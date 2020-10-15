@@ -38,10 +38,10 @@ jacobizeta(u+2*elliptick(k),k);
 
 Z(u,k)
 
-elliptice(u+14*elliptick(k),k);
+jacobie(u+14*elliptick(k),k);
 
 
-14*E(k) + E(u,k)
+14*E(k) + Epsilon(u,k)
 
 
 % derivatives and consistency checks
@@ -60,11 +60,12 @@ df(jacobisn(u,k)^2+jacobicn(u,k)^2,u);
 df(jacobidn(u,k),k);
 
 
-                                         2
- sn(u,k)*k*( - E(u,k)*cn(u,k) - cn(u,k)*k *u + cn(u,k)*u + dn(u,k)*sn(u,k))
-----------------------------------------------------------------------------
-                                    2
-                                   k  - 1
+(sn(u,k)*k
+
+                                      2                                     2
+ *( - cn(u,k)*Epsilon(u,k) - cn(u,k)*k *u + cn(u,k)*u + dn(u,k)*sn(u,k)))/(k
+
+    - 1)
 
 df(k^2*jacobisn(u,k)^2+jacobidn(u,k)^2,k);
 
@@ -77,20 +78,22 @@ df(k^2*jacobisn(u,k)^2+jacobidn(u,k)^2,k);
 
 % vanishes by Pythagorean identity for dn and cn
 
-df(elliptice(u,k),u);
+df(jacobie(u,k),u);
 
 
        2
 dn(u,k)
 
-df(elliptice(u,k),k);
+df(jacobie(u,k),k);
 
 
-                  2                                    2  2            2
- k*(E(u,k)*cn(u,k)  - cn(u,k)*dn(u,k)*sn(u,k) - sn(u,k) *k *u + sn(u,k) *u)
-----------------------------------------------------------------------------
-                                    2
-                                   k  - 1
+(k
+
+          2                                                 2  2            2
+ *(cn(u,k) *Epsilon(u,k) - cn(u,k)*dn(u,k)*sn(u,k) - sn(u,k) *k *u + sn(u,k) *u)
+
+     2
+ )/(k  - 1)
 
 
 df(elliptick(k),k);
@@ -125,36 +128,36 @@ df(jacobizeta(u,k),u);
 -------------------------
           K(k)
 
-df(ellipticd(u,k),u);
+df(elliptice(u,k),u);
 
 
               2  2
 sqrt( - sin(u) *k  + 1)
 
-df(ellipticd(u,k),k);
+df(elliptice(u,k),k);
 
 
- D(u,k) - F(u,k)
+ E(u,k) - F(u,k)
 -----------------
         k
 
 
 % quasi-periodicity
-ellipticd(u+pi/2,k);
+elliptice(u+pi/2,k);
 
 
-D(u,k) + E(k)
+E(k) + E(u,k)
 
 ellipticf(u-5*pi/2,k);
 
 
 F(u,k) - 5*K(k)
 
-ellipticd(u+11*pi/3,k);
+elliptice(u+11*pi/3,k);
 
 
    pi + 6*u
-D(----------,k) + 7*E(k)
+E(----------,k) + 7*E(k)
       6
 
 
@@ -329,14 +332,14 @@ Z:= jacobizeta(u, 0.4);
 
 z := 0.0384326240009
 
-E2 := elliptice(u, 0.4);
+E2 := jacobie(u, 0.4);
 
 
 e2 := 0.589386917488
 
 
 % checks
-EE - elliptice(K, 0.4);
+EE - jacobie(K, 0.4);
 
 
 0

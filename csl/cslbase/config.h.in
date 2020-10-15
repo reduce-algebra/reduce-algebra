@@ -1,5 +1,11 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Work on a transition to use of arithlib.hpp for bignums */
+#undef ARITHLIB
+
+/* disable Karatsuba and input local editing so they do not create threads */
+#undef AVOID_THREADS
+
 /* Architecture this is built to run on */
 #undef BUILTFOR
 
@@ -30,20 +36,17 @@
 /* Define to 1 if you have the `clock_gettime' function. */
 #undef HAVE_CLOCK_GETTIME
 
-/* Define to 1 if the system has the type `complex double'. */
-#undef HAVE_COMPLEX_DOUBLE
-
 /* Define to 1 if you have the <complex.h> header file. */
 #undef HAVE_COMPLEX_H
-
-/* Define to 1 if the system has the type `cpu_set_t'. */
-#undef HAVE_CPU_SET_T
 
 /* Correct Rounding maths library should be used */
 #undef HAVE_CRLIBM
 
 /* Define to 1 if you have the `csqrt' function. */
 #undef HAVE_CSQRT
+
+/* Define to 1 if you have the <cstdio> header file. */
+#undef HAVE_CSTDIO
 
 /* Define to 1 if you have the <curses.h> header file. */
 #undef HAVE_CURSES_H
@@ -205,9 +208,6 @@
 /* Define to 1 if you have the `socket' function. */
 #undef HAVE_SOCKET
 
-/* Define to 1 if the system has the type `socklen_t'. */
-#undef HAVE_SOCKLEN_T
-
 /* support for 128-bit long double/float128_t */
 #undef HAVE_SOFTFLOAT
 
@@ -224,11 +224,11 @@
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
-/* Define to 1 if you have the <stdio.h> header file. */
-#undef HAVE_STDIO_H
-
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the `std::aligned_alloc' function. */
+#undef HAVE_STD__ALIGNED_ALLOC
 
 /* Define to 1 if you have the `strchr' function. */
 #undef HAVE_STRCHR
@@ -247,15 +247,6 @@
 
 /* Define to 1 if you have the `strstr' function. */
 #undef HAVE_STRSTR
-
-/* Define to 1 if the system has the type `struct sigaction'. */
-#undef HAVE_STRUCT_SIGACTION
-
-/* Define to 1 if the system has the type `struct timeval'. */
-#undef HAVE_STRUCT_TIMEVAL
-
-/* Define to 1 if the system has the type `struct tms'. */
-#undef HAVE_STRUCT_TMS
 
 /* Define to 1 if you have the <syscall.h> header file. */
 #undef HAVE_SYSCALL_H
@@ -449,6 +440,9 @@
 /* Define to 1 if your <sys/time.h> declares `struct tm'. */
 #undef TM_IN_SYS_TIME
 
+/* True if EQUAL should be profiled */
+#undef TRACED_EQUAL
+
 /* True if we are running on Unix, Linux, BSD etc */
 #undef UNIX
 
@@ -464,10 +458,13 @@
 /* True for a (potentially) Windowed system */
 #undef WINDOW_SYSTEM
 
+/* remove the foreign function support */
+#undef WITHOUT_FFI
+
 /* Not even an attempt at support for GUI */
 #undef WITHOUT_GUI
 
-/* True if Intel or AMD (32 or 64-bit) */
+/* True if Intel or AMD (64-bit only these days) */
 #undef X86
 
 /* Define to empty if `const' does not conform to ANSI C. */

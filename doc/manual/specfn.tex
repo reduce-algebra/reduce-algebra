@@ -31,7 +31,7 @@
 \index{Jacobi Elliptic Functions and Integrals}
 \ttindex{Jacobiam} \ttindex{Jacobisn} \ttindex{Jacobidn}
 \ttindex{Jacobicn} 
-\ttindex{EllipticF}  \ttindex{EllipticK} \ttindex{EllipticE}  \ttindex{EllipticD}
+\ttindex{EllipticF}  \ttindex{EllipticK} \ttindex{EllipticE}  \ttindex{JacobiE}
  \ttindex{JacobiZeta} 
 \ttindex{EllipticTheta1} \ttindex{EllipticTheta2} \ttindex{EllipticTheta3} \ttindex{EllipticTheta4}
 \index{Airy functions} \ttindex{Airy\_Ai} \ttindex{Airy\_Bi}
@@ -595,7 +595,8 @@ The following Jacobi functions are available:-
 \end{itemize}
 These differ somewhat from the originals implemented by Lisa Temme in that
 the second argument is now the modulus (usually denoted by $k$ in most texts
-rather than its square $m$).
+rather than its square $m$).  The notation for the most part follows  Lawden 
+\cite{Lawden:89}.
 
 Extended rule lists are provided for differentiation of these functions with
 respect to either argument, to implement the standard addition formulae,
@@ -608,7 +609,8 @@ complex arguments it is also better if the \sw{complex} switch is on.
 
 \subsubsection{Jacobi Amplitude Function}
 The amplitude of u can be evaluated using the 
-\f{jacobiam(u,k)} command.
+\f{jacobiam(u,k)} command.  A rule list is provided for differentiation of this functions with
+respect to either argument.
 
 \subsubsection{Arithmetic Geometric Mean}
 A procedure to evaluate the AGM of initial values \(a_0,b_0,c_0\) 
@@ -658,8 +660,12 @@ This confusion was perhaps understandable
 as in the literature some authors use the notation $\mathrm{E}(u, k)$ for
 the Legendre form and others for Jacobi's form.
 
-To avoid any possible confusion, following Lawden \cite{Lawden:89}, the notation
-$\mathrm{D}(\phi, k)$ will be used for the Legendre form.
+To bring the notation more into line with that in the NIST Digital Library of
+Mathematical Functions. To avoid any possible confusion, $\mathrm{E}(u, k)$ is used for
+the Legendre form and $\mathcal{E}(u, k)$ for Jacobi's form.
+This differs from the 2019 version of this section which followed Lawden \cite{Lawden:89}, 
+where the notation $\mathrm{D}(\phi, k)$  and $\mathrm{E}(u, k)$ were used for the 
+Legendre and Jacobi forms respectively.
 
 A number of rule lists have been provided to implement, where appropriate,
 derivatives of these functions, addition rules and periodicity and
@@ -678,43 +684,47 @@ First Kind}:
 The Elliptic K function can be used as \f{EllipticK(k)} and will 
 return the value of the \emph{Complete Elliptic Integral of the
 First Kind}:
-\[\mathrm{K}(k)=\int_0^{\pi/2}(1-k^2 \sin^2 \theta)^{-1/2}\mathrm{d}\theta.\]
+\[\mathrm{K}(k)=\mathrm{F}(\pi/2, k) =\int_0^{\pi/2}(1-k^2 \sin^2 \theta)^{-1/2}\mathrm{d}\theta.\]
 This is one of the quarter periods of the Jacobi elliptic
-functions and is often used in the calculation of other elliptic
-functions.
-
+functions and is often used in the calculation of other elliptic functions.
 \subsubsection{Elliptic K$'$}
 
 The Elliptic K$'$ function can be used as \f{EllipticK!$'$(k)} and will 
 return the value $\mathrm{K}(k')=\mathrm{K}(\sqrt{1-k^2})$. $i\mathrm{K}'(k)$ is
 the other quarter-period of the Jacobi elliptic functions.
 
-\subsubsection{Elliptic D}
-
-The Elliptic D function takes two arguments.
-It is called as \f{EllipticD(phi,k)}
-and will return the value of Legendre's form of
-the \emph{Incomplete Elliptic Integral of the Second Kind}:
-\[\mathrm{D}(\phi, k)=\int_0^\phi (\sqrt{1-k^2 \sin^2 \theta} \mathrm{d}\theta.\]
-
 \subsubsection{Elliptic E}
 
 The Elliptic E function comes with either one or two arguments;
 used with two arguments as \f{EllipticE(u,k)}
+it will return the value of Legendre's form of
+the \emph{Incomplete Elliptic Integral of the Second Kind}:
+\[\mathrm{E}(\phi, k)=\int_0^\phi (\sqrt{1-k^2 \sin^2 \theta} \mathrm{d}\theta.\]
+ When called with one argument \f{EllipticE(k)} will return the value of the
+\emph{Complete Elliptic Integral of the Second Kind}:
+\[\mathrm{E}(k)=\mathrm{E}(\pi/2, k) =
+\int_0^{\pi/2} (\sqrt{1-k^2 \sin^2 \theta} \mathrm{d}\theta.\]
+
+\subsubsection{Jacobi E}
+The Jacobi E function can be used as  \f{JacobiE(u,k)};
 it will return the value of Jacobi's form of
 the \emph{Incomplete Elliptic Integral of the Second Kind}:
-\[\mathrm{E}(u, k)=\int_0^u \mathrm{dn}^2 (v, k) \mathrm{d}v.\]
+\[\mathcal{E}(u, k)=\int_0^u \mathrm{dn}^2 (v, k) \mathrm{d}v.\] 
+
 The relationship between the two forms of incomplete elliptic integrals can
 be expressed as
-\[\mathrm{E}(u, k) = \mathrm{D}(\mathrm{am}(u), k).\]
+\[\mathcal{E}(u, k) = \mathrm{E}(\mathrm{am}(u), k).\]
+Note that
+\[\mathrm{E}(k)=\mathcal{E}(\mathrm{K}(k), k)
+=\int_0^{\mathrm{K}(k)} \mathrm{dn}^2(v, k)  \mathrm{d}v.\]
 
-When called with one argument \f{EllipticE(k)} will return the value of the
-\emph{Complete Elliptic Integral of the Second Kind}:
-\[\mathrm{E}(k)=\mathrm{E}(\mathrm{K}(k), k)
-=\int_0^{\mathrm{K}(k)} \mathrm{dn}^2(v, k)  \mathrm{d}v\]
-or equivalently
-\[\mathrm{E}(k)=\mathrm{D}(\pi/2, k) =
-\int_0^{\pi/2} (\sqrt{1-k^2 \sin^2 \theta} \mathrm{d}\theta.\]
+\emph{Display of the Jacobi E function in Reduce} causes some minor difficulty. 
+If the GUI supports calligraphic characters there is no problem and it is rendered
+ as $\mathcal{E}(u,k)$.
+ However, this is currently not the case with the CSL GUI and so it is rendered as $\epsilon$.
+ The uppercase version cannot reasonably be used as it is indistinguishable from uppercase E
+which is used for Elliptic E.
+In non-GUI interfaces the Jacobi E function is rendered as Epsilon.
 \subsubsection{Elliptic E$'$}
 
 The Elliptic E$'$ function can be used as \f{EllipticE!$'$(k)} and will 
@@ -938,8 +948,8 @@ $am(u,k)$ & \f{jacobiam(u,k)}\\
 $F(\phi,k)$ & \f{ellipticF(phi,k)}\\
 $K(k)$ & \f{ellipticK(k)}\\
 $K'(k)$ & \f{ellipticK!'(k)}\\
-$D(\phi,k)$ & \f{ellipticD(phi,k)}\\
-$E(u,k) or E(k)$ & \f{ellipticE(u,k) or ellipticE(k)}\\
+$\mathcal{E}(u,k)$ & \f{JacobiE(u,k)}\\
+$E(u,k)\ or\ E(k)$ & \f{ellipticE(u,k) or ellipticE(k)}\\
 $E'(k)$ & \f{ellipticE!'(k)}\\
 $Z(u,k)$ & \f{jacobizeta(u,k)}\\
 $\vartheta_1(u,q)$ & \f{elliptictheta1(u,q)}\\

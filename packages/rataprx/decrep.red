@@ -330,13 +330,18 @@ fancy!-level
     if l2 > 0 or l3 > 0 then <<
       fancy!-prin2!*(".", 0);
       foreach d in npp do fancy!-prin2!*(getv(!*digit2ch, d), 0);
-      if l3 > 0 then <<
-      % *************** temporary hack to enclose periodic part in 
-      % ********* brackets rather than overlining
-	 fancy!-prin2!*('![, 0);
-         foreach d in pp do fancy!-prin2!*(getv(!*digit2ch, d), 0);
-         fancy!-prin2!*('!], 0);
-      >>;
+      if l3 > 0 then
+         if memq('showmath, lispsystem!*) then <<
+            % ****  hack to enclose periodic part in brackets 
+            % ****  rather than overlining for CSL GUI
+	    fancy!-prin2!*('![, 0);
+            foreach d in pp do fancy!-prin2!*(getv(!*digit2ch, d), 0);
+            fancy!-prin2!*('!], 0)
+	 >> else <<  % **** works for TeXmacs & Run-Reduce
+	    fancy!-prin2!*('!\overline!{, 0);
+            foreach d in pp do fancy!-prin2!*(getv(!*digit2ch, d), 0);
+            fancy!-prin2!*('!}, 0)
+	 >>;   
     >>;
     % print number base as a subscript if it is not 10
     if base neq 10 then <<

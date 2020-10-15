@@ -645,8 +645,10 @@ valgrind_FALSE
 valgrind_TRUE
 cygpath_FALSE
 cygpath_TRUE
-canrun_FALSE
-canrun_TRUE
+arithlib_FALSE
+arithlib_TRUE
+conservative_FALSE
+conservative_TRUE
 experiment_FALSE
 experiment_TRUE
 gui_FALSE
@@ -665,8 +667,6 @@ darwin_FALSE
 darwin_TRUE
 cyg64_FALSE
 cyg64_TRUE
-cyg32_FALSE
-cyg32_TRUE
 cygwin_FALSE
 cygwin_TRUE
 win64_FALSE
@@ -679,11 +679,6 @@ EQUALS
 ENDIFWORD
 ELSEWORD
 CYGWIN_FLAVOUR
-absolute_cyg64
-absolute_cyg32
-CYG64
-CYG32
-LOCALCYG
 HOST
 CYGPATH
 FOX_LIBS
@@ -833,19 +828,19 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 enable_silent_rules
-with_cygwin32
-with_cygwin64
+with_windows_layout
 with_csl
 with_psl
 with_redfront
-with_mingw64
 with_gui
+with_ffi
 with_build
 with_pslbuild
 with_cygbuild
 with_cygbuild64
 with_crlibm
 with_softfloat
+with_threads
 with_lto
 with_fox
 with_wx
@@ -855,8 +850,10 @@ with_force
 enable_debug
 enable_profile
 enable_conservative
+enable_trace_equal
 enable_test
 enable_experiment
+with_arithlib
 enable_embedded
 enable_dependency_tracking
 enable_static
@@ -1524,7 +1521,8 @@ Optional Features:
   --disable-silent-rules  verbose build output (undo: "make V=0")
   --enable-debug          compile for debugging
   --enable-profile        compile for profiling
-  --enable-conservative   garbage collect option
+  --enable-conservative   garbage collect option that is under development
+  --enable-trace-equal    trace use of EQUAL for profiling
   --enable-test           testing-mode version
   --enable-experiment     testing-mode version
   --enable-embedded       embedded-mode version
@@ -1542,25 +1540,27 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-cygwin32         Force configure and build to be under cygwin32
-  --with-cygwin64         Force configure and build to be under cygwin64
+  --with-windows_layout   old or new windows layout
   --with-csl              Use the CSL Lisp system
   --with-psl              Use the PSL Lisp system. Do not use here!
   --with-redfront         Build and install redfront
-  --with-mingw64          this option is ignored here!
   --with-gui              this option is ignored here!
+  --with-ffi              --without-ffi can be used to avoid use of libffi
   --with-build            specify host-name to use when logging
   --with-pslbuild         used if I wish to call the PSL version
   --with-cygbuild         used if I wish to call the cygwin version
   --with-cygbuild64       used if I wish to call the 64-bit cygwin version
   --with-crlibm           Can be used to disable use of crlibm
   --with-softfloat        Can be used to disable use of softfloat
+  --with-threads          Can be used to avoid any non-vital thread stuff if
+                          that helps with debugging
   --with-lto              Force extreme optimisation with gcc
   --with-fox              enable use of FOX
   --with-wx               enable use of wxWidgets
   --with-cygwin           Force use of raw cywgin
   --with-autogen          Used at a higher level
   --with-force            Used at a higher level
+  --with-arithlib         arithlib.hpp version
   --with-pic[=PKGS]       try to use only PIC/non-PIC objects [default=use
                           both]
   --with-aix-soname=aix|svr4|both
@@ -2280,6 +2280,73 @@ rm -f conftest.val
 
 } # ac_fn_cxx_compute_int
 
+# ac_fn_cxx_check_func LINENO FUNC VAR
+# ------------------------------------
+# Tests whether FUNC exists, setting the cache variable VAR accordingly
+ac_fn_cxx_check_func ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
+$as_echo_n "checking for $2... " >&6; }
+if eval \${$3+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+/* Define $2 to an innocuous variant, in case <limits.h> declares $2.
+   For example, HP-UX 11i <limits.h> declares gettimeofday.  */
+#define $2 innocuous_$2
+
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $2 (); below.
+    Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
+    <limits.h> exists even on freestanding compilers.  */
+
+#ifdef __STDC__
+# include <limits.h>
+#else
+# include <assert.h>
+#endif
+
+#undef $2
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char $2 ();
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined __stub_$2 || defined __stub___$2
+choke me
+#endif
+
+int
+main ()
+{
+return $2 ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  eval "$3=yes"
+else
+  eval "$3=no"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+eval ac_res=\$$3
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+
+} # ac_fn_cxx_check_func
+
 # ac_fn_cxx_check_header_mongrel LINENO HEADER VAR INCLUDES
 # ---------------------------------------------------------
 # Tests whether HEADER exists, giving a warning if it cannot be compiled using
@@ -2397,73 +2464,6 @@ $as_echo "$ac_res" >&6; }
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
 } # ac_fn_cxx_check_header_compile
-
-# ac_fn_cxx_check_func LINENO FUNC VAR
-# ------------------------------------
-# Tests whether FUNC exists, setting the cache variable VAR accordingly
-ac_fn_cxx_check_func ()
-{
-  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
-$as_echo_n "checking for $2... " >&6; }
-if eval \${$3+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-/* Define $2 to an innocuous variant, in case <limits.h> declares $2.
-   For example, HP-UX 11i <limits.h> declares gettimeofday.  */
-#define $2 innocuous_$2
-
-/* System header to define __stub macros and hopefully few prototypes,
-    which can conflict with char $2 (); below.
-    Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
-    <limits.h> exists even on freestanding compilers.  */
-
-#ifdef __STDC__
-# include <limits.h>
-#else
-# include <assert.h>
-#endif
-
-#undef $2
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char $2 ();
-/* The GNU C library defines this for functions which it implements
-    to always fail with ENOSYS.  Some functions are actually named
-    something starting with __ and the normal name is an alias.  */
-#if defined __stub_$2 || defined __stub___$2
-choke me
-#endif
-
-int
-main ()
-{
-return $2 ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  eval "$3=yes"
-else
-  eval "$3=no"
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-eval ac_res=\$$3
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
-
-} # ac_fn_cxx_check_func
 
 # ac_fn_cxx_check_type LINENO TYPE VAR INCLUDES
 # ---------------------------------------------
@@ -2917,6 +2917,9 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
+
+
+# I will use the older version too.
 
 ac_aux_dir=
 for ac_dir in . "$srcdir"/.; do
@@ -3571,9 +3574,6 @@ fi
 AM_BACKSLASH='\'
 
 
-# I will use the older version too.
-
-
 here=`pwd`
 { $as_echo "$as_me:${as_lineno-$LINENO}: +++ Configure in directory $here +++" >&5
 $as_echo "$as_me: +++ Configure in directory $here +++" >&6;}
@@ -3595,76 +3595,34 @@ ac_config_headers="$ac_config_headers config.h"
 ac_config_files="$ac_config_files Makefile"
 
 
-# The following is a messy hack related to building on Windows...
 
-
-# Check whether --with-cygwin32 was given.
-if test "${with_cygwin32+set}" = set; then :
-  withval=$with_cygwin32;
-else
-  with_cygwin32="no"
-fi
-
-
-# If the "--with-cygwin32" flag was passed and I am at present running under
-# a 64-bit cygwin shell then I will insist on changing gear so that I run
-# using a 32-bit cygwin shell.
-uname_o=`uname -o`
-uname_m=`uname -m`
-uname_s=`uname -s`
-case "$uname_s" in
-*WOW)
-  wow="yes"
+case `uname -n` in
+*panamintXXX* | *gauguinXXX*)
+  default_windows_layout="new"
   ;;
 *)
-  wow="no"
+  default_windows_layout="old"
   ;;
 esac
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: with_cygwin32=$with_cygwin32 with_cygwin64=$with_cygwin64 uname_o=$uname_o uname_m=$uname_m uname_s=$uname_s wow=$wow" >&5
-$as_echo "$as_me: with_cygwin32=$with_cygwin32 with_cygwin64=$with_cygwin64 uname_o=$uname_o uname_m=$uname_m uname_s=$uname_s wow=$wow" >&6;}
 
-if test "$with_cygwin32" != "no" &&
-   test "$uname_o" = "Cygwin" &&
-   test "$uname_m" = "x86_64"
-then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: Restart to use a 32-bit Cygwin shell" >&5
-$as_echo "$as_me: Restart to use a 32-bit Cygwin shell" >&6;}
-# I am on cygwin - and I will just assume that the directory with Reduce
-# in it is writable so I can put the cyg32 binary there. I always use a 32-bit
-# mingw-style compiler to create the program that can flip between 32 and
-# 64 bit usage.
-  i686-w64-mingw32-g++ -O3 -DFORCE32 $srcdir/other-cygwin.cpp -static -o ./cyg32
-  i686-w64-mingw32-strip ./cyg32
-  { $as_echo "$as_me:${as_lineno-$LINENO}: ./cyg32 $srcdir/configure $ac_configure_args" >&5
-$as_echo "$as_me: ./cyg32 $srcdir/configure $ac_configure_args" >&6;}
-  exec /bin/sh -c "./cyg32 $srcdir/configure $ac_configure_args"
-fi
-
-
-# Check whether --with-cygwin64 was given.
-if test "${with_cygwin64+set}" = set; then :
-  withval=$with_cygwin64;
+# Check whether --with-windows_layout was given.
+if test "${with_windows_layout+set}" = set; then :
+  withval=$with_windows_layout;
 else
-  with_cygwin64="no"
+  with_windows_layout="$default_windows_layout"
 fi
 
 
-if test "$with_cygwin64" != "no"
-   test "$uname_o" = "Cygwin" &&
-   test "$uname_m" = "i686" &&
-   test "wow" = "yes"
+{ $as_echo "$as_me:${as_lineno-$LINENO}: default=$default_windows_layout this-layout=$with_windows_layout" >&5
+$as_echo "$as_me: default=$default_windows_layout this-layout=$with_windows_layout" >&6;}
+
+if test "$with_windows_layout" != "new"
 then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: Restart to use a 64-bit Cygwin shell" >&5
-$as_echo "$as_me: Restart to use a 64-bit Cygwin shell" >&6;}
-  i686-w64-mingw32-g++ -O3 -DFORCE64 $srcdir/other-cygwin.cpp -static -o ./cyg64
-  i686-w64-mingw32-strip ./cyg64
-  { $as_echo "$as_me:${as_lineno-$LINENO}: ./cyg64 $srcdir/configure $ac_configure_args" >&5
-$as_echo "$as_me: ./cyg64 $srcdir/configure $ac_configure_args" >&6;}
-  exec /bin/sh -c "./cyg64 $srcdir/configure $ac_configure_args"
+  with_windows_layout="old"
 fi
 
-# These days I am making all the source files for CSL ones in C++ not C
+# All the source files for CSL are in C++ not C
 # and so it is best to make configuration tests match.
 
 ac_ext=cpp
@@ -3701,7 +3659,7 @@ fi
 
 
 # By configuring "--without-redfront" you can avoid having a CSL built
-# making an attempt to coompile and instate the newfront version of redfront.
+# making an attempt to compile and instate the newfront version of redfront.
 
 
 # Check whether --with-redfront was given.
@@ -3713,17 +3671,28 @@ fi
 
 
 
-# Check whether --with-mingw64 was given.
-if test "${with_mingw64+set}" = set; then :
-  withval=$with_mingw64;
-fi
-
-
-
 # Check whether --with-gui was given.
 if test "${with_gui+set}" = set; then :
   withval=$with_gui;
 fi
+
+
+
+# Check whether --with-ffi was given.
+if test "${with_ffi+set}" = set; then :
+  withval=$with_ffi;
+else
+  with_ffi="yes"
+fi
+
+
+if test "x$with_ffi" = "xno"
+then
+
+$as_echo "#define WITHOUT_FFI 1" >>confdefs.h
+
+fi
+
 
 
 # What host am I on?
@@ -3848,8 +3817,6 @@ fi
 
 
 
-
-
 # Check whether --with-crlibm was given.
 if test "${with_crlibm+set}" = set; then :
   withval=$with_crlibm;
@@ -3878,6 +3845,22 @@ if test "x$with_softfloat" != "xno"
 then
 
 $as_echo "#define HAVE_SOFTFLOAT 1" >>confdefs.h
+
+fi
+
+
+# Check whether --with-threads was given.
+if test "${with_threads+set}" = set; then :
+  withval=$with_threads;
+else
+  with_threads="yes"
+fi
+
+
+if test "x$with_threads" = "xno"
+then
+
+$as_echo "#define AVOID_THREADS 1" >>confdefs.h
 
 fi
 
@@ -4004,7 +3987,7 @@ $as_echo "#define WINDOW_SYSTEM 1" >>confdefs.h
 
 fi
 
-if test "x$with_gui" == "xno"
+if test "x$with_gui" = "xno"
 then
 
 $as_echo "#define WITHOUT_GUI 1" >>confdefs.h
@@ -4316,15 +4299,16 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: Building with host: $host" >&5
 $as_echo "$as_me: Building with host: $host" >&6;}
 
-cyg32="no"
 cyg64="no"
 case $host in
 *-*-cygwin* | *-*-mingw*)
   { $as_echo "$as_me:${as_lineno-$LINENO}: Building under cygwin" >&5
 $as_echo "$as_me: Building under cygwin" >&6;}
-# Note that I may be under either cygwin32 or cygwin64 here...
   x86="yes"
   exeext="yes"
+# Here I will certainly be using gcc and I like to limit the number of
+# diagnostics it can generate in any one build.
+  CPPFLAGS="$CPPFLAGS -fmax-errors=10"
   if test "x$with_cygwin" != "xno"
   then
 # The next line may ALMOST count as a lie, but under raw cygwin the world
@@ -4338,6 +4322,10 @@ $as_echo "#define UNIX 1" >>confdefs.h
 $as_echo "#define RAW_CYGWIN 1" >>confdefs.h
 
     CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses -I/usr/include/freetype2"
+# The following line is really ODD and should clearly not be needed, but
+# at least until April 2020 without it you have trouble linking code that
+# has "extern thread_local" entities when you are an a 64-bit cygwin world.
+    LDFLAGS="$LDFLAGS -Wl,--image-base,0x10000000"
     if test "x$with_gui" != "xno"
     then
       LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
@@ -4345,18 +4333,11 @@ $as_echo "#define RAW_CYGWIN 1" >>confdefs.h
     DLL_CFLAGS="$CFLAGS -shared"
     XLIBS="-lXext -lX11"
     cygwin_build="yes"
-    case $host in
-    x86_64*)
-      cyg64="yes"
-      ;;
-    *)
-      cyg32="yes"
-      ;;
-    esac
+    cyg64="yes"
   else
 # Here is the normal situation where cygwin is the BUILD environment. Mostly
 # that means using the mingw-style version of the compiler via
-# "i686-w64-mingw32-g++" or "x86_64-w64-mingw32-g++".
+# "x86_64-w64-mingw32-g++".
     { $as_echo "$as_me:${as_lineno-$LINENO}: Windows built creating native binary" >&5
 $as_echo "$as_me: Windows built creating native binary" >&6;}
 
@@ -4375,19 +4356,7 @@ $as_echo "#define WIN32 1" >>confdefs.h
     exeext="yes"
   fi
   X_BASE_LIBS=""
-  case `uname -m` in
-  *i686*)
-    cyg32="yes"
-    ;;
-  *x86_64*)
-    cyg64="yes"
-    ;;
-  *)
-    as_fn_error $? "Unknown platform in cygwin build" "$LINENO" 5
-    ;;
-  esac
-  { $as_echo "$as_me:${as_lineno-$LINENO}: with_cygwin=<$with_cygwin> cyg32=$cyg32 cyg64=$cyg64" >&5
-$as_echo "$as_me: with_cygwin=<$with_cygwin> cyg32=$cyg32 cyg64=$cyg64" >&6;}
+  cyg64="yes"
   ;;
 *-*-msdos* | *-*-go32* | *-*-windows*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: Windows built creating native binary" >&5
@@ -4744,7 +4713,7 @@ $as_echo "#define MACINTOSH 1" >>confdefs.h
 # compilation of any sort at all are then THEIR job to resolve by providing
 # settings that are satisfactory.
   CPPFLAGS="$CPPFLAGS -I/opt/local/include -I/opt/local/include/freetype2"
-  XLIBS="-lXext -lX11 -lXft -lfontconfig"
+  XLIBS="-lXext -lX11 -lXft -lfontconfig -lc"
   macintosh_build="yes"
   darwin_build="yes"
   if test "x$CC$CXX" = "x" || (test "x$CC" = "xgcc" && test "x$CXX" = "xg++")
@@ -4877,6 +4846,7 @@ $as_echo "$as_me: host=$host, target=$target" >&6;}
 
 $as_echo "#define UNIX 1" >>confdefs.h
 
+  linux_build="yes"
   if test "x$target" = "x"
   then
     xtarget="$host"
@@ -5165,10 +5135,10 @@ test -n "$VALGRIND" || VALGRIND="x"
 case $host in
 *-*-cygwin* | *-*-mingw*)
 # I use the native windows compilers here so that my scripts can run hosted
-# on either 32 or 64-bit cygwin equally happily - the x686-w64-mingw toolchain
+# on 64-bit cygwin using the x86_64-w64-mingw toolchain
 # should work on any varient of a Windows platform.
-  LOCALCXX="i686-w64-mingw32-g++ -static"
-  LOCALSTRIP="i686-w64-mingw32-strip"
+  LOCALCXX="x86_64-w64-mingw32-g++ -static"
+  LOCALSTRIP="x86_64-w64-mingw32-strip"
   ;;
 *)
   for ac_prog in g++ clang++ c++ CC
@@ -5217,6 +5187,7 @@ fi
 done
 test -n "$LOCALCXX" || LOCALCXX="g++"
 
+  LOCALCXX="$LOCALCXX -std=gnu++11"
   LOCALSTRIP="$STRIP"
   ;;
 esac
@@ -5279,6 +5250,26 @@ $as_echo "#define CONSERVATIVE 1" >>confdefs.h
 
 fi
 
+# Want to build with statistic-gathering for the EQUAL function?
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for trace-equal" >&5
+$as_echo_n "checking for trace-equal... " >&6; }
+# Check whether --enable-trace-equal was given.
+if test "${enable_trace_equal+set}" = set; then :
+  enableval=$enable_trace_equal;
+else
+  enable_trace_equal="no"
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_trace_equal" >&5
+$as_echo "$enable_trace_equal" >&6; }
+
+if test "x$enable_trace_equal" = "xyes"
+then
+
+$as_echo "#define TRACED_EQUAL 1" >>confdefs.h
+
+fi
+
 # Want to build "test" variant?
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for test" >&5
 $as_echo_n "checking for test... " >&6; }
@@ -5307,6 +5298,17 @@ then
   enable_test="yes"
 fi
 
+
+# Check whether --with-arithlib was given.
+if test "${with_arithlib+set}" = set; then :
+  withval=$with_arithlib;
+else
+  with_arithlib="no"
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_arithlib" >&5
+$as_echo "$with_arithlib" >&6; }
+
 if test "x$enable_test" = "xyes"
 then
 # I force EXPERIMENT into CPPFLAGS because when u01.cpp to u60.cpp get
@@ -5315,6 +5317,14 @@ then
   CPPFLAGS="$CPPFLAGS -DEXPERIMENT=1"
 
 $as_echo "#define EXPERIMENT 1" >>confdefs.h
+
+fi
+
+if test "x$with_arithlib" = "xyes"
+then
+  CPPFLAGS="$CPPFLAGS -DARITHLIB=1"
+
+$as_echo "#define ARITHLIB 1" >>confdefs.h
 
 fi
 
@@ -19666,11 +19676,11 @@ then
   LDFLAGS="$LDFLAGS -Wl,--hash-style=both"
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <stdio.h>
+#include <cstdio>
 int
 main ()
 {
-printf("\n");
+std::printf("\n");
   ;
   return 0;
 }
@@ -21081,8 +21091,8 @@ fi
 # things like static_assert and type traits that at present are used in just
 # a small corner of the code, but that are potentially generally valuable.
 
-if test "x$HAVE_CXX17" == "x1" || \
-   test "x$HAVE_CXX14" == "x1"
+if test "x$HAVE_CXX17" = "x1" || \
+   test "x$HAVE_CXX14" = "x1"
 then
   { $as_echo "$as_me:${as_lineno-$LINENO}: A modern C++ compiler is available" >&5
 $as_echo "$as_me: A modern C++ compiler is available" >&6;}
@@ -21445,9 +21455,189 @@ $as_echo "#define HAVE_CXX11 1" >>confdefs.h
 
 fi
 
+# Some platforms need "-latomic" to support std::atomic<T> where sizeof(T)
+# exceeds 8.
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+  #include <atomic>
+                     typedef struct _c16 { char c[16]; } c16;
+                     typedef std::atomic<c16> a16;
+
+int
+main ()
+{
+ c16 v16 = {1};
+                      a16 av16;
+                      av16 = v16;
+                   v16 = av16;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: std::atomic<T> width 16 available" >&5
+$as_echo "$as_me: std::atomic<T> width 16 available" >&6;}
+else
+  maybe_need_libatomic="yes"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+if test "x$maybe_need_libatomic" = "xyes"
+then
+  LIBS="$LIBS -latomic"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+    #include <atomic>
+                       typedef struct _c16 { char c[16]; } c16;
+                       typedef std::atomic<c16> a16;
+
+int
+main ()
+{
+ c16 v16 = {1};
+                        a16 av16;
+                        av16 = v16;
+                     v16 = av16;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: std::atomic<T> width 16 OK with -libatomic" >&5
+$as_echo "$as_me: std::atomic<T> width 16 OK with -libatomic" >&6;}
+else
+  as_fn_error $? "std::atomic<T> with sizeof(T)=16 fails" "$LINENO" 5
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+
+OLIBS="$LIBS"
+LIBS="$OLIBS -lncurses"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <ncurses.h>
+     #include <term.h>
+     int main()
+     {  (void)tgetent(NULL, "xterm");
+        return 0;
+     }
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: tgetent found in ncurses" >&5
+$as_echo "$as_me: tgetent found in ncurses" >&6;}
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: tgetent NOT found in ncurses" >&5
+$as_echo "$as_me: tgetent NOT found in ncurses" >&6;}
+   LIBS="$OLIBS -lcurses"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <curses.h>
+        #include <term.h>
+        int main()
+        {  (void)tgetent(NULL, "xterm");
+           return 0;
+        }
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: tgetent found in curses" >&5
+$as_echo "$as_me: tgetent found in curses" >&6;}
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: tgetent NOT found in curses" >&5
+$as_echo "$as_me: tgetent NOT found in curses" >&6;}
+      LIBS="$OLIBS"
+      LDFLAGS="$LDFLAGS -L/usr/local/lib"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing tgetent" >&5
+$as_echo_n "checking for library containing tgetent... " >&6; }
+if ${ac_cv_search_tgetent+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char tgetent ();
+int
+main ()
+{
+return tgetent ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' ncurses curses; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_search_tgetent=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_tgetent+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_tgetent+:} false; then :
+
+else
+  ac_cv_search_tgetent=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_tgetent" >&5
+$as_echo "$ac_cv_search_tgetent" >&6; }
+ac_res=$ac_cv_search_tgetent
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+fi
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+if test "x$linux_build" = "xyes"
+then
+# This is done on ALL Linux (etc) hosts, and that is potentially dodgy.
+# So let me explain what it is about. If one builds on Ubuntu without this
+# then libtinfo (used by ncurses) is linked dynamically. If you take the
+# resulting binary to a Fedora machine it works OK but you get an annoying
+# warning about whether the library has a proper version number. This hack
+# will link in libtinfo statically and ought to avoid that ugly warning at
+# a rather modest increase in the size of the shipped binary.
+  if test -f /usr/lib/*/libtinfo.a
+  then
+    LIBS="-l:libtinfo.a $LIBS"
+  fi
+fi
+
+
 # The sad news is that some 32-bit systems only set maxalign to 4, so for
 # instance even double precision floats can be aligned only that well. A
-# consequence is that they are entitles to let malloc() return an address
+# consequence is that they are entitled to let malloc() return an address
 # that is not 8-byte aligned, and that hurts my tagging scheme. I need to
 # review uses of malloc() and do alignment for myself where it is needed.
 
@@ -21483,6 +21673,19 @@ $as_echo "#define MAXALIGN4 1" >>confdefs.h
 
 fi
 
+for ac_func in std::aligned_alloc
+do :
+  ac_fn_cxx_check_func "$LINENO" "std::aligned_alloc" "ac_cv_func_std__aligned_alloc"
+if test "x$ac_cv_func_std__aligned_alloc" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_STD__ALIGNED_ALLOC 1
+_ACEOF
+
+fi
+done
+
+
+
 # I have alternative ways of doing things on Windows and Macintosh, but
 # for systems that use gcc (and I am perhaps most thinking of Linux here)
 # I want the flag "-rdynamic" enabled (if possible) so that dynamic modules
@@ -21507,11 +21710,11 @@ $as_echo "$as_me: Checking for \"-rdynamic\"" >&6;}
       LDFLAGS="$LDFLAGS -rdynamic"
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <stdio.h>
+#include <cstdio>
 int
 main ()
 {
-printf("\n");
+std::printf("\n");
   ;
   return 0;
 }
@@ -21548,11 +21751,11 @@ OLDCPPFLAGS="$CPPFLAGS"
 CPPFLAGS="$CPPFLAGS -fno-diagnostic-color"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <stdio.h>
+#include <cstdio>
 int
 main ()
 {
-printf("\n");
+std::printf("\n");
   ;
   return 0;
 }
@@ -21568,60 +21771,6 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "$as_me: CPPFLAGS now = $CPPFLAGS" >&6;}
 
 
-case $host in
-i386* | i486* | i586* | i686*)
-# On 32-bit Intel-style machines I will try to build using gcc options
-# that force use of sse2 rather than 387 floating point arithmetic. This
-# should be faster and it avoids intermediate floating point values
-# remaining at 80-bit working precision (which messes up some attempts to
-# be clever). But the binary that is created will only run on a machine
-# from a Pentium 4 onwards (or AMD Operton/Athlon which were introduced in
-# 2003). I believe that for now I am not too upset if forcing these flags in
-# means that the binaries that are created will fail on CPUs that are a
-# full decade behind the cutting edge, but this comment is so that anybody
-# is still trying to use a Pentium 3 knows that I at least thought about them.
-# Processors that could cause worry here are:
-#  AMD prior to Athlon 64 (ie all Socket A CPUs)
-#  Intel prior to Pentium 4
-#  VIA C3 (distribution ceased in 2006. The C7 should be OK)
-#  Transmeta Crusoe (a fine museum item!)
-#
-# On a Mac where the compiler is in fact clang not gcc these options are
-# not recognised and you get messages about that, but the code still passes
-# the test here which checks if things can still be compiled even if they
-# are specified.
-  case $host in
-  *darwin* | *Darwin*)
-   ;;
-  *)
-   OLDCPPFLAGS="$CPPFLAGS"
-   CPPFLAGS="$CPPFLAGS -msse2 -mfpmath=sse"
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdio.h>
-int
-main ()
-{
-printf("\n");
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  sse2math_available="yes"
-else
-  CPPFLAGS="$OLDCPPFLAGS"
-     sse2math_available="no"
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-   { $as_echo "$as_me:${as_lineno-$LINENO}: SSE math status = $sse2math_available" >&5
-$as_echo "$as_me: SSE math status = $sse2math_available" >&6;}
-   ;;
-  esac
-  ;;
-esac
-
 if test "x$darwin_build" = "xyes"
 then
 # I COULD be trying to build on raw Darwin without MacOS present, and in that
@@ -21634,11 +21783,11 @@ $as_echo "$as_me: Checking for \"-framework\"" >&6;}
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <stdio.h>
+#include <cstdio>
 int
 main ()
 {
-printf("\n");
+std::printf("\n");
   ;
   return 0;
 }
@@ -21681,11 +21830,11 @@ $as_echo "$as_me: Checking for \"-fPIC\"" >&6;}
     CFLAGS="$CFLAGS -fPIC"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <stdio.h>
+#include <cstdio>
 int
 main ()
 {
-printf("\n");
+std::printf("\n");
   ;
   return 0;
 }
@@ -21718,11 +21867,11 @@ then
   CFLAGS="$CFLAGS -mt"
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <stdio.h>
+#include <cstdio>
 int
 main ()
 {
-printf("\n");
+std::printf("\n");
   ;
   return 0;
 }
@@ -21748,11 +21897,11 @@ $as_echo "$as_me: Checking for link time optimisation capability (LTO)" >&6;}
     LDFLAGS="$LDFLAGS -flto"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <stdio.h>
+#include <cstdio>
 int
 main ()
 {
-printf("\n");
+std::printf("\n");
   ;
   return 0;
 }
@@ -21777,7 +21926,7 @@ if test "x$with_gui" != "xno"
 then
   if (test "x$windows_build" != "xyes" || test "x$with_cygwin" != "xno")
   then
-# I will not even look for Xft if I am building for win32 not X.
+# I will not even look for Xft if I am building for win32 rather than X.
 #
 # Furthermore I will not try xft-config if I am cross-compiling. This may
 # be a mess if I ever try to cross compile towards a machine that needs it.
@@ -22370,8 +22519,7 @@ $as_echo "$enable_static" >&6; }
 # drop back to "-O0 -g".
 # Now in 2016 I am moving back to -O3 for production use, but will remain
 # with a very conservative -O0 for debugging builds. Please note that these
-# settings are applied if the compiler is detected as gcc. Also note that
-# I may try to disable optimisations that exploit the strict aliasing rules.
+# settings are applied if the compiler is detected as gcc.
 
 LOWOPT="-O0"
 if test "x$HIGHOPT" = "x"
@@ -22419,14 +22567,25 @@ then
 # where there were hot-spots. If I get keen I will put in extra tests here to
 # check if the "-pg" option is at least acceptable to the compiler... but
 # for now it is something that one puts in by manually editing this file or
-# the eventual Makefile.
-#
+# the eventual Makefile. Well if --enable-conservative is set I will use it!
+# That is because the extra costs of atomic access to memory can be extreme
+# and the impact of that hard to predict (at least for me) so I feel I need
+# profiling while I develop.
+# However recent versions of MacOS do not support it and attempts to use it
+# are treated as errors!
 #   PROFILE="-pg"
     PROFILE=""
     CFLAGS="${CFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
     CXXFLAGS="${CXXFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
     DLL_CFLAGS="${DLL_CFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
     LDFLAGS="${LDFLAGS} -g ${PROFILE}"
+#    if test "x$enable_conservative" = "xyes"
+#    then
+#      CFLAGS="${CFLAGS} -pg"
+#      CXXFLAGS="${CXXFLAGS} -pg"
+#      DLL_CFLAGS="${DLL_CFLAGS} -pg"
+#      LDFLAGS="${LDFLAGS} -pg"
+#    fi
   else
     CFLAGS="$CFLAGS ${NSA} ${HIGHOPT} -Wall"
     CXXFLAGS="$CXXFLAGS ${NSA} ${HIGHOPT} -Wall"
@@ -23402,7 +23561,7 @@ fi
 done
 
 
-for ac_header in fcntl.h float.h malloc.h memory.h stdio.h
+for ac_header in fcntl.h float.h malloc.h memory.h cstdio
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_cxx_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -23487,11 +23646,6 @@ ac_fn_cxx_check_type "$LINENO" "cpu_set_t" "ac_cv_type_cpu_set_t" "#ifdef HAVE_S
 "
 if test "x$ac_cv_type_cpu_set_t" = xyes; then :
 
-cat >>confdefs.h <<_ACEOF
-#define HAVE_CPU_SET_T 1
-_ACEOF
-
-
 fi
 
 
@@ -23500,11 +23654,6 @@ ac_fn_cxx_check_type "$LINENO" "struct tms" "ac_cv_type_struct_tms" "#ifdef HAVE
     #endif
 "
 if test "x$ac_cv_type_struct_tms" = xyes; then :
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_STRUCT_TMS 1
-_ACEOF
-
 
 fi
 
@@ -23515,11 +23664,6 @@ ac_fn_cxx_check_type "$LINENO" "struct timeval" "ac_cv_type_struct_timeval" "#if
 "
 if test "x$ac_cv_type_struct_timeval" = xyes; then :
 
-cat >>confdefs.h <<_ACEOF
-#define HAVE_STRUCT_TIMEVAL 1
-_ACEOF
-
-
 fi
 
 
@@ -23528,11 +23672,6 @@ ac_fn_cxx_check_type "$LINENO" "struct sigaction" "ac_cv_type_struct_sigaction" 
     #endif
 "
 if test "x$ac_cv_type_struct_sigaction" = xyes; then :
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_STRUCT_SIGACTION 1
-_ACEOF
-
 
 fi
 
@@ -23737,11 +23876,6 @@ ac_fn_cxx_check_type "$LINENO" "complex double" "ac_cv_type_complex_double" "#if
 "
 if test "x$ac_cv_type_complex_double" = xyes; then :
 
-cat >>confdefs.h <<_ACEOF
-#define HAVE_COMPLEX_DOUBLE 1
-_ACEOF
-
-
 fi
 
 
@@ -23829,11 +23963,6 @@ _ACEOF
 ac_fn_cxx_check_type "$LINENO" "socklen_t" "ac_cv_type_socklen_t" "#include <sys/socket.h>
 "
 if test "x$ac_cv_type_socklen_t" = xyes; then :
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_SOCKLEN_T 1
-_ACEOF
-
 
 fi
 
@@ -24495,6 +24624,174 @@ _ACEOF
 fi
 done
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing siglongjmp" >&5
+$as_echo_n "checking for library containing siglongjmp... " >&6; }
+if ${ac_cv_search_siglongjmp+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char siglongjmp ();
+int
+main ()
+{
+return siglongjmp ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' c; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_search_siglongjmp=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_siglongjmp+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_siglongjmp+:} false; then :
+
+else
+  ac_cv_search_siglongjmp=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_siglongjmp" >&5
+$as_echo "$ac_cv_search_siglongjmp" >&6; }
+ac_res=$ac_cv_search_siglongjmp
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing sigaltstack" >&5
+$as_echo_n "checking for library containing sigaltstack... " >&6; }
+if ${ac_cv_search_sigaltstack+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char sigaltstack ();
+int
+main ()
+{
+return sigaltstack ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' c; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_search_sigaltstack=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_sigaltstack+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_sigaltstack+:} false; then :
+
+else
+  ac_cv_search_sigaltstack=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_sigaltstack" >&5
+$as_echo "$ac_cv_search_sigaltstack" >&6; }
+ac_res=$ac_cv_search_sigaltstack
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing sigaction" >&5
+$as_echo_n "checking for library containing sigaction... " >&6; }
+if ${ac_cv_search_sigaction+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char sigaction ();
+int
+main ()
+{
+return sigaction ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' c; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_search_sigaction=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_sigaction+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_sigaction+:} false; then :
+
+else
+  ac_cv_search_sigaction=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_sigaction" >&5
+$as_echo "$ac_cv_search_sigaction" >&6; }
+ac_res=$ac_cv_search_sigaction
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+fi
+
 for ac_func in siglongjmp sigaltstack sigaction
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
@@ -24586,47 +24883,6 @@ _ACEOF
 
 fi
 
-# The next bit tests if I can compile and then run programs.
-# This information is used in the Makefiles when I appear to be
-# cross compiling but neverthless the executables I generate can
-# be run. This notably arises when I am building a 64-bit windows
-# application using x86_64-w64-mingw32-gcc and my computer is
-# running 64-bit windows. If I used the same toolchain but was on
-# 32-bit windows the more normal cross-compilation restrictions would
-# apply. When I am NOT able to run the "proper" executables I would like
-# to I will expect that plain use of "gcc utility.c -o utility" can be
-# used to create working utility programs when I need that.
-
-save_cross=cross_compiling
-cross_compiling=no
-if test "$cross_compiling" = yes; then :
-  can_run_executables="no"
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdio.h>
-int
-main ()
-{
-printf("\n"); return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_run "$LINENO"; then :
-  can_run_executables="yes"
-else
-  can_run_executables="no"
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-
-cross_compiling=$save_cross
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: Can Run Executables = $can_run_executables" >&5
-$as_echo "$as_me: Can Run Executables = $can_run_executables" >&6;}
-
 
 
 
@@ -24674,11 +24930,13 @@ then
 # 10.7  Lion          )
 # 10.8  Mountain Lion )
 # 10.9  Mavericks     )
-# 10.10 Yosemite       Now the oldest deployment target I support
+# 10.10 Yosemite
 # 10.11 El Capitan
 # 10.12 Sierra
 # 10.13 High Sierra
-# 10.14 Mojave         Now the version I build and test on.
+# 10.14 Mojave          Now the oldest deployment target I support
+# 10.15 Catalina
+# 11.0  Big Sur         Now the version I build and test on.
 #
 # Every few years maybe I should review how old a MacOS can be supported, but
 # note very well that one needs to configure Macports to use a deployment
@@ -24686,7 +24944,7 @@ then
 # macports stuff is liable to need rebuilding or re-installing so as to
 # avoid moans about version support conflicts when things are linked.
 #
-  ENVP="MACOSX_DEPLOYMENT_TARGET=10.10"
+  ENVP="MACOSX_DEPLOYMENT_TARGET=10.14"
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
   CPP="$ENVP $CPP"
@@ -24727,6 +24985,8 @@ then
       $LL/libz.a \
       $LL/libbz2.a \
       $LL/libfreetype.a \
+      $LL/libbrotlicommon-static.a \
+      $LL/libbrotlidec-static.a \
       $LL/libiconv.a \
       $LL/libXft.a \
       $LL/libfontconfig.a \
@@ -24739,12 +24999,14 @@ then
       LIBS="$LIBS $LL/libiconv.a $LL/libz.a $LL/libpng.a"
     fi
   else
+# Here I have explicitly asked to avoid building the GUI. The result is
+# that it is probably possible to build without use of MacPorts...
+#
 # This is to try to force linking against a system-provided version.
     LDFLAGS="-L/usr/lib -lcurses $LDFLAGS"
-    LL=/opt/local/lib
-    LIBS="$LL/libz.a \
-      $LL/libbz2.a \
-      $LL/libiconv.a \
+    LIBS="-lz \
+      -lbz2 \
+      -liconv \
       -lpthread \
       -ldl"
   fi
@@ -24805,67 +25067,8 @@ fi
 
 HOST="$host"
 
-# I really need an absolute path to the cyg32 or cyg64 utility, and at one
-# stage I fell into a trap that I could just use $abs_srcdir here, but I
-# can not.
 
-LOCALCYG=""
-CYG32=""
-CYG64=""
-
-
-
-
-if test "x$exeext" = "xyes"
-then
-  absolute_cyg32=`pwd -P`/cyg32
-
-  i686-w64-mingw32-g++ -O3 -DFORCE32 $srcdir/other-cygwin.cpp -static -o $absolute_cyg32
-  i686-w64-mingw32-strip $absolute_cyg32
-  absolute_cyg64=`pwd -P`/cyg64
-
-  i686-w64-mingw32-g++ -O3 -DFORCE64 $srcdir/other-cygwin.cpp -static -o $absolute_cyg64
-  i686-w64-mingw32-strip $absolute_cyg64
-  CYG32=$absolute_cyg32
-  CYG64=$absolute_cyg64
-fi
-
-if test "x$with_cygwin" = "xyes"
-then
-
-  if test "x$cyg32" = "xyes"
-  then
-    CC="\$(USE_CORRECT_CYGWIN) $CC"
-    CPP="\$(USE_CORRECT_CYGWIN) $CPP"
-    CXX="\$(USE_CORRECT_CYGWIN) $CXX"
-    CXXCPP="\$(USE_CORRECT_CYGWIN) $CXXCPP"
-    STRIP="\$(USE_CORRECT_CYGWIN) $STRIP"
-    RANLIB="\$(USE_CORRECT_CYGWIN) $RANLIB"
-    LOCALCYG="$absolute_cyg32"
-  fi
-
-  if test "x$cyg64" = "xyes"
-  then
-    CC="\$(USE_CORRECT_CYGWIN) $CC"
-    CPP="\$(USE_CORRECT_CYGWIN) $CPP"
-    CXX="\$(USE_CORRECT_CYGWIN) $CXX"
-    CXXCPP="\$(USE_CORRECT_CYGWIN) $CXXCPP"
-    STRIP="\$(USE_CORRECT_CYGWIN) $STRIP"
-    RANLIB="\$(USE_CORRECT_CYGWIN) $RANLIB"
-    LOCALCYG="$absolute_cyg64"
-  fi
-fi
-
-
-if test "x$cyg64" = "xyes"
-then
-  CYGWIN_FLAVOUR="x86_64"
-elif test "x$cyg32" = "xyes"
-then
-  CYGWIN_FLAVOUR="i686"
-else
-  CYGWIN_FLAVOUR=""
-fi
+CYGWIN_FLAVOUR="x86_64"
 
 # The nexy couple are to do with making it possible to use GNU make
 # conditionals within Makefile.am
@@ -24881,7 +25084,7 @@ EQUALS="="
 # If I put the "-I" and "-L" directive for my own versions right at the
 # start of the set of options then I hope to get my versions used. This was
 # noticed as an issue in the case of a FOX library under Macports but looks
-# to be much mor egeneral than just that!
+# to be much more general than just that!
 
 CPPFLAGS="$FOX_INCLUDES -I../include $CPPFLAGS"
 LDFLAGS="-L../lib $LDFLAGS"
@@ -24920,14 +25123,6 @@ fi
 else
   cygwin_TRUE='#'
   cygwin_FALSE=
-fi
-
- if test "x$cyg32" = "xyes"; then
-  cyg32_TRUE=
-  cyg32_FALSE='#'
-else
-  cyg32_TRUE='#'
-  cyg32_FALSE=
 fi
 
  if test "x$cyg64" = "xyes"; then
@@ -25002,12 +25197,20 @@ else
   experiment_FALSE=
 fi
 
- if test "x$can_run_executables" = "xyes"; then
-  canrun_TRUE=
-  canrun_FALSE='#'
+ if test "x$enable_conservative" = "xyes"; then
+  conservative_TRUE=
+  conservative_FALSE='#'
 else
-  canrun_TRUE='#'
-  canrun_FALSE=
+  conservative_TRUE='#'
+  conservative_FALSE=
+fi
+
+ if test "x$with_arithlib" = "xyes"; then
+  arithlib_TRUE=
+  arithlib_FALSE='#'
+else
+  arithlib_TRUE='#'
+  arithlib_FALSE=
 fi
 
  if test "x$CYGPATH" != "xno"; then
@@ -25212,10 +25415,6 @@ if test -z "${cygwin_TRUE}" && test -z "${cygwin_FALSE}"; then
   as_fn_error $? "conditional \"cygwin\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${cyg32_TRUE}" && test -z "${cyg32_FALSE}"; then
-  as_fn_error $? "conditional \"cyg32\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
 if test -z "${cyg64_TRUE}" && test -z "${cyg64_FALSE}"; then
   as_fn_error $? "conditional \"cyg64\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -25252,8 +25451,12 @@ if test -z "${experiment_TRUE}" && test -z "${experiment_FALSE}"; then
   as_fn_error $? "conditional \"experiment\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${canrun_TRUE}" && test -z "${canrun_FALSE}"; then
-  as_fn_error $? "conditional \"canrun\" was never defined.
+if test -z "${conservative_TRUE}" && test -z "${conservative_FALSE}"; then
+  as_fn_error $? "conditional \"conservative\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${arithlib_TRUE}" && test -z "${arithlib_FALSE}"; then
+  as_fn_error $? "conditional \"arithlib\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${cygpath_TRUE}" && test -z "${cygpath_FALSE}"; then
@@ -26956,7 +27159,6 @@ $as_echo X"$file" |
     cat <<_LT_EOF >> "$cfgfile"
 #! $SHELL
 # Generated automatically by $as_me ($PACKAGE) $VERSION
-# Libtool was configured on host `(hostname || uname -n) 2>/dev/null | sed 1q`:
 # NOTE: Changes made to this file will be lost: look at ltmain.sh.
 
 # Provide generalized library-building support services.

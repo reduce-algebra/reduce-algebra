@@ -97,7 +97,7 @@ ellipticfrules :=
 % derivative rules
    df(ellipticf(~u,~k),~u) => 1/sqrt((1-k^2*sin(u)^2)),
 
-   df(ellipticf(~u,~k),~k) => (ellipticd(u,k)/(k^2-1)+ellipticf(u,k))/k
+   df(ellipticf(~u,~k),~k) => (elliptice(u,k)/(k^2-1)+ellipticf(u,k))/k
                           + k*sin(u)*cos(u)/((k^2-1)*sqrt(1-k^2*sin(u)^2)),
 
    ellipticf(~phi,~m)  => num_elliptic(f_function,phi,m)
@@ -141,12 +141,12 @@ elliptickrules :=
 let elliptickrules;
 
 % ######################################################################
-% VALUE OF EllipticE(phi,m)
+% VALUE OF JacobiE(phi,m)
 
-procedure e_function(phi,m);
-  d_function(num_jacobiam(phi, m), m);
+procedure je_function(phi,m);
+  e_function(num_jacobiam(phi, m), m);
 
-procedure d_function(phi, m);
+procedure e_function(phi, m);
 begin scalar f, n, bothlists, alist, plist, s,
              sinalist, sinplist, b, blist, allz, z, allx, x;
 
@@ -179,67 +179,74 @@ begin scalar f, n, bothlists, alist, plist, s,
 end;
 
 
-% EllipticD(phi, m) definition     Legendre's form of elliptic integral
+% EllipticE(phi, m) definition     Legendre's form of elliptic integral
 % ============================     of the second kind.
 
-operator ellipticd;
+% operator elliptice; % already defined in sfellip.red
 
 jacobidrules :=
 {
-        ellipticd(0,~m)     => 0,
-        ellipticd(~phi,0)   => phi,
-        ellipticd(i*~phi,0) => i*phi,
-        ellipticd(~phi,1)   => sin(phi),
-        ellipticd(i*~phi,1) => i*sinh(phi),
-        ellipticd(-~phi,~k) => -ellipticd(phi,k),
-        ellipticd(~phi,-~k) =>  ellipticd(phi,k),
-	ellipticd(pi/2,~k)  =>  elliptice(k),
+        elliptice(0,~m)     => 0,
+        elliptice(~phi,0)   => phi,
+        elliptice(i*~phi,0) => i*phi,
+        elliptice(~phi,1)   => sin(phi),
+        elliptice(i*~phi,1) => i*sinh(phi),
+        elliptice(-~phi,~k) => -elliptice(phi,k),
+        elliptice(~phi,-~k) =>  elliptice(phi,k),
+	elliptice(pi/2,~k)  =>  elliptice(k),
 
 % quasi-periodicity
 
-   ellipticd((~~w + ~~k*pi)/~~d, ~m) =>
+   elliptice((~~w + ~~k*pi)/~~d, ~m) =>
       (begin scalar shift, arg;
          shift := fix repart(2*k/d);
  	 arg := w/d + ((2*k/d)-shift)*pi/2;
-         return ellipticd(arg, m) + shift*elliptice(m);
+         return elliptice(arg, m) + shift*elliptice(m);
       end)
       when ((ratnump(rp) and abs(rp) >= 1) where rp => repart(2*k/d)),
 
 % ************************************************
 % derivative rules 
-    df(ellipticd(~phi,~m),~phi) => sqrt(1-m^2*sin(phi)^2),
+    df(elliptice(~phi,~m),~phi) => sqrt(1-m^2*sin(phi)^2),
 
-    df(ellipticd(~phi,~m),~m)   => (ellipticd(phi,m)-ellipticf(phi,m))/m,
+    df(elliptice(~phi,~m),~m)   => (elliptice(phi,m)-ellipticf(phi,m))/m,
 
-    ellipticd(~phi,~m) => num_elliptic(d_function,phi,m)
+    elliptice(~phi,~m) => num_elliptic(e_function,phi,m)
                      when lisp !*rounded and numberp phi and numberp m
 }$
 
 let jacobidrules;
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%EllipticE(phi,m) definition  Jacobi's form of the elliptic integral
-%===========================   of the second kind.
-% There was some original confusion between Jacobi's form of the standard
-% elliptic integral of the 2nd kind E(u,k) and Legendre's form D(phi,k)
-% where  D(am(u,k), k) = E(u, k)
-% In particular e_function(u, k) originally calculated D(u,k).
-% The e_function has been renamed as d_function and the e_function redefined.
-% Separate rules have been added for E(u,k) and D(u,k).
+%JacobiE(phi,m) definition   Jacobi's form of the elliptic integral
+%=========================   of the second kind.
+% There is often confusion between Jacobi's form of the incomplete elliptic 
+% integral of the 2nd kind jacobie(u,k) and Legendre's form elliptice(phi,k)
+% where elliptice(am(u,k), k) = jacobie(u, k)
+% Following the NIST Digital Library of Mathematical Functions recommendations
+% elliptice will now denote the Legendre form (was previously ellipticd) with
+% jacobie denoting the Jacobi form (was formerly elliptice).
+% On output on GUIs jacobie should be rendered as \mathcal{E} and
+% elliptice by \mathrm{E}. 
+%
+% The e_function(u, k) and d_functions(u,k) originally evaluated JacobiE(u,k)
+% and EllipticE(u,k) numerically.
+% This e_function has been renamed as je_function and the d_function
+% renamed as e_function.
 
-% operator elliptice;  % already defined in sfellip.red
+% operator jacobie;  % already defined in sfellip.red
 
 jacobierules :=
 
 {
-        elliptice(0,~m)     => 0,
-        elliptice(~phi,0)   => phi,
-        elliptice(i*~phi,0) => i*phi,
-        elliptice(~phi,1)   => tanh(phi),
-        elliptice(i*~phi,1) => i*tan phi,
-        elliptice(-~phi,~m) => -elliptice(phi,m),
-        elliptice(~phi,-~m) =>  elliptice(phi,m),
-	elliptice(elliptick(~m), ~m) => elliptice(m),
+        jacobie(0,~m)     => 0,
+        jacobie(~phi,0)   => phi,
+        jacobie(i*~phi,0) => i*phi,
+        jacobie(~phi,1)   => tanh(phi),
+        jacobie(i*~phi,1) => i*tan phi,
+        jacobie(-~phi,~m) => -jacobie(phi,m),
+        jacobie(~phi,-~m) =>  jacobie(phi,m),
+	jacobie(elliptick(~m), ~m) => elliptice(m),
 
 % complete elliptic integrals
         elliptick(-~k)    => elliptick(k),
@@ -255,38 +262,38 @@ jacobierules :=
 	
 % quasi-periodicity
 
-   elliptice((~~w + ~~k*elliptick(~m))/~~d, ~m) =>
+   jacobie((~~w + ~~k*elliptick(~m))/~~d, ~m) =>
       (begin scalar shift, arg;
          shift := fix repart(k/d);
          if not evenp shift then shift := shift-1;
 	 arg := w/d + ((k/d)-shift)*elliptick(m);
-         return elliptice(arg, m) + shift*elliptice(m);
+         return jacobie(arg, m) + shift*elliptice(m);
       end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
 
-    elliptice((~~w + ~~k*elliptick!'(~m))/~~d, ~m) =>
+    jacobie((~~w + ~~k*elliptick!'(~m))/~~d, ~m) =>
       (begin scalar shift, arg;
          shift := fix impart(k/d);
 	 if not evenp shift then shift := shift-1;
 	 arg := w/d + ((k/d)-i*shift)*elliptick!'(m);
-         return elliptice(arg, m) + shift*i*(elliptick!'(m) - elliptice!'(m));
+         return jacobie(arg, m) + shift*i*(elliptick!'(m) - elliptice!'(m));
       end)
       when ((ratnump(ip) and abs(ip) >= 2) where ip => impart(k/d)),
 
 % quasi-addition
 
-       elliptice((~u+~v)/~~d,~m) => elliptice(u/d,m) + elliptice(v/d,m)
+       jacobie((~u+~v)/~~d,~m) => jacobie(u/d,m) + jacobie(v/d,m)
          - m^2*jacobisn(u/d,m)*jacobisn(v/d,m)*jacobisn((u+v)/d,m),
 
-       elliptice(2*~u,~m) =>
-          2*elliptice(u,m) - m^2*jacobisn(u,m)^2*jacobisn(2*u,m),
+       jacobie(2*~u,~m) =>
+          2*jacobie(u,m) - m^2*jacobisn(u,m)^2*jacobisn(2*u,m),
 	  
 % derivative rules 
-        df(elliptice(~phi,~m),~phi) => jacobidn(phi,m)^2,
+        df(jacobie(~phi,~m),~phi) => jacobidn(phi,m)^2,
 	
-        df(elliptice(~phi,~m),~m)   =>
+        df(jacobie(~phi,~m),~m)   =>
             m*(jacobisn(phi,m)*jacobicn(phi,m)*jacobidn(phi,m)
-               - elliptice(phi,m)*jacobicn(phi,m)^2) / (1-m^2)
+               - jacobie(phi,m)*jacobicn(phi,m)^2) / (1-m^2)
             - m*phi*jacobisn(phi,m)^2,
 
         df(elliptice(~m),~m) => (elliptice(m)-elliptick(m))/m,
@@ -301,14 +308,14 @@ jacobierules :=
 
 % numerical evaluation
 
-        elliptice(~phi,~m) => num_elliptic(e_function,phi,m)
+        jacobie(~phi,~m) => num_elliptic(je_function,phi,m)
                               when lisp !*rounded and numberp phi
                               and numberp m,
 
-        elliptice(~m) => num_elliptic(d_function,pi/2,m)
+        elliptice(~m) => num_elliptic(e_function,pi/2,m)
                          when lisp !*rounded and numberp m,
 
-        elliptice!'(~m) => num_elliptic(d_function,pi/2,sqrt(1-m^2))
+        elliptice!'(~m) => num_elliptic(e_function,pi/2,sqrt(1-m^2))
                          when lisp !*rounded and numberp m
 }$
 let jacobierules;

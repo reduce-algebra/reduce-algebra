@@ -2609,10 +2609,10 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-am__api_version='1.15'
+
 
 ac_aux_dir=
-for ac_dir in "$srcdir" "$srcdir/.." "$srcdir/../.."; do
+for ac_dir in . "$srcdir"/.; do
   if test -f "$ac_dir/install-sh"; then
     ac_aux_dir=$ac_dir
     ac_install_sh="$ac_aux_dir/install-sh -c"
@@ -2628,7 +2628,7 @@ for ac_dir in "$srcdir" "$srcdir/.." "$srcdir/../.."; do
   fi
 done
 if test -z "$ac_aux_dir"; then
-  as_fn_error $? "cannot find install-sh, install.sh, or shtool in \"$srcdir\" \"$srcdir/..\" \"$srcdir/../..\"" "$LINENO" 5
+  as_fn_error $? "cannot find install-sh, install.sh, or shtool in . \"$srcdir\"/." "$LINENO" 5
 fi
 
 # These three variables are undocumented and unsupported,
@@ -2639,6 +2639,9 @@ ac_config_guess="$SHELL $ac_aux_dir/config.guess"  # Please don't use this var.
 ac_config_sub="$SHELL $ac_aux_dir/config.sub"  # Please don't use this var.
 ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
+
+
+am__api_version='1.15'
 
 # Find a good install program.  We prefer a C program (faster),
 # so one script is as good as another.  But avoid the broken or
@@ -3216,8 +3219,6 @@ END
     as_fn_error $? "Your 'rm' program is bad, sorry." "$LINENO" 5
   fi
 fi
-
-
 
 
 # The next bit is because config.guess fails on Solaris if SHELL=/bin/bash
@@ -18901,7 +18902,8 @@ $as_echo "$as_me: freetype-config found, and Xft should be available" >&6;}
   fi
   if test "x$xft_found" != "xyes"
   then
-    as_fn_error $? "On non-Windows platforms the Xft library development files are required" "$LINENO" 5
+    { $as_echo "$as_me:${as_lineno-$LINENO}: On non-Windows platforms the Xft library development files are required" >&5
+$as_echo "$as_me: On non-Windows platforms the Xft library development files are required" >&6;}
   fi
 fi
 
@@ -20527,38 +20529,6 @@ _ACEOF
 fi
 
 
-save_cross=cross_compiling
-cross_compiling=no
-if test "$cross_compiling" = yes; then :
-  can_run_executables="no"
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdio.h>
-int
-main ()
-{
-printf("\n"); return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_run "$LINENO"; then :
-  can_run_executables="yes"
-else
-  can_run_executables="no"
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-
-cross_compiling=$save_cross
-
-if test "x$can_run_executables" != "xyes"
-then
-  as_fn_error $? "Unable to compile and run even simple C code" "$LINENO" 5
-fi
-
 # The cast to long int works around a bug in the HP C Compiler
 # version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
 # declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
@@ -21596,36 +21566,6 @@ fi
 done
 
 
-save_cross=cross_compiling
-cross_compiling=no
-if test "$cross_compiling" = yes; then :
-  can_run_executables="no"
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdio.h>
-int
-main ()
-{
-printf("\n"); return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_run "$LINENO"; then :
-  can_run_executables="yes"
-else
-  can_run_executables="no"
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-
-cross_compiling=$save_cross
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: Can Run Executables = $can_run_executables" >&5
-$as_echo "$as_me: Can Run Executables = $can_run_executables" >&6;}
-
 if test "x$windows_build" = "xyes"
 then
   case $CC in
@@ -21640,38 +21580,11 @@ fi
 
 if test "x$macintosh_build" = "xyes"
 then
-  ENVP=MACOSX_DEPLOYMENT_TARGET=10.10
+  ENVP=MACOSX_DEPLOYMENT_TARGET=10.11
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
 fi
 
-# I will check this again right at the end.
-save_cross=cross_compiling
-cross_compiling=no
-if test "$cross_compiling" = yes; then :
-  can_run_executables="no"
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdio.h>
-int
-main ()
-{
-printf("\n"); return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_run "$LINENO"; then :
-  can_run_executables="yes"
-else
-  can_run_executables="no"
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-
-cross_compiling=$save_cross
 for ac_prog in cygpath
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
@@ -23544,7 +23457,6 @@ $as_echo X"$file" |
     cat <<_LT_EOF >> "$cfgfile"
 #! $SHELL
 # Generated automatically by $as_me ($PACKAGE) $VERSION
-# Libtool was configured on host `(hostname || uname -n) 2>/dev/null | sed 1q`:
 # NOTE: Changes made to this file will be lost: look at ltmain.sh.
 
 # Provide generalized library-building support services.
@@ -24276,8 +24188,6 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
-
-
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: Build environment seems OK" >&5

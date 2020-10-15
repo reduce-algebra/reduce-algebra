@@ -14,7 +14,7 @@ jacobisn(u+elliptick(k),k);
 jacobisn(u+i*elliptick!'(k),k);
 
 jacobizeta(u+2*elliptick(k),k);
-elliptice(u+14*elliptick(k),k);
+jacobie(u+14*elliptick(k),k);
 
 % derivatives and consistency checks
 
@@ -25,8 +25,8 @@ df(jacobidn(u,k),k);
 df(k^2*jacobisn(u,k)^2+jacobidn(u,k)^2,k);
 % vanishes by Pythagorean identity for dn and cn
 
-df(elliptice(u,k),u);
-df(elliptice(u,k),k);
+df(jacobie(u,k),u);
+df(jacobie(u,k),k);
 
 df(elliptick(k),k);
 df(elliptice(k),k);
@@ -35,13 +35,13 @@ df(elliptice(k),k);
 df(elliptice(k)*elliptick!'(k)+elliptice!'(k)*elliptick(k)-elliptick(k)*elliptick!'(k),k);
 
 df(jacobizeta(u,k),u);
-df(ellipticd(u,k),u);
-df(ellipticd(u,k),k);
+df(elliptice(u,k),u);
+df(elliptice(u,k),k);
 
 % quasi-periodicity
-ellipticd(u+pi/2,k);
+elliptice(u+pi/2,k);
 ellipticf(u-5*pi/2,k);
-ellipticd(u+11*pi/3,k);
+elliptice(u+11*pi/3,k);
 
 % theta functions
 % periodicity, quasi-periodicity and zeroes
@@ -84,10 +84,10 @@ EE!' := elliptice!'(0.4);
 % Jacobi Zeta function
 u := 0.6;
 Z:= jacobizeta(u, 0.4);
-E2 := elliptice(u, 0.4);
+E2 := jacobie(u, 0.4);
 
 % checks
-EE - elliptice(K, 0.4);
+EE - jacobie(K, 0.4);
 
 EE * K!' + EE!' * K - K * K!' - pi/2;
 

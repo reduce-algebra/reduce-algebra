@@ -152,6 +152,7 @@ operator jacobicn;
 operator jacobidn;
 operator elliptick!';
 operator elliptick;
+operator jacobie;
 operator elliptice;
 operator elliptice!';
 
@@ -167,7 +168,7 @@ jacobiamrules :=
        
        df(jacobiam(~u,~m),~u)  => jacobidn(u,m),
        df(jacobiam(~u,~m),~m)  => u*jacobidn(u,m)/m +
-                     (m*jacobisn(u,m)*jacobicn(u,k) -elliptice(u,m)*jacobidn(u,m)/m)/(1-m^2),      
+                     (m*jacobisn(u,m)*jacobicn(u,k) -jacobie(u,m)*jacobidn(u,m)/m)/(1-m^2),      
 
         jacobiam(~u,~m) =>
 	     num_elliptic(num_jacobiam, u, m)
@@ -253,7 +254,7 @@ jacobisnrules :=
 
         df(jacobisn(~u,~m),~m)  =>
 	          (m*jacobisn(u,m)*jacobicn(u,m)^2
-                    - elliptice(u,m)*jacobicn(u,m)*jacobidn(u,m)/m)/(1-m^2)
+                    - jacobie(u,m)*jacobicn(u,m)*jacobidn(u,m)/m)/(1-m^2)
                    + u*jacobicn(u,m)*jacobidn(u,m)/m,
 
 %Calls Num_Jacobisn when the rounded switch is on.
@@ -345,7 +346,7 @@ jacobicnrules :=
 %       int(jacobicn(~u,~m),~u) => acos(jacobidn(u,m))/m,
 
         df(jacobicn(~u,~m),~m)  =>
-	          (elliptice(u,m)*jacobisn(u,m)*jacobidn(u,m)/m
+	          (jacobie(u,m)*jacobisn(u,m)*jacobidn(u,m)/m
 	                        -m*jacobisn(u,m)^2*jacobicn(u,m))/(1-m^2)
                   - u*jacobisn(u,m)*jacobidn(u,m)/m,
 
@@ -452,7 +453,7 @@ jacobidnrules :=
         int(jacobidn(~u,~m),~u) => asin(jacobisn(u,m)),
 	
         df(jacobidn(~u,~m),~m)  =>
-	          m*(elliptice(u,m)*jacobisn(u,m)*jacobicn(u,m)
+	          m*(jacobie(u,m)*jacobisn(u,m)*jacobicn(u,m)
                                  -jacobisn(u,m)^2*jacobidn(u,m))/(1-m^2)
                   - m*u*jacobisn(u,m)*jacobicn(u,m),
 
@@ -1299,6 +1300,13 @@ put('jacobidc,'fancy!-functionsymbol,"\mathrm{dc}");
 put('jacobiam,'fancy!-functionsymbol,"\mathrm{am}");
 put('jacobizeta,'fancy!-functionsymbol,"\mathrm{Z}");
 
+% CSL GUI does not support \mathcal
+if memq('showmath, lispsystem!*) then
+   % Note "\Epsilon" prints as E
+   put('jacobie,'fancy!-functionsymbol,"\epsilon")
+else
+   put('jacobie,'fancy!-functionsymbol,"\mathcal{E}");
+   
 put('jacobisn,'plain!-functionsymbol,'sn);
 put('jacobicn,'plain!-functionsymbol,'cn);
 put('jacobidn,'plain!-functionsymbol,'dn);
@@ -1313,15 +1321,16 @@ put('jacobids,'plain!-functionsymbol,'ds);
 put('jacobidc,'plain!-functionsymbol,'dc);
 put('jacobiam,'plain!-functionsymbol,'am);
 put('jacobizeta,'plain!-functionsymbol,'!Z);
+put('jacobie,'plain!-functionsymbol,'!Epsilon);
 
-put('ellipticd, 'plain!-functionsymbol, '!D);
+% put('ellipticd, 'plain!-functionsymbol, '!D);
 put('elliptice, 'plain!-functionsymbol, '!E);
 put('elliptick, 'plain!-functionsymbol, '!K);
 put('ellipticf, 'plain!-functionsymbol, '!F);
 put('elliptick!', 'plain!-functionsymbol, '!K!');
 put('elliptice!', 'plain!-functionsymbol,  '!E!');
 
-put('ellipticd, 'fancy!-functionsymbol, "\mathrm{D}");
+% put('ellipticd, 'fancy!-functionsymbol, "\mathrm{D}");
 put('elliptice, 'fancy!-functionsymbol, "\mathrm{E}");
 put('elliptick, 'fancy!-functionsymbol, "\mathrm{K}");
 put('ellipticf, 'fancy!-functionsymbol, "\mathrm{F}");
@@ -1349,12 +1358,13 @@ do << put(x, 'fancy!-symbol!-length, 4);
 % put('elliptictau, 'fancy!-functionsymbol, "\tau");
 
 put('elliptice, 'prifn, 'plain!-symbol);
-put('ellipticd, 'prifn, 'plain!-symbol);
+% put('ellipticd, 'prifn, 'plain!-symbol);
 put('elliptick, 'prifn, 'plain!-symbol);
 put('elliptick!', 'prifn, 'plain!-symbol);
 put('elliptice!', 'prifn, 'plain!-symbol);
 put('ellipticf, 'prifn, 'plain!-symbol);
 put('jacobizeta, 'prifn, 'plain!-symbol);
+put('jacobie, 'prifn, 'plain!-symbol);
 
 put('elliptictheta1, 'plain!-functionsymbol, 'theta1);
 put('elliptictheta2, 'plain!-functionsymbol, 'theta2);

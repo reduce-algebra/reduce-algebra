@@ -733,7 +733,6 @@ build_os
 build_vendor
 build_cpu
 build
-LOCALCYG
 target_alias
 host_alias
 build_alias
@@ -782,20 +781,10 @@ with_psl
 with_gui
 with_wx
 with_fox
-with_w32
-with_w64
-with_c32
-with_c64
-with_cygwin32
-with_cygwin64
 with_build
 with_pslbuild
 with_cygbuild
-with_cygbuild64
 with_force
-with_lto
-with_m32
-with_m64
 with_cygwin
 with_xft
 with_xim
@@ -803,10 +792,10 @@ enable_debug
 enable_conservative
 enable_test
 enable_experiment
-enable_jit
+with_arithlib
 enable_static
-with_smallpage
 with_sequential
+with_windows_layout
 enable_silent_rules
 enable_shared
 with_pic
@@ -1462,11 +1451,10 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-debug          compile for debugging (CSL only)
-  --enable-conservative   garbage collect option: testing andf development use
+  --enable-conservative   garbage collect option: testing and development use
                           (CSL only)
   --enable-test           testing-mode version (CSL only)
   --enable-experiment     testing-mode version (CSL only)
-  --enable-jit            build in experimental JIT (CSL only)
   --enable-static         link it all statically (CSL only)
   --enable-silent-rules   less verbose build output (undo: "make V=1")
   --disable-silent-rules  verbose build output (undo: "make V=0")
@@ -1490,28 +1478,18 @@ Optional Packages:
                           only)
   --with-wx               enable or disable use of wxWidgets (CSL only)
   --with-fox              enable or disable use of FOX (CSL only)
-  --with-w32              Build 32-bit Windows version
-  --with-w64              Build 64-bit Windows version
-  --with-c32              Build 32-bit Cygwin version
-  --with-c64              Build 64-bit Cygwin version
-  --with-cygwin32         Force configure and build to be under cygwin32
-  --with-cygwin64         Force configure and build to be under cygwin64
   --with-build            Used internally to control build directory
   --with-pslbuild         Used internally to control build directory
   --with-cygbuild         Used internally to control build directory
-  --with-cygbuild64       Used internally to control build directory
   --with-force            Forces refresh of windows varients
-  --with-lto              Experiment with extreme optimisation in gcc (CSL
-                          only)
-  --with-m32              Force 32-bit model even if 64-bit (for PSL).
-  --with-m64              Force 64-bit model even if 32-bit.
   --with-cygwin           Force use of raw cygwin (CSL only)
   --with-xft              Can be used to disable use of XFT. Default is yes
                           (CSL only)
   --with-xim              Can be used to control use of XIM. Default is yes
                           (now) (CSL only)
-  --with-smallpage        Use 256K pages rather than 4M ones (CSL only)
+  --with-arithlib         development of arithlib.hpp support (CSL only)
   --with-sequential       Avoid parallel configure to make log clearer to read
+  --with-windows_layout   old or new windows layout
   --with-pic[=PKGS]       try to use only PIC/non-PIC objects [default=use
                           both]
   --with-aix-soname=aix|svr4|both
@@ -2354,6 +2332,37 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+# **************************************************************************
+# * Copyright (C) 2017-20, Codemist.                      A C Norman       *
+# *                                                                        *
+# * Redistribution and use in source and binary forms, with or without     *
+# * modification, are permitted provided that the following conditions are *
+# * met:                                                                   *
+# *                                                                        *
+# *     * Redistributions of source code must retain the relevant          *
+# *       copyright notice, this list of conditions and the following      *
+# *       disclaimer.                                                      *
+# *     * Redistributions in binary form must reproduce the above          *
+# *       copyright notice, this list of conditions and the following      *
+# *       disclaimer in the documentation and/or other materials provided  *
+# *       with the distribution.                                           *
+# *                                                                        *
+# * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *
+# * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
+# * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
+# * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *
+# * COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *
+# * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *
+# * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *
+# * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
+# * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
+# * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
+# * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
+# * DAMAGE.                                                                *
+# **************************************************************************
+
+
+
 # The next line is a dreadful thing and is in case I am launched
 # from a bash prompt, in which case the SHELL variable will be set
 # to /bin/bash (or perhaps the user's login shell?). Anyway that hurts
@@ -2367,7 +2376,7 @@ fi
 
 
 
-# $Id: configure.ac 4975 2019-05-01 20:54:45Z arthurcnorman $
+# $Id: configure.ac 5398 2020-09-11 19:24:14Z arthurcnorman $
 
 # If necessary you can fetch source versions of autoconf and automake and
 # install private versions for use here. Following discussions with other
@@ -2376,6 +2385,35 @@ fi
 # working without them.
 
 
+
+
+ac_aux_dir=
+for ac_dir in . "$srcdir"/.; do
+  if test -f "$ac_dir/install-sh"; then
+    ac_aux_dir=$ac_dir
+    ac_install_sh="$ac_aux_dir/install-sh -c"
+    break
+  elif test -f "$ac_dir/install.sh"; then
+    ac_aux_dir=$ac_dir
+    ac_install_sh="$ac_aux_dir/install.sh -c"
+    break
+  elif test -f "$ac_dir/shtool"; then
+    ac_aux_dir=$ac_dir
+    ac_install_sh="$ac_aux_dir/shtool install -c"
+    break
+  fi
+done
+if test -z "$ac_aux_dir"; then
+  as_fn_error $? "cannot find install-sh, install.sh, or shtool in . \"$srcdir\"/." "$LINENO" 5
+fi
+
+# These three variables are undocumented and unsupported,
+# and are intended to be withdrawn in a future Autoconf release.
+# They can cause serious problems if a builder's source tree is in a directory
+# whose full name contains unusual characters.
+ac_config_guess="$SHELL $ac_aux_dir/config.guess"  # Please don't use this var.
+ac_config_sub="$SHELL $ac_aux_dir/config.sub"  # Please don't use this var.
+ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 
 
@@ -2389,7 +2427,6 @@ then
   c=`cygpath $b`
   abssrcdir="$c$d"
 fi
-
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: Absolute path to source directory = $abssrcdir" >&5
 $as_echo "$as_me: Absolute path to source directory = $abssrcdir" >&6;}
@@ -2764,266 +2801,22 @@ $as_echo "$as_me: with_fox=$with_fox, with_wx=$with_wx" >&6;}
   fi
 fi
 
-# On Windows there could potentially be 4 (or in some sense 6!) variants
-# of Reduce made:
-#   cygwin 32-bit
-#   cygwin 64-bit
-#   native windows 32-bit console mode
-#   native windows 32-bit windows mode
+# On Windows there should be 3 variants  of Reduce made:
+#   cygwin 64-bit (this can be used either in console mode or using X)
 #   native windows 64-bit console mode
 #   native windows 64-bit windows mode
 #
-# If you are trying to build Reduce and are running only a 32-bit
-# operating system you will not be able to build the 64-bit cygwin version
-# and the 64-bit native windows version may be somewhat irrelevant to you.
-# If you are on a 64-bit operating system using 64-bit cygwin you may not be
-# interested in backwards compatibility and thus the 32-bit versions. If
-# you only want to run console mode versions under cygwin then the native
-# windows versions will be superfluous. To cope with these variations
-# I provide flags to enable each version individually. These are of the
-# form --with-w32, --with-w64, --with-c32 and --with-c64. The intent will
-# be that if you have a a 32-bit operating system only w32 and c32 will be
-# enabled by default. At present on a 64-bit operating system where both
-# versions of cygwin are installed all 4 versions will be enabled, but at some
-# stage in the future I expect to change that so that the 32-bit versions are
-# only built if explicitly requested.
-# Regardless of host and operating system I will want the i686-w64-mingw32
-# toolchain installed, since that produces binaries that come closest to
-# being able to run everywhere. Specifically I will want that toolchain
-# installed even if you specify --without-w32.
 
-with_w32="yes"
-with_w64="yes"
-with_c32="yes"
-with_c64="yes"
-
-
-# Check whether --with-w32 was given.
-if test "${with_w32+set}" = set; then :
-  withval=$with_w32;
-  with_w32="yes"
-fi
-
-
-
-# Check whether --with-w64 was given.
-if test "${with_w64+set}" = set; then :
-  withval=$with_w64;
-  with_w64="yes"
-fi
-
-
-
-# Check whether --with-c32 was given.
-if test "${with_c32+set}" = set; then :
-  withval=$with_c32;
-  with_c32="default"
-fi
-
-
-
-# Check whether --with-c64 was given.
-if test "${with_c64+set}" = set; then :
-  withval=$with_c64;
-  with_c64="default"
-fi
-
-
-uname_m=`uname -m`
 uname_s=`uname -s`
 case "$uname_s" in
-*WOW)
-  wow="yes"
-  uname_o=`uname -o 2>/dev/null`
-  ;;
 Darwin)
 # "uname -o" is not available on the Macintosh!
-  wow="no"
   uname_o="macOS"
   ;;
 *)
-  wow="no"
   uname_o=`uname -o 2>/dev/null`
   ;;
 esac
-
-if test "$uname_o" = "Cygwin"
-then
-#
-# If I am building under some sort of Cygwin I will adjust the "with-w32"
-# etc options...
-#
-
-# The program that I build here scans the Windows registry to look for
-# cygwin installations. When run it generates output "32", "64" or "32 64"
-# depending on which variants it finds.
-
-i686-w64-mingw32-g++ -O3 $srcdir/csl/cslbase/other-cygwin.cpp -static -o ./other-cygwin
-i686-w64-mingw32-strip ./other-cygwin
-CYGAVAIL=`./other-cygwin`
-
-case $CYGAVAIL in
-*32*)
-  cyg32_available="yes"
-  ;;
-*)
-  cyg32_available="no"
-  ;;
-esac
-case $CYGAVAIL in
-*64*)
-  cyg64_available="yes"
-  ;;
-*)
-  cyg64_available="no"
-  ;;
-esac
-# If I am either running under 64-bit cygwin or are on 32-bit cygwin but on
-# a 64-bit operating system I might be able to build 64-bit cygwin stuff.
-  if test "$uname_m" = "x86_64" ||
-     test "$wow" = "yes"
-  then
-    sixtyfour_feasible="yes"
-  else
-    sixtyfour_feasible="no"
-  fi
-# If 32-bit cygwin is available then by default build for it. If it is
-# not then refuse to even if the user asked for it.
-  if test "$cyg32_available" = "yes"
-  then
-    if test "$with_c32" = "default"
-    then
-      with_c32="yes"
-    fi
-  else
-    if test "$with_c32" = "yes"
-    then
-      as_fn_error $? "32-bit cygwin environment needed but not found in c:\cygwin" "$LINENO" 5
-    fi
-    with_c32="no"
-  fi
-
-  if test "$sixtyfour_feasible" = "yes" && test "$cyg64_available" = "yes"
-  then
-    if test "$with_c64" = "default"
-    then
-      with_c64="yes"
-    fi
-  else
-    if test "$with_c64" = "yes"
-    then
-      as_fn_error $? "64-bit cygwin environment needed but not found in c:\cygwin64" "$LINENO" 5
-    fi
-    with_c64="no"
-  fi
-fi
-
-# In general it will be an inner invocation of this script that might
-# have --with-cygwin32 or --with-cygwin64 passed. When that happens
-# I ensure that the shell I am running under is the variant of cygwin
-# indicated. This is useful because then just the plan commands gcc and g++
-# will build binaries for that platform. I need to do this because
-# cross-build toolchains for cygwin32 and cygwin64 do not seem to be
-# complete enough to count as reliable.
-
-
-# Check whether --with-cygwin32 was given.
-if test "${with_cygwin32+set}" = set; then :
-  withval=$with_cygwin32;
-else
-  with_cygwin32="no"
-fi
-
-
-
-# Check whether --with-cygwin64 was given.
-if test "${with_cygwin64+set}" = set; then :
-  withval=$with_cygwin64;
-else
-  with_cygwin64="no"
-fi
-
-
-# If the "--with-cygwin32" flag was passed and I am at present running under
-# a 64-bit cygwin shell then I will insist on changing gear so that I run
-# using a 32-bit cygwin shell.
-
-if which i686-w64-mingw32-g++ >/dev/null 2>/dev/null &&
-   which i686-w64-mingw32-strip >/dev/null 2>/dev/null
-then
-  i686-w64-mingw32-g++ -O3 -DFORCE32 $abssrcdir/csl/cslbase/other-cygwin.cpp -static -o cyg32.exe
-  i686-w64-mingw32-strip ./cyg32.exe
-  i686-w64-mingw32-g++ -O3 -DFORCE64 $abssrcdir/csl/cslbase/other-cygwin.cpp -static -o cyg64.exe
-  i686-w64-mingw32-strip ./cyg64.exe
-fi
-LOCALCYG=""
-if test "x$with_cygwin32" != "xno"
-then
-  LOCALCYG=`pwd`/cyg32.exe
-fi
-if test "x$with_cygwin64" != "xno"
-then
-  LOCALCYG=`pwd`/cyg64.exe
-fi
-
-
-if test "x$with_cygwin32" != "xno" &&
-   test "x$uname_o" = "xCygwin" &&
-   test "x$uname_m" = "xx86_64"
-then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: Restart to use a 32-bit Cygwin shell" >&5
-$as_echo "$as_me: Restart to use a 32-bit Cygwin shell" >&6;}
-  { $as_echo "$as_me:${as_lineno-$LINENO}: with-cygwin32=$with_cygwin32 uname_o=$uname_o uname_m=$uname_m" >&5
-$as_echo "$as_me: with-cygwin32=$with_cygwin32 uname_o=$uname_o uname_m=$uname_m" >&6;}
-  doconfig="$LOCALCYG $SHELL -c \"$abssrcdir/configure $ac_configure_args\""
-  { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
-$as_echo "$as_me: $doconfig" >&6;}
-  exec $doconfig
-fi
-
-if test "x$with_cygwin64" != "xno" &&
-   test "x$uname_o" = "xCygwin" &&
-   test "x$uname_m" = "xi686" &&
-   test "x$wow" = "xyes"
-then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: Restart to use a 64-bit Cygwin shell" >&5
-$as_echo "$as_me: Restart to use a 64-bit Cygwin shell" >&6;}
-  { $as_echo "$as_me:${as_lineno-$LINENO}: with-cygwin64=$with_cygwin64 uname_o=$uname_o uname_m=$uname_m uname_s=$uname_s wow=$wow" >&5
-$as_echo "$as_me: with-cygwin64=$with_cygwin64 uname_o=$uname_o uname_m=$uname_m uname_s=$uname_s wow=$wow" >&6;}
-  doconfig="$LOCALCYG $SHELL -c \"$abssrcdir/configure $ac_configure_args\""
-  { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
-$as_echo "$as_me: $doconfig" >&6;}
-  exex $doconfig
-fi
-
-ac_aux_dir=
-for ac_dir in "$srcdir" "$srcdir/.." "$srcdir/../.."; do
-  if test -f "$ac_dir/install-sh"; then
-    ac_aux_dir=$ac_dir
-    ac_install_sh="$ac_aux_dir/install-sh -c"
-    break
-  elif test -f "$ac_dir/install.sh"; then
-    ac_aux_dir=$ac_dir
-    ac_install_sh="$ac_aux_dir/install.sh -c"
-    break
-  elif test -f "$ac_dir/shtool"; then
-    ac_aux_dir=$ac_dir
-    ac_install_sh="$ac_aux_dir/shtool install -c"
-    break
-  fi
-done
-if test -z "$ac_aux_dir"; then
-  as_fn_error $? "cannot find install-sh, install.sh, or shtool in \"$srcdir\" \"$srcdir/..\" \"$srcdir/../..\"" "$LINENO" 5
-fi
-
-# These three variables are undocumented and unsupported,
-# and are intended to be withdrawn in a future Autoconf release.
-# They can cause serious problems if a builder's source tree is in a directory
-# whose full name contains unusual characters.
-ac_config_guess="$SHELL $ac_aux_dir/config.guess"  # Please don't use this var.
-ac_config_sub="$SHELL $ac_aux_dir/config.sub"  # Please don't use this var.
-ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
-
 
 # Make sure we can run config.sub.
 $SHELL "$ac_aux_dir/config.sub" sun4 >/dev/null 2>&1 ||
@@ -3125,15 +2918,6 @@ fi
 
 
 
-# Check whether --with-cygbuild64 was given.
-if test "${with_cygbuild64+set}" = set; then :
-  withval=$with_cygbuild64;
-else
-  with_cygbuild64="unknown"
-fi
-
-
-
 # Check whether --with-force was given.
 if test "${with_force+set}" = set; then :
   withval=$with_force;
@@ -3157,38 +2941,6 @@ LIBEDIT_VERSION=20140620-3.1
 # down a flag that they do not know about, and so I transcribe into here
 # all the flags that the CSL configuration may ever want. The down-side of
 # this is that "configure --help" shows them all.
-
-
-# Check whether --with-lto was given.
-if test "${with_lto+set}" = set; then :
-  withval=$with_lto;
-else
-  with_lto="no"
-fi
-
-
-# By and large the "-m32" and "-m64" flags that ONCE helped g++ with
-# multi-arch support as between 32 and 64-bit targers. It is now used
-# in the PSL case to control whether a 32 or 64-bit version gets set up.
-# It should no longer be used with CSL please.
-
-
-# Check whether --with-m32 was given.
-if test "${with_m32+set}" = set; then :
-  withval=$with_m32;
-else
-  with_m32="no"
-fi
-
-
-
-# Check whether --with-m64 was given.
-if test "${with_m64+set}" = set; then :
-  withval=$with_m64;
-else
-  with_m64="no"
-fi
-
 
 
 # Check whether --with-cygwin was given.
@@ -3254,11 +3006,12 @@ then
   enable_test="yes"
 fi
 
-# Check whether --enable-jit was given.
-if test "${enable_jit+set}" = set; then :
-  enableval=$enable_jit;
+
+# Check whether --with-arithlib was given.
+if test "${with_arithlib+set}" = set; then :
+  withval=$with_arithlib;
 else
-  enable_jit="no"
+  with_arithlib="no"
 fi
 
 
@@ -3270,21 +3023,7 @@ else
 fi
 
 
-
-# Check whether --with-smallpage was given.
-if test "${with_smallpage+set}" = set; then :
-  withval=$with_smallpage;
-else
-  with_smallpage="no"
-fi
-
-
 ###########################################################################
-
-# Note that on Windows under cygwin i686-w64-mingw32 and x86_64-w64-mingw32
-# compilers MUST be installed, and there should be a 32-bit
-# cygwin installation in c:\cygwin and a 64-bit one in c:\cygwin64.
-#
 
 # Now I want to know if the current directory is the same as $srcdir. At
 # one stage I checked that by looking to see if $srcdir was ".". That was OK
@@ -3327,34 +3066,7 @@ if test "x$with_psl" != "xno"
 then
   case $host in
   *windows | *cygwin)
-# building PSL on Windows - need to decide whether to build for 32 or 64bit.
-# Hah - I use "--with-m32" for selection of a PSL 32-bit option.
-# Do not select 32bit when I am in a 32-bit shell running on a 64-bit operating
-# system.
-    if test "$uname_m" = "i686" -a "$wow" != "yes" ||
-       test "x$with_m32" = "xyes"
-    then
-      build="i686-pc-windows"
-# For PSL I will build a 64-bit version either if I am running in 64-bit
-# mode already or I am in a 32-bit shell running on a 64-bit operating
-# system.
-    elif test "$uname_m" = "x86_64" ||
-         test "$wow" = "yes"
-    then
-      build="x86_64-pc-windows"
-    else
-# If neither of those tests resolve matters I will just take some default.
-      build="$host"
-    fi
-# Normalize the name that PSL puts its (windows) builds in.
-    case $build in
-    *i686*)
-       build=i686-pc-windows
-       ;;
-    *)
-       build="x86_64-pc-windows"
-       ;;
-    esac
+    build="x86_64-pc-windows"
     ;;
   *)
 # For cases other than Windows the PSL case is simpler.
@@ -3392,18 +3104,68 @@ fi
 
 
 
+# Hah - the next is a jolly hape. It arranged that when I build on one of my
+# own real machines I default to a new and experimental layout for the build
+# of windows versions, but everybody else (unless their host has a name
+# matching mine!) should be undisturbed.
+
+# I gave disabled this just for a while... I am making other changes and I do
+# not want this confusion to mess me up.
+
+case `uname -n` in
+*panamintXXX* | *gauguinXXX*)
+  default_windows_layout="new"
+  ;;
+*)
+  default_windows_layout="old"
+  ;;
+esac
+
+
+# Check whether --with-windows_layout was given.
+if test "${with_windows_layout+set}" = set; then :
+  withval=$with_windows_layout;
+else
+  with_windows_layout="$default_windows_layout"
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: default=$default_windows_layout this-layout=$with_windows_layout" >&5
+$as_echo "$as_me: default=$default_windows_layout this-layout=$with_windows_layout" >&6;}
+
+if test "$with_windows_layout" != "new"
+then
+  with_windows_layout="old"
+fi
+
 csl_inplace_cygwin_build ()
 {
-# The argument here will be either i686-pc-cygwin or x88_64-pc-cygwin
+# The argument here should be x88_64-pc-cygwin
   target=$1
   forcer=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: in csl_inplace_cygwin_build wwl=$with_windows_layout" >&5
+$as_echo "$as_me: in csl_inplace_cygwin_build wwl=$with_windows_layout" >&6;}
 # Find the proper name for the target directory, allowing for --enable-debug
 # and any other options that may be relevant.
-  build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $target $ac_configure_args" --with-cygwin`
-  { $as_echo "$as_me:${as_lineno-$LINENO}: target=$target => build=$build" >&5
+  if test "$with_windows_layout" = "new"
+  then
+    cygver="cyg64"
+    build=`eval "$SHELL $abssrcdir/scripts/findhost.sh intel-pc-windows $ac_configure_args --with-cygwin"`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: target=$target => build=$build/$cygver" >&5
+$as_echo "$as_me: target=$target => build=$build/$cygver" >&6;}
+    mkdir -p "$abssrcdir/cslbuild/$build/$cygver"
+    cp "$abssrcdir/csl/cslbase/Makefile.windows" "$abssrcdir/cslbuild/$build/Makefile"
+    cp "$abssrcdir/csl/cslbase/stub2020.c" "$abssrcdir/cslbuild/$build/stub2020.c"
+    cp "$abssrcdir/csl/cslbase/make-cygwin-symlink.c" "$abssrcdir/cslbuild/$build/make-cygwin-symlink.c"
+    cp "$abssrcdir/csl/cslbase/redpsl.sh" "$abssrcdir/cslbuild/$build/redpsl"
+    cd "$abssrcdir/cslbuild/$build/$cygver"
+  else
+    build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $target $ac_configure_args --with-cygwin"`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: target=$target => build=$build" >&5
 $as_echo "$as_me: target=$target => build=$build" >&6;}
-  mkdir -p "$abssrcdir/cslbuild/$build"
-  cd "$abssrcdir/cslbuild/$build"
+    mkdir -p "$abssrcdir/cslbuild/$build"
+    cd "$abssrcdir/cslbuild/$build"
+  fi
   if test "x$CC$CPP$CXX$CXXCPP" != "x"
   then
     passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
@@ -3415,28 +3177,9 @@ $as_echo "$as_me: passcc = $passcc" >&6;}
   { $as_echo "$as_me:${as_lineno-$LINENO}: host=$host buildmc=$buildmc pass_host=$pass_host" >&5
 $as_echo "$as_me: host=$host buildmc=$buildmc pass_host=$pass_host" >&6;}
   pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
-  flip=""
-  if test "$uname_m" = "x86_64" &&
-     test "target" = "i686-pc-windows"
-  then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: Will build utility to flip cygwin version from 64 to 32 bit" >&5
-$as_echo "$as_me: Will build utility to flip cygwin version from 64 to 32 bit" >&6;}
-    i686-w64-mingw32-g++ -O3 -DFORCE32 $abssrcdir/csl/cslbase/other-cygwin.cpp -static -o cyg32
-    i686-w64-mingw32-strip cyg32
-    flip="`pwd`/cyg32.exe "
-  fi
-  if test "$uname_m" = "i686" &&
-     test "target" = "x86_64-pc-windows"
-  then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: Will build utility to flip cygwin version from 32 to 64 bit" >&5
-$as_echo "$as_me: Will build utility to flip cygwin version from 32 to 64 bit" >&6;}
-    i686-w64-mingw32-g++ -O3 -DFORCE64 $abssrcdir/csl/cslbase/other-cygwin.cpp -static -o cyg64
-    i686-w64-mingw32-strip cyg64
-    flip="`pwd`/cyg64.exe "
-  fi
-  doconfig="$SHELL $flip $abssrcdir/configure --config-cache $ac_configure_args \
-          CC=\"$flip$CC\" CXX=\"$flip$CXX\" \
-          STRIP=\"$flip$STRIP\" RANLIB=\"$flip$RANLIB\" \
+  doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
+          CC=\"$CC\" CXX=\"$CXX\" \
+          STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \
           $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
           $passcc $pass_build --with-cygwin"
@@ -3460,11 +3203,22 @@ csl_inplace_nativewin_build ()
   host=$2
   { $as_echo "$as_me:${as_lineno-$LINENO}: CSL inplace for native Windows" >&5
 $as_echo "$as_me: CSL inplace for native Windows" >&6;}
-  build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $buildmc $ac_configure_args"`
-  { $as_echo "$as_me:${as_lineno-$LINENO}: About to configure using $host in $build" >&5
+  if test "$with_windows_layout" = "new"
+  then
+    winver="win64"
+    build=`eval "$SHELL $abssrcdir/scripts/findhost.sh intel-pc-windows $ac_configure_args"`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: About to configure using $host in $build/$winver" >&5
+$as_echo "$as_me: About to configure using $host in $build/$winver" >&6;}
+    mkdir -p "$abssrcdir/cslbuild/$build/$winver"
+    cp "$abssrcdir/csl/cslbase/Makefile.windows" "$abssrcdir/cslbuild/$build/Makefile"
+    cd "$abssrcdir/cslbuild/$build/$winver"
+  else
+    build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $target $ac_configure_args"`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: About to configure using $host in $build" >&5
 $as_echo "$as_me: About to configure using $host in $build" >&6;}
-  mkdir -p "$abssrcdir/cslbuild/$build"
-  cd "$abssrcdir/cslbuild/$build"
+    mkdir -p "$abssrcdir/cslbuild/$build"
+    cd "$abssrcdir/cslbuild/$build"
+  fi
   if test "x$CC$CPP$CXX$CXXCPP" != "x"
   then
     passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
@@ -3473,16 +3227,19 @@ $as_echo "$as_me: About to configure using $host in $build" >&6;}
   fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
 $as_echo "$as_me: passcc = $passcc" >&6;}
-# The Windows version would like to know where to find cygwin variants...
-  cygextra=
-  ed32="s/.*windows/i686-pc-cygwin/; s/.*cygwin/i686-pc-cygwin/"
-  dd32=`echo $build | sed -e "$ed32"`
-  cygextra="--with-cygbuild=$abssrcdir/cslbuild/$dd32"
-  ed64="s/.*windows/x86_64-pc-cygwin/; s/.*cygwin/x86_64-pc-cygwin/"
-  dd64=`echo $build | sed -e "$ed64"`
-  cygextra="$cygextra --with-cygbuild64=$abssrcdir/cslbuild/$dd64"
-  { $as_echo "$as_me:${as_lineno-$LINENO}: cygextra = $cygextra" >&5
+  if test "$with_windows_layout" = "new"
+  then
+    cygextra=
+  else
+# The Windows version would like to know where to find cygwin variants
+# at run-time.
+    cygextra=
+    ed64="s/.*windows/x86_64-pc-cygwin/; s/.*cygwin/x86_64-pc-cygwin/"
+    dd64=`echo $build | sed -e "$ed64"`
+    cygextra="$cygextra --with-cygbuild64=$abssrcdir/cslbuild/$dd64"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: cygextra = $cygextra" >&5
 $as_echo "$as_me: cygextra = $cygextra" >&6;}
+  fi
   pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
   doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
           CC=\"$CC\" CXX=\"$CXX\" \
@@ -3506,41 +3263,18 @@ $as_echo "$as_me: configuration for $target complete" >&6;}
 csl_inplace_windows_build ()
 {
 # If I am on Windows I will configure for variants:
-#   i686-pc-cygwin
 #   x86_64-pc-cygwin
-#   i686-w64-mingw
 #   x86_64-w64-mingw
   { $as_echo "$as_me:${as_lineno-$LINENO}: Inplace Windows build..." >&5
 $as_echo "$as_me: Inplace Windows build..." >&6;}
 # I am going to suppose that all the compilers I could possibly want
 # are installed. That means I do not need to put in code here to test that!
-  { $as_echo "$as_me:${as_lineno-$LINENO}: with_c32=$with_c32 with_c64=$with_c64 with_w32=$with_w32 with_w64=$with_w64 " >&5
-$as_echo "$as_me: with_c32=$with_c32 with_c64=$with_c64 with_w32=$with_w32 with_w64=$with_w64 " >&6;}
-  if test "$with_c32" = "yes"
-  then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: Configure cygwin32 version" >&5
-$as_echo "$as_me: Configure cygwin32 version" >&6;}
-    csl_inplace_cygwin_build "i686-pc-cygwin" "--with-cygwin32"
-  fi
-  if test "$with_c64" = "yes"
-  then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: Configure cygwin64 version" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Configure cygwin64 version" >&5
 $as_echo "$as_me: Configure cygwin64 version" >&6;}
-    csl_inplace_cygwin_build "x86_64-pc-cygwin" "--with-cygwin64"
-  fi
-# I will also need to build the native versions...
-  if test "$with_w32" = "yes"
-  then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: Configure windows32 version" >&5
-$as_echo "$as_me: Configure windows32 version" >&6;}
-    csl_inplace_nativewin_build "i686-pc-windows" "i686-w64-mingw32"
-  fi
-  if test "$with_w64"
-  then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: Configure windows64 version" >&5
+  csl_inplace_cygwin_build "x86_64-pc-cygwin" "--with-cygwin64"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Configure windows64 version" >&5
 $as_echo "$as_me: Configure windows64 version" >&6;}
-    csl_inplace_nativewin_build "x86_64-pc-windows" "x86_64-w64-mingw32"
-  fi
+  csl_inplace_nativewin_build "x86_64-pc-windows" "x86_64-w64-mingw32"
 }
 
 csl_inplace_build ()
@@ -3612,11 +3346,6 @@ $as_echo "$as_me: About to configure crlibm" >&6;}
   else
     passcc=""
   fi
-  case $host in
-  i386* | i486* | i586* | i686*)
-    passcc="$passcc --enable-sse2"
-    ;;
-  esac
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
 $as_echo "$as_me: passcc = $passcc" >&6;}
@@ -17890,20 +17619,6 @@ then
     printf "#! /bin/sh\nccache $CC \"\$@\"\n" > $d/cachecc.sh
     printf "#! /bin/sh\nccache $CXX \"\$@\"\n" > $d/cachecxx.sh
     chmod +x $d/cachecc.sh $d/cachecxx.sh
-    case $build in
-    *cygwin* | *windows* | *mingw*)
-# Now I want to turn the path into one that is "very" absolute. I need to
-# do this because I will be building both cygwin32 and cygwin64 variants
-# of Reduce, and paths such as "/home/USER/..." are liable to mean different
-# things as between the 32 and 64-bit world. So what I need to end up with
-# may be more like
-#   /cygdrive/C/cygwin64/home/USER/reduce...
-# which will find the same file in both worlds. "cygpath -m" turns a path
-# into one that will start with a drive letter (C:/cygwin64...) and the
-# jolly use of sed should turn that into what I need.
-      d=`cygpath -m "$d" | sed -e 's_^\(a-zA-Z\):_/cygdrive/\1_'`
-      ;;
-    esac
     CC="$d/cachecc.sh"
     CXX="$d/cachecxx.sh"
     ;;
@@ -17921,7 +17636,7 @@ $as_echo "$as_me: About to configure CSL core" >&6;}
 
   case $host in
   *darwin* | *Darwin*)
-    CPPFLAGS="$CPPFLAGS -mmacosx-version-min=10.9 -I/opt/local/include"
+    CPPFLAGS="$CPPFLAGS -mmacosx-version-min=10.12 -I/opt/local/include"
     LDFLAGS="$LDFLAGS -L/opt/local/lib"
     ;;
   esac
@@ -17934,22 +17649,11 @@ $as_echo "$as_me: host=$host build=$build" >&6;}
   if test "x$with_cygwin" != "xno"
   then
     pass_host=""
-    case `uname -m -o` in
-    *i686*Cygwin*)
-      if test "x$host" != "xi686-unknown-cygwin" &&
-         test "x$host" != "xi686-pc-cygwin"
-      then
-        pass_host="--host=$host"
-      fi
-      ;;
-    *x86_64*Cygwin*)
-      if test "x$host" != "xx86_64-unknown-cygwin" &&
-         test "x$host" != "xx86_64-pc-cygwin"
-      then
-        pass_host="--host=$host"
-      fi
-      ;;
-    esac
+    if test "x$host" != "xx86_64-unknown-cygwin" &&
+       test "x$host" != "xx86_64-pc-cygwin"
+    then
+      pass_host="--host=$host"
+    fi
   fi
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: with_cygwin=$with_cygwin pass_host=$pass_host" >&5
@@ -17959,10 +17663,8 @@ $as_echo "$as_me: with_cygwin=$with_cygwin pass_host=$pass_host" >&6;}
   then
 # A short essay to explain why I pass down "--host=$host" here. There are
 # two points. The first is that I cope with 64-bit windows by use of
-# cross-compilation using the x86_64-win32-mingw32 toolchain. To try to
-# be helpful I use this if I am running on 64-bit windows even though
-# cygwin and config.guess view the main architecture as i686-pc-windows.
-# This involves overriding "host", and I want to pass that decision down.
+# cross-compilation using the x86_64-win32-mingw32 toolchain, and I need
+# to pass down the information that I am doing that.
 # The second reason is that different releases of "config.guess" can report
 # machine identities differently. I have particularly observes this on
 # openSuSE Linux where some versions brand the host triple with "-suse-" in
@@ -18033,7 +17735,7 @@ $as_echo "$as_me: Using raw cygwin" >&6;}
       MACARCH="--enable-macosx_arch=x86_64"
       extras="--with-xft --with-xim"
       wx="--with-cocoa \
-          --with-macosx-version-min=10.10 \
+          --with-macosx-version-min=10.12 \
           $MACARCH "
       ;;
     *)
@@ -18184,11 +17886,6 @@ $as_echo "$as_me: About to configure crlibm" >&6;}
   else
     passcc=""
   fi
-  case $host in
-  i386* | i486* | i586* | i686*)
-    passcc="$passcc --enable-sse2"
-    ;;
-  esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
 $as_echo "$as_me: passcc = $passcc" >&6;}
   doconfig="$SHELL $abssrcdir/libraries/crlibm/configure -C $filtered \
@@ -20095,7 +19792,6 @@ $as_echo X"$file" |
     cat <<_LT_EOF >> "$cfgfile"
 #! $SHELL
 # Generated automatically by $as_me ($PACKAGE) $VERSION
-# Libtool was configured on host `(hostname || uname -n) 2>/dev/null | sed 1q`:
 # NOTE: Changes made to this file will be lost: look at ltmain.sh.
 
 # Provide generalized library-building support services.
