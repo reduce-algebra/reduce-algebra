@@ -1,9 +1,9 @@
 
-% RLISP to LISP converter. A C Norman 2004
+% RLISP to LISP converter. A C Norman 2004-2020
 
 
 %%
-%% Copyright (C) 2017, following the master REDUCE source files.          *
+%% Copyright (C) 2020, following the master REDUCE source files.          *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *

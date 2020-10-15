@@ -1,4 +1,4 @@
-// utfcheck.cpp                            Copyright (C) 2016-2017 Codemist
+// utfcheck.cpp                            Copyright (C) 2016-2020 Codemist
 
 //
 // This is a pretty silly program! It looks at Unicode characters and tests
@@ -14,13 +14,13 @@
 // shown.
 //
 // There is a real prospect that the concept of "case" and folding will be
-// locale sensitive and so running this in different loacles may be
+// locale sensitive and so running this in different locales may be
 // instructive.
 //
 
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

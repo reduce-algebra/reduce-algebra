@@ -1,4 +1,3 @@
-
 %
 % Create fasl files for compiler, ccomp and extras and build a CSL
 % checkpoint image for a system that includes them.
@@ -8,7 +7,7 @@
 %
 
 %%
-%% Copyright (C) 2016, A C Norman, Codemist.                              *
+%% Copyright (C) 2020, A C Norman, Codemist.                              *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *

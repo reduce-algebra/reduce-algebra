@@ -1,7 +1,7 @@
-// opnames.cpp                             Copyright (C) Codemist 1993-2017
+// opnames.cpp                             Copyright (C) Codemist 1993-2020
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

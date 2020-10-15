@@ -1,4 +1,4 @@
-// dynmodule.cpp                           Copyright (C) 2016-2017 Codemist
+// dynmodule.cpp                           Copyright (C) 2016-2020 Codemist
 //
 // This goes with dyndemo.c to form a demonstration of dynamic loading
 // of code. This file must be compiled as a DLL (or whatever it takes
@@ -6,7 +6,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

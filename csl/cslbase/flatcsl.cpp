@@ -1,4 +1,4 @@
-// flatcsl.h                               Copyright (C) 2016-2017 Codemist
+// flatcsl.h                               Copyright (C) 2016-2020 Codemist
 
 // The idea of this file is that it uses #include to gather ALL the source
 // files for CSL so they get compiled as a single program unit. This will
@@ -8,7 +8,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

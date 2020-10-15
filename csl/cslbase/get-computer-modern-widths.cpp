@@ -1,4 +1,4 @@
-// get-computer-modern-widths.cpp          Copyright (C) 2015-2017 Codemist
+// get-computer-modern-widths.cpp          Copyright (C) 2015-2020 Codemist
 
 // This extracts just enough font information from a bunch of *.tfm
 // files that I can do the processing of the fonts that the DVI format
@@ -21,7 +21,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

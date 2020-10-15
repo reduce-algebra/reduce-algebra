@@ -1,4 +1,4 @@
-// ipaq.cpp                                Copyright (C) 2005-2017 Codemist
+// ipaq.cpp                                Copyright (C) 2005-2020 Codemist
 
 //
 // Framework for a Windows CE Application... This is being
@@ -8,13 +8,14 @@
 //
 // This code has not been looked at for many years and so should be
 // assumed to be out of date and broken. It is left here in case it
-// forms a useful starting-point for some future project.
+// forms a useful starting-point for some future project, and to
+// entertain software archaeologists.
 //
-//                                 A C Norman, Codemist    , March 2005
+//                                        A C Norman, Codemist, March 2005
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

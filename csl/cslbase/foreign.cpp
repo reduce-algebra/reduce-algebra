@@ -1,8 +1,8 @@
-// foreign.cpp                              Copyright 2015-2017  A C Norman
+// foreign.cpp                              Copyright 2015-2020  A C Norman
 //
 
 //
-// This illustrates creating and in due couse calling code
+// This illustrates creating and in due course calling code
 // that is in a DLL from Lisp/Reduce, and also shows how the
 // C code you call there can call back into the Lisp/Reduce
 // world.
@@ -13,7 +13,7 @@
 #include <cstdio>
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

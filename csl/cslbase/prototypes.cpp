@@ -1,4 +1,4 @@
-// prototypes.cpp                                   A C Norman, August 2017
+// prototypes.cpp                                          A C Norman, 2020
 
 #include <iostream>
 #include <cstdio>

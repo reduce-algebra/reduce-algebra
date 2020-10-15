@@ -1,4 +1,4 @@
-// c2cpp.cpp                            Copyright (C) A C Norman. 2015-2017
+// c2cpp.cpp                            Copyright (C) A C Norman. 2015-2020
 
 // This changes comments from C to C++ style.... with all sorts of odd
 // stylistic choices motivated by the CSL source code. The task that
@@ -6,7 +6,7 @@
 // interest.
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
