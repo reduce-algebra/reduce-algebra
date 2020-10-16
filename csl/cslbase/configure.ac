@@ -873,6 +873,79 @@ then
     [AC_MSG_ERROR([std::atomic<T> with sizeof(T)=16 fails])])
 fi
 
+AC_LINK_IFELSE(
+  [AC_LANG_SOURCE([
+    #if defined __has_include && __has_include(<filesystem>)
+    #include <filesystem>
+    #ifdef __cpp_lib_filesystem
+      int main()
+      {   std::filesystem::path p(".");
+          return 0;
+      }
+    #else // __cpp_lib_filesystem
+      int main()
+      {   return 0;
+      }
+    #endif // __cpp_lib_filesystem
+    #endif // <filesystem> available
+  ])],
+  [filesystem="ok"],
+  [filesystem="fail"])
+
+if test "$filesystem" = "fail"
+then
+  OLIBS="$LIBS"
+  LIBS="$LIBS -lstdc++fs"
+  AC_LINK_IFELSE(
+    [AC_LANG_SOURCE([
+      #if defined __has_include && __has_include(<filesystem>)
+      #include <filesystem>
+      #ifdef __cpp_lib_filesystem
+        int main()
+        {   std::filesystem::path p(".");
+            return 0;
+        }
+      #else // __cpp_lib_filesystem
+        int main()
+        {   return 0;
+        }
+      #endif // __cpp_lib_filesystem
+      #endif // <filesystem> available
+    ])],
+    [filesystem="ok"],
+    [filesystem="fail"
+     LIBS="$OLIBS"])
+fi
+
+if test "$filesystem" = "fail"
+then
+  OLIBS="$LIBS"
+  LIBS="$LIBS -lc++fs"
+  AC_LINK_IFELSE(
+    [AC_LANG_SOURCE([
+      #if defined __has_include && __has_include(<filesystem>)
+      #include <filesystem>
+      #ifdef __cpp_lib_filesystem
+        int main()
+        {   std::filesystem::path p(".");
+            return 0;
+        }
+      #else // __cpp_lib_filesystem
+        int main()
+        {   return 0;
+        }
+      #endif // __cpp_lib_filesystem
+      #endif // <filesystem> available
+    ])],
+    [filesystem="ok"],
+    [filesystem="fail"
+     LIBS="$OLIBS"])
+fi
+
+if test "$filesystem" = "fail"
+then
+  AC_DEFINE(FILESYSTEM_NOT_USABLE, [1], "std::filesystem not available")
+fi
 
 OLIBS="$LIBS"
 LIBS="$OLIBS -lncurses"
@@ -1582,19 +1655,21 @@ if test "x$macintosh_build" = "xyes"
 then
 # 10.0  Cheetah       )
 # 10.1  Puma          )
-# 10.2  Jaguar        ) I will not support these at all any more
-# 10.3  Panther       )
-# 10.4  Tiger         )
-# 10.5  Leopard       )
+# 10.2  Jaguar        ) I will not support these at all any more.
+# 10.3  Panther       ) It might be possible to build on them and
+# 10.4  Tiger         ) it certainly should be by reverting to an older
+# 10.5  Leopard       ) version of CSL.
 # 10.6  Snow Leopard  )
 # 10.7  Lion          )
 # 10.8  Mountain Lion )
 # 10.9  Mavericks     )
-# 10.10 Yosemite
-# 10.11 El Capitan
-# 10.12 Sierra
-# 10.13 High Sierra
-# 10.14 Mojave          Now the oldest deployment target I support
+# 10.10 Yosemite      )
+# 10.11 El Capitan    )
+# 10.12 Sierra        )
+# 10.13 High Sierra     Now the oldest deployment target I support
+#                       (this is because it is the oldest release my old
+#                       macbook can install!)
+# 10.14 Mojave
 # 10.15 Catalina
 # 11.0  Big Sur         Now the version I build and test on.
 #
@@ -1604,7 +1679,7 @@ then
 # macports stuff is liable to need rebuilding or re-installing so as to
 # avoid moans about version support conflicts when things are linked.
 #
-  ENVP="MACOSX_DEPLOYMENT_TARGET=10.14"
+  ENVP="MACOSX_DEPLOYMENT_TARGET=10.13"
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
   CPP="$ENVP $CPP"

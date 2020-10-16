@@ -96,6 +96,41 @@
 #define UNUSED_NAME
 #endif // annotation for unused things
 
+// On some platforms it will APPEAR that <filesystem> and std::filesystem
+// are available but they will not be. This can perhaps be a consequenec of
+// transition arrangements in the C++ comnpiler, library and even the
+// operating system being used. On sufficiently old platforms there will be
+// no pretence of their availability so I will not have trouble, and on
+// fully up to date ones this part of the C++17 standard should be properly
+// supported, but somewher in between there can be "trouble"! So I have a
+// configure time test that can set FILESYSTEM_NOT_USABLE in the case when
+// the notionally standard-conforming test will not suffice.
+
+// I am really sorry about the following test! It is because on a Mac
+// one can have #include <filesystem> work and __cpp_lib_filesystem get
+// defined for you but std::filesystem may still not be properly available
+// because at least some parts of it were not supported until 10.15. I rather
+// firmly believe that __cpp_lib_filesystem ought not to have ended up
+// defined if the C++17 feature was not actually going to be available. But
+// there we go!
+
+//#define STR_HELPER(x) #x
+//#define STR(x) STR_HELPER(x)
+//#pragma message "MIN VER: " STR(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
+
+#if defined __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ && \
+            __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ < 101500 && \
+            !defined FILESYSTEM_NOT_USABLE
+
+#pragma message "Disabling use of std::filesystem because of OS version min"
+#define FILESYSTEM_NOT_USABLE 1
+
+#endif // Hack for Macintosh.
+
+#if !defined FILESYSTEM_NOT_USABLE
+
+// I will allow config.h to define HAVE_FILESYSTEM as a promise thae this
+// is all OK!
 #if !defined HAVE_FILESYSTEM && \
     defined __has_include && \
     __has_include(<filesystem>)
@@ -105,6 +140,8 @@
 #ifdef HAVE_FILESYSTEM
 #include <filesystem>
 #endif // HAVE_FILESYSTEM
+
+#endif
 
 // Now I can test __cpp_lib_filesystem to see if std::filesystem is
 // actually available. If I use it I may need to link -lstdc++fs in gcc
@@ -1984,7 +2021,11 @@ int get_users_home_directory(char *b, size_t len)
 typedef void filescan_function(string name, string leafname,
                                int why, long int size);
 
-#ifdef __cpp_lib_filesystem
+// On a Macintosh it seems that __cpp_lib_filesystem can be defined without
+// needing to #include <filesystem> and in cases when code that uses
+// std::filesystem will then not even compile!
+
+#if defined __cpp_lib_filesystem && !defined FILESYSTEM_NOT_USABLE
 
 // Here is some code thar uses std::filesystem, or that might be able to!
 // If there are functions here that could not exploit the C++17 facilities

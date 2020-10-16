@@ -242,4 +242,7 @@ January 2020. Fixes to Windows console handling...
       for whitespace) that they are removed when I am thinking about file
       paths for the image file.
 
+October 2020. fwin.cpp (and configure.ac) changed so that in some cases the
+      C++17 std::filesystem capabilities will be used.
+
 <end of CHANGED>
