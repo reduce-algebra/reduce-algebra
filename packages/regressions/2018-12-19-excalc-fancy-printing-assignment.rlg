@@ -37,10 +37,10 @@ on fancy;
 
 om(k,-l);
 
-latex:\black$\displaystyle  \mathrm{ns}\mathrm{{}}^{\theta}\mathrm{{}}_{\theta}\mathrm{:=}0$
-latex:\black$\displaystyle  \mathrm{ns}\mathrm{{}}^{\phi}\mathrm{{}}_{\theta}\mathrm{:=}\frac{\cos\left(\theta\right)\*e^{\phi}}{\sin\left(\theta\right)\*r}$
-latex:\black$\displaystyle  \mathrm{ns}\mathrm{{}}^{\theta}\mathrm{{}}_{\phi}\mathrm{:=}\frac{-\cos\left(\theta\right)\*e^{\phi}}{\sin\left(\theta\right)\*r}$
-latex:\black$\displaystyle  \mathrm{ns}\mathrm{{}}^{\phi}\mathrm{{}}_{\phi}\mathrm{:=}0$
+latex:\black$\displaystyle  \mathrm{om}\mathrm{{}}^{\theta}\mathrm{{}}_{\theta}\mathrm{:=}0$
+latex:\black$\displaystyle  \mathrm{om}\mathrm{{}}^{\phi}\mathrm{{}}_{\theta}\mathrm{:=}\frac{\cos\left(\theta\right)\*e^{\phi}}{\sin\left(\theta\right)\*r}$
+latex:\black$\displaystyle  \mathrm{om}\mathrm{{}}^{\theta}\mathrm{{}}_{\phi}\mathrm{:=}\frac{-\cos\left(\theta\right)\*e^{\phi}}{\sin\left(\theta\right)\*r}$
+latex:\black$\displaystyle  \mathrm{om}\mathrm{{}}^{\phi}\mathrm{{}}_{\phi}\mathrm{:=}0$
 
 off fancy;
 
