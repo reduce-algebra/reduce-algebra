@@ -201,7 +201,7 @@ inline double CSLlog10(double x)
 {   return std::log10(x);
 }
 inline double CSLpow(double x, double y)
-{   return std::pow(x, x);
+{   return std::pow(x, y);
 }
 
 #endif // HAVE_CRLIBM
