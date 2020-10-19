@@ -217,6 +217,13 @@ public:
 // end of the next free block (using pinChain - and if that is nullptr the
 // relevant limit is the end of the page.
     atomic<Chunk *>pinChain;
+// During GC it is sometimes necessary for the GC to scan material
+// within the chunk that it itself is allocating copied stull within. It
+// may in fact do this in several stages, each processing material until
+// everything currently in that chunk is tidy. But then it may find another
+// Chunk to scan and that can add a bit more. This pointer has to be
+// initialized in every Chunk that is a candidate for scanning.
+    atomic<uintptr_t> selfScanPoint;
 // The rest of the chunk is the region within which data is kept.
 // Its size will be such that the entire Chunk has length a specified by
 // its first word.
@@ -262,23 +269,29 @@ extern atomic<Chunk *> chunkStack;
 // This returns TRUE if the chunk stack was empty before this new chunk
 // was pushed.
 
-inline bool pushChunk(Chunk *c)
-{   Chunk *old = chunkStack.load();
-    do
-    {   c->chunkStack.store(old);
-    } while (!chunkStack.compare_exchange_weak(old, c));
-    return (old == nullptr);
-}
+// Well the code for these is actually in newcslgc.cpp and there are extra
+// bits of code to deal with synchronization at a higher level!
 
-inline Chunk *popChunk()
-{   Chunk *old = chunkStack.load();
-    Chunk *c;
-    do
-    {   if (old == nullptr) return nullptr;
-        c = old->chunkStack.load();
-    } while (!chunkStack.compare_exchange_weak(old, c));
-    return old;
-}
+// inline bool pushChunk(Chunk *c)
+// {   Chunk *old = chunkStack.load();
+//     do
+//     {   c->chunkStack.store(old);
+//     } while (!chunkStack.compare_exchange_weak(old, c));
+//     return (old == nullptr);
+// }
+
+// inline Chunk *popChunk()
+// {   Chunk *old = chunkStack.load();
+//     Chunk *c;
+//     do
+//     {   if (old == nullptr) return nullptr;
+//         c = old->chunkStack.load();
+//     } while (!chunkStack.compare_exchange_weak(old, c));
+//     return old;
+//}
+
+extern void pushChunk(Chunk * c);
+extern Chunk *popChunk();
 
 // I am going to require Pages to be aligned at nice neat boundaries
 // because then if I have an arbitrary address within one I will be able to

@@ -715,19 +715,21 @@ symbolic procedure get_configuration_data();
 % I arrange that if it fails I just omit being aware of the regression
 % test scripts. Soon the embedded system (built ising C++17) will in fact
 % support this!
-    r := errorset(list('list!-directory, "$reduce/packages/regressions"),
-                  nil, nil);
-    if atom r then r :=nil else r := car r;
-    for each f in r do <<
-      r1 := reverse explodec f;
-      if eqcar(r1, 't) and
-         eqcar(cdr r1, 's) and
-         eqcar(cddr r1, 't) and
-         eqcar(cdddr r1, '!.) then <<
-            r1 := intern list!-to!-string reverse cddddr r1;
-            put(r1, 'folder, "regressions");
-            reduce_regression_tests :=
-               r1 . reduce_regression_tests >> >>;
+    if memq('embedded, lispsystem!*) then rdf("$srcdir/regressions.list")
+    else <<
+      r := errorset(list('list!-directory, "$reduce/packages/regressions"),
+                    nil, nil);
+      if atom r then r :=nil else r := car r;
+      for each f in r do <<
+        r1 := reverse explodec f;
+        if eqcar(r1, 't) and
+           eqcar(cdr r1, 's) and
+           eqcar(cddr r1, 't) and
+           eqcar(cdddr r1, '!.) then <<
+             r1 := intern list!-to!-string reverse cddddr r1;
+             put(r1, 'folder, "regressions");
+             reduce_regression_tests :=
+                r1 . reduce_regression_tests >> >> >>;
 % I will run the "alg" test twice! This is for the benefit of Java where the
 % first time will be seriously slowed down by the need to JIT almost
 % everything.

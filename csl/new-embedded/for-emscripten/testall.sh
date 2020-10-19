@@ -23,13 +23,10 @@ then
   shift
 fi
 
-platform="js"
-sys="jscsl"
-
 #
 # Remove old log files
 #
-rm -f $sys-times/*.rlg*
+rm -f jscsl-times/*.rlg*
 
 packages=`sed -e '/^\%/d' $here/../packages/package.map | \
           grep ' test ' | \
@@ -52,12 +49,12 @@ then
   done
 fi
 
-printf "\nSummary of test runs for $platform\n\n"
+printf "\nSummary of test runs for jscsl\n\n"
 
-d=`cd $sys-times; echo *.rlg.diff`
+d=`cd jscsl-times; echo *.rlg.diff`
 if test "$d" != "*.rlg.diff"
 then
-  printf "\nDifferences for $sys: `echo $d | sed -e 's/\.rlg\.diff//g'`\n"
+  printf "\nDifferences for jscsl: `echo $d | sed -e 's/\.rlg\.diff//g'`\n"
 fi
 
 printf "\n"

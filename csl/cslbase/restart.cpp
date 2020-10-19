@@ -589,11 +589,13 @@ static void cold_setup()
 // the conservative GC is active.
 //
 #ifdef CONSERVATIVE
+    std::printf("\n: Conservative code - run a simple test of the GC\n\n");
     simple_print(nil);
     std::printf("\r\n");
     Lgc0(nil);
     simple_print(nil);
-    Lterpri(nil);
+    std::printf("\r\n");
+    std::printf("Now abort()...\n");
     my_abort();
 #endif // CONSERVATIVE
     setvalue(nil, get_basic_vector_init(sizeof(Package), nil));

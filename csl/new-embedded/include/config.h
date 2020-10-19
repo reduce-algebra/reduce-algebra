@@ -17,7 +17,9 @@
 /* Correct Rounding maths library should be used */
 // #define HAVE_CRLIBM 1
 
-#if defined __linux__ || defined __APPLE__ || defined __CYGWIN32__|| defined __CYGWIN__
+#if defined __linux__ || defined __APPLE__ || \
+    defined __CYGWIN32__|| defined __CYGWIN__ || \
+    defined __unix__
 #define HAVE_UNISTD_H 1
 #define HAVE_UTIME_H
 #define HAVE_UTIME
@@ -98,4 +100,3 @@
 
 #define WITHOUT_FFI 1
 #define AVOID_THREADS 1
-

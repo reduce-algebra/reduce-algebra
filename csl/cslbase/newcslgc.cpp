@@ -780,14 +780,92 @@ atomic<unsigned int> activeHelpers = 0;
 // before gcHelper() is called on in ANY thread the GC should have set
 // activeHelpers to the number of helper threads it is about to activate.
 
-Chunk *popChunk1()
-{   return nullptr;
+
+std::mutex mutexForChunkStack;
+bool gcComplete;
+std::condition_variable cvForChunkStack;
+
+// The lock-free stack as implemented here could fail if the "ABA"
+// scanario arose - but that involved popping an item and later
+// pushing it back. If that will never happen there should not be
+// any trouble.
+
+inline void pushChunk(Chunk *c)
+{   c->selfScanPoint = c->datastart();
+    Chunk *old = chunkStack.load();
+    do
+    {   c->chunkStack.store(old);
+    } while (!chunkStack.compare_exchange_weak(old, c));
+    if (old == nullptr)
+    {
+// The critical regiion with no code within it looks really odd! But it
+// is necessary to avoid a race condition in popChunk.
+        {   std::lock_guard<std::mutex> lock(mutexForChunkStack);
+        }
+        cvForChunkStack.notify_all();
+    }
+}
+
+// This version is lock-free and it return nullptr if the stack is empty.
+
+inline Chunk *popChunk1()
+{   Chunk *old = chunkStack.load(), *c;
+    do
+    {   if (old == nullptr) return nullptr;
+        c = old->chunkStack.load();
+    } while (!chunkStack.compare_exchange_weak(old, c));
+    return old;
+}
+
+// Here is the version for use. If called when the stack is empty it
+// returns nullptr if gcComplete is set, or otherwise it waits.
+
+inline Chunk *popChunk()
+{
+// First try in a lock-free manner.
+    Chunk *c = popChunk1();
+// ... if that succeds then I can return with only low overhead.
+    if (c != nullptr) return c;
+// ** Point A **
+// Now my first lock-free try failed. Of course a pushChunk() may have
+// happened in the meanwhile - trying again is not a problem! But this time
+// I will lock the mutex first. That will allow any pushChunk that adds
+// to a non-empty stack to complete in a lock-free manner, but a pushChunk
+// on an empty stack will not be able to reach the notify_all step until the
+// mutex is released.
+    std::unique_lock<std::mutex> lock(mutexForChunkStack);
+    while ((c = popChunk1()) == nullptr && !gcComplete)
+    {
+// ** Point B **
+// Sometimes this pop will succeed, eg if pushChunk ran while this thread
+// was at Point A. In such a case the push operation may have performed a
+// notify_all but this thread will not be aware. That could have woken some
+// other thread up and there could have been a whole sequence of pushes and
+// pops around Point A!
+// When popChunk1 fails here it will do so with the mutex locked. That means
+// that any push that could install data will do so onto an empty stack and
+// when it does that it will attempt to lock the mutex and will hence stall.
+// It will first be able to make progress when the lock is released, which
+// will be within the wait call here.
+// Meanwhile other uses of push could have added more items to the
+// stack without problems and other threads may have popped things,
+// including the one set up by the stalled push thread.
+        cvForChunkStack.wait(lock);
+// When the condition variable unlocks the mutex (while it waits), the push
+// can continue. It will perform a notify_all. Because of the activity of
+// other threads the stack could be empty again! But that does not matter
+// too much - the code here will check the stack again in popChunk1.
+// The crucial issue here is the avoidance of a race condition that could
+// lead to pushChunk performing its notify_all while this thread was
+// as Point B. If that happened the wait could deadlock.
+//
+    }
+    return c;
 }
 
 bool evacuatePartOfMyOwnChunk()
 {   return false;
 }
-
 
 void gcHelper()
 {
