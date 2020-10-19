@@ -7199,10 +7199,499 @@ ibeta(3,2,x);
 x *( - 3*x + 4)
 
 
+precision reset;
+
+
+20
+
 
 % =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-%     11. Dilogarithm, polylogartihm and Lerch_phi
+%     11. Exponential Integral, Sine and Cosine Integrals;
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+procedure do!*one!*int!:function(fn,n);
+   write (fn," of ", n, " is ",
+      if fn=!Ei then Ei(n)
+      else if fn=!Si then Si(n)
+      else if fn=!Ci then Ci(n)
+      else if fn=!Shi then Shi(n)
+      else if fn=!Chi then Chi(n)
+      	 );
+
+
+do*one*int:function
+
+
+% Ei(0), Ci(0), and Chi(0) are undefined
+
+Ei(0);
+
+
+***** ei (0) is undefined 
+
+
+Ci(0);
+
+
+***** ci (0) is undefined 
+
+
+Chi(0);
+
+
+chi(0)
+
+
+on rounded;
+
+
+
+Ei(0);
+
+
+***** ei (0) is undefined 
+
+
+Ci(0);
+
+
+***** ci (0) is undefined 
+
+
+Chi(0);
+
+
+***** Chi(0) is undefined 
+
+
+% Chi is undefined for negative real argument
+
+Chi(-1);
+
+
+***** Chi is undefined for negative real argument 
+
+
+for x := 0.1 step 0.1 until 2.0 do
+   do!*one!*int!:function(!Ei,x);
+
+
+Ei of 0.1 is  - 1.62281281397
+
+Ei of 0.2 is  - 0.821760587902
+
+Ei of 0.3 is  - 0.302668539266
+
+Ei of 0.4 is 0.104765218619
+
+Ei of 0.5 is 0.454219904863
+
+Ei of 0.6 is 0.769881289937
+
+Ei of 0.7 is 1.06490719462
+
+Ei of 0.8 is 1.34739654821
+
+Ei of 0.9 is 1.6228117137
+
+Ei of 1 is 1.89511781636
+
+Ei of 1.1 is 2.16737827956
+
+Ei of 1.2 is 2.44209228519
+
+Ei of 1.3 is 2.72139888023
+
+Ei of 1.4 is 3.00720746415
+
+Ei of 1.5 is 3.30128544913
+
+Ei of 1.6 is 3.60531994902
+
+Ei of 1.7 is 3.92096320135
+
+Ei of 1.8 is 4.24986755749
+
+Ei of 1.9 is 4.59371368695
+
+Ei of 2.0 is 4.954234356
+
+
+for x := -0.1 step -0.1 until -2.0 do
+   do!*one!*int!:function(!Ei,x);
+
+
+Ei of  - 0.1 is  - 1.82292395842
+
+Ei of  - 0.2 is  - 1.22265054418
+
+Ei of  - 0.3 is  - 0.905676651676
+
+Ei of  - 0.4 is  - 0.702380118866
+
+Ei of  - 0.5 is  - 0.559773594776
+
+Ei of  - 0.6 is  - 0.454379503189
+
+Ei of  - 0.7 is  - 0.373768843234
+
+Ei of  - 0.8 is  - 0.310596578546
+
+Ei of  - 0.9 is  - 0.260183939326
+
+Ei of -1 is  - 0.219383934396
+
+Ei of  - 1.1 is  - 0.185990904536
+
+Ei of  - 1.2 is  - 0.158408436851
+
+Ei of  - 1.3 is  - 0.135450957849
+
+Ei of  - 1.4 is  - 0.116219312571
+
+Ei of  - 1.5 is  - 0.100019582407
+
+Ei of  - 1.6 is  - 0.0863083336975
+
+Ei of  - 1.7 is  - 0.0746546444013
+
+Ei of  - 1.8 is  - 0.0647131293639
+
+Ei of  - 1.9 is  - 0.0562043781745
+
+Ei of  - 2.0 is  - 0.0489005107081
+
+
+for x := 0.0 step 0.1 until 2.0 do
+   do!*one!*int!:function(!Si,x);
+
+
+Si of 0 is 0
+
+Si of 0.1 is 0.0999444611083
+
+Si of 0.2 is 0.199556088526
+
+Si of 0.3 is 0.298504043807
+
+Si of 0.4 is 0.396461464751
+
+Si of 0.5 is 0.493107418043
+
+Si of 0.6 is 0.588128809608
+
+Si of 0.7 is 0.681222239117
+
+Si of 0.8 is 0.772095785482
+
+Si of 0.9 is 0.860470710745
+
+Si of 1 is 0.946083070367
+
+Si of 1.1 is 1.02868521867
+
+Si of 1.2 is 1.10804719901
+
+Si of 1.3 is 1.18395800908
+
+Si of 1.4 is 1.25622673278
+
+Si of 1.5 is 1.32468353117
+
+Si of 1.6 is 1.38918048587
+
+Si of 1.7 is 1.44959228968
+
+Si of 1.8 is 1.50581678026
+
+Si of 1.9 is 1.55777531375
+
+Si of 2.0 is 1.6054129768
+
+
+for x := -0.1 step -0.1 until -2.0 do
+   do!*one!*int!:function(!Si,x);
+
+
+Si of  - 0.1 is  - 0.0999444611083
+
+Si of  - 0.2 is  - 0.199556088526
+
+Si of  - 0.3 is  - 0.298504043807
+
+Si of  - 0.4 is  - 0.396461464751
+
+Si of  - 0.5 is  - 0.493107418043
+
+Si of  - 0.6 is  - 0.588128809608
+
+Si of  - 0.7 is  - 0.681222239117
+
+Si of  - 0.8 is  - 0.772095785482
+
+Si of  - 0.9 is  - 0.860470710745
+
+Si of -1 is  - 0.946083070367
+
+Si of  - 1.1 is  - 1.02868521867
+
+Si of  - 1.2 is  - 1.10804719901
+
+Si of  - 1.3 is  - 1.18395800908
+
+Si of  - 1.4 is  - 1.25622673278
+
+Si of  - 1.5 is  - 1.32468353117
+
+Si of  - 1.6 is  - 1.38918048587
+
+Si of  - 1.7 is  - 1.44959228968
+
+Si of  - 1.8 is  - 1.50581678026
+
+Si of  - 1.9 is  - 1.55777531375
+
+Si of  - 2.0 is  - 1.6054129768
+
+
+for x := 0.1 step 0.1 until 2.0 do
+   do!*one!*int!:function(!Ci,x);
+
+
+Ci of 0.1 is  - 1.72786838666
+
+Ci of 0.2 is  - 1.04220559567
+
+Ci of 0.3 is  - 0.649172932971
+
+Ci of 0.4 is  - 0.378809346425
+
+Ci of 0.5 is  - 0.177784078807
+
+Ci of 0.6 is  - 0.0222707069593
+
+Ci of 0.7 is 0.100514707009
+
+Ci of 0.8 is 0.198278615952
+
+Ci of 0.9 is 0.276067830468
+
+Ci of 1 is 0.337403922901
+
+Ci of 1.1 is 0.384873377425
+
+Ci of 1.2 is 0.420459182894
+
+Ci of 1.3 is 0.445738567529
+
+Ci of 1.4 is 0.462006585095
+
+Ci of 1.5 is 0.470356317195
+
+Ci of 1.6 is 0.471732516932
+
+Ci of 1.7 is 0.466968364177
+
+Ci of 1.8 is 0.456811129418
+
+Ci of 1.9 is 0.441940349682
+
+Ci of 2.0 is 0.422980828775
+
+
+for x := -0.1 step -0.1 until -2.0 do
+   do!*one!*int!:function(!Ci,x);
+
+
+Ci of  - 0.1 is  - 3.14159265359*i + 1.72786838666
+
+Ci of  - 0.2 is  - 3.14159265359*i + 1.04220559567
+
+Ci of  - 0.3 is  - 3.14159265359*i + 0.649172932971
+
+Ci of  - 0.4 is  - 3.14159265359*i + 0.378809346425
+
+Ci of  - 0.5 is  - 3.14159265359*i + 0.177784078807
+
+Ci of  - 0.6 is  - 3.14159265359*i + 0.0222707069593
+
+Ci of  - 0.7 is  - 3.14159265359*i - 0.100514707009
+
+Ci of  - 0.8 is  - 3.14159265359*i - 0.198278615952
+
+Ci of  - 0.9 is  - 3.14159265359*i - 0.276067830468
+
+Ci of -1 is  - 3.14159265359*i - 0.337403922901
+
+Ci of  - 1.1 is  - 3.14159265359*i - 0.384873377425
+
+Ci of  - 1.2 is  - 3.14159265359*i - 0.420459182894
+
+Ci of  - 1.3 is  - 3.14159265359*i - 0.445738567529
+
+Ci of  - 1.4 is  - 3.14159265359*i - 0.462006585095
+
+Ci of  - 1.5 is  - 3.14159265359*i - 0.470356317195
+
+Ci of  - 1.6 is  - 3.14159265359*i - 0.471732516932
+
+Ci of  - 1.7 is  - 3.14159265359*i - 0.466968364177
+
+Ci of  - 1.8 is  - 3.14159265359*i - 0.456811129418
+
+Ci of  - 1.9 is  - 3.14159265359*i - 0.441940349682
+
+Ci of  - 2.0 is  - 3.14159265359*i - 0.422980828775
+
+
+for x := 0.0 step 0.1 until 2.0 do
+   do!*one!*int!:function(!Shi,x);
+
+
+Shi of 0 is 0
+
+Shi of 0.1 is 0.100055572225
+
+Shi of 0.2 is 0.200444978141
+
+Shi of 0.3 is 0.301504056205
+
+Shi of 0.4 is 0.403572668742
+
+Shi of 0.5 is 0.50699674982
+
+Shi of 0.6 is 0.612130396563
+
+Shi of 0.7 is 0.719338018929
+
+Shi of 0.8 is 0.828996563379
+
+Shi of 0.9 is 0.941497826511
+
+Shi of 1 is 1.05725087538
+
+Shi of 1.1 is 1.17668459205
+
+Shi of 1.2 is 1.30025036102
+
+Shi of 1.3 is 1.42842491904
+
+Shi of 1.4 is 1.56171338836
+
+Shi of 1.5 is 1.70065251577
+
+Shi of 1.6 is 1.84581414136
+
+Shi of 1.7 is 1.99780892288
+
+Shi of 1.8 is 2.15729034343
+
+Shi of 1.9 is 2.32495903256
+
+Shi of 2.0 is 2.50156743335
+
+
+for x := -0.1 step -0.1 until -2.0 do
+   do!*one!*int!:function(!Shi,x);
+
+
+Shi of  - 0.1 is  - 0.100055572225
+
+Shi of  - 0.2 is  - 0.200444978141
+
+Shi of  - 0.3 is  - 0.301504056205
+
+Shi of  - 0.4 is  - 0.403572668742
+
+Shi of  - 0.5 is  - 0.50699674982
+
+Shi of  - 0.6 is  - 0.612130396563
+
+Shi of  - 0.7 is  - 0.719338018929
+
+Shi of  - 0.8 is  - 0.828996563379
+
+Shi of  - 0.9 is  - 0.941497826511
+
+Shi of -1 is  - 1.05725087538
+
+Shi of  - 1.1 is  - 1.17668459205
+
+Shi of  - 1.2 is  - 1.30025036102
+
+Shi of  - 1.3 is  - 1.42842491904
+
+Shi of  - 1.4 is  - 1.56171338836
+
+Shi of  - 1.5 is  - 1.70065251577
+
+Shi of  - 1.6 is  - 1.84581414136
+
+Shi of  - 1.7 is  - 1.99780892288
+
+Shi of  - 1.8 is  - 2.15729034343
+
+Shi of  - 1.9 is  - 2.32495903256
+
+Shi of  - 2.0 is  - 2.50156743335
+
+
+for x := 0.1 step 0.1 until 2.0 do
+   do!*one!*int!:function(!Chi,x);
+
+
+Chi of 0.1 is  - 1.72286838619
+
+Chi of 0.2 is  - 1.02220556604
+
+Chi of 0.3 is  - 0.604172595471
+
+Chi of 0.4 is  - 0.298807450123
+
+Chi of 0.5 is  - 0.0527768449565
+
+Chi of 0.6 is 0.157750893374
+
+Chi of 0.7 is 0.345569175695
+
+Chi of 0.8 is 0.518399984833
+
+Chi of 0.9 is 0.681313887185
+
+Chi of 1 is 0.83786694098
+
+Chi of 1.1 is 0.990693687514
+
+Chi of 1.2 is 1.14184192417
+
+Chi of 1.3 is 1.29297396119
+
+Chi of 1.4 is 1.44549407579
+
+Chi of 1.5 is 1.60063293336
+
+Chi of 1.6 is 1.75950580766
+
+Chi of 1.7 is 1.92315427848
+
+Chi of 1.8 is 2.09257721406
+
+Chi of 1.9 is 2.26875465439
+
+Chi of 2.0 is 2.45266692265
+
+
+%for x := -0.1 step -0.1 until -2.0 do
+%   do!*one!*int!:function(!Chi,x);
+
+off rounded;
+
+
+
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+%     12. Dilogarithm, polylogartihm and Lerch_phi
 
 % =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -7254,7 +7743,7 @@ polylog(1,x);
 precision reset;
 
 
-20
+12
 
 on rounded;
 
@@ -7312,7 +7801,7 @@ df(Lerch_phi(x,3,4),x);
 
 % =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-%     12. Constants
+%     13. Constants
 
 % =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 

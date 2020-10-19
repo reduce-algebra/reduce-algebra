@@ -137,7 +137,7 @@ algebraic procedure compute!:int!:functions(x,f);
    pre := precision 0; precision pre;
    precis := 10^(-2 * pre);
    lisp (!*uncached := t);
-   if f = si then
+   if f = Si then
            if x < 0 then result :=
                         - compute!:int!:functions(-x,f) else
             << n:=1; term := x; result := x;
@@ -145,28 +145,36 @@ algebraic procedure compute!:int!:functions(x,f);
                  << term := -1 * (term * x*x)/(2n * (2n+1));
                     result := result + term/(2n+1);
                     n := n + 1>>; >>
-    else if f = ci then
-           if x < 0 then result :=
-                         - compute!:int!:functions(-x,f) -i*pi else
+   else if f = Ci then
+           if x=0 then rerror('specfn,0,"Ci(0) is undefined")
+            else if x < 0 then result :=
+	       - compute!:int!:functions(-x,f) -i*pi
+	    else
               << n:=1; term := 1; result := Euler_gamma + log(x);
                while abs(term) > precis do
                  << term := -1 * (term * x*x)/((2n-1) * 2n);
                     result := result + term/(2n);
                     n := n + 1>>; >>
     else  if f = Ei then
-          << n:=1; term := 1; result := Euler_gamma + log(x);
+          << if x=0 then rerror('specfn,0,"Ei(0) is undefined")
+              else if not realvaluedp x
+               then symbolic rerror('specfn,0,"Ei undefined for complex argument");
+             n:=1; term := 1; result := Euler_gamma + log(abs(x));
                while abs(term) > precis do
                  << term := (term * x)/n;
                     result := result + term/n;
                     n := n + 1>>; >>
-    else  if f = shi then
+    else  if f = Shi then
             << n:=1; term := x; result := x;
                while abs(term) > precis do
                  << term := (term * x*x)/(2n * (2n+1));
                     result := result + term/(2n+1);
                     n := n + 1>>; >>
-    else  if f = chi then
-            << n:=1; term := 1; result := Euler_gamma + log(x);
+    else  if f = Chi then
+          if x=0 then rerror('specfn,0,"Chi(0) is undefined")
+           else if realvaluedp x and x<0
+            then rerror('specfn,0,"Chi is undefined for negative real argument")
+	   else << n:=1; term := 1; result := Euler_gamma + log(x);
                while abs(term) > precis do
                  << term := (term * x*x)/((2n-1) * 2n);
                     result := result + term/(2n);

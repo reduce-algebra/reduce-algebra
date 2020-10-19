@@ -644,10 +644,77 @@ off rounded,complex;
 
 ibeta(3,2,x);
 
+precision reset;
 
 % =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-%     11. Dilogarithm, polylogartihm and Lerch_phi
+%     11. Exponential Integral, Sine and Cosine Integrals;
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+procedure do!*one!*int!:function(fn,n);
+   write (fn," of ", n, " is ",
+      if fn=!Ei then Ei(n)
+      else if fn=!Si then Si(n)
+      else if fn=!Ci then Ci(n)
+      else if fn=!Shi then Shi(n)
+      else if fn=!Chi then Chi(n)
+      	 );
+
+% Ei(0), Ci(0), and Chi(0) are undefined
+
+Ei(0);
+
+Ci(0);
+
+Chi(0);
+
+on rounded;
+
+Ei(0);
+
+Ci(0);
+
+Chi(0);
+
+% Chi is undefined for negative real argument
+
+Chi(-1);
+
+for x := 0.1 step 0.1 until 2.0 do
+   do!*one!*int!:function(!Ei,x);
+
+for x := -0.1 step -0.1 until -2.0 do
+   do!*one!*int!:function(!Ei,x);
+
+for x := 0.0 step 0.1 until 2.0 do
+   do!*one!*int!:function(!Si,x);
+
+for x := -0.1 step -0.1 until -2.0 do
+   do!*one!*int!:function(!Si,x);
+
+for x := 0.1 step 0.1 until 2.0 do
+   do!*one!*int!:function(!Ci,x);
+
+for x := -0.1 step -0.1 until -2.0 do
+   do!*one!*int!:function(!Ci,x);
+
+for x := 0.0 step 0.1 until 2.0 do
+   do!*one!*int!:function(!Shi,x);
+
+for x := -0.1 step -0.1 until -2.0 do
+   do!*one!*int!:function(!Shi,x);
+
+for x := 0.1 step 0.1 until 2.0 do
+   do!*one!*int!:function(!Chi,x);
+
+%for x := -0.1 step -0.1 until -2.0 do
+%   do!*one!*int!:function(!Chi,x);
+
+off rounded;
+
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+%     12. Dilogarithm, polylogartihm and Lerch_phi
 
 % =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -685,7 +752,7 @@ df(Lerch_phi(x,3,4),x);
 
 % =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-%     12. Constants
+%     13. Constants
 
 % =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
