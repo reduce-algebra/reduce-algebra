@@ -641,7 +641,12 @@ let df(acsc(~x),x) =>  -1/(x^2*sqrt(1-1/x^2)),
     df(acsch(~x),x)=> -1/(x^2*sqrt(1+ 1/x^2)),
     df(asech(~x),x)=> -1/(x^2*sqrt(1/x-1)*sqrt(1/x+1));
 
-% rules for atan2  
+% rules for atan2
+% This rule must appear before simp!-atan2 during bootstrap.
+% Otherwise, the simplication of the right hand side calls ezgcdf which
+% isn't defined yet.
+% Temporarily set up simiden as simpfn (overwritten below)
+put('atan2,'simpfn,'simpiden);  %temporary, see below
 let df(atan2(~y,~x),~z) => (x*df(y, z)-y*df(x, z))/(x^2+y^2);
 
 % This procedure now works for complex arguments and gives results compatible 
@@ -728,7 +733,7 @@ for all x,y let df(x**y,x)= y*x**(y-1),
 
 % Ei, erf, erfc, erfi, exp and dilog.
 
-operator dilog,Ei,erf,erfi,erfc,exp;
+operator dilog,Ei,erf,erfi,erfc;
 
 let {
    dilog(0) => pi**2/6,
@@ -742,9 +747,10 @@ let df(dilog(~x),(~x)) => -log(x)/(x-1);
 let df(Ei(~x),~x) => e**x/x;
 
 
-
-let Ei(~x) => compute!:int!:functions(x,Ei)
-              when numberp x and abs(x) <= 20 and lisp !*rounded;
+let {
+   Ei(~x) => compute!:int!:functions(x,Ei)
+      when numberp x and abs(x) <= 20 and lisp !*rounded
+};
 
 
 let erf 0=0;
@@ -767,20 +773,20 @@ let   e**(i*pi/2) = i,
       e**(i*pi) = -1;
 %     e**(3*i*pi/2)=-i;
 
-% Ci and si.
+% Si and Ci
 
-operator ci,si;
+operator Si,Ci;
 
 let {
-  si(0) => 0,
-  si(-~x) => (- si(x)),
-  df(si(~x),x) => sin(x)/x,
-  si(~x) => compute!:int!:functions(x,si)
+  Si(0) => 0,
+  Si(-~x) => (- Si(x)),
+  df(Si(~x),x) => sin(x)/x,
+  Si(~x) => compute!:int!:functions(x,Si)
             when numberp x and lisp !*rounded,
 
-  ci(-~x) => - ci(x) -i*pi,
-  df(ci(~x),x) => cos(x)/x,
-  ci(~x) => compute!:int!:functions(x,ci)
+  Ci(-~x) => - Ci(x) -i*pi,
+  df(Ci(~x),x) => cos(x)/x,
+  Ci(~x) => compute!:int!:functions(x,Ci)
             when numberp x and abs(x) <= 20 and lisp !*rounded
 };
 
@@ -890,6 +896,8 @@ let trig_imag_rules;
 % FJW, 16 October 1996.
 % exp rule corrected and others generalised to work for negative n
 % by AB March 2015 (negative n used to give error)
+
+operator arbint;
 
 let {
  cos(~n*pi*arbint(~i) + ~~x) => cos((if evenp n then 0 else 1)*pi*arbint(i) + x)
