@@ -3,6 +3,13 @@
 rlset(talp, {o, 0}, {s, 1});
 
 
+*** revision missing on talp/talpsiat 
+
+*** revision missing on talp/talpbnf 
+Redlog Revision 5404 of 2020-09-20, 15:40:23Z
+(c) 1992-2020 T. Sturm and A. Dolzmann (www.redlog.eu)
+type ?; for help
+
 {}
 
 
@@ -184,10 +191,3 @@ rlqea pp3;
 
 end;
 
-Tested on x86_64-mac_10.11_elcapitan-darwin15.5.0 CSL
-Time (counter 1): 40 ms
-
-End of Lisp run after 0.04+0.13 seconds
-real         0.31
-user         0.23
-sys          0.07
