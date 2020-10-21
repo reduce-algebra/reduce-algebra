@@ -92,7 +92,7 @@
         % WinNt: handler is called with description in stack
         % don't need SIGRELSE
      ,handler
-     (*move (frame 2) (fluid errornumber*))  % number of signal received
+     (*move (reg rcx) (fluid errornumber*))  % number of signal received
      (push (reg rbp))                        % save a couple of registers (rbp, rsp, rbx, rdi, rsi) 
      (*move (reg st) (reg rbp))
      (push (reg rbp))
