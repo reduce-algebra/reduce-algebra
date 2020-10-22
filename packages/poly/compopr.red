@@ -59,6 +59,29 @@ symbolic procedure impartsq u;
    where reimnum = splitcomplex numr u,
          reimden = splitcomplex denr u;
 
+% A utility procedure to return a list ofthe  real and imaginary
+% parts of an expression;  more efficient than calling repart and
+% impart separately. Added by A. Barnes 2020
+put('reimpart,'simpfn, 'simpreimpart);
+
+symbolic procedure simpreimpart u;
+   simpreimpart1 simp!* car u where !*factor = nil;
+
+symbolic procedure simpreimpart1 u;
+  !*k2q list('list,
+       mk!*sq multsq(addsq(multsq(repartnum,repartden),
+                    multsq(impartnum,impartden)),
+              invsq addsq(multsq(repartden,repartden),
+                          multsq(impartden,impartden))),
+        mk!*sq multsq(addsq(multsq(impartnum,repartden),
+                     negsq multsq(repartnum,impartden)),
+               invsq addsq(multsq(repartden,repartden),
+                           multsq(impartden,impartden)))
+      ) where repartnum = car reimnum, impartnum = cdr reimnum,
+              repartden = car reimden, impartden = cdr reimden
+        where reimnum = splitcomplex numr u,
+              reimden = splitcomplex denr u;
+
 put('conj,'simpfn,'simpconj);
 
 % symbolic procedure simpconj u;
@@ -83,16 +106,30 @@ symbolic procedure cmpx_conjt u;
      z := if atom y and flagp(y, 'realvalued) then !*k2q y
            else if null atom y and flagp(y,'alwaysrealvalued)
 	     then !*k2q y
-           else if null atom y and flagp(car y, 'selfconjugate)
+           else if null atom y and (flagp(car y, 'selfconjugate)
+	              or (eqcar(y, 'expt) and selfconj!-expt cdr y))
              then simp((car y) . foreach arg in cdr y collect {'conj, arg})
            else if x := get_conj(y) then simp x
 	   else if null atom y and (x := get_conj(car y)) then
-	          if null atom x then typerr(x, "operator")
-                  else simp(x . foreach arg in cdr y collect {'conj, arg})
+	      << if null atom x then typerr(x, "operator")
+	         else if not get(x, 'simpfn) then
+		    % avoids error if the conjugate of an operator
+		    % has not been declared as an operator 
+		     put(x, 'simpfn, 'simpiden);
+                 simp(x . foreach arg in cdr y collect {'conj, arg})
+	      >>
 	   else conjsq simp y;
      return multsq(exptsq(z,tdeg u), cmpx_conjsf tc u);
 end;
 
+% added by A. Barnes to improve the handling of expt, sqrt and exp.
+symbolic procedure selfconj!-expt y;
+  % returns true if first arg of expt is a positive number or
+  %  if the second is an integer
+  eqcar(y, 'e) or eqcar(y, 'pi) or (atom cadr y and numberp cadr y)
+   or ((atom denr x and domainp numr x and not !:minusp numr x)
+           where x= simp!* car y);
+  
 symbolic procedure get_conj y;
 begin scalar cnj;
    cnj := rassoc({y}, get('conj, 'kvalue));
@@ -141,19 +178,41 @@ symbolic procedure expand!-imrepartpow u;
                else apply1(cmpxsplitfn,!_pvar!_ u),pdeg u)
     end;
 
+% The next 3 procedures improve the behaviour of repart and impart
+% in the presence of rules for conj(<kernel>). A Barnes, 2020
+
+symbolic procedure get_conj1 y;
+begin scalar cnj;
+   cnj := rassoc({y}, get('conj, 'kvalue));
+   if cnj then return cadar cnj
+   else return nil;
+end;
+
 symbolic procedure mkrepart u;
    if sfp u
      then if realvaluedp!-sf u then !*k2q u
             else repartsq(u ./ 1)
     else if realvaluedp u then !*k2q u
-    else mksq(list('repart, u),1);
-
+    else begin scalar c;
+            c := get_conj1(u);
+            if c then
+	       return mksq(list('repart, c),1)
+            else
+	       return mksq(list('repart, u),1); 
+         end;
+	    
 symbolic procedure mkimpart u;
    if sfp u
      then if realvaluedp!-sf u then nil ./ 1
             else impartsq(u ./ 1)
     else if realvaluedp u then nil ./ 1
-    else mksq(list('impart, u),1);
+    else begin scalar c;
+            c := get_conj1(u);
+            if c then
+	       return negsq mksq(list('impart, c),1)
+            else
+	       return mksq(list('impart, u),1); 
+         end;
 
 symbolic procedure take!-realpart u;
 % real part of numerator and the denominator may have a common factor 
