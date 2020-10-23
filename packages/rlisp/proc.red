@@ -212,11 +212,13 @@ symbolic procedure formproc(u,vars,mode);
 put('procedure,'formfn,'formproc);
 
 symbolic procedure formde(u, vars, mode);
-  formproc(
-     list('procedure, cadr u, 'symbolic, 'expr, caddr u,
-                      if null cddddr u then cadddr u else 'progn . cdddr u),
-     vars,
-     mode);
+   if mode = 'symbolic then      
+      formproc(
+     	 list('procedure, cadr u, 'symbolic, 'expr, caddr u,
+	      if null cddddr u then cadddr u else 'progn . cdddr u),
+     	    vars,
+     	    mode)
+    else ('list . algid(car u,vars) . formlis(cdr u, vars,mode));
 
 put('de,'formfn,'formde);
 

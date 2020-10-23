@@ -1,0 +1,20 @@
+
+% From the Reduce discussion forum
+% Input leads to car of an atom
+
+operator de;
+
+
+***** Reserved word invalid as operator
+
+
+for all f let de(f)=df(f,r);
+
+
+*** de declared operator 
+
+***** Reserved word invalid as operator
+
+
+end;
+
