@@ -465,9 +465,9 @@ symbolic operator trigquot;
 
 
 let cos(~x)=>sin(x+pi/2)
-        when (x+pi/2)/pi freeof pi and knowledge_about(sin,x+pi/2,cos),
+        when not(x=0) and (x+pi/2)/pi freeof pi and knowledge_about(sin,x+pi/2,cos),
     cos(~x)=>-sin(x-pi/2)
-        when (x-pi/2)/pi freeof pi and knowledge_about(sin,x-pi/2,cos),
+        when not(x=0) and (x-pi/2)/pi freeof pi and knowledge_about(sin,x-pi/2,cos),
     tan(~x)=>trigquot(sin(x),cos(x)) when knowledge_about(sin,x,tan),
     cot(~x)=>trigquot(cos(x),sin(x)) when knowledge_about(sin,x,cot),
     sec(~x)=>1/cos(x) when knowledge_about(cos,x,sec),
@@ -489,10 +489,10 @@ let sinh(i*~x)=>i*sin(x) when knowledge_about(sin,x,sinh),
     cosh(i*~x)=>cos(x) when knowledge_about(cos,x,cosh),
     cosh(i*~x/~n)=>cos(x/n) when knowledge_about(cos,x/n,cosh),
     cosh(~x)=>-i*sinh(x+i*pi/2)
-       when (x+i*pi/2)/pi freeof pi
+       when not(x=0) and (x+i*pi/2)/pi freeof pi
           and knowledge_about(sinh,x+i*pi/2,cosh),
     cosh(~x)=>i*sinh(x-i*pi/2)
-       when (x-i*pi/2)/pi freeof pi
+       when not(x=0) and (x-i*pi/2)/pi freeof pi
           and knowledge_about(sinh,x-i*pi/2,cosh),
     tanh(~x)=>sinh(x)/cosh(x) when knowledge_about(sinh,x,tanh),
     coth(~x)=>cosh(x)/sinh(x) when knowledge_about(sinh,x,coth),
