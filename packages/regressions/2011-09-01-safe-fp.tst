@@ -1,20 +1,13 @@
 on rounded;
 
-% This is part of ongoing work... the main Reduce sources in arith/rounded.red
-% define safe!_fp!-plus etc but both CSL and PSL defined their own
-% "better" versions. The CSL one in cslbase/arith08.c and the PSL one
-% is packages/support/psl.red.
+% In 2011 this tested safe!-fp!-plus etc.
 
-% As at least a temporary measure the CSL code has been adjusted to try to
-% match the portable code. The PSL version should be trivial to do the
-% same to by commenting out the versions in psl.red. However a better
-% long term solution will be to end up with compatible nice versions.
+% As of 2020 things have changed and the new model is that safe!-fp!-op
+% performs X op Y and if the result is an infinity or a NaN it returns nil
+% without generating an exception. So my newer "reference" implementation
+% here tried to model that, and is probably exactly the code used with PSL!
 
-% The code here checks against a copy of the reference code. At present I
-% believe that CSL matches that. PSL is not expected to - but I *really*
-% do not understand the nature of some of the discrepancies and they look
-% a bit like bugs to me. If nothing else on one Linux I see results that
-% that suggest "1.0 = 1.0" sometimes says "no"...
+
 
 lisp;
 
@@ -61,40 +54,143 @@ symbolic procedure badcase();
   errs := errs + 1;
 
 
-symbolic procedure portable!-fp!-plus(x,y);
-   if zerop x then y
-    else if zerop y then x
-    else if x>0.0 and y>0.0
-     then if x<!!plumax and y<!!plumax then plus2(x,y) else nil
-    else if x<0.0 and y<0.0
-     then if -x<!!plumax and -y<!!plumax then plus2(x,y) else nil
-    else if abs x<!!plumin and abs y<!!plumin then nil
-    else (if u=0.0 then u else if abs u<!!fleps1*abs x then 0.0 else u)
-         where u = plus2(x,y);
+global '(!!maxfloatq2 !!two511 !!two513);
 
-symbolic procedure portable!-fp!-times(x,y);
- if zerop x or zerop y then 0.0
- else if x=1.0 then y else if y=1.0 then x else
-   begin scalar u,v; u := abs x; v := abs y;
-      if u>=1.0 and u<=!!timmax then
-         if v<=!!timmax then go to ret else return nil;
-      if u>!!timmax then if v<=1.0 then go to ret else return nil;
-      if u<1.0 and u>=!!timmin then
-         if v>=!!timmin then go to ret else return nil;
-      if u<!!timmin and v<1.0 then return nil;
- ret: return times2(x,y) end;
+remprop('!!maxfloatq2, 'constant!?);
+remprop('!!two511, 'constant!?);
+remprop ('!!two513, 'constant!?);
 
-symbolic procedure portable!-fp!-quot(x,y);
- if zerop y then rdqoterr()
- else if zerop x then 0.0 else if y=1.0 then x else
-   begin scalar u,v; u := abs x; v := abs y;
-      if u>=1.0 and u<=!!timmax then
-         if v>=!!timmin then go to ret else return nil;
-      if u>!!timmax then if v>=1.0 then go to ret else return nil;
-      if u<1.0 and u>=!!timmin then
-         if v<=!!timmax then go to ret else return nil;
-      if u<!!timmin and v>1.0 then return nil;
- ret: return quotient(x,y) end;
+begin
+  scalar r, w;
+% I know the numeric value I want expressed in powers of 2, so I compute
+% it here building on initial values that are small enough that I can
+% be confident that they read in exactly.
+  r := 8388608.0;
+  w := r*r*r;
+  r := r*w*w;
+  r := r*r*r;
+  r := 8.0*r*r;
+% The value I produce here is 2^53-1 times a huge power of 2 and is the
+% largest finite IEEE double precision value.
+  !!maxfloatq2 := r*(134217728.0*134217728.0-2.0);
+  r := 2.0;
+  for i := 1:9 do r := r*r;
+  !!two511 := r/2.0;
+  !!two513 := 2.0*r
+end;
+
+put('!!maxfloatq2, 'constant!?, !!maxfloatq2);
+put('!!two511, 'constant!?, !!two511);
+put('!!two513, 'constant!?, !!two513);
+
+symbolic procedure portable!-fp!-plus(u, v);
+% I can only get overflow if u and v have the same sign. If u and
+% v are normalised to start with I can only end up with a sub-normal
+% number if their signs differ. Note that both +0.0 and -0.0 count as >= 0.0
+% and so do not go through the code that checks for underflow.
+  if u < 0.0 then
+    if v < 0.0 then <<
+% I want to see if u+v > would overflow. If u and v are large then I can
+% compute u/2 and v/2 with no loss of anything (if say u/2 was sub-normal
+% it might lose accuracy here). In this case both operands are negative
+% so comparing against half the most negative possible value does the
+% checking that I need. It I pass this test it will be safe to perform
+% a simple addition.
+      if 0.5*u + 0.5*v < -!!maxfloatq2 then nil
+      else u + v >>
+    else begin
+% u and v have different signs, so adding them can not lead to overflow
+% but might result in underflow. So do the arithmetic directly and check.
+      scalar r;
+      r := u + v;
+      if r = 0.0 then return r
+       else if r < !!minnorm and r > !!minnegnorm then return nil
+% As in the CSL case I dislike and would like to remove this next line.
+% Note that in the CSL case I only make this extra test if u and v have
+% different signs. The calculation performed can never cause an overflow!
+% This premature underflow to 0.0 just loses accuracy in a way I find
+% really disturbing, but I am leaving the behaviour here as it is for
+% compatibility with older versions of the code.
+      else if u - r*0.001953125 = u then return 0.0
+      else return r
+    end
+  else if v < 0.0 then begin
+% A second case where signs differ. When writing this I felt that the
+% duplicated code here was ugly but that adjusting the tree of tests to
+% have just one copy of this led to worse mess.
+    scalar r;
+    r := u + v;
+    if r = 0.0 then return r
+     else if r < !!minnorm and r > !!minnegnorm then return nil
+    else if u - r*0.001953125 = u then return 0.0
+    else return r
+  end
+  else <<
+% Adding two positive values.
+    if 0.5*u + 0.5*v > !!maxfloatq2 then nil
+    else u + v >>;
+
+symbolic procedure portable!-fp!-times(u, v);
+  begin
+% Now the real business. I will have essentially three cases, based on
+% the magnitude of the numbers.
+% (a) numbers are big and I may risk overflow.
+% (b) numbers are small and I may risk underflow.
+% (c) numbers are such that I have no great risk.
+    scalar u1, v1;
+    if !*nonegzerotimes and (u = 0.0 or v = 0.0) then return 0.0;
+    if u < 0.0 then u1 := -u else u1 := u;
+    if v < 0.0 then v1 := -v else v1 := v;
+% I now have the absolute values of the operands. I will check for all
+% potential bad cases.
+    if u1 < !!two511 then
+      if v1 < !!two511 then <<
+% Here both numbers are fairly small, so I can afford to multiply them
+% directly. Since I have filtered out multiplication by zero I can then
+% detect (gradual) underflow with a simple comparison.
+        if u1*v1 < !!minnorm and u neq 0.0 and v neq 0.0 then return nil >>
+      else <<
+% Here u is small but v is big. If I divide v by 2^511 it ends up in the
+% range 1 to 2^513, and in particular multiplying by u will not overflow.
+% Furthermore it can not underflow either because (v/2^511) is at least 1.0.
+        if u1*(v1/!!two511) >= !!two513 then return nil >>
+    else if v1 < !!two511 then <<
+% Here u is large but v is not... so similar arguments apply.
+      if (u1/!!two511)*v1 >= !!two513 then return nil >>
+    else <<
+% Finally both u and v are greater than or equal to 2^511 so overflow is possible.
+      if (u1/!!two511)*(v1/!!two511) >= 4.0 then return nil >>;
+    return u*v
+  end;
+
+symbolic procedure portable!-fp!-quot(u, v);
+% The logic for division is essentially the same as that for multiplication.
+  if v = 0.0 then nil
+  else begin
+    scalar u1, v1;
+    if !*nonegzerotimes and u = 0.0 then return 0.0;
+    if u < 0.0 then u1 := -u else u1 := u;
+    if v < 0.0 then v1 := -v else v1 := v;
+% I now have the absolute values of the operands.
+    if u1 < !!two511 then
+      if v1 > 1.0/!!two511 then <<
+% Divide a not huge number by a not tiny one, so quotient will not
+% overflow, but could underflow.
+        if u1/v1 < !!minnorm and u neq 0.0 then return nil >>
+      else <<
+% Here u is reasonable but v is tiny.
+        if u1/(v1*!!two511) >= !!two513 then return nil >>
+    else if v1 > 1.0/!!two511 then <<
+% Here u is large but v is not too tiny...
+      if (u1/!!two511)/v1 >= !!two513 then return nil >>
+    else <<
+% Finally u is big and v is tiny...
+      if (u1/!!two511)/(v1*!!two511) >= 4.0 then return nil >>;
+    return u/v;
+  end;
+    
+
+
 
 symbolic procedure tab_to n;
   while posn() < n do prin2 " ";

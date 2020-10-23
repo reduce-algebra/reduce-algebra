@@ -759,7 +759,8 @@ symbolic procedure coordinates u;
   if not eqn(length(u),3)
     then rerror(avector,11,"Wrong number of args");
   for each y in u do if (x := gettype y) and not(x eq 'operator) then
-    rerror(avector,12,"Name declared as coordinate is not a kernel");
+    rerror(avector,12,
+        list("Name declared as coordinate is not a kernel:", y, "type", x));
   remflag(!*coords,'reserved);
   !*coords := u;
   x := aeval list('avec,first u,second u,third u);
