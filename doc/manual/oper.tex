@@ -194,6 +194,24 @@ it is as if \texttt{random\_new\_seed(1)} has been obeyed.
 
 A type error occurs if the value of the argument is not a positive integer.
 
+\subsection{REIMPART}\ttindex{REIMPART}
+\hypertarget{operator:REIMPART}{}
+This returns a two-element list of the real and imaginary parts of an
+expression, if that argument has an
+numerical value.  A non-numerical argument is returned as an expression in
+the operators \texttt{REPART} and \texttt{IMPART}\ttindex{IMPART}.
+This is more efficient than calling \texttt{REPART} and \texttt{IMPART}
+separately particularly if its argument is complicated.
+For example:
+\begin{verbatim}
+        reimpart(1+i)   -> {1,1}
+        reimpart(sin(3+4*i)) -> {cosh(4)*sin(3),cos(3)*sinh(4)}
+        reimpart(log(2+i))   -> {log(5)/2,atan(1/2)}
+        reimpart(asin(1+i))  -> {acos(sqrt(5)2)/2,acosh(sqrt(5)+2)/2}
+        reimpart(a+i*b)      -> 
+                   { - impart(b) + repart(a),impart(a) + repart(b)}
+\end{verbatim}
+
 \subsection{REPART}\ttindex{REPART}
 \hypertarget{operator:REPART}{}
 This returns the real part of an expression, if that argument has an
