@@ -28,12 +28,13 @@
 \index{Stirling numbers} \ttindex{Stirling1} \ttindex{Stirling2}
 \index{Spherical and Solid Harmonics} \ttindex{SphericalHarmonicY}
 \ttindex{SolidHarmonicY}
-\index{Jacobi Elliptic Functions and Integrals}
-\ttindex{Jacobiam} \ttindex{Jacobisn} \ttindex{Jacobidn}
-\ttindex{Jacobicn} 
+\index{Elliptic Functions and Integrals}
+\ttindex{Jacobiam} \ttindex{Jacobisn} 
+\ttindex{Jacobicn} \ttindex{Jacobidn}
 \ttindex{EllipticF}  \ttindex{EllipticK} \ttindex{EllipticE}  \ttindex{JacobiE}
  \ttindex{JacobiZeta} 
-\ttindex{EllipticTheta1} \ttindex{EllipticTheta2} \ttindex{EllipticTheta3} \ttindex{EllipticTheta4}
+\ttindex{EllipticTheta1} \ttindex{EllipticTheta2} \ttindex{EllipticTheta3}
+\ttindex{EllipticTheta4} \ttindex{nome}
 \index{Airy functions} \ttindex{Airy\_Ai} \ttindex{Airy\_Bi}
 \ttindex{Airy\_Aiprime} \ttindex{Airy\_Biprime}
 \index{3j and 6j symbols} \index{Clebsch Gordan coefficients}
@@ -71,9 +72,10 @@ several common special functions, namely:
 \item Chebyshev Polynomials;
 \item Gegenbauer Polynomials;
 \item Lambert's $\omega$ function;
-\item (Jacobi's) Elliptic Functions;
+\item Jacobi's Elliptic Functions;
 \item Elliptic Integrals;
-\item (Jacobi's) Theta Functions
+\item Jacobi's Theta Functions
+\item Nome of Elliptic functions
 \item 3j and 6j symbols , Clebsch-Gordan coefficients;
 \item and some well-known constants.
 \end{itemize}
@@ -559,8 +561,8 @@ For $m < 0$ one has:-
       S(n,m,x,y,z) = (-1)^m * S(n,-m,x,-y,z);
 \end{verbatim}
 
-\subsection{Jacobi's Elliptic Functions}
-
+\subsection{Elliptic Functions}
+\index{Elliptic Functions}
 The implementation of the functions in this and the next two subsections have, in 2019,
 been substantially revised by Alan Barnes. This is to bring the
 notation more into line with standard (British) texts such as Whittaker
@@ -576,9 +578,25 @@ The following functions have been implemented:
 \item Arithmetic Geometric Mean
 \item Descending Landen Transformation
 \end{itemize}
-\subsubsection{Jacobi Elliptic Functions}
+\subsubsection{Jacobi Elliptic  Functions}
+\index{Jacobi Elliptic Functions}
 The following Jacobi functions are available:-
-
+\hypertarget{operator:Jacobisn}{}
+\hypertarget{operator:Jacobicn}{}
+\hypertarget{operator:Jacobidn}{} 
+\hypertarget{operator:Jacobicd}{}
+\hypertarget{operator:Jacobisd}{}
+\hypertarget{operator:Jacobind}{} 
+\hypertarget{operator:Jacobidc}{}
+\hypertarget{operator:Jacobinc}{}
+\hypertarget{operator:Jacobisc}{} 
+\hypertarget{operator:Jacobins}{}
+\hypertarget{operator:Jacobids}{}
+\hypertarget{operator:Jacobics}{} 
+\ttindex{Jacobisn}\ttindex{Jacobicn}\ttindex{Jacobidn}
+\ttindex{Jacobicd}\ttindex{Jacobisd}\ttindex{Jacobind}
+\ttindex{Jacobidc}\ttindex{Jacobinc}\ttindex{Jacobisc}
+\ttindex{Jacobins}\ttindex{Jacobids}\ttindex{Jacobics}
 \begin{itemize}
 \item jacobisn(u,k)
 \item jacobidn(u,k)
@@ -593,10 +611,16 @@ The following Jacobi functions are available:-
 \item jacobids(u,k)
 \item jacobics(u,k)
 \end{itemize}
+
 These differ somewhat from the originals implemented by Lisa Temme in that
 the second argument is now the modulus (usually denoted by $k$ in most texts
 rather than its square $m$).  The notation for the most part follows  Lawden 
-\cite{Lawden:89}.
+\cite{Lawden:89}. The last nine Jacobi functions are related to the three
+basic ones: \f{jacobisn(u,k)}, \f{jacobicn(u,k)} and \f{jacobidn(u,k)} and
+use Glaisher's notation. For example
+\[ \mathrm{ns}(x,k) = 1/\mathrm{sn}(u,k)\qquad
+\mathrm{cs}(x,k) = \mathrm{cn}/\mathrm{sn}(u,k) \qquad
+\mathrm{cd}(x,k) = \mathrm{cn}/\mathrm{dn}(u,k).\]
 
 Extended rule lists are provided for differentiation of these functions with
 respect to either argument, to implement the standard addition formulae,
@@ -607,9 +631,11 @@ When their arguments are purely numerical, these functions  will be evaluated
 numerically if the \sw{rounded} switch is used. For
 complex arguments it is also better if the \sw{complex} switch is on.
 
+\hypertarget{operator:Jacobiam}{}
+\ttindex{Jacobiam}
 \subsubsection{Jacobi Amplitude Function}
-The amplitude of u can be evaluated using the 
-\f{jacobiam(u,k)} command.  A rule list is provided for differentiation of this functions with
+The amplitude of u can be evaluated using the \f{jacobiam(u,k)} command.
+A rule list is provided for differentiation of this functions with
 respect to either argument.
 
 \subsubsection{Arithmetic Geometric Mean}
@@ -622,7 +648,7 @@ where N is the number of steps to compute the AGM to the
 desired acuracy. \\
 
 To determine the Elliptic Integrals K($m$), E($m$) we use initial values
-\(a_0 = 1\); \(b_0 = \sqrt{1-m}\) ; \(c_0 = \sqrt{m}\).
+\(a_0 = 1\); \(b_0 = \sqrt{1-k^2}\) ; \(c_0 = k\).
 
 This procedure and the following one are primarily intended for use in the
 numerical evaluation of the various elliptic functions and integrals rather
@@ -639,6 +665,7 @@ It can be called using \f{landentrans}($\phi_0$,$\alpha_0$)
 and will return \\
 $\{\{\phi_0, \ldots ,\phi_n\},\{\alpha_0, \ldots ,\alpha_n\}\}$.
 
+\index{Elliptic Integrals}
 \subsection{Elliptic Integrals}
 The following functions have been implemented:
 
@@ -672,6 +699,8 @@ derivatives of these functions, addition rules and periodicity and
 quasi-periodicity properties and to provide simplifications for special values
 of the arguments.
 
+\hypertarget{operator:EllipticF}{}
+\ttindex{EllipticF}
 \subsubsection{Elliptic F}
 
 The Elliptic F function can be used as \f{EllipticF(phi,k)} and 
@@ -679,6 +708,8 @@ will return the value of the \emph{Incomplete Elliptic Integral of the
 First Kind}:
 \[\mathrm{F}(\phi, k)=\int_0^\phi(1-k^2 \sin^2 \theta)^{-1/2} \mathrm{d}\theta.\]
 
+\hypertarget{operator:EllipticK}{}
+\ttindex{EllipticK}
 \subsubsection{Elliptic K}
 
 The Elliptic K function can be used as \f{EllipticK(k)} and will 
@@ -687,12 +718,14 @@ First Kind}:
 \[\mathrm{K}(k)=\mathrm{F}(\pi/2, k) =\int_0^{\pi/2}(1-k^2 \sin^2 \theta)^{-1/2}\mathrm{d}\theta.\]
 This is one of the quarter periods of the Jacobi elliptic
 functions and is often used in the calculation of other elliptic functions.
-\subsubsection{Elliptic K$'$}
 
 The Elliptic K$'$ function can be used as \f{EllipticK!$'$(k)} and will 
-return the value $\mathrm{K}(k')=\mathrm{K}(\sqrt{1-k^2})$. $i\mathrm{K}'(k)$ is
+return the value
+$\mathrm{K}(k')=\mathrm{K}(\sqrt{1-k^2})$. $i\mathrm{K}'(k)$ is
 the other quarter-period of the Jacobi elliptic functions.
 
+\hypertarget{operator:EllipticE}{}
+\ttindex{EllipticE}
 \subsubsection{Elliptic E}
 
 The Elliptic E function comes with either one or two arguments;
@@ -705,6 +738,11 @@ the \emph{Incomplete Elliptic Integral of the Second Kind}:
 \[\mathrm{E}(k)=\mathrm{E}(\pi/2, k) =
 \int_0^{\pi/2} (\sqrt{1-k^2 \sin^2 \theta} \mathrm{d}\theta.\]
 
+The Elliptic E$'$ function can be used as \f{EllipticE!$'$(k)} and will 
+return the value $\mathrm{E}(k') = \mathrm{E}(\sqrt{1-k^2})$.
+
+\hypertarget{operator:JacobiE}{}
+\ttindex{JacobiE}
 \subsubsection{Jacobi E}
 The Jacobi E function can be used as  \f{JacobiE(u,k)};
 it will return the value of Jacobi's form of
@@ -725,10 +763,6 @@ If the GUI supports calligraphic characters there is no problem and it is render
  The uppercase version cannot reasonably be used as it is indistinguishable from uppercase E
 which is used for Elliptic E.
 In non-GUI interfaces the Jacobi E function is rendered as Epsilon.
-\subsubsection{Elliptic E$'$}
-
-The Elliptic E$'$ function can be used as \f{EllipticE!$'$(k)} and will 
-return the value $\mathrm{E}(k') = \mathrm{E}(\sqrt{1-k^2})$.
 
 %\subsection{Ellpitic $\Pi$}
 %
@@ -737,6 +771,8 @@ return the value $\mathrm{E}(k') = \mathrm{E}(\sqrt{1-k^2})$.
 %Third Kind}}.
 %
 
+\hypertarget{operator:JacobiZeta}{}
+\ttindex{JacobiZeta}
 \subsubsection{Jacobi's Zeta Function}
 
 This can be called as \f{JacobiZeta(u,k)} and refers to Jacobi's (elliptic)
@@ -744,16 +780,23 @@ Zeta function $\mathrm{Z}(u,k)$ whereas the operator \f{Zeta} will invoke
 Riemann's $\zeta$ function.
 
 \subsection{Elliptic Theta Functions}
-
+\index{Elliptic Theta Functions}
 These theta functions differ from those originally defined by Lisa Temme
 in a number of respects.
-Firstly four separate functions of two arguments are defined
+Firstly four separate functions of two arguments are defined:
+\hypertarget{operator:EllipticTheta1}{}
+\hypertarget{operator:EllipticTheta2}{}
+\hypertarget{operator:EllipticTheta3}{}
+\hypertarget{operator:EllipticTheta4}{}
+\ttindex{EllipticTheta1} \ttindex{EllipticTheta2}
+\ttindex{ellipticTheta3} \ttindex{EllipticTheta4}
 \begin{itemize}
 \item \f{elliptictheta1(u,q)} $\qquad \vartheta_1(u, q)$
 \item \f{elliptictheta2(u,q)} $\qquad \vartheta_2(u, q)$
 \item \f{elliptictheta3(u,q)} $\qquad \vartheta_3(u, q)$
 \item \f{ellipticthetas(u,q)} $\qquad \vartheta_4(u, q)$
 \end{itemize}
+
 rather than a single function with three arguments (with the first argument
 taking integer values in the range 1 to 4).
 Secondly the periods are $2\pi, 2\pi, \pi$ and $\pi$ respectively 
@@ -797,20 +840,25 @@ regarded as belonging to the second rather than the third quadrant.
 
 The series for the theta functions are fairly rapidly convergent 
 due to the quadratic growth of the exponents of $q$ -- except 
-for values of $q$ for which $|q|$ is near to 1.  In such cases the direct algorithm 
-would suffer from slow convergence and rounding errors.
+for values of $q$ for which $|q|$ is near to 1.  In such cases the direct
+algorithm would suffer from slow convergence and rounding errors.
 For such values of $|q|$, Jacobi's transformation $\tau'=-1/\tau$ can be
 used to produce a smaller value of the nome and so increase the rate of
-convergence.  When $\Re q < 0$, the Jacobi transformation is preceded by the modular transformation $\tau' = 1+\tau$, which has the effect  of multiplying $q$ by -1, so that 
+convergence.  When $\Re q < 0$, the Jacobi transformation is preceded by the
+modular transformation
+$\tau' = 1+\tau$, which has the effect  of multiplying $q$ by -1, so that 
 the new nome has a non-negative real part. 
 
 This works very well for real values of $q$, but for complex
 values the gains are somewhat smaller.
-For a nome $q$ whose modulus is near to 1, the Jacobi transformation produces a nome 
-$q'$ for which $|q'|  \approx  |q|^{\alpha^2}$ where $\alpha =\pi/|\arg(q)| \geq 2$.
+For a nome $q$ whose modulus is near to 1, the Jacobi transformation produces a
+nome $q'$ for which
+$|q'|  \approx  |q|^{\alpha^2}$ where $\alpha =\pi/|\arg(q)| \geq 2$.
 Thus the worst case occurs for values of the nome $q$ near to $\pm i$ where 
 $\alpha \approx 2$.
 
+\hypertarget{operator:nome}{}
+\ttindex{nome}
 \subsubsection{Some Numerical Utility Functions}
 
 Five utility functions are provided:
