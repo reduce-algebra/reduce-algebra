@@ -166,7 +166,10 @@ cd psl
                                              (set-load-directories)
                                              (cond ((null (member "--no-rcfile" (vector2list unixargs!*)))
                                                     (read-init-file "reduce")))
-		              	             (cond ((or (member "--texmacs" (vector2list unixargs!*))
+		              	             (cond ((or (and
+					                  (member "--texmacs" (vector2list unixargs!*))
+							  (setq lispsystem!* (cons 'texmacs lispsystem!*))
+)
                                                         (getenv "TEXMACS_REDUCE_PATH"))
 						    (load tmprint))))))
 (bye)
