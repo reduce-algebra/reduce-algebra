@@ -15,7 +15,7 @@
 #define HAVE_DIRENT_H 1
 
 /* Correct Rounding maths library should be used */
-// #define HAVE_CRLIBM 1
+#define HAVE_CRLIBM 1
 
 #if defined __linux__ || defined __APPLE__ || \
     defined __CYGWIN32__|| defined __CYGWIN__ || \

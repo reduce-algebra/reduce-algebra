@@ -386,7 +386,7 @@ LispObject Ldecode_float(LispObject env, LispObject a)
 static LispObject Lfp_infinite(LispObject env, LispObject a)
 {   switch (static_cast<int>(a) & XTAG_BITS)
     {   case XTAG_SFLOAT:
-            if (1.0 / value_of_immediate_float(a) == 0.0)
+            if (std::fpclassify(value_of_immediate_float(a)) == FP_INFINITE)
                 return onevalue(lisp_true);
             return onevalue(nil);
         case TAG_BOXFLOAT:
@@ -402,7 +402,7 @@ static LispObject Lfp_infinite(LispObject env, LispObject a)
 #endif // HAVE_SOFTFLOAT
                 case TYPE_SINGLE_FLOAT:
                 case TYPE_DOUBLE_FLOAT:
-                    if (1.0 / double_float_val(a) == 0.0)
+                    if (std::fpclassify(double_float_val(a)) == FP_INFINITE)
                         return onevalue(lisp_true);
                     return onevalue(nil);
             }
@@ -412,21 +412,18 @@ static LispObject Lfp_infinite(LispObject env, LispObject a)
     return onevalue(nil);
 }
 
-//
-// A NaN is not equal to even itself....
-//
 
 static LispObject Lfp_nan(LispObject env, LispObject a)
 {   switch (static_cast<int>(a) & XTAG_BITS)
     {   case XTAG_SFLOAT:
-            if (value_of_immediate_float(a) != value_of_immediate_float(a))
+            if (std::fpclassify(value_of_immediate_float(a)) == FP_NAN)
                 return onevalue(lisp_true);
             return onevalue(nil);
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
-                    if (single_float_val(a) != single_float_val(a))
+                    if (std::fpclassify(single_float_val(a)) == FP_NAN)
                         return onevalue(lisp_true);
                     return onevalue(nil);
 #ifdef HAVE_SOFTFLOAT
@@ -436,7 +433,7 @@ static LispObject Lfp_nan(LispObject env, LispObject a)
                     return onevalue(nil);
 #endif // HAVE_SOFTFLOAT
                 case TYPE_DOUBLE_FLOAT:
-                    if (double_float_val(a) != double_float_val(a))
+                    if (std::fpclassify(double_float_val(a)) == FP_NAN)
                         return onevalue(lisp_true);
                     return onevalue(nil);
             }
@@ -449,7 +446,7 @@ static LispObject Lfp_nan(LispObject env, LispObject a)
 static LispObject Lfp_finite(LispObject env, LispObject a)
 {   switch (static_cast<int>(a) & XTAG_BITS)
     {   case XTAG_SFLOAT:
-            if (value_of_immediate_float(a)-value_of_immediate_float(a) == 0.0)
+            if (std::isfinite(value_of_immediate_float(a)))
                 return onevalue(lisp_true);
             return onevalue(nil);
         case TAG_BOXFLOAT:
@@ -463,11 +460,11 @@ static LispObject Lfp_finite(LispObject env, LispObject a)
                     return onevalue(nil);
 #endif // HAVE_SOFTFLOAT
                 case TYPE_SINGLE_FLOAT:
-                    if (single_float_val(a)-single_float_val(a) == 0.0)
+                    if (std::isfinite(single_float_val(a)))
                         return onevalue(lisp_true);
                     return onevalue(nil);
                 case TYPE_DOUBLE_FLOAT:
-                    if (double_float_val(a)-double_float_val(a) == 0.0)
+                    if (std::isfinite(double_float_val(a)))
                         return onevalue(lisp_true);
                     return onevalue(nil);
             }
@@ -480,22 +477,17 @@ static LispObject Lfp_finite(LispObject env, LispObject a)
 static LispObject Lfp_subnorm(LispObject env, LispObject a)
 {   switch (static_cast<int>(a) & XTAG_BITS)
     {   case XTAG_SFLOAT:
-        {   Float_union ff;
-            ff.f = value_of_immediate_float(a);
-            if (ff.f == 0.0) return onevalue(nil);
-            return onevalue(((uint32_t)ff.i & 0x7f800000U) == 0 ?
-                            lisp_true : nil);
+        {   if (std::fpclassify(value_of_immediate_float(a)) == FP_SUBNORMAL)
+                return  onevalue(lisp_true);
+            else return onevalue(nil);
         }
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
-                {   Float_union ff;
-                    ff.f = single_float_val(a);
-                    if (ff.f == 0.0) return onevalue(nil);
-                    return onevalue(((uint32_t)ff.i & 0x7f800000U) == 0 ?
-                                    lisp_true : nil);
-                }
+                    if (std::fpclassify(single_float_val(a)) == FP_SUBNORMAL)
+                        return  onevalue(lisp_true);
+                    else return onevalue(nil);
 #ifdef HAVE_SOFTFLOAT
                 case TYPE_LONG_FLOAT:
                     if (f128M_subnorm(reinterpret_cast<float128_t *>(&long_float_val(a))))
@@ -503,13 +495,9 @@ static LispObject Lfp_subnorm(LispObject env, LispObject a)
                     return onevalue(nil);
 #endif // HAVE_SOFTFLOAT
                 case TYPE_DOUBLE_FLOAT:
-                    if (double_float_val(a) == 0.0) return onevalue(nil);
-                    {   Double_union ff;
-                        ff.f = static_cast<double>(double_float_val(a));
-                        if (ff.f == 0.0) return onevalue(nil);
-                        uint64_t x = ff.i64 & UINT64_C(0x7ff0000000000000);
-                        return onevalue(x == 0 ? lisp_true : nil);
-                    }
+                    if (std::fpclassify(double_float_val(a)) == FP_SUBNORMAL)
+                        return  onevalue(lisp_true);
+                    else return onevalue(nil);
             }
         default:
             break;
@@ -522,6 +510,11 @@ static LispObject Lfp_subnorm(LispObject env, LispObject a)
 // NOT the same a test (x < 0) because this function returns T for -0.0.
 //
 
+// C++ is expected to have std::signbit, so I will always use it. Without
+// it I will not cope properly with signed zeros.
+
+#define HAVE_SIGNBIT 1
+
 static LispObject Lfp_signbit(LispObject env, LispObject a)
 {   switch (static_cast<int>(a) & XTAG_BITS)
     {   case XTAG_SFLOAT:
@@ -531,14 +524,7 @@ static LispObject Lfp_signbit(LispObject env, LispObject a)
         case TAG_BOXFLOAT+TAG_XBIT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
-#ifdef HAVE_SIGNBIT
                     return onevalue(std::signbit(single_float_val(a)) ? lisp_true : nil);
-#else
-                    {   Float_union ff;
-                        ff.f = single_float_val(a);
-                        return onevalue((int32_t)ff.i < 0 ? lisp_true : nil);
-                    }
-#endif
 #ifdef HAVE_SOFTFLOAT
                 case TYPE_LONG_FLOAT:
                     return onevalue(f128M_negative(reinterpret_cast<float128_t *>
@@ -546,14 +532,7 @@ static LispObject Lfp_signbit(LispObject env, LispObject a)
                                     lisp_true : nil);
 #endif // HAVE_SOFTFLOAT
                 case TYPE_DOUBLE_FLOAT:
-#ifdef HAVE_SIGNBIT
                     return onevalue(std::signbit(double_float_val(a)) ? lisp_true : nil);
-#else
-                    {   Double_union ff;
-                        ff.f = static_cast<double>(double_float_val(a));
-                        return onevalue((int64_t)ff.i64 < 0 ? lisp_true : nil);
-                    }
-#endif
             }
         default:
             break;

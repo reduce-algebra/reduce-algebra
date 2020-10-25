@@ -1246,7 +1246,6 @@ void set_up_variables(int restart_flag)
          */
 
         w = cons(make_keyword(OPSYS), nil);
-        int ii;
 #if defined WIN64 || defined __WIN64__ || defined WIN32
 //
 // In the WIN64 case I will ALSO tell the user than I am "win32". This is
