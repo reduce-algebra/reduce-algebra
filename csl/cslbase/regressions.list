@@ -9,7 +9,6 @@ $ $Id$
    "2011-08-30-divide-0-by-0-in-sub.tst"
    "2011-08-31-linelength.tst"
    "2011-08-31-off-cref.tst"
-   "2011-09-01-safe-fp.tst"
    "2011-09-05-expanddf.tst"
    "2011-09-18-defint.tst"
    "2011-10-09-defint.tst"
@@ -83,6 +82,7 @@ $ $Id$
    "2018-12-19-excalc-fancy-printing-assignment.tst"
    "2019-01-11-fancy-printing-with-pri-off.tst"
    "2019-01-11-fmprint-with-pri-off.tst"
+   "2019-02-06-operator-de.tst"
    "2019-03-04-powers-of-abs-not-simplified.tst"
    "2019-03-09-missing-spaces-in-indexspace.tst"
    "2019-04-15-nested-subs-with-df.tst"
@@ -104,4 +104,5 @@ $ $Id$
    "2020-07-30-prod-problems.tst"
    "2020-08-24-catastrophic-error-in-num_int.tst"
    "2020-09-27-function-crash-with-wrong-number-of-arguments.tst"
+   "2020-10-25-safe-fp.tst"
    ))
