@@ -731,9 +731,10 @@ end;
 for all x,y let df(x**y,x)= y*x**(y-1),
                 df(x**y,y)= log x*x**y;
 
-% Ei, erf, erfc, erfi, exp and dilog.
 
-operator dilog,Ei,erf,erfi,erfc;
+% erf, erfc, erfi, exp and dilog.
+
+operator dilog,erf,erfi,erfc;
 
 let {
    dilog(0) => pi**2/6,
@@ -744,13 +745,6 @@ let {
 
 let df(dilog(~x),(~x)) => -log(x)/(x-1);
 
-let df(Ei(~x),~x) => e**x/x;
-
-
-let {
-   Ei(~x) => compute!:int!:functions(x,Ei)
-      when numberp x and abs(x) <= 20 and lisp !*rounded
-};
 
 
 let erf 0=0;
@@ -773,22 +767,7 @@ let   e**(i*pi/2) = i,
       e**(i*pi) = -1;
 %     e**(3*i*pi/2)=-i;
 
-% Si and Ci
 
-operator Si,Ci;
-
-let {
-  Si(0) => 0,
-  Si(-~x) => (- Si(x)),
-  df(Si(~x),x) => sin(x)/x,
-  Si(~x) => compute!:int!:functions(x,Si)
-            when numberp x and lisp !*rounded,
-
-  Ci(-~x) => - Ci(x) -i*pi,
-  df(Ci(~x),x) => cos(x)/x,
-  Ci(~x) => compute!:int!:functions(x,Ci)
-            when numberp x and abs(x) <= 20 and lisp !*rounded
-};
 
 % Rule for derivative of absolute value.
 

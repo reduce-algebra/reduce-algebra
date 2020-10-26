@@ -388,6 +388,79 @@ Pochhammer(~a,~k)//Pochhammer(~b,~k)  => (b - 1)/(b + k -1)
 let pochhammer!*rules;
 
 
+% from alg/elem.red and specfn/sfint.red
+
+
+symbolic procedure sfint!:function!:error(fn,x);
+   if x=0 then rerror('alg,0,{fn,"(0) is undefined"})
+      ;
+
+symbolic operator sfint!:function!:error;
+
+% Ei and Li
+
+operator Ei,Li;
+
+let {
+   df(Ei(~x),~x) => e**x/x,
+%   Ei(~x) => sfint!:function!:error(Ei,0) when x=0,
+   Ei(~x) => compute!:int!:functions(x,Ei)
+      when numberp x and abs(x) <= 20 and lisp !*rounded
+};
+
+let Li(~x) => Ei(log(x));
+
+
+% Si and Ci, s_i, Shi and Chi
+
+operator Si,Ci,s_i,Shi,Chi;
+
+let {
+  Si(0) => 0,
+  Si(-~x) => (- Si(x)),
+  df(Si(~x),x) => sin(x)/x,
+  Si(~x) => compute!:int!:functions(x,Si)
+            when numberp x and lisp !*rounded,
+
+%  Ci(~x) => sfint!:function!:error(Ci,0) when x=0,
+  Ci(-~x) => Ci(x) + i*pi when realvaluedp x and numberp x and x<0,
+  df(Ci(~x),x) => cos(x)/x,
+  Ci(~x) => compute!:int!:functions(x,Ci)
+     when numberp x and abs(x) <= 20 and lisp !*rounded,
+  s_i(~x) => si(x) - pi/2,                               df(s_i(~x),~x) => sin(x)/x,
+  
+  Shi(0) => 0,
+  Shi(-~x) => (- Shi(x)),
+  df(Shi(~x),x) => sinh(x)/x,
+  Shi(~x) => compute!:int!:functions(x,Shi)
+            when numberp x and lisp !*rounded,
+
+%  Chi(~x) => sfint!:function!:error(Chi,0) when x=0,
+  Chi(-~x) => Chi(x) + i*pi when realvaluedp x and numberp x and x<0,
+  df(Chi(~x),x) => cosh(x)/x,
+  Chi(~x) => compute!:int!:functions(x,Chi)
+            when numberp x and abs(x) <= 20 and lisp !*rounded
+};
+
+% Fresnel_S and Fresnel_C
+
+operator Fresnel_S, Fresnel_C;
+
+let {
+   Fresnel_S(-~x) => (- Fresnel_S (x)),
+   Fresnel_S(i* ~x) => (-i*Fresnel_S (x)),
+   df(Fresnel_S(~x),~x) => sin(pi/2*x^2),
+   Fresnel_S (~x) => compute!:int!:functions(x,Fresnel_S)
+      when numberp x and abs(x) <= 10 and lisp !*rounded,
+   
+   Fresnel_C(-~x) => (- Fresnel_C (x)),
+   Fresnel_C(i* ~x) => (i*Fresnel_C (x)),
+   df(Fresnel_C(~x),~x) => cos(pi/2*x^2),
+   Fresnel_C (~x) => compute!:int!:functions(x,Fresnel_C)
+      when numberp x and abs(x) <= 10 and lisp !*rounded
+};
+
+
 % from specfn/sfpsi.red
 
 algebraic operator polygamma;

@@ -658,6 +658,8 @@ procedure do!*one!*int!:function(fn,n);
       else if fn=!Ci then Ci(n)
       else if fn=!Shi then Shi(n)
       else if fn=!Chi then Chi(n)
+      else if fn=!Fresnel_!S then Fresnel_S(n)
+      else if fn=!Fresnel_!C then Fresnel_C(n)
       	 );
 
 % Ei(0), Ci(0), and Chi(0) are undefined
@@ -707,8 +709,19 @@ for x := -0.1 step -0.1 until -2.0 do
 for x := 0.1 step 0.1 until 2.0 do
    do!*one!*int!:function(!Chi,x);
 
-%for x := -0.1 step -0.1 until -2.0 do
-%   do!*one!*int!:function(!Chi,x);
+for x := -0.1 step -0.1 until -2.0 do
+   do!*one!*int!:function(!Chi,x);
+
+for x := 0.1 step 0.1 until 2.0 do
+   do!*one!*int!:function(!Fresnel_!S,x);
+                                                        for x := -0.1 step -0.1 until -2.0 do
+   do!*one!*int!:function(!Fresnel_!S,x);
+
+for x := 0.1 step 0.1 until 2.0 do
+   do!*one!*int!:function(!Fresnel_!C,x);
+
+for x := -0.1 step -0.1 until -2.0 do
+   do!*one!*int!:function(!Fresnel_!C,x);
 
 off rounded;
 

@@ -7217,6 +7217,8 @@ procedure do!*one!*int!:function(fn,n);
       else if fn=!Ci then Ci(n)
       else if fn=!Shi then Shi(n)
       else if fn=!Chi then Chi(n)
+      else if fn=!Fresnel_!S then Fresnel_S(n)
+      else if fn=!Fresnel_!C then Fresnel_C(n)
       	 );
 
 
@@ -7270,7 +7272,7 @@ Chi(0);
 Chi(-1);
 
 
-***** Chi is undefined for negative real argument 
+3.14159265359*i + 0.83786694098
 
 
 for x := 0.1 step 0.1 until 2.0 do
@@ -7504,45 +7506,45 @@ for x := -0.1 step -0.1 until -2.0 do
    do!*one!*int!:function(!Ci,x);
 
 
-Ci of  - 0.1 is  - 3.14159265359*i + 1.72786838666
+Ci of  - 0.1 is 3.14159265359*i - 1.72786838666
 
-Ci of  - 0.2 is  - 3.14159265359*i + 1.04220559567
+Ci of  - 0.2 is 3.14159265359*i - 1.04220559567
 
-Ci of  - 0.3 is  - 3.14159265359*i + 0.649172932971
+Ci of  - 0.3 is 3.14159265359*i - 0.649172932971
 
-Ci of  - 0.4 is  - 3.14159265359*i + 0.378809346425
+Ci of  - 0.4 is 3.14159265359*i - 0.378809346425
 
-Ci of  - 0.5 is  - 3.14159265359*i + 0.177784078807
+Ci of  - 0.5 is 3.14159265359*i - 0.177784078807
 
-Ci of  - 0.6 is  - 3.14159265359*i + 0.0222707069593
+Ci of  - 0.6 is 3.14159265359*i - 0.0222707069593
 
-Ci of  - 0.7 is  - 3.14159265359*i - 0.100514707009
+Ci of  - 0.7 is 3.14159265359*i + 0.100514707009
 
-Ci of  - 0.8 is  - 3.14159265359*i - 0.198278615952
+Ci of  - 0.8 is 3.14159265359*i + 0.198278615952
 
-Ci of  - 0.9 is  - 3.14159265359*i - 0.276067830468
+Ci of  - 0.9 is 3.14159265359*i + 0.276067830468
 
-Ci of -1 is  - 3.14159265359*i - 0.337403922901
+Ci of -1 is 3.14159265359*i + 0.337403922901
 
-Ci of  - 1.1 is  - 3.14159265359*i - 0.384873377425
+Ci of  - 1.1 is 3.14159265359*i + 0.384873377425
 
-Ci of  - 1.2 is  - 3.14159265359*i - 0.420459182894
+Ci of  - 1.2 is 3.14159265359*i + 0.420459182894
 
-Ci of  - 1.3 is  - 3.14159265359*i - 0.445738567529
+Ci of  - 1.3 is 3.14159265359*i + 0.445738567529
 
-Ci of  - 1.4 is  - 3.14159265359*i - 0.462006585095
+Ci of  - 1.4 is 3.14159265359*i + 0.462006585095
 
-Ci of  - 1.5 is  - 3.14159265359*i - 0.470356317195
+Ci of  - 1.5 is 3.14159265359*i + 0.470356317195
 
-Ci of  - 1.6 is  - 3.14159265359*i - 0.471732516932
+Ci of  - 1.6 is 3.14159265359*i + 0.471732516932
 
-Ci of  - 1.7 is  - 3.14159265359*i - 0.466968364177
+Ci of  - 1.7 is 3.14159265359*i + 0.466968364177
 
-Ci of  - 1.8 is  - 3.14159265359*i - 0.456811129418
+Ci of  - 1.8 is 3.14159265359*i + 0.456811129418
 
-Ci of  - 1.9 is  - 3.14159265359*i - 0.441940349682
+Ci of  - 1.9 is 3.14159265359*i + 0.441940349682
 
-Ci of  - 2.0 is  - 3.14159265359*i - 0.422980828775
+Ci of  - 2.0 is 3.14159265359*i + 0.422980828775
 
 
 for x := 0.0 step 0.1 until 2.0 do
@@ -7682,8 +7684,229 @@ Chi of 1.9 is 2.26875465439
 Chi of 2.0 is 2.45266692265
 
 
-%for x := -0.1 step -0.1 until -2.0 do
-%   do!*one!*int!:function(!Chi,x);
+for x := -0.1 step -0.1 until -2.0 do
+   do!*one!*int!:function(!Chi,x);
+
+
+Chi of  - 0.1 is 3.14159265359*i - 1.72286838619
+
+Chi of  - 0.2 is 3.14159265359*i - 1.02220556604
+
+Chi of  - 0.3 is 3.14159265359*i - 0.604172595471
+
+Chi of  - 0.4 is 3.14159265359*i - 0.298807450123
+
+Chi of  - 0.5 is 3.14159265359*i - 0.0527768449565
+
+Chi of  - 0.6 is 3.14159265359*i + 0.157750893374
+
+Chi of  - 0.7 is 3.14159265359*i + 0.345569175695
+
+Chi of  - 0.8 is 3.14159265359*i + 0.518399984833
+
+Chi of  - 0.9 is 3.14159265359*i + 0.681313887185
+
+Chi of -1 is 3.14159265359*i + 0.83786694098
+
+Chi of  - 1.1 is 3.14159265359*i + 0.990693687514
+
+Chi of  - 1.2 is 3.14159265359*i + 1.14184192417
+
+Chi of  - 1.3 is 3.14159265359*i + 1.29297396119
+
+Chi of  - 1.4 is 3.14159265359*i + 1.44549407579
+
+Chi of  - 1.5 is 3.14159265359*i + 1.60063293336
+
+Chi of  - 1.6 is 3.14159265359*i + 1.75950580766
+
+Chi of  - 1.7 is 3.14159265359*i + 1.92315427848
+
+Chi of  - 1.8 is 3.14159265359*i + 2.09257721406
+
+Chi of  - 1.9 is 3.14159265359*i + 2.26875465439
+
+Chi of  - 2.0 is 3.14159265359*i + 2.45266692265
+
+
+for x := 0.1 step 0.1 until 2.0 do
+   do!*one!*int!:function(!Fresnel_!S,x);
+
+
+Fresnel_S of 0.1 is 0.000523589547612
+
+Fresnel_S of 0.2 is 0.00418760916166
+
+Fresnel_S of 0.3 is 0.0141169980066
+
+Fresnel_S of 0.4 is 0.0333594326606
+
+Fresnel_S of 0.5 is 0.06473243286
+
+Fresnel_S of 0.6 is 0.110540207359
+
+Fresnel_S of 0.7 is 0.172136457863
+
+Fresnel_S of 0.8 is 0.249341393054
+
+Fresnel_S of 0.9 is 0.339776344393
+
+Fresnel_S of 1 is 0.43825914739
+
+Fresnel_S of 1.1 is 0.536497911097
+
+Fresnel_S of 1.2 is 0.623400918546
+
+Fresnel_S of 1.3 is 0.686333285535
+
+Fresnel_S of 1.4 is 0.713525077363
+
+Fresnel_S of 1.5 is 0.697504960082
+
+Fresnel_S of 1.6 is 0.638887683509
+
+Fresnel_S of 1.7 is 0.549195940322
+
+Fresnel_S of 1.8 is 0.450938769268
+
+Fresnel_S of 1.9 is 0.373347317817
+
+Fresnel_S of 2.0 is 0.343415678364
+
+                                                        for x := -0.1 step -0.1 until -2.0 do
+   do!*one!*int!:function(!Fresnel_!S,x);
+
+
+Fresnel_S of  - 0.1 is  - 0.000523589547612
+
+Fresnel_S of  - 0.2 is  - 0.00418760916166
+
+Fresnel_S of  - 0.3 is  - 0.0141169980066
+
+Fresnel_S of  - 0.4 is  - 0.0333594326606
+
+Fresnel_S of  - 0.5 is  - 0.06473243286
+
+Fresnel_S of  - 0.6 is  - 0.110540207359
+
+Fresnel_S of  - 0.7 is  - 0.172136457863
+
+Fresnel_S of  - 0.8 is  - 0.249341393054
+
+Fresnel_S of  - 0.9 is  - 0.339776344393
+
+Fresnel_S of -1 is  - 0.43825914739
+
+Fresnel_S of  - 1.1 is  - 0.536497911097
+
+Fresnel_S of  - 1.2 is  - 0.623400918546
+
+Fresnel_S of  - 1.3 is  - 0.686333285535
+
+Fresnel_S of  - 1.4 is  - 0.713525077363
+
+Fresnel_S of  - 1.5 is  - 0.697504960082
+
+Fresnel_S of  - 1.6 is  - 0.638887683509
+
+Fresnel_S of  - 1.7 is  - 0.549195940322
+
+Fresnel_S of  - 1.8 is  - 0.450938769268
+
+Fresnel_S of  - 1.9 is  - 0.373347317817
+
+Fresnel_S of  - 2.0 is  - 0.343415678364
+
+
+for x := 0.1 step 0.1 until 2.0 do
+   do!*one!*int!:function(!Fresnel_!C,x);
+
+
+Fresnel_C of 0.1 is 0.0999975326271
+
+Fresnel_C of 0.2 is 0.199921057594
+
+Fresnel_C of 0.3 is 0.299400976052
+
+Fresnel_C of 0.4 is 0.397480759172
+
+Fresnel_C of 0.5 is 0.492344225871
+
+Fresnel_C of 0.6 is 0.581095446992
+
+Fresnel_C of 0.7 is 0.659652351905
+
+Fresnel_C of 0.8 is 0.722844171896
+
+Fresnel_C of 0.9 is 0.764823021273
+
+Fresnel_C of 1 is 0.779893400377
+
+Fresnel_C of 1.1 is 0.763806666062
+
+Fresnel_C of 1.2 is 0.715437722923
+
+Fresnel_C of 1.3 is 0.638550454727
+
+Fresnel_C of 1.4 is 0.543095783546
+
+Fresnel_C of 1.5 is 0.44526117604
+
+Fresnel_C of 1.6 is 0.36546168344
+
+Fresnel_C of 1.7 is 0.323826876004
+
+Fresnel_C of 1.8 is 0.333632927222
+
+Fresnel_C of 1.9 is 0.394470534892
+
+Fresnel_C of 2.0 is 0.488253406075
+
+
+for x := -0.1 step -0.1 until -2.0 do
+   do!*one!*int!:function(!Fresnel_!C,x);
+
+
+Fresnel_C of  - 0.1 is  - 0.0999975326271
+
+Fresnel_C of  - 0.2 is  - 0.199921057594
+
+Fresnel_C of  - 0.3 is  - 0.299400976052
+
+Fresnel_C of  - 0.4 is  - 0.397480759172
+
+Fresnel_C of  - 0.5 is  - 0.492344225871
+
+Fresnel_C of  - 0.6 is  - 0.581095446992
+
+Fresnel_C of  - 0.7 is  - 0.659652351905
+
+Fresnel_C of  - 0.8 is  - 0.722844171896
+
+Fresnel_C of  - 0.9 is  - 0.764823021273
+
+Fresnel_C of -1 is  - 0.779893400377
+
+Fresnel_C of  - 1.1 is  - 0.763806666062
+
+Fresnel_C of  - 1.2 is  - 0.715437722923
+
+Fresnel_C of  - 1.3 is  - 0.638550454727
+
+Fresnel_C of  - 1.4 is  - 0.543095783546
+
+Fresnel_C of  - 1.5 is  - 0.44526117604
+
+Fresnel_C of  - 1.6 is  - 0.36546168344
+
+Fresnel_C of  - 1.7 is  - 0.323826876004
+
+Fresnel_C of  - 1.8 is  - 0.333632927222
+
+Fresnel_C of  - 1.9 is  - 0.394470534892
+
+Fresnel_C of  - 2.0 is  - 0.488253406075
+
 
 off rounded;
 

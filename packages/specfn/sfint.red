@@ -37,14 +37,14 @@ module sfint;     % Assorted Integral Functions, Ei, Si, Ci, Li etc.
 
 % Exponential Integral etc.
 
-algebraic operator Fresnel_C, Fresnel_S;%, erfc,erfi;
+%algebraic operator Fresnel_C, Fresnel_S;%, erfc,erfi;
 
-algebraic operator s_i, shi, chi, li;
+%algebraic operator li;%, s_i, shi, chi
 
 algebraic let limit(si(~tt),~tt,infinity) => pi/2;
 
 algebraic
-let { int(sin(~tt)/~tt,~tt,0,~z) => si (z),
+let { int(sin(~~a*~tt)/~tt,~tt,0,~z) => si (a*z) when a freeof tt,
       int(cos(~a*~x)*sin(~b*~x)/x,x) => 1/2*si(a*x+b*x)-1/2*si(a*x-b*x),
       int(cos(~a*~x)*sin(~x)/x,x) => 1/2*si(a*x+x)-1/2*si(a*x-x),
       int(cos(~x)*sin(~b*~x)/x,x) => 1/2*si(x+b*x)-1/2*si(x-b*x),
@@ -58,9 +58,9 @@ let { int(sin(~tt)/~tt,~tt,0,~z) => si (z),
 
 algebraic
 let { int(sin(~tt)/~tt,~tt,~z,infinity) => - s_i (z),
-      limit(s_i(~tt),x,infinity) => 0,
-      s_i(~x) => si(x) - pi/2,
-      df(s_i(~x),~x) => sin(x)/x
+      limit(s_i(~tt),x,infinity) => 0
+%      s_i(~x) => si(x) - pi/2,
+%      df(s_i(~x),~x) => sin(x)/x
     };
 
 algebraic
@@ -71,8 +71,8 @@ let { int(exp(~tt)/~tt,~tt,-infinity,~z) =>  Ei (z)
     };
 
 algebraic
-let { int(1/ln(~tt),~tt,0,~z) =>  li (z),
-      li (~z) => Ei(log z)
+let { int(1/ln(~tt),~tt,0,~z) =>  li (z)
+%      li (~z) => Ei(log z)
     };
 
 algebraic
@@ -87,36 +87,36 @@ let { int(cos(~tt)/~tt,~tt,~z,infinity) => - ci (z),
     };
 
 algebraic
-let { int(sinh(~tt)/~tt,~tt,0,~z) => shi (z),
-      df(shi(~x),~x) => sinh(x)/x  ,
-      shi(~x) => compute!:int!:functions(x,shi)
-         when numberp x and abs(x) <= 20 and lisp !*rounded
+let { int(sinh(~tt)/~tt,~tt,0,~z) => shi (z)
+%      df(shi(~x),~x) => sinh(x)/x  ,
+%      shi(~x) => compute!:int!:functions(x,shi)
+%         when numberp x and abs(x) <= 20 and lisp !*rounded
     };
 
 algebraic
-let { int((cosh(~tt) -1)/~tt,~tt,0,~z) => chi (z) + psi(1) -log(z),
+let { int((cosh(~tt) -1)/~tt,~tt,0,~z) => chi (z) + psi(1) -log(z)
 % psi(1) may be replaced by euler_gamma one day ...
-      df(chi(~x),~x) => cosh(x)/x  ,
-      chi(~x) => compute!:int!:functions(x,chi)
-         when numberp x and abs(x) <= 20 and lisp !*rounded
+%      df(chi(~x),~x) => cosh(x)/x  ,
+%      chi(~x) => compute!:int!:functions(x,chi)
+%         when numberp x and abs(x) <= 20 and lisp !*rounded
     };
 
 algebraic
 let { int(sin(pi/2*~tt^2),~tt,0,~z) => Fresnel_S (z),
-      Fresnel_S(-~x) => (- Fresnel_S (x)),
-      Fresnel_S(i* ~x) => (-i*Fresnel_S (x)),
-      limit(Fresnel_S(~tt),~tt,infinity) => 1/2,
-      df(Fresnel_S(~x),~x) => sin(pi/2*x^2) ,
-      Fresnel_S (~x) => compute!:int!:functions(x,Fresnel_S)
+%      Fresnel_S(-~x) => (- Fresnel_S (x)),
+%      Fresnel_S(i* ~x) => (-i*Fresnel_S (x)),
+      limit(Fresnel_S(~tt),~tt,infinity) => 1/2
+%      df(Fresnel_S(~x),~x) => sin(pi/2*x^2) ,
+%      Fresnel_S (~x) => compute!:int!:functions(x,Fresnel_S)
               when numberp x and abs(x) <= 10 and lisp !*rounded };
 
 algebraic
 let { int(cos(pi/2*~tt^2),~tt,0,~z) => Fresnel_C (z),
-      Fresnel_C(-~x) => (- Fresnel_C (x)),
-      Fresnel_C(i* ~x) => (i*Fresnel_C (x)),
-      limit(Fresnel_C(~tt),~tt,infinity) => 1/2,
-      df(Fresnel_C(~x),~x) => cos(pi/2*x^2) ,
-      Fresnel_C (~x) => compute!:int!:functions(x,Fresnel_C)
+%      Fresnel_C(-~x) => (- Fresnel_C (x)),
+%      Fresnel_C(i* ~x) => (i*Fresnel_C (x)),
+      limit(Fresnel_C(~tt),~tt,infinity) => 1/2
+%      df(Fresnel_C(~x),~x) => cos(pi/2*x^2) ,
+%      Fresnel_C (~x) => compute!:int!:functions(x,Fresnel_C)
                when numberp x and abs(x) <= 10 and lisp !*rounded };
 
 algebraic
@@ -147,8 +147,8 @@ algebraic procedure compute!:int!:functions(x,f);
                     n := n + 1>>; >>
    else if f = Ci then
            if x=0 then rerror('specfn,0,"Ci(0) is undefined")
-            else if x < 0 then result :=
-	       - compute!:int!:functions(-x,f) -i*pi
+            else if realvaluedp x and x < 0
+             then result := compute!:int!:functions(-x,f) + i*pi
 	    else
               << n:=1; term := 1; result := Euler_gamma + log(x);
                while abs(term) > precis do
@@ -173,7 +173,7 @@ algebraic procedure compute!:int!:functions(x,f);
     else  if f = Chi then
           if x=0 then rerror('specfn,0,"Chi(0) is undefined")
            else if realvaluedp x and x<0
-            then rerror('specfn,0,"Chi is undefined for negative real argument")
+            then result := compute!:int!:functions(-x,f) + i*pi
 	   else << n:=1; term := 1; result := Euler_gamma + log(x);
                while abs(term) > precis do
                  << term := (term * x*x)/((2n-1) * 2n);
