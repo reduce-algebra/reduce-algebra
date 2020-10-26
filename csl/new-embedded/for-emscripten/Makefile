@@ -24,8 +24,8 @@ CC=em++ -s DISABLE_EXCEPTION_CATCHING=0 -s STACK_OVERFLOW_CHECK=2 \
         -s DEMANGLE_SUPPORT=1 -s USE_ZLIB
 
 CPPFLAGS=$(CFLAGS) -std=gnu++17 $(OPT) -I. -I../include -Iinclude -I$(S) \
-    -DHAVE_CONFIG_H=1 -DEMBEDDED=1 $(XCFLAGS) $(USERFLAGS)
-LIBS=$(XLIBS) -s USE_ZLIB -Lcrlibm -lcrlibm
+    -DHAVE_CONFIG_H=1 -DHAVE_CRLIBM=1 -DEMBEDDED=1 $(XCFLAGS) $(USERFLAGS)
+LIBS=$(XLIBS) -s USE_ZLIB -Llib -lcrlibm
 
 JSOPTS= -s ERROR_ON_UNDEFINED_SYMBOLS=0 -g4 \
 	-s ALLOW_MEMORY_GROWTH=1 \
@@ -59,13 +59,16 @@ VPATH=$(S)
 
 all:	reduce.js reduce.img image.cpp
 
+include/crlibm.h lib/libcrlibm.a:
+	./make-crlibm.sh
+
 bootstrapreduce.js:		allocate.o arith01.o arith02.o arith03.o arith04.o arith05.o \
 		arith06.o arith07.o arith08.o arith09.o arith10.o \
 		arith11.o arith12.o arith13.o arith14.o bytes.o char.o \
 		csl.o cslmpi.o cslread.o eval1.o eval2.o eval3.o \
 		eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o cslgc.o lisphash.o \
 		isprime.o preserve.o print.o restart.o sysfwin.o termed.o \
-		inthash.o serialize.o stubs.o
+		inthash.o serialize.o stubs.o lib/libcrlibm.a
 	$(CC) allocate.o arith01.o arith02.o arith03.o arith04.o arith05.o \
 		arith06.o arith07.o arith08.o arith09.o arith10.o \
 		arith11.o arith12.o arith13.o arith14.o bytes.o char.o \
@@ -158,8 +161,9 @@ image.cpp:	make-image.js reduce.img
 clean:
 	-rm -f *.o *.oo reduce* *.log make-image* image.cpp
 	-rm -f bootstrapreduce* *.bak *.map
+	-rm -rf crlibm include lib
 
-HEADERS = ../include/config.h \
+HEADERS = ../include/config.h include/crlibm.h \
 	$(S)/md5.h       $(S)/termed.h    $(S)/arith.h       $(S)/openmath.h \
 	$(S)/bigvector.h $(S)/entries.h     $(S)/proc.h     \
 	$(S)/uninames.h  $(S)/bytes.h     $(S)/externs.h     $(S)/int128_t.h \
