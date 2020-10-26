@@ -668,7 +668,7 @@ symbolic procedure read!-init!-file name;
       prin2 "***** Error processing resource file ";
       prin2t fname >>;
    close!-input!-files();
-   erfg!*:= cmsg!* := !*defn := nil;
+   erfg!*:= cmsg!* := !*defn := crbuf!* := nil;
    if oldmode then !*mode := oldmode;
    terpri();
    statcounter := 0
