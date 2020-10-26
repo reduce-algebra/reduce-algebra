@@ -1100,6 +1100,7 @@ intrules :=
               when a freeof x and b freeof x and n freeof x,
    int(sin(~~b*~x)/x,x) => si(b*x) when b freeof x,     % FJW
    int(sin(~x/~b)/x,x) => si(x/b) when b freeof x,      % FJW
+   int(cos(~~a*~x)*sin(~~b*~x)/x,x) => 1/2*si(a*x+b*x)-1/2*si(a*x-b*x),
 %% int(sin(~x)/x,x) => si(x),           % FJW
    int(sin(~x)/x^2,x) => -sin(x)/x +ci(x),
    int(sin(~x)^2/x,x) =>(log(x)-ci(2x))/2,
@@ -1108,6 +1109,15 @@ intrules :=
 %% int(cos(~x)/x,x) => ci(x),           % FJW
    int(cos(~x)/x^2,x) => -cos(x)/x -si(x),
    int(cos(~x)^2/x,x) =>(log(x)+ci(2x)/2),
+   int(sinh(~~b*~x)/x,x) => Shi(b*x) when b freeof x,
+   int(sinh(~x/~b)/x,x) => Shi(x/b) when b freeof x,
+   int(cosh(~~b*~x)/x,x) => Chi(b*x) when b freeof x,
+   int(cosh(~x/~b)/x,x) => Chi(x/b) when b freeof x,
+% Fresnel integrals
+   int(sin(~~a*x^2),x) =>
+     	sqrt(pi)/sqrt(2)/sqrt(a)*Fresnel_S(sqrt(2*a/pi)*x),
+   int(cos(~~a*x^2),x) =>
+     	sqrt(pi)/sqrt(2)/sqrt(a)*Fresnel_C(sqrt(2*a/pi)*x),
    int(1/log(~~b*~x),x) => Ei(log(b*x))/b when b freeof x, % FJW
    int(1/log(~x/~b),x) => Ei(log(x/b))*b when b freeof x, % FJW
 %% int(1/log(~x),x) => ei(log(x)),      % FJW
