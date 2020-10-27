@@ -415,9 +415,11 @@ let Li(~x) => Ei(log(x));
 
 operator Si,Ci,s_i,Shi,Chi;
 
+odd Si,Shi;
+
 let {
-  Si(0) => 0,
-  Si(-~x) => (- Si(x)),
+%  Si(0) => 0,
+%  Si(-~x) => (- Si(x)),
   df(Si(~x),x) => sin(x)/x,
   Si(~x) => compute!:int!:functions(x,Si)
             when numberp x and lisp !*rounded,
@@ -429,8 +431,8 @@ let {
      when numberp x and abs(x) <= 20 and lisp !*rounded,
   s_i(~x) => si(x) - pi/2,                               df(s_i(~x),~x) => sin(x)/x,
   
-  Shi(0) => 0,
-  Shi(-~x) => (- Shi(x)),
+%  Shi(0) => 0,
+%  Shi(-~x) => (- Shi(x)),
   df(Shi(~x),x) => sinh(x)/x,
   Shi(~x) => compute!:int!:functions(x,Shi)
             when numberp x and lisp !*rounded,
@@ -446,14 +448,16 @@ let {
 
 operator Fresnel_S, Fresnel_C;
 
+odd Fresnel_S,Fresnel_C;
+
 let {
-   Fresnel_S(-~x) => (- Fresnel_S (x)),
+%   Fresnel_S(-~x) => (- Fresnel_S (x)),
    Fresnel_S(i* ~x) => (-i*Fresnel_S (x)),
    df(Fresnel_S(~x),~x) => sin(pi/2*x^2),
    Fresnel_S (~x) => compute!:int!:functions(x,Fresnel_S)
       when numberp x and abs(x) <= 10 and lisp !*rounded,
    
-   Fresnel_C(-~x) => (- Fresnel_C (x)),
+%   Fresnel_C(-~x) => (- Fresnel_C (x)),
    Fresnel_C(i* ~x) => (i*Fresnel_C (x)),
    df(Fresnel_C(~x),~x) => cos(pi/2*x^2),
    Fresnel_C (~x) => compute!:int!:functions(x,Fresnel_C)

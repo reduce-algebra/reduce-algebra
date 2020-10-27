@@ -44,11 +44,11 @@ module sfint;     % Assorted Integral Functions, Ei, Si, Ci, Li etc.
 algebraic let limit(si(~tt),~tt,infinity) => pi/2;
 
 algebraic
-let { int(sin(~~a*~tt)/~tt,~tt,0,~z) => si (a*z) when a freeof tt,
-      int(cos(~a*~x)*sin(~b*~x)/x,x) => 1/2*si(a*x+b*x)-1/2*si(a*x-b*x),
-      int(cos(~a*~x)*sin(~x)/x,x) => 1/2*si(a*x+x)-1/2*si(a*x-x),
-      int(cos(~x)*sin(~b*~x)/x,x) => 1/2*si(x+b*x)-1/2*si(x-b*x),
-     int(cos(~x)*sin(~x)/x,x) => 1/2*si(2*x)
+let { int(sin(~~a*~tt)/~tt,~tt,0,~z) => si (a*z) when a freeof tt
+%      int(cos(~a*~x)*sin(~b*~x)/x,x) => 1/2*si(a*x+b*x)-1/2*si(a*x-b*x),
+%      int(cos(~a*~x)*sin(~x)/x,x) => 1/2*si(a*x+x)-1/2*si(a*x-x),
+%      int(cos(~x)*sin(~b*~x)/x,x) => 1/2*si(x+b*x)-1/2*si(x-b*x),
+%     int(cos(~x)*sin(~x)/x,x) => 1/2*si(2*x)
 %      Si(0) => 0,
 %      Si(-~x) => (- Si(x)),
 %      df(Si(~x),~x) => sin(x)/x  ,
@@ -108,7 +108,8 @@ let { int(sin(pi/2*~tt^2),~tt,0,~z) => Fresnel_S (z),
       limit(Fresnel_S(~tt),~tt,infinity) => 1/2
 %      df(Fresnel_S(~x),~x) => sin(pi/2*x^2) ,
 %      Fresnel_S (~x) => compute!:int!:functions(x,Fresnel_S)
-              when numberp x and abs(x) <= 10 and lisp !*rounded };
+%              when numberp x and abs(x) <= 10 and lisp !*rounded
+};
 
 algebraic
 let { int(cos(pi/2*~tt^2),~tt,0,~z) => Fresnel_C (z),
@@ -117,7 +118,8 @@ let { int(cos(pi/2*~tt^2),~tt,0,~z) => Fresnel_C (z),
       limit(Fresnel_C(~tt),~tt,infinity) => 1/2
 %      df(Fresnel_C(~x),~x) => cos(pi/2*x^2) ,
 %      Fresnel_C (~x) => compute!:int!:functions(x,Fresnel_C)
-               when numberp x and abs(x) <= 10 and lisp !*rounded };
+%               when numberp x and abs(x) <= 10 and lisp !*rounded
+};
 
 algebraic
 let { limit (erf(~x),~x,infinity) => 1,
