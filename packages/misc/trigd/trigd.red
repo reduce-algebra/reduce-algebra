@@ -219,13 +219,27 @@ algebraic;
 % there are no rules to convert cases with purely imaginary arguments to
 % hyperbolic functions.
 
-let cosd(0) => 1;
+trigd!*const!*rules := {
 
-let sind(15) => sqrt(2)/4*(sqrt 3-1),
-    sind(75) => sqrt(2)/4*(sqrt 3+1),
-    sind(30) => 1/2,
-    sind(45) => sqrt 2/2,
-    sind(60) => sqrt(3)/2;
+  cosd(0) => 1,
+
+  sind(15) => sqrt(2)/4*(sqrt 3-1),
+  sind(75) => sqrt(2)/4*(sqrt 3+1),
+  sind(30) => 1/2,
+  sind(45) => sqrt 2/2,
+  sind(60) => sqrt(3)/2
+
+};
+
+begin scalar olddmode,!*msg;
+  symbolic <<
+    olddmode := dmode!*;
+    if olddmode then setdmode(olddmode,nil) >>;
+  let trigd!*const!*rules;
+  symbolic(if olddmode then setdmode(olddmode,t));
+end;
+
+clear trigd!*const!*rules;
 
 for all x let cosd acosd x = x, sind asind x = x, tand atand x = x,
     cotd acotd x = x, secd asecd x = x, cscd acscd x = x;
@@ -354,7 +368,7 @@ let asind(~x) => 90 - acosd(x) when knowledge_about(acosd,x,asind),
 % Negative values not needed.
 % Ensure rules also work when RATIONAL is ON
 
-for j:=1:2 do <<
+for j:=1:2 do begin scalar olddmode,!*msg;
   acosd_rules :=
     symbolic(
     'list . for j:=0:12 join
@@ -371,12 +385,27 @@ for j:=1:2 do <<
         where w= reval{'tand,u}
          where u= 15*j)$
 
+% Don't know which domain mode is in effect.
+% Reset any domain mode if j=1.
+   symbolic <<
+     if j=1 then <<
+        olddmode := dmode!*;
+        if olddmode then setdmode(olddmode,nil)>>
+      else setdmode('rational,t);
+   >>;
+
    let acosd_rules;
    clear acosd_rules;
    let atand_rules;
    clear atand_rules;
-   if j=1 then on rational else off rational;
->>;
+
+% switch back to original domain mode at end
+   symbolic <<
+     if j=2 then <<
+        if olddmode then setdmode(olddmode,t)
+         else setdmode('rational,nil) >>;
+   >>;
+ end;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ***** Differentiation rules *****.
