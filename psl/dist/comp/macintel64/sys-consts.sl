@@ -41,7 +41,7 @@
 
 (fluid '(system_list*))
 
-(setq system_list* '(Darwin x86_64 Intel386 i386 Mac!/OS macOS unix ieee))
+(setq system_list* '(Darwin sixty!-four x86_64 Intel386 i386 Mac!/OS macOS unix ieee))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % MACHINE DEPENDENT CONSTANTS FOR THE x86_64                           %
