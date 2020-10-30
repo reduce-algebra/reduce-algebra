@@ -43,7 +43,7 @@
 
 (fluid '(system_list*))
 
-(setq system_list* '(Intel386 i386 sun386i unix ieee))
+(setq system_list* '(Linux Linux_elf Intel386 i386 unix ieee))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % MACHINE DEPENDENT CONSTANTS FOR THE MC68000                           %
