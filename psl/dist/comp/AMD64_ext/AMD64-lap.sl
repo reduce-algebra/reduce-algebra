@@ -170,9 +170,13 @@
 		(foreach X in Entries* collect (first (car X))) 
 				CodeBase* CodeSize*))) 
 
-    (return (MkCODE LapReturnValue*)))) % How does this point at the code?
-					% It is a fluid variable that got
-					% set up when the code was generated.
+    % Do not call MkCODE on LapReturnValue* if it is nil
+    % LapReturnValue* is a fluid variable that got set up to hold
+    % the address of the compiled function when the code was generated
+    (cond
+     (LapReturnValue*
+      (return
+       (MkCODE LapReturnValue*))))))
 
 
 % CheckForInitCode will scan the Codelist for the first !*Entry
