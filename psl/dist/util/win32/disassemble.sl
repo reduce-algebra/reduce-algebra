@@ -353,7 +353,11 @@
         ((eq mod 0) (bldmsg "[%w]" (reg-m rm)))
         ((eq mod 1) 
               (setq  lth* (add1 lth*))
-              (bldmsg "[%w+%w]" (reg-m rm)(pop bytes*)))
+	      (let ((b (pop bytes*)))
+		% b is unsigned, convert to signed byte
+		(if (greaterp b 127)
+		    (setq b (wdifference b 256)))
+		(bldmsg "[%w%w%w]" (reg-m rm) (if (wlessp b 0) "" "+") b)))
         ((eq mod 2) 
               (setq  lth* (plus 4 lth*))
 	      (setq w (bytes2word))
