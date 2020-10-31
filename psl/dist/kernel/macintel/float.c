@@ -146,7 +146,7 @@ uxwritefloat(buf, flt, convstr)
   /* Make sure that there is a trailing .0
    */
   dot = rindex(temps, '.');
-  if (dot == '\0')
+  if (dot == NULL)
     /* Check to see if the number is in scientific notation. If so, we need
      *  add the .0 into the middle of the string, just before the e.
      */

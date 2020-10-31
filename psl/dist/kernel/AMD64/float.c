@@ -151,6 +151,18 @@ uxquotient(f1,f2,f3)
   return (1);
 }
 
+/* Tag( uxequal )
+ */
+long long uxequal(f1,f2,val1,val2)
+     double *f1, *f2;
+     long long val1, val2;
+{
+  if (*f1 == *f2)
+    return val1;
+  else
+    return val2;
+}
+
 /* Tag( uxgreaterp )
  */
 long long uxgreaterp(f1,f2,val1,val2)
@@ -197,7 +209,7 @@ uxwritefloat(buf, flt, convstr)
     /* Make sure that there is a trailing .0
      */
     dot = strrchr(temps, '.');
-    if (dot == '\0')
+    if (dot == NULL)
       /* Check to see if the number is in scientific notation. If so, we need
        *  add the .0 into the middle of the string, just before the e.
        */
