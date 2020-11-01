@@ -429,6 +429,8 @@ for each c in '(limit limit!+ limit!-) do
      put(c,'number!-of!-args,3);
      flag({c},'full)>>;
 
+switch usetaylor,trlimit;
+
 defautoload(simplimit,limits);
 
 % Partial fractions entry point.

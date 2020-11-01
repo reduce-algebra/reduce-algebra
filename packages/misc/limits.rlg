@@ -346,13 +346,13 @@ limit(-(log x)^2/log log x,x,infinity);
 limit(log(x-1)/sin x,x,0);
 
 
-sign(log(-1))*infinity
+infinity
  % infinity
 
 limit!-(sqrt x/sin x,x,0);
 
 
- - sign(i)*infinity
+infinity
  % infinity
 limit(log x-log(2x),x,0);
 
@@ -616,7 +616,7 @@ z0 := --------------------------------
 limit(df(z0,z),z,pi*i/2);
 
 
-sign(i)*infinity
+infinity
  % infinity
 z1 := z0*(z-pi*i/2);
 

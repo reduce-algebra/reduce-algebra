@@ -66,7 +66,12 @@ load!-package 'tps; %load!-package 'taylor;
 
 lisp(ps!:order!-limit := 100);
 
+fluid '(!*usetaylor !*trlimit trlimitlevel!*);
+
 switch usetaylor=off;
+switch trlimit;
+
+trlimitlevel!* := 0;
 
 fluid '(!*precise lhop!# lplus!# !*protfg !*msg !*rounded !*complex !*factor
         !#nnn lim00!# !*crlimtest !*lim00rec);
@@ -124,10 +129,14 @@ symbolic procedure countof(u,v);
 
 symbolic procedure simplimit u;
    % The kludgey handling of cot needs to be fixed some day.
-   begin scalar fn,exprn,var,val,old,v,!*precise;
+   begin scalar fn,exprn,var,val,old,v,result,!*precise;
      if length u neq 4
        then rerror(limit,1,
                    {"Improper number of arguments to",car u,"operator"});
+     if !*trlimit then <<
+       prin2 "Limit ("; prin2!* trlimitlevel!*; prin2!* "): Entering simplimit:"; terpri!* t;
+       mathprint u;
+     >>;
      fn:= car u; exprn := cadr u; var := !*a2k caddr u; val := cadddr u;
      old := get('cot,'opmtch);
      put('cot,'opmtch,
@@ -136,18 +145,29 @@ symbolic procedure simplimit u;
      v := errorset!*({'apply,mkquote fn,mkquote {exprn,var,val}},nil)
 		where !*protfg := t;
      put('cot,'opmtch,old);
-     return if errorp v or (v := car v) = aeval 'failed
-              then mksq({fn,aeval exprn,var,val},1)
-             else simp!* v
+     result := if errorp v or (v := car v) = aeval 'failed
+                 then mksq({fn,aeval exprn,var,val},1)
+                else simp!* v;
+     if !*trlimit then <<
+       prin2 "Limit ("; prin2!* trlimitlevel!*; prin2!* "): simplimit result:"; terpri!* t;
+       printsq result;
+     >>;
+     return result
    end;
 
 symbolic procedure limit0(exp,x,a);
-   begin scalar exp1;
+   begin scalar exp1,result;
      exp1 := simp!* exp;
-     if a = 'infinity then
-        return limit00(subsq(exp1,{x . {'quotient,1,{'expt,x,2}}}),x);
-     if a = '(minus infinity) then
-        return limit00(subsq(exp1,{x . {'quotient,-1,{'expt,x,2}}}),x);
+     if a = 'infinity then <<
+	result := limit00(subsq(exp1,{x . {'quotient,1,{'expt,x,2}}}),x);
+	return if not(result eq aeval 'failed) then result
+	else limit2(prepf numr exp1,prepf denr exp1,x,a);
+     >>;
+     if a = '(minus infinity) then <<
+        result := limit00(subsq(exp1,{x . {'quotient,-1,{'expt,x,2}}}),x);
+	return if not(result eq aeval 'failed) then result
+	else limit2(prepf numr exp1,prepf denr exp1,x,a);
+     >>;
      return
         (<<y := errorset!*
              ({'subsq,mkquote(exp := simp!* exp),mkquote{(x . a)}},nil)
@@ -175,7 +195,13 @@ symbolic inline procedure limit!-factrprep p;
     prepsq simp!* p where !*factor=t;
 
 symbolic procedure limit00(ex,x);
-   begin scalar p,p1,z,xpwrlcm,lim,ls;
+   (begin scalar p,p1,z,xpwrlcm,lim,ls,result;
+     if !*trlimit then <<
+	prin2!* "Limit ("; prin2!* trlimitlevel!*; prin2!* "): Entering limit00:"; terpri!* t;
+	printsq ex;
+	prin2!* "w.r.t.";
+	mathprint x;
+     >>;
      p := limit!-exptcombine prepsq ex;
      if (lim := crlimitset(p,x)) then go to ret;
      if not lim00!# then
@@ -198,14 +224,20 @@ symbolic procedure limit00(ex,x);
          if prepsq simp!* lim = 'failed and lsimpdpth=1 then
            <<exptconv!# := nil; p := expt2exp(p,x);
              if exptconv!# then lim := limsimp(p,x)>> >>;
-ret: return
+ret: result :=
        <<if ls then lsimpdpth := lsimpdpth - 1;
          if not z or z = 1 or lim=0 then lim
          else if (ls := prepsq simp!* lim) = '(minus infinity)
            then if (-1)^z = 1 then aeval 'infinity else lim
          else if ls member '(infinity failed) then lim
-         else mk!*sq simp!* {'expt,prepsq simp!* lim,{'quotient,1,z}}>>
-    end;
+         else mk!*sq simp!* {'expt,prepsq simp!* lim,{'quotient,1,z}}>>;
+   if !*trlimit then <<
+      prin2!* "Limit ("; prin2!* trlimitlevel!*; prin2!* "): limit00 returns";
+      mathprint result;
+     >>;
+
+   return result
+    end) where trlimitlevel!*=trlimitlevel!* + 1;
 
 symbolic procedure expt2exp(p,x);
    if atom p then p
@@ -244,18 +276,36 @@ symbolic procedure pwrdenp(p,x);
    else lcm(pwrdenp(car p,x),pwrdenp(cdr p,x));
 
 symbolic procedure limitset(ex,x,a);
+ begin scalar result;
+ if !*trlimit then <<
+    prin2!* "Limit ("; prin2!* trlimitlevel!*; prin2!* "): Trying power series expansion using ";
+   prin2!* if !*usetaylor then "Taylor w.r.t." else "TPS w.r.t.";
+   mathprint x; prin2!* "around";
+   mathprint a;
+   prin2!* "of expression";
+   mathprint ex;
+ >>;
  if !*usetaylor then
   <<ex := errorset!*({'limit1t,mkquote ex,mkquote x,mkquote a},nil)
             where !*protfg := t;
-    if errorp ex then nil else car ex>>
+    result := if errorp ex then nil else car ex>>
  else % use tps.
   begin scalar oldpslim;
       oldpslim := simppsexplim '(1);
       ex := errorset!*({'limit1p,mkquote ex,mkquote x,mkquote a},nil)
               where !*protfg := t;
       simppsexplim list car oldpslim;
-      return if errorp ex then nil else car ex
+      result := if errorp ex then nil else car ex
   end;
+ if !*trlimit then <<
+   if null result then << prin2!* "Limit ("; prin2!* trlimitlevel!*; prin2!* "): Expansion failed"; terpri!* t; >>
+    else <<
+     prin2!* "Limit ("; prin2!* trlimitlevel!*; prin2!* "): Power series expansion gives"; terpri!* t;
+     mathprint result;
+     >>;
+ >>;
+ return result
+ end;
 
 symbolic procedure limit1t(ex,x,a);
    begin scalar nnn, vvv, oldklist := get('taylor!*,'klist);
@@ -281,6 +331,7 @@ symbolic procedure limit1t(ex,x,a);
        else if !*complex then 'infinity
        else if domainp(nnn := numr vvv) then
          (if !:minusp nnn then '(minus infinity) else 'infinity)
+       else if not realvaluedp prepsq vvv then 'infinity
        else << vvv := simp!-sign list mk!*sq vvv;
                if atom denr vvv and fixp numr vvv
                  then << if numr vvv = 0 then 0
@@ -300,6 +351,7 @@ symbolic procedure limit1p(ex,x,a);
        else if !*complex then 'infinity
        else if domainp(nnn := car vvv) then
          (if !:minusp nnn then '(minus infinity) else 'infinity)
+       else if not realvaluedp prepsq vvv then 'infinity
        else << vvv := simp!-sign list mk!*sq vvv;
                if atom denr vvv and fixp numr vvv
                  then << if numr vvv = 0 then 0
@@ -344,23 +396,34 @@ put('expt,'limsfn,'lexptfn);
 symbolic procedure limsimp(ex,x);
   % called when limit1 has failed, to apply more sophisticated methods.
   % output must be aeval form.
-   begin scalar y,c,z,m,ex0;
-      if eqcar(ex,'minus) then <<m := t; ex := cadr ex>>;
-      ex0 := ex;
-      if not atom ex then  % check for plus, times, or quotient.
-         <<if(z := get(y := car ex,'limsfn))
-              then ex := apply(z,list(ex,x))>>
-         else <<if ex eq x then ex := 0; go to ret>>;
-      if y eq 'plus then go to ret;
-      if y eq 'expt then if ex then goto ret else ex := ex0 . 1;
-      if z then<<z := car ex; c := cdr ex>>
-         else <<ex := simp!* ex;
-                z := prepf numr ex;
-                c := prepf denr ex>>;
-      ex := lhopital(z,c,x,0);
- ret: if m and prepsq simp!* ex neq 'failed then
+  begin scalar y,c,z,m,ex0;
+     if !*trlimit then <<
+	prin2!* "Limit ("; prin2!* trlimitlevel!*; prin2!* "): Entering limsimp:"; terpri!* t;
+	mathprint ex;
+	prin2!* "w.r.t.";
+	mathprint x;
+     >>;
+     if eqcar(ex,'minus) then <<m := t; ex := cadr ex>>;
+     ex0 := ex;
+     if not atom ex then  % check for plus, times, or quotient.
+       <<if(z := get(y := car ex,'limsfn))
+           then ex := apply(z,list(ex,x))>>
+          else <<if ex eq x then ex := 0; go to ret>>;
+     if y eq 'plus then go to ret;
+     if y eq 'expt then if ex then goto ret else ex := ex0 . 1;
+     if z then<<z := car ex; c := cdr ex>>
+           else <<ex := simp!* ex;
+                  z := prepf numr ex;
+                  c := prepf denr ex>>;
+     ex := lhopital(z,c,x,0);
+  ret: if m and prepsq simp!* ex neq 'failed then
          ex := aeval lminus2 ex;
-      return ex end;
+     if !*trlimit then <<
+       	prin2!* "Limit ("; prin2!* trlimitlevel!*; prin2!* "): limsimp returns";
+       	mathprint ex;
+     >>;
+     return ex
+  end;
 
 symbolic procedure lminus2 ex;
    if numberp ex then -ex
@@ -496,9 +559,21 @@ symbolic procedure qform(a,b);
          list ('quotient,1,a));
 
 symbolic procedure lhopital(top,bot,xxx,a);
-  begin scalar limt, limb, nvt, nvb;
+  begin scalar limt, limb, nvt, nvb, result;
+     if !*trlimit then <<
+       prin2!* "Limit ("; prin2!* trlimitlevel!*; prin2!* "): Trying l'Hopitals rule with numerator"; terpri!* t;
+       mathprint top;
+       prin2!* "and denominator"; terpri!* t;
+       mathprint bot;
+     >>;
      nvt := notval(limt := limfix(top,xxx,a));
      nvb := notval(limb := limfix(bot,xxx,a));
+     if !*trlimit then <<
+       prin2!* "Limit ("; prin2!* trlimitlevel!*; prin2!* "): limit of numerator is"; terpri!* t;
+       mathprint limt;
+       prin2!* "limit of denominator is";
+       mathprint limb;
+     >>;
  % possibilities for lims are {failed, infinity, -infinity, bounded,
  % nonzero, zero} and each combination of cases has to be handled.
      if limt=0 and limb=0 or nvt and nvb then go to lhop;
@@ -508,8 +583,14 @@ symbolic procedure lhopital(top,bot,xxx,a);
 lhop: lhop!# := lhop!#+1;
     %  write "lhop#=",lhop!#; terpri();
       if lhop!#>6 then return aeval 'failed;
-      return limit0(prepsq quotsq(diffsq(simp!* top,xxx),
-          diffsq(simp!* bot,xxx)),xxx,a) end;
+      result := limit0(prepsq quotsq(diffsq(simp!* top,xxx),
+          diffsq(simp!* bot,xxx)),xxx,a);
+      if !*trlimit then <<
+        prin2!* "Limit ("; prin2!* trlimitlevel!*; prin2!* "): Application of l'Hopitals rule gives"; terpri!* t;
+      mathprint result;
+      >>;
+      return result;
+  end;
 
 symbolic procedure notval lim;
    not lim or infinp prepsq simp!* lim;
@@ -544,15 +625,30 @@ symbolic procedure limfix(ex,x,a);
     where val=limitset(ex,x,a);
 
 symbolic procedure limitest(ex,x,a);
+   (begin scalar result;
+      if !*trlimit then <<
+	 prin2!* "Limit ("; prin2!* trlimitlevel!*; prin2!* "): Entering limitest for"; 
+	 mathprint ex;
+	 prin2!* "w.r.t. variable"; mathprint x;
+	 prin2!* "towards"; mathprint a;
+      >>;
   if ex then if atom ex then if ex eq x then a else ex else
-  begin scalar y,arg,val;
+  result := begin scalar y,arg,val;
     if eqcar(ex,'expt) then
        if cadr ex eq 'e then ex := list('exp,caddr ex)
        else return exptest(cadr ex,caddr ex,x,a);
     if (y := get(car ex,'fixfn)) then
        return apply1(y,limfix(cadr ex,x,a))
     else if (y := get(car ex,'limcomb)) then
-       return apply3(y,cdr ex,x,a) end;
+       return apply3(y,cdr ex,x,a)
+  end;
+    ret:
+  if !*trlimit then <<
+     prin2!* "Limit ("; prin2!* trlimitlevel!*; prin2!* "): limitest returns"; terpri!* t;
+     mathprint result;
+  >>;
+  return result;
+   end) where trlimitlevel!*=trlimitlevel!*+1;
 
 symbolic procedure exptest(b,n,x,a);
    if numberp n then
