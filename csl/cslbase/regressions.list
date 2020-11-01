@@ -2,7 +2,7 @@
 % unsafe. This is a list of regression test files to avoid its use. See
 % about line 720 of buildreduce.lsp. Every so often this should be updated!
 
-$ $Id$
+% $Id$
 
 (setq reduce_regression_tests '(
    "2011-08-29-fleps.tst"

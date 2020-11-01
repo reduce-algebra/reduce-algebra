@@ -7,7 +7,7 @@ echo "% Sometimes the list-directory function may not be available or may be" > 
 echo "% unsafe. This is a list of regression test files to avoid its use. See" >> regressions.list
 echo "% about line 720 of buildreduce.lsp. Every so often this should be updated!" >> regressions.list
 echo "" >> regressions.list
-echo "\$ \$Id: \$" >> regressions.list
+echo "% \$Id: \$" >> regressions.list
 echo "" >> regressions.list
 echo "(setq reduce_regression_tests '(" >> regressions.list
 
