@@ -1,4 +1,4 @@
-// hexify.cpp                                   Copyright (C) 2020 Codemist
+// make-image.cpp                               Copyright (C) 2020 Codemist
 
 
 // $Id$
@@ -40,9 +40,9 @@
 // data. The array pads the data will zero bytes to be a multiple of 8
 // bytes in all.
 // Usage:
-//    hexify [source-file [destination-file [array-name]]]
+//    make-image [source-file [destination-file [array-name]]]
 // where the defaults are
-//    hexify reduce.img image.cpp image_file
+//    make-image reduce.img image.cpp image_file
 
 
 // #include <cstdio>
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
     const char *tts = asctime(&ttt);
     outstream << "// " << dest << " (for " << src << ") created " << tts << "\n";
     outstream << "\n#include <stdint.h>\n";
-    outstream << "\nuint64_t " << arrayname << "[] = {\n";
+    outstream << "\nconst uint64_t " << arrayname << "[] = {\n";
     outstream << "#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__\n";
     uint64_t w = 0;
     size_t i = 0;
@@ -154,4 +154,4 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-// end of hexify.c
+// end of make-image.c
