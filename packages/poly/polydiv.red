@@ -23,30 +23,24 @@ module polydiv;  % Enhanced polynomial division.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% Francis Wright, 1995, 2020.
 
-% F.J.Wright@Maths.QMW.ac.uk, 6 Nov 1995.
-
-% Defines (or redefines) the following polynomial division operators:
-%   divide, div and remainder (mod),
+% Define (or redefine) the following polynomial division operators:
+%   divide, poly_quotient and remainder (mod),
 %   pseudo_divide, pseudo_quotient (pseudo_div) and pseudo_remainder.
-
-% However, for now, div has been commented out, since it conflicts with
-% other packages (avector and fide).
 
 % ===================================================================
 
 % Enhanced algebraic-mode operators for performing polynomial division
 % over the current coefficient domain, based on the operator REMAINDER
-% currently defined in poly.red by  put('remainder,'polyfn,'remf);
+% previously defined in "packages/poly/polrep.red" by
+% put('remainder,'polyfn,'remf);
 
 % divide(p,q) or p divide q returns an algebraic list {quotient,
 % remainder} of p divided by q as polynomials over the current domain.
 
-% div(p,q) or p div q returns only the quotient.
+% poly_quotient(p,q) or p poly_quotient q returns only the quotient.
 % remainder(p,q) or p mod q returns only the remainder.
-
-% div and mod are the operator names used in Pascal for Euclidean
-% (integer) division.
 
 % An optional third argument (for the prefix forms) specifies the
 % variable to treat as the leading variable for the (effectively
@@ -65,20 +59,20 @@ symbolic procedure poly!-divide u;
 
 remprop('remainder, 'polyfn);
 put('remainder, 'psopfn, 'poly!-remainder);
-put('mod, 'psopfn, 'poly!-remainder);   % name from Pascal
+put('mod, 'psopfn, 'poly!-remainder);
 symbolic procedure poly!-remainder u;
    poly!-divide!*(u, 'remainder, nil);
 
-% put('div, 'psopfn, 'poly!-quotient);    % name from Pascal
+put('poly_quotient, 'psopfn, 'poly!-quotient);
 symbolic procedure poly!-quotient u;
    poly!-divide!*(u, 'quotient, nil);
 
-infix divide, mod;
-% infix div;
-% Set a relatively low precedence:
+infix divide, mod, poly_quotient;
+% Set a relatively low precedence (see preclis!*):
 precedence divide, freeof;  % higher than freeof, lower than +
-% precedence div, divide;
-% precedence mod, div;
+precedence poly_quotient, divide;
+precedence mod, poly_quotient;
+% With integer arguments, mod calls evalmod, defined in "modular.red".
 
 
 % Pseudo-division:
@@ -92,7 +86,7 @@ put('pseudo_remainder, 'psopfn, 'pseudo!-remainder);
 symbolic procedure pseudo!-remainder u;
    poly!-divide!*(u, 'remainder, t);
 
-put('pseudo_div, 'psopfn, 'pseudo!-quotient);
+put('pseudo_div, 'psopfn, 'pseudo!-quotient); % deprecated; to be removed from manual
 put('pseudo_quotient, 'psopfn, 'pseudo!-quotient);
 symbolic procedure pseudo!-quotient u;
    poly!-divide!*(u, 'quotient, t);
@@ -110,6 +104,8 @@ symbolic procedure poly!-divide!*(u, fn, pseudo);  % u = (p, q, x)
          rederr "Division operators take 2 or 3 arguments.";
       if null (q := !*a2f cadr u) then rederr "Zero divisor";
       p := !*a2f car u;
+      % Use integer modulus?
+      if fn eq 'remainder and fixp p and fixp q then return evalmod u;
       if cddr u and (x := !*a2k caddr u) and
          not(kord!* and x eq car kord!*) then <<
             new_kord := t;  updkorder x;

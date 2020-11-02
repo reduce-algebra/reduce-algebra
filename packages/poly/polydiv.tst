@@ -3,7 +3,7 @@
 % Test and demonstration file for enhanced polynomial division
 % file polydiv.red.
 
-% F.J.Wright@Maths.QMW.ac.uk, 7 Nov 1995.
+% Francis Wright, 1995.
 
 % The example from "Computer Algebra" by Davenport, Siret & Tournier,
 % first edition, section 2.3.3.

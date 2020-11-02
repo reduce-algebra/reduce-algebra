@@ -178,11 +178,15 @@ put('setmod, 'psopfn, 'setmod);
 
 % Support for "mod" as an infix operator.
 
-infix mod;
+% infix mod;
 
-precedence mod,over;
+% precedence mod,over;
 
-put('mod,'psopfn,'evalmod);
+% put('mod,'psopfn,'evalmod);
+
+% mod is now defined in "polydiv.red" (with higher precedence
+% immediately below plus) to call poly!-divide!*, which calls evalmod
+% if its arguments are both integers.  FJW, 02/11/2020
 
 symbolic procedure evalmod u;
   begin scalar dm,cp,m,mm,w,!*rounded,!*modular;
