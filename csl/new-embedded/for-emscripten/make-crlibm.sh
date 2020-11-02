@@ -10,8 +10,10 @@ cd crlibm
   AR=emar \
   RANLIB=emranlib \
   --prefix=`pwd`/..
-make install-libLIBRARIES
-make install-includeHEADERS
+make
+make install
+# make install-libLIBRARIES
+# make install-includeHEADERS
 cd ..
 
 exit 0

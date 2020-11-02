@@ -36,6 +36,11 @@ JS_SRC=../js
 
 # --pre-js mountfs.js \
 
+# On at least one Linux machine I find that if I launch things by using
+# a command like   "node bootstrapreduce.js"   I get a failure, but if I
+# use a fully-rooted path for the "node" command all is well. I do not
+# understand! But this setting for NODE arranges the careful scheme for me.
+NODE= $(shell which node)
 NODEOPTS= -s NODERAWFS=1
 WEBOPTS= --preload-file reduce.img --shell-file $(JS_SRC)/template.html
 REDUCE_TARGET=reduce.js
@@ -98,12 +103,12 @@ bootstrapreduce:	bootstrapreduce.js
 
 bootstrapreduce.img:	bootstrapreduce.js
 	-rm -f bootstrapreduce.img
-	node bootstrapreduce.js -z -Dno_init_file $(S)/buildreduce.lsp -Dbootstrap \
+	$(NODE) bootstrapreduce.js -z -Dno_init_file $(S)/buildreduce.lsp -Dbootstrap \
 		-D@srcdir=$(S) -D@reduce=$(R) -o bootstrapreduce.img -L bootstrap_image.log
 
 
 c-code:	bootstrapreduce.img
-	node bootstrapreduce.js -w $(CSLFLAGS) \
+	$(NODE) bootstrapreduce.js -w $(CSLFLAGS) \
 		-Dno_init_file \
 		$(S)/make-c-code.red \
 		-D@destdir=$(R)/cslbuild/generated-c \
@@ -147,21 +152,21 @@ reduce:	reduce.js
 
 reduce.img:	reduce.js
 	-rm -f reduce.img
-	export reduce=$(R) && node reduce.js -z -Dforce_c_code -Dno_init_file $(S)/buildreduce.lsp \
+	export reduce=$(R) && $(NODE) reduce.js -z -Dforce_c_code -Dno_init_file $(S)/buildreduce.lsp \
 		-D@srcdir=$(S) -D@reduce=$(R) -o reduce.img -L reduce_image.log
 
 make-image.js:	$(S)/make-image.cpp
 	$(CC) $(CPPFLAGS) $(S)/hexify.cpp $(LIBS) $(JSOPTS) -o make-image.js
 
 image.cpp:	make-image.js reduce.img
-	node make-image.js
+	$(NODE) make-image.js
 	cp image.cpp ../reduce-image.cpp
 	cp reduce.img ..
 
 clean:
 	-rm -f *.o *.oo reduce* *.log make-image* image.cpp
 	-rm -f bootstrapreduce* *.bak *.map
-	-rm -rf crlibm include lib
+	-rm -rf crlibm include lib bin jscsl-times
 
 HEADERS = ../include/config.h include/crlibm.h \
 	$(S)/md5.h       $(S)/termed.h    $(S)/arith.h       $(S)/openmath.h \
