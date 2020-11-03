@@ -27,7 +27,8 @@ module polydiv;  % Enhanced polynomial division.
 
 % Define (or redefine) the following polynomial division operators:
 %   divide, poly_quotient and remainder (mod),
-%   pseudo_divide, pseudo_quotient (pseudo_div) and pseudo_remainder.
+%   pseudo_divide, pseudo_quotient and pseudo_remainder.
+% All accept a list as first argument/operand and map over it.
 
 % ===================================================================
 
@@ -94,8 +95,15 @@ symbolic procedure pseudo!-quotient u;
 
 fluid '(kord!*);
 
-symbolic procedure poly!-divide!*(u, fn, pseudo);  % u = (p, q, x)
-   % Returns the quotient and remainder of p (pseudo-)divided by q.
+symbolic procedure poly!-divide!*(u, fn, pseudo);
+   if rlistp cadr u then typerr(cadr u, 'polynomial)
+   % Accept an algebraic list as first argument/operand and map over it:
+   else if rlistp car u then
+      'list . for each v in cdar u collect poly!-divide!*!*(v . cdr u, fn, pseudo)
+   else poly!-divide!*!*(u, fn, pseudo);
+
+symbolic procedure poly!-divide!*!*(u, fn, pseudo);  % u = (p, q, x)
+   % Return the quotient and remainder of p (pseudo-)divided by q.
    % If specified, x is made the leading variable before dividing,
    % otherwise the first variable found is used.
    begin scalar p, q, x, new_kord;
