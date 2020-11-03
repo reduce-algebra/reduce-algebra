@@ -3,7 +3,7 @@
 % Test and demonstration file for enhanced polynomial division
 % file polydiv.red.
 
-% F.J.Wright@Maths.QMW.ac.uk, 7 Nov 1995.
+% Francis Wright, 1995.
 
 % The example from "Computer Algebra" by Davenport, Siret & Tournier,
 % first edition, section 2.3.3.
@@ -321,10 +321,3 @@ Pseudo-division OK
 
 end;
 
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 0 ms
-
-End of Lisp run after 0.00+0.04 seconds
-real 0.20
-user 0.00
-sys 0.06
