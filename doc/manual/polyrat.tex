@@ -303,19 +303,23 @@ calculation.
 
 \sw{MCD}\ttindex{MCD} is normally on.
 
-\section{\texttt{divide} and \texttt{mod} / \texttt{remainder} Operators}
-\ttindextype{divide}{operator}
-\ttindextype{remainder}{operator}
-\ttindextype{mod}{operator}
-\hypertarget{operator:divide}{}
-\hypertarget{operator:remainder}{}
-\hypertarget{operator:mod}{}
+\section{Euclidean Division}
+\ttindextype{DIVIDE}{operator}
+\ttindextype{POLY\_QUOTIENT}{operator}
+\ttindextype{REMAINDER}{operator}
+\ttindextype{MOD}{operator}
+\hypertarget{operator:DIVIDE}{}
+\hypertarget{operator:POLY_QUOTIENT}{}
+\hypertarget{operator:REMAINDER}{}
+\hypertarget{operator:MOD}{}
 
-The operators \texttt{divide} and \texttt{mod} / \texttt{remainder} implement Euclidean division
-of polynomials. 
+The operators \texttt{DIVIDE}, \texttt{POLY\_QUOTIENT} and
+\texttt{MOD} / \texttt{REMAINDER} implement Euclidean division of
+polynomials (over the current number domain).
 The \texttt{remainder} operator is used with the syntax
 \begin{verbatim}
-     remainder(EXPRN1:polynomial,EXPRN2:polynomial):polynomial.
+     remainder(EXPRN1:polynomial,EXPRN2:polynomial):
+          polynomial.
 \end{verbatim}
 It returns the remainder when \texttt{EXPRN1} is divided by \texttt{EXPRN2}.  This
 is the true remainder based on the internal ordering of the variables, and
@@ -323,8 +327,8 @@ not the pseudo-remainder.
 
 \textit{Examples:}
 \begin{verbatim}
-        remainder((x+y)*(x+2*y),x+3*y) ->  2*Y**2
-        remainder(2*x+y,2)             ->  Y.
+     remainder((x + y)*(x + 2*y), x + 3*y)  ->  2*y^2
+     remainder(2*x + y, 2)                  ->  y
 \end{verbatim}
 
 \textit{CAUTION:} In the default case, remainders are calculated over the
@@ -333,73 +337,81 @@ must be declared explicitly.
 
 \textit{Example:}
 \begin{verbatim}
-        remainder(x^2-2,x+sqrt(2)); -> X^2 - 2
-        load_package arnum;
-        defpoly sqrt2**2-2;
-        remainder(x^2-2,x+sqrt2); -> 0
+     remainder(x^2 - 2, x + sqrt(2));  ->  x^2 - 2
+     load_package arnum;
+     defpoly sqrt2^2 - 2;
+     remainder(x^2 - 2, x + sqrt2);    ->  0
 \end{verbatim}
-The infix operator \ttindextype{mod}{operator} is an alias for \texttt{remainder}, e.g.
-\begin{verbatim}
-(x^2 + y^2) mod (x - y);
+(Note the use of \texttt{sqrt2} in place of \texttt{sqrt(2)} in the
+second call of \texttt{remainder}.)
 
-           2
-        2*y
+The infix operator \texttt{mod} is an alias for \texttt{remainder}
+when at least one operand is explicitly polynomial, e.g.
+\begin{verbatim}
+     (x^2 + y^2) mod (x - y);
+
+        2
+     2*y
 \end{verbatim}
+However, when both operands are integers, \texttt{mod} implements the
+integer modulus operation, regardless of the current number domain,
+e.g.
+\begin{verbatim}
+     7 mod 4  ->  3
+\end{verbatim}
+
 The Euclidean division operator \texttt{divide} is used with the syntax
 \begin{verbatim}
      divide(EXPRN1:polynomial,EXPRN2:polynomial):
-             list(polynomial,polynomial).
+          list(polynomial,polynomial)
 \end{verbatim}
-and returns
-both the quotient and the remainder together as the first and second
-elements of a list, e.g.
+and returns both the quotient and the remainder together as the first
+and second elements of a list, e.g.
 \begin{verbatim}
-divide(x^2 + y^2, x - y);
+     divide(x^2 + y^2, x - y);
 
-                  2
-        {x + y,2*y }
+               2
+     {x + y,2*y }
 \end{verbatim}
 It can also be used as an infix operator:
 \begin{verbatim}
-(x^2 + y^2) divide (x - y);
+     (x^2 + y^2) divide (x - y);
 
-                  2
-        {x + y,2*y }
+               2
+     {x + y,2*y }
 \end{verbatim}
-All Euclidean division operators (when used in prefix form, and
-including the standard \texttt{remainder} operator) accept an optional
-third argument, which specifies the main variable to be used during
-the division.  The default is the leading kernel in the current global
-ordering.  Specifying the main variable does not change the ordering
-of any other variables involved, nor does it change the global
-environment.  For example
+The infix operator \texttt{poly\_quotient} returns only the quotient,
+i.e.\ the first element of the list returned by \texttt{divide}.
+
+All Euclidean division operators (when used in prefix form) accept an
+optional third argument, which specifies the main variable to be used
+during the division.  The default is the leading kernel in the current
+global ordering.  Specifying the main variable does not change the
+ordering of any other variables involved, nor does it change the
+global environment.  For example
 \begin{verbatim}
-remainder(x^2 + y^2, x - y, y);
+     divide(x^2 + y^2, x - y, y);
 
-           2
-        2*x
-
-divide(x^2 + y^2, x - y, y);
-
-                       2
-        { - (x + y),2*x }
+                    2
+     { - (x + y),2*x }
 \end{verbatim}
 
 Specifying $x$ as main variable gives the same behaviour as the
 default shown earlier, i.e.
 \begin{verbatim}
-divide(x^2 + y^2, x - y, x);
+     divide(x^2 + y^2, x - y, x);
 
-                  2
-        {x + y,2*y }
-
-remainder(x^2 + y^2, x - y, x);
-
-           2
-        2*y
+               2
+     {x + y,2*y }
 \end{verbatim}
 
+All Euclidean division operators accept a (possibly nested) list as
+first argument/operand and map over that list, e.g.
+\begin{verbatim}
+     {x, x + 1, x^2 - 1} mod x - 1;
 
+     {1,2,0}
+\end{verbatim}
 
 \section{Polynomial Pseudo-Division}
 \index{Polynomial Pseudo-Division}
@@ -412,30 +424,28 @@ dividend.  (A ring of univariate polynomials is a Euclidean domain
 only if the coefficient ring is a field.)  For example, over the
 integers:
 \begin{verbatim}
-divide(x^2 + y^2, 2(x - y));
+     divide(x^2 + y^2, 2(x - y));
 
-            2    2
-        {0,x  + y }
+         2    2
+     {0,x  + y }
 \end{verbatim}
 
-\hypertarget{operator:pseudo_div}{}
-\hypertarget{operator:pseudo_divide}{}
-\hypertarget{operator:pseudo_quotient}{}
-\hypertarget{operator:pseudo_remainder}{}
-\ttindextype{pseudo\_div}{operator}
-\ttindextype{pseudo\_divide}{operator}
-\ttindextype{pseudo\_quotient}{operator}
-\ttindextype{pseudo\_remainder}{operator}
+\hypertarget{operator:PSEUDO_DIVIDE}{}
+\hypertarget{operator:PSEUDO_QUOTIENT}{}
+\hypertarget{operator:PSEUDO_REMAINDER}{}
+\ttindextype{PSEUDO\_DIVIDE}{operator}
+\ttindextype{PSEUDO\_QUOTIENT}{operator}
+\ttindextype{PSEUDO\_REMAINDER}{operator}
+
 The division of a polynomial $u(x)$ of degree $m$ by a polynomial
 $v(x)$ of degree $n \le m$ can be performed over any commutative ring
 with identity (such as the integers, or any polynomial ring) if the
 polynomial $u(x)$ is first multiplied by $\mathrm{lc}(v,x)^{m-n+1}$
 (where lc denotes the leading coefficient).  This is called
-\emph{pseudo-division}.  The 
-polynomial pseudo-division operators \texttt{pseudo\_divide},
-\texttt{pseudo\_quotient} (or \texttt{pseudo\_div}) and
-\texttt{pseudo\_remainder} are implemented as prefix operators (only).  When
-multivariate polynomials are pseudo-divided it is important which
+\emph{pseudo-division}.  The polynomial pseudo-division operators
+\texttt{PSEUDO\_DIVIDE}, \texttt{PSEUDO\_QUOTIENT} and
+\texttt{PSEUDO\_REMAINDER} are implemented as prefix operators (only).
+When multivariate polynomials are pseudo-divided it is important which
 variable is taken as the main variable, because the leading
 coefficient of the divisor is computed with respect to this variable.
 Therefore, if this is allowed to default and there is any ambiguity,
@@ -446,39 +456,39 @@ the first kernel found in the internal forms of the dividend and
 divisor.  (As usual, the warning can be turned off by setting the
 switch \sw{msg} to off.)  For example
 \begin{verbatim}
-pseudo_divide(x^2 + y^2, x - y);
+     pseudo_divide(x^2 + y^2, x - y);
 
-        *** Main division variable selected is x 
+     *** Main division variable selected is x 
 
-                  2
-        {x + y,2*y }
+               2
+     {x + y,2*y }
 
-pseudo_divide(x^2 + y^2, x - y, x);
+     pseudo_divide(x^2 + y^2, x - y, x);
 
-                  2
-        {x + y,2*y }
+               2
+     {x + y,2*y }
 
-pseudo_divide(x^2 + y^2, x - y, y);
+     pseudo_divide(x^2 + y^2, x - y, y);
 
-                       2
-        { - (x + y),2*x }
+                    2
+     { - (x + y),2*x }
 \end{verbatim}
 
 If the leading coefficient of the divisor is a unit (invertible
 element) of the coefficient ring then division and pseudo-division
 should be identical, otherwise they are not, e.g.
 \begin{verbatim}
-divide(x^2 + y^2, 2(x - y));
+     divide(x^2 + y^2, 2(x - y));
 
-            2    2
-        {0,x  + y }
+         2    2
+     {0,x  + y }
 
-pseudo_divide(x^2 + y^2, 2(x - y));
+     pseudo_divide(x^2 + y^2, 2(x - y));
 
-        *** Main division variable selected is x
+     *** Main division variable selected is x
 
-                      2
-        {2*(x + y),8*y }
+                   2
+     {2*(x + y),8*y }
 \end{verbatim}
 
 The pseudo-division gives essentially the same result as would
@@ -486,46 +496,47 @@ division over the field of fractions of the coefficient ring (apart
 from the overall factors [contents] of the quotient and remainder),
 e.g.
 \begin{verbatim}
-on rational;
+     on rational;
 
-divide(x^2 + y^2, 2(x - y));
+     divide(x^2 + y^2, 2(x - y));
 
-          1             2
-        {---*(x + y),2*y }
-          2
+       1             2
+     {---*(x + y),2*y }
+       2
 
-pseudo_divide(x^2 + y^2, 2(x - y));
+     pseudo_divide(x^2 + y^2, 2(x - y));
 
-        *** Main division variable selected is x
+     *** Main division variable selected is x
 
-                      2
-        {2*(x + y),8*y }
+                   2
+     {2*(x + y),8*y }
 \end{verbatim}
 
 Polynomial division and pseudo-division can only be applied to what
 REDUCE regards as polynomials, i.e.\ rational expressions with
 denominator 1, e.g.
 \begin{verbatim}
-off rational;
+     off rational;
 
-pseudo_divide((x^2 + y^2)/2, x - y);
+     pseudo_divide((x^2 + y^2)/2, x - y);
 
-                2    2
-               x  + y
-        ***** --------- invalid as polynomial
-                  2
+             2    2
+            x  + y
+     ***** --------- invalid as polynomial
+               2
 \end{verbatim}
+All pseudo-division operators accept a (possibly nested) list as first
+argument/operand and map over that list.
 
-Pseudo-division is implemented in the \texttt{polydiv} package using
-an algorithm (D. E. Knuth 1981, \textit{Seminumerical Algorithms},
-Algorithm R, page 407) that does not perform any actual division at
-all (which proves that it applies over a ring).  It is more efficient
-than the naive algorithm, and it also has the advantage that it works
-over coefficient domains in which REDUCE may not be able to perform in
-practice divisions that are possible mathematically.  An example of
-this is coefficient domains involving algebraic numbers, such as the
-integers extended by $\sqrt{2}$, as illustrated in the file
-\texttt{polydiv.tst}.
+Pseudo-division is implemented using an algorithm (D.~E.~Knuth 1981,
+\textit{Seminumerical Algorithms}, Algorithm R, page 407) that does
+not perform any actual division at all (which proves that it applies
+over a ring).  It is more efficient than the naive algorithm, and it
+also has the advantage that it works over coefficient domains in which
+REDUCE may not be able to perform in practice divisions that are
+possible mathematically.  An example of this is coefficient domains
+involving algebraic numbers, such as the integers extended by
+$\sqrt{2}$, as illustrated in the file \texttt{polydiv.tst}.
 
 The implementation attempts to be reasonably efficient, except that it
 always computes the quotient internally even when only the remainder
