@@ -1,3 +1,4 @@
+
 module compopr;   % Operators on Complex Expressions.
 
 % Author: Eberhard Schruefer.
@@ -178,13 +179,26 @@ symbolic procedure expand!-imrepartpow u;
                else apply1(cmpxsplitfn,!_pvar!_ u),pdeg u)
     end;
 
-% The next 3 procedures improve the behaviour of repart and impart
-% in the presence of rules for conj(<kernel>). A Barnes, 2020
+% The next 4 procedures improve the behaviour of repart, impart and reimpart
+% in the presence of rules for conj(<kernel> of the form:
+% conj z => w, where w /=z or
+% conj z => z, so z is real-valued or
+% conj z => -z so z is purely imaginary.
+% In more complex cases the result returned involves repart z and/or impart z
+% In this last case it is better to define rules for z !!  A Barnes, 2020
 
 symbolic procedure get_conj1 y;
 begin scalar cnj;
    cnj := rassoc({y}, get('conj, 'kvalue));
    if cnj then return cadar cnj
+   else return nil;
+end;
+
+symbolic procedure get_conj2 y;
+begin scalar cnj;
+   cnj := car getpower(fkern({'conj, y}),1);
+   cnj := assoc(cnj, get('conj, 'kvalue));
+   if cnj then return cadr cnj
    else return nil;
 end;
 
@@ -194,11 +208,15 @@ symbolic procedure mkrepart u;
             else repartsq(u ./ 1)
     else if realvaluedp u then !*k2q u
     else begin scalar c;
-            c := get_conj1(u);
+            c := get_conj2(u);
             if c then
-	       return mksq(list('repart, c),1)
-            else
-	       return mksq(list('repart, u),1); 
+	       if c=u then return !*k2q u
+               else <<if c=list('minus, u) then return (nil ./ 1) >>
+            else <<
+	       c:= get_conj1(u);
+               if c then return mksq(list('repart, c),1)
+	    >>;
+	    return mksq(list('repart, u),1);
          end;
 	    
 symbolic procedure mkimpart u;
@@ -207,11 +225,17 @@ symbolic procedure mkimpart u;
             else impartsq(u ./ 1)
     else if realvaluedp u then nil ./ 1
     else begin scalar c;
-            c := get_conj1(u);
+            c := get_conj2(u);
             if c then
-	       return negsq mksq(list('impart, c),1)
-            else
-	       return mksq(list('impart, u),1); 
+	       if c=u then return (nil ./ 1)
+	       else <<
+	          if c=list('minus, u) then return mksq(list('impart, u),1)
+	       >>
+            else <<
+	       c := get_conj1(u);
+               if c then return negsq mksq(list('impart, c),1)
+	    >>;
+	    return mksq(list('impart, u),1);
          end;
 
 symbolic procedure take!-realpart u;

@@ -298,7 +298,9 @@ fluid '(lispsystem!*);
 
 procedure texmacsp;
    % Texmacs predicate. Returns [t] iff Texmacs is running.
-   if getenv("TEXMACS_REDUCE_PATH") then t;
+   % The second test is probably now redundant, as texmacs no longer 
+   % seems to set this environment variable, but is included just in case! 
+   if memq('texmacs, lispsystem!*) or getenv("TEXMACS_REDUCE_PATH") then t;
 
 % Protect against copyd being called twice
 if not getd 'linelength!-orig then copyd('linelength!-orig,'linelength);

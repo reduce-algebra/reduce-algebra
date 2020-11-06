@@ -80,8 +80,36 @@ For example:
         conj atan z    ->   atan(z*)  
 \end{verbatim}
 
-Note that in defining the rule \texttt{conj z => z!*}, the rule
-\texttt{conj z!*  => z} is (in effect) automatically defined.
+Note that in defining the rule \texttt{conj z => z!*},\ the rule
+\texttt{conj z!*  => z} is (in effect) automatically defined and 
+\emph{should not} be entered by the user.
+The main use of rules for \texttt{CONJ} is to associate two identifiers
+as complex conjugates as in the examples above. In addition rules of the form
+\texttt{let conj(z)=>z, conj(w)=>-w} may be used. They imply that
+\texttt{z} is real-valued and \texttt{w} is purely imaginary, although
+the effect of the first rule can also be obtained by declaring \texttt{z}
+to be \texttt{realvalued}.
+
+Rules of the form \texttt{let conj z => <<some-expression>>} may be used,
+but are not recommended. More useful results will usually be obtained by
+defining the equivalent rule \texttt{let z => conj(<<some-expression>>)}.
+Rules of the form \texttt{let conj z => <<some-expression>>} are particularly
+problematic if \texttt{<<some-expression>>} involves \texttt{z} itself as
+they may be inconsistent, for example \texttt{let conj z => z+1}. Even where
+they are consistent, better results may usually achieved by defining alternative rules.
+For example, given:
+\begin{verbatim}
+        realvalued a,b;
+        let conj z => 2*a-z, conj w => w-2*b*i;
+\end{verbatim}
+so that the real part of \texttt{z} is \texttt{a} and the imaginary part
+of \texttt{w} is \texttt{b}, more useful results will be obtained by
+defining the mathematically equivalent rules:
+\begin{verbatim}
+        realvalued a,b,x,y;
+        let z => a +i*y, w => x + b*i;
+\end{verbatim}
+
 Note also that the standard elementary functions and their inverses
 (where appropriate) are automatically defined to be
   \texttt{SELFCONJUGATE}\ttindextype{SELFCONJUGATE}{declaration} so that
