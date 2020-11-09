@@ -23,6 +23,9 @@
 #
 #     --uncached  run tests with symbolic(!*uncached := t);
 #
+#     --skip-missing-rlg
+#                 do not run test when the .rlg file is missing
+#
 # It is legal and reasonable and proper to specify multiple Lisp variants to
 # be tested. If none are explicitly mentioned the code will default to
 # behaving as if "--csl --psl" has been specified. Note that this means that
@@ -61,6 +64,7 @@ jlispboot="no"
 psl="no"
 
 uncached=""
+skipmissingrlg=""
 
 # I allow any number of the keyword arguments in any order. I will pick
 # off and process arguments for so long as any are available. This will
@@ -165,6 +169,10 @@ do
       uncached='symbolic (!*uncached := t);'
       shift
       ;;
+    --skip-missing-rlg)
+      skipmissingrlg="yes"
+      shift
+      ;; 
     -*)
       printf "\"$1\" looks like an option but is not recognized.\n"
       printf "Stopping.\n"
@@ -324,6 +332,10 @@ fi
 if test -f $here/packages/$d/$p.rlg
 then
   rlgfile=$here/packages/$d/$p.rlg
+elif test "x$skipmissingrlg" != "x"
+then
+  echo "Missing log file $here/packages/$d/$p.rlg - skipping test!"
+  exit 1
 else
   rlgfile=/dev/null
 fi
