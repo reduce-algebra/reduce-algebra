@@ -317,7 +317,7 @@ symbolic procedure ev_superfun_odd(superf1,superf_scal);
   % The superfunctions must have been checked in the procedure
   % nijenhuis_bracket!
   begin
-    scalar tempovar,tempmind,tempovar,ntempovar,tempres,der_odd;
+    scalar tempovar,tempmind,ntempovar,tempres,der_odd;
     tempres:=
     for each el in all_parametric_odd!* collect
     <<
