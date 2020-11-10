@@ -2347,8 +2347,12 @@ If nil then floats are printed without any additional rounding.")
                        ;; integer part of u contains e+1 digits.  To make u
                        ;; contain d significant digits, multiply by a scale
                        ;; factor s = 10^(d-e-1), round and divide s out again:
-                       (s (expt 10d0 (- *float-print-precision* e 1))))
-                  (setq u (/ (fround (* u s)) s)))
+                       (e1 (- *float-print-precision* e 1))
+                       (s (expt 10d0 (if (> e1 300) 300 e1)))
+                       (s1 (if (> e1 300) (expt 10d0 (- e1 300)) 1d0)))
+                  (if (> e1 300)
+                   (setq u (/ (/ (fround (* (* u s) s1)) s) s1))
+                  (setq u (/ (fround (* u s)) s))))
                 u)))
         p)
     ;; Lower-case an E if necessary and follow e with + unless there is already a -.
