@@ -42,6 +42,8 @@ if 'sbcl memq lispsystem!* then <<
    fasl!-dir!* := "fasl.sbcl/";  fasl!-ext!* := ".fasl"
 >> else if 'clisp memq lispsystem!* then <<
    fasl!-dir!* := "fasl.clisp/";  fasl!-ext!* := ".fas"
+>> else if 'abcl memq lispsystem!* then <<
+   fasl!-dir!* := "fasl.abcl/";  fasl!-ext!* := ".fasl"
 >> else error(0, "Unrecognised Common Lisp implementation when setting fasl directory.");
 
 symbolic procedure olderfaslp(u,v);

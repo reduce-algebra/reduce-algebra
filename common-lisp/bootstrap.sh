@@ -18,13 +18,24 @@ if [ "$lisp" = 'sbcl' ]; then
     faslext='fasl'
     if_sbcl=''
     if_clisp='%'
+    if_abcl='%'
 elif [ "$lisp" = 'clisp' ]; then
     runlisp='clisp -ansi'
     faslext='fas'
     if_sbcl='%'
     if_clisp=''
+    if_abcl='%'
+elif [ "$lisp" = 'abcl' ]; then
+    runlisp='/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java -jar abcl-bin-1.8.0/abcl.jar --noinit'
+    runbootstrap='/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java -jar abcl-bin-1.8.0/abcl.jar --noinit --noinform -M fasl/bootstrap.mem'
+    runreduce='/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java -jar abcl-bin-1.8.0/abcl.jar --noinit --noinform -M fasl/reduce.mem'
+    saveext='jar'
+    faslext='abcl'
+    if_sbcl='%'
+    if_clisp='%'
+    if_abcl=''
 else
-    echo 'Error: option -l sbcl/clisp is required'
+    echo 'Error: option -l sbcl/clisp/abcl is required'
     exit
 fi
 
@@ -80,6 +91,7 @@ time $runlisp << XXX &> log.$lisp/bootstrap.blg
       (t (error 0 "Cannot find boot file.") (exit 1)))
 
 $if_clisp (setq !*comp t)  % It's faster in some lisps if we compile.
+$if_abcl (setq !*comp t)  % It's faster in some lisps if we compile.
 
 (cl:defvar xxx)
 (begin2)

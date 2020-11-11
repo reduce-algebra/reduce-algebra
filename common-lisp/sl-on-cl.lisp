@@ -27,6 +27,10 @@
 #+SBCL (eval-when (:compile-toplevel :load-toplevel :execute)
          (require :sb-posix))
 
+#+ABCL (eval-when (:load-toplevel :execute)
+         (require :abcl-contrib)
+         (require :asdf-jar))
+
 (defpackage :standard-lisp
   (:nicknames :sl)
   (:documentation "Lower-case Standard Lisp on Common Lisp")
@@ -151,14 +155,19 @@ is printed whenever a function is redefined by PUTD.")
 
 ;; First, some utility functions used only internally:
 
+;; For ABCL, autoloaded functios must be loaded before copying the
+;; function cell. Otherwise only the autoload stub is copied.
+;; The call to resolve does this
 (defmacro defalias (symbol definition &optional docstring)
   "Set SYMBOL's function definition to DEFINITION.
 The optional third argument DOCSTRING specifies the documentation string
 for SYMBOL; if it is omitted or nil, SYMBOL uses the documentation string
 determined by DEFINITION.  The return value is undefined."
   (declare (list symbol definition) (type (or null simple-string) docstring))
-  `(setf ,@(if docstring `((documentation ,symbol 'cl:function) ,docstring))
-         (symbol-function ,symbol) (symbol-function ,definition)))
+  `(progn
+#+ABCL (if (ext:autoloadp ,definition) (ext:resolve ,definition))
+  (setf ,@(if docstring `((documentation ,symbol 'cl:function) ,docstring))
+         (symbol-function ,symbol) (symbol-function ,definition))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   ;; Needed to expand macros fluid and global when compiling.
@@ -2356,7 +2365,7 @@ If nil then floats are printed without any additional rounding.")
                 u)))
         p)
     ;; Lower-case an E if necessary and follow e with + unless there is already a -.
-    (when (setq p (position #+SBCL #\e #+CLISP #\E s))
+    (when (setq p (position #+SBCL #\e #+CLISP #\E #+ABCL #\E s))
       #+CLISP (setf (aref s p) #\e)
       (incf p)
       (unless (char-equal (aref s p) #\-)
@@ -2745,7 +2754,8 @@ A function hung on the garbage collection hook."
                         (p (position-if #'digit-char-p s)))
                    (read-from-string
                     (remove #\, (subseq s p (position #\Space s :start p))))))
-       #+CLISP (%nth-room-value 1)))
+       #+CLISP (%nth-room-value 1)
+       #+ABCL 0))
 
 (defun explode2 (u)                     ; PSL
   "(explode2 U:atom-vector): id-list expr
@@ -3109,9 +3119,22 @@ directory."
         (cl:apply #'ext:cd (and dir (string/= dir "")
                                 (list (substitute-in-file-name dir)))))))
 
+#+ABCL
+(defun cd (x)
+    "Change current directory, as per POSIX chdir(2), to a given pathname object"
+    (if-let (x (pathname x))
+      (setf *default-pathname-defaults* (truename x)) ;; d-p-d is canonical!
+      ))
+
+
 (defalias 'chdir 'cd)                   ; CSL / MS Windows
 
 (defalias 'filep 'probe-file)           ; PSL
+
+#+ABCL
+(defun getenv (string)
+    (java:jstatic "getenv" "java.lang.System" string))
+
 
 #+SBCL (import 'sb-posix:getpid)
 #+CLISP (defalias 'getpid 'os:process-id)
@@ -3362,7 +3385,9 @@ When all done, execute FASLEND;~2%" name))
   #+CLISP
   (ext:saveinitmem (concat "fasl.clisp/" name ".mem")
                    :init-function #'reduce-init-function
-                   :quiet t :norc t))
+                   :quiet t :norc t)
+  #+ABCL (asdf-jar:package (intern name ) :verbose t)
+)
 
 (pushnew :standard-lisp *features*)
 
@@ -3372,6 +3397,7 @@ A list of identifiers indicating system properties.")
 
 #+SBCL (pushnew 'sbcl lispsystem*)
 #+CLISP (pushnew 'clisp lispsystem*)
+#+ABCL (pushnew 'abcl lispsystem*)
 #+win32 (pushnew 'win32 lispsystem*)
 #+cygwin (pushnew 'cygwin lispsystem*)
 #+unix (pushnew 'unix lispsystem*)  ; appears together with cygwin
@@ -3387,6 +3413,8 @@ interpret otherwise.  The default is compile."
 ;; In SBCL, inhibit printing of package prefixes in the debugger
 ;; (which doesn't seem to work):
 #+SBCL (setq sb-ext:*debug-print-variable-alist* '((*print-escape* . nil)))
+
+#+ABCL (setq *autoload-verbose* t)
 
 ;; Common Lisp symbols used in REDUCE source code:
 (import
