@@ -767,12 +767,58 @@ void evacuateOneChunk(Chunk *c)
 }
 
 void evacuateActiveChunk(Chunk *c)
-{
+{   cout << "evacuateActiveChunk\n";
     my_abort();
 }
 
 void evacuateFromCopiedData(bool major)
-{   cout << "evacuateFromCopiedData" << "\r" << endl;
+{
+#ifdef ONLY_USE_ONE_GC_THREAD
+    cout << "evacuateFromCopiedData" << "\r" << endl;
+// When I get here the list bases have all been evacuated. That will have
+// copied some material into the new space. This copied material may have
+// filled one or more Chunks that are now on the Chunk stack and can be
+// found using popChunk(). In addition there is likely to be a partially
+// filled Chunk that anything more that is to be copied will end up in.
+// In the general case part of the data within such a Chunk may have been
+// evacuated. 
+    do
+    {   Chunk *c;
+// While there is a full Chunk to scan I scan it. This part is simple and
+// straightforward.
+        while ((c = popChunk1()) != nullptr)
+            evacuateOneChunk(c);
+// When I get here there are no full Chunks to scan, but there can be
+// data within the one I have just been copying into. I scan within it.
+// While doing so I naturally allocate further copied data within it.
+// There are two important cases. In one I find that this copied data
+// manages to fill the Chunk (and the code will then allocate a follow-on
+// one, and normal processing would push this Chunk onto the stack. In such
+// a case I can terminate my scan when I reach the end of the Chunk so it
+// is completely processed. By then I may have created not just one but
+// several new Chunks of copied material. The evacuatePartOfMyOwnChunk()
+// function returns true and these will be popped and scanned in turn. It
+// must be arranged that when the Chuunk I had already scanned is fetched
+// that it is detected that it has already been processed.
+// The other possibility is that scanning material in the Chunk leads to
+// little or no further allocation. Then scanning must stop when the scan-
+// point catches up with the allocation fringe. In that case the function
+// returns false. But to be ready for the multi-thread case it should also
+// set markers showing how far scanning got. That is because some other
+// thread might push a full Chunk and that could allow the current thread
+// to resume copying from there, thereby filling this Chunk up further. At
+// some stage it will become necessary to continue the scan to process this
+// new data.
+    } while (evacuatePartOfMyOwnChunk());
+// In the single thread GC model when I get here all copied data has been
+// properly scanned, so the new heap is in a good state. All that should need
+// doing to finish off garbage collection will be to ensure that pointers to
+// fringes etc are up to date and that the various chains of free and busy
+// pages are in the right places.
+#else // ONLY_USE_ONE_GC_THREAD
+    cout << "Multi-thread evacuateFromCopiedData" << "\r" << endl;
+    my_abort()
+#endif // ONLY_USE_ONE_GC_THREAD
 }
 
 atomic<unsigned int> activeHelpers = 0;
@@ -867,6 +913,8 @@ bool evacuatePartOfMyOwnChunk()
 {   return false;
 }
 
+#ifndef ONLY_USE_ONE_GC_THREAD
+
 void gcHelper()
 {
 // gcHelper is called from a thread that was active in Lisp but is not the
@@ -888,8 +936,10 @@ void gcHelper()
 // may signal that this part of the GC is complete.
         if (activeHelpers.fetch_sub(1) == 1) return;
     } while (evacuatePartOfMyOwnChunk());
-     
 }
+
+#endif // ONLY_USE_ONE_GC_THREAD
+
 
 void endOfGarbageCollection(bool major)
 {   cout << "endOfGarbageCollection" << "\r" << endl;

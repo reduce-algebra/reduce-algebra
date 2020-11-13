@@ -1772,7 +1772,7 @@ LispObject Ldecoded_time(LispObject env)
 }
 
 //
-// (date)             "14-May-13"
+// (date)             "14-May-2013"
 // (date!-and!-time)  "Tue May 14 09:52:45 2013"
 //
 // Then (date t) and (date!-and!-time t) flip formats (well actually any
@@ -1784,9 +1784,9 @@ LispObject Ldate(LispObject env)
     std::time_t t = std::time(nullptr);
     char today[32];
     char today1[32];
-    std::strcpy(today, std::ctime(
-                    &t));  // e.g. "Sun Sep 16 01:03:52 1973\n"
-    //       012345678901234567890123
+    std::strcpy(today, std::ctime(&t));
+// e.g. "Sun Sep 16 01:03:52 1973\n"
+//       012345678901234567890123
     today[24] = 0;             // loses final '\n'
     today1[0] = today[8]==' ' ? '0' : today[8];
     today1[1] = today[9];
@@ -1795,9 +1795,11 @@ LispObject Ldate(LispObject env)
     today1[4] = today[5];
     today1[5] = today[6];
     today1[6] = '-';
-    today1[7] = today[22];
-    today1[8] = today[23];
-    today1[9] = 0;             // Now as in 03-Apr-09
+    today1[7] = today[20];
+    today1[8] = today[21];
+    today1[9] = today[22];
+    today1[10] = today[23];
+    today1[11] = 0;             // Now as in 03-Apr-2009
     w = make_string(today1);
     return onevalue(w);
 }
@@ -1806,8 +1808,8 @@ LispObject Ldate1(LispObject env, LispObject a1)
 {   LispObject w;
     std::time_t t = std::time(nullptr);
     char today[32];
-    std::strcpy(today, std::ctime(
-                    &t));  // e.g. "Sun Sep 16 01:03:52 1973\n"
+    std::strcpy(today, std::ctime(&t));
+// e.g. "Sun Sep 16 01:03:52 1973\n"
     today[24] = 0;             // loses final '\n'
     w = make_string(today);
     return onevalue(w);
@@ -1817,8 +1819,8 @@ LispObject Ldate_and_time(LispObject env)
 {   LispObject w;
     std::time_t t = std::time(nullptr);
     char today[32];
-    std::strcpy(today, std::ctime(
-                    &t));  // e.g. "Sun Sep 16 01:03:52 1973\n"
+    std::strcpy(today, std::ctime(&t));
+// e.g. "Sun Sep 16 01:03:52 1973\n"
     today[24] = 0;             // loses final '\n'
     w = make_string(today);
     return onevalue(w);
