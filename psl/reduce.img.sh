@@ -165,7 +165,9 @@ cd psl
 (savesystem "REDUCE" "../red/reduce" (quote ((commandline_setq)
                                              (set-load-directories)
                                              (cond ((null (member "--no-rcfile" (vector2list unixargs!*)))
-                                                    (read-init-file "reduce")))
+                                                    (read-init-file "reduce"))
+                                                   (t
+                                                    (setq no!_init!_file t)))
 		              	             (cond ((or (and
 					                  (member "--texmacs" (vector2list unixargs!*))
 							  (setq lispsystem!* (cons 'texmacs lispsystem!*))

@@ -55,6 +55,7 @@ fluid '(!*break
 	loadbasedirectory!*
         lispscantable!*
         lispsystem!*
+        no!_init!_file
         promptstring!*
         rlispscantable!*);
 
