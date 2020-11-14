@@ -217,18 +217,8 @@ cd psl
 (setq symbolfilename!* "$topdir/psl/bpsl")
 (setq loaddirectories!* (quote ("" "$topdir/red/" "$topdir/psl/")))
 
-(savesystem "REDUCE" "$imagedir/reduce" (quote ((commandline_setq)
-                                                (set-load-directories)
-                                                (cond ((null (member "--no-rcfile" (vector2list unixargs!*)))
-                                                       (read-init-file "reduce"))
-                                                   (t
-                                                    (setq no!_init!_file t)))
-		              	                (cond ((or (and
-                                                             (member "--texmacs" (vector2list unixargs!*))
-							     (setq lispsystem!* (cons 'texmacs lispsystem!*))
-)
-                                                           (getenv "TEXMACS_REDUCE_PATH"))
-						       (load tmprint))))))
+(savesystem "REDUCE" "$imagedir/reduce" (quote ((reduce-init-forms))))
+
 (bye)
 
 XXX

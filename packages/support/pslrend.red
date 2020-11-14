@@ -369,6 +369,16 @@ symbolic procedure begin;
            %since most REDUCE users won't use LISP
         date!* := nil;
 a:      % crchar!* := '! ;
+	%% read init file
+	if null no!_init!_file then begin
+	   scalar name;
+	   name := assoc('shortname, lispsystem!*);
+	   if atom name then name := "reduce"
+	   else name := list2string explode2lc cdr name;
+	   erfg!* := nil;
+	   read!-init!-file name
+ 	end;
+	%% Start main system
         if errorp errorset!*('(begin1),nil) then go to a;
            %until PSL fixed
 %       if not yesp "do you really want to leave REDUCE?"
@@ -524,12 +534,26 @@ symbolic procedure get!-image!-path();
 symbolic procedure commandline_setq();
   % executes a setq(var,value); from  commandline arg
   % reduce -d var=value
-  begin scalar extraargs,extracommand;
+  begin scalar extraargs,extracommand,lastentry,l,shortname;
      getunixargs();			% copy command line args to unixargs!* vector
+     %% get command line args:
+     %% get!-command!-args excludes the memory size and image file parameters
      extraargs := get!-command!-args(); % return command line args as list
+     %% process special args
+     if "--no-rcfile" member extraargs then no!_init!_file := t;
+     if "--texmacs" member extraargs then lispsystem!* := 'texmacs . lispsystem!*;
      if null imagefilename!*
        then imagefilename!* := get!-image!-path(); % -f image file argument
 
+     if stringp imagefilename!*		% we have a valid image flename
+       then << lastentry := lastcar path!-to!-entries imagefilename!*;
+	       l := string!-length lastentry;
+	       if l>4 and substring(lastentry,l-4,l) = ".img"
+                 then shortname := substring(lastentry,0,l-4)
+                else shortname := lastentry;
+               lispsystem!* := ('shortname . shortname) . lispsystem!*;
+       >>;
+     %% Process command line definitions
      while (extraargs := member('"-d",extraargs)) do
      	if cdr extraargs
        	  then
@@ -539,6 +563,15 @@ symbolic procedure commandline_setq();
 	     extraargs := cddr extraargs;
        	  >>;
   end;
+
+symbolic procedure reduce!-init!-forms();
+   << commandline_setq();
+      set!-load!-directories();
+%      if null ("--no-rcfile" member vecter2list unixargs!*)
+%        then read!-init!-file "reduce";
+      if ("--texmacs" member vector2list unixargs!*) or getenv "TEXMACS_REDUCE_PATH"
+        then load tmprint;
+   >>;
 
 % got used to Perl/php split WN
 
