@@ -155,16 +155,20 @@ symbolic procedure simplimit u;
      return result
    end;
 
+switch limit_nohopital;
+
 symbolic procedure limit0(exp,x,a);
    begin scalar exp1,result;
      exp1 := simp!* exp;
      if a = 'infinity then <<
 	result := limit00(subsq(exp1,{x . {'quotient,1,{'expt,x,2}}}),x);
+	return result;
 	return if not(result = aeval 'failed) then result
 	else limit2(prepf numr exp1,prepf denr exp1,x,a);
      >>;
      if a = '(minus infinity) then <<
         result := limit00(subsq(exp1,{x . {'quotient,-1,{'expt,x,2}}}),x);
+	return result;
 	return if not(result = aeval 'failed) then result
 	else limit2(prepf numr exp1,prepf denr exp1,x,a);
      >>;
