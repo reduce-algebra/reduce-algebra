@@ -125,6 +125,20 @@ symbolic inline procedure lshift(m,d);
    %  an efficient logical shift.
    ashift(m,d);
 
+% And a shifts for use on signed inputs. For positive d this shifts left and
+% will be equivalent to multiplying by a power of 1. For negative d it
+% shifts right. It behaves live division by a power of two but rounding
+% towards -infinity. A different way to express that is that it takes the
+% binary representation of m and shifts it right just discarding any bits
+% that fall off the right hand end. For negative m it behaves as if there
+% was an infinite stream of "1" bits in high order positions, so those
+% come in to fill any vacated spaces. It is provided because the lshift
+% as per the specification above should not be used whem m<0.
+
+symbolic inline procedure shift(m,d);
+   if minusp m and minusp d then lnot lshift(lnot m,d)
+   else lshift(m,d);
+
 symbolic inline procedure oddintp n; not evenp n;
 
 symbolic inline procedure preci!: nmbr;

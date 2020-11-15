@@ -69,7 +69,7 @@ symbolic procedure csl_normbf x;
 % This is pretty well the only place that the LSD function from CSL is used in Reduce.
 % Reduce. Up to June 2016 it returned a result perhaps better described as
 % "count trailing zeros" rather than "least significant digit". At that stage
-% it was rationalized to match its name. The hack here allows fof either old
+% it was rationalized to match its name. The hack here allows for either old
 % or new behaviour.
 !#if (equal (lsd 1) 0)
       ep := lsd mt;

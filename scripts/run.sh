@@ -1,7 +1,7 @@
 #! /bin/sh
 # This is called as
 #    run directory-it-is-in appname scriptname args
-# args can start with some mix of --nogui, --fox, --wx etc and those
+# args can start with some mix of --fox, --wx etc and those
 # are used to select a variant of the code to use, so in particular
 # --degug will select the (slower) debugging version and some of the
 # other options activate experimental development versions.
@@ -13,11 +13,23 @@ shift
 shift
 shift
 
+# If you need to debug this script alter maybe_echo so it displays stuff!
+#maybe_echo=echo
+maybe_echo=:
+
+# The options here are only really relevent to hard-core CSL hackers. They
+# make it possible to launch versions of the system that have been built
+# with various experimental and debugging options. There are here to make
+# it possible for those who are working on such developments to run their
+# special version of the code in a way that makes it easy for them to switch
+# between that and the standard version, and hence easy to compare output and
+# performance.
 while :
 do
+  $maybe_echo First arg: ${1:-nothing}
   case ${1:-nothing} in
-  --nogui)
-    nogui="-nogui"
+  --debug)
+    debug="-debug"
     shift
     ;;
   --fox)
@@ -28,10 +40,6 @@ do
     wx="-wx"
     shift
     ;;
-  --test)
-    test="-test"
-    shift
-    ;;
   --arithlib)
     arithlib="-arithlib"
     shift
@@ -40,56 +48,32 @@ do
     conservative="-conservative"
     shift
     ;;
-  --debug)
-    debug="-debug"
-    shift
-    ;;
   *)
     break
     ;;
   esac
 done
 
-version="$nogui$fox$wx$test$arithlib$conservative$debug"
+version="$fox$wx$arithlib$conservative$debug"
 
+$maybe_echo Operating system: x$OS
 case "x$OS" in
 xWindows_NT)
-# Here I have three situations that might be relevant:
-# (1) I am on a 32-bit Windows
-# (2) I am on 64-bit Windows running 32-bit cygwin
-# (3) I am running 64-bit cygwin
-  case `uname -a` in
-  *x86_64*)
-# 64-bit cygwin
-    c64="64";
-    try64="yes"
-    ;;
-  *WOW*)
-# 32-bit cygwin on 64-bit Windows
-    c64=""
-    try64="no"
-    ;;
-  *)
-# 32-bit Windows
-    c64=""
-    try64="no";
-    ;;
-  esac
 # Now I will want to check which variant of reduce to use...
   pre=""
   suffix=".com"
-  case `uname -m -o` in
-  x86_64*Cygwin)
-    for x in $*
-    do
-      if test "$x" = "--nogui" ||
-         test "$x" = "-w-" ||
-         test "$x" = "-w"
-      then
-        withgui="no"
-        break
-      fi
-    done
+
+  for x in $*
+  do
+    $maybe_echo Arg to executable: $x
+    if test "$x" = "--nogui" ||
+       test "$x" = "-w-" ||
+       test "$x" = "-w"
+    then
+      withgui="no"
+      break
+    fi
+  done
 # On Cygwin (and here I have the cygwin64 case) I will behave as follows:
 #    --nogui or -w or -w- present on the command line: these indicate
 # that a console style use of Reduce is required. So run the explicitly
@@ -97,43 +81,24 @@ xWindows_NT)
 # Also if the --nogui option is not selected so a GUI is requested and
 # if DISPLAY is set also use the cygwin64 version that will use X11 for its
 # display.
-    if test "$withgui" = "no" || ! test -z "$DISPLAY"
-    then
-      pre="cygwin64-"
-      suffix=".exe"
+  $maybe_echo withgui=$withgui DISPLAY=$DISPLAY
+  if test "$withgui" = "no" || ! test -z "$DISPLAY"
+  then
+    pre="cygwin64-"
+    suffix=".exe"
+    cygwin="yes"
 # Otherwise the request was for the default behaviour, which is to use
 # the GUI, and the Windows-native version should be the one used.
-    fi
-    ;;
+  fi
 
-  i686*Cygwin)
-    for x in $*
-    do
-      if test "$x" = "--nogui" ||
-         test "$x" = "-w-" ||
-         test "$x" = "-w"
-      then
-        withgui="no"
-        break
-      fi
-    done
-    if test "$withgui" = "no" || ! test -z "$DISPLAY"
-    then
-      pre="cygwin32-"
-      suffix=".exe"
-    fi
-    ;;
-
-  *)
-    ;;
-  esac
-
+  $maybe_echo ap=$ap
   if test "x$ap" = "xbootstrapreduce"
   then
     suffix=".exe"
   fi
 
 # If I have built anything using the "new layout" I will try that!
+  $maybe_echo test for new dir structure case $here/cslbuild/intel-pc-windows*
   case $here/cslbuild/intel-pc-windows*
   in
   \*)
@@ -147,42 +112,36 @@ xWindows_NT)
 # I put an ordered list of preferences here. I put 64-bit release
 # versions first: FOX-based, wxWidgets-based and a version without a GUI
 # at all. These (if available) will support large memory and might (I hope)
-# run fastest. Failing any of those I try a 32-bit version. If none of those
+# run fastest. If none of those
 # are present I try for the same varieties but with debug builds. I will use
 # the first of these where I find a built version...
 # I now put "intel-pc-windows" first and that is the name used by my
 # "new layout" - when it is in general use I can withdraw a load of the
 # rest of the complication that is here!
-  if test "$try64" = "yes"
+  $maybe_echo cygwin=$cygwin
+  if test "x$cygwin" = "xyes"
   then
-    if test "x$cygwin" = "xyes"
-    then
-      versions="intel-pc-windows \
-                x86_64-pc-cygwin \
-                i686-pc-cygwin"
-    else
-      versions="intel-pc-windows \
-                x86_64-pc-windows \
-                i686-pc-windows \
-                x86_64-pc-cygwin \
-                i686-pc-cygwin"
-    fi
+    versions="intel-pc-windows \
+              x86_64-pc-cygwin"
   else
-      versions="intel-pc-windows \
-                i686-pc-windows \
-                i686-pc-cygwin"
+    versions="intel-pc-windows \
+              x86_64-pc-windows \
+              x86_64-pc-cygwin"
   fi
+  $maybe_echo version=$versions
   for hx in $versions
   do
-#   echo Try: -x $here/../cslbuild/$hx$version/csl/$pre$ap$suffix
+    $maybe_echo Try: $here/../cslbuild/$hx$version/csl/$pre$ap$suffix
     if test -x $here/../cslbuild/$hx$version/csl/$pre$ap$suffix
     then
+      $maybe_echo exec $here/../cslbuild/$hx$version/csl/$pre$ap$suffix $xtra $CSLFLAGS $*
       exec $here/../cslbuild/$hx$version/csl/$pre$ap$suffix $xtra $CSLFLAGS $*
       exit 0
     fi
-#   echo Try: -x $here/..cslbuild/$hx$version/$pre$ap$suffix
+    $maybe_echo Try: $here/..cslbuild/$hx$version/$pre$ap$suffix
     if test -x $here/../cslbuild/$hx$version/$pre$ap$suffix
     then
+      $maybe_echo exec $here/../cslbuild/$hx$version/$pre$ap$suffix $xtra $CSLFLAGS $*
       exec $here/../cslbuild/$hx$version/$pre$ap$suffix $xtra $CSLFLAGS $*
       exit 0
     fi
@@ -192,21 +151,22 @@ xWindows_NT)
 # may sometimes help.
   for hx in $versions
   do
-#   echo Try: -x $here/../cslbuild/$hx$version/csl/$ap.exe
+    $maybe_echo Try: $here/../cslbuild/$hx$version/csl/$ap.exe
     if test -x $here/../cslbuild/$hx$version/csl/$ap.exe
     then
+      $maybe_echo exec $here/../cslbuild/$hx$version/csl/$ap.exe $xtra $CSLFLAGS $*
       exec $here/../cslbuild/$hx$version/csl/$ap.exe $xtra $CSLFLAGS $*
       exit 0
     fi
   done
-  host0="i686-pc-windows"
-  host="i686-pc-windows"
   ;;
 *)
   host0=`$here/../config.guess`
   host=`$here/findhost.sh $host0`
+  $maybe_echo if test -x $here/../cslbuild/$host$version/csl/$ap
   if test -x $here/../cslbuild/$host$version/csl/$ap
   then
+    $maybe_echo exec $here/../cslbuild/$host$version/csl/$ap $CSLFLAGS $*
     exec $here/../cslbuild/$host$version/csl/$ap $CSLFLAGS $*
     exit 0
   fi

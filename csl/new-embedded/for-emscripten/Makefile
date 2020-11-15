@@ -15,9 +15,9 @@
 
 # NOTE that my going "make USERFLAGS="-O0 -g" it is possible to override this
 # optimization level and get a debugging build.
-OPT=-O2
+OPT=-O3
 
-CC=em++ -s DISABLE_EXCEPTION_CATCHING=0 -s STACK_OVERFLOW_CHECK=2 \
+CC=em++ -s DISABLE_EXCEPTION_CATCHING=0 \
         -s EXIT_RUNTIME=1 -s TOTAL_STACK=5mb \
         -s MALLOC="dlmalloc" -s INITIAL_MEMORY=16777216 \
         -s ALLOW_MEMORY_GROWTH=1 -s SAFE_HEAP=1 \
