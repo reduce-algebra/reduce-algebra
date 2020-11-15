@@ -154,15 +154,10 @@ extern LispObject lisp_ifix(LispObject a, LispObject b,
                             int roundmode);
 
 
-// The following tests for IEEE infinities and NaNs depends on arithmetic
-// being regular double-precision rounded to a 64-bit double at each stage.
-// An old-enough Intel system might have used the 8087-style 80-bit floating
-// point and hance could cause trouble. I hope that all modern compilers
-// for that architecture will use SSE instructions that behave in a more
-// obvious IEEE manner.
+// The following tests for IEEE infinities and NaNs.
 
 inline bool floating_edge_case(double r)
-{   return (1.0/r == 0.0 || r != r);
+{   return !std::isfinite(r);
 }
 
 inline void floating_clear_flags()

@@ -73,9 +73,8 @@ uint32_t Idivide(uint32_t *qp, uint32_t a, uint32_t b, uint32_t c)
 static LispObject quotis(LispObject a, LispObject b)
 {   mv_2 = fixnum_of_int(0);
     double d = value_of_immediate_float(b);
-// Here and at least at present I explicitly fail if I try to divide by 0.0s0
-// while I could wish to return an infinity.
-    if (d == 0.0) aerror2("bad arg for quotient", a, b);
+// The next line can return an infinity or a NaN. These will be turned into
+// error reports if necessarby pack_immediate_float.
     d = static_cast<double>(int_of_fixnum(a))/d;
     return pack_immediate_float(b, b);
 }
@@ -194,14 +193,12 @@ static LispObject quotic(LispObject a, LispObject b)
 static LispObject quotif(LispObject a, LispObject b)
 {   double d = float_of_number(b);
     mv_2 = fixnum_of_int(0);
-    if (d == 0.0) aerror2("bad arg for quotient", a, b);
     d = static_cast<double>(int_of_fixnum(a)) / d;
     return make_boxfloat(d, type_of_header(flthdr(b)));
 }
 
 static LispObject quotsi(LispObject a, LispObject b)
-{   if (b == fixnum_of_int(0)) aerror2("bad arg for quotient", a, b);
-    mv_2 = fixnum_of_int(0);
+{   mv_2 = fixnum_of_int(0);
     double d = value_of_immediate_float(a)/static_cast<double>
                (int_of_fixnum(b));
     return pack_immediate_float(d, a);
@@ -217,7 +214,6 @@ static LispObject quotsi(LispObject a, LispObject b)
 
 static LispObject quotsb(LispObject a, LispObject b)
 {   double d = float_of_number(b);
-    if (d == 0.0) aerror2("bad arg for quotient", a, b);
     mv_2 = fixnum_of_int(0);
     d = value_of_immediate_float(a) / d;
     return pack_immediate_float(d, a);
@@ -225,7 +221,6 @@ static LispObject quotsb(LispObject a, LispObject b)
 
 static LispObject quotsr(LispObject a, LispObject b)
 {   double d = float_of_number(b);
-    if (d == 0.0) aerror2("bad arg for quotient", a, b);
     mv_2 = fixnum_of_int(0);
     d = value_of_immediate_float(a) / d;
     return pack_immediate_float(d, a);
@@ -236,7 +231,6 @@ static LispObject quotsr(LispObject a, LispObject b)
 
 static LispObject quotsf(LispObject a, LispObject b)
 {   double d = float_of_number(b);
-    if (d == 0.0) aerror2("bad arg for quotient", a, b);
     mv_2 = fixnum_of_int(0);
     d = value_of_immediate_float(a) / d;
     return make_boxfloat(d, type_of_header(flthdr(b)));
@@ -472,6 +466,7 @@ static LispObject quotbi(LispObject a, LispObject b)
     mv_2 = fixnum_of_int(0);
     if (b == fixnum_of_int(1)) return a;
     else if (b == fixnum_of_int(-1)) return negateb(a);
+// Fixnum division by zero is an error.
     else if (b == fixnum_of_int(0))
         aerror2("bad arg for quotient", a, b);
 // Beware: quotbn can only take a 31-bit second argument...
@@ -567,7 +562,6 @@ static LispObject quotrembi(LispObject a, LispObject b)
 
 static LispObject quotbs(LispObject a, LispObject b)
 {   double d = value_of_immediate_float(b);
-    if (d == 0.0) aerror2("bad arg for quotient", a, b);
     mv_2 = fixnum_of_int(0);
     d = float_of_number(a) / d;
     return pack_immediate_float(d, a);
@@ -1015,7 +1009,6 @@ LispObject quotbb(LispObject a, LispObject b, int need)
 
 static LispObject quotbf(LispObject a, LispObject b)
 {   double d = float_of_number(b);
-    if (d == 0.0) aerror2("bad arg for quotient", a, b);
     mv_2 = fixnum_of_int(0);
     d = float_of_number(a) / d;
     return make_boxfloat(d, type_of_header(flthdr(b)));
@@ -1047,12 +1040,10 @@ static LispObject quotri(LispObject a, LispObject b)
 
 static LispObject quotrs(LispObject a, LispObject b)
 {   double d = value_of_immediate_float(b);
-    if (d == 0.0) aerror2("bad arg for quotient", a, b);
     mv_2 = fixnum_of_int(0);
     d = float_of_number(a) / d;
     return pack_immediate_float(d, a);
 }
-
 
 static LispObject quotrr(LispObject a, LispObject b)
 {   LispObject w;
@@ -1093,7 +1084,6 @@ static LispObject quotrb(LispObject a, LispObject b)
 
 static LispObject quotrf(LispObject a, LispObject b)
 {   double d = float_of_number(b);
-    if (d == 0.0) aerror2("bad arg for quotient", a, b);
     mv_2 = fixnum_of_int(0);
     d = float_of_number(a) / d;
     return make_boxfloat(d, type_of_header(flthdr(b)));
@@ -1102,7 +1092,6 @@ static LispObject quotrf(LispObject a, LispObject b)
 static LispObject quotci(LispObject a, LispObject b)
 {   LispObject r = real_part(a), i = imag_part(a);
     mv_2 = fixnum_of_int(0);
-    if (b == fixnum_of_int(0)) aerror2("bad arg for quotient", a, b);
     push(b, r);
     i = quot2(i, b);
     pop(r, b);
@@ -1125,7 +1114,6 @@ static LispObject quotci(LispObject a, LispObject b)
 static LispObject quotfi(LispObject a, LispObject b)
 {   double d;
     mv_2 = fixnum_of_int(0);
-    if (b == fixnum_of_int(0)) aerror2("bad arg for quotient", a, b);
     d = float_of_number(a) / static_cast<double>(int_of_fixnum(b));
     return make_boxfloat(d, type_of_header(flthdr(a)));
 }
@@ -1133,7 +1121,6 @@ static LispObject quotfi(LispObject a, LispObject b)
 static LispObject quotfs(LispObject a, LispObject b)
 {   double d = float_of_number(b);
     mv_2 = fixnum_of_int(0);
-    if (d == 0.0) aerror2("bad arg for quotient", a, b);
     d = float_of_number(a) / d;
     return make_boxfloat(d, type_of_header(flthdr(a)));
 }
@@ -1141,7 +1128,6 @@ static LispObject quotfs(LispObject a, LispObject b)
 static LispObject quotfb(LispObject a, LispObject b)
 {   double d = float_of_number(b);
     mv_2 = fixnum_of_int(0);
-    if (d == 0.0) aerror2("bad arg for quotient", a, b);
     d = float_of_number(a) / d;
     return make_boxfloat(d, type_of_header(flthdr(a)));
 }
@@ -1149,7 +1135,6 @@ static LispObject quotfb(LispObject a, LispObject b)
 static LispObject quotfr(LispObject a, LispObject b)
 {   double d = float_of_number(b);
     mv_2 = fixnum_of_int(0);
-    if (d == 0.0) aerror2("bad arg for quotient", a, b);
     d = float_of_number(a) / d;
     return make_boxfloat(d, type_of_header(flthdr(a)));
 }
@@ -1176,10 +1161,8 @@ static LispObject quotff(LispObject a, LispObject b)
         if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
             hc = TYPE_DOUBLE_FLOAT;
         else hc = TYPE_SINGLE_FLOAT;
-    double d;
-    if ((d = float_of_number(b)) == 0.0)
-        aerror2("bad arg for quotient", a, b);
-    else return make_boxfloat(float_of_number(a) / d, hc);
+    double d = float_of_number(b);
+    return make_boxfloat(float_of_number(a) / d, hc);
 }
 
 LispObject quot2(LispObject a, LispObject b)
