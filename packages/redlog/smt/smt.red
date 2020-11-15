@@ -280,7 +280,7 @@ procedure smt_processGetModel();
  	    else if w = "anu" then
 	       car pr
  	    else
- 	       anu_evalf car pr}
+ 	       ioto_smaprin anu_evalfR car pr}
    end;
 
 procedure smt_rat2smt2(q);

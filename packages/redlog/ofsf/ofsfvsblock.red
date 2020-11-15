@@ -305,7 +305,7 @@ asserted procedure vs_block(f: QfFormula, vl: KernelL, theo: Theory, ans: Boolea
       if vsdb_ans db then <<
       	 ansal := vsdb_computeAns db;
       	 for each pr in ansal do
-      	    ioto_prin2t {car pr, " = ", anu_evalf cdr pr}
+      	    ioto_prin2t {car pr, " = ", ioto_smaprin anu_evalfR cdr pr}
       >>;
       return {rvl, {rf . nil}, theo}
    end;

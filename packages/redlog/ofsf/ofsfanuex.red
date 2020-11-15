@@ -1,4 +1,4 @@
-module ofsfanuex;  % Expresions with real  algebraic numbers.
+module ofsfanuex;  % Expresions with real algebraic numbers.
 
 revision('ofsfanuex, "$Id$");
 
@@ -57,10 +57,6 @@ bigvarpref!* := '!~var;
 bigvarcount!* := 0;
 smallvarpref!* := '!&var;
 smallvarcount!* := 99999;
-
-global '(!*NaN!*);
-
-!*NaN!* := "NaN";
 
 procedure ofsf_mksmallid();
    begin scalar w; integer d;
@@ -1689,32 +1685,20 @@ asserted procedure anu_approx(a: Anu): Rational;
 asserted procedure anu_approxEnough(lb: Rational, ub: Rational): Boolean;
    rat_less(rat_minus(ub, lb), 1 ./ (10^anu_precision!*));
 
-asserted procedure anu_evalf(a: Anu): Any;
+asserted procedure anu_evalf(a: Anu): Floating;
    % Algebraic number evaluate floating point. Returns a floating point
    % approximation of [a], which is precise up to [anu_precision!*] decimal
-   % places. Machine floats are used for this computation. Returns !*NaN!* in
-   % case of overflow.
+   % places. Machine floats are used for this computation.
    begin scalar iv, ra, lb, ub;
       ra := a;
       repeat <<
       	 ra := anu_refine ra;
 	 iv := anu_iv ra;
-	 lb := errorset({'anu_sq2float, mkquote car iv}, nil, nil);
-	 if errorp lb then
- 	    lb := !*NaN!*
- 	 else <<
- 	    lb := car lb;
-	    ub := errorset({'anu_sq2float, mkquote cdr iv}, nil, nil);
-	    ub := if errorp ub then !*NaN!* else car ub
-	 >>;
-%% 	 lb := float(numr car iv or 0)/float denr car iv;
-%% 	 ub := float(numr cdr iv or 0)/float denr cdr iv
-      >> until lb = !*NaN!* or ub = !*NaN!* or anu_approxEqualEnough(lb, ub);
-      return if ub = !*NaN!* then ub else lb
+ 	 lb := float(numr car iv or 0) / float denr car iv;
+ 	 ub := float(numr cdr iv or 0) / float denr cdr iv
+      >> until fp!-nan lb or fp!-nan ub or (fp!-finite lb and fp!-finite ub and anu_approxEqualEnough(lb, ub));
+      return if fp!-nan lb then ub else lb
    end;
-
-asserted procedure anu_sq2float(b: SQ): Floating;
-   float(numr b or 0)/float denr b;
 
 asserted procedure anu_approxEqualEnough(lb: Floating, ub: Floating): Boolean;
    eqn(fix(lb * 10^anu_precision!*) - fix(ub * 10^anu_precision!*), 0);

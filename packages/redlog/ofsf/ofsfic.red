@@ -1717,7 +1717,7 @@ procedure ofsfic!*ofsf_qemkans(an, svf);
       >>;
       anual := ofsfic_qemkstdans an;
 %%       for each pr in anual do
-%%       	 ioto_tprin2t {car pr, " = ", anu_evalf cdr pr};
+%%       	 ioto_tprin2t {car pr, " = ", ioto_smaprin anu_evalfR cdr pr};
 %%       ioto_tprin2t {"MODEL IN FORM OF (POSSIBLY NEGATED) EQUATIONS:"};
 %%       for each al on anual do <<
 %% 	 w := car al;

@@ -2424,7 +2424,7 @@ procedure ofsf_findrat(anu1, anu2);
 procedure ofsf_qemkstdansupdmin(qmc, qca, manuv, manu, canuv, canu, anuv, anu);
    begin scalar aex, cdp, iv, mdp;
       aex := aex_mk(qca, ctx_fromial {canuv . canu, anuv . anu});
-      %ioto_tprin2t {"canu - anu = ", anu_evalf anu_fromAex aex, " sign = ", aex_sgn aex};
+      %ioto_tprin2t {"canu - anu = ", ioto_smaprin anu_evalfR anu_fromAex aex, " sign = ", aex_sgn aex};
       %ioto_tprin2t {"canu - anu = ", aex, " sign = ", aex_sgn aex};
       if aex_sgn aex < 1 then
 	 return 'lanu . manu;
