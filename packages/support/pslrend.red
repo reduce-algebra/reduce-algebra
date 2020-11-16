@@ -772,6 +772,14 @@ inline procedure putv16(v, n, x); putv(v, n, x);
 
 inline procedure getv16(v, n); getv(v, n);
 
+symbolic procedure trap!-floating!-overflow bool;
+  << if bool then fp!-except!-mode!* := 1
+      else fp!-except!-mode!* := 0;
+     old neq 0
+  >> where old := fp!-except!-mode!*;
+
+trap!-floating!-overflow nil;   % set IEEE mode
+
 global '(!*psl !*csl);
 
 !*psl := t;
