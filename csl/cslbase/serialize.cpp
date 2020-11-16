@@ -138,7 +138,7 @@
 // During garbage collection and when re-read from a
 // serialized form ant object that might have a header saying TYPE_HASH
 // has that updates to be TYPE_HASHX where this new marker indicates a
-// hash table whos eelements may not be in the correct locations. Then any
+// hash table whose elements may not be in the correct locations. Then any
 // operation on the hash table can check for TYPE_HASHX and if it sees
 // it re-hash and reset the table to TYPE_HASH.
 //
@@ -1166,52 +1166,87 @@ int mainstatic_cast<void>()
 
 // [End of crc64 source code]
 
-// I use a function "crc32" from zlib...
+std::vector<no_args *> codepointers0;
+std::vector<one_arg *> codepointers1;
+std::vector<two_args *> codepointers2;
+std::vector<three_args *> codepointers3;
+std::vector<fourup_args *> codepointers4up;
+std::unordered_map<no_args *,size_t> codehash0;
+std::unordered_map<one_arg *,size_t> codehash1;
+std::unordered_map<two_args *,size_t> codehash2;
+std::unordered_map<three_args *,size_t> codehash3;
+std::unordered_map<fourup_args *,size_t> codehash4up;
 
-// A raw CSL Lisp provides around 850 entrypounts, while a full copy of
-// Reduce with all the files u01.cpp to u60.cpp populated ends up with
-// somewhat under 4000 entrypoints. At present I am using fixed size
-// tables here and fixed hash functions. This is in principle unsatisfactory
-// because somebody could expand the number of entrypoints. I propose
-// not to worry about that now. But please note that "entrypoints" refers
-// to things present in the C++ code and so it is not noticably influenced
-// but changes in the rlisp sourec code making up Reduce.
-//
-
-#define NCODEPOINTERS 5000U
-
-size_t ncodepointers = 0;
-intptr_t codepointers[NCODEPOINTERS];
-
-inthash codehash;
-
-bool insert_codepointer(uintptr_t x, const char *s)
-{
-// If this codepointer is one I have seen before then do nothing and return
-// false.
-    if (hash_lookup(&codehash, x) != (size_t)(-1)) return false;
-// Add to the table of code-pointers, recording where it goes.
-    size_t pos = hash_insert(&codehash, x);
-    hash_set_value(&codehash, pos, ncodepointers);
-    if (ncodepointers >= NCODEPOINTERS)
-    {   std::fprintf(stderr, "Too many built-in functions. Please increase NCODEPOINTERS\n");
-        std::fprintf(stderr, "in serialize.cpp. Current value is %u\n", NCODEPOINTERS);
-        my_abort();
+bool insert_codepointer0(no_args *x)
+{   try
+    {   static_cast<void>(codehash0.at(x));
+        return false;
     }
-    codepointers[ncodepointers++] = x;
+    catch (std::out_of_range &e)
+    {   codehash0[x] = codepointers0.size();
+        codepointers0.push_back(x);
+    }
+    return true;
+}
+
+bool insert_codepointer1(one_arg *x)
+{   try
+    {   static_cast<void>(codehash1.at(x));
+        return false;
+    }
+    catch (std::out_of_range &e)
+    {   codehash1[x] = codepointers1.size();
+        codepointers1.push_back(x);
+    }
+    return true;
+}
+
+bool insert_codepointer2(two_args *x)
+{   try
+    {   static_cast<void>(codehash2.at(x));
+        return false;
+    }
+    catch (std::out_of_range &e)
+    {   codehash2[x] = codepointers2.size();
+        codepointers2.push_back(x);
+    }
+    return true;
+}
+
+bool insert_codepointer3(three_args *x)
+{   try
+    {   static_cast<void>(codehash3.at(x));
+        return false;
+    }
+    catch (std::out_of_range &e)
+    {   codehash3[x] = codepointers3.size();
+        codepointers3.push_back(x);
+    }
+    return true;
+}
+
+bool insert_codepointer4up(fourup_args *x)
+{   try
+    {   static_cast<void>(codehash4up.at(x));
+        return false;
+    }
+    catch (std::out_of_range &e)
+    {   codehash4up[x] = codepointers4up.size();
+        codepointers4up.push_back(x);
+    }
     return true;
 }
 
 uint64_t use_setup(uint64_t crc, const setup_type *p)
 {   while (p->name != nullptr)
     {   unsigned char n = 0;
-        if (insert_codepointer((uintptr_t)(p->zero), p->name)) n += 1;
-        if (insert_codepointer((uintptr_t)(p->one), p->name)) n += 2;
-        if (insert_codepointer((uintptr_t)(p->two), p->name)) n += 4;
-        if (insert_codepointer((uintptr_t)(p->three), p->name)) n += 8;
-        if (insert_codepointer((uintptr_t)(p->fourup), p->name)) n += 16;
+        if (insert_codepointer0(p->zero)) n += 1;
+        if (insert_codepointer1(p->one)) n += 2;
+        if (insert_codepointer2(p->two)) n += 4;
+        if (insert_codepointer3(p->three)) n += 8;
+        if (insert_codepointer4up(p->fourup)) n += 16;
         crc = crc64(crc, &n, 1);
-        crc = crc64(crc, reinterpret_cast<const unsigned char *>(p->name), std::strlen(p->name));
+        crc = crc64(crc, p->name, std::strlen(p->name));
         p++;
     }
     return crc;
@@ -1221,11 +1256,16 @@ uint64_t function_crc = 0;
 
 void set_up_function_tables()
 {   uint64_t crc = 0;
-    hash_init(&codehash);
-    ncodepointers = 0;
-// I put a value that I expect to be invalid at position zero in the table
-// so that if by accident I retrieve it I will see a visible crash (I hope).
-    codepointers[ncodepointers++] = (intptr_t)(-1);
+    codehash0.clear();
+    codehash1.clear();
+    codehash2.clear();
+    codehash3.clear();
+    codehash4up.clear();
+    codepointers0.clear();
+    codepointers1.clear();
+    codepointers2.clear();
+    codepointers3.clear();
+    codepointers4up.clear();
 // The code here must find all the function addresses that are built
 // into CSL that might legitimately end up within a heap image. The
 // code sets up a 64-bit CRC code this is intended to be a signature
@@ -1233,32 +1273,32 @@ void set_up_function_tables()
 // buy one system does not get re-loaded by an incompatible one.
 // Each entrypoint is allocated a sequence number and everything is
 // collected both in a hash table (codehash) that can map code-pointers
-// to index values, and a table (codepointers) that is a single
-// indexable array of the entrypoints. For Reduce there are somewhat under
+// to index values, and a table (codepointers) that is an indexable array
+// of the entrypoints. For Reduce there are somewhat under
 // 4000 pointers to handle here, so costs are not too severe.
     for (entry_point0 *p = &entries_table0[1]; p->p!=nullptr; p++)
-    {   insert_codepointer((uintptr_t)p->p, p->s);
-        crc = crc64(crc, reinterpret_cast<const unsigned char *>(p->s), std::strlen(p->s));
+    {   insert_codepointer0(p->p);
+        crc = crc64(crc, p->s, std::strlen(p->s));
     }
     for (entry_point1 *p = &entries_table1[1]; p->p!=nullptr; p++)
-    {   insert_codepointer((uintptr_t)p->p, p->s);
-        crc = crc64(crc, reinterpret_cast<const unsigned char *>(p->s), std::strlen(p->s));
+    {   insert_codepointer1(p->p);
+        crc = crc64(crc, p->s, std::strlen(p->s));
     }
     for (entry_point2 *p = &entries_table2[1]; p->p!=nullptr; p++)
-    {   insert_codepointer((uintptr_t)p->p, p->s);
-        crc = crc64(crc, reinterpret_cast<const unsigned char *>(p->s), std::strlen(p->s));
+    {   insert_codepointer2(p->p);
+        crc = crc64(crc, p->s, std::strlen(p->s));
     }
     for (entry_point3 *p = &entries_table3[1]; p->p!=nullptr; p++)
-    {   insert_codepointer((uintptr_t)p->p, p->s);
-        crc = crc64(crc, reinterpret_cast<const unsigned char *>(p->s), std::strlen(p->s));
+    {   insert_codepointer3(p->p);
+        crc = crc64(crc, p->s, std::strlen(p->s));
     }
     for (entry_point4up *p = &entries_table4up[1]; p->p!=nullptr; p++)
-    {   insert_codepointer((uintptr_t)p->p, p->s);
-        crc = crc64(crc, reinterpret_cast<const unsigned char *>(p->s), std::strlen(p->s));
+    {   insert_codepointer4up(p->p);
+        crc = crc64(crc, p->s, std::strlen(p->s));
     }
     for (entry_point1 *p = &entries_tableio[1]; p->p!=nullptr; p++)
-    {   insert_codepointer((uintptr_t)p->p, p->s);
-        crc = crc64(crc, reinterpret_cast<const unsigned char *>(p->s), std::strlen(p->s));
+    {   insert_codepointer1(p->p);
+        crc = crc64(crc, p->s, std::strlen(p->s));
     }
     const setup_type **p = setup_tables;
     while (*p != nullptr) crc = use_setup(crc, *p++);
@@ -1268,28 +1308,78 @@ void set_up_function_tables()
     function_crc = crc;
 }
 
-void *read_function()
+no_args *read_function0()
 {   uint64_t handle = read_u64();
-    if (handle == 0 || handle >= ncodepointers)
+    if (handle >= codepointers0.size())
     {   std::fprintf(stderr, "Invalid code handle read (%" PRIu64 " / %" PRIx64 ")\n",
                 handle, handle);
         my_abort();
     }
-    return reinterpret_cast<void *>(codepointers[handle]);
+    return codepointers0[handle];
 }
 
-void write_function(void *p)
-{   size_t h = hash_lookup(&codehash, (intptr_t)p);
-    if (h == (size_t)(-1))
-    {   std::fprintf(stderr, "Unknown item used as code pointer (%p)\n", p);
+one_arg *read_function1()
+{   uint64_t handle = read_u64();
+    if (handle >= codepointers1.size())
+    {   std::fprintf(stderr, "Invalid code handle read (%" PRIu64 " / %" PRIx64 ")\n",
+                handle, handle);
         my_abort();
     }
-    uint64_t handle = hash_get_value(&codehash, h);
-    if (handle == 0 || handle >= ncodepointers)
-    {   std::fprintf(stderr, "Invalid code handle recovered for writing codepointer\n");
-        std::fprintf(stderr, "codehash hash-table presumed messed up!\n");
+    return codepointers1[handle];
+}
+
+two_args *read_function2()
+{   uint64_t handle = read_u64();
+    if (handle >= codepointers2.size())
+    {   std::fprintf(stderr, "Invalid code handle read (%" PRIu64 " / %" PRIx64 ")\n",
+                handle, handle);
         my_abort();
     }
+    return codepointers2[handle];
+}
+
+three_args *read_function3()
+{   uint64_t handle = read_u64();
+    if (handle >= codepointers3.size())
+    {   std::fprintf(stderr, "Invalid code handle read (%" PRIu64 " / %" PRIx64 ")\n",
+                handle, handle);
+        my_abort();
+    }
+    return codepointers3[handle];
+}
+
+fourup_args *read_function4up()
+{   uint64_t handle = read_u64();
+    if (handle >= codepointers4up.size())
+    {   std::fprintf(stderr, "Invalid code handle read (%" PRIu64 " / %" PRIx64 ")\n",
+                handle, handle);
+        my_abort();
+    }
+    return codepointers4up[handle];
+}
+
+void write_function0(no_args *p)
+{   size_t handle = codehash0[p];
+    write_u64(handle);
+}
+
+void write_function1(one_arg *p)
+{   size_t handle = codehash1[p];
+    write_u64(handle);
+}
+
+void write_function2(two_args *p)
+{   size_t handle = codehash2[p];
+    write_u64(handle);
+}
+
+void write_function3(three_args *p)
+{   size_t handle = codehash3[p];
+    write_u64(handle);
+}
+
+void write_function4up(fourup_args *p)
+{   size_t handle = codehash4up[p];
     write_u64(handle);
 }
 
@@ -1634,11 +1724,11 @@ down:
                     setheader(w, static_cast<Header>((read_u64()<<(Tw+4)) + TAG_HDR_IMMED));
 // I will first fill in the fields that hold binary data or pointers to
 // executable code.
-                    qfn0(w) = (no_args *)read_function();
-                    qfn1(w) = (one_arg *)read_function();
-                    qfn2(w) = (two_args *)read_function();
-                    qfn3(w) = (three_args *)read_function();
-                    qfn4up(w) = (fourup_args *)read_function();
+                    qfn0(w) = read_function0();
+                    qfn1(w) = read_function1();
+                    qfn2(w) = read_function2();
+                    qfn3(w) = read_function3();
+                    qfn4up(w) = read_function4up();
                     qcount(w) = countOfValue(read_u64());
 // Now to allow me to feel safe I will put NIL in all the other fields
 // on a provisional basis. They get their proper values later.
@@ -2798,11 +2888,11 @@ down:
 // will be 1 byte long in easy cases but can cope with 2^64 possibilities in
 // all if necessary.
             write_u64(((uint64_t)qheader(p))>>(Tw+4));
-            write_function(reinterpret_cast<void *>(reinterpret_cast<no_args *>(qfn0(p))));
-            write_function(reinterpret_cast<void *>(reinterpret_cast<one_arg *>(qfn1(p))));
-            write_function(reinterpret_cast<void *>(reinterpret_cast<two_args *>(qfn2(p))));
-            write_function(reinterpret_cast<void *>(reinterpret_cast<three_args *>(qfn3(p))));
-            write_function(reinterpret_cast<void *>(reinterpret_cast<fourup_args *>(qfn4up(p))));
+            write_function0(qfn0(p));
+            write_function1(qfn1(p));
+            write_function2(qfn2(p));
+            write_function3(qfn3(p));
+            write_function4up(qfn4up(p));
             write_u64(valueOfCount(qcount(p)));
             w = p;
             p = qpname(p);
@@ -3669,7 +3759,7 @@ void write_everything()
         scan_data(qpackage(nil));
 // Next the major list-bases.
         for (LispObject **p = list_bases; *p!=nullptr; p++)
-        {   std::sprintf(trigger, "list base %p scan", reinterpret_cast<void *>(**p));
+        {   std::sprintf(trigger, "list base %" PRIxPTR " scan", **p);
             scan_data(**p);
         }
     }

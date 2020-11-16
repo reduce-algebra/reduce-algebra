@@ -168,7 +168,7 @@ char program_name[64] = {0};
 
 char **loadable_packages = nullptr, **switches = nullptr;
 
-bool trap_floating_overflow = true;
+bool trap_floating_overflow = false;
 
 int procstackp;
 

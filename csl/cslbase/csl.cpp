@@ -975,7 +975,10 @@ std::jmp_buf *global_jb;
 bool stop_on_error = false;
 
 static void lisp_main()
-{   trap_floating_overflow = true;
+{
+// As of mid-November 2020 CSL will deliver IEEE infinty for 1.0/0.0 and
+// a NaN for 0.0/0.0 rather than raising an exception.
+    trap_floating_overflow = false;
     tty_count = 0;
     while (true)
 //

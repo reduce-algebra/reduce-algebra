@@ -1475,248 +1475,137 @@ inline LispObject pack_char(int font, unsigned int code)
 //
 #define CHAR_EOF pack_char(0, 0x0010ffff)
 
-typedef int32_t
-junk;      // Unused 4-byte field for structures (for padding)
-typedef intptr_t junkxx;   // Unused cell-sized field for structures
-
 typedef struct Symbol_Head_
-{   Header header;       // Standard format header for vector types
-    LispObject value;    // Global or special value cell
-
-    LispObject env;      // Extra stuff to help function cell
-    LispObject plist;    // A list
-
-    LispObject fastgets; // to speed up flagp and get
-    LispObject package;  // Home package - a package object
-
-    LispObject pname;    // A string (always)
-    intptr_t function0;  // Executable code always (no arguments)
-
-    intptr_t function1;  // Executable code always (just 1 arg)
-    intptr_t function2;  // Executable code always (just 2 args)
-
-    intptr_t function3;  // Executable code always (just 3 args)
-    intptr_t function4up;// Executable code always (3 args + list of rest)
-
-    uint64_t count;      // for statistics
+{   std::atomic<Header> header;       // Header as for other vector-like types
+    std::atomic<LispObject> value;    // Global or special value cell
+    std::atomic<LispObject> env;      // Extra stuff to help function cell
+    std::atomic<LispObject> plist;    // A list
+    std::atomic<LispObject> fastgets; // to speed up flagp and get
+    std::atomic<LispObject> package;  // Home package - a package object
+    std::atomic<LispObject> pname;    // A string (always)
+    std::atomic<uint64_t> count;      // for statistics
+    no_args *function0;      // Executable code always (no arguments)
+    one_arg *function1;      // Executable code always (just 1 arg)
+    two_args *function2;     // Executable code always (just 2 args)
+    three_args *function3;   // Executable code always (just 3 args)
+    fourup_args *function4up;// Executable code always (3 args + list of rest)
 } Symbol_Head;
-
-#ifdef FUTURE_IDEA
-
-// If I move the function cells into a separate structure I make
-// "anonymous functions" more proper, and I save memory in the headers
-// of all symbols that do not actually have a definition. Let me quote
-// snapshot figures for Reduce (with EVERYTHING loaded)...
-// There are 41500 symbols of which 3700 have definitions as functions.
-// On a 64-bit system with the existing scheme that represents 4.3 Mbytes
-// of space in symbol headers. With the "idea" scheme that would end up
-// as 2.5 Mbytes. Or if some user created 100K gensyms then the new scheme
-// would save not that far short of 5 Mbytes.
-//
-// Hmmm these space savings are not utterly convincing in today's world,
-// even though the proposed scheme looks "tidy". More thought is needed!
-
-typedef struct Symbol_Head_
-{   Header header;       // Standard format header for vector types
-    LispObject value;    // Global or special value cell
-
-    LispObject plist;    // A list
-    LispObject fastgets; // to speed up flagp and get
-
-    LispObject pname;    // A string (always)
-    LispObject package;  // Home package - a package object
-
-    LispObject function; // A "function" object
-    uintptr_t count;     // for statistics
-} Symbol_Head;
-
-
-typedef struct Function_Object_
-{   Header header;       // Standard format header for vector types
-    LispObject env;      // Extra stuff to provide literals etc
-
-    intptr_t function0;  // Executable code always (no arguments)
-    intptr_t function1;  // Executable code always (just 1 arg)
-
-    intptr_t function2;  // Executable code always (just 2 args)
-    intptr_t function3;  // Executable code always (just 3 args)
-
-    intptr_t function4up;// Executable code always (3 args + list of rest)
-    uintptr_t count;     // for statistics
-} Function_Object;
-
-// Furthermore bytecoded functions could have the bytes of their definition
-// stored at the end of the Function_Object. That would save an indirection
-// fetching them and the space for their header word. The space saving from
-// that would be at most 100K, but again I think it would win as regards
-// elegance.
-
-typedef struct Bytecoded_Function_Object_
-{   Header header;       // Standard format header for vector types
-    LispObject env;      // Extra stuff to provide literals etc
-
-    intptr_t function0;  // Executable code always (no arguments)
-    intptr_t function1;  // Executable code always (just 1 arg)
-
-    intptr_t function2;  // Executable code always (just 2 args)
-    intptr_t function3;  // Executable code always (just 3 args)
-
-    intptr_t function4up;// Executable code always (3 args + list of rest)
-    uintptr_t count;     // for statistics
-    unsigned char bytecodes[]; // length deduced from header word
-} Bytecoded_Function_Object;
-
-#endif // FUTURE_IDEA
 
 #define MAX_FASTGET_SIZE  63
 // I have up to 63 "fast" tags for PUT/GET/FLAG/FLAGP
 
-//
-// The access macros are coded this way rather than using -> and
-// a structure since this reveals directly what offsets are involved
-// in the addressing, and so gives the C compiler an easier job!
-// There are so many casts anyway that this is not so very bad really!
-// I also use absolute numeric offsets (and do not use the offsetof
-// macro) to stress that I view the store layout as fixed, and because
-// offsetof is badly supported by some C compilers I have come across.
-//
 inline Header qheader(LispObject p,
                       std::memory_order mo=std::memory_order_relaxed)
-{   return (reinterpret_cast<atomic<Header> *>
-            (reinterpret_cast<char *>(p) + (0*CELL-TAG_SYMBOL)))->load(mo);
+{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->header.load(mo);
 }
 
 inline LispObject qvalue(LispObject p,
                          std::memory_order mo=std::memory_order_relaxed)
-{   return (reinterpret_cast<atomic<LispObject> *>
-            (reinterpret_cast<char *>(p) + (1*CELL-TAG_SYMBOL)))->load(mo);
+{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->value.load(mo);
 }
 
 inline LispObject qenv(LispObject p,
                        std::memory_order mo=std::memory_order_relaxed)
-{   return (reinterpret_cast<atomic<LispObject> *>
-            (reinterpret_cast<char *>(p) + (2*CELL-TAG_SYMBOL)))->load(mo);
+{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->env.load(mo);
 }
 
 inline LispObject qplist(LispObject p,
                          std::memory_order mo=std::memory_order_relaxed)
-{   return (reinterpret_cast<atomic<LispObject> *>
-            (reinterpret_cast<char *>(p) + (3*CELL-TAG_SYMBOL)))->load(mo);
+{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->plist.load(mo);
 }
 
 inline LispObject qfastgets(LispObject p,
                             std::memory_order mo=std::memory_order_relaxed)
-{   return (reinterpret_cast<atomic<LispObject> *>
-            (reinterpret_cast<char *>(p) + (4*CELL-TAG_SYMBOL)))->load(mo);
+{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->fastgets.load(mo);
 }
 
 inline LispObject qpackage(LispObject p,
                            std::memory_order mo=std::memory_order_relaxed)
-{   return (reinterpret_cast<atomic<LispObject> *>
-            (reinterpret_cast<char *>(p) + (5*CELL-TAG_SYMBOL)))->load(mo);
+{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->package.load(mo);
 }
 
 inline LispObject qpname(LispObject p,
                          std::memory_order mo=std::memory_order_relaxed)
-{   return (reinterpret_cast<atomic<LispObject> *>
-            (reinterpret_cast<char *>(p) + (6*CELL-TAG_SYMBOL)))->load(mo);
+{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->pname.load(mo);
 }
 
 inline atomic<LispObject> *valueaddr(LispObject p)
-{   return reinterpret_cast<atomic<LispObject> *>
-           (reinterpret_cast<char *>(p) + (1*CELL-TAG_SYMBOL));
+{   return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->value);
 }
 
 inline atomic<LispObject> *envaddr(LispObject p)
-{   return reinterpret_cast<atomic<LispObject> *>
-           (reinterpret_cast<char *>(p) + (2*CELL-TAG_SYMBOL));
+{   return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->env);
 }
 
 inline atomic<LispObject> *plistaddr(LispObject p)
-{   return reinterpret_cast<atomic<LispObject> *>
-           (reinterpret_cast<char *>(p) + (3*CELL-TAG_SYMBOL));
+{   return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->plist);
 }
 
 inline atomic<LispObject> *fastgetsaddr(LispObject p)
-{   return reinterpret_cast<atomic<LispObject> *>
-           (reinterpret_cast<char *>(p) + (4*CELL-TAG_SYMBOL));
+{   return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->fastgets);
 }
 
 inline atomic<LispObject> *packageaddr(LispObject p)
-{   return reinterpret_cast<atomic<LispObject> *>
-           (reinterpret_cast<char *>(p) + (5*CELL-TAG_SYMBOL));
+{   return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->package);
 }
 
 inline atomic<LispObject> *pnameaddr(LispObject p)
-{   return reinterpret_cast<atomic<LispObject> *>
-           (reinterpret_cast<char *>(p) + (6*CELL-TAG_SYMBOL));
+{   return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->pname);
 }
 
 inline void setheader(LispObject p, Header h,
                       std::memory_order mo=std::memory_order_relaxed)
-{   (reinterpret_cast<atomic<Header> *>(reinterpret_cast<char *>
-                                        (p) + (0*CELL-TAG_SYMBOL)))->store(h, mo);
+{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->header.store(h, mo);
 }
 
 inline void setvalue(LispObject p, LispObject q,
                      std::memory_order mo=std::memory_order_relaxed)
-{   (reinterpret_cast<atomic<LispObject> *>(reinterpret_cast<char *>
-                                            (p) + (1*CELL-TAG_SYMBOL)))->store(q, mo);
+{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->value.store(q, mo);
 }
 
 inline void setenv(LispObject p, LispObject q,
                    std::memory_order mo=std::memory_order_relaxed)
-{   (reinterpret_cast<atomic<LispObject> *>(reinterpret_cast<char *>
-                                            (p) + (2*CELL-TAG_SYMBOL)))->store(q, mo);
+{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->env.store(q, mo);
 }
 
 inline void setplist(LispObject p, LispObject q,
                      std::memory_order mo=std::memory_order_relaxed)
-{   (reinterpret_cast<atomic<LispObject> *>(reinterpret_cast<char *>
-                                            (p) + (3*CELL-TAG_SYMBOL)))->store(q, mo);
+{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->plist.store(q, mo);
 }
 
 inline void setfastgets(LispObject p, LispObject q,
                         std::memory_order mo=std::memory_order_relaxed)
-{   (reinterpret_cast<atomic<LispObject> *>(reinterpret_cast<char *>
-                                            (p) + (4*CELL-TAG_SYMBOL)))->store(q, mo);
+{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->fastgets.store(q, mo);
 }
 
 inline void setpackage(LispObject p, LispObject q,
                        std::memory_order mo=std::memory_order_relaxed)
-{   (reinterpret_cast<atomic<LispObject> *>(reinterpret_cast<char *>
-                                            (p) + (5*CELL-TAG_SYMBOL)))->store(q, mo);
+{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->package.store(q, mo);
 }
 
 inline void setpname(LispObject p, LispObject q,
                      std::memory_order mo=std::memory_order_relaxed)
-{   (reinterpret_cast<atomic<LispObject> *>(reinterpret_cast<char *>
-                                            (p) + (6*CELL-TAG_SYMBOL)))->store(q, mo);
+{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->pname.store(q, mo);
 }
 
 inline no_args*& qfn0(LispObject p)
-{   return *((no_args **)(reinterpret_cast<char *>(p) +
-                          (7*CELL-TAG_SYMBOL)));
+{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function0;
 }
 
 inline one_arg*& qfn1(LispObject p)
-{   return *(one_arg **)(reinterpret_cast<char *>(p) +
-                         (8*CELL-TAG_SYMBOL));
+{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function1;
 }
 
 inline two_args*& qfn2(LispObject p)
-{   return *(two_args **)(reinterpret_cast<char *>(p) +
-                          (9*CELL-TAG_SYMBOL));
+{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function2;
 }
 
 inline three_args*& qfn3(LispObject p)
-{   return *(three_args **)(reinterpret_cast<char *>(p) +
-                            (10*CELL-TAG_SYMBOL));
+{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function3;
 }
 
 inline fourup_args*& qfn4up(LispObject p)
-{   return *(fourup_args **)(reinterpret_cast<char *>(p) +
-                             (11*CELL-TAG_SYMBOL));
+{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function4up;
 }
 
 [[noreturn]] extern LispObject aerror1(const char *s, LispObject a);
@@ -1752,7 +1641,7 @@ inline void a4a5a6(const char *name, LispObject a4up,
 }
 
 // I store qcount as an unsigned 64-bit integer, but to allow for a
-// conservative garbage collector I want it to be garbage collecor safe at
+// conservative garbage collector I want it to be garbage collector safe at
 // all times. On a 64-bit machine I can achieve that by arranging that
 // its bottom 4 bits are always TAG_FIXNUM and that when I want to
 // increment it I do so by 0x10. On a 32-bit platform it is slightly
@@ -1761,10 +1650,13 @@ inline void a4a5a6(const char *name, LispObject a4up,
 // such that on little endian computers if accessed as a pair of adjacent
 // 32-bit values each will look like a fixnum (and hence be GC safe).
 // Incrementing such a value in an atomic manner adds fun to the code!
+//
+// By "safe" here what I mean is that I do not want the count field to
+// be able to be confused with a valid Lisp pointer and this keep some
+// structure unnecessarily pinned.
 
 inline atomic<uint64_t>& qcount(LispObject p)
-{   return *(atomic<uint64_t> *)(reinterpret_cast<char *>(p) +
-                                 (12*CELL-TAG_SYMBOL));
+{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->count;
 }
 
 #ifdef SIXTY_FOUR_BIT
@@ -1991,12 +1883,9 @@ inline int32_t& intfloat32_t_val(LispObject v)
 //  typedef struct Double_Float_
 //  {
 //      Header header;
-//                            // SIXTY_FOUR_BIT is not a compile-time constant
-//  #ifndef SIXTY_FOUR_BIT    // Can not do this #ifdef!!
-//      junk padding;         // for 64-bit the header was 64 bits wide
-//  #endif
-//      union double_or_ints {
-//          double f;         // padded to doubleword align the data.
+//  // I want the data to 
+//      alignas (8) union double_or_ints {
+//          double f;
 //          float64_t f64;
 //          int32_t i[2];
 //          int64_t ii;
@@ -2062,13 +1951,10 @@ inline int32_t& intfloat64_t_val_lo(LispObject v)
 //  typedef struct Long_Float_
 //  {
 //      Header header;
-//  #ifndef SIXTY_FOUR_BIT  // Illegal #ifdef here!
-//      junk padding;
-//  #endif
 //  What follows ALWAYS starts exactly 8 bytes on from the start
 //  of the object, ie (8-TAG_BOXFLOAT) bytes on from the tagged pointer
 //  that identifies it.
-//      union long_or_ints {
+//      alignas (8) union long_or_ints {
 //          float128_t f128;
 //          int32_t i[4];
 //          int64_t ii[2];
