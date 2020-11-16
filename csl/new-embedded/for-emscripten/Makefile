@@ -17,33 +17,16 @@
 # optimization level and get a debugging build.
 OPT=-O3
 
-#       -s WASM_BIGINT=1
-#	-s EMULATE_FUNCTION_POINTER_CASTS=1
-	
+CC=em++
 
-CATCHERS=main,bytestream_interpret1,lisp_main,setupArgs,cslstart,fwin_main,read_eval_print,Lrdf4,apply_lambda,block_fn,catch_fn.letstar_fn,prog_fn,tagbody_fn,unwind_protect_fn,errorset3,resource_limit7,bytecoded_1,bytecoded_2,bytecoded_3,bytecoded_4up,byteopt,change_directory,create_directory,execute_lisp_function,allocateSegment,set_up_variables,wait_for_char,eval,macroexpand_1,progn_fn,subst,substq,subla,sublis,Igetc,execute_lisp_function1,write_result,Lparallel,PROC_load_package,PROC_set_switch,PROC_push_symbol,PROC_push_string,PROC_push_small_integer,PROC_push_big_integer,PROC-push_floating,PROC_make_function_call,PROC_load,PROC_dup,PROC_simplify,PROC_lisp_eval,PROC_make_printable,prin_to_terminal,prin_to_stdout,prin_to_error,prin_to_trace,prinhex_to_trace,prin_to_debug,prin_to_query,raw_char_from_terminal,raw_char_from_file,Lrdf4,error,cerror,interrupted,aerror,aerror0,aerror1,aerror2,aerror3
+EMFLAGS:=$(shell source ./emflags.sh && echo $$EMFLAGS)
 
-EMFLAGS = \
-	-s ABORTING_MALLOC=1 \
-	-s ALLOW_MEMORY_GROWTH=0 \
-	-s ASSERTIONS=1 \
-	-s DISABLE_EXCEPTION_CATCHING=2 \
-	-s EXCEPTION_CATCHING_ALLOWED=[$(CATCHERS)] \
-	-s EXIT_RUNTIME=1 \
-	-s FORCE_FILESYSTEM=1 \
-	-s INITIAL_MEMORY=1024mb \
-	-s MALLOC="dlmalloc" \
-	-s NODERAWFS=1 \
-	-s SAFE_HEAP=0 \
-	-s TOTAL_STACK=5mb \
-	-s ERROR_ON_UNDEFINED_SYMBOLS=0 \
-	-s USE_ZLIB
-
-CC=em++ $(EMFLAGS)
-
-CPPFLAGS=$(CFLAGS) -std=gnu++17 $(OPT) -I. -I../include -Iinclude -I$(S) \
+CPPFLAGS=$(EMFLAGS) -std=gnu++17 $(OPT) -I. -I../include -Iinclude -I$(S) \
     -DHAVE_CONFIG_H=1 -DHAVE_CRLIBM=1 -DEMBEDDED=1 $(XCFLAGS) $(USERFLAGS)
-LIBS=$(XLIBS) -s USE_ZLIB -Llib -lcrlibm
+CFLAGS=$(EMFLAGS)
+CXXFLAGS=$(EMFLAGS)
+LDFLAGS=$(EMFLAGS) -Llib -lcrlibm
+LIBS=-lcrlibm
 
 JSOPTS= --source-map-base http://localhost:8000/new-embedded/reduce-image/
 
@@ -79,7 +62,7 @@ VPATH=$(S)
 
 all:	reduce.js reduce.img image.cpp
 
-include/crlibm.h lib/libcrlibm.a:
+include/crlibm.h lib/libcrlibm.a:	emflags.sh make-crlibm.sh
 	./make-crlibm.sh
 
 bootstrapreduce.js:		allocate.o arith01.o arith02.o arith03.o arith04.o arith05.o \
@@ -96,7 +79,7 @@ bootstrapreduce.js:		allocate.o arith01.o arith02.o arith03.o arith04.o arith05.
 		eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o cslgc.o lisphash.o \
 		isprime.o preserve.o print.o restart.o sysfwin.o termed.o \
 		inthash.o serialize.o stubs.o \
-		$(LIBS) $(JSOPTS) -o bootstrapreduce.js
+		$(LDFLAGS) $(LIBS) $(JSOPTS) -o bootstrapreduce.js
 
 .PHONY:	bootstrapreduce
 bootstrapreduce:	bootstrapreduce.js
@@ -159,7 +142,7 @@ reduce.js:		allocate.oo arith01.oo arith02.oo arith03.oo arith04.oo arith05.oo \
 		u31.oo u32.oo u33.oo u34.oo u35.oo u36.oo u37.oo u38.oo u39.oo u40.oo \
 		u41.oo u42.oo u43.oo u44.oo u45.oo u46.oo u47.oo u48.oo u49.oo u50.oo \
 		u51.oo u52.oo u53.oo u54.oo u55.oo u56.oo u57.oo u58.oo u59.oo u60.oo \
-		$(LIBS) $(JSOPTS) -o $(REDUCE_TARGET)
+		$(LDFLAGS) $(LIBS) $(JSOPTS) -o $(REDUCE_TARGET)
 
 .PHONY:	reduce
 reduce:	reduce.js
@@ -171,7 +154,7 @@ reduce.img:	reduce.js
 		-D@srcdir=$(S) -D@reduce=$(R) -o reduce.img -L reduce_image.log
 
 make-image.js:	$(S)/make-image.cpp
-	$(CC) $(CPPFLAGS) $(S)/hexify.cpp $(LIBS) $(JSOPTS) -o make-image.js
+	$(CC) $(CPPFLAGS) $(S)/hexify.cpp $(LDFLAGS) $(LIBS) $(JSOPTS) -o make-image.js
 
 image.cpp:	make-image.js reduce.img
 	$(NODE) make-image.js
