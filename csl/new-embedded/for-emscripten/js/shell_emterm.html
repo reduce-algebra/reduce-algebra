@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Reduce</title>
+    <style>
+      html {
+        height: 100%;
+      }
+      body {
+        font-family: arial;
+        margin: 0;
+        padding: none;
+        height: 100%;
+      }
+
+      #fullscreen {
+        position: absolute;
+        top: 1mm;
+        right: 1mm;
+        z-index: 5;
+      }
+      
+      #output {
+        width: 100%;
+        height: 100%;
+        margin: 0 auto;
+        border: 0px;
+        padding: 0px;
+        overflow: hidden;
+      }
+
+      @-webkit-keyframes rotation {
+        from {-webkit-transform: rotate(0deg);}
+        to {-webkit-transform: rotate(360deg);}
+      }
+      @-moz-keyframes rotation {
+        from {-moz-transform: rotate(0deg);}
+        to {-moz-transform: rotate(360deg);}
+      }
+      @-o-keyframes rotation {
+        from {-o-transform: rotate(0deg);}
+        to {-o-transform: rotate(360deg);}
+      }
+      @keyframes rotation {
+        from {transform: rotate(0deg);}
+        to {transform: rotate(360deg);}
+      }
+
+    </style>
+  </head>
+  <body>
+    <div id="output"></div>
+    <script type='text/javascript'>
+      const term = new Terminal({convertEol: true, scrollback: 0});
+      const fitAddon = new FitAddon.FitAddon();
+      var inputBuf = [];
+      var outputBuf = [];
+      term.loadAddon(fitAddon);
+      term.open(document.getElementById('output'));
+      fitAddon.fit();
+      window.addEventListener('resize', ()=>fitAddon.fit());
+
+      function write(text) {
+        if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+        // These replacements are necessary if you render to raw HTML
+        //text = text.replace(/&/g, "&amp;");
+        //text = text.replace(/</g, "&lt;");
+        //text = text.replace(/>/g, "&gt;");
+        //text = text.replace('\n', '<br>', 'g');
+        console.log(text);
+        term.write(text + "\x0d\x0a");
+      };
+
+      var resolveReadCharPromise, rejectReadCharPromise;
+      async function read_char_promise() {
+        return new Promise(((resolve, reject) => {
+          resolveReadCharPromise = resolve;
+          rejectReadCharPromise = reject;
+          // if (inputBuf.length > 0)
+          //   resolve(inputBuf.shift());
+        }));
+      }
+
+      term.onData(data => {
+        inputBuf = inputBuf.concat([...data].map(c => c.charCodeAt(0)));
+        term.write(data);
+        resolveReadCharPromise(inputBuf.shift());
+      });
+      /*term.onKey(ievent => {
+        const ev = ievent.domEvent;
+        const printable = !ev.altKey && !ev.ctrlKey && !ev.metaKey;
+        if (ev.keyCode === 13) {
+          term.write('\r\n> ');
+        } else if (ev.keyCode === 8) {
+          if (term._core.buffer.x > 2) {
+            term.write('\b \b');
+          }
+        } else if (printable) {
+          term.write(ievent.key);
+        }
+      })*/
+
+      var Module = {
+        arguments: ['-i', 'reduce.img'],
+        tty: {
+          put_array: function(tty, val) {
+            term.write(val);
+          },
+          get_char: function(tty) {
+            if (!inputBuf.length) return undefined;
+            return inputBuf.shift();
+          },
+          poll_in: function(tty) {
+            return inputBuf.length > 0;
+          },
+          get_winsize: function(tty, winsize) {
+            winsize.ws_row = term.rows;
+            winsize.ws_col = term.cols;
+            winsize.ws_xpixel = term.element.clientWidth;
+            winsize.ws_ypixel = term.element.clientHeight;
+          }
+        },
+        preRun: [],
+        postRun: [],
+        //print: (function() {
+        //  return write;
+        //})(),
+        printErr: write,
+        canvas: (function() {
+          return document.getElementById('output');
+        })(),
+        setStatus: function(text) {
+          if (text === '') return;
+          write((new Date()).toISOString() + ': ' + text);
+        },
+        totalDependencies: 0,
+        monitorRunDependencies: function(left) {
+          this.totalDependencies = Math.max(this.totalDependencies, left);
+          Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+        }
+      };
+      Module.setStatus('Downloading...');
+      window.onerror = function() {
+        Module.setStatus('Exception thrown, see JavaScript console');
+        Module.setStatus = function(text) {
+          if (text) Module.printErr('[post-exception status] ' + text);
+        };
+      };
+    </script>
+    {{{ SCRIPT }}}
+  </body>
+</html>
