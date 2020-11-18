@@ -52,14 +52,14 @@
 #ifdef USE_CRLIBM
 #include "crlibm.h"
 
-#define sin     sin_rn
-#define cos     cos_rn
-#define tan     tan_rn
-#define asin    asin_rn
-#define acos    acos_rn
-#define atan    atan_rn
-#define exp     exp_rn
-#define log     log_rn
+#define sin	sin_rn
+#define cos	cos_rn
+#define tan 	tan_rn
+#define asin	asin_rn
+#define acos	acos_rn
+#define atan	atan_rn
+#define exp	exp_rn
+#define log	log_rn
 
 #endif
 
@@ -190,32 +190,36 @@ uxwritefloat(buf, flt, convstr)
      char *convstr;      /* String containing conversion field for sprintf */
 {
   char *temps, *dot, *e;
-  char tempbuf[100]; /* reasonable size limit */
+  char tempbuf [100]; /* reasonable size limit */
   float  tempf;
 
   temps = buf + 8;       /* Skip over lisp string length to write data */
 
   sprintf(temps,convstr, *flt);
 
-  /* Make sure that there is a trailing .0
-   */
-  dot = rindex(temps, '.');
-  if (dot == NULL)
+  if (isfinite(*flt))
     {
-    /* Check to see if the number is in scientific notation. If so, we need
-     *  add the .0 into the middle of the string, just before the e.
+
+    /* Make sure that there is a trailing .0
      */
-    if ((e = rindex(temps, 'e')) || (e = rindex(temps, 'E')))
+    dot = rindex(temps, '.');
+    if (dot == NULL)
       {
-	strcpy(tempbuf, e);       /* save save exponent part */
-	*e = '\0'; 
-	strcat(temps, ".0");     /* Add .0 ono original string */
-	strcat(temps, tempbuf);  /* add the exponent part onto the end */
+      /* Check to see if the number is in scientific notation. If so, we need
+       *  add the .0 into the middle of the string, just before the e.
+       */
+      if ((e = rindex(temps, 'e')) || (e = rindex(temps, 'E')))
+	{
+	  strcpy(tempbuf, e);       /* save save exponent part */
+	  *e = '\0'; 
+	  strcat(temps, ".0");     /* Add .0 ono original string */
+	  strcat(temps, tempbuf);  /* add the exponent part onto the end */
+	}
+      else
+	{
+	  strcat(temps, ".0");
+	}
       }
-    else
-    {
-      strcat(temps, ".0");
-    }
   }
 
   /* Install the length of the string into the Lisp header word
