@@ -31,8 +31,8 @@ fluid '(depl!* kord!*);
 global '(keepl!* bndeq!*);
 
 symbolic procedure simpvardf u;
-   if indvarpf numr simp0 cadr u then mksq('vardf . u,1)
-    else begin scalar b,r,v,w,x,y,z;
+   if indvarpf numr simp0 cadr u then mksq('vardf . u, 1)
+    else begin scalar b, r, s, v, w, x, y, z;
          v := !*a2k cadr u;
          if null cddr u
           then w := intern compress append(explode '!',
@@ -40,48 +40,68 @@ symbolic procedure simpvardf u;
                                     else car v)
           else w := caddr u;
          if null atom v then w := w . cdr v;
-         putform(w,prepf deg!*form v);
-         kord!* := append(list(w := !*a2k w),kord!*);
-         if x := assoc(v,depl!*) then
-            for each j in cdr x do depend1(w,j,t);
-         x := varysq(simp!* car u,v,w);
+         putform(w, prepf deg!*form v);
+         s := mksgnsq addf(deg!*form w, 1);
+         kord!* := append(list(w := !*a2k w), kord!*);
+         if x := assoc(v, depl!*) then
+            for each j in cdr x do depend1(w, j, t);
+         x := varysq(simp!* car u, v, w);
+ 
          b := y := nil ./ 1;
           while x do
-              if (z := mvar ldpf x) eq w then
-                              <<y := addsq(lc x,y);
+             if (z := mvar ldpf x) eq w then
+                              <<y := addsq(lc x, y);
                                 x := red x>>
-               else if eqcar(z,'wedge) then
+               else if eqcar(z, 'wedge) then
                         if cadr z eq w then
                            <<y := addsq(multsq(!*kk2q('wedge . cddr z),
                                                lc x),y);
                              x := red x>>
-                         else if eqcar(cadr z,'d) then
-                             <<y := addsq(simp list('wedge,list('d,
+                         else if eqcar(cadr z, 'd) then
+                             <<y := addsq(simp list('wedge, list('d,
                                            list('times,'wedge . cddr z,
-                                                 prepsq lc x))),y);
+                                                 prepsq multsq(lc x, s)))), y);
                                b := addsq(multsq(!*kk2q('wedge . w .
-                                                       cddr z),lc x),
+                                                       cddr z), lc x),
                                           b);
                                x := red x>>
-                        else rerror(excalc,11,list("Wrong ordering ",z))
-               else if eqcar(z,'partdf) then
+                        else rerror(excalc, 11, list("Could not move", w, "to the left in", z))
+               else if eqcar(z, 'partdf) then
                      <<r := reval list('innerprod,
-                                        list('partdf,caddr z),
+                                        list('partdf, caddr z),
                                         prepsq lc x);
                        x := addpsf((if cdddr z then
                                       !*kk2f('partdf . w . cdddr z)
                                      else !*k2f w)
-                                      .* negsq simp list('d,r)
-                                      .+ nil,red x);
-                       b := addsq(multsq(if cdddr z then
-                                          !*kk2q('partdf . w . cdddr z)
-                                          else !*k2q w,simp r),b)>>
-               else << b := addsq(multsq(simp cadr z,lc x),b);
-                       x := red x>>;
+                                      .* negsq simp list('d, r)
+                                      .+ nil, red x);
+                       b := addsq(multsq(if cdddr z then !*kk2q('partdf . w . cdddr z)
+                                          else !*k2q w, simp r), b)>>
+               else if eqcar(z, 'd) then <<y := addsq(simp {'d, prepsq multsq(lc x, s)}, y); 
+                                           b := addsq(multsq(!*k2q w, lc x), b);
+                                           x := red x>>
+               else if z = 1 
+                 then <<for each p on numr lc x do
+                          if mvar p eq w then y := addsq(lc p ./ denr lc x, y)
+                           else if eqcar(mvar p, 'hodge)
+                             then if eqcar(cadr mvar p, 'wedge)
+                             then <<if eqcar(cadadr mvar p,  'd) and (cadr cadadr mvar p eq w)
+                                       then <<y := addsq(multsq(simp {'d, {'times, 'wedge . cddadr mvar p,
+                                                                                   {'hodge, prepf lc p}}},
+                                                                            multsq(s, 1 ./ denr lc x)), y);
+                                              b := addsq(multsq(simp {'times, 'wedge . (w . cddadr mvar p),
+                                                                             {'hodge, prepf lc p}},
+                                                                1 ./ denr lc x), b)>>
+                                     else if cadadr mvar p eq w
+                                             then y := addsq(multsq(simp {'times, 'wedge . cddadr mvar p,
+                                                                                  {'hodge, prepf lc p}},
+                                                                    1 ./ denr lc x), y)
+                                     else rederr {"Unexpected expression in vardf", p}>>;
+                        x := red x>>;
      kord!* := cdr kord!*;
-     bndeq!* := mk!*sq b;
+     bndeq!* := mk!*sq resimp b;
      return y
-     end;
+   end;
 
 put('vardf,'simpfn,'simpvardf);
 
