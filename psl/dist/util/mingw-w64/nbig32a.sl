@@ -62,6 +62,8 @@
 
 (compiletime (load muls32 fast-vector vfvect inum if-system double32))
 
+(fluid '(fp-except-mode* ieee-positive-infinity ieee-negative-infinity))
+
 %%(compiletime (if_system i386 (load arith387)))
 
 %------------------------- control of debug output ------------------------
@@ -926,7 +928,9 @@ error
 (de floatfrombignum (v)
   (cond ((bzerop v) 0.00000E+000)
 	((or (bgreaterp v bigfloathi!*) (blessp v bigfloatlow!*))
-	 (error 99 (list "Argument, " v " to FLOAT is too large")))
+         (if (not (eq fp-except-mode* 0))
+	     (error 99 (list "Argument, " v " to FLOAT is too large"))
+           (if (bbminusp v) ieee-negative-infinity ieee-positive-infinity)))
 	(t (prog (res sn i j base)
 		 (setq i (bbsize v))
 		 (setq j (idifference i bigitsPerMantissa*))
