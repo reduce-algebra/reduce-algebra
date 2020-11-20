@@ -3,7 +3,7 @@ load_package redlog;
 
 rlset(qqe,ofsf);
 
-Redlog Revision 5404 of 2020-09-20, 15:40:23Z
+Redlog Revision 5498 of 2020-11-15, 18:18:53Z
 (c) 1992-2020 T. Sturm and A. Dolzmann (www.redlog.eu)
 type ?; for help
 

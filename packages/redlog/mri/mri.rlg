@@ -3,7 +3,7 @@ load_package redlog;
 
 rlset mri;
 
-Redlog Revision 5405 of 2020-09-20, 16:49:38Z
+Redlog Revision 5498 of 2020-11-15, 18:18:53Z
 (c) 1992-2020 T. Sturm and A. Dolzmann (www.redlog.eu)
 type ?; for help
 
