@@ -1129,7 +1129,7 @@ error
     (channelwritechar channel (igetv digl d2))
     (return (channelwritechar channel (igetv digl d1)))))
  
-% divide the bignum v1 (of length l1) by 100000, except the quotient is
+% divide the bignum v1 (of length l1) by 1000000, except the quotient is
 % accumulated in the same place, the remainder, of course, ripples
 % down to the bottom.  Because the argument is modified there is no need
 % to CONS up a result, but simply return the remainder.

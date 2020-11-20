@@ -45,7 +45,8 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-(fluid '(**neg-zero** **neg-one** fp-except-mode*))
+(fluid '(**neg-zero** **neg-one** fp-except-mode*
+         ieee-positive-infinity ieee-negative-infinity))
 
 (off echo)
 
@@ -93,13 +94,6 @@
 (de *doubletofloat (x y)
   (uxdoubletofloat (mkitem fixnum-tag x) (mkitem fixnum-tag y)))
 
-% These two statements must be at the end of the file because times2, and
-% thus *ftimes2, must be defined before it is used.
-
-(loadtime (progn
-	    (setq **neg-one** -1.0)
-	    (setq **neg-zero** (times2 **neg-one** 0.0))))
-
 (de *floattodouble (x y)
   (uxfloattodouble (mkitem fixnum-tag x) (mkitem fixnum-tag y)))
 
@@ -144,3 +138,15 @@
 	(stderror "Floating point error in atan2")))
 
 
+% These statements must be at the end of the file because times2 and quotient,
+% and thus *ftimes2 and *fquotient, must be defined before it is used.
+% Use eval here to make sure thate the quotient forms are evaluated at
+% load time, otherwise the compiler evaluates them as constant formns.
+
+(loadtime
+  (let ((fp-except-mode* 0))
+    (setq **neg-one** -1.0)
+    (setq **neg-zero** (times2 **neg-one** 0.0))
+    (setq ieee!-positive!-infinity (eval '(quotient 1.0 0.0)))
+    (setq ieee!-negative!-infinity (eval '(quotient -1.0 0.0)))
+))

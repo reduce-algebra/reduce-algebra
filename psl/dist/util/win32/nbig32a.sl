@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PU:NBIG30a.SL 
+% File:         PU:NBIG32a.SL 
 % Description:  Vector based BIGNUM package with INUM operations 
 % Author:       M. L. Griss & B Morrison 
 % Created:      25 June 1982 
@@ -62,7 +62,9 @@
 
 (compiletime (load muls32 fast-vector vfvect inum if-system double32))
 
-(compiletime (if_system i386 (load arith387)))
+(fluid '(fp-except-mode* ieee-positive-infinity ieee-negative-infinity))
+
+%%(compiletime (if_system i386 (load arith387)))
 
 %------------------------- control of debug output ------------------------
 
@@ -924,7 +926,9 @@ error
 (de floatfrombignum (v)
   (cond ((bzerop v) 0.00000E+000)
 	((or (bgreaterp v bigfloathi!*) (blessp v bigfloatlow!*))
-	 (error 99 (list "Argument, " v " to FLOAT is too large")))
+         (if (not (eq fp-except-mode* 0))
+	     (error 99 (list "Argument, " v " to FLOAT is too large"))
+           (if (bbminusp v) ieee-negative-infinity ieee-positive-infinity)))
 	(t (prog (res sn i j base)
 		 (setq i (bbsize v))
 		 (setq j (idifference i bigitsPerMantissa*))
@@ -957,7 +961,9 @@ error
 (if_system 32 (progn
 
 (ds ieeezerop(u)
-   (and (weq (floathiword u) 0)
+    % ieee zero may have the sign bit set to indicate -0.0,
+    % so shift the leftmost bit off the machine word before comparing with 0
+   (and (weq (wshift (floathiword u) 1) 0)
         (weq (floatloword u) 0)))
 
 (ds
@@ -977,7 +983,11 @@ error
 
 (progn  % if_system 64
 
-(ds ieeezerop(u) (weq (floathiword u) 0))
+(ds ieeezerop(u)
+    % ieee zero may have the sign bit set to indicate -0.0,
+    % so shift the leftmost bit off the machine word before comparing with 0
+    (or (weq (wshift (floathiword u) 1) 0)))
+
 (ds ieeemant (f) (wand (floathiword f) 16#fffffffffffff))
 
 ))  % if_system 64
@@ -1000,6 +1010,8 @@ error
     (t(prog (m e)
        (setq m (ieeemant x))
        (setq e (ieeeexpt x))
+       (when (eq e 1024)
+          (stderror (list "Non-finite float in fix:" x)))
        (when (neq e (minus 16#3ff))
           (setq m (lor m ieee-hidden-bit*)))
        (when (eq (ieeesign x) 1)
@@ -1114,7 +1126,7 @@ error
     (channelwritechar channel (igetv digl d2))
     (return (channelwritechar channel (igetv digl d1)))))
  
-% divide the bignum v1 (of length l1) by 100000, except the quotient is
+% divide the bignum v1 (of length l1) by 1000000, except the quotient is
 % accumulated in the same place, the remainder, of course, ripples
 % down to the bottom.  Because the argument is modified there is no need
 % to CONS up a result, but simply return the remainder.

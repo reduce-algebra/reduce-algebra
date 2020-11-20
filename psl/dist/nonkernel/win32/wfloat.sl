@@ -45,7 +45,8 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-(fluid '(**neg-zero** **neg-one**))
+(fluid '(**neg-zero** **neg-one** fp-except-mode*
+         ieee-positive-infinity ieee-negative-infinity))
 
 (off echo)
 
@@ -53,17 +54,25 @@
   (uxfloat x y))
 
 (de *fplus2 (x y z)
-  (uxplus2 x y z))
+ (when (and (eq (uxplus2 x y z) 0) (not (eq fp-except-mode* 0)))
+      (stderror "Floating point error in fplus2")))
 
 (de *fdifference (x y z)
-  (uxdifference x y z))
+ (when (and (eq (uxdifference x y z) 0) (not (eq fp-except-mode* 0)))
+      (stderror "Floating point error in fdifference")))
 
 (de *ftimes2 (x y z)
-  (uxtimes2 x y z))
+  (when (and (eq (uxtimes2 x y z) 0) (not (eq fp-except-mode* 0)))
+     (stderror "Floating point error in ftimes2")))
 
 (de *fquotient (x y z)
-  (uxquotient x y z))
+  (when (and (eq (uxquotient x y z) 0) (not (eq fp-except-mode* 0)))
+     (stderror "Floating point error in fquotient")))
 
+(de *fminus (x y)
+  (when (and (eq (uxminus x y) 0) (not (eq fp-except-mode* 0)))
+     (stderror "Floating point error in fminus")))
+ 
 (de *fgreaterp (x y)
   (uxgreaterp x y 't 'nil))
 
@@ -79,23 +88,58 @@
 (de *doubletofloat (x y)
   (uxdoubletofloat x y))
 
-% These two statements must be at the end of the file because times2, and
-% thus *ftimes2, must be defined before it is used.
-
-(loadtime (progn
-	    (setq **neg-one** -1.0)
-	    (setq **neg-zero** (times2 **neg-one** 0.0))))
-
 (de *floattodouble (x y)
   (uxfloattodouble x y))
 
-(de uxsin (r x) (uuxsin r x))
-(de uxcos (r x) (uuxcos r x))
-(de uxtan (r x)(uuxtan r x))
-(de uxasin (r x)(uuxasin r x))
-(de uxacos (r x)(uuxacos r x))
-(de uxatan (r x)(uuxatan r x))
-(de uxsqrt (r x)(uuxsqrt r x))
-(de uxexp (r x)(uuxexp r x))
-(de uxlog (r x)(uuxlog r x))
-(de uxatan2 (r y x) (uuxatan2 r y x))
+(de uxsin (r x)
+  (when (and (eq (uuxsin r x) 0) (not (eq fp-except-mode* 0)))
+	(stderror "Floating point error in sin")))
+
+(de uxcos (r x)
+  (when (and (eq (uuxcos r x) 0) (not (eq fp-except-mode* 0)))
+	(stderror "Floating point error in cos")))
+
+(de uxtan (r x)
+  (when (and (eq (uuxtan r x) 0) (not (eq fp-except-mode* 0)))
+	(stderror "Floating point error in tan")))
+
+(de uxasin (r x)
+  (when (and (eq (uuxasin r x) 0) (not (eq fp-except-mode* 0)))
+	(stderror "Floating point error in asin")))
+
+(de uxacos (r x)
+  (when (and (eq(uuxacos r x) 0) (not (eq fp-except-mode* 0)))
+	(stderror "Floating point error in acos")))
+
+(de uxatan (r x)
+  (when (and (eq (uuxatan r x) 0) (not (eq fp-except-mode* 0)))
+	(stderror "Floating point error in atan")))
+
+(de uxsqrt (r x)
+  (when (and (eq (uuxsqrt r x) 0) (not (eq fp-except-mode* 0)))
+	(stderror "Floating point error in sqrt")))
+
+(de uxexp (r x)
+  (when (and (eq (uuxexp r x) 0) (not (eq fp-except-mode* 0)))
+	(stderror "Floating point error in exp")))
+
+(de uxlog (r x)
+  (when (and (eq (uuxlog r x) 0) (not (eq fp-except-mode* 0)))
+	(stderror "Floating point error in log")))
+
+(de uxatan2 (r y x)
+  (when (and (eq (uuxatan2 r y x) 0) (not (eq fp-except-mode* 0)))
+	(stderror "Floating point error in atan2")))
+
+% These statements must be at the end of the file because times2 and quotient,
+% and thus *ftimes2 and *fquotient, must be defined before it is used.
+% Use eval here to make sure thate the quotient forms are evaluated at
+% load time, otherwise the compiler evaluates them as constant formns.
+
+(loadtime
+  (let ((fp-except-mode* 0))
+    (setq **neg-one** -1.0)
+    (setq **neg-zero** (times2 **neg-one** 0.0))
+    (setq ieee!-positive!-infinity (eval '(quotient 1.0 0.0)))
+    (setq ieee!-negative!-infinity (eval '(quotient -1.0 0.0)))
+))
