@@ -1,0 +1,19 @@
+
+logb(9,3);
+
+
+2
+
+
+on expandlogs;
+
+
+
+logb(9,3);
+
+
+2
+
+
+end;
+

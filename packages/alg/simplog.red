@@ -1,4 +1,4 @@
-xmodule simplog;  % Simplify logarithms.
+module simplog;  % Simplify logarithms.
 
 % Authors: Mary Ann Moore and Arthur C. Norman.
 
@@ -57,7 +57,7 @@ symbolic inline procedure get!-log!-base u;
    if car u eq 'log10 then 10 else nil;
 
 symbolic procedure simplog u;
-   if null cdr u then rerror(alg,5,{"Wrong number of arguments to",car u})
+   if null cdr u or cddr u then rerror(alg,5,{"Wrong number of arguments to",car u})
     else if !*expandlogs then (resimp simplogbi(aeval cadr u,get!-log!-base u) where !*expandlogs=nil)
    else (if x=0 then rerror(alg,210,{car u,"0 formed"})
     	      % log(1) = 0
@@ -76,7 +76,7 @@ symbolic procedure simplog u;
     where x=reval cadr u;
 
 symbolic procedure simplogb u;
-   if null cdr u or null cddr u then rerror(alg,5,"Wrong number of arguments to logb")
+   if null cdr u or null cddr u or cdddr u then rerror(alg,5,"Wrong number of arguments to logb")
     else if !*expandlogs then (simplogbi(aeval cadr u,caddr u) where !*expandlogs=nil)
     else (if x=0 then rerror(alg,210,"Logb(0,...) formed")
     % logb(1,x) = 0
@@ -87,7 +87,7 @@ symbolic procedure simplogb u;
     else if caddr u = 'e then simplog {'log,x}
     % logb(x,10) = log10(x)
     else if reval {'difference,10,caddr u} = 0 then simplog {'log10,x}
-%    else if fixp x then simplogbn(x,caddr u,nil)
+    else if fixp x then simplogbn(x,caddr u,nil)
     % logb(a^x,a) = x
     else if eqcar(x,'expt) and reval {'difference,cadr x,caddr u} = 0
      then simp caddr x 
@@ -218,11 +218,11 @@ symbolic procedure simplogbn(u,base,flg);
                      y := append(y, list(2 . (cdr twos - cdr fives)))>>>>
       end;
       if flg then return (if null y then z else !*kk2f mk!-log!-arg(u,base)) ./ 1;
-%     if eqcar(y,'(-1 . 1)) and null(y := mergeminus cdr y)
       if not atom y and car y = '(-1 . 1) and null (y := mergeminus cdr y)
-       then return !*kk2q mk!-log!-arg(u,base);
+        then return !*kk2q mk!-log!-arg(u,base);
       for each x in y do
-          z := addf(((mksp(mk!-log!-arg(car x,base),1) .* cdr x) .+ nil),z);
+	 if car x = base then z := addf(cdr x,z)
+          else z := addf(((mksp(mk!-log!-arg(car x,base),1) .* cdr x) .+ nil),z);
       return z ./ 1
    end;
 
