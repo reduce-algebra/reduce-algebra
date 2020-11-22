@@ -611,7 +611,7 @@ AC_ARG_WITH(sequential,
 # of windows versions, but everybody else (unless their host has a name
 # matching mine!) should be undisturbed.
 
-# I gave disabled this just for a while... I am making other changes and I do
+# I have disabled this just for a while... I am making other changes and I do
 # not want this confusion to mess me up.
 
 case `uname -n` in
@@ -635,6 +635,21 @@ then
   with_windows_layout="old"
 fi
 
+AC_ARG_WITH(mac_universal,
+  AC_HELP_STRING([--with-mac-universal], [Build universal mac app]),
+  [],
+  [with_mac_universal="no"])
+
+AC_ARG_WITH(mac_x86_64,
+  AC_HELP_STRING([--with-mac-x86_64], [Build x86_64 mac app]),
+  [],
+  [with_mac_x86_64="no"])
+
+AC_ARG_WITH(mac_arm64,
+  AC_HELP_STRING([--with-mac-arm64], [Build arm64 mac app]),
+  [],
+  [with_mac_arm64="no"])
+
 csl_inplace_cygwin_build ()
 {
 # The argument here should be x88_64-pc-cygwin
@@ -654,6 +669,17 @@ AC_MSG_NOTICE([in csl_inplace_cygwin_build wwl=$with_windows_layout])
     cp "$abssrcdir/csl/cslbase/make-cygwin-symlink.c" "$abssrcdir/cslbuild/$build/make-cygwin-symlink.c"
     cp "$abssrcdir/csl/cslbase/redpsl.sh" "$abssrcdir/cslbuild/$build/redpsl"
     cd "$abssrcdir/cslbuild/$build/$cygver"
+  elif test "x$with_mac_universal" = "xyes" &&
+       test "x$with_mac_x86_64" = "xno" &&
+       test "x$with_mac_arm64" = "xno"
+  then
+    build=`eval "$SHELL $abssrcdir/scripts/findhost.sh universal-mac-macos $ac_configure_args"`
+    AC_MSG_NOTICE([target=$target => build=$build])
+    mkdir -p "$abssrcdir/cslbuild/$build/x86_64"
+    mkdir -p "$abssrcdir/cslbuild/$build/arm64"
+    cp "$abssrcdir/csl/cslbase/Makefile.mac-universal" "$abssrcdir/cslbuild/$build/Makefile"
+    cd "$abssrcdir/cslbuild/$build"
+    config_both="yes"
   else
     build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $target $ac_configure_args --with-cygwin"`
     AC_MSG_NOTICE([target=$target => build=$build])
@@ -669,19 +695,67 @@ AC_MSG_NOTICE([in csl_inplace_cygwin_build wwl=$with_windows_layout])
   AC_MSG_NOTICE([passcc = $passcc])
   AC_MSG_NOTICE([host=$host buildmc=$buildmc pass_host=$pass_host])
   pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
-  doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
-          CC=\"$CC\" CXX=\"$CXX\" \
-          STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \ 
-          $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-          CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
-          $passcc $pass_build --with-cygwin"
-  AC_MSG_NOTICE([doconfig = $doconfig])
-  if test "x$with_sequential" = "xno"
+  if test "$config_both" = "yes"
   then
-    eval "$doconfig" &
-    procids="$procids $!"
+    if test "x$with_sequential" = "xno"
+    then
+      cd x86_64
+      doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
+              CC=\"$CC -arch x86_64\" CXX=\"$CXX -arch x86_64\" \
+              STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \ 
+              $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+              CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
+              $passcc $pass_build --with-cygwin"
+      AC_MSG_NOTICE([doconfig = $doconfig])
+      eval "$doconfig" &
+      procids="$procids $!"
+      cd ../arm64
+      doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
+              CC=\"$CC -arch arm64\" CXX=\"$CXX -arch arm64\" \
+              STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \ 
+              $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+              CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
+              $passcc $pass_build --with-cygwin"
+      AC_MSG_NOTICE([doconfig = $doconfig])
+      eval "$doconfig" &
+      procids="$procids $!"
+      cd ..
+    else
+      cd x86_64
+      doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
+              CC=\"$CC -arch x86_64\" CXX=\"$CXX -arch x86_64\" \
+              STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \ 
+              $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+              CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
+              $passcc $pass_build --with-cygwin"
+      AC_MSG_NOTICE([doconfig = $doconfig])
+      eval "$doconfig"
+      cd ../arm64
+      doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
+              CC=\"$CC -arch arm64\" CXX=\"$CXX -arch arm64\" \
+              STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \ 
+              $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+              CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
+              $passcc $pass_build --with-cygwin"
+      AC_MSG_NOTICE([doconfig = $doconfig])
+      eval "$doconfig"
+      cd ..
+    fi
   else
-    eval "$doconfig"
+    doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
+            CC=\"$CC\" CXX=\"$CXX\" \
+            STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \ 
+            $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
+            $passcc $pass_build --with-cygwin"
+    AC_MSG_NOTICE([doconfig = $doconfig])
+    if test "x$with_sequential" = "xno"
+    then
+      eval "$doconfig" &
+      procids="$procids $!"
+    else
+      eval "$doconfig"
+    fi
   fi
   AC_MSG_NOTICE([configuration for cygwin on $target complete])
   cd "$abssrcdir"
@@ -994,8 +1068,21 @@ then
 
   case $host in
   *darwin* | *Darwin*)
-    CPPFLAGS="$CPPFLAGS -mmacosx-version-min=10.13 -I/opt/local/include"
+    CPPFLAGS="$CPPFLAGS -I/opt/local/include"
     LDFLAGS="$LDFLAGS -L/opt/local/lib"
+    if test "x$with_mac_x86_64" = "xyes"
+    then
+       CPPFLAGS="$CPPFLAGS --macosx-version-min=10.13 -arch x86_64"
+       LDFLAGS="$LDFLAGS --macosx-version-min=10.13 -arch x86_64"
+    elif test "x$with_mac_arm64" = "xyes"
+    then
+       CPPFLAGS="$CPPFLAGS --macosx-version-min=11.0 -arch arm64"
+       LDFLAGS="$LDFLAGS --macosx-version-min=11.0 -arch arm64"
+    elif test "x$with_mac_universal" != "xyes"
+    then
+       CPPFLAGS="$CPPFLAGS --macosx-version-min=10.13 -arch x86_64"
+       LDFLAGS="$LDFLAGS --macosx-version-min=10.13 -arch x86_64"
+    fi
     ;;
   esac
 

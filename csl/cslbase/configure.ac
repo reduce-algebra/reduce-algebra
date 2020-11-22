@@ -43,9 +43,6 @@
 #   --with-smallpage  build in way that may be better for small embedded
 #                     machines.
 #   --enable-conservative   development version not working yet!
-#   --enable-test     predefine a symbol EXPERIMENT used to protect
-#                     temporary or unfinished code developments.
-#   --enable-experiment  same effect as --enable-text
 #   --enable-embedded well the EMBEDDED option is intended for use via
 #                     a heavily cleaned up minimalist build system, but
 #                     for testing purposes I allow a build here.
@@ -95,8 +92,8 @@ case `uname -n` in
   ;;
 esac
 
-AC_ARG_WITH(windows_layout,
-  AC_HELP_STRING([--with-windows_layout], [old or new windows layout]),
+AC_ARG_WITH(windows-layout,
+  AC_HELP_STRING([--with-windows-layout], [old or new windows layout]),
   [],
   [with_windows_layout="$default_windows_layout"])
 
@@ -107,14 +104,27 @@ then
   with_windows_layout="old"
 fi
 
+AC_ARG_WITH(mac_universal,
+  AC_HELP_STRING([--with-mac-universal], [Build universal mac app]),
+  [],
+  [with_mac_universal="no"])
+
+AC_ARG_WITH(mac_x86_64,
+  AC_HELP_STRING([--with-mac-x86_64], [Build x86_64 mac app]),
+  [],
+  [with_mac_x86_64="no"])
+
+AC_ARG_WITH(mac_arm64,
+  AC_HELP_STRING([--with-mac-arm64], [Build arm64 mac app]),
+  [],
+  [with_mac_arm64="no"])
+
 # All the source files for CSL are in C++ not C
 # and so it is best to make configuration tests match.
 
 AC_LANG(C++)
 
 AC_DEFINE(CSL, [1], [True to tell sources that this build is part of CSL])
-
-AC_DEFINE(NILSEG_EXTERNS, [1], [Makes use of a debugger easier, I hope.])
 
 AC_ARG_WITH(csl,
   AC_HELP_STRING([--with-csl], [Use the CSL Lisp system]),
@@ -210,6 +220,16 @@ AC_ARG_WITH(threads,
 if test "x$with_threads" = "xno"
 then
   AC_DEFINE(AVOID_THREADS, [1], [disable Karatsuba and input local editing so they do not create threads])
+fi
+
+AC_ARG_WITH(fake-exceptions,
+   AC_HELP_STRING([--with-fake-exceptions], [Avoid use of C++ exceptions and RAII]),
+   [],
+   [with_fake_exceptions="no"])
+
+if test "x$with_fake_exceptions" = "xyes"
+then
+  AC_DEFINE(FAKE_EXCEPTIONS, [1], [Avoid C++ exceptions and RAII])
 fi
 
 if test "x$BUILTFOR" = "xunknown"
@@ -477,6 +497,22 @@ case $host in
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
   fi
   AC_CHECK_PROGS(REZ,[/usr/bin/Rez /Developer/tools/Rez],[Rez])
+  if test "x$with_mac_x86_64" != "xno"
+  then
+    CPPFLAGS="$CPPFLAGS -arch x86_64"
+    CXXCPPFLAGS="$CXXCPPFLAGS -arch x86_64"
+    CFLAGS="$CFLAGS -arch x86_64"
+    CXXFLAGS="$CXXFLAGS -arch x86_64"
+    LDFLAGS="$LDFLAGS -arch x86_64"
+  fi
+  if test "x$with_mac_arm64" != "xno"
+  then
+    CPPFLAGS="$CPPFLAGS -arch arm64"
+    CXXCPPFLAGS="$CXXCPPFLAGS -arch arm64"
+    CFLAGS="$CFLAGS -arch arm64"
+    CXXFLAGS="$CXXFLAGS -arch arm64"
+    LDFLAGS="$LDFLAGS -arch arm64"
+  fi
   ;;
 *-freebsd*)
   AC_MSG_NOTICE([Building on FreeBSD])
@@ -652,33 +688,12 @@ AC_ARG_ENABLE(test,
   [enable_test="no"])
 AC_MSG_RESULT([$enable_test])
 
-AC_ARG_ENABLE(experiment,
-  AC_HELP_STRING([--enable-experiment],
-                 [testing-mode version]),
-  [],
-  [enable_experiment="no"])
-AC_MSG_RESULT([$enable_experiment])
-
-if test "x$enable_experiment" = "xyes"
-then
-  enable_test="yes"
-fi
-
 AC_ARG_WITH(arithlib,
   AC_HELP_STRING([--with-arithlib],
                  [arithlib.hpp version]),
   [],
   [with_arithlib="no"])
 AC_MSG_RESULT([$with_arithlib])
-
-if test "x$enable_test" = "xyes"
-then
-# I force EXPERIMENT into CPPFLAGS because when u01.cpp to u60.cpp get
-# compiled they do not include config.h and so would otherwise miss out
-# on the option!
-  CPPFLAGS="$CPPFLAGS -DEXPERIMENT=1"
-  AC_DEFINE(EXPERIMENT, [1], [True if this is an experimental testing mode variant])
-fi
 
 if test "x$with_arithlib" = "xyes"
 then
@@ -813,32 +828,10 @@ then
 fi
 
 # The following seems to be an "official" way to ensure that I have at least
-# -std=gnu++11 (or gnu++0x) available. If I have C++17 I have "inline"
-# variables, and that is good too, so I will use that if I can.
+# -std=gnu++17. As of November 2020 I am going to insist on that. It started
+# to become properly supported from gcc 7 onwards.
 
-AX_CXX_COMPILE_STDCXX([17], [ext], [optional])
-
-if test "x$HAVE_CXX17" != "x1"
-then
-    AX_CXX_COMPILE_STDCXX([14], [ext], [optional])
-fi
-
-
-# If I can not use C++-14 I will INSIST on C++-11. This is somewhat an issue
-# in thet older platforms may not support this instantly. A particular case
-# is that Ubuntu 12.04 provides gcc-4.6 which would choke here, But a brief
-# web search will allow those using such a system to see how to install
-# gcc 4.9... and that MUST be done for Reduce to build. C++-11 provides
-# things like static_assert and type traits that at present are used in just
-# a small corner of the code, but that are potentially generally valuable.
-
-if test "x$HAVE_CXX17" = "x1" || \
-   test "x$HAVE_CXX14" = "x1"
-then
-  AC_MSG_NOTICE([A modern C++ compiler is available])
-else
-    AX_CXX_COMPILE_STDCXX([11], [ext], [mandatory])
-fi
+AX_CXX_COMPILE_STDCXX([17], [ext], [mandatory])
 
 # Some platforms need "-latomic" to support std::atomic<T> where sizeof(T)
 # exceeds 8.
@@ -1668,10 +1661,12 @@ then
 # 10.12 Sierra        )
 # 10.13 High Sierra     Now the oldest deployment target I support
 #                       (this is because it is the oldest release my old
-#                       macbook can install!)
+#                       macbook can install!) on x86_64.
 # 10.14 Mojave
 # 10.15 Catalina
 # 11.0  Big Sur         Now the version I build and test on.
+#                       Ha ha - from late 2020 there is a transition to
+#                       "Apple Silicon", ie ARM64.
 #
 # Every few years maybe I should review how old a MacOS can be supported, but
 # note very well that one needs to configure Macports to use a deployment
@@ -1679,7 +1674,12 @@ then
 # macports stuff is liable to need rebuilding or re-installing so as to
 # avoid moans about version support conflicts when things are linked.
 #
-  ENVP="MACOSX_DEPLOYMENT_TARGET=10.13"
+  if test "x$with_mac_arm64" = "xyes"
+  then
+    ENVP="MACOSX_DEPLOYMENT_TARGET=11.0
+  else
+    ENVP="MACOSX_DEPLOYMENT_TARGET=10.13
+  fi
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
   CPP="$ENVP $CPP"
@@ -1786,26 +1786,29 @@ LDFLAGS="-L../lib $LDFLAGS"
 # Make some things available for conditional segments of a Makefile
 #
 
-AM_CONDITIONAL(x86,test "x$x86" = "xyes")
-AM_CONDITIONAL(windows,test "x$windows_build" = "xyes")
-AM_CONDITIONAL(win64,test "x$win64" = "xyes")
-AM_CONDITIONAL(cygwin,test "x$cygwin_build" = "xyes")
-AM_CONDITIONAL(cyg64,test "x$cyg64" = "xyes")
-AM_CONDITIONAL(darwin,test "x$darwin_build" = "xyes")
-AM_CONDITIONAL(mac_framework,test "x$framework_available" = "xyes")
-AM_CONDITIONAL(debug,test "x$enable_debug" = "xyes")
-AM_CONDITIONAL(exeext,test "x$exeext" = "xyes")
-AM_CONDITIONAL(fox,test "x$with_fox" != "xno")
-AM_CONDITIONAL(wx,test "x$with_wx" != "xno")
-AM_CONDITIONAL(gui,test "x$with_fox" != "xno" || test "x$with_wx" != "xno")
-AM_CONDITIONAL(experiment,test "x$enable_test" = "xyes")
-AM_CONDITIONAL(conservative,test "x$enable_conservative" = "xyes")
-AM_CONDITIONAL(arithlib,test "x$with_arithlib" = "xyes")
+AM_CONDITIONAL(x86, test "x$x86" = "xyes")
+AM_CONDITIONAL(windows, test "x$windows_build" = "xyes")
+AM_CONDITIONAL(win64, test "x$win64" = "xyes")
+AM_CONDITIONAL(cygwin, test "x$cygwin_build" = "xyes")
+AM_CONDITIONAL(cyg64, test "x$cyg64" = "xyes")
+AM_CONDITIONAL(darwin, test "x$darwin_build" = "xyes")
+AM_CONDITIONAL(mac_framework, test "x$framework_available" = "xyes")
+AM_CONDITIONAL(debug, test "x$enable_debug" = "xyes")
+AM_CONDITIONAL(exeext, test "x$exeext" = "xyes")
+AM_CONDITIONAL(fox, test "x$with_fox" != "xno")
+AM_CONDITIONAL(wx, test "x$with_wx" != "xno")
+AM_CONDITIONAL(gui, test "x$with_fox" != "xno" || test "x$with_wx" != "xno")
+AM_CONDITIONAL(conservative, test "x$enable_conservative" = "xyes")
+AM_CONDITIONAL(arithlib, test "x$with_arithlib" = "xyes")
 AM_CONDITIONAL(cygpath, test "x$CYGPATH" != "xno")
 AM_CONDITIONAL(valgrind, test "x$VALGRIND" = "xvalgrind")
 AM_CONDITIONAL(crlibm, test "x$with_crlibm" != "xno")
 AM_CONDITIONAL(softfloat, test "x$with_softfloat" != "xno")
 AM_CONDITIONAL(redfront, test "x$with_redfront" != "xno")
+AM_CONDITIONAL(fake_exceptions, test "x$with_fake_exceptions" = "xyes")
+AM_CONDITIONAL(mac_universal, test "x$with_mac_universal" != "xno")
+AM_CONDITIONAL(mac_x86_64, test "x$with_mac_x86_64" != "xno")
+AM_CONDITIONAL(mac_arm64, test "x$with_mac_arm64" != "xno")
 
 AC_OUTPUT
 

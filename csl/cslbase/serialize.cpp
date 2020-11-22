@@ -1178,63 +1178,48 @@ std::unordered_map<three_args *,size_t> codehash3;
 std::unordered_map<fourup_args *,size_t> codehash4up;
 
 bool insert_codepointer0(no_args *x)
-{   try
-    {   static_cast<void>(codehash0.at(x));
-        return false;
-    }
-    catch (std::out_of_range &e)
+{   if (codehash0.find(x) == codehash0.end())
     {   codehash0[x] = codepointers0.size();
         codepointers0.push_back(x);
+        return true;
     }
-    return true;
+    else return false;
 }
 
 bool insert_codepointer1(one_arg *x)
-{   try
-    {   static_cast<void>(codehash1.at(x));
-        return false;
-    }
-    catch (std::out_of_range &e)
+{   if (codehash1.find(x) == codehash1.end())
     {   codehash1[x] = codepointers1.size();
         codepointers1.push_back(x);
+        return true;
     }
-    return true;
+    else return false;
 }
 
 bool insert_codepointer2(two_args *x)
-{   try
-    {   static_cast<void>(codehash2.at(x));
-        return false;
-    }
-    catch (std::out_of_range &e)
+{   if (codehash2.find(x) == codehash2.end())
     {   codehash2[x] = codepointers2.size();
         codepointers2.push_back(x);
+        return true;
     }
-    return true;
+    else return false;
 }
 
 bool insert_codepointer3(three_args *x)
-{   try
-    {   static_cast<void>(codehash3.at(x));
-        return false;
-    }
-    catch (std::out_of_range &e)
+{   if (codehash3.find(x) == codehash3.end())
     {   codehash3[x] = codepointers3.size();
         codepointers3.push_back(x);
+        return true;
     }
-    return true;
+    else return false;
 }
 
 bool insert_codepointer4up(fourup_args *x)
-{   try
-    {   static_cast<void>(codehash4up.at(x));
-        return false;
-    }
-    catch (std::out_of_range &e)
+{   if (codehash4up.find(x) == codehash4up.end())
     {   codehash4up[x] = codepointers4up.size();
         codepointers4up.push_back(x);
+        return true;
     }
-    return true;
+    else return false;
 }
 
 uint64_t use_setup(uint64_t crc, const setup_type *p)

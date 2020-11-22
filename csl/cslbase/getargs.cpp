@@ -117,15 +117,13 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
         }
         else simpleArgs.push_back(a); // No initial "-" or JUST "-".
         argSpec *aspec;
-        try                           // Look up the keyword.
-        {   string aLow(a);
-            transform(aLow.begin(), aLow.end(), aLow.begin(),
-                      [](int c)
-            {   return std::tolower(c);
-            });
-            aspec = argIndex.at(aLow);
-        }
-        catch (std::out_of_range &)
+        string aLow(a);
+        transform(aLow.begin(), aLow.end(), aLow.begin(),
+                  [](int c)
+        {   return std::tolower(c);
+        });
+        aspec = argIndex[aLow];
+        if (aspec == nullptr)
         {   badArgs.push_back(aSave); // Item not recognized at all.
             continue;
         }

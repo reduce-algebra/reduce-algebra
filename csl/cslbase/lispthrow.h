@@ -849,7 +849,7 @@ public:
 // Lisp data with them even though that might seem reasonable. This is
 // because during the processing of a throw some finalization can occur,
 // and if some time that managed to cause garbage collection I would
-// not be confident that the GC could find and the excveption object to
+// not be confident that the GC could find and the exception object to
 // treat it as a list base. I will have a number of sub-classes of
 // LispException just in case that ends up helping things be tidy.
 
@@ -913,6 +913,12 @@ struct LispThrow : public LispException
 struct LispRestart : public LispException
 {   virtual const char *what() const throw()
     {   return "Lisp Restart";
+    }
+};
+
+struct LispStop : public LispException
+{   virtual const char *what() const throw()
+    {   return "Lisp Stop";
     }
 };
 

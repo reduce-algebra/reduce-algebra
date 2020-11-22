@@ -37,7 +37,9 @@ EMFLAGS="\
   -s SAFE_HEAP=0 \
   -s TOTAL_STACK=5mb \
   -s ERROR_ON_UNDEFINED_SYMBOLS=0 \
-  -s USE_ZLIB=1"
+  -s USE_ZLIB=1 \
+  -s USE_CLOSURE_COMPILER=1 \
+  -flto"
 
 # The following are others to consider or experiment with:
 
@@ -47,6 +49,5 @@ EMFLAGS="\
 # -s USE_PTHREADS=1
 # -s PTHREAD_POOL_SIZE=nnn
 # -s DEFAULT_PTHREAD_STACK_SIZE=nnn
-# -s USE_CLOSURE_COMPILER=1
 
 # end if options

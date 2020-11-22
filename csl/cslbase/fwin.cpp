@@ -96,6 +96,9 @@
 #define UNUSED_NAME
 #endif // annotation for unused things
 
+// I am now insisting that CSL be built with C++17 and so the following
+// paragraph should be fading in relevance!
+
 // On some platforms it will APPEAR that <filesystem> and std::filesystem
 // are available but they will not be. This can perhaps be a consequenec of
 // transition arrangements in the C++ comnpiler, library and even the
@@ -2205,7 +2208,8 @@ void scan_directory(string dir, filescan_function *proc)
 {   const std::filesystem::path pathToShow{dir};
     if (!std::filesystem::is_directory(pathToShow)) return;
     std::vector<std::filesystem::directory_entry> res;
-    for (const auto& entry : std::filesystem::recursive_directory_iterator(pathToShow))
+    for (const auto& entry :
+             std::filesystem::recursive_directory_iterator(pathToShow))
     {   res.push_back(entry);
     }
     std::sort(res.begin(), res.end(),
@@ -2292,12 +2296,12 @@ char *change_directory(char *filename, const char *old, size_t n)
     {   std::sprintf(err_buf, "Filename \"%s\" invalid.", old);
         return err_buf;
     }
-    try
-    {   std::filesystem::current_path(
-           std::filesystem::path(filename));
-    }
-    catch (std::filesystem::filesystem_error &e)
-    {   std::strncpy(err_buf, e.what(), sizeof(err_buf)-1);
+    std::error_code ec;
+    std::filesystem::current_path(
+        std::filesystem::path(filename),
+        ec);
+    if (ec)
+    {   std::strncpy(err_buf, ec.message(), sizeof(err_buf)-1);
         return err_buf;
     }
     return nullptr;
@@ -2306,13 +2310,11 @@ char *change_directory(char *filename, const char *old, size_t n)
 int create_directory(char *filename, const char *old, size_t n)
 {   process_file_name(filename, old, n);
     if (*filename == 0) return 1;
-    try
-    {   std::filesystem::create_directory(
-           std::filesystem::path(filename));
-    }
-    catch (std::filesystem::filesystem_error &e)
-    {   return 1;
-    }
+    std::error_code ec;
+    std::filesystem::create_directory(
+        std::filesystem::path(filename),
+        ec);
+    if (ec) return 1;
     return 0;
 }
 
@@ -2320,7 +2322,10 @@ int create_directory(char *filename, const char *old, size_t n)
 int delete_file(char *filename, const char *old, size_t n)
 {   process_file_name(filename, old, n);
     if (*filename != 0)
-        std::filesystem::remove_all(std::filesystem::path(filename));
+    {   std::error_code ec;
+        std::filesystem::remove_all(std::filesystem::path(filename), ec);
+        if (ec) return 1;
+    }
     return 0;
 }
 
@@ -2334,7 +2339,9 @@ int delete_wildcard(char *filename, const char *old, size_t n)
         h = FindFirstFile(filename, &gg);
         if (h != INVALID_HANDLE_VALUE)
         {   for (;;)
-            {   std::filesystem::remove_all(std::filesystem::path(gg.cFileName));
+            {   std::error_code ec;
+                std::filesystem::remove_all(
+                    std::filesystem::path(gg.cFileName), ec);
                 if (!FindNextFile(h, &gg)) break;
             }
             FindClose(h);
@@ -2343,8 +2350,10 @@ int delete_wildcard(char *filename, const char *old, size_t n)
         glob_t gg;
         size_t i;
         if (glob(filename, GLOB_NOSORT, nullptr, &gg) == 0)
-        {   for (i=0; i<gg.gl_pathc; i++)
-                std::filesystem::remove_all(std::filesystem::path(gg.gl_pathv[i]));
+        {   std::error_code ec;
+             for (i=0; i<gg.gl_pathc; i++)
+                std::filesystem::remove_all(
+                    std::filesystem::path(gg.gl_pathv[i]), ec);
             globfree(&gg);
         }
 #endif // WIN32
@@ -2357,7 +2366,10 @@ int64_t file_length(char *filename, const char *old, size_t n)
     if (*filename == 0) return 0;
     std::filesystem::path p(filename);
     if (!std::filesystem::exists(p)) return -1;
-    return static_cast<int64_t>(std::filesystem::file_size(p));
+    std::error_code ec;
+    std::uintmax_t len = std::filesystem::file_size(p, ec);
+    if (ec) return 0;
+    return static_cast<int64_t>(len);
 }
 
 void list_directory_members(char *filename, const char *old,
@@ -2387,10 +2399,11 @@ bool file_exists(char *filename, const char *old, size_t n, char *tt)
 //
 {   process_file_name(filename, old, n);
     if (*filename == 0) return false;
-    if (!std::filesystem::exists(std::filesystem::path(filename)))
+    std::error_code ec;
+    if (!std::filesystem::exists(std::filesystem::path(filename), ec) || ec)
         return false;
     std::filesystem::file_time_type datestamp =
-        std::filesystem::last_write_time(std::filesystem::path(filename));
+        std::filesystem::last_write_time(std::filesystem::path(filename), ec);
     std::time_t cftime = to_time_t(datestamp);
 //      decltype(datestamp)::clock::to_time_t(datestamp); // a more proper way!
     std::strcpy(tt, std::ctime(&cftime));
@@ -2402,7 +2415,9 @@ bool directoryp(char *filename, const char *old, size_t n)
     if (*filename == 0) return false;
     if (!std::filesystem::exists(std::filesystem::path(filename)))
         return false;
-    return std::filesystem::is_directory(std::filesystem::path(filename));
+    std::error_code ec;
+    return std::filesystem::is_directory(
+        std::filesystem::path(filename), ec) && !ec;
 }
 
 
@@ -2524,7 +2539,9 @@ char *get_truename(char *filename, const char *old, size_t n)
 bool file_readable(char *filename, const char *old, size_t n)
 {   process_file_name(filename, old, n);
     if (*filename == 0) return false;
-    auto s = std::filesystem::status(std::filesystem::path(filename));
+    std::error_code ec;
+    auto s = std::filesystem::status(std::filesystem::path(filename), ec);
+    if (ec) return false;
     return (s.permissions() & std::filesystem::perms::owner_read) !=
            std::filesystem::perms::none;
 }
@@ -2533,7 +2550,9 @@ bool file_readable(char *filename, const char *old, size_t n)
 bool file_writeable(char *filename, const char *old, size_t n)
 {   process_file_name(filename, old, n);
     if (*filename == 0) return false;
+    std::error_code ec;
     auto s = std::filesystem::status(std::filesystem::path(filename));
+    if (ec) return false;
     return (s.permissions() & std::filesystem::perms::owner_write) !=
            std::filesystem::perms::none;
 }
@@ -2542,7 +2561,9 @@ bool file_writeable(char *filename, const char *old, size_t n)
 bool file_executable(char *filename, const char *old, size_t n)
 {   process_file_name(filename, old, n);
     if (*filename == 0) return false;
+    std::error_code ec;
     auto s = std::filesystem::status(std::filesystem::path(filename));
+    if (ec) return false;
     return (s.permissions() & std::filesystem::perms::owner_exec) !=
            std::filesystem::perms::none;
 }
