@@ -671,6 +671,12 @@
 
 (de lth-reg-imm8 (code reg1 reg2 imm8-rotated) 4)
 
+(de OP-reg-logical (code reg1 reg2 imm-logical)
+    )
+
+(de lth-reg-logical (code reg1 reg2 imm-logical) 4)
+
+
 (de OP-reg-shifter (code reg1 reg2 reg-shifter)
     (prog (cc opcode1 opcode2 reg3 reg4 shift-op shift-amount set-bit)
 	  (setq cc (car code) opcode1 (cadr code) set-bit (caddr code) shift-amount 0)
