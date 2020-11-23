@@ -2301,7 +2301,7 @@ char *change_directory(char *filename, const char *old, size_t n)
         std::filesystem::path(filename),
         ec);
     if (ec)
-    {   std::strncpy(err_buf, ec.message(), sizeof(err_buf)-1);
+    {   std::strncpy(err_buf, ec.message().c_str(), sizeof(err_buf)-1);
         return err_buf;
     }
     return nullptr;
