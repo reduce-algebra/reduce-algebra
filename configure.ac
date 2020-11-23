@@ -107,7 +107,6 @@ then
 
   if ! which autoconf > /dev/null 2> /dev/null
   then
-    wait $procids
     printf "You must have autoconf (at least version 2.61) installed to\n"
     printf "build this package. Install it and try again please.\n"
     exit 1
@@ -115,7 +114,6 @@ then
 
   if ! which automake > /dev/null 2> /dev/null
   then
-    wait $procids
     printf "You must have automake (at least version 1.13) installed to\n"
     printf "build this package. Install it and try again please.\n"
     exit 1
@@ -123,7 +121,6 @@ then
 
   if ! which libtool > /dev/null 2> /dev/null
   then
-    wait $procids
     printf "You must have libtool installed to build this package. Install\n"
     printf "it and try again please.\n"
     printf "Note on some Linux systems it is in a package called libtool-bin\n"
@@ -165,7 +162,6 @@ then
 
   if test $acmaj -lt 2 || test $acmaj -eq 2 && test $acmin -lt 61
   then
-    wait $procids
     printf "You have autoconf $acmaj.$acmin but at least 2.61 is needed\n"
     printf "to build this package. Install it and try again please.\n"
     exit 1
@@ -173,7 +169,6 @@ then
 
   if test $ammaj -lt 1 || test $ammaj -eq 1 && test $ammin -lt 13
   then
-    wait $procids
     printf "You have automake $ammaj.$ammin but at least 1.13 is needed\n"
     printf "to build this package. Install it and try again please.\n"
     exit 1
@@ -184,7 +179,6 @@ then
   printf "Regenerate autoconf-related files\n"
   if ! eval $SHELL -c \"./autogen.sh $ac_configure_args\"
   then
-    wait $procids
     printf "The autogen.sh script seems to have failed. I can not continue\n"
     exit 1
   fi
@@ -589,7 +583,6 @@ else
 fi
 
 AC_MSG_NOTICE([Will build in the $build subdirectory])
-procids=""
 
 # There are many configure options that are valid or relevant at the
 # top level but are not needed for sub-configure calls
@@ -599,14 +592,8 @@ AC_MSG_NOTICE([args=<$ac_configure_args>])
 AC_MSG_NOTICE([filtered=<$filtered>])
 AC_MSG_NOTICE([nohost=<$nohost>])
 
-AC_ARG_WITH(sequential,
-  AC_HELP_STRING([--with-sequential],
-                 [Avoid parallel configure to make log clearer to read]),
-  [],
-  [with_sequential="no"])
 
-
-# Hah - the next is a jolly hape. It arranged that when I build on one of my
+# Hah - the next is a jolly jape. It arranged that when I build on one of my
 # own real machines I default to a new and experimental layout for the build
 # of windows versions, but everybody else (unless their host has a name
 # matching mine!) should be undisturbed.
@@ -697,50 +684,25 @@ AC_MSG_NOTICE([in csl_inplace_cygwin_build wwl=$with_windows_layout])
   pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
   if test "$config_both" = "yes"
   then
-    if test "x$with_sequential" = "xno"
-    then
-      cd x86_64
-      doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
-              CC=\"$CC -arch x86_64\" CXX=\"$CXX -arch x86_64\" \
-              STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \ 
-              $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-              CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
-              $passcc $pass_build --with-cygwin"
-      AC_MSG_NOTICE([doconfig = $doconfig])
-      eval "$doconfig" &
-      procids="$procids $!"
-      cd ../arm64
-      doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
-              CC=\"$CC -arch arm64\" CXX=\"$CXX -arch arm64\" \
-              STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \ 
-              $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-              CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
-              $passcc $pass_build --with-cygwin"
-      AC_MSG_NOTICE([doconfig = $doconfig])
-      eval "$doconfig" &
-      procids="$procids $!"
-      cd ..
-    else
-      cd x86_64
-      doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
-              CC=\"$CC -arch x86_64\" CXX=\"$CXX -arch x86_64\" \
-              STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \ 
-              $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-              CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
-              $passcc $pass_build --with-cygwin"
-      AC_MSG_NOTICE([doconfig = $doconfig])
-      eval "$doconfig"
-      cd ../arm64
-      doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
-              CC=\"$CC -arch arm64\" CXX=\"$CXX -arch arm64\" \
-              STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \ 
-              $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-              CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
-              $passcc $pass_build --with-cygwin"
-      AC_MSG_NOTICE([doconfig = $doconfig])
-      eval "$doconfig"
-      cd ..
-    fi
+    cd x86_64
+    doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
+            CC=\"$CC -arch x86_64\" CXX=\"$CXX -arch x86_64\" \
+            STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \ 
+            $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
+            $passcc $pass_build --with-cygwin"
+    AC_MSG_NOTICE([doconfig = $doconfig])
+    eval "$doconfig"
+    cd ../arm64
+    doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
+            CC=\"$CC -arch arm64\" CXX=\"$CXX -arch arm64\" \
+            STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \ 
+            $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
+            $passcc $pass_build --with-cygwin"
+    AC_MSG_NOTICE([doconfig = $doconfig])
+    eval "$doconfig"
+    cd ..
   else
     doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
             CC=\"$CC\" CXX=\"$CXX\" \
@@ -749,13 +711,7 @@ AC_MSG_NOTICE([in csl_inplace_cygwin_build wwl=$with_windows_layout])
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
             $passcc $pass_build --with-cygwin"
     AC_MSG_NOTICE([doconfig = $doconfig])
-    if test "x$with_sequential" = "xno"
-    then
-      eval "$doconfig" &
-      procids="$procids $!"
-    else
-      eval "$doconfig"
-    fi
+    eval "$doconfig"
   fi
   AC_MSG_NOTICE([configuration for cygwin on $target complete])
   cd "$abssrcdir"
@@ -806,13 +762,7 @@ csl_inplace_nativewin_build ()
           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
           $passcc $cygextra $pass_build --host=$host"
   AC_MSG_NOTICE([doconfig = $doconfig])
-  if test "x$with_sequential" = "xno"
-  then
-    eval "$doconfig" &
-    procids="$procids $!"
-  else
-    eval "$doconfig"
-  fi
+  eval "$doconfig"
   AC_MSG_NOTICE([configuration for $target complete])
   cd "$abssrcdir"
 }
@@ -971,7 +921,6 @@ yes)
   then
     psl_inplace_build
   fi
-  wait $procids
   printf "All sub-tasks should have completed\n"
   exit 0
   ;;
@@ -1072,16 +1021,16 @@ then
     LDFLAGS="$LDFLAGS -L/opt/local/lib"
     if test "x$with_mac_x86_64" = "xyes"
     then
-       CPPFLAGS="$CPPFLAGS --macosx-version-min=10.13 -arch x86_64"
-       LDFLAGS="$LDFLAGS --macosx-version-min=10.13 -arch x86_64"
+       CPPFLAGS="$CPPFLAGS -mmacosx-version-min=10.13 -arch x86_64"
+       LDFLAGS="$LDFLAGS -mmacosx-version-min=10.13 -arch x86_64"
     elif test "x$with_mac_arm64" = "xyes"
     then
-       CPPFLAGS="$CPPFLAGS --macosx-version-min=11.0 -arch arm64"
-       LDFLAGS="$LDFLAGS --macosx-version-min=11.0 -arch arm64"
+       CPPFLAGS="$CPPFLAGS -mmacosx-version-min=11.0 -arch arm64"
+       LDFLAGS="$LDFLAGS -mmacosx-version-min=11.0 -arch arm64"
     elif test "x$with_mac_universal" != "xyes"
     then
-       CPPFLAGS="$CPPFLAGS --macosx-version-min=10.13 -arch x86_64"
-       LDFLAGS="$LDFLAGS --macosx-version-min=10.13 -arch x86_64"
+       CPPFLAGS="$CPPFLAGS -mmacosx-version-min=10.13 -arch x86_64"
+       LDFLAGS="$LDFLAGS -mmacosx-version-min=10.13 -arch x86_64"
     fi
     ;;
   esac
@@ -1145,16 +1094,10 @@ then
         $pass_host $pass_build --without-fox --without-wx"
   fi
   AC_MSG_NOTICE([$doconfig])
-  if test "x$with_sequential" = "xno"
-  then
-    eval "$doconfig" &
-    procids="$procids $!"
-  else
-    eval "$doconfig"
-  fi
+  eval "$doconfig"
   cd "$builddir"
 
-    extras=
+  extras=
   wx=
 
   case $host in
@@ -1246,14 +1189,7 @@ then
       doconfig="$doconfig --with-gtk"
     fi
     AC_MSG_NOTICE([doconfig = $doconfig])
-    if test "x$with_sequential" = "xno"
-    then
-      eval "$doconfig" &
-      jobs
-      procids="$procids $!"
-    else
-      eval "$doconfig"
-    fi
+    eval "$doconfig"
     cd "$builddir"
   elif test "x$with_fox" != "xno"
   then
@@ -1289,13 +1225,7 @@ then
             --includedir=\"$builddir/include\" \
             $extras"
     AC_MSG_NOTICE([doconfig = $doconfig])
-    if test "x$with_sequential" = "xno"
-    then
-      eval "$doconfig" &
-      procids="$procids $!"
-    else
-      eval "$doconfig"
-    fi
+    eval "$doconfig"
     cd "$builddir"
   fi
 
@@ -1329,13 +1259,7 @@ else
         --libdir=\"$builddir/lib\" \
         --includedir=\"$builddir/include\""
   AC_MSG_NOTICE([doconfig = $doconfig])
-  if test "x$with_sequential" = "xno"
-  then
-    eval "$doconfig" &
-    procids="$procids $!"
-  else
-    eval "$doconfig"
-  fi
+  eval "$doconfig"
   cd "$builddir"
 fi
 
@@ -1363,13 +1287,7 @@ doconfig="$SHELL $abssrcdir/libraries/libffi/configure -C $filtered \
         --libdir=\"$builddir/lib\" \
         --includedir=\"$builddir/include\""
 AC_MSG_NOTICE([doconfig = $doconfig])
-if test "x$with_sequential" = "xno"
-then
-  eval "$doconfig" &
-  procids="$procids $!"
-else
-  eval "$doconfig"
-fi
+eval "$doconfig"
 cd "$builddir"
 
 AC_MSG_NOTICE([About to configure libsoftfloat])
@@ -1398,13 +1316,7 @@ doconfig="$SHELL $abssrcdir/libraries/SoftFloat-3a/source/configure -C \
         --libdir=\"$builddir/lib\" \
         --includedir=\"$builddir/include\""
 AC_MSG_NOTICE([doconfig = $doconfig])
-if test "x$with_sequential" = "xno"
-then
-  eval "$doconfig" &
-  procids="$procids $!"
-else
-  eval "$doconfig"
-fi
+eval "$doconfig"
 
 cd "$builddir"
 
@@ -1424,13 +1336,7 @@ doconfig="$SHELL $abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure -C \
         --libdir=\"$builddir/lib\" \
         --includedir=\"$builddir/include\""
 AC_MSG_NOTICE([doconfig = $doconfig])
-if test "x$with_sequential" = "xno"
-then
-  eval "$doconfig" &
-  procids="$procids $!"
-else
-  eval "$doconfig"
-fi
+eval "$doconfig"
 
 cd "$builddir"
 
@@ -1450,13 +1356,7 @@ doconfig="$SHELL $abssrcdir/generic/newfront/configure -C $nohost \
         --libdir=\"$builddir/lib\" \
         --includedir=\"$builddir/include\""
 AC_MSG_NOTICE([doconfig = $doconfig])
-if test "x$with_sequential" = "xno"
-then
-  eval "$doconfig" &
-  procids="$procids $!"
-else
-  eval "$doconfig"
-fi
+eval "$doconfig"
 
 cd "$builddir"
 
@@ -1475,8 +1375,6 @@ AC_MSG_NOTICE([final output from top level configuration])
 
 AC_OUTPUT
 
-printf "Wait for %s\n" "$procids"
-wait $procids
 printf "All sub-tasks should have completed\n"
 
 # end of configure.ac
