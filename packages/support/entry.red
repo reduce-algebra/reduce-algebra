@@ -547,6 +547,31 @@ defautoload(fibonaccip,specfn,expr,2);
 flag('(motzkin),'opfn);
 defautoload(motzkin,specfn);
 
+% elliptic functions and integrals
+     defautoload_operator(jacobisn, (specfn specbess));
+     defautoload_operator(jacobicn, (specfn specbess));
+     defautoload_operator(jacobidn, (specfn specbess));
+     defautoload_operator(jacobins, (specfn specbess));
+     defautoload_operator(jacobinc, (specfn specbess));
+     defautoload_operator(jacobind, (specfn specbess));
+     defautoload_operator(jacobisc, (specfn specbess));
+     defautoload_operator(jacobisd, (specfn specbess));
+     defautoload_operator(jacobics, (specfn specbess));
+     defautoload_operator(jacobids, (specfn specbess));
+     defautoload_operator(jacobicd, (specfn specbess));
+     defautoload_operator(jacobidc, (specfn specbess));
+     defautoload_operator(jacobie,  (specfn specbess));
+     
+     defautoload_operator(elliptice,       (specfn specbess));
+     defautoload_operator(elliptice!',     (specfn specbess));
+     defautoload_operator(ellipticf,       (specfn specbess));
+     defautoload_operator(elliptick,       (specfn specbess));
+     defautoload_operator(elliptick!',     (specfn specbess));
+     defautoload_operator(elliptictheta1,  (specfn specbess));
+     defautoload_operator(elliptictheta2,  (specfn specbess));
+     defautoload_operator(elliptictheta3,  (specfn specbess));
+     defautoload_operator(elliptictheta4,  (specfn specbess));
+
 % specfn2 module entry points
 
 defautoload_operator(hypergeometric,(specfn specfn2));

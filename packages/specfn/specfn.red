@@ -58,12 +58,14 @@ module specfn;  % Special functions package for REDUCE.
 %              -- Solid and Spherical Harmonics                  %
 %              -- Jacobi Elliptic Functions                      %
 %              -- Elliptic Integrals                             %
-%                                                                %
+%              -- Jacobi Theta Functions                         %
+%
 %     accessible through the new operators Bernoulli, Gamma,     %
 %     Pochhammer, Psi, Polygamma, Zeta, BesselJ, BesselY,        %
 %     BesselI, BesselK, Hankel1, Hankel2, KummerM, KummerU,      %
 %     AiryAi, AiryBi, AiryAiPrime, AiryBiPrime,                  %
-%     Elliptic{sn,cn,dn...}, Elliptic{E,F,K...}                  %
+%     Jacobi{sn,cn,dn...}, Elliptic{E,F,K...}, JacobiE           %
+%     EllipticTheta{1,2,3,4}                                     %
 %     Beta, StruveL, StruveH, Lommel1, Lommel2, WhittakerM       %
 %     and WhittakerW, with the new switch SaveSFs.               %
 %                                                                %
@@ -71,8 +73,7 @@ module specfn;  % Special functions package for REDUCE.
 
 
 create!-package ('(specfn sfconsts sfgen sfbern dilog sfbinom sfpolys
-                   sfsums simpfact harmonic jsymbols recsimpl sfellip
-                   sfellipi sfint),
+                   sfsums simpfact harmonic jsymbols recsimpl sfint),
                  '(contrib specfn));
 
 exports sq2bf!*, c!:prec!:;
@@ -146,6 +147,31 @@ defautoload_operator(Airy_Ai,specbess);
 defautoload_operator(Airy_Bi,specbess);
 defautoload_operator(Airy_Aiprime,specbess);
 defautoload_operator(Airy_Biprime,specbess);
+
+% elliptic functions and integrals
+     defautoload_operator(jacobisn, specbess);
+     defautoload_operator(jacobicn, specbess);
+     defautoload_operator(jacobidn, specbess);
+     defautoload_operator(jacobins, specbess);
+     defautoload_operator(jacobinc, specbess);
+     defautoload_operator(jacobind, specbess);
+     defautoload_operator(jacobisc, specbess);
+     defautoload_operator(jacobisd, specbess);
+     defautoload_operator(jacobics, specbess);
+     defautoload_operator(jacobids, specbess);
+     defautoload_operator(jacobicd, specbess);
+     defautoload_operator(jacobidc, specbess);
+     defautoload_operator(jacobie,  specbess);
+     
+     defautoload_operator(elliptice,       specbess);
+     defautoload_operator(elliptice!',     specbess);
+     defautoload_operator(ellipticf,       specbess);
+     defautoload_operator(elliptick,       specbess);
+     defautoload_operator(elliptick!',     specbess);
+     defautoload_operator(elliptictheta1,  specbess);
+     defautoload_operator(elliptictheta2,  specbess);
+     defautoload_operator(elliptictheta3,  specbess);
+     defautoload_operator(elliptictheta4,  specbess);
 
 %defautoload_operator(gamma,sfgamma);
 %defautoload_operator(igamma,sfgamma);

@@ -48,8 +48,32 @@ remprop('Airy_Bi,'simpfn);
 remprop('Airy_Aiprime,'simpfn);
 remprop('Airy_Biprime,'simpfn);
 
+remprop('jacobisn,'simpfn);
+remprop('jacobicn,'simpfn);
+remprop('jacobidn,'simpfn);
+remprop('jacobins,'simpfn);
+remprop('jacobinc,'simpfn);
+remprop('jacobind,'simpfn);
+remprop('jacobisc,'simpfn);
+remprop('jacobics,'simpfn);
+remprop('jacobisd,'simpfn);
+remprop('jacobids,'simpfn);
+remprop('jacobicd,'simpfn);
+remprop('jacobidc,'simpfn);
+remprop('jacobie,'simpfn);
 
-create!-package ('(specbess sfbes sfkummer sfother sfairy),
+remprop('elliptick,'simpfn);
+remprop('elliptick!','simpfn);
+remprop('elliptice,'simpfn);
+remprop('elliptice!','simpfn);
+remprop('ellipticf,'simpfn);
+remprop('elliptictheta1,'simpfn);
+remprop('elliptictheta2,'simpfn);
+remprop('elliptictheta3,'simpfn);
+remprop('elliptictheta4,'simpfn);
+
+
+create!-package ('(specbess sfbes sfkummer sfother sfairy sfellip sfellipi),
                  '(contrib specfn));
 
 symbolic inline procedure sq2bf!*(x);

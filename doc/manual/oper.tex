@@ -65,7 +65,7 @@ For example:
                          - IMPART(A)*I - IMPART(B)
 \end{verbatim}
 
-However, if rules have been previously defined for the complex conjugate(s)
+If rules have been previously defined for the complex conjugate(s)
 of one or more non-numerical terms appearing in the argument, these rules are
 applied and the expansion in terms of the operators
 \texttt{REPART}\ttindex{REPART} and \texttt{IMPART}\ttindex{IMPART} is
@@ -163,6 +163,8 @@ in the operators \texttt{REPART}\ttindex{REPART} and \texttt{IMPART}.  For examp
         impart(a+i*b)      -> impart(a) + repart(b)
 \end{verbatim}
 
+For the inverse trigometric and hyperbolic functions with non-numeric arguments the output is usually more compact when the \sw{FACTOR} is on.
+
 \subsection{MAX/MIN}
 \hypertarget{operator:MAX}{}
 \hypertarget{operator:MIN}{}
@@ -240,6 +242,8 @@ For example:
                    { - impart(b) + repart(a),impart(a) + repart(b)}
 \end{verbatim}
 
+For the inverse trigometric and hyperbolic functions with non-numeric arguments the output is usually more compact when the \sw{FACTOR} is on.
+
 \subsection{REPART}\ttindex{REPART}
 \hypertarget{operator:REPART}{}
 This returns the real part of an expression, if that argument has an
@@ -253,6 +257,8 @@ For example:
         repart(asin(1+i))  -> acos(sqrt(5)-2)/2         
         repart(a+i*b)      ->  - impart(b) + repart(a)
 \end{verbatim}
+
+For the inverse trigometric and hyperbolic functions with non-numeric arguments the output is usually more compact when the \sw{FACTOR} is on.
 
 \subsection{ROUND}\ttindex{ROUND}
 \hypertarget{operator:ROUND}{}
