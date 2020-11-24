@@ -369,11 +369,21 @@
 	       '( 1  2  3  4  5  6  7  8
 		     R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15
 		     R16 R17 R18 R19 R20 R21 R22 R23 R24 R25 R26 R27 R28 R29 R30
-		     sp st pc lr Rzero
-		     t1 t2 t3 fp
+		     fp lr Rzero
+		     t1 t2 t3
              nil heaplast heaptrapbound symfnc symval
 	     bndstkptr bndstklowerbound bndstkupperbound
 	     ))))
+
+(de reg-zero-p (RegName)
+    (eq RegName 'RZero))
+
+(de reg-sp-p (RegName)
+    (eq RegName 'sp))
+
+(de reg-or-sp-p (RegName)
+    (or (and (regp RegName) (not (reg-zero-p RegName)))
+	(req-sp-p RegName)))
 
 (de EvenRegP (RegName)
     (and (Regp RegName) (evenp (reg2int regname))))
@@ -428,6 +438,12 @@
 	 (setq x (wand 16#ffffffff x))
 	 (decode-32bit-imm8-rotated x)))
 
+(de imm12-shiftedp (x)
+    (or (and (fixp x) (eq x (land x 16#fff)))
+	(and (pairp x) (fixp (car x)) (eq (car x) (land (car x) 16#fff))
+	     (eqcar (cdr x) 'LSL)
+	     (pairp (cddr x)) (memq (caddr x) '(0 12)))))
+
 (de sixteenbit-p (x)
     (and (fixp x) (eq (wand 16#ffff x) x)))
 
@@ -443,9 +459,24 @@
     (or (stringp x)
 	(and (pairp x) (regp x))
 	(and (eqcar x 'regshifted) (or (regp (cadr x)) (regp (list 'reg (cadr x))))
-	     (memq (caddr x) shift-ops*)
+	     (memq (caddr x) '(LSL LSR ASR))
 	     (or (fixp (cadddr x)) (regp (cadddr x))
 		 (and (null (cadddr x)) (eq (caddr x) 'RRX))))
+	)
+    )
+
+% possibly extended register (data movement), one of:
+% (reg x)
+% (regshifted x LSL/LSR.. amount)    amount is a number or a register
+% (regshift-by-reg x LSL/LSR (reg y))
+
+(de reg-extended-p (x)
+    (or (stringp x)
+	(and (pairp x) (regp x))
+	(and (eqcar x 'extend) (or (regp (cadr x)) (regp (list 'reg (cadr x))))
+	     (memq (caddr x) '(UXTB UXTH LSL UXTW UXTX SXTB SXTH SXTW SXTX))
+	     (fixp (cadddr x)))
+
 	)
     )
 
@@ -655,21 +686,32 @@
 %	    )
     )
 
+(de OP-reg3 (code reg1 reg2 reg3)
+    (DepositInstructionBytes
+     (lsh code -3)
+     (lor (lsh (land code 7) 5) (reg2int reg3))
+     (lsh (reg2int reg2 -3))
+     (lor (reg2int reg1) (lsh (land (reg2int reg2) 7) 5))))
 
-(de OP-reg-imm8 (code reg1 reg2 imm8-rotated)
-    (prog (cc opcode1 opcode2 imm8-decoded set-bit)
-	  (setq imm8-decoded (decode-32bit-imm8-rotated imm8-rotated))
-	  (if (null imm8-decoded)
-	      (stderror (bldmsg "Invalid imm8 operand %w" imm8-rotated)))
-	  (setq cc (car code) set-bit (caddr code) opcode1 (cadr code))
-	  (DepositInstructionBytes
-	   (lor (lsh cc 4) (lsh opcode1 -3))
-	   (lor (lor (lsh (land opcode1 2#111) 5) (lsh set-bit 4)) (reg2int reg2))
-	   (lor (lsh (reg2int reg1) 4) (car imm8-decoded))
-	   (cdr imm8-decoded)))
-    )
+(de lth-reg3 (code reg1 reg2 reg3) 4)
 
-(de lth-reg-imm8 (code reg1 reg2 imm8-rotated) 4)
+
+(de OP-reg-imm12 (code reg1 reg2 imm12-shifted)
+    (let ((imm12) (sh))
+      (if (or (and (fixp imm12-shifted) (eq imm12-shifted (wand imm12-shifted 16#fff))
+		   (setq imm12 imm12-shifted))
+	      (and (pairp imm12-shifted) (eq (caddr imm12-shifted) 0)
+		   (setq imm12 (caddr imm12-shifted))))
+	  (setq sh 0)
+	(setq sh 1))
+      (DepositInstructionBytes
+       (lsh code -1)
+       (lor (lsh imm12 6) (lor (lsh (land code 1) 7) (lsh sh 6)))
+       (lor (lsh (land imm12 16#33) 2) (lsh (reg2int reg2) -3))
+       (lor (reg2int reg1) (lsh (land (reg2int reg2) 7) 5))
+       )))
+
+(de lth-reg-imm12 (code reg1 reg2 imm12-rotated) 4)
 
 (de OP-reg-logical (code reg1 reg2 imm-logical)
     )
@@ -678,32 +720,44 @@
 
 
 (de OP-reg-shifter (code reg1 reg2 reg-shifter)
-    (prog (cc opcode1 opcode2 reg3 reg4 shift-op shift-amount set-bit)
-	  (setq cc (car code) opcode1 (cadr code) set-bit (caddr code) shift-amount 0)
-	  (cond ((regp reg-shifter) (setq reg3 (reg2int reg-shifter) reg4 0 opcode2 0))
+    (prog (opcode2 shift-op shift-amount)
+	  (cond ((regp reg-shifter) (setq reg3 (reg2int reg-shifter) opcode2 0 shift-amount 0))
 		((eqcar reg-shifter 'regshifted)
 		 (setq reg3 (reg2int (cadr reg-shifter)) shift-op (caddr reg-shifter))
-		 (if (eq shift-op 'RRX)
-		     (setq shift-amount 0)
-		   (setq shift-amount (cadddr reg-shifter)))
+		 (setq shift-amount (cadddr reg-shifter))
 		 (cond ((fixp shift-amount)
-			(setq reg4 (lsh shift-amount -1)
-			      opcode2 (lor (lsh (land shift-amount 1) 3) (subla '((LSL . 2#000) (LSR . 2#010) (ASR . 2#100) (ROR . 2#110) (RRX . 2#110)) shift-op))))
-		       ((regp shift-amount)
-			(setq reg4 (reg2int (cadddr reg-shifter)))
-			(setq opcode2 (subla '((LSL . 2#0001) (LSR . 2#0011) (ASR . 2#0101) (ROR 2#0111)) shift-op))
-			)
+			(setq opcode2 (lor (lsh (land shift-amount 1) 3) (subla '((LSL . 2#000) (LSR . 2#010) (ASR . 2#100)) shift-op))))
 		       (T (stderror (bldmsg "Invalid operand %w" reg-shifter)))))
 		(T (stderror (bldmsg "Invalid operand %w" reg-shifter))))
 	  (DepositInstructionBytes
-	   (lor (lsh cc 4) (lsh opcode1 -3))
-	   (lor (lor (lsh (land opcode1 2#111) 5) (lsh set-bit 4)) (reg2int reg2))
-	   (lor (lsh (reg2int reg1) 4) reg4)
-	   (lor (lsh opcode2 4) reg3)))
+	   (lsh code -3)
+	   (lor (reg2int reg3) (lsh opcode2 5))
+	   (lor (lsh (reg2int reg2) -3) (lsh shift-amount 2))
+	   (lor (reg2int reg1) (lsh (land (reg2int reg2) 7) 5))))
                                                                             
     )
 
 (de lth-reg-shifter (code reg1 reg2 reg-shifter) 4)
+
+(de OP-reg-extended (code reg1 reg2 reg-extended)
+    (prog (option shift-op shift-amount)
+	  (cond ((regp reg-extended) (setq reg3 (reg2int reg-extended)))
+		((eqcar reg-shifter 'extend)
+		 (setq reg3 (reg2int (cadr reg-extended)) shift-op (caddr reg-extended))
+		 (setq shift-amount (cadddr reg-extended))
+		 (cond ((fixp shift-amount)
+			(setq option (lor (lsh (land shift-amount 1) 3) (subla '((UXTB . 2#000) (UXTH . 2#001) (LSL . 2#010) (UXTW . 2#010) (UXTX . 2#011) (SXTB . 2#100) (SXTH . 2#101) (SXTW . 2#110) (SXTX . 2#111)) shift-op))))
+		       (T (stderror (bldmsg "Invalid operand %w" reg-shifter)))))
+		(T (stderror (bldmsg "Invalid operand %w" reg-shifter))))
+	  (DepositInstructionBytes
+	   (lsh code -3)
+	   (lor (reg2int reg3) (lsh (land code 3) 5))
+	   (lor (lor (lsh (reg2int reg2) -3) (lsh shift-amount 2)) (lsh option 5))
+	   (lor (reg2int reg1) (lsh (land (reg2int reg2) 7) 5))))
+                                                                            
+    )
+
+(de lth-reg-extended (code reg1 reg2 reg-extended) 4)
 
 (de OP-regn-imm8 (code regn imm8-rotated)
     (prog (cc opcode1 imm8-decoded set-bit)
