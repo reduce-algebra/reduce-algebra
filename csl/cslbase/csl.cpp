@@ -998,6 +998,8 @@ static void lisp_main()
                     try
                     {   START_TRY_BLOCK;
                         a = read_from_vector(exit_charvec);
+// If I fail to read the saved data "a" back I will just fold it down and
+// use nil instead.
                     }
                     catch (LispException &e) // all sorts of Lisp issues!
                     {   a = nil;

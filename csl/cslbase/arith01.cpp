@@ -49,7 +49,7 @@
 //
 
 // If I make validate-number stop absolutely that can be useful if I am
-// running under a debugger, because I can put a break-point on Lstop
+// running under a debugger, because I can put a break-point on Lstop1
 // and there I when I run normally I know I do not run on beyond trouble.
 // But if I let it exit reporting an error I may get a Lisp-level backtrace...
 // and that too can be helpful. So while I decide and to make temporary
@@ -72,7 +72,7 @@ LispObject validate_number(const char *s, LispObject a,
         prin_to_trace(b), trace_printf("\n");
         prin_to_trace(c), trace_printf("\n");
 #ifdef VALIDATE_STOPS
-        Lstop(nil, fixnum_of_int(1)); // System error, so stop.
+        Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
 #else
         aerror1("validate-number", a);
 #endif
@@ -84,7 +84,7 @@ LispObject validate_number(const char *s, LispObject a,
             prin_to_trace(b), trace_printf("\n");
             prin_to_trace(c), trace_printf("\n");
 #ifdef VALIDATE_STOPS
-            Lstop(nil, fixnum_of_int(1)); // System error, so stop.
+            Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
 #else
             aerror1("validate-number", a);
 #endif
@@ -96,7 +96,7 @@ LispObject validate_number(const char *s, LispObject a,
                 prin_to_trace(b), trace_printf("\n");
                 prin_to_trace(c), trace_printf("\n");
 #ifdef VALIDATE_STOPS
-                Lstop(nil, fixnum_of_int(1)); // System error, so stop.
+                Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
 #else
                 aerror1("validate-number", a);
 #endif
@@ -106,7 +106,7 @@ LispObject validate_number(const char *s, LispObject a,
                 prin_to_trace(b), trace_printf("\n");
                 prin_to_trace(c), trace_printf("\n");
 #ifdef VALIDATE_STOPS
-                Lstop(nil, fixnum_of_int(1)); // System error, so stop.
+                Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
 #else
                 aerror1("validate-number", a);
 #endif
@@ -121,7 +121,7 @@ LispObject validate_number(const char *s, LispObject a,
             prin_to_trace(b), trace_printf("\n");
             prin_to_trace(c), trace_printf("\n");
 #ifdef VALIDATE_STOPS
-            Lstop(nil, fixnum_of_int(1)); // System error, so stop.
+            Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
 #else
             aerror1("validate-number", a);
 #endif
@@ -133,7 +133,7 @@ LispObject validate_number(const char *s, LispObject a,
         prin_to_trace(b), trace_printf("\n");
         prin_to_trace(c), trace_printf("\n");
 #ifdef VALIDATE_STOPS
-        Lstop(nil, fixnum_of_int(1)); // System error, so stop.
+        Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
 #else
         aerror1("validate-number", a);
 #endif
@@ -143,7 +143,7 @@ LispObject validate_number(const char *s, LispObject a,
         prin_to_trace(b); trace_printf("\n");
         prin_to_trace(c); trace_printf("\n");
 #ifdef VALIDATE_STOPS
-        Lstop(nil, fixnum_of_int(1)); // System error, so stop.
+        Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
 #else
         aerror1("validate-number", a);
 #endif
@@ -154,7 +154,7 @@ LispObject validate_number(const char *s, LispObject a,
         prin_to_trace(b); trace_printf("\n");
         prin_to_trace(c); trace_printf("\n");
 #ifdef VALIDATE_STOPS
-        Lstop(nil, fixnum_of_int(1)); // System error, so stop.
+        Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
 #else
         aerror1("validate-number", a);
 #endif

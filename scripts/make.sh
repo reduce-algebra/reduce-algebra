@@ -24,10 +24,7 @@ args=""
 flags=""
 buildcsl="no"
 buildpsl="no"
-sequential="no"
-
-# "make sequential" or "make csl sequential" does a sequential rather
-# then a parallel build.
+rc=0
 
 for a in $*
 do
@@ -35,8 +32,6 @@ do
   then buildcsl="yes"
   elif test "$a" = "psl"
   then buildpsl="yes"
-  elif test "$a" = "sequential"
-  then sequential="yes"
   else args="$args $a"
   fi  
 done
@@ -191,26 +186,15 @@ do
     if test "x$firstcsl" != "x"
     then
       $PREFIX $MAKE c-code
+      rc1=$?
+      rc=$(($rc1 > $rc ? $rc1 : $rc)) 
       firstcsl=""
     fi
-    if test "$sequential" = "yes"
-    then
-      $PREFIX $MAKE $flags $args MYFLAGS="$flags" 
-    else
-      $PREFIX $MAKE $flags $args MYFLAGS="$flags" &
-      procids="$procids $!"
-    fi
+    $PREFIX $MAKE $flags $args MYFLAGS="$flags" 
+    rc1=$?
+    rc=$(($rc1 > $rc ? $rc1 : $rc)) 
     cd "$h"
   fi
-done
-
-# wait $procids
-rc=0
-for i in $procids
-do
-  wait $i
-  rc1=$?
-  rc=$(($rc1 > $rc ? $rc1 : $rc)) 
 done
 
 printf "\nReduce build tasks finished with highest return code $rc\n"
