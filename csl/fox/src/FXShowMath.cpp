@@ -2701,7 +2701,7 @@ static Keyword texWords[1<<texWordBits] =
     {"smalloint",        TeXVSymbol, FntExtension, 0x48, NULL},
     {"oint",             TeXVSymbol, FntExtension, 0x49, NULL},
     {"smallbigcup",      TeXVSymbol, FntExtension, 0x53, NULL},
-    {"nigcup",           TeXVSymbol, FntExtension, 0x5b, NULL},
+    {"bigcup",           TeXVSymbol, FntExtension, 0x5b, NULL},
     {"smallbigcap",      TeXVSymbol, FntExtension, 0x54, NULL},
     {"bigcap",           TeXVSymbol, FntExtension, 0x5c, NULL},
     {"smallbiguplus",    TeXVSymbol, FntExtension, 0x55, NULL},

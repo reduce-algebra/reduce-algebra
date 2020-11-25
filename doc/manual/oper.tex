@@ -290,10 +290,6 @@ positive only as long as the switch \texttt{COMPLEX} is off.
 \hypertarget{operator:ACOTH}{}
 \hypertarget{operator:ACSC}{}
 \hypertarget{operator:ACSCH}{}
-\hypertarget{operator:AIRY_AI}{}
-\hypertarget{operator:AIRY_AIPRIME}{}
-\hypertarget{operator:AIRY_BI}{}
-\hypertarget{operator:AIRY_BIPRIME}{}
 \hypertarget{operator:ASEC}{}
 \hypertarget{operator:ASECH}{}
 \hypertarget{operator:ASIN}{}
@@ -301,93 +297,166 @@ positive only as long as the switch \texttt{COMPLEX} is off.
 \hypertarget{operator:ATAN}{}
 \hypertarget{operator:ATANH}{}
 \hypertarget{operator:ATAN2}{}
-\hypertarget{operator:BESSELI}{}
-\hypertarget{operator:BESSELJ}{}
-\hypertarget{operator:BESSELK}{}
-\hypertarget{operator:BESSELY}{}
-\hypertarget{operator:HANKEL1}{}
-\hypertarget{operator:HANKEL2}{}
-\hypertarget{operator:KUMMERM}{}
-\hypertarget{operator:KUMMERU}{}
-\hypertarget{operator:LOMMEL1}{}
-\hypertarget{operator:LOMMEL2}{}
-\hypertarget{operator:STRUVEH}{}
-\hypertarget{operator:STRUVEL}{}
-\hypertarget{operator:WHITTAKERM}{}
-\hypertarget{operator:WHITTAKERU}{}
-\hypertarget{operator:BETA}{}
-\hypertarget{operator:CI}{}
 \hypertarget{operator:COS}{}
 \hypertarget{operator:COSH}{}
 \hypertarget{operator:COT}{}
 \hypertarget{operator:COTH}{}
 \hypertarget{operator:CSC}{}
 \hypertarget{operator:CSCH}{}
-\hypertarget{operator:DILOG}{}
-\hypertarget{operator:EI}{}
 \hypertarget{operator:EXP}{}
-\hypertarget{operator:GAMMA}{}
 \hypertarget{operator:HYPOT}{}
-\hypertarget{operator:IBETA}{}
-\hypertarget{operator:IGAMMA}{}
-\hypertarget{operator:LERCH_PHI}{}
+%%\hypertarget{operator:LERCH_PHI}{}
 \hypertarget{operator:LOG}{}
+\hypertarget{operator:LN}{}
 \hypertarget{operator:LOGB}{}
 \hypertarget{operator:LOG10}{}
-\hypertarget{operator:POCHHAMMER}{}
-\hypertarget{operator:POLYGAMMA}{}
-\hypertarget{operator:PSI}{}
 \hypertarget{operator:SEC}{}
 \hypertarget{operator:SECH}{}
-\hypertarget{operator:SI}{}
 \hypertarget{operator:SIN}{}
 \hypertarget{operator:SINH}{}
-\hypertarget{operator:SPHERICALHARMONICY}{}
-\hypertarget{operator:SOLIDHARMONICY}{}
 \hypertarget{operator:SQRT}{}
 \hypertarget{operator:TAN}{}
 \hypertarget{operator:TANH}{}
-\hypertarget{operator:ZETA}{}
 
 {\REDUCE} knows that the following represent mathematical functions
-\index{Mathematical function} that can
-take arbitrary scalar expressions as their argument(s):
-\begin{verbatim}
-   ACOS ACOSH ACOT ACOTH ACSC ACSCH ASEC ASECH ASIN
-   ASINH ATAN ATANH ATAN2 BETA CI COS COSH COT COTH CSC
-   CSCH DILOG EI EXP GAMMA HYPOT IBETA IGAMMA LOG
-   LOGB LOG10 SEC SECH SI SIN SINH SQRT TAN TANH
-   AIRY_AI AIRY_AIPRIME AIRY_BI AIRY_BIPRIME
-   BESSELI BESSELJ BESSELK BESSELY
-   HANKEL1 HANKEL2 KUMMERM KUMMERU LOMMEL1 LOMMEL2
-   STRUVEH STRUVEL WHITTAKERM WHITTAKERU
-   POLYGAMMA PSI ZETA
-   SOLIDHARMONICY SPHERICALHARMONICY
-\end{verbatim}
+\index{Mathematical functions} that can
+take arbitrary scalar expressions as their argument(s).\\
+\textbf{Elementary Functions}\\
+\textbf{Trigonometric, hyperbolic and exponential functions:}\\
+\texttt{sin cos tan cot csc sec sinh cosh tanh coth csch sech exp}\\
+\textbf{Their inverse functions:}\\
+\texttt{asin acos atan  acot acsc asec asinh acosh atanh acoth acsch asech}
+\texttt{log ln log10 logb}\\
+where \texttt{log} or equivalently \texttt{ln} is the natural logarithm,
+\texttt{log10} is
+the logarithm to base 10,
+\texttt{logb} has two arguments of which the second is the logarithmic base.\\
+\textbf{Miscellaneous functions:}\\
+\texttt{sqrt  hypot  atan2}\\
+ The function \texttt{hypot} takes two arguments \texttt{x} and \texttt{y}  and returns the value $\sqrt{x^2+y^2}$, but reduces problems with possible overflow for large  numerical arguments. \texttt{atan2} also takes two arguments \texttt{x} and \texttt{y} respectively and returns a value of $\arctan(y/x)$ in the range $(-\pi, \pi]$ taking account of the signs of its two arguments.
 \ttindex{ACOS}\ttindex{ACOSH}\ttindex{ACOT}
 \ttindex{ACOTH}\ttindex{ACSC}\ttindex{ACSCH}
-\ttindex{Airy\_Ai}\ttindex{Airy\_Aiprime}
-\ttindex{Airy\_Bi}\ttindex{Airy\_Biprime}
 \ttindex{ASEC}\ttindex{ASECH}\ttindex{ASIN}
 \ttindex{ASINH}\ttindex{ATAN}\ttindex{ATANH}\ttindex{ATAN2}
+\ttindex{COS}\ttindex{COSH}\ttindex{COT}\ttindex{COTH}\ttindex{CSC}
+\ttindex{CSCH}\ttindex{EXP}\ttindex{HYPOT}
+\ttindex{LOG}\ttindex{LN}\ttindex{LOGB}\ttindex{LOG10}
+\ttindex{SEC}\ttindex{SECH}\ttindex{SIN}\ttindex{SINH}
+\ttindex{SQRT}\ttindex{TAN}\ttindex{TANH}
+\\
+\textbf{Special Functions}\\
+The functions in this section are either built-in or are autoloading
+functions from the package \texttt{SPECFN}.\\
+\hypertarget{operator:Chi}{}
+\hypertarget{operator:Ci}{}
+\hypertarget{operator:dilog}{}
+\hypertarget{operator:Ei}{}
+\hypertarget{operator:Erf}{}
+\hypertarget{operator:Si}{}
+\hypertarget{operator:Shi}{}
+\hypertarget{operator:Fresnel\_S}{}
+\hypertarget{operator:Fresnel\_C}{}
+\hypertarget{operator:beta}{}
+\hypertarget{operator:gamma}{}
+\hypertarget{operator:ibeta}{}
+\hypertarget{operator:igamma}{}
+\hypertarget{operator:polygamma}{}
+\hypertarget{operator:psi}{}
+\hypertarget{operator:Zeta}{}
+\hypertarget{operator:SphericalHarmonicY}{}
+\hypertarget{operator:SolidHarmonicY}{}
+\hypertarget{operator:BesselI}{}
+\hypertarget{operator:BesselJ}{}
+\hypertarget{operator:BesselK}{}
+\hypertarget{operator:BesselY}{}
+\hypertarget{operator:Hankel1}{}
+\hypertarget{operator:Hankel2}{}
+\hypertarget{operator:AIRY_AI}{}
+\hypertarget{operator:AIRY_AIPRIME}{}
+\hypertarget{operator:AIRY_BI}{}
+\hypertarget{operator:AIRY_BIPRIME}{}
+\hypertarget{operator:KummerM}{}
+\hypertarget{operator:KummerU}{}
+\hypertarget{operator:Lommel1}{}
+\hypertarget{operator:Lommel2}{}
+\hypertarget{operator:StruveH}{}
+\hypertarget{operator:StruveL}{}
+\hypertarget{operator:WhittakerM}{}
+\hypertarget{operator:WhittakerU}{}
+\textbf{Assorted Integral Functions:}\\
+\texttt{Erf dilog Ei Si Ci Chi Shi Fresnel\_S Fresnel\_C }\\
+\textbf{Beta and Gamma Functions:}\\
+\texttt{beta ibeta gamma igamma psi polygamma}\\
+The function \texttt{psi} is the digamma function.\\
+\textbf{Riemann Zeta and Associated Legendre functions:}\\
+\texttt{Zeta SphericalHarmonicY SolidHarmonicY}\\
+\textbf{Bessel and Related Functions:}\\
+\texttt{BesselJ BesselY BesselI BesselK Hankel1 Hankel2}\\
+\textbf{Airy Functions:}\\
+\texttt{Airy\_Ai Airy\_Aiprime Airy\_Bi Airy\_Biprime}\\
+\textbf{Kummer, Lommel, Struve and Whittaker functions:}\\
+\texttt{KummerM KummerU Lommel1 Lommel2 StruveH StruveL WhittakerM WhittakerU}\\
+\ttindex{beta}\ttindex{ibeta}\ttindex{gamma}\ttindex{igamma}
+\ttindex{polygamma}\ttindex{psi}
+\ttindex{Si}\ttindex{Shi}\ttindex{Chi}\ttindex{Ci}
+\ttindex{dilog}\ttindex{Ei}\ttindex{Erf}
+\ttindex{Fresnel\_S}\ttindex{Fresnel\_C}
+\ttindex{Zeta}\ttindex{SphericalHarmonicY}\ttindex{SolidHarmonicY}
 \ttindex{BesselI}\ttindex{BesselJ}\ttindex{BesselK}\ttindex{BesselY}
-\ttindex{BETA}\ttindex{CI}\ttindex{COS}
-\ttindex{COSH}\ttindex{COT}\ttindex{COTH}\ttindex{CSC}
-\ttindex{CSCH}\ttindex{DILOG}\ttindex{Ei}\ttindex{EXP}\ttindex{GAMMA}
 \ttindex{Hankel1}\ttindex{Hankel2}
-\ttindex{KummerM}\ttindex{KummerU}
-\ttindex{Lommel1}\ttindex{Lommel2}
-\ttindex{StruveH}\ttindex{StruveL}
-\ttindex{WhittakerM}\ttindex{WhittakerU}
-\ttindex{HYPOT}\ttindex{IBETA}\ttindex{IGAMMA}\ttindex{LOG}\ttindex{LOGB}\ttindex{LOG10}
-\ttindex{POCHHAMMER}\ttindex{POLYGAMMA}\ttindex{PSI}
-\ttindex{SEC}\ttindex{SECH}\ttindex{SI}\ttindex{SIN}
-\ttindex{SINH}\ttindex{SQRT}\ttindex{TAN}\ttindex{TANH}
-\ttindex{ZETA}
-where \texttt{LOG} is the natural logarithm,
-and \texttt{LOGB} has two arguments of which the second is the logarithmic base.
+\ttindex{Airy\_Ai}\ttindex{Airy\_Aiprime}\ttindex{Airy\_Bi}
+\ttindex{Airy\_Biprime}
+\ttindex{KummerM}\ttindex{KummerU}\ttindex{Lommel1}\ttindex{Lommel2}
+\ttindex{StruveH}\ttindex{StruveL}\ttindex{WhittakerM}\ttindex{WhittakerU}
 
-The derivatives of all these functions are also known to the system.
+\hypertarget{operator:Jacobiam}{}
+\hypertarget{operator:Jacobisn}{}
+\hypertarget{operator:Jacobicn}{}
+\hypertarget{operator:Jacobidn}{}
+\hypertarget{operator:Jacobins}{}
+\hypertarget{operator:Jacobinc}{}
+\hypertarget{operator:Jacobind}{}
+\hypertarget{operator:Jacobisc}{}
+\hypertarget{operator:Jacobisd}{}
+\hypertarget{operator:Jacobics}{}
+\hypertarget{operator:Jacobicd}{}
+\hypertarget{operator:Jacobidc}{}
+\hypertarget{operator:Jacobids}{}
+\hypertarget{operator:JacobiZeta}{}
+\hypertarget{operator:JacobiE}{}
+\hypertarget{operator:EllipticK}{}
+\hypertarget{operator:EllipticE}{}
+\hypertarget{operator:EllipticF}{}
+\hypertarget{operator:EllipticTheta1}{}
+\hypertarget{operator:EllipticTheta2}{}
+\hypertarget{operator:EllipticTheta3}{}
+\hypertarget{operator:EllipticTheta4}{}
+\textbf{Jacobi Elliptic Functions:}\\
+\texttt{Jacobiam Jacobisn Jacobicn Jacobidn}\\
+and their three reciprocals \texttt{Jacobins Jacobinc Jacobind}\\
+ and six quotients 
+\texttt{Jacobisc Jacobisd Jacobicd Jacobics Jacobids Jacobidc}.\\
+All are binary functions with the second argument being the modulus.\\
+\textbf{Complete and Incomplete Elliptic Integrals of the First \& Second Kinds:}\\
+\texttt{EllipticK EllipticE EllipticF  EllipticE  JacobiE}\\ 
+respectively.  The function \texttt{EllipticE} may take one or two arguments to
+denote the complete and Legendre's form of the incomplete elliptic integrals of
+the second kind respectively. The complete integral of the first kind
+\texttt{EllipticK} is unary whilst \texttt{EllipticF}, \texttt{JacobiE} and
+\texttt{JacobiZeta} are
+binary and represent the incomplete integral of the first kind, Jacobi's
+form of the incomplete elliptic integral of the second kind and Jacobi's
+Zeta function respectively.\\
+\textbf{Jacobi's Theta Functions:}\\
+\texttt{EllipticTheta1 EllipticTheta2 EllipticTheta3 EllipticTheta4}\\
+are all binary functions with the second argument being the nome.\\
+\ttindex{Jacobiam}\ttindex{Jacobisn}\ttindex{Jacobicn}\ttindex{Jacobidn}
+\ttindex{Jacobins}\ttindex{Jacobinc}\ttindex{Jacobind}\ttindex{Jacobisc}
+\ttindex{Jacobisd}\ttindex{Jacobicd}\ttindex{Jacobics}\ttindex{Jacobids}
+\ttindex{Jacobidc}\ttindex{JacobiZeta}
+\ttindex{JacobiE}\ttindex{EllipticK}\ttindex{EllipticE}\ttindex{EllipticF}
+\ttindex{EllipticTheta1}\ttindex{EllipticTheta2}
+\ttindex{EllipticTheta3}\ttindex{EllipticTheta4}
 
 {\REDUCE} knows various elementary identities and properties
 of these functions. For example:
@@ -397,8 +466,10 @@ of these functions. For example:
       log(e)  = 1                   e^(i*pi/2) = i
       log(1)  = 0                   e^(i*pi) = -1
       log(e^x) = x                  e^(3*i*pi/2) = -i
+      atan(0) = 0                   atan2(-1, 0)  = pi
 \end{verbatim}
 
+The derivatives of all the elementary  functions, except \texttt{atan2} and \texttt{hypot}, are also known to the system.
 Beside these identities, there are a lot of simplifications
 for elementary functions
 defined in the {\REDUCE} system as rulelists. In order to
@@ -554,24 +625,14 @@ yields the output
 2*sqrt( - 2*a *b)
 \end{verbatim}
 
-\hypertarget{operator:LN}{}
-The statement that {\REDUCE} knows very little about these functions
-applies only in the mathematically exact \texttt{off rounded} mode.  If
-\sw{ROUNDED}\ttindexswitch{ROUNDED} is on, any of the functions
+If the switch \sw{ROUNDED}\ttindexswitch{ROUNDED} is on, any of the
+elementary functions
 \begin{verbatim}
-    ACOS ACOSH ACOT ACOTH ACSC ACSCH ASEC ASECH ASIN
-    ASINH ATAN ATANH ATAN2 COS COSH COT COTH CSC CSCH
-    EXP HYPOT IBETA IGAMMA LN LOG LOGB LOG10 PSI SEC
-    SECH SIN SINH SQRT TAN TANH
+    acos acosh acot acoth acsc acsch asec asech asin
+    asinh atan atanh atan2 cos cosh cot coth csc csch
+    exp hypot ln log logb log10 sec
+    sech sin sinh sqrt tan tanh
 \end{verbatim}
-\ttindex{ACOS}\ttindex{ACOSH}\ttindex{ACOT}\ttindex{ACOTH}
-\ttindex{ACSC}\ttindex{ACSCH}\ttindex{ASEC}\ttindex{ASECH}
-\ttindex{ASIN}\ttindex{ASINH}\ttindex{ATAN}\ttindex{ATANH}
-\ttindex{ATAN2}\ttindex{COS}\ttindex{COSH}\ttindex{COT}
-\ttindex{COTH}\ttindex{CSC}\ttindex{CSCH}\ttindex{EXP}\ttindex{HYPOT}
-\ttindex{LN}\ttindex{LOG}\ttindex{LOGB}\ttindex{LOG10}\ttindex{PSI}\ttindex{SEC}
-\ttindex{SECH}\ttindex{SIN}\ttindex{SINH}\ttindex{SQRT}\ttindex{TAN}
-\ttindex{TANH}
 when given a numerical argument has its value calculated to the current
 degree of floating point precision.  In addition, real (non-integer
 valued) powers of numbers will also be evaluated.
@@ -585,7 +646,7 @@ if given complex arguments.  For example, with \texttt{on rounded,complex;}
     cos(2+3i)   ->  -4.18962569097 - 9.10922789376*I
 \end{verbatim}
 
-For \texttt{log} and the inverse trig. and hyperbolic functions which are
+For \texttt{log} and the inverse trigonometric and hyperbolic functions which are
 multi-valued, the principal value is returned. The branch cuts chosen
 (except for \texttt{acot}) are now
 those recommended by W.~Kahan (Branch Cuts for Complex Elementary Functions,
@@ -1326,7 +1387,7 @@ remove the value from these identifiers, for example
 \section{The Pochhammer Notation}
 \ttindex{Pochhammer}\index{Pochhammer notation}
 \index{Pochhammer's symbol}
-
+\hypertarget{operator:POCHHAMMER}{}
 The Pochhammer notation $(a)_k$ (also called Pochhammer's symbol) is supported by the binary operator \texttt{POCHHAMMER(A,K)}.
 For a non-negative integer $k$, it is defined as (\url{http://dlmf.nist.gov/5.2.iii})
 \begin{align*}

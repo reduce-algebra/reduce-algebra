@@ -149,6 +149,7 @@ defautoload_operator(Airy_Aiprime,specbess);
 defautoload_operator(Airy_Biprime,specbess);
 
 % elliptic functions and integrals
+     defautoload_operator(jacobiam, specbess);
      defautoload_operator(jacobisn, specbess);
      defautoload_operator(jacobicn, specbess);
      defautoload_operator(jacobidn, specbess);

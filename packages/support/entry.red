@@ -548,6 +548,7 @@ flag('(motzkin),'opfn);
 defautoload(motzkin,specfn);
 
 % elliptic functions and integrals
+     defautoload_operator(jacobiam, (specfn specbess));
      defautoload_operator(jacobisn, (specfn specbess));
      defautoload_operator(jacobicn, (specfn specbess));
      defautoload_operator(jacobidn, (specfn specbess));

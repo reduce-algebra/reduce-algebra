@@ -48,6 +48,7 @@ remprop('Airy_Bi,'simpfn);
 remprop('Airy_Aiprime,'simpfn);
 remprop('Airy_Biprime,'simpfn);
 
+remprop('jacobiam,'simpfn);
 remprop('jacobisn,'simpfn);
 remprop('jacobicn,'simpfn);
 remprop('jacobidn,'simpfn);
