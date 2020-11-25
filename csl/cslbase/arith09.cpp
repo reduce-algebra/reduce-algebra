@@ -515,7 +515,7 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
                                static_cast<long>(carrybx),
                                static_cast<long>(carryby), static_cast<long>(borrowa),
                                static_cast<long>(borrowb));
-                    my_exit(EXIT_FAILURE);
+                    my_exit();
                 }
 #endif // DEBUG
                 while (lena != 0 && a[lena] == 0) lena--;

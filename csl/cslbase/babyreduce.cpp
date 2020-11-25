@@ -95,8 +95,8 @@ int main(int argc, char *argv[])
     try
     {   res = submain(argc, argv);
     }
-    catch (int r)
-    {   res = r;
+    catch (std::runtime_error &e)
+    {   res = EXIT_FAILURE;
     }
     return res;
 }

@@ -5645,7 +5645,7 @@ static void term_pause_execution()
 
 
 static void term_exit_program()
-{   throw 0;  // my_exit(0)
+{   throw std::runtime_error("Exiting because of Ctrl-\\");  // my_exit()
 }
 
 

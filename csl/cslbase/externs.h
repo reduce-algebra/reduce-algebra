@@ -316,7 +316,7 @@ extern void debug_show_trail_raw(const char *msg, const char *file,
 #define debug_show_trail(data) debug_show_trail_raw(data, __FILE__, __LINE__)
 
 #define debug_assert(x) \
-  if (!(x)) { debug_show_trail("Assertion failed"); my_exit(999); }
+  if (!(x)) { debug_show_trail("Assertion failed"); my_exit(); }
 
 #else
 
@@ -786,7 +786,7 @@ extern void checksum(LispObject a);
 
 extern void ensure_screen();
 extern int window_heading;
-[[noreturn]] extern void my_exit(int n);
+[[noreturn]] extern void my_exit();
 
 extern uint64_t base_time;
 extern std::chrono::high_resolution_clock::time_point base_walltime;

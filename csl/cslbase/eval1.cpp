@@ -1533,23 +1533,11 @@ static void write_result(LispObject env, LispObject r, char *shared)
     if_error(r = Lexplode(nil, r),
              // Error handler
              std::strcpy(shared, "Failed");
-// All of the uses of my_exit() in this part of the code are when a
-// fork of the main execution must terminate. So I quit exactly as if
-// I was closing down the system in a simple manner, and this will
-// do things like stopping threads - but these should be threads within the
-// forked copy of the main program so I believe I can not do any damage!
-// All the same this scheme for limited concurrent execution via fork() is
-// not really very satisfactory: forking on Windows has huge overheads,
-// forking anywhere replicates the heap, and at the very least when the
-// next garbage collection happens that is liable to get copied and so use
-// up a lot of space. And the scheme I have for returning a result uses a
-// fixed size buffer! So when I have genuine Lisp threads available I will
-// remove all this!
-             my_exit(2));
+             my_exit());
     if_error(r = Llist_to_string(nil, r),
              // Error handler
              std::strcpy(shared, "Failed");
-             my_exit(3));
+             my_exit());
     len = length_of_byteheader(vechdr(r)) - CELL;
 // If the displayed form ou the output was too long I just truncate it
 // at present. A more agressive attitude would be to count that as a form
@@ -1600,13 +1588,13 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
         if_error(r1 = Lapply2(nil, a, b, nil),
 // If the evaluation failed I will exit indicating a failure.
                  std::strcpy(shared, "Failed");
-                 my_exit(1));
+                 my_exit());
 // Write result from first task into the first half of the shared memory block.
         write_result(nil, r1, shared);
 // Exiting from the sub-task would in fact detach from the shared data
 // segment, but I do the detaching explictly to feel tidy.
         shmdt(shared);
-        my_exit(0);
+        return Lstop1(nil, fixnum_of_int(0));
     }
     else
     {
@@ -1626,10 +1614,10 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
             if_error(r2 = Lapply2(nil, a, b, lisp_true),
                      // Error handler
                      std::strcpy(shared, "Failed");
-                     my_exit(1));
+                     my_exit());
             write_result(nil, r2, shared+PARSIZE);
             shmdt(shared);
-            my_exit(0);
+            return Lstop1(nil, fixnum_of_int(0));
         }
         else
         {

@@ -250,6 +250,7 @@ using std::atomic;    // If I am going to be multi-threaded then very many
 
 #include <iomanip>
 #include <exception>
+#include <stdexcept>
 #include <cassert>
 #include <map>
 #include <unordered_map>

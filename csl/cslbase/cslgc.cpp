@@ -138,7 +138,7 @@ static void copy(LispObject *p)
                         if (pages_count == 0)
                         {   term_printf("\n+++ Run out of memory\n");
                             ensure_screen();
-                            my_exit(EXIT_FAILURE);
+                            my_exit();
                         }
                         p = pages[--pages_count];
                         zero_out(p);
@@ -227,7 +227,7 @@ static void copy(LispObject *p)
                         if (pages_count == 0)
                         {   term_printf("\n+++ Run out of memory\n");
                             ensure_screen();
-                            my_exit(EXIT_FAILURE);
+                            my_exit();
                         }
                         p1 = pages[--pages_count];
                         zero_out(p1);
@@ -607,7 +607,7 @@ void reclaim(const char *why, int stg_class)
     {   std::fprintf(stderr,
                      "\n+++ Garbage collection attempt when not permitted\n");
         std::fflush(stderr);
-        my_exit(EXIT_FAILURE);    // totally drastic...
+        my_exit();    // totally drastic...
     }
 
     gc_number++;
@@ -673,7 +673,7 @@ void reclaim(const char *why, int stg_class)
     {   report_at_end();
         term_printf("\n+++ Run out of memory\n");
         ensure_screen();
-        my_exit(EXIT_FAILURE);
+        my_exit();
     }
 // If things crash really badly maybe I would rather have my output up
 // to date.
@@ -725,7 +725,7 @@ void reclaim(const char *why, int stg_class)
     if (!reset_limit_registers())
     {   term_printf("\n+++ Run out of memory\n");
         ensure_screen();
-        my_exit(EXIT_FAILURE);    // totally drastic...
+        my_exit();    // totally drastic...
     }
     if (stop_after_gc) Lstop1(nil, fixnum_of_int(0));
     if ((space_limit >= 0 && space_now > space_limit) ||

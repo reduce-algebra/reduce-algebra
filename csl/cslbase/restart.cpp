@@ -1758,9 +1758,10 @@ void set_up_variables(int restart_flag)
             term_printf(" => ");
             Lprint(nil, v);
         }
+// A failure in an expression set to be evaluated here is fatal.
         catch (LispException &e)
         {   ensure_screen();
-            my_exit(0);
+            my_exit();
         }
     }
 //
@@ -1983,7 +1984,7 @@ void setup(int restart_flag, double store_size)
         if (IopenRoot(filename, 0, 0))
         {   term_printf("\n+++ Image file \"%s\" can not be read\n",
                         filename);
-            my_exit(EXIT_FAILURE);
+            my_exit();
         }
 // The initial record at the start of an image file is not compressed...
         Iread(junkbuf, 112);
@@ -2005,7 +2006,7 @@ void setup(int restart_flag, double store_size)
                     "    Unable to use this image file, so stopping\n");
                 term_printf(
                     "    File is: %s\n", filename);
-                my_exit(EXIT_FAILURE);
+                my_exit();
             }
         }
 //

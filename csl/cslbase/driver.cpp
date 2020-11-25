@@ -212,8 +212,7 @@ static int submain(int argc, char *argv[])
     rc = cslfinish(iput);
     std::printf("\nBuffered output is <%s>\n\n", obuff);
 
-    my_exit(rc);   // does a throw
-    return 0;
+    return rc;
 }
 
 
@@ -228,8 +227,8 @@ int main(int argc, char *argv[])
     {   START_SETJMP_BLOCK;
         res = submain(argc, argv);
     }
-    catch (int r)
-    {   res = r;
+    catch (std::runtime_error &e)
+    {   res = EXIT_FAILURE;
     }
     std::printf("Return code = %d\n", res);
     return res;

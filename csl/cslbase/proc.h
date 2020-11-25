@@ -46,7 +46,7 @@ extern int find_program_directory(const char *argv0);
 
 // .. and this to exit
 
-[[noreturn]] extern void my_exit(int n);
+[[noreturn]] extern void my_exit();
 
 //
 // These types are used for callback functions used to send and receive

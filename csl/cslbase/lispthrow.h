@@ -916,12 +916,6 @@ struct LispRestart : public LispException
     }
 };
 
-struct LispStop : public LispException
-{   virtual const char *what() const throw()
-    {   return "Lisp Stop";
-    }
-};
-
 // If I build for debugging I will verify that the stack pointer is
 // properly unchanged across some scopes. This will help...
 

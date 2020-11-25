@@ -675,7 +675,7 @@ static uint64_t hash_generic_equal(uint64_t r, LispObject key,
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__) || depth > 0x0fffffff)
     {   err_printf("Stack too deep in hash calculation\n");
-        my_exit(EXIT_FAILURE);
+        my_exit();
     }
 #endif
     if (mode == HASH_AS_SXHASH)

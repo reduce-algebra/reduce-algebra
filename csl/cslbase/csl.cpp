@@ -416,7 +416,7 @@ void interrupted()
                 case 'a': case 'A':         // raise an exception
                     break;
                 case 'x': case 'X':
-                    my_exit(EXIT_FAILURE); // Rather abrupt
+                    my_exit();              // Rather abrupt
                 case '\n':
                     ensure_screen();
                     continue;
@@ -749,7 +749,7 @@ void interrupted()
         std::fclose(spool_file);
         spool_file = nullptr;
     }
-    my_exit(EXIT_FAILURE);
+    my_exit();
 }
 
 static const char *dependency_file = nullptr;
@@ -865,26 +865,51 @@ static void report_dependencies()
     dependency_file = nullptr;
 }
 
-void my_exit(int n)
+void my_exit()
 {
-// This all seems a HORRID MESS. It is here because of a general need to
-// tidy up at the end of a run, and the fact that I may be running as
-// a sub-task of some other package so I can not let atexit() take the
-// strain since although I am exiting CSL here I may not be (quite yet)
-// leaving the whole of the current application.
-// In the future there will be a yet more messy issue, in that I may have
-// several user-mode threads! So what happens here is that my_exit() JUST
-// throws an exception (with a simple integer as its payload). Each user
-// thread must catch such exceptions and, as it terminates, get a message
-// back to the thread that invoked it. Since its termination may not be
-// at a time that the creating thread is expecting a stop request that
-// is perhaps delicate. Then also when the main thread terminates it is going
-// to have to arrange that all subsidiary user threads close down so that they
-// can be joined. That is all going to be messy!
-// However in the simple case the exception will propagate down to somewhere
-// in the main program where it can lead to an exit from the system.
-    throw n;   // I use thrown on a simple integer to cause exit with that
-    // value as my return code.
+// There are a range of places in the code where I feel I want to quite
+// abruptly because some internal failure has arisen.
+// However there are a number of issues!
+// (a) I am imagining that Reduce as a whole may be being run from some
+// surrounding software. In that case if Reduce suffers an internal failure
+// I would rather I just exited Reduce rather than causing the surrounding
+// code to quit. So I do not make my_exit merely a synomym for std::exit().
+// (b) Reduce may have created several threads. To exit it cleanly as a whole
+// each thread must terminate. The use of my_exit() could have arisen within
+// any of those threads! In general there is no clean way to force thread
+// termination, and exiting with a thread still alive can lead to an ugly
+// diagnostic.
+// (c) For use with emscripten I may well compile eveything with support
+// for C++ exception handling disabled. That is because at the time of writing
+// support for exceptions can have a very severe performance impact in that
+// case. The pain may go away in due course with upgrades to the specification
+// of "wasm" have arrived and filtered through to all toolchains and browsers!
+// Note that "not supporting exceptions" allows "throw" to happen and unwinds
+// the stack. But "catch" will be ineffective and destruction of objects
+// created in functions that are on the stack will not happen (so RAII will
+// fail in the exception context).
+//
+// The approach I take is to make "my_exit()" throw std::runtime_error,
+// In the emscripten canse if I have built without exception support that
+// quits my application but reports the uncaught exception. I am in an error
+// situation so I will not worry!
+// If exceptions are being supported I will catch the exception at
+// the top level of my entry point (eg often "main()") and return failure
+// as a return code. Each thread will start with a try block that can catch
+// this exception - if it does so it will exit in as best a way it can to
+// try to get the main thread to invoke my_exit(). If I can see a decent way
+// in which the main thread terminating can close down all other threads I
+// will do that. It is probably very hard if some other thread is stalled
+// waiting on some semaphore or external trigger!
+//
+// I need to distinguish between my_exit() which is called in cases that
+// represent system errors from Lstop1() which is what arises if the user
+// attempts to exit. Lstop1() will "throw an exception" - I put that phrase
+// in quotes because for the benefit of emscripten that might be just setting
+// a flag and exiting so as to have a software simulated exception scheme.
+// In a thread that can terminate the thread. In the main program it has to
+// led to the code as a whole stopping.
+    throw std::runtime_error("CSL internal issue");
 }
 
 static int return_code = 0;
@@ -1688,7 +1713,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     {   for (char &c : s) char_to_terminal(c, 0);
                         char_to_terminal('\n', 0);
                     }
-                    my_exit(0);
+                    std::exit(EXIT_SUCCESS);
                 }
             },
 
@@ -2023,7 +2048,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                         "Codemist Common Lisp revision %u for %s: %s\n",
 #endif
                         REVISION, IMPNAME, __DATE__);
-                    my_exit(0);
+                    std::exit(EXIT_SUCCESS);
                 }
             },
 
@@ -2703,7 +2728,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     datestamp, (uintptr_t)size, fullname);
         init_flags &= ~INIT_VERBOSE;
         fwin_pause_at_end = true;
-        my_exit(0);
+        std::exit(EXIT_SUCCESS);
     }
     base_time = read_clock();
     gc_time = 0;
@@ -2880,7 +2905,7 @@ void respond_to_stack_event()
 // Each of the messages that I might be sent comes in a separate bit, so
 // here I have to test each bit. I will test the bits in some sort of
 // order because I will only perform one major operation!
-    if ((f&RECEIVE_QUIT) != 0) my_exit(0);
+    if ((f&RECEIVE_QUIT) != 0) Lstop1(nil, fixnum_of_int(0));
     if ((f&RECEIVE_TICK) != 0)
     {   //fwin_acknowledge_tick();
 #if !defined EMBEDDED && !defined WITHOUT_GUI
@@ -3265,7 +3290,7 @@ public:
 };
 #endif
 
-[[noreturn]] static int submain(int argc, const char *argv[])
+static int submain(int argc, const char *argv[])
 {   volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
 #ifdef CONSERVATIVE
@@ -3293,7 +3318,7 @@ public:
     set_keyboard_callbacks(async_interrupt);
     cslaction();
 #endif
-    my_exit(cslfinish(nullptr));
+    return cslfinish(nullptr);
 }
 
 #ifdef EMBEDDED
@@ -3334,11 +3359,11 @@ int ENTRYPOINT(int argc, const char *argv[])
     {   START_SETJMP_BLOCK;
         res = submain(argc, argv);
     }
-    catch (int r)
+    catch (std::runtime_error &e)
     {
 // Here is where the EXIT exception is caught when somebody in the main
 // thread obeys my_exit().
-        res = r;
+        res = EXIT_FAILURE;
     }
     report_dependencies();
 #ifdef USE_MPI

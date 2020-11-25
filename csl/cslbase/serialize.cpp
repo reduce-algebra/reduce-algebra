@@ -2244,7 +2244,7 @@ static void *new_map_block()
 {   void *p = reinterpret_cast<void *>(std::calloc(512, sizeof(void *)));
     if (p == nullptr)
     {   std::fprintf(stderr, "\nFatal error - no memory\n");
-        my_exit(1);
+        my_exit();
     }
     return p;
 }
@@ -2253,7 +2253,7 @@ static std::uint8_t *new_final_map_block()
 {   std::uint8_t *p = reinterpret_cast<std::uint8_t *>(std::calloc(4096, 1));
     if (p == nullptr)
     {   std::fprintf(stderr, "\nFatal error - no memory\n");
-        my_exit(1);
+        my_exit();
     }
     return p;
 }
@@ -3839,7 +3839,7 @@ void warm_setup()
         std::fprintf(stderr, "Checksums %" PRIx64 "  vs %" PRIx64 "\n",
                         entrypt_checksum, function_crc);
         std::fprintf(stderr, "do not match. Image made by incompatible version\n");
-        my_exit(1);
+        my_exit();
     }
     size_t repeatsize = read_u64();
     reader_setup_repeats(repeatsize);
