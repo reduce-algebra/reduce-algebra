@@ -420,17 +420,13 @@ nil)
 (instr MOV   (reg reg-sp)              OP-reg-regsp  2#10010000100)
 (instr MOV   (reg-sp reg)              OP-regsp-reg  2#10010000100)
 (instr MOV   (reg reg)                  OP-reg-reg    2#10101010000)
-(instr MOV   (reg imm8-rotated)        OP-regd-imm8    2#0011101)
-(instr MVN   (reg reg-shifter)         OP-regd-shifter 2#0001111)
-(instr MVN   (reg imm12-rotated)        OP-regd-imm8    2#0011111)
+(instr MOV   (reg imm8-rotated)        OP-reg-imm8    2#0011101)
+(instr MVN   (reg reg-shifter)         OP-reg-shifter 2#0001111)
+(instr MVN   (reg imm12-rotated)        OP-reg-imm8    2#0011111)
 
 (instr MOVN  (reg imm16-shifted)       OP-reg-imm16    2#100100101)
 (instr MOVZ  (reg imm16-shifted)       OP-reg-imm16    2#110100101)
 
-%% instructions for ARMv6T2
-%%(instr MOV (MOV *cond*)   (reg imm16)               OP-mov-imm16   2#00110000)
-%%(instr MOVT (MOVT *cond*) (reg imm16)               OP-mov-imm16   2#00110100)
-      
 (instr SDIV)  (reg reg reg)             OP-mul3      2#10011010110 2#000011)
 (instr UDIV   (reg reg reg)             OP-mul3      2#10011010110 2#000010)
 
@@ -448,30 +444,8 @@ nil)
 (instr REV    (reg reg)                 OP-reg2      2#11011010110)
 (instr EXTR   (reg reg reg lsb)        OP-reg3-lsb   2#100100111)
 
-%ADD16
-%ADDSUBX
-%SUBADDX
-%SUB16
-%ADD8
-%SUB8
-
-%SXTAB16
-%SXTAB
-%SXTAH
-%SXTB16
-%SXTB
-%SXTH
-%UXTAB16
-%UXTAB
-%UXTAH
-%UXTB16
-%UXTB
-%UXTH
-
-(instr CLZ (reg reg)     OP-clz 2#11011010110))
-
-%USAD8
-%USADA8
+(instr CLS (reg reg)     OP-clz 2#11011010110 2#00000 2#000101))
+(instr CLZ (reg reg)     OP-clz 2#11011010110 2#00000 2#000100))
 
 (instr MRS (reg streg)   OP-streg 2#110101010011)
 %(instr MSR (MSR *cond*) (streg imm8-rotated) OP-MSR 2#0011001 0  ... ) 

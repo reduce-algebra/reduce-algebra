@@ -162,23 +162,23 @@
 		(r28 "x28")
 		(r29 "x29")
 		(r30 "x30")
-		(rzero "xzr")
-                (t1 "x19") 
-  		(t2 "x20")
-		(t3 "x21")
-          	(fp "fp")		% C frame pointer, R11
-		(pc "pc")		% R15
-		(lr "lr")		% R14
+		(rzero "XZR")
+                (t1 "x9") 
+  		(t2 "x10")
+		(t3 "x11")
+          	(fp "X29")		% C frame pointer, X29
+%		(pc "pc")
+		(lr "X30")		% X30
           	(sp "sp")
-          	(st "sp")		% Stack Pointer, R13
-		(heaplast "X19")
-		(heaptrapbound "x20")
-		(symfnc "X21")
-		(symval "X22")
-		(bndstkptr "X23")
-		(bndstklowerbound "X24")
-		(bndstkupperbound "X25")
-		(nil "X29")
+          	(st "sp")		% Stack Pointer
+		(heaplast "X21")
+		(heaptrapbound "X22")
+		(symfnc "X23")
+		(symval "X24")
+		(bndstkptr "X25")
+		(bndstklowerbound "X26")
+		(bndstkupperbound "X27")
+		(nil "X28")
 		)
   'RegisterName)
 

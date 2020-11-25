@@ -454,7 +454,7 @@
       (setq (size (lsh size -1))))
     ))
 
-(de imm-logical (x)
+(de imm-logical-p (x)
   (prog (size mask imm tmp zz ones immr Nimms N)
     (if (null (setq size (imm-lg-repeated x)))
         (return nil))
@@ -609,7 +609,7 @@
 
 (fluid '(numericRegisterNames))
 
-(setq numericRegisterNames [nil R0 R1 R2 R3 R4 R5 R6 R7])
+(setq numericRegisterNames [nil X0 X1 X2 X3 X4 X5 X6 X7])
 
 (de reg2int (u)
    % calculate binary number for register
@@ -623,26 +623,26 @@
 	 (stderror (bldmsg "unknown register %w" u)))))
 
 (loadtime
-(deflist '((R0   0) (R1   1) (R2   2) (R3   3) 
-	   (R4   4) (R5   5) (R6   6) (R7   7)
-	   (R8   8) (R9   9) (R10 10) (R11 11)
-	   (R12 12) (R13 13) (R14 14) (R15 15)
-	   (R16 16) (R17 17) (R18 18) (R19 19)
-	   (R20 20) (R21 21) (R22 22) (R23 23)
-	   (R24 24) (R25 25) (R26 26) (R27 27)
-	   (R28 28) (R29 29) (R30 30) (Rzero 31)
-	   (T1   5) (T2   6) (T3   7)
+(deflist '((X0   0) (X1   1) (X2   2) (X3   3) 
+	   (X4   4) (X5   5) (X6   6) (X7   7)
+	   (X8   8) (X9   9) (X10 10) (X11 11)
+	   (X12 12) (X13 13) (X14 14) (X15 15)
+	   (X16 16) (X17 17) (X18 18) (X19 19)
+	   (X20 20) (X21 21) (X22 22) (X23 23)
+	   (X24 24) (X25 25) (X26 26) (X27 27)
+	   (X28 28) (X29 29) (X30 30) (Rzero 31)
+	   (T1   9) (T2  10) (T3  11)
 	   (fp  29)			% frame pointer for C subroutine calls
 	   (sp  31) (st  31)		% LISP stack register
 	   (lr  30)			% link register
-	   (heaplast 19)
-	   (heaptrapbound 20)
-	   (symfnc 21)
-	   (symval 22)
-	   (bndstkptr 23)
-	   (bndstklowerbound 24)
-	   (bndstkupperbound 25)
-	   (nil 29)
+	   (heaplast 21)
+	   (heaptrapbound 22)
+	   (symfnc 23)
+	   (symval 24)
+	   (bndstkptr 25)
+	   (bndstklowerbound 26)
+	   (bndstkupperbound 27)
+	   (nil 28)
 	 ) 'registercode)
 )
 (de bytep(n)
@@ -889,39 +889,29 @@
 (de lth-mov-imm16 (code reg1 imm16) 4)
 
 (de OP-mul3 (code reg1 reg2 reg3)
-    (prog (cc opcode1 opcode2 set-bit rest)
-	  (setq cc (car code)
-		opcode1 (cadr code)
-		set-bit (caddr code)
-		opcode2 (cadddr code)
-		rest (car (cddddr code)))
-	  (DepositInstructionBytes
-	   (lor (lsh cc 4) (lsh opcode1 -3))
-	   (lor (lor (lsh (land opcode1 2#111) 5) (lsh set-bit 4))  (reg2int reg1))
-	   (lor (lsh rest 4) (reg2int reg3))
-	   (lor (lsh opcode2 4) (reg2int reg2)))))
+    (op-mul4 (car code) reg1 reg2 reg3 (list 'reg (cadr code))))
 
 (de lth-mul3 (code reg1 reg2 reg3) 4)
 		       
 (de OP-mul4 (code reg1 reg2 reg3 reg4)
-    (prog (cc opcode1 opcode2 set-bit)
-	  (setq cc (car code) opcode1 (cadr code) set-bit (caddr code) opcode2 (cadddr code))
+    (prog (cc opcode1)
+	  (setq cc (car code) opcode1 (cadr code))
 	  (DepositInstructionBytes
-	   (lor (lsh cc 4) (lsh opcode1 -4))
-	   (lor (lor (lsh (land opcode1 2#111) 5) set-bit) (reg2int reg2))
-	   (lor (lsh (reg2int reg1) 4) (reg2int reg4))
-	   (lor (lsh opcode2 4) (reg2int reg3)))))
+	   (lsh cc -3)
+	   (lor (lsh (land cc 7) 5) (reg2int reg2))
+	   (lor (lsh (reg2int reg2) 3) (reg2int reg4))
+	   (lor (lsh (land (reg2int reg2) 7) 5) (reg2int reg1)))))
 
 (de lth-mul4 (code reg1 reg2 reg3 reg4) 4)
 
-(de OP-clz (code regd regm)
+(de OP-clz (code regd regn)
     (prog (cc opcode1 opcode2 reg3 reg4 shift-op shift-amount set-bit)
-	  (setq cc (car code) opcode1 (cadr code) set-bit (caddr code) opcode2 (cadddr code))
+	  (setq cc (car code) opcode1 (cadr code) opcode2 (cadddr code))
 	  (DepositInstructionBytes
-	   (lor (lsh cc 4) (lsh opcode1 -3))
-	   (lor (lsh (land opcode1 2#111) 5) 2#01111)
-	   (lor (lsh (reg2int regd) 4) 2#1111)
-	   (lor (lsh opcode2 4) (reg2int regm)))
+	   (lsh cc 3)
+	   (lor opcode (lsh (land cc 7) 5))
+	   (lor (lsh (reg2int regn) -3) (lsh opcode2 2))
+	   (lor (lsh (land (reg2int regn 7) 5) (reg2int regd)))
 	  )
     )
 
