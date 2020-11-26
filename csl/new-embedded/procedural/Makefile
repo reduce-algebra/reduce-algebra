@@ -26,7 +26,7 @@ endif
 OPT=-O0 -g
 #OPT=-O3
 
-CPPFLAGS=$(CFLAGS) -std=gnu++11 $(OPT) -I. -I../include \
+CPPFLAGS=$(CFLAGS) -std=gnu++17 $(OPT) -I. -I../include \
     -DHAVE_CONFIG_H=1 -DEMBEDDED=1 $(XCFLAGS)
 LIBS=$(XLIBS) -lz -lffi
 
@@ -62,7 +62,7 @@ clean:
 
 HEADERS = ../include/config.h \
 	$(S)/md5.h       $(S)/termed.h    $(S)/arith.h       $(S)/openmath.h \
-	$(S)/uint128_t.h $(S)/bigvector.h $(S)/entries.h     $(S)/proc.h     \
+	$(S)/int128_t.h  $(S)/bigvector.h $(S)/entries.h     $(S)/proc.h     \
 	$(S)/uninames.h  $(S)/bytes.h     $(S)/externs.h     $(S)/int128_t.h \
 	$(S)/sockhdr.h   $(S)/version.h   $(S)/charmetrics.h $(S)/fwin.h     \
 	$(S)/inthash.h   $(S)/stream.h    $(S)/cslerror.h    $(S)/headers.h  \

@@ -3378,7 +3378,7 @@ int ENTRYPOINT(int argc, const char *argv[])
 //
 // And here are some functions that may help use Reduce, as an alternative
 // to the very general escape that execute_lisp_function provides... If
-// these return an integer it will genarlly be zero for success and non-
+// these return an integer it will generally be zero for success and non-
 // zero for failure.
 //
 
@@ -3395,6 +3395,42 @@ int PROC_set_callbacks(character_reader *r,
 {   procedural_input = r;
     procedural_output = w;
     return 0;   // can never report failure
+}
+
+int PROC_prepare_for_top_level_loop()
+{   LispObject w = nil, w1 = nil;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
+    if_error(w1 = make_undefined_symbol("prepare-for-top-loop");
+             Lapply1(nil, w1, nil),
+             // Error handler
+             return 1);  // Failed one way or another
+    return 0;
+}
+
+static const char *data_string = ";";
+
+int char_from_string()
+{   int c = *data_string;
+    if (c == 0) return EOF;
+    data_string++;
+    return c;
+}
+
+int PROC_process_one_reduce_statement(const char *s)
+{   LispObject w = nil, w1 = nil;
+    volatile uintptr_t sp;
+    character_reader *save_read = procedural_input;
+    data_string = s;
+    procedural_input = char_from_string;
+    C_stackbase = (uintptr_t *)&sp;
+    if_error(w1 = make_undefined_symbol("process-one-reduce-statement");
+             w = Lapply0(nil, w1),
+             // Error handler
+             procedural_input = save_read;
+             return 1);  // Failed one way or another
+    procedural_input = save_read;
+    return w != nil;
 }
 
 int PROC_load_package(const char *name)

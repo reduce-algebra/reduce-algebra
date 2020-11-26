@@ -183,6 +183,21 @@ extern int PROC_set_callbacks(character_reader *r,
 int PROC_load_package(const char *name);
 
 //
+// prepare_for_top_level_loop must be called (once) before
+//
+
+int PROC_prepare_for_top_level_loop();
+
+//
+// Deal with a single Reduce statement (or expression), passed as
+// a string ending in ";". Send the output to the character_writer
+// set up using PROC_set_callbacks. The character reader set there is
+// not accessed.
+//
+
+int PROC_process_one_reduce_statement(const char *);
+
+//
 // Set of clear a Reduce switch. As on "on expandlogs;"
 // which you do via PROC_set_switch("expandlogs", 1);
 // Use 0 to switch something off and 1 to switch it on.

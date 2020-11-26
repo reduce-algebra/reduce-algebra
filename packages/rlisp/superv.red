@@ -241,11 +241,15 @@ symbolic procedure begin1;
 % casual users might well use x as a variable name few will use that.
 % Variables such as errmsg!* already have "unusual" names to reduce the
 % chances of conflict. The changes here do not provider a technical resolution
-% of the underlying issue, but probably make it a lot less liable to bit in
+% of the underlying issue, but probably make it a lot less liable to bite in
 % the real world.
 
-symbolic procedure begin1a !~prefixchars!~;
-   begin scalar !~parserr!~,!~result!~,!~x!~;
+% Before trying to obey any Reduce statements you must call this. For all
+% normal use the argument should be NIL. The "prefixchars" stuff is to do
+% with reading in Reduce scripts interleaved with TeX using "in_tex".
+
+symbolic procedure prepare!-for!-top!-loop !~prefixchars!~;
+   begin
       otime!* := time();
       % The next line is that way for bootstrapping purposes.
       if getd 'gctime then ogctime!* := gctime() else ogctime!* := 0;
@@ -254,7 +258,15 @@ symbolic procedure begin1a !~prefixchars!~;
       peekchar!* := !~prefixchars!~;
       cursym!* := '!*semicol!*;
       curescaped!* := nil;
-  a:  if terminalp()
+   end;
+
+% This should read one Reduce statement and evaluate or obey what it finds.
+% It returns nil in "ordinary" cases and a non-nil value if the case
+% that Reduce wishes to quit from its read-eval-print loop. 
+
+symbolic procedure process!-one!-reduce!-statement();
+   begin scalar !~parserr!~,!~result!~,!~x!~;
+      if terminalp()
         then <<(if !*nosave!* or statcounter=0 then nil
                      else add2buflis());
                    update!_prompt()>> ;
@@ -275,7 +287,7 @@ symbolic procedure begin1a !~prefixchars!~;
       remflag(repeatkeywords!*,'delim);
       remflag( whilekeywords!*,'delim);
       if !*int then erfg!* := nil;   % To make editing work properly.
-      if cursym!* = 'end then << comm1 'end; return nil >>
+      if cursym!* = 'end then << comm1 'end; return '(nil) >>
        % Note that key* was set from *previous* command in following.
        else if terminalp() and null(key!* = 'ed)
         then printprompt promptexp!*;
@@ -286,22 +298,22 @@ symbolic procedure begin1a !~prefixchars!~;
       if car !~x!~ = 'symbolic and eqcar(cadr !~x!~,'xmodule)
         then !~result!~ := xmodloop eval cadr !~x!~
        else !~result!~ := begin11 !~x!~;
-      if null !~result!~ then go to a
-       else if !~result!~ = 'end then return nil
+      if null !~result!~ then return nil
+       else if !~result!~ = 'end then return '(nil)
        else if !~result!~ = 'err2 then go to err2
        else if !~result!~ = 'err3 then go to err3;
   c:  if crbuf1!* then <<
          lprim "Closing object improperly removed. Redo edit.";
          crbuf1!* := nil;
-         return nil >>
+         return '(nil) >>
         else if eof!*>4
-         then << lprim "End-of-file read"; return lispeval '(bye) >>
+         then << lprim "End-of-file read"; return list lispeval '(bye) >>
        else if terminalp()
-        then << crbuf!* := nil; !*nosave!* := t; go to a >>
-       else return nil;
+        then << crbuf!* := nil; !*nosave!* := t; return nil >>
+       else return '(nil);
   err1:
       if eofcheck() or eof!*>0 then go to c
-       else if !~x!~="BEGIN invalid" then go to a;
+       else if !~x!~="BEGIN invalid" then return nil;
       !~parserr!~ := t;
   err2:
       resetparser();  % In case parser needs to be modified.
@@ -315,10 +327,18 @@ symbolic procedure begin1a !~prefixchars!~;
                    cmsg!* := t >>
        else if null !*errcont
         then << !~result!~ := pause1 !~parserr!~;
-                   (if !~result!~ then return null lispeval !~result!~);
+                   (if !~result!~ then return lisp null lispeval !~result!~);
                    erfg!* := nil >>
        else erfg!* := nil;
-      go to a
+      return nil
+   end;
+
+symbolic procedure begin1a !~prefixchars!~;
+   begin scalar w;
+      prepare!-for!-top!-loop !~prefixchars!~;
+  a:  w := process!-one!-reduce!-statement();
+      if atom w then go to a
+      else return car w;
    end;
 
 % Newrule!* is initialized in the following function, since it is not

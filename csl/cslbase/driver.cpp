@@ -41,6 +41,8 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdint>
+#include <cstdlib>
+#include <stdexcept>
 
 #include "proc.h"
 
@@ -48,7 +50,7 @@
 static char ibuff[100], obuff[10000];
 static int ibufp = 0, obufp = 0;
 
-static int igetstatic_cast<void>()
+static int iget()
 {   int c = ibuff[ibufp];
     if (c == 0) return EOF;
     ibufp++;
@@ -60,6 +62,16 @@ static int iput(int c)
     {   obuff[obufp++] = c;
         obuff[obufp] = 0;
     }
+    return 0;
+}
+
+static int iget1()
+{   printf("Bad call to iget1()\n");
+    return EOF;
+}
+
+static int iput1(int c)
+{   putchar(c);
     return 0;
 }
 
@@ -209,6 +221,14 @@ static int submain(int argc, char *argv[])
     if ((rc = testcase()) != 0) std::printf("\n+++ Return code = %d\n",
                                                 rc);
 
+// Now another scheme...
+    PROC_set_callbacks(iget1, iput1);
+    PROC_prepare_for_top_level_loop();
+    PROC_process_one_reduce_statement("lisp linelength 60;");
+    PROC_process_one_reduce_statement("algebraic;");
+    PROC_process_one_reduce_statement("a := 1/(x^4+1);");
+    PROC_process_one_reduce_statement("int(a, x);");
+    PROC_process_one_reduce_statement("df(ws, x);");
     rc = cslfinish(iput);
     std::printf("\nBuffered output is <%s>\n\n", obuff);
 

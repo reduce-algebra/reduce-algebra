@@ -24,7 +24,7 @@ endif
 OPT=-O0 -g
 #OPT=-O3
 
-CPPFLAGS=$(CFLAGS) -std=gnu++11 $(OPT) -I. -I../include \
+CPPFLAGS=$(CFLAGS) -std=gnu++17 $(OPT) -I. -I../include \
     -DHAVE_CONFIG_H=1 -DEMBEDDED=1 $(XCFLAGS)
 LIBS=$(XLIBS) -lz -lffi
 
