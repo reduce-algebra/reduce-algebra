@@ -224,6 +224,8 @@ static int submain(int argc, char *argv[])
 // Now another scheme...
     PROC_set_callbacks(iget1, iput1);
     PROC_prepare_for_top_level_loop();
+    PROC_load_package("tmprint");
+    PROC_set_switch("fancy", 1);
     PROC_process_one_reduce_statement("lisp linelength 60;");
     PROC_process_one_reduce_statement("algebraic;");
     PROC_process_one_reduce_statement("a := 1/(x^4+1);");
