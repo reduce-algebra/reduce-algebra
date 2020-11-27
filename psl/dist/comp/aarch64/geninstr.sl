@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % File:         GENINSTR
-% Description:  armv6 Generate instruction set
+% Description:  armv8/aarch64 Generate instruction set
 % Author:       Rainer Schöpf
 % Created:
 % Modified:
@@ -66,7 +66,16 @@
 	(OP-branch-imm . lth-branch-imm)
 	(OP-branch-reg . lth-branch-reg)
 	(OP-mov-imm16 . lth-mov-imm16)
-	(OP-reg-logical . lth-reg-l1ogical)
+	(OP-reg-imm16 . lth-reg-imm16)
+	(OP-reg-imm12 . lth-reg-imm12)	
+	(OP-reg-logical . lth-reg-logical)
+	(OP-reg-regsp . lth-reg-regsp)
+	(OP-regsp-reg . lth-regsp-reg)
+	(OP-reg-reg . lth-reg-reg)
+	(OP-reg-extended . lth-reg-extended)
+	(OP-regopt . lth-regopt)
+	(OP-reg2 . lth-reg2)
+	(OP-reg3-lsb . lth-reg3-lsb)
       ))
  
 (load strings compiler)
@@ -103,66 +112,19 @@
  
 (ds newInstruction (i) (when (not (memq i allInstrs!*)) (push i allInstrs!*)))
 
-%
-% Conditions bits 31:28 in ARMv6 opcodes
-%
 
-(deflist '((EQ 2#0000) (NE 2#0001) (CS 2#0010) (HS 2#0010) (CC 2#0011) (LO 2#0011)
-	   (MI 2#0100) (PL 2#0101) (VS 2#0110) (VC 2#0111)
-	   (HI 2#1000) (LS 2#1001) (GE 2#1010) (LT 2#1011)
-	   (GT 2#1100) (LE 2#1101) (AL 2#1110))
-  'condition-bits)
-
-(fluid '(!*condition-codes))
-(setq !*condition-codes!* '(EQ NE CS HS CC LO MI PL VS VC HI LS GE LT GT LE AL))
-
-%
-% To make live easier with variants of instructions, e.g. ADD{<cond>}{S}
-% such an instruction name is coded as a list (ADD *cond* *set*) and all variants are
-% generated automatically.
-% mk-instr-name builds the instruction name out of this list and the actual condition/set bit.
-
-(de mk-instr-name (pat conditioncode set!?)
-    (prog (l)
-	  (setq l (subla (list (cons '*cond* conditioncode)
-			       (cons '*set* (if set!? "S" "")))
-			 pat))
-	  (setq l (foreach x on l join (explodec (car x))))
-	  (return (intern (compress l)))))
     
 (df instr (l)
-     (prog (name namepattern operands format namelist)
+     (prog (name operands format namelist)
        (setq instr* l)
        (setq name (pop l))
-       (setq namepattern (pop l))
        (setq operands (pop l))
        (setq format (pop l))
        (when (null (assoc format lengthfunctions))
 	 (prin2t "unknown format : ") (print format))
-       (if (or (idp namepattern) (null (cdr namepattern))) % simple name
-	   (return (instr1 l name  operands format)))
+       (return (instr1 l name  operands format)))
+     )
 
-       (if (memq '*set* namepattern)
-	   (setq l2
-		 `(
-		   (,(subst "" '*set* namepattern) . ,(subst 0 '*setbit* l))
-		   (,(subst 'S '*set* namepattern) . ,(subst 1 '*setbit* l))
-		   )
-		 )
-	 (setq l2 (list (cons namepattern l))) )
-		 
-       (if (memq '*cond* namepattern)
-	   (setq l2
-		 (foreach cc in (cons "" !*condition-codes!*) conc
-			  (sublis `((*cond* . ,cc) (*condbits* . ,(or (get cc 'condition-bits) (get 'AL 'condition-bits)))) l2))) )
-
-       (foreach pp in l2 do
-		(setq name
-		      (intern (compress (foreach s in (car pp) join (explodec s)))))
-		(instr1 (cdr pp) name operands format))
-       
-       )
-       )
 
 (de instr1 (l name operands format)
     (prog (gname code n pat)
@@ -171,7 +133,7 @@
        (put name 'argno (length operands))
     % simple instruction
        (newInstruction name)
-       (setq code (partial-mkquote l))
+       (setq code (mkquote l))
        (setq pat (mktest format code operands NIL))
        (push pat (get name 'INSTRCASES))
        (push (subla lengthfunctions pat) (get name 'LENGTHCASES))
@@ -182,14 +144,6 @@
        (return nil)
 ))
 
-(de partial-mkquote (l)
-    (if (not (or (memq '*condbits* l) (memq '*setbit* l)))
-	(mkquote l)
-      (cons 'list
-	    (foreach x in l collect
-		     (if (or (numberp x) (memq x '(*condbits* *setbit*)))
-			 x
-		       (mkquote x))))))
 
 (de mktest (format code operands rev)
    (prog (params lhs rhs type val)
@@ -212,7 +166,7 @@
 		`((and .,(reversip lhs))(,format ,code ., rhs))
 		`(,(car lhs)(,format ,code ., rhs))))
     ))
- 
+
 (de operandtype (op)
     (cond ((eqcar op 'QUOTE) (list 'EQUAL op))
 	  ((eqcar op 'UNQUOTE) op)
@@ -225,7 +179,11 @@
 	  ((eq op 'imm16) '(sixteenbit-p))
 	  ((eq op 'imm8-rotated) '(imm8-rotatedp))
 	  ((eq op 'imm12-shifted) '(imm12-shiftedp))
-	  ((eq op 'imm-logical '(imm-logical-p))
+	  ((eq op 'imm16-shifted) '(imm16-shiftedp))
+	  ((eq op 'imm-logical) '(imm-logical-p))
+	  ((eq op 'imm7) '(imm7-p))
+	  ((eq op 'simm9) '(simm9-p))
+	  ((eq op 'lsb) '(lsb-p))
 	  ((eq op 'reg-shifter) '(reg-shifter-p))
 	  ((eq op 'reg-extended) '(reg-extended-p))
 	  ((eq op 'reg-offset8) '(reg-offset8-p))
@@ -244,8 +202,8 @@
 	     (prin2t op)
 	     (prin2t instr*)
 	     (error  nil))))
- 
- 
+
+
 (de parameterlist (n) (parameterlist1 n formalParameters!*))
  
 (de parameterlist1(n l)
@@ -272,37 +230,22 @@
 % 1st application: generation of defOpcode file
 %
  
-(de collectInstructions (filelist)
-  (prog (i file)
-    (setq i 0)
-    (setq allInstrs!* (sort allInstrs!* (function string-lessp)))
-    (when (and (pairp filelist) (car filelist))
-      (setq file (open (car filelist) 'OUTPUT))
-      (wrs file)
-      (setq filelist (cdr filelist)))
-    (foreach instr in allInstrs!* do
-      (progn
-        (makeOneInstruction instr)
-	(setq i (add1 i)))
-        (when (and file (pairp filelist) (zerop (remainder i 1000)))
-	  (wrs nil)
-	  (close file)
-	  (setq file (open (car filelist) 'OUTPUT))
-	  (wrs file)
-	  (setq filelist (cdr filelist))))
+(de collectInstructions (file)
+   (when file (setq file (open file 'OUTPUT)) (wrs file))
+   (setq allInstrs!* (sort allInstrs!* (function string-lessp)))
+   (mapc allInstrs!* (function makeOneInstruction))
    (when file (wrs nil) (close file)))
-nil)
  
 (de makeOneInstruction (u)
   (prog(v vv)
   (setq v
-   `(DefOpcode ,u %,(get u 'OpcodeVariants)
+   `(DefOpcode ,u 
                   ,(parameterlist (get u 'ARGNO))
 		 .,(reverse (get u 'INSTRCASES))))
   (eval (list 'pp v))
   
   (setq v
-   `(DefOpLength ,u %,(get u 'OpcodeVariants)
+   `(DefOpLength ,u 
                     ,(parameterlist (get u 'ARGNO))
 		 .,(reverse (get u 'LENGTHCASES))))
   (eval (list 'pp v))
@@ -373,12 +316,12 @@ nil)
 (instr ADD (reg-or-sp reg-or-sp imm12-shifted)   OP-reg-imm12     2#100100010)
 (instr ADD (reg reg reg-shifter)     OP-reg-shifter   2#10001011000)
 (instr ADDS (reg reg-or-sp reg-extended)    OP-reg-extended  2#10101011001)
-(instr ADDS (reg reg-or-sp imm12-rotated)   OP-reg-imm12     2#101100010)
+(instr ADDS (reg reg-or-sp imm12-shifted)   OP-reg-imm12     2#101100010)
 (instr ADDS (reg reg reg-shifter)     OP-reg-shifter   2#10101011000)
 
-(instr AND (reg-or-sp reg imm-logical)      OP-reg-imm-logical     2#100100100)
+(instr AND (reg-or-sp reg imm-logical)      OP-reg-logical     2#100100100)
 (instr AND (reg reg reg-shifter)      OP-reg-shifter   2#10001010000)
-(instr ANDS (reg reg imm-logical)     OP-reg-imm-logical     2#111100100)
+(instr ANDS (reg reg imm-logical)     OP-reg-logical     2#111100100)
 (instr ANDS (reg reg reg-shifter)     OP-reg-shifter   2#11101010000)
 
 (instr BIC  (reg reg reg-shifter)     OP-reg-shifter 2#10001010001)
@@ -386,7 +329,7 @@ nil)
 
 (instr EON  (reg reg reg-shifter)     OP-reg-shifter 2#11001010001)
 
-(instr EOR  (reg reg imm-logical)     OP-reg-imm-logical    2#1101001000
+(instr EOR  (reg reg imm-logical)     OP-reg-logical    2#1101001000
 (instr EOR  (reg reg reg-shifter)     OP-reg-shifter 2#11001010000)
 
 (instr NEG   (reg reg reg-shifter)     OP-reg-shifter 2#11001011000)
@@ -397,7 +340,7 @@ nil)
 
 (instr ORN   (reg reg reg-shifter)     OP-reg-shifter 2#10101010001)
 
-(instr ORR   (reg reg imm-logical      OP-reg-imm-logical 2#1011001000))
+(instr ORR   (reg reg imm-logical      OP-reg-logical 2#1011001000))
 (instr ORR   (reg reg reg-shifter)     OP-reg-shifter 2#10101010000)
 
 (instr SUB   (reg reg reg-extended)     OP-reg-extended  2#11001011001)
@@ -406,28 +349,28 @@ nil)
 
 (instr SBC   (reg reg reg-shifter)     OP-reg-shifter  2#1101101000)
 
-(instr TST   (reg reg-shifter)         OP-regn-shifter 2#1101010000)
-(instr TST   (reg imm-logical)         OP-reg-imm-logical   2#11100100)
+(instr TST   (reg reg-shifter)         OP-reg-shifter 2#1101010000)
+(instr TST   (reg imm-logical)         OP-reg-logical   2#11100100)
 
 (instr CMP   (reg reg-extended)        OP-reg-extended 2#11101011000)
 (instr CMP   (reg reg-shifter)         OP-regn-shifter 2#11101011000)
 (instr CMP   (reg imm12-rotated)        OP-regn-imm12    2#111100010)
 
 (instr CMN   (reg reg-extended)        OP-reg-extended 2#10101011001)
-(instr CMN   (reg reg-shifter)         OP-regn-shifter 2#10101011000)
-(instr CMN   (reg imm12-rotated)        OP-regn-imm12  2#101100010))
+(instr CMN   (reg reg-shifter)         OP-reg-shifter 2#10101011000)
+(instr CMN   (reg imm12-rotated)        OP-reg-imm12  2#101100010))
 
 (instr MOV   (reg reg-sp)              OP-reg-regsp  2#10010000100)
 (instr MOV   (reg-sp reg)              OP-regsp-reg  2#10010000100)
 (instr MOV   (reg reg)                  OP-reg-reg    2#10101010000)
 (instr MOV   (reg imm8-rotated)        OP-reg-imm8    2#0011101)
 (instr MVN   (reg reg-shifter)         OP-reg-shifter 2#0001111)
-(instr MVN   (reg imm12-rotated)        OP-reg-imm8    2#0011111)
+(instr MVN   (reg imm12-shifted)        OP-reg-imm12   2#0011111)
 
 (instr MOVN  (reg imm16-shifted)       OP-reg-imm16    2#100100101)
 (instr MOVZ  (reg imm16-shifted)       OP-reg-imm16    2#110100101)
 
-(instr SDIV)  (reg reg reg)             OP-mul3      2#10011010110 2#000011)
+(instr SDIV  (reg reg reg)             OP-mul3      2#10011010110 2#000011)
 (instr UDIV   (reg reg reg)             OP-mul3      2#10011010110 2#000010)
 
 (instr MUL    (reg reg reg)             OP-mul3      2#10011011000 2#011111)
@@ -435,23 +378,24 @@ nil)
 (instr UMADDL (reg reg reg reg)         OP-mul4      2#10011011101)
 (instr UMULL  (reg reg reg)             OP-mul3      2#10011011101 2#011111)
 (instr UMULH  (reg reg reg)             OP-mul3      2#10011011110 2#011111)
-(inste SMADDL (reg reg reg reg)         OP-mul4      2#10011011001)
+(instr SMADDL (reg reg reg reg)         OP-mul4      2#10011011001)
 (instr SMULL  (reg reg reg)             OP-mul3      2#10011011001 2#011111)
 (instr SMULH  (reg reg reg)             OP-mul3      2#10011011010 2#011111)
 
 (instr RBIT   (reg reg)                 OP-reg2      2#11011010110)
-(instr RET    (reg-opt)                 OP-regopt    2#11010110010)
+(instr RET    ()                 OP-regopt    2#11010110010)
+(instr RET    (reg)                 OP-regopt    2#11010110010)
 (instr REV    (reg reg)                 OP-reg2      2#11011010110)
 (instr EXTR   (reg reg reg lsb)        OP-reg3-lsb   2#100100111)
 
-(instr CLS (reg reg)     OP-clz 2#11011010110 2#00000 2#000101))
-(instr CLZ (reg reg)     OP-clz 2#11011010110 2#00000 2#000100))
+(instr CLS (reg reg)     OP-clz 2#11011010110 2#00000 2#000101)
+(instr CLZ (reg reg)     OP-clz 2#11011010110 2#00000 2#000100)
 
 (instr MRS (reg streg)   OP-streg 2#110101010011)
 %(instr MSR (MSR *cond*) (streg imm8-rotated) OP-MSR 2#0011001 0  ... ) 
 %(instr MSR (MSR *cond*) (streg reg)      OP-MSR 2#0001001 0 2#0000)
 
-# LDR Xt, Xn, #simm9
+% LDR Xt, Xn, #simm9
 (instr LDR (reg reg simm9)      OP-ld-st 2#11111000010)
 (instr STR (reg reg simm9)      OP-ld-st 2#11111000000)
 % LDR Rd,[Rn,+/-#imm12]
@@ -493,7 +437,7 @@ nil)
 (off usermode) (de linelength (x) 1000)
 (reload chars)
 (pp nil)
-(collectInstructions (list "armv6-inst1.dat" "armv6-inst2.dat"))
+(collectInstructions "aarch64-inst.dat")
 % (disassembletables "disasstb")
 % (displayInstructions "386instrlist")
 
