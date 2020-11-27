@@ -15,11 +15,14 @@
 
 # NOTE that my going "make USERFLAGS="-O0 -g" it is possible to override this
 # optimization level and get a debugging build.
-OPT=-O3
+OPT=-Oz
 
 CC=em++
 
 EMFLAGS:=$(shell source ./emflags.sh && echo $$EMFLAGS)
+
+ASYNC_FUNCTIONS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$cfuns)
+ASYNC_IMPORTS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$jsimports)
 
 CPPFLAGS=$(EMFLAGS) -std=gnu++17 $(OPT) -I. -I../include -Iinclude -I$(S) \
     -DHAVE_CONFIG_H=1 -DHAVE_CRLIBM=1 -DEMBEDDED=1 $(XCFLAGS) $(USERFLAGS)
@@ -28,7 +31,7 @@ CXXFLAGS=$(EMFLAGS)
 LDFLAGS=$(EMFLAGS) -Llib -lcrlibm
 LIBS=-lcrlibm
 
-JSOPTS= --source-map-base http://localhost:8000/new-embedded/reduce-image/
+JSOPTS= -g4 --source-map-base http://localhost:8000/new-embedded/for-emscripten/
 
 JS_SRC=js
 
@@ -42,15 +45,25 @@ NODE= $(shell which node)
 NODEOPTS= -s NODERAWFS=1 \
 	-s FORCE_FILESYSTEM=1 \
 
-WEBOPTS= --preload-file reduce.img \
-	--shell-file $(JS_SRC)/shell_emterm.html \
-	-s ENVIRONMENT=web
+#WEBOPTS= --preload-file reduce.img \
+#	--shell-file $(JS_SRC)/shell_emterm.html \
+#	-s ENVIRONMENT=web
+WEBOPTS= --pre-js $(JS_SRC)/init.js \
+	-s ENVIRONMENT=worker \
+	-s BUILD_AS_WORKER=1 \
+	--js-library $(JS_SRC)/io.js
+# -s MODULARIZE=1 -s 'EXPORT_NAME="reduceModule"' \
 
 # JSOPTS += $(WEBOPTS)
 
-ASYNCIFY_OPTS = -s ASYNCIFY \
-	-s 'ASYNCIFY_IMPORTS=["web_async_read", "web_async_write"]' \
-    -s ASYNCIFY_STACK_SIZE=1048576
+
+#ASYNCIFY_OPTS = -s ASYNCIFY \
+#	$(ASYNC_IMPORTS) \
+#	$(ASYNC_FUNCTIONS) \
+#	-s ASYNCIFY_ADVISE \
+#	-DWASM_ASYNC_IO=1 \
+#	-s ASYNCIFY_IGNORE_INDIRECT
+#	-s ASYNCIFY_STACK_SIZE=1048576
 
 #ifndef WEB
 # JSOPTS += $(NODEOPTS)
@@ -113,6 +126,10 @@ bootstrapreduce:	bootstrapreduce.js
 .cpp.ooo:
 	$(CC) $(CPPFLAGS) $(ASYNCIFY_OPTS) -c -o $@ $<
 
+#csl.ooo: csl.cpp
+#	$(CC) $(CPPFLAGS) $(ASYNCIFY_OPTS) -c -o $@ $<
+#cslread.ooo: cslread.cpp
+#	$(CC) $(CPPFLAGS) $(ASYNCIFY_OPTS) -c -o $@ $<
 # Create the bootstrapreduce.img file
 
 bootstrapreduce.img:	bootstrapreduce.js
@@ -140,11 +157,11 @@ reduce.js:		allocate.oo arith01.oo arith02.oo arith03.oo arith04.oo arith05.oo \
 		isprime.oo preserve.oo print.oo restart.oo sysfwin.oo termed.oo \
 		inthash.oo serialize.oo \
 		u01.oo u02.oo u03.oo u04.oo u05.oo u06.oo u07.oo u08.oo u09.oo u10.oo \
-		u11.oo u12.oo u13.oo u14.oo u15.oo u16.oo u17.oo u18.oo u19.oo u20.oo \
-		u21.oo u22.oo u23.oo u24.oo u25.oo u26.oo u27.oo u28.oo u29.oo u30.oo \
-		u31.oo u32.oo u33.oo u34.oo u35.oo u36.oo u37.oo u38.oo u39.oo u40.oo \
-		u41.oo u42.oo u43.oo u44.oo u45.oo u46.oo u47.oo u48.oo u49.oo u50.oo \
-		u51.oo u52.oo u53.oo u54.oo u55.oo u56.oo u57.oo u58.oo u59.oo u60.oo
+        u11.oo u12.oo u13.oo u14.oo u15.oo u16.oo u17.oo u18.oo u19.oo u20.oo \
+        u21.oo u22.oo u23.oo u24.oo u25.oo u26.oo u27.oo u28.oo u29.oo u30.oo \
+        u31.oo u32.oo u33.oo u34.oo u35.oo u36.oo u37.oo u38.oo u39.oo u40.oo \
+        u41.oo u42.oo u43.oo u44.oo u45.oo u46.oo u47.oo u48.oo u49.oo u50.oo \
+        u51.oo u52.oo u53.oo u54.oo u55.oo u56.oo u57.oo u58.oo u59.oo u60.oo
 	$(CC) allocate.oo arith01.oo arith02.oo arith03.oo arith04.oo arith05.oo \
 		arith06.oo arith07.oo arith08.oo arith09.oo arith10.oo \
 		arith11.oo arith12.oo arith13.oo arith14.oo bytes.oo char.oo \
@@ -153,16 +170,16 @@ reduce.js:		allocate.oo arith01.oo arith02.oo arith03.oo arith04.oo arith05.oo \
 		isprime.oo preserve.oo print.oo restart.oo sysfwin.oo termed.oo \
 		inthash.oo serialize.oo \
 		u01.oo u02.oo u03.oo u04.oo u05.oo u06.oo u07.oo u08.oo u09.oo u10.oo \
-		u11.oo u12.oo u13.oo u14.oo u15.oo u16.oo u17.oo u18.oo u19.oo u20.oo \
-		u21.oo u22.oo u23.oo u24.oo u25.oo u26.oo u27.oo u28.oo u29.oo u30.oo \
-		u31.oo u32.oo u33.oo u34.oo u35.oo u36.oo u37.oo u38.oo u39.oo u40.oo \
-		u41.oo u42.oo u43.oo u44.oo u45.oo u46.oo u47.oo u48.oo u49.oo u50.oo \
-		u51.oo u52.oo u53.oo u54.oo u55.oo u56.oo u57.oo u58.oo u59.oo u60.oo \
+        u11.oo u12.oo u13.oo u14.oo u15.oo u16.oo u17.oo u18.oo u19.oo u20.oo \
+        u21.oo u22.oo u23.oo u24.oo u25.oo u26.oo u27.oo u28.oo u29.oo u30.oo \
+        u31.oo u32.oo u33.oo u34.oo u35.oo u36.oo u37.oo u38.oo u39.oo u40.oo \
+        u41.oo u42.oo u43.oo u44.oo u45.oo u46.oo u47.oo u48.oo u49.oo u50.oo \
+        u51.oo u52.oo u53.oo u54.oo u55.oo u56.oo u57.oo u58.oo u59.oo u60.oo \
 		$(LDFLAGS) $(NODEOPTS) $(LIBS) $(JSOPTS) -o reduce.js
 
 # The web-based (non-node) version
 
-reduce.web.html:	allocate.ooo arith01.ooo arith02.ooo arith03.ooo arith04.ooo arith05.ooo \
+reduce.web.js:	allocate.ooo arith01.ooo arith02.ooo arith03.ooo arith04.ooo arith05.ooo \
 		arith06.ooo arith07.ooo arith08.ooo arith09.ooo arith10.ooo \
 		arith11.ooo arith12.ooo arith13.ooo arith14.ooo bytes.ooo char.ooo \
 		csl.ooo cslmpi.ooo cslread.ooo eval1.ooo eval2.ooo eval3.ooo \
@@ -188,7 +205,7 @@ reduce.web.html:	allocate.ooo arith01.ooo arith02.ooo arith03.ooo arith04.ooo ar
 		u31.ooo u32.ooo u33.ooo u34.ooo u35.ooo u36.ooo u37.ooo u38.ooo u39.ooo u40.ooo \
 		u41.ooo u42.ooo u43.ooo u44.ooo u45.ooo u46.ooo u47.ooo u48.ooo u49.ooo u50.ooo \
 		u51.ooo u52.ooo u53.ooo u54.ooo u55.ooo u56.ooo u57.ooo u58.ooo u59.ooo u60.ooo \
-		$(LDFLAGS) $(LIBS) $(JSOPTS) $(WEBOPTS) $(ASYNCIFY_OPTS) -o reduce.web.html
+		$(LDFLAGS) $(LIBS) $(JSOPTS) $(ASYNCIFY_OPTS) $(WEBOPTS) -o reduce.web.js
 
 
 .PHONY:	reduce
@@ -197,8 +214,8 @@ reduce:	reduce.js
 
 
 .PHONY: reduce-web
-reduce-web: reduce.web.html
-	echo Building reduce.html
+reduce-web: reduce.web.js
+	echo Building reduce worker
 
 reduce.img:	reduce.js
 	-rm -f reduce.img
@@ -206,7 +223,7 @@ reduce.img:	reduce.js
 		-D@srcdir=$(S) -D@reduce=$(R) -o reduce.img -L reduce_image.log
 
 # same as above, because we just want the image, and that is built by the node version
-reduce.img.html:	reduce.img reduce.web.html
+reduce.img.worker:	reduce.img reduce.web.js
 #export reduce=$(R) && $(NODE) reduce.js -z -Dforce_c_code -Dno_init_file $(S)/buildreduce.lsp \
 #	-D@srcdir=$(S) -D@reduce=$(R) -o reduce.img -L reduce_image.log
 

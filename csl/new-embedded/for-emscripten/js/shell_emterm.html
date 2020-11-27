@@ -53,14 +53,14 @@
   <body>
     <div id="output"></div>
     <script type='text/javascript'>
-      const term = new Terminal({convertEol: true, scrollback: 0});
-      const fitAddon = new FitAddon.FitAddon();
+      /*const term = new Terminal({convertEol: true, scrollback: 0});
+      const fitAddon = new FitAddon.FitAddon();*/
       var inputBuf = [];
       var outputBuf = [];
-      term.loadAddon(fitAddon);
+      /*term.loadAddon(fitAddon);
       term.open(document.getElementById('output'));
       fitAddon.fit();
-      window.addEventListener('resize', ()=>fitAddon.fit());
+      window.addEventListener('resize', ()=>fitAddon.fit());*/
 
       function write(text) {
         if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
@@ -70,7 +70,7 @@
         //text = text.replace(/>/g, "&gt;");
         //text = text.replace('\n', '<br>', 'g');
         console.log(text);
-        term.write(text + "\x0d\x0a");
+        /*term.write(text + "\x0d\x0a");*/
       };
 
       var resolveReadCharPromise, rejectReadCharPromise;
@@ -83,11 +83,11 @@
         }));
       }
 
-      term.onData(data => {
+      /*term.onData(data => {
         inputBuf = inputBuf.concat([...data].map(c => c.charCodeAt(0)));
         term.write(data);
         resolveReadCharPromise(inputBuf.shift());
-      });
+      });*/
       /*term.onKey(ievent => {
         const ev = ievent.domEvent;
         const printable = !ev.altKey && !ev.ctrlKey && !ev.metaKey;
@@ -105,9 +105,9 @@
       var Module = {
         arguments: ['-i', 'reduce.img'],
         tty: {
-          put_array: function(tty, val) {
+          /*put_array: function(tty, val) {
             term.write(val);
-          },
+          },*/
           get_char: function(tty) {
             if (!inputBuf.length) return undefined;
             return inputBuf.shift();
@@ -115,12 +115,12 @@
           poll_in: function(tty) {
             return inputBuf.length > 0;
           },
-          get_winsize: function(tty, winsize) {
+          /*get_winsize: function(tty, winsize) {
             winsize.ws_row = term.rows;
             winsize.ws_col = term.cols;
             winsize.ws_xpixel = term.element.clientWidth;
             winsize.ws_ypixel = term.element.clientHeight;
-          }
+          }*/
         },
         preRun: [],
         postRun: [],
