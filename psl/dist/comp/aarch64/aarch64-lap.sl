@@ -375,15 +375,33 @@
 	     bndstkptr bndstklowerbound bndstkupperbound
 	     ))))
 
+(de Reg32P (RegName) 
+    (AND (eqcar Regname 'reg)
+	 (MemQ (cadr RegName) 
+	       '(    W0 W1 W2 W3 W4 W5 W6 W7 W8 W9 W10 W11 W12 W13 W14 W15
+		     W16 W17 W18 W19 W20 W21 W22 W23 W24 W25 W26 W27 W28 W29 W30
+		     Wzr
+	     ))))
+
 (de reg-zero-p (RegName)
     (eq RegName 'RZero))
+
+(de reg32-zero-p (RegName)
+    (eq RegName 'Wzr))
 
 (de reg-sp-p (RegName)
     (eq RegName 'sp))
 
+(de reg32-sp-p (RegName)
+    (eq RegName 'Wsp))
+
 (de reg-or-sp-p (RegName)
     (or (and (regp RegName) (not (reg-zero-p RegName)))
 	(req-sp-p RegName)))
+
+(de reg32-or-sp-p (RegName)
+    (or (and (reg32p RegName) (not (reg32-zero-p RegName)))
+	(req32-sp-p RegName)))
 
 (de EvenRegP (RegName)
     (and (Regp RegName) (evenp (reg2int regname))))
@@ -517,6 +535,16 @@
 	)
     )
 
+(de reg32-shifter-p (x)
+    (or (stringp x)
+	(and (pairp x) (reg32p x))
+	(and (eqcar x 'regshifted) (or (reg32p (cadr x)) (reg32p (list 'reg (cadr x))))
+	     (memq (caddr x) '(LSL LSR ASR))
+	     (or (fixp (cadddr x)) (reg32p (cadddr x))
+		 (and (null (cadddr x)) (eq (caddr x) 'RRX))))
+	)
+    )
+
 % possibly extended register (data movement), one of:
 % (reg x)
 % (regshifted x LSL/LSR.. amount)    amount is a number or a register
@@ -526,6 +554,16 @@
     (or (stringp x)
 	(and (pairp x) (regp x))
 	(and (eqcar x 'extend) (or (regp (cadr x)) (regp (list 'reg (cadr x))))
+	     (memq (caddr x) '(UXTB UXTH LSL UXTW UXTX SXTB SXTH SXTW SXTX))
+	     (fixp (cadddr x)))
+
+	)
+    )
+
+(de reg32-extended-p (x)
+    (or (stringp x)
+	(and (pairp x) (reg32p x))
+	(and (eqcar x 'extend) (or (reg32p (cadr x)) (reg32p (list 'reg (cadr x))))
 	     (memq (caddr x) '(UXTB UXTH LSL UXTW UXTX SXTB SXTH SXTW SXTX))
 	     (fixp (cadddr x)))
 

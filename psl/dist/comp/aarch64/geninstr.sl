@@ -50,11 +50,11 @@
 (fluid '(lengthfunctions))
 (setq lengthfunctions
       '((OP-reg-imm8 . lth-reg-imm8 )
-	(OP-regn-imm8 . lth-regn-imm8 )
-	(OP-regd-imm8 . lth-regd-imm8 )
+%	(OP-regn-imm8 . lth-regn-imm8 )
+%	(OP-regd-imm8 . lth-regd-imm8 )
 	(OP-reg-shifter . lth-reg-shifter )
-	(OP-regn-shifter . lth-regn-shifter )
-	(OP-regd-shifter . lth-regd-shifter )
+%	(OP-regn-shifter . lth-regn-shifter )
+%	(OP-regd-shifter . lth-regd-shifter )
 	(OP-reg3 . lth-reg3)
 	(OP-mul3 . lth-mul3)
 	(OP-mul4 . lth-mul4)
@@ -171,7 +171,9 @@
     (cond ((eqcar op 'QUOTE) (list 'EQUAL op))
 	  ((eqcar op 'UNQUOTE) op)
 	  ((eq op 'reg)'(REGP))
+	  ((eq op 'reg32)'(REG32P))	
 	  ((eq op 'reg-or-sp) '(reg-or-sp-p))
+	  ((eq op 'reg32-or-sp) '(reg32-or-sp-p))
 	  ((eq op 'reg-sp) '(reg-sp-p))
 	  ((eq op 'evenreg)'(evenREGP)) 
 	  ((eq op 'streg)'(streg-p))
@@ -185,7 +187,9 @@
 	  ((eq op 'simm9) '(simm9-p))
 	  ((eq op 'lsb) '(lsb-p))
 	  ((eq op 'reg-shifter) '(reg-shifter-p))
+	  ((eq op 'reg32-shifter) '(reg32-shifter-p))
 	  ((eq op 'reg-extended) '(reg-extended-p))
+	  ((eq op 'reg32-extended) '(reg32-extended-p))
 	  ((eq op 'reg-offset8) '(reg-offset8-p))
 	  ((eq op 'reg-offset12) '(reg-offset12-p))
 	  ((eq op 'reglist) '(reglistp))
@@ -309,28 +313,103 @@
  
 (clearInstructions)
 
-(instr ADC (reg reg reg)     OP-reg3 2#1001101000)
-(instr ADCS (reg reg reg)    OP-reg3 2#1011101000)
+(instr ADC (reg32 reg32 reg32)     OP-reg3 2#0001101000)
+(instr ADC (reg reg reg)           OP-reg3 2#1001101000)
+(instr ADCS (reg32 reg32 reg32)    OP-reg3 2#0011101000)
+(instr ADCS (reg reg reg)          OP-reg3 2#1011101000)
 
+(instr ADD (reg32-or-sp reg32-or-sp reg32-extended)    OP-reg-extended  2#00001011001)
 (instr ADD (reg-or-sp reg-or-sp reg-extended)    OP-reg-extended  2#10001011001)
+(instr ADD (reg32-or-sp reg32-or-sp imm12-shifted)   OP-reg-imm12     2#000100010)
 (instr ADD (reg-or-sp reg-or-sp imm12-shifted)   OP-reg-imm12     2#100100010)
+(instr ADD (reg32 reg32 reg32-shifter)     OP-reg-shifter   2#00001011000)
 (instr ADD (reg reg reg-shifter)     OP-reg-shifter   2#10001011000)
-(instr ADDS (reg reg-or-sp reg-extended)    OP-reg-extended  2#10101011001)
+(instr ADDS (reg32 reg32-or-sp reg32-extended)    OP-reg-extended  2#00101011001)
+(instr ADDS (reg32 reg32-or-sp imm12-shifted)   OP-reg-imm12     2#001100010)
 (instr ADDS (reg reg-or-sp imm12-shifted)   OP-reg-imm12     2#101100010)
+(instr ADDS (reg32 reg32 reg32-shifter)     OP-reg-shifter   2#00101011000)
 (instr ADDS (reg reg reg-shifter)     OP-reg-shifter   2#10101011000)
 
+% ADR
+% ADRP
+
+(instr AND (reg32-or-sp reg32 imm-logical)      OP-reg-logical     2#000100100)
 (instr AND (reg-or-sp reg imm-logical)      OP-reg-logical     2#100100100)
+(instr AND (reg32 reg32 reg32-shifter)      OP-reg-shifter   2#00001010000)
 (instr AND (reg reg reg-shifter)      OP-reg-shifter   2#10001010000)
+(instr ANDS (reg32 reg32 imm-logical)     OP-reg-logical     2#011100100)
 (instr ANDS (reg reg imm-logical)     OP-reg-logical     2#111100100)
+(instr ANDS (reg32 reg32 reg32-shifter)     OP-reg-shifter   2#01101010000)
 (instr ANDS (reg reg reg-shifter)     OP-reg-shifter   2#11101010000)
 
+% ASR
+% ASRV
+
+%(instr B.cond (offset19)    OP-branch-imm19 2#01010100)
+(instr B  (offset26)         OP-branch-imm 2#000101)
+
+% BFC
+% BFI
+% BFM
+% BFXIL
+
+(instr BIC  (reg32 reg32 reg32-shifter)     OP-reg-shifter 2#00001010001)
 (instr BIC  (reg reg reg-shifter)     OP-reg-shifter 2#10001010001)
+(instr BICS  (reg32 reg32 reg32-shifter)     OP-reg-shifter 2#01101010001)
 (instr BICS  (reg reg reg-shifter)     OP-reg-shifter 2#11101010001)
 
+(instr BL  (offset26)        OP-branch-imm 2#100101)
+
+(instr BLR (reg)            OP-branch-reg 2#11010110001)
+(instr BR (reg)              OP-branch-reg 2#11010110000)
+
+% CBNZ
+% CBZ
+
+% CCMN
+% CCMP
+
+% CFINV
+% CINC
+% CINV
+
+(instr CLS (reg reg)     OP-clz 2#11011010110 2#00000 2#000101)
+(instr CLZ (reg reg)     OP-clz 2#11011010110 2#00000 2#000100)
+
+(instr CMN   (reg32-or-sp reg32-extended)        OP-reg-extended 2#00101011001)
+(instr CMN   (reg-or-sp reg-extended)        OP-reg-extended 2#10101011001)
+(instr CMN   (reg32-or-sp imm12-shifted)        OP-reg-imm12  2#001100010)
+(instr CMN   (reg32 imm12-shifted)        OP-reg-imm12  2#101100010)
+(instr CMN   (reg32 reg32-shifter)         OP-reg-shifter 2#00101011000)
+(instr CMN   (reg reg-shifter)         OP-reg-shifter 2#10101011000)
+
+(instr CMP   (reg32 reg32-extended)        OP-reg-extended 2#01101011000)
+(instr CMP   (reg reg-extended)        OP-reg-extended 2#11101011000)
+(instr CMP   (reg32 imm12-shifted)        OP-reg-imm12    2#011100010)
+(instr CMP   (reg imm12-shifted)        OP-reg-imm12    2#111100010)
+(instr CMP   (reg32 reg32-shifter)         OP-reg-shifter 2#01101011000)
+(instr CMP   (reg reg-shifter)         OP-reg-shifter 2#11101011000)
+
+% CMPP
+% CNEG
+
+% CSEL
+% CSET
+% CSETM
+% CSINC
+% CSINV
+% CSNEG
+
+(instr EON  (reg32 reg32 reg32-shifter)     OP-reg-shifter 2#01001010001)
 (instr EON  (reg reg reg-shifter)     OP-reg-shifter 2#11001010001)
 
-(instr EOR  (reg reg imm-logical)     OP-reg-logical    2#1101001000
+(instr EOR  (reg32 reg32 imm-logical)     OP-reg-logical    2#0101001000)
+(instr EOR  (reg reg imm-logical)     OP-reg-logical    2#0101001000)
+(instr EOR  (reg32 reg32 reg32-shifter)     OP-reg-shifter 2#11001010000)
 (instr EOR  (reg reg reg-shifter)     OP-reg-shifter 2#11001010000)
+
+(instr EXTR   (reg32 reg32 reg32 lsb)        OP-reg3-lsb   2#0100100111)
+(instr EXTR   (reg reg reg lsb)        OP-reg3-lsb   2#100100111)
 
 (instr NEG   (reg reg reg-shifter)     OP-reg-shifter 2#11001011000)
 (instr NEGS  (reg reg reg-shifter)     OP-reg-shifter 2#11101011000)
@@ -340,25 +419,17 @@
 
 (instr ORN   (reg reg reg-shifter)     OP-reg-shifter 2#10101010001)
 
-(instr ORR   (reg reg imm-logical      OP-reg-logical 2#1011001000))
+(instr ORR   (reg reg imm-logical)      OP-reg-logical 2#1011001000)
 (instr ORR   (reg reg reg-shifter)     OP-reg-shifter 2#10101010000)
 
 (instr SUB   (reg reg reg-extended)     OP-reg-extended  2#11001011001)
 (instr SUB   (reg reg reg-shifter)     OP-reg-shifter  2#11001011000)
-(instr SUB   (reg reg imm12-rotated)    OP-reg-imm12     2#110100010)
+(instr SUB   (reg reg imm12-shifted)    OP-reg-imm12     2#110100010)
 
 (instr SBC   (reg reg reg-shifter)     OP-reg-shifter  2#1101101000)
 
 (instr TST   (reg reg-shifter)         OP-reg-shifter 2#1101010000)
 (instr TST   (reg imm-logical)         OP-reg-logical   2#11100100)
-
-(instr CMP   (reg reg-extended)        OP-reg-extended 2#11101011000)
-(instr CMP   (reg reg-shifter)         OP-regn-shifter 2#11101011000)
-(instr CMP   (reg imm12-rotated)        OP-regn-imm12    2#111100010)
-
-(instr CMN   (reg reg-extended)        OP-reg-extended 2#10101011001)
-(instr CMN   (reg reg-shifter)         OP-reg-shifter 2#10101011000)
-(instr CMN   (reg imm12-rotated)        OP-reg-imm12  2#101100010))
 
 (instr MOV   (reg reg-sp)              OP-reg-regsp  2#10010000100)
 (instr MOV   (reg-sp reg)              OP-regsp-reg  2#10010000100)
@@ -386,10 +457,7 @@
 (instr RET    ()                 OP-regopt    2#11010110010)
 (instr RET    (reg)                 OP-regopt    2#11010110010)
 (instr REV    (reg reg)                 OP-reg2      2#11011010110)
-(instr EXTR   (reg reg reg lsb)        OP-reg3-lsb   2#100100111)
 
-(instr CLS (reg reg)     OP-clz 2#11011010110 2#00000 2#000101)
-(instr CLZ (reg reg)     OP-clz 2#11011010110 2#00000 2#000100)
 
 (instr MRS (reg streg)   OP-streg 2#110101010011)
 %(instr MSR (MSR *cond*) (streg imm8-rotated) OP-MSR 2#0011001 0  ... ) 
@@ -424,21 +492,16 @@
 (instr STP   (reg reg reg imm7)  OP-ld-st-misc 2#1010100010)
 
 
-(instr B  (offset26)         OP-branch-imm 2#000101)
-(instr BL  (offset26)        OP-branch-imm 2#100101)
-
-(instr BLR (reg)            OP-branch-reg 2#1101011000)
 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% now we generate the armv6-inst.dat file
+% now we generate the aarch64-inst.dat file
 (off usermode) (de linelength (x) 1000)
 (reload chars)
 (pp nil)
 (collectInstructions "aarch64-inst.dat")
 % (disassembletables "disasstb")
-% (displayInstructions "386instrlist")
 
 (exitlisp)
