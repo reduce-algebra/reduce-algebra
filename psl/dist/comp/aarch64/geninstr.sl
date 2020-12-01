@@ -76,6 +76,7 @@
 	(OP-regopt . lth-regopt)
 	(OP-reg2 . lth-reg2)
 	(OP-reg3-lsb . lth-reg3-lsb)
+	(OP-ldp . ltzh-ldp)
       ))
  
 (load strings compiler)
@@ -175,6 +176,7 @@
 	  ((eq op 'reg-or-sp) '(reg-or-sp-p))
 	  ((eq op 'reg32-or-sp) '(reg32-or-sp-p))
 	  ((eq op 'reg-sp) '(reg-sp-p))
+	  ((eq op 'reg32-sp) '(reg32-sp-p))
 	  ((eq op 'evenreg)'(evenREGP)) 
 	  ((eq op 'streg)'(streg-p))
 	  ((eq op 'imm) '(STDIMMEDIATEP))
@@ -193,6 +195,7 @@
 	  ((eq op 'reg-offset8) '(reg-offset8-p))
 	  ((eq op 'reg-offset12) '(reg-offset12-p))
 	  ((eq op 'reglist) '(reglistp))
+	  ((eq op 'offset19) '(offset19-p))
 	  ((eq op 'offset26) '(offset26-p))
 	  ((eq op 'writeback?) '(writeback-p))
 	  ((eq op 'pm-reg-shifter) '(pm-reg-shifter-p))
@@ -345,7 +348,22 @@
 % ASR
 % ASRV
 
-%(instr B.cond (offset19)    OP-branch-imm19 2#01010100)
+(instr B.EQ (offset19)    OP-branch-imm19 2#01010100 2#0000)
+(instr B.NE (offset19)    OP-branch-imm19 2#01010100 2#0001)
+(instr B.CS (offset19)    OP-branch-imm19 2#01010100 2#0010)
+(instr B.CC (offset19)    OP-branch-imm19 2#01010100 2#0011)
+(instr B.MI (offset19)    OP-branch-imm19 2#01010100 2#0100)
+(instr B.PL (offset19)    OP-branch-imm19 2#01010100 2#0101)
+(instr B.VS (offset19)    OP-branch-imm19 2#01010100 2#0110)
+(instr B.VC (offset19)    OP-branch-imm19 2#01010100 2#0111)
+(instr B.HI (offset19)    OP-branch-imm19 2#01010100 2#1000)
+(instr B.LS (offset19)    OP-branch-imm19 2#01010100 2#1001)
+(instr B.GE (offset19)    OP-branch-imm19 2#01010100 2#1010)
+(instr B.LT (offset19)    OP-branch-imm19 2#01010100 2#1011)
+(instr B.GT (offset19)    OP-branch-imm19 2#01010100 2#1100)
+(instr B.LE (offset19)    OP-branch-imm19 2#01010100 2#1101)
+(instr B.AL (offset19)    OP-branch-imm19 2#01010100 2#1111)
+
 (instr B  (offset26)         OP-branch-imm 2#000101)
 
 % BFC
@@ -411,6 +429,62 @@
 (instr EXTR   (reg32 reg32 reg32 lsb)        OP-reg3-lsb   2#0100100111)
 (instr EXTR   (reg reg reg lsb)        OP-reg3-lsb   2#100100111)
 
+% LDP Xt1, Xt2, Xn, #imm7 (post-index)
+(instr LDP  (reg32 reg32 reg-or-sp imm7)  OP-ldp  2#0010100011)
+(instr LDP  (reg reg reg-or-sp imm7)  OP-ldp  2#1010100011)
+
+% LDP Xt1, Xt2, [Xn, #imm7]! (pre-index)
+(instr LDP  (reg32 reg32 reg-or-sp imm7)  OP-ldp  2#0010100111)
+(instr LDP  (reg reg reg-or-sp imm7)  OP-ldp  2#1010100111)
+
+% LDP Xt1, Xt2, Xn, #imm7 (signed offset)
+(instr LDP  (reg32 reg32 reg-or-sp imm7)  OP-ldp  2#0010100101)
+(instr LDP  (reg reg reg-or-sp imm7)  OP-ldp  2#1010100101)
+
+% LDPSW Xt1, Xt2, Xn, #imm7 (post-index)
+(instr LDPSW  (reg reg reg-or-sp imm7)  OP-ldp  2#0110100011)
+
+% LDPSW Xt1, Xt2, [Xn, #imm7]! (pre-index)
+(instr LDPSW  (reg reg reg-or-sp imm7)  OP-ldp  2#0110100111)
+
+% LDPSW Xt1, Xt2, Xn, #imm7 (signed offset)
+(instr LDPSW  (reg reg reg-or-sp imm7)  OP-ldp  2#0110100101)
+
+% LDR Xt, Xn, #simm9
+(instr LDR (reg32 reg-or-sp simm9)      OP-ld-st 2#10111000010)
+(instr LDR (reg reg-or-sp simm9)      OP-ld-st 2#11111000010)
+(instr STR (reg32 reg-or-sp simm9)      OP-ld-st 2#10111000000)
+(instr STR (reg reg-or-sp simm9)      OP-ld-st 2#11111000000)
+% LDR Xt, <label>
+(instr LDR (reg32 imm19)       OP-ld-st 2#00011000)
+(instr LDR (reg imm19)       OP-ld-st 2#01011000)
+% LDR Xt,[Xn,+/-#imm12]
+(instr LDR (reg32 reg-or-sp reg-offset12)   OP-ld-st 2#10111000011)
+(instr LDR (reg reg-or-sp reg-offset12)   OP-ld-st 2#11111000011)
+(instr STR (reg32 reg-or-sp reg-offset12)   OP-ld-st 2#10111000001)
+(instr STR (reg reg-or-sp reg-offset12)   OP-ld-st 2#11111000001)
+
+% LDUR
+% LDURB
+% LDURH
+% LDURSB
+% LDURSH
+% LDURSW
+
+% LSL
+% LSLV
+% LSR
+% LSRV
+
+(instr MADD   (reg32 reg32 reg32 reg32)  OP-mul4      2#00011011000 0)
+(instr MADD   (reg reg reg reg)         OP-mul4      2#10011011000 0)
+
+(instr MSUB   (reg32 reg32 reg32 reg32)  OP-mul4      2#00011011000 1)
+(instr MSUB   (reg reg reg reg)         OP-mul4      2#10011011000 1)
+
+(instr MNEG   (reg32 reg32 reg32)    OP-mul3      2#00011011000 1 2#11111)
+(instr MNEG   (reg reg reg)         OP-mul3      2#10011011000 1 2#11111)
+
 (instr NEG   (reg reg reg-shifter)     OP-reg-shifter 2#11001011000)
 (instr NEGS  (reg reg reg-shifter)     OP-reg-shifter 2#11101011000)
 
@@ -431,8 +505,11 @@
 (instr TST   (reg reg-shifter)         OP-reg-shifter 2#1101010000)
 (instr TST   (reg imm-logical)         OP-reg-logical   2#11100100)
 
+(instr MOV   (reg32 reg32-sp)              OP-reg-regsp  2#00010000100)
 (instr MOV   (reg reg-sp)              OP-reg-regsp  2#10010000100)
+(instr MOV   (reg32-sp reg32)              OP-regsp-reg  2#00010000100)
 (instr MOV   (reg-sp reg)              OP-regsp-reg  2#10010000100)
+(instr MOV   (reg32 reg32)                  OP-reg-reg    2#00101010000)
 (instr MOV   (reg reg)                  OP-reg-reg    2#10101010000)
 (instr MOV   (reg imm8-rotated)        OP-reg-imm8    2#0011101)
 (instr MVN   (reg reg-shifter)         OP-reg-shifter 2#0001111)
@@ -445,7 +522,6 @@
 (instr UDIV   (reg reg reg)             OP-mul3      2#10011010110 2#000010)
 
 (instr MUL    (reg reg reg)             OP-mul3      2#10011011000 2#011111)
-(instr MADD   (reg reg reg reg)         OP-mul4      2#10011011000)
 (instr UMADDL (reg reg reg reg)         OP-mul4      2#10011011101)
 (instr UMULL  (reg reg reg)             OP-mul3      2#10011011101 2#011111)
 (instr UMULH  (reg reg reg)             OP-mul3      2#10011011110 2#011111)
@@ -463,33 +539,23 @@
 %(instr MSR (MSR *cond*) (streg imm8-rotated) OP-MSR 2#0011001 0  ... ) 
 %(instr MSR (MSR *cond*) (streg reg)      OP-MSR 2#0001001 0 2#0000)
 
-% LDR Xt, Xn, #simm9
-(instr LDR (reg reg simm9)      OP-ld-st 2#11111000010)
-(instr STR (reg reg simm9)      OP-ld-st 2#11111000000)
-% LDR Rd,[Rn,+/-#imm12]
-(instr LDR (reg reg reg-offset12)   OP-ld-st 2#11111000011)
-(instr STR (reg reg reg-offset12)   OP-ld-st 2#11111000001)
+(instr LDRB (reg32 reg-offset12)  OP-ld-st 2#00111000010)
+(instr STRB (reg32 reg-offset12)  OP-ld-st 2#0100010 0)
+(instr LDRB (reg32 pm-reg-shifter)  OP-ld-st 2#0110010 1)
+(instr STRB (reg32 pm-reg-shifter)  OP-ld-st 2#0110010 0)
 
-(instr LDRB (reg reg-offset12)  OP-ld-st 2#0100010 1)
-(instr STRB (reg reg-offset12)  OP-ld-st 2#0100010 0)
-(instr LDRB (reg pm-reg-shifter)  OP-ld-st 2#0110010 1)
-(instr STRB (reg pm-reg-shifter)  OP-ld-st 2#0110010 0)
+(instr LDRH (reg32 reg-offset8)  OP-ld-st-misc 2#0000010 1 2#1011)
+(instr STRH (reg32 reg-offset8)  OP-ld-st-misc 2#0000010 0 2#1011)
+(instr LDRH (reg32 pm-reg-shifter)  OP-ld-st-misc 2#0000000 1 2#1011)
+(instr STRH (reg32 pm-reg-shifter)  OP-ld-st-misc 2#0000000 0 2#1011)
 
-(instr LDRH (reg reg-offset8)  OP-ld-st-misc 2#0000010 1 2#1011)
-(instr STRH (reg reg-offset8)  OP-ld-st-misc 2#0000010 0 2#1011)
-(instr LDRH (reg pm-reg-shifter)  OP-ld-st-misc 2#0000000 1 2#1011)
-(instr STRH (reg pm-reg-shifter)  OP-ld-st-misc 2#0000000 0 2#1011)
-
+(instr LDRSB (reg32 reg-offset8)  OP-ld-st-misc 2#0000010 1 2#1101)
 (instr LDRSB (reg reg-offset8)  OP-ld-st-misc 2#0000010 1 2#1101)
-(instr LDRSB (reg pm-reg-shifter)  OP-ld-st-misc 2#0000000 1 2#1101)
+(instr LDRSB (reg32 pm-reg-shifter)  OP-ld-st-misc 2#0000000 1 2#1101)
+(instr LDRSB (reg3 pm-reg-shifter)  OP-ld-st-misc 2#0000000 1 2#1101)
 (instr LDRSH (reg reg-offset8)  OP-ld-st-misc 2#0000010 1 2#1111)
 (instr LDRSH (reg pm-reg-shifter)  OP-ld-st-misc 2#0000000 1 2#1111)
 
-
-% omit LDR(B)T / STR(B)T -- only priviledged mode
-
-(instr LDP   (reg reg reg imm7)  OP-ld-st-misc 2#1010100011)
-(instr STP   (reg reg reg imm7)  OP-ld-st-misc 2#1010100010)
 
 
 
