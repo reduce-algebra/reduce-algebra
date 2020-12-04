@@ -1,0 +1,6 @@
+packages/gcref/gcref
+packages/redlog/regressions/make.sh
+packages/cde/examples/cde_test.sh
+packages/cde/examples/rrr.sh
+packages/cde/examples_book/cde_test.sh
+packages/cde/examples_book/rrr.sh

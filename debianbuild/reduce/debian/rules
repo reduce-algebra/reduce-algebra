@@ -148,7 +148,7 @@ install-stamp: build-stamp
 		$(CSLBUILDDIR)/csl/bootstrapreduce \
 		$(CSLBUILDDIR)/csl/csl.img \
 		$(CSLBUILDDIR)/csl/csl \
-			$(LIBDIR)/cslbuild/csl
+		$(LIBDIR)/cslbuild/csl
 #	$(RSYNC_CMD) --no-perms $(CSLBUILDDIR)/csl/reduce.doc/ $(DOCDIR)/
 	mkdir -p $(FONTDIR)
 	$(RSYNC_CMD) --chmod=Fa-x --exclude "/src/***" $(CSLBUILDDIR)/csl/reduce.fonts/ $(FONTDIR)
@@ -162,7 +162,8 @@ ifneq ($(BUILDPSL),)                                                          # 
 endif
 # copy common files
 	$(RSYNC_CMD) --no-perms --chmod=Fa-x --exclude "/regressions/***" $(TOPDIR)/packages/ $(SHAREDIR)/packages/
-	chmod a+x $(TOPDIR)/packages/gcref/gcref $(TOPDIR)/packages/redlog/regressions/make.sh
+#	chmod a+x $(TOPDIR)/packages/gcref/gcref $(TOPDIR)/packages/redlog/regressions/make.sh
+	for file in $(shell cat debian/reduce.scripts) ; do chmod a+x $(SHAREDIR)/$${file} ; done
 	ln -f -s ../../../../share/reduce/fonts $(LIBDIR)/cslbuild/csl/reduce.fonts
 	ln -f -s ../../../../share/doc/reduce $(LIBDIR)/cslbuild/csl/reduce.doc
 	ln -f -s ../../lib/reduce/pslbuild $(SHAREDIR)/pslbuild
@@ -206,7 +207,7 @@ binary-indep: install
 	dh_installchangelogs  -i
 	dh_lintian -i
 	dh_link -i
-	dh_strip -i
+	dh_strip -i $(NO_DEBS)
 	dh_compress -i 
 	dh_fixperms -i
 	dh_installdeb -i
@@ -230,7 +231,7 @@ binary-arch: install
 	dh_installchangelogs  -a
 	dh_lintian -a
 	dh_link -a
-	dh_strip -a $(NO_STRIP)
+	dh_strip -a $(NO_STRIP) $(NO_DEBS)
 	dh_compress -a
 	dh_fixperms -a
 	dh_installdeb -a

@@ -17,6 +17,7 @@ packages
   texlive-fonts-recommended
   tex4ht
   debhelper 
+  time
 
 To build the packages, run the following commands from the debianbuild
 directory:

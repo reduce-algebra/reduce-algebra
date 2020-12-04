@@ -13,6 +13,8 @@ BUILDTOPDIR=C
 REVISION=HEAD
 BUILD=$(shell $(BUILDTOPDIR)/scripts/findhost.sh $(shell $(BUILDTOPDIR)/config.guess))
 
+export DEB_BUILD_OPTIONS=noautodbgsym
+
 all:	update-changelog reduce-packages
 
 update-changelog:
