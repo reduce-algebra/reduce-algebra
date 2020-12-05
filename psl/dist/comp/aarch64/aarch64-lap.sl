@@ -1,10 +1,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PXC:armv6-LAP.SL
-% Description:  Armv8 PSL Assembler
+% File:         PXC:aarch64-LAP.SL
+% Description:  Armv8/A64 PSL Assembler
 % Author:       R. Schöpf
 % Created:      21 November 2020
-% Modified:
+% Modified:     December 2020
 % Mode:         Lisp
 % Package:      
 % Status:       Open Source: BSD License

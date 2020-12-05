@@ -73,7 +73,6 @@
 	(OP-regsp-reg . lth-regsp-reg)
 	(OP-reg-reg . lth-reg-reg)
 	(OP-reg-extended . lth-reg-extended)
-	(OP-regopt . lth-regopt)
 	(OP-reg2 . lth-reg2)
 	(OP-reg3-lsb . lth-reg3-lsb)
 	(OP-ldp . ltzh-ldp)
@@ -530,8 +529,8 @@
 (instr SMULH  (reg reg reg)             OP-mul3      2#10011011010 2#011111)
 
 (instr RBIT   (reg reg)                 OP-reg2      2#11011010110)
-(instr RET    ()                 OP-regopt    2#11010110010)
-(instr RET    (reg)                 OP-regopt    2#11010110010)
+(instr RET    ()                 OP-branch-reg    2#11010110010 X30)
+(instr RET    (reg)                 OP-branch-reg    2#11010110010)
 (instr REV    (reg reg)                 OP-reg2      2#11011010110)
 
 
