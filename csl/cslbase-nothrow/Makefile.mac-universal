@@ -1,0 +1,5 @@
+# Ha ha ha - this is a placeholder at present!
+
+all:
+	printf "Not supported yet"
+

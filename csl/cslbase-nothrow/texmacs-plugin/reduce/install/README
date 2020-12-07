@@ -1,0 +1,22 @@
+Installation of TeXmacs-REDUCE interface (CSL version)
+------------------------------------------------------
+
+1. Ensure that executable (reduce or reduce.exe) is in your path.
+
+
+   You can either change your PATH:
+      on Unix/Linux/Darwin/BSD/Cygwin
+           export PATH=<wherever>:$PATH
+      on Windows
+           Control Panel/System/Advanced/Environment Variables
+           and change system variable "Path"
+   OR on Unix/Linux/Darwin/BSD/Cygwin
+        select a directory that is already on your path, eg often
+        /usr/local/bin, and put a symlink to the reduce executable there.
+           ln -s /where/it/is/reduce /usr/local/bin/reduce
+      on Windows, if say c:\bin is already in your PATH, copy
+        reduce.exe, reduce.com, reduce.img and the directories reduce.doc and
+        reduce.fonts into c:\bin.
+
+------------------------------------------------------
+

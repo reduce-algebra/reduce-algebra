@@ -1,0 +1,16 @@
+The files here are fore use with wxshowmath.
+During at least initial development of the code there it will
+support a very simple textual format that specified where to place
+characters on the page. Data in this format can be created and edited
+by hand but also the code in contrib/boxdisplay may move towards
+generating it in a systematic way.
+
+While this level of preliminary testing is going on the file here
+can represent test cases. They may each have originally had some
+specific purpose but that will not be documented!
+
+Good luck and enjoy.
+
+Use via something like
+   ./wxshowmath path/to/cslbase/wxdata/parens.dat
+

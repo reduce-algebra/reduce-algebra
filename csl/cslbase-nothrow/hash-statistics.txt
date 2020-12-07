@@ -1,0 +1,32 @@
+I put in code to ccek the number of hash-table probes for both hash table
+lookups and object-list (implemented as a hash table) activity. The
+numbers here are for the implementation as of May 2016 and running the
+full set of Reduce tests using "make testall".
+
+There were 5.9 million cases where a symbol was looked up in the
+object list/symbol hashtable/package system, plus 0.18 million times
+when a new symbol was created. Each lookup involved an average of only
+1.35 string comparisons, and each insert only 0.63. This seems consistent
+with my tables being on average around half full -- and with most of the
+inserts being performed when tables are much emptier than that (which
+can include what happens when tables are expanded and existing data is
+hashed into the larger table, so a significant proportion of the inserts
+find an empty slot to place the key on their very first probe.
+
+For more general hash tables (used by the Reduce simplifier) I see 12.3
+million occasions where new data is entered into a hash table, and only
+0.24 comparisons per insert. This is liable to be the signature of
+many uses of hash table to store a fairly small number of keys and
+a generous initial table size. There are then 11.3 million hash lookup
+operations, a large proprortion of which fail to find anything. The
+message that I take away is that adding items to tables is important!
+In the Reduce tests only a trivial (0.0015 million) number of cases where
+an entry in a hash table was updated are observed.
+
+My current hash table implementation may be crude, but it seems set up so
+that table occupancy is low enough to render it pretty efficient! I had
+been thinking of replacing it with a new scheme, but am now not at all
+certain that that would be useful. Except that a sketch of a new version is
+looking quite encouraging at present!
+
+                                                           ACN May 2016

@@ -1,0 +1,26 @@
+This is cslbase-nothrow
+
+It is all the files from cslbase but adjusted so that there should not be
+any catch or throw operations that get activated during nornal use. There
+can be a few that are triggered by internal failures and crashes! Also the
+adaptation is at this stage experimental and while normal processing may work
+all error recovery is uncertain.
+
+The motivation here is that emscripten/jasm/webassembly carry severe
+performance penalties for having code that may need to perform a "catch"
+operation. Using this varient may avoid that. I want to see how much impact
+I have here on both that and the normal versions of the system.
+
+This is a whole extra copy of the directory because - as you will see by
+doing a few "diff"s it makes ugly changes in many places and merging them in
+to the main version using #ifdef would be disruptive. If this proves useful
+I will try to decide how to tidy up and consolidate verions because having
+two parallel copies of the code is asking for trouble with future changes
+ending up in one not both copies.
+
+ACN, December 2020
+
+
+
+CSL for use with REDUCE
+

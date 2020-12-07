@@ -1,0 +1,418 @@
+                     Conservative Garbage Collection
+                     ===============================
+
+
+This note is to help me while I design and implement one, and comments on
+changes from a previous world. This is a fresh version of these notes and
+is being started in April 2016. I had done some redesign in October 2017, but
+the latest changes are from June 2018 - no now May/June 2019!
+
+
+This year's plan is that memory exists in two large pools that I might
+call Heap1 and Heap2. A major garbage collection will copy almost everything
+from Heap1 to Heap2 and then swap their status. To support threads and a
+generational scheme blocks of memory are allocated from the Heap and each
+thread will have two special blocks: a "current" one that it is in the process
+of allocating into and a "previous" one that is handled specially as part
+of the generational scheme. These blocks are (maybe?) 4Mbytes large.
+Any allocation of objects of size up to 64Kbytes gets done in one of these,
+so in the most extreme case one of these will end up filled with 64 objects
+of that size. Any objects larger than 64Kbytes get allocated directly in the
+main region of the Heap.
+Allocation within a current page does not involve any overhead beyond that
+involved in the access to thread local fringe and limit pointers, and
+I will note that 256K conses are needed use up a page, so in most use cases
+almost all memory allocation will use them. The allocation of either a new
+page or an object that is larger than 64K will need a mutex lock so that
+threads do not interfere with each other. I argue in three steps that this
+will not end up as a severe overhead.
+(1) in most Lisp uses only a small proportion of allocations are of
+    large objects.
+(2) If a large object is allocated that at the very least it will need to
+    be initialized, and this at a minimum involves quite a few thousand
+    memory references. In almost all worthwhile cases there will be a lot
+    more work than that - the muxex overhead on allocation will tend to have
+    its cost swamped by this.
+(3) Because of both (1) and (2) (and because allocating from the main heap is
+    generally an inexpensive process once the relevant mutex has been
+    claimed) the frequency of large allocations will be modest and so with
+    a sensible number of threads the contention on muxexes will not become
+    severe.
+
+============
+But now a fragment of thought added in June 2019...
+
+// Here is how I can do CONS. The code for allocating larger objects is
+// essentially the same but with a non-constant increment. This can be
+// done with a single region of memory and just one fringe and one limit
+// shared across all threads.
+
+#include <cstdint>
+#include <cinttypes>
+#include <atomic>
+#include <cstdlib>
+
+typedef intptr_t LispObject;
+
+extern std::atomic_uintptr_t fringe;
+extern std::atomic_uintptr_t limit;
+
+extern uintptr_t gc_and_allocate(uintptr_t r, size_t n);
+
+LispObject cons(LispObject a, LispObject b)
+{   LispObject result = (LispObject)fringe.fetch_add(2*sizeof(LispObject));
+    if (fringe.load() >= limit.load())
+        result = gc_and_allocate(result, 2*sizeof(LispObject));
+    return result;
+}
+
+// gc_and_allocate is called if the allocation fails with the location
+// of the block that could not be allocated as its first argument and the
+// size of block that is needed as its second. The first argument is
+// needed because heap space up as far as that is properly in use, while
+// space above it is not. If there are multiple threads then the first
+// one that fails to achieve an allocation will have left fringe >= limit
+// and so all the subsequent ones will also fail. So if one can synchronize
+// all threads then the lowest value passed to gc_and_allocate will represent
+// the top of real data in the heap.
+
+// If I want to trigger a garbage collection "soon" I can go
+//       uintptr_t save = limit.fetch_and(0);
+// and then any thread that tries to allocate memory will enter the GC soon.
+// and code can go
+//       if (limit.load() == 0) gc_and_allocate(fringe.load(), 0);
+// as a voluntary way of yielding. Extra protocols will be needed where
+// a thread is about to do something that might block. The fetch_and() lets
+// me zero out the limit register but record what it used to be so that I
+// can restore it later by going
+//       limit.store(save);
+// or some such.
+
+So what I say elsewhere about having per-thread allocation blocks is
+maybe now outdated!
+
+Then as an extra related thought I could let there be a sort of soft break
+every few kilobytes which arranges that associated with heap memory there is
+an index vector such that for each page of it I store a pointer to the
+start of an object. Then when I have an ambigious pointer to process I can
+observe which page it is in and from that get a pointer to the first
+object-start within that page and thence scan until I find the exact object
+that must be pinned. The alternatives that I can think of include putting
+all 2-word objects (ie cons cslls) in dedicated pages and having bitmaps
+that tag the first word of each larger object. Well I guess that cons cells
+are really common so maybe I have cons cells segregated so that any address
+in a cons page knows what it refers to, and have my "first object in page"
+info for each page that contains vectors. Note that if one has a huge vector
+that some pages will lie totally within it and so will not have any object
+start to mention.
+
+============
+
+The work discussed here is to arrange that CSL uses a mostly-copying
+conservative collector. The details are substantially tuned to the expected
+patterns of memory usage. Although the initial implementation will be
+single threaded the intent is to allow for a threaded system in the future.
+Following CST project work by Jamie Davenport I now intend to try for a
+design that is conservative, generational and somewhat threaded. This
+is also informed by work done by Vlad Badelita.
+
+Memory is used in pages (of size CSL_PAGE_SIZE).
+[Hmmm - there may be no real point in having things arranged in pages
+like that!]
+Each page will either hold
+CONS cells (and other items of size 2*CELL) or larger items (typically
+symbol headers and vectors). Given an arbitrary bit-pattern it will be
+possible to tell if it refers to an address within an object in one of these
+pages.
+
+With each page I will have a bitmap that is used to record a concept "pinned"
+that can be associated with any object in the page. An item will be marked
+pinned if an ambiguous pointer refers to it, and hence it may not be moved.
+I will have an array of size half a page for each thread and will bse that
+to collect a list of all the pinned items in a single page of memory that
+I am evacuating. The size here is only half a page because the smallest items
+ever allocated within the heap are 2 pointers large. I rather expect that the
+full capacity of this will never be approached.
+
+Pages of memory are classified as
+  Current (C). These are the pages within which the mutator allocates
+     new material. There may be several such if allocation of CONS cells
+     and vectors use different dedicated current pages and in a multi-thread
+     world each thread would have its own current page or pages.
+  Recent (R). When a current page becomes full it is replaced with a new
+     empty page, and the full page that had been current is re-badged as
+     "recent". When that happens the previous recent page will have its
+     content evacuated - that process representing a minor garbage collection.
+  Stable (S). When live material is moved out of an "old recent" page it is
+     copied into the stable region. This will come to be the bulk of the
+     active heap and uses as many pages as are called for. At any one time
+     one of these pages will be the "stable fringe" where new material is
+     added. In a multi-thread world there is just a single pool of stable
+     heap.
+  Free (F). Pages that are not in use are in this group. When a minor garbage
+     collection places in a fresh stable page such that |S| > |F| then a full
+     garbage collection is triggered. At that stage R is empty. The stable
+     fringe page is then deemed part of what will become the new heap, and
+     all material apart from that is copied into that and subsequent pages
+     taken from free. The vacated pages are then re-labelled to form the
+     new free region. While doing this the current page does not have
+     its content relocated.
+
+Within the heap I can maintain "dirty bits" that mark parts of pages where
+data has been updated. I will arrange that as the start of a minor garbage
+collection I will have two maps of dirty memory, one corresponding to the
+time period while R was being filled and a second to the time that C was
+filled. Clearly at the end of a minor collection the old C becomes the new
+R and a fresh C is allocated, so the previous C-map becomes the new R-map
+and the new C-map starts off fresh and clean. These maps will not be needed
+or used during a major collection.
+
+Now I will be explicit about the expectations that I have that lead to this
+plan. They are
+(1) Much material that is allocated will only remain active for a short
+while. The time that it takes to fill up the C page will be long enough that
+when C becomes full everything in R will have had time for this infant
+mortality to take effect, and so on a minor garbage collection a substantial
+fraction of R will be garbage and hence does not get copied into S.
+(2) In CSL the only place the ambiguous pointers reside is on the stack.
+An especially large number of entries towards the top of the stack will
+refer to data that is just in the process of being worked on, and this will
+mean that most ambiguous pointers that refer to anything at all will refer
+to locations within C. In particular I hope that there will be few ambiguous
+references into R. Neither minor nor major garbage collection will relocate
+data that is in C, so my expectation and hope is that there will be only
+minor disruption to storage elsewhere because of conservatism.
+(3) The schemes I have for identifying dirty regions of memory are based on
+storage protection and accepting an exception when a region is first written
+to. Because subsequent memory access is unimpeded I expect this will have low
+overhead. Memory protection is performed at a granularity substantially
+smaller then the size of whole pages. My expectation is that almost all
+writes to memory will be in either C or in symbol headers. Symbol headers will
+be distributed across S, but I can imagine arranging that the major
+garbage collection would copy all symbol headers from the oblist in such
+a way as to leave them as a compact block (along with the vectors that
+represent the object list itself). The hope is that the amount of memory
+identified as dirty will be a rather small fraction of the full size of the
+heap.
+(4) Given an arbitrary bit pattern it will first be possible to tell if it
+could be an address within any active page of the heap, and if it is then
+the starting address and Lisp type of any item it points within can be
+discerned reasonably efficiently.
+(5) Given a region of memory within a page it will be possible to identify all
+Lisp objects that overlap it, and on that basis scan all pointers that flow
+out from it. Maybe the key issue here is when the region covers the end but
+not the start of some Lisp vector and it is thus necessary to search back
+through lower-address parts of a page to find the start and hence the length
+of the vector. The assumption here requires consideration of any cases where
+ojjects in memory are not strictly laid out one after the other but where
+there are gaps between them.
+(6) With a conservative collector it is necessary to leave some items
+unrelocated in a manner that leaves the free space at the end of garbage
+collection fragmented. In pathological cases this could lead to major
+inefficient in  attempots to allocate vectors, and premature failure to
+allocate. This may include failure to allocate while performing the
+copying operstions of a major garbage collection! Perhaps I can manage a
+temporary recovery if I find myself gummed up during garbage collection by
+just giving up and not evacuating some data. That way I can at least get
+back to normal operation, albeit without enough memory freed up to be
+able to start any subsequent garbage collection with any confidence at all.
+But that may be sufficient to allow be to display a disgnostic about
+running out of memory and then close down. Note that within CSL I allocate
+vectors of size up to (1/4) of the page size, and allowing for the fact
+that pages contain headers and bitmaps this means that (only) up to 3
+maximum size vector chunks can fit on one page, and a wasted gap can be left.
+I need to consider whether vector allocation should have two strands: the
+simple one being linear allocation at the end of the current page, but
+building any space that has to be skipped either because of pinned data or
+the granularity of the pages into a free-chain, and then an alternative scheme
+that allocates from within this free-chain so that smaller allocations can
+be used to fill in the gaps. I think that sort of plan may be especially
+useful for the allocations that are performed for material that is being
+copied during a major garbage collection.
+
+
+The overall pattern for a minor garbage collection will be
+(1) Clear the pinned map for R
+(2) Scan all ambiguous bases (ie the stack) and if any item there could
+    be a pointer into R then set the pinned bit against the head of the
+    relevant object. Keep a list of all those objects in the "pinned table".
+(3) Scan all unambiguous bases, all locations within objects that are
+    in regions of memory dirty since R was set up and all locations within
+    the pinned items in R. In each case if the reference is to a non-pinned
+    item in R then on the first visit evacuate that item into S, and on
+    a subsequent visit just use the forwarding pointer set up on the first
+    visit. Update the base. Note that I expect all of C to be dirty, and
+    so scanning it may perhaps be done more elegantly than checking every
+    part of it for dirty bits.
+(4) Scan the material newly places in S. If references into R are found
+    then evacuate more or follow the forwarding address. This may expand
+    the region in S that is used - grab further pages for it as needed.
+    Stop when the scan has covered everything moved into S.
+(5) Now the only live data in R should be the things that are pinned.
+    Use the pinned table to build the structures within it that support
+    allocation. [Note: after this step the pin map and table are both no
+    longer needed].
+(6) Check if S is now over-full and if so trigger a major garbage collection.
+(7) Swap the interpretation of C and R, and update the dirty maps to match.
+    Well the dirty map issue is maybe ugly. Any part of S that has been
+    updated such that it refers into C must now be tagged in the map, and
+    all of what used to be R but is now C can have map info cleared.
+
+
+A major garbage collection has a slightly simpler structure because while it
+must cope with ambiguous pointers it processes all data apart from C.
+(1) Clear pinned map for R and S.
+(2) Scan ambiguous bases, marking items referred to in R or S as pinned.
+    Build a table of the pinned items first using the pinned-table and if
+    that overflows building a linked list in pages from F.
+    If there had been a list of pinned items left in S by the previous
+    collection then scan down it clearing any pinned bits on its entries,
+    because that data is now not needed.
+(3) Scan unambiguous bases and pointers out of C relocating anything except
+    references into C or to things that are pinned. This copies material to
+    new pages in F.
+(4) Scan the new material in F much as step (4) in the minor case.
+(5) Using information about pinned data in the table and any overflow list
+    build up freespace tables/maps/chains in all the blocks from S.
+(6) Swap interpretation of S and F, and allocate a new empty block for R
+    (which in step 7 of the minor GC will then instantly become the new C).
+(7) Consider dirty bits. What is needed is to mark any segment of memory
+    containing a reference to C as dirty, and all others as clean. I rather
+    hope to be able to build up that information as part of steps (3) and
+    (4) since they already need to test for references into C.
+
+
+
+===============
+
+March 2019 updated thoughts:
+
+If the GC evacuates material into the new half-space using a simple first-fit
+strategy then there can be big trouble both in the cost of searching for a fit
+and for wasted space skipped over in the process. Of course if there are very
+few pinned items this should still be minor I guess! But special thought about
+allocating and copying large items may be a good idea.
+
+The number of pinned items here might be expected to be bounded by the amount
+of stack used. So very deep recursion is a bad bad thing.
+
+The scheme as above based on using memory protection to take an exception
+on the first write into an (old) page may have severe costs in that on many
+operating systems taking an exception and changing page access rights is
+liable to be very expensive. I see some commentary that its costs are high
+enough that the other expensive route, ie use of software write barriers,
+may in fact be competitive.
+
+The following sketch may show how I can have a slightly odd C++ class that
+lets me arrange that variables (such as x and y in the code below) can be
+writtent in the source code as if utterly ordinary, but such that reading
+from them compiles into simple code that merely does a load while writing
+can perform extra operations (in particular messing with maps of dirty
+pages). Use of that might seriously clean up my code it I do want to follow
+the software write-barrier path.
+
+#include <iostream>
+#include <cstdint>
+#include <cinttypes>
+
+class PointerWrapper
+{
+public:
+    intptr_t value;
+    PointerWrapper ()
+    {   std::cout << "constructing " << (void *)this << std::endl;
+    }
+    PointerWrapper (const intptr_t &x)
+    {   std::cout << "constructing " << (void *)this << " with " << x << std::endl;
+    }
+    PointerWrapper& operator= (const intptr_t &x)
+    {   value = x;
+        std::cout << "writing " << x << " into " << (void *)this << std::endl;
+        return *this;
+    }
+    operator intptr_t()
+    {   std::cout << "reading from " << (void *)this << std::endl;
+        return value;
+    }
+};
+
+int main(int argc, char *argv[])
+{   std::cout << "About to construct x" << std::endl;
+    PointerWrapper x;
+    std::cout << "About assign into x" << std::endl;
+    x = 12345;
+    std::cout << "About declare y as a copy of x" << std::endl;
+    PointerWrapper y = x;
+    std::cout << "About increment y" << std::endl;
+    y = y + 1;
+    std::cout << "About display x and y" << std::endl;
+    std::cout << x << " and " << y << std::endl;
+    return 0;
+}
+
+
+Hmmm the above may be overkill. Let me consider places where one writes to
+old material. Well the first and very common case is to locations within
+symbol-heads. In Reduce if EVERYTHING is loaded then teher are about 44K
+symbols. Chain all those (using weak pointers so that symbols can be subject
+to GC?) and always scavenge from them.The fields that may contain up-pointers
+will be value, plist, fastgets and environment. Arrange that any update to
+symname (eg when a gensym crystalizes) goes straight into the stable heap.
+This is work for a small phase of garbage collection but is probably OK, and
+means that writes there can all be cheap. PUT and REMPROP will need review
+either to make them activate a write barrier or to leave old data unaltered.
+I think that adds to the cost of PUT, but some extra will be unavoidable.
+The second issue will be RPLACx operations, including NREVERSE, CONC and the
+rather small number of others. Putting software write barriers into them
+should be a reasdonably modest job, and the cost implications are liable to
+be small. Cases where the code goes "a = nreverse a; ... ; a = nreverse a;"
+putting the list back soon after it has been corrupted would not need a
+write barrier if there was no chance of garbage collection within the "..."
+segment, so spotting that idiom will be a good idea. And reviewing cases
+where lists are built up backwards and then destructively reversed may not
+need a barrier in the special case that ALL the new list is in a "recent"
+not an "ancient" region of memory. Some thought will be required there.
+Note that NREVERSE updates many items, but the idiom that builds
+a fresh list "backwards" and then uses NREVERSE to rearrange it will not need
+to trigger a write barrier in the case that the earliest new item in the
+list is still not in the "old" heap. So maybe that sort of code can be
+mapped onto a version that checks for that situation and does a REVERSE if
+it applied and an NREVERSE otherwise.
+Writing into vectors and hash tables is another issue. Each such write needs
+a write barrier, but again it will be easy to see where to put those in. Also
+I think it may make sense for the write barrier for updating a vector to
+compare to see if the new write is into the vector that most recently triggered
+a write barrier - on the expectation that vector writes will often happen in
+clumps all to just one vector, and that the case of alternating updates
+to several distinct vectors will be much less common. Maybe.
+
+Now how shall I implement the write barrier? Well today's idea is to use the
+thread safe lock-avoiding scheme using a std::atomic pointer so that each
+individual write appends the exact address of the altered object to a
+table. Maybe that should be a megabyte or so in size? There is a real prospect
+of multiple updates to some objects. When the table becomes full then
+until it is tidy again no thread may add to it - this is acheived by virtue
+of its fringe being above its limit, so that is not reset until it is clear.
+All values in it are consolided into a hash table so that duplicated are
+got rid of. In good cases this hash table will be a lot smaller than the
+whole vector. When the hash table becomes too full a garbage collection must
+be triggered. One probably wants to tune table size such that this happens
+about when garbage collection was needed anyway, or so that most garbage
+collections are trigerred by other events (and they clear the vector and
+hash table). This makes the overheap on a RPLACx or PUTV operation something
+like
+    vecloc = fringe.fetch_add(sizeof(LispObject));
+    if (fringe.load() >= limit.load())
+        vecloc = move_vector_to_hash_table();
+    *vecloc = object_to_be_updated;
+    qcar(object_to_be_updated) = ...
+
+
+At present while I have looked into concurrency between a collector and the
+main mutator it seems to me that if one uses a copying collector that the
+Lisp EQ test runs into severe trouble. I may continue to think about that,
+but for now a stop-all-threads scheme is all I can feel happy about, but
+my hope is that if it is generational then each disruption will be short.
+A big issue is that of synchronising all the threads to stop them. It looks
+at present as if the only safe and portable scheme involves each thread
+polling.

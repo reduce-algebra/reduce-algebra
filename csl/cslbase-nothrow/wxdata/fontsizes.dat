@@ -1,0 +1,12 @@
+% The purpose of this script is so that trace output from it
+% shows the offset that wxWidgets will use from its "top left of the
+% bounding box" to the reference line of the character.
+
+deffont 0 cmuntt 10000;
+deffont 1 odokai 10000;
+deffont 2 General 10000;
+deffont 3 Bold 10000;
+deffont 4 Italic 10000;
+deffont 5 BoldItalic 10000;
+deffont 6 Math 10000;
+

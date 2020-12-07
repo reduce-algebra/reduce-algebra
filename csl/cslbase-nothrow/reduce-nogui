@@ -1,0 +1,51 @@
+#! /bin/sh
+here=`dirname "$0"`
+here=`cd "$here" ; pwd`
+
+case $* in
+*--cygwin*)
+  case `uname -m` in
+  *x86_64*)
+    $here/cygwin64-reduce.exe $*
+    ;;
+  *)
+    $here/cygwin32-reduce.exe $*
+    ;;
+  esac
+  ;;
+*)
+  if $here/not-under-cygwin.exe $*
+  then
+    $here/reduce.exe $*
+  else
+    case `uname -m` in
+    *x86_64*)
+      $here/cygwin64-isatty.exe $*
+      case $? in
+      0)
+        $here/reduce.exe --gui $*
+        ;;
+      1)
+        $here/cygwin64-reduce.exe $*
+        ;;
+      *)
+        $here/reduce.exe $*
+        ;;
+      esac
+      ;;
+    *i686*)
+      $here/cygwin-isatty.exe $*
+      case $? in
+      0)
+        $here/reduce.exe --gui $*
+        ;;
+      1)
+        $here/cygwin-reduce.exe $*
+        ;;
+      *)
+        $here/reduce.exe $*
+        ;;
+      esac
+    esac
+  fi
+esac
