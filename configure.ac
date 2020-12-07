@@ -527,6 +527,27 @@ AC_ARG_ENABLE(static,
   [],
   [enable_static="no"])
 
+AC_ARG_WITH(throw,
+  AC_HELP_STRING([--without-throw],
+                 [Avoid C++ catch & throw. Experimental. (CSL only)]),
+  [],
+  [with_throw="yes"])
+
+if test "x$with_throw" = "xno"
+then
+  CSLBASE=cslbase-nothrow
+  GENERATED_C=generated-c-nothrow
+else
+  CSLBASE=cslbase
+  GENERATED_C=generated-c
+fi
+
+AC_ARG_ENABLE(static,
+  AC_HELP_STRING([--enable-static],
+                 [link it all statically (CSL only)]),
+  [],
+  [enable_static="no"])
+
 ###########################################################################
 
 # Now I want to know if the current directory is the same as $srcdir. At
@@ -651,10 +672,10 @@ AC_MSG_NOTICE([in csl_inplace_cygwin_build wwl=$with_windows_layout])
     build=`eval "$SHELL $abssrcdir/scripts/findhost.sh intel-pc-windows $ac_configure_args --with-cygwin"`
     AC_MSG_NOTICE([target=$target => build=$build/$cygver])
     mkdir -p "$abssrcdir/cslbuild/$build/$cygver"
-    cp "$abssrcdir/csl/cslbase/Makefile.windows" "$abssrcdir/cslbuild/$build/Makefile"
-    cp "$abssrcdir/csl/cslbase/stub2020.c" "$abssrcdir/cslbuild/$build/stub2020.c"
-    cp "$abssrcdir/csl/cslbase/make-cygwin-symlink.c" "$abssrcdir/cslbuild/$build/make-cygwin-symlink.c"
-    cp "$abssrcdir/csl/cslbase/redpsl.sh" "$abssrcdir/cslbuild/$build/redpsl"
+    cp "$abssrcdir/csl/$CSLBASE/Makefile.windows" "$abssrcdir/cslbuild/$build/Makefile"
+    cp "$abssrcdir/csl/$CSLBASE/stub2020.c" "$abssrcdir/cslbuild/$build/stub2020.c"
+    cp "$abssrcdir/csl/$CSLBASE/make-cygwin-symlink.c" "$abssrcdir/cslbuild/$build/make-cygwin-symlink.c"
+    cp "$abssrcdir/csl/$CSLBASE/redpsl.sh" "$abssrcdir/cslbuild/$build/redpsl"
     cd "$abssrcdir/cslbuild/$build/$cygver"
   elif test "x$with_mac_universal" = "xyes" &&
        test "x$with_mac_x86_64" = "xno" &&
@@ -664,7 +685,7 @@ AC_MSG_NOTICE([in csl_inplace_cygwin_build wwl=$with_windows_layout])
     AC_MSG_NOTICE([target=$target => build=$build])
     mkdir -p "$abssrcdir/cslbuild/$build/x86_64"
     mkdir -p "$abssrcdir/cslbuild/$build/arm64"
-    cp "$abssrcdir/csl/cslbase/Makefile.mac-universal" "$abssrcdir/cslbuild/$build/Makefile"
+    cp "$abssrcdir/csl/$CSLBASE/Makefile.mac-universal" "$abssrcdir/cslbuild/$build/Makefile"
     cd "$abssrcdir/cslbuild/$build"
     config_both="yes"
   else
@@ -728,7 +749,7 @@ csl_inplace_nativewin_build ()
     build=`eval "$SHELL $abssrcdir/scripts/findhost.sh intel-pc-windows $ac_configure_args"`
     AC_MSG_NOTICE([About to configure using $host in $build/$winver])
     mkdir -p "$abssrcdir/cslbuild/$build/$winver"
-    cp "$abssrcdir/csl/cslbase/Makefile.windows" "$abssrcdir/cslbuild/$build/Makefile"
+    cp "$abssrcdir/csl/$CSLBASE/Makefile.windows" "$abssrcdir/cslbuild/$build/Makefile"
     cd "$abssrcdir/cslbuild/$build/$winver"
   else
     build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $target $ac_configure_args"`
@@ -787,12 +808,12 @@ csl_inplace_build ()
 # When I configure I will install a default "profile.dat" if there is
 # not one in place already, but the user can always regenerate a newer
 # local version of the profile.
-  if test ! -d "$abssrcdir/cslbuild/generated-c" ||
-     test ! -f "$abssrcdir/cslbuild/generated-c/profile.dat"
+  if test ! -d "$abssrcdir/cslbuild/$GENERATED_C" ||
+     test ! -f "$abssrcdir/cslbuild/$GENERATED_C/profile.dat"
   then
-    rm -rf "$abssrcdir/cslbuild/generated-c"
-    mkdir -p "$abssrcdir/cslbuild/generated-c"
-    cp -r "$abssrcdir/csl/generated-c" "$abssrcdir/cslbuild"
+    rm -rf "$abssrcdir/cslbuild/$GENERATED_C"
+    mkdir -p "$abssrcdir/cslbuild/$GENERATED_C"
+    cp -r "$abssrcdir/csl/$GENERATED_C" "$abssrcdir/cslbuild"
   fi
 # Now I am configuring for CSL and am doing so from the top directory.
   AC_MSG_NOTICE([CSL in-place build for $build])
@@ -1067,7 +1088,7 @@ then
 # However if I am building for raw cygwin I find that I have pain if I
 # specify --host specifically, so in that case I will not!
     pass_build="--with-build=\"$build\""
-    doconfig="$SHELL $abssrcdir/csl/cslbase/configure -C \
+    doconfig="$SHELL $abssrcdir/csl/$CSLBASE/configure -C \
         $ac_configure_args \
         CC=\"$CC\" CXX=\"$CXX\" \
         CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
@@ -1076,7 +1097,7 @@ then
   elif test "x$with_fox" != "xno"
   then
     pass_build="--with-build=\"$build\""
-    doconfig="$SHELL $abssrcdir/csl/cslbase/configure -C \
+    doconfig="$SHELL $abssrcdir/csl/$CSLBASE/configure -C \
         $ac_configure_args \
         CC=\"$CC\" CXX=\"$CXX\" \
         CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
@@ -1085,7 +1106,7 @@ then
   else
 # This final version will be without any GUI.
     pass_build="--with-build=\"$build\""
-    doconfig="$SHELL $abssrcdir/csl/cslbase/configure \
+    doconfig="$SHELL $abssrcdir/csl/$CSLBASE/configure \
         -C \
         $ac_configure_args \
         CC=\"$CC\" CXX=\"$CXX\" \

@@ -122,6 +122,7 @@ debug=
 test=
 arithlib=
 conservative=
+nothrow=
 m32=
 m64=
 nogui=
@@ -157,8 +158,14 @@ do
   --enable-conservative=no | --disable-conservative)
     conservative=
     ;;
+  --with-throw=no | --without-throw)
+    nothrow=-nothrow
+    ;;
   --enable-conservative*)
     conservative=-conservative
+    ;;
+  --with-throw=no | --without-throw)
+    nothrow=nothrow
     ;;
   --with-mingw64=no | --without-mingw64)
     host=$original
@@ -216,6 +223,6 @@ do
   esac
 done
 
-echo $host$m32$m64$nogui$fox$wx$test$arithlib$conservative$debug
+echo $host$m32$m64$nogui$fox$wx$test$arithlib$conservative$nothrow$debug
 
 exit 0

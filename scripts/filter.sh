@@ -19,6 +19,7 @@ do
   *--with-lto* | \
   *--with-m32* | \
   *--with-m64* | \
+  *--with*-throw* | \
   *--with*-gui* | \
   *--with*-xft* | \
   *--with*-xim* | \
