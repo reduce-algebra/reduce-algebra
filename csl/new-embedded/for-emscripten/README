@@ -21,7 +21,18 @@ in fact terribly onerous) have to be performed manually. The Makefile does
 not guarantee to include dependencies to make build updates totally
 automatic. Play with this if you are a competent programmer willing to
 experiment! And especially if you have a real need for Javascript
-compatibility.
+compatibility. To try a simple example of reduce in the browser:
+
+1. run makeall.sh to generate an image (has to be called reduce.img)
+2. read instructions in Makefile, and do `make reduce-web`
+3. recommended: start a local server in for-emscripten
+   
+        python3 -m http.server
+   
+    and navigate to [0.0.0.0:8000/toplevel.html](0.0.0.0:8000/toplevel.html)
+4. make sure your browser's development tools are open (usually ctrl+shift+i)
+5. enter reduce commands as normal in the text box, and press "submit" to execute
+6. results should appear in the javascript console
 
 The scripts test1.sh and testall.sh are hacked versions of the correspodning
 ones from the main system and can be use to run Reduce test scripts. I have

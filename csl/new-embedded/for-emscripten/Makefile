@@ -15,14 +15,17 @@
 
 # NOTE that my going "make USERFLAGS="-O0 -g" it is possible to override this
 # optimization level and get a debugging build.
+# to debug with sourcemaps, -g4 and -g must be used, eg USERFLAGS="-O0 -g -g4"
+
 OPT=-Oz
 
 CC=em++
 
 EMFLAGS:=$(shell source ./emflags.sh && echo $$EMFLAGS)
+# EMFLAGS+= -s EXPORTED_FUNCTIONS="['_main', '_insert_buffer']"
 
-ASYNC_FUNCTIONS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$cfuns)
-ASYNC_IMPORTS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$jsimports)
+#ASYNC_FUNCTIONS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$cfuns)
+#ASYNC_IMPORTS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$jsimports)
 
 CPPFLAGS=$(EMFLAGS) -std=gnu++17 $(OPT) -I. -I../include -Iinclude -I$(S) \
     -DHAVE_CONFIG_H=1 -DHAVE_CRLIBM=1 -DEMBEDDED=1 $(XCFLAGS) $(USERFLAGS)
@@ -31,7 +34,7 @@ CXXFLAGS=$(EMFLAGS)
 LDFLAGS=$(EMFLAGS) -Llib -lcrlibm
 LIBS=-lcrlibm
 
-JSOPTS= -g4 --source-map-base http://localhost:8000/new-embedded/for-emscripten/
+JSOPTS= --source-map-base http://localhost:8000/ $(USERFLAGS)
 
 JS_SRC=js
 
@@ -48,7 +51,8 @@ NODEOPTS= -s NODERAWFS=1 \
 #WEBOPTS= --preload-file reduce.img \
 #	--shell-file $(JS_SRC)/shell_emterm.html \
 #	-s ENVIRONMENT=web
-WEBOPTS= --pre-js $(JS_SRC)/init.js \
+PRE_JS=$(JS_SRC)/init.js
+WEBOPTS= --pre-js $(PRE_JS) \
 	-s ENVIRONMENT=worker \
 	-s BUILD_AS_WORKER=1 \
 	--js-library $(JS_SRC)/io.js
@@ -124,7 +128,7 @@ bootstrapreduce:	bootstrapreduce.js
 
 # don't use NODEOPTS here, because we want a virtual FS
 .cpp.ooo:
-	$(CC) $(CPPFLAGS) $(ASYNCIFY_OPTS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) -DPROCEDURAL_WASM_XX=1 $(ASYNCIFY_OPTS) -c -o $@ $<
 
 #csl.ooo: csl.cpp
 #	$(CC) $(CPPFLAGS) $(ASYNCIFY_OPTS) -c -o $@ $<
@@ -179,7 +183,7 @@ reduce.js:		allocate.oo arith01.oo arith02.oo arith03.oo arith04.oo arith05.oo \
 
 # The web-based (non-node) version
 
-reduce.web.js:	allocate.ooo arith01.ooo arith02.ooo arith03.ooo arith04.ooo arith05.ooo \
+reduce.web.wasm:	allocate.ooo arith01.ooo arith02.ooo arith03.ooo arith04.ooo arith05.ooo \
 		arith06.ooo arith07.ooo arith08.ooo arith09.ooo arith10.ooo \
 		arith11.ooo arith12.ooo arith13.ooo arith14.ooo bytes.ooo char.ooo \
 		csl.ooo cslmpi.ooo cslread.ooo eval1.ooo eval2.ooo eval3.ooo \
@@ -205,7 +209,9 @@ reduce.web.js:	allocate.ooo arith01.ooo arith02.ooo arith03.ooo arith04.ooo arit
 		u31.ooo u32.ooo u33.ooo u34.ooo u35.ooo u36.ooo u37.ooo u38.ooo u39.ooo u40.ooo \
 		u41.ooo u42.ooo u43.ooo u44.ooo u45.ooo u46.ooo u47.ooo u48.ooo u49.ooo u50.ooo \
 		u51.ooo u52.ooo u53.ooo u54.ooo u55.ooo u56.ooo u57.ooo u58.ooo u59.ooo u60.ooo \
-		$(LDFLAGS) $(LIBS) $(JSOPTS) $(ASYNCIFY_OPTS) $(WEBOPTS) -o reduce.web.js
+		$(LDFLAGS) $(LIBS) $(JSOPTS) $(ASYNCIFY_OPTS) $(WEBOPTS) \
+		-s EXPORTED_FUNCTIONS="['_main', '_insert_buffer']" \
+		-o reduce.web.js
 
 
 .PHONY:	reduce
@@ -214,7 +220,7 @@ reduce:	reduce.js
 
 
 .PHONY: reduce-web
-reduce-web: reduce.web.js
+reduce-web: reduce.web.wasm
 	echo Building reduce worker
 
 reduce.img:	reduce.js
@@ -223,7 +229,7 @@ reduce.img:	reduce.js
 		-D@srcdir=$(S) -D@reduce=$(R) -o reduce.img -L reduce_image.log
 
 # same as above, because we just want the image, and that is built by the node version
-reduce.img.worker:	reduce.img reduce.web.js
+reduce.img.worker:	reduce.img reduce-web
 #export reduce=$(R) && $(NODE) reduce.js -z -Dforce_c_code -Dno_init_file $(S)/buildreduce.lsp \
 #	-D@srcdir=$(S) -D@reduce=$(R) -o reduce.img -L reduce_image.log
 

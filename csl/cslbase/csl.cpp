@@ -136,6 +136,13 @@
 #include <unistd.h>
 #endif
 
+
+#ifdef PROCEDURAL_WASM_XX
+extern "C" {
+    void insert_buffer(char *, int);
+}
+#endif
+
 //
 // These flags are used to ensure that protected symbols don't get
 // overwritten by default, and that the system keeps quiet about it.
@@ -143,6 +150,9 @@
 
 bool symbol_protect_flag = true;
 bool warn_about_protected_symbols = false;
+
+// used in char_from_string
+static const char *data_string = ";";
 
 #ifdef USE_MPI
 int32_t mpi_rank,mpi_size;
@@ -3290,6 +3300,46 @@ public:
 };
 #endif
 
+#ifdef PROCEDURAL_WASM_XX
+//static const char* expr = ";";
+static int buff_ready = 0;
+static char *buffer = nullptr;
+static int buff_size = 0;
+
+void insert_buffer(char *buf, int size) {
+    //std::printf("setting buffer...\n");
+    buffer = buf;
+    buff_size = size;
+    buff_ready = 1;
+}
+
+void mainloop() {
+    if (buff_ready) {
+        std::printf("buffer is ready...\n");
+        char query[buff_size+1];
+        std::strncpy(query, buffer, buff_size);
+        do {
+            PROC_process_one_reduce_statement(query);
+            std::strncpy(query, data_string, buff_size);
+        } while (*data_string != 0);
+        std::printf("freeing buffer...\n");
+        free(buffer);
+        buff_ready = 0;
+        buff_size = 0;
+        std::printf("setting buff_ready=0...\n");
+        // let's hope we don't get preempted!
+        //emscripten_cancel_main_loop();
+        std::printf("waiting...\n");
+    }
+    return;
+}
+#endif
+
+
+#ifdef PROCEDURAL_WASM_SETUP
+#include PROCEDURAL_WASM_SETUP
+#endif
+
 static int submain(int argc, const char *argv[])
 {   volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
@@ -3314,7 +3364,16 @@ static int submain(int argc, const char *argv[])
     std::strcpy(ibuff, "(print '(a b c d))");
     execute_lisp_function("oem-supervisor", iget, iput);
     std::printf("Buffered output is <%s>\n", obuff);
-#else
+#elif PROCEDURAL_WASM_XX
+    // set up reduce
+    PROC_prepare_for_top_level_loop();
+    PROC_process_one_reduce_statement("algebraic;");
+#ifdef PROCEDURAL_WASM_SETUP
+    // the header you include *must* contain void setup_web_reduce(void)
+    setup_web_reduce();
+#endif
+    emscripten_set_main_loop(mainloop, 60, 0);
+#else // end PROCEDURAL_WASM_XX
     set_keyboard_callbacks(async_interrupt);
     cslaction();
 #endif
@@ -3407,8 +3466,6 @@ int PROC_prepare_for_top_level_loop()
              return 1);  // Failed one way or another
     return 0;
 }
-
-static const char *data_string = ";";
 
 int char_from_string()
 {   int c = *data_string;

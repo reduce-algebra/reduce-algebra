@@ -224,12 +224,21 @@ inline double CSLpow(double x, double y)
 #include "inthash.h"
 #include "lispthrow.h"
 #include "version.h"
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
 namespace FX
 {
 }
 
 using namespace FX;
+
+#ifdef PROCEDURAL_WASM
+extern "C" {
+    void insert_buffer(char *);
+}
+#endif
 
 #endif // header_headers_h
 
