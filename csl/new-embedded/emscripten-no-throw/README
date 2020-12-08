@@ -1,0 +1,49 @@
+The "Makefile" and other files here are for use with "emscripten". That
+provides a set of tools building on clang/llvm to translate C++ code into
+Javascript and webassembly.
+
+You will see that the adjustments even to the build scripts (in the
+simplified "embedded" form) are really very modest: emscripten provides
+a C++ compiler "em++" which very nearly "just builds Reduce" without
+fuss, such that "node" can the be used to run the generated Javascript
+stuff.
+
+As set up here at present this JUST provides a command-line version of
+Reduce for running using "node", but of course people keen on Javascript
+may wish to look further!
+
+Setting up the version here was done by Arthur Norman and Avery Laird
+in October 2020.
+
+This is not really intended for use by casual end users. To build it one
+must have emscripten installed and the various build steps (which are not
+in fact terribly onerous) have to be performed manually. The Makefile does
+not guarantee to include dependencies to make build updates totally
+automatic. Play with this if you are a competent programmer willing to
+experiment! And especially if you have a real need for Javascript
+compatibility. To try a simple example of reduce in the browser:
+
+1. run makeall.sh to generate an image (has to be called reduce.img)
+2. read instructions in Makefile, and do `make reduce-web`
+3. recommended: start a local server in for-emscripten
+   
+        python3 -m http.server
+   
+    and navigate to [0.0.0.0:8000/toplevel.html](0.0.0.0:8000/toplevel.html)
+4. make sure your browser's development tools are open (usually ctrl+shift+i)
+5. enter reduce commands as normal in the text box, and press "submit" to execute
+6. results should appear in the javascript console
+
+The scripts test1.sh and testall.sh are hacked versions of the correspodning
+ones from the main system and can be use to run Reduce test scripts. I have
+run all the tests on both a Linux (Ubuntu-x86_64) and Windows 10 systems and
+in each case almost all the tests run correctly, with the most common
+discrepency being where floating point "least significant bit" discrepancies
+arise. When these scripts are run they leave logs and timing information
+in a directory jscsl-times and these can be compared with the corresponding
+ones from scripts/testall.sh, csl-times and psl-times from the "regular"
+versions of Reduce. I am not going to comment, and I note that at this stage
+there has been no effort to tune or put in special optimisation for the
+Javascript version.
+
+                                                          Arthur Norman

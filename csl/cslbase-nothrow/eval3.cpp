@@ -189,33 +189,25 @@ static LispObject prog_fn(LispObject iargs, LispObject ienv)
 LispObject progn_fn(LispObject args, LispObject env)
 {   LispObject f;
     STACK_SANITY;
-//printf("in progn line %d, stack = %p\n", __LINE__, stack);
     if (!consp(args)) return onevalue(nil);
     stackcheck(args, env);
-//printf("in progn line %d, stack = %p\n", __LINE__, stack);
     f = nil;
     for (;;)
     {   f = car(args);
-//printf("in progn line %d, stack = %p\n", __LINE__, stack);
         args = cdr(args);
         if (!consp(args)) break;
         push(args, env, f);
-//printf("in progn line %d, stack = %p\n", __LINE__, stack);
         on_backtrace(
             static_cast<void>(eval(f, env)),
             // Action for backtrace here...
-//printf("in progn line %d, stack = %p\n", __LINE__, stack);
             pop(f, env, args);
-//printf("in progn line %d, stack = %p\n", __LINE__, stack);
             if (SHOW_FNAME)
             {   err_printf("\nEvaluating: ");
                 loop_print_error(f);
             },
             return nil);
         pop(f, env, args);
-//printf("in progn line %d, stack = %p\n", __LINE__, stack);
     }
-//printf("in progn line %d, stack = %p\n", __LINE__, stack);
     return eval(f, env);    // tail call on last item in the progn
 }
 
@@ -461,6 +453,7 @@ static LispObject setq_fn(LispObject args, LispObject env)
         if ((qheader(current_function) & SYM_TRACESET) != 0)
         {   real_push(args, env, var, val);
             freshline_trace();
+// I want loop_print_trace to avoid exiting with errors!
             loop_print_trace(current_function);
             trace_printf(":  ");
             loop_print_trace(stack[-1]);
@@ -700,24 +693,21 @@ static LispObject unless_fn(LispObject args, LispObject env)
 
 static LispObject unwind_protect_fn(LispObject args, LispObject env)
 {   LispObject r = nil, rl = nil;
-    return aerror("unwind-protect not updated yet"); // @@@@
-#pragma message ("unwind_protect_fn")
-#if 0
     STACK_SANITY;
     int nargs = 0, i;
     if (!consp(args)) return onevalue(nil);
     stackcheck(args, env);
     push(args, env);
     r = car(args);
-    try
     {   START_TRY_BLOCK;
         r = eval(r, env);
     }
-    catch (LispException &e)
-    {   pop(env, args);
+    if (exceptionPending())
+    {   int save = exceptionFlag;
+        exceptionFlag = LispNormal;
+        pop(env, args);
         LispObject xt, xv;
         int xc, xr;
-//
 // Here I am in the process of exiting because of a throw, return-from,
 // go or error.  I need to save all the internal stuff that tells me
 // what is going on so I can restore it after the clean-up forms have been
@@ -727,7 +717,6 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
 //  (c) exit_count     number of values (throw, return-from)
 //  (d) mv2,...        as indicated by exit_count
 //  (e) exit_reason    what it says.
-//
         xt = qvalue(trap_time);
         setvalue(trap_time, nil); // No timeouts in recovery code
         push(xt);
@@ -739,12 +728,18 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
         for (i=xc; i>=2; i--)
             rl = cons_no_gc((&mv_2)[i-2], rl);
         rl = cons_gc_test(rl);
+// I am going to take the view that if there is a failure during execution
+// of the cleanup forms then full cleanup will not be complete, and this
+// can include the case of "cons" failing right before anything else.
+        if (exceptionPending()) return nil;
         push(rl);
+// Now I will obey the cleanup 
         while (is_cons(args = cdr(args)) && args!=nil)
         {   LispObject w = car(args);
             push(args, env);
             static_cast<void>(eval(w, env));
             pop(env, args);
+            if (exceptionPending()) return nil;
         }
         pop(rl, xt, xv);
         for (i = 2; i<=xc; i++)
@@ -757,7 +752,8 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
         exit_reason = xr;
         pop(xt);
         setvalue(trap_time, xt);
-        throw;                   // reinstate the exception
+        exceptionFlag = save;
+        return nil;                   // reinstate the exception
     }
     pop(env, args);
 //
@@ -769,12 +765,14 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
     for (i=nargs; i>=2; i--)
         rl = cons_no_gc((&mv_2)[i-2], rl);
     rl = cons_gc_test(rl);
+    if (exceptionPending()) return nil;
     real_push(rl);
     LispObject &xenv = stack[-1];
     LispObject &xargs = stack[-2];
     while (is_cons(xargs = cdr(xargs)) && xargs!=nil)
     {   LispObject w = car(xargs);
         static_cast<void>(eval(w, xenv));
+        if (exceptionPending()) return nil;
     }
     real_pop(rl);
     real_popv(2);
@@ -783,7 +781,6 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
         rl = cdr(rl);
     }
     return nvalues(r, nargs);
-#endif // 0
 }
 
 //
@@ -1092,34 +1089,25 @@ static LispObject resource_limit7(LispObject env,
                                   LispObject Csk,
                                   LispObject Lsk)
 {
-//
 // This is being extended to make it possible to limit the C and Lisp stack
 // usage. At present the controls for that are not in place!
-//
-    return aerror("resource-limit not done yet");
-#if 0
     STACK_SANITY;
     LispObject r;
     int64_t lltime, llspace, llio, llerrors;
     RAIIresource_variables RAIIresource_variables_object;
     int64_t r0=0, r1=0, r2=0, r3=0;
     errorset_msg = nullptr;
-//
 // Here I need to do something that actually sets up the limits!
 // I only allow limits that are up to 31-bits...
-//
     lltime = thirty_two_bits(ltime); // .. or zero if not an integer
     llspace = thirty_two_bits(lspace);
     llio = thirty_two_bits(lio);
     llerrors = thirty_two_bits(lerrors);
-//
 // I can get thrown back here in four important ways:
 // (1) The calculation succeeds.
 // (2) It fails with a regular Lisp error.
 // (3) It fails because it raises a C-level signal.
 // (4) It fails by raising a resource-exhausted complaint.
-//
-    try
     {   START_SETJMP_BLOCK;
         time_base   = time_now;
         space_base  = space_now;
@@ -1168,6 +1156,8 @@ static LispObject resource_limit7(LispObject env,
             if (errors_limit >= 0 && errors_limit < w) w = errors_limit;
             errors_limit = w;
         }
+// All the above mess was just establishing the limits to be applied!
+// So now I can do the work that has to be constrained.
         r = eval(form, nil);
         r0 = time_now - time_base;
         r1 = (space_now - space_base)/
@@ -1175,29 +1165,33 @@ static LispObject resource_limit7(LispObject env,
         r2 = io_now - io_base;
         r3 = errors_now - errors_base;
     }
-    catch (LispResource &e)
-    {   form = list4(fixnum_of_int(r0),
+endOfTryBlock:
+    if (exceptionFlag == LispResource)
+    {   exceptionFlag = LispNormal;
+        form = list4(fixnum_of_int(r0),
                      fixnum_of_int(r1),
                      fixnum_of_int(r2),
                      fixnum_of_int(r3));
+        if (exceptionPending()) return nil;
         setvalue(resources, form);
 // Here I had a resource limit trap
         return onevalue(nil);
     }
-//
+// The guarded code may have exited with some other exception!
+    if (exceptionPending()) return nil; 
 // I would like the result to show what resources had been used, but for now
 // I just use ncons to wrap the resuult up.
-//
     r = ncons(r);
+    if (exceptionPending()) return nil; 
     push(r);
     form = list4(fixnum_of_int(r0),
                  fixnum_of_int(r1),
                  fixnum_of_int(r2),
                  fixnum_of_int(r3));
     pop(r);
+    if (exceptionPending()) return nil; 
     setvalue(resources, form);
     return onevalue(r);
-#endif // 0
 }
 
 LispObject Lresource_limit_4up(LispObject env, LispObject form,
@@ -1257,7 +1251,7 @@ static LispObject when_fn(LispObject args, LispObject env)
     w = car(args);
     w = eval(w, env);
     pop(env, args);
-    if (w == nil) return onevalue(nil);
+    if (w == nil || exceptionPending()) return onevalue(nil);
     else return progn_fn(cdr(args), env);
 }
 

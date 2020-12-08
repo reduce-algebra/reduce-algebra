@@ -1209,6 +1209,8 @@ symbolic procedure c!:print_exit_condition1(why, where_to, next);
           c!:printf(");\n");
 !#if common!-lisp!-mode
           if g then c!:printf "    ";
+          c!:printf("    if (exceptionPending()) return nil;\n");
+          if g then c!:printf "    ";
           c!:printf("    return onevalue(retVal); }\n");
 !#endif
           if g then c!:printf "    }\n" >>
@@ -1368,9 +1370,13 @@ flag('(fastflag), 'c!:uses_nil);
 
 symbolic procedure c!:pcar(op, r1, r2, r3);
   begin
-    if not !*unsafecar then
-        c!:printf("    if (!car_legal(%v)) %v = carerror(%v); else\n",
-                  r3, r1, r3);
+    if not !*unsafecar then <<
+        c!:printf("    if (!car_legal(%v))\n", r3);
+        c!:printf("    {   %v = carerror(%v);\n", r1, r3);
+        c!:printf("        if (exceptionPending()) ");
+        c!:pgoto(c!:find_error_label(list('car, r3), r2, depth), depth);
+        c!:printf("    }\n");
+        c!:printf("    else\n") >>
     c!:printf("    %v = car(%v);\n", r1, r3)
   end;
 
@@ -1379,8 +1385,13 @@ put('car, 'c!:opcode_printer, function c!:pcar);
 symbolic procedure c!:pcdr(op, r1, r2, r3);
   begin
     if not !*unsafecar then
-        c!:printf("    if (!car_legal(%v)) %v = cdrerror(%v); else\n",
-                  r3, r1, r3);
+    if not !*unsafecar then <<
+        c!:printf("    if (!car_legal(%v))\n", r3);
+        c!:printf("    {   %v = cdrerror(%v);\n", r1, r3);
+        c!:printf("        if (exceptionPending()) ");
+        c!:pgoto(c!:find_error_label(list('cdr, r3), r2, depth), depth);
+        c!:printf("    }\n");
+        c!:printf("    else\n") >>
     c!:printf("    %v = cdr(%v);\n", r1, r3)
   end;
 
@@ -1615,7 +1626,7 @@ symbolic procedure c!:pcall(op, r1, r2, r3);
        c!:printf("));\n") >>
 !#if 0
 % The qsum package redefines simpexpt while executing a function by that
-% name in a way that might be interacting really basly with this!
+% name in a way that might be interacting really badly with this!
     else if car r3 = c!:current_procedure then <<
        c!:printf("    %v = %s(basic_elt(env, 0)", r1, c!:current_c_name);
        for each a in r2 do c!:printf(", %v", a);
@@ -1644,7 +1655,13 @@ symbolic procedure c!:pcall(op, r1, r2, r3);
        else c!:printf("    %v = (*qfn4up(fn))(fn", r1);
        for each a in r2 do c!:printf(", %v", a);
        c!:printf(");\n    }\n") end;
-    if boolfn then c!:printf("    %v = %v ? lisp_true : nil;\n", r1, r1);
+    if not flagp(car r3, 'c!:no_gc) then <<
+       if null cadr r3 and depth = 0 then
+           c!:printf("    if (exceptionPending()) return nil;\n")
+       else <<
+           c!:printf("    if (exceptionPending()) ");
+           c!:pgoto(c!:find_error_label(nil, cadr r3, depth) , depth) >> >>;
+      if boolfn then c!:printf("    %v = %v ? lisp_true : nil;\n", r1, r1);
   end;
 
 put('call, 'c!:opcode_printer, function c!:pcall);
@@ -1981,6 +1998,19 @@ symbolic procedure c!:remove_nops c!:all_blocks;
                 car r . for each v in cdr r collect get(v, 'c!:chosen))
     end;
 
+fluid '(c!:error_labels);
+
+symbolic procedure c!:find_error_label(why, env, depth);
+  begin
+    scalar w, z;
+    z := list(why, env, depth);
+    w := assoc!*!*(z, c!:error_labels);
+    if null w then <<
+       w := z . c!:my_gensym();
+       c!:error_labels := w . c!:error_labels >>;
+    return cdr w
+  end;
+
 symbolic procedure c!:assign(u, v, c);
   if flagp(u, 'fluid) then list('strglob, v, u, c!:find_literal u) . c
   else list('movr, u, nil, v) . c;
@@ -2129,7 +2159,7 @@ symbolic procedure c!:flatten b;
 symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
                                           env, argch, args, varargs);
   begin
-    scalar w, n, locs, stacks;
+    scalar w, n, locs, stacks, c!:error_labels;
     printc "#if 0 // Start of trace output";
     c!:all_blocks := c!:flatten reverse c!:all_blocks;
 %
@@ -2155,6 +2185,7 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
       princ "reloadenv = "; print reloadenv;
       showblocklist c!:all_blocks >>;
     c!:build_clash_matrix c!:all_blocks;
+    if c!:error_labels and env then reloadenv := t;
     if !*noisy then <<
       princ "reloadenv = "; print reloadenv >>;
 % As a special cases the variables that arguments were passed in must all
@@ -2229,6 +2260,7 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
        c!:pushpop('push, args);
        c!:printf "        env = reclaim(env, \qstack\q, GC_STACK, 0);\n";
        c!:pushpop('pop, reverse args);
+       c!:printf("    if (exceptionPending()) return nil;\n");
        c!:printf "    }\n";
        c!:printf("#endif // CONSERVATIVE\n") >>;
 % Now I will allocate space for everything that has to go on the stack.
@@ -2280,12 +2312,52 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
 % style arrangement somehow. Hmmm I can see how I might achieve that!
 %
     c!:display_flowgraph1();
+    if c!:error_labels then <<
+       c!:printf "%</* error exit handlers %<*/\n";
+       for each x in c!:error_labels do <<
+          c!:printf("%s:\n", cdr x);
+          c!:print_error_return(caar x, cadar x, caddar x) >> >>;
 % I had a "{" just after the header line of the function...
     c!:printf("}\n\n");
     remflag(c!:all_blocks, 'c!:visited);
   end;
 
+
+
 %
+symbolic procedure c!:print_error_return(why, env, depth);
+  begin
+    if reloadenv and env then
+       c!:printf("    env = stack[%s];\n", -reloadenv);
+    if null why then <<
+% One could imagine generating backtrace entries here...
+       for each v in env do
+          c!:printf("    qvalue(elt(env, %s)) = %v; %</* %c %<*/\n",
+                 c!:find_literal car v, get(cdr v, 'c!:chosen), car v);
+       if depth neq 0 then c!:printf("    popv(%s);\n", depth);
+       c!:printf "    return nil;\n" >>
+    else if flagp(cadr why, 'c!:live_across_call) then <<
+       c!:printf("    {   Lisp_Object res = %v;\n", cadr why);
+       for each v in env do
+          c!:printf("        qvalue(elt(env, %s)) = %v;\n",
+                 c!:find_literal car v, get(cdr v, 'c!:chosen));
+       if depth neq 0 then c!:printf("        popv(%s);\n", depth);
+       c!:printf("        return error(1, %s, res); }\n",
+          if eqcar(why, 'car) then "err_bad_car"
+          else if eqcar(why, 'cdr) then "err_bad_cdr"
+          else error(0, list(why, "unknown_error"))) >>
+    else <<
+       for each v in env do
+          c!:printf("    qvalue(elt(env, %s)) = %v;\n",
+                 c!:find_literal car v, get(cdr v, 'c!:chosen));
+       if depth neq 0 then c!:printf("    popv(%s);\n", depth);
+       c!:printf("    return error(1, %s, %v);\n",
+          (if eqcar(why, 'car) then "err_bad_car"
+           else if eqcar(why, 'cdr) then "err_bad_cdr"
+           else error(0, list(why, "unknown_error"))),
+          cadr why) >>
+  end;
+
 % Now I have a series of separable sections each of which gives a special
 % recipe that implements or optimises compilation of some specific Lisp
 % form.
