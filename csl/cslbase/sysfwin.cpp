@@ -582,7 +582,7 @@ const char *find_image_directory(int argc, const char *argv[])
         }
         i = std::strlen(bin);
         j = std::strlen(programDir);
-        if (std::strcmp(programDir+j-i, bin) == 0)
+        if (j>=i && std::strcmp(programDir+j-i, bin)==0)
         {   std::sprintf(xname, "%.*s%s/%s.img", j-i, programDir, data, pn);
         }
 
