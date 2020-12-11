@@ -320,135 +320,43 @@ positive only as long as the switch \texttt{COMPLEX} is off.
 {\REDUCE} knows that the following represent mathematical functions
 \index{Mathematical functions} that can
 take arbitrary scalar expressions as their argument(s).\\
-\textbf{Elementary Functions}\\
-\textbf{Trigonometric, hyperbolic and exponential functions:}\\
-\texttt{sin cos tan cot csc sec sinh cosh tanh coth csch sech exp}\\
-\textbf{Their inverse functions:}\\
-\texttt{asin acos atan  acot acsc asec asinh acosh atanh acoth acsch asech}
-\texttt{log ln log10 logb}\\
-where \texttt{log} or equivalently \texttt{ln} is the natural logarithm,
-\texttt{log10} is
-the logarithm to base 10,
-\texttt{logb} has two arguments of which the second is the logarithmic base.\\
-\textbf{Miscellaneous functions:}\\
-\texttt{sqrt  hypot  atan2}\\
- The function \texttt{hypot} takes two arguments \texttt{x} and \texttt{y}  and returns the value $\sqrt{x^2+y^2}$, but reduces problems with possible overflow for large  numerical arguments. \texttt{atan2} also takes two arguments \texttt{x} and \texttt{y} respectively and returns a value of $\arctan(y/x)$ in the range $(-\pi, \pi]$ taking account of the signs of its two arguments.
 \ttindex{ACOS}\ttindex{ACOSH}\ttindex{ACOT}
 \ttindex{ACOTH}\ttindex{ACSC}\ttindex{ACSCH}
 \ttindex{ASEC}\ttindex{ASECH}\ttindex{ASIN}
-\ttindex{ASINH}\ttindex{ATAN}\ttindex{ATANH}\ttindex{ATAN2}
-\ttindex{COS}\ttindex{COSH}\ttindex{COT}\ttindex{COTH}\ttindex{CSC}
+\ttindex{ASINH}\ttindex{ATAN}\ttindex{ATANH}
+\ttindex{ATAN2}\ttindex{COS}\ttindex{COSH}
+\ttindex{COT}\ttindex{COTH}\ttindex{CSC}
 \ttindex{CSCH}\ttindex{EXP}\ttindex{HYPOT}
-\ttindex{LOG}\ttindex{LN}\ttindex{LOGB}\ttindex{LOG10}
-\ttindex{SEC}\ttindex{SECH}\ttindex{SIN}\ttindex{SINH}
+\ttindex{LOG}\ttindex{LN}\ttindex{LOGB}
+\ttindex{LOG10}
+\ttindex{SEC}\ttindex{SECH}\ttindex{SIN}
+\ttindex{SINH}
 \ttindex{SQRT}\ttindex{TAN}\ttindex{TANH}
-\\
-\textbf{Special Functions}\\
-The functions in this section are either built-in or are autoloading
-functions from the package \texttt{SPECFN}.\\
-\hypertarget{operator:Chi}{}
-\hypertarget{operator:Ci}{}
-\hypertarget{operator:dilog}{}
-\hypertarget{operator:Ei}{}
-\hypertarget{operator:Erf}{}
-\hypertarget{operator:Si}{}
-\hypertarget{operator:Shi}{}
-\hypertarget{operator:Fresnel_S}{}
-\hypertarget{operator:Fresnel_C}{}
-\hypertarget{operator:beta}{}
-\hypertarget{operator:gamma}{}
-\hypertarget{operator:ibeta}{}
-\hypertarget{operator:igamma}{}
-\hypertarget{operator:polygamma}{}
-\hypertarget{operator:psi}{}
-\hypertarget{operator:Zeta}{}
-\hypertarget{operator:SphericalHarmonicY}{}
-\hypertarget{operator:SolidHarmonicY}{}
-\hypertarget{operator:BesselI}{}
-\hypertarget{operator:BesselJ}{}
-\hypertarget{operator:BesselK}{}
-\hypertarget{operator:BesselY}{}
-\hypertarget{operator:Hankel1}{}
-\hypertarget{operator:Hankel2}{}
-\hypertarget{operator:AIRY_AI}{}
-\hypertarget{operator:AIRY_AIPRIME}{}
-\hypertarget{operator:AIRY_BI}{}
-\hypertarget{operator:AIRY_BIPRIME}{}
-\hypertarget{operator:KummerM}{}
-\hypertarget{operator:KummerU}{}
-\hypertarget{operator:Lommel1}{}
-\hypertarget{operator:Lommel2}{}
-\hypertarget{operator:StruveH}{}
-\hypertarget{operator:StruveL}{}
-\hypertarget{operator:WhittakerM}{}
-\hypertarget{operator:WhittakerU}{}
-\textbf{Assorted Integral Functions:}\\
-\texttt{Erf dilog Ei Si Ci Chi Shi Fresnel\_S Fresnel\_C }\\
-\textbf{Beta and Gamma Functions:}\\
-\texttt{beta ibeta gamma igamma psi polygamma}\\
-The function \texttt{psi} is the digamma function.\\
-\textbf{Riemann Zeta and Associated Legendre functions:}\\
-\texttt{Zeta SphericalHarmonicY SolidHarmonicY}\\
-\textbf{Bessel and Related Functions:}\\
-\texttt{BesselJ BesselY BesselI BesselK Hankel1 Hankel2}\\
-\textbf{Airy Functions:}\\
-\texttt{Airy\_Ai Airy\_Aiprime Airy\_Bi Airy\_Biprime}\\
-\textbf{Kummer, Lommel, Struve and Whittaker functions:}\\
-\texttt{KummerM KummerU Lommel1 Lommel2 StruveH StruveL WhittakerM WhittakerU}\\
-\ttindex{beta}\ttindex{ibeta}\ttindex{gamma}\ttindex{igamma}
-\ttindex{polygamma}\ttindex{psi}
-\ttindex{Si}\ttindex{Shi}\ttindex{Chi}\ttindex{Ci}
-\ttindex{dilog}\ttindex{Ei}\ttindex{Erf}
-\ttindex{Fresnel\_S}\ttindex{Fresnel\_C}
 
-\hypertarget{operator:Jacobiam}{}
-\hypertarget{operator:Jacobisn}{}
-\hypertarget{operator:Jacobicn}{}
-\hypertarget{operator:Jacobidn}{}
-\hypertarget{operator:Jacobins}{}
-\hypertarget{operator:Jacobinc}{}
-\hypertarget{operator:Jacobind}{}
-\hypertarget{operator:Jacobisc}{}
-\hypertarget{operator:Jacobisd}{}
-\hypertarget{operator:Jacobics}{}
-\hypertarget{operator:Jacobicd}{}
-\hypertarget{operator:Jacobidc}{}
-\hypertarget{operator:Jacobids}{}
-\hypertarget{operator:JacobiZeta}{}
-\hypertarget{operator:JacobiE}{}
-\hypertarget{operator:EllipticK}{}
-\hypertarget{operator:EllipticE}{}
-\hypertarget{operator:EllipticF}{}
-\hypertarget{operator:EllipticTheta1}{}
-\hypertarget{operator:EllipticTheta2}{}
-\hypertarget{operator:EllipticTheta3}{}
-\hypertarget{operator:EllipticTheta4}{}
-\textbf{Jacobi Elliptic Functions:}\\
-\texttt{Jacobiam Jacobisn Jacobicn Jacobidn}\\
-and their three reciprocals \texttt{Jacobins Jacobinc Jacobind}\\
- and six quotients 
-\texttt{Jacobisc Jacobisd Jacobicd Jacobics Jacobids Jacobidc}.\\
-All are binary functions with the second argument being the modulus.\\
-\textbf{Complete and Incomplete Elliptic Integrals of the First \& Second Kinds:}\\
-\texttt{EllipticK EllipticE EllipticF  EllipticE  JacobiE}\\ 
-respectively.  The function \texttt{EllipticE} may take one or two arguments to
-denote the complete and Legendre's form of the incomplete elliptic integrals of
-the second kind respectively. The complete integral of the first kind
-\texttt{EllipticK} is unary whilst \texttt{EllipticF}, \texttt{JacobiE} and
-\texttt{JacobiZeta} are
-binary and represent the incomplete integral of the first kind, Jacobi's
-form of the incomplete elliptic integral of the second kind and Jacobi's
-Zeta function respectively.\\
-\textbf{Jacobi's Theta Functions:}\\
-\texttt{EllipticTheta1 EllipticTheta2 EllipticTheta3 EllipticTheta4}\\
-are all binary functions with the second argument being the nome.\\
-\ttindex{Jacobiam}\ttindex{Jacobisn}\ttindex{Jacobicn}\ttindex{Jacobidn}
-\ttindex{Jacobins}\ttindex{Jacobinc}\ttindex{Jacobind}\ttindex{Jacobisc}
-\ttindex{Jacobisd}\ttindex{Jacobicd}\ttindex{Jacobics}\ttindex{Jacobids}
-\ttindex{Jacobidc}\ttindex{JacobiZeta}
-\ttindex{JacobiE}\ttindex{EllipticK}\ttindex{EllipticE}\ttindex{EllipticF}
-\ttindex{EllipticTheta1}\ttindex{EllipticTheta2}
-\ttindex{EllipticTheta3}\ttindex{EllipticTheta4}
+\index{Elementary functions}
+\subsection{Elementary Functions}
+\textbf{Trigonometric, hyperbolic and exponential functions:}\\
+\texttt{sin cos tan cot csc sec sinh cosh tanh coth csch sech exp}
+
+\textbf{Their inverse functions:}\\
+\texttt{asin acos atan  acot acsc asec asinh acosh atanh acoth acsch asech}
+\texttt{ log ln log10 logb}\\
+where \f{log} or equivalently \f{ln} is the natural logarithm,
+\f{log10} is the logarithm to base 10,
+\f{logb} has two arguments of which the second is the logarithmic base.
+Note on the CSL GUI and other graphical interfaces the inverse trig and
+hyperbolic functions are output as $\mathrm{arcsin}$ etc..
+
+\textbf{Miscellaneous functions:}\\
+\texttt{sqrt  hypot  atan2}\\
+The function \texttt{hypot} takes two arguments $x$  and $y$ and
+returns the value $\sqrt{x^2+y^2}$ but, when the switch \sw{ROUNDING} is ON, 
+problems with rounding and possible overflow for large  numerical arguments
+are reduced.\\
+The function \f{atan2} also takes two
+arguments $x$ and $y$ respectively and returns a value of $\arctan(y/x)$ in
+the range $(-\pi, \pi]$ taking account of the signs of its two arguments.\\
+  
 
 {\REDUCE} knows various elementary identities and properties
 of these functions. For example:
@@ -458,10 +366,12 @@ of these functions. For example:
       log(e)  = 1                   e^(i*pi/2) = i
       log(1)  = 0                   e^(i*pi) = -1
       log(e^x) = x                  e^(3*i*pi/2) = -i
-      atan(0) = 0                   atan2(-1, 0)  = pi
+      sin(asin(x) = x               atan(0) = 0
+      atan2(-1, 0) = pi             atan2(0, 1) = pi/2
 \end{verbatim}
 
-The derivatives of all the elementary  functions, except \texttt{atan2} and \texttt{hypot}, are also known to the system.
+The derivatives of all the elementary  functions, except \f{atan2} and
+\f{hypot}, are also known to the system.
 Beside these identities, there are a lot of simplifications
 for elementary functions
 defined in the {\REDUCE} system as rulelists. In order to
@@ -498,7 +408,7 @@ trigonometric functions, see the TRIGSIMP\indexpackage{TRIGSIMP} package
 (chapter~\ref{TRIGSIMP}) documentation.
 
 Functions not listed above may be defined in the special functions
-package SPECFN\ttindex{SPECFN}.
+package SPECFN.
 
 The user can add further rules for the reduction of expressions involving
 these operators by using the \texttt{LET}\ttindex{LET} command.
@@ -649,9 +559,10 @@ A.~Iserles, M.J.D.~Powell Eds., Clarendon Press, Oxford, 1987).
 The exception for \texttt{acot} is necessary as elsewhere in Reduce
 $\mathop{\mathrm{acot}}(-z)$ is taken to be $\pi - \mathop{\mathrm{acot}}(z)$
 rather than $-\mathop{\mathrm{acot}}(z)$.
+\index{Branch Cuts}
 The branch cuts are:\\
 \begin{tabular}{ll}
-  $\log$:           & $ \{r   \mid r \in\mathbb{R} \land r < 0\} $\\
+  $\log$, $\mathrm{sqrt}$:     & $ \{r   \mid r \in\mathbb{R} \land r < 0\} $\\
   $\mathop{\mathrm{asin}}$, $\mathop{\mathrm{acos}}$: & $ \{r   \mid r \in\mathbb{R} \land (r > 1 \lor r < -1)\} $\\
   $\mathop{\mathrm{acsc}}$, $\mathop{\mathrm{asec}}$: & $ \{r   \mid r \in\mathbb{R} \land r \neq 0 \land r > -1 \land r < 1\} $\\
   $\mathop{\mathrm{atan}}$, $\mathop{\mathrm{acot}}$: & $ \{r*i \mid r \in\mathbb{R} \land (r > 1 \lor r < -1)\} $\\
@@ -663,61 +574,300 @@ The branch cuts are:\\
   $\mathop{\mathrm{acoth}}$:         & $ \{r   \mid r \in\mathbb{R} \land r > -1 \land r < 1\} $
 \end{tabular}
 
-\section{Bernoulli Numbers and Euler Numbers}
-\ttindex{Bernoulli}\index{Bernoulli numbers}
-\ttindex{Euler}\index{Euler numbers}
-\hypertarget{operator:BERNOULLI}{}
-\hypertarget{operator:EULER}{}
+\index{Special functions}
+\subsection{Special Functions}
+The functions in this section are either built-in or are autoloading
+functions from the package \texttt{SPECFN}. On the CSL GUI and other graphical
+interfaces many of the functions will be output in standard form; for example
+\texttt{BesselJ(nu,x)} will be output as $J_\nu(x)$ and \texttt{Jacobisn(u,k)}
+as $\mathrm{sn}(u,k)$. For most of the non-unary special functions in this
+section (\f{Lerch\_phi} is an exception), the last parameter is the 'main'
+variable and the earlier parameters are the order (or orders)
+usually rendered in the literature as subscipts and/or superscripts.
 
-The unary operator \texttt{Bernoulli} provides notation and computation for
-Bernoulli numbers.  \texttt{Bernoulli(n)} evaluates to the $n$th Bernoulli
-number; all of the odd Bernoulli numbers, except \texttt{Bernoulli(1)}, are
-zero.
+The information provided below is fairly rudimentary; more complete
+information may be found in the \hyperlink{SPECFNS}{SPECFN package}.
+\hyperlink{SPECFNTAB1}{Quick Reference Tables} are also available.
 
-The algorithms are based upon those by Herbert Wilf, presented by Sandra
-Fillebrown.%
- \cite{Fillebrown:92}.  
-If the \sw{ROUNDED} switch is off,
-the algorithms are exactly those; if it is on, some further rounding may
-be done to prevent computation of redundant digits.  Hence, these
-functions are particularly fast when used to approximate the Bernoulli
-numbers in rounded mode.
+\index{Integral functions}
+\ttindex{Si}\ttindex{Shi}\ttindex{Chi}
+\ttindex{Ci}\ttindex{Ei}\ttindex{Li}
+\ttindex{Erf} \ttindex{Fresnel\_S}\ttindex{Fresnel\_C}
+\textbf{Integral Functions:}\\
+\texttt{Ei Li Si Ci Shi Chi Erf Fresnel\_S Fresnel\_C }\\
+All these functions are unary;
+the first six are the exponential, logarithmic, sine and
+cosine integrals and their hyperbolic counterparts. \f{Erf},
+\f{Fresnel\_S} and \f{Fresnel\_C} are the error function and the Fresnel
+sine and cosine integrals respectively.
 
-Euler numbers are computed by the unary operator Euler, which
-return the nth Euler number. The computation is derived 
-directly from Pascal's triangle of binomial coefficients.
+\index{Polygamma functions}\index{Gamma function}\index{Beta function}
+\ttindex{Beta}\ttindex{ibeta}\ttindex{Gamma}
+\ttindex{igamma}\ttindex{Polygamma}\ttindex{psi}
+\textbf{Beta, Gamma and Related Functions:}\\
+\texttt{Beta ibeta Gamma igamma psi Polygamma}\\
+The \f{Gamma} function is unary whilst \f{Beta} is binary.
+The binary function \f{igamma} and ternary function \f{ibeta}
+are the (normalised) incomplete Gamma and Beta functions respectively.
+The unary function \f{psi} is sometimes known as the Digamma function and
+the binary function \f{Polygamma} with integer first parameter $n$ is the
+nth derivative of the function \f{psi}.
 
-\section{Fibonacci Numbers and Fibonacci Polynomials}
-\ttindex{Fibonacci}\index{Fibonacci numbers}
-\index{Fibonacci Polynomials}\ttindex{FibonacciP}
-\hypertarget{operator:FIBONACCI}{}\hypertarget{operator:FIBONACCIP}{}
+\index{Bessel functions}\index{Hankel functions}
+\ttindex{BesselI}\ttindex{BesselJ}\ttindex{BesselK}
+\ttindex{BesselY}\ttindex{Hankel1}\ttindex{Hankel2}
+\textbf{Bessel and Related Functions:}\\
+\texttt{BesselJ BesselY BesselI BesselK Hankel1 Hankel2}\\
+ All of these functions are binary, their first argument being
+the order of the function.
 
-The unary operator \texttt{Fibonacci} provides notation and computation for
-Fibonacci numbers.  \texttt{Fibonacci(n)} evaluates to the $n$th Fibonacci
-number. If n is a positive or negative integer, it will be evaluated following
-the definition:
+For the special functions below, a second
+\hyperlink{SPECFNTAB2}{Quick Reference Table} is available.
 
-$F_0 = 0 ; F_1 = 1 ; F_n = F_{n-1} + F_{n-2} $
+\index{Airy functions}
+\ttindex{Airy\_Ai}\ttindex{Airy\_Aiprime}
+\ttindex{Airy\_Bi}\ttindex{Airy\_Biprime}
+\textbf{Airy Functions:}\\
+\texttt{Airy\_Ai Airy\_Aiprime Airy\_Bi Airy\_Biprime}\\
+These are all unary functions.
 
-Fibonacci Polynomials are computed by the binary operator 
-FibonacciP. FibonacciP(n,x) returns the $n$th Fibonaccip polynomial
-in the variable x. If n is a positive or negative integer, it will be evaluated following
-the definition:
+\index{Kummer functions}\index{Struve functions}\index{Lommel functions}
+\index{Whittaker functions}
+\ttindex{KummerM}\ttindex{KummerU}\ttindex{Lommel1}
+\ttindex{Lommel2}\ttindex{StruveH}\ttindex{StruveL}
+\ttindex{WhittakerM}\ttindex{WhittakerW}
+\textbf{Kummer, Lommel, Struve and Whittaker functions:}\\
+\texttt{KummerM KummerU Lommel1 Lommel2 StruveH StruveL WhittakerM WhittakerW}\\
+The Struve functions are both binary whilst the remaining ones are all ternary.
 
-$F_0(x) = 0 ; F_1(x) = 1 ; F_n(x) = x F_{n-1}(x) + F_{n-2}(x) $
+\index{Riemann Zeta function}\index{Lambert's W function}
+\ttindex{zeta} \ttindex{Lambert\_W}
+\textbf{Riemann Zeta and Lambert's W Function:}\\
+\texttt{zeta  Lambert\_W}\\
+These are both unary functions.
 
-\section{Motzkin numbers}
-\index{Motzkin number}\ttindex{Motzkin}
+\ttindex{dilog}\ttindex{Polylog}\ttindex{Lerch\_Phi}
+\index{PolyLogarithm and related functions} \index{Dilog function}
+\textbf{PolyLogarithms and Related Functions}\\
+\texttt{dilog Polylog Lerch\_Phi}\\
+These take one, two and three arguments respectively.
+
+\index{Spherical and Solid Harmonics}
+\ttindex{SphericalHarmonicY}\ttindex{SolidHarmonicY}
+\textbf{Associated Legendre functions:}\\
+\texttt{SphericalHarmonicY SolidHarmonicY}\\
+These functions take five and six arguments respectively.
+
+\index{Jacobi Elliptic functions}\index{Elliptic functions}
+\ttindex{Jacobiam}
+\ttindex{Jacobisn}\ttindex{Jacobicn}
+\ttindex{Jacobidn}\ttindex{Jacobins}
+\ttindex{Jacobinc}\ttindex{Jacobind}
+\ttindex{Jacobisc}\ttindex{Jacobisd}
+\ttindex{Jacobicd}\ttindex{Jacobics}
+\ttindex{Jacobids}\ttindex{Jacobidc}
+\textbf{Jacobi Elliptic Functions:}\\
+\texttt{Jacobisn Jacobicn Jacobidn}\\
+and their three reciprocals \texttt{Jacobins Jacobinc Jacobind}\\
+ and six quotients 
+\texttt{Jacobisc Jacobisd Jacobicd Jacobics Jacobids Jacobidc}.\\
+All are binary functions with the second argument being the modulus.\\
+The binary function \f{Jacobiam} is the amplitude.
+
+\index{Elliptic Integrals}\index{Zeta function of Jacobi}
+\ttindex{JacobiZeta}\ttindex{JacobiE}
+\ttindex{EllipticK}\ttindex{EllipticE}\ttindex{EllipticF}
+\textbf{Complete and Incomplete Elliptic Integrals of the First \& Second Kinds:}\\
+\texttt{EllipticK EllipticE EllipticF  EllipticE  JacobiE JacobiZeta}\\ 
+The function \f{EllipticE} may take one or two arguments to
+denote the complete and Legendre's form of the incomplete elliptic integrals of
+the second kind respectively. The complete integral of the first kind
+\f{EllipticK} is unary whilst \f{EllipticF}, \f{JacobiE} and
+\f{JacobiZeta} are binary and represent the incomplete integral of
+the first kind, Jacobi's form of the incomplete elliptic integral of
+the second kind and Jacobi's Zeta function respectively.
+
+\index{Jacobi Theta functions}
+\ttindex{EllipticTheta1}\ttindex{EllipticTheta2}
+\ttindex{EllipticTheta3}\ttindex{EllipticTheta4}
+\textbf{Jacobi's Theta Functions:}\\
+\texttt{EllipticTheta1 EllipticTheta2 EllipticTheta3 EllipticTheta4}\\
+are all binary functions with the second argument being the nome.
+
+For the elliptic functions above
+a \hyperlink{SPECFNTAB3}{Quick Reference Table} is available.
+
+\subsection{Polynomial Functions}
+\index{Polynomial functions}
+The polynomial functions below are from the non-core package SPECFN
+and for the most part are not autoloading. This package needs to be loaded
+before they may be used with the command:
+\begin{verbatim}
+  load-package "specfn";
+\end{verbatim}
+The names of the \REDUCE\  operators for the polynomial functions below
+are mostly built by adding a P to the name of the polynomial,
+e.g. \f{EulerP} implements the Euler polynomials.
+
+The information in this subsection is fairly rudimentary; more complete
+information may be found in the \hyperlink{POLYFN}{SPECFN package}.\\
+A \hyperlink{SPECFNTAB4}{Quick Reference Table} is available for all the
+polynomial functions below.
+
+\textbf{Orthogonal Polynomials}
+\index{Orthogonal polynomials}
+\index{Hermite polynomials}\index{Jacobi polynomials}
+\index{Legendre polynomials}\index{Laguerre polynomials}
+\index{Chebyshev polynomials}\index{Gegenbauer polynomials}
+\ttindex{HermiteP}\ttindex{JacobiP}
+\ttindex{LegendreP}\ttindex{LaguerreP}
+\ttindex{ChebyshevT} \ttindex{ChebyshevU}
+\ttindex{GegenbauerP}
+
+Some well-known orthogonal polynomials are available:
+\begin{itemize}
+\item Hermite polynomials: (\f{HermiteP});
+\item Chebyshev polynomials: (\f{ChebyshevT}, \f{ChebyshevU});
+\item Legendre polynomials: (\f{LegendreP});
+\item Laguerre polynomials: (\f{LaguerreP});
+\item Associated Legendre functions: (\f{LegendreP});
+\item Generalised Laguerre (or Sonin) polynomials: (\f{LaguerreP});
+\item Gegenbauer polynomials: (\f{GegenbauerP});
+\item Jacobi polynomials: (\f{JacobiP}).
+\end{itemize}
+The first three of these functions are binary and the first
+argument should be an integer specifying the order of the
+required polynomial. The functions \f{LegendreP} and \f{LaguerreP} may be used
+either as binary operators or ternary ones and represent the corresponding
+'basic' and associated functions respectively.
+Finally the Gegenbauer polynomials are ternary whilst the Jacobi polynomials
+are quaternary.
+
+Most definitions are equivalent to those in \cite{AbramowitzStegun:72},
+except for the ternary associated Legendre functions:
+$$P_n^{(m)}(x) = (-1)^m(1-x^2)^{m/2}\frac{\mathrm{d}^m P_n(x)}{\mathrm{d}x^m}\,.$$
+
+% \begin{verbatim}
+% P(n,m,x) = (-1)^m *(1-x^2)^(m/2)*df(legendreP(n,x), x, m)
+% \end{verbatim}
+These are sometimes mistakenly referred to as associated Legendre polynomials,
+but they are only polynomial when $m$ is even.
+
+\textbf{Other Polynomial Functions}
+\index{Fibonacci polynomials}\index{Other polynomials}
+\ttindex{FibonacciP}
+\hypertarget{operator:FIBONACCIP}{}
+
+\textbf{Fibonacci Polynomials} are computed by the binary operator 
+\f{FibonacciP}.
+\texttt{FibonacciP(n,x)} returns the $n$th Fibonacci polynomial
+in the variable $x$. If $n$ is an integer, it will be
+evaluated using the recursive definition:
+$$F_0(x) = 0;\qquad F_1(x) = 1; \qquad F_n(x) = x F_{n-1}(x) + F_{n-2}(x)\,.$$
+
+\index{Euler polynomials}\ttindex{EulerP}
+\textbf{Euler Polynomials} are computed by the binary operator 
+\f{EulerP}.
+\texttt{EulerP(n,x)} returns the $n$th Euler polynomial in the variable $x$.
+
+\index{Bernoulli polynomials}\ttindex{BernoulliP}
+\textbf{Bernoulli Polynomials} are computed by the binary operator 
+\f{BernoulliP}. The function call \texttt{BernoulliP(n,x)} returns the
+$n$th Bernoulli polynomial in the variable $x$.
+
+\section{Combinatorial Numbers}
+\index{Combinatorial numbers}
+\index{Binomial coefficients}  \ttindex{Binomial}
+\textbf{Binomial coefficients} are provided by the binary operator \f{Binomial}.
+\texttt{binomial(n, m)} where $n$ and $m$ are non-negative
+integers with $n \geq n$ is the number of ways of choosing $m$ items from a
+set of $n$ distinct items as well, of course, as being the coefficient of $x^m$
+in the expansion of $(1+x)^n$.
+
+The function call \texttt{binomial(n,m)} where $n$ and $m$
+ are non-negative integers will return the expected integer value
+ (from Pascal's triangle). For other real numerical values the result will
+ usually involve the $\Gamma$ function except when the switch
+ \sw{ROUNDED} is ON, where the $\Gamma$ functions will be evaluated numerically.
+ This will also be the case for complex numerical arguments if the switch
+ \sw{COMPLEX} is ON.  For non-numeric arguments the result returned will
+ involve the original oerator \f{binomial}, or its pretty-printed equivalent
+ on graphical interfaces.
+
+\hypertarget{operator:Stirling1}{}\hypertarget{operator:Stirling2}{}
+\index{Stirling numbers}\ttindex{Stirling1}\ttindex{Stirling2}
+\textbf{Stirling numbers} of the first and second kind are computed 
+by the binary operators \f{Stirling1} and \f{Stirling2}
+respectively using explicit formulae.
+\texttt{stirling1(n, k)} is $(-1)^{n-k}\ \times$
+\emph{(the number of permutations of the set} $\{1, 2, \ldots, n\}$
+\emph{into exactly $k$ cycles)}.\\
+\texttt{stirling2(n, k)} is \emph{the number of partitions of the set}
+$\{1, 2, \ldots, n\}$ \emph{into exactly $k$ non-empty subsets}.
+Here $n$ and $k$ should be non-negative integers with $n \geq k$. 
+
+For integer arguments an integer result will be
+returned, otherwise a result involving the original operator will be returned.
+Note on graphical user interfaces \texttt{Stirling1(n,m)} and
+\texttt{Stirling2(n,m)} are rendered as
+$\mathrm{s}_{n, m}$ and $\mathrm{S}_{n, m}$ respectively.
+
+Stirling numbers which are implemented in the non-core package SPECFN are
+not currently autoloading. Before use this package should be loaded with the
+command:
+\begin{verbatim}
+  load-package "specfn";
+\end{verbatim}
+For more information see \hyperlink{STIRL}{here}.
+
 \hypertarget{operator:MOTZKIN}{}
-
-A Motzkin number $M_{n}$ (named after Theodore Motzkin) is the number of
-different ways of drawing non-intersecting chords on a circle between
-n points. For a non-negative integer $n$, the operator \texttt{Motzkin(n)} 
+\index{Motzkin numbers}\ttindex{Motzkin}
+\textbf{A Motzkin number} $M_{n}$ (named after Theodore Motzkin) is the
+number of different ways of drawing non-intersecting chords on a circle between
+$n$ points. For a non-negative integer $n$, the operator \texttt{Motzkin(n)} 
 returns the $n$th Motzkin number, according to the recursion formula
 \begin{displaymath}
-  M_{0} = 1 \,;\quad M_{1}=1\,; \quad
+  M_{0} = 1; \qquad M_{1}=1; \qquad
   M_{n+1} = \frac{2n+3}{n+3}M_{n}+ \frac{3n}{n+3}M_{n-1}\,.
 \end{displaymath}
+The recursion is, of course, optimised as a simple loop to avoid repeated
+computation of lower order numbers.
+
+For the functions in this and the section below
+a \hyperlink{SPECFNTAB5}{Quick Reference Table} is available.
+It also includes a list of reserved constants known to REDUCE.
+
+\section{Bernoulli, Euler and Fibonacci Numbers}
+\ttindex{Fibonacci}\index{Fibonacci numbers}
+\hypertarget{operator:FIBONACCI}{}
+\textbf{Fibonacci numbers} are provided by the unary operator \f{Fibonacci}
+\texttt{Fibonacci(n)} evaluates to the $n$th Fibonacci
+number; if $n$ is an integer, this will be evaluated following
+the recursive definition:
+$$F_0 = 0; \qquad F_1 = 1;\qquad F_n = F_{n-1} + F_{n-2}\,.$$
+The recursion is, of course, optimised as a simple loop to avoid repeated
+computation of lower order numbers.
+Otherwise the result returned involves the original operator
+\texttt{fibonacci}; on graphical interfaces this is rendered
+as $\mathrm{F}_n$.
+
+\ttindex{Bernoulli}\index{Bernoulli numbers}
+\hypertarget{operator:BERNOULLI}{}
+\textbf{Bernoulli numbers} are provided by the unary operator
+\f{Bernoulli}. If $n$ is a non-negative integer, the call \texttt{Bernoulli(n)}
+evaluates to the $n$th Bernoulli number; all of the odd Bernoulli numbers,
+except \texttt{Bernoulli(1)}, are zero. Otherwise the result involves the
+original operator \texttt{bernoulli}; on graphical interfaces this is rendered
+as $\mathrm{B}_n$.
+
+\ttindex{Euler}\index{Euler numbers}
+\hypertarget{operator:EULER}{}
+\textbf{Euler numbers} are computed by the unary operator \f{Euler}; if $n$
+is a non-negative integer, the call \texttt{Euler(n)} returns the $n$th
+Euler number; all of the odd Euler numbers are zero. 
+Otherwise the result returned involves the original operator \texttt{euler};
+on graphical interfaces this is rendered
+as $\mathrm{E}_n$.
 
 \section{CHANGEVAR operator}
 \hypertarget{operator:CHANGEVAR}{}
@@ -860,7 +1010,6 @@ and returns the result
 \begin{verbatim}
    df(y(u),u,3) - 6*df(y(u),u,2) + 11*df(y(u),u) - 6*y(u)
 \end{verbatim}
-
 
 
 \section{CONTINUED\_FRACTION Operator}
@@ -1228,8 +1377,8 @@ the integral by substitution. It is normally off.
 \hypertarget{operator:ERF}{}
 
 If a function appears in the integrand that is not one of the functions
-\texttt{EXP, ERF, TAN, ATAN, LOG, DILOG}\ttindex{EXP}\ttindex{ERF}
-\ttindex{TAN}\ttindex{ATAN}\ttindex{LOG}\ttindex{DILOG}
+\texttt{EXP, Erf, TAN, ATAN, LOG, dilog}\ttindex{EXP}\ttindex{Erf}
+\ttindex{TAN}\ttindex{ATAN}\ttindex{LOG}\ttindex{dilog}
 then the algorithm will make an
 attempt to integrate the argument if it can, differentiate it and reach a
 known function.  However the answer cannot be guaranteed in this case.  If
@@ -1375,24 +1524,29 @@ remove the value from these identifiers, for example
         unset(mkid(a,3));
 \end{verbatim}
 
-
 \section{The Pochhammer Notation}
 \ttindex{Pochhammer}\index{Pochhammer notation}
-\index{Pochhammer's symbol}
+\index{Pochhammer symbol}
+\hypertarget{POCH}{}
 \hypertarget{operator:POCHHAMMER}{}
-The Pochhammer notation $(a)_k$ (also called Pochhammer's symbol) is supported by the binary operator \texttt{POCHHAMMER(A,K)}.
-For a non-negative integer $k$, it is defined as (\url{http://dlmf.nist.gov/5.2.iii})
+The Pochhammer notation $(a)_k$ (also called Pochhammer's symbol) is supported
+by the binary operator \texttt{Pochhammer(a,k)}.
+For a non-negative integer $k$, it is defined as
+(\url{http://dlmf.nist.gov/5.2.iii})
 \begin{align*}
   (a)_0 &= 1, \\
   (a)_k &= a(a+1)(a+2)\cdots(a+k-1).\\
-\intertext{For $a\not=0,\pm1,\pm2,\dots$, this is equivalent to}
+\intertext{For $a\neq 0,-1,-2,-3\ldots$, this is equivalent to}
   (a)_k &= \frac{\Gamma(a+k)}{\Gamma(a)}
 \end{align*}
-With \sw{ROUNDED} off, this expression is evaluated
-numerically if $a$ and $k$ are both integral, and otherwise may be
+When $n$ is integral, the defining product is expanded (assuming the switch
+\sw{EXP} is ON). With \sw{ROUNDED} off, this expression is evaluated
+numerically if $a$ is numerical and $k$ is integral, and otherwise may be
 simplified where appropriate.  The simplification rules are based upon
-algorithms supplied by Wolfram Koepf.% \cite{Koepf:92}.
+algorithms supplied by Wolfram Koepf \cite{Koepf:92}.
 
+The Pochammer symbol is used quite extensively in the simplification and
+numerical evaluation of \hyperlink{SPECFNS}{special functions}.
 
 \section{PF Operator}\ttindextype{PF}{operator}
 \hypertarget{operator:PF}{}
