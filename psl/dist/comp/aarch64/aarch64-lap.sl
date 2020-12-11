@@ -1339,13 +1339,13 @@
 
 (fluid '(ConditionalJumps*))
 (setq ConditionalJumps* 
-  '((beq  . bne)  (bne  . beq)
-    (bcs  . bcc)  (bcc  . bcs)
-    (bmi  . bpl)  (bpl  . bmi)
-    (bvs  . bvc)  (bvc  . bvs)
-    (bhi  . bls)  (bls  . bhi)
-    (bge  . blt)  (blt  . bge)
-    (bgt  . ble)  (ble  . bgt)
+  '((B.EQ  . B.NE)  (B.NE  . B.EQ)
+    (B.CS  . B.CC)  (B.CC  . B.CS)
+    (B.MI  . B.PL)  (B.PL  . B.MI)
+    (B.VS  . B.VC)  (B.VC  . B.VS)
+    (B.HI  . B.LS)  (B.LS  . B.HI)
+    (B.GE  . B.LT)  (B.LT  . B.GE)
+    (B.GT  . B.LE)  (B.LE  . B.GT)
 ))
 
 (de ReformBranches (code)

@@ -579,7 +579,6 @@
 %%  STP fp, lr , [sp, #16]!
 %%  SUB sp, sp, (8*framesize+8)
 %%  STR (reg nil), [sp, #(8*framesize+8)]
-%% but with an extra "STR r12,[sp, #-4]!" (a.k.a. "push r12") in between for even framesize
 (de *ALLOC (framesize)
     (let (ll)
       (if (greaterp framesize 0)
@@ -612,17 +611,17 @@
 )
 
 
-% Again, make sure that the stack is always 8 byte aligned
+% Again, make sure that the stack is always 16 byte aligned
 (de *Exit (N)
   (if (evenp N) (setq N (plus2 N 1)))
  (Expand1OperandCMacro
    (times N (compiler-constant 'AddressingUnitsPerItem)) '*Exit))
 
 (DefCMacro *Exit     % leaf routine first
-   ((ZeroP)  (LDMIA (reg sp) ((reg lr)) writeback)
+   ((ZeroP)  (LDP (reg fp) ((reg lr)) writeback)
              (RET))
    (         (add (reg st) (reg st) ARGONE)
-             (LDMIA (reg sp) ((reg lr)) writeback)
+             (LDP (reg fp) ((reg lr)) writeback)
              (RET)))
 
 (de displacementp (x) (and (pairp x) (eq (car x) 'displacement)))
@@ -676,7 +675,7 @@
 				     (cdr OpenCodeSequence)))))
 			 (setq OpenCodeSequence
 			       (Append OpenCodeSequence
-				 (list '(BX (reg lr))))))
+				 (list '(BR (reg lr))))))
 		       % check that there isn't another *Call somewhere
 		       (if (atsoc '*Call OpenCodeSequence)
 			   (stderror
@@ -1148,32 +1147,32 @@
 (DefCMacro *JumpEQ)
 
 (de *JumpEQ (Lbl ArgOne ArgTwo)
-       (*JumpIF ArgOne ArgTwo Lbl '(beq . beq)))
+       (*JumpIF ArgOne ArgTwo Lbl '(b.eq . b.eq)))
 
 (DefCMacro *JumpNotEQ)
 
 (de *JumpNotEQ(Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(bne . 'bne)))
+        (*JumpIF ArgOne ArgTwo Lbl '(b.ne . 'b.ne)))
 
 (DefCMacro *JumpWlessp)
 
 (de *JumpWlessp (Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(blt . bge)))
+        (*JumpIF ArgOne ArgTwo Lbl '(b.lt . b.ge)))
 
 (DefCMacro *JumpWgreaterp)
 
 (de *JumpwGreaterp (Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(bgt . ble)))
+        (*JumpIF ArgOne ArgTwo Lbl '(b.gt . b.le)))
 
 (DefCMacro *JumpWleq)
 
 (de  *JumpWleq(Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(ble . bgt)))
+        (*JumpIF ArgOne ArgTwo Lbl '(b.le . b.gt)))
 
 (DefCMacro *JumpWgeq)
 
 (de *jumpWgeq (Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(bge . blt)))
+        (*JumpIF ArgOne ArgTwo Lbl '(b.ge . b.lt)))
 
 % --------------------
 
