@@ -1378,8 +1378,9 @@ put('elliptictheta3, 'prifn, 'plain!-symbol);
 put('elliptictheta4, 'prifn, 'plain!-symbol);
 % put('elliptictau, 'prifn, 'plain!-symbol);
 
-symbolic procedure plain!-symbol(u);
-    maprin(get(car u,'plain!-functionsymbol) . cdr u);
+% moved to mprint.red so it may beused by other modules.
+% symbolic procedure plain!-symbol(u);
+%     maprin(get(car u,'plain!-functionsymbol) . cdr u);
 
 endmodule;
 end;

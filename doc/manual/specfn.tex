@@ -523,6 +523,8 @@ $$\frac{\mathrm{d}^2W}{\mathrm{d}x^2}+\left(\frac{1-4\mu^2}{4x^2}+
 \frac{\kappa}{x} -\frac{1}{4}\right)W =0\,,$$
 which is obtained from the Kummer differential equation via the substituions
 $$W=e^{z/2}z^{\mu+1/2} w,\qquad \kappa=b/2-a\qquad \mu =(b-1)/2\,.$$
+The Whittaker M \& W functions with non-numeric arguments are simplified to
+expressions involving the Kummer M \& U functions respectively.
 \end{itemize}
 
 \hypertarget{operator:zeta}{}
@@ -591,7 +593,16 @@ on the interval $(-1/e, 0)$ where it is monotonically decreasing with
 $\omega(x) < -1$.
 
 Simplification rules for $\omega(x)$ are provided for the special arguments
-$0$ and $-1/e$ and for its derivative.
+$0$ and $-1/e$ and for its logarithm, derivative and integral.
+A previous rule for its exponential caused problems with power series expansions
+about zero and has been deactivated. This does not seem to impact on the SOLVE
+package. However, this rule may be reactivated if required by
+\begin{verbatim}
+      let lambert_exp_rule;
+   %  and deactivated again by
+      clear lambert_exp_rule;
+\end{verbatim}
+
 The function is studied extensively in \cite{HareCorless:92}.  
 The current implementation will compute values on the principal branch for
 all complex numerical arguments  only if the switch \sw{ROUNDED} is ON.
@@ -1064,14 +1075,14 @@ respectively.
 
 \index{Pochammer symbol}
 Stirling numbers of the first kind have the generating function:
-$$\sum_{m=0}^n s_{n,m} x^m  =  (x-n+1)_n.$$
+$$\sum_{m=0}^n s_n^m x^m  =  (x-n+1)_n.$$
 where $(x-n+1)_n$ is the \hyperlink{POCH}{Pochhammer symbol}. This provides
 an convenient way of calculating these Stirling numbers by
 extracting coefficients of the polynomial obtained by evaluating the
 Pochhammer symbol.  \REDUCE however uses an explicit summation.
 
 Stirling numbers of the second kind are defined by the formula:
-$$S_{n,m} = \frac{1}{m!}\sum_{k=0}^m )(-1)^{m-k}{m \choose k} k^n$$
+$$S_n^m = \frac{1}{m!}\sum_{k=0}^m )(-1)^{m-k}{m \choose k} k^n$$
 \REDUCE uses this explicit summation to evaluate Stirling numbers of the
 second kind.
 
@@ -1401,9 +1412,9 @@ $S_{a,b}(z)$ & \f{Lommel2(a,b,z)}\\
 $M(a, b, z)$ or $_1F_1(a, b; z)$ or $\Phi(a, b; z)$ &
 \f{KummerM(a,b,z)} \\
 $U(a, b, z)$ or $z^{-a}{_2F_0(a, b; z)}$ or $\Psi(a, b; z)$ &
-\f{KummerU(a,b,z)}\\
-$M_{\kappa,\mu}(z)$ & \f{WhittakerM(kappa,mu,z)}\\
-$W_{\kappa,\mu}(z)$ & \f{WhittakerW(kappa,mu,z)}\\[12pt]
+\f{KummerU(a,b,z)}\\[12pt]
+Expression in Kummer\_M & \f{WhittakerM(kappa,mu,z)}\\
+Expression in Kummer\_U & \f{WhittakerW(kappa,mu,z)}\\
 Riemann's $\zeta(z)$ & \f{zeta(z)} \\
 Lambert $\omega(z)$ & \f{Lambert\_W(z)} \\
 $Li_2(z)$ & \f{dilog(z)} \\
@@ -1484,8 +1495,8 @@ $P_n^{(\alpha,\beta)} (x)$ & \f{JacobiP(n,alpha,beta,x)}\\
 Function & Operator \\
 $\displaystyle\binom{n}{m}$ & \f{Binomial(n,m)} \\[10pt]
 Fibonacci Numbers $F_{n}$ &  \f{Fibonacci(n)}\\ 
-$\mathrm{s}_{n, m}$ & \f{Stirling1(n,m)} \\
-$\mathrm{S}_{n, m}$ & \f{Stirling2(n,m)} \\
+$\mathrm{s}_n^m$ & \f{Stirling1(n,m)} \\
+$\mathrm{S}_n^m$ & \f{Stirling2(n,m)} \\
 Bernoulli($n$) or $ B_n $ & \f{Bernoulli(n)} \\
 Euler($n$) or $ E_n $ & \f{Euler(n)} \\
 Motzkin(n) & \f{Motzkin(n)}\\\\

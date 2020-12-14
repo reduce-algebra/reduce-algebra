@@ -556,6 +556,9 @@ symbolic procedure revalxpri u;
 
 put ('revalx,'prifn,'revalxpri);
 
+% moved here from sfellip.red so it may be used in other modules
+symbolic procedure plain!-symbol(u);
+    maprin(get(car u,'plain!-functionsymbol) . cdr u);
 
 endmodule;
 

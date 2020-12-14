@@ -185,16 +185,25 @@ algebraic <<
 
  operator lambert_w;
 
- let {    lambert_w(0) => 0,
-        lambert_w(-1/e) => -1,
-        sum((- ~n)^(n-1)/factorial n *~z^n,n,1,infinity)
+ let {lambert_w(0) => 0,
+      lambert_w(-1/e) => -1,
+      sum((- ~n)^(n-1)/factorial n *~z^n,n,1,infinity)
                         => lambert_w(z),
-        df(lambert_w(~z),z) => 1/((1 + lambert_w(z))*e^lambert_w z),
-        log(lambert_w(~z)) => log(z) - lambert_w z,
-        e^(lambert_w ~z) => ~z/lambert_w z,
-        int(lambert_w(~z),z) => z*(lambert_w z -1 +1/lambert_w z),
-        lambert_w(~z) =>  num_lambert_w(z)
+      df(lambert_w(~z),z) => 1/((1 + lambert_w(z))*e^lambert_w z),
+      log(lambert_w(~z)) => log(z) - lambert_w z,
+%      e^(lambert_w ~z) => ~z/lambert_w z,
+%      int(lambert_w(~z),z) => z*(lambert_w z -1 +1/lambert_w z),
+      int(lambert_w(~z),z) => e^(lambert_w(z))*(lambert_w(z)^2-lambert_w(z)+1),
+      lambert_w(~z) =>  num_lambert_w(z)
                 when numberp z and lisp !*rounded};
+
+%  Rule removed from default rules by A Barnes
+%  A power series expansion of lambert_w about zero using tps or taylor
+%  now succeeds; it previously reported a possible essential singularity 
+%  as lambert_w(z)/z produces 0/0 when z=0.
+%  The solve package doesn't seem to be affected by this change.
+
+lambert_exp_rule := {e^(lambert_w ~z) => ~z/lambert_w z}$
 
 procedure num_lambert_w(z);
 

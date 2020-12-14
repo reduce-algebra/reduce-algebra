@@ -87,6 +87,13 @@ return
   * part(bin_row,k+1)*k^n))/factorial(m));
 end;
 
+put('stirling1, 'prifn, 'plain!-symbol);
+put('stirling2, 'prifn, 'plain!-symbol);
+put('stirling1, 'plain!-functionsymbol, '!s);
+put('stirling2, 'plain!-functionsymbol, '!S);
+% put('stirling1, 'fancy!-functionsymbol, "\mathrm{s}");
+% put('stirling2, 'fancy!-functionsymbol, "\mathrm{S}");
+% fancy print stuff for Stirling now in module fancy_specfn in tmprint.red
 
 symbolic procedure binomial_row (n);
 
@@ -137,3 +144,6 @@ flag('(motzkin),'opfn);
 endmodule;
 
 end;
+
+
+
