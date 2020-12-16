@@ -28,18 +28,19 @@ interrupted,aerror,aerror0,aerror1,aerror2,aerror3"
 
 EMFLAGS="\
   -s ABORTING_MALLOC=1 \
-  -s ALLOW_MEMORY_GROWTH=0 \
   -s ASSERTIONS=1 \
   -s DISABLE_EXCEPTION_CATCHING=0 \
   -s EXIT_RUNTIME=1 \
-  -s INITIAL_MEMORY=1024mb \
   -s MALLOC="dlmalloc" \
+  -s INITIAL_MEMORY=1024mb \
   -s SAFE_HEAP=0 \
-  -s TOTAL_STACK=5mb \
   -s ERROR_ON_UNDEFINED_SYMBOLS=0 \
   -s USE_ZLIB=1 \
   -s USE_CLOSURE_COMPILER=1 \
   -flto"
+
+# -s ALLOW_MEMORY_GROWTH=0 \
+# -s TOTAL_STACK=5mb \
 
 # The following are others to consider or experiment with:
 

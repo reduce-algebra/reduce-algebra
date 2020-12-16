@@ -195,6 +195,7 @@ int PROC_prepare_for_top_level_loop();
 // not accessed.
 //
 
+extern const char *proc_data_string;
 int PROC_process_one_reduce_statement(const char *);
 
 //
@@ -381,6 +382,16 @@ extern int PROC_lisp_eval();
 extern PROC_handle PROC_get_raw_value();
 
 extern volatile int my_return_code;
+
+// the following functions are used for web reduce
+#ifdef PROCEDURAL_WASM_XX
+void PROC_mainloop();
+extern "C" void PROC_insert_buffer(const char*, int);
+extern int buff_ready;
+extern const char *buffer;
+extern int buff_size;
+#endif
+
 
 // The following would normally be picked up from "lispthrow.h" but to make
 // stuff here more free-stannding I have my own copy.

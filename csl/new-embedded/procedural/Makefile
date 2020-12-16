@@ -30,6 +30,8 @@ CPPFLAGS=$(CFLAGS) -std=gnu++17 $(OPT) -I. -I../include \
     -DHAVE_CONFIG_H=1 -DEMBEDDED=1 $(XCFLAGS)
 LIBS=$(XLIBS) -lz -lffi
 
+LINK=
+
 S=../../cslbase
 R=../../..
 
@@ -51,7 +53,7 @@ reduce:		allocate.o arith01.o arith02.o arith03.o arith04.o arith05.o \
 		eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o cslgc.o lisphash.o \
 		isprime.o preserve.o print.o restart.o sysfwin.o termed.o \
 		inthash.o serialize.o stubs.o \
-		$(LIBS) -o reduce
+		$(LIBS) $(LINK) -o reduce
 	cp ../reduce.img .
 
 .cpp.o:

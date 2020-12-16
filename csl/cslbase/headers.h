@@ -234,12 +234,6 @@ namespace FX
 
 using namespace FX;
 
-#ifdef PROCEDURAL_WASM
-extern "C" {
-    void insert_buffer(char *);
-}
-#endif
-
 #endif // header_headers_h
 
 // end of headers.h

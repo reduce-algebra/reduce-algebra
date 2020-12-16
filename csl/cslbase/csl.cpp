@@ -137,12 +137,6 @@
 #endif
 
 
-#ifdef PROCEDURAL_WASM_XX
-extern "C" {
-    void insert_buffer(char *, int);
-}
-#endif
-
 //
 // These flags are used to ensure that protected symbols don't get
 // overwritten by default, and that the system keeps quiet about it.
@@ -152,7 +146,7 @@ bool symbol_protect_flag = true;
 bool warn_about_protected_symbols = false;
 
 // used in char_from_string
-static const char *data_string = ";";
+const char *proc_data_string = ";";
 
 #ifdef USE_MPI
 int32_t mpi_rank,mpi_size;
@@ -3229,6 +3223,48 @@ int execute_lisp_function(const char *fname,
     return 0;
 }
 
+
+#ifdef PROCEDURAL_WASM_XX
+int buff_ready = 0;
+const char *buffer = nullptr;
+int buff_size = 0;
+
+void PROC_insert_buffer(const char *buf, int size) {
+    buffer = buf;
+    buff_size = size;
+    buff_ready = 1;
+}
+
+void PROC_mainloop() {
+    if (buff_ready) {
+//        std::printf("buffer is ready...buffer: %s, buff_size: %i\n", buffer, buff_size);
+//        char query[buff_size+1];
+//        std::strncpy(query, buffer, buff_size+1);
+        std::printf("processing: %s\n", buffer);
+        PROC_process_one_reduce_statement(buffer);
+        while (proc_data_string && *proc_data_string != 0) {
+            PROC_process_one_reduce_statement(proc_data_string);
+//            std::printf("copying proc_data_string: \"%s\" of size: %i", proc_data_string, buff_size);
+//            std::strncpy(query, proc_data_string, buff_size);
+        }
+//        std::printf("freeing buffer...\n");
+        free((char*)buffer);
+        buff_ready = 0;
+        buff_size = 0;
+//        std::printf("setting buff_ready=0...\n");
+        // let's hope we don't get preempted!
+        //emscripten_cancel_main_loop();
+//        std::printf("waiting...\n");
+    }
+    return;
+}
+#endif
+
+
+#ifdef PROCEDURAL_WASM_SETUP
+#include PROCEDURAL_WASM_SETUP
+#endif
+
 //
 // People who want to use this in an embedded context can predefine
 // NO_STARTUP_CODE and provide their own entrypoint...
@@ -3300,46 +3336,6 @@ public:
 };
 #endif
 
-#ifdef PROCEDURAL_WASM_XX
-//static const char* expr = ";";
-static int buff_ready = 0;
-static char *buffer = nullptr;
-static int buff_size = 0;
-
-void insert_buffer(char *buf, int size) {
-    //std::printf("setting buffer...\n");
-    buffer = buf;
-    buff_size = size;
-    buff_ready = 1;
-}
-
-void mainloop() {
-    if (buff_ready) {
-        std::printf("buffer is ready...\n");
-        char query[buff_size+1];
-        std::strncpy(query, buffer, buff_size);
-        do {
-            PROC_process_one_reduce_statement(query);
-            std::strncpy(query, data_string, buff_size);
-        } while (*data_string != 0);
-        std::printf("freeing buffer...\n");
-        free(buffer);
-        buff_ready = 0;
-        buff_size = 0;
-        std::printf("setting buff_ready=0...\n");
-        // let's hope we don't get preempted!
-        //emscripten_cancel_main_loop();
-        std::printf("waiting...\n");
-    }
-    return;
-}
-#endif
-
-
-#ifdef PROCEDURAL_WASM_SETUP
-#include PROCEDURAL_WASM_SETUP
-#endif
-
 static int submain(int argc, const char *argv[])
 {   volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
@@ -3372,7 +3368,7 @@ static int submain(int argc, const char *argv[])
     // the header you include *must* contain void setup_web_reduce(void)
     setup_web_reduce();
 #endif
-    emscripten_set_main_loop(mainloop, 60, 0);
+    emscripten_set_main_loop(PROC_mainloop, 60, 0);
 #else // end PROCEDURAL_WASM_XX
     set_keyboard_callbacks(async_interrupt);
     cslaction();
@@ -3468,9 +3464,9 @@ int PROC_prepare_for_top_level_loop()
 }
 
 int char_from_string()
-{   int c = *data_string;
+{   int c = *proc_data_string;
     if (c == 0) return EOF;
-    data_string++;
+    proc_data_string++;
     return c;
 }
 
@@ -3478,7 +3474,7 @@ int PROC_process_one_reduce_statement(const char *s)
 {   LispObject w = nil, w1 = nil;
     volatile uintptr_t sp;
     character_reader *save_read = procedural_input;
-    data_string = s;
+    proc_data_string = s;
     procedural_input = char_from_string;
     C_stackbase = (uintptr_t *)&sp;
     if_error(w1 = make_undefined_symbol("process-one-reduce-statement");
