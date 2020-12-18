@@ -18,7 +18,7 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 <h2 id="lessons">The REDUCE interactive lessons</h2>
   <p>To run the lessons, you first need to download them, which you can do in any of the following ways:</p>
   <ul>
-    <li>Create a directory on your computer called <code>lessons</code> (although you can call it whatever you want), then download <a href="tutorials/lessons.zip">lessons.zip</a> to your <code>lessons</code> directory and unzip it.</li>
+    <li>Select a directory on your computer to contain the <code>lessons</code> directory then download <a href="tutorials/lessons.zip">lessons.zip</a> to this directory and unzip it.</li>
     <li>If you have the <a href="https://en.wikipedia.org/wiki/Apache_Subversion">subversion</a> program installed then select a directory on your computer to contain the <code>lessons</code> directory, open a command prompt window in that directory (if necessary) and execute the shell command
       <pre>svn checkout svn://svn.code.sf.net/p/reduce-algebra/code/trunk/packages/lessons</pre>
 You can also download individual lesson files this way.
