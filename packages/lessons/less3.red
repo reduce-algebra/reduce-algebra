@@ -163,37 +163,43 @@ left-hand side though, at the minor nuisance of having to employ an
 operator whenever we want the rule applied to an expression:;
 
 clearrules cos(~x)^2 => 1 - sin(~x)^2;
-operator trigsimp;
-trigsimp_rules := {
-   trigsimp(~a*sin(~x)^2 + a*cos(x)^2 + ~c) => a + trigsimp(c),
-   trigsimp(~a*sin(~x)^2 + a*cos(x)^2) => a,
-   trigsimp(sin(~x)^2 + cos(x)^2 + ~c) => 1 + trigsimp(c),
-   trigsimp(sin(~x)^2 + cos(x)^2) => 1,
-   trigsimp(~x) => x }$
+operator mytrigsimp;
+mytrigsimp_rules := {
+   mytrigsimp(~a*sin(~x)^2 + a*cos(x)^2 + ~c) => a + mytrigsimp(c),
+   mytrigsimp(~a*sin(~x)^2 + a*cos(x)^2) => a,
+   mytrigsimp(sin(~x)^2 + cos(x)^2 + ~c) => 1 + mytrigsimp(c),
+   mytrigsimp(sin(~x)^2 + cos(x)^2) => 1,
+   mytrigsimp(~x) => x }$
 g1 := f*cos(g)^2 + f*sin(g)^2 + g*sin(g)^2 + g*cos(g)^2 + 5;
-g1 := trigsimp(g1) where trigsimp_rules;
+g1 := mytrigsimp(g1) where mytrigsimp_rules;
 pause;
 
 COMMENT Here we use another syntactical paradigm: the rule list is
-assigned to a name (here TRIGSIMP_RULES) and it is activated only
+assigned to a name (here MYTRIGSIMP_RULES) and it is activated only
 locally for one evaluation, using the WHERE clause.
 
-Why doesn't our rule TRIGSIMP(~X) => X defeat the other more specific
-ones?  The reason is that rules inside a list are applied in the order
-they are written, with the whole process immediately restarted
-whenever any rule succeeds.  Thus the rule TRIGSIMP(X) = X, intended
-to make the operator TRIGSIMP eventually evaporate, is tried only
-after all of the genuine simplification rules have done all they can.
-For such reasons we usually write rules for an operator in an order
-which proceeds from the most specific to the most general cases.
-Experimentation will reveal that TRIGSIMP will not simplify higher
-powers of sine and cosine, such as COS(X)^4 + 2*COS(X)^2*SIN(X)^2 +
-SIN(X)^4, and that TRIGSIMP will not necessarily work when there are
-more than 6 terms.  This latter restriction is not fundamental but is
-a practical one imposed to keep the combinatorial searching associated
-with the current algorithm under reasonable control.  As an exercise,
-see if you can generalize the rules sufficiently so that 5*COS(H)^2 +
-6*SIN(H)^2 simplifies to 5 + SIN(H)^2 or to 6 - COS(H)^2.;
+Why doesn't our rule MYTRIGSIMP(~X) => X defeat the other more
+specific ones?  The reason is that rules inside a list are applied in
+the order they are written, with the whole process immediately
+restarted whenever any rule succeeds.  Thus the rule MYTRIGSIMP(X) =
+X, intended to make the operator MYTRIGSIMP eventually evaporate, is
+tried only after all of the genuine simplification rules have done all
+they can.  For such reasons we usually write rules for an operator in
+an order which proceeds from the most specific to the most general
+cases.  Experimentation will reveal that MYTRIGSIMP will not simplify
+higher powers of sine and cosine, such as COS(X)^4 +
+2*COS(X)^2*SIN(X)^2 + SIN(X)^4, and that MYTRIGSIMP will not
+necessarily work when there are more than 6 terms.  This latter
+restriction is not fundamental but is a practical one imposed to keep
+the combinatorial searching associated with the current algorithm
+under reasonable control.  As an exercise, see if you can generalize
+the rules sufficiently so that 5*COS(H)^2 + 6*SIN(H)^2 simplifies to 5
++ SIN(H)^2 or to 6 - COS(H)^2.
+
+Note that REDUCE already provides an operator TRIGSIMP for simplifying
+trigonometric or hyperbolic expressions -- see the REDUCE manual entry
+for the user-contributed package "TRIGSIMP: Simplification and
+factorization of trigonometric and hyperbolic functions".;
 
 pause;
 
@@ -203,7 +209,7 @@ instances of M*C^2 by ENERGY:;
 
 clear m, c, energy;
 g1 := (3*m^2*c^2 + m*c^3 + c^2 + m + m*c + m1*c1^2)
-              where m*c^2 => energy;
+        where m*c^2 => energy;
 pause;
 
 COMMENT Suppose that instead we wish to replace M by ENERGY/C^2:;
@@ -268,8 +274,8 @@ rules, we need to match the patterns SIN(N*X) and COS(N*X) only when N
 is an integer exceeding 1.  We can implement one of the necessary
 rules as follows:;
 
-   cos(~n*~x) => cos(x)*cos((n-1)*x) - sin(x)*sin((n-1)*x)
-             when fixp n and n>1;
+cos(~n*~x) => cos(x)*cos((n-1)*x) - sin(x)*sin((n-1)*x)
+        when fixp n and n>1;
 
 COMMENT Note:
 
