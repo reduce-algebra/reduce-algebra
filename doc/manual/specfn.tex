@@ -1,3 +1,4 @@
+\subsection{Special Functions: Introduction}
 \index{Special functions}
 \index{Gamma function}
 \index{Beta function}
@@ -11,7 +12,7 @@
 \index{Struve functions}
 \index{Lommel functions}
 \index{Whittaker functions}
-\index{PolyLogarithm and related functions} \index{Dilog function}
+\index{polylogarithm and related functions} \index{Dilog function}
 \index{Riemann Zeta function}
 \index{Lambert's W function}
 \index{3j and 6j symbols} \index{Clebsch Gordan coefficients}
@@ -22,7 +23,6 @@
 \index{Nome and Related functions}
 \index{Stirling numbers}
 \hypertarget{SPECFNS}{}
-\subsection{Special Functions: Introduction}
 The package SPECFN is designed to provide algebraic and numeric manipulations of
 many common special functions, namely:
 
@@ -33,9 +33,9 @@ many common special functions, namely:
 \item \hyperlink{GAMMF}{The Gamma function};
 \item \hyperlink{BETAF}{The Beta function};
 \item \hyperlink{DIGAM}{The psi function} \& its \hyperlink{POLYGAM}{derivatives};
-\item \hyperlink{BESSELF}{The Bessel functions} J and Y of the first and second kinds;
-\item \hyperlink{BESSELF}{The modified Bessel functions} I and K;
-\item \hyperlink{BESSELF}{The Hankel functions} H1 and H2;
+\item \hyperlink{BESSELF}{The Bessel functions} $J$ and $Y$ of the first and second kinds;
+\item \hyperlink{BESSELF}{The modified Bessel functions} $I$ and $K$;
+\item \hyperlink{BESSELF}{The Hankel functions} $H^{(1)}$ and $H^{(2)}$;
 \item \hyperlink{AIRYF}{The Airy functions};
 \item \hyperlink{HYPERGEOM}{The Kummer hypergeometric functions} M and U;
 \item \hyperlink{HYPERGEOM}{The Struve, Lommel and Whittaker functions};
@@ -49,15 +49,15 @@ many common special functions, namely:
 \item \hyperlink{JACEF}{Jacobi's Elliptic Functions};
 \item \hyperlink{ELLIPI}{Elliptic Integrals};
 \item \hyperlink{JACTF}{Jacobi's Theta Functions};
-\item \hyperlink{ELLIPNOME}{Nome of Elliptic functions};
+\item \hyperlink{ELLIPNOME}{Nome of Elliptic Functions};
 \item \hyperlink{STIRL}{Stirling Numbers};
 \item and some \hyperlink{CONSTS}{well-known constants}.
 \end{itemize}
 
 All of the above functions (except Stirling numbers) are autoloading.
 
-More information on all these the functions may be found on the website
-\href{https://dlmf.nist.gov/}{DLMF:NIST} although curently not all functions
+More information on all these functions may be found on the website
+\href{https://dlmf.nist.gov/}{DLMF:NIST} although currently not all functions
 may conform to these standards.
 
 All algorithms whose sources are uncredited are culled from series or
@@ -74,7 +74,7 @@ pictures from \cite{AbramowitzStegun:72}.
 Most of these polynomial functions are not  autoloading. This package needs
 to be loaded before they may be used with the command:
 \begin{verbatim}
-  load-package "specfn";
+        load_package specfn;
 \end{verbatim}
 
 \subsubsection{Orthogonal Polynomial Functions}
@@ -119,7 +119,6 @@ are defined in the form of a \REDUCE{} ruleset. Therefore, in order to
 get a quick insight into the simplification rules one can use the
 ShowRules operator, e.g.
 \begin{verbatim}
-
 ShowRules BesselI;
 
                           1          ~z     - ~z
@@ -159,16 +158,15 @@ ShowRules BesselI;
  df(besseli(~n,~z),~z)
 
   => besseli(1,~z) when numberp(~n) and ~n=0}
-
 \end{verbatim}
 Several \REDUCE\ packages (such as Sum or Limits) obtain different
 (hopefully better)
 results for the algebraic simplifications when the SPECFN package 
-is loaded, because the later package contains some information which
+is loaded, because the latter package contains some information which
 may be useful and directly applicable for other packages, e.g.:
 
 \begin{verbatim}
-sum(1/k^s,k,1,infinity); % will be evaluated to zeta(s)
+sum(1/k^s,k,1,infinity);  % evaluates to zeta(s)
 \end{verbatim}
 
 \ttindexswitch{savesfs}
@@ -180,7 +178,8 @@ will not be needed again.  In this case, the switch \sw{savesfs} may be
 turned off in order to inhibit the storage of approximated values.  The
 switch is on by default.
 
-\hypertarget{OPERATOR:CHI}{}
+\subsection{Integral Functions}
+\hypertarget{operator:CHI}{}
 \hypertarget{operator:Ci}{}
 \hypertarget{operator:dilog}{}
 \hypertarget{operator:Ei}{}
@@ -194,10 +193,9 @@ switch is on by default.
 \ttindex{Li}\ttindex{Ei}\ttindex{Erf}
 \ttindex{Fresnel\_S}\ttindex{Fresnel\_C}
 \hypertarget{INTEGF}{}
-\subsection{Integral Functions}
 
-The SPECFN package includes manipulation and a limited numerical
-evaluation for some Integral functions, namely
+The SPECFN package includes manipulation and limited numerical
+evaluation for some integral functions, namely
 
 \f{erf}, \f{erfc}, \f{Si}, \f{Shi}, \f{si}, \f{Ci}, \f{Chi}, \f{Ei}, \f{Li},  
 \f{Fresnel\_C}, and \f{Fresnel\_S}.
@@ -226,11 +224,11 @@ The exponential and related integrals are defined by the following:
 \end{eqnarray*}
 where $\gamma$ is Euler's constant (\f{Euler\_gamma}).
 
-The definitions of the exponential and related integrals, the derviatives and some limits are
-known together with some simple properties such as symmetry.
-conditions.
+The definitions of the exponential and related integrals, the
+derviatives and some limits are known, together with some simple
+properties such as symmetry conditions.
 
-The numerical approximation for the Integral functions suffer
+The numerical approximations for the integral functions suffer
 from the fact that the precision is not set correctly for
 values of the argument above 10.0 (approx.) and from the
 usage of summations even for large arguments.
@@ -239,12 +237,12 @@ $\mathop{\mathrm{Li}(z)}$ is simplified to $\mathop{\mathrm{Ei}}(\ln(z))$ .
 
 \subsection{The \texorpdfstring{$\Gamma$}{Gamma} Function and Related Functions}
 
+\subsubsection{The \texorpdfstring{$\Gamma$}{Gamma} Function}
 \hypertarget{GAMMF}{}
 \hypertarget{operator:Gamma}{}
 \hypertarget{operator:igamma}{}
 \hypertarget{operator:Polygamma}{}
 \hypertarget{operator:psi}{}
-\subsubsection{The  \texorpdfstring{$\Gamma$}{Gamma} Function}
 \index{Gamma function}\index{$\Gamma$ function}
 
 This is represented by the unary operator \f{Gamma}.
@@ -274,37 +272,37 @@ and is defined by
 $$ \gamma(a, z) = \int_0^z e^{-t}t^{a-1}\, \mathrm{d}t.$$
 The normalised incomplete gamma function $P(a,z)$ is provided by the binary
 function \f{igamma} and is defined as
-$$P(a,z) = \frac{\gamma(a,z)}{\Gamma(a)}$$
+$$P(a,z) = \frac{\gamma(a,z)}{\Gamma(a)}.$$
                 
+\subsubsection{The Beta Functions}
 \hypertarget{BETAF}{}
 \hypertarget{operator:Beta}{}
 \hypertarget{operator:ibeta}{}
-\subsubsection{The Beta Functions}
 \index{Beta function}
 \ttindex{Beta}\ttindex{ibeta}
 The binary function $B(a,b)$ is related to the $\Gamma$
 function\cite{AbramowitzStegun:72} and is defined by
 $$ B(a,b) = \int_0^1 t^a (1-t)^b\, \mathrm{d}t =
 \frac{\Gamma(a)\Gamma(b)}{\Gamma(a+b)}.$$
-It is represented by the binary function \f{Beta} 
+It is represented by the binary function \f{Beta}.
 
 \index{Incomplete Beta functions}
 The unnormalised and nomalised incomplete Beta funtions are defined by
 \begin{eqnarray*}
-B_x(a,b) & = & \int_0^x t^a (1-t)^b\, \mathrm{d}t\\
+B_x(a,b) & = & \int_0^x t^a (1-t)^b\, \mathrm{d}t,\\
 I_x(a,b) & = & \frac{B_x(a,b)}{B(a,b)}
 \end{eqnarray*}
 respectively. The normalised one is represented by the ternary function
 \texttt{ibeta(a,b,x)}.
 
-\hypertarget{DIGAM}{}
 \subsubsection{The Digamma Function, $\psi$}
+\hypertarget{DIGAM}{}
 \ttindex{psi}\index{$\psi$ function}\index{Psi function}\index{Digamma
 function}
 
 This is represented by the unary operator \f{psi}. It is defined as the
 logarithmic derivative of the $\Gamma$  function:
-$$ \psi(z) = \frac{\Gamma'(z)}{\Gamma(z)}$$
+$$ \psi(z) = \frac{\Gamma'(z)}{\Gamma(z)}. $$
 
 Initial transformations for $\psi$ are applied on a similar basis to
 those for $\Gamma$; where possible, $\psi(x)$ is rewritten in
@@ -316,8 +314,8 @@ asymptotic series, with a suitable scaling.
 
 Relations for the derivative and integral of $\psi$ are included.
 
-\hypertarget{POLYGAM}{}
 \subsubsection{The Polygamma Functions, $\psi^{(n)}$}
+\hypertarget{POLYGAM}{}
 \ttindex{Polygamma}\index{$\psi^{(n)}$ functions}\index{Polygamma
 functions}
 
@@ -336,6 +334,7 @@ term in the $n$th derivative of $\cot(z\pi)$.
 
 Simple relations for derivatives and integrals are provided.
 
+\subsection{Bessel Functions}
 \hypertarget{operator:BesselI}{}
 \hypertarget{operator:BesselJ}{}
 \hypertarget{operator:BesselK}{}
@@ -343,14 +342,13 @@ Simple relations for derivatives and integrals are provided.
 \hypertarget{operator:Hankel1}{}
 \hypertarget{operator:Hankel2}{}
 \hypertarget{BESSELF}{}
-\subsection{Bessel Functions}
 \ttindex{BesselJ}\ttindex{BesselY}
 \ttindex{BesselI}\ttindex{BesselK}
 \ttindex{Hankel1}\ttindex{Hankel2}\index{Bessel functions}
 \index{Hankel functions}
 
-Support is provided for the Bessel functions J and Y, the modified
-Bessel functions I and K, and the Hankel functions of the first and
+Support is provided for the Bessel functions $J$ and $Y$, the modified
+Bessel functions $I$ and $K$, and the Hankel functions of the first and
 second kinds.  The relevant operators are, respectively, \f{BesselJ},
 \f{BesselY}, \f{BesselI}, \f{BesselK}, \f{Hankel1} and \f{Hankel2}, 
 which are all binary operators.
@@ -358,24 +356,24 @@ which are all binary operators.
 The Bessel functions $J_\nu(z)$ and $Y_\nu(z)$ are solutions of the Bessel
 equation:
 $$z^2\frac{\mathrm{d}^2w}{\mathrm{d}z^2}+z\frac{\mathrm{d}w}{\mathrm{d}z} +
-(z^2 - \nu^2)w = 0$$.
-Bessel's function of the first kind ($J_\nu(z)$ has the series expansion:
+(z^2 - \nu^2)w = 0.$$
+Bessel's function of the first kind, $J_\nu(z)$, has the series expansion:
 $$J_\nu(z) = \left(\frac{z}{2}\right)^\nu \sum_{k=0}^\infty (-1)^k
 \frac{(z/2)^{2k}}{k! \Gamma(\nu + k+1)}\,.$$
-Bessel's function of the second kind ($Y_\nu(z)$) (for non-integral $\nu$) is
+Bessel's function of the second kind, $Y_\nu(z)$, (for non-integral $\nu$) is
 defined by:
 $$Y_\nu(z) = \frac{J_\nu(z) \cos(\nu\pi)-J_{-\nu}(z)}{\sin(\nu\pi)}$$
 or by its limiting value:
 $$Y_\nu(z) =
 \left.\frac{1}{\pi}\frac{\partial{J_\nu(z)}}{\partial\nu}\right|_{\nu=n} +\quad
-\left.\frac{(-1)^n}{\pi}\frac{\partial{J_\nu(z)}}{\partial \nu}\right|_{\nu=-n},$$
+\left.\frac{(-1)^n}{\pi}\frac{\partial{J_\nu(z)}}{\partial \nu}\right|_{\nu=-n}. $$
 It is sometimes known as Weber's function.
 
 The Hankel functions are alternative solutions of the Bessel equation
 distinguished by their asymptotic behaviour as $z\rightarrow \infty$:
 \begin{eqnarray*}
 H_\nu^{(1)}(z) & \sim & \sqrt{\frac{2}{\pi z}}\exp\left(i\left(z-\frac{\nu\pi}
-{2}-\frac{\pi}{4}\right)\right)\\
+{2}-\frac{\pi}{4}\right)\right),\\
 H_\nu^{(2)}(z) & \sim & \sqrt{\frac{2}{\pi z}}\exp\left(-i\left(z-\frac{\nu\pi}
 {2}-\frac{\pi}{4}\right)\right).
 \end{eqnarray*}
@@ -387,7 +385,7 @@ $$z^2\frac{\mathrm{d}^2w}{\mathrm{d}z^2}+z\frac{\mathrm{d}w}{\mathrm{d}z} -
 Since they may be obtained by replacing $z$ by $\pm i z$ the modified Bessel
 functions are sometimes called \emph{Bessel functions  of imaginary argument}.
 $I_\nu(z)$ has the series expansion:
-$$I_\nu(z) = \left(\frac{z}{2}\right)^\nu \sum_{k=0}^\infty \frac{(z/2)^{2k}}{k!\Gamma(\nu+k+1)}\,.$$
+$$I_\nu(z) = \left(\frac{z}{2}\right)^\nu \sum_{k=0}^\infty \frac{(z/2)^{2k}}{k!\Gamma(\nu+k+1)}\,,$$
 whereas $K_\nu(z)$ is distinguished by its asymptotic behaviour:
 $$K_\nu(z) \sim \sqrt{\frac{\pi}{2 z}}e^{-z}$$
 as $z\rightarrow \infty$. For more information, see the DLMF:NIST chapters on
@@ -397,80 +395,77 @@ as $z\rightarrow \infty$. For more information, see the DLMF:NIST chapters on
 The following initial transformations are performed:
 
 \begin{itemize}
-\item trivial cases or poles of J, Y, I and K are handled;
-\item J, Y, I and K with negative first argument are transformed to have
+\item trivial cases or poles of $J$, $Y$, $I$ and $K$ are handled;
+\item $J$, $Y$, $I$ and $K$ with negative first argument are transformed to have
 positive first argument;
-\item J with negative second argument is transformed for positive second
+\item $J$ with negative second argument is transformed to have positive second
 argument;
-\item Y or K with non-integral or complex second argument is transformed
-into an expression in J or I respectively;
-\item derivatives of J, Y and I are carried out;
-\item derivatives of K with zero first argument are carried out;
+\item $Y$ or $K$ with non-integral or complex second argument is transformed
+into an expression in $J$ or $I$ respectively;
+\item derivatives of $J$, $Y$ and $I$ are carried out;
+\item derivatives of $K$ with zero first argument are carried out;
 \item derivatives of Hankel functions are carried out.
 \end{itemize}
 Also, if the \sw{COMPLEX} switch is on and \sw{ROUNDED} is off,
-expressions in Hankel functions are rewritten in terms of Bessels.
+expressions in Hankel functions are rewritten in terms of Bessel functions.
 
-No numerical approximation is provided for the Bessel K function, or for
-the Hankel functions for anything other than special cases.  The
-algorithms used for the other Bessels are generally implementations of
-standard ascending series for J, Y and I, together with asymptotic
-series for J and Y; usually, the asymptotic series are tried first, and
-if the argument is too small for them to attain the current precision,
-the standard series are applied.  An obvious optimization prevents an
-attempt with the asymptotic series if it is clear from the outset that
-it will fail.
+No numerical approximation is provided for the Bessel $K$ function, or
+for the Hankel functions for anything other than special cases.  The
+algorithms used for the other Bessel functions are generally
+implementations of standard ascending series for $J$, $Y$ and $I$,
+together with asymptotic series for $J$ and $Y$; usually, the
+asymptotic series are tried first, and if the argument is too small
+for them to attain the current precision, the standard series are
+applied.  An obvious optimization prevents an attempt with the
+asymptotic series if it is clear from the outset that it will fail.
 
 There are no rules for the integration of Bessel and Hankel functions.
  
+\subsection{Airy Functions}
 \hypertarget{operator:AIRY_AI}{}
 \hypertarget{operator:AIRY_AIPRIME}{}
 \hypertarget{operator:AIRY_BI}{}
 \hypertarget{operator:AIRY_BIPRIME}{}
 \hypertarget{AIRYF}{}
 \index{Airy functions}
-\subsection{Airy Functions}
 \ttindex{Airy\_Ai}\ttindex{Airy\_Bi}
 \ttindex{Airy\_Aiprime}\ttindex{Airy\_Biprime}
 
-Support is provided for the Airy Functions Ai and Bi and for the
-Airyprime Functions Aiprime and Biprime. The relevant operators are
+Support is provided for the Airy Functions $Ai$ and $Bi$ and for their
+derivatives $Ai'$ and $Bi'$.  The relevant operators are
 respectively \f{Airy\_Ai}, \f{Airy\_Bi}, \f{Airy\_Aiprime} and
-\f{Airy\_Biprime}, which are all unary operators with one argument.
+\f{Airy\_Biprime}, which are all unary.
 
 Airy functions are solutions of the differential equation:
-$$ \frac{\mathrm{d}^2 w}{\mathrm{d}z^2} = z w$$
-and the 'prime' functions are their respective derivatives.
+$$ \frac{\mathrm{d}^2 w}{\mathrm{d}z^2} = z w.$$
 
-The following cases can be performed:
-\begin{itemize}
-\item Trivial cases of Airy\_Ai and Airy\_Bi and their primes are handled.
-\item All cases can handle both complex and real arguments.
-\item The Airy Functions can also be represented in terms of Bessel
-Functions by activating an inactive rule set.
-\end{itemize}
+Trivial cases of Airy\_Ai and Airy\_Bi and their primes are evaluated,
+and all functions accept both real and complex arguments.
 
-In order to activate the Airy Function to Bessel Rules one should type:
+The Airy Functions can also be represented in terms of Bessel
+Functions by activating an inactive rule set:
 \begin{verbatim}
     let Airy2Bessel_rules;
 \end{verbatim}
-As a result the \f{Airy\_Ai} function will be calculated using the formula: 
+As a result the \f{Airy\_Ai} function will be evaluated using the formula: 
 \[
 \f{Ai}(z) =  \frac{1}{3} \sqrt{z} \left[I_{-1/3}(\zeta)
-- I_{1/3}(\zeta)\right]\quad \text{, where }
- \zeta =  \frac{2}{3} z^{\frac{2}{3}}
+- I_{1/3}(\zeta)\right], \text{ where }
+ \zeta =  \frac{2}{3} z^{\frac{2}{3}}.
 \]
 \textbf{Note:} In order to obtain satisfactory approximations
-to results both the \sw{COMPLEX} and \sw{ROUNDED} switches must be on.
+to numerical values both the \sw{COMPLEX} and \sw{ROUNDED} switches
+must be on.
 
 The algorithms used for the Airy Functions are implementations of
-standard ascending series, together with asymptotic series. At some
-point it is better to use the asymptotic approach, rather than the
-series. This value is calculated by the program and depends on the given
+standard ascending series, together with asymptotic series.  At some
+point it is better to use the asymptotic rather than the ascending
+series, which is calculated by the program and depends on the given
 precision.
 
 There are no rules for the integration of Airy Functions.
 
+\subsection{Hypergeometric and Other Functions}
 \hypertarget{operator:KummerM}{}
 \hypertarget{operator:KummerU}{}
 \hypertarget{operator:Lommel1}{}
@@ -480,7 +475,6 @@ There are no rules for the integration of Airy Functions.
 \hypertarget{operator:WhittakerM}{}
 \hypertarget{operator:WhittakerU}{}
 \hypertarget{HYPERGEOM}{}
-\subsection{Hypergeometric and Other Functions}
 \ttindex{KummerM}\ttindex{KummerU}\ttindex{StruveH}
 \ttindex{StruveL}\ttindex{Lommel1}\ttindex{Lommel2}
 \ttindex{WhittakerM}\ttindex{WhittakerW}
@@ -509,30 +503,30 @@ Manipulations are provided to handle special cases and simplify where
 appropriate.
 \item The Kummer confluent hypergeometric functions M and U (the
 hypergeometric ${_1F_1}$ or $\Phi$, and $z^{-a}{_2F_0}$ or $\Psi$,
-respectively), with the ternary operators \f{KummerM} and \f{KummerU} with
-arguments $a$, $b$ and $x$ are solutions of the differential equation:
+respectively), represented by the ternary operators \f{KummerM} and \f{KummerU} with
+arguments $a$, $b$ and $x$, are solutions of the differential equation:
 $$\frac{\mathrm{d}^2w}{\mathrm{d}x^2}+(b-x)\frac{\mathrm{d} w}{\mathrm{d}x}
 -a w = 0\,.$$
 There are manipulations for special cases and simplifications, derivatives
 and, for the M function, numerical approximations for real arguments.
-\item The Whittaker M and W function are variations upon the Kummer
-functions which, with the ternary operators \f{WhittakerM} and 
+\item The Whittaker M and W functions are variations upon the Kummer
+functions, which are represented by the ternary operators \f{WhittakerM} and 
 \f{WhittakerW} with arguments $\kappa$, $\mu$ and $x$.
 They satisfy the Whittaker differential equation:
 $$\frac{\mathrm{d}^2W}{\mathrm{d}x^2}+\left(\frac{1-4\mu^2}{4x^2}+
 \frac{\kappa}{x} -\frac{1}{4}\right)W =0\,,$$
 which is obtained from the Kummer differential equation via the substituions
 $$W=e^{z/2}z^{\mu+1/2} w,\qquad \kappa=b/2-a\qquad \mu =(b-1)/2\,.$$
-The Whittaker M \& W functions with non-numeric arguments are simplified to
-expressions involving the Kummer M \& U functions respectively.
+The Whittaker M and W functions with non-numeric arguments are simplified to
+expressions involving the Kummer M and U functions respectively.
 \end{itemize}
 
+\subsection{The Riemann $\zeta$ Function}
 \hypertarget{operator:zeta}{}
 \hypertarget{RIEMZETA}{}
-\subsection{The Riemann $\zeta$ Function}
 \ttindex{zeta}\index{Riemann Zeta function}\index{Zeta function}
 \index{$\zeta$ function}
-This is represented by the unary operator \f{Zeta}. It is defined by the
+This is represented by the unary operator \f{Zeta} and defined by the
 formula:
 $$\zeta(s) = \sum_{n=1}^\infty \frac{1}{n^s}.$$
 
@@ -552,37 +546,40 @@ arguments) to use a fast-converging series obtained from \cite{BenderOrszag:78}.
 
 There are no rules for differentiation or integration of $\zeta$.
 
+\subsection{Polylogarithm and Related Functions}
 \hypertarget{operator:LERCH_PHI}{}
 \hypertarget{POLYLOG}{}
-\index{PolyLogarithm and related functions} \index{Dilog function}
+\index{Polylogarithm and related functions} \index{Dilog function}
 \ttindex{dilog}
-\subsection{PolyLogarithm and Related Functions}
 The dilogarithm function $Li_2(z)$ is defined by
 $$\mathrm{Li}_2(z) \equiv \sum_{n=1}^\infty \frac{z^n}{n^2} =
--\int_0^z \frac{\log(1-t)}{t}\, \mathrm{d}t.$$
-It is represented by the unary function \f{dilog}.\\
+-\int_0^z \frac{\log(1-t)}{t}\, \mathrm{d}t$$
+and represented by the unary function \f{dilog}.
 
 \ttindex{Polylog}
-The polylogarithm function $Li_s(z)$ defined by 
+The polylogarithm function $Li_s(z)$ is defined by 
 $$\mathrm{Li}_s(z) \equiv \sum_{n=1}^\infty \frac{z^n}{n^s} =
 \frac{z}{\Gamma(s)} \int_0^\infty \frac{t^{s-1}}{e^t-z}\, \mathrm{d}t.$$
+and represented by the binary function \f{Polylog}.
 The case $s=2$ is, of course, the dilogarithm function and the special case
 when $z=1$ gives the Riemann zeta function $\zeta(s)$. For $s=1$, the
 polylogarithm reduces to the elementary function: $-\log(1-t)$.
 
 \ttindex{Lerch\_Phi}
-Lerch's transcendent or Lerch\_Phi function is defined by
-$$\Phi(z,s,a) = \sum_{n=0}^\infty \frac{z^n}{(n+a)^s}$$
-It is represented by the ternary  function \texttt{Lerch\_Phi(z,s,a)}.
+Lerch's transcendent or Lerch Phi function is defined by
+$$\Phi(z,s,a) = \sum_{n=0}^\infty \frac{z^n}{(n+a)^s}.$$
+It is represented by the ternary function \texttt{Lerch\_Phi(z,s,a)}.
 For the special case $a=1$, Lerch's function is related to a polylogarithm:
 $z Li_s(z) = \Phi(z,s,1)$.
 
+\subsection{Lambert's $\omega$ (or W) Function}
 \hypertarget{LAMBERTW}{}
 \index{Lambert's W function}\ttindex{Lambert\_W}
-\subsection{Lambert's $\omega$ (or W) Function}
 
-Lambert's $\omega$ (\texttt{Lambert\_W}) function is the inverse of the function
-$w*e^w$. Therefore it is an important contribution for the solve package.
+Lambert's function $\omega(x)$, represented by the unary
+operator \texttt{Lambert\_W}, is the inverse of the function
+$x=we^w$. Therefore it is an important contribution for the solve
+package.
 
 For real-valued arguments $\omega(x)$ is only real-valued in the
 interval $(-1/e, \infty)$.  In the interval $(-1/e, 0)$, it is double-valued
@@ -614,19 +611,19 @@ The real positive branch is part of the principal branch and currently there
 is no way of computing values on the real negative  branch or indeed any
 non-principal values.
 
+\subsection{Spherical and Solid Harmonics}
 \hypertarget{operator:SphericalHarmonicY}{}
 \hypertarget{operator:SolidHarmonicY}{}
 \hypertarget{SPHSOLH}{}
 \index{Spherical and Solid Harmonics}
-\subsection{Spherical and Solid Harmonics}
 \ttindex{SolidHarmonicY} \ttindex{SphericalHarmonicY}
  
 The relevant operators are, respectively,\\
 \f{SolidHarmonicY} and \f{SphericalHarmonicY}.
 
 The \f{SolidHarmonicY} operator implements the Solid Harmonics
-described below. It expects 6 parameter, namely n,m,x,y,z and r2
-and returns a polynomial in x,y,z and r2.
+described below. It expects 6 parameter, namely $n$, $m$, $x$, $y$, $z$ and $r2$
+and returns a polynomial in $x$, $y$, $z$ and $r2$.
 
 The operator
 \f{SphericalHarmonicY} is a special case of \f{SolidHarmonicY}
@@ -639,15 +636,15 @@ algebraic procedure SphericalHarmonicY(n,m,theta,phi);
 \end{verbatim}
 
 
-Solid Harmonics of order n (Laplace polynomials)
-are homogeneous polynomials of degree n in x,y,z
-which are solutions of Laplace equation:-
+Solid Harmonics of order $n$ (Laplace polynomials)
+are homogeneous polynomials of degree $n$ in $x$, $y$, $z$
+which are solutions of the Laplace equation:-
 
 \begin{verbatim}
        df(P,x,2) + df(P,y,2) + df(P,z,2) = 0.
 \end{verbatim}
 
-There are $2n+1$ independent such polynomials for any given $n >=0$
+There are $2n+1$ independent such polynomials for any given $n \geq 0$
 and with:-
 
 \begin{verbatim}
@@ -658,16 +655,15 @@ they are given by the Fourier integral:-
 
 \begin{verbatim}
  S(n,m,w!-,w!0,w!+) =
-
        (1/(2*pi)) *
-       for u:=-pi:pi integrate (w!0 + w!+ * exp(i*u) + w!- *
-           exp(-i*u))^n * exp(i*m*u) * du;
+       for u:=-pi:pi integrate(w!0 + w!+ * exp(i*u)
+            + w!- * exp(-i*u))^n * exp(i*m*u) * du;
 \end{verbatim}
 
 which is obviously zero if $|m| > n$ since then all terms in the
-expanded integrand contain the factor exp(i*k*u) with k neq 0,
+expanded integrand contain the factor $e^{iku}$ with $k \neq 0$.
 
-S(n,m,x,y,z) is proportional to
+$S(n,m,x,y,z)$ is proportional to
 \begin{verbatim}
      r^n * Legendre(n,m,cos theta) * exp(i*phi)
 \end{verbatim}
@@ -675,69 +671,64 @@ where $r^2 = x^2 + y^2 + z^2$.
 
 The spherical harmonics are simply the restriction of the solid
 harmonics to the surface of the unit sphere and the set of all
-spherical harmonics {$n >=0; -n <= m =< n$} form a complete orthogonal
-basis on it, i.e. $<n,m|n',m'>$ = Kronecker\_delta(n,n') *
-Kronecker\_delta(m,m') using
-$<...|...>$ to designate the scalar product
-of functions over the spherical surface.
+spherical harmonics with $n \geq 0, -n \leq m \leq n$ form a complete
+orthogonal basis on it, i.e.\ $\langle n,m | n',m' \rangle
+= \delta_{n,n'} \delta_{m,m'}$ using $\langle \ldots | \ldots \rangle$
+to designate the scalar product of functions over the spherical
+surface.
 
 The coefficients of the solid harmonics are normalised in what
-follows to yield an ortho-normal system of spherical harmonics.
+follows to yield an orthonormal system of spherical harmonics.
 
 Given their polynomial nature, there are many recursions formulae
 for the solid harmonics and any recursion valid for Legendre functions
-can be 'translated' into solid harmonics. However the direct proof is
+can be `translated' into solid harmonics. However the direct proof is
 usually far simpler using Laplace's definition.
 
 It is also clear that all differentiations of solid harmonics are
 trivial, qua polynomials.
 
 Some substantial reduction in the symbolic form would occur if one
-maintained throughout the recursions the symbol r2 (r cannot occur
-as it is not rational in x,y,z). Formally the solid harmonics appear
-in this guise as more compact polynomials in (x,y,z,r2).
+maintained throughout the recursions the symbol $r2$ ($r$ cannot occur
+as it is not rational in $x,y,z$). Formally the solid harmonics appear
+in this guise as more compact polynomials in $x,y,z,r2$.
 
 Only two recursions are needed:-
 
-(i) along the diagonal (n,n);
+(i) along the diagonal $(n,n)$;
 
-(ii) along a line of constant n: (m,m),(m+1,m),...,(n,m).
+(ii) along a line of constant $n$: $(m,m),(m+1,m),\ldots,(n,m)$.
 
 Numerically these recursions are stable.
 
 For $m < 0$ one has:-
+\[ S(n,m,x,y,z) = (-1)^m S(n,-m,x,-y,z). \]
 
-\begin{verbatim}
-      S(n,m,x,y,z) = (-1)^m * S(n,-m,x,-y,z);
-\end{verbatim}
-
+\subsection{3j symbols and Clebsch-Gordan Coefficients}
 \hypertarget{CLEBSCHG}{}
 \ttindex{ThreejSymbol}\ttindex{SixjSymbol}
 \ttindex{Clebsch\_Gordan}
-\subsection{3j symbols and Clebsch-Gordan Coefficients}
-The operators \f{ThreeJSymbol}, \f{Clebsch\_Gordan} are defined like 
-in \cite{LandoltBoernstein:68} or \cite{Edmonds:57}. ThreeJSymbol expects as arguments
+The operators \f{ThreeJSymbol} and \f{Clebsch\_Gordan} are defined as 
+in \cite{LandoltBoernstein:68} or \cite{Edmonds:57} and expect as arguments
 three lists of values \{$j_i,m_i$\}, e.g.
-
 \begin{verbatim}
 ThreeJSymbol({J+1,M},{J,-M},{1,0});
 Clebsch_Gordan({2,0},{2,0},{2,0});
 \end{verbatim}
 
 \subsection{6j symbols }
-The operator \f{SixJSymbol} is defined like
-in \cite{LandoltBoernstein:68} or \cite{Edmonds:57}.
-SixJSymbol expects two lists of values \{$j_1,j_2,j_3$\} and
- \{$l_1,l_2,l_3$\} as arguments, e.g.
-
+The operator \f{SixJSymbol} is defined as
+in \cite{LandoltBoernstein:68} or \cite{Edmonds:57} and
+expects two lists of values \{$j_1,j_2,j_3$\} and
+\{$l_1,l_2,l_3$\} as arguments, e.g.
 \begin{verbatim}
 SixJSymbol({7,6,3},{2,4,6});
 \end{verbatim}
 
-In the current implementation of the SixJSymbol, there is only a limited
+In the current implementation of \f{SixJSymbol} there is only limited
 reasoning about the minima and maxima of the summation using
 the INEQ package, such that in most
-cases the special 6j-symbols (see e.g. \cite{LandoltBoernstein:68})
+cases the special 6j-symbols (see e.g.\ \cite{LandoltBoernstein:68})
 will not be found.
 
 \subsection{Elliptic Functions}
@@ -799,9 +790,9 @@ rather than its square $m$).  The notation for the most part follows  Lawden
 \cite{Lawden:89}. The last nine Jacobi functions are related to the three
 basic ones: \f{jacobisn(u,k)}, \f{jacobicn(u,k)} and \f{jacobidn(u,k)} and
 use Glaisher's notation. For example
-\[ \mathrm{ns}(x,k) = 1/\mathrm{sn}(u,k),\qquad
-\mathrm{cs}(x,k) = \mathrm{cn}(u,k)/\mathrm{sn}(u,k), \qquad
-\mathrm{cd}(x,k) = \mathrm{cn}(u,k)/\mathrm{dn}(u,k).\]
+\[ \mathrm{ns}(x,k) = \frac{1}{\mathrm{sn}(u,k)}, \qquad
+\mathrm{cs}(x,k) = \frac{\mathrm{cn}(u,k)}{\mathrm{sn}(u,k)}, \qquad
+\mathrm{cd}(x,k) = \frac{\mathrm{cn}(u,k)}{\mathrm{dn}(u,k)}. \]
 
 Extended rule lists are provided for differentiation of these functions with
 respect to either argument, to implement the standard addition formulae,
@@ -812,21 +803,21 @@ When their arguments are purely numerical, these functions  will be evaluated
 numerically if the \sw{rounded} switch is used. For
 complex arguments it is also better if the \sw{complex} switch is on.
 
+\subsubsection{Jacobi Amplitude Function}
 \hypertarget{operator:Jacobiam}{}
 \ttindex{Jacobiam}
-\subsubsection{Jacobi Amplitude Function}
-The amplitude of u can be evaluated using the \f{jacobiam(u,k)} command.
-A rule list is provided for differentiation of this functions with
-respect to either argument.
+The amplitude of $u$ can be evaluated using the \f{jacobiam(u,k)}
+command.  A rule list is provided for differentiation of this
+functions with respect to either argument.
 
-\subsubsection{Arithmetic Geometric Mean}
+\subsubsection{Arithmetic Geometric Mean (AGM)}
 A procedure to evaluate the AGM of initial values \(a_0,b_0,c_0\) 
 exists as \\
 \texttt{AGM\_function(\(a_0,b_0,c_0\))} and will return \\
 $\{ N, AGM, \{ a_N, \ldots ,a_0\}, \{ b_N, \ldots ,b_0\}, 
 \{c_N, \ldots ,c_0\}\}$, 
-where N is the number of steps to compute the AGM to the 
-desired acuracy. \\
+where $N$ is the number of steps to compute the AGM to the 
+desired accuracy.
 
 To determine the Elliptic Integrals K($m$), E($m$) we use initial values
 \(a_0 = 1\); \(b_0 = \sqrt{1-k^2}\) ; \(c_0 = k\).
@@ -837,18 +828,18 @@ than for direct use by users.
 
 \subsubsection{Descending Landen Transformation}
 The procedure to evaluate the Descending Landen Transformation of 
-phi and alpha uses the following equations:
+$\phi$ and $\alpha$ uses the following equations:
 \begin{align*}
- (1+\sin \alpha_{n+1})(1+\cos \alpha_n)=2 &\text{ where } \alpha_{n+1}<\alpha_n \\
-  \tan(\phi_{n+1}-\phi_n)=\cos \alpha_n \tan \phi_n & \text{ where } \phi_{n+1}>\phi_n
+ (1+\sin \alpha_{n+1})(1+\cos \alpha_n)=2 &\text{ where } \alpha_{n+1}<\alpha_n, \\
+  \tan(\phi_{n+1}-\phi_n)=\cos \alpha_n \tan \phi_n & \text{ where } \phi_{n+1}>\phi_n.
 \end{align*}
-It can be called using \f{landentrans}($\phi_0$,$\alpha_0$)
+It can be called using \f{landentrans}($\phi_0$, $\alpha_0$)
 and will return \\
 $\{\{\phi_0, \ldots ,\phi_n\},\{\alpha_0, \ldots ,\alpha_n\}\}$.
 
+\subsection{Elliptic Integrals}
 \hypertarget{ELLIPI}{}
 \index{Elliptic Integrals}
-\subsection{Elliptic Integrals}
 The following functions have been implemented:
 
 \begin{itemize}
@@ -870,7 +861,7 @@ as in the literature some authors use the notation $\mathrm{E}(u, k)$ for
 the Legendre form and others for Jacobi's form.
 
 To bring the notation more into line with that in the NIST Digital Library of
-Mathematical Functions. To avoid any possible confusion, $\mathrm{E}(u, k)$ is used for
+Mathematical Functions and avoid any possible confusion, $\mathrm{E}(u, k)$ is used for
 the Legendre form and $\mathcal{E}(u, k)$ for Jacobi's form.
 This differs from the 2019 version of this section which followed Lawden \cite{Lawden:89}, 
 where the notation $\mathrm{D}(\phi, k)$  and $\mathrm{E}(u, k)$ were used for the 
@@ -881,18 +872,18 @@ derivatives of these functions, addition rules and periodicity and
 quasi-periodicity properties and to provide simplifications for special values
 of the arguments.
 
+\subsubsection{Elliptic F}
 \hypertarget{operator:EllipticF}{}
 \ttindex{EllipticF}
-\subsubsection{Elliptic F}
 
 The Elliptic F function can be used as \f{EllipticF(phi,k)} and 
 will return the value of the \emph{Incomplete Elliptic Integral of the 
 First Kind}:
 $$\mathrm{F}(\phi, k)=\int_0^\phi(1-k^2 \sin^2 \theta)^{-1/2} \mathrm{d}\theta.$$
 
+\subsubsection{Elliptic K}
 \hypertarget{operator:EllipticK}{}
 \ttindex{EllipticK}
-\subsubsection{Elliptic K}
 
 The Elliptic K function can be used as \f{EllipticK(k)} and will 
 return the value of the \emph{Complete Elliptic Integral of the
@@ -906,44 +897,44 @@ and will return the value
 $$\mathrm{K}(k')=\mathrm{K}(\sqrt{1-k^2})$$
 which is the other quarter-period of the Jacobi elliptic functions.
 
+\subsubsection{Elliptic E}
 \hypertarget{operator:EllipticE}{}
 \ttindex{EllipticE}
-\subsubsection{Elliptic E}
 
 The Elliptic E function comes with either one or two arguments;
 used with two arguments as \f{EllipticE(u,k)}
 it will return the value of Legendre's form of
 the \emph{Incomplete Elliptic Integral of the Second Kind}:
-$$\mathrm{E}(\phi, k)=\int_0^\phi (\sqrt{1-k^2 \sin^2 \theta} \mathrm{d}\theta.$$
+$$\mathrm{E}(\phi, k)=\int_0^\phi \sqrt{1-k^2 \sin^2 \theta} \,\mathrm{d}\theta.$$
  When called with one argument \f{EllipticE(k)} will return the value of the
 \emph{Complete Elliptic Integral of the Second Kind}:
 $$\mathrm{E}(k)=\mathrm{E}(\pi/2, k) =
-\int_0^{\pi/2} (\sqrt{1-k^2 \sin^2 \theta} \mathrm{d}\theta.$$
+\int_0^{\pi/2} \sqrt{1-k^2 \sin^2 \theta} \,\mathrm{d}\theta.$$
 
 The complementary Elliptic E$'$ function can be used as \f{EllipticE!$'$(k)}
 and will return the value 
-$$\mathrm{E}(k') = \mathrm{E}(\sqrt{1-k^2})$$.
+$$\mathrm{E}(k') = \mathrm{E}(\sqrt{1-k^2}).$$
 
+\subsubsection{Jacobi E}
 \hypertarget{operator:JacobiE}{}
 \ttindex{JacobiE}
-\subsubsection{Jacobi E}
 The Jacobi E function can be used as  \f{JacobiE(u,k)};
 it will return the value of Jacobi's form of
 the \emph{Incomplete Elliptic Integral of the Second Kind}:
-$$\mathcal{E}(u, k)=\int_0^u \mathrm{dn}^2 (v, k) \mathrm{d}v.$$ 
+$$\mathcal{E}(u, k)=\int_0^u \mathrm{dn}^2 (v, k) \,\mathrm{d}v.$$ 
 
 The relationship between the two forms of incomplete elliptic integrals can
 be expressed as
 $$\mathcal{E}(u, k) = \mathrm{E}(\mathrm{am}(u), k).$$
 Note that
 $$\mathrm{E}(k)=\mathcal{E}(\mathrm{K}(k), k)
-=\int_0^{\mathrm{K}(k)} \mathrm{dn}^2(v, k)  \mathrm{d}v.$$
+=\int_0^{\mathrm{K}(k)} \mathrm{dn}^2(v, k) \,\mathrm{d}v.$$
 
-\emph{Display of the Jacobi E function in Reduce} causes some minor difficulty. 
+\emph{Display of the Jacobi E function in \REDUCE} causes some minor difficulty. 
 If the GUI supports calligraphic characters there is no problem and it is rendered
- as $\mathcal{E}(u,k)$.
- However, this is currently not the case with the CSL GUI and so it is rendered as $\epsilon$.
- The uppercase version cannot reasonably be used as it is indistinguishable from uppercase E
+as $\mathcal{E}(u,k)$.
+However, this is currently not the case with the CSL GUI and so it is rendered as $\epsilon$.
+The uppercase version cannot reasonably be used as it is indistinguishable from uppercase E
 which is used for Elliptic E.
 In non-GUI interfaces the Jacobi E function is rendered as Epsilon.
 
@@ -954,16 +945,16 @@ In non-GUI interfaces the Jacobi E function is rendered as Epsilon.
 %Third Kind}}.
 %
 
+\subsubsection{Jacobi's Zeta Function}
 \hypertarget{operator:JacobiZeta}{}
 \ttindex{JacobiZeta}\index{Zeta function of Jacobi}
-\subsubsection{Jacobi's Zeta Function}
 
 This can be called as \f{JacobiZeta(u,k)} and refers to Jacobi's (elliptic)
 Zeta function $\mathrm{Z}(u,k)$ whereas the operator \f{Zeta} will invoke
 Riemann's $\zeta$ function.
 
-\hypertarget{JACTF}{}
 \subsection{Jacobi Theta Functions}
+\hypertarget{JACTF}{}
 \index{Jacobi Theta functions}
 These theta functions differ from those originally defined by Lisa Temme
 in a number of respects.
@@ -993,7 +984,7 @@ owing to the appearance of $q^{1/4}$ in their defining expansions.
 \f{elliptictheta3} and \f{elliptictheta4} are, however, single-valued
 functions of $q$.
 
-Regarded as functions of the 'parameter' (usually denoted by $\tau$ where
+Regarded as functions of the `parameter' (usually denoted by $\tau$ where
 $q = \exp(i\pi\tau)$), \f{elliptictheta1} and \f{elliptictheta2} are
 single-valued functions of $\tau$. 
 
@@ -1030,7 +1021,7 @@ For such values of $|q|$, Jacobi's transformation $\tau'=-1/\tau$ can be
 used to produce a smaller value of the nome and so increase the rate of
 convergence.  When $\Re q < 0$, the Jacobi transformation is preceded by the
 modular transformation
-$\tau' = 1+\tau$, which has the effect  of multiplying $q$ by -1, so that 
+$\tau' = 1+\tau$, which has the effect  of multiplying $q$ by $-1$, so that 
 the new nome has a non-negative real part. 
 
 This works very well for real values of $q$, but for complex
@@ -1041,10 +1032,10 @@ $|q'|  \approx  |q|^{\alpha^2}$ where $\alpha =\pi/|\arg(q)| \geq 2$.
 Thus the worst case occurs for values of the nome $q$ near to $\pm i$ where 
 $\alpha \approx 2$.
 
+\subsubsection{Some Numerical Utility Functions}
 \hypertarget{operator:nome}{}
 \hypertarget{ELLIPNOME}{}
 \ttindex{nome} \index{Nome and Related functions}
-\subsubsection{Some Numerical Utility Functions}
 
 Five utility functions are provided:
 \begin{itemize}
@@ -1066,28 +1057,28 @@ the Jacobi elliptic functions associated with the nome $q$.
 Finally, \f{nome(k)} returns the nome $q$ associated with the modulus $k$ of
 a Jacobi elliptic function and is essentially the inverse of \f{nome2mod}.
 
-\hypertarget{STIRL}{}
 \subsection{Stirling Numbers}
+\hypertarget{STIRL}{}
 \index{Stirling numbers}\ttindex{Stirling1}\ttindex{Stirling2}
 The Stirling numbers of the first and second kind are computed 
-by the calling the binary operators \f{Stirling1} and \f{Stirling2}
+by calling the binary operators \f{Stirling1} and \f{Stirling2}
 respectively.
 
 \index{Pochammer symbol}
 Stirling numbers of the first kind have the generating function:
-$$\sum_{m=0}^n s_n^m x^m  =  (x-n+1)_n.$$
+$$\sum_{m=0}^n s_n^m x^m  =  (x-n+1)_n$$
 where $(x-n+1)_n$ is the \hyperlink{POCH}{Pochhammer symbol}. This provides
-an convenient way of calculating these Stirling numbers by
+a convenient way of calculating these Stirling numbers by
 extracting coefficients of the polynomial obtained by evaluating the
 Pochhammer symbol.  \REDUCE however uses an explicit summation.
 
 Stirling numbers of the second kind are defined by the formula:
-$$S_n^m = \frac{1}{m!}\sum_{k=0}^m )(-1)^{m-k}{m \choose k} k^n$$
+$$S_n^m = \frac{1}{m!}\sum_{k=0}^m (-1)^{m-k}{m \choose k} k^n.$$
 \REDUCE uses this explicit summation to evaluate Stirling numbers of the
 second kind.
 
-\hypertarget{CONSTS}{}
 \subsection{Constants}
+\hypertarget{CONSTS}{}
 \ttindex{Euler\_Gamma}\ttindex{Khinchin}\ttindex{Golden\_Ratio}
 \ttindex{Catalan}
 
@@ -1095,25 +1086,25 @@ The following well-known constants are defined in the \REDUCE\ core,
 but the code for computing their numerical value when the switch \sw{ROUNDED}
 is on is contained in the special function package.
 \begin{itemize}
-\item Euler\_Gamma : Euler's constant, also available as -$\psi(1)$;
-\item Catalan : Catalan's constant;
-\item Khinchin : Khinchin's constant , defined in  \cite{Khinchin:64}.
- (takes a lot of time to compute);
-\item Golden\_Ratio : $\displaystyle\frac{1 + \sqrt{5}}{2}$ 
+\item \texttt{Euler\_Gamma} : Euler's constant, also available as $-\psi(1)$;
+\item \texttt{Catalan} : Catalan's constant;
+\item \texttt{Khinchin} : Khinchin's constant, defined in \cite{Khinchin:64}
+(which takes a lot of time to compute);
+\item \texttt{Golden\_Ratio} : $\displaystyle\frac{1 + \sqrt{5}}{2}$ 
 \end{itemize}
 
 
-\hypertarget{POLYFN}{}
 \subsection{Orthogonal Polynomials}
+\hypertarget{POLYFN}{}
 \index{Orthogonal polynomials}
 
 All the polynomials in this section take two or more parameters; the first is
 the degree of the polynomial and the last is its argument. Any remaining
 arguments are parameters which in the literature are normally rendered as
-subscripts and superscripts. First the definitions appropriate to all the sets
+subscripts and superscripts. First, the definitions appropriate to all the sets
 of orthogonal polynomials in the following subsections are listed.
 
-A set of polynomials $\{p_n(x)\},\, n=0,1,\ldots n$
+A set of polynomials $\{p_n(x)\},\, n=0,1,\ldots$
 are said to be \emph{orthogonal} on open interval $(a, b)$
 (where $a$ and/or $b$ may be infinite) with positive weight function $w(x)$ if
 $$\int_a^b p_n(x)p_m(x)w(x) \mathrm{d}x = 0 \qquad \mbox{when}\ m \neq n.$$
@@ -1131,17 +1122,17 @@ sets are orthonormal and hence $k_n \neq 1$ in general. In the subsections below
 on each of the polynomial sets, the interval $(a,b)$ over which the polynomials
 are orthogonal, the weight function $w(x)$ and the leading coefficient $k_n$ of
 the polynomial of degree $n$ are given together with any constraints on any
-additional parameters. Also given are what might be called the 'first moment'
+additional parameters. Also given are what might be called the `first moment'
 $\tilde{h}_n$ of the $n$th polynomial defined by:
-$$\tilde{h}_n = \int_a^b x  (p_n(x))^2 w(x) \mathrm{d}x$$
+$$\tilde{h}_n = \int_a^b x  (p_n(x))^2 w(x) \,\mathrm{d}x$$
 and the ratio
 $$r_n = \frac{\tilde{k}_n}{k_n}\quad\mbox{where}\ p_n(x) =
 k_n x^n + \tilde{k}_n x^{n-1} \ldots$$
 These quantities may be used in \href{https://dlmf.nist.gov/18.2#iv}
 {recurrence relations} when generating the polynomials.
 
-\hypertarget{LEGENDREP}{}
 \subsubsection{Legendre Polynomials}
+\hypertarget{LEGENDREP}{}
 \index{Legendre polynomials}\ttindex{LegendreP}
 The function call \texttt{LegendreP(n,x)} will return the $n$th Legendre
 polynomial if $n$ is a non-negative integer; otherwise the result will involve
@@ -1173,8 +1164,8 @@ of this section, they are \emph{not} orthonormal:
 $$\int_{-1}^1 \left(P_n^{(m)}(x)\right)^2 \mathrm{d}x = h_n =
 \frac{2(l+m)!}{(2l+1)!(l-m)!}\,.$$
 
-\hypertarget{CHEBYSHEVP}{}
 \subsubsection{Chebyshev Polynomials}
+\hypertarget{CHEBYSHEVP}{}
 \index{Chebysev polynomials} \ttindex{ChebyshevT}
 The function call \texttt{ChebyshevT(n,x)} will return the $n$th Chebyshev
 polynomial of the first kind if $n$ is a non-negative integer; otherwise the
@@ -1196,8 +1187,8 @@ The interval of definition is $(-1, 1)$, the weight function
 $w(x)=(1-x^2)^{-1/2}$ and, for the orthonormal case, the leading
 coefficients are given by $k_n= 2^n$, $\tilde{h}_n = \pi/2$ and $r_n=0$.
 
-\hypertarget{GEGENBAUERP}{}
 \subsubsection{Gegenbauer Polynomials}
+\hypertarget{GEGENBAUERP}{}
 \index{Gegenbauer polynomials} \ttindex{GegenbauerP}
 The function call \texttt{GegenbauerP(n,a,x)} will return the Gegenbauer
 polynomial of degree $n$ and parameter $a$ if $n$ is a non-negative integer
@@ -1213,11 +1204,11 @@ The parameter $a$ should satisfy $a >-1/2,\ \ a \neq 0$. Also
 $$\tilde{h}_n = \frac{2^{1-2 a}\pi \Gamma(n+2a)}{(n+a)(\Gamma(a))^2n!}\qquad
 \mbox{and}\quad r_n=0\,.$$
 
-\hypertarget{JACOBIP}{}
 \subsubsection{Jacobi Polynomials}
+\hypertarget{JACOBIP}{}
 \index{Jacobi polynomials} \ttindex{JacobiP}
 The function call \texttt{JacobiP(n,a,b,x)} will return the Jacobi
-polynomial of degree $n$ and parameters $a$ \& $b$ if $n$ is a non-negative
+polynomial of degree $n$ and parameters $a$ and $b$ if $n$ is a non-negative
 integer  and $a$ and $b$ are numerical; otherwise the result will involve
 the original operator \texttt{JacobiP} or on graphical interfaces
 $P_n^{(a, b)}(x)$ will be output.
@@ -1228,7 +1219,7 @@ $w(x)=(1-x)^a(1+x)^b$ and, for the orthonormal case, the leading
 coefficients are given by
 $$\tilde{h}_n = \frac{(n+a+b+1)_n}{2^nn!}$$
 where $(n+a+b+1)_n$ is the \hyperlink{POCH}{Pochhammer symbol}.
-The parameters $a$ \& $b$ should satisfy $a >-1,\ \ b > -1$. Also
+The parameters $a$ and $b$ should satisfy $a >-1,\ \ b > -1$. Also
 \begin{eqnarray*}
 \tilde{h}_0 & = & 2^{a+b+1}\frac{\Gamma(a+1)\Gamma(b+1)}{\Gamma(a+b+2)}\\
 \tilde{h}_n & = & 2^{a+b+1}\frac{\Gamma(n+a+1)\Gamma(n+b+1)}{(2 n +a+b+1)
@@ -1239,8 +1230,8 @@ r_n & = & \frac{n(a-b)}{2n+a+b}.
 The Legendre, Chebyshev and Gegenbauer polynomials are all, in fact, special
 cases of the Jacobi polynomials.
 
-\hypertarget{LAGUERREP}{}
 \subsubsection{Laguerre Polynomials}
+\hypertarget{LAGUERREP}{}
 \index{Laguerre polynomials}\ttindex{LaguerreP}
 The function call \texttt{LaguerreP(n,x)} will return the $n$th Laguerre
 polynomial if $n$ is a non-negative integer; otherwise the result will involve
@@ -1265,8 +1256,8 @@ $w(x)=e^{-x}x^a$ and, for the orthonormal case, the leading coefficients
 are given by $k_n=(-1)^n/n!$, $\tilde{h}_n = \Gamma(n+a+1)/n!$ and
 $r_n=-n(n+a)$. The parameter $a$ should satisfy $a > -1$.
 
-\hypertarget{HERMITEP}{}
 \subsubsection{Hermite Polynomials}
+\hypertarget{HERMITEP}{}
 \index{Hermite polynomials}\ttindex{HermiteP}
 The function call \texttt{HermiteP(n,x)} will return the $n$th Hermite
 polynomial if $n$ is a non-negative integer; otherwise the result will involve
@@ -1290,9 +1281,9 @@ evaluated using the recursive definition:
 $$F_0(x) = 0;\qquad F_1(x) = 1; \qquad F_n(x) = x F_{n-1}(x) + F_{n-2}(x)\,.$$
 
 The recursion is, of course, optimised as a simple loop to avoid repeated
-computation of lower order polynomials.
+computation of lower-order polynomials.
 
-\subsubsection{Euler Numbers \& Polynomials}
+\subsubsection{Euler Numbers and Polynomials}
 \index{Euler polynomials}\index{Euler numbers}
 \ttindex{EulerP}\ttindex{Euler}
 \hypertarget{EULERP}{}
@@ -1303,12 +1294,12 @@ derived directly from Pascal's triangle of binomial coefficients.
 
 The Euler numbers and polynomials have the following generating functions:
 
-$$\frac {2e^t} {1+e^{2t}} = \sum_{n=0}^{\infty}\frac{E_nt^n}{n!}\qquad\quad
+$$\frac {2e^t} {1+e^{2t}} = \sum_{n=0}^{\infty}\frac{E_nt^n}{n!},\qquad\quad
 \frac {e^{x t}} {1+e^t} = \sum_{n=0}^{\infty}\frac{E_n(x)t^n}{n!}$$
 respectively.  Thus $E_0=1$ and $E_1=0$. Furthermore the numbers and
 polynomials are related by the equations:
-$$ E_n = 2^nE_n(\frac{1}{2})\qquad\quad
-E_n(x) = \sum_{k=0}^n{{n \choose k} \frac{E_k}{2^k}(x-\frac{1}{2})^{n-k}}$$
+$$ E_n = 2^nE_n\left(\frac{1}{2}\right),\qquad\quad
+E_n(x) = \sum_{k=0}^n {n \choose k} \frac{E_k}{2^k} \left(x-\frac{1}{2}\right)^{n-k}.$$
 
 The Euler polynomials are evaluated for non-negative integer $n$ by using
 the summation immediately above.
@@ -1323,7 +1314,7 @@ all of the odd Bernoulli numbers, except \texttt{Bernoulli(1)}, are
 zero.
 
 The algorithms for Bernoulli numbers used are based upon those by Herbert Wilf,
-presented by Sandra Fillebrown.  \cite{Fillebrown:92}.  
+presented by Sandra Fillebrown \cite{Fillebrown:92}.  
 If the \sw{ROUNDED} switch is off,
 the algorithms are exactly those; if it is on, some further rounding may
 be done to prevent computation of redundant digits.  Hence, these
@@ -1331,11 +1322,11 @@ functions are particularly fast when used to approximate the Bernoulli
 numbers in rounded mode.
 
 The Bernoulli numbers and polynomials have the following generating functions:
-$$ \frac {t} {e^t-1} = \sum_{n=0}^{\infty}\frac{B_nt^n}{n!}\qquad\quad
+$$ \frac {t} {e^t-1} = \sum_{n=0}^{\infty}\frac{B_nt^n}{n!},\qquad\quad
 \frac {te^{x t}} {e^t -1} = \sum_{n=0}^{\infty}\frac{B_n(x)t^n}{n!}$$
 respectively. Thus $B_0=1$ and $B_1=-\frac{1}{2}$. Furthermore the numbers and
 polynomials are related by the equations:
-$$ B_n= B_n(0)\qquad\quad  B_n(x) = \sum_{k=0}^n{{n \choose k} B_kx^{n-k}}$$
+$$ B_n= B_n(0),\qquad\quad  B_n(x) = \sum_{k=0}^n {n \choose k} B_kx^{n-k}.$$
 
 The Bernoulli polynomials are evaluated for non-negative integer $n$ by using
 the summation immediately above.
@@ -1358,119 +1349,121 @@ for the development of the module for Clebsch-Gordan and 3j, 6j symbols
 and the module for spherical and solid harmonics was very much appreciated.
 \newpage
 
-\hypertarget{SPECFNTAB1}{}
 \subsection{Tables of Operators and Constants}
+\hypertarget{SPECFNTAB1}{}
 
-\textbf{Special Functions}\\
+\textbf{Special Functions}
+
 \fbox{
 \begin{tabular}{r l}
-\mbox{}\\
-Function & Operator \\[12pt]
-$Si(z)$ & \f{Si(z) }\\
-$si(z)$ & \f{s\_i(z) }\\
-$Ci(z)$ & \f{Ci(z) }\\
-$Shi(z)$ & \f{Shi(z) }\\
-$Chi(z)$ & \f{Chi(z) }\\
-$erf(z)$ & \f{Erf(z) }\\
-$erfc(z)$ & \f{erfc(z) }\\
-$Ei(z)$ & \f{Ei(z) }\\
-$Ei(log(z))$ & \f{Li(z) }\\
-$C(x)$ & \f{Fresnel\_C(x)} \\
-$S(x)$ & \f{Fresnel\_S(x)} \\[12pt]
+\rule{0pt}{16pt}Function & Operator\\[5pt]
+$\mathit{Si}(z)$ & \f{Si(z)}\\
+$\mathit{si}(z)$ & \f{s\_i(z)}\\
+$\mathit{Ci}(z)$ & \f{Ci(z)}\\
+$\mathit{Shi}(z)$ & \f{Shi(z)}\\
+$\mathit{Chi}(z)$ & \f{Chi(z)}\\
+$\mathit{erf}(z)$ & \f{Erf(z)}\\
+$\mathit{erfc}(z)$ & \f{erfc(z)}\\
+$\mathit{Ei}(z)$ & \f{Ei(z)}\\
+$\mathit{Ei}(\log(z))$ & \f{Li(z)}\\
+$C(x)$ & \f{Fresnel\_C(x)}\\
+$S(x)$ & \f{Fresnel\_S(x)}\\[5pt]
 $B(a,b)$ & \f{Beta(a,b)}\\
-$\Gamma(a)$ & \f{Gamma(a)} \\
+$\Gamma(a)$ & \f{Gamma(a)}\\
 normalized incomplete Beta $I_{x}(a,b)=\frac{\textstyle B_{x}(a,b)}{\textstyle B(a,b)}$ & \f{iBeta(a,b,x)}\\ % http://dlmf.nist.gov/8.2.E4
-normalized incomplete Gamma $P(a,z)=\frac{\textstyle\gamma(a,z)}{\textstyle\Gamma(a)}$ & \f{iGamma(a,z)} \\
-incomplete Gamma $\gamma(a,z)$ & \f{m\_gamma(a,z)} \\
-$(a)_k$ & \f{Pochhammer(a,k)} \\
-$\psi(z)$ & \f{Psi(z)} \\
-$\psi^{(n)}(z)$ & \f{Polygamma(n,z)} \\[12pt]
+normalized incomplete Gamma $P(a,z)=\frac{\textstyle\gamma(a,z)}{\textstyle\Gamma(a)}$ & \f{iGamma(a,z)}\\
+incomplete Gamma $\gamma(a,z)$ & \f{m\_gamma(a,z)}\\
+$(a)_k$ & \f{Pochhammer(a,k)}\\
+$\psi(z)$ & \f{Psi(z)}\\
+$\psi^{(n)}(z)$ & \f{Polygamma(n,z)}\\[5pt]
 $J_\nu(z)$ & \f{BesselJ(nu,z)}\\
 $Y_\nu(z)$ & \f{BesselY(nu,z)}\\
 $I_\nu(z)$ & \f{BesselI(nu,z)}\\
 $K_\nu(z)$ & \f{BesselK(nu,z)}\\
 $H^{(1)}_n(z)$ & \f{Hankel1(n,z)}\\
-$H^{(2)}_n(z)$ & \f{Hankel2(n,z)}\\
-\mbox{}
+$H^{(2)}_n(z)$ & \f{Hankel2(n,z)}\\[5pt]
 \end{tabular}}
 \newpage
+
+\textbf{More Special Functions}
 \hypertarget{SPECFNTAB2}{}
-\textbf{More Special Functions}\\
+
 \fbox{
 \begin{tabular}{r l}
-\mbox{}\\
-Function & Operator \\[12pt]
-%\hline 
-$Ai(z)$ & \f{Airy\_Ai(z)}\\
-$Bi(z)$ & \f{Airy\_Bi(z)}\\
-$Ai'(z)$ & \f{Airy\_Aiprime(z)}\\
-$Bi'(z)$ & \f{Airy\_Biprime(z)}\\
+\rule{0pt}{16pt}Function & Operator\\[5pt]
+$\mathit{Ai}(z)$ & \f{Airy\_Ai(z)}\\
+$\mathit{Bi}(z)$ & \f{Airy\_Bi(z)}\\
+$\mathit{Ai}'(z)$ & \f{Airy\_Aiprime(z)}\\
+$\mathit{Bi}'(z)$ & \f{Airy\_Biprime(z)}\\
 ${\bf H}_{\nu}(z)$ & \f{StruveH(nu,z)}\\
 ${\bf L}_{\nu}(z)$ & \f{StruveL(nu,z)}\\
 $s_{a,b}(z)$ & \f{Lommel1(a,b,z)}\\
 $S_{a,b}(z)$ & \f{Lommel2(a,b,z)}\\
 $M(a, b, z)$ or $_1F_1(a, b; z)$ or $\Phi(a, b; z)$ &
-\f{KummerM(a,b,z)} \\
+\f{KummerM(a,b,z)}\\
 $U(a, b, z)$ or $z^{-a}{_2F_0(a, b; z)}$ or $\Psi(a, b; z)$ &
-\f{KummerU(a,b,z)}\\[12pt]
+\f{KummerU(a,b,z)}\\[6pt]
 Expression in Kummer\_M & \f{WhittakerM(kappa,mu,z)}\\
 Expression in Kummer\_U & \f{WhittakerW(kappa,mu,z)}\\
-Riemann's $\zeta(z)$ & \f{zeta(z)} \\
-Lambert $\omega(z)$ & \f{Lambert\_W(z)} \\
-$Li_2(z)$ & \f{dilog(z)} \\
-$Li_{n}(z)$ & \f{Polylog(n,z)}\\
-Lerch's transcendent $\Phi(z,s,a)$ & \f{Lerch\_Phi(z,s,a)}\\[12pt]
+Riemann's $\zeta(z)$ & \f{zeta(z)}\\
+Lambert $\omega(z)$ & \f{Lambert\_W(z)}\\
+$\mathit{Li}_2(z)$ & \f{dilog(z)}\\
+$\mathit{Li}_{n}(z)$ & \f{Polylog(n,z)}\\
+Lerch's transcendent $\Phi(z,s,a)$ & \f{Lerch\_Phi(z,s,a)}\\[5pt]
+\end{tabular}}
+
+\fbox{
+\begin{tabular}{r l}
+\rule{0pt}{16pt}Function & Operator\\[5pt]
 $Y_n^{m}(x,y,z,r2)$ & \f{SolidHarmonicY(n,m,x,y,z,r2)}\\
-$Y_n^{m}(\theta,\phi)$ & \f{SphericalHarmonicY(n,m,theta,phi)}\\[12pt]
+$Y_n^{m}(\theta,\phi)$ & \f{SphericalHarmonicY(n,m,theta,phi)}\\[5pt]
 $\displaystyle\begin{pmatrix} j_{1} & j_{2} & j_{3} \\ m_{1} & m_{2} & m_{3} \end{pmatrix}$ & \f{ThreeJSymbol(\{j1,m1\},\{j2,m2\},\{j3,m3\})}\\[4mm]
 $\left( {j_1m_1j_2m_2 | j_1j_2j_3 - m_3} \right)$ &
 \f{Clebsch\_Gordan(\{j1,m1\},\{j2,m2\},\{j3,m3\})}\\[4mm]
-$\displaystyle\begin{Bmatrix} j_{1} & j_{2} & j_{3} \\ m_{1} & m_{2} & m_{3} \end{Bmatrix}$ & \f{SixJSymbol(\{j1,j2,j3\},\{l1,l2,l3\})}\\
-\mbox{}
+$\displaystyle\begin{Bmatrix} j_{1} & j_{2} & j_{3} \\ m_{1} & m_{2} & m_{3} \end{Bmatrix}$ & \f{SixJSymbol(\{j1,j2,j3\},\{l1,l2,l3\})}\\[5pt]
 \end{tabular}}
 \newpage
 
+\textbf{Elliptic Functions and Integrals}
 \hypertarget{SPECFNTAB3}{}
-\textbf{Elliptic Functions \& Integrals}\\
+
 \fbox{
 \begin{tabular}{r l}
-\mbox{}\\
-Function & Operator \\[12pt]
-$sn(u,k)$ & \f{jacobisn(u,k)}\\
-$dn(u,k)$ & \f{jacobidn(u,k)}\\
-$cn(u,k)$ & \f{jacobicn(u,k)}\\
-$cd(u,k)$ & \f{jacobicd(u,k)}\\
-$sd(u,k)$ & \f{jacobisd(u,k)}\\
-$nd(u,k)$ & \f{jacobind(u,k)}\\
-$dc(u,k)$ & \f{jacobidc(u,k)}\\
-$nc(u,k)$ & \f{jacobinc(u,k)}\\
-$sc(u,k)$ & \f{jacobisc(u,k)}\\
-$ns(u,k)$ & \f{jacobins(u,k)}\\
-$ds(u,k)$ & \f{jacobids(u,k)}\\
-$cs(u,k)$ & \f{jacobics(u,k)}\\
-$am(u,k)$ & \f{jacobiam(u,k)}\\
-Complete Integral(1st kind) $K(k)$ & \f{ellipticK(k)}\\
+\rule{0pt}{16pt}Function & Operator\\[5pt]
+$\mathit{sn}(u,k)$ & \f{jacobisn(u,k)}\\
+$\mathit{dn}(u,k)$ & \f{jacobidn(u,k)}\\
+$\mathit{cn}(u,k)$ & \f{jacobicn(u,k)}\\
+$\mathit{cd}(u,k)$ & \f{jacobicd(u,k)}\\
+$\mathit{sd}(u,k)$ & \f{jacobisd(u,k)}\\
+$\mathit{nd}(u,k)$ & \f{jacobind(u,k)}\\
+$\mathit{dc}(u,k)$ & \f{jacobidc(u,k)}\\
+$\mathit{nc}(u,k)$ & \f{jacobinc(u,k)}\\
+$\mathit{sc}(u,k)$ & \f{jacobisc(u,k)}\\
+$\mathit{ns}(u,k)$ & \f{jacobins(u,k)}\\
+$\mathit{ds}(u,k)$ & \f{jacobids(u,k)}\\
+$\mathit{cs}(u,k)$ & \f{jacobics(u,k)}\\
+$\mathit{am}(u,k)$ & \f{jacobiam(u,k)}\\
+Complete Integral (1st kind) $K(k)$ & \f{ellipticK(k)}\\
 $K'(k)$ & \f{ellipticK!'(k)}\\
-Incomplete Integral(1st kind) $F(\phi,k)$ & \f{ellipticF(phi,k)}\\
-Complete Integral(2nd kind) $E(k)$ & \f{ellipticE(k)}\\
+Incomplete Integral (1st kind) $F(\phi,k)$ & \f{ellipticF(phi,k)}\\
+Complete Integral (2nd kind) $E(k)$ & \f{ellipticE(k)}\\
 $E'(k)$ & \f{ellipticE!'(k)}\\
-Legendre Incomplete Int(2nd kind) $E(u,k)$ & \f{ellipticE(u,k)}\\
-Jacobi Incomplete Int(2nd kind) $\mathcal{E}(u,k)$ & \f{JacobiE(u,k)}\\
+Legendre Incomplete Int (2nd kind) $E(u,k)$ & \f{ellipticE(u,k)}\\
+Jacobi Incomplete Int (2nd kind) $\mathcal{E}(u,k)$ & \f{JacobiE(u,k)}\\
 Jacobi's Zeta $Z(u,k)$ & \f{jacobizeta(u,k)}\\
 $\vartheta_1(u,q)$ & \f{elliptictheta1(u,q)}\\
 $\vartheta_2(u,q)$ & \f{elliptictheta2(u,q)}\\
 $\vartheta_3(u,q)$ & \f{elliptictheta3(u,q)}\\
-$\vartheta_4(u,q)$ & \f{elliptictheta4(u,q)}\\
-\mbox{}
+$\vartheta_4(u,q)$ & \f{elliptictheta4(u,q)}\\[5pt]
 \end{tabular}}
 \newpage
+
+\textbf{Polynomial Functions}
 \hypertarget{SPECFNTAB4}{}
 
-\textbf{Polynomial Functions}\\
 \fbox{
 \begin{tabular}{r l}
-\mbox{}\\
-Function & Operator \\[12pt]
+\rule{0pt}{16pt}Function & Operator\\[5pt]
 Fibonacci Polynomials $F_{n}(x)$ &  \f{FibonacciP(n,x)}\\
 $B_n(x)$ & \f{BernoulliP(n,x)}\\
 $E_n(x)$ & \f{EulerP(n,x)}\\
@@ -1482,31 +1475,31 @@ Associated Legendre $P_n^{(m)}(x)$ & \f{LegendreP(n,m,x)}\\
 $U_n(x)$ & \f{ChebyshevU(n,x)}\\
 $T_n(x)$ & \f{ChebyshevT(n,x)}\\
 $C_n^{(\alpha)}(x)$ & \f{GegenbauerP(n,alpha,x)}\\
-$P_n^{(\alpha,\beta)} (x)$ & \f{JacobiP(n,alpha,beta,x)}\\
-\mbox{}
+$P_n^{(\alpha,\beta)} (x)$ & \f{JacobiP(n,alpha,beta,x)}\\[5pt]
 \end{tabular}}
-\\newpage
 
+\vspace{1cm}
+
+\textbf{Well-known Numbers and Reserved Constants}
 \hypertarget{SPECFNTAB5}{}
-\textbf{Well-known Numbers and Reserved Constants}\\
+
 \fbox{
 \begin{tabular}{r l}
-\mbox{}\\
-Function & Operator \\
-$\displaystyle\binom{n}{m}$ & \f{Binomial(n,m)} \\[10pt]
-Fibonacci Numbers $F_{n}$ &  \f{Fibonacci(n)}\\ 
-$\mathrm{s}_n^m$ & \f{Stirling1(n,m)} \\
-$\mathrm{S}_n^m$ & \f{Stirling2(n,m)} \\
-Bernoulli($n$) or $ B_n $ & \f{Bernoulli(n)} \\
-Euler($n$) or $ E_n $ & \f{Euler(n)} \\
-Motzkin(n) & \f{Motzkin(n)}\\\\
-Constant & REDUCE name \\
-Square root of $-1$ & \f{I}\\
+\rule{0pt}{16pt}Function & Operator\\[5pt]
+$\displaystyle\binom{n}{m}$ & \f{Binomial(n,m)}\\[10pt]
+Fibonacci Numbers $F_{n}$ & \f{Fibonacci(n)}\\ 
+$\mathrm{s}_n^m$ & \f{Stirling1(n,m)}\\
+$\mathrm{S}_n^m$ & \f{Stirling2(n,m)}\\
+Bernoulli($n$) or $ B_n $ & \f{Bernoulli(n)}\\
+Euler($n$) or $ E_n $ & \f{Euler(n)}\\
+Motzkin($n$) & \f{Motzkin($n$)}\\
+\\
+Constant & \REDUCE name\\[5pt]
+Square root of $(-1)$ & \f{i}\\
 $\pi$ &  \f{pi}\\
 Base of natural logarithms & \f{e}\\
 Euler's $\gamma$ constant & \f{Euler\_gamma}\\
 Catalan's constant & \f{Catalan}\\
 Khinchin's constant & \f{Khinchin}\\
-Golden ratio & \f{Golden\_ratio}\\
-\mbox{}
+Golden ratio & \f{Golden\_ratio}\\[5pt]
 \end{tabular}}
