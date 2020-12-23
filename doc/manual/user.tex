@@ -4,7 +4,6 @@
 % crack/conlaw.tex
 % crack/crack.tex
 % crack/v3tools.tex
-% eds/eds.tex
 % gentran/gentran.tex -- too long!
 % mathml/*.tex
 % misc/reset.tex
@@ -54,7 +53,7 @@ The packages available in the current release of {\REDUCE} are as follows:
 
 \section{ALGINT: Integration of square roots} 
 \indexpackage{ALGINT}
-\label{ALGINT}
+\label{package:ALGINT}
 
 This package, which is an extension of the basic integration package
 distributed with {\REDUCE}, will analytically integrate a wide range of
@@ -383,8 +382,24 @@ Author: Alain Dresse.
 
 \newpage
 
+\section{EDS: A package for exterior differential systems}
+\indexpackage{EDS}
+
+EDS is a REDUCE package for symbolic analysis of partial differential
+equations using the geometrical approach of exterior differential
+systems. The package implements much of exterior differential systems
+theory, including prolongation and involution analysis, and has been
+optimised for large, non-linear problems.
+
+Author: David Hartley
+
+\input{eds}
+
+\newpage
+
 \section{EXCALC: A differential geometry package} 
 \indexpackage{EXCALC}
+\label{package:EXCALC}
 
 EXCALC is designed for easy use by all who are familiar with the calculus
 of Modern Differential Geometry. The program is currently able to handle
@@ -1359,6 +1374,7 @@ Author: A. Kryukov.
 
 \section{XIDEAL: Gr\"obner Bases for exterior algebra} 
 \indexpackage{XIDEAL}
+\label{package:XIDEAL}
 
 XIDEAL constructs Gr\"obner bases for solving the left ideal membership
 problem: Gr\"obner left ideal bases or GLIBs. For graded ideals, where each
