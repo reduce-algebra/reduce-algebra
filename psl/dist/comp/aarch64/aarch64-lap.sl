@@ -517,6 +517,9 @@
 (de sixteenbit-p (x)
     (and (fixp x) (eq (wand 16#ffff x) x)))
 
+(de nineteenbit-p (x)
+    (and (fixp x) (eq (wand 16#7ffff x) x)))
+
 %(de thirtytwobit-p (x)
 %    (and (fixp x) (equal (wand 16#ffffffff x) x)))
 
@@ -541,6 +544,16 @@
 	(and (eqcar x 'regshifted) (or (reg32p (cadr x)) (reg32p (list 'reg (cadr x))))
 	     (memq (caddr x) '(LSL LSR ASR))
 	     (or (fixp (cadddr x)) (reg32p (cadddr x))
+		 (and (null (cadddr x)) (eq (caddr x) 'RRX))))
+	)
+    )
+
+(de reg-or-sp-shifter-p (x)
+    (or (stringp x)
+	(and (pairp x) (regp x))
+	(and (eqcar x 'regshifted) (or (regp (cadr x)) (regp (list 'reg (cadr x))))
+	     (memq (caddr x) '(LSL LSR ASR))
+	     (or (fixp (cadddr x)) (regp (cadddr x))
 		 (and (null (cadddr x)) (eq (caddr x) 'RRX))))
 	)
     )
