@@ -56,6 +56,15 @@
   \def\belowpdfbookmark{}
 }
 
+%% The TOC entries for the User Contributed Packages section and
+%% subsection numbers need a little more space.
+%% The relevant default commands in book.cls are:
+%% \newcommand*\l@section{\@dottedtocline{1}{1.5em}{2.3em}}
+%% \newcommand*\l@subsection{\@dottedtocline{2}{3.8em}{3.2em}}
+%% Allow an extra 0.5em, which is just enough to avoid overwriting:
+\renewcommand*\l@section{\@dottedtocline{1}{1.5em}{2.8em}}
+\renewcommand*\l@subsection{\@dottedtocline{2}{3.8em}{3.7em}}
+
 \makeatother
 
 \let\subsubsubsection\paragraph
@@ -165,7 +174,7 @@
 \newcommand{\COMPATNOTE}{{\em Compatibility Note:\ }}
 % \meta{...} is an alternative sentential form in descriptions using \it.
 \newcommand{\meta}[1]{\mbox{$\langle$\textit{#1}$\rangle$}}
-% More commands for Backups-Naur form
+% More commands for Backus-Naur form
 \newcommand{\bnfprod}{\longrightarrow}
 \newcommand{\bnfalt}{\,\mid\,}
 \begingroup
