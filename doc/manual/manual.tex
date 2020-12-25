@@ -19,12 +19,24 @@
 
 %\let\include=\cb@include
 
-\let\oldtheindex=\theindex
-\def\theindex{\oldtheindex
-   \pdfbookmark[0]{Index}{Index}%
-   \addtocontents{toc}{\protect\contentsline{chapter}{Index}{\thepage}{Index1}}%
-%   \addcontentsline{toc}{chapter}{Index}%
-}
+\renewenvironment{theindex}
+               {\if@twocolumn
+                  \@restonecolfalse
+                \else
+                  \@restonecoltrue
+                \fi
+                \@makeschapterhead{\indexname}%
+                \@mkboth{\MakeUppercase\indexname}%
+                        {\MakeUppercase\indexname}%
+                \thispagestyle{plain}\parindent\z@
+                \parskip\z@ \@plus .3\p@\relax
+                \columnseprule \z@
+                \columnsep 35\p@
+                \let\item\@idxitem
+                \pdfbookmark[0]{Index}{Index}%
+                \addtocontents{toc}{\protect\contentsline{chapter}{Index}{\thepage}{Index1}}}
+               {\if@restonecol\onecolumn\else\clearpage\fi}
+
 
 \renewenvironment{thebibliography}[1]
      {\chapter{\bibname}%
