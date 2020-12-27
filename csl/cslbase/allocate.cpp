@@ -295,6 +295,9 @@ LispObject Lgc_forcer1(LispObject env, LispObject a)
 
 LispObject cons(LispObject a, LispObject b)
 {
+#ifdef DEBUG
+    if (is_exception(a) || is_exception(b)) my_abort();
+#endif // DEBUG
 #ifdef ATOMIC
     LispObject r =
         static_cast<LispObject>(fringe.fetch_sub(sizeof(Cons_Cell),
@@ -655,7 +658,7 @@ LispObject get_basic_vector(int tag, int type, size_t size)
     size_t alloc_size = (size_t)doubleword_align_up(size);
 // Basic vectors must be smaller then the CSL page size.
     if (alloc_size > (CSL_PAGE_SIZE - 32))
-        aerror1("request for basic vector too big",
+        return aerror1("request for basic vector too big",
                 fixnum_of_int(alloc_size/CELL-1));
     for (;;)
     {   uintptr_t r = (vfringe += alloc_size) - alloc_size;
@@ -832,6 +835,5 @@ LispObject borrow_vector(int tag, int type, size_t n)
     else v = borrow_basic_vector(tag, type, n);
     return v;
 }
-
 
 // end of allocate.cpp

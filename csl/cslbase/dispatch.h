@@ -258,8 +258,8 @@ template <class R, class T, typename V>
 inline R binaryL(const char *fname, V lhsVal, LispObject b)
 {   using namespace number_dispatcher;
     switch (b & XTAG_BITS)
-{       default:
-            aerror2("Non-numeric argument", fname, b);
+    {   default:
+            return static_cast<R>(aerror2("Non-numeric argument", fname, b));
         case TAG_BOXFLOAT: case TAG_BOXFLOAT+TAG_XBIT:
             switch (type_of_header(flthdr(b)))
             {   case TYPE_SINGLE_FLOAT:
@@ -270,7 +270,7 @@ inline R binaryL(const char *fname, V lhsVal, LispObject b)
                 case TYPE_LONG_FLOAT:
                     return T::op(lhsVal, LFlt(b));
                 default:
-                    aerror2("Non-numeric argument", fname, b);
+                    return static_cast<R>(static_cast<R>(aerror2("Non-numeric argument", fname, b)));
             }
         case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
             switch (type_of_header(numhdr(b)))
@@ -281,7 +281,7 @@ inline R binaryL(const char *fname, V lhsVal, LispObject b)
                 case TYPE_COMPLEX_NUM:
                     return T::op(lhsVal, Cpx(b));
                 default:
-                    aerror2("Non-numeric argument", fname, b);
+                    return static_cast<R>(aerror2("Non-numeric argument", fname, b));
             }
         case TAG_FIXNUM:
             return T::op(lhsVal, Fixnum(b));
@@ -294,8 +294,8 @@ template <class R, class T, typename V>
 inline R binaryR(const char *fname, LispObject a, V rhsval)
 {   using namespace number_dispatcher;
     switch (a & XTAG_BITS)
-{       default:
-            aerror2("Non-numeric argument", fname, a);
+    {   default:
+            return static_cast<R>(aerror2("Non-numeric argument", fname, a));
         case TAG_BOXFLOAT: case TAG_BOXFLOAT+TAG_XBIT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
@@ -306,7 +306,7 @@ inline R binaryR(const char *fname, LispObject a, V rhsval)
                 case TYPE_LONG_FLOAT:
                     return T::op(LFlt(a), rhsval);
                 default:
-                    aerror2("Non-numeric argument", fname, a);
+                    return static_cast<R>(aerror2("Non-numeric argument", fname, a));
             }
         case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
             switch (type_of_header(numhdr(a)))
@@ -317,7 +317,7 @@ inline R binaryR(const char *fname, LispObject a, V rhsval)
                 case TYPE_COMPLEX_NUM:
                     return T::op(Cpx(a), rhsval);
                 default:
-                    aerror2("Non-numeric argument", fname, a);
+                    return static_cast<R>(aerror2("Non-numeric argument", fname, a));
             }
         case TAG_FIXNUM:
             return T::op(Fixnum(a), rhsval);
@@ -335,8 +335,8 @@ template <class R, class T>
 inline R binary(const char *fname, LispObject a, LispObject b)
 {   using namespace number_dispatcher;
     switch (a & XTAG_BITS)
-{       default:
-            aerror2("Non-numeric argument", fname, a);
+    {   default:
+            return static_cast<R>(aerror2("Non-numeric argument", fname, a));
         case TAG_BOXFLOAT: case TAG_BOXFLOAT+TAG_XBIT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
@@ -346,7 +346,7 @@ inline R binary(const char *fname, LispObject a, LispObject b)
                 case TYPE_LONG_FLOAT:
                     return binaryL<R,T,LFlt>(fname, LFlt(a), b);
                 default:
-                    aerror2("Non-numeric argument", fname, a);
+                    return static_cast<R>(aerror2("Non-numeric argument", fname, a));
             }
         case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
             switch (type_of_header(numhdr(a)))
@@ -358,7 +358,7 @@ inline R binary(const char *fname, LispObject a, LispObject b)
                 case TYPE_COMPLEX_NUM:
                     return binaryL<R,T,Cpx>(fname, Cpx(a), b);
                 default:
-                    aerror2("Non-numeric argument", fname, a);
+                    return static_cast<R>(aerror2("Non-numeric argument", fname, a));
             }
         case TAG_FIXNUM:
             return binaryL<R,T,Fixnum>(fname, Fixnum(a), b);
@@ -374,14 +374,14 @@ template <class R, class T, typename V>
 inline R ibinaryL(const char *fname, V lhsVal, LispObject b)
 {   using namespace number_dispatcher;
     switch (b & XTAG_BITS)
-{       default:
-            aerror2("Non-integer argument", fname, b);
+    {   default:
+            return static_cast<R>(aerror2("Non-integer argument", fname, b));
         case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
             switch (type_of_header(numhdr(b)))
             {   case TYPE_NEW_BIGNUM:
                     return T::op(lhsVal, (uint64_t *)((char *)b + 8 - TAG_NUMBERS));
                 default:
-                    aerror2("Non-integer argument", fname, b);
+                    return static_cast<R>(aerror2("Non-integer argument", fname, b));
             }
         case TAG_FIXNUM:
             return T::op(lhsVal, Fixnum(b));
@@ -392,14 +392,14 @@ template <class R, class T, typename V>
 inline R ibinaryR(const char *fname, LispObject a, V rhsval)
 {   using namespace number_dispatcher;
     switch (a & XTAG_BITS)
-{       default:
-            aerror2("Non-integer argument", fname, a);
+    {   default:
+            return static_cast<R>(aerror2("Non-integer argument", fname, a));
         case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
             switch (type_of_header(numhdr(a)))
             {   case TYPE_NEW_BIGNUM:
                     return T::op((uint64_t *)((char *)a + 8 - TAG_NUMBERS), rhsval);
                 default:
-                    aerror2("Non-integer argument", fname, a);
+                    return static_cast<R>(aerror2("Non-integer argument", fname, a));
             }
         case TAG_FIXNUM:
             return T::op(Fixnum(a), rhsval);
@@ -410,15 +410,15 @@ template <class R, class T>
 inline R ibinary(const char *fname, LispObject a, LispObject b)
 {   using namespace number_dispatcher;
     switch (a & XTAG_BITS)
-{       default:
-            aerror2("Non-integer argument", fname, a);
+    {   default:
+            return static_cast<R>(aerror2("Non-integer argument", fname, a));
         case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
             switch (type_of_header(numhdr(a)))
             {   case TYPE_NEW_BIGNUM:
                     return ibinaryL<R,T,uint64_t *>(fname,
                                                     (uint64_t *)((char *)a + 8 - TAG_NUMBERS), b);
                 default:
-                    aerror2("Non-integer argument", fname, a);
+                    return static_cast<R>(aerror2("Non-integer argument", fname, a));
             }
         case TAG_FIXNUM:
             return ibinaryL<R,T,Fixnum>(fname, Fixnum(a), b);
@@ -433,8 +433,8 @@ template <class R, class T>
 inline R unary(const char *fname, LispObject a)
 {   using namespace number_dispatcher;
     switch (a & XTAG_BITS)
-{       default:
-            aerror2("Non-numeric argument", fname, a);
+    {   default:
+            return static_cast<R>(aerror2("Non-numeric argument", fname, a));
         case TAG_BOXFLOAT: case TAG_BOXFLOAT+TAG_XBIT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
@@ -444,7 +444,7 @@ inline R unary(const char *fname, LispObject a)
                 case TYPE_LONG_FLOAT:
                     return T::op(LFlt(a));
                 default:
-                    aerror2("Non-numeric argument", fname, a);
+                    return static_cast<R>(aerror2("Non-numeric argument", fname, a));
             }
         case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
             switch (type_of_header(numhdr(a)))
@@ -455,7 +455,7 @@ inline R unary(const char *fname, LispObject a)
                 case TYPE_COMPLEX_NUM:
                     return T::op(Cpx(a));
                 default:
-                    aerror2("Non-numeric argument", fname, a);
+                    return static_cast<R>(aerror2("Non-numeric argument", fname, a));
             }
         case TAG_FIXNUM:
             return T::op(Fixnum(a));
@@ -472,14 +472,14 @@ template <class R, class T>
 inline R iunary(const char *fname, LispObject a)
 {   using namespace number_dispatcher;
     switch (a & XTAG_BITS)
-{       default:
-            aerror2("Non-integer argument", fname, a);
+    {   default:
+            return static_cast<R>(aerror2("Non-integer argument", fname, a));
         case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
             switch (type_of_header(numhdr(a)))
             {   case TYPE_NEW_BIGNUM:
                     return T::op((uint64_t *)((char *)a + 8 - TAG_NUMBERS));
                 default:
-                    aerror2("Non-integer argument", fname, a);
+                    return static_cast<R>(aerror2("Non-integer argument", fname, a));
             }
         case TAG_FIXNUM:
             return T::op(Fixnum(a));
@@ -490,8 +490,8 @@ template <class R, class T>
 inline R unary(const char *fname, LispObject a, int64_t &xx)
 {   using namespace number_dispatcher;
     switch (a & XTAG_BITS)
-{       default:
-            aerror2("Non-numeric argument", fname, a);
+    {   default:
+            return static_cast<R>(aerror2("Non-numeric argument", fname, a));
         case TAG_BOXFLOAT: case TAG_BOXFLOAT+TAG_XBIT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
@@ -501,7 +501,7 @@ inline R unary(const char *fname, LispObject a, int64_t &xx)
                 case TYPE_LONG_FLOAT:
                     return T::op(LFlt(a), xx);
                 default:
-                    aerror2("Non-numeric argument", fname, a);
+                    return static_cast<R>(aerror2("Non-numeric argument", fname, a));
             }
         case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
             switch (type_of_header(numhdr(a)))
@@ -512,7 +512,7 @@ inline R unary(const char *fname, LispObject a, int64_t &xx)
                 case TYPE_COMPLEX_NUM:
                     return T::op(Cpx(a), xx);
                 default:
-                    aerror2("Non-numeric argument", fname, a);
+                    return static_cast<R>(aerror2("Non-numeric argument", fname, a));
             }
         case TAG_FIXNUM:
             return T::op(Fixnum(a), xx);

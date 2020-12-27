@@ -352,7 +352,7 @@ entry_point1 entries_tableio[] =
 
 static LispObject Lreclaim_trap(LispObject env, LispObject a)
 {   int64_t previous = reclaim_trap_count;
-    if (!is_fixnum(a)) aerror1("reclaim-trap", a);
+    if (!is_fixnum(a)) return aerror1("reclaim-trap", a);
     reclaim_trap_count = int_of_fixnum(a);
     term_printf("+++ Reclaim trap set at %d, previous = %d\n",
                 reclaim_trap_count, previous);
@@ -361,7 +361,7 @@ static LispObject Lreclaim_trap(LispObject env, LispObject a)
 
 static LispObject Lreclaim_stack_limit(LispObject env, LispObject a)
 {   intptr_t previous = reclaim_stack_limit;
-    if (!is_fixnum(a)) aerror1("reclaim-stack-limit", a);
+    if (!is_fixnum(a)) return aerror1("reclaim-stack-limit", a);
     reclaim_stack_limit = int_of_fixnum(a);
     term_printf("+++ Reclaim stack limit set at %d, previous = %d\n",
                 reclaim_stack_limit, previous);
@@ -436,7 +436,7 @@ static LispObject Lcheck_c_code(LispObject env, LispObject name,
         !is_string_header(vechdr(name)) ||
         !is_fixnum(lc1) ||
         !is_fixnum(lc2) ||
-        !is_fixnum(lc3)) aerror1("check-c-code", name);
+        !is_fixnum(lc3)) return aerror1("check-c-code", name);
     c1 = int_of_fixnum(lc1);
     c2 = int_of_fixnum(lc2);
     c3 = int_of_fixnum(lc3);
@@ -448,17 +448,17 @@ static LispObject Lcheck_c_code(LispObject env, LispObject name,
     {   if ((p = find_checksum(sname, len,
                                setup_tables[i])) != nullptr) break;
     }
-    if (p == nullptr) aerror1("check-c-code", name);
+    if (p == nullptr) return aerror1("check-c-code", name);
 
     if (std::sscanf(p, "%ld %ld %ld", &x1, &x2, &x3) != 3)
-        aerror1("check-c-code", name);
+        return aerror1("check-c-code", name);
     if (c1 == x1 && c2 == x2 && c3 == x3) return onevalue(nil);
     err_printf("\n+++++ C code and environment files not compatible\n");
     err_printf("please check, re-compile and try again\n");
     err_printf("versions from %.*s.c %lx %lx %lx\n", len, sname, x1, x2,
                x3);
     err_printf("version passed here %lx %lx %lx\n", c1, c2, c3);
-    aerror1("check-c-code", name);
+    return aerror1("check-c-code", name);
 }
 
 setup_type const restart_setup[] =
@@ -856,7 +856,7 @@ static void cold_setup()
     procstackp = 0;
 }
 
-void set_up_functions(int restart_flag)
+LispObject set_up_functions(int restart_flag)
 {
 //
 // All symbols that have a pointer to C code in their function cell must
@@ -996,6 +996,7 @@ void set_up_functions(int restart_flag)
 #ifdef COMMON
     CP = saved_package;
 #endif
+    return nil;
 }
 
 static int alpha1(const void *a, const void *b)
@@ -1010,7 +1011,7 @@ static int alpha1(const void *a, const void *b)
 //       same on all platforms if I am using IEEE arithmetic...)
 //   input!-libraries and output!-library
 
-void set_up_variables(int restart_flag)
+LispObject set_up_variables(int restart_flag)
 {   LispObject w, w1;
     size_t i;
 // There are a number of system variables that are not saved in
@@ -1345,6 +1346,12 @@ void set_up_variables(int restart_flag)
 #endif
 #ifdef EMBEDDED
         w = cons(make_keyword("embedded"), w);
+#endif
+#ifdef NO_THROW
+        w = cons(make_keyword("no-throw"), w);
+#endif
+#ifdef CONSERVATIVE
+        w = cons(make_keyword("conservative"), w);
 #endif
         if (fwin_windowmode() & FWIN_WITH_TERMED)
             w = cons(make_keyword("termed"), w);
@@ -1747,22 +1754,26 @@ void set_up_variables(int restart_flag)
     }
     for (auto ss : stringsToEvaluate)
     {   const char *s = ss.c_str();
-        try
-        {   LispObject v = make_string(s);
+        TRY
+            LispObject v = make_string(s);
+            errexit();
             v = Lexplodec(nil, v);
+            errexit();
             v = Lcompress(nil, v);
+            errexit();
             push(v);
             Lprin(nil, v);
             pop(v);
+            errexit();
             v = Leval(nil, v);
+            errexit();
             term_printf(" => ");
             Lprint(nil, v);
-        }
 // A failure in an expression set to be evaluated here is fatal.
-        catch (LispException &e)
-        {   ensure_screen();
+        CATCH(LispException)
+            ensure_screen();
             my_exit();
-        }
+        END_CATCH
     }
 //
 // Now if I have the FWIN windowed system I look in the Lisp variables
@@ -1852,6 +1863,7 @@ void set_up_variables(int restart_flag)
 #ifdef COMMON
     CP = saved_package;
 #endif
+    return nil;
 }
 
 #ifndef COMMON

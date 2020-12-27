@@ -3,8 +3,6 @@
 #ifndef header_proc_h
 #define header_proc_h 1
 
-
-
 /**************************************************************************
  * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
@@ -41,12 +39,14 @@
 // Definitions useful for driving the procedural interface to Reduce...
 //
 
+
+
 // It may be useful to call this at the start...
 extern int find_program_directory(const char *argv0);
 
 // .. and this to exit
 
-[[noreturn]] extern void my_exit();
+extern void my_exit();
 
 //
 // These types are used for callback functions used to send and receive
@@ -391,82 +391,6 @@ extern int buff_ready;
 extern const char *buffer;
 extern int buff_size;
 #endif
-
-
-// The following would normally be picked up from "lispthrow.h" but to make
-// stuff here more free-stannding I have my own copy.
-
-#include <cstdint>
-#include <csetjmp>
-#include <exception>
-
-typedef intptr_t LispObject;
-extern  std::jmp_buf *global_jb;
-extern LispObject *stack;
-[[noreturn]] extern void global_longjmp();
-extern intptr_t exit_reason, miscflags;
-extern void err_printf(const char *fmt, ...);
-extern const volatile char *errorset_msg;
-
-#ifndef UNWIND_SIGNAL
-#define UNWIND_SIGNAL  0x06
-#endif
-#ifndef HEADLINE_FLAG
-#define HEADLINE_FLAG  0x08
-#endif
-
-class RAIIsave_stack_and_jb
-{   LispObject *saveStack;
-    std::jmp_buf *jbsave;
-public:
-    RAIIsave_stack_and_jb()
-    {   jbsave = global_jb;  // preserve the enclosing jmp_buff.
-        saveStack = stack;   // record stack value from entry here.
-    }
-    ~RAIIsave_stack_and_jb()
-    {   global_jb = jbsave;  // restore jmp_buf pointer
-        stack = saveStack;   // restore stack
-    }
-};
-
-#define SAVE_STACK_AND_JB_DEFINED 1
-
-struct LispException : public std::exception
-{   virtual const char *what() const throw()
-    {   return "Generic Lisp Exception";
-    }
-};
-
-struct LispError : public LispException
-{   virtual const char *what() const throw()
-    {   return "Lisp Error";
-    }
-};
-
-struct LispSignal : public LispError
-{   virtual const char *what() const throw()
-    {   return "Lisp Signal";
-    }
-};
-
-#define LISPEXCEPTION_DEFINED 1
-
-#define START_SETJMP_BLOCK                          \
-    std::jmp_buf jb;                                \
-    RAIIsave_stack_and_jb save_stack_Object;        \
-    switch (setjmp(jb))                             \
-    {   default:                                    \
-        case 1: exit_reason = UNWIND_SIGNAL;        \
-                if (miscflags & HEADLINE_FLAG)      \
-                    err_printf("\n+++ Error %s: ",  \
-                               errorset_msg);       \
-                throw LispSignal();                 \
-        case 0: break;                              \
-    }                                               \
-    global_jb = &jb;
-
-
-
 
 #endif // header_proc_h
 

@@ -71,6 +71,23 @@ size_t xppc;
                 &celt(ffpname, 0), fflength);
     ffname[fflength] = 0;
     debug_record(reinterpret_cast<const char *>(ffname));
+#ifdef UTTERLY_DESPARATE
+    {   static int count = 0;
+        count++;
+        if (count >= 0)
+        {   fprintf(stderr, "%d] call %s ", count, ffname);
+            if (count > 76450 && stack >= entry_stack+1)
+            {   simple_print(entry_stack[1]);
+            }
+            fprintf(stderr, "\n");
+        }
+        if (count == 76661 )
+        {   fprintf(stderr, "Hit the limit\n");
+            count = -10000000;
+            return aerror("Divergent");
+        }
+    }
+#endif // UTTERLY_DESPARATE (!!!)
 //
 #ifdef CHECK_STACK
     {   char *my_stack = reinterpret_cast<char *>(&my_stack);
@@ -122,17 +139,20 @@ size_t xppc;
 #ifdef CHECK_STACK
 #ifndef CONSERVATIVE
     if (reinterpret_cast<char *>(fringe) <=
-        reinterpret_cast<char *>(heaplimit)) A_reg = cons_gc_test(A_reg);
+        reinterpret_cast<char *>(heaplimit))
+    {   A_reg = cons_gc_test(A_reg);
+        errexit();
+    }
 #endif
 #ifdef DEBUG
     if (check_stack(reinterpret_cast<char *>(&ffname[0]), __LINE__))
     {   err_printf("\n+++ stack overflow\n");
-        aerror("stack overflow");
+        return aerror("stack overflow");
     }
 #else
     if (check_stack("bytecode_interpreter",__LINE__))
     {   err_printf("\n+++ stack overflow\n");
-        aerror("stack overflow");
+        return aerror("stack overflow");
     }
 #endif
 #else // CHECK_STACK
@@ -140,7 +160,7 @@ size_t xppc;
         if ((uintptr_t)p < C_stacklimit)
         {   err_printf("\n+++ stack overflow\n");
             if (C_stacklimit > 1024*1024) C_stacklimit -= 1024*1024;
-            aerror("stack_overflow");
+            return aerror("stack_overflow");
         }
     }
 #endif // CHECK_STACK
@@ -150,10 +170,20 @@ size_t xppc;
 
 next_opcode:   // This label is so that I can restart what I am doing
 // following a CATCH or to handle UNWIND-PROTECT.
-    my_assert(A_reg != 0,
-        [&]{ trace_printf("A_reg == 0 @ bytes2.cpp line __LINE__\n"); });
-    try
-    {
+// Here the "try" must NOT preserve the stack pointer!
+// I think this may be because of cases like
+//    (f a1 a2 a3 (catch ...) a5 a6)
+// where when preparing args for f some values go on the (Lisp) stack. Then
+// the inline-compiled catch arises. The purpose of the try block here is to
+// be able to cope with it but if this "try" preserved the stack then maybe
+// reaching the end of it would discard stacked arguments and cause trouble?
+// Anyway, although I make the default behaviour one when a try block
+// preseved the stack I customise this one not to!
+#ifdef NO_THROW
+    ([&]()->LispObject {
+#else
+    try { ([&]()->LispObject {
+#endif // NO_THROW
 // The try block will neeed to cope with
 // .  Various errors raised by functions called from here: a fragment of
 //    backtrace may be called for, and variable bindings undone.
@@ -178,11 +208,11 @@ next_opcode:   // This label is so that I can restart what I am doing
     jbsave = global_jb;
     std::jmp_buf jb;
     switch (setjmp(jb))
-{       default:
+    {   default:
         case 1: exit_reason = UNWIND_SIGNAL;
             if (miscflags & HEADLINE_FLAG)
                 err_printf("\n+++ Error %s: ", errorset_msg);
-            throw LispSignal();
+            THROW(LispSignal);
         case 0: break;
     }
     global_jb = &jb;
@@ -206,6 +236,11 @@ next_opcode:   // This label is so that I can restart what I am doing
 //trace_printf("ppc=%d, byte=%.2x\n", ppc, ((unsigned char *)codevec)[ppc]);
 //ensure_screen();
 
+#ifdef DEBUG
+        if (is_exception(A_reg)) my_abort();
+        if (is_exception(B_reg)) my_abort();
+#endif
+
         switch (next_byte)
         {
 //
@@ -222,7 +257,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 //
                 err_printf("\nUnrecognized opcode byte %x\n",
                            (reinterpret_cast<unsigned char *>(codevec))[ppc-1]);
-                aerror("compiler failure");
+                return aerror("compiler failure");
 
             case OP_ONEVALUE:
 // ONEVALUE is here to support a proposed re-write of the multiple values
@@ -243,7 +278,10 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifdef DEBUG
                 global_jb = jbsave;
 #endif
-                return A_reg;
+// Note that with my re-work of TRY/CATCH the "return" here just exits
+// from the TRY block, and after that the value in the A register is returned.
+//              return A_reg;
+                return nil;
 
 
             case OP_LOC1EXIT:
@@ -255,7 +293,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifdef DEBUG
                 global_jb = jbsave;
 #endif
-                return A_reg;
+//              return A_reg;
+                return nil;
 
 
             case OP_LOC2EXIT:
@@ -267,7 +306,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifdef DEBUG
                 global_jb = jbsave;
 #endif
-                return A_reg;
+//              return A_reg;
+                return nil;
 
             case OP_NILEXIT:
                 stack = entry_stack;
@@ -277,7 +317,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifdef DEBUG
                 global_jb = jbsave;
 #endif
-                return onevalue(nil);
+                A_reg = nil;
+                return nil;
 
             case OP_FREEBIND:
                 do_freebind(basic_elt(litvec, next_byte));
@@ -352,20 +393,24 @@ next_opcode:   // This label is so that I can restart what I am doing
                 push(B_reg);
                 A_reg = ncons(A_reg);
                 pop(B_reg);
+                errexit();
                 continue;
 
             case OP_XCONS:                          // A_reg = cons(A_reg, B_reg);
                 A_reg = cons(A_reg, B_reg);
+                errexit();
                 continue;
 
             case OP_LIST2:                  // A_reg = cons(B_reg, cons(A_reg, nil));
                 A_reg = list2(B_reg, A_reg);
+                errexit();
                 continue;
 
             case OP_ACONS:                  // A_reg = acons(pop(), B_reg, A_reg);
                 // = (pop() . B) . A
                 real_pop(r1);
                 A_reg = acons(r1, B_reg, A_reg);
+                errexit();
                 continue;
 
 //
@@ -399,8 +444,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                 w = next_byte;
                 A_reg = encapsulate_sp(&stack[-2-static_cast<int>(w)]);
                 pop(B_reg);
+                errexit();
                 A_reg = list2star(cfunarg, B_reg, A_reg);
                 pop(B_reg);
+                errexit();
                 continue;
 
             case OP_BIGSTACK:               // LOADLOC, STORELOC, CLOSURE etc
@@ -430,8 +477,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                         w = ((w & 0x3f) << 8) + next_byte;
                         A_reg = encapsulate_sp(&stack[-2-static_cast<int>(w)]);
                         pop(B_reg);
+                        errexit();
                         A_reg = list2star(cfunarg, B_reg, A_reg);
                         pop(B_reg);
+                        errexit();
                         continue;
                     case 0xc0:                  // LOADLEX, STORELEX extended
                         n = next_byte;
@@ -451,12 +500,14 @@ next_opcode:   // This label is so that I can restart what I am doing
                 // = pop() . (B . A)
                 real_pop(r1);
                 A_reg = list2star(r1, B_reg, A_reg);
+                errexit();
                 continue;
 
             case OP_LIST3:                  // A_reg = list3(pop(), B_reg, A_reg);
                 // = pop() . (B . (A . nil))
                 real_pop(r1);
                 A_reg = list3(r1, B_reg, A_reg);
+                errexit();
                 continue;
 
             case OP_ADD1:
@@ -464,10 +515,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   A_reg += 0x10;
                     continue;
                 }
-//
-// I drop through in the case of floating, bignum or error arithmetic.
-//
                 A_reg = plus2(A_reg, fixnum_of_int(1));
+                errexit();
                 continue;
 
             case OP_PLUS2:
@@ -476,10 +525,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                     A_reg = make_lisp_integerptr(nn);
                     continue;
                 }
-//
-// I drop through in the case of floating, bignum or error arithmetic.
-//
                 A_reg = plus2(B_reg, A_reg);
+                errexit();
                 continue;
 
             case OP_SUB1:
@@ -487,10 +534,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   A_reg -= 0x10;
                     continue;
                 }
-//
-// I drop through in the case of floating, bignum or error arithmetic.
-//
                 A_reg = plus2(A_reg, fixnum_of_int(-1));
+                errexit();
                 continue;
 
             case OP_DIFFERENCE:
@@ -500,20 +545,21 @@ next_opcode:   // This label is so that I can restart what I am doing
                     continue;
                 }
                 A_reg = difference2(B_reg, A_reg);
+                errexit();
                 continue;
 
             case OP_TIMES2:
-//
 // I do not in-line even the integer case here, since overflow checking
 // is a slight mess.
-//
                 A_reg = times2(B_reg, A_reg);
+                errexit();
                 continue;
 
             case OP_LESSP:
                 if (is_fixnum(B_reg) && is_fixnum(A_reg)) w = B_reg < A_reg;
                 else
                 {   w = lessp2(B_reg, A_reg);
+                    errexit();
                 }
                 A_reg = Lispify_predicate(w);
                 continue;
@@ -522,6 +568,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (is_fixnum(B_reg) && is_fixnum(A_reg)) w = B_reg > A_reg;
                 else
                 {   w = lessp2(A_reg, B_reg);
+                    errexit();
                 }
                 A_reg = Lispify_predicate(w);
                 continue;
@@ -531,9 +578,11 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = get(B_reg, A_reg, unset_var);
                 if (A_reg == unset_var) A_reg = nil;
                 else A_reg = lisp_true;
+                errexit();
                 continue;
 #else
                 A_reg = Lflagp(nil, B_reg, A_reg);
+                errexit();
                 continue;
 #endif
 
@@ -545,12 +594,15 @@ next_opcode:   // This label is so that I can restart what I am doing
                         A_reg = traced_call1(basic_elt(litvec, 0), f1, B_reg, A_reg);
                     else A_reg = f1(B_reg, A_reg);
                     popv(1);
+                    errexit();
                     continue;
                 }
                 push(B_reg);
                 A_reg = ncons(A_reg);
                 pop(B_reg);
+                errexit();
                 A_reg = apply(B_reg, A_reg, nil, basic_elt(litvec, 0));
+                errexit();
                 continue;
 
             case OP_APPLY2:
@@ -561,12 +613,15 @@ next_opcode:   // This label is so that I can restart what I am doing
                     if ((qheader(r2) & SYM_TRACED) != 0)
                         A_reg = traced_call2(basic_elt(litvec, 0), f2, r2, B_reg, A_reg);
                     else A_reg = f2(r2, B_reg, A_reg);
+                    errexit();
                     continue;
                 }
 // Here the stack has fn on the top and the 2 args are in B_reg, A_reg
                 A_reg = list2(B_reg, A_reg);
                 real_pop(r2);
+                errexit();
                 A_reg = apply(r2, A_reg, nil, basic_elt(litvec, 0));
+                errexit();
                 continue;
 
             case OP_APPLY3:
@@ -583,11 +638,14 @@ next_opcode:   // This label is so that I can restart what I am doing
                         A_reg = traced_call3(basic_elt(litvec, 0), f3, r2, r1, B_reg, A_reg);
                     else A_reg = f3(r2, r1, B_reg, A_reg);
                     real_popv(1);
+                    errexit();
                     continue;
                 }
                 A_reg = list3(stack[-1], B_reg, A_reg);
                 real_pop(r2);
+                errexit();
                 A_reg = apply(r2, A_reg, nil, basic_elt(litvec, 0));
+                errexit();
                 continue;
 
             case OP_APPLY4:
@@ -600,17 +658,21 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   push(r2, r3, r1, B_reg);
                     A_reg = ncons(A_reg);    // Make 4th arg a list!
                     pop(B_reg, r1, r3, r2);
+                    errexit();
                     f4up = qfn4up(r2);
                     if ((qheader(r2) & SYM_TRACED) != 0)
                         A_reg = traced_call4up(basic_elt(litvec, 0), f4up, r2, r3, r1, B_reg,
                                                A_reg);
                     else A_reg = f4up(r2, r3, r1, B_reg, A_reg);
                     real_popv(1);
+                    errexit();
                     continue;
                 }
                 A_reg = list4(r3, r1, B_reg, A_reg);
                 real_pop(r2);
+                errexit();
                 A_reg = apply(r2, A_reg, nil, basic_elt(litvec, 0));
+                errexit();
                 continue;
 
 #ifdef COMMON
@@ -621,6 +683,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_EQUAL:                                  // A = equal(B, A)
                 A_reg = SL_OR_CL_EQUAL(B_reg, A_reg) ? lisp_true : nil;
+                errexit();
                 continue;
 
             case OP_EQ:                                     // A = eq(B, A)
@@ -648,6 +711,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_GETV:                           // A_reg = getv(B_reg, A_reg)
                 A_reg = Lgetv(nil, B_reg, A_reg);
+                errexit();
                 continue;
 
             case OP_QGETVN:                         // A_reg = getv(A_reg, n)
@@ -670,6 +734,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_LENGTH:
                 A_reg = Llength(nil, A_reg);
+                errexit();
                 continue;
 
 //
@@ -711,42 +776,60 @@ next_opcode:   // This label is so that I can restart what I am doing
                 B_reg = A_reg;
                 A_reg = stack[-0];
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
-                else A_reg = cdrerror(A_reg);
+                else
+                {   A_reg = cdrerror(A_reg);
+                    errexit();
+                }
                 continue;
 
             case OP_CDRLOC1:
                 B_reg = A_reg;
                 A_reg = stack[-1];
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
-                else A_reg = cdrerror(A_reg);
+                else
+                {   A_reg = cdrerror(A_reg);
+                    errexit();
+                }
                 continue;
 
             case OP_CDRLOC2:
                 B_reg = A_reg;
                 A_reg = stack[-2];
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
-                else A_reg = cdrerror(A_reg);
+                else
+                {   A_reg = cdrerror(A_reg);
+                    errexit();
+                }
                 continue;
 
             case OP_CDRLOC3:
                 B_reg = A_reg;
                 A_reg = stack[-3];
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
-                else A_reg = cdrerror(A_reg);
+                else
+                {   A_reg = cdrerror(A_reg);
+                    errexit();
+                }
                 continue;
 
             case OP_CDRLOC4:
                 B_reg = A_reg;
                 A_reg = stack[-4];
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
-                else A_reg = cdrerror(A_reg);
+                else
+                {   A_reg = cdrerror(A_reg);
+                    errexit();
+                }
                 continue;
 
             case OP_CDRLOC5:
                 B_reg = A_reg;
                 A_reg = stack[-5];
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
-                else A_reg = cdrerror(A_reg);
+                else
+                {   A_reg = cdrerror(A_reg);
+                    errexit();
+                }
                 continue;
 
             case OP_CAARLOC0:
@@ -772,30 +855,54 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_CAAR:
             caar:
                 if (car_legal(A_reg)) A_reg = car(A_reg);
-                else A_reg = carerror(A_reg);
+                else
+                {   A_reg = carerror(A_reg);
+                    errexit();
+                }
                 if (car_legal(A_reg)) A_reg = car(A_reg);
-                else A_reg = carerror(A_reg);
+                else
+                {   A_reg = carerror(A_reg);
+                    errexit();
+                }
                 continue;
 
             case OP_CADR:
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
-                else A_reg = cdrerror(A_reg);
+                else
+                {   A_reg = cdrerror(A_reg);
+                    errexit();
+                }
                 if (car_legal(A_reg)) A_reg = car(A_reg);
-                else A_reg = carerror(A_reg);
+                else
+                {   A_reg = carerror(A_reg);
+                    errexit();
+                }
                 continue;
 
             case OP_CDAR:
                 if (car_legal(A_reg)) A_reg = car(A_reg);
-                else A_reg = carerror(A_reg);
+                else
+                {   A_reg = carerror(A_reg);
+                    errexit();
+                }
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
-                else A_reg = cdrerror(A_reg);
+                else
+                {   A_reg = cdrerror(A_reg);
+                    errexit();
+                }
                 continue;
 
             case OP_CDDR:
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
-                else A_reg = cdrerror(A_reg);
+                else
+                {   A_reg = cdrerror(A_reg);
+                    errexit();
+                }
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
-                else A_reg = cdrerror(A_reg);
+                else
+                {   A_reg = cdrerror(A_reg);
+                    errexit();
+                }
                 continue;
 
 
@@ -1166,11 +1273,14 @@ next_opcode:   // This label is so that I can restart what I am doing
                 else
 #ifdef COMMON
                 {   r1 = get(A_reg, basic_elt(litvec, w), unset_var);
+                    errexit();
                     if (r1 != unset_var) short_jump(ppc, xppc);
                     continue;
                 }
 #else
-                    r1 = Lflagp(nil, A_reg, basic_elt(litvec, w));
+                {   r1 = Lflagp(nil, A_reg, basic_elt(litvec, w));
+                    errexit();
+                }
                 if (r1 != nil) short_jump(ppc, xppc);
                 continue;
 #endif
@@ -1186,11 +1296,14 @@ next_opcode:   // This label is so that I can restart what I am doing
                 else
 #ifdef COMMON
                 {   r1 = get(A_reg, basic_elt(litvec, w), unset_var);
+                    errexit();
                     if (r1 == unset_var) short_jump(ppc, xppc);
                     continue;
                 }
 #else
-                    r1 = Lflagp(nil, A_reg, basic_elt(litvec, w));
+                {   r1 = Lflagp(nil, A_reg, basic_elt(litvec, w));
+                    errexit();
+                }
                 if (r1 == nil) short_jump(ppc, xppc);
                 continue;
 #endif
@@ -1253,24 +1366,28 @@ next_opcode:   // This label is so that I can restart what I am doing
                 xppc = ppc;
                 ppc++;
                 if (SL_OR_CL_EQUAL(A_reg, B_reg)) short_jump(ppc, xppc);
+                errexit();
                 continue;
 
             case OP_JUMPEQUAL_B:
                 xppc = ppc;
                 ppc++;
                 if (SL_OR_CL_EQUAL(A_reg, B_reg)) short_jump_back(ppc, xppc, A_reg);
+                errexit();
                 continue;
 
             case OP_JUMPNEQUAL:
                 xppc = ppc;
                 ppc++;
                 if (!SL_OR_CL_EQUAL(A_reg, B_reg)) short_jump(ppc, xppc);
+                errexit();
                 continue;
 
             case OP_JUMPNEQUAL_B:
                 xppc = ppc;
                 ppc++;
                 if (!SL_OR_CL_EQUAL(A_reg, B_reg)) short_jump_back(ppc, xppc, A_reg);
+                errexit();
                 continue;
 
             case OP_JUMP:
@@ -1457,30 +1574,29 @@ next_opcode:   // This label is so that I can restart what I am doing
 // the block that was the signal handler.
                 switch (exit_reason)
                 {   case UNWIND_NULL:      continue;
-                    case UNWIND_GO:        throw LispGo();
-                    case UNWIND_RETURN:    throw LispReturnFrom();
-                    case UNWIND_THROW:     throw LispThrow();
-                    case UNWIND_RESTART:   throw LispRestart();
-                    case UNWIND_RESOURCE:  throw LispResource();
-                    case UNWIND_SIGNAL:    throw LispSignal();
-                    case UNWIND_ERROR:     throw LispError();
-                    case UNWIND_FNAME:     throw LispError();
-                    case UNWIND_UNWIND:    throw LispError();
-                    default:               throw LispError();
+                    case UNWIND_GO:        THROW(LispGo);
+                    case UNWIND_RETURN:    THROW(LispReturnFrom);
+                    case UNWIND_THROW:     THROW(LispThrow);
+                    case UNWIND_RESTART:   THROW(LispRestart);
+                    case UNWIND_RESOURCE:  THROW(LispResource);
+                    case UNWIND_SIGNAL:    THROW(LispSignal);
+                    case UNWIND_ERROR:     THROW(LispError);
+                    case UNWIND_FNAME:     THROW(LispError);
+                    case UNWIND_UNWIND:    THROW(LispError);
+                    default:               THROW(LispError);
                 }
 
             case OP_THROW:
                 real_pop(r1);       // the tag to throw to
                 for (r2 = catch_tags; r2!=nil; r2=cdr(r2))
                     if (r1 == car(r2)) break;
-                if (r2==nil) aerror1("throw: tag not found", r1);
+                if (r2==nil) return aerror1("throw: tag not found", r1);
                 exit_tag = r2;
                 exit_value = A_reg;
                 assert(A_reg != 0);
                 exit_reason = UNWIND_THROW;
-                throw LispThrow();
+                THROW(LispThrow);
 
-//
 // I expect that calling functions with 0, 1, 2 or 3 arguments will
 // be enormously important for Lisp, and so separate opcodes are provided
 // for these cases.  The operand in each case selects the function to be
@@ -1488,7 +1604,6 @@ next_opcode:   // This label is so that I can restart what I am doing
 // and arguments are taken from A and B as necessary.  If several
 // arguments are needed the first argument will be loaded first, and thus
 // it is the LAST argument that end up in the A register.
-//
 
             case OP_CALL0_0:      // Calling myself...
                 fname = 0;
@@ -1522,6 +1637,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     A_reg = traced_call0(basic_elt(litvec, 0), f0, r1);
                 else A_reg = f0(r1);
                 assert(A_reg != 0);
+                errexit();
                 continue;
 
 
@@ -1546,6 +1662,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             jcall0: r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
                 f0 = qfn0(r1);
+                errexit();
 // The issue here is cases such as
 //    (de f1 (x) (f2 x))
 //    (de f2 (x) (f1 x))
@@ -1584,17 +1701,20 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call0(basic_elt(litvec, 0), f0, r1);
                 else A_reg = f0(r1);
+                errexit();
 #ifdef DEBUG
                 global_jb = jbsave;
 #endif
-                return A_reg;
+//              return A_reg;
+                return nil;
 #else
 #ifdef DEBUG
                 global_jb = jbsave;
 #endif
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    return traced_call0(basic_elt(litvec, 0), f0, r1);
-                else return f0(r1);
+                    A_reg = traced_call0(basic_elt(litvec, 0), f0, r1);
+                else A_reg = f0(r1);
+                return nil;
 #endif
 
             jcall1:
@@ -1634,14 +1754,16 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifdef DEBUG
                 global_jb = jbsave;
 #endif
-                return A_reg;
+//              return A_reg;
+                return nil;
 #else
 #ifdef DEBUG
                 global_jb = jbsave;
 #endif
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    return traced_call1(basic_elt(litvec, 0), f1, r1, A_reg);
-                else return f1(r1, A_reg);
+                    A_reg = traced_call1(basic_elt(litvec, 0), f1, r1, A_reg);
+                else A_reg = f1(r1, A_reg);
+                return nil;
 #endif
 
 
@@ -1682,14 +1804,16 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifdef DEBUG
                 global_jb = jbsave;
 #endif
-                return A_reg;
+//              return A_reg;
+                return nil;
 #else
 #ifdef DEBUG
                 global_jb = jbsave;
 #endif
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    return traced_call2(basic_elt(litvec, 0), f2, r1, B_reg, A_reg);
-                else return f2(r1, B_reg, A_reg);
+                    A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, B_reg, A_reg);
+                else A_reg = f2(r1, B_reg, A_reg);
+                return nil;
 #endif
 
             jcall3:
@@ -1730,14 +1854,16 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifdef DEBUG
                 global_jb = jbsave;
 #endif
-                return A_reg;
+//              return A_reg;
+                return nil;
 #else
 #ifdef DEBUG
                 global_jb = jbsave;
 #endif
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    return traced_call3(basic_elt(litvec, 0), f3, r1, r2, B_reg, A_reg);
-                else return f3(r1, r2, B_reg, A_reg);
+                    A_reg = traced_call3(basic_elt(litvec, 0), f3, r1, r2, B_reg, A_reg);
+                else A_reg = f3(r1, r2, B_reg, A_reg);
+                return nil;
 #endif
 
             jcall4:
@@ -1758,7 +1884,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifdef DEBUG
                 global_jb = jbsave;
 #endif
-                return A_reg;
+//              return A_reg;
+                return nil;
 
             case OP_BIGCALL:
 //
@@ -1783,8 +1910,10 @@ next_opcode:   // This label is so that I can restart what I am doing
 // Here I write out a variant on the CALL4 code.
                         B_reg = list3star(stack[-1], stack[0], B_reg, A_reg);
                         popv(2);
+                        errexit();
                         A_reg = basic_elt(litvec, fname);
                         A_reg = apply(A_reg, B_reg, nil, basic_elt(litvec, 0));
+                        errexit();
                         ppc++;
                         continue;
 
@@ -1800,6 +1929,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                         {   push(A_reg);
                             print_traceset(fname, A_reg);
                             pop(A_reg);
+                            errexit();
                         }
                         setvalue(basic_elt(litvec, fname), A_reg);  // store into special var
                         continue;
@@ -1843,6 +1973,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     if (stack >= stackLimit) respond_to_stack_event();
                     A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0),
                                                  stack-1);
+                    errexit();
                 }
                 assert(A_reg != 0);
                 continue;
@@ -1877,6 +2008,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     A_reg = traced_call1(basic_elt(litvec, 0), f1, r1, A_reg);
                 else A_reg = f1(r1, A_reg);
                 assert(A_reg != 0);
+                errexit();
                 continue;
 
             case OP_CALL2_0:
@@ -1891,6 +2023,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                                                  stack-2);
                 }
                 assert(A_reg != 0);
+                errexit();
                 continue;
 
             case OP_CALL2_1:
@@ -1920,6 +2053,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, B_reg, A_reg);
                 else A_reg = f2(r1, B_reg, A_reg);
                 assert(A_reg != 0);
+                errexit();
                 continue;
 
             case OP_CALL2R:
@@ -1933,6 +2067,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, A_reg, B_reg);
                 else A_reg = f2(r1, A_reg, B_reg);
                 assert(A_reg != 0);
+                errexit();
                 continue;
 
             case OP_CALL3:
@@ -1947,6 +2082,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     A_reg = traced_call3(basic_elt(litvec, 0), f3, r1, r2, B_reg, A_reg);
                 else A_reg = f3(r1, r2, B_reg, A_reg);
                 assert(A_reg != 0);
+                errexit();
                 continue;
 
             case OP_CALL4:
@@ -1954,12 +2090,14 @@ next_opcode:   // This label is so that I can restart what I am doing
 // The last two are in A and B.
                 real_pop(r2, r1);
                 B_reg = list3star(r1, r2, B_reg, A_reg);
+                errexit();
 // Here the post-byte indicates the function to be called.
                 A_reg = basic_elt(litvec,
                                   (reinterpret_cast<unsigned char *>(codevec))[ppc]);
                 A_reg = apply(A_reg, B_reg, nil, basic_elt(litvec, 0));
                 assert(A_reg != 0);
                 ppc++;
+                errexit();
                 continue;
 
             case OP_BUILTIN0:
@@ -1974,6 +2112,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                                          make_undefined_symbol(no_arg_names[previous_byte]));
                 else A_reg = f0(nil);
                 assert(A_reg != 0);
+                errexit();
                 continue;
 
             case OP_BUILTIN1:
@@ -1986,6 +2125,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                                          A_reg);
                 A_reg = f1(nil, A_reg);
                 assert(A_reg != 0);
+                errexit();
                 continue;
 
             case OP_BUILTIN2:
@@ -1998,6 +2138,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                                          B_reg, A_reg);
                 A_reg = f2(nil, B_reg, A_reg);
                 assert(A_reg != 0);
+                errexit();
                 continue;
 
             case OP_BUILTIN2R:
@@ -2010,6 +2151,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                                          A_reg, B_reg);
                 else A_reg = f2(nil, A_reg, B_reg);
                 assert(A_reg != 0);
+                errexit();
                 continue;
 
             case OP_BUILTIN3:
@@ -2023,6 +2165,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                                          r1, B_reg, A_reg);
                 else A_reg = f3(nil, r1, B_reg, A_reg);
                 assert(A_reg != 0);
+                errexit();
                 continue;
 
 //
@@ -2111,7 +2254,10 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_CAR:
                 if (car_legal(A_reg)) A_reg = car(A_reg);
-                else A_reg = carerror(A_reg);
+                else 
+                {   A_reg = carerror(A_reg);
+                    errexit();
+                }
                 assert(A_reg != 0);
                 continue;
 
@@ -2119,7 +2265,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                 B_reg = A_reg;
                 A_reg = stack[-0];
                 if (car_legal(A_reg)) A_reg = car(A_reg);
-                else A_reg = carerror(A_reg);
+                else 
+                {   A_reg = carerror(A_reg);
+                    errexit();
+                }
                 assert(A_reg != 0);
                 continue;
 
@@ -2127,7 +2276,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                 B_reg = A_reg;
                 A_reg = stack[-1];
                 if (car_legal(A_reg)) A_reg = car(A_reg);
-                else A_reg = carerror(A_reg);
+                else 
+                {   A_reg = carerror(A_reg);
+                    errexit();
+                }
                 assert(A_reg != 0);
                 continue;
 
@@ -2135,7 +2287,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                 B_reg = A_reg;
                 A_reg = stack[-2];
                 if (car_legal(A_reg)) A_reg = car(A_reg);
-                else A_reg = carerror(A_reg);
+                else 
+                {   A_reg = carerror(A_reg);
+                    errexit();
+                }
                 assert(A_reg != 0);
                 continue;
 
@@ -2143,7 +2298,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                 B_reg = A_reg;
                 A_reg = stack[-3];
                 if (car_legal(A_reg)) A_reg = car(A_reg);
-                else A_reg = carerror(A_reg);
+                else 
+                {   A_reg = carerror(A_reg);
+                    errexit();
+                }
                 assert(A_reg != 0);
                 continue;
 
@@ -2151,7 +2309,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                 B_reg = A_reg;
                 A_reg = stack[-4];
                 if (car_legal(A_reg)) A_reg = car(A_reg);
-                else A_reg = carerror(A_reg);
+                else 
+                {   A_reg = carerror(A_reg);
+                    errexit();
+                }
                 assert(A_reg != 0);
                 continue;
 
@@ -2159,7 +2320,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                 B_reg = A_reg;
                 A_reg = stack[-5];
                 if (car_legal(A_reg)) A_reg = car(A_reg);
-                else A_reg = carerror(A_reg);
+                else 
+                {   A_reg = carerror(A_reg);
+                    errexit();
+                }
                 assert(A_reg != 0);
                 continue;
 
@@ -2167,7 +2331,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                 B_reg = A_reg;
                 A_reg = stack[-6];
                 if (car_legal(A_reg)) A_reg = car(A_reg);
-                else A_reg = carerror(A_reg);
+                else 
+                {   A_reg = carerror(A_reg);
+                    errexit();
+                }
                 assert(A_reg != 0);
                 continue;
 
@@ -2175,7 +2342,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                 B_reg = A_reg;
                 A_reg = stack[-7];
                 if (car_legal(A_reg)) A_reg = car(A_reg);
-                else A_reg = carerror(A_reg);
+                else 
+                {   A_reg = carerror(A_reg);
+                    errexit();
+                }
                 assert(A_reg != 0);
                 continue;
 
@@ -2183,7 +2353,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                 B_reg = A_reg;
                 A_reg = stack[-8];
                 if (car_legal(A_reg)) A_reg = car(A_reg);
-                else A_reg = carerror(A_reg);
+                else 
+                {   A_reg = carerror(A_reg);
+                    errexit();
+                }
                 assert(A_reg != 0);
                 continue;
 
@@ -2191,7 +2364,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                 B_reg = A_reg;
                 A_reg = stack[-9];
                 if (car_legal(A_reg)) A_reg = car(A_reg);
-                else A_reg = carerror(A_reg);
+                else 
+                {   A_reg = carerror(A_reg);
+                    errexit();
+                }
                 assert(A_reg != 0);
                 continue;
 
@@ -2199,7 +2375,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                 B_reg = A_reg;
                 A_reg = stack[-10];
                 if (car_legal(A_reg)) A_reg = car(A_reg);
-                else A_reg = carerror(A_reg);
+                else 
+                {   A_reg = carerror(A_reg);
+                    errexit();
+                }
                 assert(A_reg != 0);
                 continue;
 
@@ -2207,13 +2386,19 @@ next_opcode:   // This label is so that I can restart what I am doing
                 B_reg = A_reg;
                 A_reg = stack[-11];
                 if (car_legal(A_reg)) A_reg = car(A_reg);
-                else A_reg = carerror(A_reg);
+                else 
+                {   A_reg = carerror(A_reg);
+                    errexit();
+                }
                 assert(A_reg != 0);
                 continue;
 
             case OP_CDR:
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
-                else A_reg = cdrerror(A_reg);
+                else
+                {   A_reg = cdrerror(A_reg);
+                    errexit();
+                }
                 assert(A_reg != 0);
                 continue;
 
@@ -2402,8 +2587,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifdef DEBUG
                 global_jb = jbsave;
 #endif
-                return A_reg;
-
+//              return A_reg;
+                return nil;
 
             case OP_PUSH:
                 assert(A_reg != 0);
@@ -2446,6 +2631,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_CONS:                           // A_reg = cons(B_reg, A_reg);
                 A_reg = cons(B_reg, A_reg);
+                errexit();
                 continue;
 
 //
@@ -2488,11 +2674,13 @@ next_opcode:   // This label is so that I can restart what I am doing
                 B_reg = A_reg;
                 A_reg = basic_elt(litvec, next_byte);
                 A_reg = get(B_reg, A_reg, nil);
+                errexit();
                 continue;
 
             case OP_GET:                                    // A = get(B, A)
                 A_reg = get(B_reg, A_reg, nil);
                 assert(A_reg != 0);
+                errexit();
                 continue;
 
         }
@@ -2501,41 +2689,37 @@ next_opcode:   // This label is so that I can restart what I am doing
 // End of the main block of opcodes.
 //*****************************************************************************
     } // end of switch block
-} // end of try block
-catch (LispException &e)
-{
+    CATCH(LispException)
 // What follows is my current guess for a good diagnostic...
-    if (SHOW_FNAME)
-    {   err_printf("Inside: ");
-        loop_print_error(basic_elt(litvec, 0));
-        err_printf("\n");
-    }
+        if (SHOW_FNAME)
+        {   err_printf("Inside: ");
+            loop_print_error(basic_elt(litvec, 0));
+            err_printf("\n");
+        }
 // Here I need to scan down the current stack-frame looking for either a
 // CATCH or an UNWIND-PROTECT marker.
-    for (;;)
-    {   unwind_stack(entry_stack, true);
-        if (stack == entry_stack) throw;   // re-throw!
-// Here I have a CATCH/UNWIND record within the current function
-        real_pop(r1, r2);
+        for (;;)
+        {   unwind_stack(entry_stack, true);
+            if (stack == entry_stack) RETHROW;
+            real_pop(r1, r2);
 // If the tag matches exit_tag then I must reset pc based on offset (r2)
 // and continue. NB need to restore A_reg from exit_value.
-        w = int_of_fixnum(r2);
-        if (car(r1) == SPID_PROTECT)
-        {   // This is an UNWIND catcher
-            real_push(exit_tag, fixnum_of_int(exit_reason));
-            A_reg = Lmv_list(nil, exit_value);
-            real_push(A_reg);
-            ppc = w;
-            A_reg = exit_value;
-            goto next_opcode;
+            w = int_of_fixnum(r2);
+            if (car(r1) == SPID_PROTECT)
+            {   // This is an UNWIND catcher
+                real_push(exit_tag, fixnum_of_int(exit_reason));
+                A_reg = Lmv_list(nil, exit_value);
+                real_push(A_reg);
+                ppc = w;
+                A_reg = exit_value;
+                goto next_opcode;
+            }
+            else if (exit_reason == UNWIND_THROW && r1 == exit_tag)
+            {   ppc = w;
+                A_reg = exit_value;
+                goto next_opcode;
+            }
         }
-        else if (exit_reason == UNWIND_THROW && r1 == exit_tag)
-        {   ppc = w;
-            A_reg = exit_value;
-            goto next_opcode;
-        }
-    }
-}
-
+    END_CATCH;
 
 // end of bytes2.cpp

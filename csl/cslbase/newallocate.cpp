@@ -503,8 +503,8 @@ LispObject get_basic_vector(int tag, int type, size_t size)
     size_t allocSize = (size_t)doubleword_align_up(size);
 // Basic vectors must be smaller then the CSL page size.
     if (allocSize > (CSL_PAGE_SIZE - 32))
-        aerror1("request for basic vector too big",
-                fixnum_of_int(allocSize/CELL-1));
+        return aerror1("request for basic vector too big",
+                       fixnum_of_int(allocSize/CELL-1));
     LispObject r = get_n_bytes(allocSize);
     *(reinterpret_cast<Header *>(r)) = type + (size <<
                                        (Tw+5)) + TAG_HDR_IMMED;
@@ -628,8 +628,8 @@ LispObject borrow_n_bytes(size_t n)
 LispObject borrow_basic_vector(int tag, int type, size_t size)
 {   size_t allocSize = (size_t)doubleword_align_up(size);
     if (allocSize > (CSL_PAGE_SIZE - 32))
-        aerror1("request for basic vector too big",
-                fixnum_of_int(allocSize/CELL-1));
+        return aerror1("request for basic vector too big",
+                       fixnum_of_int(allocSize/CELL-1));
     LispObject r = borrow_n_bytes(allocSize);
     *(reinterpret_cast<Header *>(r)) = type + (size <<
                                        (Tw+5)) + TAG_HDR_IMMED;
@@ -777,7 +777,7 @@ bool allocateSegment(size_t n)
 // If I have C++17 I can rely on alignment constraints and just allocate
 // using new[]
 #ifdef __cpp_aligned_new
-    r = (std::nothrow) new Page[n/pageSize];
+    r = new (std::nothrow) Page[n/pageSize];
     if (r == nullptr) return false;
     rbase = static_cast<void *>(r);
 #else // !__cpp_aligned_new

@@ -75,7 +75,6 @@ static int iput1(int c)
     return 0;
 }
 
-
 static void display(PROC_handle p)
 {   int ch;
     if (PROC_atom(p))

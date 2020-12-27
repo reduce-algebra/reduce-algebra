@@ -45,7 +45,7 @@
 
 
 LispObject rembi(LispObject a, LispObject b)
-{   if (b == fixnum_of_int(0)) aerror2("bad arg for remainder", a, b);
+{   if (b == fixnum_of_int(0)) return aerror2("bad arg for remainder", a, b);
     else if (b == fixnum_of_int(1) ||
              b == fixnum_of_int(-1)) return fixnum_of_int(0);
     intptr_t n = int_of_fixnum(b);
@@ -63,83 +63,83 @@ LispObject rembb(LispObject a, LispObject b)
 }
 
 static LispObject remis(LispObject a, LispObject b)
-{   aerror2("bad arg for remainder", a, b);
+{   return aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remir(LispObject a, LispObject b)
-{   aerror2("bad arg for remainder", a, b);
+{   return aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remif(LispObject a, LispObject b)
-{   aerror2("bad arg for remainder", a, b);
+{   return aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remsi(LispObject a, LispObject b)
-{   aerror2("bad arg for remainder", a, b);
+{   return aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remsb(LispObject a, LispObject b)
-{   aerror2("bad arg for remainder", a, b);
+{   return aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remsr(LispObject a, LispObject b)
-{   aerror2("bad arg for remainder", a, b);
+{   return aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remsf(LispObject a, LispObject b)
-{   aerror2("bad arg for remainder", a, b);
+{   return aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject rembs(LispObject a, LispObject b)
-{   aerror2("bad arg for remainder", a, b);
+{   return aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject rembr(LispObject a, LispObject b)
-{   aerror2("bad arg for remainder", a, b);
+{   return aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject rembf(LispObject a, LispObject b)
-{   aerror2("bad arg for remainder", a, b);
+{   return aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remri(LispObject a, LispObject b)
-{   aerror2("bad arg for remainder", a, b);
+{   return aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remrs(LispObject a, LispObject b)
-{   aerror2("bad arg for remainder", a, b);
+{   return aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remrb(LispObject a, LispObject b)
-{   aerror2("bad arg for remainder", a, b);
+{   return aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remrr(LispObject a, LispObject b)
-{   aerror2("bad arg for remainder", a, b);
+{   return aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remrf(LispObject a, LispObject b)
-{   aerror2("bad arg for remainder", a, b);
+{   return aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remfi(LispObject a, LispObject b)
-{   aerror2("bad arg for remainder", a, b);
+{   return aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remfs(LispObject a, LispObject b)
-{   aerror2("bad arg for remainder", a, b);
+{   return aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remfb(LispObject a, LispObject b)
-{   aerror2("bad arg for remainder", a, b);
+{   return aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remfr(LispObject a, LispObject b)
-{   aerror2("bad arg for remainder", a, b);
+{   return aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remff(LispObject a, LispObject b)
-{   aerror2("bad arg for remainder", a, b);
+{   return aerror2("bad arg for remainder", a, b);
 }
 
 LispObject Cremainder(LispObject a, LispObject b)
@@ -153,7 +153,7 @@ LispObject Cremainder(LispObject a, LispObject b)
 // make efficient.
 //
                     if (b == fixnum_of_int(0))
-                        aerror2("bad arg for remainder", a, b);
+                        return aerror2("bad arg for remainder", a, b);
                     // No overflow is possible in a remaindering operation
                     {   intptr_t aa = int_of_fixnum(a);
                         intptr_t bb = int_of_fixnum(b);
@@ -203,14 +203,14 @@ LispObject Cremainder(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return remir(a, b);
                         default:
-                            aerror1("Bad arg for remainder",  b);
+                            return aerror1("Bad arg for remainder",  b);
                     }
                 }
                 case TAG_BOXFLOAT:
                 case TAG_BOXFLOAT+TAG_XBIT:
                     return remif(a, b);
                 default:
-                    aerror1("Bad arg for remainder",  b);
+                    return aerror1("Bad arg for remainder",  b);
             }
         case XTAG_SFLOAT:
             switch (static_cast<int>(b) & XTAG_BITS)
@@ -234,14 +234,14 @@ LispObject Cremainder(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return remsr(a, b);
                         default:
-                            aerror1("Bad arg for remainder",  b);
+                            return aerror1("Bad arg for remainder",  b);
                     }
                 }
                 case TAG_BOXFLOAT:
                 case TAG_BOXFLOAT+TAG_XBIT:
                     return remsf(a, b);
                 default:
-                    aerror1("Bad arg for remainder",  b);
+                    return aerror1("Bad arg for remainder",  b);
             }
         case TAG_NUMBERS:
         case TAG_NUMBERS+TAG_XBIT:
@@ -262,14 +262,14 @@ LispObject Cremainder(LispObject a, LispObject b)
                                 case TYPE_RATNUM:
                                     return rembr(a, b);
                                 default:
-                                    aerror1("Bad arg for remainder",  b);
+                                    return aerror1("Bad arg for remainder",  b);
                             }
                         }
                         case TAG_BOXFLOAT:
                         case TAG_BOXFLOAT+TAG_XBIT:
                             return rembf(a, b);
                         default:
-                            aerror1("Bad arg for remainder",  b);
+                            return aerror1("Bad arg for remainder",  b);
                     }
                 case TYPE_RATNUM:
                     switch (static_cast<int>(b) & XTAG_BITS)
@@ -286,16 +286,16 @@ LispObject Cremainder(LispObject a, LispObject b)
                                 case TYPE_RATNUM:
                                     return remrr(a, b);
                                 default:
-                                    aerror1("Bad arg for remainder",  b);
+                                    return aerror1("Bad arg for remainder",  b);
                             }
                         }
                         case TAG_BOXFLOAT:
                         case TAG_BOXFLOAT+TAG_XBIT:
                             return remrf(a, b);
                         default:
-                            aerror1("Bad arg for remainder",  b);
+                            return aerror1("Bad arg for remainder",  b);
                     }
-                default:    aerror1("Bad arg for remainder",  a);
+                default:    return aerror1("Bad arg for remainder",  a);
             }
         }
         case TAG_BOXFLOAT:
@@ -314,17 +314,17 @@ LispObject Cremainder(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return remfr(a, b);
                         default:
-                            aerror1("Bad arg for remainder",  b);
+                            return aerror1("Bad arg for remainder",  b);
                     }
                 }
                 case TAG_BOXFLOAT:
                 case TAG_BOXFLOAT+TAG_XBIT:
                     return remff(a, b);
                 default:
-                    aerror1("Bad arg for remainder",  b);
+                    return aerror1("Bad arg for remainder",  b);
             }
         default:
-            aerror1("Bad arg for remainder",  a);
+            return aerror1("Bad arg for remainder",  a);
     }
 }
 
@@ -357,7 +357,7 @@ static LispObject modib(LispObject a, LispObject b)
 }
 
 static LispObject modbi(LispObject a, LispObject b)
-{   if (b == fixnum_of_int(0)) aerror2("bad arg for mod", a, b);
+{   if (b == fixnum_of_int(0)) return aerror2("bad arg for mod", a, b);
     if (b == fixnum_of_int(1) || b == fixnum_of_int(-1))
         return fixnum_of_int(0);
     intptr_t n = int_of_fixnum(b);
@@ -478,7 +478,7 @@ LispObject modulus(LispObject a, LispObject b)
 //
                 {   intptr_t p = int_of_fixnum(a);
                     intptr_t q = int_of_fixnum(b);
-                    if (q == 0) aerror2("bad arg for mod", a, b);
+                    if (q == 0) return aerror2("bad arg for mod", a, b);
                     p = p % q;
                     if (q < 0)
                     {   if (p > 0) p += q;
@@ -504,14 +504,14 @@ LispObject modulus(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return modir(a, b);
                         default:
-                            aerror1("Bad arg for mod",  b);
+                            return aerror1("Bad arg for mod",  b);
                     }
                 }
                 case TAG_BOXFLOAT:
                 case TAG_BOXFLOAT+TAG_XBIT:
                     return modif(a, b);
                 default:
-                    aerror1("Bad arg for mod",  b);
+                    return aerror1("Bad arg for mod",  b);
             }
         case XTAG_SFLOAT:
             switch (static_cast<int>(b) & XTAG_BITS)
@@ -537,14 +537,14 @@ LispObject modulus(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return modsr(a, b);
                         default:
-                            aerror1("Bad arg for mod",  b);
+                            return aerror1("Bad arg for mod",  b);
                     }
                 }
                 case TAG_BOXFLOAT:
                 case TAG_BOXFLOAT+TAG_XBIT:
                     return modsf(a, b);
                 default:
-                    aerror1("Bad arg for mod",  b);
+                    return aerror1("Bad arg for mod",  b);
             }
         case TAG_NUMBERS:
         case TAG_NUMBERS+TAG_XBIT:
@@ -565,14 +565,14 @@ LispObject modulus(LispObject a, LispObject b)
                                 case TYPE_RATNUM:
                                     return modbr(a, b);
                                 default:
-                                    aerror1("Bad arg for mod",  b);
+                                    return aerror1("Bad arg for mod",  b);
                             }
                         }
                         case TAG_BOXFLOAT:
                         case TAG_BOXFLOAT+TAG_XBIT:
                             return modbf(a, b);
                         default:
-                            aerror1("Bad arg for mod",  b);
+                            return aerror1("Bad arg for mod",  b);
                     }
                 case TYPE_RATNUM:
                     switch (static_cast<int>(b) & XTAG_BITS)
@@ -589,16 +589,16 @@ LispObject modulus(LispObject a, LispObject b)
                                 case TYPE_RATNUM:
                                     return modrr(a, b);
                                 default:
-                                    aerror1("Bad arg for mod",  b);
+                                    return aerror1("Bad arg for mod",  b);
                             }
                         }
                         case TAG_BOXFLOAT:
                         case TAG_BOXFLOAT+TAG_XBIT:
                             return modrf(a, b);
                         default:
-                            aerror1("Bad arg for mod",  b);
+                            return aerror1("Bad arg for mod",  b);
                     }
-                default:    aerror1("Bad arg for mod",  a);
+                default:    return aerror1("Bad arg for mod",  a);
             }
         }
         case TAG_BOXFLOAT:
@@ -617,17 +617,17 @@ LispObject modulus(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return modfr(a, b);
                         default:
-                            aerror1("Bad arg for mod",  b);
+                            return aerror1("Bad arg for mod",  b);
                     }
                 }
                 case TAG_BOXFLOAT:
                 case TAG_BOXFLOAT+TAG_XBIT:
                     return ccl_modff(a, b);
                 default:
-                    aerror1("Bad arg for mod",  b);
+                    return aerror1("Bad arg for mod",  b);
             }
         default:
-            aerror1("Bad arg for mod",  a);
+            return aerror1("Bad arg for mod",  a);
     }
 }
 
@@ -690,7 +690,7 @@ bool minusp(LispObject a)
                 case TYPE_RATNUM:
                     return minusp(numerator(a));
                 default:
-                    aerror1("Bad arg for minusp",  a);
+                    return aerror1("Bad arg for minusp",  a);
                     return 0;
             }
         }
@@ -698,7 +698,7 @@ bool minusp(LispObject a)
         case TAG_BOXFLOAT+TAG_XBIT:
             return float_of_number(a) < 0.0;
         default:
-            aerror1("Bad arg for minusp",  a);
+            return aerror1("Bad arg for minusp",  a);
             return 0;
     }
 }
@@ -722,7 +722,7 @@ bool plusp(LispObject a)
                 case TYPE_RATNUM:
                     return plusp(numerator(a));
                 default:
-                    aerror1("Bad arg for plusp",  a);
+                    return aerror1("Bad arg for plusp",  a);
                     return 0;
             }
         }
@@ -730,7 +730,7 @@ bool plusp(LispObject a)
         case TAG_BOXFLOAT+TAG_XBIT:
             return float_of_number(a) > 0.0;
         default:
-            aerror1("Bad arg for plusp",  a);
+            return aerror1("Bad arg for plusp",  a);
             return 0;
     }
 }
@@ -963,8 +963,8 @@ static bool numeqff(LispObject a, LispObject b)
 //
 
 #ifdef COMMON
-#  define differenta aerror1("Bad arg for =",  a); return false
-#  define differentb aerror1("Bad arg for =",  b); return false
+#  define differenta return aerror1("Bad arg for =",  a); return false
+#  define differentb return aerror1("Bad arg for =",  b); return false
 #else
 #  define differenta return false
 #  define differentb return false

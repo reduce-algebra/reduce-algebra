@@ -258,7 +258,7 @@ LispObject Lcopy_module(LispObject env, LispObject file)
             h = vechdr(file);
         }
         else if (!is_vector(file) || !is_string_header(h = vechdr(file)))
-            aerror("copy-module");
+            return aerror("copy-module");
         len = length_of_byteheader(h) - CELL;
         modname = reinterpret_cast<char *>(file) + CELL - TAG_VECTOR;
 #ifdef TRIM_MODULE_NAMES
@@ -284,7 +284,7 @@ LispObject Ldelete_module(LispObject env, LispObject file)
             h = vechdr(file);
         }
         else if (!is_vector(file) || !is_string_header(h = vechdr(file)))
-            aerror("delete-module");
+            return aerror("delete-module");
         len = length_of_byteheader(h) - CELL;
         modname = reinterpret_cast<char *>(file) + CELL - TAG_VECTOR;
 #ifdef TRIM_MODULE_NAMES
@@ -320,7 +320,7 @@ LispObject Lbanner(LispObject env, LispObject info)
         h = vechdr(info);
     }
     else if (!is_vector(info) || !is_string_header(h = vechdr(info)))
-        aerror("banner");
+        return aerror("banner");
     len = length_of_byteheader(h) - CELL;
     name = reinterpret_cast<char *>(info) + CELL - TAG_VECTOR;
     if (len == 0) Iopen_banner(-2); // delete banner info
@@ -388,7 +388,7 @@ LispObject Lmodule_exists(LispObject env, LispObject file)
         h = vechdr(file);
     }
     else if (!is_vector(file) ||!is_string_header(h = vechdr(file)))
-        aerror("modulep");
+        return aerror("modulep");
     len = length_of_byteheader(h) - CELL;
     modname = reinterpret_cast<char *>(file) + CELL - TAG_VECTOR;
 #ifdef TRIM_MODULE_NAMES
@@ -485,9 +485,9 @@ LispObject Lstart_module(LispObject env, LispObject name)
             {   name = get_pname(name);
                 h = vechdr(name);
             }
-            else if (!(is_vector(name))) aerror("start-module");
+            else if (!(is_vector(name))) return aerror("start-module");
             else if (!is_string_header(h = vechdr(name)))
-                aerror("start-module");
+                return aerror("start-module");
         len = length_of_byteheader(h) - CELL;
         modname = reinterpret_cast<char *>(name) + CELL - TAG_VECTOR;
 //
@@ -529,7 +529,7 @@ LispObject Lset_help_file(LispObject env, LispObject a, LispObject b)
     if (a != nil)
     {   w = get_string_data(a, "set-help-file", lena);
         aa = reinterpret_cast<char *>(std::malloc(lena+1));
-        if (aa == nullptr) aerror("set-help-file");
+        if (aa == nullptr) return aerror("set-help-file");
         std::memcpy(aa, w, lena);
         aa[lena] = 0;
     }
@@ -540,7 +540,7 @@ LispObject Lset_help_file(LispObject env, LispObject a, LispObject b)
     if (b != nil)
     {   w = get_string_data(b, "set-help-file", lenb);
         bb = reinterpret_cast<char *>(std::malloc(lenb+1));
-        if (bb == nullptr) aerror("set-help-file");
+        if (bb == nullptr) return aerror("set-help-file");
         std::memcpy(bb, w, lenb);
         bb[lenb] = 0;
     }

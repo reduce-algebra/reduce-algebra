@@ -53,7 +53,7 @@
 #include "mpipack.c"
 
 inline LispObject get_fix_arg(LispObject& v, const char *fun_name)
-{   if (!is_fixnum(v)) aerror1(fun_name, v)
+{   if (!is_fixnum(v)) return aerror1(fun_name, v)
         v = int_of_fixnum(v);
 }
 
@@ -70,7 +70,7 @@ inline LispObject get_fix_arg(LispObject& v, const char *fun_name)
 static LispObject Lmpi_comm_rank(LispObject, LispObject comm)
 {   int rank;
     static char fun_name[] = "mpi_comm_rank";
-    if (!is_fixnum(comm)) aerror1(fun_name, v)
+    if (!is_fixnum(comm)) return aerror1(fun_name, v)
         MPI_Comm_rank(int_of_fixnum(comm),&rank);
     return onevalue(fixnum_of_int(rank));
 }
@@ -82,7 +82,7 @@ static LispObject Lmpi_comm_rank(LispObject, LispObject comm)
 static LispObject Lmpi_comm_size(LispObject, LispObject comm)
 {   int size;
     static char fun_name[] = "mpi_comm_size";
-    if (!is_fixnum(comm)) aerror1(fun_name, v);
+    if (!is_fixnum(comm)) return aerror1(fun_name, v);
     MPI_Comm_size(int_of_fixnum(comm),&size);
     return onevalue(fixnum_of_int(size));
 }
@@ -101,7 +101,7 @@ static LispObject Lmpi_send(LispObject env, LispObject message,
 
     get_fix_arg(dest, fun_name);
     get_fix_arg(tag, fun_name);
-    if (cdr(comm) != nil) aerror("too many args for mpi-send");
+    if (cdr(comm) != nil) return aerror("too many args for mpi-send");
     comm = car(comm);
     get_fix_arg(comm, fun_name);
 
@@ -170,15 +170,15 @@ static LispObject Lmpi_sendrecv(LispObject, LispObject s_mess,
     source = car(a4up);
     a4up = cdr(a4up);
     get_fix_arg(source);
-    if (a4up == nil) aerror("not enough arguments for mpi_sendrecv");
+    if (a4up == nil) return aerror("not enough arguments for mpi_sendrecv");
     r_tag = car(a4up);
     a4up = cdr(a4up);
     get_fix_arg(r_tag);
-    if (a4up == nil) aerror("not enough arguments for mpi_sendrecv");
+    if (a4up == nil) return aerror("not enough arguments for mpi_sendrecv");
     com = car(a4up);
     a4up = cdr(a4up);
     get_fix_arg(comm);
-    if (a4up != nil) aerror("too many arguments for mpi_sendrecv");
+    if (a4up != nil) return aerror("too many arguments for mpi_sendrecv");
 
     pack_object(s_mess);
     MPI_Sendrecv(mpi_pack_buffer, mpi_pack_position, MPI_PACKED,
@@ -214,7 +214,7 @@ static LispObject Lmpi_isend(LispObject, LispObject message,
 
     get_fix_arg(dest, fun_name);
     get_fix_arg(tag, fun_name);
-    if (cdr(comm) != nil) aerror("too many args for mpi_isend");
+    if (cdr(comm) != nil) return aerror("too many args for mpi_isend");
     comm = car(comm);
     get_fix_arg(comm, fun_name);
 
@@ -277,7 +277,7 @@ static LispObject Lmpi_wait(LispObject env, LispObject request)
     if ( !(is_vector(request) &&
            type_of_header(vechdr(request)) == TYPE_VEC32 &&
            length_of_header(vechdr(request)) == 3*CELL) )
-        aerror1("mpi_wait",request);
+        return aerror1("mpi_wait",request);
     if ( elt(request,1))
     {   status.MPI_ERROR = MPI_UNDEFINED;
         mpi_pack_buffer = reinterpret_cast<void*>(elt(request,1));
@@ -333,7 +333,7 @@ static LispObject Lmpi_test(LispObject env, LispObject request)
     if ( !(is_vector(request) &&
            type_of_header(vechdr(request)) == TYPE_VEC32 &&
            length_of_header(vechdr(request)) == 3*CELL) )
-        aerror1("mpi_wait",request);
+        return aerror1("mpi_wait",request);
     if (elt(request,1))
     {   status.MPI_ERROR = MPI_UNDEFINED;
         mpi_pack_buffer = reinterpret_cast<void*>(elt(request,1));
@@ -437,7 +437,7 @@ static LispObject Lmpi_probe(LispObject, LispObject source,
 static LispObject Lmpi_barrier(LispObject env, LispObject comm)
 {   int rank;
     static char fun_name[] = "mpi_barrier";
-    if (!is_fixnum(comm)) aerror1(fun_name, v);
+    if (!is_fixnum(comm)) return aerror1(fun_name, v);
     MPI_Barrier(int_of_fixnum(comm));
     return onevalue(nil);
 }
@@ -608,7 +608,7 @@ static LispObject Lmpi_allgather(LispObject,
     int *recvcounts, *displs;
     char *recvbuffer;
 
-    if (!is_fixnum(comm)) aerror1(fun_name, v);
+    if (!is_fixnum(comm)) return aerror1(fun_name, v);
     comm = int_of_fixnum(comm);
 
     pack_object(message);
@@ -653,7 +653,7 @@ static LispObject Lmpi_alltoall(LispObject,
     int *sendcounts, *recvcounts, *sdispls, *rdispls;
     char* recvbuffer;
 
-    if (!is_fixnum(comm)) aerror1(fun_name, v);
+    if (!is_fixnum(comm)) return aerror1(fun_name, v);
     comm = int_of_fixnum(Lcomm);
 
     MPI_Comm_size(comm,&commsize);
@@ -713,86 +713,86 @@ static LispObject Lmpi_alltoall(LispObject,
 #else  // USE_MPI
 
 static LispObject Lmpi_comm_rank(LispObject, LispObject)
-{   aerror0("mpi support not built into this version of CSL");
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_comm_size(LispObject, LispObject)
-{   aerror0("mpi support not built into this version of CSL");
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_send(LispObject, LispObject, LispObject,
                             LispObject, LispObject)
-{   aerror0("mpi support not built into this version of CSL");
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_recv(LispObject, LispObject, LispObject,
                             LispObject)
-{   aerror0("mpi support not built into this version of CSL");
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_sendrecv(LispObject, LispObject, LispObject,
                                 LispObject, LispObject)
-{   aerror0("mpi support not built into this version of CSL");
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_isend(LispObject, LispObject, LispObject,
                              LispObject, LispObject)
-{   aerror0("mpi support not built into this version of CSL");
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_irecv(LispObject, LispObject, LispObject,
                              LispObject)
-{   aerror0("mpi support not built into this version of CSL");
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_wait(LispObject, LispObject)
-{   aerror0("mpi support not built into this version of CSL");
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
 
 static LispObject Lmpi_test(LispObject, LispObject)
-{   aerror0("mpi support not built into this version of CSL");
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_iprobe(LispObject, LispObject, LispObject,
                               LispObject)
-{   aerror0("mpi support not built into this version of CSL");
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_probe(LispObject, LispObject, LispObject,
                              LispObject)
-{   aerror0("mpi support not built into this version of CSL");
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_barrier(LispObject, LispObject)
-{   aerror0("mpi support not built into this version of CSL");
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_bcast(LispObject, LispObject, LispObject,
                              LispObject)
-{   aerror0("mpi support not built into this version of CSL");
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_gather(LispObject, LispObject, LispObject,
                               LispObject)
-{   aerror0("mpi support not built into this version of CSL");
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_scatter(LispObject, LispObject, LispObject,
                                LispObject)
-{   aerror0("mpi support not built into this version of CSL");
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
 
 static LispObject Lmpi_allgather(LispObject,
                                  LispObject,
                                  LispObject)
-{   aerror0("mpi support not built into this version of CSL");
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_alltoall(LispObject,
                                 LispObject, LispObject)
-{   aerror0("mpi support not built into this version of CSL");
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
 #endif // USE_MPI

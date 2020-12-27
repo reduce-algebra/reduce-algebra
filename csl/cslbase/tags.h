@@ -1429,7 +1429,15 @@ inline bool is_library(LispObject x)
 {   return (static_cast<int>(x) & 0xfffff) == SPID_LIBRARY;
 }
 
+inline bool is_exception(LispObject x)
+{   return (static_cast<int>(x) & 0xfffff) == SPID_ERROR;
+}
+
 inline unsigned int library_number(LispObject x)
+{   return (x >> 20) & 0xfff;
+}
+
+inline int exception_type(LispObject x)
 {   return (x >> 20) & 0xfff;
 }
 
@@ -1608,36 +1616,47 @@ inline fourup_args*& qfn4up(LispObject p)
 {   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function4up;
 }
 
-[[noreturn]] extern LispObject aerror1(const char *s, LispObject a);
+extern LispObject aerror1(const char *s, LispObject a);
 
 // When I have functions with 4 or more args I may need to
 // extract them..
 
 inline LispObject arg4(const char *name, LispObject a4up)
-{   if (cdr(a4up) != nil) aerror1(name,
-                                      a4up); // Too many args provided
+{   if (cdr(a4up) != nil) return aerror1(name, a4up);
+                          // Too many args provided
     return car(a4up);
 }
 
-inline void a4a5(const char *name, LispObject a4up,
+inline bool a4a5(const char *name, LispObject a4up,
                  LispObject& a4, LispObject& a5)
 {   a4 = car(a4up);
     a4up = cdr(a4up);
     if (a4up==nil ||
-        cdr(a4up) != nil) aerror1(name, a4up); // wrong number
+        cdr(a4up) != nil)
+    {   aerror1(name, a4up);     // wrong number
+        return true;
+    }
     a5 = car(a4up);
+    return false;
 }
 
-inline void a4a5a6(const char *name, LispObject a4up,
+inline bool a4a5a6(const char *name, LispObject a4up,
                    LispObject& a4, LispObject& a5, LispObject& a6)
 {   a4 = car(a4up);
     a4up = cdr(a4up);
-    if (a4up == nil) aerror1(name, a4up); // not enough args
+    if (a4up == nil)
+    {   aerror1(name, a4up); // not enough args
+        return true;
+    }
     a5 = car(a4up);
     a4up = cdr(a4up);
     if (a4up==nil ||
-        cdr(a4up) != nil) aerror1(name, a4up); // wrong number
+        cdr(a4up) != nil)
+    {   aerror1(name, a4up); // wrong number
+        return true;
+    }
     a6 = car(a4up);
+    return false;
 }
 
 // I store qcount as an unsigned 64-bit integer, but to allow for a

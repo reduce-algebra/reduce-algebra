@@ -42,7 +42,7 @@
 
 symbolic;
 
-global '(!*fastvector !*unsafecar);
+fluid '(!*fastvector !*unsafecar);
 flag('(fastvector unsafecar), 'switch);
 
 %

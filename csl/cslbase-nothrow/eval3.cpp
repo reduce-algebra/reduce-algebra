@@ -221,12 +221,12 @@ static LispObject prog1_fn(LispObject args, LispObject env)
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil); // (prog1) -> nil
     stackcheck(args, env);
-    if (exceptionPending()) return nil;
+    errexit();
     {   Push save(args, env);
         f = car(args);
         f = eval(f, env);              // first arg
     }
-    if (exceptionPending()) return nil;
+    errexit();
     {   Push save(f);
         for (;;)
         {   args = cdr(args);
@@ -235,7 +235,7 @@ static LispObject prog1_fn(LispObject args, LispObject env)
             {   LispObject w = car(args);
                 static_cast<void>(eval(w, env));
             }
-            if (exceptionPending()) return nil;
+            errexit();
         }
     }
     return onevalue(f);     // always hands back just 1 value
@@ -246,12 +246,12 @@ static LispObject prog2_fn(LispObject args, LispObject env)
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil); // (prog2) -> nil
     stackcheck(args, env);
-    if (exceptionPending()) return nil;
+    errexit();
     {   Push save(args, env);
         args = car(args);
         static_cast<void>(eval(args, env));  // eval & discard first arg
     }
-    if (exceptionPending()) return nil;
+    errexit();
     args = cdr(args);
     if (!consp(args)) return onevalue(nil); // (prog2 x) -> nil
     {   Push save(args, env);
@@ -299,7 +299,7 @@ static LispObject progv_fn(LispObject args_x, LispObject env_x)
     STACK_SANITY;
     if (!consp(args_x)) return onevalue(nil);
     stackcheck(args_x, env_x);
-    if (exceptionPending()) return nil;
+    errexit();
     syms_x = vals_x = specenv_x = nil;
     syms_x = car(args_x);
     args_x = cdr(args_x);
@@ -362,7 +362,7 @@ static LispObject return_fn(LispObject args, LispObject env)
     STACK_SANITY;
     LispObject p;
     stackcheck(args, env);
-    if (exceptionPending()) return nil;
+    errexit();
     for(p=env; consp(p); p=cdr(p))
     {   LispObject w = car(p);
         if (!consp(w)) continue;
@@ -378,7 +378,7 @@ tag_found:
         LispObject p1 = car(args);
         env = eval(p1, env);
         pop(p);
-        if (exceptionPending()) return nil;
+        errexit();
         exit_value = env;
     }
     else
@@ -394,7 +394,7 @@ tag_found:
 static LispObject return_from_fn(LispObject args, LispObject env)
 {   LispObject p, tag;
     stackcheck(args, env);
-    if (exceptionPending()) return nil;
+    errexit();
     STACK_SANITY;
     if (!consp(args)) tag = nil;
     else
@@ -416,7 +416,7 @@ tag_found:
         LispObject p1 = car(args);
         env = eval(p1, env);
         pop(p);
-        if (exceptionPending()) return nil;
+        errexit();
         exit_value = env;
     }
     else
@@ -433,7 +433,7 @@ static LispObject setq_fn(LispObject args, LispObject env)
 {   LispObject var, val = nil;
     STACK_SANITY;
     stackcheck(args, env);
-    if (exceptionPending()) return nil;
+    errexit();
     while (consp(args))
     {   var = car(args);
         if (!is_symbol(var) || var == nil || var == lisp_true ||
@@ -446,7 +446,7 @@ static LispObject setq_fn(LispObject args, LispObject env)
                 val = car(args);
                 val = eval(val, env);
             }
-            if (exceptionPending()) return nil;
+            errexit();
             args = cdr(args);
         }
         else val = nil;
@@ -506,7 +506,7 @@ LispObject tagbody_fn(LispObject args, LispObject env)
 // even thinks that they can use (go xx) to get back in.
 //
     stackcheck(args, env);
-    if (exceptionPending()) return nil;
+    errexit();
     STACK_SANITY;
     real_push(env, args);
     for (p=args; consp(p); p=cdr(p))
@@ -519,7 +519,7 @@ LispObject tagbody_fn(LispObject args, LispObject env)
             if (exceptionFlag == LispNormal)
                 env = cons(w1, env);
             pop(p);
-            if (exceptionPending()) return nil;
+            errexit();
         }
     }
 // That has put my new version of env with bindings of the form
@@ -628,13 +628,13 @@ static LispObject throw_fn(LispObject args, LispObject env)
     STACK_SANITY;
     if (!consp(args)) return aerror("throw");
     stackcheck(args, env);
-    if (exceptionPending()) return nil;
+    errexit();
     tag = car(args);
     args = cdr(args);
     push(args, env);
     tag = eval(tag, env);
     pop(env, args);
-    if (exceptionPending()) return nil;
+    errexit();
     for (p = catch_tags; p!=nil; p=cdr(p))
         if (tag == car(p)) goto tag_found;
     return aerror("throw: tag not found");
@@ -644,7 +644,7 @@ tag_found:
         tag = car(args);
         tag = eval(tag, env);
         pop(p);
-        if (exceptionPending()) return nil;
+        errexit();
         exit_value = tag;
     }
     else
@@ -681,12 +681,12 @@ static LispObject unless_fn(LispObject args, LispObject env)
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
     stackcheck(args, env);
-    if (exceptionPending()) return nil;
+    errexit();
     push(args, env);
     w = car(args);
     w = eval(w, env);
     pop(env, args);
-    if (exceptionPending()) return nil;
+    errexit();
     if (w != nil) return onevalue(nil);
     else return progn_fn(cdr(args), env);
 }
@@ -731,7 +731,7 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
 // I am going to take the view that if there is a failure during execution
 // of the cleanup forms then full cleanup will not be complete, and this
 // can include the case of "cons" failing right before anything else.
-        if (exceptionPending()) return nil;
+        errexit();
         push(rl);
 // Now I will obey the cleanup 
         while (is_cons(args = cdr(args)) && args!=nil)
@@ -739,7 +739,7 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
             push(args, env);
             static_cast<void>(eval(w, env));
             pop(env, args);
-            if (exceptionPending()) return nil;
+            errexit();
         }
         pop(rl, xt, xv);
         for (i = 2; i<=xc; i++)
@@ -765,14 +765,14 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
     for (i=nargs; i>=2; i--)
         rl = cons_no_gc((&mv_2)[i-2], rl);
     rl = cons_gc_test(rl);
-    if (exceptionPending()) return nil;
+    errexit();
     real_push(rl);
     LispObject &xenv = stack[-1];
     LispObject &xargs = stack[-2];
     while (is_cons(xargs = cdr(xargs)) && xargs!=nil)
     {   LispObject w = car(xargs);
         static_cast<void>(eval(w, xenv));
-        if (exceptionPending()) return nil;
+        errexit();
     }
     real_pop(rl);
     real_popv(2);
@@ -917,7 +917,7 @@ static LispObject errorset3(volatile LispObject env,
     stackcheck();
     pop(env);
     pop(form);
-    if (exceptionPending()) return nil;
+    errexit();
     errorset_msg = nullptr;
     {   START_TRY_BLOCK;
         r = eval(form, nil);
@@ -954,7 +954,7 @@ static LispObject errorset3(volatile LispObject env,
         if (consp(exit_value)) exit_value = nil;
         return onevalue(exit_value);
     }
-    else if (exceptionPending()) return nil;
+    else errexit();
 // Now the normal exit case...
     miscflags = (flags & BACKTRACE_MSG_BITS) |
                 (miscflags & ~BACKTRACE_MSG_BITS);
@@ -1172,24 +1172,24 @@ endOfTryBlock:
                      fixnum_of_int(r1),
                      fixnum_of_int(r2),
                      fixnum_of_int(r3));
-        if (exceptionPending()) return nil;
+        errexit();
         setvalue(resources, form);
 // Here I had a resource limit trap
         return onevalue(nil);
     }
 // The guarded code may have exited with some other exception!
-    if (exceptionPending()) return nil; 
+    errexit(); 
 // I would like the result to show what resources had been used, but for now
 // I just use ncons to wrap the resuult up.
     r = ncons(r);
-    if (exceptionPending()) return nil; 
+    errexit(); 
     push(r);
     form = list4(fixnum_of_int(r0),
                  fixnum_of_int(r1),
                  fixnum_of_int(r2),
                  fixnum_of_int(r3));
     pop(r);
-    if (exceptionPending()) return nil; 
+    errexit(); 
     setvalue(resources, form);
     return onevalue(r);
 }

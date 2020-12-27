@@ -3218,7 +3218,7 @@ int execute_lisp_function(const char *fname,
     procedural_input = r;
     procedural_output = w;
     if_error(Lapply0(nil, ff);
-             if (exceptionPending()) goto endOfTryBlock;
+             errcatch();
              ensure_screen(),
              // Error handler
              procedural_input = nullptr;
@@ -3422,7 +3422,7 @@ int PROC_load_package(const char *name)
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     if_error(w1 = make_undefined_symbol("load-package");
-             if (exceptionPending()) goto endOfTryBlock;
+             errcatch();
              push(w1);
              w = make_undefined_symbol(name);
              pop(w1);
@@ -3437,7 +3437,7 @@ int PROC_set_switch(const char *name, int val)
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     if_error(w1 = make_undefined_symbol("onoff");
-             if (exceptionPending()) goto endOfTryBlock;
+             errcatch();
              push(w1);
              w = make_undefined_symbol(name);
              pop(w1);
@@ -3473,7 +3473,7 @@ int PROC_push_symbol(const char *name)
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     if_error(w = make_undefined_symbol(name);
-             if (exceptionPending()) goto endOfTryBlock;
+             errcatch();
              w = cons(w, procstack),
              return 1);
     procstack = w;
@@ -3490,7 +3490,7 @@ int PROC_push_string(const char *data)
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     if_error(w = make_string(data);
-             if (exceptionPending()) goto endOfTryBlock;
+             errcatch();
              w = cons(w, procstack),
              return 2);  // Failed to push onto stack
     procstack = w;
@@ -3513,7 +3513,7 @@ int PROC_push_small_integer(int32_t n)
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     if_error(w = make_lisp_integer32(n);
-             if (exceptionPending()) goto endOfTryBlock;
+             errcatch();
              w = cons(w, procstack),
              return 1);
     procstack = w;
@@ -3533,7 +3533,7 @@ int PROC_push_big_integer(const char *n)
             len++;
         }
         w = intern(len, 0);
-        if (exceptionPending()) goto endOfTryBlock;
+        errcatch();
         w = cons(w, procstack),
         return 1);
     procstack = w;
@@ -3546,7 +3546,7 @@ int PROC_push_floating(double n)
     C_stackbase = (uintptr_t *)&sp;
 // Here I have to construct a Lisp (boxed) float
     if_error(w = make_boxfloat(n, TYPE_DOUBLE_FLOAT);
-             if (exceptionPending()) goto endOfTryBlock;
+             errcatch();
              w = cons(w, procstack),
              return 1);
     procstack = w;
@@ -3571,16 +3571,16 @@ int PROC_make_function_call(const char *name, int n)
         while (n > 0)
         {   if (procstack == nil) return 1; // Not enough args available
             w = cons(car(procstack), w);
-            if (exceptionPending()) goto endOfTryBlock;
+            errcatch();
             procstack = cdr(procstack);
             n--;
         }
         push(w);
         w1 = make_undefined_symbol(name);
         pop(w);
-        if (exceptionPending()) goto endOfTryBlock;
+        errcatch();
         w = cons(w1, w);
-        if (exceptionPending()) goto endOfTryBlock;
+        errcatch();
         w = cons(w, procstack),
             return 1);
     procstack = w;
@@ -3652,15 +3652,15 @@ int PROC_simplify()
     if (procstack == nil) return 1; // stack is empty
     if_error(
         w = make_undefined_symbol("simp");
-        if (exceptionPending()) goto endOfTryBlock;
+        errcatch();
         w = Lapply1(nil, w, car(procstack));
-        if (exceptionPending()) goto endOfTryBlock;
+        errcatch();
         push(w);
         w1 = make_undefined_symbol("mk*sq");
         pop(w);
-        if (exceptionPending()) goto endOfTryBlock;
+        errcatch();
         w = Lapply1(nil, w1, w);
-        if (exceptionPending()) goto endOfTryBlock;
+        errcatch();
         setcar(procstack, w),
         // error exit case
         return 1);
@@ -3679,7 +3679,7 @@ static void PROC_standardise_gensyms(LispObject w)
     {   push(w);
         PROC_standardise_gensyms(car(w));
         pop(w);
-        if (exceptionPending()) return;
+        errexitvoid();
         PROC_standardise_gensyms(cdr(w));
         return;
     }
@@ -3695,7 +3695,7 @@ int PROC_lisp_eval()
     if (procstack == nil) return 1; // stack is empty
     if_error(
         w = eval(car(procstack), nil);
-        if (exceptionPending()) goto endOfTryBlock;
+        errcatch();
         push(w);
         PROC_standardise_gensyms(w);
         pop(w),
@@ -3709,13 +3709,13 @@ static LispObject PROC_standardise_printed_form(LispObject w)
     {   push(w);
         LispObject w1 = PROC_standardise_printed_form(car(w));
         pop(w);
-        if (exceptionPending()) return nil;
+        errexit();
         push(w1);
         w =  PROC_standardise_printed_form(cdr(w));
         pop(w1);
-        if (exceptionPending()) return nil;
+        errexit();
         w = cons(w1, w);
-        if (exceptionPending()) return nil;
+        errexit();
         return w;
     }
 // Now w is atomic. There are two interesting cases - an unprinted gensym
@@ -3728,7 +3728,7 @@ static LispObject PROC_standardise_printed_form(LispObject w)
     }
     else if (is_numbers(w) && is_bignum(w))
     {   w = Lexplode(nil, w);        // Bignum to list of digits
-        if (exceptionPending()) return nil;
+        errexit();
         w = Llist_to_string(nil, w); // list to string
         return w;
     }
@@ -3749,14 +3749,14 @@ int PROC_make_printable()
 // I want to use "simp" again so that I can then use prepsq!
     if_error(
         w = make_undefined_symbol("simp");
-        if (exceptionPending()) goto endOfTryBlock;
+        errcatch();
         w = Lapply1(nil, w, car(procstack));
-        if (exceptionPending()) goto endOfTryBlock;
+        errcatch();
         push(w);
         w1 = make_undefined_symbol("prepsq");
         pop(w);
         w = Lapply1(nil, w1, w);
-        if (exceptionPending()) goto endOfTryBlock;
+        errcatch();
 // There are going to be two things I do next. One is to ensure that
 // all gensyms have print-names, the other is to convert bignums into
 // strings. Both of these could be viewed as mildly obscure!

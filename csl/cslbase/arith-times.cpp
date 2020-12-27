@@ -627,7 +627,7 @@ LispObject match_type(LispObject in, int value)
                 case TYPE_LONG_FLOAT:
                     return make_boxfloat128(i64_to_f128(value));
                 default:
-                    aerror1("Invalid component in complex number", in);
+                    return aerror1("Invalid component in complex number", in);
             }
         case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
             switch (type_of_header(numhdr(in)))
@@ -638,7 +638,7 @@ LispObject match_type(LispObject in, int value)
                     return make_ratio(fixnum_of_int(value), fixnum_of_int(1));
                 case TYPE_COMPLEX_NUM:
                 default:
-                    aerror1("Invalid component in complex number", in);
+                    return aerror1("Invalid component in complex number", in);
             }
         default:
         case TAG_FIXNUM:
@@ -702,7 +702,7 @@ LispObject Expt::op(Fixnum a, std::uint64_t *b)
             return fixnum_of_int(1);
         default:
             if (arithlib_lowlevel::Minusp::op(b)) return fixnum_of_int(0);
-            aerror1("bad argument for expt",
+            return aerror1("bad argument for expt",
                     reinterpret_cast<LispObject>(TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
     }
 }
@@ -710,7 +710,7 @@ LispObject Expt::op(Fixnum a, std::uint64_t *b)
 // bignum ** bignum
 LispObject Expt::op(std::uint64_t *a, std::uint64_t *b)
 {   if (arithlib_lowlevel::Minusp::op(b)) return fixnum_of_int(0);
-    aerror1("bad argument for expt",
+    return aerror1("bad argument for expt",
             reinterpret_cast<LispObject>(TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
 }
 
@@ -728,7 +728,7 @@ LispObject Expt::op(Cpx a, std::uint64_t *b)
     if (Zerop::op(a.real_part()) &&
         Zerop::op(a.imag_part()))
     {   if (Minusp::op(b))
-            aerror1("bad argument for expt",
+            return aerror1("bad argument for expt",
                     reinterpret_cast<LispObject>(TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
         else return a.value();  // (0+0i)^N
     }
@@ -759,31 +759,31 @@ LispObject Expt::op(Cpx a, std::uint64_t *b)
             case 3: return make_complex(a.real_part(), Minus::op(a.imag_part()));
         }
     }
-    aerror1("bad argument for expt",
+    return aerror1("bad argument for expt",
             reinterpret_cast<LispObject>(TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
 }
 
 // short float ** bignum
 LispObject Expt::op(SFlt a, std::uint64_t *b)
-{   aerror1("bad argument for expt",
+{   return aerror1("bad argument for expt",
             reinterpret_cast<LispObject>(TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
 }
 
 // single float ** bignum
 LispObject Expt::op(Flt a, std::uint64_t *b)
-{   aerror1("bad argument for expt",
+{   return aerror1("bad argument for expt",
             reinterpret_cast<LispObject>(TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
 }
 
 // double float ** bignum
 LispObject Expt::op(double a, std::uint64_t *b)
-{   aerror1("bad argument for expt",
+{   return aerror1("bad argument for expt",
             reinterpret_cast<LispObject>(TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
 }
 
 // long float ** bignum
 LispObject Expt::op(LFlt a, std::uint64_t *b)
-{   aerror1("bad argument for expt",
+{   return aerror1("bad argument for expt",
             reinterpret_cast<LispObject>(TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
 }
 
@@ -3221,7 +3221,7 @@ LispObject Reciprocal::op(LispObject a)
 
 LispObject Reciprocal::op(Fixnum a)
 {   switch (a.intval())
-    {   case 0:  aerror1("bad argument for reciprocal", a.value());
+    {   case 0:  return aerror1("bad argument for reciprocal", a.value());
         case 1:  return int_of_fixnum(1);
         case -1: return int_of_fixnum(-1);
         default: return int_of_fixnum(0);
@@ -3234,7 +3234,7 @@ LispObject Reciprocal::op(std::uint64_t *a)
 
 LispObject Reciprocal::op(Rat a)
 {   LispObject p = a.numerator(), q = a.denominator();
-    if (Zerop::op(p)) aerror1("bad argument for reciprocal", a.value());
+    if (Zerop::op(p)) return aerror1("bad argument for reciprocal", a.value());
     else if (Minusp::op(p))
     {   p = Minus::op(p);
         q = Minus::op(q);
@@ -3246,7 +3246,7 @@ LispObject Reciprocal::op(Cpx a)
 {   // 1/(x + iy) = (x - iy)/(x^2+y^2)
     LispObject x = a.real_part(), y = a.imag_part();
     LispObject d = Plus::op(Square::op(x), Square::op(y));
-    if (Zerop::op(d)) aerror1("bad argument for reciprocal", a.value());
+    if (Zerop::op(d)) return aerror1("bad argument for reciprocal", a.value());
 // If the complex value has both components integers I will upgrade
 // them to floating point.
     bool promote = false;

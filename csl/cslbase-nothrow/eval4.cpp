@@ -224,8 +224,7 @@ LispObject bytecoded_4up(LispObject def, LispObject a1, LispObject a2,
     int nargs = countargs(a4up);
     LispObject r = car(qenv(def));   // the vector of bytecodes
     if (nargs != (reinterpret_cast<unsigned char *>(data_of_bps(r)))[0])
-        error(2, err_wrong_no_args, def, fixnum_of_int(nargs));
-    if (exceptionPending()) return nil;
+        return error(2, err_wrong_no_args, def, fixnum_of_int(nargs));
 // I now know that there will be the right number of arguments.
     real_push(def);
     real_push(a1, a2, a3);
@@ -294,9 +293,8 @@ static LispObject byteopt(LispObject def, LispObject a1,
     wantargs = (reinterpret_cast<unsigned char *>(data_of_bps(r)))[0];
     wantopts = (reinterpret_cast<unsigned char *>(data_of_bps(r)))[1];
     if (nargs < wantargs || (!restp && nargs > wantargs+wantopts))
-        error(2, err_wrong_no_args, def,
-              fixnum_of_int((int32_t)nargs));
-    if (exceptionPending()) return nil;
+        return error(2, err_wrong_no_args, def,
+                        fixnum_of_int((int32_t)nargs));
 // Now to make life easier for myself I will collect ALL the arguments as
 // a list. I will keep that in a4up, which in some sense now becomes "a1up".
     switch (nargs)
@@ -313,7 +311,7 @@ static LispObject byteopt(LispObject def, LispObject a1,
             a4up = list3star(a1, a2, a3, a4up);
             break;
     }
-    if (exceptionPending()) return nil;
+    errexit();
 // I know there are enough arguments for the ones that are mandatory. I will
 // now pad the list of arguments so that there is something for every
 // &OPTIONAL one too. In the easy case I will just default to NIL and the
@@ -329,7 +327,7 @@ static LispObject byteopt(LispObject def, LispObject a1,
 // take special action to save the value.
             a4up = cons(defaultval, a4up);
             pop(def);
-            if (exceptionPending()) return nil;
+            errexit();
             nargs++;
         }
         if (restp)
@@ -339,7 +337,7 @@ static LispObject byteopt(LispObject def, LispObject a1,
 // a NIL on the end.
             a1 = ncons(nil);
             pop(a4up, def);
-            if (exceptionPending()) return nil;
+            errexit();
             a4up = nreverse2(a4up, a1);
             nargs++; // allow for the &REST arg.
         }
@@ -357,13 +355,13 @@ static LispObject byteopt(LispObject def, LispObject a1,
         {   push(def, cdr(a4up));
             ra = cons(car(a4up), ra);
             pop(a4up, def);
-            if (exceptionPending()) return nil;
+            errexit();
         }
 // Here I have (eg) a4up = (a3 a2 a1) and ra = (a4 a5 ...).
         push(def, a4up);
         a4up = ncons(ra);
         pop(ra, def);
-        if (exceptionPending()) return nil;
+        errexit();
 // Make a final extra argument out of the list, and then reverse the rest
 // of the arguments back, to get (eg again) (a1 a2 a3 (a4 a5 ...)).
         a4up = nreverse2(a4up, ra);
@@ -529,7 +527,7 @@ LispObject Lmv_list(LispObject env, LispObject a)
 // so what I have here is in fact unsupportable!
 //
 {   LispObject r;
-    LispObject *stacksave = stack;
+    RAIIsave_stack saver();
     int i, x = exit_count;
     if (x > 0) real_push(a);
     for (i=2; i<=x; i++) real_push((&work_0)[i]);
@@ -538,10 +536,7 @@ LispObject Lmv_list(LispObject env, LispObject a)
     {   LispObject w;
         real_pop(w);
         r = cons(w, r);
-        if (exceptionPending())
-        {   stack = stacksave;
-            return nil;
-        }
+        errexit();
     }
     return onevalue(r);
 }

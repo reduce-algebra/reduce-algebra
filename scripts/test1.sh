@@ -19,7 +19,10 @@
 #     --jlispboot run tests using Jlisp "bootstrapreduce.jar"
 #
 #     --nogui/--fox/--wx/--test/--arithlib/--conservative/--debug
+#     --version=XXX
 #                 test a non-default version of CSL
+#        [This supports eg "--cslboot --version=conservative-debug" and
+#         that maybe renders the individually brokwn-out options redundant]
 #
 #     --uncached  run tests with symbolic(!*uncached := t);
 #
@@ -161,7 +164,8 @@ do
       platform="$platform psl"
       shift
       ;;
-    --nogui | --fox | --wx | --test | --arithlib | --conservative | --debug)
+    --nogui | --fox | --wx | --test | --arithlib | \
+    --conservative | --debug | --version=*)
       v="$v $1"
       shift
       ;;

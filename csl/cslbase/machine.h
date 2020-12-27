@@ -359,11 +359,11 @@ extern "C"
 // my code behaves in a defined manner (even if that could be wrong!).
 
 #ifdef SIGNED_SHIFTS_ARE_ARITHMETIC
-
-// In this case I can make it simpler for the compiler! Something that is
-// "implementation defined" is much safer to use than anything that is
-// "undefined" in that the optimiser has to preserve whetever semantics the
-// implementation settled on!
+// Right shifts on (negative) signed values have implementation defined
+// (rather than undefined) semantics in C++, and so on platforms
+// where in fact you get right shifting of a 2s complement representation
+// with the sign bit preserved I can just use "a>>n" and the only special
+// care I need to take is if the shift amount is out of range.
 
 inline int32_t ASR(int32_t a, int n)
 {   if (n<0 || n>=8*static_cast<int>(sizeof(int32_t))) n=0;
@@ -381,6 +381,11 @@ inline int128_t ASR(int128_t a, int n)
 }
 
 #else // SIGNED_SHIFTS_ARE_ARITHMETIC
+
+// It could be that a>>n does something "odd" for negative a, for instance
+// not preserving the sign bit. I perform the main part of the shift in
+// unsigned mode and put in the extra copies of it manually. I do not expect
+// this code to be activated on any ordinary computer!
 
 inline int32_t ASR(int32_t a, int n)
 {   if (n<0 || n>=8*static_cast<int>(sizeof(int32_t))) n=0;
@@ -419,14 +424,12 @@ inline int128_t ASR(int128_t a, int n)
 
 inline int32_t ASL(int32_t a, int n)
 {   if (n < 0 || n>=8*static_cast<int>(sizeof(uint32_t))) n = 0;
-    return static_cast<int32_t>((static_cast<uint32_t>
-                                      (a)) << n);
+    return static_cast<int32_t>((static_cast<uint32_t>(a)) << n);
 }
 
 inline int64_t ASL(int64_t a, int n)
 {   if (n < 0 || n>=8*static_cast<int>(sizeof(uint64_t))) n = 0;
-    return static_cast<int64_t>((static_cast<uint64_t>
-                                      (a)) << n);
+    return static_cast<int64_t>((static_cast<uint64_t>(a)) << n);
 }
 
 inline uint64_t ASL(uint64_t a, int n)

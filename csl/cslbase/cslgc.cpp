@@ -683,12 +683,14 @@ void reclaim(const char *why, int stg_class)
     {   reclaim_trap_count = gc_number - 1;
         trace_printf("\nReclaim trap count reached...\n");
         aerror("reclaim-trap-count");
+        return;
     }
     if (reclaim_stack_limit != 0 &&
         (uintptr_t)&t0 + reclaim_stack_limit < (uintptr_t)C_stackbase)
     {   reclaim_stack_limit = 0;
         trace_printf("\nReclaim stack limit reached...\n");
         aerror("reclaim-stack-limit");
+        return;
     }
 
     if (reclaim_trigger_target != 0)

@@ -164,6 +164,11 @@ class RealPush
 // remember rather than store the count from (n) and all the addresses of
 // the variables that I save the values of!
 public:
+    RealPush(int count)
+    {   n = -count;
+        for (int i=0; i<count; i++)
+            *++stack = nil;
+    }
     RealPush(LispObject &a1)
     {   n = 1;
         v1 = &a1;
@@ -262,6 +267,10 @@ public:
 #ifdef CONSERVATIVE
                 real_push_count++;
 #endif
+                break;
+            default:
+                stack += n; // n will be negative
+                break;
         }
     }
 };
@@ -1235,29 +1244,70 @@ enum LispException
     LispNormal      = 0x00,
 
 // The next three are all varieties of error states.
-    LispError       = 0x11,
-    LispSignal      = 0x21,
-    LispResource    = 0x31,
+    LispError       = 0x03,
+    LispSignal      = 0x01,
+    LispResource    = 0x02,
 
 // Now thee that are used to implement Lisp control structures within
 // the interpreter.
-    LispGo          = 0x12,
-    LispReturnFrom  = 0x22,
-    LispThrow       = 0x32,
+    LispGo          = 0x04,
+    LispReturnFrom  = 0x08,
+    LispThrow       = 0x10,
 
-// A final case exits from everythind and then sometimes restarts.
-    LispRestart     = 0x13
-
+// A final case exits from everything and then sometimes restarts.
+    LispRestart     = 0x20
 };
 
 inline int exceptionFlag = LispNormal;
 
 inline bool errorState()
-{   return (exceptionFlag & 0xf) == 1;
+{   return (exceptionFlag & LispError) != 0;
 }
 inline bool exceptionPending()
 {   return exceptionFlag != LispNormal;
 }
+
+#ifdef NO_THROW
+
+#define errexit()  if (exceptionPending()) return nil
+#define errexitint()  if (exceptionPending()) return 0
+#define errexitvoid()  if (exceptionPending()) return
+
+#define TRY_BLOCK [&]()->LispObject {
+
+#define END_TRY_BLOCK return nil; } ();
+
+#define THROW(flavour) do { exceptionFlag = flavour; return; } while(0)
+
+#define CATCH_BLOCK(flavour) \
+   if ((exceptionFlag & flavour) != 0) \
+   {   int saveException = exceptionFlag; exceptionFlag = LispNormal;
+
+#define RETHROW do { exceptionFlag = saveExceptionFlag; return nil; } while(0)
+
+#define END_CATCH_BLOCK }
+
+#else // NO_THROW
+
+#define errexit()
+#define errexitint()
+#define errexitvoid()
+
+#define TRY_BLOCK try {
+
+#define END_TRY_BLOCK }
+
+#define THROW(flavour) throw flavour()
+
+#define CATCH_BLOCK(flavour) catch (flavour &e) {
+
+#define RETHROW throw
+
+#define END_CATCH_BLOCK }
+
+
+#endif // NO_THROW
+
 
 // If I build for debugging I will verify that the stack pointer is
 // properly unchanged across some scopes. This will help...
@@ -1286,7 +1336,7 @@ public:
     }
 // While I am unwinding the stack because of exception handling the stack
 // can remain un-restored. It is only once I have caught the exception
-// that it must end up correct. Hence get-out of exceptionFlag is set.
+// that it must end up correct. Hence get-out of exceptionFxlag is set.
     ~RAIIstack_sanity()
     {   if (saveStack != stack && exceptionFlag == LispNormal)
         {   err_printf("[Stack Consistency fails] %p => %p in %s : %s:%d\n",

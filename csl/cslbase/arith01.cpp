@@ -72,9 +72,9 @@ LispObject validate_number(const char *s, LispObject a,
         prin_to_trace(b), trace_printf("\n");
         prin_to_trace(c), trace_printf("\n");
 #ifdef VALIDATE_STOPS
-        Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
+        return Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
 #else
-        aerror1("validate-number", a);
+        return aerror1("validate-number", a);
 #endif
     }
     if (la == 0)
@@ -84,9 +84,9 @@ LispObject validate_number(const char *s, LispObject a,
             prin_to_trace(b), trace_printf("\n");
             prin_to_trace(c), trace_printf("\n");
 #ifdef VALIDATE_STOPS
-            Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
+            return Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
 #else
-            aerror1("validate-number", a);
+            return aerror1("validate-number", a);
 #endif
         }
         else
@@ -96,9 +96,9 @@ LispObject validate_number(const char *s, LispObject a,
                 prin_to_trace(b), trace_printf("\n");
                 prin_to_trace(c), trace_printf("\n");
 #ifdef VALIDATE_STOPS
-                Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
+                return Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
 #else
-                aerror1("validate-number", a);
+                return aerror1("validate-number", a);
 #endif
             }
             if (signed_overflow(msd))
@@ -106,9 +106,9 @@ LispObject validate_number(const char *s, LispObject a,
                 prin_to_trace(b), trace_printf("\n");
                 prin_to_trace(c), trace_printf("\n");
 #ifdef VALIDATE_STOPS
-                Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
+                return Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
 #else
-                aerror1("validate-number", a);
+                return aerror1("validate-number", a);
 #endif
             }
             return a;
@@ -121,9 +121,9 @@ LispObject validate_number(const char *s, LispObject a,
             prin_to_trace(b), trace_printf("\n");
             prin_to_trace(c), trace_printf("\n");
 #ifdef VALIDATE_STOPS
-            Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
+            return Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
 #else
-            aerror1("validate-number", a);
+            return aerror1("validate-number", a);
 #endif
         }
     }
@@ -133,9 +133,9 @@ LispObject validate_number(const char *s, LispObject a,
         prin_to_trace(b), trace_printf("\n");
         prin_to_trace(c), trace_printf("\n");
 #ifdef VALIDATE_STOPS
-        Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
+        return Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
 #else
-        aerror1("validate-number", a);
+        return aerror1("validate-number", a);
 #endif
     }
     if (msd == 0 && ((nsd = bignum_digits(a)[la-1]) & 0x40000000) == 0)
@@ -143,9 +143,9 @@ LispObject validate_number(const char *s, LispObject a,
         prin_to_trace(b); trace_printf("\n");
         prin_to_trace(c); trace_printf("\n");
 #ifdef VALIDATE_STOPS
-        Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
+        return Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
 #else
-        aerror1("validate-number", a);
+        return aerror1("validate-number", a);
 #endif
     }
     else if (msd == -1 &&
@@ -154,9 +154,9 @@ LispObject validate_number(const char *s, LispObject a,
         prin_to_trace(b); trace_printf("\n");
         prin_to_trace(c); trace_printf("\n");
 #ifdef VALIDATE_STOPS
-        Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
+        return Lstop1(nil, fixnum_of_int(1)); // System error, so stop.
 #else
-        aerror1("validate-number", a);
+        return aerror1("validate-number", a);
 #endif
     }
     return a; // OK
@@ -327,20 +327,7 @@ LispObject make_one_word_bignum(int32_t n)
 // should never be needed on a 64-bit system!
 //
 {   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4);
-// This happens to be the (alphabetically by file-name) first place where
-// I am removing an "errexit()" test, so let me attach some commentary.
-// If anything goes wrong within the get_basic_vector() above (or indeed some things
-// could go right but potentially go a Lisp go, return-from, throw, quit
-// restart etc!) either a longjmp or a throw will cause me to exit abruptly
-// from the call to get_basic_vector. because I am not doing any setjmp or
-// catch here the rest of this function will be abandoned and control will
-// go back to or through whoever called me. When that happens things that
-// might have been pushed onto the stack can be left with in a way that is
-// no longer useful. But any CATCH block will arrange to reset the stack
-// pointer properly and so recovers from that. The overall effect is that
-// the code I have *HERE* just does not need to worry about exceptional
-// exits, and so it is way tidier than it used to be.
-// Some places where I do mind will pick up the strain.
+    errexit();
     bignum_digits(w)[0] = n;
     return w;
 }
@@ -352,20 +339,20 @@ LispObject make_two_word_bignum(int32_t a1, uint32_t a0)
 // normalized to put in the two words as indicated.
 //
 {   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8);
+    errexit();
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
     return w;
 }
 
-LispObject make_three_word_bignum(int32_t a2, uint32_t a1,
-                                  uint32_t a0)
+LispObject make_three_word_bignum(int32_t a2, uint32_t a1, uint32_t a0)
 //
 // This make a 3-word bignum from the 3-word value (a2,a1,a0), where it
 // must have been arranged already that the values are correctly
 // normalized.
 //
-{   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM,
-                                    CELL+12);
+{   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+12);
+    errexit();
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
     bignum_digits(w)[2] = a2;
@@ -379,8 +366,8 @@ LispObject make_four_word_bignum(int32_t a3, uint32_t a2,
 // must have been arranged already that the values are correctly
 // normalized.
 //
-{   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM,
-                                    CELL+16);
+{   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+16);
+    errexit();
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
     bignum_digits(w)[2] = a2;
@@ -395,8 +382,8 @@ LispObject make_five_word_bignum(int32_t a4, uint32_t a3, uint32_t a2,
 // must have been arranged already that the values are correctly
 // normalized.
 //
-{   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM,
-                                    CELL+20);
+{   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+20);
+    errexit();
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
     bignum_digits(w)[2] = a2;
@@ -415,16 +402,16 @@ LispObject make_boxfloat(double a, int type)
             return pack_short_float(a);
         case TYPE_SINGLE_FLOAT:
             return pack_single_float(a);
-            return r;
         default: // TYPE_DOUBLE_FLOAT I hope
             r = get_basic_vector(TAG_BOXFLOAT, TYPE_DOUBLE_FLOAT,
                                  SIZEOF_DOUBLE_FLOAT);
+            errexit();
             if (!SIXTY_FOUR_BIT) double_float_pad(r) = 0;
             double_float_val(r) = a;
             if (trap_floating_overflow &&
                 floating_edge_case(double_float_val(r)))
             {   floating_clear_flags();
-                aerror("exception with double float");
+                return aerror("exception with double float");
             }
             return r;
     }
@@ -433,14 +420,14 @@ LispObject make_boxfloat(double a, int type)
 #ifdef HAVE_SOFTFLOAT
 LispObject make_boxfloat128(float128_t a)
 {   LispObject r;
-    r = get_basic_vector(TAG_BOXFLOAT, TYPE_LONG_FLOAT,
-                         SIZEOF_LONG_FLOAT);
+    r = get_basic_vector(TAG_BOXFLOAT, TYPE_LONG_FLOAT, SIZEOF_LONG_FLOAT);
+    errexit();
     if (!SIXTY_FOUR_BIT) long_float_pad(r) = 0;
     long_float_val(r) = a;
     if (trap_floating_overflow &&
-        floating_edge_case128(reinterpret_cast<float128_t *>(&long_float_val(
-                                  r))))
-        aerror("exception with long float");
+        floating_edge_case128(
+            reinterpret_cast<float128_t *>(&long_float_val(r))))
+        return aerror("exception with long float");
     return r;
 }
 #endif // HAVE_SOFTFLOAT
@@ -589,12 +576,16 @@ static float128_t bignum_to_float128(LispObject v, int32_t h, int *xp)
 // Now two functions that will help me to turn floats into (potentially big)
 // integers or rationals, or to compare floats with bignums.
 
-// double_to_binary returns and integer exponent and sets m such that the
+// double_to_binary returns an integer exponent and sets m such that the
 // original float is equal to m*2^x. It returns special values for x in the
 // case of infinities and NaNs.
 
 int double_to_binary(double d, int64_t &m)
+#ifdef OLD_VERSION
 {   Double_union u;
+// What is done here is an improper use of the union type even if it is
+// what old-fashioned C expected to be able to do. I could use std::frexp
+// after checking for infinities and NaNs and be much more officially safe!
     u.f = d;
     int x = static_cast<int>(u.i64 >> 52) & 0x7ff;
     int64_t f = u.i64 & UINT64_C(0x000fffffffffffff);
@@ -606,6 +597,26 @@ int double_to_binary(double d, int64_t &m)
     if (x == 0x7ff) return f==0 ? INT_MAX : INT_MIN;
     return x - 0x3ff - 52;
 }
+#else // OLD_VERSION
+{   if (std::isnan(d))
+    {   m = 0;
+        return INT_MIN;
+    }
+    else if (std::isinf(d))
+    {   m = (d < 0.0) ? -1 : 1;
+        return INT_MAX;
+    }
+    else if (d == 0.0)
+    {   m = 0;   // I lose information about +0.0 vs -0.0 here
+        return 0;
+    }
+    int x;
+    d = std::frexp(d, &x);
+// now d is in the range +/-[0/5, 1) and the input had value d*2^x
+    m = static_cast<int64_t>(d*4503599627370496.0); // 2.0^52
+    return x - 52;
+}
+#endif // OLD_VERSION
 
 #ifdef HAVE_SOFTFLOAT
 // This does much the same for 128-bit floats.
@@ -747,7 +758,7 @@ double float_of_number(LispObject a)
 // float, and so to improve reliability I will raise an error if one is
 // seen.
                 if (SIXTY_FOUR_BIT)
-                    aerror("boxed single float on 64-bit system");
+                    return aerror("boxed single float on 64-bit system");
                 return static_cast<double>(single_float_val(a));
             case TYPE_DOUBLE_FLOAT:
                 return double_float_val(a);
@@ -822,10 +833,10 @@ float128_t float128_of_number(LispObject a)
     {   int32_t h = type_of_header(flthdr(a));
         switch (h)
         {   case TYPE_SINGLE_FLOAT:
-                if (SIXTY_FOUR_BIT)
-                    aerror("boxed single float on 64-bit system");
                 r32 = float32_t_val(a);
                 f32_to_f128M(r32, &r);
+                if (SIXTY_FOUR_BIT)
+                    aerror("boxed single float on 64-bit system");
                 return r;
             case TYPE_DOUBLE_FLOAT:
                 r64 = float64_t_val(a);
@@ -1021,16 +1032,15 @@ LispObject make_complex(LispObject r, LispObject i)
 //
     if (i == fixnum_of_int(0)) return r;
     stackcheck(r, i);
-    push(r, i);
-    v = get_basic_vector(TAG_NUMBERS, TYPE_COMPLEX_NUM,
+    {   Push save(r, i);
+        v = get_basic_vector(TAG_NUMBERS, TYPE_COMPLEX_NUM,
                          sizeof(Complex_Number));
-//
+        errexit();
 // The vector r has uninitialized contents here - dodgy.  If the call
 // to get_basic_vector succeeded then I fill it in, otherwise I will not
 // refer to it again, and I think that unreferenced vectors containing junk
 // are OK.
-//
-    pop(i, r);
+    }
     setreal_part(v, r);
     setimag_part(v, i);
     return v;
@@ -1042,10 +1052,11 @@ LispObject make_ratio(LispObject p, LispObject q)
 {   LispObject v;
     if (q == fixnum_of_int(1)) return p;
     stackcheck(p, q);
-    push(p, q);
-    v = get_basic_vector(TAG_NUMBERS, TYPE_RATNUM,
-                         sizeof(Rational_Number));
-    pop(q, p);
+    {   Push save(p, q);
+        v = get_basic_vector(TAG_NUMBERS, TYPE_RATNUM,
+                             sizeof(Rational_Number));
+        errexit();
+    }
     setnumerator(v, p);
     setdenominator(v, q);
     return v;
@@ -1310,9 +1321,11 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
 // The bignum a2 now has at least 3 digits. I will view this as now a case
 // where I do not need to optimise edge cases so carefully, and where the
 // length (as a bignum) of the result is rather likely to match that of a2.
-    push(a2);
-    LispObject c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*len);
-    pop(a2);
+    LispObject c;
+    {   Push save(a2);
+        c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*len);
+        errexit();
+    }
 // Add in the lowest digit by hand because at this stage s1 can have
 // more than 31 bits and so intrudes beyond there.
     uint32_t d0 = bignum_digits(a2)[0] + (uint32_t)clear_top_bit(s1);
@@ -1385,9 +1398,10 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
         setnumhdr(c, numhdr(c) + pack_hdrlength(1L));
         return c;
     }
-    push(c);
-    a2 = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*len);
-    pop(c);
+    {   Push save(c);
+        a2 = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*len);
+        errexit();
+    }
     for (size_t i=0; i<len-1; i++)
         bignum_digits(a2)[i] = vbignum_digits(c)[i];
 //
@@ -1413,10 +1427,12 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
 // and GCD calculations here.
 
 inline LispObject plus_i_r(LispObject a1, LispObject a2)
-{   real_push(a2);
-    a1 = times2(a1, denominator(a2));
-    a1 = plus2(a1, numerator(stack[0]));
-    real_pop(a2);
+{   {   RealPush save(a2);
+        a1 = times2(a1, denominator(a2));
+        errexit();
+        a1 = plus2(a1, numerator(stack[0]));
+        errexit();
+    }
     return make_ratio(a1, denominator(a2));
 }
 
@@ -1424,28 +1440,29 @@ inline LispObject plus_i_r(LispObject a1, LispObject a2)
 // real value of any sort plus complex.
 
 inline LispObject plus_i_c(LispObject a1, LispObject a2)
-{   push(a2);
-    a1 = plus2(a1, real_part(a2));
-    pop(a2);
+{   {   Push save(a2);
+        a1 = plus2(a1, real_part(a2));
+        errexit();
+    }
 // make_complex() takes responsibility for mapping #C(n 0) onto n
     return make_complex(a1, imag_part(a2));
 }
 
 inline LispObject plus_i_s(LispObject a1, LispObject a2)
-{   double d = static_cast<double>(int_of_fixnum(
-                                       a1)) + value_of_immediate_float(a2);
+{   double d = static_cast<double>(int_of_fixnum(a1)) +
+               value_of_immediate_float(a2);
     return pack_immediate_float(d, a2);
 }
 
 inline LispObject plus_i_f(LispObject a1, LispObject a2)
-{   double d = static_cast<double>(int_of_fixnum(
-                                       a1)) + single_float_val(a2);
+{   double d = static_cast<double>(int_of_fixnum(a1)) +
+               single_float_val(a2);
     return make_boxfloat(d, TYPE_SINGLE_FLOAT);
 }
 
 inline LispObject plus_i_d(LispObject a1, LispObject a2)
-{   double d = static_cast<double>(int_of_fixnum(
-                                       a1)) + double_float_val(a2);
+{   double d = static_cast<double>(int_of_fixnum(a1)) +
+               double_float_val(a2);
     return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
 }
 
@@ -1453,8 +1470,7 @@ inline LispObject plus_i_d(LispObject a1, LispObject a2)
 inline LispObject plus_i_l(LispObject a1, LispObject a2)
 {   float128_t x, z;
     i64_to_f128M((int64_t)int_of_fixnum(a1), &x);
-    f128M_add(&x, reinterpret_cast<float128_t *>(long_float_addr(a2)),
-              &z);
+    f128M_add(&x, reinterpret_cast<float128_t *>(long_float_addr(a2)), &z);
     return make_boxfloat128(z);
 }
 #endif // HAVE_SOFTFLOAT
@@ -1475,9 +1491,10 @@ LispObject lengthen_by_one_bit(LispObject a, int32_t msd)
     if ((len & 4) == 0)
     {   LispObject b;
         int32_t i;
-        push(a);
-        b = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len+4);
-        pop(a);
+        {   Push save(a);
+            b = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len+4);
+            errexit();
+        }
         len = (len-CELL)/4;
         for (i=0; i<len; i++)
             bignum_digits(b)[i] = clear_top_bit(bignum_digits(a)[i]);
@@ -1497,17 +1514,20 @@ LispObject lengthen_by_one_bit(LispObject a, int32_t msd)
 
 inline LispObject plus_b_b(LispObject a, LispObject b)
 {   size_t la = (bignum_length(a)-CELL)/4,
-               lb = (bignum_length(b)-CELL)/4;
+           lb = (bignum_length(b)-CELL)/4;
     if (la < lb)    // maybe swap order of args
     {   LispObject t = a; a = b; b = t;
         size_t t1 = la; la = lb; lb = t1;
     }
 // now (a) is AT LEAST as long as (b).  I have special case code for
 // when both args are single-word bignums, since I expect that to be
-// an especially common case on 32-bit machines.
+// an especially common case on 32-bit machines. With a 1-word bignum
+// there the digits are in the range -0x40000000 to +0x3fffffff and so adding
+// two of them will not lead to signed arithmetic overflow!
     if (!SIXTY_FOUR_BIT && la == 1) // and hence b also has only 1 digit
         return make_lisp_integer32(
-                   (int32_t)bignum_digits(a)[0] + (int32_t)bignum_digits(b)[0]);
+            static_cast<int32_t>(bignum_digits(a)[0]) +
+            static_cast<int32_t>(bignum_digits(b)[0]));
 // If the longer number is just 2 words I can convert both to int64_t.
     if (la == 2)
     {   int64_t va = ASL(bignum_digits64(a, 1), 31) | bignum_digits(a)[0];
@@ -1518,9 +1538,11 @@ inline LispObject plus_b_b(LispObject a, LispObject b)
     }
 // Now at least one operand uses 3 words... I will do a general bignum add
 // which may sometimes be overkill, but ought to be safe.
-    push(a, b);
-    LispObject c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, 4*la+CELL);
-    pop(b, a);
+    LispObject c;
+    {   Push save(a, b);
+        c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, 4*la+CELL);
+        errexit();
+    }
     uint32_t carry = 0;
 // Add all but the top digit of b
     la--;
@@ -1678,8 +1700,7 @@ inline LispObject plus_b_d(LispObject a1, LispObject a2)
 inline LispObject plus_b_l(LispObject a1, LispObject a2)
 {   float128_t x, z;
     x = float128_of_number(a1);
-    f128M_add(&x, reinterpret_cast<float128_t *>(long_float_addr(a2)),
-              &z);
+    f128M_add(&x, reinterpret_cast<float128_t *>(long_float_addr(a2)), &z);
     return make_boxfloat128(z);
 }
 #endif // HAVE_SOFTFLOAT
@@ -1698,9 +1719,8 @@ inline LispObject plus_r_b(LispObject a1, LispObject a2)
 inline LispObject plus_r_r(LispObject a1, LispObject a2)
 {   LispObject na = numerator(a1), nb = numerator(a2);
     LispObject da = denominator(a1), db = denominator(a2);
-    LispObject w = nil;
-    stack_restorer RAII_save_stack;
-    real_push(na, nb, da, db, nil);
+    LispObject g = nil;
+    RealPush save(na, nb, da, db, g);
 #define g   stack[0]
 #define db  stack[-1]
 #define da  stack[-2]
@@ -1710,16 +1730,24 @@ inline LispObject plus_r_r(LispObject a1, LispObject a2)
 // All the calls to quot2() in this procedure are expected - nay required -
 // to give exact integer quotients.
     db = quot2(db, g);
+    errexit();
     g = quot2(da, g);
+    errexit();
     na = times2(na, db);
+    errexit();
     nb = times2(nb, g);
+    errexit();
     na = plus2(na, nb);
+    errexit();
     da = times2(da, db);
+    errexit();
     g = gcd(na, da);
+    errexit();
     na = quot2(na, g);
+    errexit();
     da = quot2(da, g);
-    w = make_ratio(na, da);
-    return w;
+    errexit();
+    return make_ratio(na, da);
 #undef na
 #undef nb
 #undef da
@@ -1772,10 +1800,14 @@ inline LispObject plus_c_r(LispObject a1, LispObject a2)
 
 inline LispObject plus_c_c(LispObject a1, LispObject a2)
 {   LispObject c;
-    push(a1, a2);
-    c = plus2(imag_part(a1), imag_part(a2));
-    pop(a2, a1);
-    a1 = plus2(real_part(a1), real_part(a2));
+    {   Push save(a1, a2);
+        c = plus2(imag_part(a1), imag_part(a2));
+    }
+    errexit();
+    {   Push save(c);
+        a1 = plus2(real_part(a1), real_part(a2));
+    }
+    errexit();
     return make_complex(a1, c);
 }
 
@@ -1835,8 +1867,7 @@ inline LispObject plus_s_l(LispObject a1, LispObject a2)
     Double_union xf;
     xf.f = value_of_immediate_float(a1);
     f64_to_f128M(xf.f64, &x);
-    f128M_add(&x, reinterpret_cast<float128_t *>(long_float_addr(a2)),
-              &z);
+    f128M_add(&x, reinterpret_cast<float128_t *>(long_float_addr(a2)), &z);
     return make_boxfloat128(z);
 }
 #endif // HAVE_SOFTFLOAT
@@ -1918,8 +1949,7 @@ inline LispObject plus_d_l(LispObject a1, LispObject a2)
     Double_union xf;
     xf.f = static_cast<double>(double_float_val(a1));
     f64_to_f128M(xf.f64, &x);
-    f128M_add(&x, reinterpret_cast<float128_t *>(long_float_addr(a2)),
-              &z);
+    f128M_add(&x, reinterpret_cast<float128_t *>(long_float_addr(a2)), &z);
     return make_boxfloat128(z);
 }
 
@@ -1965,9 +1995,13 @@ LispObject plus2(LispObject a, LispObject b)
 {
 #ifdef DEBUG
     validate_number("Arg1 for plus", a, a, b);
+    errexit();
     validate_number("Arg2 for plus", b, a, b);
+    errexit();
     LispObject r = plus(a, b);
+    errexit();
     validate_number("result for plus", r, a, b);
+    errexit();
     return r;
 #else
     return plus(a, b);
@@ -1979,119 +2013,136 @@ inline LispObject difference_i_i(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_i_b(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_i(a1, a2);
 }
 
 inline LispObject difference_i_r(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_i_r(a1, a2);
 }
 
 inline LispObject difference_i_c(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_i_c(a1, a2);
 }
 
 inline LispObject difference_i_s(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_i_s(a1, a2);
 }
 
 inline LispObject difference_i_f(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_i_f(a1, a2);
 }
 
 inline LispObject difference_i_d(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_i_d(a1, a2);
 }
 
 #ifdef HAVE_SOFTFLOAT
 inline LispObject difference_i_l(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_i_l(a1, a2);
 }
 #endif // HAVE_SOFTFLOAT
 
 inline LispObject difference_b_i(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_b(a1, a2);
 }
 
 inline LispObject difference_b_b(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_b(a1, a2);
 }
 
 inline LispObject difference_b_r(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_b_r(a1, a2);
 }
 
 inline LispObject difference_b_c(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_b_c(a1, a2);
 }
 
 inline LispObject difference_b_s(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_b_s(a1, a2);
 }
 
 inline LispObject difference_b_f(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_b_f(a1, a2);
 }
 
 inline LispObject difference_b_d(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_b_d(a1, a2);
 }
 
 #ifdef HAVE_SOFTFLOAT
 inline LispObject difference_b_l(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_b_l(a1, a2);
 }
 #endif // HAVE_SOFTFLOAT
 
 inline LispObject difference_r_i(LispObject a1, LispObject a2)
-{   real_push(a1);
-    a2 = times2(a2, denominator(a1));
-    a2 = difference2(numerator(stack[0]), a2);
-    real_pop(a1);
+{   {   RealPush saver(a1);
+        a2 = times2(a2, denominator(a1));
+        errexit();
+        a2 = difference2(numerator(stack[0]), a2);
+    }
+    errexit();
     return make_ratio(a2, denominator(a1));
 }
 
@@ -2100,103 +2151,117 @@ inline LispObject difference_r_b(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_r_r(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_r_r(a1, a2);
 }
 
 inline LispObject difference_r_c(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_r_c(a1, a2);
 }
 
 inline LispObject difference_r_s(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_r_s(a1, a2);
 }
 
 inline LispObject difference_r_f(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_r_f(a1, a2);
 }
 
 inline LispObject difference_r_d(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_r_d(a1, a2);
 }
 
 #ifdef HAVE_SOFTFLOAT
 inline LispObject difference_r_l(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_r_l(a1, a2);
 }
 #endif // HAVE_SOFTFLOAT
 
 inline LispObject difference_c_i(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = make_lisp_integer64(-int_of_fixnum(a2));
-    pop(a1);
+{   {   Push save(a1);
+        a2 = make_lisp_integer64(-int_of_fixnum(a2));
+    }
+    errexit();
     return plus_c_i(a1, a2);
 }
 
 inline LispObject difference_c_b(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negateb(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negateb(a2);
+    }
+    errexit();
     return plus_c_b(a1, a2);
 }
 
 inline LispObject difference_c_r(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_c_r(a1, a2);
 }
 
 inline LispObject difference_c_c(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_c_c(a1, a2);
 }
 
 inline LispObject difference_c_s(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_c_s(a1, a2);
 }
 
 inline LispObject difference_c_f(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_c_f(a1, a2);
 }
 
 inline LispObject difference_c_d(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_c_d(a1, a2);
 }
 
 #ifdef HAVE_SOFTFLOAT
 inline LispObject difference_c_l(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_c_l(a1, a2);
 }
 #endif // HAVE_SOFTFLOAT
@@ -2215,45 +2280,51 @@ inline LispObject difference_s_b(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_s_r(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_s_r(a1, a2);
 }
 
 inline LispObject difference_s_c(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_s_c(a1, a2);
 }
 
 inline LispObject difference_s_s(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_s_s(a1, a2);
 }
 
 inline LispObject difference_s_f(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_s_f(a1, a2);
 }
 
 inline LispObject difference_s_d(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_s_d(a1, a2);
 }
 
 #ifdef HAVE_SOFTFLOAT
 inline LispObject difference_s_l(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_s_l(a1, a2);
 }
 #endif // HAVE_SOFTFLOAT
@@ -2272,16 +2343,18 @@ inline LispObject difference_f_b(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_f_r(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_f_r(a1, a2);
 }
 
 inline LispObject difference_f_c(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_f_c(a1, a2);
 }
 
@@ -2302,9 +2375,10 @@ inline LispObject difference_f_d(LispObject a1, LispObject a2)
 
 #ifdef HAVE_SOFTFLOAT
 inline LispObject difference_f_l(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_f_l(a1, a2);
 }
 #endif // HAVE_SOFTFLOAT
@@ -2323,16 +2397,18 @@ inline LispObject difference_d_b(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_d_r(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_d_r(a1, a2);
 }
 
 inline LispObject difference_d_c(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_d_c(a1, a2);
 }
 
@@ -2353,67 +2429,72 @@ inline LispObject difference_d_d(LispObject a1, LispObject a2)
 
 #ifdef HAVE_SOFTFLOAT
 inline LispObject difference_d_l(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_d_l(a1, a2);
 }
 
 inline LispObject difference_l_i(LispObject a1, LispObject a2)
 {   float128_t x, z;
     i64_to_f128M((int64_t)int_of_fixnum(a2), &x);
-    f128M_sub(reinterpret_cast<float128_t *>(long_float_addr(a1)), &x,
-              &z);
+    f128M_sub(reinterpret_cast<float128_t *>(long_float_addr(a1)), &x, &z);
     return make_boxfloat128(z);
 }
 
 inline LispObject difference_l_b(LispObject a1, LispObject a2)
 {   float128_t x, z;
     x = float128_of_number(a2);
-    f128M_sub(reinterpret_cast<float128_t *>(long_float_addr(a2)), &x,
-              &z);
+    f128M_sub(reinterpret_cast<float128_t *>(long_float_addr(a2)), &x, &z);
     return make_boxfloat128(z);
 }
 
 inline LispObject difference_l_r(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_l_r(a1, a2);
 }
 
 inline LispObject difference_l_c(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_l_c(a1, a2);
 }
 
 inline LispObject difference_l_s(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_l_s(a1, a2);
 }
 
 inline LispObject difference_l_f(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_l_f(a1, a2);
 }
 
 inline LispObject difference_l_d(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_l_d(a1, a2);
 }
 
 inline LispObject difference_l_l(LispObject a1, LispObject a2)
-{   push(a1);
-    a2 = negate(a2);
-    pop(a1);
+{   {   Push save(a1);
+        a2 = negate(a2);
+    }
+    errexit();
     return plus_l_l(a1, a2);
 }
 #endif // HAVE_SOFTFLOAT
@@ -2428,9 +2509,13 @@ LispObject difference2(LispObject a, LispObject b)
 {
 #ifdef DEBUG
     validate_number("Arg1 for difference", a, a, b);
+    errexit();
     validate_number("Arg2 for difference", b, a, b);
+    errexit();
     LispObject r = difference(a, b);
+    errexit();
     validate_number("result for difference", r, a, b);
+    errexit();
     return r;
 #else
     return difference(a, b);

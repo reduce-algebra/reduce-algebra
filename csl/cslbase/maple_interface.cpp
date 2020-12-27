@@ -99,23 +99,22 @@ void start_csl()
 #include "externs.h"
 #include "stream.h"
 #include "entries.h"
-
+#include "lispthrow.h"
 
 
 int execute_lisp_function(char *fname,
                           character_reader *r, character_writer *w)
-{   try
-    {   START)_TRY_BLOCK;
+{   TRY
+        START)_TRY_BLOCK;
         LispObject ff = make_undefined_symbol(fname);
         procedural_input = r;
         procedural_output = w;
         Lapply0(nil, ff);
-    }
-    catch (LispException &e)
+    CATCH(LispException)
     {   procedural_input = nullptr;
         procedural_output = nullptr;
         return 1;
-    }
+    END_CATCH;
     procedural_input = nullptr;
     procedural_output = nullptr;
     return 0;

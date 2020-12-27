@@ -1445,7 +1445,7 @@ down:
 // has the value -1. I am further assuming that my machine is a twos
 // complement one and hence (-1) & 0xff will be 0xff, which is SER_ILLEGAL.
 // If I see that I will abandon reading and return in an error state.
-                    aerror("Failure in serialization");
+                    return aerror("Failure in serialization");
                 case SER_REPEAT:
                     assert(opcode_repeats == 0);
 // If you prefix something with "SER_REPEAT nn" then the opcode you next
@@ -3389,18 +3389,18 @@ static LispObject load_module(LispObject env, LispObject file,
     {   switch (option)
         {
         default:
-            aerror("load-module");
+            return aerror("load-module");
         case F_LOAD_SOURCE:
-            aerror("load-source");
+            return aerror("load-source");
         case F_SELECTED_SOURCE:
-            aerror("load-selected-source");
+            return aerror("load-selected-source");
         }
     }
     current_module = file;
     if (from_stream)
     {   if (Iopen_from_stdin())
         {   err_printf("Failed to load module from stream\n");
-            error(1, err_no_fasl, file);
+            return error(1, err_no_fasl, file);
         }
         real_push(qvalue(standard_input));
         setvalue(standard_input, file);
@@ -3413,7 +3413,7 @@ static LispObject load_module(LispObject env, LispObject file,
         modname = trim_module_name(modname, &len);
         if (Iopen(modname, len, IOPEN_IN, filename))
         {   err_printf("Failed to find \"%s\"\n", filename);
-            error(1, err_no_fasl, file);
+            return error(1, err_no_fasl, file);
         }
     }
 //
@@ -3967,7 +3967,7 @@ down:
 //          }
 // I will stop 256 bytes before letting the stack overflow.
             if ((uintptr_t)stack+256 < (uintptr_t)stackLimit)
-            {   if ((*pp)(p)) push(p);
+            {   if ((*pp)(p)) real_push(p);
             }
             else fail = true; // I must keep traversing to restore things.
             mark_address_as_used(p - TAG_SYMBOL);
@@ -4002,7 +4002,6 @@ down:
             if (len == CELL) goto up;
             w = p + len - CELL - TAG_NUMBERS;
             p = *reinterpret_cast<LispObject *>(w);
-my_assert(p != 0x7e65);
             *reinterpret_cast<LispObject *>(w) = b;
             b = w + BACKPOINTER_VECTOR;
             goto down;
@@ -4040,7 +4039,6 @@ up:
             w = cdr(b - BACKPOINTER_CDR + TAG_CONS);
             setcdr(b - BACKPOINTER_CDR + TAG_CONS, p);
             p = car(b - BACKPOINTER_CDR + TAG_CONS);
-my_assert(p != 0x7e65);
             setcar(b - BACKPOINTER_CDR + TAG_CONS, w);
             b = b + BACKPOINTER_CAR - BACKPOINTER_CDR;
             goto down;
@@ -4052,7 +4050,6 @@ my_assert(p != 0x7e65);
             b = car(w);
             setcar(w, p);
             p = w;
-my_assert(p != 0x7e65);
             goto up;
 
         case BACKPOINTER_SYMBOL:
@@ -4061,10 +4058,8 @@ my_assert(p != 0x7e65);
             *reinterpret_cast<LispObject *>(b - BACKPOINTER_SYMBOL) = p;
             b = b - CELL;
             p = *reinterpret_cast<LispObject *>(b - BACKPOINTER_SYMBOL);
-my_assert(p != 0x7e65);
             if (is_symbol_header_full_test(p))
             {   p = b - BACKPOINTER_SYMBOL + TAG_SYMBOL;
-my_assert(p != 0x7e65);
                 b = w;
                 goto up;
             }
@@ -4077,10 +4072,8 @@ my_assert(p != 0x7e65);
             *reinterpret_cast<LispObject *>(b - BACKPOINTER_VECTOR) = p;
             b = b - CELL;
             p = *reinterpret_cast<LispObject *>(b - BACKPOINTER_VECTOR);
-my_assert(p != 0x7e65);
             if (is_number_header_full_test(p))
             {   p = b - BACKPOINTER_VECTOR + TAG_NUMBERS;
-my_assert(p != 0x7e65);
                 b = w;
                 goto up;
             }
@@ -4158,12 +4151,12 @@ LispObject Lall_symbols(LispObject env, LispObject include_gensyms)
 {   LispObject *stacksave = stack;
     if (push_all_symbols(include_gensyms==nil ? not_gensym : always))
     {   stack = stacksave;
-        aerror("all_symbols");
+        return aerror("all_symbols");
     }
     LispObject r = nil;
     while (stack != stacksave)
     {   LispObject w;
-        pop(w);
+        real_pop(w);
         r = cons(w, r);
     }
     return onevalue(r);
@@ -4173,7 +4166,7 @@ LispObject Lall_symbols0(LispObject env)
 {   LispObject *stacksave = stack;
     if (push_all_symbols(interesting))
     {   stack = stacksave;
-        aerror("all_symbols");
+        return aerror("all_symbols");
     }
     LispObject r = nil;
     while (stack != stacksave)

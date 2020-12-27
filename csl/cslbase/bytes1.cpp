@@ -65,6 +65,7 @@ void record_get(LispObject tag, bool found)
     push(tag);
     w = Lget_hash_2(nil, tag, get_counts);
     pop(tag);
+    errexit();
     if (w == nil)
     {   w = cons_no_gc(fixnum_of_int(0), fixnum_of_int(0));
         push(w);
@@ -120,6 +121,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
     {
 #ifdef RECORD_GET
         record_get(b, false);
+        errexit();
 #endif
         return onevalue(c);
     }
@@ -128,15 +130,17 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         {
 #ifdef RECORD_GET
             record_get(b, false);
+            errexit();
 #endif
             return onevalue(c);
         }
-        w = elt(w, n-1); // use the fastget scheme
+        w = basic_elt(w, n-1); // use the fastget scheme
         if (w == SPID_NOPROP) w = c;
 #ifdef RECORD_GET
         push(w);
         record_get(b, w != nil);
         pop(w);
+        errexit();
 #endif
         return onevalue(w);
     }
@@ -145,6 +149,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
     {
 #ifdef RECORD_GET
         record_get(b, false);
+        errexit();
 #endif
         return onevalue(c);
     }
@@ -155,6 +160,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         push(w);
         record_get(b, true);
         pop(w);
+        errexit();
 #endif
         return onevalue(cdr(w));
     }
@@ -163,6 +169,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
     {
 #ifdef RECORD_GET
         record_get(b, false);
+        errexit();
 #endif
         return onevalue(c);
     }
@@ -173,16 +180,18 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         push(w);
         record_get(b, true);
         pop(w);
+        errexit();
 #endif
         return onevalue(cdr(w));
     }
     prev = pl;
     pl = cdr(pl);
-    if (pl == prev) aerror("looped up plist in get");
+    if (pl == prev) return aerror("looped up plist in get");
     if (pl == nil)
     {
 #ifdef RECORD_GET
         record_get(b, false);
+        errexit();
 #endif
         return onevalue(c);
     }
@@ -200,16 +209,18 @@ LispObject get(LispObject a, LispObject b, LispObject c)
             push(w);
             record_get(b, true);
             pop(w);
+        errexit();
 #endif
             return onevalue(cdr(w));
         }
         prev = pl;
         pl = cdr(pl);
-        if (pl == prev) aerror("looped up plist in get");
+        if (pl == prev) return aerror("looped up plist in get");
         if (pl == nil)
         {
 #ifdef RECORD_GET
             record_get(b, false);
+            errexit();
 #endif
             return onevalue(c);
         }
@@ -226,9 +237,10 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
         {   push(a, b, c);
             pl = get_basic_vector_init(CELL+CELL*fastget_size, SPID_NOPROP);
             pop(c, b, a);
+            errexit();
             setfastgets(a, pl);
         }
-        elt(pl, n-1) = c;
+        basic_elt(pl, n-1) = c;
         return c;            // NB the property is NOT on the plist
     }
     pl = qplist(a);
@@ -244,6 +256,7 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
     push(a, c);
     b = acons(b, c, qplist(a));
     pop(c, a);
+    errexit();
     setplist(a, b);
     return c;
 }
@@ -254,7 +267,7 @@ static LispObject remprop(LispObject a, LispObject b)
     if (!symbolp(a)) return nil;
     if (symbolp(b) && (n = header_fastget(qheader(b))) != 0)
     {   pl = qfastgets(a);
-        if (pl != nil) elt(pl, n-1) = SPID_NOPROP;
+        if (pl != nil) basic_elt(pl, n-1) = SPID_NOPROP;
         return nil;
     }
     prevp = nil;
@@ -269,7 +282,7 @@ static LispObject remprop(LispObject a, LispObject b)
         }
         prevp = pl;
         pl = cdr(prevp);
-        if (pl == prevp) aerror("looped up plist in remprop");
+        if (pl == prevp) return aerror("looped up plist in remprop");
     }
     return nil;
 }
@@ -279,7 +292,7 @@ LispObject get_0(LispObject a, int n)
     if (!symbolp(a)) return onevalue(nil);
     {   if ((w = qfastgets(a)) == nil)
             return onevalue(nil);
-        w = elt(w, n);
+        w = basic_elt(w, n);
         if (w == SPID_NOPROP) w = nil;
         return onevalue(w);
     }
@@ -288,16 +301,15 @@ LispObject get_0(LispObject a, int n)
 LispObject Lget(LispObject env, LispObject a, LispObject b)
 {   LispObject pl, prev, w;
     int n;
-//
 // In CSL mode plists are structured like association lists, and
 // NOT as lists with alternate tags and values.  There is also
 // a bitmap that can provide a fast test for the presence of a
 // property...
-//
     if (!symbolp(a))
     {
 #ifdef RECORD_GET
         record_get(b, false);
+        errexit();
 #endif
         return onevalue(nil);
     }
@@ -306,15 +318,17 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
         {
 #ifdef RECORD_GET
             record_get(b, false);
+            errexit();
 #endif
             return onevalue(nil);
         }
-        w = elt(w, n-1);
+        w = basic_elt(w, n-1);
         if (w == SPID_NOPROP) w = nil;
 #ifdef RECORD_GET
         push(w);
         record_get(b, w != nil);
         pop(w);
+        errexit();
 #endif
         return onevalue(w);
     }
@@ -323,6 +337,7 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, false);
+        errexit();
 #endif
         return onevalue(nil);
     }
@@ -333,6 +348,7 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
         push(w);
         record_get(b, true);
         pop(w);
+        errexit();
 #endif
         return onevalue(cdr(w));
     }
@@ -341,6 +357,7 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, false);
+        errexit();
 #endif
         return onevalue(nil);
     }
@@ -351,16 +368,18 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
         push(w);
         record_get(b, true);
         pop(w);
+        errexit();
 #endif
         return onevalue(cdr(w));
     }
     prev = pl;
     pl = cdr(pl);
-    if (pl == prev) aerror("looped up plist in Lget");
+    if (pl == prev) return aerror("looped up plist in Lget");
     if (pl == nil)
     {
 #ifdef RECORD_GET
         record_get(b, false);
+        errexit();
 #endif
         return onevalue(nil);
     }
@@ -378,16 +397,18 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
             push(w);
             record_get(b, true);
             pop(w);
+            errexit();
 #endif
             return onevalue(cdr(w));
         }
         prev = pl;
         pl = cdr(pl);
-        if (pl == prev) aerror("looped up plist in Lget");
+        if (pl == prev) return aerror("looped up plist in Lget");
         if (pl == nil)
         {
 #ifdef RECORD_GET
             record_get(b, false);
+            errexit();
 #endif
             return onevalue(nil);
         }
@@ -411,6 +432,7 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, false);
+        errexit();
 #endif
         return onevalue(nil);
     }
@@ -419,19 +441,22 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
         {
 #ifdef RECORD_GET
             record_get(b, false);
+            errexit();
 #endif
             return onevalue(nil);
         }
-        w = elt(w, n-1);
+        w = basic_elt(w, n-1);
         if (w == SPID_NOPROP)
         {
 #ifdef RECORD_GET
             record_get(b, false);
+            errexit();
 #endif
             return onevalue(nil);
         }
 #ifdef RECORD_GET
         record_get(b, true);
+        errexit();
 #endif
         return onevalue(lisp_true);
     }
@@ -440,6 +465,7 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, false);
+        errexit();
 #endif
         return onevalue(nil);
     }
@@ -448,6 +474,7 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, true);
+        errexit();
 #endif
         return onevalue(lisp_true);
     }
@@ -456,6 +483,7 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, false);
+        errexit();
 #endif
         return onevalue(nil);
     }
@@ -464,16 +492,18 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, true);
+        errexit();
 #endif
         return onevalue(lisp_true);
     }
     prev = pl;
     pl = cdr(pl);
-    if (pl == prev) aerror("looped up plist in Lflagp");
+    if (pl == prev) return aerror("looped up plist in Lflagp");
     if (pl == nil)
     {
 #ifdef RECORD_GET
         record_get(b, false);
+        errexit();
 #endif
         return onevalue(nil);
     }
@@ -489,16 +519,18 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
             setplist(a, pl);
 #ifdef RECORD_GET
             record_get(b, true);
+            errexit();
 #endif
             return onevalue(lisp_true);
         }
         prev = pl;
         pl = cdr(pl);
-        if (pl == prev) aerror("looped up plist in Lflagp");
+        if (pl == prev) return aerror("looped up plist in Lflagp");
         if (pl == nil)
         {
 #ifdef RECORD_GET
             record_get(b, false);
+            errexit();
 #endif
             return onevalue(nil);
         }
@@ -514,6 +546,7 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
         {
 #ifdef RECORD_GET
             record_get(b, false);
+            errexit();
 #endif
             return onevalue(nil);
         }
@@ -522,6 +555,7 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
         {
 #ifdef RECORD_GET
             record_get(b, false);
+            errexit();
 #endif
             return onevalue(nil);
         }
@@ -531,19 +565,22 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
         {
 #ifdef RECORD_GET
             record_get(b, false);
+            errexit();
 #endif
             return onevalue(nil);
         }
-        w = elt(w, n-1);
+        w = basic_elt(w, n-1);
         if (w == SPID_NOPROP)
         {
 #ifdef RECORD_GET
             record_get(b, false);
+            errexit();
 #endif
             return onevalue(nil);
         }
 #ifdef RECORD_GET
         record_get(b, true);
+        errexit();
 #endif
         return onevalue(lisp_true);
     }
@@ -552,6 +589,7 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, false);
+        errexit();
 #endif
         return onevalue(nil);
     }
@@ -560,6 +598,7 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, true);
+        errexit();
 #endif
         return onevalue(lisp_true);
     }
@@ -568,6 +607,7 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, false);
+        errexit();
 #endif
         return onevalue(nil);
     }
@@ -576,16 +616,18 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, true);
+        errexit();
 #endif
         return onevalue(lisp_true);
     }
     prev = pl;
     pl = cdr(pl);
-    if (pl == prev) aerror("looped up plist in flagpcar");
+    if (pl == prev) return aerror("looped up plist in flagpcar");
     if (pl == nil)
     {
 #ifdef RECORD_GET
         record_get(b, false);
+        errexit();
 #endif
         return onevalue(nil);
     }
@@ -601,16 +643,18 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
             setplist(a, pl);
 #ifdef RECORD_GET
             record_get(b, true);
+            errexit();
 #endif
             return onevalue(lisp_true);
         }
         prev = pl;
         pl = cdr(pl);
-        if (pl == prev) aerror("looped up plist in flagpcar");
+        if (pl == prev) return aerror("looped up plist in flagpcar");
         if (pl == nil)
         {
 #ifdef RECORD_GET
             record_get(b, false);
+            errexit();
 #endif
             return onevalue(nil);
         }
@@ -635,9 +679,10 @@ LispObject Lflag(LispObject env, LispObject a, LispObject b)
             {   push(v, b);
                 pl = get_basic_vector_init(CELL+CELL*fastget_size, SPID_NOPROP);
                 pop(b, v);
+                errexit();
                 setfastgets(v, pl);
             }
-            elt(pl, n-1) = lisp_true;
+            basic_elt(pl, n-1) = lisp_true;
             continue;
         }
         push(a, b);
@@ -653,6 +698,7 @@ LispObject Lflag(LispObject env, LispObject a, LispObject b)
         {   push(v);
             LispObject b1 = acons(b, lisp_true, qplist(v));
             pop(v);
+            errexit();
             setplist(v, b1);
         }
     already_flagged:
@@ -670,7 +716,7 @@ LispObject Lremflag(LispObject env, LispObject a, LispObject b)
         if (!symbolp(v)) continue;
         if (n)
         {   pl = qfastgets(v);
-            if (pl != nil) elt(pl, n-1) = SPID_NOPROP;
+            if (pl != nil) basic_elt(pl, n-1) = SPID_NOPROP;
             continue;
         }
         prevp = nil;
@@ -685,7 +731,7 @@ LispObject Lremflag(LispObject env, LispObject a, LispObject b)
             }
             prevp = pl;
             pl = cdr(prevp);
-            if (pl == prevp) aerror("looped up plist in remflag");
+            if (pl == prevp) return aerror("looped up plist in remflag");
         }
     }
     return onevalue(nil);
@@ -699,12 +745,13 @@ LispObject Lremprop(LispObject, LispObject a, LispObject b)
 LispObject Lplist(LispObject env, LispObject a)
 {   LispObject r;
     int i;
-    if (!symbolp(a)) aerror1("plist", a);
+    if (!symbolp(a)) return aerror1("plist", a);
     r = qplist(a);
 #ifdef COMMON
     LispObject r1 = nil;
     while (r != nil)
     {   r1 = list2star(car(car(r)), cdr(car(r)), r1);
+        errexit();
         r = cdr(r);
     }
     r = r1;
@@ -712,7 +759,7 @@ LispObject Lplist(LispObject env, LispObject a)
     a = qfastgets(a);
     if (a == nil) return onevalue(r);
     for (i=0; i<fastget_size; i++)
-    {   LispObject w = elt(a, i);
+    {   LispObject w = basic_elt(a, i);
         if (w != SPID_NOPROP)
         {   push(a);
 // Observe here that in Common Lisp mode I am creating an alternating
@@ -723,6 +770,7 @@ LispObject Lplist(LispObject env, LispObject a)
             r = acons(elt(fastget_names, i), w, r);
 #endif
             pop(a);
+            errexit();
         }
     }
     return onevalue(r);
@@ -829,7 +877,7 @@ LispObject Lbytecounts_1(LispObject env, LispObject a)
         if (key == SPID_HASHEMPTY || key == SPID_HASHTOMB) continue;
         yes = no = 0;
         if (consp(val)) yes = int_of_fixnum(car(val)),
-                            no  = int_of_fixnum(cdr(val));
+                        no  = int_of_fixnum(cdr(val));
         tot += static_cast<double>(yes+2*no);
     }
     tot /= 100.0;
@@ -848,6 +896,7 @@ LispObject Lbytecounts_1(LispObject env, LispObject a)
     stdout_printf("\n)\n");
 
     v = Lmkhash_2(nil, 3, fixnum_of_int(5), fixnum_of_int(0));
+    errexit();
     get_counts = v;
 #endif
 
@@ -867,15 +916,13 @@ inline void do_freebind(LispObject bvec)
 {   int32_t n, k;
     n = length_of_header(vechdr(bvec));
     for (k=CELL; k<n; k+=CELL)
-    {   LispObject v = *reinterpret_cast<LispObject *>((
-                           intptr_t)bvec + k - TAG_VECTOR);
+    {   LispObject v = *reinterpret_cast<LispObject *>(
+            static_cast<intptr_t>(bvec) + k - TAG_VECTOR);
         real_push(qvalue(v));
         setvalue(v, nil);
     }
-//
 // SPID_FBIND is a value that can NEVER occur elsewhere in the Lisp system,
 // and so it unambiguously marks a block of fluid bindings on that stack.
-//
     real_push(bvec, static_cast<LispObject>(SPID_FBIND));
 }
 
@@ -886,8 +933,8 @@ inline void do_freerstr()
     real_pop(bv);
     n = length_of_header(vechdr(bv));
     while (n>CELL)
-    {   LispObject v = *reinterpret_cast<LispObject *>((
-                           intptr_t)bv + n - (CELL + TAG_VECTOR));
+    {   LispObject v = *reinterpret_cast<LispObject *>(
+            static_cast<intptr_t>(bv) + n - (CELL + TAG_VECTOR));
         n -= CELL;
         LispObject v1;
         real_pop(v1);
@@ -907,21 +954,22 @@ inline void poll_jump_back(LispObject& A_reg)
 #endif
 }
 
-inline void do_pvbind(LispObject vals, LispObject vars)
-{   LispObject val, var;
-    real_push(nil,         // This will be a list ((var . old-value) ...)
-              SPID_PVBIND, // Flags up status of the above.
-              vars, vals);
-    while (consp(vars))
-    {   var = car(vars);
-        vars = cdr(vars);
-        if (!symbolp(var) || var == nil) continue;
-        real_push(vars);
-        var = acons(var, qvalue(var), stack[-4]);
-        stack[-4] = var;
-        real_pop(vars);
+static inline LispObject do_pvbind(LispObject vals, LispObject vars)
+{   LispObject var = nil, val = SPID_PVBIND;
+    RealPush save(var,     // This will be a list ((var . old-value) ...)
+                  val);    // Flags up status of the above.
+    {   RealPush save1(vars, vals);
+        while (consp(vars))
+        {   var = car(vars);
+            vars = cdr(vars);
+            if (!symbolp(var) || var == nil) continue;
+            {   RealPush save1(vars);
+                var = acons(var, qvalue(var), stack[-4]);
+                errexit();
+            }
+            stack[-3] = var;
+        }
     }
-    real_pop(vals, vars);
 // If the code exits ahead of getting here that is not a calamity. SOME
 // at least of the variables will have their previous value saved, and
 // unwinding code will restore them - even if they have not yet been changed.
@@ -932,6 +980,7 @@ inline void do_pvbind(LispObject vals, LispObject vars)
         if (symbolp(var) && var != nil) setvalue(var, val);
         vars = cdr(vars);
     }
+    return nil;
 }
 
 inline void do_pvrestore()
@@ -950,7 +999,8 @@ inline LispObject encapsulate_sp(LispObject *sp)
 // Creates a boxed up representation of a pointer into the stack.
 //
 {   LispObject w = get_basic_vector(TAG_VECTOR, TYPE_SP, 2*CELL);
-    elt(w, 0) = reinterpret_cast<LispObject>(sp);
+    errexit();
+    basic_elt(w, 0) = reinterpret_cast<LispObject>(sp);
     return w;
 }
 
@@ -997,6 +1047,7 @@ LispObject traced_call0(LispObject from, no_args *f0, LispObject name)
     loop_print_trace(from);
     trace_printf("\n");
     LispObject r = f0(stack[0]);
+    errexit();
     return show_result(r);
 }
 
@@ -1016,6 +1067,7 @@ LispObject traced_call1(LispObject from, one_arg *f1,
     trace_printf("\n");
     real_pop(a1);
     LispObject r = f1(stack[0], a1);
+    errexit();
     return show_result(r);
 }
 
@@ -1038,6 +1090,7 @@ LispObject traced_call2(LispObject from, two_args *f2,
     trace_printf("\n");
     real_pop(a2, a1);
     LispObject r = f2(stack[0], a1, a2);
+    errexit();
     return show_result(r);
 }
 
@@ -1064,6 +1117,7 @@ LispObject traced_call3(LispObject from, three_args *f3,
     trace_printf("\n");
     real_pop(a3, a2, a1);
     LispObject r = f3(stack[0], a1, a2, a3);
+    errexit();
     return show_result(r);
 }
 
@@ -1099,6 +1153,7 @@ LispObject traced_call4up(LispObject from, fourup_args *f4up,
     real_popv(1);
     real_pop(a4up, a3, a2, a1);
     LispObject r = f4up(stack[0], a1, a2, a3, a4up);
+    errexit();
     return show_result(r);
 }
 
@@ -1119,7 +1174,7 @@ LispObject carerror(LispObject a)
 #ifdef COMMON
     if (a == nil) return a;
 #endif
-    error(1, err_bad_car, a);
+    return error(1, err_bad_car, a);
 }
 
 LispObject cdrerror(LispObject a)
@@ -1127,23 +1182,23 @@ LispObject cdrerror(LispObject a)
 #ifdef COMMON
     if (a == nil) return a;
 #endif
-    error(1, err_bad_cdr, a);
+    return error(1, err_bad_cdr, a);
 }
 
-[[noreturn]] LispObject car_fails(LispObject a)
-{   error(1, err_bad_car, a);
+LispObject car_fails(LispObject a)
+{   return error(1, err_bad_car, a);
 }
 
-[[noreturn]] LispObject cdr_fails(LispObject a)
-{   error(1, err_bad_cdr, a);
+LispObject cdr_fails(LispObject a)
+{   return error(1, err_bad_cdr, a);
 }
 
-[[noreturn]] LispObject rplaca_fails(LispObject a)
-{   error(1, err_bad_rplac, a);
+LispObject rplaca_fails(LispObject a)
+{   return error(1, err_bad_rplac, a);
 }
 
-[[noreturn]] LispObject rplacd_fails(LispObject a)
-{   error(1, err_bad_rplac, a);
+LispObject rplacd_fails(LispObject a)
+{   return error(1, err_bad_rplac, a);
 }
 
 #define current_byte         (((unsigned char *)codevec)[ppc])
@@ -1274,7 +1329,7 @@ LispObject bytestream_interpret(size_t ppc, LispObject lit,
             trace_printf("\n");
         }
     }
-    if (len > 20000) aerror("Stack overflow");
+    if (len > 20000) return aerror("Stack overflow");
     else w = bytestream_interpret1(ppc, lit, entry_stack);
     return w;
 }
@@ -1288,6 +1343,7 @@ LispObject bytestream_interpret1(size_t ppc, LispObject lit,
 
 #include "bytes2.cpp"
 
+    return A_reg;
 }
 
 // end of bytes1.cpp

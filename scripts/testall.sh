@@ -9,6 +9,7 @@
 #                      [--jlispboot] [--basecsl]
 #                      [--uncached]
 #                         [--debug] [--wx] [--nogui] [--conservative] ...
+#                         [--version=XXX]
 #
 # If present the argument "--noregressions" must come first and it
 # causes the script to avoid running the regression tests. This may be useful
@@ -71,7 +72,8 @@ do
     fi
     some="yes"
     ;;
-  --nogui | --fox | --wx | --test | --arithlib | --conservative | --debug)
+  --nogui | --fox | --wx | --test | --arithlib | \
+  --conservative | --debug | --version=*)
     extras="$extras $a"
     ;;
   *)

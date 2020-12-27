@@ -163,15 +163,15 @@ static LispObject Lctan(LispObject env, LispObject a, LispObject b)
 }
 
 static LispObject Lccsc(LispObject env, LispObject a, LispObject b)
-{   aerror("pending function ccsc");
+{   return aerror("pending function ccsc");
 }
 
 static LispObject Lcsec(LispObject env, LispObject a, LispObject b)
-{   aerror("pending function csec");
+{   return aerror("pending function csec");
 }
 
 static LispObject Lccot(LispObject env, LispObject a, LispObject b)
-{   aerror("pending function ccot");
+{   return aerror("pending function ccot");
 }
 
 static LispObject Lcasin(LispObject env, LispObject a, LispObject b)
@@ -226,15 +226,15 @@ static LispObject Lcatan(LispObject env, LispObject a, LispObject b)
 }
 
 static LispObject Lcacsc(LispObject env, LispObject a, LispObject b)
-{   aerror("pending function cacsc");
+{   return aerror("pending function cacsc");
 }
 
 static LispObject Lcasec(LispObject env, LispObject a, LispObject b)
-{   aerror("pending function casec");
+{   return aerror("pending function casec");
 }
 
 static LispObject Lcacot(LispObject env, LispObject a, LispObject b)
-{   aerror("pending function cacot");
+{   return aerror("pending function cacot");
 }
 
 static LispObject Lcsinh(LispObject env, LispObject a, LispObject b)
@@ -289,15 +289,15 @@ static LispObject Lctanh(LispObject env, LispObject a, LispObject b)
 }
 
 static LispObject Lccsch(LispObject env, LispObject a, LispObject b)
-{   aerror("pending function ccsch");
+{   return aerror("pending function ccsch");
 }
 
 static LispObject Lcsech(LispObject env, LispObject a, LispObject b)
-{   aerror("pending function csech");
+{   return aerror("pending function csech");
 }
 
 static LispObject Lccoth(LispObject env, LispObject a, LispObject b)
-{   aerror("pending function ccoth");
+{   return aerror("pending function ccoth");
 }
 
 static LispObject Lcasinh(LispObject env, LispObject a, LispObject b)
@@ -352,15 +352,15 @@ static LispObject Lcatanh(LispObject env, LispObject a, LispObject b)
 }
 
 static LispObject Lcacsch(LispObject env, LispObject a, LispObject b)
-{   aerror("pending function cacsch");
+{   return aerror("pending function cacsch");
 }
 
 static LispObject Lcasech(LispObject env, LispObject a, LispObject b)
-{   aerror("pending function casech");
+{   return aerror("pending function casech");
 }
 
 static LispObject Lcacoth(LispObject env, LispObject a, LispObject b)
-{   aerror("pending function cacoth");
+{   return aerror("pending function cacoth");
 }
 
 
@@ -368,119 +368,119 @@ static LispObject Lcacoth(LispObject env, LispObject a, LispObject b)
 #else // HAVE_COMPLEX
 
 static LispObject Lcarg(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function carg");
+{   return aerror("unimplemented function carg");
 }
 
 static LispObject Lcabs(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function cabs");
+{   return aerror("unimplemented function cabs");
 }
 
 static LispObject Lcexp(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function cexp");
+{   return aerror("unimplemented function cexp");
 }
 
 static LispObject Lclog(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function clog");
+{   return aerror("unimplemented function clog");
 }
 
 static LispObject Lcsqrt(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function csqrt");
+{   return aerror("unimplemented function csqrt");
 }
 
 static LispObject Lcsin(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function csin");
+{   return aerror("unimplemented function csin");
 }
 
 static LispObject Lccos(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function ccos");
+{   return aerror("unimplemented function ccos");
 }
 
 static LispObject Lctan(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function ctan");
+{   return aerror("unimplemented function ctan");
 }
 
 static LispObject Lccsc(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function ccsc");
+{   return aerror("unimplemented function ccsc");
 }
 
 static LispObject Lcsec(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function csec");
+{   return aerror("unimplemented function csec");
 }
 
 static LispObject Lccot(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function ccot");
+{   return aerror("unimplemented function ccot");
 }
 
 static LispObject Lcasin(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function casin");
+{   return aerror("unimplemented function casin");
 }
 
 static LispObject Lcacos(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function cacos");
+{   return aerror("unimplemented function cacos");
 }
 
 static LispObject Lcatan(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function catan");
+{   return aerror("unimplemented function catan");
 }
 
 static LispObject Lcacsc(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function cacsc");
+{   return aerror("unimplemented function cacsc");
 }
 
 static LispObject Lcasec(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function casec");
+{   return aerror("unimplemented function casec");
 }
 
 static LispObject Lcacot(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function cacot");
+{   return aerror("unimplemented function cacot");
 }
 
 static LispObject Lcsinh(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function csinh");
+{   return aerror("unimplemented function csinh");
 }
 
 static LispObject Lccosh(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function ccosh");
+{   return aerror("unimplemented function ccosh");
 }
 
 static LispObject Lctanh(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function ctanh");
+{   return aerror("unimplemented function ctanh");
 }
 
 static LispObject Lccsch(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function ccsch");
+{   return aerror("unimplemented function ccsch");
 }
 
 static LispObject Lcsech(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function csech");
+{   return aerror("unimplemented function csech");
 }
 
 static LispObject Lccoth(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function ccoth");
+{   return aerror("unimplemented function ccoth");
 }
 
 static LispObject Lcasinh(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function casinh");
+{   return aerror("unimplemented function casinh");
 }
 
 static LispObject Lcacosh(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function cacosh");
+{   return aerror("unimplemented function cacosh");
 }
 
 static LispObject Lcatanh(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function catanh");
+{   return aerror("unimplemented function catanh");
 }
 
 static LispObject Lcacsch(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function cacsch");
+{   return aerror("unimplemented function cacsch");
 }
 
 static LispObject Lcasech(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function casech");
+{   return aerror("unimplemented function casech");
 }
 
 static LispObject Lcacoth(LispObject env, LispObject a, LispObject b)
-{   aerror("unimplemented function cacoth");
+{   return aerror("unimplemented function cacoth");
 }
 
 #endif // HAVE_COMPLEX

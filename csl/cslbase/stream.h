@@ -165,14 +165,14 @@ inline atomic<LispObject> &stream_read_data(LispObject v)
 {   return basic_elt(v, 2);
 }
 inline atomic<std::FILE *> &stream_file(LispObject v)
-{   return (atomic<std::FILE *>&)elt(v, 3);
+{   return (atomic<std::FILE *>&)basic_elt(v, 3);
 }
 inline atomic<character_stream_writer *> &stream_write_fn(
     LispObject v)
-{   return (atomic<character_stream_writer *>&)elt(v, 4);
+{   return (atomic<character_stream_writer *>&)basic_elt(v, 4);
 }
 inline atomic<other_stream_op *> &stream_write_other(LispObject v)
-{   return (atomic<other_stream_op *>&)elt(v,5);
+{   return (atomic<other_stream_op *>&)basic_elt(v,5);
 }
 inline atomic<LispObject> &stream_line_length(LispObject v)
 {   return basic_elt(v, 6);
@@ -184,10 +184,10 @@ inline atomic<LispObject> &stream_char_pos(LispObject v)
 {   return basic_elt(v, 8);
 }
 inline atomic<character_stream_reader *> &stream_read_fn(LispObject v)
-{   return (atomic<character_stream_reader *>&)elt(v, 9);
+{   return (atomic<character_stream_reader *>&)basic_elt(v, 9);
 }
 inline atomic<other_stream_op *> &stream_read_other(LispObject v)
-{   return (atomic<other_stream_op *>&)elt(v,10);
+{   return (atomic<other_stream_op *>&)basic_elt(v,10);
 }
 inline atomic<LispObject> &stream_pushed_char(LispObject v)
 {   return basic_elt(v, 11);
@@ -197,23 +197,23 @@ inline atomic<LispObject> &stream_spare(LispObject v)
 }
 
 inline LispObject set_stream_file(LispObject v, std::FILE *x)
-{   return (elt(v, 3) = reinterpret_cast<LispObject>(x));
+{   return (basic_elt(v, 3) = reinterpret_cast<LispObject>(x));
 }
 inline LispObject set_stream_write_fn(LispObject v,
                                       character_stream_writer *x)
-{   return (elt(v, 4) = reinterpret_cast<LispObject>(x));
+{   return (basic_elt(v, 4) = reinterpret_cast<LispObject>(x));
 }
 inline LispObject set_stream_write_other(LispObject v,
         other_stream_op *x)
-{   return (elt(v, 5) = reinterpret_cast<LispObject>(x));
+{   return (basic_elt(v, 5) = reinterpret_cast<LispObject>(x));
 }
 inline LispObject set_stream_read_fn(LispObject v,
                                      character_stream_reader *x)
-{   return (elt(v, 9) = reinterpret_cast<LispObject>(x));
+{   return (basic_elt(v, 9) = reinterpret_cast<LispObject>(x));
 }
 inline LispObject set_stream_read_other(LispObject v,
                                         other_stream_op *x)
-{   return (elt(v, 10) = reinterpret_cast<LispObject>(x));
+{   return (basic_elt(v, 10) = reinterpret_cast<LispObject>(x));
 }
 
 #define STREAM_HEADER (TAG_HDR_IMMED + TYPE_STREAM + (STREAM_SIZE<<(Tw+5)))

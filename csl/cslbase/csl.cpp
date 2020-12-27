@@ -293,7 +293,7 @@ void DebugTrace(const char *fmt, int i)
 
 #define ARG_CUT_OFF 10
 
-[[noreturn]] LispObject error(int nargs, int code, ...)
+LispObject error(int nargs, int code, ...)
 //
 // nargs indicates how many values have been provided AFTER the
 // code.  Thus nargs==0 will just display a simple message, nargs==1
@@ -337,10 +337,10 @@ void DebugTrace(const char *fmt, int i)
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    throw LispError();
+    THROW(LispError);
 }
 
-[[noreturn]] LispObject cerror(int nargs, int code1, int code2, ...)
+LispObject cerror(int nargs, int code1, int code2, ...)
 // nargs indicated the number of EXTRA args after code1 & code2.
 {   LispObject w1;
     std::va_list a;
@@ -372,20 +372,20 @@ void DebugTrace(const char *fmt, int i)
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    throw LispError();
+    THROW(LispError);
 }
 
 //
 // This can be used when a resource expires...
 //
-[[noreturn]] LispObject resource_exceeded()
+LispObject resource_exceeded()
 {   exit_reason = UNWIND_RESOURCE;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    throw LispResource();
+    THROW(LispResource);
 }
 
-void interrupted()
+LispObject interrupted()
 {   LispObject w;
     char save_prompt[80];
 // If I have a windowed system I expect that the mechanism for
@@ -416,11 +416,12 @@ void interrupted()
             {   case 'c': case 'C':         // proceed as if no interrupt
                     real_pop(prompt_thing);
                     fwin_set_prompt(save_prompt);
-                    return;
+                    return nil;
                 case 'a': case 'A':         // raise an exception
                     break;
                 case 'x': case 'X':
                     my_exit();              // Rather abrupt
+                    return nil;
                 case '\n':
                     ensure_screen();
                     continue;
@@ -446,10 +447,10 @@ void interrupted()
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    throw LispError();
+    THROW(LispError);
 }
 
-[[noreturn]] LispObject aerror(const char *s)
+LispObject aerror(const char *s)
 {   LispObject w;
     if (miscflags & HEADLINE_FLAG)
         err_printf("+++ Error bad args for %s\n", s);
@@ -463,10 +464,10 @@ void interrupted()
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    throw LispError();
+    THROW(LispError);
 }
 
-[[noreturn]] LispObject aerror0(const char *s)
+LispObject aerror0(const char *s)
 {   LispObject w;
     if (miscflags & HEADLINE_FLAG)
         err_printf("+++ Error: %s\n", s);
@@ -480,10 +481,10 @@ void interrupted()
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    throw LispError();
+    THROW(LispError);
 }
 
-[[noreturn]] LispObject aerror1(const char *s, LispObject a)
+LispObject aerror1(const char *s, LispObject a)
 {   LispObject w;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
@@ -500,10 +501,10 @@ void interrupted()
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    throw LispError();
+    THROW(LispError);
 }
 
-[[noreturn]] LispObject aerror2(const char *s, LispObject a, LispObject b)
+LispObject aerror2(const char *s, LispObject a, LispObject b)
 {   LispObject w;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
@@ -522,10 +523,10 @@ void interrupted()
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    throw LispError();
+    THROW(LispError);
 }
 
-[[noreturn]] LispObject aerror2(const char *s, const char *a, LispObject b)
+LispObject aerror2(const char *s, const char *a, LispObject b)
 {   LispObject w;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s %s ", s, a);
@@ -542,11 +543,11 @@ void interrupted()
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    throw LispError();
+    THROW(LispError);
 }
 
-[[noreturn]] LispObject aerror3(const char *s, LispObject a, LispObject b,
-                          LispObject c)
+LispObject aerror3(const char *s, LispObject a, LispObject b,
+                   LispObject c)
 {   LispObject w;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
@@ -567,10 +568,10 @@ void interrupted()
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    throw LispError();
+    THROW(LispError);
 }
 
-[[noreturn]] static void wrong(int given, int wanted, LispObject env)
+static LispObject wrong(int given, int wanted, LispObject env)
 {   char msg[64];
     if (wanted == 4)
         std::sprintf(msg,
@@ -587,10 +588,10 @@ void interrupted()
         loop_print_error(env);
         err_printf("\n");
     }
-    aerror(msg);
+    return aerror(msg);
 }
 
-[[noreturn]] static void wrong(int given, LispObject env)
+static LispObject wrong(int given, LispObject env)
 {   char msg[64];
     if (given == 4)
         std::sprintf(msg,
@@ -602,138 +603,128 @@ void interrupted()
         loop_print_error(env);
         err_printf("\n");
     }
-    aerror(msg);
+    return aerror(msg);
 }
 
-[[noreturn]] LispObject got_0_wanted_1(LispObject env)
-{   wrong(0, 1, env);
+LispObject got_0_wanted_1(LispObject env)
+{   return wrong(0, 1, env);
 }
 
-[[noreturn]] LispObject got_0_wanted_2(LispObject env)
-{   wrong(0, 2, env);
+LispObject got_0_wanted_2(LispObject env)
+{   return wrong(0, 2, env);
 }
 
-[[noreturn]] LispObject got_0_wanted_3(LispObject env)
-{   wrong(0, 3, env);
+LispObject got_0_wanted_3(LispObject env)
+{   return wrong(0, 3, env);
 }
 
-[[noreturn]] LispObject got_0_wanted_4up(LispObject env)
-{   wrong(0, 4, env);
+LispObject got_0_wanted_4up(LispObject env)
+{   return wrong(0, 4, env);
 }
 
-[[noreturn]] LispObject got_0_wanted_other(LispObject env)
-{   wrong(0, env);
-}
-
-
-[[noreturn]] LispObject got_1_wanted_0(LispObject env, LispObject a1)
-{   wrong(0, 1, env);
-}
-
-[[noreturn]] LispObject got_1_wanted_2(LispObject env, LispObject a1)
-{   wrong(2, 1, env);
-}
-
-[[noreturn]] LispObject got_1_wanted_3(LispObject env, LispObject a1)
-{   wrong(3, 1, env);
-}
-
-[[noreturn]] LispObject got_1_wanted_4up(LispObject env, LispObject a1)
-{   wrong(4, 1, env);
-}
-
-[[noreturn]] LispObject got_1_wanted_other(LispObject env, LispObject a1)
-{   wrong(1, env);
+LispObject got_0_wanted_other(LispObject env)
+{   return wrong(0, env);
 }
 
 
-[[noreturn]] LispObject got_2_wanted_0(LispObject env, LispObject a1,
-                                 LispObject a2)
-{   wrong(0, 2, env);
+LispObject got_1_wanted_0(LispObject env, LispObject a1)
+{   return wrong(0, 1, env);
 }
 
-[[noreturn]] LispObject got_2_wanted_1(LispObject env, LispObject a1,
-                                 LispObject a2)
-{   wrong(1, 2, env);
+LispObject got_1_wanted_2(LispObject env, LispObject a1)
+{   return wrong(2, 1, env);
 }
 
-[[noreturn]] LispObject got_2_wanted_3(LispObject env, LispObject a1,
-                                 LispObject a2)
-{   wrong(3, 2, env);
+LispObject got_1_wanted_3(LispObject env, LispObject a1)
+{   return wrong(3, 1, env);
 }
 
-[[noreturn]] LispObject got_2_wanted_4up(LispObject env, LispObject a1,
-                                   LispObject a2)
-{   wrong(4, 2, env);
+LispObject got_1_wanted_4up(LispObject env, LispObject a1)
+{   return wrong(4, 1, env);
 }
 
-[[noreturn]] LispObject got_2_wanted_other(LispObject env, LispObject a1,
-                                     LispObject a2)
-{   wrong(2, env);
+LispObject got_1_wanted_other(LispObject env, LispObject a1)
+{   return wrong(1, env);
 }
 
 
-[[noreturn]] LispObject got_3_wanted_0(LispObject env, LispObject a1,
-                                 LispObject a2, LispObject a3)
-{   wrong(0, 3, env);
+LispObject got_2_wanted_0(LispObject env, LispObject a1, LispObject a2)
+{   return wrong(0, 2, env);
 }
 
-[[noreturn]] LispObject got_3_wanted_1(LispObject env, LispObject a1,
-                                 LispObject a2, LispObject a3)
-{   wrong(1, 3, env);
+LispObject got_2_wanted_1(LispObject env, LispObject a1, LispObject a2)
+{   return wrong(1, 2, env);
 }
 
-[[noreturn]] LispObject got_3_wanted_2(LispObject env, LispObject a1,
-                                 LispObject a2, LispObject a3)
-{   wrong(2, 3, env);
+LispObject got_2_wanted_3(LispObject env, LispObject a1, LispObject a2)
+{   return wrong(3, 2, env);
 }
 
-[[noreturn]] LispObject got_3_wanted_4up(LispObject env, LispObject a1,
-                                   LispObject a2, LispObject a3)
-{   wrong(4, 3, env);
+LispObject got_2_wanted_4up(LispObject env, LispObject a1, LispObject a2)
+{   return wrong(4, 2, env);
 }
 
-[[noreturn]] LispObject got_3_wanted_other(LispObject env, LispObject a1,
-                                     LispObject a2, LispObject a3)
-{   wrong(3, env);
+LispObject got_2_wanted_other(LispObject env, LispObject a1, LispObject a2)
+{   return wrong(2, env);
 }
 
 
-[[noreturn]] LispObject got_4up_wanted_0(LispObject env, LispObject a1,
-                                   LispObject a2, LispObject a3,
-                                   LispObject a4up)
-{   wrong(0, 4, env);
+LispObject got_3_wanted_0(LispObject env, LispObject a1,
+                          LispObject a2, LispObject a3)
+{   return wrong(0, 3, env);
 }
 
-[[noreturn]] LispObject got_4up_wanted_1(LispObject env, LispObject a1,
-                                   LispObject a2, LispObject a3,
-                                   LispObject a4up)
-{   wrong(1, 4, env);
+LispObject got_3_wanted_1(LispObject env, LispObject a1,
+                          LispObject a2, LispObject a3)
+{   return wrong(1, 3, env);
 }
 
-[[noreturn]] LispObject got_4up_wanted_2(LispObject env, LispObject a1,
-                                   LispObject a2, LispObject a3,
-                                   LispObject a4up)
-{   wrong(2, 4, env);
+LispObject got_3_wanted_2(LispObject env, LispObject a1,
+                          LispObject a2, LispObject a3)
+{   return wrong(2, 3, env);
 }
 
-[[noreturn]] LispObject got_4up_wanted_3(LispObject env, LispObject a1,
-                                   LispObject a2, LispObject a3,
-                                   LispObject a4up)
-{   wrong(3, 4, env);
+LispObject got_3_wanted_4up(LispObject env, LispObject a1,
+                            LispObject a2, LispObject a3)
+{   return wrong(4, 3, env);
 }
 
-[[noreturn]] LispObject got_4up_wanted_other(LispObject env, LispObject a1,
-                                       LispObject a2, LispObject a3,
-                                       LispObject a4up)
-{   wrong(4, env);
+LispObject got_3_wanted_other(LispObject env, LispObject a1,
+                              LispObject a2, LispObject a3)
+{   return wrong(3, env);
 }
 
-[[noreturn]] LispObject bad_specialn(LispObject, int, ...)
-{   aerror("call to special form");
+
+LispObject got_4up_wanted_0(LispObject env, LispObject a1, LispObject a2,
+                            LispObject a3, LispObject a4up)
+{   return wrong(0, 4, env);
 }
 
-[[noreturn]] void fatal_error(int code, ...)
+LispObject got_4up_wanted_1(LispObject env, LispObject a1, LispObject a2,
+                            LispObject a3, LispObject a4up)
+{   return wrong(1, 4, env);
+}
+
+LispObject got_4up_wanted_2(LispObject env, LispObject a1, LispObject a2,
+                            LispObject a3, LispObject a4up)
+{   return wrong(2, 4, env);
+}
+
+LispObject got_4up_wanted_3(LispObject env, LispObject a1, LispObject a2,
+                            LispObject a3, LispObject a4up)
+{   return wrong(3, 4, env);
+}
+
+LispObject got_4up_wanted_other(LispObject env, LispObject a1, LispObject a2,
+                                LispObject a3, LispObject a4up)
+{   return wrong(4, env);
+}
+
+LispObject bad_specialn(LispObject, int, ...)
+{   return aerror("call to special form");
+}
+
+void fatal_error(int code, ...)
 {
 //
 // Note that FATAL error messages are sent to the terminal, not to the
@@ -1003,9 +994,9 @@ std::jmp_buf *global_jb;
 
 bool stop_on_error = false;
 
-static void lisp_main()
+static LispObject lisp_main()
 {
-// As of mid-November 2020 CSL will deliver IEEE infinty for 1.0/0.0 and
+// As of mid-November 2020 CSL will deliver IEEE infinity for 1.0/0.0 and
 // a NaN for 0.0/0.0 rather than raising an exception.
     trap_floating_overflow = false;
     tty_count = 0;
@@ -1016,45 +1007,39 @@ static void lisp_main()
 //
     {   LispObject * volatile save = stack;
         errorset_msg = nullptr;
-        try
-        {   START_SETJMP_BLOCK;
+        TRY
+            START_SETJMP_BLOCK;
             terminal_pushed = NOT_CHAR;
             if (supervisor != nil && !ignore_restart_fn)
             {   miscflags |= BACKTRACE_MSG_BITS;
 // Here I reconstruct the argument that I passed in (restart_csl f a).
                 if (exit_charvec != nullptr)
                 {   LispObject a;
-                    try
-                    {   START_TRY_BLOCK;
+                    TRY
                         a = read_from_vector(exit_charvec);
 // If I fail to read the saved data "a" back I will just fold it down and
 // use nil instead.
-                    }
-                    catch (LispException &e) // all sorts of Lisp issues!
-                    {   a = nil;
-                    }
+                    CATCH(LispException) // all sorts of Lisp issues!
+                        a = nil;
+                    END_CATCH
                     std::free(exit_charvec);
                     exit_charvec = nullptr;
                     apply(supervisor, ncons(a), nil, current_function = startup_symbol);
                 }
                 else apply(supervisor, nil, nil, current_function = startup_symbol);
             }
-//
 // Here the default read-eval-print loop used if the user has not provided
 // a supervisor function.
-//
             else read_eval_print(lisp_true);
-        }
-        catch (LispSignal &e)
-        {   if (errorset_msg != nullptr)
+        CATCH(LispSignal)
+            if (errorset_msg != nullptr)
             {   term_printf("\n%s detected\n", errorset_msg);
                 errorset_msg = nullptr;
             }
             unwind_stack(save, false);
             exit_reason = UNWIND_ERROR;
-        }
-        catch (LispException &e)
-        {   if (exit_reason == UNWIND_RESTART)
+        ANOTHER_CATCH(LispException)
+            if (exit_reason == UNWIND_RESTART)
             {   if (exit_tag == fixnum_of_int(0))      // "stop"
                     return_code = static_cast<int>(int_of_fixnum(exit_value));
                 else if (exit_tag == fixnum_of_int(1)) // "preserve"
@@ -1215,7 +1200,6 @@ static void lisp_main()
                     }
 //
 // Finally rebuild a contiguous block of pages from the wholesale block.
-//
                     {   char *w = big_chunk_start + NIL_SEGMENT_SIZE;
                         char *w1 = w + CSL_PAGE_SIZE;
                         while (w1 <= big_chunk_end)
@@ -1248,13 +1232,12 @@ static void lisp_main()
                     continue;
                 }
             }
-        }
-//
+        END_CATCH
 // In all normal cases when read_eval_print exits (i.e. all cases except
 // if it terminates after (cold-start)) I exit here.
-//
         break;
     }
+    return nil;
 }
 
 static long int initial_random_seed;
@@ -1395,8 +1378,8 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
         string aLow(a);
         std::transform(aLow.begin(), aLow.end(), aLow.begin(),
                        [](int c)
-        {   return std::tolower(c);
-        });
+                       {   return std::tolower(c);
+                       });
         aspec = argIndex[aLow];
         if (aspec == nullptr)
         {   badArgs.push_back(aSave); // Item not recognized at all.
@@ -1671,7 +1654,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     if (f == nullptr)
                     {   std::fprintf(stderr, "Unable to write to \"%s\"\n",
                                      filename);
-                        throw EXIT_FAILURE;
+                        return my_exit(EXIT_FAILURE);
                     }
 #endif // !WITH_GUI
                 }
@@ -1969,12 +1952,8 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 "         particular one that may arise when GC is triggered from some particular\n"
                 "         context -- hence not useful for ordinary users.",
                 [&](string key, bool hasVal, string val)
-                {   try
-                    {   reclaim_trigger_target = std::stoull(val);
-                    }
-                    catch (...)
-                    {   reclaim_trigger_target = 0;
-                    }
+                {   char *end;
+                    reclaim_trigger_target = std::strtoull(val.c_str(), &end, 10);
                 }
             },
 
@@ -2115,12 +2094,9 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 "---kara NN Set transition between single and multi-thread Karatsuba\n"
                 "         multiplication.",
                 [&](string key, bool hasVal, string val)
-                {   try
-                    {   kparallel = std::stoi(val);
-                    }
-                    catch (...)
-                    {   kparallel = 0;
-                    }
+                {   char *end;
+                    kparallel = static_cast<int>(
+                        std::strtol(val.c_str(), &end, 10));
                     if (kparallel < KARATSUBA_CUTOFF) kparallel = KARATSUBA_CUTOFF;
                 }
             },
@@ -2497,12 +2473,8 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 "         Note that the Reduce-level code uses its own random source not\n"
                 "         the one controlled here.",
                 [&](string key, bool hasVal, string val)
-                {   try
-                    {   initial_random_seed = std::stoll(val);
-                    }
-                    catch (...)
-                    {   initial_random_seed = 0;
-                    }
+                {   char *end;
+                    initial_random_seed = std::strtoll(val.c_str(), &end, 10);
                 }
             },
 
@@ -2903,13 +2875,13 @@ int async_interrupt(int type)
     return static_cast<int>(oldval) & 0xff;
 }
 
-void respond_to_stack_event()
+LispObject respond_to_stack_event()
 {   uintptr_t f = event_flag.fetch_and(0);
-    if (f == 0) aerror("stack overflow");
+    if (f == 0) return aerror("stack overflow");
 // Each of the messages that I might be sent comes in a separate bit, so
 // here I have to test each bit. I will test the bits in some sort of
 // order because I will only perform one major operation!
-    if ((f&RECEIVE_QUIT) != 0) Lstop1(nil, fixnum_of_int(0));
+    if ((f&RECEIVE_QUIT) != 0) return Lstop1(nil, fixnum_of_int(0));
     if ((f&RECEIVE_TICK) != 0)
     {   //fwin_acknowledge_tick();
 #if !defined EMBEDDED && !defined WITHOUT_GUI
@@ -2921,19 +2893,19 @@ void respond_to_stack_event()
         time_now = read_clock()/1000;  // in milliseconds now
         if ((time_limit >= 0 && time_now > time_limit) ||
             (io_limit >= 0 && io_now > io_limit))
-            resource_exceeded();
+            return resource_exceeded();
     }
     if ((f&RECEIVE_BACKTRACE) != 0)
     {   exit_reason = UNWIND_ERROR;
         exit_value = exit_tag = nil;
         exit_count = 0;
-        throw LispError();
+        THROW(LispError);
     }
     if ((f&RECEIVE_INTERRUPT) != 0)
     {   exit_reason = UNWIND_UNWIND;
         exit_value = exit_tag = nil;
         exit_count = 0;
-        throw LispError();
+        THROW(LispError);
     }
     if ((f&RECEIVE_BREAK_LOOP) != 0)
     {
@@ -2942,13 +2914,13 @@ void respond_to_stack_event()
 // garbage collection I need to be GC safe here, and that will be the case
 // with a conservative collector but not in the current version of the code
 // with the precise collector perhaps?
-        interrupted();
+        return interrupted();
     }
+    return nil;
 }
 
 #ifdef HAVE_SIGACTION
-static void low_level_signal_handler(int signo, siginfo_t *t,
-                                     void *v);
+static void low_level_signal_handler(int signo, siginfo_t *t, void *v);
 #else // !HAVE_SIGACTION
 static void low_level_signal_handler(int signo);
 #endif // !HAVE_SIGACTION
@@ -3048,7 +3020,7 @@ static void low_level_signal_handler(int signo)
 // I will create a message string (which I should put in thread local memory)
     if (miscflags & HEADLINE_FLAG)
     {   switch (signo)
-    {       default:
+        {   default:
             {   volatile char *p = signal_msg;
                 const char *m1 = "Signal (signo=";
                 while (*m1) *p++ = *m1++;
@@ -3092,12 +3064,12 @@ static void low_level_signal_handler(int signo)
 // This is the "standard" route into CSL activity - it uses file-names
 // from the decoded command-line as files to be read and processed.
 
-static void cslaction()
+static LispObject cslaction()
 {   volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     errorset_msg = nullptr;
-    try
-    {   START_SETJMP_BLOCK;
+    TRY
+        START_SETJMP_BLOCK;
         set_up_signal_handlers();
         non_terminal_input = nullptr;
 #ifdef WITH_GUI
@@ -3135,17 +3107,16 @@ static void cslaction()
                 }
             }
         }
-    }
-    catch (LispSignal &e)
-    {   if (errorset_msg != nullptr)
+    CATCH(LispSignal)
+        if (errorset_msg != nullptr)
         {   term_printf("\n%s detected\n", errorset_msg);
             errorset_msg = nullptr;
         }
-        return;
-    }
-    catch (LispException &e)
-    {   return;
-    }
+        return nil;
+    ANOTHER_CATCH(LispException)
+        return nil;
+    END_CATCH;
+    return nil;
 }
 
 int cslfinish(character_writer *w)
@@ -3417,7 +3388,9 @@ int ENTRYPOINT(int argc, const char *argv[])
     catch (std::runtime_error &e)
     {
 // Here is where the EXIT exception is caught when somebody in the main
-// thread obeys my_exit().
+// thread obeys my_exit(). It is intended to be a fatal situation, and so if
+// the "catch" here is ineffective and the application terminated not much is
+// lost!
         res = EXIT_FAILURE;
     }
     report_dependencies();
@@ -3453,7 +3426,7 @@ int PROC_set_callbacks(character_reader *r,
 }
 
 int PROC_prepare_for_top_level_loop()
-{   LispObject w = nil, w1 = nil;
+{   LispObject w1 = nil;
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     if_error(w1 = make_undefined_symbol("prepare-for-top-loop");
@@ -3505,6 +3478,7 @@ int PROC_set_switch(const char *name, int val)
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     if_error(w1 = make_undefined_symbol("onoff");
+             errexit();
              push(w1);
              w = make_undefined_symbol(name);
              pop(w1);
@@ -3540,6 +3514,7 @@ int PROC_push_symbol(const char *name)
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     if_error(w = make_undefined_symbol(name);
+             errexit();
              w = cons(w, procstack),
              return 1);
     procstack = w;
@@ -3556,6 +3531,7 @@ int PROC_push_string(const char *data)
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     if_error(w = make_string(data);
+             errexit();
              w = cons(w, procstack),
              return 2);  // Failed to push onto stack
     procstack = w;
@@ -3578,6 +3554,7 @@ int PROC_push_small_integer(int32_t n)
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     if_error(w = make_lisp_integer32(n);
+             errexit();
              w = cons(w, procstack),
              return 1);
     procstack = w;
@@ -3593,10 +3570,11 @@ int PROC_push_big_integer(const char *n)
     boffop = 0;
     if_error(
         while (*n != 0)
-{   packbyte(*n++);
-        len++;
-    }
-    w = intern(len, 0);
+        {   packbyte(*n++);
+            len++;
+        }
+        w = intern(len, 0);
+        errexit();
         w = cons(w, procstack),
         return 1);
     procstack = w;
@@ -3609,6 +3587,7 @@ int PROC_push_floating(double n)
     C_stackbase = (uintptr_t *)&sp;
 // Here I have to construct a Lisp (boxed) float
     if_error(w = make_boxfloat(n, TYPE_DOUBLE_FLOAT);
+             errexit();
              w = cons(w, procstack),
              return 1);
     procstack = w;
@@ -3633,13 +3612,16 @@ int PROC_make_function_call(const char *name, int n)
         while (n > 0)
         {   if (procstack == nil) return 1; // Not enough args available
             w = cons(car(procstack), w);
+            errexit();
             procstack = cdr(procstack);
             n--;
         }
         push(w);
         w1 = make_undefined_symbol(name);
         pop(w);
+        errexit();
         w = cons(w1, w);
+        errexit();
         w = cons(w, procstack),
             return 1);
     procstack = w;
@@ -3711,11 +3693,15 @@ int PROC_simplify()
     if (procstack == nil) return 1; // stack is empty
     if_error(
         w = make_undefined_symbol("simp");
+        errexit();
         w = Lapply1(nil, w, car(procstack));
+        errexit();
         push(w);
         w1 = make_undefined_symbol("mk*sq");
         pop(w);
+        errexit();
         w = Lapply1(nil, w1, w);
+        errexit();
         setcar(procstack, w),
         // error exit case
         return 1);
@@ -3734,12 +3720,13 @@ static void PROC_standardise_gensyms(LispObject w)
     {   push(w);
         PROC_standardise_gensyms(car(w));
         pop(w);
+#ifdef NO_THROW
+        if (exceptionPending()) return;
+#endif // NO_THROW
         PROC_standardise_gensyms(cdr(w));
         return;
     }
-//
 // Now w is atomic. The only case that concerns me is if it is a gensym.
-//
     if (symbolp(w)) get_pname(w); // allocates gensym name if needed.
 }
 
@@ -3751,6 +3738,7 @@ int PROC_lisp_eval()
     if (procstack == nil) return 1; // stack is empty
     if_error(
         w = eval(car(procstack), nil);
+        errexit();
         push(w);
         PROC_standardise_gensyms(w);
         pop(w),
@@ -3764,15 +3752,17 @@ static LispObject PROC_standardise_printed_form(LispObject w)
     {   push(w);
         LispObject w1 = PROC_standardise_printed_form(car(w));
         pop(w);
+        errexit();
         push(w1);
         w =  PROC_standardise_printed_form(cdr(w));
         pop(w1);
-        return cons(w1, w);
+        errexit();
+        w = cons(w1, w);
+        errexit();
+        return w;
     }
-//
 // Now w is atomic. There are two interesting cases - an unprinted gensym
 // and a bignum.
-//
     if (symbolp(w))
     {   push(w);
         get_pname(w); // allocates gensym name if needed. Otherwise cheap!
@@ -3781,6 +3771,7 @@ static LispObject PROC_standardise_printed_form(LispObject w)
     }
     else if (is_numbers(w) && is_bignum(w))
     {   w = Lexplode(nil, w);        // Bignum to list of digits
+        errexit();
         w = Llist_to_string(nil, w); // list to string
         return w;
     }
@@ -3798,21 +3789,20 @@ int PROC_make_printable()
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     if (procstack == nil) return 1; // stack is empty
-//
 // I want to use "simp" again so that I can then use prepsq!
-//
     if_error(
         w = make_undefined_symbol("simp");
+        errexit();
         w = Lapply1(nil, w, car(procstack));
+        errexit();
         push(w);
         w1 = make_undefined_symbol("prepsq");
         pop(w);
         w = Lapply1(nil, w1, w);
-//
+        errexit();
 // There are going to be two things I do next. One is to ensure that
 // all gensyms have print-names, the other is to convert bignums into
 // strings. Both of these could be viewed as mildly obscure!
-//
         w = PROC_standardise_printed_form(w),
         return 1);
     setcar(procstack, w);

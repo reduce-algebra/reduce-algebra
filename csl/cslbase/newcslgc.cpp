@@ -770,6 +770,11 @@ void evacuateActiveChunk(Chunk *c)
 {   cout << "evacuateActiveChunk\n";
     my_abort();
 }
+bool evacuatePartOfMyOwnChunk()
+{   cout << "evacuatePartOfMyOwnChunk\n";
+    my_abort();
+
+}
 
 void evacuateFromCopiedData(bool major)
 {
@@ -786,7 +791,7 @@ void evacuateFromCopiedData(bool major)
     {   Chunk *c;
 // While there is a full Chunk to scan I scan it. This part is simple and
 // straightforward.
-        while ((c = popChunk1()) != nullptr)
+        while ((c = popChunk()) != nullptr)   // popChunk1 ????
             evacuateOneChunk(c);
 // When I get here there are no full Chunks to scan, but there can be
 // data within the one I have just been copying into. I scan within it.
@@ -798,7 +803,7 @@ void evacuateFromCopiedData(bool major)
 // is completely processed. By then I may have created not just one but
 // several new Chunks of copied material. The evacuatePartOfMyOwnChunk()
 // function returns true and these will be popped and scanned in turn. It
-// must be arranged that when the Chuunk I had already scanned is fetched
+// must be arranged that when the Chunk I had already scanned is fetched
 // that it is detected that it has already been processed.
 // The other possibility is that scanning material in the Chunk leads to
 // little or no further allocation. Then scanning must stop when the scan-
@@ -837,7 +842,7 @@ std::condition_variable cvForChunkStack;
 // any trouble.
 
 inline void pushChunk(Chunk *c)
-{   c->selfScanPoint = c->datastart();
+{   c->selfScanPoint = c->dataStart();
     Chunk *old = chunkStack.load();
     do
     {   c->chunkStack.store(old);
@@ -907,10 +912,6 @@ inline Chunk *popChunk()
 //
     }
     return c;
-}
-
-bool evacuatePartOfMyOwnChunk()
-{   return false;
 }
 
 #ifndef ONLY_USE_ONE_GC_THREAD

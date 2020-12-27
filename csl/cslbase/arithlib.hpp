@@ -11263,7 +11263,7 @@ inline std::intptr_t value_of_current_modulus()
 }
 
 inline std::intptr_t SetModulus::op(std::int64_t n)
-{   if (n <= 1) aerror1("Invalid arg to set-modulus",
+{   if (n <= 1) return (std::intptr_t)aerror1("Invalid arg to set-modulus",
                             int_to_handle(n));
     std::intptr_t r = value_of_current_modulus();
     small_modulus = n;
@@ -11274,7 +11274,7 @@ inline std::intptr_t SetModulus::op(std::int64_t n)
 
 inline std::intptr_t SetModulus::op(std::uint64_t *n)
 {   if (Minusp::op(n))
-        aerror1("Invalid arg to set-modulus", vector_to_handle(n));
+        return (std::intptr_t)aerror1("Invalid arg to set-modulus", vector_to_handle(n));
     std::intptr_t r = value_of_current_modulus();
     std::size_t lenn = number_size(n);
     std::size_t bytes = (lenn+1)*sizeof(std::uint64_t);
@@ -11332,7 +11332,7 @@ inline std::intptr_t ModularPlus::op(std::int64_t a, std::uint64_t *b)
 {
 // One of the inputs here is a bignum, and that can only be valid if we
 // have a large modulus.
-    if (modulus_size != modulus_big) aerror1("bad arg for modular-plus",
+    if (modulus_size != modulus_big) return (std::intptr_t)aerror1("bad arg for modular-plus",
                 vector_to_handle(b));
     std::intptr_t r = Plus::op(a, b);
     if (op_dispatch1<Geq,bool>(r, large_modulus()))
@@ -11351,7 +11351,7 @@ inline std::intptr_t ModularPlus::op(std::uint64_t *a, std::int64_t b)
 inline std::intptr_t ModularPlus::op(std::uint64_t *a,
                                      std::uint64_t *b)
 {   if (modulus_size != modulus_big)
-        aerror1("bad arg for modular-plus",
+        return (std::intptr_t)aerror1("bad arg for modular-plus",
                 vector_to_handle(a));
     std::intptr_t r = Plus::op(a, b);
     if (op_dispatch1<Geq, bool>(r, large_modulus()))
@@ -11374,7 +11374,7 @@ inline std::intptr_t ModularDifference::op(std::int64_t a,
 inline std::intptr_t ModularDifference::op(std::int64_t a,
         std::uint64_t *b)
 {   if (modulus_size != modulus_big)
-        aerror1("bad arg for modular-plus",
+        return (std::intptr_t)aerror1("bad arg for modular-plus",
                 vector_to_handle(b));
     std::intptr_t r = Difference::op(b, a);
     std::intptr_t r1 = op_dispatch1<RevDifference,std::intptr_t>(r,
@@ -11386,7 +11386,7 @@ inline std::intptr_t ModularDifference::op(std::int64_t a,
 inline std::intptr_t ModularDifference::op(std::uint64_t *a,
         std::int64_t b)
 {   if (modulus_size != modulus_big)
-        aerror1("bad arg for modular-plus",
+        return (std::intptr_t)aerror1("bad arg for modular-plus",
                 vector_to_handle(a));
     return Difference::op(a, b);
 }
@@ -11394,7 +11394,7 @@ inline std::intptr_t ModularDifference::op(std::uint64_t *a,
 inline std::intptr_t ModularDifference::op(std::uint64_t *a,
         std::uint64_t *b)
 {   if (modulus_size != modulus_big)
-        aerror1("bad arg for modular-plus",
+        return (std::intptr_t)aerror1("bad arg for modular-plus",
                 vector_to_handle(a));
     if (Geq::op(a, b)) return Difference::op(a, b);
     std::intptr_t r = Difference::op(b, a);
@@ -11455,41 +11455,41 @@ inline std::intptr_t ModularTimes::op(std::uint64_t *a,
 
 
 inline std::intptr_t ModularExpt::op(std::int64_t a, std::int64_t b)
-{   aerror("incomplete");
+{   return (std::intptr_t)aerror("incomplete");
 }
 
 inline std::intptr_t ModularExpt::op(std::int64_t a, std::uint64_t *b)
-{   aerror("incomplete");
+{   return (std::intptr_t)aerror("incomplete");
 }
 
 inline std::intptr_t ModularExpt::op(std::uint64_t *a, std::int64_t b)
-{   aerror("incomplete");
+{   return (std::intptr_t)aerror("incomplete");
 }
 
 inline std::intptr_t ModularExpt::op(std::uint64_t *a,
                                      std::uint64_t *b)
-{   aerror("incomplete");
+{   return (std::intptr_t)aerror("incomplete");
 }
 
 
 inline std::intptr_t ModularQuotient::op(std::int64_t a,
         std::int64_t b)
-{   aerror("incomplete");
+{   return (std::intptr_t)aerror("incomplete");
 }
 
 inline std::intptr_t ModularQuotient::op(std::int64_t a,
         std::uint64_t *b)
-{   aerror("incomplete");
+{   return (std::intptr_t)aerror("incomplete");
 }
 
 inline std::intptr_t ModularQuotient::op(std::uint64_t *a,
         std::int64_t b)
-{   aerror("incomplete");
+{   return (std::intptr_t)aerror("incomplete");
 }
 
 inline std::intptr_t ModularQuotient::op(std::uint64_t *a,
         std::uint64_t *b)
-{   aerror("incomplete");
+{   return (std::intptr_t)aerror("incomplete");
 }
 
 
@@ -11502,16 +11502,16 @@ inline std::intptr_t ModularMinus::op(std::int64_t a)
 
 inline std::intptr_t ModularMinus::op(std::uint64_t *a)
 {   if (modulus_size != modulus_big)
-        aerror1("bad argument for modular-minus", vector_to_handle(a));
+        return (std::intptr_t)aerror1("bad argument for modular-minus", vector_to_handle(a));
     return Difference::op(large_modulus(), a);
 }
 
 inline std::intptr_t general_modular_reciprocal(std::intptr_t a)
-{   aerror("not coded yet");
+{   return (std::intptr_t)aerror("not coded yet");
 }
 
 inline std::intptr_t ModularReciprocal::op(std::int64_t aa)
-{   if (aa <= 0) aerror1("bad argument to modular-reciprocal",
+{   if (aa <= 0) return (std::intptr_t)aerror1("bad argument to modular-reciprocal",
                              int_to_handle(aa));
     else if (modulus_size == modulus_big)
         return general_modular_reciprocal(int_to_handle(aa));
@@ -11522,7 +11522,7 @@ inline std::intptr_t ModularReciprocal::op(std::int64_t aa)
     while (b != 1)
     {   std::uint64_t w, t;
         if (b == 0)
-            aerror2("non-prime modulus in modular-reciprocal",
+            return (std::intptr_t)aerror2("non-prime modulus in modular-reciprocal",
                     int_to_handle(small_modulus),
                     int_to_handle(aa));
         w = a / b;

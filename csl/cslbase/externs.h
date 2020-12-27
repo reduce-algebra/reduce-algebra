@@ -786,7 +786,7 @@ extern void checksum(LispObject a);
 
 extern void ensure_screen();
 extern int window_heading;
-[[noreturn]] extern void my_exit();
+extern void my_exit();
 
 extern uint64_t base_time;
 extern std::chrono::high_resolution_clock::time_point base_walltime;
@@ -817,55 +817,56 @@ extern void record_get(LispObject tag, bool found);
 // do so would call for careful review of linkage styles etc!
 
 extern bool        isprime(uint64_t);
-extern void        set_up_functions(int restartp);
+extern LispObject  set_up_functions(int restartp);
 extern void        get_user_files_checksum(unsigned char *);
-extern LispObject acons(LispObject a, LispObject b, LispObject c);
-extern LispObject ash(LispObject a, LispObject b);
-extern LispObject bytestream_interpret(size_t ppc, LispObject lit,
-                                       LispObject *entry_stack);
-extern bool     complex_stringp(LispObject a);
+extern LispObject  acons(LispObject a, LispObject b, LispObject c);
+extern LispObject  ash(LispObject a, LispObject b);
+extern LispObject  bytestream_interpret(size_t ppc, LispObject lit,
+                                        LispObject *entry_stack);
+extern bool        complex_stringp(LispObject a);
 extern LispObject  copy_string(LispObject a, size_t n);
-extern void        freshline_trace();
-extern void        freshline_debug();
-extern LispObject cons(LispObject a, LispObject b);
-extern LispObject cons_no_gc(LispObject a, LispObject b);
-extern LispObject acons_no_gc(LispObject a, LispObject b,
-                              LispObject c);
-extern LispObject cons_gc_test(LispObject a);
-extern void       convert_fp_rep(void *p, int old_rep, int new_rep,
-                                 int type);
-extern LispObject eval(LispObject u, LispObject env);
-extern uint32_t   Crand();
-extern LispObject Cremainder(LispObject a, LispObject b);
+extern LispObject  freshline_trace();
+extern LispObject  freshline_debug();
+extern LispObject  cons(LispObject a, LispObject b);
+extern LispObject  cons_no_gc(LispObject a, LispObject b);
+extern LispObject  acons_no_gc(LispObject a, LispObject b,
+                               LispObject c);
+extern LispObject  cons_gc_test(LispObject a);
+extern void        convert_fp_rep(void *p, int old_rep, int new_rep,
+                                  int type);
+extern LispObject  eval(LispObject u, LispObject env);
+extern uint32_t    Crand();
+extern LispObject  Cremainder(LispObject a, LispObject b);
 extern void        Csrand(uint32_t a);
 extern void        discard(LispObject a);
-extern bool eql_fn(LispObject a, LispObject b);
-extern bool cl_equal_fn(LispObject a, LispObject b);
-extern bool equal_fn(LispObject a, LispObject b);
+extern bool        eql_fn(LispObject a, LispObject b);
+extern bool        cl_equal_fn(LispObject a, LispObject b);
+extern bool        equal_fn(LispObject a, LispObject b);
 #ifdef TRACED_EQUAL
-extern bool traced_equal_fn(LispObject a, LispObject b,
-                            const char *, int, int);
+extern bool        traced_equal_fn(LispObject a, LispObject b,
+                                   const char *, int, int);
 #define equal_fn(a, b) traced_equal_fn(a, b, __FILE__, __LINE__, 0)
-extern void dump_equals();
+extern void        dump_equals();
 #endif
-extern bool equalp(LispObject a, LispObject b);
-extern LispObject apply(LispObject fn, LispObject args,
-                        LispObject env,
-                        LispObject from);
-extern LispObject apply_lambda(LispObject def, LispObject args,
-                               LispObject env, LispObject name);
+extern bool        equalp(LispObject a, LispObject b);
+extern LispObject  apply(LispObject fn, LispObject args,
+                         LispObject env,
+                         LispObject from);
+extern LispObject  apply_lambda(LispObject def, LispObject args,
+                                LispObject env, LispObject name);
 extern void        deallocate_pages();
 extern void        drop_heap_segments();
-extern LispObject gcd(LispObject a, LispObject b);
-extern LispObject get_pname(LispObject a);
-extern LispObject get(LispObject a, LispObject b, LispObject c=nil);
-extern LispObject get_basic_vector(int tag, int type, size_t length);
-extern LispObject get_basic_vector_init(size_t n, LispObject v);
-extern LispObject reduce_basic_vector_size(LispObject v, size_t len);
-extern LispObject get_vector(int tag, int type, size_t length);
-extern LispObject get_vector_init(size_t n, LispObject v);
-extern LispObject reduce_vector_size(LispObject n, size_t length);
-extern void       prepare_for_borrowing();
+extern LispObject  gcd(LispObject a, LispObject b);
+extern LispObject  get_pname(LispObject a);
+extern LispObject  get(LispObject a, LispObject b, LispObject c=nil);
+extern LispObject  get_basic_vector(int tag, int type, size_t length);
+extern LispObject  get_basic_vector_init(size_t n, LispObject v);
+extern LispObject  reduce_basic_vector_size(LispObject v, size_t len);
+extern LispObject  get_vector(int tag, int type, size_t length);
+extern LispObject  get_vector_init(size_t n, LispObject v);
+extern LispObject  reduce_vector_size(LispObject n, size_t length);
+extern void        prepare_for_borrowing();
+
 inline void zero_out(void *p)
 {   char *p1 = reinterpret_cast<char *>(doubleword_align_up(
                                             reinterpret_cast<uintptr_t>(p)));
@@ -911,9 +912,10 @@ extern LispObject  ndelete(LispObject a, LispObject b);
 extern LispObject  negate(LispObject a);
 extern LispObject  nreverse(LispObject a);
 extern LispObject  nreverse2(LispObject a, LispObject b);
-extern std::FILE        *open_file(char *filename,
-                                   const char *original_name,
-                                   size_t n, const char *dirn, std::FILE *old_file);
+extern std::FILE   *open_file(char *filename,
+                              const char *original_name,
+                              size_t n, const char *dirn,
+                              std::FILE *old_file);
 extern LispObject  plus2(LispObject a, LispObject b);
 extern void        preserve(const char *msg, size_t len);
 extern LispObject prin(LispObject u);
@@ -922,29 +924,27 @@ extern void debugprint(const char *s, LispObject a);
 extern void debugprint(const char *s);
 extern const char *get_string_data(LispObject a, const char *why,
                                    size_t &len);
-extern void prin_to_stdout(LispObject u);
-extern void prin_to_terminal(LispObject u);
-extern void prin_to_debug(LispObject u);
-extern void prin_to_query(LispObject u);
-extern void prin_to_trace(LispObject u);
-extern void prinhex_to_trace(const char *msg, LispObject value);
-extern void prin_to_error(LispObject u);
-extern void loop_print_stdout(LispObject o);
-extern void loop_print_terminal(LispObject o);
-extern void loop_print_debug(LispObject o);
-extern void loop_print_query(LispObject o);
-extern void loop_print_trace(LispObject o);
-extern void loop_print_error(LispObject o);
-extern void internal_prin(LispObject u, int prefix);
+extern LispObject prin_to_stdout(LispObject u);
+extern LispObject prin_to_terminal(LispObject u);
+extern LispObject prin_to_debug(LispObject u);
+extern LispObject prin_to_query(LispObject u);
+extern LispObject prin_to_trace(LispObject u);
+extern LispObject prinhex_to_trace(const char *msg, LispObject value);
+extern LispObject prin_to_error(LispObject u);
+extern LispObject loop_print_stdout(LispObject o);
+extern LispObject loop_print_terminal(LispObject o);
+extern LispObject loop_print_debug(LispObject o);
+extern LispObject loop_print_query(LispObject o);
+extern LispObject loop_print_trace(LispObject o);
+extern LispObject loop_print_error(LispObject o);
+extern LispObject internal_prin(LispObject u, int prefix);
 extern LispObject  princ(LispObject u);
 extern LispObject  print(LispObject u);
 extern LispObject  printc(LispObject u);
-extern void        print_bignum(LispObject u, bool blankp,
-                                int nobreak);
-extern void        print_bighexoctbin(LispObject u,
-                                      int radix, int width, bool blankp, int nobreak);
-extern void        print_newbignum(LispObject u, bool blankp,
-                                   int nobreak);
+extern void        print_bignum(LispObject u, bool blankp, int nobreak);
+extern void        print_bighexoctbin(LispObject u, int radix, int width,
+                                      bool blankp, int nobreak);
+extern void        print_newbignum(LispObject u, bool blankp, int nobreak);
 extern void        print_newbighexoctbin(LispObject u,
         int radix, int width, bool blankp, int nobreak);
 extern LispObject  putprop(LispObject a, LispObject b,
@@ -952,14 +952,14 @@ extern LispObject  putprop(LispObject a, LispObject b,
 extern LispObject  quot2(LispObject a, LispObject b);
 extern LispObject  quotrem2(LispObject a, LispObject b);
 extern LispObject  rational(LispObject a);
-extern void        read_eval_print(int noisy);
+extern LispObject  read_eval_print(int noisy);
 extern void        set_fns(LispObject sym, no_args *f0, one_arg *f1,
                            two_args *f2, three_args *f3, fourup_args *f4up);
 extern void        init_heap_segments(double size);
 extern void        grab_more_memory(size_t npages);
 extern bool        allocate_more_memory();
 extern void        setup(int restartp, double storesize);
-extern void        set_up_variables(int restart_flag);
+extern LispObject  set_up_variables(int restart_flag);
 extern void        warm_setup();
 extern void        write_everything();
 extern LispObject  simplify_string(LispObject s);
@@ -993,6 +993,35 @@ inline LispObject nvalues(LispObject r, int n)
 {   exit_count = n;
     return r;
 }
+
+// If I define an instance of SingleValued at the head of a procedure
+// then every exit from it will set exit_count to 1. This would let me
+// write just "return x;" rather than "return onevalue(x);".
+
+class SingleValued
+{
+public:
+    SingleValued()
+    {}
+    ~SingleValued()
+    {   exit_count = 1;
+    }
+};
+
+// If I know how many results some function should deliver (and it is > 1)
+// I can use this at the procedure head.
+
+class MultiValued
+{
+    int n;
+public:
+    MultiValued(int nn)
+    {   n = nn;
+    }
+    ~MultiValued()
+    {   exit_count = n;
+    }
+};
 
 //
 // The function "equal" seems to be pretty critical (certainly for Standard
@@ -1141,7 +1170,7 @@ extern LispObject tagbody_fn(LispObject args, LispObject env);
 // The variables here are always extern - they never survive in an image
 // file.
 //
-[[noreturn]] extern LispObject resource_exceeded();
+extern LispObject resource_exceeded();
 extern int64_t time_base,  space_base,  io_base,  errors_base;
 extern int64_t time_now,   space_now,   io_now,   errors_now;
 extern int64_t time_limit, space_limit, io_limit, errors_limit;

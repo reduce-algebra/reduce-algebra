@@ -1234,7 +1234,7 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
 // for Common Lisp. Boo Hiss.
     int32_t restype = TYPE_SINGLE_FLOAT;
 #endif
-    if (which_one > 46) aerror("trigfn internal error");
+    if (which_one > 46) return aerror("trigfn internal error");
     switch (static_cast<int>(a) & TAG_BITS)
     {   case TAG_FIXNUM:
             if (is_sfloat(a))
@@ -1260,7 +1260,7 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
                     return make_complex_float(c2, a);
                 }
                 default:
-                    aerror1("bad arg for trig function",  a);
+                    return aerror1("bad arg for trig function",  a);
             }
             break;
         }
@@ -1269,7 +1269,7 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
             d = float_of_number(a);
             break;
         default:
-            aerror1("bad arg for trig function",  a);
+            return aerror1("bad arg for trig function",  a);
     }
     {       double (*im)(double) = trig_functions[which_one].imag;
         if (im == nullptr)
@@ -1284,14 +1284,14 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
 // Lisp if an elementary function leads to overflow.
 //
         {   double (*rl)(double) = trig_functions[which_one].real;
-            if (rl == nullptr) aerror("unimplemented trig function");
+            if (rl == nullptr) return aerror("unimplemented trig function");
             return onevalue(make_boxfloat((*rl)(d), restype));
         }
         else
         {   double c1r, c1i;
             LispObject rp, ip;
             double (*rl)(double) = trig_functions[which_one].real;
-            if (rl == 0) aerror("unimplemented trig function");
+            if (rl == 0) return aerror("unimplemented trig function");
             c1r = (*rl)(d);
             c1i = (*im)(d);
 // if the imaginary part of the value is zero then I will return a real
@@ -1306,7 +1306,7 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
             const char *name = trig_functions[which_one].name;
             char errbuff[64];
             std::sprintf(errbuff, "Arg for %s out of range", name);
-            aerror1(errbuff, a);
+            return aerror1(errbuff, a);
 #endif
             rp = make_boxfloat(c1r, restype);
             ip = make_boxfloat(c1i, restype);
@@ -1344,7 +1344,7 @@ static LispObject makenum(LispObject a, int32_t n)
                     return onevalue(a);
                 }
             }
-            aerror1("bad arg for makenumber",  a);
+            return aerror1("bad arg for makenumber",  a);
         }
         case TAG_BOXFLOAT:
             restype = type_of_header(flthdr(a));
@@ -1355,7 +1355,7 @@ static LispObject makenum(LispObject a, int32_t n)
 #endif // HAVE_SOFTFLOAT
             return onevalue(make_boxfloat(static_cast<double>(n), restype));
         default:
-            aerror1("bad arg for makenumber",  a);
+            return aerror1("bad arg for makenumber",  a);
     }
 }
 
@@ -1435,7 +1435,7 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
         {   n = int_of_fixnum(b);
             switch (int_of_fixnum(a))
             {   case 1:  return onevalue(a);
-                case 0:  if (n < 0) aerror2("expt", a, b);
+                case 0:  if (n < 0) return aerror2("expt", a, b);
                     // In Common Lisp (expt 0 0) is defined to be 0
                     else if (n == 0) return onevalue(fixnum_of_int(1));
                     else return onevalue(a);
@@ -1447,7 +1447,7 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
         {   switch (int_of_fixnum(a))
             {   case 1:  return onevalue(a);
                 case 0:  n = bignum_digits(b)[(bignum_length(b)-CELL-4)/4];
-                    if (n <= 0) aerror2("expt", a, b);
+                    if (n <= 0) return aerror2("expt", a, b);
                     else return onevalue(a);
                 case -1: n = bignum_digits(b)[0];
                     if (n & 1) return onevalue(a);
@@ -1574,12 +1574,12 @@ static LispObject Lisqrt(LispObject, LispObject a)
                     d = float_of_number(a);
                     break;
                 default:
-                    aerror1("bad arg for isqrt",  a);
+                    return aerror1("bad arg for isqrt",  a);
             }
             break;
         }
         default:
-            aerror1("bad arg for isqrt",  a);
+            return aerror1("bad arg for isqrt",  a);
     }
     d = std::sqrt(d);
 // /* This is not anything like good enough yet
@@ -1616,14 +1616,14 @@ LispObject Labsval(LispObject env, LispObject a)
                     return onevalue(a);
                 }
                 default:
-                    aerror1("bad arg for abs",  a);
+                    return aerror1("bad arg for abs",  a);
             }
             break;
         }
         case TAG_BOXFLOAT:
             break;
         default:
-            aerror1("bad arg for abs",  a);
+            return aerror1("bad arg for abs",  a);
     }
     if (minusp(a)) a = negate(a);
     return onevalue(a);

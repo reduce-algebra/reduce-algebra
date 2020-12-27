@@ -533,14 +533,8 @@ AC_ARG_WITH(throw,
   [],
   [with_throw="yes"])
 
-if test "x$with_throw" = "xno"
-then
-  CSLBASE=cslbase-nothrow
-  GENERATED_C=generated-c-nothrow
-else
-  CSLBASE=cslbase
-  GENERATED_C=generated-c
-fi
+CSLBASE=cslbase
+GENERATED_C=generated-c
 
 AC_ARG_ENABLE(static,
   AC_HELP_STRING([--enable-static],

@@ -620,7 +620,7 @@ LispObject rational(LispObject a)
                 case TYPE_RATNUM:
                     return a;
                 default:
-                    aerror1("bad arg for rational", a);
+                    return aerror1("bad arg for rational", a);
             }
         }
         case TAG_BOXFLOAT:
@@ -633,7 +633,7 @@ LispObject rational(LispObject a)
 #endif // HAVE_SOFTFLOAT
                 return rationalf(float_of_number(a));
         default:
-            aerror1("bad arg for rational", a);
+            return aerror1("bad arg for rational", a);
     }
 }
 
@@ -653,7 +653,7 @@ LispObject rationalize(LispObject a)
                 case TYPE_RATNUM:
                     return a;
                 default:
-                    aerror1("bad arg for rationalize", a);
+                    return aerror1("bad arg for rationalize", a);
             }
         }
         case TAG_BOXFLOAT:
@@ -670,7 +670,7 @@ LispObject rationalize(LispObject a)
 #endif // HAVE_SOFTFLOAT
             }
         default:
-            aerror1("bad arg for rationalize", a);
+            return aerror1("bad arg for rationalize", a);
     }
 }
 
@@ -1007,7 +1007,7 @@ inline bool lessp_rawl_b(float128_t *a, LispObject b)
             break;
     }
 // Here the integer uses at least 113 bits to represent its absolute value.
-    aerror("comparison between log float and large bignum - not implemented yet");
+    return aerror("comparison between long float and large bignum - not implemented yet");
 }
 
 inline bool lessp_b_rawl(LispObject a, float128_t *b)
@@ -1050,16 +1050,19 @@ inline bool lessp_b_rawl(LispObject a, float128_t *b)
             break;
     }
 // Here the integer uses at least 113 bits to represent its absolute value.
-    aerror("comparison between log float and large bignum - not implemented yet");
+    return aerror("comparison between long float and large bignum - not implemented yet");
 }
 
 inline bool lessp_rawl_r(float128_t *a, LispObject b)
 {   aerror("comparison between long float and raion not coded yet");
+    return false;
 }
 
 inline bool lessp_r_rawl(LispObject a, float128_t *b)
-{   aerror("comparison between long float and raion not coded yet");
+{   aerror("comparison between long float and rational not coded yet");
+    return false;
 }
+
 #endif // HAVE_SOFTFLOAT
 
 inline bool lessp_s_s(LispObject a, LispObject b)
@@ -1240,63 +1243,78 @@ inline bool lessp_f_r(LispObject a, LispObject b)
 
 inline bool lessp_c_i(LispObject a, LispObject b)
 {   aerror2("ordered comparison on complex values", a, b);
+    return false;
 }
 
 inline bool lessp_c_b(LispObject a, LispObject b)
 {   aerror2("ordered comparison on complex values", a, b);
+    return false;
 }
 
 inline bool lessp_c_r(LispObject a, LispObject b)
 {   aerror2("ordered comparison on complex values", a, b);
+    return false;
 }
 
 inline bool lessp_c_c(LispObject a, LispObject b)
 {   aerror2("ordered comparison on complex values", a, b);
+    return false;
 }
 
 inline bool lessp_c_s(LispObject a, LispObject b)
 {   aerror2("ordered comparison on complex values", a, b);
+    return false;
 }
 
 inline bool lessp_c_f(LispObject a, LispObject b)
 {   aerror2("ordered comparison on complex values", a, b);
+    return false;
 }
 
 inline bool lessp_c_d(LispObject a, LispObject b)
 {   aerror2("ordered comparison on complex values", a, b);
+    return false;
 }
 
 inline bool lessp_c_l(LispObject a, LispObject b)
 {   aerror2("ordered comparison on complex values", a, b);
+    return false;
 }
 
 inline bool lessp_i_c(LispObject a, LispObject b)
 {   aerror2("ordered comparison on complex values", a, b);
+    return false;
 }
 
 inline bool lessp_b_c(LispObject a, LispObject b)
 {   aerror2("ordered comparison on complex values", a, b);
+    return false;
 }
 
 inline bool lessp_r_c(LispObject a, LispObject b)
 {   aerror2("ordered comparison on complex values", a, b);
+    return false;
 }
 
 inline bool lessp_s_c(LispObject a, LispObject b)
 {   aerror2("ordered comparison on complex values", a, b);
+    return false;
 }
 
 inline bool lessp_f_c(LispObject a, LispObject b)
 {   aerror2("ordered comparison on complex values", a, b);
+    return false;
 }
 
 inline bool lessp_d_c(LispObject a, LispObject b)
 {   aerror2("ordered comparison on complex values", a, b);
+    return false;
 }
 
 #ifdef HAVE_SOFTFLOAT
 inline bool lessp_l_c(LispObject a, LispObject b)
 {   aerror2("ordered comparison on complex values", a, b);
+    return false;
 }
 
 inline bool lessp_l_b(LispObject a, LispObject b)

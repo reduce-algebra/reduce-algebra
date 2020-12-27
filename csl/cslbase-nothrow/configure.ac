@@ -701,6 +701,17 @@ then
   AC_DEFINE(ARITHLIB, [1], [Work on a transition to use of arithlib.hpp for bignums])
 fi
 
+AC_ARG_WITH(throw,
+  AC_HELP_STRING([--without-throw],
+                 [Avoid C++ catch & throw. Experimental. (CSL only)]),
+  [],
+  [with_throw="yes"])
+
+if test "x$with_throw" = "xno"
+then
+  AC_DEFINE(NO_THROW, [1], [Avoid use of catch and throw])
+fi
+
 # Want to build "embedded" variant?
 AC_MSG_CHECKING(for embedded)
 AC_ARG_ENABLE(embedded,

@@ -38,7 +38,7 @@
 #include "headers.h"
 
 LispObject Lget_bps(LispObject env, LispObject n)
-{   if (!is_fixnum(n) || (intptr_t)n<0) aerror1("get-bps", n);
+{   if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("get-bps", n);
     intptr_t n1 = int_of_fixnum(n);
 // Size limited
     n = get_basic_vector(TAG_VECTOR, TYPE_BPS_4, n1+CELL);
@@ -418,7 +418,7 @@ LispObject Lsymbol_env(LispObject env, LispObject a)
 }
 
 LispObject Lsymbol_set_env(LispObject env, LispObject a, LispObject b)
-{   if (!is_symbol(a)) aerror1("symbol-set-env", a);
+{   if (!is_symbol(a)) return aerror1("symbol-set-env", a);
     if ((qheader(a) & (SYM_C_DEF | SYM_CODEPTR)) ==
         (SYM_C_DEF | SYM_CODEPTR)) return onevalue(nil);
     setenv(a, b);
@@ -474,7 +474,7 @@ LispObject Lsymbol_make_fastget(LispObject env, LispObject a,
     if (is_fixnum(n))
     {   n1 = int_of_fixnum(n);
         if (n1 < -1 || n1 >= fastget_size)
-            aerror1("symbol-make-fastget", n);
+            return aerror1("symbol-make-fastget", n);
 //
 //      trace_printf("+++ Use fastget slot %d for ", n1);
 //      loop_print_trace(a);
@@ -550,7 +550,7 @@ static LispObject Lrestore_c_code(LispObject env, LispObject a)
     size_t len;
     size_t i;
     LispObject pn;
-    if (!symbolp(a)) aerror1("restore-c-code", a);
+    if (!symbolp(a)) return aerror1("restore-c-code", a);
     push(a);
     pn = get_pname(a);
     pop(a);
@@ -600,7 +600,7 @@ LispObject Lsymbol_set_definition(LispObject env,
 //
         (qheader(a) & (SYM_SPECIAL_FORM | SYM_CODEPTR)) != 0)
     {   if (qheader(a) & SYM_C_DEF) return onevalue(nil);
-        aerror1("symbol-set-definition", a);
+        return aerror1("symbol-set-definition", a);
     }
     set_fns(a, undefined_0, undefined_1, undefined_2, undefined_3,
             undefined_4up); // Tidy up first
@@ -615,10 +615,10 @@ LispObject Lsymbol_set_definition(LispObject env,
 // of a function too.  However for the second arg to be a macro or a
 // special form would still be a calamity.
 //      if ((qheader(b) & SYM_CODEPTR) == 0)
-//          aerror1("symbol-set-definition", b);
+//          return aerror1("symbol-set-definition", b);
 //
         if ((qheader(b) & (SYM_SPECIAL_FORM | SYM_MACRO)) != 0)
-            aerror1("symbol-set-definition", b);
+            return aerror1("symbol-set-definition", b);
         setheader(a, qheader(a) & ~SYM_MACRO);
         {   set_fns(a, qfn0(b), qfn1(b), qfn2(b), qfn3(b), qfn4up(b));
             setenv(a, qenv(b));
@@ -639,7 +639,7 @@ LispObject Lsymbol_set_definition(LispObject env,
             }
         }
     }
-    else if (!consp(b)) aerror1("symbol-set-definition", b);
+    else if (!consp(b)) return aerror1("symbol-set-definition", b);
     else if (is_fixnum(car(b)))
     {   int32_t nargs = (int32_t)int_of_fixnum(car(b)),
                     nopts, flagbits, ntail;
@@ -725,7 +725,7 @@ LispObject Lsymbol_set_definition(LispObject env,
                 funarged_4up);
         setenv(a, cdr(b));
     }
-    else aerror1("symbol-set-definition", b);
+    else return aerror1("symbol-set-definition", b);
     return onevalue(b);
 }
 
@@ -753,7 +753,7 @@ LispObject Lremd(LispObject env, LispObject a)
 {   LispObject res;
     if (!is_symbol(a) ||
         (qheader(a) & SYM_SPECIAL_FORM) != 0)
-        aerror1("remd", a);
+        return aerror1("remd", a);
     if ((qheader(a) & (SYM_C_DEF | SYM_CODEPTR)) ==
         (SYM_C_DEF | SYM_CODEPTR)) return onevalue(nil);
     res = Lgetd(nil, a);
@@ -788,7 +788,7 @@ LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
 {   LispObject res;
     if (!is_symbol(a) ||
         (qheader(a) & SYM_SPECIAL_FORM) != 0)
-        aerror1("set-autoload", a);
+        return aerror1("set-autoload", a);
     if (!(qfn0(a) == undefined_0 && qfn1(a) == undefined_1 &&
           qfn2(a) == undefined_2 && qfn3(a) == undefined_3 &&
           qfn4up(a) == undefined_4up)) return onevalue(nil);
@@ -978,13 +978,13 @@ LispObject get_pname(LispObject a)
 }
 
 LispObject Lsymbol_name(LispObject env, LispObject a)
-{   if (!symbolp(a)) aerror1("symbol-name", a);
+{   if (!symbolp(a)) return aerror1("symbol-name", a);
     a = get_pname(a);
     return onevalue(a);
 }
 
 LispObject Lsymbol_package(LispObject env, LispObject a)
-{   if (!symbolp(a)) aerror1("symbol-package", a);
+{   if (!symbolp(a)) return aerror1("symbol-package", a);
     a = qpackage(a);
     return onevalue(a);
 }
@@ -1048,7 +1048,7 @@ static LispObject Lrestart_lisp2(LispObject env,
             b1 = cdr(b1);
         }
         v = reinterpret_cast<char *>(std::malloc(n+1));
-        if (v == nullptr) aerror("space exhausted in restart-csl");
+        if (v == nullptr) return aerror("space exhausted in restart-csl");
         n = 0;
         while (b != nil)
         {   int ch = int_of_fixnum(car(b));
@@ -1078,7 +1078,7 @@ static LispObject Lrestart_lisp2(LispObject env,
     exit_tag = fixnum_of_int(2);   // Flag to say "restart"
     exit_reason = UNWIND_RESTART;
     exit_charvec = v;
-    throw LispRestart();
+    THROW(LispRestart);
 }
 
 static LispObject Lrestart_lisp(LispObject env, LispObject a)
@@ -1094,7 +1094,7 @@ static LispObject Lpreserve_3(LispObject env, LispObject startup,
     failed = Iwriterootp(filename);  // Can I open image file for writing?
     term_printf("\nThe system will be preserved on file \"%s\"\n",
                 filename);
-    if (failed) aerror("preserve");
+    if (failed) return aerror("preserve");
     ensure_screen();
     exit_count = 0;  // no value at all returned
     exit_value = banner;
@@ -1102,7 +1102,7 @@ static LispObject Lpreserve_3(LispObject env, LispObject startup,
                : // Flag to say "preserve"
                fixnum_of_int(3);                  // preserve and restart
     exit_reason = UNWIND_RESTART;
-    throw LispRestart();
+    THROW(LispRestart);
 }
 
 static LispObject Lpreserve_2(LispObject env,
@@ -1154,7 +1154,7 @@ static LispObject Lcheckpoint(LispObject env,
                       filename);  // Can I open image file for writing?
     term_printf("\nThe system will be preserved on file \"%s\"\n",
                 filename);
-    if (failed) aerror("checkpoint");
+    if (failed) return aerror("checkpoint");
     if (is_vector(banner) && is_string(banner))
     {   msg = reinterpret_cast<char *>()&celt(banner, 0);
         len = length_of_byteheader(vechdr(banner)) - CELL;
@@ -1190,8 +1190,8 @@ static LispObject Lcheckpoint_1(LispObject env, LispObject startup)
 // been an overflow.
 //
 
-[[noreturn]] static LispObject Lresource_exceeded(LispObject env)
-{   resource_exceeded();
+static LispObject Lresource_exceeded(LispObject env)
+{   return resource_exceeded();
 }
 
 static bool eql_numbers(LispObject a, LispObject b)
@@ -1439,7 +1439,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
-        aerror("Stack too deep in cl_equal\n");
+        return aerror("Stack too deep in cl_equal\n");
         return false;
     }
 #endif
@@ -1746,7 +1746,7 @@ bool equal_fn(LispObject a, LispObject b)
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
-        aerror("Stack too deep in equal\n");
+        return aerror("Stack too deep in equal\n");
         return false;
     }
 #endif
@@ -1962,7 +1962,7 @@ bool equalp(LispObject a, LispObject b)
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
-        aerror("Stack too deep in equalp\n");
+        return aerror("Stack too deep in equalp\n");
         return false;
     }
 #endif
@@ -2171,7 +2171,7 @@ LispObject Lnull(LispObject env, LispObject a)
 LispObject Lendp(LispObject env, LispObject a)
 {   if (a == nil) return onevalue(lisp_true);
     else if (is_cons(a)) return onevalue(nil);
-    else error(1, err_bad_endp, a);
+    else return error(1, err_bad_endp, a);
 }
 
 LispObject Lnreverse(LispObject env, LispObject a)
@@ -2292,9 +2292,9 @@ LispObject Lassoc(LispObject env, LispObject a, LispObject b)
 #ifdef DEBUG_ASSOC
             assoc_length++;
             if (assoc_length > 100*assoc_calls)
-                aerror("average search for assoc");
+                return aerror("average search for assoc");
             if (++this_assoc > assoc_max) assoc_max = this_assoc;
-//!!        if (assoc_max > 1000) aerror("length for assoc");
+//!!        if (assoc_max > 1000) return aerror("length for assoc");
 #endif
             if (consp(c) && a == car(c)) return onevalue(c);
             b = cdr(b);
@@ -2308,7 +2308,7 @@ LispObject Lassoc(LispObject env, LispObject a, LispObject b)
 #ifdef DEBUG_ASSOC
             assoc_length++;
             if (++this_assoc > assoc_max) assoc_max = this_assoc;
-//!!        if (assoc_max > 1000) aerror("length for assoc");
+//!!        if (assoc_max > 1000) return aerror("length for assoc");
 #endif
 #ifdef COMMON
             if (cl_equal(a, cc)) return onevalue(c);
@@ -2506,14 +2506,14 @@ static LispObject Lcontained(LispObject env, LispObject x,
 
 LispObject Llast(LispObject env, LispObject a)
 {   LispObject b;
-    if (!consp(a)) aerror1("last", a);
+    if (!consp(a)) return aerror1("last", a);
     while (b = cdr(a), consp(b)) a = b;
     return onevalue(car(a));
 }
 
 LispObject Llastpair(LispObject env, LispObject a)
 {   LispObject b;
-    if (!consp(a)) return onevalue(a); // aerror1("lastpair", a);
+    if (!consp(a)) return onevalue(a); // return aerror1("lastpair", a);
     while (b = cdr(a), consp(b)) a = b;
     return onevalue(a);
 }
@@ -2568,7 +2568,7 @@ LispObject Llength(LispObject env, LispObject a)
         {   LispObject dims = elt(a, 1);
             LispObject fillp = elt(a, 5);
             if (consp(dims) && !consp(cdr(dims))) dims = car(dims);
-            else aerror1("length", a);  // Not one-dimensional
+            else return aerror1("length", a);  // Not one-dimensional
             if (is_fixnum(fillp)) dims = fillp;
             return onevalue(dims);
         }
@@ -2841,8 +2841,9 @@ LispObject Lnconc(LispObject env, LispObject a, LispObject b)
 static LispObject substq(LispObject a, LispObject b, LispObject c)
 {   LispObject w;
     stackcheck(a, b, c);
-    real_push(TAG_FIXNUM, TAG_FIXNUM); // rx and r
-    real_push(a, b, c);
+    LispObject rx=TAG_FIXNUM, r=TAG_FIXNUM;
+    {   RealPush save(rx, r); // rx and r
+        RealPush save1(a, b, c);
 // Perhaps I could replace the use of "#define" here with code like
 //    LispObject &c = stack[0];
 //    LispObject &b = stack[-1];
@@ -2854,102 +2855,93 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
 #define a   stack[-2]
 #define r   stack[-3]
 #define rx  stack[-4]
-    for (;;)
-    {   if (c == b)
-        {   if (c == a) break; // substitute by leaving unchanged
-//
+        for (;;)
+        {   if (c == b)
+            {   if (c == a) break; // substitute by leaving unchanged
 // Here I need to restore the part of the list from R backwards and
 // then copy it to RX.
-//
-            LispObject cc = c;
-            while (r != TAG_FIXNUM)
-            {   w = cdr(r);
-                write_barrier(cdraddr(r), cc);
-                cc = r;
-                r = w;
-            }
+                LispObject cc = c;
+                while (r != TAG_FIXNUM)
+                {   w = cdr(r);
+                    write_barrier(cdraddr(r), cc);
+                    cc = r;
+                    r = w;
+                }
 // The input data is now restored
-            r = cc;
-            while (r != c)
-            {   w = cons(car(r), rx);
-                rx = w;
-                r = cdr(r);
+                r = cc;
+                while (r != c)
+                {   w = cons(car(r), rx);
+                    rx = w;
+                    r = cdr(r);
+                }
+                c = a;
+                r = TAG_FIXNUM;
+                break;
             }
-            c = a;
-            r = TAG_FIXNUM;
-            break;
-        }
-        if (!consp(c)) break;
+            if (!consp(c)) break;
 // Recurse in CAR direction
-        on_backtrace(
-            w = substq(a, b, car(c)),
+            on_backtrace(
+                w = substq(a, b, car(c)),
 // If the recursive call fails I need to unshare before exit.
-            while (r != TAG_FIXNUM)
-            {   w = cdr(r);
-                write_barrier(cdraddr(r), c);
-                c = r;
-                r = w;
-            });
-//
+                while (r != TAG_FIXNUM)
+                {   w = cdr(r);
+                    write_barrier(cdraddr(r), c);
+                    c = r;
+                    r = w;
+                });
 // If the replacement is in fact identical to the original I will
 // need to pend any copy operations
-//
-        if (w == car(c))
-        {   w = cdr(c);
-            write_barrier(cdraddr(c), r);
-            r = c;
-            c = w;
-            continue;
-        }
+            if (w == car(c))
+            {   w = cdr(c);
+                write_barrier(cdraddr(c), r);
+                r = c;
+                c = w;
+                continue;
+            }
 // Otherwise I may need to unpend any pending copy operations...
-        else
-        {   LispObject cc = c, ww;
-            while (r != TAG_FIXNUM)
-            {   ww = cdr(r);
-                write_barrier(cdraddr(r), cc);
-                cc = r;
-                r = ww;
-            }
+            else
+            {   LispObject cc = c, ww;
+                while (r != TAG_FIXNUM)
+                {   ww = cdr(r);
+                    write_barrier(cdraddr(r), cc);
+                    cc = r;
+                    r = ww;
+                }
 // The input data is now restored
-            r = cc;
-            while (r != c)
-            {   LispObject u = car(r), v = rx;
-                push(w);
-                ww = cons(u, v);
-                pop(w);
-                rx = ww;
-                r = cdr(r);
+                r = cc;
+                while (r != c)
+                {   LispObject u = car(r), v = rx;
+                    push(w);
+                    ww = cons(u, v);
+                    pop(w);
+                    rx = ww;
+                    r = cdr(r);
+                }
+                w = cons(w, rx);
+                rx = w;
+                c = cdr(c);
+                r = TAG_FIXNUM;
             }
-            w = cons(w, rx);
-            rx = w;
-            c = cdr(c);
-            r = TAG_FIXNUM;
         }
-    }
 #undef c
 #undef b
 #undef a
 #undef r
 #undef rx
-    real_pop(c, b, a);
-    {   LispObject r, rx;
-        real_pop(r, rx);
-        while (r != TAG_FIXNUM)
-        {   w = cdr(r);
-            write_barrier(cdraddr(r), c);
-            c = r;
-            r = w;
-        }
-//
+    }
+    while (r != TAG_FIXNUM)
+    {   w = cdr(r);
+        write_barrier(cdraddr(r), c);
+        c = r;
+        r = w;
+    }
 // I have now restored the input list, so if I was taking an early exit
 // because EQUAL had failed on me I can give up now.
-//
-        while (rx != TAG_FIXNUM)
-        {   w = cdr(rx);
-            write_barrier(cdraddr(rx), c);
-            c = rx;
-            rx = w;
-        }
+    while (rx != TAG_FIXNUM)
+    {   w = cdr(rx);
+        write_barrier(cdraddr(rx), c);
+        c = rx;
+        rx = w;
     }
     return onevalue(c);
 }
@@ -2959,119 +2951,111 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
 LispObject subst(LispObject a, LispObject b, LispObject c)
 {   LispObject w;
     stackcheck(a, b, c);
-    real_push(TAG_FIXNUM, TAG_FIXNUM); // rx and r
-    real_push(a, b, c);
+    LispObject rx=TAG_FIXNUM, r=TAG_FIXNUM;
+    {   RealPush save(rx, r);
+        RealPush save1(a, b, c);
 #define c   stack[0]
 #define b   stack[-1]
 #define a   stack[-2]
 #define r   stack[-3]
 #define rx  stack[-4]
-    for (;;)
-    {
-#ifdef COMMON
-        if (cl_equal(c, b))
-#else
-        if (equal(c, b))
-#endif
+        for (;;)
         {
+#ifdef COMMON
+            if (cl_equal(c, b))
+#else
+            if (equal(c, b))
+#endif
+            {
 // if EQUAL said "yes" then it can not have failed.
-            if (c == a) break; // substitute by leaving unchanged
-//
+                if (c == a) break; // substitute by leaving unchanged
 // Here I need to restore the part of the list from R backwards and
 // then copy it to RX.
-//
-            LispObject cc = c;
-            while (r != TAG_FIXNUM)
-            {   w = cdr(r);
-                write_barrier(cdraddr(r), cc);
-                cc = r;
-                r = w;
-            }
+                LispObject cc = c;
+                while (r != TAG_FIXNUM)
+                {   w = cdr(r);
+                    write_barrier(cdraddr(r), cc);
+                    cc = r;
+                    r = w;
+                }
 // The input data is now restored
-            r = cc;
-            while (r != c)
-            {   w = cons(car(r), rx);
-                rx = w;
-                r = cdr(r);
+                r = cc;
+                while (r != c)
+                {   w = cons(car(r), rx);
+                    rx = w;
+                    r = cdr(r);
+                }
+                c = a;
+                r = TAG_FIXNUM;
+                break;
             }
-            c = a;
-            r = TAG_FIXNUM;
-            break;
-        }
 // equal may fail with a stack overflow, and if it does it will return
 // false (and set the exception marker). In that case I must recover and
 // undo any damage I have done to input lists.
-        if (!consp(c)) break;
+            if (!consp(c)) break;
 // Recurse in CAR direction
-        on_backtrace(
-            w = subst(a, b, car(c)),
+            on_backtrace(
+                w = subst(a, b, car(c)),
 // If the recursive call fails I need to unshare before exit.
-            while (r != TAG_FIXNUM)
-            {   w = cdr(r);
-                write_barrier(cdraddr(r), c);
-                c = r;
-                r = w;
-            });
-//
+                while (r != TAG_FIXNUM)
+                {   w = cdr(r);
+                    write_barrier(cdraddr(r), c);
+                    c = r;
+                    r = w;
+                });
 // If the replacement is in fact identical to the original I will
 // need to pend any copy operations
-//
-        if (w == car(c))
-        {   w = cdr(c);
-            write_barrier(cdraddr(c), r);
-            r = c;
-            c = w;
-            continue;
-        }
+            if (w == car(c))
+            {   w = cdr(c);
+                write_barrier(cdraddr(c), r);
+                r = c;
+                c = w;
+                continue;
+            }
 // Otherwise I may need to unpend any pending copy operations...
-        else
-        {   LispObject cc = c, ww;
-            while (r != TAG_FIXNUM)
-            {   ww = cdr(r);
-                write_barrier(cdraddr(r), cc);
-                cc = r;
-                r = ww;
-            }
+            else
+            {   LispObject cc = c, ww;
+                while (r != TAG_FIXNUM)
+                {   ww = cdr(r);
+                    write_barrier(cdraddr(r), cc);
+                    cc = r;
+                    r = ww;
+                }
 // The input data is now restored
-            r = cc;
-            while (r != c)
-            {   LispObject u = car(r), v = rx;
-                push(w);
-                ww = cons(u, v);
-                pop(w);
-                rx = ww;
-                r = cdr(r);
+                r = cc;
+                while (r != c)
+                {   LispObject u = car(r), v = rx;
+                    push(w);
+                    ww = cons(u, v);
+                    pop(w);
+                    rx = ww;
+                    r = cdr(r);
+                }
+                w = cons(w, rx);
+                rx = w;
+                c = cdr(c);
+                r = TAG_FIXNUM;
             }
-            w = cons(w, rx);
-            rx = w;
-            c = cdr(c);
-            r = TAG_FIXNUM;
         }
-    }
 #undef c
 #undef b
 #undef a
 #undef r
 #undef rx
-    real_pop(c, b, a);
-    {   LispObject r, rx;
-        real_pop(r, rx);
-        while (r != TAG_FIXNUM)
-        {   w = cdr(r);
-            write_barrier(cdraddr(r), c);
-            c = r;
-            r = w;
-        }
-//
+    }
+    while (r != TAG_FIXNUM)
+    {   w = cdr(r);
+        write_barrier(cdraddr(r), c);
+        c = r;
+        r = w;
+    }
 // I have now restored the input list, so if I was taking an early exit
 // because EQUAL had failed on me I can give up now.
-//
-        while (rx != TAG_FIXNUM)
-        {   w = cdr(rx);
-            write_barrier(cdraddr(rx), c);
-            c = rx;
-            rx = w;
-        }
+    while (rx != TAG_FIXNUM)
+    {   w = cdr(rx);
+        write_barrier(cdraddr(rx), c);
+        c = rx;
+        rx = w;
     }
     return onevalue(c);
 }
@@ -3080,119 +3064,111 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
 LispObject subla(LispObject a, LispObject c)
 {   LispObject w;
     stackcheck(a, c);
-    real_push(TAG_FIXNUM, TAG_FIXNUM); // rx and r
-    real_push(a, c);
+    LispObject rx = TAG_FIXNUM, r=TAG_FIXNUM;
+    {   RealPush save(rx, r);
+        RealPush save1(a, c);
 #define c   stack[0]
 #define a   stack[-1]
 #define r   stack[-2]
 #define rx  stack[-3]
-    for (;;)
-    {   LispObject tt = a;
-        bool found = false;
-        while (consp(tt))
-        {   LispObject tta = car(tt);
-            if (consp(tta) && c == car(tta))
-            {   tt = cdr(tta);
-                found = true;
-                break;
+        for (;;)
+        {   LispObject tt = a;
+            bool found = false;
+            while (consp(tt))
+            {   LispObject tta = car(tt);
+                if (consp(tta) && c == car(tta))
+                {   tt = cdr(tta);
+                    found = true;
+                    break;
+                }
+                tt = cdr(tt);
             }
-            tt = cdr(tt);
-        }
-        if (found)
-        {   if (c == tt) break; // substitute by leaving unchanged
-//
+            if (found)
+            {   if (c == tt) break; // substitute by leaving unchanged
 // Here I need to restore the part of the list from R backwards and
 // then copy it to RX.
-//
-            LispObject cc = c;
-            while (r != TAG_FIXNUM)
-            {   w = cdr(r);
-                write_barrier(cdraddr(r), cc);
-                cc = r;
-                r = w;
-            }
+                LispObject cc = c;
+                while (r != TAG_FIXNUM)
+                {   w = cdr(r);
+                    write_barrier(cdraddr(r), cc);
+                    cc = r;
+                    r = w;
+                }
 // The input data is now restored
-            a = tt;
-            r = cc;
-            while (r != c)
-            {   w = cons(car(r), rx);
-                rx = w;
-                r = cdr(r);
+                a = tt;
+                r = cc;
+                while (r != c)
+                {   w = cons(car(r), rx);
+                    rx = w;
+                    r = cdr(r);
+                }
+                c = a;
+                r = TAG_FIXNUM;
+                break;
             }
-            c = a;
-            r = TAG_FIXNUM;
-            break;
-        }
-        if (!consp(c)) break;
+            if (!consp(c)) break;
 // Recurse in CAR direction
-        on_backtrace(
-            w = subla(a, car(c)),
+            on_backtrace(
+                w = subla(a, car(c)),
 // If the recursive call fails I need to unshare before exit.
-            while (r != TAG_FIXNUM)
-            {   w = cdr(r);
-                write_barrier(cdraddr(r), c);
-                c = r;
-                r = w;
-            });
-//
+                while (r != TAG_FIXNUM)
+                {   w = cdr(r);
+                    write_barrier(cdraddr(r), c);
+                    c = r;
+                    r = w;
+                });
 // If the replacement is in fact identical to the original I will
 // need to pend any copy operations
-//
-        if (w == car(c))
-        {   w = cdr(c);
-            write_barrier(cdraddr(c), r);
-            r = c;
-            c = w;
-            continue;
-        }
+            if (w == car(c))
+            {   w = cdr(c);
+                write_barrier(cdraddr(c), r);
+                r = c;
+                c = w;
+                continue;
+            }
 // Otherwise I may need to unpend any pending copy operations...
-        else
-        {   LispObject cc = c, ww;
-            while (r != TAG_FIXNUM)
-            {   ww = cdr(r);
-                write_barrier(cdraddr(r), cc);
-                cc = r;
-                r = ww;
-            }
+            else
+            {   LispObject cc = c, ww;
+                while (r != TAG_FIXNUM)
+                {   ww = cdr(r);
+                    write_barrier(cdraddr(r), cc);
+                    cc = r;
+                    r = ww;
+                }
 // The input data is now restored
-            r = cc;
-            while (r != c)
-            {   LispObject u = car(r), v = rx;
-                push(w);
-                ww = cons(u, v);
-                pop(w);
-                rx = ww;
-                r = cdr(r);
+                r = cc;
+                while (r != c)
+                {   LispObject u = car(r), v = rx;
+                    push(w);
+                    ww = cons(u, v);
+                    pop(w);
+                    rx = ww;
+                    r = cdr(r);
+                }
+                w = cons(w, rx);
+                rx = w;
+                c = cdr(c);
+                r = TAG_FIXNUM;
             }
-            w = cons(w, rx);
-            rx = w;
-            c = cdr(c);
-            r = TAG_FIXNUM;
         }
-    }
 #undef c
 #undef a
 #undef r
 #undef rx
-    real_pop(c, a);
-    {   LispObject r, rx;
-        real_pop(r, rx);
-        while (r != TAG_FIXNUM)
-        {   w = cdr(r);
-            write_barrier(cdraddr(r), c);
-            c = r;
-            r = w;
-        }
-//
+    }
+    while (r != TAG_FIXNUM)
+    {   w = cdr(r);
+        write_barrier(cdraddr(r), c);
+        c = r;
+        r = w;
+    }
 // I have now restored the input list, so if I was taking an early exit
 // because EQUAL had failed on me I can give up now.
-//
-        while (rx != TAG_FIXNUM)
-        {   w = cdr(rx);
-            write_barrier(cdraddr(rx), c);
-            c = rx;
-            rx = w;
-        }
+    while (rx != TAG_FIXNUM)
+    {   w = cdr(rx);
+        write_barrier(cdraddr(rx), c);
+        c = rx;
+        rx = w;
     }
     return onevalue(c);
 }
@@ -3201,128 +3177,122 @@ LispObject subla(LispObject a, LispObject c)
 LispObject sublis(LispObject a, LispObject c)
 {   LispObject w;
     stackcheck(a, c);
-    real_push(TAG_FIXNUM, TAG_FIXNUM); // rx and r
-    real_push(a, c);
+    LispObject rx=TAG_FIXNUM, r=TAG_FIXNUM;
+    {   RealPush save(rx, r);
+        RealPush save1(a, c);
 #define c   stack[0]
 #define a   stack[-1]
 #define r   stack[-2]
 #define rx  stack[-3]
-    for (;;)
-    {   LispObject tt = a;
-        bool found = false;
-        while (consp(tt))
-        {   LispObject tta = car(tt);
+        for (;;)
+        {   LispObject tt = a;
+            bool found = false;
+            while (consp(tt))
+            {   LispObject tta = car(tt);
 #ifdef COMMON
-            if (consp(tta) && cl_equal(c, car(tta)))
+                if (consp(tta) && cl_equal(c, car(tta)))
 #else
-            if (consp(tta) && equal(c, car(tta)))
+                if (consp(tta) && equal(c, car(tta)))
 #endif
-            {   tt = cdr(tta);
-                found = true;
-                break;
+                {   tt = cdr(tta);
+                    found = true;
+                    break;
+                }
+                tt = cdr(tt);
             }
-            tt = cdr(tt);
-        }
-        if (found)
-        {
+            if (found)
+            {
 // if EQUAL had said "yes" then it can not have failed.
-            if (c == tt) break; // substitute by leaving unchanged
-//
+                if (c == tt) break; // substitute by leaving unchanged
 // Here I need to restore the part of the list from R backwards and
 // then copy it to RX.
-//
-            LispObject cc = c;
-            while (r != TAG_FIXNUM)
-            {   w = cdr(r);
-                write_barrier(cdraddr(r), cc);
-                cc = r;
-                r = w;
-            }
+                LispObject cc = c;
+                while (r != TAG_FIXNUM)
+                {   w = cdr(r);
+                    write_barrier(cdraddr(r), cc);
+                    cc = r;
+                    r = w;
+                }
 // The input data is now restored
-            a = tt;
-            r = cc;
-            while (r != c)
-            {   w = cons(car(r), rx);
-                rx = w;
-                r = cdr(r);
+                a = tt;
+                r = cc;
+                while (r != c)
+                {   w = cons(car(r), rx);
+                    rx = w;
+                    r = cdr(r);
+                }
+                c = a;
+                r = TAG_FIXNUM;
+                break;
             }
-            c = a;
-            r = TAG_FIXNUM;
-            break;
-        }
 // equal may fail with a stack overflow, and if it does it will return
 // false (and set the exception marker). In that case I must recover and
 // undo any damage I have done to input lists.
-        if (!consp(c)) break;
+            if (!consp(c)) break;
 // Recurse in CAR direction
-        on_backtrace(
-            w = sublis(a, car(c)),
+            on_backtrace(
+                w = sublis(a, car(c)),
 // If the recursive call fails I need to unshare before exit.
-            while (r != TAG_FIXNUM)
-            {   w = cdr(r);
-                write_barrier(cdraddr(r), c);
-                c = r;
-                r = w;
-            });
-//
+                while (r != TAG_FIXNUM)
+                {   w = cdr(r);
+                    write_barrier(cdraddr(r), c);
+                    c = r;
+                    r = w;
+                });
 // If the replacement is in fact identical to the original I will
 // need to pend any copy operations
-//
-        if (w == car(c))
-        {   w = cdr(c);
-            write_barrier(cdraddr(c), r);
-            r = c;
-            c = w;
-            continue;
-        }
+            if (w == car(c))
+            {   w = cdr(c);
+                write_barrier(cdraddr(c), r);
+                r = c;
+                c = w;
+                continue;
+            }
 // Otherwise I may need to unpend any pending copy operations...
-        else
-        {   LispObject cc = c, ww;
-            while (r != TAG_FIXNUM)
-            {   ww = cdr(r);
-                write_barrier(cdraddr(r), cc);
-                cc = r;
-                r = ww;
-            }
+            else
+            {   LispObject cc = c, ww;
+                while (r != TAG_FIXNUM)
+                {   ww = cdr(r);
+                    write_barrier(cdraddr(r), cc);
+                    cc = r;
+                    r = ww;
+                }
 // The input data is now restored
-            r = cc;
-            while (r != c)
-            {   LispObject u = car(r), v = rx;
-                push(w);
-                ww = cons(u, v);
-                pop(w);
-                rx = ww;
-                r = cdr(r);
+                r = cc;
+                while (r != c)
+                {   LispObject u = car(r), v = rx;
+                    push(w);
+                    ww = cons(u, v);
+                    pop(w);
+                    rx = ww;
+                    r = cdr(r);
+                }
+                w = cons(w, rx);
+                rx = w;
+                c = cdr(c);
+                r = TAG_FIXNUM;
             }
-            w = cons(w, rx);
-            rx = w;
-            c = cdr(c);
-            r = TAG_FIXNUM;
         }
-    }
 #undef c
 #undef a
 #undef r
 #undef rx
-    real_pop(c, a);
-    {   LispObject r, rx;
-        real_pop(r, rx);
-        while (r != TAG_FIXNUM)
-        {   w = cdr(r);
-            write_barrier(cdraddr(r), c);
-            c = r;
-            r = w;
-        }
+    }
+    while (r != TAG_FIXNUM)
+    {   w = cdr(r);
+        write_barrier(cdraddr(r), c);
+        c = r;
+        r = w;
+    }
 //
 // I have now restored the input list, so if I was taking an early exit
 // because EQUAL had failed on me I can give up now.
 //
-        while (rx != TAG_FIXNUM)
-        {   w = cdr(rx);
-            write_barrier(cdraddr(rx), c);
-            c = rx;
-            rx = w;
-        }
+    while (rx != TAG_FIXNUM)
+    {   w = cdr(rx);
+        write_barrier(cdraddr(rx), c);
+        c = rx;
+        rx = w;
     }
     return onevalue(c);
 }
@@ -3335,7 +3305,7 @@ LispObject Lsubstq(LispObject env, LispObject a, LispObject b,
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
-        aerror("subst");
+        return aerror("subst");
     }
 #endif
     return substq(a, b, c);
@@ -3347,7 +3317,7 @@ LispObject Lsubst(LispObject env, LispObject a, LispObject b,
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
-        aerror("subst");
+        return aerror("subst");
     }
 #endif
     if (c == b) return onevalue(a);
@@ -3360,7 +3330,7 @@ LispObject Lsublis(LispObject env, LispObject al, LispObject x)
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
-        aerror("sublis");
+        return aerror("sublis");
     }
 #endif
     if (!consp(al)) return onevalue(x);
@@ -3376,7 +3346,7 @@ LispObject Lsubla(LispObject env, LispObject al, LispObject x)
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
-        aerror("subla");
+        return aerror("subla");
     }
 #endif
     if (!consp(al)) return onevalue(x);

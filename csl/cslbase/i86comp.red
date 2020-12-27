@@ -1204,7 +1204,7 @@ symbolic procedure i!:proc_label lab;
 %
 
 
-global '(!*fastvector !*unsafecar);
+fluid '(!*fastvector !*unsafecar);
 flag('(fastvector unsafecar), 'switch);
 
 % Some internal CSL constants

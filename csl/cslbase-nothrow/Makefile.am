@@ -337,7 +337,7 @@ fwin_sources = fwin.cpp termed.cpp
 endif !wx
 endif !fox
 
-gensrc=$(cslbuild)/generated-c-nothrow
+gensrc=$(cslbuild)/generated-c
 
 INLINE_DEFS = $(gensrc)/inline-defs.dat
 
@@ -2163,7 +2163,7 @@ just-c-code:
 	./bootstrapreduce$(COM) -i- -w $(CSLFLAGS) \
 		-Dno_init_file \
 		$(CYGSRC)/make-c-code.red \
-		-D@destdir=$(CYGREDUCE)/cslbuild/generated-c-nothrow \
+		-D@destdir=$(CYGREDUCE)/cslbuild/generated-c \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/c-code.log
 
@@ -2215,7 +2215,7 @@ partial-c-code:	bootstrapreduce.img $(gensrc)/profile.dat
 	./bootstrapreduce$(COM) -w $(CSLFLAGS) \
 		-Dno_init_file \
 		$(CYGSRC)/make-c-code.red \
-		-D@destdir=$(CYGREDUCE)/cslbuild/generated-c-nothrow \
+		-D@destdir=$(CYGREDUCE)/cslbuild/generated-c \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/partial-c-code.log
 	chmod 664 $(gensrc)/*
@@ -2228,7 +2228,7 @@ full-c-code:	bootstrapreduce.img $(gensrc)/profile.dat machinid.cpp
 	./bootstrapreduce$(COM) -w $(CSLFLAGS) \
 		-Dno_init_file \
 		$(CYGSRC)/make-c-code.red \
-		-D@destdir=$(CYGREDUCE)/cslbuild/generated-c-nothrow \
+		-D@destdir=$(CYGREDUCE)/cslbuild/generated-c \
 		-Dfull_c_code \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/full-c-code.log

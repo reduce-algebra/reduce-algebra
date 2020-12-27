@@ -701,6 +701,17 @@ then
   AC_DEFINE(ARITHLIB, [1], [Work on a transition to use of arithlib.hpp for bignums])
 fi
 
+AC_ARG_WITH(throw,
+  AC_HELP_STRING([--without-throw],
+                 [Avoid C++ catch & throw. Experimental. (CSL only)]),
+  [],
+  [with_throw="yes"])
+
+if test "x$with_throw" = "xno"
+then
+  AC_DEFINE(NO_THROW, [1], [Avoid use of catch and throw])
+fi
+
 # Want to build "embedded" variant?
 AC_MSG_CHECKING(for embedded)
 AC_ARG_ENABLE(embedded,
@@ -780,6 +791,20 @@ fi
 if test "x$XLIBS" != "x"
 then
   AC_PATH_X
+fi
+
+if test "x$enable_debug" = "xyes"
+then
+# In debugging mode I will use -fsanitise=address if it is available.
+  OLDCXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -fsanitize=address -fsanitize=undefined"
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <cstdio>]],
+
+      [[for (const char *p="String"; *p!=0; p++)
+          std::printf("%c\n", *p++);]])],
+    [AC_MSG_NOTICE(Will use -fsanitize=address, -fsanitize=undefined)],
+    [CXXFLAGS="$OLDCXXFLAGS"
+     AC_MSG_NOTICE(-fsanitize=xx not available)])
 fi
 
 # Some newer versions of gcc support a new gnu (rather then sysv) format

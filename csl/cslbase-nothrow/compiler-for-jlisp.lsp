@@ -2975,7 +2975,7 @@ s!:compile0) (mkquote name)) t t)) (setq var1211 (cdr var1211)) (go lab1210))
 
 
 
-(global (quote (!*fastvector !*unsafecar)))
+(fluid (quote (!*fastvector !*unsafecar)))
 
 (flag (quote (fastvector unsafecar)) (quote switch))
 

@@ -114,12 +114,14 @@ bool file_exists(char*, char const*, unsigned long, char*)
 
 const volatile char *errorset_msg;
 
-[[noreturn]] LispObject aerror(const char *msg)
+LispObject aerror(const char *msg)
 {   my_abort();
+    return 0;
 }
 
-[[noreturn]] LispObject aerror1(const char *msg, LispObject a)
+LispObject aerror1(const char *msg, LispObject a)
 {   my_abort();
+    return 0;
 }
 
 std::int64_t sixty_four_bits(LispObject a)

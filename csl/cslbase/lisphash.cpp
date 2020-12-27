@@ -329,7 +329,7 @@ LispObject Lmkhash_3(LispObject env, LispObject size,
                         HASH_AS_EQUAL);
         else if (flavour == equalp_symbol) flavour = fixnum_of_int(
                         HASH_AS_EQUALP);
-        else aerror1("mkhash", flavour);
+        else return aerror1("mkhash", flavour);
     }
     size_t bits = 3;
     LispObject v1 = get_vector_init(CELL*((1<<bits)+1), SPID_HASHEMPTY);
@@ -373,7 +373,7 @@ LispObject Lmkhash_1(LispObject env, LispObject a)
 LispObject Lmkhashset(LispObject env, LispObject flavour)
 // (mkhashset flavour)
 {   STACK_SANITY;
-    if (!is_fixnum(flavour)) aerror1("mkhashset", flavour);
+    if (!is_fixnum(flavour)) return aerror1("mkhashset", flavour);
     size_t bits = 3;
     LispObject v1 = get_vector_init(CELL*((1<<bits)+1), SPID_HASHEMPTY);
     push(v1);
@@ -890,7 +890,7 @@ LispObject Lget_hash(LispObject env, LispObject key, LispObject tab,
     size_t pos;
     if (!is_vector(tab) || type_of_header(vechdr(tab)) != TYPE_HASH)
     {   if (type_of_header(vechdr(tab)) != TYPE_HASHX)
-            aerror1("gethash", tab);
+            return aerror1("gethash", tab);
         setvechdr(tab, vechdr(tab) ^ (TYPE_HASH ^ TYPE_HASHX));
         set_hash_operations(tab);
 // Here I have a table that at some stage had all fitted into the table, and
@@ -958,7 +958,7 @@ LispObject Lmap_hash(LispObject env, LispObject fn, LispObject tab)
     if (!is_vector(tab) ||
         (type_of_header(vechdr(tab)) != TYPE_HASH &&
          type_of_header(vechdr(tab)) != TYPE_HASHX))
-        aerror1("maphash", tab);
+        return aerror1("maphash", tab);
     v = basic_elt(tab, HASH_KEYS);
     v1 = basic_elt(tab, HASH_VALUES);
     size = cells_in_vector(v);
@@ -991,7 +991,7 @@ LispObject Lhash_contents(LispObject env, LispObject tab)
     if (!is_vector(tab) ||
         (type_of_header(vechdr(tab)) != TYPE_HASH &&
          type_of_header(vechdr(tab)) != TYPE_HASHX))
-        aerror1("hashcontents", tab);
+        return aerror1("hashcontents", tab);
     v = basic_elt(tab, HASH_KEYS);
     v1 = basic_elt(tab, HASH_VALUES);
     size = cells_in_vector(v);
@@ -1036,13 +1036,13 @@ LispObject Lput_hash(LispObject env,
 {   STACK_SANITY;
     LispObject k1;
     bool needs_rehashing = false;
-    if (!is_vector(tab)) aerror1("puthash", tab);
+    if (!is_vector(tab)) return aerror1("puthash", tab);
     if (type_of_header(vechdr(tab)) != TYPE_HASH)
     {   if (type_of_header(vechdr(tab)) == TYPE_HASHX)
         {   needs_rehashing = true;
             setvechdr(tab, vechdr(tab) ^ (TYPE_HASH ^ TYPE_HASHX));
         }
-        else aerror1("puthash", tab);
+        else return aerror1("puthash", tab);
     }
     set_hash_operations(tab);
     size_t count = int_of_fixnum(basic_elt(tab, HASH_COUNT));
@@ -1184,7 +1184,7 @@ LispObject Lclr_hash(LispObject env, LispObject tab)
 {   if (!is_vector(tab) ||
         (type_of_header(vechdr(tab)) != TYPE_HASH &&
          type_of_header(vechdr(tab)) != TYPE_HASHX))
-        aerror1("clrhash", tab);
+        return aerror1("clrhash", tab);
     set_hash_operations(tab);
     basic_elt(tab, HASH_COUNT) = fixnum_of_int(0);
     int sh = int_of_fixnum(basic_elt(tab, HASH_SHIFT));

@@ -141,8 +141,8 @@ static LispObject or_fn(LispObject args, LispObject env)
 static LispObject prog_fn(LispObject iargs, LispObject ienv)
 {   if (!consp(iargs) || !consp(cdr(iargs))) return onevalue(nil);
     stackcheck(iargs, ienv);
-    STACK_SANITY;
-    real_push(nil, iargs, ienv);
+    LispObject t = nil;
+    RealPush save(t, iargs, ienv);
     LispObject &env    = stack[0];
     LispObject &args   = stack[-1];
     LispObject &my_tag = stack[-2];
@@ -152,33 +152,24 @@ static LispObject prog_fn(LispObject iargs, LispObject ienv)
 // new block tags.
     my_tag = cons(fixnum_of_int(0), nil);
     env = cons(my_tag, env);
-    try
-    {   STACK_SANITY;
-        START_TRY_BLOCK;
+    TRY
         let_fn_1(car(args), cdr(args), env, BODY_PROG);
-    }
-    catch (LispReturnFrom &e)
-    {   setcar(my_tag, fixnum_of_int(2));    // Invalidate
+    CATCH(LispReturnFrom)
+        setcar(my_tag, fixnum_of_int(2));    // Invalidate
         if (exit_tag == my_tag)
-        {   real_popv(3);
             return exit_value;  // exit_count already OK here
-        }
 // It could be that the RETURN(-FROM) is heading to be handled by some
 // enclosing block.
-        else throw;
-    }
-    catch (LispError &e)
-    {   int _reason = exit_reason;
+        else RETHROW;
+    ANOTHER_CATCH(LispError)
+        int _reason = exit_reason;
         if (SHOW_FNAME)
         {   err_printf("\nEvaluating: "); // A bit of backtrace on errors
             loop_print_error(args);
         }
-        real_popv(3);
         exit_reason = _reason;
-        throw;
-    }
-    real_popv(3);  // I get here if using let_fn_1 to process the body of the
-                   // PROG just returned without doing a (RETURN ...).
+        RETHROW;
+    END_CATCH;
     return onevalue(nil);
 }
 
@@ -195,6 +186,7 @@ LispObject progn_fn(LispObject args, LispObject env)
         push(args, env, f);
         on_backtrace(
             static_cast<void>(eval(f, env)),
+            errexit();
             // Action for backtrace here...
             pop(f, env, args);
             if (SHOW_FNAME)
@@ -203,6 +195,7 @@ LispObject progn_fn(LispObject args, LispObject env)
             });
         pop(f, env, args);
     }
+    errexit();
     return eval(f, env);    // tail call on last item in the progn
 }
 
@@ -216,21 +209,23 @@ static LispObject prog1_fn(LispObject args, LispObject env)
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil); // (prog1) -> nil
     stackcheck(args, env);
-    push(args, env);
-    f = car(args);
-    f = eval(f, env);              // first arg
-    pop(env, args);
-    push(f);
-    for (;;)
-    {   args = cdr(args);
-        if (!consp(args)) break;
-        push(args, env);
-        {   LispObject w = car(args);
-            static_cast<void>(eval(w, env));
-        }
-        pop(env, args);
+    errexit();
+    {   Push save(args, env);
+        f = car(args);
+        f = eval(f, env);              // first arg
     }
-    pop(f);
+    errexit();
+    {   Push save(f);
+        for (;;)
+        {   args = cdr(args);
+            if (!consp(args)) break;
+            Push save1(args, env);
+            {   LispObject w = car(args);
+                static_cast<void>(eval(w, env));
+            }
+            errexit();
+        }
+    }
     return onevalue(f);     // always hands back just 1 value
 }
 
@@ -239,27 +234,28 @@ static LispObject prog2_fn(LispObject args, LispObject env)
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil); // (prog2) -> nil
     stackcheck(args, env);
-    push(args, env);
-    args = car(args);
-    static_cast<void>(eval(args,
-                           env));                    // discard first arg
-    pop(env, args);
+    errexit();
+    {   Push save(args, env);
+        args = car(args);
+        static_cast<void>(eval(args, env));  // eval & discard first arg
+    }
+    errexit();
     args = cdr(args);
     if (!consp(args)) return onevalue(nil); // (prog2 x) -> nil
-    push(args, env);
-    f = car(args);
-    f = eval(f, env);                       // second arg
-    pop(env, args);
-    push(f);
-    for (;;)
-    {   args = cdr(args);
-        if (!consp(args)) break;
-        push(args, env);
-        args = car(args);
-        static_cast<void>(eval(args, env));
-        pop(env, args);
+    {   Push save(args, env);
+        f = car(args);
+        f = eval(f, env);                       // second arg
     }
-    pop(f);
+    {   Push save(f);
+        for (;;)
+        {   args = cdr(args);
+            if (!consp(args)) break;
+            {   Push save1(args, env);
+                args = car(args);
+                static_cast<void>(eval(args, env));
+            }
+        }
+    }
     return onevalue(f);     // always hands back just 1 value
 }
 
@@ -282,7 +278,6 @@ public:
             setvalue(car(p), cdr(p));
             specenv = cdr(specenv);
         }
-        real_popv(4);
     }
 };
 
@@ -291,23 +286,20 @@ static LispObject progv_fn(LispObject args_x, LispObject env_x)
     STACK_SANITY;
     if (!consp(args_x)) return onevalue(nil);
     stackcheck(args_x, env_x);
+    errexit();
     syms_x = vals_x = specenv_x = nil;
     syms_x = car(args_x);
     args_x = cdr(args_x);
-    real_push(args_x, env_x, syms_x, vals_x, specenv_x);
+    RealPush save(args_x, env_x, syms_x, vals_x, specenv_x);
 
     syms = eval(syms, env);
-    if (!consp(args))
-    {   real_popv(5);
-        return nil;
-    }
+    errexit();
+    if (!consp(args)) return nil;
     w = car(args);
     args = cdr(args);
     vals = eval(w, env);
-    if (!consp(args))
-    {   real_popv(5);
-        return nil;
-    }
+    errexit();
+    if (!consp(args)) return nil;
     while (consp(syms))
     {   LispObject v = car(syms);
         LispObject w1;
@@ -319,38 +311,39 @@ static LispObject progv_fn(LispObject args_x, LispObject env_x)
         syms = cdr(syms);
         if (!is_symbol(v) || v==nil || v==lisp_true) continue;
         w1 = cons(v, qvalue(v));
-//
+        errexit();
 // If I were to take the error exit here then some variables would have
-// been set to their new values and some not. That would be a mess!
-//
+// been set to their new values and some not. That would be a mess! So if the
+// above CONS fails and triggers an exit things are bad. I may need to
+// pre-allocate the space, but because PROGV is esoteric (and not used by
+// Reduce) I am not going to go to the trouble YET.
         setvalue(v, w);
         specenv = cons(w1, specenv);
     }
     {   RAIIunbind_progv_specials unbind_progv_variables;
         args = progn_fn(args, env);
     }
-    real_pop(w);
+    return specenv;
+}
+
 #undef specenv
 #undef vals
 #undef syms
 #undef env
 #undef args
-    return w;
-}
 
 LispObject quote_fn(LispObject args, LispObject)
 {   if (consp(args) && cdr(args) == nil) return onevalue(car(args));
-    aerror("quote");
+    return aerror("quote");
 }
 
 static LispObject return_fn(LispObject args, LispObject env)
 {
-//
 // First check that the block name (nil in this case) is lexically available
-//
     STACK_SANITY;
     LispObject p;
     stackcheck(args, env);
+    errexit();
     for(p=env; consp(p); p=cdr(p))
     {   LispObject w = car(p);
         if (!consp(w)) continue;
@@ -359,13 +352,14 @@ static LispObject return_fn(LispObject args, LispObject env)
             goto tag_found;
         }
     }
-    error(1, err_block_tag, nil);
+    return error(1, err_block_tag, nil);
 tag_found:
     if (consp(args))
     {   push(p);
         LispObject p1 = car(args);
         env = eval(p1, env);
         pop(p);
+        errexit();
         exit_value = env;
     }
     else
@@ -374,12 +368,13 @@ tag_found:
     }
     exit_tag = p;
     exit_reason = UNWIND_RETURN;
-    throw LispReturnFrom();
+    THROW(LispReturnFrom);
 }
 
 static LispObject return_from_fn(LispObject args, LispObject env)
 {   LispObject p, tag;
     stackcheck(args, env);
+    errexit();
     STACK_SANITY;
     if (!consp(args)) tag = nil;
     else
@@ -394,13 +389,14 @@ static LispObject return_from_fn(LispObject args, LispObject env)
             goto tag_found;
         }
     }
-    error(1, err_block_tag, tag);
+    return error(1, err_block_tag, tag);
 tag_found:
     if (consp(args))
     {   push(p);
         LispObject p1 = car(args);
         env = eval(p1, env);
         pop(p);
+        errexit();
         exit_value = env;
     }
     else
@@ -409,30 +405,34 @@ tag_found:
     }
     exit_tag = p;
     exit_reason = UNWIND_RETURN;
-    throw LispReturnFrom();
+    THROW(LispReturnFrom);
 }
 
 static LispObject setq_fn(LispObject args, LispObject env)
 {   LispObject var, val = nil;
     STACK_SANITY;
     stackcheck(args, env);
+    errexit();
     while (consp(args))
     {   var = car(args);
         if (!is_symbol(var) || var == nil || var == lisp_true ||
             (qheader(var) & SYM_KEYWORD_VAR) == SYM_KEYWORD_VAR)
-            aerror1("setq (bad variable)", var);
+        {   return aerror1("setq (bad variable)", var);
+        }
         args = cdr(args);
         if (consp(args))
-        {   push(args, env, var);
-            val = car(args);
-            val = eval(val, env);
-            pop(var, env, args);
+        {   {   Push save(args, env, var);
+                val = car(args);
+                val = eval(val, env);
+            }
+            errexit();
             args = cdr(args);
         }
         else val = nil;
         if ((qheader(current_function) & SYM_TRACESET) != 0)
         {   real_push(args, env, var, val);
             freshline_trace();
+// I want loop_print_trace to avoid exiting with errors!
             loop_print_trace(current_function);
             trace_printf(":  ");
             loop_print_trace(stack[-1]);
@@ -485,17 +485,21 @@ LispObject tagbody_fn(LispObject args, LispObject env)
 // even thinks that they can use (go xx) to get back in.
 //
     stackcheck(args, env);
+    errexit();
     STACK_SANITY;
     real_push(env, args);
     for (p=args; consp(p); p=cdr(p))
     {   LispObject w = car(p);
         if (!consp(w))
         {   LispObject w1;
-            push(p, env);
-            w1 = cons(fixnum_of_int(1), p);
-            pop(env);
+            Push save(p);
+            {   Push save1(env);
+                w1 = cons(fixnum_of_int(1), p);
+            }
             env = cons(w1, env);
-            pop(p);
+            errexit();
+            env = cons(w1, env);
+            errexit();
         }
     }
 // That has put my new version of env with bindings of the form
@@ -513,64 +517,10 @@ LispObject tagbody_fn(LispObject args, LispObject env)
     {   f = car(p);
         if (!is_cons(f)) continue; // Do not evaluate labels
         push(p, env, f);
-#ifdef FUTURE
-// As a possible optimisation here I will direct use of GO or COND here,
-// and then uses of GO within the consequents within the COND. This can
-// avoid use of catch and throw, which on some platforms or in some
-// contexts may carry overheads that I dislike.
-//
-// I believe that the code here is broken at present!
-        LispObject ff = car(f);
-        if (ff == go_symbol)
-        {   ff = car(cdr(f));
-            pop(f, env, p);
-            my_env = stack[0];
-// I need to do this search. Well in the code that implemented GO I checked
-// that the destination label was bound as a label. That was so that I could
-// give a decent diagnostic if it was not. The scan here is to see if it is
-// a label in THIS level of a tagbody... and if not I will hand it upwards.
-            for (p=env; p!=my_env; p=cdr(p)) // scan label bindings
-            {   LispObject w = car(p);
-                if (w != ff) continue;
-// Now I have found the label I needed to jump to. Hoorah.
-                p = cdr(w);
-                break;
-            }
-            if (p != my_env) continue; // take the GOTO
-// If I drop out of the loop that means that the target label was
-// not present in this block. Tidy up the label bindings to be very
-// certain nobody can re-use them.
-            while (env != my_env)
-            {   setcar(car(env), fixnum_of_int(2));
-                env = cdr(env);
-            }
-// Because this is a sort of error I will display a message. It was for
-// the benefit of this code that I had stacked f, the expression that
-// contained the (GO ..) statement.
-            if (SHOW_FNAME)
-            {   err_printf("\nEvaluating: ");
-                loop_print_error(f);
-            }
-// Throw the LispGo exception to try again at some outer level.
-            exit_tag = ff;
-            exit_reason = UNWIND_GO;
-            throw LispGo();
-        }
-//        else if (ff == cond_symbol)
-//        {
-//        }
-//        else if (ff == progn_symbol)
-//        {
-//        }
-        else
-#endif // FUTURE
-        try
-        {   STACK_SANITY;
-            START_TRY_BLOCK;
+        TRY
             static_cast<void>(eval(f, env));
-        }
-        catch (LispGo &e)
-        {   int _reason = exit_reason;
+        CATCH(LispGo)
+            int _reason = exit_reason;
             pop(f, env, p);
             my_env = stack[0];
 // I need to do this search. Well in the code that implemented GO I checked
@@ -601,10 +551,9 @@ LispObject tagbody_fn(LispObject args, LispObject env)
             }
 // Re-throw the LispGo exception to try again at some outer level.
             exit_reason = _reason;
-            throw;
-        }
-        catch (LispError &e)
-        {   int _reason = exit_reason;
+            RETHROW;
+        ANOTHER_CATCH(LispError)
+            int _reason = exit_reason;
             pop(f, env, p);
             if (SHOW_FNAME)
             {   err_printf("\nEvaluating: ");
@@ -612,8 +561,8 @@ LispObject tagbody_fn(LispObject args, LispObject env)
             }
 // Re-throw some other exception that counted as an error.
             exit_reason = _reason;
-            throw;
-        }
+            RETHROW;
+        END_CATCH;
         pop(f, env, p);
     }
 // This is where I drop off the end of the tagbody, so I tidy up and
@@ -643,25 +592,28 @@ static LispObject the_fn(LispObject args, LispObject env)
 // Standard Lisp I can perfectly well provide a simple function.
 //
 
-[[noreturn]] static LispObject throw_fn(LispObject args, LispObject env)
+static LispObject throw_fn(LispObject args, LispObject env)
 {   LispObject tag, p;
     STACK_SANITY;
-    if (!consp(args)) aerror("throw");
+    if (!consp(args)) return aerror("throw");
     stackcheck(args, env);
+    errexit();
     tag = car(args);
     args = cdr(args);
     push(args, env);
     tag = eval(tag, env);
     pop(env, args);
+    errexit();
     for (p = catch_tags; p!=nil; p=cdr(p))
         if (tag == car(p)) goto tag_found;
-    aerror("throw: tag not found");
+    return aerror("throw: tag not found");
 tag_found:
     if (consp(args))
     {   push(p);
         tag = car(args);
         tag = eval(tag, env);
         pop(p);
+        errexit();
         exit_value = tag;
     }
     else
@@ -670,25 +622,25 @@ tag_found:
     }
     exit_tag = p;
     exit_reason = UNWIND_THROW;
-    throw LispThrow();
+    THROW(LispThrow);
 }
 
-[[noreturn]] LispObject Lthrow_one_value(LispObject env, LispObject tag, LispObject val)
+LispObject Lthrow_one_value(LispObject env, LispObject tag, LispObject val)
 {   LispObject p;
     STACK_SANITY;
     for (p = catch_tags; p!=nil; p=cdr(p))
         if (tag == car(p)) goto tag_found;
-    aerror("throw: tag not found");
+    return aerror("throw: tag not found");
 tag_found:
     exit_value = val;
     exit_count = 1;
     exit_tag = p;
     exit_reason = UNWIND_THROW;
-    throw LispThrow();
+    THROW(LispThrow);
 }
 
-[[noreturn]] LispObject Lthrow_nil(LispObject env, LispObject tag)
-{   Lthrow_one_value(nil, tag, nil);
+LispObject Lthrow_nil(LispObject env, LispObject tag)
+{   return Lthrow_one_value(nil, tag, nil);
 }
 
 static LispObject unless_fn(LispObject args, LispObject env)
@@ -696,10 +648,12 @@ static LispObject unless_fn(LispObject args, LispObject env)
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
     stackcheck(args, env);
+    errexit();
     push(args, env);
     w = car(args);
     w = eval(w, env);
     pop(env, args);
+    errexit();
     if (w != nil) return onevalue(nil);
     else return progn_fn(cdr(args), env);
 }
@@ -712,15 +666,12 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
     stackcheck(args, env);
     push(args, env);
     r = car(args);
-    try
-    {   START_TRY_BLOCK;
+    TRY
         r = eval(r, env);
-    }
-    catch (LispException &e)
-    {   pop(env, args);
+    CATCH(LispException)
+        pop(env, args);
         LispObject xt, xv;
         int xc, xr;
-//
 // Here I am in the process of exiting because of a throw, return-from,
 // go or error.  I need to save all the internal stuff that tells me
 // what is going on so I can restore it after the clean-up forms have been
@@ -730,7 +681,6 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
 //  (c) exit_count     number of values (throw, return-from)
 //  (d) mv2,...        as indicated by exit_count
 //  (e) exit_reason    what it says.
-//
         xt = qvalue(trap_time);
         setvalue(trap_time, nil); // No timeouts in recovery code
         push(xt);
@@ -742,12 +692,18 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
         for (i=xc; i>=2; i--)
             rl = cons_no_gc((&mv_2)[i-2], rl);
         rl = cons_gc_test(rl);
+// I am going to take the view that if there is a failure during execution
+// of the cleanup forms then full cleanup will not be complete, and this
+// can include the case of "cons" failing right before anything else.
+        errexit();
         push(rl);
+// Now I will obey the cleanup 
         while (is_cons(args = cdr(args)) && args!=nil)
         {   LispObject w = car(args);
             push(args, env);
             static_cast<void>(eval(w, env));
             pop(env, args);
+            errexit();
         }
         pop(rl, xt, xv);
         for (i = 2; i<=xc; i++)
@@ -760,8 +716,8 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
         exit_reason = xr;
         pop(xt);
         setvalue(trap_time, xt);
-        throw;                   // reinstate the exception
-    }
+        RETHROW;                   // reinstate the exception
+    END_CATCH;
     pop(env, args);
 //
 // Now code (just like multiple-value-prog1) that evaluates the
@@ -772,12 +728,14 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
     for (i=nargs; i>=2; i--)
         rl = cons_no_gc((&mv_2)[i-2], rl);
     rl = cons_gc_test(rl);
+    errexit();
     real_push(rl);
     LispObject &xenv = stack[-1];
     LispObject &xargs = stack[-2];
     while (is_cons(xargs = cdr(xargs)) && xargs!=nil)
     {   LispObject w = car(xargs);
         static_cast<void>(eval(w, xenv));
+        errexit();
     }
     real_pop(rl);
     real_popv(2);
@@ -837,7 +795,8 @@ void unwind_stack(LispObject *entry_stack, bool findcatch)
 bool force_backtrace = false;
 
 // The "volatile" qualifications here are to try to improve the chances of
-// setjmp/longjmp behaving the way I want.
+// setjmp/longjmp behaving the way I want. Even with those qualifiers in
+// place any use of it is utterly uncertain!
 
 static LispObject errorset3(volatile LispObject env,
                             volatile LispObject form,
@@ -921,13 +880,11 @@ static LispObject errorset3(volatile LispObject env,
     stackcheck();
     pop(env);
     pop(form);
+    errexit();
     errorset_msg = nullptr;
-    try
-    {   START_TRY_BLOCK;
+    TRY
         r = eval(form, nil);
-    }
-    catch (LispError &e)
-    {
+    CATCH(LispError)
 // I am not going to catch exceptions such as the ones that restart the
 // system - only ones that couunt as "errors".
         miscflags = (flags & BACKTRACE_MSG_BITS) |
@@ -954,10 +911,10 @@ static LispObject errorset3(volatile LispObject env,
             case 2: miscflags &= ~ARGS_FLAG;
             default:break;
         }
-        if (stop_on_error) throw;
+        if (stop_on_error) RETHROW;
         if (consp(exit_value)) exit_value = nil;
         return onevalue(exit_value);
-    }
+    END_CATCH;
 // Now the normal exit case...
     miscflags = (flags & BACKTRACE_MSG_BITS) |
                 (miscflags & ~BACKTRACE_MSG_BITS);
@@ -1092,44 +1049,36 @@ static LispObject resource_limit7(LispObject env,
                                   LispObject Csk,
                                   LispObject Lsk)
 {
-//
 // This is being extended to make it possible to limit the C and Lisp stack
 // usage. At present the controls for that are not in place!
-//
     STACK_SANITY;
     LispObject r;
     int64_t lltime, llspace, llio, llerrors;
     RAIIresource_variables RAIIresource_variables_object;
     int64_t r0=0, r1=0, r2=0, r3=0;
     errorset_msg = nullptr;
-//
 // Here I need to do something that actually sets up the limits!
 // I only allow limits that are up to 31-bits...
-//
     lltime = thirty_two_bits(ltime); // .. or zero if not an integer
     llspace = thirty_two_bits(lspace);
     llio = thirty_two_bits(lio);
     llerrors = thirty_two_bits(lerrors);
-//
 // I can get thrown back here in four important ways:
 // (1) The calculation succeeds.
 // (2) It fails with a regular Lisp error.
 // (3) It fails because it raises a C-level signal.
 // (4) It fails by raising a resource-exhausted complaint.
-//
-    try
-    {   START_SETJMP_BLOCK;
+    TRY
+        START_SETJMP_BLOCK;
         time_base   = time_now;
         space_base  = space_now;
         io_base     = io_now;
         errors_base = errors_now;
         if (lltime >= 0)
         {   int w;
-//
 // I make 2 seconds the smallest I can specify as a timeout because with
 // my clock resolution at 1 sec if I specified "1" I could do so just a
 // smidgin before the clock time and end up with no slack at all.
-//
             if (lltime == 0 || lltime == 1) lltime = 2;
             w = time_base + lltime;
             if (time_limit >= 0 && time_limit < w) w = time_limit;
@@ -1137,17 +1086,13 @@ static LispObject resource_limit7(LispObject env,
         }
         if (llspace >= 0)
         {   int w;
-//
 // I make 2 megaconses the smallest request here for much the same
 // reason I put a lower limit on time. Actually if go further and make
 // 4 megaconses my limit...
-//
             if (llspace >= 0 && llspace < 4) llspace = 4;
-//
 // Ok, the USER specified things in megaconses, but internally I will
 // count in "CSL pages". The standard CSL page size is 4Mbytes, ie 0.5 or
 // 0.25 megaconses so I multiply by 2 or 4 here (for 32 or 64-bit systems).
-//
             llspace *= (2*sizeof(LispObject)*1024*1024)/PAGE_POWER_OF_TWO;
             w = space_base + llspace;
             if (space_limit >= 0 && space_limit < w) w = space_limit;
@@ -1166,33 +1111,37 @@ static LispObject resource_limit7(LispObject env,
             if (errors_limit >= 0 && errors_limit < w) w = errors_limit;
             errors_limit = w;
         }
+// All the above mess was just establishing the limits to be applied!
+// So now I can do the work that has to be constrained.
         r = eval(form, nil);
         r0 = time_now - time_base;
         r1 = (space_now - space_base)/
              ((2*sizeof(LispObject)*1024*1024)/PAGE_POWER_OF_TWO);
         r2 = io_now - io_base;
         r3 = errors_now - errors_base;
-    }
-    catch (LispResource &e)
-    {   form = list4(fixnum_of_int(r0),
+    CATCH(LispResource)
+        form = list4(fixnum_of_int(r0),
                      fixnum_of_int(r1),
                      fixnum_of_int(r2),
                      fixnum_of_int(r3));
+        errexit();
         setvalue(resources, form);
 // Here I had a resource limit trap
         return onevalue(nil);
-    }
-//
+    END_CATCH;
+// The guarded code may have exited with some other exception!
+    errexit(); 
 // I would like the result to show what resources had been used, but for now
 // I just use ncons to wrap the resuult up.
-//
     r = ncons(r);
+    errexit(); 
     push(r);
     form = list4(fixnum_of_int(r0),
                  fixnum_of_int(r1),
                  fixnum_of_int(r2),
                  fixnum_of_int(r3));
     pop(r);
+    errexit(); 
     setvalue(resources, form);
     return onevalue(r);
 }
@@ -1254,26 +1203,27 @@ static LispObject when_fn(LispObject args, LispObject env)
     w = car(args);
     w = eval(w, env);
     pop(env, args);
+    errexit();
     if (w == nil) return onevalue(nil);
     else return progn_fn(cdr(args), env);
 }
 
-[[noreturn]] LispObject bad_specialfn_0(LispObject env)
-{   aerror1("bad special function", env);
+LispObject bad_specialfn_0(LispObject env)
+{   return aerror1("bad special function", env);
 }
 
-[[noreturn]] LispObject bad_specialfn_2(LispObject env, LispObject a, LispObject b)
-{   aerror1("bad special function", env);
+LispObject bad_specialfn_2(LispObject env, LispObject a, LispObject b)
+{   return aerror1("bad special function", env);
 }
 
-[[noreturn]] LispObject bad_specialfn_3(LispObject env, LispObject a, LispObject b,
+LispObject bad_specialfn_3(LispObject env, LispObject a, LispObject b,
                      LispObject c)
-{   aerror1("bad special function", env);
+{   return aerror1("bad special function", env);
 }
 
-[[noreturn]] LispObject bad_specialfn_4up(LispObject env, LispObject a, LispObject b,
+LispObject bad_specialfn_4up(LispObject env, LispObject a, LispObject b,
                        LispObject c, LispObject d)
-{   aerror1("bad special function", env);
+{   return aerror1("bad special function", env);
 }
 
 setup_type const eval3_setup[] =

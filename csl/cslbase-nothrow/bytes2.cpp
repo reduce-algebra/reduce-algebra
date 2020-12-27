@@ -124,7 +124,7 @@ size_t xppc;
     if (reinterpret_cast<char *>(fringe) <=
         reinterpret_cast<char *>(heaplimit))
     {   A_reg = cons_gc_test(A_reg);
-        if (exceptionPending()) goto endOfTryBlock;
+        errcatch();
     }
 #endif
 #ifdef DEBUG
@@ -355,24 +355,24 @@ next_opcode:   // This label is so that I can restart what I am doing
                 push(B_reg);
                 A_reg = ncons(A_reg);
                 pop(B_reg);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_XCONS:                          // A_reg = cons(A_reg, B_reg);
                 A_reg = cons(A_reg, B_reg);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_LIST2:                  // A_reg = cons(B_reg, cons(A_reg, nil));
                 A_reg = list2(B_reg, A_reg);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_ACONS:                  // A_reg = acons(pop(), B_reg, A_reg);
                 // = (pop() . B) . A
                 real_pop(r1);
                 A_reg = acons(r1, B_reg, A_reg);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
 //
@@ -406,10 +406,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                 w = next_byte;
                 A_reg = encapsulate_sp(&stack[-2-static_cast<int>(w)]);
                 pop(B_reg);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 A_reg = list2star(cfunarg, B_reg, A_reg);
                 pop(B_reg);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_BIGSTACK:               // LOADLOC, STORELOC, CLOSURE etc
@@ -439,10 +439,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                         w = ((w & 0x3f) << 8) + next_byte;
                         A_reg = encapsulate_sp(&stack[-2-static_cast<int>(w)]);
                         pop(B_reg);
-                        if (exceptionPending()) goto endOfTryBlock;
+                        errcatch();
                         A_reg = list2star(cfunarg, B_reg, A_reg);
                         pop(B_reg);
-                        if (exceptionPending()) goto endOfTryBlock;
+                        errcatch();
                         continue;
                     case 0xc0:                  // LOADLEX, STORELEX extended
                         n = next_byte;
@@ -462,14 +462,14 @@ next_opcode:   // This label is so that I can restart what I am doing
                 // = pop() . (B . A)
                 real_pop(r1);
                 A_reg = list2star(r1, B_reg, A_reg);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_LIST3:                  // A_reg = list3(pop(), B_reg, A_reg);
                 // = pop() . (B . (A . nil))
                 real_pop(r1);
                 A_reg = list3(r1, B_reg, A_reg);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_ADD1:
@@ -479,7 +479,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 }
 // I drop through in the case of floating, bignum or error arithmetic.
                 A_reg = plus2(A_reg, fixnum_of_int(1));
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_PLUS2:
@@ -490,7 +490,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 }
 // I drop through in the case of floating, bignum or error arithmetic.
                 A_reg = plus2(B_reg, A_reg);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_SUB1:
@@ -500,7 +500,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 }
 // I drop through in the case of floating, bignum or error arithmetic.
                 A_reg = plus2(A_reg, fixnum_of_int(-1));
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_DIFFERENCE:
@@ -510,21 +510,21 @@ next_opcode:   // This label is so that I can restart what I am doing
                     continue;
                 }
                 A_reg = difference2(B_reg, A_reg);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_TIMES2:
 // I do not in-line even the integer case here, since overflow checking
 // is a slight mess.
                 A_reg = times2(B_reg, A_reg);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_LESSP:
                 if (is_fixnum(B_reg) && is_fixnum(A_reg)) w = B_reg < A_reg;
                 else
                 {   w = lessp2(B_reg, A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 A_reg = Lispify_predicate(w);
                 continue;
@@ -533,7 +533,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (is_fixnum(B_reg) && is_fixnum(A_reg)) w = B_reg > A_reg;
                 else
                 {   w = lessp2(A_reg, B_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 A_reg = Lispify_predicate(w);
                 continue;
@@ -543,11 +543,11 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = get(B_reg, A_reg, unset_var);
                 if (A_reg == unset_var) A_reg = nil;
                 else A_reg = lisp_true;
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 #else
                 A_reg = Lflagp(nil, B_reg, A_reg);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 #endif
 
@@ -559,15 +559,15 @@ next_opcode:   // This label is so that I can restart what I am doing
                         A_reg = traced_call1(basic_elt(litvec, 0), f1, B_reg, A_reg);
                     else A_reg = f1(B_reg, A_reg);
                     popv(1);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                     continue;
                 }
                 push(B_reg);
                 A_reg = ncons(A_reg);
                 pop(B_reg);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 A_reg = apply(B_reg, A_reg, nil, basic_elt(litvec, 0));
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_APPLY2:
@@ -578,15 +578,15 @@ next_opcode:   // This label is so that I can restart what I am doing
                     if ((qheader(r2) & SYM_TRACED) != 0)
                         A_reg = traced_call2(basic_elt(litvec, 0), f2, r2, B_reg, A_reg);
                     else A_reg = f2(r2, B_reg, A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                     continue;
                 }
 // Here the stack has fn on the top and the 2 args are in B_reg, A_reg
                 A_reg = list2(B_reg, A_reg);
                 real_pop(r2);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 A_reg = apply(r2, A_reg, nil, basic_elt(litvec, 0));
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_APPLY3:
@@ -603,14 +603,14 @@ next_opcode:   // This label is so that I can restart what I am doing
                         A_reg = traced_call3(basic_elt(litvec, 0), f3, r2, r1, B_reg, A_reg);
                     else A_reg = f3(r2, r1, B_reg, A_reg);
                     real_popv(1);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                     continue;
                 }
                 A_reg = list3(stack[-1], B_reg, A_reg);
                 real_pop(r2);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 A_reg = apply(r2, A_reg, nil, basic_elt(litvec, 0));
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_APPLY4:
@@ -623,21 +623,21 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   push(r2, r3, r1, B_reg);
                     A_reg = ncons(A_reg);    // Make 4th arg a list!
                     pop(B_reg, r1, r3, r2);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                     f4up = qfn4up(r2);
                     if ((qheader(r2) & SYM_TRACED) != 0)
                         A_reg = traced_call4up(basic_elt(litvec, 0), f4up, r2, r3, r1, B_reg,
                                                A_reg);
                     else A_reg = f4up(r2, r3, r1, B_reg, A_reg);
                     real_popv(1);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                     continue;
                 }
                 A_reg = list4(r3, r1, B_reg, A_reg);
                 real_pop(r2);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 A_reg = apply(r2, A_reg, nil, basic_elt(litvec, 0));
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
 #ifdef COMMON
@@ -648,7 +648,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_EQUAL:                                  // A = equal(B, A)
                 A_reg = SL_OR_CL_EQUAL(B_reg, A_reg) ? lisp_true : nil;
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_EQ:                                     // A = eq(B, A)
@@ -676,7 +676,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_GETV:                           // A_reg = getv(B_reg, A_reg)
                 A_reg = Lgetv(nil, B_reg, A_reg);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_QGETVN:                         // A_reg = getv(A_reg, n)
@@ -699,7 +699,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_LENGTH:
                 A_reg = Llength(nil, A_reg);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
 //
@@ -743,7 +743,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else
                 {   A_reg = cdrerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 continue;
 
@@ -753,7 +753,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else
                 {   A_reg = cdrerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 continue;
 
@@ -763,7 +763,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else
                 {   A_reg = cdrerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 continue;
 
@@ -773,7 +773,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else
                 {   A_reg = cdrerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 continue;
 
@@ -783,7 +783,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else
                 {   A_reg = cdrerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 continue;
 
@@ -793,7 +793,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else
                 {   A_reg = cdrerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 continue;
 
@@ -822,12 +822,12 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = car(A_reg);
                 else
                 {   A_reg = carerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 if (car_legal(A_reg)) A_reg = car(A_reg);
                 else
                 {   A_reg = carerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 continue;
 
@@ -835,12 +835,12 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else
                 {   A_reg = cdrerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 if (car_legal(A_reg)) A_reg = car(A_reg);
                 else
                 {   A_reg = carerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 continue;
 
@@ -848,12 +848,12 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = car(A_reg);
                 else
                 {   A_reg = carerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else
                 {   A_reg = cdrerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 continue;
 
@@ -861,12 +861,12 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else
                 {   A_reg = cdrerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else
                 {   A_reg = cdrerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 continue;
 
@@ -1238,13 +1238,13 @@ next_opcode:   // This label is so that I can restart what I am doing
                 else
 #ifdef COMMON
                 {   r1 = get(A_reg, basic_elt(litvec, w), unset_var);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                     if (r1 != unset_var) short_jump(ppc, xppc);
                     continue;
                 }
 #else
                 {   r1 = Lflagp(nil, A_reg, basic_elt(litvec, w));
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 if (r1 != nil) short_jump(ppc, xppc);
                 continue;
@@ -1261,13 +1261,13 @@ next_opcode:   // This label is so that I can restart what I am doing
                 else
 #ifdef COMMON
                 {   r1 = get(A_reg, basic_elt(litvec, w), unset_var);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                     if (r1 == unset_var) short_jump(ppc, xppc);
                     continue;
                 }
 #else
                 {   r1 = Lflagp(nil, A_reg, basic_elt(litvec, w));
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 if (r1 == nil) short_jump(ppc, xppc);
                 continue;
@@ -1331,28 +1331,28 @@ next_opcode:   // This label is so that I can restart what I am doing
                 xppc = ppc;
                 ppc++;
                 if (SL_OR_CL_EQUAL(A_reg, B_reg)) short_jump(ppc, xppc);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_JUMPEQUAL_B:
                 xppc = ppc;
                 ppc++;
                 if (SL_OR_CL_EQUAL(A_reg, B_reg)) short_jump_back(ppc, xppc, A_reg);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_JUMPNEQUAL:
                 xppc = ppc;
                 ppc++;
                 if (!SL_OR_CL_EQUAL(A_reg, B_reg)) short_jump(ppc, xppc);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_JUMPNEQUAL_B:
                 xppc = ppc;
                 ppc++;
                 if (!SL_OR_CL_EQUAL(A_reg, B_reg)) short_jump_back(ppc, xppc, A_reg);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_JUMP:
@@ -1608,7 +1608,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     A_reg = traced_call0(basic_elt(litvec, 0), f0, r1);
                 else A_reg = f0(r1);
                 assert(A_reg != 0);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
 
@@ -1633,7 +1633,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             jcall0: r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
                 f0 = qfn0(r1);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
 // The issue here is cases such as
 //    (de f1 (x) (f2 x))
 //    (de f2 (x) (f1 x))
@@ -1672,7 +1672,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call0(basic_elt(litvec, 0), f0, r1);
                 else A_reg = f0(r1);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
 #ifdef DEBUG
                 global_jb = jbsave;
 #endif
@@ -1872,10 +1872,10 @@ next_opcode:   // This label is so that I can restart what I am doing
 // Here I write out a variant on the CALL4 code.
                         B_reg = list3star(stack[-1], stack[0], B_reg, A_reg);
                         popv(2);
-                        if (exceptionPending()) goto endOfTryBlock;
+                        errcatch();
                         A_reg = basic_elt(litvec, fname);
                         A_reg = apply(A_reg, B_reg, nil, basic_elt(litvec, 0));
-                        if (exceptionPending()) goto endOfTryBlock;
+                        errcatch();
                         ppc++;
                         continue;
 
@@ -1891,7 +1891,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                         {   push(A_reg);
                             print_traceset(fname, A_reg);
                             pop(A_reg);
-                            if (exceptionPending()) goto endOfTryBlock;
+                            errcatch();
                         }
                         setvalue(basic_elt(litvec, fname), A_reg);  // store into special var
                         continue;
@@ -1935,7 +1935,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     if (stack >= stackLimit) respond_to_stack_event();
                     A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0),
                                                  stack-1);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 assert(A_reg != 0);
                 continue;
@@ -1970,7 +1970,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     A_reg = traced_call1(basic_elt(litvec, 0), f1, r1, A_reg);
                 else A_reg = f1(r1, A_reg);
                 assert(A_reg != 0);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_CALL2_0:
@@ -1985,7 +1985,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                                                  stack-2);
                 }
                 assert(A_reg != 0);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_CALL2_1:
@@ -2015,7 +2015,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, B_reg, A_reg);
                 else A_reg = f2(r1, B_reg, A_reg);
                 assert(A_reg != 0);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_CALL2R:
@@ -2029,7 +2029,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, A_reg, B_reg);
                 else A_reg = f2(r1, A_reg, B_reg);
                 assert(A_reg != 0);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_CALL3:
@@ -2044,7 +2044,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     A_reg = traced_call3(basic_elt(litvec, 0), f3, r1, r2, B_reg, A_reg);
                 else A_reg = f3(r1, r2, B_reg, A_reg);
                 assert(A_reg != 0);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_CALL4:
@@ -2052,14 +2052,14 @@ next_opcode:   // This label is so that I can restart what I am doing
 // The last two are in A and B.
                 real_pop(r2, r1);
                 B_reg = list3star(r1, r2, B_reg, A_reg);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
 // Here the post-byte indicates the function to be called.
                 A_reg = basic_elt(litvec,
                                   (reinterpret_cast<unsigned char *>(codevec))[ppc]);
                 A_reg = apply(A_reg, B_reg, nil, basic_elt(litvec, 0));
                 assert(A_reg != 0);
                 ppc++;
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_BUILTIN0:
@@ -2074,7 +2074,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                                          make_undefined_symbol(no_arg_names[previous_byte]));
                 else A_reg = f0(nil);
                 assert(A_reg != 0);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_BUILTIN1:
@@ -2087,7 +2087,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                                          A_reg);
                 A_reg = f1(nil, A_reg);
                 assert(A_reg != 0);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_BUILTIN2:
@@ -2100,7 +2100,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                                          B_reg, A_reg);
                 A_reg = f2(nil, B_reg, A_reg);
                 assert(A_reg != 0);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_BUILTIN2R:
@@ -2113,7 +2113,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                                          A_reg, B_reg);
                 else A_reg = f2(nil, A_reg, B_reg);
                 assert(A_reg != 0);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_BUILTIN3:
@@ -2127,7 +2127,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                                          r1, B_reg, A_reg);
                 else A_reg = f3(nil, r1, B_reg, A_reg);
                 assert(A_reg != 0);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
 //
@@ -2218,7 +2218,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = car(A_reg);
                 else 
                 {   A_reg = carerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 assert(A_reg != 0);
                 continue;
@@ -2229,7 +2229,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = car(A_reg);
                 else 
                 {   A_reg = carerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 assert(A_reg != 0);
                 continue;
@@ -2240,7 +2240,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = car(A_reg);
                 else 
                 {   A_reg = carerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 assert(A_reg != 0);
                 continue;
@@ -2251,7 +2251,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = car(A_reg);
                 else 
                 {   A_reg = carerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 assert(A_reg != 0);
                 continue;
@@ -2262,7 +2262,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = car(A_reg);
                 else 
                 {   A_reg = carerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 assert(A_reg != 0);
                 continue;
@@ -2273,7 +2273,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = car(A_reg);
                 else 
                 {   A_reg = carerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 assert(A_reg != 0);
                 continue;
@@ -2284,7 +2284,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = car(A_reg);
                 else 
                 {   A_reg = carerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 assert(A_reg != 0);
                 continue;
@@ -2295,7 +2295,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = car(A_reg);
                 else 
                 {   A_reg = carerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 assert(A_reg != 0);
                 continue;
@@ -2306,7 +2306,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = car(A_reg);
                 else 
                 {   A_reg = carerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 assert(A_reg != 0);
                 continue;
@@ -2317,7 +2317,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = car(A_reg);
                 else 
                 {   A_reg = carerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 assert(A_reg != 0);
                 continue;
@@ -2328,7 +2328,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = car(A_reg);
                 else 
                 {   A_reg = carerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 assert(A_reg != 0);
                 continue;
@@ -2339,7 +2339,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = car(A_reg);
                 else 
                 {   A_reg = carerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 assert(A_reg != 0);
                 continue;
@@ -2350,7 +2350,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = car(A_reg);
                 else 
                 {   A_reg = carerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 assert(A_reg != 0);
                 continue;
@@ -2359,7 +2359,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else
                 {   A_reg = cdrerror(A_reg);
-                    if (exceptionPending()) goto endOfTryBlock;
+                    errcatch();
                 }
                 assert(A_reg != 0);
                 continue;
@@ -2593,7 +2593,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_CONS:                           // A_reg = cons(B_reg, A_reg);
                 A_reg = cons(B_reg, A_reg);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
 //
@@ -2636,13 +2636,13 @@ next_opcode:   // This label is so that I can restart what I am doing
                 B_reg = A_reg;
                 A_reg = basic_elt(litvec, next_byte);
                 A_reg = get(B_reg, A_reg, nil);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
             case OP_GET:                                    // A = get(B, A)
                 A_reg = get(B_reg, A_reg, nil);
                 assert(A_reg != 0);
-                if (exceptionPending()) goto endOfTryBlock;
+                errcatch();
                 continue;
 
         }

@@ -57,8 +57,8 @@ int main(int argc, char *argv[])
         return 1;
     }
     for (i=0; i<MAXDEPTH; i++)
-        pending[i] = reinterpret_cast<char *>(std)::malloc(
-                         MAXLINE); // should check for failure!
+        pending[i] = reinterpret_cast<char *>(std::malloc(
+                         MAXLINE)); // should check for failure!
     in = std::fopen(argv[1], "r");
     if (in == nullptr)
     {   std::fprintf(stderr, "Failed to access \"%s\"\n", argv[1]);

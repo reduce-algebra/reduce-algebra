@@ -1219,11 +1219,10 @@ LispObject Lunwind(LispObject env)
 
 LispObject error_N(LispObject args)
 {   LispObject w;
-    if (exceptionPending()) return nil;
+    errexit();
     errors_now++;
     if (errors_limit >= 0 && errors_now > errors_limit)
-        resource_exceeded();
-    if (exceptionPending()) return nil;
+        return resource_exceeded();
 #ifdef COMMON
 :#pragma message ("fns1.cpp line about 1228 in COMMON case seems mangled")
 //@@@ This variant seems to be malformed, and has been since it was
@@ -1329,33 +1328,27 @@ LispObject Lerror_0(LispObject env)
 
 LispObject Lmake_special(LispObject, LispObject a)
 {   if (!symbolp(a)) return aerror1("make-special", a);
-    if (exceptionPending()) return nil;
     if ((qheader(a) & SYM_GLOBAL_VAR) != 0)
         return aerror1(
             "Variable is global or keyword so can not become fluid", a);
-    if (exceptionPending()) return nil;
     setheader(a, qheader(a) | SYM_SPECIAL_VAR);
     return onevalue(a);
 }
 
 LispObject Lmake_global(LispObject, LispObject a)
 {   if (!symbolp(a)) return aerror("make-global");
-    if (exceptionPending()) return nil;
     if ((qheader(a) & SYM_SPECIAL_VAR) != 0)
         return aerror1(
             "Variable is fluid or keyword so can not become global", a);
-    if (exceptionPending()) return nil;
     setheader(a, qheader(a) | SYM_GLOBAL_VAR);
     return onevalue(a);
 }
 
 LispObject Lmake_keyword(LispObject, LispObject a)
 {   if (!symbolp(a)) return aerror("make-keyword");
-    if (exceptionPending()) return nil;
     if ((qheader(a) & (SYM_GLOBAL_VAR | SYM_SPECIAL_VAR)) != 0)
         return aerror1(
             "Variable is fluid or global so can not become keyword", a);
-    if (exceptionPending()) return nil;
     setheader(a, qheader(a) | (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR));
     setvalue(a, a);   // value is itself.
     return onevalue(a);
@@ -1490,7 +1483,7 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
                 return onevalue(c);
             b = cdr(b);
         }
-        push(a);
+        {   Push pushvar(a);
 // To carry a code-pointer I manufacture a sort of gensym, flagging
 // it in its header as a "code pointer object" and sticking the required
 // definition in with it.  I need to link this to the originating
@@ -1504,15 +1497,15 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
 // mode the thing will print as (say) #:apply which is visibly different
 // from the name 'apply of the base function, while in Standard Lisp a name
 // like apply775 is needed to make the distinction (easily) visible.
-        get_pname(a);  // to do with unprinted gensyms.
-        if (exceptionPending()) { pop(a); return nil; }
+            get_pname(a);  // to do with unprinted gensyms.
+            errexit();
 #ifdef COMMON
-        b = Lgensym2(nil, a);
+            b = Lgensym2(nil, a);
 #else
-        b = Lgensym0(nil, a, "#code");
+            b = Lgensym0(nil, a, "#code");
 #endif
-        pop(a);
-        if (exceptionPending()) return nil;
+            errexit();
+        }
         qfn0(b) = qfn0(a);
         qfn1(b) = qfn1(a);
         qfn2(b) = qfn2(a);
@@ -1530,16 +1523,17 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
         {   LispObject c, w;
             c = get(a, unset_var, nil);
             if (c == nil) c = a;
-            real_push(a, b, c);
-            setheader(b, qheader(b) | SYM_C_DEF);
-            putprop(b, unset_var, c);
-            c = stack[0]; b = stack[-1];
-            w = get(c, work_symbol, nil);
-            w = cons(b, w);
-            real_pop(c);
-            if (exceptionPending()) { real_pop(b, a); return nil; }
-            putprop(c, work_symbol, w);
-            real_pop(b, a);
+            {   RealPush save(a, b);
+                {   RealPush save1(c);
+                    setheader(b, qheader(b) | SYM_C_DEF);
+                    putprop(b, unset_var, c);
+                    c = stack[0]; b = stack[-1];
+                    w = get(c, work_symbol, nil);
+                    w = cons(b, w);
+                    errexit();
+                }
+                putprop(c, work_symbol, w);
+            }
         }
         return onevalue(b);
     }
@@ -1569,7 +1563,7 @@ LispObject get_basic_vector_init(size_t n, LispObject k)
     push(k);
     p = get_basic_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
     pop(k);
-    if (exceptionPending()) return nil;
+    errexit();
     n = n/CELL - 1;
     for (size_t i=0; i<n; i++)
         basic_elt(p, i) = k;
@@ -1661,7 +1655,7 @@ LispObject get_vector(int tag, int type, size_t n)
         size_t last_size = (n - CELL) % VECTOR_CHUNK_BYTES;
         if (last_size == 0) last_size = VECTOR_CHUNK_BYTES;
         v = gvector(TAG_VECTOR, TYPE_INDEXVEC, CELL*(chunks+1));
-        if (exceptionPending()) return nil;
+        errexit();
 // Note that this index vector will be around while the various sub
 // vectors are allocated, so I need to make it GC safe...
         for (i=0; i<chunks; i++)
@@ -1672,7 +1666,7 @@ LispObject get_vector(int tag, int type, size_t n)
             push(v);
             v1 = gvector(tag, type, k+CELL);
             pop(v);
-            if (exceptionPending()) return nil;
+            errexit();
 // The vector here will be active as later chunks are allocated, so it needs
 // to be GC safe.
             if (!vector_holds_binary(v1))
@@ -1713,7 +1707,7 @@ LispObject get_vector_init(size_t n, LispObject val)
     push(val);
     p = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
     pop(val);
-    if (exceptionPending()) return nil;
+    errexit();
     n = n/CELL - 1;
     while (n != 0)
     {   n--;
@@ -1908,7 +1902,7 @@ LispObject Ltimeofday(LispObject env)
 #endif
 #endif
     w = make_lisp_unsigned64(n);
-    if (exceptionPending()) return nil;
+    errexit();
     return onevalue(cons(w, fixnum_of_int(un)));
 }
 
