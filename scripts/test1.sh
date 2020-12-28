@@ -7,27 +7,37 @@
 #
 # The available options are
 #
+#  VERSIONS TO TEST:
+#     --csl       run tests using CSL
+#                 [can also use eg --csl-debug, --csl-nothrow etc]
+#     --cslboot   run tests using CSL "bootstrapreduce"
+#                 [can also use --cslboot-debug etc]
+#     --psl       run tests using PSL
+#     --jlisp     run tests using Jlisp
+#     --jlispboot run tests using Jlisp "bootstrapreduce.jar"
+#
+#  GENERAL OPTIONS:
 #     --keep      preserve raw intermediate files at end of test, eg for
 #                 debugging.
 #     --install   copy CSL results back into the main source tree as
 #                 a fresh set of reference log files
-#     --csl       run tests using CSL
-#     --basecsl   use CSL but ignore the --nogui etc varient selectors
-#     --psl       run tests using PSL
-#     --jlisp     run tests using Jlisp
-#     --cslboot   run tests using CSL "bootstrapreduce"
-#     --jlispboot run tests using Jlisp "bootstrapreduce.jar"
-#
-#     --nogui/--fox/--wx/--test/--arithlib/--conservative/--debug
-#     --version=XXX
-#                 test a non-default version of CSL
-#        [This supports eg "--cslboot --version=conservative-debug" and
-#         that maybe renders the individually brokwn-out options redundant]
-#
 #     --uncached  run tests with symbolic(!*uncached := t);
-#
 #     --skip-missing-rlg
 #                 do not run test when the .rlg file is missing
+#
+# For --csl and --cslboot the end of the name can be some subset of
+# CSL variant builds. As of early 2021 this is some of the following
+# in the order shown
+#     -m32-m64-nogui-fox-wx-test-arithlib-conservative-nothrow-debug
+# but of these -m32 and -m64 are historical relics, -wx a stalled potential
+# development and -arithlib, -conservative and -nothrow are to varing extents
+# incomplete and experimental. This feature is present for sensible reasons
+# like comparing results and timing for a release vs. a debug build and
+# while testing those incomplete experiments to see how close to running the
+# full set of tests they get. And what impact they have on timings.
+# If any such suffix is given a relevent built version must be present in
+#     cslbuild/$host_triple$suffix/csl
+# [eg cslbuild/x86_64-pc-cygwin-test-debug/cslor whatever].
 #
 # It is legal and reasonable and proper to specify multiple Lisp variants to
 # be tested. If none are explicitly mentioned the code will default to
@@ -45,27 +55,28 @@ here=`cd "$here"; pwd -P`
 here=`dirname "$here"`
 
 diffBw() {
+    case `diff -v` in
+    *GNU\ diffutils*)
+      diff -B -w $1 $2
+      ;;
+    *)
 # if "diff" is not the GNU version it may not support the "-B" or "-w"
 # options that ignore whitespace, so here I use sed to get rid of it
 # before running diff.
-    sed 's/[[:space:]]//g; /^[[:space:]]*$/d' < $1 > $name-times/temp1.tmp
-    sed 's/[[:space:]]//g; /^[[:space:]]*$/d' < $2 > $name-times/temp2.tmp
-    diff $name-times/temp1.tmp $name-times/temp2.tmp
-    rm $name-times/temp1.tmp $name-times/temp2.tmp
+      sed 's/[[:space:]]//g; /^[[:space:]]*$/d' < $1 > $name-times/temp1.tmp
+      sed 's/[[:space:]]//g; /^[[:space:]]*$/d' < $2 > $name-times/temp2.tmp
+      diff $name-times/temp1.tmp $name-times/temp2.tmp
+      rm $name-times/temp1.tmp $name-times/temp2.tmp
+      ;;
+    esac
 }
+
+# platforms is a list of the cases to be tested
+platforms=""
 
 install="no"
 keep="no"
-platform=""
 slow="no"
-
-csl="no"
-basecsl="no"
-cslboot="no"
-jlisp="no"
-jlispboot="no"
-psl="no"
-
 uncached=""
 skipmissingrlg=""
 
@@ -74,7 +85,6 @@ skipmissingrlg=""
 # stop if I either upperly run put of arguments (detected when $# = 0) or
 # if $1 fails to match one of the keywords.
 
-v=""
 stop="no"
 until test "$stop" = "yes"
 do
@@ -101,72 +111,27 @@ do
       keep="yes";
       shift
       ;;
-    --csl)
-      if test "$csl" = "yes"
-      then
-        printf "You should only specify --csl once. Stopping.\n"
-        exit 1
-      fi
-      csl="yes"
-      platform="$platform csl"
+    --csl | --csl-*)
+      platforms="$platforms ${1#--}"
       shift
       ;;
-    --basecsl)
-      if test "$basecsl" = "yes"
-      then
-        printf "You should only specify --basecsl once. Stopping.\n"
-        exit 1
-      fi
-      basecsl="yes"
-      platform="$platform basecsl"
-      shift
-      ;;
-    --cslboot)
-      if test "$cslboot" = "yes"
-      then
-        printf "You should only specify --cslboot once. Stopping.\n"
-        exit 1
-      fi
-      cslboot="yes"
+    --cslboot | --cslboot-*)
       slow="yes"
-      platform="$platform cslboot"
+      platforms="$platforms ${1#--}"
       shift
       ;;
     --jlisp)
-      if test "$jlisp" = "yes"
-      then
-        printf "You should only specify --jlisp once. Stopping.\n"
-        exit 1
-      fi
-      jlisp="yes"
       slow="yes"
-      platform="$platform jlisp"
+      platforms="$platforms jlisp"
       shift
       ;;
     --jlispboot)
-      if test "$jlispboot" = "yes"
-      then
-        printf "You should only specify --jlispboot once. Stopping.\n"
-        exit 1
-      fi
-      jlispboot="yes"
       slow="yes"
-      platform="$platform jlispboot"
+      platforms="$platforms jlispboot"
       shift
       ;;
     --psl)
-      if test "$psl" = "yes"
-      then
-        printf "You should only specify --psl once. Stopping.\n"
-        exit 1
-      fi
-      psl="yes"
-      platform="$platform psl"
-      shift
-      ;;
-    --nogui | --fox | --wx | --test | --arithlib | \
-    --conservative | --debug | --version=*)
-      v="$v $1"
+      platforms="$platforms psl"
       shift
       ;;
     --uncached)
@@ -176,7 +141,7 @@ do
     --skip-missing-rlg)
       skipmissingrlg="yes"
       shift
-      ;; 
+      ;;
     -*)
       printf "\"$1\" looks like an option but is not recognized.\n"
       printf "Stopping.\n"
@@ -190,11 +155,9 @@ do
 done
 
 # If no specific choice of platform was made I use a default...
-if test "$platform" = ""
+if test "$platforms" = ""
 then
-  csl="yes"
-  psl="yes"
-  platform=" csl psl"
+  platforms=" csl psl"
 fi
 
 loader=""
@@ -275,8 +238,8 @@ fi
 # If I can I will limit the time that each test script can possibly use.
 # I would like to make the limit such that everything has a decent chance of
 # running to completion but that tests that get stuck do not delay me
-# unduly. The most extreme test at the time of writing this is qsum which
-# uses around 20 seconds on a decent speed desktop machine. So a limit
+# unduly. The most extreme test at the time of writing this is stoolls which
+# uses up to 90 seconds on a decent speed desktop machine. So a limit
 # at 600 seconds seems tolerably safe for most machine. It is sufficient for
 # if the Raspberry Pi 3, where the sstools and qsum take a fair proportion
 # of that. Well I will qualify that the bootstrap version -- especially if
@@ -310,25 +273,12 @@ then
 fi
 
 # I will annotate the script with the identity of the machine on which the
-# test was run...
+# test was run... mc ends up as (probably!) the host-triple used in the
+# cslbuild directory. There is perhaps one oddity in that if that comes
+# out as x86_64-pc-windows than x86_64-pc-cygwin may also be relevant!
 
 mc=`$here/config.guess`
 mc=`$here/scripts/findhost.sh $mc`
-
-# There is one reall mess about the above identification of platform. On
-# a 64-bit windows the default behaviour is that a 64-bit version will be
-# built and used if possible. But possibility will depend on the availability
-# if build-tools etc. So I try tests here that will probably work...
-# In unusual cases it may mis-report but unless you are going to install
-# all the log files built here that is not very important!
-
-if test "x$mc" = "xi686-pc-windows"
-then
-  if test -d cslbuild/x86_64-pc-windows
-  then
-    mc="x86_64-pc-windows"
-  fi
-fi
 
 # 
 # Use /dev/null if the .rlg file doesn't exist
@@ -345,9 +295,8 @@ else
 fi
 
 # 
-# Each individual test should only take a few seconds. On my computer the
-# slowest ones may take almost 15 seconds. The idea behind applying a
-# ulimit here is to avoid trouble when and if a test script loops.
+# Each individual test should only take a few seconds. The idea behind
+# applying a ulimit here is to avoid trouble when or if a test script loops.
  
 ulimit -c 60 2>/dev/null
 
@@ -381,23 +330,30 @@ ESCAPED_DIR=`echo $dd | sed -e 's/[\/\\\\]/\\\\&/g'`
 # CSL testing
 #######################################################################
 
-if test "$csl" = "yes" || test "$basecsl" = "yes" || test "$cslboot" = "yes"
-then
-
 # For CSL the normal and bootstrap versions will be processed almost
-# identically, so I wrap up the recipe in a function
+# identically, so I wrap up the recipe in a function.
 
 csltest() {
-name=$1
-command=$2
-showname=$3
-extras="$4"
+  name=$1
+  command=$2
+  showname=$3
+  variant="$4"
 
-fullcommand="$here/bin/$command $CSLFLAGS $extras"
+  if test "$variant" = ""
+  then
+    fullcommand="$here/bin/$command $CSLFLAGS"
+  else
+    exename="$here/cslbuild/$mc-$variant/csl/$command"
+    if ! test -x "$exename"
+    then
+      printf "\n+++ Unable to use $fullcommand\n";
+      exit 1
+    fi
+    fullcommand="$exename $CSLFLAGS"
+  fi
 
-mkdir -p $name-times
-
-$timeoutcmd $timecmd sh -c "$fullcommand $extras -v -w $otherflags > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+  mkdir -p $name-times
+  $timeoutcmd $timecmd sh -c "$fullcommand $extras -v -w $otherflags > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
@@ -411,72 +367,92 @@ write "START OF REDUCE TEST RUN ON $mc"$ in "$f"; write "END OF REDUCE TEST RUN"
 showtime1$
 quit$
 XXX
-cat $p.howlong.tmp >> $name-times/$p.rlg.tmp
-printf $showname...
-sed -e "/^Tested on /,//d" <$rlgfile |
-  sed -e "$SED1" >$name-times/$p.rlg.orig
-sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
-    -e "/OMIT/,/TIMO/d" <$name-times/$p.rlg.tmp | \
-  sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
-  sed -e "s/${ESCAPED_DIR}.//" | \
-  sed -e "$SED1" >$name-times/$p.rlg
-diffBw $name-times/$p.rlg.orig $name-times/$p.rlg >$name-times/$p.rlg.diff
-if test -s $name-times/$p.rlg.diff
-  then printf "Diff is in $name-times/$p.rlg.diff "
-  else printf "OK " ; rm -f $name-times/$p.rlg.diff $name-times/$p.rlg.orig
-fi
-echo "Tested on $mc CSL" > $name-times/$p.time
-sed -e "1,/END OF REDUCE TEST RUN/d"  <$name-times/$p.rlg.tmp | \
-  sed -e '/^1: *$/d;' >>$name-times/$p.time
-if test "x$keep" = "xno"
-then
-  rm -f $name-times/$p.rlg.tmp
-fi
-
+  cat $p.howlong.tmp >> $name-times/$p.rlg.tmp
+  printf $showname...
+  sed -e "/^Tested on /,//d" <$rlgfile |
+    sed -e "$SED1" >$name-times/$p.rlg.orig
+  sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
+      -e "/OMIT/,/TIMO/d" <$name-times/$p.rlg.tmp | \
+    sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
+    sed -e "s/${ESCAPED_DIR}.//" | \
+    sed -e "$SED1" >$name-times/$p.rlg
+  diffBw $name-times/$p.rlg.orig $name-times/$p.rlg >$name-times/$p.rlg.diff
+  if test -s $name-times/$p.rlg.diff
+    then printf "Diff is in $name-times/$p.rlg.diff "
+    else printf "OK " ; rm -f $name-times/$p.rlg.diff $name-times/$p.rlg.orig
+  fi
+  echo "Tested on $mc CSL" > $name-times/$p.time
+  sed -e "1,/END OF REDUCE TEST RUN/d"  <$name-times/$p.rlg.tmp | \
+    sed -e '/^1: *$/d;' >>$name-times/$p.time
+  if test "x$keep" = "xno"
+  then
+    rm -f $name-times/$p.rlg.tmp
+  fi
 }
 
-if test "$csl" = "yes"
-then
-  csltest "csl" "redcsl" "CSL" "$v"
+#######################################################################
+# Jlisp testing
+# This may be similar enough to the CSL case that it should be merged?
+#######################################################################
 
-  if test "$install" = "yes"
+jlisptest() {
+  name=$1
+  command=$2
+  showname=$3
+
+  mkdir -p $name-times
+
+  wh="$here"
+  if test -f /usr/bin/cygpath
   then
-    cat $here/packages/$d/$p.tst > $here/xmpl/$p.tst
-    cat csl-times/$p.rlg csl-times/$p.time > $here/xmpl/$p.rlg
-    cat csl-times/$p.rlg csl-times/$p.time > $here/packages/$d/$p.rlg
+    wh=`cygpath -m $wh`
   fi
-fi
 
-if test "$basecsl" = "yes"
-then
-  csltest "basecsl" "redcsl" "BASECSL" ""
-
-  if test "$install" = "yes"
+  $timeoutcmd $timecmd sh -c "java -jar $wh/jlisp/$command -v -w $otherflags > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+off int;
+symbolic linelength 80;
+symbolic(!*redeflg!* := nil);
+$uncached
+on errcont;
+$loader
+lisp (testdirectory:="$dd");
+lisp random_new_seed 1;
+resettime1;
+write "START OF REDUCE TEST RUN ON $mc"$ in "$f"; write "END OF REDUCE TEST RUN"$
+showtime1$
+quit$
+XXX
+  cat $p.howlong.tmp >> $name-times/$p.rlg.tmp
+  printf $showname...
+  sed -e "/^Tested on /,//d" <$rlgfile |
+    sed -e "$SED1" >$name-times/$p.rlg.orig
+  sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
+      -e "/OMIT/,/TIMO/d" <$name-times/$p.rlg.tmp | \
+    sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
+    sed -e "$SED1" >$name-times/$p.rlg
+  diffBw $name-times/$p.rlg.orig $name-times/$p.rlg >$name-times/$p.rlg.diff
+  if test -s $name-times/$p.rlg.diff
+    then printf "Diff is in $name-times/$p.rlg.diff "
+    else printf "OK " ; rm -f $name-times/$p.rlg.diff $name-times/$p.rlg.orig
+  fi
+  echo "Tested on $mc Jlisp" > $name-times/$p.time
+  sed -e "1,/END OF REDUCE TEST RUN/d"  <$name-times/$p.rlg.tmp | \
+    sed -e '/^1: *$/d;' >>$name-times/$p.time
+  if test "x$keep" = "xno"
   then
-    cat $here/packages/$d/$p.tst > $here/xmpl/$p.tst
-    cat basecsl-times/$p.rlg basecsl-times/$p.time > $here/xmpl/$p.rlg
-    cat basecsl-times/$p.rlg basecsl-times/$p.time > $here/packages/$d/$p.rlg
+    rm -f $name-times/$p.rlg.tmp
   fi
-fi
-
-if test "$cslboot" = "yes"
-then
-  csltest "cslboot" "bootstrapreduce" "BootstrapCSL" "$v"
-fi
-
-fi # CSL case
-
-if test "$psl" = "yes"
-then
+}
 
 #######################################################################
 # PSL testing
 #######################################################################
 
-name=psl
-mkdir -p $name-times
+psltest() {
+  name=psl
+  mkdir -p $name-times
 
-$timeoutcmd $timecmd sh -c "$here/bin/redpsl > psl-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+  $timeoutcmd $timecmd sh -c "$here/bin/redpsl > psl-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redefmsg := nil);
@@ -492,126 +468,100 @@ write "START OF REDUCE TEST RUN on $mc"$ in "$f"; write "END OF REDUCE TEST RUN"
 showtime1$
 quit$
 XXX
-cat $p.howlong.tmp >> psl-times/$p.rlg.tmp
-printf "PSL..."
-sed -e "/^Tested on /,//d" <$rlgfile | \
-  sed -e "$SED1" >psl-times/$p.rlg.orig
-sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
-    -e "/OMIT/,/TIMO/d" <psl-times/$p.rlg.tmp | \
-  sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
-  sed -e "s/${ESCAPED_DIR}.//" | \
-  sed -e "$SED1" >psl-times/$p.rlg
-diffBw psl-times/$p.rlg.orig psl-times/$p.rlg >psl-times/$p.rlg.diff
-if test -s psl-times/$p.rlg.diff
-  then echo "diff is in psl-times/$p.rlg.diff"
-  else printf "OK " ; rm -f psl-times/$p.rlg.diff psl-times/$p.rlg.orig
-fi
-echo "Tested on $mc PSL" > psl-times/$p.time
-sed -e "1,/END OF REDUCE TEST RUN/d"  <psl-times/$p.rlg.tmp | \
-  sed -e '/^1: /d;' >>psl-times/$p.time
-if test "x$keep" = "xno"
-then
-  rm -f psl-times/$p.rlg.tmp
-fi
-
-fi # PSL case
-
-#######################################################################
-# Jlisp testing
-# This may be similar enough to the CSL case that it should be merged?
-#######################################################################
-
-if test "$jlisp" = "yes" || test "$jlispboot" = "yes"
-then
-
-jlisptest() {
-name=$1
-command=$2
-showname=$3
-
-mkdir -p $name-times
-
-wh="$here"
-if test -f /usr/bin/cygpath
-then
-  wh=`cygpath -m $wh`
-fi
-
-$timeoutcmd $timecmd sh -c "java -jar $wh/jlisp/$command -v -w $otherflags > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
-off int;
-symbolic linelength 80;
-symbolic(!*redeflg!* := nil);
-$uncached
-on errcont;
-$loader
-lisp (testdirectory:="$dd");
-lisp random_new_seed 1;
-resettime1;
-write "START OF REDUCE TEST RUN ON $mc"$ in "$f"; write "END OF REDUCE TEST RUN"$
-showtime1$
-quit$
-XXX
-cat $p.howlong.tmp >> $name-times/$p.rlg.tmp
-printf $showname...
-sed -e "/^Tested on /,//d" <$rlgfile |
-  sed -e "$SED1" >$name-times/$p.rlg.orig
-sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
-    -e "/OMIT/,/TIMO/d" <$name-times/$p.rlg.tmp | \
-  sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
-  sed -e "$SED1" >$name-times/$p.rlg
-diffBw $name-times/$p.rlg.orig $name-times/$p.rlg >$name-times/$p.rlg.diff
-if test -s $name-times/$p.rlg.diff
-  then printf "Diff is in $name-times/$p.rlg.diff "
-  else printf "OK " ; rm -f $name-times/$p.rlg.diff $name-times/$p.rlg.orig
-fi
-echo "Tested on $mc Jlisp" > $name-times/$p.time
-sed -e "1,/END OF REDUCE TEST RUN/d"  <$name-times/$p.rlg.tmp | \
-  sed -e '/^1: *$/d;' >>$name-times/$p.time
-if test "x$keep" = "xno"
-then
-  rm -f $name-times/$p.rlg.tmp
-fi
+  cat $p.howlong.tmp >> psl-times/$p.rlg.tmp
+  printf "PSL..."
+  sed -e "/^Tested on /,//d" <$rlgfile | \
+    sed -e "$SED1" >psl-times/$p.rlg.orig
+  sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
+      -e "/OMIT/,/TIMO/d" <psl-times/$p.rlg.tmp | \
+    sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
+    sed -e "s/${ESCAPED_DIR}.//" | \
+    sed -e "$SED1" >psl-times/$p.rlg
+  diffBw psl-times/$p.rlg.orig psl-times/$p.rlg >psl-times/$p.rlg.diff
+  if test -s psl-times/$p.rlg.diff
+    then echo "diff is in psl-times/$p.rlg.diff"
+    else printf "OK " ; rm -f psl-times/$p.rlg.diff psl-times/$p.rlg.orig
+  fi
+  echo "Tested on $mc PSL" > psl-times/$p.time
+  sed -e "1,/END OF REDUCE TEST RUN/d"  <psl-times/$p.rlg.tmp | \
+    sed -e '/^1: /d;' >>psl-times/$p.time
+  if test "x$keep" = "xno"
+  then
+    rm -f psl-times/$p.rlg.tmp
+  fi
 }
 
-if test "$jlisp" = "yes"
-then
-  jlisptest "jlisp" "reduce.jar" "Jlisp"
-fi
-
-if test "$jlispboot" = "yes"
-then
-  jlisptest "jlispboot" "bootstrapreduce.jar" "JlispBootstrap"
-fi
-
-fi # Jlisp case
+for pp in $platforms
+do
+  case $pp in
+  csl)
+    csltest "$pp" "redcsl" "CSL"
+# If the test cases include simple "--csl" and "--install" is specified
+# the log files will be installed in the main tree.
+    if test "$install" = "yes"
+    then
+      cat $here/packages/$d/$p.tst > $here/xmpl/$p.tst
+      cat csl-times/$p.rlg csl-times/$p.time > $here/xmpl/$p.rlg
+      cat csl-times/$p.rlg csl-times/$p.time > $here/packages/$d/$p.rlg
+    fi
+    ;;
+  csl-*)
+    csltest "$pp" "reduce" "CSL${pp#csl}" "${pp#csl-}"
+    ;;
+  cslboot)
+    csltest "$pp" "bootstrapreduce" "BootstrapCSL"
+    ;;
+  cslboot-*)
+    csltest "$pp" "bootstrapreduce" "BootstrapCSL${pp#cslboot}" "{pp#cslboot-}"
+    ;;
+  jlisp)
+    jlisptest "jlisp" "reduce.jar" "Jlisp"
+    ;;
+  jlispboot)
+    jlisptest "jlispboot" "bootstrapreduce.jar" "JlispBootstrap"
+    ;;
+  psl)
+    psltest
+    ;;
+  *)
+    printf "\n+++ Platform $pp not recognized\n"
+    exit 1
+  esac
+done
 
 #######################################################################
-# End of code that runs the tests.
+# End of code that runs the tests. Now report on results.
 #######################################################################
 
 
-# Now I will show speed ratios. The first specified platform will be used
+# I will show speed ratios. The first specified platform will be used
 # as defining the base-line. Thus for instance
 #   test1.sh --csl --psl            uses CSL as the base
 #   test1.sh --psl --csl --jlisp    uses PSL as the base
 # There is no merit in trying to do comparisons if only one system
 # had been tested, so I will detect and filter that case...
 
-counter=""
-for x in $platform
+first=""
+more="no"
+for x in $platforms
 do
-  counter="x$counter"
+  if test "$first" = ""
+  then
+    first="$x"
+  else
+    more="yes"
+  fi
 done
 
-if test "$counter" != "x"
+if test "$more" = "yes"
 then
-
 # Append on the end of the output line a list of speed ratios.
   base=""
-  for sys in $platform
+  for sys in $platforms
   do
     tt=`grep ^Time $sys-times/$p.time | \
         sed -e 's/.*(counter 1): //; s/ms.*//'`
+# base gets set to the time recorded for the first platform in the list.
     if test "x$base" = "x"
     then
 # If the recorded time is zero (which at least sometimes comes out
@@ -637,7 +587,7 @@ then
 # Now if any test logs disagree (using the first platform to define
 # a reference) print messages that explain that fact.
   base=""
-  for sys in $platform
+  for sys in $platforms
   do
     if test "x$base" = "x"
     then

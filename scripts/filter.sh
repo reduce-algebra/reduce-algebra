@@ -11,38 +11,41 @@ do
 # to have a catalogue of all the options I need to ignore. Messy!
 # And what is more, sometimes they appear as '--with-xxx' and sometimes
 # as just --with-xxx (sans the quote marks)....
+# Some of the options listed here are no longer in use! Many are so
+# specialised that no sane person would use them.
   case $x in
-  *--with-force* | \
-  *--with*-autogen* | \
-  *--with*-ccache* | \
-  *--with-mingw* | \
-  *--with-lto* | \
-  *--with-m32* | \
-  *--with-m64* | \
-  *--with*-throw* | \
-  *--with*-gui* | \
-  *--with*-xft* | \
-  *--with*-xim* | \
-  *--with-smallpage* | \
-  *--with*-fox* | \
-  *--with*-wx* | \
-  *--with-cyg* | \
-  *--with*-win32bit* | \
-  *--with-csl* | \
-  *--with-psl* | \
-  *--with-build* | \
-  *--with-pslbuild* | \
-  *--with*-crlibm* | \
-  *--with*-boehm* | \
-  *--with*-redfront* | \
-  *--with*-sequential* | \
-  *--enable-debug* | \
+  *--*able-silent* | \
   *--enable-conservative* | \
-  *--enable-test* | \
+  *--enable-debug* | \
   *--enable-experiment* | \
   *--enable-jit* | \
   *--enable-static* | \
-  *--*able-silent* )
+  *--enable-test* | \
+  *--with*-autogen* | \
+  *--with*-boehm* | \
+  *--with*-ccache* | \
+  *--with*-crlibm* | \
+  *--with*-fox* | \
+  *--with*-gui* | \
+  *--with*-redfront* | \
+  *--with*-sequential* | \
+  *--with*-throw* | \
+  *--with*-win32bit* | \
+  *--with*-wx* | \
+  *--with*-xft* | \
+  *--with*-xim* | \
+  *--with-arithlib* | \
+  *--with-build* | \
+  *--with-csl* | \
+  *--with-cyg* | \
+  *--with-force* | \
+  *--with-lto* | \
+  *--with-m32* | \
+  *--with-m64* | \
+  *--with-mingw* | \
+  *--with-psl* | \
+  *--with-pslbuild* | \
+  *--with-smallpage*)
     ;;
   *)
     filter="$filter $x"
