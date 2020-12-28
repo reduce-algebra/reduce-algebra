@@ -276,17 +276,17 @@ it is to be joined to the previous list of turtle commands at that point
 exactly, e.\ g.\ \ for i:=0:10 collect \{\ldots\}).
 
 
-\turtlesyntax\ \{ {\small(For user-defined Turtle functions)}\} 
+\turtlesyntax{\small(For user-defined Turtle functions)}
 \begin{tabbing}
-\ \ \= set \ \ \ \=tabs\=                                       \kill
- \> \texttt{procedure \textit{func\_name(func\_args)};}                  \\
- \> \texttt{begin [scalar \textit{additional variables}];}               \\   
- \> \> \vdots                                                      \\
- \> \> \textit{(the procedure body containing some turtle commands)}  \\
- \> \> \vdots                                                      \\ 
+\ \ \= set \ \ \ \=tabs\=\kill
+ \> \texttt{procedure \textit{func\_name(func\_args)};}\\
+ \> \texttt{begin [scalar \textit{additional variables}];}\\
+ \> \> $\vdots$\\
+ \> \> \textit{(the procedure body containing some turtle commands)}\\
+ \> \> $\vdots$\\
  \> \> \texttt{return} \textit{(a list, or label to a list, of turtle commands}\\
  \> \>            \>\textit{as accepted by \texttt{draw})}\\
- \> \texttt{end;} \\
+ \> \texttt{end;}
 \end{tabbing}
 
   For convenience, it is recommended that all user defined functions, such

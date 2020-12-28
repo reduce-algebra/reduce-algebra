@@ -1073,7 +1073,7 @@ extracting coefficients of the polynomial obtained by evaluating the
 Pochhammer symbol.  \REDUCE however uses an explicit summation.
 
 Stirling numbers of the second kind are defined by the formula:
-$$S_n^m = \frac{1}{m!}\sum_{k=0}^m (-1)^{m-k}{m \choose k} k^n.$$
+$$S_n^m = \frac{1}{m!} \sum_{k=0}^m (-1)^{m-k} \binom{n}{k} k^n.$$
 \REDUCE uses this explicit summation to evaluate Stirling numbers of the
 second kind.
 
@@ -1299,7 +1299,7 @@ $$\frac {2e^t} {1+e^{2t}} = \sum_{n=0}^{\infty}\frac{E_nt^n}{n!},\qquad\quad
 respectively.  Thus $E_0=1$ and $E_1=0$. Furthermore the numbers and
 polynomials are related by the equations:
 $$ E_n = 2^nE_n\left(\frac{1}{2}\right),\qquad\quad
-E_n(x) = \sum_{k=0}^n {n \choose k} \frac{E_k}{2^k} \left(x-\frac{1}{2}\right)^{n-k}.$$
+E_n(x) = \sum_{k=0}^n \binom{n}{k} \frac{E_k}{2^k} \left(x-\frac{1}{2}\right)^{n-k}.$$
 
 The Euler polynomials are evaluated for non-negative integer $n$ by using
 the summation immediately above.
@@ -1326,7 +1326,7 @@ $$ \frac {t} {e^t-1} = \sum_{n=0}^{\infty}\frac{B_nt^n}{n!},\qquad\quad
 \frac {te^{x t}} {e^t -1} = \sum_{n=0}^{\infty}\frac{B_n(x)t^n}{n!}$$
 respectively. Thus $B_0=1$ and $B_1=-\frac{1}{2}$. Furthermore the numbers and
 polynomials are related by the equations:
-$$ B_n= B_n(0),\qquad\quad  B_n(x) = \sum_{k=0}^n {n \choose k} B_kx^{n-k}.$$
+$$ B_n= B_n(0),\qquad\quad  B_n(x) = \sum_{k=0}^n \binom{n}{k} B_kx^{n-k}.$$
 
 The Bernoulli polynomials are evaluated for non-negative integer $n$ by using
 the summation immediately above.

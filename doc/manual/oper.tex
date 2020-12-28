@@ -1069,7 +1069,7 @@ permitted for the denominator of the convergent
 and an \textbf{optional} number of continuents to be generated:
 \begin{syntaxtable}
   \texttt{continued\_fraction(}\meta{num}\texttt{)}\\
-  \texttt{continued\_fraction(}\meta{num}\texttt{,}\meta{size}\texttt{)} \\
+  \texttt{continued\_fraction(}\meta{num}\texttt{,}\meta{size}\texttt{)}\\
   \texttt{continued\_fraction(}\meta{num}\texttt{,}
   \meta{size}\texttt{,}\meta{numterms}\texttt{)}
 \end{syntaxtable}
@@ -1077,15 +1077,15 @@ The result is the special operator \texttt{contfrac}
 \ttindextype{contfrac}{operator}
 with three arguments: the original number to be expanded
 \meta{num}, secondly the rational number approximation (the final convergent)
-and thirdly a list of continuents of the continued fraction (i\.e. a list of
+and thirdly a list of continuents of the continued fraction (i.e. a list of
 pairs of partial numerators and denominators)
-\begin{quote}
-\begin{tabbing}
-\hspace{10mm} \= \texttt{\{t0, \{1, t1\}, \{1, t2\}, .... \}}\\ \\
-which represents the same value according to the definition\\ \\
- \> \texttt{t0 +1/(t1 + 1/(t2 + ...))}.
-\end{tabbing}
-\end{quote}
+
+\hspace{10mm}\texttt{\{t0, \{1, t1\}, \{1, t2\}, .... \}}
+
+which represents the same value according to the definition
+
+\hspace{10mm}\texttt{t0 +1/(t1 + 1/(t2 + ...))}.
+
 Note that, although with the current
 algorithm all the partial numerators have the value 1, they are stored
 in the list of continuents. This is for compatibility with the output of
@@ -1195,16 +1195,15 @@ arguments specify the differentiation variables and the number of times
 they are applied.
 
 The number \texttt{NUM} may be omitted if it is 1.  For example,
-\begin{quote}
+
 \begin{tabbing}
-\texttt{df(y,x1,2,x2,x3,2)} \= = $\partial^{5}y/\partial x_{1}^{2} \
- \partial x_{2}\partial x_{3}^{2}.$\kill
-\texttt{df(y,x)} \> = $\partial y/\partial x$ \\
-\texttt{df(y,x,2)} \> = $\partial^{2}y/\partial x^{2}$ \\
-\texttt{df(y,x1,2,x2,x3,2)} \> = $\partial^{5}y/\partial x_{1}^{2} \
- \partial x_{2}\partial x_{3}^{2}.$
+\hspace{0.5in} \= \texttt{df(y,x1,2,x2,x3,2)} \= \kill
+\> \texttt{df(y,x)} \> = $\partial y/\partial x$ \\
+\> \texttt{df(y,x,2)} \> = $\partial^{2}y/\partial x^{2}$ \\
+\> \texttt{df(y,x1,2,x2,x3,2)} \> = $\partial^{5}y/\partial x_{1}^{2}
+ \partial x_{2}\partial x_{3}^{2}$.
 \end{tabbing}
-\end{quote}
+
 The evaluation of \texttt{df(y,x)} proceeds as follows: first, the values of
 \var{Y} and \var{X} are found.  Let us assume that \var{X} has no assigned
 value, so its value is \var{X}.  Each term or other part of the value of

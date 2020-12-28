@@ -13,6 +13,9 @@ GS_OPTIONS=-DNOSAFER ; export GS_OPTIONS
 
 test "$1" = "for-sf" && CONFIG=reduce-sf
 
+# FJW 2020-12-28 Delete previously generated HTML and PNG files:
+rm -f ${JOBNAME}*.{html,png}
+
 # Remove .ind file, could be left over from latex run
 rm -f ${JOBNAME}.ind
 
@@ -32,8 +35,8 @@ bibtex ${JOBNAME}
 
 mk4ht htlatex ${JOBNAME} ${CONFIG},${SECTIONINGDEPTH}
 
-LC_CTYPE=C sed -e 's#https://reduce-_algebra\.sourceforge\.io/#https://reduce-algebra.sourceforge.io/#' ${JOBNAME}.html >index.html
-cp index.html ${JOBNAME}.html
+# FJW 2020-12-28 These steps seem to be redundant:
+# LC_CTYPE=C sed -e 's#https://reduce-_algebra\.sourceforge\.io/#https://reduce-algebra.sourceforge.io/#' ${JOBNAME}.html >index.html
+# cp index.html ${JOBNAME}.html
 
 exit 0
-
