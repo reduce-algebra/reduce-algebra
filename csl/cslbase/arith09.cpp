@@ -41,14 +41,15 @@
 #include "headers.h"
 
 
-#define topdigit(a) ((int32_t)bignum_digits(a)[(bignum_length(a)-CELL)/4-1])
+#define topdigit(a) \
+    static_cast<int32_t>(bignum_digits(a)[(bignum_length(a)-CELL)/4-1])
 
 static LispObject absb(LispObject a)
 //
 // take absolute value of a bignum
 //
 {   size_t len = (bignum_length(a)-CELL)/4;
-    if ((int32_t)bignum_digits(a)[len-1] < 0) return negateb(a);
+    if (static_cast<int32_t>(bignum_digits(a)[len-1]) < 0) return negateb(a);
     else return a;
 }
 
@@ -89,7 +90,7 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
     term_printf("a0=%.8x a1=%.8x b0=%.8x b1=%.8x\n", a0, a1, b0, b1);
 #endif
     b1++;
-    if ((int32_t)b1 < 0)
+    if (static_cast<int32_t>(b1) < 0)
     {   b0++;
         b1 = 0;  // carry if necessary
     }
@@ -129,7 +130,7 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
                 while (b0 < a0)     // Shift B left until >= A
                 {   b0 = b0 << 1;
                     b1 = b1 << 1;
-                    if ((int32_t)b1 < 0)
+                    if (static_cast<int32_t>(b1) < 0)
                     {   b0++;
                         b1 &= 0x7fffffff;
                     }
@@ -141,7 +142,7 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
                     {   q |= qt;
                         a0 -= b0;
                         a1 -= b1;
-                        if ((int32_t)a1 < 0)
+                        if (static_cast<int32_t>(a1) < 0)
                         {   a0--;
                             a1 &= 0x7fffffff;
                         }
@@ -180,12 +181,12 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
 // so that the partial quotients I compute always tend to be underestimates.
 //
             a1 = a1 - axy;
-            if ((int32_t)a1 < 0)
+            if (static_cast<int32_t>(a1) < 0)
             {   a1 &= 0x7fffffff;
                 a0--;
             }
             b1 = b1 + bxy;
-            if ((int32_t)b1 < 0)
+            if (static_cast<int32_t>(b1) < 0)
             {   b1 &= 0x7fffffff;
                 b0++;
             }
@@ -409,7 +410,7 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
             {   uint32_t mlow, w;
                 Dmultiply(carry, mlow, b[i], q, carry);
                 w = a[j] + (uint32_t)clear_top_bit(~mlow) + carry1;
-                if ((int32_t)w < 0)
+                if (static_cast<int32_t>(w) < 0)
                 {   w = clear_top_bit(w);
                     carry1 = 1;
                 }
@@ -431,7 +432,7 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
 // should increase the number of steps that can be taken at once (slightly).
 // These days I could probably improve the code here using uint64_t, but
 // right now I do not want to disrupt it!
-                if (a0 < (int32_t)0x8000U && lena > 2)
+                if (a0 < static_cast<int32_t>(0x8000U) && lena > 2)
                 {   a0 = (a0 << 16) | (a1 >> 15);
                     a1 = ((a1 << 16) | (a[lena-2] >> 15)) & 0x7fffffff;
                     b00 = (b00 << 16) | (b1 >> 15);
@@ -472,8 +473,10 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
                     Dmultiply(carryay, aiy, b[i], ay, carryay);
                     Dmultiply(carrybx, bix, a[i], bx, carrybx);
                     Dmultiply(carryby, biy, b[i], by, carryby);
-                    aa = aix + (uint32_t)clear_top_bit(~aiy) + borrowa;
-                    bb = biy + (uint32_t)clear_top_bit(~bix) + borrowb;
+                    aa = aix + static_cast<uint32_t>(clear_top_bit(~aiy)) +
+                         borrowa;
+                    bb = biy + static_cast<uint32_t>(clear_top_bit(~bix)) +
+                         borrowb;
                     borrowa = aa >> 31;
                     borrowb = bb >> 31;
                     a[i] = clear_top_bit(aa);
@@ -487,8 +490,8 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
                 Dmultiply(carryay, aiy, b0, ay, carryay);
                 Dmultiply(carrybx, bix, a[lena], bx, carrybx);
                 Dmultiply(carryby, biy, b0, by, carryby);
-                aa = aix + (uint32_t)clear_top_bit(~aiy) + borrowa;
-                bb = biy + (uint32_t)clear_top_bit(~bix) + borrowb;
+                aa = aix + static_cast<uint32_t>(clear_top_bit(~aiy)) + borrowa;
+                bb = biy + static_cast<uint32_t>(clear_top_bit(~bix)) + borrowb;
                 borrowa = aa >> 31;
                 borrowb = bb >> 31;
                 aa = clear_top_bit(aa);
@@ -825,20 +828,23 @@ LispObject ash(LispObject a, LispObject b)
             return fixnum_of_int(aa);
         }
         else if (SIXTY_FOUR_BIT && bb < 64)
-        {   int64_t lo = ASL(aa, bb);  // low 64-bits of result
-            int64_t hi = ASR((int64_t)aa, 64-bb);
-            uint32_t d0 = (uint32_t)(lo & 0x7fffffff);
-            uint32_t d1 = (uint32_t)((lo>>31) & 0x7fffffff);
-            uint32_t d2 = (uint32_t)((lo>>62) & 0x3) |
-                          (uint32_t)((hi<<2) & 0x7ffffffc);
-            int32_t  d3 = (int32_t)(hi>>29);
+        {   int64_t lo = ASL(static_cast<int64_t>(aa),
+                             static_cast<int>(bb));  // low 64-bits
+            int64_t hi = ASR(static_cast<int64_t>(aa),
+                             static_cast<int>(64-bb));
+            uint32_t d0 = static_cast<uint32_t>(lo & 0x7fffffff);
+            uint32_t d1 = static_cast<uint32_t>((lo>>31) & 0x7fffffff);
+            uint32_t d2 = static_cast<uint32_t>((lo>>62) & 0x3) |
+                          static_cast<uint32_t>((hi<<2) & 0x7ffffffc);
+            int32_t  d3 = static_cast<int32_t>(hi>>29);
 // (d3 .. d0) is now a 4-word 2s complement shifted value. It may have
 // leading (-1) or (0) digits...
             if (d3==0 && d2==0)
                 return make_lisp_integer64(ASL((int64_t)d1, 31) | d0);
-            else if (d3==-1 && (int32_t)d2==0x7fffffff)
+            else if (d3==-1 && static_cast<int32_t>(d2)==0x7fffffff)
                 return make_lisp_integer64(
-                           ASL((int64_t)(int32_t)(d1|0x80000000), 31) | d0);
+                           ASL(static_cast<int64_t>(
+                                 static_cast<int32_t>(d1|0x80000000)), 31) | d0);
 // Now I have at least a 3-word bignum
             else if (d3 == 0 && (d2 & 0x40000000) == 0)
                 return make_three_word_bignum(d2, d1, d0);
@@ -877,7 +883,7 @@ LispObject ash(LispObject a, LispObject b)
         int32_t bits = bb % 31;     // bits to shift left by
         int32_t msd = bignum_digits(a)[lena];
         int32_t d0 = ASR(msd, (31 - bits));
-        int32_t d1 = clear_top_bit(((uint32_t)msd) << bits);
+        int32_t d1 = clear_top_bit(static_cast<uint32_t>(msd) << bits);
         size_t i, lenc = lena + words;
         bool longer = false;
         LispObject c;
@@ -905,8 +911,8 @@ LispObject ash(LispObject a, LispObject b)
 // logical vs arithmetic shifts to bother me.
 //
             bignum_digits(c)[words + i] =
-                ((uint32_t)d0 >> (31 - bits)) |
-                clear_top_bit(((uint32_t)d1) << bits);
+                (static_cast<uint32_t>(d0) >> (31 - bits)) |
+                clear_top_bit(static_cast<uint32_t>(d1) << bits);
             d0 = d1;
         }
         if (longer) bignum_digits(c)[words+i] = ASR(d0, (31 - bits));
@@ -923,7 +929,7 @@ LispObject ash(LispObject a, LispObject b)
         int32_t bits = (-bb) % 31;     // bits to shift right by
         int32_t msd = bignum_digits(a)[lena];
         int32_t d0 = ASR(msd, bits);
-        int32_t d1 = clear_top_bit(((uint32_t)msd) << (31 - bits));
+        int32_t d1 = clear_top_bit(static_cast<uint32_t>(msd) << (31 - bits));
 // Maybe at this stage I can tell that the result will be zero (or -1).
         if (words > lena) return fixnum_of_int(msd < 0 ? -1 : 0);
         size_t i, lenc = lena - words;
@@ -949,7 +955,8 @@ LispObject ash(LispObject a, LispObject b)
         for (i=0; i<lenc; i++)
         {   d1 = bignum_digits(a)[words+i+1];
             bignum_digits(c)[i] =
-                ((uint32_t)d0 >> bits) | clear_top_bit(((uint32_t)d1) << (31 - bits));
+                (static_cast<uint32_t>(d0) >> bits) |
+                clear_top_bit(static_cast<uint32_t>(d1) << (31 - bits));
             d0 = d1;
         }
         d1 = shorter ? msd : (msd < 0 ? -1 : 0);
@@ -1058,7 +1065,7 @@ static LispObject logiorib(LispObject a, LispObject b)
 // only need inspect the low one or two digits of a bignum.
     if ((intptr_t)a < 0)
     {   intptr_t v;
-        if (!SIXTY_FOUR_BIT) v = (int32_t)bignum_digits(b)[0];
+        if (!SIXTY_FOUR_BIT) v = static_cast<int32_t>(bignum_digits(b)[0]);
         else v = (intptr_t)ASL(bignum_digits64(b,1), 31) | bignum_digits(b)[0];
         return fixnum_of_int(int_of_fixnum(a) | v);
     }
@@ -1190,7 +1197,7 @@ static LispObject logandib(LispObject a, LispObject b)
 // words.
     if ((intptr_t)a >= 0)
     {   intptr_t v;
-        if (!SIXTY_FOUR_BIT) v = (int32_t)bignum_digits(b)[0];
+        if (!SIXTY_FOUR_BIT) v = static_cast<int32_t>(bignum_digits(b)[0]);
         else v = (intptr_t)ASL(bignum_digits64(b,1), 31) | bignum_digits(b)[0];
         return fixnum_of_int(int_of_fixnum(a) & v);
     }
