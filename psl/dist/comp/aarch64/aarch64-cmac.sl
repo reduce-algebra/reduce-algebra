@@ -435,14 +435,14 @@
 (DefCMacro *Call
        ((InternallyCallableP)  (BL (InternalEntry ArgOne)))
         (         (*Move (idloc ArgOne) (reg t3))
-                  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 2)))
+                  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 3)))
                   (BLR (reg t2)))
 )
 
 (DefCMacro *JCall
        ((InternallyCallableP)  (B (InternalEntry ArgOne)))
         (         (*Move (idloc ArgOne) (reg t3))
-                  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 2)))
+                  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 3)))
                   (BR (reg t2)))
 )
 
@@ -538,9 +538,9 @@
         (comment (if *writingasmfile `((comment ,@nonlocal)))))
     (append comment
       (if (and idnumber (fixp idnumber) (lessp idnumber 257) (greaterp idnumber -1))
-        `( (,load-or-store ,reg (displacement (reg symval) ,(times 4 idnumber))) )
+        `( (,load-or-store ,reg (displacement (reg symval) ,(times 8 idnumber))) )
        `( (LDR (reg t3) ,(if (null idnumber) (SaveConstant `(saveidloc ,(cadr nonlocal))) `(quote ,idnumber))) 
-         (,load-or-store ,reg (displacement (reg symval) (regshifted t3 LSL 2))) )
+         (,load-or-store ,reg (displacement (reg symval) (regshifted t3 LSL 3))) )
       ))))
 
 (DefCMacro *LoadIdNumber)
@@ -552,6 +552,7 @@
         `((LDR ,dest ,(unimmediate src)))
       `((ADRL ,dest ,src)))             % two instruction load address pseudo-op
     )
+
 
 (DefCMacro *LoadImmediate)
 
