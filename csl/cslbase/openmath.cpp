@@ -53,7 +53,6 @@
 // symbol OPENMATH must be #defined.
 //
 
-
 #include "headers.h"
 
 
@@ -174,8 +173,8 @@ om_toBigNumStr(LispObject num)
     i = ((bignum_length(num) >> 2) - 1) * 31;
     numDigits = (i >> 2) + (((i & 0x3) != 0) ? 1 : 0);
 
-    str = reinterpret_cast<char *>(std)::malloc((numDigits + 1) * sizeof(
-                char));
+// If we are out of memory this will just crash with an exception thown.
+    str = new char[numDigits + 1];
     std::memset(str, 0, (numDigits + 1) * sizeof(char));
 
     strPos = 0;
@@ -329,7 +328,7 @@ om_toCString(LispObject obj)
         int len = 0;
         tmp = get_string_data(obj, "om_toCString", len);
         tmp[len] = '\0';
-        pstr = (char **)std::malloc(sizeof(char *));
+        pstr = new char *();
         *pstr = strdup(tmp);
     }
     return pstr;
@@ -913,7 +912,7 @@ LispObject om_putInt(LispObject env, LispObject ldev, LispObject val)
         size = std::strlen(data);
         sign = minusp(val) ? -1 : 1;
         status = OMputBigInt(dev, data, size, sign, OMbigIntBase16);
-        std::free(data);
+        delete [] data;
     }
 
     if (status != OMsuccess)
@@ -1387,7 +1386,7 @@ LispObject om_getInt(LispObject env, LispObject ldev)
                 status = OMgetBigInt(dev, &data, &len, &sign, &fmt);
                 if (status == OMsuccess)
                     obj = om_fromBigNumStr(data, len, sign, fmt);
-                std::free(data);
+                delete [] data;
                 break;
             }
             default:
@@ -1468,7 +1467,7 @@ LispObject om_getVar(LispObject env, LispObject ldev)
     else
     {   obj = make_symbol(var, 2, // do not convert name to upper case
                           undefined1, undefined2, undefinedn);
-        std::free(var);
+        delete [] var;
         return obj;
     }
 }
@@ -1489,7 +1488,7 @@ LispObject om_getString(LispObject env, LispObject ldev)
         return om_error(status);
     else
     {   obj = make_string(str);
-        std::free(str);
+        delete [] str;
         return obj;
     }
 }
@@ -1516,13 +1515,11 @@ LispObject om_getSymbol(LispObject env, LispObject ldev)
     status = OMgetSymbolLength(dev, &cdLen, &nameLen);
     if (status != OMsuccess)
         return om_error(status);
-    cd = reinterpret_cast<char *>(std)::malloc(sizeof(char) *
-            (cdLen + 1));
-    name = reinterpret_cast<char *>(std)::malloc(sizeof(char) *
-            (nameLen + 1));
+    cd = new char[cdLen + 1];
+    name = new (std::nothrow) char[nameLen + 1];
     if (cd == nullptr || name == nullptr)
-    {   if (cd != nullptr) std::free(cd);
-        else if (name != nullptr) std::free(name);
+    {   if (cd != nullptr) delete [] cd;
+        else if (name != nullptr) delete [] name;
         return om_error(OMinternalError);
     }
     cd[cdLen] = '\0';
@@ -1538,8 +1535,8 @@ LispObject om_getSymbol(LispObject env, LispObject ldev)
         obj = cons(cdstr, cons(namestr, nil));
     }
 
-    std::free(cd);
-    std::free(name);
+    delete [] cd;
+    delete [] name;
     //return onevalue(obj);
     return obj;
 }

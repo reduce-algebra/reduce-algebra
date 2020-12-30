@@ -470,15 +470,15 @@ void reader_setup_repeats(size_t n)
 {   if (repeat_heap_size != 0 ||
         repeat_heap != nullptr)
     {   std::fprintf(stderr, "\n+++ repeat heap processing error\n");
-        my_abort();
+        my_abort("repeat heap");
     }
     repeat_heap_size = n;
     repeat_count = 0;
     if (n == 0) return; // No repeats present, so not table needed.
-    repeat_heap = reinterpret_cast<LispObject *>(std::malloc((n+1)*sizeof(LispObject)));
+    repeat_heap = new (std::nothrow) LispObject[n+1];
     if (repeat_heap == nullptr)
     {   std::fprintf(stderr, "\n+++ unable to allocate repeat heap\n");
-        my_abort();
+        my_abort("repeat heap");
     }
 // I fill the vector with fixnum_of_int(0) so it is GC safe.
     for (size_t i=0; i<repeat_heap_size; i++)
@@ -488,11 +488,10 @@ void reader_setup_repeats(size_t n)
 void writer_setup_repeats()
 {   repeat_heap_size = repeat_hash.count;
     repeat_count = 0;
-    repeat_heap =
-        reinterpret_cast<LispObject *>(std::malloc((repeat_heap_size+1)*sizeof(LispObject)));
+    repeat_heap = new (std::nothrow) LispObject[repeat_heap_size+1];
     if (repeat_heap == nullptr)
     {   std::fprintf(stderr, "\n+++ unable to allocate repeat heap\n");
-        my_abort();
+        my_abort("run out of memory");
     }
     for (size_t i=0; i<=repeat_heap_size; i++)
         repeat_heap[i] = fixnum_of_int(0);
@@ -592,7 +591,7 @@ int read_opcode_byte()
     std::fprintf(stderr, "Read %d = %.2x ", r, r);
     if (r != SER_OPNEXT)
     {   std::fprintf(stderr, "\nExpected OPNEXT but did not find it\n");
-        my_abort();
+        my_abort("bad bytecodes");
     }
     else std::fprintf(stderr, "SER_OPNEXT\n");
 #endif // DEBUG_SERIALIZE & DEBUG_OPNEXT
@@ -716,7 +715,7 @@ void write_opcode(int byte, const char *msg, ...)
             {   if (n == 1) write_opcode(SER_NIL, "NIL");
                 else if (n == 2) write_opcode(SER_NIL2, "NIL NIL");
                 else if (n == 3) write_opcode(SER_NIL3, "NIL NIL NIL");
-                else my_abort();
+                else my_abort("serialization failure");
             }
             else for (uint64_t i=0; i<n; i++)
                 write_opcode(b, delayed_message);
@@ -1156,9 +1155,9 @@ uint64_t crc64(uint64_t crc, const void *buf, size_t size)
 #ifdef TEST_MAIN
 
 #include <cstdio>
-int mainstatic_cast<void>()
+int main()
 {   std::printf("e9c6d914c4b8d9ca == %016" PRIx64 "\n",
-           crc64(0,(const std::uint8_t *)"123456789",9));
+                crc64(0,(const std::uint8_t *)"123456789",9));
     return 0;
 }
 
@@ -1298,7 +1297,7 @@ no_args *read_function0()
     if (handle >= codepointers0.size())
     {   std::fprintf(stderr, "Invalid code handle read (%" PRIu64 " / %" PRIx64 ")\n",
                 handle, handle);
-        my_abort();
+        my_abort("bad code handle");
     }
     return codepointers0[handle];
 }
@@ -1308,7 +1307,7 @@ one_arg *read_function1()
     if (handle >= codepointers1.size())
     {   std::fprintf(stderr, "Invalid code handle read (%" PRIu64 " / %" PRIx64 ")\n",
                 handle, handle);
-        my_abort();
+        my_abort("bad code handle");
     }
     return codepointers1[handle];
 }
@@ -1318,7 +1317,7 @@ two_args *read_function2()
     if (handle >= codepointers2.size())
     {   std::fprintf(stderr, "Invalid code handle read (%" PRIu64 " / %" PRIx64 ")\n",
                 handle, handle);
-        my_abort();
+        my_abort("bad code handle");
     }
     return codepointers2[handle];
 }
@@ -1328,7 +1327,7 @@ three_args *read_function3()
     if (handle >= codepointers3.size())
     {   std::fprintf(stderr, "Invalid code handle read (%" PRIu64 " / %" PRIx64 ")\n",
                 handle, handle);
-        my_abort();
+        my_abort("bad code handle");
     }
     return codepointers3[handle];
 }
@@ -1338,7 +1337,7 @@ fourup_args *read_function4up()
     if (handle >= codepointers4up.size())
     {   std::fprintf(stderr, "Invalid code handle read (%" PRIu64 " / %" PRIx64 ")\n",
                 handle, handle);
-        my_abort();
+        my_abort("bad code handle");
     }
     return codepointers4up[handle];
 }
@@ -1777,7 +1776,7 @@ down:
 // A 28-bit short float
                     assert(opcode_repeats == 0);
                     std::fprintf(stderr, "SER_FLOAT28 not coded yet\n");
-                    my_abort();
+                    my_abort("FLOAT28");
 
                 case SER_FLOAT32:
 // a 32-bit single float
@@ -1858,11 +1857,11 @@ down:
 
                 case SER_END:
                     std::fprintf(stderr, "End of dump marker found - this is an error situation\n");
-                    my_abort();
+                    my_abort("truncated image file");
 
                 case SER_OPNEXT:
                     std::fprintf(stderr, "OPNEXT opcode out of place\n");
-                    my_abort();
+                    my_abort("bad image file");
 
                 case SER_spare_f6:
                 case SER_spare_f7:
@@ -1875,7 +1874,7 @@ down:
                 case SER_spare_fe:
                 default:
                     std::fprintf(stderr, "Unimplemented/unknown reader opcode (a) %.2x\n", c);
-                    my_abort();
+                    my_abort("unknown code in image file");
             }
             break;
         case SER_LVECTOR:
@@ -2065,26 +2064,26 @@ down:
                 else if (vector_f128(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+16*w));
                     *(atomic<LispObject>*)p = prev;
-                    std::fprintf(stderr, "128-bit integer arrays not supported (yet?)\n");
-                    my_abort();
+                    std::fprintf(stderr, "128-bit floats not supported (yet?)\n");
+                    my_abort("128-bit float");
                 }
 #endif // HAVE_SOFTFLOAT
                 else if (vector_i128(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+16*w));
                     *(atomic<LispObject>*)p = prev;
-                    std::fprintf(stderr, "128-bit floats not supported (yet?)\n");
-                    my_abort();
+                    std::fprintf(stderr, "128-bit integer arrays not supported (yet?)\n");
+                    my_abort("128-bit integer arrays");
                 }
                 else
                 {   std::fprintf(stderr, "Vector code is impossible\n");
-                    my_abort();
+                    my_abort("bad format in image file");
                 }
             }
             goto up;
 
         default:
             std::fprintf(stderr, "Unimplemented reader opcode (b) %.2x\n", c);
-            my_abort();
+            my_abort("bad byte in image file");
     }
 
 // The above deals with arriving at the description of an object. What follows
@@ -2096,7 +2095,7 @@ up:
     if (b == fixnum_of_int(0))
     {   if (r == 0)
         {   std::fprintf(stderr, "serial reader about to return zero\n");
-            my_abort();
+            my_abort("bad image file");
         }
         return r;
     }
@@ -2114,12 +2113,12 @@ up:
     if (!is_cons(s))
     {   std::fprintf(stderr, "s bad at line %d in serialize.cpp\n", __LINE__);
         simple_print(s);
-        my_abort();
+        my_abort("serialization");
     }
     if (!is_fixnum(car(s)))
     {   std::fprintf(stderr, "car s bad at line %d in serialize.cpp\n", __LINE__);
         simple_print(car(s));
-        my_abort();
+        my_abort("serialization");
     }
     intptr_t n = int_of_fixnum(car(s)) - 1;
     if (n < 0)
@@ -2127,7 +2126,7 @@ up:
         std::fprintf(stderr, "car(s) = %" PRIx64 " in raw hex\n", (int64_t)car(s));
         std::fprintf(stderr, "value of car(s) as list: ");
         simple_print(car(s));
-        my_abort();
+        my_abort("serialization");
     }
     if (n == 0)
     {   w = b;
@@ -2227,34 +2226,36 @@ static int address_used(uint64_t addr)
     return (m5[addr >> 3] & (1 << (addr & 7))) != 0;
 }
 
-// Allocate memory for part of the map. if malloc can not allocate space
+// Allocate memory for part of the map. if new can not allocate space
 // it should be treated as a fatal error - the processing here is naive
 // at present, since for instance with a GUI there is no guarantee that
 // stderr exists.
 //
-// Furthermore rather than using malloc here (and free later) I should try
+// Furthermore rather than using new here (and delete later) I should try
 // to use some space that is allocated to me but not currently in use. If I
 // have a 2-space copying collector I have half my whole memory available!
 // Even if I am using a non-copying collector I expect there to be LOTS of
-// space available. So maybe what I need rather than malloc is a call that
-// allocates a vector-like region in the heap, but falls back to malloc (eg
+// space available. So maybe what I need rather than new is a call that
+// allocates a vector-like region in the heap, but falls back to new (eg
 // to expand the heap) rather than garbage collecting?
 
 static void *new_map_block()
-{   void *p = reinterpret_cast<void *>(std::calloc(512, sizeof(void *)));
+{   char *p = new (std::nothrow) char[512*sizeof(void *)];
     if (p == nullptr)
     {   std::fprintf(stderr, "\nFatal error - no memory\n");
         my_exit();
     }
-    return p;
+    std::memset(p, 0, 512*sizeof(void *));
+    return reinterpret_cast<void *>(p);
 }
 
 static std::uint8_t *new_final_map_block()
-{   std::uint8_t *p = reinterpret_cast<std::uint8_t *>(std::calloc(4096, 1));
+{   std::uint8_t *p = new (std::nothrow) std::uint8_t[4096];
     if (p == nullptr)
     {   std::fprintf(stderr, "\nFatal error - no memory\n");
         my_exit();
     }
+    std::memset(p, 0, 4096);
     return p;
 }
 
@@ -2294,34 +2295,34 @@ static void mark_address_as_used(uint64_t addr)
 // Release all memory used by the bitmap.
 
 static void release_map_5(std::uint8_t *m)
-{   if (m != nullptr) std::free(m);
+{   if (m != nullptr) delete [] m;
 }
 
 static void release_map_4(std::uint8_t **m)
 {   if (m != nullptr)
     {   for (int i=0; i<512; i++) release_map_5(m[i]);
-        std::free(m);
+        delete [] m;
     }
 }
 
 static void release_map_3(std::uint8_t ***m)
 {   if (m != nullptr)
     {   for (int i=0; i<512; i++) release_map_4(m[i]);
-        std::free(m);
+        delete [] m;
     }
 }
 
 static void release_map_2(std::uint8_t ****m)
 {   if (m != nullptr)
     {   for (int i=0; i<512; i++) release_map_3(m[i]);
-        std::free(m);
+        delete [] m;
     }
 }
 
 static void release_map_1(std::uint8_t *****m)
 {   if (m != nullptr)
     {   for (int i=0; i<512; i++) release_map_2(m[i]);
-        std::free(m);
+        delete [] m;
     }
 }
 
@@ -3087,16 +3088,16 @@ down:
 #ifdef HAVE_SOFTFLOAT
             else if (vector_f128(h))
             {   std::fprintf(stderr, "128-bit float arrays not supported (yet?)\n");
-                my_abort();
+                my_abort("128-bit float arrays");
             }
 #endif // HAVE_SOFTFLOAT
             else if (vector_i128(h))
             {   std::fprintf(stderr, "128-bit integer arrays not supported (yet?)\n");
-                my_abort();
+                my_abort("128-bit integer arrays");
             }
             else
             {   std::fprintf(stderr, "Vector code is impossible\n");
-                my_abort();
+                my_abort("bad vector type");
             }
             if (i != (size_t)-1)
                 write_opcode(SER_DUP, "repeatedly ref. vector");
@@ -3140,7 +3141,7 @@ down:
 #endif // HAVE_SOFTFLOAT
                 default:
                     std::fprintf(stderr, "floating point representation not recognized\n");
-                    my_abort();
+                    my_abort("unknown floating  point format");
             }
             if (i != (size_t)-1)
                 write_opcode(SER_DUP, "repeatedly referenced vector");
@@ -3275,7 +3276,7 @@ public:
     {   hash_finalize(&repeat_hash);
         if (repeat_heap_size != 0)
         {   repeat_heap_size = 0;
-            std::free(repeat_heap);
+            delete [] repeat_heap;
         }
         repeat_heap = nullptr;
     }
@@ -3479,7 +3480,7 @@ static LispObject load_module(LispObject env, LispObject file,
             option != F_LOAD_MODULE) r = serial_read();
         if (repeat_heap_size != 0)
         {   repeat_heap_size = 0;
-            std::free(repeat_heap);
+            delete [] repeat_heap;
         }
     }
 // I will process the stuff I just read AFTER I have closed the stream
@@ -3622,7 +3623,7 @@ LispObject Lunserialize(LispObject env)
     r = serial_read();
     if (repeat_heap_size != 0)
     {   repeat_heap_size = 0;
-        std::free(repeat_heap);
+        delete [] repeat_heap;
     }
     repeat_heap = nullptr;
     return onevalue(r);
@@ -3861,7 +3862,7 @@ void warm_setup()
     if ((i = read_opcode_byte()) != SER_END)
     {   std::fprintf(stderr, "Did not find SER_END opcode where expected\n");
         std::fprintf(stderr, "Byte that was read was %.2x\n", static_cast<int>(i));
-        my_abort();
+        my_abort("END marker missing");
     }
     {   char endmsg[32];
         Zread(endmsg, 24);  // the termination record
@@ -3888,7 +3889,7 @@ void warm_setup()
     }
     if (repeat_heap_size != 0)
     {   repeat_heap_size = 0;
-        std::free(repeat_heap);
+        delete [] repeat_heap;
     }
     repeat_heap = nullptr;
 
@@ -3902,7 +3903,7 @@ void warm_setup()
 // variant on the code that traverses my entire heap.
 
 // This code uses the same bitmap technology (with the temporary bitmap
-// allocated using malloc) that serialization (and hence both fasl output
+// allocated using new) that serialization (and hence both fasl output
 // and preserve) does. I provide a generic function that visits every
 // symbol in the system. This function must not trigger garbage collection!
 // So I give it a predicate that filters the symbols found, and it pushes
@@ -4268,7 +4269,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
         return onevalue(nil);
     }
     if (what == 0 || what == 1)   // needed if I am printing
-    {   buff = (mapstore_item *)std::malloc(100*sizeof(mapstore_item));
+    {   buff = new (std::nothrow) mapstore_item[100];
         if (buff == nullptr) return onevalue(nil); // fail
         buffp = 0;
         buffn = 100;
@@ -4298,10 +4299,12 @@ LispObject Lmapstore(LispObject env, LispObject a)
                     {   if (what == 0 || what == 1)
                         {   if (buffp == buffn)
                             {   buffn += 100;
-                                buff = (mapstore_item *)
-                                       std::realloc(reinterpret_cast<void *>(buff),
-                                           sizeof(mapstore_item)*buffn);
-                                if (buff == nullptr) return onevalue(nil);
+                                mapstore_item *bigger  = new (std::nothrow)
+                                    mapstore_item[buffn];
+                                if (bigger == nullptr) return onevalue(nil);
+                                std::memcpy(bigger, buff, (buffn-100)*sizeof(mapstore_item));
+                                delete [] buff;
+                                buff = bigger;
                             }
                             buff[buffp].w = 100.0*w/total_count;
                             buff[buffp].n = 100.0*static_cast<double>(n)/itotal_count;
@@ -4341,7 +4344,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
             trace_printf("%s\n", buff[j].name);
         }
         trace_printf("\n");
-        std::free(reinterpret_cast<void *>(buff));
+        delete [] buff;
     }
     return onevalue(r);
 }

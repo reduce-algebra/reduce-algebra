@@ -561,10 +561,9 @@ double find_best_assignment(
     printlog("starting find_best_assignment %d %d\n", item_count,
              table_size);
     printlog("m2=%d o2=%d\n", modulus2, offset2);
-    adjacency_matrix = (int **)std::malloc(
-                           table_size*sizeof(int *) + table_size*item_count*sizeof(int) + 8);
+    adjacency_matrix = new int *[table_size + table_size*item_count + 2];
     hungarian_test_alloc(adjacency_matrix);
-    mem = reinterpret_cast<int *>()&adjacency_matrix[table_size];
+    mem = reinterpret_cast<int *>(&adjacency_matrix[table_size]);
     for (i=0; i<table_size; i++)
     {   adjacency_matrix[i] = mem;
         mem += item_count;

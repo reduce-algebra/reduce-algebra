@@ -6,6 +6,10 @@
 // this Lisp system.
 //
 
+// I have left this using malloc/free rather than new/delete since it is
+// self-contained and the memory allocated does not get passed out to
+// other parts of CSL.
+
 /**************************************************************************
  * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
@@ -130,7 +134,7 @@ static LispObject Lmpi_recv(LispObject, LispObject source,
 
     MPI_Probe(source, tag, comm, &status);
     MPI_Get_count(&status, MPI_PACKED, &mpi_pack_size);
-    mpi_pack_buffer = reinterpret_cast<char*>(std)::malloc(mpi_pack_size);
+    mpi_pack_buffer = reinterpret_cast<char*>(std::malloc(mpi_pack_size));
 
     MPI_Recv(mpi_pack_buffer, mpi_pack_size, MPI_PACKED,
              source, tag, comm, &status);
@@ -258,7 +262,7 @@ static LispObject Lmpi_irecv(LispObject, LispObject aource,
     get_fix_arg(comm, fun_name);
 
     elt(request,1) = 0; // There is no buffer yet
-    elt(request,0) = static_cast<int>(std)::malloc(sizeof(struct dummy_request));
+    elt(request,0) = static_cast<int>(std::malloc(sizeof(struct dummy_request)));
     ((struct dummy_request*)elt(request,0))->source = source;
     ((struct dummy_request*)elt(request,0))->tag = tag;
     ((struct dummy_request*)elt(request,0))->comm = comm;
@@ -302,7 +306,7 @@ static LispObject Lmpi_wait(LispObject env, LispObject request)
         MPI_Probe(source, tag, comm, &status);
         std::free((struct dummy_request*)elt(request,0));
         MPI_Get_count(&status, MPI_PACKED, &mpi_pack_size);
-        mpi_pack_buffer = reinterpret_cast<char*>(std)::malloc(mpi_pack_size);
+        mpi_pack_buffer = reinterpret_cast<char*>(std::malloc(mpi_pack_size));
 
         MPI_Recv(mpi_pack_buffer, mpi_pack_size, MPI_PACKED,
                  source, tag, comm, &status);
@@ -363,7 +367,7 @@ static LispObject Lmpi_test(LispObject env, LispObject request)
 
         std::free((struct dummy_request*)elt(request,0));
         MPI_Get_count(&status, MPI_PACKED, &mpi_pack_size);
-        mpi_pack_buffer = reinterpret_cast<char*>(std)::malloc(mpi_pack_size);
+        mpi_pack_buffer = reinterpret_cast<char*>(std::malloc(mpi_pack_size));
 
         MPI_Recv(mpi_pack_buffer, mpi_pack_size, MPI_PACKED,
                  source, tag, comm, &status);
@@ -464,7 +468,7 @@ static LispObject Lmpi_bcast(LispObject, LispObject message,
     }
     else
     {   MPI_Bcast(&mpi_pack_size, 1, MPI_LONG, root, comm);
-        mpi_pack_buffer = reinterpret_cast<char*>(std)::malloc(mpi_pack_size);
+        mpi_pack_buffer = reinterpret_cast<char*>(std::malloc(mpi_pack_size));
         MPI_Bcast(mpi_pack_buffer, mpi_pack_size, MPI_PACKED, root, comm);
         message = unpack_object();
         std::free(mpi_pack_buffer);
@@ -494,9 +498,9 @@ static LispObject Lmpi_gather(LispObject, LispObject message,
         char *recvbuffer;
 
         MPI_Comm_size(comm,&commsize);
-        recvcounts = reinterpret_cast<int*>(std)::calloc(commsize,
-                     sizeof(int));
-        displs = reinterpret_cast<int*>(std)::calloc(commsize+1, sizeof(int));
+        recvcounts = reinterpret_cast<int*>(std::calloc(commsize,
+                     sizeof(int)));
+        displs = reinterpret_cast<int*>(std::calloc(commsize+1, sizeof(int)));
         MPI_Gather(&mpi_pack_position, 1, MPI_LONG,
                    recvcounts, 1, MPI_LONG, root, comm);
 
@@ -504,7 +508,7 @@ static LispObject Lmpi_gather(LispObject, LispObject message,
         for (count = 0; count < commsize; ++count)
             displs[count+1] = displs[count] + recvcounts[count];
 
-        recvbuffer = reinterpret_cast<char*>(std)::malloc(displs[commsize]);
+        recvbuffer = reinterpret_cast<char*>(std::malloc(displs[commsize]));
 
         MPI_Gatherv(mpi_pack_buffer, mpi_pack_position, MPI_PACKED,
                     recvbuffer, recvcounts, displs, MPI_PACKED, root, comm);
@@ -551,9 +555,9 @@ static LispObject Lmpi_scatter(LispObject, LispObject messages,
         char* recvbuffer;
 
         MPI_Comm_size(comm,&commsize);
-        sendcounts = reinterpret_cast<int*>(std)::calloc(commsize,
-                     sizeof(int));
-        displs = reinterpret_cast<int*>(std)::calloc(commsize+1, sizeof(int));
+        sendcounts = reinterpret_cast<int*>(std::calloc(commsize,
+                     sizeof(int)));
+        displs = reinterpret_cast<int*>(std::calloc(commsize+1, sizeof(int)));
         displs[0] = 0;
 
         // Call private functions in mpi_packing for consecutive packs
@@ -575,7 +579,7 @@ static LispObject Lmpi_scatter(LispObject, LispObject messages,
         check_buffer = default_check_buffer;
         MPI_Scatter(sendcounts, 1, MPI_LONG, &recvcount, 1, MPI_LONG, root,
                     comm);
-        recvbuffer = reinterpret_cast<char*>(std)::malloc(recvcount);
+        recvbuffer = reinterpret_cast<char*>(std::malloc(recvcount));
         MPI_Scatterv(mpi_buffer_bottom, sendcounts, displs, MPI_PACKED,
                      recvbuffer, recvcount, MPI_PACKED, root, comm);
         std::free(recvbuffer);
@@ -586,7 +590,7 @@ static LispObject Lmpi_scatter(LispObject, LispObject messages,
     }
     else
     {   MPI_Scatter(0,0,MPI_LONG,&mpi_pack_size,1,MPI_LONG,root,comm);
-        mpi_pack_buffer = reinterpret_cast<char*>(std)::malloc(mpi_pack_size);
+        mpi_pack_buffer = reinterpret_cast<char*>(std::malloc(mpi_pack_size));
         MPI_Scatterv(0,0,0,MPI_PACKED,
                      mpi_pack_buffer,mpi_pack_size,MPI_PACKED,root,comm);
         message = unpack_object();
@@ -614,9 +618,9 @@ static LispObject Lmpi_allgather(LispObject,
     pack_object(message);
 
     MPI_Comm_size(comm,&commsize);
-    recvcounts = reinterpret_cast<int*>(std)::calloc(commsize,
-                 sizeof(int));
-    displs = reinterpret_cast<int*>(std)::calloc(commsize+1, sizeof(int));
+    recvcounts = reinterpret_cast<int*>(std::calloc(commsize,
+                 sizeof(int)));
+    displs = reinterpret_cast<int*>(std::calloc(commsize+1, sizeof(int)));
     MPI_Allgather(&mpi_pack_position, 1, MPI_LONG, recvcounts, 1,
                   MPI_LONG, comm);
 
@@ -624,7 +628,7 @@ static LispObject Lmpi_allgather(LispObject,
     for (count = 0; count < commsize; ++count)
         displs[count+1] = displs[count] + recvcounts[count];
 
-    recvbuffer = reinterpret_cast<char*>(std)::malloc(displs[commsize]);
+    recvbuffer = reinterpret_cast<char*>(std::malloc(displs[commsize]));
 
     MPI_Allgatherv(mpi_pack_buffer, mpi_pack_position, MPI_PACKED,
                    recvbuffer, recvcounts, displs, MPI_PACKED, comm);
@@ -657,14 +661,10 @@ static LispObject Lmpi_alltoall(LispObject,
     comm = int_of_fixnum(Lcomm);
 
     MPI_Comm_size(comm,&commsize);
-    sendcounts = reinterpret_cast<int*>(std)::calloc(commsize,
-                 sizeof(int));
-    recvcounts = reinterpret_cast<int*>(std)::calloc(commsize,
-                 sizeof(int));
-    sdispls = reinterpret_cast<int*>(std)::calloc(commsize+1,
-              sizeof(int));
-    rdispls = reinterpret_cast<int*>(std)::calloc(commsize+1,
-              sizeof(int));
+    sendcounts = reinterpret_cast<int*>(std::calloc(commsize, sizeof(int)));
+    recvcounts = reinterpret_cast<int*>(std::calloc(commsize, sizeof(int)));
+    sdispls = reinterpret_cast<int*>(std::calloc(commsize+1, sizeof(int)));
+    rdispls = reinterpret_cast<int*>(std::calloc(commsize+1, sizeof(int)));
 
     // Call private functions in mpi_packing for consecutive packs
     check_buffer = scatter_check_buffer;
@@ -692,7 +692,7 @@ static LispObject Lmpi_alltoall(LispObject,
     for (count = 0; count < commsize; ++count)
         rdispls[count+1] = rdispls[count] + recvcounts[count];
 
-    recvbuffer = reinterpret_cast<char*>(std)::malloc(rdispls[commsize]);
+    recvbuffer = reinterpret_cast<char*>(std::malloc(rdispls[commsize]));
 
     MPI_Alltoallv(mpi_buffer_bottom, sendcounts, sdispls, MPI_PACKED,
                   recvbuffer, recvcounts, rdispls, MPI_PACKED, comm);

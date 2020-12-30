@@ -131,8 +131,7 @@ int main(int argc, char *argv[])
         return 1;
     }
     for (i=0; i<MAXDEPTH; i++)
-    {   pending[i] = reinterpret_cast<char *>(std::malloc(
-                         MAXLINE)); // should check for failure!
+    {   pending[i] = new char[MAXLINE];
         elseseen[i] = 0;
     }
     in = std::fopen(argv[1], "r");

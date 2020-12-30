@@ -49,11 +49,11 @@
 void global_longjmp()
 {   std::printf("\nglobal_longjmp called\n");
     std::fflush(stdout);
-    std::abort();
+    my_abort();
 }
 
 void term_printf(const char *fm, ...)
-{   std::abort();
+{   my_abort();
 }
 
 LispObject **get_stack_addr()
@@ -74,7 +74,7 @@ void garbage_collect()
 }
 
 void my_abort()
-{   std::abort();
+{   my_abort();
 }
 
 //

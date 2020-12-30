@@ -66,13 +66,6 @@ extern LispObject nil;
 
 #define SIXTY_FOUR_BIT (sizeof(intptr_t) == 8)
 
-// My hope is that writing CSL_IGNORE(x) will cause the compiler to believe
-// that x is "used" enough that it does not give any "not used" warnings.
-
-inline void CSL_IGNORE(LispObject x)
-{   static_cast<void>(x);
-}
-
 // I manage memory in CSL_PAGE_SIZE chunks.
 //
 // My default at present is to use PAGE_BITS=23, which leads to 8 Mbyte
@@ -120,6 +113,13 @@ inline void CSL_IGNORE(LispObject x)
 
 #define LONGEST_LEGAL_FILENAME 1024
 
+// This class is provided just so I can allocate things so as to be
+// (at least) 8-byte aligned.
+
+class alignas(8) Align8
+{
+    char data[8];
+};
 
 // The macro CELL had better have either the value 4 or 8. It is the
 // size of the basic unit of memory within which CSL works.
@@ -397,6 +397,7 @@ typedef struct Cons_Cell_
 
 extern bool valid_address(void *pointer);
 [[noreturn]] extern void my_abort();
+[[noreturn]] extern void my_abort(const char *msg);
 
 // Going forward I may want to be able to control where I have memory
 // fences and what sort get used, so these access functions have (optional)
@@ -405,35 +406,35 @@ extern bool valid_address(void *pointer);
 
 inline LispObject car(LispObject p,
                       std::memory_order mo=std::memory_order_relaxed)
-{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort();
+{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid car");
     return (reinterpret_cast<Cons_Cell *>(p))->car.load(mo);
 }
 
 inline LispObject cdr(LispObject p,
                       std::memory_order mo=std::memory_order_relaxed)
-{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort();
+{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid cdr");
     return (reinterpret_cast<Cons_Cell *>(p))->cdr.load(mo);
 }
 
 inline void setcar(LispObject p, LispObject q,
                    std::memory_order mo=std::memory_order_relaxed)
-{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort();
+{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid setcar");
     (reinterpret_cast<Cons_Cell *>(p))->car.store(q, mo);
 }
 
 inline void setcdr(LispObject p, LispObject q,
                    std::memory_order mo=std::memory_order_relaxed)
-{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort();
+{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid setcdr");
     (reinterpret_cast<Cons_Cell *>(p))->cdr.store(q, mo);
 }
 
 inline atomic<LispObject> *caraddr(LispObject p)
-{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort();
+{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid caraddr");
     return &((reinterpret_cast<Cons_Cell *>(p))->car);
 }
 
 inline atomic<LispObject> *cdraddr(LispObject p)
-{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort();
+{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid cdraddr");
     return &((reinterpret_cast<Cons_Cell *>(p))->cdr);
 }
 
@@ -443,13 +444,13 @@ inline atomic<LispObject> *cdraddr(LispObject p)
 // fields in a cons cell expecting atomic and non-atomic layouts to match.
 
 inline LispObject *vcaraddr(LispObject p)
-{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort();
+{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid vcaraddr");
     return reinterpret_cast<LispObject *>(
                &(reinterpret_cast<Cons_Cell *>(p)->car));
 }
 
 inline LispObject *vcdraddr(LispObject p)
-{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort();
+{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid "vcdraddr");
     return reinterpret_cast<LispObject *>(
                &(reinterpret_cast<Cons_Cell *>(p)->cdr));
 }

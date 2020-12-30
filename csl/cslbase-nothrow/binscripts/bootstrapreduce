@@ -1,5 +1,0 @@
-#! /bin/sh
-
-CSLBUILDDIR=`readlink -m #libdir#/reduce/cslbuild`
-exec $CSLBUILDDIR/csl/bootstrapreduce $*
-

@@ -99,7 +99,7 @@ inline size_t real_push_count = 0;
 inline void real_push(LispObject a)
 {   *++stack = a;
 #ifdef DEBUG
-    if (is_exception(a)) my_abort();
+    if (is_exception(a)) my_abort("exception value not trapped");
 #endif // DEBUG
 #ifdef CONSERVATIVE
     real_push_count++;
@@ -110,8 +110,8 @@ inline void real_push(LispObject a, LispObject b)
 {   *++stack = a;
     *++stack = b;
 #ifdef DEBUG
-    if (is_exception(a)) my_abort();
-    if (is_exception(b)) my_abort();
+    if (is_exception(a)) my_abort("exception value not trapped");
+    if (is_exception(b)) my_abort("exception value not trapped");
 #endif // DEBUG
 #ifdef CONSERVATIVE
     real_push_count++;
@@ -123,9 +123,9 @@ inline void real_push(LispObject a, LispObject b, LispObject c)
     *++stack = b;
     *++stack = c;
 #ifdef DEBUG
-    if (is_exception(a)) my_abort();
-    if (is_exception(b)) my_abort();
-    if (is_exception(c)) my_abort();
+    if (is_exception(a)) my_abort("exception value not trapped");
+    if (is_exception(b)) my_abort("exception value not trapped");
+    if (is_exception(c)) my_abort("exception value not trapped");
 #endif // DEBUG
 #ifdef CONSERVATIVE
     real_push_count++;
@@ -139,10 +139,10 @@ inline void real_push(LispObject a, LispObject b, LispObject c,
     *++stack = c;
     *++stack = d;
 #ifdef DEBUG
-    if (is_exception(a)) my_abort();
-    if (is_exception(b)) my_abort();
-    if (is_exception(c)) my_abort();
-    if (is_exception(d)) my_abort();
+    if (is_exception(a)) my_abort("exception value not trapped");
+    if (is_exception(b)) my_abort("exception value not trapped");
+    if (is_exception(c)) my_abort("exception value not trapped");
+    if (is_exception(d)) my_abort("exception value not trapped");
 #endif // DEBUG
 #ifdef CONSERVATIVE
     real_push_count++;
@@ -157,11 +157,11 @@ inline void real_push(LispObject a, LispObject b, LispObject c,
     *++stack = d;
     *++stack = e;
 #ifdef DEBUG
-    if (is_exception(a)) my_abort();
-    if (is_exception(b)) my_abort();
-    if (is_exception(c)) my_abort();
-    if (is_exception(d)) my_abort();
-    if (is_exception(e)) my_abort();
+    if (is_exception(a)) my_abort("exception value not trapped");
+    if (is_exception(b)) my_abort("exception value not trapped");
+    if (is_exception(c)) my_abort("exception value not trapped");
+    if (is_exception(d)) my_abort("exception value not trapped");
+    if (is_exception(e)) my_abort("exception value not trapped");
 #endif // DEBUG
 #ifdef CONSERVATIVE
     real_push_count++;
@@ -177,12 +177,12 @@ inline void real_push(LispObject a, LispObject b, LispObject c,
     *++stack = e;
     *++stack = f;
 #ifdef DEBUG
-    if (is_exception(a)) my_abort();
-    if (is_exception(b)) my_abort();
-    if (is_exception(c)) my_abort();
-    if (is_exception(d)) my_abort();
-    if (is_exception(e)) my_abort();
-    if (is_exception(f)) my_abort();
+    if (is_exception(a)) my_abort("exception value not trapped");
+    if (is_exception(b)) my_abort("exception value not trapped");
+    if (is_exception(c)) my_abort("exception value not trapped");
+    if (is_exception(d)) my_abort("exception value not trapped");
+    if (is_exception(e)) my_abort("exception value not trapped");
+    if (is_exception(f)) my_abort("exception value not trapped");
 #endif // DEBUG
 #ifdef CONSERVATIVE
     real_push_count++;
@@ -206,7 +206,7 @@ public:
         v1 = &a1;
         *++stack = a1;
 #ifdef DEBUG
-        if (is_exception(a1)) my_abort();
+        if (is_exception(a1)) my_abort("exception value not trapped");
 #endif // DEBUG
 #ifdef CONSERVATIVE
         real_push_count++;
@@ -219,8 +219,8 @@ public:
         *++stack = a1;
         *++stack = a2;
 #ifdef DEBUG
-        if (is_exception(a1)) my_abort();
-        if (is_exception(a2)) my_abort();
+        if (is_exception(a1)) my_abort("exception value not trapped");
+        if (is_exception(a2)) my_abort("exception value not trapped");
 #endif // DEBUG
 #ifdef CONSERVATIVE
         real_push_count++;
@@ -235,9 +235,9 @@ public:
         *++stack = a2;
         *++stack = a3;
 #ifdef DEBUG
-        if (is_exception(a1)) my_abort();
-        if (is_exception(a2)) my_abort();
-        if (is_exception(a3)) my_abort();
+        if (is_exception(a1)) my_abort("exception value not trapped");
+        if (is_exception(a2)) my_abort("exception value not trapped");
+        if (is_exception(a3)) my_abort("exception value not trapped");
 #endif // DEBUG
 #ifdef CONSERVATIVE
         real_push_count++;
@@ -255,10 +255,10 @@ public:
         *++stack = a3;
         *++stack = a4;
 #ifdef DEBUG
-        if (is_exception(a1)) my_abort();
-        if (is_exception(a2)) my_abort();
-        if (is_exception(a3)) my_abort();
-        if (is_exception(a4)) my_abort();
+        if (is_exception(a1)) my_abort("exception value not trapped");
+        if (is_exception(a2)) my_abort("exception value not trapped");
+        if (is_exception(a3)) my_abort("exception value not trapped");
+        if (is_exception(a4)) my_abort("exception value not trapped");
 #endif // DEBUG
 #ifdef CONSERVATIVE
         real_push_count++;
@@ -278,11 +278,11 @@ public:
         *++stack = a4;
         *++stack = a5;
 #ifdef DEBUG
-        if (is_exception(a1)) my_abort();
-        if (is_exception(a2)) my_abort();
-        if (is_exception(a3)) my_abort();
-        if (is_exception(a4)) my_abort();
-        if (is_exception(a5)) my_abort();
+        if (is_exception(a1)) my_abort("exception value not trapped");
+        if (is_exception(a2)) my_abort("exception value not trapped");
+        if (is_exception(a3)) my_abort("exception value not trapped");
+        if (is_exception(a4)) my_abort("exception value not trapped");
+        if (is_exception(a5)) my_abort("exception value not trapped");
 #endif // DEBUG
 #ifdef CONSERVATIVE
         real_push_count++;
@@ -304,12 +304,12 @@ public:
         *++stack = a5;
         *++stack = a6;
 #ifdef DEBUG
-        if (is_exception(a1)) my_abort();
-        if (is_exception(a2)) my_abort();
-        if (is_exception(a3)) my_abort();
-        if (is_exception(a4)) my_abort();
-        if (is_exception(a5)) my_abort();
-        if (is_exception(a6)) my_abort();
+        if (is_exception(a1)) my_abort("exception value not trapped");
+        if (is_exception(a2)) my_abort("exception value not trapped");
+        if (is_exception(a3)) my_abort("exception value not trapped");
+        if (is_exception(a4)) my_abort("exception value not trapped");
+        if (is_exception(a5)) my_abort("exception value not trapped");
+        if (is_exception(a6)) my_abort("exception value not trapped");
 #endif // DEBUG
 #ifdef CONSERVATIVE
         real_push_count++;
@@ -425,7 +425,7 @@ inline void real_popv(int n)
 inline void push(LispObject a)
 {   *++stack = a;
 #ifdef DEBUG
-    if (is_exception(a)) my_abort();
+    if (is_exception(a)) my_abort("exception value not trapped");
 #endif // DEBUG
     push_count++;
 }
@@ -434,8 +434,8 @@ inline void push(LispObject a, LispObject b)
 {   *++stack = a;
     *++stack = b;
 #ifdef DEBUG
-    if (is_exception(a)) my_abort();
-    if (is_exception(b)) my_abort();
+    if (is_exception(a)) my_abort("exception value not trapped");
+    if (is_exception(b)) my_abort("exception value not trapped");
 #endif // DEBUG
     push_count++;
 }
@@ -445,9 +445,9 @@ inline void push(LispObject a, LispObject b, LispObject c)
     *++stack = b;
     *++stack = c;
 #ifdef DEBUG
-    if (is_exception(a)) my_abort();
-    if (is_exception(b)) my_abort();
-    if (is_exception(c)) my_abort();
+    if (is_exception(a)) my_abort("exception value not trapped");
+    if (is_exception(b)) my_abort("exception value not trapped");
+    if (is_exception(c)) my_abort("exception value not trapped");
 #endif // DEBUG
     push_count++;
 }
@@ -459,10 +459,10 @@ inline void push(LispObject a, LispObject b, LispObject c,
     *++stack = c;
     *++stack = d;
 #ifdef DEBUG
-    if (is_exception(a)) my_abort();
-    if (is_exception(b)) my_abort();
-    if (is_exception(c)) my_abort();
-    if (is_exception(d)) my_abort();
+    if (is_exception(a)) my_abort("exception value not trapped");
+    if (is_exception(b)) my_abort("exception value not trapped");
+    if (is_exception(c)) my_abort("exception value not trapped");
+    if (is_exception(d)) my_abort("exception value not trapped");
 #endif // DEBUG
     push_count++;
 }
@@ -475,11 +475,11 @@ inline void push(LispObject a, LispObject b, LispObject c,
     *++stack = d;
     *++stack = e;
 #ifdef DEBUG
-    if (is_exception(a)) my_abort();
-    if (is_exception(b)) my_abort();
-    if (is_exception(c)) my_abort();
-    if (is_exception(d)) my_abort();
-    if (is_exception(e)) my_abort();
+    if (is_exception(a)) my_abort("exception value not trapped");
+    if (is_exception(b)) my_abort("exception value not trapped");
+    if (is_exception(c)) my_abort("exception value not trapped");
+    if (is_exception(d)) my_abort("exception value not trapped");
+    if (is_exception(e)) my_abort("exception value not trapped");
 #endif // DEBUG
     push_count++;
 }
@@ -493,12 +493,12 @@ inline void push(LispObject a, LispObject b, LispObject c,
     *++stack = e;
     *++stack = f;
 #ifdef DEBUG
-    if (is_exception(a)) my_abort();
-    if (is_exception(b)) my_abort();
-    if (is_exception(c)) my_abort();
-    if (is_exception(d)) my_abort();
-    if (is_exception(e)) my_abort();
-    if (is_exception(f)) my_abort();
+    if (is_exception(a)) my_abort("exception value not trapped");
+    if (is_exception(b)) my_abort("exception value not trapped");
+    if (is_exception(c)) my_abort("exception value not trapped");
+    if (is_exception(d)) my_abort("exception value not trapped");
+    if (is_exception(e)) my_abort("exception value not trapped");
+    if (is_exception(f)) my_abort("exception value not trapped");
 #endif // DEBUG
     push_count++;
 }
@@ -595,7 +595,7 @@ public:
         v1 = &a1;
         *++stack = a1;
 #ifdef DEBUG
-        if (is_exception(a1)) my_abort();
+        if (is_exception(a1)) my_abort("exception value not trapped");
 #endif // DEBUG
         push_count++;
     }
@@ -606,8 +606,8 @@ public:
         *++stack = a1;
         *++stack = a2;
 #ifdef DEBUG
-        if (is_exception(a1)) my_abort();
-        if (is_exception(a2)) my_abort();
+        if (is_exception(a1)) my_abort("exception value not trapped");
+        if (is_exception(a2)) my_abort("exception value not trapped");
 #endif // DEBUG
         push_count++;
     }
@@ -620,9 +620,9 @@ public:
         *++stack = a2;
         *++stack = a3;
 #ifdef DEBUG
-        if (is_exception(a1)) my_abort();
-        if (is_exception(a2)) my_abort();
-        if (is_exception(a3)) my_abort();
+        if (is_exception(a1)) my_abort("exception value not trapped");
+        if (is_exception(a2)) my_abort("exception value not trapped");
+        if (is_exception(a3)) my_abort("exception value not trapped");
 #endif // DEBUG
         push_count++;
     }
@@ -638,10 +638,10 @@ public:
         *++stack = a3;
         *++stack = a4;
 #ifdef DEBUG
-        if (is_exception(a1)) my_abort();
-        if (is_exception(a2)) my_abort();
-        if (is_exception(a3)) my_abort();
-        if (is_exception(a4)) my_abort();
+        if (is_exception(a1)) my_abort("exception value not trapped");
+        if (is_exception(a2)) my_abort("exception value not trapped");
+        if (is_exception(a3)) my_abort("exception value not trapped");
+        if (is_exception(a4)) my_abort("exception value not trapped");
 #endif // DEBUG
         push_count++;
     }
@@ -659,11 +659,11 @@ public:
         *++stack = a4;
         *++stack = a5;
 #ifdef DEBUG
-        if (is_exception(a1)) my_abort();
-        if (is_exception(a2)) my_abort();
-        if (is_exception(a3)) my_abort();
-        if (is_exception(a4)) my_abort();
-        if (is_exception(a5)) my_abort();
+        if (is_exception(a1)) my_abort("exception value not trapped");
+        if (is_exception(a2)) my_abort("exception value not trapped");
+        if (is_exception(a3)) my_abort("exception value not trapped");
+        if (is_exception(a4)) my_abort("exception value not trapped");
+        if (is_exception(a5)) my_abort("exception value not trapped");
 #endif // DEBUG
         push_count++;
     }
@@ -683,12 +683,12 @@ public:
         *++stack = a5;
         *++stack = a6;
 #ifdef DEBUG
-        if (is_exception(a1)) my_abort();
-        if (is_exception(a2)) my_abort();
-        if (is_exception(a3)) my_abort();
-        if (is_exception(a4)) my_abort();
-        if (is_exception(a5)) my_abort();
-        if (is_exception(a6)) my_abort();
+        if (is_exception(a1)) my_abort("exception value not trapped");
+        if (is_exception(a2)) my_abort("exception value not trapped");
+        if (is_exception(a3)) my_abort("exception value not trapped");
+        if (is_exception(a4)) my_abort("exception value not trapped");
+        if (is_exception(a5)) my_abort("exception value not trapped");
+        if (is_exception(a6)) my_abort("exception value not trapped");
 #endif // DEBUG
         push_count++;
     }
@@ -835,7 +835,7 @@ public:
 inline void push(LispObject a)
 {   *++stack = a;
 #ifdef DEBUG
-    if (is_exception(a)) my_abort();
+    if (is_exception(a)) my_abort("exception value not trapped");
 #endif // DEBUG
 }
 
@@ -843,8 +843,8 @@ inline void push(LispObject a, LispObject b)
 {   *++stack = a;
     *++stack = b;
 #ifdef DEBUG
-    if (is_exception(a)) my_abort();
-    if (is_exception(b)) my_abort();
+    if (is_exception(a)) my_abort("exception value not trapped");
+    if (is_exception(b)) my_abort("exception value not trapped");
 #endif // DEBUG
 }
 
@@ -853,9 +853,9 @@ inline void push(LispObject a, LispObject b, LispObject c)
     *++stack = b;
     *++stack = c;
 #ifdef DEBUG
-    if (is_exception(a)) my_abort();
-    if (is_exception(b)) my_abort();
-    if (is_exception(c)) my_abort();
+    if (is_exception(a)) my_abort("exception value not trapped");
+    if (is_exception(b)) my_abort("exception value not trapped");
+    if (is_exception(c)) my_abort("exception value not trapped");
 #endif // DEBUG
 }
 
@@ -866,10 +866,10 @@ inline void push(LispObject a, LispObject b, LispObject c,
     *++stack = c;
     *++stack = d;
 #ifdef DEBUG
-    if (is_exception(a)) my_abort();
-    if (is_exception(b)) my_abort();
-    if (is_exception(c)) my_abort();
-    if (is_exception(d)) my_abort();
+    if (is_exception(a)) my_abort("exception value not trapped");
+    if (is_exception(b)) my_abort("exception value not trapped");
+    if (is_exception(c)) my_abort("exception value not trapped");
+    if (is_exception(d)) my_abort("exception value not trapped");
 #endif // DEBUG
 }
 
@@ -881,11 +881,11 @@ inline void push(LispObject a, LispObject b, LispObject c,
     *++stack = d;
     *++stack = e;
 #ifdef DEBUG
-    if (is_exception(a)) my_abort();
-    if (is_exception(b)) my_abort();
-    if (is_exception(c)) my_abort();
-    if (is_exception(d)) my_abort();
-    if (is_exception(e)) my_abort();
+    if (is_exception(a)) my_abort("exception value not trapped");
+    if (is_exception(b)) my_abort("exception value not trapped");
+    if (is_exception(c)) my_abort("exception value not trapped");
+    if (is_exception(d)) my_abort("exception value not trapped");
+    if (is_exception(e)) my_abort("exception value not trapped");
 #endif // DEBUG
 }
 
@@ -898,12 +898,12 @@ inline void push(LispObject a, LispObject b, LispObject c,
     *++stack = e;
     *++stack = f;
 #ifdef DEBUG
-    if (is_exception(a)) my_abort();
-    if (is_exception(b)) my_abort();
-    if (is_exception(c)) my_abort();
-    if (is_exception(d)) my_abort();
-    if (is_exception(e)) my_abort();
-    if (is_exception(f)) my_abort();
+    if (is_exception(a)) my_abort("exception value not trapped");
+    if (is_exception(b)) my_abort("exception value not trapped");
+    if (is_exception(c)) my_abort("exception value not trapped");
+    if (is_exception(d)) my_abort("exception value not trapped");
+    if (is_exception(e)) my_abort("exception value not trapped");
+    if (is_exception(f)) my_abort("exception value not trapped");
 #endif // DEBUG
 }
 
@@ -969,7 +969,7 @@ public:
         v1 = &a1;
         *++stack = a1;
 #ifdef DEBUG
-        if (is_exception(a1)) my_abort();
+        if (is_exception(a1)) my_abort("exception value not trapped");
 #endif // DEBUG
 #ifdef CONSERVATIVE
         push_count++;
@@ -982,8 +982,8 @@ public:
         *++stack = a1;
         *++stack = a2;
 #ifdef DEBUG
-        if (is_exception(a1)) my_abort();
-        if (is_exception(a2)) my_abort();
+        if (is_exception(a1)) my_abort("exception value not trapped");
+        if (is_exception(a2)) my_abort("exception value not trapped");
 #endif // DEBUG
 #ifdef CONSERVATIVE
         push_count++;
@@ -998,9 +998,9 @@ public:
         *++stack = a2;
         *++stack = a3;
 #ifdef DEBUG
-        if (is_exception(a1)) my_abort();
-        if (is_exception(a2)) my_abort();
-        if (is_exception(a3)) my_abort();
+        if (is_exception(a1)) my_abort("exception value not trapped");
+        if (is_exception(a2)) my_abort("exception value not trapped");
+        if (is_exception(a3)) my_abort("exception value not trapped");
 #endif // DEBUG
 #ifdef CONSERVATIVE
         push_count++;
@@ -1018,10 +1018,10 @@ public:
         *++stack = a3;
         *++stack = a4;
 #ifdef DEBUG
-        if (is_exception(a1)) my_abort();
-        if (is_exception(a2)) my_abort();
-        if (is_exception(a3)) my_abort();
-        if (is_exception(a4)) my_abort();
+        if (is_exception(a1)) my_abort("exception value not trapped");
+        if (is_exception(a2)) my_abort("exception value not trapped");
+        if (is_exception(a3)) my_abort("exception value not trapped");
+        if (is_exception(a4)) my_abort("exception value not trapped");
 #endif // DEBUG
 #ifdef CONSERVATIVE
         push_count++;
@@ -1041,11 +1041,11 @@ public:
         *++stack = a4;
         *++stack = a5;
 #ifdef DEBUG
-        if (is_exception(a1)) my_abort();
-        if (is_exception(a2)) my_abort();
-        if (is_exception(a3)) my_abort();
-        if (is_exception(a4)) my_abort();
-        if (is_exception(a5)) my_abort();
+        if (is_exception(a1)) my_abort("exception value not trapped");
+        if (is_exception(a2)) my_abort("exception value not trapped");
+        if (is_exception(a3)) my_abort("exception value not trapped");
+        if (is_exception(a4)) my_abort("exception value not trapped");
+        if (is_exception(a5)) my_abort("exception value not trapped");
 #endif // DEBUG
 #ifdef CONSERVATIVE
         push_count++;
@@ -1067,12 +1067,12 @@ public:
         *++stack = a5;
         *++stack = a6;
 #ifdef DEBUG
-        if (is_exception(a1)) my_abort();
-        if (is_exception(a2)) my_abort();
-        if (is_exception(a3)) my_abort();
-        if (is_exception(a4)) my_abort();
-        if (is_exception(a5)) my_abort();
-        if (is_exception(a6)) my_abort();
+        if (is_exception(a1)) my_abort("exception value not trapped");
+        if (is_exception(a2)) my_abort("exception value not trapped");
+        if (is_exception(a3)) my_abort("exception value not trapped");
+        if (is_exception(a4)) my_abort("exception value not trapped");
+        if (is_exception(a5)) my_abort("exception value not trapped");
+        if (is_exception(a6)) my_abort("exception value not trapped");
 #endif // DEBUG
 #ifdef CONSERVATIVE
         push_count++;
@@ -1624,7 +1624,7 @@ public:
             err_printf("\n");
             err_printf("exit_count = %d, exit_reason = %d\n",
                        exit_count, exit_reason);
-            my_abort();
+            my_abort("stack consistency");
         }
     }
 };

@@ -52,10 +52,17 @@
 #include <csignal>
 
 // An "my_assert" scheme that lets me write in my own code to print the
-// diagnostics.
+// diagnostics. I also "exit()" rather than "abort()" since that is slightly
+// cleaner!
 
 [[noreturn]] inline void my_abort()
-{   std::abort();
+{   std::exit(EXIT_FAILURE);
+}
+
+[[noreturn]] inline void my_abort(const char *msg)
+{   std::fprintf(stderr, "\n\n!!! Aborting: %s\n\n", msg);
+    std::fflush(stderr);
+    std::exit(EXIT_FAILURE);
 }
 
 template <typename F>

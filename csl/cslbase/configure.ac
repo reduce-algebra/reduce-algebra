@@ -1007,38 +1007,6 @@ then
   fi
 fi
 
-
-# The sad news is that some 32-bit systems only set maxalign to 4, so for
-# instance even double precision floats can be aligned only that well. A
-# consequence is that they are entitled to let malloc() return an address
-# that is not 8-byte aligned, and that hurts my tagging scheme. I need to
-# review uses of malloc() and do alignment for myself where it is needed.
-
-AC_COMPUTE_INT(maxalign, alignof(std::max_align_t), [#include <cstddef>],
-               maxalign="0")
-if test "$maxalign" = "0"
-then
-# Any "good enough" c++ compiler will not trigger this fragment.
-  AC_COMPUTE_INT(maxalign, alignof(double), [#include <cstddef>],
-    AC_MSG_ERROR([Unable to get alignment of std::max_align_t]))
-fi
-#--
-# I will expect that malloc and new will return blocks of memory
-# aligned at least as per maxalign... and I require that it be at least
-# 8 so that I have 3 low bits for use as tags. In reality I fully expect
-# it to be 16 on most if not all 64-bit systems. The test here is in case
-# somebody tries a build on a system where everything can be placed at
-# arbitrary byte boundaries and hence where malloc (and friends) feel
-# entitled to return values that are not aligned at all.
-
-if test $maxalign -lt 8
-then
-  AC_DEFINE([MAXALIGN4], [1], [alignof(max_align_t)==4])
-fi
-
-AC_CHECK_FUNCS([std::aligned_alloc])
-
-
 # I have alternative ways of doing things on Windows and Macintosh, but
 # for systems that use gcc (and I am perhaps most thinking of Linux here)
 # I want the flag "-rdynamic" enabled (if possible) so that dynamic modules

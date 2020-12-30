@@ -174,10 +174,10 @@ int fwin_main(int argc, const char **argv)
 // With Windows I will always create the sub-process via a command line
 // and it will split that up into individual arguments when it is ready to.
 //
-    char *cmdLine = reinterpret_cast<char *>(std)::malloc(std::strlen(
-                        bpsl_binary) +
-                    std::strlen(reduce_image) +
-                    std::strlen(memory_control) + 16);
+    char *cmdLine = new (std::nothrow)
+        char[std::strlen(bpsl_binary) +
+             std::strlen(reduce_image) +
+             std::strlen(memory_control) + 16];
     if (cmdLine  == nullptr)
     {   fwin_printf("failed to allocate space for command line\n");
         fwin_exit(EXIT_FAILURE);
@@ -248,7 +248,7 @@ int fwin_main(int argc, const char **argv)
         fwin_exit(EXIT_FAILURE);
     }
     else if (reduceProcessId == 0)      // Child process
-    {   char **nargv = (char **)std::malloc(6*sizeof(char *));
+    {   char **nargv = new char *[6];
         setsid();
 // Re-plumb the pipes to link to stdin & stdout.
         close(MeToReduce[1]);
@@ -433,7 +433,7 @@ void print_help(char name[])
 // This code installs handlers for a whole pile of signals, most of which
 // should never arise!
 
-void sig_killChildstatic_cast<void>()
+void sig_killChild()
 {
 #ifdef SIGCHLD
     std::signal(SIGCHLD,SIG_IGN);
@@ -470,8 +470,7 @@ void sig_skipUntilString(int handle,const char string[])
     int i;
 
     len = std::strlen(string);
-    buffer = reinterpret_cast<char *>(std)::malloc(len * sizeof(
-                 char) + 1);
+    buffer = new char[len+1];
     read(handle,buffer,len);
 
     while (std::strcmp(buffer,string) != 0)
@@ -480,7 +479,7 @@ void sig_skipUntilString(int handle,const char string[])
             buffer[i] = buffer[i+1];
         read(handle,buffer+len-1,1);
     }
-    std::free(buffer);
+    delete [] buffer;
 }
 
 void sig_sigChld(int arg)
@@ -499,7 +498,7 @@ void sig_sigTstp(int arg)
 #endif
 }
 
-void sig_installHandlersstatic_cast<void>()
+void sig_installHandlers()
 {
 #ifdef SIGQUIT
     std::signal(SIGQUIT,sig_sigGen);
@@ -533,7 +532,7 @@ void sig_installHandlersstatic_cast<void>()
 #endif
 }
 
-void sig_removeHandlersstatic_cast<void>()
+void sig_removeHandlers()
 {
 #ifdef SIGQUIT
     std::signal(SIGQUIT,SIG_DFL);

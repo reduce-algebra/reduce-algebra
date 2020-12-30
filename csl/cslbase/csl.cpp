@@ -748,14 +748,11 @@ void fatal_error(int code, ...)
 }
 
 static const char *dependency_file = nullptr;
-
-static char **dependency_map = nullptr;
-static int dependency_count = 0, dependency_capacity = 0;
+static std::vector<char *> dependency_map;
 
 void report_file(const char *s)
 {   char *c;
     const char *s1;
-    int i;
     if (dependency_file == nullptr) return;
 //
 // In a really odd way I will avoid recording inline-defs.dat as a
@@ -770,34 +767,29 @@ void report_file(const char *s)
     else if ((s1 = std::strrchr(s, '\\')) != nullptr) s1++;
     else s1 = s;
     if (std::strcmp(s1, "inline-defs.dat") == 0) return;
-    if (dependency_count >= dependency_capacity)
-    {   dependency_capacity = 2*dependency_capacity + 40;
-        dependency_map = (char **)std::realloc(dependency_map,
-                                               dependency_capacity*sizeof(char *));
-        if (dependency_map == nullptr)
-        {   dependency_capacity = dependency_count = 0;
-            return;
-        }
+    for (char *s1 : dependency_map)
+    {   if (std::strcmp(s, s1)==0) return; // already recorded
     }
-    for (i=0; i<dependency_count; i++)
-    {   if (std::strcmp(s,
-                        dependency_map[i]) == 0) return; // already recorded
-    }
-    c = reinterpret_cast<char *>(std::malloc(std::strlen(s) + 1));
+    c = new (std::nothrow) char[std::strlen(s) + 1];
     if (c == nullptr) return;
     std::strcpy(c, s);
-    dependency_map[dependency_count++] = c;
+// The following could throw an exception if the Vector was getting full and
+// needed to grow and if the allocation of new space failed. Such a case may
+// be fatal if exceptions are not supported!
+    try
+    {   dependency_map.push_back(c);
+    }
+    catch (...)
+    {}
 }
 
-static int alphorder(const void *a, const void *b)
-{   char *aa = *(char **)a;
-    char *bb = *(char **)b;
-    return std::strcmp(aa, bb);
+static bool alphorder(const char *a, const char *b)
+{   return std::strcmp(a, b) < 0;
 }
 
 static void report_dependencies()
 {   std::FILE *f;
-    int i, c;
+    int c;
     const char *p;
     if (dependency_file == nullptr) return;
     f = std::fopen(dependency_file, "w");
@@ -807,49 +799,43 @@ static void report_dependencies()
                  static_cast<int>(p==nullptr ? std::strlen(dependency_file) :
                                   (p - dependency_file)),
                  dependency_file);
-    std::qsort(dependency_map, dependency_count,
-               sizeof(char *), alphorder);
-    for (i=0; i<dependency_count; i++)
-    {   p = dependency_map[i];
-        std::putc('\t', f);
-//
+    std::sort(dependency_map.begin(), dependency_map.end(), alphorder);
+    for (char *pp : dependency_map)
+    {   std::putc('\t', f);
 // If I am on Windows some files may at this stage be shown with names
 // of the form "X:/..." where X denotes the drive. But the dependencies I
 // am creating are for the benefit of the cygwin version of GNU make, and
 // that will get seriously upset by the colon, thinking it is indicating that
 // I have multiple targets. So I will map "X:/" onto "/cygdrive/x/".
-//
-        if (p[0] != 0 &&
-            p[1] == ':' &&
-            (p[2] == '/' || p[2] == '\\'))
+        if (pp[0] != 0 &&
+            pp[1] == ':' &&
+            (pp[2] == '/' || pp[2] == '\\'))
         {   std::fprintf(f, "/cygdrive/%c",
-                         static_cast<char>(std::tolower(static_cast<unsigned char>(p[0]))));
-            p+=2;
+                         static_cast<char>(std::tolower(static_cast<unsigned char>(pp[0]))));
+            pp+=2;
         }
-        while ((c = *p++) != 0)
+        while ((c = *pp++) != 0)
         {   if (c == ' ') std::putc('\\', f); // for spaces in file-name
             std::putc(c == '\\' ? '/' : c, f);
         }
-        if (i < dependency_count-1)
-        {   std::putc(' ', f);
-            std::putc('\\', f);
-        }
+        std::putc(' ', f);
+        std::putc('\\', f);
         std::putc('\n', f);
     }
     std::putc('\n', f);
+    std::putc('\n', f);
 // Now I put in empty rules for each file that was used... By having
-// rules rules with no prerequisites and no recipes I avoid trouble
+// rules with no prerequisites and no recipes I avoid trouble
 // when files get moved.
-    for (i=0; i<dependency_count; i++)
-    {   p = dependency_map[i];
-        if (p[0] != 0 &&
-            p[1] == ':' &&
-            (p[2] == '/' || p[2] == '\\'))
+    for (char *pp : dependency_map)
+    {   if (pp[0] != 0 &&
+            pp[1] == ':' &&
+            (pp[2] == '/' || pp[2] == '\\'))
         {   std::fprintf(f, "/cygdrive/%c",
-                         static_cast<char>(std::tolower(static_cast<unsigned char>(p[0]))));
-            p+=2;
+                         static_cast<char>(std::tolower(static_cast<unsigned char>(pp[0]))));
+            pp+=2;
         }
-        while ((c = *p++) != 0)
+        while ((c = *pp++) != 0)
         {   if (c == ' ') std::putc('\\', f); // for spaces in file-name
             std::putc(c == '\\' ? '/' : c, f);
         }
@@ -857,6 +843,9 @@ static void report_dependencies()
     }
     std::putc('\n', f);
     std::fclose(f);
+    for (char *pp : dependency_map)
+        delete [] pp;
+    dependency_map.clear();
     dependency_file = nullptr;
 }
 
@@ -988,7 +977,7 @@ std::jmp_buf *global_jb;
 
 [[noreturn]] void global_longjmp()
 {   std::longjmp(*global_jb, 1);
-    std::abort();
+    my_abort();
 // longjmp should never return, but some C++ compilers do not know that!
 }
 
@@ -1022,7 +1011,7 @@ static LispObject lisp_main()
                     CATCH(LispException) // all sorts of Lisp issues!
                         a = nil;
                     END_CATCH
-                    std::free(exit_charvec);
+                    delete [] exit_charvec;
                     exit_charvec = nullptr;
                     apply(supervisor, ncons(a), nil, current_function = startup_symbol);
                 }
@@ -1176,16 +1165,12 @@ static LispObject lisp_main()
                     {   char *w = reinterpret_cast<char *>(pages[i]);
                         if (!(w > big_chunk_start && w <= big_chunk_end))
                             continue;
-//
 // Here the page shown as free is one in the contiguous block. Move in
 // the final page to fill the gap here and try again.
-//
                         pages[i] = pages[--pages_count];
                         i--;
                     }
-//
 // Next recycle all the non-contiguous pages that have been in use.
-//
                     while (vheap_pages_count != 0)
                     {   char *w = reinterpret_cast<char *>
                                   (vheap_pages[--vheap_pages_count]);
@@ -1198,7 +1183,6 @@ static LispObject lisp_main()
                         if (!(w > big_chunk_start && w <= big_chunk_end))
                             pages[pages_count++] = w;
                     }
-//
 // Finally rebuild a contiguous block of pages from the wholesale block.
                     {   char *w = big_chunk_start + NIL_SEGMENT_SIZE;
                         char *w1 = w + CSL_PAGE_SIZE;
@@ -1210,12 +1194,10 @@ static LispObject lisp_main()
                         }
                     }
 #endif // CONSERVATIVE
-//
 // When I call restart-csl I will leave the random number generator where it
 // was. Anybody who wants to reset if either to a freshly randomised
 // configuration or to a defined condition must do so for themselves. For
 // people who do not care too much what I do here is probably acceptable!
-//
                     IreInit();
                     setup(cold_start ? 0 : 1, 0.0);
                     exit_tag = exit_value = nil;
@@ -2338,7 +2320,10 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 "         for reading.",
                 [&](string key, bool hasVal, string val)
                 {   if (val == "-") val = standard_directory;
-                    fasl_files.push_back(faslFileRecord(val, false));
+                    const char *val1 = val.c_str();
+                    char *val2 = new (std::nothrow) char[std::strlen(val1)+1];
+                    if (val2 != nullptr) std::strcpy(val2, val1);
+                    fasl_files.push_back(faslFileRecord(val2, false));
                 }
             },
 
@@ -2428,7 +2413,10 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 [&](string key, bool hasVal, string val)
                 {   if (val == "-") val = standard_directory;
                     output_directory = fasl_files.size();
-                    fasl_files.push_back(faslFileRecord(val, true));
+                    const char *val1 = val.c_str();
+                    char *val2 = new (std::nothrow) char[std::strlen(val1)+1];
+                    if (val2 != nullptr) std::strcpy(val2, val1);
+                    fasl_files.push_back(faslFileRecord(val2, true));
                 }
             },
 
@@ -2587,7 +2575,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
             {   nullptr, false, false,
                 "[Termination record for table]",
                 [&](string key, bool hasVal, string val)
-                {   std::abort();   // Should never arise!
+                {   my_abort();   // Should never arise!
                 }
             }
         };
@@ -2662,20 +2650,26 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                *--p != '/' &&
                *p != '\\') /* nothing */;
         if (std::strncmp(standard_directory, cur, p-standard_directory) != 0)
-            p1 = reinterpret_cast<char *>(std::malloc(std::strlen(p)));
+            p1 = new (std::nothrow) char[std::strlen(p)];
         else p1 = nullptr;
 // If output_directory has the 0x40000000 bit set then the directory
 // involved is one that should be opened now if it exists, but if
 // it does not its creation should be deferred for as long as possible.
         output_directory = 0x40000000 + 0;
         if (p == standard_directory || p1 == nullptr)
-        {   fasl_files.push_back(faslFileRecord(standard_directory, true));
-            if (p1 != nullptr) std::free(p1);
+        {   char *val2 =
+                new (std::nothrow) char[std::strlen(standard_directory)+1];
+            if (val2 != nullptr) std::strcpy(val2, standard_directory);
+            fasl_files.push_back(faslFileRecord(val2, true));
+            if (p1 != nullptr) delete [] p1;
         }
         else
         {   std::strcpy(p1, p+1);
             fasl_files.push_back(faslFileRecord(p1, true));
-            fasl_files.push_back(faslFileRecord(standard_directory, false));
+            char *val2 =
+                new (std::nothrow) char[std::strlen(standard_directory)+1];
+            if (val2 != nullptr) std::strcpy(val2, standard_directory);
+            fasl_files.push_back(faslFileRecord(val2, false));
         }
     }
 
@@ -3200,32 +3194,35 @@ int buff_ready = 0;
 const char *buffer = nullptr;
 int buff_size = 0;
 
-void PROC_insert_buffer(const char *buf, int size) {
-    buffer = buf;
+void PROC_insert_buffer(const char *buf, int size)
+{   buffer = buf;
     buff_size = size;
     buff_ready = 1;
 }
 
-void PROC_mainloop() {
-    if (buff_ready) {
-//        std::printf("buffer is ready...buffer: %s, buff_size: %i\n", buffer, buff_size);
-//        char query[buff_size+1];
-//        std::strncpy(query, buffer, buff_size+1);
+void PROC_mainloop()
+{   if (buff_ready)
+    {
+//      std::printf("buffer is ready...buffer: %s, buff_size: %i\n", buffer, buff_size);
+//      char query[buff_size+1];
+//      std::strncpy(query, buffer, buff_size+1);
         std::printf("processing: %s\n", buffer);
         PROC_process_one_reduce_statement(buffer);
-        while (proc_data_string && *proc_data_string != 0) {
-            PROC_process_one_reduce_statement(proc_data_string);
-//            std::printf("copying proc_data_string: \"%s\" of size: %i", proc_data_string, buff_size);
-//            std::strncpy(query, proc_data_string, buff_size);
+        while (proc_data_string && *proc_data_string != 0)
+        {   PROC_process_one_reduce_statement(proc_data_string);
+//          std::printf("copying proc_data_string: \"%s\" of size: %i", proc_data_string, buff_size)
+//          std::strncpy(query, proc_data_string, buff_size);
         }
-//        std::printf("freeing buffer...\n");
-        free((char*)buffer);
+//      std::printf("freeing buffer...\n");
+// NB in the rest of CSL I am nov moving to use NEW and DELETE rather
+// then MALLOC and FREE.
+        std::free((char*)buffer);
         buff_ready = 0;
         buff_size = 0;
-//        std::printf("setting buff_ready=0...\n");
-        // let's hope we don't get preempted!
-        //emscripten_cancel_main_loop();
-//        std::printf("waiting...\n");
+//      std::printf("setting buff_ready=0...\n");
+// let's hope we don't get preempted!
+//      emscripten_cancel_main_loop();
+//      std::printf("waiting...\n");
     }
     return;
 }

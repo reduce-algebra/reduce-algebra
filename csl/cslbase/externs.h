@@ -64,7 +64,6 @@ extern size_t new_heap_pages_count, new_vheap_pages_count;
 
 extern LispObject *list_bases[];
 extern LispObject *nilsegment, *stacksegment;
-extern LispObject *nilsegmentbase, *stacksegmentbase;
 extern LispObject *stackBase;
 extern int32_t stack_segsize;  // measured in units of one CSL page
 extern double max_store_size;
@@ -207,10 +206,10 @@ class faslFileRecord
 {
 public:
     bool inUse;
-    string name;
+    const char *name;
     directory *dir;
     bool isOutput;
-    faslFileRecord(string n, bool o)
+    faslFileRecord(const char *n, bool o)
     {   inUse = true;
         name = n;
         dir = nullptr;

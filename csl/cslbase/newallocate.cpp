@@ -445,36 +445,36 @@ public:
     MakeAssertions()
     {   if (sizeof(atomic<std::uint8_t>) != 1)
         {   cout << "atomic<int8_t> is not the expected size" << "\r" << endl;
-            std::abort();
+            my_abort();
         }
         if (!atomic<std::uint8_t>().is_lock_free())
         {   cout << "atomic<uint8_t> not lock-free" << "\r" << endl;
-            std::abort();
+            my_abort();
         }
         if (sizeof(atomic<std::uintptr_t>) != sizeof(intptr_t))
         {   cout << "atomic<uintptr_t> is not the expected size" << "\r" << endl;
-            std::abort();
+            my_abort();
         }
         if (!atomic<uintptr_t>().is_lock_free())
         {   cout << "Atomic<uintptr_t> not lock-free" << "\r" << endl;
-            std::abort();
+            my_abort();
         }
         if (sizeof(atomic<std::uint32_t>) != 4)
         {   cout << "atomic<uint32_t> is not the expected size" << "\r" << endl;
-            std::abort();
+            my_abort();
         }
         if (!atomic<std::uint32_t>().is_lock_free())
         {   cout << "atomic<uint32_t> not lock-free" << "\r" << endl;
-            std::abort();
+            my_abort();
         }
         if (SIXTY_FOUR_BIT)
         {   if (sizeof(atomic<std::uint64_t>) != 8)
             {   cout << "atomic<uint64_t> is not the expected size" << "\r" << endl;
-                std::abort();
+                my_abort();
             }
             if (!atomic<std::uint64_t>().is_lock_free())
             {   cout << "atomic<uint64_t> not lock-free" << "\r" << endl;
-                std::abort();
+                my_abort();
             }
         }
         cout << "is_standard_layout(Chunk) = "
@@ -773,28 +773,11 @@ bool allocateSegment(size_t n)
 // page size. Note that this will be quite a large value!
     n = (n + pageSize - 1) & -pageSize;
     Page *r;
-    void *rbase;
 // If I have C++17 I can rely on alignment constraints and just allocate
 // using new[]
-#ifdef __cpp_aligned_new
     r = new (std::nothrow) Page[n/pageSize];
     if (r == nullptr) return false;
-    rbase = static_cast<void *>(r);
-#else // !__cpp_aligned_new
-// On older platforms I need to allocate extra memory and then use std::align
-// to get the address within the bigger block that I want.
-// In this case I will need to preserve the base of the full block because
-// that will be what I will be able to free at the end.
-    size_t N = n + pageSize - 1;
-    rbase = static_cast<void *>(new (std::nothrow) char[N]);
-    if (rbase == nullptr) return false;
-    void *work = rbase;
-    work = std::align(pageSize, n, work, N);
-    my_assert(work != nullptr);
-    r = static_cast<Page *>(work);
-#endif // !__cpp_aligned_new
     heapSegment[heapSegmentCount] = r;
-    heapSegmentBase[heapSegmentCount] = rbase;
     heapSegmentSize[heapSegmentCount] = n;
     heapSegmentCount++;
 // Now I need to arrange that the segments are sorted in the tables
@@ -806,7 +789,6 @@ bool allocateSegment(size_t n)
             break; // Ordering is OK
 // The segment must sink a place in the tables.
         std::swap(heapSegment[i], heapSegment[j]);
-        std::swap(heapSegmentBase[i], heapSegmentBase[j]);
         std::swap(heapSegmentSize[i], heapSegmentSize[j]);
     }
 // r now refers to a new segment of size n, I want to structure it into
@@ -939,7 +921,6 @@ ThreadStartup::~ThreadStartup()
     activeThreads.fetch_sub(0x00010101);
 }
 
-LispObject *nilSegmentBase, *stackSegmentBase;
 LispObject *nilSegment, *stackSegment;
 
 uintptr_t               stackBases[maxThreads];
@@ -1000,30 +981,12 @@ void initHeapSegments(double storeSize)
     cout << "Allocate " << (freeSpace/1024U) << " Kbytes" << "\r" << endl;
     allocateSegment(freeSpace);
 
-// There are other bits of memory that I will grab manually for now...
-// and at present csl.cpp ALSO sets them up... @@@@
-#if defined __cpp_aligned_new && defined HAVE_ALIGNED_ALLOC
-    nilSegment = nilSegmentBase =
-                     reinterpret_cast<LispObject *>(
-                         std::aligned_alloc(16, NIL_SEGMENT_SIZE));
-#else
-    nilSegmentBase =
-        reinterpret_cast<LispObject *>(std::malloc(NIL_SEGMENT_SIZE+32));
     nilSegment = reinterpret_cast<LispObject *>(
-                     doubleword_align_up(reinterpret_cast<uintptr_t>(nilSegmentBase)));
-#endif
+        new (std::nothrow) Align8[(NIL_SEGMENT_SIZE)/8]);
     if (nilSegment == nullptr) fatal_error(err_no_store);
     nil = static_cast<LispObject>((uintptr_t)nilSegment + TAG_SYMBOL);
-#if defined __cpp_aligned_new&& defined HAVE_ALIGNED_ALLOC
-    stackSegment = stackSegmentBase =
-                       reinterpret_cast<LispObject *>(
-                           std::aligned_alloc(16, CSL_PAGE_SIZE));
-#else
-    stackSegmentBase =
-        reinterpret_cast<LispObject *>(std::malloc(CSL_PAGE_SIZE+32));
     stackSegment = reinterpret_cast<LispObject *>(
-                       doubleword_align_up(reinterpret_cast<uintptr_t>(stackSegmentBase)));
-#endif
+        new (std::nothrow) Align8[CSL_PAGE_SIZE/8]);
     if (stackSegment == nullptr) fatal_error(err_no_store);
     stackBase = reinterpret_cast<LispObject *>(stackSegment);
     previousPage = nullptr;
@@ -1102,15 +1065,10 @@ void initHeapSegments(double storeSize)
 
 void dropHeapSegments()
 {
-#ifdef __cpp_aligned_new
     for (size_t i=0; i<heapSegmentCount; i++)
-        delete [] static_cast<Page *>(heapSegmentBase[i]);
-#else
-    for (size_t i=0; i<heapSegmentCount; i++)
-        delete [] static_cast<char *>(heapSegmentBase[i]);
-#endif
-    std::free(nilSegmentBase);
-    std::free(stackSegmentBase);
+        delete [] static_cast<Page *>(heapSegment[i]);
+    delete [] reinterpret_cast<Align8 *>(nilSegment);
+    delete [] reinterpret_cast<Align8 *>(stackSegment);
 }
 
 void drop_heap_segments()
@@ -1299,11 +1257,11 @@ LispObject Lgctest_0(LispObject env)
         {   cout << i;
             LispObject b = a;
             for (unsigned int j=i; j!=static_cast<unsigned int>(-1); j--)
-            {   if (!is_cons(b)) my_abort();
-                if (car(b) != fixnum_of_int(j)) my_abort();
+            {   if (!is_cons(b)) my_abort("gc test failure");
+                if (car(b) != fixnum_of_int(j)) my_abort("gc test failure");
                 b = cdr(b);
             }
-            if (b != nil) my_abort();
+            if (b != nil) my_abort("gc test failure");
         }
     }
     return nil;

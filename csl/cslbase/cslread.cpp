@@ -125,7 +125,7 @@ void validate_string_fn(LispObject s, const char *file, int line)
                     p++;
                 }
                 std::fflush(stderr);
-                my_abort();
+                my_abort("string format invalid");
             }
             len++;
         }
@@ -136,7 +136,7 @@ void validate_string_fn(LispObject s, const char *file, int line)
     std::fprintf(stderr, "Header = %" PRIxMAX "\n",
                  (std::intmax_t)vechdr(s));
     std::fflush(stderr);
-    my_abort();
+    my_abort("string format invalid");
 }
 
 LispObject copy_string(LispObject str, size_t n)
@@ -953,16 +953,6 @@ uint64_t Nhget=0, Nhgetp=0, Nhput1=0, Nhputp1=0, Nhput2=0, Nhputp2=0,
          Nhputtmp=0;
 uint64_t Noget=0, Nogetp=0, Noput=0, Noputp=0, Noputtmp=0;
 #endif
-
-// my_abort exists for two purposes. The first is so that it cal call
-// ensure_screen() before aborting, so that buffered output at least stands
-// a chance of being visible. The second is that it is a place I might
-// reasonably set breakpoints.
-
-void myabort()
-{   ensure_screen();
-    std::abort();
-}
 
 static LispObject lookup(LispObject str, size_t strsize,
                          LispObject v, uint64_t hash)

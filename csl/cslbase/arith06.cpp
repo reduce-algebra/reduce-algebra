@@ -1539,7 +1539,7 @@ LispObject Lmd5(LispObject env, LispObject a)
     if (v4 != 0 || (v3 & 0x40000000) != 0) len = CELL+20;
     else if (v3 != 0 || (v2 & 0x40000000) != 0) len = CELL+16;
     else if (v2 != 0 || (v1 & 0x40000000) != 0) len = CELL+12;
-    else std::abort();  // All smaller cases were filtered earlier!
+    else my_abort();  // All smaller cases were filtered earlier!
     r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
     if (SIXTY_FOUR_BIT)
     {   switch (len)
@@ -1611,7 +1611,7 @@ LispObject Lmd5string(LispObject env, LispObject a)
     if (v4 != 0 || (v3 & 0x40000000) != 0) len = CELL+20;
     else if (v3 != 0 || (v2 & 0x40000000) != 0) len = CELL+16;
     else if (v2 != 0 || (v1 & 0x40000000) != 0) len = CELL+12;
-    else std::abort();
+    else my_abort();
     r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
     if (SIXTY_FOUR_BIT)
     {   switch (len)

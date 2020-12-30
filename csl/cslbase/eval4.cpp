@@ -114,7 +114,7 @@ LispObject bytecoded_1(LispObject def, LispObject a)
 // as an argument here that indicated that some interception tests had been
 // omitted. If I abort() here then exceptionFile and exceptionLine can be
 // checked using a debugger and they will show where the exception originated.
-    if (is_exception(a)) my_abort();
+    if (is_exception(a)) my_abort("exception value not trapped");
 #endif
     real_push(def, a);
     LispObject r;
@@ -138,8 +138,8 @@ LispObject bytecoded_1(LispObject def, LispObject a)
 LispObject bytecoded_2(LispObject def, LispObject a, LispObject b)
 {   SAVE_CODEVEC;
 #ifdef DEBUG
-    if (is_exception(a)) my_abort();
-    if (is_exception(b)) my_abort();
+    if (is_exception(a)) my_abort("exception value not trapped");
+    if (is_exception(b)) my_abort("exception value not trapped");
 #endif
     real_push(def, a, b);
     LispObject r;
@@ -163,9 +163,9 @@ LispObject bytecoded_3(LispObject def, LispObject a, LispObject b,
                        LispObject c)
 {   SAVE_CODEVEC;
 #ifdef DEBUG
-    if (is_exception(a)) my_abort();
-    if (is_exception(b)) my_abort();
-    if (is_exception(c)) my_abort();
+    if (is_exception(a)) my_abort("exception value not trapped");
+    if (is_exception(b)) my_abort("exception value not trapped");
+    if (is_exception(c)) my_abort("exception value not trapped");
 #endif
     real_push(def, a, b, c);
     LispObject r;
@@ -200,10 +200,10 @@ LispObject bytecoded_4up(LispObject def, LispObject a1, LispObject a2,
                          LispObject a3, LispObject a4up)
 {   SAVE_CODEVEC;
 #ifdef DEBUG
-    if (is_exception(a1)) my_abort();
-    if (is_exception(a2)) my_abort();
-    if (is_exception(a3)) my_abort();
-    if (is_exception(a4up)) my_abort();
+    if (is_exception(a1)) my_abort("exception value not trapped");
+    if (is_exception(a2)) my_abort("exception value not trapped");
+    if (is_exception(a3)) my_abort("exception value not trapped");
+    if (is_exception(a4up)) my_abort("exception value not trapped");
 #endif
     int nargs = countargs(a4up);
     LispObject r = car(qenv(def));   // the vector of bytecodes
@@ -250,11 +250,11 @@ static LispObject byteopt(LispObject def, LispObject a1,
                           LispObject a4up, LispObject defaultval, bool restp)
 {   LispObject r;
 #ifdef DEBUG
-    if (is_exception(a1)) my_abort();
-    if (is_exception(a2)) my_abort();
-    if (is_exception(a3)) my_abort();
-    if (is_exception(a4up)) my_abort();
-    if (is_exception(defaultval)) my_abort();
+    if (is_exception(a1)) my_abort("exception value not trapped");
+    if (is_exception(a2)) my_abort("exception value not trapped");
+    if (is_exception(a3)) my_abort("exception value not trapped");
+    if (is_exception(a4up)) my_abort("exception value not trapped");
+    if (is_exception(defaultval)) my_abort("exception value not trapped");
 #endif
     int i, wantargs, wantopts;
     SAVE_CODEVEC;
@@ -503,7 +503,7 @@ LispObject Lmv_list(LispObject env, LispObject a)
 //
 {   LispObject r;
 #ifdef DEBUG
-    if (is_exception(a)) my_abort();
+    if (is_exception(a)) my_abort("exception value not trapped");
 #endif
     RAIIsave_stack saver;
     int i, x = exit_count;
@@ -511,7 +511,7 @@ LispObject Lmv_list(LispObject env, LispObject a)
     for (i=2; i<=x; i++)
     {
 #ifdef DEBUG
-        if (is_exception((&work_0)[i])) my_abort();
+        if (is_exception((&work_0)[i])) my_abort("exception value not trapped");
 #endif
         real_push((&work_0)[i]);
     }

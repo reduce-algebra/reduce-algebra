@@ -1,3 +1,0 @@
-LIBRARY dynmodule.dll
-EXPORTS
-   callme

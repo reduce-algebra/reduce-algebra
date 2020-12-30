@@ -416,7 +416,7 @@ int getFromKeyboard()
     FD_SET(n2, &readFd);
     int n = n1 > n2 ? n1 : n2;
     int r = select(n+1, &readFd, nullptr, nullptr, nullptr);
-    if (r == -1) std::abort(); // select failed
+    if (r == -1) my_abort(); // select failed
     if (FD_ISSET(n2, &readFd))
     {   close(n2);
         return EOF; // pipe told us to quit!
@@ -935,12 +935,12 @@ void input_history_end()
                            std::setfill('0') << (ch & 0xffff);
             }
             h << "\"" << endl;
-            std::free(l);
+            delete [] l;
         }
     }
     if (blankcount != 0) h << std::dec << "-" << blankcount << endl;
     h << "History end" << endl;
-    if (pending_history_line != nullptr) std::free(pending_history_line);
+    if (pending_history_line != nullptr) delete [] pending_history_line;
     history_active = false;
 // Now as h goes out of scope the output stream will be closed.
 }
@@ -952,9 +952,8 @@ void input_history_stage(const wchar_t *s)
 // The first line after a new prompt just simply forms the pending input
 // line.
     if (pending_history_line == nullptr)
-    {   pending_history_line = (wchar_t *)
-                               std::malloc((std::wcslen(s)+1)*sizeof(wchar_t));
-        if (pending_history_line != nullptr) // in case malloc fails
+    {   pending_history_line = new (std::nothrow) wchar_t[std::wcslen(s)+1];
+        if (pending_history_line != nullptr) // in case "new" fails
             std::wcscpy(pending_history_line, s);
         return;
     }
@@ -963,11 +962,11 @@ void input_history_stage(const wchar_t *s)
 // something from the history I will need to worry about those newlines
 // and potentially how they display with or without associated prompts.
     n = std::wcslen(pending_history_line);
-    pending_history_line = (wchar_t *)
-                           std::realloc(pending_history_line,
-                                        (std::wcslen(s) + n + 2)*sizeof(wchar_t));
-    if (pending_history_line == nullptr)
-        return; // make be space leak here!
+    wchar_t *bigger = new (std::nothrow) wchar_t[std::wcslen(s) + n + 2];
+    if (bigger == nullptr) return;
+    std::memcpy(bigger, pending_history_line, n*sizeof(wchar_t));
+    delete [] pending_history_line;
+    pending_history_line = bigger;
     pending_history_line[n] = '\n';
     std::wcscpy(pending_history_line+n+1, s);
 }
@@ -992,14 +991,14 @@ void input_history_add(const wchar_t *s)
         (scopy = input_history[(p-1)%INPUT_HISTORY_SIZE]) != nullptr &&
         std::wcscmp(s, scopy) == 0) return;
 // Make a copy of the input string...
-    scopy = (wchar_t *)std::malloc((std::wcslen(s) + 1)*sizeof(wchar_t));
+    scopy = new (std::nothrow) wchar_t[std::wcslen(s) + 1];
     p = input_history_next % INPUT_HISTORY_SIZE;
-// If malloc returns nullptr I just store an empty history entry.
+// If new returns nullptr I just store an empty history entry.
     if (scopy != nullptr) std::wcscpy(scopy, s);
-//   OG("History entry has %d characters in it\n", wcslen(s));
+//  LOG("History entry has %d characters in it\n", wcslen(s));
 // I can overwrite an old history item here... I will keep INPUT_HISTORY_SIZE
 // entries.
-    if (input_history[p] != nullptr) std::free(input_history[p]);
+    if (input_history[p] != nullptr) delete [] input_history[p];
     printlog("insert new item in slot %d\n", p);
     input_history[p] = scopy;
     historyLast = input_history_next;
@@ -1020,7 +1019,7 @@ const wchar_t *input_history_get(int n)
         n >= input_history_next ||
         n < input_history_next-INPUT_HISTORY_SIZE) return nullptr;
     s = input_history[n % INPUT_HISTORY_SIZE];
-// The nullptr here would be if malloc had failed earlier.
+// The nullptr here would be if new had failed earlier.
     printlog("input_history_get(%d) = %ls\n", n,
              s==nullptr ? L"<nil>" : s);
     if (s == nullptr) return L"";
@@ -1076,14 +1075,16 @@ static wchar_t *term_wide_plain_getline()
 // wchar_t but needs 3 bytes in utf-8.
         if ((n+20)*(5-sizeof(wchar_t)) >=
             input_line_size*(4/sizeof(wchar_t)))
-        {   input_line =
-                (wchar_t *)std::realloc(input_line,
-                                        2*input_line_size*sizeof(wchar_t));
-            if (input_line == nullptr)
-            {   input_line_size = 0;
+        {   wchar_t *bigger = new (std::nothrow) wchar_t[2*input_line_size];
+            if (bigger == nullptr)
+            {   delete [] input_line;
+                input_line_size = 0;
                 return nullptr;
             }
-            else input_line_size = 2*input_line_size;
+            std::memcpy(bigger, input_line, input_line_size*sizeof(wchar_t));
+            delete [] input_line;
+            input_line = bigger;
+            input_line_size = 2*input_line_size;
         }
         input_line[n++] = ch;
         input_line[n] = 0;
@@ -1153,7 +1154,7 @@ void term_setprompt(const char *s)
             historyFirst = input_history_next - INPUT_HISTORY_SIZE;
             if (historyFirst < 0) historyFirst = 0;
             historyNumber = historyLast + 1; // so that ALT-P moves to first entry
-            std::free(pending_history_line);
+            delete [] pending_history_line;
             pending_history_line = nullptr;
         }
     }
@@ -1203,7 +1204,7 @@ void term_wide_setprompt(const wchar_t *s)
         historyFirst = input_history_next - INPUT_HISTORY_SIZE;
         if (historyFirst < 0) historyFirst = 0;
         historyNumber = historyLast + 1; // so that ALT-P moves to first entry
-        std::free(pending_history_line);
+        delete [] pending_history_line;
         pending_history_line = nullptr;
     }
 #endif // !EMBEDDED
@@ -1525,7 +1526,7 @@ static int direct_to_terminal()
 int term_setup(const char *argv0, const char *colour)
 {
 #if defined EMBEDDED || defined AVOID_THREADS
-    input_line = (wchar_t *)std::malloc(200*sizeof(wchar_t));
+    input_line = new (std::nothrow) wchar_t[200];
     if (input_line == nullptr)
     {   input_line_size = 0;
         return 1;  // failed to allocate buffers
@@ -1546,8 +1547,8 @@ int term_setup(const char *argv0, const char *colour)
     termEnabled = false;
     keyboardBuffer[0].Event.KeyEvent.wRepeatCount = 0;
     term_colour = (colour == nullptr ? "-" : colour);
-    input_line = (wchar_t *)std::malloc(200*sizeof(wchar_t));
-    display_line = (wchar_t *)std::malloc(200*sizeof(wchar_t));
+    input_line = new (std::nothrow) wchar_t[200];
+    display_line = new (std::nothrow) wchar_t[200];
     if (input_line == nullptr || display_line == nullptr)
     {   input_line_size = 0;
         return 1;  // failed to allocate buffers
@@ -1611,8 +1612,8 @@ int term_setup(const char *argv0, const char *colour)
             promptColour = c;
         }
     }
-    input_line = (wchar_t *)std::malloc(200*sizeof(wchar_t));
-    display_line = (wchar_t *)std::malloc(200*sizeof(wchar_t));
+    input_line = new (std::nothrow) wchar_t[200];
+    display_line = new (std::nothrow) wchar_t[200];
     if (input_line == nullptr || display_line == nullptr)
     {   input_line_size = 0;
         return 1; // no space for buffer
@@ -1731,7 +1732,7 @@ void term_close()
     resetCP();
 #endif
     if (keyboardThreadActive) quitKeyboardThread();
-#if !defined EMBEDDED && !defined AVOID_THREADS
+#ifndef EMBEDDED
 #ifdef WIN32
     if (*term_colour != 0)
         SetConsoleTextAttribute(consoleOutputHandle, plainAttributes);
@@ -1754,17 +1755,17 @@ void term_close()
     }
 #endif // !WIN32
     if (display_line != nullptr)
-    {   std::free(display_line);
+    {   delete [] display_line;
         display_line = nullptr;
     }
 #endif // !EMBEDDED
     if (input_line != nullptr)
-    {   std::free(input_line);
+    {   delete [] input_line;
         input_line = nullptr;
     }
     input_history_end();
     termEnabled = false;
-#endif
+#endif // AVOID_THREADS
 }
 
 #if !defined EMBEDDED && !defined AVOID_THREADS
@@ -5834,16 +5835,33 @@ static wchar_t *term_wide_fancy_getline()
 // Again allow extra space in case of a need to convert to utf-8.
         if ((n+20)*(5-sizeof(wchar_t)) >=
             input_line_size*(4/sizeof(wchar_t)))
-        {   input_line = (wchar_t *)std::realloc(input_line,
-                                                 2*input_line_size*sizeof(wchar_t));
-            display_line = (wchar_t *)std::realloc(display_line,
-                                                   2*input_line_size*sizeof(wchar_t));
-            if (input_line == nullptr || display_line == nullptr)
-            {   input_line_size = 0;
+        {   wchar_t *bigger = new (std::nothrow) wchar_t[2*input_line_size];
+            if (bigger != nullptr)
+            {   std::memcpy(bigger, input_line, input_line_size*sizeof(wchar_t));
+                delete [] input_line;
+                input_line = bigger;
+            }
+            else
+            {   delete [] input_line;
+                delete [] display_line;
+                input_line_size = 0;
                 set_default_colour();
                 return nullptr;
             }
-            else input_line_size = 2*input_line_size;
+            bigger = new (std::nothrow) wchar_t[2*input_line_size];
+            if (bigger != nullptr)
+            {   std::memcpy(bigger, display_line, input_line_size*sizeof(wchar_t));
+                delete [] display_line;
+                display_line = bigger;
+            }
+            else
+            {   delete [] input_line;
+                delete [] display_line;
+                input_line_size = 0;
+                set_default_colour();
+                return nullptr;
+            }
+            input_line_size = 2*input_line_size;
         }
 // There are cases where I need to treat characters specially:
 //   (1) I am in the middle of a history search, and the

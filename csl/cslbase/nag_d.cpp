@@ -108,8 +108,8 @@ LispObject Ld01ajf(LispObject env, int nargs, ...)
     pop(Lepsabs,Lb,La);
 
     // Setup workspace arrays etc.
-    w = reinterpret_cast<double *>(std)::malloc(lw*sizeof(double));
-    iw = (int32_t *)std::malloc(liw*sizeof(int));
+    w = new double[lw];
+    iw = new int32_t[liw];
 
     // Call NAG routine
     push(La,Lb,Lepsabs,Lepsrel);
@@ -158,8 +158,8 @@ LispObject Ld01ajf(LispObject env, int nargs, ...)
     Lifail = int2ccl(ifail);
     pop(Liw,Lw,Labserr,Lresult);
 
-    std::free (w);
-    std::free (iw);
+    delete [] (w);
+    delete [] (iw);
 
     return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
@@ -237,8 +237,8 @@ LispObject Ld01akf(LispObject env, int nargs, ...)
     pop(Lepsabs,Lb,La);
 
     // Setup workspace arrays etc.
-    w = reinterpret_cast<double *>(std)::malloc(lw*sizeof(double));
-    iw = (int32_t *)std::malloc(liw*sizeof(int));
+    w = new double[lw];
+    iw = new int32_t *[liw];
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -283,8 +283,8 @@ LispObject Ld01akf(LispObject env, int nargs, ...)
     Lifail = int2ccl(ifail);
     pop(Liw,Lw,Labserr,Lresult);
 
-    std::free (w);
-    std::free (iw);
+    delete [] (w);
+    delete [] (iw);
 
     return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
@@ -345,7 +345,7 @@ LispObject Ld01alf(LispObject env, int nargs, ...)
     pop(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop(Lpoints,Lnpts,Lb,La);
     // ndim = (length_of_header(vechdr(Lpoints)) - 4)/4;
-    points = reinterpret_cast<double *>(std)::malloc(npts*sizeof(double));
+    points = new double[npts];
     push(La,Lb,Lnpts,Lpoints,Lepsabs);
     push(Lepsrel,Llw,Lliw,Lifail);
     mkFortranVectorDouble(points, Lpoints, npts);
@@ -378,8 +378,8 @@ LispObject Ld01alf(LispObject env, int nargs, ...)
     pop(Lpoints,Lnpts,Lb,La);
 
     // Setup workspace arrays etc.
-    w = reinterpret_cast<double *>(std)::malloc(lw*sizeof(double));
-    iw = (int32_t *)std::malloc(liw*sizeof(int));
+    w = new double[lw];
+    iw = new int32_t *[liw];
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -424,9 +424,9 @@ LispObject Ld01alf(LispObject env, int nargs, ...)
     Lifail = int2ccl(ifail);
     pop(Liw,Lw,Labserr,Lresult);
 
-    std::free (points);
-    std::free (w);
-    std::free (iw);
+    delete [] (points);
+    delete [] (w);
+    delete [] (iw);
 
     return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
@@ -511,8 +511,8 @@ LispObject Ld01amf(LispObject env, int nargs, ...)
     pop(Lepsabs,Linf,Lbound);
 
     // Setup workspace arrays etc.
-    w = reinterpret_cast<double *>(std)::malloc(lw*sizeof(double));
-    iw = (int32_t *)std::malloc(liw*sizeof(int));
+    w = new double[lw];
+    iw = new int32_t *[liw];
 
     push(Lbound,Linf,Lepsabs,Lepsrel);
     push(Llw,Lliw,Lifail);
@@ -562,8 +562,8 @@ LispObject Ld01amf(LispObject env, int nargs, ...)
     Lifail = int2ccl(ifail);
     pop(Liw,Lw,Labserr,Lresult);
 
-    std::free (w);
-    std::free (iw);
+    delete [] (w);
+    delete [] (iw);
 
     return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
@@ -660,8 +660,8 @@ LispObject Ld01anf(LispObject env, int nargs, ...)
     pop(Lkey,Lomega,Lb,La);
 
     // Setup workspace arrays etc.
-    w = reinterpret_cast<double *>(std)::malloc(lw*sizeof(double));
-    iw = (int32_t *)std::malloc(liw*sizeof(int));
+    w = new double[lw];
+    iw = new int32_t *[liw];
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -707,8 +707,8 @@ LispObject Ld01anf(LispObject env, int nargs, ...)
     Lifail = int2ccl(ifail);
     pop(Liw,Lw,Labserr,Lresult);
 
-    std::free (w);
-    std::free (iw);
+    delete [] (w);
+    delete [] (iw);
 
     return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
@@ -813,8 +813,8 @@ LispObject Ld01apf(LispObject env, int nargs, ...)
     pop(Lkey,Lbeta,Lalfa,Lb,La);
 
     // Setup workspace arrays etc.
-    w = reinterpret_cast<double *>(std)::malloc(lw*sizeof(double));
-    iw = (int32_t *)std::malloc(liw*sizeof(int));
+    w = new double[lw];
+    iw = new int32_t *[liw];
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -859,8 +859,8 @@ LispObject Ld01apf(LispObject env, int nargs, ...)
     Lifail = int2ccl(ifail);
     pop(Liw,Lw,Labserr,Lresult);
 
-    std::free (w);
-    std::free (iw);
+    delete [] (w);
+    delete [] (iw);
 
     return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
@@ -950,8 +950,8 @@ LispObject Ld01aqf(LispObject env, int nargs, ...)
     pop(Lepsabs,Lc,Lb,La);
 
     // Setup workspace arrays etc.
-    w = reinterpret_cast<double *>(std)::malloc(lw*sizeof(double));
-    iw = (int32_t *)std::malloc(liw*sizeof(int));
+    w = new double[lw];
+    iw = new int32_t *[liw];
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -997,8 +997,8 @@ LispObject Ld01aqf(LispObject env, int nargs, ...)
     Lifail = int2ccl(ifail);
     pop(Liw,Lw,Labserr,Lresult);
 
-    std::free (w);
-    std::free (iw);
+    delete [] (w);
+    delete [] (iw);
 
     return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
@@ -1094,13 +1094,11 @@ LispObject Ld01asf(LispObject env, int nargs, ...)
     pop(Lepsabs,Lkey,Lomega,La);
 
     // Setup workspace arrays etc.
-    erlst = reinterpret_cast<double *>(std)::malloc(limlst*sizeof(
-                double));
-    rslst = reinterpret_cast<double *>(std)::malloc(limlst*sizeof(
-                double));
-    ierlst = (int32_t *)std::malloc(limlst*sizeof(int));
-    w = reinterpret_cast<double *>(std)::malloc(lw*sizeof(double));
-    iw = (int32_t *)std::malloc(liw*sizeof(int));
+    erlst = new double[limlst];
+    rslst = new double[limlst];
+    ierlst = new int32_t *[limlst];
+    w = new double[lw];
+    iw = new int32_t *[liw];
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -1159,11 +1157,11 @@ LispObject Ld01asf(LispObject env, int nargs, ...)
     pop(Llst,Liw,Lifail,Lerlst);
     pop(Labserr,Lresult,Lierlst);
 
-    std::free (erlst);
-    std::free (rslst);
-    std::free (ierlst);
-    std::free (w);
-    std::free (iw);
+    delete [] (erlst);
+    delete [] (rslst);
+    delete [] (ierlst);
+    delete [] (w);
+    delete [] (iw);
 
     return Llist(nil,8,Lierlst,Lresult,Labserr,Lerlst,Lifail,Liw,Llst,
                  Lrslst);
@@ -1238,8 +1236,8 @@ LispObject Ld01bbf(LispObject env, int nargs, ...)
     push(Ln,Lgtype,Lifail);
 
     /* Setup workspace arrays etc. */  // return value arrays in this case
-    weight = reinterpret_cast<double *>(std)::malloc(n*sizeof(double));
-    abscis = reinterpret_cast<double *>(std)::malloc(n*sizeof(double));
+    weight = new double[n];
+    abscis = new double[n];
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -1279,8 +1277,8 @@ LispObject Ld01bbf(LispObject env, int nargs, ...)
     Lifail = int2ccl(ifail);
     pop(Labscis,Lweight);
 
-    std::free (weight);
-    std::free (abscis);
+    delete [] (weight);
+    delete [] (abscis);
 
     return Llist(nil,3,Lweight,Labscis,Lifail);
 }
@@ -1332,13 +1330,13 @@ LispObject Ld01fcf(LispObject env, int nargs, ...)
     ndim = thirty_two_bits(Lndim);
     pop(Lifail,Lminpts,Llenwrk,Leps);
     pop(Lmaxpts,Lb,La,Lndim);
-    a = reinterpret_cast<double *>() std::malloc (ndim * sizeof(double));
+    a = new double[ndim];
     push(Lndim,La,Lb,Lmaxpts);
     push(Leps,Llenwrk,Lminpts,Lifail);
     mkFortranVectorDouble(a, La, ndim);
     pop(Lifail,Lminpts,Llenwrk,Leps);
     pop(Lmaxpts,Lb,La,Lndim);
-    b = reinterpret_cast<double *>() std::malloc (ndim * sizeof(double));
+    b = new double[ndim];
     push(Lndim,La,Lb,Lmaxpts);
     push(Leps,Llenwrk,Lminpts,Lifail);
     mkFortranVectorDouble(b, Lb, ndim);
@@ -1371,8 +1369,7 @@ LispObject Ld01fcf(LispObject env, int nargs, ...)
     pop(Lmaxpts,Lb,La,Lndim);
 
     // Setup workspace arrays etc.
-    wrkstr = reinterpret_cast<double *>(std)::malloc(lenwrk*sizeof(
-                 double));
+    wrkstr = new double[lenwrk];
 
     push(Lndim,La,Lb,Lmaxpts);
     push(Leps,Llenwrk,Lminpts,Lifail);
@@ -1418,9 +1415,9 @@ LispObject Ld01fcf(LispObject env, int nargs, ...)
     Lacc = make_boxfloat(acc,TYPE_DOUBLE_FLOAT);
     pop(Lifail,Lminpts,Lfinval);
 
-    std::free (a);
-    std::free (b);
-    std::free (wrkstr);
+    delete [] (a);
+    delete [] (b);
+    delete [] (wrkstr);
 
     return Llist(nil,4,Lfinval,Lminpts,Lifail,Lacc);
 }
@@ -1460,11 +1457,11 @@ LispObject Ld01gaf(LispObject env, int nargs, ...)
     push(Lx,Ly,Ln,Lifail);
     n = thirty_two_bits(Ln);
     pop(Lifail,Ln,Ly,Lx);
-    x = reinterpret_cast<double *>() std::malloc (n * sizeof(double));
+    x = new double[n];
     push(Lx,Ly,Ln,Lifail);
     mkFortranVectorDouble(x, Lx, n);
     pop(Lifail,Ln,Ly,Lx);
-    y = reinterpret_cast<double *>() std::malloc (n * sizeof(double));
+    y = new double[n];
     push(Lx,Ly,Ln,Lifail);
     mkFortranVectorDouble(y, Ly, n);
     pop(Lifail,Ln,Ly,Lx);
@@ -1508,8 +1505,8 @@ LispObject Ld01gaf(LispObject env, int nargs, ...)
     Lifail = int2ccl(ifail);
     pop(Ler,Lans);
 
-    std::free (x);
-    std::free (y);
+    delete [] (x);
+    delete [] (y);
 
     return Llist(nil,3,Lans,Ler,Lifail);
 }
@@ -1562,13 +1559,13 @@ LispObject Ld01gbf(LispObject env, int nargs, ...)
     ndim = thirty_two_bits(Lndim);
     pop(Lifail,Lwrkstr,Lmincls,Llenwrk,Leps);
     pop(Lmaxcls,Lb,La,Lndim);
-    a = reinterpret_cast<double *>() std::malloc (ndim * sizeof(double));
+    a = new double[ndim];
     push(Lndim,La,Lb,Lmaxcls,Leps);
     push(Llenwrk,Lmincls,Lwrkstr,Lifail);
     mkFortranVectorDouble(a, La, ndim);
     pop(Lifail,Lwrkstr,Lmincls,Llenwrk,Leps);
     pop(Lmaxcls,Lb,La,Lndim);
-    b = reinterpret_cast<double *>() std::malloc (ndim * sizeof(double));
+    b = new double[ndim];
     push(Lndim,La,Lb,Lmaxcls,Leps);
     push(Llenwrk,Lmincls,Lwrkstr,Lifail);
     mkFortranVectorDouble(b, Lb, ndim);
@@ -1594,8 +1591,7 @@ LispObject Ld01gbf(LispObject env, int nargs, ...)
     mincls = thirty_two_bits(Lmincls);
     pop(Lifail,Lwrkstr,Lmincls,Llenwrk,Leps);
     pop(Lmaxcls,Lb,La,Lndim);
-    wrkstr = reinterpret_cast<double *>() std::malloc (lenwrk * sizeof(
-                 double));
+    wrkstr = new double[lenwrk];
     push(Lndim,La,Lb,Lmaxcls,Leps);
     push(Llenwrk,Lmincls,Lwrkstr,Lifail);
     mkFortranVectorDouble(wrkstr, Lwrkstr, lenwrk);
@@ -1654,9 +1650,9 @@ LispObject Ld01gbf(LispObject env, int nargs, ...)
     Lacc = make_boxfloat(acc,TYPE_DOUBLE_FLOAT);
     pop(Lwrkstr,Lifail,Lmincls,Lfinval);
 
-    std::free (a);
-    std::free (b);
-    std::free (wrkstr);
+    delete [] (a);
+    delete [] (b);
+    delete [] (wrkstr);
 
     return Llist(nil,5,Lfinval,Lmincls,Lifail,Lwrkstr,Lacc);
 }
@@ -1728,7 +1724,7 @@ LispObject Ld02bbf(LispObject env, int nargs, ...)
     x = float_of_number(Lx);
     pop(Lifail,Ltol,Ly,Lx);
     pop(Lirelab,Ln,Lm,Lxend);
-    y = reinterpret_cast<double *>() std::malloc (n * sizeof(double));
+    y = new double[n];
     push(Lxend,Lm,Ln,Lirelab);
     push(Lx,Ly,Ltol,Lifail);
     mkFortranVectorDouble(y, Ly, n);
@@ -1746,8 +1742,8 @@ LispObject Ld02bbf(LispObject env, int nargs, ...)
     pop(Lirelab,Ln,Lm,Lxend);
 
     // Setup workspace arrays etc.
-    w = reinterpret_cast<double *>(std)::malloc(n*7*sizeof(double));
-    result = reinterpret_cast<double *>(std)::malloc(m*n*sizeof(double));
+    w = new double[n*7];
+    result = new double[m*n];
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -1794,9 +1790,9 @@ LispObject Ld02bbf(LispObject env, int nargs, ...)
     Ltol = make_boxfloat(tol,TYPE_DOUBLE_FLOAT);
     pop(Lifail,Lresult,Ly,Lx);
 
-    std::free (y);
-    std::free (w);
-    std::free (result);
+    delete [] (y);
+    delete [] (w);
+    delete [] (result);
 
     return Llist(nil,5,Lx,Ly,Lresult,Lifail,Ltol);
 }
@@ -1868,7 +1864,7 @@ LispObject Ld02bhf(LispObject env, int nargs, ...)
     x = float_of_number(Lx);
     pop(Lifail,Ltol,Ly,Lx);
     pop(Lhmax,Lirelab,Ln,Lxend);
-    y = reinterpret_cast<double *>() std::malloc (n * sizeof(double));
+    y = new double[n];
     push(Lxend,Ln,Lirelab,Lhmax);
     push(Lx,Ly,Ltol,Lifail);
     mkFortranVectorDouble(y, Ly, n);
@@ -1888,7 +1884,7 @@ LispObject Ld02bhf(LispObject env, int nargs, ...)
     push(Lx,Ly,Ltol,Lifail);
 
     // Setup workspace arrays etc.
-    w = reinterpret_cast<double *>(std)::malloc(n*7*sizeof(double));
+    w = new double[n*7];
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -1930,8 +1926,8 @@ LispObject Ld02bhf(LispObject env, int nargs, ...)
     Ltol = make_boxfloat(tol,TYPE_DOUBLE_FLOAT);
     pop(Lifail,Ly,Lx);
 
-    std::free (y);
-    std::free (w);
+    delete [] (y);
+    delete [] (w);
 
     return Llist(nil,4,Lx,Ly,Lifail,Ltol);
 }
@@ -2017,7 +2013,7 @@ LispObject Ld02cjf(LispObject env, int nargs, ...)
     x = float_of_number(Lx);
     pop(Lifail,Ly,Lx,Lrelabs);
     pop(Ltol,Ln,Lm,Lxend);
-    y = reinterpret_cast<double *>() std::malloc (n * sizeof(double));
+    y = new double[n];
     push(Lxend,Lm,Ln,Ltol);
     push(Lrelabs,Lx,Ly,Lifail);
     mkFortranVectorDouble(y, Ly, n);
@@ -2032,8 +2028,8 @@ LispObject Ld02cjf(LispObject env, int nargs, ...)
     relabs.len = 1;
 
     // Setup workspace arrays etc.
-    w = reinterpret_cast<double *>(std)::malloc((28+21*n)*sizeof(double));
-    result = reinterpret_cast<double *>(std)::malloc(m*n*sizeof(double));
+    w = new double[28+21*n];
+    result = new double[m*n];
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -2077,9 +2073,9 @@ LispObject Ld02cjf(LispObject env, int nargs, ...)
     Lifail = int2ccl(ifail);
     pop(Lresult,Ly,Lx);
 
-    std::free (y);
-    std::free (w);
-    std::free (result);
+    delete [] (y);
+    delete [] (w);
+    delete [] (result);
 
     return Llist(nil,4,Lx,Ly,Lresult,Lifail);
 }
@@ -2170,7 +2166,7 @@ LispObject Ld02ejf(LispObject env, int nargs, ...)
     x = float_of_number(Lx);
     pop(Lifail,Ltol,Ly,Lx,Liw);
     pop(Lrelabs,Ln,Lm,Lxend);
-    y = reinterpret_cast<double *>() std::malloc (n * sizeof(double));
+    y = new double[n];
     push(Lxend,Lm,Ln,Lrelabs,Liw);
     push(Lx,Ly,Ltol,Lifail);
     mkFortranVectorDouble(y, Ly, n);
@@ -2192,8 +2188,8 @@ LispObject Ld02ejf(LispObject env, int nargs, ...)
     relabs.len = 1;
 
     // Setup workspace arrays etc.
-    w = reinterpret_cast<double *>(std)::malloc(iw*sizeof(double));
-    result = reinterpret_cast<double *>(std)::malloc(m*n*sizeof(double));
+    w = new double[iw];
+    result = new double[m*n];
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -2240,9 +2236,9 @@ LispObject Ld02ejf(LispObject env, int nargs, ...)
     Ltol = make_boxfloat(tol,TYPE_DOUBLE_FLOAT);
     pop(Lifail,Lresult,Ly,Lx);
 
-    std::free (y);
-    std::free (w);
-    std::free (result);
+    delete [] (y);
+    delete [] (w);
+    delete [] (result);
 
     return Llist(nil,5,Lx,Ly,Lresult,Lifail,Ltol);
 }

@@ -248,13 +248,18 @@ symbolic procedure begin1;
 % normal use the argument should be NIL. The "prefixchars" stuff is to do
 % with reading in Reduce scripts interleaved with TeX using "in_tex".
 
+global '(otime!-set!*);
+otime!-set!* := nil;
+
 symbolic procedure prepare!-for!-top!-loop !~prefixchars!~;
    begin
-      otime!* := time();
-      % The next line is that way for bootstrapping purposes.
-      if getd 'gctime then ogctime!* := gctime() else ogctime!* := 0;
-      otime1!* := otime2!* := otime3!* := otime!*;
-      ogctime1!* := ogctime2!* := ogctime3!* := ogctime!*;
+      if not otime!-set!* then <<
+         otime!* := time();
+% The next line is that way for bootstrapping purposes.
+         if getd 'gctime then ogctime!* := gctime() else ogctime!* := 0;
+         otime1!* := otime2!* := otime3!* := otime!*;
+         ogctime1!* := ogctime2!* := ogctime3!* := ogctime!*;
+         otime!-set!* := t >>;
       peekchar!* := !~prefixchars!~;
       cursym!* := '!*semicol!*;
       curescaped!* := nil;

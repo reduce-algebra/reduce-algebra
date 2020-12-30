@@ -53,7 +53,7 @@
 
 static const char *line = nullptr, *linep = nullptr;
 
-static int igetstatic_cast<void>()
+static int iget()
 {   if (linep == nullptr)
     {   term_setprompt(prompt_string);
         line = linep = term_getline();

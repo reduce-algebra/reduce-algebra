@@ -45,7 +45,7 @@
 //
 // find_image_directory is handed the information that main() sees when
 // the application is started up, and it returns a string (in freshly
-// malloc'd space) that is the default name for the checkpoint image file
+// allocated space) that is the default name for the checkpoint image file
 // to be used for this run.
 //
 
@@ -170,8 +170,8 @@ extern char *change_directory(char *filename, const char *old,
 // get_truename attempts to get a canonical name for a file or directory.
 // It returns a string. If unable to do anything useful it can just
 // return a copy of its input, but the result is expected to be a
-// freshly allocated block of memory and should be handed to free() after
-// it has been used. This interface using malloc() should be changed at
+// freshly allocated block of memory and should be handed to "delete" after
+// it has been used. This interface using "new" should be changed at
 // some stage so that the caller passes down a buffer for the result to
 // be placed in (what is arg1 for anyway).
 // This comment also needs to be expanded to explain in a little more detail
@@ -303,10 +303,10 @@ extern uint32_t Idiv10_9(uint32_t *qp, uint32_t a, uint32_t b);
 
 //
 // When the garbage collector observes that memory is tight it can attempt
-// to allocate more by going back to malloc(). This function is called with
+// to allocate more by going back to "new". This function is called with
 // an argument that indicates how many pages are in use at present, and it
 // is expected to return an indication of how many more might be worth
-// allocating. See the code in gc.c for details of usage.
+// allocating. See the code in csl[new]gc.c for details of usage.
 //
 extern int32_t ok_to_grab_memory(int32_t current_pages);
 

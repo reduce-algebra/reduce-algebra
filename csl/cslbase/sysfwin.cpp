@@ -409,7 +409,7 @@ char *look_in_lisp_variable(char *o, int prefix)
 // a value expressed in microseconds, but of course there is no guarantee that
 // I will have anything like that as my actual granularity!
 
-uint64_t read_clock_microsecondsstatic_cast<void>()
+uint64_t read_clock_microsecond()
 {   struct std::timespec tt;
     clock_gettime(CLOCK_THREAD_CPUTIME_ID, &tt);
     double w1 = static_cast<double>(tt.tv_sec) + static_cast<double>
@@ -461,8 +461,8 @@ uint64_t read_clock()
 // will wraps round after around 20 minutes of CPU time!
 
 uint64_t read_clock()
-{   return (uint64_t)((1000000.0/CLOCKS_PER_SEC)*static_cast<double>
-                      (std::clock()));
+{   return static_cast<uint64_t>((1000000.0/CLOCKS_PER_SEC)*
+                                 static_cast<double>(std::clock()));
 }
 
 #endif
@@ -599,8 +599,8 @@ const char *find_image_directory(int argc, const char *argv[])
     }
 #endif
     n = std::strlen(xname)+1;
-    w = reinterpret_cast<char *>(std::malloc(n));
-    if (w == nullptr) std::abort();
+    w = new (std::nothrow) char[n];
+    if (w == nullptr) my_abort();
     std::strcpy(w, xname);
     return w;
 }

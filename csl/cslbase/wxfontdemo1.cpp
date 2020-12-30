@@ -276,8 +276,7 @@ int main(int argc, const char *argv[])
                 (buf.st_mode & S_IFDIR) != 0)
             {
 // Well foo.app exists and is a directory, so I will try to use it
-                const char **nargs =
-                    (const char **)std::malloc(sizeof(char *)*(argc+3));
+                const char **nargs = new char *[argc+3];
                 int i;
                 nargs[0] = "/usr/bin/open";
                 nargs[1] = xname;

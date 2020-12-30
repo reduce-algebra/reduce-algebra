@@ -226,8 +226,14 @@ using std::string;
 // An "my_assert" scheme that lets me write in my own code to print the
 // diagnostics. Included here because this files does not icnlude "fx.h".
 
-[[noreturn]] static void my_abort()
-{   std::abort();
+[[noreturn]] inline void my_abort()
+{   std::exit(EXIT_FAILURE);
+}
+
+[[noreturn]] inline void my_abort(const char *msg)
+{   std::fprintf(stderr, "\n\n!!! Aborting: %s\n\n", msg);
+    std::fflush(stderr);
+    std::exit(EXIT_FAILURE);
 }
 
 template <typename F>
@@ -457,9 +463,9 @@ void mac_deal_with_application_bundle(int argc, const char *argv[])
         if (stat(xname, &buf) == 0 &&
             (buf.st_mode & S_IFDIR) != 0)
         {
-// Well foo.app exists and is a directory, so I will try to use it
-            const char **nargs = (const char **)std::malloc(sizeof(char *)*
-                                 (argc+3));
+// Well foo.app exists and is a directory, so I will try to use it. Here
+// I will let "new" throw an exception if it fails!
+            const char **nargs = new const char *[argc+3];
             int i;
 #ifdef DEBUG
 //
@@ -1062,7 +1068,6 @@ int plain_worker(int argc, const char *argv[],
     TermSetup ts(argv[0], colour_spec);
     std::strcpy(fwin_prompt_string, "> ");
     int r = (*fwin_main)(argc, argv);
-    term_close();
     return r;
 }
 
@@ -1293,8 +1298,8 @@ int find_program_directory(const char *argv0)
         return 0;
     }
 
-    w = reinterpret_cast<char *>(std::malloc(1+std::strlen(ww)));
-    if (w == nullptr) return 5;           // 5 = malloc fails
+    w = new (std::nothrow) char[1+std::strlen(ww)];
+    if (w == nullptr) return 5;           // 5 = new fails
     std::strcpy(w, ww);
     fullProgramName = w;
     len = std::strlen(ww);
@@ -1350,14 +1355,12 @@ int find_program_directory(const char *argv0)
     ndir = len - npgm - 1;
     if (ndir < 0) programDir = ".";  // none really visible
     else
-    {   if ((w = reinterpret_cast<char *>(std::malloc(
-                     ndir+1))) == nullptr) return 1;
+    {   if ((w = new (std::nothrow) char[ndir+1]) == nullptr) return 1;
         std::strncpy(w, fullProgramName, ndir);
         w[ndir] = 0;
         programDir = w;
     }
-    if ((w = reinterpret_cast<char *>(std::malloc(npgm+1))) == nullptr)
-        return 1;
+    if ((w = new (std::nothrow) char[npgm+1]) == nullptr) return 1;
     std::strncpy(w, fullProgramName + len - npgm, npgm);
     w[npgm] = 0;
     programName = w;
@@ -1550,9 +1553,8 @@ int find_program_directory(const char *argv0)
 // Now fullProgramName is set up, but may refer to an array that
 // is stack allocated. I need to make it proper!
 //
-    w1 = reinterpret_cast<char *>(std::malloc(1+std::strlen(
-                fullProgramName)));
-    if (w1 == nullptr) return 5;           // 5 = malloc fails
+    w1 = new (std::nothrow) char[1+std::strlen(fullProgramName)];
+    if (w1 == nullptr) return 5;           // 5 = new fails
     std::strcpy(w1, fullProgramName);
     fullProgramName = w1;
     size_t len = std::strlen(w1);
@@ -1618,8 +1620,8 @@ int find_program_directory(const char *argv0)
     for (n=std::strlen(fullProgramName)-1; n>=0; n--)
         if (fullProgramName[n] == '/') break;
     if (n < 0) return 6;               // 6 = no "/" in full file path
-    w1 = reinterpret_cast<char *>(std::malloc(1+n));
-    if (w1 == nullptr) return 7;           // 7 = malloc fails
+    w1 = new (std::nothrow) char[n+1];
+    if (w1 == nullptr) return 7;           // 7 = new fails
     std::strncpy(w1, fullProgramName, n);
     w1[n] = 0;
 // Note that if the executable was "/foo" then programDir will end up as ""
@@ -1627,8 +1629,8 @@ int find_program_directory(const char *argv0)
 //
     programDir = w1;
     n1 = std::strlen(fullProgramName) - n;
-    w1 = reinterpret_cast<char *>(std::malloc(n1));
-    if (w1 == nullptr) return 8;           // 8 = malloc fails
+    w1 = new (std::nothrow) char[n1];
+    if (w1 == nullptr) return 8;           // 8 = new fails
     std::strncpy(w1, fullProgramName+n+1, n1-1);
     w1[n1-1] = 0;
     programName = w1;
@@ -2453,16 +2455,20 @@ char *get_truename(char *filename, const char *old, size_t n)
         {   std::strcpy(filename, "truename: cannot change directory");
             return nullptr;
         }
-        dir1 = reinterpret_cast<char*>(std::malloc(LONGEST_LEGAL_FILENAME));
+        dir1 = new (std::nothrow) char[LONGEST_LEGAL_FILENAME];
+        if (dir1 == nullptr)
+        {   std::strcpy(filename, "truename: run out of memory");
+            return nullptr;
+        }
         if (getcwd(dir1,LONGEST_LEGAL_FILENAME) == nullptr)
         {   std::strcpy(filename,
                         "truename: cannot get current working directory");
-            std::free(dir1);
+            delete [] dir1;
             return nullptr;
         }
         if (chdir(pwd) != 0)
         {   std::strcpy(filename, "truename: cannot change directory");
-            std::free(dir1);
+            delete [] dir1;
             return nullptr;
         }
 //
@@ -2483,39 +2489,46 @@ char *get_truename(char *filename, const char *old, size_t n)
         {   // Found a directory component
             char theDir[LONGEST_LEGAL_FILENAME];
             std::memset(theDir, 0, sizeof(theDir));
-            fn   = reinterpret_cast<char *>(std::malloc(1+std::strlen(temp)));
+            fn = new (std::nothrow) char[1+std::strlen(temp)];
+            if (fn == nullptr)
+            {   std::strcpy(filename, "truename: run out of memory");
+                return nullptr;
+            }
             std::strcpy(fn, temp);
             *temp = '\0';
-            // fn is now "/file" and filename is the directory
-
+// fn is now "/file" and filename is the directory
             if (chdir(filename) != 0)
             {   std::strcpy(filename, "truename: cannot change directory");
+                delete [] fn;
                 return nullptr;
             }
             if (get_current_directory(theDir, LONGEST_LEGAL_FILENAME) < 0)
             {   std::strcpy(filename,
                             "truename: cannot get current working directory");
+                delete [] fn;
                 return nullptr;
             }
             temp = theDir;
             if (chdir(pwd) != 0)
             {   std::strcpy(filename, "truename: cannot change directory");
+                delete [] fn;
                 return nullptr;
             }
-            dir = reinterpret_cast<char *>(std::malloc((std::strlen(
-                        temp) + std::strlen(fn) + 1)*sizeof(char)));
+            dir = new (std::nothrow)
+                char[std::strlen(temp) + std::strlen(fn) + 1];
             if (dir == nullptr)
             {   std::strcpy(filename, "truename: run out of memory");
+                delete [] fn;
                 return nullptr;
             }
             std::strcpy(dir, temp);
             std::strcat(dir, fn);
-            std::free(fn);
+            delete [] fn;
             return dir;
         }
         else
-        {   dir = reinterpret_cast<char *>(std::malloc((std::strlen(
-                        pwd) + std::strlen(filename) + 2)*sizeof(char)));
+        {   dir = new (std::nothrow)
+                char[std::strlen(pwd) + std::strlen(filename) + 2];
             if (dir == nullptr)
             {   std::strcpy(filename, "truename: run out of memory");
                 return nullptr;
@@ -2769,11 +2782,12 @@ static int n_found_files = 0, max_found_files = 0;
 
 static int more_files()
 {   if (n_found_files > max_found_files - 5)
-    {   WIN32_FIND_DATA *fnew = (WIN32_FIND_DATA *)
-                                std::realloc(reinterpret_cast<void *>(found_files),
-                                             sizeof(WIN32_FIND_DATA)*
-                                             (max_found_files + TABLE_INCREMENT));
+    {   WIN32_FIND_DATA *fnew =
+            new (std::nothrow) WIN32_FIND_DATA[max_found_files+TABLE_INCREMENT];
         if (fnew == nullptr) return 1;  // failure flag
+        std::memcpy(fnew, found_files,
+            sizeof(WIN32_FIND_DATA)*max_found_files);
+        delete [] found_files;
         found_files = fnew;
         max_found_files += TABLE_INCREMENT;
     }
@@ -2915,11 +2929,11 @@ int n_found_files = 0, max_found_files = 0;
 
 static int more_files()
 {   if (n_found_files > max_found_files - 5)
-    {   char **fnew = (char **)
-                      std::realloc(reinterpret_cast<void *>(found_files),
-                                   sizeof(char *) *
-                                   (max_found_files + TABLE_INCREMENT));
+    {   char **fnew =
+            new (std::nothrow) char *[max_found_files + TABLE_INCREMENT];
         if (fnew == nullptr) return 1;  // failure flag
+        std::memcpy(fnew, found_files, sizeof(char *)*max_found_files);
+        delete [] found_files;
         found_files = fnew;
         max_found_files += TABLE_INCREMENT;
     }
@@ -2962,8 +2976,7 @@ static void exall(int namelength, filescan_function *proc)
             if (std::strcmp(leafname, ".") == 0 ||
                 std::strcmp(leafname, "..") == 0) continue;
             if (more_files()) break;
-            copyname = reinterpret_cast<char *>(std::malloc(1+std::strlen(
-                           leafname)));
+            copyname = new (std::nothrow) char[1+std::strlen(leafname)];
             if (copyname == nullptr) break;
             std::strcpy(copyname, leafname);
             found_files[n_found_files++] = copyname;
@@ -2982,7 +2995,7 @@ static void exall(int namelength, filescan_function *proc)
         namelength = rootlen+1;
         while ((c = *p++) != 0) posix_filename[namelength++] =
                 static_cast<char>(c);
-        std::free(reinterpret_cast<void *>(found_files[n_found_files]));
+        delete [] found_files[n_found_files];
         posix_filename[namelength] = 0;
         scan_file(namelength, proc);
     }
@@ -3245,22 +3258,24 @@ char *get_truename(char *filename, const char *old, size_t n)
         {   std::strcpy(filename, "truename: cannot change directory");
             return nullptr;
         }
-        dir1 = reinterpret_cast<char*>(std::malloc(LONGEST_LEGAL_FILENAME));
+        dir1 = new (std::nothrow) char[LONGEST_LEGAL_FILENAME];
+        if (dir1==nullptr)
+        {   std::strcpy(filename, "truename: run out of memory");
+            return nullptr;
+        }
         if (getcwd(dir1,LONGEST_LEGAL_FILENAME) == nullptr)
         {   std::strcpy(filename,
                         "truename: cannot get current working directory");
-            std::free(dir1);
+            delete [] dir1;
             return nullptr;
         }
         if (chdir(pwd) != 0)
         {   std::strcpy(filename, "truename: cannot change directory");
-            std::free(dir1);
+            delete [] dir1;
             return nullptr;
         }
-//
 // Axiom-specific hack: truename preserves '/' at the end of
 // a path
-//
         if (old[n-1] == '/' && dir1[std::strlen(dir1)-1] != '/')
         {   n = std::strlen(dir1);
             dir1[n]   = '/';
@@ -3275,39 +3290,45 @@ char *get_truename(char *filename, const char *old, size_t n)
         {   // Found a directory component
             char theDir[LONGEST_LEGAL_FILENAME];
             std::memset(theDir, 0, sizeof(theDir));
-            fn   = reinterpret_cast<char *>(std::malloc(1+std::strlen(temp)));
+            fn = new (std::nothrow) char[1+std::strlen(temp)];
+            if (fn == nullptr)
+            {   std::strcpy(filename, "truename: run out of memory");
+                return nullptr;
+            }
             std::strcpy(fn, temp);
             *temp = '\0';
-            // fn is now "/file" and filename is the directory
-
+// fn is now "/file" and filename is the directory
             if (chdir(filename) != 0)
             {   std::strcpy(filename, "truename: cannot change directory");
+                delete [] fn;
                 return nullptr;
             }
             if (get_current_directory(theDir, LONGEST_LEGAL_FILENAME) < 0)
             {   std::strcpy(filename,
                             "truename: cannot get current working directory");
+                delete [] fn;
                 return nullptr;
             }
             temp = theDir;
             if (chdir(pwd) != 0)
             {   std::strcpy(filename, "truename: cannot change directory");
+                delete [] fn;
                 return nullptr;
             }
-            dir = reinterpret_cast<char *>(std::malloc((std::strlen(
-                        temp) + std::strlen(fn) + 1)*sizeof(char)));
+            dir = new (std::nothrow)
+                char[std::strlen(temp) + std::strlen(fn) + 1];
             if (dir == nullptr)
             {   std::strcpy(filename, "truename: run out of memory");
                 return nullptr;
             }
             std::strcpy(dir, temp);
             std::strcat(dir, fn);
-            std::free(fn);
+            delete [] fn;
             return dir;
         }
         else
-        {   dir = reinterpret_cast<char *>(std::malloc((std::strlen(
-                        pwd) + std::strlen(filename) + 2)*sizeof(char)));
+        {   dir = new (std::nothrow)
+                char[std::strlen(pwd) + std::strlen(filename) + 2];
             if (dir == nullptr)
             {   std::strcpy(filename, "truename: run out of memory");
                 return nullptr;

@@ -305,11 +305,7 @@ static void process_file(const char *file)
 
 static char *heap(const char *s)
 {   PAD;
-    char *r = reinterpret_cast<char *>(std)::malloc(std::strlen(s)+1);
-    if (r == nullptr)
-    {   std::printf("malloc failure\n");
-        std::exit(1);
-    }
+    char *r = new char[std::strlen(s)+1];
     std::strcpy(r, s);
     return r;
 }
@@ -350,11 +346,12 @@ static subsection *make_subsection(const char *alphakey,
                                    const char *subsechdr,
                                    const char *text, subsection *next)
 {   PAD;
-    subsection *r = (subsection *)std::malloc(sizeof(subsection));
+    subsection *r = new subsection();
     r->alphakey = alphakey;
     r->subsechdr = subsechdr;
     r->text = text;
     r->next = next;
+    return r;
 }
 
 typedef struct section
@@ -379,7 +376,7 @@ static section *find_section(const char *name)
     {   if (std::strcmp(name, r->name) == 0) return r;
         r = r->next;
     }
-    r = (section *)std::malloc(sizeof(section));
+    r = new section();
     r->name = heap(name);
     r->alphakey = "unset alphakey";
     r->sechdr = "unset section header";
@@ -813,9 +810,9 @@ static section *sort_sections(section *s)
     section **v;
     if (s == nullptr) return nullptr;
     for (s1=s; s1!=nullptr; s1=s1->next) i++;
-    v = (section **)std::malloc(i*sizeof(section *));
+    v = new section *[i];
     if (v == nullptr)
-    {   std::printf("malloc failure\n");
+    {   std::printf("new failure\n");
         std::exit(1);
     }
     i = 0;
@@ -827,7 +824,7 @@ static section *sort_sections(section *s)
         s->next = s1;
         s1 = s;
     }
-    std::free(v);
+    delete [] v;
     return s1;
 }
 
@@ -846,9 +843,9 @@ static subsection *sort_subsections(subsection *s)
     subsection **v;
     if (s == nullptr) return nullptr;
     for (s1=s; s1!=nullptr; s1=s1->next) i++;
-    v = (subsection **)std::malloc(i*sizeof(subsection *));
+    v = new subsection *[i];
     if (v == nullptr)
-    {   std::printf("malloc failure\n");
+    {   std::printf("new failure\n");
         std::exit(1);
     }
     i = 0;
@@ -860,7 +857,7 @@ static subsection *sort_subsections(subsection *s)
         s->next = s1;
         s1 = s;
     }
-    std::free(v);
+    delete [] v;
     return s1;
 }
 

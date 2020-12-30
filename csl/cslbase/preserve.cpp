@@ -522,9 +522,7 @@ static directory *make_empty_directory(const char *name)
 // The sole purpose of this empty directory is to carry with it the
 // name of the file that I had tried to open.
 //
-{   directory *d;
-    d = (directory *) std::malloc(sizeof(directory) - sizeof(
-                                      directory_entry));
+{   directory *d  = new (std::nothrow) directory;
     if (d == nullptr) return &empty_directory;
     d->h.C = 'C'; d->h.S = MIDDLE_INITIAL; d->h.L = 'L';
     d->h.version = IMAGE_FORMAT_VERSION;
@@ -555,7 +553,7 @@ static directory *make_pending_directory(const char *name, int pds)
 // overflowed here.
 //
     if (l > 0) n += l;
-    d = (directory *)std::malloc(n);
+    d = reinterpret_cast<directory *>(new (std::nothrow) char[n]);
     if (d == nullptr) return &empty_directory;
     d->h.C = 'C'; d->h.S = MIDDLE_INITIAL; d->h.L = 'L';
     d->h.version = IMAGE_FORMAT_VERSION;
@@ -568,9 +566,8 @@ static directory *make_pending_directory(const char *name, int pds)
     std::strcpy(d->filename, name);  // guaranteed enough space here
     if (pds) d->full_filename = nullptr;
     else
-    {   char *s = reinterpret_cast<char *>(std::malloc(std::strlen(
-                                               name)+1));
-// Ought to check for nullptr here
+    {   char *s = new (std::nothrow) char[std::strlen(name)+1];
+        if (s == nullptr) my_abort();
         std::strcpy(s, name);
         d->full_filename = s;
     }
@@ -580,9 +577,7 @@ static directory *make_pending_directory(const char *name, int pds)
 
 static directory *make_native_directory(const char *shortname,
                                         const char *fullname, int ro)
-{   directory *d;
-    d = (directory *)std::malloc(sizeof(directory) - sizeof(
-                                     directory_entry));
+{   directory *d = new (std::nothrow) directory;
     if (d == nullptr) return &empty_directory;
     d->h.C = 'C'; d->h.S = MIDDLE_INITIAL; d->h.L = 'L';
     d->h.version = IMAGE_FORMAT_VERSION;
@@ -593,9 +588,8 @@ static directory *make_native_directory(const char *shortname,
     d->f = nullptr;
     std::strncpy(d->filename, shortname, sizeof(d->filename));
     d->filename[DIRNAME_LENGTH-1] = 0;
-    {   char *s = reinterpret_cast<char *>(std::malloc(std::strlen(
-                                               fullname)+1));
-// Ought to check for nullptr here
+    {   char *s = new (std::nothrow) char[std::strlen(fullname)+1];
+        if (s == nullptr) my_abort();
         std::strcpy(s, fullname);
         d->full_filename = s;
     }
@@ -741,8 +735,8 @@ directory *open_pds(const char *name, int mode)
 // This next bit is never used in the BUILTIN_DIRECTOT case
         std::fseek(f, 0, SEEK_SET);
         n = DIRECTORY_SIZE;      // Size for a directory
-        d = (directory *)
-            std::malloc(sizeof(directory)+(n-1)*sizeof(directory_entry));
+        d = reinterpret_cast<directory *>(
+            new char[sizeof(directory)+(n-1)*sizeof(directory_entry)]);
         if (d == nullptr) return &empty_directory;
         d->h.C = 'C'; d->h.S = MIDDLE_INITIAL; d->h.L = 'L';
         d->h.version = IMAGE_FORMAT_VERSION;
@@ -765,8 +759,9 @@ directory *open_pds(const char *name, int mode)
     }
     hdr.h.updated = write_OK ? D_WRITE_OK : 0;
     n = get_dirsize(hdr);
-    d = (directory *)
-        std::malloc(sizeof(directory)+(n-1)*sizeof(directory_entry));
+    d = reinterpret_cast<directory *>(
+        new (std::nothrow) char[sizeof(directory)+
+                                (n-1)*sizeof(directory_entry)]);
     if (d == nullptr) return &empty_directory;
     std::memcpy(&d->h, &hdr.h, sizeof(directory_header));
 #ifdef BUILTIN_IMAGE
@@ -839,11 +834,12 @@ void Iinit()
     any_output_request = false;
     std::strcpy(would_be_output_directory, "<unknown>");
     for (i=0; i<fasl_files.size(); i++)
-    {   if (!fasl_files[i].inUse) continue;
+    {   if (!fasl_files[i].inUse ||
+            fasl_files[i].name == nullptr) continue;
         else if (0x40000000+i == output_directory)
-            fasl_files[i].dir = open_pds(fasl_files[i].name.c_str(), PDS_PENDING);
+            fasl_files[i].dir = open_pds(fasl_files[i].name, PDS_PENDING);
         else
-            fasl_files[i].dir = open_pds(fasl_files[i].name.c_str(),
+            fasl_files[i].dir = open_pds(fasl_files[i].name,
                                          i == output_directory ? PDS_OUTPUT :
                                          PDS_INPUT);
     }
@@ -1109,15 +1105,18 @@ static directory *enlarge_directory(int current_size)
         setbits32(d1->h.eof, eofpos);
     }
     std::fseek(d1->f, newpos, SEEK_SET);
-    d1 = (directory *)std::realloc(reinterpret_cast<void *>(d1), newsize);
-    if (d1 == nullptr) return nullptr;
-    d1->h.dirsize = static_cast<unsigned char>(n & 0xff);
-    d1->h.dirext = static_cast<unsigned char>((d1->h.dirext & 0x0f) + ((
-                       n>>4) & 0xf0));
-    d1->h.updated |= D_COMPACT | D_UPDATED;
-    while (n>current_size) clear_entry(&d1->d[--n]);
-    fasl_files[dirno].dir = d1;
-    return d1;
+    directory *d2 = reinterpret_cast<directory *>(new char[newsize]);
+    if (d2 == nullptr) return nullptr;
+    std::memcpy(d2, d1, sizeof(directory)+(current_size-1)*sizeof(directory_entry));
+    d2->h.dirsize = static_cast<unsigned char>(n & 0xff);
+    d2->h.dirext = static_cast<unsigned char>((d2->h.dirext & 0x0f) +
+                       ((n>>4) & 0xf0));
+    d2->h.updated |= D_COMPACT | D_UPDATED;
+    while (n>current_size) clear_entry(&d2->d[--n]);
+    fasl_files[dirno].dir = d2;
+//  free [] d1;    The type consistency is not right here! So I will
+// accept the space leak.
+    return d2;
 }
 
 bool open_output(const char *name, size_t len)
@@ -1978,11 +1977,8 @@ bool IcloseOutput()
 bool finished_with(int j)
 {   directory *d = fasl_files[j].dir;
     fasl_files[j].dir = nullptr;
-// If the library concerned had been opened using (open-library ...) then
-// the name stored in fasl_paths[] would have been allocated using malloc(),
-// and just discarding it as here will represent a space-leak. Just for now
-// I am going to accept that as an unimportant detail.
-    fasl_files[j].name = "";
+    if (fasl_files[j].name != nullptr) delete [] fasl_files[j].name;
+    fasl_files[j].name = nullptr;
     fasl_files[j].inUse = false;
     fasl_files[j].isOutput = false;
     if (d == nullptr) return false;

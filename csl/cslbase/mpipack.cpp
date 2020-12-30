@@ -291,7 +291,7 @@ static LispObject unpack_atom()
 }
 
 
-static LispObject unpack_cellstatic_cast<void>()
+static LispObject unpack_cell()
 {   switch (unpack_char())
     {   case ' ': return unpack_atom();
         case '(': return unpack_list();
@@ -302,7 +302,7 @@ static LispObject unpack_cellstatic_cast<void>()
     }
 }
 
-static LispObject unpack_liststatic_cast<void>()
+static LispObject unpack_list()
 {   push(unpack_cell());
     switch (unpack_char())
     {   case ')': return cons(my_pop(),nil);

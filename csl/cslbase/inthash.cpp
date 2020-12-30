@@ -44,12 +44,17 @@
 // it will expand as necessary. Keys are going to be non-zero uintptr_t
 // values, so I fill the initial table with 0 to show it is empty.
 
+// Well C++ enthusiasts might suggest that I use std::unordered_map rather
+// that all this and then memory management would be burried within the
+// C++ library. But I do it myself with MY choice of exact hashing procedures
+// and the like!
+
 void hash_init(inthash *h, int bits)
 {   assert(bits > 3 && bits < 30);
     h->size = ((size_t)1) << bits;
     h->count = 0;
-    h->keys = (uintptr_t *)std::malloc(h->size*sizeof(uintptr_t));
-    if (h->keys == nullptr) std::abort(); // not enough memory
+    h->keys = new (std::nothrow) uintptr_t[h->size];
+    if (h->keys == nullptr) my_abort(); // not enough memory
     assert(h->keys != nullptr);
     for (size_t i=0; i<h->size; i++) h->keys[i] = 0;
     h->values = nullptr;
@@ -82,17 +87,23 @@ void hash_init(inthash *h, int bits)
 // that this does is to free the big vectors. It sets the various other
 // fields to dummy values just in a spirit of tidying up.
 void hash_finalize(inthash *h)
-{   std::free(h->keys);
+{   delete [] h->keys;
     h->keys = nullptr;
     if (h->values != nullptr)
-    {   std::free(h->values);
+    {   delete [] h->values;
         h->values = nullptr;
     }
     h->size = h->count = 0;
     h->shift = 0;
     h->mult1 = h->mult2 = 1;
 #ifdef CHECK_INTHASH
+    hash_alist ch = h->chain;
     h->chain = nullptr;
+    while (ch != nullptr)
+    {   hash_alist *temp = ch;
+        ch = ch->next;
+        delete temp;
+    }
 #endif
 }
 
@@ -104,8 +115,8 @@ void hash_finalize(inthash *h)
 // on call hash_init_values then lookup on existing keys will return 0.
 
 void hash_init_values(inthash *h)
-{   h->values = (uintptr_t *)std::malloc(h->size*sizeof(uintptr_t));
-    if (h->values == nullptr) std::abort(); // not enough memory
+{   h->values = new (std::nothrow) uintptr_t[h->size];
+    if (h->values == nullptr) my_abort(); // not enough memory
     assert(h->values != nullptr);
     for (size_t i=0; i<h->size; i++) h->values[i] = 0;
 }
@@ -174,19 +185,19 @@ void hash_validate(inthash *h)
         uintptr_t k4 = h->keys[hx2+1];
         if (hx != i && k1 == k)
         {   std::printf("key duplicated..\n");
-            my_abort();
+            my_abort("hash table problem");
         }
         if (hx+1 != i && k2 == k)
         {   std::printf("key duplicated..\n");
-            my_abort();
+            my_abort("hash table problem");
         }
         if (hx2 != i && k3 == k)
         {   std::printf("key duplicated..\n");
-            my_abort();
+            my_abort("hash table problem");
         }
         if (hx2+1 != i && k4 == k)
         {   std::printf("key duplicated..\n");
-            my_abort();
+            my_abort("hash table problem");
         }
     }
 #ifdef CHECK_INTHASH
@@ -195,7 +206,7 @@ void hash_validate(inthash *h)
         for (size_t i=0; i<h->size; i++)
             if (h->keys[i] == k) goto found;
         std::printf("Key that was in alist not in table\n");
-        my_abort();
+        my_abort("hash table problem");
     found:
         continue;
     }
@@ -326,6 +337,16 @@ static void hash_change_multiplier(inthash *h)
                (size_t)UINT64_C(3037000493);
 }
 
+static uintptr_t *doubleSizeCopy(uintptr_t *h, size_t size)
+{   uintptr_t *hh = new (std::nothrow) uintptr_t[2*size];
+    if (hh == nullptr) my_abort(); // not enough memory
+    for (size_t i=0; i<size; i++)
+    {   hh[i] = h[i];
+        hh[i+size] = 0;
+    }
+    return hh;
+}
+
 static void hash_double_size(inthash *h)
 {   size_double++;
     size_size_double += h->size;
@@ -334,20 +355,9 @@ static void hash_double_size(inthash *h)
 // will now not be in the right place. I reset the second multiplier
 // back to its default value since this value has not failed with this
 // larger table.
-    uintptr_t *hh = (uintptr_t *)std::realloc(h->keys,
-                    2*h->size*sizeof(uintptr_t));
-    if (hh == nullptr) std::abort(); // not enough memory
-    assert(hh != nullptr);
-    for (size_t i=h->size; i<2*h->size; i++) hh[i] = 0;
-    h->keys = hh;
+    h->keys = doubleSizeCopy(h->keys, h->size);
     if (h->values != nullptr)
-    {   uintptr_t *vv =
-            (uintptr_t *)std::realloc(h->values, 2*h->size*sizeof(uintptr_t));
-        if (vv == nullptr) std::abort(); // not enough memory
-        assert(vv != nullptr);
-        for (size_t i=h->size; i<2*h->size; i++) vv[i] = 0;
-        h->values = vv;
-    }
+        h->values = doubleSizeCopy(h->values, h->size);
     h->size *= 2;
     h->shift--;
     h->mult2 = (uintptr_t)UINT64_C(0x61c8eb8961c8865f);
@@ -486,7 +496,7 @@ size_t hash_insert(inthash *h, uintptr_t key)
     h->count++;
 #ifdef CHECK_INTHASH
     assert(p == nullptr);
-    p = (hash_alist *)std::malloc(sizeof(hash_alist));
+    p = new (std::nothrow) hash_alist;
     assert(p != nullptr);
     p->key = k;
     p->value = 0;

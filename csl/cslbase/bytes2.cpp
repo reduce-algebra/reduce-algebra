@@ -237,8 +237,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 //ensure_screen();
 
 #ifdef DEBUG
-        if (is_exception(A_reg)) my_abort();
-        if (is_exception(B_reg)) my_abort();
+        if (is_exception(A_reg)) my_abort("exception value not trapped");
+        if (is_exception(B_reg)) my_abort("exception value not trapped");
 #endif
 
         switch (next_byte)

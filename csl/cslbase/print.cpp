@@ -746,20 +746,21 @@ int char_to_math(int c, LispObject stream)
     }
     if (math_buffer == nullptr)
     {   math_buffer_size = 500;
-        math_buffer = reinterpret_cast<char *>(std::malloc(math_buffer_size));
+// I think that I fail to delete this when the program terminates.
+        math_buffer = new (std::nothrow) char[math_buffer_size];
         math_buffer_p = 0;
         if (math_buffer == nullptr) return 1; // failed
     }
     if (math_buffer_p == math_buffer_size-1)
     {   math_buffer_size += 500; // Grow the buffer
-        math_buffer = reinterpret_cast<char *>(std::realloc(math_buffer,
-                                               math_buffer_size));
-//
+        char *bigger = new (std::nothrow) char[math_buffer_size];
+        if (bigger == nullptr) return 1;
+        std::memcpy(bigger, math_buffer, math_buffer_size-500);
+        delete [] math_buffer;
+        math_buffer = bigger;
 // If I fail to extend the buffer then I will lose some initial part of
 // my output. Ugh! But (provided the memory situation improves!) things will
 // correct themselves when I next try to display a smaller expression.
-//
-        if (math_buffer == nullptr) return 1;
     }
     math_buffer[math_buffer_p++] = c;
     math_buffer[math_buffer_p] = 0;
@@ -2191,8 +2192,10 @@ restart:
 // When I print the name of a library I will truncate the displayed name
 // to 124 characters. This is somewhat arbitrary (but MUST relate to the
 // size of my_buff), but will tend to keep output more compact.
-                        std::sprintf(my_buff, "#{%.124s}",
-                                     fasl_files[u].name.c_str());
+                        if (fasl_files[u].name == nullptr)
+                            std::sprintf(my_buff, "#{%.124s}", "*unknown*");
+                        else std::sprintf(my_buff, "#{%.124s}",
+                                          fasl_files[u].name);
                         break;
                     default:           std::sprintf(my_buff, "SPID_%lx",
                                                         static_cast<long>((u >> 8) & 0x00ffffff));
@@ -4625,21 +4628,17 @@ static LispObject Lopen_library(LispObject env, LispObject file,
     }
 // If not I append a new slot on the end of the std::vector. By using
 // std::vector I can at least pretend that there is no limit to the number of
-// libraries that I can have open at once.
-    fasl_files.push_back(faslFileRecord("", !forinput));
+// libraries that I can have open at once. However the cost of that is that
+// it can need to allocate memory and that allocation may fail. If it does
+// that will be abruptly fatal.
+    fasl_files.push_back(faslFileRecord(nullptr, !forinput));
     i = fasl_files.size()-1;
 found:
     fasl_files[i].inUse = true;
-// Allocating space using malloc() here is dodgy, because the matching
-// place in close-library does not do a corresponding free() operation.
-// For now I will accept that space leak.
-    w1 = reinterpret_cast<char *>(std::malloc(std::strlen(filename)+1));
-    if (w1 == nullptr) w = "Unknown file";
-    else
-    {   std::strcpy(w1, filename);
-        w = w1;
-    }
-    fasl_files[i].name = w;
+    w1 = new (std::nothrow) char[std::strlen(filename)+1];
+    if (w1 != nullptr) std::strcpy(w1, filename);
+// The name field contains either nullptr or a newly allocated C string.
+    fasl_files[i].name = w1;
     fasl_files[i].dir = open_pds(filename,
                                  forinput ? PDS_INPUT : PDS_OUTPUT);
     fasl_files[i].isOutput = !forinput;
@@ -4659,7 +4658,9 @@ static LispObject Lclose_library(LispObject env, LispObject lib)
 static LispObject Llibrary_name(LispObject env, LispObject lib)
 {   LispObject a;
     if (!is_library(lib)) return aerror1("library-name", lib);
-    a = make_string(fasl_files[library_number(lib)].name.c_str());
+    const char *s = fasl_files[library_number(lib)].name;
+    if (s == nullptr) s = "*unknown*";
+    a = make_string(s);
     return onevalue(a);
 }
 

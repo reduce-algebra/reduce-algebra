@@ -336,7 +336,8 @@ int main(int argc, char *argv[])
             {
 // Well foo.app exists and is a directory, so I will try to use it
                 const char **nargs =
-                    (const char **)std::malloc(sizeof(char *)*(argc+3));
+                    new (std::nothrow) char *[argc+3];
+                if (nargs == nullptr) my_abort();
                 nargs[0] ="/usr/bin/open";
                 nargs[1] = xname;
                 nargs[2] ="--args";
@@ -946,7 +947,7 @@ showmathPanel::showmathPanel(showmathFrame *parent,
         }
         std::fseek(f, (off_t)0, SEEK_END);
         off_t len = std::ftell(f);
-        showmathData = reinterpret_cast<char *>(std)::malloc(4+(size_t)len);
+        showmathData = new char[4+(size_t)len];
         std::fseek(f, (off_t)0, SEEK_SET);
         for (i=0; i<len; i++) showmathData[i] = std::getc(f);
         showmathData[i] = 0;

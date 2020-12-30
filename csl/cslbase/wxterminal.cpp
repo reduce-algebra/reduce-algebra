@@ -1577,7 +1577,7 @@ fwinText::fwinText(fwinFrame *parent)
 // generous to me. The plan is that the buffer will automatically expand
 // as needed.
     textBufferSize = 40000;
-    textBuffer = (uint32_t *)std::malloc(textBufferSize*sizeof(uint32_t));
+    textBuffer = new uint32_t[textBufferSize];
     textEnd = 0;
     searchFlags = 0;
     caret = nullptr;
@@ -1594,8 +1594,7 @@ fwinText::fwinText(fwinFrame *parent)
     use_buffer1 = 1;
 
     inputBufferSize = INITIAL_INPUT_BUFFER_SIZE;
-    inputBuffer = reinterpret_cast<unsigned char *>(std)::malloc(
-                      inputBufferSize);
+    inputBuffer = new char[inputBufferSize];
     inputBufferP = inputBufferLen = 0;
     awaiting = 0;
     unicodePrompt[0] = '>' | 0x02000000;
@@ -2187,9 +2186,12 @@ void fwinText::insertNewline()
     {   int c = TXT(i);    // Just the character - no colour etc info
         FWIN_LOG("Move char %x (%c) to posn %d in inputBuffer\n", c, c, n);
         if (n > inputBufferSize - 5)
-        {   inputBufferSize = (4*inputBufferSize)/3;
-            inputBuffer = reinterpret_cast<unsigned char *>(std)::realloc(
-                              inputBuffer, inputBufferSize);
+        {   unsigned char *bigger =
+                new unsigned_char[(4*inputBufferSize)/3];
+            std::memcpy(bigger, inputBuffer, inputBufferSize);
+            delete [] inputBuffer;
+            inputBuffer = bigger;
+            inputBufferSize = (4*inputBufferSize)/3;
         }
         n += utf_encode(&inputBuffer[n], c);
     }
@@ -2774,11 +2776,11 @@ void fwinFrame::OnSize(wxSizeEvent &event)
 }
 
 void fwinText::enlargeTextBuffer()
-{   textBufferSize *= 2;
-    textBuffer =
-        (uint32_t *)std::realloc(textBuffer, textBufferSize*sizeof(uint32_t));
-    if (textBuffer == nullptr) std::exit(
-            1); // Abrupt collapse on no memory.
+{   uint32_t *bigger = new (std::nothrow) uint32_t[textBufferSize*2];
+    if (bigger == nullptr) std::exit(1); // Abrupt collapse on no memory.
+    delete [] textBuffer;
+    textBuffer = bigger;
+    textBufferSize *= 2;
 }
 
 // Now I have handlers for the menu items used here...
@@ -3862,23 +3864,22 @@ void fwinText::historyInit()
 void fwinText::historyEnd()
 {   int i;
     for (i=0; i<INPUT_HISTORY_SIZE; i++)
-    {   if (input_history[i] != nullptr) std::free(input_history[i]);
+    {   if (input_history[i] != nullptr) delete [] input_history[i];
     }
 }
 
 void fwinText::historyAdd(unsigned char *s, int n)
 {   /* Make a copy of the input string... */
     size_t size = sizeof(char)*(n + 1);
-    unsigned char *scopy = reinterpret_cast<unsigned char *>(std)::malloc(
-                               size);
+    unsigned char *scopy = new (std::nothrow) unsigned char[size];
     int p = historyNextEntry % INPUT_HISTORY_SIZE;
-    /* If malloc returns nullptr I just store an empty history entry. */
+    /* If new returns nullptr I just store an empty history entry. */
     if (scopy != nullptr) std::memcpy(scopy, s, size);
     /*
      * I can overwrite an old history item here... I will keep INPUT_HISTORY_SIZE
      * entries.
      */
-    if (input_history[p] != nullptr) std::free(input_history[p]);
+    if (input_history[p] != nullptr) delete [] input_history[p];
     input_history[p] = scopy;
     historyNextEntry++;
     if (scopy != nullptr)
@@ -3898,7 +3899,7 @@ unsigned char *fwinText::historyGet(int n)
         n >= historyNextEntry ||
         n < historyNextEntry-INPUT_HISTORY_SIZE) return nullptr;
     s = input_history[n % INPUT_HISTORY_SIZE];
-    /* The nullptr here would be if malloc had failed earlier. */
+    /* The nullptr here would be if new had failed earlier. */
     if (s == nullptr) return &nullString[0];
     else return s;
 }

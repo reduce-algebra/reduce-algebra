@@ -1085,10 +1085,8 @@ LispObject Ls17dcf(LispObject env, int nargs, ...)
     scale.len = 1;
 
     // Setup workspace arrays etc.
-    cy = reinterpret_cast<double *>(std)::malloc(n*2*sizeof(
-                double));    // "complex" array
-    cwrk = reinterpret_cast<double *>(std)::malloc(n*2*sizeof(
-                double));  // "complex" array
+    cy = new double[2*n];    // "complex" array
+    cwrk = new double[2*n];  // "complex" array
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -1126,8 +1124,8 @@ LispObject Ls17dcf(LispObject env, int nargs, ...)
     Lnz = int2ccl(nz);
     pop(Lifail,Lcy);
 
-    std::free (cy);
-    std::free (cwrk);
+    delete [] (cy);
+    delete [] (cwrk);
 
     return Llist(nil,3,Lcy,Lifail,Lnz);
 }
@@ -1208,8 +1206,7 @@ LispObject Ls17def(LispObject env, int nargs, ...)
     scale.len = 1;
 
     // Setup workspace arrays etc.
-    cy = reinterpret_cast<double *>(std)::malloc(n*2*sizeof(
-                double));    // "complex" array
+    cy = new double[2*n];    // "complex" array
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -1247,7 +1244,7 @@ LispObject Ls17def(LispObject env, int nargs, ...)
     Lnz = int2ccl(nz);
     pop(Lifail,Lcy);
 
-    std::free (cy);
+    delete [] (cy);
 
     return Llist(nil,3,Lcy,Lifail,Lnz);
 }
@@ -1524,8 +1521,7 @@ LispObject Ls17dlf(LispObject env, int nargs, ...)
     scale.len = 1;
 
     // Setup workspace arrays etc.
-    cy = reinterpret_cast<double *>(std)::malloc(n*2*sizeof(
-                double));    // "complex" array
+    cy = new double[2*n];    // "complex" array
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -1563,7 +1559,7 @@ LispObject Ls17dlf(LispObject env, int nargs, ...)
     Lnz = int2ccl(nz);
     pop(Lifail,Lcy);
 
-    std::free (cy);
+    delete [] (cy);
 
     return Llist(nil,3,Lcy,Lifail,Lnz);
 }
@@ -1864,8 +1860,7 @@ LispObject Ls18dcf(LispObject env, int nargs, ...)
     scale.len = 1;
 
     // Setup workspace arrays etc.
-    cy = reinterpret_cast<double *>(std)::malloc(n*2*sizeof(
-                double));    // "complex" array
+    cy = new double[2*n];    // "complex" array
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -1903,7 +1898,7 @@ LispObject Ls18dcf(LispObject env, int nargs, ...)
     Lnz = int2ccl(nz);
     pop(Lifail,Lcy);
 
-    std::free (cy);
+    delete [] (cy);
 
     return Llist(nil,3,Lcy,Lifail,Lnz);
 }
@@ -1984,8 +1979,7 @@ LispObject Ls18def(LispObject env, int nargs, ...)
     scale.len = 1;
 
     // Setup workspace arrays etc.
-    cy = reinterpret_cast<double *>(std)::malloc(n*2*sizeof(
-                double));    // "complex" array
+    cy = new double[2*n];    // "complex" array
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -2023,7 +2017,7 @@ LispObject Ls18def(LispObject env, int nargs, ...)
     Lnz = int2ccl(nz);
     pop(Lifail,Lcy);
 
-    std::free (cy);
+    delete [] (cy);
 
     return Llist(nil,3,Lcy,Lifail,Lnz);
 }

@@ -338,14 +338,12 @@ int find_program_directory(const char *argv0)
     ndir = len - npgm - 1;
     if (ndir < 0) programDir = ".";  // none really visible
     else
-    {   if ((w = reinterpret_cast<char *>(std)::malloc(
-                     ndir+1)) == nullptr) return 1;
+    {   if ((w = new (std::nothroe) char[ndir+1]) == nullptr) return 1;
         std::strncpy(w, argv0, ndir);
         w[ndir] = 0;
         programDir = w;
     }
-    if ((w = reinterpret_cast<char *>(std)::malloc(npgm+1)) == nullptr)
-        return 1;
+    if ((w = new (std::nothrow) char[npgm+1]) == nullptr) return 1;
     std::strncpy(w, argv0 + len - npgm, npgm);
     w[npgm] = 0;
     programName = w;
@@ -536,9 +534,8 @@ int find_program_directory(const char *argv0)
 // Now fullProgramName is set up, but may refer to an array that
 // is stack allocated. I need to make it proper!
 //
-    w = reinterpret_cast<char *>(std)::malloc(1+std::strlen(
-                fullProgramName));
-    if (w == nullptr) return 5;           // 5 = malloc fails
+    w = new (std::nothrow) char[1+std::strlen(fullProgramName)];
+    if (w == nullptr) return 5;           // 5 = new fails
     std::strcpy(w, fullProgramName);
     fullProgramName = w;
 #ifdef __CYGWIN__
@@ -567,8 +564,8 @@ int find_program_directory(const char *argv0)
     for (n=std::strlen(fullProgramName)-1; n>=0; n--)
         if (fullProgramName[n] == '/') break;
     if (n < 0) return 6;               // 6 = no "/" in full file path
-    w = reinterpret_cast<char *>(std)::malloc(1+n);
-    if (w == nullptr) return 7;           // 7 = malloc fails
+    w = new (std::nothrow) char[n+1];
+    if (w == nullptr) return 7;           // 7 = new fails
     std::strncpy(w, fullProgramName, n);
     w[n] = 0;
 // Note that if the executable was "/foo" then programDir will end up as ""
@@ -576,8 +573,8 @@ int find_program_directory(const char *argv0)
 //
     programDir = w;
     n1 = std::strlen(fullProgramName) - n;
-    w = reinterpret_cast<char *>(std)::malloc(n1);
-    if (w == nullptr) return 8;           // 8 = malloc fails
+    w = new (std::nothrow) char[n1];
+    if (w == nullptr) return 8;           // 8 = new fails
     std::strncpy(w, fullProgramName+n+1, n1-1);
     w[n1-1] = 0;
     programName = w;
@@ -631,8 +628,7 @@ int main(int argc, const char *argv[])
                 (buf.st_mode & S_IFDIR) != 0)
             {
 // Well foo.app exists and is a directory, so I will try to use it
-                const char **nargs =
-                    (const char **)std::malloc(sizeof(char *)*(argc+3));
+                const char **nargs = new const char *[argc+3];
                 int i;
                 nargs[0] = "/usr/bin/open";
                 nargs[1] = xname;

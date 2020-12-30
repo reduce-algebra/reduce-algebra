@@ -445,49 +445,6 @@ inline uint64_t ASL(uint64_t a, int n)
 INLINE_VAR const uintptr_t uptr_1 = static_cast<uintptr_t>(1);
 INLINE_VAR const uint64_t u64_1 = static_cast<uint64_t>(1);
 
-#ifdef MAXALING4
-
-// In the horrid case where malloc might return a fairly unaligned block
-// of memory I will allocate a block that is 32-bytes larger than will be
-// required. If I round that address up to be a multiple of 16 I can then
-// guarantee to leave 16 bytes that are both free and aligned at a 16 byte
-// boundary. I put a "void *" value in there (it will very probably not use
-// up all the space, but I do not mind) pointing at the original start of
-// the block.
-
-inline void *aligned_malloc(size_t n)
-{   void *p = reinterpret_cast<void *>(std)::malloc(n + 32);
-    if (p == nullptr) return p;
-    void *r = reinterpret_cast<void *>(((reinterpret_cast<uintptr_t>
-                                         (p) + 15) & -static_cast<uint64_t>(16)) + 16);
-    reinterpret_cast<void *>(reinterpret_cast<uintptr_t>
-                             (r) - 16) = p;
-    return r;
-}
-
-// To free something I need to retrieve the pointer to the genuine block
-// start and hand that to free().
-
-inline void aligned_free(void *p)
-{   if (p == nullptr) return;
-    std::free(*reinterpret_cast<void *>(reinterpret_cast<uintptr_t>
-                                        (p) - 16));
-}
-#else // MAXALING4
-
-// In the hugely more common case where malloc does align things to at least
-// 8 byte boundaries I can use malloc() and free() directly.
-
-inline void *aligned_malloc(size_t n)
-{   return reinterpret_cast<void *>(std::malloc(n));
-}
-
-inline void aligned_free(void *p)
-{   std::free(p);
-}
-
-#endif // MAXALING4
-
 #endif // header_machine_h
 
 // end machine.h

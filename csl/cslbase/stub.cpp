@@ -379,8 +379,8 @@ int RunResource(int index, int forcegui, const char *modulename)
     chmod(pPath, 0755); // Make executable
 
     const char *cmd = GetCommandLine();
-    char *cmd1 = reinterpret_cast<char *>(std)::malloc(std::strlen(
-                     cmd) + 12);
+    char *cmd1 =
+        new (std::nothrow) char[std::strlen(cmd) + 12];
     if (cmd1 == nullptr)
     {   std::printf("No memory for new command line\n");
         std::fflush(stdout);

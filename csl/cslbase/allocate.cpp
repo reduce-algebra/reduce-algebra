@@ -90,11 +90,12 @@ void init_heap_segments(double store_size)
 // The store-size is passed in units bytes, and as a double not
 // an integer so that overflow is not an issue.
 //
-{   pages = (void **)std::malloc(MAX_PAGES*sizeof(void *));
-    heap_pages = (void **)std::malloc(MAX_PAGES*sizeof(void *));
-    vheap_pages = (void **)std::malloc(MAX_PAGES*sizeof(void *));
-    new_heap_pages = (void **)std::malloc(MAX_PAGES*sizeof(void *));
-    new_vheap_pages = (void **)std::malloc(MAX_PAGES*sizeof(void *));
+{
+    pages = new (std::nothrow) void *[MAX_PAGES];
+    heap_pages = new (std::nothrow) void *[MAX_PAGES];
+    vheap_pages = new (std::nothrow) void *[MAX_PAGES];
+    new_heap_pages = new (std::nothrow) void *[MAX_PAGES];
+    new_vheap_pages = new (std::nothrow) void *[MAX_PAGES];
     if (pages == nullptr ||
         new_heap_pages == nullptr ||
         new_vheap_pages == nullptr ||
@@ -117,7 +118,8 @@ void init_heap_segments(double store_size)
 // one gulp since that (maybe) gives me the best chance to obtain all
 // the memory in just one half of my address space.
 //
-            char *pool = reinterpret_cast<char *>(std::malloc(n));
+            char *pool = reinterpret_cast<char *>(
+                new (std::nothrow) Align8[n/8]);
             if (pool != nullptr)
             {   big_chunk_start = reinterpret_cast<char *>(pool);
                 big_chunk_end = big_chunk_start + (n-1);
@@ -151,12 +153,11 @@ void init_heap_segments(double store_size)
     if (nilsegment != nullptr && pages_count > 0)
     {   if (stack_segsize != 1)
         {   stacksegment =
-                reinterpret_cast<LispObject *>(aligned_malloc(
-                                                   stack_segsize*CSL_PAGE_SIZE));
+                reinterpret_cast<LispObject *>(
+                    new (std::nothrow) Align8[stack_segsize*CSL_PAGE_SIZE/8]);
             if (stacksegment == nullptr) fatal_error(err_no_store);
         }
-        else stacksegment = reinterpret_cast<LispObject *>
-                                (pages[--pages_count]);
+        else stacksegment = reinterpret_cast<LispObject *>(pages[--pages_count]);
     }
     else
     {   std::printf("pages_count <= 0 = %d\n",
@@ -182,7 +183,8 @@ static void abandon(void *p[], int32_t n)
 // all be recycled in one go when the whole chunk is freed. Note that
 // the whole of the "big chunk" tends to get allocated as part of the
 // segment that contans nil.
-        if (w != nullptr && !is_in_big_chunk(w)) aligned_free(w);
+        if (w != nullptr && !is_in_big_chunk(w))
+            delete [] reinterpret_cast<Align8 *>(w);
     }
 }
 
@@ -190,8 +192,6 @@ void drop_heap_segments()
 {   abandon(pages,           pages_count);
     abandon(heap_pages,      heap_pages_count);
     abandon(vheap_pages,     vheap_pages_count);
-    if (!is_in_big_chunk(stacksegment)) std::free(stacksegmentbase);
-    std::free(nilsegmentbase);
 }
 
 // This allocates another page of memory if that is allowed and if it is
@@ -208,8 +208,8 @@ bool allocate_more_memory()
             return false;
         }
     }
-    void *page = reinterpret_cast<void *>(std::malloc((
-            size_t)CSL_PAGE_SIZE));
+    void *page = reinterpret_cast<void *>(
+        new (std::nothrow) Align8[CSL_PAGE_SIZE/8]);
     if (page == nullptr)
     {   init_flags &= ~INIT_EXPANDABLE;
         return false;
@@ -296,7 +296,8 @@ LispObject Lgc_forcer1(LispObject env, LispObject a)
 LispObject cons(LispObject a, LispObject b)
 {
 #ifdef DEBUG
-    if (is_exception(a) || is_exception(b)) my_abort();
+    if (is_exception(a) || is_exception(b))
+        my_abort("exception value not trapped");
 #endif // DEBUG
 #ifdef ATOMIC
     LispObject r =
@@ -776,7 +777,7 @@ void get_borrowed_page()
 {   if (borrowed_pages_count == 0)
     {   trace_printf("\nRun out of memory (for rehashing)\n");
 #ifdef DEBUG
-        my_abort();
+        my_abort("memory full");
 #endif
         Lstop1(nil, fixnum_of_int(1));
     }

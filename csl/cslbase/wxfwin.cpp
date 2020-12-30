@@ -1789,7 +1789,7 @@ static int n_found_files = 0, max_found_files = 0;
 
 #define TABLE_INCREMENT 50
 
-static int more_filesstatic_cast<void>()
+static int more_files()
 {   if (n_found_files > max_found_files - 5)
     {   WIN32_FIND_DATAA *fnew = (WIN32_FIND_DATAA *)
                                  std::realloc(reinterpret_cast<void *>(found_files),
@@ -1932,7 +1932,7 @@ int n_found_files = 0, max_found_files = 0;
 
 #define TABLE_INCREMENT 50
 
-static int more_filesstatic_cast<void>()
+static int more_files()
 {   if (n_found_files > max_found_files - 5)
     {   char **fnew = (char **)
                       std::realloc(reinterpret_cast<void *>(found_files),

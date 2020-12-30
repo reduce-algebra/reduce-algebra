@@ -528,7 +528,7 @@ LispObject Lset_help_file(LispObject env, LispObject a, LispObject b)
     size_t lena, lenb;
     if (a != nil)
     {   w = get_string_data(a, "set-help-file", lena);
-        aa = reinterpret_cast<char *>(std::malloc(lena+1));
+        aa = new (std::nothrow) char[lena+1];
         if (aa == nullptr) return aerror("set-help-file");
         std::memcpy(aa, w, lena);
         aa[lena] = 0;
@@ -539,11 +539,14 @@ LispObject Lset_help_file(LispObject env, LispObject a, LispObject b)
     }
     if (b != nil)
     {   w = get_string_data(b, "set-help-file", lenb);
-        bb = reinterpret_cast<char *>(std::malloc(lenb+1));
+        bb = new (std::nothrow) char [lenb+1];
         if (bb == nullptr) return aerror("set-help-file");
         std::memcpy(bb, w, lenb);
         bb[lenb] = 0;
     }
+// NOTE NOTE NOTE that the strings passed have been allocated using "new"
+// and issues about who might delete the space at the end of a run are
+// unresolved!
     fwin_set_help_file(aa, bb);
     return onevalue(nil);
 }

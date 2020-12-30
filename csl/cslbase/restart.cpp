@@ -81,8 +81,8 @@ LispObject nil;
 LispObject *stackBase;
 LispObject *stackLimit;
 
-LispObject *nilsegment, *nilsegmentbase;
-LispObject *stacksegment, *stacksegmentbase;
+LispObject *nilsegment;
+LispObject *stacksegment;
 int32_t stack_segsize = 1;
 
 char *exit_charvec = nullptr;
@@ -1788,15 +1788,14 @@ LispObject set_up_variables(int restart_flag)
 // who call restart!-csl.
 //
     if (loadable_packages == nullptr && switches==nullptr)
-    {   LispObject w1 = qvalue(
-                            make_undefined_symbol("loadable-packages*"));
+    {   LispObject w1 = qvalue(make_undefined_symbol("loadable-packages*"));
         LispObject w2;
         int n;
         char *v;
         n = 0;
         for (w2=w1; consp(w2); w2=cdr(w2)) n++; // How many?
         n = 2*n;
-        loadable_packages = (char **)std::malloc((n+1)*sizeof(char *));
+        loadable_packages = new (std::nothrow) char *[n+1];
         if (loadable_packages != nullptr)
         {   n = 0;
             for (w2=w1; consp(w2); w2=cdr(w2))
@@ -1806,7 +1805,7 @@ LispObject set_up_variables(int restart_flag)
                 if (!is_vector(w3) ||
                     !is_string_header(vechdr(w3))) break;
                 n1 = length_of_byteheader(vechdr(w3))-CELL;
-                v = reinterpret_cast<char *>(std::malloc(n1+2));
+                v = new (std::nothrow) char[n1+2];
                 if (v == nullptr) break;
                 v[0] = ' ';
                 std::memcpy(v+1, &celt(w3, 0), n1);
@@ -1822,7 +1821,7 @@ LispObject set_up_variables(int restart_flag)
         for (w2=w1; consp(w2); w2=cdr(w2)) n++; // How many?
         n = (n+1)*sizeof(char *);
         n = 2*n;
-        switches = (char **)std::malloc(n);
+        switches = new (std::nothrow) char *[n+1];
         if (switches != nullptr)
         {   n = 0;
             for (w2=w1; consp(w2); w2=cdr(w2))
@@ -1837,7 +1836,7 @@ LispObject set_up_variables(int restart_flag)
                 std::sprintf(sname, "*%.*s", n1,
                              reinterpret_cast<const char *>(&celt(w3, 0)));
                 w4 = make_undefined_symbol(sname);
-                v = reinterpret_cast<char *>(std::malloc(n1+2));
+                v = new (std::nothrow) char[n1+2];
                 if (v == nullptr) break;
 //
 // The first character records the current state of the switch. With FWIN
@@ -2090,8 +2089,8 @@ void setup(int restart_flag, double store_size)
     {   int32_t more = heap_pages_count + vheap_pages_count;
         more = 3 *more - pages_count;
         while (more-- > 0)
-        {   void *page = reinterpret_cast<void *>(aligned_malloc((
-                    size_t)CSL_PAGE_SIZE));
+        {   void *page = reinterpret_cast<void *>(
+                new (std::nothrow) char[CSL_PAGE_SIZE]);
             if (page == nullptr)
             {   init_flags &= ~INIT_EXPANDABLE;
                 break;

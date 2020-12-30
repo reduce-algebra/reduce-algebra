@@ -184,12 +184,12 @@ THREADRESULT_T threadwork(void *arg)
 }
 
 THREADRESULT_T threadnowork(void *arg)
-{   char *w = reinterpret_cast<char *>(std)::malloc(10000);
+{   char *w = new (std::nothrow) char[10000];
     if (w == nullptr)
     {   std::printf("Disaster\n");
         std::exit(1);
     }
-    std::free(w);
+    delete [] w;
     return THREADRESULT;
 }
 

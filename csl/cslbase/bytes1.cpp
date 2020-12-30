@@ -1219,7 +1219,7 @@ inline void short_jump(size_t& ppc, size_t xppc)
 // resolution in the compiler, and some jumps led to bytecode execution
 // resuming a byte early or late. The bug that was involved there has
 // now been fixed, and i no longer put the label-marker bytes in the
-// bytestream. The code here illustrates use of "my_abort" with a lambda
+// bytestream. The code here illustrates use of "my_assert" with a lambda
 // expression so that I can have absolute control over the message
 // displayed if the assertion fails.
 #ifdef LABEL_RESOLUTION_DEBUGGING

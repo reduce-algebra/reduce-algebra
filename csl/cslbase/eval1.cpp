@@ -78,7 +78,7 @@ LispObject eval(LispObject u, LispObject env)
 {   STACK_SANITY;
     assert (env == nil || consp(env));
 #ifdef DEBUG
-    if (is_exception(u) || is_exception(env)) my_abort();
+    if (is_exception(u) || is_exception(env)) my_abort("exception value not trapped");
 #endif // DEBUG
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__)) return aerror("deep stack in eval");

@@ -1047,7 +1047,7 @@ static LispObject Lrestart_lisp2(LispObject env,
             if (ch > 0xffff) n++; // Now have enough bytes for utf8
             b1 = cdr(b1);
         }
-        v = reinterpret_cast<char *>(std::malloc(n+1));
+        v = new (std::nothrow) char[n+1];
         if (v == nullptr) return aerror("space exhausted in restart-csl");
         n = 0;
         while (b != nil)

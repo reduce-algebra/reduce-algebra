@@ -354,8 +354,7 @@ int main(int argc, const char *argv[])
                 (buf.st_mode & S_IFDIR) != 0)
             {
 // Well foo.app exists and is a directory, so I will try to use it
-                const char **nargs = (const char **)std::malloc(sizeof(char *)*
-                                     (argc+3));
+                const char **nargs = new const char *[argc+3];
                 int i;
                 nargs[0] = "/usr/bin/open";
                 nargs[1] = xname;
@@ -988,19 +987,19 @@ void dviPanel::RenderDVI()
                     continue;
                 case 239: // xxx1
                     k = *stringInput++;
-                    for (i=0; i<k; i++) static_cast<void>()*stringInput++;
+                    for (i=0; i<k; i++) static_cast<void>(*stringInput++);
                     continue;
                 case 240: // xxx2
                     k = u2();
-                    for (i=0; i<k; i++) static_cast<void>()*stringInput++;
+                    for (i=0; i<k; i++) static_cast<void>(*stringInput++);
                     continue;
                 case 241: // xxx3
                     k = u3();
-                    for (i=0; i<k; i++) static_cast<void>()*stringInput++;
+                    for (i=0; i<k; i++) static_cast<void>(*stringInput++);
                     continue;
                 case 242: // xxx4
                     k = s4();
-                    for (i=0; i<k; i++) static_cast<void>()*stringInput++;
+                    for (i=0; i<k; i++) static_cast<void>(*stringInput++);
                     continue;
                 case 243: // fnt_def1
                     DefFont(*stringInput++);
@@ -1024,7 +1023,7 @@ void dviPanel::RenderDVI()
                     static_cast<void>(s4());    // ignore den
                     static_cast<void>(s4());    // ignore mag
                     k = *stringInput++;
-                    for (i=0; i<k; i++) static_cast<void>()*stringInput++;
+                    for (i=0; i<k; i++) static_cast<void>(*stringInput++);
                     continue;
                 case 248: // post
                     static_cast<void>(s4()); // ignore p;
@@ -1039,7 +1038,7 @@ void dviPanel::RenderDVI()
                     continue;
                 case 249: // post_post
                     static_cast<void>(s4());
-                    static_cast<void>()*stringInput++;
+                    static_cast<void>(*stringInput++);
                     if (*stringInput++ != 223) printlog("Malformed DVI file\n");
                     break;
 
@@ -1153,8 +1152,7 @@ dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
         }
         std::fseek(f, (off_t)0, SEEK_END);
         off_t len = std::ftell(f);
-        dviData = reinterpret_cast<unsigned char *>(std)::malloc(
-                      static_cast<std::size_t>(len));
+        dviData = new unsigned char[len];
         std::fseek(f, (off_t)0, SEEK_SET);
         for (int i=0; i<len; i++) dviData[i] = std::getc(f);
         std::fclose(f);
