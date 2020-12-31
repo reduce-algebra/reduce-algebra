@@ -522,6 +522,15 @@ LispObject make_stream_handle()
     return w;
 }
 
+// broadcast, concateneded and string-input streams are Common Lisp features
+// and the current code has not been adapted to allow for the change I
+// made quite some while ago about treatment of functions with more than
+// 2 or 3 arguments! I may get around to fixing this and then making then
+// available in a Standard Lisp world but for now they are just plain broken
+// as regards argument passing conventions! 
+
+#ifdef COMMON
+
 LispObject Lmake_broadcast_stream_n(LispObject env, int nargs, ...)
 {   LispObject r = nil, w, w1;
     std::va_list a;
@@ -586,6 +595,8 @@ LispObject Lmake_concatenated_stream_2(LispObject env, LispObject a,
 {   return Lmake_concatenated_stream_n(env, 2, a, b);
 }
 
+#endif // COMMON
+
 LispObject Lmake_synonym_stream(LispObject env, LispObject a)
 {   LispObject w;
     if (!is_symbol(a)) return aerror1("make-synonym-stream", a);
@@ -635,6 +646,8 @@ LispObject Lmake_echo_stream(LispObject env, LispObject a,
     return onevalue(w);
 }
 
+#ifdef COMMON
+
 // string input streams are not implemented yet, but I can read from a
 // list so all I would need to do would be to use explodec to turn the
 // string into a list of characters and then I have at least all the
@@ -652,6 +665,8 @@ LispObject Lmake_string_input_stream_2(LispObject env, LispObject a,
                                        LispObject b)
 {   return Lmake_string_input_stream_n(env, 2, a, b);
 }
+
+#endif // COMMON
 
 LispObject Lmake_string_output_stream(LispObject env)
 {   LispObject w;

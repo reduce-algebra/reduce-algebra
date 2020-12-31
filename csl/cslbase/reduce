@@ -101,7 +101,7 @@ exit
 # one has used "mintty" - that change had implications for low level terminal
 # handling. So it USED to be that case that it was necessary to run any
 # reduce that was directly attached to the console and had been launched from
-'# a cygwin shell as the cygwin-specific version, but desirable to run batch
+# a cygwin shell as the cygwin-specific version, but desirable to run batch
 # uses (eg when input and output were provided via files or pipes) as the
 # native windows version that could thereby take advantage of all system
 # memory. So the predecessor of this script had checks for "not under cygwin"

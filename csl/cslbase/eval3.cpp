@@ -794,17 +794,13 @@ void unwind_stack(LispObject *entry_stack, bool findcatch)
 
 bool force_backtrace = false;
 
-// The "volatile" qualifications here are to try to improve the chances of
-// setjmp/longjmp behaving the way I want. Even with those qualifiers in
-// place any use of it is utterly uncertain!
-
-static LispObject errorset3(volatile LispObject env,
-                            volatile LispObject form,
-                            volatile LispObject fg1,
-                            volatile LispObject fg2)
+static LispObject errorset3(LispObject env,
+                            LispObject form,
+                            LispObject fg1,
+                            LispObject fg2)
 {   LispObject r;
     STACK_SANITY;
-    volatile uint32_t flags = miscflags;
+    uint32_t flags = miscflags;
 //
 // See also (ENABLE-BACKTRACE level) and (ENABLE-ERROSET min max)
 //
@@ -1069,7 +1065,6 @@ static LispObject resource_limit7(LispObject env,
 // (3) It fails because it raises a C-level signal.
 // (4) It fails by raising a resource-exhausted complaint.
     TRY
-        START_SETJMP_BLOCK;
         time_base   = time_now;
         space_base  = space_now;
         io_base     = io_now;

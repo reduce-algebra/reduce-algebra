@@ -258,7 +258,6 @@ static LispObject catch_fn(LispObject args, LispObject env)
     }
     push(tag);
     TRY
-        START_SETJMP_BLOCK;
         v = progn_fn(cdr(args), env);
     CATCH(LispThrow)
         pop(tag);
@@ -815,7 +814,6 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
     }
 // Now I will start doing some binding...
     TRY
-        START_SETJMP_BLOCK;
         for (; consp(bvl); bvl=cdr(bvl))
         {   LispObject z;
             q = car(bvl);

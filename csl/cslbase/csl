@@ -1,50 +1,50 @@
 #! /bin/sh
+
+# see the "reduce" script for commentary...
+
 here=`dirname "$0"`
 here=`cd "$here" ; pwd`
-case $* in
-*--cygwin*)
-  case `uname -m` in
-  *x86_64*)
+case `uname -m -o` in
+x86_64*Cygwin)
+  for x in $*
+  do
+    if test "$x" = "--nogui" ||
+       test "$x" = "-w-" ||
+       test "$x" = "-w"
+    then
+      withgui="no"
+      break
+    fi
+  done
+  if test "$withgui" = "no" || ! test -z "$DISPLAY"
+  then
     $here/cygwin64-csl.exe $*
-    ;;
-  *)
+  else
+    $here/csl.com $*
+  fi
+  ;;
+i686*Cygwin)
+  withgui="yes"
+  for x in $*
+  do
+    if test "$x" = "--nogui" ||
+       test "$x" = "-w-" ||
+       test "$x" = "-w"
+    then
+      withgui="no"
+      break
+    fi
+  done
+  if test "$withgui" = "no" || ! test -z "$DISPLAY"
+  then
     $here/cygwin32-csl.exe $*
-    ;;
-  esac
+  else
+    $here/csl.com $*
+  fi
   ;;
 *)
-  if $here/not-under-cygwin.exe $*
-  then
-    $here/csl.com $*
-  else
-    case `uname -m` in
-    *x86_64*)
-      $here/cygwin64-isatty.exe $*
-      case $? in
-      0)
-        $here/csl.com --gui $*
-        ;;
-      1)
-        $here/cygwin64-csl.exe $*
-        ;;
-      *)
-        $here/csl.com $*
-        ;;
-      esac
-      ;;
-    *i686*)
-      $here/cygwin-isatty.exe $*
-      case $? in
-      0)
-        $here/csl.com --gui $*
-        ;;
-      1)
-        $here/cygwin-csl.exe $*
-        ;;
-      *)
-        $here/csl.com $*
-        ;;
-      esac
-    esac
-  fi
+  $here/csl.com $*
+  ;;
 esac
+exit
+

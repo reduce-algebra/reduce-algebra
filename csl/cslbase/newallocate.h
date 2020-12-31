@@ -197,7 +197,6 @@ enum PageClass
     busyPageTag       = 0x03,     // Page contains active data.
 };
 
-extern void set_up_signal_handlers();
 extern bool allocateSegment(size_t);
 
 // Each Chunk has a header that contains various information, including in
@@ -1080,18 +1079,18 @@ inline void poll()
 // A C++ system is liable to have some "callee save" registers and keep the
 // values of some variable in them. A conservative garbage collector needs
 // to access their values. I EXPECT that setjmp will dump copies of all
-// such registers (at least!) into the jmp_buff, thus ensuring that a copy of
-// all the data is present on the stack. Well here the jmp_buff is not
+// such registers (at least!) into the jmp_buf, thus ensuring that a copy of
+// all the data is present on the stack. Well here the jmp_buf is not
 // referenced again or elsewhere, so maybe a compiler could consider it
 // unused and just remove the call to setjmp. To discourage that I have
-// buffer_pointer referring to the jmp_buff, and then at least potentially
-// (as far as the compiler can tell) in some other compilation uint there
+// buffer_pointer referring to the jmp_buf, and then at least potentially
+// (as far as the compiler can tell) in some other compilation unit there
 // might be code reachable from action() that does a longjmp() via it.
-// I alse want the jmp_buff to have been allocate on the stack at a lower
+// I alse want the jmp_buf to have been allocate on the stack at a lower
 // address than any other values currently in use. The "noinline" qualifier
 // as provided by gcc is intended to help to enforce that by arranging that
 // withRecordedStack() has its own stack frame with almost nothing except
-// action() and the jmp_buff in it. If values used within action() end up
+// action() and the jmp_buf in it. If values used within action() end up
 // on the stack above buffer that should not be a problem.
 //
 // There can be at most maxThreads threads in play, and each must have

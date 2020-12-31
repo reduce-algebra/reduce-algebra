@@ -160,19 +160,11 @@ reporttime() {
   for x in $dir/*.time
   do
     val=`grep ^Time $x | sed -e 's/.*(counter 1): //; s/ms.*//'`
-    case $x in
-    *sstools*)
-      sstime=$val
-      ;;
-    *)
 # The apparently spurious "0" here is in case $val ends up as empty.
-      total=`printf "1k 0 $val $total + pq" | dc`
-      ;;
-    esac
+    total=`printf "1k 0 $val $total + pq" | dc`
   done
   total=`printf "2k $total 1000 / pq" | dc`
   printf "$name total = $total (seconds)\n" | tee $dir/total_time
-  printf "$name sstools = $sstime (seconds)\n" | tee -a $dir/total_time
 }
 
 if test "`which dc`" != ""

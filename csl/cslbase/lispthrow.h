@@ -40,18 +40,13 @@
 
 //extern thread_local LispObject *stack;
 extern LispObject *stack;
-//extern thread_local jmp_buf *global_jb;
-extern  std::jmp_buf *global_jb;
 
 //extern LispObject **get_stack_addr();
-//extern jmp_buf **get_global_jb_addr();
 // In any single compilation unit you will only scan this header file
 // once, and so the static variables set up here get defined just once
 // and the initialization of them should happen during thread initialization.
 //static thread_local LispObject **const stack_addr = get_stack_addr();
-//static thread_local jmp_buf **const global_jb_addr = get_global_jb_addr();
 //#define stack (*stack_addr)
-//#define global_jb (*global_jb_addr)
 
 // There is a "Lisp Stack" which is separate from the C++ stack. It has
 // a number of uses:
@@ -1403,8 +1398,7 @@ enum LispExceptionTag
 
 // The next three are all varieties of error states.
     LispError       = 0x03,
-    LispSignal      = 0x01,
-    LispResource    = 0x02,
+    LispResource    = 0x01,
 
 // Now thee that are used to implement Lisp control structures within
 // the interpreter.
@@ -1432,7 +1426,6 @@ enum LispExceptionTag
 
 #define SPID_LispException    (SPID_ERROR+(static_cast<int>(LispException)<<20))
 #define SPID_Error            (SPID_ERROR+(static_cast<int>(LispError)<<20))
-#define SPID_Signal           (SPID_ERROR+(static_cast<int>(LispSignal)<<20))
 #define SPID_Resource         (SPID_ERROR+(static_cast<int>(LispResource)<<20))
 #define SPID_Go               (SPID_ERROR+(static_cast<int>(LispGo)<<20))
 #define SPID_ReturnFrom       (SPID_ERROR+(static_cast<int>(LispReturnFrom)<<20))
@@ -1497,12 +1490,6 @@ struct LispException : public std::exception
 struct LispError : public LispException
 {   virtual const char *what() const throw()
     {   return "Lisp Error";
-    }
-};
-
-struct LispSignal : public LispError
-{   virtual const char *what() const throw()
-    {   return "Lisp Signal";
     }
 };
 
@@ -1672,12 +1659,9 @@ public:
 //    <exception or sigaction triggered here>
 //    pop(b, a);
 // I try take care to restore the stack pointer before returning from any
-// function, but it is certain that exits via longjmp will in general mess
-// this up. They should only arise in the case of system-level failures and
-// so I am not too upset, but I will restore the stack pointer when setjmp()
-// returns via longjmp.
+// function.
 // Well for a time I had code that was slack about stack restoration
-// especially in the face of "throw" operations. Bu using the Push class
+// especially in the face of "throw" operations. But using the Push class
 // and RAII I hope I am repairing things.
 //
 // The places where I may depend on the stack pointer and so where it may
@@ -1692,17 +1676,6 @@ public:
 // (5) Places where data structures are temporarily corrupted and then
 //     mended later.
 // (6) Some places where backtrace-style reports are called for.
-//
-// Note that the setjmp/longjmp stuff is something I need to think about a
-// a lot harder. Including it represents a run-time cost. I really ought not
-// to get any exceptions raised! SIGSEGC, SIGBUS, SIGILL, SIGFPE all
-// represent system failures, so ANY recovery at all would be a bonus. Perhaps
-// the most common or plausible circumstance for them to arise is on stack
-// overflow, and typically some level of recovery or backtrace there is
-// really desirable, but continuation of the computation afterwards may well
-// not be possible. I believe that SIGFPE only arises on integer division
-// by zero, and my code is supposed to check for and avoid that.
-// I probably want to reduce my use of signal as much as I can!
 //
 // Let me try to comment a bit more on those.
 // (1) errorset needs to trap all errors. It should convert GO, RETURN-FROM
@@ -1722,37 +1695,6 @@ public:
 //     called needs to generate backtraces at times.
 //
 
-[[noreturn]] extern void global_longjmp();
-
-class RAIIsave_stack_and_jb
-{   LispObject *saveStack;
-    std::jmp_buf *jbsave;
-public:
-    RAIIsave_stack_and_jb()
-    {   jbsave = global_jb;  // preserve the enclosing jmp_buff.
-        saveStack = stack;   // record stack value from entry here.
-    }
-    ~RAIIsave_stack_and_jb()
-    {   global_jb = jbsave;  // restore jmp_buf pointer
-        stack = saveStack;   // restore stack
-    }
-};
-
-class RAIIsave_stack
-{   LispObject *saveStack;
-public:
-    RAIIsave_stack()
-    {   saveStack = stack;   // record stack value from entry here.
-    }
-    ~RAIIsave_stack()
-    {
-#if defined DEBUG && 0
-        if (stack != saveStack) fprintf(stderr, "@@@ %d\n", (int)(stack - saveStack));
-#endif
-        stack = saveStack;   // restore stack
-    }
-};
-
 class SaveStack
 {   LispObject *saveStack;
 public:
@@ -1768,67 +1710,6 @@ public:
     }
 };
 
-
-// I will sketch this usinn native "try" and "throw".
-//
-// try
-// {   jmp_buf jb;
-//     RAIIsave_stack_and_jb RAII2_Object; // Save SP and setjmp stuff.
-//     if (setjmp(jb) != 0) throw LispSignal();
-// Signals convert to exceptions!
-// Only set new jmp_buf when ready.
-//     global_jb = &jb;                    // (*)
-//     <ACTIVITY>
-// }             // At end of block destructor is called, both for standard
-//               // and exception exits, so SP and global_jb are restored.
-//  
-//
-// Explanation...
-//
-// First the case when the setjmp stuff can be ignored this just like
-// "try { <ACTIVITY> } catch (EEE_t) { <ERROR_ACTIVITY> }" which is simple
-// code to handle exceptions that are raised within the C++ world. The extra
-// bulk and complication arises because I wish to be able to respond to
-// events noticed by sigaction(). I will arrange that global_jb points
-// at a jmp_buf structure, because regardless of official legality I will
-// use longjmp to exit from event handlers. Look up "async signal safe" to
-// find explanations and discussions of why this is all delicate! I believe
-// that things are liable to fail if the signal arose while a system call
-// was being executed, and I hope that events prompted directly by my own
-// code and nor arising during system calls will be reasonably safe. But my
-// official stance has to be that following an exception it is good if I
-// can recover enough to produce a diagnostic, but even that is not
-// guaranteed.
-//
-// The constructor and destructor of RAII (Resource Allocation Is
-// Initialization) class save and restore global_jb across the extent of
-// the try block.
-// The setjmp call starts by returning normally with the value zero, and only
-// when that has happened do I update global_jb to point to the new jmp_buf.
-// A longjmp that is triggered before the line marked (*) just uses the
-// jmp_buf from a dynamically enclosing context.
-//
-// If during <ACTIVITY> there is an event signalled and longjmp is called
-// code returns from setjmp for a second time an exception is thrown. On
-// the way out of the try block towards the exception handler global_jb
-// should be unwound.
-//
-// The effect should be that signalled conditions as well as C++ exceptions
-// all gather together and are processed by subsequent "catch" clauses.
-//
-// There is HOPE that the overhead from all this will be fairly low, and that
-// specifically the handling of both "try" and the construction and
-// destruction of RAII_Object will have almost no cost at run time (at least
-// when compilers are used at reasonable optimization levels). The setjmp
-// call does have a cost even when no event ends up signalled. There will
-// be a space cost in extra tables needed to support unwinding, and the
-// unwinding process itself may sometimes involve complicated searches in
-// them and so may have non-trivial cost.
-//
-
-// Even though I describe things in these comments using "try" and "catch"
-// I may use the faked exception scheme!
-
 // The full mess I seem to want is ugly and bulky. I will try hiding it
 // away in a number of macros... so the user writes
 //    TRY
@@ -1836,21 +1717,6 @@ public:
 //    CATCH(LispException)
 //        <whatever>
 //    END_CATCH
-
-// If I put START_SETJMP_BLOCK at the start of TRY activity it puts in
-// recovery after low-level signals.
-
-#define START_SETJMP_BLOCK                                \
-    std::jmp_buf jb;                                      \
-    RAIIsave_stack_and_jb save_stack_Object;              \
-    if (setjmp(jb) != 0)                                  \
-    {   exit_reason = UNWIND_SIGNAL;                      \
-        if (miscflags & HEADLINE_FLAG)                    \
-            err_printf("\n+++ Error %s: ", errorset_msg); \
-        THROW(LispSignal);                                \
-    }                                                     \
-    global_jb = &jb;
-
 
 // There are places where I need to display part of a backtrace when
 // unwinding the stack because of an error.
@@ -1905,21 +1771,6 @@ public:
     CATCH(LispError)                          \
     {}                                        \
     END_CATCH
-
-// ignore_exception() also recovers after any exception (eg SIGSEGV) gets
-// raised. Well the state of non-volatile local variables may be undefined
-// after recovery via a signal handler and hence via longjmp. This ignores
-// all Lisp "errors" and caught signals are treated as just that. But it
-// does not catch Lisp "quit", "restart", "return-from", "throw" or
-// "resource-limit" exceptions.
-
-#define ignore_exception(a)                   \
-    TRY                                       \
-        START_SETJMP_BLOCK;                   \
-        a;                                    \
-    CATCH(LispException)                      \
-    {}                                        \
-    }
 
 #endif // __lispthrow_h
 

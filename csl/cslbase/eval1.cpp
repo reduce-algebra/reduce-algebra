@@ -535,7 +535,6 @@ LispObject apply_lambda(LispObject def, LispObject args,
 // Next parse the BVL
     LispObject *stacksave = stack;
     TRY
-        START_SETJMP_BLOCK;
         for (p = bvl; consp(p); p=cdr(p))
         {   v = car(p);
             v1 = nil;

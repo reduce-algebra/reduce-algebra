@@ -6339,9 +6339,7 @@ static void record_keys()
 
 int main(int argc, char *argv[])
 {   TermSetup ts(argv[0], nullptr);
-//    def_prog_mode();
     record_keys();
-//    reset_shell_mode();
     return 0;
 }
 

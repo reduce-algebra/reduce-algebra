@@ -242,7 +242,6 @@ using std::atomic;    // If I am going to be multi-threaded then very many
 #include <cwctype>
 #include <ctime>
 #include <cstdarg>
-#include <csetjmp>
 #include <csignal>
 #include <cerrno>
 

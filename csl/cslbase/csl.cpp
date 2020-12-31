@@ -330,7 +330,10 @@ LispObject error(int nargs, int code, ...)
     if ((w1 = qvalue(break_function)) != nil &&
         symbolp(w1) &&
         qfn1(w1) != undefined_1)
-    {   ignore_exception((*qfn1(w1))(qenv(w1), nil));
+    {   ignore_error((*qfn1(w1))(qenv(w1), nil));
+// If the break function does a (stop) or (restart) etc then that
+// must be activated.
+        errexit();
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
@@ -365,7 +368,8 @@ LispObject cerror(int nargs, int code1, int code2, ...)
     if ((w1 = qvalue(break_function)) != nil &&
         symbolp(w1) &&
         qfn1(w1) != undefined_1)
-    {   ignore_exception((*qfn1(w1))(qenv(w1), nil));
+    {   ignore_error((*qfn1(w1))(qenv(w1), nil));
+        errexit();
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
@@ -440,7 +444,8 @@ LispObject interrupted()
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
         qfn1(w) != undefined_1)
-    {   ignore_exception((*qfn1(w))(qenv(w), nil));
+    {   ignore_error((*qfn1(w))(qenv(w), nil));
+        errexit();
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
@@ -457,7 +462,8 @@ LispObject aerror(const char *s)
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
         qfn1(w) != undefined_1)
-    {   ignore_exception((*qfn1(w))(qenv(w), nil));
+    {   ignore_error((*qfn1(w))(qenv(w), nil));
+        errexit();
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
@@ -474,7 +480,8 @@ LispObject aerror0(const char *s)
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
         qfn1(w) != undefined_1)
-    {   ignore_exception((*qfn1(w))(qenv(w), nil));
+    {   ignore_error((*qfn1(w))(qenv(w), nil));
+        errexit();
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
@@ -494,7 +501,8 @@ LispObject aerror1(const char *s, LispObject a)
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
         qfn1(w) != undefined_1)
-    {   ignore_exception((*qfn1(w))(qenv(w), nil));
+    {   ignore_error((*qfn1(w))(qenv(w), nil));
+        errexit();
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
@@ -516,7 +524,8 @@ LispObject aerror2(const char *s, LispObject a, LispObject b)
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
         qfn1(w) != undefined_1)
-    {   ignore_exception((*qfn1(w))(qenv(w), nil));
+    {   ignore_error((*qfn1(w))(qenv(w), nil));
+        errexit();
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
@@ -536,7 +545,8 @@ LispObject aerror2(const char *s, const char *a, LispObject b)
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
         qfn1(w) != undefined_1)
-    {   ignore_exception((*qfn1(w))(qenv(w), nil));
+    {   ignore_error((*qfn1(w))(qenv(w), nil));
+        errexit();
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
@@ -561,7 +571,8 @@ LispObject aerror3(const char *s, LispObject a, LispObject b,
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
         qfn1(w) != undefined_1)
-    {   ignore_exception((*qfn1(w))(qenv(w), nil));
+    {   ignore_error((*qfn1(w))(qenv(w), nil));
+        errexit();
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
@@ -969,18 +980,6 @@ void debug_show_trail_raw(const char *msg, const char *file, int line)
 
 #endif
 
-// See comments in lispthrow.h for an explanation of this. And note that
-// any threaded system will need to worry a LOT about this! Maybe global_jb
-// can be thread_local?
-
-std::jmp_buf *global_jb;
-
-[[noreturn]] void global_longjmp()
-{   std::longjmp(*global_jb, 1);
-    my_abort();
-// longjmp should never return, but some C++ compilers do not know that!
-}
-
 bool stop_on_error = false;
 
 static LispObject lisp_main()
@@ -994,10 +993,8 @@ static LispObject lisp_main()
 // The sole purpose of the while loop here is to allow me to proceed
 // for a second try if I get a (cold-start) call.
 //
-    {   LispObject * volatile save = stack;
-        errorset_msg = nullptr;
+    {   errorset_msg = nullptr;
         TRY
-            START_SETJMP_BLOCK;
             terminal_pushed = NOT_CHAR;
             if (supervisor != nil && !ignore_restart_fn)
             {   miscflags |= BACKTRACE_MSG_BITS;
@@ -1020,14 +1017,7 @@ static LispObject lisp_main()
 // Here the default read-eval-print loop used if the user has not provided
 // a supervisor function.
             else read_eval_print(lisp_true);
-        CATCH(LispSignal)
-            if (errorset_msg != nullptr)
-            {   term_printf("\n%s detected\n", errorset_msg);
-                errorset_msg = nullptr;
-            }
-            unwind_stack(save, false);
-            exit_reason = UNWIND_ERROR;
-        ANOTHER_CATCH(LispException)
+        CATCH(LispException)
             if (exit_reason == UNWIND_RESTART)
             {   if (exit_tag == fixnum_of_int(0))      // "stop"
                     return_code = static_cast<int>(int_of_fixnum(exit_value));
@@ -2937,41 +2927,27 @@ void set_up_signal_handlers()
     struct sigaction sa;
     sa.sa_sigaction = low_level_signal_handler;
     sigemptyset(&sa.sa_mask);
-    sa.sa_flags = SA_RESTART |
-                  SA_SIGINFO; //???@@@ | SA_ONSTACK | SA_NODEFER;
+    sa.sa_flags = SA_RESTART | SA_SIGINFO;
 // (a) restart system calls after signal (if possible),
 // (b) use handler that gets more information,
-// (c) use alternative stack for the handler,
-// (d) leave the exception unmasked while the handler is active. This
-//     will be vital if then handler "exits" using longjmp, because as
-//     far as the exception system is concerned that leaves us within the
-//     handler. But after the  exit is caught by setjmp I want the
-//     exception to remain trapped.
-    if (sigaction(SIGSEGV, &sa, nullptr) == -1)
-        /* I can not thing of anything useful to do if I fail here! */;
-#ifdef SIGBUS
-    if (sigaction(SIGBUS, &sa, nullptr) == -1)
-        /* I can not thing of anything useful to do if I fail here! */;
-#endif
-#ifdef SIGILL
-    if (sigaction(SIGILL, &sa, nullptr) == -1)
-        /* I can not thing of anything useful to do if I fail here! */;
-#endif
-    if (sigaction(SIGFPE, &sa, nullptr) == -1)
-        /* I can not thing of anything useful to do if I fail here! */;
-#else // !HAVE_SIGACTION
-#ifndef WIN32
-#error All platforms other than Windows are expected to support sigaction.
-#endif // !WIN32
-    std::signal(SIGSEGV, low_level_signal_handler);
-#ifdef SIGBUS
-    std::signal(SIGBUS, low_level_signal_handler);
-#endif
-#ifdef SIGILL
-    std::signal(SIGILL, low_level_signal_handler);
-#endif
+//
+// The signals that C++ allows for are
+//      SIGABRT, SIGFPE, SIGILL, SIGINT, SIGSEGV and SIGTERM.
+// and I will assume that ig sigaction is available it will support all those.
+    sigaction(SIGABRT, &sa, nullptr);
+    sigaction(SIGFPE, &sa, nullptr);
+    sigaction(SIGILL, &sa, nullptr);
+    sigaction(SIGINT, &sa, nullptr);
+    sigaction(SIGSEGV, &sa, nullptr);
+    sigaction(SIGTERM, &sa, nullptr);
+#else // HAVE_SIGACTION
+    std::signal(SIGABRT, low_level_signal_handler);
     std::signal(SIGFPE, low_level_signal_handler);
-#endif // !HAVE_SIGACTION
+    std::signal(SIGILL, low_level_signal_handler);
+    std::signal(SIGINT, low_level_signal_handler);
+    std::signal(SIGSEGV, low_level_signal_handler);
+    std::signal(SIGTERM, low_level_signal_handler);
+#endif // HAVE_SIGACTION
 }
 
 static volatile thread_local char signal_msg[32];
@@ -3001,58 +2977,28 @@ static void low_level_signal_handler(int signo)
 #endif // !HAVE_SIGACTION
 {
 // There are really very restrictive rules about what I can do in a
-// signal handler and remain safe. For a start I should only reference
-// variables that are of type atomic_t (or its friends) and that are
-// volatile, and there are fairly few system functions that are
-// "async signal safe" and generally permitted. However I am going to
-// stray well beyond the rules here! Well in most cases I will view this
-// as acceptable, because in most cases these low level signals will only
-// arise in case of a system-level bug, and so ANY recovery or diagnostic
-// I can produce will be better than nothing, and if things get confused
-// or crash again then that is not much worse than the exception having
-// arisen in the first case!
-// I will create a message string (which I should put in thread local memory)
-    if (miscflags & HEADLINE_FLAG)
-    {   switch (signo)
-        {   default:
-            {   volatile char *p = signal_msg;
-                const char *m1 = "Signal (signo=";
-                while (*m1) *p++ = *m1++;
-                p = int2str(p, signo);
-                *p++ = ')';
-                *p = 0;
-            }
-            errorset_msg = signal_msg;
-            break;
-#ifdef SIGFPE
-            case SIGFPE:
-                errorset_msg = "Arithmetic exception";
-                break;
-#endif
-#ifdef SIGSEGV
-            case SIGSEGV:
-                errorset_msg = "Memory access violation";
-                break;
-#endif
-#ifdef SIGBUS
-            case SIGBUS:
-                errorset_msg = "Bus error";
-                break;
-#endif
-#ifdef SIGILL
-            case SIGILL:
-                errorset_msg = "Illegal instruction";
-                break;
-#endif
-        }
-    }
-// I am NOT ALLOWED TO USE THROW to exit from a signal handler in C++. I
-// can at best try use of longjmp, and that is not really legal
-// In particular this has the malign consequence that destructors
-// associated with stack frames passed through will not be activated. And
-// I use destructors in a RAII style to tidy up bindings at times, so I
-// hope I never do a really do longjmp, because that would bypass things!
-    global_longjmp();
+// signal handler and remain safe. And the exceptions that are trapped
+// (and activate this code) are either caused by internal system failure
+// or by requests from outside that the system stop at once. So I will
+// call std::quick_exit(), which is allowed by the C++ standard. There will
+// often be a function registered by at_quick_exit() that tries to reset the
+// console from RAW to COOKED mode. The issue about whether that is formally
+// async-signal safe is one that I will ignore!
+#ifdef HAVE_QUICK_EXIT
+// quick_exit is a C++17 feature but as of the start of 2021 the mingw
+// versions of g++ and their libraries do not support it. So if it is
+// not available I will try calling term_close() directly.
+    std::quick_exit(EXIT_FAILURE);
+#else // HAVE_QUICK_EXIT
+    term_close();
+// To quit I will then use _Exit() if available, but fall back to abort()
+// if I have to.
+#ifdef HAVE__EXIT
+    std::_Exit(EXIT_FAILURE);
+#else // HAVE__EXIT
+    std::abort();
+#endif // HAVE__EXIT
+#endif // HAVE_QUICK_EXIT
 }
 
 // This is the "standard" route into CSL activity - it uses file-names
@@ -3063,7 +3009,6 @@ static LispObject cslaction()
     C_stackbase = (uintptr_t *)&sp;
     errorset_msg = nullptr;
     TRY
-        START_SETJMP_BLOCK;
         set_up_signal_handlers();
         non_terminal_input = nullptr;
 #ifdef WITH_GUI
@@ -3101,13 +3046,7 @@ static LispObject cslaction()
                 }
             }
         }
-    CATCH(LispSignal)
-        if (errorset_msg != nullptr)
-        {   term_printf("\n%s detected\n", errorset_msg);
-            errorset_msg = nullptr;
-        }
-        return nil;
-    ANOTHER_CATCH(LispException)
+    CATCH(LispException)
         return nil;
     END_CATCH;
     return nil;
@@ -3379,8 +3318,7 @@ int ENTRYPOINT(int argc, const char *argv[])
     std::strcpy(about_box_title, "About CSL");
     std::strcpy(about_box_description, "Codemist Standard Lisp");
     try
-    {   START_SETJMP_BLOCK;
-        res = submain(argc, argv);
+    {   res = submain(argc, argv);
     }
     catch (std::runtime_error &e)
     {

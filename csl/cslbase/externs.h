@@ -797,7 +797,7 @@ extern void unwind_stack(LispObject *, bool findcatch);
 extern bool segvtrap;
 extern bool batch_flag;
 extern int escaped_printing;
-void set_up_signal_handlers();
+extern void set_up_signal_handlers();
 extern int async_interrupt(int a);
 
 extern void record_get(LispObject tag, bool found);

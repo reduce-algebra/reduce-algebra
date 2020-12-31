@@ -1054,11 +1054,7 @@ int plain_worker(int argc, const char *argv[],
 // (a) restart system calls after signal (if possible),
 // (b) use handler that gets more information,
 // (c) use alternative stack for the handler,
-// (d) leave the SIGINT unmasked while the handler is active. This
-//     will be vital if then handler "exits" using longjmp, because as
-//     far as the exception system is concerned that leaves us within the
-//     handler. But after the  exit is caught by setjmp I want the
-//     exception to remain trapped.
+// (d) leave the SIGINT unmasked while the handler is active.
     if (sigaction(SIGINT, &sa, nullptr) == -1)
         /* I can not thing of anything useful to do if I fail here! */;
 #else // !HAVE_SIGACTION

@@ -3474,7 +3474,7 @@ LispObject Lstring2list(LispObject env, LispObject a)
 }
 
 LispObject read_eval_print(int noisy)
-{   LispObject *save = stack;
+{   SaveStack stack_saver;
     for (;;)        // Loop for each s-expression found
     {   volatile LispObject u;
 #ifdef COMMON
@@ -3484,28 +3484,12 @@ LispObject read_eval_print(int noisy)
         errorset_msg = nullptr;
         bool keepGoing = false;
         TRY
-            START_SETJMP_BLOCK;
             u = Lread(nil);
         CATCH(LispResource)
             RETHROW;
         ANOTHER_CATCH(LispRestart)
             RETHROW;
-        ANOTHER_CATCH(LispSignal)
-            u = nil;
-            if (errorset_msg != nullptr)
-            {   err_printf("\n%s detected\n", errorset_msg);
-                errorset_msg = nullptr;
-            }
-            unwind_stack(save, false);
-            stack = save;
-            err_printf("\n... read failed\n");
-            errors_now++;
-            if (errors_limit >= 0 && errors_now > errors_limit)
-                return resource_exceeded();
-            else keepGoing = true;
-// I used to go "continue;" here but the way I expand TRY these days
-// means I have to do something that looks odd!
-            ANOTHER_CATCH(LispException)
+        ANOTHER_CATCH(LispException)
             err_printf("\n... read failed\n");
             if (stop_on_error) RETHROW;
             keepGoing = true;
@@ -3539,29 +3523,26 @@ LispObject read_eval_print(int noisy)
         miscflags |= (HEADLINE_FLAG | FNAME_FLAG | ARGS_FLAG);
         errorset_msg = nullptr;
         TRY
-            START_SETJMP_BLOCK;
-            TRY
-                START_SETJMP_BLOCK;
-                exit_count = 1; // Because I care how many results are returned
-                u = eval(u, nil);
-            CATCH(LispResource)
-                RETHROW;
-            ANOTHER_CATCH(LispRestart)
-                RETHROW;
-            ANOTHER_CATCH(LispException)
-                err_printf("\n... continuing after error\n");
-                if (spool_file != nullptr) std::fflush(spool_file);
-                if (stop_on_error) RETHROW;
-                keepGoing = true;
-            END_CATCH;
-            if (keepGoing) return nil;
-            if (noisy)
-            {
+            exit_count = 1; // Because I care how many results are returned
+            u = eval(u, nil);
+        CATCH(LispResource)
+            RETHROW;
+        ANOTHER_CATCH(LispRestart)
+            RETHROW;
+        ANOTHER_CATCH(LispException)
+            err_printf("\n... continuing after error\n");
+            if (spool_file != nullptr) std::fflush(spool_file);
+            if (stop_on_error) RETHROW;
+            keepGoing = true;
+        END_CATCH;
+        if (keepGoing) continue;
+        if (noisy)
+        {
 #ifndef COMMON
-                ignore_error(print(u));
-                stdout_printf("\n");
+            ignore_error(print(u));
+            stdout_printf("\n");
 #else
-                nvals = exit_count;
+            nvals = exit_count;
 //
 // These days I have to push mv_2 because print can call find-symbol to
 // decide if it needs to display a package qualifier, and in that case
@@ -3570,42 +3551,24 @@ LispObject read_eval_print(int noisy)
 // loop (if one existed) could corrupt almost anything, but I will
 // ignore that worry.
 //
-                if (nvals > 0)
-                {   push(mv_2);
-                    ignore_error(print(u));
-                    pop(u);
-                }
-                mv_2 = u;
-                miscflags |= (HEADLINE_FLAG | FNAME_FLAG | ARGS_FLAG);
+            if (nvals > 0)
+            {   push(mv_2);
+                ignore_error(print(u));
+                pop(u);
+            }
+            mv_2 = u;
+            miscflags |= (HEADLINE_FLAG | FNAME_FLAG | ARGS_FLAG);
 //
 // Here I will demand that the print code does not use multiple-value
 // procedures because if it did it might clobber the information stored in
 // mv_2[] that is accessed here.
 //
-                for (i=2; i<=nvals; i++)
-                {   if_error(print((&mv_2)[i-2]), break);
-                }
-                stdout_printf("\n");
+            for (i=2; i<=nvals; i++)
+            {   if_error(print((&mv_2)[i-2]), break);
+            }
+            stdout_printf("\n");
 #endif
-            }
-        CATCH(LispSignal)
-            if (errorset_msg != nullptr)
-            {   err_printf("\n%s detected\n", errorset_msg);
-                errorset_msg = nullptr;
-            }
-            unwind_stack(save, false);
-            stack = save;
-            err_printf("\n... continuing after error\n");
-            if (spool_file != nullptr) std::fflush(spool_file);
-            errors_now++;
-            if (stop_on_error) RETHROW;
-            if (errors_limit >= 0 && errors_now > errors_limit)
-            {   resource_exceeded();
-                return nil;
-            }
-            else continue;
-        END_CATCH
-        if (keepGoing) continue;
+        }
     }
     return nil;
 }
@@ -3726,7 +3689,6 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
         }
     }
     TRY
-        START_SETJMP_BLOCK;
         read_eval_print(noisy);
     CATCH(LispException)
         int _reason = exit_reason;

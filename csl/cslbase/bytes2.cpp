@@ -164,9 +164,6 @@ size_t xppc;
         }
     }
 #endif // CHECK_STACK
-#ifdef DEBUG
-    std::jmp_buf *jbsave;
-#endif
 
 next_opcode:   // This label is so that I can restart what I am doing
 // following a CATCH or to handle UNWIND-PROTECT.
@@ -203,24 +200,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 // to the end of it.
 
 #ifdef DEBUG
-// I will also convert signals into exceptions, so that utter disasters
-// in things that I call can be at least partially recovered from
-    jbsave = global_jb;
-    std::jmp_buf jb;
-    switch (setjmp(jb))
-    {   default:
-        case 1: exit_reason = UNWIND_SIGNAL;
-            if (miscflags & HEADLINE_FLAG)
-                err_printf("\n+++ Error %s: ", errorset_msg);
-            THROW(LispSignal);
-        case 0: break;
-    }
-    global_jb = &jb;
-// Now I must remember that on every exit from this region of code I need
-// to go "global_jb = jbsave;". I have messy enough handling of exceptions
-// here that I will want to track every path explicitly, so I am not using
-// RAII to ensure this. So let me remind myself once again that on every
-// exit from this code region the stack will need unwindind, restoring any
+// Let me remind myself once again that on every
+// exit from this code region the stack will need unwinding, restoring any
 // fluids that have been bound and removing catch frames that are no longer
 // needed.
 #endif // DEBUG
@@ -275,9 +256,6 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (callstack != nil) callstack = cdr(callstack);
 #endif
 
-#ifdef DEBUG
-                global_jb = jbsave;
-#endif
 // Note that with my re-work of TRY/CATCH the "return" here just exits
 // from the TRY block, and after that the value in the A register is returned.
 //              return A_reg;
@@ -290,9 +268,6 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = cdr(callstack);
 #endif
-#ifdef DEBUG
-                global_jb = jbsave;
-#endif
 //              return A_reg;
                 return nil;
 
@@ -303,9 +278,6 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = cdr(callstack);
 #endif
-#ifdef DEBUG
-                global_jb = jbsave;
-#endif
 //              return A_reg;
                 return nil;
 
@@ -313,9 +285,6 @@ next_opcode:   // This label is so that I can restart what I am doing
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = cdr(callstack);
-#endif
-#ifdef DEBUG
-                global_jb = jbsave;
 #endif
                 A_reg = nil;
                 return nil;
@@ -1579,7 +1548,6 @@ next_opcode:   // This label is so that I can restart what I am doing
                     case UNWIND_THROW:     THROW(LispThrow);
                     case UNWIND_RESTART:   THROW(LispRestart);
                     case UNWIND_RESOURCE:  THROW(LispResource);
-                    case UNWIND_SIGNAL:    THROW(LispSignal);
                     case UNWIND_ERROR:     THROW(LispError);
                     case UNWIND_FNAME:     THROW(LispError);
                     case UNWIND_UNWIND:    THROW(LispError);
@@ -1702,15 +1670,9 @@ next_opcode:   // This label is so that I can restart what I am doing
                     A_reg = traced_call0(basic_elt(litvec, 0), f0, r1);
                 else A_reg = f0(r1);
                 errexit();
-#ifdef DEBUG
-                global_jb = jbsave;
-#endif
 //              return A_reg;
                 return nil;
 #else
-#ifdef DEBUG
-                global_jb = jbsave;
-#endif
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call0(basic_elt(litvec, 0), f0, r1);
                 else A_reg = f0(r1);
@@ -1751,15 +1713,9 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call1(basic_elt(litvec, 0), f1, r1, A_reg);
                 else A_reg = f1(r1, A_reg);
-#ifdef DEBUG
-                global_jb = jbsave;
-#endif
 //              return A_reg;
                 return nil;
 #else
-#ifdef DEBUG
-                global_jb = jbsave;
-#endif
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call1(basic_elt(litvec, 0), f1, r1, A_reg);
                 else A_reg = f1(r1, A_reg);
@@ -1801,15 +1757,9 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, B_reg, A_reg);
                 else A_reg = f2(r1, B_reg, A_reg);
-#ifdef DEBUG
-                global_jb = jbsave;
-#endif
 //              return A_reg;
                 return nil;
 #else
-#ifdef DEBUG
-                global_jb = jbsave;
-#endif
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, B_reg, A_reg);
                 else A_reg = f2(r1, B_reg, A_reg);
@@ -1851,15 +1801,9 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call3(basic_elt(litvec, 0), f3, r1, r2, B_reg, A_reg);
                 else A_reg = f3(r1, r2, B_reg, A_reg);
-#ifdef DEBUG
-                global_jb = jbsave;
-#endif
 //              return A_reg;
                 return nil;
 #else
-#ifdef DEBUG
-                global_jb = jbsave;
-#endif
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call3(basic_elt(litvec, 0), f3, r1, r2, B_reg, A_reg);
                 else A_reg = f3(r1, r2, B_reg, A_reg);
@@ -1880,9 +1824,6 @@ next_opcode:   // This label is so that I can restart what I am doing
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = cdr(callstack);
-#endif
-#ifdef DEBUG
-                global_jb = jbsave;
 #endif
 //              return A_reg;
                 return nil;
@@ -2583,9 +2524,6 @@ next_opcode:   // This label is so that I can restart what I am doing
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = cdr(callstack);
-#endif
-#ifdef DEBUG
-                global_jb = jbsave;
 #endif
 //              return A_reg;
                 return nil;

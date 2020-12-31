@@ -221,7 +221,6 @@ extern size_t page_size;
 // can hold up to 32 segments. Note that both get_page_size() and
 // set_up_signal_handlers() must be called first.
 
-extern void set_up_signal_handlers();
 extern void *allocate_segment(size_t);
 
 // These arrays record information about allocated segments. heap_segment[i]

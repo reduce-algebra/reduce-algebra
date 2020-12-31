@@ -505,7 +505,7 @@ LispObject Lmv_list(LispObject env, LispObject a)
 #ifdef DEBUG
     if (is_exception(a)) my_abort("exception value not trapped");
 #endif
-    RAIIsave_stack saver;
+    SaveStack saver;
     int i, x = exit_count;
     if (x > 0) real_push(a);
     for (i=2; i<=x; i++)

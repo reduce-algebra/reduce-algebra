@@ -46,21 +46,11 @@
 
 #include "headers.h"
 
-void global_longjmp()
-{   std::printf("\nglobal_longjmp called\n");
-    std::fflush(stdout);
-    my_abort();
-}
-
 void term_printf(const char *fm, ...)
 {   my_abort();
 }
 
 LispObject **get_stack_addr()
-{   return nullptr;
-}
-
-std::jmp_buf **get_global_jb_addr()
 {   return nullptr;
 }
 

@@ -1583,6 +1583,7 @@ AC_FUNC_STAT
 AC_FUNC_UTIME_NULL
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([atexit ftruncate getcwd gethostbyaddr gethostbyname inet_ntoa])
+AC_CHECK_FUNCS([quick_exit at_quick_exit _Exit])
 AC_CHECK_FUNCS([memmove memset mkdir pow rmdir socket sqrt strchr strdup])
 AC_CHECK_FUNCS([strrchr strstr utime popen getrlimit])
 AC_CHECK_FUNCS([fork wait waitpid shmget shmat shmdt shmctl])

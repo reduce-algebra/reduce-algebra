@@ -43,11 +43,12 @@
 
 // $Id$
 
+#include <cstdlib>
+
 //
 // This supports modest line-editing and history for terminal-mode
 // use of "fwin" applications.
 //
-
 
 //
 // Start up input through this package. Returns 0 if local editing
@@ -74,6 +75,8 @@ extern int term_setup(const char *argv0, const char *colours);
 // Before returning from your code it would be a really good idea to
 // call "term_close" since that can re-set all sorts of terminal
 // characteristics. I use an object of class TermSetup to arrange this.
+// On any normal exit the destructor is invoked, however if std::quick_exit
+// is activated the at_quick_exit does the job for me.
 
 extern void term_close(void);
 
@@ -83,9 +86,12 @@ public:
     TermSetup(const char *argv0, const char *colours)
     {   termEnabled = false;
         term_setup(argv0, colours);
+#ifdef HAVE_AT_QUICK_EXIT
+        std::at_quick_exit(term_close);
+#endif // HAVE_AT_QUICK_EXIT
     }
     ~TermSetup()
-    {   if (termEnabled) term_close();
+    {   term_close();
     }
 };
 

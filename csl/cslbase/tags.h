@@ -2083,8 +2083,7 @@ inline uintptr_t object_2_align_up(uintptr_t n)
 #define UNWIND_THROW      0x3         // THROW is obvious
 #define UNWIND_RESTART    0x4         // (restart!-csl ...)
 #define UNWIND_RESOURCE   0x5         // used with (resource!-limit ...)
-#define UNWIND_SIGNAL     0x6         // SIGSEGV or other random signal
-#define UNWIND_SIGINT     0x7         // SIGINT
+//#define UNWIND_SIGINT   0x6         // SIGINT
 
 #define UNWIND_FNAME      0x100       // at least short backtrace is needed
 #define UNWIND_ARGS       0x200       // produce long form backtrace

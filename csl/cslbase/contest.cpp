@@ -180,13 +180,17 @@ int64_t sixty_four_bits(LispObject a)
     return 0;
 }
 
-[[noreturn]] void fatal_error(int code, ...)
+void fatal_error(int code, ...)
 {   my_abort();
 }
 
 int init_flags;
 
 LispObject *stackBase;
+LispObject *stack;
+
+LispObject *repeat_heap = nullptr;
+size_t repeat_heap_size = 0, repeat_count = 0;
 
 LispObject multiplication_buffer;
 intptr_t nwork;

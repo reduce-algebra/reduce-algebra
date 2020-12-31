@@ -245,8 +245,7 @@ int main(int argc, char *argv[])
         return 1;
     }
     try
-    {   START_SETJMP_BLOCK;
-        res = submain(argc, argv);
+    {   res = submain(argc, argv);
     }
     catch (std::runtime_error &e)
     {   res = EXIT_FAILURE;
