@@ -1356,12 +1356,15 @@ fi
 # Also I will use dlopen (and friends) for dynamic loading of stuff
 # compiled via C.
 AC_SEARCH_LIBS([dlopen], [dl])
+AC_SEARCH_LIBS([dlsym], [dl])
 
 # Fox 1.6 seems to use nanosleep in FXThread and on some systems at least
 # the means I must link against librt.
 AC_SEARCH_LIBS([clock_nanosleep], [rt])
 
 AC_SEARCH_LIBS([pthread_create], [pthread])
+AC_SEARCH_LIBS([pthread_mutex_init], [pthread])
+AC_SEARCH_LIBS([pthread_mutexattr_settype], [pthread])
 
 if test "x$with_gui" != "xno"
 then

@@ -522,7 +522,8 @@ static directory *make_empty_directory(const char *name)
 // The sole purpose of this empty directory is to carry with it the
 // name of the file that I had tried to open.
 //
-{   directory *d  = new (std::nothrow) directory;
+{   directory *d  = reinterpret_cast<directory *>(
+        new (std::nothrow) char[sizeof(directory)]);
     if (d == nullptr) return &empty_directory;
     d->h.C = 'C'; d->h.S = MIDDLE_INITIAL; d->h.L = 'L';
     d->h.version = IMAGE_FORMAT_VERSION;
@@ -540,8 +541,7 @@ static directory *make_empty_directory(const char *name)
 
 static directory *make_pending_directory(const char *name, int pds)
 {   directory *d;
-    int n = sizeof(directory) + (DIRECTORY_SIZE-1)*sizeof(
-                directory_entry);
+    int n = sizeof(directory) + (DIRECTORY_SIZE-1)*sizeof(directory_entry);
     int l = std::strlen(name) + 1 -
             DIRNAME_LENGTH -
             DIRECTORY_SIZE*sizeof(directory_entry);
@@ -577,7 +577,8 @@ static directory *make_pending_directory(const char *name, int pds)
 
 static directory *make_native_directory(const char *shortname,
                                         const char *fullname, int ro)
-{   directory *d = new (std::nothrow) directory;
+{   directory *d = reinterpret_cast<directory *>(
+        new (std::nothrow) char[sizeof(directory)]);
     if (d == nullptr) return &empty_directory;
     d->h.C = 'C'; d->h.S = MIDDLE_INITIAL; d->h.L = 'L';
     d->h.version = IMAGE_FORMAT_VERSION;
@@ -1114,8 +1115,7 @@ static directory *enlarge_directory(int current_size)
     d2->h.updated |= D_COMPACT | D_UPDATED;
     while (n>current_size) clear_entry(&d2->d[--n]);
     fasl_files[dirno].dir = d2;
-//  free [] d1;    The type consistency is not right here! So I will
-// accept the space leak.
+    delete [] reinterpret_cast<char *>(d1);
     return d2;
 }
 
@@ -1974,6 +1974,11 @@ bool IcloseOutput()
     return r;
 }
 
+static bool deldir(directory *d, bool r)
+{   delete [] reinterpret_cast<char *>(d);
+    return r;
+}
+
 bool finished_with(int j)
 {   directory *d = fasl_files[j].dir;
     fasl_files[j].dir = nullptr;
@@ -1985,7 +1990,7 @@ bool finished_with(int j)
     if (d->h.updated & D_COMPACT)
     {   int i;
         long int hwm;
-        if (d->f == nullptr) return true;
+        if (d->f == nullptr) return deldir(d, true);
         d->h.updated |= D_UPDATED;
         sort_directory(d);
         hwm = sizeof(directory_header) +
@@ -2039,18 +2044,18 @@ bool finished_with(int j)
         }
     }
     if (d->h.updated & D_UPDATED)
-    {   if (d->f == nullptr || std::fflush(d->f) != 0) return true;
+    {   if (d->f == nullptr || std::fflush(d->f) != 0) return deldir(d, true);
         std::fseek(d->f, 0, SEEK_SET);
         if (std::fwrite(&d->h, sizeof(directory_header), 1,
-                        d->f) != 1) return true;
+                        d->f) != 1) return deldir(d, true);
         if (std::fwrite(&d->d[0], sizeof(directory_entry),
                         (size_t)get_dirsize(*d), d->f) !=
-            (size_t)get_dirsize(*d)) return true;
-        if (std::fflush(d->f) != 0) return true;
+            (size_t)get_dirsize(*d)) return deldir(d, true);
+        if (std::fflush(d->f) != 0) return deldir(d, true);
     }
-    if (d->h.updated & D_PENDING) return false;
-    else if (d->f != nullptr && std::fclose(d->f) != 0) return true;
-    else return false;
+    if (d->h.updated & D_PENDING) return deldir(d, false);
+    else if (d->f != nullptr && std::fclose(d->f) != 0) return deldir(d, true);
+    else return deldir(d, false);
 }
 
 bool Ifinished()

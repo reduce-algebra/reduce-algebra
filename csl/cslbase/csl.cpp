@@ -758,13 +758,13 @@ void fatal_error(int code, ...)
     my_exit();
 }
 
-static const char *dependency_file = nullptr;
+static char dependency_file[LONGEST_LEGAL_FILENAME] = {0};
 static std::vector<char *> dependency_map;
 
 void report_file(const char *s)
 {   char *c;
     const char *s1;
-    if (dependency_file == nullptr) return;
+    if (dependency_file[0] == 0) return;
 //
 // In a really odd way I will avoid recording inline-defs.dat as a
 // dependency and insist that if it is to be one that the Makefile should
@@ -802,7 +802,7 @@ static void report_dependencies()
 {   std::FILE *f;
     int c;
     const char *p;
-    if (dependency_file == nullptr) return;
+    if (dependency_file[0] == 0) return;
     f = std::fopen(dependency_file, "w");
     if (f == nullptr) return;
     p = std::strrchr(dependency_file, '.');
@@ -857,7 +857,7 @@ static void report_dependencies()
     for (char *pp : dependency_map)
         delete [] pp;
     dependency_map.clear();
-    dependency_file = nullptr;
+    dependency_file[0] = 0;
 }
 
 void my_exit()
@@ -2326,7 +2326,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 "-j       If you go \"-j FILE\" then Reduce puts some dependency information\n"
                 "         into the named file as if builds modules for you.",
                 [&](string key, bool hasVal, string val)
-                {   if (!val.empty()) dependency_file = mystrdup(val.c_str());
+                {   if (!val.empty()) strcpy(dependency_file, val.c_str());
                 }
             },
 

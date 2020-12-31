@@ -215,6 +215,9 @@ public:
         dir = nullptr;
         isOutput = o;
     }
+    ~faslFileRecord()
+    {   if (dir != nullptr) delete [] reinterpret_cast<char *>(dir);
+    }
 };
 
 extern std::vector<stringBoolString> symbolsToDefine;
