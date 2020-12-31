@@ -454,10 +454,10 @@
 
 % LDR Xt, [Xn], #simm9 - post-index
 % (LDR (reg t) (displacement (reg n) +/-number postindexed))
-(instr LDR (reg32 reg-or-sp simm9)      OP-ld-st 2#10111000010 2#01)
-(instr LDR (reg reg-or-sp simm9)      OP-ld-st 2#11111000010 2#01)
-(instr STR (reg32 reg-or-sp simm9)      OP-ld-st 2#10111000000 2#01)
-(instr STR (reg reg-or-sp simm9)      OP-led-st 2#11111000000 2#01)
+(instr LDR (reg32 reg-or-sp-simm9)      OP-ld-st 2#10111000010 2#01)
+(instr LDR (reg reg-or-sp-simm9)      OP-ld-st 2#11111000010 2#01)
+(instr STR (reg32 reg-or-sp-simm9)      OP-ld-st 2#10111000000 2#01)
+(instr STR (reg reg-or-sp-simm9)      OP-led-st 2#11111000000 2#01)
 % LDR Xt,[Xn,#simm9]! - pre-index
 % (LDR (reg t) (displacement (reg n) +/-number preindexed))
 (instr LDR (reg32 reg-or-sp simm9)      OP-ld-st 2#10111000010 2#11)
@@ -467,10 +467,10 @@
 
 % LDR Xt,[Xn,#pimm12] - unsigned offset
 % (LDR (reg t) (displacement (reg n) +number))
-(instr LDR (reg32 reg-or-sp simm9)      OP-ld-st 2#1011100101 nil)
-(instr LDR (reg reg-or-sp simm9)      OP-ld-st 2#1111100101 nil)
-(instr STR (reg32 reg-or-sp simm9)      OP-ld-st 2#1011100100 nil)
-(instr STR (reg reg-or-sp simm9)      OP-ld-st 2#1111100100 nil)
+(instr LDR (reg32 reg-or-sp-pimm12)      OP-ld-st 2#1011100101 nil)
+(instr LDR (reg reg-or-sp-pimm12)      OP-ld-st 2#1111100101 nil)
+(instr STR (reg32 reg-or-sp-pimm12)      OP-ld-st 2#1011100100 nil)
+(instr STR (reg reg-or-sp-pimm12)      OP-ld-st 2#1111100100 nil)
 
 % LDR Xt, <label> - literal
 (instr LDR (reg32 imm19)       OP-ld-st 2#00011000)

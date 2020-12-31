@@ -2,7 +2,7 @@
 %
 % File:         PXC:aarch64-LAP.SL
 % Description:  Armv8/A64 PSL Assembler
-% Author:       R. Schöpf
+% Author:       R. SchÃ¶pf
 % Created:      21 November 2020
 % Modified:     December 2020
 % Mode:         Lisp
@@ -608,6 +608,9 @@
 (de twelve-bit-p (x)
     (and (fixp x) (lessp x 4096) (greaterp x -4096)))
 
+(de pos-twelve-bit-p (x)
+    (and (fixp x) (lessp x 4096) (greaterp x -1)))
+
 (de eight-bit-p (x)
     (and (fixp x) (lessp x 256) (greaterp x -256)))
 
@@ -997,90 +1000,89 @@
 
 
 %%  Instruction                                      Lisp expression for second operand
-%% LDR Rd,[Rn]                                         (indirect (reg n))
-%% LDR Rd,[Rn,+/-offset12]                             (displacement (reg n) +/-12bit-number)
-%% LDR Rd,[Rn,Rm]                                      (displacement (reg n) (reg m))
-%% LDR Rd,[Rn,+/-Rm]                                   (displacement (reg n) (plus|minus (reg m)))
-%% LDR Rd,[Rn,Rm, shift, #shift_imm]                   (displacement (reg n) (regshifted <regno> LSL/LSR.. amount))
-%% LDR Rd,[Rn,+/-Rm, shift, #shift_imm]                (displacement (reg n) (plus|minus (regshifted <regno> LSL/LSR.. amount)))
-%% LDR Rd,[Rn,+/-offset12]!                            (displacement (reg n) +/-12bit-number preindexed)
-%% LDR Rd,[Rn,Rm]!                                     (displacement (reg n) (reg m) preindexed)
-%% LDR Rd,[Rn,+/-Rm]!                                  (displacement (reg n) (plus|minus (reg m)) preindexed)
-%% LDR Rd,[Rn,+Rm, shift, #shift_imm]!                 (displacement (reg n) (regshifted <regno> LSL/LSR.. amount) preindexed)
-%% LDR Rd,[Rn,+/-Rm, shift, #shift_imm]!               (displacement (reg n) (plus|minus (regshifted <regno> LSL/LSR.. amount)) preindexed)
-%% LDR Rd,[Rn],+/-offset12                             (displacement (reg n) +/-12bit-number postindexed)
-%% LDR Rd,[Rn],Rm                                      (displacement (reg n) (reg m) postindexed)
-%% LDR Rd,[Rn],+/-Rm                                   (displacement (reg n) (plus|minus (reg m)) postindexed)  
-%% LDR Rd,[Rn],Rm, shift, #shift_imm                   (displacement (reg n) (regshifted <regno> LSL/LSR.. amount) postindexed)
-%% LDR Rd,[Rn],+/-Rm, shift, #shift_imm                (displacement (reg n) (plus|minus (regshifted <regno> LSL/LSR.. amount)) postindexed)  
+%% LDR Rt,[Rn]                                         (indirect (reg n))
+%% LDR Rt,[Rn,+/-offset12words]                        (displacement (reg n) +/-14/15bit-number)
+%% LDR Rt,[Rn,Rm]                                      (displacement (reg n) (reg m))
+%% LDR Rt,[Rn,Rm, shift, #shift_imm]                   (displacement (reg n) (regshifted <regno> LSL amount))
+%% LDR Rt,[Rn,Rm, extend, #shift_imm]                  (displacement (reg n) (regextended <regno> UXTW/SXTW/SXTX amount))
+%% LDR Rt,[Rn,+/-offset8]!                             (displacement (reg n) +/-8bit-number preindexed)
+%% LDR Rt,[Rn],+/-offset8                              (displacement (reg n) +/-8bit-number postindexed)
 
-(de OP-ld-st (code regd reg-offset12)
+(de OP-ld-st (code regt reg-offset)
     (prog (cc ld-bit opcode1 temp shift-op shift-amount regn displ pre-post p-bit u-bit w-bit regm lastbyte)
 	  (setq cc (car code) opcode1 (cadr code) ld-bit (caddr code) shift-amount 0)
 	  (if (and
-	       (not (labelp reg-offset12))
-	       (or (not (pairp reg-offset12)) (not (memq (car reg-offset12) '(displacement indirect indexed))) (not (regp (cadr reg-offset12)))))
-	      (stderror (bldmsg "Invalid LDR/STR operand: %w" reg-offset12)))
-	  (if (labelp reg-offset12)	% label --> pc-relative
+	       (not (labelp reg-offset))
+	       (or (not (pairp reg-offset)) (not (memq (car reg-offset) '(displacement indirect indexed))) (not (regp (cadr reg-offset)))))
+	      (stderror (bldmsg "Invalid LDR/STR operand: %w" reg-offset)))
+	  (if (labelp reg-offset)	% label --> pc-relative
 	      (progn
-		(setq regn 15)
-		(setq displ (MakeExpressionRelative reg-offset12 8)))
+		(setq byte1 cc)
+		(setq displ (MakeExpressionRelative reg-offset
+						    (if (eq (lsh cc -6) 1) 8 4))))
 	    (progn
-	      (setq regn (reg2int (cadr reg-offset12)))
-	      (setq displ (if (eqcar reg-offset12 'indirect) 0 (caddr reg-offset12)))))
-	  (setq u-bit 1)
-	  (cond ((or (labelp reg-offset12) (null (cddr reg-offset12)) (null (cdddr reg-offset12))) % no pre or post indexed
-		 (setq p-bit 1 w-bit 0))
-		((memq (cadddr reg-offset12) '(preindexed postindexed))
-		 (setq pre-post (cadddr reg-offset12))
-		 (setq p-bit (if (eq pre-post 'preindexed) 1 0))
-		 (setq w-bit (if (eq pre-post 'preindexed) 1 0)))
-		(t (stderror (bldmsg "Invalid LDR/STR operand: %w" reg-offset12))))
-	  (cond ((and (fixp displ) (lessp displ 4096) (greaterp displ -4096))
-		 (if (lessp displ 0)
-		     (progn
-		       (setq u-bit 0)
-		       (setq displ (minus displ)))
-		   (setq u-bit 1))
-		 (setq temp (lsh displ -8))
-		 (setq lastbyte (land displ 16#FF)))
-		((fixp displ)		% integer offset out of range
-		 (stderror (bldmsg "Invalid LDR/STR operand: %w - offset out of range: %d" reg-offset12 displ)))
-		((or (not (pairp displ))
-		     (not (memq (car displ) '(reg regshifted plus minus))))
-		 (stderror (bldmsg "Invalid LDR/STR operand: %w" reg-offset12)))
-                % check for register offset
+	      (setq byte1 (lsh cc -2))
+	      (setq regn (reg2int (cadr reg-offset)))
+	      (setq size (lsh cc -8))
+	      (setq displ (if (eqcar reg-offset 'indirect) 0 (caddr reg-offset)))))
+	  (cond ((or (labelp reg-offset) (null (cddr reg-offset)) (null (cdddr reg-offset))) % no pre or post indexed
+		 nil)
+		((and (memq (cadddr reg-offset) '(preindexed postindexed))
+		      (fixp displ) (lessp displ 256) (greaterp displ -257))
+		 (setq pre-post (cadddr reg-offset))
+		 (setq ppbits (if (eq pre-post 'preindexed) 2#11 2#01)))
+		 (setq displ (land displ 2#111111111)) % mask to nine bits
+		 (setq lastbyte (lor (lsh (land 2#111 (reg2int regn)) 5) (reg2int regt)))
+		 (setq byte3 
+		       (lor (lsh (reg2int regn) -3)
+			    (lor (lsh ppbits 2)
+				 (lor (lsh S-bit 4)
+				      (land displ 2#1111)))))
+		 (setq byte2
+		       (lor (lsh displ -4)
+			    (lsh (land cc 2#111) 5))))
+		((and (fixp displ)
+		      (or (and (eq size 2#10) (eq (and 2#11 displ) 0)
+			       (pos-twelve-bit-p (setq displ (lsh displ -2))))
+			  (and (eq size 2#11) (eq (and 2#111 displ) 0)
+			       (pos-twelve-bit-p (setq displ (lsh displ -3))))))
+		 (setq lastbyte (lor (lsh (land 2#111 (reg2int regn)) 5) (reg2int regt)))
+		 (setq byte3 
+		       (lor (lsh (reg2int regn) -3)
+			    (lsh (land displ 2#111111) 2)))
+		 (setq byte2
+		       (lor (lsh displ -6)
+			    (lsh (land cc 2#11) 6))))
+		(t (stderror (bldmsg "Invalid LDR/STR operand: %w" reg-offset))))
+	  (cond ((or (not (pairp displ))
+		     (not (memq (car displ) '(reg regshifted regextended))))
+		 (stderror (bldmsg "Invalid LDR/STR operand: %w" reg-offset)))
+                % check for (scaled) register offset
 		((or (regp displ)
-		     (and (memq (car displ) '(plus minus))
-			  (progn (if (eq (car displ) 'minus) (setq u-bit 0))
-				 (regp (setq displ (cadr displ))))))
-		 (setq temp 0)
-%                 (setq opcode1 (lor opcode1 16#10))
-		 (setq lastbyte (reg2int displ)))
-                % check for scaled register offset
-		((or (eq (car displ) 'regshifted)
-		     (and (memq (car displ) '(plus minus))
-			  (progn (if (eq (car displ) 'minus) (setq u-bit 0))
-				 (eq (car (setq displ (cadr displ))) 'regshifted))))
-		 (if (or (not (fixp (cadddr displ)))
-			 (lessp (cadddr displ) 0)
-			 (greaterp (cadddr displ) 32))
+		     (and (eq (car displ) 'regshifted)
+			  (eq (caddr displ) 'LSL))
+		     (and (eq (car displ) 'regextended)
+			  (memq (caddr displ) '(UXTW SXTW SXTX))))
+		 (if (not (or (regp displ) (memq displ (list 0 size))))
 		     (stderror (bldmsg "Invalid LDR/STR operand: %w" reg-offset12)))
 		 (setq regm (reg2int (cadr displ)) shift-op (caddr displ))
-%                 (setq opcode1 (lor opcode1 16#10))
-		 (if (eq shift-op 'RRX)
-		     (setq shift-amount 0)
-		   (setq shift-amount (land 31 (cadddr displ))))
-		 (setq temp (lsh shift-amount -1)
-		       lastbyte (lor (lsh (land shift-amount 1) 7)
-				     (lor (subla '((LSL . 2#0000000) (LSR . 2#0100000) (ASR . 2#1000000) (ROR . 2#1100000) (RRX . 2#1100000)) shift-op)
-					  regm))))
+		 (setq S-bit (if (or (regp displ) (eq displ 0)) 0 1))
+		 (setq shift-amount (if (regp displ) 0 (cadddr displ)))
+		 (setq lastbyte (lor (lsh (land 2#111 (reg2int regn)) 5) (reg2int regt)))
+		 (setq byte3 
+		       (lor (lsh (reg2int regn) -3)
+			    (lor 2#1000
+				 (lor (lsh S-bit 4)
+				      (lsh (subla '((LSL . 2#011) (UXTW . 2#010) (SXTW . 2#110) (SXTX . 2#111)) shift-op) 5)))))
+		 (setq byte2
+		       (lor (lsh (land cc 2#111) 5)
+			    (reg2int regm))))
 		(t (stderror (bldmsg "Invalid LDR/STR operand: %w" reg-offset12))))
 	  (DepositInstructionBytes
-	   (lor (lor (lsh cc 4) (lsh opcode1 -3)) p-bit)
-	   (lor (lor (lsh u-bit 7) (lsh (land opcode1 2#111) 5) ) (lor (lsh w-bit 5) (lor (lsh ld-bit 4) regn)))
-	   (lor (lsh (reg2int regd) 4) temp)
-	   lastbyte))
+	   byte1
+	   byte2
+	   byte3
+	   lastbyte)
     )
 
 (de lth-ld-st (code regn reg-offset12) 4)
