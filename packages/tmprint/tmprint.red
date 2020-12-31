@@ -2295,39 +2295,39 @@ module fancy_specfn;
 
 % Elementary transcendental functions
 
-put('sin, 'fancy!-special!-symbol, "\sin");
-put('cos, 'fancy!-special!-symbol, "\cos");
-put('tan, 'fancy!-special!-symbol, "\tan");
-put('cot, 'fancy!-special!-symbol, "\cot");
-put('sec, 'fancy!-special!-symbol, "\sec");
-put('csc, 'fancy!-special!-symbol, "\csc");
+put('sin, 'fancy!-functionsymbol, "\sin");
+put('cos, 'fancy!-functionsymbol, "\cos");
+put('tan, 'fancy!-functionsymbol, "\tan");
+put('cot, 'fancy!-functionsymbol, "\cot");
+put('sec, 'fancy!-functionsymbol, "\sec");
+put('csc, 'fancy!-functionsymbol, "\csc");
 
-put('sinh, 'fancy!-special!-symbol, "\sinh");
-put('cosh, 'fancy!-special!-symbol, "\cosh");
-put('tanh, 'fancy!-special!-symbol, "\tanh");
-put('coth, 'fancy!-special!-symbol, "\coth");
-put('sech, 'fancy!-special!-symbol, "\mathrm{sech}");
-put('csch, 'fancy!-special!-symbol, "\mathrm{csch}");
+put('sinh, 'fancy!-functionsymbol, "\sinh");
+put('cosh, 'fancy!-functionsymbol, "\cosh");
+put('tanh, 'fancy!-functionsymbol, "\tanh");
+put('coth, 'fancy!-functionsymbol, "\coth");
+put('sech, 'fancy!-functionsymbol, "\mathrm{sech}");
+put('csch, 'fancy!-functionsymbol, "\mathrm{csch}");
 
 % The inverse of the trigonometric or hyperbolic function fn is named
 % arcfn and is written in normal (roman) font style.
 
-put('asin, 'fancy!-special!-symbol, "\arcsin");
-put('acos, 'fancy!-special!-symbol, "\arccos");
-put('atan, 'fancy!-special!-symbol, "\arctan");
-put('acot, 'fancy!-special!-symbol, "\mathrm{arccot}");
-put('asec, 'fancy!-special!-symbol, "\mathrm{arcsec}");
-put('acsc, 'fancy!-special!-symbol, "\mathrm{arccsc}");
+put('asin, 'fancy!-functionsymbol, "\arcsin");
+put('acos, 'fancy!-functionsymbol, "\arccos");
+put('atan, 'fancy!-functionsymbol, "\arctan");
+put('acot, 'fancy!-functionsymbol, "\mathrm{arccot}");
+put('asec, 'fancy!-functionsymbol, "\mathrm{arcsec}");
+put('acsc, 'fancy!-functionsymbol, "\mathrm{arccsc}");
 
-put('asinh, 'fancy!-special!-symbol, "\mathrm{arcsinh}");
-put('acosh, 'fancy!-special!-symbol, "\mathrm{arccosh}");
-put('atanh, 'fancy!-special!-symbol, "\mathrm{arctanh}");
-put('acoth, 'fancy!-special!-symbol, "\mathrm{arccoth}");
-put('asech, 'fancy!-special!-symbol, "\mathrm{arcsech}");
-put('acsch, 'fancy!-special!-symbol, "\mathrm{arccsch}");
+put('asinh, 'fancy!-functionsymbol, "\mathrm{arcsinh}");
+put('acosh, 'fancy!-functionsymbol, "\mathrm{arccosh}");
+put('atanh, 'fancy!-functionsymbol, "\mathrm{arctanh}");
+put('acoth, 'fancy!-functionsymbol, "\mathrm{arccoth}");
+put('asech, 'fancy!-functionsymbol, "\mathrm{arcsech}");
+put('acsch, 'fancy!-functionsymbol, "\mathrm{arccsch}");
 
-put('exp, 'fancy!-special!-symbol, "\exp");
-put('log, 'fancy!-special!-symbol, "\log");
+put('exp, 'fancy!-functionsymbol, "\exp"); % Used in special cases, e.g. complicated argument.
+put('log, 'fancy!-functionsymbol, "\log");
 put('logb, 'fancy!-prifn, 'fancy!-logb);
 put('log10, 'fancy!-prifn, 'fancy!-log10);
 
@@ -2355,6 +2355,17 @@ put('max, 'fancy!-special!-symbol, "\max");
 put('min, 'fancy!-special!-symbol, "\min");
 % put('repart, 'fancy!-special!-symbol, "\Re");
 % put('impart, 'fancy!-special!-symbol, "\Im");
+
+put('abs, 'fancy!-prifn, 'fancy!-abs);
+
+symbolic procedure fancy!-abs u;
+   fancy!-level
+   begin scalar w;
+      fancy!-prin2!*("\left|", 1);
+      w := fancy!-maprin0 cadr u;
+      fancy!-prin2!*("\right|", 1);
+      return w
+   end;
 
 % Gamma, Beta and Related Functions
 
@@ -2407,7 +2418,7 @@ put('Ci, 'fancy!-functionsymbol, "\mathrm{Ci}");
 put('Shi, 'fancy!-functionsymbol, "\mathrm{Shi}");
 put('Chi, 'fancy!-functionsymbol, "\mathrm{Chi}");
 put('erf, 'fancy!-functionsymbol, "\mathrm{erf}");
-put('erfc, 'fancy!-functionsymbol, "\mathrm{erfc}");
+% erfc(x) -> 1 - erf(x) for all x.
 put('Fresnel_S, 'fancy!-functionsymbol, "\mathrm{S}");
 put('Fresnel_C, 'fancy!-functionsymbol, "\mathrm{C}");
 
@@ -2538,12 +2549,22 @@ put('EulerP, 'fancy!-functionsymbol, '!E);
 put('FibonacciP, 'fancy!-prifn, 'fancy!-indexed!-fn); %F_n(x)
 put('FibonacciP, 'fancy!-functionsymbol, '!F);
 
-put('Bernoulli, 'fancy!-prifn, 'fancy!-indexed!-fn); %B_n
-put('Bernoulli, 'fancy!-functionsymbol, '!B);
-put('Euler, 'fancy!-prifn, 'fancy!-indexed!-fn); %E_n
-put('Euler, 'fancy!-functionsymbol, '!E);
-put('Fibonacci, 'fancy!-prifn, 'fancy!-indexed!-fn); %F_n
-put('Fibonacci, 'fancy!-functionsymbol, '!F);
+put('Bernoulli, 'fancy!-prifn, 'fancy!-indexed!-symbol); % B_n
+put('Bernoulli, 'fancy!-special!-symbol, '!B);
+put('Euler, 'fancy!-prifn, 'fancy!-indexed!-symbol); % E_n
+put('Euler, 'fancy!-special!-symbol, '!E);
+put('Fibonacci, 'fancy!-prifn, 'fancy!-indexed!-symbol); % F_n
+put('Fibonacci, 'fancy!-special!-symbol, '!F);
+put('Motzkin, 'fancy!-prifn, 'fancy!-indexed!-symbol); % M_n
+put('Motzkin, 'fancy!-special!-symbol, '!M);
+
+symbolic procedure fancy!-indexed!-symbol(u);
+   % e.g. u = (Motzkin n)
+   fancy!-level
+   <<
+      fancy!-prefix!-operator car u;
+      fancy!-print!-one!-index cadr u
+   >>;
 
 put('Stirling1, 'fancy!-prifn, 'fancy!-Stirling); %s_n^m
 put('Stirling2, 'fancy!-prifn, 'fancy!-Stirling); %S_n^m
