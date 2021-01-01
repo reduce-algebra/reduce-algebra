@@ -1,7 +1,7 @@
-// inthash.cpp                                    Copyright A C Norman 2020
+// inthash.cpp                                    Copyright A C Norman 2021
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -65,12 +65,14 @@ void hash_init(inthash *h, int bits)
 // 0.618034*2^32 and it is still prime. Note that 0.618034 is (sqrt 5-1)/2,
 // and there are plausible (if marginal) reasons for expecting that to yield
 // good multipliers here.
-// Since C++11 one can write an intger liyteral with many digits and it
+// Since C++11 one can write an intger literal with many digits and it
 // will be treated as an int. long or long long as necessary. Support for
 // long long started in  gcc with release 4.3 which was released in 2008, but
 // at least early versions of that did not allow long literals without
-// explicit "LL" suffixes. Howver 4.3.0 seens to support UINT64_C() as a
+// explicit "LL" suffixes. However 4.3.0 seens to support UINT64_C() as a
 // macro that allows one to write 64-bit integer literals, so I use that here.
+// [Well as I write this addendum to the comment I am typically using g++
+// version 10.2, so comments about 4.3 are "historical"!]
     h->mult1 = (uintptr_t)UINT64_C(0x9e3779b99e3779bd);
 // The initial value for the second multiplier is somewhat similarly
 // similarly derived from 0.381966 (the square of (sqrt 5-1)/2) except that
@@ -355,7 +357,9 @@ static void hash_double_size(inthash *h)
 // will now not be in the right place. I reset the second multiplier
 // back to its default value since this value has not failed with this
 // larger table.
-    h->keys = doubleSizeCopy(h->keys, h->size);
+    uintptr_t *bigger = doubleSizeCopy(h->keys, h->size);
+    if (h->keys != nullptr) delete [] h->keys;
+    h->keys = bigger;
     if (h->values != nullptr)
         h->values = doubleSizeCopy(h->values, h->size);
     h->size *= 2;

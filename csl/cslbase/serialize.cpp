@@ -1,7 +1,7 @@
-// serialize.cpp                                Copyright (C) 2020 Codemist
+// serialize.cpp                                Copyright (C) 2021 Codemist
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -466,33 +466,45 @@ static inthash repeat_hash;
 LispObject *repeat_heap = nullptr;
 size_t repeat_heap_size = 0, repeat_count = 0;
 
-void reader_setup_repeats(size_t n)
-{   if (repeat_heap_size != 0 ||
-        repeat_heap != nullptr)
-    {   std::fprintf(stderr, "\n+++ repeat heap processing error\n");
-        my_abort("repeat heap");
+class TidyRepeatHeap
+{
+public:
+    ~TidyRepeatHeap()
+    {   if (repeat_heap != nullptr) delete [] repeat_heap;
+        repeat_heap = nullptr;
     }
-    repeat_heap_size = n;
-    repeat_count = 0;
-    if (n == 0) return; // No repeats present, so not table needed.
-    repeat_heap = new (std::nothrow) LispObject[n+1];
+};
+static TidyRepeatHeap tidyRepeatHeap;
+
+
+void reader_setup_repeats(size_t n)
+{   if (n == 0) n = 1;
+    if (repeat_heap == nullptr || repeat_heap_size < n)
+    {   repeat_heap_size = n;
+        if (repeat_heap != nullptr) delete [] repeat_heap;
+        repeat_heap = new (std::nothrow) LispObject[n+1];
+    }
     if (repeat_heap == nullptr)
     {   std::fprintf(stderr, "\n+++ unable to allocate repeat heap\n");
         my_abort("repeat heap");
     }
+    repeat_count = 0;
 // I fill the vector with fixnum_of_int(0) so it is GC safe.
     for (size_t i=0; i<repeat_heap_size; i++)
         repeat_heap[i] = fixnum_of_int(0);
 }
 
 void writer_setup_repeats()
-{   repeat_heap_size = repeat_hash.count;
-    repeat_count = 0;
-    repeat_heap = new (std::nothrow) LispObject[repeat_heap_size+1];
+{   if (repeat_heap == nullptr || repeat_heap_size < repeat_hash.count)
+    {   repeat_heap_size = repeat_hash.count;
+        if (repeat_heap != nullptr) delete [] repeat_heap;
+        repeat_heap = new (std::nothrow) LispObject[repeat_heap_size+1];
+    }
     if (repeat_heap == nullptr)
     {   std::fprintf(stderr, "\n+++ unable to allocate repeat heap\n");
         my_abort("run out of memory");
     }
+    repeat_count = 0;
     for (size_t i=0; i<=repeat_heap_size; i++)
         repeat_heap[i] = fixnum_of_int(0);
 // I will call this before generating any output bytes, and so here is a
@@ -3274,11 +3286,9 @@ class hash_releaser
 public:
     ~hash_releaser()
     {   hash_finalize(&repeat_hash);
-        if (repeat_heap_size != 0)
-        {   repeat_heap_size = 0;
-            delete [] repeat_heap;
-        }
+        if (repeat_heap != nullptr) delete [] repeat_heap;
         repeat_heap = nullptr;
+        repeat_heap_size = 0;
     }
 };
 
@@ -3451,7 +3461,9 @@ static LispObject load_module(LispObject env, LispObject file,
         {   stack = save;
 // This is some tidy-up activity that I must always do at the end of
 // reading (or trying to read) something.
+            if (repeat_heap != nullptr) delete [] repeat_heap;
             repeat_heap = nullptr;
+            repeat_heap_size = 0;
             LispObject p;
             real_pop(p);
             setvalue(current_package, p);
@@ -3478,10 +3490,9 @@ static LispObject load_module(LispObject env, LispObject file,
 #endif // DEBUG_SERIALIZE
         if (r != eof_symbol &&
             option != F_LOAD_MODULE) r = serial_read();
-        if (repeat_heap_size != 0)
-        {   repeat_heap_size = 0;
-            delete [] repeat_heap;
-        }
+        if (repeat_heap != nullptr) delete [] repeat_heap;
+        repeat_heap = nullptr;
+        repeat_heap_size = 0;
     }
 // I will process the stuff I just read AFTER I have closed the stream
 // etc. That will mean I never try using nested reading of fasl streams.
@@ -3621,11 +3632,9 @@ LispObject Lunserialize(LispObject env)
 {   LispObject r;
     reader_setup_repeats(read_u64());
     r = serial_read();
-    if (repeat_heap_size != 0)
-    {   repeat_heap_size = 0;
-        delete [] repeat_heap;
-    }
+    if (repeat_heap != nullptr) delete [] repeat_heap;
     repeat_heap = nullptr;
+    repeat_heap_size = 0;
     return onevalue(r);
 }
 
@@ -3887,11 +3896,9 @@ void warm_setup()
         IcloseInput();
         error_output = w;
     }
-    if (repeat_heap_size != 0)
-    {   repeat_heap_size = 0;
-        delete [] repeat_heap;
-    }
+    if (repeat_heap != nullptr) delete [] repeat_heap;
     repeat_heap = nullptr;
+    repeat_heap_size = 0;
 
 // There are various things such as lispsystem* and the various standard
 // output streams that may depend on the particular system I am loading on
