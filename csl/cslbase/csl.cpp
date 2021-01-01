@@ -1626,7 +1626,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     if (f == nullptr)
                     {   std::fprintf(stderr, "Unable to write to \"%s\"\n",
                                      filename);
-                        return my_exit(EXIT_FAILURE);
+                        my_exit();
                     }
 #endif // !WITH_GUI
                 }

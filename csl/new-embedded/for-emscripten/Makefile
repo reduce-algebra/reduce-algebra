@@ -239,7 +239,7 @@ reduce.img.worker:	reduce.img reduce-web
 
 
 make-image.js:	$(S)/make-image.cpp
-	$(CC) $(CPPFLAGS) $(NODEOPTS) $(S)/hexify.cpp $(LDFLAGS) $(LIBS) $(JSOPTS) -o make-image.js
+	$(CC) $(CPPFLAGS) $(NODEOPTS) $(S)/make-image.cpp $(LDFLAGS) $(LIBS) $(JSOPTS) -o make-image.js
 
 image.cpp:	make-image.js reduce.img
 	$(NODE) make-image.js

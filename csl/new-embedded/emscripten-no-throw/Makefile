@@ -28,7 +28,7 @@ EMFLAGS:=$(shell source ./emflags.sh && echo $$EMFLAGS)
 #ASYNC_IMPORTS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$jsimports)
 
 CPPFLAGS=$(EMFLAGS) -std=gnu++17 $(OPT) -I. -I../include -Iinclude -I$(S) \
-    -DHAVE_CONFIG_H=1 -DHAVE_CRLIBM=1 -DEMBEDDED=1 $(XCFLAGS) $(USERFLAGS)
+    -DHAVE_CONFIG_H=1 -DNO_THROW=1 -DHAVE_CRLIBM=1 -DEMBEDDED=1 $(XCFLAGS) $(USERFLAGS)
 CFLAGS=$(EMFLAGS)
 CXXFLAGS=$(EMFLAGS)
 LDFLAGS=$(EMFLAGS) -Llib -lcrlibm
@@ -81,7 +81,7 @@ WEBOPTS= --pre-js $(PRE_JS) \
 #endif
 
 
-S=../../cslbase-nothrow
+S=../../cslbase
 R=../../..
 
 VPATH=$(S)
@@ -235,7 +235,7 @@ reduce.img.worker:	reduce.img reduce-web
 
 
 make-image.js:	$(S)/make-image.cpp
-	$(CC) $(CPPFLAGS) $(NODEOPTS) $(S)/hexify.cpp $(LDFLAGS) $(LIBS) $(JSOPTS) -o make-image.js
+	$(CC) $(CPPFLAGS) $(NODEOPTS) $(S)/make-image.cpp $(LDFLAGS) $(LIBS) $(JSOPTS) -o make-image.js
 
 image.cpp:	make-image.js reduce.img
 	$(NODE) make-image.js

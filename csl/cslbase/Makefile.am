@@ -1937,9 +1937,8 @@ $(REDUCE_IMG):	reduce$(COM) $(reducedep) $(generated_lisp)
 # an application bundle, while on all other platforms they life in the
 # directory adjacent to the executable file. I conditionally copy from both
 # places here
-	if test -f reduce.app/Contents/reduce.img; \
-	then $(CP) reduce.app/Contents/reduce.img $(gensrc); \
-	elif test -f reduce.img; then $(CP) reduce.img $(gensrc); fi
+	if test -f $(REDUCE_IMG) \
+	then $(CP) $(REDUCE_IMG) $(gensrc); fi
 	chmod 664 $(gensrc)/*
 
 # This is a temporary target "reduce.dir" to create the image as a directory
@@ -2044,7 +2043,7 @@ $(BOOTSTRAPREDUCE_IMG):	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 		-o- -- buildlogs/bootstrapreduce.log \
 		-j bootstrapreduce.dep
 	chmod 664 $(gensrc)/*
-	test -f $(BOOTSTRAPREDUCE_IMG); \
+	if test -f $(BOOTSTRAPREDUCE_IMG); \
 	then $(CP) $(BOOTSTRAPREDUCE_IMG) $(gensrc); fi
 	chmod 664 $(gensrc)/*
 
