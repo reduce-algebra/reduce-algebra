@@ -26,6 +26,9 @@ do
     popd
   fi
   case $x in
+  *conservative* | *arithlib*)
+# Do *NOT* build these at present since they will not yet work!
+    ;;
   *-*-*-*)
     if test "$second" = ""
     then

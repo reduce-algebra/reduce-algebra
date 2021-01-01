@@ -1937,7 +1937,7 @@ $(REDUCE_IMG):	reduce$(COM) $(reducedep) $(generated_lisp)
 # an application bundle, while on all other platforms they life in the
 # directory adjacent to the executable file. I conditionally copy from both
 # places here
-	if test -f $(REDUCE_IMG) \
+	if test -f $(REDUCE_IMG); \
 	then $(CP) $(REDUCE_IMG) $(gensrc); fi
 	chmod 664 $(gensrc)/*
 
@@ -2371,7 +2371,8 @@ $(CSL_IMG):	csl$(COM) $(csldep)
 		-D@cslbase="$(CYGSRC)" \
 		-o- -- buildlogs/csl.img.log \
 		-j csl.dep
-	test -f $(CSL_IMG); then $(CP) -r $(CSL_IMG) $(gensrc); fi
+	if test -f $(CSL_IMG); \
+	then $(CP) -r $(CSL_IMG) $(gensrc); fi
 
 
 csli.img:	csl$(COM) $(csldep)
