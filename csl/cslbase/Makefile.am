@@ -260,12 +260,16 @@ endif
 endif !mac_framework
 
 if mac_framework
+CSL_IMG=csl.app/Contents/MacOS/csl.img
+BOOTSTRAPREDUCE_IMG=bootstrapreduce.app/Contents/MacOS/bootstrapreduce.img
 REDUCE_IMG=reduce.app/Contents/MacOS/reduce.img
 else !mac_framework
+CSL_IMG=csl.img
+BOOTSTRAPREDUCE_IMG=bootstrapreduce.img
 REDUCE_IMG=reduce.img
 endif !mac_framework
 
-all-local:	csl.img $(REDUCE_IMG)
+all-local:	$(CSL_IMG) $(REDUCE_IMG)
 
 if arithlib
 arith_sources = arith-setup.cpp arith-plus.cpp arith-times.cpp \
@@ -1760,7 +1764,7 @@ if windows
 image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir)
 else !windows
 if mac_framework
-image_files = csl.img $(REDUCE_IMG) reduce.doc reduce.resources reduce.$(fontsdir) *.app
+image_files = $(CSL_IMG) $(REDUCE_IMG) reduce.doc reduce.resources reduce.$(fontsdir) *.app
 else
 image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir)
 endif
@@ -1780,7 +1784,7 @@ console_binaries =
 noinstall_console_binaries =
 endif !gui
 
-local_image_files = bootstrapreduce.img noinlines.img
+local_image_files = $(BOOTSTRAPREDUCE_IMG) noinlines.img
 
 win_specials = \
 	cygwin64-reduce cygwin64-csl \
@@ -1795,7 +1799,7 @@ clean-local:
 	
 else !windows
 
-local_image_files = bootstrapreduce.img noinlines.img
+local_image_files = $(BOOTSTRAPREDUCE_IMG) noinlines.img
 
 if mac_framework
 macr = mac.r *.app
@@ -1967,7 +1971,7 @@ reduce.dir:	reduce$(COM) $(reducedep) $(generated_lisp)
 
 bootstraprecompile:
 	chmod 664 $(gensrc)/*
-	if ! test -f bootstrapreduce.img; then $(MAKE) bootstrapreduce.img; fi
+	if ! test -f $(BOOTSTRAPREDUCE_IMG); then $(MAKE) $(BOOTSTRAPREDUCE_IMG); fi
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
 	./bootstrapreduce$(COM) -v -w $(CSLFLAGS) \
@@ -1977,7 +1981,7 @@ bootstraprecompile:
 		-D@reduce=$(CYGREDUCE) \
 		-l buildlogs/$(which).log -Dwhich=$(which)
 	chmod 664 $(gensrc)/*
-	$(MAKE) -t bootstrapreduce.img > /dev/null
+	$(MAKE) -t $(BOOTSTRAPREDUCE_IMG) > /dev/null
 
 recompile:
 	chmod 664 $(gensrc)/*
@@ -2027,8 +2031,8 @@ reduce.resources/qepcad.awk:	$(packages)/redlog/ofsf/qepcad.awk
 bootstrapreduce.dep:
 	$(TRACE)touch bootstrapreduce.dep
 
-bootstrapreduce.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
-	-$(TRACE)$(RM) -f bootstrapreduce.img
+$(BOOTSTRAPREDUCE_IMG):	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
+	-$(TRACE)$(RM) -f $(BOOTSTRAPREDUCE_IMG)
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 	chmod 664 $(gensrc)/*
@@ -2040,10 +2044,8 @@ bootstrapreduce.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 		-o- -- buildlogs/bootstrapreduce.log \
 		-j bootstrapreduce.dep
 	chmod 664 $(gensrc)/*
-	if test -f bootstrapreduce.app/Contents/bootstrapreduce.img; \
-	then $(CP) bootstrapreduce.app/Contents/bootstrapreduce.img $(gensrc); \
-	elif test -f bootstrapreduce.img; \
-	then $(CP) bootstrapreduce.img $(gensrc); fi
+	test -f $(BOOTSTRAPREDUCE_IMG); \
+	then $(CP) $(BOOTSTRAPREDUCE_IMG) $(gensrc); fi
 	chmod 664 $(gensrc)/*
 
 noinlines.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
@@ -2078,7 +2080,7 @@ boot.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 		-D@reduce=$(CYGREDUCE) \
 		-o boot.img -- buildlogs/boot.log
 
-profile:	bootstrapreduce.img
+profile:	$(BOOTSTRAPREDUCE_IMG)
 	$(TRACE)mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
 	if test -f $(INLINE_DEFS); \
@@ -2086,15 +2088,15 @@ profile:	bootstrapreduce.img
 	else touch old-inline-defs.dat; \
 	fi
 	touch $(INLINE_DEFS)
-	$(RM) -f bootstrapreduce.img
-	$(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img
+	$(RM) -f $(BOOTSTRAPREDUCE_IMG)
+	$(MAKE) $(AM_MAKEFLAGS) $(BOOTSTRAPREDUCE_IMG)
 	chmod 664 $(gensrc)/*
 	if diff $(INLINE_DEFS) old-inline-defs.dat > /dev/null; \
 	then \
 	  echo "Inline definitions have not changed"; \
 	  else \
-	  $(RM) bootstrapreduce.img; \
-	  $(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img; \
+	  $(RM) $(BOOTSTRAPREDUCE_IMG); \
+	  $(MAKE) $(AM_MAKEFLAGS) $(BOOTSTRAPREDUCE_IMG); \
 	fi
 	./bootstrapreduce$(COM) \
 		-w $(CSLFLAGS) -Dno_init_file \
@@ -2131,15 +2133,15 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 	else touch old-inline-defs.dat; \
 	fi
 	touch $(INLINE_DEFS)
-	$(RM) -f bootstrapreduce.img
-	$(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img
+	$(RM) -f $(BOOTSTRAPREDUCE_IMG)
+	$(MAKE) $(AM_MAKEFLAGS) $(BOOTSTRAPREDUCE_IMG)
 	chmod 664 $(gensrc)/*
 	if diff $(INLINE_DEFS) old-inline-defs.dat > /dev/null; \
 	then \
 	  echo "Inline definitions have not changed"; \
 	  else \
-	  $(RM) bootstrapreduce.img; \
-	  $(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img; \
+	  $(RM) $(BOOTSTRAPREDUCE_IMG); \
+	  $(MAKE) $(AM_MAKEFLAGS) $(BOOTSTRAPREDUCE_IMG); \
 	fi
 	$(MAKE) $(AM_MAKEFLAGS) just-c-code
 	chmod 664 $(gensrc)/*
@@ -2155,7 +2157,7 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 	fi
 	mv $(gensrc)/make.tmp $(gensrc)/make.stamp
 
-# This target assumes that bootstrapreduce.img is up to date and on that
+# This target assumes that $(BOOTSTRAPREDUCE_IMG) is up to date and on that
 # basis regenerates the C++ code. It is really only intended for direct use
 # while debugging.
 
@@ -2209,7 +2211,7 @@ standard-c-code $(generated_lisp):	$(gensrc)/make.stamp
 
 # partial-c-code is a target only activated manually.
 
-partial-c-code:	bootstrapreduce.img $(gensrc)/profile.dat
+partial-c-code:	$(BOOTSTRAPREDUCE_IMG) $(gensrc)/profile.dat
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
 	./bootstrapreduce$(COM) -w $(CSLFLAGS) \
@@ -2222,7 +2224,7 @@ partial-c-code:	bootstrapreduce.img $(gensrc)/profile.dat
 
 # full-c-code is a target only activated manually.
 
-full-c-code:	bootstrapreduce.img $(gensrc)/profile.dat machinid.cpp
+full-c-code:	$(BOOTSTRAPREDUCE_IMG) $(gensrc)/profile.dat machinid.cpp
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
 	./bootstrapreduce$(COM) -w $(CSLFLAGS) \
@@ -2236,7 +2238,7 @@ full-c-code:	bootstrapreduce.img $(gensrc)/profile.dat machinid.cpp
 
 # j-code will only be triggered manually.
 
-j-code:	bootstrapreduce.img $(gensrc)/profile.dat
+j-code:	$(BOOTSTRAPREDUCE_IMG) $(gensrc)/profile.dat
 	mkdir -p buildlogs
 	mkdir -p $(CYGREDUCE)/cslbuild/generated-java
 	./bootstrapreduce$(COM) -w $(CSLFLAGS) \
@@ -2245,7 +2247,7 @@ j-code:	bootstrapreduce.img $(gensrc)/profile.dat
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/j-code.log
 
-smacros smacros.red:	bootstrapreduce.img
+smacros smacros.red:	$(BOOTSTRAPREDUCE_IMG)
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
 	./bootstrapreduce$(COM) -w $(CSLFLAGS) \
@@ -2255,7 +2257,7 @@ smacros smacros.red:	bootstrapreduce.img
 		-L buildlogs/smacros.log
 	echo You may now copy smacros.red to trunk/packages/support
 
-testslow:	bootstrapreduce.img
+testslow:	$(BOOTSTRAPREDUCE_IMG)
 	mkdir -p testlogs
 	./bootstrapreduce$(COM) -v -w \
 		$(CSLFLAGS) $(CYGSRC)/testall.red \
@@ -2286,7 +2288,7 @@ testall:	$(REDUCE_IMG)
 		-D@reduce=$(CYGREDUCE) \
 		-- testlogs/checkall.log
 
-testslow1:	bootstrapreduce.img
+testslow1:	$(BOOTSTRAPREDUCE_IMG)
 	mkdir -p testlogs
 	./bootstrapreduce$(COM) -v -w $(CSLFLAGS) \
 		$(CYGSRC)/testall.red \
@@ -2361,8 +2363,8 @@ cleanlog:
 csl.dep:
 	$(TRACE)touch csl.dep
 
-csl.img:	csl$(COM) $(csldep)
-	-$(TRACE)$(RM) -rf csl.img
+$(CSL_IMG):	csl$(COM) $(csldep)
+	-$(TRACE)$(RM) -rf $(CSL_IMG)
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 	./csl$(COM) -w -v -z $(CSLFLAGS) \
@@ -2370,9 +2372,7 @@ csl.img:	csl$(COM) $(csldep)
 		-D@cslbase="$(CYGSRC)" \
 		-o- -- buildlogs/csl.img.log \
 		-j csl.dep
-	if test -f csl.app/Contents/csl.img; \
-	then $(CP) -r csl.app/Contents/csl.img $(gensrc); \
-	elif test -f csl.img; then $(CP) -r csl.img $(gensrc); fi
+	test -f $(CSL_IMG); then $(CP) -r $(CSL_IMG) $(gensrc); fi
 
 
 csli.img:	csl$(COM) $(csldep)
@@ -2511,7 +2511,7 @@ install-exec-local:	reduce.exe reduce.img bootstrapreduce.exe bootstrapreduce.im
 
 else !cygwin
 if mac_framework
-install-exec-local:	reduce reduce.img bootstrapreduce bootstrapreduce.img csl csl.img
+install-exec-local:	reduce $(REDUCE_IMG) bootstrapreduce $(BOOTSTRAPREDUCE_IMG) csl $(CSL_IMG)
 	echo install for macintosh not implemented
 	exit 1
 

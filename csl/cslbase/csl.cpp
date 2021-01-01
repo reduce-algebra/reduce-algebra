@@ -1,4 +1,4 @@
-// csl.cpp                                 Copyright (C) 1989-2020 Codemist
+// csl.cpp                                 Copyright (C) 1989-2021 Codemist
 
 //
 // This is Lisp system for use when delivering Lisp applications
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -2948,25 +2948,6 @@ void set_up_signal_handlers()
     std::signal(SIGSEGV, low_level_signal_handler);
     std::signal(SIGTERM, low_level_signal_handler);
 #endif // HAVE_SIGACTION
-}
-
-static volatile thread_local char signal_msg[32];
-
-static volatile char *int2str(volatile char *s, int n)
-{   unsigned int n1;
-// Even though I really only expect this to be called with small positive
-// arguments I will code it so it should support ANY integer value, including
-// the most negative one.
-    if (n >= 0) n1 = static_cast<unsigned int>(n);
-    {   *s++ = '-';
-        n1 = -static_cast<unsigned int>(n);
-    }
-    if (n1 >= 10)
-    {   s = int2str(s, n1/10);
-        n1 = n1 % 10;
-    }
-    *s++ = '0' + n1;
-    return s;
 }
 
 #ifdef HAVE_SIGACTION

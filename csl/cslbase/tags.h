@@ -1,4 +1,4 @@
-// tags.h                                  Copyright (C) Codemist 1990-2020
+// tags.h                                  Copyright (C) Codemist 1990-2021
 
 //
 //   Data-structure and tag bit definitions, also common C macros
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -118,6 +118,7 @@ extern LispObject nil;
 
 class alignas(8) Align8
 {
+public:
     char data[8];
 };
 

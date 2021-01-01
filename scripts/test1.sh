@@ -30,7 +30,7 @@
 # in the order shown
 #     -m32-m64-nogui-fox-wx-test-arithlib-conservative-nothrow-debug
 # but of these -m32 and -m64 are historical relics, -wx a stalled potential
-# development and -arithlib, -conservative and -nothrow are to varing extents
+# development and -arithlib, -conservative and -nothrow are to varying extents
 # incomplete and experimental. This feature is present for sensible reasons
 # like comparing results and timing for a release vs. a debug build and
 # while testing those incomplete experiments to see how close to running the

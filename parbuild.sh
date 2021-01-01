@@ -41,6 +41,7 @@ do
 done
 
 if test "$first" = ""
+then
   first="$second"
 fi
 
@@ -49,30 +50,53 @@ then
   exit 0
 fi
 
+if test "`uname -s`" = "Darwin"
+then
+  GNU_MAKE=gmake
+  RED=reduce.app/Contents/MacOS/reduce.img
+  BOOT=bootstrapreduce.app/Contents/MacOS/bootstrapreduce.img
+else
+  GNU_MAKE=make
+  RED=reduce.img
+  BOOT=bootstrapreduce.img
+fi
+
 # I need to ensure that if the generated C++ code needs rebuilding that
 # that is done once (sequentially). I will use the first build target that
 # does not have any suffices.
 
-make cslbuild/$first/csl/reduce-u01.o
+$GNU_MAKE cslbuild/$first/csl/reduce-u01.o
 
 for x in $l
 do
   printf "$x:\n\techo Building for $x\n" >> $m
   printf "\t\$(MAKE) -C cslbuild/$x/csl > $x.log 2>&1\n" >> $m
-  printf "\t\$(MAKE) -C cslbuild/$x/csl bootstrapreduce.img > $x.log 2>&1\n\n" >> $m
+  printf "\t\$(MAKE) -C cslbuild/$x/csl $BOOT > $x.log 2>&1\n\n" >> $m
 done
 
-time make -j `nproc` -f $m
+if test "`which nproc`" != "" && test "$?" = "0"
+then
+  N=`nproc`
+else
+  if test "`which sysctl`" != "" && test "$?" = "0"
+  then
+    N=`sysctl -n hw.ncpu`
+  else
+    N=2
+  fi
+fi
+
+time $GNU_MAKE -j $N -f $m
 
 for x in $l
 do
-  if ! test -f cslbuild/$x/csl/reduce.img
+  if ! test -f cslbuild/$x/csl/$RED
   then
-    printf "Issue with cslbuild/$x/csl/reduce.img\n"
+    printf "Issue with cslbuild/$x/csl/$RED\n"
   fi
-  if ! test -f cslbuild/$x/csl/bootstrapreduce.img
+  if ! test -f cslbuild/$x/csl/$BOOT
   then
-    printf "Issue with cslbuild/$x/csl/bootstrapreduce.img\n"
+    printf "Issue with cslbuild/$x/csl/$BOOT\n"
   fi
 done
 
