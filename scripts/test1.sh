@@ -364,9 +364,29 @@ lisp (testdirectory:="$dd");
 lisp random_new_seed 1;
 resettime1;
 write "START OF REDUCE TEST RUN ON $mc"$ in "$f"; write "END OF REDUCE TEST RUN"$
-showtime1$
+% What follows is in Lisp to avoid parsing issues if some packages are loaded!
+on echo; %@@@@
+symbolic eval '
+  (prog (cpu_time gc_time o)
+    (setq cpu_time  (difference (time) otime1!*))
+    (setq gc_time   (difference (gctime) ogctime1!*))
+    (cond
+      ((memq 'psl lispsystem!*)
+       (setq cpu_time (difference cpu_time gc_time))))
+    (wrs (setq o (open "$name-times/$p.showtime" 'output)))
+    (print (list "$p" cpu_time gc_time))
+    (wrs nil)
+    (prin2 "Time: ") (prin2 "$p")
+    (prin2 "  ") (prin2 cpu_time)
+    (prin2 "  ") (prin2 gc_time)
+    (terpri))$
+end$
 quit$
 XXX
+  if test -f $name-times/$p.showtime
+  then
+    cat $name-times/$p.showtime >> $name-times/showtimes
+  fi
   cat $p.howlong.tmp >> $name-times/$p.rlg.tmp
   printf $showname...
   sed -e "/^Tested on /,//d" <$rlgfile |
@@ -419,9 +439,23 @@ lisp (testdirectory:="$dd");
 lisp random_new_seed 1;
 resettime1;
 write "START OF REDUCE TEST RUN ON $mc"$ in "$f"; write "END OF REDUCE TEST RUN"$
-showtime1$
+symbolic begin
+  scalar cpu_time, gc_time;
+  cpu_time := otime1!*;
+  otime1!* := time();
+  cpu_time := otime1!* - cpu_time;
+  gc_time := ogctime1!*;
+  ogctime1!* := gctime();
+  gc_time := ogctime1!* - gc_time;
+  if 'psl memq lispsystem!* then cpu_time := cpu_time - gc_time;
+  out "$name-times/$p.showtime";
+  print list('$p, cpu_time, gc_time);
+  out t;
+  print list('$p, cpu_time, gc_time);
+end$
 quit$
 XXX
+  cat $name-times/$p.showtime >> $name-times/showtimes
   cat $p.howlong.tmp >> $name-times/$p.rlg.tmp
   printf $showname...
   sed -e "/^Tested on /,//d" <$rlgfile |
@@ -555,33 +589,38 @@ done
 
 if test "$more" = "yes"
 then
-# Append on the end of the output line a list of speed ratios.
-  base=""
-  for sys in $platforms
-  do
-    tt=`grep ^Time $sys-times/$p.time | \
-        sed -e 's/.*(counter 1): //; s/ms.*//'`
-# base gets set to the time recorded for the first platform in the list.
-    if test "x$base" = "x"
-    then
-# If the recorded time is zero (which at least sometimes comes out
-# as the string "0 " here) I will set a base-time of 1 so that I
-# avoid division by zero later on.
-      if test "x$tt" = "x" || test "x$tt" = "x0" || test "x$tt" = "x0 "
-      then
-        base="1"
-      else
-        base="$tt"
-      fi
-    fi
-# If "dc" is not available then the following line leaves ratio empty.
-    ratio=`printf "1k $tt 100 * $base / pq" | dc 2> /dev/null`
-    if test "x$ratio" = "x"
-    then
-      ratio="?"
-    fi
-    printf "$sys:${ratio}%% "
-  done
+
+#== This does not work with my adjusted time reporting! I will come back and
+#== fix it later, but often the ratios it displays are pretty uncertain
+#== because of jitter in timings.
+#==
+#== # Append on the end of the output line a list of speed ratios.
+#==   base=""
+#==   for sys in $platforms
+#==   do
+#==     tt=`grep ^Time $sys-times/$p.time | \
+#==         sed -e 's/.*(counter 1): //; s/ms.*//'`
+#== # base gets set to the time recorded for the first platform in the list.
+#==     if test "x$base" = "x"
+#==     then
+#== # If the recorded time is zero (which at least sometimes comes out
+#== # as the string "0 " here) I will set a base-time of 1 so that I
+#== # avoid division by zero later on.
+#==       if test "x$tt" = "x" || test "x$tt" = "x0" || test "x$tt" = "x0 "
+#==       then
+#==         base="1"
+#==       else
+#==         base="$tt"
+#==       fi
+#==     fi
+#== # If "dc" is not available then the following line leaves ratio empty.
+#==     ratio=`printf "1k $tt 100 * $base / pq" | dc 2> /dev/null`
+#==     if test "x$ratio" = "x"
+#==     then
+#==       ratio="?"
+#==     fi
+#==     printf "$sys:${ratio}%% "
+#==   done
   printf "\n"
 
 # Now if any test logs disagree (using the first platform to define

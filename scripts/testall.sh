@@ -103,8 +103,9 @@ fi
 #
 for sys in $platforms
 do
-  rm -f $sys-times/*.rlg* \
+  rm -f $sys-times/*.rlg* $sys-times/showtimes \
         $base-$sys-times-comparison/*.rlg.diff
+  echo "showtimes := '(" > $sys-times/showtimes
 done
 
 packages=`sed -e '/^\%/d' $here/packages/package.map | \
@@ -127,6 +128,12 @@ then
     $here/scripts/test1.sh $extras $plist regressions $p
   done
 fi
+
+for sys in $platforms
+do
+  echo ")\$ end\$" >> $sys-times/showtimes
+done
+
 
 printf "\nSummary of test runs for $platforms\n\n"
 
@@ -157,39 +164,52 @@ reporttime() {
   name=$1
   dir=$2
   total="0"
-  for x in $dir/*.time
-  do
-    val=`grep ^Time $x | sed -e 's/.*(counter 1): //; s/ms.*//'`
-# The apparently spurious "0" here is in case $val ends up as empty.
-    total=`printf "1k 0 $val $total + pq" | dc`
-  done
-  total=`printf "2k $total 1000 / pq" | dc`
-  printf "$name total = $total (seconds)\n" | tee $dir/total_time
+  if test "`which redcsl 2> /dev/null`" != ""
+  then
+    red="redcsl"
+  elif test "`which redpsl 2> /dev/null`" != ""
+  then
+    red="redpsl"
+  else
+    red="$here/bin/redcsl"
+  fi
+  "$red" <<XXX | grep "^$name"
+symbolic <<
+in "$dir/showtimes"$
+total := for each r in showtimes sum cadr r;
+gctotal := for each r in showtimes sum caddr r;
+terpri();
+prin2 "$name";
+prin2 " ";
+while posn() < 20 do prin2 " ";
+prin2 total; prin2 " ms CPU ";
+while posn() < 40 do prin2 " ";
+prin2 gctotal; prin2 " ms GC";
+terpri();
+quit; >>$
+XXX
 }
 
-if test "`which dc`" != ""
-then
-  for sys in $platforms
-  do
-    case $sys in
-    cslboot*)
-      reporttime "CSLBOOT${sys#cslboot}" "$sys-times"
-      ;;
-    csl*)
-      reporttime "CSL${sys#csl}" "$sys-times"
-      ;;
-    jlisp)
-      reporttime "Jlisp" "jlisp-times"
-      ;;
-    jlispboot)
-      reporttime "Jlispboot" "jlispboot-times"
-      ;;
-    psl)
-      reporttime "PSL" "psl-times"
-      ;;
-    esac
-  done
-fi
+for sys in $platforms
+do
+  case $sys in
+  cslboot*)
+    reporttime "CSLBOOT${sys#cslboot}" "$sys-times"
+    ;;
+  csl*)
+    reporttime "CSL${sys#csl}" "$sys-times"
+    ;;
+  jlisp)
+    reporttime "Jlisp" "jlisp-times"
+    ;;
+  jlispboot)
+    reporttime "Jlispboot" "jlispboot-times"
+    ;;
+  psl)
+    reporttime "PSL" "psl-times"
+    ;;
+  esac
+done
 
 # end of script
 
