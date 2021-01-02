@@ -64,6 +64,7 @@
 	(OP-streg . lth-streg)
 	(OP-clz . lth-clz)
 	(OP-branch-imm . lth-branch-imm)
+	(OP-branch-imm19 . lth-branch-imm19)
 	(OP-branch-reg . lth-branch-reg)
 	(OP-mov-imm16 . lth-mov-imm16)
 	(OP-reg-imm16 . lth-reg-imm16)
@@ -186,7 +187,9 @@
 	  ((eq op 'imm16-shifted) '(imm16-shiftedp))
 	  ((eq op 'imm-logical) '(imm-logical-p))
 	  ((eq op 'imm7) '(imm7-p))
-	  ((eq op 'simm9) '(simm9-p))
+	  ((eq op 'reg-or-sp-simm9) '(reg-or-sp-simm9-p))
+	  ((eq op 'reg-or-sp-pimm14) '(reg-or-sp-pimm14-p))
+	  ((eq op 'reg-or-sp-pimm15) '(reg-or-sp-pimm15-p))
 	  ((eq op 'lsb) '(lsb-p))
 	  ((eq op 'reg-or-sp-shifter) '(reg-or-sp-shifter-p))
 	  ((eq op 'reg-shifter) '(reg-shifter-p))
@@ -431,7 +434,7 @@
 (instr EXTR   (reg32 reg32 reg32 lsb)        OP-reg3-lsb   2#0100100111)
 (instr EXTR   (reg reg reg lsb)        OP-reg3-lsb   2#100100111)
 
-% LDP Xt1, Xt2, Xn, #imm7 (post-index)
+% LDP Xt1, Xt2, [Xn], #imm7 (post-index)
 (instr LDP  (reg32 reg32 reg-or-sp imm7)  OP-ldp  2#0010100011)
 (instr LDP  (reg reg reg-or-sp imm7)  OP-ldp  2#1010100011)
 
@@ -439,12 +442,14 @@
 (instr LDP  (reg32 reg32 reg-or-sp imm7)  OP-ldp  2#0010100111)
 (instr LDP  (reg reg reg-or-sp imm7)  OP-ldp  2#1010100111)
 
-% LDP Xt1, Xt2, Xn, #imm7 (signed offset)
+% LDP Xt1, Xt2, [Xn, #imm7] (signed offset)
 (instr LDP  (reg32 reg32 reg-or-sp imm7)  OP-ldp  2#0010100101)
 (instr LDP  (reg reg reg-or-sp imm7)  OP-ldp  2#1010100101)
 
 % LDPSW Xt1, Xt2, Xn, #imm7 (post-index)
 (instr LDPSW  (reg reg reg-or-sp imm7)  OP-ldp  2#0110100011)
+
+
 
 % LDPSW Xt1, Xt2, [Xn, #imm7]! (pre-index)
 (instr LDPSW  (reg reg reg-or-sp imm7)  OP-ldp  2#0110100111)
@@ -457,20 +462,20 @@
 (instr LDR (reg32 reg-or-sp-simm9)      OP-ld-st 2#10111000010 2#01)
 (instr LDR (reg reg-or-sp-simm9)      OP-ld-st 2#11111000010 2#01)
 (instr STR (reg32 reg-or-sp-simm9)      OP-ld-st 2#10111000000 2#01)
-(instr STR (reg reg-or-sp-simm9)      OP-led-st 2#11111000000 2#01)
+(instr STR (reg reg-or-sp-simm9)      OP-ld-st 2#11111000000 2#01)
 % LDR Xt,[Xn,#simm9]! - pre-index
 % (LDR (reg t) (displacement (reg n) +/-number preindexed))
-(instr LDR (reg32 reg-or-sp simm9)      OP-ld-st 2#10111000010 2#11)
-(instr LDR (reg reg-or-sp simm9)      OP-ld-st 2#11111000010 2#11)
-(instr STR (reg32 reg-or-sp simm9)      OP-ld-st 2#10111000000 2#11)
-(instr STR (reg reg-or-sp simm9)      OP-ld-st 2#11111000000 2#11)
+(instr LDR (reg32 reg-or-sp-simm9)      OP-ld-st 2#10111000010 2#11)
+(instr LDR (reg reg-or-sp-simm9)      OP-ld-st 2#11111000010 2#11)
+(instr STR (reg32 reg-or-sp-simm9)      OP-ld-st 2#10111000000 2#11)
+(instr STR (reg reg-or-sp-simm9)      OP-ld-st 2#11111000000 2#11)
 
 % LDR Xt,[Xn,#pimm12] - unsigned offset
 % (LDR (reg t) (displacement (reg n) +number))
-(instr LDR (reg32 reg-or-sp-pimm12)      OP-ld-st 2#1011100101 nil)
-(instr LDR (reg reg-or-sp-pimm12)      OP-ld-st 2#1111100101 nil)
-(instr STR (reg32 reg-or-sp-pimm12)      OP-ld-st 2#1011100100 nil)
-(instr STR (reg reg-or-sp-pimm12)      OP-ld-st 2#1111100100 nil)
+(instr LDR (reg32 reg-or-sp-pimm14)      OP-ld-st 2#1011100101 nil)
+(instr LDR (reg reg-or-sp-pimm15)      OP-ld-st 2#1111100101 nil)
+(instr STR (reg32 reg-or-sp-pimm14)      OP-ld-st 2#1011100100 nil)
+(instr STR (reg reg-or-sp-pimm15)      OP-ld-st 2#1111100100 nil)
 
 % LDR Xt, <label> - literal
 (instr LDR (reg32 imm19)       OP-ld-st 2#00011000)

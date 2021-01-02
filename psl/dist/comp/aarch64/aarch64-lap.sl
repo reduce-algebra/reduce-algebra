@@ -403,6 +403,33 @@
     (or (and (reg32p RegName) (not (reg32-zero-p RegName)))
 	(req32-sp-p RegName)))
 
+(de reg-or-sp-simm9-p (x)
+    (and (eqcar x 'displacement)
+	 (pairp (cdr x)) (reg-or-sp-p (cadr x))
+	 (pairp (cddr x)) (simm9-p (caddr x))))
+
+(de simm9-p (displ)
+    (and (fixp displ) (greaterp displ -257) (lessp displ 256)))
+
+(de reg-or-sp-pimm15-p (x)
+    (and (eqcar x 'displacement)
+	 (pairp (cdr x)) (reg-or-sp-p (cadr x))
+	 (pairp (cddr x)) (fixp (caddr x)) (eq 0 (land (caddr x) 7))
+	 (pimm12-p (lsh (caddr x) -3))
+	 (pairp (cdddr x)) (memq (cadddr x) '(preindexed postindexed))
+	 ))
+
+(de reg-or-sp-pimm14-p (x)
+    (and (eqcar x 'displacement)
+	 (pairp (cdr x)) (reg-or-sp-p (cadr x))
+	 (pairp (cddr x)) (fixp (caddr x)) (eq 0 (land (caddr x) 3))
+	 (pimm12-p (lsh (caddr x) -2))
+	 (pairp (cdddr x)) (memq (cadddr x) '(preindexed postindexed))
+	 ))
+
+(de pimm12-p (displ)
+    (and (greaterp displ -1) (lessp displ 2#1000000000000)))
+
 (de EvenRegP (RegName)
     (and (Regp RegName) (evenp (reg2int regname))))
 	 
@@ -1149,7 +1176,7 @@
 
 (de lth-ld-st-misc (code regn reg-offset8) 4)
 
-(de OP-ldm-stm (code regn reglist writeback?)
+(de OP-ldp-stp (code regt1 regt2 reglist writeback?)
     (prog (cc opcode1 regbits ld-bit w-bit)
 	  (setq cc (car code) opcode1 (cadr code) ld-bit (caddr code) regbits 0)
 	  (setq w-bit (if writeback? 1 0))
@@ -1162,7 +1189,7 @@
 	   (land regbits 16#ff)))
     )
 
-(de lth-ldm-stm (code regn reg-offset12) 4)
+(de lth-ldm-stm (code regt1 regt2 reg-offset12) 4)
 
 
 

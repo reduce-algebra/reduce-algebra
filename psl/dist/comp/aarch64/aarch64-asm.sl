@@ -410,6 +410,7 @@
     )
 
 (put 'regshifted 'OperandPrintFunction 'OperandPrintRegshifted)
+(put 'regextended 'OperandPrintFunction 'OperandPrintRegshifted)
 
 
 (de OperandPrintIndirect (x)            % (Indirect x)

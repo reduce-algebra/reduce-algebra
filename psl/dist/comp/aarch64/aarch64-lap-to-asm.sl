@@ -490,8 +490,8 @@
                        ((setq val (get x 'initialvalue)) 
                         (compileconstant val))
 % print the value of nil.
-		       ((eq (id2int x) 128)
-			(list 'mkitem (compiler-constant 'unbound-tag) 128))
+		       ((eq (id2int x) 256)
+			(list 'mkitem (compiler-constant 'unbound-tag) 256))
                        ((flagp x 'nilinitialvalue) nilnumber*)
 % print the unbound variable value.
                        (t 
