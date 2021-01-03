@@ -337,24 +337,56 @@
 		       x    (difference CurrentOffset* (LabelOffset x)))))) 
 	   
 
+(CompileTime (progn 
+
+(dm DefOpcode (U) 
 %
-% Conditions bits 31:28 in ARMv6 opcodes
+% (DefOpcode name (parameters) pattern)
 %
+(prog (OpName vars pattern fname) 
+    (setq U (rest U)) 
+    (setq OpName (pop U))   
+    (setq fname (intern (bldmsg "%w.INSTR" OpName)))
+    (setq OpName (MkQuote OpName)) 
+    (setq vars (pop u)) 
+    (setq pattern
+      (append u
+	`((t (laperr ',OpName  (list .,vars))))))
+    (setq pattern (cons 'cond pattern))
+    % (setq u `(lambda ,vars ,pattern)) 
+    % (return `(put ,OpName 'InstructionDepositMacro ',u))
+    (return
+      `(progn
+	 (de ,fname ,vars ,pattern)
+	 (put ,OpName 'InstructionDepositMacro ',fname)))
+ ))
 
-(deflist '((EQ 2#0000) (NE 2#0001) (CS 2#0010) (HS 2#0010) (CC 2#0011) (LO 2#0011)
-	   (MI 2#0100) (PL 2#0101) (VS 2#0110) (VC 2#0111)
-	   (HI 2#1000) (LS 2#1001) (GE 2#1010) (LT 2#1011)
-	   (GT 2#1100) (LE 2#1101) (AL 2#1110))
-  'condition-bits)
+(dm DefOpLength (U)
+%
+% (DefOpLength name (parameters) pattern)
+%
+(prog (OpName vars pattern fname)
+    (setq U (rest U))
+    (setq OpName (pop U))   % (quote name)
+    (setq fname (intern (bldmsg "%w.LTH" OpName)))
+    (setq OpName (MkQuote OpName))   % (quote name)
+    (setq vars (pop u)) 
+    (setq pattern
+      (append u 
+	`((t (laperr ',OpName  (list .,vars))))))  
+    (setq pattern (cons 'cond pattern)) 
+    % (setq u `(lambda ,vars ,pattern))
+    % (return `(put ,OpName 'InstructionLengthFunction ',u))
+    (return 
+      `(progn
+	 (de ,fname ,vars ,pattern) 
+	 (put ,OpName 'InstructionLengthFunction ',fname))) 
+)) 
+ 
+ 
+ 
+))
 
-(setq !*condition-codes!* '(EQ NE CS HS CC LO MI PL VS VC HI LS GE LT GT LE AL))
-
-(deflist '((IA 2#01) (IB 2#11) (DA 2#00) (DB 2#10))
-  'ldm-addressing-modes)
-
-(setq !*LDM-adressing-modes '(IA IB DA DB))
-
-(load armv6-instrs1 armv6-instrs2)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -496,7 +528,7 @@
       (setq mask (lsh -1 (minus size)))
       (if (not (eq (land mask x) (land mask (lsh x (minus size)))))
 	  (return (lsh size 1)))
-      (setq (size (lsh size -1))))
+      (setq size (lsh size -1)))
     ))
 
 (de imm-logical-p (x)
@@ -864,7 +896,7 @@
 
 
 (de OP-reg-shifter (code reg1 reg2 reg-shifter)
-    (prog (opcode2 shift-op shift-amount)
+    (prog (opcode2 shift-op shift-amount reg3)
 	  (cond ((regp reg-shifter) (setq reg3 (reg2int reg-shifter) opcode2 0 shift-amount 0))
 		((eqcar reg-shifter 'regshifted)
 		 (setq reg3 (reg2int (cadr reg-shifter)) shift-op (caddr reg-shifter))
@@ -886,7 +918,7 @@
 (de OP-reg-extended (code reg1 reg2 reg-extended)
     (prog (option shift-op shift-amount)
 	  (cond ((regp reg-extended) (setq reg3 (reg2int reg-extended)))
-		((eqcar reg-shifter 'extend)
+		((eqcar reg-extended 'extend)
 		 (setq reg3 (reg2int (cadr reg-extended)) shift-op (caddr reg-extended))
 		 (setq shift-amount (cadddr reg-extended))
 		 (cond ((fixp shift-amount)
@@ -1001,11 +1033,11 @@
 	  (setq cc (car code) opcode1 (cadr code) opcode2 (cadddr code))
 	  (DepositInstructionBytes
 	   (lsh cc 3)
-	   (lor opcode (lsh (land cc 7) 5))
+	   (lor opcode1 (lsh (land cc 7) 5))
 	   (lor (lsh (reg2int regn) -3) (lsh opcode2 2))
 	   (lor (lsh (land (reg2int regn 7) 5) (reg2int regd)))
 	  )
-    )
+    ))
 
 (de lth-clz (code regd regm) 4)
 
@@ -1036,8 +1068,8 @@
 %% LDR Rt,[Rn],+/-offset8                              (displacement (reg n) +/-8bit-number postindexed)
 
 (de OP-ld-st (code regt reg-offset)
-    (prog (cc ld-bit opcode1 temp shift-op shift-amount regn displ pre-post p-bit u-bit w-bit regm lastbyte)
-	  (setq cc (car code) opcode1 (cadr code) ld-bit (caddr code) shift-amount 0)
+    (prog (cc s-bit opcode1 size shift-op shift-amount regn displ pre-post ppbits regm byte1 byte2 byte3 lastbyte)
+	  (setq cc (car code) opcode1 (cadr code) shift-amount 0)
 	  (if (and
 	       (not (labelp reg-offset))
 	       (or (not (pairp reg-offset)) (not (memq (car reg-offset) '(displacement indirect indexed))) (not (regp (cadr reg-offset)))))
@@ -1057,7 +1089,7 @@
 		((and (memq (cadddr reg-offset) '(preindexed postindexed))
 		      (fixp displ) (lessp displ 256) (greaterp displ -257))
 		 (setq pre-post (cadddr reg-offset))
-		 (setq ppbits (if (eq pre-post 'preindexed) 2#11 2#01)))
+		 (setq ppbits (if (eq pre-post 'preindexed) 2#11 2#01))
 		 (setq displ (land displ 2#111111111)) % mask to nine bits
 		 (setq lastbyte (lor (lsh (land 2#111 (reg2int regn)) 5) (reg2int regt)))
 		 (setq byte3 
@@ -1091,7 +1123,7 @@
 		     (and (eq (car displ) 'regextended)
 			  (memq (caddr displ) '(UXTW SXTW SXTX))))
 		 (if (not (or (regp displ) (memq displ (list 0 size))))
-		     (stderror (bldmsg "Invalid LDR/STR operand: %w" reg-offset12)))
+		     (stderror (bldmsg "Invalid LDR/STR operand: %w" reg-offset)))
 		 (setq regm (reg2int (cadr displ)) shift-op (caddr displ))
 		 (setq S-bit (if (or (regp displ) (eq displ 0)) 0 1))
 		 (setq shift-amount (if (regp displ) 0 (cadddr displ)))
@@ -1104,13 +1136,16 @@
 		 (setq byte2
 		       (lor (lsh (land cc 2#111) 5)
 			    (reg2int regm))))
-		(t (stderror (bldmsg "Invalid LDR/STR operand: %w" reg-offset12))))
+		(t (stderror (bldmsg "Invalid LDR/STR operand: %w" reg-offset))))
 	  (DepositInstructionBytes
 	   byte1
 	   byte2
 	   byte3
 	   lastbyte)
-    )
+    ))
+
+(compiletime (print 'here2))
+
 
 (de lth-ld-st (code regn reg-offset12) 4)
 
@@ -1189,7 +1224,7 @@
 	   (land regbits 16#ff)))
     )
 
-(de lth-ldm-stm (code regt1 regt2 reg-offset12) 4)
+(de lth-ldp-stp (code regt1 regt2 reg-offset12) 4)
 
 
 
@@ -1381,13 +1416,13 @@
 
 (fluid '(ConditionalJumps*))
 (setq ConditionalJumps* 
-  '((B.EQ  . B.NE)  (B.NE  . B.EQ)
-    (B.CS  . B.CC)  (B.CC  . B.CS)
-    (B.MI  . B.PL)  (B.PL  . B.MI)
-    (B.VS  . B.VC)  (B.VC  . B.VS)
-    (B.HI  . B.LS)  (B.LS  . B.HI)
-    (B.GE  . B.LT)  (B.LT  . B.GE)
-    (B.GT  . B.LE)  (B.LE  . B.GT)
+  '((B!.EQ  . B!.NE)  (B!.NE  . B!.EQ)
+    (B!.CS  . B!.CC)  (B!.CC  . B!.CS)
+    (B!.MI  . B!.PL)  (B!.PL  . B!.MI)
+    (B!.VS  . B!.VC)  (B!.VC  . B!.VS)
+    (B!.HI  . B!.LS)  (B!.LS  . B!.HI)
+    (B!.GE  . B!.LT)  (B!.LT  . B!.GE)
+    (B!.GT  . B!.LE)  (B!.LE  . B!.GT)
 ))
 
 (de ReformBranches (code)
@@ -2353,3 +2388,5 @@
    ))
    (when fcode (cons (reversip rcode) fcode))
 ))
+
+(dskin "aarch64-inst.dat")

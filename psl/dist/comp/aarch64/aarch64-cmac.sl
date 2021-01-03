@@ -588,9 +588,9 @@
 	  (if (oddp framesize)
             (progn
 	      (setq framesize (add1 framesize))
-	      (setq ll `((STR (reg nil) (displacment (reg sp) ,(times2 framesize (compiler-constant 'AddressingUnitsPerItem))))))))
-	  (setq NAlloc!* framesize))
-          (setq ll `((SUB (reg st) (reg st) ,(times2 framesize (compiler-constant 'AddressingUnitsPerItem))) ,@ll)))
+	      (setq ll `((STR (reg nil) (displacement (reg sp) ,(times2 framesize (compiler-constant 'AddressingUnitsPerItem))))))))
+	  (setq NAlloc!* framesize)
+          (setq ll `((SUB (reg st) (reg st) ,(times2 framesize (compiler-constant 'AddressingUnitsPerItem))) ,@ll))))
       `((STP (reg fp) (reg lr) (displacement (reg sp) preindexed 16))
 	(MOV (reg fp) (reg sp))
 	,@ll)))
@@ -604,7 +604,7 @@
    '*DeAlloc))
 
 (DefCmacro *DeAlloc
-           ((ZeroP)   (LDP (reg fp) (reg lr) (displacement (reg sp) postindexed 16))
+           ((ZeroP)   (LDP (reg fp) (reg lr) (displacement (reg sp) postindexed 16)))
 
            (           (add (reg st) (reg st) ARGONE)
                         % pop link register
@@ -619,10 +619,10 @@
    (times N (compiler-constant 'AddressingUnitsPerItem)) '*Exit))
 
 (DefCMacro *Exit     % leaf routine first
-   ((ZeroP)  (LDP (reg fp) ((reg lr)) writeback)
+   ((ZeroP)  (LDP (reg fp) (reg lr) writeback)
              (RET))
    (         (add (reg st) (reg st) ARGONE)
-             (LDP (reg fp) ((reg lr)) writeback)
+             (LDP (reg fp) (reg lr) writeback)
              (RET)))
 
 (de displacementp (x) (and (pairp x) (eq (car x) 'displacement)))
@@ -962,7 +962,7 @@
     ((regp negp)     (MOV ArgOne (regshifted ArgOne ASR (minus ArgTwo))))
     ((regp fixplusp) (MOV ArgOne (regshifted ArgOne LSL ArgTwo)))
     ((regp regp)     (CMP ArgTwo 0)
-                      (B.GE templabel)
+                      (B!.GE templabel)
                       (RSB (reg t2) ArgOne 0)
                       (*asr ArgOne ArgOne (reg t2))
                       (B templabel2)
@@ -986,7 +986,7 @@
     ((regp negp)     (*lsr ArgOne ArgOne (minus ArgTwo)))
     ((regp fixplusp) (*lsl ArgOne ArgOne ArgTwo))
     ((regp regp)     (CMP argtwo 0)
-                      (B.GE templabel)
+                      (B!.GE templabel)
                       (RSB (reg t2) ArgTwo 0)
                       (*lsr ArgOne Argone (reg t2))
                       (B templabel2)
@@ -1091,18 +1091,18 @@
 (DefCMacro *JumpInType
        (            (*Tag (reg t3) ArgOne)
                      (CMP (reg t3) ArgTwo )
-                     (B.LE  ArgThree)
+                     (B!.LE  ArgThree)
                      (CMP (reg t3) 31) % negint-tag)
-                     (B.EQ ArgThree)
+                     (B!.EQ ArgThree)
                      templabel)
        )
 
 (DefCMacro *JumpNotInType
        (            (*Tag (reg t3) ArgOne)
                      (CMP (reg t3) 31) % negint-tag
-                     (B.EQ templabel)
+                     (B!.EQ templabel)
                      (CMP (reg t3) ArgTwo)
-                     (B.GT ArgThree)
+                     (B!.GT ArgThree)
                      templabel)
        )
 
@@ -1148,32 +1148,32 @@
 (DefCMacro *JumpEQ)
 
 (de *JumpEQ (Lbl ArgOne ArgTwo)
-       (*JumpIF ArgOne ArgTwo Lbl '(b.eq . b.eq)))
+       (*JumpIF ArgOne ArgTwo Lbl '(b!.eq . b!.eq)))
 
 (DefCMacro *JumpNotEQ)
 
 (de *JumpNotEQ(Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(b.ne . 'b.ne)))
+        (*JumpIF ArgOne ArgTwo Lbl '(b!.ne . 'b!.ne)))
 
 (DefCMacro *JumpWlessp)
 
 (de *JumpWlessp (Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(b.lt . b.ge)))
+        (*JumpIF ArgOne ArgTwo Lbl '(b!.lt . b!.ge)))
 
 (DefCMacro *JumpWgreaterp)
 
 (de *JumpwGreaterp (Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(b.gt . b.le)))
+        (*JumpIF ArgOne ArgTwo Lbl '(b!.gt . b!.le)))
 
 (DefCMacro *JumpWleq)
 
 (de  *JumpWleq(Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(b.le . b.gt)))
+        (*JumpIF ArgOne ArgTwo Lbl '(b!.le . b!.gt)))
 
 (DefCMacro *JumpWgeq)
 
 (de *jumpWgeq (Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(b.ge . b.lt)))
+        (*JumpIF ArgOne ArgTwo Lbl '(b!.ge . b!.lt)))
 
 % --------------------
 
@@ -1224,7 +1224,7 @@
   ((regp regp fixp fixp) (SBFX ArgOne ArgTwo ArgThree)
                          (*asr ArgOne ArgOne (difference 32 ArgFour)))
   ((regp anyp fixp fixp) (*Move ArgTwo (reg t3))
-                         (*SignedField ArgOne (reg t3) ArgThree))
+                         (*SignedField ArgOne (reg t3) ArgThree ArgFour))
   ((anyp regp fixp fixp) (*Signedfield (reg t1) ArgTwo ArgThree ArgFour)
                           (*Move (reg t1) ArgOne))
   (                      (*Move ArgTwo (reg t2))
@@ -1549,7 +1549,7 @@ preload  (setq initload
                    (*Move ($fluid BndstkUpperBound) (reg t3))
                    (*wplus3 (reg t2) (reg t1) ,lng)
                    (CMP (reg t2) (reg t3))
-                   (B.MI ,genlabel)
+                   (B!.MI ,genlabel)
                    (*Call Bstackoverflow)  % is never come back
                    ,genlabel
 
@@ -1618,7 +1618,7 @@ preload  (setq initload
        (setq list `((*Move ($fluid BndstkLowerBound) (reg t3))
                     (SUB (reg t2) (reg t1) ,lng)
                     (CMP (reg t2) (reg t3))
-                    (B.PL ,genlabel)
+                    (B!.PL ,genlabel)
                     (*Call Bstackunderflow) % never returns
                    ,genlabel
                    (*Move (reg t2) ($fluid Bndstkptr)) 
@@ -1654,7 +1654,7 @@ preload  (setq initload
       (for (from x lowerbound upperbound)
                 (join
                   `((CMP ,x ,register)
-                    (B.EQ ,(pop labellist))))))
+                    (B!.EQ ,(pop labellist))))))
 
 
 (de !*JumpOn (register lowerbound upperbound labellist)
@@ -1674,10 +1674,10 @@ preload  (setq initload
         (B (label ,ll))
        ,ll2)
       `((cmp ,register ,upperbound )
-        (b.eq ,(lastcar labellist))
-        (b.gt (label ,ll))
+        (b!.eq ,(lastcar labellist))
+        (b!.gt (label ,ll))
         (cmp ,register ,Lowerbound )
-        (b.lt (label ,ll))
+        (b!.lt (label ,ll))
         (*WDifference ,register ,lowerbound)
         (LDR (reg pc) (displacement (reg pc) (regshifted ,(cadr register) LSL 2)))
         (B (label ,ll))                 % extra instruction to jump over
