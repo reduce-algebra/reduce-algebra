@@ -1,4 +1,4 @@
-Time-stamp: "2020-04-16 11:23:31 vitolo"
+Time-stamp: "2021-01-05 17:34:32 vitolo"
 
 This folder contains software for the CDE package, written by Raffaele
 Vitolo. It is devoted to computations for general differential equations (i.e.,
