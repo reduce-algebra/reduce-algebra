@@ -45,6 +45,19 @@ and loads the files:
  files. The script cde_test.sh runs all the example files, writes results and
  states and compares them with the old results and states as a regression test
  suite.
+ - The folder examples_book, with all examples that are described in the book
+ `The symbolic computation of integrability operators for partial differential
+ equations, Springer, Texts and Monographs in Symbolic Computation,
+ ISBN 978-3-319-71655-8 (2018).
+ - The folder examples_compHO, with all examples described in the paper
+ by R. Vitolo: "Computing with Hamiltonian Operators",
+ Computer Physics Communications Volume 244 (2019), 228-245
+ ArXiv: https://arxiv.org/abs/1808.03902
+ - The folder examples_weaklynl with the example programs that illustrate
+ the commands provided by the module cde_weaklynl.red for
+ the calculation of Schouten brackets of weakly nonlocal operators.
+ This will be the subject of a forthcoming paper by
+ M. Casati, P. Lorenzoni, D. Valeri, R. Vitolo (2021).
 
 In the folder examples a shell script `cde_test.sh' (it works only in bash, a
 unix/linux shell) that runs reduce on all examples has been inserted.

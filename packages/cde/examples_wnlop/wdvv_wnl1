@@ -1,0 +1,128 @@
+% First-order HO for hydrodynamyc-type system compatible with g^3
+% 2020-04-16
+% Raffaele Vitolo
+
+% Loading the interface to cdiff packages;
+load_package cde;
+
+% Initialization of the jet environment of the differential equation.
+indep_var:={x}$
+dep_var_equ:={u1,u2,u3}$
+total_order:=10$
+loc_arg:={psi1,psi2,psi3}$
+% names for output of the state of cde and results of computations
+resname:="wdvv_wnl1_res.red"$
+
+% right-hand side of the differential equation defining the two operators
+de:={
+  u2_x + u3_x,
+ - ( - 2*u1*u2*u2_x - u1*u2*u3_x - u1*u2_x*u3 + u1_x*u2**2 + u1_x*u2*u3 -
+ u1_x)/u1**2,
+  u1_x
+    }$
+
+nc:=length(dep_var_equ)$
+dv1:={u1_x,u2_x,u3_x}$
+
+% Define the velocity matrix of the system
+
+matrix av(nc,nc);
+for i:=1:nc do
+  for j:=1:nc do
+    av(i,j):=df(part(de,i),part(dv1,j));
+
+% Load the metric of the first-order operator in upper indices:
+matrix gu1(nc,nc);
+gu1(1,1):=(u1**2 + u2**2 + 2*u2*u3 + u3**2 + 1)$
+gu1(1,2):=(u1**2*u2 + u2**3 + 2*u2**2*u3 + u2*u3**2 - u2 - u3)/(u1)$
+gu1(1,3):=(u1*(u2 + 2*u3))$
+gu1(2,1):=(u1**2*u2 + u2**3 + 2*u2**2*u3 + u2*u3**2 - u2 - u3)/(u1)$
+gu1(2,2):=(u1**2*u2**2 + 4*u1**2 + u2**4 + 2*u2**3*u3 + u2**2*u3**2 - 2*u2**2 - 
+2*u2*u3 + 1)/(u1**2)$
+gu1(2,3):=(u2**2 + 2*u2*u3 - 3)$
+gu1(3,1):=(u1*(u2 + 2*u3))$
+gu1(3,2):=(u2**2 + 2*u2*u3 - 3)$
+gu1(3,3):=(u1**2 + u3**2 + 4)$
+
+% Defining the Christoffel symbols with two upper indices,
+% chr3_ijk stands for \Gamma^{ij}_k
+
+chr3_111:=u1$
+chr3_112:=u2 + u3$
+chr3_113:=u2 + u3$
+chr3_121:=u2$
+chr3_122:=(u2**2 + u2*u3 - 1)/u1$
+chr3_123:=(u2**2 + u2*u3 - 1)/u1$
+chr3_131:=u3$
+chr3_132:=u1$
+chr3_133:=u1$
+chr3_211:=( - u2**3 - 2*u2**2*u3 - u2*u3**2 + u2 + u3)/u1**2$
+chr3_212:=(u1**2 + 2*u2**2 + 3*u2*u3 + u3**2)/u1$
+chr3_213:=(u2*(u2 + u3))/u1$
+chr3_221:=( - u2**4 - 2*u2**3*u3 - u2**2*u3**2 + 2*u2**2 + 2*u2*u3 - 1)/u1**3$
+chr3_222:=(u1**2*u2 + 2*u2**3 + 3*u2**2*u3 + u2*u3**2 - 2*u2 - u3)/u1**2$
+chr3_223:=(u2*(u2**2 + u2*u3 - 1))/u1**2$
+chr3_231:=( - u2**2 - u2*u3 + 1)/u1$
+chr3_232:=2*(u2 + u3)$
+chr3_233:=u2$
+chr3_311:=u2 + u3$
+chr3_312:=0$
+chr3_313:=u1$
+chr3_321:=(u2**2 + u2*u3 - 1)/u1$
+chr3_322:=0$
+chr3_323:=u2$
+chr3_331:=u1$
+chr3_332:=0$
+chr3_333:=u3$
+
+operator b;
+for i:=1:nc do for j:=1:nc do
+  b(i,j):=for k:=1:nc sum mkid(mkid(mkid(chr3_,i),j),k)*part(dv1,k);
+
+% Defining the local part of the operator
+mk_cdiffop(ham_l,1,{3},3);
+for all i,j,psi let ham_l(i,j,psi)=
+  gu1(i,j)*td(psi,x) + b(i,j)*psi;
+
+% Coefficient matrix; syntax: c^{alpha,beta} = c(alpha,beta)
+% Tail vector; syntax: w^i_\alpha = w(i,alpha)
+mk_wnlop(c,w,2);
+c(1,1):= - 1;
+c(2,2):= - 1;
+c(1,2):=0;
+c(2,1):=0;
+for i:=1:nc do w(i,1):=(for j:=1:nc sum av(i,j)*part(dv1,j));
+w(1,2):=u1_x;
+w(2,2):=u2_x;
+w(3,2):=u3_x;
+
+% Input for the first wnl operator
+ham1:={ham_l,c,w};
+
+% Input for the second wnl operator
+ham2:=ham1;
+
+% The list of all distinct non-local variables to be used in the jetspace.
+% Each (w^i_\alpha) (with given \alpha) gives rise to 3 distinct
+% nonlocal variables \tilde{psi}^a_\alpha, a=1,2,3.
+% The format of the list is:
+% {nonlocal variable, tail vector, alpha}
+nloc_var:={{tpsi,w,1},{tpsi,w,2},{tpsi,w,3}};
+
+% Preparing the jetspace
+dep_var_tot:=cde_weaklynl(indep_var,dep_var_equ,loc_arg,nloc_var,total_order);
+
+% The list of the two names of nonlocal variables for the two operators;
+% here the two names can be the same if necessary.
+nloc_arg:={{tpsi,w},{tpsi,w}};
+
+% Computing the Schouten bracket
+on time;
+sb_res:=schouten_bracket_wnl(ham1,ham2,dep_var_equ,loc_arg,nloc_arg);
+off time;
+
+;end;
+
+Local Variables:
+mode:reduce
+End:

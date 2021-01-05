@@ -1,0 +1,68 @@
+% Computing the Hamiltonian property for the
+% nonlocal operator of the modified KdV equation
+% J.P. Wang, A List of 1+1 Dimensional Integrable Equations
+% and Their Properties, Journal of Nonlinear Mathematical Physics
+% Volume 9 (2002),  213-233
+
+% R. Vitolo, 22 march 2020
+
+% mKdV: u_t=u_{xxx}+u^2u_x
+% Nonlocal H.O. for mKdV:
+% D_x^3 + (2/3)*(u**2*D_x + u*u_x - u_x D_x^{-1} u_x)
+
+on comp, echo, backtrace;
+in cdedebug;
+algebraic;
+
+% load_package cde;
+
+% Initialization of the jet environment of the differential equation.
+indep_var:={x}$
+dep_var_equ:={u}$
+% Here we need one argument psi for each dependent variable in dep_var_equ
+% in order to generate arguments psi^1,psi^2,psi^3
+% of the three-vector [P,Q](psi^1,psi^2,psi^3)
+loc_arg:={psi}$
+total_order:=10$
+% name for output file
+resname:="mkdv_wnl1_res.red"$
+
+% Coefficient matrix; syntax: c^{alpha,beta} = c(alpha,beta)
+% Tail vector; syntax: w^i_\alpha = w(i,alpha)
+mk_wnlop(c,w,1);
+c(1,1):= - 2/3$
+w(1,1):=u_x$
+
+% Defining the local part of the operators
+mk_cdiffop(ham_l,1,{1},1);
+for all psi let ham_l(1,1,psi)=
+  td(psi,x,3) + (2/3)*(u**2*td(psi,x) + u*u_x*psi);
+
+% Input for the first wnl operator
+ham1:={ham_l,c,w};
+
+% Input for the second wnl operator
+ham2:=ham1;
+
+% The list of all distinct non-local variables to be used in the jetspace.
+% Each (w^i_\alpha) (with given \alpha) gives rise to 3 distinct
+% nonlocal variables \tilde{psi}^a_\alpha, a=1,2,3.
+% The format of the list is:
+% {nonlocal variable, tail vector, alpha}
+nloc_var:={{tpsi,w,1}};
+
+% Preparing the jetspace
+dep_var_tot:=cde_weaklynl(indep_var,dep_var_equ,loc_arg,nloc_var,total_order);
+
+% The list of the two names of nonlocal variables for the two operators;
+% here the two names can be the same if necessary.
+nloc_arg:={{tpsi,w},{tpsi,w}};
+
+% Computing the Schouten bracket
+sb_res:=schouten_bracket_wnl(ham1,ham2,dep_var_equ,loc_arg,nloc_arg);
+
+;end;
+
+Local Variables:
+mode:reduce
+End:

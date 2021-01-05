@@ -77,17 +77,17 @@ symbolic procedure cdwnl2vec(cdl_op,c,w,loc_arg,nloc_arg);
     scalar largcd,ntarget,ntail,temploc,tempnloc;
     largcd:=cadr get('cdlarg,cdl_op);
     ntarget:=get('cdtarget,cdl_op);
-    ntail:=get('wnl_narg,c);
+%    ntail:=get('wnl_narg,c);
     ntail:=get('wnl_narg,w);
-    if not(eqn(largcd,ntarget)) then rederr
-      "Non-conformant length of argument and dimension of target";
+%    if not(eqn(largcd,ntarget)) then rederr
+%      "Non-conformant length of argument and dimension of target";
     return for i:=1:largcd collect
       <<
         temploc:=for j:=1:ntarget collect
           aeval list(cdl_op,i,j,nth(loc_arg,j));
 	tempnloc:=for a:=1:ntail join for b:=1:ntail collect
 	  aeval list('times,
-	    list('c,a,b),list('w,i,a),nth(nloc_arg,b)
+	    list(c,a,b),list(w,i,a),nth(nloc_arg,b)
 	      );
 	aeval cons('plus,append(temploc,tempnloc))
       >>
@@ -96,7 +96,8 @@ symbolic procedure cdwnl2vec(cdl_op,c,w,loc_arg,nloc_arg);
 symbolic procedure l_summand(cdop_loc_cf,loc_arg_1,vec_op2_2,loc_arg_3,
     all_parder);
   % First summand of the Dubrovin-Zhang formula:
-  % linearization of the local part of one operator
+  % linearization of the local part of the first operator
+  % applied to the second operator
   begin
     scalar op_i,op_j,templterms,lin_coeff,var_m,var_id,m_ind;
     return for each op_entry in cdr(cdop_loc_cf) join
@@ -107,10 +108,10 @@ symbolic procedure l_summand(cdop_loc_cf,loc_arg_1,vec_op2_2,loc_arg_3,
 	for each op_term in templterms join
 	  for each var in all_parder collect
 	  <<
-            % Linearization of coeff
-	    lin_coeff:=aeval list('df,cadr op_term,var);
-	    if not(eqn(lin_coeff,0)) then
+	    if cde_dependon(cadr op_term,var) then
 	    <<
+              % Linearization of coefficients of the local part of the op.
+              lin_coeff:=aeval list('df,cadr op_term,var);
 	      var_m:=idtomind(0,var);
               var_id:=car var_m;
               m_ind:='list . cadr var_m;
@@ -139,10 +140,10 @@ symbolic procedure nl_summand_1(c,w,vec_op2_2,nloc_arg_1,loc_arg_3,all_parder);
       for i:=1:length(loc_arg_3) join
       for each var in all_parder collect
       <<
-        % Linearization of coeff
-	lin_coeff:=aeval list('df,aeval list(w,i,alpha),var);
-	if not(eqn(lin_coeff,0)) then
+        if cde_dependon(aeval list(w,i,alpha),var) then
 	<<
+	  % Linearization of w
+          lin_coeff:=aeval list('df,aeval list(w,i,alpha),var);
 	  var_m:=idtomind(0,var);
           var_id:=car var_m;
           m_ind:='list . cadr var_m;
@@ -174,9 +175,10 @@ symbolic procedure nl_summand_2(c,w,nloc_arg_3,vec_op2_2,loc_arg_1,all_parder);
       for each var in all_parder collect
       <<
         % Linearization of coeff
-	lin_coeff:=aeval list('df,aeval list(w,j,beta),var);
-	if not(eqn(lin_coeff,0)) then
+        if cde_dependon(aeval list(w,j,beta),var) then
 	<<
+	  % Linearization of w
+          lin_coeff:=aeval list('df,aeval list(w,j,beta),var);
 	  var_m:=idtomind(0,var);
           var_id:=car var_m;
           m_ind:='list . cadr var_m;
@@ -365,15 +367,17 @@ symbolic procedure local_reduction(sb_expr,
     return aeval list('plus,reduced_expr,sb_expr)
     end;
 
-symbolic procedure generate_nlarg(w,nloc_arg,i);
-  % Lists of nonlocal-w variables with respect to the argument psi^i
+symbolic procedure generate_nlarg(nloc_arg_w,i);
+  % Lists of nonlocal-w variables
+  % tpsi_alp i = d_x^(-1) w^j_alp*psi_j^i
+  % with respect to the argument psi^i
   begin
-    scalar ntail_w,nlarg_i;
+    scalar tpsi,w,ntail_w,nlarg_i;
+    tpsi:=car nloc_arg_w;
+    w:=cadr nloc_arg_w;
     ntail_w:=get('wnl_narg,w);
     for alp:=1:ntail_w do
-      for each el in nloc_arg do
-        if equal(nth(el,3),w) and eqn(nth(el,4),alp) then
-          nlarg_i:=cons(cde_list2id(list(nth(el,2),'!_,alp,i)),nlarg_i);
+      nlarg_i:=cons(cde_list2id(list(tpsi,'!_,alp,i)),nlarg_i);
     return reverse(nlarg_i)
   end;
 
@@ -384,25 +388,30 @@ symbolic procedure sb_wnl_algorithm(ham1_l,c,w,ham2_l,d,z,
   % See Casati, Lorenzoni, Vitolo, Studies in Appl. Math. (2020)
   % for details on the algorithm.
     begin
-      scalar loc_arg_1,loc_arg_2,loc_arg_3,
+      scalar nloc_arg_w,nloc_arg_z,
+      loc_arg_1,loc_arg_2,loc_arg_3,
       nlargw_1,nlargw_2,nlargw_3,
       nlargz_1,nlargz_2,nlargz_3,
       nlargw,nlargz,
       dz,first_step;
+      % Separating the nonlocal arguments
+      nloc_arg_w:=cdar nloc_arg;
+      nloc_arg_z:=cdadr nloc_arg;
       % Defining the three lists of the three local arguments of [P,Q]
       loc_arg_1:=for each el in loc_arg collect mkid(el,1);
       loc_arg_2:=for each el in loc_arg collect mkid(el,2);
       loc_arg_3:=for each el in loc_arg collect mkid(el,3);
       % Generating the three lists of the three nonlocal-w arguments of [P,Q]
-      nlargw_1:=generate_nlarg(w,nloc_arg,1);
-      nlargw_2:=generate_nlarg(w,nloc_arg,2);
-      nlargw_3:=generate_nlarg(w,nloc_arg,3);
-      nlargz_1:=generate_nlarg(z,nloc_arg,1);
-      nlargz_2:=generate_nlarg(z,nloc_arg,2);
-      nlargz_3:=generate_nlarg(z,nloc_arg,3);
+      nlargw_1:=generate_nlarg(nloc_arg_w,1);
+      nlargw_2:=generate_nlarg(nloc_arg_w,2);
+      nlargw_3:=generate_nlarg(nloc_arg_w,3);
+      nlargz_1:=generate_nlarg(nloc_arg_z,1);
+      nlargz_2:=generate_nlarg(nloc_arg_z,2);
+      nlargz_3:=generate_nlarg(nloc_arg_z,3);
       nlargw:=list(nlargw_1,nlargw_2,nlargw_3);
       nlargz:=list(nlargz_1,nlargz_2,nlargz_3);
       % Computing Dubrovin-Zhang formula
+      print "Step 0: calculating Dubrovin-Zhang formula";
       dz:=dubrovin_zhang_expr(ham1_l,c,w,ham2_l,d,z,
       	dep_var_equ,
       	loc_arg_1,loc_arg_2,loc_arg_3,
@@ -410,6 +419,7 @@ symbolic procedure sb_wnl_algorithm(ham1_l,c,w,ham2_l,d,z,
 	nlargz);
 %%      return dz;
       % First step of the algorithm: nonlocal reduction
+      print "Step 1: reducing the nonlocal terms";
       % Integrating Coeff * tpsi^1_w,\a * psi^2_p * d^k_x psi^3_i, k>0
       first_step:=nonlocal_reduction(dz,
       	nlargw_1,loc_arg_2,loc_arg_3);
@@ -430,10 +440,12 @@ symbolic procedure sb_wnl_algorithm(ham1_l,c,w,ham2_l,d,z,
       first_step:=nonlocal_reduction(first_step,
       	nlargz_3,loc_arg_1,loc_arg_2);
       % Second step of the algorithm: local reduction
+      print "Step 2: reducing the local terms";
       % Integrating Coeff * d^k_x psi^3_i, k>0
       return local_reduction(first_step,
       	loc_arg_1,loc_arg_2,loc_arg_3)
     end;
+
 
 symbolic procedure schouten_bracket_wnl(ham1,ham2,
     dep_var_equ,loc_arg,nloc_arg);
@@ -458,6 +470,10 @@ symbolic procedure schouten_bracket_wnl(ham1,ham2,
     check_cdiff_sametype(ham1_l,ham2_l);
     if not equal(get('cdlarg,ham1_l),get('cdlarg,ham2_l)) then
       rederr "Error: non-conformant C-Differential operators";
+    if not equal(cadr get('cdlarg,ham1_l),get('cdtarget,ham1_l)) then rederr
+      "Non-conformant length of argument and dimension of target";
+    if not equal(cadr get('cdlarg,ham1_l),get('cdtarget,ham1_l)) then rederr
+      "Non-conformant length of argument and dimension of target";
     dep_var_equ:=cdr dep_var_equ;
     loc_arg:=cdr loc_arg;
     nloc_arg:=cdr nloc_arg;
@@ -484,6 +500,7 @@ symbolic procedure schouten_bracket_wnl(ham1,ham2,
   end;
 
 symbolic operator schouten_bracket_wnl;
+
 
 symbolic procedure cde_weaklynl(indep_var,dep_var_equ,loc_arg,nloc_arg,
     total_order);
@@ -534,6 +551,7 @@ symbolic procedure cde_weaklynl(indep_var,dep_var_equ,loc_arg,nloc_arg,
   end;
 
 symbolic operator cde_weaklynl;
+
 
 endmodule;
 

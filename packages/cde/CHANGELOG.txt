@@ -1,4 +1,14 @@
-Time-stamp: "2020-04-16 11:31:16 vitolo"
+Time-stamp: "2021-01-05 17:27:44 vitolo"
+
+2021-01-05 Raffaele Vitolo <raffaele.vitolo@unisalento.it>
+Updated: CDE version 3.0. Main changes are:
+* Bug corrected in cde_weaklynl.red
+* Linearization of operators in cde_weaklynl improved, this should speed up
+calculations.
+* Added: a folder examples_weaklynl with some examples of calculations of
+Schouten bracket of weakly nonlocal operators. The examples and the software
+will be discussed in a forthcoming paper by
+M. Casati P. Lorenzoni, D. Valeri, R.V. (2021).
 
 2020-04-14 Raffaele Vitolo <raffaele.vitolo@unisalento.it>
 Updated: CDE version 3.0. Main changes are:

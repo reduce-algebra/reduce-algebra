@@ -1,0 +1,73 @@
+% Computing the Hamiltonian property for the
+% nonlocal operator of the Heisenberg magnet equation
+% E.V. Ferapontov: Nonlocal Hamiltonian Operators of
+% Hydrodynamic Type: Differential Geometry and Applications.
+% Amer. Math. Soc. Transl. (2) Vol. 170 (1995), 33--58.
+
+% R. Vitolo, 05 January 2021
+
+load_package cde;
+
+% Initialization of the jet environment of the differential equation.
+indep_var:={x}$
+dep_var_equ:={u1,u2}$
+% Here we need one argument psi for each dependent variable in dep_var_equ
+% in order to generate arguments psi^1,psi^2,psi^3 of the three-vector
+% [P,Q]((psi^1_1,psi^1_2),(psi^2_1,psi^2_2),(psi^3_1,psi^3_2))
+loc_arg:={psi1,psi2}$
+total_order:=10$
+% name for output file
+resname:="hmag_wnl1_res.red"$
+
+% Defining the local part of the operators
+p:=(1/2)*(u1**2 + u2**2 + 1)$
+
+mk_cdiffop(ham_l,1,{2},2);
+
+for all psi11 let ham_l(1,1,psi11)=
+  p**2*td(psi11,x) + p*(u1*u1_x + u2*u2_x)*psi11;
+
+for all psi12 let ham_l(1,2,psi12)=
+  p*(u1*u2_x - u2*u1_x)*psi12;
+
+for all psi21 let ham_l(2,1,psi21)=
+  p*(u2*u1_x - u1*u2_x)*psi21;
+
+for all psi22 let ham_l(2,2,psi22)=
+  p**2*td(psi22,x) + p*(u1*u1_x + u2*u2_x)*psi22;
+
+% Coefficient matrix; syntax: c^{alpha,beta} = c(alpha,beta)
+% Tail vector; syntax: w^i_\alpha = w(i,alpha)
+mk_wnlop(c,w,1);
+c(1,1):=1$
+w(1,1):=u1_x$
+w(2,1):=u2_x$
+
+% Input for the first wnl operator
+ham1:={ham_l,c,w};
+
+% Input for the second wnl operator
+ham2:=ham1;
+
+% The list of all distinct non-local variables to be used in the jetspace.
+% Each (w^i_\alpha) (with given \alpha) gives rise to 3 distinct
+% nonlocal variables \tilde{psi}^a_\alpha, a=1,2,3.
+% The format of the list is:
+% {nonlocal variable, tail vector, alpha}
+nloc_var:={{tpsi,w,1}};
+
+% Preparing the jetspace
+dep_var_tot:=cde_weaklynl(indep_var,dep_var_equ,loc_arg,nloc_var,total_order);
+
+% The list of the two names of nonlocal variables for the two operators;
+% here the two names can be the same if necessary.
+nloc_arg:={{tpsi,w},{tpsi,w}};
+
+% Computing the Schouten bracket
+sb_res:=schouten_bracket_wnl(ham1,ham2,dep_var_equ,loc_arg,nloc_arg);
+
+;end;
+
+Local Variables:
+mode:reduce
+End:
