@@ -527,6 +527,13 @@ algebraic procedure num_airy(z,fname);
 
    end;
 
+% The next 2 declarations  enable better checking of number of arguments
+% by simpiden
+
+flag('(Airy_Ai Airy_Bi Airy_Aiprime Airy_Biprime), 'specfn);
+
+deflist('((Airy_Ai 1) (Airy_Bi 1) (Airy_Aiprime 1) (Airy_Biprime 1)),
+        'number!-of!-args);
 
 algebraic <<
 operator Airy_Ai, Airy_Bi, Airy_Aiprime, Airy_Biprime;
@@ -560,6 +567,16 @@ airy_rules := { Airy_Ai(0) => (3 ^ (-2/3)) / gamma(2/3),
 %This activates the above rule set.
 
 let airy_rules;
+
+put('Airy_Ai, 'plain!-functionsymbol, '!Ai);
+put('Airy_Bi, 'plain!-functionsymbol, '!Bi);
+put('Airy_Aiprime, 'plain!-functionsymbol, '!Ai!');
+put('Airy_Biprime, 'plain!-functionsymbol, '!Bi!');
+
+put('Airy_Ai, 'prifn, 'plain!-symbol);
+put('Airy_Bi, 'prifn, 'plain!-symbol);
+put('Airy_Aiprime, 'prifn, 'plain!-symbol);
+put('Airy_Biprime, 'prifn, 'plain!-symbol);
 
 %The following is an inactive rule set that can be activated by the user
 %if desired.

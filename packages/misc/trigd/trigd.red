@@ -68,6 +68,8 @@ deflist('((acosd simpiden) (asind simpiden) (atand simpiden)
           (asecd simpiden) (acscd simpiden) (atan2d simpiden)
    ),'simpfn);
 
+deflist('((secd 1) (cscd 1) (cotd 1) ),'number!-of!-args);
+
 flag ('(acosd asind atand acotd cosd sind tand cscd secd 
         cotd acotd asecd acscd), 'full);
 

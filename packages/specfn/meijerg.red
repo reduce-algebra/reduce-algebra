@@ -28,6 +28,13 @@ module MeijerG;  % Meijer's G-function.
 
 % Major modifications by: Winfried Neun, ZIB Berlin.
 
+
+% The next 2 declarations enable better checking of number of arguments
+% by simpiden
+
+flag('(meijerg), 'specfn);
+put('meijerg, 'number!-of!-args, 3);
+
 symbolic inline procedure meijerg_fehler();
         rerror('specialf,140,"Wrong arguments to operator MeijerG");
 

@@ -132,6 +132,18 @@ algebraic procedure compute!:lerch_phi(z,s,a);
            return summa;
     end;
 
+% The next 2 declarations enable better checking of number of arguments
+% by simpiden
+
+flag('(Gamma Beta iGamma iBeta m_gamma polygamma psi zeta
+       Pochhammer dilog polylog Lerch_Phi), 'specfn);
+       
+deflist('((Gamma 1) (Beta 2) (iGamma 2) (iBeta 3)
+          (m_gamma 2) (polygamma 2) (psi 1)
+	  (zeta 1) (Pochhammer 2) (dilog 1)
+	  (polylog 2) (Lerch_Phi 3)
+	 ), 'number!-of!-args);
+
 endmodule;
 end;
 

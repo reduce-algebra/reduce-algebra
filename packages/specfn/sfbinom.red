@@ -27,6 +27,14 @@ module sfbinom;   % Procedures for computing Binomial coefficients
 %
 
 
+% The next 2 declarations enable better checking of number of arguments
+% by simpiden
+
+flag('(Motzin Stirling1 Stirling2 Binomial), 'specfn);
+
+deflist('((Motzin 1) (Stirling1 2) (Stirling2 2) (Binomial 2)
+	 ), 'number!-of!-args);
+
 % algebraic operator binomial;  % Now in entry.red.
 deflist('((binomial simpiden)),'simpfn);
 

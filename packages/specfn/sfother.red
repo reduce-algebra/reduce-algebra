@@ -137,6 +137,18 @@ algebraic (let whittaker!*rules);
 
 %Handbook of Mathematical Functions - page 496
 
+% The next 2 declarations enable better checking of number of arguments
+% by simpiden
+
+flag('(StruveH StruveL Lommel1 Lommel2
+       WhittakerM WhittakerW Lambert_W), 'specfn);
+
+deflist('((StruveH 2) (StruveL 1) (Lommel1 3)
+          (Lommel2 3) (Lambert_W 1)
+          (WhittakerM 3) (WhittakerW 3)
+	 ), 'number!-of!-args);
+
+
 algebraic procedure struve_compute_term(n,x,h_or_l);
 
 begin scalar dmode!*!*;
@@ -193,7 +205,7 @@ algebraic <<
       log(lambert_w(~z)) => log(z) - lambert_w z,
 %      e^(lambert_w ~z) => ~z/lambert_w z,
 %      int(lambert_w(~z),z) => z*(lambert_w z -1 +1/lambert_w z),
-      int(lambert_w(~z),z) => e^(lambert_w(z))*(lambert_w(z)^2-lambert_w(z)+1),
+%      int rule is redundant
       lambert_w(~z) =>  num_lambert_w(z)
                 when numberp z and lisp !*rounded};
 
@@ -201,6 +213,7 @@ algebraic <<
 %  A power series expansion of lambert_w about zero using tps or taylor
 %  now succeeds; it previously reported a possible essential singularity 
 %  as lambert_w(z)/z produces 0/0 when z=0.
+%  integration behaves better when lambert_exp_rule is inactive
 %  The solve package doesn't seem to be affected by this change.
 
 lambert_exp_rule := {e^(lambert_w ~z) => ~z/lambert_w z}$

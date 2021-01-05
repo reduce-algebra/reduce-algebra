@@ -93,6 +93,15 @@ module harmonic; % Solid & spherical harmonics.
 
 %       S(n,m,x,y,z) = (-1)^m * S(n,-m,x,-y,z);
 
+
+% The next 2 declarations enable better checking of number of arguments
+% by simpiden
+
+flag('(SolidHarmonic SphericalHarmonic), 'specfn);
+       
+deflist('((SolidHarmonic 6) (SphericalHarmonic 4)
+         ), 'number!-of!-args);
+
 algebraic procedure solidharmonicy(n,m,x,y,z,r2);
 begin scalar mp, v, y0, y1, y2;
 

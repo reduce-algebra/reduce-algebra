@@ -1068,6 +1068,16 @@ put('precise_complex,'simpfg,'((t nil) (nil (rmsubs))));
 
 % ***** simplification functions for other explicit operators *****
 
+% Used in simpiden to check the number of arguments of a special function
+symbolic procedure check!-argnum(fn,u);
+begin scalar n, na;
+   if (n := get(fn,'number!-of!-args)) and (na := length u) neq n and
+        not memq(na ,n) and not flagp(fn, 'variadic) then
+      rerror(specfn,117,list(fn,
+             "called with", na, "argument(s) instead of",
+	     <<if atom n then "" else "one from">>, n));
+end;
+
 symbolic procedure simpiden u;
    % Convert the operator expression U to a standard quotient.
    % Note: we must use PREPSQXX and not PREPSQ* here, since the REVOP1
@@ -1078,6 +1088,8 @@ symbolic procedure simpiden u;
     % Allow prefix ops with names of symbolic functions.
     if (get(fn,'!:rn!:) or get(fn,'!:rd!:)) and (x := valuechk(fn,u))
       then return x;
+    % check the number of arguments supplied to a specfn. Added by AB
+    if flagp(fn,'specfn) then check!-argnum(fn,u);
     % Keep list arguments in *SQ form.
     if u and eqcar(car u,'list) and null cdr u
       then return mksq(list(fn,aeval car u),1);

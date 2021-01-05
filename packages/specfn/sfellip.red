@@ -1382,5 +1382,23 @@ put('elliptictheta4, 'prifn, 'plain!-symbol);
 % symbolic procedure plain!-symbol(u);
 %     maprin(get(car u,'plain!-functionsymbol) . cdr u);
 
+% The next 2 declarations enable better checking of number of arguments
+% by simpiden
+
+flag('(jacobisn jacobicn jacobidn jacobins jacobinc jacobind 
+       jacobisc jacobisd jacobics jacobicd jacobids jacobidc
+       jacobiam jacobizeta jacobie ellipticK ellipticK!'
+       ellipticF ellipticE ellipticE!' elliptictheta1
+       elliptictheta2 elliptictheta3 elliptictheta4), 'specfn);
+
+deflist('((jacobisn 2) (jacobicn 2) (jacobidn 2)
+          (jacobins 2) (jacobinc 2) (jacobind 2) (jacobisc 2) (jacobisd 2)
+	  (jacobics 2) (jacobicd 2) (jacobids 2) (jacobidc 2) (jacobiam 2)
+	  (ellipticF 2)  (jacobiZeta 2) (jacobie 2)
+	  (ellipticK 1) (ellipticK!' 1) (ellipticE (1 2)) (ellipticE!' 1)
+          (elliptictheta1 2) (elliptictheta2 2) (elliptictheta3 2)
+	  (elliptictheta4 2)
+	 ), 'number!-of!-args);
+
 endmodule;
 end;

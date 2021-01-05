@@ -42,6 +42,12 @@ exports nearest!-int!-to!-bf, bernoulli!*calc, multi!*bern,
    single!*bern, retrieve!*bern;
 
 
+% The next 2 declarations enable better checking of number of arguments
+% by simpiden
+
+flag('(Euler Bernoulli), 'specfn);
+deflist('((Euler 1) (Bernoulli 1)), 'number!-of!-args);
+
 %%algebraic operator bernoulli;
 %%symbolic operator bernoulli!*calc;
 %%

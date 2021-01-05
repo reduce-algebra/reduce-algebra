@@ -42,6 +42,15 @@ load!-package 'matrix;   % Needed for matrix input.
 load!-package 'solve;
 load!-package 'ineq;
 
+% The next 2 declarations enable better checking of number of arguments
+% by simpiden
+
+flag('(ThreeJSymbol SixJSymbol Clebsch_Gordon), 'specfn);
+       
+deflist('((ThreeJSymbol 3) (Clebsch_Gordon 3) (SixJSymbol 2)
+         ), 'number!-of!-args);
+
+
 symbolic procedure clean_up_sqrt(input);
   %
   %  Takes input and factorises out all sqrt's.

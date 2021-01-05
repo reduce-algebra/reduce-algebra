@@ -1357,15 +1357,15 @@ and the module for spherical and solid harmonics was very much appreciated.
 \fbox{
 \begin{tabular}{r l}
 \rule{0pt}{16pt}Function & Operator\\[5pt]
-$\mathit{Si}(z)$ & \f{Si(z)}\\
-$\mathit{si}(z)$ & \f{s\_i(z)}\\
-$\mathit{Ci}(z)$ & \f{Ci(z)}\\
-$\mathit{Shi}(z)$ & \f{Shi(z)}\\
-$\mathit{Chi}(z)$ & \f{Chi(z)}\\
-$\mathit{erf}(z)$ & \f{Erf(z)}\\
-$\mathit{erfc}(z)$ & \f{erfc(z)}\\
-$\mathit{Ei}(z)$ & \f{Ei(z)}\\
-$\mathit{Ei}(\log(z))$ & \f{Li(z)}\\
+$\mathrm{Si}(z)$ & \f{Si(z)}\\
+$\mathrm{Si}(z)-\pi/2$ & \f{s\_i(z)}\\
+$\mathrm{Ci}(z)$ & \f{Ci(z)}\\
+$\mathrm{Shi}(z)$ & \f{Shi(z)}\\
+$\mathrm{Chi}(z)$ & \f{Chi(z)}\\
+$\mathrm{erf}(z)$ & \f{Erf(z)}\\
+$1-\mathrm{erf}(z)$ & \f{erfc(z)}\\
+$\mathrm{Ei}(z)$ & \f{Ei(z)}\\
+$\mathrm{Ei}(\log(z))$ & \f{Li(z)}\\
 $C(x)$ & \f{Fresnel\_C(x)}\\
 $S(x)$ & \f{Fresnel\_S(x)}\\[5pt]
 $B(a,b)$ & \f{Beta(a,b)}\\
@@ -1391,10 +1391,10 @@ $H^{(2)}_n(z)$ & \f{Hankel2(n,z)}\\[5pt]
 \fbox{
 \begin{tabular}{r l}
 \rule{0pt}{16pt}Function & Operator\\[5pt]
-$\mathit{Ai}(z)$ & \f{Airy\_Ai(z)}\\
-$\mathit{Bi}(z)$ & \f{Airy\_Bi(z)}\\
-$\mathit{Ai}'(z)$ & \f{Airy\_Aiprime(z)}\\
-$\mathit{Bi}'(z)$ & \f{Airy\_Biprime(z)}\\
+$\mathrm{Ai}(z)$ & \f{Airy\_Ai(z)}\\
+$\mathrm{Bi}(z)$ & \f{Airy\_Bi(z)}\\
+$\mathrm{Ai}'(z)$ & \f{Airy\_Aiprime(z)}\\
+$\mathrm{Bi}'(z)$ & \f{Airy\_Biprime(z)}\\
 ${\bf H}_{\nu}(z)$ & \f{StruveH(nu,z)}\\
 ${\bf L}_{\nu}(z)$ & \f{StruveL(nu,z)}\\
 $s_{a,b}(z)$ & \f{Lommel1(a,b,z)}\\
@@ -1407,8 +1407,8 @@ Expression in Kummer\_M & \f{WhittakerM(kappa,mu,z)}\\
 Expression in Kummer\_U & \f{WhittakerW(kappa,mu,z)}\\
 Riemann's $\zeta(z)$ & \f{zeta(z)}\\
 Lambert $\omega(z)$ & \f{Lambert\_W(z)}\\
-$\mathit{Li}_2(z)$ & \f{dilog(z)}\\
-$\mathit{Li}_{n}(z)$ & \f{Polylog(n,z)}\\
+$\mathrm{Li}_2(z)$ & \f{dilog(z)}\\
+$\mathrm{Li}_{n}(z)$ & \f{Polylog(n,z)}\\
 Lerch's transcendent $\Phi(z,s,a)$ & \f{Lerch\_Phi(z,s,a)}\\[5pt]
 \end{tabular}}
 
@@ -1430,27 +1430,27 @@ $\displaystyle\begin{Bmatrix} j_{1} & j_{2} & j_{3} \\ m_{1} & m_{2} & m_{3} \en
 \fbox{
 \begin{tabular}{r l}
 \rule{0pt}{16pt}Function & Operator\\[5pt]
-$\mathit{sn}(u,k)$ & \f{jacobisn(u,k)}\\
-$\mathit{dn}(u,k)$ & \f{jacobidn(u,k)}\\
-$\mathit{cn}(u,k)$ & \f{jacobicn(u,k)}\\
-$\mathit{cd}(u,k)$ & \f{jacobicd(u,k)}\\
-$\mathit{sd}(u,k)$ & \f{jacobisd(u,k)}\\
-$\mathit{nd}(u,k)$ & \f{jacobind(u,k)}\\
-$\mathit{dc}(u,k)$ & \f{jacobidc(u,k)}\\
-$\mathit{nc}(u,k)$ & \f{jacobinc(u,k)}\\
-$\mathit{sc}(u,k)$ & \f{jacobisc(u,k)}\\
-$\mathit{ns}(u,k)$ & \f{jacobins(u,k)}\\
-$\mathit{ds}(u,k)$ & \f{jacobids(u,k)}\\
-$\mathit{cs}(u,k)$ & \f{jacobics(u,k)}\\
-$\mathit{am}(u,k)$ & \f{jacobiam(u,k)}\\
-Complete Integral (1st kind) $K(k)$ & \f{ellipticK(k)}\\
-$K'(k)$ & \f{ellipticK!'(k)}\\
-Incomplete Integral (1st kind) $F(\phi,k)$ & \f{ellipticF(phi,k)}\\
-Complete Integral (2nd kind) $E(k)$ & \f{ellipticE(k)}\\
-$E'(k)$ & \f{ellipticE!'(k)}\\
-Legendre Incomplete Int (2nd kind) $E(u,k)$ & \f{ellipticE(u,k)}\\
+$\mathrm{sn}(u,k)$ & \f{jacobisn(u,k)}\\
+$\mathrm{dn}(u,k)$ & \f{jacobidn(u,k)}\\
+$\mathrm{cn}(u,k)$ & \f{jacobicn(u,k)}\\
+$\mathrm{cd}(u,k)$ & \f{jacobicd(u,k)}\\
+$\mathrm{sd}(u,k)$ & \f{jacobisd(u,k)}\\
+$\mathrm{nd}(u,k)$ & \f{jacobind(u,k)}\\
+$\mathrm{dc}(u,k)$ & \f{jacobidc(u,k)}\\
+$\mathrm{nc}(u,k)$ & \f{jacobinc(u,k)}\\
+$\mathrm{sc}(u,k)$ & \f{jacobisc(u,k)}\\
+$\mathrm{ns}(u,k)$ & \f{jacobins(u,k)}\\
+$\mathrm{ds}(u,k)$ & \f{jacobids(u,k)}\\
+$\mathrm{cs}(u,k)$ & \f{jacobics(u,k)}\\
+$\mathrm{am}(u,k)$ & \f{jacobiam(u,k)}\\
+Complete Integral (1st kind) $\mathrm{K}(k)$ & \f{ellipticK(k)}\\
+$\mathrm{K}^\prime(k)$ & \f{ellipticK!'(k)}\\
+Incomplete Integral (1st kind) $\mathrm{F}(\phi,k)$ & \f{ellipticF(phi,k)}\\
+Complete Integral (2nd kind) $\mathrm{E}(k)$ & \f{ellipticE(k)}\\
+$\mathrm{E}^\prime(k)$ & \f{ellipticE!'(k)}\\
+Legendre Incomplete Int (2nd kind) $\mathrm{E}(u,k)$ & \f{ellipticE(u,k)}\\
 Jacobi Incomplete Int (2nd kind) $\mathcal{E}(u,k)$ & \f{JacobiE(u,k)}\\
-Jacobi's Zeta $Z(u,k)$ & \f{jacobizeta(u,k)}\\
+Jacobi's Zeta $\mathrm{Z}(u,k)$ & \f{jacobizeta(u,k)}\\
 $\vartheta_1(u,q)$ & \f{elliptictheta1(u,q)}\\
 $\vartheta_2(u,q)$ & \f{elliptictheta2(u,q)}\\
 $\vartheta_3(u,q)$ & \f{elliptictheta3(u,q)}\\
@@ -1492,7 +1492,7 @@ $\mathrm{s}_n^m$ & \f{Stirling1(n,m)}\\
 $\mathrm{S}_n^m$ & \f{Stirling2(n,m)}\\
 Bernoulli($n$) or $ B_n $ & \f{Bernoulli(n)}\\
 Euler($n$) or $ E_n $ & \f{Euler(n)}\\
-Motzkin($n$) & \f{Motzkin($n$)}\\
+Motzkin($n$) or $ M_n $ & \f{Motzkin($n$)}\\
 \\
 Constant & \REDUCE name\\[5pt]
 Square root of $(-1)$ & \f{i}\\

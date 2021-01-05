@@ -126,6 +126,16 @@ return !10j(nu,x);
 end;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% The next 2 declarations enable better checking of number of arguments
+% by simpiden
+
+flag('(BesselJ BesselY BesselI BesselK
+       Hankel1 Hankel2), 'specfn);
+
+deflist('((BesselJ 2) (BesselY 2) (BesselI 2) (BesselK 2)
+          (Hankel1 2) (Hankel2 2)
+         ), 'number!-of!-args);
+
 algebraic <<let BesselJ(~n,~x) =>  compute!:cvpr130108(n,x)
                            when (numberp n and den n = 2 and
                             fixp(num n) and  abs(num n) < 6)>>;

@@ -300,6 +300,10 @@ flag('(cos sec sech cosh),'even);
 
 flag('(cot coth csc csch acoth),'nonzero);
 
+% added by A Barnes 2021
+deflist('((sec 1) (sech 1) (csc 1) (csch 1) (cot 1) (coth 1)),
+        'number!-of!-args);
+
 % In the following rules, it is not necessary to let f(0)=0, when f
 % is odd, since simpiden already does this.
 

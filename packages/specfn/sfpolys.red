@@ -35,6 +35,18 @@ module sfpolys;   % Assorted Polynomials
 
 fluid '(powlis1!*);
 
+% The next 2 declarations enable better checking of number of arguments
+% by simpiden
+
+flag('(EulerP BernoulliP HermiteP JacobiP
+       ChebyshevT ChebyshevU GegenbauerP LegendreP LaguerreP), 'specfn);
+       
+deflist('((EulerP 2) (BernoulliP 2) (HemiteP 2)
+          (ChebyshevT 2) (ChebyshevU 2)
+	  (GegenbauerP 3) (JacobiP 4)
+	  (LegendreP (2 3)) (LaguerreP (2 3))
+         ), 'number!-of!-args);
+
 % Bernoulli Polynomials (see e.g. Abramowitz Stegun , chapter 23
 
 algebraic operator bernoullip;

@@ -40,6 +40,11 @@ algebraic (operator KummerM, KummerU);
 
 symbolic operator kummerm!*calc;
 
+% The next 2 declarations enable better checking of number of arguments
+% by simpiden
+
+flag('(KummerM KummerU), 'specfn);
+deflist('((KummerM 3) (KummerU 3)), 'number!-of!-args);
 
 algebraic (kummer!*rules := {
 

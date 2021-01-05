@@ -29,9 +29,28 @@ module sfint;     % Assorted Integral Functions, Ei, Si, Ci, Li etc.
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
 %
+put('Ei, 'plain!-functionsymbol, '!Ei);
+put('Ci, 'plain!-functionsymbol, '!Ci);
+put('Si, 'plain!-functionsymbol, '!Si);
+put('Chi, 'plain!-functionsymbol, '!Chi);
+put('Shi, 'plain!-functionsymbol, '!Shi);
 
+put('Ei, 'prifn, 'plain!-symbol);
+put('Si, 'prifn, 'plain!-symbol);
+put('Ci, 'prifn, 'plain!-symbol);
+put('Shi, 'prifn, 'plain!-symbol);
+put('Chi, 'prifn, 'plain!-symbol);
 
 % added Li , Winfried Neun, Oct 1998
+
+% The next 2 declarations enable better checking of number of arguments
+% by simpiden
+
+flag('(Ei Ci Si s_i Chi Shi Li erf erfc Fresnel_C Fresnel_S), 'specfn);
+
+deflist('((Ei 1) (Si 1) (s_i 1) (Ci 1) (Chi 1) (Shi 1) (Li 1)
+          (erf 1) (erfc 1) (Fresnel_S 1) (Fresnel_C 1)
+         ), 'number!-of!-args);
 
 % For Math References, see e.g. Abramowitz/Stegun, chapter 5 and 7
 

@@ -32,6 +32,12 @@ module ghyper;   % Generalized Hypergeometric Functions.
 %         unevaluated (without error) as requested by Francis Wright
 
 
+% The next 2 declarations enable better checking of number of arguments
+% by simpiden
+
+flag('(hypergeometic), 'specfn);
+put('hypergeomtric, 'number!-of!-args, 3);
+
  put('ghf,'simpfn,'simpghf)$
 
    symbolic procedure simpghf u;
