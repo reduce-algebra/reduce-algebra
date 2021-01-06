@@ -591,7 +591,7 @@
 	      (setq ll `((STR (reg nil) (displacement (reg sp) ,(times2 framesize (compiler-constant 'AddressingUnitsPerItem))))))))
 	  (setq NAlloc!* framesize)
           (setq ll `((SUB (reg st) (reg st) ,(times2 framesize (compiler-constant 'AddressingUnitsPerItem))) ,@ll))))
-      `((STP (reg fp) (reg lr) (displacement (reg sp) preindexed 16))
+      `((STP (reg fp) (reg lr) (displacement (reg sp) 16 preindexed))
 	(MOV (reg fp) (reg sp))
 	,@ll)))
 
@@ -604,11 +604,11 @@
    '*DeAlloc))
 
 (DefCmacro *DeAlloc
-           ((ZeroP)   (LDP (reg fp) (reg lr) (displacement (reg sp) postindexed 16)))
+           ((ZeroP)   (LDP (reg fp) (reg lr) (displacement (reg sp) 16 postindexed)))
 
            (           (add (reg st) (reg st) ARGONE)
                         % pop link register
-                       (LDP (reg fp) (reg lr) (displacement (reg sp) postindexed 8)))
+                       (LDP (reg fp) (reg lr) (displacement (reg sp) 16 postindexed)))
 )
 
 
@@ -619,10 +619,10 @@
    (times N (compiler-constant 'AddressingUnitsPerItem)) '*Exit))
 
 (DefCMacro *Exit     % leaf routine first
-   ((ZeroP)  (LDP (reg fp) (reg lr) writeback)
+   ((ZeroP)  (LDP (reg fp) (reg lr) (displacement (reg sp) 16 postindexed))
              (RET))
    (         (add (reg st) (reg st) ARGONE)
-             (LDP (reg fp) (reg lr) writeback)
+             (LDP (reg fp) (reg lr) (displacement (reg sp) 16 postindexed))
              (RET)))
 
 (de displacementp (x) (and (pairp x) (eq (car x) 'displacement)))

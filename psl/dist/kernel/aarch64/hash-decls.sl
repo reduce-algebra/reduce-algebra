@@ -56,8 +56,22 @@
 
 (ds occupied-slot? (u) 
   (let ((hte (hash-table-entry u)))
-	(and (wleq hte 16#7fffffff) (> hte 0)))
+	(and (wleq hte 16#ffffffff) (> hte 0)))
   )
+
+%
+% Compiler macros for reading and writing 32bit words:
+%
+
+(deflist 
+      '(
+        (Hashtab-HalfWord ((shl 2 (reg 2))
+                (LDR (indexed (reg 1) (regshifted (reg 2) LSL 2)) (reg W1))))
+        (PutHashtab-HalfWord ((shl 2 (reg 2))
+                (STR (reg W3) (indexed (reg 1) (regshifted (reg 2) LSL 2))))))
+ 'OpenCode)
+
+(put 'Hashtab-HalfWord 'assign-op 'PutHashtab-HalfWord)
 
 %
 % Assorted macros:
