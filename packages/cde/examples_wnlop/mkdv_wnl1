@@ -4,17 +4,13 @@
 % and Their Properties, Journal of Nonlinear Mathematical Physics
 % Volume 9 (2002),  213-233
 
-% R. Vitolo, 22 march 2020
+% R. Vitolo, 05 January 2021
 
 % mKdV: u_t=u_{xxx}+u^2u_x
 % Nonlocal H.O. for mKdV:
 % D_x^3 + (2/3)*(u**2*D_x + u*u_x - u_x D_x^{-1} u_x)
 
-on comp, echo, backtrace;
-in cdedebug;
-algebraic;
-
-% load_package cde;
+load_package cde;
 
 % Initialization of the jet environment of the differential equation.
 indep_var:={x}$
@@ -27,16 +23,16 @@ total_order:=10$
 % name for output file
 resname:="mkdv_wnl1_res.red"$
 
-% Coefficient matrix; syntax: c^{alpha,beta} = c(alpha,beta)
-% Tail vector; syntax: w^i_\alpha = w(i,alpha)
-mk_wnlop(c,w,1);
-c(1,1):= - 2/3$
-w(1,1):=u_x$
-
-% Defining the local part of the operators
+% Defining the local part of the operator
 mk_cdiffop(ham_l,1,{1},1);
 for all psi let ham_l(1,1,psi)=
   td(psi,x,3) + (2/3)*(u**2*td(psi,x) + u*u_x*psi);
+
+% Coefficient matrix; syntax: c^{alpha,beta} = c(alpha,beta)
+% `Tail' vector; syntax: w^i_\alpha = w(i,alpha)
+mk_wnlop(c,w,1);
+c(1,1):= - 2/3$
+w(1,1):=u_x$
 
 % Input for the first wnl operator
 ham1:={ham_l,c,w};
