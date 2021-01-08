@@ -143,7 +143,7 @@ algebraic (let whittaker!*rules);
 flag('(StruveH StruveL Lommel1 Lommel2
        WhittakerM WhittakerW Lambert_W), 'specfn);
 
-deflist('((StruveH 2) (StruveL 1) (Lommel1 3)
+deflist('((StruveH 2) (StruveL 2) (Lommel1 3)
           (Lommel2 3) (Lambert_W 1)
           (WhittakerM 3) (WhittakerW 3)
 	 ), 'number!-of!-args);

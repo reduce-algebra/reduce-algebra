@@ -616,7 +616,7 @@ igamma(2,4);
 
 igamma(0.5,4);
 
-beta(1,1,1);
+ibeta(1,1,1);
 
 ibeta(1,2,1);
 

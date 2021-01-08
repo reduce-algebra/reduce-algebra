@@ -7114,10 +7114,10 @@ igamma(0.5,4);
 0.9953206825613376
 
 
-beta(1,1,1);
+ibeta(1,1,1);
 
 
-beta(1,1,1)
+1
 
 
 ibeta(1,2,1);
@@ -7230,19 +7230,19 @@ do*one*int:function
 Ei(0);
 
 
-ei(0)
+Ei(0)
 
 
 Ci(0);
 
 
-ci(0)
+Ci(0)
 
 
 Chi(0);
 
 
-chi(0)
+Chi(0)
 
 
 on rounded;
@@ -8097,4 +8097,3 @@ Catalan;
 
 
 end;
-
