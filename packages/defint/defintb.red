@@ -67,7 +67,7 @@ begin scalar !*combinelogs,!*expandlogs;
   defint_choose(-erf(~x)+1,~var) => defint!:opf1(42,x),    %erfc(x)
   defint_choose(Fresnel_S(~x),~var) => defint!:opf1(43,x),
   defint_choose(Fresnel_C(~x),~var) => defint!:opf1(44,x),
-  defint_choose(gamma(~n,~x),~var) => defint!:opf1(45,x,n),
+  defint_choose(m_gamma(~n,~x),~var) => defint!:opf1(45,x,n),
 
   defint_choose(BesselJ(~n,~x),~var) => defint!:opf1(50,x,n),
   defint_choose(BesselY(~n,~x),~var) => defint!:opf1(51,x,n),
