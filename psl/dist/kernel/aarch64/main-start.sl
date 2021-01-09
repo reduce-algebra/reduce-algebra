@@ -302,7 +302,7 @@ panic-exit                      % need to do UNIX cleanup after
                                 % a fatal error, so jump here
        (*move (wconst 0) (reg 1))
        (*linke 3 exit-with-status expr 1)
-       (*exit 3)
+%       (*exit 0)
 
        (*entry exit-with-status expr 1)
        (*push (reg 1))
@@ -317,10 +317,10 @@ panic-exit                      % need to do UNIX cleanup after
 % input from 1st argument, output into second
 %
 (lap '((*entry !_reduceup expr 0)
-       (*move (displacement (reg st) 4) (reg 1))
-       (*move (displacement (reg st) 8) (reg 2))
-       (*move (displacement (reg st) 12) (reg 3))
-       (*move (displacement (reg st) 16) (reg 4))
+       (*move (displacement (reg st) 16) (reg 1))
+       (*move (displacement (reg st) 24) (reg 2))
+       (*move (displacement (reg st) 32) (reg 3))
+       (*move (displacement (reg st) 40) (reg 4))
        (*linke 0 reduceup expr 4)))
 
 (de reduceup (str1 str2 len1 len2)

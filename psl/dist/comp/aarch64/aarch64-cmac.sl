@@ -327,8 +327,8 @@
 
 (DefAnyreg FRAME
   AnyregFRAME
-           ((zerop)  (Indirect (reg st)))
-           (         (Displacement (REG st) SOURCE)))
+%           ((zerop)  (Indirect (reg st)))
+           (         (Displacement (REG st) (plus2 (times2 2 8) SOURCE))))
 
 % The compiler will tag expressions immediate in the procedure ResolveWConst.
 % Only expressions are tagged immediate, not numbers.
@@ -588,10 +588,12 @@
 	  (if (oddp framesize)
             (progn
 	      (setq framesize (add1 framesize))
-	      (setq ll `((STR (reg nil) (displacement (reg sp) ,(times2 framesize (compiler-constant 'AddressingUnitsPerItem))))))))
-	  (setq NAlloc!* framesize)
-          (setq ll `((SUB (reg st) (reg st) ,(times2 framesize (compiler-constant 'AddressingUnitsPerItem))) ,@ll))))
-      `((STP (reg fp) (reg lr) (displacement (reg sp) 16 preindexed))
+	      (setq ll `((STR (reg nil) (displacement (reg sp) ,(times2 (plus2 1 framesize) (compiler-constant 'AddressingUnitsPerItem))))))))
+	  (setq NAlloc!* framesize)))
+      `((STP (reg fp) (reg lr)
+      	     (displacement (reg sp)
+      	     		   ,(times2 (plus2 2 framesize) (compiler-constant 'AddressingUnitsPerItem))
+			   preindexed))
 	(MOV (reg fp) (reg sp))
 	,@ll)))
 
@@ -599,30 +601,32 @@
 
 (de *DeAlloc (DeAllocCount)
   (if (oddp DeAllocCount) (setq DeAllocCount (plus2 DeAllocCount 1)))
-  (Expand1OperandCMacro 
-   (times DeAllocCount (compiler-constant 'AddressingUnitsPerItem))
+  (Expand1OperandCMacro
+   %% room for fp and lr
+   (times (plus 2 DeAllocCount) (compiler-constant 'AddressingUnitsPerItem))
    '*DeAlloc))
 
 (DefCmacro *DeAlloc
-           ((ZeroP)   (LDP (reg fp) (reg lr) (displacement (reg sp) 16 postindexed)))
+%           ((ZeroP)   (LDP (reg fp) (reg lr) (displacement (reg sp) 16 postindexed)))
 
-           (           (add (reg st) (reg st) ARGONE)
+           (   %        (add (reg st) (reg st) ARGONE)
                         % pop link register
-                       (LDP (reg fp) (reg lr) (displacement (reg sp) 16 postindexed)))
+                       (LDP (reg fp) (reg lr) (displacement (reg sp) ARGONE postindexed)))
 )
 
 
 % Again, make sure that the stack is always 16 byte aligned
 (de *Exit (N)
-  (if (evenp N) (setq N (plus2 N 1)))
+  (if (oddp N) (setq N (plus2 N 1)))
  (Expand1OperandCMacro
-   (times N (compiler-constant 'AddressingUnitsPerItem)) '*Exit))
+   %% room for fp and lr
+   (times (plus2 2 N) (compiler-constant 'AddressingUnitsPerItem)) '*Exit))
 
 (DefCMacro *Exit     % leaf routine first
-   ((ZeroP)  (LDP (reg fp) (reg lr) (displacement (reg sp) 16 postindexed))
-             (RET))
-   (         (add (reg st) (reg st) ARGONE)
-             (LDP (reg fp) (reg lr) (displacement (reg sp) 16 postindexed))
+%   ((ZeroP)  (LDP (reg fp) (reg lr) (displacement (reg sp) 16 postindexed))
+%             (RET))
+   (%         (add (reg st) (reg st) ARGONE)
+             (LDP (reg fp) (reg lr) (displacement (reg sp) ARGONE postindexed))
              (RET)))
 
 (de displacementp (x) (and (pairp x) (eq (car x) 'displacement)))
