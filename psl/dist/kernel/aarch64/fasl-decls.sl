@@ -103,9 +103,8 @@
 (ds reloc-right-half-inf (x) (field x 2 14))
 
 (ds reloc-inf-tag (x) (field x 8 2))
-(ds reloc-inf-inf (x) (field x 10 22))
+(ds reloc-inf-inf (x) (field x 42 22))
 
 (ds reloc-word-tag (x) (field x 0 2))
-(ds reloc-word-inf (x) (field x 2 30))
+(ds reloc-word-inf (x) (field x 2 62))
 
-  
