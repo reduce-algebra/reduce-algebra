@@ -91,7 +91,7 @@ int(si(1/x),x,0,infinity);
 
 
         1
-int(si(---),x,0,infinity)
+int(Si(---),x,0,infinity)
         x
 
 
@@ -196,7 +196,7 @@ int(-3*Ei(-x),x,0,infinity);
 int(x*shi(x),x,0,infinity);
 
 
-int(x*shi(x),x,0,infinity)
+int(x*Shi(x),x,0,infinity)
 
 
 int(x*Fresnel_C(x),x,0,infinity);
@@ -286,7 +286,7 @@ int(2,x,0,infinity)
 int(cos(x)*si(x),x,0,infinity);
 
 
-int(cos(x)*si(x),x,0,infinity)
+int(cos(x)*Si(x),x,0,infinity)
 
 
 int(2*cos(x)*e^(-x),x,0,infinity);
@@ -565,7 +565,7 @@ int(e^(-1/2x),x,0,y);
 int(si(x),x,0,y);
 
 
-cos(y) + si(y)*y - 1
+cos(y) + Si(y)*y - 1
 
 
 int(BesselJ(2,x^(1/4)),x,0,y);
@@ -616,7 +616,7 @@ int(x*shi(x),x,0,y);
 
 
                         2
-  - cosh(y)*y + shi(y)*y  + sinh(y)
+  - cosh(y)*y + Shi(y)*y  + sinh(y)
 ------------------------------------
                  2
 
@@ -636,7 +636,7 @@ int(x^2*e^(-x^2),x,0,y);
 int(x^(-1)/2*sin(x),x,0,y);
 
 
- si(y)
+ Si(y)
 -------
    2
 
@@ -1169,9 +1169,3 @@ int(e^(-(x-mu)^2/(2*sigma^2)),x,-infinity,infinity);
 
 end;
 
-Tested on x86_64-unknown-ubuntu16.04 PSL
-Time (counter 1): 15390 ms  plus GC time: 10 ms
-Quitting
-real 16.69
-user 15.58
-sys 0.88

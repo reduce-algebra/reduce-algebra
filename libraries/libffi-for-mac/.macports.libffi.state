@@ -1,0 +1,10 @@
+version: 2
+checksum: e59d333d0e1e7dcfa136c452d2a546c783cf627060f8dcb93529b61b1ae7b7fb
+variant: +universal
+target: org.macports.fetch
+target: org.macports.checksum
+target: org.macports.extract
+target: org.macports.patch
+target: org.macports.configure
+target: org.macports.build
+target: org.macports.destroot

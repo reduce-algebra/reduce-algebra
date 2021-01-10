@@ -1,0 +1,12 @@
+src/x86/unix64.lo: ../src/x86/unix64.S fficonfig.h include/ffi.h \
+  include/ffitarget.h ../src/x86/internal64.h ../src/x86/asmnames.h
+
+fficonfig.h:
+
+include/ffi.h:
+
+include/ffitarget.h:
+
+../src/x86/internal64.h:
+
+../src/x86/asmnames.h:

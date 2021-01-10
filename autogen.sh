@@ -133,7 +133,18 @@ case $a in
 *--without-csl* | *with-csl=no*)
   ;;
 *--with-csl*)
-  L="$L ./csl ./csl/cslbase ./csl/cslbase-nothrow ./libraries/SoftFloat-3a/source ./libraries/libffi"
+  L="$L ./csl ./csl/cslbase ./csl/cslbase-nothrow ./libraries/SoftFloat-3a/source"
+# On Apple m1 (ie arm64) I will want to build a universal version of the
+# libffi library and that is done in a way that differs from standrad builds.
+  case "`uname -s` `uname -m`" in
+  *Darwin*arm64*)
+    L="$L ./libraries/libffi-for-mac/libffi-3.3-arm64"
+    L="$L ./libraries/libffi-for-mac/libffi-3.3-x86_6464"
+    ;;
+  *)
+    L="$L ./libraries/libffi"
+    ;;
+  esac
   case $a in
   *--without-fox* | *with-fox=no* | \
   *--without-gui* | *with-gui=no*)

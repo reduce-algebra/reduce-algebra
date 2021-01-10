@@ -365,7 +365,6 @@ lisp random_new_seed 1;
 resettime1;
 write "START OF REDUCE TEST RUN ON $mc"$ in "$f"; write "END OF REDUCE TEST RUN"$
 % What follows is in Lisp to avoid parsing issues if some packages are loaded!
-on echo; %@@@@
 symbolic eval '
   (prog (cpu_time gc_time o)
     (setq cpu_time  (difference (time) otime1!*))
@@ -439,23 +438,28 @@ lisp (testdirectory:="$dd");
 lisp random_new_seed 1;
 resettime1;
 write "START OF REDUCE TEST RUN ON $mc"$ in "$f"; write "END OF REDUCE TEST RUN"$
-symbolic begin
-  scalar cpu_time, gc_time;
-  cpu_time := otime1!*;
-  otime1!* := time();
-  cpu_time := otime1!* - cpu_time;
-  gc_time := ogctime1!*;
-  ogctime1!* := gctime();
-  gc_time := ogctime1!* - gc_time;
-  if 'psl memq lispsystem!* then cpu_time := cpu_time - gc_time;
-  out "$name-times/$p.showtime";
-  print list('$p, cpu_time, gc_time);
-  out t;
-  print list('$p, cpu_time, gc_time);
+% What follows is in Lisp to avoid parsing issues if some packages are loaded!
+symbolic eval '
+  (prog (cpu_time gc_time o)
+    (setq cpu_time  (difference (time) otime1!*))
+    (setq gc_time   (difference (gctime) ogctime1!*))
+    (cond
+      ((memq 'psl lispsystem!*)
+       (setq cpu_time (difference cpu_time gc_time))))
+    (wrs (setq o (open "$name-times/$p.showtime" 'output)))
+    (print (list "$p" cpu_time gc_time))
+    (wrs nil)
+    (prin2 "Time: ") (prin2 "$p")
+    (prin2 "  ") (prin2 cpu_time)
+    (prin2 "  ") (prin2 gc_time)
+    (terpri))$
 end$
 quit$
 XXX
-  cat $name-times/$p.showtime >> $name-times/showtimes
+  if test -f $name-times/$p.showtime
+  then
+    cat $name-times/$p.showtime >> $name-times/showtimes
+  fi
   cat $p.howlong.tmp >> $name-times/$p.rlg.tmp
   printf $showname...
   sed -e "/^Tested on /,//d" <$rlgfile |
@@ -499,9 +503,27 @@ lisp (testdirectory:="$dd");
 lisp random_new_seed 1;
 resettime1;
 write "START OF REDUCE TEST RUN on $mc"$ in "$f"; write "END OF REDUCE TEST RUN"$
-showtime1$
+% What follows is in Lisp to avoid parsing issues if some packages are loaded!
+symbolic eval '
+  (prog (cpu_time gc_time o)
+    (setq cpu_time  (difference (time) otime1!*))
+    (setq gc_time   (difference (gctime) ogctime1!*))
+    (cond
+      ((memq 'psl lispsystem!*)
+       (setq cpu_time (difference cpu_time gc_time))))
+    (wrs (setq o (open "$name-times/$p.showtime" 'output)))
+    (print (list "$p" cpu_time gc_time))
+    (wrs nil)
+    (prin2 "Time: ") (prin2 "$p")
+    (prin2 "  ") (prin2 cpu_time)
+    (prin2 "  ") (prin2 gc_time)
+    (terpri))$
 quit$
 XXX
+  if test -f $name-times/$p.showtime
+  then
+    cat $name-times/$p.showtime >> $name-times/showtimes
+  fi
   cat $p.howlong.tmp >> psl-times/$p.rlg.tmp
   printf "PSL..."
   sed -e "/^Tested on /,//d" <$rlgfile | \

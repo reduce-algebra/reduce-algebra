@@ -701,19 +701,19 @@ AC_MSG_NOTICE([in csl_inplace_cygwin_build wwl=$with_windows_layout])
   then
     cd x86_64
     doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
-            CC=\"$CC -arch x86_64\" CXX=\"$CXX -arch x86_64\" \
+            CC=\"$CC\" CXX=\"$CXX\" \
             STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \ 
-            $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
+            $forcer CPPFLAGS=\"$CPPFLAGS -arch x86_64\" CFLAGS=\"$CFLAGS -arch x86_64\" \
+            CXXFLAGS=\"$CXXFLAGS -arch x86_64\" LDFLAGS=\"$LDFLAGS -arch x86_64\" LIBS=\"$LIBS\" \
             $passcc $pass_build --with-cygwin"
     AC_MSG_NOTICE([doconfig = $doconfig])
     eval "$doconfig"
     cd ../arm64
     doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
-            CC=\"$CC -arch arm64\" CXX=\"$CXX -arch arm64\" \
+            CC=\"$CC\" CXX=\"$CXX -arch arm64\" \
             STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \ 
-            $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
+            $forcer CPPFLAGS=\"$CPPFLAGS -arch arm64\" CFLAGS=\"$CFLAGS -arch arm64\" \
+            CXXFLAGS=\"$CXXFLAGS -arch arm64\" LDFLAGS=\"$LDFLAGS -arch arm64\" LIBS=\"$LIBS\" \
             $passcc $pass_build --with-cygwin"
     AC_MSG_NOTICE([doconfig = $doconfig])
     eval "$doconfig"
@@ -1034,18 +1034,31 @@ then
   *darwin* | *Darwin*)
     CPPFLAGS="$CPPFLAGS -I/opt/local/include"
     LDFLAGS="$LDFLAGS -L/opt/local/lib"
+# The Apple change-over from x86_64 to arm64 will be "fun". For now
+# I have 4 scenarios:
+#     default:              build explicitly for x86_64 and up to 10.13.
+#     --with-mac-x86_64:    ditto.
+#     --with-mac-arm64:     build for arm64 and 11.0 up.
+#     --with-mac-universal: build both versions (not yet implemented but
+#                           should become the new default if on an arm64 mac).
     if test "x$with_mac_x86_64" = "xyes"
     then
        CPPFLAGS="$CPPFLAGS -mmacosx-version-min=10.13 -arch x86_64"
+       CFLAGS="$CFLAGS -mmacosx-version-min=10.13 -arch x86_64"
+       CXXFLAGS="$CXXFLAGS -mmacosx-version-min=10.13 -arch x86_64"
        LDFLAGS="$LDFLAGS -mmacosx-version-min=10.13 -arch x86_64"
     elif test "x$with_mac_arm64" = "xyes"
     then
        CPPFLAGS="$CPPFLAGS -mmacosx-version-min=11.0 -arch arm64"
+       CFLAGS="$CFLAGS -mmacosx-version-min=11.0 -arch arm64"
+       CXXFLAGS="$CXXFLAGS -mmacosx-version-min=11.0 -arch arm64"
        LDFLAGS="$LDFLAGS -mmacosx-version-min=11.0 -arch arm64"
     elif test "x$with_mac_universal" != "xyes"
     then
-       CPPFLAGS="$CPPFLAGS -mmacosx-version-min=10.13 -arch x86_64"
-       LDFLAGS="$LDFLAGS -mmacosx-version-min=10.13 -arch x86_64"
+       CPPFLAGS="$CPPFLAGS -mmacosx-version-min=10.13"
+       CFLAGS="$CFLAGS -mmacosx-version-min=10.13"
+       CXXFLAGS="$CXXFLAGS -mmacosx-version-min=10.13"
+       LDFLAGS="$LDFLAGS -mmacosx-version-min=10.13"
     fi
     ;;
   esac
@@ -1280,30 +1293,36 @@ fi
 
 AC_MSG_NOTICE([About to configure libffi])
 mkdir -p libffi
-cd libffi
-
-if test "x$CC$CPP$CXX$CXXCPP" != "x"
-then
-  passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
-else
-  passcc=""
-fi
-AC_MSG_NOTICE([passcc = $passcc])
-doconfig="$SHELL $abssrcdir/libraries/libffi/configure -C $filtered \
-        $pass_host \
-        CPPFLAGS=\"$CPPFLAGS\" \
-        CFLAGS=\"$CFLAGS\" \
-        CXXFLAGS=\"$CXXFLAGS\" \
-        LDFLAGS=\"$LDFLAGS\" \
-        $passcc \
-        --disable-multi-os-directory \
-        --disable-docs \
-        --prefix=\"$builddir\" \
-        --libdir=\"$builddir/lib\" \
-        --includedir=\"$builddir/include\""
-AC_MSG_NOTICE([doconfig = $doconfig])
-eval "$doconfig"
-cd "$builddir"
+case "`uname -s` `uname -m`" in
+*Darwin*arm64*)
+  cp $abssrcdir/libraries/libffi-for-mac/Makefile libffi
+  ;;
+*)
+  cd libffi
+  if test "x$CC$CPP$CXX$CXXCPP" != "x"
+  then
+    passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+  else
+    passcc=""
+  fi
+  AC_MSG_NOTICE([passcc = $passcc])
+  doconfig="$SHELL $abssrcdir/libraries/libffi/configure -C $filtered \
+          $pass_host \
+          CPPFLAGS=\"$CPPFLAGS\" \
+          CFLAGS=\"$CFLAGS\" \
+          CXXFLAGS=\"$CXXFLAGS\" \
+          LDFLAGS=\"$LDFLAGS\" \
+          $passcc \
+          --disable-multi-os-directory \
+          --disable-docs \
+          --prefix=\"$builddir\" \
+          --libdir=\"$builddir/lib\" \
+          --includedir=\"$builddir/include\""
+  AC_MSG_NOTICE([doconfig = $doconfig])
+  eval "$doconfig"
+  cd "$builddir"
+  ;;
+esac
 
 AC_MSG_NOTICE([About to configure libsoftfloat])
 mkdir -p softfloat

@@ -624,7 +624,7 @@ fps(ci x,x);
 
                    2*k       k
                   x   *( - 1) *infinity*x
-ci(0) + infsum(------------------------------,k,0,infinity)
+Ci(0) + infsum(------------------------------,k,0,infinity)
                 factorial(2*k + 1)*(2*k + 1)
 
 fps(log(1-2*x*y+x^2),x);

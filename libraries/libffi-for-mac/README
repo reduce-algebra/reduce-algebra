@@ -1,0 +1,10 @@
+This is a copy of the libffi sources extracted from where "macports"
+fetched it. It is here so that Reduce can have an embedded copy of libffi in
+case that has not been installed at a system level, and the files here
+have not been modified from the versions used with macports even though
+I will not use all of them. The "Makefile" here is copies into a Reduce
+build tree for use there and is not suitable for general purposes. It
+should work on either Intel or ARM-based Macs provided a sufficiently up
+tp date Xcode is installed, and should then build universal versions of
+the library.
+    Arthur Norman. January 2021

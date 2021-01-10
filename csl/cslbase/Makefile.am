@@ -263,6 +263,12 @@ if mac_framework
 CSL_IMG=csl.app/Contents/MacOS/csl.img
 BOOTSTRAPREDUCE_IMG=bootstrapreduce.app/Contents/MacOS/bootstrapreduce.img
 REDUCE_IMG=reduce.app/Contents/MacOS/reduce.img
+#.PHONY:	csl.img
+#.PHONY:	bootstrapreduce.img
+#.PHONY:	reduce.img
+csl.img:	$(CSL_IMG)
+bootstrapreduce.img:	$(BOOTSTRAPREDUCE_IMG)
+reduce.img:	$(REDUCE_IMG)
 else !mac_framework
 CSL_IMG=csl.img
 BOOTSTRAPREDUCE_IMG=bootstrapreduce.img

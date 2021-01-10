@@ -1521,6 +1521,7 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
                     errexit();
                 }
                 putprop(c, work_symbol, w);
+                errexit();
             }
         }
         return onevalue(b);
@@ -2023,19 +2024,19 @@ LispObject Lindirect(LispObject, LispObject a)
                         static_cast<intptr_t>(sixty_four_bits(a))));
 }
 
+#ifndef WITHOUT_FFI
+
 //
 // A basic foreign function interface...
 //
 
 
-//
 //   (setq libobject (open!-foreign!-library "libraryname"))
 // On windows ".dll" is appended, on other systems ".so", unless there is
 // already a suffix. Returns nil if the library can not be accessed.
 //
 // I will not (for now) provide a call to close the library - it should be
 // closed when the system exits.
-//
 
 LispObject Lopen_foreign_library(LispObject env, LispObject name)
 {
@@ -2056,22 +2057,18 @@ LispObject Lopen_foreign_library(LispObject env, LispObject name)
     for (w2=libname; *w2!=0; w2++)
         if (w1==nullptr && *w2 == '.') w1 = w2;
         else if (*w2 == '/' || *w2 == '\\') w1 = nullptr;
-//
 // Now of w1 is not nullptr it identifies a suffix ".xxx" where there is no
 // "/" or "\\" in the string xxx. A suffix such as ".so.1.3.2" is reported as
 // a whole despite the embedded dots.
 // On Windows if no suffix is provided a ".dll" will be appended, while
 // on other systems ".so" is used.
-//
 #ifdef WIN32
     if (w1 == nullptr) std::strcat(libname, ".dll");
     for (w1=libname; *w1!=0; w1++)
         if (*w1 == '/') *w1 = '\\';
-//
 // For now I will leave the trace print of the library name here, since
 // it should only appear once per run so ought not to cause over-much grief.
 // eventually I will remove it!
-//
 #ifdef DEBUG
     std::printf("open-library Windows %s\n", libname);
 #endif
@@ -2081,10 +2078,8 @@ LispObject Lopen_foreign_library(LispObject env, LispObject name)
 #ifdef DEBUG
         DWORD err = GetLastError();
         char errbuf[80];
-//
 // The printf calls here to report errors will not be useful in some
 // windowed contexts, so I will need to rework them in due course.
-//
         std::printf("Error code %ld = %lx\n", static_cast<long>(err),
                     static_cast<long>(err));
         err = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
@@ -2097,11 +2092,9 @@ LispObject Lopen_foreign_library(LispObject env, LispObject name)
 #else
     if (w1 == nullptr) std::strcat(libname, ".so");
 #ifdef DEBUG
-//
 // For now I will leave the trace print of the library name here, since
 // it should only appear once per run so ought not to cause over-much grief.
 // eventually I will remove it!
-//
     std::printf("open-library Linux/Mac/BSD/Unix etc %s\n", libname);
 #endif
 #ifdef EMBEDDED
@@ -2121,11 +2114,9 @@ LispObject Lopen_foreign_library(LispObject env, LispObject name)
     return onevalue(r);
 }
 
-//
 // (setq entrypoint (find!-foreign!-function "fname" libobject))
 // Using a library opened by open!-foreign!-library look up an entrypoint
 // for a function called "fname". If one can not be found return nil.
-//
 
 LispObject Lfind_foreign_function(LispObject env, LispObject name,
                                   LispObject lib)
@@ -2170,12 +2161,9 @@ LispObject Lfind_foreign_function(LispObject env, LispObject name,
     return onevalue(r);
 }
 
-#ifndef WITHOUT_FFI
-//
 // (call!-foreign!-function fnptr)
 // call the function as found by find!-foreign!-function not passing it
 // any arguments and not expecting any result.
-//
 
 typedef void void_function();
 
@@ -2200,7 +2188,6 @@ LispObject Lcallf_1(LispObject env, LispObject entry)
     return onevalue(nil);
 }
 
-//
 // For calling foreign functions I need to know something of their type
 // signature. The view I will take here is NOT guaranteed portable but
 // is liable to work on many practical systems. I classify arguments that
@@ -2213,7 +2200,6 @@ LispObject Lcallf_1(LispObject env, LispObject entry)
 //           size_t if it has size 8
 //           char *, void *, strings etc when size 8
 // Double    double
-//
 
 #define MAX_ARGCOUNT 20
 #define MAX_STRINGLEN 256
@@ -2239,10 +2225,9 @@ int64_t i64res;
 double  dblres;
 void   *strres;
 
-//
 // Given a symbol (or in fact a string) this checks if its name is the
 // same as the value given as arg2.
-//
+
 int name_matches(LispObject a, const char *s)
 {   size_t len = 0;
     const char *w = get_string_data(a, "call-foreign", len);
@@ -2251,7 +2236,6 @@ int name_matches(LispObject a, const char *s)
     else return 0;
 }
 
-//
 // The general scheme for call-foreign-function is as follows, where the
 // key issue is that of the types of data passed and returned...
 //
@@ -2285,7 +2269,6 @@ int name_matches(LispObject a, const char *s)
 //    and val is something that can be mapped onto the matching type. The
 //    purpose of this is so that whether an integer passed this way will be
 //    32 or 64-bit can depend on the nature of the host system.
-//
 
 static bool dumparg(int i, LispObject type, LispObject value)
 {   size_t len = 0;
@@ -2433,10 +2416,8 @@ LispObject Lcallf_2(LispObject env, LispObject entry, LispObject a1)
 {   return callf_n(entry, ncons(a1));
 }
 
-//
 // It may be useful to pass callbacks into CSL to a foreign function so that
 // they can be stored and used...
-//
 
 static LispObject Lget_callback(LispObject env, LispObject a)
 {   void *r = nullptr;

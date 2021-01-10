@@ -50,6 +50,21 @@ case $host in
   host=`echo $host | $SED -e s/i386/universal/`
   host=`echo $host | $SED -e s/i686/universal/`
   host=`echo $host | $SED -e s/powerpc/universal/`
+# Well the above is a bit "Historical", but with Apple "m1" (arm64)
+# being releases a whole fresh tranche of transition is upon us!
+  case $* in
+  *--with-mac-universal*)
+    host=`echo $host | $SED -e s/x86_64/universal/`
+    host=`echo $host | $SED -e s/aarch64/universal/`
+    ;;
+  *--with-mac-x86_64*)
+    host=`echo $host | $SED -e s/aarch64/x86_64/`
+    ;;
+  *--with-mac-arm64*)
+# Trying --with-mac-arm64 when running on an Intel-mac will probably not work.
+    host=`echo $host | $SED -e s/x86_65/aarch64/`
+    ;;
+  esac
   ;;
 *)
 # The following line may help on FreeBSD where AC_CANONICAL_HOST

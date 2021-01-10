@@ -104,6 +104,7 @@ then
   with_windows_layout="old"
 fi
 
+# Universal builds on the Macintosh are NOT YET AVAILABLE.
 AC_ARG_WITH(mac_universal,
   AC_HELP_STRING([--with-mac-universal], [Build universal mac app]),
   [],
@@ -497,7 +498,7 @@ case $host in
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
   fi
   AC_CHECK_PROGS(REZ,[/usr/bin/Rez /Developer/tools/Rez],[Rez])
-  if test "x$with_mac_x86_64" != "xno"
+  if test "x$with_mac_x86_64" = "xyes"
   then
     CPPFLAGS="$CPPFLAGS -arch x86_64"
     CXXCPPFLAGS="$CXXCPPFLAGS -arch x86_64"
@@ -505,7 +506,7 @@ case $host in
     CXXFLAGS="$CXXFLAGS -arch x86_64"
     LDFLAGS="$LDFLAGS -arch x86_64"
   fi
-  if test "x$with_mac_arm64" != "xno"
+  if test "x$with_mac_arm64" != "xyes"
   then
     CPPFLAGS="$CPPFLAGS -arch arm64"
     CXXCPPFLAGS="$CXXCPPFLAGS -arch arm64"
@@ -1673,9 +1674,12 @@ then
 #
   if test "x$with_mac_arm64" = "xyes"
   then
-    ENVP="MACOSX_DEPLOYMENT_TARGET=11.0
+# I have doubts about this because 11.0 was the first OS release to
+# support arm64. But I may be building other things for 10.13 and so it
+# starts off safer to stay there.
+    ENVP="MACOSX_DEPLOYMENT_TARGET=10.13"
   else
-    ENVP="MACOSX_DEPLOYMENT_TARGET=10.13
+    ENVP="MACOSX_DEPLOYMENT_TARGET=10.13"
   fi
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
@@ -1803,9 +1807,9 @@ AM_CONDITIONAL(crlibm, test "x$with_crlibm" != "xno")
 AM_CONDITIONAL(softfloat, test "x$with_softfloat" != "xno")
 AM_CONDITIONAL(redfront, test "x$with_redfront" != "xno")
 AM_CONDITIONAL(fake_exceptions, test "x$with_fake_exceptions" = "xyes")
-AM_CONDITIONAL(mac_universal, test "x$with_mac_universal" != "xno")
-AM_CONDITIONAL(mac_x86_64, test "x$with_mac_x86_64" != "xno")
-AM_CONDITIONAL(mac_arm64, test "x$with_mac_arm64" != "xno")
+AM_CONDITIONAL(mac_universal, test "x$with_mac_universal" = "xyes")
+AM_CONDITIONAL(mac_x86_64, test "x$with_mac_x86_64" = "xyes")
+AM_CONDITIONAL(mac_arm64, test "x$with_mac_arm64" = "xyes")
 
 AC_OUTPUT
 

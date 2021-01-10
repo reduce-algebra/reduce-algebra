@@ -1,0 +1,18 @@
+src/aarch64/sysv.lo: ../src/aarch64/sysv.S fficonfig.h include/ffi.h \
+  include/ffitarget.h ../include/ffi_cfi.h ../src/aarch64/internal.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX11.1.sdk/usr/include/mach/machine/vm_param.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX11.1.sdk/usr/include/mach/arm/vm_param.h
+
+fficonfig.h:
+
+include/ffi.h:
+
+include/ffitarget.h:
+
+../include/ffi_cfi.h:
+
+../src/aarch64/internal.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX11.1.sdk/usr/include/mach/machine/vm_param.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX11.1.sdk/usr/include/mach/arm/vm_param.h:
