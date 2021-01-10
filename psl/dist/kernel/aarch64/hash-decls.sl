@@ -65,10 +65,10 @@
 
 (deflist 
       '(
-        (Hashtab-HalfWord ((shl 2 (reg 2))
-                (LDR (indexed (reg 1) (regshifted (reg 2) LSL 2)) (reg W1))))
-        (PutHashtab-HalfWord ((shl 2 (reg 2))
-                (STR (reg W3) (indexed (reg 1) (regshifted (reg 2) LSL 2))))))
+        (Hashtab-HalfWord (
+                (LDR (reg W0) (indexed (reg 1) (regshifted (reg 2) LSL 2)))))
+        (PutHashtab-HalfWord (
+                (STR (reg W2) (indexed (reg 1) (regshifted (reg 2) LSL 2))))))
  'OpenCode)
 
 (put 'Hashtab-HalfWord 'assign-op 'PutHashtab-HalfWord)
@@ -89,9 +89,10 @@
 
 (ds hash-table-entry (i) 
   % Access to an element of the hash table.
-  (wgetv hashtable i))
+%  (wgetv hashtable i))
+  (Hashtab-Halfword hashtable i))
 				         
 (ds set-hash-table-entry (i x) 
-  (setf (wgetv hashtable i) x))
+  (setf (Hashtab-Halfword hashtable i) x))
 
 (put 'hash-table-entry 'assign-op 'set-hash-table-entry)
