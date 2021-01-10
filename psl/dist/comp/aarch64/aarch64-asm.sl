@@ -100,7 +100,7 @@
 (setq NumericRegisterNames* '[nil "X0" "X1" "X2" "X3" "X4" "X5", "X6", "X7"])
 
 (setq LabelFormat* "%w:%n")             % Labels are in the first column
-(setq CommentFormat* "@ %p%n")          % Comments begin with at sign
+(setq CommentFormat* "// %p%n")          % Comments begin with at sign
                                         % will group alphabetically
 
 (setq ExportedDeclarationFormat* " .globl %w%n")
@@ -543,10 +543,10 @@
 (Fluid '(ResultingCode*))
 
 (de MCPrint (x)                         % Echo of MC's
- (CodePrintF "@ %p%n" x))
+ (CodePrintF "// %p%n" x))
 
 (de InstructionPrint (x) 
- (CodePrintF "@    %p%n" x))
+ (CodePrintF "//    %p%n" x))
 
 (de *cerror (x) 
  (prog (i) 

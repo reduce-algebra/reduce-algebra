@@ -173,10 +173,12 @@
     (AND (eqcar Regname 'reg)
          (MemQ (cadr RegName) 
                '( 1  2  3  4  5  6  7  8
-                     R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15
-		     R16 R17 R18 R19 R20 R21 R22 R23 R24 R25 R26 R27 R28 R29 R30
-		     sp st pc lr Rzero
-                     t1 t2 t3 fp
+                     X0 X1 X2 X3 X4 X5 X6 X7 X8 X9 X10 X11 X12 X13 X14 X15
+		     X16 X17 X18 X19 X20 X21 X22 X23 X24 X25 X26 X27 X28 X29 X30
+                     W0 W1 W2 W3 W4 W5 W6 W7 W8 W9 W10 W11 W12 W13 W14 W15
+		     W16 W17 W18 W19 W20 W21 W22 W23 W24 W25 W26 W27 W28 W29 W30
+		     sp st fp lr Rzero Wzero
+                     t1 t2 t3
              nil heaplast heaptrapbound symfnc symval
              bndstkptr bndstklowerbound bndstkupperbound
              ))))
@@ -489,11 +491,12 @@
        (                         (*Move ArgOne (reg t1))
                                  (*Move (reg t1) ArgTwo)))
 
+%% ToDo!
 (de *LoadConstant (dest cst)
     (cond ((imm8-rotatedp cst)
            `( (MOV ,dest ,cst)))
           ((imm8-rotatedp (land 16#ffffffff (lnot cst)))
-           `( (MVN ,dest  ,(land 16#ffffffff (lnot cst)))))
+           `( (MOVN ,dest  ,(land 16#ffffffff (lnot cst)))))
           ((sixteenbit-p cst)
            % sixteen bits: load in two steps
            `( (MOV ,dest ,(land 16#ff cst))
@@ -538,9 +541,9 @@
         (comment (if *writingasmfile `((comment ,@nonlocal)))))
     (append comment
       (if (and idnumber (fixp idnumber) (lessp idnumber 257) (greaterp idnumber -1))
-        `( (,load-or-store ,reg (displacement (reg symval) ,(times 8 idnumber))) )
+        `( (,load-or-store ,reg (indexed (reg symval) ,(times 8 idnumber))) )
        `( (LDR (reg t3) ,(if (null idnumber) (SaveConstant `(saveidloc ,(cadr nonlocal))) `(quote ,idnumber))) 
-         (,load-or-store ,reg (displacement (reg symval) (regshifted t3 LSL 3))) )
+         (,load-or-store ,reg (indexed (reg symval) (regshifted t3 LSL 3))) )
       ))))
 
 (DefCMacro *LoadIdNumber)
@@ -1224,8 +1227,11 @@
 
 (DefCMacro *SignedField
 
+  ((regp regp Eightp FiftySixP) (SBFX ArgOne ArgTwo 0 56))
+  ((regp anyp Eightp FiftySixP) (*Move ArgTwo ArgOne)
+                                (SBFX ArgOne ArgOne 0 56))
   ((regp regp zerop fixp) (SBFX ArgOne ArgTwo (difference 64 ArgFour) ArgFour))
-  ((regp regp fixp fixp) (SBFX ArgOne ArgTwo ArgThree)
+  ((regp regp fixp fixp) (SBFX ArgOne ArgTwo (difference 64 (plus2 ArgThree ArgFour)) ArgFour)
                          (*asr ArgOne ArgOne (difference 32 ArgFour)))
   ((regp anyp fixp fixp) (*Move ArgTwo (reg t3))
                          (*SignedField ArgOne (reg t3) ArgThree ArgFour))
