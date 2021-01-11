@@ -76,10 +76,8 @@ void set_fns(LispObject a, no_args *f0, one_arg *f1, two_args *f2,
 #ifdef HIDE_USELESS_SYMBOL_ENVIRONMENTS
 
 static bool interpreter_entry(LispObject a)
-//
 // If a function will be handled by the interpreter, including the case
 // of it being undefined, then the fn1() cell will tell me so.
-//
 {   return (   qfn1(a) == interpreted_1 ||
                qfn1(a) == funarged_1 ||
                qfn1(a) == undefined_1);
@@ -191,12 +189,10 @@ static const char *show_fn4up(fourup_args *p)
 }
 
 LispObject Lsymbol_fn_cell(LispObject env, LispObject a)
-//
 // For debugging... This looks in the 5 function cells that any
 // symbol has and attempts to display the name of the function there.
 // There are enough tables for me to find the names of MANY things, but I
 // do not guarantee everything.
-//
 {   const char *s0, *s1, *s2, *s3, *s4up;
     if (!symbolp(a)) return onevalue(nil);
     s0 = show_fn0(qfn0(a));
@@ -280,7 +276,6 @@ LispObject Lobject_header(LispObject env, LispObject a)
 }
 
 LispObject Lsymbol_argcount(LispObject env, LispObject a)
-//
 // For debugging use. Only valid if the function involved
 // is byte-coded. For simple functions taking a fixed number of args the
 // result is an integer. Otherwise it is a list of 3 items
@@ -288,7 +283,6 @@ LispObject Lsymbol_argcount(LispObject env, LispObject a)
 // where the flags has a 1 bit if missing &optional args are to be left
 // for the bytecoded stuff to unpick, otherwise they should be mapped to nil
 // somewhere. The 2 bit is present if a &rest argument is present.
-//
 {   no_args *f0;
     one_arg *f1;
     two_args *f2;
@@ -346,11 +340,9 @@ LispObject Lsymbol_argcount(LispObject env, LispObject a)
 }
 
 LispObject Lsymbol_argcode(LispObject env, LispObject a)
-//
 // This hands back a single integer that encodes what must be in the
 // five function cells for anything byte-coded.
 // Or nil if the argument did not name a bytecoded function.
-//
 {
 #define BYTE_ARGMASK 0x007    // 0, 1, 2, 3 or 4. 4 means "4 or more"
 #define BYTE_OPT     0x008    // &optional present
@@ -358,10 +350,8 @@ LispObject Lsymbol_argcode(LispObject env, LispObject a)
 #define BYTE_REST    0x020    // &rest present
 //#define BYTE_TRACED  0x040
 #define BYTE_CALLAS  0x100    // link to some other function
-//
 // I can not see any way much better than a grim sequence of explicit
 // tests to achieve what I want here.
-//
     no_args *f0;
     one_arg *f1;
     two_args *f2;
@@ -404,11 +394,9 @@ LispObject Lsymbol_argcode(LispObject env, LispObject a)
 }
 
 LispObject Lsymbol_env(LispObject env, LispObject a)
-//
 // Not Common Lisp - read the 'environment' cell associated with a
 // symbol.  This cell is deemed empty unless the symbol-function is
 // compiled code.  For use mainly for debugging.
-//
 {   if (!symbolp(a)) return onevalue(nil);
 #ifdef HIDE_USELESS_SYMBOL_ENVIRONMENTS
     else if ((qheader(a) & (SYM_SPECIAL_FORM | SYM_MACRO)) != 0 ||
@@ -430,11 +418,9 @@ LispObject Lsymbol_fastgets(LispObject env, LispObject a)
     return onevalue(qfastgets(a));
 }
 
-//
 // (protect 'name t) arranges that the function indicated (which is
 // expected to have been defined in the C kernel) can not be redefined.
 // (protect 'name nil) restores the usual state of affairs.
-//
 
 LispObject Lsymbol_protect(LispObject env, LispObject a, LispObject b)
 {   Header h;
@@ -446,20 +432,16 @@ LispObject Lsymbol_protect(LispObject env, LispObject a, LispObject b)
     return onevalue(Lispify_predicate(h == (SYM_CODEPTR | SYM_C_DEF)));
 }
 
-//
 // (symbol-make-fastget 'xxx nil)   returns current information, nil if no
 //                                  fastget usage set.
 // (symbol-make-fastget 'xxx n)     sets it to n (0 <= n < 63)
 // (symbol-make-fastget 'xxx -1)    sets the option off
-//
 
 LispObject Lsymbol_make_fastget1(LispObject env, LispObject a)
 {
-//
 // Originally I had thought I would let people change the fastget size here,
 // but I think that is dangerous and unnecessary so I will not do so any
 // more. Anybody who tries will get a cryptic message!
-//
     term_printf("+++ symbol-make-fastget called with only 1 argument\n");
     return onevalue(nil);
 }
@@ -475,11 +457,9 @@ LispObject Lsymbol_make_fastget(LispObject env, LispObject a,
     {   n1 = int_of_fixnum(n);
         if (n1 < -1 || n1 >= fastget_size)
             return aerror1("symbol-make-fastget", n);
-//
 //      trace_printf("+++ Use fastget slot %d for ", n1);
 //      loop_print_trace(a);
 //      trace_printf("\n");
-//
         if (p != 0) elt(fastget_names, p-1) = SPID_NOPROP;
         q = (n1 + 1) & 0x3f;
         h = (h & ~SYM_FASTGET_MASK) | (q << SYM_FASTGET_SHIFT);
@@ -491,11 +471,9 @@ LispObject Lsymbol_make_fastget(LispObject env, LispObject a,
 }
 
 static LispObject deleqip(LispObject a, LispObject l)
-//
 // This deletes the item a (tested for using EQ) from the list l,
 // assuming that the list is nil-terminated and that the item a
 // occurs at most once. It overwrites the list l in the process.
-//
 {   LispObject w, r;
     if (l == nil) return nil;
     if (car(l) == a) return cdr(l);
@@ -511,9 +489,7 @@ static LispObject deleqip(LispObject a, LispObject l)
 
 void lose_C_def(LispObject a)
 {
-//
 // None of the code here can cause garbage collection.
-//
     LispObject b = get(a, unset_var, nil), c;
     Lremprop(nil, a, unset_var);
     setheader(a, qheader(a) & ~SYM_C_DEF);
@@ -535,7 +511,6 @@ static bool restore_fn_cell(LispObject a, char *name,
     return true;
 }
 
-//
 // This gets called by the compiler if it is asked to compile something
 // into a fasl file where that thing has a definition as C code. In such a
 // case what it puts into the fasl file is a call to this to instate the
@@ -543,7 +518,6 @@ static bool restore_fn_cell(LispObject a, char *name,
 // become a bottleneck - and in such a case I should make a table of C
 // entrypoints as a hash table or something sorted for use with binary
 // search!
-//
 
 static LispObject Lrestore_c_code(LispObject env, LispObject a)
 {   char *name;
@@ -556,10 +530,8 @@ static LispObject Lrestore_c_code(LispObject env, LispObject a)
     pop(a);
     name = reinterpret_cast<char *>(&celt(pn, 0));
     len = length_of_byteheader(vechdr(pn)) - CELL;
-//
 // This is a potential time-sink in that it does a linear scan of all the
 // definitions in the tables that are in u01.c to u60.c.
-//
     for (i=0; setup_tables[i]!=nullptr; i++)
     {   if (restore_fn_cell(a, name, len, setup_tables[i]))
         {   LispObject env;
@@ -575,7 +547,6 @@ static LispObject Lrestore_c_code(LispObject env, LispObject a)
 
 LispObject Lsymbol_set_definition(LispObject env,
                                   LispObject a, LispObject b)
-//
 // The odd case here is where the second argument represents a freshly
 // created bit of compiled code. In which case the structure is
 //   (nargs . codevec . envvec)
@@ -592,12 +563,9 @@ LispObject Lsymbol_set_definition(LispObject env,
 // length of the function body.
 // Standard Lisp does not need &optional or &rest arguments, but it turned
 // out to be pretty easy to make the bytecode compiler support them.
-//
 {   if (!is_symbol(a) ||
-//
 // Something flagged with the CODEPTR bit is a gensym manufactured to
 // stand for a compiled-code object. It should NOT be reset!
-//
         (qheader(a) & (SYM_SPECIAL_FORM | SYM_CODEPTR)) != 0)
     {   if (qheader(a) & SYM_C_DEF) return onevalue(nil);
         return aerror1("symbol-set-definition", a);
@@ -609,24 +577,20 @@ LispObject Lsymbol_set_definition(LispObject env,
     if (b == nil) return onevalue(b); // set defn to nil to undefine
     else if (symbolp(b))
     {
-//
 // One could imagine a view that the second arg to symbol-set-definition
 // had to be a codepointer object. I will be kind (?) and permit the NAME
 // of a function too.  However for the second arg to be a macro or a
 // special form would still be a calamity.
 //      if ((qheader(b) & SYM_CODEPTR) == 0)
 //          return aerror1("symbol-set-definition", b);
-//
         if ((qheader(b) & (SYM_SPECIAL_FORM | SYM_MACRO)) != 0)
             return aerror1("symbol-set-definition", b);
         setheader(a, qheader(a) & ~SYM_MACRO);
         {   set_fns(a, qfn0(b), qfn1(b), qfn2(b), qfn3(b), qfn4up(b));
             setenv(a, qenv(b));
-//
 // In order that checkpoint files can be made there is some very
 // ugly fooling around here for functions that are defined in the C coded
 // kernel.  Sorry.
-//
             if ((qheader(b) & SYM_C_DEF) != 0)
             {   LispObject c = get(b, unset_var, nil);
                 if (c == nil) c = b;
@@ -758,10 +722,8 @@ LispObject Lremd(LispObject env, LispObject a)
         (SYM_C_DEF | SYM_CODEPTR)) return onevalue(nil);
     res = Lgetd(nil, a);
     if (res == nil) return onevalue(nil); // no definition to remove
-//
 // I treat an explicit use of remd as a redefinition, and ensure that
 // restarting a preserved image will not put the definition back.
-//
     setheader(a, qheader(a) & ~SYM_MACRO);
     if ((qheader(a) & SYM_C_DEF) != 0) lose_C_def(a);
     set_fns(a, undefined_0, undefined_1, undefined_2, undefined_3,
@@ -770,7 +732,6 @@ LispObject Lremd(LispObject env, LispObject a)
     return onevalue(res);
 }
 
-//
 // For set-autoload the first argument must be a symbol that will name
 // a function, the second arg is either an atom or a list of atoms, each
 // of which specified a module to be loaded if the names function is
@@ -782,7 +743,6 @@ LispObject Lremd(LispObject env, LispObject a)
 // An explicit use of remd first can be used to ensure that no previous
 // definition is present and thus that a real autoload stub will be instated,
 // if that is what you really want.
-//
 
 LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
 {   LispObject res;
@@ -798,11 +758,9 @@ LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
     if (consp(b)) res = cons(a, b);
     else res = list2(a, b);
     pop(b, a);
-//
 // I treat an explicit use of set-autoload as a redefinition, and ensure that
 // restarting a preserved image will not put the definition back.  Note that
 // I will not allow autoloadable macros...
-//
     setheader(a, qheader(a) & ~SYM_MACRO);
     if ((qheader(a) & SYM_C_DEF) != 0) lose_C_def(a);
     set_fns(a, autoload_0, autoload_1, autoload_2, autoload_3,
@@ -918,7 +876,6 @@ LispObject Lmacro_function(LispObject env, LispObject a)
 LispObject get_pname(LispObject a)
 {   LispObject name = qpname(a);
 #ifndef COMMON
-//
 // When a gensym is first created its pname field points at a string that
 // will form the base of its name, and a magic bit is set in its header.
 // If at some stage it is necessary to inspect the print name (mainly in
@@ -929,7 +886,6 @@ LispObject get_pname(LispObject a)
 // that every time I want to grab the pname of anything I have to check for
 // this case and admit the possibility of garbage collection or even
 // failure.
-//
     if (qheader(a) & SYM_UNPRINTED_GENSYM)
     {   uintptr_t len;
         char *p;
@@ -991,7 +947,6 @@ LispObject Lsymbol_package(LispObject env, LispObject a)
 
 static LispObject Lrestart_lisp2(LispObject env,
                                  LispObject a, LispObject b)
-//
 // If the argument is given as nil then this is a cold-start, and when
 // I begin again it would be a VERY good idea to do a (load!-module 'compat)
 // rather promptly (otherwise some Lisp functions will not work at all).
@@ -1019,24 +974,19 @@ static LispObject Lrestart_lisp2(LispObject env,
 // from its initial default input source, and that will be preserved across
 // the restart. A log file and the standard output should also be safe,
 // but no other files should be active when restart!-lisp is called.
-//
 {   int n;
     char *v;
     ensure_screen();
     n = 0;
     v = nullptr;
-//
 // A comment seems in order here. The case b==SPID_NOARG should only
 // arise if I came from Lrestart_lisp: it indicates that there was
 // no second argument provided.
-//
     if (b != SPID_NOARG)
     {   LispObject b1;
         push(a);
-//
 // I will need to pack the data into a character vector using utf-8
 // encoding... exploden can hand back character codes up to 0x0010ffff.
-//
         b1 = b = Lexploden(nil, b);
         pop(a);
         while (b1 != nil)
@@ -1107,7 +1057,6 @@ static LispObject Lpreserve_3(LispObject env, LispObject startup,
 
 static LispObject Lpreserve_2(LispObject env,
                               LispObject startup, LispObject banner)
-//
 // (preserve <startup-fn>) saves a Lisp image in a standard place
 // and arranges that when restarted the saved image will call the specified
 // startup function.  In the process of doing all this it unwinds down to
@@ -1116,7 +1065,6 @@ static LispObject Lpreserve_2(LispObject env,
 // active startup function is retained.  If banner is non-nil (well really
 // I want a string) is is a message of up to 40 characters to display
 // when the system restart.
-//
 {   return Lpreserve_3(env, startup, banner, nil);
 }
 
@@ -1130,13 +1078,11 @@ static LispObject Lpreserve_0(LispObject env)
 
 
 #if 0
-//
 // This is an experimental addition - a version of PRESERVE that allows
 // CSL to continue executing after it has written out an image file. I am
 // now removing it because I have arranged that if PRESERVE is given a
 // non-nil third argument it reloads the image that it creates rather than
 // quitting lisp.
-//
 
 // ++++ With the new serialization-based scheme for preserve() this would
 //      all become almost trivial to reinstate if I thought it was useful!
@@ -1159,14 +1105,12 @@ static LispObject Lcheckpoint(LispObject env,
     {   msg = reinterpret_cast<char *>()&celt(banner, 0);
         len = length_of_byteheader(vechdr(banner)) - CELL;
     }
-//
 // Note, with some degree of nervousness, that things on the C stack will
 // be updated by the garbage collection that happens during the processing
 // of the call to preserve(), but they will be neither adjusted into
 // relative addresses nor unadjusted (and hence restored) by in the
 // image-writing. But the image writing will not actually move any data
 // around so all is still OK, I hope!
-//
     push(catch_tags, faslvec, faslgensyms);
     preserve(msg, len);
     pop(faslgensyms, faslvec, catch_tags);
@@ -1185,20 +1129,16 @@ static LispObject Lcheckpoint_1(LispObject env, LispObject startup)
 #endif
 
 
-//
 // Drop out to the next enclosing code that limits resources, as if there had
 // been an overflow.
-//
 
 static LispObject Lresource_exceeded(LispObject env)
 {   return resource_exceeded();
 }
 
 static bool eql_numbers(LispObject a, LispObject b)
-//
 // This is only called from eql, and then only when a and b are both tagged
 // as ratios or complex numbers.
-//
 {   LispObject p, q;
     p = *reinterpret_cast<LispObject *>(a + (CELL - TAG_NUMBERS));
     q = *reinterpret_cast<LispObject *>(b + (CELL - TAG_NUMBERS));
@@ -1209,12 +1149,9 @@ static bool eql_numbers(LispObject a, LispObject b)
 }
 
 bool eql_fn(LispObject a, LispObject b)
-//
 // This seems incredible - all the messing about that is needed to
 // check that numeric values compare properly.  Ugh.
-//
 {
-//
 // (these tests done before eql_fn is called).
 //  if (a == b) return true;
 //  if ((((intptr_t)a ^ (intptr_t)b) & TAG_BITS) != 0) return false;
@@ -1223,7 +1160,6 @@ bool eql_fn(LispObject a, LispObject b)
 // I have further pain here with (eql 0.0s -0.0s), and (eql NaN NaN) might
 // improperly return true because of the early EQ test. For Standard Lisp
 // I am going to make +0.0 and -0.0 equal.
-//
     if (SIXTY_FOUR_BIT)
     {   if (a == XTAG_SFLOAT &&
             b == static_cast<LispObject>(XTAG_SFLOAT|((uint64_t)1<<63))) return
@@ -1286,12 +1222,10 @@ bool eql_fn(LispObject a, LispObject b)
 #endif
 
 static bool cl_vec_equal(LispObject a, LispObject b)
-//
 // here a and b are known to be vectors or arrays.  This should compare
 // them following the Common Lisp recipe, where strings or bitvectors
 // (simple or complex) have their contents compared, while all other types of
 // vector or array are tested using EQ.
-//
 {   Header ha = vechdr(a), hb = vechdr(b);
     intptr_t offa = 0, offb = 0;
     int ta = type_of_header(ha), tb = type_of_header(hb);
@@ -1300,23 +1234,19 @@ static bool cl_vec_equal(LispObject a, LispObject b)
     if (is_bitvec_header(hb)) tb = TYPE_BITVEC_1;
     switch (ta)
     {
-//
 //case TYPE_ARRAY:
-///  My moan here is that, as noted above, I ought to process even
+//  My moan here is that, as noted above, I ought to process even
 // non-simple strings and bit-vectors by comparing contents, but as a
 // matter of idleness I have not yet got around to that. In fact if I get
 // arrays to compare here I will pretend that they are not strings or
 // bit-vectors and compare using EQ...
-//
         case TYPE_STRING_1:
         case TYPE_STRING_2:
         case TYPE_STRING_3:
         case TYPE_STRING_4:
             switch (tb)
             {
-// /*
-//  case TYPE_ARRAY:
-//
+//              case TYPE_ARRAY:
                 case TYPE_STRING_1:
                 case TYPE_STRING_2:
                 case TYPE_STRING_3:
@@ -1358,9 +1288,7 @@ static bool cl_vec_equal(LispObject a, LispObject b)
         case TYPE_BITVEC_32:
             switch (tb)
             {
-// /*
 //  case TYPE_ARRAY:
-//
                 case TYPE_BITVEC_1:
                 case TYPE_BITVEC_2:
                 case TYPE_BITVEC_3:
@@ -1425,17 +1353,14 @@ compare_bits:
 }
 
 bool cl_equal_fn(LispObject a, LispObject b)
-//
 // a and b are not EQ at this stage.. I guarantee to have checked that
 // before entering this general purpose code.
 // I will only view short and possibly single floats as EQUAL here if they
 // has been EQ. In particular that has implications for +0.0 vs. -0.0 and
 // also NaN values...
 {
-//
 // The for loop at the top here is so that cl_equal can iterate along the
 // length of linear lists.
-//
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
@@ -1455,11 +1380,9 @@ bool cl_equal_fn(LispObject a, LispObject b)
                     if (a == b) return true;
                     continue;
                 }
-//
 // And here, because cl_equal() seems to be a very important low-level
 // primitive, I unwind one level of the recursion that would arise
 // with nested lists.
-//
                 for (;;)
                 {   uint32_t tca = (uint32_t)ca & TAG_BITS;
                     if (tca == TAG_CONS && ca != nil)
@@ -1472,10 +1395,8 @@ bool cl_equal_fn(LispObject a, LispObject b)
                                 if (ca == cb) break;
                                 continue;
                             }
-//
 // Do a real recursion when I get down to args like
 // ((x ...) ...) ((y ...) ...)
-//
                             if (!cl_equal(cca, ccb)) return false;
                             ca = cdr(ca);
                             cb = cdr(cb);
@@ -1540,11 +1461,9 @@ bool cl_equal_fn(LispObject a, LispObject b)
         }
         else if (is_immed_cons_sym(ta) ||
                  ((uint32_t)b & TAG_BITS) != ta) return false;
-//
 // OK - now a and b both have the same type and neither are immediate data
 // conses or symbols. That leaves vectors (including strings) and boxed
 // numbers.
-//
         else switch (ta)
             {   case TAG_NUMBERS:
                 {   Header h = numhdr(a);
@@ -1592,23 +1511,21 @@ bool cl_equal_fn(LispObject a, LispObject b)
 
 static bool vec_equal(LispObject a, LispObject b);
 
-//
 // Hmmm - EQUAL could be re-implemented to be non-recursive via pointer
 // reversing and if that was done then there could not possibly be any
-// concerns about stck overflow in it. Furthermore since EQUAL traverses
-// the two input lists in lockstep and only dived into structures that
+// concerns about stack overflow in it. Furthermore since EQUAL traverses
+// the two input lists in lockstep and only dives into structures that
 // are not EQ, and since a larger part of one list can not be EQUAL to
 // a smaller part of the other it may be that the temporary rearrangement
 // to one list can never confuse traversal of the other. I might want to
 // think about recovery in the case that cyclic (and partially shared) lists
 // are presented. Until I implement this I do not know what the performance
-// would be as compared agsinst a regular recursive version.
+// would be as compared aginst a regular recursive version.
 //
 // For performance I might wish to consider an implementation that
 // defers pointer reversal via a small local stack of depth (say) three.
 // Oh what a jolly and messy project it will be if I get round to implementing
 // and measuring that!
-//
 
 #ifdef TRACED_EQUAL
 #define LOG_SIZE 10000
@@ -1709,10 +1626,8 @@ extern bool inner_equal(LispObject a, LispObject b,
 
 bool traced_equal_fn(LispObject a, LispObject b,
                      const char *file, int line, int depth)
-//
 // a and b are not EQ at this stage.. I guarantee to have checked that
 // before entering this general purpose code.
-//
 {   bool r = inner_equal(a, b, file, line,depth);
     record_equal(file, line, depth, r);
     return r;
@@ -1726,15 +1641,12 @@ bool inner_equal(LispObject a, LispObject b,
 {
 #else
 bool equal_fn(LispObject a, LispObject b)
-//
 // a and b are not EQ at this stage.. I guarantee to have checked that
 // before entering this general purpose code. I will also have checked that
 // the types of the two args agree, and that they are not both immediate
 // data.
-//
 {
 #endif
-//
 // The for loop at the top here is so that equal can iterate along the
 // length of linear lists. For MANY MANY cases in a Lisp world data
 // structures will be long but not so terribly deep and so one hopes that
@@ -1742,7 +1654,6 @@ bool equal_fn(LispObject a, LispObject b)
 // non-recursive version of the code too but it proved generally slower
 // I could trigger a transfer into it at the stage that stack use became
 // excessive...
-//
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
@@ -1762,11 +1673,9 @@ bool equal_fn(LispObject a, LispObject b)
                     if (a == b) return true;
                     continue;
                 }
-//
 // And here, because equal() seems to be a very important low-level
 // primitive, I unwind one level of the recursion that would arise
 // with nested lists.
-//
                 for (;;)
                 {   uint32_t tca = (uint32_t)ca & TAG_BITS;
                     if (tca == TAG_CONS && ca != nil)
@@ -1779,10 +1688,8 @@ bool equal_fn(LispObject a, LispObject b)
                                 if (ca == cb) break;
                                 continue;
                             }
-//
 // Do a real recursion when I get down to args like
 // ((x ...) ...) ((y ...) ...)
-//
                             if (!equal(cca, ccb)) return false;
                             ca = cdr(ca);
                             cb = cdr(cb);
@@ -1904,20 +1811,16 @@ LispObject Lequalstats(LispObject env)
 #endif // TRACED_EQUAL
 
 static bool vec_equal(LispObject a, LispObject b)
-//
 // Here a and b are known to be vectors. Compare using recursive calls to
 // EQUAL on all components.
-//
 {   Header ha = vechdr(a), hb = vechdr(b);
     size_t l;
     if (ha != hb) return false;
-//
 // This used to check all the way up to the end of the final doubleword
 // that the vector was padded to. This means that it was VITAL that any
 // vector needed any final padding word put in a definite and good state.
 // Checking only the words that matter is just marginally quicker and
 // will fail less often if I do not pad properly!
-//
     l = (size_t)word_align_up(length_of_header(ha));
     if (vector_holds_binary(ha))
     {   while ((l -= 4) != 0)
@@ -1950,15 +1853,11 @@ static bool vec_equal(LispObject a, LispObject b)
 }
 
 bool equalp(LispObject a, LispObject b)
-//
 // a and b are not EQ at this stage.. I guarantee to have checked that
 // before entering this general purpose code.
-//
 {
-//
 // The for loop at the top here is so that equalp can iterate along the
 // length of linear lists.
-//
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
@@ -1978,11 +1877,9 @@ bool equalp(LispObject a, LispObject b)
                     if (a == b) return true;
                     continue;
                 }
-//
 // And here, because equalp() seems to be a very important low-level
 // primitive, I unwind one level of the recursion that would arise
 // with nested lists.
-//
                 for (;;)
                 {   uint32_t tca = (uint32_t)ca & TAG_BITS;
                     if (tca == TAG_CONS && ca != nil)
@@ -1995,10 +1892,8 @@ bool equalp(LispObject a, LispObject b)
                                 if (ca == cb) break;
                                 continue;
                             }
-//
 // Do a real recursion when I get down to args like
 // ((x ...) ...) ((y ...) ...)
-//
                             if (!equalp(cca, ccb)) return false;
                             ca = cdr(ca);
                             cb = cdr(cb);
@@ -2153,12 +2048,10 @@ LispObject Lneq_2(LispObject env, LispObject a, LispObject b)
 #ifdef COMMON
     r = cl_equal(a, b);
 #else
-//
 // Note that "equal" here is a macro that expands to something that
 // checks the EQ case in-line, so there is no merit in putting
 //   if (a == b) return onevalue(nil);
 // first.
-//
     r = equal(a, b);
 #endif
     return onevalue(Lispify_predicate(!r));
@@ -2234,10 +2127,8 @@ LispObject Lnrevlist_3(LispObject env, LispObject a, LispObject b,
     return onevalue(b);
 }
 
-//
 // nreverse0 is like nreverse except that if its input is atomic it gets
 // returned intact rather than being converted to nil.
-//
 
 LispObject Lnreverse0(LispObject env, LispObject a)
 {   LispObject b = nil;
@@ -2316,9 +2207,7 @@ LispObject Lassoc(LispObject env, LispObject a, LispObject b)
             if (equal(a, cc))
             {
 #ifdef TRACED_EQUAL
-//
 // In silly cases the length might not be a fixnum!
-//
                 trace_printf("Assoc true %3d %3d ", pos, int_of_fixnum(Llength(nil,
                              save_b)));
                 prin_to_stdout(a); trace_printf("\n");
@@ -2344,9 +2233,7 @@ LispObject Lassoc(LispObject env, LispObject a, LispObject b)
 LispObject Latsoc(LispObject env, LispObject a, LispObject b)
 {
 #ifdef COMMON
-//
 // See comments under atsoc...
-//
     if (is_symbol(a) || is_fixnum(a))
     {   while (consp(b))
         {   LispObject c = car(b);
@@ -2358,11 +2245,9 @@ LispObject Latsoc(LispObject env, LispObject a, LispObject b)
 #endif
     while (consp(b))
     {   LispObject c = car(b);
-//
 // As for memq I unroll the loop a little...
 // eql() can neither fail nor call the garbage collector, so I do
 // not need to stack things here.
-//
         if (consp(c) && eqcheck(a, car(c))) return onevalue(c);
         b = cdr(b);
         if (!consp(b)) return onevalue(nil);
@@ -2413,12 +2298,10 @@ LispObject Lmember(LispObject env, LispObject a, LispObject b)
 LispObject Lmemq(LispObject env, LispObject a, LispObject b)
 {
 #ifdef COMMON
-//
 // I think it is possible that the test I need here is more along the
 // lines of "is it a number that is not a fixnum" since EQL only
 // diverges from EQ in that case... However I will not adjust this right
 // now since I am not at present too concerned about Common Lisp mode...
-//
     if (is_symbol(a) || is_fixnum(a))
     {   while (consp(b))
         {   if (a == car(b)) return onevalue(b);
@@ -2429,10 +2312,8 @@ LispObject Lmemq(LispObject env, LispObject a, LispObject b)
 #endif
     while (consp(b))
     {
-//
 // I have unrolled this loop a bit because I found that in one of the
 // Reduce tests it was a serious hot-spot.
-//
         if (eqcheck(a, car(b))) return onevalue(b);
         b = cdr(b);
         if (!consp(b)) return onevalue(nil);
@@ -2450,13 +2331,11 @@ LispObject Lmemq(LispObject env, LispObject a, LispObject b)
 
 static bool smemq(LispObject a, LispObject b)
 {
-//
 // /* This is a bit worrying - it can use C recursion to arbitrary
 // depth without any checking for overflow, and hence it can ESCAPE
 // if (e.g.) given cyclic structures.  Some alteration is needed.  As
 // things stand the code can never give wrong answers via GC rearrangement -
 // the problem is closer to being that it can never call the GC.
-//
     while (consp(b))
     {   LispObject w = car(b);
         if (w == quote_symbol) return false;
@@ -2472,12 +2351,10 @@ LispObject Lsmemq(LispObject env, LispObject a, LispObject b)
     return onevalue(Lispify_predicate(r));
 }
 
-//
 //  (defun contained (x y)
 //     (cond ((atom y) (equal x y))
 //           ((equal x y) 't)
 //           ('t (or (contained x (car y)) (contained x (cdr y))))))
-//
 
 static bool containedeq(LispObject env, LispObject x, LispObject y)
 {   while (consp(y))
@@ -2522,7 +2399,6 @@ LispObject Llength(LispObject env, LispObject a)
 {   if (a == nil) return onevalue(fixnum_of_int(0));
     if (is_cons(a))
     {   size_t n = 1;
-//
 // Possibly I should do something to trap cyclic lists.. But doing so
 // would tend to be extra cost so unless it becomes a vital issue because
 // of some bug I will not worry.
@@ -2530,7 +2406,6 @@ LispObject Llength(LispObject env, LispObject a)
 // I have unrolled the loop here 4 times since I expect length to be
 // tolerably heavily used. Look at the assembly code generated for
 // this to see if it was useful or counterproductive!
-//
         for (;;)
         {   a = cdr(a);
             if (!consp(a)) break;
@@ -2554,11 +2429,9 @@ LispObject Llength(LispObject env, LispObject a)
         a = make_lisp_unsigned64(n);
         return onevalue(a);
     }
-//
 // Common Lisp expects length to find the length of vectors
 // as well as lists. I might as well do that in Standard Lisp mode
 // too. Otherwise length of atoms (except NIL) lead to zero.
-//
     else if (is_vector(a))
     {   Header h = vechdr(a);
         size_t n = length_of_header(h) - CELL;
@@ -2727,7 +2600,6 @@ LispObject Lnconc(LispObject env, LispObject a, LispObject b)
 // code will not have to include the messy mapping of names onto stack
 // locations!
 
-//
 // All the comments that follow are the signature of me needing to think
 // carefully while implementing a version of the code here that will
 // not recurse in the CDR direction.
@@ -2827,34 +2699,22 @@ LispObject Lnconc(LispObject env, LispObject a, LispObject b)
 //
 // If the substitution on car c proceed something that differeed
 // then normalise and push the new result onto rx.
-//
-//
 
 
-//
 // The above treatment is required for four functions
 //     subst, substq
 //     sublis, subla
-//
 
-
-static LispObject substq(LispObject a, LispObject b, LispObject c)
+static LispObject substq(LispObject a1, LispObject b1, LispObject c1)
 {   LispObject w;
-    stackcheck(a, b, c);
-    LispObject rx=TAG_FIXNUM, r=TAG_FIXNUM;
-    {   RealPush save(rx, r); // rx and r
-        RealPush save1(a, b, c);
-// Perhaps I could replace the use of "#define" here with code like
-//    LispObject &c = stack[0];
-//    LispObject &b = stack[-1];
-//    etc.
-// which would perhaps be cleaner.
-//
-#define c   stack[0]
-#define b   stack[-1]
-#define a   stack[-2]
-#define r   stack[-3]
-#define rx  stack[-4]
+    LispObject r1, rx1;
+    stackcheck(a1, b1, c1);
+    {   RealSave save(a1, b1, c1, TAG_FIXNUM, TAG_FIXNUM);
+        LispObject &a = save.val(1);
+        LispObject &b = save.val(2);
+        LispObject &c = save.val(3);
+        LispObject &r = save.val(4);
+        LispObject &rx = save.val(5);
         for (;;)
         {   if (c == b)
             {   if (c == a) break; // substitute by leaving unchanged
@@ -2923,42 +2783,35 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
                 r = TAG_FIXNUM;
             }
         }
-#undef c
-#undef b
-#undef a
-#undef r
-#undef rx
+        save.restore(a1, b1, c1, r1, rx1);
     }
-    while (r != TAG_FIXNUM)
-    {   w = cdr(r);
-        write_barrier(cdraddr(r), c);
-        c = r;
-        r = w;
+    while (r1 != TAG_FIXNUM)
+    {   w = cdr(r1);
+        write_barrier(cdraddr(r1), c1);
+        c1 = r1;
+        r1 = w;
     }
 // I have now restored the input list, so if I was taking an early exit
 // because EQUAL had failed on me I can give up now.
-    while (rx != TAG_FIXNUM)
-    {   w = cdr(rx);
-        write_barrier(cdraddr(rx), c);
-        c = rx;
-        rx = w;
+    while (rx1 != TAG_FIXNUM)
+    {   w = cdr(rx1);
+        write_barrier(cdraddr(rx1), c1);
+        c1 = rx1;
+        rx1 = w;
     }
-    return onevalue(c);
+    return onevalue(c1);
 }
 
-
-
-LispObject subst(LispObject a, LispObject b, LispObject c)
+LispObject subst(LispObject a1, LispObject b1, LispObject c1)
 {   LispObject w;
-    stackcheck(a, b, c);
-    LispObject rx=TAG_FIXNUM, r=TAG_FIXNUM;
-    {   RealPush save(rx, r);
-        RealPush save1(a, b, c);
-#define c   stack[0]
-#define b   stack[-1]
-#define a   stack[-2]
-#define r   stack[-3]
-#define rx  stack[-4]
+    stackcheck(a1, b1, c1);
+    LispObject r1=TAG_FIXNUM, rx1=TAG_FIXNUM;
+    {   RealSave save(a1, b1, c1, r1, rx1);
+        LispObject &a  = save.val(1);
+        LispObject &b  = save.val(2);
+        LispObject &c  = save.val(3);
+        LispObject &r  = save.val(4);
+        LispObject &rx = save.val(5);
         for (;;)
         {
 #ifdef COMMON
@@ -3037,40 +2890,34 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
                 r = TAG_FIXNUM;
             }
         }
-#undef c
-#undef b
-#undef a
-#undef r
-#undef rx
+        save.restore(a1, b1, c1, r1, rx1);
     }
-    while (r != TAG_FIXNUM)
-    {   w = cdr(r);
-        write_barrier(cdraddr(r), c);
-        c = r;
-        r = w;
+    while (r1 != TAG_FIXNUM)
+    {   w = cdr(r1);
+        write_barrier(cdraddr(r1), c1);
+        c1 = r1;
+        r1 = w;
     }
 // I have now restored the input list, so if I was taking an early exit
 // because EQUAL had failed on me I can give up now.
-    while (rx != TAG_FIXNUM)
-    {   w = cdr(rx);
-        write_barrier(cdraddr(rx), c);
-        c = rx;
-        rx = w;
+    while (rx1 != TAG_FIXNUM)
+    {   w = cdr(rx1);
+        write_barrier(cdraddr(rx1), c1);
+        c1 = rx1;
+        rx1 = w;
     }
-    return onevalue(c);
+    return onevalue(c1);
 }
 
-
-LispObject subla(LispObject a, LispObject c)
+LispObject subla(LispObject a1, LispObject c1)
 {   LispObject w;
-    stackcheck(a, c);
-    LispObject rx = TAG_FIXNUM, r=TAG_FIXNUM;
-    {   RealPush save(rx, r);
-        RealPush save1(a, c);
-#define c   stack[0]
-#define a   stack[-1]
-#define r   stack[-2]
-#define rx  stack[-3]
+    stackcheck(a1, c1);
+    LispObject r1 = TAG_FIXNUM, rx1 = TAG_FIXNUM;
+    {   RealSave save(a1, c1, r1, rx1);
+        LispObject &a  = save.val(1);
+        LispObject &c  = save.val(2);
+        LispObject &r  = save.val(3);
+        LispObject &rx = save.val(4);
         for (;;)
         {   LispObject tt = a;
             bool found = false;
@@ -3151,39 +2998,34 @@ LispObject subla(LispObject a, LispObject c)
                 r = TAG_FIXNUM;
             }
         }
-#undef c
-#undef a
-#undef r
-#undef rx
+        save.restore(a1, c1, r1, rx1);
     }
-    while (r != TAG_FIXNUM)
-    {   w = cdr(r);
-        write_barrier(cdraddr(r), c);
-        c = r;
-        r = w;
+    while (r1 != TAG_FIXNUM)
+    {   w = cdr(r1);
+        write_barrier(cdraddr(r1), c1);
+        c1 = r1;
+        r1 = w;
     }
 // I have now restored the input list, so if I was taking an early exit
 // because EQUAL had failed on me I can give up now.
-    while (rx != TAG_FIXNUM)
-    {   w = cdr(rx);
-        write_barrier(cdraddr(rx), c);
-        c = rx;
-        rx = w;
+    while (rx1 != TAG_FIXNUM)
+    {   w = cdr(rx1);
+        write_barrier(cdraddr(rx1), c1);
+        c1 = rx1;
+        rx1 = w;
     }
-    return onevalue(c);
+    return onevalue(c1);
 }
 
-
-LispObject sublis(LispObject a, LispObject c)
+LispObject sublis(LispObject a1, LispObject c1)
 {   LispObject w;
-    stackcheck(a, c);
-    LispObject rx=TAG_FIXNUM, r=TAG_FIXNUM;
-    {   RealPush save(rx, r);
-        RealPush save1(a, c);
-#define c   stack[0]
-#define a   stack[-1]
-#define r   stack[-2]
-#define rx  stack[-3]
+    stackcheck(a1, c1);
+    LispObject r1=TAG_FIXNUM, rx1=TAG_FIXNUM;
+    {   RealSave save(a1, c1, r1, rx1);
+        LispObject &a = save.val(1);
+        LispObject &c = save.val(2);
+        LispObject &r = save.val(3);
+        LispObject &rx= save.val(4);
         for (;;)
         {   LispObject tt = a;
             bool found = false;
@@ -3273,31 +3115,24 @@ LispObject sublis(LispObject a, LispObject c)
                 r = TAG_FIXNUM;
             }
         }
-#undef c
-#undef a
-#undef r
-#undef rx
+        save.restore(a1, c1, r1, rx1);
     }
-    while (r != TAG_FIXNUM)
-    {   w = cdr(r);
-        write_barrier(cdraddr(r), c);
-        c = r;
-        r = w;
+    while (r1 != TAG_FIXNUM)
+    {   w = cdr(r1);
+        write_barrier(cdraddr(r1), c1);
+        c1 = r1;
+        r1 = w;
     }
-//
 // I have now restored the input list, so if I was taking an early exit
 // because EQUAL had failed on me I can give up now.
-//
-    while (rx != TAG_FIXNUM)
-    {   w = cdr(rx);
-        write_barrier(cdraddr(rx), c);
-        c = rx;
-        rx = w;
+    while (rx1 != TAG_FIXNUM)
+    {   w = cdr(rx1);
+        write_barrier(cdraddr(rx1), c1);
+        c1 = rx1;
+        rx1 = w;
     }
-    return onevalue(c);
+    return onevalue(c1);
 }
-
-
 
 LispObject Lsubstq(LispObject env, LispObject a, LispObject b,
                    LispObject c)
@@ -3339,9 +3174,7 @@ LispObject Lsublis(LispObject env, LispObject al, LispObject x)
 
 
 LispObject Lsubla(LispObject env, LispObject al, LispObject x)
-//
 // as sublis, but uses eq test rather than equal
-//
 {   stackcheck(al, x);
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
@@ -3357,11 +3190,9 @@ LispObject Lsubla(LispObject env, LispObject al, LispObject x)
 setup_type const funcs2_setup[] =
 {   {"all-symbols",             Lall_symbols0, Lall_symbols, G2Wother, G3Wother, G4Wother},
     {"assoc",                   G0W1, G1W2, Lassoc, G3W2, G4W2},
-//
 // assoc** is expected to remain as the Standard Lisp version even if in
 // a Common Lisp world I redefine assoc to be something messier. xassoc was
 // an earlier name I used for the same purpose, and is being withdrawn.
-//
     {"assoc**",                 G0W1, G1W2, Lassoc, G3W2, G4W2},
     {"xassoc",                  G0W1, G1W2, Lassoc, G3W2, G4W2},
     {"atsoc",                   G0W1, G1W2, Latsoc, G3W2, G4W2},
@@ -3369,12 +3200,10 @@ setup_type const funcs2_setup[] =
     {"member**",                G0W1, G1W2, Lmember, G3W2, G4W2},
     {"memq",                    G0W1, G1W2, Lmemq, G3W2, G4W2},
     {"contained",               G0W1, G1W2, Lcontained, G3W2, G4W2},
-//
 // I originally called this restart!-csl but I am now changing the name
 // to be restart!-lisp to be a little less specific about exactly which
-// implementation of Lisp is involved. IN the fullness of time I will
+// implementation of Lisp is involved. In the fullness of time I will
 // remove the name restart!-csl...
-//
     {"restart-lisp",            G0Wother, Lrestart_lisp, Lrestart_lisp2, G3Wother, G4Wother},
     {"restart-csl",             G0Wother, Lrestart_lisp, Lrestart_lisp2, G3Wother, G4Wother},
     {"eq",                      G0W1, G1W2, Leq, G3W2, G4W2},
@@ -3434,10 +3263,8 @@ setup_type const funcs2_setup[] =
     {"symbol-protect",          G0W1, G1W2, Lsymbol_protect, G3W2, G4W2},
     {"symbol-plist",            G0W1, Lplist, G2W1, G3W1, G4W1},
     {"append",                  Lnilfn, Lappend_1, Lappend_2, Lappend_3, Lappend_4up},
-//
 // In Common Lisp mode I make EQUAL do what Common Lisp says it should, but
 // also have EQUALS that is much the same but which also descends vectors.
-//
 //  {"equal",                   G0W1, G1W2, Lcl_equal, G3W2, G4W2},
 //  {"equals",                  G0W1, G1W2, Lequal, G3W2, G4W2},
 //  {"nreverse0",               G0W1, Lnreverse0, G2W1, G3W1, G4W1},

@@ -141,11 +141,10 @@ static LispObject or_fn(LispObject args, LispObject env)
 static LispObject prog_fn(LispObject iargs, LispObject ienv)
 {   if (!consp(iargs) || !consp(cdr(iargs))) return onevalue(nil);
     stackcheck(iargs, ienv);
-    LispObject t = nil;
-    RealPush save(t, iargs, ienv);
-    LispObject &env    = stack[0];
-    LispObject &args   = stack[-1];
-    LispObject &my_tag = stack[-2];
+    RealSave save(nil, iargs, ienv);
+    LispObject &my_tag = save.val(1);
+    LispObject &args   = save.val(2);
+    LispObject &env    = save.val(3);
 // I need to augment the (lexical) environment with a null block
 // tag so that (return ..) will work as required. See block_fn for
 // further elaboration since (block ..) is the main way of introducing
@@ -210,22 +209,24 @@ static LispObject prog1_fn(LispObject args, LispObject env)
     if (!consp(args)) return onevalue(nil); // (prog1) -> nil
     stackcheck(args, env);
     errexit();
-    {   Push save(args, env);
+    {   Save save(args, env);
         f = car(args);
         f = eval(f, env);              // first arg
+        save.restore(args, env);
     }
     errexit();
-    {   Push save(f);
-        for (;;)
-        {   args = cdr(args);
-            if (!consp(args)) break;
-            Push save1(args, env);
-            {   LispObject w = car(args);
-                static_cast<void>(eval(w, env));
-            }
-            errexit();
+    Save save(f);
+    for (;;)
+    {   args = cdr(args);
+        if (!consp(args)) break;
+        Save save1(args, env);
+        {   LispObject w = car(args);
+            static_cast<void>(eval(w, env));
         }
+        errexit();
+        save1.restore(args, env);
     }
+    save.restore(f);
     return onevalue(f);     // always hands back just 1 value
 }
 
@@ -235,48 +236,55 @@ static LispObject prog2_fn(LispObject args, LispObject env)
     if (!consp(args)) return onevalue(nil); // (prog2) -> nil
     stackcheck(args, env);
     errexit();
-    {   Push save(args, env);
+    {   Save save(args, env);
         args = car(args);
         static_cast<void>(eval(args, env));  // eval & discard first arg
+        errexit();
+        save.restore(args, env);
     }
     errexit();
     args = cdr(args);
     if (!consp(args)) return onevalue(nil); // (prog2 x) -> nil
-    {   Push save(args, env);
+    {   Save save(args, env);
         f = car(args);
         f = eval(f, env);                       // second arg
+        errexit();
+        save.restore(args, env);
     }
-    {   Push save(f);
-        for (;;)
-        {   args = cdr(args);
-            if (!consp(args)) break;
-            {   Push save1(args, env);
-                args = car(args);
-                static_cast<void>(eval(args, env));
-            }
+    Save save(f);
+    for (;;)
+    {   args = cdr(args);
+        if (!consp(args)) break;
+        {   Save save1(args, env);
+            args = car(args);
+            static_cast<void>(eval(args, env));
+            save1.restore(args, env);
         }
     }
+    save.restore(f);
     return onevalue(f);     // always hands back just 1 value
 }
 
-#define specenv stack[0]
-#define vals    stack[-1]
-#define syms    stack[-2]
-#define env     stack[-3]
-#define args    stack[-4]
+#define specenv save.val(5)
+#define vals    save.val(4)
+#define syms    save.val(3)
+#define env     save.val(2)
+#define args    save.val(1)
 
-class RAIIunbind_progv_specials
-{   LispObject *save;
+class Unbind_progv_specials
+{   LispObject *saveStack;
+    LispObject *specenv_p;
 public:
-    RAIIunbind_progv_specials()
-    {   save = stack;
+    Unbind_progv_specials(LispObject *ss)
+    {   saveStack = stack;
+        specenv_p = ss;
     }
-    ~RAIIunbind_progv_specials()
-    {   stack = save;
-        while (specenv != nil)
-        {   LispObject p = car(specenv);
+    ~Unbind_progv_specials()
+    {   stack = saveStack;
+        while (*specenv_p != nil)
+        {   LispObject p = car(*specenv_p);
             setvalue(car(p), cdr(p));
-            specenv = cdr(specenv);
+            *specenv_p = cdr(*specenv_p);
         }
     }
 };
@@ -290,8 +298,7 @@ static LispObject progv_fn(LispObject args_x, LispObject env_x)
     syms_x = vals_x = specenv_x = nil;
     syms_x = car(args_x);
     args_x = cdr(args_x);
-    RealPush save(args_x, env_x, syms_x, vals_x, specenv_x);
-
+    RealSave save(args_x, env_x, syms_x, vals_x, specenv_x);
     syms = eval(syms, env);
     errexit();
     if (!consp(args)) return nil;
@@ -320,7 +327,7 @@ static LispObject progv_fn(LispObject args_x, LispObject env_x)
         setvalue(v, w);
         specenv = cons(w1, specenv);
     }
-    {   RAIIunbind_progv_specials unbind_progv_variables;
+    {   Unbind_progv_specials unbind_progv_variables(&specenv);
         args = progn_fn(args, env);
     }
     return specenv;
@@ -421,9 +428,11 @@ static LispObject setq_fn(LispObject args, LispObject env)
         }
         args = cdr(args);
         if (consp(args))
-        {   {   Push save(args, env, var);
+        {   {   Save save(args, env, var);
                 val = car(args);
                 val = eval(val, env);
+                errexit();
+                save.restore(args, env, var);
             }
             errexit();
             args = cdr(args);
@@ -492,14 +501,16 @@ LispObject tagbody_fn(LispObject args, LispObject env)
     {   LispObject w = car(p);
         if (!consp(w))
         {   LispObject w1;
-            Push save(p);
-            {   Push save1(env);
+            Save save(p);
+            {   Save save1(env);
                 w1 = cons(fixnum_of_int(1), p);
+                save1.restore(env);
             }
             env = cons(w1, env);
             errexit();
             env = cons(w1, env);
             errexit();
+            save.restore(p);
         }
     }
 // That has put my new version of env with bindings of the form

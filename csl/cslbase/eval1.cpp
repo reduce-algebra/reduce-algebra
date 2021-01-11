@@ -842,15 +842,17 @@ LispObject Levlis(LispObject env, LispObject a)
     errexit();
     r = nil;
     while (consp(a))
-    {   {   Push save(a);
+    {   {   Save save(a);
             LispObject a1;
-            {   Push save(r);
+            {   Save save1(r);
                 a1 = car(a);
                 a1 = eval(a1, nil);
                 errexit();
+                save1.restore(r);
             }
             r = cons(a1, r);
             errexit();
+            save.restore(a);
         }
         a = cdr(a);
     }
@@ -877,8 +879,9 @@ LispObject Lapply_4up(LispObject env, LispObject fn, LispObject a1,
     errexit();
     a3up = nreverse2(cdr(a3up), car(a3up));
 // I have just flattened out the final argument.
-    {   Push save(fn);
+    {   Save save(fn);
         a1 = list2star(a1, a2, a3up);
+        save.restore(fn);
     }
     errexit();
     return apply(fn, a1, nil, apply_symbol);
@@ -904,8 +907,9 @@ LispObject Lapply_2(LispObject env, LispObject fn, LispObject a1)
 LispObject Lapply_3(LispObject env, LispObject fn, LispObject a1,
                     LispObject a2)
 {   save_current_function saver(apply_symbol);
-    {   Push save(fn);
+    {   Save save(fn);
         a1 = cons(a1, a2);
+        save.restore(fn);
     }
     errexit();
     return apply(fn, a1, nil, apply_symbol);
@@ -933,8 +937,9 @@ LispObject Lapply2(LispObject env, LispObject fn,
                    LispObject a1, LispObject a2)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
         return (*qfn2(fn))(fn, a1, a2);
-    {   Push save(env, fn);
+    {   Save save(env, fn);
         a1 = list2(a1, a2);
+        save.restore(env, fn);
     }
     errexit();
     return Lapply_2(env, fn, a1);
@@ -947,8 +952,9 @@ LispObject Lapply3(LispObject env, LispObject fn,
         return (*qfn3(fn))(fn, a1, a2, a3);
     }
     LispObject a3 = arg4("apply3", a3up);
-    {   Push save(env, fn);
+    {   Save save(env, fn);
         a1 = list3(a1, a2, a3);
+        save.restore(env, fn);
     }
     errexit();
     return Lapply_2(env, fn, a1);
@@ -967,8 +973,9 @@ LispObject Lfuncall_1(LispObject env, LispObject fn)
 LispObject Lfuncall_2(LispObject env, LispObject fn, LispObject a1)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
         return (*qfn1(fn))(fn, a1);
-    {   Push save(env, fn);
+    {   Save save(env, fn);
         a1 = ncons(a1);
+        save.restore(env, fn);
     }
     errexit();
     return Lapply_2(env, fn, a1);
@@ -978,8 +985,9 @@ LispObject Lfuncall_3(LispObject env, LispObject fn,
                       LispObject a1, LispObject a2)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
         return (*qfn2(fn))(fn, a1, a2);
-    {   Push save(env, fn);
+    {   Save save(env, fn);
         a1 = list2(a1, a2);
+        save.restore(env, fn);
     }
     errexit();
     return Lapply_2(env, fn, a1);
@@ -991,8 +999,9 @@ LispObject Lfuncall_4up(LispObject env, LispObject fn,
     {   if (cdr(a3up) == nil) return (*qfn3(fn))(fn, a1, a2, car(a3up));
         else return (*qfn4up(fn))(fn, a1, a2, car(a3up), cdr(a3up));
     }
-    {   Push save(env, fn);
+    {   Save save(env, fn);
         a1 = list2star(a1, a2, a3up);
+        save.restore(env, fn);
     }
     errexit();
     return Lapply_2(env, fn, a1);
@@ -1062,9 +1071,10 @@ LispObject mv_call_fn(LispObject args, LispObject env)
     if (!consp(args)) return nil;       // (multiple-value-call) => nil
     stackcheck(args, env);
     LispObject fn;
-    {   Push save(args, env);
+    {   Save save(args, env);
         fn = car(args);
         fn = eval(fn, env);
+        save.restore(args, env);
     }
     errexit();
     args = cdr(args);
@@ -1072,16 +1082,20 @@ LispObject mv_call_fn(LispObject args, LispObject env)
     LispObject xargs = nil;             // for list of eventual args
     while (consp(args))
     {   LispObject r1;
-        {   RealPush save(args, env, xargs);
+        {   RealSave save(args, env, xargs);
+//          LispObject &arg1 = save.val(1);
+//          LispObject &env1 = save.val(2);
+            LispObject &xargs1 = save.val(3);
             r1 = car(args);
             exit_count = 1;
             r1  = eval(r1, env);
             errexit();
-            if (exit_count != 0) stack[0] = cons(r1, stack[0]);
+            if (exit_count != 0) xargs1 = cons(r1, xargs1);
             for (unsigned int i=2; i<=exit_count; i++)
-            {   stack[0] = cons((&work_0)[i], stack[0]);
+            {   xargs1 = cons((&work_0)[i], xargs1);
                 errexit();
             }
+            save.restore(args, env, xargs);
         }
         args = cdr(args);
     }
@@ -1101,8 +1115,9 @@ LispObject interpreted_1(LispObject def, LispObject a1)
     save_current_function saver(def);
     stackcheck(def, a1);
     errexit();
-    {   Push save(def);
+    {   Save save(def);
         a1 = ncons(a1);
+        save.restore(def);
     }
     errexit();
     return apply_lambda(qenv(def), a1, nil, def);
@@ -1113,8 +1128,9 @@ LispObject interpreted_2(LispObject def, LispObject a1, LispObject a2)
     save_current_function saver(def);
     stackcheck(def, a1, a2);
     errexit();
-    {   Push save(def);
+    {   Save save(def);
         a1 = list2(a1, a2);
+        save.restore(def);
     }
     errexit();
     return apply_lambda(qenv(def), a1, nil, def);
@@ -1126,8 +1142,9 @@ LispObject interpreted_3(LispObject def, LispObject a1, LispObject a2,
     save_current_function saver(def);
     stackcheck(def, a1, a2, a3);
     errexit();
-    {   Push save(def);
+    {   Save save(def);
         a1 = list3(a1, a2, a3);
+        save.restore(def);
     }
     errexit();
     return apply_lambda(qenv(def), a1, nil, def);
@@ -1140,8 +1157,9 @@ LispObject interpreted_4up(LispObject def, LispObject a1,
     save_current_function saver(def);
     stackcheck(a1, a2, a3, a4up);
     errexit();
-    {   Push save(def);
+    {   Save save(def);
         a1 = list3star(a1, a2, a3, a4up);
+        save.restore(def);
     }
     errexit();
     return apply_lambda(qenv(def), a1, nil, def);
@@ -1162,8 +1180,9 @@ LispObject funarged_1(LispObject def, LispObject a1)
     stackcheck(def, a1);
     errexit();
     def = qenv(def);
-    {   Push save(def);
+    {   Save save(def);
         a1 = ncons(a1);
+        save.restore(def);
     }
     errexit();
     return apply_lambda(cdr(def), a1, car(def), cdr(def));
@@ -1175,8 +1194,9 @@ LispObject funarged_2(LispObject def, LispObject a1, LispObject a2)
     stackcheck(def, a1, a2);
     errexit();
     def = qenv(def);
-    {   Push save(def);
+    {   Save save(def);
         a1 = list2(a1, a2);
+        save.restore(def);
     }
     errexit();
     return apply_lambda(cdr(def), a1, car(def), cdr(def));
@@ -1189,8 +1209,9 @@ LispObject funarged_3(LispObject def, LispObject a1, LispObject a2,
     stackcheck(def, a1, a2, a3);
     errexit();
     def = qenv(def);
-    {   Push save(def);
+    {   Save save(def);
         a1 = list3(a1, a2, a3);
+        save.restore(def);
     }
     errexit();
     return apply_lambda(cdr(def), a1, car(def), cdr(def));
@@ -1203,8 +1224,9 @@ LispObject funarged_4up(LispObject def, LispObject a1, LispObject a2,
     def = qenv(def);
     stackcheck(a1, a2, a3, a4up);
     errexit();
-    {   Push save(def);
+    {   Save save(def);
         a1 = list3star(a1, a2, a3, a4up);
+        save.restore(def);
     }
     errexit();
     return apply_lambda(cdr(def), a1, car(def), cdr(def));
@@ -1230,11 +1252,12 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
                     {   mv_2 = nil;
                         return nvalues(form, 2);
                     }
-                    {   RealPush save(form, done);
-                        {   RealPush save(env);
+                    {   RealSave save(form, done);
+                        {   RealSave save1(env);
                             w = cons(lambda, w);
                             errexit();
-                            w = list3(w, stack[-1], nil);
+                            w = list3(w, save.val(1), nil);
+                            save1.restore(env);
                         }
                         errexit();
                         on_backtrace(
@@ -1245,8 +1268,9 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
                             // Now the error handler
                             if (SHOW_FNAME)
                             {   err_printf("\nMacroexpanding: ");
-                                loop_print_error(stack[-1]);
+                                loop_print_error(save.val(1));
                             });
+                        save.restore(form, done);
                     }
                     mv_2 = lisp_true;
                     return nvalues(p, 2);
@@ -1258,12 +1282,14 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
         {   done = qvalue(macroexpand_hook);
             if (done == unset_var)
                 return error(1, err_macroex_hook, macroexpand_hook);
-            {   Push save(form, env, done);
+            {   Save save(form, env, done);
                 f = cons(lambda, qenv(f));
+                save.restore(form, env, done);
             }
             errexit();
-            {   Push save(done, env);
+            {   Save save(done, env);
                 f = list3(f, form, env);
+                save.restore(done, env);
             }
             errexit();
             form = apply(done,
@@ -1286,8 +1312,9 @@ LispObject macroexpand(LispObject form, LispObject env)
     errexit();
     done = nil;
     for (;;)
-    {   {   Push save(env, done);
+    {   {   Save save(env, done);
             form = macroexpand_1(form, env);
+            save.restore(env, done);
         }
         errexit();
         if (mv_2 == nil) break;
@@ -1323,18 +1350,20 @@ LispObject Lmacroexpand_1_2(LispObject, LispObject a, LispObject b)
 LispObject autoload_0(LispObject fname)
 {   STACK_SANITY;
     fname = qenv(fname);
-    {   Push save(fname);
+    {   Save save(fname);
         set_fns(car(fname), undefined_0, undefined_1, undefined_2,
                 undefined_3, undefined_4up);
         setenv(car(fname), car(fname));
         LispObject fname1 = cdr(fname);
         while (consp(fname1))
-        {   {   Push save(fname1);
+        {   {   Save save1(fname1);
                 Lload_module(nil, car(fname1));
+                save1.restore(fname1);
             }
             errexit();
             fname1 = cdr(fname1);
         }
+        save.restore(fname);
     }
     return apply(car(fname), nil, nil, autoload_symbol);
 }
@@ -1342,22 +1371,25 @@ LispObject autoload_0(LispObject fname)
 LispObject autoload_1(LispObject fname, LispObject a1)
 {   STACK_SANITY;
     fname = qenv(fname);
-    {   Push save(fname);
-        {   Push save( a1);
+    {   Save save(fname);
+        {   Save save1(a1);
             set_fns(car(fname), undefined_0, undefined_1, undefined_2,
                     undefined_3, undefined_4up);
             setenv(car(fname), car(fname));
             LispObject fname1 = cdr(fname);
             while (consp(fname1))
-            {   {   Push save(fname1);
+            {   {   Save save2(fname1);
                     Lload_module(nil, car(fname1));
                     errexit();
+                    save2.restore(fname1);
                 }
                 fname1 = cdr(fname1);
             }
+            save1.restore(a1);
         }
         a1 = ncons(a1);
         errexit();
+        save.restore(fname);
     }
     return apply(car(fname), a1, nil, autoload_symbol);
 }
@@ -1365,22 +1397,25 @@ LispObject autoload_1(LispObject fname, LispObject a1)
 LispObject autoload_2(LispObject fname, LispObject a1, LispObject a2)
 {   STACK_SANITY;
     fname = qenv(fname);
-    {   Push save(fname);
-        {   Push save(a1, a2);
+    {   Save save(fname);
+        {   Save save1(a1, a2);
             set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
                     undefined_3, undefined_4up);
             setenv(car(fname), car(fname));
             LispObject fname1 = cdr(fname);
             while (consp(fname1))
-            {   {   Push save(fname1);
+            {   {   Save save2(fname1);
                     Lload_module(nil, car(fname1));
+                    save2.restore(fname1);
                 }
                 errexit();
                 fname1 = cdr(fname1);
             }
+            save1.restore(a1, a2);
         }
         a1 = list2(a1, a2);
         errexit();
+        save.restore(fname);
     }
     errexit();
     return apply(car(fname), a1, nil, autoload_symbol);
@@ -1390,22 +1425,25 @@ LispObject autoload_3(LispObject fname, LispObject a1, LispObject a2,
                       LispObject a3)
 {   STACK_SANITY;
     fname = qenv(fname);
-    {   Push save(fname);
-        {   Push save(a1, a2, a3);
+    {   Save save(fname);
+        {   Save save1(a1, a2, a3);
             set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
                     undefined_3, undefined_4up);
             setenv(car(fname), car(fname));
             LispObject fname1 = cdr(fname);
             while (consp(fname1))
-            {   {   Push save(fname1);
+            {   {   Save save2(fname1);
                     Lload_module(nil, car(fname1));
                     errexit();
+                    save2.restore(fname1);
                 }
                 fname1 = cdr(fname1);
             }
+            save1.restore(a1, a2, a3);
         }
         a1 = list3(a1, a2, a3);
         errexit();
+        save.restore(fname);
     }
     return apply(car(fname), a1, nil, autoload_symbol);
 }
@@ -1415,20 +1453,23 @@ LispObject autoload_4up(LispObject fname, LispObject a1,
                         LispObject a3, LispObject a4up)
 {   STACK_SANITY;
     fname = qenv(fname);
-    {   Push save(fname);
-        {   Push save(a1, a2, a3, a4up);
+    {   Save save(fname);
+        {   Save save1(a1, a2, a3, a4up);
             set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
                     undefined_3, undefined_4up);
             setenv(car(fname), car(fname));
             LispObject fname1 = cdr(fname);
             while (consp(fname1))
-            {   {   Push save(fname1);
+            {   {   Save save2(fname1);
                     Lload_module(nil, car(fname1));
+                    save2.restore(fname);
                 }
                 fname1 = cdr(fname1);
             }
+            save1.restore(a1, a2, a3, a4up);
         }
         a1 = list3star(a1, a2, a3, a4up);
+        save.restore(fname);
     }
     return apply(car(fname), a1, nil, autoload_symbol);
 }

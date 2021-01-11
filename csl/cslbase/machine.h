@@ -75,6 +75,18 @@
 // actually available. If I use it I may need to link -lstdc++fs in gcc
 // or -lc++fs in clang!
 
+#ifdef __has_cpp_attribute_likely
+#define LIKELY [[likely]]
+#else // __has_cpp_attribute_likely
+#define LIKELY
+#endif // __has_cpp_attribute_likely
+
+#ifdef __has_cpp_attribute_unlikely
+#define UNLIKELY [[unlikely]]
+#else // __has_cpp_attribute_unlikely
+#define UNLIKELY
+#endif // __has_cpp_attribute_unlikely
+
 using std::cout;      // Make C++ output as in "cout << "string" << endl;"
 using std::endl;      // a lot nicer.
 

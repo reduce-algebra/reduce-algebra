@@ -623,6 +623,7 @@ symbolic procedure c!:ccall1(fn, args, env);
       r := c!:evalargs(args, env);
       c!:outop('call, val, r, fn) >>;
     c!:outop('reloadenv, 'env, nil, nil);
+    reloadenv := t;
     return val
   end;
       
@@ -1198,8 +1199,6 @@ symbolic procedure c!:print_exit_condition(why, where_to, next);
           c!:printf(");\n");
 !#if common!-lisp!-mode
           if g then c!:printf "    ";
-          c!:printf("    errexit();\n");
-          if g then c!:printf "    ";
           c!:printf("    return onevalue(retVal); }\n");
 !#endif
           if g then c!:printf "    }\n" >>
@@ -1292,15 +1291,7 @@ symbolic procedure c!:pfastget(op, r1, r2, r3);
    c!:printf("    else { %v = qfastgets(%v);\n", r1, r2);
    c!:printf("           if (%v != nil) { %v = elt(%v, %s); %<// %c\n",
                                        r1, r1, r1, car r3, cdr r3);
-   c!:printf("#ifdef RECORD_GET\n");
-   c!:printf("             if (%v != SPID_NOPROP)\n", r1);
-   c!:printf("                record_get(elt(fastget_names, %s), 1);\n", car r3);
-   c!:printf("             else record_get(elt(fastget_names, %s), 0),\n", car r3);
-   c!:printf("                %v = nil; }\n", r1);
-   c!:printf("           else record_get(elt(fastget_names, %s), 0); }\n", car r3);
-   c!:printf("#else\n");
    c!:printf("             if (%v == SPID_NOPROP) %v = nil; }}\n", r1, r1);
-   c!:printf("#endif\n");
   >>;
 
 put('fastget, 'c!:opcode_printer, function c!:pfastget);
@@ -1312,16 +1303,7 @@ symbolic procedure c!:pfastflag(op, r1, r2, r3);
    c!:printf("    else { %v = qfastgets(%v);\n", r1, r2);
    c!:printf("           if (%v != nil) { %v = elt(%v, %s); %<// %c\n",
                                        r1, r1, r1, car r3, cdr r3);
-   c!:printf("#ifdef RECORD_GET\n");
-   c!:printf("             if (%v == SPID_NOPROP)\n", r1);
-   c!:printf("                record_get(elt(fastget_names, %s), 0),\n", car r3);
-   c!:printf("                %v = nil;\n", r1);
-   c!:printf("             else record_get(elt(fastget_names, %s), 1),\n", car r3);
-   c!:printf("                %v = lisp_true; }\n", r1);
-   c!:printf("           else record_get(elt(fastget_names, %s), 0); }\n", car r3);
-   c!:printf("#else\n");
    c!:printf("             if (%v == SPID_NOPROP) %v = nil; else %v = lisp_true; }}\n", r1, r1, r1);
-   c!:printf("#endif\n");
   >>;
 
 put('fastflag, 'c!:opcode_printer, function c!:pfastflag);
@@ -1330,10 +1312,8 @@ flag('(fastflag), 'c!:uses_nil);
 symbolic procedure c!:pcar(op, r1, r2, r3);
   begin
     if not !*unsafecar then <<
-        c!:printf("    if (!car_legal(%v))\n", r3);
-        c!:printf("    {   %v = carerror(%v);\n", r1, r3); 
-        c!:printf("        errexit();\n");
-        c!:printf("    }\n    else %v = car(%v);\n", r1, r3) >>
+        c!:printf("    if (!car_legal(%v)) UNLIKELY return carerror(%v);\n", r3, r3);
+        c!:printf("    %v = car(%v);\n", r1, r3) >>
     else c!:printf("    %v = car(%v);\n", r1, r3)
   end;
 
@@ -1342,10 +1322,8 @@ put('car, 'c!:opcode_printer, function c!:pcar);
 symbolic procedure c!:pcdr(op, r1, r2, r3);
   begin
     if not !*unsafecar then <<
-        c!:printf("    if (!car_legal(%v))\n", r3);
-        c!:printf("    {   %v = cdrerror(%v);\n", r1, r3); 
-        c!:printf("        errexit();\n");
-        c!:printf("    }\n    else %v = cdr(%v);\n", r1, r3) >>
+        c!:printf("    if (!car_legal(%v)) UNLIKELY return cdrerror(%v);\n", r3, r3);
+        c!:printf("    %v = cdr(%v);\n", r1, r3) >>
     else c!:printf("    %v = cdr(%v);\n", r1, r3)
   end;
 
@@ -1529,16 +1507,14 @@ put('qputv, 'c!:opcode_printer, function c!:pqputv);
 
 symbolic procedure c!:prplaca(op, r1, r2, r3);
  <<
-  c!:printf("    if (!car_legal(%v)) { rplaca_fails(%v); errexit(); }\n",
-            r2, r2);
+  c!:printf("    if (!car_legal(%v)) UNLIKELY return rplaca_fails(%v);\n", r2, r2);
   c!:printf("    setcar(%v, %v);\n", r2, r3) >>;
 
 put('rplaca, 'c!:opcode_printer, function c!:prplaca);
 
 symbolic procedure c!:prplacd(op, r1, r2, r3);
  <<
-  c!:printf("    if (!car_legal(%v)) { rplacd_fails(%v); errexit(); }\n",
-            r2, r2);
+  c!:printf("    if (!car_legal(%v)) UNLIKELY return rplacd_fails(%v);\n", r2, r2);
   c!:printf("    setcdr(%v, %v);\n", r2, r3) >>;
 
 put('rplacd, 'c!:opcode_printer, function c!:prplacd);
@@ -1631,11 +1607,11 @@ symbolic procedure c!:pcall(op, r1, r2, r3);
        nargs := length r2;
        c!:printf("    {   LispObject fn = basic_elt(env, %s); %<// %c\n",
               c!:find_literal car r3, car r3);
-       if nargs = 0 then c!:printf("    %v = (*qfn0(fn))(fn", r1)
-       else if nargs = 1 then c!:printf("    %v = (*qfn1(fn))(fn", r1)
-       else if nargs = 2 then c!:printf("    %v = (*qfn2(fn))(fn", r1)
-       else if nargs = 3 then c!:printf("    %v = (*qfn3(fn))(fn", r1)
-       else c!:printf("    %v = (*qfn4up(fn))(fn", r1);
+       if nargs = 0 then c!:printf("        %v = (*qfn0(fn))(fn", r1)
+       else if nargs = 1 then c!:printf("        %v = (*qfn1(fn))(fn", r1)
+       else if nargs = 2 then c!:printf("        %v = (*qfn2(fn))(fn", r1)
+       else if nargs = 3 then c!:printf("        %v = (*qfn3(fn))(fn", r1)
+       else c!:printf("        %v = (*qfn4up(fn))(fn", r1);
        for each a in r2 do c!:printf(", %v", a);
        c!:printf(");\n    }\n") end;
     if not flagp(car r3, 'c!:no_errors) then
@@ -2195,7 +2171,7 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
        c!:printf("#else // CONSERVATIVE\n");
        c!:printf("    if (++reclaim_trigger_count == reclaim_trigger_target ||\n");
        c!:printf("        stack >= stackLimit)\n");
-       c!:printf "    {   Push saveArgs(env";
+       c!:printf "    {   Save saveArgs(env";
        if not null args then <<
           c!:printf(", %s", car args);
           w := cdr args;
@@ -2209,32 +2185,34 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
        c!:printf(");\n");
        c!:printf "        env = reclaim(env, \qstack\q, GC_STACK, 0);\n";
        c!:printf "        errexit();\n";
-       c!:printf "    }\n";
+       c!:printf "        saveArgs.restore(env";
+       if not null args then <<
+          c!:printf(", %s", car args);
+          w := cdr args;
+          if not null w then <<
+             c!:printf(", %s", car w);
+             w := cdr w;
+             if not null w then <<
+                c!:printf(", %s", car w);
+                w := cdr w;
+                if not null w then c!:printf(", _a4up_") >> >> >>;
+       c!:printf ");\n    }\n";
        c!:printf("#endif // CONSERVATIVE\n") >>;
 % Now I will allocate space for everything that has to go on the stack.
 % and record in the c!:location property where on the stack the variable
 % will live.
-    if reloadenv then c!:printf("    RealPush saveEnv(env);\n");
     n := 0;
     if stacks then <<
        c!:printf "%<// space for vars preserved across procedure calls\n";
        for each v in stacks do <<
           put(v, 'c!:location, n);
-          n := n+1 >>;
-       w := n;
-       if w neq 0 then c!:printf("    RealPush Workspace(%a);\n", w) >>;
-%      while w >= 5 do <<
-%         c!:printf "    real_push(nil, nil, nil, nil, nil);\n";
-%         w := w - 5 >>;
-%      if w neq 0 then <<
-%         if w = 1 then c!:printf "    real_push(nil);\n"
-%         else <<
-%            c!:printf("    push(nil");
-%            for i := 2:w do c!:printf ", nil";
-%            c!:printf ");\n" >> >> >>;
+          n := n+1 >> >>;
+%reloadenv := t; % @@@@@
     if reloadenv then <<
        reloadenv := n;
-       n := n + 1 >>;
+       if n=0 then c!:printf("    RealSave saveEnv(env);\n")
+       else c!:printf("    RealSave saveEnv(env, %a);\n", n) >>
+    else if n neq 0 then c!:printf("    RealSave Workspace(%a);\n", n);
     if env then c!:printf "%<// copy arguments values to proper place\n";
     for each v in env do
       if flagp(cdr v, 'c!:live_across_call) then

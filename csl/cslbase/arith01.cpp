@@ -1032,10 +1032,11 @@ LispObject make_complex(LispObject r, LispObject i)
 //
     if (i == fixnum_of_int(0)) return r;
     stackcheck(r, i);
-    {   Push save(r, i);
+    {   Save save(r, i);
         v = get_basic_vector(TAG_NUMBERS, TYPE_COMPLEX_NUM,
                          sizeof(Complex_Number));
         errexit();
+        save.restore(r, i);
 // The vector r has uninitialized contents here - dodgy.  If the call
 // to get_basic_vector succeeded then I fill it in, otherwise I will not
 // refer to it again, and I think that unreferenced vectors containing junk
@@ -1052,10 +1053,11 @@ LispObject make_ratio(LispObject p, LispObject q)
 {   LispObject v;
     if (q == fixnum_of_int(1)) return p;
     stackcheck(p, q);
-    {   Push save(p, q);
+    {   Save save(p, q);
         v = get_basic_vector(TAG_NUMBERS, TYPE_RATNUM,
                              sizeof(Rational_Number));
         errexit();
+        save.restore(p, q);
     }
     setnumerator(v, p);
     setdenominator(v, q);
@@ -1322,9 +1324,10 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
 // where I do not need to optimise edge cases so carefully, and where the
 // length (as a bignum) of the result is rather likely to match that of a2.
     LispObject c;
-    {   Push save(a2);
+    {   Save save(a2);
         c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*len);
         errexit();
+        save.restore(a2);
     }
 // Add in the lowest digit by hand because at this stage s1 can have
 // more than 31 bits and so intrudes beyond there.
@@ -1398,9 +1401,10 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
         setnumhdr(c, numhdr(c) + pack_hdrlength(1L));
         return c;
     }
-    {   Push save(c);
+    {   Save save(c);
         a2 = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*len);
         errexit();
+        save.restore(c);
     }
     for (size_t i=0; i<len-1; i++)
         bignum_digits(a2)[i] = vbignum_digits(c)[i];
@@ -1427,11 +1431,12 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
 // and GCD calculations here.
 
 inline LispObject plus_i_r(LispObject a1, LispObject a2)
-{   {   RealPush save(a2);
+{   {   Save save(a2);
         a1 = times2(a1, denominator(a2));
+        save.restore(a2);
+        a1 = plus2(a1, numerator(a2));
         errexit();
-        a1 = plus2(a1, numerator(stack[0]));
-        errexit();
+        save.restore(a2);
     }
     return make_ratio(a1, denominator(a2));
 }
@@ -1440,9 +1445,10 @@ inline LispObject plus_i_r(LispObject a1, LispObject a2)
 // real value of any sort plus complex.
 
 inline LispObject plus_i_c(LispObject a1, LispObject a2)
-{   {   Push save(a2);
+{   {   Save save(a2);
         a1 = plus2(a1, real_part(a2));
         errexit();
+        save.restore(a2);
     }
 // make_complex() takes responsibility for mapping #C(n 0) onto n
     return make_complex(a1, imag_part(a2));
@@ -1491,9 +1497,10 @@ LispObject lengthen_by_one_bit(LispObject a, int32_t msd)
     if ((len & 4) == 0)
     {   LispObject b;
         int32_t i;
-        {   Push save(a);
+        {   Save save(a);
             b = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len+4);
             errexit();
+            save.restore(a);
         }
         len = (len-CELL)/4;
         for (i=0; i<len; i++)
@@ -1539,9 +1546,10 @@ inline LispObject plus_b_b(LispObject a, LispObject b)
 // Now at least one operand uses 3 words... I will do a general bignum add
 // which may sometimes be overkill, but ought to be safe.
     LispObject c;
-    {   Push save(a, b);
+    {   Save save(a, b);
         c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, 4*la+CELL);
         errexit();
+        save.restore(a, b);
     }
     uint32_t carry = 0;
 // Add all but the top digit of b
@@ -1720,7 +1728,7 @@ inline LispObject plus_r_r(LispObject a1, LispObject a2)
 {   LispObject na = numerator(a1), nb = numerator(a2);
     LispObject da = denominator(a1), db = denominator(a2);
     LispObject g = nil;
-    RealPush save(na, nb, da, db, g);
+    RealSave save(na, nb, da, db, g);
 #define g   stack[0]
 #define db  stack[-1]
 #define da  stack[-2]
@@ -1800,12 +1808,14 @@ inline LispObject plus_c_r(LispObject a1, LispObject a2)
 
 inline LispObject plus_c_c(LispObject a1, LispObject a2)
 {   LispObject c;
-    {   Push save(a1, a2);
+    {   Save save(a1, a2);
         c = plus2(imag_part(a1), imag_part(a2));
+        save.restore(a1, a2);
     }
     errexit();
-    {   Push save(c);
+    {   Save save(c);
         a1 = plus2(real_part(a1), real_part(a2));
+        save.restore(c);
     }
     errexit();
     return make_complex(a1, c);
@@ -2013,48 +2023,54 @@ inline LispObject difference_i_i(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_i_b(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_i(a1, a2);
 }
 
 inline LispObject difference_i_r(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_i_r(a1, a2);
 }
 
 inline LispObject difference_i_c(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_i_c(a1, a2);
 }
 
 inline LispObject difference_i_s(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_i_s(a1, a2);
 }
 
 inline LispObject difference_i_f(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_i_f(a1, a2);
 }
 
 inline LispObject difference_i_d(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_i_d(a1, a2);
@@ -2062,8 +2078,9 @@ inline LispObject difference_i_d(LispObject a1, LispObject a2)
 
 #ifdef HAVE_SOFTFLOAT
 inline LispObject difference_i_l(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_i_l(a1, a2);
@@ -2071,56 +2088,63 @@ inline LispObject difference_i_l(LispObject a1, LispObject a2)
 #endif // HAVE_SOFTFLOAT
 
 inline LispObject difference_b_i(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_b(a1, a2);
 }
 
 inline LispObject difference_b_b(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_b(a1, a2);
 }
 
 inline LispObject difference_b_r(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_b_r(a1, a2);
 }
 
 inline LispObject difference_b_c(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_b_c(a1, a2);
 }
 
 inline LispObject difference_b_s(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_b_s(a1, a2);
 }
 
 inline LispObject difference_b_f(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_b_f(a1, a2);
 }
 
 inline LispObject difference_b_d(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_b_d(a1, a2);
@@ -2128,8 +2152,9 @@ inline LispObject difference_b_d(LispObject a1, LispObject a2)
 
 #ifdef HAVE_SOFTFLOAT
 inline LispObject difference_b_l(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_b_l(a1, a2);
@@ -2137,10 +2162,12 @@ inline LispObject difference_b_l(LispObject a1, LispObject a2)
 #endif // HAVE_SOFTFLOAT
 
 inline LispObject difference_r_i(LispObject a1, LispObject a2)
-{   {   RealPush saver(a1);
+{   {   Save save(a1);
         a2 = times2(a2, denominator(a1));
         errexit();
-        a2 = difference2(numerator(stack[0]), a2);
+        save.restore(a1);
+        a2 = difference2(numerator(a1), a2);
+        save.restore(a1);
     }
     errexit();
     return make_ratio(a2, denominator(a1));
@@ -2151,40 +2178,45 @@ inline LispObject difference_r_b(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_r_r(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_r_r(a1, a2);
 }
 
 inline LispObject difference_r_c(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_r_c(a1, a2);
 }
 
 inline LispObject difference_r_s(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_r_s(a1, a2);
 }
 
 inline LispObject difference_r_f(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_r_f(a1, a2);
 }
 
 inline LispObject difference_r_d(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_r_d(a1, a2);
@@ -2192,8 +2224,9 @@ inline LispObject difference_r_d(LispObject a1, LispObject a2)
 
 #ifdef HAVE_SOFTFLOAT
 inline LispObject difference_r_l(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_r_l(a1, a2);
@@ -2201,56 +2234,63 @@ inline LispObject difference_r_l(LispObject a1, LispObject a2)
 #endif // HAVE_SOFTFLOAT
 
 inline LispObject difference_c_i(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = make_lisp_integer64(-int_of_fixnum(a2));
+        save.restore(a1);
     }
     errexit();
     return plus_c_i(a1, a2);
 }
 
 inline LispObject difference_c_b(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negateb(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_c_b(a1, a2);
 }
 
 inline LispObject difference_c_r(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_c_r(a1, a2);
 }
 
 inline LispObject difference_c_c(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_c_c(a1, a2);
 }
 
 inline LispObject difference_c_s(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_c_s(a1, a2);
 }
 
 inline LispObject difference_c_f(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_c_f(a1, a2);
 }
 
 inline LispObject difference_c_d(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_c_d(a1, a2);
@@ -2258,8 +2298,9 @@ inline LispObject difference_c_d(LispObject a1, LispObject a2)
 
 #ifdef HAVE_SOFTFLOAT
 inline LispObject difference_c_l(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_c_l(a1, a2);
@@ -2280,40 +2321,45 @@ inline LispObject difference_s_b(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_s_r(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_s_r(a1, a2);
 }
 
 inline LispObject difference_s_c(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_s_c(a1, a2);
 }
 
 inline LispObject difference_s_s(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_s_s(a1, a2);
 }
 
 inline LispObject difference_s_f(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_s_f(a1, a2);
 }
 
 inline LispObject difference_s_d(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_s_d(a1, a2);
@@ -2321,8 +2367,9 @@ inline LispObject difference_s_d(LispObject a1, LispObject a2)
 
 #ifdef HAVE_SOFTFLOAT
 inline LispObject difference_s_l(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_s_l(a1, a2);
@@ -2343,16 +2390,18 @@ inline LispObject difference_f_b(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_f_r(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_f_r(a1, a2);
 }
 
 inline LispObject difference_f_c(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_f_c(a1, a2);
@@ -2375,8 +2424,9 @@ inline LispObject difference_f_d(LispObject a1, LispObject a2)
 
 #ifdef HAVE_SOFTFLOAT
 inline LispObject difference_f_l(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_f_l(a1, a2);
@@ -2397,16 +2447,18 @@ inline LispObject difference_d_b(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_d_r(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_d_r(a1, a2);
 }
 
 inline LispObject difference_d_c(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_d_c(a1, a2);
@@ -2429,8 +2481,9 @@ inline LispObject difference_d_d(LispObject a1, LispObject a2)
 
 #ifdef HAVE_SOFTFLOAT
 inline LispObject difference_d_l(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_d_l(a1, a2);
@@ -2451,48 +2504,54 @@ inline LispObject difference_l_b(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_l_r(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_l_r(a1, a2);
 }
 
 inline LispObject difference_l_c(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_l_c(a1, a2);
 }
 
 inline LispObject difference_l_s(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_l_s(a1, a2);
 }
 
 inline LispObject difference_l_f(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_l_f(a1, a2);
 }
 
 inline LispObject difference_l_d(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_l_d(a1, a2);
 }
 
 inline LispObject difference_l_l(LispObject a1, LispObject a2)
-{   {   Push save(a1);
+{   {   Save save(a1);
         a2 = negate(a2);
+        save.restore(a1);
     }
     errexit();
     return plus_l_l(a1, a2);

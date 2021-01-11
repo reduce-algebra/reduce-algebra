@@ -3330,7 +3330,7 @@ c!:cval (car args) env)) fn)) (t (progn (cond ((and (not (get (car fn) (quote
 c!:direct_entrypoint))) (cddr args) (cdddr args)) (setq args (list (car args
 ) (cadr args) (caddr args) (cons (quote list) (cdddr args)))))) (setq r (
 c!:evalargs args env)) (c!:outop (quote call) val r fn)))))) (c!:outop (quote
-reloadenv) (quote env) nil nil) (return val)))
+reloadenv) (quote env) nil nil) (setq reloadenv t) (return val)))
 
 (fluid (quote (restart_label reloadenv does_call c!:current_c_name)))
 
@@ -3650,15 +3650,8 @@ reloadenv)))
 "    if (!symbolp(%v)) %v = nil;\n" r2 r1) (c!:printf 
 "    else { %v = qfastgets(%v);\n" r1 r2) (c!:printf 
 "           if (%v != nil) { %v = elt(%v, %s); %<// %c\n" r1 r1 r1 (car r3) (
-cdr r3)) (c!:printf "#ifdef RECORD_GET\n") (c!:printf 
-"             if (%v != SPID_NOPROP)\n" r1) (c!:printf 
-"                record_get(elt(fastget_names, %s), 1);\n" (car r3)) (
-c!:printf "             else record_get(elt(fastget_names, %s), 0),\n" (car 
-r3)) (c!:printf "                %v = nil; }\n" r1) (c!:printf 
-"           else record_get(elt(fastget_names, %s), 0); }\n" (car r3)) (
-c!:printf "#else\n") (c!:printf 
-"             if (%v == SPID_NOPROP) %v = nil; }}\n" r1 r1) (c!:printf 
-"#endif\n")))
+cdr r3)) (c!:printf "             if (%v == SPID_NOPROP) %v = nil; }}\n" r1 
+r1)))
 
 (put (quote fastget) (quote c!:opcode_printer) (function c!:pfastget))
 
@@ -3668,34 +3661,25 @@ c!:printf "#else\n") (c!:printf
 "    if (!symbolp(%v)) %v = nil;\n" r2 r1) (c!:printf 
 "    else { %v = qfastgets(%v);\n" r1 r2) (c!:printf 
 "           if (%v != nil) { %v = elt(%v, %s); %<// %c\n" r1 r1 r1 (car r3) (
-cdr r3)) (c!:printf "#ifdef RECORD_GET\n") (c!:printf 
-"             if (%v == SPID_NOPROP)\n" r1) (c!:printf 
-"                record_get(elt(fastget_names, %s), 0),\n" (car r3)) (
-c!:printf "                %v = nil;\n" r1) (c!:printf 
-"             else record_get(elt(fastget_names, %s), 1),\n" (car r3)) (
-c!:printf "                %v = lisp_true; }\n" r1) (c!:printf 
-"           else record_get(elt(fastget_names, %s), 0); }\n" (car r3)) (
-c!:printf "#else\n") (c!:printf 
+cdr r3)) (c!:printf 
 "             if (%v == SPID_NOPROP) %v = nil; else %v = lisp_true; }}\n" r1 
-r1 r1) (c!:printf "#endif\n")))
+r1 r1)))
 
 (put (quote fastflag) (quote c!:opcode_printer) (function c!:pfastflag))
 
 (flag (quote (fastflag)) (quote c!:uses_nil))
 
 (de c!:pcar (op r1 r2 r3) (prog nil (cond ((not !*unsafecar) (progn (
-c!:printf "    if (!car_legal(%v))\n" r3) (c!:printf 
-"    {   %v = carerror(%v);\n" r1 r3) (c!:printf "        errexit();\n") (
-c!:printf "    }\n    else %v = car(%v);\n" r1 r3))) (t (c!:printf 
-"    %v = car(%v);\n" r1 r3)))))
+c!:printf "    if (!car_legal(%v)) UNLIKELY return carerror(%v);\n" r3 r3) (
+c!:printf "    %v = car(%v);\n" r1 r3))) (t (c!:printf "    %v = car(%v);\n" 
+r1 r3)))))
 
 (put (quote car) (quote c!:opcode_printer) (function c!:pcar))
 
 (de c!:pcdr (op r1 r2 r3) (prog nil (cond ((not !*unsafecar) (progn (
-c!:printf "    if (!car_legal(%v))\n" r3) (c!:printf 
-"    {   %v = cdrerror(%v);\n" r1 r3) (c!:printf "        errexit();\n") (
-c!:printf "    }\n    else %v = cdr(%v);\n" r1 r3))) (t (c!:printf 
-"    %v = cdr(%v);\n" r1 r3)))))
+c!:printf "    if (!car_legal(%v)) UNLIKELY return cdrerror(%v);\n" r3 r3) (
+c!:printf "    %v = cdr(%v);\n" r1 r3))) (t (c!:printf "    %v = cdr(%v);\n" 
+r1 r3)))))
 
 (put (quote cdr) (quote c!:opcode_printer) (function c!:pcdr))
 
@@ -3857,13 +3841,13 @@ r1 r2) (c!:printf
 (put (quote qputv) (quote c!:opcode_printer) (function c!:pqputv))
 
 (de c!:prplaca (op r1 r2 r3) (progn (c!:printf 
-"    if (!car_legal(%v)) { rplaca_fails(%v); errexit(); }\n" r2 r2) (
+"    if (!car_legal(%v)) UNLIKELY return rplaca_fails(%v);\n" r2 r2) (
 c!:printf "    setcar(%v, %v);\n" r2 r3)))
 
 (put (quote rplaca) (quote c!:opcode_printer) (function c!:prplaca))
 
 (de c!:prplacd (op r1 r2 r3) (progn (c!:printf 
-"    if (!car_legal(%v)) { rplacd_fails(%v); errexit(); }\n" r2 r2) (
+"    if (!car_legal(%v)) UNLIKELY return rplacd_fails(%v);\n" r2 r2) (
 c!:printf "    setcdr(%v, %v);\n" r2 r3)))
 
 (put (quote rplacd) (quote c!:opcode_printer) (function c!:prplacd))
@@ -3915,13 +3899,14 @@ lab1274 (cond ((null var1275) (return nil))) (prog (a) (setq a (car var1275))
 (c!:printf ", %v" a)) (setq var1275 (cdr var1275)) (go lab1274)) (c!:printf 
 ");\n"))) (t (prog (nargs) (setq nargs (length r2)) (c!:printf 
 "    {   LispObject fn = basic_elt(env, %s); %<// %c\n" (c!:find_literal (car
-r3)) (car r3)) (cond ((equal nargs 0) (c!:printf "    %v = (*qfn0(fn))(fn" 
-r1)) (t (cond ((equal nargs 1) (c!:printf "    %v = (*qfn1(fn))(fn" r1)) (t (
-cond ((equal nargs 2) (c!:printf "    %v = (*qfn2(fn))(fn" r1)) (t (cond ((
-equal nargs 3) (c!:printf "    %v = (*qfn3(fn))(fn" r1)) (t (c!:printf 
-"    %v = (*qfn4up(fn))(fn" r1))))))))) (prog (var1277) (setq var1277 r2) 
-lab1276 (cond ((null var1277) (return nil))) (prog (a) (setq a (car var1277))
-(c!:printf ", %v" a)) (setq var1277 (cdr var1277)) (go lab1276)) (c!:printf 
+r3)) (car r3)) (cond ((equal nargs 0) (c!:printf 
+"        %v = (*qfn0(fn))(fn" r1)) (t (cond ((equal nargs 1) (c!:printf 
+"        %v = (*qfn1(fn))(fn" r1)) (t (cond ((equal nargs 2) (c!:printf 
+"        %v = (*qfn2(fn))(fn" r1)) (t (cond ((equal nargs 3) (c!:printf 
+"        %v = (*qfn3(fn))(fn" r1)) (t (c!:printf 
+"        %v = (*qfn4up(fn))(fn" r1))))))))) (prog (var1277) (setq var1277 r2)
+lab1276 (cond ((null var1277) (return nil))) (prog (a) (setq a (car var1277)
+) (c!:printf ", %v" a)) (setq var1277 (cdr var1277)) (go lab1276)) (c!:printf
 ");\n    }\n")))))))) (cond ((not (flagp (car r3) (quote c!:no_errors))) (
 c!:printf "    errexit();\n"))) (cond (boolfn (c!:printf 
 "    %v = %v ? lisp_true : nil;\n" r1 r1)))))
@@ -4255,21 +4240,26 @@ c!:printf "#endif\n") (cond (does_call (progn (c!:printf
 "#ifdef CONSERVATIVE\n") (c!:printf "    poll();\n") (c!:printf 
 "#else // CONSERVATIVE\n") (c!:printf 
 "    if (++reclaim_trigger_count == reclaim_trigger_target ||\n") (c!:printf 
-"        stack >= stackLimit)\n") (c!:printf "    {   Push saveArgs(env") (
+"        stack >= stackLimit)\n") (c!:printf "    {   Save saveArgs(env") (
 cond ((not (null args)) (progn (c!:printf ", %s" (car args)) (setq w (cdr 
 args)) (cond ((not (null w)) (progn (c!:printf ", %s" (car w)) (setq w (cdr w
 )) (cond ((not (null w)) (progn (c!:printf ", %s" (car w)) (setq w (cdr w)) (
 cond ((not (null w)) (c!:printf ", _a4up_")))))))))))) (c!:printf ");\n") (
 c!:printf "        env = reclaim(env, \qstack\q, GC_STACK, 0);\n") (c!:printf
-"        errexit();\n") (c!:printf "    }\n") (c!:printf 
-"#endif // CONSERVATIVE\n")))) (cond (reloadenv (c!:printf 
-"    RealPush saveEnv(env);\n"))) (setq n 0) (cond (stacks (progn (c!:printf 
-"%<// space for vars preserved across procedure calls\n") (prog (var1350) (
-setq var1350 stacks) lab1349 (cond ((null var1350) (return nil))) (prog (v) (
-setq v (car var1350)) (progn (put v (quote c!:location) n) (setq n (plus n 1)
-))) (setq var1350 (cdr var1350)) (go lab1349)) (setq w n) (cond ((neq w 0) (
-c!:printf "    RealPush Workspace(%a);\n" w)))))) (cond (reloadenv (progn (
-setq reloadenv n) (setq n (plus n 1))))) (cond (env (c!:printf 
+"        errexit();\n") (c!:printf "        saveArgs.restore(env") (cond ((
+not (null args)) (progn (c!:printf ", %s" (car args)) (setq w (cdr args)) (
+cond ((not (null w)) (progn (c!:printf ", %s" (car w)) (setq w (cdr w)) (cond
+((not (null w)) (progn (c!:printf ", %s" (car w)) (setq w (cdr w)) (cond ((
+not (null w)) (c!:printf ", _a4up_")))))))))))) (c!:printf ");\n    }\n") (
+c!:printf "#endif // CONSERVATIVE\n")))) (setq n 0) (cond (stacks (progn (
+c!:printf "%<// space for vars preserved across procedure calls\n") (prog (
+var1350) (setq var1350 stacks) lab1349 (cond ((null var1350) (return nil))) (
+prog (v) (setq v (car var1350)) (progn (put v (quote c!:location) n) (setq n 
+(plus n 1)))) (setq var1350 (cdr var1350)) (go lab1349))))) (cond (reloadenv 
+(progn (setq reloadenv n) (cond ((equal n 0) (c!:printf 
+"    RealSave saveEnv(env);\n")) (t (c!:printf 
+"    RealSave saveEnv(env, %a);\n" n))))) (t (cond ((neq n 0) (c!:printf 
+"    RealSave Workspace(%a);\n" n))))) (cond (env (c!:printf 
 "%<// copy arguments values to proper place\n"))) (prog (var1352) (setq 
 var1352 env) lab1351 (cond ((null var1352) (return nil))) (prog (v) (setq v (
 car var1352)) (cond ((flagp (cdr v) (quote c!:live_across_call)) (c!:printf 

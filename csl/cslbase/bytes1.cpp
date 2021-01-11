@@ -955,28 +955,31 @@ inline void poll_jump_back(LispObject& A_reg)
 }
 
 static inline LispObject do_pvbind(LispObject vals, LispObject vars)
-{   LispObject var = nil, val = SPID_PVBIND;
-    RealPush save(var,     // This will be a list ((var . old-value) ...)
-                  val);    // Flags up status of the above.
-    {   RealPush save1(vars, vals);
+{   RealSave save(nil,          // This will be a list ((var . old-value) ...)
+                  SPID_PVBIND); // Flags up status of the above.
+    LispObject &binding_list = save.val(1);
+    {   RealSave save1(vars, vals);
         while (consp(vars))
-        {   var = car(vars);
+        {   LispObject var = car(vars);
             vars = cdr(vars);
             if (!symbolp(var) || var == nil) continue;
-            {   RealPush save1(vars);
-                var = acons(var, qvalue(var), stack[-4]);
+            {   RealSave save2(vars);
+                var = acons(var, qvalue(var), binding_list);
                 errexit();
+                save2.restore(vars);
             }
-            stack[-3] = var;
+            binding_list = var;
         }
+        save1.restore(vars, vals);
     }
 // If the code exits ahead of getting here that is not a calamity. SOME
 // at least of the variables will have their previous value saved, and
 // unwinding code will restore them - even if they have not yet been changed.
     while (consp(vars))
-    {   if (consp(vals)) val = car(vals), vals = cdr(vals);
+    {   LispObject val;
+        if (consp(vals)) val = car(vals), vals = cdr(vals);
         else val = unset_var;
-        var = car(vars);
+        LispObject var = car(vars);
         if (symbolp(var) && var != nil) setvalue(var, val);
         vars = cdr(vars);
     }

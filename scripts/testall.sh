@@ -105,6 +105,7 @@ for sys in $platforms
 do
   rm -f $sys-times/*.rlg* $sys-times/showtimes \
         $base-$sys-times-comparison/*.rlg.diff
+  mkdir -p $sys-times
   echo "showtimes := '(" > $sys-times/showtimes
 done
 
