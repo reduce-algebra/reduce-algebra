@@ -43,7 +43,7 @@ extern LispObject *stack;
 
 //extern LispObject **get_stack_addr();
 // In any single compilation unit you will only scan this header file
-1;5q// once, and so the static variables set up here get defined just once
+// once, and so the static variables set up here get defined just once
 // and the initialization of them should happen during thread initialization.
 //static thread_local LispObject **const stack_addr = get_stack_addr();
 //#define stack (*stack_addr)
