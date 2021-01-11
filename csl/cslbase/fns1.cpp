@@ -1471,7 +1471,7 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
                 return onevalue(c);
             b = cdr(b);
         }
-        {   Push pushvar(a);
+        {   Save pushvar(a);
 // To carry a code-pointer I manufacture a sort of gensym, flagging
 // it in its header as a "code pointer object" and sticking the required
 // definition in with it.  I need to link this to the originating
@@ -1493,6 +1493,7 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
             b = Lgensym0(nil, a, "#code");
 #endif
             errexit();
+            pushvar.restore(a);
         }
         qfn0(b) = qfn0(a);
         qfn1(b) = qfn1(a);
@@ -1511,17 +1512,19 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
         {   LispObject c, w;
             c = get(a, unset_var, nil);
             if (c == nil) c = a;
-            {   RealPush save(a, b);
-                {   RealPush save1(c);
+            {   RealSave save(a, b);
+                {   RealSave save1(c);
                     setheader(b, qheader(b) | SYM_C_DEF);
                     putprop(b, unset_var, c);
                     c = stack[0]; b = stack[-1];
                     w = get(c, work_symbol, nil);
                     w = cons(b, w);
                     errexit();
+                    save1.restore(c);
                 }
                 putprop(c, work_symbol, w);
                 errexit();
+                save.restore(a, b);
             }
         }
         return onevalue(b);
