@@ -101,7 +101,7 @@ algebraic <<
 % for all z let cosh(z) = (exp (z) + exp(-z))/2;
 
 operator laplace2,y_transform2,k_transform2,struveh_transform2,
-               fourier_sin2,fourier_cos2;
+         hankelt, fourier_sin2,fourier_cos2;
 
 gamma_rules :=
 
@@ -140,7 +140,7 @@ symbolic procedure new_hankel(lst);
 
 begin scalar new_lst;
 lst := product_test(lst);
-new_lst := {'hankel2,lst};
+new_lst := {'hankelt,lst};
 return defint_trans(new_lst);
 end;
 

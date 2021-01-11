@@ -48,32 +48,32 @@ laplace2_rules :=
 
 let laplace2_rules;
 
-hankel2_rules :=
+hankelt_rules :=
 
-{ hankel2(1/~x,~f1,~x) =>
+{ hankelt(1/~x,~f1,~x) =>
                 int(1/x*f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
-  hankel2(1/~x^(~a),~f1,~x) =>
+  hankelt(1/~x^(~a),~f1,~x) =>
                 int(1/x^a*f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
-  hankel2(1/sqrt(~x),~f1,~x) =>
+  hankelt(1/sqrt(~x),~f1,~x) =>
                 int(1/sqrt(x)*f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
-  hankel2(1/(sqrt(~x)*~x),~f1,~x) =>
+  hankelt(1/(sqrt(~x)*~x),~f1,~x) =>
             int(1/(sqrt(x)*x)*f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
-  hankel2(1/(sqrt(~x)*~x^~a),~f1,~x) =>
+  hankelt(1/(sqrt(~x)*~x^~a),~f1,~x) =>
           int(1/(sqrt(x)*x^a)*f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
-  hankel2(~x^~a,~f1,~x) =>
+  hankelt(~x^~a,~f1,~x) =>
           int(x^a*f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
-  hankel2(~x,~f1,~x) => int(x*f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
-  hankel2(sqrt(~x),~f1,~x) =>
+  hankelt(~x,~f1,~x) => int(x*f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
+  hankelt(sqrt(~x),~f1,~x) =>
           int(sqrt(x)*f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
-  hankel2(sqrt(~x)*~x,~f1,~x) =>
+  hankelt(sqrt(~x)*~x,~f1,~x) =>
           int(sqrt(x)*x,f1,BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
-  hankel2(sqrt(~x)*~x^~a,~f1,~x) =>
+  hankelt(sqrt(~x)*~x^~a,~f1,~x) =>
           int(sqrt(x)*x^a*f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
-  hankel2(~b,~f1,~x) => int(b*f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
-  hankel2(~f1,~x) => int(f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity)
+  hankelt(~b,~f1,~x) => int(b*f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
+  hankelt(~f1,~x) => int(f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity)
 };
 
-let hankel2_rules;
+let hankelt_rules;
 
 y_transform2_rules :=
 
