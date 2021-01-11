@@ -234,9 +234,9 @@
         (STR (reg 2) (displacement (reg heaplast) 8))
         (*wplus2 (reg heaplast) 16)
         (*jumpwlessp (labelgen templabel) (reg heaplast) (reg heaptrapbound))
-        (*push (reg 1))
+        (STP (reg 1) (reg 2) (preindexed (reg sp) 16))
         (*link !%reclaim expr 0)
-        (*pop (reg 1))
+        (LDP (reg 1) (reg 2) (postindexed (reg sp) 16))
 
         (labelref templabel)))
 
@@ -248,9 +248,9 @@
         (STR (reg nil) (displacement (reg heaplast) 8))
         (*wplus2 (reg heaplast) 16)
         (*jumpwlessp (labelgen templabel) (reg heaplast) (reg heaptrapbound))
-        (*push (reg 1))
+        (STP (reg 1) (reg 2) (preindexed (reg sp) 16))
         (*link !%reclaim expr 0)
-        (*pop (reg 1))
+        (LDP (reg 1) (reg 2) (postindexed (reg sp) 16))
 
         (labelref templabel))
 )
@@ -263,9 +263,9 @@
         (STR (reg 2) (displacement (reg heaplast) 0))
         (*wplus2 (reg heaplast) 16)
         (*jumpwlessp (labelgen templabel) (reg heaplast) (reg heaptrapbound))
-        (*push (reg 1))
+        (STP (reg 1) (reg 2) (preindexed (reg sp) 16))
         (*link !%reclaim expr 0)
-        (*pop (reg 1))
+        (LDP (reg 1) (reg 2) (postindexed (reg sp) 16))
 
         (labelref templabel))
 )

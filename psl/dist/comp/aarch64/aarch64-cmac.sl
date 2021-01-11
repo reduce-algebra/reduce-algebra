@@ -493,17 +493,14 @@
 
 %% ToDo!
 (de *LoadConstant (dest cst)
-    (cond ((imm8-rotatedp cst)
-           `( (MOV ,dest ,cst)))
-          ((imm8-rotatedp (land 16#ffffffff (lnot cst)))
-           `( (MOVN ,dest  ,(land 16#ffffffff (lnot cst)))))
-          ((sixteenbit-p cst)
-           % sixteen bits: load in two steps
+    (cond ((sixteenbit-p cst)
            `( (MOV ,dest ,(land 16#ffff cst))))
+          ((sixteenbit-p (lnot cst))
+           `( (MOVN ,dest ,(land 16#ffff (lnot cst)))))
           ((InumP cst)
            `( (LDR ,dest (sysint ,cst))))
           (t
-           `( (ldr ,dest (quote ,cst))))
+           `( (LDR ,dest (quote ,cst))))
           )
     )
 

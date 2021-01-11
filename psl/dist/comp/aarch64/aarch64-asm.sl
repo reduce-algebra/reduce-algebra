@@ -504,6 +504,27 @@
 
 (put 'Indexed 'OperandPrintFunction 'OperandPrintIndexed)
 
+
+(de OperandPrintPrePostIndexed (x)  % (preindexed (reg y) disp)
+  (if (regp (second x))
+    (let ((disp (third x)))
+       (prin2 "[")
+       (PrintRegister (second x))
+       (if (eq (first x) 'preindexed)
+	   (progn
+	     (prin2 ", ")
+	     (PrintOperand (third x))
+	     (prin2 "]!"))
+	 (progn
+	   (prin2 "], ")
+	   (PrintOperand (third x)))))
+    (error 199 "Wrong Pre/Post Indexed mode"))
+)
+
+(put 'preindexed  'OperandPrintFunction 'OperandPrintPrePostIndexed)
+(put 'postindexed 'OperandPrintFunction 'OperandPrintPrePostIndexed)
+
+     
 (de OperandPrintImmediate (x)           % (Immediate x) % for ADDRESS
   (progn %(prin2 "#")
 	 (PrintExpression (cadr x))))
