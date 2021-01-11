@@ -672,8 +672,8 @@ AC_MSG_NOTICE([in csl_inplace_cygwin_build wwl=$with_windows_layout])
     cp "$abssrcdir/csl/$CSLBASE/redpsl.sh" "$abssrcdir/cslbuild/$build/redpsl"
     cd "$abssrcdir/cslbuild/$build/$cygver"
   elif test "x$with_mac_universal" = "xyes" &&
-       test "x$with_mac_x86_64" = "xno" &&
-       test "x$with_mac_arm64" = "xno"
+       test "x$with_mac_x86_64" != "xyes" &&
+       test "x$with_mac_arm64" != "xyes"
   then
     build=`eval "$SHELL $abssrcdir/scripts/findhost.sh universal-mac-macos $ac_configure_args"`
     AC_MSG_NOTICE([target=$target => build=$build])
@@ -1053,8 +1053,7 @@ then
        CFLAGS="$CFLAGS -mmacosx-version-min=11.0 -arch arm64"
        CXXFLAGS="$CXXFLAGS -mmacosx-version-min=11.0 -arch arm64"
        LDFLAGS="$LDFLAGS -mmacosx-version-min=11.0 -arch arm64"
-    elif test "x$with_mac_universal" != "xyes"
-    then
+    else
        CPPFLAGS="$CPPFLAGS -mmacosx-version-min=10.13"
        CFLAGS="$CFLAGS -mmacosx-version-min=10.13"
        CXXFLAGS="$CXXFLAGS -mmacosx-version-min=10.13"

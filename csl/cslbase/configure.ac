@@ -506,7 +506,7 @@ case $host in
     CXXFLAGS="$CXXFLAGS -arch x86_64"
     LDFLAGS="$LDFLAGS -arch x86_64"
   fi
-  if test "x$with_mac_arm64" != "xyes"
+  if test "x$with_mac_arm64" = "xyes"
   then
     CPPFLAGS="$CPPFLAGS -arch arm64"
     CXXCPPFLAGS="$CXXCPPFLAGS -arch arm64"
