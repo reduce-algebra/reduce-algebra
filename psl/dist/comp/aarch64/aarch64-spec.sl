@@ -226,26 +226,46 @@
      (t form))))
 
 
-(put 'ncons 'opencode
-      '((*Move (reg nil) (reg 2))
-	(*Call cons))
-)
+(put 'cons 'opencode
+      '((STR (reg 1) (displacement (reg heaplast) 0))
+        (*move 9 (reg 1))
+        (*wshift (reg 1) 56)
+        (*wplus2 (reg 1) (reg heaplast))
+        (STR (reg 2) (displacement (reg heaplast) 8))
+        (*wplus2 (reg heaplast) 16)
+        (*jumpwlessp (labelgen templabel) (reg heaplast) (reg heaptrapbound))
+        (*push (reg 1))
+        (*link !%reclaim expr 0)
+        (*pop (reg 1))
 
-(put 'ncons 'exitopencode
-      '((*Move (reg nil) (reg 2))
-	(*JCall cons))
+        (labelref templabel)))
+
+(put 'ncons 'opencode
+      '((STR (reg 1) (displacement (reg heaplast) 0))
+        (*move 9 (reg 1))
+        (*wshift (reg 1) 56)
+        (*wplus2 (reg 1) (reg heaplast))
+        (STR (reg nil) (displacement (reg heaplast) 8))
+        (*wplus2 (reg heaplast) 16)
+        (*jumpwlessp (labelgen templabel) (reg heaplast) (reg heaptrapbound))
+        (*push (reg 1))
+        (*link !%reclaim expr 0)
+        (*pop (reg 1))
+
+        (labelref templabel))
 )
 
 (put 'xcons 'opencode
-      '((*Move (reg 1) (reg t3))
-	(*Move (reg 2) (reg 1))
-	(*Move (reg t3) (reg 2))
-	(*Call cons))
-)
+      '((STR (reg 1) (displacement (reg heaplast) 8))
+        (*move 9 (reg 1))
+        (*wshift (reg 1) 56)
+        (*wplus2 (reg 1) (reg heaplast))
+        (STR (reg 2) (displacement (reg heaplast) 0))
+        (*wplus2 (reg heaplast) 16)
+        (*jumpwlessp (labelgen templabel) (reg heaplast) (reg heaptrapbound))
+        (*push (reg 1))
+        (*link !%reclaim expr 0)
+        (*pop (reg 1))
 
-(put 'xcons 'exitopencode
-      '((*Move (reg 1) (reg t3))
-	(*Move (reg 2) (reg 1))
-	(*Move (reg t3) (reg 2))
-	(*JCall cons))
+        (labelref templabel))
 )

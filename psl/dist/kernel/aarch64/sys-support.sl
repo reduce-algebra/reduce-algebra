@@ -49,7 +49,7 @@
 (lap '((!*entry PlantUnbound expr 1)
        (*ALLOC 0)			% Make sure that (reg lr) is saved on stack
        (LDR (reg t1) UndefinedFunctionInstruction)
-       (STR (reg t1) (displacement (reg SYMFNC) (regshifted 1 LSL 2)))
+       (STR (reg t1) (displacement (reg SYMFNC) (regshifted 1 LSL 3)))
        (!*EXIT 0)
        (fullword 0) 
     UndefinedFunctionInstruction
@@ -59,7 +59,7 @@
 
 (lap '((!*entry PlantCodePointer expr 2)
        (*ALLOC 0)			% Make sure that (reg lr) is saved on stack
-       (STR (reg 2) (displacement (reg SYMFNC) (regshifted 1 LSL 2)))
+       (STR (reg 2) (displacement (reg SYMFNC) (regshifted 1 LSL 3)))
        (!*EXIT 0)))
 
 (compiletime 
@@ -70,7 +70,7 @@
 (lap '((!*entry PlantLambdaLink expr 1)
        (*ALLOC 0)			% Make sure that (reg lr) is saved on stack
        (LDR (reg t1) LambdaLinkInstruction)
-       (STR (reg t1) (displacement (reg SYMFNC) (regshifted 1 LSL 2)))
+       (STR (reg t1) (displacement (reg SYMFNC) (regshifted 1 LSL 3)))
        (!*EXIT 0)
        (fullword 0)
     LambdaLinkInstruction
@@ -78,7 +78,7 @@
 
 
 (lap '((*entry addressapply0 expr 1)
-       (BX (reg 1))))
+       (BR (reg 1))))
   
 (de bittable (baseaddress bitoffset)
   (field (ilsh (byte baseaddress (ilsh bitoffset -2))
@@ -99,7 +99,7 @@
        (*call console-print-string)
        (*move (fluid symnam) (reg t2))
        (*pop (reg t1))
-       (LDR (reg 1) (displacement (reg t2) (regshifted t1 LSL 2)))
+       (LDR (reg 1) (displacement (reg t2) (regshifted t1 LSL 3)))
        (*call console-print-string)
        (*call console-newline)
        (*move 0 (reg 1))

@@ -499,8 +499,7 @@
            `( (MOVN ,dest  ,(land 16#ffffffff (lnot cst)))))
           ((sixteenbit-p cst)
            % sixteen bits: load in two steps
-           `( (MOV ,dest ,(land 16#ff cst))
-              (ADD ,dest ,dest ,(land 16#ff00 cst))))
+           `( (MOV ,dest ,(land 16#ffff cst))))
           ((InumP cst)
            `( (LDR ,dest (sysint ,cst))))
           (t
@@ -697,10 +696,10 @@
 
 
 (DefCMacro *Push
-  ( (!*Move ArgOne (displacement (reg st) -4 preindexed))))
+  ( (!*Move ArgOne (displacement (reg st) -8 preindexed))))
 
 (DefCMacro *Pop
-  ( (!*Move (displacement (reg st) 4 postindexed) ArgOne)))
+  ( (!*Move (displacement (reg st) 8 postindexed) ArgOne)))
 
 (de *3op (a1 a2 instruction)
   (prog (ResultingCode*)
@@ -1305,9 +1304,9 @@
 
 (deflist '((Byte        ((LDRSB (reg 1) (displacement (reg 1) (reg 2)))))
            (r_Byte      ((LDRSB (reg 1) (displacement (reg 1) (reg 2)))))
-           (PutByte     ((STRB (reg 3) (displacement (reg 1) (reg 2)))))
+           (PutByte     ((STRB (reg w2) (displacement (reg 1) (reg 2)))))
            (HalfWord    ((LDRSH (reg 1) (displacement (reg 1) (reg 2)))))
-           (PutHalfWord ((STRH (reg 3) (displacement (reg 1) (reg 2))))))
+           (PutHalfWord ((STRH (reg w2) (displacement (reg 1) (reg 2))))))
   'OpenCode)
 
 (&OneReg '(Byte PutByte HalfWord PutHalfWord))
