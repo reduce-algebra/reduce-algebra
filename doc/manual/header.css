@@ -1,0 +1,30 @@
+/* FJW, January 2021: Header styling to match the web site */
+header {
+    text-align: center;
+    font-family: Georgia, 'Times New Roman', 'Lucida Bright', serif;
+    font-size: 40px;
+    font-weight: bold;
+    color: #0F0;
+    line-height: 1.5;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 600px;           /* width of background image */
+    width: 60vw;                /* 60% of viewport width */
+    min-width: 200px;           /* width of text */
+}
+
+@media (min-width: 500px) {     /* bootstrap breakpoint sm = 576px */
+    header {
+        background-image: url(header.png);
+        background-repeat: no-repeat;
+        background-position: left;
+    }
+}
+
+@media (max-width: 499.98px) {  /* as used by bootstrap */
+    header {
+        background-color: #009;
+        line-height: 1.0;
+        height: 40px;
+    }
+}
