@@ -1052,7 +1052,7 @@ LispObject set_up_variables(int restart_flag)
                           qvalue(input_libraries)));
     output_library = make_undefined_symbol("output-library");
     setvalue(output_library, (output_directory & 0x80000000u) != 0 ? nil :
-             SPID_LIBRARY + (((int32_t)output_directory)<<20));
+             SPID_LIBRARY + (((int32_t)(output_directory&0x3ff))<<20));
 //
 // The Lisp variable lispsystem* gets set here. (in Common mode it is
 // the variable *features*)

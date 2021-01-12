@@ -5,7 +5,6 @@
 // Arithmetic functions.
 //    quotient.
 //
-//
 
 /**************************************************************************
  * Copyright (C) 2020, Codemist.                         A C Norman       *
@@ -64,7 +63,6 @@ uint32_t Idivide(uint32_t *qp, uint32_t a, uint32_t b, uint32_t c)
 // of values this 64 by 32-bit division only has to handle positive numbers,
 // but depending on the hardware of your computer you are entitled to use
 // either signed or unsigned arithmetic.
-//
 {   uint64_t p = ((uint64_t)a << 31) | (uint64_t)b;
     if (qp != nullptr) *qp = (uint32_t)(p / (uint64_t)c);
     return (uint32_t)(p % (uint64_t)c);
@@ -81,7 +79,6 @@ static LispObject quotis(LispObject a, LispObject b)
 
 static LispObject quotib(LispObject a, LispObject b)
 {
-//
 // a fixnum divided by a bignum always gives 0, regardless of signs etc.,
 // save in the one case of (-#x8000000)/(#x8000000) which must yield -1
 // (an an analagous case in the 64-bit world...)
@@ -105,20 +102,17 @@ static LispObject quotib(LispObject a, LispObject b)
 }
 
 static LispObject CLquotib(LispObject a, LispObject b)
-{   LispObject g;
-    bool w;
-    real_push(a, b);
+{   bool w;
+    RealSave save(a, b, nil);
+    LispObject &aa = save.val(1);
+    LispObject &bb = save.val(2);
+    LispObject &g = save.val(3);
     w = minusp(b);
-    g = gcd(stack[0], stack[-1]);
+    g = gcd(bb, aa);
     if (w) g = negate(g);
-    a = stack[-1];
-    real_push(g);
-    a = quot2(a, g);
-    real_pop(g, b);
-    stack[0] = a;
-    b = quot2(b, g);
-    real_pop(a);
-    return make_ratio(a, b);
+    aa = quot2(aa, g);
+    bb = quot2(bb, g);
+    return make_ratio(aa, bb);
 }
 
 // Remember that in Common Lisp there is a tendancy for QUOTIENT to
@@ -136,58 +130,43 @@ static LispObject quotir(LispObject a, LispObject b)
 {   LispObject w;
     mv_2 = fixnum_of_int(0);
     if (a == fixnum_of_int(0)) return a;
-    real_push(b, a, nil);
-#define g   stack[0]
-#define a   stack[-1]
-#define b   stack[-2]
-    g = gcd(a, numerator(b));
-//
+    RealSave save(a, b, nil);
+    LispObject &aa = save.val(1);
+    LispObject &bb = save.val(2);
+    LispObject &gg = save.val(3);
+    gg = gcd(aa, numerator(bb));
 // the gcd() function guarantees to hand back a positive result.
-//
-    a = quot2(a, g);
-    w = minusp(numerator(b));
-    if (w) g = negate(g);
-    g = quot2(numerator(b), g);     // denominator of result will be +ve
-    a = times2(a, denominator(b));
-    w = make_ratio(a, g);
-    real_popv(3);
-    return w;
-#undef a
-#undef b
-#undef g
+    aa = quot2(aa, gg);
+    w = minusp(numerator(bb));
+    if (w) gg = negate(gg);
+    gg = quot2(numerator(bb), gg);     // denominator of result will be +ve
+    aa = times2(aa, denominator(bb));
+    return make_ratio(aa, gg);
 }
 
 static LispObject quotic(LispObject a, LispObject b)
-//
 // Used for all cases of xxx/<p+iq>.  This is coded in a fairly naive
 // way, multiplying both numerator and denominator of what will end up
 // as the result by the complex conjugate of b.  If floating point
 // arithmetic is used this can lead to grossly premature overflow.  For
 // the moment I will ignore that miserable fact
-//
 {   LispObject u, v;
     mv_2 = fixnum_of_int(0);
-    real_push(a, b);
-#define b stack[0]
-#define a stack[-1]
-//
+    RealSave save(a, b);
+    LispObject &aa = save.val(1);
+    LispObject &bb = save.val(2);
 //   a / (p + iq) is computed as follows:
 //     (a * (p - iq)) / (p^2 + q^2)
-//
-    u = negate(imag_part(b));
-    u = make_complex(real_part(b), u);
-    a = times2(a, u);
-    u = real_part(b);
+    u = negate(imag_part(bb));
+    u = make_complex(real_part(bb), u);
+    aa = times2(aa, u);
+    u = real_part(bb);
     u = times2(u, u);
-    v = imag_part(b);
-    b = u;
+    v = imag_part(bb);
+    bb = u;
     u = times2(v, v);
-    u = plus2(u, b);
-    v = a;
-    real_popv(2);
-    return quot2(v, u);
-#undef a
-#undef b
+    u = plus2(u, bb);
+    return quot2(aa, u);
 }
 
 static LispObject quotif(LispObject a, LispObject b)
@@ -237,7 +216,6 @@ static LispObject quotsf(LispObject a, LispObject b)
 }
 
 LispObject quotbn(LispObject a, int32_t n)
-//
 // Divide a bignum by an integer, where the integer is (by now)
 // a natural C int32_t but limited to 31 not 32 bits active.  I.e.
 // this can be used when dividing by a small fixnum or by dividing by
@@ -247,18 +225,15 @@ LispObject quotbn(LispObject a, int32_t n)
 // before I get here. Leaves nwork set to the remainder.
 // NOTE NOTE NOTE that on a 64-bit system this is not good enough
 // for dividing by a general fixnum.
-//
 {   int sign;
     size_t lena = (bignum_length(a)-CELL)/4-1, i, lenc, lenx;
     uint32_t carry;
     if (!SIXTY_FOUR_BIT && lena == 0)   // one-word bignum as numerator
     {   int32_t p = (int32_t)bignum_digits(a)[0];
         nwork = p % n;
-//
 // C does not define what happens on non-exact division involving
 // negative quantities, so I adjust things here so that the remainder
 // has the sign that I want and the division I do is exact.
-//
         if (p < 0)
         {   if (nwork > 0) nwork -= n;
         }
@@ -334,12 +309,10 @@ LispObject quotbn(LispObject a, int32_t n)
     {   sign ^= 1;
         n = -n;
     }
-//
 // Now both a and n have been made positive, and their original signs
 // have been recorded so that I can tidy up at the end.  The 1 bit in sign
 // tells me what sign the quotient will have, the 2 bit gives the sign
 // for the remainder.
-//
     lena = (bignum_length(a)-CELL)/4;
     carry = 0;
     for (i=lena; i>0; i--)
@@ -383,7 +356,6 @@ LispObject quotbn(LispObject a, int32_t n)
 }
 
 LispObject quotbn1(LispObject a, int32_t n)
-//
 // Divide a bignum by an integer, where the integer is (by now)
 // a natural C int32_t but limited to 31 not 32 bits active.  I.e.
 // this can be used when dividing by a fixnum or by dividing by
@@ -401,11 +373,9 @@ LispObject quotbn1(LispObject a, int32_t n)
     if (!SIXTY_FOUR_BIT && lena == 0)      // one-word bignum as numerator
     {   int32_t p = (int32_t)bignum_digits(a)[0];
         nwork = p % n;
-//
 // C does not define what happens on non-exact division involving
 // negative quantities, so I adjust things here so that the remainder
 // has the sign that I want and the division I do is exact.
-//
         if (p < 0)
         {   if (nwork > 0) nwork -= n;
         }
@@ -422,12 +392,10 @@ LispObject quotbn1(LispObject a, int32_t n)
         else if (nwork < 0) nwork += n;
         return nil;
     }
-//
 // That has dealt with the special cases - now the input is a bignum
 // with at least 3 digits and the quotient will certainly be a bignum.
 // Start by allocating a workspace copy of the dividend.  negateb will
 // leave a a bignum, although it may change its length.
-//
 //
 // Also note that I could fold the negateb() in with the division, and
 // thereby save allocating a big hunk of extra memory.
@@ -441,12 +409,10 @@ LispObject quotbn1(LispObject a, int32_t n)
     {   sign ^= 1;
         n = -n;
     }
-//
 // Now both a and n have been made positive, and their original signs
 // have been recorded so that I can tidy up at the end.  The 1 bit in sign
 // tells me what sign the quotient will have, the 2 bit gives the sign
 // for the remainder.
-//
     lena = (bignum_length(a)-CELL)/4;
     carry = 0;
     for (i=lena-1; i>=0; i--)
@@ -460,9 +426,7 @@ LispObject quotbn1(LispObject a, int32_t n)
 
 static LispObject quotbi(LispObject a, LispObject b)
 {
-//
 // dividing by 1 or -1 seems worth optimising.
-//
     mv_2 = fixnum_of_int(0);
     if (b == fixnum_of_int(1)) return a;
     else if (b == fixnum_of_int(-1)) return negateb(a);
@@ -511,9 +475,7 @@ static LispObject quotbi(LispObject a, LispObject b)
 
 static LispObject quotrembi(LispObject a, LispObject b)
 {
-//
 // dividing by 1 or -1 seems worth optimising.
-//
     mv_2 = fixnum_of_int(0);
     if (b == fixnum_of_int(1)) return a;
     else if (b == fixnum_of_int(-1)) return negateb(a);
@@ -596,7 +558,6 @@ static LispObject quotbs(LispObject a, LispObject b)
 //     trace_printf("\n");
 // }
 
-//
 // It is probably way over the top to make all the sub-functions for
 // division "inline", but at least while I am writing it doing so will
 // help discipline me into using procedural abstraction and not writing
@@ -604,7 +565,6 @@ static LispObject quotbs(LispObject a, LispObject b)
 // the burden of inline expansion will not be huge, and maybe the most
 // common use-cases will be when the big numbers are not very big and so
 // procedure call overhead may be noticable.
-//
 
 // If |a| < |b| then a/b is zero. I judge the sizes by looking at how
 // many digits are used in the bignum representations. There is a jolly
@@ -788,10 +748,10 @@ inline uint32_t next_quotient_digit(uint32_t atop,
 //
 // The test on the next line should detect all case where q0 was in error
 // by 2 and most when it was in error by 1.
-//
     if (q0 == 0x80000000U ||
-        (uint64_t)q0*(uint64_t)bignum_digits(b)[lenb-1] >
-        (((uint64_t)r0 << 31) | bignum_digits(a)[lena-1]))
+        (lenb > 0 &&
+           (uint64_t)q0*(uint64_t)bignum_digits(b)[lenb-1] >
+           (((uint64_t)r0 << 31) | bignum_digits(a)[lena-1])))
         q0--;
 //  trace_printf("Leading quotient digit = %d = %#x\n", q0, q0);
 //
@@ -799,7 +759,6 @@ inline uint32_t next_quotient_digit(uint32_t atop,
 // is set to an accurate remainder after using q0 as (part of) the
 // quotient. This may carry an overshoot into atop and if so I will need
 // to reduce q0 again and compensate.
-//
     atop += multiply_and_subtract(a, lena, q0, b, lenb);
 //  show1("sets a to ", atop, a, lena);
     if ((int32_t)atop < 0)
@@ -1020,22 +979,17 @@ static LispObject quotri(LispObject a, LispObject b)
     if (b == fixnum_of_int(1)) return a;
     else if (b == fixnum_of_int(0))
         return aerror2("bad arg for quotient", a, b);
-    real_push(a, b, nil);
-#define g   stack[0]
-#define b   stack[-1]
-#define a   stack[-2]
-    g = gcd(b, numerator(a));
-    w = minusp(b);
-    if (w) g = negate(g);      // ensure denominator is +ve
-    b = quot2(b, g);
-    g = quot2(numerator(a), g);
-    a = times2(b, denominator(a));
-    w = make_ratio(g, a);
-    real_popv(3);
-    return w;
-#undef a
-#undef b
-#undef g
+    RealSave save(a, b, nil);
+    LispObject &aa = save.val(1);
+    LispObject &bb = save.val(2);
+    LispObject &gg = save.val(3);
+    gg = gcd(bb, numerator(aa));
+    w = minusp(bb);
+    if (w) gg = negate(gg);      // ensure denominator is +ve
+    bb = quot2(bb, gg);
+    gg = quot2(numerator(aa), gg);
+    aa = times2(bb, denominator(aa));
+    return make_ratio(gg, aa);
 }
 
 static LispObject quotrs(LispObject a, LispObject b)
@@ -1048,14 +1002,14 @@ static LispObject quotrs(LispObject a, LispObject b)
 static LispObject quotrr(LispObject a, LispObject b)
 {   LispObject w;
     mv_2 = fixnum_of_int(0);
-    real_push(numerator(a), denominator(a),
-              denominator(b), numerator(b), // NB switched order
-              nil);
-#define g   stack[0]
-#define db  stack[-1]
-#define nb  stack[-2]
-#define da  stack[-3]
-#define na  stack[-4]
+    RealSave save(numerator(a), denominator(a),
+                  numerator(b), denominator(b),
+                  nil);
+    LispObject &na = save.val(1);
+    LispObject &da = save.val(2);
+    LispObject &nb = save.val(3);
+    LispObject &db = save.val(4);
+    LispObject &g  = save.val(5);
     g = gcd(na, db);
     w = minusp(db);
     if (w) g = negate(g);
@@ -1066,14 +1020,7 @@ static LispObject quotrr(LispObject a, LispObject b)
     da = quot2(da, g);
     na = times2(na, nb);
     da = times2(da, db);
-    w = make_ratio(na, da);
-    real_popv(5);
-    return w;
-#undef g
-#undef db
-#undef nb
-#undef da
-#undef na
+    return make_ratio(na, da);
 }
 
 static LispObject quotrb(LispObject a, LispObject b)
@@ -1197,10 +1144,8 @@ LispObject quot2a(LispObject a, LispObject b)
                         else if (r < 0) r += bb;
 // then the division can be an exact one, as here
                         r = (aa - r)/bb;
-//
 // the only case where dividing one fixnum by another can lead to
 // a bignum result is (-0x08000000/(-1)) which JUST overflows.
-//
                         if (!SIXTY_FOUR_BIT && r == 0x08000000)
                             return make_one_word_bignum(r);
                         if (SIXTY_FOUR_BIT && r == INT64_C(0x0800000000000000))
@@ -1391,10 +1336,8 @@ LispObject quotrem2a(LispObject a, LispObject b)
     {   case TAG_FIXNUM:
             switch (static_cast<int>(b) & XTAG_BITS)
             {   case TAG_FIXNUM:
-//
 // This is where fixnum / fixnum arithmetic happens - the case I most want to
 // make efficient.
-//
                     if (b == fixnum_of_int(0))
                         return aerror2("bad arg for divide", a, b);
                     else
@@ -1410,10 +1353,8 @@ LispObject quotrem2a(LispObject a, LispObject b)
                         mv_2 = fixnum_of_int(r);
 // then the division can be an exact one, as here
                         r = (aa - r)/bb;
-//
 // the only case where dividing one fixnum by another can lead to
 // a bignum result is (-0x08000000/(-1)) which JUST overflows.
-//
                         if (r == -MOST_NEGATIVE_FIXVAL)
                             return make_lisp_integerptr(r);
                         else return fixnum_of_int(r);
@@ -1588,13 +1529,11 @@ LispObject quotrem2a(LispObject a, LispObject b)
     }
 }
 
-//
 // The above version of quot2 is as required for the Standard Lisp QUOTIENT
 // function, and it is called from various internal places in CSL/CCL, eg
 // from within the code for TRUNCATE. Next I have something that will be very
 // similar in behaviour, but which turns quotients of integers into
 // rational numbers when that is necessary.
-//
 
 /***** Not reconstructed yet!!
  * ie this would need testing and review before being used in anger.
@@ -1616,10 +1555,8 @@ LispObject CLquot2a(LispObject a, LispObject b)
     {   case TAG_FIXNUM:
             switch (static_cast<int>(b) & XTAG_BITS)
             {   case TAG_FIXNUM:
-//
 // This is where fixnum / fixnum arithmetic happens - the case I most want to
 // make efficient.
-//
                     if (b == fixnum_of_int(0))
                         return aerror2("bad arg for /", a, b);
                     else
@@ -1630,10 +1567,8 @@ LispObject CLquot2a(LispObject a, LispObject b)
                         r = aa % bb;
                         if (r == 0)   // Exact division case
                         {   r = aa/bb;
-//
 // the only case where dividing one fixnum by another can lead to
 // a bignum result is (-0x08000000/(-1)) which JUST overflows.
-//
                             if (!SIXTY_FOUR_BIT && r == 0x08000000)
                                 return make_one_word_bignum(r);
                             else if (SIXTY_FOUR_BIT &&
