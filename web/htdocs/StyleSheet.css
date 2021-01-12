@@ -20,7 +20,7 @@ header span.mx-auto {
 
 @media (min-width: 500px) {     /* bootstrap breakpoint sm = 576px */
     header span.mx-auto {
-        background-image: url(/images/header.gif);
+        background-image: url(/images/header.png);
         background-repeat: no-repeat;
         background-position: left;
     }
