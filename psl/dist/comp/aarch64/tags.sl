@@ -55,6 +55,8 @@
  
 (CompileTime
  
+ (setq TagBitLength 8)
+
  (de DeclareTagRange (NameList StartingValue Increment)
    (let ((result '(PROGN)))
      (while NameList

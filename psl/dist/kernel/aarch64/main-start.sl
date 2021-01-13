@@ -214,6 +214,9 @@
        (*Alloc 0)
        (*MOVE (reg x21) ($fluid heaplast))
        (*MOVE (reg x22) ($fluid heaptrapbound))
+       (*MOVE (reg bndstkptr) ($fluid bndstkptr))
+       (*MOVE (reg bndstklowerbound) ($fluid bndstklowerbound))
+       (*MOVE (reg bndstkupperbound) ($fluid bndstkupperbound))
        (*exit 0)
 ))
 
@@ -293,6 +296,9 @@
 
        (*MOVE ($fluid heaplast) (reg X21))
        (*MOVE ($fluid heaptrapbound) (reg X22))
+       (*MOVE ($fluid bndstkptr) (reg bndstkptr))
+       (*MOVE ($fluid bndstklowerbound) (reg bndstklowerbound))
+       (*MOVE ($fluid bndstkupperbound) (reg bndstkupperbound))
 
        (*link init-gcarray expr 0)
 

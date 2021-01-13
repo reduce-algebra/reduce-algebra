@@ -106,7 +106,7 @@
 (setq ExportedDeclarationFormat* " .globl %w%n")
 (setq ExternalDeclarationFormat* " .globl %w%n") % All in DATA space
 
-(setq FullWordFormat* " .long %e%n")     % FullWord expects %e for parameter
+(setq FullWordFormat* " .quad %e%n")     % FullWord expects %e for parameter
 (setq HalfWordFormat* " .hword %e%n")     % Will EVAL formatter
 
 (setq ReserveDataBlockFormat* " .bss %w,%e%n")
@@ -115,11 +115,11 @@
 % Changed below to be like Vax version, so heap will be in bss. 
 (setq ReserveZeroBlockFormat* "%w:%n  .space %e%n")
 
-(put 'MkItem 'ASMExpressionFormat "[[%e*0x8000000]+%e]" )
+(put 'MkItem 'ASMExpressionFormat "[[%e<<56]+%e]" )
 
-(setq DefinedFunctionCellFormat* " .long %w%n")   %/ Must be LONG
+(setq DefinedFunctionCellFormat* " .quad %w%n")   %/ Must be LONG
 
-(setq UndefinedFunctionCellInstructions*   '(( !.long UndefinedFunction)))
+(setq UndefinedFunctionCellInstructions*   '(( !.quad UndefinedFunction)))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %LISTS and CONSTANT DEFINITIONS%
