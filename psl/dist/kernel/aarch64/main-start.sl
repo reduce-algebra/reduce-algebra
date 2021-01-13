@@ -311,10 +311,11 @@ panic-exit                      % need to do UNIX cleanup after
 %       (*exit 0)
 
        (*entry exit-with-status expr 1)
-       (*push (reg 1))
+       (*alloc 1)
+       (*move (reg 1) (frame 1))
        (*link os_cleanup_hook expr 0)
-       (*pop (reg 1))
-       (*link external_exit expr 1)
+       (*move (frame 1) (reg 1))
+       (*linke 1 external_exit expr 1)
        (*exit 0)
        ))
 
