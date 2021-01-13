@@ -67,13 +67,13 @@ char *abs_execfilepath;
  
 void clear_iob(), clear_dtabsize();
 
-void _psl_main(int argc, char *argv[], int *symvalptr);
+void _psl_main(int argc, char *argv[], long long *symvalptr);
 
 char ** copy_argv();
 
 int Debug = 0;
 
-extern int symval;
+extern long long symval;
 
 int
 main(argc,argv)

@@ -233,9 +233,9 @@ printf("total %llx %llx %llx\n",heapsize_in_bytes , current_size_in_bytes,total)
   }
 
 #if (NUMBEROFHEAPS == 2)
-  heapsize =(heapsize_in_bytes / 8) * 4;  /* insure full words */
+  heapsize =(heapsize_in_bytes / 8) * 4;  /* ensure full words */
 #else
-  heapsize =(heapsize_in_bytes / 8) * 8;  /* insure full words */
+  heapsize =(heapsize_in_bytes / 8) * 8;  /* ensure full words */
 #endif
 
   heappercent = ((float) (total - bpssize) / total) * 100.0;

@@ -251,17 +251,17 @@ int  count;
 }
  
  
-int wquotient(int x, int y)
+int wquotient(long long x, long long y)
 {
 	return (x / y);
 }
 
-int wremainder(int x, int y)
+int wremainder(long long x, long long y)
 {
 	return (x % y);
 }
 
-int wxdivide(int x, int y, int * rem)
+int wxdivide(long long x, long long y, long long * rem)
 {
         int q = x / y;
         *rem = x - y * q;
