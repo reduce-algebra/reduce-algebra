@@ -118,7 +118,7 @@
 (compiletime
  (put 'getword32 'opencode
       '(
-	(movl (indexed (reg 1) (displacement (reg 2) 0)) (reg EAX)))))
+	(LDR (reg w0) (indexed (reg 1) (displacement (reg 2) 0)) ))))
  
 
 % ------------------------------------------------------------
@@ -437,9 +437,20 @@
     (or (and (reg32p RegName) (not (reg32-zero-p RegName)))
 	(req32-sp-p RegName)))
 
+(de reg-indirect-p (x)
+    (and (eqcar x 'indirect)
+    	 (regp (cadr x))))
+
+(de reg-or-sp-simm9-post-p (x)
+    (and (eqcar x 'postindexed)
+	 (reg-or-sp-simm9-p x)))
+
+(de reg-or-sp-simm9-pre-p (x)
+    (and (eqcar x 'preindexed)
+	 (reg-or-sp-simm9-p x)))
+
 (de reg-or-sp-simm9-p (x)
-    (and (eqcar x 'displacement)
-	 (pairp (cdr x)) (reg-or-sp-p (cadr x))
+    (and (pairp (cdr x)) (reg-or-sp-p (cadr x))
 	 (pairp (cddr x)) (simm9-p (caddr x))))
 
 (de simm9-p (displ)
@@ -450,7 +461,6 @@
 	 (pairp (cdr x)) (reg-or-sp-p (cadr x))
 	 (pairp (cddr x)) (fixp (caddr x)) (eq 0 (land (caddr x) 7))
 	 (pimm12-p (lsh (caddr x) -3))
-	 (pairp (cdddr x)) (memq (cadddr x) '(preindexed postindexed))
 	 ))
 
 (de reg-or-sp-pimm14-p (x)
@@ -458,7 +468,6 @@
 	 (pairp (cdr x)) (reg-or-sp-p (cadr x))
 	 (pairp (cddr x)) (fixp (caddr x)) (eq 0 (land (caddr x) 3))
 	 (pimm12-p (lsh (caddr x) -2))
-	 (pairp (cdddr x)) (memq (cadddr x) '(preindexed postindexed))
 	 ))
 
 (de pimm12-p (displ)
@@ -610,14 +619,13 @@
     )
 
 (de reg-or-sp-shifter-p (x)
-    (or (stringp x)
-	(and (pairp x) (regp x))
-	(and (eqcar x 'regshifted) (or (regp (cadr x)) (regp (list 'reg (cadr x))))
-	     (memq (caddr x) '(LSL LSR ASR))
-	     (or (fixp (cadddr x)) (regp (cadddr x))
-		 (and (null (cadddr x)) (eq (caddr x) 'RRX))))
-	)
-    )
+    (and (eqcar x 'indexed)
+         (pairp (cdr x)) (reg-or-sp-p (cadr x))
+	 (pairp (cddr x))
+	 (let ((indx (caddr x)))
+	   (or (regp indx)
+	       (and (eqcar indx 'regshifted) (or (regp (cadr indx)) (regp (list 'reg (cadr indx)))) (eq 'LSL (caddr indx)))
+	       (and (eqcar indx 'regextended) (or (reg32p (cadr indx)) (reg32p (list 'reg (cadr indx)))) (memq (caddr indx) '(SXTW UXTW)))))))
 
 % possibly extended register (data movement), one of:
 % (reg x)
@@ -1066,15 +1074,17 @@
 %% LDR Rt,[Rn,Rm]                                      (displacement (reg n) (reg m))
 %% LDR Rt,[Rn,Rm, shift, #shift_imm]                   (displacement (reg n) (regshifted <regno> LSL amount))
 %% LDR Rt,[Rn,Rm, extend, #shift_imm]                  (displacement (reg n) (regextended <regno> UXTW/SXTW/SXTX amount))
-%% LDR Rt,[Rn,+/-offset8]!                             (displacement (reg n) +/-8bit-number preindexed)
-%% LDR Rt,[Rn],+/-offset8                              (displacement (reg n) +/-8bit-number postindexed)
+%% LDR Rt,[Rn,+/-offset8]!                             (preindexed (reg n) +/-8bit-number)
+%% LDR Rt,[Rn],+/-offset8                              (postindexed (reg n) +/-8bit-number)
 
 (de OP-ld-st (code regt reg-offset)
     (prog (cc s-bit opcode1 size shift-op shift-amount regn displ pre-post ppbits regm byte1 byte2 byte3 lastbyte)
 	  (setq cc (car code) opcode1 (cadr code) shift-amount 0)
 	  (if (and
 	       (not (labelp reg-offset))
-	       (or (not (pairp reg-offset)) (not (memq (car reg-offset) '(displacement indirect indexed))) (not (regp (cadr reg-offset)))))
+	       (or (not (pairp reg-offset))
+	       	   (not (memq (car reg-offset) '(displacement indirect indexed preindexed postindexed)))
+		   (not (regp (cadr reg-offset)))))
 	      (stderror (bldmsg "Invalid LDR/STR operand: %w" reg-offset)))
 	  (if (labelp reg-offset)	% label --> pc-relative
 	      (progn
@@ -1086,11 +1096,13 @@
 	      (setq regn (reg2int (cadr reg-offset)))
 	      (setq size (lsh cc -8))
 	      (setq displ (if (eqcar reg-offset 'indirect) 0 (caddr reg-offset)))))
-	  (cond ((or (labelp reg-offset) (null (cddr reg-offset)) (null (cdddr reg-offset))) % no pre or post indexed
+	  (cond ((or (labelp reg-offset)
+	         (not (memq (car reg-offset) '(preindexed postindexed)))
+                 (null (cddr reg-offset)))
 		 nil)
-		((and (memq (cadddr reg-offset) '(preindexed postindexed))
+		((and (memq (car reg-offset) '(preindexed postindexed))
 		      (fixp displ) (lessp displ 256) (greaterp displ -257))
-		 (setq pre-post (cadddr reg-offset))
+		 (setq pre-post (car reg-offset))
 		 (setq ppbits (if (eq pre-post 'preindexed) 2#11 2#01))
 		 (setq displ (land displ 2#111111111)) % mask to nine bits
 		 (setq lastbyte (lor (lsh (land 2#111 (reg2int regn)) 5) (reg2int regt)))
@@ -1164,8 +1176,8 @@
 %% LDRD Rd,[Rn,+/-offset8]!                             (displacement (reg n) +/-8bit-number preindexed)
 %% LDRD Rd,[Rn,Rm]!                                     (displacement (reg n) (reg m) preindexed)
 %% LDRD Rd,[Rn,+/-Rm]!                                  (displacement (reg n) (plus|minus (reg m)) preindexed)
-%% LDRD Rd,[Rn],+/-offset8                              (displacement (reg n) +/-8bit-number postindexed)
-%% LDRD Rd,[Rn],Rm                                      (displacement (reg n) (reg m) postindexed)
+%% LDRD Rd,[Rn],+/-offset8                              (postindex (reg n) +/-8bit-number)
+%% LDRD Rd,[Rn],Rm                                      (postindexed (reg n) (reg m))
 %% LDRD Rd,[Rn],+/-Rm                                   (displacement (reg n) (plus|minus (reg m)) postindexed)  
 
 (de OP-ld-st-misc (code regd reg-offset8)

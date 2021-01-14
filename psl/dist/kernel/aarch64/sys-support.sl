@@ -93,18 +93,18 @@
    % to be redefined in nonkernel
 
 (lap '((*entry undefinedfunction-aux expr 1)
-       (*ALLOC 0)			% Make sure that (reg lr) is saved on stack
-       (*push (reg t1))
+       (*ALLOC 1)			% Make sure that (reg lr) is saved on stack
+       (*move (reg t1) (frame 1))
        (*move (quote "Undefined function called: ") (reg 1))
        (*call console-print-string)
        (*move (fluid symnam) (reg t2))
-       (*pop (reg t1))
+       (*move (frame 1) (reg t1))
        (LDR (reg 1) (displacement (reg t2) (regshifted t1 LSL 3)))
        (*call console-print-string)
        (*call console-newline)
        (*move 0 (reg 1))
        (*call Exit-with-status)
-       (*exit 0)
+       (*exit 1)
        ))
 
 (lap '((*entry CompiledCallingInterpreted expr 0)      %. link for lambda

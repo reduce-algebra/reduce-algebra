@@ -437,14 +437,14 @@
 (DefCMacro *Call
        ((InternallyCallableP)  (BL (InternalEntry ArgOne)))
         (         (*Move (idloc ArgOne) (reg t3))
-                  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 3)))
+                  (LDR (reg t2) (indexed (reg symfnc) (regshifted t3 LSL 3)))
                   (BLR (reg t2)))
 )
 
 (DefCMacro *JCall
        ((InternallyCallableP)  (B (InternalEntry ArgOne)))
         (         (*Move (idloc ArgOne) (reg t3))
-                  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 3)))
+                  (LDR (reg t2) (indexed (reg symfnc) (regshifted t3 LSL 3)))
                   (BR (reg t2)))
 )
 
@@ -604,11 +604,9 @@
    '*DeAlloc))
 
 (DefCmacro *DeAlloc
-%           ((ZeroP)   (LDP (reg fp) (reg lr) (displacement (reg sp) 16 postindexed)))
-
-           (   %        (add (reg st) (reg st) ARGONE)
+           ( 
                         % pop link register
-                       (LDP (reg fp) (reg lr) (displacement (reg sp) ARGONE postindexed)))
+                       (LDP (reg fp) (reg lr) (postindexed (reg sp) ARGONE)))
 )
 
 
@@ -620,10 +618,7 @@
    (times (plus2 2 N) (compiler-constant 'AddressingUnitsPerItem)) '*Exit))
 
 (DefCMacro *Exit     % leaf routine first
-%   ((ZeroP)  (LDP (reg fp) (reg lr) (displacement (reg sp) 16 postindexed))
-%             (RET))
-   (%         (add (reg st) (reg st) ARGONE)
-             (LDP (reg fp) (reg lr) (displacement (reg sp) ARGONE postindexed))
+   (         (LDP (reg fp) (reg lr) (postindexed (reg sp) ARGONE))
              (RET)))
 
 (de displacementp (x) (and (pairp x) (eq (car x) 'displacement)))
@@ -690,11 +685,11 @@
                                                    'CMacroPatternTable)))))))
 
 
-(DefCMacro *Push
-  ( (!*Move ArgOne (displacement (reg st) -8 preindexed))))
+%(DefCMacro *Push
+%  ( (!*Move ArgOne (displacement (reg st) -8 preindexed))))
 
-(DefCMacro *Pop
-  ( (!*Move (displacement (reg st) 8 postindexed) ArgOne)))
+%(DefCMacro *Pop
+%  ( (!*Move (displacement (reg st) 8 postindexed) ArgOne)))
 
 (de *3op (a1 a2 instruction)
   (prog (ResultingCode*)
@@ -1295,11 +1290,11 @@
  )
  
 
-(deflist '((Byte        ((LDRSB (reg 1) (displacement (reg 1) (reg 2)))))
-           (r_Byte      ((LDRSB (reg 1) (displacement (reg 1) (reg 2)))))
-           (PutByte     ((STRB (reg w2) (displacement (reg 1) (reg 2)))))
-           (HalfWord    ((LDRSH (reg 1) (displacement (reg 1) (reg 2)))))
-           (PutHalfWord ((STRH (reg w2) (displacement (reg 1) (reg 2))))))
+(deflist '((Byte        ((LDRSB (reg 1) (indexed (reg 1) (reg 2)))))
+           (r_Byte      ((LDRSB (reg 1) (indexed (reg 1) (reg 2)))))
+           (PutByte     ((STRB (reg w2) (indexed (reg 1) (reg 2)))))
+           (HalfWord    ((LDRSH (reg 1) (indexed (reg 1) (reg 2)))))
+           (PutHalfWord ((STRH (reg w2) (indexed (reg 1) (reg 2))))))
   'OpenCode)
 
 (&OneReg '(Byte PutByte HalfWord PutHalfWord))
@@ -1420,13 +1415,12 @@
 
 (put 'fast-idapply    'opencode
      '((!*Field (reg t3) (reg t1)  (wconst infstartingbit) (wconst infbitlength))       % remove tag
-       (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 2)))
+       (LDR (reg t2) (indexed (reg symfnc) (regshifted t3 LSL 3)))
        (BLR (reg t2))))
      
 (put 'fast-idapply    'exitopencode
      '((!*Field (reg t3) (reg t1)  (wconst infstartingbit) (wconst infbitlength))       % remove tag
-       (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 2)))
-%       (LDMIA (reg sp) ((reg lr)) writeback) % pop link register
+       (LDR (reg t2) (indexed(reg symfnc) (regshifted t3 LSL 3)))
        (BR (reg t2))))
 
 %% could be:
@@ -1669,7 +1663,7 @@ preload  (setq initload
         (if (and (weq lowerbound 0) (weq upperbound 31))
                                         % jumpon on tags (most probably)
                                         % 4 bytes per jumptable entry
-      `((LDR (reg pc) (displacement (reg pc) (regshifted ,(cadr register) LSL 2)))
+      `((LDR (reg pc) (indexed (reg pc) (regshifted ,(cadr register) LSL 2)))
         % new value of the PC is:
         % (address of the LDR instruction) + PC + 8 + 4*(contents of register)
         % therefore we need 4 bytes (one instruction) to jump over
@@ -1681,7 +1675,7 @@ preload  (setq initload
         (cmp ,register ,Lowerbound )
         (b!.lt (label ,ll))
         (*WDifference ,register ,lowerbound)
-        (LDR (reg pc) (displacement (reg pc) (regshifted ,(cadr register) LSL 2)))
+        (LDR (reg pc) (indexed (reg pc) (regshifted ,(cadr register) LSL 2)))
         (B (label ,ll))                 % extra instruction to jump over
        ,ll2) ) )
       Loop  (Setq x (nconc X `((fullword ,(car Labellist)))))

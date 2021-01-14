@@ -187,7 +187,8 @@
 	  ((eq op 'imm16-shifted) '(imm16-shiftedp))
 	  ((eq op 'imm-logical) '(imm-logical-p))
 	  ((eq op 'imm7) '(imm7-p))
-	  ((eq op 'reg-or-sp-simm9) '(reg-or-sp-simm9-p))
+	  ((eq op 'reg-or-sp-simm9-post) '(reg-or-sp-simm9-post-p))
+	  ((eq op 'reg-or-sp-simm9-pre) '(reg-or-sp-simm9-pre-p))
 	  ((eq op 'reg-or-sp-pimm14) '(reg-or-sp-pimm14-p))
 	  ((eq op 'reg-or-sp-pimm15) '(reg-or-sp-pimm15-p))
 	  ((eq op 'lsb) '(lsb-p))
@@ -458,17 +459,17 @@
 (instr LDPSW  (reg reg reg-or-sp imm7)  OP-ldp  2#0110100101)
 
 % LDR Xt, [Xn], #simm9 - post-index
-% (LDR (reg t) (displacement (reg n) +/-number postindexed))
-(instr LDR (reg32 reg-or-sp-simm9)      OP-ld-st 2#10111000010 2#01)
-(instr LDR (reg reg-or-sp-simm9)      OP-ld-st 2#11111000010 2#01)
-(instr STR (reg32 reg-or-sp-simm9)      OP-ld-st 2#10111000000 2#01)
-(instr STR (reg reg-or-sp-simm9)      OP-ld-st 2#11111000000 2#01)
+% (LDR (reg t) (postindex (reg n) +/-number))
+(instr LDR (reg32 reg-or-sp-simm9-post)      OP-ld-st 2#10111000010 2#01)
+(instr LDR (reg reg-or-sp-simm9-post)      OP-ld-st 2#11111000010 2#01)
+(instr STR (reg32 reg-or-sp-simm9-post)      OP-ld-st 2#10111000000 2#01)
+(instr STR (reg reg-or-sp-simm9-post)      OP-ld-st 2#11111000000 2#01)
 % LDR Xt,[Xn,#simm9]! - pre-index
-% (LDR (reg t) (displacement (reg n) +/-number preindexed))
-(instr LDR (reg32 reg-or-sp-simm9)      OP-ld-st 2#10111000010 2#11)
-(instr LDR (reg reg-or-sp-simm9)      OP-ld-st 2#11111000010 2#11)
-(instr STR (reg32 reg-or-sp-simm9)      OP-ld-st 2#10111000000 2#11)
-(instr STR (reg reg-or-sp-simm9)      OP-ld-st 2#11111000000 2#11)
+% (LDR (reg t) (preindex (reg n) +/-number))
+(instr LDR (reg32 reg-or-sp-simm9-pre)      OP-ld-st 2#10111000010 2#11)
+(instr LDR (reg reg-or-sp-simm9-pre)      OP-ld-st 2#11111000010 2#11)
+(instr STR (reg32 reg-or-sp-simm9-pre)      OP-ld-st 2#10111000000 2#11)
+(instr STR (reg reg-or-sp-simm9-pre)      OP-ld-st 2#11111000000 2#11)
 
 % LDR Xt,[Xn,#pimm12] - unsigned offset
 % (LDR (reg t) (displacement (reg n) +number))
@@ -490,10 +491,10 @@
 (instr STR (reg reg-indirect)       OP-ld-ST 2#1111100100 nil)
 
 % LDR Xt,[Xn,Xm]
-% (LDR (reg t) (displacement (reg n) (reg m)))
+% (LDR (reg t) (indexed (reg n) (reg m)))
 % LDR Xt,[Xn,Xm,lsl #3]
 % LDR Xt,[Xn,Wm,sxtw/uxtw]
-% (LDR (reg t) (displacement (reg n) (regshifted m LSL amount)))
+% (LDR (reg t) (indexed (reg n) (regshifted m LSL amount)))
 (instr LDR (reg32 reg-or-sp-shifter)   OP-ld-st 2#10111000011)
 (instr LDR (reg reg-or-sp-shifter)   OP-ld-st 2#11111000011)
 (instr STR (reg32 reg-or-sp-shifter)   OP-ld-st 2#10111000001)
