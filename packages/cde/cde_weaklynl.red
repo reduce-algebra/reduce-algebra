@@ -28,10 +28,8 @@ module cde_weaklynl;
 %
 
 % % *****************************************************************
-% Author and maintainer: Raffaele Vitolo
-% Dipartimento di Matematica, Universita' del Salento (Lecce, Italy)
-% email: raffaele.vitolo@unisalento.it
-% web: http://poincare.unisalento.it/vitolo
+% Authors and maintainers: M. Casati, P. Lorenzoni, D. Valeri, R. Vitolo
+% web: https://gdeq.org/Weakly_nonlocal_Poisson_brackets
 % ===============================================================
 
 %
@@ -411,7 +409,7 @@ symbolic procedure sb_wnl_algorithm(ham1_l,c,w,ham2_l,d,z,
       nlargw:=list(nlargw_1,nlargw_2,nlargw_3);
       nlargz:=list(nlargz_1,nlargz_2,nlargz_3);
       % Computing Dubrovin-Zhang formula
-      print "Step 0: calculating Dubrovin-Zhang formula";
+      prin2t "Step 0: calculating Schouten bracket";
       dz:=dubrovin_zhang_expr(ham1_l,c,w,ham2_l,d,z,
       	dep_var_equ,
       	loc_arg_1,loc_arg_2,loc_arg_3,
@@ -419,7 +417,7 @@ symbolic procedure sb_wnl_algorithm(ham1_l,c,w,ham2_l,d,z,
 	nlargz);
 %%      return dz;
       % First step of the algorithm: nonlocal reduction
-      print "Step 1: reducing the nonlocal terms";
+      prin2t "Step 1: reducing the nonlocal terms";
       % Integrating Coeff * tpsi^1_w,\a * psi^2_p * d^k_x psi^3_i, k>0
       first_step:=nonlocal_reduction(dz,
       	nlargw_1,loc_arg_2,loc_arg_3);
@@ -440,7 +438,7 @@ symbolic procedure sb_wnl_algorithm(ham1_l,c,w,ham2_l,d,z,
       first_step:=nonlocal_reduction(first_step,
       	nlargz_3,loc_arg_1,loc_arg_2);
       % Second step of the algorithm: local reduction
-      print "Step 2: reducing the local terms";
+      prin2t "Step 2: reducing the local terms";
       % Integrating Coeff * d^k_x psi^3_i, k>0
       return local_reduction(first_step,
       	loc_arg_1,loc_arg_2,loc_arg_3)
@@ -459,6 +457,11 @@ symbolic procedure schouten_bracket_wnl(ham1,ham2,
   % dep_var_equ,loc_arg,nloc_arg: algebraic lists of variables and arguments
   begin
     scalar ham1_l,c,w,ham2_l,d,z,ntail_w,ntail_z;
+    prin2t "Weakly nonlocal Poisson bracket: checking the Jacobi property";
+    prin2t "CDE module cde_weaklynl.red (2021)";
+    prin2t "by M. Casati, P. Lorenzoni, D. Valeri, R. Vitolo";
+    prin2t "see https://gdeq.org/Weakly_nonlocal_Poisson_brackets";
+    terpri();
     ham1_l:=nth(ham1,2);
     c:=nth(ham1,3);
     w:=nth(ham1,4);

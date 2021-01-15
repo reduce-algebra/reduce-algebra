@@ -1,4 +1,4 @@
-Time-stamp: "2021-01-05 17:27:44 vitolo"
+Time-stamp: "2021-01-15 20:11:39 vitolo"
 
 2021-01-05 Raffaele Vitolo <raffaele.vitolo@unisalento.it>
 Updated: CDE version 3.0. Main changes are:
@@ -9,6 +9,7 @@ calculations.
 Schouten bracket of weakly nonlocal operators. The examples and the software
 will be discussed in a forthcoming paper by
 M. Casati P. Lorenzoni, D. Valeri, R.V. (2021).
+See https://gdeq.org/Weakly_nonlocal_Poisson_brackets for more details.
 
 2020-04-14 Raffaele Vitolo <raffaele.vitolo@unisalento.it>
 Updated: CDE version 3.0. Main changes are:
