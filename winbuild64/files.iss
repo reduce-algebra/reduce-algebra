@@ -47,7 +47,7 @@ Source: "{#mydir}\C\doc\misc\reduce.sty"; \
   DestDir: "{app}\doc\"; \
   Flags: ignoreversion; \
   Components: common
-Source: "{#mydir}\C\doc\manual\redlogo.png"; \
+Source: "{#mydir}\C\doc\manual\header.png"; \
   DestDir: "{app}\lib\csl\reduce.doc\"; \
   Flags: ignoreversion; \
   Components: common
