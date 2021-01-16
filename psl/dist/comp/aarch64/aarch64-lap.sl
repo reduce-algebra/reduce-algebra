@@ -2204,12 +2204,12 @@
 		(list 'mov '(reg t1) (caddr (car u)))
 		(LapoptFrame1 src (cdr u))))))
 
-(fluid '(!*optimize-armv6))
+(fluid '(!*optimize-aarch64))
 
-(setq *optimize-armv6 t)
+(setq *optimize-aarch64 t)
 
 (de LapoptPeep(code)
-   (when *optimize-armv6 (setq code (LapoptPeepArmv6 code)))
+   (when *optimize-aarch64 (setq code (LapoptPeepAarch64 code)))
    code)
 
 
@@ -2231,14 +2231,13 @@
 %%        (ldr (reg t1) (displacement (reg symval) (regshifted t2 lsl 2)))
 %%        (ldr (reg 2) (indirect (reg t1)))
 %%
-%% 2) optimize (mov (reg n) (reg m)) (lsl (reg n) (reg n) 2)
-%%         --> (mov (reg n) (regshifted m LSL 2)) [from wgetv]
+%% 2) optimize (mov (reg n) (reg m)) (lsl (reg n) 3)
+%%         --> (mov (reg n) (regshifted m LSL 3)) [from wgetv]
 %% 3) optimize (add (reg n) (reg n) (reg m)) (ldr (reg k) (indirect (reg n))
-%%         --> (ldr (reg k) (displacement (reg n) (reg m))) [from wgetv]
-%% 4) optimize (b<cond> lbl) (dataop ...) lbl
-%%         --> (dataop<invertedcond> ...) lbl
-(de LapoptPeepArmv6 (code)
-% peephole optimizer for armv6 code
+%%         --> (ldr (reg k) (indexed (reg n) (reg m))) [from wgetv]
+
+(de LapoptPeepAarch64 (code)
+% peephole optimizer for aarch6 code
 % interchanging instructions for dependencies.
  (let (rcode i1 i2 i3 r rb)
   (while code
@@ -2247,17 +2246,24 @@
      (setq i2 (car code) i3 (if (cdr code) (cadr code)))
     (cond
       % case
-      %   (ldm (reg sp) (reglist ... (reg lr)))
-      %   (bx (reg lr)) 
-      % replace (reg lr) in ldm by (reg pc) and remove bx instruction
-     ((and (equal i2 '(bx (reg lr)))
+      %   (add/sub (reg n) ... ))
+      %   (cmp (reg n) 0)
+      % replace add/sub by adds/subs and remove cmp instruction
+     ((and (eqcar i2 'cmp) (eq (caddr i2) 0)
 	   (pairp i1)
-	   (eq (car i1) 'ldmia)
-	   (equal (cadr i1) '(reg sp))
-	   (member '(reg lr) (caddr i1))
+	   (memq (car i1) '(add sub))
+	   (equal (cadr i1) (cadr i2))
 	   )
-      (pop code)		% remove bx instruction
-      (setq i1 (subst '(reg pc) '(reg lr) i1)))
+      (pop code)		% remove cmp instruction
+      (setq i1 (sublis '((adc . adcs)
+      	                 (add . adds)
+			 (sub . subs)
+			 (sbc . sbcs)
+			 (neg . negs)
+			 (ngc . ngcs)
+			 (and . ands)
+			 (bic . bics))
+		       i1)))
 
       % case
       %   something

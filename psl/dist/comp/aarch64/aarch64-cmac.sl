@@ -879,39 +879,17 @@
                     (*Move ArgThree (reg t2))
                     (MUL (reg t1) (Reg t1) (reg t2))
                     (*Move (reg t1) ArgOne)))
- 
-(DefCMacro *wquotient)
 
-(de *wquotient (arg1 arg2) (*wquotient3 arg1 arg1 arg2))
 
-(de *wquotient3 (arg1 arg2 arg3)
-    (Expand3OperandCmacro arg1 arg2 arg3 '*wquotient3))
+(put 'wquotient 'opencode '((SDIV (reg x0) (reg x0) (reg x1))))
 
-% format ArgOne = ArgTwo / ArgThree
+(put 'wremainder 'opencode '((SDIV (reg t1) (reg x0) (reg x1))
+			     (MSUB (reg x0) (reg t1) (reg x1) (reg x0))))
 
-(DefCMacro *wquotient3              
-         ((anyp anyp onep)       (*Move argtwo argone))
-         ((regp regp powerof2p)  (*wquotientshift ArgOne ArgTwo ArgThree))
-         ((regp regp regp)       (SDIV ArgOne ArgTwo Argthree))
-         ((regp regp anyp)       (*Move argthree (reg t1))
-                                 (*wquotient3 ArgOne ArgTwo (reg t1)))
-           (        (*Move ArgTwo (Reg t1))
-                    (*Move ArgThree (reg t2))
-                    (SDIV (reg t1) (Reg t1) (reg t2))
-                    (*Move (reg t1) ArgOne)))
+(put 'wdivide 'opencode '((SDIV (reg t1) (reg x0) (reg x1))
+			  (MSUB (reg t1) (reg t1) (reg x1) (reg x0))
+			  (*Move (reg t1) ($fluid *second-value*))))
 
-(de *wquotientshift (arg1 arg2 arg3)
-        (setq arg3 (powerof2p arg3))
-        `((*asr arg1 arg2 arg3)))
-
-(DefCMacro *wquotientshift)
-
-(DefCMacro *wremainder
-           (       (*Move ArgOne (reg t2))
-                   (*Move ArgTwo (reg t1))
-                   (SDIV (reg t2) (reg t2) (reg t1))
-                   (mul (reg t1) (reg t1) (reg t2))
-                   (*wdifference3 ArgOne ArgOne (reg t1))))
 
 (de *Wcmp(arg1 arg2)
   (Expand2OperandCMacro arg1 arg2 '*Wcmp))
@@ -1519,8 +1497,8 @@ afterpreload
       (setq genlabel (gensym))
       (setq n 0)
       (setq Fluids (rest fluids)) % Remove NONLOCALVARS
-      (setq lng (wtimes2 (length Fluids) 8)) % two words per BndStk entry
-                                         % * 4 addressingunits
+      (setq lng (wtimes2 (length Fluids) 16)) % two words per BndStk entry
+                                              % * 8 addressingunits
       (setq freeregs '((reg 1)(reg 2)(reg 3)(reg 4)(reg 5)))
       (setq cfluids fluids) % copy of fluids
 
@@ -1566,7 +1544,7 @@ preload  (setq initload
       (Setq list (append list
              `((*Move ,(car freeregs) (indexed (Reg t2) ,n))
                (*Move (quote ,Cadrcfluids)
-                           (indexed (reg t2)  ,(wplus2 n -4)))
+                           (indexed (reg t2)  ,(wplus2 n -8)))
                (*Move (quote nil) ,cfluids)
       )          ))
       (setq freeregs (cdr freeregs))
@@ -1585,8 +1563,8 @@ preload  (setq initload
       (setq lng (wtimes2 (length Fluids) 2)) % two words per BndStk entry
       (setq freeregs '((reg 2)(reg 3)(reg 4)(reg 5)))
       (setq cfluids fluids) % copy of fluids
-      (setq n (wtimes2 4 (wdifference 2 lng)))
-      (setq lng (wtimes2 lng 4)) % * addressingunitperitem
+      (setq n (wtimes2 8 (wdifference 2 lng)))
+      (setq lng (wtimes2 lng 8)) % * addressingunitperitem
       (setq initload (list '(*Move ($fluid Bndstkptr) (reg t1))))
 
 preload  (setq initload
@@ -1598,7 +1576,7 @@ preload  (setq initload
          (if freeregs
      `((*Move (displacement (reg t1) ,n) ,(car freeregs))) nil)
        )   ))
-       (setq n (wplus2 n 8))
+       (setq n (wplus2 n 16))
        (when freeregs (setq freeregs (cdr freeregs)))
        (setq cfluids (cdr cfluids))
 
@@ -1622,11 +1600,11 @@ preload  (setq initload
 
      %start of code
      (setq list (append initload list))
-     (setq n 0)<
+     (setq n 0)
 
  loop
       (setq cfluids (car Fluids))
-      (setq n (wplus2 n 8))
+      (setq n (wplus2 n 16))
 
   % insert reloaded register or memory reference
 
@@ -1660,12 +1638,14 @@ preload  (setq initload
        (setq ll  (gensym))
        (setq ll2 (stringgensym))
        (SETQ X
-        (if (and (weq lowerbound 0) (weq upperbound 31))
+        (if (and (weq lowerbound 0) (weq upperbound 255))
                                         % jumpon on tags (most probably)
-                                        % 4 bytes per jumptable entry
-      `((LDR (reg pc) (indexed (reg pc) (regshifted ,(cadr register) LSL 2)))
+                                        % 8 bytes per jumptable entry
+      `((ADR (reg t1) ,ll2)
+        (LDR (reg t1) (indexed (reg t1) (regshifted ,(cadr register) LSL 3)))
+	(BR (reg t1))
         % new value of the PC is:
-        % (address of the LDR instruction) + PC + 8 + 4*(contents of register)
+        % (address of the LDR instruction) + PC + 8 + 8*(contents of register)
         % therefore we need 4 bytes (one instruction) to jump over
         (B (label ,ll))
        ,ll2)
@@ -1675,7 +1655,9 @@ preload  (setq initload
         (cmp ,register ,Lowerbound )
         (b!.lt (label ,ll))
         (*WDifference ,register ,lowerbound)
-        (LDR (reg pc) (indexed (reg pc) (regshifted ,(cadr register) LSL 2)))
+	(ADR (reg t1) ,ll2)
+	(LDR (reg t1) (indexed (reg t1) (regshifted ,(cadr register) LSL 3)))
+	(BR (reg t1))
         (B (label ,ll))                 % extra instruction to jump over
        ,ll2) ) )
       Loop  (Setq x (nconc X `((fullword ,(car Labellist)))))
