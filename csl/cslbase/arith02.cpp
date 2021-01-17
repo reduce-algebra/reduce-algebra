@@ -1,4 +1,4 @@
-//  arith02.cpp                            Copyright (C) 1990-2020 Codemist
+//  arith02.cpp                            Copyright (C) 1990-2021 Codemist
 
 //
 // Arithmetic functions.
@@ -8,7 +8,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -67,16 +67,13 @@
 // Now for multiplication
 //
 
-//
 // If I have 64-bit unsigneds available this function in not in fact needed
 // since a macro in arith.h arranges that the multiplication is done
 // in-line.  However this version is left here in the source code as
 // convenient documentation of what the function needs to do.
-//
 
 inline uint32_t Imultiply(uint32_t *rlow, uint32_t a, uint32_t b,
                           uint32_t c)
-//
 //          (result, *rlow) = a*b + c     as 62-bit product
 //
 //          rlow may well be the same as one of a, b or c so the
@@ -87,7 +84,6 @@ inline uint32_t Imultiply(uint32_t *rlow, uint32_t a, uint32_t b,
 //          The result is computed and the low 31 bits placed in rlow,
 //          (the top bit of rlow will end up zero) and the top part
 //          of the result is returned.
-//
 {
 // NB the value r could be int64_t or uint64_t - it does not matter
     uint64_t r = (uint64_t)a*(uint64_t)b + (uint64_t)c;
@@ -96,10 +92,8 @@ inline uint32_t Imultiply(uint32_t *rlow, uint32_t a, uint32_t b,
 }
 
 inline LispObject timesii(LispObject a, LispObject b)
-//
 // multiplying two fixnums together is much messier than adding them,
 // mainly because the result can easily be a bignum
-//
 {   int64_t aa = (int64_t)int_of_fixnum(a),
             bb = (int64_t)int_of_fixnum(b);
 // If I am on a 32-bit system then fixnums are only 28 bits wide so using
@@ -114,12 +108,11 @@ inline LispObject timesii(LispObject a, LispObject b)
 }
 
 static LispObject timesis(LispObject a, LispObject b)
-{   double d = static_cast<double>(int_of_fixnum(
-                                       a))*value_of_immediate_float(b);
+{   double d = static_cast<double>(int_of_fixnum(a)) *
+               value_of_immediate_float(b);
     return pack_immediate_float(d, b);
 }
 
-//
 // This code has existed since around 1990, but in January 2008 a bug
 // surfaced relating to cases such as (-2)*(2^61-1) where the top digit
 // of the bignum is close to overflowing and so needing an additional word.
@@ -144,16 +137,16 @@ static LispObject timesib(LispObject a, LispObject b)
     size_t lenb, i;
     uint32_t carry, ms_dig, w;
     LispObject c;
-//
 // I will split off the (easy) cases of the fixnum being -1, 0 or 1.
-//
     if (aa == 0) return fixnum_of_int(0);
     else if (aa == 1) return b;
     else if (aa == -1) return negateb(b);
     lenb = bignum_length(b);
-    push(b);
-    c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, lenb);
-    pop(b);
+    {   Save save(b);
+        c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, lenb);
+        errexit();
+        save.restore(b);
+    }
     lenb = (lenb-CELL)/4;
     if (aa < 0)
     {   aa = -aa;
@@ -163,11 +156,8 @@ static LispObject timesib(LispObject a, LispObject b)
                           top_bit(carry));
             bignum_digits(c)[i] = clear_top_bit(carry);
         }
-//
 // I do the most significant digit separately.
-//
         carry = ADD32(~bignum_digits(b)[i], top_bit(carry));
-//
 // there is a special case needed here - if b started off as a number
 // like 0xc0000000,0,0,0 then negating it would call for extension of
 // the bignum c (this is the usual assymetry in the range of twos-
@@ -176,7 +166,6 @@ static LispObject timesib(LispObject a, LispObject b)
 // negated value is exactly a power of 2 such .. an easy thing to
 // multiply a by!  Furthermore the power of two involved is known to
 // be 30 mod 31.
-//
         if (carry == 0x40000000)
         {   bignum_digits(c)[i] = (aa & 1) << 30;
             aa = (aa & ~1)/2;
@@ -188,7 +177,6 @@ static LispObject timesib(LispObject a, LispObject b)
     else
     {   for (i=0; i<lenb; i++) bignum_digits(c)[i] = vbignum_digits(b)[i];
     }
-//
 // Now c is a copy of b (negated if necessary) and I just want to
 // multiply it by the positive value a.  This is the heart of the
 // procedure.  Re-write Imultiply in assembly code if you want it
@@ -198,23 +186,18 @@ static LispObject timesib(LispObject a, LispObject b)
 // supporting a 64-bit integer data-type then Imultiply macro-expands
 // into code that uses 64-bit intermediate values and so that should
 // go quite fast enough without assembly code.
-//
     carry = 0;
-//
 // Here aa is > 0, and a fortiori the 0x80000000 bit of aa is clear,
 // so I do not have to worry about the difference between 31 and 32
 // bit values for aa.
-//
     for (i=0; i<lenb-1; i++)
         Dmultiply(carry, bignum_digits(c)[i], bignum_digits(c)[i],
                   (uint32_t)aa, carry);
     ms_dig = bignum_digits(c)[i];
     Dmultiply(carry, w, clear_top_bit(ms_dig), (uint32_t)aa, carry);
-//
 // After forming the product to (lenb) digits I need to see if there
 // is any overflow. Calculate what the next digit would be, sign
 // extending into the 0x80000000 bit as necessary.
-//
     if ((carry & 0x40000000) != 0) carry = set_top_bit(carry);
     if (((int32_t)ms_dig) < 0) carry -= aa;
     aa = (int32_t)carry;
@@ -224,27 +207,23 @@ static LispObject timesib(LispObject a, LispObject b)
     }
     bignum_digits(c)[i] = w;
     if (aa == 0 && (w & 0x40000000) == 0) return c;
-//
 // drop through to extend the number by a word - note that because I
 // am multiplying by a fixnum it is only possible to have to expand by
 // just one word.
-//
 extend_by_one_word:
     if ((SIXTY_FOUR_BIT && ((lenb & 1) != 0)) ||
         (!SIXTY_FOUR_BIT && ((lenb & 1) == 0)))
-//
 // Here there was a padder word that I can expand into.
-//
     {   bignum_digits(c)[lenb] = aa;
         setnumhdr(c, numhdr(c) + pack_hdrlength(1));
         return c;
     }
-//
 // Need to allocate more space to grow into. I need to grow by just 4 bytes.
-//
-    push(c);
-    a = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*lenb);
-    pop(c);
+    {   Save save(c);
+        a = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*lenb);
+        errexit();
+        save.restore(c);
+    }
     for (i=0; i<lenb; i++)
         bignum_digits(a)[i] = vbignum_digits(c)[i];
     bignum_digits(a)[i] = aa;
@@ -252,43 +231,36 @@ extend_by_one_word:
     return a;
 }
 
-static LispObject timesir(LispObject a, LispObject b)
-//
+static LispObject timesir(LispObject aa, LispObject bb)
 // multiply integer (fixnum or bignum) by ratio.
-//
-{   LispObject w = nil;
-    if (a == fixnum_of_int(0)) return a;
-    else if (a == fixnum_of_int(1)) return b;
-    real_push(b, a, nil);
-#define g   stack[0]
-#define a   stack[-1]
-#define b   stack[-2]
+{   if (aa == fixnum_of_int(0)) return aa;
+    else if (aa == fixnum_of_int(1)) return bb;
+    RealSave save(aa, bb, nil);
+    LispObject &a = save.val(1);
+    LispObject &b = save.val(2);
+    LispObject &g = save.val(3);
     g = gcd(a, denominator(b));
+    errexit();
     a = quot2(a, g);
+    errexit();
     g = quot2(denominator(b), g);
+    errexit();
     a = times2(a, numerator(b));
-//
+    errexit();
 // make_ratio tidies things up if the denominator was exactly 1
-//
-    w = make_ratio(a, g);
-    real_popv(3);
-    return w;
-#undef a
-#undef b
-#undef g
+    return make_ratio(a, g);
 }
 
-static LispObject timesic(LispObject a, LispObject b)
-//
+static LispObject timesic(LispObject aa, LispObject b)
 // multiply an arbitrary non-complex number by a complex one
-//
-{   LispObject r = real_part(b), i = imag_part(b);
-    push(a, r);
+{   RealSave save(aa, real_part(b), imag_part(b));
+    LispObject &a = save.val(1);
+    LispObject &r = save.val(2);
+    LispObject &i = save.val(3);
     i = times2(a, i);
-    pop(r, a);
-    push(i);
+    errexit();
     r = times2(a, r);
-    pop(i);
+    errexit();
     return make_complex(r, i);
 }
 
@@ -355,10 +327,8 @@ static LispObject timessf(LispObject a, LispObject b)
 
 #define timesbs(a, b) timessb(b, a)
 
-//
 // Now for bignum multiplication - made more than comfortably complicated
 // by a desire to make it go fast for very big numbers.
-//
 
 
 static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
@@ -366,7 +336,6 @@ static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
 
 static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
                         uint32_t *d, size_t lena, size_t lenb, size_t lenc)
-//
 // Here both a and b are big, with lena <= lenb.  Split each into two chunks
 // of size (lenc/4), say (a1,a2) and (b1,b2), and compute each of
 //          a1*b1
@@ -379,16 +348,13 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
 // was shorter than lenc/4 (so that after (a) is split up the top half is
 // all zero) I do things in a more straightforward way.  I require that on
 // entry to this code lenc<4 < lenb <= lenc/2.
-//
 {   size_t h = lenc/4;   // lenc must have been made even enough...
     size_t lena1 = lena < h ? 0 : lena - h;
     size_t lenb1 = lenb - h;
     uint32_t carrya, carryb;
     size_t i;
-//
 // if the top half of (a) would be all zero I go through a separate path,
 // doing just two subsidiary multiplications.
-//
     if (lena1 == 0)
     {   long_times(c+h, a, b+h, d, lena, lenb-h, 2*h);
         for (i=0; i<h; i++) c[3*h+i] = 0;
@@ -407,9 +373,7 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
         }
         return;
     }
-//
 // form (a1+a2) and (b1+b2).
-//
     carrya = 0;
     for (i=0; i<h; i++)
     {   uint32_t w = a[i] + carrya;
@@ -425,10 +389,8 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
         carryb = w >> 31;
     }
     long_times(c+h, d, d+h, c, h, h, 2*h);
-//
 // Adjust to allow for the cases of a1+a2 or b1+b2 overflowing
 // by a single bit.
-//
     c[3*h] = carrya & carryb;
     if (carrya != 0)
     {   carrya = 0;
@@ -448,14 +410,10 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
     }
     c[3*h] += carrya + carryb;
     for (i=1; i<h; i++) c[3*h+i] = 0;
-//
 // Now (a1+a2)*(b1+b2) should have been computed totally properly
-//
     for (i=0; i<h; i++) d[h+i] = 0;
-//
 // multiply out a1*b1, where note that a1 and b1 may be less long
 // than h, but not by much.
-//
     long_times(d, a+h, b+h, c, lena-h, lenb-h, 2*h);
     carrya = 0;
     for (i=0; i<2*h; i++)
@@ -474,9 +432,7 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
         c[h+i] = clear_top_bit(w);
         carrya = w >> 31;
     }
-//
 // multiply out a2*b2
-//
     long_times(d, a, b, c, h, h, 2*h);
     for (i=0; i<h; i++) c[i] = d[i];
     carrya = 0;
@@ -501,12 +457,9 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
         c[h+i] = clear_top_bit(w);
         carrya = w >> 31;
     }
-//
 // The product is now complete
-//
 }
 
-//
 // If I have big enough numbers I will decompose in Karatsuba style and
 // perform the three top-level multiplications in parallel using some threads
 // that I dedicate just to that purpose. Because of the overheads associated
@@ -523,7 +476,6 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
 // If the "CILK" parallel framework is present that will be used, which
 // provides a yet higher level way of expressing all that is needed.
 
-//
 //   Karatsuba memory:
 //   Compute (c3,c2,c1,c0) = (a1,a0)*(b1,b0) using (d1,d0) as workspace.
 //          a1 a0 *
@@ -599,7 +551,6 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
 //       (c3, c2, c1) -= (0, d0, c0);
 //       (c3, c2, c1) += (carry out 3, d5, d6);
 //   DONE!
-//
 
 static uint32_t *kara_0_c, *kara_0_a, *kara_0_b, *kara_0_d;
 static uint32_t kara_0_lena, kara_0_lenb, kara_0_lenc;
@@ -641,7 +592,6 @@ void kara_worker(int my_id)
 
 static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
                          uint32_t *d, size_t lena, size_t lenb, size_t lenc)
-//
 // Here both a and b are big, with lena <= lenb.  Split each into two chunks
 // of size (lenc/4), say (a1,a2) and (b1,b2), and compute each of
 //          a1*b1
@@ -654,18 +604,15 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
 // was shorter than lenc/4 (so that after (a) is split up the top half is
 // all zero) I do things in a more straightforward way.  I require that on
 // entry to this code lenc<4 < lenb <= lenc/2.
-//
 {   size_t h = lenc/4;   // lenc must have been made even enough...
     size_t lena1 = lena < h ? 0 : lena - h;
     size_t lenb1 = lenb - h;
     uint32_t carry, asumcarry, bsumcarry, carryc, carryc1, carryc2;
     size_t i;
-//
 // if the top half of a would be all zero I go through a separate path,
 // doing just two subsidiary multiplications. Note that if I do that I
 // only have a single sub-task to delegate work to and so the potential
 // speedup from parallel working is reduced.
-//
     if (lena1 == 0)
     {   kara_1_c = c+h;         // set up input data for worker 1
         kara_1_a = a;
@@ -712,13 +659,11 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
         }
         return;
     }
-//
 // Now I have the more general case ... and to be able to run things in
 // parallel I will need to start off the three initial multiplications
 // as soon as I can...
 // First:
 //       (c1,c0) = a0*b0 using d0 as workspace;
-//
     kara_1_c = c;           // set up input data for worker 1
     kara_1_a = a;
     kara_1_b = b;
@@ -726,19 +671,15 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
     kara_1_lena = h;
     kara_1_lenb = h;
     kara_1_lenc = 2*h;
-//
 // Second:
 //       (c3,c2) = a1*b1 using d1 as workspace;
-//
     kara_0_c = c+2*h;       // set up input data for worker 2
     kara_0_a = a+h;
     kara_0_b = b+h;
     kara_0_d = d+h;         // workspace
-//
 // Note that the top halves of the two inputs might not use up the
 // full width of the number that is available, but the product generated
 // here will be widened to fill all its space.
-//
     kara_0_lena = lena1;
     kara_0_lenb = lenb1;
     kara_0_lenc = 2*h;
@@ -756,7 +697,6 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
         cilk_spawn long_times(kara_0_c,kara_0_a,kara_0_b,kara_0_d,
                               kara_0_lena,kara_0_lenb,kara_0_lenc);
 #endif // WITH_CILK
-//
 // The rest can be done using the main thread.
 //       d3 = a0+a1;   (leave asumcarry)
 //       d4 = b0+b1;   (leave bsumcarry)
@@ -764,7 +704,6 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
 //
 // Well I compute this as (d3<low> * d4<low>) where d3<high> and d4<hight>
 // are each just one bit and get stored in asumcarry and bsumcarry.
-//
     asumcarry = 0;
     for (i=0; i<h; i++)
     {   uint32_t w = a[i] + asumcarry;
@@ -781,9 +720,7 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
     }
 //       (d6,d5) = d3*d4 using d2 as workspace;
     long_times(&d[5*h], &d[3*h], &d[4*h], &d[2*h], h, h, 2*h);
-//
 // Now I wish to re-sync with the two sub-tasks...
-//
     std::fflush(stdout);
 #ifndef WITH_CILK
     {   std::unique_lock<std::mutex> lk(kara_mutex);
@@ -792,23 +729,17 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
 #else // WITH_CILK
     cilk_sync;
 #endif // WITH_CILK
-//
 // Now I just need to combine the various bits together!
 //       d0 = c1;                  preserve (c1, c0)
-//
     for (i=0; i<h; i++) d[i] = c[h+i];
-//
 //       (c3, c2, c1) -= (0, c3, c2);
-//
     carryc1 = 0;
     for (i=0; i<2*h; i++)
     {   uint32_t w = c[h+i] - c[2*h+i] - carryc1;
         c[h+i] = clear_top_bit(w);
         carryc1 = w >> 31;
     }
-//
 //       (c3, c2, c1) -= (0, d0, c0);
-//
     carryc2 = 0;
     for (i=0; i<h; i++)
     {   uint32_t w = c[h+i] - c[i] - carryc2;
@@ -820,17 +751,13 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
         c[h+i] = clear_top_bit(w);
         carryc2 = w >> 31;
     }
-//
 // I held on to the "borrow" bits that combine with c3
-//
     carryc = (asumcarry & bsumcarry) - carryc1 - carryc2;
-//
 // Adjust to allow for the cases of a1+a2 or b1+b2 overflowing
 // by a single bit.
 //       carry out 3 = carry out 1 & carry out 2;
 //       if carry out 1 then c2 += d4; record carry out 1.
 //       if carry out 2 then c2 += d3; record carry out 2.
-//
     if (asumcarry != 0)
     {   carry = 0;
         for (i=0; i<h; i++)
@@ -851,43 +778,34 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
     }
 // Now just needs (d5, d6) adding in... as in
 //       (c3, c2, c1) += (<deferred carry>, d5, d6);
-//
     carry = 0;
     for (i=0; i<2*h; i++)
     {   uint32_t w = c[h+i] + d[5*h+i] + carry;
         c[h+i] = clear_top_bit(w);
         carry = w >> 31;
     }
-//
 // Here is where I finally merge in carries into c3.
-//
     carry += carryc;
     for (; i<3*h && carry!=0; i++)
     {   uint32_t w = c[h+i] + carry;
         c[h+i] = clear_top_bit(w);
         carry = w >> 31;
     }
-//
-// The product is now complete
-//
+// The product is now complete.
 }
 
 static void long_times2(uint32_t *c, uint32_t *a, uint32_t *b,
                         size_t lena, size_t lenb, size_t lenc)
-//
 // This case is standard old fashioned long multiplication.  Dump the
 // result into c.
-//
 {   size_t i;
     for (i=0; i<lenc; i++) c[i] = 0;
     for (i=0; i<lena; i++)
     {   uint32_t carry = 0, da = a[i];
         size_t j;
-//
 // When I multiply by (for instance) a high power of 2 there will
 // be plenty of zero digits in the number being worked with, and
 // so the test da!=0 will save something useful.
-//
         if (da != 0)
         {   for (j=0; j<lenb; j++)
             {   size_t k = i + j;
@@ -904,14 +822,12 @@ size_t kparallel, karatsuba_parallel = KARATSUBA_PARALLEL_CUTOFF;
 
 static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
                        uint32_t *d, size_t lena, size_t lenb, size_t lenc)
-//
 // This decides if a multiplication is big enough to benefit from
 // decomposition a la Karatsuba.
 // In recursive entries through here out of long_times1() the numbers a
 // and b may have shrunk in ways that mean I need to reconsider the
 // precision to which I am working.  This must leave c filled out all
 // the way to lenc, with padding 0s if necessary.
-//
 {   if (lenb < lena)
     {   uint32_t *t1;
         size_t t2;
@@ -934,10 +850,8 @@ static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
     }
     if (lena > karatsuba_parallel)
     {   size_t save = karatsuba_parallel;
-//
 // I will only allow a single level of the recursion to use threads, and I
 // achieve that by temporarily resetting the cut-off here...
-//
         karatsuba_parallel = 0x7fffffff;
         long_times1p(c, a, b, d, lena, lenb, lenc);
         karatsuba_parallel = save;
@@ -948,17 +862,14 @@ static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
 }
 
 static LispObject timesbb(LispObject a, LispObject b)
-//
 // a and b are both guaranteed to be bignums when I call this
 // procedure.
-//
 {   int sign = 1;
     LispObject c, d;
     size_t lena, lenb, lenc, i;
     lena = (bignum_length(a) - CELL)/4;
     lenb = (bignum_length(b) - CELL)/4;
     if (!SIXTY_FOUR_BIT && lena == 1 && lenb == 1)
-//
 // I am going to deem multiplication of two one-word bignums worthy of
 // a special case, since it is probably fairly common and it will be cheap
 // enough that avoiding overheads might matter.  I still need to split
@@ -968,7 +879,6 @@ static LispObject timesbb(LispObject a, LispObject b)
 // bignum. This can not arise on a 64-bit machine because in that case any
 // value that could have aspired to be a 1-word bignum would in fact have
 // ended up as a fixnum.
-//
     {   int32_t va = (int32_t)bignum_digits(a)[0],
                     vb = (int32_t)bignum_digits(b)[0], vc;
         uint32_t vclow;
@@ -994,34 +904,32 @@ static LispObject timesbb(LispObject a, LispObject b)
         else Dmultiply(vc, vclow, va, vb, 0);
         return make_two_word_bignum(vc, vclow);
     }
-//
 // I take the absolute values of the two input values a and b,
 // recording what the eventual sign for the product will need to be.
 // This is a bit of a waste and a cop-out in that with more care I
 // could do the whole long multiplication on the twos complement values,
 // however this makes life simpler there for me!
-//
     if (((int32_t)bignum_digits(a)[lena-1]) < 0)
     {   sign = -sign;
-        push(b);
-//
+        Save save(b);
 // Negating a negative bignum can sometimes mean that it will
 // have to get longer (because of the twos complement assymmetry),
 // but can never cause it to shrink,  In particular it can never lead
 // to demotion to a fixnum, so after this call to negateb it is still
 // OK to assume that a is a bignum. The manner in which the call to
 // negate allocates more memory is ugly here.
-//
         a = negateb(a);
-        pop(b);
+        errexit();
+        save.restore(b);
         lena = (bignum_length(a) - CELL)/4;
     }
     if (((int32_t)bignum_digits(b)[lenb-1]) < 0)
     {   sign = -sign;
-        push(a);
+        Save save(a);
         // see above comments about negateb
         b = negateb(b);
-        pop(a);
+        errexit();
+        save.restore(a);
         lenb = (bignum_length(b) - CELL)/4;
     }
     if (lenb < lena)    // Commute so that b is at least as long as a
@@ -1032,64 +940,64 @@ static LispObject timesbb(LispObject a, LispObject b)
         lena = lenb;
         lenb = lenc;
     }
-    push(a, b);
-//
+    {   Save save(a, b);
 // For very big numbers I have two special actions called for here.  First
 // I must round up the size of the result vector to have a big enough power
 // of two as a factor so that (recursive) splitting in two does not cause
 // trouble later.  Then I have to allocate some workspace, the size of that
 // being related to the size of the numbers being handled.
-//
-    if (lena > KARATSUBA_CUTOFF)
-    {   size_t lend;
-        int k = 0;
-//
+        if (lena > KARATSUBA_CUTOFF)
+        {   size_t lend;
+            int k = 0;
 // I pad lenc up to have a suitably large power of 2 as a factor so
 // that splitting numbers in half works neatly for me.
-//
-        lenc = (lenb+1)/2;  // rounded up half-length of longer number
-        while (lenc > KARATSUBA_CUTOFF)
-        {   lenc = (lenc + 1)/2;
-            k++;
-        }
-        while (k != 0)
-        {   lenc = 2*lenc;
-            k--;
-        }
-        lenc = 2*lenc;
-        c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8*lenc);
+            lenc = (lenb+1)/2;  // rounded up half-length of longer number
+            while (lenc > KARATSUBA_CUTOFF)
+            {   lenc = (lenc + 1)/2;
+                k++;
+            }
+            while (k != 0)
+            {   lenc = 2*lenc;
+                k--;
+            }
+            lenc = 2*lenc;
+            c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8*lenc);
+            errexit();
 // If I run using threads then each of the three threads can need some
 // workspace, so I will allocate (rather a lot) more.
-        lend = (7*lenc)/2;
-
+            lend = (7*lenc)/2;
 // The next line should save a serious amount of memory turn-over when
 // doing a lot of arithmetic. It maintains a multiplication buffer, but
 // one that is discarded at the start of any garbage collection. Thus
 // between garbage collections it will get allocated just big enough
 // but it should not cause clutter when not used.
-        if (multiplication_buffer == nil ||
-            (4*lend+CELL) > length_of_header(numhdr(multiplication_buffer)))
-        {   push(c);
-            multiplication_buffer =
-                get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lend);
-            pop(c);
+            if (multiplication_buffer == nil ||
+                (4*lend+CELL) > length_of_header(numhdr(multiplication_buffer)))
+            {   Save save(c);
+                multiplication_buffer =
+                    get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lend);
+                errexit();
+                save.restore(c);
+            }
+            lenc = 2*lenc;
         }
-        lenc = 2*lenc;
-    }
-    else
-    {
+        else
+        {
 // In cases where I will use classical long multiplication there is no
 // need to waste space with extra padding or with the workspace vector d.
-        lenc = lena + lenb;
-        c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lenc);
-        if (multiplication_buffer == nil)
-        {   push(c);
-            multiplication_buffer =
-                get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8*lenc);
-            pop(c);
+            lenc = lena + lenb;
+            c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lenc);
+            errexit();
+            if (multiplication_buffer == nil)
+            {   push(c);
+                multiplication_buffer =
+                    get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8*lenc);
+                errexit();
+                pop(c);
+            }
         }
+        save.restore(a, b);
     }
-    pop(b, a);
     d = multiplication_buffer;
     {   uint32_t *da = (uint32_t *)&bignum_digits(a)[0],
                       *db = (uint32_t *)&bignum_digits(b)[0],
@@ -1097,7 +1005,6 @@ static LispObject timesbb(LispObject a, LispObject b)
                         *dd = (uint32_t *)&bignum_digits(d)[0];
         long_times(dc, da, db, dd, lena, lenb, lenc);
     }
-//
 // Here the absolute value of the product has been computed properly.
 // The result can easily have a zero top digit, which will need trimming
 // off.  If at least one of the input values was a number which had to
@@ -1107,14 +1014,11 @@ static LispObject timesbb(LispObject a, LispObject b)
 // resulted in extra padding up at the top.  lenc gives the size of vector
 // that was allocated, lena+lenb is a much better guess of how much data
 // is active in it.
-//
     {   size_t newlenc = lena + lenb;
-//
 // I tidy up by putting a zero in any padding word above the top of the
 // active data, and by inserting a header in space that gets trimmed off
 // in such a way that the garbage collector will not get upset.  This
 // all just roughly trims the numbers - fine adjustment follows.
-//
         if ((SIXTY_FOUR_BIT && ((newlenc & 1) != 0)) ||
             (!SIXTY_FOUR_BIT && ((newlenc & 1) == 0)))
         {   bignum_digits(c)[newlenc] = 0;
@@ -1133,10 +1037,8 @@ static LispObject timesbb(LispObject a, LispObject b)
             setnumhdr(c, make_bighdr(lenc+CELL/4));
         }
     }
-//
 // Now I am safe against the garbage collector, and the number c has as
 // its length just lena+lenb, even if it had been padded out earlier.
-//
     if (sign < 0)
     {   uint32_t carry = 0x80000000U;
         for (i=0; i<lenc-1; i++)
@@ -1154,19 +1056,15 @@ static LispObject timesbb(LispObject a, LispObject b)
         {   bignum_digits(c)[i] = 0xffffffffU;
             return c;   // no truncation becase of previous digit
         }
-//
 // I need to argue that lenc was at least 2, so bignum_digits(c)[i-2]
 // could at worst access the header word of the bignum - but it can never
 // do that because if it were doing so then the bignum product would
 // be about to have a value zero or thereabouts.  One-word bignums are not
 // allowed to have leading zero digits.
-//
         if (carry == 0x7fffffff &&
             (bignum_digits(c)[i-2] & 0x40000000) != 0) // chop 2
         {   bignum_digits(c)[i-2] |= ~0x7fffffff;
-//
 // I common up the code to chop off two words from the number at label "chop2"
-//
             goto chop2;
         }
         bignum_digits(c)[i-1] |= ~0x7fffffff;
@@ -1181,13 +1079,11 @@ static LispObject timesbb(LispObject a, LispObject b)
             (bignum_digits(c)[lenc-3] & 0x40000000) == 0) goto chop2;
         // truncate one word
     }
-//
 // here the data in the bignum is all correct (even in the most significant
 // digit) but I need to shrink the number by one word.  Because of all the
 // doubleword alignment that is used here this can sometimes be done very
 // easily, and other times it involves forging a short bit of dummy data
 // to fill in a gap that gets left in the heap.
-//
     setnumhdr(c, numhdr(c) - pack_hdrlength(1));
     if ((SIXTY_FOUR_BIT && ((lenc & 1) == 0)) ||
         (!SIXTY_FOUR_BIT && ((lenc & 1) != 0)))
@@ -1219,33 +1115,31 @@ chop2:
 #define timesrb(a, b) timesbr(b, a)
 
 static LispObject timesrr(LispObject a, LispObject b)
-//
 // multiply a pair of rational numbers
-//
-{   LispObject w = nil;
-    real_push(numerator(a), denominator(a),
-              numerator(b), denominator(b), nil);
-#define g   stack[0]
-#define db  stack[-1]
-#define nb  stack[-2]
-#define da  stack[-3]
-#define na  stack[-4]
+{   RealSave save(numerator(a), denominator(a),
+                  numerator(b), denominator(b), nil);
+    LispObject &na = save.val(1);
+    LispObject &da = save.val(2);
+    LispObject &nb = save.val(3);
+    LispObject &db = save.val(4);
+    LispObject &g  = save.val(5);
     g = gcd(na, db);
+    errexit();
     na = quot2(na, g);
+    errexit();
     db = quot2(db, g);
+    errexit();
     g = gcd(nb, da);
+    errexit();
     nb = quot2(nb, g);
+    errexit();
     da = quot2(da, g);
+    errexit();
     na = times2(na, nb);
+    errexit();
     da = times2(da, db);
-    w = make_ratio(na, da);
-    real_popv(5);
-    return w;
-#undef g
-#undef db
-#undef nb
-#undef da
-#undef na
+    errexit();
+    return make_ratio(na, da);
 }
 
 #define timesrc(a, b) timesic(a, b)
@@ -1261,35 +1155,30 @@ static LispObject timesrr(LispObject a, LispObject b)
 #define timescr(a, b) timesrc(b, a)
 
 static LispObject timescc(LispObject a, LispObject b)
-//
 // multiply a pair of complex values
-//
-{   LispObject w = nil;
-    real_push(real_part(a), imag_part(a),
-              real_part(b), imag_part(b));
-    real_push(nil, nil);
-#define u   stack[0]
-#define v   stack[-1]
-#define ib  stack[-2]
-#define rb  stack[-3]
-#define ia  stack[-4]
-#define ra  stack[-5]
+{   RealSave save(real_part(a), imag_part(a),
+                  real_part(b), imag_part(b), nil, nil);
+    LispObject &ra = save.val(1);
+    LispObject &ia = save.val(2);
+    LispObject &rb = save.val(3);
+    LispObject &ib = save.val(4);
+    LispObject &u  = save.val(5);
+    LispObject &v  = save.val(6);
     u = times2(ra, rb);
+    errexit();
     v = times2(ia, ib);
+    errexit();
     v = negate(v);
+    errexit();
     u = plus2(u, v);                    // real part of result
+    errexit();
     v = times2(ra, ib);
+    errexit();
     ib = times2(rb, ia);
+    errexit();
     v = plus2(v, ib);                   // imaginary part
-    w = make_complex(u, v);
-    real_popv(6);
-    return w;
-#undef u
-#undef v
-#undef ib
-#undef rb
-#undef ia
-#undef ra
+    errexit();
+    return make_complex(u, v);
 }
 
 #define timescf(a, b) timesci(a, b)
@@ -1325,41 +1214,40 @@ inline LispObject timesff(LispObject a, LispObject b)
     return make_boxfloat(r, hc);
 }
 
-//
 // ... and now for the dispatch code that copes with general
 // multiplication.
-//
 
 #ifdef DEBUG_TIMES
 
-//
 // If I have suspicions about the behaviour of the arithmetic code I can
 // do some degree of extra testing. Eg I can compute the same value twice
 // (once inefficiently) and compare results.
-//
 
 extern LispObject genuine_times2(LispObject a, LispObject b);
 
-LispObject times2(LispObject a, LispObject b)
-{   LispObject ab1, aa, bb;
-    push(a, b);
+LispObject times2(LispObject ax, LispObject bx)
+{   LispObject save(ax, bx, nil, nil, nil);
+    LispObject &a   = save.val(1);
+    LispObject &b   = save.val(2);
+    LispObject &ab1 = save.val(3);
+    LispObject &aa  = save.val(4);
+    LispObject &bb  = save.val(5);
     ab1 = plus2(a, b);               // a + b
+    errexit();
     ab1 = genuine_times2(ab1, ab1);  // a^2 + 2*a*b + b^2
-    pop(b, a);
-    push(a, b, ab1);
+    errexit();
     aa = genuine_times2(a, a);       // a^2
-    pop(ab1, b, a);
-    push(a, b, aa, ab1);
+    errexit();
     bb = genuine_times2(b, b);       // b^2
-    pop(ab1);
+    errexit();
     ab1 = difference2(ab1, bb);      // now a^2 + 2*a*b
-    pop(aa);
+    errexit();
     ab1 = difference2(ab1, aa);      // 2*a*b
+    errexit();
     ab1 = quot2(ab1, fixnum_of_int(2));
-    pop(b, a);
-    push(ab1, a, b);
+    errexit();
     aa = genuine_times2(a, b);
-    pop(b, a, ab1);
+    errexit();
     if (!numeq2(aa, ab1))
     {   err_printf("multiply messed up\n");
         err_printf("a = "); prin_to_error(a);

@@ -337,7 +337,7 @@ void print_bighexoctbin(LispObject u, int radix, int width,
 // bits in all when I am printing base 8 or 16.  The variable (len) now tells
 // me how many digits remain to be printed.
 //
-    push(u);
+    Save save(u);
     if ((int32_t)bignum_digits(u)[n] < 0)
     {   sign = true;
         len+=2;    // Allow extra length for sign marker and initial f/7/1
@@ -372,7 +372,7 @@ void print_bighexoctbin(LispObject u, int radix, int width,
             bits -= 1;
         }
         if (bits < 0)     // there had not been enough buffered bits
-        {   u = stack[0];
+        {   save.restore(u);
             b = bignum_digits(u)[n] << 1;
             n--;
             a |= b >> (32+bits);
@@ -403,7 +403,6 @@ void print_bighexoctbin(LispObject u, int radix, int width,
         else a += ('a' - 10);
         putc_stream(static_cast<int>(a), active_stream);
     }
-    popv(1);
 }
 
 // end of arith05.cpp

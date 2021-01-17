@@ -59,25 +59,35 @@ LispObject apply(LispObject fn, LispObject args,
 // have been prepared and in the list "args"
             bool tracing = (qheader(fn) & SYM_TRACED) != 0;
             if (tracing)
-            {   real_push(args, fn, from);
+            {   RealSave save(args, fn, from);
+                LispObject &args1 = save.val(1);
+                LispObject &fn1   = save.val(2);
+                LispObject &from1 = save.val(3);
                 freshline_trace();
+                errexit();
                 trace_printf("Calling ");
-                loop_print_trace(stack[-1]); // Function being called
+                errexit();
+                loop_print_trace(fn1); // Function being called
+                errexit();
                 trace_printf(" from ");
-                loop_print_trace(stack[0]);  // caller
+                errexit();
+                loop_print_trace(from1);  // caller
+                errexit();
                 trace_printf("\n");
-                stack[0] = stack[-2];
-                for (int i=1; stack[0]!=nil; i++)
+                errexit();
+                for (int i=1; args1!=nil; i++)
                 {   trace_printf("Arg%d: ", i);
-                    loop_print_trace(car(stack[0]));
+                    errexit();
+                    loop_print_trace(car(args1));
+                    errexit();
                     trace_printf("\n");
-                    stack[0] = cdr(stack[0]);
+                    errexit();
+                    args1 = cdr(args1);
                 }
-                real_popv(1);
-                real_pop(fn, args);
+                save.restore(args, fn, from);
             }
             def = fn; // this is passed as arg1 to the called code
-            push(fn); // I may need the function name when tracing
+            Save save(fn); // I may need the function name when tracing
             // displays a result.
             if (args == nil)
                 def = (*qfn0(fn))(def);
@@ -101,17 +111,23 @@ LispObject apply(LispObject fn, LispObject args,
                     }
                 }
             }
-            debug_assert(1);
-            pop(fn);
+            errexit();
+            save.restore(fn);
             if (tracing)
-            {   real_push(def);
+            {   Save save1(def);
 // In due course I will need to worry about multiple values here
                 freshline_trace();
+                errexit();
                 loop_print_trace(fn);
+                errexit();
                 trace_printf(" => ");
-                loop_print_trace(stack[0]);
+                errexit();
+                save1.restore(def);
+                loop_print_trace(def);
+                errexit();
                 trace_printf("\n");
-                real_pop(def);
+                errexit();
+                save.restore(def);
             }
             return def;
         }
@@ -120,7 +136,6 @@ LispObject apply(LispObject fn, LispObject args,
 // If the object in the function position is not a symbol but is atomic I
 // have an error state, and it happens that I can tell something about where
 // the call was from so I will construct a half decent diagnostic.
-            push(fn);
             char name_of_caller[32];
             from = qpname(from);
             size_t len = length_of_byteheader(vechdr(from)) - CELL;
@@ -140,9 +155,9 @@ LispObject apply(LispObject fn, LispObject args,
         else if (def == cfunarg)
         {   def = cdr(fn);
             fn = car(def);
-            push(fn, env);
+            Save save(fn, env);
             args = cons(cdr(def), args);
-            pop(env, fn);
+            save.restore(fn, env);
 // The "continue" here just goes back and tries again!
             continue;
         }
@@ -179,9 +194,9 @@ static LispObject and_fn(LispObject args, LispObject env)
     {   LispObject v = car(args);
         args = cdr(args);
         if (!consp(args)) return eval(v, env);
-        push(args, env);
+        Save save(args, env);
         v = eval(v, env);
-        pop(env, args);
+        save.restore(args, env);
         if (v == nil) return onevalue(nil);
     }
 }
@@ -194,9 +209,9 @@ static LispObject and_fn(LispObject args, LispObject env)
 //  if (!consp(a)) return b;
 //  else
 //  {   stackcheck(a, b);
-//      push(a);
+//      Save save(a);
 //      b = append(cdr(a), b);
-//      pop(a);
+//      save.restore(a);
 //      return cons(car(a), b);
 //  }
 //}
@@ -256,11 +271,11 @@ static LispObject catch_fn(LispObject args, LispObject env)
         errexit();
         save.restore(args, env);
     }
-    push(tag);
+    Save save(tag);
     TRY
         v = progn_fn(cdr(args), env);
     CATCH(LispThrow)
-        pop(tag);
+        save.restore(tag);
         catch_tags = cdr(tag);
         write_barrier(caraddr(tag), tag);
 // Hmm - ought I to put a write_barrier on the CDR. Well it gets changed
@@ -270,13 +285,13 @@ static LispObject catch_fn(LispObject args, LispObject env)
         if (exit_tag == tag) return nvalues(exit_value, exit_count);
         else RETHROW;
     ANOTHER_CATCH(LispException)
-        pop(tag);
+        save.restore(tag);
         catch_tags = cdr(tag);
         write_barrier(caraddr(tag), tag);
         setcdr(tag, nil);        // Invalidate the catch frame
         RETHROW;
     END_CATCH;
-    pop(tag);
+    save.restore(tag);
     catch_tags = cdr(tag);
     write_barrier(caraddr(tag), tag);
     setcdr(tag, nil);            // Invalidate the catch frame

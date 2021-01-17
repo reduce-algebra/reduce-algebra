@@ -563,9 +563,10 @@ LispObject Lsetpchar(LispObject env, LispObject a)
     stream_byte_pos(lisp_work_stream) = 0;
     stream_char_pos(lisp_work_stream) = 0;
     active_stream = lisp_work_stream;
-    push(old);
+    Save save(old);
     internal_prin(a, 0);
-    pop(old);
+    errexit();
+    save.restore(old);
     std::memcpy(prompt_string, memory_print_buffer, MAX_PROMPT_LENGTH);
     prompt_string[MAX_PROMPT_LENGTH-1] = 0;
     fwin_set_prompt(prompt_string);

@@ -346,7 +346,7 @@ csltest() {
     exename="$here/cslbuild/$mc-$variant/csl/$command"
     if ! test -x "$exename"
     then
-      printf "\n+++ Unable to use $fullcommand\n";
+      printf "\n+++ Unable to use $exename\n";
       exit 1
     fi
     fullcommand="$exename $CSLFLAGS"
@@ -568,7 +568,7 @@ do
     csltest "$pp" "bootstrapreduce" "BootstrapCSL"
     ;;
   cslboot-*)
-    csltest "$pp" "bootstrapreduce" "BootstrapCSL${pp#cslboot}" "{pp#cslboot-}"
+    csltest "$pp" "bootstrapreduce" "BootstrapCSL${pp#cslboot}" "${pp#cslboot-}"
     ;;
   jlisp)
     jlisptest "jlisp" "reduce.jar" "Jlisp"

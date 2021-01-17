@@ -1,11 +1,11 @@
-// cslread.cpp                             Copyright (C) 1990-2020 Codemist
+// cslread.cpp                             Copyright (C) 1990-2021 Codemist
 
 //
 // Reading and symbol-table support.
 //
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -186,8 +186,7 @@ LispObject Lsymbols_in(LispObject env, LispObject a)
     push_symbols(always, a);
     LispObject r = nil;
     while (stack != stacksave)
-    {   LispObject w;
-        pop(w);
+    {   LispObject w = *stack--;
         r = cons(w, r);
     }
     return onevalue(r);

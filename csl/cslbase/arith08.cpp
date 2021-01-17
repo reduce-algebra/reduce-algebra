@@ -1,11 +1,11 @@
-//  arith08.cpp                            Copyright (C) 1990-2020 Codemist
+//  arith08.cpp                            Copyright (C) 1990-2021 Codemist
 
 //
 // Arithmetic functions.
 //
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -49,17 +49,21 @@ static LispObject Lboole_3(LispObject env, LispObject op,
             r = logand2(a1, a2);
             break;
         case boole_andc2:
-            push(a1);
-            a2 = lognot(a2);
-            pop(a1);
+            {   Save save(a1);
+                a2 = lognot(a2);
+                errexit();
+                save.restore(a1);
+            }
             r = logand2(a1, a2);
             break;
         case boole_1:
             return onevalue(a1);
         case boole_andc1:
-            push(a2);
-            a1 = lognot(a1);
-            pop(a2);
+            {   Save save(a2);
+                a1 = lognot(a1);
+                errexit();
+                save.restore(a2);
+            }
             r = logand2(a1, a2);
             break;
         case boole_2:
@@ -72,6 +76,7 @@ static LispObject Lboole_3(LispObject env, LispObject op,
             break;
         case boole_nor:
             a1 = logior2(a1, a2);
+            errexit();
             r = lognot(a1);
             break;
         case boole_eqv:
@@ -81,20 +86,27 @@ static LispObject Lboole_3(LispObject env, LispObject op,
             r = lognot(a2);
             break;
         case boole_orc2:
-            a2 = lognot(a2);
+            {   Save save(a1);
+                a2 = lognot(a2);
+                errexit();
+                save.restore(a1);
+            }
             r = logior2(a1, a2);
             break;
         case boole_c1:
             r = lognot(a1);
             break;
         case boole_orc1:
-            push(a2);
-            a1 = lognot(a1);
-            pop(a2);
+            {   Save save(a2);
+                a1 = lognot(a1);
+                errexit();
+                save.restore(a2);
+            }
             r = logior2(a1, a2);
             break;
         case boole_nand:
             a1 = logand2(a1, a2);
+            errexit();
             r = lognot(a1);
             break;
         case boole_set:
@@ -140,9 +152,11 @@ static LispObject Lconjugate(LispObject env, LispObject a)
     if (is_numbers(a) && is_complex(a))
     {   LispObject r = real_part(a),
                        i = imag_part(a);
-        push(r);
-        i = negate(i);
-        pop(r);
+        {   Save save(r);
+            i = negate(i);
+            errexit();
+            save.restore(r);
+        }
         a = make_complex(r, i);
         return onevalue(a);
     }
@@ -159,9 +173,7 @@ static LispObject Ldenominator(LispObject env, LispObject a)
 static LispObject Ldeposit_field_3(LispObject env, LispObject a1,
                                    LispObject a2, LispObject a3)
 {
-//
 // Not implemented yet!
-//
 #ifdef LATER
 // Perhaps I will eventually implement this!
 #endif
@@ -171,9 +183,7 @@ static LispObject Ldeposit_field_3(LispObject env, LispObject a1,
 static LispObject Ldpb_3(LispObject env, LispObject a1,
                          LispObject a2, LispObject a3)
 {
-//
 // Not implemented yet!
-//
 #ifdef LATER
 // Ha ha!
 #endif
@@ -183,9 +193,7 @@ static LispObject Ldpb_3(LispObject env, LispObject a1,
 static LispObject Lffloor(LispObject env, LispObject a1,
                           LispObject a2)
 {
-//
 // Not implemented yet!
-//
     return aerror("ffloor");
 }
 
@@ -203,25 +211,30 @@ LispObject Lgcd_2(LispObject env, LispObject a1, LispObject a2)
 
 LispObject Lgcd_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
-{   push(a3);
+{   Save save(a3);
     a1 = gcd(a1, a2);
-    pop(a2);
-    return onevalue(gcd(a1, a2));
+    errexit();
+    save.restore(a3);
+    return onevalue(gcd(a1, a3));
 }
 
 LispObject Lgcd_4up(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3, LispObject a4up)
-{   real_push(a4up, a3);
-    a1 = gcd(a1, a2);
-    real_pop(a3);
-    a1 = gcd(a1, a3);
-    while (stack[0] != nil)
-    {   a2 = stack[0];
-        a3 = car(a2);
-        stack[0] = cdr(a2);
+{   {   Save save(a3, a4up);
+        a1 = gcd(a1, a2);
+        errexit();
+        save.restore(a3, a4up);
         a1 = gcd(a1, a3);
+        errexit();
+        save.restore(a3, a4up);
     }
-    real_popv(1);
+    while (a4up != nil)
+    {   Save save(a4up);
+        a1 = gcd(a1, car(a4up));
+        errexit();
+        save.restore(a4up);
+        a4up = cdr(a4up);
+    }
     return onevalue(a1);
 }
 
@@ -235,9 +248,7 @@ static LispObject Limagpart(LispObject env, LispObject a)
 
 static LispObject Lldb(LispObject env, LispObject a1, LispObject a2)
 {
-//
 // Not implemented yet!
-//
     return aerror("ldb");
 }
 
@@ -255,34 +266,37 @@ LispObject Llcm_2(LispObject env, LispObject a1, LispObject a2)
 
 LispObject Llcm_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
-{   push(a3);
+{   Save save(a3);
     a1 = lcm(a1, a2);
-    pop(a2);
-    return onevalue(lcm(a1, a2));
+    errexit();
+    save.restore(a3);
+    return onevalue(lcm(a1, a3));
 }
 
 LispObject Llcm_4up(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3, LispObject a4up)
-{   real_push(a4up, a3);
-    a1 = lcm(a1, a2);
-    real_pop(a3);
-    a1 = lcm(a1, a3);
-    while (stack[0] != nil)
-    {   a2 = stack[0];
-        a3 = car(a2);
-        stack[0] = cdr(a2);
+{   {   Save save(a3, a4up);
+        a1 = lcm(a1, a2);
+        errexit();
+        save.restore(a3, a4up);
         a1 = lcm(a1, a3);
+        errexit();
+        save.restore(a3, a4up);
     }
-    real_popv(1);
+    while (a4up != nil)
+    {   Save save(a4up);
+        a1 = lcm(a1, car(a4up));
+        errexit();
+        save.restore(a4up);
+        a4up = cdr(a4up);
+    }
     return onevalue(a1);
 }
 
 static LispObject Lldb_test(LispObject env, LispObject a1,
                             LispObject a2)
 {
-//
 // Not implemented yet!
-//
     return aerror("ldb-test");
 }
 
@@ -322,14 +336,14 @@ LispObject decode_long_float(LispObject a)
     LispObject sign = make_boxfloat128(f128_1);
     if (neg) f128M_negate(reinterpret_cast<float128_t *>(long_float_addr(
                                   sign)));
-    push(sign);
-    a = make_boxfloat128(d);
-    pop(sign);
+    {   Save save(sign);
+        a = make_boxfloat128(d);
+        errexit();
+        save.restore(sign);
+    }
 #ifdef COMMON
-//
 // Until and unless Standard Lisp supports multiple values this has to
 // return a list in standard lisp mode.
-//
     mv_2 = fixnum_of_int(x);
     mv_3 = sign;
     return nvalues(a, 3);
@@ -359,15 +373,15 @@ LispObject Ldecode_float(LispObject env, LispObject a)
     else d = std::frexp(d, &x);
     if (is_sfloat(a)) sign = pack_immediate_float(neg, a);
     else sign = make_boxfloat(neg, type_of_header(flthdr(a)));
-    push(sign);
-    if (is_sfloat(a)) a = pack_immediate_float(d, a);
-    else a = make_boxfloat(d, type_of_header(flthdr(a)));
-    pop(sign);
+    {   Save save(sign);
+        if (is_sfloat(a)) a = pack_immediate_float(d, a);
+        else a = make_boxfloat(d, type_of_header(flthdr(a)));
+        errexit();
+        save.restore(sign);
+    }
 #ifdef COMMON
-//
 // Until and unless Standard Lisp supports multiple values this has to
 // return a list in standard lisp mode.
-//
     mv_2 = fixnum_of_int(x);
     mv_3 = sign;
     return nvalues(a, 3);
@@ -505,10 +519,8 @@ static LispObject Lfp_subnorm(LispObject env, LispObject a)
     return onevalue(nil);
 }
 
-//
 // This will return T if its argument has its sign bit set. Note that this
 // NOT the same a test (x < 0) because this function returns T for -0.0.
-//
 
 // C++ is expected to have std::signbit, so I will always use it. Without
 // it I will not cope properly with signed zeros.
@@ -541,13 +553,11 @@ static LispObject Lfp_signbit(LispObject env, LispObject a)
 }
 
 
-//
 // The functions such as float-digits, float-precision, float-radix are
 // coded here assuming that IEEE-style arithmetic is being used. If this is
 // not so then all the code in this file needs review.  Furthermore I will
 // be lazy about NaNs and denormalised numbers for now and come back to
 // worry about them later on if I am really forced to.
-//
 
 static LispObject Lfloat_digits(LispObject env, LispObject a)
 {   int tag = static_cast<int>(a) & XTAG_BITS;
@@ -1100,17 +1110,17 @@ static LispObject lisp_fix_sub(LispObject a, int roundmode)
 // rounding in the desired direction.
 
 static LispObject lisp_fix_ratio(LispObject a, int roundmode)
-{   LispObject p, q, r, w, w1;
-    p = numerator(a);
-    q = denominator(a); // note that q will always be positive!
-    real_push(q, p);
+{   LispObject w, w1;
+    RealSave save(numerator(a), denominator(a), nil);
+    LispObject &p = save.val(1);
+    LispObject &q = save.val(2);  // note that q will always be positive!
+    LispObject &r = save.val(3);
     r = quot2(p, q);
-    p = stack[0];
-    stack[0] = r;
-    p = Cremainder(p, stack[-1]);
-    real_pop(r, q);
+    errexit();
+    p = Cremainder(p, q);
+    errexit();
 // The quotient is now in r and the remainder in p. The original divisor
-// is back in q.
+// is still in q.
     switch (roundmode)
     {   case FIX_TRUNCATE:
             break;
@@ -1118,41 +1128,42 @@ static LispObject lisp_fix_ratio(LispObject a, int roundmode)
 // Here p is the eventual remainder. If it is less then -q/2 or greater
 // then q/2 I will need to adjust things. And if it is equal in either of
 // those edge cases I need to think even harder!
-            push(p, q, r);
             w = times2(p, fixnum_of_int(2));
-            push(w);
-            w1 = negate(w);
-            pop(w);
-            pop(r, q, p);
+            errexit();
+            {   Save save1(w);
+                w1 = negate(w);
+                errexit();
+                save.restore(w);
+            }
             if (greaterp2(w, q) ||
                 (numeq2(w, q) && Loddp(nil, r)!=nil))
-            {   push(r);
-                p = difference2(p, q);
-                pop(r);
+            {   p = difference2(p, q);
+                errexit();
                 r = add1(r);
+                errexit();
             }
             else if (greaterp2(w1, q) ||
                      (numeq2(w1, q) && Loddp(nil, r)!=nil))
-            {   push(r);
-                p = plus2(p, q);
-                pop(r);
+            {   p = plus2(p, q);
+                errexit();
                 r = sub1(r);
+                errexit();
             }
             break;
         case FIX_FLOOR:
             if (minusp(p))
-            {   push(r);
-                p = plus2(p, q);
-                pop(r);
+            {   p = plus2(p, q);
+                errexit();
                 r = sub1(r);
+                errexit();
             }
             break;
         case FIX_CEILING:
             if (plusp(p))
-            {   push(r);
-                p = difference2(p, q);
-                pop(r);
+            {   p = difference2(p, q);
+                errexit();
                 r = add1(r);
+                errexit();
             }
             break;
     }
@@ -1165,12 +1176,14 @@ static LispObject lisp_fix_ratio(LispObject a, int roundmode)
 
 LispObject lisp_fix(LispObject a, int roundmode)
 {   LispObject r;
-    real_push(a);
+    Save save(a);
     r = lisp_fix_sub(a, roundmode);
-    a = stack[0];
-    stack[0] = r;
+    errexit();
+    save.restore(a);
+    Save save1(r);
     a = difference2(a, r);
-    real_pop(r);
+    errexit();
+    save1.restore(r);
     mv_2 = a;
     return nvalues(r, 2);
 }
@@ -1179,37 +1192,41 @@ LispObject lisp_fix(LispObject a, int roundmode)
 // floating point values a and b it computes fix(a/b) and the residue
 // returned as a second value is b times the residue in that fix operation.
 
-LispObject lisp_ifix(LispObject a, LispObject b, int roundmode)
-{   LispObject q, r, r2, negb;
-    if (is_float(a) || is_float(b))
-    {   real_push(b);
-        a = quot2(a, b);
+LispObject lisp_ifix(LispObject aa, LispObject bb, int roundmode)
+{   LispObject r2, negb;
+    if (is_float(aa) || is_float(bb))
+    {   Save save(bb);
+        aa = quot2(aa, bb);
+        errexit();
 // If either argument was floating point then the quotient will be.
-        r = lisp_fix(a, roundmode);
-        a = stack[0];
-        stack[0] = r;
-        mv_2 = times2(mv_2, a);
-        real_pop(r);
+        LispObject r = lisp_fix(aa, roundmode);
+        save.restore(bb);
+        Save save1(r);
+        mv_2 = times2(mv_2, bb);
+        errexit();
+        save1.restore(r);
         return nvalues(r, 2);
     }
-    real_push(a, b);
+    RealSave save(aa, bb, nil, nil);
+    LispObject &a = save.val(1);
+    LispObject &b = save.val(2);
+    LispObject &r = save.val(3);
+    LispObject &q = save.val(4);
     q = quot2(a, b);
-    a = stack[-1];
-    b = stack[0];
-    real_push(q);
+    errexit();
     r = Cremainder(a, b);
+    errexit();
     switch (roundmode)
     {   case FIX_TRUNCATE:
             break;
         case FIX_ROUND:
 // I will apply a round-to-nearest, with round-to-even to break ties.
-            push(r);
-            negb = negate(stack[-2]);
-            push(negb);
-            r2 = times2(r, fixnum_of_int(2));
-            pop(negb, r);
-            q = stack[0];
-            b = stack[-1];
+            negb = negate(b);
+            {   Save save1(negb);
+                r2 = times2(r, fixnum_of_int(2));
+                errexit();
+                save1.restore(negb);
+            }
             if (lessp2(b, r2) ||
                 (numeq2(b, r2) && Loddp(nil, q)!=nil)) goto increase_q;
             if (lessp2(r2, negb) ||
@@ -1218,33 +1235,26 @@ LispObject lisp_ifix(LispObject a, LispObject b, int roundmode)
         case FIX_FLOOR:
             if (!minusp(r)) break;
         decrease_q:
-            r = plus2(r, stack[-1]);
-            q = stack[0];
-            push(r);
+            r = plus2(r, b);
+            errexit();
             q = sub1(q);
-            pop(r);
-            stack[0] = q;
+            errexit();
             break;
         case FIX_CEILING:
             if (!plusp(r)) break;
         increase_q:
-            r = difference2(r, stack[-1]);
-            q = stack[0];
-            push(r);
+            r = difference2(r, b);
+            errexit();
             q = add1(q);
-            pop(r);
-            stack[0] = q;
+            errexit();
             break;
     }
-    real_pop(q, b, a);
     mv_2 = r;
     return nvalues(q, 2);
 }
 
-//
 // So far I have not implemented support for rational numbers in the 2-arg
 // versions of these functions. /*
-//
 
 static LispObject Lceiling_2(LispObject env, LispObject a,
                              LispObject b)

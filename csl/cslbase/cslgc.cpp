@@ -740,9 +740,9 @@ void reclaim(const char *why, int stg_class)
 
 LispObject reclaim(LispObject p, const char *why, int stg_class,
                    size_t size)
-{   push(p);
+{   Save save(p);
     reclaim(why, stg_class);
-    pop(p);
+    save.restore(p);
     return p;
 }
 

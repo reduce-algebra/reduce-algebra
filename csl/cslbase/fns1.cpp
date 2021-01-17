@@ -1,11 +1,11 @@
-// fns1.cpp                                Copyright (C) 1989-2020 Codemist
+// fns1.cpp                                Copyright (C) 1989-2021 Codemist
 
 //
 // Basic functions part 1.
 //
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -71,10 +71,8 @@ LispObject integerp(LispObject p)
 //****************************************************************************
 //****************************************************************************
 
-//
 // The set of car/cdr combinations here seem pretty dull, but they
 // are fairly important for performance...
-//
 
 /*! fns [car] \item [{\ttfamily car} {\itshape expr}] \index{{\ttfamily car} {\itshape expr}} ~\newline
  * For a non-empty list the function {\ttfamily car} will return the
@@ -94,9 +92,7 @@ LispObject Lcar(LispObject, LispObject a)
     else return onevalue(car(a));
 }
 
-//
 // (car* a) = (car a) if a is non-atomic, but just a otherwise.
-//
 
 /*! fns [car*] \item[{\ttfamily car!*} {\itshape expr}] \index{{\ttfamily car"!*} {\itshape expr}} ~\newline
  * This function behaves like {\ttfamily car} except that if its argument
@@ -547,17 +543,13 @@ LispObject Lconsp(LispObject env, LispObject a)
 }
 
 LispObject Lconstantp(LispObject env, LispObject a)
-//
 // This version is as required for Standard Lisp - it is inadequate
 // for Common Lisp.
-//
 {
-//
 // Standard Lisp requires that I report that "Function Pointers" are
 // "constant" here. It is not at all clear that I have a way of
 // doing that. I will go some way by ensuring that code-vectors are
 // reported as constant.
-//
     return onevalue(Lispify_predicate(
                         a == nil || a == lisp_true ||
                         is_char(a) ||
@@ -584,11 +576,9 @@ LispObject Lintegerp(LispObject, LispObject a)
 
 LispObject Leq_safe(LispObject env, LispObject a)
 {
-//
 // True if you can safely use EQ tests to check equality. Thus true for
 // things that are represented in "immediate" form... and ALSO of nil
 // and all other symbols.
-//
     return onevalue(symbolp(a) ||
                     is_fixnum(a) ||
                     is_sfloat(a) ||
@@ -600,10 +590,8 @@ LispObject Lfixp(LispObject env, LispObject a)
 #ifdef COMMON
     return onevalue(is_fixnum(a) ? lisp_true : nil);
 #else
-//
 // Standard Lisp defines fixp to say yes to bignums as well as
 // fixnums. The code here is as in intergerp.
-//
     if (is_fixnum(a)) return onevalue(lisp_true);
     else if (is_numbers(a))
     {   Header h = *reinterpret_cast<Header *>(reinterpret_cast<char *>
@@ -678,20 +666,16 @@ LispObject Lcomplexp(LispObject env, LispObject a)
 }
 
 bool complex_stringp(LispObject a)
-//
 // true if the arg is a string, but NOT a simple string.  In general
 // when this is true simplify_string() will then be called to do
 // an adjustment.
-//
 {   Header h;
     LispObject w;
     if (!is_vector(a)) return false;
     h = vechdr(a);
     if (type_of_header(h) != TYPE_ARRAY) return false;
-//
 // Note that the cheery Common Lisp Committee decided the abolish the
 // separate type 'string-char, so the test here is maybe dubious...
-//
     else if (static_cast<LispObject>(elt(a,
                                          0)) != string_char_sym) return false;
     w = elt(a, 1);
@@ -713,18 +697,14 @@ LispObject Lprotect_symbols(LispObject env, LispObject a)
 }
 
 bool stringp(LispObject a)
-//
 // True if arg is a simple OR a general string
-//
 {   Header h;
     LispObject w;
     if (!is_vector(a)) return false;
     h = vechdr(a);
     if (is_string_header(h)) return true;
     else if (type_of_header(h) != TYPE_ARRAY) return false;
-//
 // Beware abolition of 'string-char
-//
     else if (static_cast<LispObject>(elt(a,
                                          0)) != string_char_sym) return false;
     w = elt(a, 1);
@@ -733,9 +713,7 @@ bool stringp(LispObject a)
 }
 
 LispObject Lstringp(LispObject env, LispObject a)
-//
 // simple-string-p
-//
 {   if (!(is_vector(a)) || !is_string(a)) return onevalue(nil);
     else return onevalue(lisp_true);
 }
@@ -749,9 +727,7 @@ static LispObject Lc_stringp(LispObject env, LispObject a)
 }
 
 LispObject Lhash_table_p(LispObject env, LispObject a)
-//
 // hash-table-p
-//
 {   if (!(is_vector(a)) || type_of_header(vechdr(a)) != TYPE_HASH)
         return onevalue(nil);
     else return onevalue(lisp_true);
@@ -759,17 +735,13 @@ LispObject Lhash_table_p(LispObject env, LispObject a)
 
 static LispObject Lsimple_bit_vector_p(LispObject env,
                                        LispObject a)
-//
 // simple-bit-vector-p
-//
 {   if (!(is_vector(a))) return onevalue(nil);
     else return onevalue(Lispify_predicate(is_bitvec_header(vechdr(a))));
 }
 
 LispObject Lsimple_vectorp(LispObject env, LispObject a)
-//
 // simple-vector-p
-//
 {   if (!(is_vector(a))) return onevalue(nil);
     else return onevalue(Lispify_predicate(
                                  type_of_header(vechdr(a))==TYPE_SIMPLE_VEC));
@@ -781,10 +753,8 @@ LispObject Lbpsp(LispObject env, LispObject a)
 }
 
 LispObject Lthreevectorp(LispObject env, LispObject a)
-//
 // This is useful for REDUCE - it checks if something is a vector
 // of size 3!
-//
 {   if (!(is_vector(a))) return onevalue(nil);
 // The "pack_hdrlength(4*CELL/4)" is because I want a vector
 // with 1 cell of header and 3 of data. So the 4*CELL deals with with that
@@ -799,7 +769,6 @@ static LispObject Larrayp(LispObject env, LispObject a)
 {   Header h;
     if (!(is_vector(a))) return onevalue(nil);
     h = vechdr(a);
-//
 // I could consider accepting TYPE_VEC16 and TYPE_VEC32 etc here...
 //
 // Note that the suggestion that a string is an array is a real problem
@@ -824,9 +793,7 @@ static LispObject Lconvert_to_array(LispObject env, LispObject a)
 }
 
 static LispObject Lstructp(LispObject env, LispObject a)
-//
 // structp
-//
 {   if (!(is_basic_vector(a))) return onevalue(nil);
     else return onevalue(Lispify_predicate(
                                  type_of_header(vechdr(a))==TYPE_STRUCTURE));
@@ -916,9 +883,9 @@ LispObject Lliststar_4up(LispObject env, LispObject a, LispObject b,
 LispObject Lpair(LispObject env, LispObject a, LispObject b)
 {   LispObject r = nil;
     while (consp(a) && consp(b))
-    {   push(a, b);
+    {   Save save(a, b);
         r = acons(car(a), car(b), r);
-        pop(b, a);
+        save.restore(a, b);
         a = cdr(a);
         b = cdr(b);
     }
@@ -934,9 +901,7 @@ LispObject Lpair(LispObject env, LispObject a, LispObject b)
 
 
 static size_t membercount(LispObject a, LispObject b)
-//
 // Counts how many times a is a member of the list b
-//
 {   size_t r = 0;
     if (is_symbol(a) || is_fixnum(a))
     {   while (consp(b))
@@ -948,55 +913,52 @@ static size_t membercount(LispObject a, LispObject b)
     while (consp(b))
     {   LispObject cb = car(b);
         if (equal(a, cb)) r++;
+        if (exceptionPending()) break;
         b = cdr(b);
     }
     return r;
 }
 
-//
 // INTERSECTION(A,B)
 // The result will have its items in the order that they occur in A.
 // If lists A and B contain duplicate items these will appear in the
 // output if and only if the items involved are duplicated in both
 // input lists.
-//
+
 LispObject Lintersect(LispObject env, LispObject a, LispObject b)
-{   LispObject r = nil, w;
-    real_push(b);
-    while (consp(a))
-    {   real_push(a, r);
-        w = Lmember(nil, car(a), stack[-2]);
+{   LispObject w;
+    RealSave save(a, b, nil);
+    LispObject &aa = save.val(1);
+    LispObject &bb = save.val(2);
+    LispObject &rr = save.val(3);
+    while (consp(aa))
+    {   w = Lmember(nil, car(aa), bb);
+        errexit();
 // Here I ignore any item in a that is not also in b
         if (w != nil)
-        {   size_t n1 = membercount(car(stack[-1]), stack[0]);
-//
+        {   size_t n1 = membercount(car(aa), rr);
+            errexit();
 // Here I want to arrange that items only appear in the result list multiple
 // times if they occur multiple times in BOTH the input lists.
-//
             if (n1 != 0)
-            {   size_t n2 = membercount(car(stack[-1]), stack[-2]);
+            {   size_t n2 = membercount(car(aa), bb);
                 if (n2 > n1) n1 = 0;
             }
             if (n1 == 0)
-            {   real_pop(r);
-                a = stack[0];
-                r = cons(car(a), r);
-                real_pop(a);
+            {   rr = cons(car(aa), rr);
+                errexit();
             }
-            else real_pop(r, a);
         }
-        else real_pop(r, a);
-        a = cdr(a);
+        aa = cdr(aa);
     }
-    real_popv(1);
-    a = nil;
-    while (consp(r))
-    {   b = r;
-        r = cdr(r);
-        write_barrier(cdraddr(b), a);
-        a = b;
+    aa = nil;
+    while (consp(rr))
+    {   bb = rr;
+        rr = cdr(rr);
+        write_barrier(cdraddr(bb), aa);
+        aa = bb;
     }
-    return onevalue(a);
+    return onevalue(aa);
 }
 
 // If you have two lists where all items in both lists are just symbols
@@ -1004,19 +966,22 @@ LispObject Lintersect(LispObject env, LispObject a, LispObject b)
 // tag bit in symbol headers.
 
 class tidy_intersect
-{   LispObject *save;
+{   LispObject *b;
 public:
-    tidy_intersect()
-    {   save = stack;
+    tidy_intersect(LispObject *bb)
+    {   b = bb;
     }
     ~tidy_intersect()
-    {   stack = save;
-        LispObject b;
-        real_pop(b);
-        while (consp(b))
-        {   setheader(car(b),
-                      qheader(car(b)) & ~static_cast<Header>(SYM_TAGGED));
-            b = cdr(b);
+    {   LispObject w = *b;
+        while (consp(w))
+        {
+#ifdef DEBUG
+            LispObject ss = car(w);
+            if (!is_symbol(ss)) my_abort("Not a symbol in tidy_intersection");
+#endif
+            setheader(car(w),
+                      qheader(car(w)) & ~static_cast<Header>(SYM_TAGGED));
+            w = cdr(w);
         }
     }
 };
@@ -1030,16 +995,17 @@ LispObject Lintersect_symlist(LispObject env, LispObject a,
     {   LispObject x = car(w);
         if (is_symbol(x)) setheader(x, qheader(x) | SYM_TAGGED);
     }
-// Now for each item in a push it onto a result list (r) if it a
+// Now for each item in (a) push it onto a result list (r) if it a
 // symbol that is tagged, i.e. if it was present in b.
-    real_push(b);
-    {   tidy_intersect RAII;
+    RealSave save(b);
+//  LispObject &bb = save.val(1);
+    {   tidy_intersect tidy(&stack[0]);
         while (consp(a))
         {   LispObject x = car(a);
             if (is_symbol(x) && (qheader(x) & SYM_TAGGED))
-            {   push(a);
+            {   Save save1(a);
                 r = cons(x, r);
-                pop(a);
+                save1.restore(a);
             }
             a = cdr(a);
         }
@@ -1055,23 +1021,25 @@ LispObject Lintersect_symlist(LispObject env, LispObject a,
     return onevalue(a);
 }
 
-//
 // UNION(A, B)
 // This works by consing onto the front of B each element of A that
 // is not already in B.  Thus items in A (but not already in B) get
 // added in reversed order.  Duplicates in B remain there, and but
 // duplicates in A are dropped.
-//
 LispObject Lunion(LispObject env, LispObject a, LispObject b)
 {   while (consp(a))
     {   LispObject c;
-        real_push(a, b);
-        c = Lmember(nil, car(a), b);
-        real_pop(b);
-        if (c == nil)
-        {   b = cons(car(stack[0]), b);
+        {   Save save(a, b);
+            c = Lmember(nil, car(a), b);
+            errexit();
+            save.restore(a, b);
         }
-        real_pop(a);
+        if (c == nil)
+        {   Save save(a);
+            b = cons(car(a), b);
+            errexit();
+            save.restore(a);
+        }
         a = cdr(a);
     }
     return onevalue(b);
@@ -1081,18 +1049,22 @@ LispObject Lunion(LispObject env, LispObject a, LispObject b)
 // basis can run in linear time.
 
 class tidy_union
-{   LispObject *save;
+{   LispObject *b;
 public:
-    tidy_union()
-    {   save = stack;
+    tidy_union(LispObject *bb)
+    {   b = bb;
     }
     ~tidy_union()
-    {   stack = save;
-        LispObject a = stack[0];
-        while (consp(a))
-        {   setheader(car(a),
-                      qheader(car(a)) & ~static_cast<Header>(SYM_TAGGED));
-            a = cdr(a);
+    {   LispObject w = *b;
+        while (consp(w))
+        {
+#ifdef DEBUG
+            LispObject ss = car(w);
+            if (!is_symbol(ss)) my_abort("Not a symbol in tidy_union");
+#endif
+            setheader(car(w),
+                      qheader(car(w)) & ~static_cast<Header>(SYM_TAGGED));
+            w = cdr(w);
         }
     }
 };
@@ -1107,29 +1079,38 @@ LispObject Lunion_symlist(LispObject env, LispObject a, LispObject b)
     }
 // Now for each item in a push it onto a result list (r) if it a
 // symbol that is NOT tagged, i.e. if it was not present in b.
-    real_push(b);
-    {   tidy_union RAII;
+    RealSave save(b);
+//  LispObject bb = save.val(1);
+// I want to be able to traverse the list (b) at the end of this
+// clearing tag bits. And this must be GC safe, so I save b on the
+// stack. The destructor for the tidy_union must then access this and
+// do its work, but its private data must be an address of the stack
+// item not a LispObject (because the GC will not look at its internal
+// state. I pass a very explicit stack address here because trying to be
+// more abstract about things pushed too hard against edges of my C++
+// understanding!
+    {   tidy_union tidy(&stack[0]);
         while (consp(a))
         {   LispObject x = car(a);
             if (is_symbol(x) && (qheader(x) & SYM_TAGGED) == 0)
-            {   push(a);
+            {   Save save1(a);
                 r = cons(x, r);
-                pop(a);
+                errexit();
+                save1.restore(a);
             }
             a = cdr(a);
         }
     }
 // What I now have is a reversed list of new items in r, and the existing
 // list b. So reverse r onto the front of b.
-    pop(b);
-    a = b;
+    save.restore(b);
     while (consp(r))
-    {   b = r;
+    {   a = r;
         r = cdr(r);
-        write_barrier(cdraddr(b), a);
-        a = b;
+        write_barrier(cdraddr(a), b);
+        b = a;
     }
-    return onevalue(a);
+    return onevalue(b);
 }
 
 
@@ -1173,7 +1154,6 @@ LispObject Lenable_errorset(LispObject env, LispObject a,
 
 LispObject Lenable_backtrace(LispObject env, LispObject a)
 {
-//
 //    (enable-backtrace nil)    errors silent unless ALWAYS_NOISY set
 //    (enable-backtrace 0)      ditto
 //    (enable-backtrace 1)      show 1-line messaqe on error
@@ -1181,7 +1161,6 @@ LispObject Lenable_backtrace(LispObject env, LispObject a)
 //    (enable-backtrace 3)      show functions and args
 //    (enable-backtrace t)      ditto
 //    otherwise                 just return previous setting
-//
     int32_t n = miscflags;
     miscflags &= ~BACKTRACE_MSG_BITS;
     if (a == nil || a == fixnum_of_int(0)) /* nothing */;
@@ -1207,21 +1186,19 @@ LispObject Lunwind(LispObject env)
     THROW(LispError);
 }
 
-//
 // If the variable *break-function* has as its value a symbol, and that
 // symbol names a function, then the function concerned will be called
 // with one argument after the headline for the diagnostic. When it returns
 // the system will unwind in the usual manner.
-//
 
 LispObject error_N(LispObject args)
 {   LispObject w;
-    errexit();
+    errexit();     // because construcing argument may have failed
     errors_now++;
     if (errors_limit >= 0 && errors_now > errors_limit)
         return resource_exceeded();
 #ifdef COMMON
-:#pragma message ("fns1.cpp line about 1228 in COMMON case seems mangled")
+:#pragma message ("fns1.cpp line about 1177 in COMMON case seems mangled")
 //@@@ This variant seems to be malformed, and has been since it was
 // first introduced! But the issue only arises if I compile with COMMON defined
 // so I will investigate next time I need to do that! 
@@ -1240,17 +1217,21 @@ LispObject error_N(LispObject args)
     exit_value = fixnum_of_int(0);       // "Error number"  in CL world
 #else
     if (miscflags & HEADLINE_FLAG)
-    {   real_push(args, cdr(args));
+    {   RealSave save(args, cdr(args));
         err_printf("\n+++ error: ");
-        loop_print_error(car(stack[-1]));
-        while (is_cons(stack[0]))
+        errexit();
+        loop_print_error(save.val(1));
+        errexit();
+        while (is_cons(save.val(2)))
         {   err_printf(" ");
-            loop_print_error(car(stack[0]));
-            stack[0] = cdr(stack[0]);
+            errexit();
+            loop_print_error(car(save.val(2)));
+            errexit();
+            save.val(2) = cdr(save.val(2));
         }
         err_printf("\n");
-        real_popv(1);
-        real_pop(args);
+        errexit();
+        args = save.val(1);
     }
 // So if you go (error n A B C) the output should be
 //     +++ error n A B C
@@ -1391,7 +1372,6 @@ LispObject Lsymbol_keywordp(LispObject env, LispObject a)
 
 LispObject Lboundp(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
-//
 // In COMMON Lisp it seems that this is intended to just check if the
 // value cell in a shallow-bound implementation contains some marker value
 // that stands for "junk".  In Standard Lisp mode I deem that variables
@@ -1404,7 +1384,6 @@ LispObject Lboundp(LispObject env, LispObject a)
 // as "bound". This probably matches what PSL does and this function is
 // also probably used by few enough people that this will not lead to
 // too many bugs even though it is an incompatible change in behavior.
-//
 #if 0
     else if ((qheader(a) & (SYM_SPECIAL_VAR|SYM_GLOBAL_VAR)) == 0)
         return onevalue(nil);
@@ -1460,10 +1439,8 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
         return onevalue(cons(funarg, qenv(a)));
     else
     {   LispObject b = get(a, work_symbol, nil);
-//
 // If I have already manufactured a code pointer for this function I
 // can find it on the property list - in that case I will re-use it.
-//
         while (b != nil)
         {   LispObject c = car(b);
             if ((qheader(c) & (SYM_C_DEF | SYM_CODEPTR)) ==
@@ -1471,7 +1448,7 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
                 return onevalue(c);
             b = cdr(b);
         }
-        {   Save pushvar(a);
+        {   Save save(a);
 // To carry a code-pointer I manufacture a sort of gensym, flagging
 // it in its header as a "code pointer object" and sticking the required
 // definition in with it.  I need to link this to the originating
@@ -1493,7 +1470,7 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
             b = Lgensym0(nil, a, "#code");
 #endif
             errexit();
-            pushvar.restore(a);
+            save.restore(a);
         }
         qfn0(b) = qfn0(a);
         qfn1(b) = qfn1(a);
@@ -1516,8 +1493,10 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
                 {   RealSave save1(c);
                     setheader(b, qheader(b) | SYM_C_DEF);
                     putprop(b, unset_var, c);
-                    c = stack[0]; b = stack[-1];
+                    errexit();
+                    c = save.val(2);
                     w = get(c, work_symbol, nil);
+                    errexit();
                     w = cons(b, w);
                     errexit();
                     save1.restore(c);
@@ -1539,11 +1518,9 @@ LispObject Lspecial_form_p(LispObject env, LispObject a)
 }
 
 LispObject Lcodep(LispObject env, LispObject a)
-//
 // This responds TRUE for the special pseudo-symbols that are used to
 // carry compiled code objects.  It returns NIL on the symbols that
 // are normally used by the user.
-//
 {   if (!symbolp(a)) return onevalue(nil);
     if ((qheader(a) & (SYM_CODEPTR | SYM_C_DEF)) == SYM_CODEPTR)
         return onevalue(lisp_true);
@@ -1552,10 +1529,11 @@ LispObject Lcodep(LispObject env, LispObject a)
 
 LispObject get_basic_vector_init(size_t n, LispObject k)
 {   LispObject p;
-    push(k);
-    p = get_basic_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
-    pop(k);
-    errexit();
+    {   Save save(k);
+        p = get_basic_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
+        errexit();
+        save.restore(k);
+    }
     n = n/CELL - 1;
     for (size_t i=0; i<n; i++)
         basic_elt(p, i) = k;
@@ -1622,7 +1600,6 @@ static LispObject gvector(int tag, int type, size_t size)
 
 LispObject get_vector(int tag, int type, size_t n)
 {   LispObject v;
-//
 // A major ugliness here is that I need to support huge vectors.
 // To achieve this I will handle big cases using a vector of vectors, with
 // the higher level vector tagged as a INDEXVEC and the lower level vectors
@@ -1634,7 +1611,6 @@ LispObject get_vector(int tag, int type, size_t n)
 //   Larger vectors will have an INDEXVEC most of whose contents are
 //     vectors of size VECTOR_CHUNK_BYTES but where the final item
 //     may be smaller.
-//
     if (n-CELL > VECTOR_CHUNK_BYTES)
     {
 // If the number size is exactly a multiple of the chunk size I will not
@@ -1655,10 +1631,11 @@ LispObject get_vector(int tag, int type, size_t n)
         for (i=0; i<chunks; i++)
         {   LispObject v1;
             int k = i==chunks-1 ? last_size : VECTOR_CHUNK_BYTES;
-            push(v);
-            v1 = gvector(tag, type, k+CELL);
-            pop(v);
-            errexit();
+            {   Save save(v);
+                v1 = gvector(tag, type, k+CELL);
+                errexit();
+                save.restore(v);
+            }
 // The vector here will be active as later chunks are allocated, so it needs
 // to be GC safe.
             if (!vector_holds_binary(v1))
@@ -1696,10 +1673,10 @@ LispObject reduce_vector_size(LispObject v, size_t len)
 
 LispObject get_vector_init(size_t n, LispObject val)
 {   LispObject p;
-    push(val);
+    Save save(val);
     p = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
-    pop(val);
     errexit();
+    save.restore(val);
     n = n/CELL - 1;
     while (n != 0)
     {   n--;
@@ -1748,7 +1725,6 @@ LispObject Lgctime(LispObject env)
 
 LispObject Ldecoded_time(LispObject env)
 {   std::time_t t0 = std::time(nullptr);
-//
 //        tm_sec      -- seconds 0..59
 //        tm_min      -- minutes 0..59
 //        tm_hour     -- hour of day 0..23
@@ -1760,7 +1736,6 @@ LispObject Ldecoded_time(LispObject env)
 //        tm_isdst    -- >0 if daylight savings time
 //                    -- ==0 if not DST
 //                    -- <0 if don't know
-//
     struct std::tm *tbuf = std::localtime(&t0);
     LispObject r, *p = &mv_2;
     int w;
@@ -1780,13 +1755,11 @@ LispObject Ldecoded_time(LispObject env)
     return nvalues(r, 9);
 }
 
-//
 // (date)             "14-May-2013"
 // (date!-and!-time)  "Tue May 14 09:52:45 2013"
 //
 // Then (date t) and (date!-and!-time t) flip formats (well actually any
 // argument will suffice).
-//
 
 LispObject Ldate(LispObject env)
 {   LispObject w;
@@ -1867,18 +1840,14 @@ LispObject Ldatestamp(LispObject env)
 }
 
 LispObject Ltimeofday(LispObject env)
-//
 // This is like datestamp, in that it returns information about the
 // current real time. However it returns a pair of two values, the
 // first being in seconds and the second (when available) being in
 // microseconds.
-//
 {   LispObject w;
     std::time_t t = std::time(nullptr);
-//
 // Note that if this is a 32-bit value it will wrap in 2038. Probably some
 // other API should be used here!
-//
     uint64_t n = (uint64_t)t;
     uint32_t un =
         0;  // will be for microseconds, so value will be 0-999999
@@ -1929,7 +1898,6 @@ static int getmon(char *s)
 
 static LispObject Ldatelessp(LispObject env, LispObject a,
                              LispObject b)
-//
 // This is maybe a bit of an abomination!  The functions (date) and
 // (filedate "filename") [and also (modulep 'modulename)] return times
 // as strings of 24 characters.  This function decodes these and
@@ -1939,7 +1907,6 @@ static LispObject Ldatelessp(LispObject env, LispObject a,
 // textual arrangement used here seems fairly robust (until you start
 // worrying about carrying a portable machine across time zones or switching
 // to daylight savings time).
-//
 {   char *aa, *bb;
     bool res;
     int wa, wb;
@@ -1948,12 +1915,10 @@ static LispObject Ldatelessp(LispObject env, LispObject a,
         vechdr(b) != STR24HDR) return aerror2("datelessp", a, b);
     aa = reinterpret_cast<char *>(a) + (CELL - TAG_VECTOR);
     bb = reinterpret_cast<char *>(b) + (CELL - TAG_VECTOR);
-//
 // Layout is eg. "Wed May 12 15:50:23 1993"
 //                012345678901234567890123
 // Note that the year is 4 digits so that the year 2000 should hold
 // no special terrors JUST here.
-//
     if ((wa = getint(aa+20, 4)) != (wb = getint(bb+20, 4))) res = wa < wb;
     else if ((wa = getmon(aa+4)) != (wb = getmon(bb+4))) res = wa < wb;
     else if ((wa = getint(aa+8, 2)) != (wb = getint(bb+8,
@@ -1969,20 +1934,16 @@ static LispObject Ldatelessp(LispObject env, LispObject a,
 }
 
 LispObject Lrepresentation1(LispObject env, LispObject a)
-//
 // Intended for debugging, and use with indirect (q.v.)
-//
 {   a = make_lisp_integer64((intptr_t)a);
     return onevalue(a);
 }
 
 LispObject Lrepresentation2(LispObject env, LispObject a,
                             LispObject b)
-//
 // Intended for debugging, and use with indirect (q.v.).  arg2, if
 // present and non-nil makes this more verbose. If arg2 is numeric it
 // prints slightly less than if it is other non-nil things!
-//
 {   if (SIXTY_FOUR_BIT)
     {   if (b != nil)
         {   if (!is_fixnum(b))
@@ -2029,9 +1990,7 @@ LispObject Lindirect(LispObject, LispObject a)
 
 #ifndef WITHOUT_FFI
 
-//
 // A basic foreign function interface...
-//
 
 
 //   (setq libobject (open!-foreign!-library "libraryname"))
@@ -2241,7 +2200,6 @@ int name_matches(LispObject a, const char *s)
 
 // The general scheme for call-foreign-function is as follows, where the
 // key issue is that of the types of data passed and returned...
-//
 //    (call-foreign-function f)    call f with no args, ignoring any result
 //    (call-foreign-function f a1)
 //    (call-foreign-function f a1 a2)

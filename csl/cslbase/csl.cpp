@@ -3062,11 +3062,6 @@ int cslfinish(character_writer *w)
                     "+%" PRId64 ".%.2" PRId64 " seconds\n",
                     t/100, t%100, gct/100, gct%100);
     }
-#ifdef CONSERVATIVE
-    cout << "push_count = " << push_count << "\n"
-         << "real_push_count = " << real_push_count << "\n"
-         << "ratio = " << static_cast<double>(push_count)/real_push_count << "\n";
-#endif
     drop_heap_segments();
     if (spool_file != nullptr)
     {

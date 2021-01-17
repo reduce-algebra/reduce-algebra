@@ -1,4 +1,4 @@
-// contest.cpp                                 Copyright (C) 1989-2020 Codemist
+// contest.cpp                             Copyright (C) 1989-2021 Codemist
 
 // Test harness for new storage allocation...
 
@@ -8,7 +8,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -154,8 +154,6 @@ int main(int argc, const char *argv[])
     ThreadStartup userThreads;
     cslstart(argc, argv, nullptr);
     cslaction();
-    cout << "push_count = " << push_count << "\n"
-         << "real_push_count = " << real_push_count << "\n";
     return 0;
 }
 

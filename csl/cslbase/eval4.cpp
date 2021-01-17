@@ -1,11 +1,11 @@
-// eval4.cpp                              Copyright (C) 1991-2020, Codemist
+// eval4.cpp                              Copyright (C) 1991-2021, Codemist
 
 //
 // Bytecode interpreter/main interpreter interfaces
 //
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -116,7 +116,8 @@ LispObject bytecoded_1(LispObject def, LispObject a)
 // checked using a debugger and they will show where the exception originated.
     if (is_exception(a)) my_abort("exception value not trapped");
 #endif
-    real_push(def, a);
+    RealSave save(def, a);
+    LispObject &a1 = save.val(2);
     LispObject r;
     TRY
         r = bytestream_interpret(CELL-TAG_VECTOR, def, stack-1);
@@ -124,7 +125,7 @@ LispObject bytecoded_1(LispObject def, LispObject a)
         int _reason = exit_reason;
         if (SHOW_ARGS)
         {   err_printf("Arg1: ");
-            loop_print_error(stack[0]);
+            loop_print_error(a1);
             err_printf("\n");
         }
         exit_reason = _reason;
@@ -141,7 +142,9 @@ LispObject bytecoded_2(LispObject def, LispObject a, LispObject b)
     if (is_exception(a)) my_abort("exception value not trapped");
     if (is_exception(b)) my_abort("exception value not trapped");
 #endif
-    real_push(def, a, b);
+    RealSave save(def, a, b);
+    LispObject &a1 = save.val(2);
+    LispObject &a2 = save.val(3);
     LispObject r;
     TRY
         r = bytestream_interpret(CELL-TAG_VECTOR, def, stack-2);
@@ -149,9 +152,9 @@ LispObject bytecoded_2(LispObject def, LispObject a, LispObject b)
         int _reason = exit_reason;
         if (SHOW_ARGS)
         {   err_printf("Arg 1: ");
-            loop_print_error(stack[-1]); err_printf("\n");
+            loop_print_error(a1); err_printf("\n");
             err_printf("Arg 2: ");
-            loop_print_error(stack[0]); err_printf("\n");
+            loop_print_error(a2); err_printf("\n");
         }
         exit_reason = _reason;
         RETHROW;
@@ -167,7 +170,10 @@ LispObject bytecoded_3(LispObject def, LispObject a, LispObject b,
     if (is_exception(b)) my_abort("exception value not trapped");
     if (is_exception(c)) my_abort("exception value not trapped");
 #endif
-    real_push(def, a, b, c);
+    RealSave save(def, a, b, c);
+    LispObject &a1 = save.val(2);
+    LispObject &a2 = save.val(3);
+    LispObject &a3 = save.val(4);
     LispObject r;
     TRY
         r = bytestream_interpret(CELL-TAG_VECTOR, def, stack-3);
@@ -175,11 +181,11 @@ LispObject bytecoded_3(LispObject def, LispObject a, LispObject b,
         int _reason = exit_reason;
         if (SHOW_ARGS)
         {   err_printf("Arg1: ");
-            loop_print_error(stack[-2]); err_printf("\n");
+            loop_print_error(a1); err_printf("\n");
             err_printf("Arg2: ");
-            loop_print_error(stack[-1]); err_printf("\n");
+            loop_print_error(a2); err_printf("\n");
             err_printf("Arg3: ");
-            loop_print_error(stack[0]); err_printf("\n");
+            loop_print_error(a3); err_printf("\n");
         }
         exit_reason = _reason;
         RETHROW;
@@ -210,10 +216,9 @@ LispObject bytecoded_4up(LispObject def, LispObject a1, LispObject a2,
     if (nargs != (reinterpret_cast<unsigned char *>(data_of_bps(r)))[0])
         return error(2, err_wrong_no_args, def, fixnum_of_int(nargs));
 // I now know that there will be the right number of arguments.
-    real_push(def);
-    real_push(a1, a2, a3);
+    RealSave save(def, a1, a2, a3);
     for (int i=4; i<=nargs; i++)
-    {   real_push(car(a4up));
+    {   *++stack = car(a4up);
         a4up = cdr(a4up);
     }
     TRY
@@ -223,7 +228,7 @@ LispObject bytecoded_4up(LispObject def, LispObject a1, LispObject a2,
         if (SHOW_ARGS)
         {   for (int i=1; i<=nargs; i++)
             {   err_printf("Arg%d: ", i);
-                loop_print_error(stack[i-nargs]); err_printf("\n");
+                loop_print_error(save.val(i+1)); err_printf("\n");
             }
         }
         exit_reason = _reason;
@@ -304,22 +309,22 @@ static LispObject byteopt(LispObject def, LispObject a1,
     if (nargs < wantargs+wantopts)
     {   a4up = nreverse(a4up);
         while (nargs < wantargs+wantopts)
-        {   push(def);
+        {   Save save(def);
 // Note that defaultval will be either nil or SPID_NOARG and neither
 // of those change address during garbage collection, so I do not need to
 // take special action to save the value.
             a4up = cons(defaultval, a4up);
-            pop(def);
+            save.restore(def);
             errexit();
             nargs++;
         }
         if (restp)
-        {   push(def, a4up);
+        {   Save save(def, a4up);
 // On this path the number of actual arguments could not even supply all
 // &OPTIONAL args, and so the &RESR value will definitely be nil. So stick
 // a NIL on the end.
             a1 = ncons(nil);
-            pop(a4up, def);
+            save.restore(def, a4up);
             errexit();
             a4up = nreverse2(a4up, a1);
             nargs++; // allow for the &REST arg.
@@ -335,16 +340,18 @@ static LispObject byteopt(LispObject def, LispObject a1,
 // length. So I can pick off nargs-(wantargs+optargs) items to make
 // a &REST argument...
         while (nargs > wantargs+wantopts)
-        {   push(def, cdr(a4up));
+        {   Save save(def, a4up);
             ra = cons(car(a4up), ra);
-            pop(a4up, def);
+            save.restore(def, a4up);
+            a4up = cdr(a4up);
             errexit();
         }
 // Here I have (eg) a4up = (a3 a2 a1) and ra = (a4 a5 ...).
-        push(def, a4up);
-        a4up = ncons(ra);
-        pop(ra, def);
-        errexit();
+        {   Save save(def, a4up);
+            a4up = ncons(ra);
+            save.restore(def, ra);
+            errexit();
+        }
 // Make a final extra argument out of the list, and then reverse the rest
 // of the arguments back, to get (eg again) (a1 a2 a3 (a4 a5 ...)).
         a4up = nreverse2(a4up, ra);
@@ -353,7 +360,7 @@ static LispObject byteopt(LispObject def, LispObject a1,
 // I have now handled &OPTIONAL and &REST issues, and a4up is now a list of
 // length nargs.
     for (int i=0; i<nargs; i++)
-    {   push(car(a4up));
+    {   *++stack = car(a4up);
         a4up = cdr(a4up);
     }
     TRY

@@ -1,11 +1,11 @@
-// fns2.cpp                                Copyright (C) 1989-2020 Codemist
+// fns2.cpp                                Copyright (C) 1989-2021 Codemist
 
 //
 // Basic functions part 2.
 //
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -525,9 +525,10 @@ static LispObject Lrestore_c_code(LispObject env, LispObject a)
     size_t i;
     LispObject pn;
     if (!symbolp(a)) return aerror1("restore-c-code", a);
-    push(a);
-    pn = get_pname(a);
-    pop(a);
+    {   Save save(a);
+        pn = get_pname(a);
+        save.restore(a);
+    }
     name = reinterpret_cast<char *>(&celt(pn, 0));
     len = length_of_byteheader(vechdr(pn)) - CELL;
 // This is a potential time-sink in that it does a linear scan of all the
@@ -535,9 +536,9 @@ static LispObject Lrestore_c_code(LispObject env, LispObject a)
     for (i=0; setup_tables[i]!=nullptr; i++)
     {   if (restore_fn_cell(a, name, len, setup_tables[i]))
         {   LispObject env;
-            push(a);
+            Save save(a);
             env = get(a, funarg, nil);
-            pop(a);
+            save.restore(a);
             setenv(a, env);
             return onevalue(a);
         }
@@ -594,12 +595,17 @@ LispObject Lsymbol_set_definition(LispObject env,
             if ((qheader(b) & SYM_C_DEF) != 0)
             {   LispObject c = get(b, unset_var, nil);
                 if (c == nil) c = b;
-                real_push(c, a);
+                Save save(a, c);
                 putprop(a, unset_var, c);
-                real_pop(a);
-                a = cons(a, get(stack[0], work_symbol, nil));
-                putprop(stack[0], work_symbol, a);
-                real_pop(b);
+                errexit();
+                save.restore(a, c);
+                LispObject aaa = cons(a, get(c, work_symbol, nil));
+                errexit();
+                save.restore(a, c);
+                putprop(a, work_symbol, aaa);
+                errexit();
+                save.restore(a, c);
+                b = c;
             }
         }
     }
@@ -674,10 +680,12 @@ LispObject Lsymbol_set_definition(LispObject env,
         setenv(a, cdr(b));
         if (qvalue(comp_symbol) != nil &&
             qfn1(compiler_symbol) != undefined_1)
-        {   push(a);
+        {   Save save(a);
             LispObject a1 = ncons(a);
+            errexit();
             (*qfn1(compiler_symbol))(compiler_symbol, a1);
-            pop(a);
+            errexit();
+            save.restore(a);
         }
     }
     else if (car(b) == funarg)
@@ -702,6 +710,7 @@ LispObject Lgetd(LispObject env, LispObject a)
     if ((h & SYM_SPECIAL_FORM) != 0) type = fexpr_symbol;
     else if ((h & SYM_MACRO) != 0)
     {   a = cons(lambda, qenv(a));
+        errexit();
         type = macro_symbol;
     }
     else
@@ -754,10 +763,12 @@ LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
           qfn4up(a) == undefined_4up)) return onevalue(nil);
     if ((qheader(a) & (SYM_C_DEF | SYM_CODEPTR)) ==
         (SYM_C_DEF | SYM_CODEPTR)) return onevalue(nil);
-    push(a, b);
-    if (consp(b)) res = cons(a, b);
-    else res = list2(a, b);
-    pop(b, a);
+    {   Save save(a, b);
+        if (consp(b)) res = cons(a, b);
+        else res = list2(a, b);
+        errexit();
+        save.restore(a, b);
+    }
 // I treat an explicit use of set-autoload as a redefinition, and ensure that
 // restarting a preserved image will not put the definition back.  Note that
 // I will not allow autoloadable macros...
@@ -791,6 +802,7 @@ LispObject Ltrace(LispObject env, LispObject a)
 {   LispObject w = a;
     if (symbolp(a))
     {   a = ncons(a);
+        errexit();
         w = a;
     }
     while (consp(w))
@@ -822,6 +834,7 @@ LispObject Luntrace(LispObject env, LispObject a)
 {   LispObject w = a;
     if (symbolp(a))
     {   a = ncons(a);
+        errexit();
         w = a;
     }
     while (consp(w))
@@ -841,6 +854,7 @@ LispObject Ltraceset(LispObject env, LispObject a)
 {   LispObject w = a;
     if (symbolp(a))
     {   a = ncons(a);
+        errexit();
         w = a;
     }
     while (consp(w))
@@ -855,6 +869,7 @@ LispObject Luntraceset(LispObject env, LispObject a)
 {   LispObject w = a;
     if (symbolp(a))
     {   a = ncons(a);
+        errexit();
         w = a;
     }
     while (consp(w))
@@ -923,9 +938,11 @@ LispObject get_pname(LispObject a)
                          static_cast<int>((gensym_ser/1000)%1000),
                          static_cast<int>(gensym_ser%1000));
         gensym_ser++;
-        push(a);
-        name = make_string(genname);
-        pop(a);
+        {   Save save(a);
+            name = make_string(genname);
+            errexit();
+            save.restore(a);
+        }
         setpname(a, name);
         setheader(a, qheader(a) & ~SYM_UNPRINTED_GENSYM);
     }
@@ -984,11 +1001,13 @@ static LispObject Lrestart_lisp2(LispObject env,
 // no second argument provided.
     if (b != SPID_NOARG)
     {   LispObject b1;
-        push(a);
+        {   Save save(a);
 // I will need to pack the data into a character vector using utf-8
 // encoding... exploden can hand back character codes up to 0x0010ffff.
-        b1 = b = Lexploden(nil, b);
-        pop(a);
+            b1 = b = Lexploden(nil, b);
+            errexit();
+            save.restore(a);
+        }
         while (b1 != nil)
         {   int ch = int_of_fixnum(car(b1));
             n++;            // number of chars of arg
@@ -1111,9 +1130,10 @@ static LispObject Lcheckpoint(LispObject env,
 // relative addresses nor unadjusted (and hence restored) by in the
 // image-writing. But the image writing will not actually move any data
 // around so all is still OK, I hope!
-    push(catch_tags, faslvec, faslgensyms);
+    RealSave save(catch_tags, faslvec, faslgensyms);
     preserve(msg, len);
-    pop(faslgensyms, faslvec, catch_tags);
+    errexit();
+    save.restore(catch_tags, faslvec, faslgensyms);
     set_up_functions(true);
     return onevalue(nil);
 }
@@ -2101,9 +2121,11 @@ LispObject Lnreverse2(LispObject env, LispObject a, LispObject b)
 }
 
 LispObject Lnrevlist_2(LispObject env, LispObject b, LispObject a)
-{   push(a);
-    b = ncons(b);
-    pop(a);
+{   {   Save save(a);
+        b = ncons(b);
+        errexit();
+        save.restore(a);
+    }
     while (consp(a))
     {   LispObject c = a;
         a = cdr(a);
@@ -2115,9 +2137,11 @@ LispObject Lnrevlist_2(LispObject env, LispObject b, LispObject a)
 
 LispObject Lnrevlist_3(LispObject env, LispObject a, LispObject b,
                        LispObject c)
-{   push(a);
-    b = list2(b, c);
-    pop(a);
+{   {   Save save(a);
+        b = list2(b, c);
+        errexit();
+        save.restore(a);
+    }
     while (consp(a))
     {   LispObject d = a;
         a = cdr(a);
@@ -2150,9 +2174,10 @@ LispObject Lreverse(LispObject env, LispObject a)
     stackcheck(a);
     r = nil;
     while (consp(a))
-    {   push(a);
+    {   Save save (a);
         r = cons(car(a), r);
-        pop(a);
+        errexit();
+        save.restore(a);
         a = cdr(a);
     }
     return onevalue(r);
@@ -2460,16 +2485,18 @@ LispObject Lappend_1(LispObject, LispObject a)
 
 LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
 {   LispObject r = nil;
-    push(b);
-    stackcheck(a, r);
-    while (consp(a))
-    {   LispObject cara = car(a);
-        a = cdr(a);
-        push(a);
-        r = cons(cara, r);
-        pop(a);
+    {   Save save(b);
+        stackcheck(a, r);
+        while (consp(a))
+        {   LispObject cara = car(a);
+            a = cdr(a);
+            Save save1(a);
+            r = cons(cara, r);
+            errexit();
+            save1.restore(a);
+        }
+        save.restore(b);
     }
-    pop(b);
     while (r != nil)
     {   a = cdr(r);
         write_barrier(cdraddr(r), b);
@@ -2481,15 +2508,15 @@ LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
 
 LispObject Lappend_3(LispObject env, LispObject a, LispObject b,
                      LispObject c)
-{   push(a);
+{   Save save(a);
     b = Lappend_2(nil, b, c);
-    pop(a);
+    save.restore(a);
     return Lappend_2(nil, a, b);
 }
 
 LispObject Lappend_4up(LispObject env, LispObject a1, LispObject a2,
                        LispObject a3, LispObject a4up)
-{   push(a1, a2, a3);
+{   Save save(a1, a2, a3);
 // Note that the list of arguments from a4 upwards will be freshly consed
 // and so I am entitled to overwrite it as I go.
     a4up = nreverse(a4up);
@@ -2498,32 +2525,37 @@ LispObject Lappend_4up(LispObject env, LispObject a1, LispObject a2,
     while (a4up != nil)
     {   LispObject w = car(a4up);
         a4up = cdr(a4up);
-        push(a4up);
+        Save save1(a4up);
         r = Lappend_2(nil, w, r);
-        pop(a4up);
+        errexit();
+        save1.restore(a4up);
     }
-    pop(a3);
+    save.restore(a1, a2, a3);
     r = Lappend_2(nil, a3, r);
-    pop(a2);
+    errexit();
+    save.restore(a1, a2, a3);
     r = Lappend_2(nil, a2, r);
-    pop(a1);
+    errexit();
+    save.restore(a1, a2, a3);
     return onevalue(Lappend_2(nil, a1, r));
 }
 
-LispObject Ldelete(LispObject env, LispObject a, LispObject b)
+LispObject Ldelete(LispObject env, LispObject aa, LispObject bb)
 {   LispObject r;
-    real_push(a, b);
+    RealSave save(aa, bb);
+    LispObject &a = save.val(1);
+    LispObject &b = save.val(2);
     r = nil;
     if (is_symbol(a) || is_fixnum(a))
     {   while (consp(b))
         {   LispObject q = car(b);
-            if (q == stack[-1])
+            if (q == a)
             {   b = cdr(b);
                 break;
             }
-            stack[0] = cdr(b);
             r = cons(car(b), r);
-            b = stack[0];
+            errexit();
+            b = cdr(b);
         }
     }
     else
@@ -2537,45 +2569,46 @@ LispObject Ldelete(LispObject env, LispObject a, LispObject b)
             {   b = cdr(b);
                 break;
             }
-            stack[0] = cdr(b);
             r = cons(car(b), r);
-            b = stack[0];
-            a = stack[-1];
+            errexit();
+            b = cdr(b);
         }
     }
-    real_popv(2);
+    bb = b;
     while (r != nil)
     {   LispObject w = cdr(r);
-        write_barrier(cdraddr(r), b);
-        b = r;
+        write_barrier(cdraddr(r), bb);
+        bb = r;
         r = w;
     }
-    return onevalue(b);
+    return onevalue(bb);
 }
 
 
-LispObject Ldeleq(LispObject env, LispObject a, LispObject b)
+LispObject Ldeleq(LispObject env, LispObject aa, LispObject bb)
 {   LispObject r;
-    real_push(a, b);
+    RealSave save(aa, bb);
+    LispObject &a = save.val(1);
+    LispObject &b = save.val(2);
     r = nil;
     while (consp(b))
     {   LispObject q = car(b);
-        if (q == stack[-1])
+        if (q == a)
         {   b = cdr(b);
             break;
         }
-        stack[0] = cdr(b);
         r = cons(car(b), r);
-        b = stack[0];
+        errexit();
+        b = cdr(b);
     }
-    real_popv(2);
+    bb = b;
     while (r != nil)
     {   LispObject w = cdr(r);
-        write_barrier(cdraddr(r), b);
-        b = r;
+        write_barrier(cdraddr(r), bb);
+        bb = r;
         r = w;
     }
-    return onevalue(b);
+    return onevalue(bb);
 }
 
 LispObject Lnconc(LispObject env, LispObject a, LispObject b)
@@ -2648,8 +2681,8 @@ LispObject Lnconc(LispObject env, LispObject a, LispObject b)
 // has not yet been inspected.
 //
 // There is a procedure referred to here as "normalising"  that restores the
-// pointers from R backwars to be forward pointers, and as it does so correspoding
-// new items are placed on the RX list. It leaves R=nil.
+// pointers from R backwars to be forward pointers, and as it does so
+// correspoding new items are placed on the RX list. It leaves R=nil.
 //
 //  orig                                          R:0       C
 //   |                                                      |
@@ -2697,13 +2730,17 @@ LispObject Lnconc(LispObject env, LispObject a, LispObject b)
 // is unchanged then extent the reversed list ar R. This may need
 // special care when the list is empty to start with.
 //
-// If the substitution on car c proceed something that differeed
+// If the substitution on car c proceed something that differed
 // then normalise and push the new result onto rx.
 
 
 // The above treatment is required for four functions
 //     subst, substq
 //     sublis, subla
+
+// I probably want to re-check this code to ensure that any failures
+// in CONS or other internanly-called things are trapped in such
+// a way that the input expressions are not left corrupted!
 
 static LispObject substq(LispObject a1, LispObject b1, LispObject c1)
 {   LispObject w;
@@ -2731,6 +2768,7 @@ static LispObject substq(LispObject a1, LispObject b1, LispObject c1)
                 r = cc;
                 while (r != c)
                 {   w = cons(car(r), rx);
+                    errexit();
                     rx = w;
                     r = cdr(r);
                 }
@@ -2771,13 +2809,15 @@ static LispObject substq(LispObject a1, LispObject b1, LispObject c1)
                 r = cc;
                 while (r != c)
                 {   LispObject u = car(r), v = rx;
-                    push(w);
+                    Save save1(w);
                     ww = cons(u, v);
-                    pop(w);
+                    errexit();
+                    save1.restore(w);
                     rx = ww;
                     r = cdr(r);
                 }
                 w = cons(w, rx);
+                errexit();
                 rx = w;
                 c = cdr(c);
                 r = TAG_FIXNUM;
@@ -2835,6 +2875,7 @@ LispObject subst(LispObject a1, LispObject b1, LispObject c1)
                 r = cc;
                 while (r != c)
                 {   w = cons(car(r), rx);
+                    errexit();
                     rx = w;
                     r = cdr(r);
                 }
@@ -2878,13 +2919,15 @@ LispObject subst(LispObject a1, LispObject b1, LispObject c1)
                 r = cc;
                 while (r != c)
                 {   LispObject u = car(r), v = rx;
-                    push(w);
+                    Save save1(w);
                     ww = cons(u, v);
-                    pop(w);
+                    errexit();
+                    save1.restore(w);
                     rx = ww;
                     r = cdr(r);
                 }
                 w = cons(w, rx);
+                errexit();
                 rx = w;
                 c = cdr(c);
                 r = TAG_FIXNUM;
@@ -2946,6 +2989,7 @@ LispObject subla(LispObject a1, LispObject c1)
                 r = cc;
                 while (r != c)
                 {   w = cons(car(r), rx);
+                    errexit();
                     rx = w;
                     r = cdr(r);
                 }
@@ -2986,13 +3030,15 @@ LispObject subla(LispObject a1, LispObject c1)
                 r = cc;
                 while (r != c)
                 {   LispObject u = car(r), v = rx;
-                    push(w);
+                    Save save1(w);
                     ww = cons(u, v);
-                    pop(w);
+                    errexit();
+                    save1.restore(w);
                     rx = ww;
                     r = cdr(r);
                 }
                 w = cons(w, rx);
+                errexit();
                 rx = w;
                 c = cdr(c);
                 r = TAG_FIXNUM;
@@ -3060,6 +3106,7 @@ LispObject sublis(LispObject a1, LispObject c1)
                 r = cc;
                 while (r != c)
                 {   w = cons(car(r), rx);
+                    errexit();
                     rx = w;
                     r = cdr(r);
                 }
@@ -3103,13 +3150,15 @@ LispObject sublis(LispObject a1, LispObject c1)
                 r = cc;
                 while (r != c)
                 {   LispObject u = car(r), v = rx;
-                    push(w);
+                    Save save1(w);
                     ww = cons(u, v);
-                    pop(w);
+                    errexit();
+                    save1.restore(w);
                     rx = ww;
                     r = cdr(r);
                 }
                 w = cons(w, rx);
+                errexit();
                 rx = w;
                 c = cdr(c);
                 r = TAG_FIXNUM;

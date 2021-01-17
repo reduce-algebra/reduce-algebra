@@ -1,9 +1,9 @@
-// lispthrow.h                                      Copyright Codemist 2020
+// lispthrow.h                                 Copyright Codemist 2020-2021
 
 // Some exception processing stuff for CSL
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -241,6 +241,24 @@ public:
         *++stack = a3;
         *++stack = a4;
         *++stack = a5;
+#ifdef DEBUG
+        if (is_exception(a1)) UNLIKELY my_abort("exception value not trapped");
+        if (is_exception(a2)) UNLIKELY my_abort("exception value not trapped");
+        if (is_exception(a3)) UNLIKELY my_abort("exception value not trapped");
+        if (is_exception(a4)) UNLIKELY my_abort("exception value not trapped");
+        if (is_exception(a5)) UNLIKELY my_abort("exception value not trapped");
+#endif // DEBUG
+    }
+    RealSave(LispObject a1, LispObject a2, LispObject a3,
+             LispObject a4, LispObject a5, int count)
+    {   ssave = stack;
+        *++stack = a1;
+        *++stack = a2;
+        *++stack = a3;
+        *++stack = a4;
+        *++stack = a5;
+        for (int i=0; i<count; i++)
+            *++stack = nil;
 #ifdef DEBUG
         if (is_exception(a1)) UNLIKELY my_abort("exception value not trapped");
         if (is_exception(a2)) UNLIKELY my_abort("exception value not trapped");
@@ -1452,6 +1470,9 @@ struct LispRestart : public LispException
 // The following dynamic tests for exception conditions are not used in the
 // version of the code that uses "catch" and "throw".
 
+inline bool exceptionPending()
+{   return false;
+}
 #define errexit()
 #define errexitint()
 #define errexitvoid()

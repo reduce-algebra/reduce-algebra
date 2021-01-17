@@ -1,4 +1,4 @@
-// arith01.cpp                             Copyright (C) 1990-2020 Codemist
+// arith01.cpp                             Copyright (C) 1990-2021 Codemist
 
 //
 // Arithmetic functions.
@@ -8,7 +8,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -1433,6 +1433,7 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
 inline LispObject plus_i_r(LispObject a1, LispObject a2)
 {   {   Save save(a2);
         a1 = times2(a1, denominator(a2));
+        errexit();
         save.restore(a2);
         a1 = plus2(a1, numerator(a2));
         errexit();
@@ -1725,15 +1726,13 @@ inline LispObject plus_r_b(LispObject a1, LispObject a2)
 // lowest terms.
 
 inline LispObject plus_r_r(LispObject a1, LispObject a2)
-{   LispObject na = numerator(a1), nb = numerator(a2);
-    LispObject da = denominator(a1), db = denominator(a2);
-    LispObject g = nil;
-    RealSave save(na, nb, da, db, g);
-#define g   stack[0]
-#define db  stack[-1]
-#define da  stack[-2]
-#define nb  stack[-3]
-#define na  stack[-4]
+{   RealSave save(numerator(a1), numerator(a2),
+                  denominator(a1), denominator(a2), nil);
+    LispObject &na = save.val(1);
+    LispObject &nb = save.val(2);
+    LispObject &da = save.val(3);
+    LispObject &db = save.val(4);
+    LispObject &g  = save.val(5);
     g = gcd(da, db);
 // All the calls to quot2() in this procedure are expected - nay required -
 // to give exact integer quotients.
@@ -1756,11 +1755,6 @@ inline LispObject plus_r_r(LispObject a1, LispObject a2)
     da = quot2(da, g);
     errexit();
     return make_ratio(na, da);
-#undef na
-#undef nb
-#undef da
-#undef db
-#undef g
 }
 
 inline LispObject plus_r_c(LispObject a1, LispObject a2)
@@ -1810,14 +1804,15 @@ inline LispObject plus_c_c(LispObject a1, LispObject a2)
 {   LispObject c;
     {   Save save(a1, a2);
         c = plus2(imag_part(a1), imag_part(a2));
+        errexit();
         save.restore(a1, a2);
     }
     errexit();
     {   Save save(c);
         a1 = plus2(real_part(a1), real_part(a2));
+        errexit();
         save.restore(c);
     }
-    errexit();
     return make_complex(a1, c);
 }
 
@@ -2025,54 +2020,54 @@ inline LispObject difference_i_i(LispObject a1, LispObject a2)
 inline LispObject difference_i_b(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_i(a1, a2);
 }
 
 inline LispObject difference_i_r(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_i_r(a1, a2);
 }
 
 inline LispObject difference_i_c(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_i_c(a1, a2);
 }
 
 inline LispObject difference_i_s(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_i_s(a1, a2);
 }
 
 inline LispObject difference_i_f(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_i_f(a1, a2);
 }
 
 inline LispObject difference_i_d(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_i_d(a1, a2);
 }
 
@@ -2080,6 +2075,7 @@ inline LispObject difference_i_d(LispObject a1, LispObject a2)
 inline LispObject difference_i_l(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
     errexit();
@@ -2090,15 +2086,16 @@ inline LispObject difference_i_l(LispObject a1, LispObject a2)
 inline LispObject difference_b_i(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_b(a1, a2);
 }
 
 inline LispObject difference_b_b(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
     errexit();
@@ -2108,45 +2105,45 @@ inline LispObject difference_b_b(LispObject a1, LispObject a2)
 inline LispObject difference_b_r(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_b_r(a1, a2);
 }
 
 inline LispObject difference_b_c(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_b_c(a1, a2);
 }
 
 inline LispObject difference_b_s(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_b_s(a1, a2);
 }
 
 inline LispObject difference_b_f(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_b_f(a1, a2);
 }
 
 inline LispObject difference_b_d(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_b_d(a1, a2);
 }
 
@@ -2154,9 +2151,9 @@ inline LispObject difference_b_d(LispObject a1, LispObject a2)
 inline LispObject difference_b_l(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_b_l(a1, a2);
 }
 #endif // HAVE_SOFTFLOAT
@@ -2167,9 +2164,9 @@ inline LispObject difference_r_i(LispObject a1, LispObject a2)
         errexit();
         save.restore(a1);
         a2 = difference2(numerator(a1), a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return make_ratio(a2, denominator(a1));
 }
 
@@ -2180,45 +2177,45 @@ inline LispObject difference_r_b(LispObject a1, LispObject a2)
 inline LispObject difference_r_r(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_r_r(a1, a2);
 }
 
 inline LispObject difference_r_c(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_r_c(a1, a2);
 }
 
 inline LispObject difference_r_s(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_r_s(a1, a2);
 }
 
 inline LispObject difference_r_f(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_r_f(a1, a2);
 }
 
 inline LispObject difference_r_d(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_r_d(a1, a2);
 }
 
@@ -2226,9 +2223,9 @@ inline LispObject difference_r_d(LispObject a1, LispObject a2)
 inline LispObject difference_r_l(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_r_l(a1, a2);
 }
 #endif // HAVE_SOFTFLOAT
@@ -2236,63 +2233,63 @@ inline LispObject difference_r_l(LispObject a1, LispObject a2)
 inline LispObject difference_c_i(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = make_lisp_integer64(-int_of_fixnum(a2));
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_c_i(a1, a2);
 }
 
 inline LispObject difference_c_b(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negateb(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_c_b(a1, a2);
 }
 
 inline LispObject difference_c_r(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_c_r(a1, a2);
 }
 
 inline LispObject difference_c_c(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_c_c(a1, a2);
 }
 
 inline LispObject difference_c_s(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_c_s(a1, a2);
 }
 
 inline LispObject difference_c_f(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_c_f(a1, a2);
 }
 
 inline LispObject difference_c_d(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_c_d(a1, a2);
 }
 
@@ -2300,9 +2297,9 @@ inline LispObject difference_c_d(LispObject a1, LispObject a2)
 inline LispObject difference_c_l(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_c_l(a1, a2);
 }
 #endif // HAVE_SOFTFLOAT
@@ -2323,45 +2320,45 @@ inline LispObject difference_s_b(LispObject a1, LispObject a2)
 inline LispObject difference_s_r(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_s_r(a1, a2);
 }
 
 inline LispObject difference_s_c(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_s_c(a1, a2);
 }
 
 inline LispObject difference_s_s(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_s_s(a1, a2);
 }
 
 inline LispObject difference_s_f(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_s_f(a1, a2);
 }
 
 inline LispObject difference_s_d(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_s_d(a1, a2);
 }
 
@@ -2369,9 +2366,9 @@ inline LispObject difference_s_d(LispObject a1, LispObject a2)
 inline LispObject difference_s_l(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_s_l(a1, a2);
 }
 #endif // HAVE_SOFTFLOAT
@@ -2392,18 +2389,18 @@ inline LispObject difference_f_b(LispObject a1, LispObject a2)
 inline LispObject difference_f_r(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_f_r(a1, a2);
 }
 
 inline LispObject difference_f_c(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_f_c(a1, a2);
 }
 
@@ -2426,9 +2423,9 @@ inline LispObject difference_f_d(LispObject a1, LispObject a2)
 inline LispObject difference_f_l(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_f_l(a1, a2);
 }
 #endif // HAVE_SOFTFLOAT
@@ -2449,18 +2446,18 @@ inline LispObject difference_d_b(LispObject a1, LispObject a2)
 inline LispObject difference_d_r(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_d_r(a1, a2);
 }
 
 inline LispObject difference_d_c(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_d_c(a1, a2);
 }
 
@@ -2483,9 +2480,9 @@ inline LispObject difference_d_d(LispObject a1, LispObject a2)
 inline LispObject difference_d_l(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_d_l(a1, a2);
 }
 
@@ -2506,54 +2503,54 @@ inline LispObject difference_l_b(LispObject a1, LispObject a2)
 inline LispObject difference_l_r(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_l_r(a1, a2);
 }
 
 inline LispObject difference_l_c(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_l_c(a1, a2);
 }
 
 inline LispObject difference_l_s(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_l_s(a1, a2);
 }
 
 inline LispObject difference_l_f(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_l_f(a1, a2);
 }
 
 inline LispObject difference_l_d(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_l_d(a1, a2);
 }
 
 inline LispObject difference_l_l(LispObject a1, LispObject a2)
 {   {   Save save(a1);
         a2 = negate(a2);
+        errexit();
         save.restore(a1);
     }
-    errexit();
     return plus_l_l(a1, a2);
 }
 #endif // HAVE_SOFTFLOAT

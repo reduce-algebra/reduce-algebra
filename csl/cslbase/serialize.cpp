@@ -3975,7 +3975,7 @@ down:
 //          }
 // I will stop 256 bytes before letting the stack overflow.
             if ((uintptr_t)stack+256 < (uintptr_t)stackLimit)
-            {   if ((*pp)(p)) real_push(p);
+            {   if ((*pp)(p)) *++stack = p;
             }
             else fail = true; // I must keep traversing to restore things.
             mark_address_as_used(p - TAG_SYMBOL);
@@ -4288,11 +4288,16 @@ LispObject Lmapstore(LispObject env, LispObject a)
     LispObject r;
     {   stack_restorer RAII;
         LispObject *savestack = stack;
+// The code here is a bit odd. push_all_symbols() does what its name
+// says and places references to every symbol that passes its predicate
+// onto the (Lisp) stack. That is a place where those refernces are safe
+// across GCs. Then the symbols can be removed one at a time until the stack
+// is back at its original level. I do the transfers to and from the stack
+// with explicit visible code to stress exactly what is happening. 
         push_all_symbols(non_zero_count);
         r = nil;
         while (stack != savestack)
-        {   LispObject x;
-            x = stack[0];
+        {   LispObject x = *stack;
             uint64_t n = valueOfCount(qcount(x));
             if (n == 0) continue;
             LispObject e = qenv(x);
@@ -4326,16 +4331,18 @@ LispObject Lmapstore(LispObject env, LispObject a)
                         if (what == 2 || what == 3)
                         {   LispObject w1;
 // Result is a list of items ((name size bytes-executed) ...).
-                            push(r);
+                            Save save(r);
                             w1 = make_lisp_integer64(n);
                             w1 = list3(x, fixnum_of_int(clen), w1);
-                            pop(r);
+                            errexit();
+                            save.restore(r);
                             r = cons(w1, r);
+                            errexit();
                         }
                     }
                 }
             }
-            pop(x);
+            x = *stack--;
             if ((what & 1) == 0) qcount(x) = zeroCount;
         }
     }

@@ -378,34 +378,11 @@ static LispObject key_lookup(LispObject keyname, LispObject args)
 }
 
 
-// Within apply_lambda I have a fairly large amount of state that needs
-// to be kept on the Lisp stack so that it is GC safe. Here I introduce
-// names so I can access the information as if it was ordinary data. Note
-// that I MUST NOT use push or pop operations while referencing these!
-
-#define w           stack[0]
-#define p           stack[-1]
-#define v           stack[-2]
-#define v1          stack[-3]
-#define arg         stack[-4]
-#define val1        stack[-5]
-#define specenv     stack[-6]
-#define restarg     stack[-7]
-#define ok_keys     stack[-8]
-#define local_decs  stack[-9]
-#define name        stack[-10]
-#define env         stack[-11]
-#define body        stack[-12]
-#define bvl         stack[-13]
-#define arglist     stack[-14]
-#define stack_used  15
-// Wow - that looks like a lot of state to be kept on the stack!
-
-// This function is not free-standing - it can interact with its caller
-// via some of the stack-address names show above. Ugh.
 
 inline LispObject instate_binding(LispObject var, LispObject val,
-                                  LispObject local_decs1)
+                                  LispObject local_decs1,
+                                  LispObject &env, LispObject &specenv,
+                                  LispObject &w)
 {   Header h;
 // Complain if the varianble that somebody is attempting to bind seems bad.
     if (!is_symbol(var) || (qheader(var) & SYM_GLOBAL_VAR)!=0)
@@ -447,7 +424,7 @@ inline LispObject instate_binding(LispObject var, LispObject val,
 
 // arglist is in fact a value on the Lisp stack.
 
-inline LispObject next_arg()
+inline LispObject next_arg(LispObject &arglist)
 {   LispObject r = car(arglist);
     arglist = cdr(arglist);
     return r;
@@ -460,8 +437,14 @@ LispObject apply_lambda(LispObject def, LispObject args,
 // with &optional and &rest args (including initialisers and supplied-p
 // variables, also &key, &allow-other-keys and &aux).  Note the need to find
 // any special declarations at the head of the body of the lambda-form.
+// Much of the reall mess here is because I am supporting features that
+// Common Lisp introduced but that my use of Lisp does not actually use!
+//
+// The final argument "name1" may be used in backtrces of otherwise for
+// debugging: when you are calling an interpreted function it may be the
+// name of that function and if you are applying a free-standing lambda
+// expression it may be the whole expression. At present it is not used.
 {
-
 // lambda-lists are parsed using a finite state engine with the
 // following states, plus an exit state.
 #define STATE_NULL     0        // at start and during regular args
@@ -472,7 +455,6 @@ LispObject apply_lambda(LispObject def, LispObject args,
 #define STATE_KEY      5        // &key with no &rest
 #define STATE_ALLOW    6        // &allow-other-keys
 #define STATE_AUX      7        // &aux
-
     int opt_rest_state = STATE_NULL;
     int args_left = 0;
     for (LispObject u=args; u!=nil; u=cdr(u)) args_left++;
@@ -480,23 +462,30 @@ LispObject apply_lambda(LispObject def, LispObject args,
     if (!consp(def)) return onevalue(nil);    // Should never happen
     stackcheck(def, args, env1, name1);
     w1 = car(def);
-//
 // The next fragment is horrible but is here because at present I have a
-// precise garbage collector and all the values set up here (and established
-// via #define above) need to act as list-bases. The exact number and ordering
-// of PUSH operations here must exactly match the #define statements given
-//  earlier.
-//
-    real_push(args);                        // arglist
-    real_push(w1,                           // bvl
-         cdr(def),                          // body
-         env1, name1);
-    real_push(nil, nil,                     // local_decs, ok_keys
-         nil, nil, nil);                    // restarg, specenv, val1
-    real_push(nil, nil,                     // arg, v1
-         nil, nil, nil);                    // v, p, w
-// Now I am entitled to reference the names that resolve to the above
-// stack offsets.
+// precise garbage collector and all the values set up here need to act
+// as list-bases.
+    RealSave save(args,                        // arglist
+                  w1,                          // bvl
+                  cdr(def),                    // body
+                  env1,
+                  name1,
+                  10);
+    LispObject &arglist    = save.val(1);
+    LispObject &bvl        = save.val(2);
+    LispObject &body       = save.val(3);
+    LispObject &env        = save.val(4);
+//  LispObject &name       = save.val(5);    // not used at present!
+    LispObject &local_decs = save.val(6);
+    LispObject &ok_keys    = save.val(7);
+    LispObject &restarg    = save.val(8);
+    LispObject &specenv    = save.val(9);
+    LispObject &val1       = save.val(10);
+    LispObject &arg        = save.val(11);
+    LispObject &v1         = save.val(12);
+    LispObject &v          = save.val(13);
+    LispObject &p          = save.val(14);
+    LispObject &w          = save.val(15);
     for (;;)
     {   if (!consp(body)) break;
 // I used to macroexpand things here in case a macro might expand into
@@ -513,6 +502,7 @@ LispObject apply_lambda(LispObject def, LispObject args,
         }
         if (car(p) != declare_symbol)
         {   body = cons(p, body);  // something other than a "declare".
+            errexit();
             break;
         }
 // I have found a body that was initially something like
@@ -525,7 +515,9 @@ LispObject apply_lambda(LispObject def, LispObject args,
             if (!consp(v1) || car(v1) != special_symbol) continue;
             // here v1 says (special ...)
             for (v1=cdr(v1); consp(v1); v1 = cdr(v1))
-                local_decs = cons(car(v1), local_decs);
+            {   local_decs = cons(car(v1), local_decs);
+                errexit();
+            }
         }
 // I keep going so that several DECLARE expressions one after the other will
 // be supported. Note that the way I have coded this allows strings interleaved
@@ -533,7 +525,6 @@ LispObject apply_lambda(LispObject def, LispObject args,
 // permitted.
     }
 // Next parse the BVL
-    LispObject *stacksave = stack;
     TRY
         for (p = bvl; consp(p); p=cdr(p))
         {   v = car(p);
@@ -569,7 +560,7 @@ LispObject apply_lambda(LispObject def, LispObject args,
                     }
                     if (v == allow_other_keys) return error(1, err_bad_bvl, v);
                     if (args_left == 0) return error(0, err_insufficient_args);
-                    arg = next_arg(); // the simple case!
+                    arg = next_arg(arglist); // the simple case!
                     args_left--;
                     v1 = nil;       // no suppliedp mess here, I'm glad to say
                     break;
@@ -585,7 +576,7 @@ LispObject apply_lambda(LispObject def, LispObject args,
                     opt_rest_state = STATE_OPT1;
                 process_optional_parameter:
                     if (args_left != 0)
-                    {   arg = next_arg();       // Arg available for optional
+                    {   arg = next_arg(arglist);       // Arg available for optional
                         args_left--;
                         val1 = lisp_true;
                     }
@@ -690,6 +681,7 @@ LispObject apply_lambda(LispObject def, LispObject args,
                                 if (!is_symbol(keyname) || v==nil || v ==lisp_true)
                                     return error(1, err_bad_bvl, v);
                                 keyname = keywordify(keyname);
+                                errexit();
                                 v = cdr(v);
                                 if (consp(v)) v = car(v);
                                 else return error(1, err_bad_bvl, v);
@@ -741,10 +733,10 @@ LispObject apply_lambda(LispObject def, LispObject args,
                     v1 = nil;
                     break;
             }
-            instate_binding(v, arg, local_decs);
+            instate_binding(v, arg, local_decs, env, specenv, w);
             errexit();
             if (v1 != nil)
-            {   instate_binding(v1, val1, local_decs);
+            {   instate_binding(v1, val1, local_decs, env, specenv, w);
                 errexit();
             }
         }   // End of for loop that scans BVL
@@ -794,7 +786,6 @@ LispObject apply_lambda(LispObject def, LispObject args,
             }
         }
     CATCH(LispException)
-        stack = stacksave;
 // On any exception raised above I will need to restore any fluid bindings
 // that have been made.
         while (specenv != nil)
@@ -804,30 +795,11 @@ LispObject apply_lambda(LispObject def, LispObject args,
         }
         RETHROW;
     END_CATCH;
-    real_popv(stack_used);
 // note that exit_count has not been disturbed since I called progn_fn,
 // so the number of values that will be returned remains correctly
 // established.
     return def;
 }
-
-// Get rid of the stack reference short names. Whew.
-
-#undef w
-#undef p
-#undef v
-#undef v1
-#undef arg
-#undef val1
-#undef specenv
-#undef restarg
-#undef ok_keys
-#undef local_decs
-#undef name
-#undef env
-#undef body
-#undef bvl
-#undef stack_used
 
 LispObject Leval(LispObject env, LispObject a)
 {   save_current_function saver(eval_symbol);
