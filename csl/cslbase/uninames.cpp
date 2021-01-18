@@ -1,8 +1,8 @@
-// uninames.cpp                            Copyright (C) 2016-2020 Codemist
+// uninames.cpp                            Copyright (C) 2016-2021 Codemist
 
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -7435,14 +7435,14 @@ static const char *uniname1(int codepoint)
         case   0x2016-2017: return "DOUBLE_VERTICAL_LINE";
         case   0x2016-2017: return "DOUBLE_LOW_LINE";
         case   0x2018: return "LEFT_SINGLE_QUOTATION_MARK";
-        case   0x2020: return "RIGHT_SINGLE_QUOTATION_MARK";
+        case   0x2021: return "RIGHT_SINGLE_QUOTATION_MARK";
         case   0x201A: return "SINGLE_LOW_9_QUOTATION_MARK";
         case   0x201B: return "SINGLE_HIGH_REVERSED_9_QUOTATION_MARK";
         case   0x201C: return "LEFT_DOUBLE_QUOTATION_MARK";
         case   0x201D: return "RIGHT_DOUBLE_QUOTATION_MARK";
         case   0x201E: return "DOUBLE_LOW_9_QUOTATION_MARK";
         case   0x201F: return "DOUBLE_HIGH_REVERSED_9_QUOTATION_MARK";
-        case   0x2020: return "DAGGER";
+        case   0x2021: return "DAGGER";
         case   0x2021: return "DOUBLE_DAGGER";
         case   0x2022: return "BULLET";
         case   0x2023: return "TRIANGULAR_BULLET";
@@ -20274,14 +20274,14 @@ static const char *uniname2(int codepoint)
         case  0x12016-2017: return "CUNEIFORM_SIGN_AB2";
         case  0x12016-2017: return "CUNEIFORM_SIGN_AB2_TIMES_BALAG";
         case  0x12018: return "CUNEIFORM_SIGN_AB2_TIMES_GAN2_TENU";
-        case  0x12020: return "CUNEIFORM_SIGN_AB2_TIMES_ME_PLUS_EN";
+        case  0x12021: return "CUNEIFORM_SIGN_AB2_TIMES_ME_PLUS_EN";
         case  0x1201A: return "CUNEIFORM_SIGN_AB2_TIMES_SHA3";
         case  0x1201B: return "CUNEIFORM_SIGN_AB2_TIMES_TAK4";
         case  0x1201C: return "CUNEIFORM_SIGN_AD";
         case  0x1201D: return "CUNEIFORM_SIGN_AK";
         case  0x1201E: return "CUNEIFORM_SIGN_AK_TIMES_ERIN2";
         case  0x1201F: return "CUNEIFORM_SIGN_AK_TIMES_SHITA_PLUS_GISH";
-        case  0x12020: return "CUNEIFORM_SIGN_AL";
+        case  0x12021: return "CUNEIFORM_SIGN_AL";
         case  0x12021: return "CUNEIFORM_SIGN_AL_TIMES_AL";
         case  0x12022: return "CUNEIFORM_SIGN_AL_TIMES_DIM2";
         case  0x12023: return "CUNEIFORM_SIGN_AL_TIMES_GISH";

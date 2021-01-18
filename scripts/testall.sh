@@ -4,11 +4,11 @@
 
 # Usage:
 #   scripts/testall.sh [--noregressions]
-#                      [--csl] [--cslboot]
+#                      [--csl] [--cslboot] [--installed-csl]
 #                      [--csl-XXX] [--cslboot-XXX]
 #                      [--jlisp] [[jlispboot]
-#                      [--psl]
-#                      [--uncached] [--install] [--keep]
+#                      [--psl] [--installed-psl]
+#                      [--uncached] [--install] [--keep] [--just-time]
 #
 # If present the argument "--noregressions" must come first and it
 # causes the script to avoid running the regression tests. This may be useful
@@ -25,6 +25,8 @@
 # --csl-debug, --csl-nothrow, --csl-nothrow-debug or some other collection
 # of options referring to a copy of Reduce (or bootstrareduce) in the cslbuild
 # directory.
+# --installed-csl and --installed-psl use versions of the redcsl and redpsl
+# command present on your PATH.
 
 # Part of the intent here is that if any further variants of Reduce get
 # created it should be reasonably straightforward to extent the code here
@@ -55,6 +57,7 @@ plist=""
 base=""
 extras=""
 version=""
+just_time="no"
 for a in $*
 do
   case $a
@@ -62,7 +65,8 @@ do
   --install | --keep | --uncached)
     extras="$extras $a"
     ;;
-  --csl | --csl-* | --cslboot | --cslboot-* | --jlisp | --jlispboot | --psl)
+  --csl | --csl-* | --cslboot | --cslboot-* | --jlisp | \
+  --jlispboot | --installed-csl | --psl | --installed-psl)
 # I will build up two lists of the platforms to test, plus a variable.
 #    $platforms will be a sequence of names like "csl psl" etc and is used in
 #       this file to deal with directories within which logs accumulate.
@@ -79,6 +83,9 @@ do
       plist="$plist $a"
       platforms="$platforms $sys"
     fi
+    ;;
+  --just-time)
+    just_time="yes"
     ;;
   *)
     printf "\"$a\" is not a valid argument to this script.\n"
@@ -98,43 +105,46 @@ then
   base="csl"
 fi
 
+if test "$just_time" = "no"
+then
+
 #
 # Remove old log files
 #
-for sys in $platforms
-do
-  rm -f $sys-times/*.rlg* $sys-times/showtimes \
-        $base-$sys-times-comparison/*.rlg.diff
-  mkdir -p $sys-times
-  echo "showtimes := '(" > $sys-times/showtimes
-done
-
-packages=`sed -e '/^\%/d' $here/packages/package.map | \
-          grep ' test ' | \
-          sed -e 's/(//; s/".*//'`
-
-for p in $packages
-do
-  echo "Test package $p"
-  $here/scripts/test1.sh $extras $plist $p
-done
-
-if test "$noregressions" = "no"
-then
-  for p1 in $here/packages/regressions/*.tst
+  for sys in $platforms
   do
-    p=${p1%.tst}
-    p=${p##*/}
-    echo "Test regression case $p"
-    $here/scripts/test1.sh $extras $plist regressions $p
+    rm -f $sys-times/*.rlg* $sys-times/showtimes \
+          $base-$sys-times-comparison/*.rlg.diff
+    mkdir -p $sys-times
+    echo "showtimes := '(" > $sys-times/showtimes
+  done
+
+  packages=`sed -e '/^\%/d' $here/packages/package.map | \
+            grep ' test ' | \
+            sed -e 's/(//; s/".*//'`
+
+  for p in $packages
+  do
+    echo "Test package $p"
+    $here/scripts/test1.sh $extras $plist $p
+  done
+
+  if test "$noregressions" = "no"
+  then
+    for p1 in $here/packages/regressions/*.tst
+    do
+      p=${p1%.tst}
+      p=${p##*/}
+      echo "Test regression case $p"
+      $here/scripts/test1.sh $extras $plist regressions $p
+    done
+  fi
+
+  for sys in $platforms
+  do
+    echo ")\$ end\$" >> $sys-times/showtimes
   done
 fi
-
-for sys in $platforms
-do
-  echo ")\$ end\$" >> $sys-times/showtimes
-done
-
 
 printf "\nSummary of test runs for $platforms\n\n"
 
@@ -165,16 +175,18 @@ reporttime() {
   name=$1
   dir=$2
   total="0"
+  opt=""
   if test "`which redcsl 2> /dev/null`" != ""
   then
     red="redcsl"
+    opt="-w"
   elif test "`which redpsl 2> /dev/null`" != ""
   then
     red="redpsl"
   else
-    red="$here/bin/redcsl"
+    red="$here/bin/redcsl -w"
   fi
-  "$red" <<XXX | grep "^$name"
+  "$red" "$opt" <<XXX | grep "^$name"
 symbolic <<
 in "$dir/showtimes"$
 total := for each r in showtimes sum cadr r;
@@ -197,8 +209,14 @@ do
   cslboot*)
     reporttime "CSLBOOT${sys#cslboot}" "$sys-times"
     ;;
+  installed-cslboot)
+    reporttime "installedCSLBOOT" "installed-cslboot-times"
+    ;;
   csl*)
     reporttime "CSL${sys#csl}" "$sys-times"
+    ;;
+  installed-csl)
+    reporttime "installedCSL" "installed-csl-times"
     ;;
   jlisp)
     reporttime "Jlisp" "jlisp-times"
@@ -208,6 +226,9 @@ do
     ;;
   psl)
     reporttime "PSL" "psl-times"
+    ;;
+  installed-psl)
+    reporttime "installedPSL" "installed-psl-times"
     ;;
   esac
 done

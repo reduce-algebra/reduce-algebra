@@ -1,4 +1,4 @@
-// newallocate.cpp                         Copyright (C) 2018-2020 Codemist
+// newallocate.cpp                         Copyright (C) 2018-2021 Codemist
 //
 // Code to deal with storage allocation, both grabbing memory at the start
 // or a run and significant aspects of garbage collection.
@@ -47,7 +47,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

@@ -15,6 +15,9 @@
 #     --psl       run tests using PSL
 #     --jlisp     run tests using Jlisp
 #     --jlispboot run tests using Jlisp "bootstrapreduce.jar"
+#     --installed-csl  Use a version installed such that just "redcsl" uses it
+#     --installed-cslboot  Use "bootstrapreduce" from PATH
+#     --installed-psl  Use "redpsl", ie version from PATH
 #
 #  GENERAL OPTIONS:
 #     --keep      preserve raw intermediate files at end of test, eg for
@@ -93,6 +96,37 @@ do
     stop="yes"
   else
     case $1 in
+    --csl | --installed-csl | --csl-*)
+      platforms="$platforms ${1#--}"
+      shift
+      ;;
+    --cslboot | --installed-cslboot | --cslboot-*)
+      slow="yes"
+      platforms="$platforms ${1#--}"
+      shift
+      ;;
+    --jlisp)
+      slow="yes"
+      platforms="$platforms jlisp"
+      shift
+      ;;
+    --jlispboot)
+      slow="yes"
+      platforms="$platforms jlispboot"
+      shift
+      ;;
+    --psl | --installed-psl)
+      platforms="$platforms ${1#--}"
+      shift
+      ;;
+    --uncached)
+      uncached='symbolic (!*uncached := t);'
+      shift
+      ;;
+    --skip-missing-rlg)
+      skipmissingrlg="yes"
+      shift
+      ;;
     --install)
       if test "$install" = "yes"
       then
@@ -109,37 +143,6 @@ do
         exit 1
       fi
       keep="yes";
-      shift
-      ;;
-    --csl | --csl-*)
-      platforms="$platforms ${1#--}"
-      shift
-      ;;
-    --cslboot | --cslboot-*)
-      slow="yes"
-      platforms="$platforms ${1#--}"
-      shift
-      ;;
-    --jlisp)
-      slow="yes"
-      platforms="$platforms jlisp"
-      shift
-      ;;
-    --jlispboot)
-      slow="yes"
-      platforms="$platforms jlispboot"
-      shift
-      ;;
-    --psl)
-      platforms="$platforms psl"
-      shift
-      ;;
-    --uncached)
-      uncached='symbolic (!*uncached := t);'
-      shift
-      ;;
-    --skip-missing-rlg)
-      skipmissingrlg="yes"
       shift
       ;;
     -*)
@@ -341,7 +344,14 @@ csltest() {
 
   if test "$variant" = ""
   then
-    fullcommand="$here/bin/$command $CSLFLAGS"
+    case $name in
+    installed*)
+      fullcommand="$command $CSLFLAGS"
+      ;;
+    *)
+      fullcommand="$here/bin/$command $CSLFLAGS"
+      ;;
+    esac
   else
     exename="$here/cslbuild/$mc-$variant/csl/$command"
     if ! test -x "$exename"
@@ -487,10 +497,22 @@ XXX
 #######################################################################
 
 psltest() {
-  name=psl
+  name="$1"
   mkdir -p $name-times
-
-  $timeoutcmd $timecmd sh -c "$here/bin/redpsl > psl-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+  case $name in
+  installed-psl)
+    showname="installedPSL"
+    cmd=redpsl
+    outdir="installed-psl-times"
+    ;;
+  *)
+    showname="PSL"
+    cmd="$here/bin/redpsl"
+    outdir="psl-times"
+    ;;
+  esac
+  mkdir -p "$outdir"
+  $timeoutcmd $timecmd sh -c "$cmd > $outdir/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redefmsg := nil);
@@ -524,26 +546,26 @@ XXX
   then
     cat $name-times/$p.showtime >> $name-times/showtimes
   fi
-  cat $p.howlong.tmp >> psl-times/$p.rlg.tmp
-  printf "PSL..."
+  cat $p.howlong.tmp >> $outdir/$p.rlg.tmp
+  printf "$showname..."
   sed -e "/^Tested on /,//d" <$rlgfile | \
-    sed -e "$SED1" >psl-times/$p.rlg.orig
+    sed -e "$SED1" >$outdir/$p.rlg.orig
   sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
-      -e "/OMIT/,/TIMO/d" <psl-times/$p.rlg.tmp | \
+      -e "/OMIT/,/TIMO/d" <$outdir/$p.rlg.tmp | \
     sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
     sed -e "s/${ESCAPED_DIR}.//" | \
-    sed -e "$SED1" >psl-times/$p.rlg
-  diffBw psl-times/$p.rlg.orig psl-times/$p.rlg >psl-times/$p.rlg.diff
-  if test -s psl-times/$p.rlg.diff
-    then echo "diff is in psl-times/$p.rlg.diff"
-    else printf "OK " ; rm -f psl-times/$p.rlg.diff psl-times/$p.rlg.orig
+    sed -e "$SED1" >$outdir/$p.rlg
+  diffBw $outdir/$p.rlg.orig $outdir/$p.rlg >$outdir/$p.rlg.diff
+  if test -s $outdir/$p.rlg.diff
+    then echo "diff is in $outdir/$p.rlg.diff"
+    else printf "OK " ; rm -f $outdir/$p.rlg.diff $outdir/$p.rlg.orig
   fi
-  echo "Tested on $mc PSL" > psl-times/$p.time
-  sed -e "1,/END OF REDUCE TEST RUN/d"  <psl-times/$p.rlg.tmp | \
-    sed -e '/^1: /d;' >>psl-times/$p.time
+  echo "Tested on $mc PSL" > $outdir/$p.time
+  sed -e "1,/END OF REDUCE TEST RUN/d"  <$outdir/$p.rlg.tmp | \
+    sed -e '/^1: /d;' >>$outdir/$p.time
   if test "x$keep" = "xno"
   then
-    rm -f psl-times/$p.rlg.tmp
+    rm -f $outdir/$p.rlg.tmp
   fi
 }
 
@@ -561,10 +583,13 @@ do
       cat csl-times/$p.rlg csl-times/$p.time > $here/packages/$d/$p.rlg
     fi
     ;;
+  installed-csl)
+    csltest "$pp" "redcsl" "installedCSL"
+    ;;
   csl-*)
     csltest "$pp" "reduce" "CSL${pp#csl}" "${pp#csl-}"
     ;;
-  cslboot)
+  cslboot | installed-cslboot)
     csltest "$pp" "bootstrapreduce" "BootstrapCSL"
     ;;
   cslboot-*)
@@ -576,8 +601,8 @@ do
   jlispboot)
     jlisptest "jlispboot" "bootstrapreduce.jar" "JlispBootstrap"
     ;;
-  psl)
-    psltest
+  psl | installed-psl)
+    psltest "$pp"
     ;;
   *)
     printf "\n+++ Platform $pp not recognized\n"
