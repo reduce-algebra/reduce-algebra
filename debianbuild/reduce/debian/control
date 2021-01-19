@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: REDUCE Developers <reduce-algebra-developers@lists.sourceforge.net>
 Build-Depends: autoconf, libffi-dev, libncurses5-dev, libx11-dev, libxext-dev, libxft-dev, texlive-latex-base, texlive-fonts-extra, texlive-latex-recommended, texlive-fonts-recommended, tex4ht, debhelper (>= 7.0.50~)
 Standards-Version: 3.9.1
-Homepage: http://reduce-algebra.sf.net/
+Homepage: https://reduce-algebra.sourceforge.io/
 
 Package: reduce-complete
 Architecture: i386 amd64
