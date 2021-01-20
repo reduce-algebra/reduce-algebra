@@ -989,11 +989,11 @@ static LispObject timesbb(LispObject a, LispObject b)
             c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lenc);
             errexit();
             if (multiplication_buffer == nil)
-            {   push(c);
+            {   Save save(c);
                 multiplication_buffer =
                     get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8*lenc);
                 errexit();
-                pop(c);
+                save.restore(c);
             }
         }
         save.restore(a, b);

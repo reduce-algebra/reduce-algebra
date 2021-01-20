@@ -1106,16 +1106,14 @@ typedef struct setup_type
     fourup_args *fourup;
 } setup_type;
 
-typedef struct setup_type_1
-{   const char *name;
-    no_args *zero;
-    one_arg *one;
-    two_args *two;
-    three_args *three;
-    fourup_args *fourup;
-    uint32_t c1;
-    uint32_t c2;
-} setup_type_1;
+// In many cases a function will take a fixed number of arguments,
+// and these will make those cases tidier to express.
+
+#define DEF_0(name, code)   {name, code, G1W0, G2W0, G3W0, G4W0}
+#define DEF_1(name, code)   {name, G0W1, code, G2W1, G3W1, G4W1}
+#define DEF_2(name, code)   {name, G0W2, G1W2, code, G3W2, G4W2}
+#define DEF_3(name, code)   {name, G0W3, G1W3, G2W3, code, G4W3}
+#define DEF_4up(name, code) {name, G0W4up, G1W4up, G2W4up, G3W4up, code}
 
 extern setup_type const
 arith06_setup[], arith08_setup[], arith10_setup[], arith12_setup[],

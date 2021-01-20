@@ -1,4 +1,4 @@
-// cslmpi.cpp                                       Copyright (C) 1997-2020
+// cslmpi.cpp                                       Copyright (C) 1997-2021
 
 //
 // Interfaces for mpi from CSL. The bulk of this code was written by
@@ -11,7 +11,7 @@
 // other parts of CSL.
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -142,13 +142,15 @@ static LispObject Lmpi_recv(LispObject, LispObject source,
     // The only relevant status things are the 3 public fields, so I'll
     // stick them in a list and return them as the 2nd value
     //
-    push(unpack_object());
+    LispObject r = unpack_object();
+    Save save(r);
     std::free(mpi_pack_buffer);
     Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                     fixnum_of_int(status.MPI_TAG),
                     fixnum_of_int(status.MPI_ERROR));
-
-    return onevalue(list2(my_pop(),Lstatus));
+    errexit();
+    save.restore(r);
+    return onevalue(list2(r, Lstatus));
 }
 
 // Standard blocking simultaneous send and receive
@@ -191,12 +193,14 @@ static LispObject Lmpi_sendrecv(LispObject, LispObject s_mess,
                  source, r_tag, comm, &status);
     std::free(mpi_pack_buffer);
     mpi_pack_buffer = r_buffer;
-    push(unpack_object());
+    LispObject r = unpack_object();
+    Save save(r);
     Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                     fixnum_of_int(status.MPI_TAG),
                     fixnum_of_int(status.MPI_ERROR));
-
-    return onevalue(list2(my_pop(),Lstatus));
+    errexit();
+    save.restore(r);
+    return onevalue(list2(r, Lstatus));
 }
 
 /************** Non-Blocking point-to-point functions ***********/
@@ -291,12 +295,15 @@ static LispObject Lmpi_wait(LispObject env, LispObject request)
             return onevalue(nil);
         }
         else     // old-style receive
-        {   push(unpack_object());
+        {   LispObject r = unpack_object();
+            Save save(r);
             std::free(mpi_pack_buffer);
             Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                             fixnum_of_int(status.MPI_TAG),
                             fixnum_of_int(status.MPI_ERROR));
-            return onevalue(list2(my_pop(),Lstatus));
+            errexit();
+            save.restore(r);
+            return onevalue(list2(r, Lstatus));
         }
     }
     else       // new-style receive
@@ -314,13 +321,15 @@ static LispObject Lmpi_wait(LispObject env, LispObject request)
         // The only relevant status things are the 3 public fields, so I'll
         // stick them in a list and return them as the 2nd value
         //
-        push(unpack_object());
+        LispObject r = unpack_object());
+        Save save(r);
         std::free(mpi_pack_buffer);
         Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                         fixnum_of_int(status.MPI_TAG),
                         fixnum_of_int(status.MPI_ERROR));
-
-        return onevalue(list2(my_pop(),Lstatus));
+        errexit();
+        save.restore(r);
+        return onevalue(list2(r, Lstatus));
     }
 }
 
@@ -348,13 +357,15 @@ static LispObject Lmpi_test(LispObject env, LispObject request)
             return onevalue(Lispify_predicate(YES));
         }
         else    // old-style receive
-        {   push(unpack_object());
+        {   LispObject r = unpack_object();
+            Save save(r);
             std::free(mpi_pack_buffer);
             Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                             fixnum_of_int(status.MPI_TAG),
                             fixnum_of_int(status.MPI_ERROR));
-
-            return onevalue(list2(my_pop(),Lstatus));
+            errexit();
+            save.restore(r);
+            return onevalue(list2(r, Lstatus));
         }
     }
     else          // new-style receive
@@ -375,13 +386,15 @@ static LispObject Lmpi_test(LispObject env, LispObject request)
         // The only relevant status things are the 3 public fields, so I'll
         // stick them in a list and return them as the 2nd value
         //
-        push(unpack_object());
+        LispObject r = unpack_object();
+        Save save(r);
         std::free(mpi_pack_buffer);
         Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                         fixnum_of_int(status.MPI_TAG),
                         fixnum_of_int(status.MPI_ERROR));
-
-        return onevalue(list2(my_pop(),Lstatus));
+        errexit();
+        save.restore(r);
+        return onevalue(list2(r, Lstatus));
     }
 }
 

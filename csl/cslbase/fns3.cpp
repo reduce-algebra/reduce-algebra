@@ -192,15 +192,19 @@ LispObject Lmaple_integer(LispObject env, LispObject a)
     int len = static_cast<int>(*p & 0x03ffffff);
     for (i=1; i<len; i++)
     {   int d = fixnum_of_int(static_cast<int>(p[i]));
-        push(r, t);
-        d = Ltimes2(nil, d, t);
-        pop(t, r);
-        push(t);
-        r = Lplus2(nil, r, d);
-        pop(t);
-        push(r);
+        {   Save save(r, t);
+            d = Ltimes2(nil, d, t);
+            errexit();
+            save.restore(r, t);
+        }
+        {   Save save(t);
+            r = Lplus2(nil, r, d);
+            errexit();
+            save.restore(t);
+        }
+        Save save(r);
         t = Ltimes2(nil, t, fixnum_of_int(10000));
-        pop(r);
+        save.restore(r);
     }
     return r;
 }
@@ -420,10 +424,11 @@ LispObject simplify_string(LispObject s)
     h1 = basic_elt(s, 5);                         // Fill pointer
     if (is_fixnum(h1)) n = int_of_fixnum(h1);
     stackcheck(s);
-    push(s);
+    Save save(s);
 // Size limited
     w = get_vector(TAG_VECTOR, TYPE_STRING_4, n+CELL);
-    pop(s);
+    errexit();
+    save.restore(s);
     errexit();
     i = (intptr_t)doubleword_align_up(n+CELL) - CELL;
     while (i != 0) // pre-fill target vector with zero
@@ -819,10 +824,10 @@ LispObject Llist_to_vector(LispObject env, LispObject a)
 // version.
 //
     for (v=a; consp(v); v = cdr(v)) n += CELL;
-    push(a);
+    Save save(a);
     v = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
-    pop(a);
     errexit();
+    save.restore(a);
     for(n=0; consp(a); a = cdr(a), n++) elt(v, n) = car(a);
     return onevalue(v);
 }
@@ -1606,10 +1611,10 @@ LispObject Lvector_4up(LispObject env, LispObject a1, LispObject a2,
 {   LispObject r = nil;
     size_t n = 3;
     for (LispObject x=a4up; x!=nil; x=cdr(x)) n++;
-    push(a1, a2, a3, a4up);
+    Save save(a1, a2, a3, a4up);
     r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*(n+1));
-    pop(a4up, a3, a2, a1);
     errexit();
+    save.restore(a1, a2, a3, a4up);
     write_barrier(&elt(r, 0), a1);
     write_barrier(&elt(r, 1), a2);
     write_barrier(&elt(r, 2), a3);
@@ -1625,19 +1630,19 @@ LispObject Lvector_0(LispObject env)
 }
 
 LispObject Lvector_1(LispObject env, LispObject a)
-{   push(a);
+{   Save save(a);
     LispObject r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, 2*CELL);
-    pop(a);
     errexit();
+    save.restore(a);
     write_barrier(&elt(r, 0), a);
     return onevalue(r);
 }
 
 LispObject Lvector_2(LispObject env, LispObject a, LispObject b)
-{   push(a, b);
+{   Save save(a, b);
     LispObject r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, 3*CELL);
-    pop(b, a);
     errexit();
+    save.restore(a, b);
     write_barrier(&elt(r, 0), a);
     write_barrier(&elt(r, 1), b);
     return onevalue(r);
@@ -1645,10 +1650,10 @@ LispObject Lvector_2(LispObject env, LispObject a, LispObject b)
 
 LispObject Lvector_3(LispObject env, LispObject a, LispObject b,
                      LispObject c)
-{   push(a, b, c);
+{   Save save(a, b, c);
     LispObject r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, 4*CELL);
-    pop(c, b, a);
     errexit();
+    save.restore(a, b, c);
     write_barrier(&elt(r, 0), a);
     write_barrier(&elt(r, 1), b);
     write_barrier(&elt(r, 2), c);
@@ -1846,18 +1851,19 @@ LispObject list_subseq(LispObject sequence, size_t start, size_t end)
     copy = nil;
 
 // Store the values
-    push(sequence);
+    Save save(sequence);
     while (consp(seq) && pntr < seq_length)
-    {   push(seq,copy,last);
+    {   Save save1(seq,copy,last);
         newv = Lcons(nil,car(seq),nil);
-        pop(last,copy,seq);
+        errexit();
+        save1.restore(seq, copy, last);
         if (pntr == 0) copy = newv;
         else write_barrier(cdraddr(last), newv);
         last = newv;
         seq = cdr(seq);
         pntr++;
     }
-    pop(sequence);
+    save.restore(sequence);
     if (pntr != seq_length) return aerror1("subseq",sequence);
 
     return onevalue(copy);
@@ -1901,10 +1907,11 @@ LispObject vector_subseq(LispObject sequence, size_t start,
         if (hl < end) return aerror0("vector-subseq* out of range");
 
         // Get a new string of the right size
-        push(sequence);
+        Save save(sequence);
 // Size limited
         copy = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+seq_length+3);
-        pop(sequence);
+        errexit();
+        save.restore(sequence);
         errexit();
 
         // This code plagiarised from copy_string ...
@@ -1924,9 +1931,10 @@ LispObject vector_subseq(LispObject sequence, size_t start,
         if (hl < end/8) return aerror0("vector-subseq* out of range");
 
         // Grab a bit-vector of the right size
-        push(sequence);
+        Save save(sequence);
         copy = Lmake_simple_bitvector(nil,fixnum_of_int(seq_length));
-        pop(sequence);
+        errexit();
+        save.restore(sequence);
 
         //
         // This is not terribly efficient since the calls to Lbputv and Lbgetv
@@ -1934,10 +1942,11 @@ LispObject vector_subseq(LispObject sequence, size_t start,
         // original Lisp-coded version.
         //
         for (i=start; i<end; ++i)
-        {   push(sequence,copy);
-            Lbputv(nil,copy,fixnum_of_int(i-start),
-                   Lbgetv(nil,sequence,fixnum_of_int(i)));
-            pop(copy,sequence);
+        {   Save save1(sequence, copy);
+            LispObject v = Lbgetv(nil,sequence,fixnum_of_int(i))
+            errexit();
+            Lbputv(nil,copy,fixnum_of_int(i-start), v);
+            save1.restore(sequence, copy);
         }
 
         return onevalue(copy);
@@ -1959,9 +1968,10 @@ LispObject Llist_subseq1(LispObject env, LispObject seq,
     size_t first, last;
 
     first = int_of_fixnum(start);
-    push(seq);
+    Save save(seq);
     len = Llength(nil,seq);
-    pop(seq);
+    errexit();
+    save.restore(seq);
     last = int_of_fixnum(len);
     if (first > last) return aerror1("list-subseq* out of range",seq);
     return list_subseq(seq, first, last);
@@ -1983,9 +1993,10 @@ LispObject Lvector_subseq1(LispObject env, LispObject seq,
     size_t first, last;
 
     first = int_of_fixnum(start);
-    push(seq);
+    Save save(seq);
     len = Llength(nil,seq);
-    pop(seq);
+    errexit();
+    save.restore(seq);
     last = int_of_fixnum(len);
 
     if (first > last) return aerror1("vector-subseq* out of range",seq);
@@ -2004,90 +2015,94 @@ LispObject Lvector_subseq2(LispObject env, LispObject seq,
 }
 
 setup_type const funcs3_setup[] =
-{   {"getv",                    G0W2, G1W2, Lgetv, G3W2, G4W2},
-    {"putv",                    G0W3, G1W3, G2W3, Lputv, G4W3},
-    {"getv8",                   G0W2, G1W2, Lgetv8, G3W2, G4W2},
-    {"putv8",                   G0W3, G1W3, G2W3, Lputv8, G4W3},
-    {"getv16",                  G0W2, G1W2, Lgetv16, G3W2, G4W2},
-    {"putv16",                  G0W3, G1W3, G2W3, Lputv16, G4W3},
-    {"getv32",                  G0W2, G1W2, Lgetv32, G3W2, G4W2},
-    {"putv32",                  G0W3, G1W3, G2W3, Lputv32, G4W3},
-    {"fgetv32",                 G0W2, G1W2, Lfgetv32, G3W2, G4W2},
-    {"fputv32",                 G0W3, G1W3, G2W3, Lfputv32, G4W3},
-    {"fgetv64",                 G0W2, G1W2, Lfgetv64, G3W2, G4W2},
-    {"fputv64",                 G0W3, G1W3, G2W3, Lfputv64, G4W3},
-    {"qgetv",                   G0W2, G1W2, Lgetv, G3W2, G4W2},
-    {"egetv",                   G0W2, G1W2, Lgetv, G3W2, G4W2},
-    {"qputv",                   G0W3, G1W3, G2W3, Lputv, G4W3},
-    {"eputv",                   G0W3, G1W3, G2W3, Lputv, G4W3},
-    {"make-simple-string",      G0W1, Lsmkvect, G2W1, G3W1, G4W1},
-    {"allocate-string",         G0W1, Lsmkvect, G2W1, G3W1, G4W1},
-    {"putv-char",               G0W3, G1W3, G2W3, Lsputv, G4W3},
-    {"string-store",            G0W3, G1W3, G2W3, Lsputv, G4W3},
-    {"string-store1",           G0W3, G1W3, G2W3, Lsputv, G4W3},
-    {"string-store2",           G0W4up, G1W4up, G2W4up, G3W4up, Lsputv2},
-    {"string-store3",           G0W4up, G1W4up, G2W4up, G3W4up, Lsputv3},
-    {"string-store4",           G0W4up, G1W4up, G2W4up, G3W4up, Lsputv4},
-    {"bps-putv",                G0W3, G1W3, G2W3, Lbpsputv, G4W3},
-    {"bps-getv",                G0W2, G1W2, Lbpsgetv, G3W2, G4W2},
-    {"bps-upbv",                G0W1, Lbpsupbv, G2W1, G3W1, G4W1},
-    {"eupbv",                   G0W1, Lupbv, G2W1, G3W1, G4W1},
-    {"schar",                   G0W2, G1W2, Lsgetv, G3W2, G4W2},
-    {"scharn",                  G0W2, G1W2, Lsgetvn, G3W2, G4W2},
-    {"byte-getv",               G0W2, G1W2, Lbytegetv, G3W2, G4W2},
-    {"mkvect",                  G0W1, Lmkvect, G2W1, G3W1, G4W1},
-    {"mkevect",                 G0W1, Lmkevect, G2W1, G3W1, G4W1},
-    {"mkxvect",                 G0W1, Lmkxvect, G2W1, G3W1, G4W1},
-    {"mkvect8",                 G0W1, Lmkvect8, G2W1, G3W1, G4W1},
-    {"mkvect16",                G0W1, Lmkvect16, G2W1, G3W1, G4W1},
-    {"mkvect32",                G0W1, Lmkvect32, G2W1, G3W1, G4W1},
-    {"mkfvect32",               G0W1, Lmkfvect32, G2W1, G3W1, G4W1},
-    {"mkfvect64",               G0W1, Lmkfvect64, G2W1, G3W1, G4W1},
-    {"upbv",                    G0W1, Lupbv, G2W1, G3W1, G4W1},
-    {"string-length",           G0W1, Lstring_length, G2W1, G3W1, G4W1},
-    {"getv-bit",                G0W2, G1W2, Lbgetv, G3W2, G4W2},
-    {"sbit",                    G0W2, G1W2, Lbgetv, G3W2, G4W2},
-    {"make-simple-bitvector",   G0W1, Lmake_simple_bitvector, G2W1, G3W1, G4W1},
-    {"putv-bit",                G0W3, G1W3, G2W3, Lbputv, G4W3},
-    {"sbitset",                 G0W3, G1W3, G2W3, Lbputv, G4W3},
-    {"primep32",                G0W1, Lprimep32, G2W1, G3W1, G4W1},
-    {"primep64",                G0W1, Lprimep32, G2W1, G3W1, G4W1},
+{   DEF_2("getv",              Lgetv),
+    DEF_3("putv",              Lputv),
+    DEF_2("getv8",             Lgetv8),
+    DEF_3("putv8",             Lputv8),
+    DEF_2("getv16",            Lgetv16),
+    DEF_3("putv16",            Lputv16),
+    DEF_2("getv32",            Lgetv32),
+    DEF_3("putv32",            Lputv32),
+    DEF_2("fgetv32",           Lfgetv32),
+    DEF_3("fputv32",           Lfputv32),
+    DEF_2("fgetv64",           Lfgetv64),
+    DEF_3("fputv64",           Lfputv64),
+    DEF_2("qgetv",             Lgetv),
+    DEF_2("egetv",             Lgetv),
+    DEF_3("qputv",             Lputv),
+    DEF_3("eputv",             Lputv),
+    DEF_1("make-simple-string", Lsmkvect),
+    DEF_1("allocate-string",   Lsmkvect),
+    DEF_3("putv-char",         Lsputv),
+    DEF_3("string-store",      Lsputv),
+    DEF_3("string-store1",     Lsputv),
+    DEF_4up("string-store2",   Lsputv2),
+    DEF_4up("string-store3",   Lsputv3),
+    DEF_4up("string-store4",   Lsputv4),
+    DEF_3("bps-putv",          Lbpsputv),
+    DEF_2("bps-getv",          Lbpsgetv),
+    DEF_1("bps-upbv",          Lbpsupbv),
+    DEF_1("eupbv",             Lupbv),
+    DEF_2("schar",             Lsgetv),
+    DEF_2("scharn",            Lsgetvn),
+    DEF_2("byte-getv",         Lbytegetv),
+    DEF_1("mkvect",            Lmkvect),
+    DEF_1("mkevect",           Lmkevect),
+    DEF_1("mkxvect",           Lmkxvect),
+    DEF_1("mkvect8",           Lmkvect8),
+    DEF_1("mkvect16",          Lmkvect16),
+    DEF_1("mkvect32",          Lmkvect32),
+    DEF_1("mkfvect32",         Lmkfvect32),
+    DEF_1("mkfvect64",         Lmkfvect64),
+    DEF_1("upbv",              Lupbv),
+    DEF_1("string-length",     Lstring_length),
+    DEF_2("getv-bit",          Lbgetv),
+    DEF_2("sbit",              Lbgetv),
+    DEF_1("make-simple-bitvector", Lmake_simple_bitvector),
+    DEF_3("putv-bit",          Lbputv),
+    DEF_3("sbitset",           Lbputv),
+    DEF_1("primep32",          Lprimep32),
+    DEF_1("primep64",          Lprimep32),
 #ifdef COMMON
-    {"hashtable-flavour",       G0W1, Lhash_flavour, G2W1, G3W1, G4W1},
-    {"make-simple-vector",      G0W1, Lmksimplevec, G2W1, G3W1, G4W1},
-    {"svref",                   G0W2, G1W2, Lgetv, G3W2, G4W2},
-    {"vector-bound",            G0W1, Lvecbnd, G2W1, G3W1, G4W1},
-    {"putvec",                  G0W3, G1W3, G2W3, Lputvec, G4W3},
+    DEF_1("hashtable-flavour",  Lhash_flavour),
+    DEF_1("make-simple-vector", Lmksimplevec),
+    DEF_2("svref",             Lgetv),
+    DEF_1("vector-bound",      Lvecbnd),
+    DEF_3("putvec",            Lputvec),
 #ifdef DO_AREF_AND_ASET_LATER
-    {"aref",                    G0Wother, Laref_1, Laref_2, Laref_3, Laref_4up},
-    {"aset",                    G0Wother, Laset_1, Laset_2, Laset_3, Laset_4up},
+    {"aref",                   G0Wother, Laref_1, Laref_2, Laref_3, Laref_4up},
+    {"aset",                   G0Wother, Laset_1, Laset_2, Laset_3, Laset_4up},
 #endif
-    {"elt",                     G0W2, G1W2, Lelt, G3W2, G4W2},
-    {"setelt",                  G0W3, G1W3, G2W3, Lsetelt, G4W3},
-    {"vectorp",                 G0W1, Lvectorp, G2W1, G3W1, G4W1},
-    {"char",                    G0W2, G1W2, Lchar, G3W2, G4W2},
-    {"charset",                 G0W3, G1W3, G2W3, Lcharset, G4W3},
-    {"make-string",             G0wother, Lmake_string_1, G2Wother, Lmake_string_3, G4Wother},
-    {"shrink-vector",           G0W2, G1W2, Lshrink_vector, G3W2, G4W2},
-    {"string",                  G0W1, Lstring, G2W1, G3W1, G4W1},
-    {"vector-subseq*",          WRONG_NO_3A, Lvector_subseq1, Lvector_subseq2},
-    {"list-subseq*",            WRONG_NO_3A, Llist_subseq1, Llist_subseq2},
-    {"subseq",                  WRONG_NO_3A, Lvector_subseq1, Lvector_subseq2},
-// The "x" is temporary while I debug
-    {"xcopy-vector",            G0W1, Lcopy_vector, G2W1, G3W1, G4W1},
-#endif
-    {"vector",                  Lvector_0, Lvector_1, Lvector_2, Lvector_3, Lvector_4up},
-    {"list-to-vector",          G0W1, Llist_to_vector, G2W1, G3W1, G4W1},
-    {"encapsulatedp",           G0W1, Lencapsulatedp, G2W1, G3W1, G4W1},
+    DEF_2("elt",               Lelt),
+    DEF_3("setelt",            Lsetelt),
+    DEF_1("vectorp",           Lvectorp),
+    DEF_2("char",              Lchar),
+    DEF_3("charset",           Lcharset),
+    {"make-string",            G0wother, Lmake_string_1, G2Wother, Lmake_string_3, G4Wother},
+    DEF_2("shrink-vector",     Lshrink_vector),
+    DEF_1("string",            Lstring),
+
 #if 0
-    {"maple_atomic_value",      G0W1, Lmaple_atomic_value, G2W1, G3W1, G4W1},
-    {"maple_tag",               G0W1, Lmaple_tag, G2W1, G3W1, G4W1},
-    {"maple_length",            G0W1, Lmaple_length, G2W1, G3W1, G4W1},
-    {"maple_string_data",       G0W1, Lmaple_string_data, G2W1, G3W1, G4W1},
-    {"maple_integer",           G0W1, Lmaple_integer, G2W1, G3W1, G4W1},
-    {"maple_component",         G0W2, G1W2, Lmaple_component, G3W2, G4W2},
+// These need serious updating if they are to be revived!
+    {"vector-subseq*",         WRONG_NO_3A, Lvector_subseq1, Lvector_subseq2},
+    {"list-subseq*",           WRONG_NO_3A, Llist_subseq1, Llist_subseq2},
+    {"subseq",                 WRONG_NO_3A, Lvector_subseq1, Lvector_subseq2},
 #endif
-    {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
+// The "x" is temporary while I debug
+    DEF_1("xcopy-vector",      Lcopy_vector),
+#endif
+    {"vector",                 Lvector_0, Lvector_1, Lvector_2, Lvector_3, Lvector_4up},
+    DEF_1("list-to-vector",    Llist_to_vector),
+    DEF_1("encapsulatedp",     Lencapsulatedp),
+#if 0
+    DEF_1("maple_atomic_value", Lmaple_atomic_value),
+    DEF_1("maple_tag",         Lmaple_tag),
+    DEF_1("maple_length",      Lmaple_length),
+    DEF_1("maple_string_data", Lmaple_string_data),
+    DEF_1("maple_integer",     Lmaple_integer),
+    DEF_2("maple_component",   Lmaple_component),
+#endif
+    {nullptr,                  nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 // end of fns3.cpp

@@ -202,17 +202,18 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
         default:
             break;  // general big case
     }
-    push(u);
-    len1 = CELL+4+(11*len)/10;
+    {   Save save(u);
+        len1 = CELL+4+(11*len)/10;
 //
 // To print a general big number I will convert it from radix 2^31 to
 // radix 10^9.  This can involve increasing the number of digits by a factor
 // of about 1.037, so the 10% expansion I allow for in len1 above should
 // keep me safe.
 //
-    len1 = (size_t)doubleword_align_up((uintptr_t)len1);
-    w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len1);
-    pop(u);
+        len1 = (size_t)doubleword_align_up((uintptr_t)len1);
+        w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len1);
+        save.restore(u);
+    }
     bool sign = false;
     size_t len2;
     len = len/4;
@@ -246,8 +247,8 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
         if (bignum_digits(w)[len-1] == 0) len--;
         bignum_digits(w)[--len2] = carry; // 9 digits in decimal format
     }
-    push(w);
-    {   uint32_t dig;
+    {   Save save(w);
+        uint32_t dig;
         int i;
         size_t len;
         if (bignum_digits(w)[0] == 0) dig = bignum_digits(w)[len2++];
@@ -270,19 +271,19 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
         else if (nobreak==0 && column != 0 && column+len > line_length)
             putc_stream('\n', active_stream);
         while (--i >= 0) putc_stream(my_buff[i], active_stream);
+        save.restore(w);
     }
-    pop(w);
     while (len2 < len1)
     {   uint32_t dig = bignum_digits(w)[len2++];
         int i;
-        push(w);
+        Save save(w);
         for (i=8; i>=0; i--)
         {   int32_t nxt = dig % 10;
             dig = dig / 10;
             my_buff[i] = static_cast<char>(nxt + '0');
         }
         for (i=0; i<=8; i++) putc_stream(my_buff[i], active_stream);
-        pop(w);
+        save.restore(w);
         if ((uintptr_t)stack >=
             ((uintptr_t)stackLimit | event_flag.load()))
             respond_to_stack_event();

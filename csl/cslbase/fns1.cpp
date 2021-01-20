@@ -1193,28 +1193,25 @@ LispObject Lunwind(LispObject env)
 
 LispObject error_N(LispObject args)
 {   LispObject w;
-    errexit();     // because construcing argument may have failed
+    errexit();     // because constructing argument may have failed
     errors_now++;
     if (errors_limit >= 0 && errors_now > errors_limit)
         return resource_exceeded();
 #ifdef COMMON
-:#pragma message ("fns1.cpp line about 1177 in COMMON case seems mangled")
-//@@@ This variant seems to be malformed, and has been since it was
-// first introduced! But the issue only arises if I compile with COMMON defined
-// so I will investigate next time I need to do that! 
-    LispObject a1 = car(args);
-    args = cdr(args);
+    {   Save save(args);
+        LispObject a1 = car(args);
+        args = cdr(args);
 // I will use FORMAT to handle error messages provided the first arg
 // to error had been a string and also provided (for bootstrapping) that
 // the function FORMAT seems to be defined.
-    if (qfn1(format_symbol) == undefined_1 ||
-        !stringp(a1)) loop_print_error(cons(a1, args));
-    else Lapply_3(nil, format_symbol, qvalue(error_output), a1, args);
-    err_printf("\n");
-    pop(r);
-}
-    qvalue(emsg_star) = cons(a1, r);     // "Error message" in CL world
-    exit_value = fixnum_of_int(0);       // "Error number"  in CL world
+        if (qfn1(format_symbol) == undefined_1 ||
+            !stringp(a1)) loop_print_error(cons(a1, args));
+        else Lapply_3(nil, format_symbol, qvalue(error_output), a1, args);
+        err_printf("\n");
+        save.restore(args);
+        qvalue(emsg_star) = args;            // "Error message" in CL world
+        exit_value = fixnum_of_int(0);       // "Error number"  in CL world
+    }
 #else
     if (miscflags & HEADLINE_FLAG)
     {   RealSave save(args, cdr(args));

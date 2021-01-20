@@ -173,9 +173,9 @@ LispObject rationalf(double d)
 // integer.
     assert(x < 0);
     LispObject w = make_fix_or_big2(a1, a0);
-    push(w);
+    Save save(w);
     LispObject den = make_power_of_two(-x);
-    pop(w);
+    save.restore(w);
     return make_ratio(w, den);
 }
 
@@ -322,9 +322,9 @@ static LispObject rationalizef(double dd, int bits)
     if (dd < 0.0) p1 = make_lisp_integer64(-(int64_t)u1);
     else p1 = make_lisp_integer64(u1);
     if (v1 == 1) return p1;
-    push(p1);
+    Save save(p1);
     LispObject q1 = make_lisp_integer64(v1);
-    pop(p1);
+    save.restore(p1);
     return make_ratio(p1, q1);
 }
 
@@ -442,9 +442,9 @@ LispObject rationalf128(float128_t *d)
             break;
     }
     if (x == 0) return w;
-    push(w);
+    Save save(w);
     LispObject den = make_power_of_two(-x);
-    pop(w);
+    save.restore(w);
     return make_ratio(w, den);
 }
 
@@ -598,9 +598,9 @@ static LispObject rationalizef128(float128_t *dd)
     if (f128M_negative(dd)) p1 = make_lisp_integer128(-u1);
     else p1 = make_lisp_unsigned128(u1);
     if (v1 == 1) return p1;
-    push(p1);
+    Save save(p1);
     LispObject q1 = make_lisp_unsigned128(v1);
-    pop(p1);
+    save.restore(p1);
     return make_ratio(p1, q1);
 }
 
@@ -796,10 +796,10 @@ inline bool lessp_i_b(LispObject, LispObject b)
 }
 
 inline bool lessp_i_r(LispObject a, LispObject b)
-{   push(numerator(b));  // compute a < p/q  as a*q < p
+{   Save save(b);  // compute a < p/q  as a*q < p
     a = times2(a, denominator(b));
-    pop(b);
-    return lessp2(a, b);  // lessp2 is NOT an inline function!
+    save.restore(b);
+    return lessp2(a, numerator(b));  // lessp2 is NOT an inline function!
 }
 
 inline bool lessp_i_f(LispObject a, LispObject b)
@@ -1122,12 +1122,12 @@ inline bool lessp_b_l(LispObject a, LispObject b)
 
 inline bool lessp_r_r(LispObject a, LispObject b)
 {   LispObject c;
-    push(a, b);
+    Save save(a, b);
     c = times2(numerator(a), denominator(b));
-    pop(b, a);
-    push(c);
+    save.restore(a, b);
+    Save save1(c);
     b = times2(numerator(b), denominator(a));
-    pop(c);
+    save1.restore(c);
     return lessp2(c, b);
 }
 
@@ -1214,10 +1214,10 @@ inline bool lessp_b_r(LispObject a, LispObject b)
 }
 
 inline bool lessp_r_i(LispObject a, LispObject b)
-{   push(numerator(a));
+{   Save save(a);
     b = times2(b, denominator(a));
-    pop(a);
-    return lessp2(a, b);
+    save.restore(a);
+    return lessp2(numerator(a), b);
 }
 
 inline bool lessp_r_s(LispObject a, LispObject b)

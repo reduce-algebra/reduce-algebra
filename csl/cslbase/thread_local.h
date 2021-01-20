@@ -378,6 +378,37 @@ public:                                                       \
 
 #endif // __cpp_inline_variables
 
+
+//==============================================================
+// Now an initial sketch of an alternative scheme. With this one
+// JUST puts in definitions of thread local variables as
+//      THREAD_LOCAL(T x);
+// or   THREAD_LOCAL(T x[n]);
+// where T is some type.
+// A script that starts with "grep '^THREAD_LOCAL' *.cpp" is then
+// run on all the source files to collect these. If the platform provides
+// good support for "thread_local" then it creates a new header file
+// containing
+//    extern thread_local T x;
+//    #define THREAD_LOCAL(def) thread_local def
+//
+// For the particular case of Windows it will instead need to generate
+//    class AllThreadLocals
+//    {
+//    public:
+//        T x;
+//    };
+//    extern AllThreadLocals *allThreadLocals;
+//    #define x allThreadLocals->x
+//    #define THREAD_LOCAL(def)
+//
+// and then it will need some code that using platform-specific trickery
+// it sets up in effect
+//    thread_local AllThreadLocals *allThreadLocals = ...;
+// in such a manner that each thread gets its own proper set of all the
+// variables.
+
+
 #endif // header_thread_local_h
 
 // end of thread_local.h

@@ -274,12 +274,18 @@ static LispObject unpack_atom()
 
         case TYPE_SIMPLE_VEC: case TYPE_ARRAY: case TYPE_STRUCTURE:
             size = length_of_header(a);
-            push(get_basic_vector(TAG_VECTOR,type_of_header(a),size));
+            LispObject v = get_basic_vector(TAG_VECTOR,type_of_header(a),size);
+            Save save(v);
             {   int i;
-                for (i=0; i<(size>>2)-1; ++i) elt(*stack,i) = unpack_cell();
-                if (!(i&1)) elt(*stack,i) = nil;
+                for (i=0; i<(size>>2)-1; ++i)
+                {   save.restore(v);
+                    elt(v, i) = unpack_cell();
+                    errexit();
+                }
+                save.restore(v);
+                if (!(i&1)) elt(v, i) = nil;
             }
-            return my_pop();
+            return v;
 
         case TYPE_SYMBOL:
         {   a = unpack_atom();  // Name in a string
@@ -303,20 +309,26 @@ static LispObject unpack_cell()
 }
 
 static LispObject unpack_list()
-{   push(unpack_cell());
+{   LispObject r = unpack_cell();
+    errexit();
+    Save save(r);
     switch (unpack_char())
-    {   case ')': return cons(my_pop(),nil);
+    {   case ')': return cons(r, nil);
         case '.':
         {   LispObject tail = unpack_atom();
-            return cons(my_pop(), tail);
+            errexit();
+            save.restore(r);
+            return cons(r, tail);
         }
         case ',':
         {   LispObject tail = unpack_list();
-            return cons(my_pop(), tail);
+            errexit();
+            save.restore(r);
+            return cons(r, tail);
         }
         default :
         {   err_printf("Syntax error in message.\n");
-            return (my_pop());
+            return r;
         }
     }
 }

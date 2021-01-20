@@ -522,82 +522,83 @@ LispObject make_stream_handle()
     return w;
 }
 
-// broadcast, concateneded and string-input streams are Common Lisp features
-// and the current code has not been adapted to allow for the change I
-// made quite some while ago about treatment of functions with more than
-// 2 or 3 arguments! I may get around to fixing this and then making then
-// available in a Standard Lisp world but for now they are just plain broken
-// as regards argument passing conventions! 
-
-#ifdef COMMON
-
-LispObject Lmake_broadcast_stream_n(LispObject env, int nargs, ...)
-{   LispObject r = nil, w, w1;
-    std::va_list a;
-    va_start(a, nargs);
-    while (nargs > 1)
-    {   pop(w, w1);
-        nargs-=2;
-        r = list2star(w1, w, r);
-    }
-    while (nargs > 0)
-    {   pop(w);
-        nargs--;
-        r = cons(w, r);
-    }
-    Save save(r);
-    w = make_stream_handle();
+LispObject Lmake_broadcast_stream_4up(LispObject env,
+    LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
+{   Save save(a1, a2);
+    if (a3 != SPID_NOARG) a4up = cons(a3, a4up);
     errexit();
-    save.restore(r);
+    save.restore(a1, a2);
+    if (a2 != SPID_NOARG) a4up = cons(a2, a4up);
+    errexit();
+    save.restore(a1, a2);
+    if (a1 != SPID_NOARG) a4up = cons(a1, a4up);
+    errexit();
+    Save save1(a4up);
+    LispObject w = make_stream_handle();
+    errexit();
+    save1.restore(a4up);
     set_stream_write_fn(w, char_to_broadcast);
     set_stream_write_other(w, write_action_broadcast);
-    stream_write_data(w) = r;
+    stream_write_data(w) = a4up;
     return onevalue(w);
 }
 
+LispObject Lmake_broadcast_stream_0(LispObject env)
+{   return Lmake_broadcast_stream_4up(env, SPID_NOARG, SPID_NOARG, SPID_NOARG, nil);
+}
+
 LispObject Lmake_broadcast_stream_1(LispObject env, LispObject a)
-{   return Lmake_broadcast_stream_n(env, 1, a);
+{   return Lmake_broadcast_stream_4up(env, a, SPID_NOARG, SPID_NOARG, nil);
 }
 
 LispObject Lmake_broadcast_stream_2(LispObject env, LispObject a,
                                     LispObject b)
-{   return Lmake_broadcast_stream_n(env, 2, a, b);
+{   return Lmake_broadcast_stream_4up(env, a, b, SPID_NOARG, nil);
 }
 
-LispObject Lmake_concatenated_stream_n(LispObject env, int nargs, ...)
-{   LispObject r = nil, w, w1;
-    std::va_list a;
-    va_start(a, nargs);
-    while (nargs > 1)
-    {   pop(w, w1);
-        nargs-=2;
-        r = list2star(w1, w, r);
-    }
-    while (nargs > 0)
-    {   pop(w);
-        nargs--;
-        r = cons(w, r);
-    }
-    Save save(r);
-    w = make_stream_handle();
+LispObject Lmake_broadcast_stream_3(LispObject env, LispObject a,
+                                    LispObject b, LispObject c)
+{   return Lmake_broadcast_stream_4up(env, a, b, c, nil);
+}
+
+LispObject Lmake_concatenated_stream_4up(LispObject env,
+    LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
+{   Save save(a1, a2);
+    if (a3 != SPID_NOARG) a4up = cons(a3, a4up);
     errexit();
-    save.restore(r);
+    save.restore(a1, a2);
+    if (a2 != SPID_NOARG) a4up = cons(a2, a4up);
+    errexit();
+    save.restore(a1, a2);
+    if (a1 != SPID_NOARG) a4up = cons(a1, a4up);
+    errexit();
+    Save save1(a4up);
+    LispObject w = make_stream_handle();
+    errexit();
+    save1.restore(a4up);
     set_stream_read_fn(w, char_from_concatenated);
     set_stream_read_other(w, read_action_concatenated);
-    stream_read_data(w) = r;
+    stream_read_data(w) = a4up;
     return onevalue(w);
 }
 
+LispObject Lmake_concatenated_stream_0(LispObject env)
+{   return Lmake_concatenated_stream_4up(env, SPID_NOARG, SPID_NOARG, SPID_NOARG, nil);
+}
+
 LispObject Lmake_concatenated_stream_1(LispObject env, LispObject a)
-{   return Lmake_concatenated_stream_n(env, 1, a);
+{   return Lmake_concatenated_stream_4up(env, a, SPID_NOARG, SPID_NOARG, nil);
 }
 
 LispObject Lmake_concatenated_stream_2(LispObject env, LispObject a,
                                        LispObject b)
-{   return Lmake_concatenated_stream_n(env, 2, a, b);
+{   return Lmake_concatenated_stream_4up(env, a, b, SPID_NOARG, nil);
 }
 
-#endif // COMMON
+LispObject Lmake_concatenated_stream_3(LispObject env, LispObject a,
+                                       LispObject b, LispObject c)
+{   return Lmake_concatenated_stream_4up(env, a, b, c, nil);
+}
 
 LispObject Lmake_synonym_stream(LispObject env, LispObject a)
 {   LispObject w;
@@ -651,27 +652,34 @@ LispObject Lmake_echo_stream(LispObject env, LispObject a,
     return onevalue(w);
 }
 
-#ifdef COMMON
 
 // string input streams are not implemented yet, but I can read from a
 // list so all I would need to do would be to use explodec to turn the
 // string into a list of characters and then I have at least all the
 // basic mechanisms necessary.
 
-LispObject Lmake_string_input_stream_n(LispObject, int, ...)
+LispObject Lmake_string_input_stream_4up(LispObject env,
+    LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
 {   return aerror("make-string-input-stream");
 }
 
+LispObject Lmake_string_input_stream_0(LispObject env)
+{   return Lmake_string_input_stream_4up(env, SPID_NOARG, SPID_NOARG, SPID_NOARG, nil);
+}
+
 LispObject Lmake_string_input_stream_1(LispObject env, LispObject a)
-{   return Lmake_string_input_stream_n(env, 1, a);
+{   return Lmake_string_input_stream_4up(env, a, SPID_NOARG, SPID_NOARG, nil);
 }
 
 LispObject Lmake_string_input_stream_2(LispObject env, LispObject a,
                                        LispObject b)
-{   return Lmake_string_input_stream_n(env, 2, a, b);
+{   return Lmake_string_input_stream_4up(env, a, b, SPID_NOARG, nil);
 }
 
-#endif // COMMON
+LispObject Lmake_string_input_stream_3(LispObject env, LispObject a,
+                                       LispObject b, LispObject c)
+{   return Lmake_string_input_stream_4up(env, a, b, c, nil);
+}
 
 LispObject Lmake_string_output_stream(LispObject env)
 {   LispObject w;
@@ -5465,19 +5473,17 @@ setup_type const print_setup[] =
     {"prin2a",                  G0W1, Lprin2a, G2W1, G3W1, G4W1},
     {"print",                   G0W1, Lprint, G2W1, G3W1, G4W1},
     {"printc",                  G0W1, Lprintc, G2W1, G3W1, G4W1},
-#ifdef COMMON
+    {"tyo",                     G0W1, Ltyo, G2W1, G3W1, G4W1},
+// The next few are Common Lisp-isms but I will stick them in here anyway.
     {"charpos",                 Lposn, Lposn_1, G2Wother, G3Wother, G4Wother},
     {"finish-output",           Lflush, Lflush1, G2Wother, G3Wother, G4Wother},
     {"make-synonym-stream",     G0W1, Lmake_synonym_stream, G2W1, G3W1, G4W1},
-    {"make-broadcast-stream",   Lmake_broadcast_stream_1, Lmake_broadcast_stream_2, Lmake_broadcast_stream_3, Lmake_broadcast_stream_4up},
-    {"make-concatenated-stream",Lmake_concatenated_stream_1, Lmake_concatenated_stream_2, Lmake_concatenated_stream_3, Lmake_concatenated_stream_4up},
+    {"make-broadcast-stream",   Lmake_broadcast_stream_0, Lmake_broadcast_stream_1, Lmake_broadcast_stream_2, Lmake_broadcast_stream_3, Lmake_broadcast_stream_4up},
+    {"make-concatenated-stream",Lmake_concatenated_stream_0, Lmake_concatenated_stream_1, Lmake_concatenated_stream_2, Lmake_concatenated_stream_3, Lmake_concatenated_stream_4up},
     {"make-two-way-stream",     G0W2, G1W2, Lmake_two_way_stream, G3W2, G4W2},
     {"make-echo-stream",        G0W2, G1W2, Lmake_echo_stream, G3W2, G4W2},
-    {"make-string-input-stream",Lmake_string_input_stream_1, Lmake_string_input_stream_2, Lmake_string_input_stream_3, Lmake_string_input_stream_4up},
+    {"make-string-input-stream",Lmake_string_input_stream_0, Lmake_string_input_stream_1, Lmake_string_input_stream_2, Lmake_string_input_stream_3, Lmake_string_input_stream_4up},
     {"~tyo",                    G0W1, Ltyo, G2W1, G3W1, G4W1},
-#else
-    {"tyo",                     G0W1, Ltyo, G2W1, G3W1, G4W1},
-#endif
     {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 

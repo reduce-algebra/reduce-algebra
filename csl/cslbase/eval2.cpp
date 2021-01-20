@@ -61,8 +61,8 @@ LispObject apply(LispObject fn, LispObject args,
             if (tracing)
             {   RealSave save(args, fn, from);
                 LispObject &args1 = save.val(1);
-                LispObject &fn1   = save.val(2);
-                LispObject &from1 = save.val(3);
+                LispObject &fn1   = save.val(3);
+                LispObject &from1 = save.val(4);
                 freshline_trace();
                 errexit();
                 trace_printf("Calling ");
@@ -75,14 +75,18 @@ LispObject apply(LispObject fn, LispObject args,
                 errexit();
                 trace_printf("\n");
                 errexit();
-                for (int i=1; args1!=nil; i++)
-                {   trace_printf("Arg%d: ", i);
+                LispObject p = args1;
+                for (int i=1; p!=nil; i++)
+                {   Save save(p);
+                    trace_printf("Arg%d: ", i);
                     errexit();
-                    loop_print_trace(car(args1));
+                    save.restore(p);
+                    loop_print_trace(car(p));
                     errexit();
                     trace_printf("\n");
                     errexit();
-                    args1 = cdr(args1);
+                    save.restore(p);
+                    p = cdr(p);
                 }
                 save.restore(args, fn, from);
             }

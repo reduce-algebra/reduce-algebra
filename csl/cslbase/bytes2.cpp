@@ -307,9 +307,9 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_STOREFREE:
                 if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
-                {   push(A_reg);
+                {   Save save(A_reg);
                     print_traceset(current_byte, A_reg);
-                    pop(A_reg);
+                    save.restore(A_reg);
                 }
                 setvalue(basic_elt(litvec, next_byte),
                          A_reg);  // store into special var
@@ -317,34 +317,34 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_STOREFREE1:
                 if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
-                {   push(A_reg);
+                {   Save save(A_reg);
                     print_traceset(1, A_reg);
-                    pop(A_reg);
+                    save.restore(A_reg);
                 }
                 setvalue(basic_elt(litvec, 1), A_reg);
                 continue;
 
             case OP_STOREFREE2:
                 if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
-                {   push(A_reg);
+                {   Save save(A_reg);
                     print_traceset(2, A_reg);
-                    pop(A_reg);
+                    save.restore(A_reg);
                 }
                 setvalue(basic_elt(litvec, 2), A_reg);
                 continue;
 
             case OP_STOREFREE3:
                 if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
-                {   push(A_reg);
+                {   Save save(A_reg);
                     print_traceset(3, A_reg);
-                    pop(A_reg);
+                    save.restore(A_reg);
                 }
                 setvalue(basic_elt(litvec, 3), A_reg);
                 continue;
 
             case OP_PUSHNILS:
                 n = next_byte;
-                for (k=0; k<n; k++) real_push(nil);
+                for (k=0; k<n; k++) *++stack = nil;
                 continue;
 
             case OP_VNIL:
@@ -359,10 +359,11 @@ next_opcode:   // This label is so that I can restart what I am doing
                 continue;
 
             case OP_NCONS:                          // A_reg = cons(A_reg, nil);
-                push(B_reg);
-                A_reg = ncons(A_reg);
-                pop(B_reg);
-                errexit();
+                {   Save save(B_reg);
+                    A_reg = ncons(A_reg);
+                    errexit();
+                    save.restore(B_reg);
+                }
                 continue;
 
             case OP_XCONS:                          // A_reg = cons(A_reg, B_reg);
@@ -377,7 +378,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_ACONS:                  // A_reg = acons(pop(), B_reg, A_reg);
                 // = (pop() . B) . A
-                real_pop(r1);
+                r1 = *stack--;
                 A_reg = acons(r1, B_reg, A_reg);
                 errexit();
                 continue;
@@ -406,17 +407,17 @@ next_opcode:   // This label is so that I can restart what I am doing
                 continue;
 
             case OP_CLOSURE:
-                push(B_reg, A_reg);
+                *++stack = B_reg; *++stack = A_reg;
 // This will be the address where the first arg of this function lives on
 // the stack.  It provides a hook for the called function to access lexical
 // variables.
                 w = next_byte;
                 A_reg = encapsulate_sp(&stack[-2-static_cast<int>(w)]);
-                pop(B_reg);
                 errexit();
+                B_reg = *stack--;
                 A_reg = list2star(cfunarg, B_reg, A_reg);
-                pop(B_reg);
                 errexit();
+                B_reg = *stack--;
                 continue;
 
             case OP_BIGSTACK:               // LOADLOC, STORELOC, CLOSURE etc
@@ -442,14 +443,14 @@ next_opcode:   // This label is so that I can restart what I am doing
                         stack[-static_cast<int>(w + next_byte)] = A_reg;
                         continue;
                     case 0x80:                  // CLOSURE extended
-                        push(B_reg, A_reg);
+                        *++stack = B_reg; *++stack = A_reg;
                         w = ((w & 0x3f) << 8) + next_byte;
                         A_reg = encapsulate_sp(&stack[-2-static_cast<int>(w)]);
-                        pop(B_reg);
                         errexit();
+                        B_reg = *stack--;
                         A_reg = list2star(cfunarg, B_reg, A_reg);
-                        pop(B_reg);
                         errexit();
+                        B_reg = *stack--;
                         continue;
                     case 0xc0:                  // LOADLEX, STORELEX extended
                         n = next_byte;
@@ -467,14 +468,14 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_LIST2STAR:              // A_reg = list2!*(pop(), B_reg, A_reg);
                 // = pop() . (B . A)
-                real_pop(r1);
+                r1 = *stack--;
                 A_reg = list2star(r1, B_reg, A_reg);
                 errexit();
                 continue;
 
             case OP_LIST3:                  // A_reg = list3(pop(), B_reg, A_reg);
                 // = pop() . (B . (A . nil))
-                real_pop(r1);
+                r1 = *stack--;
                 A_reg = list3(r1, B_reg, A_reg);
                 errexit();
                 continue;
@@ -558,18 +559,19 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_APPLY1:
                 if (is_symbol(B_reg))   // can optimise this case, I guess
                 {   f1 = qfn1(B_reg);
-                    push(B_reg);
+                    *++stack = B_reg;
                     if ((qheader(B_reg) & SYM_TRACED) != 0)
                         A_reg = traced_call1(basic_elt(litvec, 0), f1, B_reg, A_reg);
                     else A_reg = f1(B_reg, A_reg);
-                    popv(1);
                     errexit();
+                    stack--;
                     continue;
                 }
-                push(B_reg);
-                A_reg = ncons(A_reg);
-                pop(B_reg);
-                errexit();
+                {   Save save(B_reg);
+                    A_reg = ncons(A_reg);
+                    errexit();
+                    save.restore(B_reg);
+                }
                 A_reg = apply(B_reg, A_reg, nil, basic_elt(litvec, 0));
                 errexit();
                 continue;
@@ -578,7 +580,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 r2 = *stack;
                 if (is_symbol(r2))   // can optimise this case, I guess
                 {   f2 = qfn2(r2);
-                    real_popv(1);
+                    stack--;
                     if ((qheader(r2) & SYM_TRACED) != 0)
                         A_reg = traced_call2(basic_elt(litvec, 0), f2, r2, B_reg, A_reg);
                     else A_reg = f2(r2, B_reg, A_reg);
@@ -587,7 +589,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 }
 // Here the stack has fn on the top and the 2 args are in B_reg, A_reg
                 A_reg = list2(B_reg, A_reg);
-                real_pop(r2);
+                r2 = *stack--;
                 errexit();
                 A_reg = apply(r2, A_reg, nil, basic_elt(litvec, 0));
                 errexit();
@@ -599,46 +601,48 @@ next_opcode:   // This label is so that I can restart what I am doing
 // In particular a general call to an "apply3" function would have passed in
 // effect (apply3' F a1 a2 [a3]) with the fourth argument passed as a list.
 // When I use the bytecode op I do not do that.
-                real_pop(r1);
+                r1 = *stack--;
                 r2 = *stack;
                 if (is_symbol(r2))   // can optimise this case, I guess
                 {   f3 = qfn3(r2);
                     if ((qheader(r2) & SYM_TRACED) != 0)
                         A_reg = traced_call3(basic_elt(litvec, 0), f3, r2, r1, B_reg, A_reg);
                     else A_reg = f3(r2, r1, B_reg, A_reg);
-                    real_popv(1);
+                    stack--;
                     errexit();
                     continue;
                 }
                 A_reg = list3(stack[-1], B_reg, A_reg);
-                real_pop(r2);
+                r2 = *stack--;
                 errexit();
                 A_reg = apply(r2, A_reg, nil, basic_elt(litvec, 0));
                 errexit();
                 continue;
 
             case OP_APPLY4:
-                real_pop(r1, r3);
+                r1 = *stack--;
+                r3 = *stack--;
 // The 4 arguments are now r3, r1, B_reg, A_reg in that order, and as with
 // APPLY3 I do not wrap the final two arguments up in a list but instead pass
 // them individually.
                 r2 = *stack;
                 if (is_symbol(r2))   // can optimise this case, I guess
-                {   push(r2, r3, r1, B_reg);
-                    A_reg = ncons(A_reg);    // Make 4th arg a list!
-                    pop(B_reg, r1, r3, r2);
-                    errexit();
+                {   {   Save save(r2, r3, r1, B_reg);
+                        A_reg = ncons(A_reg);    // Make 4th arg a list!
+                        errexit();
+                        save.restore(r2, r3, r1, B_reg);
+                    }
                     f4up = qfn4up(r2);
                     if ((qheader(r2) & SYM_TRACED) != 0)
                         A_reg = traced_call4up(basic_elt(litvec, 0), f4up, r2, r3, r1, B_reg,
                                                A_reg);
                     else A_reg = f4up(r2, r3, r1, B_reg, A_reg);
-                    real_popv(1);
+                    stack--;
                     errexit();
                     continue;
                 }
                 A_reg = list4(r3, r1, B_reg, A_reg);
-                real_pop(r2);
+                r2 = *stack--;
                 errexit();
                 A_reg = apply(r2, A_reg, nil, basic_elt(litvec, 0));
                 errexit();
@@ -1493,11 +1497,13 @@ next_opcode:   // This label is so that I can restart what I am doing
             catcher:
                 A_reg = cons(A_reg, catch_tags);
                 catch_tags = A_reg;
-                real_push(fixnum_of_int(w+1), catch_tags, SPID_CATCH);
+                *++stack = fixnum_of_int(w+1);
+                *++stack = catch_tags;
+                *++stack = SPID_CATCH;
                 continue;
 
             case OP_UNCATCH:
-                real_popv(1); real_pop(r1); real_popv(1);
+                stack--; r1 = *stack--; stack--;
                 catch_tags = cdr(r1);
                 setcar(r1,  r1); setcdr(r1, nil);
                 continue;
@@ -1507,18 +1513,20 @@ next_opcode:   // This label is so that I can restart what I am doing
 // This needs to save A_reg, all the multiple-result registers,
 // and the exit_count. Also something to indicate that there had not been
 // an error.
-                real_popv(1); real_pop(r1); real_popv(1);
+                stack--; r1 = *stack--; stack--;
                 catch_tags = cdr(r1);
                 setcar(r1, r1); setcdr(r1, nil);
                 A_reg = Lmv_list(nil, A_reg);
-                real_push(nil, fixnum_of_int(UNWIND_NULL), A_reg);
+                *++stack = nil;
+                *++stack = fixnum_of_int(UNWIND_NULL);
+                *++stack = A_reg;
                 continue;
 
             case OP_UNPROTECT:
 // This must restore all the results (including exit_count). If the
 // PROTECT had been done by an unwinding then exit_reason and exit_tag
 // must also be restored, and the unwind condition must be re-instated.
-                real_pop(A_reg, B_reg, exit_tag);
+                A_reg = *stack--; B_reg = *stack--; exit_tag = *stack--;
                 exit_reason = int_of_fixnum(B_reg);
 // Here I have multiple values to restore.
                 exit_count = 0;
@@ -1555,7 +1563,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 }
 
             case OP_THROW:
-                real_pop(r1);       // the tag to throw to
+                r1 = *stack--;       // the tag to throw to
                 for (r2 = catch_tags; r2!=nil; r2=cdr(r2))
                     if (r1 == car(r2)) break;
                 if (r2==nil) return aerror1("throw: tag not found", r1);
@@ -1637,9 +1645,10 @@ next_opcode:   // This label is so that I can restart what I am doing
 // where the bodies of the functions so not do enough work that polling
 // for interrupts or for window-system updates will happen. Thus it seems
 // I need to perform a polling operation as part of the tail-call sequence.
-                push(r1);
-                poll_jump_back(A_reg);
-                pop(r1);
+                {   Save save(r1);
+                    poll_jump_back(A_reg);
+                    save.restore(r1);
+                }
 // If I have an (untraced) tailcall to a bytecoded function I can just reset
 // some pointers and go back to the top of the code of the bytecode
 // interpreter.
@@ -1683,9 +1692,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                 r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
                 f1 = qfn1(r1);
-                push(r1);
-                poll_jump_back(A_reg);
-                pop(r1);
+                {   Save save(r1);
+                    poll_jump_back(A_reg);
+                    save.restore(r1);
+                }
                 if (f1 == bytecoded_1 &&
                     (qheader(r1) & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
@@ -1699,7 +1709,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                                 fflength);
                     ffname[fflength] = 0;
                     stack = entry_stack;
-                    real_push(A_reg);
+                    *++stack = A_reg;
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
                     incCount(qcount(basic_elt(litvec, 0)),
@@ -1727,9 +1737,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                 r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
                 f2 = qfn2(r1);
-                push(r1);
-                poll_jump_back(A_reg);
-                pop(r1);
+                {   Save save(r1);
+                    poll_jump_back(A_reg);
+                    save.restore(r1);
+                }
                 if (f2 == bytecoded_2 &&
                     (qheader(r1) & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
@@ -1743,7 +1754,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                                 fflength);
                     ffname[fflength] = 0;
                     stack = entry_stack;
-                    real_push(B_reg, A_reg);
+                    *++stack = B_reg; *++stack = A_reg;
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
                     incCount(qcount(basic_elt(litvec, 0)),
@@ -1770,10 +1781,11 @@ next_opcode:   // This label is so that I can restart what I am doing
                 r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
                 f3 = qfn3(r1);
-                push(r1);
-                poll_jump_back(A_reg);
-                pop(r1);
-                real_pop(r2);
+                {   Save save(r1);
+                    poll_jump_back(A_reg);
+                    save.restore(r1);
+                }
+                r2 = *stack--;
                 if (f3 == bytecoded_3 &&
                     (qheader(r1) & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
@@ -1787,7 +1799,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                                 fflength);
                     ffname[fflength] = 0;
                     stack = entry_stack;
-                    real_push(r2, B_reg, A_reg);
+                    *++stack = r2; *++stack = B_reg; *++stack = A_reg;
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
                     incCount(qcount(basic_elt(litvec, 0)),
@@ -1816,7 +1828,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 // In some other JCALL cases I optimise if the called function is
 // bytecoded. I have not done that here (yet?).
                 poll_jump_back(A_reg);
-                real_pop(r2, r1);
+                r2 = *stack--; r1 = *stack--;
                 B_reg = list3star(r1, r2, B_reg, A_reg);
                 A_reg = basic_elt(litvec, fname);
                 debug_record_symbol(A_reg);
@@ -1867,9 +1879,9 @@ next_opcode:   // This label is so that I can restart what I am doing
                         continue;
                     case 7:
                         if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
-                        {   push(A_reg);
+                        {   Save save(A_reg);
                             print_traceset(fname, A_reg);
-                            pop(A_reg);
+                            save.restore(A_reg);
                             errexit();
                         }
                         setvalue(basic_elt(litvec, fname), A_reg);  // store into special var
@@ -1910,7 +1922,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     goto call1;
                 }
                 {   RAIIsave_codevec saver;
-                    real_push(A_reg); // the argument
+                    *++stack = A_reg; // the argument
                     if (stack >= stackLimit) respond_to_stack_event();
                     A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0),
                                                  stack-1);
@@ -1958,7 +1970,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     goto call2;
                 }
                 {   RAIIsave_codevec saver;
-                    real_push(B_reg, A_reg);
+                    *++stack =B_reg; *++stack = A_reg;
                     if (stack >= stackLimit) respond_to_stack_event();
                     A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0),
                                                  stack-2);
@@ -2018,7 +2030,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 debug_record_symbol(r1);
                 f3 = qfn3(r1);
 // CALL3:   A=fn(pop(),B,A);
-                real_pop(r2);
+                r2 = *stack--;
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call3(basic_elt(litvec, 0), f3, r1, r2, B_reg, A_reg);
                 else A_reg = f3(r1, r2, B_reg, A_reg);
@@ -2029,7 +2041,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_CALL4:
 // All but the last two args have been pushed onto the stack already.
 // The last two are in A and B.
-                real_pop(r2, r1);
+                r2 = *stack--; r1 = *stack--;
                 B_reg = list3star(r1, r2, B_reg, A_reg);
                 errexit();
 // Here the post-byte indicates the function to be called.
@@ -2099,7 +2111,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 f3 = three_arg_functions[next_byte];
                 debug_record_int("BUILTIN3", previous_byte);
 // CALL3:   A=fn(pop(),B,A);
-                real_pop(r1);
+                r1 = *stack--;
                 if (three_arg_traceflags[previous_byte])
                     A_reg = traced_call3(basic_elt(litvec, 0), f3,
                                          make_undefined_symbol(three_arg_names[previous_byte]),
@@ -2530,41 +2542,44 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_PUSH:
                 assert(A_reg != 0);
-                real_push(A_reg);
+                *++stack = A_reg;
                 continue;
 
             case OP_PUSHNIL:
-                real_push(nil);
+                *++stack = nil;
                 continue;
 
             case OP_PUSHNIL2:
-                real_push(nil, nil);
+                *++stack = nil;
+                *++stack = nil;
                 continue;
 
             case OP_PUSHNIL3:
-                real_push(nil, nil, nil);
+                *++stack = nil;
+                *++stack = nil;
+                *++stack = nil;
                 continue;
 
             case OP_POP:
                 B_reg = A_reg;
-                real_pop(A_reg);
+                A_reg = *stack--;
                 assert(A_reg != 0);
                 continue;
 
             case OP_LOSE:
-                real_popv(1);
+                stack--;
                 continue;
 
             case OP_LOSE2:
-                real_popv(2);
+                stack -= 2;
                 continue;
 
             case OP_LOSE3:
-                real_popv(3);
+                stack -= 3;
                 continue;
 
             case OP_LOSES:
-                real_popv(next_byte);
+                stack -= next_byte;
                 continue;
 
             case OP_CONS:                           // A_reg = cons(B_reg, A_reg);
@@ -2639,15 +2654,14 @@ next_opcode:   // This label is so that I can restart what I am doing
         for (;;)
         {   unwind_stack(entry_stack, true);
             if (stack == entry_stack) RETHROW;
-            real_pop(r1, r2);
+            r1 = *stack--; r2 = *stack--;
 // If the tag matches exit_tag then I must reset pc based on offset (r2)
 // and continue. NB need to restore A_reg from exit_value.
             w = int_of_fixnum(r2);
             if (car(r1) == SPID_PROTECT)
             {   // This is an UNWIND catcher
-                real_push(exit_tag, fixnum_of_int(exit_reason));
-                A_reg = Lmv_list(nil, exit_value);
-                real_push(A_reg);
+                *++stack =exit_tag; *++stack = fixnum_of_int(exit_reason);
+                *++stack = Lmv_list(nil, exit_value);
                 ppc = w;
                 A_reg = exit_value;
                 goto next_opcode;

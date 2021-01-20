@@ -824,9 +824,9 @@ LispObject borrow_vector(int tag, int type, size_t n)
         for (i=0; i<chunks; i++)
         {   LispObject v1;
             int k = i==chunks-1 ? last_size : VECTOR_CHUNK_BYTES;
-            push(v);
+            Save save(v);
             v1 = borrow_basic_vector(tag, type, k+CELL);
-            pop(v);
+            save.restore(v);
             size_t k1 = k/CELL;
             for (size_t j=0; j<k1; j++)
                 basic_elt(v1, j) = nil;

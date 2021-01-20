@@ -499,29 +499,25 @@ static LispObject setq_fn(LispObject args, LispObject env)
 
 // tagbody does the bit of PROG that covers labels.
 
-LispObject tagbody_fn(LispObject args, LispObject env)
-{   LispObject f, p, my_env;
+LispObject tagbody_fn(LispObject args1, LispObject env1)
+{
 // Bind the labels that occur in this block.  Note that I invalidate
 // these bindings if I ever exit from this block, so that nobody
 // even thinks that they can use (go xx) to get back in.
-    stackcheck(args, env);
+    stackcheck(args1, env1);
     errexit();
     STACK_SANITY;
-    real_push(env, args);
+    RealSave save(args1, env1, nil, env1);
+    LispObject &args = save.val(1);
+    LispObject &env  = save.val(2);
+    LispObject &p    = save.val(3);
+    LispObject &oldenv = save.val(4);
     for (p=args; consp(p); p=cdr(p))
     {   LispObject w = car(p);
         if (!consp(w))
-        {   LispObject w1;
-            Save save(p);
-            {   Save save1(env);
-                w1 = cons(fixnum_of_int(1), p);
-                save1.restore(env);
-            }
-            env = cons(w1, env);
+        {   w = cons(fixnum_of_int(1), p);
+            env = cons(w, env);
             errexit();
-            env = cons(w1, env);
-            errexit();
-            save.restore(p);
         }
     }
 // That has put my new version of env with bindings of the form
@@ -530,65 +526,69 @@ LispObject tagbody_fn(LispObject args, LispObject env)
 //    env = ( ... (1 labelname <continuation>) ... )
 // where bindings for variable in the environment would have a symbol
 // so the integer 1 here distinguishes these as label bindings.
-    real_pop(args);
 // (go xx) sets exit_tag to xx, which is then noticed next time tagbody
 // is about to do anything.
     for (p=args; consp(p); p = cdr(p))
-    {   f = car(p);
-        if (!is_cons(f)) continue; // Do not evaluate labels
-        push(p, env, f);
+    {
+// Within this block args will store the particular statement being
+// processed.
+        args = car(p);
+        if (!is_cons(args)) continue; // Do not evaluate labels
         TRY
-            static_cast<void>(eval(f, env));
+            eval(args, env);
         CATCH(LispGo)
             int _reason = exit_reason;
-            pop(f, env, p);
-            my_env = stack[0];
 // I need to do this search. Well in the code that implemented GO I checked
 // that the destination label was bound as a label. That was so that I could
 // give a decent diagnostic if it was not. The scan here is to see if it is
 // a label in THIS level of a tagbody... and if not I will hand it upwards.
-            for (p=env; p!=my_env; p=cdr(p)) // scan label bindings
+            for (p=env; p!=oldenv; p=cdr(p)) // scan label bindings
             {   LispObject w = car(p);
                 if (w != exit_tag) continue;
 // Now I have found the label I needed to jump to. Hoorah.
                 p = cdr(w);
                 break;
             }
-            if (p != my_env) continue; // take the GOTO
+// At the end of the loop either p==oldenv in which case I had not found
+// the desired label as one associated with this particular tagbody, or
+// it is the new place within the tagbody for me to resume execution.
+            if (p != oldenv) continue; // take the GOTO
 // If I drop out of the loop that means that the target label was
 // not present in this block. Tidy up the label bindings to be very
-// certain nobody can re-use them.
-            while (env != my_env)
+// certain nobody can re-use them. The risk here would be if within a
+// tagbody somebody has saved the closure of (eg) a lambda-expression that
+// contained a relevent GO. This is not something that could every happen
+// in Standard Lisp, but it could in Common Lisp!
+            while (env != oldenv)
             {   setcar(car(env), fixnum_of_int(2));
                 env = cdr(env);
             }
-// Because this is a sort of error I will display a message. It was for
-// the benefit of this code that I had stacked f, the expression that
-// contained the (GO ..) statement.
+// Because this is a sort of error I will display a message. Well with
+// Common Lisp one would be entitled to perform a GO that exited through
+// multiple levels, and a message here would not be appropriate
+#ifndef COMMON
             if (SHOW_FNAME)
             {   err_printf("\nEvaluating: ");
-                loop_print_error(f);
+                loop_print_error(args);
             }
+#endif // COMMON
 // Re-throw the LispGo exception to try again at some outer level.
             exit_reason = _reason;
             RETHROW;
         ANOTHER_CATCH(LispError)
             int _reason = exit_reason;
-            pop(f, env, p);
             if (SHOW_FNAME)
             {   err_printf("\nEvaluating: ");
-                loop_print_error(f);
+                loop_print_error(args);
             }
 // Re-throw some other exception that counted as an error.
             exit_reason = _reason;
             RETHROW;
         END_CATCH;
-        pop(f, env, p);
     }
 // This is where I drop off the end of the tagbody, so I tidy up and
 // return nil.
-    real_pop(my_env);
-    while (env != my_env)
+    while (env != oldenv)
     {   setcar(car(env), fixnum_of_int(2));
         env = cdr(env);
     }
@@ -675,18 +675,17 @@ static LispObject unless_fn(LispObject args, LispObject env)
     else return progn_fn(cdr(args), env);
 }
 
-static LispObject unwind_protect_fn(LispObject args, LispObject env)
-{   LispObject r = nil, rl = nil;
-    STACK_SANITY;
-    int nargs = 0, i;
-    if (!consp(args)) return onevalue(nil);
-    stackcheck(args, env);
-    push(args, env);
-    r = car(args);
+static LispObject unwind_protect_fn(LispObject args1, LispObject env1)
+{   STACK_SANITY;
+    if (!consp(args1)) return onevalue(nil);
+    stackcheck(args1, env1);
+    RealSave save(args1, env1);
+    LispObject &args = save.val(1);
+    LispObject &env = save.val(2);
+    LispObject r;
     TRY
-        r = eval(r, env);
+        r = eval(car(args), env);
     CATCH(LispException)
-        pop(env, args);
         LispObject xt, xv;
         int xc, xr;
 // Here I am in the process of exiting because of a throw, return-from,
@@ -698,32 +697,30 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
 //  (c) exit_count     number of values (throw, return-from)
 //  (d) mv2,...        as indicated by exit_count
 //  (e) exit_reason    what it says.
-        xt = qvalue(trap_time);
+        LispObject savetraptime = qvalue(trap_time);
         setvalue(trap_time, nil); // No timeouts in recovery code
-        push(xt);
         xv = exit_value;
         xt = exit_tag;
         xc = exit_count;
         xr = exit_reason;
-        push(xv, xt);
-        for (i=xc; i>=2; i--)
-            rl = cons_no_gc((&mv_2)[i-2], rl);
-        rl = cons_gc_test(rl);
+        Save save1(savetraptime, xv, xt);
+        LispObject rl = nil;
+        for (int i=xc; i>=2; i--)
+        {   rl = cons((&mv_2)[i-2], rl);
+            errexit();
+        }
 // I am going to take the view that if there is a failure during execution
 // of the cleanup forms then full cleanup will not be complete, and this
 // can include the case of "cons" failing right before anything else.
-        errexit();
-        push(rl);
+        Save save2(rl);
 // Now I will obey the cleanup 
         while (is_cons(args = cdr(args)) && args!=nil)
-        {   LispObject w = car(args);
-            push(args, env);
-            static_cast<void>(eval(w, env));
-            pop(env, args);
+        {   eval(car(args), env);
             errexit();
         }
-        pop(rl, xt, xv);
-        for (i = 2; i<=xc; i++)
+        save2.restore(rl);
+        save1.restore(savetraptime, xv, xt);
+        for (int i = 2; i<=xc; i++)
         {   (&mv_2)[i-2] = car(rl);
             rl = cdr(rl);
         }
@@ -731,30 +728,24 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
         exit_tag   = xt;
         exit_count = xc;
         exit_reason = xr;
-        pop(xt);
-        setvalue(trap_time, xt);
+        setvalue(trap_time, savetraptime);
         RETHROW;                   // reinstate the exception
     END_CATCH;
-    pop(env, args);
 // Now code (just like multiple-value-prog1) that evaluates the
 // cleanup forms in the case that the protected form exits normally.
-    nargs = exit_count;
-    real_push(args, env);
-    for (i=nargs; i>=2; i--)
-        rl = cons_no_gc((&mv_2)[i-2], rl);
-    rl = cons_gc_test(rl);
-    errexit();
-    real_push(rl);
-    LispObject &xenv = stack[-1];
-    LispObject &xargs = stack[-2];
-    while (is_cons(xargs = cdr(xargs)) && xargs!=nil)
-    {   LispObject w = car(xargs);
-        static_cast<void>(eval(w, xenv));
+    int nargs = exit_count;
+    LispObject rl = nil;
+    for (int i=nargs; i>=2; i--)
+    {   rl = cons((&mv_2)[i-2], rl);
         errexit();
     }
-    real_pop(rl);
-    real_popv(2);
-    for (i = 2; i<=nargs; i++)
+    Save save3(rl);
+    while (is_cons(args = cdr(args)) && args!=nil)
+    {   eval(car(args), env);
+        errexit();
+    }
+    save3.restore(rl);
+    for (int i=2; i<=nargs; i++)
     {   (&mv_2)[i-2] = car(rl);
         rl = cdr(rl);
     }

@@ -94,7 +94,7 @@ LispObject bytecoded_0(LispObject def)
 // of SAVE_CODEVEC can be removed, and that should at least slightly
 // speed things up.
     SAVE_CODEVEC;
-    real_push(def);
+    RealSave save(def);
     LispObject r;
     TRY
         r = bytestream_interpret(CELL-TAG_VECTOR, def, stack);

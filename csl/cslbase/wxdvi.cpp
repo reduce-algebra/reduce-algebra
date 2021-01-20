@@ -1,4 +1,4 @@
-// wxdvi.cpp                               Copyright (C) 2016-2020 Codemist
+// wxdvi.cpp                               Copyright (C) 2016-2021 Codemist
 
 // A sample wxWidgets application to display dvi files.
 // This will ONLY cope with a set of fonts that it itself
@@ -12,7 +12,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -560,7 +560,7 @@ int32_t dviPanel::s4()
 
 // The following two macros are syntactically delicate - so BEWARE.
 
-#define push()         \
+#define pushDVI()      \
   stack[stackp++] = h; \
   stack[stackp++] = v; \
   stack[stackp++] = w; \
@@ -568,7 +568,7 @@ int32_t dviPanel::s4()
   stack[stackp++] = y; \
   stack[stackp++] = z
 
-#define pop()          \
+#define popDVI()       \
   z = stack[--stackp]; \
   y = stack[--stackp]; \
   x = stack[--stackp]; \
@@ -866,10 +866,10 @@ void dviPanel::RenderDVI()
                 case 140: // end of page
                     continue;
                 case 141: // push
-                    push();
+                    pushDVI();
                     continue;
                 case 142: // pop
-                    pop();
+                    popDVI();
                     continue;
                 case 143: // right1
                     h += s1();

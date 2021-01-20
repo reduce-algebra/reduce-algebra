@@ -376,31 +376,20 @@ LispObject om_setLispProperty(LispObject obj, LispObject name,
 // Exposed OpenMath Device manipulation functions.
 //
 
-LispObject om_openFileDev(LispObject env, int nargs, ...)
+LispObject om_openFileDev(LispObject env, LispObject lname, LispObject lmode, LispObject lenc)
 // Opens a file and creates an OpenMath device for it. The return value is the
 // LISP object which wraps the created device. The parameters are:
 //   fname  - string    - the name of the file to open.
 //   fmode  - string    - the mode, as passed to the fopen routine.
 //   fenc   - string    - the OpenMath encoding type of the file.
 //
-{   std::va_list args;
-    LispObject lname, lmode, lenc;
     char *fname, *fmode;
     OMencodingType fenc;
     std::FILE *f;
     OMdev dev;
     int32_t len = 0;
     LispObject lispDev;
-
-    // Unpack the parameters into Lisp_Objects.
-    argcheck(nargs, 3, "om_openFileDev");
-    va_start(args, nargs);
-    lname = va_arg(args, LispObject);
-    lmode = va_arg(args, LispObject);
-    lenc = va_arg(args, LispObject);
-    va_end(args);
-
-    push(lname, lmode, lenc);
+    Save save(lname, lmode, lenc);
 
     // Convert the parameters into their C equivalents.
     if (!is_vector(lname) ||
@@ -418,10 +407,10 @@ LispObject om_openFileDev(LispObject env, int nargs, ...)
     if (!is_fixnum(lenc))
         return aerror("om_openFileDev");
     // This gets OMencodingTypes as an integer then casts it to OMencodingType.
-//   * That may be a bit dodgy...
+    //   * That may be a bit dodgy...
     fenc = om_toEncodingType(lenc);
 
-    pop(lname, lmode, lenc);
+    save.restore(lname, lmode, lenc);
 
     f = std::fopen(fname, fmode);
     if (f == nullptr)
@@ -453,31 +442,27 @@ LispObject om_openStringDev(LispObject env, LispObject lstr,
     char **pstr = nullptr;
     OMencodingType enc;
     OMdev dev;
-    LispObject ldev;
 
-    push(lstr, lenc);
-
+    Save save(lenc);
     pstr = om_toCString(lstr);
+    errexit();
+    save.restore(lenc);
 
     enc = om_toEncodingType(lenc);
+    errexit();
 
     dev = OMmakeDevice(enc, OMmakeIOString(pstr));
-    ldev = om_fromDev(dev);
-
-    pop(lstr, lenc);
-    return onevalue(ldev);
+    return om_fromDev(dev);
 }
 
 
 LispObject om_closeDev(LispObject env, LispObject ldev)
 {   OMdev dev;
 
-    push(ldev);
-
     dev = om_toDev(ldev);
+    errexit();
     OMcloseDevice(dev);
 
-    pop(ldev);
     return lisp_true;
 }
 
@@ -487,19 +472,19 @@ LispObject om_setDevEncoding(LispObject env, LispObject ldev,
 {   OMdev dev;
     OMencodingType enc;
 
-    push(ldev, lenc);
+    Save save(lenc);
 
     dev = om_toDev(ldev);
+    errexit();
     if (!dev)
         return aerror("om_setDevEncoding: invalid device");
 
     if (!is_fixnum(lenc))
         return aerror("om_setDevEncoding: invalid encoding");
     // This gets OMencodingTypes as an integer then casts it to OMencodingType.
-//   * That may be a bit dodgy...
+   //   * That may be a bit dodgy...
+    save.restore(ldev);
     enc = om_toEncodingType(lenc);
-
-    pop(ldev, lenc);
 
     OMsetDeviceEncoding(dev, enc);
     return onevalue(om_fromDev(dev));
@@ -515,15 +500,11 @@ LispObject om_makeConn(LispObject env, LispObject ltimeout)
 {   OMconn conn;
     int32_t timeout;
 
-    push(ltimeout);
-
     if (!is_fixnum(ltimeout))
         return aerror("om_makeConn: timeout value must be a fixnum");
 
     timeout = int_of_fixnum(ltimeout);
     conn = OMmakeConn(timeout);
-
-    pop(ltimeout);
 
     return onevalue(om_fromConn(conn));
 }
@@ -533,19 +514,14 @@ LispObject om_closeConn(LispObject env, LispObject lconn)
 {   OMconn conn;
     OMstatus status;
 
-    push(lconn);
-
     conn = om_toConn(lconn);
     if (!conn)
         return aerror("om_toConn");
 
-    pop(lconn);
-
     status = OMconnClose(conn);
     if (status != OMsuccess)
         return om_error(status);
-    else
-        return lisp_true;
+    else return lisp_true;
 }
 
 
@@ -553,13 +529,10 @@ LispObject om_getConnInDev(LispObject env, LispObject lconn)
 {   OMconn conn;
     OMdev dev;
 
-    push(lconn);
-
     conn = om_toConn(lconn);
+    errexit();
     if (!conn)
         return aerror("om_toConn");
-
-    pop(lconn);
 
     dev = OMconnIn(conn);
     return onevalue(om_fromDev(dev));
@@ -570,13 +543,10 @@ LispObject om_getConnOutDev(LispObject env, LispObject lconn)
 {   OMconn conn;
     OMdev dev;
 
-    push(lconn);
-
     conn = om_toConn(lconn);
+    errexit();
     if (!conn)
         return aerror("om_toConn");
-
-    pop(lconn);
 
     dev = OMconnOut(conn);
     return om_fromDev(dev);
@@ -587,42 +557,34 @@ LispObject om_getConnOutDev(LispObject env, LispObject lconn)
 // Exposed OpenMath client/server functions.
 //
 
-LispObject om_connectTCP(LispObject env, int nargs, ...)
-{   std::va_list args;
-    LispObject lconn, lhost, lport;
-    OMconn conn;
+LispObject om_connectTCP(LispObject env, LispObject lconn,
+                         LispObject lhost, LispObject lport)
+{   OMconn conn;
     char *host = nullptr;
     int32_t hostlen = 0;
     int32_t port;
     OMstatus status;
 
-
-    // Unpack the parameters into Lisp_Objects.
-    argcheck(nargs, 3, "om_connectTCP");
-    va_start(args, nargs);
-    lconn = va_arg(args, LispObject);
-    lhost = va_arg(args, LispObject);
-    lport = va_arg(args, LispObject);
-    va_end(args);
-
-    push(lconn, lhost, lport);
-
-    // Convert the parameters into their C equivalents.
-    conn = om_toConn(lconn);
-    if (!conn)
-        return aerror("om_toConn");
-
-    if (!stringp(lhost))
-        return aerror("om_connectTCP: host name must be a string");
-    host = get_string_data(lhost, "om_putString", hostlen);
-    if (host != nullptr)
-        host[hostlen] = '\0';
-
     if (!is_fixnum(lport))
         return aerror("om_connectTCP: port number must be a fixnum");
-    port = int_of_fixnum(lport);
 
-    pop(lconn, lhost, lport);
+    {   Save save(lhost);
+
+    // Convert the parameters into their C equivalents.
+        conn = om_toConn(lconn);
+        errexit();
+        if (!conn)
+            return aerror("om_toConn");
+        save.restore(lhost);
+    }
+    if (!stringp(lhost))
+        return aerror("om_connectTCP: host name must be a string");
+
+    host = get_string_data(lhost, "om_putString", hostlen);
+    errexit();
+    if (host != nullptr)
+        host[hostlen] = '\0';
+    port = int_of_fixnum(lport);
 
     status = OMconnTCP(conn, host, port);
     if (status != OMsuccess)
@@ -638,17 +600,14 @@ LispObject om_bindTCP(LispObject env, LispObject lconn,
     int32_t port;
     OMstatus status;
 
-    push(lconn, lport);
+    if (!is_fixnum(lport))
+        return aerror("om_bindTCP: port number must be a fixnum");
 
     conn = om_toConn(lconn);
     if (!conn)
         return aerror("om_toConn");
 
-    if (!is_fixnum(lport))
-        return aerror("om_bindTCP: port number must be a fixnum");
     port = int_of_fixnum(lport);
-
-    pop(lconn, lport);
 
     status = OMbindTCP(conn, port);
     if (status != OMsuccess)
@@ -1037,8 +996,7 @@ LispObject om_putString(LispObject env, LispObject ldev,
 }
 
 
-LispObject om_putSymbol(LispObject env, LispObject ldev,
-                        LispObject val)
+LispObject om_putSymbol(LispObject env, LispObject ldev, LispObject val)
 // This routine expects val to be a cons cell where the first element is the
 // name of the content dictionary and the second (and final) element is the
 // name of the symbol.
@@ -1062,41 +1020,38 @@ LispObject om_putSymbol(LispObject env, LispObject ldev,
 }
 
 
-LispObject om_putSymbol2(LispObject env, int nargs, ...)
+LispObject om_putSymbol2(LispObject env,
+                         LispObject ldev, LispObject lcd, LispObject lname)
 //
 // A different form of putSymbol, where the cd and symbol names are given as strings.
 // The parameters are: (om-putSymbol omdevice "cdname" "symbolname")
 //
-{   std::va_list args;
-    LispObject ldev;
-    LispObject lcd, lname;
-    OMdev dev;
+{   OMdev dev;
     char *cd, *name;
     int32_t cdLen = 0, nameLen = 0;
     OMstatus status;
 
-    // Get the arguments from the arglist.
-    argcheck(nargs, 3, "om_putSymbol2");
-    va_start(args, nargs);
-    ldev = va_arg(args, LispObject);
-    lcd = va_arg(args, LispObject);
-    lname = va_arg(args, LispObject);
-    va_end(args);
-
     // err_printf("[om_putSymbol2] about to convert params to C equivalents...\n");
 
     // Convert the parameters into their C equivalents.
-    dev = om_toDev(ldev);
-    if (!dev)
-        return aerror("om_toDev");
+    {   Save save(lcd, lname);
+        dev = om_toDev(ldev);
+        errexit();
+        if (!dev)
+            return aerror("om_toDev");
+        save.restore(lcd, lname);
+    }
 
     if (!is_vector(lcd) || !(type_of_header(vechdr(lcd)) == TYPE_STRING))
         return aerror("om_putSymbol2");
+    Save save(lname);
     cd = get_string_data(lcd, "om_putSymbol2", cdLen);
+    errexit();
     if (cd == nullptr)
     {   status = OMinternalError;
         return om_error(status);
     }
+    save.restore(lname);
 
     // err_printf("[om_putSymbol2] converted cd name (%s)\n", cd);
 
@@ -1504,13 +1459,9 @@ LispObject om_getSymbol(LispObject env, LispObject ldev)
     int cdLen, nameLen;
     LispObject cdstr, namestr, obj;
 
-    push(ldev);
-
     dev = om_toDev(ldev);
     if (dev == nullptr)
         return aerror("om_toDev");
-
-    pop(ldev);
 
     status = OMgetSymbolLength(dev, &cdLen, &nameLen);
     if (status != OMsuccess)
@@ -1530,9 +1481,12 @@ LispObject om_getSymbol(LispObject env, LispObject ldev)
         obj = om_error(status);
     else
     {   cdstr = make_string(cd);
+        errexit();
+        Save save(cdstr);
         namestr = make_string(name);
-        // FIXME: is this needed?  push(cdstr, namestr);
-        obj = cons(cdstr, cons(namestr, nil));
+        errexit();
+        errexit();
+        obj = list2(cdstr, namestr);
     }
 
     delete [] cd;
@@ -1623,70 +1577,70 @@ LispObject om_stringPtrToString(LispObject env, LispObject lpstr)
 // This is OUT OF DATE code and will not at present work!
 
 setup_type const om_setup[] =
-{   /* LISP Name */         /* Unary */         /* Binary */        // Nary
-    {"om-openFileDev",      wrong_no_3a,        wrong_no_3b,        om_openFileDev},
-    {"om-openStringDev",            too_few_2,      om_openStringDev,   wrong_no_2},
-    {"om-closeDev",         om_closeDev,        too_many_1,     wrong_no_1},
-    {"om-setDevEncoding",           too_few_2,      om_setDevEncoding,  wrong_no_2},
+{
+    DEF_3("om-openFileDev",      om_openFileDev),
+    DEF_2("om-openStringDev",    om_openStringDev),
+    DEF_1("om-closeDev",         om_closeDev),
+    DEF_2("om-setDevEncoding",   om_setDevEncoding),
 
-    {"om-makeConn",         om_makeConn,        too_many_1,     wrong_no_1},
-    {"om-closeConn",        om_closeConn,       too_many_1,     wrong_no_1},
-    {"om-getConnInDev",     om_getConnInDev,    too_many_1,     wrong_no_1},
-    {"om-getConnOutDev",            om_getConnOutDev,   too_many_1,     wrong_no_1},
+    DEF_1("om-makeConn",         om_makeConn),
+    DEF_1("om-closeConn",        om_closeConn),
+    DEF_1("om-getConnInDev",     om_getConnInDev),
+    DEF_1("om-getConnOutDev",    om_getConnOutDev),
 
-    {"om-connectTCP",       wrong_no_3a,        wrong_no_3b,        om_connectTCP},
-    {"om-bindTCP",          too_few_2,      om_bindTCP,     wrong_no_2},
+    DEF_3("om-connectTCP",       om_connectTCP),
+    DEF_2("om-bindTCP",          om_bindTCP),
 
-    {"om-putApp",           om_putApp,      too_many_1,     wrong_no_1},
-    {"om-putEndApp",        om_putEndApp,       too_many_1,     wrong_no_1},
-    {"om-putAtp",           om_putAtp,      too_many_1,     wrong_no_1},
-    {"om-putEndAtp",        om_putEndAtp,       too_many_1,     wrong_no_1},
-    {"om-putAttr",          om_putAttr,     too_many_1,     wrong_no_1},
-    {"om-putEndAttr",       om_putEndAttr,      too_many_1,     wrong_no_1},
-    {"om-putBind",          om_putBind,     too_many_1,     wrong_no_1},
-    {"om-putEndBind",       om_putEndBind,      too_many_1,     wrong_no_1},
-    {"om-putBVar",          om_putBVar,     too_many_1,     wrong_no_1},
-    {"om-putEndBVar",       om_putEndBVar,      too_many_1,     wrong_no_1},
-    {"om-putError",         om_putError,        too_many_1,     wrong_no_1},
-    {"om-putEndError",      om_putEndError,     too_many_1,     wrong_no_1},
-    {"om-putObject",        om_putObject,       too_many_1,     wrong_no_1},
-    {"om-putEndObject",     om_putEndObject,    too_many_1,     wrong_no_1},
+    DEF_1("om-putApp",           om_putApp),
+    DEF_1("om-putEndApp",        om_putEndApp),
+    DEF_1("om-putAtp",           om_putAtp),
+    DEF_1("om-putEndAtp",        om_putEndAtp),
+    DEF_1("om-putAttr",          om_putAttr),
+    DEF_1("om-putEndAttr",       om_putEndAttr),
+    DEF_1("om-putBind",          om_putBind),
+    DEF_1("om-putEndBind",       om_putEndBind),
+    DEF_1("om-putBVar",          om_putBVar),
+    DEF_1("om-putEndBVar",       om_putEndBVar),
+    DEF_1("om-putError",         om_putError),
+    DEF_1("om-putEndError",      om_putEndError),
+    DEF_1("om-putObject",        om_putObject),
+    DEF_1("om-putEndObject",     om_putEndObject),
 
-    {"om-putInt",           too_few_2,      om_putInt,      wrong_no_2},
-    {"om-putFloat",         too_few_2,      om_putFloat,        wrong_no_2},
-    {"om-putByteArray",     too_few_2,      om_putByteArray,    wrong_no_2},
-    {"om-putVar",           too_few_2,      om_putVar,      wrong_no_2},
-    {"om-putString",        too_few_2,      om_putString,       wrong_no_2},
-    {"om-putSymbol",        too_few_2,      om_putSymbol,       om_putSymbol2},
+    DEF_2("om-putInt",           om_putInt),
+    DEF_2("om-putFloat",         om_putFloat),
+    DEF_2("om-putByteArray",     om_putByteArray),
+    DEF_2("om-putVar",           om_putVar),
+    DEF_2("om-putString",        om_putString),
+    {"om-putSymbol", G0Wother, G1Wother, om_putSymbol, om_putSymbol2, G4Wother},
 
-    {"om-getApp",           om_getApp,      too_many_1,     wrong_no_1},
-    {"om-getEndApp",        om_getEndApp,       too_many_1,     wrong_no_1},
-    {"om-getAtp",           om_getAtp,      too_many_1,     wrong_no_1},
-    {"om-getEndAtp",        om_getEndAtp,       too_many_1,     wrong_no_1},
-    {"om-getAttr",          om_getAttr,     too_many_1,     wrong_no_1},
-    {"om-getEndAttr",       om_getEndAttr,      too_many_1,     wrong_no_1},
-    {"om-getBind",          om_getBind,     too_many_1,     wrong_no_1},
-    {"om-getEndBind",       om_getEndBind,      too_many_1,     wrong_no_1},
-    {"om-getBVar",          om_getBVar,     too_many_1,     wrong_no_1},
-    {"om-getEndBVar",       om_getEndBVar,      too_many_1,     wrong_no_1},
-    {"om-getError",         om_getError,        too_many_1,     wrong_no_1},
-    {"om-getendError",      om_getEndError,     too_many_1,     wrong_no_1},
-    {"om-getObject",        om_getObject,       too_many_1,     wrong_no_1},
-    {"om-getEndObject",     om_getEndObject,    too_many_1,     wrong_no_1},
+    DEF_1("om-getApp",           om_getApp),
+    DEF_1("om-getEndApp",        om_getEndApp),
+    DEF_1("om-getAtp",           om_getAtp),
+    DEF_1("om-getEndAtp",        om_getEndAtp),
+    DEF_1("om-getAttr",          om_getAttr),
+    DEF_1("om-getEndAttr",       om_getEndAttr),
+    DEF_1("om-getBind",          om_getBind),
+    DEF_1("om-getEndBind",       om_getEndBind),
+    DEF_1("om-getBVar",          om_getBVar),
+    DEF_1("om-getEndBVar",       om_getEndBVar),
+    DEF_1("om-getError",         om_getError),
+    DEF_1("om-getendError",      om_getEndError),
+    DEF_1("om-getObject",        om_getObject),
+    DEF_1("om-getEndObject",     om_getEndObject),
 
-    {"om-getInt",           om_getInt,      too_many_1,     wrong_no_1},
-    {"om-getFloat",         om_getFloat,        too_many_1,     wrong_no_1},
-    {"om-getByteArray",     om_getByteArray,    too_many_1,     wrong_no_1},
-    {"om-getVar",           om_getVar,      too_many_1,     wrong_no_1},
-    {"om-getString",        om_getString,       too_many_1,     wrong_no_1},
-    {"om-getSymbol",        om_getSymbol,       too_many_1,     wrong_no_1},
+    DEF_1("om-getInt",           om_getInt),
+    DEF_1("om-getFloat",         om_getFloat),
+    DEF_1("om-getByteArray",     om_getByteArray),
+    DEF_1("om-getVar",           om_getVar),
+    DEF_1("om-getString",        om_getString),
+    DEF_1("om-getSymbol",        om_getSymbol),
 
-    {"om-getType",          om_getType,     too_many_1,     wrong_no_1},
+    DEF_1("om-getType",          om_getType),
 
-    {"om-stringToStringPtr",     om_stringToStringPtr,      too_many_1,     wrong_no_1},
-    {"om-stringPtrToString",     om_stringPtrToString,      too_many_1,     wrong_no_1},
+    DEF_1("om-stringToStringPtr",om_stringToStringPtr),
+    DEF_1("om-stringPtrToString",om_stringPtrToString),
 
-    {nullptr,  nullptr,  nullptr,  nullptr}
+    {nullptr,  nullptr,  nullptr,  nullptr, nullptr, nullptr}
 };
 
 #endif // OPENMATH

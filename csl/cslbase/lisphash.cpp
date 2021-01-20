@@ -333,11 +333,16 @@ LispObject Lmkhash_3(LispObject env, LispObject size,
     }
     size_t bits = 3;
     LispObject v1 = get_vector_init(CELL*((1<<bits)+1), SPID_HASHEMPTY);
-    push(v1);
-    LispObject v2 = get_vector_init(CELL*((1<<bits)+1), SPID_HASHEMPTY);
-    push(v2);
-    LispObject v = get_basic_vector_init(6*CELL, nil);
-    pop(v2, v1);
+    LispObject v, v2;
+    {   Save save(v1);
+        v2 = get_vector_init(CELL*((1<<bits)+1), SPID_HASHEMPTY);
+        errexit();
+        Save save1(v2);
+        v = get_basic_vector_init(6*CELL, nil);
+        errexit();
+        save1.restore(v2);
+        save.restore(v1);
+    }
     write_barrier(&basic_elt(v, HASH_FLAVOUR), flavour);
 // I am being tricky here - when I write a fixnum into the vector I
 // do not trigger the write-barrier because I know that a fixnum is not
@@ -376,9 +381,12 @@ LispObject Lmkhashset(LispObject env, LispObject flavour)
     if (!is_fixnum(flavour)) return aerror1("mkhashset", flavour);
     size_t bits = 3;
     LispObject v1 = get_vector_init(CELL*((1<<bits)+1), SPID_HASHEMPTY);
-    push(v1);
-    LispObject v = get_basic_vector_init(6*CELL, nil);
-    pop(v1);
+    LispObject v;
+    {   Save save(v1);
+        v = get_basic_vector_init(6*CELL, nil);
+        errexit();
+        save.restore(v1);
+    }
     write_barrier(&basic_elt(v, HASH_FLAVOUR), flavour);
     basic_elt(v, HASH_COUNT) = fixnum_of_int(
                                    0);  // current number of items stored.
@@ -966,15 +974,17 @@ LispObject Lmap_hash(LispObject env, LispObject fn, LispObject tab)
     {   LispObject key = elt(v, i);
         if (key == SPID_HASHEMPTY) continue;
         if (v1 == nil)
-        {   push(v, v1, fn);
+        {   Save save(v, v1, fn);
             Lapply1(nil, fn, key);
-            pop(fn, v1, v);
+            errexit();
+            save.restore(v, v1, fn);
         }
         else
         {   LispObject val = elt(v1, i);
-            push(v, v1, fn);
+            Save save(v, v1, fn);
             Lapply2(nil, fn, key, val);
-            pop(fn, v1, v);
+            errexit();
+            save.restore(v, v1, fn);
         }
     }
     return onevalue(nil);
@@ -999,10 +1009,11 @@ LispObject Lhash_contents(LispObject env, LispObject tab)
     for (i=0; i<size; i++)
     {   LispObject key = elt(v, i);
         if (key == SPID_HASHEMPTY) continue;
-        push(v, v1);
+        Save save(v, v1);
         if (v1 == nil) r = cons(key, r);
         else r = acons(key, elt(v1, i), r);
-        pop(v1, v);
+        errexit();
+        save.restore(v, v1);
     }
 // The ordering of items in the result a-list is unpredictable.
 // That is probably quite reasonable.
@@ -1017,11 +1028,13 @@ LispObject Lget_hash_1(LispObject env, LispObject key)
 // The definition implemented here is as required by Reduce in
 // the file matrix.red...  In the long term this is unsatisfactory.
     LispObject r;
-    push(key);
+    Save save(key);
     r = Lget_hash(nil, key, sys_hash_table, nil);
-    pop(key);
+    errexit();
+    save.restore(key);
     if (mv_2 != nil)
     {   r = cons(key, r);
+        errexit();
     }
     return onevalue(r);
 #endif
@@ -1070,16 +1083,19 @@ LispObject Lput_hash(LispObject env,
 // have to get 80% full before expanding. If there are many deletions this
 // will tend to keep tables sparse all the time.
         if (2*load >= h_table_size)
-        {   push(key, val);
-            h_shift--;
-            push(tab);
-            LispObject newkeys =
-                get_vector_init(CELL*(2*h_table_size+1), SPID_HASHEMPTY);
-            push(newkeys);
-            LispObject newvals = v_table == nil ? nil :
-                                 get_vector_init(CELL*(2*h_table_size+1), SPID_HASHEMPTY);
-            pop(newkeys, tab);
-            pop(val, key);
+        {   LispObject newkeys, newvals;
+            {   Save save(key, val, tab);
+                h_shift--;
+                newkeys =
+                    get_vector_init(CELL*(2*h_table_size+1), SPID_HASHEMPTY);
+                errexit();
+                Save save1(newkeys);
+                newvals = (v_table == nil) ? nil :
+                    get_vector_init(CELL*(2*h_table_size+1), SPID_HASHEMPTY);
+                errexit();
+                save1.restore(newkeys);
+                save.restore(key, val, tab);
+            }
 // Allocating the new table might trigger garbage collection, and that
 // could mark the table as in need of rehashing. Well I am about to
 // rehash everything already, so I can cancel any new request.

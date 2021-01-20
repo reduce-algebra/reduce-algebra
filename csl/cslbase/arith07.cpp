@@ -47,9 +47,9 @@ LispObject copyb(LispObject a)
 //
 {   LispObject b;
     size_t len = bignum_length(a), i;
-    push(a);
+    Save save(a);
     b = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
-    pop(a);
+    save.restore(a);
     len = (len-CELL)/4;
     for (i=0; i<len; i++)
         bignum_digits(b)[i] = vbignum_digits(a)[i];
@@ -101,9 +101,11 @@ LispObject negateb(LispObject a)
         else if (d0 == 0x40000000) return make_two_word_bignum(0, d0);
         else return make_one_word_bignum(d0);
     }
-    push(a);
-    b = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
-    pop(a);
+    {   Save save(a);
+        b = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
+        errexit();
+        save.restore(a);
+    }
     len = (len-CELL-4)/4;
     carry = -1;
     for (i=0; i<len; i++)
@@ -187,20 +189,20 @@ LispObject negate(LispObject a)
                 case TYPE_RATNUM:
                 {   LispObject n = numerator(a),
                                    d = denominator(a);
-                    push(d);
+                    Save save(d);
                     n = negate(n);
-                    pop(d);
+                    save.restore(d);
                     return make_ratio(n, d);
                 }
                 case TYPE_COMPLEX_NUM:
                 {   LispObject r = real_part(a),
                                    i = imag_part(a);
-                    push(i);
+                    Save save(i);
                     r = negate(r);
-                    pop(i);
-                    push(r);
+                    save.restore(i);
+                    Save save1(r);
                     i = negate(i);
-                    pop(r);
+                    save1.restore(r);
                     return make_complex(r, i);
                 }
                 default:

@@ -1,5 +1,14 @@
 // This code was contributed to CSL by NAG Ltd
 
+
+#error "This code needs a copy of the NAG library available and is out of date"
+
+// The code here is not usable as it is, because it uses an old CSL
+// argument calling convention (using var_args for functions with < 2 args).
+// It is left both for history and in case it ever gets revived.
+
+
+
 /**************************************************************************
  * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *

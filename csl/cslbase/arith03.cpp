@@ -640,27 +640,27 @@ inline int make_positive_and_copy(LispObject &a, size_t &lena,
 // in the working variables... And I will leave myself a few bytes in hand.
     while (bignum_length(a)+16 >= bignum_length(big_dividend))
     {   size_t newlen = 2*bignum_length(big_dividend);
-        push(a, b);
+        Save save(a, b);
 //      trace_printf("newlen = %d\n", (int)newlen);
         LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
-        pop(b, a);
+        save.restore(a, b);
         big_dividend = w;
     }
     while (bignum_length(b)+16 >= bignum_length(big_divisor))
     {   size_t newlen = 2*bignum_length(big_divisor);
-        push(a, b);
+        Save save(a, b);
 //      trace_printf("newlen = %d\n", (int)newlen);
         LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
-        pop(b, a);
+        save.restore(a, b);
         big_divisor = w;
     }
     while (bignum_length(a)-bignum_length(b)+16 >= bignum_length(
                big_quotient))
     {   size_t newlen = 2*bignum_length(big_quotient);
-        push(a, b);
+        Save save(a, b);
 //      trace_printf("newlen = %d\n", (int)newlen);
         LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
-        pop(b, a);
+        save.restore(a, b);
         big_quotient = w;
     }
     int sign = 0;
@@ -843,10 +843,10 @@ inline LispObject pack_up_result(LispObject a, size_t lena)
     {   int64_t r = ASL(bignum_digits64(a, 1), 31) | bignum_digits(a)[0];
         if (valid_as_fixnum(r)) return fixnum_of_int(r);
     }
-    push(a);
+    Save save(a);
     LispObject r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM,
                                     CELL+4*lena+4);
-    pop(a);
+    save.restore(a);
 //  trace_printf("lena = %d  r = %p\n", (int)lena, (void *)r);
     for (size_t i=0; i<=lena; i++)
         bignum_digits(r)[i] = vbignum_digits(a)[i];
@@ -890,9 +890,9 @@ LispObject quotbb(LispObject a, LispObject b, int need)
             nn = (int32_t)((uint32_t)nn | 0x80000000U);
         LispObject q = quotbn(a, nn);
         if ((need & QUOTBB_REMAINDER_NEEDED) != 0)
-        {   push(q);
+        {   Save save(q);
             a = make_lisp_integer32(nwork);
-            pop(q);
+            save.restore(q);
             mv_2 = a;
         }
         return q;
@@ -1039,12 +1039,12 @@ static LispObject quotrf(LispObject a, LispObject b)
 static LispObject quotci(LispObject a, LispObject b)
 {   LispObject r = real_part(a), i = imag_part(a);
     mv_2 = fixnum_of_int(0);
-    push(b, r);
+    Save save(b, r);
     i = quot2(i, b);
-    pop(r, b);
-    push(i);
+    save.restore(b, r);
+    Save save1(i);
     r = quot2(r, b);
-    pop(i);
+    save1.restore(i);
     return make_complex(r, i);
 }
 

@@ -1711,7 +1711,7 @@ LispObject set_up_variables(int restart_flag)
         }
         else
         {   LispObject n = make_undefined_symbol(s);
-            push(n);
+            Save save(n);
             s = ss.data.c_str();
 // If you go "--D xxx" then treat it as "--D xxx=t".
             LispObject v;
@@ -1728,7 +1728,7 @@ LispObject set_up_variables(int restart_flag)
 // parsing fails I (silently) treat the value as just NIL.
 //
             }
-            pop(n);
+            save.restore(n);
             setheader(n, qheader(n) | SYM_SPECIAL_VAR);
             setvalue(n, v);
         }
@@ -1742,12 +1742,12 @@ LispObject set_up_variables(int restart_flag)
         }
         else
         {   LispObject n = make_undefined_symbol(s);
-            push(n);
+            Save save(n);
             s = ss.data.c_str();
             LispObject v;
             if (std::strlen(s) == 0) v = lisp_true;
             else v = make_string(s);
-            pop(n);
+            save.restore(n);
             setheader(n, qheader(n) | SYM_SPECIAL_VAR);
             setvalue(n, v);
         }
@@ -1761,13 +1761,16 @@ LispObject set_up_variables(int restart_flag)
             errexit();
             v = Lcompress(nil, v);
             errexit();
-            push(v);
+            Save save(v);
             Lprin(nil, v);
-            pop(v);
+            save.restore(v);
             errexit();
             v = Leval(nil, v);
             errexit();
+            Save save1(v);
             term_printf(" => ");
+            errexit();
+            save1.restore(v);
             Lprint(nil, v);
 // A failure in an expression set to be evaluated here is fatal.
         CATCH(LispException)

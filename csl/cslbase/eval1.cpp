@@ -176,20 +176,21 @@ restart:
 // time may seem to be mutually recursive but there is a sense in which they
 // are not (as well as a sense in which they are) - self and cross references
 // only happen AFTER an expansion and can not happen during one.
-                        push(u, env);
+                        Save save(u, env);
                         on_backtrace(
                             w = cons(lambda, w);
+                            errexit();
                             p = apply(qvalue(macroexpand_hook),
                                       list3(w, u, nil),
                                       nil,
                                       macroexpand_hook),
                             // now the error handler
-                            pop(env, u);
+                            save.restore(u, env);
                             if (SHOW_FNAME)
                             {   err_printf("\nMacroexpanding: ");
                                 loop_print_error(u);
                             });
-                        pop(env, u);
+                        save.restore(u, env);
                         u = p;
                         goto restart;
                     }
@@ -210,7 +211,7 @@ restart:
             }
             else if (h & SYM_MACRO)
             {   STACK_SANITY;
-                push(u, env);
+                Save save(u, env);
 // the environment passed to macroexpand should only be needed to cope
 // with macrolet, I think.  Since I use just one datastructure for the
 // whole environment I also pass along lexical bindings etc, but I hope that
@@ -222,12 +223,12 @@ restart:
                     fn = macroexpand(u, env);
                     debug_record("macro expanded"),
                     // now the error handler
-                    pop(env, u);
+                    save.restore(u, env);
                     if (SHOW_FNAME)
                     {   err_printf("\nMacroexpanding: ");
                         loop_print_error(u);
                     });
-                pop(env, u);
+                save.restore(u, env);
                 return eval(fn, env);
             }
         }
@@ -243,62 +244,68 @@ restart:
         if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
         {   if (args == nil) return (*qfn0(fn))(fn);
             LispObject a1 = car(args);
-            push(fn, args, env);
-            on_backtrace(a1 = eval(a1, env),
-                pop(env, args, fn);
-                if (SHOW_ARGS)
-                {   err_printf("\nEvaluating: ");
-                    loop_print_error(car(args));
-                });
-            pop(env, args, fn);
+            {   Save save(fn, args, env);
+                on_backtrace(a1 = eval(a1, env),
+                    save.restore(fn, args, env);
+                    if (SHOW_ARGS)
+                    {   err_printf("\nEvaluating: ");
+                        loop_print_error(car(args));
+                    });
+                save.restore(fn, args, env);
+            }
             args = cdr(args);
             if (args == nil) return (*qfn1(fn))(fn, a1);
             LispObject a2 = car(args);
-            push(fn, args, env, a1);
-            on_backtrace(
-                a2 = eval(a2, env),
-                pop(a1, env, args, fn);
-                if (SHOW_ARGS)
-                {   err_printf("\nEvaluating: ");
-                    loop_print_error(car(args));
-                });
-            pop(a1, env, args, fn);
+            {   Save save(fn, args, env, a1);
+                on_backtrace(
+                    a2 = eval(a2, env),
+                    save.restore(fn, args, env, a1);
+                    if (SHOW_ARGS)
+                    {   err_printf("\nEvaluating: ");
+                        loop_print_error(car(args));
+                    });
+                save.restore(fn, args, env, a1);
+            }
             args = cdr(args);
             if (args == nil) return (*qfn2(fn))(fn, a1, a2);
             LispObject a3 = car(args);
-            push(fn, args, env, a1, a2);
-            on_backtrace(
-                a3 = eval(a3, env),
-                pop(a2, a1, env, args, fn);
-                if (SHOW_ARGS)
-                {   err_printf("\nEvaluating: ");
-                    loop_print_error(car(args));
-                });
-            pop(a2, a1, env, args, fn);
+            {   Save save(fn, args, env, a1, a2);
+                on_backtrace(
+                    a3 = eval(a3, env),
+                    save.restore(fn, args, env, a1, a2);
+                    if (SHOW_ARGS)
+                    {   err_printf("\nEvaluating: ");
+                        loop_print_error(car(args));
+                    });
+                save.restore(fn, args, env, a1, a2);
+            }
             args = cdr(args);
             if (args == nil) return (*qfn3(fn))(fn, a1, a2, a3);
-            push(fn, env, args);
+            Save save(fn, env, args);
             eargs = list3(a3, a2, a1);
-            pop(args, env, fn);
+            errexit();
+            save.restore(fn, env, args);
         }
 // I have evaluated the first 3 args if the function was a symbol, so
 // now I process the rest.
         {   STACK_SANITY1(u);
             while (consp(args))
             {   LispObject w;
-                push(fn, args, env, eargs);
+                Save save(fn, args, env, eargs);
                 w = car(args);
                 on_backtrace(
                     w = eval(w, env),
                     // Now the error handler
-                    pop(eargs, env, args, fn);
+                    save.restore(fn, args, env, eargs);;
                     if (SHOW_ARGS)
                     {   err_printf("\nEvaluating: ");
                         loop_print_error(car(args));
                     });
-                pop(eargs);
+                save.restore(fn, args, env, eargs);
+                Save save1(fn, args, env);
                 eargs = cons(w, eargs);
-                pop(env, args, fn);
+                errexit();
+                save1.restore(fn, args, env);
                 args = cdr(args);
             }
             eargs = nreverse(eargs);
@@ -899,9 +906,10 @@ LispObject Lapply0(LispObject env, LispObject fn)
 LispObject Lapply1(LispObject env, LispObject fn, LispObject a1)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
         return (*qfn1(fn))(fn, a1);
-    push(env, fn);
+    Save save(fn, env);
     a1 = ncons(a1);
-    pop(fn, env);
+    errexit();
+    save.restore(fn, env);
     return Lapply_2(env, fn, a1);
 }
 
