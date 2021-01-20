@@ -59,14 +59,14 @@
 	(OP-mul3 . lth-mul3)
 	(OP-mul4 . lth-mul4)
 	(OP-ld-st . lth-ld-st)
-	(OP-ld-st-misc . lth-ld-st-misc)
-	(OP-ldm-stm . lth-ldm-stm)
+%	(OP-ld-st-misc . lth-ld-st-misc)
+%	(OP-ldm-stm . lth-ldm-stm)
 	(OP-streg . lth-streg)
 	(OP-clz . lth-clz)
 	(OP-branch-imm . lth-branch-imm)
 	(OP-branch-imm19 . lth-branch-imm19)
 	(OP-branch-reg . lth-branch-reg)
-	(OP-mov-imm16 . lth-mov-imm16)
+%	(OP-mov-imm16 . lth-mov-imm16)
 	(OP-reg-imm16 . lth-reg-imm16)
 	(OP-reg-imm12 . lth-reg-imm12)	
 	(OP-reg-logical . lth-reg-logical)
@@ -76,7 +76,7 @@
 	(OP-reg-extended . lth-reg-extended)
 	(OP-reg2 . lth-reg2)
 	(OP-reg3-lsb . lth-reg3-lsb)
-	(OP-ldp . ltzh-ldp)
+	(OP-ldp-stp . lth-ldp-stp)
       ))
  
 (load strings compiler)
@@ -112,7 +112,6 @@
 (setq formalParameters!* '(par1 par2 par3 par4))
  
 (ds newInstruction (i) (when (not (memq i allInstrs!*)) (push i allInstrs!*)))
-
 
     
 (df instr (l)
@@ -280,12 +279,12 @@
     (prog (u v)
        (setq u (sort instrlist* (function instrcmp)))
        (when f (setq v (wrs (open f 'OUTPUT))))
-       (prin2t "   SUN 386 instructions sorted by opcode")
+       (prin2t "   Aarch64 instructions sorted by opcode")
        (prin2t "   =====================================")
        (terpri)
        (mapc u (function printinstr))
        (terpri)(terpri)
-       (prin2t "   SUN 386 instructions sorted by name")
+       (prin2t "   Aarch64 instructions sorted by name")
        (prin2t "   ===================================")
        (setq u (sort instrlist* (function instrcmpalpha)))
        (mapc u (function printinstr))
@@ -329,13 +328,13 @@
  
 (clearInstructions)
 
-(instr ADC (reg32 reg32 reg32)     OP-reg3 2#0001101000)
-(instr ADC (reg reg reg)           OP-reg3 2#1001101000)
-(instr ADCS (reg32 reg32 reg32)    OP-reg3 2#0011101000)
-(instr ADCS (reg reg reg)          OP-reg3 2#1011101000)
+(instr ADC (reg32 reg32 reg32)     OP-reg3 2#00011010000)
+(instr ADC (reg reg reg)           OP-reg3 2#10011010000)
+(instr ADCS (reg32 reg32 reg32)    OP-reg3 2#00111010000)
+(instr ADCS (reg reg reg)          OP-reg3 2#10111010000)
 
-(instr ADD (reg32-or-sp reg32-or-sp reg32-extended)    OP-reg-extended  2#00001011001)
-(instr ADD (reg-or-sp reg-or-sp reg-extended)    OP-reg-extended  2#10001011001)
+(instr ADD (reg32-or-sp reg32-or-sp reg32-extended)  OP-reg-extended  2#00001011001)
+(instr ADD (reg-or-sp reg-or-sp reg-extended)        OP-reg-extended  2#10001011001)
 (instr ADD (reg32-or-sp reg32-or-sp imm12-shifted)   OP-reg-imm12     2#000100010)
 (instr ADD (reg-or-sp reg-or-sp imm12-shifted)   OP-reg-imm12     2#100100010)
 (instr ADD (reg32 reg32 reg32-shifter)     OP-reg-shifter   2#00001011000)
@@ -404,7 +403,9 @@
 % CINC
 % CINV
 
+(instr CLS (reg32 reg32) OP-clz 2#01011010110 2#00000 2#000101)
 (instr CLS (reg reg)     OP-clz 2#11011010110 2#00000 2#000101)
+(instr CLZ (reg32 reg32) OP-clz 2#01011010110 2#00000 2#000100)
 (instr CLZ (reg reg)     OP-clz 2#11011010110 2#00000 2#000100)
 
 (instr CMN   (reg32-or-sp reg32-extended)        OP-reg-extended 2#00101011001)
@@ -443,25 +444,31 @@
 (instr EXTR   (reg reg reg lsb)        OP-reg3-lsb   2#100100111)
 
 % LDP Xt1, Xt2, [Xn], #imm7 (post-index)
-(instr LDP  (reg32 reg32 reg-or-sp-imm9-post)  OP-ldp  2#0010100011)
-(instr LDP  (reg reg reg-or-sp-imm10-post)  OP-ldp  2#1010100011)
+(instr LDP  (reg32 reg32 reg-or-sp-imm9-post)  OP-ldp-stp 2#0010100011)
+(instr STP  (reg32 reg32 reg-or-sp-imm9-post)  OP-ldp-stp 2#0010100010)
+(instr LDP  (reg reg reg-or-sp-imm10-post)     OP-ldp-stp 2#1010100011)
+(instr STP  (reg reg reg-or-sp-imm10-post)     OP-ldp-stp 2#1010100010)
 
 % LDP Xt1, Xt2, [Xn, #imm7]! (pre-index)
-(instr LDP  (reg32 reg32 reg-or-sp-imm9-pre)  OP-ldp  2#0010100111)
-(instr LDP  (reg reg reg-or-sp-imm10-pre)  OP-ldp  2#1010100111)
+(instr LDP  (reg32 reg32 reg-or-sp-imm9-pre)   OP-ldp-stp 2#0010100111)
+(instr LDP  (reg reg reg-or-sp-imm10-pre)      OP-ldp-stp 2#1010100111)
+(instr STP  (reg32 reg32 reg-or-sp-imm9-pre)   OP-ldp-stp 2#0010100110)
+(instr STP  (reg reg reg-or-sp-imm10-pre)      OP-ldp-stp 2#1010100110)
 
 % LDP Xt1, Xt2, [Xn, #imm7] (signed offset)
-(instr LDP  (reg32 reg32 reg-or-sp-imm9)  OP-ldp  2#0010100101)
-(instr LDP  (reg reg reg-or-sp-imm10)  OP-ldp  2#1010100101)
+(instr LDP  (reg32 reg32 reg-or-sp-imm9)       OP-ldp-stp 2#0010100101)
+(instr LDP  (reg reg reg-or-sp-imm10)          OP-ldp-stp 2#1010100101)
+(instr STP  (reg32 reg32 reg-or-sp-imm9)       OP-ldp-stp 2#0010100100)
+(instr STP  (reg reg reg-or-sp-imm10)          OP-ldp-stp 2#1010100100)
 
 % LDPSW Xt1, Xt2, Xn, #imm (post-index)
-(instr LDPSW  (reg reg reg-or-sp-simm9-post)  OP-ldp  2#0110100011)
+(instr LDPSW  (reg reg reg-or-sp-simm9-post)   OP-ldp-stp 2#0110100011)
 
 % LDPSW Xt1, Xt2, [Xn, #imm]! (pre-index)
-(instr LDPSW  (reg reg reg-or-sp-simm9-pre)  OP-ldp  2#0110100111)
+(instr LDPSW  (reg reg reg-or-sp-simm9-pre)    OP-ldp-stp 2#0110100111)
 
 % LDPSW Xt1, Xt2, Xn, #imm (signed offset)
-(instr LDPSW  (reg reg reg-or-sp-simm9)  OP-ldp  2#0110100101)
+(instr LDPSW  (reg reg reg-or-sp-simm9)        OP-ldp-stp 2#0110100101)
 
 % LDR Xt, [Xn], #simm9 - post-index
 % (LDR (reg t) (postindex (reg n) +/-number))
@@ -518,13 +525,13 @@
 % LSRV
 
 (instr MADD   (reg32 reg32 reg32 reg32)  OP-mul4      2#00011011000 0)
-(instr MADD   (reg reg reg reg)         OP-mul4      2#10011011000 0)
+(instr MADD   (reg reg reg reg)          OP-mul4      2#10011011000 0)
 
 (instr MSUB   (reg32 reg32 reg32 reg32)  OP-mul4      2#00011011000 1)
-(instr MSUB   (reg reg reg reg)         OP-mul4      2#10011011000 1)
+(instr MSUB   (reg reg reg reg)          OP-mul4      2#10011011000 1)
 
-(instr MNEG   (reg32 reg32 reg32)    OP-mul3      2#00011011000 1 2#11111)
-(instr MNEG   (reg reg reg)         OP-mul3      2#10011011000 1 2#11111)
+(instr MNEG   (reg32 reg32 reg32)        OP-mul3      2#00011011000 1 2#11111)
+(instr MNEG   (reg reg reg)              OP-mul3      2#10011011000 1 2#11111)
 
 (instr NEG   (reg reg reg-shifter)     OP-reg-shifter 2#11001011000)
 (instr NEGS  (reg reg reg-shifter)     OP-reg-shifter 2#11101011000)
@@ -559,16 +566,23 @@
 (instr MOVN  (reg imm16-shifted)       OP-reg-imm16    2#100100101)
 (instr MOVZ  (reg imm16-shifted)       OP-reg-imm16    2#110100101)
 
-(instr SDIV  (reg reg reg)             OP-mul3      2#10011010110 2#000011)
-(instr UDIV   (reg reg reg)             OP-mul3      2#10011010110 2#000010)
+(instr SDIV  (reg32 reg32 reg32)        OP-mul3      2#00011010110 0 2#00011)
+(instr SDIV  (reg reg reg)              OP-mul3      2#10011010110 0 2#00011)
+(instr UDIV   (reg32 reg32 reg32)       OP-mul3      2#00011010110 0 2#00010)
+(instr UDIV   (reg reg reg)             OP-mul3      2#10011010110 0 2#00010)
 
-(instr MUL    (reg reg reg)             OP-mul3      2#10011011000 2#011111)
-(instr UMADDL (reg reg reg reg)         OP-mul4      2#10011011101)
-(instr UMULL  (reg reg reg)             OP-mul3      2#10011011101 2#011111)
-(instr UMULH  (reg reg reg)             OP-mul3      2#10011011110 2#011111)
-(instr SMADDL (reg reg reg reg)         OP-mul4      2#10011011001)
-(instr SMULL  (reg reg reg)             OP-mul3      2#10011011001 2#011111)
-(instr SMULH  (reg reg reg)             OP-mul3      2#10011011010 2#011111)
+(instr MUL    (reg32 reg32 reg32)             OP-mul3      2#00011011000 0 2#11111)
+(instr MUL    (reg reg reg)             OP-mul3      2#10011011000 0 2#11111)
+(instr UMADDL (reg reg32 reg32 reg)         OP-mul4      2#10011011101 0)
+(instr UMSUBL (reg reg32 reg32 reg)         OP-mul4      2#10011011101 1)
+(instr UMNEG (reg reg32 reg32)              OP-mul3      2#10011011101 1 2#11111)
+(instr UMULL  (reg reg32 reg32)             OP-mul3      2#10011011101 0 2#11111)
+(instr UMULH  (reg reg reg)             OP-mul3      2#10011011110 0 2#11111)
+(instr SMADDL (reg reg32 reg32 reg)         OP-mul4      2#10011011001 0)
+(instr SMSUBL (reg reg32 reg32 reg)         OP-mul4      2#10011011001 1)
+(instr SMNEGL (reg reg32 reg32)         OP-mul3      2#10011011001 1 2#11111)
+(instr SMULL  (reg reg32 reg32)             OP-mul3      2#10011011001 0 2#11111)
+(instr SMULH  (reg reg reg)             OP-mul3      2#10011011010 0 2#11111)
 
 (instr RBIT   (reg reg)                 OP-reg2      2#11011010110)
 (instr RET    ()                 OP-branch-reg    2#11010110010 X30)

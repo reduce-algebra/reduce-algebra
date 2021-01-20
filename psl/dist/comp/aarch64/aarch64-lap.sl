@@ -926,6 +926,7 @@
 %	    )
     )
 
+%% Checks
 (de OP-reg3 (code reg1 reg2 reg3)
     (DepositInstructionBytes
      (lsh code -3)
@@ -935,7 +936,7 @@
 
 (de lth-reg3 (code reg1 reg2 reg3) 4)
 
-
+%% ChecK!
 (de OP-reg-imm12 (code reg1 reg2 imm12-shifted)
     (let ((imm12) (sh))
       (if (or (and (fixp imm12-shifted) (eq imm12-shifted (wand imm12-shifted 16#fff))
@@ -953,21 +954,25 @@
 
 (de lth-reg-imm12 (code reg1 reg2 imm12-rotated) 4)
 
+%% ToDo
 (de OP-reg-logical (code reg1 reg2 imm-logical)
     )
 
 (de lth-reg-logical (code reg1 reg2 imm-logical) 4)
 
+%% ToDo
 (de OP-reg-regsp (code reg1 reg2)
     )
 
 (de lth-reg-regsp (code reg1 reg2) 4)
 
+%% ToDo
 (de OP-reg-reg (code reg1 reg2)
     )
 
 (de lth-reg-reg (code reg1 reg2) 4)
 
+%% ToDo
 (de OP-reg-shifter (code reg1 reg2 reg-shifter)
     (prog (opcode2 shift-op shift-amount reg3)
 	  (cond ((regp reg-shifter) (setq reg3 (reg2int reg-shifter) opcode2 0 shift-amount 0))
@@ -989,15 +994,21 @@
 (de lth-reg-shifter (code reg1 reg2 reg-shifter) 4)
 
 (de OP-reg-extended (code reg1 reg2 reg-extended)
-    (prog (option shift-op shift-amount)
+    (prog (option reg3 shift-op shift-amount extend-bits)
 	  (cond ((regp reg-extended) (setq reg3 (reg2int reg-extended)))
-		((eqcar reg-extended 'extend)
-		 (setq reg3 (reg2int (cadr reg-extended)) shift-op (caddr reg-extended))
-		 (setq shift-amount (cadddr reg-extended))
+		((eqcar reg-extended 'regextended)
+		 (setq reg3 (reg2int (list 'reg (cadr reg-extended)))
+		       shift-op (caddr reg-extended))
+		 (if (pairp (cdddr reg-extended))
+		     (setq shift-amount (cadddr reg-extended))
+		   (setq shift-amount 0))
 		 (cond ((fixp shift-amount)
-			(setq option (lor (lsh (land shift-amount 1) 3) (subla '((UXTB . 2#000) (UXTH . 2#001) (LSL . 2#010) (UXTW . 2#010) (UXTX . 2#011) (SXTB . 2#100) (SXTH . 2#101) (SXTW . 2#110) (SXTX . 2#111)) shift-op))))
-		       (T (stderror (bldmsg "Invalid operand %w" reg-shifter)))))
-		(T (stderror (bldmsg "Invalid operand %w" reg-shifter))))
+			(if (eq shift-op 'LSL)
+			    (setq extend-bits (if (reg32p reg1) 2#010 2#011))
+			  (setq extend-bits (subla '((UXTB . 2#000) (UXTH . 2#001) (UXTW . 2#010) (LSL . 2#011) (UXTX . 2#011) (SXTB . 2#100) (SXTH . 2#101) (SXTW . 2#110) (SXTX . 2#111)) shift-op)))
+			(setq option (lor (lsh (land shift-amount 1) 3) extend-bits)))
+		       (T (stderror (bldmsg "Invalid operand %w" reg-extended)))))
+		(T (stderror (bldmsg "Invalid operand %w" reg-extended))))
 	  (DepositInstructionBytes
 	   (lsh code -3)
 	   (lor (reg2int reg3) (lsh (land code 3) 5))
@@ -1008,65 +1019,65 @@
 
 (de lth-reg-extended (code reg1 reg2 reg-extended) 4)
 
-(de OP-regn-imm8 (code regn imm8-rotated)
-    (prog (cc opcode1 imm8-decoded set-bit)
-	  (setq imm8-decoded (decode-32bit-imm8-rotated imm8-rotated))
-	  (if (null imm8-decoded)
-	      (stderror (bldmsg "Invalid imm8 operand %w" imm8-rotated)))
-	  (setq cc (car code) opcode1 (cadr code) set-bit (caddr code))
-	  (DepositInstructionBytes
-	   (lor (lsh cc 4) (lsh opcode1 -3))
-	   (lor (lor (lsh (land opcode1 2#111) 5) (lsh set-bit 4)) (reg2int regn))
-	   (car imm8-decoded)
-	   (cdr imm8-decoded)))
-    )
+%% (de OP-regn-imm8 (code regn imm8-rotated)
+%%     (prog (cc opcode1 imm8-decoded set-bit)
+%% 	  (setq imm8-decoded (decode-32bit-imm8-rotated imm8-rotated))
+%% 	  (if (null imm8-decoded)
+%% 	      (stderror (bldmsg "Invalid imm8 operand %w" imm8-rotated)))
+%% 	  (setq cc (car code) opcode1 (cadr code) set-bit (caddr code))
+%% 	  (DepositInstructionBytes
+%% 	   (lor (lsh cc 4) (lsh opcode1 -3))
+%% 	   (lor (lor (lsh (land opcode1 2#111) 5) (lsh set-bit 4)) (reg2int regn))
+%% 	   (car imm8-decoded)
+%% 	   (cdr imm8-decoded)))
+%%     )
 
-(de lth-regn-imm8 (code regn imm8-rotated) 4)
+%% (de lth-regn-imm8 (code regn imm8-rotated) 4)
 
-(de OP-regn-shifter (code regn reg-shifter)
-    (prog (cc opcode1 opcode2 set-bit reg3 reg4 shift-op shift-amount)
-	  (setq cc (car code) opcode1 (cadr code) set-bit (caddr code) shift-amount 0)
-	  (cond ((regp reg-shifter) (setq reg3 (reg2int reg-shifter) reg4 0 opcode2 0))
-		((eqcar reg-shifter 'regshifted)
-		 (setq reg3 (reg2int (cadr reg-shifter)) shift-op (caddr reg-shifter))
-		 (if (eq shift-op 'RRX)
-		     (setq shift-amount 0)
-		   (setq shift-amount (cadddr reg-shifter)))
-		 (cond ((and (fixp shift-amount)
-			     (greaterp shift-amount -1)
-			     (lessp shift-amount 33))
-			(setq shift-amount (land 31 shift-amount))
-			(setq reg4 (lsh shift-amount -1)
-			      opcode2 (lor (lsh (land shift-amount 1) 3) (subla '((LSL . 2#000) (LSR . 2#010) (ASR . 2#100) (ROR . 2#110) (RRX . 2#110)) shift-op))))
-		       ((regp shift-amount)
-			(setq reg4 (reg2int (cadddr reg-shifter)))
-			(setq opcode2 (subla '((LSL . 2#0001) (LSR . 2#0011) (ASR . 2#0101) (ROR 2#0111)) shift-op))
-			)
-		       (T (stderror (bldmsg "Invalid operand %w" reg-shifter)))))
-		(T (stderror (bldmsg "Invalid operand %w" reg-shifter))))
-	  (DepositInstructionBytes
-	   (lor (lsh cc 4) (lsh opcode1 -3))
-	   (lor (lor (lsh (land opcode1 2#111) 5) (lsh set-bit 4)) (reg2int regn))
-	   reg4
-	    (lor (lsh opcode2 4) reg3)))
-    )
+%% (de OP-regn-shifter (code regn reg-shifter)
+%%     (prog (cc opcode1 opcode2 set-bit reg3 reg4 shift-op shift-amount)
+%% 	  (setq cc (car code) opcode1 (cadr code) set-bit (caddr code) shift-amount 0)
+%% 	  (cond ((regp reg-shifter) (setq reg3 (reg2int reg-shifter) reg4 0 opcode2 0))
+%% 		((eqcar reg-shifter 'regshifted)
+%% 		 (setq reg3 (reg2int (cadr reg-shifter)) shift-op (caddr reg-shifter))
+%% 		 (if (eq shift-op 'RRX)
+%% 		     (setq shift-amount 0)
+%% 		   (setq shift-amount (cadddr reg-shifter)))
+%% 		 (cond ((and (fixp shift-amount)
+%% 			     (greaterp shift-amount -1)
+%% 			     (lessp shift-amount 33))
+%% 			(setq shift-amount (land 31 shift-amount))
+%% 			(setq reg4 (lsh shift-amount -1)
+%% 			      opcode2 (lor (lsh (land shift-amount 1) 3) (subla '((LSL . 2#000) (LSR . 2#010) (ASR . 2#100) (ROR . 2#110) (RRX . 2#110)) shift-op))))
+%% 		       ((regp shift-amount)
+%% 			(setq reg4 (reg2int (cadddr reg-shifter)))
+%% 			(setq opcode2 (subla '((LSL . 2#0001) (LSR . 2#0011) (ASR . 2#0101) (ROR 2#0111)) shift-op))
+%% 			)
+%% 		       (T (stderror (bldmsg "Invalid operand %w" reg-shifter)))))
+%% 		(T (stderror (bldmsg "Invalid operand %w" reg-shifter))))
+%% 	  (DepositInstructionBytes
+%% 	   (lor (lsh cc 4) (lsh opcode1 -3))
+%% 	   (lor (lor (lsh (land opcode1 2#111) 5) (lsh set-bit 4)) (reg2int regn))
+%% 	   reg4
+%% 	    (lor (lsh opcode2 4) reg3)))
+%%     )
 
-(de lth-regn-shifter (code regn reg-shifter) 4)
+%% (de lth-regn-shifter (code regn reg-shifter) 4)
 
-(de OP-regd-imm8 (code regd imm8-rotated)
-    (prog (cc opcode1 imm8-decoded set-bit)
-	  (setq imm8-decoded (decode-32bit-imm8-rotated imm8-rotated))
-	  (if (null imm8-decoded)
-	      (stderror (bldmsg "Invalid imm8 operand %w" imm8-rotated)))
-	  (setq cc (car code) opcode1 (cadr code) set-bit (caddr code))
-	  (DepositInstructionBytes
-	   (lor (lsh cc 4) (lsh opcode1 -3))
-	   (lor (lsh (land opcode1 2#111) 5) (lsh set-bit 4))
-	   (lor (lsh (reg2int regd) 4) (car imm8-decoded))
-	   (cdr imm8-decoded)))
-    )
+%% (de OP-regd-imm8 (code regd imm8-rotated)
+%%     (prog (cc opcode1 imm8-decoded set-bit)
+%% 	  (setq imm8-decoded (decode-32bit-imm8-rotated imm8-rotated))
+%% 	  (if (null imm8-decoded)
+%% 	      (stderror (bldmsg "Invalid imm8 operand %w" imm8-rotated)))
+%% 	  (setq cc (car code) opcode1 (cadr code) set-bit (caddr code))
+%% 	  (DepositInstructionBytes
+%% 	   (lor (lsh cc 4) (lsh opcode1 -3))
+%% 	   (lor (lsh (land opcode1 2#111) 5) (lsh set-bit 4))
+%% 	   (lor (lsh (reg2int regd) 4) (car imm8-decoded))
+%% 	   (cdr imm8-decoded)))
+%%     )
 
-(de lth-regd-imm8 (code regd imm8-rotated) 4)
+%% (de lth-regd-imm8 (code regd imm8-rotated) 4)
 
 (de OP-regd-shifter (code regd reg-shifter)
     (OP-reg-shifter code regd '(reg R0) reg-shifter))
@@ -1090,14 +1101,15 @@
 
 (de lth-mul3 (code reg1 reg2 reg3) 4)
 		       
-(de OP-mul4 (code reg1 reg2 reg3 reg4)
+(de OP-mul4 (code regd regn regm rega)
     (prog (cc opcode1)
 	  (setq cc (car code) opcode1 (cadr code))
 	  (DepositInstructionBytes
 	   (lsh cc -3)
-	   (lor (lsh (land cc 7) 5) (reg2int reg2))
-	   (lor (lsh (reg2int reg2) 3) (reg2int reg4))
-	   (lor (lsh (land (reg2int reg2) 7) 5) (reg2int reg1)))))
+	   (lor (lsh (land cc 7) 5) (reg2int regm))
+	   (lor (lsh opcode1 7)
+		(lor (lsh (reg2int regn) -3) (lsh (reg2int rega) 2)))
+	   (lor (lsh (land (reg2int regn) 7) 5) (reg2int regd)))))
 
 (de lth-mul4 (code reg1 reg2 reg3 reg4) 4)
 
@@ -1105,7 +1117,7 @@
     (prog (cc opcode1 opcode2 reg3 reg4 shift-op shift-amount set-bit)
 	  (setq cc (car code) opcode1 (cadr code) opcode2 (cadddr code))
 	  (DepositInstructionBytes
-	   (lsh cc 3)
+	   (lsh cc -3)
 	   (lor opcode1 (lsh (land cc 7) 5))
 	   (lor (lsh (reg2int regn) -3) (lsh opcode2 2))
 	   (lor (lsh (land (reg2int regn 7) 5) (reg2int regd)))
@@ -1114,6 +1126,7 @@
 
 (de lth-clz (code regd regm) 4)
 
+%% ToDo
 (de OP-streg (code regd cpsr-or-spsr)
     (prog (cc opcode1 opcode2 reg3 reg4 shift-op shift-amount set-bit r)
 	  (cond ((eq cpsr-or-spsr 'cpsr) (setq r 0))
@@ -1240,82 +1253,71 @@
 
 (de lth-ld-st (code regn reg-offset12) 4)
 
-(de OP-ldr-id (code regn idref)
-    (OP-ld-st code regn idref)
-    )
+%% (de OP-ldr-id (code regn idref)
+%%     (OP-ld-st code regn idref)
+%%     )
 
-(de lth-ldr-id (code regn idref) 4)
+%% (de lth-ldr-id (code regn idref) 4)
 
-%%  Instruction                                      Lisp expression for second operand
-%% LDRD Rd,[Rn,+/-offset8]                              (displacement (reg n) +/-8bit-number)
-%% LDRD Rd,[Rn,Rm]                                      (displacement (reg n) (reg m))
-%% LDRD Rd,[Rn,+/-Rm]                                   (displacement (reg n) (plus|minus (reg m)))
-%% LDRD Rd,[Rn,+/-offset8]!                             (displacement (reg n) +/-8bit-number preindexed)
-%% LDRD Rd,[Rn,Rm]!                                     (displacement (reg n) (reg m) preindexed)
-%% LDRD Rd,[Rn,+/-Rm]!                                  (displacement (reg n) (plus|minus (reg m)) preindexed)
-%% LDRD Rd,[Rn],+/-offset8                              (postindex (reg n) +/-8bit-number)
-%% LDRD Rd,[Rn],Rm                                      (postindexed (reg n) (reg m))
-%% LDRD Rd,[Rn],+/-Rm                                   (displacement (reg n) (plus|minus (reg m)) postindexed)  
 
-(de OP-ld-st-misc (code regd reg-offset8)
-    (prog (cc ld-bit opcode1 opcode2 temp shift-op shift-amount regn displ pre-post p-bit u-bit w-bit regm lastnibble)
-	  (setq cc (car code) opcode1 (cadr code) ld-bit (caddr code) opcode2 (cadddr code) shift-amount 0)
-	  (if (or (not (pairp reg-offset8))
-		  (not (memq (car reg-offset8) '(displacement indirect)))
-		  (not (regp (cadr reg-offset8))))
-	      (stderror (bldmsg "Invalid misc. load/store operand %w" reg-offset8)))
-	  (setq regn (reg2int (cadr reg-offset8)))
-	  (setq displ (if (eqcar reg-offset8 'indirect) 0 (caddr reg-offset8)))
-	  (setq u-bit 1)
-	  (cond ((or (eqcar reg-offset8 'indirect)
-		     (null (cdddr reg-offset8))) % no pre or post indexed
-		 (setq p-bit 1 w-bit 0))
-		((memq (cadddr reg-offset8) '(preindexed postindexed))
-		 (setq pre-post (cadddr reg-offset8))
-		 (setq p-bit (if (eq pre-post 'preindexed) 1 0))
-		 (setq w-bit (if (eq pre-post 'preindexed) 1 0)))
-		(t (stderror (bldmsg "Invalid misc. load/store operand: %w" reg-offset8))))
-	  (cond ((and (fixp displ) (lessp displ 256) (greaterp displ -256))
-		 (if (lessp displ 0)
-		     (progn
-		       (setq u-bit 0)
-		       (setq displ (minus displ)))
-		   (setq u-bit 1))
-		 (setq temp (lsh displ -4))
-		 (setq lastnibble (land displ 16#0F)))
-		((or (not (pairp displ))
-		     (not (memq (car displ) '(reg plus minus))))
-		 (stderror (bldmsg "Invalid misc. load/store operand: %w" reg-offset8)))
-		((or (regp displ)
-		     (and (memq (car displ) '(plus minus))
-			  (progn (if (eq (car displ) 'minus) (setq u-bit 0))
-				 (regp (setq displ (cadr displ))))))
-		 (setq temp 0)
-		 (setq lastnibble (reg2int displ)))
-		(t (stderror (bldmsg "Invalid misc. load/store operand: %w" reg-offset8))))
+%% (de OP-ld-st-misc (code regd reg-offset8)
+%%     (prog (cc ld-bit opcode1 opcode2 temp shift-op shift-amount regn displ pre-post p-bit u-bit w-bit regm lastnibble)
+%% 	  (setq cc (car code) opcode1 (cadr code) ld-bit (caddr code) opcode2 (cadddr code) shift-amount 0)
+%% 	  (if (or (not (pairp reg-offset8))
+%% 		  (not (memq (car reg-offset8) '(displacement indirect)))
+%% 		  (not (regp (cadr reg-offset8))))
+%% 	      (stderror (bldmsg "Invalid misc. load/store operand %w" reg-offset8)))
+%% 	  (setq regn (reg2int (cadr reg-offset8)))
+%% 	  (setq displ (if (eqcar reg-offset8 'indirect) 0 (caddr reg-offset8)))
+%% 	  (setq u-bit 1)
+%% 	  (cond ((or (eqcar reg-offset8 'indirect)
+%% 		     (null (cdddr reg-offset8))) % no pre or post indexed
+%% 		 (setq p-bit 1 w-bit 0))
+%% 		((memq (cadddr reg-offset8) '(preindexed postindexed))
+%% 		 (setq pre-post (cadddr reg-offset8))
+%% 		 (setq p-bit (if (eq pre-post 'preindexed) 1 0))
+%% 		 (setq w-bit (if (eq pre-post 'preindexed) 1 0)))
+%% 		(t (stderror (bldmsg "Invalid misc. load/store operand: %w" reg-offset8))))
+%% 	  (cond ((and (fixp displ) (lessp displ 256) (greaterp displ -256))
+%% 		 (if (lessp displ 0)
+%% 		     (progn
+%% 		       (setq u-bit 0)
+%% 		       (setq displ (minus displ)))
+%% 		   (setq u-bit 1))
+%% 		 (setq temp (lsh displ -4))
+%% 		 (setq lastnibble (land displ 16#0F)))
+%% 		((or (not (pairp displ))
+%% 		     (not (memq (car displ) '(reg plus minus))))
+%% 		 (stderror (bldmsg "Invalid misc. load/store operand: %w" reg-offset8)))
+%% 		((or (regp displ)
+%% 		     (and (memq (car displ) '(plus minus))
+%% 			  (progn (if (eq (car displ) 'minus) (setq u-bit 0))
+%% 				 (regp (setq displ (cadr displ))))))
+%% 		 (setq temp 0)
+%% 		 (setq lastnibble (reg2int displ)))
+%% 		(t (stderror (bldmsg "Invalid misc. load/store operand: %w" reg-offset8))))
+%% 	  (DepositInstructionBytes
+%% 	   (lor (lor (lsh cc 4) (lsh opcode1 -3)) p-bit)
+%% 	   (lor (lor (lsh u-bit 7) (lsh (land opcode1 2#111) 5) ) (lor (lsh w-bit 5) (lor (lsh ld-bit 4) regn)))
+%% 	   (lor (lsh (reg2int regd) 4) temp)
+%% 	   (lor (lshift opcode2 4) lastnibble)))
+%% )
+
+%% (de lth-ld-st-misc (code regn reg-offset8) 4)
+
+(de OP-ldp-stp (code regt1 regt2 reg-or-sp-imm)
+    (prog (opcode1 imm regn)
+	  (setq opcode1 (car code)
+                regn (reg2int (cadr reg-or-sp-imm))
+                imm (lsh (caddr reg-or-sp-imm) (if (reg32p regt1) 4 8)))
 	  (DepositInstructionBytes
-	   (lor (lor (lsh cc 4) (lsh opcode1 -3)) p-bit)
-	   (lor (lor (lsh u-bit 7) (lsh (land opcode1 2#111) 5) ) (lor (lsh w-bit 5) (lor (lsh ld-bit 4) regn)))
-	   (lor (lsh (reg2int regd) 4) temp)
-	   (lor (lshift opcode2 4) lastnibble)))
-    )
+	   (lsh opcode1 -2)
+	   (lor (lsh (land opcode1 2#11) 6) (lsh imm -1))
+           (lor (lor (lsh (land imm 1) 7) (lsh (reg2int regt2) 2)) (lsh regn -3))
+           (lor (reg2int regt1) (lsh (land regn 2#111) 5)))
+    ))
 
-(de lth-ld-st-misc (code regn reg-offset8) 4)
-
-(de OP-ldp-stp (code regt1 regt2 reglist writeback?)
-    (prog (cc opcode1 regbits ld-bit w-bit)
-	  (setq cc (car code) opcode1 (cadr code) ld-bit (caddr code) regbits 0)
-	  (setq w-bit (if writeback? 1 0))
-	  (foreach reg in reglist do
-		   (setq regbits (lor regbits (lsh 1 (reg2int reg)))))
-	  (DepositInstructionBytes
-	   (lor (lsh cc 4) (lsh opcode1 -3))
-	   (lor (lor (lsh (land opcode1 2#111) 5) (lsh w-bit 5)) (lor (lsh ld-bit 4) (reg2int regn)))
-	   (lsh regbits -8)
-	   (land regbits 16#ff)))
-    )
-
-(de lth-ldp-stp (code regt1 regt2 reg-offset12) 4)
+(de lth-ldp-stp (code regt1 regt2 reg-or-sp-imm) 4)
 
 
 
