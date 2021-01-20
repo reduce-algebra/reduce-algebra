@@ -403,7 +403,7 @@
 		     X16 X17 X18 X19 X20 X21 X22 X23 X24 X25 X26 X27 X28 X29 X30
                      W0 W1 W2 W3 W4 W5 W6 W7 W8 W9 W10 W11 W12 W13 W14 W15
 		     W16 W17 W18 W19 W20 W21 W22 W23 W24 W25 W26 W27 W28 W29 W30
-		     sp st fp lr Rzero Wzero
+		     sp st fp lr Xzr Wzr
 		     t1 t2 t3
              nil heaplast heaptrapbound symfnc symval
 	     bndstkptr bndstklowerbound bndstkupperbound
@@ -418,7 +418,7 @@
 	     ))))
 
 (de reg-zero-p (RegName)
-    (eq RegName 'RZero))
+    (eq RegName 'XZr))
 
 (de reg32-zero-p (RegName)
     (eq RegName 'Wzr))
@@ -818,7 +818,15 @@
 	   (X16 16) (X17 17) (X18 18) (X19 19)
 	   (X20 20) (X21 21) (X22 22) (X23 23)
 	   (X24 24) (X25 25) (X26 26) (X27 27)
-	   (X28 28) (X29 29) (X30 30) (Rzero 31)
+	   (X28 28) (X29 29) (X30 30) (Wzero 31)
+	   (W0   0) (W1   1) (W2   2) (W3   3) 
+	   (W4   4) (W5   5) (W6   6) (W7   7)
+	   (W8   8) (W9   9) (W10 10) (W11 11)
+	   (W12 12) (W13 13) (W14 14) (W15 15)
+	   (W16 16) (W17 17) (W18 18) (W19 19)
+	   (W20 20) (W21 21) (W22 22) (W23 23)
+	   (W24 24) (W25 25) (W26 26) (W27 27)
+	   (W28 28) (W29 29) (W30 30) (Wzero 31)
 	   (T1   9) (T2  10) (T3  11)
 	   (fp  29)			% frame pointer for C subroutine calls
 	   (sp  31) (st  31)		% LISP stack register
@@ -862,13 +870,14 @@
 (de lth-branch-imm (code offset) 4)
 
 (de OP-branch-reg (code regm)
-    (prog (cc opcode1 opcode2 set-bit)
-	  (setq cc (car code) opcode1 (cadr code) set-bit (caddr code) opcode2 (cadddr code)) 
+    (prog (opcode)
+	  (setq opcode (car code)) 
 	  (DepositInstructionBytes
-	   (lor (lsh cc 4) (lsh opcode1 -3))
-	   (lor (lor (lsh (land opcode1 2#111) 5) (lsh set-bit 4)) 2#1111)
-	   16#ff 
-	   (lor (lsh opcode2 4) (reg2int regm)))
+	   (lsh opcode -3)
+	   (lor (lsh (land opcode 2#111) 5) 2#11111)
+	   (lsh (reg2int regm) -3)
+	   (lsh (land (reg2int regm) 2#111) 5)
+	   )
 	)
     )
 
@@ -938,7 +947,7 @@
 
 %% ChecK!
 (de OP-reg-imm12 (code reg1 reg2 imm12-shifted)
-    (let ((imm12) (sh))
+    (let ((imm12) (sh) (opcode (car code)))
       (if (or (and (fixp imm12-shifted) (eq imm12-shifted (wand imm12-shifted 16#fff))
 		   (setq imm12 imm12-shifted))
 	      (and (pairp imm12-shifted) (eq (caddr imm12-shifted) 0)
@@ -946,8 +955,8 @@
 	  (setq sh 0)
 	(setq sh 1))
       (DepositInstructionBytes
-       (lsh code -1)
-       (lor (lsh imm12 6) (lor (lsh (land code 1) 7) (lsh sh 6)))
+       (lsh opcode -1)
+       (lor (lsh imm12 6) (lor (lsh (land opcode 1) 7) (lsh sh 6)))
        (lor (lsh (land imm12 16#33) 2) (lsh (reg2int reg2) -3))
        (lor (reg2int reg1) (lsh (land (reg2int reg2) 7) 5))
        )))
@@ -1168,56 +1177,51 @@
 		(setq displ (MakeExpressionRelative reg-offset
 						    (if (eq (lsh opcode1 -6) 1) 8 4))))
 	    (progn
-	      (setq byte1 (lsh opcode1 -2))
 	      (setq regn (reg2int (cadr reg-offset)))
-	      (setq size (lsh opcode1 -8))
+	      (setq size (lsh opcode1 -9))
 	      (setq displ (if (eqcar reg-offset 'indirect) 0 (caddr reg-offset)))
-	      (print (list 1 'displ displ))
 	      ))
-	      (print (list '1a 'displ displ))
 	  (cond ((or (labelp reg-offset)
 		     (not (memq (car reg-offset) '(indexed indirect displacement preindexed postindexed)))
 		     (null (cddr reg-offset)))
-		 (print (list '1c 'displ displ))
-
 		 nil)
 		((and (memq (car reg-offset) '(preindexed postindexed))
 		      (fixp displ) (lessp displ 256) (greaterp displ -257))
 		 (setq pre-post (car reg-offset))
 		 (setq ppbits (cadr code))
 		 (setq displ (land displ 2#111111111)) % mask to nine bits
-		 (print (list 2 'displ displ))
-		 (setq lastbyte (lor (lsh (land 2#111 (reg2int regn)) 5) (reg2int regt)))
+		 (setq lastbyte (lor (lsh (land 2#111 regn) 5) (reg2int regt)))
 		 (setq byte3 
-		       (lor (lsh (reg2int regn) -3)
+		       (lor (lsh regn -3)
 			    (lor (lsh ppbits 2)
-				 (land displ 2#1111))))
+				 (lsh (land displ 2#1111) 4))))
 		 (setq byte2
 		       (lor (lsh displ -4)
-			    (lsh (land opcode1 2#111) 5))))
+			    (lsh (land opcode1 2#111) 5)))
+		 (setq byte1 (lsh opcode1 -3)))
+		
 		((and (eq (car reg-offset) 'displacement) (fixp displ)
-		      (or (and (eq size 2#10) (eq (land 2#11 displ) 0)
+		      (or (and (eq (setq size (lsh opcode1 -8)) 2#10) (eq (land 2#11 displ) 0)
 			       (pos-twelve-bit-p (setq displ (lsh displ -2))))
 			  (and (eq size 2#11) (eq (land 2#111 displ) 0)
 			       (pos-twelve-bit-p (setq displ (lsh displ -3))))))
-		 (print (list 3 'displ displ))
-		 (setq lastbyte (lor (lsh (land 2#111 (reg2int regn)) 5) (reg2int regt)))
+		 (setq lastbyte (lor (lsh (land 2#111 regn) 5) (reg2int regt)))
 		 (setq byte3 
-		       (lor (lsh (reg2int regn) -3)
+		       (lor (lsh regn -3)
 			    (lsh (land displ 2#111111) 2)))
 		 (setq byte2
 		       (lor (lsh displ -6)
-			    (lsh (land opcode1 2#11) 6))))
+			    (lsh (land opcode1 2#11) 6)))
+		 (setq byte1 (lsh opcode1 -2)))
 		((or (not (pairp displ))
 		     (not (memq (car displ) '(reg regshifted regextended))))
 		 (stderror (bldmsg "Invalid 3 LDR/STR operand: %w" reg-offset)))
                 % check for (scaled) register offset
-		((or (regp displ)
+		((or (and (eq (car reg-offset) 'indexed) (regp displ))
 		     (and (eq (car displ) 'regshifted)
 			  (eq (caddr displ) 'LSL))
 		     (and (eq (car displ) 'regextended)
 			  (memq (caddr displ) '(UXTW SXTW SXTX))))
-		 (print (list 4 'displ displ))
 		 (if (not (or (regp displ) (memq (cadddr displ) (list 0 size))))
 		     (stderror (bldmsg "Invalid 4 LDR/STR operand: %w" reg-offset)))
 		 (if (regp displ)
@@ -1231,18 +1235,16 @@
 		     (setq shift-op (if (cddr displ) (caddr displ) 'LSL))
 		     (setq S-bit (if (cddr displ) 1 0))
 		     (setq shift-amount (cadddr displ))))
-		 (setq lastbyte (lor (lsh (land 2#111 (reg2int regn)) 5) (reg2int regt)))
+		 (setq lastbyte (lor (lsh (land 2#111 regn) 5) (reg2int regt)))
 		 (setq byte3 
-		       (lor (lsh (reg2int regn) -3)
+		       (lor (lsh regn -3)
 			    (lor (lsh (cadr code) 2)
 				 (lor (lsh S-bit 4)
 				      (lsh (subla '((LSL . 2#011) (UXTW . 2#010) (SXTW . 2#110) (SXTX . 2#111)) shift-op) 5)))))
 		 (setq byte2
-		       (lor (lsh (land opcode1 2#111) 5)
-			    (reg2int regm))))
+		       (lor (lsh (land opcode1 2#111) 5) regm))
+		 (setq byte1 (lsh opcode1 -3)))
 		(t (stderror (bldmsg "Invalid 5 LDR/STR operand: %w" reg-offset))))
-	  (print (list 'last 'displ displ))
-
 	  (DepositInstructionBytes
 	   byte1
 	   byte2
@@ -1307,9 +1309,11 @@
 
 (de OP-ldp-stp (code regt1 regt2 reg-or-sp-imm)
     (prog (opcode1 imm regn)
-	  (setq opcode1 (car code)
-                regn (reg2int (cadr reg-or-sp-imm))
-                imm (lsh (caddr reg-or-sp-imm) (if (reg32p regt1) 4 8)))
+	  (setq opcode1 (car code))
+	  (setq regn (reg2int (cadr reg-or-sp-imm)))
+	  (if (eq (car reg-or-sp-imm) 'indirect)
+	      (setq imm 0)
+	    (setq imm (lsh (caddr reg-or-sp-imm) (if (reg32p regt1) -2 -3))))
 	  (DepositInstructionBytes
 	   (lsh opcode1 -2)
 	   (lor (lsh (land opcode1 2#11) 6) (lsh imm -1))

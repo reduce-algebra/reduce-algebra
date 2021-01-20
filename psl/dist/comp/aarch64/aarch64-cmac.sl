@@ -177,7 +177,7 @@
 		     X16 X17 X18 X19 X20 X21 X22 X23 X24 X25 X26 X27 X28 X29 X30
                      W0 W1 W2 W3 W4 W5 W6 W7 W8 W9 W10 W11 W12 W13 W14 W15
 		     W16 W17 W18 W19 W20 W21 W22 W23 W24 W25 W26 W27 W28 W29 W30
-		     sp st fp lr Rzero Wzero
+		     sp st fp lr Xzr Wzr
                      t1 t2 t3
              nil heaplast heaptrapbound symfnc symval
              bndstkptr bndstklowerbound bndstkupperbound
