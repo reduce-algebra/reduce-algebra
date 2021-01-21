@@ -1,6 +1,9 @@
 \chapter*{Abstract}
 
+%% tex4ht.sty generates a TOC entry automatically and we don't want two.
+\ifdefined\HCode\else
 \addcontentsline{toc}{chapter}{Abstract}
+\fi
 
 This document provides the user with a description of the algebraic
 programming system {\REDUCE}.  The capabilities of this system include:
@@ -18,4 +21,3 @@ programming system {\REDUCE}.  The capabilities of this system include:
 \item facilities for generating numerical programs from symbolic input,
 \item Dirac matrix calculations of interest to high energy physicists.
 \end{enumerate}
-
