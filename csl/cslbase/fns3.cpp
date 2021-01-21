@@ -1943,7 +1943,7 @@ LispObject vector_subseq(LispObject sequence, size_t start,
         //
         for (i=start; i<end; ++i)
         {   Save save1(sequence, copy);
-            LispObject v = Lbgetv(nil,sequence,fixnum_of_int(i))
+            LispObject v = Lbgetv(nil,sequence,fixnum_of_int(i));
             errexit();
             Lbputv(nil,copy,fixnum_of_int(i-start), v);
             save1.restore(sequence, copy);
