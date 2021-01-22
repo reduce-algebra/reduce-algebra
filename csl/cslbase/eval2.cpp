@@ -59,10 +59,10 @@ LispObject apply(LispObject fn, LispObject args,
 // have been prepared and in the list "args"
             bool tracing = (qheader(fn) & SYM_TRACED) != 0;
             if (tracing)
-            {   RealSave save(args, fn, from);
-                LispObject &args1 = save.val(1);
-                LispObject &fn1   = save.val(3);
-                LispObject &from1 = save.val(4);
+            {   RealSave save(fn, args, from);
+                LispObject &fn1   = save.val(1);
+                LispObject &args1 = save.val(2);
+                LispObject &from1 = save.val(3);
                 freshline_trace();
                 errexit();
                 trace_printf("Calling ");
@@ -77,18 +77,18 @@ LispObject apply(LispObject fn, LispObject args,
                 errexit();
                 LispObject p = args1;
                 for (int i=1; p!=nil; i++)
-                {   Save save(p);
+                {   Save save1(p);
                     trace_printf("Arg%d: ", i);
                     errexit();
-                    save.restore(p);
+                    save1.restore(p);
                     loop_print_trace(car(p));
                     errexit();
                     trace_printf("\n");
                     errexit();
-                    save.restore(p);
+                    save1.restore(p);
                     p = cdr(p);
                 }
-                save.restore(args, fn, from);
+                save.restore(fn, args, from);
             }
             def = fn; // this is passed as arg1 to the called code
             Save save(fn); // I may need the function name when tracing
@@ -131,7 +131,7 @@ LispObject apply(LispObject fn, LispObject args,
                 errexit();
                 trace_printf("\n");
                 errexit();
-                save.restore(def);
+                save1.restore(def);
             }
             return def;
         }

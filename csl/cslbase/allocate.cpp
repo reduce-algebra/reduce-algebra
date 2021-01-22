@@ -85,11 +85,9 @@ void *allocate_page(const char *why)
 }
 
 void init_heap_segments(double store_size)
-//
 // This function just makes nil and the pool of page-frames available.
 // The store-size is passed in units bytes, and as a double not
 // an integer so that overflow is not an issue.
-//
 {
     pages = new (std::nothrow) void *[MAX_PAGES];
     heap_pages = new (std::nothrow) void *[MAX_PAGES];
@@ -104,7 +102,7 @@ void init_heap_segments(double store_size)
     {   fatal_error(err_no_store);
     }
 
-    {   size_t free_space = SIXTY_FOUR_BIT ? 128000000 : 32000000;
+    {   size_t free_space = INITIAL_HEAPSIZE;
         size_t request = (size_t)store_size;
 // By doing this in size_t I should avoid overflow
         if (request != 0) free_space = request;
@@ -113,11 +111,9 @@ void init_heap_segments(double store_size)
         pages_count = heap_pages_count = vheap_pages_count = 0;
         nilsegment = nullptr;
         {   size_t n = (size_t)(NIL_SEGMENT_SIZE+free_space*CSL_PAGE_SIZE);
-//
 // I try to get the whole of the initial hunk of memory that I need in
 // one gulp since that (maybe) gives me the best chance to obtain all
 // the memory in just one half of my address space.
-//
             char *pool = reinterpret_cast<char *>(
                 new (std::nothrow) Align8[n/8]);
             if (pool != nullptr)
@@ -655,7 +651,6 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // a mistake since the header size depends on whether I am using a
 // 32-bit or 64-bit representation. However it would be hard to unwind
 // that now!]
-//
     size_t alloc_size = (size_t)doubleword_align_up(size);
 // Basic vectors must be smaller then the CSL page size.
     if (alloc_size > (CSL_PAGE_SIZE - 32))
@@ -668,11 +663,9 @@ LispObject get_basic_vector(int tag, int type, size_t size)
             vec_forced(alloc_size/CELL))
         {   vfringe = r;
             char msg[40];
-//
 // I go to a whole load of trouble here to tell the user what sort of
 // vector request provoked this garbage collection.  I wonder if the user
 // really cares - but I do very much when I am chasing after GC bugs!
-//
             switch (tag)
             {   case TAG_SYMBOL:
                     std::sprintf(msg, "symbol header");
@@ -732,7 +725,6 @@ LispObject get_basic_vector(int tag, int type, size_t size)
         }
         *reinterpret_cast<Header *>(r) = type + (size <<
                                          (Tw+5)) + TAG_HDR_IMMED;
-//
 // DANGER: the vector allocated here is left uninitialised at this stage.
 // This is OK if the vector will contain binary information, but if it
 // will hold any LispObjects it needs safe values put in PDQ.
@@ -813,12 +805,13 @@ LispObject borrow_basic_vector(int tag, int type, size_t size)
 LispObject borrow_vector(int tag, int type, size_t n)
 {   LispObject v;
     if (n-CELL > VECTOR_CHUNK_BYTES)
-    {   size_t chunks = (n - CELL + VECTOR_CHUNK_BYTES -
-                         1)/VECTOR_CHUNK_BYTES;
+    {   size_t chunks = (n - CELL + VECTOR_CHUNK_BYTES - 1) /
+                        VECTOR_CHUNK_BYTES;
         size_t i;
         size_t last_size = (n - CELL) % VECTOR_CHUNK_BYTES;
         if (last_size == 0) last_size = VECTOR_CHUNK_BYTES;
         v = borrow_basic_vector(TAG_VECTOR, TYPE_INDEXVEC, CELL*(chunks+1));
+        errexit();
         for (i=0; i<chunks; i++)
             basic_elt(v, i) = nil;
         for (i=0; i<chunks; i++)
@@ -826,6 +819,7 @@ LispObject borrow_vector(int tag, int type, size_t n)
             int k = i==chunks-1 ? last_size : VECTOR_CHUNK_BYTES;
             Save save(v);
             v1 = borrow_basic_vector(tag, type, k+CELL);
+            errexit();
             save.restore(v);
             size_t k1 = k/CELL;
             for (size_t j=0; j<k1; j++)

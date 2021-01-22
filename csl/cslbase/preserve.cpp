@@ -1398,7 +1398,7 @@ static void collect_modules(string Cname, string Cleafname,
     }
     if (std::strcmp(name, ".fasl") != 0) return;
     v = iintern(boffo, k, lisp_package, 0);
-    errexit();
+    if (exceptionPending()) return;
     save.restore(mods);
     mods = cons(v, mods);
 }

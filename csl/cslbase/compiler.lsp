@@ -4220,17 +4220,17 @@ stacks (quote c!:live_across_call)) (cond (!*noisy (progn (printc
 "before remove nops") (showblocklist c!:all_blocks)))) (c!:remove_nops 
 c!:all_blocks) (cond (!*noisy (progn (printc "after remove nops") (
 showblocklist c!:all_blocks)))) (printc "#endif // End of trace output") (
-cond (locs (progn (c!:printf "    LispObject %s" (car locs)) (prog (var1344) 
-(setq var1344 (cdr locs)) lab1343 (cond ((null var1344) (return nil))) (prog 
-(v) (setq v (car var1344)) (c!:printf ", %s" v)) (setq var1344 (cdr var1344))
-(go lab1343)) (c!:printf ";\n")))) (cond ((or stacks reloadenv) (c!:printf 
-"    stack_restorer stack_restorer_var;\n"))) (cond ((and varargs args) (
-progn (setq w " ") (c!:printf "    LispObject") (prog (var1346) (setq var1346
-(cdddr args)) lab1345 (cond ((null var1346) (return nil))) (prog (v) (setq v
-(car var1346)) (progn (c!:printf "%s%s" w v) (setq w ", "))) (setq var1346 (
-cdr var1346)) (go lab1345)) (c!:printf ";\n") (prog (var1348) (setq var1348 (
-cdddr args)) lab1347 (cond ((null var1348) (return nil))) (prog (v) (setq v (
-car var1348)) (progn (c!:printf 
+cond (locs (progn (c!:printf "    UNUSED_NAME LispObject %s" (car locs)) (
+prog (var1344) (setq var1344 (cdr locs)) lab1343 (cond ((null var1344) (
+return nil))) (prog (v) (setq v (car var1344)) (c!:printf ", %s" v)) (setq 
+var1344 (cdr var1344)) (go lab1343)) (c!:printf ";\n")))) (cond ((or stacks 
+reloadenv) (c!:printf "    stack_restorer stack_restorer_var;\n"))) (cond ((
+and varargs args) (progn (setq w " ") (c!:printf "    LispObject") (prog (
+var1346) (setq var1346 (cdddr args)) lab1345 (cond ((null var1346) (return 
+nil))) (prog (v) (setq v (car var1346)) (progn (c!:printf "%s%s" w v) (setq w
+", "))) (setq var1346 (cdr var1346)) (go lab1345)) (c!:printf ";\n") (prog (
+var1348) (setq var1348 (cdddr args)) lab1347 (cond ((null var1348) (return 
+nil))) (prog (v) (setq v (car var1348)) (progn (c!:printf 
 "    if (_a4up_ == nil)\n        aerror1(\qnot enough arguments provided\q, basic_elt(env, 0));\n"
 ) (c!:printf "    %s = car(_a4up_); _a4up_ = cdr(_a4up_);\n" v))) (setq 
 var1348 (cdr var1348)) (go lab1347)) (c!:printf 

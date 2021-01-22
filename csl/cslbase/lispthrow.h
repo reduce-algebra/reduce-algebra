@@ -1224,13 +1224,13 @@ class save_current_function
 {   LispObject *savestack;
 public:
     save_current_function(LispObject newfn)
-    {   real_push(current_function);
+    {   *++stack = current_function;
         savestack = stack;
         current_function = newfn;
     }
     ~save_current_function()
     {   stack = savestack;
-        real_pop(current_function);
+        current_function = *stack--;
     }
 };
 
@@ -1585,12 +1585,14 @@ class RAIIsave_codevec
 {   LispObject *saveStack;
 public:
     RAIIsave_codevec()
-    {   real_push(litvec, codevec);
+    {   *++stack = litvec;
+        *++stack = codevec;
         saveStack = stack;
     }
     ~RAIIsave_codevec()
     {   stack = saveStack;
-        real_pop(codevec, litvec);
+        codevec = *stack--;
+        litvec = *stack--;
     }
 };
 

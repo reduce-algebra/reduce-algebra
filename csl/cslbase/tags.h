@@ -92,6 +92,10 @@ extern LispObject nil;
 
 #define MEGABYTE                ((size_t)0x100000)
 
+#ifndef INITIAL_HEAPSIZE
+#define INITIAL_HEAPSIZE         ((SIXTY_FOUR_BIT ? 768 : 128) * MEGABYTE)
+#endif // MAX_HEAPSIZE
+
 #if PAGE_BITS >= 20
 #define MAX_PAGES               (MAX_HEAPSIZE >> (PAGE_BITS-20))
 #else

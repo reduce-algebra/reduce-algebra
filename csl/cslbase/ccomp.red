@@ -2134,9 +2134,11 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
     printc "#endif // End of trace output";
 
 % Now I am ready to start emitting some code. First declare all the
-% local variables I will use.
+% local variables I will use. I am not quite certain that all will be
+% used so to supress C++ compiler warnings I use [[maybe_unused]] or
+% some equivalent if I can.
    if locs then <<
-      c!:printf("    LispObject %s", car locs);
+      c!:printf("    UNUSED_NAME LispObject %s", car locs);
       for each v in cdr locs do c!:printf(", %s", v);
       c!:printf ";\n" >>;
 % If I wanted the stack fully popped even in throw and error cases I could

@@ -184,7 +184,8 @@ reporttime() {
   then
     red="redpsl"
   else
-    red="$here/bin/redcsl -w"
+    red="$here/bin/redcsl"
+    opt="-w"
   fi
   "$red" "$opt" <<XXX | grep "^$name"
 symbolic <<
