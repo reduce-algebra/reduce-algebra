@@ -403,7 +403,7 @@
 		     X16 X17 X18 X19 X20 X21 X22 X23 X24 X25 X26 X27 X28 X29 X30
                      W0 W1 W2 W3 W4 W5 W6 W7 W8 W9 W10 W11 W12 W13 W14 W15
 		     W16 W17 W18 W19 W20 W21 W22 W23 W24 W25 W26 W27 W28 W29 W30
-		     sp st fp lr Xzr Wzr
+		     fp lr Xzr Wzr
 		     t1 t2 t3
              nil heaplast heaptrapbound symfnc symval
 	     bndstkptr bndstklowerbound bndstkupperbound
@@ -418,20 +418,20 @@
 	     ))))
 
 (de reg-zero-p (RegName)
-    (eq RegName 'XZr))
+    (eq (cadr RegName) 'XZr))
 
 (de reg32-zero-p (RegName)
-    (eq RegName 'Wzr))
+    (eq (cadr RegName) 'Wzr))
 
 (de reg-sp-p (RegName)
-    (eq RegName 'sp))
+    (eq (cadr RegName) 'sp))
 
 (de reg32-sp-p (RegName)
-    (eq RegName 'Wsp))
+    (eq (cadr RegName) 'Wsp))
 
 (de reg-or-sp-p (RegName)
     (or (and (regp RegName) (not (reg-zero-p RegName)))
-	(req-sp-p RegName)))
+	(reg-sp-p RegName)))
 
 (de reg32-or-sp-p (RegName)
     (or (and (reg32p RegName) (not (reg32-zero-p RegName)))
@@ -469,7 +469,7 @@
 	 (pairp (cddr x)) (imm9-p (caddr x))))
 
 (de reg-or-sp-imm9-p (x)
-    (or (and (eqcar x 'indirect) (pairp (cdr x)) (regp (cadr x)))
+    (or (and (eqcar x 'indirect) (pairp (cdr x)) (reg-or-sp-p (cadr x)))
 	(and (eqcar x 'displacement)
 	     (pairp (cdr x)) (reg-or-sp-p (cadr x))
 	     (pairp (cddr x)) (imm9-p (caddr x)))))
@@ -488,7 +488,7 @@
 	 (pairp (cddr x)) (imm10-p (caddr x))))
 
 (de reg-or-sp-imm10-p (x)
-    (or (and (eqcar x 'indirect) (pairp (cdr x)) (regp (cadr x)))
+    (or (and (eqcar x 'indirect) (pairp (cdr x)) (reg-or-sp-p (cadr x)))
 	(and (eqcar x 'displacement)
 	     (pairp (cdr x)) (reg-or-sp-p (cadr x))
 	     (pairp (cddr x)) (imm10-p (caddr x)))))
@@ -818,7 +818,7 @@
 	   (X16 16) (X17 17) (X18 18) (X19 19)
 	   (X20 20) (X21 21) (X22 22) (X23 23)
 	   (X24 24) (X25 25) (X26 26) (X27 27)
-	   (X28 28) (X29 29) (X30 30) (Wzero 31)
+	   (X28 28) (X29 29) (X30 30) (Xzr 31)
 	   (W0   0) (W1   1) (W2   2) (W3   3) 
 	   (W4   4) (W5   5) (W6   6) (W7   7)
 	   (W8   8) (W9   9) (W10 10) (W11 11)
@@ -826,7 +826,7 @@
 	   (W16 16) (W17 17) (W18 18) (W19 19)
 	   (W20 20) (W21 21) (W22 22) (W23 23)
 	   (W24 24) (W25 25) (W26 26) (W27 27)
-	   (W28 28) (W29 29) (W30 30) (Wzero 31)
+	   (W28 28) (W29 29) (W30 30) (Wzr 31)
 	   (T1   9) (T2  10) (T3  11)
 	   (fp  29)			% frame pointer for C subroutine calls
 	   (sp  31) (st  31)		% LISP stack register
@@ -854,13 +854,13 @@
 
 %------------------------------------------------------------------------
 (de OP-branch-imm (code offset)
-    (setq offset (MakeExpressionRelative offset 8))
+    (setq offset (MakeExpressionRelative offset 4))
     (if (not (weq (land offset 2#11) 0))
 	(stderror (bldmsg "Invalid immediate branch offset %w" offset))
       (progn
 	(setq offset (ashift offset -2))
 	(DepositInstructionBytes
-	 (lor (lsh (car code) 4) (cadr code))
+	 (lor (lsh (car code) 2) (land (lsh offset -24) 3))
 	 (land 16#ff (lshift offset -16))
 	 (land 16#ff (lshift offset -8))
 	 (land 16#ff offset))
@@ -969,14 +969,20 @@
 
 (de lth-reg-logical (code reg1 reg2 imm-logical) 4)
 
-%% ToDo
 (de OP-reg-regsp (code reg1 reg2)
+    (OP-reg-imm12 code reg1 reg2 0)
     )
 
 (de lth-reg-regsp (code reg1 reg2) 4)
 
-%% ToDo
+(de OP-regsp-reg (code reg1 reg2)
+    (OP-reg-imm12 code reg1 reg2 0)
+    )
+
+(de lth-regsp-reg (code reg1 reg2) 4)
+
 (de OP-reg-reg (code reg1 reg2)
+    (OP-reg-shifter code reg1 (if (reg32p reg1) 'Wzr 'Xzr) reg2)
     )
 
 (de lth-reg-reg (code reg1 reg2) 4)
@@ -984,16 +990,16 @@
 %% ToDo
 (de OP-reg-shifter (code reg1 reg2 reg-shifter)
     (prog (opcode2 shift-op shift-amount reg3)
-	  (cond ((regp reg-shifter) (setq reg3 (reg2int reg-shifter) opcode2 0 shift-amount 0))
+	  (cond ((regp reg-shifter) (setq reg3 reg-shifter opcode2 0 shift-amount 0))
 		((eqcar reg-shifter 'regshifted)
-		 (setq reg3 (reg2int (cadr reg-shifter)) shift-op (caddr reg-shifter))
+		 (setq reg3 (list 'reg (cadr reg-shifter)) shift-op (caddr reg-shifter))
 		 (setq shift-amount (cadddr reg-shifter))
 		 (cond ((fixp shift-amount)
 			(setq opcode2 (lor (lsh (land shift-amount 1) 3) (subla '((LSL . 2#000) (LSR . 2#010) (ASR . 2#100)) shift-op))))
 		       (T (stderror (bldmsg "Invalid operand %w" reg-shifter)))))
 		(T (stderror (bldmsg "Invalid operand %w" reg-shifter))))
 	  (DepositInstructionBytes
-	   (lsh code -3)
+	   (lsh (car code) -3)
 	   (lor (reg2int reg3) (lsh opcode2 5))
 	   (lor (lsh (reg2int reg2) -3) (lsh shift-amount 2))
 	   (lor (reg2int reg1) (lsh (land (reg2int reg2) 7) 5))))
@@ -1169,7 +1175,7 @@
 	       (not (labelp reg-offset))
 	       (or (not (pairp reg-offset))
 	       	   (not (memq (car reg-offset) '(displacement indirect indexed preindexed postindexed)))
-		   (not (regp (cadr reg-offset)))))
+		   (not (reg-or-sp-p (cadr reg-offset)))))
 	      (stderror (bldmsg "Invalid 1 LDR/STR operand: %w" reg-offset)))
 	  (if (labelp reg-offset)	% label --> pc-relative
 	      (progn

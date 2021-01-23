@@ -546,17 +546,18 @@
 
 (instr SUB   (reg reg reg-extended)     OP-reg-extended  2#11001011001)
 (instr SUB   (reg reg reg-shifter)     OP-reg-shifter  2#11001011000)
-(instr SUB   (reg reg imm12-shifted)    OP-reg-imm12     2#110100010)
+(instr SUB   (reg32-or-sp reg32-or-sp imm12-shifted) OP-reg-imm12     2#010100010)
+(instr SUB   (reg-or-sp reg-or-sp imm12-shifted)     OP-reg-imm12     2#110100010)
 
 (instr SBC   (reg reg reg-shifter)     OP-reg-shifter  2#1101101000)
 
 (instr TST   (reg reg-shifter)         OP-reg-shifter 2#1101010000)
 (instr TST   (reg imm-logical)         OP-reg-logical   2#11100100)
 
-(instr MOV   (reg32 reg32-sp)          OP-reg-regsp  2#0001000100)
-(instr MOV   (reg reg-sp)              OP-reg-regsp  2#1001000100)
-(instr MOV   (reg32-sp reg32)          OP-regsp-reg  2#0001000100)
-(instr MOV   (reg-sp reg)              OP-regsp-reg  2#1001000100)
+(instr MOV   (reg32 reg32-sp)          OP-reg-regsp  2#000100010)
+(instr MOV   (reg reg-sp)              OP-reg-regsp  2#100100010)
+(instr MOV   (reg32-sp reg32)          OP-regsp-reg  2#000100010)
+(instr MOV   (reg-sp reg)              OP-regsp-reg  2#100100010)
 (instr MOV   (reg32 reg32)             OP-reg-reg    2#00101010000)
 (instr MOV   (reg reg)                 OP-reg-reg    2#10101010000)
 (instr MOV   (reg imm16-shifted)       OP-reg-imm16   2#010100101)
