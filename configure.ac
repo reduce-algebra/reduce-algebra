@@ -965,7 +965,7 @@ AC_CHECK_PROG([CCACHE], [ccache], [ccache], [])
 AC_MSG_NOTICE([CC=/$CC/ CXX=/$CXX/ CCACHE=/$CCACHE/])
 
 # The use of ccache here deserves an explanation. The first and maybe obvious
-# thing is that if wither ccache seems to to be installed or if the person
+# thing is that if either ccache seems not to to be installed or if the person
 # who invoked the configure script had overridden CC or CXX so specify any
 # custom compilers that I will not do anything.
 # Then the "obvious" thing do do would be to go 'CC="ccache $CC"' so that
@@ -976,7 +976,7 @@ AC_MSG_NOTICE([CC=/$CC/ CXX=/$CXX/ CCACHE=/$CCACHE/])
 # in ways I do not want, so I take steps to preserve and restore those.
 # Now an issue that caused me much pain. If CC ends up as text with embedded
 # whitespace then passing it down to lower-level configure scripts is
-# delicate. And at leats one library that I use performs a test of the form
+# delicate. And at least one library that I use performs a test of the form
 #    if test $CC = xxx; then
 # (where perhaps more properly it would have gone 'test "$CC" = "xxx"') and
 # if CC expands to more than one word that gives a syntax error. So to work
@@ -988,7 +988,7 @@ AC_MSG_NOTICE([CC=/$CC/ CXX=/$CXX/ CCACHE=/$CCACHE/])
 # to where Reduce gets built is not supported. If some keen person would
 # like to review all the build scripts and get quoting of strings fully
 # correct that might be nice!
-# Hah - a further issue. On some platforms gcc and g++ (and som others) will
+# Hah - a further issue. On some platforms gcc and g++ (and some others) will
 # be links to ccache and so the facility is already used automatically. In
 # that case it is not a help to wrap in an extra call to ccache!
 
@@ -1001,6 +1001,14 @@ AC_PROG_CXX
 CFLAGS="$OLD_CFLAGS"
 CXXFLAGS="$OLD_CXXFLAGS"
 CPPFLAGS="$OLD_CPPFLAGS"
+
+# If I am on a Macintosh and if the user had not pre-specified the
+# compiler I will force in clang/clang++ whatever AC_PROG_CC suggests.
+if test "$uname_s" == "Darwin" && test "$ORIG" = ""
+then
+  CC=clang
+  CXX=clang++
+fi
 
 if test "$with_ccache" != "no" &&
    test "$ORIG" = "" &&

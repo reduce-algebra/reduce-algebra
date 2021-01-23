@@ -1,4 +1,4 @@
-// newallocate.h                          Copyright (C) Codemist, 1990-2020
+// newallocate.h                          Copyright (C) Codemist, 1990-2021
 
 // This represents a substantial re-though in April 2020, with the ideas
 // mainly ones that emerged while I was thinking about and implementing a
@@ -7,7 +7,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

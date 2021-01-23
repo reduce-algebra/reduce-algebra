@@ -1214,27 +1214,30 @@ LispObject bad_specialfn_4up(LispObject env, LispObject a, LispObject b,
 {   return aerror1("bad special function", env);
 }
 
+#define DEF_special(name, def) \
+    {name, bad_specialfn_0, def, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up}
+
 setup_type const eval3_setup[] =
-{   {"or",                      bad_specialfn_0, or_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"prog",                    bad_specialfn_0, prog_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"prog1",                   bad_specialfn_0, prog1_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"prog2",                   bad_specialfn_0, prog2_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"progn",                   bad_specialfn_0, progn_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"quote",                   bad_specialfn_0, quote_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"return",                  bad_specialfn_0, return_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"setq",                    bad_specialfn_0, setq_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"tagbody",                 bad_specialfn_0, tagbody_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"unless",                  bad_specialfn_0, unless_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"unwind-protect",          bad_specialfn_0, unwind_protect_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"when",                    bad_specialfn_0, when_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"macrolet",                bad_specialfn_0, macrolet_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"multiple-value-call",     bad_specialfn_0, mv_call_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"multiple-value-prog1",    bad_specialfn_0, mv_prog1_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"progv",                   bad_specialfn_0, progv_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"return-from",             bad_specialfn_0, return_from_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"the",                     bad_specialfn_0, the_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"throw",                   bad_specialfn_0, throw_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
+{   DEF_special("or",                   or_fn),
+    DEF_special("prog",                 prog_fn),
+    DEF_special("prog1",                prog1_fn),
+    DEF_special("prog2",                prog2_fn),
+    DEF_special("progn",                progn_fn),
+    DEF_special("quote",                quote_fn),
+    DEF_special("return",               return_fn),
+    DEF_special("setq",                 setq_fn),
+    DEF_special("tagbody",              tagbody_fn),
+    DEF_special("unless",               unless_fn),
+    DEF_special("unwind-protect",       unwind_protect_fn),
+    DEF_special("when",                 when_fn),
+    DEF_special("macrolet",             macrolet_fn),
+    DEF_special("multiple-value-call",  mv_call_fn),
+    DEF_special("multiple-value-prog1", mv_prog1_fn),
+    DEF_special("progv",                progv_fn),
+    DEF_special("return-from",          return_from_fn),
+    DEF_special("the",                  the_fn),
+    DEF_special("throw",                throw_fn),
+    {nullptr,                           nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 // end of eval3.cpp

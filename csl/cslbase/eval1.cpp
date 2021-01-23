@@ -1819,24 +1819,24 @@ LispObject Lshow_stack_0(LispObject env)
 }
 
 setup_type const eval1_setup[] =
-{   {"bytecounts",              Lbytecounts_0, Lbytecounts_1, G2Wother, G3Wother, G4Wother},
-    {"idapply",                 G0Wother, Lapply_1, Lapply_2, Lapply_3, Lapply_4up},
-    {"eval",                    G0W1, Leval, G2W1, G3W1, G4W1},
-    {"apply",                   G0Wother, Lapply_1, Lapply_2, Lapply_3, Lapply_4up},
-    {"apply0",                  G0W1, Lapply0, G2W1, G3W1, G4W1},
-    {"apply1",                  G0W2, G1W2, Lapply1, G3W2, G4W2},
-    {"apply2",                  G0W3, G1W3, G2W3, Lapply2, G4W3},
-    {"apply3",                  G0W4up, G1W4up, G2W4up, G3W4up, Lapply3},
-    {"evlis",                   G0W1, Levlis, G2W1, G3W1, G4W1},
-    {"funcall",                 G0Wother, Lfuncall_1, Lfuncall_2, Lfuncall_3, Lfuncall_4up},
-    {"funcall*",                G0Wother, Lfuncall_1, Lfuncall_2, Lfuncall_3, Lfuncall_4up},
-    {"parallel",                G0W2, G1W2, Lparallel, G3W2, G4W2},
-    {"sleep",                   G0W1, Lsleep, G2W1, G3W1, G4W1},
-    {"values",                  Lvalues_0, Lvalues_1, Lvalues_2, Lvalues_3, Lvalues_4up},
-    {"macroexpand",             G0Wother, Lmacroexpand, Lmacroexpand_2, G3W1, G4W1},
-    {"macroexpand-1",           G0Wother, Lmacroexpand_1, Lmacroexpand_2, G3Wother, G4Wother},
-    {"show-stack",              Lshow_stack_0, Lshow_stack_1, Lshow_stack_2, G3Wother, G4Wother},
-    {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
+{   {"bytecounts",      Lbytecounts_0, Lbytecounts_1, G2Wother, G3Wother, G4Wother},
+    {"idapply",         G0Wother, Lapply_1, Lapply_2, Lapply_3, Lapply_4up},
+    DEF_1("eval",       Leval),
+    {"apply",           G0Wother, Lapply_1, Lapply_2, Lapply_3, Lapply_4up},
+    DEF_1("apply0",     Lapply0),
+    DEF_2("apply1",     Lapply1),
+    DEF_3("apply2",     Lapply2),
+    DEF_4up("apply3",   Lapply3),
+    DEF_1("evlis",      Levlis),
+    {"funcall",         G0Wother, Lfuncall_1, Lfuncall_2, Lfuncall_3, Lfuncall_4up},
+    {"funcall*",        G0Wother, Lfuncall_1, Lfuncall_2, Lfuncall_3, Lfuncall_4up},
+    DEF_2("parallel",   Lparallel),
+    DEF_1("sleep",      Lsleep),
+    {"values",          Lvalues_0, Lvalues_1, Lvalues_2, Lvalues_3, Lvalues_4up},
+    {"macroexpand",     G0Wother, Lmacroexpand, Lmacroexpand_2, G3W1, G4W1},
+    {"macroexpand-1",   G0Wother, Lmacroexpand_1, Lmacroexpand_2, G3Wother, G4Wother},
+    {"show-stack",      Lshow_stack_0, Lshow_stack_1, Lshow_stack_2, G3Wother, G4Wother},
+    {nullptr,           nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 // end of eval1.cpp

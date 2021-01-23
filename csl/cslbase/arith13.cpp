@@ -1,4 +1,4 @@
-// arith13.cpp                             Copyright (C) 2016-2013 Codemist
+// arith13.cpp                             Copyright (C) 2016-2021 Codemist
 
 //
 // Complex elementary functions using the C99 support for same, but with
@@ -15,7 +15,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2013, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -487,36 +487,36 @@ static LispObject Lcacoth(LispObject env, LispObject a, LispObject b)
 
 
 setup_type const arith13_setup[] =
-{   {"native-carg",             G0W2, G1W2, Lcarg, G3W2, G4W2},
-    {"native-cabs",             G0W2, G1W2, Lcabs, G3W2, G4W2},
-    {"native-cexp",             G0W2, G1W2, Lcexp, G3W2, G4W2},
-    {"native-clog",             G0W2, G1W2, Lclog, G3W2, G4W2},
-    {"native-csqrt",            G0W2, G1W2, Lcsqrt, G3W2, G4W2},
-    {"native-csin",             G0W2, G1W2, Lcsin, G3W2, G4W2},
-    {"native-ccos",             G0W2, G1W2, Lccos, G3W2, G4W2},
-    {"native-ctan",             G0W2, G1W2, Lctan, G3W2, G4W2},
-    {"native-ccsc",             G0W2, G1W2, Lccsc, G3W2, G4W2},
-    {"native-csec",             G0W2, G1W2, Lcsec, G3W2, G4W2},
-    {"native-ccot",             G0W2, G1W2, Lccot, G3W2, G4W2},
-    {"native-casin",            G0W2, G1W2, Lcasin, G3W2, G4W2},
-    {"native-cacos",            G0W2, G1W2, Lcacos, G3W2, G4W2},
-    {"native-catan",            G0W2, G1W2, Lcatan, G3W2, G4W2},
-    {"native-cacsc",            G0W2, G1W2, Lcacsc, G3W2, G4W2},
-    {"native-casec",            G0W2, G1W2, Lcasec, G3W2, G4W2},
-    {"native-cacot",            G0W2, G1W2, Lcacot, G3W2, G4W2},
-    {"native-csinh",            G0W2, G1W2, Lcsinh, G3W2, G4W2},
-    {"native-ccosh",            G0W2, G1W2, Lccosh, G3W2, G4W2},
-    {"native-ctanh",            G0W2, G1W2, Lctanh, G3W2, G4W2},
-    {"native-ccsch",            G0W2, G1W2, Lccsch, G3W2, G4W2},
-    {"native-csech",            G0W2, G1W2, Lcsech, G3W2, G4W2},
-    {"native-ccoth",            G0W2, G1W2, Lccoth, G3W2, G4W2},
-    {"native-casinh",           G0W2, G1W2, Lcasinh, G3W2, G4W2},
-    {"native-cacosh",           G0W2, G1W2, Lcacosh, G3W2, G4W2},
-    {"native-catanh",           G0W2, G1W2, Lcatanh, G3W2, G4W2},
-    {"native-cacsch",           G0W2, G1W2, Lcacsch, G3W2, G4W2},
-    {"native-casech",           G0W2, G1W2, Lcasech, G3W2, G4W2},
-    {"native-cacoth",           G0W2, G1W2, Lcacoth, G3W2, G4W2},
-    {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
+{   DEF_2("native-carg",    Lcarg),
+    DEF_2("native-cabs",    Lcabs),
+    DEF_2("native-cexp",    Lcexp),
+    DEF_2("native-clog",    Lclog),
+    DEF_2("native-csqrt",   Lcsqrt),
+    DEF_2("native-csin",    Lcsin),
+    DEF_2("native-ccos",    Lccos),
+    DEF_2("native-ctan",    Lctan),
+    DEF_2("native-ccsc",    Lccsc),
+    DEF_2("native-csec",    Lcsec),
+    DEF_2("native-ccot",    Lccot),
+    DEF_2("native-casin",   Lcasin),
+    DEF_2("native-cacos",   Lcacos),
+    DEF_2("native-catan",   Lcatan),
+    DEF_2("native-cacsc",   Lcacsc),
+    DEF_2("native-casec",   Lcasec),
+    DEF_2("native-cacot",   Lcacot),
+    DEF_2("native-csinh",   Lcsinh),
+    DEF_2("native-ccosh",   Lccosh),
+    DEF_2("native-ctanh",   Lctanh),
+    DEF_2("native-ccsch",   Lccsch),
+    DEF_2("native-csech",   Lcsech),
+    DEF_2("native-ccoth",   Lccoth),
+    DEF_2("native-casinh",  Lcasinh),
+    DEF_2("native-cacosh",  Lcacosh),
+    DEF_2("native-catanh",  Lcatanh),
+    DEF_2("native-cacsch",  Lcacsch),
+    DEF_2("native-casech",  Lcasech),
+    DEF_2("native-cacoth",  Lcacoth),
+    {nullptr,               nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 // end of arith13.cpp

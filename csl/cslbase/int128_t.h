@@ -1,5 +1,5 @@
 // "int128_t.h":  128 bit integer types for C++
-//                             Copyright Jason Lee, Arthur Norman 2013-2020
+//                             Copyright Jason Lee, Arthur Norman 2013-2021
 
 // $Id$
   
@@ -36,7 +36,7 @@ slow at big arithmetic whatever I do, so hurtying it a bit mnore will not
 upset me too much. A C++ expert may want to address that too!
 
 Copyright (c) 2013 - 2017 Jason Lee @ calccrypto at gmail.com
-              2020        Arthur Norman
+              2020 - 2021 Arthur Norman
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -66,7 +66,7 @@ to do a general rewrite of this class.
 
 
 This code incorporated the Jason Lee code but has been re-worked by Arthur
-Norman, 2020, and now provides both signed and unsigned 128-bit types called
+Norman, 2020-, and now provides both signed and unsigned 128-bit types called
 uint128_t and int128_t, and to arrange that it can always be loaded as a
 header-only library that checks HAVE_INT128_T (etc) as set up using autoconf
 to decide how it will support the required types.

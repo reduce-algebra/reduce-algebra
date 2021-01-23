@@ -42,8 +42,6 @@
 #include "headers.h"
 
 
-#define FP_EVALUATE   1
-
 LispObject Lfrexp(LispObject env, LispObject a)
 {
 #ifdef HAVE_SOFTFLOAT
@@ -375,12 +373,10 @@ LispObject Lidifference_2(LispObject, LispObject a, LispObject b)
                                             (intptr_t)b + TAG_FIXNUM));
 }
 
-//
 // xdifference is provided just for the support of the CASE operator. It
 // subtracts its arguments but returns NIL if either argument is not
 // an small integer or if the result overflows. Small is 28-bits in this
 // context at present, which is maybe strange!
-//
 
 LispObject Lxdifference(LispObject env, LispObject a, LispObject b)
 {   int32_t r;
@@ -661,8 +657,6 @@ LispObject Lizerop(LispObject env, LispObject a)
                                       (intptr_t)fixnum_of_int(0)));
 }
 
-#ifdef FP_EVALUATE
-
 static double fp_args[32];
 static double fp_stack[16];
 
@@ -685,12 +679,10 @@ static double fp_stack[16];
 
 static LispObject Lfp_eval(LispObject env, LispObject code,
                            LispObject args)
-//
 // The object of this code is to support fast evaluation of numeric
 // expressions.  The first argument is a vector of byte opcodes, while
 // the second arg is a list of floating point values whose value will (or
 // at least may) be used.  There are at most 32 values in this list.
-//
 {   int n = 0;
     double w;
     unsigned char *p;
@@ -703,9 +695,7 @@ static LispObject Lfp_eval(LispObject env, LispObject code,
     p = reinterpret_cast<unsigned char *>(&ucelt(code, 0));
     for (;;)
     {   int op = *p++;
-//
 // Opcodes 0 to 31 just load up the corresponding input value.
-//
         if (op < 32)
         {   fp_stack[n++] = fp_args[op];
             continue;
@@ -765,47 +755,43 @@ static LispObject Lfp_eval(LispObject env, LispObject code,
     }
 }
 
-#endif
-
 setup_type const arith12_setup[] =
-{   {"frexp",                   G0W1, Lfrexp, G2W1, G3W1, G4W1},
-    {"modular-difference",      G0W2, G1W2, Lmodular_difference, G3W2, G4W2},
-    {"modular-minus",           G0W1, Lmodular_minus, G2W1, G3W1, G4W1},
-    {"modular-number",          G0W1, Lmodular_number, G2W1, G3W1, G4W1},
-    {"modular-plus",            G0W2, G1W2, Lmodular_plus, G3W2, G4W2},
-    {"modular-quotient",        G0W2, G1W2, Lmodular_quotient, G3W2, G4W2},
-    {"modular-reciprocal",      G0W1, Lmodular_reciprocal, G2W1, G3W1, G4W1},
-    {"safe-modular-reciprocal", G0W1, Lsafe_modular_reciprocal, G2W1, G3W1, G4W1},
-    {"modular-times",           G0W2, G1W2, Lmodular_times, G3W2, G4W2},
-    {"modular-expt",            G0W2, G1W2, Lmodular_expt, G3W2, G4W2},
-    {"set-small-modulus",       G0W1, Lset_small_modulus, G2W1, G3W1, G4W1},
-    {"iadd1",                   G0W1, Liadd1, G2W1, G3W1, G4W1},
-    {"idifference",             G0W2, G1W2, Lidifference_2, G3W2, G4W2},
-    {"xdifference",             G0W2, G1W2, Lxdifference, G3W2, G4W2},
-    {"igeq",                    G0W2, G1W2, Ligeq_2, G3W2, G4W2},
-    {"igreaterp",               G0W2, G1W2, Ligreaterp_2, G3W2, G4W2},
-    {"ileq",                    G0W2, G1W2, Lileq_2, G3W2, G4W2},
-    {"ilessp",                  G0W2, G1W2, Lilessp_2, G3W2, G4W2},
+{   DEF_1("frexp",              Lfrexp),
+    DEF_2("modular-difference", Lmodular_difference),
+    DEF_1("modular-minus",      Lmodular_minus),
+    DEF_1("modular-number",     Lmodular_number),
+    DEF_2("modular-plus",       Lmodular_plus),
+    DEF_2("modular-quotient",   Lmodular_quotient),
+    DEF_1("modular-reciprocal", Lmodular_reciprocal),
+    DEF_1("safe-modular-reciprocal", Lsafe_modular_reciprocal),
+    DEF_2("modular-times",      Lmodular_times),
+    DEF_2("modular-expt",       Lmodular_expt),
+    DEF_1("set-small-modulus",  Lset_small_modulus),
+    DEF_1("iadd1",              Liadd1),
+    DEF_2("idifference",        Lidifference_2),
+    DEF_2("xdifference",        Lxdifference),
+    DEF_2("igeq",               Ligeq_2),
+    DEF_2("igreaterp",          Ligreaterp_2),
+    DEF_2("ileq",               Lileq_2),
+    DEF_2("ilessp",             Lilessp_2),
     {"ilogand",                 Lilogand_0, Lilogand_1, Lilogand_2, Lilogand_3, Lilogand_4up},
     {"ilogor",                  Lilogor_0, Lilogor_1, Lilogor_2, Lilogor_3, Lilogor_4up},
     {"ilogxor",                 Lilogxor_0, Lilogxor_1, Lilogxor_2, Lilogxor_3, Lilogxor_4up},
-    {"imax",                    G0W2, G1W2, Limax_2, G3W2, G4W2},
-    {"imin",                    G0W2, G1W2, Limin_2, G3W2, G4W2},
-    {"iminus",                  G0W1, Liminus, G2W1, G3W1, G4W1},
-    {"iminusp",                 G0W1, Liminusp, G2W1, G3W1, G4W1},
+    DEF_2("imax",               Limax_2),
+    DEF_2("imin",               Limin_2),
+    DEF_1("iminus",             Liminus),
+    DEF_1("iminusp",            Liminusp),
     {"iplus",                   Liplus_0, Liplus_1, Liplus_2, Liplus_3, Liplus_4up},
-    {"iplus2",                  G0W2, G1W2, Liplus_2, G3W2, G4W2},
-    {"iquotient",               G0W2, G1W2, Liquotient_2, G3W2, G4W2},
-    {"iremainder",              G0W2, G1W2, Liremainder_2, G3W2, G4W2},
-    {"irightshift",             G0W2, G1W2, Lirightshift, G3W2, G4W2},
-    {"isub1",                   G0W1, Lisub1, G2W1, G3W1, G4W1},
+    DEF_2("iplus2",             Liplus_2),
+    DEF_2("iquotient",          Liquotient_2),
+    DEF_2("iremainder",         Liremainder_2),
+    DEF_2("irightshift",        Lirightshift),
+    DEF_1("isub1",              Lisub1),
     {"itimes",                  Litimes_0, Litimes_1, Litimes_2, Litimes_3, Litimes_4up},
-    {"itimes2",                 G0W2, G1W2, Litimes_2, G3W2, G4W2},
-    {"ionep",                   G0W1, Lionep, G2W1, G3W1, G4W1},
-    {"izerop",                  G0W1, Lizerop, G2W1, G3W1, G4W1},
-#ifdef FP_EVALUATE
-    {"fp-evaluate",             G0W2, G1W2, Lfp_eval, G3W2, G4W2},
-#endif
+    DEF_2("itimes2",            Litimes_2),
+    DEF_1("ionep",              Lionep),
+    DEF_1("izerop",             Lizerop),
+    DEF_2("fp-evaluate",        Lfp_eval),
     {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 

@@ -2149,7 +2149,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 "         the license under which this code is distributed.",
                 [&](string key, bool hasVal, string val)
                 {   fwin_restore();
-                    term_printf("\nCSL was coded by A C Norman, Codemist, 1988-2020\n");
+                    term_printf("\nCSL was coded by A C Norman, Codemist, 1988-2021\n");
                     term_printf("Distributed under the Modified BSD License\n");
                     term_printf("See also --help\n");
                 }

@@ -905,31 +905,34 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
 // OK some are listed here and some in eval3.cpp, but both the lists are
 // fairly short.
 
+#define DEF_special(name, def) \
+    {name, bad_specialfn_0, def, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up}
+
 setup_type const eval2_setup[] =
-{   {"and",                     bad_specialfn_0, and_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"catch",                   bad_specialfn_0, catch_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"cond",                    bad_specialfn_0, cond_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"eval-when",               bad_specialfn_0, eval_when_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"function",                bad_specialfn_0, function_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"go",                      bad_specialfn_0, go_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"if",                      bad_specialfn_0, if_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"let*",                    bad_specialfn_0, letstar_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+{   DEF_special("and",           and_fn),
+    DEF_special("catch",         catch_fn),
+    DEF_special("cond",          cond_fn),
+    DEF_special("eval-when",     eval_when_fn),
+    DEF_special("function",      function_fn),
+    DEF_special("go",            go_fn),
+    DEF_special("if",            if_fn),
+    DEF_special("let*",          letstar_fn),
 // DE and DM are used as low level primitives in the Common Lisp bootstrap
-    {"de",                      bad_specialfn_0, defun_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"dm",                      bad_specialfn_0, defmacro_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"declare",                 bad_specialfn_0, declare_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"compiler-let",            bad_specialfn_0, compiler_let_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"flet",                    bad_specialfn_0, flet_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"labels",                  bad_specialfn_0, labels_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    DEF_special("de",            defun_fn),
+    DEF_special("dm",            defmacro_fn),
+    DEF_special("declare",       declare_fn),
+    DEF_special("compiler-let",  compiler_let_fn),
+    DEF_special("flet",          flet_fn),
+    DEF_special("labels",        labels_fn),
 // For the purposes of Reduce there is a problem with the names LET and BLOCK
 // because they are used in the system, and having them as Lisp-level special
 // forms would clash. I provide implementations but with names prefixed by
 // "~". This is perhaps an issue that ough to get resolved some time.
-//  {"block",                   bad_specialfn_0, block_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-//  {"let",                     bad_specialfn_0, let_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"~block",                  bad_specialfn_0, block_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {"~let",                    bad_specialfn_0, let_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
-    {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
+//  DEF_special("block",         block_fn),
+//  DEF_special("let",           let_fn),
+    DEF_special("~block",        block_fn),
+    DEF_special("~let",          let_fn),
+    {nullptr,                    nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 // end of eval2.cpp

@@ -1410,19 +1410,19 @@ setup_type const lisphash_setup[] =
     {"puthash",        G0Wother, G1Wother, Lput_hash_2, Lput_hash, G4Wother},
     {"remhash",        G0Wother, Lrem_hash_1, Lrem_hash, G3Wother, G4Wother},
     {"clrhash",        Lclr_hash_0, Lclr_hash, G2Wother, G3Wother, G4Wother},
-    {"maphash",        G0W2, G1W2, Lmap_hash, G3W2, G4W2},
-    {"hashcontents",   G0W1, Lhash_contents, G2W1, G3W1, G4W1},
+    DEF_2("maphash",        Lmap_hash),
+    DEF_1("hashcontents",   Lhash_contents),
 // Now somewhat similarly for hashsets rather than hashtables. To some extent
 // these are the same code!
-    {"mkhashset",      G0W1, Lmkhashset, G2W1, G3W1, G4W1},
-    {"gethashset",     G0W2, G1W2, Lget_hash_2, G3W2, G4W2},
-    {"sethashset",     G0W2, G1W2, Lset_hashset, G3W2, G4W2},
-    {"resethashset",   G0W2, G1W2, Lrem_hash, G3W2, G4W2},
-    {"clrhashset",     G0W1, Lclr_hash, G2W1, G3W1, G4W1},
-    {"maphashset",     G0W2, G1W2, Lmap_hash, G3W2, G4W2},
-    {"hashsetcontents",G0W1, Lhash_contents, G2W1, G3W1, G4W1},
+    DEF_1("mkhashset",      Lmkhashset),
+    DEF_2("gethashset",     Lget_hash_2),
+    DEF_2("sethashset",     Lset_hashset),
+    DEF_2("resethashset",   Lrem_hash),
+    DEF_1("clrhashset",     Lclr_hash),
+    DEF_2("maphashset",     Lmap_hash),
+    DEF_1("hashsetcontents",Lhash_contents),
 // And finally something that Common Lisp asks for that seems a bit silly!
-    {"sxhash",         G0W1, Lsxhash, G2W1, G3W1, G4W1},
+    DEF_1("sxhash",         Lsxhash),
     {nullptr,          nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 

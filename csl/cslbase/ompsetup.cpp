@@ -1,7 +1,7 @@
-// This file was contributed to CSL by NAG Ltd.     Copyright (C) 2016-2020
+// This file was contributed to CSL by NAG Ltd.     Copyright (C) 2016-2021
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -36,28 +36,20 @@
 
 extern LispObject om_read(LispObject, LispObject);
 extern LispObject om_supportsCD(LispObject, LispObject);
-extern LispObject om_supportsSymbol(LispObject, LispObject,
-                                    LispObject);
-extern LispObject om_listCDs(LispObject, int, ...);
+extern LispObject om_supportsSymbol(LispObject, LispObject, LispObject);
+extern LispObject om_listCDs(LispObject);
 extern LispObject om_listSymbols(LispObject, LispObject);
 extern LispObject om_whichCDs(LispObject, LispObject);
 
-// The setup here is OUT OF DATE and WILL NOT WORK because for some years
-// CSL has used 5 not 3 function cslls per symbol to cover 0, 1, 2 3 and 4+
-// arguments, while this setup is from the old scheme that just dealt
-// with 1, 2, 0&3+. So the om_* functions would need adjustment and rework
-// before they coudl be used again. It would not be terribly hard but I
-// have not yet done it.
-
 setup_type const om_parse_setup[] =
-{   /* LISP Name */        /* Unary */      /* Binary */        /* Nary */
-    {"om-read",            om_read,         too_many_1,         wrong_no_1},
-    {"om-supportsCD",      om_supportsCD,   too_many_1,         wrong_no_1},
-    {"om-supportsSymbol",  too_few_2,       om_supportsSymbol,  wrong_no_2},
-    {"om-listCDs",         wrong_no_0a,     wrong_no_0b,        om_listCDs},
-    {"om-listSymbols",     om_listSymbols,  too_many_1,         wrong_no_1},
-    {"om-whichCDs",        om_whichCDs,     too_many_1,         wrong_no_1},
-    {nullptr,              nullptr,         nullptr,            nullptr}
+{
+    DEF_1("om-read",            om_read),
+    DEF_1("om-supportsCD",      om_supportsCD),
+    DEF_2("om-supportsSymbol",  om_supportsSymbol),
+    DEF_0("om-listCDs",         om_listCDs),
+    DEF_1("om-listSymbols",     om_listSymbols),
+    DEF_1("om-whichCDs",        om_whichCDs),
+    {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 // end of ompsetup.cpp
