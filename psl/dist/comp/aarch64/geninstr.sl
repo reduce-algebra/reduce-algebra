@@ -77,6 +77,16 @@
 	(OP-reg2 . lth-reg2)
 	(OP-reg3-lsb . lth-reg3-lsb)
 	(OP-ldp-stp . lth-ldp-stp)
+	(OP-reg-Xbfm . lth-reg-Xbfm)
+	(OP-reg-Xbfx . lth-reg-Xbfx)
+	(OP-reg-Xbfiz . lth-reg-Xbfiz)
+	(OP-reg-XxtX . lth-reg-XxtX)
+	(OP-reg-Xsl . lth-reg-Xsl)
+	(OP-reg-Xsr . lth-reg-Xsr)
+	(OP-bfm . lth-bfm)
+	(OP-bfc . lth-bfc)
+	(OP-bfi . lth-bfi)
+	(OP-bfxil . lth-bfxil)
       ))
  
 (load strings compiler)
@@ -172,6 +182,10 @@
 	  ((eqcar op 'UNQUOTE) op)
 	  ((eq op 'reg)'(REGP))
 	  ((eq op 'reg32)'(REG32P))	
+	  ((eq op 'reg-nonzero)'(reg-nonzero-p))
+	  ((eq op 'reg32-nonzero)'(reg32-nonzero-P))	
+	  ((eq op 'reg)'(REGP))
+	  ((eq op 'reg32)'(REG32P))	
 	  ((eq op 'reg-or-sp) '(reg-or-sp-p))
 	  ((eq op 'reg32-or-sp) '(reg32-or-sp-p))
 	  ((eq op 'reg-sp) '(reg-sp-p))
@@ -217,6 +231,8 @@
 	  ((eq op 'shortlabel) '(SHORTLABELP))
 	  ((eq op 'adr) '(adrp))
 	  ((eq op 'indadr) '(indirectadrp))
+	  ((eq op 'five-bit) '(five-bit-p))
+	  ((eq op 'six-bit) '(six-bit-p))
 	  (t (prin2t "unknown operand type during instruction generation:")
 	     (prin2t op)
 	     (prin2t instr*)
@@ -378,10 +394,16 @@
 
 (instr B  (offset26)         OP-branch-imm 2#000101)
 
-% BFC
-% BFI
-% BFM
-% BFXIL
+(instr BFM (reg32 reg32 five-bit five-bit) OP-bfm 2#0011001100)
+(instr BFM (reg reg six-bit six-bit)       OP-bfm 2#1011001101)
+
+%% Aliases of BFM
+(instr BFC (reg32 five-bit five-bit) OP-bfc 2#0011001100)
+(instr BFC (reg six-bit six-bit)       OP-bfc 2#1011001101)
+(instr BFI (reg32 reg32-nonzero five-bit five-bit) OP-bfi 2#0011001100)
+(instr BFI (reg reg-nonzero six-bit six-bit)       OP-bfi 2#1011001101)
+(instr BFXIL (reg32 reg32 five-bit five-bit) OP-bfxil 2#0011001100)
+(instr BFXIL (reg reg six-bit six-bit)       OP-bfxil 2#1011001101)
 
 (instr BIC  (reg32 reg32 reg32-shifter)     OP-reg-shifter 2#00001010001)
 (instr BIC  (reg reg reg-shifter)     OP-reg-shifter 2#10001010001)
@@ -553,6 +575,37 @@
 
 (instr TST   (reg reg-shifter)         OP-reg-shifter 2#1101010000)
 (instr TST   (reg imm-logical)         OP-reg-logical   2#11100100)
+
+(instr UBFM  (reg32 reg32 five-bit five-bit) OP-reg-Xbfm     2#0101001100)
+(instr UBFM  (reg reg six-bit six-bit)       OP-reg-Xbfm     2#1101001101)
+
+%% Aliases of UBFM
+(instr UBFX  (reg32 reg32 five-bit five-bit) OP-reg-Xbfx     2#0101001100)
+(instr UBFX  (reg reg six-bit six-bit)       OP-reg-Xbfx     2#1101001101)
+(instr UBFIZ (reg32 reg32 five-bit five-bit) OP-reg-Xbfiz    2#0101001100)
+(instr UBFIZ (reg reg six-bit six-bit)       OP-reg-Xbfiz    2#1101001101)
+(instr UXTB  (reg32 reg32)                   OP-reg-XxtX     2#0001001100 7)
+(instr UXTH  (reg32 reg32)                   OP-reg-XxtX     2#0001001100 15)
+(instr LSL   (reg32 reg32 five-bit)          OP-reg-Xsl      2#0101001100)
+(instr LSL   (reg reg five-bit)              OP-reg-Xsl      2#1101001101)
+(instr LSR   (reg32 reg32 five-bit)          OP-reg-Xsr      2#0101001100)
+(instr LSR   (reg reg five-bit)              OP-reg-Xsr      2#1101001101)
+
+(instr SBFM  (reg32 reg32 five-bit five-bit) OP-reg-Xbfm     2#0001001100)
+(instr SBFM  (reg reg six-bit six-bit)       OP-reg-Xbfm     2#1001001101)
+
+%% Aliases of SBFM
+(instr SBFX  (reg32 reg32 five-bit five-bit) OP-reg-Xbfx     2#0001001100)
+(instr SBFX  (reg reg six-bit six-bit)       OP-reg-Xbfx     2#1001001101)
+(instr SBFIZ (reg32 reg32 five-bit five-bit) OP-reg-Xbfiz    2#0001001100)
+(instr SBFIZ (reg reg six-bit six-bit)       OP-reg-Xbfiz    2#1001001101)
+(instr SXTB  (reg32 reg32)                   OP-reg-XxtX     2#0001001100 7)
+(instr SXTB  (reg reg)                       OP-reg-XxtX     2#1001001101 7)
+(instr SXTH  (reg32 reg32)                   OP-reg-XxtX     2#0001001100 15)
+(instr SXTH  (reg reg)                       OP-reg-XxtX     2#1001001101 15)
+(instr SXTW  (reg reg32)                     OP-reg-XxtX     2#1001001101 31)
+(instr ASR   (reg32 reg32 five-bit)          OP-reg-Xsr      2#0001001100)
+(instr ASR   (reg reg five-bit)              OP-reg-Xsr      2#1001001101)
 
 (instr MOV   (reg32 reg32-sp)          OP-reg-regsp  2#000100010)
 (instr MOV   (reg reg-sp)              OP-reg-regsp  2#100100010)

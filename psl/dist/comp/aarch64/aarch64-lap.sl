@@ -423,6 +423,18 @@
 (de reg32-zero-p (RegName)
     (eq (cadr RegName) 'Wzr))
 
+(de reg-nonzero-p (RegName)
+    (and (regp RegName) (not (reg-zero-p RegName))))
+
+(de reg32-nonzero-p (RegName)
+    (and (reg32p RegName) (not (reg32-zero-p RegName))))
+
+(de reg-zero-p (RegName)
+    (eq (cadr RegName) 'XZr))
+
+(de reg32-zero-p (RegName)
+    (eq (cadr RegName) 'Wzr))
+
 (de reg-sp-p (RegName)
     (eq (cadr RegName) 'sp))
 
@@ -637,6 +649,12 @@
     (return (lor (lsh N 12) (lor (lsh immr 6) (land Nimms 16#3f))))
     )
   )
+
+(de five-bit-p (x)
+    (and (fixp x) (eq (wand 16#1f x) x)))
+
+(de six-bit-p (x)
+    (and (fixp x) (eq (wand 16#3f x) x)))
 
 (de sixteenbit-p (x)
     (and (fixp x) (eq (wand 16#ffff x) x)))
@@ -869,6 +887,22 @@
 
 (de lth-branch-imm (code offset) 4)
 
+(de OP-branch-imm19 (code offset)
+    (setq offset (MakeExpressionRelative offset 4))
+    (if (not (weq (land offset 2#11) 0))
+	(stderror (bldmsg "Invalid immediate branch offset %w" offset))
+      (progn
+	(setq offset (ashift offset -2))
+	(DepositInstructionBytes
+	 (car code)
+	 (land 16#ff (lshift offset -11))
+	 (land 16#ff (lshift offset -3))
+	 (lor (land 16#ff (lsh offset 5)) (cadr code)))
+	))
+    )
+
+(de lth-branch-imm19 (code offset) 4)
+
 (de OP-branch-reg (code regm)
     (prog (opcode)
 	  (setq opcode (car code)) 
@@ -882,6 +916,86 @@
     )
 
 (de lth-branch-reg (code reg) 4)
+
+
+(de OP-reg-Xbfm (code regd regn lsb width)
+    (prog (opcode)
+	  (setq opcode (car code)) 
+	  (DepositInstructionBytes
+	   (lsh opcode -2)
+	   (lor (lsh (land opcode 2#11) 6) lsb)
+	   (lor (lsh width 2) (lsh (reg2int regn) -3))
+	   (lor (lsh (land (reg2int regn) 2#111) 5) (reg2int regd))
+	   )
+	)
+    )
+
+(de lth-reg-Xbfm (code regd regn lsb width) 4)
+
+(de OP-reg-Xbfx (code regd regn lsb width)
+    (OP-reg-Xbfm code regd regn lsb (sub1 (plus2 lsb width)))
+    )
+
+(de lth-reg-Xbfx (code regd regn lsb width) 4)
+
+(de OP-reg-Xbfiz (code regd regn lsb width)
+    (OP-reg-Xbfm code regd regn (land (minus lsb) (if (reg32p regd) 2#11111 2#111111)) (sub1 width))
+    )
+
+(de lth-reg-Xbfiz (code regd regn lsb width) 4)
+
+(de OP-reg-XxtX (code regd regn)
+    (OP-reg-Xbfm code regd regn 0 (cadr code))
+    )
+
+(de lth-reg-XxtX (code regd regn lsb width) 4)
+
+(de OP-reg-Xsl (code regd regn shift)
+    (let ((base (if (reg32p regd) 2#11111 2#111111)))
+        (OP-reg-Xbfm code regd regn (land (minus shift) base) (difference base shift))
+    ))
+
+(de lth-reg-Xsl (code regd regn lsb width) 4)
+
+(de OP-reg-Xsr (code regd regn shift)
+    (let ((base (if (reg32p regd) 2#11111 2#111111)))
+        (OP-reg-Xbfm code regd regn shift base)
+    ))
+
+(de lth-reg-Xsr (code regd regn lsb width) 4)
+
+(de OP-bfm (code regd regn immr imms)
+    (prog (opcode)
+	  (setq opcode (car code)) 
+	  (DepositInstructionBytes
+	   (lsh opcode -2)
+	   (lor (lsh (land opcode 2#11) 6) immr)
+	   (lor (lsh imms 2) (lsh (reg2int regn) -3))
+	   (lor (lsh (land (reg2int regn) 2#111) 5) (reg2int regd))
+	   )
+	)
+   
+    )
+
+(de lth-bfm (code regd regn immr imms) 4)
+
+(de OP-bfc (code regd lsb width)
+    (OP-bfm code regd (list 'reg (if (reg32p regd) 'Xzr 'Wzr)) (land (minus lsb) (if (reg32p regd) 2#11111 2#111111)) (sub1 width))
+    )
+
+(de lth-bfc (code regd lsb width) 4)
+
+(de OP-bfi (code regd regn lsb width)
+    (OP-bfm code regd regn (land (minus lsb) (if (reg32p regd) 2#11111 2#111111)) (sub1 width))
+    )
+
+(de lth-bfi (code regd regn lsb width) 4)
+
+(de OP-bfxil (code regd regn lsb width)
+    (OP-bfm code regd regn lsb (sub1 (plus2 lsb width)))
+    )
+
+(de lth-bfxil (code regd regn lsb width) 4)
 
 
 (de saniere-Sprungziel (l)
