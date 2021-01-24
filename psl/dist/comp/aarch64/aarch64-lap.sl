@@ -417,6 +417,46 @@
 		     Wzr
 	     ))))
 
+(de Regfp8P (RegName) 
+    (AND (eqcar Regname 'reg)
+	 (MemQ (cadr RegName) 
+	       '(    B0 B1 B2 B3 B4 B5 B6 B7 B8 B9 B10 B11 B12 B13 B14 B15
+		     B16 B17 B18 B19 B20 B21 B22 B23 B24 B25 B26 B27 B28 B29 B30
+		     B31
+	     ))))
+
+(de Regfp16P (RegName) 
+    (AND (eqcar Regname 'reg)
+	 (MemQ (cadr RegName) 
+	       '(    H0 H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15
+		     H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30
+		     H31
+	     ))))
+
+(de Regfp32P (RegName) 
+    (AND (eqcar Regname 'reg)
+	 (MemQ (cadr RegName) 
+	       '(    S0 S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15
+		     S16 S17 S18 S19 S20 S21 S22 S23 S24 S25 S26 S27 S28 S29 S30
+		     S31
+	     ))))
+
+(de Regfp64P (RegName) 
+    (AND (eqcar Regname 'reg)
+	 (MemQ (cadr RegName) 
+	       '(    D0 D1 D2 D3 D4 D5 D6 D7 D8 D9 D10 D11 D12 D13 D14 D15
+		     D16 D17 D18 D19 D20 D21 D22 D23 D24 D25 D26 D27 D28 D29 D30
+		     D31
+	     ))))
+
+1(de Regfp128P (RegName) 
+    (AND (eqcar Regname 'reg)
+	 (MemQ (cadr RegName) 
+	       '(    Q0 Q1 Q2 Q3 Q4 Q5 Q6 Q7 Q8 Q9 Q10 Q11 Q12 Q13 Q14 Q15
+		     Q16 Q17 Q18 Q19 Q20 Q21 Q22 Q23 Q24 Q25 Q26 Q27 Q28 Q29 Q30
+		     Q31
+	     ))))
+
 (de reg-zero-p (RegName)
     (eq (cadr RegName) 'XZr))
 
@@ -845,6 +885,46 @@
 	   (W20 20) (W21 21) (W22 22) (W23 23)
 	   (W24 24) (W25 25) (W26 26) (W27 27)
 	   (W28 28) (W29 29) (W30 30) (Wzr 31)
+	   (B0   0) (B1   1) (B2   2) (B3   3) 
+	   (B4   4) (B5   5) (B6   6) (B7   7)
+	   (B8   8) (B9   9) (B10 10) (B11 11)
+	   (B12 12) (B13 13) (B14 14) (B15 15)
+	   (B16 16) (B17 17) (B18 18) (B19 19)
+	   (B20 20) (B21 21) (B22 22) (B23 23)
+	   (B24 24) (B25 25) (B26 26) (B27 27)
+	   (B28 28) (B29 29) (B30 30) (B31 31)
+	   (H0   0) (H1   1) (H2   2) (H3   3) 
+	   (H4   4) (H5   5) (H6   6) (H7   7)
+	   (H8   8) (H9   9) (H10 10) (H11 11)
+	   (H12 12) (H13 13) (H14 14) (H15 15)
+	   (H16 16) (H17 17) (H18 18) (H19 19)
+	   (H20 20) (H21 21) (H22 22) (H23 23)
+	   (H24 24) (H25 25) (H26 26) (H27 27)
+	   (H28 28) (H29 29) (H30 30) (H31 31)
+	   (S0   0) (S1   1) (S2   2) (S3   3) 
+	   (S4   4) (S5   5) (S6   6) (S7   7)
+	   (S8   8) (S9   9) (S10 10) (S11 11)
+	   (S12 12) (S13 13) (S14 14) (S15 15)
+	   (S16 16) (S17 17) (S18 18) (S19 19)
+	   (S20 20) (S21 21) (S22 22) (S23 23)
+	   (S24 24) (S25 25) (S26 26) (S27 27)
+	   (S28 28) (S29 29) (S30 30) (S31 31)
+	   (D0   0) (D1   1) (D2   2) (D3   3) 
+	   (D4   4) (D5   5) (D6   6) (D7   7)
+	   (D8   8) (D9   9) (D10 10) (D11 11)
+	   (D12 12) (D13 13) (D14 14) (D15 15)
+	   (D16 16) (D17 17) (D18 18) (D19 19)
+	   (D20 20) (D21 21) (D22 22) (D23 23)
+	   (D24 24) (D25 25) (D26 26) (D27 27)
+	   (D28 28) (D29 29) (D30 30) (D31 31)
+	   (Q0   0) (Q1   1) (Q2   2) (Q3   3) 
+	   (Q4   4) (Q5   5) (Q6   6) (Q7   7)
+	   (Q8   8) (Q9   9) (Q10 10) (Q11 11)
+	   (Q12 12) (Q13 13) (Q14 14) (Q15 15)
+	   (Q16 16) (Q17 17) (Q18 18) (Q19 19)
+	   (Q20 20) (Q21 21) (Q22 22) (Q23 23)
+	   (Q24 24) (Q25 25) (Q26 26) (Q27 27)
+	   (Q28 28) (Q29 29) (Q30 30) (Q31 31)
 	   (T1   9) (T2  10) (T3  11)
 	   (fp  29)			% frame pointer for C subroutine calls
 	   (sp  31) (st  31)		% LISP stack register

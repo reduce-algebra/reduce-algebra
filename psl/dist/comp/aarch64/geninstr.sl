@@ -190,6 +190,11 @@
 	  ((eq op 'reg32-or-sp) '(reg32-or-sp-p))
 	  ((eq op 'reg-sp) '(reg-sp-p))
 	  ((eq op 'reg32-sp) '(reg32-sp-p))
+	  ((eq op 'regfp8) '(regfp8p))
+	  ((eq op 'regfp16) '(regfp16p))
+	  ((eq op 'regfp32) '(regfp32p))
+	  ((eq op 'regfp64) '(regfp64p))
+	  ((eq op 'regfp128) '(regfp128p))
 %	  ((eq op 'evenreg)'(evenREGP)) 
 	  ((eq op 'streg)'(streg-p))
 	  ((eq op 'imm) '(STDIMMEDIATEP))
@@ -701,7 +706,20 @@
 (instr LDRSW (reg imm19)                  OP-ld-st 2#10011000)
 (instr LDRSW (reg reg-or-sp-shifter)      OP-ld-st 2#10111000101 2#10)
 
+%% Floating point instructions
 
+% LDR Xt, [Xn], #simm9 - post-index
+% (LDR (reg t) (postindex (reg n) +/-number))
+(instr LDR (regfp8 reg-or-sp-simm9-post)       OP-ld-st 2#00111100010 2#01)
+(instr LDR (regfp16 reg-or-sp-simm9-post)      OP-ld-st 2#01111100010 2#01)
+(instr LDR (regfp32 reg-or-sp-simm9-post)      OP-ld-st 2#10111100010 2#01)
+(instr LDR (regfp64 reg-or-sp-simm9-post)      OP-ld-st 2#11111100010 2#01)
+(instr LDR (regfp128 reg-or-sp-simm9-post)     OP-ld-st 2#00111100110 2#01)
+(instr STR (regfp8 reg-or-sp-simm9-post)       OP-ld-st 2#00111100000 2#01)
+(instr STR (regfp16 reg-or-sp-simm9-post)      OP-ld-st 2#01111100000 2#01)
+(instr STR (regfp32 reg-or-sp-simm9-post)      OP-ld-st 2#10111100000 2#01)
+(instr STR (regfp64 reg-or-sp-simm9-post)      OP-ld-st 2#11111100000 2#01)
+(instr STR (regfp128 reg-or-sp-simm9-post)     OP-ld-st 2#00111100100 2#01)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
