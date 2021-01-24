@@ -424,6 +424,12 @@ case "$uname_s" in
 Darwin)
 # "uname -o" is not available on the Macintosh!
   uname_o="macOS"
+  if test "$CC$CXX" = ""
+  then
+    CC=clang
+    CXX=clang++
+    AC_MSG_NOTICE([Will use clang on Macintosh"])
+  fi
   ;;
 *)
   uname_o=`uname -o 2>/dev/null`
@@ -657,7 +663,7 @@ csl_inplace_cygwin_build ()
 # The argument here should be x88_64-pc-cygwin
   target=$1
   forcer=$2
-AC_MSG_NOTICE([in csl_inplace_cygwin_build wwl=$with_windows_layout])
+  AC_MSG_NOTICE([in csl_inplace_cygwin_build wwl=$with_windows_layout])
 # Find the proper name for the target directory, allowing for --enable-debug
 # and any other options that may be relevant.
   if test "$with_windows_layout" = "new"
@@ -961,9 +967,6 @@ AC_ARG_WITH(ccache,
                  [--without-ccache can be used to disable use of ccache]),
   [], [])
 
-AC_CHECK_PROG([CCACHE], [ccache], [ccache], [])
-AC_MSG_NOTICE([CC=/$CC/ CXX=/$CXX/ CCACHE=/$CCACHE/])
-
 # The use of ccache here deserves an explanation. The first and maybe obvious
 # thing is that if either ccache seems not to to be installed or if the person
 # who invoked the configure script had overridden CC or CXX so specify any
@@ -1002,13 +1005,8 @@ CFLAGS="$OLD_CFLAGS"
 CXXFLAGS="$OLD_CXXFLAGS"
 CPPFLAGS="$OLD_CPPFLAGS"
 
-# If I am on a Macintosh and if the user had not pre-specified the
-# compiler I will force in clang/clang++ whatever AC_PROG_CC suggests.
-if test "$uname_s" == "Darwin" && test "$ORIG" = ""
-then
-  CC=clang
-  CXX=clang++
-fi
+AC_CHECK_PROG([CCACHE], [ccache], [ccache], [])
+AC_MSG_NOTICE([CC=/$CC/ CXX=/$CXX/ CCACHE=/$CCACHE/])
 
 if test "$with_ccache" != "no" &&
    test "$ORIG" = "" &&
