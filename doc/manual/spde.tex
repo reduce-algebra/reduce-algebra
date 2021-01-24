@@ -23,6 +23,7 @@ of Mathematical Physics'', to appear.
 The symmetry analysis of partial differential equations logically
 falls into three parts. Accordingly the most important functions
 provided by the package are:
+\begin{table}[htbp]
 \begin{center}
 \begin{tabular}{| c | c | }\hline
 Function name & Operation \\ \hline \hline
@@ -34,13 +35,13 @@ SIMPSYS() & Solves determining system \\ \hline
 RESULT() & Prints infinitesimal generators \\
 &  and commutator table \\ \hline
 \end{tabular}\\
-\captionsetup{hypcap=false}
-\captionof{table}{SPDE Functions}
+\caption{SPDE Functions}
 \end{center}
-
+\end{table}
 
 Some other useful functions for obtaining various kinds of output
-are:
+are:\pagebreak
+\begin{table}[htbp]
 \begin{center}
 \begin{tabular}{| c | c |} \hline
 Function name & Operation \\ \hline \hline
@@ -51,14 +52,15 @@ PRGEN() & Prints infinitesimal generators \\ \hline
 \ttindex{COMM}
 COMM(U,V) & Prints commutator of generators U and V \\ \hline
 \end{tabular}\\
-\captionsetup{hypcap=false}
-\captionof{table}{SPDE Useful Output Functions}\label{spde:useful}
-\end{center}\nopagebreak
+\caption{SPDE Useful Output Functions}\label{spde:useful}
+\end{center}
+\end{table}
 
 There are several global variables defined by the system which should
 not be used for any other purpose than that given in
 Table~\ref{spde:intt} and~\ref{spde:op}. The three globals of the type
 integer are:
+\begin{table}[htbp]
 \begin{center}
 \begin{tabular}{| c | c |}\hline
 Variable name & Meaning \\ \hline \hline
@@ -69,12 +71,13 @@ MM & Number of dependent variables \\ \hline
 \ttindex{PCLASS}
 PCLASS=0, 1 or 2 & Controls amount of output \\ \hline
 \end{tabular}\\
-\captionsetup{hypcap=false}
-\captionof{table}{SPDE Integer valued globals}\label{spde:intt}
+\caption{SPDE Integer valued globals}\label{spde:intt}
 \end{center}
+\end{table}
 
 In addition there are the following global variables of type
 operator:
+\begin{table}[htbp]
 \begin{center}
 \begin{tabular}{| c | c |}\hline
 Variable name & Meaning \\ \hline \hline
@@ -98,10 +101,9 @@ ZETA(ALFA,I) & references quoted in the introduction. \\ \hline
 \ttindex{C(I)}
 C(I) & i-th function used for substitution \\ \hline
 \end{tabular}\\
-\captionsetup{hypcap=false}
-\captionof{table}{SPDE Operator type global variables}\label{spde:op}
+\caption{SPDE Operator type global variables}\label{spde:op}
 \end{center}
-
+\end{table}
 
 The differential equations of the system at issue have to be assigned
 as values to the operator deq i applying the notation which is defined
