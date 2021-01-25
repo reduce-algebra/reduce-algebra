@@ -1546,9 +1546,24 @@
            (lor (reg2int regd) (lsh (land (reg2int regn) 2#111) 5)))
     ))
 
-    )
-
 (de lth-fcvt (code regd regn) 4)
+
+(de OP-fp-arith (code regd regn regm)
+    (prog (opcode1 opcode2)
+	  (setq opcode1 (car code) opcode2 (cadr code))
+	  (DepositInstructionBytes
+	   (lsh opcode1 -3)
+	   (lor (lsh (land opcode1 2#111) 5) (reg2int regm))
+	   (lor (lsh opcode2 2) (lsh (reg2int regn) -3))
+           (lor (reg2int regd) (lsh (land (reg2int regn) 2#111) 5)))
+    ))
+
+(de lth-fp-arith (code regd regn regm) 4)
+
+(de OP-fcmp (code regn regm)
+    (OP-fp-arith code '(reg d0) regn regm))
+
+(de lth-fcmp (code regd regn) 4)
 
 
 % ------------------------------------------------------------

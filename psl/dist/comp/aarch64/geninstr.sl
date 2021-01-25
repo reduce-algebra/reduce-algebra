@@ -88,6 +88,8 @@
 	(OP-bfi . lth-bfi)
 	(OP-bfxil . lth-bfxil)
 	(OP-fcvt . lth-fcvt)
+	(OP-fp-arith . lth-fp-arith)
+	(OP-fcmp . lth-fcmp)
       ))
  
 (load strings compiler)
@@ -806,6 +808,28 @@
 (instr SCVTF (regfp32 reg)                   OP-fcvt 2#10011110001 2#00010)
 (instr SCVTF (regfp64 reg32)                 OP-fcvt 2#00011110011 2#00010)
 (instr SCVTF (regfp64 reg)                   OP-fcvt 2#10011110011 2#00010)
+
+%% Floating point arithmetic and comparison
+(instr FADD (regfp16 regfp16 regfp16)      OP-fp-arith 2#00011110111 2#001010)
+(instr FADD (regfp32 regfp32 regfp32)      OP-fp-arith 2#00011110001 2#001010)
+(instr FADD (regfp64 regfp64 regfp64)      OP-fp-arith 2#00011110011 2#001010)
+
+(instr FSUB (regfp16 regfp16 regfp16)      OP-fp-arith 2#00011110111 2#001110)
+(instr FSUB (regfp32 regfp32 regfp32)      OP-fp-arith 2#00011110001 2#001110)
+(instr FSUB (regfp64 regfp64 regfp64)      OP-fp-arith 2#00011110011 2#001110)
+
+(instr FMUL (regfp16 regfp16 regfp16)      OP-fp-arith 2#00011110111 2#000010)
+(instr FMUL (regfp32 regfp32 regfp32)      OP-fp-arith 2#00011110001 2#000010)
+(instr FMUL (regfp64 regfp64 regfp64)      OP-fp-arith 2#00011110011 2#000010)
+
+(instr FDIV (regfp16 regfp16 regfp16)      OP-fp-arith 2#00011110111 2#000110)
+(instr FDIV (regfp32 regfp32 regfp32)      OP-fp-arith 2#00011110001 2#000110)
+(instr FDIV (regfp64 regfp64 regfp64)      OP-fp-arith 2#00011110011 2#000110)
+
+(instr FCMP (regfp16 regfp16)      OP-fcmp 2#00011110111 2#001000)
+(instr FCMP (regfp32 regfp32)      OP-fcmp 2#00011110001 2#001000)
+(instr FCMP (regfp64 regfp64)      OP-fcmp 2#00011110011 2#001000)
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
