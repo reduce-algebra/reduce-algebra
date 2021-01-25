@@ -548,6 +548,13 @@
 (de imm10-p (displ)
     (and (fixp displ) (greaterp displ -513) (lessp displ 505) (eq (land displ 2#111) 0)))
 
+(de reg-or-sp-pimm16-p (x)
+    (and (eqcar x 'displacement)
+	 (pairp (cdr x)) (reg-or-sp-p (cadr x))
+	 (pairp (cddr x)) (fixp (caddr x)) (eq 0 (land (caddr x) 15))
+	 (pimm12-p (lsh (caddr x) -4))
+	 ))
+
 (de reg-or-sp-pimm15-p (x)
     (and (eqcar x 'displacement)
 	 (pairp (cdr x)) (reg-or-sp-p (cadr x))
@@ -1383,7 +1390,7 @@
 	      ))
 	  (cond ((or (labelp reg-offset)
 		     (not (memq (car reg-offset) '(indexed indirect displacement preindexed postindexed)))
-		     (null (cddr reg-offset)))
+		     )
 		 nil)
 		((and (memq (car reg-offset) '(preindexed postindexed))
 		      (fixp displ) (lessp displ 256) (greaterp displ -257))
@@ -1412,6 +1419,12 @@
 		 (setq byte2
 		       (lor (lsh displ -6)
 			    (lsh (land opcode1 2#11) 6)))
+		 (setq byte1 (lsh opcode1 -2)))
+		((and (eq (car reg-offset) 'indirect) (null (cddr reg-offset)))
+		 % like previous case with displacement = 0
+		 (setq lastbyte (lor (lsh (land 2#111 regn) 5) (reg2int regt)))
+		 (setq byte3  (lsh regn -3))
+		 (setq byte2 (lsh (land opcode1 2#11) 6))
 		 (setq byte1 (lsh opcode1 -2)))
 		((or (not (pairp displ))
 		     (not (memq (car displ) '(reg regshifted regextended))))
@@ -1523,6 +1536,19 @@
 
 (de lth-ldp-stp (code regt1 regt2 reg-or-sp-imm) 4)
 
+(de OP-fcvt (code regd regn)
+    (prog (opcode1 opcode2)
+	  (setq opcode1 (car code) opcode2 (cadr code))
+	  (DepositInstructionBytes
+	   (lsh opcode1 -3)
+	   (lor (lsh (land opcode1 2#111) 5) opcode2)
+	   (lsh (reg2int regn) -3)
+           (lor (reg2int regd) (lsh (land (reg2int regn) 2#111) 5)))
+    ))
+
+    )
+
+(de lth-fcvt (code regd regn) 4)
 
 
 % ------------------------------------------------------------
@@ -2170,7 +2196,7 @@
        (when (setq Y (get (car x) 'INSTRUCTIONLENGTH))
 	 (return (if (numberp y) y (apply y (list x)))))
        (return 4)))
-%       (stderror (bldmsg "*** Unknown ARMv6 instruction:%w " x))))
+%       (stderror (bldmsg "*** Unknown Aarchv6 instruction:%w " x))))
 
 (de apply2safe(y x) % ensure that plly has two parameters at least
      (cond ((null x) (apply y (list nil nil)))
