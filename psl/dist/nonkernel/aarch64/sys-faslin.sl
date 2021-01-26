@@ -155,7 +155,7 @@
   (putw n channel))
 
 (de binarywriteblock (channel blockbase blocksize)
-  (fwrite blockbase 4 blocksize channel))
+  (fwrite blockbase 8 blocksize channel))
 
 (de binarypositionfile (channel nastysystemdependentnumber)
   (fseek channel nastysystemdependentnumber 0))

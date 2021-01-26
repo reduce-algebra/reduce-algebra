@@ -44,7 +44,8 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-(fluid '(**neg-zero** **neg-one** fp-except-mode*))
+(fluid '(**neg-zero** **neg-one** fp-except-mode*
+         ieee-positive-infinity ieee-negative-infinity))
 
 (off echo)
 
@@ -96,24 +97,19 @@
 (de *doubletofloat (x y)
   (uxdoubletofloat (inf x) (inf y)))
 
-% These two statements must be at the end of the file because times2, and
-% thus *ftimes2, must be defined before it is used.
-
-%(loadtime (progn
-%	    (setq **neg-one** -1.0)
-%	    (setq **neg-zero** (times2 **neg-one** 0.0))))
-
 (de *floattodouble (x y)
   (uxfloattodouble (inf x) (inf y)))
 
-(de uxsin (r x) (uuxsin (inf r) (inf x)))
-(de uxcos (r x) (uuxcos (inf r) (inf x)))
-(de uxtan (r x)(uuxtan (inf r) (inf x)))
-(de uxasin (r x)(uuxasin (inf r) (inf x)))
-(de uxacos (r x)(uuxacos (inf r) (inf x)))
-(de uxatan (r x)(uuxatan (inf r) (inf x)))
-(de uxsqrt (r x)(uuxsqrt (inf r) (inf x)))
-(de uxexp (r x)(uuxexp (inf r) (inf x)))
-(de uxlog (r x)(uuxlog (inf r) (inf x)))
-(de uxatan2 (r y x)(uuxatan2 (inf r) (inf y)(inf x)))
+% These statements must be at the end of the file because times2 and quotient,
+% and thus *ftimes2 and *fquotient, must be defined before it is used.
 
+% Use eval here to make sure thate the quotient forms are evaluated at
+% load time, otherwise the compiler evaluates them as constant formns.
+
+(loadtime
+  (let ((fp-except-mode* 0))
+    (setq **neg-one** -1.0)
+    (setq **neg-zero** (times2 **neg-one** 0.0))
+    (setq ieee!-positive!-infinity (eval '(quotient 1.0 0.0)))
+    (setq ieee!-negative!-infinity (eval '(quotient -1.0 0.0)))
+))

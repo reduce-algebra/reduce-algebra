@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PXNK:arithmetic.sl  for armv6
+% File:         PXNK:arithmetic.sl  for aarch64
 % Description:  Generic arithmetic routines for PSL (New model, less hairy)
 % Author:       Eric Benson and Martin Griss 
 % Created:      9 August 1982 
@@ -455,6 +455,8 @@
 % Beware of Overflow                                                       
 (deffloatentry floattimes2 !*ftimes2)
 
+%% aarch64 division instructions do not fault on division by zero
+%% catch zero divisor in lisp code
 (compiletime
  (dm wquotient2 (u)
      (let ((divisor (gensym)))
@@ -510,6 +512,40 @@
 )
 (de lsh(x y) (lshift x y))
 
+(de logcount (x)
+    (case (wand (wplus2 (tag x) 1) 31)
+          ((0) (wlogcount (wnot x)))   % negint
+          ((1) (wlogcount x))          % posint
+          ((2) (progn                  % fixnum
+                  (setq x (fixval (fixinf x)))
+                  (if (wlessp x 0) (wlogcount (wnot x))
+                    (wlogcount x))))
+          ((3)   (biglogcount x))      % bignum
+          (nil   (continuableerror 99 "Non-integer argument to logcount" (list (mkquote x))))
+))
+
+(de wlogcount (x)
+  (if (eq x 0) 0			% optimization
+    (let ((c 16#55555555))
+      % compiler cannot handle 64 bit constants, so use a 32 bit constant and duplicate it
+      (setq c (wor (wshift c 32) c))
+      (setq x (wdifference x (wand (wshift x -1) c)))
+      (setq c 16#33333333)
+      (setq c (wor (wshift c 32) c))
+      (setq x (wplus2 (wand (wshift x -2) c) (wand x c)))
+      (setq c 16#0f0f0f0f)
+      (setq c (wor (wshift c 32) c))
+      (setq x (wand (wplus2 x (wshift x -4)) c))
+      (setq c 16#01010101)
+      (setq c (wor (wshift c 32) c))
+      (setq x (wtimes2 x c))
+      (setq x (wshift x -56))
+      % reuse c in this way to make sure that nothing is left on the stack
+      % that can be interpreted asa lisp object by the garbage collector
+      (setq c 16#7f)
+      (wand x c))))
+
+
 (defarith1entry add1 iadd1 (lambda (x)
                                    (floatplus2 x '1.0)) bigadd1)
 
@@ -555,8 +591,8 @@
 (defarithpred1entry onep ionep (lambda (x)
                                        (equal x '1.0)) returnnil)
 
-(de floatzerop (x) (and  (eq 0 (wshift (wshift (wgetv (inf x) 2) 1) -1))
-			 (eq 0 (wgetv (inf x) 1))))
+(de floatzerop (x) (and (floatp x)
+                        (eq 0 (wshift (wshift (wgetv (inf x) 1) 1) -1))))
 
 (de returnnil (u)
   nil)

@@ -89,8 +89,7 @@
          (reclaim)
          (when (wgreaterp heapupperbound oldheapupperbound) 
                (reclaim)))
-	 (compactheap))
-% warum nur ?      (apply (intern "COMPACTHEAP") nil))
+	)%  (compactheap))
     (setq savedunixargs unixargs*)    % Force each new system to get
     (setq unixargs* nil)              % its own args
         % must be 0 for a new file
@@ -99,17 +98,17 @@
 	(binarywriteblock unexecresult bpscontrol 2)
 	(move-regs-to-mem)
 	%% The symbol table has slots 0 ... maxsymbols, i.e. size maxsymbols + 1
-        (binarywrite unexecresult (times 4 5 (plus2 maxsymbols 1)))
+        (binarywrite unexecresult (times 8 5 (plus2 maxsymbols 1)))
         (binarywrite unexecresult 
-		(Wplus2 (wdifference heaplast heaplowerbound) 12))
-        (binarywrite unexecresult  (times (quotient (plus2 3 hash-table-size) 4) 16))
+		(Wplus2 (wdifference heaplast heaplowerbound) 24))
+        (binarywrite unexecresult (times (quotient (plus2 3 hash-table-size) 4) 16))
         (binarywrite unexecresult bpssize)
         (binarywriteblock unexecresult SYMVAL (times2 5 (plus2 maxsymbols 1)))
         (binarywriteblock unexecresult heaplowerbound 
-		(wshift (wplus2 (wdifference heaplast heaplowerbound) 12) -2))
-        (binarywriteblock unexecresult hashtable (times (quotient (plus2 3 hash-table-size) 4) 4))
+		(wshift (wplus2 (wdifference heaplast heaplowerbound) 24) -3))
+        (binarywriteblock unexecresult hashtable (times 2 (quotient (plus2 3 hash-table-size) 4)))
         (binarywriteblock unexecresult bpslowerbound 
-                (wshift bpssize -2)) 
+                (wshift bpssize -3)) 
         (binaryclose unexecresult)
 ))
 
