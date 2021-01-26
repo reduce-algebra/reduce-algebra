@@ -522,8 +522,8 @@
 (instr STR (reg reg-or-sp-pimm15)      OP-ld-st 2#1111100100 nil)
 
 % LDR Xt, <label> - literal
-(instr LDR (reg32 imm19)       OP-ld-st 2#00011000)
-(instr LDR (reg imm19)       OP-ld-st 2#01011000)
+(instr LDR (reg32 offset19)       OP-ld-st 2#00011000)
+(instr LDR (reg offset19)       OP-ld-st 2#01011000)
 
 % LDR Xt,[Xn]
 % (LDR (reg t) (indirect (reg n)))
@@ -707,7 +707,7 @@
 (instr LDRSW (reg reg-or-sp-simm9-pre)    OP-ld-st 2#10111000100 2#11)
 (instr LDRSW (reg reg-or-sp-pimm14)       OP-ld-st 2#1011100110 nil)
 (instr LDRSW (reg reg-indirect)           OP-ld-st 2#1011100110 nil)
-(instr LDRSW (reg imm19)                  OP-ld-st 2#10011000)
+(instr LDRSW (reg offset19)               OP-ld-st 2#10011000)
 (instr LDRSW (reg reg-or-sp-shifter)      OP-ld-st 2#10111000101 2#10)
 
 %% Floating point instructions

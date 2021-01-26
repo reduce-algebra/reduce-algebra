@@ -69,33 +69,36 @@
 
 (fluid '(argumentblock))
 
+(compiletime (put 'put_a_halfword 'opencode '(
+   (STR (reg w1) (displacement (reg x0) 0)))))) 
+
 (de depositvaluecelllocation (x)
   (if (not *writingfaslfile)
-    (progn (setf (getmem (iplus2 codebase* currentoffset*)) 
-                 (loc (wgetv symval (idinf x))))
+    (progn (put_a_halfword (iplus2 codebase* currentoffset*) 
+                 (iplus2 symval (itimes2 8 (idinf x))))
            (setf currentoffset* (iplus2 currentoffset* 4)))
-    (progn (setf (getmem (iplus2 codebase* currentoffset*)) 
+    (progn (put_a_halfword (iplus2 codebase* currentoffset*) 
                  (makerelocword reloc-value-cell (findidnumber x)))
            (setf currentoffset* (iplus2 currentoffset* 4))
            (updatebittable 4 reloc-word))))
 
 (de depositextrareglocation (x)
   (if (not *writingfaslfile)
-    (progn (setf (getmem (iplus2 codebase* currentoffset*)) 
+    (progn (put_a_halfword (iplus2 codebase* currentoffset*) 
                  (loc (wgetv argumentblock
                        (wdifference x (wplus2 maxrealregs 1)))))
            (setf currentoffset* (iplus2 currentoffset* 4)))
-    (progn (setf (getmem (iplus2 codebase* currentoffset*)) 
-                 (makerelocword reloc-value-cell (wplus2 x first-extraargument-number)))
+    (progn (put_a_halfword (iplus2 codebase* currentoffset*)
+                 (makerelocword reloc-value-cell (wplus2 x 8150)))
            (setf currentoffset* (iplus2 currentoffset* 4))
            (updatebittable 4 reloc-word))))
 
 (de depositfunctioncelllocation (x)
   (if (not *writingfaslfile)
-    (progn (setf (getmem (iplus2 codebase* currentoffset*)) 
-                 (iplus2 symfnc (itimes2 4 (idinf x))))
+    (progn (put_a_halfword (iplus2 codebase* currentoffset*) 
+                 (iplus2 symfnc (itimes2 8 (idinf x))))
            (setf currentoffset* (iplus2 currentoffset* 4)))
-    (progn (setf (getmem (iplus2 codebase* currentoffset*)) 
+    (progn (put_a_halfword (iplus2 codebase* currentoffset*) 
                  (makerelocword reloc-function-cell 
                   (findidnumber x)))
            (setf currentoffset* (iplus2 currentoffset* 4))
@@ -152,7 +155,8 @@
                   f))))
 
 (de binarywrite (channel n)
-  (putw n channel))
+	(putw (wshift (wshift n 32) -32) channel)
+	(putw (wshift n -32) channel)) % little endian
 
 (de binarywriteblock (channel blockbase blocksize)
   (fwrite blockbase 8 blocksize channel))

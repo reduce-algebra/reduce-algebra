@@ -38,7 +38,9 @@
 %
 % 3-Apr-90 (Winfried Neun)
 % added support for new car and cdr scheme in modr/m
- 
+
+(compiletime (load if-system))
+
 
 % ------------------------------------------------------------
 % Fluid declarations:
@@ -449,7 +451,7 @@
 		     D31
 	     ))))
 
-1(de Regfp128P (RegName) 
+(de Regfp128P (RegName) 
     (AND (eqcar Regname 'reg)
 	 (MemQ (cadr RegName) 
 	       '(    Q0 Q1 Q2 Q3 Q4 Q5 Q6 Q7 Q8 Q9 Q10 Q11 Q12 Q13 Q14 Q15
@@ -458,10 +460,10 @@
 	     ))))
 
 (de reg-zero-p (RegName)
-    (eq (cadr RegName) 'XZr))
+    (AND (eqcar Regname 'reg) (eq (cadr RegName) 'XZr)))
 
 (de reg32-zero-p (RegName)
-    (eq (cadr RegName) 'Wzr))
+    (AND (eqcar Regname 'reg) (eq (cadr RegName) 'Wzr)))
 
 (de reg-nonzero-p (RegName)
     (and (regp RegName) (not (reg-zero-p RegName))))
@@ -470,16 +472,16 @@
     (and (reg32p RegName) (not (reg32-zero-p RegName))))
 
 (de reg-zero-p (RegName)
-    (eq (cadr RegName) 'XZr))
+    (AND (eqcar Regname 'reg) (eq (cadr RegName) 'XZr)))
 
 (de reg32-zero-p (RegName)
-    (eq (cadr RegName) 'Wzr))
+    (AND (eqcar Regname 'reg) (eq (cadr RegName) 'Wzr)))
 
 (de reg-sp-p (RegName)
-    (eq (cadr RegName) 'sp))
+    (AND (eqcar Regname 'reg) (eq (cadr RegName) 'sp)))
 
 (de reg32-sp-p (RegName)
-    (eq (cadr RegName) 'Wsp))
+    (AND (eqcar Regname 'reg) (eq (cadr RegName) 'Wsp)))
 
 (de reg-or-sp-p (RegName)
     (or (and (regp RegName) (not (reg-zero-p RegName)))
@@ -644,6 +646,12 @@
 	(and (pairp x) (fixp (car x)) (eq (car x) (land (car x) 16#fff))
 	     (eqcar (cdr x) 'LSL)
 	     (pairp (cddr x)) (memq (caddr x) '(0 12)))))
+
+(de imm16-shiftedp (x)
+    (or (and (fixp x) (eq x (land x 16#ffff)))
+	(and (pairp x) (fixp (car x)) (eq (car x) (land (car x) 16#ffff))
+	     (eqcar (cdr x) 'LSL)
+	     (pairp (cddr x)) (memq (caddr x) '(0 16 32 48)))))
 
 (de imm-lg-repeated (x)
   (let ((size 64) (mask))
@@ -1147,14 +1155,17 @@
 (de lth-reg3 (code reg1 reg2 reg3) 4)
 
 %% ChecK!
-(de OP-reg-imm12 (code reg1 reg2 imm12-shifted)
-    (let ((imm12) (sh) (opcode (car code)))
+(de OP-reg-imm12 (code reg1 imm12-shifted)
+    (let ((imm12 0) (sh) (reg2) (opcode (car code)))
       (if (or (and (fixp imm12-shifted) (eq imm12-shifted (wand imm12-shifted 16#fff))
 		   (setq imm12 imm12-shifted))
-	      (and (pairp imm12-shifted) (eq (caddr imm12-shifted) 0)
+	      (and (pairp imm12-shifted) (pairp (cddr imm12-shifted)) (eq (caddr imm12-shifted) 0)
 		   (setq imm12 (caddr imm12-shifted))))
 	  (setq sh 0)
 	(setq sh 1))
+      (cond ((regp imm12-shifted) (setq reg2 imm12-shifted))
+	    ((eqcar imm12-shifted 'regshifted)
+	     (setq reg2 (list 'reg (cadr imm12-shifted)))))
       (DepositInstructionBytes
        (lsh opcode -1)
        (lor (lsh imm12 6) (lor (lsh (land opcode 1) 7) (lsh sh 6)))
@@ -1162,7 +1173,27 @@
        (lor (reg2int reg1) (lsh (land (reg2int reg2) 7) 5))
        )))
 
-(de lth-reg-imm12 (code reg1 reg2 imm12-rotated) 4)
+(de lth-reg-imm12 (code reg1 imm12-shifted) 4)
+
+(de OP-reg-imm16 (code reg1 imm16-shifted)
+    (let ((imm16 0) (sh) (opcode (car code)))
+      (if (or (and (fixp imm16-shifted) (eq imm16-shifted (wand imm16-shifted 16#ffff))
+		   (setq imm16 imm16-shifted))
+	      (and (pairp imm16-shifted) (pairp (cddr imm16-shifted)) (eq (caddr imm16-shifted) 0)
+		   (setq imm16 (caddr imm16-shifted))))
+	  (setq sh 0)
+	(setq sh 1))
+      (cond ((fixp imm16-shifted) (setq imm16 imm16-shifted))
+	    (t (setq imm16 (car imm16-shifted))
+	       (setq sh (lsh (caddr imm16-shifted) -4))))
+      (DepositInstructionBytes
+       opcode
+       (lor (lsh imm16 14) (lsh sh 6))
+       (land 16#ff (lsh imm16 -3))
+       (lor (reg2int reg1) (lsh (land imm16 7) 5))
+       )))
+
+(de lth-reg-imm16 (code reg1 reg2 imm16-shifted) 4)
 
 %% ToDo
 (de OP-reg-logical (code reg1 reg2 imm-logical)
@@ -1171,13 +1202,13 @@
 (de lth-reg-logical (code reg1 reg2 imm-logical) 4)
 
 (de OP-reg-regsp (code reg1 reg2)
-    (OP-reg-imm12 code reg1 reg2 0)
+    (OP-reg-imm12 code reg1 reg2)
     )
 
 (de lth-reg-regsp (code reg1 reg2) 4)
 
 (de OP-regsp-reg (code reg1 reg2)
-    (OP-reg-imm12 code reg1 reg2 0)
+    (OP-reg-imm12 code reg1 reg2)
     )
 
 (de lth-regsp-reg (code reg1 reg2) 4)
@@ -1599,7 +1630,7 @@
 % ------------------------------------------------------------
 
 (de DepositWordBlock (X)                % (FULLWORD xxx xxx ... xxx)
-    (foreach Y in (cdr X) do (DepositWordExpression Y)))
+    (foreach Y in (cdr X) do (DepositQuadWordExpression Y)))
 
 (de DepositHalfWordBlock (X)            % (HALFWORD xxx xxx ... xxx)
     (foreach Y in (cdr X) do (DepositHalfWordExpression Y)))
@@ -2273,21 +2304,63 @@
     (UpdateBitTable 2 0) 
     (setq CurrentOffset* (plus CurrentOffset* 2))))
 
+(compiletime
+ (if_system x86_64
+   (put 'put_a_halfword 'opencode '((mov (reg ebx) (displacement (reg rax) 0))))
+   (put 'put_a_halfword 'opencode '((STR (reg w1) (displacement (reg x0) 0))))
+   ))
+
+(de deposit32bitword (x) %% cross
+  (put_a_halfword (wplus2 codebase* currentoffset*) x)
+  (updatebittable 4 0)
+  (setq currentoffset* (plus currentoffset* 4)))
+
+(de deposit32bitword (x) %% cross
+  (put_a_halfword (wplus2 codebase* currentoffset*) x)
+  (updatebittable 4 0)
+  (setq currentoffset* (plus currentoffset* 4)))
+
 (de DepositWord (x)
   (putword (wplus2 CodeBase* CurrentOffset*) 0 x)
-  (updatebittable 4 0)
+  (updatebittable 8 0)
   (setq CurrentOffset* (plus CurrentOffset* 4)))
 
 (de deposit-relocated-word (offset)
   % Given an OFFSET from CODEBASE*, deposit a word containing the
   % absolute address of that offset.
-  (putword (wplus2 CodeBase* CurrentOffset*)
-	   0 
+  (put_a_halfword (wplus2 CodeBase* CurrentOffset*)
 	   (iplus2 offset (if *writingfaslfile 0 CodeBase*)))
   (updatebittable 4 (const reloc_word))
   (setq CurrentOffset* (plus CurrentOffset* 4)))
 
 (de DepositWordExpression (x)
+  % Only limited expressions now handled
+  (let (y)
+%    (printf "Deposit %w at %x -> %x%n" x CurrentOffset* (wplus2 CodeBase* CurrentOffset*))
+    (cond
+      ((fixp x) (deposit32bitword (int2sys x)))
+      ((labelp x) (deposit-relocated-word (LabelOffset x)))
+      ((equal (first x) 'internalentry) 
+       (let ((offset (get (second x) 'internalentryoffset)))
+	 (if offset
+	     (deposit-relocated-word offset)
+	     (progn
+	       (setq ForwardInternalReferences*
+		     (cons (cons CurrentOffset* (second x))
+			   ForwardInternalReferences*))
+	       (deposit-relocated-word 0)))))
+      ((equal (first x) 'idloc) (depositwordidnumber (second x)))
+      ((equal (first x) 'entry) (DepositEntry x))
+      (t (stderror (bldmsg "Expression too complicated %r" x))))
+%    (printf "Deposited at %x: %x >%x< %x%n"
+%	    (wplus2 (wplus2 CodeBase* CurrentOffset*) -4)
+%	    (getword32 (wplus2 (wplus2 CodeBase* CurrentOffset*) -8) 0)
+%	    (getword32 (wplus2 (wplus2 CodeBase* CurrentOffset*) -4) 0)
+%	    (getword32 (wplus2 CodeBase* CurrentOffset*) 0)
+%	    )
+    ))
+
+(de DepositQuadWordExpression (x)
   % Only limited expressions now handled
   (let (y)
 %    (printf "Deposit %w at %x -> %x%n" x CurrentOffset* (wplus2 CodeBase* CurrentOffset*))
@@ -2325,9 +2398,9 @@
 (de depositwordidnumber (x) 
   (cond
     ((or (not *writingfaslfile) (leq (idinf x) 256)) 
-     (depositword (idinf X)))
+     (deposit32bitword (idinf X)))
     (t
-      (putword (wplus2 CodeBase* CurrentOffset*) 0 
+      (put_a_halfword (wplus2 CodeBase* CurrentOffset*)
 	       (makerelocword (const reloc_id_number) (findidnumber x))) 
       (setq CurrentOffset* (plus CurrentOffset* 4)) 
       (updatebittable 4 (const reloc_word)))))
@@ -2419,9 +2492,7 @@
        (setq x (wshift x -2))		% offset is in words, not bytes
        % insert the fixup into the lower 24 bits, upper 8 bits are condition bits and opcode
        (setq wrd (wgetv (iplus2 CodeBase* (car (first ForwardInternalReferences*))) 0))
-       (putword (iplus2 CodeBase* (car (first ForwardInternalReferences*)))
-		0
-		(wor (wand wrd 16#ff000000) (wand x 16#00ffffff)))
+       (put_a_halfword (iplus2 CodeBase* (car (first ForwardInternalReferences*))) x)
        (setq ForwardInternalReferences* (cdr ForwardInternalReferences*)))
 	      % Now remove the InternalEntry offsets from everyone
    (mapobl 'remove-ieo-property)))

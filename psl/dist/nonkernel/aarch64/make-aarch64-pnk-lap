@@ -76,8 +76,8 @@ ForwardInternalReferences*
 %(tr MakeInternalentryRelative MakeExpressionRelative)
 %(tr resolveoperand)
 %(tr anyregwconst)
+(tr op-reg-imm12 instructionlength reg-sp-p depositinstruction)
 
-%(dskin "/mounts/software/rainer/reduce-algebra/code/trunk/psl/dist/nonkernel/aarch64/lambind.sl")
 %% For machines that require the carcdr.sl fix for car/cdr of NIL, make sure
 %% we turn on fastcar to ensure optimized code. Since PSL was written with
 %% the assumption that car/car of NIL was illegal, it is not necessary

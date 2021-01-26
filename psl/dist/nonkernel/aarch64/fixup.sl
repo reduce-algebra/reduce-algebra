@@ -83,15 +83,15 @@
   (iplus2 (ilsh reloctag 30) (ilsh (ilsh relocinf 2) -2)))
 
 (de makerelocinf (reloctag relocinf)
-  (iplus2 (ilsh reloctag 22) (field relocinf 10 22)))
+  (iplus2 (ilsh reloctag 54) (field relocinf 42 22)))
 
 (de makerelochalfword (reloctag relocinf)
   (iplus2 (ilsh reloctag 14) (field relocinf 18 14)))
 
 (de getbittable (baseaddress bitoffset)
   (field (ilsh (byte baseaddress (ilsh bitoffset -2)) 
-               (idifference (itimes2 (field bitoffset 30 2) 2) 6))
-         30 2))
+               (idifference (itimes2 (field bitoffset 62 2) 2) 6))
+         62 2))
 
 (de putbittable (baseaddress bitoffset value2)
   (prog (m b c)
@@ -99,7 +99,7 @@
               (iland (byte baseaddress (setq m (ilsh bitoffset -2))) 
                      (ilsh (idifference -1 (itimes2 3 256)) 
                       (idifference -2 
-                       (setq c (itimes2 (field bitoffset 30 2) 2))))))
+                       (setq c (itimes2 (field bitoffset 62 2) 2))))))
         (putbyte baseaddress m (if (eq value2 0)
                    b
                    (ilor b (ilsh value2 (idifference 6 c)))))))
