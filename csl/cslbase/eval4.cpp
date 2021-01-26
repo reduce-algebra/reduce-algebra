@@ -514,18 +514,17 @@ LispObject Lmv_list(LispObject env, LispObject a)
 #endif
     SaveStack saver;
     int i, x = exit_count;
-    if (x > 0) real_push(a);
+    if (x > 0) *++stack = a;
     for (i=2; i<=x; i++)
     {
 #ifdef DEBUG
         if (is_exception((&work_0)[i])) my_abort("exception value not trapped");
 #endif
-        real_push((&work_0)[i]);
+        *++stack = (&work_0)[i];
     }
     r = nil;
     for (i=0; i<x; i++)
-    {   LispObject w;
-        real_pop(w);
+    {   LispObject w= *stack--;
         r = cons(w, r);
         errexit();
     }

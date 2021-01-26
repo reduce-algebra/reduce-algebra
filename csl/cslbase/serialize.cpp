@@ -446,7 +446,6 @@ static void ser_print_opname(int n)
 // perfectly ordinary code to serialize data so it is stored compactly
 // on disc. Indeed this may end up replacing the previous "fasl" format
 // that I had.
-//
 
 // I will need a hash table that records information about items in the
 // heap that are visited several times. I use the one from inthash.cpp.
@@ -1405,10 +1404,10 @@ void write_function4up(fourup_args *p)
 
 #define GC_PROTECT(stmt)                                \
     do                                                  \
-    {   push(r, s, pbase, b);                           \
+    {   Save save(r, s, pbase, b);                      \
         ip = reinterpret_cast<LispObject>(p) - pbase;   \
         stmt;                                           \
-        pop(b, pbase, s, r);                            \
+        save.restore(r, s, pbase, b);                   \
         p = reinterpret_cast<LispObject *>(pbase + ip); \
     } while (0)
 
@@ -3297,13 +3296,18 @@ bool setup_codepointers = false;
 LispObject Lwrite_module(LispObject env, LispObject a, LispObject b)
 {
 #ifdef DEBUG_FASL
-    push(a, b);
+    Save save (a, b);
     trace_printf("FASLOUT: ");
+    errexit();
     loop_print_trace(a);
+    errexit();
     trace_printf("\n");
+    errexit();
     loop_print_trace(b);
+    errexit();
     trace_printf("\n");
-    pop(b, a);
+    errexit();
+    Save restore(a, b);
 #endif // DEBUG_FASL
     if (!setup_codepointers)
     {   set_up_function_tables();
@@ -3378,18 +3382,14 @@ LispObject Lserialize1(LispObject env, LispObject a)
 #define F_LOAD_SOURCE     1
 #define F_SELECTED_SOURCE 2
 
-static LispObject load_module(LispObject env, LispObject file,
-                              int option)
-//
+static LispObject load_module(LispObject env, LispObject file, int option)
 // load_module() rebinds *package* in COMMON mode, but also note that
 // it also rebinds *echo to nil in case we are reading from a stream.
-//
 {   save_current_function saver(env);
     char filename[LONGEST_LEGAL_FILENAME];
     Header h;
     size_t len;
     bool from_stream = false;
-    char *modname;
     std::memset(filename, 0, sizeof(filename));
     if (is_stream(file)) h=0, from_stream = true;
     else if (symbolp(file))
@@ -3413,25 +3413,19 @@ static LispObject load_module(LispObject env, LispObject file,
         {   err_printf("Failed to load module from stream\n");
             return error(1, err_no_fasl, file);
         }
-        real_push(qvalue(standard_input));
-        setvalue(standard_input, file);
-        real_push(qvalue(echo_symbol));
-        setvalue(echo_symbol, nil);
     }
     else
     {   len = length_of_byteheader(h) - CELL;
-        modname = reinterpret_cast<char *>(file) + CELL - TAG_VECTOR;
+        char *modname = reinterpret_cast<char *>(file) + CELL - TAG_VECTOR;
         modname = trim_module_name(modname, &len);
         if (Iopen(modname, len, IOPEN_IN, filename))
         {   err_printf("Failed to find \"%s\"\n", filename);
             return error(1, err_no_fasl, file);
         }
     }
-//
 // I will account time spent fast-loading things as "storage management"
 // overhead to be counted as "garbage collector time" rather than
 // regular "cpu time"
-//
     uint64_t t0 = read_clock();
     if (verbos_flag & 2)
     {   freshline_trace();
@@ -3445,42 +3439,45 @@ static LispObject load_module(LispObject env, LispObject file,
         }
     }
     inf_init(); // Ready for reading from compressed stream
-    real_push(CP);
     LispObject r = nil;
     class serializer_tidy
-    {   LispObject *save;
+    {   LispObject *saveStack;
         bool from_stream;
         uint64_t t0b;
     public:
-        serializer_tidy(bool fg, uint64_t t0a)
-        {   save = stack;
+        serializer_tidy(bool fg, uint64_t t0a, LispObject file)
+        {
+            if (fg)
+            {   *++stack = qvalue(standard_input);
+                setvalue(standard_input, file);
+                *++stack = qvalue(echo_symbol);
+                setvalue(echo_symbol, nil);
+            }
+            *++stack = qvalue(current_package);
+            saveStack = stack;
             from_stream = fg;
             t0b = t0a;
         }
         ~serializer_tidy()
-        {   stack = save;
+        {   stack = saveStack;
 // This is some tidy-up activity that I must always do at the end of
 // reading (or trying to read) something.
             if (repeat_heap != nullptr) delete [] repeat_heap;
             repeat_heap = nullptr;
             repeat_heap_size = 0;
-            LispObject p;
-            real_pop(p);
-            setvalue(current_package, p);
+            setvalue(current_package, *stack--);
             inf_finish();
             IcloseInput();
             if (from_stream)
-            {   real_pop(p);
-                setvalue(echo_symbol, p);
-                real_pop(p);
-                setvalue(standard_input, p);
+            {   setvalue(echo_symbol, *stack--);
+                setvalue(standard_input, *stack--);
             }
             uint64_t delta = read_clock() - t0b;
             gc_time += delta;
             base_time += delta;
         }
     };
-    {   serializer_tidy raii(from_stream, t0);
+    {   serializer_tidy tidy(from_stream, t0, file);
         reader_setup_repeats(read_u64());
         r = serial_read();
 #ifdef DEBUG_SERIALIZE
@@ -3525,41 +3522,49 @@ static LispObject load_module(LispObject env, LispObject file,
                 w = get(name, load_selected_source_symbol, nil);
                 if (w == nil) getsavedef = false;
                 else if (integerp(w) != nil && consp(def))
-                {   push(name, file, r, def);
+                {   Save save1(name, file, r, def);
 // The md60 function is called on something like (fname (args...) body...)
                     LispObject def1 = cons(name, cdr(def));
+                    errexit();
                     LispObject w1 = Lmd60(nil, def1);
+                    errexit();
                     if (!numeq2(w, w1)) getsavedef = false;
-                    pop(def, r, file, name);
+                    save1.restore(name, file, r, def);
                 }
             }
             if (getsavedef)
-            {   push(name, file, r);
-                if (name == nil)
-                {   LispObject p1 = cdr(p);
-                    LispObject n1 = car(p1);
-                    LispObject t1 = car(p1 = cdr(p1));
-                    LispObject v1 = car(p1 = cdr(p1));
-                    putprop(n1, t1, v1);
+            {   {   Save save1(name, file, r);
+                    if (name == nil)
+                    {   LispObject p1 = cdr(p);
+                        LispObject n1 = car(p1);
+                        LispObject t1 = car(p1 = cdr(p1));
+                        LispObject v1 = car(p1 = cdr(p1));
+                        putprop(n1, t1, v1);
+                    }
+                    else putprop(name, savedef, def);
+                    errexit();
+                    save1.restore(name, file, r);
                 }
-                else putprop(name, savedef, def);
-                pop(r, file, name);
 // Build up a list of the names of all functions whose !*savedef information
 // has been established.
-                push(r, name);
+                Save save2(name, r);
                 file = cons(name, file);
-                pop(name, r);
+                errexit();
+                save2.restore(name, r);
             }
 // Now set up the load_source property on the function name to indicate the
 // module it was found in.
             LispObject w;
             w = get(name, load_source_symbol, nil);
-            push(name, file, r);
-            w = cons(current_module, w);
-            pop(r, file, name);
-            push(name, file, r);
+            {   Save save(name, file, r);
+                w = cons(current_module, w);
+                errexit();
+                save.restore(name, file, r);
+            }
+            Save save(name, file, r);
             putprop(name, load_source_symbol, w);
-            pop(r, file, name);
+            errexit();
+            save.restore(name, file, r);
         }
     }
     if (option == F_LOAD_MODULE) return onevalue(nil);
@@ -3581,16 +3586,20 @@ LispObject load_source0(int option)
 // names.
     LispObject mods = nil;
     for (LispObject l = qvalue(input_libraries); is_cons(l); l = cdr(l))
-    {   push(mods, l);
-        LispObject m = Llibrary_members(nil, car(l));
-        pop(l, mods);
+    {   LispObject m;
+        {   Save save(mods, l);
+            m = Llibrary_members(nil, car(l));
+            errexit();
+            save.restore(mods, l);
+        }
         while (is_cons(m))
         {   LispObject m1 = car(m);
             m = cdr(m);
             if (Lmemq(nil, m1, mods) != nil) continue;
-            push(l, m);
+            Save save(l, m);
             mods = cons(m1, mods);
-            pop(m, l);
+            errexit();
+            save.restore(l, m);
         }
     }
 // Now I will do load-source or load-selected-source on each module, and
@@ -3598,12 +3607,14 @@ LispObject load_source0(int option)
 // list of the names of functions seen.
     LispObject r = nil;
     while (is_cons(mods))
-    {   LispObject m = car(mods);
+    {   LispObject m = car(mods), w;
         mods = cdr(mods);
-        push(r, mods);
-        LispObject w = load_module(nil, m, option);
-        pop(mods, r);
-        push(mods);
+        {   Save save(r, mods);
+            w = load_module(nil, m, option);
+            errexit();
+            save.restore(r, mods);
+        }
+        Save save(mods);
 // The special version of UNION here always works in linear time, and that
 // is MUCH better than the more general version. Well with bootstrapreduce
 // the final result list from load!-source() ends up of length about
@@ -3611,7 +3622,8 @@ LispObject load_source0(int option)
 // proportional to 400 million - which does complete but which noticably
 // slows things down.
         r = Lunion_symlist(nil, r, w);
-        pop(mods);
+        errexit();
+        save.restore(mods);
     }
     return onevalue(r);
 }
@@ -3706,7 +3718,6 @@ LispObject Lunserialize(LispObject env)
 // this is very provisional and uncertain, but is feels encouraging to
 // me.
 
-//
 // There is some need to be careful here. While serializing everything the
 // code will traverse through all the data structures that represent open
 // streams. Stream objects have three initial items in them - a type,
@@ -3875,11 +3886,9 @@ void warm_setup()
     }
     {   char endmsg[32];
         Zread(endmsg, 24);  // the termination record
-//
 // Although I check here I will not make the system crash if I see an
 // error - at least until I have tested things and found this test
 // properly reliable.
-//
 #ifdef COMMON
         if (std::strncmp(endmsg, "\n\nEnd of CCL dump file\n\n", 24) != 0)
 #else
@@ -4163,8 +4172,7 @@ LispObject Lall_symbols(LispObject env, LispObject include_gensyms)
     }
     LispObject r = nil;
     while (stack != stacksave)
-    {   LispObject w;
-        real_pop(w);
+    {   LispObject w = *stack--;
         r = cons(w, r);
     }
     return onevalue(r);
@@ -4178,8 +4186,7 @@ LispObject Lall_symbols0(LispObject env)
     }
     LispObject r = nil;
     while (stack != stacksave)
-    {   LispObject w;
-        real_pop(w);
+    {   LispObject w = *stack--;
         r = cons(w, r);
     }
     return onevalue(r);
@@ -4220,7 +4227,6 @@ static bool count_totals(LispObject x)
         if (is_bps(e))
         {   size_t clen = length_of_byteheader(vechdr(e)) - CELL;
             double w = static_cast<double>(n)/static_cast<double>(clen);
-//
 // Here I want a measure that will give a good idea of how worthwhile it
 // would be to compile the given function into C - what I have chosen is
 // a count of bytecodes executed scaled by the length
@@ -4260,7 +4266,6 @@ LispObject Lmapstore(LispObject env, LispObject a)
 // The cases I seem to use while building Reduce are
 //     2  return a list (and reset counts)
 //     4  reset counts to zero
-// 
 {   int what;
     mapstore_item *buff=nullptr;
     size_t buffp=0, buffn=0;
@@ -4333,6 +4338,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
 // Result is a list of items ((name size bytes-executed) ...).
                             Save save(r);
                             w1 = make_lisp_integer64(n);
+                            errexit();
                             w1 = list3(x, fixnum_of_int(clen), w1);
                             errexit();
                             save.restore(r);

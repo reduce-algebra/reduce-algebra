@@ -36,7 +36,6 @@
  *************************************************************************/
 
 
-//
 // When built using wxWidgets this code will use the Latin Modern
 // fonts, which are subject to the LaTeX Project Public License. This
 // comment is places somewhere I view as pretty prominent - ie at the head
@@ -45,18 +44,15 @@
 // Reduce with an option "--help" will generate the required credits and
 // notices, so if this matters to you search this file for the string
 // "LaTeX" for more information.
-//
 
 // $Id$
 
 
-//
 // There are a number of comments here introduced with exclamation
 // mark after the "/" and "*" that start them. These contain material
 // to be extracted to form documentation. They MUST remain as slash-star
 // style comments with format as used here so that the documentation
 // extraction utility can find them.
-//
 
 /*!!! csl
  * \documentclass[a4paper,11pt]{article}
@@ -137,10 +133,8 @@
 #endif
 
 
-//
 // These flags are used to ensure that protected symbols don't get
 // overwritten by default, and that the system keeps quiet about it.
-//
 
 bool symbol_protect_flag = true;
 bool warn_about_protected_symbols = false;
@@ -159,7 +153,6 @@ int32_t mpi_rank,mpi_size;
 volatile char stack_contents_temp = 0;
 
 #ifdef CHECK_STACK
-//
 // Some computers are notably unhelpful about their behaviour when the system
 // stack overflows. As a debugging tool on such machines I can do limited
 // software checking by inserting explicit calls to this function in places
@@ -169,7 +162,6 @@ volatile char stack_contents_temp = 0;
 // since it is miserably expensive and crude. I appear to observe that on
 // my Windows versions (both 32 and 64-bit) there is around 2M of stack, while
 // on Linux the amount of stack is set via ulimit and is not fixed.
-//
 
 #define C_STACK_ALLOCATION 1000000
 
@@ -283,24 +275,20 @@ void DebugTrace(const char *fmt, int i)
     std::fflush(stderr);
 }
 
-//
 // error_message_table was defined in cslerror.h since that way I can keep its
 // contents textually close to the definitions of the message codes that it
 // has to relate to.
-//
 
 #define errcode(n) error_message_table[n]
 
 #define ARG_CUT_OFF 10
 
 LispObject error(int nargs, int code, ...)
-//
 // nargs indicates how many values have been provided AFTER the
 // code.  Thus nargs==0 will just display a simple message, nargs==1
 // will be a message plus a value and so on.  I will expect that the
 // number of actual args here is well within any limits that I ought to
 // impose.
-//
 {   std::va_list a;
     int i;
     LispObject w1;
@@ -308,21 +296,18 @@ LispObject error(int nargs, int code, ...)
     if (nargs > ARG_CUT_OFF) nargs = ARG_CUT_OFF;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("\n+++ Error %s: ", errcode(code));
-//
 // There is now some painful shuffling around to get all the args
 // to error() moved over onto the Lisp stack so that is garbage collection
 // is triggered during printing all will be well.
-//
         va_start(a, code);
         for (i=0; i<nargs; i++) *w++ = va_arg(a, LispObject);
         va_end(a);
-        for (i=0; i<nargs; i++) real_push(*--w);
+        for (i=0; i<nargs; i++) *++stack = *--w;
         if (code != err_stack_overflow)  // Be cautious here!
         {   stackcheck();
         }
         for (i=0; i<nargs; i++)
-        {   LispObject p;
-            real_pop(p);
+        {   LispObject p = *stack--;
             loop_print_error(p);
             err_printf("\n");
         }
@@ -351,16 +336,14 @@ LispObject cerror(int nargs, int code1, int code2, ...)
     LispObject *w = reinterpret_cast<LispObject *>(&work_1);
     if (nargs > ARG_CUT_OFF) nargs = ARG_CUT_OFF;
     if (miscflags & HEADLINE_FLAG)
-    {   err_printf("\n+++ Error %s, %s: ", errcode(code1),
-                   errcode(code2));
+    {   err_printf("\n+++ Error %s, %s: ", errcode(code1), errcode(code2));
         va_start(a, code2);
         for (i=0; i<nargs; i++) *w++ = va_arg(a, LispObject);
         va_end(a);
-        for (i=0; i<nargs; i++) real_push(*--w);
+        for (i=0; i<nargs; i++) *++stack = *--w;
         stackcheck();
         for (i=0; i<nargs; i++)
-        {   LispObject p;
-            real_pop(p);
+        {   LispObject p = *stack--;
             loop_print_error(p);
             err_printf("\n");
         }
@@ -379,9 +362,7 @@ LispObject cerror(int nargs, int code1, int code2, ...)
     THROW(LispError);
 }
 
-//
 // This can be used when a resource expires...
-//
 LispObject resource_exceeded()
 {   exit_reason = UNWIND_RESOURCE;
     exit_value = exit_tag = nil;
@@ -397,11 +378,10 @@ LispObject interrupted()
 // to decide whether to proceed or abort.  Thus the following code
 // is only needed if there is no window system active.  On some systems
 // this may be an active check.
-//
     if ((fwin_windowmode() & FWIN_IN_WINDOW) == 0)
     {   term_printf("\n");
         ensure_screen();
-        real_push(prompt_thing);
+        RealSave save(prompt_thing);
         prompt_thing = nil;  // switch off the regular prompts
         std::strncpy(save_prompt, fwin_prompt_string, sizeof(save_prompt));
         save_prompt[sizeof(save_prompt)-1] = 0;
@@ -411,14 +391,12 @@ LispObject interrupted()
         other_read_action(READ_FLUSH, lisp_terminal_io);
         for (;;)
         {   int c = char_from_terminal(nil);
-//
 // Note that I explicitly say "char_from_terminal()" here - this is because
 // I do not expect to be interrupted unless there was a terminal available
 // to send the interrupt! This is in fact a slightly marginal assumption.
-//
             switch (c)
             {   case 'c': case 'C':         // proceed as if no interrupt
-                    real_pop(prompt_thing);
+                    save.restore(prompt_thing);
                     fwin_set_prompt(save_prompt);
                     return nil;
                 case 'a': case 'A':         // raise an exception
@@ -434,7 +412,7 @@ LispObject interrupted()
             }
             break;
         }
-        real_pop(prompt_thing);
+        save.restore(prompt_thing);
         fwin_set_prompt(save_prompt);
     }
 // Now for the common code to be used in all cases.
@@ -737,11 +715,9 @@ LispObject bad_specialn(LispObject, int, ...)
 
 void fatal_error(int code, ...)
 {
-//
 // Note that FATAL error messages are sent to the terminal, not to the
 // error output stream. This is because the error output stream may be
 // corrupted in such dire circumstances.
-//
     term_printf("+++ Fatal error %s\n", errcode(code));
     if (spool_file != nullptr)
     {
@@ -765,7 +741,6 @@ void report_file(const char *s)
 {   char *c;
     const char *s1;
     if (dependency_file[0] == 0) return;
-//
 // In a really odd way I will avoid recording inline-defs.dat as a
 // dependency and insist that if it is to be one that the Makefile should
 // list that explicitly. This helps me avoid some dependency circularities.
@@ -773,7 +748,6 @@ void report_file(const char *s)
 // Use of that file-name for any other purposes may cause issues!
 // Here I find the final component of the path - ie the bit following the
 // last "/" or "\" present if there is one of those.
-//
     if ((s1 = std::strrchr(s, '/')) != nullptr) s1++;
     else if ((s1 = std::strrchr(s, '\\')) != nullptr) s1++;
     else s1 = s;
@@ -989,10 +963,8 @@ static LispObject lisp_main()
     trap_floating_overflow = false;
     tty_count = 0;
     while (true)
-//
 // The sole purpose of the while loop here is to allow me to proceed
 // for a second try if I get a (cold-start) call.
-//
     {   errorset_msg = nullptr;
         TRY
             terminal_pushed = NOT_CHAR;
@@ -1034,9 +1006,8 @@ static LispObject lisp_main()
                         len = static_cast<int>(length_of_byteheader(vechdr(
                                                    exit_value)) - CELL);
                     }
-                    push(codevec, litvec);
+                    RAIIsave_codevec save;
                     preserve(msg, len);
-                    pop(litvec, codevec);
                 }
                 else if (exit_tag == fixnum_of_int(3)) // "preserve & restart"
                 {   const char *msg = "";
@@ -1051,9 +1022,9 @@ static LispObject lisp_main()
                         len = static_cast<int>(length_of_byteheader(vechdr(
                                                    exit_value)) - CELL);
                     }
-                    push(litvec, codevec);
-                    preserve(msg, len);
-                    pop(codevec, litvec);
+                    {   RAIIsave_codevec save;
+                        preserve(msg, len);
+                    }
 #ifdef CONSERVATIVE
 // I believe that this is all to abandon all existing in-use pages and
 // put things back as if all memory is totally empty.
@@ -1100,18 +1071,14 @@ static LispObject lisp_main()
                     char new_module[64], new_fn[64]; // Limited name length
                     int cold_start;
                     cold_start = (exit_value == nil);
-//
 // Of course a tick may very well have happened rather recently - so
 // I will flush it out now just to clear the air.
-//
                     if ((stack+event_flag.load()) >= stackLimit) respond_to_stack_event();
                     cold_start = (exit_value == nil);
                     Lrds(nil, nil);
                     Lwrs(nil, nil);
-//
 // If either of the above two calls to rds/wrs were to fail I would
 // be in a big mess.
-//
                     if (!cold_start)
                     {   new_module[0] = 0;
                         new_fn[0] = 0;
@@ -1148,9 +1115,7 @@ static LispObject lisp_main()
 #ifdef CONSERVATIVE
 // @@@@@
 #else // CONSERVATIVE
-//
 // This puts all recorded heap pages back in the main pool.
-//
                     for (size_t i=0; i<pages_count; i++)
                     {   char *w = reinterpret_cast<char *>(pages[i]);
                         if (!(w > big_chunk_start && w <= big_chunk_end))
@@ -1229,18 +1194,14 @@ int init_flags = 0;
 std::FILE *alternative_stdout = nullptr;
 #endif // WITH_GUI
 
-//
 // standard_directory holds the name of the default image file that CSL
 // would load.
-//
 const char *standard_directory;
 
-//
 // If non-empty the string module_enquiry is a name presenetd on the
 // command line in a "-T name" request, and this will cause the system
 // to behave in a totally odd manner - it does not run Lisp at all but
 // performs a directory enquiry within the image file.
-//
 static string module_enquiry;
 
 int errorset_min = 0, errorset_max = 3;
@@ -1273,7 +1234,6 @@ int kara_done = 0;
 // argv. Args that are either just "-" or that do not start with a "-"
 // end up in simpleArgs while ones that do start with "-" but are not
 // recognized are placed in badArgs.
-//
 
 // Arguments of the form "-x" for any single letter x might have an
 // associated value which can be written as either "-xVAL" or "-x VAL".
@@ -1436,14 +1396,12 @@ char *mystrdup(const char *s)
 
 void cslstart(int argc, const char *argv[], character_writer *wout)
 {   double store_size = 0.0;
-//
 // I make "sp" volatile - it is a variable I declare here but then only use by
 // taking its address to get a pointer into the current stack-frame. When it
 // is volatile my compiler will not be entitled to moan about the lack of
 // assignment to it and will not be entitled to optimise it out of existance
 // or otherwise do things that run against my intent! But then to put its
 // address in C_stackbase I need to cast away the volatile qualifier.
-//
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     C_stacklimit = 0;
@@ -1462,12 +1420,10 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 (IMAGE_NT_HEADERS*)((BYTE*)dh + dh->e_lfanew);
             int64_t stackLimit =
                 (int64_t)NTh->OptionalHeader.SizeOfStackReserve;
-//
 // If the limit recovered above is under 200K I will pretend it is
 // just plain wrong and increase it to that. The effect may be that I
 // end up with an untidy stack overflow but at least I get closer to
 // using all the space that I have.
-//
             if (stackLimit < 200*1024) stackLimit = 200*1024;
 // I also assume that any figure over 20 Mbytes is a mess so ignore it
             if (stackLimit <= 20*1024*1024)
@@ -1481,14 +1437,12 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     {   struct rlimit r;
         if (getrlimit(RLIMIT_STACK, &r) == 0)
         {   int64_t stackLimit = (int64_t)r.rlim_cur;
-//
 // If the user has used ulimit to remove all stack limits I will
 // nevertheless apply one at 20 Mbytes. That is SO much higher than any
 // default as to not hurt ordinary people - and if anybody NEEDS gigabytes
 // of stack they need to ensure that getrlimit returns a finite indication
 // of that! Results of RLIM_SAVED_MAX represent a sort of "give up" from
 // getrlimit so I will treat them as failure.
-//
 #if HAVE_DECL_RLIM_SAVED_MAX
             if (stackLimit == (int64_t)RLIM_SAVED_MAX &&
                 RLIM_SAVED_MAX != RLIM_INFINITY)
@@ -1594,13 +1548,11 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     f = open_file(filename, val.c_str(), val.length(), "w", nullptr);
                     if (f == nullptr)
                     {
-//
 // Under FWIN if there is a "--" among the arguments I will start off
 // with the main window minimized. Thus if an error is detected at a
 // stage that the transcript file is not properly opened I need to
 // maximize the window so I can see the error! Note that I will need to
 // ensure that fwin only uses "-- file" not "--option" to do this...
-//
                         fwin_restore();
                         term_printf("Unable to write to \"%s\"\n", filename);
                         return;
@@ -1613,13 +1565,11 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                         std::fclose(alternative_stdout);
                     alternative_stdout = f;
 #else // !WITH_GUI
-//
 // I use freopen() on stdout here to get my output sent elsewhere.  Quite
 // what sort of mess I am in if the freopen fails is hard to understand!
 // Thus I write a message to stderr and exit promptly in case of trouble.
 // I print a message explaining what I am doing BEFORE actually performing
 // the redirection.
-//
                     std::fprintf(stderr, "Output to be redirected to \"%s\"\n",
                                  val.c_str());
                     f = open_file(filename, val.c_str(), val.length(), "w", stdout);
@@ -2223,7 +2173,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
              * that supports this may be a useful foundation to others who want to make a
              * network service out of this code-base, but is currently disabled.
              */
-//
 //                     -F
 // No longer used, so SPARE!
 // I *ONCE* had a scheme where Reduce could run as a remote server accessed
@@ -2280,13 +2229,11 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 #ifndef HAVE_LIBWX
 // If I am using wxWidgets this option is not supported.
 #endif
-//
 // Actually, like the "-w" option, it is TOO LATE to do this here because
 // lower-level parts of fwin may already have adjusted font paths using
 // mechanisms based on whether Xft is to be activated or not. So fwin
 // checks for "-h" and "-H" and interprets what it finds. So what I do here
 // is just a redundant reminder. Ugh.
-//
             {   "-h", false, false,
                 "-h       Obsolete option!",
                 [&](string key, bool hasVal, string val)
@@ -2590,7 +2537,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     {   const char *p = standard_directory;
         char *p1;
         char cur[LONGEST_LEGAL_FILENAME];
-//
 // If the user does not specify any image files then the behaviour
 // defaults as follows:
 //   Suppose that the current executable is xxx/yyy/zzz then the
@@ -2630,7 +2576,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // At present I still view the one-file solution as neater and so it is the
 // default. The names used for files within a directory are discussed in the
 // places where I manage them.
-//
         if (standard_directory[0] == '.' &&
             (standard_directory[1] == '/' ||
              standard_directory[1] == '\\')) std::strcpy(cur, standard_directory);
@@ -2696,12 +2641,10 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     if (init_flags & INIT_VERBOSE)
     {
 #ifdef WITHOUT_GUI
-//
 // If I do NOT have a window system I will print a newline here so that I
 // can be very certain that my banner appears at the start of a line.
 // With a window system I should have a brand-new fresh window for output
 // and the newline would intrude as an initial blank line.
-//
         term_printf("\n");
 #endif
 
@@ -2724,29 +2667,23 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     if (kparallel > 0) karatsuba_parallel = kparallel;
 #endif // AVOID_THREADS
 
-//
 // Up until the time I call setup() I may only use term_printf for
 // output, because the other relevant streams will not have been set up.
 //    1 bit:    0 for cold, 1 for warm.
 //    2 bit:    1 to request initial allocation of memory.
-//
     setup(restartp ? 3 : 2, store_size);
     {
-//
 // If the user had used "-g" on the command line that will have set
 // errorset_min and I use that to trigger during on gc and fasl messages.
-//
         if (errorset_min == 3) miscflags |= GC_MESSAGES | FASL_MESSAGES;
     }
 
     fwin_menus(loadable_packages, switches, review_switch_settings);
 
-//
 // Now that setup is complete (and I have done any authorisation I want to)
 // I will seed the random number generator as requested by the user. The
 // default will be to put it in an unpredictable (well hard to predict!)
 // state
-//
     Csrand((uint32_t)initial_random_seed);
 
 //?        uint64_t t0 = read_clock();
@@ -2755,11 +2692,9 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 
     ensure_screen();
     procedural_output = nullptr;
-//
 // OK, if I get this far I will suppose that any messages that report utter
 // disasters will have reached the user, so I can allow FWIN to terminate
 // rather more promptly.
-//
     fwin_pause_at_end = false;
 
     if (timeTestCons)
@@ -2911,7 +2846,6 @@ static void low_level_signal_handler(int signo);
 
 void set_up_signal_handlers()
 {
-//
 #ifdef USE_SIGALTSTACK
 // If I get a SIGSEGV that is caused by a stack overflow then I am in
 // a world of pain because the regular stack does not have space to run my
@@ -3148,14 +3082,11 @@ void PROC_mainloop()
 #include PROCEDURAL_WASM_SETUP
 #endif
 
-//
 // People who want to use this in an embedded context can predefine
 // NO_STARTUP_CODE and provide their own entrypoint...
-//
 
 #ifndef NO_STARTUP_CODE
 
-//
 // The next fragment of code is to help with the use of CSL (and hence
 // packages written in Lisp and supported under CSL) as OEM products
 // embedded within larger C-coded packages.  There is (of course) a
@@ -3164,11 +3095,9 @@ void PROC_mainloop()
 // just yet.
 // The protocol for calling Lisp code from C is as follows:
 //
-//
 #ifdef CONSERVATIVE
 //     Create an instance of a ThreadStartup object, and keep it alive
 //     while everything else is happening.
-//
 #endif
 //     cslstart(argc, argv, writer);allocate memory and Lisp heap etc. Args
 //                                  should be "as if" CSL was being called
@@ -3183,7 +3112,6 @@ void PROC_mainloop()
 //                                  down.  [Value returned indicates if
 //                                  the evaluation succeeded?]
 //     cslfinish(writer);           Tidies up ready to stop.
-//
 
 #ifdef SAMPLE_OF_PROCEDURAL_INTERFACE
 
@@ -3314,20 +3242,16 @@ int ENTRYPOINT(int argc, const char *argv[])
 
 #endif // NO_STARTUP_CODE
 
-//
 // And here are some functions that may help use Reduce, as an alternative
 // to the very general escape that execute_lisp_function provides... If
 // these return an integer it will generally be zero for success and non-
 // zero for failure.
-//
 
-//
 // After having called cslstart() you can set the I/O callback functions
 // using this. If you set one or both to nullptr this indicates use of
 // stdin/stdout as per usual rather than an callback, otherwise whenever
 // anybody wants to read or write they use these procedures. It is then
 // your responsibility to cope with whatever text gets exchanged!
-//
 
 int PROC_set_callbacks(character_reader *r,
                        character_writer *w)
@@ -3375,9 +3299,9 @@ int PROC_load_package(const char *name)
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     if_error(w1 = make_undefined_symbol("load-package");
-             push(w1);
+             Save save(w1);
              w = make_undefined_symbol(name);
-             pop(w1);
+             save.restore(w1);
              Lapply1(nil, w1, w),
              // Error handler
              return 1);  // Failed one way or another
@@ -3390,9 +3314,9 @@ int PROC_set_switch(const char *name, int val)
     C_stackbase = (uintptr_t *)&sp;
     if_error(w1 = make_undefined_symbol("onoff");
              errexit();
-             push(w1);
+             Save save(w1);
              w = make_undefined_symbol(name);
-             pop(w1);
+             save.restore(w1);
              Lapply2(nil, w1, w, val == 0 ? nil : lisp_true),
              // Error handler
              return 1);  // Failed to set the switch
@@ -3404,21 +3328,17 @@ int PROC_gc_messages(int n)
     return 0;
 }
 
-//
 // Expressions are entered in Reverse Polish Notation, This call clears
 // the stack. It is probably only wanted if there has been an error
 // of some sort.
-//
 
 int PROC_clear_stack()
 {   procstack = nil;
     return 0;       // can never fail!
 }
 
-//
 // The RPN stack is used to build a prefix-form expression for
 // evaluation. This code creates a Lisp symbol and pushes it.
-//
 
 int PROC_push_symbol(const char *name)
 {   LispObject w = nil;
@@ -3433,9 +3353,7 @@ int PROC_push_symbol(const char *name)
 }
 
 
-//
 //    stack = the-string . stack;
-//
 
 int PROC_push_string(const char *data)
 {   LispObject w = nil;
@@ -3449,16 +3367,12 @@ int PROC_push_string(const char *data)
     return 0;
 }
 
-//
 // Return a handle to the top item on the stack, and pop the stack.
 // The value here will be a RAW LISP structure and NOT at all necessarily
 // anything neat.
-//
 
-//
 // Push an integer, which should fit within the constraints of a
 // 28-bit fixnum.
-//
 
 int PROC_push_small_integer(int32_t n)
 {   LispObject w = nil;
@@ -3505,7 +3419,6 @@ int PROC_push_floating(double n)
     return 0;
 }
 
-//
 // To make an expression
 //    (f a1 a2 a3)
 // you go
@@ -3513,7 +3426,6 @@ int PROC_push_floating(double n)
 //       push(a2)
 //       push(a3)
 //       make_function_call("f", 3)
-//
 
 int PROC_make_function_call(const char *name, int n)
 {   LispObject w = nil, w1 = nil;
@@ -3527,9 +3439,9 @@ int PROC_make_function_call(const char *name, int n)
             procstack = cdr(procstack);
             n--;
         }
-        push(w);
+        Save save(w);
         w1 = make_undefined_symbol(name);
-        pop(w);
+        save.restore(w);
         errexit();
         w = cons(w1, w);
         errexit();
@@ -3539,9 +3451,7 @@ int PROC_make_function_call(const char *name, int n)
     return 0;
 }
 
-//
 // Take the top item on the stack and save it in location n (0 <= n <= 99).
-//
 
 int PROC_save(int n)
 {   if (n < 0 || n > 99) return 1; // index out of range
@@ -3552,9 +3462,7 @@ int PROC_save(int n)
     return 0;
 }
 
-//
 // Push onto the stack the value saved at location n. See PROC_save.
-//
 
 int PROC_load(int n)
 {   LispObject w = nil;
@@ -3568,9 +3476,7 @@ int PROC_load(int n)
     return 0;
 }
 
-//
 // Duplicate the top item on the stack.
-//
 
 int PROC_dup()
 {   LispObject w = nil;
@@ -3590,12 +3496,10 @@ int PROC_pop()
     return 0;
 }
 
-//
 // Replaces the top item on the stack with a simplified version of
 // itself. For experts on Reduce internals I note that this wraps
 // the simplified form up in a prefix-like "!*sq" wrapper so it can
 // still be used in a prefix context.
-//
 
 int PROC_simplify()
 {   LispObject w = nil, w1 = nil;
@@ -3607,9 +3511,9 @@ int PROC_simplify()
         errexit();
         w = Lapply1(nil, w, car(procstack));
         errexit();
-        push(w);
+        Save save(w);
         w1 = make_undefined_symbol("mk*sq");
-        pop(w);
+        save.restore(w);
         errexit();
         w = Lapply1(nil, w1, w);
         errexit();
@@ -3619,18 +3523,16 @@ int PROC_simplify()
     return 0;
 }
 
-//
 // Replace the top item on the stack with whatever is obtained by using
 // the Lisp EVAL operation on it. Note that this is not intended for
 // casual use - if there is any functionality that you need PLEASE ask
 // me to put in a cleaner abstraction to support it.
-//
 
 static void PROC_standardise_gensyms(LispObject w)
 {   if (consp(w))
-    {   push(w);
+    {   Save save(w);
         PROC_standardise_gensyms(car(w));
-        pop(w);
+        save.restore(w);
 #ifdef NO_THROW
         if (exceptionPending()) return;
 #endif // NO_THROW
@@ -3650,9 +3552,9 @@ int PROC_lisp_eval()
     if_error(
         w = eval(car(procstack), nil);
         errexit();
-        push(w);
+        Save save(w);
         PROC_standardise_gensyms(w);
-        pop(w),
+        save.restore(w),
         return 1);
     setcar(procstack, w);
     return 0;
@@ -3660,13 +3562,16 @@ int PROC_lisp_eval()
 
 static LispObject PROC_standardise_printed_form(LispObject w)
 {   if (consp(w))
-    {   push(w);
-        LispObject w1 = PROC_standardise_printed_form(car(w));
-        pop(w);
+    {   LispObject w1;
+        {   Save save(w);
+            w1 = PROC_standardise_printed_form(car(w));
+            save.restore(w);
+        }
         errexit();
-        push(w1);
-        w =  PROC_standardise_printed_form(cdr(w));
-        pop(w1);
+        {   Save save(w1);
+            w =  PROC_standardise_printed_form(cdr(w));
+            save.restore(w1);
+        }
         errexit();
         w = cons(w1, w);
         errexit();
@@ -3675,9 +3580,9 @@ static LispObject PROC_standardise_printed_form(LispObject w)
 // Now w is atomic. There are two interesting cases - an unprinted gensym
 // and a bignum.
     if (symbolp(w))
-    {   push(w);
+    {   Save save(w);
         get_pname(w); // allocates gensym name if needed. Otherwise cheap!
-        pop(w);
+        save.restore(w);
         return w;
     }
     else if (is_numbers(w) && is_bignum(w))
@@ -3689,15 +3594,13 @@ static LispObject PROC_standardise_printed_form(LispObject w)
     else return w;
 }
 
-//
 // Replaces the top item on the stack with version that is in
 // a simple prefix form. This prefix form should be viewed as
 // unsuitable for inclusion in any further expression.
-//
 
 int PROC_make_printable()
 {   LispObject w = nil, w1 = nil;
-    volatile uintptr_t sp;
+    uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     if (procstack == nil) return 1; // stack is empty
 // I want to use "simp" again so that I can then use prepsq!
@@ -3706,9 +3609,10 @@ int PROC_make_printable()
         errexit();
         w = Lapply1(nil, w, car(procstack));
         errexit();
-        push(w);
+        Save save(w);
         w1 = make_undefined_symbol("prepsq");
-        pop(w);
+        errexit();
+        save.restore(w);
         w = Lapply1(nil, w1, w);
         errexit();
 // There are going to be two things I do next. One is to ensure that
@@ -3740,25 +3644,19 @@ PROC_handle PROC_get_raw_value()
     return (PROC_handle)w;
 }
 
-//
 // return true if the expression is atomic.
-//
 
 int PROC_atom(PROC_handle p)
 {   return !consp(reinterpret_cast<LispObject>(p));
 }
 
-//
 // return true if the expression is NIL.
-//
 
 int PROC_null(PROC_handle p)
 {   return (reinterpret_cast<LispObject>(p)) == nil;
 }
 
-//
 // Return true if it is a small integer.
-//
 
 int PROC_fixnum(PROC_handle p)
 {   return is_fixnum(reinterpret_cast<LispObject>(p));
@@ -3776,9 +3674,7 @@ int PROC_floatnum(PROC_handle p)
     return is_bfloat(reinterpret_cast<LispObject>(p));
 }
 
-//
 // Return true if it is a symbol.
-//
 
 int PROC_symbol(PROC_handle p)
 {   return symbolp(reinterpret_cast<LispObject>(p));
@@ -3795,7 +3691,6 @@ double PROC_floating_value(PROC_handle p)
 {   return double_float_val(reinterpret_cast<LispObject>(p));
 }
 
-//
 // Given that it is a symbol, return a string that is its name. Note
 // that this must not be too long, and that the value returned is in
 // a static buffer. Note that this would crash if the item was a
@@ -3803,7 +3698,6 @@ double PROC_floating_value(PROC_handle p)
 // sort that out in PROC_make_printable.
 // Hmmm the name-length restriction here is ugly _ will wait and see how
 // long it is before somebody falls foul of it!
-//
 
 static char PROC_name[256];
 
@@ -3823,10 +3717,8 @@ const char *PROC_string_data(PROC_handle p)
 {   LispObject w = reinterpret_cast<LispObject>(p);
     intptr_t n;
     n = length_of_byteheader(vechdr(w)) - CELL;
-//
 // NOTE that I truncate long strings here. Boo Hiss! This may make a mess
 // of dealing with big numbers, so in due course I will need to fix it!
-//
     if (n > (intptr_t)sizeof(PROC_name)-1) n = sizeof(PROC_name)-1;
     std::strncpy(PROC_name, reinterpret_cast<const char *>(&celt(w, 0)),
                  n);
@@ -3834,10 +3726,8 @@ const char *PROC_string_data(PROC_handle p)
     return &PROC_name[0];
 }
 
-//
 // First and rest allow list traversal. The two-levels of cast are to
 // dispose of atomic<> stuff.
-//
 
 PROC_handle PROC_first(PROC_handle p)
 {   return reinterpret_cast<PROC_handle>(
@@ -3852,4 +3742,3 @@ PROC_handle PROC_rest(PROC_handle p)
 }
 
 // End of csl.cpp
-

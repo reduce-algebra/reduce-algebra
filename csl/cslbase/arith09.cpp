@@ -45,22 +45,17 @@
     static_cast<int32_t>(bignum_digits(a)[(bignum_length(a)-CELL)/4-1])
 
 static LispObject absb(LispObject a)
-//
 // take absolute value of a bignum
-//
 {   size_t len = (bignum_length(a)-CELL)/4;
     if (static_cast<int32_t>(bignum_digits(a)[len-1]) < 0) return negateb(a);
     else return a;
 }
 
-//
 // The next two functions help with bignum GCDs
-//
 
 static void next_gcd_step(uint32_t a0, uint32_t a1,
                           uint32_t b0, uint32_t b1,
                           int32_t *axp, int32_t *ayp, int32_t *bxp, int32_t*byp)
-//
 // This function takes the two leading digits (a0,a1) and (b0,b1) of
 // a pair of numbers A and B and performs an extended GCD process to
 // find values ax, bx, ay and by with a view to letting
@@ -74,18 +69,15 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
 // no progress has been made will be signalled because the values ax, ay,
 // bx and by will be returned as ((1, 0), (0, 1)).  Note that through the
 // body of this code axy and bxy hold ax+ay and bx+by
-//
 {   int32_t ax = 1, axy = 1,
                 bx = 0, bxy = 1;
     uint32_t q;
     int n = 0;
-//
 // I will keep A and B as double-precision values with a view to getting
 // the most progress out of this that I can.  Also I round B up, so that
 // the quotient (A/B) is guaranteed to be an under-estimate for the true
 // result.  Note that A was rounded down just by the process of keeping
 // only the two leading digits.
-//
 #ifdef DEBUG_GCD_CODE
     term_printf("a0=%.8x a1=%.8x b0=%.8x b1=%.8x\n", a0, a1, b0, b1);
 #endif
@@ -94,19 +86,15 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
     {   b0++;
         b1 = 0;  // carry if necessary
     }
-//
 // If b0 overflowed here then both A and B must have started off as
 // 0x7fffffff:0x7fffffff (since B was like that to overflow when incremented,
 // and A>=B).  I return as if this code was invalid, and the fall-back
 // case will do one step and tidy up a bit. A jolly uncommon case!
-//
     if (static_cast<int>(b0) >= 0)
     {   for (;;)
         {   uint32_t c0, c1;
-//
 // If A/B would overflow I break.  This includes the special case where B
 // has reduced to zero.  I compute q = (a0,a1)/(b0,b1)
-//
             if (b0 == 0)
             {   uint32_t qt;
                 if (a0 >= b1) break; // Overflow exit
@@ -115,18 +103,14 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
                 q = qt;              // Accurate quotient here
             }
             else
-//
 // I expect that the quotient here will be quite small, so I compute it in
 // a way optimised for such cases.  This is just a simple shift-and-subtract
 // bit of division code, but for small quotients the number of loops executed
 // will be small.  This naturally leaves the remainder in A.
-//
             {   uint32_t qt = 1;
                 q = 0;
-//
 // This code uses B (it shifts it left a few bits to start with) but at the
 // end B has been put back in its original state.
-//
                 while (b0 < a0)     // Shift B left until >= A
                 {   b0 = b0 << 1;
                     b1 = b1 << 1;
@@ -154,32 +138,24 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
                     b0 = b0 >> 1;
                 }
             }
-//
 // Now A hold the next remainder onwards, so flip A and B
-//
             c0 = a0; c1 = a1; a0 = b0; a1 = b1; b0 = c0; b1 = c1;
-//
 // If either of the next re-calculations of bx, bxy overflow then I ought
 // to exit before updating ax, bx, axy and bxy. Things are arranged so that
 // all values remain positive at this stage.
-//
             {   uint32_t cx, cxy;
                 Dmultiply(cx, cxy, bxy, q, axy);
                 if (cx != 0) break;
-//
 // cxy will be >= cx, so if cxy did not overflow then cx can not. Thus it
 // is safe to use regular (not double-length) multiplication here.
-//
                 cx = bx*q + ax;
                 axy = bxy; bxy = cxy;
                 ax = bx; bx = cx;
                 n++;
             }
-//
 // I update A and B in such a way that they alternate between the
 // sequences for under- and over-estimates of the true ratio.  This is done
 // so that the partial quotients I compute always tend to be underestimates.
-//
             a1 = a1 - axy;
             if (static_cast<int32_t>(a1) < 0)
             {   a1 &= 0x7fffffff;
@@ -196,14 +172,12 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
     }    // This is the end of the block testing the initial quotient
     {   int32_t ay = axy - ax,
                     by = bxy - bx;
-//
 // Use of this route would involve computing A*x+B*y and C*x+D*y,
 // which is 4 multiplications.  Simple division would be just A-q*B at
 // one division.  To account for this I pretend that I made no progress
 // at all if I would simulate less than 3 regular remainder steps.  This is
 // 3 rather than 4 because (maybe) the Lehmer code bundles up more work for
 // the overhead that it spends.
-//
         if (n < 3) ax = 1, ay = 0, bx = 0, by = 1;
         else if ((n & 1) != 0)
         {   ax = -ax;
@@ -213,9 +187,7 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
         {   ay = -ay;
             bx = -bx;
         }
-//
 // Copy results into the places where they are wanted.
-//
         *axp = ax;
         *ayp = ay;
         *bxp = bx;
@@ -226,7 +198,6 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
 
 static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
                        size_t lenb)
-//
 // A and B are vectors of unsigned integers, representing numbers with
 // radix 2^31.  lena and lenb indicate how many digits are present. The
 // numbers are unsigned.  This will use the vectors as workspace and
@@ -237,14 +208,11 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
 //
 // When this returns the bignums that A and B refer to will have been
 // reduced until B has a single 31-bit digit.
-//
 {   uint32_t a0, a1, a2, b0, b1;
     bool flipped = false;
-//
 // The next two lines adjust for an oddity in my bignum representation - the
 // if the leading digit would have its 0x40000000 bit set then I stick on
 // a leading zero.  This gives me a bit more in hand wrt signed values.
-//
     if (a[lena] == 0) lena--;
     if (b[lenb] == 0) lenb--;
 #ifdef DEBUG_GCD_CODE
@@ -260,7 +228,6 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
     for (;;)
     {   uint32_t q;
         size_t lenr;
-//
 // I will perform reductions until the smaller of my two bignums has been
 // reduced to a single-precision value.  After that the tidying up to
 // obtain the true GCD will be fairly easy.
@@ -268,7 +235,6 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
 // regular remainder calculation to reduce it.  If the two numbers are
 // about the same size then I will combine several big-number operations
 // into one - the clever part of this entire program.
-//
         if (lena < lenb)
         {   uint32_t *c = a;
             size_t lenc = lena;
@@ -279,13 +245,11 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
         if (lenb == 0) break;    // B is now just one digit
         else if (lena == lenb)
         {   while (lenb != 0 && a[lenb] == b[lenb]) lenb--;
-//
 // Here I want to ensure that A is really at least as big as B.  While
 // so doing I may happen to discover that they are actually the same value.
 // If I do that I set things so that B looks like a single precision zero
 // and exit from the loop.  The result will be that A gets returned as the
 // GCD.
-//
             if (a[lenb] == b[lenb])  // must have lenb==0 in this case
             {   b[0] = 0;            // a and b were equal, so a-b=0
                 break;
@@ -306,10 +270,8 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
                 term_printf("\n");
             }
 #endif
-//
 // Since the shorter number was double-length (at least) it is OK to
 // grab the first two digits of each.
-//
             a0 = a[lena]; a1 = a[lena-1];
             b0 = b[lena]; b1 = b[lena-1];
             lenb = lena;            // restore lenb
@@ -318,10 +280,8 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
         else if (lena == lenb+1)
         {   a0 = a[lena]; a1 = a[lenb];
             b0 = 0;       b1 = b[lenb];
-//
 // If one number has one more digit than the other but the quotient will
 // still be small I may be able to use the Lehmer code.
-//
             if (a0 < b1) goto lehmer;
         }
 // Here I need to do one step towards reduction by division.  A is
@@ -331,12 +291,10 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
         b0 = b[lenb];    b1 = b[lenb-1];
         if (lena > 1)    a2 = a[lena-2];
         else             a2 = 0;
-//
 // Now I intend to estimate A/B by computing (a0,a1,a2)/(b0,b1).  To do
 // this I will first shift the leading digits of A and B right until b0
 // vanishes, then I will just need to compute (a0,a1,a2)/b1.  If this
 // would overflow, I compute (a0,a1)/b1 instead.
-//
 #ifdef DEBUG_GCD_CODE
         term_printf("a0 = %.8x a1 = %.8x a2 = %.8x\n", a0, a1, a2);
         term_printf("b0 = %.8x b1 = %.8x\n", b0, b1);
@@ -357,7 +315,6 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
 #endif
         lenr = lena;
         if (b1 == 0x7fffffff)
-//
 // I make b1 = 0x7fffffff a special case because (a) then B is as well-
 // normalised as it possibly can be and so maybe my estimated quotient
 // should be quite accurate and (b) I want to ensure that the estimate
@@ -372,7 +329,6 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
 // not very much progress in the step.  My main justification for taking
 // a relaxed view is that except for the very first step in the remainder
 // sequence it will be very uncommon for this code to be activated.
-//
         {   if (a0 != 0) q = a0;
             else if (lena == lenb) q = 1;
             else q = a1, lenr--;
@@ -381,7 +337,6 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
         {   uint32_t qtemp;
             b1++;         // To achieve rounding down of q
             if (a0 != 0 || a1 >= b1) Ddivideq(qtemp, a0, a1, b1);
-//
 // The following line indicates a special case needed when this division
 // is almost done - up to almost the end I can afford to approximate a
 // true quotient (1,0,...) as (0,ffffffff,...), but eventually I must
@@ -389,7 +344,6 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
 // ensured that A>B I KNOW that the true quotient is at least 1, so when
 // lena==lenb I can force this is if I was in danger of estimating a lower
 // value.
-//
             else if (lena == lenb) qtemp = 1;
             else
             {   Ddivideq(qtemp, a1, a2, b1);
@@ -397,10 +351,8 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
             }
             q = qtemp;
         }
-//
 // Now q is an approximation to the leading digit of the quotient.
 // I now want to replace a by a - q*b*r^(lenr-lenb).
-//
 #ifdef DEBUG_GCD_CODE
         term_printf("q = %.8x\n", q);
 #endif
@@ -444,12 +396,10 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
                 bx = bxt; by = byt;
                 if (ay == 0) goto reduce_by_division;
             }
-//
 // Now we should be able to arrange
 //   [ ax  ay ]  =  [ >0    <= 0 ]
 //   [ bx  by ]     [ <= 0  > 0  ]
 // and I swop the rows to ensure that this is so.
-//
             if (ax < 0 || by < 0)
             {   int32_t cx = ax, cy = ay;
                 ax = bx; ay = by;
@@ -457,13 +407,11 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
             }
             ay = -ay;
             bx = -bx;    // Now all variables are positive
-//
 // Now I want to compute ax*a - ay*b
 //                   and by*b - bx*a
 // and use these values for the new a and b.  Remember that at present
 // a and b are just about the same length, and provided that I use b0
 // for the leading digit of b I can treat both as having length lena
-//
             {   uint32_t carryax = 0, carryay = 0,
                              carrybx = 0, carryby = 0,
                              borrowa = 1, borrowb = 1,
@@ -482,10 +430,8 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
                     a[i] = clear_top_bit(aa);
                     b[i] = clear_top_bit(bb);
                 }
-//
 // I do the top digit by hand to cope with a possible virtual zero digit at
 // the head of B.
-//
                 Dmultiply(carryax, aix, a[lena], ax, carryax);
                 Dmultiply(carryay, aiy, b0, ay, carryay);
                 Dmultiply(carrybx, bix, a[lena], bx, carrybx);
@@ -501,7 +447,6 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
                 lenb = lena;
                 if (b0 == 0) lenb--;
 #ifdef DEBUG
-//
 // The following test is here as a provisional measure - it caught a number of
 // bugs etc while I was developing this code.  My only worry is that maybe
 // the carries and borrows could (correctly) combine to leave zero
@@ -562,35 +507,35 @@ LispObject gcd(LispObject a, LispObject b)
             trace_printf("GCD of 2 bignums %x %x\n", topdigit(a), topdigit(b));
             trace_printf("signs %d %d\n", bignum_minusp(a), bignum_minusp(b));
 #endif
-            push(b);
-            if (bignum_minusp(a)) a = negateb(a);
-            else a = copyb(a);
-            pop(b);
-            push(a);
-            if (bignum_minusp(b)) b = negateb(b);
-            else b = copyb(b);
-            pop(a);
+            {   Save save(b);
+                if (bignum_minusp(a)) a = negateb(a);
+                else a = copyb(a);
+                errexit();
+                save.restore(b);
+            }
+            {   Save save(a);
+                if (bignum_minusp(b)) b = negateb(b);
+                else b = copyb(b);
+                errexit();
+                save.restore(a);
+            }
 #ifdef DEBUG_GCD_CODE
             trace_printf("GCD of 2 positive bignums %x %x\n", topdigit(a),
                          topdigit(b));
             trace_printf("signs %d %d\n", bignum_minusp(a), bignum_minusp(b));
 #endif
-//
 // Note that negating a NEGATIVE bignum may sometimes make it grow by one
 // word, but can never cause it to shrink - and in particular never shrink to
 // a smallnum.  Of course negating a positive bignum can (in just one case!)
 // give a fixnum - but that can not occur here. Thus I know that I still
 // have two bignums to worry about!
-//
             {   size_t lena, lenb, new_lena;
                 uint32_t b0;
-//
 // I apply two ideas here.  The first is to perform all my arithmetic
 // in-place, since I have ensured that the numbers I am working with are
 // fresh copies.  The second is to defer true bignum operations for as
 // long as I can by starting a remainder sequence using just the leading
 // digits of the inputs.
-//
                 lena = (bignum_length(a)-CELL)/4 - 1;
                 lenb = (bignum_length(b)-CELL)/4 - 1;
 #ifdef DEBUG_GCD_CODE
@@ -601,11 +546,9 @@ LispObject gcd(LispObject a, LispObject b)
 // be OK. Well I sort of know it might not be!
                 new_lena = huge_gcd((uint32_t *)&bignum_digits(a)[0], lena,
                                     (uint32_t *)&bignum_digits(b)[0], lenb);
-//
 // The result handed back (new_lena here) contains not only the revised
 // length of a, but also a flag bit (handed back in its sign bit) to
 // indicate whether A and B have been swopped.
-//
 #ifdef DEBUG_GCD_CODE
                 trace_printf("new_lena = %d = %.8x\n", new_lena, new_lena);
 #endif
@@ -615,13 +558,11 @@ LispObject gcd(LispObject a, LispObject b)
                     b = c;
                     new_lena &= ~TOP_BIT_OF_SIZE;
                 }
-//
 // By this stage I have reduced A and B so that B is a single-precision
 // bignum (i.e. its value is at most 0x7fffffff).  A special case will be
 // when B==0.  To complete the GCD process I need to do a single remainder
 // operation (A%B) after which I have just machine arithmetic to do to
 // complete the job.
-//
                 b0 = bignum_digits(b)[0];
 #ifdef DEBUG_GCD_CODE
                 std::printf("b0 = %d = %x\n", b0, b0);
@@ -640,14 +581,12 @@ LispObject gcd(LispObject a, LispObject b)
                                       bignum_digits(a)[0];
                         if (valid_as_fixnum(a64)) return fixnum_of_int(a64);
                     }
-//
 // The leading digit of a bignum is in effect one bit shorter than the
 // others (to allow for the fact that it is signed).  In huge_gcd I did
 // not worry about that, but here (before I return) I need to restore a
 // proper state.  Note that since the GCD is no larger than either original
 // number I am guaranteed to have space to put the padding zero I may need
 // to stick onto the number...
-//
 #ifdef DEBUG_GCD_CODE
                     trace_printf("a0 = %d = %x\n", a0, a0);
 #endif
@@ -697,10 +636,8 @@ LispObject gcd(LispObject a, LispObject b)
         else return aerror2("bad arg for gcd", a, b);
     }
     else return aerror2("bad arg for gcd", a, b);
-//
 // If I drop out of the above IF statement I have reduced a and b to
 // fixnums, which I can compute with directly using C native arithmetic.
-//
     p = int_of_fixnum(a);
     q = int_of_fixnum(b);
     if (p < 0) p = -p;
@@ -753,7 +690,6 @@ gcd_using_machine_arithmetic:
 // earlier.
         p = p << twos;
     }
-//
 // In some cases the result will be a bignum.  Even with fixnum inputs
 // gcd(-0x08000000, -0x08000000) == 0x08000000 which is a bignum. Yuk!
 // What is worse, in the case that I get here out of the gcd(big,big) code
@@ -769,29 +705,32 @@ LispObject lcm(LispObject a, LispObject b)
     if (a == fixnum_of_int(0) ||
         b == fixnum_of_int(0)) return fixnum_of_int(0);
     stackcheck(a, b);
-    push(a, b);
-    g = gcd(a, b);
-    pop(b);
-    b = quot2(b, g);
-//
-// b has already been through quot2(), so minusp can not fail...
-//
-    if (minusp(b)) b = negate(b);
-    pop(a);
-    if (minusp(a))  // can not fail
-    {   push(b);
+    errexit();
+    {   Save save(a, b);
+        g = gcd(a, b);
+        errexit();
+        save.restore(a, b);
+    }
+    {   Save save(a);
+        b = quot2(b, g);
+        errexit();
+        if (minusp(b)) b = negate(b);
+        errexit();
+        save.restore(a);
+    }
+    if (minusp(a))
+    {   Save save(b);
         a = negate(a);
-        pop(b);
+        errexit();
+        save.restore(b);
     }
     return times2(a, b);
 }
 
 LispObject lognot(LispObject a)
 {
-//
 // bitwise negation can never cause a fixnum to need to grow into
 // a bignum.  For bignums I implement ~a as -(a+1).
-//
     if (is_fixnum(a))
         return static_cast<LispObject>((uintptr_t)a ^ ~(uintptr_t)XTAG_BITS);
     else if (is_numbers(a) && is_bignum(a))
@@ -802,11 +741,9 @@ LispObject lognot(LispObject a)
 }
 
 LispObject ash(LispObject a, LispObject b)
-//
 // Shift A left if B is positive, or right if B is negative.  Right shifts
 // are arithmetic, i.e. as if 2s-complement values are used with negative
 // values having an infinite number of leading '1' bits.
-//
 {   intptr_t bb;
     if (!is_fixnum(b)) return aerror2("bad arg for lshift", a, b);
     bb = int_of_fixnum(b);
@@ -816,12 +753,10 @@ LispObject ash(LispObject a, LispObject b)
         if (aa == 0) return a;    // Shifting zero leaves it unaltered
         if (bb < 0)
         {   bb = -bb;
-//
 // In a 32-bit world fixnums have only 28 data bits in them, and so right
 // shifts by more than that will lead to a result that is all 1s or all 0s.
 // For a 64-bit systen the limit is 60 bits. That means that shifting right
 // but 30 or 62 bits is as much as I ever need to do!
-//
             if (SIXTY_FOUR_BIT && bb > 62) bb = 62;
             else if (!SIXTY_FOUR_BIT && bb > 30) bb = 30;
             aa = ASR((int64_t)aa, bb);
@@ -858,20 +793,17 @@ LispObject ash(LispObject a, LispObject b)
             return make_lisp_integer64(ASL((int64_t)aa, bb));
         else
         {
-//
 // I drop through to here for a left-shift that will need to give a
 // bignum result, since the shift will be by at least 31 (or 62) and the
 // value being shifted was non-zero.  I deal with this by making the input
 // into bignum representation (though it would not generally be valid as one),
 // and dropping through to the general bignum shift code.
             a = make_fake_bignum(aa);
-//
 // DROP THROUGH from here and pick up the general bignum shift code.
 // Observe that if I do I have a non-zero value shifted left by at least
 // 37 bits if we are on a 32-bit machine and at least 64 bits if we are on
 // a 64-bit machine. That should mean that the result is going to have to
 // be a bignum.
-//
         }
     }
     else if (!is_numbers(a) || !is_bignum(a))
@@ -892,24 +824,22 @@ LispObject ash(LispObject a, LispObject b)
             lenc++, longer = true;
 // When I am shifting (left) I can work out exactly how long the resulting
 // bignum will be right at the start.
-        push(a);
-        c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*(lenc+1));
-        pop(a);
-//
+        {   Save save(a);
+            c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*(lenc+1));
+            errexit();
+            save.restore(a);
+        }
 // Before I do anything else I will fill the result-vector with zero, so that
 // the parts that do not get A copied in will end up in a proper state.  This
 // should include the word that pads the vector out to an even number of
 // words.
-//
         for (i=0; i<=lenc; i++) bignum_digits(c)[i] = 0;
         if ((lenc & 1) != 0) bignum_digits(c)[i] = 0; // The spare word
         d0 = 0;
         for (i=0; i<=lena; i++)
         {   d1 = bignum_digits(a)[i];
-//
 // The value of d0 here is positive, so there are no nasty issues of
 // logical vs arithmetic shifts to bother me.
-//
             bignum_digits(c)[words + i] =
                 (static_cast<uint32_t>(d0) >> (31 - bits)) |
                 clear_top_bit(static_cast<uint32_t>(d1) << bits);
@@ -920,10 +850,8 @@ LispObject ash(LispObject a, LispObject b)
         return c;
     }
     else
-//
 // Here for bignum right-shifts. This may sometimes collapse things to give
 // a fixnum result.
-//
     {   size_t lena = (bignum_length(a)-CELL)/4 - 1;
         size_t words = (-bb) / 31;    // words to shift right by
         int32_t bits = (-bb) % 31;     // bits to shift right by
@@ -946,10 +874,11 @@ LispObject ash(LispObject a, LispObject b)
 // build it in a one or two-word bignum and then (if appropriate) extract the
 // fixnum value.  This is slightly wasteful, but I do not (at present)
 // view right-shifting a bignum to get a fixnum as super speed-critical.
-//
-        push(a);
-        c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*(lenc+1));
-        pop(a);
+        {   Save save(a);
+            c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*(lenc+1));
+            errexit();
+            save.restore(a);
+        }
         if ((lenc & 1) != 0) bignum_digits(c)[lenc+1] = 0;// The spare word
         d0 = bignum_digits(a)[words];
         for (i=0; i<lenc; i++)
@@ -962,9 +891,7 @@ LispObject ash(LispObject a, LispObject b)
         d1 = shorter ? msd : (msd < 0 ? -1 : 0);
         bignum_digits(c)[i] =
             (d0 >> bits) | ASL(d1, (31 - bits));
-//
 // Now I see if the result ought to be represented as a fixnum.
-//
         if (SIXTY_FOUR_BIT && lenc == 1)
         {   int64_t v = ASL(bignum_digits64(c,1), 31) | bignum_digits(c)[0];
             if (valid_as_fixnum(v)) return fixnum_of_int(v);
@@ -973,9 +900,7 @@ LispObject ash(LispObject a, LispObject b)
         {   d0 = bignum_digits(c)[0];
             if (valid_as_fixnum(d0)) return fixnum_of_int(d0);
         }
-//
 // Drop through if a genuine bignum result is needed.
-//
         return c;
     }
 }
@@ -1012,10 +937,8 @@ LispObject shrink_bignum(LispObject a, size_t lena)
         if (valid_as_fixnum(v)) return fixnum_of_int(v);
     }
     if (lena == olen) return a;
-//
 // Here I had allocated too much space, so I have to trim it off and
 // put a dummy vector in to pad out the heap.
-//
     setnumhdr(a, numhdr(a) - pack_hdrlength(olen-lena));
     msd = bignum_digits(a)[lena];
     if ((msd & 0x40000000) != 0) bignum_digits(a)[lena] = msd |
@@ -1043,15 +966,17 @@ static LispObject logiorbb(LispObject a, LispObject b)
     // Now b is at least as long as a
     msd = bignum_digits(a)[lena];
     if (msd < 0)
-    {   push(b);
+    {   Save save(b);
         a = copyb(a);
-        pop(b);
+        errexit();
+        save.restore(b);
         for (i=0; i<=lena; i++) bignum_digits(a)[i] |= bignum_digits(b)[i];
     }
     else
-    {   push(a);
+    {   Save save(a);
         b = copyb(b);
-        pop(a);
+        errexit();
+        save.restore(a);
         for (i=0; i<=lena; i++) bignum_digits(b)[i] |= bignum_digits(a)[i];
         if (lena != lenb) return shrink_bignum(b, lenb);
         a = b;
@@ -1099,9 +1024,11 @@ static LispObject logxorbb(LispObject a, LispObject b)
         b = c; lenb = lenc;
     }
     // Now b is at least as long as a
-    push(a);
-    b = copyb(b);
-    pop(a);
+    {   Save save(a);
+        b = copyb(b);
+        errexit();
+        save.restore(a);
+    }
     for (i=0; i<lena; i++) bignum_digits(b)[i] ^= bignum_digits(a)[i];
     w = bignum_digits(a)[i];
     if (lena == lenb) bignum_digits(b)[i] ^= w;
@@ -1149,9 +1076,11 @@ LispObject logeqv2(LispObject a, LispObject b)
     {   if (is_fixnum(b))
             return logxorbb(make_fake_bignum(~int_of_fixnum(b)), a);
         else if (is_numbers(b) && is_bignum(b))
-        {   push(a);
-            b = lognot(b);
-            pop(a);
+        {   {   Save save(a);
+                b = lognot(b);
+                errexit();
+                save.restore(a);
+            }
             return logxorbb(a, b);
         }
         else return aerror2("bad arg for logeqv", a, b);
@@ -1173,15 +1102,17 @@ static LispObject logandbb(LispObject a, LispObject b)
     // Now b is at least as long as a
     msd = bignum_digits(a)[lena];
     if (msd >= 0)
-    {   push(b);
+    {   Save save(b);
         a = copyb(a);
-        pop(b);
+        errexit();
+        save.restore(b);
         for (i=0; i<=lena; i++) bignum_digits(a)[i] &= bignum_digits(b)[i];
     }
     else
-    {   push(a);
+    {   Save save(a);
         b = copyb(b);
-        pop(a);
+        errexit();
+        save.restore(a);
         for (i=0; i<=lena; i++) bignum_digits(b)[i] &= bignum_digits(a)[i];
         if (lena != lenb) return shrink_bignum(b, lenb);
         a = b;

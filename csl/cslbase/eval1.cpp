@@ -1058,7 +1058,7 @@ LispObject mv_call_fn(LispObject args, LispObject env)
     }
     errexit();
     args = cdr(args);
-    push(fn);
+    Save save1(fn);
     LispObject xargs = nil;             // for list of eventual args
     while (consp(args))
     {   LispObject r1;
@@ -1079,6 +1079,7 @@ LispObject mv_call_fn(LispObject args, LispObject env)
         }
         args = cdr(args);
     }
+    save1.restore(fn);
     return apply(fn, xargs, env, mv_call_symbol);
 }
 

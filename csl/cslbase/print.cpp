@@ -2309,7 +2309,6 @@ restart:
                         putc_stream(hexdig[(ch >> 4) & 0xf], active_stream);
                         putc_stream(hexdig[ch & 0xf], active_stream);
                     }
-                    real_popv(1);
                     putc_stream(']', active_stream);
                     return nil;
 
@@ -2540,7 +2539,6 @@ restart:
                                 }
                             }
                         }
-                        real_popv(1);
                         if (escaped_printing & escape_yes)
                             putc_stream('"', active_stream);
                     }
@@ -2688,7 +2686,6 @@ restart:
                                                  (CELL - TAG_VECTOR) + k));
                             internal_prin(vv, (k != 0) ? 1 : 0);
                         }
-                    real_popv(1);
                     outprefix(false, 1);
 #ifndef COMMON
                     if (type_of_header(h) == TYPE_SIMPLE_VEC) putc_stream(']',
@@ -2734,7 +2731,6 @@ restart:
                                              (CELL - TAG_VECTOR) + k)));
                         prin_buf(my_buff, true);
                     }
-                    real_popv(1);
                     outprefix(false, 1);
                     putc_stream(']', active_stream);
                     return nil;
@@ -2753,7 +2749,6 @@ restart:
                     }
                     outprefix(false, 1);
                     putc_stream(')', active_stream);
-                    real_popv(1);
                     return nil;
                 case TYPE_VEC16_1:
                 case TYPE_VEC16_2:
@@ -2768,7 +2763,6 @@ restart:
                     }
                     outprefix(false, 1);
                     putc_stream(')', active_stream);
-                    real_popv(1);
                     return nil;
                 case TYPE_VEC32:
                     outprefix(blankp, 5);
@@ -2783,7 +2777,6 @@ restart:
                     }
                     outprefix(false, 1);
                     putc_stream(')', active_stream);
-                    real_popv(1);
                     return nil;
                 case TYPE_VECFLOAT32:
                     outprefix(blankp, 4);
@@ -2797,7 +2790,6 @@ restart:
                     }
                     outprefix(false, 1);
                     putc_stream(')', active_stream);
-                    real_popv(1);
                     return nil;
                 case TYPE_VECFLOAT64:
                     outprefix(blankp, 4);
@@ -2811,7 +2803,6 @@ restart:
                     }
                     outprefix(false, 1);
                     putc_stream(')', active_stream);
-                    real_popv(1);
                     return nil;
                 default:goto error_case;
             }
@@ -2836,7 +2827,6 @@ restart:
                     }
                 }
             }
-            real_popv(1);
             return nil;
         }
 
@@ -2844,7 +2834,6 @@ restart:
 // It seems probable that I could never get here, but this "return" is
 // just in case, as a safety measure.
 //
-        real_popv(1);
         return nil;
 
         case TAG_SYMBOL:
@@ -3244,7 +3233,6 @@ restart:
 #endif
                 }
             }
-            real_popv(1);
             return nil;
 
         case TAG_BOXFLOAT:

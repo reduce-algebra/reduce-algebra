@@ -62,15 +62,16 @@ void record_get(LispObject tag, bool found)
 {
 #ifdef RECORD_GET
     LispObject w;
-    push(tag);
-    w = Lget_hash_2(nil, tag, get_counts);
-    pop(tag);
+    {   Save save(tag);
+        w = Lget_hash_2(nil, tag, get_counts);
+        save.restore(tag);
+    }
     errexit();
     if (w == nil)
     {   w = cons_no_gc(fixnum_of_int(0), fixnum_of_int(0));
-        push(w);
+        Save save(w);
         Lput_hash(nil, 3, tag, get_counts, w);
-        pop(w);
+        save.restore(w);
     }
     if (found) car(w) += 0x10;
     else cdr(w) += 0x10;
@@ -137,9 +138,9 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         w = basic_elt(w, n-1); // use the fastget scheme
         if (w == SPID_NOPROP) w = c;
 #ifdef RECORD_GET
-        push(w);
+        Save save(w);
         record_get(b, w != nil);
-        pop(w);
+        save.restore(w);
         errexit();
 #endif
         return onevalue(w);
@@ -157,9 +158,9 @@ LispObject get(LispObject a, LispObject b, LispObject c)
     if (car(w) == b)    // found at first position on the list
     {
 #ifdef RECORD_GET
-        push(w);
+        Save save(w);
         record_get(b, true);
-        pop(w);
+        save.restore(w);
         errexit();
 #endif
         return onevalue(cdr(w));
@@ -177,9 +178,9 @@ LispObject get(LispObject a, LispObject b, LispObject c)
     if (car(w) == b)    // found at second position on the list
     {
 #ifdef RECORD_GET
-        push(w);
+        Save save(w);
         record_get(b, true);
-        pop(w);
+        save.restore(w);
         errexit();
 #endif
         return onevalue(cdr(w));
@@ -206,10 +207,10 @@ LispObject get(LispObject a, LispObject b, LispObject c)
             write_barrier(cdraddr(pl), qplist(a));
             setplist(a, pl);
 #ifdef RECORD_GET
-            push(w);
+            Save save(w);
             record_get(b, true);
-            pop(w);
-        errexit();
+            save.restore(w);
+            errexit();
 #endif
             return onevalue(cdr(w));
         }
@@ -234,9 +235,9 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
     if (symbolp(b) && (n = header_fastget(qheader(b))) != 0)
     {   pl = qfastgets(a);
         if (pl == nil)
-        {   push(a, b, c);
+        {   Save save(a, b, c);
             pl = get_basic_vector_init(CELL+CELL*fastget_size, SPID_NOPROP);
-            pop(c, b, a);
+            save.restore(a, b, c);
             errexit();
             setfastgets(a, pl);
         }
@@ -253,9 +254,9 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
         else pl = cdr(pl);
     }
     stackcheck(a, b, c);
-    push(a, c);
+    Save save(a, c);
     b = acons(b, c, qplist(a));
-    pop(c, a);
+    save.restore(a, c);
     errexit();
     setplist(a, b);
     return c;
@@ -325,9 +326,9 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
         w = basic_elt(w, n-1);
         if (w == SPID_NOPROP) w = nil;
 #ifdef RECORD_GET
-        push(w);
+        Save save(w);
         record_get(b, w != nil);
-        pop(w);
+        save.restore(w);
         errexit();
 #endif
         return onevalue(w);
@@ -345,9 +346,9 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
     if (car(w) == b)
     {
 #ifdef RECORD_GET
-        push(w);
+        Save save(w);
         record_get(b, true);
-        pop(w);
+        save.restore(w);
         errexit();
 #endif
         return onevalue(cdr(w));
@@ -365,9 +366,9 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
     if (car(w) == b)
     {
 #ifdef RECORD_GET
-        push(w);
+        Save save(w);
         record_get(b, true);
-        pop(w);
+        save.restore(w);
         errexit();
 #endif
         return onevalue(cdr(w));
@@ -394,9 +395,9 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
             write_barrier(cdraddr(pl), qplist(a));
             setplist(a, pl);
 #ifdef RECORD_GET
-            push(w);
+            Save save(w);
             record_get(b, true);
-            pop(w);
+            save.restore(w);
             errexit();
 #endif
             return onevalue(cdr(w));
@@ -676,16 +677,16 @@ LispObject Lflag(LispObject env, LispObject a, LispObject b)
         if (n)
         {   pl = qfastgets(v);
             if (pl == nil)
-            {   push(v, b);
+            {   Save save(v, b);
                 pl = get_basic_vector_init(CELL+CELL*fastget_size, SPID_NOPROP);
-                pop(b, v);
+                save.restore(v, b);
                 errexit();
                 setfastgets(v, pl);
             }
             basic_elt(pl, n-1) = lisp_true;
             continue;
         }
-        push(a, b);
+        Save save(a, b);
         pl = qplist(v);
         while (pl != nil)
         {   LispObject w = car(pl);
@@ -695,14 +696,14 @@ LispObject Lflag(LispObject env, LispObject a, LispObject b)
             }
             else pl = cdr(pl);
         }
-        {   push(v);
+        {   Save save1(v);
             LispObject b1 = acons(b, lisp_true, qplist(v));
-            pop(v);
+            save1.restore(v);
             errexit();
             setplist(v, b1);
         }
     already_flagged:
-        pop(b, a);
+        save.restore(a, b);
     }
     return onevalue(nil);
 }
@@ -761,7 +762,7 @@ LispObject Lplist(LispObject env, LispObject a)
     for (i=0; i<fastget_size; i++)
     {   LispObject w = basic_elt(a, i);
         if (w != SPID_NOPROP)
-        {   push(a);
+        {   Save save(a);
 // Observe here that in Common Lisp mode I am creating an alternating
 // list of indicators and values.
 #ifdef COMMON
@@ -769,7 +770,7 @@ LispObject Lplist(LispObject env, LispObject a)
 #else
             r = acons(elt(fastget_names, i), w, r);
 #endif
-            pop(a);
+            save.restore(a);
             errexit();
         }
     }
@@ -918,26 +919,26 @@ inline void do_freebind(LispObject bvec)
     for (k=CELL; k<n; k+=CELL)
     {   LispObject v = *reinterpret_cast<LispObject *>(
             static_cast<intptr_t>(bvec) + k - TAG_VECTOR);
-        real_push(qvalue(v));
+        *++stack = qvalue(v);
         setvalue(v, nil);
     }
 // SPID_FBIND is a value that can NEVER occur elsewhere in the Lisp system,
 // and so it unambiguously marks a block of fluid bindings on that stack.
-    real_push(bvec, static_cast<LispObject>(SPID_FBIND));
+    *++stack = bvec;
+    *++stack = static_cast<LispObject>(SPID_FBIND);
 }
 
 inline void do_freerstr()
 {   LispObject bv;
     size_t n;
-    real_popv(1);
-    real_pop(bv);
+    stack--;;
+    bv = *stack--;
     n = length_of_header(vechdr(bv));
     while (n>CELL)
     {   LispObject v = *reinterpret_cast<LispObject *>(
             static_cast<intptr_t>(bv) + n - (CELL + TAG_VECTOR));
         n -= CELL;
-        LispObject v1;
-        real_pop(v1);
+        LispObject v1 = *stack--;;
         setvalue(v, v1);
     }
 // possibly need a FENCE here?
@@ -988,8 +989,8 @@ static inline LispObject do_pvbind(LispObject vals, LispObject vars)
 
 inline void do_pvrestore()
 {   LispObject w;
-    real_popv(1);                // the SPID_PVBIND
-    real_pop(w);                 // this list ((var . old-value) ...)
+    stack--;                     // the SPID_PVBIND
+    w = *stack--;                // this list ((var . old-value) ...)
     while (w != nil)
     {   LispObject q = car(w);
         setvalue(car(q), cdr(q));
@@ -1028,148 +1029,195 @@ inline LispObject encapsulate_sp(LispObject *sp)
 // across the printing here...
 
 
-static LispObject show_result(LispObject r)
-{   LispObject name = stack[0];
-    stack[0] = r;
+static LispObject show_result(LispObject name, LispObject r)
+{   Save save(r);
     freshline_trace();
     loop_print_trace(name);
+    errexit();
     trace_printf(" => ");
-    loop_print_trace(stack[0]);
+    save.restore(r);
+    loop_print_trace(r);
+    errexit();
     trace_printf("\n");
-    real_pop(r);
+    save.restore(r);
     return r;
 }
 LispObject traced_call0(LispObject from, no_args *f0, LispObject name)
-{   real_push(name);
-    real_push(from);
-    freshline_trace();
-    trace_printf("Calling ");
-    loop_print_trace(name);
-    trace_printf(" from ");
-    real_pop(from);
-    loop_print_trace(from);
+{   Save save(name);
+    {   Save save1(from);
+        freshline_trace();
+        trace_printf("Calling ");
+        save.restore(name);
+        loop_print_trace(name);
+        errexit();
+        trace_printf(" from ");
+        save1.restore(from);
+        loop_print_trace(from);
+        errexit();
+    }
     trace_printf("\n");
-    LispObject r = f0(stack[0]);
+    save.restore(name);
+    LispObject r = f0(name);
     errexit();
-    return show_result(r);
+    save.restore(name);
+    return show_result(name, r);
 }
 
 LispObject traced_call1(LispObject from, one_arg *f1,
                         LispObject name, LispObject a1)
-{   real_push(name, a1);
-    real_push(from);
-    freshline_trace();
-    trace_printf("Calling ");
-    loop_print_trace(name);
-    trace_printf(" from ");
-    real_pop(from);
-    loop_print_trace(from);
+{   Save save(name, a1);
+    {   Save save1(from);
+        freshline_trace();
+        trace_printf("Calling ");
+        loop_print_trace(name);
+        trace_printf(" from ");
+        save1.restore(from);
+        loop_print_trace(from);
+        errexit();
+    }
     trace_printf("\n");
     trace_printf("Arg1: ");
-    loop_print_trace(stack[0]);
-    trace_printf("\n");
-    real_pop(a1);
-    LispObject r = f1(stack[0], a1);
+    save.restore(name, a1);
+    loop_print_trace(a1);
     errexit();
-    return show_result(r);
+    trace_printf("\n");
+    save.restore(name, a1);
+    LispObject r = f1(name, a1);
+    errexit();
+    save.restore(name, a1);
+    return show_result(name, r);
 }
 
 LispObject traced_call2(LispObject from, two_args *f2,
                         LispObject name, LispObject a1, LispObject a2)
-{   real_push(name, a1, a2);
-    real_push(from);
-    freshline_trace();
-    trace_printf("Calling ");
-    loop_print_trace(name);
-    trace_printf(" from ");
-    real_pop(from);
-    loop_print_trace(from);
+{   Save save(name, a1, a2);
+    {   Save save1(from);
+        freshline_trace();
+        trace_printf("Calling ");
+        loop_print_trace(name);
+        errexit();
+        trace_printf(" from ");
+        save1.restore(from);
+        loop_print_trace(from);
+        errexit();
+    }
     trace_printf("\n");
     trace_printf("Arg1: ");
-    loop_print_trace(stack[-1]);
+    save.restore(name, a1, a2);
+    loop_print_trace(a1);
+    errexit();
     trace_printf("\n");
     trace_printf("Arg2: ");
-    loop_print_trace(stack[0]);
-    trace_printf("\n");
-    real_pop(a2, a1);
-    LispObject r = f2(stack[0], a1, a2);
+    save.restore(name, a1, a2);
+    loop_print_trace(a2);
     errexit();
-    return show_result(r);
+    trace_printf("\n");
+    save.restore(name, a1, a2);
+    LispObject r = f2(name, a1, a2);
+    errexit();
+    save.restore(name, a1, a2);
+    return show_result(name, r);
 }
 
 LispObject traced_call3(LispObject from, three_args *f3,
                         LispObject name,
                         LispObject a1, LispObject a2, LispObject a3)
-{   real_push(name, a1, a2, a3);
-    real_push(from);
-    freshline_trace();
-    trace_printf("Calling ");
-    loop_print_trace(name);
-    trace_printf(" from ");
-    real_pop(from);
-    loop_print_trace(from);
+{   Save save(name, a1, a2, a3);
+    {   Save save1(from);
+        freshline_trace();
+        trace_printf("Calling ");
+        loop_print_trace(name);
+        errexit();
+        trace_printf(" from ");
+        save1.restore(from);
+        loop_print_trace(from);
+        errexit();
+    }
     trace_printf("\n");
     trace_printf("Arg1: ");
-    loop_print_trace(stack[-2]);
+    save.restore(name, a1, a2, a3);
+    loop_print_trace(a1);
+    errexit();
     trace_printf("\n");
     trace_printf("Arg2: ");
-    loop_print_trace(stack[-1]);
+    save.restore(name, a1, a2, a3);
+    loop_print_trace(a2);
+    errexit();
     trace_printf("\n");
     trace_printf("Arg3: ");
-    loop_print_trace(stack[0]);
-    trace_printf("\n");
-    real_pop(a3, a2, a1);
-    LispObject r = f3(stack[0], a1, a2, a3);
+    save.restore(name, a1, a2, a3);
+    loop_print_trace(a3);
     errexit();
-    return show_result(r);
+    trace_printf("\n");
+    save.restore(name, a1, a2, a3);
+    LispObject r = f3(name, a1, a2, a3);
+    errexit();
+    save.restore(name, a1, a2, a3);
+    return show_result(name, r);
 }
 
 LispObject traced_call4up(LispObject from, fourup_args *f4up,
                           LispObject name,
                           LispObject a1, LispObject a2, LispObject a3,
                           LispObject a4up)
-{   real_push(name, a1, a2, a3, a4up);
-    real_push(from);
-    freshline_trace();
-    trace_printf("Calling ");
-    loop_print_trace(name);
-    trace_printf(" from ");
-    real_pop(from);
-    loop_print_trace(from);
+{   Save save(name, a1, a2, a3, a4up);
+    {   Save save1(from);
+        freshline_trace();
+        trace_printf("Calling ");
+        loop_print_trace(name);
+        errexit();
+        trace_printf(" from ");
+        save1.restore(from);
+        loop_print_trace(from);
+        errexit();
+    }
     trace_printf("\n");
     trace_printf("Arg1: ");
-    loop_print_trace(stack[-3]);
+    save.restore(name, a1, a2, a3, a4up);
+    loop_print_trace(a1);
+    errexit();
     trace_printf("\n");
     trace_printf("Arg2: ");
-    loop_print_trace(stack[-2]);
+    save.restore(name, a1, a2, a3, a4up);
+    loop_print_trace(a2);
+    errexit();
     trace_printf("\n");
     trace_printf("Arg3: ");
-    loop_print_trace(stack[-1]);
-    trace_printf("\n");
-    real_push(stack[0]);
-    for (int i=4; stack[0]!=nil; i++)
-    {   trace_printf("Arg%d: ", i);
-        loop_print_trace(car(stack[0]));
-        trace_printf("\n");
-        stack[0] = cdr(stack[0]);
-    }
-    real_popv(1);
-    real_pop(a4up, a3, a2, a1);
-    LispObject r = f4up(stack[0], a1, a2, a3, a4up);
+    save.restore(name, a1, a2, a3, a4up);
+    loop_print_trace(a3);
     errexit();
-    return show_result(r);
+    trace_printf("\n");
+    save.restore(name, a1, a2, a3, a4up);
+    LispObject p = a4up;
+    for (int i=4; p!=nil; i++)
+    {   Save save1(p);
+        trace_printf("Arg%d: ", i);
+        loop_print_trace(car(p));
+        errexit();
+        save1.restore(p);
+        trace_printf("\n");
+        p = cdr(p);
+    }
+    save.restore(name, a1, a2, a3, a4up);
+    LispObject r = f4up(name, a1, a2, a3, a4up);
+    errexit();
+    return show_result(name, r);
 }
 
-void print_traceset(int varname, LispObject val)
-{   push(val);
+LispObject print_traceset(int varname, LispObject val)
+{   Save save(val);
     freshline_trace();
     loop_print_trace(elt(litvec, 0)); // Function this is within
+    errexit();
     trace_printf(":  ");
     loop_print_trace(elt(litvec, varname));
+    errexit();
     trace_printf(" := ");
-    pop(val);
+    save.restore(val);
     loop_print_trace(val);
+    errexit();
     trace_printf("\n");
+    return nil;
 }
 
 LispObject carerror(LispObject a)

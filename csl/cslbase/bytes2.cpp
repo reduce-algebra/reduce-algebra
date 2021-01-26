@@ -309,6 +309,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
                 {   Save save(A_reg);
                     print_traceset(current_byte, A_reg);
+                    errexit();
                     save.restore(A_reg);
                 }
                 setvalue(basic_elt(litvec, next_byte),
@@ -319,6 +320,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
                 {   Save save(A_reg);
                     print_traceset(1, A_reg);
+                    errexit();
                     save.restore(A_reg);
                 }
                 setvalue(basic_elt(litvec, 1), A_reg);
@@ -328,6 +330,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
                 {   Save save(A_reg);
                     print_traceset(2, A_reg);
+                    errexit();
                     save.restore(A_reg);
                 }
                 setvalue(basic_elt(litvec, 2), A_reg);
@@ -337,6 +340,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
                 {   Save save(A_reg);
                     print_traceset(3, A_reg);
+                    errexit();
                     save.restore(A_reg);
                 }
                 setvalue(basic_elt(litvec, 3), A_reg);
@@ -1861,8 +1865,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                     case 3: goto call3;
                     case 4:
 // Here I write out a variant on the CALL4 code.
-                        B_reg = list3star(stack[-1], stack[0], B_reg, A_reg);
-                        popv(2);
+                        {   LispObject a3 = *stack--;
+                            LispObject a4 = *stack--;
+                            B_reg = list3star(a4, a3, B_reg, A_reg);
+                        }
                         errexit();
                         A_reg = basic_elt(litvec, fname);
                         A_reg = apply(A_reg, B_reg, nil, basic_elt(litvec, 0));
@@ -1881,6 +1887,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                         if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
                         {   Save save(A_reg);
                             print_traceset(fname, A_reg);
+                            errexit();
                             save.restore(A_reg);
                             errexit();
                         }

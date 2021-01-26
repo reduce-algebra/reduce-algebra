@@ -52,7 +52,8 @@ extern LispObject *stack;
 // a number of uses:
 // (1) Prior to the conservative GC all references to heap data must be
 //     somewhere "safe" whenever a GC could happen. This is achieved by
-//     going { push(x); <dangerous operations>; pop(x); } in many places.
+//     going { Save save(x); <dangerous operations>; save.restore(x); }
+//     in many places.
 //     This keeps the identification of heap pointers "precise".
 // (2) The bytecode interpreter is a variety of stack-based computer with
 //     two accumulators (A and B). It works by pushing and popping items
@@ -66,100 +67,12 @@ extern LispObject *stack;
 // When a conservative collector is in use case (1) above becomes an out of
 // date constraint (that adds a level of inefficiency) and come cases of (3)
 // could be reworked to have tidier code when there is no need for precise
-// pointers. By and large (2) will remain. The code should now use real_push()
-// in those cases where push and pop must use the Lisp stack and push()
+// pointers. By and large (2) will remain. The code should now use RealSave
+// in those cases where push and pop must use the Lisp stack and Save
 // when the transfer is only needed for precision. So in the conservative
-// case push() and pop() can become no-ops while real_push and real_pop()
-// continue to behave as always.
+// case Save can represent a no-op while RealSave does something.
 // If at some stage the precice GC is totally removed then all calls to
-// just push() and pop() can be discarded. Before that the two variants on
-// stack access can be instrumented so that the cost impact of the change to
-// a conservative GC can be assessed.
-
-// Because in the precise GC model both push() and real_push() do the same
-// thing (etc) I view the risk of bugs being introduced into the main-stream
-// version as rather low here. But for the conservative code checking that
-// every previous push that needs to be upgraded to real_push will need some
-// care. However it adds a constraint that uses of push/pop MUST be in the
-// style    push(v); ... pop(v);   with the SAME variable used in each
-// location and that variable not having its value changed in the "..."
-// section. I.e. the use of push and pop is ONLY to ensure that v is garbage
-// collection safe and they should not be used to move data around.
-
-inline void real_push(LispObject a)
-{   *++stack = a;
-#ifdef DEBUG
-    if (is_exception(a)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-}
-
-inline void real_push(LispObject a, LispObject b)
-{   *++stack = a;
-    *++stack = b;
-#ifdef DEBUG
-    if (is_exception(a)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(b)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-}
-
-inline void real_push(LispObject a, LispObject b, LispObject c)
-{   *++stack = a;
-    *++stack = b;
-    *++stack = c;
-#ifdef DEBUG
-    if (is_exception(a)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(b)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(c)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-}
-
-inline void real_push(LispObject a, LispObject b, LispObject c,
-                 LispObject d)
-{   *++stack = a;
-    *++stack = b;
-    *++stack = c;
-    *++stack = d;
-#ifdef DEBUG
-    if (is_exception(a)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(b)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(c)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(d)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-}
-
-inline void real_push(LispObject a, LispObject b, LispObject c,
-                 LispObject d, LispObject e)
-{   *++stack = a;
-    *++stack = b;
-    *++stack = c;
-    *++stack = d;
-    *++stack = e;
-#ifdef DEBUG
-    if (is_exception(a)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(b)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(c)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(d)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(e)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-}
-
-// If I use the functions push() and pop() [or real_push() and real_pop())
-// then I need to ensure that they match (even when unwinding following an
-// exception) and that the stack pointer is consistent for them. That is
-// a big dangerous, so I have here an alternative that I intend to migrate
-// to.
-// If at the start of some context I declare an object of type Save (or
-// RealSave) and give some arguments to the constructor then those arguments
-// get pushed ontp the stack. When the Save object goes out of scope the
-// stack is restored. The values saved on it are not automatically put back
-// where they came from: to achive that you need something like the conversion
-//   ( push(a, b, c);         { Save save(a, b, c);
-//     ...              ==>     ...
-//     pop(a, b, c);            save.restore(a, b, c);
-//   }                        }
-// Note that it is then legal to use save.restore(...) multiple times and
-// each will restore all the saved items. I can also use "save.val(n)" to
-// access the nth saved value...
+// just Save can be discarded.
 //
 // RealSave ALWAYS transfers values to the stack, so within the code indicated
 // by the "..." you can access them via stack[-n], but use of save.val() is
@@ -187,6 +100,12 @@ public:
     {   ssave = stack;
         *++stack = a1;
 #ifdef DEBUG
+// In general after a function call that might return via an "exception"
+// I should write "errexit()" so that if I build CSL in the mode where
+// exceptions are simulated the simulation works. To help trap cases where
+// I have failed to do this I have the concept of exception values" which
+// are (mostly) delivered when a function exits "exceptionally". Such values
+// ought never to end up being used. If I do see one I will abort!
         if (is_exception(a1)) UNLIKELY my_abort("exception value not trapped");
 #endif // DEBUG
     }
@@ -396,52 +315,6 @@ public:
     }
 };
 
-inline void real_pop(LispObject& a)
-{   a = *stack--;
-}
-
-inline void real_pop(LispObject& a, LispObject& b)
-{   a = *stack--;
-    b = *stack--;
-}
-
-inline void real_pop(LispObject& a, LispObject& b, LispObject& c)
-{   a = *stack--;
-    b = *stack--;
-    c = *stack--;
-}
-
-inline void real_pop(LispObject& a, LispObject& b, LispObject& c,
-                LispObject& d)
-{   a = *stack--;
-    b = *stack--;
-    c = *stack--;
-    d = *stack--;
-}
-
-inline void real_pop(LispObject& a, LispObject& b, LispObject& c,
-                LispObject& d, LispObject& e)
-{   a = *stack--;
-    b = *stack--;
-    c = *stack--;
-    d = *stack--;
-    e = *stack--;
-}
-
-inline void real_pop(LispObject& a, LispObject& b, LispObject& c,
-                LispObject& d, LispObject& e, LispObject& f)
-{   a = *stack--;
-    b = *stack--;
-    c = *stack--;
-    d = *stack--;
-    e = *stack--;
-    f = *stack--;
-}
-
-inline void real_popv(int n)
-{   stack -= n;
-}
-
 // With a conservative GC I will want real_push and real_pop to exist and
 // move things to and from a dedicated Lisp stack (eg as part of the way
 // I handle some special forms or functions with huge numbers of arguments)
@@ -451,147 +324,8 @@ inline void real_popv(int n)
 
 #if 1 // TEMP
 
-inline void push(LispObject a)
-{   *++stack = a;
-#ifdef DEBUG
-    if (is_exception(a)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-}
-
-inline void push(LispObject a, LispObject b)
-{   *++stack = a;
-    *++stack = b;
-#ifdef DEBUG
-    if (is_exception(a)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(b)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-}
-
-inline void push(LispObject a, LispObject b, LispObject c)
-{   *++stack = a;
-    *++stack = b;
-    *++stack = c;
-#ifdef DEBUG
-    if (is_exception(a)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(b)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(c)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-}
-
-inline void push(LispObject a, LispObject b, LispObject c,
-                 LispObject d)
-{   *++stack = a;
-    *++stack = b;
-    *++stack = c;
-    *++stack = d;
-#ifdef DEBUG
-    if (is_exception(a)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(b)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(c)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(d)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-}
-
-inline void push(LispObject a, LispObject b, LispObject c,
-                 LispObject d, LispObject e)
-{   *++stack = a;
-    *++stack = b;
-    *++stack = c;
-    *++stack = d;
-    *++stack = e;
-#ifdef DEBUG
-    if (is_exception(a)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(b)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(c)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(d)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(e)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-}
-
-inline void push(LispObject a, LispObject b, LispObject c,
-                 LispObject d, LispObject e, LispObject f)
-{   *++stack = a;
-    *++stack = b;
-    *++stack = c;
-    *++stack = d;
-    *++stack = e;
-    *++stack = f;
-#ifdef DEBUG
-    if (is_exception(a)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(b)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(c)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(d)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(e)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(f)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-}
-
-inline void pop(LispObject& a)
-{   my_assert(a == *stack);
-    a = *stack--;
-}
-
-inline void pop(LispObject& a, LispObject& b)
-{   my_assert(a == *stack);
-    a = *stack--;
-    my_assert(b == *stack);
-    b = *stack--;
-}
-
-inline void pop(LispObject& a, LispObject& b, LispObject& c)
-{   my_assert(a == *stack);
-    a = *stack--;
-    my_assert(b == *stack);
-    b = *stack--;
-    my_assert(c == *stack);
-    c = *stack--;
-}
-
-inline void pop(LispObject& a, LispObject& b, LispObject& c,
-                LispObject& d)
-{   my_assert(a == *stack);
-    a = *stack--;
-    my_assert(b == *stack);
-    b = *stack--;
-    my_assert(c == *stack);
-    c = *stack--;
-    my_assert(d == *stack);
-    d = *stack--;
-}
-
-inline void pop(LispObject& a, LispObject& b, LispObject& c,
-                LispObject& d, LispObject& e)
-{   my_assert(a == *stack);
-    a = *stack--;
-    my_assert(b == *stack);
-    b = *stack--;
-    my_assert(c == *stack);
-    c = *stack--;
-    my_assert(d == *stack);
-    d = *stack--;
-    my_assert(e == *stack);
-    e = *stack--;
-}
-
-inline void pop(LispObject& a, LispObject& b, LispObject& c,
-                LispObject& d, LispObject& e, LispObject& f)
-{   my_assert(a == *stack);
-    a = *stack--;
-    my_assert(b == *stack);
-    b = *stack--;
-    my_assert(c == *stack);
-    c = *stack--;
-    my_assert(d == *stack);
-    d = *stack--;
-    my_assert(e == *stack);
-    e = *stack--;
-    my_assert(f == *stack);
-    f = *stack--;
-}
-
-inline void popv(int n)
-{   stack -= n;
-}
+// The version here actually saves things to the stack although that ought
+// not to be necessary.
 
 class Save
 {
@@ -721,63 +455,8 @@ public:
 
 #else // 1, TEMP
 
-inline void push(UNUSED_NAME LispObject a)
-{
-}
-
-inline void push(UNUSED_NAME LispObject a, UNUSED_NAME LispObject b)
-{
-}
-
-inline void push(UNUSED_NAME LispObject a, UNUSED_NAME LispObject b, UNUSED_NAME LispObject c)
-{
-}
-
-inline void push(UNUSED_NAME LispObject a, UNUSED_NAME LispObject b, UNUSED_NAME LispObject c,
-                 UNUSED_NAME LispObject d)
-{
-}
-
-inline void push(UNUSED_NAME LispObject a, UNUSED_NAME LispObject b, UNUSED_NAME LispObject c,
-                 UNUSED_NAME LispObject d, UNUSED_NAME LispObject e)
-{
-}
-
-inline void push(UNUSED_NAME LispObject a, UNUSED_NAME LispObject b, UNUSED_NAME LispObject c,
-                 UNUSED_NAME LispObject d, UNUSED_NAME LispObject e, UNUSED_NAME LispObject f)
-{
-}
-
-inline void pop(UNUSED_NAME LispObject& a)
-{
-}
-
-inline void pop(UNUSED_NAME LispObject& a, UNUSED_NAME LispObject& b)
-{
-}
-
-inline void pop(UNUSED_NAME LispObject& a, UNUSED_NAME LispObject& b, UNUSED_NAME LispObject& c)
-{
-}
-
-inline void pop(UNUSED_NAME LispObject& a, UNUSED_NAME LispObject& b, UNUSED_NAME LispObject& c,
-                UNUSED_NAME LispObject& d)
-{
-}
-
-inline void pop(UNUSED_NAME LispObject& a, UNUSED_NAME LispObject& b, UNUSED_NAME LispObject& c,
-                UNUSED_NAME LispObject& d, UNUSED_NAME LispObject& e)
-{
-}
-
-inline void pop(UNUSED_NAME LispObject& a, UNUSED_NAME LispObject& b, UNUSED_NAME LispObject& c,
-                UNUSED_NAME LispObject& d, UNUSED_NAME LispObject& e, UNUSED_NAME LispObject& f)
-{
-}
-
-inline void popv(UNUSED_NAME int n)
-{
-}
+// Here is the pure noop version which shoudl eventually be used while I am
+// in the process of textually removing mention of Save all together!
 
 class Save
 {
@@ -831,131 +510,6 @@ public:
 #endif // 1, TEMP
 
 #else // CONSERVATIVE
-
-// In the non-conservative world oushing and popping must always happen.
-// I just have copies of the relevant code here rather than making one
-// varient call the other.
-
-inline void push(LispObject a)
-{   *++stack = a;
-#ifdef DEBUG
-    if (is_exception(a)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-}
-
-inline void push(LispObject a, LispObject b)
-{   *++stack = a;
-    *++stack = b;
-#ifdef DEBUG
-    if (is_exception(a)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(b)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-}
-
-inline void push(LispObject a, LispObject b, LispObject c)
-{   *++stack = a;
-    *++stack = b;
-    *++stack = c;
-#ifdef DEBUG
-    if (is_exception(a)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(b)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(c)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-}
-
-inline void push(LispObject a, LispObject b, LispObject c,
-                 LispObject d)
-{   *++stack = a;
-    *++stack = b;
-    *++stack = c;
-    *++stack = d;
-#ifdef DEBUG
-    if (is_exception(a)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(b)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(c)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(d)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-}
-
-inline void push(LispObject a, LispObject b, LispObject c,
-                 LispObject d, LispObject e)
-{   *++stack = a;
-    *++stack = b;
-    *++stack = c;
-    *++stack = d;
-    *++stack = e;
-#ifdef DEBUG
-    if (is_exception(a)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(b)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(c)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(d)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(e)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-}
-
-inline void push(LispObject a, LispObject b, LispObject c,
-                 LispObject d, LispObject e, LispObject f)
-{   *++stack = a;
-    *++stack = b;
-    *++stack = c;
-    *++stack = d;
-    *++stack = e;
-    *++stack = f;
-#ifdef DEBUG
-    if (is_exception(a)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(b)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(c)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(d)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(e)) UNLIKELY my_abort("exception value not trapped");
-    if (is_exception(f)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-}
-
-inline void pop(LispObject& a)
-{   a = *stack--;
-}
-
-inline void pop(LispObject& a, LispObject& b)
-{   a = *stack--;
-    b = *stack--;
-}
-
-inline void pop(LispObject& a, LispObject& b, LispObject& c)
-{   a = *stack--;
-    b = *stack--;
-    c = *stack--;
-}
-
-inline void pop(LispObject& a, LispObject& b, LispObject& c,
-                LispObject& d)
-{   a = *stack--;
-    b = *stack--;
-    c = *stack--;
-    d = *stack--;
-}
-
-inline void pop(LispObject& a, LispObject& b, LispObject& c,
-                LispObject& d, LispObject& e)
-{   a = *stack--;
-    b = *stack--;
-    c = *stack--;
-    d = *stack--;
-    e = *stack--;
-}
-
-inline void pop(LispObject& a, LispObject& b, LispObject& c,
-                LispObject& d, LispObject& e, LispObject& f)
-{   a = *stack--;
-    b = *stack--;
-    c = *stack--;
-    d = *stack--;
-    e = *stack--;
-    f = *stack--;
-}
-
-inline void popv(int n)
-{   stack -= n;
-}
 
 class Save
 {
@@ -1183,23 +737,6 @@ inline void respond_to_fringe_event(LispObject &r, const char *msg)
         return;
     }
 }
-
-// If I know just how many items will need removing from the stack I
-// can create an instance of this class and the stack will be popped when
-// that goes out of scope. I rather hope that good compilers will perform
-// constant propagation if the argument is a literal constant and so there
-// will be no need to store the field "n" that is shown in the class.
-
-class stack_popper
-{   int n;
-public:
-    stack_popper(int nn)
-    {   n = nn;
-    }
-    ~stack_popper()
-    {   popv(n);
-    }
-};
 
 // Sometimes it could be that calls within the scope of a block might
 // exit (eg via a throw) in a way that means that the exact state of the

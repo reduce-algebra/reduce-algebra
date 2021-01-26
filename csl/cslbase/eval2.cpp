@@ -246,9 +246,7 @@ static LispObject block_fn(LispObject iargs, LispObject ienv)
         CATCH(LispReturnFrom)
             setcar(my_tag, fixnum_of_int(2)); // Invalidate
             if (exit_tag == my_tag)
-            {   real_popv(3);
                 return nvalues(exit_value, exit_count);
-            }
             else RETHROW;
         ANOTHER_CATCH(LispError)
             int _reason = exit_reason;
