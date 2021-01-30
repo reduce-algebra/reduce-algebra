@@ -29,10 +29,10 @@ LOGO.
 forward, back, turnleft, in order to construct pictures as opposed to
 drawing lines connecting cartesian coordinate points.
 
-The `turtle' is at all times determined by its state \{$x$,$y$,$a$,$p$\}-
+The `turtle' is at all times determined by its state \{$x$,$y$,$a$,$p$\} --
 where $x$,$y$ determine its position in the \mbox{($x$,$y$)-plane}, $a$
 determines the angle (which describes the direction the turtle is
-facing) and $p$ signals whether the pen is up or down (i.~e.~  whether or
+facing) and $p$ signals whether the pen is up or down (i.e.\ whether or
 not it is drawing on the paper).
 
 
@@ -43,14 +43,14 @@ made in this implementation due to the design of the graphics package
 
 \begin{itemize}
  \item It is not possible to draw lines individually and to see each
-        seperate line as it is added to the graph since gnuplot
+        separate line as it is added to the graph since gnuplot
         automatically replaces the last graph each time it calls on
         the plot function.
 
        Thus the whole sequence of commands must be input together if
         the complete picture is to be seen.
  \item This implementation does not make use of the standard turtle
-        commands `pen-up' or `pen-down' . Instead, `set' commands are
+        commands `pen-up' or `pen-down'. Instead, `set' commands are
         included which allow the turtle to move without drawing a line.
  \item No facility is provided here to change the pen-colour, but gnuplot
         does have the capability to handle a few different colours (which
@@ -69,7 +69,7 @@ made in this implementation due to the design of the graphics package
 \subsection{Turtle Functions}
  As previously mentioned, the turtle is determined at all times by its
 state \{$x$,$y$,$a$\}: its position on the \mbox{($x$,$y$)-plane} and its
-angle($a$) - its \emph{heading} - which determines the direction the
+angle($a$) -- its \emph{heading} -- which determines the direction the
 turtle is facing, in degrees, relative anticlockwise to the positive
 x-axis.     
        
@@ -203,17 +203,17 @@ x-axis.
 \begin{description}
  \item[draw] This is the function the user calls within {\REDUCE} to
        draw the list of turtle commands given into a picture. Takes a list
-       as its argument, with each seperate command being seperated by a
+       as its argument, with each separate command being separated by a
        comma, and returns the graph drawn by following the commands.
 
        \turtlesyntax{draw\{\textit{command(command\_args)},\ldots,%
-                              \textit\textit{command(command\_args)}\}}
+                              \textit{command(command\_args)}\}}
        \underline{Note:} all commands may be entered in either long or
                          shorthand form, and with a space
                          before the arguments instead of parentheses only
                          if just one argument is needed. Commands taking
-                         more than one argument must be written in
-                         parentheses and arguments seperated by a comma.
+                         more than one argument must be written with
+                         parentheses and arguments separated by a comma.
  \item[fdraw] This function is also called in {\REDUCE} by the user 
        and outputs the same as the \texttt{draw} command, but it takes a
        filename as its argument. The file which is called upon by \texttt{fdraw}
@@ -267,16 +267,16 @@ x-axis.
 
   It is possible to use conditional statements (if \ldots\ then \ldots\
 else \ldots) and `for' statements (for i:=\ldots collect\{\ldots\}) in
-calls to draw. However, care must be taken - when using conditional
+calls to draw. However, care must be taken -- when using conditional
 statements the final else statement must return a point or at least
 \{x\_coord,y\_coord\} if the picture is to be continued at that point.
 Also, `for' statements {\em must} include `collect' followed by a list of
 turtle commands (in addition, the variable must begin counting from 0 if
 it is to be joined to the previous list of turtle commands at that point
-exactly, e.\ g.\ \ for i:=0:10 collect \{\ldots\}).
-
+exactly, e.g.\ for i:=0:10 collect \{\ldots\}).
 
 \turtlesyntax{\small(For user-defined Turtle functions)}
+
 \begin{tabbing}
 \ \ \= set \ \ \ \=tabs\=\kill
  \> \texttt{procedure \textit{func\_name(func\_args)};}\\
@@ -299,7 +299,7 @@ called into {\REDUCE} using the \texttt{in "\textit{filename}"} command.
 \subsection{Examples}
 
 The following examples are taken from the tur.tst file. 
-Examples 1,2,5 \& 6 are simple calls to draw. Examples 3 \& 4 show how 
+Examples 1, 2, 5 \& 6 are simple calls to draw. Examples 3 \& 4 show how 
 more complicated commands can be built (which can take their own set of
 arguments) using procedures. Examples 7 \& 8 show the difference between
 the draw and fdraw commands.
@@ -483,8 +483,6 @@ fdraw '"fx";
 %so this method did not have any advantage over the normal draw command. 
 %However, when the list of commands is longer it is clearly advantageous 
 %to use fdraw)
-
-
 \end{verbatim}
 
 
@@ -500,6 +498,3 @@ fdraw '"fx";
          Eugenio Roanes Lozano \&  Eugenio Roanes Macias
 
 \end{enumerate}
-
-
-
