@@ -4,7 +4,7 @@ rm -rf crlibm include lib
 mkdir -p crlibm
 cd crlibm
 
-source ../emflags.sh
+. ../emflags.sh
 
 CC="emcc"
 

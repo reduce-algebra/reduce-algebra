@@ -25,14 +25,14 @@ LINK_OPT=$(OPT)
 
 CC=em++
 
-EMFLAGS:=$(shell source ./emflags.sh && echo $$EMFLAGS)
+EMFLAGS:=$(shell . ./emflags.sh && echo $$EMFLAGS)
 # EMFLAGS+= -s EXPORTED_FUNCTIONS="['_main', '_insert_buffer']"
 
 #ASYNC_FUNCTIONS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$cfuns)
 #ASYNC_IMPORTS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$jsimports)
 
 CPPFLAGS=$(EMFLAGS) -std=gnu++17 $(OPT) -I. -I../include -Iinclude -I$(S) \
-    -DHAVE_CONFIG_H=1 -DHAVE_CRLIBM=1 -DEMBEDDED=1 $(XCFLAGS) $(USERFLAGS)
+    -DHAVE_CONFIG_H=1 -DNO_THROW=1 -DHAVE_CRLIBM=1 -DEMBEDDED=1 $(XCFLAGS) $(USERFLAGS)
 CFLAGS=$(EMFLAGS)
 CXXFLAGS=$(EMFLAGS)
 LDFLAGS=$(EMFLAGS) -Llib -lcrlibm
@@ -215,7 +215,7 @@ reduce.web.wasm:	allocate.ooo arith01.ooo arith02.ooo arith03.ooo arith04.ooo ar
 		u41.ooo u42.ooo u43.ooo u44.ooo u45.ooo u46.ooo u47.ooo u48.ooo u49.ooo u50.ooo \
 		u51.ooo u52.ooo u53.ooo u54.ooo u55.ooo u56.ooo u57.ooo u58.ooo u59.ooo u60.ooo \
 		$(LDFLAGS) $(LIBS) $(JSOPTS) $(ASYNCIFY_OPTS) $(WEBOPTS) $(LINK_OPT) \
-		-s EXPORTED_FUNCTIONS="['_main', '_PROC_insert_buffer']" \
+		-s EXPORTED_FUNCTIONS="['_main','_PROC_insert_buffer']" \
 		-o reduce.web.js
 
 .PHONY:	reduce

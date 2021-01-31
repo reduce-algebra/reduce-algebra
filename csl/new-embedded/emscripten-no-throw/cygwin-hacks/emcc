@@ -1,8 +1,0 @@
-export PATH=/cygdrive/d/emsdk:/cygdrive/d/emsdk/upstream/emscripten:/cygdrive/d/emsdk/node/12.18.1_64bit/bin:/cygdrive/d/emsdk/python/3.7.4-pywin32_64bit:/cygdrive/d/emsdk/java/8.152_64bit/bin:$PATH
-export EMSDK=D:/emsdk
-export EM_CONFIG=D:/emsdk/.emscripten
-export EM_CACHE=D:/emsdk/upstream/emscripten/cache
-export EMSDK_NODE=D:/emsdk/node/12.18.1_64bit/bin/node.exe
-export EMSDK_PYTHON=D:/emsdk/python/3.7.4-pywin32_64bit/python.exe
-export JAVA_HOME=D:/emsdk/java/8.152_64bit
-cmd /c emcc "-Dsetmode(a,b)=0" $*
