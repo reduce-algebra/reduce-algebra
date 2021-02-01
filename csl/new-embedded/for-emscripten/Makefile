@@ -26,7 +26,7 @@ LINK_OPT=$(OPT)
 CC=em++
 
 EMFLAGS:=$(shell . ./emflags.sh && echo $$EMFLAGS)
-# EMFLAGS+= -s EXPORTED_FUNCTIONS="['_main', '_insert_buffer']"
+# EMFLAGS+= -s EXPORTED_FUNCTIONS="['_main','_PROC_insert_buffer']"
 
 #ASYNC_FUNCTIONS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$cfuns)
 #ASYNC_IMPORTS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$jsimports)
@@ -133,7 +133,7 @@ bootstrapreduce:	bootstrapreduce.js
 
 # don't use NODEOPTS here, because we want a virtual FS
 .cpp.ooo:
-	$(CC) $(CPPFLAGS) -DPROCEDURAL_WASM_XX=1 $(ASYNCIFY_OPTS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) -DBUILTIN_IMAGE=1 -DPROCEDURAL_WASM_XX=1 $(ASYNCIFY_OPTS) -c -o $@ $<
 
 #csl.ooo: csl.cpp
 #	$(CC) $(CPPFLAGS) $(ASYNCIFY_OPTS) -c -o $@ $<
@@ -225,7 +225,7 @@ reduce:	reduce.js
 
 .PHONY: reduce-web
 reduce-web: reduce.web.wasm
-	echo Building reduce worker
+	echo Building reduce workers
 
 reduce.img:	reduce.js
 	-rm -f reduce.img
@@ -444,7 +444,7 @@ fwin.ooo:		$(S)/fwin.cpp $(HEADERS)
 cslgc.ooo:		$(S)/cslgc.cpp $(HEADERS)
 lisphash.ooo:	$(S)/lisphash.cpp $(HEADERS)
 isprime.ooo:	$(S)/isprime.cpp $(HEADERS)
-preserve.ooo:	$(S)/preserve.cpp $(HEADERS)
+preserve.ooo:	$(S)/preserve.cpp $(HEADERS) image.cpp
 print.ooo:		$(S)/print.cpp $(HEADERS)
 restart.ooo:	$(S)/restart.cpp $(HEADERS)
 sysfwin.ooo:	$(S)/sysfwin.cpp $(HEADERS)
