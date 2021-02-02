@@ -105,8 +105,8 @@ void validate_string_fn(LispObject s, const char *file, int line)
                 if (std::strrchr(file, '/') != nullptr) file = std::strrchr(file,
                             '/')+1;
                 std::fprintf(stderr, "\n+++ Bad string at %s %d\n", file, line);
-                std::fprintf(stderr, "Header = %" PRIxPTR "\n",
-                    static_cast<uintptr_t>(vechdr(s)));
+                std::fprintf(stderr, "Header = %" PRIx64 "\n",
+                    static_cast<uint64_t>(vechdr(s)));
                 std::fprintf(stderr, "length = %d bytelength = %d\n",
                              static_cast<int>(length_of_header(vechdr(s))),
                              static_cast<int>(length_of_byteheader(vechdr(s))));

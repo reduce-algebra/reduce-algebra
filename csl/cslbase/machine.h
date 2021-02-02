@@ -61,8 +61,16 @@
 #include <atomic>
 #include <string>
 
+#ifndef __has_cpp_attribute
+#define __has_cpp_attribute(name) 0
+#endif // C++17 support
+
+#ifndef __has_include
+#define __has_include(name) 0
+#endif // C++17 support
+
+
 #if !defined HAVE_FILESYSTEM &&  \
-    defined __has_include &&     \
      __has_include(<filesystem>)
 #define HAS_FILESYSTEM 1
 #endif // HAVE_FILESYSTEM now defined if "#include <filesystem>" reasonable.
@@ -134,7 +142,7 @@ using std::atomic;    // If I am going to be multi-threaded then very many
 #define USE_SIGALTSTACK 1
 #endif // sigaltstack availability
 
-#if defined __has_cpp_attribute && __has_cpp_attribute(maybe_unused)
+#if __has_cpp_attribute(maybe_unused)
 // C++17 introduced [[maybe_unused]] to avoid warnings about unused variables
 // and functions. Earlier versions of gcc and clang supported [[gnu::unused]]
 // as a non-standard annotation with similar effect.
@@ -196,12 +204,6 @@ using std::atomic;    // If I am going to be multi-threaded then very many
 #ifndef __STDC_FORMAT_MACROS
 #define __STDC_FORMAT_MACROS 1
 #endif // define PRId32 etc
-
-// Here is some more exploitation of C++17 when it is available.
-
-#ifndef __has_cpp_attribute
-#define __has_cpp_attribute(name) 0
-#endif // C++17 support
 
 #ifdef WIN32
 // The aim here is to avoid use of the Microsoft versions of printf and

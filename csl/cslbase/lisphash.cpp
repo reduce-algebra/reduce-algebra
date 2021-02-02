@@ -1336,8 +1336,8 @@ void simple_print1(LispObject x)
         else if (vector_holds_binary(vechdr(x)) &&
                  vector_i8(vechdr(x)))
         {   len = length_of_byteheader(vechdr(x)) - CELL;
-            std::fprintf(stderr, "<Header is %" PRIxPTR ">",
-                         static_cast<uintptr_t>(vechdr(x)));
+            std::fprintf(stderr, "<Header is %" PRIx64 ">",
+                         static_cast<uint64_t>(vechdr(x)));
             simple_lineend(2*len+3);
             std::fprintf(stderr, "#8[");
             for (size_t i=0; i<len; i++)

@@ -83,7 +83,11 @@
 // but this file is shared with FOX and can not use that header, so it has
 // its own copies of the tests.
 
-#if defined __has_cpp_attribute && __has_cpp_attribute(maybe_unused)
+#ifndef __has_cpp_attribute
+#define __has_cpp_attribute(name) 0
+#endif // C++17 support
+
+#if __has_cpp_attribute(maybe_unused)
 // C++17 introduced [[maybe_unused]] to avoid warnings about unused variables
 // and functions. Earlier versions of gcc and clang supported [[gnu::unused]]
 // as a non-standard annotation with similar effect.

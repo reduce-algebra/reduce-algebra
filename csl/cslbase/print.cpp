@@ -2102,7 +2102,7 @@ restart:
 // the big number printing code.  A prefix "~" stands for an infinite initial
 // string of 'f' digits, and what follows will be exactly one 'f' (just to
 // remind you) and then the remaining hex digits.  E.g. -2 should display
-// as ~fe.  Note that any fixnum will start off with 0xf in the top 4 of
+//1;5q as ~fe.  Note that any fixnum will start off with 0xf in the top 4 of
 // 32 bits.  If an explicit width had been specified then I want that many
 // charcters to be displayed, with full leading zeros etc. A width is taken as
 // minimum number of chars to be displayed, so a width of zero (or in fact 1)
@@ -2129,8 +2129,8 @@ restart:
                     mask = (mask<<4) | 0xf;
                 }
                 while (--width > 0) my_buff[len++] = static_cast<char>(k);
-                std::sprintf(&my_buff[len], "%" PRIxPTR,
-                    static_cast<intptr_t>(v));
+                std::sprintf(&my_buff[len], "%" PRIx64,
+                    static_cast<int64_t>(v));
             }
             else if (escaped_printing & escape_octal)
             {   intptr_t v = int_of_fixnum(u);
@@ -2156,8 +2156,8 @@ restart:
                     mask = (mask<<3) | 0x7;
                 }
                 while (--width > 0) my_buff[len++] = static_cast<char>(k);
-                std::sprintf(&my_buff[len], "%" PRIoPTR,
-                    static_cast<intptr_t>(v));
+                std::sprintf(&my_buff[len], "%" PRIo64,
+                    static_cast<int64_t>(v));
             }
             else if (escaped_printing & escape_binary)
             {   intptr_t v = int_of_fixnum(u);
@@ -2185,8 +2185,8 @@ restart:
                 my_buff[len] = 0;
             }
             else
-                std::sprintf(my_buff, "%" PRIdPTR,
-                    static_cast<intptr_t>(int_of_fixnum(u)));
+                std::sprintf(my_buff, "%" PRId64,
+                    static_cast<int64_t>(int_of_fixnum(u)));
             break;
 
         case TAG_HDR_IMMED:
@@ -3950,8 +3950,8 @@ static void internal_check(LispObject original_a, LispObject a,
 {   if (!is_cons(a)) return;
     if ((a & 0x7ffffff0) == 0)
     {   std::printf("Zero cons pointer at depth %d\n", depth);
-        std::printf("Original a = %" PRIxPTR " path = %" PRIx64 "\n",
-                    static_cast<intptr_t>(original_a), path);
+        std::printf("Original a = %" PRIx64 " path = %" PRIx64 "\n",
+                    static_cast<int64_t>(original_a), path);
         *reinterpret_cast<char *>(-1) = 0;
     }
     internal_check(original_a, car(a), depth+1, path<<1);

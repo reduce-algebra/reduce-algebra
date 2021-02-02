@@ -859,42 +859,45 @@ fi
 
 AX_CXX_COMPILE_STDCXX([17], [ext], [mandatory])
 
-# Some platforms need "-latomic" to support std::atomic<T> where sizeof(T)
-# exceeds 8.
-
-AC_LINK_IFELSE([
-  AC_LANG_PROGRAM([[#include <atomic>
-                     typedef struct _c16 { char c[16]; } c16;
-                     typedef std::atomic<c16> a16;
-                   ]],
-                   [[ c16 v16 = {1};
-                      a16 av16;
-                      av16 = v16;
-                   v16 = av16;
-                  ]])],
-  [AC_MSG_NOTICE([std::atomic<T> width 16 available])],
-  [maybe_need_libatomic="yes"])
-
-if test "x$maybe_need_libatomic" = "xyes"
-then
-  LIBS="$LIBS -latomic"
-  AC_LINK_IFELSE([
-    AC_LANG_PROGRAM([[#include <atomic>
-                       typedef struct _c16 { char c[16]; } c16;
-                       typedef std::atomic<c16> a16;
-                     ]],
-                     [[ c16 v16 = {1};
-                        a16 av16;
-                        av16 = v16;
-                     v16 = av16;
-                    ]])],
-    [AC_MSG_NOTICE([std::atomic<T> width 16 OK with -libatomic])],
-    [AC_MSG_ERROR([std::atomic<T> with sizeof(T)=16 fails])])
-fi
+# I will withdraw the following tests until I actually need 16-byte atomics!
+#
+# # Some platforms need "-latomic" to support std::atomic<T> where sizeof(T)
+# # exceeds 8.
+#
+# AC_LINK_IFELSE([
+#   AC_LANG_PROGRAM([[#include <atomic>
+#                      typedef struct _c16 { char c[16]; } c16;
+#                      typedef std::atomic<c16> a16;
+#                    ]],
+#                    [[ c16 v16 = {1};
+#                       a16 av16;
+#                       av16 = v16;
+#                    v16 = av16;
+#                   ]])],
+#   [AC_MSG_NOTICE([std::atomic<T> width 16 available])],
+#   [maybe_need_libatomic="yes"])
+#
+# if test "x$maybe_need_libatomic" = "xyes"
+# then
+#   LIBS="$LIBS -latomic"
+#   AC_LINK_IFELSE([
+#     AC_LANG_PROGRAM([[#include <atomic>
+#                        typedef struct _c16 { char c[16]; } c16;
+#                        typedef std::atomic<c16> a16;
+#                      ]],
+#                      [[ c16 v16 = {1};
+#                         a16 av16;
+#                         av16 = v16;
+#                      v16 = av16;
+#                     ]])],
+#     [AC_MSG_NOTICE([std::atomic<T> width 16 OK with -libatomic])],
+#     [AC_MSG_ERROR([std::atomic<T> with sizeof(T)=16 fails])])
+# fi
 
 AC_LINK_IFELSE(
   [AC_LANG_SOURCE([
-    #if defined __has_include && __has_include(<filesystem>)
+    #if defined __has_include
+    #if __has_include(<filesystem>)
     #include <filesystem>
     #ifdef __cpp_lib_filesystem
       int main()
@@ -906,7 +909,8 @@ AC_LINK_IFELSE(
       {   return 0;
       }
     #endif // __cpp_lib_filesystem
-    #endif // <filesystem> available
+    #endif // <filesystem>
+    #endif // __has_include
   ])],
   [filesystem="ok"],
   [filesystem="fail"])
@@ -917,7 +921,8 @@ then
   LIBS="$LIBS -lstdc++fs"
   AC_LINK_IFELSE(
     [AC_LANG_SOURCE([
-      #if defined __has_include && __has_include(<filesystem>)
+      #if defined __has_include
+      #if __has_include(<filesystem>)
       #include <filesystem>
       #ifdef __cpp_lib_filesystem
         int main()
@@ -929,7 +934,8 @@ then
         {   return 0;
         }
       #endif // __cpp_lib_filesystem
-      #endif // <filesystem> available
+      #endif // <filesystem>
+      #endif // __has_include
     ])],
     [filesystem="ok"],
     [filesystem="fail"
@@ -942,7 +948,8 @@ then
   LIBS="$LIBS -lc++fs"
   AC_LINK_IFELSE(
     [AC_LANG_SOURCE([
-      #if defined __has_include && __has_include(<filesystem>)
+      #if defined __has_include
+      #if __has_include(<filesystem>)
       #include <filesystem>
       #ifdef __cpp_lib_filesystem
         int main()
@@ -954,7 +961,8 @@ then
         {   return 0;
         }
       #endif // __cpp_lib_filesystem
-      #endif // <filesystem> available
+      #endif // <filesystem>
+      #endif // __has_include
     ])],
     [filesystem="ok"],
     [filesystem="fail"
@@ -1814,4 +1822,3 @@ AM_CONDITIONAL(mac_arm64, test "x$with_mac_arm64" = "xyes")
 AC_OUTPUT
 
 # end of "configure.ac"
-

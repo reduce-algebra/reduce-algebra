@@ -3765,7 +3765,8 @@ void write_everything()
         scan_data(qpackage(nil));
 // Next the major list-bases.
         for (LispObject **p = list_bases; *p!=nullptr; p++)
-        {   std::sprintf(trigger, "list base %" PRIxPTR " scan", **p);
+        {   std::sprintf(trigger, "list base %" PRIx64 " scan",
+                static_cast<uint64_t>(**p));
             scan_data(**p);
         }
     }
