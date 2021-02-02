@@ -48,6 +48,7 @@
 // #include <cstdio>
 #include <cstdlib>
 #include <cinttypes>
+#include <cctype>
 #include <cstdint>
 #include <ctime>
 #include <cstring>
@@ -101,26 +102,43 @@ int main(int argc, char *argv[])
     outstream << "// " << dest << " (for " << src << ") created " << tts << "\n";
     outstream << "\n#include <stdint.h>\n";
     outstream << "\nconst uint64_t " << arrayname << "[] = {\n";
-    outstream << "#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__\n";
+    outstream << "#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__\n";
     uint64_t w = 0;
     size_t i = 0;
+    uint64_t currentLine[4];
     outstream << std::hex << std::setfill('0');
     for (;;)
     {   uint64_t c = instream.get() & 0xff;
         if (instream.eof()) break;
-        w = w | (c << (8*(i&7)));
+        w = w | (c << (8*(7-(i&7))));
         if ((i&31) == 31)
         {   outstream << "0x"  << std::setw(16) << w << ",\n";
+            currentLine[3] = w;
+            if (i < 160)
+            {   outstream << "//";
+                for (int j=0; j<4; j++)
+                {   if (j != 0) outstream << "    ";
+                    w = currentLine[j];
+                    for (int k=0; k<8; k++)
+                    {   int b = (w >> (8*(7-k))) & 0xff;
+                        if (0x20 <= b && b < 0x7f)
+                            outstream << " " << static_cast<char>(b);
+                        else outstream << std::setw(2) << b;
+                    }
+                }
+                outstream << "\n";
+            }
             w = 0;
         }
         else if ((i&7) == 7)
         {   outstream << "0x"  << std::setw(16) << w << ", ";
+            currentLine[((i-7)/8)%4] = w;
             w = 0;
         }
         i++;
     }
     outstream << "0x"  << std::setw(16) << w << "\n};\n";
-    outstream << "#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__\n";
+    outstream << "#elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__\n";
     instream.clear();
     instream.seekg(0);
     w = 0;
@@ -128,7 +146,7 @@ int main(int argc, char *argv[])
     for (;;)
     {   uint64_t c = instream.get() & 0xff;
         if (instream.eof()) break;
-        w = w | (c << (8*(7-(i&7))));
+        w = w | (c << (8*(i&7)));
         if ((i&31) == 31)
         {   outstream << "0x"  << std::setw(16) << w << ",\n";
             w = 0;

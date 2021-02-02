@@ -34,6 +34,9 @@ compatibility. To try a simple example of reduce in the browser:
 5. enter reduce commands as normal in the text box, and press "submit" to execute
 6. results should appear in the javascript console
 
+There is a script "launch.sh" that is intended to automate this process.
+I believe that the web server can be left running over a number of test runs.
+
 The scripts test1.sh and testall.sh are hacked versions of the correspodning
 ones from the main system and can be use to run Reduce test scripts. I have
 run all the tests on both a Linux (Ubuntu-x86_64) and Windows 10 systems and
@@ -42,8 +45,6 @@ discrepency being where floating point "least significant bit" discrepancies
 arise. When these scripts are run they leave logs and timing information
 in a directory jscsl-times and these can be compared with the corresponding
 ones from scripts/testall.sh, csl-times and psl-times from the "regular"
-versions of Reduce. I am not going to comment, and I note that at this stage
-there has been no effort to tune or put in special optimisation for the
-Javascript version.
+versions of Reduce.
 
                                                           Arthur Norman

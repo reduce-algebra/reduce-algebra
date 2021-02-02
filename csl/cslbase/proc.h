@@ -173,6 +173,9 @@ extern int execute_lisp_function(const char *fname,
 // your responsibility to cope with whatever text gets exchanged!
 //
 
+extern "C"
+{
+
 extern int PROC_set_callbacks(character_reader *r,
                               character_writer *w);
 
@@ -385,13 +388,20 @@ extern volatile int my_return_code;
 
 // the following functions are used for web reduce
 #ifdef PROCEDURAL_WASM_XX
+
 void PROC_mainloop();
-extern "C" void PROC_insert_buffer(const char*, int);
+void PROC_insert_buffer(const char*, int);
+void _PROC_insert_buffer(const char*, int);
+void insert_buffer(const char*, int);
+void _insert_buffer(const char*, int);
 extern int buff_ready;
 extern const char *buffer;
 extern int buff_size;
+
 #endif
 
+
+};
 #endif // header_proc_h
 
 // end of proc.h

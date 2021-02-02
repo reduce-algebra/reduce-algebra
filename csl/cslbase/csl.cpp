@@ -3049,6 +3049,21 @@ void PROC_insert_buffer(const char *buf, int size)
     buff_ready = 1;
 }
 
+// Here are several aliases in case accessing the function is made easier
+// by use of one of them.
+
+void insert_buffer(const char *buf, int size)
+{   PROC_insert_buffer(buf, size);
+}
+
+void _PROC_insert_buffer(const char *buf, int size)
+{   PROC_insert_buffer(buf, size);
+}
+
+void _insert_buffer(const char *buf, int size)
+{   PROC_insert_buffer(buf, size);
+}
+
 void PROC_mainloop()
 {   if (buff_ready)
     {
