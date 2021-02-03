@@ -170,7 +170,7 @@
 	    (eqcar (setq y (caddr x)) 'idloc)
 	    (wlessp (id2int (cadr y)) 257))
 	(depositword (cadr y)))
-      ((equal (first x) 'idloc) (depositwordidnumber (second x)))
+      ((equal (first x) 'idloc) (depositquadwordidnumber (second x)))
       ((equal (first x) 'mkitem) (DepositItem (second x) (third x)))
       ((equal (first x) 'entry) (DepositEntry x))
       ((memq (first x) '(fluid global $fluid $global)) (DepositValueCellLocation (second x)))

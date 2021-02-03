@@ -315,16 +315,18 @@
 
 (fluid '(*testlap))
 (de DepositInstruction (X) 
-% This actually dispatches to the procedures to assemble the instrucitons
+% This actually dispatches to the procedures to assemble the instructions
 % version with address calculation test
 (prog (Y l offs) 
       (when *testlap (prin2 CurrentOffset*) (tab 10) (print x))
+      (if (flagp (first X) 'ForceAlignment)
+	  (ForceAlignment))
       (when *writingfaslfile (setq offs CurrentOffset*))
       (cond ((setq Y (get (first X) 'InstructionDepositFunction)) 
 	     (Apply Y (list X)))
 	    ((setq Y (get (first X) 'InstructionDepositMacro))
 	     (apply4safe y (cdr x)))
-	    (t (StdError (BldMsg "Unknown ARMv6 instruction %p" X))))
+	    (t (StdError (BldMsg "Unknown Aarch64 instruction %p" X))))
       (when (and offs (not (equal CurrentOffset* (plus offs (InstructionLength x)))))
 	(StdError (BldMsg "length error with instruction %p: %p"
 			  x (difference (difference CurrentOffset* offs)
@@ -1601,7 +1603,10 @@
 % standard operand tags
 % ------------------------------------------------------------
 
-
+(de ForceALignment nil
+    % align to quadword boundary
+    (while (not (eq 0 (remainder CurrentOffset!* 8)))
+      (DepositByte 0)))
 
 (de DepositFluid (X)
     (DepositValueCellLocation (second X)))      % Defined in System-Faslin.Red
@@ -1613,7 +1618,9 @@
     (DepositFunctionCellLocation (second X)))   % Defined in System-Faslin.Red
 
 (de depositforeignentry (x)
-  (depositfunctioncelllocation (second x)))
+    (depositfunctioncelllocation (second x)))
+
+(flag '(fluid $fluid global $global ExtraReg entry foreignentry) 'ForceAlignment)
 
 (put 'fluid 'OperandDepositFunction (function DepositFluid))
 (put '$fluid 'OperandDepositFunction (function DepositFluid))
@@ -1656,15 +1663,18 @@
 % align to word boundary
 
 (de DepositFloat (X)                    % this will not work in cross-assembly
-(progn (setq X (FltInf (second X))) 
-    (DepositWord (FloatlowOrder X)) 
-    (DepositWord (FloathighOrder X))))
+    (progn
+      (setq X (FltInf (second X))) 
+      (DepositWord (FloatlowOrder X)) 
+      (DepositWord (FloathighOrder X))))
 
 (put 'fullword 'InstructionDepositFunction 'DepositWordBlock)
 (put 'halfword 'InstructionDepositFunction 'DepositHalfWordBlock)
 (put 'byte 'InstructionDepositFunction 'DepositByteBlock)
 (put 'string 'InstructionDepositFunction 'DepositString)
 (put 'float 'InstructionDepositFunction 'DepositFloat)
+
+(flag '(fullword string float) 'ForceAlignment)
 
 (de AddLapComment (X)
     (setq comment* (cdr X))
@@ -2074,9 +2084,12 @@
    ((and (GeneralLDRInstructionP Instr) (LocalLabelp (third X)))
            (setq AList (cons (cons X CodeSize*) AList)))
 		
-   (t (setq CodeSize* (plus CodeSize* (InstructionLength X)))))))
+   (t
+    (if (and (flagp (first X) 'ForceAlignment)
+	     (not (eq 0 (remainder CodeSize* 8))))
+	(setq CodeSize* (plus CodeSize* (difference 8 (remainder CodeSize* 8)))))
+    (setq CodeSize* (plus CodeSize* (InstructionLength X)))))))
     
-
     (setq BranchAndLabelAList* (ReversIP AList))
     (return CodeList)))
 
@@ -2101,7 +2114,11 @@
 	   ((and (GeneralLDRInstructionP Instr) (LocalLabelp (third X))) 
 	    (setq CodeSize* (plus CodeSize* (InstructionLength X))) 
 	    (setq AList (cons (cons X CodeSize*) AList)))
-	   (t (setq CodeSize* (plus CodeSize* (InstructionLength X)))))))
+	   (t
+	    (if (and (flagp (first X) 'ForceAlignment)
+		     (not (eq 0 (remainder CodeSize* 8))))
+		(setq CodeSize* (plus CodeSize* (difference 8 (remainder CodeSize* 8)))))
+	    (setq CodeSize* (plus CodeSize* (InstructionLength X)))))))
   (setq BranchAndLabelAList* (ReversIP AList)) 
   (setq InstructionChanged* BranchAndLabelAList*)
   (return BranchAndLabelAList*) ))
@@ -2267,9 +2284,7 @@
 %   X has the form:
 %          (Unit  value_1  value_2 value_3 .... )
     (Times2 (cond ((equal (first X) 'fullword) 8) (t 2)) 
-	     
-	     
-	   (length (rest X))))
+	    (length (rest X))))
 
 (de ByteConstantLength (X) 
     (Times2 (Quotient (Plus2 (length (rest X)) 1) 2) 2))
@@ -2376,7 +2391,7 @@
 	    (eqcar (setq y (caddr x)) 'idloc)
 	    (wlessp (id2int (cadr y)) 257))
 	(depositword (cadr y)))
-      ((equal (first x) 'idloc) (depositwordidnumber (second x)))
+      ((equal (first x) 'idloc) (depositquadwordidnumber (second x)))
       ((equal (first x) 'mkitem) (DepositItem (second x) (third x)))
       ((equal (first x) 'entry) (DepositEntry x))
       ((memq (first x) '(fluid global $fluid $global)) (DepositValueCellLocation (second x)))
@@ -2399,6 +2414,16 @@
 	       (makerelocword (const reloc_id_number) (findidnumber x))) 
       (setq CurrentOffset* (plus CurrentOffset* 4)) 
       (updatebittable 4 (const reloc_word)))))
+
+(de depositquadwordidnumber (x) 
+  (cond
+    ((or (not *writingfaslfile) (leq (idinf x) 256)) 
+     (depositword (idinf X)))
+    (t
+      (putword (wplus2 CodeBase* CurrentOffset*) 0
+	       (makerelocword (const reloc_id_number) (findidnumber x))) 
+      (setq CurrentOffset* (plus CurrentOffset* 8)) 
+      (updatebittable 8 (const reloc_word)))))
 
 (de DepositHalfWordExpression (X) 
 (prog (Y) 
