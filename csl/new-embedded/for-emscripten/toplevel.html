@@ -4,21 +4,31 @@
     <meta charset="UTF-8">
     <title>Test</title>
     <script>
-        // add textarea + button
+        // add textareas + button
         window.reduceLatch = 0;
-        let ta = document.createElement('textarea');
-        ta.cols = 80;
-        ta.rows = 10;
-        ta.setAttribute('id', 'reduce-input');
+
+        let outArea = document.createElement('textarea');
+        outArea.cols = 50;
+        outArea.rows = 20;
+        outArea.setAttribute('id', 'reduce-output');
+        outArea.value = 'Some initial output...';
+
+        let inArea = document.createElement('textarea');
+        inArea.cols = 80;
+        inArea.rows = 10;
+        inArea.setAttribute('id', 'reduce-input');
+        inArea.value = 'int(1/(x^4-1), x);';
+
         let button = document.createElement('button');
         button.appendChild(document.createTextNode('Submit'));
         button.addEventListener('click', event => {
             // need to convert the string to a Uint8Array
-            let str = unescape(encodeURIComponent(ta.value));
+            let str = unescape(encodeURIComponent(inArea.value));
             // found the above snippet at https://gist.github.com/emrahgunduz/5c27ff1db650b93c7864
-            let buf = new Uint8Array(str.length);
+            let buf = new Uint8Array(str.length+1);
             for (let i=0; i<str.length; i++)
                 buf[i] = str.charCodeAt(i);
+            buf[str.length] = 0; // nul-terminate for benefit of C/C++.
             worker.postMessage({
                 funcName: 'insert_buffer',
                 callbackId: '',
@@ -26,13 +36,21 @@
             });
         });
         document.addEventListener("DOMContentLoaded", function(event) {
-            document.body.appendChild(ta);
+            document.body.appendChild(inArea);
             document.body.appendChild(button);
+            document.body.appendChild(outArea);
         });
         let worker = new Worker('./reduce.web.js');
         worker.onmessage = function(event) {
             if (event.data.channel === 'stdout') {
-                console.log(event.data.line);
+                let o = event.data.line;
+// If an empty string is passed (ie asking for a blank lin eouf output)
+// console.log displays an <empty string> message that I view as ugly, so
+// I map blank lines into ones consistong of a single space chatacter.
+                if (o == '') o = ' ';
+                console.log(o);
+                outArea.value += o;
+                outArea.value += '\n';
             }
         }
     </script>
