@@ -3039,52 +3039,70 @@ int execute_lisp_function(const char *fname,
 
 
 #ifdef PROCEDURAL_WASM_XX
+
 int buff_ready = 0;
 const char *buffer = nullptr;
 int buff_size = 0;
 
 void PROC_insert_buffer(const char *buf, int size)
-{   buffer = buf;
+{   std::printf("[PROC_insert_buffer]\n");
+    buffer = buf;
     buff_size = size;
     buff_ready = 1;
 }
 
 // Here are several aliases in case accessing the function is made easier
-// by use of one of them.
+// by use of one of them and because when I inserted this code I was not
+// certain either that the same name was usable on Windows vs Unix or
+// which version would be in use.
 
 void insert_buffer(const char *buf, int size)
-{   PROC_insert_buffer(buf, size);
+{   std::printf("[insert_buffer]\n");
+    buffer = buf;
+    buff_size = size;
+    buff_ready = 1;
 }
 
 void _PROC_insert_buffer(const char *buf, int size)
-{   PROC_insert_buffer(buf, size);
+{   std::printf("[_PROC_insert_buffer]\n");
+    buffer = buf;
+    buff_size = size;
+    buff_ready = 1;
 }
 
 void _insert_buffer(const char *buf, int size)
-{   PROC_insert_buffer(buf, size);
+{   std::printf("[_insert_buffer]\n");
+    buffer = buf;
+    buff_size = size;
+    buff_ready = 1;
 }
 
 void PROC_mainloop()
 {   if (buff_ready)
     {
-//      std::printf("buffer is ready...buffer: %s, buff_size: %i\n", buffer, buff_size);
-//      char query[buff_size+1];
-//      std::strncpy(query, buffer, buff_size+1);
-        std::printf("processing: %s\n", buffer);
-        PROC_process_one_reduce_statement(buffer);
+//      std::printf("buffer is ready...buffer: %*s, buff_size: %i\n",
+//                   buff_size, buffer, buff_size);
+// I am not certain that the buffer is nul-terminated, and it is read-only.
+// For use here I want a null-terminated string, so I copy into a local
+// array, truncating if necessary,
+        const size_t MAX_BUF_SIZE=1000;
+        char query[MAX_BUF_SIZE];
+        if (buff_size >= MAX_BUF_SIZE) buff_size = MAX_BUF_SIZE-1;
+        std::memcpy(query, buffer, buff_size);
+        query[buff_size] = 0;
+// NB in the rest of CSL I am now moving to use NEW and DELETE rather
+// then MALLOC and FREE. But this pointer was passed in from another world!
+        std::free((char*)buffer);
+        buff_ready = 0;
+        buff_size = 0;
+        std::printf("processing: %s\n", query);
+        PROC_process_one_reduce_statement(query);
         while (proc_data_string && *proc_data_string != 0)
         {   PROC_process_one_reduce_statement(proc_data_string);
 //          std::printf("copying proc_data_string: \"%s\" of size: %i", proc_data_string, buff_size)
 //          std::strncpy(query, proc_data_string, buff_size);
         }
-//      std::printf("freeing buffer...\n");
-// NB in the rest of CSL I am nov moving to use NEW and DELETE rather
-// then MALLOC and FREE.
-        std::free((char*)buffer);
-        buff_ready = 0;
-        buff_size = 0;
-//      std::printf("setting buff_ready=0...\n");
-// let's hope we don't get preempted!
+// Let's hope we don't get preempted!
 //      emscripten_cancel_main_loop();
 //      std::printf("waiting...\n");
     }
@@ -3093,7 +3111,8 @@ void PROC_mainloop()
 #endif
 
 
-#ifdef PROCEDURAL_WASM_SETUP
+#ifdef PROCEDURAL_WASM
+_SETUP
 #include PROCEDURAL_WASM_SETUP
 #endif
 
@@ -3174,37 +3193,47 @@ static int submain(int argc, const char *argv[])
     activeThreads = 0;
     ThreadStartup userThreads;
     stackBases[threadId::get()] = reinterpret_cast<uintptr_t>(C_stackbase);
-#endif
+#endif // CONSERVATIVE
 #ifdef HAVE_CRLIBM
     CrlibmSetup crlibmVar;
-#endif
+#endif // HAVE_CRLIBM
 #ifndef AVOID_THREADS
     KaratsubaThreads kthreads;
 #endif // AVOID_THREADS
+
     cslstart(argc, argv, nullptr);
 #ifdef SAMPLE_OF_PROCEDURAL_INTERFACE
     std::strcpy(ibuff, "(print '(a b c d))");
     execute_lisp_function("oem-supervisor", iget, iput);
     std::printf("Buffered output is <%s>\n", obuff);
-#elif PROCEDURAL_WASM_XX
-    // set up reduce
+    return cslfinish(nullptr);
+
+#elif defined PROCEDURAL_WASM_XX
+// set up reduce
     PROC_prepare_for_top_level_loop();
     PROC_process_one_reduce_statement("algebraic;");
 #ifdef PROCEDURAL_WASM_SETUP
-    // the header you include *must* contain void setup_web_reduce(void)
+// the header you include *must* contain void setup_web_reduce(void)
     setup_web_reduce();
-#endif
+#endif // PROCEDURAL_WASM_SETUP
     emscripten_set_main_loop(PROC_mainloop, 60, 0);
-#else // end PROCEDURAL_WASM_XX
+// Note that in this case I am not going to call cslfinish() yet because
+// I have just set up Reduce as a sort of server for web requests.
+    return 0;
+
+#else // PROCEDURAL_WASM_XX
+
+// Here is the "standard" behaviour where this is a free-standing application
     set_keyboard_callbacks(async_interrupt);
     cslaction();
-#endif
     return cslfinish(nullptr);
+
+#endif // PROCEDURAL_INTERFACE variants
 }
 
 #ifdef EMBEDDED
 #define ENTRYPOINT main
-#else
+#else // EMBEDDED
 
 #define ENTRYPOINT fwin_main
 
@@ -3215,7 +3244,7 @@ int main(int argc, const char *argv[])
     return fwin_startup(argc, argv, ENTRYPOINT);
 }
 
-#endif
+#endif // EMBEDDED
 
 
 int ENTRYPOINT(int argc, const char *argv[])
@@ -3226,13 +3255,13 @@ int ENTRYPOINT(int argc, const char *argv[])
                      "Unable to identify program name and directory (%d)\n", res);
         return 1;
     }
-#endif
+#endif // EMBEDDED
 #ifdef USE_MPI
     MPI_Init(&argc,&argv);
     MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
     MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
     std::printf("I am mpi instance %d of %d.\n", mpi_rank+1, mpi_size);
-#endif
+#endif // USE_MPI
 
     std::strcpy(about_box_title, "About CSL");
     std::strcpy(about_box_description, "Codemist Standard Lisp");
@@ -3250,7 +3279,7 @@ int ENTRYPOINT(int argc, const char *argv[])
     report_dependencies();
 #ifdef USE_MPI
     MPI_Finalize();
-#endif
+#endif // USE_MPI
     ensure_screen();
     return res;
 }
