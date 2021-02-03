@@ -1568,7 +1568,7 @@ preload  (setq initload
 (de !*xjumpon (register lowerbound upperbound labellist)
       (for (from x lowerbound upperbound)
                 (join
-                  `((CMP ,x ,register)
+                  `((CMP ,register ,x)
                     (B!.EQ ,(pop labellist))))))
 
 

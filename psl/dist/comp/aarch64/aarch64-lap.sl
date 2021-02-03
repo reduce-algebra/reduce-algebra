@@ -152,7 +152,7 @@
 					% PC:PASS-1-LAP.SL
 
     (setq U (LapoptFrame u))            % optimize frame-register transports
-    (setq U (LapoptPeep u))             % peephole optimizer for 486 code
+    (setq U (LapoptPeep u))             % peephole optimizer for aarch64 code
 
     (when *WritingFaslFile       % round off to fullword address
 	  (while (not (eq (wshift (wshift currentOffset* -2) 2) currentOffset*))
@@ -1651,7 +1651,7 @@
     (setq X (second X)) 
     (for (from I 0 (Size X) 1) (do (DepositByte (Indx X I)))) 
     (DepositByte 0) 
-	(while (not (eq 0 (remainder CurrentOffset!* 4)))
+	(while (not (eq 0 (remainder CurrentOffset!* 8)))
 	       (DepositByte 0))))
 % align to word boundary
 
@@ -2242,7 +2242,7 @@
        (when (setq Y (get (car x) 'INSTRUCTIONLENGTH))
 	 (return (if (numberp y) y (apply y (list x)))))
        (return 4)))
-%       (stderror (bldmsg "*** Unknown Aarchv6 instruction:%w " x))))
+%       (stderror (bldmsg "*** Unknown Aarch64 instruction:%w " x))))
 
 (de apply2safe(y x) % ensure that plly has two parameters at least
      (cond ((null x) (apply y (list nil nil)))
@@ -2266,7 +2266,7 @@
 % Purpose: returns the Size_Of_Unit_In_Bytes * Number_Of_Such_Units
 %   X has the form:
 %          (Unit  value_1  value_2 value_3 .... )
-    (Times2 (cond ((equal (first X) 'fullword) 4) (t 2)) 
+    (Times2 (cond ((equal (first X) 'fullword) 8) (t 2)) 
 	     
 	     
 	   (length (rest X))))
@@ -2277,7 +2277,7 @@
 (de LapStringLength (X)                 % must fall on word boundary
 % Purpose: Calculate the number of bytes occupied by a given string
 %  X has the form: (STRING "xxxxxx")
-    (Times2 (Quotient (Plus2 (Size (second X)) 5) 4) 4))
+    (Times2 (Quotient (Plus2 (Size (second X)) 9) 8) 8))
 
 (DefList '((fullword InlineConstantLength) 
 	  (halfword InlineConstantLength) 
@@ -2315,15 +2315,10 @@
   (updatebittable 4 0)
   (setq currentoffset* (plus currentoffset* 4)))
 
-(de deposit32bitword (x) %% cross
-  (put_a_halfword (wplus2 codebase* currentoffset*) x)
-  (updatebittable 4 0)
-  (setq currentoffset* (plus currentoffset* 4)))
-
 (de DepositWord (x)
   (putword (wplus2 CodeBase* CurrentOffset*) 0 x)
   (updatebittable 8 0)
-  (setq CurrentOffset* (plus CurrentOffset* 4)))
+  (setq CurrentOffset* (plus CurrentOffset* 8)))
 
 (de deposit-relocated-word (offset)
   % Given an OFFSET from CODEBASE*, deposit a word containing the
@@ -2451,8 +2446,8 @@
 		     (t 
 		      (StdError (BldMsg "Unknown inf in MkItem %r"
 				 InfPart))))
-	      (setq CurrentOffset* (plus CurrentOffset* 4))
-	      (UpdateBitTable 4 (const RELOC_INF))))))
+	      (setq CurrentOffset* (plus CurrentOffset* 8))
+	      (UpdateBitTable 8 (const RELOC_INF))))))
 
 (de DepositHalfWordIDNumber (X) 
     (cond ((or (not *WritingFaslFile) (LEQ (IDInf X) 128)) 
