@@ -75,11 +75,11 @@
             f)))
 
 (de binaryread (filepointer)            % Read one word, 32 bits.
-  (getw filepointer)
+  (xgetw filepointer)
   )
 
 (de binaryreadblock (filepointer blockbase blocksize) 
-  (fread blockbase 4 blocksize filepointer)
+  (fread blockbase 8 blocksize filepointer)
   )
 
 (de binaryclose (filepointer) 

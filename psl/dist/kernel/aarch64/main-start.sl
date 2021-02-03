@@ -143,7 +143,7 @@
  (tokenbuffer       #.(compiler-constant 'maxtokensize))
  (bndstk            #.(compiler-constant 'bndstksize))
  (catchstack        #.(times2 (compiler-constant 'catchstacksize) 4))
- (hashtable         #.(compiler-constant 'hash-table-size))
+ (hashtable         #.(quotient (compiler-constant 'hash-table-size) 2))
  (onewordbuffer     1)
  (saveargc          1)
  (saveargv          1)

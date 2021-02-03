@@ -97,7 +97,7 @@
   (wdifference u (wplus2 first-extraargument-number (wplus2 maxrealregs 1)))
   )
 
-(define-constant bittable-entries-per-word 16)
+(define-constant bittable-entries-per-word 32)
 
 (ds reloc-right-half-tag (x) (field x 0 2))
 (ds reloc-right-half-inf (x) (field x 2 14))

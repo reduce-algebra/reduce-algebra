@@ -221,7 +221,7 @@
      ((and (constant? arg2) (powerof2p (constant-value arg2)))
       `(ashift (wplus2 ,arg1 
                     (wshift ,arg1 
-                         ',(difference (powerof2p (constant-value arg2)) 32 )))
+                         ',(difference (powerof2p (constant-value arg2)) bitsperword )))
                ',(minus (powerof2p (constant-value arg2)))))
      (t form))))
 

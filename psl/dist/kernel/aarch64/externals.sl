@@ -212,7 +212,7 @@
 (external-function fflush               (fp))
 (external-function fseek                (fp offset ptrname))
 (external-function clearerr             (fp))
-(external-function getw                 (fp))
+(external-function xgetw                (fp))
 (external-function putw                 (w fp))
 (external-function signal               (signame handler))
 (external-function sleep        (sec))

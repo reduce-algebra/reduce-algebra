@@ -883,8 +883,13 @@
 
 (put 'wquotient 'opencode '((SDIV (reg x0) (reg x0) (reg x1))))
 
+(put 'wquotient-unsigned 'opencode '((UDIV (reg x0) (reg x0) (reg x1))))
+
 (put 'wremainder 'opencode '((SDIV (reg t1) (reg x0) (reg x1))
 			     (MSUB (reg x0) (reg t1) (reg x1) (reg x0))))
+
+(put 'wremainder-unsigned 'opencode '((UDIV (reg t1) (reg x0) (reg x1))
+			              (MSUB (reg x0) (reg t1) (reg x1) (reg x0))))
 
 (put 'wdivide 'opencode '((SDIV (reg t1) (reg x0) (reg x1))
 			  (MSUB (reg t1) (reg t1) (reg x1) (reg x0))
@@ -1321,7 +1326,7 @@
 	            ((ldr (reg d0) (indirect (reg 2)))
                      (ldr (reg d1) (indirect (reg 3)))
 		     (fdiv (reg d0) (reg d0) (reg d1))
-                     (str (reg d0) (indirect (reg 1)))))
+                     (str (reg d0) (indirect (reg 1))))))
          'opencode)
 
 (DefCMacro *fast-apply-load

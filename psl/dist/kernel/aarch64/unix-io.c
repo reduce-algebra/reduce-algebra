@@ -310,3 +310,12 @@ external_fullpath(relpath)
 {
   return realpath(relpath,NULL);
 }
+
+long long xgetw (f)
+FILE* f;
+{ long long a1,a2;
+
+  a1 = (long long) getw(f);
+  a2 = (long long) getw(f);
+  return (a2 << 32 | a1);
+}

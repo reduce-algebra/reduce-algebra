@@ -6,6 +6,7 @@
 % Created:      16-Feb-84 
 % Modified:     13-Nov-84 14:35:11 (Brian Beach) 
 % Package:      
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -114,7 +115,7 @@
 	bps-string
 	new-id)
     (if (= string-len 0)
-      (mkid (strbyt string-inf 0))
+      (mkid (wand 16#ff (strbyt string-inf 0)))
       (if (occupied-slot? (setq hash-table-index (hash-into-table name)))
 	(mkid (hash-table-entry hash-table-index))
 	(progn 
@@ -174,7 +175,7 @@
 	 (do (setf result 
 	       (^ result (<< (strbyt inf i) 
 			     (- (- bitsperword 8) i))))))
-    (wremainder result hash-table-size)
+    (wremainder-unsigned result hash-table-size)
     ))
 
 (off fast-integers)
