@@ -49,7 +49,8 @@
  
 (fluid '(lengthfunctions))
 (setq lengthfunctions
-      '((OP-reg-imm8 . lth-reg-imm8 )
+      '((OP-nop . lth-nop)
+	(OP-reg-imm8 . lth-reg-imm8 )
 %	(OP-regn-imm8 . lth-regn-imm8 )
 %	(OP-regd-imm8 . lth-regd-imm8 )
 	(OP-reg-shifter . lth-reg-shifter )
@@ -569,6 +570,8 @@
 
 (instr NGC   (reg reg reg-shifter)     OP-reg-shifter 2#11011010000)
 (instr NGCS  (reg reg reg-shifter)     OP-reg-shifter 2#11111010000)
+
+(instr NOP   nil                       OP-nop nil)
 
 (instr ORN   (reg reg reg-shifter)     OP-reg-shifter 2#10101010001)
 

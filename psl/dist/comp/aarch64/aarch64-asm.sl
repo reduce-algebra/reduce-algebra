@@ -100,13 +100,13 @@
 (setq NumericRegisterNames* '[nil "X0" "X1" "X2" "X3" "X4" "X5", "X6", "X7"])
 
 (setq LabelFormat* "%w:%n")             % Labels are in the first column
-(setq CommentFormat* "// %p%n")          % Comments begin with at sign
+(setq CommentFormat* "// %p%n")          % Comments begin with //
                                         % will group alphabetically
 
 (setq ExportedDeclarationFormat* " .globl %w%n")
 (setq ExternalDeclarationFormat* " .globl %w%n") % All in DATA space
 
-(setq FullWordFormat* " .quad %e%n")     % FullWord expects %e for parameter
+(setq FullWordFormat* " .align 3%n .quad %e%n")     % FullWord expects %e for parameter
 (setq HalfWordFormat* " .hword %e%n")     % Will EVAL formatter
 
 (setq ReserveDataBlockFormat* " .bss %w,%e%n")
@@ -117,7 +117,7 @@
 
 (put 'MkItem 'ASMExpressionFormat "[[%e<<56]+%e]" )
 
-(setq DefinedFunctionCellFormat* " .quad %w%n")   %/ Must be LONG
+(setq DefinedFunctionCellFormat* " .align 3%n .quad %w%n")   %/ Must be LONG
 
 (setq UndefinedFunctionCellInstructions*   '(( !.quad UndefinedFunction)))
 

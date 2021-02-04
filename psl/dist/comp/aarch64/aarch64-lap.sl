@@ -1598,15 +1598,21 @@
 
 (de lth-fcmp (code regd regn) 4)
 
+(de OP-nop (code)
+    (DepositInstructionBytes 16#d5 16#03 16#20 16#1f))
+
+(de lth-nop (code) 4)
 
 % ------------------------------------------------------------
 % standard operand tags
 % ------------------------------------------------------------
 
-(de ForceALignment nil
+(de ForceAlignment nil
     % align to quadword boundary
-    (while (not (eq 0 (remainder CurrentOffset!* 8)))
-      (DepositByte 0)))
+    (while (not (eq 0 (remainder CurrentOffset!* 4)))
+      (DepositByte 0))
+    (if (not (eq 0 (remainder CurrentOffset!* 8)))
+      (OP-nop nil)))
 
 (de DepositFluid (X)
     (DepositValueCellLocation (second X)))      % Defined in System-Faslin.Red

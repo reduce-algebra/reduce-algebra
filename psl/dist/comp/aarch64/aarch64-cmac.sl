@@ -514,7 +514,7 @@
 %%%  (idloc id)   and    (quote (idloc id)),
 %%% since the quote in the latter form is stripped before passing it on.
 %%% Therefore, a special form (saveidloc id) is used.  This will be handled in
-%%% ExpandItem (see the redefintion in armv6-spec.sl.
+%%% ExpandItem (see the redefintion in armv6-spec.sl).
 
 (de *LoadIDLoc (dest src)
   (let ((idnumber (WConstEvaluable src))
