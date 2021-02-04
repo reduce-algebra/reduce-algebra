@@ -2,7 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Test</title>
+    <meta name="viewport" content="width=device-width">
+    <title>Test of Reduce web-interface</title>
+// I will ensure that MathJax is available.
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6">
+    </script>
+    <script id="MathJax-script" async
+       src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
     <script>
         // add textareas + button
         window.reduceLatch = 0;
@@ -35,11 +42,6 @@
                 data: buf
             });
         });
-        document.addEventListener("DOMContentLoaded", function(event) {
-            document.body.appendChild(inArea);
-            document.body.appendChild(button);
-            document.body.appendChild(outArea);
-        });
         let worker = new Worker('./reduce.web.js');
         worker.onmessage = function(event) {
             if (event.data.channel === 'stdout') {
@@ -53,8 +55,16 @@
                 outArea.value += '\n';
             }
         }
+        document.addEventListener("DOMContentLoaded", function(event) {
+            document.body.appendChild(inArea);
+            document.body.appendChild(button);
+            document.body.appendChild(outArea);
+        });
     </script>
 </head>
 <body>
+<p>
+\[ \alpha^2 + 2 \alpha \beta + \beta^2 \]
+</p>
 </body>
 </html>

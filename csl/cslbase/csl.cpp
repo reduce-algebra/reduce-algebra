@@ -3082,26 +3082,20 @@ void PROC_mainloop()
     {
 //      std::printf("buffer is ready...buffer: %*s, buff_size: %i\n",
 //                   buff_size, buffer, buff_size);
-// I am not certain that the buffer is nul-terminated, and it is read-only.
-// For use here I want a null-terminated string, so I copy into a local
-// array, truncating if necessary,
-        const size_t MAX_BUF_SIZE=1000;
-        char query[MAX_BUF_SIZE];
-        if (buff_size >= MAX_BUF_SIZE) buff_size = MAX_BUF_SIZE-1;
-        std::memcpy(query, buffer, buff_size);
-        query[buff_size] = 0;
+// I have arranged that the buffer is nul-terminated.
+        std::printf("processing: %s\n", buffer);
+// There is an UGLY interface here. PROC_process_one_reduce_statement()
+// reads a Reduce statement from the character array provided as its
+// argument, and leaved proc_data_string pointing to the character after
+// the last one it made use of.
+        PROC_process_one_reduce_statement(buffer);
+        while (proc_data_string && *proc_data_string != 0)
+            PROC_process_one_reduce_statement(proc_data_string);
 // NB in the rest of CSL I am now moving to use NEW and DELETE rather
 // then MALLOC and FREE. But this pointer was passed in from another world!
         std::free((char*)buffer);
         buff_ready = 0;
         buff_size = 0;
-        std::printf("processing: %s\n", query);
-        PROC_process_one_reduce_statement(query);
-        while (proc_data_string && *proc_data_string != 0)
-        {   PROC_process_one_reduce_statement(proc_data_string);
-//          std::printf("copying proc_data_string: \"%s\" of size: %i", proc_data_string, buff_size)
-//          std::strncpy(query, proc_data_string, buff_size);
-        }
 // Let's hope we don't get preempted!
 //      emscripten_cancel_main_loop();
 //      std::printf("waiting...\n");
@@ -3209,16 +3203,20 @@ static int submain(int argc, const char *argv[])
     return cslfinish(nullptr);
 
 #elif defined PROCEDURAL_WASM_XX
-// set up reduce
+// Set up Reduce
     PROC_prepare_for_top_level_loop();
     PROC_process_one_reduce_statement("algebraic;");
+    PROC_process_one_reduce_statement("load_package tmprint;");
+    PROC_process_one_reduce_statement("on fancy;");
+    PROC_process_one_reduce_statement("lisp print \"Reduce Ready\";");
 #ifdef PROCEDURAL_WASM_SETUP
-// the header you include *must* contain void setup_web_reduce(void)
+// The header you include *must* contain void setup_web_reduce(void)
     setup_web_reduce();
 #endif // PROCEDURAL_WASM_SETUP
     emscripten_set_main_loop(PROC_mainloop, 60, 0);
 // Note that in this case I am not going to call cslfinish() yet because
-// I have just set up Reduce as a sort of server for web requests.
+// I have just set up Reduce as a sort of server for web requests, and so
+// it will only be finished with when the server exits.
     return 0;
 
 #else // PROCEDURAL_WASM_XX
