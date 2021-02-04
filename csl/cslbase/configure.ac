@@ -854,10 +854,21 @@ then
 fi
 
 # The following seems to be an "official" way to ensure that I have at least
-# -std=gnu++17. As of November 2020 I am going to insist on that. It started
-# to become properly supported from gcc 7 onwards.
+# -std=gnu++17. 
 
-AX_CXX_COMPILE_STDCXX([17], [ext], [mandatory])
+AX_CXX_COMPILE_STDCXX([17], [ext], [optional])
+AC_MSG_NOTICE([HAVE_CXX17=$HAVE_CXX17])
+
+if test "$HAVE_CXX17" != "1"
+then
+  AX_CXX_COMPILE_STDCXX([14], [ext], [optional])
+  AC_MSG_NOTICE([HAVE_CXX14=$HAVE_CXX14])
+  if test "$HAVE_CXX14" != "1"
+  then
+    AX_CXX_COMPILE_STDCXX([11], [ext], [mandatory])
+    AC_MSG_NOTICE([HAVE_CXX11=$HAVE_CXX11])
+  fi
+fi
 
 # I will withdraw the following tests until I actually need 16-byte atomics!
 #

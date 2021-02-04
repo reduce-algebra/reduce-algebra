@@ -136,11 +136,13 @@
 
 #if !defined FILESYSTEM_NOT_USABLE
 
+#ifndef __has_include
+#define __has_include(name) 0
+#endif
+
 // I will allow config.h to define HAVE_FILESYSTEM as a promise thae this
 // is all OK!
-#if !defined HAVE_FILESYSTEM && \
-    defined __has_include && \
-    __has_include(<filesystem>)
+#if !defined HAVE_FILESYSTEM && __has_include(<filesystem>)
 #define HAVE_FILESYSTEM 1
 #endif // HAVE_FILESYSTEM
 

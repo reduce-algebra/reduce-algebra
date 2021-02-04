@@ -826,7 +826,7 @@ void evacuateFromCopiedData(bool major)
 #endif // ONLY_USE_ONE_GC_THREAD
 }
 
-atomic<unsigned int> activeHelpers = 0;
+atomic<unsigned int> activeHelpers;
 
 // before gcHelper() is called on in ANY thread the GC should have set
 // activeHelpers to the number of helper threads it is about to activate.
