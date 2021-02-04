@@ -1392,7 +1392,7 @@ char *mystrdup(const char *s)
 }
 
 // Note that I will not have my signal handlers active during the call
-// to cslstart(), so 
+// to cslstart(). 
 
 void cslstart(int argc, const char *argv[], character_writer *wout)
 {   double store_size = 0.0;
@@ -3080,10 +3080,8 @@ void _insert_buffer(const char *buf, int size)
 void PROC_mainloop()
 {   if (buff_ready)
     {
-//      std::printf("buffer is ready...buffer: %*s, buff_size: %i\n",
-//                   buff_size, buffer, buff_size);
 // I have arranged that the buffer is nul-terminated.
-        std::printf("processing: %s\n", buffer);
+//@@      std::printf("processing: %s\n", buffer);
 // There is an UGLY interface here. PROC_process_one_reduce_statement()
 // reads a Reduce statement from the character array provided as its
 // argument, and leaved proc_data_string pointing to the character after
@@ -3206,8 +3204,12 @@ static int submain(int argc, const char *argv[])
 // Set up Reduce
     PROC_prepare_for_top_level_loop();
     PROC_process_one_reduce_statement("algebraic;");
+// Here I initialise state in the way that we do when we are going to run
+// under TeXmacs.
     PROC_process_one_reduce_statement("load_package tmprint;");
     PROC_process_one_reduce_statement("on fancy;");
+    PROC_process_one_reduce_statement("off promptnumbers;");
+    PROC_process_one_reduce_statement("on redfront_mode;");
     PROC_process_one_reduce_statement("lisp print \"Reduce Ready\";");
 #ifdef PROCEDURAL_WASM_SETUP
 // The header you include *must* contain void setup_web_reduce(void)
@@ -3316,6 +3318,8 @@ int PROC_prepare_for_top_level_loop()
 int char_from_string()
 {   int c = *proc_data_string;
     if (c == 0) return EOF;
+    if (qvalue(echo_symbol) != nil &&
+        procedural_output != nullptr) (*procedural_output)(c);
     proc_data_string++;
     return c;
 }
@@ -3331,7 +3335,12 @@ int PROC_process_one_reduce_statement(const char *s)
              w = Lapply0(nil, w1),
              // Error handler
              procedural_input = save_read;
+             std::printf("\n");
              return 1);  // Failed one way or another
+// At present (?) the web interface does not get output sent to it
+// until a line-end, and the Reduce TeX output does not automatically
+// append one bacause that is deemed implicit within the embedded LaTeX. 
+    std::printf("\n");
     procedural_input = save_read;
     return w != nil;
 }
