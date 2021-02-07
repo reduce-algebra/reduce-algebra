@@ -113,7 +113,8 @@ symbolic procedure poly!-divide!*!*(u, fn, pseudo);  % u = (p, q, x)
       if null (q := !*a2f cadr u) then rederr "Zero divisor";
       p := !*a2f car u;
       % Use integer modulus?
-      if fn eq 'remainder and fixp p and fixp q then return evalmod u;
+      if fn eq 'remainder and fixp p and fixp q then
+        if q>0 then return evalmod u else typerr(q, "modulus");
       if cddr u and (x := !*a2k caddr u) and
          not(kord!* and x eq car kord!*) then <<
             new_kord := t;  updkorder x;
