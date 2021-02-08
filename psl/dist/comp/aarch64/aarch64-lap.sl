@@ -87,8 +87,6 @@
 					% and size of each compiled
 					% procedure are printed as they are
 					% deposited into memory
-	*align16                        % align lables to 16 byte
-					% boundaries        
 	*lapopt
 	*trlapopt
 	*big-endian*    		% True if big-endian version
@@ -139,6 +137,8 @@
 % Start of actual code
 % ------------------------------------------------------------
 
+(de xxxlap (u) u )
+
 (de Lap (U) 
 (prog (LabelOffsets* LapReturnValue* Entries* temp) 
     (cond ((not *WritingFaslFile) (setq CurrentOffset* 0))) 
@@ -150,17 +150,21 @@
 					% expand all the LAP macros
 					% Note that this is defined in
 					% PC:PASS-1-LAP.SL
-
+    (print (list "Before LapoptXXX"))
     (setq U (LapoptFrame u))            % optimize frame-register transports
     (setq U (LapoptPeep u))             % peephole optimizer for aarch64 code
 
+    (print (list "After lapoptpeep"))
     (when *WritingFaslFile       % round off to fullword address
 	  (while (not (eq (wshift (wshift currentOffset* -2) 2) currentOffset*))
 		 (DepositByte 0) ))
  
+    (print (list "Before Reformbranches"))
     (SETQ U (ReformBranches U))         % process conditional branches
+    (print (list "After Reformbranches"))
     (setq U (OptimizeBranches U))       % optimize branches and
 					% calculate offsets and total length
+    (print (list "After Optimizebranches"))
     
     (when (not *WritingFaslFile)       
 	  (setq CodeBase* (GTBPS (Quotient (Plus2 CodeSize* 3) 4))))
@@ -1626,7 +1630,7 @@
 (de depositforeignentry (x)
     (depositfunctioncelllocation (second x)))
 
-(flag '(fluid $fluid global $global ExtraReg entry foreignentry) 'ForceAlignment)
+%(flag '(fluid $fluid global $global ExtraReg entry foreignentry) 'ForceAlignment)
 
 (put 'fluid 'OperandDepositFunction (function DepositFluid))
 (put '$fluid 'OperandDepositFunction (function DepositFluid))
@@ -1680,7 +1684,7 @@
 (put 'string 'InstructionDepositFunction 'DepositString)
 (put 'float 'InstructionDepositFunction 'DepositFloat)
 
-(flag '(fullword string float) 'ForceAlignment)
+%(flag '(fullword string float) 'ForceAlignment)
 
 (de AddLapComment (X)
     (setq comment* (cdr X))
@@ -1921,136 +1925,78 @@
 %%
 % Returns: a new code list
 
-(commentoutcode
- %% 1. Approach: commented out
-(de OptimizeBranches (u)
-(prog (BranchAndLabelAList* InstructionChanged*) 
-    (setq BranchCodeList* u)
-    (BuildOffsetTable)                  % find branches, labels, and entries
-    (setq InstructionChanged* nil)
-    (setq InstructionChanged* (FindFarLoads))
-    (while InstructionChanged*
-      (setq BranchCodeList* (UpdateCodeList BranchCodeList* InstructionChanged*))
-      (BuildOffsetTable)
-      (setq InstructionChanged* (FindFarLoads)))
-    (setq LabelOffsets* (DeleteAllButLabels BranchAndLabelAList*)) 
-    (return BranchCodeList*)))
 
-(de UpdateCodeList (codelist alist)
-    %% alist contains pairs (lbl . instrlist)
-    %% instrlist is to be inserted immediately before lbl
-    (prog (l l1 pp)
-      (printf "start: %p %p %n" (car alist) (caar alist))
-      (setq l codelist)
-     loop
-      (setq l1 (cdr l))
-      (when (null l1) (return codelist))
-      (printf "Trying %p:" (first (rest l)))
-      (setq pp (assoc (first (rest l)) alist))
-      (cond ((null pp))			% nothing to do - advance
-	    (t				% found - splice in the new code
-	     (printf " --> %p" (cdr pp))
-	     (nconc (cdr pp) l1)
-	     (rplacd l (cdr pp))))
-      (terpri)
-      (setq l l1)
-      (go loop)))
-
-)
 
 (de OptimizeBranches (u) 
 (prog (BranchAndLabelAList* InstructionChanged* q w) 
-    (setq BranchCodeList* u)
+    (setq BranchCodeList* (alignData u))
     (BuildOffsetTable)                  % find branches, labels, and entries
     (setq InstructionChanged* nil)
-    (FindFarLoads)
-    (while InstructionChanged*
-         (BuildOffsetTable)    
-	 (setq InstructionChanged* nil) 
-	 (FindFarLoads)) 
     (setq LabelOffsets* (DeleteAllButLabels BranchAndLabelAList*)) 
     (return BranchCodeList*)))
 
-%% (de &make-nop(n)
-%%    % make n bytes of nop instructions
-%%    (cond ((wleq n 0) nil)
-%% 	 ((eq n 1)'((inc (reg t2))))
-%% 	 ((eq n 2)'((mov (reg t1)(reg t1))))
-%% 	 ((eq n 3)'((lea (displacement(reg t1)0) (reg t1))))
-%% 	 (t (append (&make-nop 3)(&make-nop (difference n 3)))) ))
+(de alignData(u)
+    (let(rcode
+	 w
+	 (offset CurrentOffset*)
+	 prev-op
+	 offset1
+	 in-code?
+	 nops)
+      (while u
+       (setq prev-op w)
+       (setq w (pop u))
+       (setq nops 0)
+       (cond 
 
-%% (de &make-nop(n))
-
-%% (de alignCode(u)
-%%   (if (&smember 'fastapply u) u (alignCode1 u)))
-
-%% (de alignCode1(u)
-%%    (let(rcode w (a CurrentOffset*) l x y z q s nops)
-%%      (while u
-%%        (setq w (pop u))
-%%        (setq nops 0)
-%%        (cond 
-
-%% 	 % initial start: sync. entry point
-%% 	   ((null rcode)
-%% 	     (setq x a)
-%% 	     (setq y u q w)
-%% 	     (setq s (eqcar w '*entry))
-%% 	     (while y
-%% 		 (when (pairp q)(setq x (iplus2 x (instructionlength q))))
-%% 		 (if (eqcar q '*entry) (setq y nil) (setq q (pop y))))
-%% 	     (setq x (wand x 15))
-%% 	     (when (not (eq x 0)) (setq nops (idifference 16 x)))
-%% 	    )
+	 % initial start: sync. entry point
+	   ((null rcode)
+	    (setq offset1 offset)
+	    (let ((y u) (q w))
+	      (setq in-code? (eqcar w '*entry))
+	      (while y
+		(when (pairp q)(setq offset1 (iplus2 offset1 (instructionlength q))))
+		(if (eqcar q '*entry) (setq y nil) (setq q (pop y))))
+	      (setq offset1 (wand offset1 7))
+	      (when (not (eq offset1 0))
+		(push '(nop) rcode)
+		(setq offset (iplus2 offset 4)))
+	     ))
  
-%% 	% entry: executable code starts
-%% 	    ((eqcar w '*entry)(setq s t))
+	% entry: executable code starts
+	    ((eqcar w '*entry)(setq in-code? t))
 	    
-%% 	% fullword: executable code terminated
-%% 	    ((eqcar w 'fullword)(setq s nil)) 
+	% fullword: executable code terminated
+	((eqcar w 'fullword)
+	 (setq in-code? nil)
+	 (setq offset1 (wand offset 7))
+	 (when (not (eq offset1 0))
+	   % insert nop for 8 byte alignment
+	   % check if preceded by label, push label after alignment
+	   (let (q)
+	     (if (and (pairp rcode) (labelp (car rcode)))
+		 (setq q (pop rcode)))
+	     (push '(nop) rcode)
+	     (setq offset (iplus2 offset 4))
+	     (if q (push q rcode)))
+	 ))
 
-%%         % label under *align16
-%% 	   ((and s (atom w) *align16)
-%% 	      % next instruction should begin on cache line
-%% 	     (setq x (wand a 15))   
-%% 	     (when (not (eq x 0)) 
-%% 		   (setq nops(wdifference 16 x))))
-
-%% 	% label in standard mode
-%% 	   ((and s (atom w) u (pairp (car u))) 
-%% 	      % next instruction should not split cache lines
-%% 	    (setq x (iplus2 (wand a 15) (instructionlength (car u))))
-%% 	    (when (not (igreaterp x 16))
-%% 		  (setq nops (idifference 16 (wand a 15))))
-%% 	   )
+	% label in data
+	   ((and (not in-code?) (labelp w))
+ 	    (setq offset1 (wand offset 8))
+ 	    (when (not (eq offset1 0))
+	      (push '(nop) rcode)
+	      (setq offset (iplus2 offset 4)))
+	    )
 	       
-%%        % call under *align16
-%% 	   ((and *align16 (eqcar w 'call))  
-%% 	      % put call exactly at the end of cache line
-%% 	    (setq x (wand (iplus2 a (instructionlength w)) 15))
-%% 	    (when (not (eq x 0)) (setq nops (idifference 16 x)))
-%% 	   )
+	 )
+       (when (pairp w)(setq offset (iplus2 offset (InstructionLength w))))
+       (push w rcode)
+       )
+      (setq u (reversip rcode))
 
-%% 	% call 
-%% 	   ((and (eqcar w 'call) u (pairp (car u)))  
-%% 	      % following instruction should not split over cache line
-%% 	    (setq x (wand (iplus2 a (instructionlength w)) 15))
-%% 	    (when (igreaterp (iplus2 x (instructionlength (car u)))16)
-%% 		  (setq nops (idifference 16 x)))
-%% 	   )
-%% 	 )   
-%%        (when (and (igreaterp nops 0) 
-%% 		  (ilessp nops 9))  % not too many
-%% 	     (foreach q in (&make-nop nops) do (push q rcode))
-%% 	     (setq a (iplus2 a nops)))
-%%        (when (pairp w)(setq a (iplus2 a (InstructionLength w))))
-%%        (push w rcode)
-%%       )
-%%       (while rcode
-%% 	 (when (not (eq (setq w (pop rcode)) '!%temp-label))
-%% 	       (push w u)))
-%%     u      
-%% ))
+    u      
+))
 
 (de DeleteAllButLabels (X) 
 (prog (Y) 

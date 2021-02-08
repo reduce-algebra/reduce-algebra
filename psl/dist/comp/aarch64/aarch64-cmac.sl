@@ -537,7 +537,7 @@
         (comment (if *writingasmfile `((comment ,@nonlocal)))))
     (append comment
       (if (and idnumber (fixp idnumber) (lessp idnumber 4096) (greaterp idnumber -1))
-        `( (,load-or-store ,reg (indexed (reg symval) ,(times 8 idnumber))) )
+        `( (,load-or-store ,reg (displacement (reg symval) ,(times 8 idnumber))) )
        `( (LDR (reg t3) ,(if (null idnumber) (SaveConstant `(saveidloc ,(cadr nonlocal))) `(quote ,idnumber))) 
          (,load-or-store ,reg (indexed (reg symval) (regshifted t3 LSL 3))) )
       ))))

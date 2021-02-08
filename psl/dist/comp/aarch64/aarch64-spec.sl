@@ -126,7 +126,8 @@
   (prog (locallabels* oldout)
         (setq u (pass1lap (&fillframeholes u)))
 	(setq U (LapoptFrame u))
-	(setq U (LapoptPeep u)) 
+	(setq U (LapoptPeep u))
+	(setq u (alignData u))
         % Expand cmacros, quoted expressions
         (codeblockheader)
         (setq oldout (wrs codeout*))
