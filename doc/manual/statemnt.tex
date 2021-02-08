@@ -3,7 +3,7 @@
 A statement\index{Statement} is any combination of reserved words and
 expressions, and has the syntax \index{Proper statement}
 \begin{syntax}
-  \meta{statement} \bnfprod \meta{expression} | \meta{proper statement}
+  \meta{statement}\ \BNFprod\ \meta{expression}|\meta{proper statement}
 \end{syntax}
 A {\REDUCE} program consists of a series of commands which are statements
 followed by a terminator:\index{Terminator, statement}
@@ -11,7 +11,7 @@ followed by a terminator:\index{Terminator, statement}
 \index{Semicolon}\ttindextype{;}{(statement terminator)}
 \index{Dollar sign}\ttindextype{\$}{(statement terminator)}
 \begin{syntax}
-        \meta{terminator} \bnfprod \texttt{;}|\texttt{\$}
+  \meta{terminator}\ \BNFprod\ \texttt{;}|\texttt{\$}
 \end{syntax}
 The division of the program into lines is arbitrary. Several statements
 can be on one line, or one statement can be freely broken onto several
@@ -46,7 +46,7 @@ The following sub-sections describe the types of proper statements
 These statements\index{Assignment}\index{Assignment statement}
 \index{Statement!assignment} have the syntax
 \begin{syntax}
-    \meta{assignment statement} \bnfprod \meta{expression} \texttt{:=} \meta{expression}
+  \meta{assignment statement}\ \BNFprod\ \meta{expression}\texttt{ := }\meta{expression}
 \end{syntax}
 The \meta{expression} on the left side is normally the name of a variable, an
 operator symbol with its list of arguments filled in, or an array name with
@@ -81,7 +81,8 @@ It is also possible to write a multiple assignment statement:
 \index{Multiple assignment statement}
 \index{Assignment statement!multiple}
 \begin{syntax}
-    \meta{expression} \texttt{:=} \dots \texttt{:=} \meta{expression} \texttt{:=} \meta{expression}
+  \meta{expression}\texttt{ := }\dots\texttt{ :=
+  }\meta{expression}\texttt{ := }\meta{expression}
 \end{syntax}
 In this form, each \meta{expression} but the last is set to the value of
 the last \meta{expression}.  If a semicolon is used as a terminator, each
@@ -100,7 +101,7 @@ the left- and right-hand sides of an assignment\index{Assignment} are
 evaluated.  In this case, the \texttt{SET}\ttindextype{SET}{statement} statement can
 be used with the syntax:
 \begin{syntax}
-        \texttt{SET(}\meta{expression}\texttt{,}\meta{expression}\texttt{);}
+  \texttt{SET(}\meta{expression}\texttt{,}\,\meta{expression}\texttt{);}
 \end{syntax}
 For example, the statements
 \begin{verbatim}
@@ -152,9 +153,9 @@ the value NIL or zero.
 The conditional statement\index{Conditional statement}\index{Statement!conditional}
 has the following syntax:
 \begin{syntaxtable}
- \meta{conditional statement} &\bnfprod &
-    \texttt{IF } \meta{boolean expression} \texttt{ THEN } \meta{statement} \\
-      && [\texttt{ELSE } \meta{statement}]
+ \meta{conditional statement} &\BNFprod &
+    \texttt{IF }\meta{boolean expression}\texttt{ THEN }\meta{statement} \\
+      && [\texttt{ELSE }\meta{statement}]
 \end{syntaxtable}
 The boolean expression is evaluated. If this is \emph{true}, the first
 \meta{statement} is executed.  If it is \emph{false}, the second is.
@@ -241,8 +242,8 @@ loops\index{Loop}.  Its general syntax is as follows:\ttindex{UNTIL}
 %
 where
 \begin{syntax}
-     \meta{action} \bnfprod \texttt{do}|\texttt{product}|\texttt{sum}|
-                            \texttt{collect}|\texttt{join}.
+  \meta{action}\ \BNFprod\ \texttt{do}|\texttt{product}|\texttt{sum}|%
+                           \texttt{collect}|\texttt{join}.
 \end{syntax}
 The assignment\index{Assignment} form of the \texttt{FOR} statement defines an
 iteration over the indicated numerical range.  If expressions that do not
@@ -338,7 +339,7 @@ allows easy coding of a repeated operation in which the number of repetitions
 is known in advance.  If the criterion for repetition is more complicated,
 \texttt{WHILE} \ldots{} \texttt{DO} can often be used.  Its syntax is:
 \begin{syntax}
-      \texttt{WHILE }\meta{boolean expression} \texttt{ DO }\meta{statement}
+  \texttt{WHILE }\meta{boolean expression}\texttt{ DO }\meta{statement}
 \end{syntax}
 The \texttt{WHILE} \ldots{} \texttt{DO} controls the single statement
 following \texttt{DO}.
@@ -379,7 +380,7 @@ be added to \var{EX} and the next \var{TERM} calculated.  As soon as
 \ttindex{REPEAT}\texttt{REPEAT} \ldots{} \texttt{UNTIL} is very similar
 in purpose to \texttt{WHILE} \ldots{} \texttt{DO}.  Its syntax is:
 \begin{syntax}
-        \texttt{REPEAT }\meta{statement}\texttt{ UNTIL }\meta{boolean expression}
+  \texttt{REPEAT }\meta{statement}\texttt{ UNTIL }\meta{boolean expression}
 \end{syntax}
 (PASCAL users note: Only a single statement -- usually a group statement
 -- is allowed between the \texttt{REPEAT} and the \texttt{UNTIL}.)
@@ -539,10 +540,10 @@ subsidiary constructions like \texttt{$<<$} \ldots \texttt{$>>$}, \texttt{IF} \l
 
 Labels and \texttt{GO TO} statements have the syntax:
 \begin{syntaxtable}
-  \meta{go to statement} &\bnfprod& \texttt{GO TO } \meta{label} | 
-                                    \texttt{GOTO } \meta{label} \\
-  \meta{label} &\bnfprod& \meta{identifier}\\
-  \meta{labeled statement} &\bnfprod& \meta{label}\texttt{:}\meta{statement}
+  \meta{go to statement} &\BNFprod& \texttt{GO TO }\meta{label}|%
+                                    \texttt{GOTO }\meta{label} \\
+  \meta{label} &\BNFprod& \meta{identifier}\\
+  \meta{labeled statement} &\BNFprod& \meta{label}\texttt{:}\meta{statement}
 \end{syntaxtable}
 Note that statement names cannot be used as labels.
 

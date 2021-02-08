@@ -161,10 +161,10 @@ This is represented in {\REDUCE} as
 The operator \texttt{CFRAC} is used to generate a generalised continued
 fraction expansion of an algebraic expression.\\
 \begin{syntaxtable}
-  \texttt{cfrac(}\meta{num}\texttt{)} \\
-  \texttt{cfrac(}\meta{num}\texttt{,}\meta{length}\texttt{)}\\
-  \texttt{cfrac(}\meta{func}\texttt{,}\meta{var}\texttt{)}\\
-  \texttt{cfrac(}\meta{func}\texttt{,}\meta{var}\texttt{,}
+  \texttt{cfrac(}\meta{num}\texttt{)}\\
+  \texttt{cfrac(}\meta{num}\texttt{,}\,\meta{length}\texttt{)}\\
+  \texttt{cfrac(}\meta{func}\texttt{,}\,\meta{var}\texttt{)}\\
+  \texttt{cfrac(}\meta{func}\texttt{,}\,\meta{var}\texttt{,}\,%
   \meta{length}\texttt{)}
 \end{syntaxtable}
 
@@ -285,10 +285,10 @@ cfrac(e^x, x);
 The operator \texttt{CF} \ttindextype{CF}{operator} is a 
 synonym for the operator \texttt{CONTINUED\_FRACTION}.
 \begin{syntaxtable}
-  \texttt{cf(}\meta{num}\texttt{)} \hspace{5mm}\\
-  \texttt{cf(}\meta{num}\texttt{,}\meta{size}\texttt{)} \\
-  \texttt{cf(}\meta{num}\texttt{,}\meta{size}
-  \texttt{,}\meta{numterms}\texttt{)}
+  \texttt{cf(}\meta{num}\texttt{)}\\
+  \texttt{cf(}\meta{num}\texttt{,}\,\meta{size}\texttt{)}\\
+  \texttt{cf(}\meta{num}\texttt{,}\,\meta{size}%
+  \texttt{,}\,\meta{numterms}\texttt{)}
 \end{syntaxtable}
 
 The meaning of the arguments is the same as for the operator
@@ -378,9 +378,9 @@ The operator \texttt{CF\_EULER} is used to generate a generalised
 continued fraction expansion of an algebraic expression using a formula due to
 Leonhard Euler (~\cite{Euler:1748}).
 \begin{syntaxtable}
- \texttt{cf\_euler(}\meta{func}\texttt{,}\meta{var}\texttt{)}\\
- \texttt{cf\_euler(}\meta{func}\texttt{,}\meta{var}\texttt{,}
-  \meta{length}\texttt{)}
+  \texttt{cf\_euler(}\meta{func}\texttt{,}\,\meta{var}\texttt{)}\\
+  \texttt{cf\_euler(}\meta{func}\texttt{,}\,\meta{var}\texttt{,}\,%
+    \meta{length}\texttt{)}
 \end{syntaxtable}
 
 
@@ -430,7 +430,7 @@ an equivalent expansion. Unlike the four preceding operators it requires
 a second argument: a list of multipliers used to modify the partial
 numerators and denominators of the original expansion.
 \begin{syntaxtable}
-  \texttt{cf\_transform(}\meta{cf\_object}\texttt{,}
+  \texttt{cf\_transform(}\meta{cf\_object}\texttt{,}\,%
   \meta{multiplier-list}\texttt{)}
 \end{syntaxtable}
 To understand the operation of \texttt{cf\_transform} consider first the

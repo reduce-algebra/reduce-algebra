@@ -12,12 +12,12 @@ evaluation of expressions.  Such substitutions use the prefix operator
 
 Syntax:
 \begin{syntax}
-        \texttt{SUB(}\meta{substitution\_list},\meta{EXPRN1:algebraic}\texttt{)}:algebraic
+  \texttt{SUB(}\meta{substitution\_list},\,\meta{EXPRN1:algebraic}\texttt{)}\,:\,\textit{algebraic}
 \end{syntax}
 where \meta{substitution\_list} is a list of one or more equations of the
 form
 \begin{syntax}
-        \meta{VAR:kernel}\texttt{ = }\meta{EXPRN:algebraic}
+  \meta{VAR:kernel}\texttt{ = }\meta{EXPRN:algebraic}
 \end{syntax}
 or a kernel that evaluates to such a list.
 
@@ -64,22 +64,22 @@ rules are global in scope and stay in effect until replaced or \texttt{CLEAR}ed.
 
 The simplest use of the \texttt{LET} statement is in the form
 \begin{syntax}
-        \texttt{LET }\meta{substitution list}
+  \texttt{LET }\meta{substitution list}
 \end{syntax}
 where \meta{substitution list} is a list of rules separated by commas, each
 of the form:
 \begin{syntax}
-        \meta{variable}\texttt{ = } \meta{expression}
+  \meta{variable}\texttt{ = }\meta{expression}
 \end{syntax}
 or
 \begin{syntax}
-   \meta{prefix operator}\texttt{(}\meta{argument},\dots,\meta{argument}\texttt{) = }
-         \meta{expression}
+  \meta{prefix operator}\texttt{(}\meta{argument},\,\dots,\,\meta{argument}\texttt{)
+    = }\meta{expression}
 \end{syntax}
 or
 \begin{syntax}
-    \meta{argument}\meta{infix operator},\dots,\meta{argument}\texttt{ = }
-         \meta{expression}
+  \meta{argument}\meta{infix operator},\,\dots,\,\meta{argument}\texttt{
+    = }\meta{expression}
 \end{syntax}
 For example,
 \begin{verbatim}
@@ -181,10 +181,10 @@ THAT)}, the remaining rules are not evaluated.
 If a substitution for all possible values of a given argument of an
 operator is required, the declaration \texttt{FOR ALL} may be used. The
 syntax of such a command is
-\begin{syntaxtable}
-   \texttt{FOR ALL }\meta{variable},\dots,\meta{variable} \\
-   \qquad  \meta{LET statement} \meta{terminator}
-\end{syntaxtable}
+\begin{syntax}
+  \texttt{FOR ALL }\meta{variable},\,\dots,\,\meta{variable}\
+    \meta{LET statement}\meta{terminator}
+\end{syntax}
 e.g.,
 \begin{verbatim}
         for all x,y let h(x,y) = x-y;
@@ -242,7 +242,7 @@ affected.  Any boolean expression can follow the \texttt{SUCH THAT} keywords.
 The user may remove all assignments and substitution rules from any
 expression by the command \texttt{CLEAR}, in the form
 \begin{syntax}
-  \texttt{CLEAR } \meta{expression},\dots,\meta{expression} \texttt{ = } \meta{terminator}
+  \texttt{CLEAR }\meta{expression},\,\dots,\,\meta{expression}\meta{terminator}
 \end{syntax}
 e.g.
 \begin{verbatim}
@@ -318,7 +318,7 @@ matching algorithm.  However, the present system uses far more sophisticated
 techniques than those discussed in the above papers.  It is now possible for
 the rules appearing in arguments of \texttt{LET} to have the form
 \begin{syntax}
-       \meta{substitution expression} \texttt{ = } \meta{expression}
+  \meta{substitution expression}\texttt{ = }\meta{expression}
 \end{syntax}
 where any rule to which a sensible meaning can be assigned is permitted.
 However, this meaning can vary according to the form of \meta{substitution
@@ -772,7 +772,7 @@ system to permit this type of asymptotic constraint. The command
 \texttt{WEIGHT}\ttindex{WEIGHT}
 takes a list of equations of the form
 \begin{syntax}
-      \meta{kernel form} \texttt{ = } \meta{number}
+  \meta{kernel form}\texttt{ = }\meta{number}
 \end{syntax}
 where \meta{number} must be a positive integer (not just evaluate to a
 positive integer).  This command assigns the weight \meta{number} to the

@@ -71,7 +71,7 @@ more zeros after the decimal point is printed in scientific notation.  To
 change these defaults, \texttt{SCIENTIFIC\_NOTATION} can be used in one of two
 ways.
 
-\texttt{SCIENTIFIC\_NOTATION} \emph{m};
+\texttt{SCIENTIFIC\_NOTATION}\ \emph{m};
 
 where \emph{m} is a positive
 integer, sets the printing format so that a number with more than \emph{m}
@@ -417,25 +417,24 @@ simplification. The built in operators are described in another section.
 The following infix operators\index{Infix operator} are built into the
 system.  They are all defined internally as procedures.
 \begin{syntaxtable}
-\meta{infix operator} &\bnfprod & \texttt{where}|\texttt{:=}|\texttt{or}|\texttt{and}|
-                                 \texttt{member}|\texttt{memq}|\\
-                        &       & \texttt{=}|\texttt{neq}|\texttt{eq}|
-                                 \texttt{>=}|\texttt{>}|\texttt{<=}|\texttt{<}|\\
-         &  &         \texttt{+}|
-                     \texttt{-}|\texttt{*}|\texttt{/}|\texttt{\textasciicircum}|
-                     \texttt{**}|\texttt{.}
+\meta{infix operator} &\BNFprod & \texttt{where}|\texttt{:=}|\texttt{or}|\texttt{and}|%
+                                  \texttt{member}|\texttt{memq}|\\
+                      &         & \texttt{=}|\texttt{neq}|\texttt{eq}|%
+                                  \texttt{>=}|\texttt{>}|\texttt{<=}|\texttt{<}|\\
+                      &         & \texttt{+}|\texttt{-}|\texttt{*}|\texttt{/}|%
+                                  \texttt{\textasciicircum}|\texttt{**}|\texttt{.}
 \end{syntaxtable}
 These operators may be further divided into the following subclasses:
 \begin{syntaxtable}
-   \meta{assignment operator}   &\bnfprod & \texttt{:=} \\
-   \meta{logical operator}      &\bnfprod & \texttt{or}|\texttt{and}|\texttt{member}|
-                                           \texttt{memq} \\
-   \meta{relational operator}   &\bnfprod & \texttt{=}|\texttt{neq}|\texttt{eq}|
-                                           \texttt{>=}|\texttt{>}|\texttt{<=}|\texttt{<}\\
-   \meta{substitution operator} &\bnfprod & \texttt{where} \\
-   \meta{arithmetic operator}   &\bnfprod & \texttt{+}|\texttt{-}|\texttt{*}|\texttt{/}|
-                                           \texttt{\textasciicircum}|\texttt{**} \\
-   \meta{construction operator} &\bnfprod & \texttt{.}
+   \meta{assignment operator}   &\BNFprod & \texttt{:=} \\
+   \meta{logical operator}      &\BNFprod & \texttt{or}|\texttt{and}|\texttt{member}|%
+                                            \texttt{memq} \\
+   \meta{relational operator}   &\BNFprod & \texttt{=}|\texttt{neq}|\texttt{eq}|%
+                                            \texttt{>=}|\texttt{>}|\texttt{<=}|\texttt{<}\\
+   \meta{substitution operator} &\BNFprod & \texttt{where} \\
+   \meta{arithmetic operator}   &\BNFprod & \texttt{+}|\texttt{-}|\texttt{*}|\texttt{/}|%
+                                            \texttt{\textasciicircum}|\texttt{**} \\
+   \meta{construction operator} &\BNFprod & \texttt{.}
 \end{syntaxtable}
 \texttt{MEMQ} and \texttt{EQ} are not used in the algebraic mode of
 {\REDUCE}.  They are explained in the section on symbolic mode.

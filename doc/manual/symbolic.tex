@@ -140,13 +140,13 @@ and \texttt{B}.
 expressions in symbolic mode. They may not be used in algebraic mode.
 
 Syntax:
-\begin{syntaxtable}
-     \meta{\texttt{LAMBDA} expression} \bnfprod& \\
-        \qquad \texttt{LAMBDA } \meta{varlist}\meta{terminator}\meta{statement}
-\end{syntaxtable}
+\begin{syntax}
+  \meta{\texttt{LAMBDA}\ expression}\ \BNFprod\
+    \texttt{LAMBDA }\meta{varlist}\meta{terminator} \meta{statement}
+\end{syntax}
  where
 \begin{syntax}
-    \meta{varlist}  \bnfprod \texttt{(} \meta{variable}\texttt{,}\dots\texttt{,}\meta{variable}\texttt{)}
+  \meta{varlist}\ \BNFprod\ \texttt{(}\meta{variable}\texttt{,}\,\dots\texttt{,}\,\meta{variable}\texttt{)}
 \end{syntax}
 e.g.,
 \begin{verbatim}

@@ -2137,7 +2137,7 @@ invariants {d y*z**2 - d y*z + d z*y,d x*(1 - z) + d z*x};
 The \f{symbol\_relations} operator finds the linear relations between the
 entries of the tableau matrix for a quasilinear system. The syntax is
 \begin{syntax}
-	symbol\_relations(\meta{EDS},\meta{identifier})
+  \f{symbol\_relations}(\meta{EDS},\,\meta{identifier})
 \end{syntax}
 where \meta{EDS} is a quasilinear Pfaffian system and \meta{identifier} is
 used to create a 2-indexed 1-form which will label the tableau entries.
@@ -2171,7 +2171,7 @@ symbol_relations(S,pi);
 The \f{symbol\_matrix} operator returns the symbol matrix for a quasilinear
 system in terms of a given variable. The syntax is
 \begin{syntax}
-	symbol\_matrix(\meta{EDS},\meta{identifier})
+  \f{symbol\_matrix}(\meta{EDS},\,\meta{identifier})
 \end{syntax}
 where \meta{EDS} is a quasilinear Pfaffian system and \meta{identifier} is
 used to create an indexed 0-form which will parameterise the matrix.
@@ -2196,7 +2196,7 @@ The \f{characteristic\_variety} operator returns the equations specifying
 the characteristic variety for a quasilinear
 system in terms of a given variable. The syntax is
 \begin{syntax}
-	characteristic\_variety(\meta{EDS},\meta{identifier})
+  \f{characteristic\_variety}(\meta{EDS},\,\meta{identifier})
 \end{syntax}
 where \meta{EDS} is a quasilinear Pfaffian system and \meta{identifier} is
 used to create an indexed 0-form variable. The result is a list of two

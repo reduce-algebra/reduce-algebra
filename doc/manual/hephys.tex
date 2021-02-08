@@ -238,7 +238,7 @@ but an alternative method is provided by two commands \texttt{MASS} and
 \texttt{MSHELL}.\ttindex{MSHELL}
 \texttt{MASS} takes a list of equations of the form:
 \begin{syntax}
-    \meta{vector variable} \texttt{=} \meta{scalar variable}
+  \meta{vector variable}\texttt{ = }\meta{scalar variable}
 \end{syntax}
 for example,
 \begin{verbatim}
@@ -247,13 +247,13 @@ for example,
 The only effect of this command is to associate the relevant scalar
 variable as a mass with the corresponding vector. If we now say
 \begin{syntax}
-   \texttt{mshell }\meta{vector variable}\texttt{,}\dots\texttt{,}\meta{vector variable}\meta{terminator}
+  \texttt{mshell }\meta{vector variable}\texttt{,}\,\dots\texttt{,}\,\meta{vector variable}\meta{terminator}
 \end{syntax}
 and a mass has been associated with these arguments, a substitution of the
 form
 \begin{syntax}
-   \meta{vector variable} \texttt{.}\meta{vector variable} \texttt{ = }
-       \meta{mass}\texttt{\textasciicircum} 2
+  \meta{vector variable}\,\texttt{.}\,\meta{vector variable}\texttt{ = }%
+    \meta{mass}\texttt{\textasciicircum}2
 \end{syntax}
 is set up. An error results if the variable has no preassigned mass.
 
@@ -332,7 +332,7 @@ normal four dimensions of QED calculations. However, in most cases, the
 programs will also work in an arbitrary number of dimensions. The command
 \ttindex{VECDIM}
 \begin{syntax}
-    \texttt{vecdim }\meta{expression}\meta{terminator}
+  \texttt{vecdim }\meta{expression}\meta{terminator}
 \end{syntax}
 sets the appropriate dimension. The dimension can be symbolic as well as
 numerical. Users should note however, that the \texttt{EPS} operator and the

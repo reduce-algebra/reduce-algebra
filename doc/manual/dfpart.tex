@@ -18,15 +18,15 @@ assumes that the arguments of a generic function have default
 names such as $f(x,y)$,$q(rho,phi)$. 
 A generic function is declared by prototype form in a statement
 \begin{syntax}
- \f{GENERIC\_FUNCTION } \meta{fname}\texttt{(}\meta{arg$_1$},\meta{arg$_2$}\cdots \meta{arg$_n$}\texttt{);}
+  \f{GENERIC\_FUNCTION }\meta{fname}\texttt{(}\meta{arg$_1$},\,\meta{arg$_2$},\,\dots,\,\meta{arg$_n$}\texttt{);}
 \end{syntax}
 
 \noindent
 where $fname$ is the (new) name of a function and $arg_i$ are
 symbols for its formal arguments. 
 In the following $fname$ is referred to as ``generic function",
-$arg_1,arg_2\cdots arg_n$ as ``generic arguments" and
-$fname(arg_1,arg_2\cdots arg_n)$ as ``generic form".
+$arg_1,arg_2,\dots,arg_n$ as ``generic arguments" and
+$fname(arg_1,arg_2,\dots,arg_n)$ as ``generic form".
 Examples:
 
 \begin{verbatim}
@@ -55,7 +55,7 @@ as $\frac{\partial f}{\partial x} \frac{d u}{d w} +
 \ttindex{DFP}
 The operator \f{DFP} represents a partial derivative:
 \begin{syntax}
- \f{DFP(}\meta{expr},\meta{dfarg$_1$},\meta{dfarg$_2$}\cdots \meta{dfarg$_n$}\texttt{);}
+  \f{DFP(}\meta{expr},\,\meta{dfarg$_1$},\,\meta{dfarg$_2$},\,\dots,\,\meta{dfarg$_n$}\texttt{);}
 \end{syntax}
 \noindent
 where $expr$ is a function expression and $dfarg_i$ are

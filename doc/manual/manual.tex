@@ -186,29 +186,32 @@
 
 \newcommand{\COMPATNOTE}{{\em Compatibility Note:\ }}
 % \meta{...} is an alternative sentential form in descriptions using \it.
-\newcommand{\meta}[1]{\mbox{$\langle$\textit{#1}$\rangle$}}
+\newcommand{\meta}[1]{$\langle$\textit{#1}$\rangle$}
 % More commands for Backus-Naur form
-\newcommand{\bnfprod}{\longrightarrow}
-\newcommand{\bnfalt}{\,\mid\,}
+\newcommand{\BNFprod}{$\longrightarrow$}
+% Redefinition of \bnfprod is ignored by TeX4ht, which always uses ::=.
+\newcommand{\BNFalt}{$\ \mid\ $}
 \begingroup
   \catcode`\|=\active
   \catcode`\<=\active
   \catcode`\[=\active
-  \global\let|=\bnfalt
+  \global\let|=\BNFalt
   \global\def<#1>{\meta{#1}}
   \global\def[#1]{\left[#1\right]}
-
 \endgroup
+
+%% When generating MathJax output, the definition of syntax using math
+%% mode caused htlatex compilation errors.
 \newenvironment{syntax}{%
     \list{}{\setlength{\leftmargin}{1em}\setlength{\listparindent}{0em}}%
-    \item\relax\math\displaystyle
+    \item\relax
     \catcode`\|=\active
-}{\endmath\endlist}
+}{\endlist}
 
 \newenvironment{syntaxtable}{
     \syntax
-    \begin{array}{lcl}%
-}{\end{array}\endsyntax}
+    \begin{tabular}{lcl}%
+}{\end{tabular}\endsyntax}
 
 % Will print out a heading in bold, and then indent the following text.
 \def\indented{\list{}{

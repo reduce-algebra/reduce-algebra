@@ -6,8 +6,8 @@ others, usually called declarations\index{Declaration}, set options,
 define properties of variables, or define procedures.  Commands are
 formally defined as a statement followed by a terminator
 \begin{syntaxtable}
-  \meta{command} &\bnfprod& \meta{statement} \meta{terminator} \\
-  \meta{terminator} &\bnfprod& \texttt{;}|\texttt{\$}
+  \meta{command} &\BNFprod& \meta{statement}\meta{terminator} \\
+  \meta{terminator} &\BNFprod& \texttt{;}|\texttt{\$}
 \end{syntaxtable}
 Some {\REDUCE} commands and declarations are described in the following
 sub-sections.
@@ -163,8 +163,8 @@ The command \texttt{DEFINE} allows a user to supply a new name for
 any identifier or replace it by any well-formed expression.  Its argument
 is a list of expressions of the form
 \begin{syntaxtable}
-   \meta{identifier} &\texttt{=}& \meta{number}|\meta{identifier}|\meta{operator}|\\
-                    &&    \meta{reserved word}|\meta{expression}
+  \meta{identifier} &\texttt{=}& \meta{number}|\meta{identifier}|\meta{operator}|\\
+                    &          & \meta{reserved word}|\meta{expression}
 \end{syntaxtable}
 
 \textit{Example:}

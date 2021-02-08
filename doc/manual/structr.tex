@@ -99,7 +99,7 @@ later use, the \texttt{SAVEAS}\ttindextype{SAVEAS}{statement}
 \index{Statement!SAVEAS@\texttt{SAVEAS}} statement can be used.  It
 has the syntax
 \begin{syntax}
-        \texttt{SAVEAS}\ \meta{expression}
+  \texttt{SAVEAS}\ \meta{expression}
 \end{syntax}
 For example, after the differentiation in the last example, the workspace
 holds the expression \texttt{2*x+2*y}.  If we wish to assign this to the
@@ -625,14 +625,14 @@ The breakup of the expression into subparts is such that the number of
 continuation lines produced is less than a given number. This number can
 be modified by the assignment
 \begin{syntax}
-        \texttt{card\_no := }\meta{number}\texttt{;}
+  \texttt{card\_no := }\meta{number}\texttt{;}
 \end{syntax}
 where \meta{number} is the \emph{total} number of cards allowed in a
 statement. The default value of \texttt{CARD\_NO} is 20.
 
 The width of the output expression is also adjustable by the assignment
 \begin{syntax}
-        \texttt{fort\_width := }\meta{integer}\texttt{;}
+  \texttt{fort\_width := }\meta{integer}\texttt{;}
 \end{syntax}
 \var{FORT\_WIDTH} which sets the total width of a given line to
 \meta{integer}.  The initial FORTRAN output width is 70.
@@ -883,12 +883,12 @@ obtain the relevant parts.
 The evaluation proceeds recursively down the integer expression list. In
 other words,
 \begin{syntaxtable}
- \texttt{PART(}\meta{expression}\texttt{,}\meta{integer1}\texttt{,}\meta{integer2}\texttt{)} \\
-  \qquad \rightarrow \texttt{PART(PART(}\meta{expression}\texttt{,}\meta{integer1}\texttt{),}\meta{integer2}\texttt{)}
+  \texttt{PART(}\meta{expression}\texttt{,}\,\meta{integer1}\texttt{,}\,\meta{integer2}\texttt{)} \\
+  \qquad $\longrightarrow$\ \texttt{PART(PART(}\meta{expression}\texttt{,}\,\meta{integer1}\texttt{),}\,\meta{integer2}\texttt{)}
 \end{syntaxtable}
  and so on, and
 \begin{syntax}
-  \texttt{PART(}\meta{expression}\texttt{)}  \rightarrow \meta{expression} .
+  \texttt{PART(}\meta{expression}\texttt{)}\ $\longrightarrow$\ \meta{expression}.
 \end{syntax}
 \texttt{INTEXP} can be any expression that evaluates to an integer.  If the
 integer is positive, then that term of the expression is found.  If the

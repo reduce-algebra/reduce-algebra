@@ -917,7 +917,7 @@ The operator \texttt{CHANGEVAR} does a variable transformation in a set of
 differential equations.
 Syntax:
 \begin{syntaxtable}
-   \texttt{changevar(}\meta{depvars},\meta{newvars},\meta{eqlist},\meta{diffeq}\texttt{)}
+  \texttt{changevar(}\meta{depvars},\,\meta{newvars},\,\meta{eqlist},\,\meta{diffeq}\texttt{)}
 \end{syntaxtable}
 \meta{diffeq} is either a single differential equation or a list of
 differential equations, \meta{depvars} are the dependent variables to
@@ -1069,15 +1069,15 @@ permitted for the denominator of the convergent
 and an \textbf{optional} number of continuents to be generated:
 \begin{syntaxtable}
   \texttt{continued\_fraction(}\meta{num}\texttt{)}\\
-  \texttt{continued\_fraction(}\meta{num}\texttt{,}\meta{size}\texttt{)}\\
-  \texttt{continued\_fraction(}\meta{num}\texttt{,}
-  \meta{size}\texttt{,}\meta{numterms}\texttt{)}
+  \texttt{continued\_fraction(}\meta{num}\texttt{,}\,\meta{size}\texttt{)}\\
+  \texttt{continued\_fraction(}\meta{num}\texttt{,}\,%
+  \meta{size}\texttt{,}\,\meta{numterms}\texttt{)}
 \end{syntaxtable}
 The result is the special operator \texttt{contfrac}
 \ttindextype{contfrac}{operator}
 with three arguments: the original number to be expanded
 \meta{num}, secondly the rational number approximation (the final convergent)
-and thirdly a list of continuents of the continued fraction (i.e. a list of
+and thirdly a list of continuents of the continued fraction (i.e.\ a list of
 pairs of partial numerators and denominators)
 
 \hspace{10mm}\texttt{\{t0, \{1, t1\}, \{1, t2\}, .... \}}
@@ -1188,7 +1188,7 @@ The operator \texttt{DF}\ttindextype{DF}{operator} is used to represent partial
 differentiation\index{Differentiation} with respect
 to one or more variables. It is used with the syntax:
 \begin{syntax}
-     \texttt{DF(}\meta{EXPRN:algebraic}[,\meta{VAR:kernel}<,\meta{NUM:integer}>]):algebraic.
+  \texttt{DF(}\meta{EXPRN:algebraic}[,\,\meta{VAR:kernel}<,\,\meta{NUM:integer}>])\,:\,\textit{algebraic}.
 \end{syntax}
 The first argument is the expression to be differentiated. The remaining
 arguments specify the differentiation variables and the number of times
@@ -1274,22 +1274,23 @@ simplifies. Both switches are off by default.
 The \texttt{LET}\ttindex{LET} statement can be used to introduce
 rules for differentiation of user-defined operators.  Its general form is
 \begin{syntaxtable}
- \texttt{FOR ALL }\meta{var1}\texttt{,}\dots\texttt{,}\meta{varn} \\
-  \qquad \texttt{LET DF(}\meta{operator}\meta{varlist}\texttt{,}\meta{vari}\texttt{)=}\meta{expression}
+  \texttt{FOR ALL }\meta{var1}\texttt{,}\,\dots\texttt{,}\,\meta{varn} \\
+    \qquad \texttt{LET DF(}\meta{operator}\meta{varlist}\texttt{,}\,\meta{vari}\texttt{)
+    = }\meta{expression}
 \end{syntaxtable}
 where
 \begin{syntax}
- \meta{varlist} \bnfprod  (\meta{var1},\dots,\meta{varn}),
+  \meta{varlist}\ \BNFprod\ (\meta{var1},\,\dots,\,\meta{varn}),
 \end{syntax}
 and
-\meta{var1},\ldots,\meta{varn} are the dummy variable arguments of
+\meta{var1},\,\dots,\,\meta{varn} are the dummy variable arguments of
 \meta{operator}.
 
 An analogous form applies to infix operators.
 
 \textit{Examples:}
 \begin{verbatim}
-        for all x let df(tan x,x)= 1 + tan(x)^2;
+        for all x let df(tan x,x) = 1 + tan(x)^2;
 \end{verbatim}
 (This is how the tan differentiation rule appears in the {\REDUCE}
 source.)
@@ -1350,7 +1351,7 @@ integration\index{Integration}\index{Indefinite integration} using a
 combination of the Risch-Norman algorithm and pattern matching.  It is
 used with the syntax:
 \begin{syntax}
-   \texttt{INT(}\meta{EXPRN:algebraic}\texttt{,}\meta{VAR:kernel}\texttt{)}:algebraic.
+  \texttt{INT(}\meta{EXPRN:algebraic}\texttt{,}\,\meta{VAR:kernel}\texttt{)}\,:\,\textit{algebraic}.
 \end{syntax}
 This will return correctly the indefinite integral for expressions comprising
 polynomials, log functions, exponential functions and tan and atan. The
@@ -1639,7 +1640,7 @@ The \texttt{SELECT} operator extracts from a list,
 or from the arguments of an n--ary operator, elements corresponding
 to a boolean predicate. It is used with the syntax:
 \begin{syntax}
-  \texttt{SELECT(}\meta{FNC:function},\meta{LST:list}\texttt{)}
+  \texttt{SELECT(}\meta{FNC:function},\,\meta{LST:list}\texttt{)}
 \end{syntax}
 
 \texttt{FNC} can be one of the following forms:

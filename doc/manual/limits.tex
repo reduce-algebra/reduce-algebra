@@ -14,8 +14,8 @@ is also employed where applicable.
 \subsection{Normal entry points}
 \ttindex{LIMIT}\hypertarget{operator:LIMIT}{}
 \begin{syntax}
- \f{LIMIT(}\meta{EXPRN:algebraic}, \meta{VAR:kernel},
-  \meta{LIMPOINT:algebraic}):{algebraic}
+  \f{LIMIT(}\meta{EXPRN:algebraic},\,\meta{VAR:kernel},\,%
+    \meta{LIMPOINT:algebraic})\,:\,\textit{algebraic}
 \end{syntax}
 
 This is the standard way of calling limit, applying all of the methods. The
@@ -28,10 +28,10 @@ result is the limit of EXPRN as VAR approaches LIMPOINT.
 \hypertarget{operator:LIMIT+}{}
 \hypertarget{operator:LIMIT-}{}
 \begin{syntaxtable}
-  \texttt{LIMIT!+(}\meta{EXPRN:algebraic}, \meta{VAR:kernel},
-     \meta{LIMPOINT:algebraic}\texttt{)}:algebraic & \\
-  \texttt{LIMIT!-(}\meta{EXPRN:algebraic}, \meta{VAR:kernel},
-     \meta{LIMPOINT:algebraic}\texttt{)}:algebraic \\
+  \texttt{LIMIT!+(}\meta{EXPRN:algebraic},\,\meta{VAR:kernel},\,%
+    \meta{LIMPOINT:algebraic}\texttt{)}\,:\,\textit{algebraic} \\
+  \texttt{LIMIT!-(}\meta{EXPRN:algebraic},\,\meta{VAR:kernel},\,%
+    \meta{LIMPOINT:algebraic}\texttt{)}\,:\,\textit{algebraic}
 \end{syntaxtable}
 
 If the limit depends upon the direction of approach to the \texttt{LIMPOINT},
