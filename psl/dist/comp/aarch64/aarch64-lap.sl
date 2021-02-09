@@ -137,8 +137,6 @@
 % Start of actual code
 % ------------------------------------------------------------
 
-(de xxxlap (u) u )
-
 (de Lap (U) 
 (prog (LabelOffsets* LapReturnValue* Entries* temp) 
     (cond ((not *WritingFaslFile) (setq CurrentOffset* 0))) 
@@ -150,21 +148,16 @@
 					% expand all the LAP macros
 					% Note that this is defined in
 					% PC:PASS-1-LAP.SL
-    (print (list "Before LapoptXXX"))
     (setq U (LapoptFrame u))            % optimize frame-register transports
     (setq U (LapoptPeep u))             % peephole optimizer for aarch64 code
 
-    (print (list "After lapoptpeep"))
     (when *WritingFaslFile       % round off to fullword address
-	  (while (not (eq (wshift (wshift currentOffset* -2) 2) currentOffset*))
+	  (while (not (eq (wshift (wshift currentOffset* -3) 3) currentOffset*))
 		 (DepositByte 0) ))
  
-    (print (list "Before Reformbranches"))
     (SETQ U (ReformBranches U))         % process conditional branches
-    (print (list "After Reformbranches"))
     (setq U (OptimizeBranches U))       % optimize branches and
 					% calculate offsets and total length
-    (print (list "After Optimizebranches"))
     
     (when (not *WritingFaslFile)       
 	  (setq CodeBase* (GTBPS (Quotient (Plus2 CodeSize* 3) 4))))
@@ -670,7 +663,8 @@
     ))
 
 (de imm-logical-p (x)
-  (prog (size mask imm tmp zz ones immr Nimms N)
+    (prog (size mask imm tmp zz ones immr Nimms N)
+    (if (null (fixp x)) (return nil))
     (if (null (setq size (imm-lg-repeated x)))
         (return nil))
     (setq mask (lsh -1 (difference size 64)))
@@ -702,7 +696,7 @@
 	(setq ones (difference (plus2 (difference 64 zz) ones)
 			       (diffference 64 size)))
 	))
-    (if (greaterp size zz) (return nil))
+    (if (not (greaterp size zz)) (return nil))
     (setq immr (land (difference size zz) (sub1 size)))
     (setq Nimms (lsh (lnot (sub1 size)) 1))
     (setq Nimms (lor Nimms (sub1 ones)))
@@ -842,6 +836,7 @@
 (de offset26-p (x)
     (or (labelp x)
 	(eqcar x 'internalentry)
+	(eqcar x 'foreignentry)
 	(and (or (eqcar x 'immediate) (setq x (cadr x)))
 	     (fixp x)
 	     (lessp x (add1 16#7FFFFFC))
@@ -973,7 +968,7 @@
 
 %------------------------------------------------------------------------
 (de OP-branch-imm (code offset)
-    (setq offset (MakeExpressionRelative offset 4))
+    (setq offset (MakeExpressionRelative offset 0))
     (if (not (weq (land offset 2#11) 0))
 	(stderror (bldmsg "Invalid immediate branch offset %w" offset))
       (progn
@@ -989,7 +984,7 @@
 (de lth-branch-imm (code offset) 4)
 
 (de OP-branch-imm19 (code offset)
-    (setq offset (MakeExpressionRelative offset 4))
+    (setq offset (MakeExpressionRelative offset 0))
     (if (not (weq (land offset 2#11) 0))
 	(stderror (bldmsg "Invalid immediate branch offset %w" offset))
       (progn
@@ -1033,6 +1028,7 @@
 
 (de lth-reg-Xbfm (code regd regn lsb width) 4)
 
+
 (de OP-reg-Xbfx (code regd regn lsb width)
     (OP-reg-Xbfm code regd regn lsb (sub1 (plus2 lsb width)))
     )
@@ -1064,6 +1060,19 @@
     ))
 
 (de lth-reg-Xsr (code regd regn lsb width) 4)
+
+(de OP-reg-Xsrv (code regd regn regm)
+    (DepositInstructionBytes
+     (lsh (car code) -3)
+     (lor (lsh (land (car code) 2#111) 5)
+	  (reg2int regm))
+     (lor (lsh (cadr code) 2)
+	  (lsh (reg2int regn) -3))
+     (lor (lsh (land (reg2int regn) 2#111) 5)
+	  (reg2int regd))
+    ))
+
+(de lth-reg-Xsrv (code regd regn regm) 4)
 
 (de OP-bfm (code regd regn immr imms)
     (prog (opcode)
@@ -1224,6 +1233,11 @@
     )
 
 (de lth-reg-reg (code reg1 reg2) 4)
+
+(de OP-regd-shifter (code regd reg-shifter)
+    (OP-reg-shifter code regd (if (reg32p regd) 'Wzr 'Xzr) reg-shifter))
+
+(de lth-regd-shifter (code regd reg-shifter) 4)
 
 %% ToDo
 (de OP-reg-shifter (code reg1 reg2 reg-shifter)
@@ -1418,8 +1432,11 @@
 	  (if (labelp reg-offset)	% label --> pc-relative
 	      (progn
 		(setq byte1 opcode1)
-		(setq displ (MakeExpressionRelative reg-offset
-						    (if (eq (lsh opcode1 -6) 1) 8 4))))
+		(setq displ (MakeExpressionRelative reg-offset 0))
+		(setq byte2 (land 16#ff (lsh displ -13)))
+		(setq byte3 (land 16#ff (lsh displ -5)))
+		(setq lastbyte (lor (land 16#e0 (lsh displ 3)) (reg2int regt)))
+	      )
 	    (progn
 	      (setq regn (reg2int (cadr reg-offset)))
 	      (setq size (lsh opcode1 -9))
@@ -1983,7 +2000,7 @@
 
 	% label in data
 	   ((and (not in-code?) (labelp w))
- 	    (setq offset1 (wand offset 8))
+ 	    (setq offset1 (wand offset 7))
  	    (when (not (eq offset1 0))
 	      (push '(nop) rcode)
 	      (setq offset (iplus2 offset 4)))

@@ -531,12 +531,14 @@
 
 (DefCMacro *LoadIDLoc)
 
+%% ID numbers below 257 are fixed: single character ids and nil.
+%% All others must be determined at compile/load time
 (de *LoadIdNumber (load-or-store reg nonlocal)
   (let ((idnumber
          (WConstEvaluable `(idloc ,(cadr nonlocal))))
         (comment (if *writingasmfile `((comment ,@nonlocal)))))
     (append comment
-      (if (and idnumber (fixp idnumber) (lessp idnumber 4096) (greaterp idnumber -1))
+      (if (and idnumber (fixp idnumber) (lessp idnumber 257) (greaterp idnumber -1))
         `( (,load-or-store ,reg (displacement (reg symval) ,(times 8 idnumber))) )
        `( (LDR (reg t3) ,(if (null idnumber) (SaveConstant `(saveidloc ,(cadr nonlocal))) `(quote ,idnumber))) 
          (,load-or-store ,reg (indexed (reg symval) (regshifted t3 LSL 3))) )
@@ -933,15 +935,15 @@
     ((mov ArgOne (regshifted ArgTwo ASR ArgThree))))
 
 (DefCMacro *lsr
-    ((mov ArgOne (regshifted ArgTwo LSR ArgThree))))
+    ((mov ArgOne (regshifted (cadr ArgTwo) LSR ArgThree))))
 
 (DefCMacro *lsl
     ((mov ArgOne (regshifted ArgTwo LSL ArgThree))))
 
 (DefCMacro *AShift
     ((AnyP ZeroP))
-    ((regp negp)     (MOV ArgOne (regshifted ArgOne ASR (minus ArgTwo))))
-    ((regp fixplusp) (MOV ArgOne (regshifted ArgOne LSL ArgTwo)))
+    ((regp negp)     (ASR ArgOne ArgOne (minus ArgTwo)))
+    ((regp fixplusp) (LSL ArgOne ArgOne ArgTwo))
     ((regp regp)     (CMP ArgTwo 0)
                       (B!.GE templabel)
                       (NEG (reg t2) ArgOne)
@@ -964,8 +966,8 @@
 
 (DefCMacro *WShift
     ((AnyP ZeroP))
-    ((regp negp)     (*lsr ArgOne ArgOne (minus ArgTwo)))
-    ((regp fixplusp) (*lsl ArgOne ArgOne ArgTwo))
+    ((regp negp)     (LSR ArgOne ArgOne (minus ArgTwo)))
+    ((regp fixplusp) (LSL ArgOne ArgOne ArgTwo))
     ((regp regp)     (CMP argtwo 0)
                       (B!.GE templabel)
                       (NEG (reg t2) ArgTwo)

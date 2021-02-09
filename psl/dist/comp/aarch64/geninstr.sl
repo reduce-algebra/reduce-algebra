@@ -50,12 +50,13 @@
 (fluid '(lengthfunctions))
 (setq lengthfunctions
       '((OP-nop . lth-nop)
+	(OP-reg-Xsrv . lth-reg-Xsrv)
 	(OP-reg-imm8 . lth-reg-imm8 )
 %	(OP-regn-imm8 . lth-regn-imm8 )
 %	(OP-regd-imm8 . lth-regd-imm8 )
 	(OP-reg-shifter . lth-reg-shifter )
 %	(OP-regn-shifter . lth-regn-shifter )
-%	(OP-regd-shifter . lth-regd-shifter )
+	(OP-regd-shifter . lth-regd-shifter )
 	(OP-reg3 . lth-reg3)
 	(OP-mul3 . lth-mul3)
 	(OP-mul4 . lth-mul4)
@@ -383,8 +384,11 @@
 (instr ANDS (reg32 reg32 reg32-shifter)     OP-reg-shifter   2#01101010000)
 (instr ANDS (reg reg reg-shifter)     OP-reg-shifter   2#11101010000)
 
-% ASR
 % ASRV
+(instr ASR (reg32 reg32 reg32)        OP-reg-Xsrv 2#00011010110 2#001010)
+(instr ASR (reg reg reg)        OP-reg-Xsrv 2#10011010110 2#001010)
+(instr ASRV (reg32 reg32 reg32)        OP-reg-Xsrv 2#00011010110 2#001010)
+(instr ASRV (reg reg reg)        OP-reg-Xsrv 2#10011010110 2#001010)
 
 (instr B!.EQ (offset19)    OP-branch-imm19 2#01010100 2#0000)
 (instr B!.NE (offset19)    OP-branch-imm19 2#01010100 2#0001)
@@ -551,10 +555,17 @@
 % LDURSH
 % LDURSW
 
-% LSL
 % LSLV
-% LSR
+(instr LSLV (reg32 reg32 reg32)        OP-reg-Xsrv 2#00011010110 2#001000)
+(instr LSLV (reg reg reg)              OP-reg-Xsrv 2#10011010110 2#001000)
+(instr LSL (reg32 reg32 reg32)        OP-reg-Xsrv 2#00011010110 2#001000)
+(instr LSL (reg reg reg)              OP-reg-Xsrv 2#10011010110 2#001000)
+
 % LSRV
+(instr LSRV (reg32 reg32 reg32)        OP-reg-Xsrv 2#00011010110 2#001001)
+(instr LSRV (reg reg reg)              OP-reg-Xsrv 2#10011010110 2#001001)
+(instr LSR (reg32 reg32 reg32)        OP-reg-Xsrv 2#00011010110 2#001001)
+(instr LSR (reg reg reg)              OP-reg-Xsrv 2#10011010110 2#001001)
 
 (instr MADD   (reg32 reg32 reg32 reg32)  OP-mul4      2#00011011000 0)
 (instr MADD   (reg reg reg reg)          OP-mul4      2#10011011000 0)
@@ -565,11 +576,11 @@
 (instr MNEG   (reg32 reg32 reg32)        OP-mul3      2#00011011000 1 2#11111)
 (instr MNEG   (reg reg reg)              OP-mul3      2#10011011000 1 2#11111)
 
-(instr NEG   (reg reg reg-shifter)     OP-reg-shifter 2#11001011000)
-(instr NEGS  (reg reg reg-shifter)     OP-reg-shifter 2#11101011000)
+(instr NEG   (reg reg-shifter)     OP-regd-shifter 2#11001011000)
+(instr NEGS  (reg reg-shifter)     OP-regd-shifter 2#11101011000)
 
-(instr NGC   (reg reg reg-shifter)     OP-reg-shifter 2#11011010000)
-(instr NGCS  (reg reg reg-shifter)     OP-reg-shifter 2#11111010000)
+(instr NGC   (reg reg-shifter)     OP-regd-shifter 2#11011010000)
+(instr NGCS  (reg reg-shifter)     OP-regd-shifter 2#11111010000)
 
 (instr NOP   nil                       OP-nop nil)
 
@@ -598,10 +609,12 @@
 (instr UBFIZ (reg reg six-bit six-bit)       OP-reg-Xbfiz    2#1101001101)
 (instr UXTB  (reg32 reg32)                   OP-reg-XxtX     2#0001001100 7)
 (instr UXTH  (reg32 reg32)                   OP-reg-XxtX     2#0001001100 15)
+% LSL
 (instr LSL   (reg32 reg32 five-bit)          OP-reg-Xsl      2#0101001100)
-(instr LSL   (reg reg five-bit)              OP-reg-Xsl      2#1101001101)
+(instr LSL   (reg reg six-bit)               OP-reg-Xsl      2#1101001101)
+% LSR
 (instr LSR   (reg32 reg32 five-bit)          OP-reg-Xsr      2#0101001100)
-(instr LSR   (reg reg five-bit)              OP-reg-Xsr      2#1101001101)
+(instr LSR   (reg reg six-bit)               OP-reg-Xsr      2#1101001101)
 
 (instr SBFM  (reg32 reg32 five-bit five-bit) OP-reg-Xbfm     2#0001001100)
 (instr SBFM  (reg reg six-bit six-bit)       OP-reg-Xbfm     2#1001001101)
@@ -616,6 +629,7 @@
 (instr SXTH  (reg32 reg32)                   OP-reg-XxtX     2#0001001100 15)
 (instr SXTH  (reg reg)                       OP-reg-XxtX     2#1001001101 15)
 (instr SXTW  (reg reg32)                     OP-reg-XxtX     2#1001001101 31)
+% ASR
 (instr ASR   (reg32 reg32 five-bit)          OP-reg-Xsr      2#0001001100)
 (instr ASR   (reg reg five-bit)              OP-reg-Xsr      2#1001001101)
 

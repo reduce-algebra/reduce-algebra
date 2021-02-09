@@ -106,7 +106,7 @@
 (setq ExportedDeclarationFormat* " .globl %w%n")
 (setq ExternalDeclarationFormat* " .globl %w%n") % All in DATA space
 
-(setq FullWordFormat* " .align 3%n .quad %e%n")     % FullWord expects %e for parameter
+(setq FullWordFormat* " .quad %e%n")     % FullWord expects %e for parameter
 (setq HalfWordFormat* " .hword %e%n")     % Will EVAL formatter
 
 (setq ReserveDataBlockFormat* " .bss %w,%e%n")
@@ -117,7 +117,7 @@
 
 (put 'MkItem 'ASMExpressionFormat "[[%e<<56]+%e]" )
 
-(setq DefinedFunctionCellFormat* " .align 3%n .quad %w%n")   %/ Must be LONG
+(setq DefinedFunctionCellFormat* " .quad %w%n")   %/ Must be LONG
 
 (setq UndefinedFunctionCellInstructions*   '(( !.quad UndefinedFunction)))
 

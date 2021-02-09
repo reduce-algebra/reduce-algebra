@@ -119,9 +119,9 @@ char *str;
  */
 void
 unixputn(n)
-int n;
+unsigned long long n;
 {
-    fprintf(stdout, "%x", n);
+    fprintf(stdout, "%llx", n);
 }
  
 /* Tag( unixcleario )

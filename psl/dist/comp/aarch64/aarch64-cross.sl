@@ -169,7 +169,7 @@
 	    (eq (cadr x) id-tag)
 	    (eqcar (setq y (caddr x)) 'idloc)
 	    (wlessp (id2int (cadr y)) 257))
-	(depositword (cadr y)))
+	(depositword (if (null (cadr y)) (int2id 256) (cadr y))))
       ((equal (first x) 'idloc) (depositquadwordidnumber (second x)))
       ((equal (first x) 'mkitem) (DepositItem (second x) (third x)))
       ((equal (first x) 'entry) (DepositEntry x))
