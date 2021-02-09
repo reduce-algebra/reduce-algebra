@@ -413,11 +413,22 @@ then
   fi
 fi
 
-# On Windows there should be 3 variants  of Reduce made:
-#   cygwin 64-bit (this can be used either in console mode or using X)
-#   native windows 64-bit console mode
-#   native windows 64-bit windows mode
-#
+# I will only attempt to build a Mac univeral binary if things are
+# configured with "--enable-universal", and even then such a build will
+# only be possible if enough build libraries have been installed in
+# universal mode. At the time of inserting this comment (February 2021)
+# this is just about possible on an ARM-based Mac but needs some delicate
+# manual adjustment, while on an Intel Mac the current Macports fails
+# to get there. I fully expect that soon things will improve, so when
+# I can I will first make the default builds on ARM based Macs universal
+# and maybe later let the Intel builds catch up.
+
+AC_ARG_ENABLE(universal,
+  AC_HELP_STRING([--enable-universal],
+                 [Try to build universal binary on Mac Big Sur (CSL only)]),
+  [],
+  [enable_universal="no"])
+
 
 uname_s=`uname -s`
 case "$uname_s" in
@@ -429,9 +440,28 @@ Darwin)
     CC=clang
     CXX=clang++
     AC_MSG_NOTICE([Will use clang on Macintosh"])
+    if test "$enable_univeral" != "no"
+    then
+      CPPFLAGS="$CPPFLAGS"
+      CFLAGS="$CFLAGS"
+      CXXFLAGS="$CXXFLAGS"
+      LDFLAGS="$LDFLAGS"
+      CPPFLAGS="$CPPFLAGS -arch x86_64 -arch arm64"
+      CFLAGS="$CFLAGS -arch x86_64 -arch arm64"
+      CXXFLAGS="$CXXFLAGS -arch x86_64 -arch arm64"
+      LDFLAGS="$LDFLAGS -arch x86_64 -arch arm64"
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([],
+        [[return 0]])],
+      [AC_MSG_NOTICE(Will build in universal mode)],
+      [CPPFLAGS="$OLDCPPFLAGS"
+       CFLAGS="$OLDCFLAGS"
+       CXXFLAGS="$OLDCXXFLAGS"
+       LDFLAGS="$OLDLDFLAGS"
+       AC_MSG_NOTICE(Universal build not possible on this host)])
+    fi
   fi
   ;;
-*)
+  *)
   uname_o=`uname -o 2>/dev/null`
   ;;
 esac
@@ -643,21 +673,6 @@ then
   with_windows_layout="old"
 fi
 
-AC_ARG_WITH(mac_universal,
-  AC_HELP_STRING([--with-mac-universal], [Build universal mac app]),
-  [],
-  [with_mac_universal="no"])
-
-AC_ARG_WITH(mac_x86_64,
-  AC_HELP_STRING([--with-mac-x86_64], [Build x86_64 mac app]),
-  [],
-  [with_mac_x86_64="no"])
-
-AC_ARG_WITH(mac_arm64,
-  AC_HELP_STRING([--with-mac-arm64], [Build arm64 mac app]),
-  [],
-  [with_mac_arm64="no"])
-
 csl_inplace_cygwin_build ()
 {
 # The argument here should be x88_64-pc-cygwin
@@ -677,10 +692,6 @@ csl_inplace_cygwin_build ()
     cp "$abssrcdir/csl/$CSLBASE/make-cygwin-symlink.c" "$abssrcdir/cslbuild/$build/make-cygwin-symlink.c"
     cp "$abssrcdir/csl/$CSLBASE/redpsl.sh" "$abssrcdir/cslbuild/$build/redpsl"
     cd "$abssrcdir/cslbuild/$build/$cygver"
-  elif test "x$with_mac_universal" = "xyes" &&
-       test "x$with_mac_x86_64" != "xyes" &&
-       test "x$with_mac_arm64" != "xyes"
-  then
     build=`eval "$SHELL $abssrcdir/scripts/findhost.sh universal-mac-macos $ac_configure_args"`
     AC_MSG_NOTICE([target=$target => build=$build])
     mkdir -p "$abssrcdir/cslbuild/$build/x86_64"
@@ -689,11 +700,10 @@ csl_inplace_cygwin_build ()
     cd "$abssrcdir/cslbuild/$build"
     config_both="yes"
   else
-    build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $target $ac_configure_args --with-cygwin"`
-    AC_MSG_NOTICE([target=$target => build=$build])
-    mkdir -p "$abssrcdir/cslbuild/$build"
-    cd "$abssrcdir/cslbuild/$build"
-  fi
+  build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $target $ac_configure_args --with-cygwin"`
+  AC_MSG_NOTICE([target=$target => build=$build])
+  mkdir -p "$abssrcdir/cslbuild/$build"
+  cd "$abssrcdir/cslbuild/$build"
   if test "x$CC$CPP$CXX$CXXCPP" != "x"
   then
     passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
@@ -703,37 +713,14 @@ csl_inplace_cygwin_build ()
   AC_MSG_NOTICE([passcc = $passcc])
   AC_MSG_NOTICE([host=$host buildmc=$buildmc pass_host=$pass_host])
   pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
-  if test "$config_both" = "yes"
-  then
-    cd x86_64
-    doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
-            CC=\"$CC\" CXX=\"$CXX\" \
-            STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \ 
-            $forcer CPPFLAGS=\"$CPPFLAGS -arch x86_64\" CFLAGS=\"$CFLAGS -arch x86_64\" \
-            CXXFLAGS=\"$CXXFLAGS -arch x86_64\" LDFLAGS=\"$LDFLAGS -arch x86_64\" LIBS=\"$LIBS\" \
-            $passcc $pass_build --with-cygwin"
-    AC_MSG_NOTICE([doconfig = $doconfig])
-    eval "$doconfig"
-    cd ../arm64
-    doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
-            CC=\"$CC\" CXX=\"$CXX -arch arm64\" \
-            STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \ 
-            $forcer CPPFLAGS=\"$CPPFLAGS -arch arm64\" CFLAGS=\"$CFLAGS -arch arm64\" \
-            CXXFLAGS=\"$CXXFLAGS -arch arm64\" LDFLAGS=\"$LDFLAGS -arch arm64\" LIBS=\"$LIBS\" \
-            $passcc $pass_build --with-cygwin"
-    AC_MSG_NOTICE([doconfig = $doconfig])
-    eval "$doconfig"
-    cd ..
-  else
-    doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
-            CC=\"$CC\" CXX=\"$CXX\" \
-            STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \ 
-            $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
-            $passcc $pass_build --with-cygwin"
-    AC_MSG_NOTICE([doconfig = $doconfig])
-    eval "$doconfig"
-  fi
+  doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
+          CC=\"$CC\" CXX=\"$CXX\" \
+          STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \ 
+          $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+          CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
+          $passcc $pass_build --with-cygwin"
+  AC_MSG_NOTICE([doconfig = $doconfig])
+  eval "$doconfig"
   AC_MSG_NOTICE([configuration for cygwin on $target complete])
   cd "$abssrcdir"
 }
@@ -853,7 +840,9 @@ psl_inplace_build ()
 # This passes down any configure arguments to the PSL-specific configuration
 # but at present I do not expect any to be relevant.
   pass_build="--with-build=\"$build\""
-  eval "$SHELL $abssrcdir/psl/configure --config-cache $ac_configure_args $pass_build"
+  eval "$SHELL $abssrcdir/psl/configure --config-cache $ac_configure_args \
+       $pass_build CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+          CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" "
 
   AC_MSG_NOTICE([About to configure crlibm])
   builddir=`pwd`
@@ -1040,31 +1029,10 @@ then
   *darwin* | *Darwin*)
     CPPFLAGS="$CPPFLAGS -I/opt/local/include"
     LDFLAGS="$LDFLAGS -L/opt/local/lib"
-# The Apple change-over from x86_64 to arm64 will be "fun". For now
-# I have 4 scenarios:
-#     default:              build explicitly for x86_64 and up to 10.13.
-#     --with-mac-x86_64:    ditto.
-#     --with-mac-arm64:     build for arm64 and 11.0 up.
-#     --with-mac-universal: build both versions (not yet implemented but
-#                           should become the new default if on an arm64 mac).
-    if test "x$with_mac_x86_64" = "xyes"
-    then
-       CPPFLAGS="$CPPFLAGS -mmacosx-version-min=10.13 -arch x86_64"
-       CFLAGS="$CFLAGS -mmacosx-version-min=10.13 -arch x86_64"
-       CXXFLAGS="$CXXFLAGS -mmacosx-version-min=10.13 -arch x86_64"
-       LDFLAGS="$LDFLAGS -mmacosx-version-min=10.13 -arch x86_64"
-    elif test "x$with_mac_arm64" = "xyes"
-    then
-       CPPFLAGS="$CPPFLAGS -mmacosx-version-min=11.0 -arch arm64"
-       CFLAGS="$CFLAGS -mmacosx-version-min=11.0 -arch arm64"
-       CXXFLAGS="$CXXFLAGS -mmacosx-version-min=11.0 -arch arm64"
-       LDFLAGS="$LDFLAGS -mmacosx-version-min=11.0 -arch arm64"
-    else
-       CPPFLAGS="$CPPFLAGS -mmacosx-version-min=10.13"
-       CFLAGS="$CFLAGS -mmacosx-version-min=10.13"
-       CXXFLAGS="$CXXFLAGS -mmacosx-version-min=10.13"
-       LDFLAGS="$LDFLAGS -mmacosx-version-min=10.13"
-    fi
+    CPPFLAGS="$CPPFLAGS -mmacosx-version-min=10.13"
+    CFLAGS="$CFLAGS -mmacosx-version-min=10.13"
+    CXXFLAGS="$CXXFLAGS -mmacosx-version-min=10.13"
+    LDFLAGS="$LDFLAGS -mmacosx-version-min=10.13"
     ;;
   esac
 

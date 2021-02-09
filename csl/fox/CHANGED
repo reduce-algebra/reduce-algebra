@@ -245,4 +245,8 @@ January 2020. Fixes to Windows console handling...
 October 2020. fwin.cpp (and configure.ac) changed so that in some cases the
       C++17 std::filesystem capabilities will be used.
 
+February 2021. Change configure.ac as that it does not override CXXFLAGS and
+      thus prevent users of the configure script for passing down options
+      thar are in fact needed.
+
 <end of CHANGED>

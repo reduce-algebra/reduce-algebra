@@ -6,16 +6,17 @@
 
 if test "$1" = "--help"
 then
-  printf "macports-setup.sh [--help] [--minimal] [[force]\n"
-  printf "  help:    displays this message\n"
-  printf "  minimal: only the bare minimum for local Reduce use\n"
-  printf "  force:   overwrite any existing $HOME/.macports/macports.conf\n\n"
+  printf "macports-setup.sh [--help] [--minimal] [--universal] [[force]\n"
+  printf "  help:      displays this message\n"
+  printf "  minimal:   only the bare minimum for local Reduce use\n"
+  printf "  universal: try to install x86_64+arm64 on Macintosh
+  printf "  force: overwrite any existing $HOME/.macports/macports.conf\n\n"
   exit 0
 fi
 
 
-# This script can be used on either a new Macintosh (once macports has
-# been installed, and that in turn required Xcode tools icnluding its
+# This script can be used on either a Macintosh (once macports has
+# been installed, and that in turn required Xcode tools including its
 # command-line option). It installs a collection of "ports" sufficient for
 # building, testing and distributing Reduce.
 #
@@ -42,6 +43,16 @@ fi
 # the "--minimal" flag at any stage after you have done a --minimal install,
 # and it will check the alread-installed components but then just go on to
 # fetch and install the rest.
+#
+# The --universal flag is for use on Big Sur and beyond to ttry to install
+# ports so that that support both x86_64 and arm64, and hence Reduce can be
+# built in that way. At the time of writing (February 2021) this still fails
+# on an M1 Macintosh because a few ports will not build in universal mode.
+# On an x86_64 Macintosh it fails much more thoroughly. There are strong
+# indications that the Macports support team are aware of and are addressing
+# these issues and the problem is just a natural one due to to the need for
+# universal builds being fairly new. In many reszpects that extent to which
+# things do work is amazing!
 
 if grep macosx_deployment_target /opt/local/etc/macports/macports.conf 2>/dev/null
 then
@@ -95,25 +106,48 @@ port       selfupdate
 # if I moved xorg-libX11 up then various of its dependencies would end up
 # compiled from source in an unnecessary way.
 
-port -N -s install ncurses gperf libiconv
-port -N -s install gettext xz zlib libedit
-port -N -s install bzip2 expat
-port -N    install gsed
-port -N    install pkgconfig subversion
-port -N    install autoconf autoconf-archive
-port -N    install m4 perl5 autoconf213
-port -N    install automake libtool
-port -N    install bzip2 libffi python_select
-port -N    install python2_select python27
-port -N -s install xorg-libX11
+extraopt=""
+case "$*" in
+*--universal*)
+  extraopt="+universal"
+  ;;
+esac
+
+port -N -s install ncurses gperf libiconv $(extraopt)
+port -N -s install gettext xz zlib libedit $(extraopt)
+port -N -s install bzip2 expat $(extraopt)
+port -N    install gsed $(extraopt)
+port -N    install pkgconfig subversion $(extraopt)
+port -N    install autoconf autoconf-archive $(extraopt)
+port -N    install m4 $(extraopt)
+port -N    install perl5 autoconf213 $(extraopt)
+port -N    install automake libtool $(extraopt)
+port -N    install bzip2 libffi python_select $(extraopt)
+port -N    install python2_select python27 $(extraopt)
+port -N    install python39 $(extraopt)
+# As of February 2021 xorg-libxcb depends on libxml2 which in turn
+# depends on icu, and an attempt to build on an x86_64 Mac stalls with
+# a message
+#   --->  Computing dependencies for libxml2
+#   Error: Cannot install libxml2 for the archs 'arm64 x86_64' because
+#   Error: its dependency icu cannot build for the required archs.
+# this despite the fact that "port install icu +universal" succeeds. I
+# expect this to be a transient issue and will remove this comment when
+# I observe things behave better.
+port -N -s install xorg-libxcb +python39 $(extraopt)
+# xorg-libX11 is stalled by xorg-libxcb.
+port -N -s install xorg-libX11 $(extraopt)
+# perl5.28 depends on gdbm which in turn depends on readline, which
+# can not (yet) be built in universal mode if you are on an x86_64 mac.
 port -N    install perl5.28
-port -N -s install Xft2
-port -N -s install xorg-libXext
-port -N    install ccache gtime
-port -N    install gmake bc timeout
-port -N -s install xorg-libXrandr
-port -N -s install xorg-libXcursor
-port -N    install brotli
+# Xft2 also depends on libxml2.
+port -N -s install Xft2 $(extraopt)
+port -N -s install xorg-libXext $(extraopt)
+port -N    install ccache gtime $(extraopt)
+port -N    install gmake bc timeout $(extraopt)
+port -N -s install xorg-libXrandr $(extraopt)
+port -N -s install xorg-libXcursor $(extraopt)
+port -N    install brotli $(extraopt)
 date
 
 case "$*" in
@@ -132,27 +166,29 @@ esac
 # Once again several of the ports that follow are really not essential
 # for Reduce use, but by installing them I find that the full set of tools
 # that I (ACN) have made use of in Reduce development and experiment
-# will be set up. As an exammple of ports that may not matter as much to
-# others, "gmp" is the GNU multiprocesion library and I have some test
+# will be set up. As an example of ports that may not matter as much to
+# others, "gmp" is the GNU multiprecision library and I have some test
 # code that benchmarks CSL arithmetic against it.
 # "fontforge" is obviously relevant when considering details of fonts that
 # may be used in a future Reduce GUI. "astyle" helps to keep C++ source
 # code laid out consistently. All the texlive components are used when
 # building the Reduce manual.
 
+port -N -s install          \
+  fontconfig                \
+  libffi                    \
+  gmp             $(extraopt)
+
 port -N install             \
   astyle                    \
   dvipng                    \
   findutils                 \
-  fontconfig                \
   fontforge                 \
   gdb                       \
   git                       \
-  gmp                       \
   gnuplot                   \
   gnutar                    \
   gzip                      \
-  libffi                    \
   md5sha1sum                \
   netpbm                    \
   psutils                   \

@@ -62,7 +62,7 @@ AC_SUBST(LT_REVISION)
 AC_SUBST(LT_AGE)
 
 # Prevents setting flags.
-CXXFLAGS=""
+# CXXFLAGS=""
 
 # More secret source
 AC_GNU_SOURCE
