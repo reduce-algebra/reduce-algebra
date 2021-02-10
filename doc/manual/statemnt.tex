@@ -53,11 +53,11 @@ operator symbol with its list of arguments filled in, or an array name with
 the proper number of integer subscript values within the array bounds. For
 example:
 \begin{quote}
-\begin{tabbing}
+\begin{tabular}{ll}
 \texttt{a1 := b + c} \\
-\texttt{h(l,m) := x-2*y} \hspace{1in} \= (where \texttt{h} is an operator) \\
-\texttt{k(3,5) := x-2*y} \> (where \texttt{k} is a 2-dim. array)
-\end{tabbing}
+\texttt{h(l,m) := x-2*y} \hspace{1in} & (where \texttt{h} is an operator) \\
+\texttt{k(3,5) := x-2*y}              & (where \texttt{k} is a 2-dim. array)
+\end{tabular}
 \end{quote}
 More general assignments\index{Assignment} such as \texttt{a+b := c} are also
 allowed.  The effect of these is explained in Section~\ref{sec-gensubs}.
@@ -221,23 +221,27 @@ loops\index{Loop}.  Its general syntax is as follows:\ttindex{UNTIL}
 \ttindextype{DO}{keyword}\ttindextype{PRODUCT}{keyword}\ttindextype{SUM}{keyword}
 \ttindextype{COLLECT}{keyword}\ttindextype{JOIN}{keyword}
 \ttindextype{ON}{keyword}\ttindextype{IN}{keyword}
-%% RmS 2020-06-01 Temporarily replace \( ... \) by $ ... $ to work around a bug in tex4ht.
+%% FJW 2021-02-09 This version works with (and without) MathJax.
 \begin{small}
-\[ \mbox{\texttt{FOR}} \left\{ \begin{array}{@{}ccc@{}}
-    \mbox{\meta{var} \texttt{:=} \meta{number} } \left\{ \begin{array}{@{}c@{}}
-    \mbox{\texttt{STEP} \meta{number} \texttt{UNTIL}} \\
-    \mbox{\texttt{:}}
+  \[ \texttt{FOR}\ \left\{
+  \begin{array}{@{}c@{}}
+    \langle\textit{var}\rangle\ \texttt{:=}\ \langle\textit{number}\rangle\
+    \left\{
+    \begin{array}{@{}c@{}}
+      \texttt{STEP}\ \langle\textit{number}\rangle\ \texttt{UNTIL} \\
+      \texttt{:}
     \end{array}
-    \right\} \mbox{\meta{number}} \\[3mm]
-    \multicolumn{1}{c}{\mbox{\texttt{EACH} \meta{var}
-       $\left\{
-          \begin{tabular}{@{}c@{}}
-              \texttt{IN} \\ \texttt{ON}
-          \end{tabular}
-       \right\}$
-       \meta{list}}}
+    \right\}\
+    \langle\textit{number}\rangle \\[3mm]
+    \texttt{EACH}\ \langle\textit{var}\rangle\
+    \left\{
+    \begin{array}{@{}c@{}}
+      \texttt{IN} \\ \texttt{ON}
     \end{array}
-    \right\} \mbox{ \meta{action} \meta{exprn}} \]
+    \right\}\
+    \langle\textit{list}\rangle
+  \end{array}
+  \right\}\ \langle\textit{action}\rangle\ \langle\textit{exprn}\rangle \]
 \end{small}%
 %
 where

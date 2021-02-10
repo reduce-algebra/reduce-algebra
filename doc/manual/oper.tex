@@ -782,7 +782,7 @@ are quaternary.
 
 Most definitions are equivalent to those in \cite{AbramowitzStegun:72},
 except for the ternary associated Legendre functions:
-$$P_n^{(m)}(x) = (-1)^m(1-x^2)^{m/2}\frac{\mathrm{d}^m P_n(x)}{\mathrm{d}x^m}\,.$$
+\[P_n^{(m)}(x) = (-1)^m(1-x^2)^{m/2}\frac{\mathrm{d}^m P_n(x)}{\mathrm{d}x^m}\,.\]
 
 % \begin{verbatim}
 % P(n,m,x) = (-1)^m *(1-x^2)^(m/2)*df(legendreP(n,x), x, m)
@@ -800,7 +800,7 @@ but they are only polynomial when $m$ is even.
 \texttt{FibonacciP(n,x)} returns the $n$th Fibonacci polynomial
 in the variable $x$. If $n$ is an integer, it will be
 evaluated using the recursive definition:
-$$F_0(x) = 0;\qquad F_1(x) = 1; \qquad F_n(x) = x F_{n-1}(x) + F_{n-2}(x)\,.$$
+\[F_0(x) = 0;\qquad F_1(x) = 1; \qquad F_n(x) = x F_{n-1}(x) + F_{n-2}(x)\,.\]
 
 \index{Euler polynomials}\ttindex{EulerP}
 \textbf{Euler Polynomials} are computed by the binary operator
@@ -899,7 +899,7 @@ as $\mathrm{E}_n$.
 where \texttt{Fibonacci(n)} evaluates to the $n$th Fibonacci
 number; if $n$ is an integer, this will be evaluated following
 the recursive definition:
-$$F_0 = 0; \qquad F_1 = 1;\qquad F_n = F_{n-1} + F_{n-2}\,.$$
+\[F_0 = 0; \qquad F_1 = 1;\qquad F_n = F_{n-1} + F_{n-2}\,.\]
 The recursion is, of course, optimised as a simple loop to avoid repeated
 computation of lower-order numbers.
 Otherwise the result returned involves the original operator
@@ -911,7 +911,7 @@ as $\mathrm{F}_n$.
 \ttindextype{CHANGEVAR}{operator}
 
 \noindent
-Author: G. \"{U}\c{c}oluk.
+Author: G.~\"{U}\c{c}oluk.
 
 The operator \texttt{CHANGEVAR} does a variable transformation in a set of
 differential equations.
@@ -1195,14 +1195,15 @@ arguments specify the differentiation variables and the number of times
 they are applied.
 
 The number \texttt{NUM} may be omitted if it is 1.  For example,
-
-\begin{tabbing}
-\hspace{0.5in} \= \texttt{df(y,x1,2,x2,x3,2)} \= \kill
-\> \texttt{df(y,x)} \> = $\partial y/\partial x$ \\
-\> \texttt{df(y,x,2)} \> = $\partial^{2}y/\partial x^{2}$ \\
-\> \texttt{df(y,x1,2,x2,x3,2)} \> = $\partial^{5}y/\partial x_{1}^{2}
- \partial x_{2}\partial x_{3}^{2}$.
-\end{tabbing}
+\begin{flushleft}
+  \hspace{0.5in}%
+  \begin{tabular}{@{}l@{}l}
+    \texttt{df(y,x)}            & ~=~$\partial y/\partial x$ \\
+    \texttt{df(y,x,2)}          & ~=~$\partial^{2}y/\partial x^{2}$ \\
+    \texttt{df(y,x1,2,x2,x3,2)} & ~=~$\partial^{5}y/\partial x_{1}^{2}
+    \partial x_{2}\partial x_{3}^{2}$.
+  \end{tabular}
+\end{flushleft}
 
 The evaluation of \texttt{df(y,x)} proceeds as follows: first, the values of
 \var{Y} and \var{X} are found.  Let us assume that \var{X} has no assigned
@@ -1243,7 +1244,6 @@ If the switch \sw{EXPANDDF}\ttindexswitch{EXPANDDF} is turned on then REDUCE use
 the chain rule to expand symbolic derivatives of indirectly dependent variables
 provided the result is unambiguous, i.e. provided there is no direct dependence.
 It is off by default.  Thus, for example, given
-\newpage
 \begin{verbatim}
         DEPEND F,U,V; DEPEND {U,V},X;
         ON EXPANDDF;
@@ -1572,10 +1572,11 @@ For a non-negative integer $k$, it is defined as
 (\url{http://dlmf.nist.gov/5.2.iii})
 \begin{align*}
   (a)_0 &= 1, \\
-  (a)_k &= a(a+1)(a+2)\cdots(a+k-1).\\
-\intertext{For $a\neq 0,-1,-2,-3\ldots$, this is equivalent to}
-  (a)_k &= \frac{\Gamma(a+k)}{\Gamma(a)}
+  (a)_k &= a(a+1)(a+2)\cdots(a+k-1).
 \end{align*}
+%% Note that MathJax does not support \intertext.
+For $a \neq 0, -1, -2, -3, \ldots$, this is equivalent to
+\[ (a)_k = \frac{\Gamma(a+k)}{\Gamma(a)}. \]
 When $n$ is integral, the defining product is expanded (assuming the switch
 \sw{EXP} is ON). With \sw{ROUNDED} off, this expression is evaluated
 numerically if $a$ is numerical and $k$ is integral, and otherwise may be

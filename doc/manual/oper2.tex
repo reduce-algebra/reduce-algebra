@@ -54,15 +54,18 @@ use:\ttindex{LINEAR}
 \end{verbatim}
 The analysis is done of the first argument with respect to the second; any
 other arguments are ignored. It uses the following rules of evaluation:
-\begin{quote}
-\begin{tabbing}
-\texttt{   f(0)      ->   0} \\
-\texttt{   f(-y,x)   ->  -F(Y,X)} \\
-\texttt{   f(y+z,x)  ->   F(Y,X)+F(Z,X)} \\
-\texttt{   f(y*z,x)  ->   Z*F(Y,X)} \hspace{0.5in}\= if Z does not depend on X \\
-\texttt{   f(y/z,x)  ->   F(Y,X)/Z} \> if Z does not depend on X
-\end{tabbing}
-\end{quote}
+\begin{flushleft}
+  \hspace{0.5in}%
+  \begin{tabular}{llll}
+    \texttt{f(0)}     & $\longrightarrow$ & \texttt{0} \\
+    \texttt{f(-y,x)}  & $\longrightarrow$ & \texttt{-F(Y,X)} \\
+    \texttt{f(y+z,x)} & $\longrightarrow$ & \texttt{F(Y,X)+F(Z,X)} & \\
+    \texttt{f(y*z,x)} & $\longrightarrow$ & \texttt{Z*F(Y,X)}      &
+    if Z does not depend on X \\
+    \texttt{f(y/z,x)} & $\longrightarrow$ & \texttt{F(Y,X)/Z}      &
+    if Z does not depend on X
+  \end{tabular}
+\end{flushleft}
 To summarize, \texttt{Y} ``depends'' on the indeterminate \texttt{X} in the above
 if either of the following hold:
 \begin{enumerate}
