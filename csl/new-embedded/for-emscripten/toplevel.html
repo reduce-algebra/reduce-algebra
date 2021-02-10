@@ -4,12 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width">
     <title>Test of Reduce web-interface</title>
-// I will ensure that MathJax is available.
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6">
-    </script>
-    <script id="MathJax-script" async
-       src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
-    </script>
+    <!-- This web page is a CRUDE demonstration of Reduce being able to run
+         as a web application. Reduce itself is compiled using emscripten
+         and ends up mostly as Wasm code which runs acceptably fast. The
+         Reduce interaface here provides two rectangular panes and a "submit"
+         button. You can type a Reduce command into the input pane and when
+         you clock on "submit" that live is passed to Reduce which sends
+         its output to the other window. You may need to scroll that window
+         to see the output. The input windows is pre-populated with the text
+         "int(1/(x^4-1), x);" so you can either edit or replace that or just
+         press submit. The mathematical part of the output should be
+           latex:\black$\displaystyle
+           \frac{-2\*\arctan\left(x\right)+\log\left(x-1\right)-
+           \log\left(x+1\right)}{4}$
+         and that should be delimited by a pair of control characters,
+         \U0002 before and \U005 after it. Other output is to be viewed as
+         plain text. Note that the two renderings of that dislike the use
+         of "\*". Reduce could be adjusted in that respect is necessary!
+
+         Because this page loads the various web tools it may take a while
+         to load!
+    -->
     <script>
         // add textareas + button
         window.reduceLatch = 0;
@@ -46,7 +61,7 @@
         worker.onmessage = function(event) {
             if (event.data.channel === 'stdout') {
                 let o = event.data.line;
-// If an empty string is passed (ie asking for a blank lin eouf output)
+// If an empty string is passed (ie asking for a blank line of output)
 // console.log displays an <empty string> message that I view as ugly, so
 // I map blank lines into ones consisting of a single space chatacter.
                 if (o == '') o = ' ';
@@ -61,10 +76,53 @@
             document.body.appendChild(outArea);
         });
     </script>
+    <!-- This sample web-page includes instances of various external
+         packages tjat we may wish to use. Here I load MathJax, which
+         is a widely-used component for rendering TeX onto a web page.
+    -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6">
+    </script>
+    <script id="MathJax-script" async
+       src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <!-- Another component that we are investigating is mathlive, which
+         supports an input editor for maths as well as a rendering
+         capability. I hope that somebody with better HTML and Javascript
+         skills than I have will help plug these into the Reduce interface
+         and arrange that the page as a whole is pretty! Please post to
+         the sourceforge mailing list or send a private message if you have
+         a go at that.
+    -->
+    <script src="https://unpkg.com/mathlive/dist/mathlive.min.js">
+    </script>
+    <script type="module">
+       import { renderMathInDocument } from
+          'https://unpkg.com/mathlive/dist/mathlive.min.mjs';
+       renderMathInDocument();
+    </script>
 </head>
+
 <body>
 <p>
 \[ \alpha^2 + 2 \alpha \beta + \beta^2 \]
 </p>
+<p>
+\[ \frac{-2\*\arctan\left(x\right)+\log\left(x-1\right)-
+           \log\left(x+1\right)}{4}$ \]
+</p>
+
+<math-field>f(x)=
+</math-field>
+
+<h1>Euler's Identity</h1>
+
+<p>
+  $$e^{i\pi} + 1 = 0$$
+</p>
+<p>
+  $$\frac{-2\*\arctan\left(x\right)+\log\left(x-1\right)-
+          \log\left(x+1\right)}{4}$$
+</p>
+
 </body>
 </html>
