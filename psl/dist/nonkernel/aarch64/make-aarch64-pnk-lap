@@ -71,12 +71,7 @@ $psys/pslcomp << EOF
 
 ForwardInternalReferences* 
 
-%(tr inump)
-%(tr *move )
-%(tr MakeInternalentryRelative MakeExpressionRelative)
-%(tr resolveoperand)
-%(tr anyregwconst)
-(tr op-reg-imm12 instructionlength reg-sp-p depositinstruction)
+%(tr depositinstructionbytes)
 
 %% For machines that require the carcdr.sl fix for car/cdr of NIL, make sure
 %% we turn on fastcar to ensure optimized code. Since PSL was written with
@@ -92,9 +87,7 @@ ForwardInternalReferences*
 (faslout "$pnk/aarch64/lap/$2")
 (compiletime (print (list 'Forwardinternalreferences* Forwardinternalreferences*)))
 (dskin "$2.sl")
-t
 (faslend)
-t
 (exitlisp)
 EOF
 

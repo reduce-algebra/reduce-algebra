@@ -114,12 +114,17 @@
 (setq shift-ops* '(LSL LSR ASR ROR RRX))
 
 (compiletime (load addr2id))
-
-(compiletime
- (put 'getword32 'opencode
-      '(
-	(LDR (reg w0) (indexed (reg 1) (displacement (reg 2) 0)) ))))
  
+(compiletime
+ (if_system x86_64
+   (progn
+     (put 'put_a_halfword 'opencode '((mov (reg ebx) (displacement (reg rax) 0))))
+     (put 'getword32 'opencode '((movl (indexed (reg 1) (displacement (reg 2) 0)) (reg EAX)))))
+   (progn
+     (put 'put_a_halfword 'opencode '((STR (reg w1) (displacement (reg x0) 0))))
+     (put 'getword32 'opencode '((LDR (reg w0) (indexed (reg 1) (displacement (reg 2) 0)) ))))
+   ))
+
 
 % ------------------------------------------------------------
 % Constant declarations:
@@ -1170,25 +1175,29 @@
 (de lth-reg3 (code reg1 reg2 reg3) 4)
 
 %% ChecK!
-(de OP-reg-imm12 (code reg1 imm12-shifted)
-    (let ((imm12 0) (sh) (reg2) (opcode (car code)))
+(de OP-reg-imm12 (code regd reg1 imm12-shifted)
+    (let ((imm12 0) (sh) (opcode (car code)))
       (if (or (and (fixp imm12-shifted) (eq imm12-shifted (wand imm12-shifted 16#fff))
 		   (setq imm12 imm12-shifted))
 	      (and (pairp imm12-shifted) (pairp (cddr imm12-shifted)) (eq (caddr imm12-shifted) 0)
-		   (setq imm12 (caddr imm12-shifted))))
+		   (setq imm12 (car imm12-shifted)))
+	      )
 	  (setq sh 0)
-	(setq sh 1))
-      (cond ((regp imm12-shifted) (setq reg2 imm12-shifted))
-	    ((eqcar imm12-shifted 'regshifted)
-	     (setq reg2 (list 'reg (cadr imm12-shifted)))))
+	(setq sh 1 imm12 (car imm12-shifted)))
       (DepositInstructionBytes
        (lsh opcode -1)
-       (lor (lsh imm12 6) (lor (lsh (land opcode 1) 7) (lsh sh 6)))
-       (lor (lsh (land imm12 16#33) 2) (lsh (reg2int reg2) -3))
-       (lor (reg2int reg1) (lsh (land (reg2int reg2) 7) 5))
+       (lor (lsh imm12 -6) (lor (lsh (land opcode 1) 7) (lsh sh 6)))
+       (lor (lsh (land imm12 16#3f) 2) (lsh (reg2int reg1) -3))
+       (lor (reg2int regd) (lsh (land (reg2int reg1) 7) 5))
        )))
 
 (de lth-reg-imm12 (code reg1 imm12-shifted) 4)
+
+(de OP-reg-xzr-imm12 (code reg1 imm12)
+    (OP-reg-imm12 code
+		  (list 'reg (if (reg32-or-sp-p reg1) 'Wzr 'Xzr))
+		  reg1 imm12)
+)
 
 (de OP-reg-imm16 (code reg1 imm16-shifted)
     (let ((imm16 0) (sh) (opcode (car code)))
@@ -1198,12 +1207,22 @@
 		   (setq imm16 (caddr imm16-shifted))))
 	  (setq sh 0)
 	(setq sh 1))
-      (cond ((fixp imm16-shifted) (setq imm16 imm16-shifted))
+      (cond ((fixp imm16-shifted)
+	     (cond ((eq 0 (land imm16-shifted 16#ffffffffffff))
+		    (setq sh 3)
+		    (setq imm16 (lsh imm16-shited -48)))
+		   ((eq 0 (land imm16-shifted 16#ffffffff))
+		    (setq sh 2)
+		    (setq imm16 (lsh imm16-shited -32)))
+		   ((eq 0 (land imm16-shifted 16#ffff))
+		    (setq sh 1)
+		    (setq imm16 (lsh imm16-shited -16)))
+		   (t (setq sh 0) (setq imm16 imm16-shifted))))
 	    (t (setq imm16 (car imm16-shifted))
 	       (setq sh (lsh (caddr imm16-shifted) -4))))
       (DepositInstructionBytes
-       opcode
-       (lor (lsh imm16 14) (lsh sh 6))
+       (lsh opcode -1)
+       (lor (lsh (land opcode 1) 7) (lor (land (lsh imm16 -11) 16#1f) (lsh sh 5)))
        (land 16#ff (lsh imm16 -3))
        (lor (reg2int reg1) (lsh (land imm16 7) 5))
        )))
@@ -1217,13 +1236,13 @@
 (de lth-reg-logical (code reg1 reg2 imm-logical) 4)
 
 (de OP-reg-regsp (code reg1 reg2)
-    (OP-reg-imm12 code reg1 reg2)
+    (OP-reg-imm12 code reg1 reg2 0)
     )
 
 (de lth-reg-regsp (code reg1 reg2) 4)
 
 (de OP-regsp-reg (code reg1 reg2)
-    (OP-reg-imm12 code reg1 reg2)
+    (OP-reg-imm12 code reg1 reg2 0)
     )
 
 (de lth-regsp-reg (code reg1 reg2) 4)
@@ -1580,7 +1599,7 @@
 	  (setq regn (reg2int (cadr reg-or-sp-imm)))
 	  (if (eq (car reg-or-sp-imm) 'indirect)
 	      (setq imm 0)
-	    (setq imm (lsh (caddr reg-or-sp-imm) (if (reg32p regt1) -2 -3))))
+	    (setq imm (land 16#7f (lsh (caddr reg-or-sp-imm) (if (reg32p regt1) -2 -3)))))
 	  (DepositInstructionBytes
 	   (lsh opcode1 -2)
 	   (lor (lsh (land opcode1 2#11) 6) (lsh imm -1))
@@ -2288,12 +2307,6 @@
     (UpdateBitTable 2 0) 
     (setq CurrentOffset* (plus CurrentOffset* 2))))
 
-(compiletime
- (if_system x86_64
-   (put 'put_a_halfword 'opencode '((mov (reg ebx) (displacement (reg rax) 0))))
-   (put 'put_a_halfword 'opencode '((STR (reg w1) (displacement (reg x0) 0))))
-   ))
-
 (de deposit32bitword (x) %% cross
   (put_a_halfword (wplus2 codebase* currentoffset*) x)
   (updatebittable 4 0)
@@ -2390,9 +2403,9 @@
      (depositword (idinf X)))
     (t
       (putword (wplus2 CodeBase* CurrentOffset*) 0
-	       (makerelocword (const reloc_id_number) (findidnumber x))) 
+	       (MakeRelocInf (const RELOC_ID_NUMBER) (findidnumber x))) 
       (setq CurrentOffset* (plus CurrentOffset* 8)) 
-      (updatebittable 8 (const reloc_word)))))
+      (updatebittable 8 (const RELOC_INF)))))
 
 (de DepositHalfWordExpression (X) 
 (prog (Y) 
