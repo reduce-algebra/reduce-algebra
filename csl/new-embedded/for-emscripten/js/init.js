@@ -1,7 +1,7 @@
 // this is a sample file for reference
 if (typeof(Module) === "undefined") Module = {};
 // any arguments put here as strings
-Module["arguments"] = ["-v"];
+Module["arguments"] = [];
 Module["preInit"] = function () {
 };
 Module["print"] = function(s) {

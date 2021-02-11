@@ -25,6 +25,34 @@
          Because this page loads the various web tools it may take a while
          to load!
     -->
+    <!-- This sample web-page includes instances of various external
+         packages that we may wish to use. Here I load MathJax, which
+         is a widely-used component for rendering TeX onto a web page.
+    -->
+    <!--
+       <script src="https://polyfill.io/v3/polyfill.min.js?features=es6">
+       </script>
+    -->
+    <script type="text/javascript" async
+       src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-MML-AM_CHTML">
+    </script>
+    <!-- Another component that we are investigating is mathlive, which
+         supports an input editor for maths as well as a rendering
+         capability. I hope that somebody with better HTML and Javascript
+         skills than I have will help plug these into the Reduce interface
+         and arrange that the page as a whole is pretty! Please post to
+         the sourceforge mailing list or send a private message if you have
+         a go at that.
+    -->
+    <!--
+       <script src="https://unpkg.com/mathlive/dist/mathlive.min.js">
+       </script>
+       <script type="module">
+          import { renderMathInDocument } from
+             'https://unpkg.com/mathlive/dist/mathlive.min.mjs';
+          renderMathInDocument();
+       </script>
+    -->
     <script>
         // add textareas + button
         window.reduceLatch = 0;
@@ -43,6 +71,26 @@
 
         let button = document.createElement('button');
         button.appendChild(document.createTextNode('Submit'));
+        let worker = new Worker('./reduce.web.js');
+        worker.onmessage = function(event) {
+            if (event.data.channel === 'stdout') {
+                let o = event.data.line;
+// If an empty string is passed (ie asking for a blank line of output)
+// console.log displays an <empty string> message that I view as ugly, so
+// I map blank lines into ones consisting of a single space chatacter.
+                if (o == '') o = ' ';
+                console.log(o);
+                outArea.value += o;
+                outArea.value += '\n';
+                o = '$$'.concat(o, '$$');
+                var para = document.createElement("P");//make an p element
+                var node = document.createTextNode(o);//create an innerhtml node
+                para.appendChild(node);//add the text to the p element
+                var body = document.getElementById("p0");//search the first p element
+                var child = document.getElementById("p1");//search the first p element
+                body.insertBefore(para, child);//inserts the p element before the first paragraph
+            }
+        }
         button.addEventListener('click', event => {
             // need to convert the string to a Uint8Array
             let str = unescape(encodeURIComponent(inArea.value));
@@ -57,72 +105,47 @@
                 data: buf
             });
         });
-        let worker = new Worker('./reduce.web.js');
-        worker.onmessage = function(event) {
-            if (event.data.channel === 'stdout') {
-                let o = event.data.line;
-// If an empty string is passed (ie asking for a blank line of output)
-// console.log displays an <empty string> message that I view as ugly, so
-// I map blank lines into ones consisting of a single space chatacter.
-                if (o == '') o = ' ';
-                console.log(o);
-                outArea.value += o;
-                outArea.value += '\n';
-            }
-        }
         document.addEventListener("DOMContentLoaded", function(event) {
             document.body.appendChild(inArea);
             document.body.appendChild(button);
             document.body.appendChild(outArea);
+            var para = document.createElement("P");//make an p element
+            var node = document.createTextNode("$$1/(x-2)$$");//create an innerhtml node
+            para.appendChild(node);//add the text to the p element
+            var body = document.getElementById("p0");//search the first p element
+            var child = document.getElementById("p1");//search the first p element
+            body.insertBefore(para, child);//inserts the p element before the first paragraph
         });
-    </script>
-    <!-- This sample web-page includes instances of various external
-         packages tjat we may wish to use. Here I load MathJax, which
-         is a widely-used component for rendering TeX onto a web page.
-    -->
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6">
-    </script>
-    <script id="MathJax-script" async
-       src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
-    </script>
-    <!-- Another component that we are investigating is mathlive, which
-         supports an input editor for maths as well as a rendering
-         capability. I hope that somebody with better HTML and Javascript
-         skills than I have will help plug these into the Reduce interface
-         and arrange that the page as a whole is pretty! Please post to
-         the sourceforge mailing list or send a private message if you have
-         a go at that.
-    -->
-    <script src="https://unpkg.com/mathlive/dist/mathlive.min.js">
-    </script>
-    <script type="module">
-       import { renderMathInDocument } from
-          'https://unpkg.com/mathlive/dist/mathlive.min.mjs';
-       renderMathInDocument();
     </script>
 </head>
 
-<body>
-<p>
-\[ \alpha^2 + 2 \alpha \beta + \beta^2 \]
-</p>
-<p>
-\[ \frac{-2\*\arctan\left(x\right)+\log\left(x-1\right)-
-           \log\left(x+1\right)}{4}$ \]
-</p>
-
-<math-field>f(x)=
-</math-field>
-
-<h1>Euler's Identity</h1>
+<body id="p0">
+   \[ \sqrt {\alpha^2 - 2 \alpha \beta + \beta^2} \]
 
 <p>
-  $$e^{i\pi} + 1 = 0$$
+   \[ \alpha^2 + 2 \alpha \beta + \beta^2 \]
 </p>
-<p>
-  $$\frac{-2\*\arctan\left(x\right)+\log\left(x-1\right)-
-          \log\left(x+1\right)}{4}$$
+
+<p id="p1">
+   \[ \frac{-2\*\arctan\left(x\right)+\log\left(x-1\right)-
+      \log\left(x+1\right)}{4}$ \]
 </p>
+
+<!--
+   <math-field>f(x)=
+   </math-field>
+
+   <h1>Euler's Identity</h1>
+
+   <p>
+     $$e^{i\pi} + 1 = 0$$
+   </p>
+   <p>
+     $$\frac{-2\*\arctan\left(x\right)+\log\left(x-1\right)-
+             \log\left(x+1\right)}{4}$$
+   </p>
+-->
 
 </body>
 </html>
+
