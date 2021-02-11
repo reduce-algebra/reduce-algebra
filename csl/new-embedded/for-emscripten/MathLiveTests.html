@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Test of Reduce web-interface</title>
+    <script src="https://unpkg.com/mathlive/dist/mathlive.min.js"></script>
+    <script type="module">
+       import { MathfieldElement } from
+          'https://unpkg.com/mathlive/dist/mathlive.min.mjs';
+    </script>
+    <style>          
+    math-field {
+ //             border: 1px solid #ddd;
+                padding: 5px;
+ //             margin: 10px 0 10px 0;
+                border-radius: 5px;
+                background-color: #fff;
+ //             margin: 3em;  
+                border: 1px solid rgba(0, 0, 0, .3); 
+                box-shadow: 0 0 8px rgba(0, 0, 0, .2);
+               } 
+    </style>  
+    <script>
+        // add math-field + button
+        window.reduceLatch = 0;
+
+        let mfo = new MathfieldElement();
+        let mfi = new MathfieldElement();
+
+        let button = document.createElement('button');
+        button.appendChild(document.createTextNode('Submit'));
+        button.addEventListener('click', event => {
+            // need to convert the string to a Uint8Array
+            let str = unescape(encodeURIComponent(mfi.value));
+            // found the above snippet at https://gist.github.com/emrahgunduz/5c27ff1db650b93c7864
+            let buf = new Uint8Array(str.length+1);
+            for (let i=0; i<str.length; i++)
+                buf[i] = str.charCodeAt(i);
+            buf[str.length] = 0; // nul-terminate for benefit of C/C++.
+            worker.postMessage({
+                funcName: 'insert_buffer',
+                callbackId: '',
+                data: buf
+            });
+          });          
+       let worker = new Worker('./reduce.web.js');
+        worker.onmessage = function(event) {
+            if (event.data.channel === 'stdout') {
+                let o = event.data.line;
+// If an empty string is passed (ie asking for a blank line of output)
+// console.log displays an <empty string> message that I view as ugly, so
+// I map blank lines into ones consisting of a single space chatacter.
+                if (o == '') o = ' ';
+                console.log(o);
+                mfo.value = o;
+                mfo.value += '\n';
+            }
+        } ;  
+            document.addEventListener("DOMContentLoaded", function(event) {
+            document.body.appendChild(mfi);
+            document.body.appendChild(button);
+            document.body.appendChild(mfo);
+        });       
+    </script>    
+</head> 
+</html>
