@@ -548,7 +548,7 @@ flag('(motzkin),'opfn);
 defautoload(motzkin,specfn);
 
 % elliptic functions and integrals
-% remove autoloading of elliptic functions temporarily.
+% remove the autoloading of elliptic functions temporarily.
 %      defautoload_operator(jacobiam, (specfn specbess));
 %      defautoload_operator(jacobisn, (specfn specbess));
 %      defautoload_operator(jacobicn, (specfn specbess));

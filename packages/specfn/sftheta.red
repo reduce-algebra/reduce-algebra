@@ -71,8 +71,8 @@ module sftheta;  % Procedures and Rules for Jacobi Theta Functions.
 % are somewhat smaller. The worst case occurs for values of the original nome
 % near to +/-i where |q''| ~ |q|^4.
 
-% By using a series of Jacobi transformations preceded if necessary by the
-% modular transformation tau' = tau +/- integer to ensure |a| <= 1/2 to reduce
+% By using a series of Jacobi transformations preceded, if necessary by the
+% modular transformation tau' = tau +/- integer to ensure |a| <= 1/2, to reduce
 % |q| to acceptable levels.
 % Somewhat arbitrarily Jacobi's transformations are used 
 % until b > 0.5 (i.e. |q| < 0.208). This seems to produce reasonable behaviour.

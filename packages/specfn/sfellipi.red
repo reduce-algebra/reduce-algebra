@@ -399,7 +399,7 @@ jacobizetarules :=
 }$
 let jacobizetarules;
 
-% Support for theta functions moved to a separate file (sftheta.red)
+% Support for theta functions moved to a separate file (sftheta.red).
 
 endmodule;
 end;

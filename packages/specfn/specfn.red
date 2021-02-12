@@ -74,7 +74,7 @@ module specfn;  % Special functions package for REDUCE.
 
 create!-package ('(specfn sfconsts sfgen sfbern dilog sfbinom sfpolys
                    sfsums simpfact harmonic jsymbols recsimpl sfint
-		   sfellip sfellipi sftheta 
+		   sfellip sfellipi  sftheta 
 		  ),
                  '(contrib specfn));
 

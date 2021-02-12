@@ -1390,7 +1390,7 @@ put('ellipticf, 'prifn, 'plain!-symbol);
 put('jacobizeta, 'prifn, 'plain!-symbol);
 put('jacobie, 'prifn, 'plain!-symbol);
 
-% moved to mprint.red so it may beused by other modules.
+% Moved to mprint.red so it may beused by other modules.
 % symbolic procedure plain!-symbol(u);
 %     maprin(get(car u,'plain!-functionsymbol) . cdr u);
 
