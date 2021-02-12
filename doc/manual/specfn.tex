@@ -966,71 +966,91 @@ Firstly four separate functions of two arguments are defined:
 \ttindex{EllipticTheta1} \ttindex{EllipticTheta2}
 \ttindex{EllipticTheta3} \ttindex{EllipticTheta4}
 \begin{itemize}
-\item \f{elliptictheta1(u,q)} $\qquad \vartheta_1(u, q)$
-\item \f{elliptictheta2(u,q)} $\qquad \vartheta_2(u, q)$
-\item \f{elliptictheta3(u,q)} $\qquad \vartheta_3(u, q)$
-\item \f{ellipticthetas(u,q)} $\qquad \vartheta_4(u, q)$
+\item \f{elliptictheta1(u,tau)} $\qquad \vartheta_1(u, \tau)$
+\item \f{elliptictheta2(u,tau)} $\qquad \vartheta_2(u, \tau)$
+\item \f{elliptictheta3(u,tau)} $\qquad \vartheta_3(u, \tau)$
+\item \f{ellipticthetas(u,tau)} $\qquad \vartheta_4(u, \tau)$
 \end{itemize}
 
 rather than a single function with three arguments (with the first argument
 taking integer values in the range 1 to 4).
 Secondly the periods are $2\pi, 2\pi, \pi$ and $\pi$ respectively 
 (NOT 4K, 4K, 2K and 2K).
-Thirdly the second argument is the nome $q$ where $|q| < 1$ and hence
-the quasi-period is $-i\log q$.
+Thirdly the second argument is the modulus $\tau = a+i b$ where $b=\Im\tau>0$
+and hence the quasi-period is $\pi\tau$.
 
-\f{elliptictheta1} and \f{elliptictheta2} are consequently multi-valued
-owing to the appearance of $q^{1/4}$ in their defining expansions.
-\f{elliptictheta3} and \f{elliptictheta4} are, however, single-valued
+The second parameter was previously the nome $q$
+where $|q|<1$. As a consequence \f{elliptictheta1} and \f{elliptictheta2} were
+multi-valued owing to the appearance of $q^{1/4}$ in their defining expansions.
+\f{elliptictheta3} and \f{elliptictheta4} were, however, single-valued
 functions of $q$.
 
-Regarded as functions of the `parameter' (usually denoted by $\tau$ where
-$q = \exp(i\pi\tau)$), \f{elliptictheta1} and \f{elliptictheta2} are
-single-valued functions of $\tau$. 
+Regarded as functions of $\tau$,
+\f{elliptictheta1} and \f{elliptictheta2} are single-valued functions. The nome
+is given by $q = \exp(i\pi\tau)$  so that the condition $\Im(\tau)>0$ ensures
+that $|q| < 1$. Note also  in this case $q^{1/4}$ is interpreted as
+$\exp(i\pi\tau/4)$ rather than the principal value of $q^{1/4}$.
+Thus, $\tau$, $2+\tau$, $4+\tau$ and $6+\tau$ produce four different values of
+both \f{elliptictheta1} and \f{elliptictheta2} although they all correspond to
+the same nome $q$.
 
-Recall that in order that $|q| < 1$, the
-imaginary part of $\tau$ must be positive. Note also
- in this case $q^{1/4}$ is interpreted as $\exp(i\pi\tau/4)$ rather than
-the principal value of $q^{1/4}$. Thus $\tau, 2+\tau, 4+\tau$ and $6+\tau$
-produce four different values of both \f{elliptictheta1} and \f{elliptictheta2}
-although they all produce the same nome $q$.
+The four theta functions are defined by the Fourier series:
+\begin{eqnarray*}
+  \vartheta_1(z,\tau) & = & 2 e^{i\pi\tau/4}\sum_{n=0}^\infty (-1)^nq^{n^2+n} \sin(2n+1)z\\
+\vartheta_2(z,\tau) & = & 2 e^{i\pi\tau/4}\sum_{n=0}^\infty q^{n^2+n} \cos(2n+1)z\\
+\vartheta_3(z,\tau) & = & 1 +2\sum_{n=1}^\infty q^{n^2} \cos 2n z\\
+\vartheta_4(z,\tau) & = & 1 +2\sum_{n=1}^\infty (-1)^n q^{n^2} \cos 2n z.
+\end{eqnarray*}
 
 Utilising the periodicity and quasi-periodicity of the theta functions
 some generalised shift rules are implemented to shift their first argument
 into the base period parallelogram with vertices
 $$(\pi/2, \pi\tau/2),\quad (-\pi/2, \pi\tau/2),\quad (-\pi/2, -\pi\tau/2),
 \quad (\pi/2, -\pi\tau/2).$$
-Together with the relation $\vartheta_1(0,q)=0$, these shift rules serve to
+Together with the relation $\vartheta_1(0,\tau)=0$,  these shift rules serve to
 simplify all four theta functions to zero when appropriate.
 
-When the switch \sw{rounded} is on and the arguments are purely numerical,
-the theta functions are evaluated numerically. For complex numerical arguments
-the switch \sw{complex} \emph{must} also be on.
+When the switches \sw{rounded} and \sw{complex} are on and the arguments are
+purely numerical and the imaginary part of $\tau$ positive,
+the theta functions are evaluated numerically. Note that as $\tau$ is
+necessarily complex, the switch \sw{complex} \emph{must} be on.
 
-The numerical code always returns the principal value of 
-\f{elliptictheta1} and \f{elliptictheta2} (that is the one obtained by
-taking the principal value of $q^{1/4}$).
-Thus the negative real-axis of $q$ is a branch cut with the cut line
-regarded as belonging to the second rather than the third quadrant.
-
+In what follows $a$ and $b$ will denote the real and imaginary parts of
+$\tau$ respectively and so $|q| = \exp(-\pi b)$ and $\arg q =\pi a$.
 The series for the theta functions are fairly rapidly convergent 
-due to the quadratic growth of the exponents of $q$ -- except 
-for values of $q$ for which $|q|$ is near to 1.  In such cases the direct
-algorithm would suffer from slow convergence and rounding errors.
+due to the quadratic growth of the exponents of the nome $q$ -- except 
+for values of $q$ for which $|q|$ is near to 1
+(i.e. $b=\Im \tau $ close to zero).
+In such cases the direct algorithm would suffer from slow convergence and
+rounding errors.
 For such values of $|q|$, Jacobi's transformation $\tau'=-1/\tau$ can be
 used to produce a smaller value of the nome and so increase the rate of
-convergence.  When $\Re q < 0$, the Jacobi transformation is preceded by the
-modular transformation
-$\tau' = 1+\tau$, which has the effect  of multiplying $q$ by $-1$, so that 
-the new nome has a non-negative real part. 
+convergence. 
+This works very well for real values of $q$, or equivalently for $\tau$ purely
+imaginary since $q'= q^{1/b^2}$, but for complex
+values the gains are somewhat smaller. The Jacobi transformation produces a
+nome $q'$ for which $|q'| =  |q|^{1/(a^2+b^2)}$.
 
-This works very well for real values of $q$, but for complex
-values the gains are somewhat smaller.
-For a nome $q$ whose modulus is near to 1, the Jacobi transformation produces a
-nome $q'$ for which
-$|q'|  \approx  |q|^{\alpha^2}$ where $\alpha =\pi/|\arg(q)| \geq 2$.
+When $\Re q < 0$, the Jacobi transformation is preceded by either the
+modular transformation $\tau' = \tau+1$ when $\Im q < 0$, or $\tau' = \tau-1$
+when $\Im q > 0$, which both have the effect  of multiplying $q$ by $-1$,
+so that the new nome has a non-negative real part and $|a| \leq 1/2$. 
 Thus the worst case occurs for values of the nome $q$ near to $\pm i$ where 
-$\alpha \approx 2$.
+$|q'| \approx |q|^4$.
+
+By using a series of Jacobi transformations preceded, if necessary by
+$\tau$-shifts to ensure $|a| <= 1/2$, $|q|$ may be reduced to an acceptable
+level. Somewhat arbitrarily these Jacobi's transformations are used 
+until $b > 0.5$ (i.e.~$|q| < 0.208$). This seems to produce reasonable
+behaviour. In practice more than two applications of Jacobi transformations
+are rarely necessary.
+
+The previous version of the numerical code returned the principal values
+of $\vartheta_1$ and $\vartheta_2$, that is the ones obtained by taking
+the principal value of $q^{1/4}$ in their series expansions. The current version replaces
+$q^{1/4}$ by $\exp(i\pi\tau/4)$.  If the principal value is required, it is easily obtained
+by multiplying by the `correcting' factor $q^{1/4}\exp(-i\pi\tau/4)$.
+
 
 \subsubsection{Some Numerical Utility Functions}
 \hypertarget{operator:nome}{}
@@ -1451,10 +1471,10 @@ $\mathrm{E}^\prime(k)$ & \f{ellipticE!'(k)}\\
 Legendre Incomplete Int (2nd kind) $\mathrm{E}(u,k)$ & \f{ellipticE(u,k)}\\
 Jacobi Incomplete Int (2nd kind) $\mathcal{E}(u,k)$ & \f{JacobiE(u,k)}\\
 Jacobi's Zeta $\mathrm{Z}(u,k)$ & \f{jacobizeta(u,k)}\\
-$\vartheta_1(u,q)$ & \f{elliptictheta1(u,q)}\\
-$\vartheta_2(u,q)$ & \f{elliptictheta2(u,q)}\\
-$\vartheta_3(u,q)$ & \f{elliptictheta3(u,q)}\\
-$\vartheta_4(u,q)$ & \f{elliptictheta4(u,q)}\\[5pt]
+$\vartheta_1(u,\tau)$ & \f{elliptictheta1(u,tau)}\\
+$\vartheta_2(u,\tau)$ & \f{elliptictheta2(u,tau)}\\
+$\vartheta_3(u,\tau)$ & \f{elliptictheta3(u,tau)}\\
+$\vartheta_4(u,\tau)$ & \f{elliptictheta4(u,tau)}\\[5pt]
 \end{tabular}}
 \newpage
 

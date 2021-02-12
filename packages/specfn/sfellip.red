@@ -172,8 +172,10 @@ jacobiamrules :=
 
         jacobiam(~u,~m) =>
 	     num_elliptic(num_jacobiam, u, m)
-                           when lisp !*rounded and numberp u
-                           and numberp m 
+                when lisp !*rounded and numberp repart u and numberp impart u
+                     and numberp repart m and numberp impart m
+%                           when lisp !*rounded and numberp u
+%                           and numberp m and impart(u) = 0		     
 }$
 
 let jacobiamrules;
@@ -260,8 +262,10 @@ jacobisnrules :=
 %Calls Num_Jacobisn when the rounded switch is on.
 %-------------------------------------------------
         jacobisn(~u,~m) => num_elliptic(num_jacobisn, u, m)
-                           when lisp !*rounded and numberp u
-                           and numberp m and impart(u) = 0
+                when lisp !*rounded and numberp repart u and numberp repart m
+                     and numberp part m and numberp impart m
+%                           when lisp !*rounded and numberp u
+%                           and numberp m and impart(u) = 0
 
 }$
 let jacobisnrules;
@@ -355,8 +359,10 @@ jacobicnrules :=
 %Calls Num_Jacobicn when rounded switch is on.
 %---------------------------------------------
         jacobicn(~u,~m) => num_elliptic(num_jacobicn, u, m)
-                           when lisp !*rounded and numberp u
-                           and numberp m and impart(u) = 0
+                when lisp !*rounded and numberp repart u and numberp impart u
+                     and numberp repart m and numberp impart m
+%                           when lisp !*rounded and numberp u
+%                           and numberp m and impart(u) = 0
 
 }$
 let jacobicnrules;
@@ -460,8 +466,10 @@ jacobidnrules :=
 %Calls Num_Jacobidn when rounded switch is on.
 %---------------------------------------------
         jacobidn(~u,~m) => num_elliptic(num_jacobidn, u, m)
-                           when lisp !*rounded and numberp u
-                           and numberp m and impart(u) = 0
+                when lisp !*rounded and numberp repart u and numberp impart u
+                     and numberp repart m and numberp impart m
+%                           when lisp !*rounded and numberp u
+%                           and numberp m and impart(u) = 0
 
 }$
 let jacobidnrules;
@@ -559,8 +567,11 @@ jacobicdrules :=
 %Calls Num_Jacobicd when rounded switch is on.
 %---------------------------------------------
         jacobicd(~u,~m) => num_elliptic(num_jacobicd, u, m)
-                           when lisp !*rounded and numberp u
-                           and numberp m
+                when lisp !*rounded and numberp repart u and numberp impart u
+                     and numberp repart m and numberp impart m
+%                           when lisp !*rounded and numberp u
+%                           and numberp m and impart(u) = 0
+
 }$
 let jacobicdrules;
 
@@ -660,8 +671,11 @@ jacobisdrules :=
 %Calls Num_Jacobisd when rounded switch is on.
 %---------------------------------------------
         jacobisd(~u,~m) => num_elliptic(num_jacobisd, u, m)
-                           when lisp !*rounded and numberp u
-                           and numberp m
+                when lisp !*rounded and numberp repart u and numberp impart u
+                     and numberp repart m and numberp impart m
+%                           when lisp !*rounded and numberp u
+%                           and numberp m and impart(u) = 0
+
 }$
 let jacobisdrules;
 
@@ -748,8 +762,10 @@ jacobindrules :=
 %Calls Num_Jacobind when rounded switch is on.
 %---------------------------------------------
         jacobind(~u,~m) => num_elliptic(num_jacobind, u, m)
-                           when lisp !*rounded and numberp u
-                           and numberp m
+                when lisp !*rounded and numberp repart u and numberp impart u
+                     and numberp repart m and numberp impart m
+%                           when lisp !*rounded and numberp u
+%                           and numberp m and impart(u) = 0
 }$
 let jacobindrules;
 
@@ -835,8 +851,11 @@ jacobidcrules :=
 %Calls Num_Jacobidc when rounded switch is on.
 %---------------------------------------------
         jacobidc(~u,~m) => num_elliptic(num_jacobidc, u, m)
-                           when lisp !*rounded and numberp u
-                           and numberp m
+                when lisp !*rounded and numberp repart u and numberp impart u
+                     and numberp repart m and numberp impart m
+%                           when lisp !*rounded and numberp u
+%                           and numberp m and impart(u) = 0
+
 }$
 let jacobidcrules;
 
@@ -927,8 +946,11 @@ jacobincrules :=
 %Calls Num_Jacobinc when rounded switch is on.
 %---------------------------------------------
         jacobinc(~u,~m) => num_elliptic(num_jacobinc, u, m)
-                           when lisp !*rounded and numberp u
-                           and numberp m
+                when lisp !*rounded and numberp repart u and numberp impart u
+                     and numberp repart m and numberp impart m
+%                           when lisp !*rounded and numberp u
+%                           and numberp m and impart(u) = 0
+
 }$
 let jacobincrules;
 
@@ -1018,8 +1040,11 @@ jacobiscrules :=
 %Calls Num_Jacobisc when rounded switch is on.
 %---------------------------------------------
         jacobisc(~u,~m) => num_elliptic(num_jacobisc, u, m)
-                           when lisp !*rounded and numberp u
-                           and numberp m
+                when lisp !*rounded and numberp repart u and numberp impart u
+                     and numberp repart m and numberp impart m
+%                           when lisp !*rounded and numberp u
+%                           and numberp m and impart(u) = 0
+
 }$
 let jacobiscrules;
 
@@ -1103,8 +1128,11 @@ jacobinsrules :=
 %Calls Num_Jacobins when rounded switch is on.
 %---------------------------------------------
         jacobins(~u,~m) => num_elliptic(num_jacobins, u, m)
-                           when lisp !*rounded and numberp u
-                           and numberp m
+                when lisp !*rounded and numberp repart u and numberp impart u
+                     and numberp repart m and numberp impart m
+%                           when lisp !*rounded and numberp u
+%                           and numberp m and impart(u) = 0
+
 }$
 let jacobinsrules;
 
@@ -1192,8 +1220,11 @@ jacobidsrules :=
 %Calls Num_Jacobids when on rounded switch is on.
 %------------------------------------------------
         jacobids(~u,~m) => num_elliptic(num_jacobids, u, m)
-                           when lisp !*rounded and numberp u
-                           and numberp m
+                when lisp !*rounded and numberp repart u and numberp impart u
+                     and numberp repart m and numberp impart m
+%                           when lisp !*rounded and numberp u
+%                           and numberp m and impart(u) = 0
+
 }$
 let jacobidsrules;
 
@@ -1278,8 +1309,11 @@ jacobicsrules :=
 %Calls Num_Jacobics when rounded switch is on.
 %---------------------------------------------
         jacobics(~u,~m) => num_elliptic(num_jacobics, u, m)
-                           when lisp !*rounded and numberp u
-                           and numberp m
+                when lisp !*rounded and numberp repart u and numberp impart u
+                     and numberp repart m and numberp impart m
+%                           when lisp !*rounded and numberp u
+%                           and numberp m and impart(u) = 0
+
 }$
 let jacobicsrules;
 
@@ -1339,14 +1373,6 @@ put('elliptice!', 'fancy!-functionsymbol,  "\mathrm{E}^\prime");
 put('elliptice!', 'fancy!-symbol!-length, 4);
 put('elliptick!', 'fancy!-symbol!-length, 4);
 
-put('elliptictheta1, 'fancy!-functionsymbol,"\vartheta_1");
-put('elliptictheta2, 'fancy!-functionsymbol,"\vartheta_2");
-put('elliptictheta3, 'fancy!-functionsymbol,"\vartheta_3");
-put('elliptictheta4, 'fancy!-functionsymbol,"\vartheta_4");
-put('elliptictheta1, 'fancy!-symbol!-length, 4);
-put('elliptictheta2, 'fancy!-symbol!-length, 4);
-put('elliptictheta3, 'fancy!-symbol!-length, 4);
-put('elliptictheta4, 'fancy!-symbol!-length, 4);
 
 foreach x in '(jacobisn  jacobicn  jacobidn jacobins  jacobinc  jacobind
                jacobisc  jacobisd  jacobicd jacobics  jacobids  jacobidc
@@ -1354,8 +1380,6 @@ foreach x in '(jacobisn  jacobicn  jacobidn jacobins  jacobinc  jacobind
 do << put(x, 'fancy!-symbol!-length, 4);
       put(x, 'prifn, 'plain!-symbol)
    >>;
-
-% put('elliptictau, 'fancy!-functionsymbol, "\tau");
 
 put('elliptice, 'prifn, 'plain!-symbol);
 % put('ellipticd, 'prifn, 'plain!-symbol);
@@ -1365,18 +1389,6 @@ put('elliptice!', 'prifn, 'plain!-symbol);
 put('ellipticf, 'prifn, 'plain!-symbol);
 put('jacobizeta, 'prifn, 'plain!-symbol);
 put('jacobie, 'prifn, 'plain!-symbol);
-
-put('elliptictheta1, 'plain!-functionsymbol, 'theta1);
-put('elliptictheta2, 'plain!-functionsymbol, 'theta2);
-put('elliptictheta3, 'plain!-functionsymbol, 'theta3);
-put('elliptictheta4, 'plain!-functionsymbol, 'theta4);
-% put('elliptictau, 'plain!-functionsymbol, 'tau);
-
-put('elliptictheta1, 'prifn, 'plain!-symbol);
-put('elliptictheta2, 'prifn, 'plain!-symbol);
-put('elliptictheta3, 'prifn, 'plain!-symbol);
-put('elliptictheta4, 'prifn, 'plain!-symbol);
-% put('elliptictau, 'prifn, 'plain!-symbol);
 
 % moved to mprint.red so it may beused by other modules.
 % symbolic procedure plain!-symbol(u);
@@ -1388,16 +1400,13 @@ put('elliptictheta4, 'prifn, 'plain!-symbol);
 flag('(jacobisn jacobicn jacobidn jacobins jacobinc jacobind 
        jacobisc jacobisd jacobics jacobicd jacobids jacobidc
        jacobiam jacobizeta jacobie ellipticK ellipticK!'
-       ellipticF ellipticE ellipticE!' elliptictheta1
-       elliptictheta2 elliptictheta3 elliptictheta4), 'specfn);
+       ellipticF ellipticE ellipticE!'), 'specfn);
 
 deflist('((jacobisn 2) (jacobicn 2) (jacobidn 2)
           (jacobins 2) (jacobinc 2) (jacobind 2) (jacobisc 2) (jacobisd 2)
 	  (jacobics 2) (jacobicd 2) (jacobids 2) (jacobidc 2) (jacobiam 2)
 	  (ellipticF 2)  (jacobiZeta 2) (jacobie 2)
 	  (ellipticK 1) (ellipticK!' 1) (ellipticE (1 2)) (ellipticE!' 1)
-          (elliptictheta1 2) (elliptictheta2 2) (elliptictheta3 2)
-	  (elliptictheta4 2)
 	 ), 'number!-of!-args);
 
 endmodule;

@@ -101,8 +101,8 @@ ellipticfrules :=
                           + k*sin(u)*cos(u)/((k^2-1)*sqrt(1-k^2*sin(u)^2)),
 
    ellipticf(~phi,~m)  => num_elliptic(f_function,phi,m)
-                         when lisp !*rounded and numberp phi
-                            and numberp m
+            when lisp !*rounded and numberp repart phi and numberp impart phi
+                 and numberp repart m and numberp impart m
 }$
 let ellipticfrules;
 
@@ -126,17 +126,17 @@ elliptickrules :=
 
 {
         elliptick(~m)   => num_elliptic(k_function, m)
-	       when lisp !*rounded and numberp m,
+	       when lisp !*rounded and numberp repart m and numberp impart m,
 
         elliptick!'(~m) => num_elliptic(k_function, sqrt(1-m^2))
-	       when lisp !*rounded and numberp m,
+	       when lisp !*rounded and numberp repart m and numberp impart m,
 
         nome(0) => 0,
 
         nome(1) => 1,
 
         nome(~m) => exp(-pi*elliptick!'(m)/elliptick(m))
-	       when lisp !*rounded and numberp m
+	       when lisp !*rounded and numberp repart m and numberp impart m
 }$
 let elliptickrules;
 
@@ -212,7 +212,8 @@ jacobidrules :=
     df(elliptice(~phi,~m),~m)   => (elliptice(phi,m)-ellipticf(phi,m))/m,
 
     elliptice(~phi,~m) => num_elliptic(e_function,phi,m)
-                     when lisp !*rounded and numberp phi and numberp m
+            when lisp !*rounded and numberp repart phi and numberp impart phi
+                 and numberp repart m and numberp impart m
 }$
 
 let jacobidrules;
@@ -309,14 +310,14 @@ jacobierules :=
 % numerical evaluation
 
         jacobie(~phi,~m) => num_elliptic(je_function,phi,m)
-                              when lisp !*rounded and numberp phi
-                              and numberp m,
+            when lisp !*rounded and numberp repart phi and numberp impart phi
+                 and numberp repart m and numberp impart m,
 
         elliptice(~m) => num_elliptic(e_function,pi/2,m)
-                         when lisp !*rounded and numberp m,
+            when lisp !*rounded and numberp repart m  and numberp impart m,
 
         elliptice!'(~m) => num_elliptic(e_function,pi/2,sqrt(1-m^2))
-                         when lisp !*rounded and numberp m
+            when lisp !*rounded and numberp repart m  and numberp impart m
 }$
 let jacobierules;
 
@@ -387,8 +388,8 @@ jacobizetarules :=
         jacobizeta(elliptick(~m) -~u,m) => -jacobizeta(elliptick(m)+u,m),
 
         jacobizeta(~u,~m) => num_elliptic(num_jacobizeta,u,m)
-                             when lisp !*rounded and numberp u
-                             and numberp m,
+            when lisp !*rounded and numberp repart u and numberp impart u
+                 and numberp repart m  and numberp impart m,             
 
 %derivative rules
        df(jacobizeta(~u, ~k),~u) => jacobidn(u,k)^2 - elliptice(k)/elliptick(k),
@@ -398,561 +399,8 @@ jacobizetarules :=
 }$
 let jacobizetarules;
 
-%#######################################################################
-% CALCULATING THE FOUR THETA FUNCTIONS
-% These theta functions differ from those originally defined by Lisa Temme
-% in that the periods are 2*pi, 2*pi, pi and pi respectively 
-% (NOT 4K, 4K, 2K and 2K).
-% Also the second argument is the nome q where |q| < 1 and hence
-% the quasi-period is -i*log q (NB for q real log q < 0).
-% theta1 and theta2 are consequently multi-valued owing to the appearance
-% of q^(1/4) in their defining expansions.
-% The numerical code always returns the principal value of theta1 and theta2
-% that is the one obtained by taking the principal value of q^(1/4).
-% Thus the negative real-axis of q is a branch cut with the cut line
-% regarded as belonging to the second rather than the third quadrant.
-%
-% Regarded as functions of the 'parameter' (usually denoted by tau where
-% q = exp(i*pi*tau)), theta1 and theta2 are single-valued functions of tau.
-% Note in this case q^(1/4) is interpreted as exp(i*pi*tau/4) rather than
-% the principal value of q^(1/4). Thus tau and 2+tau, 4+tau and 6+tau produce
-% four different values of both theta1 and theta2 although they produce the
-% same nome q.
-%
-% Again we are following the conventions of DF Lawden:
-% Elliptic Functions & Applications, Springer, 1989
-%
-% The series for the theta functions are fairly rapidly convergent 
-% due to the quadratic growth of the exponents of q except 
-% for values of q for which |q| is near to 1.
-% In such cases the direct algorithm 
-% would suffer from slow convergence and rounding errors.
-% For such values of |q| Jacobi's transformation (tau'=-1/tau) can
-% be used to produce a smaller value of the nome and so
-% increase the rate of convergence.
-% When repart(q) < 0 the Jacobi transformation is preceded by the
-% modular transformation tau' = 1+tau, which has the effect  of multiplying
-% q by -1, so that the new nome has a non-negative real part.
-%
-% This works very well for real values of q, but for complex values the
-% gains are somewhat smaller.
-% For nomes whose modulus is near to 1 the Jacobi transformation produces
-% a nome q' for which |q'| ~ |q|^(alpha^2) where alpha = pi/|arg(q)| >= 2.
-% Thus the worst case occurs for values of the nome q near to +i or -i
-% where alpha ~ 2$.
+% Support for theta functions moved to a separate file (sftheta.red)
 
-% Somewhat arbitrarily Jacobi's transformation is used 
-% whenever |q| >= 0.8. This seems to produce reasonable behaviour.
-
-procedure shift!-arg(z,q);
-% shift the argument down into the base period parallelogram
-begin scalar quasip, rpq, numhqp, numhrp;
-  quasip := -log q;
-  rpq := repart quasip;
-  numhqp := fix(2*impart(z)/rpq);  % number of half quasi-periods used
-  z := z - i*numhqp*quasip/2;
-  numhrp := fix(2*repart(z)/pi);   % number of half real periods used
-  z := z - numhrp*pi/2;
-  return {z, numhrp, numhqp};
-end;
-
-procedure n_theta1(z, q);
-begin scalar n, pow, term, total, tol;
-    tol := 10.0^-(symbolic !:prec!:);
-    total := 0;
-    n := 0;
-
-    repeat <<
-       pow := (-1)^n*q^(n*(n+1));
-       term := pow*sin((2*n+1)*z);
-       total := total + term;
-       n := n+1;
-    >> until total = 0 or
-          max(abs(pow),abs(term)) < abs(total)*tol;
-    return 2*sqrt(sqrt q)*total;
-end;    
-
-procedure num_theta1(z,q);
-   if abs(q) >= 1.0 then
-      rederr "num_theta1: the nome q (2nd arg) must satisfy |q| < 1"
-   else if repart q < 0 then
-      % apply the modular transformation tau' = 1+tau (so that q' = -q)
-      (begin scalar x;
-          if impart q < 0  then x := -1 else x := 1;
-          return (1+i*x)*num_theta1(z, -q)/sqrt 2;
-      end)
-   else if abs(q) < 0.8  then
-       num1_theta1(z,q) 
-   else begin scalar x, m, l, a1, a2, q1;
-      % Use Jacobi transformation theta1(i*x*z, q')
-      l := log q;
-      % calculate the 4th root of unity required to correct the 
-      % result of the Jacobi transformation to the principal  value 
-      a1 := -pi^2*impart(l)/(repart(l)^2+impart(l)^2);
-      x := -pi/l;   % x = -i*tau'
-      q1 := exp(-pi*x);
-      a2 := arg q1;
-      m := exp(i*(a1-a2)/4);
-      m := -i*m*sqrt x*exp(-x*z^2/pi);
-      return m*num1_theta1(i*x*z, q1);
-   end;
-
-procedure num1_theta1(z, q);
-begin scalar shiftvalues, nr, nq, m;
-   shiftvalues := shift!-arg(z,q);
-   z:= first shiftvalues;
-   nr := second shiftvalues;
-   nq := third shiftvalues;
-
-   nr := nr mod 4;
-   if nr = 2 or nr=3 then m :=-1 else m := 1;
-   if evenp nr then 
-      if evenp nq then <<
-         nq := nq/2;
-         m := m*(-1)^nq*exp(-2*i*nq*z)/q^(nq^2);
-         return m*n_theta1(z, q);
-      >> 
-      else <<
-          nq := (nq-1)/2;
-          m := m*(-1)^nq*i*exp(-(2*nq+1)*i*z)/q^(nq^2+nq+1/4);
-          return m*n_theta4(z,q);
-       >>
-    else
-       if evenp nq then <<
-          nq := nq/2;
-          m := m*exp(-2*i*nq*z)/q^(nq^2);
-          return m*n_theta2(z, q);
-       >>
-       else <<
-          nq := (nq-1)/2;
-          m := m*exp(-(2*nq+1)*i*z)/q^(nq^2+nq+1/4);
-          return m*n_theta3(z, q);
-       >>;
-end;
-
-procedure n_theta2(z,q);
-begin scalar n, pow, term, total, tol;
-    tol := 10.0^-(symbolic !:prec!:);
-    total := 0;
-    n := 0;
-    repeat <<
-       pow := q^(n*(n+1));
-       term := pow*cos((2*n+1)*z);
-       total := total +  term; 
-       n := n+1;
-    >> until max(abs(pow),abs(term)) < abs(total)*tol;
-    return 2*sqrt(sqrt q)*total;
-end;
-
-procedure num_theta2(z,q);
-   if abs(q) >= 1.0 then
-      rederr "num_theta2: the nome q (2nd arg) must satisfy |q| < 1"
-   else if repart q < 0 then
-      % apply the modular transformation tau' = 1+tau (so that q' = -q)
-      (begin scalar x;
-          if impart q < 0  then x := -1 else x := 1;
-          return (1+i*x)*num_theta2(z, -q)/sqrt 2;
-      end)
-   else if abs(q) < 0.8 then
-       num1_theta2(z,q)
-   else begin scalar x, m;
-       % Use Jacobi transformation theta4(i*x*z, q')
-       x := -pi/log q;   % x = -i*tau'
-       m := sqrt x*exp(-x*z^2/pi);
-       return m*num1_theta4(i*x*z, exp(-pi*x));
-   end;
-
-
-procedure num1_theta2(z,q);
-begin scalar shiftvalues, nr, nq, m;
-   shiftvalues := shift!-arg(z,q);
-   z:= first shiftvalues;
-   nr := second shiftvalues;
-   nq := third shiftvalues;
-
-   nr := nr mod 4;
-   if nr = 2 or nr=3 then m :=-1 else m := 1;
-   if evenp nr then
-      if evenp nq then <<
-         nq := nq/2;
-         m := m*exp(-2*i*nq*z)/q^(nq^2);
-         return m*n_theta2(z, q);
-      >>
-      else <<
-         nq := (nq-1)/2;
-         m := m*exp(-(2*nq+1)*i*z)/q^(nq^2+nq+1/4);
-         return m*n_theta3(z,q);
-      >>
-   else
-      if evenp nq then <<
-         nq := nq/2;
-         m := m*(-1)^nq*exp(-2*i*nq*z)/q^(nq^2);
-	 return -m*n_theta1(z, q);
-      >>
-      else <<
-         nq := (nq-1)/2;
-         m := m*(-1)^nq*i*exp(-(2*nq+1)*i*z)/q^(nq^2+nq+1/4);
-         return -m*n_theta4(z, q);
-      >>;
-end;
-
-procedure n_theta3(z, q);
-begin scalar n, pow, term, total, tol;
-   tol := 10.0^-(symbolic !:prec!:);
-   total := 0;
-   n := 1;
-
-   repeat <<
-      pow := q^(n*n);
-      term := pow*cos(2*n*z);
-      total := total + term;
-      n := n+1;
-   >> until max(abs(pow),abs(term)) < abs(total)*tol;
-   return 1 + 2*total;
-end;
-
-
-procedure num_theta3(z,q);
-   if abs(q) >= 1.0 then
-      rederr "num_theta3: the nome q (2nd arg) must satisfy |q| < 1"
-   else if repart q < 0 then
-      % apply the modular transformation tau' = 1+tau (so that q' = -q)
-      num_theta4(z, -q)
-   else if abs(q) < 0.8 then
-      num1_theta3(z, q)
-   else begin scalar x, m;
-      % Use Jacobi transformation theta3(i*x*z, q')
-      x := -pi/log q;   % x = -i*tau'
-      m := sqrt x*exp(-x*z^2/pi);
-      return m*num1_theta3(i*x*z, exp(-pi*x));
-   end;
-
-
-procedure num1_theta3(z,q);
-begin scalar shiftvalues, nr, nq, m;
-   shiftvalues := shift!-arg(z,q);
-   z:= first shiftvalues;
-   nr := second shiftvalues;
-   nq := third shiftvalues;
-
-   if evenp nr then
-      if evenp nq then <<
-         nq := nq/2;
-         m := exp(-2*i*nq*z)/q^(nq^2);
-         return m*n_theta3(z, q);
-      >>
-      else <<
-         nq := (nq-1)/2;
-         m := exp(-(2*nq+1)*i*z)/q^(nq^2+nq+1/4);
-	 return m*n_theta2(z,q);
-       >>
-    else
-       if evenp nq then <<
-          nq := nq/2;
-          m := (-1)^nq*exp(-2*i*nq*z)/q^(nq^2);
-          return m*n_theta4(z, q);
-       >>
-       else <<
-          nq := (nq-1)/2;
-          m := (-1)^nq*i*exp(-(2*nq+1)*i*z)/q^(nq^2+nq+1/4);
-          return m*n_theta1(z, q);
-       >>;
-end;
-
-procedure n_theta4(z, q);
-begin scalar n, pow, term, total, tol;
-   tol := 10.0^-(symbolic !:prec!:);
-   total := 0;
-   n := 1;
-
-   repeat <<
-      pow := (-1)^n*q^(n*n);
-      term := pow*cos(2*n*z);
-      total := total + term;
-      n := n+1;
-   >> until max(abs(pow),abs(term)) < abs(total)*tol;
-   return 1 + 2*total;
-end;
-
-procedure num_theta4(z,q);
-   if abs(q) >= 1.0 then
-      rederr "num_theta4: the nome q (2nd arg) must satisfy |q| < 1"
-   else if repart q < 0 then
-      % apply the modular transformation tau' = 1+tau (so that q' = -q)
-      num_theta3(z, -q)
-   else if abs(q) < 0.8 then
-      num1_theta4(z, q)
-   else begin scalar x, m, l, a1, a2, q1;
-      % Use Jacobi transformation theta2(i*x*z, q')
-      l := log q;
-      % calculate the 4th root of unity required to correct the 
-      % result of the Jacobi transformation to the principal  value 
-      a1 := -pi^2*impart(l)/(repart(l)^2+impart(l)^2);
-      x := -pi/l;   % x = -i*tau'
-      q1 := exp(-pi*x);
-      a2 := arg q1;
-      m := exp(i*(a1-a2)/4);  
-      m := m*sqrt x*exp(-x*z^2/pi);
-      return m*num1_theta2(i*x*z, q1);
-   end;
-
-procedure num1_theta4(z, q);
-begin scalar shiftvalues, nr, nq, m;
-   shiftvalues := shift!-arg(z,q);
-   z:= first shiftvalues;
-   nr := second shiftvalues;
-   nq := third shiftvalues;
-
-   if evenp nr then
-      if evenp nq then <<
-         nq := nq/2;
-         m := (-1)^nq*exp(-2*i*nq*z)/q^(nq^2);
-         return m*n_theta4(z, q);
-      >>
-      else <<
-         nq := (nq-1)/2;
-         m := (-1)^nq*i*exp(-(2*nq+1)*i*z)/q^(nq^2+nq+1/4);
-         return m*n_theta1(z,q);
-      >>
-   else
-      if evenp nq then <<
-	 nq := nq/2;
-	 m := exp(-2*i*nq*z)/q^(nq^2);
-         return m*n_theta3(z, q);
-      >>
-      else <<
-         nq := (nq-1)/2;
-	 m := exp(-(2*nq+1)*i*z)/q^(nq^2+nq+1/4);
-	 return m*n_theta2(z, q);
-      >>;
-end;
-
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-operator elliptictheta1;
-operator elliptictheta2;
-operator elliptictheta3;
-operator elliptictheta4;
-operator nome2mod;
-operator nome2mod!';
-operator nome2!K;
-operator nome2!K!';
-
-ellipticthetarules :=
-{
-  
-%Theta1rules
-
-   elliptictheta1(-~u,~m) => -elliptictheta1(u,m),
-
-   elliptictheta1(0,~m) => 0,
-
-   elliptictheta1(~u, 0) => 0,
-
-%  This rule implements the modular transformation tau'=1+tau (so q'=-q)
-%  for real nomes only
-   elliptictheta1(~u, -~m) => exp(i*sign(m)*pi/4)*elliptictheta1(u, m)
-                when impart(m) = 0,
-		
-%   The following version of the rule is quite general but messy
-%   elliptictheta1(~u, -~m) =>
-%       (begin scalar s;
-%	    s := (sign(repart m)-sign(repart m)^2+1)
-%	           * (sign(impart m)-sign(impart m)^2+1);
-%            return (1+s*i)*elliptictheta1(u, m)/sqrt 2;
-%        end),
-
-% generalised shift rules added by A Barnes
-% periodicity:
-   elliptictheta1((~~w + ~~k*pi)/~~d, ~m) =>
-      (begin scalar n, arg, r, s;
-          n := fix(2*repart(k/d));
-          r := n mod 4;
-	  arg := w/d + ((k/d)-n/2)*pi;
-	  if r=2 or r=3 then s := -1 else s := 1;
-	  if evenp n then
-	     return s*elliptictheta1(arg, m)
-	  else
-	     return s*elliptictheta2(arg, m);
-      end)
-      when ((ratnump(rp) and abs(rp) >= 1) where rp => 2*repart(k/d)),
-
-% quasi-periodicity:
-   elliptictheta1((~~w + ~~k*log(~m))/~~d, ~m) =>
-      (begin scalar n, arg, f;
-          n := fix(2*impart(k/d));
-	  arg := w/d + ((k/d)-i*n/2)*log m;
-	  if evenp n then <<
-	     n := n/2;
-	     f := (-1)^n*exp(2*i*n*arg)/m^(n^2);
-             return f*elliptictheta1(arg, m);
-	  >>
-	  else <<
-	     n := (n-1)/2;
-	     f := (-1)^(n+1)*i*exp((2*n+1)*i*arg)/m^(n^2+n+1/4);
-	     return f*elliptictheta4(arg,m);
-	  >>;
-      end)
-      when ((ratnump(ip) and abs(ip) >= 1) where ip => 2*impart(k/d)),
-
-   elliptictheta1(~u,~m) => num_elliptic(num_theta1,u,m)
-       when lisp !*rounded and numberp u and numberp m,
-
-%Theta2rules
-%-----------
-   elliptictheta2(-~u,~m) =>  elliptictheta2(u,m),
-
-   elliptictheta2(~u, 0) => 0,
-   
-%  This rule implements the modular transformation tau'=1+tau (so q'=-q)
-%  for real nomes only
-   elliptictheta2(~u, -~m) => exp(i*sign(m)*pi/4)*elliptictheta2(u, m)
-                                  when impart m=0,
-
-%   The following version of the rule is quite general but messy
-%   elliptictheta2(~u, -~m) =>
-%        (begin scalar s;
-%	    s := (sign(repart m)-sign(repart m)^2+1)
-%	           * (sign(impart m)-sign(impart m)^2+1);
-%            return (1+s*i)*elliptictheta2(u, m)/sqrt 2;
-%         end),
-
-% periodicity:
-   elliptictheta2((~~w + ~~k*pi)/~~d, ~m) =>
-      (begin scalar n, arg, r, s;
-          n := fix(2*repart(k/d));
-          r := n mod 4;
-	  arg := w/d + ((k/d)-n/2)*pi;
-	  if r=2 or r=3 then s := -1 else s := 1;
-	  if evenp n then
-	     return s*elliptictheta2(arg, m)
-	  else
-	     return -s*elliptictheta1(arg, m);
-      end)
-      when ((ratnump(rp) and abs(rp) >= 1) where rp => 2*repart(k/d)),
-
-% quasi-periodicity:
-   elliptictheta2((~~w + ~~k*log(~m))/~~d, ~m) =>
-      (begin scalar n, arg, f;
-          n := fix(2*impart(k/d));
-	  arg := w/d + ((k/d)-i*n/2)*log m;
-	  if evenp n then <<
-	     n := n/2;
-	     f := exp(2*i*n*arg)/m^(n^2);
-             return f*elliptictheta2(arg, m);
-	  >>
-	  else <<
-	     n := (n-1)/2;
-	     f := exp((2*n+1)*i*arg)/m^(n^2+n+1/4);
-	     return f*elliptictheta3(arg,m);
-	  >>;
-      end)
-      when ((ratnump(ip) and abs(ip) >= 1) where ip => 2*impart(k/d)),
-
-   elliptictheta2(~u,~m) => num_elliptic(num_theta2,u,m)
-            when lisp !*rounded and numberp u and numberp m,
-
-%Theta3rules
-%-----------
-
-   elliptictheta3(-~u,~m) =>  elliptictheta3(u,m),
-
-   elliptictheta3(~u, 0) => 1,
-   
-%  This rule implements the modular transformation tau'=1+tau (so q'=-q)
-   elliptictheta3(~u, -~m) => elliptictheta4(u, m),
-
-% periodicity:
-   elliptictheta3((~~w + ~~k*pi)/~~d, ~m) =>
-      (begin scalar n, arg;
-          n := fix(2*repart(k/d));
-	  arg := w/d + ((k/d)-n/2)*pi;
-	  if evenp n then
-	     return elliptictheta3(arg, m)
-	  else
-	     return elliptictheta4(arg, m);
-      end)
-      when ((ratnump(rp) and abs(rp) >= 1) where rp => 2*repart(k/d)),
-
-% quasi-periodicity:
-   elliptictheta3((~~w + ~~k*log(~m))/~~d, ~m) =>
-      (begin scalar n, arg, f;
-          n := fix(2*impart(k/d));
-	  arg := w/d + ((k/d)-i*n/2)*log m;
-	  if evenp n then <<
-	     n := n/2;
-	     f := exp(2*i*n*arg)/m^(n^2);
-             return f*elliptictheta3(arg, m);
-	  >>
-	  else <<
-	     n := (n-1)/2;
-	     f := exp((2*n+1)*i*arg)/m^(n^2+n+1/4);
-	     return f*elliptictheta2(arg,m);
-	  >>;
-      end)
-      when ((ratnump(ip) and abs(ip) >= 1) where ip => 2*impart(k/d)),
-
-   elliptictheta3(~u,~m) => num_elliptic(num_theta3,u,m)
-        when lisp !*rounded and numberp u and numberp m,
-
-%Theta4rules
-%-----------
-
-   elliptictheta4(-~u,~m) =>  elliptictheta4(u,m),
-
-   elliptictheta4(~u, 0) => 1,
-   
-%  This rule implements the modular transformation tau'=1+tau (so q'=-q)
-   elliptictheta4(~u, -~m) => elliptictheta3(u, m),
-
-% periodicity:
-   elliptictheta4((~~w + ~~k*pi)/~~d, ~m) =>
-      (begin scalar n, arg;
-          n := fix(2*repart(k/d));
-	  arg := w/d + ((k/d)-n/2)*pi;
-	  if evenp n then
-	     return elliptictheta4(arg, m)
-	  else
-	     return elliptictheta3(arg, m);
-      end)
-      when ((ratnump(rp) and abs(rp) >= 1) where rp => 2*repart(k/d)),
-
-% quasi-periodicity:
-   elliptictheta4((~~w + ~~k*log(~m))/~~d, ~m) =>
-      (begin scalar n, arg, f;
-          n := fix(2*impart(k/d));
-	  arg := w/d + ((k/d)-i*n/2)*log m;
-	  if evenp n then <<
-	     n := n/2;
-	     f := (-1)^n*exp(2*i*n*arg)/m^(n^2);
-             return f*elliptictheta4(arg, m);
-	  >>
-	  else <<
-	     n := (n-1)/2;
-	     f := (-1)^(n+1)*i*exp((2*n+1)*i*arg)/m^(n^2+n+1/4);
-	     return f*elliptictheta1(arg,m);
-	  >>;
-      end)
-      when ((ratnump(ip) and abs(ip) >= 1) where ip => 2*impart(k/d)),
-
-   elliptictheta4(~u,~m) => num_elliptic(num_theta4,u,m)
-        when lisp !*rounded and numberp u and numberp m,
-
-   % Below for numerical evaluation it is much better to use theta
-   % functions evaluated at zero rather than direct series summations
-   % as modular transformations can be used to speed up convergence
-   % when |q| is near to one.
-
-   nome2mod(~q) => (elliptictheta2(0,q)/elliptictheta3(0,q))^2,
-	
-   nome2mod!'(~q) =>  (elliptictheta4(0,q)/elliptictheta3(0,q))^2,
- 
-   nome2!K(~q) => pi*elliptictheta3(0,q)^2/2,
-
-   nome2!K!'(~q) => -log q*elliptictheta3(0,q)^2/2
-}$
-let ellipticthetarules;
-  
 endmodule;
 end;
 
