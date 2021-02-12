@@ -212,11 +212,15 @@
 
 (de FiveP (x)  (eq x 5))
 
+(de SevenP (x)  (eq x 7))
+
 (de EightP (x)  (eq x 8))
 
 (de TwentySevenP (x)  (eq x 27))
 
 (de FiftySixP (x) (eq x 56))
+
+(de FiftySevenP (x) (eq x 57))
 
 (de SixteenP (x) (eq x 16))
 
@@ -932,13 +936,14 @@
 
 
 (DefCMacro *asr
-    ((mov ArgOne (regshifted ArgTwo ASR ArgThree))))
+    ((regp regp negp)		(LSL ArgOne ArgTwo (minus ArgThree)))
+    ((regp regp fixplusp)	(ASR ArgOne ArgTwo ArgThree)))
 
 (DefCMacro *lsr
-    ((mov ArgOne (regshifted (cadr ArgTwo) LSR ArgThree))))
+    ((LSR ArgOne ArgTwo ArgThree)))
 
 (DefCMacro *lsl
-    ((mov ArgOne (regshifted ArgTwo LSL ArgThree))))
+    ((LSL ArgOne ArgTwo ArgThree)))
 
 (DefCMacro *AShift
     ((AnyP ZeroP))
@@ -1184,8 +1189,8 @@
 
 (DefCMacro *Field
 
-  ((regp regp Eightp FiftySixP) (UBFX ArgOne ArgTwo 0 56))
-  ((regp anyp Eightp FiftySixP) (*Move ArgTwo ArgOne)
+  ((regp regp EightP FiftySixP) (UBFX ArgOne ArgTwo 0 56))
+  ((regp anyp EightP FiftySixP) (*Move ArgTwo ArgOne)
                                 (UBFX ArgOne ArgOne 0 56))
   ((regp regp zerop fixp) (UBFX ArgOne ArgTwo (difference 64 ArgFour) ArgFour))
   ((regp regp fixp fixp) (UBFX ArgOne ArgTwo (difference 64 (plus2 ArgThree ArgFour)) ArgFour))
@@ -1199,7 +1204,8 @@
 
 (DefCMacro *SignedField
 
-  ((regp regp Eightp FiftySixP) (SBFX ArgOne ArgTwo 0 56))
+  ((regp regp EightP FiftySixP) (SBFX ArgOne ArgTwo 0 56))
+  ((regp regp SevenP FiftySevenP) (SBFX ArgOne ArgTwo 0 57))
   ((regp anyp Eightp FiftySixP) (*Move ArgTwo ArgOne)
                                 (SBFX ArgOne ArgOne 0 56))
   ((regp regp zerop fixp) (SBFX ArgOne ArgTwo (difference 64 ArgFour) ArgFour))
@@ -1419,9 +1425,9 @@ afterpreload
            (stderror "T and NIL cannot be rebound"))
       (setq n (wplus2 n 8))
       (Setq list (append list
-     `((*Move ,(car freeregs) (indexed (Reg t2) ,n))
+     `((*Move ,(car freeregs) (displacement (Reg t2) ,n))
        (*Move (quote ,Cadrcfluids)
-                   (indexed (reg t2) ,(wplus2 n -4)))
+                   (displacement (reg t2) ,(wplus2 n -4)))
        (*Move ,cregs ,cfluids)
       )          ))
       (setq fluids (cdr Fluids))
@@ -1485,9 +1491,9 @@ preload  (setq initload
            (stderror "T and NIL cannot be rebound"))
       (setq n (wplus2 n 8))
       (Setq list (append list
-             `((*Move ,(car freeregs) (indexed (Reg t2) ,n))
+             `((*Move ,(car freeregs) (displacement (Reg t2) ,n))
                (*Move (quote ,Cadrcfluids)
-                           (indexed (reg t2)  ,(wplus2 n -8)))
+                           (displacement (reg t2) ,(wplus2 n -8)))
                (*Move (quote nil) ,cfluids)
       )          ))
       (setq freeregs (cdr freeregs))

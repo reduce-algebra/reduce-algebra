@@ -112,7 +112,7 @@
                  *declarebeforeuse mainentrypointname* entrypoints* 
                  locallabels* codeexternals* codeexporteds* 
                  dataexternals* dataexporteds* 
-                 externaldeclarationformat* exporteddeclarationformat* 
+                 ExternalDeclarationFormat* ExportedDeclarationFormat* 
                  labelformat* fullwordformat* doublefloatformat* 
                  reservedatablockformat* reservezeroblockformat* 
                  undefinedfunctioncellinstructions* 
@@ -734,24 +734,24 @@
 (de datadeclareexternal (x)
   (unless (or (member x dataexternals*) (member x dataexporteds*))
     (setq dataexternals* (cons x dataexternals*))
-    (dataprintf externaldeclarationformat* x x)))
+    (dataprintf ExternalDeclarationFormat* x x)))
 
 (de codedeclareexternal (x)
   (unless (or (member x codeexternals*) (member x codeexporteds*))
     (setq codeexternals* (cons x codeexternals*))
-    (codeprintf externaldeclarationformat* x x)))
+    (codeprintf ExternalDeclarationFormat* x x)))
 
 (de datadeclareexported (x)
   (when (or (member x dataexternals*) (member x dataexporteds*))
     (errorprintf "***** %r multiply defined" x))
   (setq dataexporteds* (cons x dataexporteds*))
-  (dataprintf exporteddeclarationformat* x x))
+  (dataprintf ExportedDeclarationFormat* x x))
 
 (de codedeclareexported (x)
   (when (or (member x codeexternals*) (member x codeexporteds*))
     (errorprintf "***** %r multiply defined" x))
   (setq codeexporteds* (cons x codeexporteds*))
-  (codeprintf exporteddeclarationformat* x x))
+  (codeprintf ExportedDeclarationFormat* x x))
 
 (de printlabel (x)
   (printf labelformat* x x))

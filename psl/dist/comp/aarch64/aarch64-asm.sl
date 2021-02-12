@@ -393,14 +393,14 @@
 
 
 %%% Predicate to decide whether the given id or string is a valid
-%%% one to the machine's assembler (though what lap-to-asm does if
-%%% this predicate fails is beyond me!)
+%%% one to the machine's assembler (if this predicate fails lap-to-asm
+%%% replaces the id or string by a gensym)
 
 (de ASMSymbolP (x)
-  (SunSymbolP (if (idp x) (id2string x) x))
+  (AArch64Symbolp (if (idp x) (id2string x) x))
 )
 
-(de SunSymbolP (x)
+(de AArch64Symbolp (x)
   (let ((n (size x))
         (c (indx x 0))
        )
@@ -415,6 +415,7 @@
               (do (setq c (indx x i))
                   (setq rslt (or (and (geq c (char A)) (leq c (char Z)))
                                  (and (geq c (char !a)) (leq c (char !z)))
+%                                 (and (geq c (char !0)) (leq c (char !9)))
                                  (eqn c (char !_))
                              )
                   )
