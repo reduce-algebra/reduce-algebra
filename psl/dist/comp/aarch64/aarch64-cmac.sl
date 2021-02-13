@@ -1406,7 +1406,7 @@ afterpreload
                    (*Move ($fluid BndstkUpperBound) (reg t3))
                    (*wplus3 (Reg t2) (Reg t1) ,lng)
                    (cmp (reg t2) (reg t3))
-                   (bmi ,genlabel)
+                   (B!.MI ,genlabel)
                    (*call Bstackoverflow) % never come back
                   ,genlabel
                    (*Move (Reg t2) ($fluid BndstkPtr))
@@ -1427,7 +1427,7 @@ afterpreload
       (Setq list (append list
      `((*Move ,(car freeregs) (displacement (Reg t2) ,n))
        (*Move (quote ,Cadrcfluids)
-                   (displacement (reg t2) ,(wplus2 n -4)))
+                   (displacement (reg t2) ,(wplus2 n -8)))
        (*Move ,cregs ,cfluids)
       )          ))
       (setq fluids (cdr Fluids))
