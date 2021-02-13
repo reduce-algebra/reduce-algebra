@@ -288,11 +288,11 @@
 		  (do (PrintByte!, (Indx S i))))
 	     (PrintByte!, 0)
 	     % at this point (n+2) bytes (including final 0 byte) have been printed
-	     % fill with 0 bytes to a multiple of 4 if necessary
+	     % fill with 0 bytes to a multiple of 8 if necessary
 	     (cond
-	      ((greaterp (Remainder (plus n 2) 4) 0)
-	       (for (from i (Remainder (plus n 2) 4) 3)
-		    (do (PrintByte!, 0)))	% fill with 0 bytes to multiple of 4
+	      ((greaterp (Remainder (plus n 2) 8) 0)
+	       (for (from i (Remainder (plus n 2) 8) 7)
+		    (do (PrintByte!, 0)))	% fill with 0 bytes to multiple of 8
 	       ))
 	     (Terpri)
 	     nil))

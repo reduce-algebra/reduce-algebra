@@ -93,12 +93,12 @@
     
     % Read the code.
     (setf code-size (binaryread fid)) % Size of code segment in words
-%(console-print-string "Code-size=0x")(unixputn code-size)(console-newline)
+(console-print-string "Code-size=0x")(unixputn code-size)(console-newline)
     (setf code-base (gtbps code-size)) % Allocate space in BPS
-%(console-print-string "Code-base=0x")(unixputn code-base)(console-newline)
+(console-print-string "Code-base=0x")(unixputn code-base)(console-newline)
     (setq Btop (GtBPS 0))              % pointer to top of alloc. BPS
     (setf init-function-address (wplus2 code-base (binaryread fid)))
-%(console-print-string "Init-function at 0x")(unixputn init-function-address)(console-newline)
+(console-print-string "Init-function at 0x")(unixputn init-function-address)(console-newline)
     (binaryreadblock fid (loc (wgetv code-base 0)) code-size)
 
     % Read the bit table
@@ -115,6 +115,9 @@
     (if (weq (wand mode 1) 1) 
 	(do-relocation-new code-base code-size bit-table local-id-table)
 	(do-relocation code-base code-size bit-table local-id-table))
+
+    % Flush the caches
+    (clear_cache code-base (wplus2 code-base (wtimes2 code-size addressingunitsperitem)))
 
     % Call the init code
     (let ((temp code-base-hack))  % avoid use of fluid binding
@@ -153,7 +156,7 @@
 	(code-location code-base) 
 	 entry)
      (setq bit-table (strbase (strinf bit-table)))
-%(console-print-string "do-relocation-new ")
+%(console-print-string "do-relocation-new code-base=")
 %(unixputn code-base)
 %(console-newline)
      (while (not (izerop (setq entry (wand 16#ff (byte bit-table ptr)))))     
@@ -163,8 +166,10 @@
 	  (setq code-location (iplus2 code-location (wand entry 16#3f)))
 %(console-print-string " at 0x")
 %(unixputn code-location)
-%(console-newline)
 	  (setq entry (wshift entry -6))
+%	  (console-print-string " entry=")
+%	  (unixputn entry)
+%	  (console-newline)
 	  (case entry
 	      ((reloc-word)
 	       (relocate-word code-location code-base id-table))
@@ -185,9 +190,25 @@
 (de relocate-inf  (code-location code-base id-table)
   (let ((reloc-tag (reloc-inf-tag (getmem code-location)))
 	(reloc-inf (reloc-inf-inf (getmem code-location))))
+%    (console-print-string "Relocate inf at 0x")
+%    (unixputn code-location)
+%    (console-print-string " value: 0x")
+%    (unixputn (getmem code-location))
+%    (console-newline)
     (setf (inf (getmem code-location))
       (compute-relocation reloc-tag reloc-inf code-base id-table)
-      )))
+      )
+%    (console-print-string "Value after relocation: 0x")
+%    (unixputn (getmem code-location))
+%    (console-print-string " -> ")
+%    (cond ((idp (getmem code-location))
+%	   (console-print-string (symnam (idinf (getmem code-location)))))
+%	  ((stringp (getmem code-location))
+%	   (console-print-string """")
+%	   (console-print-string (getmem code-location))
+%	   (console-print-string """")))
+%    (console-newline)
+    ))
 
 (de relocate-right-half (code-location code-base id-table)
   (let ((reloc-tag (reloc-right-half-tag (getmem code-location)))
@@ -197,6 +218,18 @@
       )))
 
 (de compute-relocation (reloc-tag reloc-inf code-base id-table)
+%  (console-print-string "tag=0x")
+%  (unixputn reloc-tag)
+%  (console-print-string " (")
+%  (console-print-string
+%   (case reloc-tag	
+%	 ((reloc-code-offset) "code-offset")
+%	 ((reloc-id-number) "id-number")
+%	 ((reloc-value-cell) "value-cell")
+%	 ((reloc-function-cell) "function-cell")))
+%  (console-print-string ") inf=0x")
+%  (unixputn reloc-inf)
+%  (console-newline)
   (cond
     ((eq reloc-tag reloc-code-offset) 
      (wplus2 code-base reloc-inf))

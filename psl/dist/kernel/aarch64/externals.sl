@@ -123,6 +123,7 @@
 (external-function os_startup_hook      (pargc pargv))
 (external-function os_cleanup_hook      ())
 (external-function get_execfilepath     ())
+(external-function clear_cache          (start end))
 (external-function wquotient 		(x y))
 (external-function wremainder		(x y))
 (external-function wxdivide             (x y rem))

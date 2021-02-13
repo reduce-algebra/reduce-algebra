@@ -127,6 +127,12 @@ char * get_execfilepath ()
   return abs_execfilepath;
 }
 
+void clear_cache(void * begin, void * end)
+{
+  __builtin___clear_cache(begin,end);
+}
+
+
 void
 clear_iob()
 {

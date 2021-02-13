@@ -193,6 +193,11 @@
 		(foreach X in Entries* collect (first (car X))) 
 				CodeBase* CodeSize*))) 
 
+% If writing into memory, flush the caches
+
+    (cond ((not *WritingFaslFile)
+	   (clear_cache CodeBase* (wplus2 CodeBase* CodeSize*))))
+
     (return (and LapReturnValue*	  % return nil if LapReturnValue* is not set
 	     (MkCODE LapReturnValue*))))) % How does this point at the code?
 					  % It is a fluid variable that got
@@ -1720,10 +1725,9 @@
   (prog nil 
     (setq X (second X)) 
     (for (from I 0 (Size X) 1) (do (DepositByte (Indx X I)))) 
-    (DepositByte 0) 
-	(while (not (eq 0 (remainder CurrentOffset!* 8)))
-	       (DepositByte 0))))
-% align to word boundary
+    (DepositByte 0)
+    (while (not (eq 0 (remainder CurrentOffset!* 8)))
+      (DepositByte 0))))		% align to word boundary
 
 (de DepositFloat (X)                    % this will not work in cross-assembly
     (progn
@@ -1991,7 +1995,7 @@
 (de alignData(u)
     (let(rcode
 	 w
-	 (offset CurrentOffset*)
+	 (offset (or CurrentOffset* 0))
 	 prev-op
 	 offset1
 	 in-code?
@@ -2003,18 +2007,20 @@
        (cond 
 
 	 % initial start: sync. entry point
-	   ((null rcode)
-	    (setq offset1 offset)
-	    (let ((y u) (q w))
-	      (setq in-code? (eqcar w '*entry))
-	      (while y
-		(when (pairp q)(setq offset1 (iplus2 offset1 (instructionlength q))))
-		(if (eqcar q '*entry) (setq y nil) (setq q (pop y))))
-	      (setq offset1 (wand offset1 7))
-	      (when (not (eq offset1 0))
-		(push '(nop) rcode)
-		(setq offset (iplus2 offset 4)))
-	     ))
+%%	   ((null rcode)
+%% 	    (setq offset1 offset)
+%% 	    (let ((y u) (q w))
+%% 	      (setq in-code? (eqcar w '*entry))
+%% 	      (while y
+%% 		(when (pairp q)(setq offset1 (iplus2 offset1 (instructionlength q))))
+%% 		(if (eqcar q '*entry) (setq y nil) (setq q (pop y))))
+%% 	      (setq offset1 (wand offset1 7))
+%% 	      (when (not (eq offset1 0))
+%% 		(push '(nop) rcode)
+%% 		(setq offset (iplus2 offset 4)))
+%% 	      )
+%%	    )
+	   
  
 	% entry: executable code starts
 	    ((eqcar w '*entry)(setq in-code? t))
@@ -2032,7 +2038,9 @@
 	     (push '(nop) rcode)
 	     (setq offset (iplus2 offset 4))
 	     (if q (push q rcode)))
-	 ))
+	   )
+	 (setq offset (iplus2 offset 8))
+	 )
 
 	% label in data
 	   ((and (not in-code?) (labelp w))
@@ -2044,8 +2052,13 @@
 	       
 	 )
        (when (pairp w)(setq offset (iplus2 offset (InstructionLength w))))
+       (print (list offset w))
        (push w rcode)
        )
+      % Now at end: if we are in code, check for alignment and issue nop if necessary
+      (when (and in-code? (not (eq 0 (wand offset 7))))
+	(push '(nop) rcode)
+	(setq offset (iplus2 offset 4)))
       (setq u (reversip rcode))
 
     u      
