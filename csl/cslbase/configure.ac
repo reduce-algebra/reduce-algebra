@@ -104,22 +104,6 @@ then
   with_windows_layout="old"
 fi
 
-# Universal builds on the Macintosh are NOT YET AVAILABLE.
-AC_ARG_WITH(mac_universal,
-  AC_HELP_STRING([--with-mac-universal], [Build universal mac app]),
-  [],
-  [with_mac_universal="no"])
-
-AC_ARG_WITH(mac_x86_64,
-  AC_HELP_STRING([--with-mac-x86_64], [Build x86_64 mac app]),
-  [],
-  [with_mac_x86_64="no"])
-
-AC_ARG_WITH(mac_arm64,
-  AC_HELP_STRING([--with-mac-arm64], [Build arm64 mac app]),
-  [],
-  [with_mac_arm64="no"])
-
 # All the source files for CSL are in C++ not C
 # and so it is best to make configuration tests match.
 
@@ -221,16 +205,6 @@ AC_ARG_WITH(threads,
 if test "x$with_threads" = "xno"
 then
   AC_DEFINE(AVOID_THREADS, [1], [disable Karatsuba and input local editing so they do not create threads])
-fi
-
-AC_ARG_WITH(fake-exceptions,
-   AC_HELP_STRING([--with-fake-exceptions], [Avoid use of C++ exceptions and RAII]),
-   [],
-   [with_fake_exceptions="no"])
-
-if test "x$with_fake_exceptions" = "xyes"
-then
-  AC_DEFINE(FAKE_EXCEPTIONS, [1], [Avoid C++ exceptions and RAII])
 fi
 
 if test "x$BUILTFOR" = "xunknown"
@@ -498,22 +472,6 @@ case $host in
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
   fi
   AC_CHECK_PROGS(REZ,[/usr/bin/Rez /Developer/tools/Rez],[Rez])
-  if test "x$with_mac_x86_64" = "xyes"
-  then
-    CPPFLAGS="$CPPFLAGS -arch x86_64"
-    CXXCPPFLAGS="$CXXCPPFLAGS -arch x86_64"
-    CFLAGS="$CFLAGS -arch x86_64"
-    CXXFLAGS="$CXXFLAGS -arch x86_64"
-    LDFLAGS="$LDFLAGS -arch x86_64"
-  fi
-  if test "x$with_mac_arm64" = "xyes"
-  then
-    CPPFLAGS="$CPPFLAGS -arch arm64"
-    CXXCPPFLAGS="$CXXCPPFLAGS -arch arm64"
-    CFLAGS="$CFLAGS -arch arm64"
-    CXXFLAGS="$CXXFLAGS -arch arm64"
-    LDFLAGS="$LDFLAGS -arch arm64"
-  fi
   ;;
 *-freebsd*)
   AC_MSG_NOTICE([Building on FreeBSD])
@@ -1677,13 +1635,13 @@ then
 # 10.11 El Capitan    )
 # 10.12 Sierra        )
 # 10.13 High Sierra     Now the oldest deployment target I support
-#                       (this is because it is the oldest release my old
-#                       macbook can install!) on x86_64.
+#                       (this is because it is the best release my very
+#                       old macbook can install!).
 # 10.14 Mojave
 # 10.15 Catalina
 # 11.0  Big Sur         Now the version I build and test on.
-#                       Ha ha - from late 2020 there is a transition to
-#                       "Apple Silicon", ie ARM64.
+# 11.1                  Ha ha - from late 2020 there is a transition to
+# 11.2                  "Apple Silicon", ie ARM64.
 #
 # Every few years maybe I should review how old a MacOS can be supported, but
 # note very well that one needs to configure Macports to use a deployment
@@ -1691,19 +1649,13 @@ then
 # macports stuff is liable to need rebuilding or re-installing so as to
 # avoid moans about version support conflicts when things are linked.
 #
-  if test "x$with_mac_arm64" = "xyes"
-  then
-# I have doubts about this because 11.0 was the first OS release to
-# support arm64. But I may be building other things for 10.13 and so it
-# starts off safer to stay there.
-    ENVP="MACOSX_DEPLOYMENT_TARGET=10.13"
-  else
-    ENVP="MACOSX_DEPLOYMENT_TARGET=10.13"
-  fi
+  ENVP="MACOSX_DEPLOYMENT_TARGET=10.13"
+  AC_MSG_NOTICE([CC=$CC CXX=$CXX CPP=$CPP CXXCPP=$CXXCPP])
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
   CPP="$ENVP $CPP"
   CXXCPP="$ENVP $CXXCPP"
+  AC_MSG_NOTICE([CC=$CC CXX=$CXX CPP=$CPP CXXCPP=$CXXCPP])
 # The eccentric code here insists that I use the "macports" version
 # of many libraries and it links in the .a files not the .dyld ones so
 # that the resulting executable is easier to distribute. If that is not done
@@ -1825,10 +1777,6 @@ AM_CONDITIONAL(valgrind, test "x$VALGRIND" = "xvalgrind")
 AM_CONDITIONAL(crlibm, test "x$with_crlibm" != "xno")
 AM_CONDITIONAL(softfloat, test "x$with_softfloat" != "xno")
 AM_CONDITIONAL(redfront, test "x$with_redfront" != "xno")
-AM_CONDITIONAL(fake_exceptions, test "x$with_fake_exceptions" = "xyes")
-AM_CONDITIONAL(mac_universal, test "x$with_mac_universal" = "xyes")
-AM_CONDITIONAL(mac_x86_64, test "x$with_mac_x86_64" = "xyes")
-AM_CONDITIONAL(mac_arm64, test "x$with_mac_arm64" = "xyes")
 
 AC_OUTPUT
 

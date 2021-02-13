@@ -1,7 +1,7 @@
 AC_INIT([REDUCE], [from SourceForge], [acn1@cam.ac.uk])
 
 # **************************************************************************
-# * Copyright (C) 2017-20, Codemist.                      A C Norman       *
+# * Copyright (C) 2017-21, Codemist.                      A C Norman       *
 # *                                                                        *
 # * Redistribution and use in source and binary forms, with or without     *
 # * modification, are permitted provided that the following conditions are *
@@ -30,7 +30,6 @@ AC_INIT([REDUCE], [from SourceForge], [acn1@cam.ac.uk])
 # **************************************************************************
 
 
-
 # The next line is a dreadful thing and is in case I am launched
 # from a bash prompt, in which case the SHELL variable will be set
 # to /bin/bash (or perhaps the user's login shell?). Anyway that hurts
@@ -56,6 +55,8 @@ AC_PREREQ(2.61)
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_AUX_DIR([.])
+
+AC_CANONICAL_HOST()
 
 abssrcdir=`"$srcdir/scripts/here.sh"`
 
@@ -423,50 +424,52 @@ fi
 # I can I will first make the default builds on ARM based Macs universal
 # and maybe later let the Intel builds catch up.
 
+AC_MSG_NOTICE([About to think about universal])
+
 AC_ARG_ENABLE(universal,
   AC_HELP_STRING([--enable-universal],
                  [Try to build universal binary on Mac Big Sur (CSL only)]),
   [],
   [enable_universal="no"])
 
+ORIG="$CC$CXX"
+OLD_CFLAGS="$CFLAGS"
+OLD_CXXFLAGS="$CXXFLAGS"
+OLD_CPPFLAGS="$CPPFLAGS"
+AC_PROG_CC
+AC_PROG_CXX
+CFLAGS="$OLD_CFLAGS"
+CXXFLAGS="$OLD_CXXFLAGS"
+CPPFLAGS="$OLD_CPPFLAGS"
 
+uname_m=`uname -m`
 uname_s=`uname -s`
 case "$uname_s" in
 Darwin)
 # "uname -o" is not available on the Macintosh!
   uname_o="macOS"
-  if test "$CC$CXX" = ""
+  if test "$CC" = ""; then CC=clang; fi
+  if test "$CXX" = ""; then CXX=clang++; fi
+  if test "$enable_universal" != "no"
   then
-    CC=clang
-    CXX=clang++
-    AC_MSG_NOTICE([Will use clang on Macintosh"])
-    if test "$enable_univeral" != "no"
-    then
-      CPPFLAGS="$CPPFLAGS"
-      CFLAGS="$CFLAGS"
-      CXXFLAGS="$CXXFLAGS"
-      LDFLAGS="$LDFLAGS"
-      CPPFLAGS="$CPPFLAGS -arch x86_64 -arch arm64"
-      CFLAGS="$CFLAGS -arch x86_64 -arch arm64"
-      CXXFLAGS="$CXXFLAGS -arch x86_64 -arch arm64"
-      LDFLAGS="$LDFLAGS -arch x86_64 -arch arm64"
-      AC_LINK_IFELSE([AC_LANG_PROGRAM([],
-        [[return 0]])],
-      [AC_MSG_NOTICE(Will build in universal mode)],
-      [CPPFLAGS="$OLDCPPFLAGS"
-       CFLAGS="$OLDCFLAGS"
-       CXXFLAGS="$OLDCXXFLAGS"
-       LDFLAGS="$OLDLDFLAGS"
-       AC_MSG_NOTICE(Universal build not possible on this host)])
-    fi
+    CPPFLAGS="$CPPFLAGS -arch x86_64 -arch arm64"
+    CFLAGS="$CFLAGS -arch x86_64 -arch arm64"
+    CXXFLAGS="$CXXFLAGS -arch x86_64 -arch arm64"
+    LDFLAGS="$LDFLAGS -arch x86_64 -arch arm64"
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([],
+      [[return 0]])],
+    [AC_MSG_NOTICE(Will build in universal mode)],
+    [CPPFLAGS="$OLDCPPFLAGS"
+     CFLAGS="$OLDCFLAGS"
+     CXXFLAGS="$OLDCXXFLAGS"
+     LDFLAGS="$OLDLDFLAGS"
+     AC_MSG_NOTICE(Universal build not possible on this host)])
   fi
   ;;
-  *)
+*)
   uname_o=`uname -o 2>/dev/null`
   ;;
 esac
-
-AC_CANONICAL_HOST()
 
 AC_ARG_WITH(build,
   AC_HELP_STRING([--with-build], [Used internally to control build directory]),
@@ -503,6 +506,12 @@ LIBEDIT_VERSION=20140620-3.1
 # down a flag that they do not know about, and so I transcribe into here
 # all the flags that the CSL configuration may ever want. The down-side of
 # this is that "configure --help" shows them all.
+
+AC_ARG_WITH(lto,
+   AC_HELP_STRING([--with-lto],
+                  [Experiment with extreme optimisation in gcc (CSL only)]),
+   [],
+   [with_lto="no"])
 
 AC_ARG_WITH(cygwin,
   AC_HELP_STRING([--with-cygwin],
@@ -643,14 +652,14 @@ AC_MSG_NOTICE([args=<$ac_configure_args>])
 AC_MSG_NOTICE([filtered=<$filtered>])
 AC_MSG_NOTICE([nohost=<$nohost>])
 
-
 # Hah - the next is a jolly jape. It arranged that when I build on one of my
 # own real machines I default to a new and experimental layout for the build
 # of windows versions, but everybody else (unless their host has a name
 # matching mine!) should be undisturbed.
 
 # I have disabled this just for a while... I am making other changes and I do
-# not want this confusion to mess me up.
+# not want this confusion to mess me up. The XXX is there to cause this
+# match not to be taken.
 
 case `uname -n` in
 *panamintXXX* | *gauguinXXX*)
@@ -673,6 +682,17 @@ then
   with_windows_layout="old"
 fi
 
+setpasscc ()
+{
+  passcc=""
+  if test "$CPP" != ""; then passcc="$passcc CPP=\"$CPP\""; fi
+  if test "$CC" != ""; then passcc="$passcc CC=\"$CC\""; fi
+  if test "$CXXCPP" != ""; then passcc="$passcc CXXCPP=\"$CXXCPP\""; fi
+  if test "$CXX" != ""; then passcc="$passcc CXX=\"$CXX\""; fi
+  if test "$LD" != ""; then passcc="$passcc LD=\"$LD\""; fi
+  AC_MSG_NOTICE([passcc = $passcc])
+}
+
 csl_inplace_cygwin_build ()
 {
 # The argument here should be x88_64-pc-cygwin
@@ -692,29 +712,16 @@ csl_inplace_cygwin_build ()
     cp "$abssrcdir/csl/$CSLBASE/make-cygwin-symlink.c" "$abssrcdir/cslbuild/$build/make-cygwin-symlink.c"
     cp "$abssrcdir/csl/$CSLBASE/redpsl.sh" "$abssrcdir/cslbuild/$build/redpsl"
     cd "$abssrcdir/cslbuild/$build/$cygver"
-    build=`eval "$SHELL $abssrcdir/scripts/findhost.sh universal-mac-macos $ac_configure_args"`
+  else
+    build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $target $ac_configure_args --with-cygwin"`
     AC_MSG_NOTICE([target=$target => build=$build])
-    mkdir -p "$abssrcdir/cslbuild/$build/x86_64"
-    mkdir -p "$abssrcdir/cslbuild/$build/arm64"
-    cp "$abssrcdir/csl/$CSLBASE/Makefile.mac-universal" "$abssrcdir/cslbuild/$build/Makefile"
+    mkdir -p "$abssrcdir/cslbuild/$build"
     cd "$abssrcdir/cslbuild/$build"
-    config_both="yes"
-  else
-  build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $target $ac_configure_args --with-cygwin"`
-  AC_MSG_NOTICE([target=$target => build=$build])
-  mkdir -p "$abssrcdir/cslbuild/$build"
-  cd "$abssrcdir/cslbuild/$build"
-  if test "x$CC$CPP$CXX$CXXCPP" != "x"
-  then
-    passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
-  else
-    passcc=""
   fi
-  AC_MSG_NOTICE([passcc = $passcc])
+  setpascc
   AC_MSG_NOTICE([host=$host buildmc=$buildmc pass_host=$pass_host])
   pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
   doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
-          CC=\"$CC\" CXX=\"$CXX\" \
           STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \ 
           $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
@@ -744,13 +751,7 @@ csl_inplace_nativewin_build ()
     mkdir -p "$abssrcdir/cslbuild/$build"
     cd "$abssrcdir/cslbuild/$build"
   fi
-  if test "x$CC$CPP$CXX$CXXCPP" != "x"
-  then
-    passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
-  else
-    passcc=""
-  fi
-  AC_MSG_NOTICE([passcc = $passcc])
+  setpascc
   if test "$with_windows_layout" = "new"
   then
     cygextra=
@@ -765,7 +766,6 @@ csl_inplace_nativewin_build ()
   fi
   pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
   doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
-          CC=\"$CC\" CXX=\"$CXX\" \
           CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
           $passcc $cygextra $pass_build --host=$host"
@@ -812,16 +812,9 @@ csl_inplace_build ()
 # All other platforms come here...
     mkdir -p "$abssrcdir/cslbuild/$build"
     cd "$abssrcdir/cslbuild/$build"
-    if test "x$CC$CPP$CXX$CXXCPP" != "x"
-    then
-      passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
-    else
-      passcc=""
-    fi
-    AC_MSG_NOTICE([passcc = $passcc])
+    setpascc
     pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
     doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
-            CC=\"$CC\" CXX=\"$CXX\" \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
             $passcc $pass_build"
@@ -848,15 +841,7 @@ psl_inplace_build ()
   builddir=`pwd`
   mkdir -p crlibm
   cd crlibm
-
-  if test "x$CC$CPP$CXX$CXXCPP" != "x"
-  then
-    passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
-  else
-    passcc=""
-  fi
-
-  AC_MSG_NOTICE([passcc = $passcc])
+  setpascc
   doconfig="$SHELL $abssrcdir/libraries/crlibm/configure --config-cache $filtered \
         $pass_host \
         CPPFLAGS=\"$CPPFLAGS\" \
@@ -876,7 +861,6 @@ psl_inplace_build ()
   cd libedit
   doconfig="$SHELL $abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure --config-cache \
         $nohost \
-        CC=\"$CC\" CXX=\"$CXX\" \
         CPPFLAGS=\"$CPPFLAGS\" \
         CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" \
@@ -895,9 +879,9 @@ psl_inplace_build ()
   AC_MSG_NOTICE([About to configure redfront])
   mkdir -p redfront
   cd redfront
-
+  setpascc
   doconfig="$SHELL $abssrcdir/generic/newfront/configure --config-cache $nohost \
-        CC=\"$CC\" CXX=\"$CXX\" \
+        $passcc \
         CPPFLAGS=\"$CPPFLAGS\" \
         CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" \
@@ -956,6 +940,9 @@ AC_ARG_WITH(ccache,
                  [--without-ccache can be used to disable use of ccache]),
   [], [])
 
+AC_CHECK_PROG([CCACHE], [ccache], [ccache], [])
+AC_MSG_NOTICE([CC=/$CC/ CXX=/$CXX/ CCACHE=/$CCACHE/])
+
 # The use of ccache here deserves an explanation. The first and maybe obvious
 # thing is that if either ccache seems not to to be installed or if the person
 # who invoked the configure script had overridden CC or CXX so specify any
@@ -983,19 +970,6 @@ AC_ARG_WITH(ccache,
 # Hah - a further issue. On some platforms gcc and g++ (and some others) will
 # be links to ccache and so the facility is already used automatically. In
 # that case it is not a help to wrap in an extra call to ccache!
-
-ORIG="$CC$CXX"
-OLD_CFLAGS="$CFLAGS"
-OLD_CXXFLAGS="$CXXFLAGS"
-OLD_CPPFLAGS="$CPPFLAGS"
-AC_PROG_CC
-AC_PROG_CXX
-CFLAGS="$OLD_CFLAGS"
-CXXFLAGS="$OLD_CXXFLAGS"
-CPPFLAGS="$OLD_CPPFLAGS"
-
-AC_CHECK_PROG([CCACHE], [ccache], [ccache], [])
-AC_MSG_NOTICE([CC=/$CC/ CXX=/$CXX/ CCACHE=/$CCACHE/])
 
 if test "$with_ccache" != "no" &&
    test "$ORIG" = "" &&
@@ -1068,28 +1042,31 @@ then
 # However if I am building for raw cygwin I find that I have pain if I
 # specify --host specifically, so in that case I will not!
     pass_build="--with-build=\"$build\""
+    setpascc
     doconfig="$SHELL $abssrcdir/csl/$CSLBASE/configure -C \
         $ac_configure_args \
-        CC=\"$CC\" CXX=\"$CXX\" \
+        $passcc \
         CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
         $pass_host --with-wx=\"$with_wx\" $pass_build --without-fox"
   elif test "x$with_fox" != "xno"
   then
     pass_build="--with-build=\"$build\""
+    setpascc
     doconfig="$SHELL $abssrcdir/csl/$CSLBASE/configure -C \
         $ac_configure_args \
-        CC=\"$CC\" CXX=\"$CXX\" \
+        $passcc \
         CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
         $pass_host --with-fox=\"$builddir\" $pass_build --without-wx"
   else
 # This final version will be without any GUI.
     pass_build="--with-build=\"$build\""
+    setpascc
     doconfig="$SHELL $abssrcdir/csl/$CSLBASE/configure \
         -C \
         $ac_configure_args \
-        CC=\"$CC\" CXX=\"$CXX\" \
+        $passcc \
         CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
         $pass_host $pass_build --without-fox --without-wx"
@@ -1140,13 +1117,7 @@ then
 # BaKoMa fonts which remap at least one TeX glyph to outside the range
 # of simple 8-bit characters. This will bring some follow-on pain no doubt
 # but addressing that pain is probably good in the long term. 
-    if test "x$CC$CPP$CXX$CXXCPP" != "x"
-    then
-      passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
-    else
-      passcc=""
-    fi
-    AC_MSG_NOTICE([passcc = $passcc pass_host=$pass_host])
+    setpascc
     doconfig="$SHELL $abssrcdir/csl/wxWidgets/configure -C $wx \
             $pass_host \
             CPPFLAGS=\"$CPPFLAGS -D_GNU_SOURCE=1\" \
@@ -1200,13 +1171,7 @@ then
     # in the build directory.
     cp "$abssrcdir/csl/fox/src/"*.gif fox/src
     cd fox
-    if test "x$CC$CPP$CXX$CXXCPP" != "x"
-    then
-      passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
-    else
-      passcc=""
-    fi
-    AC_MSG_NOTICE([passcc = $passcc])
+    setpascc
     doconfig="$SHELL $abssrcdir/csl/fox/configure -C $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" \
             CFLAGS=\"$CFLAGS\" \
@@ -1241,14 +1206,7 @@ else
   AC_MSG_NOTICE([About to configure crlibm])
   mkdir -p crlibm
   cd crlibm
-
-  if test "x$CC$CPP$CXX$CXXCPP" != "x"
-  then
-    passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
-  else
-    passcc=""
-  fi
-  AC_MSG_NOTICE([passcc = $passcc])
+  setpascc
   doconfig="$SHELL $abssrcdir/libraries/crlibm/configure -C $filtered \
         $pass_host \
         CPPFLAGS=\"$CPPFLAGS\" \
@@ -1272,13 +1230,7 @@ case "`uname -s` `uname -m`" in
   ;;
 *)
   cd libffi
-  if test "x$CC$CPP$CXX$CXXCPP" != "x"
-  then
-    passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
-  else
-    passcc=""
-  fi
-  AC_MSG_NOTICE([passcc = $passcc])
+  setpascc
   doconfig="$SHELL $abssrcdir/libraries/libffi/configure -C $filtered \
           $pass_host \
           CPPFLAGS=\"$CPPFLAGS\" \
@@ -1300,14 +1252,7 @@ esac
 AC_MSG_NOTICE([About to configure libsoftfloat])
 mkdir -p softfloat
 cd softfloat
-
-if test "x$CC$CPP$CXX$CXXCPP" != "x"
-then
-  passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
-else
-  passcc=""
-fi
-AC_MSG_NOTICE([passcc = $passcc])
+setpascc
 
 # NOTE that there is now a SoftFloat-3e and I should migrate to use of it!
 
@@ -1330,10 +1275,10 @@ cd "$builddir"
 AC_MSG_NOTICE([About to configure libedit])
 mkdir -p libedit
 cd libedit
-
+setpascc
 doconfig="$SHELL $abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure -C \
         $nohost \
-        CC=\"$CC\" CXX=\"$CXX\" \
+        $passcc \
         CPPFLAGS=\"$CPPFLAGS\" \
         CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" \
@@ -1352,9 +1297,9 @@ ln -f -s $abssrcdir/libraries/wineditline .
 AC_MSG_NOTICE([About to configure redfront])
 mkdir -p redfront
 cd redfront
-
+setpascc
 doconfig="$SHELL $abssrcdir/generic/newfront/configure -C $nohost \
-        CC=\"$CC\" CXX=\"$CXX\" \
+        $passcc \
         CPPFLAGS=\"$CPPFLAGS\" \
         CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" \

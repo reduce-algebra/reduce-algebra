@@ -230,11 +230,12 @@ else
         *Mac*OS*X*ProductVersion*\<string\>10.15*)
           os="mac_10.15_catalina"
           ;;
-        *Mac*OS*X*ProductVersion*\<string\>11.0*)
-          os="mac_11.0_big_sur"
+# I think that 11.0 and 11.2 are both known as Big Sur?
+        *Mac*OS*X*ProductVersion*\<string\>11.*)
+          os="mac_11_big_sur"
           ;;
-        *mac*OS*ProductVersion*\<string\>11.0*)
-          os="mac_11.0_bigsur"
+        *mac*OS*ProductVersion*\<string\>11.*)
+          os="mac_11_bigsur"
           ;;
         *Mac*OS*X*ProductVersion*\<string\>*)
           os="mac_unknown_version"
