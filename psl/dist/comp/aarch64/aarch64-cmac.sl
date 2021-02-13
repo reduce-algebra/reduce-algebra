@@ -857,9 +857,9 @@
  )
  
 (DefCMacro *WMinus
-        ((regp regp)  (rsb ArgOne ArgTwo 0))
+        ((regp regp)  (NEG ArgOne ArgTwo))
         ((regp Anyp)  (*Move ArgTwo ArgOne)
-                      (rsb ArgOne ArgOne 0))
+                      (NEG ArgOne ArgOne))
         (             (*Move ArgTwo (reg t2))
                         (*wminus (reg t2) (reg t2))
                         (*Move (reg t2) ArgOne)))

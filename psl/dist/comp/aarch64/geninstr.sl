@@ -55,7 +55,7 @@
 %	(OP-regn-imm8 . lth-regn-imm8 )
 %	(OP-regd-imm8 . lth-regd-imm8 )
 	(OP-reg-shifter . lth-reg-shifter )
-	(OP-xzr-reg-shifter . lth-reg-shifter )
+	(OP-reg-xzr-shifter . lth-reg-shifter )
 %	(OP-regn-shifter . lth-regn-shifter )
 	(OP-regd-shifter . lth-regd-shifter )
 	(OP-reg3 . lth-reg3)
@@ -68,6 +68,7 @@
 	(OP-clz . lth-clz)
 	(OP-branch-imm . lth-branch-imm)
 	(OP-branch-imm19 . lth-branch-imm19)
+	(OP-ret . lth-branch-reg)
 	(OP-branch-reg . lth-branch-reg)
 %	(OP-mov-imm16 . lth-mov-imm16)
 	(OP-reg-imm16 . lth-reg-imm16)
@@ -671,7 +672,7 @@
 (instr SMULH  (reg reg reg)             OP-mul3      2#10011011010 0 2#11111)
 
 (instr RBIT   (reg reg)                 OP-reg2      2#11011010110)
-(instr RET    ()                 OP-branch-reg    2#11010110010 X30)
+(instr RET    ()                 OP-ret    2#11010110010 X30)
 (instr RET    (reg)                 OP-branch-reg    2#11010110010)
 (instr REV    (reg reg)                 OP-reg2      2#11011010110)
 

@@ -771,7 +771,7 @@
 
 (de reg-extended-p (x)
     (or (stringp x)
-	(and (pairp x) (regp x))
+%	(and (pairp x) (regp x))
 	(and (eqcar x 'extend) (or (regp (cadr x)) (regp (list 'reg (cadr x))))
 	     (memq (caddr x) '(UXTB UXTH LSL UXTW UXTX SXTB SXTH SXTW SXTX))
 	     (fixp (cadddr x)))
@@ -1023,6 +1023,7 @@
 
 (de lth-branch-reg (code reg) 4)
 
+(de OP-ret (code) (OP-branch-reg code 'X30))
 
 (de OP-reg-Xbfm (code regd regn lsb width)
     (prog (opcode)
@@ -1240,7 +1241,6 @@
 
 (de lth-reg-imm16 (code reg1 reg2 imm16-shifted) 4)
 
-%% ToDo
 (de OP-reg-logical (code regd regn imm-logical)
     (let ((opcode (car code))
 	  (imm-part (imm-logical-p imm-logical)))
@@ -1278,7 +1278,6 @@
 
 (de lth-regd-shifter (code regd reg-shifter) 4)
 
-%% ToDo
 (de OP-reg-shifter (code reg1 reg2 reg-shifter)
     (prog (opcode2 shift-op shift-amount reg3)
 	  (cond ((regp reg-shifter) (setq reg3 reg-shifter opcode2 0 shift-amount 0))
@@ -1386,11 +1385,6 @@
 %%     )
 
 %% (de lth-regd-imm8 (code regd imm8-rotated) 4)
-
-(de OP-regd-shifter (code regd reg-shifter)
-    (OP-reg-shifter code regd '(reg R0) reg-shifter))
-
-(de lth-regd-shifter (code reg reg-shifter) 4)
 
 (de OP-mov-imm16 (code reg1 imm16)
     (prog (cc opcode1)
@@ -1732,8 +1726,7 @@
 (de DepositFloat (X)                    % this will not work in cross-assembly
     (progn
       (setq X (FltInf (second X))) 
-      (DepositWord (FloatlowOrder X)) 
-      (DepositWord (FloathighOrder X))))
+      (DepositWord (FloatlowOrder X))))
 
 (put 'fullword 'InstructionDepositFunction 'DepositWordBlock)
 (put 'halfword 'InstructionDepositFunction 'DepositHalfWordBlock)
