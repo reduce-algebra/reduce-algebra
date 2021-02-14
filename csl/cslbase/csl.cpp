@@ -3202,16 +3202,7 @@ static int submain(int argc, const char *argv[])
 
 #elif defined PROCEDURAL_WASM_XX
 // Set up Reduce
-    PROC_prepare_for_top_level_loop();
-    PROC_process_one_reduce_statement("off echo$");
-    PROC_process_one_reduce_statement("algebraic$");
-// Here I initialise state in the way that we do when we are going to run
-// under TeXmacs.
-    PROC_process_one_reduce_statement(
-        "<< lisp (!*redeflg!* := nil)$ load_package tmprint$"
-        " on fancy$ off promptnumbers$ on redfront_mode >>$");
-    PROC_process_one_reduce_statement("int(x/ln(x^2-beta^2), x);");
-
+    PROC_prepare_for_web_top_level();
 #ifdef PROCEDURAL_WASM_SETUP
 // The header you include *must* contain void setup_web_reduce(void)
     setup_web_reduce();
@@ -3310,6 +3301,17 @@ int PROC_prepare_for_top_level_loop()
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     if_error(w1 = make_undefined_symbol("prepare-for-top-loop");
+             Lapply1(nil, w1, nil),
+             // Error handler
+             return 1);  // Failed one way or another
+    return 0;
+}
+
+int PROC_prepare_for_web_top_level()
+{   LispObject w1 = nil;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
+    if_error(w1 = make_undefined_symbol("prepare-for-web-top-level");
              Lapply1(nil, w1, nil),
              // Error handler
              return 1);  // Failed one way or another

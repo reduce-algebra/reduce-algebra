@@ -1,10 +1,10 @@
-// proc.h                                       Copyright (C) 2020 Codemist
+// proc.h                                       Copyright (C) 2021 Codemist
 
 #ifndef header_proc_h
 #define header_proc_h 1
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -186,10 +186,12 @@ extern int PROC_set_callbacks(character_reader *r,
 int PROC_load_package(const char *name);
 
 //
-// prepare_for_top_level_loop must be called (once) before
+// prepare_for_top_level_loop must be called (once) before other things.
+// prepare_for_web_top_level is a variant!
 //
 
 int PROC_prepare_for_top_level_loop();
+int PROC_prepare_for_web_top_level();
 
 //
 // Deal with a single Reduce statement (or expression), passed as

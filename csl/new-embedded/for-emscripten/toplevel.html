@@ -72,31 +72,57 @@
                 let o = event.data.line;
 // If an empty string is passed (ie asking for a blank line of output)
 // console.log displays an <empty string> message that I view as ugly, so
-// I map blank lines into ones consisting of a single space chatacter.
+// I map blank lines into ones consisting of a single space character.
                 if (o == '') o = ' ';
                 console.log(o);   // For debugging...
                 let n = o.indexOf('\002');
+                var body = document.getElementById("theBody");
                 if (n != -1)
                 {
 // Here I not only strip out the material before the "\002" but also the
 // "junk" that reads "latex:\black$\displaystyle" and a final "$\005". Those
 // are fragments that the Reduce interface for TeXmacs inserts.
-                   o = o.substring(n+1+26, o.length-2)
-                   o = '$$'.concat(o, '$$');
+                    o = o.substring(n+1+26, o.length-2)
+// Reduce puts in "\*" for multiplication, but MathJax does not like that,
+// so I define it away into a narrow space.
+                    o = '$$\\def\\*{{\\,}}'.concat(o, '$$');
+                    var para = document.createElement("P");
+                    var node = document.createTextNode(o);
+                    para.appendChild(node);
+                    MathJax.Hub.Queue(["Typeset", MathJax.Hub, para]);
+                    body.insertBefore(para, inArea);
                 }
-                var para = document.createElement("P");//make an p element
-                var node = document.createTextNode(o);//create an innerhtml node
-                para.appendChild(node);//add the text to the p element
-                MathJax.Hub.Queue(["Typeset", MathJax.Hub, para]);
-                var body = document.getElementById("theBody");//search the first p element
-                var child = document.getElementById("endMarker");//search the first p element
-                body.insertBefore(para, child);//inserts the p element before the first paragraph
+                else
+                {   var para = document.createElement("P");
+                    var node = document.createTextNode(o);
+                    para.appendChild(node);
+                    body.insertBefore(para, inArea);
+                }
             }
+        }
+        function sendToReduce(str)
+        {
+            console.log(str);   // For debugging...
+            let buf = new Uint8Array(str.length+1);
+            for (let i=0; i<str.length; i++)
+                buf[i] = str.charCodeAt(i);
+            buf[str.length] = 0; // nul-terminate for benefit of C/C++.
+            worker.postMessage({
+                funcName: 'insert_buffer',
+                callbackId: '',
+                data: buf
+            });
         }
         button.addEventListener('click', event => {
             // need to convert the string to a Uint8Array
             let str = unescape(encodeURIComponent(inArea.value));
             // found the above snippet at https://gist.github.com/emrahgunduz/5c27ff1db650b93c7864
+// Insert the input text so that people can see it...
+            var para = document.createElement("P");//make an p element
+            var node = document.createTextNode(str);//create an innerHTML node
+            para.appendChild(node);//add the text to the p element
+            var body = document.getElementById("theBody");
+            body.insertBefore(para, inArea);
             let buf = new Uint8Array(str.length+1);
             for (let i=0; i<str.length; i++)
                 buf[i] = str.charCodeAt(i);
@@ -110,13 +136,8 @@
         document.addEventListener("DOMContentLoaded", function(event) {
             document.body.appendChild(inArea);
             document.body.appendChild(button);
-            var para = document.createElement("P");//make an p element
-            var node = document.createTextNode("$$1/(x-2)$$");//create an innerhtml node
-            para.appendChild(node);//add the text to the p element
-            var body = document.getElementById("theBody");//search the first p element
-            var child = document.getElementById("endMarker");//search the first p element
-            body.insertBefore(para, child);//inserts the p element before the first paragraph
         });
+        sendToReduce('<< lisp (!*redefmsg := nil); load_package tmprint; on fancy; off promptnumbers; on redfront_mode >>$');
     </script>
 </head>
 
@@ -127,7 +148,6 @@
    </math-field>
 -->
 
-<p id="endMarker">
 </p>
 
 </body>

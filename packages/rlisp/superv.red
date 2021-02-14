@@ -266,6 +266,27 @@ symbolic procedure prepare!-for!-top!-loop !~prefixchars!~;
       curescaped!* := nil;
    end;
 
+fluid '(!*nat);
+
+symbolic procedure prepare!-for!-web!-top!-level !~prefixchars!~;
+   begin
+      verbos nil;
+      if not otime!-set!* then <<
+         otime!* := time();
+% The next line is that way for bootstrapping purposes.
+         if getd 'gctime then ogctime!* := gctime() else ogctime!* := 0;
+         otime1!* := otime2!* := otime3!* := otime!*;
+         ogctime1!* := ogctime2!* := ogctime3!* := ogctime!*;
+         otime!-set!* := t >>;
+      peekchar!* := !~prefixchars!~;
+      cursym!* := '!*semicol!*;
+      curescaped!* := nil;
+% The next three lines are the "web top level" speciality.
+      !*echo := nil;
+      !*nat := nil;
+      !*mode := 'algebraic;
+   end;
+
 % This should read one Reduce statement and evaluate or obey what it finds.
 % It returns nil in "ordinary" cases and a non-nil value if the case
 % that Reduce wishes to quit from its read-eval-print loop. 
