@@ -10,13 +10,6 @@
 # the python web server uses). By default it uses firefox but if it is
 # given an argument that specifies what to use.
 
-# For the moment you then need to type "ctrl-shift-i" in the browser window
-# to access developer tools there, and possibly select the tab that shows
-# the javascript console.
-
-# As of early February 2021 I have seen this start to work on Linux but on
-# Windows there is still some issue....
-
 
 HTTP_ACTIVE="no"
 PID=`cat http.pid 2> /dev/null`

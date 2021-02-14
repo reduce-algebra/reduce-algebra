@@ -13,14 +13,15 @@
          its output to the other window. You may need to scroll that window
          to see the output. The input windows is pre-populated with the text
          "int(1/(x^4-1), x);" so you can either edit or replace that or just
-         press submit. The mathematical part of the output should be
+         press submit. The mathematical part of the output as delived by
+         Reduce w will be:
            latex:\black$\displaystyle
            \frac{-2\*\arctan\left(x\right)+\log\left(x-1\right)-
            \log\left(x+1\right)}{4}$
          and that should be delimited by a pair of control characters,
          \U0002 before and \U005 after it. Other output is to be viewed as
-         plain text. Note that the two renderings of that dislike the use
-         of "\*". Reduce could be adjusted in that respect is necessary!
+         plain text. Note that the MathJax dislikes the use of "\*".
+         Reduce could be adjusted in that respect is necessary!
 
          Because this page loads the various web tools it may take a while
          to load!
@@ -57,12 +58,6 @@
         // add textareas + button
         window.reduceLatch = 0;
 
-        let outArea = document.createElement('textarea');
-        outArea.cols = 50;
-        outArea.rows = 20;
-        outArea.setAttribute('id', 'reduce-output');
-        outArea.value = 'Some initial output...';
-
         let inArea = document.createElement('textarea');
         inArea.cols = 80;
         inArea.rows = 10;
@@ -79,15 +74,22 @@
 // console.log displays an <empty string> message that I view as ugly, so
 // I map blank lines into ones consisting of a single space chatacter.
                 if (o == '') o = ' ';
-                console.log(o);
-                outArea.value += o;
-                outArea.value += '\n';
-                o = '$$'.concat(o, '$$');
+                console.log(o);   // For debugging...
+                let n = o.indexOf('\002');
+                if (n != -1)
+                {
+// Here I not only strip out the material before the "\002" but also the
+// "junk" that reads "latex:\black$\displaystyle" and a final "$\005". Those
+// are fragments that the Reduce interface for TeXmacs inserts.
+                   o = o.substring(n+1+26, o.length-2)
+                   o = '$$'.concat(o, '$$');
+                }
                 var para = document.createElement("P");//make an p element
                 var node = document.createTextNode(o);//create an innerhtml node
                 para.appendChild(node);//add the text to the p element
-                var body = document.getElementById("p0");//search the first p element
-                var child = document.getElementById("p1");//search the first p element
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub, para]);
+                var body = document.getElementById("theBody");//search the first p element
+                var child = document.getElementById("endMarker");//search the first p element
                 body.insertBefore(para, child);//inserts the p element before the first paragraph
             }
         }
@@ -108,44 +110,25 @@
         document.addEventListener("DOMContentLoaded", function(event) {
             document.body.appendChild(inArea);
             document.body.appendChild(button);
-            document.body.appendChild(outArea);
             var para = document.createElement("P");//make an p element
             var node = document.createTextNode("$$1/(x-2)$$");//create an innerhtml node
             para.appendChild(node);//add the text to the p element
-            var body = document.getElementById("p0");//search the first p element
-            var child = document.getElementById("p1");//search the first p element
+            var body = document.getElementById("theBody");//search the first p element
+            var child = document.getElementById("endMarker");//search the first p element
             body.insertBefore(para, child);//inserts the p element before the first paragraph
         });
     </script>
 </head>
 
-<body id="p0">
-   \[ \sqrt {\alpha^2 - 2 \alpha \beta + \beta^2} \]
-
-<p>
-   \[ \alpha^2 + 2 \alpha \beta + \beta^2 \]
-</p>
-
-<p id="p1">
-   \[ \frac{-2\*\arctan\left(x\right)+\log\left(x-1\right)-
-      \log\left(x+1\right)}{4}$ \]
-</p>
+<body id="theBody">
 
 <!--
    <math-field>f(x)=
    </math-field>
-
-   <h1>Euler's Identity</h1>
-
-   <p>
-     $$e^{i\pi} + 1 = 0$$
-   </p>
-   <p>
-     $$\frac{-2\*\arctan\left(x\right)+\log\left(x-1\right)-
-             \log\left(x+1\right)}{4}$$
-   </p>
 -->
+
+<p id="endMarker">
+</p>
 
 </body>
 </html>
-
