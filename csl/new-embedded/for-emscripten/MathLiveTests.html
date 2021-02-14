@@ -9,6 +9,7 @@
        import { MathfieldElement } from
           'https://unpkg.com/mathlive/dist/mathlive.min.mjs';
     </script>
+    
     <style>          
     math-field {
  //             border: 1px solid #ddd;
@@ -25,16 +26,28 @@
         // add math-field + button
         window.reduceLatch = 0;
 
-        let mfo = new MathfieldElement();
+
         let mfi = new MathfieldElement();
+        
 
         let button = document.createElement('button');
         button.appendChild(document.createTextNode('Submit'));
         button.addEventListener('click', event => {
             // need to convert the string to a Uint8Array
-            let str = unescape(encodeURIComponent(mfi.value));
+            console.log(mfi.value);
+            let istr = unescape(encodeURIComponent(mfi.value));
+            let str = istr.replace("\\sqrt", "sqrt");
+            str = str.replaceAll("{","(");
+            str = str.replaceAll("}",")");
+            str = str.replaceAll("[]","");
+            str = str.replaceAll("\\mleft","");
+            str = str.replaceAll("\\mright","");
+            str = str.replaceAll("\\cdot","*");
+            str = str.replaceAll("?","");
             // found the above snippet at https://gist.github.com/emrahgunduz/5c27ff1db650b93c7864
             let buf = new Uint8Array(str.length+1);
+            console.log("Send to Reduce:");
+            console.log(str);
             for (let i=0; i<str.length; i++)
                 buf[i] = str.charCodeAt(i);
             buf[str.length] = 0; // nul-terminate for benefit of C/C++.
@@ -48,20 +61,32 @@
         worker.onmessage = function(event) {
             if (event.data.channel === 'stdout') {
                 let o = event.data.line;
-// If an empty string is passed (ie asking for a blank line of output)
-// console.log displays an <empty string> message that I view as ugly, so
-// I map blank lines into ones consisting of a single space chatacter.
-                if (o == '') o = ' ';
-                console.log(o);
+ //               console.log(o);
+                if (o.substring(0, 6) == "Reduce") {var h = document.createElement("h3");
+                                                    var greeting = document.createTextNode(o);
+                                                    h.appendChild(greeting);
+                                                    document.body.appendChild(h);
+                                                    document.body.appendChild(mfi);
+                                                    document.body.appendChild(button);}
+                else if (!(o == '' || o.substring(0,3) == "off" ||
+                           o.substring(0,1) == "["))
+                {  console.log("Received from Reduce:");
+                   console.log(o);
+                o = o.replaceAll("sqrt","\\sqrt");
+                o = o.replaceAll("(","{");
+                o = o.replaceAll(")","}");
+                o = o.replaceAll("**","^");
+                o = o.replaceAll("*","\\cdot ");
+                var mfo = new MathfieldElement();
                 mfo.value = o;
                 mfo.value += '\n';
+                document.body.appendChild(mfo);
+                mfi = new MathfieldElement();
+                document.body.appendChild(mfi);
+                document.body.appendChild(button); }
             }
         } ;  
-            document.addEventListener("DOMContentLoaded", function(event) {
-            document.body.appendChild(mfi);
-            document.body.appendChild(button);
-            document.body.appendChild(mfo);
-        });       
+ 
     </script>    
 </head> 
 </html>
