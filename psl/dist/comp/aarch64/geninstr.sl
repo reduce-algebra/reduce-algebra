@@ -50,6 +50,7 @@
 (fluid '(lengthfunctions))
 (setq lengthfunctions
       '((OP-nop . lth-nop)
+	(OP-adr . lth-adr)
 	(OP-reg-Xsrv . lth-reg-Xsrv)
 	(OP-reg-imm8 . lth-reg-imm8 )
 %	(OP-regn-imm8 . lth-regn-imm8 )
@@ -237,6 +238,7 @@
 	  ((eq op 'reg-offset8) '(reg-offset8-p))
 	  ((eq op 'reg-offset12) '(reg-offset12-p))
 	  ((eq op 'offset19) '(offset19-p))
+	  ((eq op 'offset21) '(offset21-p))
 	  ((eq op 'offset26) '(offset26-p))
 	  ((eq op 'pm-reg-shifter) '(pm-reg-shifter-p))
 	  ((eq op 'reg-indirect) '(reg-indirect-p))
@@ -371,12 +373,15 @@
 (instr ADD (reg32 reg32 reg32-shifter)     OP-reg-shifter   2#00001011000)
 (instr ADD (reg reg reg-shifter)     OP-reg-shifter   2#10001011000)
 (instr ADDS (reg32 reg32-or-sp reg32-extended)    OP-reg-extended  2#00101011001)
+(instr ADDS (reg reg-or-sp reg32-extended)    OP-reg-extended  2#10101011001)
 (instr ADDS (reg32 reg32-or-sp imm12-shifted)   OP-reg-imm12     2#001100010)
 (instr ADDS (reg reg-or-sp imm12-shifted)   OP-reg-imm12     2#101100010)
 (instr ADDS (reg32 reg32 reg32-shifter)     OP-reg-shifter   2#00101011000)
 (instr ADDS (reg reg reg-shifter)     OP-reg-shifter   2#10101011000)
 
 % ADR
+(instr ADR (reg offset21)           OP-adr 2#00010000)
+
 % ADRP
 
 (instr AND (reg32-or-sp reg32 imm-logical)      OP-reg-logical     2#000100100)
@@ -593,10 +598,18 @@
 (instr ORR   (reg reg imm-logical)      OP-reg-logical 2#1011001000)
 (instr ORR   (reg reg reg-shifter)     OP-reg-shifter 2#10101010000)
 
+(instr SUB   (reg32 reg32 reg-extended)     OP-reg-extended  2#01001011001)
 (instr SUB   (reg reg reg-extended)     OP-reg-extended  2#11001011001)
+(instr SUB   (reg32 reg32 reg-shifter)     OP-reg-shifter  2#01001011000)
 (instr SUB   (reg reg reg-shifter)     OP-reg-shifter  2#11001011000)
 (instr SUB   (reg32-or-sp reg32-or-sp imm12-shifted) OP-reg-imm12     2#010100010)
 (instr SUB   (reg-or-sp reg-or-sp imm12-shifted)     OP-reg-imm12     2#110100010)
+(instr SUBS  (reg32 reg32 reg-extended)     OP-reg-extended  2#01101011001)
+(instr SUBS  (reg reg reg-extended)     OP-reg-extended  2#11101011001)
+(instr SUBS  (reg32 reg32 reg-shifter)     OP-reg-shifter  2#01101011000)
+(instr SUBS  (reg reg reg-shifter)     OP-reg-shifter  2#11101011000)
+(instr SUBS  (reg32-or-sp reg32-or-sp imm12-shifted) OP-reg-imm12     2#011100010)
+(instr SUBS  (reg-or-sp reg-or-sp imm12-shifted)     OP-reg-imm12     2#111100010)
 
 (instr SBC   (reg reg reg-shifter)     OP-reg-shifter  2#1101101000)
 

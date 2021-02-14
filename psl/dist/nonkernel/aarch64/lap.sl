@@ -150,34 +150,34 @@ TooMany
   (*field (reg 1) (reg 1)
 	  (wconst InfStartingBit) (wconst InfBitLength))
   (!*move   (reg  1) (reg t3))           %  copy ID
-  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 3))) % load function pointer
-  (BX (reg t2))				% jump to function
+  (LDR (reg t2) (indexed (reg symfnc) (regshifted t3 LSL 3))) % load function pointer
+  (BR (reg t2))				% jump to function
 
   (!*entry XIDApply1 expr 2)              %  IDApply1(Arg1, CodePointer)
   (*field (reg 2) (reg 2) 
 	  (wconst InfStartingBit) (wconst InfBitLength))
   (!*move   (reg 2) (reg t3))           %  copy ID
-  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 3))) % load function pointer
-  (BX (reg t2))			% jump to function
+  (LDR (reg t2) (indexed (reg symfnc) (regshifted t3 LSL 3))) % load function pointer
+  (BR (reg t2))			% jump to function
 
   (!*entry XIDApply2 expr 3)              %  IDApply2(Arg1, Arg2, CodePointer)
   (*field (reg 3) (reg 3) (wconst InfStartingBit) (wconst InfBitLength))
   (!*move   (reg  3) (reg t3))           %  copy ID
-  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 3))) % load function pointer
-  (BX (reg t2))			% jump to function
+  (LDR (reg t2) (indexed (reg symfnc) (regshifted t3 LSL 3))) % load function pointer
+  (BR (reg t2))			% jump to function
 
   (!*entry XIDApply3 expr 4)    %  IDApply3(Arg1, Arg2, Arg3, CodePointer)
   (*field (reg 4) (reg 4) (wconst InfStartingBit) (wconst InfBitLength))
   (!*move   (reg  4) (reg t2))        
-  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 3))) % load function pointer
-  (BX (reg t2))			% jump to function
+  (LDR (reg t2) (indexed (reg symfnc) (regshifted t3 LSL 3))) % load function pointer
+  (BR (reg t2))			% jump to function
 
   (!*entry XIDApply4 expr 5)    %  IDApply4(Arg1, Arg2, Arg3, Arg4, CodePointer)
   (*field (reg 5) (reg 5)
 	  (wconst InfStartingBit) (wconst InfBitLength))
   (!*move   (reg  5) (reg t3))   
-  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 3))) % load function pointer
-  (BX (reg t2))			% jump to function
+  (LDR (reg t2) (indexed (reg symfnc) (regshifted t3 LSL 3))) % load function pointer
+  (BR (reg t2))			% jump to function
       ))
 
 
@@ -204,7 +204,7 @@ TooMany
         (!*JUMPNOTEQ (Label NotAnID) (reg t1) (wconst id-tag))
 
 	% t2 contains id number, load function pointer into t2
-	(LDR (reg t2) (displacement (reg symfnc) (regshifted t2 LSL 3)))
+	(LDR (reg t2) (indexed (reg symfnc) (regshifted t2 LSL 3)))
         (*move (Fluid Codeform*) (reg t3))
 	(!*DeAlloc 0)
         (BR (reg t2))
@@ -413,24 +413,24 @@ IllegalFunctionalForm
     (*field (reg 3)(reg 3) (wconst tagstartingbit)(wconst tagbitlength))
     (*jumpnoteq (label no)(reg 3)(wconst id-tag))
     (*field (reg 1)(reg 1) (wconst infstartingbit)(wconst infbitlength))
-    (*wshift (reg 1) 2)
+    (*wshift (reg 1) 3)
     (*wplus2 (reg 1) ($FLUID SYMPRP))
-    (*move (indexed (reg 1) 0) (reg 1))
+    (*move (displacement (reg 1) 0) (reg 1))
   loop
     (*jumpeq (label ret) (reg 1) (quote nil))
     (*field (reg 1)(reg 1) (wconst infstartingbit)(wconst infbitlength))
-    (*move (indexed (reg 1) 0) (reg 4))
+    (*move (displacement (reg 1) 0) (reg 4))
     (*move (reg 4) (reg 3))
     (*field (reg 3)(reg 3) (wconst tagstartingbit)(wconst tagbitlength))
     (*jumpnoteq (label next) (reg 3)(wconst pair-tag))
     (*move (reg 4) (reg 3))
     (*field (reg 3)(reg 3) (wconst infstartingbit)(wconst infbitlength))
-    (*move (indexed (reg 3) 0) (reg 5))
+    (*move (displacement (reg 3) 0) (reg 5))
     (*jumpnoteq (label next) (reg 5)(reg 2))
-    (*move (indexed (reg 3) 4) (reg 1))
+    (*move (displacement (reg 3) 8) (reg 1))
     (*jump (label ret))
   next
-    (*move (indexed (reg 1) 4) (reg 1))
+    (*move (displacement (reg 1) 8) (reg 1))
     (*jump (label loop))
   no
     (*move (quote nil)(reg 1))
@@ -443,18 +443,18 @@ IllegalFunctionalForm
     (*field (reg 3)(reg 3) (wconst tagstartingbit)(wconst tagbitlength))
     (*jumpnoteq (label no)(reg 3)(wconst id-tag))
     (*field (reg 1)(reg 1) (wconst infstartingbit)(wconst infbitlength))
-    (*wshift (reg 1) 2)
+    (*wshift (reg 1) 3)
     (*wplus2 (reg 1) ($FLUID SYMPRP))
-    (*move (indexed (reg 1) 0) (reg 1))
+    (*move (displacement (reg 1) 0) (reg 1))
   loop
     (*jumpeq (label ret) (reg 1) (quote nil))
     (*field (reg 1)(reg 1) (wconst infstartingbit)(wconst infbitlength))
-    (*move (indexed (reg 1) 0) (reg 4))
+    (*move (displacement (reg 1) 0) (reg 4))
     (*jumpnoteq (label next) (reg 4)(reg 2))
     (*move (quote T) (reg 1))
     (*jump (label ret))
   next
-    (*move (indexed (reg 1) 4) (reg 1))
+    (*move (displacement (reg 1) 8) (reg 1))
     (*jump (label loop))
   no
     (*move (quote nil)(reg 1))

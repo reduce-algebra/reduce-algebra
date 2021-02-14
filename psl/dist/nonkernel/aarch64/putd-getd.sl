@@ -251,27 +251,29 @@
 
 (lap '((!*entry trampoline expr 0)
        (!*move (idloc compiledcallinginterpreted) (reg t3))
-       (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 3)))
+       (LDR (reg t2) (indexed (reg symfnc) (regshifted t3 LSL 3)))
        % move id of called function into reg t3, for compiledcallinginterpreted
        (!*move (idloc *TheCalledID*) (reg t3))
        (BR (reg t2))))
 
 (de planttrampoline(u p)
    % install an indirect call to compiledcallinginterpreted
-   % by copying the code for trampoline (7 words)
+   % by copying the code for trampoline (3 quadwords + 4 instructions = 5 quadwords)
    (let ((m (gtbps 8))
 	 (n (id2int u))
 	 %  (p (getmem (wdifference (inf (cdr (getd u))) 4)))
 	 (a (inf (cdr (getd 'trampoline)))) ) % start address of trampoline
-	(putmem m p)
-	(putmem (wplus2 m 4) (getmem a))
-	(putmem (wplus2 m 8) (getmem (wplus2 a 4)))
-	(putmem (wplus2 m 12) (getmem (wplus2 a 8)))
-	(putmem (wplus2 m 16) (getmem (wplus2 a 12)))
-	(putmem (wplus2 m 20) n)	% replace *TheCalledID* by actual id of called function
-	(putmem (wplus2 m 24) (getmem (wplus2 a 20)))
+        (putmem m p)
+        % now the 4 instructions
+        (putmem (wplus2 m 8) (getmem a))
+	(putmem (wplus2 m 16) (getmem (wplus2 a 8)))
+        % 2 fullwords
+	(putmem (wplus2 m 24) (getmem (wplus2 a 16)))
+	(putmem (wplus2 m 32) (getmem (wplus2 a 24)))
+	% replace *TheCalledID* by actual id of called function
+	(put_a_halfword (wplus2 m 20) n)
 	   % now plant it
-	(setf (getmem (wplus2 symfnc (wtimes2 n 4))) (wplus2 m 4))
+	(setf (getmem (wplus2 symfnc (wtimes2 n 8))) (wplus2 m 8))
 	  ))
 
 

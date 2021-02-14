@@ -178,7 +178,7 @@
                      W0 W1 W2 W3 W4 W5 W6 W7 W8 W9 W10 W11 W12 W13 W14 W15
 		     W16 W17 W18 W19 W20 W21 W22 W23 W24 W25 W26 W27 W28 W29 W30
 		     sp st fp lr Xzr Wzr
-                     t1 t2 t3
+                     t1 t2 t3 t4 t5
              nil heaplast heaptrapbound symfnc symval
              bndstkptr bndstklowerbound bndstkupperbound
              ))))
@@ -223,6 +223,9 @@
 (de FiftySevenP (x) (eq x 57))
 
 (de SixteenP (x) (eq x 16))
+
+(de pos-fifteen-bit-p (x)
+    (and (fixp x) (lessp x 32768) (greaterp x -1)))
 
 (de evenp (x) (and (fixp x) (eq 0 (land x 1))))
 
@@ -313,11 +316,16 @@
                                (indirect (reg t3)))
            ((Anyp ZeroP)      (*Move SOURCE REGISTER)
                                (indirect REGISTER))
-           ((RegP twelve-bit-p)      (Displacement SOURCE ARGTWO))
-	   ((fluid-arg-p twelve-bit-p) (*Move SOURCE (reg t3))
+	   ((Regp negp)       (SUB REGISTER SOURCE (minus ARGTWO))
+	                      (indirect REGISTER))
+           ((RegP pos-fifteen-bit-p)      (Displacement SOURCE ARGTWO))
+	   ((fluid-arg-p negp) (*Move SOURCE REGISTER)
+	                                  (SUB REGISTER REGISTER (minus ARGTWO))
+					  (indirect REGISTER))
+	   ((fluid-arg-p pos-fifteen-bit-p) (*Move SOURCE (reg t3))
                                (Displacement (reg t3) ARGTWO))
-           ((AnyP twelve-bit-p)      (*Move SOURCE REGISTER)
-                               (Displacement REGISTER ARGTWO))
+           ((AnyP pos-fifteen-bit-p)      (*Move SOURCE REGISTER)
+	                                  (Displacement SOURCE ARGTWO))
            ((RegP RegP)       (Indexed ARGTWO (Displacement source 0)))
            ((RegP AnyP)       (*Move SOURCE REGISTER)
                                (*WPlus2 REGISTER ARGTWO)
@@ -555,7 +563,7 @@
     (print (list src (prop (unimmediate src))))
     (if (not (idp src))
         `((LDR ,dest ,(unimmediate src)))
-      `((ADRL ,dest ,src)))             % two instruction load address pseudo-op
+      `((ADR ,dest ,src)))  
     )
 
 
@@ -1179,9 +1187,8 @@
     %% dest is a register, src an indirect reference
     (cond((eqcar src 'indirect)
           `((MOV ,dest ,(cadr src))))
-         ((and (displacementp src) (regp (cadr src)) (fixp (caddr src)))
-          `((MOV ,dest ,(cadr src))
-            (ADD ,dest ,dest ,(caddr src))))
+         ((and (displacementp src) (regp (cadr src)) (WconstEvaluable (caddr src)))
+          `((ADD ,dest ,(cadr src) ,(caddr src))))
          (t `((MOV ,dest ,src)))))
 
 (DefCMacro *LoadAddress)
@@ -1523,7 +1530,12 @@ preload  (setq initload
                 (nconc listfluids (cons nil nil))) )
         (nconc initload
          (if freeregs
-     `((*Move (displacement (reg t1) ,n) ,(car freeregs))) nil)
+	   (if (not (negp n))
+	     `((*Move (displacement (reg t1) ,n) ,(car freeregs)))
+	     `((SUB ,(car freeregs) (reg t1) ,(minus n))
+	       (*MOVE (indirect ,(car freeregs)) ,(car freeregs)))
+	     )
+	      nil)
        )   ))
        (setq n (wplus2 n 16))
        (when freeregs (setq freeregs (cdr freeregs)))
@@ -1591,7 +1603,6 @@ preload  (setq initload
                                         % jumpon on tags (most probably)
                                         % 8 bytes per jumptable entry
       `((ADR (reg t1) ,ll2)
-        (LDR (reg t1) (indexed (reg t1) (regshifted ,(cadr register) LSL 3)))
 	(BR (reg t1))
         % new value of the PC is:
         % (address of the LDR instruction) + PC + 8 + 8*(contents of register)
@@ -1605,11 +1616,10 @@ preload  (setq initload
         (b!.lt (label ,ll))
         (*WDifference ,register ,lowerbound)
 	(ADR (reg t1) ,ll2)
-	(LDR (reg t1) (indexed (reg t1) (regshifted ,(cadr register) LSL 3)))
 	(BR (reg t1))
         (B (label ,ll))                 % extra instruction to jump over
        ,ll2) ) )
-      Loop  (Setq x (nconc X `((fullword ,(car Labellist)))))
+      Loop  (Setq x (nconc X `((B ,(car Labellist)))))
             (setq Labellist (cdr Labellist))
             (cond (Labellist (go loop)))
 

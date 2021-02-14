@@ -415,7 +415,7 @@
                      W0 W1 W2 W3 W4 W5 W6 W7 W8 W9 W10 W11 W12 W13 W14 W15
 		     W16 W17 W18 W19 W20 W21 W22 W23 W24 W25 W26 W27 W28 W29 W30
 		     fp lr Xzr Wzr
-		     t1 t2 t3
+		     t1 t2 t3 t4 t5
              nil heaplast heaptrapbound symfnc symval
 	     bndstkptr bndstklowerbound bndstkupperbound
 	     ))))
@@ -843,6 +843,18 @@
 	)
     )
 
+(de offset21-p (x)
+    (or (labelp x)
+	(eqcar x 'internalentry)
+	(and (or (eqcar x 'immediate) (setq x (cadr x)))
+	     (fixp x)
+	     (setq x (lsh x -2))
+	     (lessp x (add1 16#FFFFC))
+	     (greaterp x (sub1 -1048572))
+	 )
+	)
+    )
+
 (de offset26-p (x)
     (or (labelp x)
 	(eqcar x 'internalentry)
@@ -951,7 +963,7 @@
 	   (Q20 20) (Q21 21) (Q22 22) (Q23 23)
 	   (Q24 24) (Q25 25) (Q26 26) (Q27 27)
 	   (Q28 28) (Q29 29) (Q30 30) (Q31 31)
-	   (T1   9) (T2  10) (T3  11)
+	   (T1   9) (T2  10) (T3  11) (T4  12) (T5 13)
 	   (fp  29)			% frame pointer for C subroutine calls
 	   (sp  31) (st  31)		% LISP stack register
 	   (lr  30)			% link register
@@ -1024,6 +1036,21 @@
 (de lth-branch-reg (code reg) 4)
 
 (de OP-ret (code) (OP-branch-reg code 'X30))
+
+(de OP-adr (code regd offset)
+    (setq offset (MakeExpressionRelative offset 0))
+    (prog (byte1)
+	(setq byte1 (lor (car code) (lsh (land offset 3) 5)))
+	(setq offset (ashift offset -2))
+	(DepositInstructionBytes
+	 byte1
+	 (land 16#ff (lshift offset -11))
+	 (land 16#ff (lshift offset -3))
+	 (lor (land 16#7 offset) (reg2int regd))
+	 ))
+    )
+
+(de lth-adr (code regd offset) 4)
 
 (de OP-reg-Xbfm (code regd regn lsb width)
     (prog (opcode)
@@ -1399,7 +1426,7 @@
 (de lth-mov-imm16 (code reg1 imm16) 4)
 
 (de OP-mul3 (code reg1 reg2 reg3)
-    (op-mul4 (car code) reg1 reg2 reg3 (list 'reg (cadr code))))
+    (op-mul4 code reg1 reg2 reg3 (if (reg32p reg1) 'Wzr 'Xzr)))
 
 (de lth-mul3 (code reg1 reg2 reg3) 4)
 		       
@@ -1894,14 +1921,6 @@
 %% ------------------------------------------------------------
 %% Branch optimization (in favour of short jumps)
 %% ------------------------------------------------------------
-%
-%(deflist '(
-%   (BEQ BEQ) (BNE BNE) (BCS BCS)(BCC BCC)
-%   (BMI BMI) (BPL BPL) (BVS BVS)(BVC BVC)
-%   (BHI BHI)(BLS BLS)(BGE BGE)(BLT BLT)
-%   (BGT BGT)(BLE BLE)(BAL BAL)
-%   (B B) (BX BX) (BLX BLX)
-%) 'WordBranch)
 %
 %(de GeneralBranchInstructionP (i) (get i 'WordBranch))
 

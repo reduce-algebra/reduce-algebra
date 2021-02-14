@@ -198,6 +198,8 @@
                 (t1 "X9") 
   		(t2 "X10")
 		(t3 "X11")
+		(t4 "X12")
+		(t5 "X13")
           	(fp "X29")		% C frame pointer, X29
 %		(pc "pc")
 		(lr "X30")		% X30
