@@ -131,7 +131,7 @@
     % NIL if not a code-pointer or too many arguments.
 
     (when
-	 (codep code-pointer)
+	 (and (codep code-pointer) (codeaddressp code-pointer))
 	 % THEN We have a real codepointer.
 	 (let
 	     ((num-args (!%code-number-of-arguments (codeinf code-pointer))))
