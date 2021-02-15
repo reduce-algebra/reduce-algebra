@@ -68,7 +68,7 @@
      %  code pointer, ready for RTS, but first it is tag stripped, then pushed
   (*field (reg 1) (reg 1) (wconst InfStartingBit) (wconst InfBitLength))
 
-  (!*move (reg 1) (reg t1))            % move function address to reg t1
+  (!*move (reg 1) (reg t4))            % move function address to reg t4
   (!*jumpeq (Label L0) (reg  2)  (quote nil))    %  done if no arguments
 
   (!*move (reg 2) (reg t2))            %  move argument list to safe place
@@ -131,7 +131,7 @@
   (!*move (car (reg t2)) (reg 14))     % the 14th and last argument 
 
 L0
-  (BR (reg t1))	% JUMP to code pointer
+  (BR (reg t4))	% JUMP to code pointer
 
 TooMany
 	(!*MOVE (QUOTE "Too many arguments to function") (reg 1))

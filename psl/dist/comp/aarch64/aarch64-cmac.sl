@@ -305,7 +305,7 @@
 
 (DefAnyreg CDR
            AnyregCDR     %Same as CAR, except move to next word in pair.
-           (       (!*Field REGISTER SOURCE 8 56)
+           (       (*Field REGISTER SOURCE 8 56)
                    (Displacement REGISTER 8)))
 
 
@@ -1380,7 +1380,7 @@
       (setq n 0)
       (setq Regs (rest Regs))   % Remove "Registers" from the front
       (setq Fluids (rest fluids)) % Remove NONLOCALVARS
-      (setq lng (wtimes2 (length Regs) 8)) % two words per BndStk entry *4
+      (setq lng (wtimes2 (length Regs) 16)) % two words per BndStk entry *8
 
    %looking for free register to preload values of fluid s
 
