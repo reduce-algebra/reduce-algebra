@@ -66,9 +66,9 @@
 (deflist 
       '(
         (Hashtab-HalfWord (
-                (LDR (reg W0) (indexed (reg 1) (regshifted (reg 2) LSL 2)))))
+                (LDR (reg W0) (indexed (reg 1) (regshifted 2 LSL 2)))))
         (PutHashtab-HalfWord (
-                (STR (reg W2) (indexed (reg 1) (regshifted (reg 2) LSL 2))))))
+                (STR (reg W2) (indexed (reg 1) (regshifted 2 LSL 2))))))
  'OpenCode)
 
 (put 'Hashtab-HalfWord 'assign-op 'PutHashtab-HalfWord)

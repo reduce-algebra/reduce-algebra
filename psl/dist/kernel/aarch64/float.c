@@ -68,14 +68,14 @@
 void
 uxfloat(f,i)
      double *f;
-     int i;
+     long long i;
 {
   *f = i;
 }
 
 /* Tag( uxfix )
  */
-int uxfix(f)
+long long uxfix(f)
      double *f;
 {
   return *f;
@@ -92,7 +92,7 @@ uxassign(f1,f2)
 
 fexcept_t flagp;
 
-int
+long long
 uxminus(f1,f2)
      double *f1, *f2;
 {
@@ -104,7 +104,7 @@ uxminus(f1,f2)
 
 /* Tag( uxplus2 )
  */
-int
+long long
 uxplus2(f1,f2,f3)
      double *f1, *f2, *f3;
 {
@@ -116,7 +116,7 @@ uxplus2(f1,f2,f3)
 
 /* Tag( uxdifference )
  */
-int
+long long
 uxdifference(f1,f2,f3)
      double *f1, *f2, *f3;
 {
@@ -128,7 +128,7 @@ uxdifference(f1,f2,f3)
 
 /* Tag( uxtimes2 )
  */
-int
+long long
 uxtimes2(f1,f2,f3)
      double *f1, *f2, *f3;
 {
@@ -140,7 +140,7 @@ uxtimes2(f1,f2,f3)
 
 /* Tag( uxquotient )
  */
-int
+long long
 uxquotient(f1,f2,f3)
      double *f1, *f2, *f3;
 {
@@ -152,9 +152,9 @@ uxquotient(f1,f2,f3)
 
 /* Tag( uxgreaterp )
  */
-int uxgreaterp(f1,f2,val1,val2)
+long long uxgreaterp(f1,f2,val1,val2)
      double *f1, *f2;
-     int val1, val2;
+     long long val1, val2;
 {
   if (*f1 > *f2)
     return val1;
@@ -164,9 +164,9 @@ int uxgreaterp(f1,f2,val1,val2)
 
 /* Tag( uxlessp )
  */
-int uxlessp(f1,f2,val1,val2)
+long long uxlessp(f1,f2,val1,val2)
      double *f1, *f2;
-     int val1, val2;
+     long long val1, val2;
 {
   if (*f1 < *f2)
     return val1;
@@ -186,7 +186,7 @@ uxwritefloat(buf, flt, convstr)
   char tempbuf[102]; /* reasonable size limit */
   double tempf;
 
-  temps = buf + 4;       /* Skip over lisp string length to write data */
+  temps = buf + 8;       /* Skip over lisp string length to write data */
 
   snprintf(temps, 99, convstr, *flt);
 
@@ -213,7 +213,7 @@ uxwritefloat(buf, flt, convstr)
     }
   /* Install the length of the string into the Lisp header word
    */
-  *((int *)buf) = strlen(temps) - 1;
+  *((long long *)buf) = strlen(temps) - 1;
 }
 
 
@@ -236,7 +236,7 @@ uuxfloattodouble (flt,dbl)
 }
 
 /* Functions for fast-math.sl (Unix C replacement for mathlib.) */
-int
+long long
 uuxsin (r, x)
      double *r, *x;
 {
@@ -246,14 +246,14 @@ uuxsin (r, x)
   return (1);
 }
 
-int
+long long
 uuxcos (r, x)
      double *r, *x;
 {
     *r = cos( *x );
 }
 
-int
+long long
 uuxtan (r, x)
      double *r, *x;
 {
@@ -263,7 +263,7 @@ uuxtan (r, x)
   return (1);
 }
 
-int
+long long
 uuxasin (r, x)
      double *r, *x;
 {
@@ -273,14 +273,14 @@ if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID); return (
   return (1);
 }
 
-int
+long long
 uuxacos (r, x)
      double *r, *x;
 {
     *r = acos( *x );
 }
 
-int
+long long
 uuxatan (r, x)
      double *r, *x;
 {
@@ -290,7 +290,7 @@ uuxatan (r, x)
   return (1);
 }
 
-int
+long long
 uuxsqrt (r, x)
      double *r, *x;
 {
@@ -300,7 +300,7 @@ uuxsqrt (r, x)
     return (1);      
 }
 
-int
+long long
 uuxexp (r, x)
      double *r, *x;
 {
@@ -310,7 +310,7 @@ uuxexp (r, x)
   return (1);
 }
 
-int
+long long
 uuxlog (r, x)
      double *r, *x;
 {
@@ -320,7 +320,7 @@ uuxlog (r, x)
   return (1);
 }
 
-int
+long long
 uuxatan2 (r, y, x)
      double *r, *y, *x;
 {

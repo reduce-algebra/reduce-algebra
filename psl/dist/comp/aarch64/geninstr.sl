@@ -593,10 +593,13 @@
 
 (instr NOP   nil                       OP-nop nil)
 
-(instr ORN   (reg reg reg-shifter)     OP-reg-shifter 2#10101010001)
+(instr ORN   (reg32 reg32 reg-shifter)  OP-reg-shifter 2#00101010001)
+(instr ORN   (reg reg reg-shifter)      OP-reg-shifter 2#10101010001)
 
-(instr ORR   (reg reg imm-logical)      OP-reg-logical 2#1011001000)
-(instr ORR   (reg reg reg-shifter)     OP-reg-shifter 2#10101010000)
+(instr ORR   (reg32-or-sp reg imm-logical)      OP-reg-logical 2#0011001000)
+(instr ORR   (reg-or-sp reg imm-logical)      OP-reg-logical 2#1011001000)
+(instr ORR   (reg32 reg32 reg-shifter)  OP-reg-shifter 2#00101010000)
+(instr ORR   (reg reg reg-shifter)      OP-reg-shifter 2#10101010000)
 
 (instr SUB   (reg32 reg32 reg-extended)     OP-reg-extended  2#01001011001)
 (instr SUB   (reg reg reg-extended)     OP-reg-extended  2#11001011001)
@@ -658,8 +661,8 @@
 (instr MOV   (reg reg)                 OP-reg-reg    2#10101010000)
 (instr MOV   (reg32 imm16-shifted)     OP-reg-imm16   2#010100101)
 (instr MOV   (reg imm16-shifted)       OP-reg-imm16   2#110100101)
-(instr MVN   (reg32 reg32-shifter)     OP-reg-shifter 2#001010100)
-(instr MVN   (reg reg-shifter)         OP-reg-shifter 2#101010100)
+(instr MVN   (reg32 reg32-shifter)     OP-regd-shifter 2#001010100)
+(instr MVN   (reg reg-shifter)         OP-regd-shifter 2#101010100)
 
 (instr MOVN  (reg32 imm16-shifted)     OP-reg-imm16    2#000100101)
 (instr MOVN  (reg imm16-shifted)       OP-reg-imm16    2#100100101)
