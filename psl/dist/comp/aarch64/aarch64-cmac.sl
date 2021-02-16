@@ -225,7 +225,7 @@
 (de SixteenP (x) (eq x 16))
 
 (de pos-fifteen-bit-p (x)
-    (and (fixp x) (lessp x 32768) (greaterp x -1)))
+    (and (fixp x) (lessp x 32768) (greaterp x -1) (eq 0 (wand x 7))))
 
 (de evenp (x) (and (fixp x) (eq 0 (land x 1))))
 
@@ -325,15 +325,14 @@
 	   ((fluid-arg-p pos-fifteen-bit-p) (*Move SOURCE (reg t3))
                                (Displacement (reg t3) ARGTWO))
            ((AnyP pos-fifteen-bit-p)      (*Move SOURCE REGISTER)
-	                                  (Displacement SOURCE ARGTWO))
-           ((RegP RegP)       (Indexed ARGTWO (Displacement source 0)))
+	                                  (Displacement REGISTER ARGTWO))
+           ((RegP RegP)       (Indexed ARGTWO (Displacement SOURCE 0)))
            ((RegP AnyP)       (*Move SOURCE REGISTER)
                                (*WPlus2 REGISTER ARGTWO)
                                (indirect REGISTER))
 	   ((fluid-arg-p DispInumP)  (!*Move SOURCE (reg t3))
-                               (Indexed (reg t3) (Displacement ARGTWO 0)))
-           ((AnyP DispInumP)  (!*Move SOURCE REGISTER)
-                               (Indexed REGISTER (Displacement ARGTWO 0)))
+	                         (*WPlus2 (reg t3) ARGTWO)
+                               (Indexed (reg t3)))
            (                   (!*Move SOURCE REGISTER)
                                (!*WPlus2 REGISTER ARGTWO)
                                (indirect REGISTER)))
@@ -484,7 +483,7 @@
 (DefCMacro *Move
        (Equal)
        ((regp regp)              (MOV ArgTwo ArgOne))
-       ((imm8-rotatedp regp)     (MOV Argtwo ArgOne))
+%       ((imm8-rotatedp regp)     (MOV Argtwo ArgOne))
        ((quotep regp)            (LDR ArgTwo ArgOne))
        ((InumP regp)             (*LoadConstant ArgTwo ArgOne))
        ((fixp regp)              (*LoadConstant ArgTwo ArgOne))

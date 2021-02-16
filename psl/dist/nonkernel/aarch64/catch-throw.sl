@@ -203,7 +203,7 @@
 (lap '((*entry throwaux expr 3)
        (*move (reg 3) (reg st))
        (*move (reg 2) (reg lr))
-       (BX (reg lr)))
+       (RET))
 )
 
 (de throw (tag value)
