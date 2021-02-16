@@ -48,7 +48,7 @@ $ \frac{r}{s} = q$ or $ r = q s $.
 The last equation written out explicitly reads
 
 \begin{eqnarray*}
-\lefteqn{({r_{n-1}} {a^{n-1}} + {r_{n-2}} {a^{n-2}} + \ldots)} \\
+({r_{n-1}} {a^{n-1}} + {r_{n-2}} {a^{n-2}} + \ldots) \\
 & = & ({q_{n-1}} {a^{n-1}} + {q_{n-2}} {a^{n-2}} + \ldots) \times
 ({s_{n-1}} {a^{n-1}} + {s_{n-2}} {a^{n-2}} + \ldots) \\
 & & {\bf modulo} (a^n + {p _{n-1}} {a^{n -1}} + \ldots) \\
@@ -65,22 +65,22 @@ the representation REDUCE normally uses for polynomials, the so-called
 standard form.  Since our polynomials have in general rational coefficients,
 we must allow for a rational number domain inside the algebraic number.
 
-\begin{tabbing}
+\begin{flushleft}
 \s{algebraic number} ::= \\
-\hspace{.25in} \= {\tt :ar:} . \s{univariate polynomial over the rationals}
+\hspace{.25in} {\tt :ar:} . \s{univariate polynomial over the rationals}
 \\[0.05in]
 
 \s{univariate polynomial over the rationals} ::= \\
-\> \s{variable} .** \s{ldeg} .* \s{rational} .+ \s{reductum} \\[0.05in]
+\hspace{.25in} \s{variable} .** \s{ldeg} .* \s{rational} .+ \s{reductum} \\[0.05in]
 
 \s{ldeg} ::= integer \\[0.3in]
 
 \s{rational} ::= \\
-\> {\tt :rn:} . \s{integer numerator} . \s{integer denominator} :
+\hspace{.25in} {\tt :rn:} . \s{integer numerator} . \s{integer denominator} :
 integer \\[0.05in]
 
 \s{reductum} ::= \s{univariate polynomial} : \s{rational} : nil
-\end{tabbing}
+\end{flushleft}
 
 This representation allows us to use the REDUCE functions for adding and
 multiplying polynomials on the tail of the tagged algebraic number.  Also,

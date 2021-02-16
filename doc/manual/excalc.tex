@@ -63,11 +63,11 @@ An exterior form is introduced by\label{PFORM} \ttindextype{PFORM}{statement}
 \hspace*{2em} \k{PFORM} \s{declaration$_1$}, \s{declaration$_2$}, \ldots;
 
 where
-\begin{tabbing}
+\begin{flushleft}
 \s{declaration} ::= \s{name} $\mid$ \s{list of names}=\s{number} $\mid$  \s{identifier} $\mid$ \\
 \s{expression} \\
 \s{name} ::= \s{identifier} $\mid$ \s{identifier}(\s{arguments})
-\end{tabbing}
+\end{flushleft}
 
 For example
 \begin{verbatim}
@@ -683,16 +683,18 @@ basis one-forms (the coframe) together with the metric.
 
 Syntax:\label{COFRAME}
 
-\begin{tabbing}
-\hspace*{2em} \k{COFRAME} \=
-\s{identifier}\s{(index$_1$)}=\s{expression$_1$}, \\
-\> \s{identifier}\s{(index$_2$)}=\s{expression$_2$}, \\
-\> . \\
-\> . \\
-\> . \\
-\> \s{identifier}\s{(index$_n$)}=\s{expression$_n$} \\
-\> \hspace{1em} \k{WITH} \k{METRIC} \s{name}=\s{expression}; \\
-\end{tabbing}
+\begin{flushleft}
+  \begin{tabular}{@{}l@{~}l}
+    \hspace*{2em} \k{COFRAME}
+    & \s{identifier}\s{(index$_1$)}=\s{expression$_1$}, \\
+    & \s{identifier}\s{(index$_2$)}=\s{expression$_2$}, \\
+    & . \\
+    & . \\
+    & . \\
+    & \s{identifier}\s{(index$_n$)}=\s{expression$_n$} \\
+    & \hspace{1em} \k{WITH} \k{METRIC} \s{name}=\s{expression}; \\
+  \end{tabular}
+\end{flushleft}
 
 \index{Euclidean metric} \index{COFRAME!WITH METRIC}
 This statement automatically sets the dimension of the space and the

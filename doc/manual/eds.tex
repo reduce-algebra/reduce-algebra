@@ -1,11 +1,9 @@
 
 % Extra macros
 
-
-
 \newcommand{\deriv}{\mathrm{d}}
 \newcommand{\union}{\cup}
-\renewcommand{\R}{\hbox{\bf R}}
+\def\R{\hbox{\bf R}}
 \newcommand{\del}{\partial}
 %\newcommand\implies{\Rightarrow}
 \newcommand{\optional}[1]{$\,[$#1$]\,$}
@@ -13,8 +11,16 @@
    {\begin{list}{}{\tt}\item[]}
    {\end{list}}
 
-
-
+%% For MathJax, must be part of a paragraph to avoid extra space:
+\ifdefined\HCode
+\(
+\def\deriv{\mathrm{d}}
+\def\union{\cup}
+\def\R{\mathbf{R}}
+\def\del{\partial}
+\)%
+\fi
+%
 %\begin{abstract}
 EDS is a REDUCE package for symbolic analysis of partial differential
 equations using the geometrical approach of exterior differential
@@ -204,8 +210,8 @@ possible to omit the Pfaffian component of the \meta{EDS}, since these
 \paragraph{\it Examples:}
 \begin{itemize}
 \item With $M = \R^3 = \{(x,y,z)\}$, $S = \{\deriv x\wedge \deriv z\}$ and
-      $\Omega = \{\deriv x,\deriv y\}$, the integral element $P = \{\partial\sb
-      x + \partial_z,\partial_y\}$ is equally determined by its
+      $\Omega = \{\deriv x,\deriv y\}$, the integral element $P =
+       \{\partial_x + \partial_z,\partial_y\}$ is equally determined by its
       annihilator $P^\perp = \{\deriv z - \deriv x\}$. 
 \item For $S = \{\deriv z - y\deriv x\}$ and $\Omega = \{\deriv x\}$, the integral
       element $P = \{\partial_x + y\partial_z\}$ can be specified
@@ -312,9 +318,9 @@ which the contact system is simply $\{\theta^1,\theta^2,\theta^3\}$.
 For a quasilinear Pfaffian exterior differential system
 $(\{\theta^a\},\{\omega^i\},M)$, the tableau $A=[\pi^a_i]$
 is a matrix of 1-forms such that
-$$	\deriv \theta^a + \pi^a_i\wedge\omega^i \simeq 0 
+\[	\deriv \theta^a + \pi^a_i\wedge\omega^i \simeq 0 
 		\pmod{\{\theta^a,\omega^i\wedge\omega^j\}}
-$$
+\]
 The $\pi^a_i$ are not unique: if $\{\theta^a,\pi^\rho,\omega^i\}$ is a
 standard cobasis for the system (section \ref{Standard cobasis}), the EDS
 \meta{tableau} is a matrix containing linear combinations of the $\pi^\rho$
@@ -361,14 +367,14 @@ cobasis transformations and choices of generators.
 \paragraph{\it Examples:}
 \begin{itemize}
 \item On $M=\{(u,v,w)\in\R^3\mid u\neq v\}$, the Pfaffian system
-      $$\{u\deriv u + v\deriv v + \deriv w,\>(u^2 + u - v^2)\deriv u + u\deriv v + \deriv w\}$$ has
+      \[\{u\deriv u + v\deriv v + \deriv w,\>(u^2 + u - v^2)\deriv u + u\deriv v + \deriv w\}\] has
       the solved form
-      $$\{\deriv v + (u + v)\deriv u,\>\deriv w + ( - uv + u - v )\deriv u\}.$$
+      \[\{\deriv v + (u + v)\deriv u,\>\deriv w + ( - uv + u - v )\deriv u\}.\]
 \item Since the independence condition is defined only modulo the system,
       the system
-      $$S=\{\deriv u - \deriv x - u_y\deriv y\},\quad \Omega=\deriv x\wedge\deriv y$$ has an
+      \[S=\{\deriv u - \deriv x - u_y\deriv y\},\quad \Omega=\deriv x\wedge\deriv y\] has an
       equivalent normal form
-      $$S=\{\deriv x - \deriv u + u_y\deriv y\},\quad \Omega=\deriv u\wedge\deriv y.$$
+      \[S=\{\deriv x - \deriv u + u_y\deriv y\},\quad \Omega=\deriv u\wedge\deriv y.\]
 \end{itemize}
 
 \subsubsection{Standard cobasis}
@@ -2253,7 +2259,7 @@ characteristic_variety(S,xi);
 \newenvironment{commandtable}[2]
    {%\savebox\commandtablecaption{#1} % save caption for the end
     \def\mkcaption{\caption{#1}\label{#2}}
-    \def\header##1{$\vcenter to 2\baselineskip{\vfill\textbf{##1}\vfill}$}
+    \def\header##1{\rule[-.7\baselineskip]{0pt}{2\baselineskip}\textbf{##1}}
     \table[htbp]\small\tabular{|p{.4\hsize}|p{.5\hsize}|}\hline}
    {\endtabular%\caption{\usebox\commandtablecaption}
     \mkcaption\endtable}

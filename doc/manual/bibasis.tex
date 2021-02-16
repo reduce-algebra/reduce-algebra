@@ -29,17 +29,17 @@ And finally in section 4 we give the full description of BIBASIS package capabil
 {\em Boolean ring} perfectly goes with its name, it is a ring of {\em Boolean functions} of $n$ variables, i.e
 mappings from $\{0,1\}^n$ to $\{0,1\}^n$. Considering these variables are $\mathbf{X}:=\{x_1,\ldots,x_n\}$ and
 $\mathbb{F}_2$ is the finite field of two elements $\{0,1\}$, Boolean ring can be regarded as the quotient ring
-$$
+\[
 \mathbb{B\,}[\mathbf{X}]:=\mathbb{F}_2[\mathbf{X}]\,/<x_1^2+x_1,\ldots,x_n^2+x_n>.
-$$
+\]
 Multiplication in $\mathbb{B\,}[\mathbf{X}]$ is {\em idempotent} and addition is {\em nilpotent}
-$$
+\[
 \forall\, b\in \mathbb{B\,}[\mathbf{X}]\ :\ \,b^2=b\,,\ b+b=0.
-$$
+\]
 Elements in $\mathbb{B\,}[\mathbf{X}]$ are {\em Boolean polynomials} and can be represented as finite sums
-$$
+\[
 \sum_j \prod_{x\in\, \Omega_j \subseteq\, \mathbf{X}} x
-$$
+\]
 of {\em Boolean monomials}. Each monomial is a conjunction. If set $\Omega$ is empty, then the corresponding
 monomial is the unity Boolean function 1. The sum of zero monomials corresponds to zero polynomial, i.e. is
 zero Boolean function 0.
@@ -49,20 +49,20 @@ zero Boolean function 0.
 Detailed description of involutive algorithm can found in~\cite{Gerdt:2005}. Here we note that result of both
 involutive and Buhberger's algorithms depend on chosen monomial ordering. At that the ordering must be
 admissible, i.e.
-$$
+\[
 \ m \neq 1 \Longleftrightarrow m \succ 1, \quad \ \ m_1 \succ m_2 \Longleftrightarrow m_1 m \succ m_2 m
 \quad \ \ \forall \ m, m_1, m_2.
-$$
+\]
 But as one can easily check the second condition of admissibility does not hold for any monomial ordering
 in Boolean ring:
-$$
+\[
 x_1\succ x_2\quad \xrightarrow{\ \ *x_1\ \ }\quad x_1*x_1\succ x_2*x_2\quad \xrightarrow{\ \ \ \ \ }\quad x_1 \prec x_1x_2
-$$
+\]
 Though $\mathbb{B\,}[\mathbf{X}]$ is a principal ideal ring, boolean singleton $\{p\}$ is not necessarily a Gr\"obner basis of
 ideal $<p>$, for example:
-$$
+\[
 x_1,x_2\in \,<x_1x_2 + x_1 + x_2> \subset \mathbb{B\,}[x_1, x_2].
-$$
+\]
 That the reason why one cannot apply the Buhberger's algorithm directly in a Boolean ring, using instead a ring
 $\mathbb{F}_2[\mathbf{X}]$ and {\em the field binomials} $x_1^2+x_1,\ldots,x_n^2+x_n$.
 

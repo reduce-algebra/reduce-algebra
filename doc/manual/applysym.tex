@@ -204,22 +204,21 @@ The procedure \texttt{LIEPDE} is called through \\
 All parameters are lists.  \\[6pt]
 The first parameter specifies the DEs to be investigated: \\
 \textit{problem} has the form \{\textit{equations, ulist, xlist}\} where
-\begin{tabbing}
-\hspace{0.5cm}
- \textit{equations } \=  is a list of equations,
-              each has the form \texttt{df(ui,..)=...} where \\
-       \> the LHS (left hand side) \texttt{df(ui,..)} is selected such that \\
-       \>  - The RHS (right h.s.) of an equations must not include     \\
-       \>$\;\,$ the derivative on the LHS nor a derivative of it.  \\
-       \>  - Neither the LHS nor any derivative of it of any equation \\
-       \>$\;\,$ may occur in any other equation.\\
-       \>  - Each of the unknown functions occurs on the LHS of \\
-       \>$\;\,$ exactly one equation.  \\
-\hspace{0.5cm}
- \textit{ulist} \>  is a list of function names, which can be chosen freely \\
-\hspace{0.5cm}
- \textit{xlist}  \>  is a list of variable names, which can be chosen freely 
-\end{tabbing}
+\begin{description}
+\item[\textit{equations}] is a list of equations, each has the form
+  \texttt{df(ui,..)=...} where the LHS (left hand side)
+  \texttt{df(ui,..)} is selected such that
+  \begin{itemize}
+  \item The RHS (right h.s.) of an equations must not include the
+    derivative on the LHS nor a derivative of it.
+  \item Neither the LHS nor any derivative of it of any equation may
+    occur in any other equation.
+  \item Each of the unknown functions occurs on the LHS of exactly one
+    equation.
+  \end{itemize}
+\item[\textit{ulist}] is a list of function names, which can be chosen freely.
+\item[\textit{xlist}] is a list of variable names, which can be chosen freely.
+\end{description}
 Equations can be given as a list of single differential expressions and then
 the program will try to bring them into the `solved form' \texttt{df(ui,..)=...}
 automatically. If equations are given in the solved form then the above
@@ -235,64 +234,65 @@ generators depends on the derivative chosen for the LHS.
 The second parameter \textit{symtype} of \texttt{LIEPDE} is a list $\{\;\}$ that
 specifies the symmetry to be calculated. \textit{symtype} can have the following
 values and meanings:
-\begin{tabbing}
-\verb+{"point"}         + \= Point symmetries with $\xi^i=\xi^i(x^j,u^{\beta}),\;
-                           \eta^{\alpha}=\eta^{\alpha}(x^j,u^{\beta})$ are \\
-                          \> determined.\\
-\verb+{"contact"}+ \> Contact symmetries with $\xi^i=0, \;
-                            \eta=\eta(x^j,u,u_k)$ are \\
-\> determined $(u_k = \partial u/\partial x^k)$, which is only applicable if a \\
-                      \> single equation (\ref{PDEs}) with an order $>1$ for a 
-                             single function \\
-                      \> $u$ is to be investigated. (The \textit{symtype}
-                             \verb+{"contact"}+ \\
-\> is equivalent to \verb+{"general",1}+ (see below) apart from \\
-\> the additional checks done for \verb+{"contact"}+.)\\
-\verb+{"general"+,\textit{order}\verb+}+ \> where \textit{order} is an integer $>0$. 
-      Generalized symmetries $\xi^i=0,$ \\
-\> $\eta^{\alpha}=\eta^{\alpha}(x^j,u^{\beta},\ldots,u^{\beta}_K)$ 
-      of a specified order are determined \\
-\> (where $_K$ is a multiple index representing \textit{order} many indices.) \\
-\> NOTE: Characteristic functions of generalized symmetries \\
-\> ($= \eta^{\alpha}$ if $\xi^i=0$) are equivalent if they are equal on\\
-\> the solution manifold. Therefore, all dependences of\\
-\> characteristic functions on the substituted derivatives \\
-\> and their derivatives are dropped. For example, if the heat \\
-\> equation is given as $u_t=u_{xx}$ (i.e.\ $u_t$ is substituted by $u_{xx}$) \\
-\> then \verb+{"general",2}+ would not include characteristic \\
-\> functions depending on $u_{tx}$ or $u_{xxx}$. \\
-\> THEREFORE: \\
-\> If you want to find \textit{all} symmetries up to a given order then either \\
-\> - avoid using $H_A=0$ to substitute lower order \\
-\> $\;\,$derivatives by expressions involving higher derivatives, or \\
-\> - increase the order specified in \textit{symtype}. \\
-\> For an illustration of this effect see the two symmetry \\
-\> determinations of the Burgers equation in the file \\
-\> \texttt{LIEPDE.TST}. \\
-\verb+{xi!_+\textit{x1}\verb+ =...,..., +  \>  \\ 
-\verb+ eta!_+\textit{u1}\verb+=...,...}+  \> It is possible to specify an
-ansatz for the symmetry. Such \\
-\> an ansatz must specify all $\xi^i$ for all independent variables and \\
-\> all $\eta^{\alpha}$ for all dependent variables in terms of differential \\
-\> expressions which may involve unknown functions/constants. \\
-\> The dependences of the unknown functions have to be declared \\
-\> in advance by using the \texttt{DEPEND} command. For example, \\
-\> \verb+    DEPEND f, t, x, u$  + \\
-\> specifies $f$ to be a function of $t,x,u$. If one wants to have $f$ as \\
-\> a function of derivatives of $u(t,x)$, say $f$ depending on $u_{txx}$, \\
-\> then one \underline{\textit{cannot}} write \\
-\> \verb+    DEPEND f, df(u,t,x,2)$ + \\ 
-\> but instead must write \\
-\> \verb+    DEPEND f, u!`1!`2!`2$ + \\
-\> assuming \textit{xlist} has been specified as \verb+ {t,x}+. 
-   Because $t$ is the \\
-\> first variable and $x$ is the second variable in \textit{xlist} and $u$ is \\
-\> differentiated oncs wrt.\ $t$ and twice wrt.\ $x$ we therefore \\
-\> use \verb+ u!`1!`2!`2+. The character \texttt{!} is the escape character \\
-\> to allow special characters like ` to occur in an identifier. \\
-\> \hspace{4mm} For generalized symmetries one usually sets all $\xi^i=0$.\\
-\> Then the $\eta^{\alpha}$ are equal to the characteristic functions.
-\end{tabbing}
+\begin{description}
+\item[\texttt{\{"point"\}}] Point symmetries with
+  $\xi^i=\xi^i(x^j,u^{\beta}),\;
+  \eta^{\alpha}=\eta^{\alpha}(x^j,u^{\beta})$ are determined.
+\item[\texttt{\{"contact"\}}] Contact symmetries with
+  $\xi^i=0,\;\eta=\eta(x^j,u,u_k)$ are determined $(u_k = \partial
+  u/\partial x^k)$, which is only applicable if a single equation
+  (\ref{PDEs}) with an order $>1$ for a single function $u$ is to be
+  investigated.  (The \textit{symtype} \verb+{"contact"}+ is
+  equivalent to \verb+{"general", 1}+ (see below) apart from the
+  additional checks done for \verb+{"contact"}+.)
+\item[\texttt{\{"general"}, \textit{order}\texttt{\}}] where \textit{order}
+  is an integer $>0$.  Generalized symmetries $\xi^i=0,$
+  $\eta^{\alpha}=\eta^{\alpha}(x^j,u^{\beta},\ldots,u^{\beta}_K)$ of a
+  specified order are determined (where $_K$ is a multiple index
+  representing \textit{order} many indices.) \\
+  NOTE: Characteristic functions of generalized symmetries ($=
+  \eta^{\alpha}$ if $\xi^i=0$) are equivalent if they are equal on the
+  solution manifold.  Therefore, all dependences of characteristic
+  functions on the substituted derivatives and their derivatives are
+  dropped.  For example, if the heat equation is given as $u_t=u_{xx}$
+  (i.e.\ $u_t$ is substituted by $u_{xx}$) then \verb+{"general", 2}+
+  would not include characteristic functions depending on $u_{tx}$ or
+  $u_{xxx}$. \\
+  THEREFORE: \\
+  If you want to find \textit{all} symmetries up to a given order then
+  either
+  \begin{itemize}
+  \item avoid using $H_A=0$ to substitute lower order derivatives by
+    expressions involving higher derivatives, or
+  \item increase the order specified in \textit{symtype}.
+  \end{itemize}
+  For an illustration of this effect see the two symmetry
+  determinations of the Burgers equation in the file \texttt{LIEPDE.TST}.
+\item[\texttt{\{xi!\_}\textit{x1}\texttt{ =...,...,
+    eta!\_}\textit{u1}\texttt{ =...,...\}}] It is possible to specify
+  an ansatz for the symmetry. Such an ansatz must specify all $\xi^i$
+  for all independent variables and all $\eta^{\alpha}$ for all
+  dependent variables in terms of differential expressions which may
+  involve unknown functions/constants.  The dependences of the unknown
+  functions have to be declared in advance by using the
+  \texttt{DEPEND} command. For example, \\  
+  \verb+    DEPEND f, t, x, u$+ \\
+  specifies $f$ to be a function of $t,x,u$. If one wants to have $f$
+  as a function of derivatives of $u(t,x)$, say $f$ depending on
+  $u_{txx}$, then one \underline{\textit{cannot}} write \\
+  \verb+    DEPEND f, df(u,t,x,2)$+ \\
+  but instead must write \\
+  \verb+    DEPEND f, u!`1!`2!`2$+ \\
+  assuming \textit{xlist} has been specified as \verb+ {t,x}+.
+  Because $t$ is the first variable and $x$ is the second variable in
+  \textit{xlist} and $u$ is differentiated oncs wrt.\ $t$ and twice
+  wrt.\ $x$ we therefore use \verb+ u!`1!`2!`2+. The character
+  \texttt{!} is the escape character to allow special characters like
+  ` to occur in an identifier.
+  
+  For generalized symmetries one usually sets all $\xi^i=0$.  Then the
+  $\eta^{\alpha}$ are equal to the characteristic functions.
+\end{description}
 \noindent The third parameter \textit{flist} of \texttt{LIEPDE} is a list $\{\;\}$ 
 that includes
 \begin{itemize}
@@ -1072,15 +1072,17 @@ x^k        & = & x^k(v^i,u^{\beta},u^{\beta},_{v^j},\ldots).
 %---------------------------------------
 \subsubsection{Syntax}
 The call of \texttt{DETRAFO} is
-\begin{tabbing}
-\texttt{DETRAFO}(\=\{\textit{ex}$_1$, \textit{ex}$_2$, \ldots , \textit{ex}$_m$\}, \\
-              \>\{\textit{ofun}$_1=$\textit{fex}$_1$, \textit{ofun}$_2=$\textit{fex}$_2$,
-               \ldots ,\textit{ofun}$_p=$\textit{fex}$_p$\},  \\
-              \>\{\textit{ovar}$_1=$\textit{vex}$_1$, \textit{ovar}$_2=$\textit{vex}$_2$, \ldots ,
-                  \textit{ovar}$_q=$\textit{vex}$_q$\},  \\
-              \>\{\textit{nfun}$_1$, \textit{nfun}$_2$, \ldots , \textit{nfun}$_p$\},\\
-              \>\{\textit{nvar}$_1$, \textit{nvar}$_2$, \ldots , \textit{nvar}$_q$\});
-\end{tabbing}     
+\begin{flushleft}
+\begin{tabular}{@{}l@{}l}
+\texttt{DETRAFO}(&\{\textit{ex}$_1$, \textit{ex}$_2$, \ldots , \textit{ex}$_m$\}, \\
+              &\{\textit{ofun}$_1=$\textit{fex}$_1$, \textit{ofun}$_2=$\textit{fex}$_2$,
+               \ldots ,\textit{ofun}$_p=$\textit{fex}$_p$\}, \\
+              &\{\textit{ovar}$_1=$\textit{vex}$_1$, \textit{ovar}$_2=$\textit{vex}$_2$, \ldots ,
+                  \textit{ovar}$_q=$\textit{vex}$_q$\}, \\
+              &\{\textit{nfun}$_1$, \textit{nfun}$_2$, \ldots , \textit{nfun}$_p$\},\\
+              &\{\textit{nvar}$_1$, \textit{nvar}$_2$, \ldots , \textit{nvar}$_q$\});
+\end{tabular}     
+\end{flushleft}
 where $m,p,q$ are arbitrary.
 \begin{itemize}
 \item

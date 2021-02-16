@@ -55,14 +55,14 @@ they are relevant for. If we keep the Gr\"obner bases for all cases
 separate and associate information on the respective specializations
 with them, we obtain a \emph{Gr\"obner system}. For our example, the
 Gr\"obner system is the following;
-$$
+\[
 \left[
 \begin{array}{c|c}
 a\neq0 & \{x+y,ax,ay\}\\
 a=0 & \{x+y\}
 \end{array}
 \right].
-$$
+\]
 A \textsc{cgb} is obtained as the union of the single Gr\"obner bases in
 a Gr\"obner system. It has also been shown that, on the other hand, a
 Gr\"obner system can easily be reconstructed from a given \textsc{cgb}
@@ -115,10 +115,10 @@ with the output of \texttt{ws}.
 same calling conventions as \texttt{cgb}. It returns the complete
 Gr\"obner system represented as a nested list
 \begin{center}
-\begin{math}
+\(
 \bigl\{\bigl\{c_1,\{g_{11},\ldots,g_{1n_1}\}\bigr\},\dots,
 \bigl\{c_m,\{g_{m1},\dots,g_{1n_m}\}\bigr\}\bigr\}.
-\end{math}
+\)
 \end{center}
 The $c_i$ are conditions in the parameters represented as
 quantifier-free REDLOG formulas. Each choice of parameters will obey

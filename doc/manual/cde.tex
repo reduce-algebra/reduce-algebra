@@ -1,8 +1,6 @@
 
 \indexpackage{CDE}
 
-
-
 % MACROS
 
 \newcommand{\cprime}{\/{\mathsurround=0pt$'$}}
@@ -23,7 +21,6 @@
 \newcommand*{\CDiffsym}[1]{\CDiff_{(#1)}^{\,\mathrm{sym}}}
 \newcommand*{\CDiffself}[1]{\CDiff_{(#1)}^{\,\mathrm{self}}}
 \newcommand*{\CDiffskew}[1]{\CDiff_{(#1)}^{\,\mathrm{skew}}}
-\newenvironment{system}{\left\{\begin{array}{l}}{\end{array}\right.}
 
 \newcommand{\ddx}[1]{D_x^{#1}}
 
@@ -36,6 +33,26 @@
 \providecommand*{\eprint}[2][]{\href{http://arXiv.org/abs/#2}%
 {\begingroup \Url{arXiv:#2}}}
 
+%% For MathJax, must be part of a paragraph to avoid extra space:
+\ifdefined\HCode
+\(
+\def\pd#1#2{\mathchoice{\frac{\partial#1}{\partial#2}}
+  {\partial#1/\partial#2}{\partial#1/\partial#2}
+  {\partial#1/\partial#2}}
+\def\od#1#2{\mathchoice{\frac{d#1}{d#2}}
+  {d#1/d#2}{d#1/d#2}{d#1/d#2}}
+\def\fd#1#2{\mathchoice{\frac{\delta#1}{\delta#2}}
+  {\delta #1/\delta#2}{\delta#1/\delta#2}{\delta#1/\delta#2}}
+\def\N{\mathbb{N}}
+\def\R{\mathbb{R}}
+\def\Z{\mathbb{Z}}
+\def\CDiff{\mathop{\mathcal{C}\mathrm{Dif{}f}}}
+\def\CDiffsym#1{\CDiff_{(#1)}^{\,\mathrm{sym}}}
+\def\CDiffself#1{\CDiff_{(#1)}^{\,\mathrm{self}}}
+\def\CDiffskew#1{\CDiff_{(#1)}^{\,\mathrm{skew}}}
+\def\ddx#1{D_x^{#1}}
+\)%
+\fi
 We describe \cde, a \REDUCE package devoted to differential-geometric
 computations on Differential Equations (DEs, for short).
 
@@ -144,10 +161,10 @@ to be \emph{independent variables} and $u^i$ to be \emph{dependent variables}.
 Let us introduce the \emph{jet space} $J^r(n,m)$. This is the space with
 coordinates $(x^\lambda,u^i_\sigma)$, where $u^i_\sigma$ is defined as follows.
 If $s\colon \R^n\to \R^m$ is a differentiable function, then
-\begin{displaymath}
+\[
   u^i_\sigma\circ s(x)=\frac{\partial^{|\sigma|}(u^i\circ s)}
   {(\partial x^1)^{\sigma_1}\cdots (\partial x^n)^{\sigma_n}}.
-\end{displaymath}
+\]
 Here $\sigma=(\sigma_1,\ldots,\sigma_n)\in\N^n$ is a multiindex. We set
 $|\sigma|=\sigma_1+\cdots+\sigma_n$. If $\sigma=(0,\ldots,0)$ we set
 $u^i_\sigma=u^i$.
@@ -235,9 +252,9 @@ expressions are of the form
 \begin{equation}
   \label{cdeeq:2}
   D_\lambda=\pd{}{x^\lambda} +
-  u^i_{\boldsymbol{\sigma}\lambda}\pd{}{u^i_{\boldsymbol{\sigma}}},
+  u^i_{\mathbf{\sigma}\lambda}\pd{}{u^i_{\mathbf{\sigma}}},
 \end{equation}
-where $\boldsymbol{\sigma}$ is a multiindex.
+where $\mathbf{\sigma}$ is a multiindex.
 
 The total derivative of an argument $\varphi$ is invoked as follows:
 \begin{verbatim}
@@ -307,10 +324,10 @@ variables and the even and odd dependent variables, up to the order
 \texttt{total\_order} will also include odd derivatives:
 \begin{equation}
   D_\lambda=\pd{}{x^\lambda} +
-  u^i_{\boldsymbol{\sigma}\lambda}\pd{}{u^i_{\boldsymbol{\sigma}}}
-    + p^i_{\boldsymbol{\sigma}\lambda}\pd{}{p^i_{\boldsymbol{\sigma}}},
+  u^i_{\mathbf{\sigma}\lambda}\pd{}{u^i_{\mathbf{\sigma}}}
+    + p^i_{\mathbf{\sigma}\lambda}\pd{}{p^i_{\mathbf{\sigma}}},
 \end{equation}
-where $\boldsymbol{\sigma}$ is a multiindex. The considerations on
+where $\mathbf{\sigma}$ is a multiindex. The considerations on
 expansion and \texttt{letop} apply in this case too.
 
 \ttindextype{EXT}{operator (CDE)}
@@ -384,13 +401,13 @@ The function \texttt{cde} also defines total derivatives truncated at the order
 that total derivatives are tangent to the equation manifold. Their coordinate
 expressions are of the form
 \begin{equation}
-  D_\lambda=\pd{}{x^\lambda}+\sum_{u^i_{\boldsymbol{\sigma}}\
-    \text{parametric}}u^i_{\boldsymbol{\sigma}\lambda}\pd{}{u^i_{\boldsymbol{\sigma}}}
-  + \sum_{p^i_{\boldsymbol{\sigma}}\
-    \text{parametric}}p^i_{\boldsymbol{\sigma}\lambda}\pd{}{p^i_{\boldsymbol{\sigma}}},
+  D_\lambda=\pd{}{x^\lambda}+\sum_{u^i_{\mathbf{\sigma}}\
+    \text{parametric}}u^i_{\mathbf{\sigma}\lambda}\pd{}{u^i_{\mathbf{\sigma}}}
+  + \sum_{p^i_{\mathbf{\sigma}}\
+    \text{parametric}}p^i_{\mathbf{\sigma}\lambda}\pd{}{p^i_{\mathbf{\sigma}}},
 \end{equation}
-where $\boldsymbol{\sigma}$ is a multiindex.  It can happen that
-$u^i_{\boldsymbol{\sigma}\lambda}$ (or $p^i_{\boldsymbol{\sigma}\lambda}$) is
+where $\mathbf{\sigma}$ is a multiindex.  It can happen that
+$u^i_{\mathbf{\sigma}\lambda}$ (or $p^i_{\mathbf{\sigma}\lambda}$) is
 principal and must be replaced with differential consequences of the equation.
 Such differential consequences are called \emph{primary differential
   consequences}, and are computed; in general they will depend on other,
@@ -488,9 +505,9 @@ $\mathcal{C}$-differential operators is the subject of this section.
 \label{cdesec:mathc-diff-oper}
 
 Let us consider the spaces
-\begin{displaymath}
+\[
   P=\{\varphi\colon J^r(n,m)\to \R^k\},\qquad Q=\{\psi\colon J^r(n,m)\to \R^s\}.
-\end{displaymath}
+\]
 A \emph{$\mathcal{C}$-differential operator} $\Delta\colon P\to Q$ is defined
 to be a map of the type
 \begin{equation}\label{eq:4}
@@ -550,27 +567,27 @@ they can be summed and multiplied by scalars.
 
 An important example of $\mathcal{C}$-differential operator is that of
 \emph{linearization}, or \emph{Fr\'echet derivative}, of a vector function
-\begin{displaymath}
+\[
     F\colon J^r(n,m) \to \R^k.
-\end{displaymath}
+\]
 This is the operator
-\begin{displaymath}
+\[
   \ell_F\colon \varkappa \to P ,\quad \varphi \mapsto
   \sum_{\sigma, i}\pd{F^k}{u^i_\sigma}D_\sigma\varphi^i,
-\end{displaymath}
+\]
 where $\varkappa = \{ \varphi \colon J^r(n,m) \to \R^m \}$ is the space of
 \emph{generalized vector fields on jets} \cite{Krasilshchik:99,Olver:93}.
 
 Linearization can be extended to an operation that, starting from a
 $k$-$\mathcal{C}$-differential operator, generates a
 $k+1$-$\mathcal{C}$-differential operator as follows:
-\begin{displaymath}
+\[
   \ell_{\Delta}(p_1,\dots,p_k,\varphi) =
   (\sum_{\sigma,\sigma_1,\ldots,\sigma_k, i,i_1,\ldots,i_k}
   \frac{\partial a^{\sigma_1,\ldots,\sigma_k,\ j}_{i_1\cdots i_k}}{\partial
     u^i_\sigma}
   D_{\sigma}\varphi^i D_{\sigma_1}p_1^{i_1}\cdots D_{\sigma_k}p_k^{i_k})
-\end{displaymath}
+\]
 (The above operation is also denoted by $\ell_{\Delta,p_1,\dots,p_k}(\varphi)$.)
 
 At the moment, \cde is only able to compute the linearization of a vector
@@ -594,15 +611,15 @@ At the moment, \cde can compute the adjoint of an operator with one argument
 Now, consider two operators $\Delta\colon P\to Q$ and $\nabla\colon Q\to R$.
 Then the composition $\nabla\circ\Delta$ is again a $\mathcal{C}$-differential
 operator. In particular, if
-\begin{displaymath}
+\[
   \Delta(p) = (\sum_{\sigma, i}a^{\sigma j}_i D_\sigma p^i),\quad
   \nabla(q) = (\sum_{\tau, j}b^{\tau k}_j D_\tau q^j),
-\end{displaymath}
+\]
 then
-\begin{displaymath}
+\[
   \nabla\circ\Delta(p) =
   (\sum_{\tau, j}b^{\tau k}_j D_\tau (\sum_{\sigma, i}a^{\sigma j}_i D_\sigma p^i))
-\end{displaymath}
+\]
 This operation can be generalized to
 \cdiffops with $h$ arguments.
 
@@ -886,9 +903,9 @@ with respect to gradings.
 
 In particular, Burgers'equation translates into the following dimensional
 equation:
-\begin{displaymath}
+\[
   [u_t]=[u_{xx}],\quad [u_{xx}]=[2uu_x].
-\end{displaymath}
+\]
 By the rules $[u_z]=[u]-[z]$ and $[uv]=[u]+[v]$, and choosing $[x]=-1$, we have
 $[u]=1$ and $[t]=-2$. This will be used to generate the list of homogeneous
 monomials of given grading to be used in the ansatz about the structure of the
@@ -1255,12 +1272,12 @@ that it sends generating functions (or characteristics, according with
 \cite{Olver:93}) of conservation laws to higher (or generalized) symmetries.
 As it is proved in \cite{KerstenKrasilshchikVerboretsky:2004}, this amounts at solving $\bar
 \ell_{KdV}(\mathtt{phi})=0$ over the equation
-\begin{displaymath}
+\[
   \left\{\begin{array}{l}
     u_t=u_{xxx}+uu_x\\
     p_t=p_{xxx}+up_x
   \end{array}\right.
-\end{displaymath}
+\]
 or, in geometric terminology, find the shadows of symmetries on the
 $\ell^*$-covering of the KdV equation, with the further condition that the
 shadows must be linear in the $p$-variables. Note that the second equation (in
@@ -1336,10 +1353,10 @@ sym := (c(5)*p*u_x + 2*c(5)*p_x*u +
         3*c(5)*p_3x + 3*c(2)*p_x)/3$
 \end{verbatim}
 Of course, the results correspond to the operators
-\begin{gather*}
-  p_x \to D_x,\\
-  \frac{1}{3}(3p_{3x} + 2up_x + u_xp) \to \frac{1}{3}(3D_{xxx} + 2uD_{x} + u_x)
-\end{gather*}
+\begin{center}
+  $p_x \to D_x$,\\
+  $\displaystyle\frac{1}{3}(3p_{3x} + 2up_x + u_xp) \to \frac{1}{3}(3D_{xxx} + 2uD_{x} + u_x)$.
+\end{center}
 Note that each operator is multiplied by one arbitrary real
 constant, \texttt{c(5)} and \texttt{c(2)}.
 
@@ -1408,12 +1425,12 @@ respect to the previous computations for scalar equations. We will look for
 Hamiltonian structures for the dispersionless Boussinesq equation \eqref{cdeeq:1}.
 
 We will proceed by dimensional analysis. Gradings can be taken as
-\begin{displaymath}
+\[
   [t]=-2,\quad [x]=-1,\quad [v]=1,\quad [u]=2,\quad [p]=1,\quad [q]=2
-\end{displaymath}
+\]
 where $p$, $q$ are the two odd coordinates. We have the
 $\ell^*_{\text{Bou}}$ covering equation
-\begin{displaymath}
+\[
   \label{eq:12}
   \left\{
   \begin{array}{l}
@@ -1423,7 +1440,7 @@ $\ell^*_{\text{Bou}}$ covering equation
   v_t-u_x-vv_x=0
 \end{array}
 \right.
-\end{displaymath}
+\]
 We have to find Hamiltonian operators as shadows of symmetries on the above
 covering.  At the level of source file (\texttt{bou\_lho1}) the input
 data is:
@@ -1582,10 +1599,10 @@ where the correspondence is given by
 \end{equation}
 
 In terms of the corresponding superfunctions:
-\begin{displaymath}
+\[
   H = a^{ik\,\sigma} p_{k\,\sigma} \quad \to \quad
   \hat H = a^{ik\,\sigma} p_{k\,\sigma}p_i.
-\end{displaymath}
+\]
 Note that the product $p_{k\,\sigma}p_i$ is anticommutative since $p$'s are odd
 variables.
 
@@ -1666,7 +1683,7 @@ possesses two Hamiltonian formulations \cite{Ferapontov:97}:
   \end{pmatrix},\quad i=1,2
 \end{equation*}
 with the homogeneous first-order Hamiltonian operator
-\begin{displaymath}
+\[
 \hat{A}_{1}=%
 \begin{pmatrix}
 -\frac{3}{2}D _{x}^{{}} & \frac{1}{2}D _{x}^{{}}a & D
@@ -1676,10 +1693,10 @@ _{x}^{{}}) & \frac{3}{2}cD _{x}^{{}}+c_{x} \\
 bD _{x}^{{}} & \frac{3}{2}D _{x}^{{}}c-c_{x} & 
 (b^{2}-ac)D _{x}^{{}}+D _{x}^{{}}(b^{2}-ac)%
 \end{pmatrix}
-\end{displaymath}%
+\]%
 with the Hamiltonian $H_1 = \int c \, dx$,
 and the homogeneous third-order Hamiltonian operator
-$$
+\[
   A_2= \ddx{}\left(
     \begin{array}{ccc}
       0 & 0 & \displaystyle\ddx{} \\
@@ -1688,12 +1705,12 @@ $$
       \displaystyle\ddx{}b + b\ddx{} + a \ddx{} a
     \end{array}\right)
   \ddx{},
-$$
+\]
 with the nonlocal Hamiltonian
-\begin{displaymath}
+\[
   H_2=-\int\left(  \frac{1}{2}a\left({\ddx{}}^{-1}b\right)^2 + {\ddx{}}^{-1}b
   {\ddx{}}^{-1}c\right)dx.
-\end{displaymath}
+\]
 Both operators are of Dubrovin--Novikov type \cite{DubrovinNovikov:83,DubrovinNovikov:84}. 
 This means that the
 operators are homogeneous with respect to the grading $|D_x|=1$. It follows
@@ -1704,9 +1721,9 @@ transformations, the coefficients of the operators transform as
 differential-geometric objects.
 
 The operator $A_1$ has the general structure
-\begin{displaymath}
+\[
   A_1 = g_1^{ij}\ddx{} + \Gamma^{ij}_ku^k_x
-\end{displaymath}
+\]
 where the covariant metric $g_{1\,ij}$ is flat, $\Gamma^{ij}_k =
 g_1^{is}\Gamma^j_{sk}$ (here $g_1^{ij}$ is the inverse matrix that represent
 the contravariant metric induced by $g_{1\,ij}$), and $\Gamma^j_{sk}$ are the
@@ -1720,9 +1737,9 @@ where the inverse $g_{2\,ij}$ of the leading term transforms as a covariant
 pseudo-Riemannian metric. From now on we drop the subscript $2$ for the metric
 of $A_2$. It was proved in \cite{Ferapontov:2014} that, if we set
 $c_{ijk}=g_{iq}g_{jp}c_{k}^{pq}$, then
-\begin{displaymath}
+\[
   c_{ijk}=\frac{1}{3}(g_{ik,j}-g_{ij,k})
-\end{displaymath}
+\]
 and the metric fulfills the following identity:
 \begin{equation}
   g_{mk,n}+g_{kn,m}+g_{mn,k}=0.
@@ -1746,7 +1763,7 @@ and computed in the system using the inverse matrix $g_{ij}$ of the leading
 coefficient contravariant metric\footnote{Indeed in the example file
   \texttt{wdvv\_biham1.red} there are procedures for computing all those
   quantities.}
-\begin{displaymath}
+\[
   g^{ij} =
   \begin{pmatrix}
     -\frac{3}{2} & \frac{1}{2}a & b
@@ -1755,7 +1772,7 @@ coefficient contravariant metric\footnote{Indeed in the example file
     \\
     b & \frac{3}{2}c & 2(b^2-ac)
   \end{pmatrix}
-\end{displaymath}
+\]
 then, provided we defined a list \texttt{dep\_var} of the dependent variables,
 we could set
 \begin{verbatim}
@@ -1775,7 +1792,7 @@ gu1(i,j)*td(psi,x)+(for k:=1:3 sum gamma_hi_con(i,j)*psi
 
 The third order operator can be reconstructed as follows.
 Observe that the leading contravariant metric is
-\begin{displaymath}
+\[
   g^{ij}=
   \begin{pmatrix}
     0 & 0 & 1
@@ -1784,7 +1801,7 @@ Observe that the leading contravariant metric is
     \\
     1 & -a & 2b+a^2
   \end{pmatrix}
-\end{displaymath}
+\]
 Introduce the above matrix in \REDUCE as \texttt{gu3}. Then set
 \begin{verbatim}
 gu3:=gl3**(-1)$
@@ -1869,20 +1886,21 @@ This example has been provided by M. Casati. The file of the computation is
 \texttt{dn2d\_sb1.red}. The dependent variables are $p^1$, $p^2$.
 
 Let us set
-\begin{gather}
+\begin{equation}
   \label{eq:19}
   H=
   \begin{pmatrix}
     D_x & 0 \\ 0 & D_y
   \end{pmatrix}
-  \\ 
+\end{equation}
+\begin{equation}
   P_1=
   \begin{pmatrix}
     P_1^{11} & P_1^{12}
     \\
     P_1^{21} & P_1^{22}
   \end{pmatrix}
-\end{gather}
+\end{equation}
 where
 \begin{align*}
   P_1^{11} = &
@@ -2107,12 +2125,12 @@ symmetries into symmetries can be found as a shadow of symmetry on the
 $\ell$-covering of the KdV equation, with the further condition that the
 shadows must be linear in the covering $q$-variables. The tangent covering of
 the KdV equation is
-\begin{displaymath}
+\[
   \left\{\begin{array}{l}
     u_t=u_{xxx}+uu_x\\
     q_t=u_xq + uq_x + q_{xxx}
   \end{array}\right.
-\end{displaymath}
+\]
 and we have to solve the equation $\bar\ell_{KdV}(\mathtt{phi})=0$, where
 $\bar\ell_{KdV}$ means that the linearization of the KdV equation is lifted
 over the tangent covering.
@@ -2124,30 +2142,30 @@ Usually, recursion operators are non-local: operators of the
 form $D_x^{-1}$ appear in their expression. Geometrically we interpret this
 kind of operator as follows. We introduce a conservation law on the cotangent
 covering of the form
-\begin{displaymath}
+\[
   \omega = rt\,dx + rx\, dt
-\end{displaymath}
+\]
 where $rt = uq+q_{xx}$ and $rx = q$. It has the remarkable feature of being
 linear with respect to $q$-variables. A non-local variable $r$ can be
 introduced as a potential of $\omega$, as $r_x=rx$, $r_t=rt$. A computation
 of shadows of symmetries on the system of PDEs
-\begin{displaymath}
+\[
   \left\{\begin{array}{l}
     u_t=u_{xxx}+uu_x\\
     q_t=u_xq + uq_x + q_{xxx}\\
     r_t = uq+q_{xx}\\
     r_x = q
   \end{array}\right.
-\end{displaymath}
+\]
 yields, analogously to the previous computations,
 \begin{verbatim}
   2*c(5)*q*u + 3*c(5)*q_2x + c(5)*r*u_x + c(2)*q.
 \end{verbatim}
 The operator $q$ stands for the identity operator, which is (and must be!)
 always a solution; the other solution corresponds to the Lenard--Magri operator
-\begin{displaymath}
+\[
   3D_{xx} + 2u + u_xD_x^{-1}.
-\end{displaymath}
+\]
 
 \subsection{Non-local Hamiltonian-recursion operators for
   Plebanski equation.}
@@ -2233,4 +2251,3 @@ changing coordinates to the evolutionary presentation yields the local operator
 (which has a much more complex expression than the identity operator) and one
 of the nonlocal operators of \cite{NeyziNutkuSheftel:JPA:2005}. More details on
 this computation can be found in \cite{KrasilshchikVerbovetskyVitolo:SPT:2012}.
-

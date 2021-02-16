@@ -27,21 +27,27 @@
   {\partial#1/\partial#2}{\partial#1/\partial#2}
   {\partial#1/\partial#2}}
 
-
 \providecommand{\cdiff}{CDIFF\xspace}
-
 
 %\keywords{\REDUCE, Hamiltonian operators, generalized symmetries, higher
 %  symmetries, conservation laws, nonlocal variables.}
 
 %\subjclass[2000]{37K05}
 
+%% For MathJax, must be part of a paragraph to avoid extra space:
+\ifdefined\HCode
+\(
+\def\pd#1#2{\mathchoice{\frac{\partial#1}{\partial#2}}
+  {\partial#1/\partial#2}{\partial#1/\partial#2}
+  {\partial#1/\partial#2}}
+\)%
+\fi
 %\begin{abstract}
-  Author of this Section: R. Vitolo.
+  Author of this Section: R.~Vitolo.
 
   We describe \cdiff, a Reduce package for computations in geometry of
-  Differential Equations (DEs, for short) developed by P. Gragert,
-  P.H.M. Kersten, G. Post and G. Roelofs from the University of Twente, The
+  Differential Equations (DEs, for short) developed by P.~Gragert,
+  P.H.M.~Kersten, G.~Post and G.~Roelofs from the University of Twente, The
   Netherlands.
 
   The package is part of the official \REDUCE distribution at Sourceforge
@@ -161,9 +167,9 @@ with respect to gradings.
 
 In particular, Burgers' equation translates into the following dimensional
 equation:
-\begin{displaymath}
+\[
   [u_t]=[u_{xx}],\quad [u_{xx}=2uu_x].
-\end{displaymath}
+\]
 By the rules $[u_z]=[u]-[z]$ and $[uv]=[u]+[v]$, and choosing $[x]=-1$, we have
 $[u]=1$ and $[t]=-2$. This will be used to generate the list of homogeneous
 monomials of given grading to be used in the ansatz about the structure of the
@@ -556,12 +562,12 @@ and paper.
 In this section we will find local Hamiltonian operators for the KdV equation
 $u_t=u_{xxx}+uu_x$. Concretely, we have to solve $\bar
 \ell_{KdV}(\mathtt{phi})=0$ over the equation
-\begin{displaymath}
+\[
   \left\{\begin{array}{l}
     u_t=u_{xxx}+uu_x\\
     p_t=p_{xxx}+up_x
   \end{array}\right.
-\end{displaymath}
+\]
 or, in geometric terminology, find the shadows of symmetries on the
 $\ell^*$-covering of the KdV equation. The reference paper for this type of
 computations is \cite{KerstenKrasilshchikVerboretsky:2004}.
@@ -699,12 +705,12 @@ phi := c(4)*ext(4) + 3*c(3)*ext(6) + 2*c(3)*ext(4)*u
  + c(3)*ext(3)*u1$
 \end{verbatim}
 Of course, the results correspond to the operators
-\begin{gather*}
-  \text{\texttt{ext(4)}} \to D_x,\\
-  \text{\texttt{3*c(3)*ext(6) +
-  2*c(3)*ext(4)*u + c(3)*ext(3)*u1}} \to \\
- 3D_{xxx} + 2uD_{x} + u_x
-\end{gather*}
+\begin{center}
+  \texttt{ext(4)}\ $\to D_x$,\\
+  \texttt{3*c(3)*ext(6) +
+  2*c(3)*ext(4)*u + c(3)*ext(3)*u1}\ $\to$ \\
+ $3D_{xxx} + 2uD_{x} + u_x$.
+\end{center}
 Note that each operator is multiplied by one arbitrary real
 constant, \texttt{c(4)} and \texttt{c(3)}.
 
@@ -895,15 +901,15 @@ look for Hamiltonian structures for the following Boussinesq equation:
 \end{equation}
 where $\sigma$ is a constant. This example also shows how to deal with jet
 spaces with more than one dependent variable. Here gradings can be taken as
-\begin{displaymath}
+\[
   [t]=-2,\quad [x]=-1,\quad [v]=1,\quad [u]=2,\quad [p]=[\pd{}{u}]=-2,\quad
   [q]=[\pd{}{v}]=-1
-\end{displaymath}
+\]
 where $p$, $q$ are the two coordinates in the space of generating functions of
 conservation laws.
 
 The linearization of the above system and its adjoint are, respectively
-\begin{displaymath}
+\[
   \ell_{\text{Bou}}=
   \begin{pmatrix}
     D_t-vD_x-v_x & -u_x-uD_x-\sigma D_{xxx}\\
@@ -914,9 +920,9 @@ The linearization of the above system and its adjoint are, respectively
     -D_t+vD_x & D_x\\
     uD_x+\sigma D_{xxx} & -D_t+vD_x
   \end{pmatrix}
-\end{displaymath}
+\]
 and lead to the $\ell^*_{\text{Bou}}$ covering equation
-\begin{displaymath}
+\[
   \label{cdiffeq:2}
   \left\{
   \begin{array}{l}
@@ -926,7 +932,7 @@ and lead to the $\ell^*_{\text{Bou}}$ covering equation
   v_t-u_x-vv_x=0
 \end{array}
 \right.
-\end{displaymath}
+\]
 We have to find shadows of symmetries on the above covering.
 Total derivatives must be defined as follows:
 \begin{verbatim}

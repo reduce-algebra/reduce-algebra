@@ -189,7 +189,6 @@
 \newcommand{\meta}[1]{$\langle$\textit{#1}$\rangle$}
 % More commands for Backus-Naur form
 \newcommand{\BNFprod}{$\longrightarrow$}
-% Redefinition of \bnfprod is ignored by TeX4ht, which always uses ::=.
 \newcommand{\BNFalt}{$\ \mid\ $}
 \begingroup
   \catcode`\|=\active
@@ -230,7 +229,7 @@
 \newcommand{\extendedmanual}[1]{#1}
 
 % \s{...} is a sentential form in descriptions. Enclosed \em text in <...>
-\newcommand{\s}[1] {$<\emph{#1}>$}
+\newcommand{\s}[1] {$<$\,\emph{#1}\,$>$}
 
 % \meta{...} is an alternative sentential form in descriptions using \it.
 %\newcommand{\meta}[1]{\mbox{$\langle\textit{#1}\rangle$}}

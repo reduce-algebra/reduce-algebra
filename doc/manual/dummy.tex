@@ -49,14 +49,14 @@ definite space is defined, $i_1$ and $i_2$ are assumed to be some
 integers which are the {\em same} for all dummy variables.
 
 If $f$ is any {\tt REDUCE} operator, then the simplest dummy summation 
-associated to $dv$ is the sum  
-$$
+associated to $dv$ is the sum
+\[
 \sum_{dv=i_1}^{i_2} f(dv)
-$$
+\]
 and is simply written as
-$$
+\[
 f(dv). 
-$$
+\]
 No other rules govern the implicit summations. $dv$ can appear as many times
 we want since the operator $f$ may depend on an arbitrary number of 
 variables. So, the package is potentially applicable to many contexts.
@@ -66,21 +66,21 @@ tensor calculus.
 Obviously, there are as many ways we want to express the {\em same} quantity.
 If the name of another dummy variable is $dum$ then 
 the previous expression is written as
-$$
+\[
 \sum_{dum=i_1}^{i_2} f(dum)
-$$
+\]
 and the computer algebra system should be able to find that the expression
-$$
+\[
 f(dv)-f(dum);
-$$
+\]
 is equal to $0$.
 A very special case which is {\em allowed} is when $f$ is the identity 
 operator.
 So, a generic dummy polynomial will be a sum 
 of dummy monomials of the  kind
-$$
+\[
 \prod_i c_i*f_i(dv_1,\ldots ,dv_{k_i},fr_1,\ldots , fr_{l_i})
-$$
+\]
 where $dv_1,\ldots,$ are dummy variables while $fr_1, \ldots, $ 
 are ordinary or free variables. 
 
