@@ -135,7 +135,7 @@
      '(!&regmem ('!*destroy dest)
                 (any   
                        ('!*load dest a1)
-                       ('*wshift dest '-27)
+                       ('*wshift dest '-56)
                        ('*wcmp dest p2)
                        ('!*load dest ''t)
                        (&convert-mac l1)

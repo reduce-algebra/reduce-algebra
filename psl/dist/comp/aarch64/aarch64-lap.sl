@@ -1041,7 +1041,7 @@
     (setq offset (MakeExpressionRelative offset 0))
     (prog (byte1)
 	(setq byte1 (lor (car code) (lsh (land offset 3) 5)))
-	(setq offset (ashift offset -2))
+	(setq offset (ash offset -2))
 	(DepositInstructionBytes
 	 byte1
 	 (land 16#ff (lshift offset -11))
@@ -1426,7 +1426,7 @@
 (de lth-mov-imm16 (code reg1 imm16) 4)
 
 (de OP-mul3 (code reg1 reg2 reg3)
-    (op-mul4 code reg1 reg2 reg3 (if (reg32p reg1) 'Wzr 'Xzr)))
+    (op-mul4 code reg1 reg2 reg3 (caddr code)))
 
 (de lth-mul3 (code reg1 reg2 reg3) 4)
 		       
