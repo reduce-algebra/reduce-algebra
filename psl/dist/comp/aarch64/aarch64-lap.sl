@@ -118,7 +118,7 @@
 (compiletime
  (if_system x86_64
    (progn
-     (put 'put_a_halfword 'opencode '((mov (reg ebx) (displacement (reg rax) 0))))
+     (put 'put_a_halfword 'opencode '((movl (reg ebx) (displacement (reg rax) 0))))
      (put 'getword32 'opencode '((movl (indexed (reg 1) (displacement (reg 2) 0)) (reg EAX)))))
    (progn
      (put 'put_a_halfword 'opencode '((STR (reg w1) (displacement (reg x0) 0))))
@@ -1046,7 +1046,7 @@
 	 byte1
 	 (land 16#ff (lshift offset -11))
 	 (land 16#ff (lshift offset -3))
-	 (lor (land 16#7 offset) (reg2int regd))
+	 (lor (lsh (land 16#7 offset) 5) (reg2int regd))
 	 ))
     )
 

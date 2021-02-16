@@ -329,5 +329,5 @@
 
 
 (setq MAXNARGS&       15)   
-(setq LASTACTUALREG&   5)
+(setq LASTACTUALREG&   8)
 

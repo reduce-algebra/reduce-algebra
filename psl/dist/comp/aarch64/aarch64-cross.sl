@@ -50,6 +50,7 @@
 
 (setq addressingunitsperitem 8)
 (setq bittable-entries-per-word 32)
+(setq LASTACTUALREG&   8)
 
 (compiletime
  (load fasl-decls fast-vector)

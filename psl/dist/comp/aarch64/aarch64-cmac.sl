@@ -59,7 +59,7 @@
         postincrement                    % (An)+
         Indexed                          % d(An,Dn)
         absolute                         % absolute.long
-        extrareg                         % Regs 5 .. 15
+        extrareg                         % Regs 9 .. 15
         idloc
         reglist)
         'TerminalOperand)
