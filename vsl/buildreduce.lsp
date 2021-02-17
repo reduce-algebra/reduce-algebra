@@ -27,7 +27,7 @@
 % Author: Anthony C. Hearn, Stanley L. Kameny and Arthur Norman
 
 (cond
-   ((eq 'vsl (car lispsystem!*)) (rdf "vsl.lsp")))
+   ((eq 'vsl (car lispsystem!*)) (rdf "$srcdir/vsl.lsp")))
 
 (verbos 3)
 
@@ -124,7 +124,7 @@
    ((memq 'vsl lispsystem!*)
     (faslout 'cslcompat)
 % Ha ha. faslout does not support this usage!
-    (rdf "vsl.lsp")
+    (rdf "$srcdir/vsl.lsp")
     (faslend)
    )
    (t
@@ -480,8 +480,6 @@ rds(xxx := open("$reduce/packages/support/build.red", 'input));
 (load!-package!-sources 'remake 'support)
 
 (setq !*comp nil)
-
-
 
 (begin)
 
@@ -1442,7 +1440,9 @@ load!-module 'xremake;
 << initreduce();
    date!* := "Bootstrap version";
 %  !@reduce := symbol!-value gensym();
-   checkpoint('begin, "REDUCE") >>;
+   preserve('begin, "REDUCE", t) >>;
+
+lisp;
 
 !#if (and (not (memq 'embedded lispsystem!*)) (not !*savedef))
 load!-module 'user;
@@ -1499,7 +1499,7 @@ build_reduce_modules reduce_base_modules;
 symbolic restart!-csl nil;
 
 (cond
-   ((eq 'vsl (car lispsystem!*)) (rdf "vsl.lsp")))
+   ((eq 'vsl (car lispsystem!*)) (rdf "$srcdir/vsl.lsp")))
 
 
 (setq !*savedef (and (null (memq 'embedded lispsystem!*))
@@ -1569,13 +1569,11 @@ symbolic restart!-csl nil;
 (fluid '(!*native_code))
 (setq !*native_code nil)   % Try T if you are VERY keen...
 
-(setq !*echo t !*backtrace t)
-(getd 'begin)
-(checkpoint 'begin (bldmsg "%w, %w ..." version!* date!*))
+(preserve 'begin (bldmsg "%w, %w ..." version!* date!*) t)
 
-(setq no_init_file t)
-(getd 'begin)
-(begin)
+%(setq no_init_file t)
+%(getd 'begin)
+%(begin)
 
 %
 % See the fairly length comments given a bit earlier about the

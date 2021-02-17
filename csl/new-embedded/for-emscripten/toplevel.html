@@ -20,8 +20,8 @@
            \log\left(x+1\right)}{4}$
          and that should be delimited by a pair of control characters,
          \U0002 before and \U005 after it. Other output is to be viewed as
-         plain text. Note that the MathJax dislikes the use of "\*".
-         Reduce could be adjusted in that respect is necessary!
+         plain text. Note that the MathJax dislikes the use of "\*", so
+         I edit that out.
 
          Because this page loads the various web tools it may take a while
          to load!
@@ -34,8 +34,13 @@
        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6">
        </script>
     -->
+    <script>
+       MathJax = {
+          chtml: { displayAlign: 'left' }
+       };
+    </script>
     <script type="text/javascript" async
-       src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-MML-AM_CHTML">
+       src="./tex-chtml.js">
     </script>
     <!-- Another component that we are investigating is mathlive, which
          supports an input editor for maths as well as a rendering
@@ -85,11 +90,11 @@
                     o = o.substring(n+1+26, o.length-2)
 // Reduce puts in "\*" for multiplication, but MathJax does not like that,
 // so I define it away into a narrow space.
-                    o = '$$\\def\\*{{\\,}}'.concat(o, '$$');
+                    o = '$$'.concat(o.replace(/\\\*/g, '\\,'), '$$');
                     var para = document.createElement("P");
                     var node = document.createTextNode(o);
                     para.appendChild(node);
-                    MathJax.Hub.Queue(["Typeset", MathJax.Hub, para]);
+                    MathJax.typesetPromise([para]);
                     body.insertBefore(para, inArea);
                 }
                 else
@@ -137,7 +142,7 @@
             document.body.appendChild(inArea);
             document.body.appendChild(button);
         });
-        sendToReduce('<< lisp (!*redefmsg := nil); load_package tmprint; on fancy; off promptnumbers; on redfront_mode >>$');
+        sendToReduce('<< lisp (!*redefmsg := nil); load_package tmprint; on nat; on fancy; off promptnumbers; on redfront_mode >>$');
     </script>
 </head>
 

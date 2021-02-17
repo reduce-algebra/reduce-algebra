@@ -373,29 +373,26 @@ symbolic procedure fancy!-tex s;
      prin2t fancy!-switch!-off!*;
    >>;
 
-symbolic procedure fancy!-out!-item(it);
+symbolic procedure fancy!-out!-item it;
   if atom it then prin2 it else
   if eqcar(it,'ascii) then writechar(cadr it) else
   if eqcar(it,'tab) then
       for i:=1:cdr it do prin2 " "
-    else
-  if eqcar(it,'bkt) then
-     begin scalar m,b,l; integer n;
-      m:=cadr it; b:=caddr it; n:=cadddr it;
-      l := b member '( !( !{ );
-   %  if m then prin2 if l then "\left" else "\right"
-   % else
-%      if n> 0 then
-%      <<prin2 if n=1 then "\big" else if n=2 then "\Big" else
-%            if n=3 then "\bigg" else "\Bigg";
-%       prin2 if l then "l" else "r";
-%      >>;
-      if l then prin2 "\left" else prin2 "\right";
-      if b member '(!{ !}) then prin2 "\";
-      prin2 b;
-    end
-    else
-      rederr "unknown print item";
+  else if eqcar(it,'bkt) then
+     begin scalar m:=cadr it,b:=caddr it,l,n:=cadddr it;
+        l := b = '!( or b = '!{;
+%       if m then prin2 if l then "\left" else "\right"
+%       else if n > 0 then <<
+%          prin2 if n=1 then "\big"
+%                else if n=2 then "\Big"
+%                else if n=3 then "\bigg" else "\Bigg";
+%          prin2 if l then "l" else "r" >>;
+        if b neq '!\left!. and b neq '!\right!. then <<
+           if l then prin2 "\left" else prin2 "\right" >>;
+        if member(b, '(!{ !})) then prin2 "\";
+        prin2 b;
+     end
+  else rederr "unknown print item";
 
 symbolic procedure set!-fancymode bool;
   if bool neq !*fancy!-mode then
@@ -534,6 +531,41 @@ symbolic procedure fancy!-out!-trailer();
        prin2 int2id 5
     >>;
 
+% The following can be used to issue a fragment of TeX, as in
+%    tex_string "\frac{1}{\sqrt{2}}";
+% It may be useful when debugging TeX rendering schemes.
+
+symbolic procedure tex_string s;
+<< fancy!-out!-header();
+   prin2 s;
+   fancy!-out!-trailer();
+   nil >>;
+
+flag('(tex_string), 'opfn);
+
+symbolic procedure balance!-parens line;
+  begin
+    scalar r, depth := 0, b;
+% Brakets are included as lists (BKT nil !{ n) where what I have written as
+% !{ could be  !(, !), !{ or !}. The integer n is an indication of the bracket
+% size desired and just for now is ignored!
+    for each s in line do
+       if eqcar(s, 'bkt) then <<
+          b := caddr s;
+          if b = '!( or b = '!{ then depth := depth+1
+          else depth := depth-1 >>;
+    while depth > 0 do <<
+       r := '(bkt nil !\right!. 1) . r;
+       depth := depth-1 >>;
+    while line do <<
+       r := car line . r;
+       line := cdr line >>;
+    while depth < 0 do <<
+       r := '(bkt nil !\left!. 1) . r;
+       depth := depth+1 >>;
+    return r;
+  end;
+
 #if (memq 'csl lispsystem!*)
 
 symbolic procedure fancy!-flush();
@@ -563,7 +595,7 @@ symbolic procedure fancy!-flush();
       for each line in reverse fancy!-page!* do
         if line and not eqcar(car line,'tab) then <<
           if 'wx memq lispsystem!* then fancy!-out!-item "\[";
-          for each it in reverse line do fancy!-out!-item it;
+          for each it in balance!-parents line do fancy!-out!-item it;
           if 'wx memq lispsystem!* then fancy!-out!-item "\]";
           terpri() >>;
       math!-display 3 >> where !*standard!-output!*=!*math!-output!*
@@ -572,7 +604,7 @@ symbolic procedure fancy!-flush();
          fancy!-out!-header();
 % If somehow "on fancy" is true but I am not talking to the GUI then the
 % expectation will be that I am talking to TeXmacs. In that case I do
-% not want tro confuse things with the "flat" output, but for debuggability
+% not want to confuse things with the "flat" output, but for debuggability
 % I will arrange that if a user goes "lisp (!*display!-for!-copy := t);
 % the the extra stuff will be shown.
          if !*display!-for!-copy and most_recent_fancy then <<
@@ -584,7 +616,7 @@ symbolic procedure fancy!-flush();
             terpri!* nil where outputhandler!* = nil;
             prin2 "::||::" >>;
          most_recent_fancy := nil;
-         for each it in reverse line do fancy!-out!-item it;
+         for each it in balance!-parens line do fancy!-out!-item it;
          fancy!-out!-trailer() >>;
     set!-fancymode nil
   end;
@@ -592,11 +624,11 @@ symbolic procedure fancy!-flush();
 #else
 
 symbolic procedure fancy!-flush();
-    << fancy!-terpri!* t;
+    <<  fancy!-terpri!* t;
         for each line in reverse fancy!-page!* do
         if line and not eqcar(car line,'tab) then
         <<fancy!-out!-header();
-          for each it in reverse line do fancy!-out!-item it;
+          for each it in balance!-parens line do fancy!-out!-item it;
           fancy!-out!-trailer();
         >>;
         set!-fancymode nil;

@@ -221,6 +221,8 @@ reducex.js:	allocate.xo arith01.xo arith02.xo arith03.xo arith04.xo \
 
 # The web-based (non-node) version
 
+INSERT_BUFFER = '_insert_buffer'
+
 reduce.web.wasm:	allocate.yo arith01.yo arith02.yo arith03.yo \
 		arith04.yo arith05.yo arith06.yo arith07.yo arith08.yo \
 		arith09.yo arith10.yo arith11.yo arith12.yo arith13.yo \
@@ -249,7 +251,7 @@ reduce.web.wasm:	allocate.yo arith01.yo arith02.yo arith03.yo \
 		u41.yo u42.yo u43.yo u44.yo u45.yo u46.yo u47.yo u48.yo u49.yo u50.yo \
 		u51.yo u52.yo u53.yo u54.yo u55.yo u56.yo u57.yo u58.yo u59.yo u60.yo \
 		$(LDFLAGS) $(LIBS) $(JSOPTS) $(ASYNCIFY_OPTS) $(WEBOPTS) $(LINK_OPT) \
-		-s EXPORTED_FUNCTIONS="['_main','__PROC_insert_buffer','_PROC_insert_buffer','__insert_buffer','_insert_buffer']" \
+		-s EXPORTED_FUNCTIONS="['_main',$(INSERT_BUFFER)]" \
 		-o reduce.web.js
 
 .PHONY:	reduce

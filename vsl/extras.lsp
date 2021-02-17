@@ -3,7 +3,7 @@
 
 
 %%
-%% Copyright (C) 2010, following the master REDUCE source files.          *
+%% Copyright (C) 2017, following the master REDUCE source files.          *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *
@@ -31,6 +31,8 @@
 %% DAMAGE.                                                                *
 %%
 
+
+% $Id: $
 
 (dm df (u !&optional env) (prog (g w) (setq g (gensym)) (setq w (list (quote 
 list) (quote (quote let!*)) (list (quote list) (list (quote list) (mkquote (
@@ -62,12 +64,12 @@ setpchar prompt) (return nil)))
 "0123456789abcdefghijklmnopqrstuvwxyz" (remainder n 36)) (s!:stamp (truncate 
 n 36))))))))
 
-(de dated!-name (base) (intern (list!-to!-string (append (explodec base) (
-cons (quote !_) (append (reverse (s!:stamp (datestamp))) (cons (quote !_) (
-explodec (setq s!:gensym!-serial (plus s!:gensym!-serial 1))))))))))
+(de dated!-name (base) (intern (list2string (append (explodec base) (cons (
+quote !_) (append (reverse (s!:stamp (datestamp))) (cons (quote !_) (explodec
+(setq s!:gensym!-serial (plus s!:gensym!-serial 1))))))))))
 
-(de hashtagged!-name (base value) (intern (list!-to!-string (append (explodec
-base) (cons (quote !_) (s!:stamp (md60 value)))))))
+(de hashtagged!-name (base value) (intern (list2string (append (explodec base
+) (cons (quote !_) (s!:stamp (md60 value)))))))
 
 (remflag (quote (sort sortip)) (quote lose))
 
@@ -179,8 +181,8 @@ lab1010 (cond ((null var1011) (return nil))) (prog (k) (setq k (car var1011))
 (setq res (cons k res))) (setq var1011 (cdr var1011)) (go lab1010))) (t (
 prin (list (quote !?!?!?) c a))))))))))))))) (t (progn (cond ((null dest) (
 setq res (cons c res))) (t (princ c))))))) (setq i (plus i 1)) (go lab1012)) 
-(cond ((null dest) (return (list!-to!-string (reversip res)))) (t (progn (wrs
-o) (return nil))))))
+(cond ((null dest) (return (list2string (reversip res)))) (t (progn (wrs o) (
+return nil))))))
 
 (dm format (u !&optional env) (list (quote s!:format) (cadr u) (caddr u) (
 cons (quote list) (cdddr u))))
@@ -196,7 +198,13 @@ s!:initialblanks s!:lmar s!:pendingrpars s!:rmar s!:rparcount s!:stack)))
 
 (setq thin!* 5)
 
+(remflag (quote (superprinm superprintm prettyprint tprettyprint)) (quote 
+lose))
+
 (de prettyprint (x) (progn (superprinm x (posn)) (terpri) nil))
+
+(de tprettyprint (x) (progn (cond ((greaterp (posn) 6) (terpri))) (
+prettyprint x)))
 
 (de superprintm (x s!:lmar) (progn (superprinm x s!:lmar) (terpri) x))
 
@@ -209,8 +217,10 @@ s!:rmar "Linelength too short for superprinting")))) (setq s!:bn 0) (setq
 s!:indentlevel 0) (cond ((geq (plus s!:lmar 20) s!:rmar) (setq s!:lmar (
 difference s!:rmar 21)))) (setq w (posn)) (cond ((greaterp w s!:lmar) (progn 
 (terpri) (setq w 0)))) (cond ((lessp w s!:lmar) (setq s!:initialblanks (
-difference s!:lmar w)))) (s!:prindent x (plus s!:lmar 3)) (s!:overflow (quote
+difference s!:lmar w)))) (s!:prindent x (plus s!:lmar 2)) (s!:overflow (quote
 none)) (linelength s!:rmar) (return x)))
+
+(flag (quote (superprinm superprintm prettyprint tprettyprint)) (quote lose))
 
 (dm s!:top (u !&optional v) (quote (car s!:stack)))
 
@@ -250,21 +260,21 @@ s!:newframe n) s!:stack)) (s!:putch (cons (quote lpar) (s!:top))) (setq cx (
 car x)) (s!:prindent cx (plus n 1)) (cond ((and (idp cx) (not (atom (cdr x)))
 ) (setq cx (get cx (quote s!:ppformat)))) (t (setq cx nil))) (cond ((and (
 equal cx 2) (atom (cddr x))) (setq cx nil))) (cond ((equal cx (quote prog)) (
-progn (s!:putch (quote ! )) (s!:prindent (car (setq x (cdr x))) (plus n 3))))
+progn (s!:putch (quote ! )) (s!:prindent (car (setq x (cdr x))) (plus n 2))))
 ) (setq x (cdr x)) scan (cond ((atom x) (go outt))) (s!:finishpending) (cond 
 ((equal cx (quote prog)) (progn (s!:putblank) (s!:overflow s!:bufferi) (cond 
 ((atom (car x)) (progn (setq s!:lmar (setq s!:initialblanks (max (difference 
-s!:lmar 6) 0))) (s!:prindent (car x) (difference n 3)) (setq x (cdr x)) (cond
+s!:lmar 6) 0))) (s!:prindent (car x) (difference n 2)) (setq x (cdr x)) (cond
 ((and (not (atom x)) (atom (car x))) (go scan))) (cond ((greaterp (plus 
 s!:lmar s!:bn) n) (s!:putblank)) (t (prog (i) (setq i (plus s!:lmar s!:bn)) 
 lab1015 (cond ((minusp (times 1 (difference (difference n 1) i))) (return nil
 ))) (s!:putch (quote ! )) (setq i (plus i 1)) (go lab1015)))) (cond ((atom x)
 (go outt)))))))) (t (cond ((numberp cx) (progn (setq cx (difference cx 1)) (
 cond ((equal cx 0) (setq cx nil))) (s!:putch (quote ! )))) (t (s!:putblank)))
-)) (s!:prindent (car x) (plus n 3)) (setq x (cdr x)) (go scan) outt (cond ((
+)) (s!:prindent (car x) (plus n 2)) (setq x (cdr x)) (go scan) outt (cond ((
 not (null x)) (progn (s!:finishpending) (s!:putblank) (s!:putch (quote !.)) (
 s!:putch (quote ! )) (s!:prindent x (plus n 5))))) (s!:putch (cons (quote 
-rpar) (difference n 3))) (cond ((and (equal (s!:indenting (s!:top)) (quote 
+rpar) (difference n 2))) (cond ((and (equal (s!:indenting (s!:top)) (quote 
 indent)) (not (null (s!:blanklist (s!:top))))) (s!:overflow (car (
 s!:blanklist (s!:top))))) (t (s!:endlist (s!:top)))) (setq s!:stack (cdr 
 s!:stack))))))))
@@ -273,10 +283,10 @@ s!:stack))))))))
 
 (de s!:prvector (x n) (prog (bound) (setq bound (upbv x)) (setq s!:stack (
 cons (s!:newframe n) s!:stack)) (s!:putch (cons (quote lsquare) (s!:top))) (
-s!:prindent (getv x 0) (plus n 3)) (prog (i) (setq i 1) lab1016 (cond ((
+s!:prindent (getv x 0) (plus n 2)) (prog (i) (setq i 1) lab1016 (cond ((
 minusp (times 1 (difference bound i))) (return nil))) (progn (s!:putch (quote
-!,)) (s!:putblank) (s!:prindent (getv x i) (plus n 3))) (setq i (plus i 1)) 
-(go lab1016)) (s!:putch (cons (quote rsquare) (difference n 3))) (s!:endlist 
+!,)) (s!:putblank) (s!:prindent (getv x i) (plus n 2))) (setq i (plus i 1)) 
+(go lab1016)) (s!:putch (cons (quote rsquare) (difference n 2))) (s!:endlist 
 (s!:top)) (setq s!:stack (cdr s!:stack))))
 
 (de s!:putblank nil (prog nil (s!:putch (s!:top)) (s!:setblankcount (s!:top) 
@@ -333,9 +343,9 @@ lab1021)) nocheck (setq s!:bufferi (cdr (rplacd s!:bufferi (list c)))) (setq
 s!:bn (plus s!:bn 1))))
 
 (de s!:overflow (flg) (prog (c blankstoskip) (cond ((and (equal s!:indblanks 
-0) (greaterp s!:initialblanks 3) (equal flg (quote more))) (progn (setq 
-s!:initialblanks (difference s!:initialblanks 3)) (setq s!:lmar (difference 
-s!:lmar 3)) (return (quote moved!-left))))) fblank (cond ((equal s!:bn 0) (
+0) (greaterp s!:initialblanks 2) (equal flg (quote more))) (progn (setq 
+s!:initialblanks (difference s!:initialblanks 2)) (setq s!:lmar (difference 
+s!:lmar 2)) (return (quote moved!-left))))) fblank (cond ((equal s!:bn 0) (
 progn (cond ((not (equal flg (quote more))) (return (quote empty)))) (cond ((
 atom (car s!:buffero)) (prin2 "%+"))) (terpri) (setq s!:lmar 0) (return (
 quote continued)))) (t (progn (spaces s!:initialblanks) (setq 
@@ -384,6 +394,21 @@ quote output))) (cond ((null d) (progn (close a) (return (error 0
 setq w (linelength 500)) (prog nil lab1022 (cond ((null (not (equal (setq c (
 readch)) !$eof!$))) (return nil))) (princ c) (go lab1022)) (linelength e) (
 rds b) (close a) (cond (dest (close (wrs d))))))
+
+(de bldmsg_temp_internal (fmt args) (prog (r a) (setq fmt (explodec fmt)) (
+prog nil lab1025 (cond ((null fmt) (return nil))) (progn (cond ((eqcar fmt (
+quote !%)) (progn (setq fmt (cdr fmt)) (setq a (car args)) (setq args (cdr 
+args)) (cond ((or (eqcar fmt (quote !p)) (eqcar fmt (quote !P))) (setq a (
+explode a))) (t (setq a (explodec a)))) (prog (var1024) (setq var1024 a) 
+lab1023 (cond ((null var1024) (return nil))) (prog (c) (setq c (car var1024))
+(setq r (cons c r))) (setq var1024 (cdr var1024)) (go lab1023)))) (t (setq r
+(cons (car fmt) r)))) (setq fmt (cdr fmt))) (go lab1025)) (return (
+list2string (reversip r)))))
+
+(dm bldmsg (u) (list (quote bldmsg_temp_internal) (cadr u) (cons (quote list)
+(cddr u))))
+
+(flag (quote (bldmsg)) (quote variadic))
 
 
 % end of file

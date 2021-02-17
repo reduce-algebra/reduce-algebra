@@ -3045,37 +3045,30 @@ const char *buffer = nullptr;
 int buff_size = 0;
 
 void PROC_insert_buffer(const char *buf, int size)
-{   std::printf("[PROC_insert_buffer]\n");
-    buffer = buf;
+{   buffer = buf;
     buff_size = size;
     buff_ready = 1;
 }
-
-// Here are several aliases in case accessing the function is made easier
-// by use of one of them and because when I inserted this code I was not
-// certain either that the same name was usable on Windows vs Unix or
-// which version would be in use.
 
 void insert_buffer(const char *buf, int size)
-{   std::printf("[insert_buffer]\n");
-    buffer = buf;
+{   buffer = buf;
     buff_size = size;
     buff_ready = 1;
 }
 
+#if 0
 void _PROC_insert_buffer(const char *buf, int size)
-{   std::printf("[_PROC_insert_buffer]\n");
-    buffer = buf;
+{   buffer = buf;
     buff_size = size;
     buff_ready = 1;
 }
 
 void _insert_buffer(const char *buf, int size)
-{   std::printf("[_insert_buffer]\n");
-    buffer = buf;
+{   buffer = buf;
     buff_size = size;
     buff_ready = 1;
 }
+#endif
 
 void PROC_mainloop()
 {   if (buff_ready)
