@@ -487,7 +487,7 @@
     (AND (eqcar Regname 'reg) (eq (cadr RegName) 'Wzr)))
 
 (de reg-sp-p (RegName)
-    (AND (eqcar Regname 'reg) (eq (cadr RegName) 'sp)))
+    (AND (eqcar Regname 'reg) (memq (cadr RegName) '(sp st))))
 
 (de reg32-sp-p (RegName)
     (AND (eqcar Regname 'reg) (eq (cadr RegName) 'Wsp)))

@@ -201,7 +201,7 @@
                         (return (throwaux value pc sp)))))))
 
 (lap '((*entry throwaux expr 3)
-       (*move (reg 3) (reg st))
+       (*move (reg 3) (reg sp))
        (*move (reg 2) (reg lr))
        (RET))
 )

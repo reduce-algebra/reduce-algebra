@@ -1429,7 +1429,7 @@ afterpreload
       (setq cadrcfluids (cadr cfluids))
       (when (or (eq cadrcfluids 't) (eq cadrcfluids 'nil))
            (stderror "T and NIL cannot be rebound"))
-      (setq n (wplus2 n 8))
+      (setq n (wplus2 n 16))
       (Setq list (append list
      `((*Move ,(car freeregs) (displacement (Reg t2) ,n))
        (*Move (quote ,Cadrcfluids)
@@ -1495,7 +1495,7 @@ preload  (setq initload
       (setq cadrcfluids (cadr cfluids))
       (when (or (eq cadrcfluids 't) (eq cadrcfluids 'nil))
            (stderror "T and NIL cannot be rebound"))
-      (setq n (wplus2 n 8))
+      (setq n (wplus2 n 16))
       (Setq list (append list
              `((*Move ,(car freeregs) (displacement (Reg t2) ,n))
                (*Move (quote ,Cadrcfluids)
