@@ -1602,11 +1602,8 @@ preload  (setq initload
                                         % jumpon on tags (most probably)
                                         % 8 bytes per jumptable entry
       `((ADR (reg t1) ,ll2)
+	(ADD (reg t1) (reg t1) (regshifted ,(cadr register) LSL 2))
 	(BR (reg t1))
-        % new value of the PC is:
-        % (address of the LDR instruction) + PC + 8 + 8*(contents of register)
-        % therefore we need 4 bytes (one instruction) to jump over
-        (B (label ,ll))
        ,ll2)
       `((cmp ,register ,upperbound )
         (b!.eq ,(lastcar labellist))
@@ -1615,8 +1612,8 @@ preload  (setq initload
         (b!.lt (label ,ll))
         (*WDifference ,register ,lowerbound)
 	(ADR (reg t1) ,ll2)
+	(ADD (reg t1) (reg t1) (regshifted ,(cadr register) LSL 2))
 	(BR (reg t1))
-        (B (label ,ll))                 % extra instruction to jump over
        ,ll2) ) )
       Loop  (Setq x (nconc X `((B ,(car Labellist)))))
             (setq Labellist (cdr Labellist))
