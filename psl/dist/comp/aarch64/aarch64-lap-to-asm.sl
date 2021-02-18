@@ -491,7 +491,10 @@
                         (compileconstant val))
 % print the value of nil.
 		       ((eq (id2int x) 256)
-			(list 'mkitem (compiler-constant 'unbound-tag) 256))
+			(list 'mkitem (compiler-constant 'id-tag) 256))
+% print the value of cross compiler nil
+                       ((eq (id2int x) 128)
+			(list 'mkitem (compiler-constant 'unbound-tag) 128))
                        ((flagp x 'nilinitialvalue) nilnumber*)
 % print the unbound variable value.
                        (t 

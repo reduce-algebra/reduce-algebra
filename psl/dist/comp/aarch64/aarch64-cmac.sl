@@ -590,6 +590,8 @@
 %%  and increase NAlloc!* by 1.
 %% Hence, for odd framesize the instructions are
 %%  STP fp, lr , [sp, -#n]!   n = 8*(number of frames + 1 + 2)
+%% and for even framesize:
+%%  STP fp, lr , [sp, -#n]!   n = 8*(number of frames + 2)
 %%  STR (reg nil), [sp, #(8*framesize+8)]
 (de *ALLOC (framesize)
     (let (ll)
@@ -599,11 +601,12 @@
 	  (if (oddp framesize)
             (progn
 	      (setq framesize (add1 framesize))
-	      (setq ll `((STR (reg nil) (displacement (reg sp) ,(times2 (plus2 1 framesize) (compiler-constant 'AddressingUnitsPerItem))))))))
-	  (setq NAlloc!* framesize)))
+	      (setq ll `((STR (reg nil) (displacement (reg sp) ,(times2 (plus2 1 framesize) (compiler-constant 'AddressingUnitsPerItem))))))))))
+      (setq framesize (plus2 2 framesize))
+      (setq NAlloc!* framesize)
       `((STP (reg fp) (reg lr)
       	     (preindexed (reg sp)
-			 ,(minus (times2 (plus2 2 framesize) (compiler-constant 'AddressingUnitsPerItem)))))
+			 ,(minus (times2 framesize (compiler-constant 'AddressingUnitsPerItem)))))
 	(MOV (reg fp) (reg sp))
 	,@ll)))
 
@@ -611,9 +614,10 @@
 
 (de *DeAlloc (DeAllocCount)
   (if (oddp DeAllocCount) (setq DeAllocCount (plus2 DeAllocCount 1)))
+  (setq DeAllocCount (plus2 2 DeAllocCount))
   (Expand1OperandCMacro
    %% room for fp and lr
-   (times (plus 2 DeAllocCount) (compiler-constant 'AddressingUnitsPerItem))
+   (times2 DeAllocCount (compiler-constant 'AddressingUnitsPerItem))
    '*DeAlloc))
 
 (DefCmacro *DeAlloc

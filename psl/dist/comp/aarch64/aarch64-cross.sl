@@ -213,6 +213,42 @@
 			   (setq nextidnumber* (iadd1 nextidnumber*)) i)))))))
 
 
+(de initsymval1 (x)
+  (prog (val)
+% now decide what to plant in value cell at compiletime.
+        (return (dataprintfullword 
+                 (cond 
+                       ((eq x 'nextsymbol) nextidnumber*)
+% print the corresponding symbol for the valuecell with label, and external declaration.
+                       ((flagp x 'externalsymbol)
+                          (setq val (get x 'symbol))
+                          (datadeclareexternal val)
+                          val)
+% print the corresponding symbol for the valuecell with label, and exported declaration.
+                       ((flagp x 'exportedsymbol)
+                          (setq val (get x 'symbol))
+                          (datadeclareexported val)
+                          (dataprintlabel val)
+                          (list 'mkitem (compiler-constant 'unbound-tag) 
+                            (findidnumber x)))
+% print internal references for symnam, symfnc, symval, symprp.
+                       ((flagp x 'internalsymbol)
+                          (setq val (get x 'symbol))
+                          val)
+% print the initial value.
+                       ((setq val (get x 'initialvalue)) 
+                        (compileconstant val))
+% print the value of nil.
+		       ((eq (id2int x) 256)
+			(list 'mkitem (compiler-constant 'id-tag) 256))
+% print the value of cross compiler nil
+                       ((eq (id2int x) 128)
+			(list 'mkitem (compiler-constant 'unbound-tag) 128))
+                       ((flagp x 'nilinitialvalue) nilnumber*)
+% print the unbound variable value.
+                       (t 
+                        (list 'mkitem (compiler-constant 'unbound-tag) 
+                         (findidnumber x))))))))
 (setq nil-t-diff* 140)
 
 %(remprop '*get-stack 'opencode)
