@@ -26,28 +26,13 @@
         // add math-field + button
         window.reduceLatch = 0;
 
-
-        let mfi = new MathfieldElement();
-        
-
-        let button = document.createElement('button');
-        button.appendChild(document.createTextNode('Submit'));
-        button.addEventListener('click', event => {
-            // need to convert the string to a Uint8Array
-            console.log(mfi.value);
-            let istr = unescape(encodeURIComponent(mfi.value));
-            let str = istr.replace("\\sqrt", "sqrt");
-            str = str.replaceAll("{","(");
-            str = str.replaceAll("}",")");
-            str = str.replaceAll("[]","");
-            str = str.replaceAll("\\mleft","");
-            str = str.replaceAll("\\mright","");
-            str = str.replaceAll("\\cdot","*");
-            str = str.replaceAll("?","");
-            // found the above snippet at https://gist.github.com/emrahgunduz/5c27ff1db650b93c7864
+let worker = new Worker('./reduce.web.js');
+        let mfi = mkMathInputField();
+                 
+            
+function sendToReduce(str)
+        {
             let buf = new Uint8Array(str.length+1);
-            console.log("Send to Reduce:");
-            console.log(str);
             for (let i=0; i<str.length; i++)
                 buf[i] = str.charCodeAt(i);
             buf[str.length] = 0; // nul-terminate for benefit of C/C++.
@@ -56,37 +41,151 @@
                 callbackId: '',
                 data: buf
             });
-          });          
-       let worker = new Worker('./reduce.web.js');
+        }     
+        
+        let button = document.createElement('button');
+        
+        button.appendChild(document.createTextNode('Submit'));
+        
+        button.addEventListener('click', event => {
+            console.log("Raw input:");
+            console.log(mfi.value);
+            // need to convert the string to a Uint8Array
+            let str = unescape(encodeURIComponent(mfi.value));
+            str = serializeToReduce(str);
+            // found the above snippet at https://gist.github.com/emrahgunduz/5c27ff1db650b93c7864
+            let buf = new Uint8Array(str.length+1);
+            console.log("Send to Reduce:");
+            console.log(str);
+            if (str.substr(-1) != ";") {str = str.concat(";")};
+            sendToReduce(str);
+          });   
+                 
+ //      let worker = new Worker('./reduce.web.js');
         worker.onmessage = function(event) {
             if (event.data.channel === 'stdout') {
                 let o = event.data.line;
- //               console.log(o);
+                console.log(o);
                 if (o.substring(0, 6) == "Reduce") {var h = document.createElement("h3");
                                                     var greeting = document.createTextNode(o);
                                                     h.appendChild(greeting);
                                                     document.body.appendChild(h);
                                                     document.body.appendChild(mfi);
-                                                    document.body.appendChild(button);}
-                else if (!(o == '' || o.substring(0,3) == "off" ||
-                           o.substring(0,1) == "["))
+                                                    document.body.appendChild(button); }
+                else 
+//                if (!(o == '' || o.substring(0,3) == "off" 
+//                ||
+//                           o.substring(0,1) == "["
+//                           ))
                 {  console.log("Received from Reduce:");
                    console.log(o);
-                o = o.replaceAll("sqrt","\\sqrt");
-                o = o.replaceAll("(","{");
-                o = o.replaceAll(")","}");
-                o = o.replaceAll("**","^");
-                o = o.replaceAll("*","\\cdot ");
+                   if (o == '') o = ' ';
+                   let n = o.indexOf('\002'); 
+                   console.log(n);
+                if (n != -1)
+                {
+// Here I not only strip out the material before the "\002" but also the
+// "junk" that reads "latex:\black$\displaystyle" and a final "$\005". Those
+// are fragments that the Reduce interface for TeXmacs inserts.
+                    o = o.substring(n+1+26, o.length-2)
+// Reduce puts in "\*" for multiplication, but MathJax does not like that,
+// so I define it away into a narrow space.
+                o = o.replaceAll("\*","\cdot ");
+                console.log("Trimmed:");
+                console.log(o);
                 var mfo = new MathfieldElement();
                 mfo.value = o;
                 mfo.value += '\n';
                 document.body.appendChild(mfo);
-                mfi = new MathfieldElement();
+                mfi = mkMathInputField();
                 document.body.appendChild(mfi);
                 document.body.appendChild(button); }
             }
-        } ;  
- 
+         }};  
+
+
+function serializeToReduce(str)
+     {// very primitive serialization.           
+ //         str = str.replace(/\\int\s{([^}]*)}d{([^}]*)}/gi, "int($1, $2)");
+            str = str.replaceAll("\\text{ws}", "ws");
+            str = str.replaceAll("\\sqrt", "sqrt");
+            str = str.replaceAll("\\frac", "quotient");
+            str = str.replaceAll("}d{", ",");        
+            str = str.replaceAll("\\int", "int");
+            str = str.replaceAll("\\sin", "sin");
+            str = str.replaceAll("\\log", "log")
+            str = str.replaceAll("\\operatorname{df}","df");
+            str = str.replaceAll("\\, \\differentialD","");
+            str = str.replaceAll("}{",",");
+            str = str.replaceAll("}}","}");
+            str = str.replaceAll("{","(");
+            str = str.replaceAll("}",")");
+            str = str.replaceAll("[]","");
+            str = str.replaceAll("\\mleft","");
+            str = str.replaceAll("\\mright","");
+            str = str.replaceAll("\\cdot","*");
+            str = str.replaceAll("\\*","*");
+            str = str.replaceAll("?","");
+            str = str.replaceAll("}","");
+            return str;
+            }
+            
+function mkMathInputField()
+    {return new MathfieldElement(
+                  {smartMode: false,
+                  
+                   inlineShortcuts: 
+                      {// ASCIIIMath examples just for demonstration
+                       //
+                       // Binary operation symbols
+                       '*': '\\cdot',
+                       '**': '\\ast',
+                       '***': '\\star',
+                       '@': '\\circ',
+                       'o+': '\\oplus',
+                       'ox': '\\otimes',
+                       'o.': '\\odot',
+                       '^^': '\\wedge',
+                       '^^^': '\\bigwedge',
+                       
+                       // Reduce specific examples
+                       'ws': '\\text{ws}',                                       
+                       'int': '\\int{#?\\,\\differentialD}{#?}',
+                       'df': '\\operatorname{df}',
+                       '£': {mode: 'math', value: '\\pounds_{#?}{#?}'}},
+                       
+                    // Virtual keyboard example    
+                    virtualKeyboardMode: 'manual',
+                    
+                    customVirtualKeyboardLayers: {
+                        'layer-name': {
+                            styles: '',
+                            rows: [
+                                [
+                                    {
+                                        class: 'keycap',
+                                        latex: '\\int{#?\\,\\differentialD}{#?}',
+                                    },
+                                    {
+                                        class: 'keycap',
+                                        latex: '\\sqrt{#?}',
+                                    },
+                                ],
+                            ],
+                        },
+                    },
+                    customVirtualKeyboards: {
+                        'keyboard-name': {
+                            label: 'Json',
+                            tooltip: 'Json keyboard',
+                            layer: 'layer-name',
+                        },
+                    },
+                    virtualKeyboards: 'keyboard-name',
+                    })};
+                    
+sendToReduce('<<lisp (!*redefmsg := nil);load_package tmprint; on nat;on fancy;off promptnumbers;on redfront_mode>>$');
+
     </script>    
 </head> 
 </html>

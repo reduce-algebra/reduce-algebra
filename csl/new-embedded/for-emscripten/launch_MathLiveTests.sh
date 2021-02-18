@@ -47,6 +47,6 @@ else
   browser="$1"
 fi
 
-"$browser" localhost:8000/MathLiveTests.html
+"$browser" --new-window localhost:8000/MathLiveTests.html
 
 exit 0
