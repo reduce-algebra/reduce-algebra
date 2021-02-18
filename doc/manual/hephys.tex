@@ -262,18 +262,18 @@ is set up. An error results if the variable has no preassigned mass.
 We give here as an example of a simple calculation in high energy physics
 the computation of the Compton scattering cross-section as given in
 Bjorken and Drell Eqs. (7.72) through (7.74). We wish to compute the trace of
-\begin{displaymath}
+\[
 \frac{\alpha^2}{2} \left(\frac{k^\prime}{k}\right)^2
  \left(\frac{\gamma\cdot p_f+m}{2m}\right)\left(\frac{\gamma\cdot e^\prime \gamma\cdot e
  \gamma\cdot k_i}{2k.p_i} + \frac{\gamma\cdot e\gamma\cdot e^\prime
  \gamma\cdot k_f}{2k^\prime\cdot p_i}\right)
-\end{displaymath}
-\begin{displaymath}
+\]
+\[
  \left(\frac{\gamma\cdot p_i+m}{2m}\right)
  \left(\frac{\gamma\cdot k_i\gamma\cdot e\gamma\cdot e^\prime}{2k.p_i} +
  \frac{\gamma\cdot k_f\gamma\cdot e^\prime\gamma\cdot e}{2k^\prime\cdot p_i}
  \right)
-\end{displaymath}
+\]
 where $k_i$ and $k_f$ are the four-momenta of incoming and outgoing photons
 (with polarization vectors $e$ and $e^\prime$ and laboratory energies 
 $k$ and $k^\prime$
@@ -281,17 +281,17 @@ respectively) and $p_i$, $p_f$ are incident and final electron four-momenta.
 
 Omitting therefore an overall factor
 $\displaystyle\frac{\alpha^2}{2m^2}\left(\frac{k^\prime}{k}\right)^2$ we need to find one quarter of the trace of
-\begin{displaymath}
+\[
  \left( \gamma\cdot p_f + m\right)
  \left(\frac{\gamma\cdot e^\prime \gamma\cdot e\gamma\cdot k_i}{2k.p_i} +
   \frac{\gamma\cdot e\gamma\cdot e^\prime \gamma\cdot k_f}{2k^\prime.p_i}\right)\times
-\end{displaymath}
-\begin{displaymath}
+\]
+\[
  \qquad\left(
   \gamma\cdot p_i + m\right)
  \left(\frac{\gamma\cdot k_i\gamma\cdot e\gamma\cdot e^\prime}{2k.p_i} +
   \frac{\gamma\cdot k_f\gamma\cdot e^\prime \gamma\cdot e}{2k^\prime.p_i}\right) 
-\end{displaymath}
+\]
 A straightforward REDUCE program for this, with appropriate substitutions
 (using \texttt{P1} for $p_i$, \texttt{PF} for $p_f$, \texttt{KI}
 for $k_i$ and \texttt{KF} for $k_f$) is

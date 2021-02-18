@@ -864,10 +864,10 @@ For more information see \hyperlink{STIRL}{here}.
 number of different ways of drawing non-intersecting chords on a circle between
 $n$ points. For a non-negative integer $n$, the operator \texttt{Motzkin(n)}
 returns the $n$th Motzkin number, according to the recursion formula
-\begin{displaymath}
+\[
   M_{0} = 1; \qquad M_{1}=1; \qquad
   M_{n+1} = \frac{2n+3}{n+3}M_{n}+ \frac{3n}{n+3}M_{n-1}\,.
-\end{displaymath}
+\]
 The recursion is, of course, optimised as a simple loop to avoid repeated
 computation of lower-order numbers.
 
