@@ -67,30 +67,36 @@
              *sigcalls*))
        % Return the the function definition for the signal handler.
        `(% addresses of symval and symfnc fluid variables
-	 (fullword (fluid symval))
-	 (fullword (fluid symfnc))
+     (*lbl ,(concat (id2string function) "_symval"))
+%	 (fullword (fluid symval))
+     (*lbl ,(concat (id2string function) "_symfnc"))
+%	 (fullword (fluid symfnc))
 	 (*entry ,function expr 0)
      ,handler
      (*alloc 0)
-     % load address of symval value cell and move contents to (reg symval)
-     (*MOVE (displacement (reg pc) -24) (reg symval))
-     (*MOVE (indirect (reg symval)) (reg symval))
-     % load address of symfnc value cell and move contents to (reg symfnc)     
-     (*MOVE (displacement (reg pc) -28) (reg symfnc))
-     (*MOVE (indirect (reg symfnc)) (reg symfnc))
+
+     % reg 3 contains a pointer to an ucontext_t structre
+     % restore lisp registers x23 (symfnc), x24 (symval), x25 (bndstkptr),
+     % x26 (bndstklowerbound), x27 (bndstkupperbound), x28 (nil)
+     (*move (memory (reg 3) 368) (reg symfnc))
+     (*move (memory (reg 3) 376) (reg symval))
+     (*move (memory (reg 3) 384) (reg bndstkptr))
+     (*move (memory (reg 3) 392) (reg bndstklowerbound))
+     (*move (memory (reg 3) 400) (reg bndstkupperbound))
+     (*move (memory (reg 3) 408) (reg nil))
+     (*move (memory (reg 3) 440) (fluid sigaddr*))   % instruction pointer at fault
+     (*move (memory (reg 3) 432) (fluid stack-pointer*))   % stack pointer at fault
      (*move (wconst ,signumber) (reg 1))
      (*move (reg 1) (fluid errornumber*))
 
      % Reg r2 contains a pointer to a siginto_t structure
-     % for SIGILL, SIGFPE, SIGSEGV, SIGBUS, get faulting address (at offset 12 of siginfo_t structure)
-     (*move (memory (reg 2) 12) (fluid faultaddr*))
+     % for SIGILL, SIGFPE, SIGSEGV, SIGBUS, get faulting address (at offset 16 of siginfo_t structure)
+     (*move (memory (reg 2) 16) (fluid faultaddr*))
      % for arithmetic expressions, get exception subtype: at offset 8 of siginfo_t structure
      % there is si_code (4 byte integer) which is the FPE subtype
-     (*move (displacement (reg 2) 8) (reg 2))
+     (LDRSW (reg w2) (displacement (reg 2) 8))
      (*move (reg 2) (fluid arith-exception-type*))
      (*move ,handler (reg 2))
-     (*move (memory (reg 3) 92) (fluid sigaddr*))   % instruction pointer at fault
-     (*move (memory (reg 3) 84) (fluid stack-pointer*))   % stack pointer at fault
      (*link sigrelse expr 2)
      (*move (quote ,errorstring) (reg 1))
      (*dealloc 0)
@@ -189,7 +195,7 @@
      % if sp + 1024 >= faultaddr* >= sp - 1024, assume a stack overflow
      (*move ($fluid faultaddr*) (reg 3))
      (*WPlus2 (reg 3) 1024)
-     (*jumplessp (label nostackoverflow) (reg 3) (fluid stack-pointer*))
+     (*jumpwlessp (label nostackoverflow) (reg 3) (fluid stack-pointer*))
      (!*WDifference (reg 3) 2048)
      (*jumpwgreaterp (label nostackoverflow) (reg 3) (fluid stack-pointer*))
      (*move (quote "Stack overflow") (reg 2))

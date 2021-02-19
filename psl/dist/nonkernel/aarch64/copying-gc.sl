@@ -302,11 +302,11 @@
  
 (lap '((*entry current-stack-pointer expr 0)
        (*move (reg st) (reg 1))
-       (*exit 0)
+       (RET)
        ))
 )
  
-(de markandcopyfromid (x)
+(DE markandcopyfromid (x)
   % SymNam has to be copied before marking, since the mark destroys the tag
   % No problem since it's only a string, can't reference itself.
   (progn (copyitem (loc (symnam x)))
