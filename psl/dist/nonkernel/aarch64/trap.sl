@@ -66,20 +66,20 @@
                (*link sun3_sigset expr 2))
              *sigcalls*))
        % Return the the function definition for the signal handler.
-       `(% addresses of symval and symfnc fluid variables
-     (*lbl ,(concat (id2string function) "_symval"))
-%	 (fullword (fluid symval))
-     (*lbl ,(concat (id2string function) "_symfnc"))
-%	 (fullword (fluid symfnc))
-	 (*entry ,function expr 0)
+       `(
+     (*entry ,function expr 0)
      ,handler
      (*alloc 0)
 
+     % restore SYMVAL and SYMFNC registers
+     (LDR (reg symval) symval_adr)
+     (LDR (reg symfnc) symfnc_adr)
+     
      % reg 3 contains a pointer to an ucontext_t structre
      % restore lisp registers x23 (symfnc), x24 (symval), x25 (bndstkptr),
      % x26 (bndstklowerbound), x27 (bndstkupperbound), x28 (nil)
-     (*move (memory (reg 3) 368) (reg symfnc))
-     (*move (memory (reg 3) 376) (reg symval))
+%     (*move (memory (reg 3) 368) (reg symfnc))
+%     (*move (memory (reg 3) 376) (reg symval))
      (*move (memory (reg 3) 384) (reg bndstkptr))
      (*move (memory (reg 3) 392) (reg bndstklowerbound))
      (*move (memory (reg 3) 400) (reg bndstkupperbound))
@@ -148,8 +148,26 @@
         (*entry initializeinterrupts expr 0)
        (*alloc 0)
        (*sigcall)
-       (*exit 0)))
- 
+       (*exit 0)
+       (*entry init_symval_symfnc expr 0)
+       (ADR (reg t1) symval_adr)
+       (STR (reg symval) (indirect (reg t1)))
+       (ADR (reg t1) symfnc_adr)
+       (STR (reg symfnc) (indirect (reg t1)))
+       (RET)
+       (*entry _set-symval-symfnc expr 0)
+       (LDR (reg symval) symval_adr)
+       (LDR (reg symfnc) symfnc_adr)
+       (RET)
+       symval_adr
+       (fullword 0)
+       symfnc_adr
+       (fullword 0)
+))
+
+%% store values of symval and symfnc where the signal handler can find them
+(init_symval_symfnc)
+
 %(de initializeinterrupts (nn)
 %%       (ieee_flags (strbase (strinf "set")) (strbase (strinf "direction"))
 %%				(strbase (strinf "tozero")) 0)
