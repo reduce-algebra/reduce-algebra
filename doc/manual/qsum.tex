@@ -1,5 +1,4 @@
 
-
 \newcommand{\qphihyp}[5]{{}_{#1}\phi_{#2}\left.\left[\begin{array}{c}
 	#3 \\ #4 \end{array}\right|q,#5\right]}
 \newcommand{\qpsihyp}[5]{{}_{#1}\psi_{#2}\left.\left[\begin{array}{c}
@@ -21,11 +20,26 @@
 
 \subsection{Introduction}
 
+%% For MathJax, must be part of a paragraph to avoid extra space:
+\ifdefined\HCode
+\(
+\def\qphihyp#1#2#3#4#5{{}_{#1}\phi_{#2}\left.\left[\begin{array}{c}
+	#3 \\ #4 \end{array}\right|q,#5\right]}
+\def\qpsihyp#1#2#3#4#5{{}_{#1}\psi_{#2}\left.\left[\begin{array}{c}
+	#3 \\ #4 \end{array}\right|q,#5\right]}
+\def\hyp#1#2#3#4#5{{}_{#1}F_{#2}\left.\left[\begin{array}{c}
+	#3 \\ #4 \end{array}\right|#5\right]}
+\def\fcn#1#2{{\mathrm #1}(#2)}
+\def\ifcn#1#2#3{{\mathrm #1}_{#2}(#3)}
+\def\qfac#1#2{\left(#1;\,q\right)_{#2}}
+\def\qbinomial#1#2{{\binom{#1}{#2}\!}_q}
+\)%
+\fi
 This package is an implementation of the $q$-analogues of Gosper's
 and Zeil\-berger's%
 %
 \footnote{The \texttt{ZEILBERG} package (see \cite{Koepf:95})
-contains the hypergeometric versions. Those algorithms are described in 
+contains the hypergeometric versions. Those algorithms are described in
 \cite{Gosper:78},\cite{Zeilberger:91},\cite{Zeilberger:90}
 and \cite{Koepf:95e}.}
 %
@@ -34,9 +48,9 @@ $q$-hypergeo\-metric terms, respectively.
 
 An expression $a_k$ is called a \textsl{$q$-hypergeometric term}, if
 $a_{k}/a_{k-1}$ is a rational function with respect to $q^k$. Most
-$q$-terms are based on the \textsl{$q$-shifted factorial} or 
-\textsl{qpochhammer}. Other typical $q$-hypergeometric terms are ratios 
-of products of powers, $q$-factorials, $q$-binomial coefficients, and 
+$q$-terms are based on the \textsl{$q$-shifted factorial} or
+\textsl{qpochhammer}. Other typical $q$-hypergeometric terms are ratios
+of products of powers, $q$-factorials, $q$-binomial coefficients, and
 $q$-shifted factorials that are integer-linear in their arguments.
 
 % ----------------------------------------------------------------------
@@ -47,15 +61,15 @@ $q$-shifted factorials that are integer-linear in their arguments.
 \ttindextype{QBRACKETS}{operator}
 \ttindextype{QFACTORIAL}{operator}
 \ttindextype{QBINOMIAL}{operator}
-Our package supports the input of the following elementary 
+Our package supports the input of the following elementary
 $q$-functions:
 \begin{itemize}
 %
-\item \texttt{qpochhammer(a,q,infinity)@}\[
+\item \texttt{qpochhammer(a,q,infinity)}\[
 	\qfac{a}{\infty}:= \prod_{j=0}^{\infty}{\left(1-a\,q^j\right)}
 	\]
 \item \texttt{qpochhammer(a,q,k)} \[
-	\qfac{a}{k}:= 
+	\qfac{a}{k}:=
          \left\{\begin{array}{ccc}
            \prod_{j=0}^{k-1}{\left(1-a\,q^j\right)} && \mbox{{if} $k>0$ } \\
            1 && \mbox{{if} $k=0$ } \\
@@ -75,10 +89,10 @@ $q$-functions:
 \ttindextype{QPSIHYPERTERM}{operator}
 Furthermore it is possible to use an abbreviation for the
 {\sl generalized $q$-hypergeometric series}
-({\sl basic generalized hypergeometric series}, 
+({\sl basic generalized hypergeometric series},
 see e.\,g.\ \cite{GasperRahman:90}, Chapter 1) which is defined as:
 \begin{eqnarray*}
-	\qphihyp{r}{s}{a_1,a_2,\ldots,a_r}{b_1,b_2,\ldots,b_s}{z}:= 
+	\qphihyp{r}{s}{a_1,a_2,\ldots,a_r}{b_1,b_2,\ldots,b_s}{z}:=
 	\hspace{15em}\\ \hspace{10em}
 	\sum_{k=0}^{\infty}{\frac{\qfac{a_1,a_2,\ldots,a_r}{k}}
 	{\qfac{b_1,b_2,\ldots,b_s}{k}}
@@ -95,7 +109,7 @@ hypergeometric function}) is due to a {\sl confluence process}.
 With this factor one gets the simple formula:
 \[
 	\lim_{a_r\rightarrow\infty}{\qphihyp{r}{s}{a_1,a_2,\ldots,a_r}
-	{b_1,b_2,\ldots,b_s}{z}} = 
+	{b_1,b_2,\ldots,b_s}{z}} =
 	{\qphihyp{r-1}{s}{a_1,a_2,\ldots,a_{r-1}}{b_1,b_2,\ldots,b_s}{z}}.
 \]
 Another variation is the {\sl bilateral basic hypergeometric
@@ -121,19 +135,19 @@ respectively.
 \label{qgosper}
 
 The $q$-Gosper algorithm\cite{Koornwinder:93} is a {\sl decision procedure}, that
-decides by algebraic calculations whether or not a given 
-$q$-hypergeometric term $a_k$ has a $q$-hypergeometric term 
-antidifference $g_k$, i.\,e.\ $a_k=g_{k}-g_{k-1}$ with 
+decides by algebraic calculations whether or not a given
+$q$-hypergeometric term $a_k$ has a $q$-hypergeometric term
+antidifference $g_k$, i.\,e.\ $a_k=g_{k}-g_{k-1}$ with
 $g_{k}/g_{k-1}$ rational in $q^k$. The ratio $g_k/a_k$ is also rational
-in $q^k$ --- an important fact which makes the 
+in $q^k$ --- an important fact which makes the
 \textsl{rational certification} (see \S~\ref{qzeilberger}) of Zeilberger's
 algorithm possible. If the procedure is successful
-it returns $g_k$, in which case we call $a_k$ 
+it returns $g_k$, in which case we call $a_k$
 {\sl $q$-Gosper-summable}. Otherwise
 {\sl no $q$-hypergeometric antidifference exists}. Therefore
 if the $q$-Gosper algorithm does not return a $q$-hypergeometric antidifference,
 it has {\sl proved} that no such solution exists, an information
-that may be quite useful and important. 
+that may be quite useful and important.
 
 Any antidifference is uniquely determined up to a constant, and is
 denoted by
@@ -142,13 +156,13 @@ g_k=\sum a_k\,\delta_k
 \;.
 \]
 Finding $g_k$ given $a_k$ is called {\sl indefinite summation}.
-The antidifference operator $\Sigma$ is the inverse of the downward 
+The antidifference operator $\Sigma$ is the inverse of the downward
 difference operator $\nabla a_k=a_{k}-a_{k-1}$. There is an analogous
-summation theory corresponding to the upward difference operator 
+summation theory corresponding to the upward difference operator
 $\Delta a_k=a_{k+1}-a_k$.
 
 In case, an antidifference $g_k$ of $a_k$ is known, any sum
-$\sum_{k=m}^n{a_k}$ can be easily calculated by an evaluation of 
+$\sum_{k=m}^n{a_k}$ can be easily calculated by an evaluation of
 $g$ at the boundary points like in the integration case:
 \[
 	\sum_{k=m}^{n}{a_k} = g_{n}-g_{m-1}
@@ -161,7 +175,7 @@ $g$ at the boundary points like in the integration case:
 \label{qzeilberger}
 
 The $q$-Zeilberger algorithm \cite{Koornwinder:93}
-deals with the {\sl definite summation} of 
+deals with the {\sl definite summation} of
 $q$-hyper\-geo\-metric terms $\fcn{f}{n,k}$ wrt.\ $n$ and $k$:
 \[
 	\fcn{s}{n}:= \sum_{k=-\infty}^\infty{\fcn{f}{n,k}}
@@ -170,7 +184,7 @@ Zeilberger's idea is to use Gosper's algorithm to find an
 inhomogeneous recurrence equation with polynomial coefficients
 for $\fcn{f}{n,k}$ of the form
 \begin{equation} \label{eq:f_n_k-recursion}
-	\sum_{j=0}^J{\ifcn{\sigma}{j}{n}\cdot \fcn{f}{n+j,k}} = 
+	\sum_{j=0}^J{\ifcn{\sigma}{j}{n}\cdot \fcn{f}{n+j,k}} =
 	\fcn{g}{k}-\fcn{g}{k-1},
 \end{equation}
 where $\fcn{g}{k}/\fcn{f}{k}$ is rational in $q^k$ and $q^n$.
@@ -185,43 +199,43 @@ coefficients (called {\sl holonomic equation}) for $\fcn{s}{n}$:
 %
 At this stage the implementation assumes that the summation
 bounds are infinite and the input term has finite support wrt.\ $k$.
-If those input requirements are not fulfilled the resulting 
-recursion is probably not valid. Thus we strongly advise the user to 
+If those input requirements are not fulfilled the resulting
+recursion is probably not valid. Thus we strongly advise the user to
 check those requirements.
 
 Despite this restriction you may still be able to get valuable
 information by the program: On request it returns the
 left hand side of the recurrence equation (\ref{holonomic_recurrence})
 \textsl{and} the antidifference $\fcn{g}{k}$ of equation
-(\ref{eq:f_n_k-recursion}). 
+(\ref{eq:f_n_k-recursion}).
 
 Once you have the certificate $\fcn{g}{k}$ it is trivial
 (at least theoretically) to prove equation (\ref{holonomic_recurrence})
 as long as the input requirements are fulfilled. Let's assume
 somone gives us equation (\ref{eq:f_n_k-recursion}). If we divide
-it by $\fcn{f}{n,k}$ we get a rational identity (in $q^n$ and $q^k$) 
----due to the fact that $\fcn{g}{k}/\fcn{f}{n,k}$ is rational in 
+it by $\fcn{f}{n,k}$ we get a rational identity (in $q^n$ and $q^k$)
+---due to the fact that $\fcn{g}{k}/\fcn{f}{n,k}$ is rational in
 $q^n$ and $q^k$. Once we confirmed this identity we sum equation
 (\ref{eq:f_n_k-recursion}) over $k\in\mathbb{Z}$:
 \begin{equation}
-	\sum_{k\in\mathbb{Z}}\sum_{j=0}^J{\ifcn{\sigma}{j}{n}\cdot \fcn{f}{n+j,k}} = 
+	\sum_{k\in\mathbb{Z}}\sum_{j=0}^J{\ifcn{\sigma}{j}{n}\cdot \fcn{f}{n+j,k}} =
 	\sum_{k\in\mathbb{Z}}{\left(\fcn{g}{k}-\fcn{g}{k-1}\right)},
 \end{equation}
 Again we exploit the
 fact that $\fcn{g}{k}$ is a rational multiple of $\fcn{f}{n,k}$ and thus
 $\fcn{g}{k}$ has \textsl{finite support} which makes the telescoping sum
 on the right hand side vanish. If we exchange the order of summation we
-get equation (\ref{holonomic_recurrence}) which finishes the proof. 
+get equation (\ref{holonomic_recurrence}) which finishes the proof.
 
 
 Note that we may relax the requirements for $\fcn{f}{n,k}$:
-An infinite support is possible as long as 
-$\lim\limits_{k\rightarrow\infty}{\fcn{g}{k}}=0$. 
-(This is certainly true if 
+An infinite support is possible as long as
+$\lim\limits_{k\rightarrow\infty}{\fcn{g}{k}}=0$.
+(This is certainly true if
 $\lim\limits_{k\rightarrow\infty}{\fcn{p}{k}\,\fcn{f}{k}}=0$ for
 all polynomials $\fcn{p}{k}$.)
 
-For a quite general class of $q$-hypergeometric terms 
+For a quite general class of $q$-hypergeometric terms
 ({\sl proper q-hypergeometric terms}) the $q$-Zeilberger algorithm
 always finds a recurrence equation, not necessarily of lowest
 order though. Unlike Zeilberger's original algorithm its
@@ -235,18 +249,18 @@ If the resulting recurrence equation is of first order
 \]
 $\fcn{s}{n}$ turns out to be a $q$-hypergeometric term
 (as a and b are polynomials in $q^n$),
-and a $q$-hypergeometric solution can be easily established using a 
+and a $q$-hypergeometric solution can be easily established using a
 suitable initial value.
 
-If the resulting recurrence equation has order larger than one, 
+If the resulting recurrence equation has order larger than one,
 this information can be used for identification purposes:
 Any other expression satisfying the same recurrence equation, and the same
 initial values, represents the same function.
 
 Our implementation is mainly based on \cite{Koornwinder:93} and on the
-hypergeometric analogue described in \cite{Koepf:95e}. 
+hypergeometric analogue described in \cite{Koepf:95e}.
 More examples can be found in \cite{GasperRahman:90}, \cite{Gasper:95},
-some of which are contained in the test file 
+some of which are contained in the test file
 \texttt{qsum.tst}.
 
 % ======================================================================
@@ -265,19 +279,19 @@ algorithm.
 \begin{itemize}
 	\item \texttt{qgosper(a,q,k)} determines a $q$-hypergeometric
 		antidifference. (By default it returns a \textsl{downward}
-		antidifference, which may be changed by the switch 
-		\sw{qgosper\_down}; see also 
+		antidifference, which may be changed by the switch
+		\sw{qgosper\_down}; see also
                 \ttindexswitch[QSUM]{QGOSPER\_DOWN}
 		\S~\ref{switches}.)
 		If it does not return a \textsl{q}-hypergeometric antidifference,
 		then such an antidifference does not exist.
 	\item \texttt{qgosper(a,q,k,m,n)} determines a closed formula
 		for the definite sum $\sum\limits_{k=m}^n a_k$ using the
-		$q$-analogue of Gosper's algorithm. 
+		$q$-analogue of Gosper's algorithm.
 		This is only successful if \textsl{q}-Gosper's algorithm applies.
 \end{itemize}
 
-{\bf Examples}: The following two examples can be found in 
+{\bf Examples}: The following two examples can be found in
 	\cite{GasperRahman:90} ((II.3) and (2.3.4)).
 
 \begin{redoutput}
@@ -308,7 +322,7 @@ Here are some other simple examples:
 \begin{redoutput}
 \redprompt qgosper(qpochhammer(q^(-n),q,k)*z^k/qpochhammer(q,q,k),q,k);
 
-***** No q-hypergeometric antidifference exists. 
+***** No q-hypergeometric antidifference exists.
 
 \redprompt off qgosper_down;
 
@@ -338,14 +352,14 @@ Here are some other simple examples:
 \ttindextype{QSUMRECURSION}{operator}
 The \texttt{qsumrecursion} operator is an implementation of the
 $q$-Zeilberger algorithm.
-It tries to determine a homogeneous recurrence equation for 
+It tries to determine a homogeneous recurrence equation for
 $\fcn{summ}{n}$ wrt. $n$ with polynomial coefficients (in $n$), where
 %
 \[
 	\fcn{summ}{n}:= \sum_{k=-\infty}^{\infty}{\fcn{f}{n,k}}.
 \]
 %
-If successful the left hand side of the recurrence equation 
+If successful the left hand side of the recurrence equation
 (\ref{holonomic_recurrence}) is returned.
 
 There are three different ways to pass a summand $\fcn{f}{n,k}$
@@ -358,7 +372,7 @@ to \f{qsumrecursion}:
 		variable, \texttt{q} is a symbol.
 	\item \texttt{qsumrecursion(upper,lower,q,z,n)} is a shortcut for \\
 		\texttt{qsumrecursion(qphihyperterm(upper,lower,q,z,k),q,k,n)}
-	\item \texttt{qsumrecursion(f,upper,lower,q,z,n)} is a similar 
+	\item \texttt{qsumrecursion(f,upper,lower,q,z,n)} is a similar
 		shortcut for\\
 		\texttt{qsumrecursion(f*qphihyperterm(upper,lower,q,z,k),q,k,n)},
 \end{itemize}
@@ -372,14 +386,14 @@ For all three instances the following variations are allowed:
 	\item If for some reason the recursion order is known in
 		advance you can specify it as an additional ({\sl optional}\,)
 		argument at the very end of the parameter sequence. There are two
-		ways. If you just specify a positive integer, 
+		ways. If you just specify a positive integer,
 		\texttt{qsumrecursion} looks only for a recurrence equation of this order.
 		You can also specify a range by a list of two positive integers,
 		i.\,e.\ the first one specifying the lowest and the second one the
 		highest order.
 
 		By default \texttt{qsumrecursion} will search for recurrences
-		of order from 1 to 5. (The global variable 
+		of order from 1 to 5. (The global variable
 		\texttt{qsumrecursion\_recrange!*} controls this behavior,
 		see \S~\ref{switches}.)
 	\item Usually \texttt{qsumrecursion} uses \texttt{summ} as a name
@@ -397,7 +411,7 @@ provided that $|z|,|q|<1$.
 It is the $q$-analogue of the binomial theorem in the sense that
 \[
 	\lim_{q\rightarrow{}1^-}\;{\sum_{k=0}^\infty{
-	\frac{\qfac{q^a}{k}}{\qfac{q}{k}}z^k}} \;\;=\;\; 
+	\frac{\qfac{q^a}{k}}{\qfac{q}{k}}z^k}} \;\;=\;\;
 	\sum_{k=0}^\infty{\frac{(a)_k}{k!}z^k} \;\;=\;\; (1-z)^{-a}\;.
 \]
 For $a:=q^{-n}$ with $n\in\mathbb{N}$ our implementation gets:
@@ -410,7 +424,7 @@ For $a:=q^{-n}$ with $n\in\mathbb{N}$ our implementation gets:
 \end{redoutput}
 %
 Notice that the input requirements are fulfilled. For $n\in\mathbb{N}$ the
-summand is zero for all $k>n$ as $\qfac{q^{-n}}{k}=0$ and 
+summand is zero for all $k>n$ as $\qfac{q^{-n}}{k}=0$ and
 the $\qfac{q}{k}$-term in the denominator makes the summand
 vanish for all $k<0$.
 
@@ -457,7 +471,7 @@ you obtain the left hand side of equation (\ref{eq:f_n_k-recursion}),
 where \texttt{f} is the input summand. The function
 $\fcn{g}{k}:=\text{\texttt{f*cert}}$ is the corresponding
 antidifference, where \texttt{dir} states which sort of antidifference
-was calculated \texttt{downward\_antidifference} or 
+was calculated \texttt{downward\_antidifference} or
 \texttt{upward\_antidifference}, see also \S~\ref{switches}.
 Those informations enable you to prove the recurrence equation for
 the sum or supply you with the necessary informations to determine
@@ -499,7 +513,7 @@ rhside := ---------------------------------------------------------
 Thus we have proved the validity of the recurrence equation.
 
 As some other examples we want to consider some generalizations
-of orthogonal polynomials from the 
+of orthogonal polynomials from the
 Askey--Wilson--scheme \cite{KoekoekSwarttouw:94}: The $q$-Laguerre
 (3.21), $q$-Charlier (3.23) and the continuous $q$-Jacobi (3.10)
 polynomials.
@@ -530,7 +544,7 @@ polynomials.
 \redprompt term:= qpochhammer(q^(alpha+1),q,n)/qpochhammer(q,q,n)*
     qphihyperterm(\{q^(-n),q^(n+alpha+beta+1),
     q^(alpha/2+1/4)*exp(I*theta), q^(alpha/2+1/4)*exp(-I*theta)\},
-    \{q^(alpha+1), -q^((alpha+beta+1)/2), -q^((alpha+beta+2)/2)\}, 
+    \{q^(alpha+1), -q^((alpha+beta+1)/2), -q^((alpha+beta+2)/2)\},
     q,q,k)$
 
 \redprompt qsumrecursion(term,q,k,n,2);
@@ -541,25 +555,25 @@ polynomials.
  - ((q *e       *(q     *(q    *(q *(q + 1) - q) - q
 
                alpha + beta + n           n    beta + n
-            + q                *(q + 1 - q  - q        )) - 
+            + q                *(q + 1 - q  - q        )) -
 
          (alpha + beta)/2   alpha   n                beta + n           n
         q                *(q     *(q *(q + 1) - q + q        *(q + 1 - q ))
 
                 2*alpha + beta + 2*n
-            - (q                     + q)))*(sqrt(q) + q) + 
+            - (q                     + q)))*(sqrt(q) + q) +
 
       (2*alpha + 1)/4   2*i*theta        alpha + beta + 2*n    2
      q               *(e          + 1)*(q                   - q )
 
         alpha + beta + 2*n         alpha + beta + 2*n
-     *(q                   - 1))*(q                   - q)*summ(n - 1) - 
+     *(q                   - 1))*(q                   - q)*summ(n - 1) -
 
      i*theta    (alpha + beta + 2*n)/2   (alpha + beta + 2*n)/2
     e       *((q                      *(q                       + q)
 
                   (alpha + beta + 2*n)/2
-               *(q                       - q)*(sqrt(q) + q) + 
+               *(q                       - q)*(sqrt(q) + q) +
 
                  (2*alpha + 2*beta + 4*n + 1)/2
                (q                               + q)
@@ -581,7 +595,7 @@ polynomials.
 \redprompt off qsum_nullspace;
 \end{alltt}}
 
-The setting of \sw{qsum\_nullspace} 
+The setting of \sw{qsum\_nullspace}
 \ttindexswitch[QSUM]{QSUM\_NULLSPACE}
 (see \cite{PauleRiese:95} and \S~\ref{switches})
 results in a faster
@@ -608,10 +622,10 @@ as \texttt{qpochhammer}, \texttt{qbrackets}, \texttt{qbinomial}
 and \texttt{qfactorial}. Note that the procedure may fail to
 completely simplify some expressions. This is due to the fact that the
 procedure was designed to simplify ratios of $q$-hypergeometric
-terms in the form $\fcn{f}{k}/\fcn{f}{k-1}$ and not arbitrary 
-$q$-hypergeometric terms. 
+terms in the form $\fcn{f}{k}/\fcn{f}{k-1}$ and not arbitrary
+$q$-hypergeometric terms.
 
-E.\,g.\ an expression like 
+E.\,g.\ an expression like
 $\qfac{a}{-n}\cdot\qfac{a/q^n}{n}$
 is not recognized as 1, despite the transformation formula
 \[ \qfac{a}{-n} \;=\; \frac{1}{\qfac{a/q^n}{n}},\]
@@ -619,7 +633,7 @@ which is valid for $n\in\mathbb{N}$.
 
 Note that due to necessary simplification of powers, the switch
 \sw{precise} is (locally) turned off in \texttt{qsimpcomb}. This
-might produce wrong results if the input term contains 
+might produce wrong results if the input term contains
 e.\,g.\ complex variables.
 
 The following synomyms may be used:
@@ -656,7 +670,7 @@ the \texttt{QSUM} package:
 		switched on a downward recurrence equation will be returned by
 		\texttt{qsumrecursion}. Switching it off leads to an upward
 		recurrence equation.
-	\item \sw{qsum\_nullspace}, default setting is off. The 
+	\item \sw{qsum\_nullspace}, default setting is off. The
 		antidifference $\fcn{g}{k}$ is always a rational multiple (in $q^k$)
 		of the input term $\fcn{f}{k}$. \texttt{qgosper} and \texttt{qsumrecursion}
 		determine this certificate, which requires solving a set of
@@ -667,7 +681,7 @@ the \texttt{QSUM} package:
 		it might help to switch on \sw{qsum\_nullspace}.
 		See also \cite{Knuth:TAoCP2} and \cite{PauleRiese:95}.
 	\item \sw{qgosper\_specialsol}, default setting is on. The
-		antidifference $\fcn{g}{k}$ which is determined by 
+		antidifference $\fcn{g}{k}$ which is determined by
 		\texttt{qgosper} might not be unique. If this switch is turned on,
 		just one special solution is returned. If you want
 		to see all solutions, you should turn the switch off.
@@ -678,16 +692,16 @@ the \texttt{QSUM} package:
 		(if factoring is complicated). Note that
 		when turning on \sw{qsum\_nullspace} usually no speedup
 		occurs by switching \sw{qsumrecursion\_exp} on.
-	\item \sw{qsumrecursion\_certificate}, default off. 
-		As Zeilberger's algorithm 
+	\item \sw{qsumrecursion\_certificate}, default off.
+		As Zeilberger's algorithm
 		delivers a recurrence equation for a $q$-hypergeometric term
 		$\mathrm{f}(n,k)$, see equation (\ref{eq:f_n_k-recursion}),
 		this switch is used to get all necessary informations for
 		proving this recurrence equation.
 
-		If it is set on, instead of simply returning the 
-		resulting recurrence equation (for the sum)---if one 
-		exists---\texttt{qsumrecursion} returns 
+		If it is set on, instead of simply returning the
+		resulting recurrence equation (for the sum)---if one
+		exists---\texttt{qsumrecursion} returns
 		a list \texttt{\{rec,cert,f,k,dir\}} with
 		five items: The first entry contains the
 		recurrence equation, while the other items enable you to
@@ -718,7 +732,7 @@ The following messages may occur:
 \begin{itemize}
 %
 	\item If your call to \texttt{qgosper} or \texttt{qsumrecursion}
-		reveals some incorrect syntax, e.\,g.\ wrong number of 
+		reveals some incorrect syntax, e.\,g.\ wrong number of
 		arguments or wrong type you may receive the following messages:
 		\begin{verbatim}***** Wrong number of arguments.\end{verbatim}
 		or
@@ -734,7 +748,7 @@ The following messages may occur:
 %	\item It is not allowed to specify bounds in \\texttt{qgosper} which
 %		contain the summation variable. Otherwise you get the message:
 %		\begin{verbatim}
-%		***** Summation bounds contain the summation variable. 
+%		***** Summation bounds contain the summation variable.
 %		\end{verbatim}
 %
 	\item If \texttt{qgosper} finds no antidifference it returns:
@@ -749,8 +763,8 @@ The following messages may occur:
 		the default range in \texttt{qsumrecursion\_recrange!*} will be used.)
 %
 	\item If the input term passed to \texttt{qgosper}
-		(\texttt{qsumrecursion}) is not $q$-hyper\-geometric wrt.\ the 
-		summation variable --- say $k$ --- (and the recursion variable) 
+		(\texttt{qsumrecursion}) is not $q$-hyper\-geometric wrt.\ the
+		summation variable --- say $k$ --- (and the recursion variable)
 		then you get
 		\begin{verbatim}
 		***** Input term is probably not q-hypergeometric.
@@ -765,8 +779,7 @@ The following messages may occur:
 		\begin{verbatim}
 		Global variable qsumrecursion_recrange!* must be a list
 		of two positive integers: {lo,hi} with lo<=hi.
-		***** Invalid value of qsumrecursion_recrange!* 
+		***** Invalid value of qsumrecursion_recrange!*
 		\end{verbatim}
 %
 \end{itemize}
-

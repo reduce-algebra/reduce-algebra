@@ -1,15 +1,15 @@
 
-%\newcommand{\Sym}{\operatorname{Sym}}
+\newcommand{\Sym}{\operatorname{Sym}}
 \newenvironment{reduce}{\begin{scriptsize}\begin{verbatim}}%
 {\end{verbatim}\end{scriptsize}}
 
 \newenvironment{ebnf}{\begin{tabular}{rcll}}{\end{tabular}}
 \newcommand{\ebnfvar}[1]{{\textit{#1}}\ \ }
-\newcommand{\ebnfvara}[1]{$\left\langle \text{\textit{#1}}\right\rangle$\ \ }
+\newcommand{\ebnfvara}[1]{$\langle$\textit{#1}$\rangle$\ \ }
 \newcommand{\ebnfor}{\textrm{\ $|$\ \ }}
 \newcommand{\ebnfterm}[1]{\textrm{\textbf{\texttt{#1}}}\ \ }
-\newcommand{\ebnfoption}[1]{\textrm{$\left[\;\text{#1}\;\right]$}\ \ }
-\newcommand{\ebnfmult}[1]{\textrm{$\left\{\;\text{#1}\;\right\}$}\ \ }
+\newcommand{\ebnfoption}[1]{\textrm{$[\;$#1$\;]$}\ \ }
+\newcommand{\ebnfmult}[1]{\textrm{$\{\;$#1$\;\}$}\ \ }
 \newcommand{\ebnfattrib}[1]{{$\bigl\{$\ {#1}\ $\bigr\}$}\ \ }
 
 \newcommand{\ebnfrule}[2]{{#1}&$\ \ \rightarrow\ \ $&{#2}&\\}
@@ -27,6 +27,12 @@
 
 
 \subsection{Introduction}
+%% For MathJax, must be part of a paragraph to avoid extra space:
+\ifdefined\HCode
+\(
+\def\Sym{\operatorname{Sym}}
+\)%
+\fi
 Consider the field $F = \mathbb{Q}(x_1,\dots,x_n)$ of rational functions and a
 set $\Delta = \{\partial_{x_1}$,\dots,~$\partial_{x_n}\}$ of
 \emph{commuting derivations} acting on $F$. That is, for all
@@ -340,9 +346,9 @@ variable, which is \texttt{y} by default.
 
 \subsubsubsection{\texttt{lpdos}}
 Given LPDOs $p$, $q$ and $m\in\mathbb{N}$ the function
-\texttt{lpdos($p$,$q$,$m$)} computes the commutative polynomial $$S_m
+\texttt{lpdos($p$,$q$,$m$)} computes the commutative polynomial \[S_m
 = \sum_{\substack{|j| = m\\ |j| < k}} \left(\sum_{i = 1}^n
-p_i \partial_i(q_j) + p_0 q_j\right)y^{j}.$$ This is useful for the
+p_i \partial_i(q_j) + p_0 q_j\right)y^{j}.\] This is useful for the
 factorization of LPDOs. % \cite{LasarukSturm:08b}.
 \begin{footnotesize}
 \begin{verbatim}
@@ -566,4 +572,3 @@ This is a low-level entry point to the factorization
 \subsubsubsection{\texttt{lpdohrect}}
 
 \subsubsubsection{\texttt{lpdohcirc}}
-

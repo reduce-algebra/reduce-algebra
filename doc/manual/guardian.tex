@@ -9,13 +9,27 @@
 \newcommand{\sign}{\textrm{sign}}
 
 \subsection{Introduction}
+%% For MathJax, must be part of a paragraph to avoid extra space:
+\ifdefined\HCode
+\(
+\def\gex{\left[\begin{array}{c|c}}
+\def\endgex{\end{array}\right]}
+\def\gc#1{\boldsymbol{#1}}
+\def\true{\textrm{T}}
+\def\false{\textrm{F}}
+\def\E{\textrm{E}}
+\def\GE{\textrm{GE}}
+\def\gscheme{\textrm{gscheme}}
+\def\sign{\textrm{sign}}
+\)%
+\fi
 It is meanwhile a well-known fact that evaluations obtained with the
 interactive use of computer algebra systems (\textsc{cas}) are not
 entirely correct in general. Typically, some degenerate cases are
 dropped. Consider for instance the evaluation
-$$
+\[
 \frac{x^2}{x}=x,
-$$
+\]
 which is correct only if $x\neq0$.
 The problem here is that \textsc{cas} consider variables to be
 transcendental elements. The user, in contrast, has in mind variables
@@ -23,9 +37,9 @@ in the sense of logic. In other words: The user does not think of
 rational functions but of terms.
 
 Next consider the valid expression
-$$
+\[
 \frac{\sqrt{x}+\sqrt{-x}}{x}.
-$$
+\]
 It is meaningless over the reals. \textsc{Cas} often offer no choice than
 to interprete surds over the complex numbers even if they distinguish
 between a {\em real} and a {\em complex} mode.
@@ -42,27 +56,27 @@ Our setting is as follows: Expressions are evaluated to {\em guarded
 expressions} consisting of possibly several conventional expressions
 guarded by quantifier-free formulas. For the above examples, we would
 obtain
-$$
+\[
 \begin{gex}
 \gc{x\neq0}&\gc{x}
 \end{gex},\quad
 \begin{gex}
 \gc{\false}&\gc{\frac{\sqrt{x}+\sqrt{-x}}{x}}
 \end{gex}.
-$$
+\]
 As the second example illustrates, we are working in ordered fields,
 more precisely in real closed fields. The handling of guarded
 expressions as described in this paper can, however, be easily
 transferred to other situations.
 
 Our approach can also deal with redundant guarded expressions, such as
-$$
+\[
 \begin{gex}
 \gc{\true} & \gc{|x|-x}\\
 x\geq0 & 0\\
 x<0 & -2x
 \end{gex}
-$$
+\]
 which leads to algebraic simplification techniques based on logical
 simplification as proposed by Davenport and
 Faure \cite{DavenportFaure:94}.
@@ -91,9 +105,9 @@ parametrically. Consider, e.g., the {\em Gr\"obner systems} used
 during the computation of {\em comprehensive Gr\"obner bases}
 \cite{Weispfenning:92}.
 
-The algorithms described in this paper are implemented in the 
-\REDUCE package \textsc{guardian}. It is based on the 
-\REDUCE~\cite{Hearn:91,Melenk:95} package 
+The algorithms described in this paper are implemented in the
+\REDUCE package \textsc{guardian}. It is based on the
+\REDUCE~\cite{Hearn:91,Melenk:95} package
 \textsc{redlog}~\cite{DolzmannSturm:97a,Dolzmann:96a} implementing a
 formula data type with corresponding algorithms, in particular
 including simplification and quantifier elimination.
@@ -103,14 +117,14 @@ including simplification and quantifier elimination.
 \subsection{An outline of our method}
 \subsubsection{Guarded expressions}
 A {\em guarded expression} is a scheme
-$$
+\[
 \begin{gex}
 \gc{\gamma_0} & \gc{t_0}\\
 \gamma_1 & t_1\\
 \vdots&\vdots\\
 \gamma_n& t_n
 \end{gex}
-$$
+\]
 where each $\gamma_i$ is a quantifier-free formula, the {\em guard},
 and each $t_i$ is an associated {\em conventional expression}. The
 idea is that some $t_i$ is a valid interpretation iff $\gamma_i$
@@ -129,13 +143,13 @@ covered by the generic case; in other words:
 \end{equation}
 
 Consider the following evaluation of $|x|$ to a guarded expression:
-$$
+\[
 \begin{gex}
 \gc{\true} & \gc{|x|}\\
 x\geq0 & x\\
 x<0 & -x
 \end{gex}.
-$$
+\]
 Here the non-generic cases already cover the whole domain. The
 generic case is in some way {\em redundant}. It is just present for
 keeping track of the system's default behavior. Formally we have
@@ -145,23 +159,23 @@ keeping track of the system's default behavior. Formally we have
 \end{equation}
 As an example for a non-redundant, i.e., {\em necessary} generic case
 we have the evaluation of the reciprocal $\frac{1}{x}$:
-$$
+\[
 \begin{gex}
 \gc{x\neq0}& \gc{\frac{1}{x}}
 \end{gex}.
-$$
+\]
 
 In every guarded expression, the generic case is explicitly marked as
 either necessary or redundant. The corresponding tag is inherited
 during the evaluation process. Unfortunately it can happen that
 guarded expressions satisfy~(\ref{formalredund}) without being tagged
 redundant, e.g., specialization of
-$$
+\[
 \begin{gex}
 \gc{\true}&\gc{\sin x}\\
 x=0&0
 \end{gex}
-$$
+\]
 to $x=0$ if the system cannot evaluate $\sin(0)$. This does not happen
 if one claims for necessary generic cases to have, as the reciprocal
 above, no alternative cases at all. Else, in the sequel ``redundant
@@ -178,9 +192,9 @@ guarding scheme} associated providing information on how to map
 $f(t_1,\ldots,t_m)$ to a guarded expression provided that one does not
 have to care for the argument expressions $t_1$, \dots,~$t_m$. In the
 easiest case, this is a rewrite rule
-$$
+\[
 f(a_1,\ldots,a_m)\to G(a_1,\ldots,a_m).
-$$
+\]
 The actual terms $t_1$, \dots,~$t_m$ are simply substituted for the
 formal symbols $a_1$, \dots,~$a_m$ into the generic guarded expression
 $G(a_1,\ldots,a_m)$. We give some examples:
@@ -226,9 +240,9 @@ while for higher arities there are more case distinctions necessary.
 For later complexity analysis, we state the concept of a guarding
 scheme formally: a guarding scheme for an $m$-ary operator $f$ is a
 map
-$$
+\[
 \gscheme_f: \E^m \to \GE
-$$
+\]
 where $\E$ is the set of expressions, and $\GE$ is the set of guarded
 expressions. This allows to split $f(t_1,\ldots,t_m)$ in dependence
 on the form of the parameter expressions $t_1$, \dots,~$t_m$.
@@ -237,11 +251,11 @@ on the form of the parameter expressions $t_1$, \dots,~$t_m$.
 \subsubsubsection{Evaluating conventional expressions}
 The evaluation of conventional expressions into guarded expressions is
 performed recursively: Constants $c$ evaluate to
-$$
+\[
 \begin{gex}
 \gc{\true} & \gc{c}
 \end{gex}.
-$$
+\]
 For the evaluation
 of $f(e_1,\ldots,e_m)$ the argument expressions $e_1$, \ldots, $e_m$
 are recursively evaluated to guarded expressions
@@ -304,7 +318,7 @@ form~(\ref{intermediate}) yielding a nested guarded expression
 \end{gex},\label{nestedge}
 \end{equation}
 which can be straightforwardly resolved to a guarded expression
-$$
+\[
 \begin{gex}
 \gc{\Gamma_0\land\delta_{00}} & \gc{u_{00}}\\
 \vdots & \vdots\\
@@ -314,7 +328,7 @@ $$
 \vdots & \vdots\\
 \Gamma_N\land\delta_{Nk_N} & u_{Nk_N}
 \end{gex}.
-$$
+\]
 This form is treated analogously to the form~(\ref{intermediate}): The
 new generic case $(\Gamma_0\land\delta_{00},u_{00})$ is redundant if
 at least one of $\bigl(\Gamma_0,f(t_{10},\dots,t_{m0})\bigr)$ and
@@ -354,35 +368,35 @@ with a necessary generic case. The nested $x$ inside $e_2=|x|$ evaluates
 to the same form~(\ref{evalx}). For obtaining $e_2'$, we apply the
 guarding scheme~(\ref{absrewrite}) of the absolute value to the only
 term of~(\ref{evalx}) yielding
-$$
+\[
 \begin{gex} \gc{\true} & \begin{gex}
 \gc{\true} & \gc{|x|}\\
 x\geq 0 & x\\
 x<0 & -x
 \end{gex}
 \end{gex},
-$$
+\]
 where the inner generic case is redundant. This form is resolved to
-$$
+\[
 e_2'=\begin{gex}
 \gc{\true\land\true} & \gc{|x|}\\
 \true\land x\geq 0 & x\\
 \true\land x<0 & -x
 \end{gex}
-$$
+\]
 with a redundant generic case. The next step is the combination of
 cases by Cartesian product computation. We obtain
-$$
+\[
 \begin{gex}
 \gc{\true\land(\true\land\true)} & \gc{\min(x,|x|)}\\
 \true\land(\true\land x\geq0) & \min(x,x)\\
 \true\land(\true\land x<0) & \min(x,-x)
 \end{gex},
-$$
+\]
 which corresponds to~(\ref{intermediate}) above. For the outer $\min$,
 we apply the guarding scheme~(\ref{binminscheme}) to all terms
 yielding the nested guarded expression
-$$
+\[
 \begin{gex}
 \gc{\true\land(\true\land\true)} & \begin{gex}
 \gc{\true} & \gc{\min(x,|x|)}\\
@@ -400,9 +414,9 @@ x\leq -x & x\\
 -x\leq x & -x
 \end{gex}
 \end{gex},
-$$
+\]
 which is in turn resolved to
-$$
+\[
 \begin{gex}
 \gc{(\true\land(\true\land\true))\land\true} & \gc{\min(x,|x|)}\\
 (\true\land(\true\land\true))\land x\leq |x| & x\\
@@ -414,7 +428,7 @@ $$
 (\true\land(\true\land x<0))\land x\leq -x & x\\
 (\true\land(\true\land x<0))\land -x\leq x & -x
 \end{gex}.
-$$
+\]
 From this, we delete the two non-generic cases obtained by combination
 with the redundant generic case of the $\min$. The final result of the
 algebraic evaluation step is the following:
@@ -432,23 +446,24 @@ algebraic evaluation step is the following:
 \subsubsection{Worst-case complexity}
 Our measure of complexity $|G|$ for guarded expressions $G$ is the
 number of contained cases:
-$$
+\[
 \left|\begin{gex}
 \gc{\gamma_0} & \gc{t_0}\\
 \gamma_1 & t_1\\
 \vdots&\vdots\\
 \gamma_n& t_n
 \end{gex}\right|=n+1.
-$$
+\]
 
 As in Section~\ref{algeval}, consider an $m$-ary operator $f$,
 guarded expression arguments $e_1'$, \dots,~$e_m'$ as in
 equation~(\ref{eprimes}), and the Cartesian product $T$ as in
 equation~(\ref{cartprod}). Then
-\begin{eqnarray*}
-\lefteqn{
+\[
 |f(e_1',\ldots,e_m')| \leq  \sum_{(t_1,\dots,t_m)\in
-T}|\gscheme_f(t_1,\dots,t_m)|}\\
+  T}|\gscheme_f(t_1,\dots,t_m)|
+\]
+\begin{eqnarray*}
 & &{}\leq  \max_{(t_1,\ldots,t_m)\in
 T}|\gscheme_f(t_1,\ldots,t_m)|\cdot \#T\\
 & & {}=  \max_{(t_1,\ldots,t_m)\in
@@ -460,10 +475,10 @@ T}|\gscheme_f(t_1,\ldots,t_m)|\cdot\bigl(\max_{1\leq j\leq m}|e_j'|\bigr)^m.
 In the important special case that the guarding scheme of $f$ is a
 rewrite rule $f(a_1,\ldots,a_m)\to G$, the above complexity
 estimation simplifies to
-$$
+\[
 |f(e_1',\ldots,e_m')| \leq  |G|\cdot \prod_{j=1}^m|e_j'| \leq  |G|\cdot
 \bigl(\max_{1\leq j\leq m}|e_j'|\bigr)^m.
-$$
+\]
 In other words: $|G|$ plays the role of a factor, which, however,
 depends on $f$, and $|f(e_1',\ldots,e_m')|$ is polynomial in the size
 of the $e_i$ but exponential in the arity of $f$.
@@ -500,7 +515,7 @@ The following simplification steps are applied in the given order:
 \paragraph{Contraction of cases} This is restricted to the
 non-generic cases of the considered guarded expression. We contract
 different cases containing the same terms:
-$$
+\[
 \begin{gex}
 \gc{\gamma_0}&\gc{t_0}\\
 \vdots & \vdots\\
@@ -515,7 +530,7 @@ $$
 \gamma_i\lor\gamma_j & t_i\\
 \vdots & \vdots\\
 \end{gex}.
-$$
+\]
 \paragraph{Simplification of the guards} The simplifier is applied to
 all guards replacing them by simplified equivalents. Since our
 simplifier maps $\gamma\lor\gamma$ to $\gamma$, this together with the
@@ -543,14 +558,14 @@ delete all non-generic cases.
 We turn back to the form~(\ref{example}) of our example $\min(x,|x|)$.
 Contraction of cases with subsequent simplification automatically
 yields
-$$
+\[
 \begin{gex}
 \gc{\true} & \gc{\min(x,|x|)}\\
 \true & x\\
 |x|-x\leq 0 & |x|\\
 \false & -x
 \end{gex},
-$$
+\]
 of which only the tautological non-generic case survives:
 \begin{equation}
 \begin{gex}
@@ -591,23 +606,23 @@ case}. To begin with, we show why the problem can not be overcome by a
 Assume that there is an output mode which outputs $x$
 for~(\ref{minabs}). As the next computation involving~(\ref{minabs})
 consider division by $y$. This would result in
-$$
+\[
 \begin{gex}
 \gc{y\neq0} & \gc{\frac{\min(x,|x|)}{y}}\\
 y\neq0 & \frac{x}{y}
 \end{gex}.
-$$
+\]
 Again, there are identic conditions for the generic case and some
 non-generic case, and, again, the term belonging to the latter is
 simpler. Our mode would output $\frac{x}{y}$. Next, we apply the
 absolute value once more yielding
-$$
+\[
 \begin{gex}
 \gc{y\neq 0} & \gc{\frac{|\min(x,|x|)|}{|y|}}\\
 xy\geq0 \land y\neq0 & \frac{x}{y}\\
 xy<0 \land y\neq0 & \frac{-x}{y}
 \end{gex}.
-$$
+\]
 Here, the condition of the generic case differs from all other
 conditions. We thus have to output the generic term. For the user, the
 evaluation of $|\frac{x}{y}|$ results in $\frac{|\min(x,|x|)|}{|y|}$.
@@ -643,69 +658,67 @@ computation result. The reader can derive himself what the output in
 the mode {\em generic case} or {\em generic term} would be.
 \begin{itemize}
 \item Smart mode or not:
-$$
+\[
 \frac{1}{x^2+2x+1}=\begin{gex}
 \gc{x+1\neq0}& \gc{\frac{1}{x^2+2x+1}}
 		   \end{gex}.
-$$
+\]
 The simplifier recognizes that the denominator is a square.
 \item Smart mode or not:
-$$
+\[
 \frac{1}{x^2+2x+2}=\begin{gex}
 \gc{\true}& \gc{\frac{1}{x^2+2x+2}}
 		   \end{gex}.
-$$
+\]
 Quantifier elimination recognizes the positive definiteness of the
 denominator.
 \item Smart mode:
-$$
+\[
 |x|-\sqrt{x}=\begin{gex}
 \gc{x\geq 0} & \gc{-\sqrt{x}+x}
 	     \end{gex}.
-$$
+\]
 The square root allows to forget about the negative branch of the
 absolute value.
 \item Smart mode:
-$$
+\[
 |x^2+2x+1|=\begin{gex}
 \gc{\true}&\gc{x^2+2x+1}
 	   \end{gex}.
-$$
+\]
 The simplifier recognizes the positive semidefiniteness of
 the argument. \textsc{Reduce} itself recognizes squares within absolute values
 only in very special cases such as $|x^2|$.
 \item Smart mode:
-$$
+\[
 \min\bigl(x,\max(x,y)\bigr)=\begin{gex}
 \gc{\true}&\gc{x}
 		  \end{gex}.
-$$
+\]
 Note that \textsc{reduce} does not know any rules about nested minima and
 maxima.
 \item
 Smart mode:
-$$
+\[
 \min\bigl(\sign(x),-1\bigr)=\begin{gex}
 \gc{\true}&\gc{-1}
 		  \end{gex}.
-$$
+\]
 \item Smart mode or not:
-$$
+\[
 |x|-x=\begin{gex}
 \gc{\true}&\gc{|x|-x}\\
 x\geq0&0\\
 x<0&-2x
       \end{gex}.
-$$
+\]
 This example is taken from~\cite{DavenportFaure:94}.
 \item
 Smart mode or not:
-$$
-\sqrt{1+x^2\relax y^2\relax
-(x^2+y^2-3)}={}
-\begin{gex}\gc{\true}&\gc{\sqrt{x^4\relax y^2 +
-x^2\relax y^4 - 3\relax x^2\relax y^2 + 1}}\end{gex}
-$$
+\[
+\sqrt{1+x^2 y^2 (x^2+y^2-3)}={}
+\begin{gex}\gc{\true}&\gc{\sqrt{x^4 y^2 + x^2 y^4 - 3 x^2 y^2 + 1}}\end{gex}
+\]
 The {\em Motzkin polynomial} is recognized to be positive semidefinite
 by quantifier elimination.
 \end{itemize}
@@ -724,27 +737,27 @@ more theoretical work necessary.
 \subsubsection{Simplification of terms}\label{simplification}
 Consider the expression $\sign(x)x-|x|$. It evaluates to the following
 guarded expression:
-$$
+\[
 \begin{gex}
 \gc{\true} & \gc{-|x|+\sign(x)x}\\
 x\neq 0 & 0\\
 x=0 & -x
 \end{gex}.
-$$
+\]
 This suggests to substitute $-x$ by $0$ in the third case, which would
 in turn allow to contract the two non-generic cases yielding
-$$
+\[
 \begin{gex}
 \gc{\true} & \gc{-|x|+\sign(x)x}\\
 \true & 0\end{gex}.
-$$
+\]
 In smart mode second case would then become the only generic case.
 
 Generally, one would proceed as follows: If the guard is a conjunction
 containing as toplevel equations
-$$
+\[
 t_1=0,\quad \dots,\quad t_k=0,
-$$
+\]
 reduce the corresponding expression modulo the set of univariate
 linear polynomials among $t_1$, \dots,~$t_k$.
 
@@ -787,13 +800,13 @@ the {\em simplification of the guards}, we can make use of the fact
 that our simplifier is designed to simplify wrt.~a theory,
 cf.~\cite{Dolzmann:97b}. For proving that some guard $\gamma$ is
 {\em tautological}, we try to prove
-$$\underline{\forall}(\Phi\longrightarrow\gamma)$$ instead of
+\[\underline{\forall}(\Phi\longrightarrow\gamma)\] instead of
 $\underline{\forall}\gamma$. Similarly, for proving that $\gamma$ is
 {\em contradictive}, we try to disprove
-$$\underline{\exists}(\Phi\land\gamma).$$ Instead of proving
+\[\underline{\exists}(\Phi\land\gamma).\] Instead of proving
 $\underline{\forall}(\gamma_1\longrightarrow\gamma_2)$ in smart mode, we try to
 prove
-$$\underline{\forall}\bigl((\Phi\land\gamma_1)\longrightarrow\gamma_2\bigr).$$
+\[\underline{\forall}\bigl((\Phi\land\gamma_1)\longrightarrow\gamma_2\bigr).\]
 
 Independently, one can imagine to use a background theory for reducing
 the {\em output} with the {\em matrix} output mode. For this, one
@@ -808,13 +821,13 @@ procedure {\tt unassert($\varphi$)} in a reasonable way.
 \subsubsection{Integration}\label{integration}
 \textsc{Cas} integrators make ``mistakes'' similar to those we have
 examined. Consider, e.g., the typical result
-$$
+\[
 \int x^a\,dx=\frac{1}{a+1}x^{a+1}.
-$$
+\]
 It does not cover the case $a=-1$, for which one wishes to obtain
-$$
+\[
 \int x^{-1}\,dx=\ln x.
-$$
+\]
 This problem can also be solved by using guarded expressions for
 integration results.
 
@@ -830,13 +843,13 @@ integral would look like. Since we know that the integral is defined
 for all interpretations of the variables, our
 assumption~(\ref{gencoversall}) implies that the generic condition be
 ``$\true$.'' We obtain the guarded expression
-$$
+\[
 \begin{gex}
 \gc{\true}& \gc{\int x^a\,dx}\\
 a\neq-1& \frac{1}{a+1}x^{a+1}\\
 a=-1 & \ln x
 \end{gex}.
-$$
+\]
 Note that the redundant generic case does not model the system's
 current behavior.
 %
@@ -856,13 +869,13 @@ a non-generic term without making a case distinction.
 Equation~(\ref{signrule}) is wrong when not considering $x$
 transcendental. In contrast to the situation with reciprocals, our
 technique cannot be used to avoid this ``mistake.'' We obtain
-$$
+\[
 \sign(|x|)=\begin{gex}
 \gc{\true} & \gc{1}\\
 x\neq0 & 1\\
 x=0 & 0
 	   \end{gex}
-$$
+\]
 yielding two different answers for $x=0$.
 
 We have already seen in the example Section~\ref{examples} that the
@@ -884,4 +897,3 @@ implemented, and the software is published. The outlook on background
 theories and on the treatment of integration by guarded expressions
 points on interesting future extensions.
 \nocite{Bradford:92}
-

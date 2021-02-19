@@ -14,19 +14,19 @@ limit(----,x,infinity)
        e
 \end{verbatim}
 
-This particular problem arises, because L'Hopital's rule for the computation of indefinite forms (such as $0/0$, or $\frac{\infty}{\infty}$) can only be applied in a CAS a finite number of times, and in \REDUCE, this number is 3. Applied 7 times to the above problem would have yielded the correct answer 0. 
+This particular problem arises, because L'Hopital's rule for the computation of indefinite forms (such as $0/0$, or $\frac{\infty}{\infty}$) can only be applied in a CAS a finite number of times, and in \REDUCE, this number is 3. Applied 7 times to the above problem would have yielded the correct answer 0.
 The new algorithm solves this particular problem, and enables the computation of many more limit calculations in \REDUCE. We first define the domain in which we work, and then give a statement of the main algorithm that is used in this package. \\[\baselineskip]
 Definition: \\
 Let $\Re[x]$ be the ring of polynomials in $x$ with real coefficients, and let $f$ be an element in this ring. The field which is obtained from $\Re[x]$ by closing it under the operations $f\rightarrow\exp(f)$ and $f\rightarrow\log |f|$ is called the $L$- field (or logarithmico-exponential field, or field of exp-log functions for short).
 \\[\baselineskip]
 Hardy proved that every $L$ function is ultimately continuous, of constant sign, monotonic, and tends to $\pm \infty$ or to a finite real constant as $x\rightarrow +\infty.$
 
-Here are some examples of exp-log functions, which the package is able to deal with: 
+Here are some examples of exp-log functions, which the package is able to deal with:
 \begin{align*}
  f(x) &=e^{x}*\log(\log(x)) \\[2mm]
  f(x) &=\frac{\log(\log(x+e^{-x}))}{e^{x^{2}}+\log(\log(x))}  \\[2mm]
  f(x) &=\log(x)^{\log(x)}  \\[2mm]
- f(x) &=e^{x*\log(x)} 
+ f(x) &=e^{x*\log(x)}
 \end{align*}
 
 \subsection{The Algorithm}
@@ -41,21 +41,22 @@ Let $f$ be a log-exp function in $x$, whose limit we wish to compute as $x\right
 \end{itemize}
 %}}
 The algorithm to compute the most rapidly varying subset (the mrv set) of a function f is given below:
-%\vspace{5 mm}
-\begin{tabbing}      
-procedure mrv(f) \= \\ % f an exp log function in $x$ \\
-  if (not (depend(f,$x$)))  $\rightarrow$ return (\{\}) \\
-  \> else if $f=x \rightarrow$   return(\{$x$\}) \\
- \> else if $f=gh$  $\rightarrow$   return(max(mrv(g),mrv(h))) \\
-  else if $f=g+h\rightarrow$   return(max(mrv(g),mrv(h))) \\
-  else if $f=g^{c}$ and c $\in C \rightarrow$   return(mrv(g)) \\
-  else if $f=log(g)\rightarrow$   return(mrv(g)) \\
-  else if \= $f=e^{g}\rightarrow$  \\
-   \>   if $\lim_{x \rightarrow \infty} g=\pm\infty \rightarrow$ \\
-   \>        return(max(\{$e^{g}$\}, mrv(g))) \\
-    \>  else $\rightarrow $ return mrv(g) \\
-\textbf{end}
-\end{tabbing}
+
+\begin{tabular}{@{}l@{}l@{}l}
+  \multicolumn{2}{l}{procedure mrv(f)} & \\
+  \multicolumn{3}{l}{\% f an exp log function in $x$} \\
+  \multicolumn{3}{l}{if (not (depend(f,$x$))) $\rightarrow$ return (\{\})} \\
+          &                            & else if $f=x \rightarrow$ return(\{$x$\}) \\
+          &                            & else if $f=gh \rightarrow$ return(max(mrv(g),mrv(h))) \\
+  else if & \multicolumn{2}{l}{$f=g+h \rightarrow$ return(max(mrv(g),mrv(h)))} \\
+  else if & \multicolumn{2}{l}{$f=g^{c}$ and c $\in C \rightarrow$ return(mrv(g))} \\
+  else if & \multicolumn{2}{l}{$f=\log(g) \rightarrow$ return(mrv(g))} \\
+  else if & \multicolumn{2}{l}{$f=e^{g} \rightarrow$} \\
+          & \multicolumn{2}{l}{if $\lim_{x \rightarrow \infty} g=\pm\infty \rightarrow$} \\
+          & \multicolumn{2}{l}{return(max(\{$e^{g}$\}, mrv(g)))} \\
+          & \multicolumn{2}{l}{else $\rightarrow$ return mrv(g)} \\
+  \textbf{end}
+\end{tabular}
 
 %\vspace{5 mm}
 The function max() computes the maximum of the two sets of expressions. Max() compares two elements of its argument sets and returns the set which is in the higher comparability class or the union of both if they have the same order of variation. \\[\baselineskip]
@@ -65,10 +66,10 @@ For further details, proofs and explanations of the algorithm, please consult~\c
 For example, we have
 \begin{align*}
 &\text{mrv}(e^{x})=\{e^x\} \\
-&\text{mrv}(log(log(log(x+x^2+x^3))))=\{x\}  \\
+&\text{mrv}(\log(\log(\log(x+x^2+x^3))))=\{x\}  \\
 &\text{mrv}(x)=\{x\} \\
 &\text{mrv}(e^x+e^{-x}+x^2+x \log(x))= \{e^x,e^{-x} \} \\
-&\text{mrv}(e^{e^{-x}})=\{e^{-x} \} 
+&\text{mrv}(e^{e^{-x}})=\{e^{-x} \}
 \end{align*}
 
 \subsubsection{Mrv\_limit Examples}
@@ -199,7 +200,7 @@ small has been changed to e
 After substitution to ww, f is ww
 
                         -1
-performing taylor on: ww   
+performing taylor on: ww
 
                       -1
 series expansion is ww
@@ -215,5 +216,3 @@ infinity
 \end{verbatim}
 \vspace{10 mm}
 Note that, due to the recursiveness of the functions $mrv$ and $mrv\_limit$, many calls to each function are made, and information is given on all calls when the \sw{tracelimit} switch is on.
-
-
