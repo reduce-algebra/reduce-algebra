@@ -16,10 +16,11 @@
                 padding: 5px;
  //             margin: 10px 0 10px 0;
                 border-radius: 5px;
-                background-color: #fff;
+ //               background-color: #fff;
  //             margin: 3em;  
                 border: 1px solid rgba(0, 0, 0, .3); 
                 box-shadow: 0 0 8px rgba(0, 0, 0, .2);
+                hue: 10;
                } 
     </style>  
     <script>
@@ -27,8 +28,9 @@
         window.reduceLatch = 0;
 
 let worker = new Worker('./reduce.web.js');
-        let mfi = mkMathInputField();
-                 
+        let mfi = mkMathInputField({smartMode: false,
+                                    smartFence: false,
+                                    ignoreSpacebarInMathMode: false});
             
 function sendToReduce(str)
         {
@@ -58,6 +60,8 @@ function sendToReduce(str)
             console.log("Send to Reduce:");
             console.log(str);
             if (str.substr(-1) != ";") {str = str.concat(";")};
+ //           console.log("***********ASCIIMath***************");
+ //           console.log(mfi.getValue('ASCIIMath'));
             sendToReduce(str);
           });   
                  
@@ -90,14 +94,23 @@ function sendToReduce(str)
                     o = o.substring(n+1+26, o.length-2)
 // Reduce puts in "\*" for multiplication, but MathJax does not like that,
 // so I define it away into a narrow space.
-                o = o.replaceAll("\*","\cdot ");
+                o = o.replaceAll("\*","\operatorname{\\cdot}");
                 console.log("Trimmed:");
                 console.log(o);
-                var mfo = new MathfieldElement();
+                var mfo = new MathfieldElement({smartMode: false,
+                                                smartFence: false,
+                                                ignoreSpacebarInMathMode: false,
+                                                inlineShortcuts:
+                                                {'\*': {mode: 'math',
+                                                value: '\\operatorname{\\cdot}'}}
+                                                });
                 mfo.value = o;
                 mfo.value += '\n';
                 document.body.appendChild(mfo);
                 mfi = mkMathInputField();
+ //               mfi.getValue('ASCIIMath');
+ //               var sep=document.createElement('HR');
+//                document.body.appendChild(sep);
                 document.body.appendChild(mfi);
                 document.body.appendChild(button); }
             }
@@ -107,14 +120,21 @@ function sendToReduce(str)
 function serializeToReduce(str)
      {// very primitive serialization.           
  //         str = str.replace(/\\int\s{([^}]*)}d{([^}]*)}/gi, "int($1, $2)");
-            str = str.replaceAll("\\text{ws}", "ws");
             str = str.replaceAll("\\sqrt", "sqrt");
             str = str.replaceAll("\\frac", "quotient");
             str = str.replaceAll("}d{", ",");        
             str = str.replaceAll("\\int", "int");
             str = str.replaceAll("\\sin", "sin");
-            str = str.replaceAll("\\log", "log")
+            str = str.replaceAll("\\log", "log");
+//            str = str.replaceAll("\\cdot", "*");
+            str = str.replaceAll("\\times", "*");
+//            str = str.replaceAll("{\\cdot}", "*");
+            str = str.replaceAll("\\operatorname{\\cdot}","*"),
+            str = str.replaceAll("\\operatorname{solve}", "solve");
+            str = str.replaceAll("\\operatorname{sub}", "sub");
             str = str.replaceAll("\\operatorname{df}","df");
+            str = str.replaceAll("\\operatorname{ws}","ws");
+//            str = str.replaceAll("\\operatorname{operator}","operator");
             str = str.replaceAll("\\, \\differentialD","");
             str = str.replaceAll("}{",",");
             str = str.replaceAll("}}","}");
@@ -123,22 +143,28 @@ function serializeToReduce(str)
             str = str.replaceAll("[]","");
             str = str.replaceAll("\\mleft","");
             str = str.replaceAll("\\mright","");
-            str = str.replaceAll("\\cdot","*");
+//            str = str.replaceAll("\\cdot","*");
             str = str.replaceAll("\\*","*");
             str = str.replaceAll("?","");
             str = str.replaceAll("}","");
+            str = str.replaceAll("\\lbrace","{");
+            str = str.replaceAll("\\rbrace","}");
             return str;
             }
             
 function mkMathInputField()
     {return new MathfieldElement(
                   {smartMode: false,
-                  
+                   smartFence: false,
+                   ignoreSpacebarInMathMode: false,
                    inlineShortcuts: 
                       {// ASCIIIMath examples just for demonstration
                        //
                        // Binary operation symbols
-                       '*': '\\cdot',
+ //                      '*': '\\cdot',
+                       '*': {mode: 'math', 
+//                       after: 'nothing+digit+function+binop+punctuation+frac+surd+relop+punct+text+space',
+                       value: '\\operatorname{\\cdot}'}, // Hm, how to get cut and paste working here???
                        '**': '\\ast',
                        '***': '\\star',
                        '@': '\\circ',
@@ -149,10 +175,14 @@ function mkMathInputField()
                        '^^^': '\\bigwedge',
                        
                        // Reduce specific examples
-                       'ws': '\\text{ws}',                                       
+                       'ws': {mode: 'math', value: '\\operatorname{ws}'},                                       
                        'int': '\\int{#?\\,\\differentialD}{#?}',
                        'df': '\\operatorname{df}',
-                       '£': {mode: 'math', value: '\\pounds_{#?}{#?}'}},
+                       'sub': '\\operatorname{sub}',
+                       'solve': '\\operatorname{solve}',
+                       '£': {mode: 'math', value: '\\pounds_{#?}{#?}'},
+ //                      'operator': '\\operatorname{operator}',
+                       },
                        
                     // Virtual keyboard example    
                     virtualKeyboardMode: 'manual',
