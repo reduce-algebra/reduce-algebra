@@ -81,7 +81,7 @@ extern FILE * unixstdin, * unixstdout, * unixstderr, * unixtty;
  
 /* Import NULL and EOF constants for error returns from stdio fns.
  */
-extern int unixnull, unixeof;
+extern unsigned long long unixnull, unixeof;
  
 /* Tag( unixinitio )
  */
@@ -215,7 +215,6 @@ char *fname;
   return (collect);
 }
  
-extern int errno;
  
 FILE *
 unixopen(filename, type)
@@ -227,35 +226,6 @@ unixopen(filename, type)
   return(fptr);
 }
 
-
-#if 0
-unixopen(filename, type)
-     char *filename, *type;
-{
-  int fptr;
- 
-  /*  printf("open %s %s ",filename,type);    */
-  fptr = (int) fopen(expand_file_name(filename), type);
-  if(fptr==(int)NULL)
-  { /* try file name in dos syntax */
-    char c,nfname[255];
-    int i,j,k,kmax;
-    /*  printf("open failed %s %s ",filename,type); */
-    k=0;kmax=8;j=0;
-    for(i=0;filename[i];i++)
-    { c=filename[i]; nfname[j++]=c; k++; 
-      if(c == '\\')     {k=0; kmax=8;}
-      else if(c == '.') {k=0; kmax=3;}
-      else if(k > kmax) j--;
-    };
-    nfname[j]='\0';
-    /*   printf(" reformatted  %s  ",nfname); */
-    fptr = (int) fopen(expand_file_name(nfname), type);
-    /*   printf(" --> %x\n",fptr);  */
-  };
-  return(fptr);
-}
-#endif
 
 void
 unixcd(filename)

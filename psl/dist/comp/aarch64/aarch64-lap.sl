@@ -122,7 +122,7 @@
      (put 'getword32 'opencode '((movl (indexed (reg 1) (displacement (reg 2) 0)) (reg EAX)))))
    (progn
      (put 'put_a_halfword 'opencode '((STR (reg w1) (displacement (reg x0) 0))))
-     (put 'getword32 'opencode '((LDR (reg w0) (indexed (reg 1) (displacement (reg 2) 0)) ))))
+     (put 'getword32 'opencode '((LDR (reg w0) (indexed (reg 1) (reg 2)) ))))
    ))
 
 

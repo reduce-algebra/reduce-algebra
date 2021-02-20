@@ -664,7 +664,7 @@
  (cons `(*DeAlloc ,DeAllocCount)
        (cond ((FlagP FunctionName 'ForeignFunction)
               `((*ForeignLink ,FunctionName ,FunctionType ,NumberOfArguments)
-                (BR (reg lr))))
+                (RET)))
              (t
               `((*JCall ,FunctionName))))))
  
@@ -689,7 +689,7 @@
 				     (cdr OpenCodeSequence)))))
 			 (setq OpenCodeSequence
 			       (Append OpenCodeSequence
-				 (list '(BR (reg lr))))))
+				 (list '(RET)))))
 		       % check that there isn't another *Call somewhere
 		       (if (atsoc '*Call OpenCodeSequence)
 			   (stderror
@@ -1360,10 +1360,6 @@
        (LDR (reg t2) (indexed(reg symfnc) (regshifted t3 LSL 3)))
        (BR (reg t2))))
 
-%% could be:
-%% (LDMIA (reg sp) ((reg lr)) writeback) % pop link register
-%% (LDR (reg pc) (displacement (reg symfnc) (regshifted t3 LSL 2)))
-
 
 (put 'fast-codeapply    'opencode
      '((*Field (reg t2) (reg t1) (wconst infstartingbit) (wconst infbitlength)) % extract codepointer
@@ -1371,7 +1367,6 @@
 
 (put 'fast-codeapply    'exitopencode
      '((*Field (reg t2) (reg t1) (wconst infstartingbit) (wconst infbitlength)) % extract codepointer
-%       (LDMIA (reg sp) ((reg lr)) writeback) % pop link register
        (BR (reg t2))))
 
 (De *LamBind (Regs Fluids)

@@ -163,6 +163,10 @@
 % code, but more importantly assures it points to existing                 
 % memory. /csp                                                             
 
+(compiletime
+ (put 'getword32 'opencode '((LDR (reg w0) (indexed (reg 1) (reg 2)))))
+ )
+
 (de returnaddressp (x)
   (prog (s y)
         (unless (and (posintp x) (>= x 2000)) (return nil))
@@ -179,14 +183,12 @@
         (setq s (inf symfnc))
 %        (unless (weq (halfword x -3) 16#15ff) (return nil))
         % call word
-	% The usual call instruction is "BLX R6" (0xe12fff36).
+	% The usual call instruction is "BLR X10" (0xd63f0140).
 	% However, for calls to internal functions, there is only one instruction
 	%  BL <pc-rel address>.
-	% check that there is indeed a "BLX R6" call.
-	(setq y (wgetv x -1)) 		% possible branch instruction 
-	% Note: compare in two steps since the compiler converts 16#e12fff36 into a fixnum object
-	(unless (and (weq (wand y 16#ffff) 16#ff36)
-		     (weq (wand (wshift y -16) 16#ffff) 16#e12f))
+	% check that there is indeed a "BLR X10" call.
+	(setq y (getword32 (wplus2 x -4) 0)) 		% possible branch instruction 
+	(unless (weq y 16#d63f01400)
 	  (return nil))
         (setq y (get-called-idnumber x))
 	(when (null y) (return nil))
@@ -196,89 +198,28 @@
 
 %%
 %% The usual calling sequence is
-%%  1. load id number into r7
-%%  2. load symfnc+4*r7 into r6
-%%  3. branch to adress in r6 (BLX r6)
-%% The first step comes in three variants:
-%%  1a. load id number immediate (only for id numbers <=256): MOV r7,#cst
-%%      bit pattern is 0xe3a07 + 1 nibble rotate + 1 byte immediate
-%%  1b. load id number from memory (pc-relative): LDR r7,pc-rel-addr
-%%      bit pattern is 0xe59f7 + 12 bit relative offset
-%%  1c. far load: the relative address doesn't fit into a 12 bit offset.
-%%      the load is performed with three instructions: two ADD or SUB instructions
-%%      to load the address containing the id number into r7, and one LDR instruction
-%%      to actually load the id number.
-%%      The bit patterns for the first two instructions are either:
-%%       (ADD Rx,PC,#n)    0xe28f + 1 nibble reg x + 1 nibble rotate + 1 byte immediate
-%%       (ADD Rx,Rx,#m)    0xe28 + 1 nibble reg x + 1 nibble reg x + 1 nibble rotate + 1 byte immediate
-%%      or:
-%%       (SUB Rx,PC,#n)    0xe24f
-%%       (SUB Rx,Rx,#m)    0xe24
-%%      The bit pattern for the LDR instruction is
-%%       0xe59 + 1 nibble reg x + 1 nibble reg x + 0x000 (12 bit offset)
+%%  1. load id number into X11
+%%  2. load symfnc+8*X11 into X10
+%%  3. branch to adress in X10 (BLR X10)
+%% The first step comes in two variants:
+%%  1a. load id number immediate (only for id numbers <=256): MOV X10,#cst
+%%      bit pattern is 0xd280 + 11 bit immediate + 5 bit register (01010)
+%%  1b. load id number from memory (pc-relative): LDR X10,pc-rel-addr
+%%      bit pattern is 0x58 + 19 bit relative offset + 5 bit register (01010)
 %%
 %% However, for calls to internal functions, the calling sequence is simply 
 
 (de get-called-idnumber (adr)
-    (let* ((adr-load-instr (wgetv adr -3))
-	   (bit-pattern (wshift adr-load-instr -12))
-	   (rest (wand adr-load-instr 16#fff)))
-      (cond ((eq bit-pattern 16#e59f7)
-	     % LDR r7,pc-rel-addr
-	     % address where id number is stored is address of instruction + 8 + pc-rel-addr
-	     (wgetv (wplus2 adr rest) -1))
-	    ((eq bit-pattern 16#e59f7)
-	     % MOV r7,#cst
-	     % rest consists of a nibble sepcifying the rotate amount, and the 1 byte data
-	     % Since #cst is is the range 0 <= rest <= 256, there are only two cases:
-	     %  a) data < 256, in which case rest = 0 + data,
-	     %  b) date = 256, ie. rest = C01
-	     (if (eq rest 16#c01) 256 rest))
-	    ((and (eq (wshift bit-pattern -8) 16#e59)
-		  (eq (wand 16#f (wshift bit-pattern -4)) (wand 16#f bit-pattern))
-		  (eq rest 0))
-	     % OK, so the instruction is actually LDR Rx,[Rx]
-	     % Check whether the two preceding instructions are the appropriate ADD/SUB
-	     (let ((instr1 (wgetv addr -5))
-		   (instr2 (wgetv addr -4))
-		   (regno (wand 16#f bit-pattern))
-		   (offset))
-	       (cond ((and (eq (wshift instr1 -16) 16#e28f)            % ADD Ry,PC
-			   (eq (wand 16#f (wshift instr1 -12)) regno)  % Rx=Ry
-			   (eq (wshift instr2 -20) 16#e28)	       % ADD Ry,Rz
-			   (eq (wand 16#f (wshift instr2 -16)) regno)  % Rz=Rx
-			   (eq (wand 16#f (wshift instr2 -12)) regno)) % Ry=Rx
-		      % match found; compute immediate number from last 3 nibbles:
-		      % rotate right by n can be replaced by LSR by 32-n (in this case!)
-		      (setq
-		       offset
-		       (wplus2
-			(wshift (wand 16#ff instr1)
-				(wdifference 32 (wtimes2 2 (wand 16#f (wshift -8 instr1)))))
-			(wshift (wand 16#ff instr2)
-				(wdifference 32 (wtimes2 2 (wand 16#f (wshift -8 instr2)))))))
-		      % offset is relative to first ADD instruction + 2 * addressingunitsperitem
-		      % adr is 5 words after first ADD instruction, so subtract 3 words to add 8 bytes
-		      (wgetv (wplus2 addr offset) -3))
-		     ((and (eq (wshift instr1 -16) 16#e24f)            % SUB Ry,PC
-			   (eq (wand 16#f (wshift instr1 -12)) regno)  % Rx=Ry
-			   (eq (wshift instr2 -20) 16#e24)	       % SUB Ry,Rz
-			   (eq (wand 16#f (wshift instr2 -16)) regno)  % Rz=Rx
-			   (eq (wand 16#f (wshift instr2 -12)) regno)) % Ry=Rx
-		      % match found; compute immediate number from last 3 nibbles:
-		      % rotate right by n can be replaced by LSR by 32-n (in this case!)
-		      (setq
-		       offset
-		       (wplus2
-			(wshift (wand 16#ff instr1)
-				(wdifference 32 (wtimes2 2 (wand 16#f (wshift -8 instr1)))))
-			(wshift (wand 16#ff instr2)
-				(wdifference 32 (wtimes2 2 (wand 16#f (wshift -8 instr2)))))))
-		      % offset is relative to first ADD instruction + 2 * addressingunitsperitem
-		      % adr is 5 words after first ADD instruction, so subtract 3 words to add 8 bytes
-		      (wgetv (wdifference addr offset) -3))
-		     (t nil)))
-	       )
+    (let* ((adr-load-instr (getword32 (wplus2 adr -12)))
+	   (rest))
+      (cond ((eq (wand 16#ff (wshift adr-load-instr -24)) 16#58)
+	     % LDR X10,pc-rel-addr
+	     % address where id number is stored is address of instruction + pc-rel-addr
+	     (setq rest (wand (wshift addr-load-instr -5) 16#7ffff))
+	     (wgetv (wplus2 adr rest) 0))
+	    ((eq (wand 16#ffff (wshift adr-load-instr -16)) 16#d280)
+	     % MOV X10,#cst
+	     (setq rest (wand (wshift addr-load-instr -5) 16#7ff)))
 	    (t nil))))
 
 % ****************************************************************         
