@@ -69,16 +69,16 @@
 #include <sys/stat.h>
 #include <sys/times.h>
  
-int external_alarm(sec)
+unsigned long long external_alarm(sec)
 unsigned long sec;
 {
-  alarm(sec);
+  return alarm(sec);
 }
  
-int external_ualarm(usec,repeat)
+long long external_ualarm(usec,repeat)
 unsigned long usec,repeat;
 {
-  ualarm(usec,repeat);
+  return ualarm(usec,repeat);
 }
  
 char *expand_file_name();    /* from unix-io.c */
@@ -175,7 +175,7 @@ int external_setenv (var, val, ov)
   strcat(var_plus_equal_sign, "=");
   return(setenv (var_plus_equal_sign, val, ov));
 }
- 
+
 /*
  * sets the value of var to be arg in the Unix environment env.
  * Var should end with '=' (bindings are of the form "var=value").
@@ -208,7 +208,7 @@ setenv (var, value, ov)
     strcat (environ [index], value);
     environ [++index] = NULL;
 }
- 
+
 void
 block_copy (b1, b2, length)
      char *b1, *b2;
@@ -240,7 +240,7 @@ int unixreadrecord(fp, buf)
  
 /* Tag( unixwriterecord )
  */
-int unixwriterecord(fp, buf, count)
+void unixwriterecord(fp, buf, count)
      FILE *fp;
      char *buf;
 int  count;

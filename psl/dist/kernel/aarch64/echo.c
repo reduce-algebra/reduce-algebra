@@ -106,7 +106,7 @@ char *external_anyuser_homedir_string(username)
 char *username;
 {
   struct passwd *ptr;
-  if (ptr = getpwnam(username))
+  if ((ptr = getpwnam(username)))
     return(ptr -> pw_dir);
   else 
     return "";

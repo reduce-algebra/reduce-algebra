@@ -47,8 +47,8 @@
 #include <netinet/in.h> 
 
  
-/* #define PORT_NUMBER 1188    /* Port number to listen on. 
-                               Must be the same as in client!!!! */ 
+// #define PORT_NUMBER 1188    /* Port number to listen on. 
+//                               Must be the same as in client!!!! */ 
 
 int
 unixsocketopen(name , number)
@@ -58,11 +58,11 @@ int number;
 
 {  struct hostent *host_info;
    struct sockaddr_in mail_addr;   /* Address structure */ 
-   int mail_len = sizeof(struct sockaddr_in); 
+   unsigned int mail_len = sizeof(struct sockaddr_in); 
    int port_fd, conn_fd; 
-   int mail_fd, temp;
-   int continue1;
-   char message[80]; 
+   int mail_fd;
+   //   int continue1;
+   //   char message[80]; 
    char *getlogin();
  
   if (name == (char *) 0)
@@ -135,11 +135,11 @@ writesocket (mail_fd , string , length)
 int mail_fd,length; 
 char * string; 
  
-{ send (mail_fd, string, length, 0); }
+{ return send (mail_fd, string, length, 0); }
 
 int
 unixclosesocket (conn_fd)
 int conn_fd;
 
-{ close (conn_fd); }
+{ return close (conn_fd); }
 

@@ -118,6 +118,7 @@ extern long long  oldheapupperbound;
 extern long long  oldheaplast;
 extern long long  oldheaptrapbound;
 
+#if 0
 /* Write this ourselves to keep from including half the math library */
 static int power(x, n)
      int x, n;
@@ -129,6 +130,7 @@ static int power(x, n)
     p = p * x;
   return(p);
 }
+#endif
 
 int creloc (unsigned long long array, long len, long long diff, unsigned long long lowb, unsigned long long uppb, int do_symval);
 
@@ -270,7 +272,7 @@ printf("total %llx %llx %llx\n",heapsize_in_bytes , current_size_in_bytes,total)
 	 (unsigned long long) sbrk(0), (unsigned long long) sbrk(0));
 
    if (imagefile != NULL) {
-	ohl = oldheaplowerbound; ohub = oldheapupperbound;
+	ohlb = oldheaplowerbound; ohub = oldheapupperbound;
 	ohl =  oldheaplast; ohtb = oldheaptrapbound;
         hlb = heaplowerbound; hub = heapupperbound;
         hl =  heaplast; htb = heaptrapbound;
@@ -342,7 +344,7 @@ printf("total %llx %llx %llx\n",heapsize_in_bytes , current_size_in_bytes,total)
 	if (hugo != headerword[3]) read_error("BPS",hugo,headerword[3]);
 	fclose (imago);
 	if (memset || diff != 0) {
-	  oldheaplowerbound = ohl; oldheapupperbound = ohub;
+	  oldheaplowerbound = ohlb; oldheapupperbound = ohub;
 	  oldheaplast = ohl; oldheaptrapbound = ohtb;
 	  heaplowerbound = hlb; heapupperbound = hub;
 	  heaptrapbound = htb;
@@ -372,7 +374,7 @@ void
 setupbps()
 { char *p = (char *) bps;
   int bpssize;
-  char c;
+  //  char c;
 
 //  nextbps = malloc (50000000);
 //  bps = nextbps;
@@ -482,7 +484,7 @@ int increment;
   NOTE: only implemented for the one heap version on the 68000.
 */
 
-  int heapsize;
+  //int heapsize;
   int current_size_in_bytes;
 
 #if (NUMBEROFHEAPS == 1)

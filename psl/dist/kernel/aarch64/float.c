@@ -184,7 +184,6 @@ uxwritefloat(buf, flt, convstr)
 {
   char *temps, *dot, *e;
   char tempbuf[102]; /* reasonable size limit */
-  double tempf;
 
   temps = buf + 8;       /* Skip over lisp string length to write data */
 
@@ -196,6 +195,7 @@ uxwritefloat(buf, flt, convstr)
      */
     dot = rindex(temps, '.');
     if (dot == NULL)
+      {
       /* Check to see if the number is in scientific notation. If so, we need
        *  add the .0 into the middle of the string, just before the e.
        */
@@ -210,6 +210,7 @@ uxwritefloat(buf, flt, convstr)
 	{
 	  strcat(temps, ".0");
 	}
+      }
     }
   /* Install the length of the string into the Lisp header word
    */
@@ -251,6 +252,9 @@ uuxcos (r, x)
      double *r, *x;
 {
     *r = cos( *x );
+  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID);
+  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID); return (0);}
+  return (1);
 }
 
 long long
@@ -278,6 +282,9 @@ uuxacos (r, x)
      double *r, *x;
 {
     *r = acos( *x );
+  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID);
+  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID); return (0);}
+  return (1);
 }
 
 long long
