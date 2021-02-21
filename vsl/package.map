@@ -1,3 +1,40 @@
+% "package.map"
+
+%**************************************************************************
+%* Copyright (C) 2020, the Reduce developers                              *
+%*                                                                        *
+%* Redistribution and use in source and binary forms, with or without     *
+%* modification, are permitted provided that the following conditions are *
+%* met:                                                                   *
+%*                                                                        *
+%*     * Redistributions of source code must retain the relevant          *
+%*       copyright notice, this list of conditions and the following      *
+%*       disclaimer.                                                      *
+%*     * Redistributions in binary form must reproduce the above          *
+%*       copyright notice, this list of conditions and the following      *
+%*       disclaimer in the documentation and/or other materials provided  *
+%*       with the distribution.                                           *
+%*                                                                        *
+%* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *
+%* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
+%* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
+%* FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *
+%* COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *
+%* INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *
+%* BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *
+%* OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
+%* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
+%* TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
+%* THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
+%* DAMAGE.                                                                *
+%**************************************************************************
+
+% $Id: package.map 5390 2020-09-03 20:57:57Z arthurcnorman $
+
+% This file lists all the REDUCE packages. It documents the overall
+% package name, which directory its source is kept in, whether there is
+% as associated test script and package relevance to CSL and PSL.
+
 % For a build-system implemented mostly in Lisp it can be
 % read directly. When the build system uses scripts in some
 % other notation a simple Lisp program can read this and re-print
@@ -38,6 +75,7 @@
 
 (
  (support       "support"     core                               psl)
+ (revision      "support"     core                           csl psl)
  (rlisp         "rlisp"       core                           csl psl)
  (alg           "alg"         core      test                 csl psl)
  (poly          "poly"        core      test                 csl psl)
@@ -122,19 +160,20 @@
  (tps           "tps"                   test                 csl psl)
  (limits        "misc"                  test                 csl psl)
 %defint seems to fail under vsl. Maybe because of bignum needs.
- (defint        "defint"                test                 csl psl)
+% (defint        "defint"                test                 csl psl)
  (fps           "specfn"                test                 csl psl)
  (trigint       "trigint"               test                 csl psl)
  (ratint        "ratint"                test                 csl psl)
  (mathml        "mathml"                test                 csl psl)
  (mathmlom      "mathml"                test                 csl psl)
+ (rlsupport     "redlog/rlsupport" 			     csl psl)
  (rltools       "redlog/rltools"        test                 csl psl)
  (redlog        "redlog/rl"             test                 csl psl)
  (cgb           "cgb"                   test                 csl psl)
  (cl            "redlog/cl"                                  csl psl)
  (ofsf          "redlog/ofsf"           test                 csl psl)
  (dvfsf         "redlog/dvfsf"                               csl psl)
- (acfsf         "redlog/acfsf"                               csl psl)
+ (acfsf         "redlog/acfsf"          test                 csl psl)
  (dcfsf         "redlog/dcfsf"                               csl psl)
  (ibalp         "redlog/ibalp"          test                 csl psl)
  (pasf          "redlog/pasf"           test                 csl psl)
@@ -146,7 +185,7 @@
  (redfront      "redfront"                                   csl psl)
  (reduce4       "reduce4"                                    csl psl)
  (tables        "reduce4"                                    csl psl)
- (talp          "redlog/talp"                                csl psl)
+ (talp          "redlog/talp"           test                 csl psl)
  (sum           "sum"                   test                 csl psl)
  (zeilberg      "sum"                   test                 csl psl)
  (symaux        "symmetry"                                   csl psl)
@@ -185,12 +224,19 @@
  (pident        "pident"                                     csl psl)
  (pgauss        "pgauss"                                     csl psl)
  (qhull         "qhull"                                      csl psl)
- (smt           "redlog/smt"                                 csl psl)
+ (smt           "redlog/smt"            test                 csl psl)
+ (gurobi        "foreign/gurobi"                             csl)
+ (z3            "foreign/z3"                                 csl)
+ (cuba          "foreign/cuba"                               csl)
+ (nlopt         "foreign/nlopt"                              csl)
  (rubi_red      "rubi_red"                                   csl psl)
  (lalr          "lalr"                  test                 csl psl)
  (ranum         "ranum"                 test                 csl psl)
  (listvecops    "listvecops"            test                 csl psl)
- (cde            "cde"                  test                 csl psl)
+ (cde           "cde"                   test                 csl psl)
+ (sstools       "sstools"               test                 csl psl)
+ (coeff2        "misc"                                       csl psl)
+%  (heugcd        "heugcd"               test                 csl psl)
 )
 
-% End of configuration data
+% End of package.map
