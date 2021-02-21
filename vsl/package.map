@@ -1,5 +1,3 @@
-
-
 % For a build-system implemented mostly in Lisp it can be
 % read directly. When the build system uses scripts in some
 % other notation a simple Lisp program can read this and re-print

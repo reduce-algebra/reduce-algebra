@@ -1,11 +1,11 @@
-// "vsl.c"                                              A C Norman, 2012-18
+// "vsl.c"                                              A C Norman, 2012-21
 //
 // This is a small Lisp system.
 // It should build on almost any computer with a modern C compiler.
 
 // This code may be used subject to the BSD licence:
 
-// Copyright (C) 2011-2018,                               A C Norman
+// Copyright (C) 2011-2021,                               A C Norman
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -186,11 +186,8 @@ LispObject stackbase, *sp, stacktop;
 // such as the Reduce algebra system (reduce-algebra.sourceforge.net) I would
 // end up with around 7000 symbols in a basic installation! So the size
 // table I use here intended to give decent performance out to that scale.
-// This is (of course) utterly over the top for the purpose of toy and
-// demonstration applications! I make the table size a prime in the hope that
-// that will help keep hashed distribution even across it.
 
-#define OBHASH_SIZE 1009
+#define OBHASH_SIZE 11213
 
 // Some Lisp values that I will use frequently...
 
@@ -3479,6 +3476,7 @@ struct defined_functions fnsetup[] =
     {"open",       0,            (void *)Lopen},
     {"plist",      0,            (void *)Lplist},
     {"pname",      0,            (void *)Lpname},
+    {"symbol-name",0,            (void *)Lpname},
     {"posn",       0,            (void *)Lposn},
     {"preserve",   0,            (void *)Lpreserve},
     {"prin",       0,            (void *)Lprin},
@@ -3580,6 +3578,7 @@ void setup()
     {   LispObject w = lookup(p->name, strlen(p->name), 1);
         qflags(w) |= p->flags;
         qdefn(w) = p->entrypoint;
+        printf("Setting up %s %p\n", p->name, p->entrypoint);
         p++;
     }
 }

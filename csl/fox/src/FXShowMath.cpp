@@ -339,6 +339,7 @@ static Box *makeBracketBox(Box *b1, char left, char right)
     b->bracket.depth = 0;
     b->bracket.width = 0;
     b->bracket.sub = b1;
+// With things like \
     b->bracket.leftBracket = left;
     b->bracket.rightBracket = right;
     b->bracket.dx = 0;
@@ -2279,16 +2280,17 @@ typedef Box *keywordHandlerFunction(int w);
 #define TeXBegin     0x09  // "close bracket" to match TeXBegin
 #define TeXEnd       0x0a  // "^" or "_".
 #define TeXNot       0x0b  // a special case for "\not"
+#define TeXBracket   0x0c  // Things like \big( and \Bigg} but not \Bigl[.
 
 #define TeXFlag      0x80
 
-#define matchCenter    1
-#define matchMatrix    2
-#define matchLeftRight 3
-#define matchBrace     4
-#define matchParen     5
-#define matchBracket   6
-#define matchDollar    7
+#define matchCenter        1
+#define matchMatrix        2
+#define matchLeftRight     3
+#define matchBrace         4
+#define matchParen         5
+#define matchBracket       6
+#define matchDollar        7
 
 
 int insideDollars;
@@ -2466,7 +2468,7 @@ static void printKeyword(Keyword *k)
 // have some degree of coherence of presentation, but as soon as the code
 // starts to run it gets rearranged as a hash table.
 
-#define texWordBits 9
+#define texWordBits 10
 
 
 static Keyword texWords[1<<texWordBits] =
@@ -2487,10 +2489,17 @@ static Keyword texWords[1<<texWordBits] =
     {")matrix",    TeXEnd,    matchMatrix,    'm',  NULL},
 
 // Special-case bracket-like items (delimiters that get displayed
-// at a size the cover the item on one size of them). The case "\right("
+// at a size the cover the item on one side of them). The case "\right("
 // is probably never used, but I include all cases here for consistency.
 // A "\left" must match with a "\right", but the associated delimiter
 // does not have to match.
+// Here the character code field contains an ASCII character that identifies
+// the bracket type (eg '(' or '}') and a second field that starts at bit 8.
+// This second bit is zero for "\left" and "\right" case where size is
+// determined by context, but is non-zero for fixed size case. 1 for big,
+// 2 for bigg, 3 for Big and 4 for Bigg. It may even end up with larger
+// numbers for super-tall brackets and be related to the number of half-
+// character point-size chunks that the total height should be.
     {"left:(",     TeXBegin,  matchLeftRight, '(',  (void *)doLeftRight},
     {"right:(",    TeXEnd,    matchLeftRight, '(',  (void *)doLeftRight},
     {"left:)",     TeXBegin,  matchLeftRight, ')',  (void *)doLeftRight},
@@ -2544,6 +2553,288 @@ static Keyword texWords[1<<texWordBits] =
     {"right:\\Downarrow",TeXEnd,    matchLeftRight, 'V',  (void *)doLeftRight},
     {"left:\\Updownarrow", TeXBegin,matchLeftRight, 'B',  (void *)doLeftRight},
     {"right:\\Updownarrow",TeXEnd,  matchLeftRight, 'B',  (void *)doLeftRight},
+
+    {"bigl:(",     TeXBegin,  matchLeftRight, '('+0x100  (void *)doLeftRight},
+    {"bigl:)",     TeXBegin,  matchLeftRight, ')'+0x100  (void *)doLeftRight},
+    {"bigl:[",     TeXBegin,  matchLeftRight, '['+0x100  (void *)doLeftRight},
+    {"bigl:]",     TeXBegin,  matchLeftRight, ']'+0x100  (void *)doLeftRight},
+    {"bigl:\\{",   TeXBegin,  matchLeftRight, '{'+0x100  (void *)doLeftRight},
+    {"bigl:\\}",   TeXBegin,  matchLeftRight, '}'+0x100  (void *)doLeftRight},
+    {"bigl:|",     TeXBegin,  matchLeftRight, '|'+0x100  (void *)doLeftRight},
+    {"bigl:.",     TeXBegin,  matchLeftRight, '.'+0x100  (void *)doLeftRight},
+    {"bigl:/",        TeXBegin,     matchLeftRight, '/'+0x100  (void *)doLeftRight},
+    {"bigl:\\|",      TeXBegin,     matchLeftRight, '#'+0x100  (void *)doLeftRight},
+    {"bigl:\\langle", TeXBegin,     matchLeftRight, '<'+0x100  (void *)doLeftRight},
+    {"bigl:\\rangle", TeXBegin,     matchLeftRight, '>'+0x100  (void *)doLeftRight},
+    {"bigl:\\backslash", TeXBegin,  matchLeftRight, '\\'+0x100  (void *)doLeftRight},
+    {"bigl:\\lfloor", TeXBegin,     matchLeftRight, 'L'+0x100  (void *)doLeftRight},
+    {"bigl:\\rfloor", TeXBegin,     matchLeftRight, 'J'+0x100  (void *)doLeftRight},
+    {"bigl:\\lceil",  TeXBegin,     matchLeftRight, 'G'+0x100  (void *)doLeftRight},
+    {"bigl:\\rceil",  TeXBegin,     matchLeftRight, '7'+0x100  (void *)doLeftRight},
+    {"bigl:\\uparrow", TeXBegin,    matchLeftRight, '^'+0x100  (void *)doLeftRight},
+    {"bigl:\\downarrow", TeXBegin,  matchLeftRight, 'v'+0x100  (void *)doLeftRight},
+    {"bigl:\\updownarrow", TeXBegin,matchLeftRight, 'b'+0x100  (void *)doLeftRight},
+    {"bigl:\\Uparrow", TeXBegin,    matchLeftRight, 'A'+0x100  (void *)doLeftRight},
+    {"bigl:\\Downarrow", TeXBegin,  matchLeftRight, 'V'+0x100  (void *)doLeftRight},
+    {"bigl:\\Updownarrow", TeXBegin,matchLeftRight, 'B'+0x100  (void *)doLeftRight},
+    {"biggl:(",     TeXBegin,  matchLeftRight, '('+0x200  (void *)doLeftRight},
+    {"biggl:)",     TeXBegin,  matchLeftRight, ')'+0x200  (void *)doLeftRight},
+    {"biggl:[",     TeXBegin,  matchLeftRight, '['+0x200  (void *)doLeftRight},
+    {"biggl:]",     TeXBegin,  matchLeftRight, ']'+0x200  (void *)doLeftRight},
+    {"biggl:\\{",   TeXBegin,  matchLeftRight, '{'+0x200  (void *)doLeftRight},
+    {"biggl:\\}",   TeXBegin,  matchLeftRight, '}'+0x200  (void *)doLeftRight},
+    {"biggl:|",     TeXBegin,  matchLeftRight, '|'+0x200  (void *)doLeftRight},
+    {"biggl:.",     TeXBegin,  matchLeftRight, '.'+0x200  (void *)doLeftRight},
+    {"biggl:/",        TeXBegin,     matchLeftRight, '/'+0x200  (void *)doLeftRight},
+    {"biggl:\\|",      TeXBegin,     matchLeftRight, '#'+0x200  (void *)doLeftRight},
+    {"biggl:\\langle", TeXBegin,     matchLeftRight, '<'+0x200  (void *)doLeftRight},
+    {"biggl:\\rangle", TeXBegin,     matchLeftRight, '>'+0x200  (void *)doLeftRight},
+    {"biggl:\\backslash", TeXBegin,  matchLeftRight, '\\'+0x200  (void *)doLeftRight},
+    {"biggl:\\lfloor", TeXBegin,     matchLeftRight, 'L'+0x200  (void *)doLeftRight},
+    {"biggl:\\rfloor", TeXBegin,     matchLeftRight, 'J'+0x200  (void *)doLeftRight},
+    {"biggl:\\lceil",  TeXBegin,     matchLeftRight, 'G'+0x200  (void *)doLeftRight},
+    {"biggl:\\rceil",  TeXBegin,     matchLeftRight, '7'+0x200  (void *)doLeftRight},
+    {"biggl:\\uparrow", TeXBegin,    matchLeftRight, '^'+0x200  (void *)doLeftRight},
+    {"biggl:\\downarrow", TeXBegin,  matchLeftRight, 'v'+0x200  (void *)doLeftRight},
+    {"biggl:\\updownarrow", TeXBegin,matchLeftRight, 'b'+0x200  (void *)doLeftRight},
+    {"biggl:\\Uparrow", TeXBegin,    matchLeftRight, 'A'+0x200  (void *)doLeftRight},
+    {"biggl:\\Downarrow", TeXBegin,  matchLeftRight, 'V'+0x200  (void *)doLeftRight},
+    {"biggl:\\Updownarrow", TeXBegin,matchLeftRight, 'B'+0x200  (void *)doLeftRight},
+    {"Bigl:(",     TeXBegin,  matchLeftRight, '('+0x300  (void *)doLeftRight},
+    {"Bigl:)",     TeXBegin,  matchLeftRight, ')'+0x300  (void *)doLeftRight},
+    {"Bigl:[",     TeXBegin,  matchLeftRight, '['+0x300  (void *)doLeftRight},
+    {"Bigl:]",     TeXBegin,  matchLeftRight, ']'+0x300  (void *)doLeftRight},
+    {"Bigl:\\{",   TeXBegin,  matchLeftRight, '{'+0x300  (void *)doLeftRight},
+    {"Bigll:\\}",   TeXBegin,  matchLeftRight, '}'+0x300  (void *)doLeftRight},
+    {"Bigl:|",     TeXBegin,  matchLeftRight, '|'+0x300  (void *)doLeftRight},
+    {"Bigl:.",     TeXBegin,  matchLeftRight, '.'+0x300  (void *)doLeftRight},
+    {"Bigl:/",        TeXBegin,     matchLeftRight, '/'+0x300  (void *)doLeftRight},
+    {"Bigl:\\|",      TeXBegin,     matchLeftRight, '#'+0x300  (void *)doLeftRight},
+    {"Bigl:\\langle", TeXBegin,     matchLeftRight, '<'+0x300  (void *)doLeftRight},
+    {"Bigl:\\rangle", TeXBegin,     matchLeftRight, '>'+0x300  (void *)doLeftRight},
+    {"Bigl:\\backslash", TeXBegin,  matchLeftRight, '\\'+0x300  (void *)doLeftRight},
+    {"Bigl:\\lfloor", TeXBegin,     matchLeftRight, 'L'+0x300  (void *)doLeftRight},
+    {"Bigl:\\rfloor", TeXBegin,     matchLeftRight, 'J'+0x300  (void *)doLeftRight},
+    {"Bigl:\\lceil",  TeXBegin,     matchLeftRight, 'G'+0x300  (void *)doLeftRight},
+    {"Bigl:\\rceil",  TeXBegin,     matchLeftRight, '7'+0x300  (void *)doLeftRight},
+    {"Bigl:\\uparrow", TeXBegin,    matchLeftRight, '^'+0x300  (void *)doLeftRight},
+    {"Bigl:\\downarrow", TeXBegin,  matchLeftRight, 'v'+0x300  (void *)doLeftRight},
+    {"Bigl:\\updownarrow", TeXBegin,matchLeftRight, 'b'+0x300  (void *)doLeftRight},
+    {"Bigl:\\Uparrow", TeXBegin,    matchLeftRight, 'A'+0x300  (void *)doLeftRight},
+    {"Bigl:\\Downarrow", TeXBegin,  matchLeftRight, 'V'+0x300  (void *)doLeftRight},
+    {"Bigl:\\Updownarrow", TeXBegin,matchLeftRight, 'B'+0x300  (void *)doLeftRight},
+    {"Biggl:(",     TeXBegin,  matchLeftRight, '('+0x400  (void *)doLeftRight},
+    {"Biggl:)",     TeXBegin,  matchLeftRight, ')'+0x400  (void *)doLeftRight},
+    {"Biggl:[",     TeXBegin,  matchLeftRight, '['+0x400  (void *)doLeftRight},
+    {"Biggl:]",     TeXBegin,  matchLeftRight, ']'+0x400  (void *)doLeftRight},
+    {"Biggl:\\{",   TeXBegin,  matchLeftRight, '{'+0x400  (void *)doLeftRight},
+    {"Biggl:\\}",   TeXBegin,  matchLeftRight, '}'+0x400  (void *)doLeftRight},
+    {"Biggl:|",     TeXBegin,  matchLeftRight, '|'+0x400  (void *)doLeftRight},
+    {"Biggl:.",     TeXBegin,  matchLeftRight, '.'+0x400  (void *)doLeftRight},
+    {"Biggl:/",        TeXBegin,     matchLeftRight, '/'+0x400  (void *)doLeftRight},
+    {"Biggl:\\|",      TeXBegin,     matchLeftRight, '#'+0x400  (void *)doLeftRight},
+    {"Biggl:\\langle", TeXBegin,     matchLeftRight, '<'+0x400  (void *)doLeftRight},
+    {"Biggl:\\rangle", TeXBegin,     matchLeftRight, '>'+0x400  (void *)doLeftRight},
+    {"Biggl:\\backslash", TeXBegin,  matchLeftRight, '\\'+0x400  (void *)doLeftRight},
+    {"Biggl:\\lfloor", TeXBegin,     matchLeftRight, 'L'+0x400  (void *)doLeftRight},
+    {"Biggl:\\rfloor", TeXBegin,     matchLeftRight, 'J'+0x400  (void *)doLeftRight},
+    {"Biggl:\\lceil",  TeXBegin,     matchLeftRight, 'G'+0x400  (void *)doLeftRight},
+    {"Biggl:\\rceil",  TeXBegin,     matchLeftRight, '7'+0x400  (void *)doLeftRight},
+    {"Biggl:\\uparrow", TeXBegin,    matchLeftRight, '^'+0x400  (void *)doLeftRight},
+    {"Biggl:\\downarrow", TeXBegin,  matchLeftRight, 'v'+0x400  (void *)doLeftRight},
+    {"Biggl:\\updownarrow", TeXBegin,matchLeftRight, 'b'+0x400  (void *)doLeftRight},
+    {"Biggl:\\Uparrow", TeXBegin,    matchLeftRight, 'A'+0x400  (void *)doLeftRight},
+    {"Biggl:\\Downarrow", TeXBegin,  matchLeftRight, 'V'+0x400  (void *)doLeftRight},
+    {"Biggl:\\Updownarrow", TeXBegin,matchLeftRight, 'B'+0x400  (void *)doLeftRight},
+
+    {"bigr:(",     TeXEnd,  matchLeftRight, '('+0x100  (void *)doLeftRight},
+    {"bigr:)",     TeXEnd,  matchLeftRight, ')'+0x100  (void *)doLeftRight},
+    {"bigr:[",     TeXEnd,  matchLeftRight, '['+0x100  (void *)doLeftRight},
+    {"bigr:]",     TeXEnd,  matchLeftRight, ']'+0x100  (void *)doLeftRight},
+    {"bigr:\\{",   TeXEnd,  matchLeftRight, '{'+0x100  (void *)doLeftRight},
+    {"bigr:\\}",   TeXEnd,  matchLeftRight, '}'+0x100  (void *)doLeftRight},
+    {"bigr:|",     TeXEnd,  matchLeftRight, '|'+0x100  (void *)doLeftRight},
+    {"bigr:.",     TeXEnd,  matchLeftRight, '.'+0x100  (void *)doLeftRight},
+    {"bigr:/",        TeXEnd,     matchLeftRight, '/'+0x100  (void *)doLeftRight},
+    {"bigr:\\|",      TeXEnd,     matchLeftRight, '#'+0x100  (void *)doLeftRight},
+    {"bigr:\\langle", TeXEnd,     matchLeftRight, '<'+0x100  (void *)doLeftRight},
+    {"bigr:\\rangle", TeXEnd,     matchLeftRight, '>'+0x100  (void *)doLeftRight},
+    {"bigr:\\backslash", TeXEnd,  matchLeftRight, '\\'+0x100  (void *)doLeftRight},
+    {"bigr:\\lfloor", TeXEnd,     matchLeftRight, 'L'+0x100  (void *)doLeftRight},
+    {"bigr:\\rfloor", TeXEnd,     matchLeftRight, 'J'+0x100  (void *)doLeftRight},
+    {"bigr:\\lceil",  TeXEnd,     matchLeftRight, 'G'+0x100  (void *)doLeftRight},
+    {"bigr:\\rceil",  TeXEnd,     matchLeftRight, '7'+0x100  (void *)doLeftRight},
+    {"bigr:\\uparrow", TeXEnd,    matchLeftRight, '^'+0x100  (void *)doLeftRight},
+    {"bigr:\\downarrow", TeXEnd,  matchLeftRight, 'v'+0x100  (void *)doLeftRight},
+    {"bigr:\\updownarrow", TeXEnd,matchLeftRight, 'b'+0x100  (void *)doLeftRight},
+    {"bigr:\\Uparrow", TeXEnd,    matchLeftRight, 'A'+0x100  (void *)doLeftRight},
+    {"bigr:\\Downarrow", TeXEnd,  matchLeftRight, 'V'+0x100  (void *)doLeftRight},
+    {"bigr:\\Updownarrow", TeXEnd,matchLeftRight, 'B'+0x100  (void *)doLeftRight},
+    {"biggr:(",     TeXEnd,  matchLeftRight, '('+0x200  (void *)doLeftRight},
+    {"biggr:)",     TeXEnd,  matchLeftRight, ')'+0x200  (void *)doLeftRight},
+    {"biggr:[",     TeXEnd,  matchLeftRight, '['+0x200  (void *)doLeftRight},
+    {"biggr:]",     TeXEnd,  matchLeftRight, ']'+0x200  (void *)doLeftRight},
+    {"biggr:\\{",   TeXEnd,  matchLeftRight, '{'+0x200  (void *)doLeftRight},
+    {"biggr:\\}",   TeXEnd,  matchLeftRight, '}'+0x200  (void *)doLeftRight},
+    {"biggr:|",     TeXEnd,  matchLeftRight, '|'+0x200  (void *)doLeftRight},
+    {"biggr:.",     TeXEnd,  matchLeftRight, '.'+0x200  (void *)doLeftRight},
+    {"biggr:/",        TeXEnd,     matchLeftRight, '/'+0x200  (void *)doLeftRight},
+    {"biggr:\\|",      TeXEnd,     matchLeftRight, '#'+0x200  (void *)doLeftRight},
+    {"biggr:\\langle", TeXEnd,     matchLeftRight, '<'+0x200  (void *)doLeftRight},
+    {"biggr:\\rangle", TeXEnd,     matchLeftRight, '>'+0x200  (void *)doLeftRight},
+    {"biggr:\\backslash", TeXEnd,  matchLeftRight, '\\'+0x200  (void *)doLeftRight},
+    {"biggr:\\lfloor", TeXEnd,     matchLeftRight, 'L'+0x200  (void *)doLeftRight},
+    {"biggr:\\rfloor", TeXEnd,     matchLeftRight, 'J'+0x200  (void *)doLeftRight},
+    {"biggr:\\lceil",  TeXEnd,     matchLeftRight, 'G'+0x200  (void *)doLeftRight},
+    {"biggr:\\rceil",  TeXEnd,     matchLeftRight, '7'+0x200  (void *)doLeftRight},
+    {"biggr:\\uparrow", TeXEnd,    matchLeftRight, '^'+0x200  (void *)doLeftRight},
+    {"biggr:\\downarrow", TeXEnd,  matchLeftRight, 'v'+0x200  (void *)doLeftRight},
+    {"biggr:\\updownarrow", TeXEnd,matchLeftRight, 'b'+0x200  (void *)doLeftRight},
+    {"biggr:\\Uparrow", TeXEnd,    matchLeftRight, 'A'+0x200  (void *)doLeftRight},
+    {"biggr:\\Downarrow", TeXEnd,  matchLeftRight, 'V'+0x200  (void *)doLeftRight},
+    {"biggr:\\Updownarrow", TeXEnd,matchLeftRight, 'B'+0x200  (void *)doLeftRight},
+    {"Bigr:(",     TeXEnd,  matchLeftRight, '('+0x300  (void *)doLeftRight},
+    {"Bigr:)",     TeXEnd,  matchLeftRight, ')'+0x300  (void *)doLeftRight},
+    {"Bigr:[",     TeXEnd,  matchLeftRight, '['+0x300  (void *)doLeftRight},
+    {"Bigr:]",     TeXEnd,  matchLeftRight, ']'+0x300  (void *)doLeftRight},
+    {"Bigr:\\{",   TeXEnd,  matchLeftRight, '{'+0x300  (void *)doLeftRight},
+    {"Bigr:\\}",   TeXEnd,  matchLeftRight, '}'+0x300  (void *)doLeftRight},
+    {"Bigr:|",     TeXEnd,  matchLeftRight, '|'+0x300  (void *)doLeftRight},
+    {"Bigr:.",     TeXEnd,  matchLeftRight, '.'+0x300  (void *)doLeftRight},
+    {"Bigr:/",        TeXEnd,     matchLeftRight, '/'+0x300  (void *)doLeftRight},
+    {"Bigr:\\|",      TeXEnd,     matchLeftRight, '#'+0x300  (void *)doLeftRight},
+    {"Bigr:\\langle", TeXEnd,     matchLeftRight, '<'+0x300  (void *)doLeftRight},
+    {"Bigr:\\rangle", TeXEnd,     matchLeftRight, '>'+0x300  (void *)doLeftRight},
+    {"Bigr:\\backslash", TeXEnd,  matchLeftRight, '\\'+0x300  (void *)doLeftRight},
+    {"Bigr:\\lfloor", TeXEnd,     matchLeftRight, 'L'+0x300  (void *)doLeftRight},
+    {"Bigr:\\rfloor", TeXEnd,     matchLeftRight, 'J'+0x300  (void *)doLeftRight},
+    {"Bigr:\\lceil",  TeXEnd,     matchLeftRight, 'G'+0x300  (void *)doLeftRight},
+    {"Bigr:\\rceil",  TeXEnd,     matchLeftRight, '7'+0x300  (void *)doLeftRight},
+    {"Bigr:\\uparrow", TeXEnd,    matchLeftRight, '^'+0x300  (void *)doLeftRight},
+    {"Bigr:\\downarrow", TeXEnd,  matchLeftRight, 'v'+0x300  (void *)doLeftRight},
+    {"Bigr:\\updownarrow", TeXEnd,matchLeftRight, 'b'+0x300  (void *)doLeftRight},
+    {"Bigr:\\Uparrow", TeXEnd,    matchLeftRight, 'A'+0x300  (void *)doLeftRight},
+    {"Bigr:\\Downarrow", TeXEnd,  matchLeftRight, 'V'+0x300  (void *)doLeftRight},
+    {"Bigr:\\Updownarrow", TeXEnd,matchLeftRight, 'B'+0x300  (void *)doLeftRight},
+    {"Biggr:(",     TeXEnd,  matchLeftRight, '('+0x400  (void *)doLeftRight},
+    {"Biggr:)",     TeXEnd,  matchLeftRight, ')'+0x400  (void *)doLeftRight},
+    {"Biggr:[",     TeXEnd,  matchLeftRight, '['+0x400  (void *)doLeftRight},
+    {"Biggr:]",     TeXEnd,  matchLeftRight, ']'+0x400  (void *)doLeftRight},
+    {"Biggr:\\{",   TeXEnd,  matchLeftRight, '{'+0x400  (void *)doLeftRight},
+    {"Biggr:\\}",   TeXEnd,  matchLeftRight, '}'+0x400  (void *)doLeftRight},
+    {"Biggr:|",     TeXEnd,  matchLeftRight, '|'+0x400  (void *)doLeftRight},
+    {"Biggr:.",     TeXEnd,  matchLeftRight, '.'+0x400  (void *)doLeftRight},
+    {"Biggr:/",        TeXEnd,     matchLeftRight, '/'+0x400  (void *)doLeftRight},
+    {"Biggr:\\|",      TeXEnd,     matchLeftRight, '#'+0x400  (void *)doLeftRight},
+    {"Biggr:\\langle", TeXEnd,     matchLeftRight, '<'+0x400  (void *)doLeftRight},
+    {"Biggr:\\rangle", TeXEnd,     matchLeftRight, '>'+0x400  (void *)doLeftRight},
+    {"Biggr:\\backslash", TeXEnd,  matchLeftRight, '\\'+0x400  (void *)doLeftRight},
+    {"Biggr:\\lfloor", TeXEnd,     matchLeftRight, 'L'+0x400  (void *)doLeftRight},
+    {"Biggr:\\rfloor", TeXEnd,     matchLeftRight, 'J'+0x400  (void *)doLeftRight},
+    {"Biggr:\\lceil",  TeXEnd,     matchLeftRight, 'G'+0x400  (void *)doLeftRight},
+    {"Biggr:\\rceil",  TeXEnd,     matchLeftRight, '7'+0x400  (void *)doLeftRight},
+    {"Biggr:\\uparrow", TeXEnd,    matchLeftRight, '^'+0x400  (void *)doLeftRight},
+    {"Biggr:\\downarrow", TeXEnd,  matchLeftRight, 'v'+0x400  (void *)doLeftRight},
+    {"Biggr:\\updownarrow", TeXEnd,matchLeftRight, 'b'+0x400  (void *)doLeftRight},
+    {"Biggr:\\Uparrow", TeXEnd,    matchLeftRight, 'A'+0x400  (void *)doLeftRight},
+    {"Biggr:\\Downarrow", TeXEnd,  matchLeftRight, 'V'+0x400  (void *)doLeftRight},
+    {"Biggr:\\Updownarrow", TeXEnd,matchLeftRight, 'B'+0x400  (void *)doLeftRight},
+
+// "\big(" and friends have definite size but do not participate in any
+// bracket-matching processes - they are free-standing.
+    {"big:(",     TeXBracket,  matchLeftRight, '('+0x100  (void *)doLeftRight},
+    {"big:)",     TeXBracket,  matchLeftRight, ')'+0x100  (void *)doLeftRight},
+    {"big:[",     TeXBracket,  matchLeftRight, '['+0x100  (void *)doLeftRight},
+    {"big:]",     TeXBracket,  matchLeftRight, ']'+0x100  (void *)doLeftRight},
+    {"big:\\{",   TeXBracket,  matchLeftRight, '{'+0x100  (void *)doLeftRight},
+    {"big:\\}",   TeXBracket,  matchLeftRight, '}'+0x100  (void *)doLeftRight},
+    {"big:|",     TeXBracket,  matchLeftRight, '|'+0x100  (void *)doLeftRight},
+    {"big:.",     TeXBracket,  matchLeftRight, '.'+0x100  (void *)doLeftRight},
+    {"big:/",        TeXBracket,     matchLeftRight, '/'+0x100  (void *)doLeftRight},
+    {"big:\\|",      TeXBracket,     matchLeftRight, '#'+0x100  (void *)doLeftRight},
+    {"big:\\langle", TeXBracket,     matchLeftRight, '<'+0x100  (void *)doLeftRight},
+    {"big:\\rangle", TeXBracket,     matchLeftRight, '>'+0x100  (void *)doLeftRight},
+    {"big:\\backslash", TeXBracket,  matchLeftRight, '\\'+0x100  (void *)doLeftRight},
+    {"big:\\lfloor", TeXBracket,     matchLeftRight, 'L'+0x100  (void *)doLeftRight},
+    {"big:\\rfloor", TeXBracket,     matchLeftRight, 'J'+0x100  (void *)doLeftRight},
+    {"big:\\lceil",  TeXBracket,     matchLeftRight, 'G'+0x100  (void *)doLeftRight},
+    {"big:\\rceil",  TeXBracket,     matchLeftRight, '7'+0x100  (void *)doLeftRight},
+    {"big:\\uparrow", TeXBracket,    matchLeftRight, '^'+0x100  (void *)doLeftRight},
+    {"big:\\downarrow", TeXBracket,  matchLeftRight, 'v'+0x100  (void *)doLeftRight},
+    {"big:\\updownarrow", TeXBracket,matchLeftRight, 'b'+0x100  (void *)doLeftRight},
+    {"big:\\Uparrow", TeXBracket,    matchLeftRight, 'A'+0x100  (void *)doLeftRight},
+    {"big:\\Downarrow", TeXBracket,  matchLeftRight, 'V'+0x100  (void *)doLeftRight},
+    {"big:\\Updownarrow", TeXBracket,matchLeftRight, 'B'+0x100  (void *)doLeftRight},
+    {"bigg:(",     TeXBracket,  matchLeftRight, '('+0x200  (void *)doLeftRight},
+    {"bigg:)",     TeXBracket,  matchLeftRight, ')'+0x200  (void *)doLeftRight},
+    {"bigg:[",     TeXBracket,  matchLeftRight, '['+0x200  (void *)doLeftRight},
+    {"bigg:]",     TeXBracket,  matchLeftRight, ']'+0x200  (void *)doLeftRight},
+    {"bigg:\\{",   TeXBracket,  matchLeftRight, '{'+0x200  (void *)doLeftRight},
+    {"bigg:\\}",   TeXBracket,  matchLeftRight, '}'+0x200  (void *)doLeftRight},
+    {"bigg:|",     TeXBracket,  matchLeftRight, '|'+0x200  (void *)doLeftRight},
+    {"bigg:.",     TeXBracket,  matchLeftRight, '.'+0x200  (void *)doLeftRight},
+    {"bigg:/",        TeXBracket,     matchLeftRight, '/'+0x200  (void *)doLeftRight},
+    {"bigg:\\|",      TeXBracket,     matchLeftRight, '#'+0x200  (void *)doLeftRight},
+    {"bigg:\\langle", TeXBracket,     matchLeftRight, '<'+0x200  (void *)doLeftRight},
+    {"bigg:\\rangle", TeXBracket,     matchLeftRight, '>'+0x200  (void *)doLeftRight},
+    {"bigg:\\backslash", TeXBracket,  matchLeftRight, '\\'+0x200  (void *)doLeftRight},
+    {"bigg:\\lfloor", TeXBracket,     matchLeftRight, 'L'+0x200  (void *)doLeftRight},
+    {"bigg:\\rfloor", TeXBracket,     matchLeftRight, 'J'+0x200  (void *)doLeftRight},
+    {"bigg:\\lceil",  TeXBracket,     matchLeftRight, 'G'+0x200  (void *)doLeftRight},
+    {"bigg:\\rceil",  TeXBracket,     matchLeftRight, '7'+0x200  (void *)doLeftRight},
+    {"bigg:\\uparrow", TeXBracket,    matchLeftRight, '^'+0x200  (void *)doLeftRight},
+    {"bigg:\\downarrow", TeXBracket,  matchLeftRight, 'v'+0x200  (void *)doLeftRight},
+    {"bigg:\\updownarrow", TeXBracket,matchLeftRight, 'b'+0x200  (void *)doLeftRight},
+    {"bigg:\\Uparrow", TeXBracket,    matchLeftRight, 'A'+0x200  (void *)doLeftRight},
+    {"bigg:\\Downarrow", TeXBracket,  matchLeftRight, 'V'+0x200  (void *)doLeftRight},
+    {"bigg:\\Updownarrow", TeXBracket,matchLeftRight, 'B'+0x200  (void *)doLeftRight},
+    {"Big:(",     TeXBracket,  matchLeftRight, '('+0x300  (void *)doLeftRight},
+    {"Big:)",     TeXBracket,  matchLeftRight, ')'+0x300  (void *)doLeftRight},
+    {"Big:[",     TeXBracket,  matchLeftRight, '['+0x300  (void *)doLeftRight},
+    {"Big:]",     TeXBracket,  matchLeftRight, ']'+0x300  (void *)doLeftRight},
+    {"Big:\\{",   TeXBracket,  matchLeftRight, '{'+0x300  (void *)doLeftRight},
+    {"Big:\\}",   TeXBracket,  matchLeftRight, '}'+0x300  (void *)doLeftRight},
+    {"Big:|",     TeXBracket,  matchLeftRight, '|'+0x300  (void *)doLeftRight},
+    {"Big:.",     TeXBracket,  matchLeftRight, '.'+0x300  (void *)doLeftRight},
+    {"Big:/",        TeXBracket,     matchLeftRight, '/'+0x300  (void *)doLeftRight},
+    {"Big:\\|",      TeXBracket,     matchLeftRight, '#'+0x300  (void *)doLeftRight},
+    {"Big:\\langle", TeXBracket,     matchLeftRight, '<'+0x300  (void *)doLeftRight},
+    {"Big:\\rangle", TeXBracket,     matchLeftRight, '>'+0x300  (void *)doLeftRight},
+    {"Big:\\backslash", TeXBracket,  matchLeftRight, '\\'+0x300  (void *)doLeftRight},
+    {"Big:\\lfloor", TeXBracket,     matchLeftRight, 'L'+0x300  (void *)doLeftRight},
+    {"Big:\\rfloor", TeXBracket,     matchLeftRight, 'J'+0x300  (void *)doLeftRight},
+    {"Big:\\lceil",  TeXBracket,     matchLeftRight, 'G'+0x300  (void *)doLeftRight},
+    {"Big:\\rceil",  TeXBracket,     matchLeftRight, '7'+0x300  (void *)doLeftRight},
+    {"Big:\\uparrow", TeXBracket,    matchLeftRight, '^'+0x300  (void *)doLeftRight},
+    {"Big:\\downarrow", TeXBracket,  matchLeftRight, 'v'+0x300  (void *)doLeftRight},
+    {"Big:\\updownarrow", TeXBracket,matchLeftRight, 'b'+0x300  (void *)doLeftRight},
+    {"Big:\\Uparrow", TeXBracket,    matchLeftRight, 'A'+0x300  (void *)doLeftRight},
+    {"Big:\\Downarrow", TeXBracket,  matchLeftRight, 'V'+0x300  (void *)doLeftRight},
+    {"Big:\\Updownarrow", TeXBracket,matchLeftRight, 'B'+0x300  (void *)doLeftRight},
+    {"Bigg:(",     TeXBracket,  matchLeftRight, '('+0x400  (void *)doLeftRight},
+    {"Bigg:)",     TeXBracket,  matchLeftRight, ')'+0x400  (void *)doLeftRight},
+    {"Bigg:[",     TeXBracket,  matchLeftRight, '['+0x400  (void *)doLeftRight},
+    {"Bigg:]",     TeXBracket,  matchLeftRight, ']'+0x400  (void *)doLeftRight},
+    {"Bigg:\\{",   TeXBracket,  matchLeftRight, '{'+0x400  (void *)doLeftRight},
+    {"Bigg:\\}",   TeXBracket,  matchLeftRight, '}'+0x400  (void *)doLeftRight},
+    {"Bigg:|",     TeXBracket,  matchLeftRight, '|'+0x400  (void *)doLeftRight},
+    {"Bigg:.",     TeXBracket,  matchLeftRight, '.'+0x400  (void *)doLeftRight},
+    {"Bigg:/",        TeXBracket,     matchLeftRight, '/'+0x400  (void *)doLeftRight},
+    {"Bigg:\\|",      TeXBracket,     matchLeftRight, '#'+0x400  (void *)doLeftRight},
+    {"Bigg:\\langle", TeXBracket,     matchLeftRight, '<'+0x400  (void *)doLeftRight},
+    {"Bigg:\\rangle", TeXBracket,     matchLeftRight, '>'+0x400  (void *)doLeftRight},
+    {"Bigg:\\backslash", TeXBracket,  matchLeftRight, '\\'+0x400  (void *)doLeftRight},
+    {"Bigg:\\lfloor", TeXBracket,     matchLeftRight, 'L'+0x400  (void *)doLeftRight},
+    {"Bigg:\\rfloor", TeXBracket,     matchLeftRight, 'J'+0x400  (void *)doLeftRight},
+    {"Bigg:\\lceil",  TeXBracket,     matchLeftRight, 'G'+0x400  (void *)doLeftRight},
+    {"Bigg:\\rceil",  TeXBracket,     matchLeftRight, '7'+0x400  (void *)doLeftRight},
+    {"Bigg:\\uparrow", TeXBracket,    matchLeftRight, '^'+0x400  (void *)doLeftRight},
+    {"Bigg:\\downarrow", TeXBracket,  matchLeftRight, 'v'+0x400  (void *)doLeftRight},
+    {"Bigg:\\updownarrow", TeXBracket,matchLeftRight, 'b'+0x400  (void *)doLeftRight},
+    {"Bigg:\\Uparrow", TeXBracket,    matchLeftRight, 'A'+0x400  (void *)doLeftRight},
+    {"Bigg:\\Downarrow", TeXBracket,  matchLeftRight, 'V'+0x400  (void *)doLeftRight},
+    {"Bigg:\\Updownarrow", TeXBracket,matchLeftRight, 'B'+0x400  (void *)doLeftRight},
+
 // Some other things that generate enclosing contexts
     {"{",          TeXBegin,  matchBrace,     '{',  NULL},
     {"}",          TeXEnd,    matchBrace,     '{',  NULL},
@@ -2957,21 +3248,15 @@ static Keyword texWords[1<<texWordBits] =
 #define hashTableSize ((unsigned int)(sizeof(texWords)/sizeof(Keyword)))
 
 // The hash function here is not especially clever or fast! But it should
-// suffice. It looks at the first 4 characters of the string and returns
-// a result in the range 0 to 511.
+// suffice. It looks at the first 8 characters of the string and returns
+// a result in the range 0 to hashTableSize-1 (probably 1023).
 
 static unsigned int texHash(const char *s)
-{
-    unsigned int h = 0x123456;
-    if (*s != 0)
-    {   h = 169*h + *s++;
-        if (*s != 0)
-        {   h = 169*h + *s++;
-            if (*s != 0)
-            {   h = 169*h + *s++;
-                h = 169*h + *s;
-            }
-        }
+{   unsigned int h = 0x123456;
+    for (int i=0; i<8; i++)
+    {   int ch = *s++ & 0xff;
+        if (ch == 0) break;
+        h = 19937*h + ch;
     }
     return (h ^ (h>>11)) % hashTableSize;
 }
@@ -3866,8 +4151,13 @@ case '\\':
 //     escaped word         \lfloor, \Uparrow etc etc
 // I will pack things in being a bit generous in what I allow, but bad cases
 // will then get spotted because they will count as unknown TeX keywords.
+// Well I also need to do this for big, bigg, Big and Bigg
         if ((strcmp(lexerBuffer, "left") == 0 ||
-             strcmp(lexerBuffer, "right") == 0) &&
+             strcmp(lexerBuffer, "right") == 0 ||
+             strcmp(lexerBuffer, "big") == 0 ||
+             strcmp(lexerBuffer, "bigg") == 0 ||
+             strcmp(lexerBuffer, "Big") == 0 ||
+             strcmp(lexerBuffer, "Bigg") == 0) &&
             curChar != 0)
         {   while (curChar != 0 && isspace(curChar)) curChar = (*nextChar)();
             lexerBuffer[lexLength++] = ':';
@@ -4628,7 +4918,7 @@ int setupShowMath(FXApp *app, int mainSize, FXWindow *w)
 void closeShowMath(FXApp *app)
 {
 // I have had really uncomfortable trouble trying to close down the various
-// font systems, so for now I just give up and hop that the application
+// font systems, so for now I just give up and hope that the application
 // fonts I added here will not persist beyond exit from the application.
 }
 

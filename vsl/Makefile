@@ -19,16 +19,25 @@ psl:	vslpsl vsl.img
 vsl:	vsl.c
 	$(CC) $(OPT) -Wall vsl.c -lm -ledit -o vsl
 
+vsl1:	vsl1.c
+	$(CC) $(OPT) -Wall vsl1.c -lm -ledit -lz -o vsl1
+
+vsl1d:	vsl1.c
+	$(CC) -O0 -g -Wall vsl1.c -lm -ledit -lz -o vsl1d
+
 vslpsl:	vsl.c
 	$(CC) -DPSL=1 $(OPT) -Wall vsl.c -lm -ledit -o vsl
 
 vsl.img:	vsl library.lsp vsl.lsp extras.lsp
 	./vsl -z library.lsp
 
-reduce:	vsl
+vsl1.img:	vsl1 library.lsp vsl.lsp extras.lsp
+	./vsl1 -z library.lsp -ivsl1.img
+
+reduce:	vsl1
 	mkdir -p reduce.img.modules
 	rm -f reduce.img.modules/* reduce.img
-	./vsl -z -ireduce.img -D@srcdir=. -D@reduce=.. \
+	./vsl1 -z -ireduce.img -D@srcdir=. -D@reduce=.. \
 	   buildreduce.lsp | tee reduce.log
 
 

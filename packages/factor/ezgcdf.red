@@ -70,14 +70,16 @@ symbolic procedure ezgcdf(u,v);
         x := errorset2{'ezgcdf1,mkquote u,mkquote v},
 % I am going to hope that the activity that checks for and potentially raises
 % a timeout trap can not happen during the "if null errorp x" test here.
-        << if null errorp x then return first x;
-           without!-timeout <<
+% Also the previous version of this code had a "return" inside the use of
+% "unwind-protect" and hence not in what used to be known as "program context".
+        << if errorp x then without!-timeout <<
              % If ezgcdf fails, erfg!* can be set to t,
              % (e.g., in invlap(c/(p^3/8-9p^2/4+27/2*p-27)^2,p,t)), and
              % the kernel order not properly reset.
              erfg!* := erfgx;
              setkorder kordx >> >>);
-      return gcdf1(u,v)
+      if null errorp x then return first x
+      else return gcdf1(u,v)
    end;
 
 symbolic procedure ezgcdf1(u,v);

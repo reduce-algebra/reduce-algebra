@@ -12,7 +12,7 @@
 
 (rdf "vsl.lsp")
 
-(rdf "printf.lsp")
+% (rdf "printf.lsp")
 
 % The compatibility file "vsl.lsp" defines a macro called
 % "~let" rather than "let" because of a name-clash with the

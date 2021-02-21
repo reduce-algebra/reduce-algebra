@@ -83,7 +83,7 @@ typedef struct BracketBox
 // left delimiter, which is how far the contents must be offset. Note
 // that a "right vertical bar" is represented here by an exclamation
 // mark so I can distinguish it from a left vertical bar.
-    char leftBracket, rightBracket;
+    int leftBracket, rightBracket;
     short int dx;
     union Box *sub;
 // Just for the sake of \sqrt I permit "brackets" to store an additional
