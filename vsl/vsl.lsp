@@ -1633,6 +1633,8 @@ top (cond ((atom a) (return (reversip r))))
       (printc "When all done, execute FASLEND;")
       (cond
          ((not (atom u)) (setq u (car u))))
+(if (equal u 'rlsupport) (setq !*echo t)
+                         (setq !*echo nil))  % @@@
       (cond ((not (start!-module u))
              (progn
                 (cond ((neq (posn) 0) (terpri)))
@@ -1708,6 +1710,12 @@ top (cond ((atom a) (return (reversip r))))
             (if (memq 'load (cadr u))
                 (s!:fslout1 (cons 'progn (cddr u)) loadonly))
             (return nil))
+      (when (or (eqcar u 'compiletime)
+                (eqcar u 'bothtimes))
+            (eval (cons 'progn (cdr u))))
+      (when (or (eqcar u 'loadtime)
+                (eqcar u 'bothtimes))
+            (s!:fslout1 (cons 'progn (cddr u)) loadonly))
       (cond
          ((not (atom u)) (setq u (macroexpand u))))
       (cond
@@ -1947,6 +1955,7 @@ top (cond ((atom a) (return (reversip r))))
 (dm compiletime (x) (cons 'progn (cdr x)))
 (dm loadtime (x) (cons 'progn (cdr x)))
 (dm bothtimes (x) (cons 'progn (cdr x)))
+
 (de find!-gnuplot ()
   "gnuplot")
 
