@@ -246,6 +246,7 @@ fluid '(
       fancy!-bstack!*
       !*fancy_tex
       !*fancy!-lower    % control of conversion to lower case
+      !*multilines      % multiline experiment
       );
 
 fluid '(fancy!-texwidth fancy!-texpos tex!-pointsize);
@@ -569,7 +570,7 @@ symbolic procedure balance!-parens line;
 #if (memq 'csl lispsystem!*)
 
 symbolic procedure fancy!-flush();
-  begin
+  begin scalar done;
     fancy!-terpri!* t;
     if getd 'math!-display and math!-display 0 then <<
       math!-display 2; % clear out any previous junk
@@ -599,9 +600,11 @@ symbolic procedure fancy!-flush();
           if 'wx memq lispsystem!* then fancy!-out!-item "\]";
           terpri() >>;
       math!-display 3 >> where !*standard!-output!*=!*math!-output!*
-    else for each line in reverse fancy!-page!* do
-      if line and not eqcar(car line,'tab) then <<
-         fancy!-out!-header();
+    else for each lines on reverse fancy!-page!* do
+      if car lines and not eqcar(caar lines,'tab) 
+         then <<if null !*multilines then fancy!-out!-header()
+                 else if null done then <<done := t; 
+                                          fancy!-out!-header()>>;
 % If somehow "on fancy" is true but I am not talking to the GUI then the
 % expectation will be that I am talking to TeXmacs. In that case I do
 % not want to confuse things with the "flat" output, but for debuggability
@@ -616,14 +619,15 @@ symbolic procedure fancy!-flush();
             terpri!* nil where outputhandler!* = nil;
             prin2 "::||::" >>;
          most_recent_fancy := nil;
-         for each it in balance!-parens line do fancy!-out!-item it;
-         fancy!-out!-trailer() >>;
+         for each it in balance!-parens car lines do fancy!-out!-item it;
+         if cdr lines and !*multilines then prin2 " \\ " 
+                   else fancy!-out!-trailer() >>;
     set!-fancymode nil
   end;
 
 #else
 
-symbolic procedure fancy!-flush();
+symbolic procedure fancy!-flush_ ();
     <<  fancy!-terpri!* t;
         for each line in reverse fancy!-page!* do
         if line and not eqcar(car line,'tab) then
@@ -633,6 +637,22 @@ symbolic procedure fancy!-flush();
         >>;
         set!-fancymode nil;
       >> where !*lower=nil;
+      
+ symbolic procedure fancy!-flush();
+   begin scalar !*lower, done;
+     fancy!-terpri!* t;
+     for each lines on reverse fancy!-page!* do
+        if car lines and not eqcar(caar lines,'tab)
+           then <<if null !*multilines then fancy!-out!-header()
+                   else if null done then <<done := t; 
+                                            fancy!-out!-header()>>;
+                  for each it in balance!-parens car lines 
+                      do fancy!-out!-item it;
+                  if cdr lines and !*multilines then prin2 " \\ " 
+                   else fancy!-out!-trailer();
+                >>;
+        set!-fancymode nil;
+   end;     
 
 #endif
 

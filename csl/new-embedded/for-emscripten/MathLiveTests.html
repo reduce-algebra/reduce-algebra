@@ -30,7 +30,12 @@
 let worker = new Worker('./reduce.web.js');
         let mfi = mkMathInputField({smartMode: false,
                                     smartFence: false,
-                                    ignoreSpacebarInMathMode: false});
+                                    ignoreSpacebarInMathMode: false});   
+                                    
+//            mfi.executeCommand(['insert',
+//                              '\\begin{MULTLINE} #0 \\end{MULTLINE}'],'after');
+
+// mfi.value = '\\begin{equation} \\frac{\\alpha + 1}{3} \\\\ \\beta-1 \\end{equation}';
             
 function sendToReduce(str)
         {
@@ -92,8 +97,7 @@ function sendToReduce(str)
 // "junk" that reads "latex:\black$\displaystyle" and a final "$\005". Those
 // are fragments that the Reduce interface for TeXmacs inserts.
                     o = o.substring(n+1+26, o.length-2)
-// Reduce puts in "\*" for multiplication, but MathJax does not like that,
-// so I define it away into a narrow space.
+// Reduce puts in "\*" for multiplication. It's replaced here by \cdot.
                 o = o.replaceAll("\*","\operatorname{\\cdot}");
                 console.log("Trimmed:");
                 console.log(o);
@@ -104,13 +108,16 @@ function sendToReduce(str)
                                                 {'\*': {mode: 'math',
                                                 value: '\\operatorname{\\cdot}'}}
                                                 });
+                o = '\\begin{equation} ' + o + ' \\end{equation}'; 
+                console.log(o);
                 mfo.value = o;
                 mfo.value += '\n';
                 document.body.appendChild(mfo);
                 mfi = mkMathInputField();
- //               mfi.getValue('ASCIIMath');
- //               var sep=document.createElement('HR');
-//                document.body.appendChild(sep);
+//              mfi.executeCommand(['insert', '\\begin{multiline} #0 \\end{multiline}']);
+//              mfi.getValue('ASCIIMath');
+//              var sep=document.createElement('HR');
+//              document.body.appendChild(sep);
                 document.body.appendChild(mfi);
                 document.body.appendChild(button); }
             }
@@ -164,7 +171,7 @@ function mkMathInputField()
  //                      '*': '\\cdot',
                        '*': {mode: 'math', 
 //                       after: 'nothing+digit+function+binop+punctuation+frac+surd+relop+punct+text+space',
-                       value: '\\operatorname{\\cdot}'}, // Hm, how to get cut and paste working here???
+                       value: '\\operatorname{\\cdot}'},
                        '**': '\\ast',
                        '***': '\\star',
                        '@': '\\circ',
@@ -214,7 +221,7 @@ function mkMathInputField()
                     virtualKeyboards: 'keyboard-name',
                     })};
                     
-sendToReduce('<<lisp (!*redefmsg := nil);load_package tmprint; on nat;on fancy;off promptnumbers;on redfront_mode>>$');
+sendToReduce('<<lisp (!*redefmsg := nil);load_package tmprint;lisp(!*multilines := t);on nat;on fancy;off promptnumbers;on redfront_mode>>$');
 
     </script>    
 </head> 
