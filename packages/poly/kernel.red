@@ -30,7 +30,7 @@ module kernel;   % Functions for operations on kernels.
 
 global '(exlist!* kprops!*);
 
-!#if (memq 'csl lispsystem!*)
+!#if (or (memq 'csl lispsystem!*) (memq 'vsl lispsystem))
 
 global '(kernhash);
 

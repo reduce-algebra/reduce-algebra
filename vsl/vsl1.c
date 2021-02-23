@@ -110,17 +110,19 @@ typedef intptr_t LispObject;
 // at their start.
 // This contains extra information about the exact form of data present.
 
-#define TYPEBITS    0x78
+#define TYPEBITS       0x78
 
-#define typeSYM     0x00
-#define typeGENSYM  0x08
-#define typeSTRING  0x10
-#define typeVEC     0x18
-#define typeBIGNUM  0x20
-#define typeEQHASH  0x28
-#define typeEQHASHX 0x30
-// Codes 0x38, 0x40, 0x48, 0x50, 0x58, 0x60, 0x68,
-// 0x70 and 0x78 spare!
+#define typeSYM        0x00
+#define typeGENSYM     0x08
+#define typeSTRING     0x10
+#define typeVEC        0x18
+#define typeBIGNUM     0x20
+//                     0x28
+#define typeEQHASH     0x30
+#define typeEQHASHX    0x38
+#define typeEQUALHASH  0x40
+#define typeEQUALHASHX 0x48
+// Codes 0x28,    0x50, 0x58, 0x60, 0x68, 0x70 and 0x78 spare!
 
 #define veclength(h)  (((uintptr_t)(h)) >> 7)
 #define packlength(n) (((LispObject)(n)) << 7)
@@ -196,6 +198,8 @@ typedef LispObject LispFn(LispObject lits, int nargs, ...);
 #define isVEC(x) (isATOM(x) && ((qheader(x) & TYPEBITS) == typeVEC))
 #define isEQHASH(x) (isATOM(x) && ((qheader(x) & TYPEBITS) == typeEQHASH))
 #define isEQHASHX(x) (isATOM(x) && ((qheader(x) & TYPEBITS) == typeEQHASHX))
+#define isEQUALHASH(x) (isATOM(x) && ((qheader(x) & TYPEBITS) == typeEQUALHASH))
+#define isEQUALHASHX(x) (isATOM(x) && ((qheader(x) & TYPEBITS) == typeEQUALHASHX))
 
 // The Lisp heap will have fixed size. Here I make it 256 Mbytes on a
 // 32-bit machine and 612M on a 64-bit one.
@@ -620,6 +624,8 @@ void reclaim()
                 case typeVEC:
                 case typeEQHASH:
                 case typeEQHASHX:
+                case typeEQUALHASH:
+                case typeEQUALHASHX:
 // These are to be processed the same way. They contain a bunch of
 // reference items.
                     s++; // Past the header
@@ -689,10 +695,12 @@ LispObject copy(LispObject x)
             if (!isHDR(h)) disaster(__LINE__);
             switch (h & TYPEBITS)
             {   case typeEQHASH:
+                case typeEQUALHASH:
 // When a hash table is copied its header is changes to EQHASHX, which
 // indicates that it will need rehashing before further use.
-                    h ^= (typeEQHASH ^ typeEQHASHX);
+                    qheader(x) ^= (typeEQHASH ^ typeEQHASHX);
                 case typeEQHASHX:
+                case typeEQUALHASHX:
                 case typeSTRING:
                 case typeVEC:
                 case typeBIGNUM:
@@ -959,20 +967,31 @@ void internalprint(LispObject x)
                         return;
                     case typeVEC:
                         i++;
+                    case typeEQUALHASH:
+                        i++;
+                    case typeEQUALHASHX:
+                        i++;
                     case typeEQHASH:
                         i++;
                     case typeEQHASHX:
                         switch (i)
                         {
+// EQ hash table                     #h
+// EQUALhash table                   #H
+// ditto but in need of rehashing    #g or 'G
                         case 0:
-// hash table                        #h
-// hash table in need of rehashing   #H
-                            wrch('#'); wrch('H');
+                            wrch('#'); wrch('g');
                             break;
                         case 1:
                             wrch('#'); wrch('h');
                             break;
                         case 2:
+                            wrch('#'); wrch('G');
+                            break;
+                        case 3:
+                            wrch('#'); wrch('H');
+                            break;
+                        case 4:
                             break;
                         }
                         sep = '[';
@@ -1496,22 +1515,24 @@ int unwindflag = unwindNONE;
 int backtraceflag = -1;
 #define backtraceHEADER 1
 #define backtraceTRACE  2
+int forcedMIN=0, forcedMAX=3;
 
 LispObject error1(const char *msg, LispObject data)
-{   if ((backtraceflag & backtraceHEADER) != 0)
+{   if ((backtraceflag & backtraceHEADER) != 0 || forcedMIN > 0)
     {   linepos = printf("\n+++ Error: %s: ", msg);
 #ifdef DEBUG
         if (logfile != NULL) fprintf(logfile, "\n+++ Error: %s: ", msg);
 #endif // DEBUG
         errprint(data);
     }
-    unwindflag = (backtraceflag & backtraceTRACE) != 0 ? unwindBACKTRACE :
+    unwindflag = (backtraceflag & backtraceTRACE) != 0 ||
+                  forcedMIN > 1 ? unwindBACKTRACE :
                  unwindERROR;
     return nil;
 }
 
 LispObject error2(const char *msg, LispObject data1, LispObject data2)
-{   if ((backtraceflag & backtraceHEADER) != 0)
+{   if ((backtraceflag & backtraceHEADER) != 0 || forcedMIN > 0)
     {   linepos = printf("\n+++ Error: %s: ", msg);
 #ifdef DEBUG
         if (logfile != NULL) fprintf(logfile, "\n+++ Error: %s: ", msg);
@@ -1520,13 +1541,13 @@ LispObject error2(const char *msg, LispObject data1, LispObject data2)
         linepos += printf("  ");
         errprint(data2);
     }
-    unwindflag = (backtraceflag & backtraceTRACE) != 0 ? unwindBACKTRACE :
-                 unwindERROR;
+    unwindflag = (backtraceflag & backtraceTRACE) != 0 ||
+                 forcedMIN > 1 ? unwindBACKTRACE : unwindERROR;
     return nil;
 }
 
 LispObject error1s(const char *msg, const char *data)
-{   if ((backtraceflag & backtraceHEADER) != 0)
+{   if ((backtraceflag & backtraceHEADER) != 0 || forcedMIN > 0)
 #ifdef DEBUG
     {   printf("\n+++ Error: %s %s\n", msg, data);
         if (logfile != NULL) fprintf(logfile, "\n+++ Error: %s %s\n", msg, data);
@@ -1534,8 +1555,8 @@ LispObject error1s(const char *msg, const char *data)
 #else // DEBUG
         printf("\n+++ Error: %s %s\n", msg, data);
 #endif // DEBUG
-    unwindflag = (backtraceflag & backtraceTRACE) != 0 ? unwindBACKTRACE :
-                 unwindERROR;
+    unwindflag = (backtraceflag & backtraceTRACE) != 0 ||
+                  forcedMIN > 1 ? unwindBACKTRACE : unwindERROR;
     return nil;
 }
 
@@ -2441,6 +2462,7 @@ LispObject Lequal(LispObject lits, int nargs, ...)
     if (qheader(x) != qheader(y)) return nil;
     switch (qheader(x) & TYPEBITS)
     {   case typeVEC: case typeEQHASH: case typeEQHASHX:
+        case typeEQUALHASH: case typeEQUALHASHX:
         {   int i;
             for (i=0; i<veclength(qheader(x))/sizeof(LispObject); i++)
                 if (Lequal(lits, 2, elt(x, i), elt(y, i)) == nil) return nil;
@@ -2501,6 +2523,7 @@ LispObject Lchar(LispObject lits, int nargs, ...)
 
 LispObject Lcharcode(LispObject lits, int nargs, ...)
 {   ARG1("char-code", x);
+    if (isFIXNUM(x)) return x;
     if (isSYMBOL(x)) x = qpname(x);
     if (!isSTRING(x)) return error1("bad arg for char-code", x);
     return packfixnum(*qstring(x));
@@ -2689,7 +2712,8 @@ LispObject Lgetv(LispObject lits, int nargs, ...)
     ARG2("getv", x, y);
 // As a matter of convenience and generosity I will allow "getv" to
 // access items from hash tables as well as ordinary vectors.
-    if ((!isVEC(x) && !isEQHASH(x) && !isEQHASHX(x)) || !isFIXNUM(y))
+    if ((!isVEC(x) && !isEQHASH(x) && !isEQHASHX(x) &&
+         !isEQUALHASH(x) && !isEQUALHASHX(x)) || !isFIXNUM(y))
         return error2("bad arg to getv", x, y);
     n = (int)qfixnum(y);
     if (n < 0 || n >= veclength(qheader(x))/sizeof(LispObject))
@@ -2698,34 +2722,65 @@ LispObject Lgetv(LispObject lits, int nargs, ...)
 }
 
 LispObject Lmkhash(LispObject lits, int nargs, ...)
-{   int n;
-    LispObject x, r;
+{   LispObject size = packfixnum(10), r, flavour = packfixnum(0);
     va_list a;          // I am going to permit mkhash to have extra arguments.
     va_start(a, nargs); // This is for easier compatibility with Reduce.
-    x = va_arg(a, LispObject);
+    if (nargs >= 1) size = va_arg(a, LispObject);
+    if (nargs >= 2) flavour = va_arg(a, LispObject);
     va_end(a);
-    if (!isFIXNUM(x)) return error1("bad size in mkhash", x);
-    n = (int)qfixnum(x);
+    if (!isFIXNUM(size)) return error1("bad size in mkhash", size);
+    if (!isFIXNUM(flavour)) return error1("bad flavour in mkhash", flavour);
+    int n = (int)qfixnum(size);
+    int f = (int)qfixnum(flavour);
 // I force hash tables to be of limited size.
     if (n <= 10) n = 11;
     else if (n > 1000) n = 997;
     n |= 1;  // Force table-size to be an odd number
     r = makevector(n-1);
-    qheader(r) ^= (typeVEC ^ typeEQHASH);
+    f = (f == 0 ? typeEQHASH : typeEQUALHASH);
+    qheader(r) ^= (typeVEC ^ f);
     return r;
 }
 
 LispObject Lclrhash(LispObject lits, int nargs, ...)
 {   ARG1("clrhash", x);
     if (isEQHASHX(x)) qheader(x) ^= (typeEQHASH ^ typeEQHASHX);
-    if (!isEQHASH(x)) return error1("not a hash table in clrhash", x);
+    if (isEQUALHASHX(x)) qheader(x) ^= (typeEQUALHASH ^ typeEQUALHASHX);
+    if (!isEQHASH(x) && !isEQUALHASH(x))
+        return error1("not a hash table in clrhash", x);
     size_t n = veclength(qheader(x))/sizeof(LispObject);
     for (size_t i=0; i<n; i++) elt(x, i) = nil;
     return x;
 }
 
+uintptr_t hashup(LispObject a, int isEQUAL)
+{  if (!isEQUAL) return (uintptr_t)a;
+   switch (a & TAGBITS)
+   {   case tagCONS:         // Traditional Lisp "cons" item.
+           return 19937*hashup(qcar(a), 1) + hashup(qcdr(a), 1);
+       case tagFLOAT:        // A double-precision number.
+           {   union { double d; uintptr_t i;} dd;
+               dd.d = qfloat(a);
+               return dd.i;
+           }
+       case tagATOM:         // Something else that will have a header word.
+           if (isSTRING(a))
+           {   int len = veclength(qheader(a));
+               char *s = qstring(a);
+               uintptr_t h = 0;
+               for (int i=0; i<len; i++) h = 11213*h + s[i];
+               return h;
+           }
+           return 1;         // give up for other atoms!
+       default:
+       case tagSYMBOL:       // a symbol.
+       case tagFIXNUM:       // An immediate integer value (29 or 61 bits).
+           return (uintptr_t)a;
+    }
+}
+
 void rehash(LispObject x)
-{
+{   int isEQUAL = isEQUALHASHX(x);
     int n = veclength(qheader(x));
     int i;
 // At the moment that this is invoked it is at least certain that
@@ -2744,7 +2799,7 @@ void rehash(LispObject x)
     {   LispObject b = elt(x1, i);
         while (b != nil)
         {   LispObject ca = qcar(b), cd = qcdr(b);
-            int h = (int)(((uintptr_t)qcar(ca))%((uintptr_t)n)); // New bucket.
+            int h = (int)(hashup(qcar(ca), isEQUAL)%((uintptr_t)n)); // New bucket.
             qcdr(b) = elt(x, h);
             elt(x, h) = b;    // Re-inserted in table.
             b = cd;
@@ -2753,18 +2808,25 @@ void rehash(LispObject x)
     qheader(x) ^= (typeEQHASH ^ typeEQHASHX);
 }
 
+int hashsame(LispObject x, LispObject y, int isEQUAL)
+{
+    if (isEQUAL) return Lequal(nil, 2, x, y) != nil;
+    else return x == y;
+}
+
 LispObject Lputhash(LispObject lits, int nargs, ...)
 {   int n, h;
     LispObject c;
     ARG3("puthash", x, y, z);
-    if (isEQHASHX(y)) rehash(y);
-    if (!isEQHASH(y)) return error2("not a hash table in puthash", x, y);
+    if (isEQHASHX(y) || isEQUALHASHX(y)) rehash(y);
+    if (!isEQHASH(y) && !isEQUALHASH(y))
+        return error2("not a hash table in puthash", x, y);
     n = veclength(qheader(y))/sizeof(LispObject);
 // I use unsigned types so I get a positive remainder.
-    h = (int)(((uintptr_t)x) % ((uintptr_t)n));
+    h = (int)(hashup(x, isEQUALHASH(y)) % ((uintptr_t)n));
     c = elt(y, h);
     while (isCONS(c))
-    {   if (qcar(qcar(c)) == x)
+    {   if (hashsame(qcar(qcar(c)), x, isEQUALHASH(y)))
         {   qcdr(qcar(c)) = z;
             return z;
         }
@@ -2781,13 +2843,14 @@ LispObject Lremhash(LispObject lits, int nargs, ...)
 {   int n, h;
     LispObject c, *cp;
     ARG2("remhash", x, y);
-    if (isEQHASHX(y)) rehash(y);
-    if (!isEQHASH(y)) return error2("not a hash table in remhash", x, y);
+    if (isEQHASHX(y) || isEQUALHASHX(y)) rehash(y);
+    if (!isEQHASH(y) && !isEQUALHASH(y))
+        return error2("not a hash table in remhash", x, y);
     n = veclength(qheader(y))/sizeof(LispObject);
-    h = (int)(((uintptr_t)x) % ((uintptr_t)n));
+    h = (int)(hashup(x, isEQUALHASH(y)) % ((uintptr_t)n));
     c = *(cp = &elt(y, h));
     while (isCONS(c))
-    {   if (qcar(qcar(c)) == x)
+    {   if (hashsame(qcar(qcar(c)), x, isEQUALHASH(y)))
         {   *cp = qcdr(c);
             return qcdr(qcar(c));
         }
@@ -2800,13 +2863,14 @@ LispObject Lgethash(LispObject lits, int nargs, ...)
 {   int n, h;
     LispObject c;
     ARG2("gethash", x, y);
-    if (isEQHASHX(y)) rehash(y);
-    if (!isEQHASH(y)) return error2("not a hash table in gethash", x, y);
+    if (isEQHASHX(y) || isEQUALHASHX(y)) rehash(y);
+    if (!isEQHASH(y) && !isEQUALHASH(y))
+        return error2("not a hash table in gethash", x, y);
     n = veclength(qheader(y))/sizeof(LispObject);
-    h = (int)(((uintptr_t)x) % ((uintptr_t)n));
+    h = (int)(hashup(x, isEQUALHASH(y)) % ((uintptr_t)n));
     c = elt(y, h);
     while (isCONS(c))
-    {   if (qcar(qcar(c)) == x) return qcdr(qcar(c));
+    {   if (hashsame(qcar(qcar(c)), x, isEQUALHASH(y))) return qcdr(qcar(c));
         c = qcdr(c);
     }
     return nil;
@@ -3441,8 +3505,6 @@ LispObject Lerror(LispObject lits, int nargs, ...)
     return error2("error function called", x, y);
 }
 
-int forcedMIN=0, forcedMAX=0;
-
 LispObject Lenable_errorset(LispObject lits, int nargs, ...)
 {   ARG2("enable-errorset", x, y);
     if (isFIXNUM(x))
@@ -3473,10 +3535,10 @@ LispObject Lerrorset(LispObject lits, int nargs, ...)
     backtraceflag = 0;
     if (y != nil) backtraceflag |= backtraceHEADER;
     if (z != nil) backtraceflag |= backtraceTRACE;
-    if (forcedMIN > 0) backtraceflag |= backtraceHEADER;
-    if (forcedMIN > 1) backtraceflag |= backtraceHEADER;
     if (forcedMAX < 1) backtraceflag &= ~backtraceHEADER;
     if (forcedMAX < 2) backtraceflag &= ~backtraceHEADER;
+    if (forcedMIN > 0) backtraceflag |= backtraceHEADER;
+    if (forcedMIN > 1) backtraceflag |= backtraceHEADER;
     x = eval(x);
     if (unwindflag == unwindERROR ||
         unwindflag == unwindBACKTRACE)
@@ -3819,9 +3881,9 @@ void warm_start()
 // but I have to allow for the length code being in bytes etc.
                         s += ALIGN8(sizeof(LispObject) + veclength(h));
                         continue;
-                    case typeEQHASH:
+                    case typeEQHASH: case typeEQUALHASH:
                         qcar(s) ^= (typeEQHASH ^ typeEQHASHX);
-                    case typeVEC: case typeEQHASHX:
+                    case typeVEC: case typeEQHASHX: case typeEQUALHASHX:
                         s += sizeof(LispObject);
                         w = veclength(h);
                         while (w > 0)
