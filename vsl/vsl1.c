@@ -60,7 +60,7 @@ static EditLine *elx_e;
 static History *elx_h;
 static HistEvent elx_v;
 
-char promptstring[1000];
+char promptstring[1000] = "> ";
 
 const char *prompt(EditLine *e)
 {   return promptstring;
@@ -756,6 +756,10 @@ FILE *lispfiles[MAX_LISPFILES], *logfile = NULL;
 #else // DEBUG
 FILE *lispfiles[MAX_LISPFILES];
 #endif // DEBUG
+int curchars[MAX_LISPFILES+1];
+int symtypes[MAX_LISPFILES+1];
+#define curchar curchars[lispin+1]
+#define symtype symtypes[lispin+1]
 int32_t file_direction = 0, interactive = 0;
 int lispin = 0, lispout = 1;
 
@@ -1086,7 +1090,6 @@ LispObject printc(LispObject a)
     return a;
 }
 
-int curchar = '\n', symtype = 0;
 
 int hexval(int n)
 {   if (isdigit(n)) return n - '0';
@@ -2517,10 +2520,46 @@ LispObject Ltime(LispObject lits, int nargs, ...)
     return packfixnum((intptr_t)((1000*(int64_t )c)/CLOCKS_PER_SEC));
 }
 
+// (date)             "14-May-2013"
+// (date!-and!-time)  "Tue May 14 09:52:45 2013"
+//
+
+LispObject Ldate(LispObject lits, int nargs, ...)
+{   time_t t = time(NULL);
+    char today[32];
+    char today1[32];
+    strcpy(today, ctime(&t));
+// e.g. "Sun Sep 16 01:03:52 1973\n"
+//       012345678901234567890123
+    today[24] = 0;             // loses final '\n'
+    today1[0] = today[8]==' ' ? '0' : today[8];
+    today1[1] = today[9];
+    today1[2] = '-';
+    today1[3] = today[4];
+    today1[4] = today[5];
+    today1[5] = today[6];
+    today1[6] = '-';
+    today1[7] = today[20];
+    today1[8] = today[21];
+    today1[9] = today[22];
+    today1[10] = today[23];
+    today1[11] = 0;             // Now as in 03-Apr-2009
+    return makestring(today1, 11);
+}
+
+LispObject Ldate_and_time(LispObject lits, int nargs, ...)
+{   time_t t = time(NULL);
+    char today[32];
+    strcpy(today, ctime(&t));
+// e.g. "Sun Sep 16 01:03:52 1973\n"
+    today[24] = 0;             // loses final '\n'
+    return makestring(today, 24);
+}
+
 LispObject Loblist(LispObject lits, int nargs, ...)
 {
-	int i;
-	ARG0("oblist");
+    int i;
+    ARG0("oblist");
     work1 = nil;
     for (i=0; i<OBHASH_SIZE; i++)
         for (work2=obhash[i]; isCONS(work2); work2 = qcdr(work2))
@@ -3139,7 +3178,6 @@ LispObject Lread(LispObject lits, int nargs, ...)
 LispObject Lcompress(LispObject lits, int nargs, ...)
 {   int f = lispin;
     LispObject r;
-    int savetype = symtype, savech = curchar;
     ARG1("compress", x);
     lispin = -1;
     symtype = '?';
@@ -3149,8 +3187,6 @@ LispObject Lcompress(LispObject lits, int nargs, ...)
     r = readS();
     lispin = f;
     pop(cursym);
-    symtype = savetype;
-    curchar = savech;
     return r;
 }
 
@@ -3164,6 +3200,8 @@ LispObject Lrds(LispObject lits, int nargs, ...)
             (file_direction & (1<<n)) == 0)
         {   lispin = n;
             symtype = '?';
+// If you RDS between two files then curchar (for each) must not be
+// disturbed, but this hack makes EOF get re-checked for...
             if (curchar == EOF) curchar = '\n';
             return packfixnum(old);
         }
@@ -3189,6 +3227,12 @@ LispObject Lwrs(LispObject lits, int nargs, ...)
 #define LONGEST_FILENAME 1000
 char filename[2*LONGEST_FILENAME+50];
 static char imagename[LONGEST_FILENAME];
+static char lispdirectory[LONGEST_FILENAME];
+
+LispObject Lget_lisp_directory(LispObject lits, int nargs, ...)
+{
+    return makestring(lispdirectory, strlen(lispdirectory));
+}
 
 LispObject Lsystem(LispObject lits, int nargs, ...)
 {   ARG1("system", x);
@@ -3349,7 +3393,7 @@ void readevalprint(int loadp)
 }
 
 LispObject Lrdf(LispObject lits, int nargs, ...)
-{   int f, f1, savech = curchar, savetype = symtype;
+{   int f, f1;
     ARG1("rdf", x);
     f1 = Lopen(nil, 2, x, input);
     if (unwindflag != unwindNONE) return nil;
@@ -3357,23 +3401,20 @@ LispObject Lrdf(LispObject lits, int nargs, ...)
     readevalprint(0);
     Lrds(nil, 1, f);
     Lclose(nil, 1, f1);
-    curchar = savech;
-    symtype = savetype;
     printf("+++ End of rdf\n");
     return nil;
 }
 
 LispObject Lload_module(LispObject lits, int nargs, ...)
-{   int f, f1, savech = curchar, savetype = symtype;
+{   int f, f1;
     ARG1("load-module", x);
     f1 = Lopen_module(nil, 2, x, input);
     if (unwindflag != unwindNONE) return nil;
+// I want to save the current input status
     f = Lrds(nil, 1, f1);
     readevalprint(1);
     Lrds(nil, 1, f);
     Lclose(nil, 1, f1);
-    curchar = savech;
-    symtype = savetype;
     return nil;
 }
 
@@ -3400,12 +3441,42 @@ LispObject Lerror(LispObject lits, int nargs, ...)
     return error2("error function called", x, y);
 }
 
+int forcedMIN=0, forcedMAX=0;
+
+LispObject Lenable_errorset(LispObject lits, int nargs, ...)
+{   ARG2("enable-errorset", x, y);
+    if (isFIXNUM(x))
+    {   forcedMIN = qfixnum(x);
+        if (forcedMIN < 0) forcedMIN = 0;
+        else if (forcedMIN > 3) forcedMIN = 3;
+    }
+    else if (x == nil) forcedMIN = 0;
+    else forcedMIN = 3;
+    if (isFIXNUM(y))
+    {   forcedMAX = qfixnum(x);
+        if (forcedMAX < 0) forcedMAX = 0;
+        else if (forcedMAX > 3) forcedMAX = 3;
+    }
+    else if (y == nil) forcedMAX = 0;
+    else forcedMAX = 3;
+    if (forcedMIN > forcedMAX) forcedMAX = forcedMIN;
+    if (forcedMIN > 0) backtraceflag |= backtraceHEADER;
+    if (forcedMIN > 1) backtraceflag |= backtraceHEADER;
+    if (forcedMAX < 1) backtraceflag &= ~backtraceHEADER;
+    if (forcedMAX < 2) backtraceflag &= ~backtraceHEADER;
+    return nil;
+}
+
 LispObject Lerrorset(LispObject lits, int nargs, ...)
 {   int save = backtraceflag;
     ARG3("errorset", x, y, z);
     backtraceflag = 0;
     if (y != nil) backtraceflag |= backtraceHEADER;
     if (z != nil) backtraceflag |= backtraceTRACE;
+    if (forcedMIN > 0) backtraceflag |= backtraceHEADER;
+    if (forcedMIN > 1) backtraceflag |= backtraceHEADER;
+    if (forcedMAX < 1) backtraceflag &= ~backtraceHEADER;
+    if (forcedMAX < 2) backtraceflag &= ~backtraceHEADER;
     x = eval(x);
     if (unwindflag == unwindERROR ||
         unwindflag == unwindBACKTRACE)
@@ -3465,6 +3536,8 @@ struct defined_functions fnsetup[] =
     {"compress",   0,            (void *)Lcompress},
     {"cons",       0,            (void *)Lcons},
     {"cos",        0,            (void *)Lcos},
+    {"date",       0,            (void *)Ldate},
+    {"date-and-time",0,          (void *)Ldate_and_time},
     {"eq",         0,            (void *)Leq},
     {"equal",      0,            (void *)Lequal},
     {"error",      0,            (void *)Lerror},
@@ -3477,6 +3550,7 @@ struct defined_functions fnsetup[] =
     {"gensym",     0,            (void *)Lgensym},
     {"gensymp",    0,            (void *)Lgensymp},
     {"get",        0,            (void *)Lget},
+    {"get-lisp-directory",0,     (void *)Lget_lisp_directory},
     {"getd",       0,            (void *)Lgetd},
     {"gethash",    0,            (void *)Lgethash},
     {"getv",       0,            (void *)Lgetv},
@@ -3771,7 +3845,11 @@ void warm_start()
 
 int main(int argc, char *argv[])
 {
-#ifndef NO_EDITLINE
+    for (int i=0; i<MAX_LISPFILES+1; i++)
+    {   curchars[i] = '\n';
+        symtypes[i] = 0;
+    }
+#ifndef NO_LIBEDIT
     elx_e = el_init(argv[0], stdin, stdout, stderr);
     el_set(elx_e, EL_PROMPT, prompt);
     el_set(elx_e, EL_EDITOR, "emacs");
@@ -3803,6 +3881,12 @@ int main(int argc, char *argv[])
 #else // __WIN32__
     sprintf(imagename, "%s.img", argv[0]);
 #endif // __WIN32__
+    strcpy(lispdirectory, imagename);
+    {   char *p = lispdirectory+strlen(lispdirectory)-5;
+        while (isalnum((int)*p) && p != &lispdirectory[0]) p--;
+        if (*p != '/' && *p != '\\') p++;
+        *p = 0;
+    }
     for (i=1; i<argc; i++)
     {
 // I have some VERY simple command-line options here.
@@ -3810,7 +3894,10 @@ int main(int argc, char *argv[])
 //        -ifilename use that as image file
 //        -i filename    ditto
 //        filename   read from that file rather than from the standard input.
+//        -g         force all diagnostics
         if (strcmp(argv[i], "-z") == 0) coldstart = 1;
+        else if (strcmp(argv[i], "-g") == 0)
+            Lenable_errorset(nil, 2, lisptrue, lisptrue);
         else if (strcmp(argv[i], "-i") == 0 && i<argc-1)
         {   strcpy(imagename, argv[i+1]);
             i++;
@@ -3819,7 +3906,6 @@ int main(int argc, char *argv[])
         else if (argv[i][0] != '-') inputfilename = argv[i], interactive = 0;
     }
     printf("VSL version %d.%.3d\n", VERSION/1000, VERSION%1000); fflush(stdout);
-    printf("Image name = %s\n", imagename);
     linepos = 0;
     for (i=0; i<MAX_LISPFILES; i++) lispfiles[i] = 0;
     lispfiles[0] = stdin;   lispfiles[1] = stdout;

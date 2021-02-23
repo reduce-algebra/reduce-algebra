@@ -1451,8 +1451,6 @@ top (cond ((atom a) (return (reversip r))))
 
 (setq !*redefmsg nil)
 
-(dm date (x) "1 Jan 2018") % A macro so that number of args does not matter
-
 (de set!-print!-precision (n) n)
 
 (de constantp (x)
@@ -1548,6 +1546,12 @@ top (cond ((atom a) (return (reversip r))))
       ((greaterp b a) (gcdn b a))
       ((zerop b) a)
       (t (gcdn b (remainder a b)))))
+
+(de lcmn (u v)
+   (cond
+      ((onep u) v)
+      ((onep v) u)
+      (t (times u (quotient v (gcdn u v))))))
 
 (de abs (x)
    (if (minusp x) (minus x) x))

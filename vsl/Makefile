@@ -37,7 +37,7 @@ vsl1.img:	vsl1 library.lsp vsl.lsp extras.lsp
 reduce:	vsl1
 	mkdir -p reduce.img.modules
 	rm -f reduce.img.modules/* reduce.img
-	./vsl1 -z -ireduce.img -D@srcdir=. -D@reduce=.. \
+	./vsl1 -z -g -ireduce.img -D@srcdir=. -D@reduce=.. \
 	   buildreduce.lsp | tee reduce.log
 
 

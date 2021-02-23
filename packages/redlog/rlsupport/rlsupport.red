@@ -1,5 +1,7 @@
 module rlsupport;
 
+on echo, backtrace;
+
 put('rlsupport, 'revision, "$Id$");
 put('rlsupport, 'copyright, "(c) 2016-2017 T. Sturm");
 
