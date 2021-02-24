@@ -42,7 +42,7 @@
 
 pushd $1
 
-setenv bl `dirname $pl`/armv6-cross 
+setenv bl `dirname $pl`/aarch64-cross 
 
 $psys/pslcomp << EOF
 (off redefmsg verboseload)
@@ -52,8 +52,8 @@ $psys/pslcomp << EOF
 
 (setq loaddirectories!* (cons "$bl/" loaddirectories!*))
 (reload sys-consts)
-(setq addressingunitsperitem 4)
-(setq CharactersPerWord 4)
+(setq addressingunitsperitem 8)
+(setq CharactersPerWord 8)
 (off usermode)
 
 (load if-system)
@@ -71,7 +71,7 @@ $psys/pslcomp << EOF
 
 ForwardInternalReferences* 
 
-%(tr depositinstructionbytes)
+%(tr instructionlength)
 
 %% For machines that require the carcdr.sl fix for car/cdr of NIL, make sure
 %% we turn on fastcar to ensure optimized code. Since PSL was written with

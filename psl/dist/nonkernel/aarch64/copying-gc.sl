@@ -154,17 +154,17 @@
       (setf b *temp*)
       ))
  
-  (flag '(copyfromallbases
-      copyfromrange
-      copyfrombase
-      copyitem
-      copyitem1
-      copypairitem
-      markandcopyfromid
-      makeidfreelist
-      moreheap
-      gcstats)
-    'internalfunction)
+%  (flag '(copyfromallbases
+%      copyfromrange
+%      copyfrombase
+%      copyitem
+%      copyitem1
+%      copypairitem
+%      markandcopyfromid
+%      makeidfreelist
+%      moreheap
+%      gcstats)
+%    'internalfunction)
   ))
  
 (global '(heaptrapped
@@ -540,14 +540,14 @@
                        (progn (setf (getmem (strinf s))
                                (mark (setq news (copystring s))))
                               (return (setf (getmem p) news))))
-              ((floatnum-tag)
-               (progn (setf ptr (inf s))
-                  (setf (getmem ptr)
-                    (mark (setq news (gtfltn))))
+                      ((floatnum-tag)
+		       (progn (setf ptr (inf s))
+			      (setf (getmem ptr)
+				    (mark (setq news (gtfltn))))
                               (setf (wgetv news 1) (wgetv ptr 1))
-                  (setf (wgetv news 2) (wgetv ptr 2))
-                  (return
-                   (setf (getmem p) (mkitem floatnum-tag news)))))
+			      (setf (wgetv news 2) (wgetv ptr 2))
+			      (return
+			       (setf (getmem p) (mkitem floatnum-tag news)))))
                       ((vector-tag evector-tag)
                        (progn (setq strips (vecinf s))
                               (setq len (veclen strips))

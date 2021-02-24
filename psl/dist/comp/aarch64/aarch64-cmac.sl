@@ -1246,10 +1246,6 @@
           ))
  
 (DefCMacro *PutField
-  ((imm8-rotatedp regP EightP FiftySixP)
-                     (AND ArgTwo ArgTwo 16#FF00000000000000)
-                     (ORR ArgTwo ArgTwo ArgOne))
-           
   ((InumP regP EightP FiftySixP)
                      (*Move ArgOne (reg t1))
                      (BFI ArgTwo (reg t1) 0 56))
@@ -1257,37 +1253,26 @@
   ((RegP regP Eightp FiftySixP)
                      (BFI ArgTwo ArgOne 0 56))
 
-%  ((InumP regP ZeroP SixteenP)
-%                     ( and  (LNOT (BITMASK  ARGTHREE ARGFOUR)) ARGTWO)
-%                     ( or   (LAND (BITMASK  ARGTHREE ARGFOUR)
-%                             (LSHIFT ARGONE (SHIFTAMT ARGTHREE ARGFOUR)))
-%                   ARGTWO))
-
   ((InumP regP ZeroP AnyP)
-                     ( *WAnd ArgTwo (LAND 16#ffffffff (LNOT (BITMASK  ARGTHREE ARGFOUR))))
-                     ( *WOr ArgTwo (LAND (BITMASK  ARGTHREE ARGFOUR)
-                                         (LSHIFT ARGONE (SHIFTAMT ARGTHREE ARGFOUR)))
-                            ))
+                     (*Move ArgOne (reg t1))
+                     (BFI ArgTwo (reg t1) (difference 64 ARGFOUR) ARGFOUR))
+
   ((InumP regP AnyP  AnyP)
-                     (*WAND   ARGTWO (LAND 16#ffffffff (LNOT (BITMASK  ARGTHREE ARGFOUR))))
-                     (*WOR    ARGTWO (LAND (BITMASK  ARGTHREE ARGFOUR)
-                             (LSHIFT ARGONE (SHIFTAMT ARGTHREE ARGFOUR)))))
+                     (*Move ArgOne (reg t1))
+                     (BFI ArgTwo (reg t1) (difference 64 (PLUS2 ARGTHREE ARGFOUR)) ARGFOUR))
  
   ((regP regP ZeroP AnyP)
-                     (*WSHIFT ARGONE       (SHIFTAMT ARGTHREE ARGFOUR))
-                     (*WAND  ARGTWO (LAND 16#ffffffff (LNOT (BITMASK  ARGTHREE ARGFOUR)) ))
-                     (*Wor   ARGONE ARGTWO))
+                     (BFI ArgTwo ArgOne (difference 64 ARGFOUR) ARGFOUR))
+  
   ((regP regP AnyP AnyP)
-                     (*WSHIFT ARGONE       (SHIFTAMT ARGTHREE ARGFOUR))
-                     (*Wand ArgOne (BITMASK  ARGTHREE ARGFOUR))
-                     (*WAND   ARGTWO (LAND 16#ffffffff (LNOT (BITMASK  ARGTHREE ARGFOUR))))
-                     (*WOR    ARGTWO ARGONE))
+                     (BFI ArgTwo ArgOne (difference 64 (PLUS2 ARGTHREE ARGFOUR)) ARGFOUR))
+
   ((AnyP  regP AnyP AnyP)
                      (*Move ARGONE (reg t1))
-             (*PUTFIELD    (Reg T1) ARGTWO ARGTHREE ARGFOUR))
-  (                  (*Move ARGTWO     (reg t1))
-                     (*PUTFIELD ARGONE (Reg T1) ARGTHREE ARGFOUR)
-                     (*Move            (reg t1) ARGTWO))
+                     (*PUTFIELD    (Reg T1) ARGTWO ARGTHREE ARGFOUR))
+  (                  (*Move ARGTWO     (reg t2))
+                     (*PUTFIELD ARGONE (Reg T2) ARGTHREE ARGFOUR)
+                     (*Move            (reg t2) ARGTWO))
  )
  
 
