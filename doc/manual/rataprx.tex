@@ -17,72 +17,76 @@ periodic representation back to a rational number.
 \ttindextype{RATIONAL2PERIODIC}{operator}
 \ttindextype{PERIODIC2RATIONAL}{operator}
 \ttindextype{PERIODIC}{operator}
-\begin{tabbing}
-\textbf{\underline{Periodic Representation of a Rational Number}}\\[\baselineskip]
+\textbf{\underline{Periodic Representation of a Rational Number}}
 
-\textbf{SYNTAX:} \hspace{3mm} 
-       \= \texttt{rational2periodic(n);}\\
-\> {\tt rational2periodic(n, b);}\\[\baselineskip]
+\begin{list}{}{
+    \setlength{\leftmargin}{22mm}
+    \setlength{\labelwidth}{\leftmargin}\addtolength{\labelwidth}{-\labelsep}
+    \renewcommand{\makelabel}[1]{#1}
+  }
+\item[\textbf{SYNTAX:}]
+  \texttt{rational2periodic(n);}\\
+  {\tt rational2periodic(n, b);}
 
-\textbf{INPUT:}\\  
-\> \texttt{n} \hspace{3mm} is a rational number\\
-\> {\tt b} \hspace{3mm} is the number base, if absent the default is 10.\\[\baselineskip]
+\item[\textbf{INPUT:}]
+  \texttt{n} \hspace{3mm} is a rational number\\
+  {\tt b} \hspace{3mm} is the number base, if absent the default is 10.
 
-\textbf{RESULT:}\\
-     \> {\tt periodic(\{a1,...,an\},\{b1,...,bm\},\{c1,...,ck\},$\pm{\rm b}$)}\\
- \> where  {\tt\{a1,...,an\}} is a list of the digits in the integer part,\\
- \> {\tt\{b1,...,bm\}} is a list of the digits in the non-periodic part,\\
- \> {\tt\{c1,...,ck\}} is a list of the digits in the periodic part\\
- \> and $\pm${\tt b} where {\tt b} is the number base $2 \leq {\rm b} \leq 16$, \\
- \> a minus indicating the rational number {\tt n} was negative. \\[\baselineskip]
+\item[\textbf{RESULT:}]
+  {\tt periodic(\{a1,...,an\},\{b1,...,bm\},\{c1,...,ck\},$\pm{\rm b}$)}\\
+  where  {\tt\{a1,...,an\}} is a list of the digits in the integer part,\\
+  {\tt\{b1,...,bm\}} is a list of the digits in the non-periodic part,\\
+  {\tt\{c1,...,ck\}} is a list of the digits in the periodic part\\
+  and $\pm${\tt b} where {\tt b} is the number base $2 \leq {\rm b} \leq 16$, \\
+  a minus indicating the rational number {\tt n} was negative.
 
-\textbf{EXAMPLES:}\\
-    \> $-59/70$ written as $-0.8\overline{428571}$\\
-    \>  \texttt{1: rational2periodic(-59/70);}\\
-    \> \texttt{ periodic(\{0\}, \{8\}, \{4,2,8,5,7,1\}, -10)}\\[\baselineskip]
-    \> $1/80$ written as a hexadecimal is $0.0\overline{3}$\\
-    \>  \texttt{2: rational2periodic(1/80,16);}\\
-    \> \texttt{ periodic(\{0\}, \{0\}, \{3\}, 16)}\\[\baselineskip]
+\item[\textbf{EXAMPLES:}]\mbox{}\\
+  $-59/70$ written as $-0.8\overline{428571}$\\
+  \texttt{1: rational2periodic(-59/70);}\\
+  \texttt{\hspace*{1em}periodic(\{0\}, \{8\}, \{4,2,8,5,7,1\}, -10)}\\[\baselineskip]
+  $1/80$ written as a hexadecimal is $0.0\overline{3}$\\
+  \texttt{2: rational2periodic(1/80,16);}\\
+  \texttt{\hspace*{1em}periodic(\{0\}, \{0\}, \{3\}, 16)}
+\end{list}
 
-   Normally the operator {\tt periodic} will not be seen as the output will
-    be prettyprinted\\
-    as $-0.8\overline{428571}$ and $0.0\overline{3}\ {\rm (base\ 16)}$
-    respectively. Currently the CSL GUI  does not\\
-      support over-lining. Instead the periodic part is enclosed in square brackets when  \\
-   the switch \texttt{FANCY} is \texttt{ON}; hence output in this case looks better when 
-     this switch  \texttt{OFF}.\\
-\end{tabbing}
+Normally the operator {\tt periodic} will not be seen as the output
+will be prettyprinted as $-0.8\overline{428571}$ and
+$0.0\overline{3}\ (\mbox{base }16)$ respectively. Currently the CSL
+GUI does not support over-lining. Instead the periodic part is
+enclosed in square brackets when the switch \texttt{FANCY} is
+\texttt{ON}; hence output in this case looks better when this switch
+is \texttt{OFF}.
 
-\begin{tabbing}
-  \textbf{\underline{Rational Number of a Periodic Representation}}\\[\baselineskip]
-\textbf{SYNTAX:}\\
-\hspace{3mm} \= \texttt{periodic2rational(periodic(\{a1,...,an\},\{b1...bm\},\{c1,...,ck\},$\pm{\rm b}$)}\\
-   \> \texttt{periodic2rational(\{a1,...,an\},\{b1...bm\},\{c1,...,ck\},$\pm{\rm b}$)}\\[\baselineskip]
+\textbf{\underline{Rational Number of a Periodic Representation}}\\[\baselineskip]
+\begin{description}
+\item[\textbf{SYNTAX:}]\mbox{}\\
+  \texttt{periodic2rational(periodic(\{a1,...,an\},\{b1...bm\},\{c1,...,ck\},$\pm{\rm b}$)}\\
+  \texttt{periodic2rational(\{a1,...,an\},\{b1...bm\},\{c1,...,ck\},$\pm{\rm b}$)}
 
-\textbf{INPUT:}\\
-     \> \texttt{\{a1,...,an\}} is a list of the digits in the integer part,\\
-     \> \texttt{\{b1,...,bm\}} is a list of the digits in the non-periodic part,\\
-     \>\texttt{\{c1,...,ck\}} is a list of the digits in the periodic part\\
-     \> and {\tt b} is the number base $2 \leq {\rm b} \leq 16$, a minus\\
-     \> indicating the rational number result should be negative. \\
-     \> If the base is omitted, 10 is assumed. \\[\baselineskip]
+\item[\textbf{INPUT:}]\mbox{}\\
+  \texttt{\{a1,...,an\}} is a list of the digits in the integer part,\\
+  \texttt{\{b1,...,bm\}} is a list of the digits in the non-periodic part,\\
+  \texttt{\{c1,...,ck\}} is a list of the digits in the periodic part\\
+  and {\tt b} is the number base $2 \leq {\rm b} \leq 16$, a minus\\
+  indicating the rational number result should be negative. \\
+  If the base is omitted, 10 is assumed.
 
-\textbf{RESULT:}\\
-     \> A rational number.\\[\baselineskip]
+\item[\textbf{RESULT:}]\mbox{}\\
+  A rational number.
 
-\textbf{EXAMPLES:}\\[\baselineskip]
-\hspace{10mm} \= $0.8\overline{428571}$ written as $59/70$ \\
-    \> \texttt{3: periodic2rational(periodic(\{0\},\{8\},\{4,2,8,5,7,1\}));}
-\\[\baselineskip]
-    \> \hspace{1mm} {\tt 59}\\
-    \> {\tt ----}\\
-    \> \hspace{1mm} {\tt 70}\\[\baselineskip]
-    \> \texttt{4: periodic2rational(\{0\},\{8\},\{4,2,8,5,7,1\}, -10);}
-\\[\baselineskip]
-    \> \hspace{4mm} \texttt{59}\\
-    \> \texttt{- ----}\\
-    \> \hspace{4mm} \texttt{70}
-\end{tabbing}
+\item[\textbf{EXAMPLES:}]\mbox{}\\[\baselineskip]
+  $0.8\overline{428571}$ written as $59/70$ \\
+  \texttt{3: periodic2rational(periodic(\{0\},\{8\},\{4,2,8,5,7,1\}));}
+  \\[\baselineskip]
+  \verb| 59|\\
+  \verb|---|\\
+  \verb| 70|\\[\baselineskip]
+  \texttt{4: periodic2rational(\{0\},\{8\},\{4,2,8,5,7,1\}, -10);}
+  \\[\baselineskip]
+  \verb|  59|\\
+  \verb|- ---|\\
+  \verb|  70|
+\end{description}
 
 Note that \texttt{periodic2rational} will produce the correct rational result
 when passed a parameter for the periodic part which is not minimal.
@@ -91,20 +95,26 @@ Similarly, a parameter for the periodic part which consists of all 9's
 parts are not canonical and are never generated by calls to
 \texttt{rational2periodic}.
 
-\begin{tabbing}
-For example,\\
-\hspace{10mm}\= \texttt{periodic2rational(\{0\}, \{\}, \{1, 2, 1, 2\});} \\
-    \> \texttt{periodic2rational(\{0\}, \{1\}, \{2, 1\});} \\
-    \> \texttt{periodic2rational(\{0\}, \{1, 2\}, \{1, 2, 1, 2\});} \\[\baselineskip]
-all produce the same rational result, namely $\frac{4}{33}$, as the canonical input\\
-    \> \texttt{periodic2rational(\{0\}, \{\}, \{1, 2\});}\\[\baselineskip]
-Similarly,\\
-    \> \texttt{periodic2rational(\{0\}, \{\}, \{9\});} \\
-    \> \texttt{periodic2rational(\{0\}, \{9\}, \{9\});} \\
-    \> \texttt{periodic2rational(\{0\}, \{\}, \{9, 9, 9, 9\});} \\
-all produce the same rational result, namely $1$, as the  canonical input\\
-    \> \texttt{periodic2rational(\{1\}, \{\}, \{\});}
-\end{tabbing}
+For example,
+\begin{quote}\tt
+  periodic2rational(\{0\}, \{\}, \{1, 2, 1, 2\}); \\
+  periodic2rational(\{0\}, \{1\}, \{2, 1\}); \\
+  periodic2rational(\{0\}, \{1, 2\}, \{1, 2, 1, 2\});
+\end{quote}
+all produce the same rational result, namely $\frac{4}{33}$, as the canonical input
+\begin{quote}\tt
+  periodic2rational(\{0\}, \{\}, \{1, 2\});
+\end{quote}
+Similarly,
+\begin{quote}\tt
+  periodic2rational(\{0\}, \{\}, \{9\}); \\
+  periodic2rational(\{0\}, \{9\}, \{9\}); \\
+  periodic2rational(\{0\}, \{\}, \{9, 9, 9, 9\});
+\end{quote}
+all produce the same rational result, namely $1$, as the  canonical input
+\begin{quote}\tt
+  periodic2rational(\{1\}, \{\}, \{\});
+\end{quote}
 
 Although the operators \texttt{periodic2rational} and
 \texttt{rational2periodic} work even when \texttt{ROUNDED} is \texttt{ON},
@@ -150,16 +160,17 @@ Even more succinctly:
 %
 \ttindextype{CONTFRAC}{operator}
 This is represented in {\REDUCE} as
-\[{\tt
+\begin{center}\tt
   contfrac(\textsl{Expression},
     \textsl{Rational approximant},
-                \{a0, \{a1,b1\}, \{a2,b2\},.....\})
-}\]
+                $\{a0, \{a1,b1\}, \{a2,b2\}, \dots\}$)
+\end{center}
 
 \hypertarget{CFRAC:operator}{}
 \ttindextype{CFRAC}{operator}
 The operator \texttt{CFRAC} is used to generate a generalised continued
-fraction expansion of an algebraic expression.\\
+fraction expansion of an algebraic expression.
+
 \begin{syntaxtable}
   \texttt{cfrac(}\meta{num}\texttt{)}\\
   \texttt{cfrac(}\meta{num}\texttt{,}\,\meta{length}\texttt{)}\\
@@ -189,7 +200,7 @@ complete continued fraction.
 \ttindextype{CF\_TAYLOR}{switch}
 
 For a non-rational function, power series expansion is necessary. The new
-switch \texttt{cf\_taylor} controls whether the TAYLOR or the TPS package is 
+switch \texttt{cf\_taylor} controls whether the TAYLOR or the TPS package is
 used to produce the power series required. By default this switch is OFF and
 so the TPS package is normally employed.
 In most cases the choice is not important, but the TPS option is somewhat
@@ -211,7 +222,7 @@ of the second element is printed as a list of pairs. Thus, usually the
 operator \texttt{contfrac} is not seen in the output.
 
 %\newpage
-\large{\textbf{EXAMPLES}}
+{\large\textbf{EXAMPLES}}
 \begin{verbatim}
 cfrac(pi, 4);
 
@@ -282,7 +293,7 @@ cfrac(e^x, x);
 
 \hypertarget{CF:operator}{}
 
-The operator \texttt{CF} \ttindextype{CF}{operator} is a 
+The operator \texttt{CF} \ttindextype{CF}{operator} is a
 synonym for the operator \texttt{CONTINUED\_FRACTION}.
 \begin{syntaxtable}
   \texttt{cf(}\meta{num}\texttt{)}\\
@@ -308,7 +319,7 @@ pretty-printed so the operator \texttt{confract} will not be seen.
 
 The accessor operators \texttt{CF\_EXPRESSION},
 \ttindextype{CF\_EXPRESSION}{operator}
-\texttt{CF\_CONVERGENT} \ttindextype{CF\_CONVERGENT}{operator} and \\ 
+\texttt{CF\_CONVERGENT} \ttindextype{CF\_CONVERGENT}{operator} and
 \texttt{CF\_CONTINUENTS} \ttindextype{CF\_CONTINUENTS}{operator} allow
 the various parts of a continued fraction object \meta{cf\_object}
 (as returned by any of the operators \texttt{cf}, \texttt{cfrac},
@@ -326,10 +337,10 @@ returns a list of all the convergents of the expansion.
   \texttt{cf\_expression(}\meta{cf\_object}\texttt{)} \\
   \texttt{cf\_convergent(}\meta{cf\_object}\texttt{)} \\
   \texttt{cf\_continuents(}\meta{cf\_object}\texttt{)} \\
-  \texttt{cf\_convergents(}\meta{cf\_object}\texttt{)} 
+  \texttt{cf\_convergents(}\meta{cf\_object}\texttt{)}
 \end{syntaxtable}
 
-\large{\textbf{EXAMPLES}}
+{\large\textbf{EXAMPLES}}
 \begin{verbatim}
 2: cf(6/11);
 
@@ -409,18 +420,18 @@ fraction argument \meta{cf\_object} into an equivalent expansion,
 that is one with exactly the same convergents.
 They all accept as their single argument any continued fraction
 object \meta{cf\_object}.
-These are:\\
+These are:
 
 \texttt{cf\_unit\_denominators}\\
-converts all partial denominators to 1. \\\\
+converts all partial denominators to 1.\\[\baselineskip]
 \texttt{cf\_unit\_numerators}\\
-converts all partial numerators to 1. \\\\
+converts all partial numerators to 1.\\[\baselineskip]
 \texttt{cf\_remove\_fractions}\\
 converts the denominators of the partial numerators and partial
-denominators in the continuents to 1.\\\\
-\texttt{cf\_remove\_constant} \\
+denominators in the continuents to 1.\\[\baselineskip]
+\texttt{cf\_remove\_constant}\\
 removes the zeroth continuent (if non-zero) absorbing it into the
-first continuent pair.\\
+first continuent pair.
 
 \ttindextype{CF\_TRANSFORM}{operator}
 \hypertarget{CF_TRANSFORM:operator}{}
@@ -463,7 +474,7 @@ fraction expansions generated by the operators \texttt{cf} and
 the even part form a monotonically increasing sequence whilst those of the
 odd part (after the zeroth) form a monotonically decreasing sequence.
 
-\large{\textbf{EXAMPLES}}
+{\large\textbf{EXAMPLES}}
 \begin{verbatim}
 cf_remove_fractions(cf_euler(e^x, x, 4));
 
@@ -588,14 +599,14 @@ cf_convergents second d;
 \subsection{Pad\'{e} Approximation}
 \index{Pad\'{e} Approximation}
 
-The Pad\'{e} approximant represents a function by the ratio of two 
-polynomials. The coefficients of the powers occuring in the polynomials 
+The Pad\'{e} approximant represents a function by the ratio of two
+polynomials. The coefficients of the powers occuring in the polynomials
 are determined by the coefficients in the Taylor series
 expansion of the function (see ~\cite{BakerGravesMorris:81}). Given a power series
 \[ f(x) = c_0 + c_1 (x-h) + c_2 (x-h)^2 \ldots \]
 and the degree of numerator, $n$, and of the denominator, $d$,
-the \texttt{pade} function finds the unique coefficients 
-$a_i,\, b_i$ in the Pad\'{e} approximant 
+the \texttt{pade} function finds the unique coefficients
+$a_i,\, b_i$ in the Pad\'{e} approximant
 \[ \frac{a_0+a_1 x+ \cdots + a_n x^n}{b_0+b_1 x+ \cdots + b_d x^d} \; .\]
 
 \hypertarget{PADE:operator}{}
@@ -603,14 +614,14 @@ $a_i,\, b_i$ in the Pad\'{e} approximant
 
 \textbf{SYNTAX:} \hspace{5mm} \texttt{pade(f, x, h, n, d);}\\[\baselineskip]
 
-\textbf{INPUT:}\\\\
+\textbf{INPUT:}\\[\baselineskip]
 \texttt{f} \hspace{6mm} the funtion to be approximated\\
 \texttt{x} \hspace{6mm} the function variable\\
 \texttt{h} \hspace{6mm} the point at which the approximation is evaluated\\
 \texttt{n} \hspace{6mm} the (specified) degree of the numerator\\
 \texttt{d} \hspace{6mm} the (specified) degree of the denominator\\[\baselineskip]
 \textbf{RESULT:} \\
-Pad\a'{e} Approximant, ie. a rational function.\\[\baselineskip]
+Pad\'{e} Approximant, ie. a rational function.\\[\baselineskip]
 
 \textbf{ERROR MESSAGES:}\\
 
@@ -633,7 +644,6 @@ of a different order may exist.\\[\baselineskip]
 {\large\textbf{EXAMPLES}}
 
 \begin{verbatim}
-
 23: pade(sin(x),x,0,3,3);
 
           2
@@ -676,7 +686,7 @@ of a different order may exist.\\[\baselineskip]
 
 29: taylor(ws-asech(x),x,0,10);
 
-               11  
+               11
 log(x)*(0 + O(x  ))
 
      13    6     43    8    1611    10      11
@@ -696,8 +706,6 @@ log(x)*(0 + O(x  ))
 
 32: pade(exp(x),x,0,10,10);
 
-
-
   10        9         8           7            6
 (x   + 110*x  + 5940*x  + 205920*x  + 5045040*x
 
@@ -711,15 +719,15 @@ log(x)*(0 + O(x  ))
     (x   - 110*x  + 5940*x  - 205920*x  + 5045040*x
 
                      5               4
-         - 90810720*x  + 1210809600*x 
+         - 90810720*x  + 1210809600*x
 
                         3               2
-         - 11762150400*x + 79394515200*x  
+         - 11762150400*x + 79394515200*x
 
          - 335221286400*x + 670442572800)
 
 33: pade(sin(sqrt(x)),x,0,3,3);
-        
+
 (sqrt(x)*
             3            2
   (56447*x  - 4851504*x  + 132113520*x - 885487680))\
@@ -727,4 +735,3 @@ log(x)*(0 + O(x  ))
               3         2
     (7*(179*x  - 7200*x  - 2209680*x - 126498240))
 \end{verbatim}
-

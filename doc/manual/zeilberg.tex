@@ -1,22 +1,30 @@
 
-\newcommand{\funkdef}[3]{\left\{\!\!\!\begin{array}{cc}
-                                #1 & \!\!\!\mbox{\rm{if} $#2$ } \\
-                                #3 & \!\!\!\mbox{\rm{otherwise}}
-                                \end{array}
-                         \right.}
+\newcommand{\funkdef}[3]{\left\{\begin{array}{cc}
+                                #1 & \mbox{\rm{if} $#2$ } \\
+                                #3 & \mbox{\rm{otherwise}}
+                                \end{array}\right.}
 
 \subsection{Introduction}
 
+%% For MathJax, must be part of a paragraph to avoid extra space:
+\ifdefined\HCode
+\(
+\def\funkdef#1#2#3{\left\{\begin{array}{cc}
+                                #1 & \textrm{if } #2 \\
+                                #3 & \textrm{otherwise}
+                          \end{array}\right.}
+\)%
+\fi
 This package is a careful implementation of the Gosper%
 \footnote{The {\tt sum} package contains also a partial implementation
 of the Gosper algorithm.}
 and Zeilberger algorithms for indefinite, and definite summation of
 hypergeometric terms, respectively. Further, extensions of these algorithms
-given by the first author are covered. An expression $a_k$ is called a 
+given by the first author are covered. An expression $a_k$ is called a
 \textsl{hypergeometric term} (or \textsl{closed form}),
 if $a_{k}/a_{k-1}$ is a rational function with respect to $k$.
-Typical hypergeometric terms are ratios of products of powers, factorials, 
-$\Gamma$ function terms, binomial coefficients, and shifted factorials 
+Typical hypergeometric terms are ratios of products of powers, factorials,
+$\Gamma$ function terms, binomial coefficients, and shifted factorials
 (Pochhammer symbols) that are integer-linear in their arguments.
 
 The extensions of Gosper's and Zeilberger's algorithm mentioned
@@ -28,14 +36,14 @@ that are rational-linear in their arguments.
 
 The Gosper algorithm \cite{Gosper:78} is a \textsl{decision procedure}, that
 decides by algebraic calculations whether or not a given hypergeometric term
-$a_k$ has a hypergeometric term antidifference $g_k$, i.\ e.\ 
-$g_{k}-g_{k-1}=a_k$ with rational $g_k/g_{k-1}$, 
+$a_k$ has a hypergeometric term antidifference $g_k$, i.\ e.\
+$g_{k}-g_{k-1}=a_k$ with rational $g_k/g_{k-1}$,
 and returns $g_k$ if the procedure is successful, in which
 case we call $a_k$ \textsl{Gosper-summable}. Otherwise
 \textsl{no hypergeometric term antidifference exists}. Therefore
 if the Gosper algorithm does not return a closed form solution,
 it has \textsl{proved} that no such solution exists, an information
-that may be quite useful and important. 
+that may be quite useful and important.
 The Gosper algorithm is the discrete analogue of the Risch algorithm
 for integration in terms of elementary functions.
 
@@ -46,9 +54,9 @@ g_k=\sum\nolimits_k a_k
 \;.
 \]
 Finding $g_k$ given $a_k$ is called \textsl{indefinite summation}.
-The antidifference operator $\Sigma$ is the inverse of the downward 
+The antidifference operator $\Sigma$ is the inverse of the downward
 difference operator $\nabla a_k=a_{k}-a_{k-1}$. There is an analogous
-summation theory corresponding to the upward difference operator 
+summation theory corresponding to the upward difference operator
 $\Delta a_k=a_{k+1}-a_k$.
 
 In case, an antidifference $g_k$ of $a_k$ is known, any sum
@@ -69,10 +77,10 @@ that we consider in the next section.
 Our package supports the input of powers ({\tt a\verb+^+k)},
 factorials ({\tt factorial(k)}),
 $\Gamma$ function terms ({\tt gamma(a)}), binomial coefficients
-({\tt binomial(n,k)}), shifted factorials 
+({\tt binomial(n,k)}), shifted factorials
 ({\tt pochhammer(a,k)$=a(a+1)\cdots(a+k-1)=\Gamma (a+k)/\Gamma (a)$}), and
 partially products ({\tt prod(f,k,k1,k2)}).
-It takes care of the necessary simplifications, and therefore 
+It takes care of the necessary simplifications, and therefore
 provides you with the solution of the decision problem
 as long as the memory or time requirements are not too high for the
 computer used.
@@ -80,7 +88,7 @@ computer used.
 \subsection{Zeilberger Algorithm}
 
 The (fast) Zeilberger algorithm \cite{Zeilberger:90}--\cite{Zeilberger:91}
-deals with the \textsl{definite summation} of 
+deals with the \textsl{definite summation} of
 hypergeometric terms. Zeilberger's paradigm is to find (and return)
 a linear homogeneous recurrence equation with polynomial coefficients
 (called \textsl{holonomic equation}) for an \textsl{infinite sum}
@@ -99,15 +107,15 @@ p(n)\,s(n-1)+q(n)\,s(n)=0
 \quad\quad(p,q\;\mbox{polynomials})
 \;,
 \]
-$s(n)$ turns out to be a hypergeometric term, and a closed form solution 
+$s(n)$ turns out to be a hypergeometric term, and a closed form solution
 can be easily established using a suitable initial value, and is
-represented by a ratio of Pochhammer or $\Gamma$ function terms if the 
+represented by a ratio of Pochhammer or $\Gamma$ function terms if the
 polynomials $p$, and $q$ can be factored.
 
 Zeilberger's algorithm does not guarantee to find the holonomic equation
-of lowest order, but often it does. 
+of lowest order, but often it does.
 
-If the resulting recurrence equation has order larger than one, 
+If the resulting recurrence equation has order larger than one,
 this information can be used for identification purposes:
 Any other expression satisfying the same recurrence equation, and the same
 initial values, represents the same function.
@@ -116,19 +124,19 @@ Note that a \textsl{definite sum} $\sum\limits_{k=m_1}^{m_2} f(n,k)$ is an
 infinite sum if $f(n,k)=0$ for $k<m_1$ and $k>m_2$.
 This is often the case, an example of which is the sum (\ref{eq:nchoosek})
 considered above, for which the hypergeometric recurrence equation
-$2 s(n-1) - s(n) = 0$ is generated by Zeilberger's algorithm, leading 
+$2 s(n-1) - s(n) = 0$ is generated by Zeilberger's algorithm, leading
 to the closed form solution $s(n)=2^n$.
 
 Definite summation is trivial if the corresponding indefinite sum
 is Gosper-summable analogously to the fact that definite integration
-is trivial as soon as an elementary antiderivative is known.  If this is 
+is trivial as soon as an elementary antiderivative is known.  If this is
 not the case, the situation is much more difficult, and it is therefore
 quite remarkable and non-obvious
 that Zeilberger's method is just a clever application of Gosper's algorithm.
 
-Our implementation is mainly based on \cite{Koornwinder:93} and \cite{Koepf:94b}. 
+Our implementation is mainly based on \cite{Koornwinder:93} and \cite{Koepf:94b}.
 More examples can be found in \cite{PauleSchorn:95}, \cite{Strehl:93}, \cite{Wilf:90},
-and \cite{Wilf:93} many of which are contained in the test file 
+and \cite{Wilf:93} many of which are contained in the test file
 {\tt zeilberg.tst}.
 
 \subsection{\REDUCE{} operator {\tt GOSPER}}
@@ -147,7 +155,7 @@ The \texttt{gosper} operator\ttindex{GOSPER} is an implementation of the Gosper 
 form antidifference. If it does not return a closed form solution, then
 a closed form solution does not exist.
 \item
-{\tt gosper(a,k,m,n)} determines 
+{\tt gosper(a,k,m,n)} determines
 \[
 \sum_{k=m}^n a_k
 \]
@@ -168,7 +176,7 @@ Example:
  2   *factorial(k + 1)*factorial(k)
 \end{verbatim}
 }\noindent
-This solves a problem given in SIAM Review (\cite{OverhauserKim:94}, Problem 94--2) 
+This solves a problem given in SIAM Review (\cite{OverhauserKim:94}, Problem 94--2)
 where it was asked to determine the infinite sum
 \[
 S=\lim_{n\rightarrow\infty} S_n
@@ -233,7 +241,7 @@ for the fact that $H_k$ does not possess a closed form evaluation:
 ***** Gosper algorithm: no closed form solution exists
 \end{verbatim}
 }\noindent
-The following code gives the solution to a summation problem proposed in 
+The following code gives the solution to a summation problem proposed in
 Gosper's original paper \cite{Gosper:78}. Let
 \[
 f_k=\prod_{j=1}^k (a+b\,j+c\,j^2)
@@ -251,14 +259,14 @@ is found by the definitions
 \begin{verbatim}
 7: operator ff,gg$
 
-8: let {ff(~k+~m) => ff(k+m-1)*(c*(k+m)^2+b*(k+m)+a) 
+8: let {ff(~k+~m) => ff(k+m-1)*(c*(k+m)^2+b*(k+m)+a)
         when (fixp(m) and m>0),
-   ff(~k+~m) => ff(k+m+1)/(c*(k+m+1)^2+b*(k+m+1)+a) 
+   ff(~k+~m) => ff(k+m+1)/(c*(k+m+1)^2+b*(k+m+1)+a)
         when (fixp(m) and m<0)}$
 
-9: let {gg(~k+~m) => gg(k+m-1)*(c*(k+m)^2+b*(k+m)+e) 
+9: let {gg(~k+~m) => gg(k+m-1)*(c*(k+m)^2+b*(k+m)+e)
         when (fixp(m) and m>0),
-   gg(~k+~m) => gg(k+m+1)/(c*(k+m+1)^2+b*(k+m+1)+e) 
+   gg(~k+~m) => gg(k+m+1)/(c*(k+m+1)^2+b*(k+m+1)+e)
         when (fixp(m) and m<0)}$
 \end{verbatim}
 }\noindent
@@ -299,7 +307,7 @@ h_{k}/h_{k-m}\quad\mbox{is a rational function with respect to $k$.}
 \]
 If it does not return a solution, then such a solution does not exist.
 \item
-{\tt extended\_gosper(a,k,m)} 
+{\tt extended\_gosper(a,k,m)}
 determines an \textsl{$m$-fold antidifference} $h_k$ of $a_k$,
 i.\ e.\ $h_{k}-h_{k-m}=a_k$, if it is an $m$-fold hypergeometric term.
 \end{itemize}
@@ -331,24 +339,24 @@ Zeilberger algorithm.
 \begin{itemize}
 \item
 {\tt sumrecursion(f,k,n)} determines a holonomic recurrence equation
-for 
+for
 \[
 {\tt sum(n)} =\sum\limits_{k=-\infty}^\infty f(n,k)
 \]
 with respect to $n$, applying
-{\tt extended\_sumrecursion} if necessary, 
+{\tt extended\_sumrecursion} if necessary,
 see \S~\ref{sec:EXTENDED_SUMRECURSION}.
 The resulting expression equals zero.
 \item
-{\tt sumrecursion(f,k,n,j)} % $(j\in\mathbb{N})$ 
-searches for a holonomic recurrence equation of order $j$. This 
+{\tt sumrecursion(f,k,n,j)} % $(j\in\mathbb{N})$
+searches for a holonomic recurrence equation of order $j$. This
 operator does not use {\tt extended\_sumrecursion} automatically.
 Note that if $j$ is too large, the recurrence equation
 may not be unique, and only one particular solution is returned.
 \end{itemize}
 A simple example deals with Equation (\ref{eq:nchoosek})%
-\footnote{Note that with \REDUCE{} Version 3.5 we use the global operator 
-{\tt summ} instead of {\tt sum} to denote the sum.} 
+\footnote{Note that with \REDUCE{} Version 3.5 we use the global operator
+{\tt summ} instead of {\tt sum} to denote the sum.}
 
 {\small
 \begin{verbatim}
@@ -360,7 +368,7 @@ A simple example deals with Equation (\ref{eq:nchoosek})%
 The whole \textsl{hypergeometric database} of the {\sl
 Vandermonde, Gau{\ss}, Kummer, Saalsch\"utz, Dixon, Clausen} and \textsl{Dougall
 identities} (see \cite{Wilf:93}), and many more identities (see e.\ g.\
-\cite{Koepf:94b}), can be obtained using {\tt sumrecursion}. 
+\cite{Koepf:94b}), can be obtained using {\tt sumrecursion}.
 As examples, we consider the difficult cases of Clausen and Dougall:%
 
 {\small
@@ -383,7 +391,7 @@ As examples, we consider the difficult cases of Clausen and Dougall:%
 
 18: sumrecursion(summand,k,n);
 
-(2*a - b - c - d + n)*(b + n - 1)*(c + n - 1)*(d + n)*sum(n - 1) + 
+(2*a - b - c - d + n)*(b + n - 1)*(c + n - 1)*(d + n)*sum(n - 1) +
 
 (a - b - c - d - n + 1)*(a - b + n)*(a - c + n)*(a - d + n - 1)
 
@@ -393,17 +401,11 @@ As examples, we consider the difficult cases of Clausen and Dougall:%
 corresponding to the statements
 \[
 _4 F_3\left.
-\!\!
 \left(
-\!\!\!\!
 \begin{array}{c}
-\multicolumn{1}{c}{\begin{array}{c}
-a\;, b\;, 1/2-a-b-n\;, -n
-\end{array}}\\[1mm]
-\multicolumn{1}{c}{\begin{array}{c}
+a\;, b\;, 1/2-a-b-n\;, -n\\[1mm]
 1/2+a+b \;, 1-a-n\;, 1-b-n
-            \end{array}}\end{array}
-\!\!\!\!
+\end{array}
 \right| 1\right)
 =\frac{(2a)_n\,(a+b)_n\,(2b)_n}
 {(2a+2b)_n\,(a)_n\,(b)_n}
@@ -411,17 +413,11 @@ a\;, b\;, 1/2-a-b-n\;, -n
 and
 \[
 _7 F_6\left.
-\!\!
 \left(
-\!\!\!\!
 \begin{array}{c}
-\multicolumn{1}{c}{\begin{array}{c} 
-d\;, 1+d/2\;, d+b-a\;, d+c-a\;, 1+a-b-c\;, n+a\;, -n 
-\end{array}}\\[1mm]
-\multicolumn{1}{c}{\begin{array}{c} 
- d/2\;, 1+a-b\;, 1+a-c\;, b+c+d-a \;, 1+d-a-n\;, 1+d+n
-            \end{array}}\end{array}
-\!\!\!\!
+d\;, 1+d/2\;, d+b-a\;, d+c-a\;, 1+a-b-c\;, n+a\;, -n\\[1mm]
+d/2\;, 1+a-b\;, 1+a-c\;, b+c+d-a \;, 1+d-a-n\;, 1+d+n
+\end{array}
 \right| 1\right)
 \]
 \[
@@ -482,14 +478,14 @@ and finally check the initial conditions:
 \label{sec:EXTENDED_SUMRECURSION}
 \ttindex{EXTENDED\_SUMRECURSION}
 
-The {\tt extended\_sumrecursion} operator is an implementation 
+The {\tt extended\_sumrecursion} operator is an implementation
 of an extension of the (fast) Zeilberger algorithm given by Koepf
 \cite{Koepf:94b}.
 \begin{itemize}
 \item
-{\tt extended\_sumrecursion(f,k,n,m,l)} determines a holonomic recurrence 
-equation for ${\tt sum(n)} =\sum\limits_{k=-\infty}^\infty f(n,k)$ 
-with respect to $n$ if $f(n,k)$ is an \textsl{$(m,l)$-fold hypergeometric term} 
+{\tt extended\_sumrecursion(f,k,n,m,l)} determines a holonomic recurrence
+equation for ${\tt sum(n)} =\sum\limits_{k=-\infty}^\infty f(n,k)$
+with respect to $n$ if $f(n,k)$ is an \textsl{$(m,l)$-fold hypergeometric term}
 with respect to $(n,k)$, i.\ e.\
 \[
 \frac{F(n,k)}{F(n-m,k)}
@@ -566,17 +562,17 @@ generalized hypergeometric function is to be established, you can use
 the following \REDUCE{} operator:
 \begin{itemize}
 \item
-{\tt hyperrecursion(upper,lower,x,n)} determines a holonomic recurrence 
-equation with respect to $n$ for 
+{\tt hyperrecursion(upper,lower,x,n)} determines a holonomic recurrence
+equation with respect to $n$ for
 $_{p}F_{q}\left.\left(\begin{array}{cccc}
 a_{1},&a_{2},&\cdots,&a_{p}\\
 b_{1},&b_{2},&\cdots,&b_{q}\\
             \end{array}\right| x\right)
 $, where {\tt upper}$=\{a_{1}, a_{2}, \ldots, a_{p}\}$
-is the list of upper parameters, and 
+is the list of upper parameters, and
 {\tt lower}$=\{b_{1}, b_{2}, \ldots, b_{q}\}$
 is the list of lower parameters depending on $n$. If Zeilberger's algorithm
-does not apply, {\tt extended\_sumrecursion} 
+does not apply, {\tt extended\_sumrecursion}
 of \S~\ref{sec:EXTENDED_SUMRECURSION} is used.
 \item
 {\tt hyperrecursion(upper,lower,x,n,j)} $(j\in\mathbb{N})$
@@ -595,14 +591,11 @@ Therefore
 establishes the Vandermonde identity
 \[
 _2 F_1\left.
-\!\!
 \left(
-\!\!\!\!
 \begin{array}{c}
-\multicolumn{1}{c}{\begin{array}{cc} -n\;, & b \end{array}}\\[1mm]
-\multicolumn{1}{c}{ c}
-            \end{array}
-\!\!\!\!
+-n\;,\;\;b\\[1mm]
+c
+\end{array}
 \right| 1\right)
 =\frac{(c-b)_n}{(c)_n}
 \;,
@@ -614,7 +607,7 @@ whereas
 31: hyperrecursion({d,1+d/2,d+b-a,d+c-a,1+a-b-c,n+a,-n},
                    {d/2,1+a-b,1+a-c,b+c+d-a,1+d-a-n,1+d+n},1,n);
 
-(2*a - b - c - d + n)*(b + n - 1)*(c + n - 1)*(d + n)*sum(n - 1) + 
+(2*a - b - c - d + n)*(b + n - 1)*(c + n - 1)*(d + n)*sum(n - 1) +
 
 (a - b - c - d - n + 1)*(a - b + n)*(a - c + n)*(a - d + n - 1)
 
@@ -641,7 +634,7 @@ and lower parameters {\tt lower}$=\{b_{1}, b_{2}, \ldots, b_{q}\}$
 \end{itemize}
 in connection with hypergeometric terms.
 
-The operator {\tt sumrecursion} can also be used to 
+The operator {\tt sumrecursion} can also be used to
 obtain three-term recurrence equations for systems of orthogonal polynomials
 with the aid of known hypergeometric representations. By
 (\cite{NikiforovUvarovSuslov:91}, (2.7.11a)), the discrete Krawtchouk polynomials $k_n^{(p)}(x,N)$
@@ -650,14 +643,11 @@ have the hypergeometric representation
 k_n^{(p)}(x,N)=
 (-1)^n\,p^n\,\binom{N}{n}\;
 _2 F_1\left.
-\!\!
 \left(
-\!\!\!\!
 \begin{array}{c}
-\multicolumn{1}{c}{\begin{array}{cc} -n\;, & -x \end{array}}\\[1mm]
-\multicolumn{1}{c}{ -N}
-            \end{array}
-\!\!\!\!
+-n\;,\;\;-x\\[1mm]
+-N
+\end{array}
 \right| \frac{1}{p}\right)
 \;,
 \]
@@ -698,7 +688,7 @@ with respect to the parameters $n$, $x$, and $N$ respectively.
 \ttindex{HYPERSUM}
 
 With the operator {\tt hypersum}, hypergeometric sums are directly
-evaluated in closed form whenever the extended 
+evaluated in closed form whenever the extended
 Zeilberger algorithm leads to a recurrence equation containing only
 two terms:
 \begin{itemize}
@@ -712,15 +702,15 @@ b_{1},&b_{2},&\cdots,&b_{q}\\
 $, where {\tt upper}$=\{a_{1}, a_{2}, \ldots, a_{p}\}$
 is the list of upper parameters, and
 {\tt lower}$=\{b_{1}, b_{2}, \ldots, b_{q}\}$
-is the list of lower parameters depending on $n$. The result is given as a 
-hypergeometric term with respect to $n$.  
+is the list of lower parameters depending on $n$. The result is given as a
+hypergeometric term with respect to $n$.
 
 If the result is a list of length $m$, we call it $m$-\textsl{fold symmetric},
 which is to be interpreted as follows:
 Its $j^{th}$ part is the solution valid for all $n$ of the form $n=mk+j-1
 \;(k\in\mathbb{N}_0)$.
 In particular, if the resulting list contains two terms, then
-the first part is the solution for even $n$, and the second part is the 
+the first part is the solution for even $n$, and the second part is the
 solution for odd $n$.
 \end{itemize}
 Examples \cite{Koepf:94b}:
@@ -785,17 +775,11 @@ Here are some $m$-fold symmetric results:
 These results correspond to the formulas (compare \cite{Koepf:94b})
 \[
 _3 F_2\left.
-\!\!
 \left(
-\!\!\!\!
 \begin{array}{c}
-\multicolumn{1}{c}{\begin{array}{c}
--n\;, -n\;, -n
-\end{array}}\\[1mm]
-\multicolumn{1}{c}{\begin{array}{c}
+-n\;, -n\;, -n\\[1mm]
 1 \;, 1
-            \end{array}}\end{array}
-\!\!\!\!
+\end{array}
 \right| 1\right)
 =
 \funkdef{0}{n\;\mbox{odd}}{\displaystyle
@@ -805,36 +789,29 @@ _3 F_2\left.
 and
 \[
 _3 F_2\left.
-\!\!
 \left(
-\!\!\!\!
 \begin{array}{c}
-\multicolumn{1}{c}{\begin{array}{c}
--n\;, n+3a\;, a
-\end{array}}\\[1mm]
-\multicolumn{1}{c}{\begin{array}{c}
+-n\;, n+3a\;, a\\[1mm]
 3a/2\;,(3a+1)/2
-            \end{array}}\end{array}
-\!\!\!\!
+\end{array}
 \right| \frac{3}{4}\right)
 =
 \funkdef{0}{n\neq 0 {\mbox{ (mod }} 3)}{\displaystyle
 \frac{(1/3)_{n/3}\,(2/3)_{n/3}}
 {(a+1/3)_{n/3}\,(a+2/3)_{n/3}}
 }
-\!\!\!\!\!\!\!\!.
 \]
 
 \subsection{\REDUCE{} operator {\tt SUMTOHYPER}}
 \ttindex{SUMTOHYPER}
 
-With the operator {\tt sumtohyper}, sums given in 
+With the operator {\tt sumtohyper}, sums given in
 factorial-$\Gamma$-binomial-Poch\-hammer notation
 are converted into hypergeometric notation.\\
 \texttt{sumtohyper(f,k)} determines the hypergeometric representation
 of
 $\sum\limits_{k=-\infty}^\infty f_k$,
-i.\ e.\ 
+i.e.\
 its output is {\tt c*hypergeometric(upper,lower,x)}, corresponding to
 the representation
 \[
@@ -876,26 +853,26 @@ hypergeometric({ - n, - n, - n},{1,1},-1)
 \ttindex{simplify\_gamma2}
 \ttindex{simplify\_gamman}
 
-For the decision that an expression $a_k$ is a hypergeometric term, it is 
+For the decision that an expression $a_k$ is a hypergeometric term, it is
 necessary to find out whether or not $a_{k}/a_{k-1}$ is a rational
 function with respect to $k$. For the purpose to decide
 whether or not an expression involving powers, factorials,
-$\Gamma$ function terms, 
+$\Gamma$ function terms,
 binomial coefficients, and Pochhammer symbols is a hypergeometric term,
 the following simplification operators can be used:
 \begin{itemize}
 \item
-{\tt simplify\_gamma(f)} simplifies an expression {\tt f} involving 
-only rational, powers and $\Gamma$ function terms according to a recursive 
-application of the simplification rule $\Gamma\:(a+1)=a\,\Gamma\:(a)$ 
+{\tt simplify\_gamma(f)} simplifies an expression {\tt f} involving
+only rational, powers and $\Gamma$ function terms according to a recursive
+application of the simplification rule $\Gamma\:(a+1)=a\,\Gamma\:(a)$
 to the expression tree. Since all $\Gamma$ arguments with integer difference
 are transformed, this gives a decision procedure for rationality
 for integer-linear $\Gamma$ term product ratios.
 \item
-{\tt simplify\_combinatorial(f)} simplifies an expression {\tt f} 
+{\tt simplify\_combinatorial(f)} simplifies an expression {\tt f}
 involving powers, factorials, $\Gamma$ function terms,
 binomial coefficients, and Pochhammer symbols by converting
-factorials, binomial coefficients, and Poch\-hammer symbols into 
+factorials, binomial coefficients, and Poch\-hammer symbols into
 $\Gamma$ function terms, and applying {\tt simplify\_gamma} to its
 result. If the output is not rational,
 it is given in terms of $\Gamma$ functions. If you prefer factorials
@@ -967,13 +944,13 @@ Other examples are
 \subsection{Tracing}
 \ttindexswitch[ZEILBERG]{ZB\_TRACE}
 
-If you set 
+If you set
 {\small
 \begin{verbatim}
 48: on zb_trace;
 \end{verbatim}
 }\noindent
-tracing is enabled, and you get intermediate results, see \cite{Koepf:94b}. 
+tracing is enabled, and you get intermediate results, see \cite{Koepf:94b}.
 
 Example for the Gosper algorithm:
 
@@ -1068,11 +1045,11 @@ The following global variables and switches can be used in connection with
 the {\tt ZEILBERG} package:
 \begin{itemize}
 \item
-{\tt zb\_trace}, switch; default setting {\tt off}. 
+{\tt zb\_trace}, switch; default setting {\tt off}.
 Turns tracing on and off.
 \item
 {\tt zb\_direction}, variable; settings: {\tt down}, {\tt up};
-default setting {\tt down}. 
+default setting {\tt down}.
 
 In the case of the Gosper algorithm, either a downward or a forward
 antidifference is calculated, i.\ e., {\tt gosper} finds $g_k$ with either
@@ -1099,7 +1076,7 @@ sum(n + 1)*n + sum(n + 1) - 4*sum(n)*n - 2*sum(n)
 }\noindent
 \item
 {\tt zb\_order}, variable; settings: any nonnegative integer;
-default setting~{\tt 5}. 
+default setting~{\tt 5}.
 Gives the maximal order for the recurrence
 equation that {\tt sumrecursion} searches for.
 \item
@@ -1161,7 +1138,7 @@ see \cite{Gosper:78}. Examples:
 {\tt zeilberger\_representation}, variable; default setting {\tt nil}.
 
 If a {\tt sumrecursion} command is issued, and if the Zeilberger
-algorithm is successful, then the variable 
+algorithm is successful, then the variable
 {\tt zeilberger\_representation} is set to the final Gosper
 representation used, see \cite{Koornwinder:93}.
 \end{itemize}
