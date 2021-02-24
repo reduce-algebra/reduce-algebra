@@ -168,10 +168,10 @@
  )
 
 (de returnaddressp (x)
-  (prog (s y)
+  (prog (y)
         (unless (and (posintp x) (>= x 2000)) (return nil))
-        % Check that return address is even                                           
-        (when (weq (wand x 1) 1)
+        % Check that return address is a multiple of 4
+        (when (not (weq (wand x 3) 0))
           (return nil))
         (when (not (codeaddressp x))
           (return nil))
@@ -180,7 +180,7 @@
           (return nil))
         (cond ((not (wlessp x nextbps)) % Assures X points to real memory
                (return nil)))
-        (setq s (inf symfnc))
+%        (setq s (inf symfnc))
 %        (unless (weq (halfword x -3) 16#15ff) (return nil))
         % call word
 	% The usual call instruction is "BLR X10" (0xd63f0140).
@@ -188,8 +188,14 @@
 	%  BL <pc-rel address>.
 	% check that there is indeed a "BLR X10" call.
 	(setq y (getword32 (wplus2 x -4) 0)) 		% possible branch instruction 
-	(unless (weq y 16#d63f01400)
+	(unless (weq y 16#d63f0140)
 	  (return nil))
+        % Check that instruction preceding the BLR is
+        %  ldr	x10, [x23, x11, lsl #3]   (0xf86b7aea)
+        (setq y (getword32 (wplus2 x -8) 0))
+        (unless (weq y 16#f86b7aea)
+          (return nil))
+
         (setq y (get-called-idnumber x))
 	(when (null y) (return nil))
         (if (or (wlessp y 0) (wgreaterp y maxsymbols))
@@ -215,11 +221,11 @@
       (cond ((eq (wand 16#ff (wshift adr-load-instr -24)) 16#58)
 	     % LDR X10,pc-rel-addr
 	     % address where id number is stored is address of instruction + pc-rel-addr
-	     (setq rest (wand (wshift addr-load-instr -5) 16#7ffff))
-	     (wgetv (wplus2 adr rest) 0))
+	     (setq rest (wshift (wand (wshift adr-load-instr -5) 16#7ffff) 2))
+	     (wgetv (wplus2 (wplus2 adr -12) rest) 0))
 	    ((eq (wand 16#ffff (wshift adr-load-instr -16)) 16#d280)
 	     % MOV X10,#cst
-	     (setq rest (wand (wshift addr-load-instr -5) 16#7ff)))
+	     (setq rest (wand (wshift adr-load-instr -5) 16#7ff)))
 	    (t nil))))
 
 % ****************************************************************         
