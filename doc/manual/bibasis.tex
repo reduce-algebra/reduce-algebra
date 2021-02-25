@@ -2,25 +2,25 @@
 
 \subsection{Introduction}
 
-Involutive polynomial bases are redundant Gr\"obner bases of special structure with some additional useful features in comparison 
-with reduced Gr\"obner bases~\cite{Gerdt:98}. Apart from numerous applications of involutive bases~\cite{Seiler:2010} the 
-involutive algorithms~\cite{Gerdt:2005} provide an efficient method for computing reduced Gr\"obner bases. A reduced Gr\"obner basis 
-is a well-determined subset of an involutive basis and can be easily extracted from the latter without any extra reductions. 
+Involutive polynomial bases are redundant Gr\"obner bases of special structure with some additional useful features in comparison
+with reduced Gr\"obner bases~\cite{Gerdt:98}. Apart from numerous applications of involutive bases~\cite{Seiler:2010} the
+involutive algorithms~\cite{Gerdt:2005} provide an efficient method for computing reduced Gr\"obner bases. A reduced Gr\"obner basis
+is a well-determined subset of an involutive basis and can be easily extracted from the latter without any extra reductions.
 All this takes place not only in rings of commutative polynomials but also in Boolean rings.
 
 Boolean Gr\"obner basis already have already revealed their value and usability in  practice. The first impressive demonstration
 of practicability of Boolean Gr\"obner bases was breaking the first HFE (Hidden Fields Equations) challenge in the public
 key cryptography done in~\cite{Faugere:2003} by computing a Boolean Gr\"obner basis for the system of quadratic
-polynomials in 80 variables. Since that time the Boolean Gr\"obner bases application area has widen drastically and nowadays there 
+polynomials in 80 variables. Since that time the Boolean Gr\"obner bases application area has widen drastically and nowadays there
 is also a number of quite successful examples of using Gr\"obner bases for solving SAT problems.
 
-During our research we had developed~\cite{Gerdt:2008, Gerdt:2008a, Gerdt:2010} Boolean involutive algorithms based on Janet and Pommaret 
-divisions and applied them to computation of Boolean Gr\"obner bases. Our implementation of both divisions has experimentally 
+During our research we had developed~\cite{Gerdt:2008, Gerdt:2008a, Gerdt:2010} Boolean involutive algorithms based on Janet and Pommaret
+divisions and applied them to computation of Boolean Gr\"obner bases. Our implementation of both divisions has experimentally
 demonstrated computational superiority of the Pommaret division implementation. This package BIBASIS is the result
-of our thorough research in the field of Boolean Gr\"obner bases. BIBASIS implements the involutive algorithm based on Pommaret 
+of our thorough research in the field of Boolean Gr\"obner bases. BIBASIS implements the involutive algorithm based on Pommaret
 division in a multivariate Boolean ring.
 
-In section 2 the Boolean ring and its peculiarities are shortly introduced. In section 3 we briefly argue  
+In section 2 the Boolean ring and its peculiarities are shortly introduced. In section 3 we briefly argue
 why the involutive algorithm and Pommaret division are good for Boolean ring while the Buhberger's algorithm is not.
 And finally in section 4 we give the full description of BIBASIS package capabilities and illustrate it by examples.
 
@@ -66,8 +66,8 @@ x_1,x_2\in \,<x_1x_2 + x_1 + x_2> \subset \mathbb{B\,}[x_1, x_2].
 That the reason why one cannot apply the Buhberger's algorithm directly in a Boolean ring, using instead a ring
 $\mathbb{F}_2[\mathbf{X}]$ and {\em the field binomials} $x_1^2+x_1,\ldots,x_n^2+x_n$.
 
-The involutive algorithm based on Janet division has the same disadvantage unlike the Pommaret division algorithm as shown 
-in~\cite{Gerdt:2008}. The Pommaret division  algorithm can be applied directly in a Boolean ring and admits effective data 
+The involutive algorithm based on Janet division has the same disadvantage unlike the Pommaret division algorithm as shown
+in~\cite{Gerdt:2008}. The Pommaret division  algorithm can be applied directly in a Boolean ring and admits effective data
 structures for monomial representation.
 
 \subsection{BIBASIS Package}
@@ -77,7 +77,7 @@ is to load it:
 \begin{verbatim}
     1: load_package bibasis;
 \end{verbatim}
-The current version of the BIBASIS user interface consists only of 2 functions:  
+The current version of the BIBASIS user interface consists only of 2 functions:
 \texttt{bibasis} and
 \texttt{bibasis\_print\_statistics}.
 
@@ -90,9 +90,9 @@ Input:
 \begin{itemize}
     \item \texttt{initial\_polynomial\_list} is the list of polynomials containing the known basis of initial
 Boolean ideal. All given polynomials are treated modulo 2. See Example 1.
-    
+
     \item \texttt{variables\_list} is the list of independent variables in decreasing order.
-    
+
     \item \texttt{monomial\_ordering} is a chosen monomial ordering and the supported ones are:
         \begin{itemize}
             \item[] \texttt{lex} -- pure lexicographical ordering;
@@ -100,7 +100,7 @@ Boolean ideal. All given polynomials are treated modulo 2. See Example 1.
             \item[] \texttt{degrevlex} -- degree reverse lexicographic.
         \end{itemize}
         See Examples 2---4 to check that Gr\"obner (as well as involutive) basis depends on monomial ordering.
-        
+
     \item \texttt{reduce\_to\_groebner} is a Boolean value, if it is \texttt{t} the output is the reduced
         Boolean Gr\"obner basis, if \texttt{nil}, then the reduced Boolean Pommaret basis. Examples 5,6 show distinctions between these two outputs.
 \end{itemize}
@@ -124,7 +124,6 @@ Example 1:
     1: load_package bibasis;
     2: bibasis({x+2*y}, {x,y}, lex, t);
     {x}
-
 \end{verbatim}
 
 \noindent Example 2:
@@ -134,7 +133,6 @@ Example 1:
 3: polynomials := {x0*x3+x1*x2,x2*x4+x0}$
 4: bibasis(polynomials, variables, lex, t);
 {x0 + x2*x4,x2*(x1 + x3*x4)}
-
 \end{verbatim}
 
 \noindent Example 3:
@@ -149,7 +147,6 @@ Example 1:
  x0*x3 + x1*x2,
  x0*(x4 + 1),
  x2*x4 + x0}
-
 \end{verbatim}
 
 \noindent Example 4:
@@ -163,10 +160,7 @@ Example 1:
  x1*x2 + x0*x3,
  x0*(x4 + 1),
  x2*x4 + x0}
-
 \end{verbatim}
-
-\newpage
 
 \noindent Example 5:
 \begin{verbatim}
@@ -175,7 +169,6 @@ Example 1:
 3: polinomials := {x, z}$
 4: bibasis(polinomials, variables, degrevlex, t);
 {x,z}
-
 \end{verbatim}
 
 \noindent Example 6:
@@ -185,7 +178,6 @@ Example 1:
 3: polinomials := {x, z}$
 4: bibasis(polinomials, variables, degrevlex, nil);
 {x,z,y*z}
-
 \end{verbatim}
 
 \noindent Example 7:
@@ -224,6 +216,4 @@ Normal forms calculated = 216
         Reductions made = 4488
 Time: 270 ms
 GC time: 0 ms
-
 \end{verbatim}
-

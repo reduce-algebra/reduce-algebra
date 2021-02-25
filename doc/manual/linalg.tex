@@ -887,55 +887,44 @@ numeric entries or imaginary entries with numeric coefficients.}
   $\mathcal{LU} = $ \texttt{convert($\mathcal{A}$,vec)}.
 
 \item[Examples:]
-\begin{flushleft}
 \(
 \mathcal{K} = \begin{pmatrix} 1 & 3 & 5 \\ -4 & 3 & 7 \\ 8 & 6 & 4 \end{pmatrix}
 \)
-\end{flushleft}
 
-\begin{align*}
-\texttt{lu} := \texttt{lu\_decom}(\mathcal{K}) = &
+\texttt{lu} $:=$ \texttt{lu\_decom}\((\mathcal{K}) =
 \left\{
         \begin{pmatrix} 8 & 0 & 0 \\ -4 & 6 & 0 \\ 1 & 2.25 & 1.125 1 \end{pmatrix},
         \begin{pmatrix} 1 & 0.75 & 0.5 \\ 0 & 1 & 1.5 \\ 0 & 0 & 1 \end{pmatrix},
 	[\; 3 \; 2 \; 3 \; ]
-\right\}
-\end{align*}
+\right\}\)
 
-\(
-\begin{array}{@{}ll}
-\texttt{first lu * second lu} & =
-        \begin{pmatrix} 8 & 6 & 4 \\ -4 & 3 & 7 \\ 1 & 3 & 5 \end{pmatrix} \\[2mm]
-\texttt{convert($\mathcal{K}$,third lu)} & =
+\(\texttt{first lu * second lu} =
+        \begin{pmatrix} 8 & 6 & 4 \\ -4 & 3 & 7 \\ 1 & 3 & 5 \end{pmatrix}\)
+
+\(\texttt{convert($\mathcal{K}$,third lu)} =
         \begin{pmatrix} 8 & 6 & 4 \\ -4 & 3 & 7 \\ 1 & 3 & 5 \end{pmatrix}
-\end{array}
 \)
 
-\begin{flushleft}
 \(
 \mathcal{P} = \begin{pmatrix} i+1 & i+2 & i+3 \\ 4 & 5 & 2 \\ 1 & i & 0 \end{pmatrix}
 \)
-\end{flushleft}
 
 \begin{align*}
 \texttt{lu} := \texttt{lu\_decom}(\mathcal{P}) = &
 \left\{
         \begin{pmatrix} 1 & 0 & 0 \\ 4 & -4*i+5 & 0 \\ i+1 &
 3 & 0.41463*i+2.26829 \end{pmatrix}, \right. \nonumber \\ &
-\left. \: \; \,  \begin{pmatrix} 1 & i & 0 \\ 0 & 1 &
+\left. \: \; \, \begin{pmatrix} 1 & i & 0 \\ 0 & 1 &
 0.19512*i+0.24390 \\ 0 & 0 & 1 \end{pmatrix}, \,\,
 [\; 3 \; 2 \; 3 \;] \,\,
-\right\} \nonumber
+\right\}
 \end{align*}
 
-\(
-\begin{array}{@{}ll}
-\texttt{first lu * second lu} & =
-        \begin{pmatrix} 1 & i & 0 \\ 4 & 5 & 2 \\ i+1 & i+2 & i+3 \end{pmatrix} \\[2mm]
-\mathtt{convert(\mathcal{P},third lu}) & =
-        \begin{pmatrix} 1 & i & 0 \\ 4 & 5 & 2 \\ i+1 & i+2 & i+3  \end{pmatrix}
-\end{array}
-\)
+\(\texttt{first lu * second lu} =
+        \begin{pmatrix} 1 & i & 0 \\ 4 & 5 & 2 \\ i+1 & i+2 & i+3 \end{pmatrix}\)
+
+\(\mathtt{convert(\mathcal{P},third lu}) =
+        \begin{pmatrix} 1 & i & 0 \\ 4 & 5 & 2 \\ i+1 & i+2 & i+3 \end{pmatrix}\)
 
 \item[Related functions:]\mbox{}\\
 \texttt{cholesky}.
@@ -1229,13 +1218,15 @@ matrix is upper triangular. \\
 \end{tabular}
 
 \item[Examples:]\mbox{}\\
-  \(\texttt{random\_matrix}(3,3,10)  =
+  \texttt{random\_matrix}\((3,3,10) =
   \begin{pmatrix} -4.729721 & 6.987047 & 7.521383 \\
     - 5.224177 & 5.797709 & - 4.321952 \\
     - 9.418455 & - 9.94318 & - 0.730980
-  \end{pmatrix}\) \\
+  \end{pmatrix}\)
+
   \texttt{on only\_integer, not\_negative, upper\_matrix, imaginary;}
-  \(\texttt{random\_matrix}(4,4,10) =
+
+  \texttt{random\_matrix}\((4,4,10) =
   \begin{pmatrix} 2*i+5 & 3*i+7 & 7*i+3 & 6 \\ 0 & 2*i+5 &
     5*i+1 & 2*i+1 \\ 0 & 0 & 8 & i \\ 0 & 0 & 0& 5*i+9
   \end{pmatrix}\)
@@ -1262,15 +1253,12 @@ column\_list &:-& either a positive integer or a list of
 \texttt{remove\_rows} performs the same task on the rows
                 of $\mathcal{A}$.
 
-\item[Examples:]
-\(
-\begin{array}{@{}ll}
-\texttt{remove\_columns}(\mathcal{A},2) & =
-        \begin{pmatrix} 1 & 3 \\ 4 & 6 \\ 7 & 9  \end{pmatrix} \\[2mm]
-\texttt{remove\_rows}(\mathcal{A},\{1,3\}) & =
-        \begin{pmatrix} 4 & 5 & 6 \end{pmatrix}
-\end{array}
-\)
+\item[Examples:]\mbox{}\\
+\texttt{remove\_columns}\((\mathcal{A},2) =
+        \begin{pmatrix} 1 & 3 \\ 4 & 6 \\ 7 & 9  \end{pmatrix}\)
+
+\texttt{remove\_rows}\((\mathcal{A},\{1,3\}) =
+        \begin{pmatrix} 4 & 5 & 6 \end{pmatrix}\)
 
 \item[Related functions:]\mbox{}\\*
 \texttt{minor}.
