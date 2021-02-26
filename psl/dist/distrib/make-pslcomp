@@ -66,6 +66,9 @@ endif
 if ($MACHINE == freeBSD64) then
   set imagesize=1000
 endif
+if ($MACHINE == aarch64) then
+  set imagesize=1000
+endif
 
 pushd $psys
 if ( -e $psys/.imago) then

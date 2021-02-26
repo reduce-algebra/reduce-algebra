@@ -70,6 +70,8 @@ if ($MACHINE == apollo) then
    set imagesize=1000
   else if ($MACHINE == freeBSD64) then
    set imagesize=1000
+  else if ($MACHINE == aarch64) then
+   set imagesize=1000
   else
    set imagesize=10000000 
 endif

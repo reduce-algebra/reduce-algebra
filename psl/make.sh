@@ -72,6 +72,11 @@ case "guess:$guess" in
 	MACHINE=armv6
 	;;
 
+  guess:aarch64-unknown-linux* )
+	MACHINE=aarch64
+	;;
+
+
 esac
 
 export MACHINE
