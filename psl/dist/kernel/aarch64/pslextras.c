@@ -268,7 +268,7 @@ int wxdivide(long long x, long long y, long long * rem)
 	return q;
 }
 
-unsigned int wxquotientdouble(unsigned long long dividend,unsigned int divisor,unsigned int *rem)
+unsigned int wxquotientdouble(unsigned __int128 dividend,unsigned long long divisor,unsigned long long *rem)
 {
         unsigned int q = dividend / divisor;
         *rem = dividend - divisor * q;

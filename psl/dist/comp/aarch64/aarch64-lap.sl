@@ -652,6 +652,7 @@
 
 (de imm12-shiftedp (x)
     (or (and (fixp x) (eq x (land x 16#fff)))
+	(and (fixp x) (eq x (land x 16#fff000)))
 	(and (pairp x) (fixp (car x)) (eq (car x) (land (car x) 16#fff))
 	     (eqcar (cdr x) 'LSL)
 	     (pairp (cddr x)) (memq (caddr x) '(0 12)))))
@@ -685,7 +686,7 @@
 	  %% count trailing zeros
 	  (setq zz 0 tmp imm)
 	  (while (and (lessp zz 64) (eq 0 (land tmp 1)))
-	    (setq tmp (lsh tmp -1)) (zz (add1 zz))
+	    (setq tmp (lsh tmp -1) zz (add1 zz))
 	    )
 	  (if (greaterp zz 63) (return nil))
 	  %% now count ones
@@ -1216,7 +1217,7 @@
 		   (setq imm12 (car imm12-shifted)))
 	      )
 	  (setq sh 0)
-	(setq sh 1 imm12 (car imm12-shifted)))
+	(setq sh 1 imm12 (if (pairp imm12-shifted) (car imm12-shifted) (lsh imm12-shifted -12))))
       (DepositInstructionBytes
        (lsh opcode -1)
        (lor (lsh imm12 -6) (lor (lsh (land opcode 1) 7) (lsh sh 6)))
@@ -1309,12 +1310,12 @@
 
 (de OP-reg-shifter (code reg1 reg2 reg-shifter)
     (prog (opcode2 shift-op shift-amount reg3)
-	  (cond ((regp reg-shifter) (setq reg3 reg-shifter opcode2 0 shift-amount 0))
+	  (cond ((regp reg-shifter) (setq reg3 reg-shifter opcode2 (land (car code) 1) shift-amount 0))
 		((eqcar reg-shifter 'regshifted)
 		 (setq reg3 (list 'reg (cadr reg-shifter)) shift-op (caddr reg-shifter))
 		 (setq shift-amount (cadddr reg-shifter))
 		 (cond ((fixp shift-amount)
-			(setq opcode2 (lor (lsh (land shift-amount 1) 3) (subla '((LSL . 2#000) (LSR . 2#010) (ASR . 2#100)) shift-op))))
+			(setq opcode2 (lor (land (car code) 1) (subla '((LSL . 2#000) (LSR . 2#010) (ASR . 2#100) (ROR . 2#110)) shift-op))))
 		       (T (stderror (bldmsg "Invalid operand %w: shift amount = %w" reg-shifter shift-amount)))))
 		(T (stderror (bldmsg "Invalid operand %w (shifted register)" reg-shifter))))
 	  (DepositInstructionBytes

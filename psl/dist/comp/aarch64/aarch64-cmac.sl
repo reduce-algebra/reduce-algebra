@@ -598,7 +598,7 @@
       (if (greaterp framesize 0)
 	(progn
 	  %% Make sure that the stack is always 16 byte aligned
-	  (if (oddp framesize)
+	  (if (not (evenp framesize))
             (progn
 	      (setq framesize (add1 framesize))
 	      (setq ll `((STR (reg nil) (displacement (reg sp) ,(times2 (plus2 1 framesize) (compiler-constant 'AddressingUnitsPerItem))))))))))
@@ -613,7 +613,7 @@
 (DefCmacro *ALLOC)
 
 (de *DeAlloc (DeAllocCount)
-  (if (oddp DeAllocCount) (setq DeAllocCount (plus2 DeAllocCount 1)))
+  (if (not (evenp DeAllocCount)) (setq DeAllocCount (plus2 DeAllocCount 1)))
   (setq DeAllocCount (plus2 2 DeAllocCount))
   (Expand1OperandCMacro
    %% room for fp and lr
@@ -629,7 +629,7 @@
 
 % Again, make sure that the stack is always 16 byte aligned
 (de *Exit (N)
-  (if (oddp N) (setq N (plus2 N 1)))
+  (if (not (evenp N)) (setq N (plus2 N 1)))
  (Expand1OperandCMacro
    %% room for fp and lr
    (times (plus2 2 N) (compiler-constant 'AddressingUnitsPerItem)) '*Exit))
@@ -1087,14 +1087,14 @@
        (            (*Tag (reg t3) ArgOne)
                      (CMP (reg t3) ArgTwo )
                      (B!.LE  ArgThree)
-                     (CMP (reg t3) 31) % negint-tag)
+                     (CMP (reg t3) 16#ff) % negint-tag)
                      (B!.EQ ArgThree)
                      templabel)
        )
 
 (DefCMacro *JumpNotInType
        (            (*Tag (reg t3) ArgOne)
-                     (CMP (reg t3) 31) % negint-tag
+                     (CMP (reg t3) 16#ff) % negint-tag
                      (B!.EQ templabel)
                      (CMP (reg t3) ArgTwo)
                      (B!.GT ArgThree)
