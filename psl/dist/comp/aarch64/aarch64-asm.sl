@@ -240,6 +240,7 @@
 
 (de CodeFileHeader nil                  % Pure Code Segment
   (CodePrintF "        .text%n")
+  (CodePrintf " .align 3%n")		% make sure that everything is aligned to 8 bytes
   (setq DataProcState* 'data) 
   (setq ForeignExternList* nil))
                 
