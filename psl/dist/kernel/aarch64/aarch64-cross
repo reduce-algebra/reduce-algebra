@@ -21,8 +21,8 @@ $psys/pslcomp <<EOF
 (load aarch64-cmac)
 (load aarch64-comp)
 (load aarch64-spec)
-(remprop 'wquotient 'opencode)
-(remprop 'wremainder 'opencode)
+%(remprop 'wquotient 'opencode)
+%(remprop 'wremainder 'opencode)
 (setq nil-t-diff* 140)
 %(put 'NEGINTP 	'OPENTST 	'(TSTPAT2 !*JUMPTYPE    31))
 %(put 'NOTNEGINTP 'OPENTST 	'(TSTPAT2 !*JUMPNOTTYPE 31))
@@ -39,9 +39,9 @@ $psys/pslcomp <<EOF
 (put 'id-tag 'compiler-constant? t)
 (put 'bstruct-tag 'compiler-constant? t)
 (put 'negint-tag 'compiler-constant? t)
-(put 'id-tag 'compiler-constant-value 30)
-(put 'bstruct-tag 'compiler-constant-value 22)
-(put 'negint-tag 'compiler-constant-value 31)
+(put 'id-tag 'compiler-constant-value 254)
+(put 'bstruct-tag 'compiler-constant-value 246)
+(put 'negint-tag 'compiler-constant-value 255)
 (print (list "nextidnumber*" nextidnumber*))
 
 (remd 'foreignlink)
@@ -53,7 +53,6 @@ $psys/pslcomp <<EOF
 %  (list 'displacement '(reg st) (plus2 20
 %        (times (difference (cadr u) (plus lastactualreg!& 1))
 %               (compiler-constant 'addressingunitsperitem)))))
-(tr *exit *dealloc *alloc)
 (dskin "tmp.sl")
 EOF
 

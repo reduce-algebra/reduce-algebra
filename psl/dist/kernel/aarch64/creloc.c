@@ -46,35 +46,37 @@
 
 extern int Debug;
 
-void creloc (unsigned int array[], int len, int diff, unsigned int lowb, unsigned int uppb, int do_symval)
-
+void creloc (unsigned long long array[], long len, long long diff, unsigned long long lowb, unsigned long long uppb, int do_symval)
 {  long i;
    long skip;
    long tag;
-   long inf;
+   long long inf;
 
    for (i=0;i< len; i += skip)
-       {  tag = (array[i] >> 27) ;
-          if (tag < 0) { tag += 32;}
-          inf = (array[i] << 5) >> 5;
+       {  tag = (array[i] >> 56) ;
+          if (tag < 0) { tag += 256;}
+          inf = (array[i] << 8) >> 8;
           skip = 1;
           if ( tag == 0 ) continue;  // posint
-          if ( tag > 26 ) continue; // negint to forward
+          if ( tag > 250 ) continue; // negint to forward
 #ifdef DEBUG
 	  if (Debug > 1) {
-	    printf("at %lx: %d before %d %lx",&array[i],tag,i,array[i]);
+	    printf("at %llx: %ld before %ld %llx",(long long) &array[i],tag,i,array[i]);
 	  }
 #endif
-	  if ( tag < 23  && (inf > lowb) && (inf < uppb))
+	  if ( tag < 31  && (inf > lowb) && (inf < uppb))
                   {array[i] += diff;}
-          if (tag == 23 && inf < 1000000)
-                  { skip = (inf +5) /4  +1 ;} //strpack
-             else if (tag==25 && inf < 1000000) { skip = inf + 2;}
-             else if (tag==26 && inf < 1000000) { skip = 1;} // work on the vect contents
+          if (tag == 247) {		      /* hbytes */
+	    // handle zero length strings correctly
+	    if (inf == 0xffffffffffffff) inf = -1;
+	    skip = (inf +9) /8  +1 ;  //strpack
+	  }
+             else if (tag==249) { skip = inf + 2;} /* hwords */
+             else if (tag==250) { skip = 1;} // hvect, work on the vect contents
 // One has to make sure that bignums are *NOT* vectors in gc, but WORD-VECT.
 #ifdef DEBUG
 	  if (Debug > 1) {
-	    printf(" %d after %lx\n",skip, array[i]);
+	    printf(" %ld after %llx\n",skip, array[i]);
 	  }
 #endif
 	  if (do_symval != 0) {

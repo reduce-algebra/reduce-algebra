@@ -153,6 +153,7 @@
 (exported-global
  '(bndstkptr
    bndstkupperbound
+   bndstklowerbound
    gcarraylowerbound
    gcarrayupperbound
    heaplast
@@ -170,7 +171,6 @@
    oldheaplowerbound
    stacklowerbound
    stackupperbound
-   saveda7
    unixstdin
    unixstdout
    unixstderr

@@ -62,7 +62,7 @@
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <errno.h>
-#include <limits.h>    /* for PAGESIZE */
+#include <limits.h>    // for PAGESIZE
 #include <inttypes.h>  // Make newer integer types  of known width available
 #include <unistd.h>
 
@@ -70,7 +70,7 @@
 #define PAGESIZE 4096
 #endif
 
-long unexec();
+long long unexec();
 
 
 /* Use 1 if using compacting collector ($pxnk/compact-gc.sl).
@@ -96,7 +96,7 @@ char *  abs_imagefile = NULL; /* like imagefile, but as an absolute path */
 long long   max_image_size;
 long long   oldbreakvalue;
 
-long bpscontrol[2];
+long long bpscontrol[2];
 
 extern long long  alreadysetupbpsandheap;
 extern long long  hashtable;
@@ -132,7 +132,7 @@ static int power(x, n)
 }
 #endif
 
-int creloc (unsigned long long array, long len, long long diff, unsigned long long lowb, unsigned long long uppb, int do_symval);
+void creloc (unsigned long long array, long len, long long diff, unsigned long long lowb, unsigned long long uppb, int do_symval);
 
 long sizeofsymvectors = 0;
 
@@ -192,6 +192,9 @@ setupbpsandheap(argc,argv)
     }   /* end of for loop -- arg vector searched */
 
   /* protect against invalid values */
+
+  if (total < 1000000)  total = total * 1000000;
+
   if (total < MINSIZE)
     total = MINSIZE;
 
@@ -280,13 +283,14 @@ printf("total %llx %llx %llx\n",heapsize_in_bytes , current_size_in_bytes,total)
 	if (Debug > 0) {
 	  printf("symbol table size = %llu (%llX), symbol table address = %llu (%llx)\n"
 		 "bpssize = %llu (%llX), bps address =  %llu (%llX)\n"
-		 "heapsize = %llu (%llX), heap address = %llu (%llX)\nTotal image size = %lld (%llX)\n",
+		 "heapsize = %llu (%llX), heap address = %llu (%llX), heaplast = %llu (%llX)\nTotal image size = %lld (%llX)\n",
 		 (long long unsigned) 5*(&symprp - &symval), (long long unsigned) 5*(&symprp - &symval),
 		 (long long unsigned) &symval, (long long unsigned) &symval,
 		 bpssize, bpssize,
 		 bpslowerbound, bpslowerbound,
 		 heapsize, heapsize,
 		 heaplowerbound, heaplowerbound,
+		 hl, hl,
 		 (unsigned long long) sbrk(0), (unsigned long long) sbrk(0));
 	}
 	printf("Loading image file :%s \n",imagefile); 
@@ -297,10 +301,10 @@ printf("total %llx %llx %llx\n",heapsize_in_bytes , current_size_in_bytes,total)
 	}
 	fread (headerword,8,2,imago);
 	unexec();      /* set control vector */
-	if ((int) bpscontrol[0] != headerword[0] 
+	if (bpscontrol[0] != headerword[0] 
 	    || bpscontrol[1] != headerword[1])
 	  { printf(" Cannot start the image with this bpsl \n");
-	    printf(" %lx != %llx, %lx != %llx\n", bpscontrol[0], headerword [0], bpscontrol[1], headerword[1]);
+	    printf(" %llx != %llx, %llx != %llx\n", bpscontrol[0], headerword [0], bpscontrol[1], headerword[1]);
 	    exit (-19);
 	  }
 	fread (headerword,8,4,imago);
@@ -314,11 +318,12 @@ printf("total %llx %llx %llx\n",heapsize_in_bytes , current_size_in_bytes,total)
 	hugo = fread (&symval,1,headerword[0],imago);
 	diff = hlb-heaplowerbound;
 
+	if (hugo != headerword[0]) read_error("symbol table",hugo,headerword[0]);
+
 	if (Debug > 0) {
-	printf("Relocate heap: %llx => %llx: shift by %lld\n", heaplowerbound, hlb, diff);
+	  printf("Relocate heap: %llx => %llx: shift by %lld\n", heaplowerbound, hlb, diff);
 	}
 
-	if (hugo != headerword[0]) read_error("symbol table",hugo,headerword[0]);
 	if (hlb < heaplowerbound) {
 	  creloc((unsigned long long) &symval,headerword[0]/8,diff,hlb -1,heapupperbound+1,1);
 	} 
@@ -330,6 +335,7 @@ printf("total %llx %llx %llx\n",heapsize_in_bytes , current_size_in_bytes,total)
 
 	hugo = fread ((char*)hlb,1,headerword[1],imago);
 	if (hugo != headerword[1]) read_error("heap",hugo,headerword[1]);
+
 	if (hlb < heaplowerbound) {
 	  creloc(hlb,headerword[1]/8,diff,hlb -1,heapupperbound+1,0);
 	}
@@ -342,6 +348,7 @@ printf("total %llx %llx %llx\n",heapsize_in_bytes , current_size_in_bytes,total)
 	if (hugo != headerword[2]) read_error("hash table",hugo,headerword[2]);
 	hugo = fread ((char*)bpslowerbound,1,headerword[3],imago);
 	if (hugo != headerword[3]) read_error("BPS",hugo,headerword[3]);
+	__builtin___clear_cache((void *)bpslowerbound,(void *)bpslowerbound+headerword[3]);
 	fclose (imago);
 	if (memset || diff != 0) {
 	  oldheaplowerbound = ohlb; oldheapupperbound = ohub;
@@ -556,11 +563,11 @@ int increment;
 
 }
 
-long unexec()
+long long unexec()
 {
   bpscontrol[0] = bpslowerbound;
   bpscontrol[1] = BPSSIZE;
-  return((long) bpscontrol);
+  return((long long) bpscontrol);
 }
 
 char * get_imagefilepath ()
