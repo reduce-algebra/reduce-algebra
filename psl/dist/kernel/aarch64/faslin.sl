@@ -93,12 +93,12 @@
     
     % Read the code.
     (setf code-size (binaryread fid)) % Size of code segment in words
-(console-print-string "Code-size=0x")(unixputn code-size)(console-newline)
+%(console-print-string "Code-size=0x")(unixputn code-size)(console-newline)
     (setf code-base (gtbps code-size)) % Allocate space in BPS
-(console-print-string "Code-base=0x")(unixputn code-base)(console-newline)
+%(console-print-string "Code-base=0x")(unixputn code-base)(console-newline)
     (setq Btop (GtBPS 0))              % pointer to top of alloc. BPS
     (setf init-function-address (wplus2 code-base (binaryread fid)))
-(console-print-string "Init-function at 0x")(unixputn init-function-address)(console-newline)
+%(console-print-string "Init-function at 0x")(unixputn init-function-address)(console-newline)
     (binaryreadblock fid (loc (wgetv code-base 0)) code-size)
 
     % Read the bit table

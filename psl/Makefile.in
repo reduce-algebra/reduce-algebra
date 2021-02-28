@@ -715,7 +715,7 @@ red/reduce.img:  red/hugo
 @linux_TRUE@@macintosh_FALSE@@windows_FALSE@	cp -r psl/* $(DESTDIR)$(libdir)/reduce/pslbuild/psl ; \
 @linux_TRUE@@macintosh_FALSE@@windows_FALSE@	cp -r red/* $(DESTDIR)$(libdir)/reduce/pslbuild/red ; \
 @linux_TRUE@@macintosh_FALSE@@windows_FALSE@	sed -e "s+#libdir#+$(libdir)+" < $(reducec)/psl/redpsl > $(DESTDIR)$(prefix)/bin/redpsl ; \
-@linux_TRUE@@macintosh_FALSE@@windows_FALSE@	chmod +x > $(DESTDIR)$(prefix)/bin/redpsl ; \
+@linux_TRUE@@macintosh_FALSE@@windows_FALSE@	chmod +x $(DESTDIR)$(prefix)/bin/redpsl ; \
 @linux_TRUE@@macintosh_FALSE@@windows_FALSE@	echo Installed for PSL in $(DESTDIR)$(prefix)
 
 @linux_FALSE@@macintosh_FALSE@@windows_FALSE@install-exec-local:
