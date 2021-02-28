@@ -1,0 +1,8 @@
+filters:
+  - true
+commentBody: |
+  Thanks for your contribution!  Unfortunately, we don't use GitHub pull
+  requests to manage code contributions to this repository.  Instead, please
+  see the [REDUCE Homepage](/home/jhj/src/update-reduce-repo.sh) for details
+  on how to get involved with REDUCE.
+addLabel: false
