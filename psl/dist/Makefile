@@ -65,12 +65,15 @@ bpsl:
 
 bare-psl: bpsl pnkl make-bare-psl
 
-make-bare-psl:	sparsify
-	(cd $(PDIST) ; gcc -Dhpux -o $(PSYS)/$(MACHINE)/sparsify sparsify.c; \
-         csh -f make-bare-psl)
+make-bare-psl:
+	(cd $(PDIST) ; csh -f make-bare-psl)
 
-sparsify:	$(PSYS)/sparsify.c
-	(cd $(PDIST) ; gcc -Dhpux -o $(PSYS)/$(MACHINE)/sparsify sparsify.c)
+#make-bare-psl:	sparsify
+#	(cd $(PDIST) ; gcc -Dhpux -o $(PSYS)/$(MACHINE)/sparsify sparsify.c; \
+#         csh -f make-bare-psl)
+#
+#sparsify:	$(PSYS)/sparsify.c
+#	(cd $(PDIST) ; gcc -Dhpux -o $(PSYS)/$(MACHINE)/sparsify sparsify.c)
 
 psl:	bpsl bare-psl utilities make-psl sparsify
 
