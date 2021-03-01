@@ -1,5 +1,5 @@
 filters:
-  - true
+  - @.pull_request.number != 1
 commentBody: |
   Thanks for your contribution!  Unfortunately, we don't use GitHub pull
   requests to manage code contributions to this repository.  Instead, please
