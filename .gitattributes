@@ -1,4 +1,9 @@
 # Disable GitHub linguist
+*.sh linguist-vendored
+*.m4 linguist-vendored
+Makefile linguist-vendored
+*.am linguist-vendored
+*.in linguist-vendored
 bin/* linguist-vendored
 buglist/* linguist-vendored
 common-lisp/* linguist-vendored
@@ -21,3 +26,8 @@ web/* linguist-vendored
 winbuild64/* linguist-vendored
 xmpl/* linguist-vendored
 ./* linguist-vendored
+*.sh linguist-vendored
+*.m4 linguist-vendored
+Makefile linguist-vendored
+*.am linguist-vendored
+*.in linguist-vendored
