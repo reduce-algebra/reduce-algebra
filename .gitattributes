@@ -1,0 +1,23 @@
+# Disable GitHub linguist
+bin/* linguist-vendored
+buglist/* linguist-vendored
+common-lisp/* linguist-vendored
+contrib/* linguist-vendored
+csl/* linguist-vendored
+debianbuild/* linguist-vendored
+doc/* linguist-vendored
+generic/* linguist-vendored
+jlisp/* linguist-vendored
+jslisp/* linguist-vendored
+libedit/* linguist-vendored
+libraries/* linguist-vendored
+macbuild/* linguist-vendored
+MacPorts/* linguist-vendored
+packages/* linguist-vendored
+psl/* linguist-vendored
+scripts/* linguist-vendored
+vsl/* linguist-vendored
+web/* linguist-vendored
+winbuild64/* linguist-vendored
+xmpl/* linguist-vendored
+./* linguist-vendored
