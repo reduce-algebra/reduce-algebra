@@ -1,8 +1,0 @@
-filters:
-  - @.pull_request.number != 1
-commentBody: |
-  Thanks for your contribution!  Unfortunately, we don't use GitHub pull
-  requests to manage code contributions to this repository.  Instead, please
-  see the [REDUCE Homepage](https://reduce-algebra.sourceforge.io/) for details
-  on how to get involved with REDUCE.
-addLabel: false
