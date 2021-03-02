@@ -34,6 +34,7 @@ The development of the **REDUCE** computer algebra system was started in the 196
 - [***Sourceforge***](https://sourceforge.net/projects/reduce-algebra/) (*Primary Project Page*)
   - [**SVN Repository**](http://svn.code.sf.net/p/reduce-algebra/code/) (*Primary Code Repository*)
 - [GitHub Mirror](https://github.com/reduce-algebra/reduce-algebra/)
+  - [GitHub _reduce-algebra_ organization](https://github.com/reduce-algebra/)
 - [SourceHut Mirror](https://git.sr.ht/~trn/reduce-algebra/)
 - [Chisel Mirror](https://chiselapp.com/user/reduce-algebra/repository/reduce-algebra/)
 
