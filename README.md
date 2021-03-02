@@ -42,8 +42,8 @@ The development of the **REDUCE** computer algebra system was started in the 196
 ## News and Announcements
 
 - [**REDUCE** News](https://sourceforge.net/p/reduce-algebra/news/)
-  - **REDUCE** News [Atom Feed](https://sourceforge.net/p/reduce-algebra/news/feed.atom)
-  - **REDUCE** News [RSS Feed](https://sourceforge.net/p/reduce-algebra/news/feed.rss)
+  - [Atom Feed](https://sourceforge.net/p/reduce-algebra/news/feed.atom)
+  - [RSS Feed](https://sourceforge.net/p/reduce-algebra/news/feed.rss)
 
 ----
 
