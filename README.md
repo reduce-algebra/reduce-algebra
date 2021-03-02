@@ -16,7 +16,7 @@ Other systems that address some of the same issues, but sometimes with rather di
 
 **REDUCE** is implemented in *Standard Lisp*. It primarily runs on either **_Portable Standard Lisp_**, which compiles to native machine code, or **_Codemist Standard Lisp_**, which compiles to optimized byte-code. It can also run on **_Visible Standard Lisp_**, an extremely minimal and highly portable *Standard Lisp* interpreter. PSL, CSL, and VSL are all included in the **REDUCE** distribution.
 
-By modern standards, **REDUCE** is a surprisingly small and compact application, and runs well on all major platforms and operating systems ⸻ including [Android](https://play.google.com/store/apps/details?id=de.dieteregger.symbolic&hl=en_US&gl=US) and [iOS](https://apps.apple.com/us/app/icas/id394637176).
+By modern standards, **REDUCE** is a surprisingly small and compact application, and runs well on all major platforms and operating systems ― including [Android](https://play.google.com/store/apps/details?id=de.dieteregger.symbolic&hl=en_US&gl=US) and [iOS](https://apps.apple.com/us/app/icas/id394637176).
 
 ----
 
