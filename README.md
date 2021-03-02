@@ -16,16 +16,16 @@ The development of the **REDUCE** computer algebra system was started in the 196
 
 ## Features
 
-- arbitrary precision integer and rational arithmetic
-- algorithms for polynomials and rational functions
-- facilities for the solution of a variety of algebraic equations;
-- automatic and user controlled simplification of expressions
-- substitutions and pattern matching in a wide variety of forms
-- analytic differentiation and integration
-- computations with a wide variety of special functions
+- Arbitrary precision integer and rational arithmetic
+- Algorithms for polynomials and rational functions
+- Facilities for the solution of a variety of algebraic equations;
+- Automatic and user controlled simplification of expressions
+- Substitutions and pattern matching in a wide variety of forms
+- Analytic differentiation and integration
+- Computations with a wide variety of special functions
 - Dirac matrix calculations of interest to high energy physicists
-- quantifier elimination and decision for interpreted first-order logic
-- powerful intuitive user-level programming language
+- Quantifier elimination and decision for interpreted first-order logic
+- Powerful intuitive user-level programming language
 
 ----
 
