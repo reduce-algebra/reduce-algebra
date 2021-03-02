@@ -45,7 +45,6 @@ By modern standards, **REDUCE** is a surprisingly small and compact application,
 - [GitHub Mirror](https://github.com/reduce-algebra/reduce-algebra/)
 - [SourceHut Mirror](https://git.sr.ht/~trn/reduce-algebra/)
 - [NotABug Mirror](https://notabug.org/reduce-algebra/reduce-algebra/)
-- [Chisel Mirror](https://chiselapp.com/user/reduce-algebra/repository/reduce-algebra/)
 
 ----
 
