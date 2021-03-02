@@ -78,7 +78,7 @@ By modern standards, **REDUCE** is a surprisingly small and compact application,
 ## Additional Packages and Related Software
 
 - [**REDUCE** External Packages](https://reduce-algebra.sourceforge.io/packages.php)
-- [GitHub **Reduce-Algebra Organization**](https://github.com/reduce-algebra/)
+- [GitHub **REDUCE-Algebra Organization**](https://github.com/reduce-algebra/)
 
 ----
 
