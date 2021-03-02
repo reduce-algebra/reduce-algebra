@@ -6,7 +6,9 @@
 
 ## Introduction
 
-**REDUCE** is a freely available open-source interactive system for general algebraic computations, of interest to mathematicians, scientists, and engineers. It can be used interactively for simple calculations, but also provides a flexible and expressive user programming language.
+**REDUCE** is a freely available open-source interactive system for general algebraic computations, of interest to mathematicians, scientists, and engineers.
+
+It can be used interactively for simple calculations, but also provides a flexible and expressive user programming language.
 
 The development of the **REDUCE** computer algebra system was started in the 1960's by [Anthony C. Hearn](https://en.wikipedia.org/wiki/Anthony_C._Hearn) and further developed by [Arthur C. Norman](https://en.wikipedia.org/wiki/Arthur_Norman_(computer_scientist)) and others. Since then, many scientists from all over the world have contributed to its development.
 
