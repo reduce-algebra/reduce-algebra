@@ -178,6 +178,7 @@ then
   here=`pwd`
   cd $abssrcdir
   printf "Regenerate autoconf-related files\n"
+  find . -name config.cache | xargs rm
   if ! eval $SHELL -c \"./autogen.sh $ac_configure_args\"
   then
     printf "The autogen.sh script seems to have failed. I can not continue\n"
@@ -424,8 +425,6 @@ fi
 # I can I will first make the default builds on ARM based Macs universal
 # and maybe later let the Intel builds catch up.
 
-AC_MSG_NOTICE([About to think about universal])
-
 AC_ARG_ENABLE(universal,
   AC_HELP_STRING([--enable-universal],
                  [Try to build universal binary on Mac Big Sur (CSL only)]),
@@ -452,15 +451,18 @@ Darwin)
   if test "$CXX" = ""; then CXX=clang++; fi
   if test "$enable_universal" != "no"
   then
-    CPPFLAGS="$CPPFLAGS -arch x86_64 -arch arm64"
+# I must not add these to CPPFLAGS because the pre-processor does not like
+# the idea of dual targets!
+    OLDCFLAGS="$CFLAGS"
+    OLDCXXFLAGS="$CXXFLAGS"
+    OLDLDFLAGS="$LDFLAGS"
     CFLAGS="$CFLAGS -arch x86_64 -arch arm64"
     CXXFLAGS="$CXXFLAGS -arch x86_64 -arch arm64"
     LDFLAGS="$LDFLAGS -arch x86_64 -arch arm64"
     AC_LINK_IFELSE([AC_LANG_PROGRAM([],
       [[return 0]])],
     [AC_MSG_NOTICE(Will build in universal mode)],
-    [CPPFLAGS="$OLDCPPFLAGS"
-     CFLAGS="$OLDCFLAGS"
+    [CFLAGS="$OLDCFLAGS"
      CXXFLAGS="$OLDCXXFLAGS"
      LDFLAGS="$OLDLDFLAGS"
      AC_MSG_NOTICE(Universal build not possible on this host)])
@@ -1001,8 +1003,26 @@ then
 
   case $host in
   *darwin* | *Darwin*)
-    CPPFLAGS="$CPPFLAGS -I/opt/local/include"
-    LDFLAGS="$LDFLAGS -L/opt/local/lib"
+    if test -d $HOME/ports/include
+    then 
+      CPPFLAGS="$CPPFLAGS -I$HOME/ports/include"
+    fi
+    if test -d $HOME/ports/include/freetype2
+    then 
+      CPPFLAGS="$CPPFLAGS -I$HOME/ports/include/freetype2"
+    fi
+    if test -d $HOME/ports/lib
+    then
+      LDFLAGS="$LDFLAGS -L$HOME/ports/lib"
+    fi
+    if test -d /opt/local/include
+    then 
+      CPPFLAGS="$CPPFLAGS -I/opt/local/include"
+    fi
+    if test -d /opt/local/lib
+    then
+      LDFLAGS="$LDFLAGS -L/opt/local/lib"
+    fi
     CPPFLAGS="$CPPFLAGS -mmacosx-version-min=10.13"
     CFLAGS="$CFLAGS -mmacosx-version-min=10.13"
     CXXFLAGS="$CXXFLAGS -mmacosx-version-min=10.13"

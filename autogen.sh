@@ -34,6 +34,8 @@ here=`cd \`dirname "$here"\` ; pwd -P`
 save=`pwd`
 cd $here
 
+find . -name config.cache | xargs rm
+
 if test "$1" = "--fast"
 then
   fast="yes"
