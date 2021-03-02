@@ -44,7 +44,8 @@ By modern standards, **REDUCE** is a surprisingly small and compact application,
   - [**Sourceforge RSS Feed**](https://sourceforge.net/p/reduce-algebra/activity/feed.rss)
 - [GitHub Mirror](https://github.com/reduce-algebra/reduce-algebra/)
 - [SourceHut Mirror](https://git.sr.ht/~trn/reduce-algebra/)
-<!--- [Chisel Mirror](https://chiselapp.com/user/reduce-algebra/repository/reduce-algebra/)-->
+- [NotABug Mirror](https://notabug.org/reduce-algebra/reduce-algebra/)
+- [Chisel Mirror](https://chiselapp.com/user/reduce-algebra/repository/reduce-algebra/)
 
 ----
 
@@ -82,7 +83,8 @@ By modern standards, **REDUCE** is a surprisingly small and compact application,
 - [**REDUCE** External Packages](https://reduce-algebra.sourceforge.io/packages.php)
 - [GitHub **REDUCE-Algebra Organization**](https://github.com/reduce-algebra/)
 - [SourceHut **REDUCE-Algebra Project**](https://sr.ht/~trn/reduce-algebra/sources)
-<!--- [Chisel **REDUCE-Algebra Public Repositories**](https://chiselapp.com/user/reduce-algebra/)-->
+- [NotABug **REDUCE-Algebra Organization**](https://notabug.org/reduce-algebra/)
+- [Chisel **REDUCE-Algebra Public Repositories**](https://chiselapp.com/user/reduce-algebra/)
 
 ----
 
