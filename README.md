@@ -12,7 +12,7 @@ The development of the **REDUCE** computer algebra system was started in the 196
 
 **REDUCE** has a long and distinguished place in the history of computer algebra systems.
 
-Other systems that address some of the same issues but sometimes with rather different emphasis are [Axiom](http://axiom-developer.org/), [Derive](https://www.chartwellyorke.com/derive.html), [Macsyma](http://www.symbolics-dks.com/Macsyma-1.htm)/[Maxima](https://maxima.sourceforge.io/), [Maple](https://www.maplesoft.com/), [Mathematica](https://www.wolfram.com/mathematica/), and [MuPAD](<https://en.wikipedia.org/wiki/MuPAD>).
+Other systems that address some of the same issues, but sometimes with rather different emphasis, are [Axiom](http://axiom-developer.org/), [Derive](https://www.chartwellyorke.com/derive.html), [Macsyma](http://www.symbolics-dks.com/Macsyma-1.htm)/[Maxima](https://maxima.sourceforge.io/), [Maple](https://www.maplesoft.com/), [Mathematica](https://www.wolfram.com/mathematica/), and [MuPAD](<https://en.wikipedia.org/wiki/MuPAD>).
 
 **REDUCE** is implemented in *Standard Lisp*. It primarily runs on either **_Portable Standard Lisp_**, which compiles to native machine code, or **_Codemist Standard Lisp_**, which compiles to optimized byte-code. It can also run on **_Visible Standard Lisp_**, an extremely minimal and highly portable *Standard Lisp* interpreter. PSL, CSL, and VSL are all included in the **REDUCE** distribution.
 
