@@ -42,7 +42,7 @@ By modern standards, **REDUCE** is a surprisingly small and compact application,
   - [**Sourceforge RSS Feed**](https://sourceforge.net/p/reduce-algebra/activity/feed.rss)
 - [GitHub Mirror](https://github.com/reduce-algebra/reduce-algebra/)
 - [SourceHut Mirror](https://git.sr.ht/~trn/reduce-algebra/)
-- [Chisel Mirror](https://chiselapp.com/user/reduce-algebra/repository/reduce-algebra/)
+<!--- [Chisel Mirror](https://chiselapp.com/user/reduce-algebra/repository/reduce-algebra/)-->
 
 ----
 
