@@ -18,7 +18,7 @@ The development of the **REDUCE** computer algebra system was started in the 196
 
 - Arbitrary precision integer and rational arithmetic
 - Algorithms for polynomials and rational functions
-- Facilities for the solution of a variety of algebraic equations;
+- Facilities for the solution of a variety of algebraic equations
 - Automatic and user controlled simplification of expressions
 - Substitutions and pattern matching in a wide variety of forms
 - Analytic differentiation and integration
