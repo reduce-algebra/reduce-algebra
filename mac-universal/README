@@ -1,0 +1,78 @@
+                    UNIVERSAL PACKAGES ON A MACINTOSH
+                                March 2021
+
+This directory is relevant as of March 2021 but is liable to be overtaken
+by developments elsewhere! It only makes any sense in the context of a
+Macintosh with an M1 (ie arm64) CPU. So if you are not using one of those
+you can just ignore all of this!
+
+Using MacPorts on an M1 Mac one can often go
+    port install portname +universal
+and end up with a universal version of the library files and executables
+involved. However there are enough cases where particular packages have
+not yet been updated to support this that I wanted an alternative solution.
+The one here is based on maintainng two parallel instances of MacPorts, one
+for arm64 and one for x86_64. I can then build packages for both architectures
+and then use the Apple "lipo" utility to merge the results into single
+universal versions.
+
+The files here attempt to make that easy. The copies of MacPorts are
+installed within the user's home directory so "sudo" is not needed. The
+eventual universal material is places in ${HOME}/ports, and ${HOME}/ports/bin
+should be added to $PATH. The install script patches that on the end of
+your .zprofile if it does not seem to be present already. To avoid confusion
+you may find it feels safest to remove any existing installation of MacPorts
+before playing with this. Their web-pages provide instructions.
+
+The script set-up-macports.sh fetches MacPorts source and builds it, leaving
+a framework ready for the user to install the particular software they need.
+Then "uinstall p1 p2 ..." will [attempt to] fetch and install universal
+versions of the ports p1, p2... and "uupgrade" will perform the steps that
+would otherwise have been "port selfupdate; port upgrade outdated".
+Small scripts "arm" and "intel" may ease multi-architecture development
+by being just slighly more compact than "arch -arch x86_64 ...".
+"umerge" is the script that merges ARM and Intel variants, and if it is
+given an argument "-force" it merges everything present - normally it is
+just automatically called as part of uinstall or uupgrade to merge newly
+changed stuff. Note that after you have installed a bunch of packages there
+can be VERY many file (hundreds of thousands!) to be processed there so
+"umerge -force" will take a seriously long time.
+
+It is easy to envisage situations when ARM and Intel installations of
+a certain package set up different sets of files or arrange things so as
+to defeat the attempts to consolidate them that are used here. It MAY be
+that in such cases reading the scripts here could allow one to piece together
+an universal version, either by using lipo with a little more manual control
+than in the scripts or by setting up a high level script that can test
+which architecture is in use and then select one of two independent versions.
+Or otherwise!
+
+One (current) PAIN is that even though the setup here tried to instruct
+MacPorts to place everything somewhere within $HOME, some ports insist on
+putting some file in /Library or perhaps other places where "sudo" must be
+used to gain access permission. texlive-bin is one example of this (as of
+early March 2021 - such things may change when the MacPorts community has
+this raised with them as an issue!). So SOMETIMES (and I hope infrequently)
+you will need to run uinstall as "sudo uinstall ...".
+
+Every so often you may find that things have got tangled, and using clean.sh
+and starting from scratch is very tedious. One recipe you can attempt to use
+to repair things if port P is messed up is
+   arm port uninstall P  ;  intel port uninstall P
+   arm port clean P      ;  intel port clean P
+   arm port install P    ;  intel port install P
+   ./umerge.sh -force
+which at least splits the stages down into individual ones that you can
+try to address.
+
+If all the libraries and programs you need install happily using the
++universal for MacPorts you will not need any of this!
+
+Note that these scripts will work on ARM-based Macintoshes. They will
+be less useful on Intel ones because, at the time of writing, essentially
+all ports can be built for Intel when using an ARM-based Mac (via Rosetta
+so the build happens as on an Intel Mac), but a fair number of ports can
+not (yet?) be cross-built for ARM when runing on an Intel Mac.
+
+
+                                                Arthur Norman.  March 2021

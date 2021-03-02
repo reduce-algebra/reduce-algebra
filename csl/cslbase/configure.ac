@@ -446,7 +446,14 @@ case $host in
 # that arise because they hand down options that lead to failures in
 # compilation of any sort at all are then THEIR job to resolve by providing
 # settings that are satisfactory.
-  CPPFLAGS="$CPPFLAGS -I/opt/local/include -I/opt/local/include/freetype2"
+  if test -d $HOME/ports/include
+  then
+    CPPFLAGS="$CPPFLAGS -I$HOME/ports/include -I$HOME/ports/include/freetype2"
+  fi
+  if test -d /opt/local/include
+  then
+    CPPFLAGS="$CPPFLAGS -I/opt/local/include -I/opt/local/include/freetype2"
+  fi
   XLIBS="-lXext -lX11 -lXft -lfontconfig -lc"
   macintosh_build="yes"
   darwin_build="yes"
@@ -468,7 +475,15 @@ case $host in
     CPPFLAGS="$CPPFLAGS -fno-common -I/usr/X11R6/include"
     DLL_CFLAGS="$CFLAGS -bundle -undefined suppress"
     AC_DEFINE(UNIX,[1],[True if we are running on Unix, Linux, BSD etc])
-    LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -L/opt/local/lib -L/opt/X11/lib"
+    if test -d $HOME/ports/lib
+    then
+      LDFLAGS="$LDFLAGS -L$HOME/ports/lib"
+    fi
+    if test -d /opt/local/lib
+    then
+      LDFLAGS="$LDFLAGS -L/opt/local/lib"
+    fi
+    LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -L/opt/X11/lib"
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
   fi
   AC_CHECK_PROGS(REZ,[/usr/bin/Rez /Developer/tools/Rez],[Rez])
@@ -1163,7 +1178,7 @@ then
 # libraries are nevertheless available. I will look for freetype-config
 # which may also help me...
         AC_PATH_PROGS(FREETYPE_CONFIG, freetype-config, [no],
-          [/usr/local/bin:/usr/sfw/bin:/opt/local/bin:$PATH])
+          [/usr/local/bin:/usr/sfw/bin:$HOME/ports/bin:/opt/local/bin:$PATH])
         if test "$FREETYPE_CONFIG" != "no"
         then
 # I will add to CFLAGS and XLIBS if freetype-config is found, an in fact I
@@ -1676,7 +1691,14 @@ then
 # configured for use without a GUI.
   if test "x$with_gui" = "xyes"
   then
-    LL=/opt/local/lib
+    if test -d /opt/local/lib
+    then 
+      LL=/opt/local/lib
+    fi
+    if test -d $HOME/ports/lib
+    then 
+      LL=$HOME/ports/lib
+    fi
     LIBS="$LL/libXrandr.a \
       $LL/libXcursor.a \
       $LL/libXrender.a \
