@@ -52,12 +52,10 @@ kernels not in the list of variables; if, however, the variables are
 extracted automatically from the input expressions, $d$ is identical
 with the current \REDUCE domain. It is useful to regard kernels not
 being members of the list of variables as ``parameters'', e.g.
-\[
-\begin{array}{c}
- a * x + (a - b) * y**2 \;\mbox{ with ``variables''}\ \{x,y\} \\
-\mbox{and ``parameters''  $\;a\;$ and $\;b\;$}\;.
-\end{array}
-\]
+\begin{center}
+\texttt{a * x + (a - b) * y**2} with ``variables'' \{$x,y$\} \\
+and ``parameters'' $\;a\;$ and $\;b\;$.
+\end{center}
 
 The exponents of \emph{groebner} variables must be positive integers.
 
@@ -207,8 +205,7 @@ over the reduction process. These are discussed in the following.
 
 \begin{description}
 \ttindex{torder}
-\item [{\it torder}]($vl$,$m$,$[p_1,p_2,\ldots]$);
-
+\item[{{\it torder}($vl,m,[p_1,p_2,\ldots]$);}]\mbox{}\\
 where $vl$ is a variable list (or the empty list if
 no variables are declared explicitly),
 $m$ is the name of a term ordering mode \emph{lex}, \emph{gradlex},
@@ -225,9 +222,8 @@ If the variable list is empty or if the \emph{torder} declaration
 is omitted, the automatic variable extraction is activated.
 
 \ttindex{gvars}
-\item[{\it gvars}] ({\it\{exp$1$, exp$2$, $ \ldots$, exp$n$\}});
-
- where $\{exp1, exp2, \ldots , expn\}$ is a list of expressions or
+\item[{\it gvars}({\it\{exp$1$, exp$2$, $\ldots$, exp$n$\}});]\mbox{}\\
+where $\{exp1, exp2, \ldots , expn\}$ is a list of expressions or
 equations.
 
 \emph{gvars} extracts from the expressions $\{exp1, exp2, \ldots , expn\}$
@@ -238,8 +234,7 @@ calculation. This can be used e.g. in a \emph{torder} declaration.
 \subsubsection{\emph{groebner}: Calculation of a Gr\"obner Basis}
 \begin{description}
 \ttindex{groebner}
-\item[{\it groebner}] $\{exp1, exp2, \ldots , expm\}; $
-
+\item[{\it groebner} $\{exp1, exp2, \ldots , expm\};$]\mbox{}\\
 where $\{exp1, exp2, \ldots , expm\}$ is a list of
 expressions or equations.
 
@@ -316,7 +311,7 @@ Another basis yet again results with a different term ordering:
 The operation of \emph{groebner} can be controlled by the following switches:
 \begin{description}
 \ttindexswitch[GROEBNER]{GROEBOPT}
-\item[groebopt] -- If set \emph{on}, the sequence of variables is optimized
+\item[groebopt --] If set \emph{on}, the sequence of variables is optimized
 with respect to execution speed; the algorithm involved is described
 in~\cite{Boege:86}; note that the final list of variables is available in
 \ttindex{gvarslast}
@@ -332,18 +327,18 @@ guarantees that $a$ will be placed in front of $x$ and $y$. So
 By default \emph{groebopt} is \emph{off}, conserving the original variable sequence.
 
 \ttindexswitch[GROEBNER]{GROEBFULLREDUCTION}
-\item[\emph{groebfullreduction}] -- If set \emph{off}, the reduction steps during
+\item[\emph{groebfullreduction} --] If set \emph{off}, the reduction steps during
 the \linebreak[4] \emph{groebner} operation are limited to the pure head
 term reduction; subsequent terms are reduced otherwise.
 
 By default \emph{groebfullreduction} is on.
 
 \ttindexswitch[GROEBNER]{GLTBASIS}
-\item[\emph{gltbasis}] -- If set on, the leading terms of the result basis are
+\item[\emph{gltbasis} --] If set on, the leading terms of the result basis are
 extracted. They are collected in a basis of monomials, which is
 available as value of the global variable with the name \emph{gltb}.
 
-\item[\emph{glterms}] -- If $\{exp_1, \ldots , exp_m\} $ contain parameters
+\item[\emph{glterms} --] If $\{exp_1, \ldots , exp_m\} $ contain parameters
 (symbols which are not member of the variable list), the share variable
 \var{\emph{glterms}} contains a list of expression which during the
 calculation were assumed to be nonzero. A Gr\"obner basis
@@ -355,26 +350,26 @@ The following switches control the print output of \emph{groebner}; by
 default all these switches are set \emph{off} and nothing is printed.
 \begin{description}
 \ttindexswitch[GROEBNER]{GROEBSTAT}
-\item[\emph{groebstat}] -- A summary of the computation is printed
+\item[\emph{groebstat} --] A summary of the computation is printed
 including the computing time, the number of intermediate
 $h$--polynomials and the counters for the hits of the criteria.
 
 \ttindexswitch[GROEBNER]{TRGROEB}
-\item[\emph{trgroeb}] -- Includes \emph{groebstat} and the printing of the
+\item[\emph{trgroeb} --] Includes \emph{groebstat} and the printing of the
 intermediate $h$-polynomials.
 
 \ttindexswitch[GROEBNER]{TRGROEBS}
-\item[\emph{trgroebs}] -- Includes \emph{trgroeb} and the printing of
+\item[\emph{trgroebs} --] Includes \emph{trgroeb} and the printing of
 intermediate $s$--poly\-nomials.
 
 \ttindexswitch[GROEBNER]{TRGROEB1}
-\item[\emph{trgroeb1}] -- The internal pairlist is printed when modified.
+\item[\emph{trgroeb1} --] The internal pairlist is printed when modified.
 \end{description}
 
 \subsubsection{\emph{Gzerodim}?: Test of $\dim = 0$}
 \begin{description}
 \ttindex{gzerodim?}
-\item[{\it gzerodim}!?] \emph{bas} \\
+\item[{\it gzerodim}!? \emph{bas}]\mbox{}\\
 where {\it bas} is a Gr\"obner basis in the current setting.
 The result is {\it nil}, if {\it bas} is the
 basis of an ideal of polynomials with more than finitely many common zeros.
@@ -391,8 +386,8 @@ Gr\"obner basis {\it bas} with arbitrary term order:
 \begin{description}
 \ttindex{gdimension}\ttindex{gindependent\_sets}
 \ttindex{ideal dimension}\ttindex{independent sets}
-\item[\emph{gdimension}]\emph{bas}
-\item[\emph{gindependent\_sets}]\emph{bas}
+\item[\emph{gdimension bas}]
+\item[\emph{gindependent\_sets bas}]
 {\it gindependent\_sets} computes the maximal
 left independent variable sets of the ideal, that are
 the variable sets which play the role of free parameters in the
@@ -408,7 +403,7 @@ The switch \emph{groebopt} plays no role in the algorithms \emph{gdimension} and
 \emph{gindependent\_sets}. It is set \emph{off} during the processing even if
 it is set \emph{on} before. Its state is saved during the processing.
 
-The ``Kredel-Weispfenning" algorithm is used (see \cite{Kredel:88a},
+The ``Kredel-Weispfenning'' algorithm is used (see \cite{Kredel:88a},
 extended to general ordering in \cite{Becker:93}.
 
 \subsubsection{Conversion of a Gr\"obner Basis}
@@ -417,9 +412,9 @@ extended to general ordering in \cite{Becker:93}.
 of a Zero Dimensional Ideal into a Lexical One}
 \begin{description}
 \ttindex{glexconvert}
-\item[{\it glexconvert}] $ \left(\{exp,\ldots , expm\} \left[,\{var1
-\ldots , varn\}\right]\left[,maxdeg=mx\right]\right.$ \\
-$\left.\left[,newvars=\{nv1, \ldots , nvk\}\right]\right) $ \\
+\item[{{\it glexconvert}$\left(\{exp,\ldots , expm\} \left[,\{var1
+\ldots , varn\}\right]\left[,maxdeg=mx\right]\right.$}]\mbox{}\\
+$\left.\left[,newvars=\{nv1, \ldots , nvk\}\right]\right)$ \\
 where $\{exp1, \ldots , expm\}$ is a Gr\"obner basis with
 $\{var1, \ldots , varn\}$ as variables in the current term order mode,
 $mx$ is an integer, and
@@ -504,7 +499,7 @@ so do not call \emph{groebner\_walk} with \emph{groebopt on}!
 
 \begin{description}
 \ttindex{groebner\_walk}
-\item[{\it groebner\_walk}] $g$\\
+\item[{\it groebner\_walk} $g$]\mbox{}\\
 where $g$ is a polynomial ideal basis computed under \emph{gradlex} or under
 \emph{weighted} with a one-element, non zero weight vector with only one
 element, repeated for each variable. The result is a corresponding
@@ -534,6 +529,7 @@ common zero, i.e. no additional solution for the original problem,
 contributed by this branch.
 
 \subsubsubsection{\emph{groebnerf} Call}
+
 \ttindex{groebnerf}
 The syntax of \emph{groebnerf} is the same as for \emph{groebner}.
 \[ \textit{groebnerf}(\{exp1, exp2, \ldots , expm\}
@@ -602,11 +598,11 @@ All switches from \emph{groebner} are valid for \emph{groebnerf} as well:
 \end{tabular}
 \end{center}
 
-\subsubsubsection*{Additional switches for \emph{groebnerf}:}
+\subsubsubsection{Additional switches for \emph{groebnerf}:}
 \begin{description}
 
 \ttindexswitch[GROEBNER]{TRGROEBR}
-\item[\emph{trgroebr}] -- All intermediate partial basis are printed when
+\item[\emph{trgroebr} --] All intermediate partial basis are printed when
 detected.
 
 By default \emph{trgroebr} is off.
@@ -710,17 +706,17 @@ Buchberger algorithm. Informally it can be described for
 polynomials over a field as follows:
 \begin{center}
 \begin{tabular}{l}
-loop1: \hspace*{2mm}\% head term elimination \\
-\hspace*{-1cm} if there is one polynomial $b$ in $B$ such that the
-leading \\ term of $p$ is a multiple of the leading term of $P$ do \\
-$p := p - lt(p)/lt(b) * b$  (the leading term vanishes)\\
-\hspace*{-1cm} do this loop as long as possible; \\
-loop2: \hspace*{2mm} \% elimination of subsequent terms \\
-\hspace*{-1cm} for each term $s$ in $p$ do \\
-if there is one polynomial $b$ in $B$ such that $s$ is a\\
-multiple of the leading term of $p$ do \\
-$p := p - s/lt(b) * b$ (the term $s$ vanishes) \\
-\hspace*{-1cm}do this loop as long as possible;
+~~~~~~~~~~loop1:~~\% head term elimination \\
+if there is one polynomial $b$ in $B$ such that the leading \\
+~~~~~~~~~~term of $p$ is a multiple of the leading term of $P$ do \\
+~~~~~~~~~~$p := p - lt(p)/lt(b) * b$  (the leading term vanishes) \\
+do this loop as long as possible; \\
+~~~~~~~~~~loop2:~~\% elimination of subsequent terms \\
+for each term $s$ in $p$ do \\
+~~~~~~~~~~if there is one polynomial $b$ in $B$ such that $s$ is a \\
+~~~~~~~~~~multiple of the leading term of $p$ do \\
+~~~~~~~~~~$p := p - s/lt(b) * b$ (the term $s$ vanishes) \\
+do this loop as long as possible;
 \end{tabular}
 \end{center}
 
@@ -787,9 +783,8 @@ with the operator \emph{greduce\_orders}:
 
 \begin{description}
 \ttindex{greduce\_orders}
-\item[{\it greduce\_orders}]($exp$, \{$exp1$, $exp2$, \ldots , $expm$\}
-[,\{$v_1$,$v_2$ \ldots $v_n$\}]);
-
+\item[{{\it greduce\_orders}($exp$, \{$exp1$, $exp2$, \ldots , $expm$\}
+[,\{$v_1,v_2,\ldots,v_n$\}]);}]\mbox{}\\
 where {\it exp} is an expression and $\{exp1, exp2,\ldots , expm\}$ is
 a list of any number of expressions or equations. The list of variables
 $v_1,v_2 \ldots v_n$ may be omitted; if set, the variables must be a list.
@@ -946,7 +941,7 @@ gb1 := {2*x - y + 1=p2,
 
 \example \index{Groebner package!example}
 
-We want to reduce the polynomial \verb+ x**2+ {\it  wrt}
+We want to reduce the polynomial \verb+ x**2+\ {\it wrt}
 the above Gr\"obner basis and need knowledge about the reduction
 formula. We therefore extract the basis polynomials from $gb1$,
 assign unique names to them (here $g1$, $g2$) and call \emph{preducet}.
@@ -1116,16 +1111,17 @@ grouping \ttindex{torder}
 Here the integer $n$ is the number of variables in the first group
 and the names combine the local ordering for the first and second
 group, e.g.
+
 \begin{center}
-\begin{tabular}{llll}
-\multicolumn{4}{l}{{\it lexgradlex}, 3 for $\{x_1,x_2,x_3,x_4,x_5\}$:} \\
-\multicolumn{4}{l}{$x_1^{i_1}\ldots x_5^{i_5} \gg x_1^{j_1}\ldots
-x_5^{j_5}$} \\
+\begin{tabular}{@{~}lllll}
+\multicolumn{4}{@{~}l}{\textit{lexgradlex}, 3 for $\{x_1,x_2,x_3,x_4,x_5\}$:} \\
+\multicolumn{4}{@{~}l}{$x_1^{i_1}\ldots x_5^{i_5} \gg x_1^{j_1}\ldots x_5^{j_5}$} \\
 if & & & $(i_1,i_2,i_3) \gg_{lex}(j_1,j_2,j_3)$ \\
 & or & & $(i_1,i_2,i_3) = (j_1,j_2,j_3)$ \\
 & & and & $(i_4,i_5) \gg_{gradlex}(j_4,j_5)$
 \end{tabular}
 \end{center}
+
 Note that in the second place there is no {\it lex} ordering available;
 that would not make sense.
 
@@ -1133,9 +1129,7 @@ that would not make sense.
 \ttindex{torder} \index{Weighted ordering}\index{Groebner package!ordering!weighted}
 The statement
 \begin{center}
-\begin{tabular}{cl}
-{\it torder} &(\emph{vl}, weighted, $\{n_1,n_2,n_3  \ldots$\}) ; \\
-\end{tabular}
+{\it torder}(\emph{vl}, weighted, $\{n_1,n_2,n_3  \ldots\}$);
 \end{center}
 establishes a graduated ordering, where the exponents are first
 multiplied by the given weights. If there are less weight values than
@@ -1146,9 +1140,7 @@ degree calculation is not decidable, a \emph{lex} comparison follows.
 \ttindex{torder} \index{Graded ordering}\index{Groebner package!ordering!graded}
 The statement
 \begin{center}
-\begin{tabular}{l}
-{\it torder} (\emph{vl}, graded, $\{n_1,n_2,n_3 \ldots\}$, $order_2$);
-\end{tabular}
+{\it torder}(\emph{vl}, graded, $\{n_1,n_2,n_3 \ldots\}$, $order_2$);
 \end{center}
 establishes a graduated ordering, where the exponents are first
 multiplied by the given weights. If there are less weight values than
@@ -1161,9 +1153,7 @@ primarily for use with the operator \emph{dd\_groebner}.
 \ttindex{torder} \index{Matrix ordering}\index{Groebner package!ordering!matrix}
 The statement
 \begin{center}
-\begin{tabular}{cl}
-{\it torder} &(\emph{vl}, matrix, $m$);
-\end{tabular}
+{\it torder}(\emph{vl}, matrix, $m$);
 \end{center}
 where $m$ is a matrix with integer elements and row length which
 corresponds to the variable number. The exponents of each monomial
@@ -1203,7 +1193,7 @@ a Gr\"obner Base can be computed with limiting the grade
 of the intermediate $s$--polynomials:
 \begin{description}
 \ttindex{dd\_groebner}
-\item [{\it dd\_groebner}]($d1$,$d2$,$\{p_1,p_2,\ldots\}$);
+\item[{\it dd\_groebner}($d1,d2,\{p_1,p_2,\ldots\}$);]
 \end{description}
 where $d1$ is a non--negative integer and $d2$ is an integer
 $>$ $d1$ or ``infinity". A pair of polynomials is considered

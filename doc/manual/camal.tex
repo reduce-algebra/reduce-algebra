@@ -62,7 +62,7 @@ data structures and special algorithms is presented.
 
 CAMAL is a hierarchical system, with the representation of polynomials
 being completely independent of the representations of the angular
-parts.  
+parts.
 
 The angular part had to represent a polynomial coefficient, either a
 sine or cosine function and a linear sum of angles.  In the problems
@@ -119,11 +119,11 @@ necessary to apply the transformations for linearising products of
 sine and cosines.  These will be familiar to readers of the REDUCE
 test program as
 \begin{eqnarray}
-\cos \theta \cos \phi & \Rightarrow & 
+\cos \theta \cos \phi & \Rightarrow &
                 (\cos(\theta+\phi)+\cos(\theta-\phi))/2, \\
-\cos \theta \sin \phi & \Rightarrow & 
+\cos \theta \sin \phi & \Rightarrow &
                 (\sin(\theta+\phi)-\sin(\theta-\phi))/2, \\
-\sin \theta \sin \phi & \Rightarrow & 
+\sin \theta \sin \phi & \Rightarrow &
                 (\cos(\theta-\phi)-\cos(\theta+\phi))/2, \\
 \cos^2 \theta & \Rightarrow & (1+\cos(2\theta))/2,      \\
 \sin^2 \theta & \Rightarrow & (1-\cos(2\theta))/2.
@@ -157,7 +157,7 @@ An operation which is of great importance in Fourier operations is the
 some angles and a general expression for an angle.  In order to
 preserve the format, the mechanism uses the translations
 \begin{eqnarray*}
-\sin(\theta + A) & \Rightarrow & \sin(\theta) \cos(A) + 
+\sin(\theta + A) & \Rightarrow & \sin(\theta) \cos(A) +
                                  \cos(\theta) \sin(A) \\
 \cos(\theta + A) & \Rightarrow & \cos(\theta) \cos(A) -
                                  \sin(\theta) \sin(A) \\
@@ -212,7 +212,7 @@ philosophy.  It was not intended at this stage to produce a complete
 product, and so for simplicity a number of compromises were made with
 the ``no restrictions'' principle in REDUCE and the space and time
 efficiency of CAMAL.  This section describes the basic design
-decisions. 
+decisions.
 
 \subsubsection{Data Structures}
 
@@ -318,10 +318,10 @@ use.  The prototype uses the operator form
         fourier sin(u)
 \end{verbatim}
 to introduce harmonically represented sine functions.  An alternative of
-using the tokens \texttt{F\_SIN} and \texttt{F\_COS} is also available.  
+using the tokens \texttt{F\_SIN} and \texttt{F\_COS} is also available.
 
 It is necessary to declare the names of the angles, which is achieved
-with the declaration 
+with the declaration
 \begin{verbatim}
         harmonic theta, phi;
 \end{verbatim}
@@ -336,7 +336,7 @@ The REDUCE test file contains a simple example of a Fourier
 calculation, determining the value of $(a_1 \cos({wt}) + a_3
 \cos(3{wt}) + b_1 \sin({wt}) + b_3 \sin(3{wt}))^3$.  For the purposes
 of this system this is too trivial to do more than confirm the correct
-answers. 
+answers.
 
 The simplest non-trivial calculation for a Fourier series manipulator
 is to solve Kepler's equation for the eccentric anomoly E in terms of
@@ -370,7 +370,7 @@ Fourier module, as could be expected.
 \medskip
 \begin{center}
 \begin{tabular}{ | c | l l |}
-\multicolumn{3}{c}{\bf Solving Kepler's Equation} \\
+\multicolumn{3}{@{}c@{}}{\bf Solving Kepler's Equation} \\
 \hline
 Order   &       REDUCE  &       Fourier Module \\
 5       &       9.16    &       2.48    \\
@@ -414,10 +414,10 @@ brief description is given here for completeness, and to grasp the
 extent of the calculation.
 
 Referring to the figure 1 which gives the cordinate system, the basic
-equations are 
+equations are
 \begin{eqnarray}
 S  & = & (1-\gamma ^2)\cos(f + g +h -f' -g' -h')
-+ \gamma ^2 cos(f + g -h +f' +g' +h') \\
++ \gamma ^2 \cos(f + g -h +f' +g' +h') \\
 r & = & a (1 - e \cos E) \\
 l & = & E - e \sin E \\
 a & = & \frac{r\mathbf{d} E}{\mathbf{d}l} \\
@@ -456,7 +456,7 @@ and Fitch \cite{Barton72} with just small changes to generalise it for
 any order, and to make it acceptable for Reduce3.4.  The Fourier
 program followed the same pattern, but obviously used the \texttt{HSUB}
 operation as appropriate and the harmonic integration.  It is very
-similar to the CAMAL program in \cite{Barton72}.   
+similar to the CAMAL program in \cite{Barton72}.
 
 The disturbing function was calculated to orders 2, 4 and 6 using
 Cambridge LISP on an HLH Orion 1/05 (Intergraph Clipper), with the
@@ -498,7 +498,7 @@ Order of DDF    & Reduce        & Camal Linear  & Camal Tree \\ \hline
 From this we conclude that a doubling of speed is about correct, and
 although the balanced tree system is slower as the problem size
 increases the gap between it and the simpler linear system is
-narrowing. 
+narrowing.
 
 It is disappointing that the ratio is not better, nor the absolute
 time less.  It is worth noting in this context that Jefferys claimed
@@ -612,6 +612,4 @@ wtlevel n;
 for i:=n/2+2 step -1 until 3 do
     p(n/2+2):=fourier(a*a)*zz*p(n/2+2)+p(i-1);
 yy*p(n/2+2);
-
 \end{verbatim}
-

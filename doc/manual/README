@@ -12,4 +12,41 @@ Prerequisites are:
 
 The file reduce.cfg contains the necessary configuration lines for TeX4ht.
 
- 
+
+LaTeX that works with TeX4ht HTML + MathJax output. FJW, March 2021
+
+Avoid tabbing environments, which don't translate well to HTML.  For
+columns consider a tabular environment.  For indentation of text
+consider a list environment, such as a description environment or if
+necessary a custom list.  For indentation of algorithms or program
+code consider using an appropriate number of ~ characters.
+
+To get correct alignment in tabular environments when using
+\multicolumn it may help to use @{~} as the first column specifier.
+
+New commands and environments that are used in math mode must be
+defined in math mode for use by MathJax (which seems strange but
+works), and they must be defined on every page that uses them.
+Supporting HTML output both using and not using MathJax is
+particularly tricky, but is possible; see e.g. guardian.tex, near the
+top of the file, for an example.
+
+Avoid unnecessary use of math mode, and nesting of math mode within
+text mode within math mode within... .  For example, an array
+environment containing a lot of text might work better as a tabular
+environment.  Math-mode facilities that need information from the
+non-math environment, such as \lefteqn, \intertext and gather
+environments, do not work in MathJax and need to be implemented
+differently.  Align environments work but split environments may not.
+Commands related to page breaking, such as \\*, do not work, although
+\\ is fine.
+
+Headings below \subsubsection level should be avoided because they
+disappear in HTML.
+
+Nested tabular-type environments need to be handled specially, such as
+by implementing the inner environment as a new command that is called
+in the output environment; see specfn.tex, towards the end.
+
+Excessively convoluted LaTeX is best avoided and is often unnecessary,
+even if it works in normal LaTeX.

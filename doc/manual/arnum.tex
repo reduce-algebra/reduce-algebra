@@ -46,14 +46,13 @@ Division of two algebraic numbers r and s yields another algebraic number q.
 $ \frac{r}{s} = q$ or $ r = q s $.
 
 The last equation written out explicitly reads
-
-\(({r_{n-1}} {a^{n-1}} + {r_{n-2}} {a^{n-2}} + \ldots)\)
-\begin{eqnarray*}
-& = & ({q_{n-1}} {a^{n-1}} + {q_{n-2}} {a^{n-2}} + \ldots) \times
-({s_{n-1}} {a^{n-1}} + {s_{n-2}} {a^{n-2}} + \ldots) \\
-& & {\bf modulo} (a^n + {p _{n-1}} {a^{n -1}} + \ldots) \\
-& = & ({t_{n-1}} {a^{n-1}} + {t_{n-2}} {a^{n-2}} + \ldots)
-\end{eqnarray*}
+\begin{align*}
+  ({r_{n-1}} & {a^{n-1}} + {r_{n-2}} {a^{n-2}} + \ldots) \\
+  =\ & ({q_{n-1}} {a^{n-1}} + {q_{n-2}} {a^{n-2}} + \ldots) \times
+  ({s_{n-1}} {a^{n-1}} + {s_{n-2}} {a^{n-2}} + \ldots) \\
+     & {\bf modulo} (a^n + {p _{n-1}} {a^{n -1}} + \ldots) \\
+  =\ & ({t_{n-1}} {a^{n-1}} + {t_{n-2}} {a^{n-2}} + \ldots)
+\end{align*}
 
 The $t_i$ are linear in the $q_j$.  Equating equal powers of $a$ yields a
 linear system for the quotient coefficients $q_j$.
