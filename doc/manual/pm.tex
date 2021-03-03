@@ -39,7 +39,7 @@ of the expression until all the generic variables in the subexpression are
 bound.  The equality is then checked.  This is controlled by the
 switch \texttt{semantic}.  By default it is \texttt{on}.
 
-\subsection{\texttt{M(exp,temp)}} 
+\subsection{\texttt{M(exp,temp)}}
 
 The template \texttt{temp} is matched against the expression \texttt{exp}.  If
 the template is literally equal to the expression \texttt{T} is returned.  If
@@ -108,7 +108,7 @@ Note that the effect of using a multi-generic symbol is different:
 
 
 
-\subsection{temp \_= logical\_exp} 
+\subsection{temp \_= logical\_exp}
 
 A template may be qualified by the use of the conditional operator \texttt{\_=},
 \texttt{such!-that}.  When a \texttt{such-that} condition is encountered in a template, it
@@ -122,9 +122,9 @@ held \texttt{such-that} conditions are evaluated and compared to \texttt{T}.
 \subsubsection*{Examples:}
 
 \begin{verbatim}
-        m(f(a,b), f(?a,?b\_=(?a=?b)));
+        m(f(a,b), f(?a,?b_=(?a=?b)));
         0
-        m(f(a,a), f(?a,?b\_=(?a=?b)));
+        m(f(a,a), f(?a,?b_=(?a=?b)));
         {?b -> a, ?a -> a}
 \end{verbatim}
 Note that \texttt{f(?a,?b\_=(?a=?b))} is the same as \texttt{f(?a,?a)}.
@@ -220,9 +220,9 @@ termination condition.  For all other values write it as a gamma function.  Note
 that the order of definition is not important, as the rules are re-ordered so
 that the most specific rule is tried first.  Note the use of \texttt{::-}
 instead of \texttt{:-} to stop simplification of the l.h.s.  \texttt{hold} stops
-its arguments from being simplified. 
+its arguments from being simplified.
 \begin{verbatim}
-        fac(?x \_= Natp(?x)) ::- ?x*fac(?x-1);
+        fac(?x _= Natp(?x)) ::- ?x*fac(?x-1);
         hold(fac(?X-1)*?X)
         fac(0) :- 1;
         1
@@ -259,7 +259,7 @@ functions.  For further details see McIsaac.
 
 \subsubsection*{Examples:}
 
-\texttt{f(?a,?a,?b)} is better than \texttt{f(?a,?b,?c\_=(?a=?b))}. 
+\texttt{f(?a,?a,?b)} is better than \texttt{f(?a,?b,?c\_=(?a=?b))}.
 \texttt{?a+??b} is better than \texttt{?a+?b+?c...}.
 
 The template \texttt{f(?a+?b,?a,?b)}, matched against \texttt{f(3,2,1)} is
@@ -290,4 +290,3 @@ In general usage the following switches need not be considered:
     require these types of matches.  However they can be made available by
     turning the switch off.
 \end{description}
-
