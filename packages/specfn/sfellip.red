@@ -119,10 +119,10 @@ end;
 
 %Increases the precision used to evaluate algebraic arguments.
 
-symbolic procedure  num_jacobi (u);
+symbolic procedure  n_elliptic (u);
 % check that length u >= 2 !
  if length u < 2 then
-         rederr "illegal call to num_jacobi" else
+         rederr "illegal call to n_elliptic" else
    begin scalar oldprec,res;
      oldprec := precision 0;
      precision max(oldprec,15);
@@ -133,7 +133,7 @@ symbolic procedure  num_jacobi (u);
 
   end;
 
-put('num_elliptic, 'psopfn, 'num_jacobi);
+put('num_elliptic, 'psopfn, 'n_elliptic);
 
 %######################################################################
 %JACOBI AMPLITUDE
@@ -1357,7 +1357,6 @@ put('jacobiam,'plain!-functionsymbol,'am);
 put('jacobizeta,'plain!-functionsymbol,'!Z);
 put('jacobie,'plain!-functionsymbol,'!Epsilon);
 
-% put('ellipticd, 'plain!-functionsymbol, '!D);
 put('elliptice, 'plain!-functionsymbol, '!E);
 put('elliptick, 'plain!-functionsymbol, '!K);
 put('ellipticf, 'plain!-functionsymbol, '!F);
@@ -1382,7 +1381,6 @@ do << put(x, 'fancy!-symbol!-length, 4);
    >>;
 
 put('elliptice, 'prifn, 'plain!-symbol);
-% put('ellipticd, 'prifn, 'plain!-symbol);
 put('elliptick, 'prifn, 'plain!-symbol);
 put('elliptick!', 'prifn, 'plain!-symbol);
 put('elliptice!', 'prifn, 'plain!-symbol);

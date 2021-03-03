@@ -1,0 +1,913 @@
+
+
+% test of sfweier.red
+% Author: Alan Barnes   (Alan.Barnes45678@gmail.com) February 2021
+
+weierstrass(u+2v+4w,v,w);
+
+
+weierstrass(u,v,w)
+
+a1:=weierstrass(u-2v-6w,v,w);
+
+
+a1 := weierstrass(u,v,w)
+
+a2:=weierstrass(u+2v+3w,v,w);
+
+
+a2 := weierstrass(u + w,v,w)
+
+a3:=weierstrass(u+5v+4w,v,w);
+
+
+a3 := weierstrass(u + v,v,w)
+
+a4:=weierstrass(u+3v+5w,v,w);
+
+
+a4 := weierstrass(u + v + w,v,w)
+
+weierstrass(2v+3w,v,w);
+
+
+lattice_e3(v,w)
+
+weierstrass(5v+2w,v,w);
+
+
+lattice_e1(v,w)
+
+weierstrass(3v+5w,v,w);
+
+
+lattice_e2(v,w)
+
+
+weierstrass(-2u^3,v,w);
+
+
+               3
+weierstrass(2*u ,v,w)
+
+m :=6;
+
+
+m := 6
+
+weierstrass(m*u,m*v,m*w);
+
+
+ weierstrass(u,v,w)
+--------------------
+         36
+
+
+weierstrassZeta(u+2v+4w,v,w);
+
+
+2*eta1(v,w) + 4*eta3(v,w) + weierstrasszeta(u,v,w)
+
+b1:=weierstrassZeta(u-2v-6w,v,w);
+
+
+b1 :=  - 2*eta1(v,w) - 6*eta3(v,w) + weierstrasszeta(u,v,w)
+
+b2:=weierstrassZeta(u+2v+3w,v,w);
+
+
+b2 := 2*eta1(v,w) + 2*eta3(v,w) + weierstrasszeta(u + w,v,w)
+
+b3:=weierstrassZeta(u+5v+4w,v,w);
+
+
+b3 := 4*eta1(v,w) + 4*eta3(v,w) + weierstrasszeta(u + v,v,w)
+
+b4:=weierstrassZeta(u+3v+5w,v,w);
+
+
+b4 := 2*eta1(v,w) + 4*eta3(v,w) + weierstrasszeta(u + v + w,v,w)
+
+weierstrassZeta(2v+3w,v,w);
+
+
+2*eta1(v,w) + 3*eta3(v,w)
+
+weierstrassZeta(5v+4w,v,w);
+
+
+5*eta1(v,w) + 4*eta3(v,w)
+
+weierstrassZeta(3v+5w,v,w);
+
+
+2*eta1(v,w) + 4*eta3(v,w) + weierstrasszeta(v + w,v,w)
+
+
+weierstrassZeta(-u+2w+4v,v,w);
+
+
+4*eta1(v,w) + 2*eta3(v,w) - weierstrasszeta(u,v,w)
+
+m:= -5;
+
+
+m := -5
+
+weierstrassZeta(m*u,m*v,m*w);
+
+
+  - weierstrasszeta(u,v,w)
+---------------------------
+             5
+
+
+
+sigma(u+2v,v,w);
+
+
+    2*eta1(v,w)*u + 2*eta1(v,w)*v
+ - e                             *sigma(u,v,w)
+
+sigma(u-2w,v,w);
+
+
+     2*eta3(v,w)*w
+  - e             *sigma(u,v,w)
+--------------------------------
+          2*eta3(v,w)*u
+         e
+
+sigma(u+2v+2w,v,w);
+
+
+ 2*eta1(v,w)*u + 2*eta1(v,w)*v + 4*eta1(v,w)*w + 2*eta3(v,w)*u + 2*eta3(v,w)*w
+e
+
+*sigma(u,v,w)
+
+c1:=sigma(u-2v-6w,v,w);
+
+
+        2*eta1(v,w)*v + 12*eta1(v,w)*w + 18*eta3(v,w)*w
+       e                                               *sigma(u,v,w)
+c1 := ---------------------------------------------------------------
+                       2*eta1(v,w)*u + 6*eta3(v,w)*u
+                      e
+
+c2:=sigma(u+2v+3w,v,w);
+
+
+c2 := e**(2*eta1(v,w)*u + 2*eta1(v,w)*v + 6*eta1(v,w)*w + 2*eta3(v,w)*u
+
+           + 4*eta3(v,w)*w)*sigma(u + w,v,w)
+
+c3:=sigma(u+5v+4w,v,w);
+
+
+c3 := e**(4*eta1(v,w)*u + 12*eta1(v,w)*v + 16*eta1(v,w)*w + 4*eta3(v,w)*u
+
+           + 4*eta3(v,w)*v + 8*eta3(v,w)*w)*sigma(u + v,v,w)
+
+c4:=sigma(u+3v+5w,v,w);
+
+
+c4 :=  - e**(2*eta1(v,w)*u + 4*eta1(v,w)*v + 10*eta1(v,w)*w + 4*eta3(v,w)*u
+
+              + 4*eta3(v,w)*v + 12*eta3(v,w)*w)*sigma(u + v + w,v,w)
+
+sigma(2v+4w,v,w);
+
+
+0
+
+sigma(-2v-4w,v,w);
+
+
+0
+
+sigma(2v+w,v,w);
+
+
+    2*eta1(v,w)*v + 2*eta1(v,w)*w
+ - e                             *sigma(w,v,w)
+
+sigma(v+4w,v,w);
+
+
+ 4*eta3(v,w)*v + 8*eta3(v,w)*w
+e                             *sigma(v,v,w)
+
+sigma(3v+w,v,w);
+
+
+    4*eta1(v,w)*v + 2*eta1(v,w)*w
+ - e                             *sigma(v + w,v,w)
+
+
+sigma(-u+2v+4w,v,w);
+
+
+  2*eta1(v,w)*v + 8*eta1(v,w)*w + 8*eta3(v,w)*w
+ e                                             *sigma(u,v,w)
+-------------------------------------------------------------
+                2*eta1(v,w)*u + 4*eta3(v,w)*u
+               e
+
+
+sigma1(u+2v,v,w);
+
+
+    2*eta1(v,w)*u + 2*eta1(v,w)*v
+ - e                             *sigma1(u,v,w)
+
+sigma1(u-2w,v,w);
+
+
+  2*eta3(v,w)*w
+ e             *sigma1(u,v,w)
+------------------------------
+         2*eta3(v,w)*u
+        e
+
+sigma1(u+2v+2w,v,w);
+
+
+ - 
+
+ 2*eta1(v,w)*u + 2*eta1(v,w)*v + 4*eta1(v,w)*w + 2*eta3(v,w)*u + 2*eta3(v,w)*w
+e
+
+*sigma1(u,v,w)
+
+d1:=sigma1(u-2v-6w,v,w);
+
+
+           2*eta1(v,w)*v + 12*eta1(v,w)*w + 18*eta3(v,w)*w
+        - e                                               *sigma1(u,v,w)
+d1 := -------------------------------------------------------------------
+                         2*eta1(v,w)*u + 6*eta3(v,w)*u
+                        e
+
+d2:=sigma1(u+2v+3w,v,w);
+
+
+d2 :=  - e**(2*eta1(v,w)*u + 2*eta1(v,w)*v + 6*eta1(v,w)*w + 2*eta3(v,w)*u
+
+              + 4*eta3(v,w)*w)*sigma1(u + w,v,w)
+
+d3:=sigma1(u+5v+4w,v,w);
+
+
+d3 := e**(4*eta1(v,w)*u + 12*eta1(v,w)*v + 16*eta1(v,w)*w + 4*eta3(v,w)*u
+
+           + 4*eta3(v,w)*v + 8*eta3(v,w)*w)*sigma1(u + v,v,w)
+
+d4:=sigma1(u+3v+5w,v,w);
+
+
+d4 :=  - e**(2*eta1(v,w)*u + 4*eta1(v,w)*v + 10*eta1(v,w)*w + 4*eta3(v,w)*u
+
+              + 4*eta3(v,w)*v + 12*eta3(v,w)*w)*sigma1(u + v + w,v,w)
+
+sigma1(2v+4w,v,w);
+
+
+    2*eta1(v,w)*v + 8*eta1(v,w)*w + 8*eta3(v,w)*w
+ - e
+
+sigma1(-2v-4w,v,w);
+
+
+    2*eta1(v,w)*v + 8*eta1(v,w)*w + 8*eta3(v,w)*w
+ - e
+
+sigma1(2v+w,v,w);
+
+
+    2*eta1(v,w)*v + 2*eta1(v,w)*w
+ - e                             *sigma1(w,v,w)
+
+sigma1(v+4w,v,w);
+
+
+0
+
+sigma1(3v+w,v,w);
+
+
+    4*eta1(v,w)*v + 2*eta1(v,w)*w
+ - e                             *sigma1(v + w,v,w)
+
+sigma1(-u+2v+4w,v,w);
+
+
+     2*eta1(v,w)*v + 8*eta1(v,w)*w + 8*eta3(v,w)*w
+  - e                                             *sigma1(u,v,w)
+-----------------------------------------------------------------
+                  2*eta1(v,w)*u + 4*eta3(v,w)*u
+                 e
+
+
+sigma2(u+2v,v,w);
+
+
+ 2*eta1(v,w)*u + 2*eta1(v,w)*v
+e                             *sigma2(u,v,w)
+
+sigma2(u-2w,v,w);
+
+
+  2*eta3(v,w)*w
+ e             *sigma2(u,v,w)
+------------------------------
+         2*eta3(v,w)*u
+        e
+
+sigma2(u+2v+2w,v,w);
+
+
+ 2*eta1(v,w)*u + 2*eta1(v,w)*v + 4*eta1(v,w)*w + 2*eta3(v,w)*u + 2*eta3(v,w)*w
+e
+
+*sigma2(u,v,w)
+
+f1:=sigma2(u-2v-6w,v,w);
+
+
+        2*eta1(v,w)*v + 12*eta1(v,w)*w + 18*eta3(v,w)*w
+       e                                               *sigma2(u,v,w)
+f1 := ----------------------------------------------------------------
+                        2*eta1(v,w)*u + 6*eta3(v,w)*u
+                       e
+
+f2:=sigma2(u+2v+3w,v,w);
+
+
+f2 := e**(2*eta1(v,w)*u + 2*eta1(v,w)*v + 6*eta1(v,w)*w + 2*eta3(v,w)*u
+
+           + 4*eta3(v,w)*w)*sigma2(u + w,v,w)
+
+f3:=sigma2(u+5v+4w,v,w);
+
+
+f3 := e**(4*eta1(v,w)*u + 12*eta1(v,w)*v + 16*eta1(v,w)*w + 4*eta3(v,w)*u
+
+           + 4*eta3(v,w)*v + 8*eta3(v,w)*w)*sigma2(u + v,v,w)
+
+f4:=sigma2(u+3v+5w,v,w);
+
+
+f4 := e**(2*eta1(v,w)*u + 4*eta1(v,w)*v + 10*eta1(v,w)*w + 4*eta3(v,w)*u
+
+           + 4*eta3(v,w)*v + 12*eta3(v,w)*w)*sigma2(u + v + w,v,w)
+
+sigma2(2v+4w,v,w);
+
+
+ 2*eta1(v,w)*v + 8*eta1(v,w)*w + 8*eta3(v,w)*w
+e
+
+sigma2(-2v-4w,v,w);
+
+
+ 2*eta1(v,w)*v + 8*eta1(v,w)*w + 8*eta3(v,w)*w
+e
+
+sigma2(2v+w,v,w);
+
+
+ 2*eta1(v,w)*v + 2*eta1(v,w)*w
+e                             *sigma2(w,v,w)
+
+sigma2(v+4w,v,w);
+
+
+ 4*eta3(v,w)*v + 8*eta3(v,w)*w
+e                             *sigma2(v,v,w)
+
+sigma2(3v+w,v,w);
+
+
+0
+
+sigma2(-u+2v+4w,v,w);
+
+
+  2*eta1(v,w)*v + 8*eta1(v,w)*w + 8*eta3(v,w)*w
+ e                                             *sigma2(u,v,w)
+--------------------------------------------------------------
+                 2*eta1(v,w)*u + 4*eta3(v,w)*u
+                e
+
+
+sigma3(u+2v,v,w);
+
+
+ 2*eta1(v,w)*u + 2*eta1(v,w)*v
+e                             *sigma3(u,v,w)
+
+sigma3(u-2w,v,w);
+
+
+     2*eta3(v,w)*w
+  - e             *sigma3(u,v,w)
+---------------------------------
+          2*eta3(v,w)*u
+         e
+
+sigma3(u+2v+2w,v,w);
+
+
+ - 
+
+ 2*eta1(v,w)*u + 2*eta1(v,w)*v + 4*eta1(v,w)*w + 2*eta3(v,w)*u + 2*eta3(v,w)*w
+e
+
+*sigma3(u,v,w)
+
+g1:=sigma3(u-2v-6w,v,w);
+
+
+           2*eta1(v,w)*v + 12*eta1(v,w)*w + 18*eta3(v,w)*w
+        - e                                               *sigma3(u,v,w)
+g1 := -------------------------------------------------------------------
+                         2*eta1(v,w)*u + 6*eta3(v,w)*u
+                        e
+
+g2:=sigma3(u+2v+3w,v,w);
+
+
+g2 :=  - e**(2*eta1(v,w)*u + 2*eta1(v,w)*v + 6*eta1(v,w)*w + 2*eta3(v,w)*u
+
+              + 4*eta3(v,w)*w)*sigma3(u + w,v,w)
+
+g3:=sigma3(u+5v+4w,v,w);
+
+
+g3 := e**(4*eta1(v,w)*u + 12*eta1(v,w)*v + 16*eta1(v,w)*w + 4*eta3(v,w)*u
+
+           + 4*eta3(v,w)*v + 8*eta3(v,w)*w)*sigma3(u + v,v,w)
+
+g4:=sigma3(u+3v+5w,v,w);
+
+
+g4 := e**(2*eta1(v,w)*u + 4*eta1(v,w)*v + 10*eta1(v,w)*w + 4*eta3(v,w)*u
+
+           + 4*eta3(v,w)*v + 12*eta3(v,w)*w)*sigma3(u + v + w,v,w)
+
+sigma3(2v+4w,v,w);
+
+
+ 2*eta1(v,w)*v + 8*eta1(v,w)*w + 8*eta3(v,w)*w
+e
+
+sigma3(-2v-4w,v,w);
+
+
+ 2*eta1(v,w)*v + 8*eta1(v,w)*w + 8*eta3(v,w)*w
+e
+
+sigma3(2v+w,v,w);
+
+
+0
+
+sigma3(v+4w,v,w);
+
+
+ 4*eta3(v,w)*v + 8*eta3(v,w)*w
+e                             *sigma3(v,v,w)
+
+sigma3(3v+w,v,w);
+
+
+ 4*eta1(v,w)*v + 2*eta1(v,w)*w
+e                             *sigma3(v + w,v,w)
+
+sigma3(-u+2v+4w,v,w);
+
+
+  2*eta1(v,w)*v + 8*eta1(v,w)*w + 8*eta3(v,w)*w
+ e                                             *sigma3(u,v,w)
+--------------------------------------------------------------
+                 2*eta1(v,w)*u + 4*eta3(v,w)*u
+                e
+
+
+on complex;
+
+
+m :=6i;
+
+
+m := 6*i
+
+sigma(m*u,m*v,m*w);
+
+
+6*i*sigma(u,v,w)
+
+
+m :=-6i;
+
+
+m :=  - 6*i
+
+sigma1(m*u,m*v,m*w);
+
+
+sigma1(u,v,w)
+
+
+m :=6+i;
+
+
+m := 6 + i
+
+sigma2(m*u,m*v,m*w);
+
+
+sigma2(u,v,w)
+
+
+m :=-(6+i);
+
+
+m :=  - (6 + i)
+
+sigma3(m*u,m*v,m*w);
+
+
+sigma3(u,v,w)
+
+
+% numerical evaluations  -- should agree with Lawden's tables 
+on rounded;
+
+
+*** Domain mode complex changed to complex-rounded 
+
+
+weierstrass(0.1, 1, 0.4i);
+
+
+100.154750762
+
+9*weierstrass(0.3, 3, 1.2i);
+
+
+100.154750762
+
+weierstrass(0.5+0.3i, 1, 0.3i);
+
+
+8.56109276988
+
+16*weierstrass(2.0+1.2i, 4, 1.2i);
+
+
+8.56109276988
+
+weierstrass(1,1,(1+1.4i)/2);
+
+
+1.16506417116
+
+weierstrass(1.2, 1.2, 0.8i)-lattice_e1(1.2, 0.8i);
+
+
+0
+
+weierstrass(0.8i, 1.2, 0.8i)-lattice_e3(1.2, 0.8i);
+
+
+0
+
+weierstrass(1.2+0.8i, 1.2, 0.8i)-lattice_e2(1.2, 0.8i);
+
+
+0
+
+
+weierstrassZeta(0.2, 1, 1.6i);
+
+
+4.99889643343
+
+3*weierstrassZeta(0.6, 3, 4.8i);
+
+
+4.99889643343
+
+weierstrassZeta(1.9, 1, 0.6i);
+
+
+ - 9.32912341014
+
+4*weierstrassZeta(7.6, 4, 2.4i);
+
+
+ - 9.32912341014
+
+weierstrassZeta(1, 1, 1.6i)-eta1(1,1.6i);
+
+
+0
+
+weierstrassZeta(1.6i, 1, 1.6i)-eta3(1,1.6i);
+
+
+0
+
+weierstrassZeta(1+1.6i, 1, 1.6i)+eta2(1,1.6i);
+
+
+0
+
+
+sigma(0.2, 1, 1.6i);
+
+
+0.19998899833
+
+sigma(0.6, 3, 4.8i)/3;
+
+
+0.19998899833
+
+sigma(1.9, 1, 0.6i);
+
+
+0.182726966444
+
+sigma(7.6, 4, 2.4i)/4;
+
+
+0.182726966444
+
+sigma(2, 1, 1.6i);
+
+
+0
+
+sigma(3.2i, 1, 1.6i);
+
+
+0
+
+sigma(2+3.2i, 1, 1.6i);
+
+
+0
+
+
+sigma1(0.2, 1, 1.6i);
+
+
+0.966797813534
+
+sigma1(0.6, 3, 4.8i);
+
+
+0.966797813534
+
+sigma1(1.9, 1, 0.6i);
+
+
+ - 1.80385108579
+
+sigma1(7.6, 4, 2.4i);
+
+
+ - 1.80385108579
+
+-sigma1(2, 1, 1.6i)/exp(2*eta1(1,1.6i));
+
+
+1
+
+sigma1(3.2i, 1, 1.6i)/exp(2*eta3(1,1.6i)*1.6i);
+
+
+1
+
+sigma1(1, 1, 1.6i);
+
+
+0
+
+
+sigma2(0.2, 1, 1.6i);
+
+
+1.01405333088 + 5.42101086243e-20*i
+
+sigma2(0.6, 3, 4.8i);
+
+
+1.01405333088 + 1.62630325873e-19*i
+
+sigma2(1.9, 1, 0.6i);
+
+
+1.809244598 + 6.93889390391e-18*i
+
+sigma2(7.6, 4, 2.4i);
+
+
+1.809244598 + 6.93889390391e-18*i
+
+sigma2(2, 1, 1.6i)/exp(2*eta1(1,1.6i));
+
+
+1 + 1.34166069148e-18*i
+
+sigma2(3.2i, 1, 1.6i)/exp(2*eta3(1,1.6i)*1.6i);
+
+
+1 - 7.64127484858e-19*i
+
+sigma2(1+1.6i, 1, 1.6i);
+
+
+0
+
+
+sigma3(0.2, 1, 1.6i);
+
+
+1.01914973447 - 5.42101086243e-20*i
+
+sigma3(0.6, 3, 4.8i);
+
+
+1.01914973447
+
+sigma3(1.9, 1, 0.6i);
+
+
+1.86885620246 + 1.73472347598e-18*i
+
+sigma3(7.6, 4, 2.4i);
+
+
+1.86885620246 + 1.73472347598e-18*i
+
+sigma3(2, 1, 1.6i)/exp(2*eta1(1,1.6i));
+
+
+1 - 6.7083034574e-19*i
+
+-sigma3(3.2i, 1, 1.6i)/exp(2*eta3(1,1.6i)*1.6i);
+
+
+1
+
+sigma3(1.6i, 1, 1.6i);
+
+
+0
+
+
+u:=1;
+
+
+u := 1
+ v:=2;
+
+
+v := 2
+ w:= 0.5i;
+
+
+w := 0.5*i
+
+weierstrass(u-2v-6w,v,w)-a1;
+
+
+0
+
+weierstrass(u+2v+3w,v,w)-a2;
+
+
+0
+
+weierstrass(u+5v+4w,v,w)-a3;
+
+
+0
+
+weierstrass(u+3v+5w,v,w)-a4;
+
+
+0
+
+
+weierstrassZeta(u-2v-6w,v,w)-b1;
+
+
+0
+
+weierstrassZeta(u+2v+3w,v,w)-b2;
+
+
+0
+
+weierstrassZeta(u+5v+4w,v,w)-b3;
+
+
+0
+
+weierstrassZeta(u+3v+5w,v,w)-b4;
+
+
+0
+
+
+sigma(u-2v-6w,v,w)-c1;
+
+
+0
+
+sigma(u+2v+3w,v,w)-c2;
+
+
+0
+
+sigma(u+5v+4w,v,w)-c3;
+
+
+0
+
+sigma(u+3v+5w,v,w)-c4;
+
+
+0
+
+
+sigma1(u-2v-6w,v,w)-d1;
+
+
+0
+
+sigma1(u+2v+3w,v,w)-d2;
+
+
+0
+
+sigma1(u+5v+4w,v,w)-d3;
+
+
+0
+
+sigma1(u+3v+5w,v,w)-d4;
+
+
+0
+
+
+sigma2(u-2v-6w,v,w)-f1;
+
+
+0
+
+sigma2(u+2v+3w,v,w)-f2;
+
+
+0
+
+sigma2(u+5v+4w,v,w)-f3;
+
+
+0
+
+sigma2(u+3v+5w,v,w)-f4;
+
+
+0
+
+
+sigma3(u-2v-6w,v,w)-g1;
+
+
+0
+
+sigma3(u+2v+3w,v,w)-g2;
+
+
+0
+
+sigma3(u+5v+4w,v,w)-g3;
+
+
+0
+
+sigma3(u+3v+5w,v,w)-g4;
+
+
+0
+
+
+shut "sfweier.rlg";
+
