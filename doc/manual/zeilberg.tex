@@ -36,7 +36,7 @@ that are rational-linear in their arguments.
 
 The Gosper algorithm \cite{Gosper:78} is a \textsl{decision procedure}, that
 decides by algebraic calculations whether or not a given hypergeometric term
-$a_k$ has a hypergeometric term antidifference $g_k$, i.\ e.\
+$a_k$ has a hypergeometric term antidifference $g_k$, i.e.\
 $g_{k}-g_{k-1}=a_k$ with rational $g_k/g_{k-1}$,
 and returns $g_k$ if the procedure is successful, in which
 case we call $a_k$ \textsl{Gosper-summable}. Otherwise
@@ -301,7 +301,7 @@ version of Gosper's algorithm given by Koepf \cite{Koepf:94b}.
 \item
 {\tt extended\_gosper(a,k)} determines an antidifference $g_k$ of $a_k$
 whenever there is a number $m$ such that $h_{k}-h_{k-m}=a_k$, and $h_k$ is an
-\textsl{$m$-fold hypergeometric term}, i.\ e.
+\textsl{$m$-fold hypergeometric term}, i.e.
 \[
 h_{k}/h_{k-m}\quad\mbox{is a rational function with respect to $k$.}
 \]
@@ -309,7 +309,7 @@ If it does not return a solution, then such a solution does not exist.
 \item
 {\tt extended\_gosper(a,k,m)}
 determines an \textsl{$m$-fold antidifference} $h_k$ of $a_k$,
-i.\ e.\ $h_{k}-h_{k-m}=a_k$, if it is an $m$-fold hypergeometric term.
+i.e.\ $h_{k}-h_{k-m}=a_k$, if it is an $m$-fold hypergeometric term.
 \end{itemize}
 Examples:
 
@@ -486,7 +486,7 @@ of an extension of the (fast) Zeilberger algorithm given by Koepf
 {\tt extended\_sumrecursion(f,k,n,m,l)} determines a holonomic recurrence
 equation for ${\tt sum(n)} =\sum\limits_{k=-\infty}^\infty f(n,k)$
 with respect to $n$ if $f(n,k)$ is an \textsl{$(m,l)$-fold hypergeometric term}
-with respect to $(n,k)$, i.\ e.\
+with respect to $(n,k)$, i.e.
 \[
 \frac{F(n,k)}{F(n-m,k)}
 \quad
@@ -1052,7 +1052,7 @@ Turns tracing on and off.
 default setting {\tt down}.
 
 In the case of the Gosper algorithm, either a downward or a forward
-antidifference is calculated, i.\ e., {\tt gosper} finds $g_k$ with either
+antidifference is calculated, i.e., {\tt gosper} finds $g_k$ with either
 \[
 a_k=g_k-g_{k-1}
 \quad\quad\mbox{or}\quad\quad

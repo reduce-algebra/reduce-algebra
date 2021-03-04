@@ -49,7 +49,7 @@ module specfn;  % Special functions package for REDUCE.
 %              -- Digamma (Psi) Function and Derivatives         %
 %              -- Riemann Zeta Function                          %
 %              -- Bessel Functions J, Y, I and K                 %
-%              -- Airy Functions                          %
+%              -- Airy Functions                                 %
 %              -- Hankel Functions H1 and H2                     %
 %              -- Kummer Hypergeometric Functions M and U        %
 %              -- Struve, Lommel and Whittaker Functions         %
@@ -59,6 +59,8 @@ module specfn;  % Special functions package for REDUCE.
 %              -- Jacobi Elliptic Functions                      %
 %              -- Elliptic Integrals                             %
 %              -- Jacobi Theta Functions                         %
+%              -- Weierstrassian Elliptic Functions              %
+%              -- Sigma Functions                                %
 %
 %     accessible through the new operators Bernoulli, Gamma,     %
 %     Pochhammer, Psi, Polygamma, Zeta, BesselJ, BesselY,        %
@@ -66,6 +68,8 @@ module specfn;  % Special functions package for REDUCE.
 %     AiryAi, AiryBi, AiryAiPrime, AiryBiPrime,                  %
 %     Jacobi{sn,cn,dn...}, Elliptic{E,F,K...}, JacobiE           %
 %     EllipticTheta{1,2,3,4}                                     %
+%     Weierstrass, WeierstrassZeta, sigma                        %
+%     sigma1, sigma2, sigma3                                     %
 %     Beta, StruveL, StruveH, Lommel1, Lommel2, WhittakerM       %
 %     and WhittakerW, with the new switch SaveSFs.               %
 %                                                                %
@@ -74,7 +78,7 @@ module specfn;  % Special functions package for REDUCE.
 
 create!-package ('(specfn sfconsts sfgen sfbern dilog sfbinom sfpolys
                    sfsums simpfact harmonic jsymbols recsimpl sfint
-		   sfellip sfellipi  sftheta 
+		   sfellip sfellipi  sftheta sfweier
 		  ),
                  '(contrib specfn));
 

@@ -89,13 +89,13 @@ linear in $\varepsilon$ must be determined. The corresponding formulas are
 \begin{eqnarray}
 \tilde{y}^\alpha_{j_1\ldots j_k} & = &
 y^\alpha_{j_1\ldots j_k} + \varepsilon
-\eta^\alpha_{j_1\ldots j_k} + O(\varepsilon^2)  \nonumber \\*[3mm]
+\eta^\alpha_{j_1\ldots j_k} + O(\varepsilon^2)  \nonumber \\[3mm]
 \eta^\alpha_{j_1\ldots j_{k-1}j_k} & = &
   \frac{D \eta^\alpha_{j_1\ldots j_{k-1}}}{D x^k} -
   y^\alpha_{ij_1\ldots j_{k-1}}\frac{D \xi^i}{D x^k} \label{recur}
 \end{eqnarray}
 where $D/Dx^k$ means total differentiation w.r.t.\ $x^k$ and
-from now on lower latin indices of functions $y^\alpha,$ 
+from now on lower latin indices of functions $y^\alpha,$
 (and later $u^\alpha$)
 denote partial differentiation w.r.t.\ the independent variables $x^i,$
 (and later $v^i$).
@@ -137,8 +137,8 @@ conditions for a single PDE are described by Bocharov/Bronstein
 \cite{Bocharov:89} and Stephani \cite{Stephani:89}.
 
 In the first method only those terms of the symmetry condition
-$X H_A = 0$ are calculated which contain 
-at least a derivative of $y^\alpha$ of a minimal order $m.$ 
+$X H_A = 0$ are calculated which contain
+at least a derivative of $y^\alpha$ of a minimal order $m.$
 Setting coefficients
 of these $u$-derivatives to zero provides symmetry conditions. Lowering the
 minimal order $m$ successively then gradually provides all symmetry conditions.
@@ -146,7 +146,7 @@ minimal order $m$ successively then gradually provides all symmetry conditions.
 The second method is even more selective. If $H_A$ is of order $n$
 then only terms of the symmetry condition $X H_A = 0$ are generated which
 contain $n'$th order derivatives of $y^\alpha.$ Furthermore these derivatives
-must not occur in $H_A$ itself. They can therefore occur 
+must not occur in $H_A$ itself. They can therefore occur
 in the symmetry condition
 (\ref{sbed1}) only in
 $\eta^\alpha_{j_1\ldots j_n},$ i.e. in the terms
@@ -226,8 +226,8 @@ conditions are checked and execution is stopped it they are not satisfied.
 An easy way to get the equations in the desired form is to use \\
 \verb+    FIRST SOLVE({+\textit{eq1,eq2,}...\verb+},{+\textit{one highest
 derivative for each function u}\verb+})+  \\
-(see the example of the Karpman equations in \texttt{LIEPDE.TST}). 
-The example of the Burgers equation in \texttt{LIEPDE.TST} demonstrates 
+(see the example of the Karpman equations in \texttt{LIEPDE.TST}).
+The example of the Burgers equation in \texttt{LIEPDE.TST} demonstrates
 that the number of symmetries for a given maximal order of the infinitesimal
 generators depends on the derivative chosen for the LHS.
 
@@ -275,7 +275,7 @@ values and meanings:
   dependent variables in terms of differential expressions which may
   involve unknown functions/constants.  The dependences of the unknown
   functions have to be declared in advance by using the
-  \texttt{DEPEND} command. For example, \\  
+  \texttt{DEPEND} command. For example, \\
   \verb+    DEPEND f, t, x, u$+ \\
   specifies $f$ to be a function of $t,x,u$. If one wants to have $f$
   as a function of derivatives of $u(t,x)$, say $f$ depending on
@@ -289,25 +289,25 @@ values and meanings:
   wrt.\ $x$ we therefore use \verb+ u!`1!`2!`2+. The character
   \texttt{!} is the escape character to allow special characters like
   ` to occur in an identifier.
-  
+
   For generalized symmetries one usually sets all $\xi^i=0$.  Then the
   $\eta^{\alpha}$ are equal to the characteristic functions.
 \end{description}
-\noindent The third parameter \textit{flist} of \texttt{LIEPDE} is a list $\{\;\}$ 
+\noindent The third parameter \textit{flist} of \texttt{LIEPDE} is a list $\{\;\}$
 that includes
 \begin{itemize}
 \item all parameters and functions in the equations which are to
-      be determined such that symmetries exist (if any such 
-      parameters/functions are 
-      specified in \textit{flist} then the symmetry conditions 
+      be determined such that symmetries exist (if any such
+      parameters/functions are
+      specified in \textit{flist} then the symmetry conditions
       formulated in \texttt{LIEPDE}
       become non-linear conditions which may be much harder for
       \texttt{CRACK} to solve with many cases and subcases to be considered.)
-\item all unknown functions and constants in the ansatz 
+\item all unknown functions and constants in the ansatz
       \verb+xi!_..+ and \verb+eta!_..+
       if that has been specified in \textit{symtype}.
 \end{itemize}
-\noindent The fourth parameter \textit{inequ} of \texttt{LIEPDE} is a list $\{\;\}$ 
+\noindent The fourth parameter \textit{inequ} of \texttt{LIEPDE} is a list $\{\;\}$
 that includes all non-vanishing expressions which represent
 inequalities for the functions in flist.
 
@@ -319,7 +319,7 @@ is a list:
      \{\textit{flist}\}\}. \]
 The first list contains remaining unsolved symmetry conditions \textit{con}$_i$. It
 is the empty list \{\} if all conditions have been solved. The second list
-gives the symmetry generators, i.e.\ expressions for $\xi_i$ and $\eta_j$. The 
+gives the symmetry generators, i.e.\ expressions for $\xi_i$ and $\eta_j$. The
 last list contains all free constants and functions occuring in the first
 and second list.
 
@@ -405,7 +405,7 @@ $v^i|_{i\neq 1}, u^\alpha$ (all functions of $x^k,y^\gamma$):
 The general solutions of (\ref{ql1}), (\ref{ql2}) involve free functions
 of $p+q-1$ arguments. From the general solution of equation (\ref{ql2}),
 $p+q-1$ functionally independent special solutions have to be selected
-($v^2,\ldots,v^p$ and $u^1,\ldots,u^q$), 
+($v^2,\ldots,v^p$ and $u^1,\ldots,u^q$),
 whereas from (\ref{ql1}) only one solution $v^1$ is needed.
 Together, the expressions for the symmetry and similarity variables must
 define a non-singular transformation $x,y \rightarrow u,v$.
@@ -632,7 +632,7 @@ eta_h=h*r
 xi_r= - r
 ----------------------
 Which single symmetry or linear combination of symmetries
-do you want to apply? 
+do you want to apply?
 Enter an expression with `sy_(i)' for the i'th symmetry.
 sy_(1);
 \end{verbatim} \normalsize
@@ -749,7 +749,7 @@ Is this selection of dependent and independent variables ok? (Y or N)
 We so far assumed that the symmetry variable is one of the new variables, but,
 of course we also could choose it to be one of the new functions.
 If it is one of the functions then only derivatives of this function occur
-in the new DE, not the function itself. If it is one of the variables then 
+in the new DE, not the function itself. If it is one of the variables then
 this variable will not occur explicitly.
 
 In our case we prefer (without strong reason) to have the function as
@@ -823,7 +823,7 @@ Essentially this means that symmetry generators may only be polynomially
 non-linear in $x^i, y^\alpha$.
 Though even then the solvability can not be guaranteed, the
 generators of Lie-symmetries are mostly very simple such that the
-resulting PDE (\ref{PDE}) and the corresponding characteristic 
+resulting PDE (\ref{PDE}) and the corresponding characteristic
 ODE-system have good chances to be solvable.
 
 Apart from these limitations implied through the solution of differential
@@ -865,7 +865,7 @@ for $\phi, w_i$ regarded now as functions of one variable $\varepsilon$.
 Because the $a_i$ and $b$ do not depend explicitly on $\varepsilon$, one of the
 equations (\ref{char1}),(\ref{char2}) with non-vanishing right hand side
 can be used to divide all others through it and by that having a system
-with one less ODE to solve. 
+with one less ODE to solve.
 If the equation to divide through is one of
 (\ref{char1}) then the remaining system would be
 \begin{eqnarray}
@@ -906,13 +906,13 @@ Although being designed primarily for the solution of overdetermined
 PDE-systems, \texttt{CRACK} can also be used to solve simple not
 overdetermined ODE-systems. This solution
 process is not completely algorithmic. Improved versions of \texttt{CRACK}
-could be used, without making any changes of \texttt{QUASILINPDE} 
+could be used, without making any changes of \texttt{QUASILINPDE}
 necessary.
 
 If the characteristic ODE-system can not be solved in the form
 (\ref{char3}), (\ref{char4}) or (\ref{char3a})
 then successively all other ODEs of (\ref{char1}), (\ref{char2})
-with non-vanishing right hand side are used for division until 
+with non-vanishing right hand side are used for division until
 one is found
 such that the resulting ODE-system can be solved completely.
 Otherwise the PDE can not be solved by \texttt{QUASILINPDE}.
@@ -935,7 +935,7 @@ from the beginning by dividing all equations of (\ref{char1}),
 (\ref{char2})
 through one of them.
 
-On either way one ends up with $n$ equations 
+On either way one ends up with $n$ equations
 \begin{equation}
 0=g_i(\phi,w_j,c_k),\;\;i,j,k=1\ldots n             \label{charsol2}
 \end{equation}
@@ -984,11 +984,11 @@ varlist:={x,y,z};
 QUASILINPDE(de,u,varlist);
 \end{verbatim} \normalsize
 In this example the procedure returns
-\[\{ \{ x/e^u, ze^u, u^2 - 2y \} \},\] 
+\[\{ \{ x/e^u, ze^u, u^2 - 2y \} \},\]
 i.e. there is one general solution (because the outer list has only one
-element which itself is a list) and $u$ is given implicitly through 
+element which itself is a list) and $u$ is given implicitly through
 the algebraic equation
-\[ 0 = F(x/e^u, ze^u, u^2 - 2y)\] 
+\[ 0 = F(x/e^u, ze^u, u^2 - 2y)\]
 with arbitrary function $F.$ \\
 {\em Example 2:}\\
 For the linear inhomogeneous PDE
@@ -1000,7 +1000,7 @@ defines the general solution for $z$. \\
 {\em Example 3:}\\
 For the linear inhomogeneous PDE (3.8) from \cite{Kamke:Vol2}
 \[ 0 = x w,_x + (y+z)(w,_y - w,_z), \;\;\;\;\mbox{for}\;\;\;\;w=w(x,y,z)\]
-\texttt{QUASILINPDE} returns the result 
+\texttt{QUASILINPDE} returns the result
 that for an arbitrary function $F,$ the equation
 \[ 0 = F\left(w, \;y+z, \;\ln(x)(y+z)-y\right) \]
 defines the general solution for $w$, i.e.\ for any function $f$
@@ -1011,14 +1011,14 @@ solves the PDE.
 One restriction on the applicability of \texttt{QUASILINPDE} results from
 the program \texttt{CRACK} which tries to solve the
 characteristic ODE-system of the PDE. So far \texttt{CRACK} can be
-applied only to polynomially non-linear DE's, i.e.\ the characteristic 
+applied only to polynomially non-linear DE's, i.e.\ the characteristic
 ODE-system (\ref{char3}),(\ref{char4}) or (\ref{char3a}) may
 only be polynomially non-linear, i.e.\ in the PDE (\ref{PDE})
 the expressions $a_i$ and $b$ may only be rational in $w_j,\phi$.
 
 The task of \texttt{CRACK} is simplified as (\ref{charsol1}) does not have to
 be solved for $w_j, \phi$. On the other hand (\ref{charsol1}) has to be
-solved for the $c_i$. This gives a 
+solved for the $c_i$. This gives a
 second restriction coming from the REDUCE function \texttt{SOLVE}.
 Though \texttt{SOLVE} can be applied
 to polynomial and transzendential equations, again no guarantee for
@@ -1039,10 +1039,10 @@ This might be especially useful if one wants to experiment
 and try out different coordinate transformations interactively,
 using \texttt{DETRAFO} as standalone procedure.
 
-To run \texttt{DETRAFO}, the old functions $y^{\alpha}$ and old 
-variables $x^i$ must be 
+To run \texttt{DETRAFO}, the old functions $y^{\alpha}$ and old
+variables $x^i$ must be
 known explicitly in terms of algebraic or
-differential expressions of the new functions $u^{\beta}$ 
+differential expressions of the new functions $u^{\beta}$
 and new variables $v^j$. Then for point transformations the identity
 \begin{eqnarray}
 dy^{\alpha} & = & \left(y^{\alpha},_{v^i} +
@@ -1072,17 +1072,17 @@ x^k        & = & x^k(v^i,u^{\beta},u^{\beta},_{v^j},\ldots).
 %---------------------------------------
 \subsubsection{Syntax}
 The call of \texttt{DETRAFO} is
+
 \begin{flushleft}
-\begin{tabular}{@{}l@{}l}
-\texttt{DETRAFO}(&\{\textit{ex}$_1$, \textit{ex}$_2$, \ldots , \textit{ex}$_m$\}, \\
-              &\{\textit{ofun}$_1=$\textit{fex}$_1$, \textit{ofun}$_2=$\textit{fex}$_2$,
+\texttt{DETRAFO}(\{\textit{ex}$_1$, \textit{ex}$_2$, \ldots , \textit{ex}$_m$\}, \\
+~~~~~~~~~~~~~~~~~~\{\textit{ofun}$_1=$\textit{fex}$_1$, \textit{ofun}$_2=$\textit{fex}$_2$,
                \ldots ,\textit{ofun}$_p=$\textit{fex}$_p$\}, \\
-              &\{\textit{ovar}$_1=$\textit{vex}$_1$, \textit{ovar}$_2=$\textit{vex}$_2$, \ldots ,
+~~~~~~~~~~~~~~~~~~\{\textit{ovar}$_1=$\textit{vex}$_1$, \textit{ovar}$_2=$\textit{vex}$_2$, \ldots ,
                   \textit{ovar}$_q=$\textit{vex}$_q$\}, \\
-              &\{\textit{nfun}$_1$, \textit{nfun}$_2$, \ldots , \textit{nfun}$_p$\},\\
-              &\{\textit{nvar}$_1$, \textit{nvar}$_2$, \ldots , \textit{nvar}$_q$\});
-\end{tabular}     
+~~~~~~~~~~~~~~~~~~\{\textit{nfun}$_1$, \textit{nfun}$_2$, \ldots , \textit{nfun}$_p$\},\\
+~~~~~~~~~~~~~~~~~~\{\textit{nvar}$_1$, \textit{nvar}$_2$, \ldots , \textit{nvar}$_q$\});
 \end{flushleft}
+
 where $m,p,q$ are arbitrary.
 \begin{itemize}
 \item

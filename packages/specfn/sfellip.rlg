@@ -6,7 +6,7 @@ load_package specfn;
 
 % test of facilities sfellip.red and sfellipi.red
 % Author: Alan Barnes   (Alan.Barnes45678@gmail.com) July 2019
-% Modified August 2019
+% Modified August 2019. Tests of theta functions moved to sftheta.tst -- 2021
 
 % periodic properties and quarter period shifts
 
@@ -161,137 +161,6 @@ E(----------,k) + 7*E(k)
       6
 
 
-% theta functions
-% periodicity, quasi-periodicity and zeroes
-elliptictheta1(z+6*pi, q);
-
-
-theta1(z,q)
-
-elliptictheta1(z+7*pi, q);
-
-
- - theta1(z,q)
-
-elliptictheta2(z+7*pi/2, q);
-
-
-theta1(z,q)
-
-elliptictheta2(z+9*pi/2, q);
-
-
- - theta1(z,q)
-
-elliptictheta4(z+9*pi, q);
-
-
-theta4(z,q)
-
-elliptictheta4(z+9*pi/2, q);
-
-
-theta3(z,q)
-
-
-elliptictheta1(6*pi+7*i*log q, q);
-
-
-0
-
-elliptictheta1(z+5*pi/2+3*i*log q, q);
-
-
-  6*i*z
- e     *theta2(z,q)
---------------------
-          9
-         q
-
-elliptictheta2(6*pi+7*i*log q, q);
-
-
- theta2(0,q)
--------------
-      49
-     q
-
-elliptictheta2(7/2*pi+7*i*log q, q);
-
-
-0
-
-
-elliptictheta4(6*pi+7/2*i*log q, q);
-
-
-0
-
-elliptictheta4(z+6*pi+7/2*i*log q, q);
-
-
-  7*i*z
- e     *theta1(z,q)*i
-----------------------
-        1/4  12
-       q   *q
-
-elliptictheta4(z+6*pi+7*i*log q, q);
-
-
-     14*i*z
-  - e      *theta4(z,q)
-------------------------
-           49
-          q
-
-elliptictheta3(7*pi/2+3/2*i*log q, q);
-
-
-0
-
-elliptictheta3(z+7*pi/2+3/2*i*log q, q);
-
-
-  3*i*z
- e     *theta1(z,q)*i
-----------------------
-        1/4  2
-       q   *q
-
-
-elliptictheta1(-z,q);
-
-
- - theta1(z,q)
-
-elliptictheta3(-z,q);
-
-
-theta3(z,q)
-
-elliptictheta3(z,-q);
-
-
-theta4(z,q)
-
-realvalued q;
-
-
-elliptictheta1(z,-q);
-
-
- (sign(q)*i*pi)/4
-e                *theta1(z,q)
-
-elliptictheta2(z,-1/4);
-
-
- (i*pi)/4           1
-e        *theta2(z,---)
-                    4
-
-
 % numerical evaluation and consistency checks
 on rounded;
 
@@ -431,7 +300,11 @@ a := 0.0108953620102
 nome2mod(a);
 
 
-0.4
+                          2
+ theta2(0,1.43857545592*i)
+----------------------------
+                          2
+ theta3(0,1.43857545592*i)
 
 nome(0.99);
 
@@ -447,7 +320,8 @@ elliptick(0.4);
 nome2!K(a);
 
 
-1.63999986586
+                                       2
+1.57079632679*theta3(0,1.43857545592*i)
 
 elliptick!'(0.4);
 
@@ -457,71 +331,8 @@ elliptick!'(0.4);
 nome2!K!'(a);
 
 
-2.35926355475
-
-
-% theta functions
-elliptictheta1(pi/6,0.6);
-
-
-0.28934542961
-
-elliptictheta2(pi/4,0.6);
-
-
-0.741269674214
-
-elliptictheta3(pi/3,0.6);
-
-
-0.290270458596
-
-elliptictheta4(pi/2,0.6);
-
-
-2.47992532069
-
-
-elliptictheta1(pi/6,0.9);
-
-
-0.00016480616429
-
-elliptictheta2(pi/4,0.9);
-
-
-0.0156526658225
-
-elliptictheta3(pi/3,0.9);
-
-
-0.00016480616429
-
-elliptictheta4(pi/2,0.9);
-
-
-5.46054502706
-
-
-a := elliptictheta3(0,0.5);
-
-
-a := 2.12893682721
-
-b := elliptictheta2(0,0.5);
-
-
-b := 2.12893125051
-
-c := elliptictheta4(0,0.5);
-
-
-c := 0.121124208003
-
-a^4-b^4-c^4;
-
-
-3.30697925641e-15
+                                       2
+2.25970904198*theta3(0,1.43857545592*i)
 
 
 shut "sfellip.rlg";

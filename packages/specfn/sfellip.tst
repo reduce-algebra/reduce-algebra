@@ -4,7 +4,7 @@ load_package specfn;
 
 % test of facilities sfellip.red and sfellipi.red
 % Author: Alan Barnes   (Alan.Barnes45678@gmail.com) July 2019
-% Modified August 2019
+% Modified August 2019. Tests of theta functions moved to sftheta.tst -- 2021
 
 % periodic properties and quarter period shifts
 
@@ -42,33 +42,6 @@ df(elliptice(u,k),k);
 elliptice(u+pi/2,k);
 ellipticf(u-5*pi/2,k);
 elliptice(u+11*pi/3,k);
-
-% theta functions
-% periodicity, quasi-periodicity and zeroes
-elliptictheta1(z+6*pi, q);
-elliptictheta1(z+7*pi, q);
-elliptictheta2(z+7*pi/2, q);
-elliptictheta2(z+9*pi/2, q);
-elliptictheta4(z+9*pi, q);
-elliptictheta4(z+9*pi/2, q);
-
-elliptictheta1(6*pi+7*i*log q, q);
-elliptictheta1(z+5*pi/2+3*i*log q, q);
-elliptictheta2(6*pi+7*i*log q, q);
-elliptictheta2(7/2*pi+7*i*log q, q);
-
-elliptictheta4(6*pi+7/2*i*log q, q);
-elliptictheta4(z+6*pi+7/2*i*log q, q);
-elliptictheta4(z+6*pi+7*i*log q, q);
-elliptictheta3(7*pi/2+3/2*i*log q, q);
-elliptictheta3(z+7*pi/2+3/2*i*log q, q);
-
-elliptictheta1(-z,q);
-elliptictheta3(-z,q);
-elliptictheta3(z,-q);
-realvalued q;
-elliptictheta1(z,-q);
-elliptictheta2(z,-1/4);
 
 % numerical evaluation and consistency checks
 on rounded;
@@ -119,22 +92,6 @@ elliptick(0.4);
 nome2!K(a);
 elliptick!'(0.4);
 nome2!K!'(a);
-
-% theta functions
-elliptictheta1(pi/6,0.6);
-elliptictheta2(pi/4,0.6);
-elliptictheta3(pi/3,0.6);
-elliptictheta4(pi/2,0.6);
-
-elliptictheta1(pi/6,0.9);
-elliptictheta2(pi/4,0.9);
-elliptictheta3(pi/3,0.9);
-elliptictheta4(pi/2,0.9);
-
-a := elliptictheta3(0,0.5);
-b := elliptictheta2(0,0.5);
-c := elliptictheta4(0,0.5);
-a^4-b^4-c^4;
 
 shut "sfellip.rlg";
 

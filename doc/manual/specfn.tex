@@ -19,8 +19,12 @@
 \index{Spherical and Solid Harmonics}
 \index{Jacobi Elliptic functions}
 \index{Elliptic Integrals}
-\index{Jacobi Theta functions}
 \index{Nome and Related functions}
+\index{Jacobi Theta functions}
+\index{Theta function derivatives}
+\index{Weierstrass Elliptic functions}
+\index{Sigma functions}
+\index{Period Lattice and Related functions};
 \index{Stirling numbers}
 \hypertarget{SPECFNS}{}
 %% For MathJax, must be part of a paragraph to avoid extra space:
@@ -52,8 +56,13 @@ many common special functions, namely:
 \item \hyperlink{CLEBSCHG}{3j and 6j symbols, Clebsch-Gordan coefficients};
 \item \hyperlink{JACEF}{Jacobi's Elliptic Functions};
 \item \hyperlink{ELLIPI}{Elliptic Integrals};
-\item \hyperlink{JACTF}{Jacobi's Theta Functions};
-\item \hyperlink{ELLIPNOME}{Nome of Elliptic Functions};
+\item \hyperlink{ELLIPNOME}{Nome and Related Functions};
+\item \hyperlink{JACTF}{Jacobi's Theta Functions} and their 
+\hyperlink{THETAD}{ derivatives};
+\item \hyperlink{WEIERSTRASS}{Weierstrass Elliptic Functions} and the 
+\hyperlink{SIGMA}{Sigma Function};
+\item \hyperlink{SIGMA1}{Other Sigma Functions};
+\item \hyperlink{ETA}{Period Lattice and Related Functions};
 \item \hyperlink{STIRL}{Stirling Numbers};
 \item and some \hyperlink{CONSTS}{well-known constants}.
 \end{itemize}
@@ -737,28 +746,30 @@ will not be found.
 
 \subsection{Elliptic Functions}
 \index{Elliptic functions}
-The implementation of the functions in this and the next two subsections have, in 2019,
-been substantially revised by Alan Barnes. This is to bring the
+The implementation of the functions in this and the next two subsections have
+been substantially revised by Alan Barnes in 2019. This is to bring the
 notation more into line with standard (British) texts such as Whittaker
 \& Watson \cite{WhittakerWatson:69} and Lawden \cite{Lawden:89} and also to correct
 a number of errors and omissions. These changes and additions will be itemised in the relevant
-sections below.
+sections below.  A new subsection has been added in 2021 to support  Weierstrassian Elliptic
+functions and Sigma functions. While the code for these is being updated, the autoloading
+properties of all elliptic functions has been temporarily removed.
 
-The following functions have been implemented:
+
 \hypertarget{JACEF}{}
+\subsubsection{Jacobi Elliptic  Functions}
+The following functions have been implemented:
 \begin{itemize}
-\item The 12 Jacobi Functions
-\item Jacobi's Amplitude Function
+\item The Twelve Jacobi Functions
 \item Arithmetic Geometric Mean
 \item Descending Landen Transformation
 \end{itemize}
-\subsubsection{Jacobi Elliptic  Functions}
+
 \index{Jacobi Elliptic functions}
 The following Jacobi functions are available:-
-\hypertarget{operator:Jacobisn}{}
-\hypertarget{operator:Jacobicn}{}
-\hypertarget{operator:Jacobidn}{}
-\hypertarget{operator:Jacobicd}{}
+\hypertarget{operator:JACOBISN}{}
+\hypertarget{operator:JACOBICN}{}
+\hypertarget{operator:JACOBIDN}{}
 \hypertarget{operator:Jacobisd}{}
 \hypertarget{operator:Jacobind}{}
 \hypertarget{operator:Jacobidc}{}
@@ -808,7 +819,7 @@ numerically if the \sw{rounded} switch is used. For
 complex arguments it is also better if the \sw{complex} switch is on.
 
 \subsubsection{Jacobi Amplitude Function}
-\hypertarget{operator:Jacobiam}{}
+\hypertarget{operator:JACOBIAM}{}
 \ttindex{Jacobiam}
 The amplitude of $u$ can be evaluated using the \f{jacobiam(u,k)}
 command.  A rule list is provided for differentiation of this
@@ -877,7 +888,7 @@ quasi-periodicity properties and to provide simplifications for special values
 of the arguments.
 
 \subsubsection{Elliptic F}
-\hypertarget{operator:EllipticF}{}
+\hypertarget{operator:ELLIPTICF}{}
 \ttindex{EllipticF}
 
 The Elliptic F function can be used as \f{EllipticF(phi,k)} and
@@ -886,7 +897,7 @@ First Kind}:
 \[\mathrm{F}(\phi, k)=\int_0^\phi(1-k^2 \sin^2 \theta)^{-1/2} \mathrm{d}\theta.\]
 
 \subsubsection{Elliptic K}
-\hypertarget{operator:EllipticK}{}
+\hypertarget{operator:ELLIPTICK}{}
 \ttindex{EllipticK}
 
 The Elliptic K function can be used as \f{EllipticK(k)} and will
@@ -902,7 +913,7 @@ and will return the value
 which is the other quarter-period of the Jacobi elliptic functions.
 
 \subsubsection{Elliptic E}
-\hypertarget{operator:EllipticE}{}
+\hypertarget{operator:ELLIPTICE}{}
 \ttindex{EllipticE}
 
 The Elliptic E function comes with either one or two arguments;
@@ -920,7 +931,7 @@ and will return the value
 \[\mathrm{E}(k') = \mathrm{E}(\sqrt{1-k^2}).\]
 
 \subsubsection{Jacobi E}
-\hypertarget{operator:JacobiE}{}
+\hypertarget{operator:JACOBIE}{}
 \ttindex{JacobiE}
 The Jacobi E function can be used as  \f{JacobiE(u,k)};
 it will return the value of Jacobi's form of
@@ -950,12 +961,38 @@ In non-GUI interfaces the Jacobi E function is rendered as Epsilon.
 %
 
 \subsubsection{Jacobi's Zeta Function}
-\hypertarget{operator:JacobiZeta}{}
+\hypertarget{operator:JACOBIZETA}{}
 \ttindex{JacobiZeta}\index{Zeta function of Jacobi}
 
 This can be called as \f{JacobiZeta(u,k)} and refers to Jacobi's (elliptic)
 Zeta function $\mathrm{Z}(u,k)$ whereas the operator \f{Zeta} will invoke
 Riemann's $\zeta$ function.
+
+
+\subsubsection{Some Numerical Utility Functions}
+\hypertarget{operator:nome}{}
+\hypertarget{ELLIPNOME}{}
+\ttindex{nome} \index{Nome and Related functions}
+
+Five utility functions are provided:
+\begin{itemize}
+\item \f{nome2mod(q)}
+\item \f{nome2mod!$'$(q)}
+\item \f{nome2!K(q)}
+\item \f{nome2!K!$'$(q)}
+\item \f{nome(k)}
+\end{itemize}
+
+These are only operative when the switch \sw{rounded} is on and their
+argument is numerical. The first pair relate the nome $q$ of the theta
+functions with the moduli $k$ and $k'=\sqrt{1-k^2}$ of the associated Jacobi
+elliptic functions.
+
+The second pair return the quarter-periods K and K$'$ respectively of
+the Jacobi elliptic functions associated with the nome $q$.
+
+Finally, \f{nome(k)} returns the nome $q$ associated with the modulus $k$ of
+a Jacobi elliptic function and is essentially the inverse of \f{nome2mod}.
 
 \subsection{Jacobi Theta Functions}
 \hypertarget{JACTF}{}
@@ -963,10 +1000,10 @@ Riemann's $\zeta$ function.
 These theta functions differ from those originally defined by Lisa Temme
 in a number of respects.
 Firstly four separate functions of two arguments are defined:
-\hypertarget{operator:EllipticTheta1}{}
-\hypertarget{operator:EllipticTheta2}{}
-\hypertarget{operator:EllipticTheta3}{}
-\hypertarget{operator:EllipticTheta4}{}
+\hypertarget{operator:ELLIPTICTHETA1}{}
+\hypertarget{operator:ELLIPTICTHETA2}{}
+\hypertarget{operator:ELLIPTICTHETA3}{}
+\hypertarget{operator:ELLIPTICTHETA4}{}
 \ttindex{EllipticTheta1} \ttindex{EllipticTheta2}
 \ttindex{EllipticTheta3} \ttindex{EllipticTheta4}
 \begin{itemize}
@@ -1045,7 +1082,7 @@ $|q'| \approx |q|^4$.
 By using a series of Jacobi transformations preceded, if necessary by
 $\tau$-shifts to ensure $|a| <= 1/2$, $|q|$ may be reduced to an acceptable
 level. Somewhat arbitrarily these Jacobi's transformations are used
-until $b > 0.5$ (i.e.~$|q| < 0.208$). This seems to produce reasonable
+until $b > 0.6$ (i.e.~$|q| < 0.15$). This seems to produce reasonable
 behaviour. In practice more than two applications of Jacobi transformations
 are rarely necessary.
 
@@ -1055,31 +1092,156 @@ the principal value of $q^{1/4}$ in their series expansions. The current version
 $q^{1/4}$ by $\exp(i\pi\tau/4)$.  If the principal value is required, it is easily obtained
 by multiplying by the `correcting' factor $q^{1/4}\exp(-i\pi\tau/4)$.
 
+\textbf{Derivatives of Theta Functions}
 
-\subsubsection{Some Numerical Utility Functions}
-\hypertarget{operator:nome}{}
-\hypertarget{ELLIPNOME}{}
-\ttindex{nome} \index{Nome and Related functions}
 
-Five utility functions are provided:
+\hypertarget{THETAD}{}
+\index{Theta function derivatives}
+\ttindex{theta1d} \ttindex{theta2d}
+\ttindex{theta3d}\ttindex{theta4d}
+Four functions are provided:
 \begin{itemize}
-\item \f{nome2mod(q)}
-\item \f{nome2mod!$'$(q)}
-\item \f{nome2!K(q)}
-\item \f{nome2!K!$'$(q)}
-\item \f{nome(k)}
+\item \f{theta1d(u,ord,tau)} 
+\item \f{theta2d(u,ord,tau)} 
+\item \f{theta3d(u,ord,tau)} 
+\item \f{theta4d(u,ord,tau)} 
+\end{itemize}
+These return the $d$th derivatives of the respective theta functions
+with respect to their first argument $u$; $\tau$ is as usual the modulus
+of the theta function. These functions are only operative when the switches
+\sw{ROUNDED} and \sw{COMPLEX} are ON and their arguments are numeric with
+$d$ being a positive integer.  They are provided mainly to support the implementation
+the Weierstrassian and Sigma functions discussed in the following subsection.
+
+The numeric code simply sums the Fourier series for the required derivatives.
+Unlike the theta functions themselves the code does not use the quasi-periodicity nor
+modular transformations to speed  up the convergence of the series by reducing the sizes
+of $\Im u$ and $|q|$.  In the numerical evaluation of the Weierstrassian and Sigma functions
+these functions are only called after the necessary shifts of the argument $u$ and modular
+transformations of $\tau$ have been performed. These are much simpler in this context.
+
+Nevertheless they may be used from top level and numerical experiments reveal that the rounding
+errors are not significant provided $|q|$ is not near one (say $|q|<0.9$)
+and $u$ is real or at least has a relatively small imaginary part.
+
+\subsection{Weierstrass Elliptic \& Sigma Functions}
+\index{Weierstrass Elliptic functions}
+\index{Sigma functions}
+Three main functions of three arguments are defined:
+\hypertarget{WEIERSTRASS}{}
+\hypertarget{WEIERSTRASSZETA}{}
+\hypertarget{SIGMA}{}
+\hypertarget{operator:sigma}{}
+\hypertarget{operator:Weierstrass}{}
+\hypertarget{operator:WeierstrassZeta}{}
+\ttindex{Weierstrass} \ttindex{WeierstrassZeta}
+\ttindex{sigma}
+\begin{itemize}
+\item  $P_w(u, \omega_1, \omega_3)$ \ --- \ \f{weierstrass(u,omega1,omega3)}
+\item $\zeta_w(u, \omega_1, \omega_3)$ \ --- \ \f{weierstrassZeta(u,omega1,omega3)} 
+\item $\sigma(u, \omega_1, \omega_3)$ \ --- \ \f{sigma(u,omega1,omega3)}
 \end{itemize}
 
-These are only operative when the switch \sw{rounded} is on and their
-argument is numerical. The first pair relate the nome $q$ of the theta
-functions with the moduli $k$ and $k'=\sqrt{1-k^2}$ of the associated Jacobi
-elliptic functions.
+The notation used is broadly similar used by Lawden \cite{Lawden:89} which is also used in the
+NIST Digital Library of Mathematical Functions \href{https://dlmf.nist.gov/}{DLMF:NIST}. However,
+$\zeta_w$ is used for the Weierstrassian Zeta function to distinguish it from the Riemann Zeta
+function and currently $P_w$ is used for the Weierstrassian elliptic function itself.
 
-The second pair return the quarter-periods K and K$'$ respectively of
-the Jacobi elliptic functions associated with the nome $q$.
+The two primitive periods of the Weierstrass function are $2\omega_1$ and $2\omega_3$ and these must satisfy
+$\Im(\omega_3/\omega_1) \neq 0$. The two periods are normally numbered so that $\tau = \omega_3/\omega_1$ has
+a positive imaginary part and hence the nome $q = exp(i\pi\tau)$ satisfies $|q| <1$.
 
-Finally, \f{nome(k)} returns the nome $q$ associated with the modulus $k$ of
-a Jacobi elliptic function and is essentially the inverse of \f{nome2mod}.
+Any linear combination $\Omega_{m,n} = 2m\omega_1 +2n\omega_3$ where $m$ and $n$ are
+integers (not both zero) is also a period. The set of all such periods plus the origin form a lattice. In the literature
+$-(\omega_1+\omega_3)$ is often denoted by $\omega_2$ and $2\omega_2$ is clearly also a period; this 
+accounts for the gap in the numbering of primitive periods. The period $\omega_2$ is not used in \REDUCE the rule sets for
+the Weierstrassian elliptic and related functions.
+
+The primitive periods are not unique;
+indeed any periods $2\Omega_1$ and $2\Omega_3$ defined by the unimodular integer bilinear transformation:
+\[\Omega_1 = a\omega_1 + b\omega_3,\qquad\Omega_3 = c\omega_1 + d\omega_3,\qquad\text{ where }ad-bc = 1\]
+are also primitive. This fact is very useful in the numerical evaluation of the Weierstrassian and Sigma
+functions as a sequence of such transformations may be used to increase the size $\Im \tau$ and so reduce
+the size of $|q|$. Thus the Fourier series for the theta functions and their derivatives will converge rapidly.
+In theory these transformations may be used to reduce the size of $|q|$ until $\Im \tau \geq \sqrt 3/2$ when
+$|q|<0.06$. However, in numerical evaluations in \REDUCE it is sufficient to use these transformations only until
+$\Im \tau > 0.7$, i.e.~until $|q| < 0.11$. In practice only two or three iterations are required
+and usually very much smaller values of $|q|$ are achieved particularly when $\tau$ is purely imaginary i.e.~$q$ is real.
+
+In the numerical evaluations, if a result is real (or purely imaginary) it may
+happen that the result returned has a very small imaginary part
+(resp. real part). The ratio of the `deliquent' part to the actual result is
+invariably smaller than current PRECISION and is due to rounding. Similarly if
+the true result is actually zero the result returned may have a very small
+absolute value -- again smaller than the current PRECISION.
+
+The Weierstrassian function is even and has a pole of order 2 at all lattice points.
+The Zeta and Sigma functions are only quasi-periodic on the lattice. Zeta is odd and has simple poles of residue
+1 at all lattice points. The basic Sigma function $\sigma(u,\omega_1,\omega_3)$ is odd and regular everywhere as is
+the function $\vartheta_1(u,\tau)$ to which it is closely related. It has zeros at all lattice points. All three functions
+$P_w$, $\zeta_w$ and $\sigma$ are homogenous of degrees -2, -1 and +1 respectively. The functions are related by
+\[ P_w(u) = -\zeta_w^\prime(u),\qquad\qquad \zeta_w(u) = \sigma^\prime(u)/\sigma(u),\]
+where the lattice parameters have been omitted for conciseness.
+
+Rule sets are provided which implement all the properties such as double periodicity discussed above. For numerical evaluation
+the switches \sw{ROUNDED} and \sw{COMPLEX} must both be ON and all three parameters must be numeric. It is not, however,
+necessary to ensure $\Im(\omega_3/\omega_1) >0$ as the second and third parameters will be swapped if required.
+
+\textbf{Other Sigma Functions}
+\hypertarget{SIGMA1}{}
+\hypertarget{SIGMA2}{}
+\hypertarget{SIGMA3}{}
+
+Three further Sigma functions are also provided:
+\index{Sigma functions}
+\ttindex{sigma1} \ttindex{sigma2} \ttindex{sigma3}
+\begin{itemize}
+\item $\sigma_1(u, \omega_1, \omega_3)$ \ --- \ \f{sigma1(u,omega1,omega3)} 
+\item $\sigma_2(u, \omega_1, \omega_3)$ \ --- \ \f{sigma2(u,omega1,omega3)}
+\item $\sigma_3(u, \omega_1, \omega_3)$ \ --- \ \f{sigma3(u,omega1,omega3)} 
+\end{itemize}
+These are all even functions, regular everywhere, homogenous of degree zero and doubly quasi-periodic. They are closely related to the
+theta functions $\vartheta_2$, $\vartheta_3$ and $\vartheta_4$ respectively; but \emph{note the difference in numbering}.
+For more information on the properties these sigma functions, see Lawden \cite{Lawden:89};
+they do not appear in the NIST Digital Library of Mathematical Functions, but are included here for completeness.
+
+\subsubsection{Lattice Roots and Quasi-Period Functions}
+\hypertarget{ETA}{}
+\ttindex{lattice\_e1}\ttindex{lattice\_e2}\ttindex{lattice\_e3}
+\index{Lattice roots}\index{Quasi-period functions}
+
+Six functions are provided:
+\begin{itemize}
+\item $e_1(\omega_1, \omega_3)$ \ --- \ \f{lattice\_e1(omega1, omega3)};
+\item $e_2(\omega_1, \omega_3)$ \ --- \ \f{lattice\_e2(omega1, omega3)};
+\item $e_3(\omega_1, \omega_3)$ \ --- \ \f{lattice\_e3(omega1, omega3)};
+\item $\eta_1(\omega_1, \omega_3)$ \ --- \ \f{eta\_1(omega1, omega3)};
+\item $\eta_2(\omega_1, \omega_3)$ \ --- \ \f{eta\_2(omega1, omega3)};
+\item $\eta_3(\omega_1, \omega_3)$ \ --- \ \f{eta\_3(omega1, omega3)}.
+\end{itemize}
+
+These are only operative when the switches \sw{ROUNDED} and \sw{COMPLEX} are ON and their
+arguments are numerical. The first three are referred to as lattice roots and are related to the invariants
+$g_2$ and $g_3$ of the Weierstrassian elliptic function $P_w$. The lattice root $e_2$ also appears in the numerical
+evaluation of the Weierstrass function. These lattice roots satisfy:
+\[e_1+e_2+e_3=0,\qquad g_2=2(e_1^2+e_2^2+e_3^2),\qquad g_3= 4e_1e_2e_3.\]
+
+\ttindex{eta\_1}\ttindex{eta\_2}\ttindex{eta\_3}
+The remaining three functions \f{eta\_1}, \f{eta\_2} \& \f{eta\_3} appear in the rules for the quasi-periodicity of
+the four sigma functions and of the Weierstrassian Zeta function. They are also used in the numerical
+evaluation of these functions when the switches \sw{ROUNDED} and \sw{COMPLEX} are ON. The quasi-period relations are:
+\begin{eqnarray*}
+  \zeta_w(u+2\omega_j) & = & \zeta_w(u)+2\eta_j\\
+  \sigma(u+2\omega_j) & = & -exp(2\eta_j(u+\omega_j))\sigma(u)\\
+  \sigma_k(u+2\omega_j) & = &  exp(2\eta_j(u+\omega_j))\sigma_k(u) \quad\text{  if  }j\neq k\\
+  \sigma_j(u+2\omega_j) & = & -exp(2\eta_j(u+\omega_j))\sigma_j(u)\\
+  \zeta_w(\omega_j) & = & \eta_j\\
+  \sigma_j(\omega_j) & = & 0,
+\end{eqnarray*}
+where the lattice parameters have been omitted for conciseness and $j,k = 1\ldots 3$.
+The quasi-period functions satisfy
+\[\eta_1+\eta_2+\eta_3=0,\qquad
+   \eta_1\omega_3-\eta_3\omega_1=\eta_2\omega_1-\eta_1\omega_2=\eta_3\omega_2-\eta_2\omega_3=i\pi/2.\]
 
 \subsection{Stirling Numbers}
 \hypertarget{STIRL}{}
@@ -1487,7 +1649,13 @@ Jacobi's Zeta $\mathrm{Z}(u,k)$ & \f{jacobizeta(u,k)}\\
 $\vartheta_1(u,\tau)$ & \f{elliptictheta1(u,tau)}\\
 $\vartheta_2(u,\tau)$ & \f{elliptictheta2(u,tau)}\\
 $\vartheta_3(u,\tau)$ & \f{elliptictheta3(u,tau)}\\
-$\vartheta_4(u,\tau)$ & \f{elliptictheta4(u,tau)}\\[5pt]
+$\vartheta_4(u,\tau)$ & \f{elliptictheta4(u,tau)}\\
+$P_z(u,\omega_1, \omega_3)$ & \f{weierstrass(u,omega1,omega3)}\\
+$\zeta_z(u,\omega_1, \omega_3)$ & \f{weierstrasszeta(u,omega1,omega3)}\\
+$\sigma(u,\omega_1, \omega_3)$ & \f{sigma(u,omega1,omega3)}\\
+$\sigma_1(u,\omega_1, \omega_3)$ & \f{sigma1(u,omega1,omega3)}\\
+$\sigma_2(u,\omega_1, \omega_3)$ & \f{sigma2(u,omega1,omega3)}\\
+$\sigma_3(u,\omega_1, \omega_3)$ & \f{sigma3(u,omega1,omega3)}\\[5pt]
 \end{tabular}}
 \newpage
 

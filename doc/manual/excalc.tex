@@ -93,7 +93,7 @@ takes a list of names. \ttindextype{TVECTOR}{command} \index{Exterior form!vecto
 
 \hspace*{2em} \k{TVECTOR} \s{name$_1$}, \s{name$_2$}, \ldots;
 
-For example, to declare \texttt{X} as a vector and \texttt{COMM} as a vector with 
+For example, to declare \texttt{X} as a vector and \texttt{COMM} as a vector with
 two indices, one would say
 \begin{verbatim}
      tvector x,comm(a,b);
@@ -116,7 +116,7 @@ Example:
 
 \subsection{Exterior Multiplication}
 
-\ttindextype{"\^}{operator!exterior multiplication} 
+\ttindextype{"\^}{operator!exterior multiplication}
 \index{Exterior product}
 Exterior multiplication between exterior forms is carried out with the
 nary infix operator \^{ } (wedge)\label{wedge}.  Factors are ordered
@@ -365,7 +365,7 @@ The Lie derivative can be taken between a vector and an exterior form
 or between two vectors.  It is represented by the infix operator \f{\textbar\_}
 \label{lie}.  In the case of Lie differentiating, an exterior form by
 a vector, the Lie derivative is expressed through inner products and
-exterior differentiations, \emph{i.e.} 
+exterior differentiations, \emph{i.e.}
 \ttindextype{\textbar\_}{(Lie derivative) operator}
 
 \begin{verbatim}
@@ -389,7 +389,7 @@ are differentiated out.
 
      v |_ u;
 
-     - U |_ V 
+     - U |_ V
 
      pform x=0,y=0;
 
@@ -518,7 +518,7 @@ are given as arguments of the object.  A positive argument denotes a
 superscript and a negative argument a subscript.  On output, the
 indexed quantity is displayed two dimensionally if \sw{NAT} is on.
 \ttindexswitch{NAT}
-Indices may be identifiers or numbers.  
+Indices may be identifiers or numbers.
 
 \example\index{EXCALC package!example}
 
@@ -616,7 +616,7 @@ index evaluations would take place
 
 \begin{verbatim}
      pform w n=0;
-    
+
      w(k)*w(-k);
 
          X       Y       Z
@@ -645,11 +645,11 @@ specified index names, or at all.  For this the command
 and the switch \sw{NOSUM} are\ttindexswitch[EXCALC]{NOSUM}
 available.  The command \f{NOSUM} has the effect that summation is
 not performed over those indices which had been listed.  The command
-\f{RENOSUM}\label{RENOSUM} enables summation again.  The switch \sw{NOSUM}, 
+\f{RENOSUM}\label{RENOSUM} enables summation again.  The switch \sw{NOSUM},
 if on, inhibits any summation. \ttindextype{RENOSUM}{command}
 
 \label{INDEXSYMMETRIES} \ttindextype{INDEX\_SYMMETRIES}{command}
-It is possible to declare symmetry properties for an indexed quantity by 
+It is possible to declare symmetry properties for an indexed quantity by
 the command \f{INDEX\_SYMMETRIES}. A prototypical example is as
 follows
 
@@ -661,7 +661,7 @@ follows
 
 \end{verbatim}
 
-It declares the object \texttt{u} symmetric in the first two and last 
+It declares the object \texttt{u} symmetric in the first two and last
 two indices and antisymmetric with respect to commutation of the given
 index pairs. If an object is completely symmetric or antisymmetric,
 the indices need not to be given after the corresponding keyword as
@@ -746,7 +746,7 @@ quantity with the desired indices.
      index_symmetries f(k,l): antisymmetric;
 
      f(k,l) := 0$
-     f(-t,-x):=ex$ f(-x,-y):=b$ 
+     f(-t,-x):=ex$ f(-x,-y):=b$
      on nero;
 
      f(k,-l);
@@ -929,9 +929,9 @@ inner products.
 The command \f{KILLING\_VECTOR} is provided for calculating the
 \ttindextype{KILLING\_VECTOR}{command} \label{KILLING_VECTOR}
 determining system of partial differential equations of Killing vectors for
-a given metric structure provided by the coframe statement.  The result is 
-a list where the first entry is a vector constructed from the identifier 
-given to the command and the second entry consists of a list of partial 
+a given metric structure provided by the coframe statement.  The result is
+a list where the first entry is a vector constructed from the identifier
+given to the command and the second entry consists of a list of partial
 differential equations for the coefficients of this vector.
 
 \example (Calculate the determining pde's for a Killing vector of S(2))
@@ -1029,7 +1029,7 @@ defined on.
 \begin{tabular}{l l r}
 \ttindextype{"\^}{operator!exterior multiplication}
 \index{Wedge}
-\f{\^}  &  Exterior Multiplication & \pageref{wedge} \\
+\f{\textasciicircum}  &  Exterior Multiplication & \pageref{wedge} \\
 \ttindextype{"@}{operator!partial differentiation}
 \f{@}  & Partial Differentiation & \pageref{at}  \\
 \ttindextype{"@}{operator!tangent vector}
@@ -1115,7 +1115,6 @@ The examples are on a test file distributed with {\bf EXCALC}.
 \index{EXCALC package!example}
 {\small
 \begin{verbatim}
-
 % Problem: Calculate the PDE's for the isovector of the heat equation.
 % --------
 %         (c.f. B.K. Harrison, f.B. Estabrook, "Geometric Approach...",
@@ -1526,7 +1525,7 @@ hlang(-i,-j) := 2*(riemc3(-i,-j) - riemri(-i,-j) -
 		   2*ricci(-i,-k)*ricci(-j,K) +
 		   riccisc*ricci(-i,-j) - (1/2)*laglanc*g(-i,-j));
 
-% The complete Einstein tensor: 
+% The complete Einstein tensor:
 
 einst(-i,-j) := (ricci(-i,-j) - (1/2)*riccisc*g(-i,-j))*alp1 +
 		hlang(-i,-j)*alp2$
@@ -1540,7 +1539,7 @@ clear o(k),e(k),riemc3(i,j),riemri(i,j),curv(k,l),riemann(a,b,c,d),
       ricci(a,b),riccisc,t,u,v1,v2,theta,phi,r,om(k,l),einst(a,b),
       hlang(a,b);
 
-remfdomain r,s; 
+remfdomain r,s;
 
 % Problem:
 % --------
@@ -1599,6 +1598,5 @@ remfdomain u1,u3,u5,ff,gg;
 
 showtime;
 end;
-
 \end{verbatim}
 }

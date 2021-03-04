@@ -82,13 +82,12 @@ not defined. See section Operators with Matrix Arguments
 \subsubsection{Examples}
 In the examples the matrix $\mathcal{AA}$ will be
 
-\begin{flushleft}
 \(
 \mathcal{AA} = \left( \begin{array}{cccc} 1 & 0 & 0 & 0 \\ 0 & 3 & 0 & 0 \\
 0 & 0 & 5 & 0 \\ 0 & 0 & 0 & 9
 \end{array} \right)
 \)
-\end{flushleft}
+
 \begin {verbatim}
 det ppp;
 
@@ -213,11 +212,10 @@ symmetricp  & \ldots & \ref{sparse:symmetricp}
 
 In the examples the matrix $\mathcal{A}$ will be
 
-\begin{flushleft}
 \(
 \mathcal{A} = \begin{pmatrix} 1 & 0 & 0 \\ 0 & 5 & 0 \\ 0 & 0 & 9 \end{pmatrix}
 \)
-\end{flushleft}
+
 Unfortunately, due to restrictions of size, it is not practical to use
 ``large'' sparse matrices in the examples. As a result the examples
 shown may appear trivial, but they give an idea of how the functions
@@ -356,14 +354,11 @@ square\_size &:-& a positive integer.
                 dimension square\_size.
 
 \item[Examples:]
-\begin{flushleft}
 \texttt{spband\_matrix}\((\{x,y,z\},6) =
 \begin{pmatrix} y & z & 0 & 0 & 0 & 0 \\ x & y & z & 0 & 0
 & 0 \\ 0 & x & y & z & 0 & 0 \\ 0 & 0 & x & y & z & 0 \\ 0 & 0 & 0 & x &
  y & z \\ 0 & 0 & 0 & 0 & x & y
-\end{pmatrix}
-\)
-\end{flushleft}
+\end{pmatrix}\)
 
 \item[Related functions:]\mbox{}\\
  \texttt{spdiagonal}.
@@ -415,11 +410,8 @@ $\mathcal{A}$.
 This is $\mathcal{C} = \lambda * \mathcal{I} - \mathcal{A}$.
 
 \item[Examples:]
-\begin{flushleft}
 \texttt{spchar\_matrix}\((\mathcal{A},x) =
-\begin{pmatrix} x-1 & 0 & 0 \\ 0 & x-5 & 0 \\ 0 & 0 & x-9 \end{pmatrix}
-\)
-\end{flushleft}
+\begin{pmatrix} x-1 & 0 & 0 \\ 0 & x-5 & 0 \\ 0 & 0 & x-9 \end{pmatrix}\)
 
 \item[Related functions:]\mbox{}\\
 \texttt{spchar\_poly}.
@@ -640,13 +632,10 @@ expr      &:-& algebraic expression or symbol.
                 made equal to expr.
 
 \item[Examples:]
-\begin{flushleft}
 \texttt{spextend}\((\mathcal{A},1,2,0) =
 \begin{pmatrix} 1 & 0 & 0 & 0 & 0 \\ 0 & 5 & 0 & 0 & 0
 \\ 0 & 0 & 9 & 0 & 0 \\ 0 & 0 & 0 & 0 & 0
-\end{pmatrix}
-\)
-\end{flushleft}
+\end{pmatrix}\)
 
 \item[Related functions:]\mbox{}\\
 \texttt{spcopy\_into}, \texttt{spmatrix\_augment},
@@ -795,14 +784,11 @@ variable\_list &:-& either a single variable or a list of variables.
                 the variables in variable\_list.
 
 \item[Examples:]
-\begin{flushleft}
 \hspace*{0.1in}
 \texttt{sphessian}\((x*y*z+x^2,\{w,x,y,z\})  =
 \begin{pmatrix} 0 & 0 & 0 & 0 \\ 0 & 2 & z & y \\ 0 & z & 0
 & x \\ 0 & y & x & 0
-\end{pmatrix}
-\)
-\end{flushleft}
+\end{pmatrix}\)
 \end{description}
 
 \subsubsection{spjacobian}
@@ -850,13 +836,10 @@ square\_size &:-& a positive integer.
                 of dimension square\_size.
 
 \item[Examples:]
-\begin{flushleft}
 \texttt{spjordan\_block(x,5)} \( =
 \begin{pmatrix} x & 1 & 0 & 0 & 0 \\ 0 & x & 1 & 0 & 0 \\ 0
 & 0 & x & 1 & 0 \\ 0 & 0 & 0 & x & 1 \\ 0 & 0 & 0 & 0 & x
-\end{pmatrix}
-\)
-\end{flushleft}
+\end{pmatrix}\)
 
 \item[Related functions:]\mbox{}\\*
  \texttt{spdiagonal}, \texttt{spcompanion}.
@@ -890,13 +873,11 @@ The algorithm used can swap the rows of $\mathcal{A}$
                 \texttt{spconvert($\mathcal{A}$,vec)}.
 
 \item[Examples:]
-\begin{flushleft}
 \(
 \mathcal{K} = \begin{pmatrix} 1 & 0 & 0 \\ 0 & 5 & 0 \\ 0 & 0 & 9 \end{pmatrix}
 \)
-\end{flushleft}
 
-\texttt{lu} $:=$ \texttt{splu\_decom}\((\mathcal{K}) =
+\texttt{lu}\ $:=$\ \texttt{splu\_decom}\((\mathcal{K}) =
 \left\{
         \begin{pmatrix} 1 & 0 & 0 \\ 0 & 5 & 0 \\ 0 & 0 & 9 \end{pmatrix},
         \begin{pmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix},
@@ -929,13 +910,10 @@ square\_size &:-& a positive integer.
                 dimension square\_size.
 
 \item[Examples:]
-\begin{flushleft}
 \texttt{spmake\_identity}\((4) =
         \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0
 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1
- \end{pmatrix}
-\)
-\end{flushleft}
+\end{pmatrix}\)
 
 \item[Related functions:]\mbox{}\\*
 \texttt{spdiagonal}.
@@ -1020,11 +998,8 @@ r,c        &:-& positive integers.
                 \texttt{spminor} computes the (r,c)'th minor of $\mathcal{A}$.
 
 \item[Examples:]
-\begin{flushleft}
 \texttt{spminor}\((\mathcal{A},1,3) =
-        \begin{pmatrix} 0 & 5 \\ 0 & 0  \end{pmatrix}
-\)
-\end{flushleft}
+        \begin{pmatrix} 0 & 5 \\ 0 & 0  \end{pmatrix}\)
 
 \item[Related functions:]\mbox{}\\*
  \texttt{spremove\_columns}, \texttt{spremove\_rows}.
@@ -1277,12 +1252,9 @@ positive integer or a list of positive integers.}
 columns specified in column\_list.
 
 \item[Examples:]
-\begin{flushleft}
 \hspace*{0.1in}
 \texttt{spsub\_matrix}\((\mathcal{A},\{1,3\},\{2,3\}) =
-        \begin{pmatrix} 5 & 0\\ 0 & 9 \end{pmatrix}
-\)
-\end{flushleft}
+        \begin{pmatrix} 5 & 0\\ 0 & 9 \end{pmatrix}\)
 
 \item[Related functions:]\mbox{}\\*
 \texttt{spaugment\_columns}, \texttt{spstack\_rows}.
@@ -1349,11 +1321,8 @@ c1,c1      &:-& positive integers.
                 $\mathcal{A}$.
 
 \item[Examples:]
-\begin{flushleft}
 \texttt{spswap\_columns}\((\mathcal{A},2,3) =
-        \begin{pmatrix} 1 & 0 & 0 \\ 0 & 0 & 5 \\ 0 & 9 & 0 \end{pmatrix}
-\)
-\end{flushleft}
+        \begin{pmatrix} 1 & 0 & 0 \\ 0 & 0 & 5 \\ 0 & 9 & 0 \end{pmatrix}\)
 
 \item[Related functions:]\mbox{}\\*
 \texttt{spswap\_entries}.
@@ -1376,11 +1345,8 @@ r1,c1,r2,c2 &:-& positive integers.
                 $\mathcal{A}$(r2,c2).
 
 \item[Examples:]
-\begin{flushleft}
 \texttt{spswap\_entries}\((\mathcal{A},\{1,1\},\{3,3\}) =
-        \begin{pmatrix} 9 & 0 & 0 \\ 0 & 5 & 0 \\ 0 & 0 & 1 \end{pmatrix}
-\)
-\end{flushleft}
+        \begin{pmatrix} 9 & 0 & 0 \\ 0 & 5 & 0 \\ 0 & 0 & 1 \end{pmatrix}\)
 
 \item[Related functions:]\mbox{}\\*
 \texttt{spswap\_columns}, \texttt{spswap\_rows}.

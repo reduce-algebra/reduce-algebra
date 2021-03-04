@@ -71,9 +71,9 @@ $q$-functions:
 \item \texttt{qpochhammer(a,q,k)} \[
 	\qfac{a}{k}:=
          \left\{\begin{array}{ccc}
-           \prod_{j=0}^{k-1}{\left(1-a\,q^j\right)} && \mbox{{if} $k>0$ } \\
-           1 && \mbox{{if} $k=0$ } \\
-           \prod_{j=1}^{k}{\left(1-a\,q^{-j}\right)^{-1}} && \mbox{{if} $k<0$ }
+           \prod_{j=0}^{k-1}{\left(1-a\,q^j\right)} && \mbox{if $k>0$} \\
+           1 && \mbox{if $k=0$} \\
+           \prod_{j=1}^{k}{\left(1-a\,q^{-j}\right)^{-1}} && \mbox{if $k<0$}
          \end{array}\right.
 	\]
 \item  \texttt{qbrackets(k,q)}
@@ -469,7 +469,7 @@ Let's define the list entries as \texttt{\{rec,cert,f,k,dir\}}. If you
 substitute $\fcn{summ}{n+j}$ by $\fcn{f}{n+j,k}$ in \texttt{rec} then
 you obtain the left hand side of equation (\ref{eq:f_n_k-recursion}),
 where \texttt{f} is the input summand. The function
-$\fcn{g}{k}:=\text{\texttt{f*cert}}$ is the corresponding
+$\fcn{g}{k}:=\texttt{f*cert}$ is the corresponding
 antidifference, where \texttt{dir} states which sort of antidifference
 was calculated \texttt{downward\_antidifference} or
 \texttt{upward\_antidifference}, see also \S~\ref{switches}.

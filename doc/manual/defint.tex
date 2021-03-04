@@ -18,16 +18,16 @@ found in \cite {Prudnikov:90c}), and then calculating the integral by using
 the following Meijer G integration formula.
 
 \begin{equation}
-\int_{0}^{\infty} x^{\alpha-1} G^{s t}_{u v} 
-\left( \sigma x \  \Bigg\vert \  \MeijerGparams{( c_u)}{(d_v)} \right) 
+\int_{0}^{\infty} x^{\alpha-1} G^{s t}_{u v}
+\left( \sigma x \  \Bigg\vert \  \MeijerGparams{( c_u)}{(d_v)} \right)
 G^{m n}_{p q} \left( \omega x^{l/k} \  \Bigg\vert \ \MeijerGparams{(a_p)}{(b_q)}
-\right) dx = k G^{i j}_{k l} \left( \xi \ \Bigg\vert \ 
+\right) dx = k G^{i j}_{k l} \left( \xi \ \Bigg\vert \
 \MeijerGparams{(g_k)}{(h_l)} \right)  \hspace{5mm} \label{defint:eq1}
 \end{equation}
 
 The resulting Meijer G-function is then retransformed, either directly
 or via a hypergeometric function simplification, to give
-the answer. A more detailed account of this theory can be found in 
+the answer. A more detailed account of this theory can be found in
 \cite {Adamchik90}.
 
 \subsection{Integration between zero and infinity}
@@ -38,42 +38,42 @@ As an example, if one wishes to calculate the following integral
 \int_{0}^{\infty} x^{-1} e^{-x} \sin(x) \, dx
 \]
 
-then initially the  correct Meijer G-functions are found, via a 
-pattern matching 
+then initially the  correct Meijer G-functions are found, via a
+pattern matching
 process, and are substituted into eq.~\ref{defint:eq1} to give
 
 \[
-\sqrt{\pi} \int_{0}^{\infty} x^{-1} G^{1 0}_{0 1} \left(x 
-\ \Bigg\vert \ 
-\MeijerGparams{.}{0}\right) G^{1 0}_{0 2}\left(\frac{x^{2}}{4} 
+\sqrt{\pi} \int_{0}^{\infty} x^{-1} G^{1 0}_{0 1} \left(x
+\ \Bigg\vert \
+\MeijerGparams{.}{0}\right) G^{1 0}_{0 2}\left(\frac{x^{2}}{4}
 \ \Bigg\vert \ \MeijerGparams{. \; . }{\frac{1}{2} \; 0} \right) dx
 \]
 
-The cases for validity of the integral are then checked. If these 
-are found to be satisfactory then the formula is calculated and we 
-obtain the following Meijer G-function 
+The cases for validity of the integral are then checked. If these
+are found to be satisfactory then the formula is calculated and we
+obtain the following Meijer G-function
 
-\[  
+\[
 G^{1 2}_{2 2} \left(1 \ \Bigg\vert \ \MeijerGparams{\frac{1}{2} \; 1}{\frac{1}{2} \; 0} \right)
-\] 
+\]
 
 This is reduced to the following hypergeometric function
 
-\(
-\hspace{50mm} _2F_1 (\frac{1}{2},1;\frac{3}{2};-1 )
-\)
+\[
+_2F_1 (\frac{1}{2},1;\frac{3}{2};-1)
+\]
 
-which is then calculated to give the correct answer of 
+which is then calculated to give the correct answer of
 
 \[
 \frac{\pi}{4}
 \]
 
 The above formula (1) is also true for the integration of a single
-Meijer G-function by replacing the second Meijer G-function 
+Meijer G-function by replacing the second Meijer G-function
 with a trivial Meijer G-function.
 
-A list of numerous particular Meijer G-functions is available in 
+A list of numerous particular Meijer G-functions is available in
 \cite {Prudnikov:90c}.
 
 \subsection{Integration over other ranges}
@@ -86,34 +86,34 @@ to use the Heaviside function, i.e.
 
 \[
 \int_{0}^{\infty} x^{2} e^{-x} H(1-x)\,dx = \int_{0}^{1} x^{2} e^{-x}dx
-\] 
+\]
 
 Another approach, again not involving the normal indefinite integration
 process, again uses Meijer G-functions, this time by means of the
 following formula
 
 \begin{equation}
-\int_{0}^{y} x^{\alpha-1} G^{m n}_{p q} 
+\int_{0}^{y} x^{\alpha-1} G^{m n}_{p q}
 \left( \sigma x \  \Bigg\vert \ \MeijerGparams{(a_u)}{(b_v)} \right) dx=%
 y^{\alpha}\,G^{m \; n+1}_{p+1 \; q+1} \left( \sigma y \  \Bigg\vert \
 \MeijerGparams{( a_1..a_n,1-\alpha,a_{n+1}..a_p)}{(b_1..b_m,-\alpha,b_{m+1}..b_q)} \right) \label{defint:eq2}
 \end{equation}
 
-For a more detailed look at the theory behind this see 
+For a more detailed look at the theory behind this see
 \cite{Adamchik90}.
 
 For example, if one wishes to calculate the following integral
 
 \[
-\int_{0}^{y} \sin(2 \sqrt{x}) \, dx 
+\int_{0}^{y} \sin(2 \sqrt{x}) \, dx
 \]
 
-then initially the correct Meijer G-function is found, by a pattern 
-matching process, and is substituted 
+then initially the correct Meijer G-function is found, by a pattern
+matching process, and is substituted
 into eq.~\ref{defint:eq2} to give
 
 \[
-\int_{0}^{y} G^{1 0}_{0 2}\left(x 
+\int_{0}^{y} G^{1 0}_{0 2}\left(x
 \ \Bigg\vert \ \MeijerGparams{. \; .}{\frac{1}{2} \; 0} \right) dx
 \]
 
@@ -146,7 +146,7 @@ the definite integration of EXPRN with respect to VAR.
 \subsubsection{Examples}
 
 \[
-\int_{0}^{\infty} e^{-x} dx 
+\int_{0}^{\infty} e^{-x} dx
 \]
 
 
@@ -219,26 +219,27 @@ INT(X*SIN(---),X,0,INFINITY)
 
 \subsection{Integral Transforms}
 
-A useful application of the definite integration package is in the 
+A useful application of the definite integration package is in the
 calculation of various integral transforms. The transforms
 available are as follows:
 
 \begin{itemize}
-\item Laplace transform 
-\item Hankel transform 
-\item Y-transform 
-\item K-transform 
-\item StruveH transform 
+\item Laplace transform
+\item Hankel transform
+\item Y-transform
+\item K-transform
+\item StruveH transform
 \item Fourier sine transform
-\item Fourier cosine transform 
+\item Fourier cosine transform
 \end{itemize}
 
 \subsubsection{Laplace transform}
 
 The Laplace transform
 
-$\hspace{20 mm} f(s) = \cal L$ \{F(t)\} =
-$\int_{0}^{\infty} e^{-st}F(t)\,dt$
+\[
+f(s) = \mathcal{L}\{\mathrm{F}(t)\} = \int_{0}^{\infty} e^{-st}F(t)\,dt
+\]
 
 can be calculated by using the \verb+laplace_transform+ command.
 
@@ -251,7 +252,9 @@ This requires as parameters
 
 For example
 
-$\hspace{56 mm} \cal L$ $\{e^{-at}\}$
+\[
+\mathcal{L}\{e^{-at}\}
+\]
 
 is entered as
 
@@ -260,7 +263,7 @@ is entered as
 \end{verbatim}
 
 and returns the result
- 
+
 \[
 \frac{1}{s+a}
 \]
@@ -270,7 +273,7 @@ and returns the result
 The Hankel transform
 
 \[
-f(\omega) = \int_{0}^{\infty} F(t) \,J_{\nu}(2\sqrt{\omega t}) \,dt 
+f(\omega) = \int_{0}^{\infty} F(t) \,J_{\nu}(2\sqrt{\omega t}) \,dt
 \]
 
 can be calculated by using the \verb+hankel_transform+ command e.g.
@@ -286,13 +289,13 @@ This is used in the same way as the \verb+laplace_transform+ command.
 The Y-transform
 
 \[
-f(\omega) = \int_{0}^{\infty} F(t) \,Y_{\nu}(2\sqrt{\omega t}) \,dt 
+f(\omega) = \int_{0}^{\infty} F(t) \,Y_{\nu}(2\sqrt{\omega t}) \,dt
 \]
 
 can be calculated by using the \verb+Y_transform+ command e.g.
 
 \begin{verbatim}
-        Y_transform(f(x),x);    
+        Y_transform(f(x),x);
 \end{verbatim}
 
 This is used in the same way as the \verb+laplace_transform+ command.
@@ -308,7 +311,7 @@ f(\omega) = \int_{0}^{\infty} F(t) \,K_{\nu}(2\sqrt{\omega t}) \,dt
 can be calculated by using the \verb+K_transform+ command e.g.
 
 \begin{verbatim}
-        K_transform(f(x),x);    
+        K_transform(f(x),x);
 \end{verbatim}
 
 This is used in the same way as the \verb+laplace_transform+ command.
@@ -331,25 +334,25 @@ This is used in the same way as the \verb+laplace_transform+ command.
 
 \subsubsection{Fourier sine transform}
 
-The Fourier sine transform 
+The Fourier sine transform
 
 \[
-f(s) = \int_{0}^{\infty} F(t) \sin(st) \,dt 
+f(s) = \int_{0}^{\infty} F(t) \sin(st) \,dt
 \]
 
 can be calculated by using the \verb+fourier_sin+ command e.g.
 \begin{verbatim}
-        fourier_sin(f(x),x);    
+        fourier_sin(f(x),x);
 \end{verbatim}
 
 This is used in the same way as the \verb+laplace_transform+ command.
 
 \subsubsection{Fourier cosine transform}
 
-The Fourier cosine transform 
+The Fourier cosine transform
 
 \[
-f(s) = \int_{0}^{\infty} F(t) \cos(st) \,dt 
+f(s) = \int_{0}^{\infty} F(t) \cos(st) \,dt
 \]
 
 can be calculated by using the \verb+fourier_cos+ command e.g.
@@ -361,9 +364,9 @@ This is used in the same way as the \verb+laplace_transform+ command.
 
 \subsection{Additional Meijer G-function Definitions}
 
-The relevant Meijer G representation for any function is found by a 
-pattern-matching process which is carried out on a list of Meijer 
-G-function definitions. This list, although extensive, can never hope 
+The relevant Meijer G representation for any function is found by a
+pattern-matching process which is carried out on a list of Meijer
+G-function definitions. This list, although extensive, can never hope
 to be complete and therefore the user may wish to add more definitions.
 Definitions can be added by adding the following lines:
 
@@ -375,23 +378,23 @@ Definitions can be added by adding the following lines:
 
 \end{verbatim} 
      where f(x) is the new function, i = 1..p, j=1..q, C = a constant,
-%where i = 1..p, j=1..q, C = a constant,  
+%where i = 1..p, j=1..q, C = a constant,
      var = variable, n = an indexing number.
 
 For example when considering $\cos(x)$ we have
 
-\it Meijer G representation  -  
+{\it Meijer G representation --}
 \[
-\sqrt{\pi} \,G^{1 0}_{0 2}\left(\frac{x^{2}}{4} \ \Bigg\vert 
-\ \MeijerGparams{ . \; . }{ 0 \; \frac{1}{2}} \right) dx 
+\sqrt{\pi} \,G^{1 0}_{0 2}\left(\frac{x^{2}}{4} \ \Bigg\vert
+\ \MeijerGparams{ . \; . }{ 0 \; \frac{1}{2}} \right) dx
 \]
 
-\it Internal definite integration package representation  - 
+{\it Internal definite integration package representation --}
 \begin{verbatim}
   defint_choose(cos(~x),~var)   => f1(3,x);
 \end{verbatim}
 
-\rm where 3 is the indexing number corresponding to the 3
+where 3 is the indexing number corresponding to the 3
 in the following formula
 
 \begin{verbatim}
@@ -402,13 +405,13 @@ in the following formula
 
 or the more interesting example of $J_{n}(x)$:
 
-\it Meijer G representation  -  
+{\it Meijer G representation --}
 \[
-G^{1 0}_{0 2} \left(\frac{x^{2}}{4} \ \Bigg\vert 
-\ \MeijerGparams{. \; .}{\frac{n}{2} \; {\frac{-n}{2}}} \right) dx 
+G^{1 0}_{0 2} \left(\frac{x^{2}}{4} \ \Bigg\vert
+\ \MeijerGparams{. \; .}{\frac{n}{2} \; {\frac{-n}{2}}} \right) dx
 \]
 
-\it Internal definite integration package representation  - 
+{\it Internal definite integration package representation --}
 
 \begin{verbatim}
   defint_choose(besselj(~n,~x),~var) => f1(50,x,n);
@@ -421,7 +424,7 @@ G^{1 0}_{0 2} \left(\frac{x^{2}}{4} \ \Bigg\vert
 
 \subsection{The print\_conditions function}
 
-\rm The required conditions for the validity of the transform integrals
+The required conditions for the validity of the transform integrals
 can be viewed using the following command:
 
 \begin{verbatim}
@@ -437,22 +440,20 @@ For example after calculating the following laplace transform
 using the \verb+print_conditions+ command would produce
 
 \begin{verbatim}
-                         
 repart(sum(ai) - sum(bj)) + 1/2 (q + 1 - p)>(q - p) repart(s)
-                         
- and ( - min(repart(bj))<repart(s))<1 - max(repart(ai)) 
+
+ and ( - min(repart(bj))<repart(s))<1 - max(repart(ai))
 
  or mod(arg(eta))=pi*delta
 
- or ( - min(repart(bj))<repart(s))<1 - max(repart(ai)) 
+ or ( - min(repart(bj))<repart(s))<1 - max(repart(ai))
 
  or mod(arg(eta))<pi*delta
-
 \end{verbatim}
 
 where
 \[
-\begin{array}{ll}
+\begin{array}{l}
 delta = s+t-\frac{u-v}{2}\\
 eta = 1-\alpha(v-u)-\mu-\rho\\
 \mu = \sum_{j=1}^{q} b_{j} - \sum_{i=1}^{p} a_{i} + \frac{p-q}{2} + 1\\
@@ -465,13 +466,10 @@ s,t,u,v,p,q,\alpha \; {\rm as \; in \; (1)}
 \subsection{Tracing}
 \hypertarget{switch:TRDEFINT}{}
 
-A new switch \sw{TRDEFINT} can be set to ON to print information about intermediate steps 
+A new switch \sw{TRDEFINT} can be set to ON to print information about intermediate steps
 of the calculation.
 
 \subsection{Acknowledgements}
-I would like to thank Victor Adamchik whose implementation of the 
+I would like to thank Victor Adamchik whose implementation of the
 definite integration package for {\REDUCE} is vital to this
-interface.  
-
-
-
+interface.

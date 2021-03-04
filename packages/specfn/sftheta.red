@@ -26,8 +26,7 @@ module sftheta;  % Procedures and Rules for Jacobi Theta Functions.
 %
 
 % Substantial additions and corrections by Alan Barnes, 2019
-% Addition of numerical procedures for the derivatives of theta functions
-% and support for sigma functions added -- 2021.
+% Numerical procedures for the derivatives of theta functions, Feb. 2021.
 
 %#######################################################################
 % CALCULATING THE FOUR THETA FUNCTIONS
@@ -75,7 +74,7 @@ module sftheta;  % Procedures and Rules for Jacobi Theta Functions.
 % modular transformation tau' = tau +/- integer to ensure |a| <= 1/2, to reduce
 % |q| to acceptable levels.
 % Somewhat arbitrarily Jacobi's transformations are used 
-% until b > 0.5 (i.e. |q| < 0.208). This seems to produce reasonable behaviour.
+% until b > 0.6 (i.e. |q| < 0.15). This seems to produce reasonable behaviour.
 % In practice more than 2 applications of Jacobi's transformation are rarely
 % necessary.
 
@@ -110,7 +109,7 @@ begin scalar quasip, rpq, numhqp, numhrp;
 end;
 
 procedure n_theta1(z, q, tau);
-begin scalar n, pow, term, total, tol;
+begin scalar n, pow, term, total, tol, m;
     tol := 10.0^-(symbolic !:prec!:);
     total := 0;
     n := 0;
@@ -119,8 +118,8 @@ begin scalar n, pow, term, total, tol;
        term := pow*sin((2*n+1)*z);
        total := total + term;
        n := n+1;
-    >> until total = 0 or
-          max(abs(pow),abs(term)) < abs(total)*tol;
+       m :=  max(abs(pow),abs(term));
+    >> until (total = 0 and m < tol) or m < abs(total)*tol;
     % max is essential here as z may be complex so |sin(2n+1)z|>1 is possible
     % or z may be such that sin(2n+1)z is very small or zero.
     return 2*exp(i*pi*tau/4)*total;
@@ -128,7 +127,7 @@ end;
 
 procedure num_theta1(z, q, tau);
 begin scalar x, m, nt;
-   if impart tau > 0.5  then   % i.e. |q| < 0.208
+   if impart tau > 0.6  then   % i.e. |q| < 0.15
        return n_theta1(z, q, tau);
 
    % before applying the Jacobi transformation, ensure |repart tau| <= 1/2
@@ -200,7 +199,7 @@ end;
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 procedure n_theta2(z,q,tau);
-begin scalar n, pow, term, total, tol;
+begin scalar n, pow, term, total, tol, m;
     tol := 10.0^-(symbolic !:prec!:);
     total := 0;
     n := 0;
@@ -209,7 +208,8 @@ begin scalar n, pow, term, total, tol;
        term := pow*cos((2*n+1)*z);
        total := total +  term; 
        n := n+1;
-    >> until max(abs(pow),abs(term)) < abs(total)*tol;
+       m :=  max(abs(pow),abs(term));
+    >> until (total = 0 and m < tol) or m < abs(total)*tol;
     %  max is essential here as z may be complex so |cos(2n+1)z|>1 is possible
     % or z may be such that cos(2n+1)z is very small or zero.    
     return 2*exp(i*pi*tau/4)*total;
@@ -217,7 +217,7 @@ end;
 
 procedure num_theta2(z, q, tau);
 begin scalar  x, m, nt;
-   if  impart tau > 0.5  then  % i.e. |q| < 0.208
+   if  impart tau > 0.6  then  % i.e. |q| < 0.15
        return n_theta2(z, q, tau);
 
    m := shift!-tau(tau);
@@ -289,7 +289,7 @@ end;
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 procedure n_theta3(z, q);
-begin scalar n, pow, term, total, tol;
+begin scalar n, pow, term, total, tol, m;
    tol := 10.0^-(symbolic !:prec!:);
    total := 0;
    n := 1;
@@ -299,7 +299,8 @@ begin scalar n, pow, term, total, tol;
       term := pow*cos(2*n*z);
       total := total + term;
       n := n+1;
-   >> until max(abs(pow),abs(term)) < abs(total)*tol;
+      m :=  max(abs(pow),abs(term));
+   >> until (total = 0 and m < tol) or m < abs(total)*tol;
    %  max is essential here as z may be complex so |cos 2nz| > 1 is possible
    % or z may be such that cos 2nz is very small or zero.
    return 1 + 2*total;
@@ -308,7 +309,7 @@ end;
 procedure num_theta3(z, q, tau);
 begin scalar x, m, nt;
 
-   if impart tau > 0.5  then   % i.e. |q| < 0.208
+   if impart tau > 0.6  then   % i.e. |q| < 0.15
        return n_theta3(z, q);
 
    m := shift!-tau(tau);
@@ -392,7 +393,7 @@ end;
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 procedure n_theta4(z, q);
-begin scalar n, pow, term, total, tol;
+begin scalar n, pow, term, total, tol, m;
    tol := 10.0^-(symbolic !:prec!:);
    total := 0;
    n := 1;
@@ -402,7 +403,8 @@ begin scalar n, pow, term, total, tol;
       term := pow*cos(2*n*z);
       total := total + term;
       n := n+1;
-   >> until max(abs(pow),abs(term)) < abs(total)*tol;
+      m :=  max(abs(pow),abs(term));
+   >> until (total = 0 and m < tol) or m < abs(total)*tol;
    %  max is essential here as z may be complex so |cos 2nz| > 1 is possible
    % or z may be such that cos 2nz is very small or zero.
    return 1 + 2*total;
@@ -410,7 +412,7 @@ end;
 
 procedure num_theta4(z, q, tau);
 begin scalar x, m, nt;
-   if impart tau > 0.5 then    % i.e. |q| < 0.208
+   if impart tau > 0.6 then    % i.e. |q| < 0.15
        return n_theta4(z, q);
 
    m := shift!-tau(tau);
@@ -511,21 +513,21 @@ ellipticthetarules :=
 % numerical evaluation must be performed in complex-rounded mode
 % Note impart tau is necessarily > 0 as |q| must be less than 1.
 
-   elliptictheta1(~u,~tau) => num_elliptic(num1_theta1,u,tau)
+   elliptictheta1(~u,~tau) => n_theta(num1_theta1,u,tau)
         when lisp !*rounded and lisp !*complex
-	     and numberp u and numberp tau and impart tau > 0,
+	     and numberp u and numberp tau,
 
-   elliptictheta2(~u,~tau) => num_elliptic(num1_theta2,u,tau)
+   elliptictheta2(~u,~tau) => n_theta(num1_theta2,u,tau)
         when lisp !*rounded and lisp !*complex
-	     and numberp u and numberp tau and impart tau > 0,
+	     and numberp u and numberp tau,
 
-   elliptictheta3(~u,~tau) => num_elliptic(num1_theta3,u,tau)
+   elliptictheta3(~u,~tau) => n_theta(num1_theta3,u,tau)
         when lisp !*rounded and lisp !*complex
-	     and numberp u and numberp tau and impart tau > 0,
+	     and numberp u and numberp tau,
 
-   elliptictheta4(~u,~tau) => num_elliptic(num1_theta4,u,tau)
+   elliptictheta4(~u,~tau) => n_theta(num1_theta4,u,tau)
         when lisp !*rounded and lisp !*complex
-	     and numberp u and numberp tau and impart tau > 0,
+	     and numberp u and numberp tau,
 
 % generalised shift rules added by A Barnes
 % periodicity:
@@ -565,9 +567,6 @@ ellipticthetarules :=
 	     return elliptictheta4(arg, tau);
       end)
       when ((ratnump(rp) and abs(rp) >= 1) where rp => 2*repart(k/d)),
-
-   elliptictheta3(~u,~tau) => num_elliptic(num_theta3,u,tau)
-        when lisp !*rounded and numberp u and numberp tau,
 
    elliptictheta4((~~w + ~~k*pi)/~~d, ~tau) =>
       (begin scalar n, arg;
@@ -745,6 +744,147 @@ flag('(elliptictheta1 elliptictheta2 elliptictheta3 elliptictheta4),
 deflist('((elliptictheta1 2) (elliptictheta2 2) (elliptictheta3 2)
 	  (elliptictheta4 2)
 	 ), 'number!-of!-args);
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% Derivatives of theta functions
+
+procedure n_theta1d(z, d, tau);
+% differentiate d times wrt z
+if not(fixp d and d>0) then
+   rederr("d must be a positve integer: n_theta1d")
+else begin scalar n, q, pow, term, total, tol, m;
+    tol := 10.0^-(symbolic !:prec!:);
+    total := 0;
+    q := exp(i*pi*tau);
+
+    n := 0;
+    repeat <<
+       pow := (-1)^n*q^(n*(n+1));
+       if evenp d then
+          term := (-1)^(d/2)*(2*n+1)^d*pow*sin((2*n+1)*z)
+       else
+          term := (-1)^((d-1)/2)*(2*n+1)^d*pow*cos((2*n+1)*z);
+       total := total + term;
+       n := n+1;
+       m := max(abs(pow),abs(term));
+    >> until (total=0 and m < tol) or m < abs(total)*tol;
+    % max is essential here as z may be complex so |cos(2n+1)z|>1 is possible
+    % or z may be such that cos(2n+1)z is very small or zero.
+    return 2*exp(i*pi*tau/4)*total;
+end;    
+
+procedure n_theta2d(z, d, tau);
+% differentiate d times wrt z
+if not(fixp d and d>0) then
+   rederr("d must be a positve integer: n_theta2d")
+else begin scalar n, q, pow, term, total, tol, m;
+    tol := 10.0^-(symbolic !:prec!:);
+    total := 0;
+    q := exp(i*pi*tau);
+    
+    n := 0;
+    repeat <<
+       pow := q^(n*(n+1));
+       if evenp d then
+          term := (-1)^(d/2)*(2*n+1)^d*pow*cos((2*n+1)*z)
+       else
+          term := (-1)^((d+1)/2)*(2*n+1)^d*pow*sin((2*n+1)*z);
+       total := total +  term; 
+       n := n+1;
+       m := max(abs(pow),abs(term));
+    >> until (total=0 and m < tol) or m < abs(total)*tol;
+    %  max is essential here as z may be complex so |sin(2n+1)z|>1 is possible
+    % or z may be such that sin(2n+1)z is very small or zero.    
+    return 2*exp(i*pi*tau/4)*total;
+end;
+
+procedure n_theta3d(z, d, tau);
+% differentiate d times wrt z
+if not(fixp d and d>0) then
+   rederr("d must be a positve integer: n_theta3d")
+else begin scalar n, q, pow, term, total, tol, m;
+   tol := 10.0^-(symbolic !:prec!:);
+   total := 0;
+   n := 1;
+   q := exp(i*pi*tau);
+
+   repeat <<
+      pow := q^(n*n);
+      if evenp d then
+          term := (-1)^(d/2)*(2*n)^d*pow*cos(2*n*z)
+      else
+          term := (-1)^((d+1)/2)*(2*n)^d*pow*sin(2*n*z);
+      total := total + term;
+      n := n+1;
+      m := max(abs(pow),abs(term));
+   >> until (total=0 and m < tol) or m < abs(total)*tol;
+   %  max is essential here as z may be complex so |sin 2nz| > 1 is possible
+   % or z may be such that sin 2nz is very small or zero.
+   return  2*total;
+end;
+
+procedure n_theta4d(z, d, tau);
+% differentiate d times wrt z
+if not(fixp d and d>0) then
+   rederr("d must be a positve integer: n_theta4d")
+else begin scalar n, q, pow, term, total, tol, m;
+   tol := 10.0^-(symbolic !:prec!:);
+   total := 0;
+   n := 1;
+   q := exp(i*pi*tau);
+
+   repeat <<
+      pow := (-1)^n*q^(n*n);
+      if evenp d then
+          term := (-1)^(d/2)*(2*n)^d*pow*cos(2*n*z)
+      else
+          term := (-1)^((d+1)/2)*(2*n)^d*pow*sin(2*n*z);
+      total := total + term;
+      n := n+1;
+      m := max(abs(pow),abs(term));
+   >> until (total=0 and m < tol) or m < abs(total)*tol;
+   %  max is essential here as z may be complex so |sin 2nz| > 1 is possible
+   % or z may be such that sin 2nz is very small or zero.
+   return 2*total;
+end;
+
+procedure n_theta(f,u,tau);
+if impart(tau) <= 0 then rederr
+  ("2nd parameter of the theta functions must have positive imaginary part")
+else num_elliptic(f,u,tau);
+
+procedure n_thetad(f,u,d, tau);
+if impart(tau) <= 0 then rederr
+  ("3rd parameter of the theta derivs must have positive imaginary part")
+else num_elliptic(f,u,d,tau);
+
+operator theta1d, theta2d, theta3d, theta4d;
+
+flag('(n_theta1d n_theta2d n_theta3d n_theta4d), 'specfn);
+
+deflist('((n_theta1d 3) (n_theta2d 3) (n_theta3d 3) (n_theta4d 3)
+	 ), 'number!-of!-args);
+
+theta_deriv_rules :=
+{
+   theta1d(~u,~d,~tau) => n_thetad(n_theta1d,u,d,tau)
+        when lisp !*rounded and lisp !*complex
+	     and numberp u and numberp tau,
+
+   theta2d(~u,~d,~tau) => n_thetad(n_theta2d,u,d,tau)
+        when lisp !*rounded and lisp !*complex
+	     and numberp u and numberp tau,
+
+   theta3d(~u,~d,~tau) => n_thetad(n_theta3d,u,d,tau)
+        when lisp !*rounded and lisp !*complex 
+	     and numberp u and numberp tau,
+
+   theta4d(~u,~d,~tau) => n_thetad(n_theta4d,u,d,tau)
+        when lisp !*rounded and lisp !*complex 
+	     and numberp u and numberp tau
+}$
+let theta_deriv_rules$
+
 
 
 endmodule;
