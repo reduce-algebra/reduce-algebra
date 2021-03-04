@@ -35,7 +35,8 @@ symbolic procedure setmatpri(u,v);
 put('mat,'setprifn,'setmatpri);
 
 symbolic procedure matpri u;
-   matpri1(cdr u,nil);
+   if null cdr u then rederr "Empty matrix"
+    else matpri1(cdr u,nil);
 
 symbolic procedure matpri1(u,x);
    % Prints a matrix canonical form U with name X.
