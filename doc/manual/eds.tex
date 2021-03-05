@@ -1,10 +1,6 @@
 
 % Extra macros
 
-\newcommand{\deriv}{\mathrm{d}}
-\newcommand{\union}{\cup}
-\def\R{\hbox{\bf R}}
-\newcommand{\del}{\partial}
 %\newcommand\implies{\Rightarrow}
 \newcommand{\optional}[1]{$\,[$#1$]\,$}
 \newenvironment{edssyntax}
@@ -12,13 +8,18 @@
    {\end{list}}
 
 %% For MathJax, must be part of a paragraph to avoid extra space:
-\ifdefined\HCode
+\ifdefined\VerbMath
 \(
-\def\deriv{\mathrm{d}}
-\def\union{\cup}
-\def\R{\mathbf{R}}
-\def\del{\partial}
+\newcommand{\deriv}{\mathrm{d}}
+\newcommand{\union}{\cup}
+\newcommand{\R}{\mathbf{R}}
+\newcommand{\del}{\partial}
 \)%
+\else
+\newcommand{\deriv}{\mathrm{d}}
+\newcommand{\union}{\cup}
+\def\R{\hbox{\bf R}}
+\newcommand{\del}{\partial}
 \fi
 %
 %\begin{abstract}
@@ -26,7 +27,7 @@ EDS is a REDUCE package for symbolic analysis of partial differential
 equations using the geometrical approach of exterior differential
 systems. The package implements much of exterior differential systems
 theory, including prolongation and involution analysis, and has been
-optimised for large, non-linear problems. 
+optimised for large, non-linear problems.
 %\end{abstract}
 
 %\newpage
@@ -44,7 +45,7 @@ coordinate-independence, including superior treatment of nonlinear and
 global problems. There is not sufficient space in this manual for an
 introduction to exterior differential systems beyond the scant details
 given in section \ref{EDS data structures and concepts}, but there are a
-number of up-to-date texts on the subject (eg \cite{Bryant:1991,Spivak:1979}). 
+number of up-to-date texts on the subject (eg \cite{Bryant:1991,Spivak:1979}).
 
 EDS provides a number of tools for setting up and manipulating exterior
 differential systems and implements many features of the theory. Its main
@@ -88,7 +89,7 @@ The information about a coframing required by EDS is kept in a
 EDS \meta{coframing}: distinct cobases for the same differentiable
 manifold are treated as distinct \meta{coframing} objects in EDS. The
 cobasis may be either holonomic or anholonomic, allowing some manifolds
-with non-trivial topology (eg.  group manifolds) to be treated. 
+with non-trivial topology (eg.  group manifolds) to be treated.
 
 In addition to the cobasis, an EDS \meta{coframing} can be given {\it
 coordinates}, {\it structure equations} and {\it restrictions}. The
@@ -97,7 +98,7 @@ equations express the exterior derivative of the coordinates and cobasis
 elements as needed.  All coordinate differentials must be expressed in
 terms of the given cobasis, but not all cobasis differentials need be
 known. The restrictions are a set of inequalities (at present using just
-$\neq$) describing point sets not in the manifold. 
+$\neq$) describing point sets not in the manifold.
 
 The \meta{coframing} object is, of course, by no means a full
 description of a differentiable manifold. For example, there is no
@@ -105,10 +106,10 @@ topology and there are no charts. However, the \meta{coframing} object
 carries sufficient information about the underlying manifold to allow a
 range of exterior systems calculations to be carried out. As such, it is
 convenient to accept an abuse of language and think of the
-\meta{coframing} object as a manifold. 
+\meta{coframing} object as a manifold.
 
 A \meta{coframing} is constructed or selected using the \f{coframing}
-operator. 
+operator.
 
 \paragraph{\it Examples:}
 \begin{itemize}
@@ -118,7 +119,7 @@ operator.
 	$\deriv e^1=0$,$\deriv e^2=e^1\wedge e^2/r\}$ and restrictions $\{r\neq0\}$.
 \item $\R^2\backslash\{0\}$ with cobasis $\{\deriv x,\deriv y\}$,
 	coordinates $\{x,y\}$ and restrictions $\{x^2+y^2\neq0\}$.
-\item $S^1$ with cobasis $\{\omega\}$ and structure equations 
+\item $S^1$ with cobasis $\{\omega\}$ and structure equations
 	$\{\deriv\omega = 0\}$.
 \item $S^2$ cannot be encapsulated by an EDS \meta{coframing} since there
         is no global cobasis.
@@ -133,17 +134,17 @@ $(S,\Omega,M)$, where $M$ is a \meta{coframing} (section
 $M$, and $\Omega$ is an independence condition: either a decomposable
 \meta{p-form} or a \meta{system} of 1-forms on $M$ (exterior
 differential systems without independence condition are not treated by
-EDS). 
+EDS).
 
 More generally, an \meta{EDS} is a list of simple \meta{EDS} objects
 where the various coframings are all disjoint. This last requirement in
 not enforced within EDS unless the \f{edsdisjoint} switch is \f{on}
 (section \ref{edsdisjoint}). These more general \meta{EDS} objects are
 represented as a list of simple \meta{EDS} objects. All operators which
-take an \meta{EDS} argument accept both simple and compound types. 
+take an \meta{EDS} argument accept both simple and compound types.
 
 The trivial \meta{EDS}, describing an inconsistent problem with no
-solutions, is defined to be (\{1\},\{\},\{\}). 
+solutions, is defined to be (\{1\},\{\},\{\}).
 
 An \meta{EDS} is represented by the \f{eds} operator (section \ref{eds}),
 and can additionally be generated using the \f{contact} and \f{pde2eds}
@@ -166,7 +167,7 @@ of differential forms. This is distinct from an \meta{EDS} (section
 However, many EDS operators will accept either an \meta{EDS} or a
 \meta{system} as arguments. In the latter case, any extra information
 which is required is taken from the background coframing (section
-\ref{Background coframing}). 
+\ref{Background coframing}).
 
 The \meta{system} of an \meta{EDS} can be obtained with the \f{system}
 operator (section \ref{system}).
@@ -192,7 +193,7 @@ and changed with the \f{set\_coframing} command, and inspected using
 An {\it integral element} of an exterior system $(S,\Omega,M)$ is a
 subspace $P\subset T_pM$ of the tangent space at some point $p\in M$
 such that all forms in $S$ vanish when evaluated on vectors from $P$. In
-addition, no non-zero vector in $P$ may annul every form in $\Omega$. 
+addition, no non-zero vector in $P$ may annul every form in $\Omega$.
 
 Alternatively, an integral element $P\subset T_pM$ can be represented
 by its annihilator $P^\perp\subset T^*_pM$, comprising those 1-forms
@@ -201,7 +202,7 @@ maximal set of 1-forms at $p$ such that $S \simeq 0 \pmod{P^\perp}$ and
 the rank of $\Omega$ is preserved modulo $P^\perp$.  This is the
 representation used by EDS. Further, the reference to the point $p$ is
 omitted, so an \meta{integral element} in EDS is a distribution of
-1-forms on $M$, specified as a \meta{system} of 1-forms. 
+1-forms on $M$, specified as a \meta{system} of 1-forms.
 
 In specifying an integral element for a particular \meta{EDS}, it is
 possible to omit the Pfaffian component of the \meta{EDS}, since these
@@ -212,7 +213,7 @@ possible to omit the Pfaffian component of the \meta{EDS}, since these
 \item With $M = \R^3 = \{(x,y,z)\}$, $S = \{\deriv x\wedge \deriv z\}$ and
       $\Omega = \{\deriv x,\deriv y\}$, the integral element $P =
        \{\partial_x + \partial_z,\partial_y\}$ is equally determined by its
-      annihilator $P^\perp = \{\deriv z - \deriv x\}$. 
+      annihilator $P^\perp = \{\deriv z - \deriv x\}$.
 \item For $S = \{\deriv z - y\deriv x\}$ and $\Omega = \{\deriv x\}$, the integral
       element $P = \{\partial_x + y\partial_z\}$ can be specified
       simply as $\{\deriv y\}$.
@@ -254,7 +255,7 @@ are never checked. Properties can be erased using the \f{cleanup} operator
 \subsubsection{Maps}
 \label{Maps}
 
-Within EDS, a map $f:M\to N$ is given as a \meta{map} object, a list 
+Within EDS, a map $f:M\to N$ is given as a \meta{map} object, a list
 \begin{edssyntax}
 \{\meta{coordinate} = \meta{expr},$\cdots$,\meta{expr} neq \meta{expr},$\cdots$\}
 \end{edssyntax}
@@ -299,7 +300,7 @@ transformation just as for a \f{sub} substitution. For \meta{EDS} and
 the desired substition: EDS will automatically invert the transformation
 as required. For a partial change of cobasis, it is not necessary to
 include trivial equalities. Cobasis transformations are applied by the
-\f{transform} operator (section \ref{transform}). 
+\f{transform} operator (section \ref{transform}).
 
 \paragraph{\it Examples:}
 \begin{itemize}
@@ -318,7 +319,7 @@ which the contact system is simply $\{\theta^1,\theta^2,\theta^3\}$.
 For a quasilinear Pfaffian exterior differential system
 $(\{\theta^a\},\{\omega^i\},M)$, the tableau $A=[\pi^a_i]$
 is a matrix of 1-forms such that
-\[	\deriv \theta^a + \pi^a_i\wedge\omega^i \simeq 0 
+\[	\deriv \theta^a + \pi^a_i\wedge\omega^i \simeq 0
 		\pmod{\{\theta^a,\omega^i\wedge\omega^j\}}
 \]
 The $\pi^a_i$ are not unique: if $\{\theta^a,\pi^\rho,\omega^i\}$ is a
@@ -360,7 +361,7 @@ component of the \meta{coframing} structure (cf section \ref{Coframings}) and
 is still primitive: facts such as $x^2+1\neq0$ on a real manifold are
 overlooked. See also the switch \f{edssloppy} (section \ref{edssloppy}).
 
-This ``normal form'' has, of course, nothing to do with the various normal 
+This ``normal form'' has, of course, nothing to do with the various normal
 forms (eg Goursat) into which some exterior systems may be brought by
 cobasis transformations and choices of generators.
 
@@ -394,7 +395,7 @@ is determined by the REDUCE \meta{kernel} ordering.
 \item For the system $S=\{\deriv u - \deriv x - u_y\deriv y\}$, $\Omega=\deriv x\wedge\deriv y$,
       the decomposed standard cobasis is $\{\deriv u\}\cup\{\deriv u_y\}\cup\{\deriv
       x,\deriv y\}$.
-\item For the contact system 
+\item For the contact system
   \[S=\begin{cases}
                 \deriv u - u_x\deriv x - u_y\deriv y\\
                 \deriv u_x - u_{xx}\deriv x - u_{xy}\deriv y\\
@@ -419,7 +420,7 @@ this section.
 \label{coframing}
 
 An EDS \meta{coframing} is constructed using the \f{coframing}
-operator. There are several ways in which it can be used. 
+operator. There are several ways in which it can be used.
 
 The simplest syntax
 \begin{edssyntax}
@@ -449,7 +450,7 @@ exterior derivatives of the coordinates and cobasis elements. All
 arguments except the cobasis are optional, and the order of arguments is
 unimportant. As in the first syntax, missing parts are deduced. The
 ordering of the final cobasis elements follows the ordering specified,
-rather than the prevailing REDUCE ordering. 
+rather than the prevailing REDUCE ordering.
 
 Finally,
 \begin{edssyntax}
@@ -474,7 +475,7 @@ coframing({e 1,e 2},{r},{r neq 0},
                                             1  2
                1  2          1        2    e ^e           1
    coframing({e ,e },{r},{d e => 0,d e => -------,d r => e },
-                                             r 
+                                             r
              {r neq 0})
 
 coframing({e 2}) where {d r=e 1,d e 1=0,d e 2=e 1^e 2/r};
@@ -482,7 +483,7 @@ coframing({e 2}) where {d r=e 1,d e 1=0,d e 2=e 1^e 2/r};
                                             1  2
                1  2          1        2    e ^e           1
    coframing({e ,e },{r},{d e => 0,d e => -------,d r => e },
-                                             r 
+                                             r
              {r neq 0})
 \end{verbatim}
 
@@ -515,7 +516,7 @@ being returned.
 On output, only the \meta{system} and \meta{indep. condition} are
 displayed, unless the \f{nat} switch is off, in which case the
 \meta{coframing} and \meta{properties} are shown too. This is so that an
-\meta{EDS} can be written out to a file and read back in. 
+\meta{EDS} can be written out to a file and read back in.
 
 The parts of an \meta{EDS} are obtained with the operators \f{system},
 \f{cobasis}, \f{independence} and \f{properties} (sections \ref{system},
@@ -529,9 +530,9 @@ indexrange {i,j,k}={1,2},{a,b,c}={3};
 
 eds({d z - p*d x - q*d y, d p^d q},{d x,d y});
 
-   EDS({d z - p*d x - q*d y,d p^d q},{d x,d y}) 
+   EDS({d z - p*d x - q*d y,d p^d q},{d x,d y})
 
-OMrules := 
+OMrules :=
    index_expand {d e(i)=>-w(i,-j)^e(j),w(i,-j)+w(j,-i)=>0}$
 
 eds({e(a)},{e(i)}) where OMrules;
@@ -540,12 +541,12 @@ eds({e(a)},{e(i)}) where OMrules;
    EDS({e },{e ,e })
 
 coframing ws;
-               3  2    1  2         1        2  2 
+               3  2    1  2         1        2  2
    coframing({e ,w   ,e ,e },{},{d e  =>  - e ^w   ,
-                    1                             1 
-                  2     1  2 
+                    1                             1
+                  2     1  2
                d e  => e ^w   },{})
-                             1 
+                             1
 \end{verbatim}
 
 \subsubsection{\tt contact}
@@ -573,22 +574,22 @@ indexrange {i}={1,2},{a}=1;
 contact(1,{x,y,z},{u,v});
 
    EDS({d u - u *d x - u *d y - u *d z,
-               x        y        z 
+               x        y        z
         d v - v *d x - v *d y - v *d z},{d x,d y,d z})
-               x        y        z 
+               x        y        z
 
-OMrules := index_expand{d e(1)=>e(1)^e(2),d e(2)=>0,d w(a)=>0}; 
+OMrules := index_expand{d e(1)=>e(1)^e(2),d e(2)=>0,d w(a)=>0};
 contact(2,{e(i)},{w(a)}) where OMrules;
 
          1    1    1    1    2
    EDS({w  - w   *e  - w   *e ,
-                1         2 
+                1         2
            1      1      1    1      2
         d w    - w     *e  - w     *e ,
-             1      1 1         1 2 
+             1      1 1         1 2
            1          1        1     1    1      2    1  2
         d w    + ( - w      + w   )*e  - w     *e },{e ,e })
-             2          1 2      1          2 2 
+             2          1 2      1          2 2
 \end{verbatim}
 
 \subsubsection{\tt pde2eds}
@@ -720,12 +721,12 @@ implicit dependencies.
 coordinates contact(3,{x},{u});
 
    {x,u,u ,u   ,u     }
-         x  x x  x x x 
+         x  x x  x x x
 
 fdomain u=u(x);
 coordinates {d u+d y};
 
-   {x,y} 
+   {x,y}
 \end{verbatim}
 
 \subsubsection{\tt structure\_equations}
@@ -753,7 +754,7 @@ avoids recomputing the inverse.
 structure_equations{e 1=d x/x,e 2=x*d y};
 
        1         2     1  2
-   {d e  => 0,d e  => e ^e } 
+   {d e  => 0,d e  => e ^e }
 \end{verbatim}
 
 \subsubsection{\tt restrictions}
@@ -823,7 +824,7 @@ list of \meta{expr} (sections \ref{Exterior differential systems},
 \begin{verbatim}
 one_forms {5,x*y - u,d u - x*d y,d u^d x- x*d y^d x};
 
-   {d u - d y*x} 
+   {d u - d y*x}
 \end{verbatim}
 
 \subsubsection{\tt zero\_forms, nought\_forms}
@@ -840,7 +841,7 @@ list of \meta{expr} (sections \ref{Exterior differential systems},
 \begin{verbatim}
 zero_forms {5,x*y - u,d u - x*d y,d u^d x- x*d y^d x};
 
-   {5, - u + x*y} 
+   {5, - u + x*y}
 \end{verbatim}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -875,10 +876,10 @@ S := contact(1,{x,y},{z})$
 S := augment(S,{d z(-x)^d z(-y)});
 
    s := EDS({d z - z *d x - z *d y,
-                    x        y 
+                    x        y
 
              d z ^d z },{d x,d y})
-                x    y 
+                x    y
 \end{verbatim}
 
 \subsubsection{\tt cross}
@@ -899,14 +900,14 @@ coordinates or cobasis elements.
 
 If the first argument is an \meta{EDS}, the result is the \meta{EDS}
 lifted to the direct product space. In this way, it is possible to
-execute a pullback under a projection. 
+execute a pullback under a projection.
 
 \paragraph{\it Example:}
 \begin{verbatim}
 coordinates(contact(1,{x,y},{u}) cross {v});
 
    {x,y,u,u ,u ,v}
-           x  y 
+           x  y
 \end{verbatim}
 
 \subsubsection{\tt pullback}
@@ -932,7 +933,7 @@ are dropped from the list.
 pullback(contact(1,{x,y},{u}),{u(-y) = u*u(-x)});
 
    EDS({d u - u *d x - u *u*d y},{d x,d y})
-               x        x 
+               x        x
 
 M := coframing({e 1,e 2},{r},{r neq 0},
                {d r=>e 1,d e 1=>0,d e 2=>e 1^e 2/r})$
@@ -941,11 +942,11 @@ pullback(M,{r=1/x});
                                      2
                2              2     e ^d x
    coframing({e ,d x},{x},{d e  => --------},{x neq 0})
-                                      x 
+                                      x
 
 pullback(ws,{x=0});
 
-   ***** Map image not within target coframing in pullback  
+   ***** Map image not within target coframing in pullback
 
 pullback({y*d y,d y - d x},{y=x});
 
@@ -973,13 +974,13 @@ variables are unchanged.
 
 S := eds({u*d v - v*d u},{d x});
 
-   s := EDS({v*d u - u*d v},{d x}) 
+   s := EDS({v*d u - u*d v},{d x})
 
 restrict(S,{u neq 0});
 
                v
    EDS({d v - ---*d u},{d x})
-               u 
+               u
 
 % Difference between restrict and pullback
 
@@ -1023,24 +1024,24 @@ new := {e(1) = first system S,w(1) = d x};
 
             1               1
    new := {e =d u - d x*u ,w =d x}
-                         x 
+                         x
 
 S := transform(S,new);
 
               1    1
-   s := EDS({e },{w }) 
+   s := EDS({e },{w })
 
 structure_equations s;
 
        1             1
    {d e  =>  - d u ^w ,
-                  x 
+                  x
        1
-    d w  => 0, 
+    d w  => 0,
 
             1       1
     d u => e  + u *w ,
-                 x 
+                 x
             1
     d x => w }
 \end{verbatim}
@@ -1067,19 +1068,19 @@ the solutions are displayed as they are generated.
 S := augment(contact(2,{x,y},{u}),{u(-y,-y)-u(-x,-x)})$
 on edsverbose;
 lift S;
-   Solving 0-forms 
-   New equations:  
+   Solving 0-forms
+   New equations:
    u   =u
-    y y  x x  
+    y y  x x
 
    EDS({d u - u *d x - u *d y,
-               x        y 
+               x        y
 
         d u  - u   *d x - u   *d y,
-           x    x x        x y 
+           x    x x        x y
 
         d u  - u   *d x - u   *d y},{d x,d y})
-           y    x y        x x 
+           y    x y        x x
 \end{verbatim}
 
 
@@ -1194,17 +1195,17 @@ results.
 S := pullback(contact(2,{x,y},{u}),{u(-x,-y)=0});
 
    s := EDS({d u - u *d x - u *d y,
-                    x        y 
+                    x        y
 
              d u  - u   *d x,
-                x    x x 
+                x    x x
 
              d u  - u   *d y},{d x,d y})
                 y    y y
 
 characters S;
 
-   {1,1} 
+   {1,1}
 
 on ranpos; characters S;
 
@@ -1217,7 +1218,7 @@ on ranpos; characters S;
 \begin{edssyntax}
 	closure \meta{EDS}
 \end{edssyntax}
-returns the closure of the \meta{EDS} under exterior differentiation. 
+returns the closure of the \meta{EDS} under exterior differentiation.
 
 Owing to conflicts with the requirements of a normal form (section
 \ref{Normal form}), \f{closure} cannot guarantee that the resulting system
@@ -1240,19 +1241,19 @@ derived_system eds({d z - q*d y,d p - e**z*d y,
                     d r - e**z*p*d y,d x},{d y});
 
                z            z
-   EDS({d p - e *d y,d r - e *p*d y,d x},{d y}) 
+   EDS({d p - e *d y,d r - e *p*d y,d x},{d y})
 
 derived_system ws;
 
                1
    EDS({d p - ---*d r,d x},{d y})
-               p 
+               p
 
 derived_system ws;
 
                1
    EDS({d p - ---*d r,d x},{d y})
-               p 
+               p
 \end{verbatim}
 
 \subsubsection{\tt dim\_grassmann\_variety}
@@ -1330,11 +1331,11 @@ returns an equivalent exterior system containing only linear generators.
 f := d u^d x + d v^d y$
 S := eds({f,d v^f},{d x,d y});
 
-   s := EDS({d u^d x + d v^d y,d u^d v^d x},{d x,d y}) 
+   s := EDS({d u^d x + d v^d y,d u^d v^d x},{d x,d y})
 
 linearise S;
 
-   EDS({d u^d x + d v^d y},{d x,d y}) 
+   EDS({d u^d x + d v^d y},{d x,d y})
 \end{verbatim}
 
 \subsubsection{\tt integral\_element}
@@ -1404,42 +1405,42 @@ pde := {u(-y,-y)=u(-x,-x)**2/2,u(-x,-y)=u(-x,-x)};
                  (u   )
                    x x
    pde := {u   =---------,u   =u   }
-            y y     2      x y  x x 
+            y y     2      x y  x x
 
 S := pullback(contact(2,{x,y},{u}),pde)$
 on edsverbose;
 prolong S;
-   Reduction using new equations:  
+   Reduction using new equations:
    u   =1
-    x x 
-   Prolongation using new equations:  
+    x x
+   Prolongation using new equations:
    u     =0
-    x x x  
+    x x x
    u     =0
-    x x y 
-   
+    x x y
+
    {EDS({d u - u *d x - u *d y,
-                x        y 
-   
+                x        y
+
          d u  - d x - d y,
-            x 
+            x
                        1
          d u  - d x - ---*d y},{d x,d y}),
-            y          2 
-   
+            y          2
+
     EDS({d u - u *d x - u *d y,
-                x        y 
-   
+                x        y
+
          d u  - u   *d x - u   *d y,
-            x    x x        x x 
+            x    x x        x x
                                   2
                             (u   )
                               x x
          d u  - u   *d x - ---------*d y,
-            y    x x           2 
-   
+            y    x x           2
+
          d u   },{d x,d y})}
-            x x 
+            x x
 \end{verbatim}
 
 \subsubsection{\tt tableau}
@@ -1460,7 +1461,7 @@ tableau contact(2,{x,y},{u});
    [   x x     x y]
    [              ]
    [d u     d u   ]
-   [   x y     y y] 
+   [   x y     y y]
 \end{verbatim}
 
 \subsubsection{\tt torsion}
@@ -1485,17 +1486,17 @@ S := pullback(contact(2,{x,y},{u}),
               {u(-y,-y)=u(-x),u(-x,-y)=u});
 
    s := EDS({d u - u *d x - u *d y,
-                    x        y 
-   
+                    x        y
+
              d u  - u   *d x - u*d y,
-                x    x x 
-   
+                x    x x
+
              d u  - u*d x - u *d y},{d x,d y})
-                y            x 
+                y            x
 torsion s;
 
    {u    - u }
-     x x    y 
+     x x    y
 \end{verbatim}
 
 \subsubsection{\tt grassmann\_variety}
@@ -1523,21 +1524,21 @@ Using the system from the example in section \ref{prolong}:
 zero_forms grassmann_variety S;
 
    { - u     *u    + u     ,
-        x x x  x x    x x y 
-   
+        x x x  x x    x x y
+
      - u      + u     }
-        x x x    x x y 
+        x x x    x x y
 
 solve ws;
 
    Unknowns: {u     ,u     ,u   }
                x x x  x x y  x x
-   
+
    {{u     =0,u     =0},
-      x x y    x x x 
-   
+      x x y    x x x
+
     {u   =1,u     =u     }}
-      x x    x x x  x x y 
+      x x    x x x  x x y
 \end{verbatim}
 The second solution contains an integrability condition.
 
@@ -1635,7 +1636,7 @@ quasilinear S;
 
 linearise closure S;
 
-   EDS({d u - p*d x - q*d y, 
+   EDS({d u - p*d x - q*d y,
          - d p^d x - d q^d y},{d x,d y})
 
 % One which is really non-linear
@@ -1725,11 +1726,11 @@ S1 := contact(2,{x,y},{u})$
 S2 := augment(S1,foreach f in system S1 join {d f,d x^d f})$
 if S1 equiv S2 then yes else no;
 
-   no 
+   no
 
 if closure S1 equiv S2 then yes else no;
 
-   yes 
+   yes
 \end{verbatim}
 
 
@@ -1739,7 +1740,7 @@ if closure S1 equiv S2 then yes else no;
 \subsection{Switches}
 \label{Switches}
 
-EDS provides several switches to govern the display of information and 
+EDS provides several switches to govern the display of information and
 speed or reliability of the results.
 
 \subsubsection{\tt edsverbose}
@@ -1836,7 +1837,7 @@ invert {d u = 3*d x - d y + 5*d z, d v = d x + 2*d z};
 
 invert {d u = 3*d x - y*d y + 5*d z, d v = d x + 2*d z};
 
-   {d x=2*d u - 5*d v + 2*d y*y,d z= - d u + 3*d v - d y*y} 
+   {d x=2*d u - 5*d v + 2*d y*y,d z= - d u + 3*d v - d y*y}
 \end{verbatim}
 
 
@@ -1896,8 +1897,8 @@ f := d p^d q^d u - d p^d q^d x*x + d p^d q^d z*y
      + d x^d y^d z*y$
 exfactors f;
 
-   {d p^d q - d v^d x*x + d v^d z*y + d x^d y, 
-    d u - d x*x + d z*y} 
+   {d p^d q - d v^d x*x + d v^d z*y + d x^d y,
+    d u - d x*x + d z*y}
 
 f - (part(ws,0) := ^);
 
@@ -1935,7 +1936,7 @@ index_expand(e(i)^e(j));
 index_expand{o(-a,-b)+o(-b,-a) => 0};
 
    {2*o    => 0,o    + o    => 0, 2*o    => 0}
-       x x       x y    y x          y y 
+       x x       x y    y x          y y
 \end{verbatim}
 
 
@@ -2060,12 +2061,12 @@ undisturbed by this operation: the result of \f{reorder} must be used.
 \begin{verbatim}
 M := coframing {x,y,z};
 
-   m := coframing({d x,d y,d z},{x,y,z},{},{}) 
+   m := coframing({d x,d y,d z},{x,y,z},{},{})
 
 korder z,y,x;
 reorder m;
 
-   coframing({d z,d y,d x},{z,y,x},{},{}) 
+   coframing({d z,d y,d x},{z,y,x},{},{})
 \end{verbatim}
 
 
@@ -2096,7 +2097,7 @@ If \f{f} is a $p$-form, then \f{poincare f} is a $(p-1)$-form, and
 \begin{verbatim}
 poincare(3*d x^d y^d z);
 
-   d x^d y*z - d x^d z*y + d y^d z*x 
+   d x^d y*z - d x^d z*y + d y^d z*x
 
 d ws;
 
@@ -2154,7 +2155,7 @@ S := pde2eds {df(u,y,y) = df(u,x,x)};
 
    s := EDS({d u - u *d x - u *d y,
                     x        y
-   
+
              d u  - u   *d x - u   *d y,
                 x    x x        x y
 
@@ -2163,12 +2164,12 @@ S := pde2eds {df(u,y,y) = df(u,x,x)};
 
 symbol_relations(S,pi);
 
-      1       2 
+      1       2
    {pi    - pi   ,
-        x       y 
-      1       2 
+        x       y
+      1       2
     pi    - pi   }
-        y       x 
+        y       x
 \end{verbatim}
 
 \subsubsection{\tt symbol\_matrix}
@@ -2217,7 +2218,7 @@ characteristic_variety(S,xi);
 
           2        2
    {{(xi )  - (xi ) },
-        x        y 
+        x        y
     {xi ,xi }}
        x   y
 \end{verbatim}
@@ -2283,7 +2284,7 @@ $\Omega$    &\meta{p-form}\\
 $f$         &\meta{map}\\
 $rsx$       &\meta{list of inequalities}\\
 $cob$       &\meta{list of 1-form variables}\\
-$crd$, $dep$, $ind$     
+$crd$, $dep$, $ind$
             &\meta{list of 0-form variables}\\
 $drv$       &\meta{list of rules for exterior derivatives}\\
 $pde$       &\meta{list of expressions or equations}\\
@@ -2298,7 +2299,7 @@ $P$         &\meta{integral element}\\
 \literal{coframing($cob$,$crd$,$rsx$,$drv$)}
     &constructs a \meta{coframing} with the given cobasis $cob$, coordinates $crd$,
      restrictions $rsx$ and structure equations $drv$: $crd$, $rsx$ and $drv$
-     are optional\\\hline 
+     are optional\\\hline
 \literal{coframing($S$)}
     &constructs a \meta{coframing} capable of supporting the given
      \meta{system}\\\hline
@@ -2332,10 +2333,10 @@ $P$         &\meta{integral element}\\
 \literal{coordinates($M$)}\nl \literal{coordinates($E$)}
     &extracts the coordinates\\\hline
 \literal{structure\_equations($M$)}\nl \literal{structure\_equations($E$)}
-    &extracts the rules for exterior derivatives for cobasis and 
+    &extracts the rules for exterior derivatives for cobasis and
      coordinates\\\hline
 \literal{restrictions($M$)}\nl \literal{restrictions($E$)}
-    &extracts the inequalities describing the restrictions 
+    &extracts the inequalities describing the restrictions
      in the \meta{coframing}\\\hline
 \literal{system($E$)}
     &extracts the \meta{system} part of $E$\\\hline
@@ -2365,7 +2366,7 @@ $P$         &\meta{integral element}\\
 \literal{pullback($M$,$f$)}
     &returns a \meta{coframing} $N$ suitable as the source for $f:N\to M$\\\hline
 \literal{restrict($E$,$f$)}\nl \literal{restrict($S$,$f$)}\nl \literal{restrict($\Omega$,$f$)}
-    &restricts the first argument to the points specified by the 
+    &restricts the first argument to the points specified by the
      \meta{map} $f$\\\hline
 \literal{restrict($M$,$f$)}
     &adds the restrictions in $f$ to $M$\\\hline
@@ -2389,7 +2390,7 @@ $P$         &\meta{integral element}\\
     &calculates the Cauchy system: the Cartan system of the closure under
      exterior differentiation\\\hline
 \literal{characters($E$)} \nl \literal{characters($T$)}
-    &calculates the (reduced) Cartan characters $\{s_1,...,s_n\}$ 
+    &calculates the (reduced) Cartan characters $\{s_1,...,s_n\}$
      ($E$ quasilinear)\\\hline
 \literal{characters($E$,$P$)}
     &Cartan characters for a non-linear $E$ at integral element $P$\\\hline
@@ -2468,7 +2469,7 @@ $P$         &\meta{integral element}\\
 \literal{ranpos}\nl \literal{genpos}
     &if \literal{on}, uses a random or generic flag of integral elements when
     calculating Cartan characters: otherwise the independence condition as
-    presented guides the choice of flag\\\hline 
+    presented guides the choice of flag\\\hline
 \end{commandtable}
 
 
@@ -2527,7 +2528,7 @@ $P$         &\meta{integral element}\\
     of \meta{0-form} variables $\xi_i$\\\hline
 \literal{characteristic\_variety($E$,$\xi$)}
     &returns equations describing the characteristic variety of
-    $E$ in terms of \meta{0-form} variables $\xi_i$\\\hline 
+    $E$ in terms of \meta{0-form} variables $\xi_i$\\\hline
 \end{commandtable}
 
 %\catcode`\"=12\relax

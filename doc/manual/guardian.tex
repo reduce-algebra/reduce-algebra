@@ -1,4 +1,19 @@
 
+\subsection{Introduction}
+%% For MathJax, must be part of a paragraph to avoid extra space:
+\ifdefined\VerbMath
+\(
+\newenvironment{gex}{\left[\begin{array}{c|c}}{\end{array}\right]}
+\newcommand{\gc}[1]{\boldsymbol{#1}}
+\newcommand{\true}{\textrm{T}}
+\newcommand{\false}{\textrm{F}}
+\newcommand{\E}{\textrm{E}}
+\newcommand{\GE}{\textrm{GE}}
+\newcommand{\gscheme}{\textrm{gscheme}}
+\newcommand{\sign}{\textrm{sign}}
+\)%
+\else
+\newenvironment{gex}{\left[\begin{array}{c|c}}{\end{array}\right]}
 \newcommand{\gc}[1]{\mbox{\boldmath$#1$}}
 \newcommand{\true}{\textrm{T}}
 \newcommand{\false}{\textrm{F}}
@@ -6,23 +21,7 @@
 \newcommand{\GE}{\textrm{GE}}
 \newcommand{\gscheme}{\textrm{gscheme}}
 \newcommand{\sign}{\textrm{sign}}
-
-\subsection{Introduction}
-%% For MathJax, must be part of a paragraph to avoid extra space:
-\ifdefined\HCode
-\(
-\newenvironment{gex}{\left[\begin{array}{c|c}}{\end{array}\right]}
-\def\gc#1{\boldsymbol{#1}}
-\def\true{\textrm{T}}
-\def\false{\textrm{F}}
-\def\E{\textrm{E}}
-\def\GE{\textrm{GE}}
-\def\gscheme{\textrm{gscheme}}
-\def\sign{\textrm{sign}}
-\)%
 \fi
-\def\gex{\left[\begin{array}{c|c}}
-\def\endgex{\end{array}\right]}
 It is meanwhile a well-known fact that evaluations obtained with the
 interactive use of computer algebra systems (\textsc{cas}) are not
 entirely correct in general. Typically, some degenerate cases are

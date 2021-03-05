@@ -1,5 +1,4 @@
 
-\newcommand{\Sym}{\operatorname{Sym}}
 \newenvironment{reduce}{\begin{scriptsize}\begin{verbatim}}%
 {\end{verbatim}\end{scriptsize}}
 
@@ -28,10 +27,12 @@
 
 \subsection{Introduction}
 %% For MathJax, must be part of a paragraph to avoid extra space:
-\ifdefined\HCode
+\ifdefined\VerbMath
 \(
-\def\Sym{\operatorname{Sym}}
+\newcommand{\Sym}{\operatorname{Sym}}
 \)%
+\else
+\newcommand{\Sym}{\operatorname{Sym}}
 \fi
 Consider the field $F = \mathbb{Q}(x_1,\dots,x_n)$ of rational functions and a
 set $\Delta = \{\partial_{x_1}$,\dots,~$\partial_{x_n}\}$ of

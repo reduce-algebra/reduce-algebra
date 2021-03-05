@@ -28,7 +28,7 @@
 \index{Stirling numbers}
 \hypertarget{SPECFNS}{}
 %% For MathJax, must be part of a paragraph to avoid extra space:
-\ifdefined\HCode
+\ifdefined\VerbMath
 \(\def\f#1{\texttt{#1}}\)%
 \fi
 The package SPECFN is designed to provide algebraic and numeric manipulations of
@@ -57,9 +57,9 @@ many common special functions, namely:
 \item \hyperlink{JACEF}{Jacobi's Elliptic Functions};
 \item \hyperlink{ELLIPI}{Elliptic Integrals};
 \item \hyperlink{ELLIPNOME}{Nome and Related Functions};
-\item \hyperlink{JACTF}{Jacobi's Theta Functions} and their 
+\item \hyperlink{JACTF}{Jacobi's Theta Functions} and their
 \hyperlink{THETAD}{ derivatives};
-\item \hyperlink{WEIERSTRASS}{Weierstrass Elliptic Functions} and the 
+\item \hyperlink{WEIERSTRASS}{Weierstrass Elliptic Functions} and the
 \hyperlink{SIGMA}{Sigma Function};
 \item \hyperlink{SIGMA1}{Other Sigma Functions};
 \item \hyperlink{ETA}{Period Lattice and Related Functions};
@@ -1101,10 +1101,10 @@ by multiplying by the `correcting' factor $q^{1/4}\exp(-i\pi\tau/4)$.
 \ttindex{theta3d}\ttindex{theta4d}
 Four functions are provided:
 \begin{itemize}
-\item \f{theta1d(u,ord,tau)} 
-\item \f{theta2d(u,ord,tau)} 
-\item \f{theta3d(u,ord,tau)} 
-\item \f{theta4d(u,ord,tau)} 
+\item \f{theta1d(u,ord,tau)}
+\item \f{theta2d(u,ord,tau)}
+\item \f{theta3d(u,ord,tau)}
+\item \f{theta4d(u,ord,tau)}
 \end{itemize}
 These return the $d$th derivatives of the respective theta functions
 with respect to their first argument $u$; $\tau$ is as usual the modulus
@@ -1138,7 +1138,7 @@ Three main functions of three arguments are defined:
 \ttindex{sigma}
 \begin{itemize}
 \item  $P_w(u, \omega_1, \omega_3)$ \ --- \ \f{weierstrass(u,omega1,omega3)}
-\item $\zeta_w(u, \omega_1, \omega_3)$ \ --- \ \f{weierstrassZeta(u,omega1,omega3)} 
+\item $\zeta_w(u, \omega_1, \omega_3)$ \ --- \ \f{weierstrassZeta(u,omega1,omega3)}
 \item $\sigma(u, \omega_1, \omega_3)$ \ --- \ \f{sigma(u,omega1,omega3)}
 \end{itemize}
 
@@ -1153,7 +1153,7 @@ a positive imaginary part and hence the nome $q = exp(i\pi\tau)$ satisfies $|q| 
 
 Any linear combination $\Omega_{m,n} = 2m\omega_1 +2n\omega_3$ where $m$ and $n$ are
 integers (not both zero) is also a period. The set of all such periods plus the origin form a lattice. In the literature
-$-(\omega_1+\omega_3)$ is often denoted by $\omega_2$ and $2\omega_2$ is clearly also a period; this 
+$-(\omega_1+\omega_3)$ is often denoted by $\omega_2$ and $2\omega_2$ is clearly also a period; this
 accounts for the gap in the numbering of primitive periods. The period $\omega_2$ is not used in \REDUCE the rule sets for
 the Weierstrassian elliptic and related functions.
 
@@ -1196,9 +1196,9 @@ Three further Sigma functions are also provided:
 \index{Sigma functions}
 \ttindex{sigma1} \ttindex{sigma2} \ttindex{sigma3}
 \begin{itemize}
-\item $\sigma_1(u, \omega_1, \omega_3)$ \ --- \ \f{sigma1(u,omega1,omega3)} 
+\item $\sigma_1(u, \omega_1, \omega_3)$ \ --- \ \f{sigma1(u,omega1,omega3)}
 \item $\sigma_2(u, \omega_1, \omega_3)$ \ --- \ \f{sigma2(u,omega1,omega3)}
-\item $\sigma_3(u, \omega_1, \omega_3)$ \ --- \ \f{sigma3(u,omega1,omega3)} 
+\item $\sigma_3(u, \omega_1, \omega_3)$ \ --- \ \f{sigma3(u,omega1,omega3)}
 \end{itemize}
 These are all even functions, regular everywhere, homogenous of degree zero and doubly quasi-periodic. They are closely related to the
 theta functions $\vartheta_2$, $\vartheta_3$ and $\vartheta_4$ respectively; but \emph{note the difference in numbering}.
@@ -1599,13 +1599,14 @@ Lerch's transcendent $\Phi(z,s,a)$ & \f{Lerch\_Phi(z,s,a)}\\[5pt]
 \end{tabular}}
 
 %% Nested tabular environments need special treatment to work with MathJax:
+\ifdefined\VerbMath
+\(
 \newcommand{\ThreeJSymbol}{\begin{pmatrix} j_{1} & j_{2} & j_{3} \\ m_{1} & m_{2} & m_{3} \end{pmatrix}}
 \newcommand{\SixJSymbol}{\begin{Bmatrix} j_{1} & j_{2} & j_{3} \\ m_{1} & m_{2} & m_{3} \end{Bmatrix}}
-\ifdefined\HCode
-\(
-\def\ThreeJSymbol{\begin{pmatrix} j_{1} & j_{2} & j_{3} \\ m_{1} & m_{2} & m_{3} \end{pmatrix}}
-\def\SixJSymbol{\begin{Bmatrix} j_{1} & j_{2} & j_{3} \\ m_{1} & m_{2} & m_{3} \end{Bmatrix}}
 \)%
+\else
+\newcommand{\ThreeJSymbol}{\begin{pmatrix} j_{1} & j_{2} & j_{3} \\ m_{1} & m_{2} & m_{3} \end{pmatrix}}
+\newcommand{\SixJSymbol}{\begin{Bmatrix} j_{1} & j_{2} & j_{3} \\ m_{1} & m_{2} & m_{3} \end{Bmatrix}}
 \fi
 
 \fbox{
