@@ -82,6 +82,7 @@ By modern standards, **REDUCE** is a surprisingly small and compact application,
 
 - [**REDUCE** External Packages](https://reduce-algebra.sourceforge.io/packages.php)
 - [GitHub **REDUCE-Algebra Organization**](https://github.com/reduce-algebra/)
+- [GitLab **REDUCE-Algebra Organization**](https://gitlab.com/reduce-algebra)
 - [SourceHut **REDUCE-Algebra Project**](https://sr.ht/~trn/reduce-algebra/sources)
 - [NotABug **REDUCE-Algebra Organization**](https://notabug.org/reduce-algebra/)
 - [Chisel **REDUCE-Algebra Public Repositories**](https://chiselapp.com/user/reduce-algebra/)
