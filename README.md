@@ -43,6 +43,7 @@ By modern standards, **REDUCE** is a surprisingly small and compact application,
   - [**Sourceforge SVN Repository**](https://svn.code.sf.net/p/reduce-algebra/code/)
   - [**Sourceforge RSS Feed**](https://sourceforge.net/p/reduce-algebra/activity/feed.rss)
 - [GitHub Mirror](https://github.com/reduce-algebra/reduce-algebra/)
+- [GitLab Mirror](https://gitlab.com/reduce-algebra/reduce-algebra)
 - [SourceHut Mirror](https://git.sr.ht/~trn/reduce-algebra/)
 - [NotABug Mirror](https://notabug.org/reduce-algebra/reduce-algebra/)
 
