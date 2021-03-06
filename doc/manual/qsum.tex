@@ -1,4 +1,29 @@
 
+\newcounter{redprompt}
+{\setcounter{redprompt}{0}}
+\newcommand{\redprompt}{\stepcounter{redprompt}\theredprompt:}
+\newenvironment{redoutput}{\small\begin{alltt}}{\end{alltt}\vskip-\parskip\noindent{}}
+
+% ----------------------------------------------------------------------
+
+\subsection{Introduction}
+
+%% For MathJax, must be part of a paragraph to avoid extra space:
+\ifdefined\VerbMath
+\(
+\newcommand{\qphihyp}[5]{{}_{#1}\phi_{#2}\left.\left[\begin{array}{c}
+	#3 \\ #4 \end{array}\right|q,#5\right]}
+\newcommand{\qpsihyp}[5]{{}_{#1}\psi_{#2}\left.\left[\begin{array}{c}
+	#3 \\ #4 \end{array}\right|q,#5\right]}
+\newcommand{\hyp}[5]{{}_{#1}F_{#2}\left.\left[\begin{array}{c}
+	#3 \\ #4 \end{array}\right|#5\right]}
+%
+\newcommand{\fcn}[2]{{\mathrm #1}(#2)}
+\newcommand{\ifcn}[3]{{\mathrm #1}_{#2}(#3)}
+\newcommand{\qfac}[2]{\left(#1;\,q\right)_{#2}}
+\newcommand{\qbinomial}[2]{{\binom{#1}{#2}\!}_q}
+\)%
+\else
 \newcommand{\qphihyp}[5]{{}_{#1}\phi_{#2}\left.\left[\begin{array}{c}
 	#3 \\ #4 \end{array}\right|q,#5\right]}
 \newcommand{\qpsihyp}[5]{{}_{#1}\psi_{#2}\left.\left[\begin{array}{c}
@@ -10,30 +35,6 @@
 \newcommand{\ifcn}[3]{{\mathrm #1}_{#2}(#3)}
 \newcommand{\qfac}[2]{\left(#1;\,q\right)_{#2}}
 \newcommand{\qbinomial}[2]{{\binom{#1}{#2}\!}_q}
-
-\newcounter{redprompt}
-{\setcounter{redprompt}{0}}
-\newcommand{\redprompt}{\stepcounter{redprompt}\theredprompt:}
-\newenvironment{redoutput}{\small\begin{alltt}}{\end{alltt}\vskip-\parskip\noindent{}}
-
-% ----------------------------------------------------------------------
-
-\subsection{Introduction}
-
-%% For MathJax, must be part of a paragraph to avoid extra space:
-\ifdefined\HCode
-\(
-\def\qphihyp#1#2#3#4#5{{}_{#1}\phi_{#2}\left.\left[\begin{array}{c}
-	#3 \\ #4 \end{array}\right|q,#5\right]}
-\def\qpsihyp#1#2#3#4#5{{}_{#1}\psi_{#2}\left.\left[\begin{array}{c}
-	#3 \\ #4 \end{array}\right|q,#5\right]}
-\def\hyp#1#2#3#4#5{{}_{#1}F_{#2}\left.\left[\begin{array}{c}
-	#3 \\ #4 \end{array}\right|#5\right]}
-\def\fcn#1#2{{\mathrm #1}(#2)}
-\def\ifcn#1#2#3{{\mathrm #1}_{#2}(#3)}
-\def\qfac#1#2{\left(#1;\,q\right)_{#2}}
-\def\qbinomial#1#2{{\binom{#1}{#2}\!}_q}
-\)%
 \fi
 This package is an implementation of the $q$-analogues of Gosper's
 and Zeil\-berger's%

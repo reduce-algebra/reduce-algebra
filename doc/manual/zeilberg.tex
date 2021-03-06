@@ -1,19 +1,19 @@
 
+\subsection{Introduction}
+
+%% For MathJax, must be part of a paragraph to avoid extra space:
+\ifdefined\VerbMath
+\(
+\newcommand{\funkdef}[3]{\left\{\begin{array}{cc}
+                                #1 & \textrm{if } #2 \\
+                                #3 & \textrm{otherwise}
+                                \end{array}\right.}
+\)%
+\else
 \newcommand{\funkdef}[3]{\left\{\begin{array}{cc}
                                 #1 & \mbox{\rm{if} $#2$ } \\
                                 #3 & \mbox{\rm{otherwise}}
                                 \end{array}\right.}
-
-\subsection{Introduction}
-
-%% For MathJax, must be part of a paragraph to avoid extra space:
-\ifdefined\HCode
-\(
-\def\funkdef#1#2#3{\left\{\begin{array}{cc}
-                                #1 & \textrm{if } #2 \\
-                                #3 & \textrm{otherwise}
-                          \end{array}\right.}
-\)%
 \fi
 This package is a careful implementation of the Gosper%
 \footnote{The {\tt sum} package contains also a partial implementation

@@ -23,10 +23,6 @@
 
 \providecommand{\cprime}{\/{\mathsurround=0pt$'$}}
 
-\providecommand*{\pd}[2]{\mathchoice{\frac{\partial#1}{\partial#2}}
-  {\partial#1/\partial#2}{\partial#1/\partial#2}
-  {\partial#1/\partial#2}}
-
 \providecommand{\cdiff}{CDIFF\xspace}
 
 %\keywords{\REDUCE, Hamiltonian operators, generalized symmetries, higher
@@ -35,12 +31,16 @@
 %\subjclass[2000]{37K05}
 
 %% For MathJax, must be part of a paragraph to avoid extra space:
-\ifdefined\HCode
+\ifdefined\VerbMath
 \(
-\def\pd#1#2{\mathchoice{\frac{\partial#1}{\partial#2}}
+\newcommand{\pd}[2]{\mathchoice{\frac{\partial#1}{\partial#2}}
   {\partial#1/\partial#2}{\partial#1/\partial#2}
   {\partial#1/\partial#2}}
 \)%
+\else
+\providecommand*{\pd}[2]{\mathchoice{\frac{\partial#1}{\partial#2}}
+  {\partial#1/\partial#2}{\partial#1/\partial#2}
+  {\partial#1/\partial#2}}
 \fi
 %\begin{abstract}
   Author of this Section: R.~Vitolo.
@@ -828,9 +828,9 @@ way (see the example file).
 Now, we solve the equation for shadows of nonlocal symmetries in a covering of
 the $\ell^*$-covering. We can choose between three new nonlocal variables
 \texttt{ra,rb,rc}. We are going to look for non-local Hamiltonian operators
-depending linearly on one of these variables. Higher non-local Hamiltonian 
+depending linearly on one of these variables. Higher non-local Hamiltonian
 operators could be found by introducing total derivatives of the r's.
-As usual, the new variables are specified through the components of the 
+As usual, the new variables are specified through the components of the
 previously found conservation laws according with the rule
 \begin{verbatim}
 ra_x=fx, ra_t=ft,
@@ -853,8 +853,8 @@ ddt(1,52) := ext(5)*u*u1 + ext(5)*u3 - ext(4)*u*u2
 \end{verbatim}
 as it results from the computation of the conservation laws.
 The following ansatz for the nonlocal Hamiltonian operator
-comes from the fact that local Hamiltonian operators have 
-gradings $-1$ and $+1$ when written in terms of $p$'s. So we are looking 
+comes from the fact that local Hamiltonian operators have
+gradings $-1$ and $+1$ when written in terms of $p$'s. So we are looking
 for a nonlocal Hamiltonian operator of degree $3$.
 \begin{verbatim}
 phi:=
@@ -914,7 +914,7 @@ The linearization of the above system and its adjoint are, respectively
   \begin{pmatrix}
     D_t-vD_x-v_x & -u_x-uD_x-\sigma D_{xxx}\\
     -D_x & D_t-v_x-vD_x
-  \end{pmatrix},\ 
+  \end{pmatrix},\
   \ell^*_{\text{Bou}}=
   \begin{pmatrix}
     -D_t+vD_x & D_x\\
@@ -1195,4 +1195,3 @@ phi := aa21**2*( - 120*aa21**4*u**5*u2**5
  - 10*u3**2 - u8)$
 \end{verbatim}
 where the value of \texttt{aa21} can be replaced back in the expression.
-

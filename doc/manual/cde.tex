@@ -5,6 +5,38 @@
 
 \newcommand{\cprime}{\/{\mathsurround=0pt$'$}}
 
+\newcommand{\cde}{CDE\xspace}
+\newcommand{\cdiff}{CDIFF\xspace}
+\newcommand{\crack}{CRACK\xspace}
+\newcommand{\cdiffop}{$\mathcal{C}$-differential operator\xspace}
+\newcommand{\cdiffops}{$\mathcal{C}$-differential operators\xspace}
+
+\providecommand*{\eprint}[2][]{\href{http://arXiv.org/abs/#2}%
+{\begingroup \Url{arXiv:#2}}}
+
+%% For MathJax, must be part of a paragraph to avoid extra space:
+\ifdefined\VerbMath
+\(
+\newcommand{\pd}[2]{\mathchoice{\frac{\partial#1}{\partial#2}}
+  {\partial#1/\partial#2}{\partial#1/\partial#2}
+  {\partial#1/\partial#2}}
+\newcommand{\od}[2]{\mathchoice{\frac{d#1}{d#2}}
+  {d#1/d#2}{d#1/d#2}{d#1/d#2}}
+\newcommand{\fd}[2]{\mathchoice{\frac{\delta#1}{\delta#2}}
+  {\delta #1/\delta#2}{\delta#1/\delta#2}{\delta#1/\delta#2}}
+%
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+%
+\newcommand{\CDiff}{\mathop{\mathcal{C}\mathrm{Dif{}f}}}
+\newcommand{\CDiffsym}[1]{\CDiff_{(#1)}^{\,\mathrm{sym}}}
+\newcommand{\CDiffself}[1]{\CDiff_{(#1)}^{\,\mathrm{self}}}
+\newcommand{\CDiffskew}[1]{\CDiff_{(#1)}^{\,\mathrm{skew}}}
+%
+\newcommand{\ddx}[1]{D_x^{#1}}
+\)%
+\else
 \newcommand*{\pd}[2]{\mathchoice{\frac{\partial#1}{\partial#2}}
   {\partial#1/\partial#2}{\partial#1/\partial#2}
   {\partial#1/\partial#2}}
@@ -23,35 +55,6 @@
 \newcommand*{\CDiffskew}[1]{\CDiff_{(#1)}^{\,\mathrm{skew}}}
 
 \newcommand{\ddx}[1]{D_x^{#1}}
-
-\newcommand{\cde}{CDE\xspace}
-\newcommand{\cdiff}{CDIFF\xspace}
-\newcommand{\crack}{CRACK\xspace}
-\newcommand{\cdiffop}{$\mathcal{C}$-differential operator\xspace}
-\newcommand{\cdiffops}{$\mathcal{C}$-differential operators\xspace}
-
-\providecommand*{\eprint}[2][]{\href{http://arXiv.org/abs/#2}%
-{\begingroup \Url{arXiv:#2}}}
-
-%% For MathJax, must be part of a paragraph to avoid extra space:
-\ifdefined\HCode
-\(
-\def\pd#1#2{\mathchoice{\frac{\partial#1}{\partial#2}}
-  {\partial#1/\partial#2}{\partial#1/\partial#2}
-  {\partial#1/\partial#2}}
-\def\od#1#2{\mathchoice{\frac{d#1}{d#2}}
-  {d#1/d#2}{d#1/d#2}{d#1/d#2}}
-\def\fd#1#2{\mathchoice{\frac{\delta#1}{\delta#2}}
-  {\delta #1/\delta#2}{\delta#1/\delta#2}{\delta#1/\delta#2}}
-\def\N{\mathbb{N}}
-\def\R{\mathbb{R}}
-\def\Z{\mathbb{Z}}
-\def\CDiff{\mathop{\mathcal{C}\mathrm{Dif{}f}}}
-\def\CDiffsym#1{\CDiff_{(#1)}^{\,\mathrm{sym}}}
-\def\CDiffself#1{\CDiff_{(#1)}^{\,\mathrm{self}}}
-\def\CDiffskew#1{\CDiff_{(#1)}^{\,\mathrm{skew}}}
-\def\ddx#1{D_x^{#1}}
-\)%
 \fi
 We describe \cde, a \REDUCE package devoted to differential-geometric
 computations on Differential Equations (DEs, for short).
@@ -393,7 +396,7 @@ cde({indep_var,dep_var,{},total_order},
 Here the three empty lists are placeholders; they are important for
 computations with odd variables. The function \texttt{cde}
 computes principal and parametric derivatives of even and odd variables, they
-are stored in the lists \texttt{all\_parametric\_der, all\_principal\_der, 
+are stored in the lists \texttt{all\_parametric\_der, all\_principal\_der,
 all\_parametric\_odd, all\_principal\_odd}.
 
 The function \texttt{cde} also defines total derivatives truncated at the order
@@ -634,7 +637,7 @@ In the papers \cite{IgoninVerbovetskyVitolo:2004,KerstenKrasilshchikVerboretsky:
 dealing with (skew-adjoint) variational multivectors was devised. The idea was
 that operators of the type \eqref{eq:7} could be represented by homogeneous
 vector superfunctions on a supermanifold, where odd coordinates $q^i_\sigma$
-would correspond to total derivatives $D_\sigma\varphi^i$. 
+would correspond to total derivatives $D_\sigma\varphi^i$.
 
 The isomorphism between the two languages is given by
 \begin{equation}
@@ -1179,7 +1182,7 @@ The results are in the variable \texttt{crack\_results}:
 \begin{verbatim}
 {{{},
 {ansatz=(2*c_12*u_x + 2*c_13*u*u_x + c_13*u_2x
- + 6*c_8*u**2*u_x + 6*c_8*u*u_2x + 2*c_8*u_3x 
+ + 6*c_8*u**2*u_x + 6*c_8*u*u_2x + 2*c_8*u_3x
  + 6*c_8*u_x**2)/2},{c_8,c_13,c_12},
 {}}}$
 \end{verbatim}
@@ -1346,7 +1349,7 @@ end;
 \end{verbatim}
 Note that we want \emph{all} equations to be solved!
 
-The results are the two well-known Hamiltonian operators for the KdV. 
+The results are the two well-known Hamiltonian operators for the KdV.
 After integration the function \texttt{sym} becomes
 \begin{verbatim}
 sym := (c(5)*p*u_x + 2*c(5)*p_x*u +
@@ -1687,10 +1690,10 @@ with the homogeneous first-order Hamiltonian operator
 \hat{A}_{1}=%
 \begin{pmatrix}
 -\frac{3}{2}D _{x}^{{}} & \frac{1}{2}D _{x}^{{}}a & D
-_{x}^{{}}b \\ 
+_{x}^{{}}b \\
 \frac{1}{2}aD _{x}^{{}} & \frac{1}{2}(D _{x}^{{}}b+bD
-_{x}^{{}}) & \frac{3}{2}cD _{x}^{{}}+c_{x} \\ 
-bD _{x}^{{}} & \frac{3}{2}D _{x}^{{}}c-c_{x} & 
+_{x}^{{}}) & \frac{3}{2}cD _{x}^{{}}+c_{x} \\
+bD _{x}^{{}} & \frac{3}{2}D _{x}^{{}}c-c_{x} &
 (b^{2}-ac)D _{x}^{{}}+D _{x}^{{}}(b^{2}-ac)%
 \end{pmatrix}
 \]%
@@ -1711,7 +1714,7 @@ with the nonlocal Hamiltonian
   H_2=-\int\left(  \frac{1}{2}a\left({\ddx{}}^{-1}b\right)^2 + {\ddx{}}^{-1}b
   {\ddx{}}^{-1}c\right)dx.
 \]
-Both operators are of Dubrovin--Novikov type \cite{DubrovinNovikov:83,DubrovinNovikov:84}. 
+Both operators are of Dubrovin--Novikov type \cite{DubrovinNovikov:83,DubrovinNovikov:84}.
 This means that the
 operators are homogeneous with respect to the grading $|D_x|=1$. It follows
 that the operators are form-invariant under point transformations of the
@@ -1913,7 +1916,7 @@ where
   \pd{g}{p^2} p^2_y D_y -
   (\pd{f}{p^1} p^1_x+2 \pd{f}{p^2} p^2_x) D_x
   \\ &
-    - \pd{f}{^2p^2} p^2_x p^2_x  - \pd{f}{p^1\partial p^2} p^1_x p^2_x 
+    - \pd{f}{^2p^2} p^2_x p^2_x  - \pd{f}{p^1\partial p^2} p^1_x p^2_x
     - \pd{f}{p^2} p^2_2x ;
   \\
 P_1^{12}=&    f D_x^2 - g D_y^2
@@ -1924,7 +1927,7 @@ P_1^{12}=&    f D_x^2 - g D_y^2
   - \pd{g}{p^1} p^1_{2y} ;
   \\
 P_1^{22}=&    2 \pd{f}{p^2} p^1_x D_y
-  + \pd{f}{p^2} p^1_xy  + \pd{f}{p^1\partial p^2} p^1_x p^1_y 
+  + \pd{f}{p^2} p^1_xy  + \pd{f}{p^1\partial p^2} p^1_x p^1_y
   + \pd{f}{^2p^2} p^1_x p^2_y ;
 \end{align*}
 and let $P_2 = P_1^T$. This is implemented as follows:

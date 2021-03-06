@@ -1,11 +1,11 @@
 
-\newcommand{\Res}{\mathop{\rm Res}\limits}
-
 %% For MathJax, must be part of a paragraph to avoid extra space:
-\ifdefined\HCode
+\ifdefined\VerbMath
 \(
-\def\Res{\mathop{\rm Res}\limits}
+\newcommand{\Res}{\mathop{\rm Res}\limits}
 \)%
+\else
+\newcommand{\Res}{\mathop{\rm Res}\limits}
 \fi
 %This package supports the calculation of residues.
 The residue

@@ -9,8 +9,9 @@ SUCCESS=0
 RUNS=0
 NEED_BIBTEX=0
 
-# Remove .ind file, could be left over from tex4ht run
-rm -f ${JOBNAME}.ind
+# Remove .ind file and .aux files that could be left over from a
+# tex4ht run and may cause obscure complaints from a PDF run:
+rm -f ${JOBNAME}.ind *.aux
 
 # Run latex until it no longer complains about cross references
 until [ ${SUCCESS} = 1 ] ; do
@@ -50,4 +51,3 @@ if test -f ${JOBNAME}.idx ; then
 fi
 
 exit 0
-

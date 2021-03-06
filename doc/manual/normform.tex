@@ -1,14 +1,14 @@
 \index{NORMFORM package}
 
-\newcommand{\rank}{\mathop{\mathrm{rank}}}
-
 \subsection{Introduction}
 %% For MathJax, must be part of a paragraph to avoid extra space:
-\ifdefined\HCode
+\ifdefined\VerbMath
 \(
-\def\rank{\mathop{\mathrm{rank}}}
+\newcommand{\rank}{\mathop{\mathrm{rank}}}
 \def\f#1{\texttt{#1}}
 \)%
+\else
+\newcommand{\rank}{\mathop{\mathrm{rank}}}
 \fi
 When are two given matrices similar? Similar matrices have the same
 trace, determinant, characteristic polynomial,

@@ -1,10 +1,11 @@
-\newcommand{\MeijerGparams}[2]{\genfrac{}{}{0pt}{}{#1}{#2}}
 \subsection{Introduction}
 %% For MathJax, must be part of a paragraph to avoid extra space:
-\ifdefined\HCode
+\ifdefined\VerbMath
 \(
-\def\MeijerGparams#1#2{\genfrac{}{}{0pt}{}{#1}{#2}}
+\newcommand{\MeijerGparams}[2]{\genfrac{}{}{0pt}{}{#1}{#2}}
 \)%
+\else
+\newcommand{\MeijerGparams}[2]{\genfrac{}{}{0pt}{}{#1}{#2}}
 \fi
 This documentation describes part of \REDUCE's definite
 integration package that is able to calculate the definite integrals of
