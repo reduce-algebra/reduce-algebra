@@ -50,8 +50,8 @@
      '(% double length unsigned mutiply; 
        % reg1:reg2 <- reg1 * reg2
        % put high 64 bits of product in reg 3, low 64 bits in reg 1
-       (UMULH (reg 3) (reg 1) reg 2))
-       (UMULL (reg 1) (reg 1) (reg 2))
+       (UMULH (reg 3) (reg 1) (reg 2))
+       (UMULL (reg 1) (reg W0) (reg W1))
        % now we have 64 low bits in REG1, 64 high bits in REG3
        (*MOVE (reg 3)($FLUID *second-value*))
      ))
@@ -60,8 +60,8 @@
 
 
 (put 'wxtimes2 'opencode % different version for $pxu/mbarith
-     '((SMULH (reg 3) (reg 1) reg 2))
-       (SMULL (reg 1) (reg 1) (reg 2))
+     '((SMULH (reg 3) (reg 1) (reg 2))
+       (SMULL (reg 1) (reg W0) (reg W1))
        (*MOVE (reg 3)($FLUID *second-value*))
       ))
 
@@ -71,7 +71,7 @@
       % Result is the single length quotient.
       % the remainder is placed in a fluid variable.
       '(  % load address of fluid variable in (reg 4)
-        (!*Move (idloc *second-value*) (reg 4))
+        (*Move (idloc *second-value*) (reg 4))
         (ADD (reg 4) (reg symval) (regshifted 4 LSL 3))
         (*JCall wxquotientdouble)
       ))
@@ -82,13 +82,10 @@
 
 (put 'addAndSetCarry 'opencode
        '(
-         (ADDS (reg1) (reg 1) (reg 2))
+         (ADDS (reg 1) (reg 1) (reg 2))
          % move cf to carry*
-         (*Move (wconst 0) (reg t1))
-         (B!.CC templabel)
-         (!*Move (wconst 1) (reg t1))
-         templabel
-         (!*Move (reg t1) ($FLUID carry*))
+	 (CSET (reg t1) CS)
+         (*Move (reg t1) ($FLUID carry*))
 ))
 (put 'addAndSetCarry 'destroys '((reg 1)))
 
@@ -104,12 +101,9 @@
          (*WPlus3 (reg Xzr) (reg t1) ($fluid carry*))
            % add with carry
          (ADCS (reg 1) (reg 1) (reg 2))
-           % move cf to carry*
-         (*Move (wconst 0) (reg t1))
-         (B!.CC templabel)
-         (!*Move (wconst 1) (reg t1))
-         templabel
-         (!*Move (reg t1) ($FLUID carry*))
+         % move cf to carry*
+	 (CSET (reg t1) CS)
+         (*Move (reg t1) ($FLUID carry*))
        ))
 (put 'addWithCarry 'destroys '((reg 1)))
 
@@ -119,9 +113,9 @@
 
 (put 'addAndAddCarry 'opencode
        '(
-         (ADDS (reg1) (reg 1) (reg 2))
+         (ADDS (reg 1) (reg 1) (reg 2))
          (*Move ($FLUID *second-value*) (reg 2))
-         (ADC (wconst 0)(reg 2))
+         (ADC (reg 2) (reg Xzr) (reg 2))
          (*Move (reg 2) ($FLUID *second-value*))
        ))
 (put 'addAndAddCarry 'destroys '((reg 1)(reg 2)))
@@ -136,13 +130,10 @@
          (*MOVE (wconst -1) (reg t1))
          (*WPlus3 (reg Xzr) (reg t1) ($fluid carry*))
            % subtract with borrow
-         (SBCS (reg1) (reg 1) (reg 2))
-           % move new borrow to carry*
-         (*Move (wconst 0) (reg t1))
-         (B!.CC templabel)
-         (!*Move (wconst 1) (reg t1))
-         templabel
-         (!*Move (reg t1) ($FLUID carry*))
+         (SBCS (reg 1) (reg 1) (reg 2))
+	 % move new borrow to carry*
+	 (CSET (reg t1) CS)
+         (*Move (reg t1) ($FLUID carry*))
        ))
 (put 'subtractwithborrow 'destroys '((reg 1)))
 
@@ -154,10 +145,7 @@
 (put 'ugreaterp* 'opencode 
    % returns 1 if arg1 > arg2 unsigned.
      '( (SUBS (reg Xzr) (reg 2) (reg 1))        % compare, setting carry if r1>r2
-        (*Move (wconst 0) (reg 1))
-        (B!.CC templabel)
-        (!*Move (wconst 1) (reg 1))
-        templabel
+        (CSET (reg 1) CS)
 ))
 
 (ds ugreaterp(a b)(eq 1 (ugreaterp* a b)))

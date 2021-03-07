@@ -97,6 +97,8 @@
 	(OP-fcvt . lth-fcvt)
 	(OP-fp-arith . lth-fp-arith)
 	(OP-fcmp . lth-fcmp)
+	(OP-csinc . lth-csinc)
+	(OP-cset . lth-csinc)
       ))
  
 (load strings compiler)
@@ -250,6 +252,7 @@
 	  ((eq op 'indadr) '(indirectadrp))
 	  ((eq op 'five-bit) '(five-bit-p))
 	  ((eq op 'six-bit) '(six-bit-p))
+	  ((eq op 'cond) '(cond-p))
 	  (t (prin2t "unknown operand type during instruction generation:")
 	     (prin2t op)
 	     (prin2t instr*)
@@ -471,9 +474,17 @@
 % CNEG
 
 % CSEL
+
 % CSET
+(instr CSET  (reg32 cond)              OP-cset  2#00011010100 Wzr 2#01 Wzr)
+(instr CSET  (reg cond)                OP-cset  2#10011010100 Xzr 2#01 Xzr)
+
 % CSETM
+
 % CSINC
+(instr CSINC (reg32 reg32 reg32 cond)  OP-csinc 2#00011010100 2#01)
+(instr CSINC (reg reg reg cond)        OP-csinc 2#10011010100 2#01)
+
 % CSINV
 % CSNEG
 
@@ -615,6 +626,7 @@
 (instr SUBS  (reg-or-sp reg-or-sp imm12-shifted)     OP-reg-imm12     2#111100010)
 
 (instr SBC   (reg reg reg-shifter)     OP-reg-shifter  2#1101101000)
+(instr SBCS  (reg reg reg-shifter)     OP-reg-shifter  2#1111101000)
 
 (instr TST   (reg reg-shifter)         OP-reg-shifter 2#1101010000)
 (instr TST   (reg imm-logical)         OP-reg-logical   2#11100100)
@@ -693,7 +705,8 @@
 (instr REV    (reg reg)                 OP-reg2      2#11011010110)
 
 
-(instr MRS (reg streg)   OP-streg 2#110101010011)
+%% ToDo
+%%(instr MRS (reg streg)   OP-streg 2#110101010011)
 %(instr MSR (MSR *cond*) (streg imm8-rotated) OP-MSR 2#0011001 0  ... ) 
 %(instr MSR (MSR *cond*) (streg reg)      OP-MSR 2#0001001 0 2#0000)
 

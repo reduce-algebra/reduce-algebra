@@ -267,12 +267,11 @@
         % now the 4 instructions
         (putmem (wplus2 m 8) (getmem a))
 	(putmem (wplus2 m 16) (getmem (wplus2 a 8)))
-        % 2 fullwords
-	(putmem (wplus2 m 24) (getmem (wplus2 a 16)))
+        % 1 fullword for *TheCalledID*, replace by actual id of called function
+	(putmem (wplus2 m 24) n)
+        % 1 fullword for compiledcallinginterpreted
 	(putmem (wplus2 m 32) (getmem (wplus2 a 24)))
-	% replace *TheCalledID* by actual id of called function
-	(put_a_halfword (wplus2 m 20) n)
-	   % now plant it
+	% now plant it
 	(setf (getmem (wplus2 symfnc (wtimes2 n 8))) (wplus2 m 8))
 	  ))
 

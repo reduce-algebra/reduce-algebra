@@ -91,12 +91,12 @@
 	*trlapopt
 	*big-endian*    		% True if big-endian version
 	shift-ops*			% known armv6 shift operations
+	*condition-codes*               % aarch64 condition codes
 	comment*                        % optional comment in lap output
 %	*cond*
 %	*set*
 	*OpNameList*
 	!*LDM-adressing-modes
-	!*condition-codes*
 
 ))
 
@@ -112,6 +112,18 @@
 					% put in memory
 
 (setq shift-ops* '(LSL LSR ASR ROR RRX))
+
+%
+% Conditions bits 31:28 in ARMv6 opcodes
+%
+
+(deflist '((EQ 2#0000) (NE 2#0001) (CS 2#0010) (HS 2#0010) (CC 2#0011) (LO 2#0011)
+           (MI 2#0100) (PL 2#0101) (VS 2#0110) (VC 2#0111)
+           (HI 2#1000) (LS 2#1001) (GE 2#1010) (LT 2#1011)
+           (GT 2#1100) (LE 2#1101) (AL 2#1110))
+  'condition-bits)
+
+(setq *condition-codes* '(EQ NE CS HS CC LO MI PL VS VC HI LS GE LT GT LE AL))
 
 (compiletime (load addr2id))
  
@@ -869,6 +881,7 @@
     )
 
 
+(de cond-p (cc) (memq cc *condition-codes*))
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 
@@ -1146,6 +1159,23 @@
 
 (de lth-bfxil (code regd regn lsb width) 4)
 
+(de OP-csinc (code regd regn regm cond)
+    (prog (opcode)
+	  (setq opcode (car code)) 
+	  (DepositInstructionBytes
+	   (lsh opcode -3)
+	   (lor (lsh (land opcode 2#111) 5) (reg2int regm))
+	   (lor (lor (lsh (get cond 'condition-bits) 4) (lsh (caddr code) 2)) (lsh (reg2int regn) -3))
+	   (lor (lsh (land (reg2int regn) 2#111) 5) (reg2int regd))
+	   )
+	)
+   
+    )
+
+(de lth-csinc (code regd regn regm cond) 4)
+
+(de OP-cset (code regd cond)
+    (OP-csinc code regd (list 'reg (cadr code)) (list 'reg (nth code 4)) cond))
 
 (de saniere-Sprungziel (l)
     (cond ((atom l) l)
@@ -1201,9 +1231,9 @@
 %% Checks
 (de OP-reg3 (code reg1 reg2 reg3)
     (DepositInstructionBytes
-     (lsh code -3)
-     (lor (lsh (land code 7) 5) (reg2int reg3))
-     (lsh (reg2int reg2 -3))
+     (lsh (car code) -3)
+     (lor (lsh (land (car code) 7) 5) (reg2int reg3))
+     (lsh (reg2int reg2) -3)
      (lor (reg2int reg1) (lsh (land (reg2int reg2) 7) 5))))
 
 (de lth-reg3 (code reg1 reg2 reg3) 4)
@@ -1466,7 +1496,7 @@
 		(t (stderror (bldmsg "Invalid MRS operand: %w" cpsr-or-spsr))))
 	  (setq cc (car code) opcode1 (cadr code) set-bit (caddr code) opcode2 (cadddr code))
 	  (DepositInstructionBytes
-	   (lor (lsh cc 4) (lsh opcode1 -3))
+	   (lsh cc -4)
 	   (lor (lsh r 6) 2#01111)
 	   (lor (lsh (reg2int regd) 4) 2#0000)
 	   (lsh opcode2 4))
