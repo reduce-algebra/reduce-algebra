@@ -6,12 +6,12 @@ and commas.  The most common types are as follows:
 
 \section{Scalar Expressions}
 
-\index{Scalar}Using the arithmetic operations \texttt{+ - * / \textasciicircum}
-\ttindextype{+}{operator}
-\ttindextype{-}{operator}
-\ttindextype{*}{operator}
-\ttindextype{/}{operator}
-\ttindextype{"\^}{operator}
+\index{Scalar}Using the arithmetic operations \texttt{+ - * / \textasciicircum}\
+\ttindextype{+}{operator}%
+\ttindextype{-}{operator}%
+\ttindextype{*}{operator}%
+\ttindextype{/}{operator}%
+\ttindextype{"\^}{operator}%
 (power) and parentheses, scalar expressions are composed from numbers,
 ordinary ``scalar'' variables (identifiers), array names with subscripts,
 operator or procedure names with arguments and statement expressions.
@@ -24,7 +24,7 @@ operator or procedure names with arguments and statement expressions.
         a(5) + b(i,q)
 \end{verbatim}
 The symbol \texttt{**} may be used as an alternative to the caret symbol
-\ttindextype{**}{operator}
+\ttindextype{**}{operator}%
 (\texttt{\textasciicircum})
 for forming powers, particularly in those systems that do not support a
 caret symbol.
@@ -95,7 +95,7 @@ cancel out'', as in
 
 \section{Boolean Expressions}
 \label{sec-boolean}
-A boolean expression\index{Boolean expression}\index{Expression!boolean} returns 
+A boolean expression\index{Boolean expression}\index{Expression!boolean} returns
 a truth value.  In the
 algebraic mode of {\REDUCE}, boolean expressions have the syntactical form:
 \begin{syntax}
@@ -197,7 +197,7 @@ One can then use this in a boolean construct, such as
 
 In addition, any procedure that does not have a defined return value
 (for example, a block without a \texttt{RETURN} statement in it)
-has the boolean value \emph{false}. 
+has the boolean value \emph{false}.
 
 \section{Equations}
 
@@ -246,4 +246,3 @@ sets \texttt{X} to \texttt{a+b} and \texttt{Y} to \texttt{2*(a+b)}.
 
 The sections on the various proper statement\index{Proper statement} types
 indicate which of these statements are also useful as expressions.
-
