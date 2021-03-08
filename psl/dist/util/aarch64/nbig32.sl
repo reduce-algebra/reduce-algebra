@@ -1,6 +1,14 @@
-
-% Authors: Arthur Norman
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% File:         PXU:NBIG32.SL 
+% Description:  Vector based BIGNUM package with INUM operations 
+% Author:       Winfried Neun
+% Created:      25 December 2004
+% Modified:	
+% Mode:         Lisp 
+% Package:      Utilities 
+% Status:       Open Source: BSD License
+%
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
 %
@@ -23,14 +31,12 @@
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% $Id$
+(load vector-fix double32 nbig32a) %% mbarith)
 
-% This file will be automatically updated by the code in scripts/commit.sh
-% to show the latest subversion revision number.
+(de gcdn(u v)
+%  U and v are integers. Value is absolute value of gcd of u and v.
+   (if (eqn v 0) (abs u)
+     (gcdn v (remainder u v))))
 
-fluid '(revision!*);
-
-revision!* := 5706;
-
-end;

@@ -46,6 +46,8 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+(compiletime (load if-system))
+
 (fluid '(bittable-entries-per-word))
 
 (setq addressingunitsperitem 8)
@@ -121,9 +123,14 @@
         (deallocatefaslspaces)))
 
 (compiletime
- (put 'put_a_halfword 'opencode
-      '(
-        (movl (reg ebx) (displacement (reg rax) 0)))))
+ (if_system x86_64
+   (progn
+     (put 'put_a_halfword 'opencode '((movl (reg ebx) (displacement (reg rax) 0))))
+     (put 'getword32 'opencode '((movl (indexed (reg 1) (displacement (reg 2) 0)) (reg EAX)))))
+   (progn
+     (put 'put_a_halfword 'opencode '((STR (reg w1) (displacement (reg x0) 0))))
+     (put 'getword32 'opencode '((LDR (reg w0) (indexed (reg 1) (reg 2)) ))))
+   ))
 
 (de deposit32bitword (x) %% cross
   (put_a_halfword (wplus2 codebase* currentoffset*) x)

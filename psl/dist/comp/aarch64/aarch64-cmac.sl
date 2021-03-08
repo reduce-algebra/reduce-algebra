@@ -1167,7 +1167,7 @@
 
 (DefCMacro *JumpWgeq)
 
-(de *jumpWgeq (Lbl ArgOne ArgTwo)
+(de *JumpWgeq (Lbl ArgOne ArgTwo)
         (*JumpIF ArgOne ArgTwo Lbl '(b!.ge . b!.lt)))
 
 % --------------------

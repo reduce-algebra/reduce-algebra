@@ -9,7 +9,7 @@ CONFIG=reduce
 SECTIONINGDEPTH=3
 
 # RMS 2020-06-10: The following needed on MacOS, otherwise gsftopk doesn't work.
-GS_OPTIONS=-DNOSAFER ; export GS_OPTIONS 
+GS_OPTIONS=-DNOSAFER ; export GS_OPTIONS
 
 test "$1" = "for-sf" && CONFIG=reduce-sf
 
@@ -27,6 +27,7 @@ tex '\def\filename{{'${JOBNAME}'}{idx}{4dx}{ind}} \input idxmake.4ht'
 sed -e 's/^\(\\indexentry{[^@]*\)\\textbar/\1"|/' \
     -e 's/^\(\\indexentry{[^@]*\)\\underscore/\1_/' \
     -e 's/^\(\\indexentry{[^@]*\)\\char `\\\\/\1\\\\/' \
+    -e 's/^\(\\indexentry{"\\\^ operator@\\texttt {\)"\\\^/\1\\textasciicircum/' \
   <manual.4dx >manual.4dxtmp ; mv manual.4dxtmp manual.4dx
 
 makeindex -o ${JOBNAME}.ind ${JOBNAME}.4dx
