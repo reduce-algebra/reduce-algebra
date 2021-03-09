@@ -846,19 +846,7 @@
                                (SUB (reg t2) (reg t2) (reg t3))
                                (*Move (reg t2) ArgOne)))
 
-(put 'wdivide 'opencode
-     % returns (signed) quotient and puts remainder in *second-value*
-     '( % save dividend and divisor on stack
-        (*Push (reg 1))
-        (*Push (reg 2))
-        (*Call wquotient)
-	(*Pop (reg t2))
-	(*Pop (reg t1))
-	% calculate remainder as t1-q*t2
-	(MUL (reg 2) (reg 1) (reg t2))
-	(SUB (reg 2) (reg t1) (reg 2))
-        (*Move (reg 2) (fluid *second-value*))
-      ))
+
 
 (de *WNegate(ARG1)
  (Expand1OperandCMacro ARG1 '*WNegate))
@@ -909,9 +897,10 @@
 			              (MSUB (reg x0) (reg t1) (reg x1) (reg x0))))
 
 (put 'wdivide 'opencode '((SDIV (reg t1) (reg x0) (reg x1))
-			  (MSUB (reg t1) (reg t1) (reg x1) (reg x0))
-			  (*Move (reg t1) ($fluid *second-value*))))
-
+			  (MSUB (reg x1) (reg t1) (reg x1) (reg x0))
+			  (*Move (reg x1) ($fluid *second-value*))
+			  (*Move (reg t1) (reg x0))))
+(put 'wdivide 'destroys '((reg 1) (reg 2)))
 
 (de *Wcmp(arg1 arg2)
   (Expand2OperandCMacro arg1 arg2 '*Wcmp))

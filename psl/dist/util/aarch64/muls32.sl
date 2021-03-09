@@ -80,7 +80,7 @@
 	% load address of fluid variable in (reg 4)
         (*Move (idloc *second-value*) (reg 4))
         (ADD (reg 4) (reg symval) (regshifted 4 LSL 3))
-        (*JCall wxquotientdouble)
+        (*Call wxquotientdouble)
       ))
 
 % add and set carry
@@ -103,11 +103,11 @@
 
 (put 'addwithcarry 'opencode
        '(
-         % move carry* to register CF
-         (*MOVE (wconst -1) (reg t1))
-         (*WPlus3 (reg Xzr) (reg t1) ($fluid carry*))
+         % move add carry* to second parameter b
+	 (*Move ($fluid carry*) (reg t1))
+         (ADDS (reg t1) (reg 2) (reg t1))
            % add with carry
-         (ADCS (reg 1) (reg 1) (reg 2))
+         (ADCS (reg 1) (reg 1) (reg t1))
          % move cf to carry*
 	 (CSET (reg t1) CS)
          (*Move (reg t1) ($FLUID carry*))
@@ -133,13 +133,13 @@
 
 (put 'subtractwithborrow 'opencode
        '(
-         % move carry* to register CF
-         (*MOVE (wconst -1) (reg t1))
-         (*WPlus3 (reg Xzr) (reg t1) ($fluid carry*))
+         % add carry* to second parameter b
+	 (*Move ($fluid carry*) (reg t1))
+         (ADDS (reg t3) (reg 2) (reg t1))
            % subtract with borrow
-         (SBCS (reg 1) (reg 1) (reg 2))
-	 % move new borrow to carry*
-	 (CSET (reg t1) CS)
+         (SBCS (reg 1) (reg 1) (reg t1))
+	 % move new borrow (=not(CF)) to carry* 
+	 (CSET (reg t1) CC)
          (*Move (reg t1) ($FLUID carry*))
        ))
 (put 'subtractwithborrow 'destroys '((reg 1)))
