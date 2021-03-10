@@ -273,6 +273,17 @@
 
 \begin{document}
 
+%% For MathJax, equation references must be output unprocessed, so use
+%% this new macro \eqnref instead of \ref for equation references
+%% only, and redefine \eqref.  (This definition must be
+%% after \begin{document} for the condition to work!)
+\ifdefined\VerbMath
+\newcommand{\eqnref}[1]{\alteqtoks{\ref{#1}}}
+\renewcommand{\eqref}[1]{\alteqtoks{\eqref{#1}}}
+\else
+\newcommand{\eqnref}[1]{\ref{#1}}
+\fi
+
 %\bibliographystyle{plain}
 \bibliographystyle{alpha}
 

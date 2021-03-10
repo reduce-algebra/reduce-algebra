@@ -191,7 +191,7 @@ for $\fcn{f}{n,k}$ of the form
 where $\fcn{g}{k}/\fcn{f}{k}$ is rational in $q^k$ and $q^n$.
 Assuming finite support of $\fcn{f}{n,k}$ wrt.\ $k$
 (i.\,e. $\fcn{f}{n,k}=0$ for any $n$ and all sufficiently large $k$)
-we can sum equation (\ref{eq:f_n_k-recursion}) over all $k\in\mathbb{Z}$.
+we can sum equation (\eqnref{eq:f_n_k-recursion}) over all $k\in\mathbb{Z}$.
 Thus we receive a homogeneous recurrence equation with polynomial
 coefficients (called {\sl holonomic equation}) for $\fcn{s}{n}$:
 \begin{equation} \label{holonomic_recurrence}
@@ -206,18 +206,18 @@ check those requirements.
 
 Despite this restriction you may still be able to get valuable
 information by the program: On request it returns the
-left hand side of the recurrence equation (\ref{holonomic_recurrence})
+left hand side of the recurrence equation (\eqnref{holonomic_recurrence})
 \textsl{and} the antidifference $\fcn{g}{k}$ of equation
-(\ref{eq:f_n_k-recursion}).
+(\eqnref{eq:f_n_k-recursion}).
 
 Once you have the certificate $\fcn{g}{k}$ it is trivial
-(at least theoretically) to prove equation (\ref{holonomic_recurrence})
+(at least theoretically) to prove equation (\eqnref{holonomic_recurrence})
 as long as the input requirements are fulfilled. Let's assume
-somone gives us equation (\ref{eq:f_n_k-recursion}). If we divide
+somone gives us equation (\eqnref{eq:f_n_k-recursion}). If we divide
 it by $\fcn{f}{n,k}$ we get a rational identity (in $q^n$ and $q^k$)
 ---due to the fact that $\fcn{g}{k}/\fcn{f}{n,k}$ is rational in
 $q^n$ and $q^k$. Once we confirmed this identity we sum equation
-(\ref{eq:f_n_k-recursion}) over $k\in\mathbb{Z}$:
+(\eqnref{eq:f_n_k-recursion}) over $k\in\mathbb{Z}$:
 \begin{equation}
 	\sum_{k\in\mathbb{Z}}\sum_{j=0}^J{\ifcn{\sigma}{j}{n}\cdot \fcn{f}{n+j,k}} =
 	\sum_{k\in\mathbb{Z}}{\left(\fcn{g}{k}-\fcn{g}{k-1}\right)},
@@ -226,7 +226,7 @@ Again we exploit the
 fact that $\fcn{g}{k}$ is a rational multiple of $\fcn{f}{n,k}$ and thus
 $\fcn{g}{k}$ has \textsl{finite support} which makes the telescoping sum
 on the right hand side vanish. If we exchange the order of summation we
-get equation (\ref{holonomic_recurrence}) which finishes the proof.
+get equation (\eqnref{holonomic_recurrence}) which finishes the proof.
 
 
 Note that we may relax the requirements for $\fcn{f}{n,k}$:
@@ -361,7 +361,7 @@ $\fcn{summ}{n}$ wrt. $n$ with polynomial coefficients (in $n$), where
 \]
 %
 If successful the left hand side of the recurrence equation
-(\ref{holonomic_recurrence}) is returned.
+(\eqnref{holonomic_recurrence}) is returned.
 
 There are three different ways to pass a summand $\fcn{f}{n,k}$
 to \f{qsumrecursion}:
@@ -468,7 +468,7 @@ proof := { - ((q  - z)*summ(n - 1) - q *summ(n)),
 \\[-2.5ex]\noindent{}
 Let's define the list entries as \texttt{\{rec,cert,f,k,dir\}}. If you
 substitute $\fcn{summ}{n+j}$ by $\fcn{f}{n+j,k}$ in \texttt{rec} then
-you obtain the left hand side of equation (\ref{eq:f_n_k-recursion}),
+you obtain the left hand side of equation (\eqnref{eq:f_n_k-recursion}),
 where \texttt{f} is the input summand. The function
 $\fcn{g}{k}:=\texttt{f*cert}$ is the corresponding
 antidifference, where \texttt{dir} states which sort of antidifference
@@ -480,7 +480,7 @@ an inhomogeneous recurrence equation for a sum with nonnatural bounds.
 
 \ttindextype{QSIMPCOMB}{operator}
 For our last example we can now calculate both sides of
-equation (\ref{eq:f_n_k-recursion}):
+equation (\eqnref{eq:f_n_k-recursion}):
 
 \begin{redoutput}
 \redprompt lhside:= qsimpcomb(sub(summ(n)=part(proof,3),
@@ -696,7 +696,7 @@ the \texttt{QSUM} package:
 	\item \sw{qsumrecursion\_certificate}, default off.
 		As Zeilberger's algorithm
 		delivers a recurrence equation for a $q$-hypergeometric term
-		$\mathrm{f}(n,k)$, see equation (\ref{eq:f_n_k-recursion}),
+		$\mathrm{f}(n,k)$, see equation (\eqnref{eq:f_n_k-recursion}),
 		this switch is used to get all necessary informations for
 		proving this recurrence equation.
 

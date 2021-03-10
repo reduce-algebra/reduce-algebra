@@ -50,3 +50,11 @@ in the output environment; see specfn.tex, towards the end.
 
 Excessively convoluted LaTeX is best avoided and is often unnecessary,
 even if it works in normal LaTeX.
+
+MathJax supports \ref{} and \eqref{}, which must appear verbatim as
+text within the HTML.  The \eqref macro can easily be redefined to
+output itself verbatim, but \ref should only be output verbatim when
+it refers to an equation.  I therefore define a macro \eqnref in
+manual.tex, which outputs \ref{} verbatim when generating MathJax
+output and calls \ref otherwise.  Uses of \ref that relate to
+equations must be changed to \eqnref for this mechanism to work.
