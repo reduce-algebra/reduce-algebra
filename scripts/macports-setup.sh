@@ -9,7 +9,7 @@ then
   printf "macports-setup.sh [--help] [--minimal] [--universal] [[force]\n"
   printf "  help:      displays this message\n"
   printf "  minimal:   only the bare minimum for local Reduce use\n"
-  printf "  universal: try to install x86_64+arm64 on Macintosh
+  printf "  universal: try to install x86_64+arm64 on Macintosh"
   printf "  force: overwrite any existing $HOME/.macports/macports.conf\n\n"
   exit 0
 fi
