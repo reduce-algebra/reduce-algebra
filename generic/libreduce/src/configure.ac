@@ -38,7 +38,6 @@ BUILD=`eval "$SHELL $srcdir/../../../scripts/findhost.sh $host $ac_configure_arg
 AC_MSG_NOTICE([Build platform detected as $BUILD])
 AC_SUBST(BUILD)
 
-AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_AUX_DIR([.])
 

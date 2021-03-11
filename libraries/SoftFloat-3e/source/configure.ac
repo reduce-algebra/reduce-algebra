@@ -1,6 +1,6 @@
 ## Process this file with autoconf to produce a configure script.
 
-# A C Norman.                                               2016
+# A C Norman.                                               2016-2021
 
 # Specify the name of this "application" and a version number
 AC_INIT([SoftFP],[3a])
@@ -11,7 +11,6 @@ AC_PREREQ(2.61)
 
 AC_CONFIG_SRCDIR(softfloat_state.c)
 AC_CONFIG_FILES(Makefile)
-AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_AUX_DIR([.])
 

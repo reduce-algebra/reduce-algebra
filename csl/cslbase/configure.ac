@@ -1,9 +1,9 @@
 ## Process this file with autoconf to produce a configure script.
 
-# A C Norman.                                                     2008-2020
+# A C Norman.                                                     2008-2021
 
 # **************************************************************************
-# * Copyright (C) 2020, Codemist.                         A C Norman       *
+# * Copyright (C) 2021, Codemist.                         A C Norman       *
 # *                                                                        *
 # * Redistribution and use in source and binary forms, with or without     *
 # * modification, are permitted provided that the following conditions are *
@@ -54,8 +54,6 @@
 AC_INIT([REDUCE],[9.01])
 
 AC_CONFIG_MACRO_DIRS([m4])
-# I will use the older version too.
-AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([.])
 
 # automake 1.13 was the first to support AC_CONFIG_MACRO_DIRS
@@ -335,6 +333,8 @@ case $host in
 # Here I will certainly be using gcc and I like to limit the number of
 # diagnostics it can generate in any one build.
   CPPFLAGS="$CPPFLAGS -fmax-errors=10"
+  CFLAGS="$CFLAGS -mfsgsbase"
+  CXXFLAGS="$CXXFLAGS -mfsgsbase"
   if test "x$with_cygwin" != "xno"
   then
 # The next line may ALMOST count as a lie, but under raw cygwin the world
@@ -384,6 +384,8 @@ case $host in
 # like the C++ library do not get found when I try to run the executables.
 # This is of course liable to be an issue of my $PATH, but linking in static
 # mode will still keep me safe.
+    CFLAGS="$CFLAGS -mfsgsbase"
+    CXXFLAGS="$CXXFLAGS -mfsgsbase"
     LDFLAGS="$LDFLAGS -static"
     DLL_CFLAGS="$CFLAGS -shared"
 # In this case I make the machine appear to be "i686-pc-windows" or some

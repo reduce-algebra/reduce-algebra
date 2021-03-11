@@ -1,6 +1,6 @@
 ## Process this file with autoconf to produce a configure script.
 
-# A C Norman.                                         April 2009-2020
+# A C Norman.                                         April 2009-2021
 
 #
 # The object of this configuration file is not to set the world up to
@@ -13,7 +13,6 @@
 # Specify the name of this "application" and a version number
 AC_INIT([CSLCONFIGTEST],[1.0])
 AC_PREREQ(2.61)
-AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_AUX_DIR([.])
 

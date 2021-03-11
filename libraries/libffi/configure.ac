@@ -5,7 +5,6 @@ AC_PREREQ(2.68)
 AC_INIT([libffi], [3.3-rc0], [http://github.com/libffi/libffi/issues])
 AC_CONFIG_HEADERS([fficonfig.h])
 
-AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_AUX_DIR([.])
 
@@ -43,7 +42,6 @@ AC_SUBST(CFLAGS)
 AM_PROG_AS
 AM_PROG_CC_C_O
 AC_PROG_LIBTOOL
-AC_CONFIG_MACRO_DIR([m4])
 
 # Test for 64-bit build.
 AC_CHECK_SIZEOF([size_t])
