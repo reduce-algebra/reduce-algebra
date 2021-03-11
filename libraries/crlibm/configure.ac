@@ -4,7 +4,7 @@ dnl Process this file with autoconf to produce a configure script.
 # "modernise" things and hence avoid warning messages from autoconf. This
 # comments is intended to be a prominent notice of the change as required
 # by the license. 
-AC_INIT([crlibm], m4_esyscmd([cat VERSION]))
+AC_INIT([crlibm],[m4_esyscmd(cat VERSION)])
 AC_CONFIG_SRCDIR([crlibm.h])
 
 AC_CONFIG_HEADERS([crlibm_config.h])
@@ -140,15 +140,8 @@ dnl Other checks
 AC_C_BIGENDIAN(,,)
 dnl defines WORDS_BIGENDIAN, or not 
 
-AC_C_LONG_DOUBLE
-dnl defines HAVE_LONG_DOUBLE, or not
-
-
 AC_CHECK_SIZEOF(int)
 dnl defines SIZEOF_INT to be the size in bytes of int
-
-
-
 
 
 dnl All the rest is related to MPFR and to Ziv's lib, useful for testing.

@@ -110,7 +110,7 @@ AC_CHECK_LIB(socket,socketpair,LIBS="-lsocket $LIBS")
 AC_CHECK_HEADERS(wait.h sys/wait.h,break)
 
 # Checks for library functions.
-AC_TYPE_SIGNAL
+
 AC_CHECK_FUNCS(waitpid)
 AC_CHECK_FUNCS(setlinebuf)
 
@@ -149,6 +149,7 @@ AM_CONDITIONAL(NATIVEWIN, test "x$native_win" = "xyes")
 # I have left the option to build a version that does not impose colour and
 # a way of setting how much history will be kept.
 
-AC_OUTPUT(Makefile)
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT
 
 # end of configure.ac

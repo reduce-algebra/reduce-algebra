@@ -23,7 +23,7 @@
 #    "./configure --disable-silent-rules" or "make V=1"
 #
 
-AC_INIT(libedit, [EL_RELEASE],, libedit-[EL_TIMESTAMP])
+AC_INIT([libedit],[EL_RELEASE],[],[libedit-EL_TIMESTAMP])
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_AUX_DIR([.])
 AC_CONFIG_SRCDIR([src/strlcat.c])
@@ -33,7 +33,7 @@ AC_CONFIG_HEADER([config.h])
 AC_USE_SYSTEM_EXTENSIONS
 
 AM_INIT_AUTOMAKE
-AC_PROG_LIBTOOL
+LT_INIT
 
 # libtool -version-info
 AC_SUBST(LT_VERSION, [0:51:0])
@@ -116,7 +116,6 @@ AC_PROG_GCC_TRADITIONAL
 ## _AIX is offended by rpl_malloc and rpl_realloc
 #AC_FUNC_MALLOC
 #AC_FUNC_REALLOC
-AC_TYPE_SIGNAL
 AC_FUNC_STAT
 AC_CHECK_FUNCS([endpwent isascii memchr memset re_comp regcomp strcasecmp strchr strcspn strdup strerror strrchr strstr strtol issetugid wcsdup strlcpy strlcat fgetln vis strvis strunvis __secure_getenv secure_getenv])
 

@@ -21,7 +21,8 @@ LT_INIT
 AC_C_BIGENDIAN(
   [],
   AC_DEFINE(LITTLEENDIAN, [1], [Indicate byte order]),
-  AC_MSG_ERROR([Unable to determine byte-order for this system]))
+  AC_MSG_ERROR([Unable to determine byte-order for this system]),
+  AC_MSG_ERROR([Variable byte-order for this system]))
 
 echo "/*" > platform.h
 echo " * \"platform.h\", created automatically by the \"configure\" script" >> platform.h
