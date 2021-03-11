@@ -113,18 +113,18 @@ case "$*" in
   ;;
 esac
 
-port -N -s install ncurses gperf libiconv $(extraopt)
-port -N -s install gettext xz zlib libedit $(extraopt)
-port -N -s install bzip2 expat $(extraopt)
-port -N    install gsed $(extraopt)
-port -N    install pkgconfig subversion $(extraopt)
-port -N    install autoconf autoconf-archive $(extraopt)
-port -N    install m4 $(extraopt)
-port -N    install perl5 autoconf213 $(extraopt)
-port -N    install automake libtool $(extraopt)
-port -N    install bzip2 libffi python_select $(extraopt)
-port -N    install python2_select python27 $(extraopt)
-port -N    install python39 $(extraopt)
+port -N -s install ncurses gperf libiconv $extraopt
+port -N -s install gettext xz zlib libedit $extraopt
+port -N -s install bzip2 expat $extraopt
+port -N    install gsed $extraopt
+port -N    install pkgconfig subversion $extraopt
+port -N    install autoconf autoconf-archive $extraopt
+port -N    install m4 $extraopt
+port -N    install perl5 autoconf213 $extraopt
+port -N    install automake libtool $extraopt
+port -N    install bzip2 libffi python_select $extraopt
+port -N    install python2_select python27 $extraopt
+port -N    install python39 $extraopt
 # As of February 2021 xorg-libxcb depends on libxml2 which in turn
 # depends on icu, and an attempt to build on an x86_64 Mac stalls with
 # a message
@@ -134,20 +134,20 @@ port -N    install python39 $(extraopt)
 # this despite the fact that "port install icu +universal" succeeds. I
 # expect this to be a transient issue and will remove this comment when
 # I observe things behave better.
-port -N -s install xorg-libxcb +python39 $(extraopt)
+port -N -s install xorg-libxcb +python39 $extraopt
 # xorg-libX11 is stalled by xorg-libxcb.
-port -N -s install xorg-libX11 $(extraopt)
+port -N -s install xorg-libX11 $extraopt
 # perl5.28 depends on gdbm which in turn depends on readline, which
 # can not (yet) be built in universal mode if you are on an x86_64 mac.
 port -N    install perl5.28
 # Xft2 also depends on libxml2.
-port -N -s install Xft2 $(extraopt)
-port -N -s install xorg-libXext $(extraopt)
-port -N    install ccache gtime $(extraopt)
-port -N    install gmake bc timeout $(extraopt)
-port -N -s install xorg-libXrandr $(extraopt)
-port -N -s install xorg-libXcursor $(extraopt)
-port -N    install brotli $(extraopt)
+port -N -s install Xft2 $extraopt
+port -N -s install xorg-libXext $extraopt
+port -N    install ccache gtime $extraopt
+port -N    install gmake bc timeout $extraopt
+port -N -s install xorg-libXrandr $extraopt
+port -N -s install xorg-libXcursor $extraopt
+port -N    install brotli $extraopt
 date
 
 case "$*" in
@@ -177,7 +177,7 @@ esac
 port -N -s install          \
   fontconfig                \
   libffi                    \
-  gmp             $(extraopt)
+  gmp             $extraopt
 
 port -N install             \
   astyle                    \
