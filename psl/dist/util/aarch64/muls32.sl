@@ -66,14 +66,21 @@
       ))
 
 (put 'wquotientdouble 'opencode
-      % called with a double length number in params 1 and 2
+      % called with a double length number in params 1 and 2,
+      % high word in reg1, low word in reg2
       % and a single length number in par 3.
       % Result is the single length quotient.
       % the remainder is placed in a fluid variable.
-      '(  % load address of fluid variable in (reg 4)
+      '(
+        % wxquotientdouble expects the low word in reg1 und the high word in reg
+	% exchange the two registers
+	(!*Move (reg 1) (reg t1))
+	(!*Move (reg 2) (reg 1))
+	(!*Move (reg t1) (reg 2))
+	% load address of fluid variable in (reg 4)
         (*Move (idloc *second-value*) (reg 4))
         (ADD (reg 4) (reg symval) (regshifted 4 LSL 3))
-        (*JCall wxquotientdouble)
+        (*Call wxquotientdouble)
       ))
 
 % add and set carry
@@ -96,11 +103,11 @@
 
 (put 'addwithcarry 'opencode
        '(
-         % move carry* to register CF
-         (*MOVE (wconst -1) (reg t1))
-         (*WPlus3 (reg Xzr) (reg t1) ($fluid carry*))
+         % move add carry* to second parameter b
+	 (*Move ($fluid carry*) (reg t1))
+         (ADDS (reg t1) (reg 2) (reg t1))
            % add with carry
-         (ADCS (reg 1) (reg 1) (reg 2))
+         (ADCS (reg 1) (reg 1) (reg t1))
          % move cf to carry*
 	 (CSET (reg t1) CS)
          (*Move (reg t1) ($FLUID carry*))
@@ -126,13 +133,13 @@
 
 (put 'subtractwithborrow 'opencode
        '(
-         % move carry* to register CF
-         (*MOVE (wconst -1) (reg t1))
-         (*WPlus3 (reg Xzr) (reg t1) ($fluid carry*))
+         % add carry* to second parameter b
+	 (*Move ($fluid carry*) (reg t1))
+         (ADDS (reg t3) (reg 2) (reg t1))
            % subtract with borrow
-         (SBCS (reg 1) (reg 1) (reg 2))
-	 % move new borrow to carry*
-	 (CSET (reg t1) CS)
+         (SBCS (reg 1) (reg 1) (reg t1))
+	 % move new borrow (=not(CF)) to carry* 
+	 (CSET (reg t1) CC)
          (*Move (reg t1) ($FLUID carry*))
        ))
 (put 'subtractwithborrow 'destroys '((reg 1)))

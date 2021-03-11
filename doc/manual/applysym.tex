@@ -82,8 +82,8 @@ must be forminvariant against infinitesimal transformations
 \tilde{x}^i = x^i + \varepsilon \xi^i, \;\; \;\;\;
         \tilde{y}^\alpha = y^\alpha + \varepsilon \eta^\alpha  \label{tran}
 \end{equation}
-in first order of $\varepsilon.$ To transform the equations (\ref{PDEs})
-by (\ref{tran}), derivatives of $y^\alpha$ must be transformed, i.e. the part
+in first order of $\varepsilon.$ To transform the equations (\eqnref{PDEs})
+by (\eqnref{tran}), derivatives of $y^\alpha$ must be transformed, i.e. the part
 linear in $\varepsilon$ must be determined. The corresponding formulas are
 (see e.g. \cite{Olver:89,Stephani:89})
 \begin{eqnarray}
@@ -111,7 +111,7 @@ X & = & \xi^i \frac{\partial}{\partial x^i} +
 \end{eqnarray}
 where mod $H_A = 0$ means that the original PDE-system is used to replace
 some partial derivatives of $y^\alpha$ to reduce the number of independent
-variables, because the symmetry condition (\ref{sbed1}) must be
+variables, because the symmetry condition (\eqnref{sbed1}) must be
 fulfilled identically in $x^i, y^\alpha$ and all partial
 derivatives of $y^\alpha.$
 
@@ -121,11 +121,11 @@ $y^\beta_k.$ We restrict ourself to point symmetries as those are the only
 ones that can be applied by the current version of the program \texttt{APPLYSYM}
 (see below). For literature about generalized symmetries see \cite{Hereman:95}.
 
-Though the formulation of the symmetry conditions (\ref{sbed1}),
-(\ref{sbed2}), (\ref{recur})
+Though the formulation of the symmetry conditions (\eqnref{sbed1}),
+(\eqnref{sbed2}), (\eqnref{recur})
 is straightforward and handled in principle by all related
 programs \cite{Hereman:95}, the computational effort to formulate
-the conditions (\ref{sbed1}) may cause problems if
+the conditions (\eqnref{sbed1}) may cause problems if
 the number of $x^i$ and $y^\alpha$ is high.  This can
 partially be avoided if at first only a few conditions are formulated
 and solved such that the remaining ones are much shorter and quicker to
@@ -148,14 +148,14 @@ then only terms of the symmetry condition $X H_A = 0$ are generated which
 contain $n'$th order derivatives of $y^\alpha.$ Furthermore these derivatives
 must not occur in $H_A$ itself. They can therefore occur
 in the symmetry condition
-(\ref{sbed1}) only in
+(\eqnref{sbed1}) only in
 $\eta^\alpha_{j_1\ldots j_n},$ i.e. in the terms
 \[\eta^\alpha_{j_1\ldots j_n}
 \frac{\partial H_A}{\partial y^\alpha_{j_1\ldots j_n}}. \]
 If only coefficients of $n'$th order derivatives of $y^\alpha$ need to be
 accurate to formulate preliminary conditions
 then from the total derivatives to be taken in
-(\ref{recur}) only that part is performed which differentiates w.r.t.\ the
+(\eqnref{recur}) only that part is performed which differentiates w.r.t.\ the
 highest $y^\alpha$-derivatives.
 This means, for example, to form only
 $y^\alpha_{mnk} \partial/\partial y^\alpha_{mn} $
@@ -170,7 +170,7 @@ concerning symmetries.
 %---------------------------------------
 \subsubsection{The second step: Solving the symmetry conditions}
 The second step in applying the whole method consists in solving the
-determining conditions (\ref{sbed1}), (\ref{sbed2}), (\ref{recur})
+determining conditions (\eqnref{sbed1}), (\eqnref{sbed2}), (\eqnref{recur})
 which are linear homogeneous PDEs for $\xi^i, \eta^\alpha$. The
 complete solution of this system is not algorithmic any more because the
 solution of a general linear PDE-system is as difficult as the solution of
@@ -241,7 +241,7 @@ values and meanings:
 \item[\texttt{\{"contact"\}}] Contact symmetries with
   $\xi^i=0,\;\eta=\eta(x^j,u,u_k)$ are determined $(u_k = \partial
   u/\partial x^k)$, which is only applicable if a single equation
-  (\ref{PDEs}) with an order $>1$ for a single function $u$ is to be
+  (\eqnref{PDEs}) with an order $>1$ for a single function $u$ is to be
   investigated.  (The \textit{symtype} \verb+{"contact"}+ is
   equivalent to \verb+{"general", 1}+ (see below) apart from the
   additional checks done for \verb+{"contact"}+.)
@@ -361,8 +361,8 @@ Both methods are described in the following section.
 %---------------------------------------
 \subsubsection{The first mode: Calculation of similarity and symmetry variables}
 In the following we assume that a symmetry generator $X$, given
-in (\ref{sbed2}), is known such that ODE(s)/PDE(s) $H_A=0$
-satisfy the symmetry condition (\ref{sbed1}). The aim is to
+in (\eqnref{sbed2}), is known such that ODE(s)/PDE(s) $H_A=0$
+satisfy the symmetry condition (\eqnref{sbed1}). The aim is to
 find new dependent functions $u^\alpha = u^\alpha(x^j,y^\beta)$ and
 new independent variables $v^i = v^i(x^j,y^\beta),\;\;
 1\leq\alpha,\beta\leq p,\;1\leq i,j \leq q$
@@ -392,7 +392,7 @@ are then of lower total order
 after the transformation $z = z(u^1) = du^1/dv$ with now $z, u^2,\ldots u^p$
 as unknown functions and $u^1$ as independent variable.
 
-The new form (\ref{sbed3}) of $X$ leads directly to conditions for the
+The new form (\eqnref{sbed3}) of $X$ leads directly to conditions for the
 symmetry variable $v^1$ and the similarity variables
 $v^i|_{i\neq 1}, u^\alpha$ (all functions of $x^k,y^\gamma$):
 \begin{eqnarray}
@@ -402,11 +402,11 @@ $v^i|_{i\neq 1}, u^\alpha$ (all functions of $x^k,y^\gamma$):
                  \xi^i(x^k,y^\gamma)\partial_{x^i}u^\beta +
                  \eta^\alpha(x^k,y^\gamma)\partial_{y^\alpha}u^\beta \label{ql2}
 \end{eqnarray}
-The general solutions of (\ref{ql1}), (\ref{ql2}) involve free functions
-of $p+q-1$ arguments. From the general solution of equation (\ref{ql2}),
+The general solutions of (\eqnref{ql1}), (\eqnref{ql2}) involve free functions
+of $p+q-1$ arguments. From the general solution of equation (\eqnref{ql2}),
 $p+q-1$ functionally independent special solutions have to be selected
 ($v^2,\ldots,v^p$ and $u^1,\ldots,u^q$),
-whereas from (\ref{ql1}) only one solution $v^1$ is needed.
+whereas from (\eqnref{ql1}) only one solution $v^1$ is needed.
 Together, the expressions for the symmetry and similarity variables must
 define a non-singular transformation $x,y \rightarrow u,v$.
 
@@ -417,7 +417,7 @@ look quite differently. A transformation that is more difficult than another
 one will in general
 only complicate the new DE(s) compared with the simpler transformation.
 We therefore seek the simplest possible special
-solutions of (\ref{ql1}), (\ref{ql2}). They also
+solutions of (\eqnref{ql1}), (\eqnref{ql2}). They also
 have to be simple because the transformation has to be inverted to solve for
 the old variables in order to do the transformations.
 
@@ -427,10 +427,10 @@ program \texttt{APPLYSYM}:
 \item The user is asked to specify a symmetry by selecting one symmetry
 from all the known symmetries or by specifying a linear combination of them.
 \item Through a call of the procedure \texttt{QUASILINPDE} (described in a later
-section) the two linear first order PDEs (\ref{ql1}), (\ref{ql2}) are
+section) the two linear first order PDEs (\eqnref{ql1}), (\eqnref{ql2}) are
 investigated and, if possible, solved.
-\item From the general solution of (\ref{ql1}) 1 special solution
-is selected and from (\ref{ql2}) $p+q-1$ special
+\item From the general solution of (\eqnref{ql1}) 1 special solution
+is selected and from (\eqnref{ql2}) $p+q-1$ special
 solutions are selected which should be as simple as possible.
 \item The user is asked whether the symmetry variable should be one of the
 independent variables (as it has been assumed so far) or one of the new
@@ -474,7 +474,7 @@ Better is, to integrate $x^i,y^\alpha$ along $X$:
 \end{equation}
 with initial values $\bar{x}^i = x^i, \bar{y}^\alpha = y^\alpha$
 for $\varepsilon = 0.$
-(This ODE-system is the characteristic system of (\ref{ql2}).)
+(This ODE-system is the characteristic system of (\eqnref{ql2}).)
 
 Knowing only the finite transformations
 \begin{equation}
@@ -501,9 +501,9 @@ program \texttt{APPLYSYM} show features of both techniques:
 from all the known symmetries or by specifying a linear combination of them.
 \item The special solution to be generalized and the name of the new
 constant have to be put in.
-\item Through a call of the procedure \texttt{QUASILINPDE}, the PDE (\ref{ql1})
+\item Through a call of the procedure \texttt{QUASILINPDE}, the PDE (\eqnref{ql1})
 is solved which amounts to a solution of its characteristic ODE system
-(\ref{ODEsys}) where $v^1=\varepsilon$.
+(\eqnref{ODEsys}) where $v^1=\varepsilon$.
 \item \texttt{QUASILINPDE} returns a list of constant expressions
 \begin{equation}
 c_i = c_i(x^k, y^\beta, \varepsilon),\;\;1\leq i\leq p+q
@@ -525,7 +525,7 @@ again is a symmetry generator. Running the program once adds one constant
 but we have in addition $m-1$ arbitrary constants in the linear combination
 of the symmetries, so $m$ new constants are added.
 Usually one will generalize the solution gradually to make solving
-(\ref{ODEsys}) gradually more difficult.
+(\eqnref{ODEsys}) gradually more difficult.
 %---------------------------------------
 \subsubsection{Syntax}
 The call of \texttt{APPLYSYM}\ttindex{APPLYSYM} is
@@ -589,17 +589,17 @@ simplifies the ODE to
 \end{equation}
 where $'= d/d\rho$.
 Calling \texttt{LIEPDE} through
-\small \begin{verbatim}
+{\small \begin{verbatim}
 depend h,r;
 prob:={{-20*h**4+16*h**6+3*r**2*h*df(h,r,2)+5*r*h*df(h,r)
         -20*h**3*r*df(h,r)+4*h**2-5*r**2*df(h,r)**2},
        {h}, {r}};
 sym:=liepde(prob, {"point"},{},{});
-end; \end{verbatim} \normalsize
-gives \small \begin{verbatim}
+end; \end{verbatim}}
+gives {\small \begin{verbatim}
                           3                       2
 sym := {{}, {xi_r= - c10*r  - c11*r, eta_h=c10*h*r }, {c10,c11}}.
-\end{verbatim} \normalsize
+\end{verbatim}}
 All conditions have been solved because the first element of \texttt{sym}
 is $\{\}$. The two existing symmetries are therefore
 \begin{equation}
@@ -608,21 +608,21 @@ is $\{\}$. The two existing symmetries are therefore
 \end{equation}
 Corresponding finite
 transformations can be calculated with \texttt{APPLYSYM} through
-\small \begin{verbatim}
+{\small \begin{verbatim}
 newde:=applysym(prob,rest sym);
-\end{verbatim} \normalsize
+\end{verbatim}}
 The interactive session is given below with the user input following
 the prompt `\texttt{Input:3:}' or following `?'. (Empty lines have been deleted.)
-\small \begin{verbatim}
+{\small \begin{verbatim}
 Do you want to find similarity and symmetry variables (enter `1;')
 or generalize a special solution with new parameters  (enter `2;')
 or exit the program                                   (enter  `;')
 Input:3: 1;
-\end{verbatim} \normalsize
+\end{verbatim}}
 We enter `1;' because we want to reduce dependencies by finding similarity
 variables and one symmetry variable and then doing the transformation such
 that the symmetry variable does not explicitly occur in the DE.
-\small \begin{verbatim}
+{\small \begin{verbatim}
 ----------------------   The 1.  symmetry is:
          3
 xi_r= - r
@@ -635,11 +635,11 @@ Which single symmetry or linear combination of symmetries
 do you want to apply?
 Enter an expression with `sy_(i)' for the i'th symmetry.
 sy_(1);
-\end{verbatim} \normalsize
+\end{verbatim}}
 We could have entered `sy\_(2);' or a combination of both
 as well with the calculation running then
 differently.
-\small \begin{verbatim}
+{\small \begin{verbatim}
 The symmetry to be applied in the following is
           3          2
 {xi_r= - r ,eta_h=h*r }
@@ -647,9 +647,9 @@ Enter the name of the new dependent variables:
 Input:3: u;
 Enter the name of the new independent variables:
 Input:3: v;
-\end{verbatim} \normalsize
+\end{verbatim}}
 This was the input part, now the real calculation starts.
-\small \begin{verbatim}
+{\small \begin{verbatim}
 The ODE/PDE (-system) under investigation is :
                    2            2  2               3
 0 = 3*df(h,r,2)*h*r  - 5*df(h,r) *r  - 20*df(h,r)*h *r
@@ -668,8 +668,8 @@ The equivalent characteristic system:
       2
 0= - r *(df(h,r)*r + h)
 for the functions: h(r)  u_(r).
-\end{verbatim} \normalsize
-The PDE is equation (\ref{ql2}).
+\end{verbatim}}
+The PDE is equation (\eqnref{ql2}).
 \begin{small}
 \begin{verbatim}
 The general solution of the PDE is given through
@@ -699,7 +699,7 @@ $v^2,\ldots,v^p$. Here we have $p=q=1$ (one single ODE).
 Though the program could have done that alone, once the general solution
 \texttt{ff(..)} is known, the user can interfere here to enter a simpler solution,
 if possible.
-\small \begin{verbatim}
+{\small \begin{verbatim}
 2. Determination of the symmetry variable
                                       2             3
 The quasilinear PDE:  0 = df(u_,h)*h*r  - df(u_,r)*r  - 1.
@@ -729,9 +729,9 @@ A suggestion for this function ff(..) yields:
               2
 Do you like this choice? (Y or N)
 ?y
-\end{verbatim} \normalsize
+\end{verbatim}}
 Similar to above.
-\small \begin{verbatim}
+{\small \begin{verbatim}
 The suggested solution of the algebraic system which will
 do the transformation is:
                         sqrt(v)*sqrt(2)
@@ -745,7 +745,7 @@ The symmetry variable is v, i.e. the transformed expression
 will be free of v.
 Is this selection of dependent and independent variables ok? (Y or N)
 ?n
-\end{verbatim} \normalsize
+\end{verbatim}}
 We so far assumed that the symmetry variable is one of the new variables, but,
 of course we also could choose it to be one of the new functions.
 If it is one of the functions then only derivatives of this function occur
@@ -756,7 +756,7 @@ In our case we prefer (without strong reason) to have the function as
 symmetry variable. We therefore answered with `no'. As a consequence, $u$ and
 $v$ will exchange names such that still all new functions have the name $u$
 and the new variables have name $v$:
-\small \begin{verbatim}
+{\small \begin{verbatim}
 Please enter a list of substitutions. For example, to
 make the variable, which is so far call u1, to an
 independent variable v2 and the variable, which is
@@ -771,7 +771,7 @@ Do you want to find similarity and symmetry variables (enter `1;')
 or generalize a special solution with new parameters  (enter `2;')
 or exit the program                                   (enter  `;')
 Input:3: ;
-\end{verbatim}
+\end{verbatim}}
 We stop here. The following is returned from our \texttt{APPLYSYM} call:
 \begin{small}
 \begin{verbatim}
@@ -794,8 +794,8 @@ and the new ODE
 0 = 3u''v - 16u'^3v^6 - 20u'^2v^3 + 5u'        \label{udgl}
 \end{equation}
 where $u=u(v)$ and $'=d/dv.$
-Using one symmetry we reduced the 2.\,order ODE (\ref{hdgl})
-to a first order ODE (\ref{udgl}) for $u'$ plus one
+Using one symmetry we reduced the 2.\,order ODE (\eqnref{hdgl})
+to a first order ODE (\eqnref{udgl}) for $u'$ plus one
 integration. The second symmetry can be used to reduce the remaining ODE
 to an integration too by introducing a variable $w$ through $v^3d/dv = d/dw$,
 i.e. $w = -1/(2v^2)$. With
@@ -807,14 +807,14 @@ the remaining ODE is
 with solution
 \[ \tilde{c}w^{-2}/4 = \tilde{c}v^4 = \frac{p^3(p+1)}{(4\,p+1)^4},\;\;\;
  \tilde{c}=const. \]
-Writing (\ref{udot}) as $p = v^3(du/dp)/(dv/dp)$ we get $u$ by integration
-and with (\ref{trafo1}) further a parametric solution for $\rho,h$:
+Writing (\eqnref{udot}) as $p = v^3(du/dp)/(dv/dp)$ we get $u$ by integration
+and with (\eqnref{trafo1}) further a parametric solution for $\rho,h$:
 \begin{eqnarray}
 \rho & = & \left(\frac{3c_1^2(2p-1)}{p^{1/2}(p+1)^{1/2}}+c_2\right)^{-1/2} \\
 h & = & \frac{(c_2p^{1/2}(p+1)^{1/2}+6c_1^2p-3c_1^2)^{1/2}p^{1/2}}{c_1(4p+1)}
 \end{eqnarray}
 where $c_1, c_2 = const.$ and $c_1=\tilde{c}^{1/4}.$ Finally, the metric
-function $U(p)$ is obtained as an integral from (\ref{g1dgl}),(\ref{g2dgl}).
+function $U(p)$ is obtained as an integral from (\eqnref{g1dgl}),(\eqnref{g2dgl}).
 %---------------------------------------
 \subsubsection{Limitations of \texttt{APPLYSYM}}
 Restrictions of the applicability of the program \texttt{APPLYSYM} result
@@ -823,7 +823,7 @@ Essentially this means that symmetry generators may only be polynomially
 non-linear in $x^i, y^\alpha$.
 Though even then the solvability can not be guaranteed, the
 generators of Lie-symmetries are mostly very simple such that the
-resulting PDE (\ref{PDE}) and the corresponding characteristic
+resulting PDE (\eqnref{PDE}) and the corresponding characteristic
 ODE-system have good chances to be solvable.
 
 Apart from these limitations implied through the solution of differential
@@ -854,7 +854,7 @@ in $n$ independent variables $w_i, i=1\ldots n$ for one unknown function
 $\phi=\phi(w_i)$.
 \begin{enumerate}
 \item
-The first step in solving a quasilinear PDE (\ref{PDE})
+The first step in solving a quasilinear PDE (\eqnref{PDE})
 is the formulation of the corresponding characteristic ODE-system
 \begin{eqnarray}
 \frac{dw_i}{d\varepsilon} & = & a_i(w_j,\phi) \label{char1}   \\
@@ -863,11 +863,11 @@ is the formulation of the corresponding characteristic ODE-system
 for $\phi, w_i$ regarded now as functions of one variable $\varepsilon$.
 
 Because the $a_i$ and $b$ do not depend explicitly on $\varepsilon$, one of the
-equations (\ref{char1}),(\ref{char2}) with non-vanishing right hand side
+equations (\eqnref{char1}),(\eqnref{char2}) with non-vanishing right hand side
 can be used to divide all others through it and by that having a system
 with one less ODE to solve.
 If the equation to divide through is one of
-(\ref{char1}) then the remaining system would be
+(\eqnref{char1}) then the remaining system would be
 \begin{eqnarray}
 \frac{dw_i}{dw_k} & = & \frac{a_i}{a_k} , \;\;\;i=1,2,\ldots k-1,k+1,\ldots n
   \label{char3} \\
@@ -875,7 +875,7 @@ If the equation to divide through is one of
 \end{eqnarray}
 with the independent variable $w_k$ instead of $\varepsilon$.
 If instead we divide through equation
-(\ref{char2}) then the remaining system would be
+(\eqnref{char2}) then the remaining system would be
 \begin{eqnarray}
 \frac{dw_i}{d\phi} & = & \frac{a_i}{b} , \;\;\;i=1,2,\ldots n
   \label{char3a}
@@ -893,14 +893,14 @@ one variable.
 \end{itemize}
 
 One purpose of this division is to reduce the number of ODEs by one.
-Secondly, the general solution of (\ref{char1}), (\ref{char2}) involves
+Secondly, the general solution of (\eqnref{char1}), (\eqnref{char2}) involves
 an additive constant to $\varepsilon$ which is not relevant and would
 have to be set to zero. By dividing through one ODE we eliminate
 $\varepsilon$ and lose the problem of identifying this constant in the
 general solution before we would have to set it to zero.
 
 \item % from enumerate
-To solve the system (\ref{char3}), (\ref{char4}) or (\ref{char3a}),
+To solve the system (\eqnref{char3}), (\eqnref{char4}) or (\eqnref{char3a}),
 the procedure \texttt{CRACK} is called.
 Although being designed primarily for the solution of overdetermined
 PDE-systems, \texttt{CRACK} can also be used to solve simple not
@@ -910,15 +910,15 @@ could be used, without making any changes of \texttt{QUASILINPDE}
 necessary.
 
 If the characteristic ODE-system can not be solved in the form
-(\ref{char3}), (\ref{char4}) or (\ref{char3a})
-then successively all other ODEs of (\ref{char1}), (\ref{char2})
+(\eqnref{char3}), (\eqnref{char4}) or (\eqnref{char3a})
+then successively all other ODEs of (\eqnref{char1}), (\eqnref{char2})
 with non-vanishing right hand side are used for division until
 one is found
 such that the resulting ODE-system can be solved completely.
 Otherwise the PDE can not be solved by \texttt{QUASILINPDE}.
 
 \item % from enumerate
-If the characteristic ODE-system (\ref{char1}), (\ref{char2}) has been
+If the characteristic ODE-system (\eqnref{char1}), (\eqnref{char2}) has been
 integrated completely and in full generality to the implicit solution
 \begin{equation}
 0 = G_i(\phi, w_j, c_k, \varepsilon),\;\;
@@ -931,8 +931,8 @@ others to have left $n$ equations.
 Also the constant that turns up additively to $\varepsilon$
 is to be set to zero. Both tasks are automatically
 fulfilled, if, as described above, $\varepsilon$ is already eliminated
-from the beginning by dividing all equations of (\ref{char1}),
-(\ref{char2})
+from the beginning by dividing all equations of (\eqnref{char1}),
+(\eqnref{char2})
 through one of them.
 
 On either way one ends up with $n$ equations
@@ -941,11 +941,11 @@ On either way one ends up with $n$ equations
 \end{equation}
 involving $n$ constants $c_k$.
 
-The final step is to solve (\ref{charsol2}) for the $c_i$ to obtain
+The final step is to solve (\eqnref{charsol2}) for the $c_i$ to obtain
 \begin{equation}
 c_i = c_i(\phi, w_1,\ldots ,w_n) \;\;\;\;\;i=1,\ldots n  . \label{cons}
 \end{equation}
-The final solution $\phi = \phi(w_i)$ of the PDE (\ref{PDE}) is then
+The final solution $\phi = \phi(w_i)$ of the PDE (\eqnref{PDE}) is then
 given implicitly through
 \[ 0 = F(c_1(\phi,w_i),c_2(\phi,w_i),\ldots,c_n(\phi,w_i)) \]
 where $F$ is an arbitrary function with $n$ arguments.
@@ -969,7 +969,7 @@ The result of \texttt{QUASILINPDE} is a list of general solutions
 If \texttt{QUASILINPDE} can not solve the PDE then it returns $\{\}$.
 Each solution $\textit{sol}_i$ is a list of expressions
 \[      \{\textit{ex}_1, \textit{ex}_2, \ldots \}  \]
-such that the dependent function ($\phi$ in (\ref{PDE})) is determined
+such that the dependent function ($\phi$ in (\eqnref{PDE})) is determined
 implicitly through an arbitrary function $F$ and the algebraic
 equation \[ 0 = F(\textit{ex}_1, \textit{ex}_2, \ldots). \]
 %---------------------------------------
@@ -977,12 +977,12 @@ equation \[ 0 = F(\textit{ex}_1, \textit{ex}_2, \ldots). \]
 {\em Example 1:}\\
 To solve the quasilinear first order PDE \[1 = xu,_x + uu,_y - zu,_z\]
 for the function $u = u(x,y,z),$ the input would be
-\small \begin{verbatim}
+{\small \begin{verbatim}
 depend u,x,y,z;
 de:=x*df(u,x)+u*df(u,y)-z*df(u,z) - 1;
 varlist:={x,y,z};
 QUASILINPDE(de,u,varlist);
-\end{verbatim} \normalsize
+\end{verbatim}}
 In this example the procedure returns
 \[\{ \{ x/e^u, ze^u, u^2 - 2y \} \},\]
 i.e. there is one general solution (because the outer list has only one
@@ -1012,12 +1012,12 @@ One restriction on the applicability of \texttt{QUASILINPDE} results from
 the program \texttt{CRACK} which tries to solve the
 characteristic ODE-system of the PDE. So far \texttt{CRACK} can be
 applied only to polynomially non-linear DE's, i.e.\ the characteristic
-ODE-system (\ref{char3}),(\ref{char4}) or (\ref{char3a}) may
-only be polynomially non-linear, i.e.\ in the PDE (\ref{PDE})
+ODE-system (\eqnref{char3}),(\eqnref{char4}) or (\eqnref{char3a}) may
+only be polynomially non-linear, i.e.\ in the PDE (\eqnref{PDE})
 the expressions $a_i$ and $b$ may only be rational in $w_j,\phi$.
 
-The task of \texttt{CRACK} is simplified as (\ref{charsol1}) does not have to
-be solved for $w_j, \phi$. On the other hand (\ref{charsol1}) has to be
+The task of \texttt{CRACK} is simplified as (\eqnref{charsol1}) does not have to
+be solved for $w_j, \phi$. On the other hand (\eqnref{charsol1}) has to be
 solved for the $c_i$. This gives a
 second restriction coming from the REDUCE function \texttt{SOLVE}.
 Though \texttt{SOLVE} can be applied

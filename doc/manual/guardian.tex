@@ -167,7 +167,7 @@ we have the evaluation of the reciprocal $\frac{1}{x}$:
 In every guarded expression, the generic case is explicitly marked as
 either necessary or redundant. The corresponding tag is inherited
 during the evaluation process. Unfortunately it can happen that
-guarded expressions satisfy~(\ref{formalredund}) without being tagged
+guarded expressions satisfy~(\eqnref{formalredund}) without being tagged
 redundant, e.g., specialization of
 \[
 \begin{gex}
@@ -302,7 +302,7 @@ in their guard.
 
 At this point, we apply the guarding scheme of $f$ to all remaining
 expressions $f(t_{1i_1},\ldots,t_{mi_m})$ in the
-form~(\ref{intermediate}) yielding a nested guarded expression
+form~(\eqnref{intermediate}) yielding a nested guarded expression
 \begin{equation}
 \begin{gex}
 \gc{\Gamma_0} &
@@ -328,7 +328,7 @@ which can be straightforwardly resolved to a guarded expression
 \Gamma_N\land\delta_{Nk_N} & u_{Nk_N}
 \end{gex}.
 \]
-This form is treated analogously to the form~(\ref{intermediate}): The
+This form is treated analogously to the form~(\eqnref{intermediate}): The
 new generic case $(\Gamma_0\land\delta_{00},u_{00})$ is redundant if
 at least one of $\bigl(\Gamma_0,f(t_{10},\dots,t_{m0})\bigr)$ and
 $(\delta_{00},u_{00})$ is redundant. Among the non-generic cases all
@@ -350,7 +350,7 @@ evaluation.
 When there is a {\em guarded} subexpression $e_i$ detected during
 evaluation, all contained expressions are recursively evaluated to
 guarded expressions yielding a nested guarded expression of the
-form~(\ref{nestedge}). This is resolved as described above yielding
+form~(\eqnref{nestedge}). This is resolved as described above yielding
 the evaluation subresult $e_i'$.
 
 As a special case, this explains how guarded expressions are
@@ -364,9 +364,9 @@ e_1'=\begin{gex} \gc{\true} & \gc{x} \end{gex}
 \label{evalx}
 \end{equation}
 with a necessary generic case. The nested $x$ inside $e_2=|x|$ evaluates
-to the same form~(\ref{evalx}). For obtaining $e_2'$, we apply the
-guarding scheme~(\ref{absrewrite}) of the absolute value to the only
-term of~(\ref{evalx}) yielding
+to the same form~(\eqnref{evalx}). For obtaining $e_2'$, we apply the
+guarding scheme~(\eqnref{absrewrite}) of the absolute value to the only
+term of~(\eqnref{evalx}) yielding
 \[
 \begin{gex} \gc{\true} & \begin{gex}
 \gc{\true} & \gc{|x|}\\
@@ -392,8 +392,8 @@ cases by Cartesian product computation. We obtain
 \true\land(\true\land x<0) & \min(x,-x)
 \end{gex},
 \]
-which corresponds to~(\ref{intermediate}) above. For the outer $\min$,
-we apply the guarding scheme~(\ref{binminscheme}) to all terms
+which corresponds to~(\eqnref{intermediate}) above. For the outer $\min$,
+we apply the guarding scheme~(\eqnref{binminscheme}) to all terms
 yielding the nested guarded expression
 \[
 \begin{gex}
@@ -456,8 +456,8 @@ number of contained cases:
 
 As in Section~\ref{algeval}, consider an $m$-ary operator $f$,
 guarded expression arguments $e_1'$, \dots,~$e_m'$ as in
-equation~(\ref{eprimes}), and the Cartesian product $T$ as in
-equation~(\ref{cartprod}). Then
+equation~(\eqnref{eprimes}), and the Cartesian product $T$ as in
+equation~(\eqnref{cartprod}). Then
 \[
 |f(e_1',\ldots,e_m')| \leq  \sum_{(t_1,\dots,t_m)\in
   T}|\gscheme_f(t_1,\dots,t_m)|
@@ -550,11 +550,11 @@ on, we try to detect further contradictive cases by eliminating the
 existential closure $\underline\exists\gamma$ for each guard $\gamma$.
 This quantifier elimination is also applied to generic cases. In case
 of success they are not deleted but their guards are replaced by
-``$\false$.'' Our assumption (\ref{gencoversall}) allows then to
+``$\false$.'' Our assumption (\eqnref{gencoversall}) allows then to
 delete all non-generic cases.
 
 \subsubsection{Example revisited}
-We turn back to the form~(\ref{example}) of our example $\min(x,|x|)$.
+We turn back to the form~(\eqnref{example}) of our example $\min(x,|x|)$.
 Contraction of cases with subsequent simplification automatically
 yields
 \[
@@ -593,7 +593,7 @@ internally the system still computes with the complete guarded
 expressions.
 %
 \subsubsection{A smart mode}\label{smartmode}
-Consider the evaluation result~(\ref{minabs}) of $\min(x,|x|)$. The
+Consider the evaluation result~(\eqnref{minabs}) of $\min(x,|x|)$. The
 {\em generic term} output mode would output $\min(x,|x|)$, although
 more precise information could be given, namely $x$. The problem is
 caused by the fact that generic cases are used to keep track of the
@@ -603,7 +603,7 @@ case}. To begin with, we show why the problem can not be overcome by a
 ``smart output mode.''
 
 Assume that there is an output mode which outputs $x$
-for~(\ref{minabs}). As the next computation involving~(\ref{minabs})
+for~(\eqnref{minabs}). As the next computation involving~(\eqnref{minabs})
 consider division by $y$. This would result in
 \[
 \begin{gex}
@@ -628,14 +628,14 @@ evaluation of $|\frac{x}{y}|$ results in $\frac{|\min(x,|x|)|}{|y|}$.
 
 The smart mode can turn a non-generic case into a necessary generic
 one dropping the original generic case and all other non-generic
-cases. Consider, e.g.,~(\ref{minabs}), where the conditions are equal,
+cases. Consider, e.g.,~(\eqnref{minabs}), where the conditions are equal,
 and the non-generic term is ``simpler.''
 
 In fact, the relevant relationship between the conditions is that the
 generic condition {\em implies} the non-generic one. In other words:
 Some non-generic condition is not more restrictive than the generic
 condition, and thus covers the whole domain of the guarded expression.
-Note that from the implication and~(\ref{gencoversall}) we may
+Note that from the implication and~(\eqnref{gencoversall}) we may
 conclude that the cases are even equivalent.
 
 Implication is heuristically checked by simplification. If this fails,
@@ -840,7 +840,7 @@ guarded expressions.
 Next, we have to clarify what the guarded expression for the above
 integral would look like. Since we know that the integral is defined
 for all interpretations of the variables, our
-assumption~(\ref{gencoversall}) implies that the generic condition be
+assumption~(\eqnref{gencoversall}) implies that the generic condition be
 ``$\true$.'' We obtain the guarded expression
 \[
 \begin{gex}
@@ -863,9 +863,9 @@ Also our approach runs into trouble with built-in knowledge such as
 \sqrt{x^2}&=&|x|\label{sqrtrule},\\
 \sign(|x|)&=&1\label{signrule}.
 \end{eqnarray}
-Equation~(\ref{sqrtrule}) introduces an absolute value operator within
+Equation~(\eqnref{sqrtrule}) introduces an absolute value operator within
 a non-generic term without making a case distinction.
-Equation~(\ref{signrule}) is wrong when not considering $x$
+Equation~(\eqnref{signrule}) is wrong when not considering $x$
 transcendental. In contrast to the situation with reciprocals, our
 technique cannot be used to avoid this ``mistake.'' We obtain
 \[
@@ -878,8 +878,8 @@ x=0 & 0
 yielding two different answers for $x=0$.
 
 We have already seen in the example Section~\ref{examples} that the
-implementation of knowledge such as~(\ref{sqrtrule})
-and~(\ref{signrule}) is usually quite {\it ad hoc}, and can be mostly
+implementation of knowledge such as~(\eqnref{sqrtrule})
+and~(\eqnref{signrule}) is usually quite {\it ad hoc}, and can be mostly
 covered by using guarded expressions. This obesrvation gives rise to
 the following question: When designing a new \textsc{cas} based on guarded
 expressions, how should the knowledge be distributed between the

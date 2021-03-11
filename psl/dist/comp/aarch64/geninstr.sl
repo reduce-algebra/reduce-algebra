@@ -625,8 +625,10 @@
 (instr SUBS  (reg32-or-sp reg32-or-sp imm12-shifted) OP-reg-imm12     2#011100010)
 (instr SUBS  (reg-or-sp reg-or-sp imm12-shifted)     OP-reg-imm12     2#111100010)
 
-(instr SBC   (reg reg reg-shifter)     OP-reg-shifter  2#1101101000)
-(instr SBCS  (reg reg reg-shifter)     OP-reg-shifter  2#1111101000)
+(instr SBC   (reg32 reg32 reg-shifter)     OP-reg-shifter  2#01011010000)
+(instr SBC   (reg reg reg-shifter)         OP-reg-shifter  2#11011010000)
+(instr SBCS  (reg32 reg32 reg-shifter)     OP-reg-shifter  2#01111010000)
+(instr SBCS  (reg reg reg-shifter)         OP-reg-shifter  2#11111010000)
 
 (instr TST   (reg reg-shifter)         OP-reg-shifter 2#1101010000)
 (instr TST   (reg imm-logical)         OP-reg-logical   2#11100100)

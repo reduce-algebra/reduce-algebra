@@ -52,14 +52,14 @@
 (compiletime (load if-system))
  
 (compiletime
-(if_system SPARC
+(if_system aarch64
 (progn
    (defCmacro *CleanStack)
    (de *CleanStack()
        (prog (u)
-	 (for (from i 1 nalloc* 1)
-	      (do (setq u (cons `(*MOVE (reg 2) (FRAME ,i)) u))))
-	 (return (cons '(*MOVE (quote NIL) (reg 2)) u))))
+	 (for (from i 1 (difference nalloc* 2) 1)
+	      (do (setq u (cons `(*MOVE (reg NIL) (FRAME ,i)) u))))
+	 (return u)))
    (put 'CleanStack1 'OpenCode
 	  '((*CleanStack)))
    (put 'CleanStack2 'OpenCode '((*MOVE (reg 1)(reg 1)))) % this is a dummy

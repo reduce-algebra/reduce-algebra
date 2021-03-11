@@ -23,7 +23,7 @@ the following Meijer G integration formula.
 \left( \sigma x \  \Bigg\vert \  \MeijerGparams{( c_u)}{(d_v)} \right)
 G^{m n}_{p q} \left( \omega x^{l/k} \  \Bigg\vert \ \MeijerGparams{(a_p)}{(b_q)}
 \right) dx = k G^{i j}_{k l} \left( \xi \ \Bigg\vert \
-\MeijerGparams{(g_k)}{(h_l)} \right)  \hspace{5mm} \label{defint:eq1}
+\MeijerGparams{(g_k)}{(h_l)} \right) \label{defint:eq1}
 \end{equation}
 
 The resulting Meijer G-function is then retransformed, either directly
@@ -41,7 +41,7 @@ As an example, if one wishes to calculate the following integral
 
 then initially the  correct Meijer G-functions are found, via a
 pattern matching
-process, and are substituted into eq.~\ref{defint:eq1} to give
+process, and are substituted into eq.~\eqnref{defint:eq1} to give
 
 \[
 \sqrt{\pi} \int_{0}^{\infty} x^{-1} G^{1 0}_{0 1} \left(x
@@ -70,9 +70,9 @@ which is then calculated to give the correct answer of
 \frac{\pi}{4}
 \]
 
-The above formula (1) is also true for the integration of a single
-Meijer G-function by replacing the second Meijer G-function
-with a trivial Meijer G-function.
+The above formula (\eqnref{defint:eq1}) is also true for the
+integration of a single Meijer G-function by replacing the second
+Meijer G-function with a trivial Meijer G-function.
 
 A list of numerous particular Meijer G-functions is available in
 \cite {Prudnikov:90c}.
@@ -111,7 +111,7 @@ For example, if one wishes to calculate the following integral
 
 then initially the correct Meijer G-function is found, by a pattern
 matching process, and is substituted
-into eq.~\ref{defint:eq2} to give
+into eq.~\eqnref{defint:eq2} to give
 
 \[
 \int_{0}^{y} G^{1 0}_{0 2}\left(x

@@ -1,6 +1,6 @@
 ## Process this file with autoconf to produce a configure script.
 
-# A C Norman.                                         May 2008
+# A C Norman.                                         May 2008-2021
 
 # This is for building the FOX test programs in the CSL/Reduce environment,
 # and the sources for the FOX tests have been moved to a distinct directory
@@ -32,7 +32,6 @@ AC_MSG_NOTICE([+++ Configuring FOX tests in directory $here +++])
 AC_CONFIG_SRCDIR(scribble.cpp)
 AC_CONFIG_FILES(Makefile)
 
-AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_AUX_DIR([.])
 

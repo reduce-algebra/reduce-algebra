@@ -123,7 +123,20 @@
            (GT 2#1100) (LE 2#1101) (AL 2#1110))
   'condition-bits)
 
+(deflist '(( EQ NE ) ( NE EQ )
+	   ( CS CC ) ( CC CS )
+	   ( MI PL ) ( PL MI )
+	   ( VS VC ) ( VC VS )
+	   ( HI LS ) ( LS HI )
+	   ( GE LT ) ( LT GE )
+	   ( GT LE ) ( LE GT )
+	   )
+  'inverted-condition)
+
 (setq *condition-codes* '(EQ NE CS HS CC LO MI PL VS VC HI LS GE LT GT LE AL))
+
+(de invert-cond (cond)
+    (get cond 'inverted-condition))
 
 (compiletime (load addr2id))
  
@@ -1175,7 +1188,7 @@
 (de lth-csinc (code regd regn regm cond) 4)
 
 (de OP-cset (code regd cond)
-    (OP-csinc code regd (list 'reg (cadr code)) (list 'reg (nth code 4)) cond))
+    (OP-csinc code regd (list 'reg (cadr code)) (list 'reg (nth code 4)) (invert-cond cond)))
 
 (de saniere-Sprungziel (l)
     (cond ((atom l) l)

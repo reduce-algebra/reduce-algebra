@@ -31,7 +31,6 @@
 # Process this file with autoconf to produce a configure script.
 AC_INIT([Redfront],[3.3],[http://sourceforge.net/reduce-algebra])
 
-AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_AUX_DIR([.])
 AM_INIT_AUTOMAKE([1.13 -Wno-portability -Wno-override foreign dist-bzip2])

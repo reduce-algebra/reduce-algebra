@@ -148,19 +148,20 @@
 % it overwrites all stack positions and is transparent with respect to
 % the result lying in register 1. The macro code should be machine independent.
 % It will work correctly only if Nalloc* is set properly!
-% That is the case for 68020 e.g. with frames > 2
+% For aarch64 Nalloc* is the frame size, but this includes the space for the
+% fp and lr registers which must not be overwritten
 
 (compiletime (load if-system))
 
 (compiletime
-(if_system SPARC
+(if_system aarch64
 (progn
    (defCmacro *CleanStack)
    (de *CleanStack()
        (prog (u)
-	 (for (from i 1 nalloc* 1)
-	      (do (setq u (cons `(*MOVE (reg 2) (FRAME ,i)) u))))
-	 (return (cons '(*MOVE (quote NIL) (reg 2)) u))))
+	 (for (from i 1 (difference nalloc* 2) 1)
+	      (do (setq u (cons `(*MOVE (reg NIL) (FRAME ,i)) u))))
+	 (return u)))
    (put 'CleanStack1 'OpenCode
 	  '((*CleanStack)))
    (put 'CleanStack2 'OpenCode '((*MOVE (reg 1)(reg 1)))) % this is a dummy
