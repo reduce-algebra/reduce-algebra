@@ -23,9 +23,8 @@
 #    "./configure --disable-silent-rules" or "make V=1"
 #
 
-AC_INIT([libedit],[EL_RELEASE],[],[libedit-EL_TIMESTAMP])
-AC_CONFIG_MACRO_DIRS([m4])
-AC_CONFIG_AUX_DIR([.])
+AC_INIT(libedit, [EL_RELEASE],, libedit-[EL_TIMESTAMP])
+AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([src/strlcat.c])
 AC_CONFIG_HEADER([config.h])
 
@@ -33,37 +32,32 @@ AC_CONFIG_HEADER([config.h])
 AC_USE_SYSTEM_EXTENSIONS
 
 AM_INIT_AUTOMAKE
-LT_INIT
+AC_PROG_LIBTOOL
 
 # libtool -version-info
-AC_SUBST(LT_VERSION, [0:51:0])
+AC_SUBST(LT_VERSION, [0:64:0])
 
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 # Checks for programs.
-AC_PROG_CC
+AC_PROG_CC_C99
+#AC_PROG_CC
 AC_PROG_LN_S
 AC_PROG_AWK
 EL_MANTYPE
 
-
-AC_CHECK_LIB(tinfo, tgetent,,
-  [AC_CHECK_LIB(terminfo, tgetent,,
+AC_CHECK_LIB(ncurses, tgetent,,
+  [AC_CHECK_LIB(curses, tgetent,,
     [AC_CHECK_LIB(termcap, tgetent,,
-       [AC_CHECK_LIB(termlib, tgetent,,
-           [AC_CHECK_LIB(curses, tgetent,,
-               [AC_CHECK_LIB(ncurses, tgetent,,
-                   [AC_MSG_ERROR([libcurses or libncurses are required!])]
-               )]
-           )]
-       )]
+      [AC_CHECK_LIB(tinfo, tgetent,,
+        [AC_MSG_ERROR([libncurses, libcurses, libtermcap or libtinfo is required!])]
+      )]
     )]
   )]
 )
 
-
-### use option --enable-widec to turn on use of wide-character support
-EL_ENABLE_WIDEC
+### deprecate option --enable-widec to turn on use of wide-character support
+EL_DEPRECATE_WIDEC
 
 AC_ARG_ENABLE(
   [examples],
@@ -72,14 +66,23 @@ AC_ARG_ENABLE(
   [enable_examples="yes"]
 )
 
-AM_CONDITIONAL(ENABLE_EXAMPLES, [test "$enable_examples" == "yes"])
+AM_CONDITIONAL(ENABLE_EXAMPLES, [test "$enable_examples" = "yes"])
 
 # Checks for header files.
 AC_HEADER_DIRENT
+AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS([fcntl.h limits.h malloc.h stdlib.h string.h sys/ioctl.h sys/param.h unistd.h curses.h ncurses.h sys/cdefs.h termcap.h])
 
-AC_CHECK_HEADER([termios.h], [], [AC_MSG_ERROR([termios.h is required!])],[])
+AC_CHECK_HEADER([ncurses.h], [],
+  [AC_CHECK_HEADER([curses.h], [],
+    [AC_CHECK_HEADER([termcap.h], [],
+      [AC_MSG_ERROR([ncurses.h, curses.h, or termcap.h is required!])],
+    [])],
+  [])],
+[])
+
+AC_CHECK_HEADER([termios.h], [], [AC_MSG_ERROR([termios.h is required!])], [])
 
 ## include curses.h to prevent "Present But Cannot Be Compiled"
 AC_CHECK_HEADERS([term.h],,,
@@ -114,8 +117,9 @@ AC_PROG_GCC_TRADITIONAL
 ## _AIX is offended by rpl_malloc and rpl_realloc
 #AC_FUNC_MALLOC
 #AC_FUNC_REALLOC
+AC_TYPE_SIGNAL
 AC_FUNC_STAT
-AC_CHECK_FUNCS([endpwent isascii memchr memset re_comp regcomp strcasecmp strchr strcspn strdup strerror strrchr strstr strtol issetugid wcsdup strlcpy strlcat fgetln vis strvis strunvis __secure_getenv secure_getenv])
+AC_CHECK_FUNCS([endpwent isascii memchr memset re_comp regcomp strcasecmp strchr strcspn strdup strerror strrchr strstr strtol issetugid wcsdup strlcpy strlcat getline vis strvis strunvis __secure_getenv secure_getenv])
 
 # strlcpy
 AC_CHECK_FUNC(strlcpy, found_strlcpy=yes, found_strlcpy=no)

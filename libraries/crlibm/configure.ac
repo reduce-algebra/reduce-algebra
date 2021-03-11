@@ -116,7 +116,6 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 
 dnl Checks for standard C stuff.
-AC_HEADER_STDC
 AC_C_CONST
 AC_C_INLINE
 

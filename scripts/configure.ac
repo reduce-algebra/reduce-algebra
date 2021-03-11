@@ -18,5 +18,7 @@ LT_INIT
 
 AC_CONFIG_FILES([Makefile])
 
+AC_OUTPUT
+
 # end of "configure.ac"
 

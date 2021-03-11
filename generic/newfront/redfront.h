@@ -66,7 +66,6 @@
 
 #ifdef NATIVE_WINDOWS
 
-#define RETSIGTYPE void
 #define PACKAGE_NAME "winredfront"
 #define PACKAGE_VERSION "3.3"
 #define USE_PIPES 1
@@ -179,7 +178,7 @@ void line_init(void);
 void line_learn_completion(char *);
 void line_end(void);
 
-RETSIGTYPE sig_sigInt(int);
+void sig_sigInt(int);
 void sig_installHandlers(void);
 void sig_killChild(void);
 
