@@ -97,8 +97,12 @@ AC_MSG_NOTICE([Absolute path to source directory = $abssrcdir])
 # set up a directory of your own, put it early in your PATH and use that as
 # the "--prefix".
 
+
+# Note that AS_HELP_STRING has been available since version 2.61 and
+# use of AC_HELP_STRING leads to loud moans from version 2.71
+
 AC_ARG_WITH(autogen,
-  AC_HELP_STRING([--with-autogen], [Regenerate autoconf file at start]),
+  AS_HELP_STRING([--with-autogen], [Regenerate autoconf file at start]),
   [],
   [with_autogen="yes"])
 
@@ -201,12 +205,12 @@ fi
 # I am using the FOX or wxWidgets toolkit.
 
 AC_ARG_WITH(csl,
-  AC_HELP_STRING([--with-csl], [Use the CSL Lisp system]),
+  AS_HELP_STRING([--with-csl], [Use the CSL Lisp system]),
   [],
   [with_csl="no"])
 
 AC_ARG_WITH(psl,
-  AC_HELP_STRING([--with-psl], [Use the PSL Lisp system]),
+  AS_HELP_STRING([--with-psl], [Use the PSL Lisp system]),
   [],
   [with_psl="no"])
 
@@ -227,7 +231,7 @@ options. After that you may use "make" and both systems should be made.])
 fi
 
 AC_ARG_WITH(gui,
-  AC_HELP_STRING([--with-gui],
+  AS_HELP_STRING([--with-gui],
                  [use --without-gui to get a text-only system (CSL only)]),
   [],
   [with_gui="yes"])
@@ -253,13 +257,13 @@ default_gui="fox"
 #default_gui="wx"
 
 AC_ARG_WITH(wx,
-  AC_HELP_STRING([--with-wx],
+  AS_HELP_STRING([--with-wx],
                  [enable or disable use of wxWidgets (CSL only)]),
   [],
   [with_wx="default"])
 
 AC_ARG_WITH(fox,
-  AC_HELP_STRING([--with-fox],
+  AS_HELP_STRING([--with-fox],
                  [enable or disable use of FOX (CSL only)]),
   [],
   [with_fox="default"])
@@ -425,7 +429,7 @@ fi
 # and maybe later let the Intel builds catch up.
 
 AC_ARG_ENABLE(universal,
-  AC_HELP_STRING([--enable-universal],
+  AS_HELP_STRING([--enable-universal],
                  [Try to build universal binary on Mac Big Sur (CSL only)]),
   [],
   [enable_universal="no"])
@@ -473,22 +477,22 @@ Darwin)
 esac
 
 AC_ARG_WITH(build,
-  AC_HELP_STRING([--with-build], [Used internally to control build directory]),
+  AS_HELP_STRING([--with-build], [Used internally to control build directory]),
   [],
   [with_build="unknown"])
 
 AC_ARG_WITH(pslbuild,
-  AC_HELP_STRING([--with-pslbuild], [Used internally to control build directory]),
+  AS_HELP_STRING([--with-pslbuild], [Used internally to control build directory]),
   [],
   [with_pslbuild="unknown"])
 
 AC_ARG_WITH(cygbuild,
-  AC_HELP_STRING([--with-cygbuild], [Used internally to control build directory]),
+  AS_HELP_STRING([--with-cygbuild], [Used internally to control build directory]),
   [],
   [with_cygbuild="unknown"])
 
 AC_ARG_WITH(force,
-  AC_HELP_STRING([--with-force], [Forces refresh of windows varients]),
+  AS_HELP_STRING([--with-force], [Forces refresh of windows varients]),
   [],
   [with_force="no"])
 
@@ -509,49 +513,49 @@ LIBEDIT_VERSION=20140620-3.1
 # this is that "configure --help" shows them all.
 
 AC_ARG_WITH(lto,
-   AC_HELP_STRING([--with-lto],
+   AS_HELP_STRING([--with-lto],
                   [Experiment with extreme optimisation in gcc (CSL only)]),
    [],
    [with_lto="no"])
 
 AC_ARG_WITH(cygwin,
-  AC_HELP_STRING([--with-cygwin],
+  AS_HELP_STRING([--with-cygwin],
                  [Force use of raw cygwin (CSL only)]),
   [],
   [with_cygwin="no"])
 
 AC_ARG_WITH(xft,
-  AC_HELP_STRING([--with-xft],
+  AS_HELP_STRING([--with-xft],
                  [Can be used to disable use of XFT. Default is yes (CSL only)]),
   [],
   [with_xft="yes"])
 
 AC_ARG_WITH(xim,
-  AC_HELP_STRING([--with-xim],
+  AS_HELP_STRING([--with-xim],
                  [Can be used to control use of XIM. Default is yes (now) (CSL only)]),
   [],
   [with_xim="yes"])
 
 AC_ARG_ENABLE(debug,
-  AC_HELP_STRING([--enable-debug],
+  AS_HELP_STRING([--enable-debug],
                  [compile for debugging (CSL only)]),
   [],
   [enable_debug="no"])
 
 AC_ARG_ENABLE(conservative,
-  AC_HELP_STRING([--enable-conservative],
+  AS_HELP_STRING([--enable-conservative],
                  [garbage collect option: testing and development use (CSL only)]),
   [],
   [enable_conservative="no"])
 
 AC_ARG_ENABLE(test,
-  AC_HELP_STRING([--enable-test],
+  AS_HELP_STRING([--enable-test],
                  [testing-mode version (CSL only)]),
   [],
   [enable_test="no"])
 
 AC_ARG_ENABLE(experiment,
-  AC_HELP_STRING([--enable-experiment],
+  AS_HELP_STRING([--enable-experiment],
                  [testing-mode version (CSL only)]),
   [],
   [enable_experiment="no"])
@@ -562,19 +566,19 @@ then
 fi
 
 AC_ARG_WITH(arithlib,
-  AC_HELP_STRING([--with-arithlib],
+  AS_HELP_STRING([--with-arithlib],
                  [development of arithlib.hpp support (CSL only)]),
   [],
   [with_arithlib="no"])
 
 AC_ARG_ENABLE(static,
-  AC_HELP_STRING([--enable-static],
+  AS_HELP_STRING([--enable-static],
                  [link it all statically (CSL only)]),
   [],
   [enable_static="no"])
 
 AC_ARG_WITH(throw,
-  AC_HELP_STRING([--without-throw],
+  AS_HELP_STRING([--without-throw],
                  [Avoid C++ catch & throw. Experimental. (CSL only)]),
   [],
   [with_throw="yes"])
@@ -583,7 +587,7 @@ CSLBASE=cslbase
 GENERATED_C=generated-c
 
 AC_ARG_ENABLE(static,
-  AC_HELP_STRING([--enable-static],
+  AS_HELP_STRING([--enable-static],
                  [link it all statically (CSL only)]),
   [],
   [enable_static="no"])
@@ -672,7 +676,7 @@ case `uname -n` in
 esac
 
 AC_ARG_WITH(windows_layout,
-  AC_HELP_STRING([--with-windows_layout], [old or new windows layout]),
+  AS_HELP_STRING([--with-windows_layout], [old or new windows layout]),
   [],
   [with_windows_layout="$default_windows_layout"])
 
@@ -937,7 +941,7 @@ AC_CONFIG_FILES([Makefile])
 builddir=`pwd`
 
 AC_ARG_WITH(ccache,
-  AC_HELP_STRING([--with-ccache],
+  AS_HELP_STRING([--with-ccache],
                  [--without-ccache can be used to disable use of ccache]),
   [], [])
 

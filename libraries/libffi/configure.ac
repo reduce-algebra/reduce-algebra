@@ -285,7 +285,7 @@ if test "x$GCC" = "xyes"; then
 fi
 
 AC_ARG_ENABLE(docs,
-              AC_HELP_STRING([--disable-docs],
+              AS_HELP_STRING([--disable-docs],
                              [Disable building of docs (default: no)]),
               [enable_docs=no],
               [enable_docs=yes])

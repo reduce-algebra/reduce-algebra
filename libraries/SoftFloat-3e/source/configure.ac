@@ -70,7 +70,7 @@ AC_MSG_NOTICE([machine_size computed as $machine_size])
 CPPFLAGS="$CPPFLAGS -I$srcdir -I$srcdir/8086-SSE -I$srcdir/include"
 
 AC_ARG_ENABLE(debug,
-  AC_HELP_STRING([--enable-debug],
+  AS_HELP_STRING([--enable-debug],
                  [Select debugging build options]),
   [],
   [enable_debug="no"])

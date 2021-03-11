@@ -69,7 +69,7 @@ AS_IF([test "$EXEEXT" = .exe],
    COMEXT=".com"
    on_windows="yes"],
   [AC_ARG_ENABLE(pipes,
-    AC_HELP_STRING([--enable-pipes],
+    AS_HELP_STRING([--enable-pipes],
       [use pipes not sockets on systems other than Windows]),
    if test "$enableval" = no
    then
@@ -115,7 +115,7 @@ AC_CHECK_FUNCS(waitpid)
 AC_CHECK_FUNCS(setlinebuf)
 
 AC_ARG_ENABLE(debug,
-  AC_HELP_STRING([--enable-debug],
+  AS_HELP_STRING([--enable-debug],
     [comprehensive printing of debugging messages]),
 if test "$enableval" = yes
 then
@@ -130,10 +130,10 @@ then
 fi
 
 AC_ARG_WITH(win32bit,
-  AC_HELP_STRING([--with-win32bit], [not relevent here]))
+  AS_HELP_STRING([--with-win32bit], [not relevent here]))
 
 AC_ARG_WITH(c32,
-  AC_HELP_STRING([--with-c32], [not relevent here]))
+  AS_HELP_STRING([--with-c32], [not relevent here]))
 
 
 AM_CONDITIONAL(DEBUG,   test "x$debug" = "xyes")

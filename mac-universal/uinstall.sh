@@ -44,9 +44,9 @@ do
 # I use the "-N" option so that dependencies are installed without asking
 # the user whether that is wanted.
 #
-  arm port -N install $p -universal
+  arm port -N install $p
   intel port clean $p
-  intel port -N install $p -universal
+  intel port -N install $p
 done
 
 ${HERE}/umerge.sh

@@ -4,4 +4,27 @@ the system can build and run much of Reduce. Since there is only
 an interpreter it will be slow, but for teaching purposes and for
 fun it may still be of interest.
 
-Arthur Norman.   2012-2018
+There are two versions here (apologies).
+vsl1.c can be compiled and is expected to run Reduce. Try "make reduce" here
+and then "./vsl1 -i reduce.img" possibly followed by a file-name to read.
+This is all interpreted and the bignum arithmetic is painfully slow, but all
+it needs is a simple C compiler so it may be of interest as at leaset a first
+test on a new and potentially tricky machine. But note that a Reduce built
+that was is not only slow but it has not been seriously tested and either
+bugs in vsl1 or missing features may cause problems to arise. Because vsl1.c
+is so compact you are mostly expected to track those down and fix them for
+yourself!
+
+The second version is called simply vsl.c. That was being used as part of a
+project to explore the bootstrapping phases of building PSL. It thus has
+options to mimic the parsing regime in a raw "bpsl" Lisp (with eg "-" and "&"
+treated as letters so that one can have a token &abc-def without needing
+to use escape characters to spell it). There are some somewhat fragmentary
+files and stages in the Makefile for starting to build a PSL kernel. The work
+there got as far as "proof of concept" and so is available if anybody wants
+to pick it up, but it is not complete or tidy! If you want to port PSL as a
+serious task you will be better off using an existing version and running
+initial bootstrap stages as cross-builds on a platform where everthing is
+known to be stable.
+
+Arthur Norman.   2012-2018, 2021

@@ -72,7 +72,7 @@ AC_CONFIG_HEADERS([config.h])
 
 AC_COPYRIGHT([Codemist])
 
-AC_PREREQ(2.61)
+AC_PREREQ(2.69)
 
 # My source file is expected to have "csl.cpp" in it. This is just a small
 # sanity check in case somebody tries to configure with directories
@@ -91,7 +91,7 @@ case `uname -n` in
 esac
 
 AC_ARG_WITH(windows-layout,
-  AC_HELP_STRING([--with-windows-layout], [old or new windows layout]),
+  AS_HELP_STRING([--with-windows-layout], [old or new windows layout]),
   [],
   [with_windows_layout="$default_windows_layout"])
 
@@ -110,12 +110,12 @@ AC_LANG(C++)
 AC_DEFINE(CSL, [1], [True to tell sources that this build is part of CSL])
 
 AC_ARG_WITH(csl,
-  AC_HELP_STRING([--with-csl], [Use the CSL Lisp system]),
+  AS_HELP_STRING([--with-csl], [Use the CSL Lisp system]),
   [],
   [with_csl="no"])
 
 AC_ARG_WITH(psl,
-  AC_HELP_STRING([--with-psl], [Use the PSL Lisp system. Do not use here!]),
+  AS_HELP_STRING([--with-psl], [Use the PSL Lisp system. Do not use here!]),
   [],
   [with_psl="no"])
 
@@ -123,17 +123,17 @@ AC_ARG_WITH(psl,
 # making an attempt to compile and instate the newfront version of redfront.
 
 AC_ARG_WITH(redfront,
-  AC_HELP_STRING([--with-redfront], [Build and install redfront]),
+  AS_HELP_STRING([--with-redfront], [Build and install redfront]),
   [],
   [with_redfront="yes"])
 
 AC_ARG_WITH(gui,
-  AC_HELP_STRING([--with-gui], [this option is ignored here!]),
+  AS_HELP_STRING([--with-gui], [this option is ignored here!]),
   [],
   [])
 
 AC_ARG_WITH(ffi,
-  AC_HELP_STRING([--with-ffi], [--without-ffi can be used to avoid use of libffi]),
+  AS_HELP_STRING([--with-ffi], [--without-ffi can be used to avoid use of libffi]),
   [],
   [with_ffi="yes"])
 
@@ -148,35 +148,35 @@ fi
 AC_CANONICAL_HOST()
 
 AC_ARG_WITH(build,
-   AC_HELP_STRING([--with-build], [specify host-name to use when logging]),
+   AS_HELP_STRING([--with-build], [specify host-name to use when logging]),
    [],
    [with_build="unknown"])
 
 BUILTFOR="$with_build"
 
 AC_ARG_WITH(pslbuild,
-   AC_HELP_STRING([--with-pslbuild], [used if I wish to call the PSL version]),
+   AS_HELP_STRING([--with-pslbuild], [used if I wish to call the PSL version]),
    [],
    [with_pslbuild="unknown"])
 
 AC_DEFINE_UNQUOTED(PSLBUILD,["$with_pslbuild"], [Show where a matching PSL might live])
 
 AC_ARG_WITH(cygbuild,
-   AC_HELP_STRING([--with-cygbuild], [used if I wish to call the cygwin version]),
+   AS_HELP_STRING([--with-cygbuild], [used if I wish to call the cygwin version]),
    [],
    [with_cygbuild=""])
 
 AC_SUBST(with_cygbuild)
 
 AC_ARG_WITH(cygbuild64,
-   AC_HELP_STRING([--with-cygbuild64], [used if I wish to call the 64-bit cygwin version]),
+   AS_HELP_STRING([--with-cygbuild64], [used if I wish to call the 64-bit cygwin version]),
    [],
    [with_cygbuild64=""])
 
 AC_SUBST(with_cygbuild64)
 
 AC_ARG_WITH(crlibm,
-   AC_HELP_STRING([--with-crlibm], [Can be used to disable use of crlibm]),
+   AS_HELP_STRING([--with-crlibm], [Can be used to disable use of crlibm]),
    [],
    [with_crlibm="yes"])
 
@@ -186,7 +186,7 @@ then
 fi
 
 AC_ARG_WITH(softfloat,
-   AC_HELP_STRING([--with-softfloat], [Can be used to disable use of softfloat]),
+   AS_HELP_STRING([--with-softfloat], [Can be used to disable use of softfloat]),
    [],
    [with_softfloat="yes"])
 
@@ -196,7 +196,7 @@ then
 fi
 
 AC_ARG_WITH(threads,
-   AC_HELP_STRING([--with-threads], [Can be used to avoid any non-vital thread stuff if that helps with debugging]),
+   AS_HELP_STRING([--with-threads], [Can be used to avoid any non-vital thread stuff if that helps with debugging]),
    [],
    [with_threads="yes"])
 
@@ -226,39 +226,39 @@ AC_DEFINE_UNQUOTED(HOST_VENDOR,"$host_vendor",[Name of vendor])
 AC_DEFINE_UNQUOTED(HOST_OS,"$host_os",[Name of Operating System])
 
 AC_ARG_WITH(lto,
-   AC_HELP_STRING([--with-lto],
+   AS_HELP_STRING([--with-lto],
                   [Force extreme optimisation with gcc]),
    [],
    [with_lto="no"])
 
 AC_ARG_WITH(fox,
-  AC_HELP_STRING([--with-fox],
+  AS_HELP_STRING([--with-fox],
                  [enable use of FOX]),
   [],
   [with_fox="no"])
 AC_MSG_NOTICE([--with-fox=$with_fox])
 
 AC_ARG_WITH(wx,
-  AC_HELP_STRING([--with-wx],
+  AS_HELP_STRING([--with-wx],
                  [enable use of wxWidgets]),
   [],
   [with_wx="no"])
 AC_MSG_NOTICE([--with-wx=$with_wx])
 
 AC_ARG_WITH(cygwin,
-  AC_HELP_STRING([--with-cygwin],
+  AS_HELP_STRING([--with-cygwin],
                  [Force use of raw cywgin]),
   [],
   [with_cygwin="no"])
 
 AC_ARG_WITH(autogen,
-  AC_HELP_STRING([--with-autogen],
+  AS_HELP_STRING([--with-autogen],
                  [Used at a higher level]),
   [],
   [with_autogen="yes"])
 
 AC_ARG_WITH(force,
-  AC_HELP_STRING([--with-force],
+  AS_HELP_STRING([--with-force],
                  [Used at a higher level]),
   [],
   [with_force="no"])
@@ -603,14 +603,14 @@ AC_SUBST(LOCALSTRIP)
 # Debugging turned on?
 AC_MSG_CHECKING(for debugging)
 AC_ARG_ENABLE(debug,
-  AC_HELP_STRING([--enable-debug],
+  AS_HELP_STRING([--enable-debug],
                  [compile for debugging]),
   [],
   [enable_debug="no"])
 AC_MSG_RESULT([$enable_debug])
 
 AC_ARG_ENABLE(profile,
-  AC_HELP_STRING([--enable-profile],
+  AS_HELP_STRING([--enable-profile],
                  [compile for profiling]),
   [],
   [enable_profile="no"])
@@ -630,7 +630,7 @@ ARCHITECTURE="$foxdir"
 # Want to build "conservative" variant?
 AC_MSG_CHECKING(for conservative)
 AC_ARG_ENABLE(conservative,
-  AC_HELP_STRING([--enable-conservative],
+  AS_HELP_STRING([--enable-conservative],
                  [garbage collect option that is under development]),
   [],
   [enable_conservative="no"])
@@ -644,7 +644,7 @@ fi
 # Want to build with statistic-gathering for the EQUAL function?
 AC_MSG_CHECKING(for trace-equal)
 AC_ARG_ENABLE(trace-equal,
-  AC_HELP_STRING([--enable-trace-equal],
+  AS_HELP_STRING([--enable-trace-equal],
                  [trace use of EQUAL for profiling]),
   [],
   [enable_trace_equal="no"])
@@ -658,14 +658,14 @@ fi
 # Want to build "test" variant?
 AC_MSG_CHECKING(for test)
 AC_ARG_ENABLE(test,
-  AC_HELP_STRING([--enable-test],
+  AS_HELP_STRING([--enable-test],
                  [testing-mode version]),
   [],
   [enable_test="no"])
 AC_MSG_RESULT([$enable_test])
 
 AC_ARG_WITH(arithlib,
-  AC_HELP_STRING([--with-arithlib],
+  AS_HELP_STRING([--with-arithlib],
                  [arithlib.hpp version]),
   [],
   [with_arithlib="no"])
@@ -678,7 +678,7 @@ then
 fi
 
 AC_ARG_WITH(throw,
-  AC_HELP_STRING([--without-throw],
+  AS_HELP_STRING([--without-throw],
                  [Avoid C++ catch & throw. Experimental. (CSL only)]),
   [],
   [with_throw="yes"])
@@ -691,7 +691,7 @@ fi
 # Want to build "embedded" variant?
 AC_MSG_CHECKING(for embedded)
 AC_ARG_ENABLE(embedded,
-  AC_HELP_STRING([--enable-embedded],
+  AS_HELP_STRING([--enable-embedded],
                  [embedded-mode version]),
   [],
   [enable_embedded="no"])
@@ -735,7 +735,7 @@ CXXFLAGS="$old_CXXFLAGS"
 LT_INIT([disable-static])
 
 AC_ARG_WITH(ccache,
-  AC_HELP_STRING([--with-ccache],
+  AS_HELP_STRING([--with-ccache],
                  [--without-ccache can be used to disable use of ccache]),
   [], [])
 
@@ -1151,7 +1151,7 @@ then
 # Furthermore I will not try xft-config if I am cross-compiling. This may
 # be a mess if I ever try to cross compile towards a machine that needs it.
     AC_ARG_WITH(xft,
-      AC_HELP_STRING([--with-xft],
+      AS_HELP_STRING([--with-xft],
                      [Can be used to disable use of XFT. Default is yes]),
       [],
       [with_xft="yes"])
@@ -1240,7 +1240,7 @@ AC_PROG_LN_S
 # trick for me.
 AC_MSG_CHECKING(for static linking)
 AC_ARG_ENABLE(static,
-  AC_HELP_STRING([--enable-static],
+  AS_HELP_STRING([--enable-static],
                  [link it all statically]),
   [],
   [enable_static="no"])
@@ -1280,7 +1280,7 @@ x86_64-w64-*)
 esac
 
 AC_ARG_WITH(smallpage,
-   AC_HELP_STRING([--with-smallpage],
+   AS_HELP_STRING([--with-smallpage],
                   [Use smaller block of memory to suit tiny computers]),
    [],
    [with_smallpage="no"])

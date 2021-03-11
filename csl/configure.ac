@@ -40,7 +40,7 @@ fi
 #
 
 AC_ARG_WITH(autogen,
-  AC_HELP_STRING([--with-autogen], [Regenerate autoconf file at start]),
+  AS_HELP_STRING([--with-autogen], [Regenerate autoconf file at start]),
   [],
   [with_autogen="yes"])
 
@@ -170,7 +170,7 @@ fi
 # subset of the options that will go to the top-level one...
 
 AC_ARG_WITH(mingw64,
-   AC_HELP_STRING([--with-mingw64],
+   AS_HELP_STRING([--with-mingw64],
                   [Should behave like --host=x86_64-w64-mingw32]),
    [],
    [with_mingw64="no"])
@@ -210,7 +210,7 @@ x86_64-w64-*)
 *-*-cygwin* | *-*-*mingw*)
   AC_MSG_NOTICE([Building under cygwin])
   AC_ARG_WITH(cygwin,
-    AC_HELP_STRING([--with-cygwin],
+    AS_HELP_STRING([--with-cygwin],
                    [Force use of raw cywgin (note license consequences please)]),
     [],
     [with_cygwin="no"])
@@ -386,7 +386,7 @@ fi
 # Debugging turned on?
 AC_MSG_CHECKING(for debugging)
 AC_ARG_ENABLE(debug,
-  AC_HELP_STRING([--enable-debug],
+  AS_HELP_STRING([--enable-debug],
                  [compile for debugging]),
   [],
   [enable_debug="no"])
@@ -524,7 +524,7 @@ fi
 if test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes"
 then
   AC_ARG_WITH(xft,
-    AC_HELP_STRING([--with-xft],
+    AS_HELP_STRING([--with-xft],
                    [Can be used to disable use of XFT. Default is yes]),
     [],
     [with_xft="yes"])
@@ -576,7 +576,7 @@ AC_PROG_LN_S
 
 AC_MSG_CHECKING(for static linking)
 AC_ARG_ENABLE(static,
-  AC_HELP_STRING([--enable-static],
+  AS_HELP_STRING([--enable-static],
                  [link it all statically]),
   [],
   [enable_static="no"])

@@ -607,7 +607,6 @@ zlibdemo_LDADD = -lz
 remake-zlibdemo-source:	$(cslbase)/preserve.cpp
 	unifdef -x2 -DZLIB_DEMO < $(cslbase)/preserve.cpp > $(cslbase)/zlibdemo.cpp
 
-
 if conservative
 contest_LDADD =
 contest_DEPENDENCIES =
@@ -1124,7 +1123,7 @@ reduce-u58.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 reduce-u59.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 reduce-u60.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 
-# If one of the major foundations of this Makefile have a date later than that
+# If one of the major foundations of this Makefile has a date later than that
 # on fxver.h then make does a futile recursion to try to fix it and in the
 # process it can do a LOT of work that I do not want done. I can at least
 # arrange that that happens at most once by putting the following rules:

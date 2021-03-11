@@ -51,7 +51,7 @@ AS_IF([test "$EXEEXT" = .exe],
    AC_DEFINE(USE_PIPES,1,[Define as 1 for using pipes instead of sockets])
    on_windows=yes],
   [AC_ARG_ENABLE(pipes,
-   AC_HELP_STRING([--enable-pipes],
+   AS_HELP_STRING([--enable-pipes],
 		  [use pipes not sockets on systems other than Windows]),
    if test "$enableval" = no ; then
       AC_DEFINE(USE_PIPES,0,[Define  1 for using pipes instead if sockets])
@@ -75,7 +75,7 @@ case $host in *darwin*)
   CXXFLAGS="$CXXFLAGS -fno-common -no-cpp-precomp"
 
   AC_ARG_ENABLE(universal,
-    AC_HELP_STRING([--disable-universal],
+    AS_HELP_STRING([--disable-universal],
 	[do not build universal binary on Mac OSX]),
     universal="$enableval",
     universal=yes)

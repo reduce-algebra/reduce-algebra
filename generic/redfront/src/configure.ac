@@ -54,7 +54,7 @@ AS_IF([test "$EXEEXT" = .exe],
    COMEXT=.com
    on_windows=yes],
   [AC_ARG_ENABLE(pipes,
-   AC_HELP_STRING([--enable-pipes],
+   AS_HELP_STRING([--enable-pipes],
 		  [use pipes not sockets on systems other than Windows]),
    if test "$enableval" = no ; then
       AC_DEFINE(USE_PIPES,0,[Define  1 for using pipes instead if sockets])
@@ -85,7 +85,7 @@ case $host in *darwin*)
   CXXFLAGS="$CXXFLAGS -fno-common -no-cpp-precomp"
 
   AC_ARG_ENABLE(universal,
-    AC_HELP_STRING([--enable-universal],
+    AS_HELP_STRING([--enable-universal],
 	[build universal binary on Mac OSX]),
     universal="$enableval",
     universal=no)
@@ -156,18 +156,18 @@ AC_ARG_WITH(reduce-img,[  --with-reduce-img=FILE  location of the REDUCE image (
         redimg="$withval",redimg="$abssrcdir/pslbuild/$RBUILD/red/reduce.img")
 AC_DEFINE_UNQUOTED(REDIMG,"$redimg",
 	[Define your REDUCE image (with PSL)])
-AC_ARG_WITH(td,AC_HELP_STRING([--with-td=BYTES],
+AC_ARG_WITH(td,AS_HELP_STRING([--with-td=BYTES],
 	[the default argument for bpsl -td]),defmem=$withval,defmem=0)
 AC_DEFINE_UNQUOTED(MEMORY,"$defmem",
 	[Define bytes allocated by BPSL (-td argument) as a string])
 
 dnl AC_ARG_WITH(csl,
-dnl   AC_HELP_STRING([--with-csl], [use the CSL Lisp system]),
+dnl   AS_HELP_STRING([--with-csl], [use the CSL Lisp system]),
 dnl   [],
 dnl   [with_csl="no"])
 
 dnl AC_ARG_WITH(psl,
-dnl   AC_HELP_STRING([--with-psl], [use the PSL Lisp system]),
+dnl   AS_HELP_STRING([--with-psl], [use the PSL Lisp system]),
 dnl   [],
 dnl   [with_psl="no"])
 
@@ -186,7 +186,7 @@ dnl 	[Define your executable bpsl (with PSL)])
 dnl    AC_DEFINE_UNQUOTED(REDIMG,"$abssrcdir/pslbuild/$RBUILD/red/reduce.img",
 dnl 	[Define your REDUCE image (with PSL)])
 dnl    AC_ARG_WITH(td,
-dnl 	AC_HELP_STRING([--with-td=BYTES],
+dnl 	AS_HELP_STRING([--with-td=BYTES],
 dnl 		[the default argument for bpsl -td]),
 dnl 	defmem=$withval,defmem=0)
 dnl    AC_DEFINE_UNQUOTED(MEMORY,"$defmem",
@@ -241,7 +241,7 @@ AC_CACHE_CHECK(for union wait, tar_cv_header_union_wait,
 test $tar_cv_header_union_wait = yes && AC_DEFINE(HAVE_UNION_WAIT,1,[use (union wait)* in contrast to int* for arg2 of wait4])
 
 AC_ARG_ENABLE(color,
-   AC_HELP_STRING([--disable-color],[do not color any text]),
+   AS_HELP_STRING([--disable-color],[do not color any text]),
    if test "$enableval" = no ; then
       AC_DEFINE(HAVE_COLOR,0,[Define for color terminal support])
    else
@@ -255,16 +255,16 @@ AC_DEFINE_UNQUOTED(HISTFILESIZE,$histfilesize,
 	[Define the maximum number of lines in your .reduce_history])
 
 AC_ARG_ENABLE(debug,
-   AC_HELP_STRING([--enable-debug],
+   AS_HELP_STRING([--enable-debug],
       [comprehensive printing of debugging messages]),
 if test "$enableval" = yes ; then
 AC_DEFINE(DEBUG,1,[Define this for debug information on signals and files])
 fi)
 
 AC_ARG_ENABLE(static,
-   [AC_HELP_STRING([--enable-static],
+   [AS_HELP_STRING([--enable-static],
        [static linking on systems other than Windows])
-AC_HELP_STRING([--disable-static],
+AS_HELP_STRING([--disable-static],
        [dynamic linking on Windows])],
 if test "$enableval" = yes ; then
 AC_DEFINE(STATIC,1,[static linking info in banner])
@@ -284,7 +284,7 @@ editline=yes
 #editlinepath="$abssrcdir/generic/redfront/$RBUILD/libedit"
 editlinepath=""
 AC_ARG_WITH(libedit,
-   AC_HELP_STRING([--without-libedit],[do not use libedit]),
+   AS_HELP_STRING([--without-libedit],[do not use libedit]),
 if test "$withval" = no 
   then editline=no
 elif test -n "$withval"
@@ -330,7 +330,7 @@ dnl be used even with the system libedit for Darwin universal builds.
       AC_MSG_ERROR("libedit not found")))
 
 AC_ARG_ENABLE(cmdhist,
-   AC_HELP_STRING([--disable-cmdhist],[do not use cmdhist in the sense of bash]),
+   AS_HELP_STRING([--disable-cmdhist],[do not use cmdhist in the sense of bash]),
 if test "$enableval" = no ; then
 AC_DEFINE(CMDHIST,0,[Use bash cmdhist history style])
 else
@@ -340,7 +340,7 @@ AC_DEFINE(CMDHIST,1,[Use bash cmdhist history style])
 )
 
 AC_ARG_ENABLE(lithist,
-   AC_HELP_STRING([--disable-lithist],[do not use lithist in the sense of bash]),
+   AS_HELP_STRING([--disable-lithist],[do not use lithist in the sense of bash]),
 if test "$enableval" = no ; then
 AC_DEFINE(LITHIST,0,[Use bash lithist history style])
 else
@@ -350,7 +350,7 @@ AC_DEFINE(LITHIST,1,[Use bash lithist history style])
 )
 
 AC_ARG_ENABLE(ignoredups,
-   AC_HELP_STRING([--disable-ignoredups],[do not use ignordups in the sense of bash]),
+   AS_HELP_STRING([--disable-ignoredups],[do not use ignordups in the sense of bash]),
 if test "$enableval" = no ; then
 AC_DEFINE(IGNOREDUPS,0,[Ignore adjacent duplicate history entries])
 else
