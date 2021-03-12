@@ -85,6 +85,9 @@ then
   mingw-w64)
     pslver="win32"
     ;;
+  aarch64)
+    pslver="armv6"
+    ;;
   esac
 fi
 
