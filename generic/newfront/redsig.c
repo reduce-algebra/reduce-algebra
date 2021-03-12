@@ -44,21 +44,21 @@ extern int inputcolor;
 extern int outputcolor;
 extern int debugcolor;
 
-RETSIGTYPE sig_sigGen(int);
+void sig_sigGen(int);
 void sig_killChild(void);
-RETSIGTYPE sig_sigInt(int);
+void sig_sigInt(int);
 #ifdef NATIVE_WINDOWS
 void sig_skipUntilString(HANDLE,const char *);
 #else
 void sig_skipUntilString(int,const char *);
 #endif
-RETSIGTYPE sig_sigChld(int);
-RETSIGTYPE sig_sigTstp(int);
+void sig_sigChld(int);
+void sig_sigTstp(int);
 void sig_installHandlers(void);
 sig_t sig_signal(int, sig_t);
 const char *sig_identify(int);
 
-RETSIGTYPE sig_sigGen(int arg) {
+void sig_sigGen(int arg) {
   deb_fprintf(stderr,"sig_sigGen(%d)\n",arg);
   sig_killChild();
   line_end();
@@ -97,7 +97,7 @@ void sig_killChild(void) {
 #endif
 }
 
-RETSIGTYPE sig_sigInt(int arg) {
+void sig_sigInt(int arg) {
 #ifdef NATIVE_WINDOWS
   DWORD ret;
 #else
@@ -144,7 +144,7 @@ void sig_skipUntilString(int handle,const char string[]) {
   free(buffer);
 }
 
-RETSIGTYPE sig_sigChld(int arg) {
+void sig_sigChld(int arg) {
   deb_fprintf(stderr,"sig_sigChld(): Reduce process terminated\n");
   line_end_history();
   line_end();
@@ -155,7 +155,7 @@ RETSIGTYPE sig_sigChld(int arg) {
   rf_exit(0);
 }
 
-RETSIGTYPE sig_sigTstp(int arg) {
+void sig_sigTstp(int arg) {
   resetcolor();
 #ifndef NATIVE_WINDOWS
 /*

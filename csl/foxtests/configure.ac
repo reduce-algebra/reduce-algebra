@@ -52,47 +52,47 @@ foxdir="$host"
 
 
 AC_ARG_WITH(csl,
-  AC_HELP_STRING([--with-csl], [Use the CSL Lisp system]),
+  AS_HELP_STRING([--with-csl], [Use the CSL Lisp system]),
   [],
   [with_csl="no"])
 
 AC_ARG_WITH(psl,
-  AC_HELP_STRING([--with-psl], [Use the PSL Lisp system]),
+  AS_HELP_STRING([--with-psl], [Use the PSL Lisp system]),
   [],
   [with_psl="no"])
 
 AC_ARG_WITH(mingw64,
-  AC_HELP_STRING([--with-mingw64], [Use internally with CSL]),
+  AS_HELP_STRING([--with-mingw64], [Use internally with CSL]),
   [],
   [with_mingw64="no"])
 
 AC_ARG_WITH(build,
-  AC_HELP_STRING([--with-build], [Used internally to control build directory]),
+  AS_HELP_STRING([--with-build], [Used internally to control build directory]),
   [],
   [with_build="unknown"])
 
 AC_ARG_WITH(pslbuild,
-  AC_HELP_STRING([--with-pslbuild], [Used internally to control build directory]),
+  AS_HELP_STRING([--with-pslbuild], [Used internally to control build directory]),
   [],
   [with_pslbuild="unknown"])
 
 AC_ARG_WITH(cygbuild,
-  AC_HELP_STRING([--with-cygbuild], [Used internally to control build directory]),
+  AS_HELP_STRING([--with-cygbuild], [Used internally to control build directory]),
   [],
   [with_cygbuild="unknown"])
 
 AC_ARG_WITH(cygbuild64,
-  AC_HELP_STRING([--with-cygbuild64], [Used internally to control build directory]),
+  AS_HELP_STRING([--with-cygbuild64], [Used internally to control build directory]),
   [],
   [with_cygbuild64="unknown"])
 
 AC_ARG_WITH(force,
-  AC_HELP_STRING([--with-force], [Used internally]),
+  AS_HELP_STRING([--with-force], [Used internally]),
   [],
   [])
 
 AC_ARG_WITH(crlibm,
-  AC_HELP_STRING([--with-crlibm], [Used internally]),
+  AS_HELP_STRING([--with-crlibm], [Used internally]),
   [],
   [])
 
@@ -791,4 +791,3 @@ AC_CHECK_PROGS(CYGPATH,[cygpath],[no])
 AC_OUTPUT
 
 # end of "configure.ac"
-

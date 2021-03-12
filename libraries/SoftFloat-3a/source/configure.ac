@@ -21,7 +21,8 @@ LT_INIT
 AC_C_BIGENDIAN(
   [],
   AC_DEFINE(LITTLEENDIAN, [1], [Indicate byte order]),
-  AC_MSG_ERROR([Unable to determine byte-order for this system]))
+  AC_MSG_ERROR([Unable to determine byte-order for this system]),
+  AC_MSG_ERROR([Variable byte-order for this system]))
 
 echo "/*" > platform.h
 echo " * \"platform.h\", created automatically by the \"configure\" script" >> platform.h
@@ -66,7 +67,7 @@ AC_MSG_NOTICE([machine_size computed as $machine_size])
 CPPFLAGS="$CPPFLAGS -I$srcdir -I$srcdir/8086-SSE -I$srcdir/include"
 
 AC_ARG_ENABLE(debug,
-  AC_HELP_STRING([--enable-debug],
+  AS_HELP_STRING([--enable-debug],
                  [Select debugging build options]),
   [],
   [enable_debug="no"])

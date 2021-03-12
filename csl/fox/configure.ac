@@ -7,7 +7,7 @@ m4_define([fox_level], [49])
 m4_define([fox_version],[fox_major.fox_minor.fox_level])
 
 # Init
-AC_INIT(fox,[fox_version],jeroen@fox-toolkit.com)
+AC_INIT([fox],[fox_version],[jeroen@fox-toolkit.com])
 AC_CONFIG_SRCDIR([include/fx.h])
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_AUX_DIR([.])
@@ -64,7 +64,7 @@ AC_SUBST(LT_AGE)
 # CXXFLAGS=""
 
 # More secret source
-AC_GNU_SOURCE
+AC_USE_SYSTEM_EXTENSIONS
 
 # Check using C++
 AC_LANG(C++)
@@ -137,13 +137,14 @@ else
   AC_PATH_XTRA
 fi
 
-AC_HEADER_TIME
 AC_HEADER_SYS_WAIT
 AC_HEADER_DIRENT
 AC_FUNC_MMAP
 
 # Byte order
-AC_C_BIGENDIAN([FOX_BYTEORDER=1], [FOX_BYTEORDER=0])
+AC_C_BIGENDIAN([FOX_BYTEORDER=1], [FOX_BYTEORDER=0],
+   AC_MSG_ERROR([Byte ordering unknown]),
+   AC_MSG_ERROR([Byte ordering univeral]))
 AC_SUBST(FOX_BYTEORDER)
 
 # Threads
@@ -445,7 +446,7 @@ AM_CONDITIONAL(cygwinshell, test "x$win32" = "xyes")
 AM_CONDITIONAL(canrun, test "x$cross_compiling" != "xyes")
 
 # Done.
-AC_OUTPUT(Makefile
+AC_CONFIG_FILES([Makefile
 utils/Makefile
 include/Makefile
 include/fxver.h
@@ -453,4 +454,5 @@ src/Makefile
 src/version.rc
 fox.spec
 fox-config
-fox.pc)
+fox.pc])
+AC_OUTPUT

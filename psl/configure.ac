@@ -20,27 +20,27 @@ AC_CHECK_PROGS(CYGPATH,[cygpath],[no])
 AM_CONDITIONAL(cygpath, test "x$CYGPATH" != "xno")
 
 AC_ARG_WITH(autogen,
-  AC_HELP_STRING([--with-autogen], [Regenerate autoconf-related files]),
+  AS_HELP_STRING([--with-autogen], [Regenerate autoconf-related files]),
   [],
   [with_autogen="yes"])
 
 AC_ARG_WITH(m32,
-   AC_HELP_STRING([--with-m32], [Force use of 32-bit mode on 64-bit host]),
+   AS_HELP_STRING([--with-m32], [Force use of 32-bit mode on 64-bit host]),
    [],
    [with_m32="no"])
 
 AC_ARG_WITH(csl,
-  AC_HELP_STRING([--with-csl], [Use the CSL Lisp system]),
+  AS_HELP_STRING([--with-csl], [Use the CSL Lisp system]),
   [],
   [with_csl="no"])
 
 AC_ARG_WITH(psl,
-  AC_HELP_STRING([--with-psl], [Use the PSL Lisp system]),
+  AS_HELP_STRING([--with-psl], [Use the PSL Lisp system]),
   [],
   [with_psl="no"])
 
 AC_ARG_WITH(build,
-   AC_HELP_STRING([--with-build], [specify host-name to use when logging]),
+   AS_HELP_STRING([--with-build], [specify host-name to use when logging]),
    [],
    [with_build="unknown"])
 

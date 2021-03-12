@@ -51,17 +51,14 @@
        % reg1:reg2 <- reg1 * reg2
        % put high 64 bits of product in reg 3, low 64 bits in reg 1
        (UMULH (reg 3) (reg 1) (reg 2))
-       (UMULL (reg 1) (reg W0) (reg W1))
+       (MUL (reg 1) (reg 1) (reg 2))
        % now we have 64 low bits in REG1, 64 high bits in REG3
        (*MOVE (reg 3)($FLUID *second-value*))
      ))
 
-(put 'addAndSetCarry 'destroys '((reg 1)(reg 3)))
-
-
 (put 'wxtimes2 'opencode % different version for $pxu/mbarith
      '((SMULH (reg 3) (reg 1) (reg 2))
-       (SMULL (reg 1) (reg W0) (reg W1))
+       (MUL (reg 1) (reg 1) (reg 2))
        (*MOVE (reg 3)($FLUID *second-value*))
       ))
 
@@ -135,9 +132,9 @@
        '(
          % add carry* to second parameter b
 	 (*Move ($fluid carry*) (reg t1))
-         (ADDS (reg t3) (reg 2) (reg t1))
-           % subtract with borrow
-         (SBCS (reg 1) (reg 1) (reg t1))
+         (ADDS (reg t1) (reg 2) (reg t1))
+         % subtract
+         (SUBS (reg 1) (reg 1) (reg t1))
 	 % move new borrow (=not(CF)) to carry* 
 	 (CSET (reg t1) CC)
          (*Move (reg t1) ($FLUID carry*))
@@ -152,7 +149,7 @@
 (put 'ugreaterp* 'opencode 
    % returns 1 if arg1 > arg2 unsigned.
      '( (SUBS (reg Xzr) (reg 2) (reg 1))        % compare, setting carry if r1>r2
-        (CSET (reg 1) CS)
+        (CSET (reg 1) CC)
 ))
 
 (ds ugreaterp(a b)(eq 1 (ugreaterp* a b)))

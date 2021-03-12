@@ -53,14 +53,14 @@ static void gzwrite(gzFile f, void *b, size_t n)
 }
 #endif
 
+char promptstring[1000] = "> ";
+
 #ifndef NO_LIBEDIT
 #include <histedit.h>
 
 static EditLine *elx_e;
 static History *elx_h;
 static HistEvent elx_v;
-
-char promptstring[1000] = "> ";
 
 const char *prompt(EditLine *e)
 {   return promptstring;
