@@ -59,6 +59,7 @@
 	(OP-reg-xzr-shifter . lth-reg-shifter )
 %	(OP-regn-shifter . lth-regn-shifter )
 	(OP-regd-shifter . lth-regd-shifter )
+	(OP-cbz . lth-branch-imm19)
 	(OP-reg3 . lth-reg3)
 	(OP-mul3 . lth-mul3)
 	(OP-mul4 . lth-mul4)
@@ -376,7 +377,7 @@
 (instr ADD (reg32 reg32 reg32-shifter)     OP-reg-shifter   2#00001011000)
 (instr ADD (reg reg reg-shifter)     OP-reg-shifter   2#10001011000)
 (instr ADDS (reg32 reg32-or-sp reg32-extended)    OP-reg-extended  2#00101011001)
-(instr ADDS (reg reg-or-sp reg32-extended)    OP-reg-extended  2#10101011001)
+(instr ADDS (reg reg-or-sp reg-extended)    OP-reg-extended  2#10101011001)
 (instr ADDS (reg32 reg32-or-sp imm12-shifted)   OP-reg-imm12     2#001100010)
 (instr ADDS (reg reg-or-sp imm12-shifted)   OP-reg-imm12     2#101100010)
 (instr ADDS (reg32 reg32 reg32-shifter)     OP-reg-shifter   2#00101011000)
@@ -443,6 +444,11 @@
 
 % CBNZ
 % CBZ
+(instr CBNZ (reg32 offset19)     OP-cbz     2#00110101)
+(instr CBNZ (reg offset19)       OP-cbz     2#10110101)
+(instr CBZ (reg32 offset19)      OP-cbz     2#00110100)
+(instr CBZ (reg offset19)        OP-cbz     2#10110100)
+       
 
 % CCMN
 % CCMP
@@ -491,9 +497,9 @@
 (instr EON  (reg32 reg32 reg32-shifter)     OP-reg-shifter 2#01001010001)
 (instr EON  (reg reg reg-shifter)     OP-reg-shifter 2#11001010001)
 
-(instr EOR  (reg32 reg32 imm-logical)     OP-reg-logical    2#0101001000)
-(instr EOR  (reg reg imm-logical)     OP-reg-logical    2#0101001000)
-(instr EOR  (reg32 reg32 reg32-shifter)     OP-reg-shifter 2#11001010000)
+(instr EOR  (reg32-or-sp reg32 imm-logical)     OP-reg-logical    2#010100100)
+(instr EOR  (reg-or-sp reg imm-logical)         OP-reg-logical    2#110100100)
+(instr EOR  (reg32 reg32 reg32-shifter)     OP-reg-shifter 2#01001010000)
 (instr EOR  (reg reg reg-shifter)     OP-reg-shifter 2#11001010000)
 
 (instr EXTR   (reg32 reg32 reg32 lsb)        OP-reg3-lsb   2#0100100111)

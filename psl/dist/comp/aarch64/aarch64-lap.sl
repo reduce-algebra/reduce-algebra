@@ -1048,6 +1048,21 @@
 
 (de lth-branch-imm19 (code offset) 4)
 
+(de OP-cbz (code regt offset)
+    (setq offset (MakeExpressionRelative offset 0))
+    (if (not (weq (land offset 2#11) 0))
+	(stderror (bldmsg "Invalid immediate branch offset %w" offset))
+      (progn
+	(setq offset (ashift offset -2))
+	(DepositInstructionBytes
+	 (car code)
+	 (land 16#ff (lshift offset -11))
+	 (land 16#ff (lshift offset -3))
+	 (lor (land 16#ff (lsh offset 5)) (reg2int regt)))
+	))
+    )
+    
+
 (de OP-branch-reg (code regm)
     (prog (opcode)
 	  (setq opcode (car code)) 
@@ -2757,6 +2772,21 @@
 			 (and . ands)
 			 (bic . bics))
 		       i1)))
+
+      % case
+      %   (cmp (reg n) 0)
+      %   (B.eq / B.ne label)
+      % replace by CBZ /CBNZ instruction
+     ((and (pairp i2) (memq (car i2) '(B!.eq B!.ne))
+	   (eqcar i1 'cmp) (eq (caddr i1) 0)
+	   )
+      (pop code)		% remove branch instruction
+      (setq i1 (list (car (sublis '((B!.eq . cbz)
+				    (B!.ne . cbnz))
+				  i2))
+		     (cadr i1)		% register in cmp instr
+		     (cadr i2)		% label in branch instr
+		     )))
 
       % case
       %   something
