@@ -119,8 +119,7 @@
 			       (*wshift (reg 3) 8)  % inf 
 			       (*wshift (reg 3) -5) % *8 
 			       (*wplus2 (reg 5) (reg 3))
-			       (*wshift (reg 5) 8)
-			       (*wshift (reg 5) -8) % inf
+			       (*field (reg 5) (reg 5) 8 56) % inf
 			       (*move (memory (reg 5) 8) (reg 4))
 			       (*move 1 (reg t1))
 			       (*wshift (reg t1) (reg 2))
@@ -137,22 +136,9 @@
 			       (*move 1 (reg t1))
 			       (*wshift (reg t1) (reg 2))
 			       (*wnot (reg t1) (reg t1))
-			       (*wand (reg 4) (reg t1)))
-
-
-  (put 'delsymflag 'opencode '((*move ($fluid &symflag&) (reg t2))
-			       (*move (reg 1) (reg t1))
-			       (*wshift (reg t1) 5)  % inf
-			       (*wshift (reg t1) -3) % *4
-			       (*wplus2 (reg t2) (reg t1))
-			       (*field (reg 5) (reg 5) 8 56) % inf
-			       (*move (memory (reg t2) 4) (reg 4))
-			       (*move 1 (reg t1))
-			       (*wshift (reg t1) (reg 2))
-			       (*wnot (reg t1) (reg t1))
 			       (*wand (reg 4) (reg t1))
-			       (*move (reg 4) (memory (reg t2) 4)))))
-))%end compiletime
+			       (*move (reg 4) (memory (reg 5) 8))))))
+
 
 (dm symflagp (u)
   (cond ((not (get (cadr (caddr u)) 'symflag?)) nil)
@@ -207,8 +193,7 @@
 
 (null (progn
 	     (setq &symgetsize& 20)                  % default
-%%%	     (setq symget (gtwarray maxsymbols)) 
-	     (ifor (from i 0 maxsymbols 1)
+             (ifor (from i 0 maxsymbols 1)
 		   (do (setf (symget i) nil)))
 	     (setq &symflag& (make-words maxsymbols 0))))
 
