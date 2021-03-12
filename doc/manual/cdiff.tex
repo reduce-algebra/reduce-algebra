@@ -31,13 +31,13 @@
 %\subjclass[2000]{37K05}
 
 %% For MathJax, must be part of a paragraph to avoid extra space:
-\ifdefined\VerbMath
+\ifdefined\VerbMath{\makehashletter
 \(
-\newcommand{\pd}[2]{\mathchoice{\frac{\partial#1}{\partial#2}}
-  {\partial#1/\partial#2}{\partial#1/\partial#2}
-  {\partial#1/\partial#2}}
+\newcommand{\pd}[2]{\mathchoice{\frac{\partial{#1}}{\partial{#2}}}
+  {\partial{#1}/\partial{#2}}{\partial{#1}/\partial{#2}}
+  {\partial{#1}/\partial{#2}}}
 \)%
-\else
+}\else
 \providecommand*{\pd}[2]{\mathchoice{\frac{\partial#1}{\partial#2}}
   {\partial#1/\partial#2}{\partial#1/\partial#2}
   {\partial#1/\partial#2}}
