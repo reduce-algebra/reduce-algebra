@@ -25,11 +25,14 @@ To get correct alignment in tabular environments when using
 \multicolumn it may help to use @{~} as the first column specifier.
 
 New commands and environments that are used in math mode must be
-defined in math mode for use by MathJax (which seems strange but
-works), and they must be defined on every page that uses them.
-Supporting HTML output both using and not using MathJax is
-particularly tricky, but is possible; see e.g. guardian.tex, near the
-top of the file, for an example.
+defined in math mode for use by MathJax (see the MathJax
+documentation), and they must be defined on every page that uses them.
+Any parameters *must* be enclosed in braces and definitions involving
+parameters must be within braces and preceded by \makehashletter
+(otherwise the # characters will be doubled and the definitions will
+fail).  Definitions intended for MathJax cannot clash with any others,
+so \newcommand and \newenvironment are always appropriate.  See
+e.g. guardian.tex, near the top of the file, for an example.
 
 Avoid unnecessary use of math mode, and nesting of math mode within
 text mode within math mode within... .  For example, an array

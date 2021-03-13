@@ -9,7 +9,7 @@
 \subsection{Introduction}
 
 %% For MathJax, must be part of a paragraph to avoid extra space:
-\ifdefined\VerbMath
+\ifdefined\VerbMath{\makehashletter
 \(
 \newcommand{\qphihyp}[5]{{}_{#1}\phi_{#2}\left.\left[\begin{array}{c}
 	#3 \\ #4 \end{array}\right|q,#5\right]}
@@ -23,7 +23,7 @@
 \newcommand{\qfac}[2]{\left(#1;\,q\right)_{#2}}
 \newcommand{\qbinomial}[2]{{\binom{#1}{#2}\!}_q}
 \)%
-\else
+}\else
 \newcommand{\qphihyp}[5]{{}_{#1}\phi_{#2}\left.\left[\begin{array}{c}
 	#3 \\ #4 \end{array}\right|q,#5\right]}
 \newcommand{\qpsihyp}[5]{{}_{#1}\psi_{#2}\left.\left[\begin{array}{c}

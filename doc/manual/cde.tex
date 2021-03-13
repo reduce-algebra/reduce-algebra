@@ -15,15 +15,15 @@
 {\begingroup \Url{arXiv:#2}}}
 
 %% For MathJax, must be part of a paragraph to avoid extra space:
-\ifdefined\VerbMath
+\ifdefined\VerbMath{\makehashletter
 \(
-\newcommand{\pd}[2]{\mathchoice{\frac{\partial#1}{\partial#2}}
-  {\partial#1/\partial#2}{\partial#1/\partial#2}
-  {\partial#1/\partial#2}}
+\newcommand{\pd}[2]{\mathchoice{\frac{\partial{#1}}{\partial{#2}}}
+  {\partial{#1}/\partial{#2}}{\partial{#1}/\partial{#2}}
+  {\partial{#1}/\partial{#2}}}
 \newcommand{\od}[2]{\mathchoice{\frac{d#1}{d#2}}
-  {d#1/d#2}{d#1/d#2}{d#1/d#2}}
-\newcommand{\fd}[2]{\mathchoice{\frac{\delta#1}{\delta#2}}
-  {\delta #1/\delta#2}{\delta#1/\delta#2}{\delta#1/\delta#2}}
+  {d{#1}/d{#2}}{d{#1}/d{#2}}{d{#1}/d{#2}}}
+\newcommand{\fd}[2]{\mathchoice{\frac{\delta{#1}}{\delta{#2}}}
+  {\delta{#1}/\delta{#2}}{\delta{#1}/\delta{#2}}{\delta{#1}/\delta{#2}}}
 %
 \newcommand{\N}{\mathbb{N}}
 \newcommand{\R}{\mathbb{R}}
@@ -36,7 +36,7 @@
 %
 \newcommand{\ddx}[1]{D_x^{#1}}
 \)%
-\else
+}\else
 \newcommand*{\pd}[2]{\mathchoice{\frac{\partial#1}{\partial#2}}
   {\partial#1/\partial#2}{\partial#1/\partial#2}
   {\partial#1/\partial#2}}

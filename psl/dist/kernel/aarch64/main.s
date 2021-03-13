@@ -600,8 +600,7 @@ binaryopenread:
  ldr X11, l0091
  ldr X10, [X23, X11, lsl #3]
  blr X10
- cmp X0, #0
- b.ne l0096
+ cbnz X0, l0096
  ldr X0, l0092
  ldp X29, X30, [sp], #16
 // (idloc kernel-fatal-error)
@@ -611,7 +610,6 @@ binaryopenread:
 l0096:
  ldp X29, X30, [sp], #16
  ret
- nop
 l0093:
  .quad 334
 l0092:
@@ -832,8 +830,7 @@ l0119:
  ubfx X0, X0, #0, #56
  add X0, X0, #8
  ldrsb X0, [X0, X1]
- cmp X0, #0
- b.ne l0120
+ cbnz X0, l0120
  ldr X10, [sp, #24]
  add X10, X10, #1
  str X10, [sp, #24]
@@ -864,7 +861,6 @@ l0122:
  ldr X11, l0116
  ldr X10, [X23, X11, lsl #3]
  br X10
- nop
 l0117:
  .quad 348
 l0116:
@@ -907,8 +903,7 @@ l0137:
  str X2, [sp, #40]
  str X3, [sp, #48]
  str X4, [sp, #56]
- cmp X1, #0
- b.ne l0138
+ cbnz X1, l0138
  add X0, X0, #8
  ldrsb X0, [X0, X1]
  and X0, X0, #255
@@ -1008,7 +1003,6 @@ l0144:
 l0139:
  ldp X29, X30, [sp], #64
  ret
- nop
 l0135:
  .quad 354
 l0134:
@@ -1062,8 +1056,7 @@ l0155:
  ldr X11, l0146
  ldr X0, [X24, X11, lsl #3]
  ldr W0, [X0, X1, lsl #2]
- cmp X0, #0
- b.ne l0156
+ cbnz X0, l0156
  ldr X9, [sp, #40]
  movn X10, #0
  cmp X9, X10
@@ -1136,6 +1129,7 @@ l0163:
 l0159:
  ldp X29, X30, [sp], #48
  ret
+ nop
 l0152:
  .quad 334
 l0151:
@@ -1589,8 +1583,7 @@ l0210:
  ldrsb X0, [X0, X1]
  and X0, X0, #255
  str X0, [sp, #32]
- cmp X0, #0
- b.ne l0211
+ cbnz X0, l0211
  mov X0, X28
  b l0212
 l0211:
@@ -1644,7 +1637,6 @@ l0214:
 l0212:
  ldp X29, X30, [sp], #64
  ret
- nop
 l0208:
  .quad 373
 l0207:
@@ -1738,8 +1730,7 @@ l0224:
  mov X29, sp
  str X28, [sp, #24]
  str X1, [sp, #16]
- cmp X0, #0
- b.ne l0225
+ cbnz X0, l0225
  mov X0, X2
  add X0, X0, X1
  b l0226
@@ -1811,6 +1802,7 @@ l0232:
 l0226:
  ldp X29, X30, [sp], #32
  ret
+ nop
 l0223:
  .quad 375
 l0222:
@@ -2008,8 +2000,7 @@ l0260:
  ldr X11, l0251
  ldr X10, [X24, X11, lsl #3]
  and X0, X0, X10
- cmp X0, #0
- b.eq l0261
+ cbz X0, l0261
 // ($global nextbps)
  ldr X11, l0251
  ldr X1, [X24, X11, lsl #3]
@@ -2066,7 +2057,6 @@ l0263:
 l0262:
  ldp X29, X30, [sp], #32
  ret
- nop
 l0257:
  .quad 381
 l0256:

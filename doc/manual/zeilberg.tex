@@ -2,14 +2,14 @@
 \subsection{Introduction}
 
 %% For MathJax, must be part of a paragraph to avoid extra space:
-\ifdefined\VerbMath
+\ifdefined\VerbMath{\makehashletter
 \(
 \newcommand{\funkdef}[3]{\left\{\begin{array}{cc}
                                 #1 & \textrm{if } #2 \\
                                 #3 & \textrm{otherwise}
                                 \end{array}\right.}
 \)%
-\else
+}\else
 \newcommand{\funkdef}[3]{\left\{\begin{array}{cc}
                                 #1 & \mbox{\rm{if} $#2$ } \\
                                 #3 & \mbox{\rm{otherwise}}

@@ -1,7 +1,7 @@
 
 \subsection{Introduction}
 %% For MathJax, must be part of a paragraph to avoid extra space:
-\ifdefined\VerbMath
+\ifdefined\VerbMath{\makehashletter
 \(
 \newenvironment{gex}{\left[\begin{array}{c|c}}{\end{array}\right]}
 \newcommand{\gc}[1]{\boldsymbol{#1}}
@@ -12,7 +12,7 @@
 \newcommand{\gscheme}{\textrm{gscheme}}
 \newcommand{\sign}{\textrm{sign}}
 \)%
-\else
+}\else
 \newenvironment{gex}{\left[\begin{array}{c|c}}{\end{array}\right]}
 \newcommand{\gc}[1]{\mbox{\boldmath$#1$}}
 \newcommand{\true}{\textrm{T}}

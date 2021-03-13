@@ -28,9 +28,9 @@
 \index{Stirling numbers}
 \hypertarget{SPECFNS}{}
 %% For MathJax, must be part of a paragraph to avoid extra space:
-\ifdefined\VerbMath
-\(\def\f#1{\texttt{#1}}\)%
-\fi
+\ifdefined\VerbMath{\makehashletter
+\(\newcommand{\f}[1]{\texttt{#1}}\)%
+}\fi
 The package SPECFN is designed to provide algebraic and numeric manipulations of
 many common special functions, namely:
 
