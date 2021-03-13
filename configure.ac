@@ -724,7 +724,7 @@ csl_inplace_cygwin_build ()
     mkdir -p "$abssrcdir/cslbuild/$build"
     cd "$abssrcdir/cslbuild/$build"
   fi
-  setpascc
+  setpasscc
   AC_MSG_NOTICE([host=$host buildmc=$buildmc pass_host=$pass_host])
   pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
   doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
@@ -757,7 +757,7 @@ csl_inplace_nativewin_build ()
     mkdir -p "$abssrcdir/cslbuild/$build"
     cd "$abssrcdir/cslbuild/$build"
   fi
-  setpascc
+  setpasscc
   if test "$with_windows_layout" = "new"
   then
     cygextra=
@@ -818,7 +818,7 @@ csl_inplace_build ()
 # All other platforms come here...
     mkdir -p "$abssrcdir/cslbuild/$build"
     cd "$abssrcdir/cslbuild/$build"
-    setpascc
+    setpasscc
     pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
     doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
@@ -847,7 +847,7 @@ psl_inplace_build ()
   builddir=`pwd`
   mkdir -p crlibm
   cd crlibm
-  setpascc
+  setpasscc
   doconfig="$SHELL $abssrcdir/libraries/crlibm/configure --config-cache $filtered \
         $pass_host \
         CPPFLAGS=\"$CPPFLAGS\" \
@@ -885,7 +885,7 @@ psl_inplace_build ()
   AC_MSG_NOTICE([About to configure redfront])
   mkdir -p redfront
   cd redfront
-  setpascc
+  setpasscc
   doconfig="$SHELL $abssrcdir/generic/newfront/configure --config-cache $nohost \
         $passcc \
         CPPFLAGS=\"$CPPFLAGS\" \
@@ -1066,7 +1066,7 @@ then
 # However if I am building for raw cygwin I find that I have pain if I
 # specify --host specifically, so in that case I will not!
     pass_build="--with-build=\"$build\""
-    setpascc
+    setpasscc
     doconfig="$SHELL $abssrcdir/csl/$CSLBASE/configure -C \
         $ac_configure_args \
         $passcc \
@@ -1076,7 +1076,7 @@ then
   elif test "x$with_fox" != "xno"
   then
     pass_build="--with-build=\"$build\""
-    setpascc
+    setpasscc
     doconfig="$SHELL $abssrcdir/csl/$CSLBASE/configure -C \
         $ac_configure_args \
         $passcc \
@@ -1086,7 +1086,7 @@ then
   else
 # This final version will be without any GUI.
     pass_build="--with-build=\"$build\""
-    setpascc
+    setpasscc
     doconfig="$SHELL $abssrcdir/csl/$CSLBASE/configure \
         -C \
         $ac_configure_args \
@@ -1141,7 +1141,7 @@ then
 # BaKoMa fonts which remap at least one TeX glyph to outside the range
 # of simple 8-bit characters. This will bring some follow-on pain no doubt
 # but addressing that pain is probably good in the long term. 
-    setpascc
+    setpasscc
     doconfig="$SHELL $abssrcdir/csl/wxWidgets/configure -C $wx \
             $pass_host \
             CPPFLAGS=\"$CPPFLAGS -D_GNU_SOURCE=1\" \
@@ -1195,7 +1195,7 @@ then
     # in the build directory.
     cp "$abssrcdir/csl/fox/src/"*.gif fox/src
     cd fox
-    setpascc
+    setpasscc
     doconfig="$SHELL $abssrcdir/csl/fox/configure -C $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" \
             CFLAGS=\"$CFLAGS\" \
@@ -1230,7 +1230,7 @@ else
   AC_MSG_NOTICE([About to configure crlibm])
   mkdir -p crlibm
   cd crlibm
-  setpascc
+  setpasscc
   doconfig="$SHELL $abssrcdir/libraries/crlibm/configure -C $filtered \
         $pass_host \
         CPPFLAGS=\"$CPPFLAGS\" \
@@ -1254,7 +1254,7 @@ case "`uname -s` `uname -m`" in
   ;;
 *)
   cd libffi
-  setpascc
+  setpasscc
   doconfig="$SHELL $abssrcdir/libraries/libffi/configure -C $filtered \
           $pass_host \
           CPPFLAGS=\"$CPPFLAGS\" \
@@ -1276,7 +1276,7 @@ esac
 AC_MSG_NOTICE([About to configure libsoftfloat])
 mkdir -p softfloat
 cd softfloat
-setpascc
+setpasscc
 
 # NOTE that there is now a SoftFloat-3e and I should migrate to use of it!
 
@@ -1299,7 +1299,7 @@ cd "$builddir"
 AC_MSG_NOTICE([About to configure libedit])
 mkdir -p libedit
 cd libedit
-setpascc
+setpasscc
 doconfig="$SHELL $abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure -C \
         $nohost \
         $passcc \
@@ -1321,7 +1321,7 @@ ln -f -s $abssrcdir/libraries/wineditline .
 AC_MSG_NOTICE([About to configure redfront])
 mkdir -p redfront
 cd redfront
-setpascc
+setpasscc
 doconfig="$SHELL $abssrcdir/generic/newfront/configure -C $nohost \
         $passcc \
         CPPFLAGS=\"$CPPFLAGS\" \
