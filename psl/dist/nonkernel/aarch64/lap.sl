@@ -410,8 +410,9 @@ IllegalFunctionalForm
 
 (lap '((*entry get expr 2)
     (*alloc 0)
-    (*move (reg 1)(reg 3))
-    (*field (reg 3)(reg 3) (wconst tagstartingbit)(wconst tagbitlength))
+    (*field (reg 3)(reg 1) (wconst tagstartingbit)(wconst tagbitlength))
+    (*jumpnoteq (label no)(reg 3)(wconst id-tag))
+    (*field (reg 3)(reg 2) (wconst tagstartingbit)(wconst tagbitlength))
     (*jumpnoteq (label no)(reg 3)(wconst id-tag))
     (*field (reg 1)(reg 1) (wconst infstartingbit)(wconst infbitlength))
     (*wshift (reg 1) 3)
@@ -440,8 +441,9 @@ IllegalFunctionalForm
     
 (lap '((*entry flagp  expr 2)
     (*alloc 0)
-    (*move (reg 1)(reg 3))
-    (*field (reg 3)(reg 3) (wconst tagstartingbit)(wconst tagbitlength))
+    (*field (reg 3)(reg 1) (wconst tagstartingbit)(wconst tagbitlength))
+    (*jumpnoteq (label no)(reg 3)(wconst id-tag))
+    (*field (reg 3)(reg 2) (wconst tagstartingbit)(wconst tagbitlength))
     (*jumpnoteq (label no)(reg 3)(wconst id-tag))
     (*field (reg 1)(reg 1) (wconst infstartingbit)(wconst infbitlength))
     (*wshift (reg 1) 3)
