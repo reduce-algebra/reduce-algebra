@@ -503,8 +503,8 @@ AC_ARG_WITH(force,
 
 # This is set here so that if I need to experiment with or chance to a
 # different version that will be reasonably tidy.
-#LIBEDIT_VERSION=20140620-3.1
-LIBEDIT_VERSION=20210216-3.1
+LIBEDIT_VERSION=20140620-3.1
+#LIBEDIT_VERSION=20210216-3.1
 
 ############################################################################
 #

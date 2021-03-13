@@ -23,16 +23,16 @@
 #    "./configure --disable-silent-rules" or "make V=1"
 #
 
-AC_INIT(libedit, [EL_RELEASE],, libedit-[EL_TIMESTAMP])
+AC_INIT([libedit],[EL_RELEASE],[],[libedit-EL_TIMESTAMP])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([src/strlcat.c])
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
 
 # features of Posix that are extensions to C (define _GNU_SOURCE)
 AC_USE_SYSTEM_EXTENSIONS
 
 AM_INIT_AUTOMAKE
-AC_PROG_LIBTOOL
+LT_INIT
 
 # libtool -version-info
 AC_SUBST(LT_VERSION, [0:64:0])
@@ -40,8 +40,7 @@ AC_SUBST(LT_VERSION, [0:64:0])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 # Checks for programs.
-AC_PROG_CC_C99
-#AC_PROG_CC
+AC_PROG_CC
 AC_PROG_LN_S
 AC_PROG_AWK
 EL_MANTYPE
@@ -70,7 +69,6 @@ AM_CONDITIONAL(ENABLE_EXAMPLES, [test "$enable_examples" = "yes"])
 
 # Checks for header files.
 AC_HEADER_DIRENT
-AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS([fcntl.h limits.h malloc.h stdlib.h string.h sys/ioctl.h sys/param.h unistd.h curses.h ncurses.h sys/cdefs.h termcap.h])
 
@@ -117,7 +115,6 @@ AC_PROG_GCC_TRADITIONAL
 ## _AIX is offended by rpl_malloc and rpl_realloc
 #AC_FUNC_MALLOC
 #AC_FUNC_REALLOC
-AC_TYPE_SIGNAL
 AC_FUNC_STAT
 AC_CHECK_FUNCS([endpwent isascii memchr memset re_comp regcomp strcasecmp strchr strcspn strdup strerror strrchr strstr strtol issetugid wcsdup strlcpy strlcat getline vis strvis strunvis __secure_getenv secure_getenv])
 

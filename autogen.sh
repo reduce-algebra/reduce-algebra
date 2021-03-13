@@ -34,7 +34,8 @@ here=`cd \`dirname "$here"\` ; pwd -P`
 save=`pwd`
 cd $here
 
-find . -name config.cache | xargs rm
+find . -name config.cache | xargs rm -rf
+find . -name autom4te.cache | xargs rm -rf
 
 if test "$1" = "--fast"
 then
@@ -88,6 +89,7 @@ fi
 
 
 # I will re-process the top level first before any lower level
+printf "+++ top-level of Reduce tree\n"
 mkdir -p m4
 if test "$fast" = "yes"
 then
@@ -105,7 +107,10 @@ fi
 
 # Here are the directories that I will always process...
 
-L="./scripts ./libraries/crlibm ./libraries/libedit-20140620-3.1 \
+LIBEDIT_VERSION=libedit-20140620-3.1
+#LIBEDIT_VERSION=libedit-20210216-3.1
+
+L="./scripts ./libraries/crlibm ./libraries/$LIBEDIT_VERSION \
    ./generic/newfront"
 
 case $a in
@@ -164,6 +169,7 @@ for d in $L
 do
   if test -d $d
   then
+    printf "+++ $d\n"
     cd $d
     if test "$fast" = "yes"
     then

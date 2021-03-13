@@ -31,6 +31,7 @@
 #include "fxdefs.h"
 #include "FXThread.h"
 #ifndef WIN32
+#include <sys/time.h>
 #ifdef __APPLE__
 #ifdef Status
 #undef Status
