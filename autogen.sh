@@ -91,6 +91,8 @@ fi
 # I will re-process the top level first before any lower level
 printf "+++ top-level of Reduce tree\n"
 mkdir -p m4
+rm -rf ltmain.sh config.cache autom4te.cache m4/libtool.m4 \
+       m4/lt-obsolete.m4 m4/ltoptions.m4 m4/ltsugar.m4 m4/ltversion.m4
 if test "$fast" = "yes"
 then
   ( $LIBTOOLIZE --copy && \
@@ -98,8 +100,6 @@ then
     autoreconf -i ) &
   procids="$procids $!"
 else
-  rm -rf ltmain.sh config.cache autom4te.cache m4/libtool.m4 \
-         m4/lt-obsolete.m4 m4/ltoptions.m4 m4/ltsugar.m4 m4/ltversion.m4
   $LIBTOOLIZE --force --copy
   aclocal --force
   autoreconf -f -i
@@ -171,18 +171,17 @@ do
   then
     printf "+++ $d\n"
     cd $d
+    mkdir -p m4
+    rm -rf ltmain.sh config.cache autom4te.cache m4/libtool.m4 \
+           m4/lt-obsolete.m4 m4/ltoptions.m4 m4/ltsugar.m4 m4/ltversion.m4
     if test "$fast" = "yes"
     then
-      mkdir -p m4
       ( printf "$d: $LIBTOOLIZE/aclocal/autoreconf -i -v\n" && \
         $LIBTOOLIZE --copy && \
         aclocal && \
         autoreconf -i ) &
       procids="$procids $!"
     else
-      mkdir -p m4
-      rm -rf ltmain.sh config.cache autom4te.cache m4/libtool.m4 \
-             m4/lt-obsolete.m4 m4/ltoptions.m4 m4/ltsugar.m4 m4/ltversion.m4
       printf "$d: $LIBTOOLIZE --force --copy; aclocal --force\n"
       $LIBTOOLIZE --force --copy
       printf "$d: aclocal/autoreconf -f -i\n"
