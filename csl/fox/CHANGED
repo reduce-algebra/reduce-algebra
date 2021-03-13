@@ -247,6 +247,10 @@ October 2020. fwin.cpp (and configure.ac) changed so that in some cases the
 
 February 2021. Change configure.ac as that it does not override CXXFLAGS and
       thus prevent users of the configure script for passing down options
-      thar are in fact needed.
+      that are in fact needed.
+
+March 2021. Review autoconf files to ensure survival against autoconf 2.71
+      without generating excessive warnings, and add a header file #include
+      in FXThread.cpp where gettimeofday() was not oterwise declared.
 
 <end of CHANGED>
