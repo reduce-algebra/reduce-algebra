@@ -1,6 +1,13 @@
 
 \newcommand{\turtlesyntax}[1]{\textsl{SYNTAX: } \texttt{#1}}
 \newcommand{\turtleabb}[1]{\textsl{Abbreviated form: } \texttt{#1}}
+\ifdefined\HCode
+\newcommand{\turtleincludegraphics}[1]
+           {\includegraphics[width=8.1cm,height=8.1cm]{#1.eps}}
+\else
+\newcommand{\turtleincludegraphics}[1]
+           {\includegraphics[width=8.1cm,height=8.1cm,angle=270]{#1.pdf}}
+\fi
 
 \index{TURTLE package}
 This package is a simple implementation of the ``Turtle Graphics''
@@ -312,7 +319,7 @@ draw {for i:=1:36 collect{setheading(i*10), forward 100, back 100} };
 \unitlength=1cm
 \begin{picture}(8,8)(0,0)
 %\put (0,8){\Includegraphics[bb=0 0 504 720,width=8cm,height=8cm,angle=270]{turtleeg1}}
-\put (0,8){\Includegraphics[width=8.1cm,height=8.1cm,angle=270]{turtleeg1}}
+\put (0,8){\turtleincludegraphics{turtleeg1}}
 \end{picture}
 
 \begin{verbatim}
@@ -327,7 +334,7 @@ draw {for i:=1:12 collect
 \unitlength=1cm
 \begin{picture}(8,8)(0,0)
 %\put (0,8){\Includegraphics[bb=0 0 504 720,width=8cm,height=8cm,angle=270]{turtleeg4}}
-\put (0,8){\Includegraphics[width=8.1cm,height=8.1cm,angle=270]{turtleeg4}}
+\put (0,8){\turtleincludegraphics{turtleeg4}}
 \end{picture}
 
 \begin{verbatim}
@@ -346,7 +353,7 @@ draw {home(), peak(3)};
 \unitlength=1cm
 \begin{picture}(8,8)(0,0)
 %\put (0,8){\Includegraphics[bb=0 0 504 720,width=8cm,height=8cm,angle=270]{turtleeg5a}}
-\put (0,8){\Includegraphics[width=8.1cm,height=8.1cm,angle=270]{turtleeg5a}}
+\put (0,8){\turtleincludegraphics{turtleeg5a}}
 \end{picture}
 
 \begin{verbatim}
@@ -359,7 +366,7 @@ draw {home(), move(5,50), peak(3), move(x_coord+10,-100),
 \unitlength=1cm
 \begin{picture}(8,8)(0,0)
 %\put (0,8){\Includegraphics[bb=0 0 504 720,width=8cm,height=8cm,angle=270]{turtleeg5b}}
-\put (0,8){\Includegraphics[width=8.1cm,height=8.1cm,angle=270]{turtleeg5b}}
+\put (0,8){\turtleincludegraphics{turtleeg5b}}
 \end{picture}
 
 \begin{verbatim}
@@ -383,7 +390,7 @@ draw {home(), tree(130,7)};
 \unitlength=1cm
 \begin{picture}(8,8)(0,0)
 %\put(0,8){\Includegraphics[bb=0 0 504 720,width=8cm,height=8cm,angle=270]{turtleeg6a}}
-\put(0,8){\Includegraphics[width=8.1cm,height=8.1cm,angle=270]{turtleeg6a}}
+\put(0,8){\turtleincludegraphics{turtleeg6a}}
 \end{picture}
 
 \begin{verbatim}
@@ -396,7 +403,7 @@ draw {home(), for i:=1:36 collect
 \unitlength=1cm
 \begin{picture}(8,8)(0,0)
 %\put(0,8){\Includegraphics[bb=0 0 504 720,width=8cm,height=8cm,angle=270]{turtleeg7}}
-\put(0,8){\Includegraphics[width=8.1cm,height=8.1cm,angle=270]{turtleeg7}}
+\put(0,8){\turtleincludegraphics{turtleeg7}}
 \end{picture}
 
 \begin{verbatim}
@@ -411,7 +418,7 @@ draw {home(), for i:=1:100 collect
 \unitlength=1cm
 \begin{picture}(8,8)(0,0)
 %\put(0,8){\Includegraphics[bb=0 0 504 720,width=8cm,height=8cm,angle=270]{turtleeg8}}
-\put(0,8){\Includegraphics[width=8.1cm,height=8.1cm,angle=270]{turtleeg8}}
+\put(0,8){\turtleincludegraphics{turtleeg8}}
 \end{picture}
 
 \begin{verbatim}
@@ -433,7 +440,7 @@ draw {gr2, gr6};
 \unitlength=1cm
 \begin{picture}(8,8)(0,0)
 %\put(0,8){\Includegraphics[bb=0 0 504 720,width=8cm,height=8cm,angle=270]{turtleeg9}}
-\put(0,8){\Includegraphics[width=8.1cm,height=8.1cm,angle=270]{turtleeg9}}
+\put(0,8){\turtleincludegraphics{turtleeg9}}
 \end{picture}
 
 \begin{verbatim}

@@ -101,6 +101,10 @@
   pdfdisplaydoctitle=true,
 }
 
+%% bkm-dvips.def 2020-11-06 v1.29 bookmark driver for dvips (HO)
+%% causes a problem with TeX4ht, so here is a workaround suggested by
+%% Michal Hoftich <michal.h21@gmail.com>:
+\def\BookmarkDriverDefault{dvipdfm}
 \usepackage{bookmark}
 
 \hyphenation{unique}
