@@ -2128,7 +2128,7 @@
 	       
 	 )
        (when (pairp w)(setq offset (iplus2 offset (InstructionLength w))))
-       (print (list offset w))
+%       (print (list offset w))
        (push w rcode)
        )
       % Now at end: if we are in code, check for alignment and issue nop if necessary

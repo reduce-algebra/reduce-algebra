@@ -85,9 +85,8 @@ char *argv[];
   clear_iob();             /* clear garbage pointer in _iob[]    */
   clear_dtabsize();
   /* fpsetround(FP_RZ);  */
-  //  init_malloc_param();        /* reset malloc parameters.        */
-    setvbuf(stdout,NULL,_IOLBF,BUFSIZ);
-   /* Record path to exec file */
+  setvbuf(stdout,NULL,_IOLBF,BUFSIZ);
+  /* Record path to exec file */
   if (argc > 0)
     abs_execfilepath = realpath(argv[0],NULL);
 
@@ -95,7 +94,7 @@ char *argv[];
     Debug = 1;
 
   val=setjmp(mainenv);        /* set non-local return point for exit    */
- 
+
   if (val == 0)
     _psl_main(argc,copy_argv(argc,argv),&symval);
  

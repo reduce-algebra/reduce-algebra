@@ -8,6 +8,8 @@ AC_CONFIG_HEADERS([fficonfig.h])
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_AUX_DIR([.])
 
+AC_LANG(C)
+
 AC_CANONICAL_TARGET
 target_alias=${target_alias-$host_alias}
 
@@ -42,6 +44,8 @@ AC_SUBST(CFLAGS)
 AM_PROG_AS
 AM_PROG_CC_C_O
 LT_INIT
+
+AC_LANG(C)
 
 # Test for 64-bit build.
 AC_CHECK_SIZEOF([size_t])
@@ -84,7 +88,7 @@ fi
 AC_SUBST(AM_RUNTESTFLAGS)
 AC_SUBST(AM_LTLDFLAGS)
 
-AC_HEADER_STDC
+AC_DEFINE([STDC_HEADERS], [1], [Assuming at least C99])
 AC_CHECK_FUNCS(memcpy)
 AC_FUNC_ALLOCA
 
