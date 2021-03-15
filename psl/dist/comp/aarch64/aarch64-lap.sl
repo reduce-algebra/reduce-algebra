@@ -92,7 +92,7 @@
 	*big-endian*    		% True if big-endian version
 	shift-ops*			% known armv6 shift operations
 	*condition-codes*               % aarch64 condition codes
-	comment*                        % optional comment in lap output
+	lapcomment*                     % optional comment in lap output
 %	*cond*
 %	*set*
 	*OpNameList*
@@ -1828,7 +1828,7 @@
 %(flag '(fullword string float) 'ForceAlignment)
 
 (de AddLapComment (X)
-    (setq comment* (cdr X))
+    (setq lapcomment* (cdr X))
     )
 
 (put 'comment 'InstructionDepositFunction 'AddLapComment)
