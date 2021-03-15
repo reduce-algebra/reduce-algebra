@@ -100,11 +100,11 @@
 
 (put 'addwithcarry 'opencode
        '(
-         % move add carry* to second parameter b
+         % set CF from carry* 
 	 (*Move ($fluid carry*) (reg t1))
-         (ADDS (reg t1) (reg 2) (reg t1))
-           % add with carry
-         (ADCS (reg 1) (reg 1) (reg t1))
+	 (SUBS (reg t1) (reg t1) 1)
+         % add with carry
+         (ADCS (reg 1) (reg 1) (reg 2))
          % move cf to carry*
 	 (CSET (reg t1) CS)
          (*Move (reg t1) ($FLUID carry*))
