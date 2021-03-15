@@ -325,7 +325,7 @@
   (for (from i 0 hash-table-size 1)
        (do
     (let ((id-number  (hash-table-entry i)))
-      (when (and (> id-number 0)     % Slot is occupied
+      (when (and (> id-number 0) (< id-number 16#ffffffff)    % Slot is occupied
              (not (markedid id-number)))
         (markandcopyfromid id-number)
         ))))

@@ -604,11 +604,18 @@
 	      (setq ll `((STR (reg nil) (displacement (reg sp) ,(times2 (plus2 1 framesize) (compiler-constant 'AddressingUnitsPerItem))))))))))
       (setq framesize (plus2 2 framesize))
       (setq NAlloc!* framesize)
-      `((STP (reg fp) (reg lr)
-      	     (preindexed (reg sp)
-			 ,(minus (times2 framesize (compiler-constant 'AddressingUnitsPerItem)))))
-	(MOV (reg fp) (reg sp))
-	,@ll)))
+      %% STP preindexed allows a frame size up to 64 slots.
+      %% Since LDP postindexed allows up to 63 slots, treat both cases in the smea way
+      (if (greaterp framesize 63)
+	  `((SUB (reg sp) (reg sp) ,(times2 framesize (compiler-constant 'AddressingUnitsPerItem)))
+	    (STP (reg fp) (reg lr) (indirect (reg sp)))
+	    (MOV (reg fp) (reg sp))
+	    ,@ll)
+	`((STP (reg fp) (reg lr)
+	       (preindexed (reg sp)
+			   ,(minus (times2 framesize (compiler-constant 'AddressingUnitsPerItem)))))
+	  (MOV (reg fp) (reg sp))
+	  ,@ll))))
 
 (DefCmacro *ALLOC)
 
@@ -621,9 +628,9 @@
    '*DeAlloc))
 
 (DefCmacro *DeAlloc
-           ( 
-                        % pop link register
-                       (LDP (reg fp) (reg lr) (postindexed (reg sp) ARGONE)))
+  ((imm10-p) (LDP (reg fp) (reg lr) (postindexed (reg sp) ARGONE)))
+  (          (LDP (reg fp) (reg lr) (indirect (reg sp)))
+	     (ADD (reg sp) (reg sp) ARGONE))
 )
 
 
@@ -635,8 +642,12 @@
    (times (plus2 2 N) (compiler-constant 'AddressingUnitsPerItem)) '*Exit))
 
 (DefCMacro *Exit     % leaf routine first
-   (         (LDP (reg fp) (reg lr) (postindexed (reg sp) ARGONE))
-             (RET)))
+  ((imm10-p) (LDP (reg fp) (reg lr) (postindexed (reg sp) ARGONE))
+             (RET))
+  (          (LDP (reg fp) (reg lr) (indirect (reg sp)))
+             (ADD (reg sp) (reg sp) ARGONE)
+	     (RET))
+  )
 
 (de displacementp (x) (and (pairp x) (eq (car x) 'displacement)))
 
