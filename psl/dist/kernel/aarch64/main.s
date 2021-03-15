@@ -3902,7 +3902,7 @@ l0417:
  ldp X29, X30, [sp], #80
  ret
  .quad 2
-// (*entry uuxdoubletofloat expr 2)
+// (*entry uxdoubletofloat expr 2)
  .globl l0418
 l0418:
  stp X29, X30, [sp, #-16]!
@@ -3914,7 +3914,7 @@ l0418:
  stp X23, X24, [sp, #48]
  stp X25, X26, [sp, #32]
  stp X27, X28, [sp, #16]
- bl uuxdoubletofloat
+ bl uxdoubletofloat
  ldp X27, X28, [sp, #16]
  ldp X25, X26, [sp, #32]
  ldp X23, X24, [sp, #48]
@@ -3922,7 +3922,7 @@ l0418:
  ldp X29, X30, [sp], #80
  ret
  .quad 2
-// (*entry uuxfloattodouble expr 2)
+// (*entry uxfloattodouble expr 2)
  .globl l0419
 l0419:
  stp X29, X30, [sp, #-16]!
@@ -3934,7 +3934,7 @@ l0419:
  stp X23, X24, [sp, #48]
  stp X25, X26, [sp, #32]
  stp X27, X28, [sp, #16]
- bl uuxfloattodouble
+ bl uxfloattodouble
  ldp X27, X28, [sp, #16]
  ldp X25, X26, [sp, #32]
  ldp X23, X24, [sp, #48]
@@ -3942,7 +3942,7 @@ l0419:
  ldp X29, X30, [sp], #80
  ret
  .quad 2
-// (*entry uuxsin expr 2)
+// (*entry uxsin expr 2)
  .globl l0420
 l0420:
  stp X29, X30, [sp, #-16]!
@@ -3954,7 +3954,7 @@ l0420:
  stp X23, X24, [sp, #48]
  stp X25, X26, [sp, #32]
  stp X27, X28, [sp, #16]
- bl uuxsin
+ bl uxsin
  ldp X27, X28, [sp, #16]
  ldp X25, X26, [sp, #32]
  ldp X23, X24, [sp, #48]
@@ -3962,7 +3962,7 @@ l0420:
  ldp X29, X30, [sp], #80
  ret
  .quad 2
-// (*entry uuxcos expr 2)
+// (*entry uxcos expr 2)
  .globl l0421
 l0421:
  stp X29, X30, [sp, #-16]!
@@ -3974,7 +3974,7 @@ l0421:
  stp X23, X24, [sp, #48]
  stp X25, X26, [sp, #32]
  stp X27, X28, [sp, #16]
- bl uuxcos
+ bl uxcos
  ldp X27, X28, [sp, #16]
  ldp X25, X26, [sp, #32]
  ldp X23, X24, [sp, #48]
@@ -3982,7 +3982,7 @@ l0421:
  ldp X29, X30, [sp], #80
  ret
  .quad 2
-// (*entry uuxtan expr 2)
+// (*entry uxtan expr 2)
  .globl l0422
 l0422:
  stp X29, X30, [sp, #-16]!
@@ -3994,7 +3994,7 @@ l0422:
  stp X23, X24, [sp, #48]
  stp X25, X26, [sp, #32]
  stp X27, X28, [sp, #16]
- bl uuxtan
+ bl uxtan
  ldp X27, X28, [sp, #16]
  ldp X25, X26, [sp, #32]
  ldp X23, X24, [sp, #48]
@@ -4002,7 +4002,7 @@ l0422:
  ldp X29, X30, [sp], #80
  ret
  .quad 2
-// (*entry uuxasin expr 2)
+// (*entry uxasin expr 2)
  .globl l0423
 l0423:
  stp X29, X30, [sp, #-16]!
@@ -4014,7 +4014,7 @@ l0423:
  stp X23, X24, [sp, #48]
  stp X25, X26, [sp, #32]
  stp X27, X28, [sp, #16]
- bl uuxasin
+ bl uxasin
  ldp X27, X28, [sp, #16]
  ldp X25, X26, [sp, #32]
  ldp X23, X24, [sp, #48]
@@ -4022,7 +4022,7 @@ l0423:
  ldp X29, X30, [sp], #80
  ret
  .quad 2
-// (*entry uuxacos expr 2)
+// (*entry uxacos expr 2)
  .globl l0424
 l0424:
  stp X29, X30, [sp, #-16]!
@@ -4034,7 +4034,7 @@ l0424:
  stp X23, X24, [sp, #48]
  stp X25, X26, [sp, #32]
  stp X27, X28, [sp, #16]
- bl uuxacos
+ bl uxacos
  ldp X27, X28, [sp, #16]
  ldp X25, X26, [sp, #32]
  ldp X23, X24, [sp, #48]
@@ -4042,7 +4042,7 @@ l0424:
  ldp X29, X30, [sp], #80
  ret
  .quad 2
-// (*entry uuxatan expr 2)
+// (*entry uxatan expr 2)
  .globl l0425
 l0425:
  stp X29, X30, [sp, #-16]!
@@ -4054,7 +4054,7 @@ l0425:
  stp X23, X24, [sp, #48]
  stp X25, X26, [sp, #32]
  stp X27, X28, [sp, #16]
- bl uuxatan
+ bl uxatan
  ldp X27, X28, [sp, #16]
  ldp X25, X26, [sp, #32]
  ldp X23, X24, [sp, #48]
@@ -4062,7 +4062,7 @@ l0425:
  ldp X29, X30, [sp], #80
  ret
  .quad 2
-// (*entry uuxsqrt expr 2)
+// (*entry uxsqrt expr 2)
  .globl l0426
 l0426:
  stp X29, X30, [sp, #-16]!
@@ -4074,7 +4074,7 @@ l0426:
  stp X23, X24, [sp, #48]
  stp X25, X26, [sp, #32]
  stp X27, X28, [sp, #16]
- bl uuxsqrt
+ bl uxsqrt
  ldp X27, X28, [sp, #16]
  ldp X25, X26, [sp, #32]
  ldp X23, X24, [sp, #48]
@@ -4082,7 +4082,7 @@ l0426:
  ldp X29, X30, [sp], #80
  ret
  .quad 2
-// (*entry uuxexp expr 2)
+// (*entry uxexp expr 2)
  .globl l0427
 l0427:
  stp X29, X30, [sp, #-16]!
@@ -4094,7 +4094,7 @@ l0427:
  stp X23, X24, [sp, #48]
  stp X25, X26, [sp, #32]
  stp X27, X28, [sp, #16]
- bl uuxexp
+ bl uxexp
  ldp X27, X28, [sp, #16]
  ldp X25, X26, [sp, #32]
  ldp X23, X24, [sp, #48]
@@ -4102,7 +4102,7 @@ l0427:
  ldp X29, X30, [sp], #80
  ret
  .quad 2
-// (*entry uuxlog expr 2)
+// (*entry uxlog expr 2)
  .globl l0428
 l0428:
  stp X29, X30, [sp, #-16]!
@@ -4114,7 +4114,7 @@ l0428:
  stp X23, X24, [sp, #48]
  stp X25, X26, [sp, #32]
  stp X27, X28, [sp, #16]
- bl uuxlog
+ bl uxlog
  ldp X27, X28, [sp, #16]
  ldp X25, X26, [sp, #32]
  ldp X23, X24, [sp, #48]
@@ -4122,7 +4122,7 @@ l0428:
  ldp X29, X30, [sp], #80
  ret
  .quad 3
-// (*entry uuxatan2 expr 3)
+// (*entry uxatan2 expr 3)
  .globl l0429
 l0429:
  stp X29, X30, [sp, #-16]!
@@ -4134,7 +4134,7 @@ l0429:
  stp X23, X24, [sp, #48]
  stp X25, X26, [sp, #32]
  stp X27, X28, [sp, #16]
- bl uuxatan2
+ bl uxatan2
  ldp X27, X28, [sp, #16]
  ldp X25, X26, [sp, #32]
  ldp X23, X24, [sp, #48]
@@ -7356,57 +7356,54 @@ l0948:
  .byte 111,97,116,0,0,0,0
  .globl l0949
 l0949:
- .quad 15
- .byte 117,117,120,100,111,117,98,108,101
- .byte 116,111,102,108,111,97,116,0,0,0,0
- .byte 0,0,0,0
+ .quad 14
+ .byte 117,120,100,111,117,98,108,101,116
+ .byte 111,102,108,111,97,116,0
  .globl l0950
 l0950:
- .quad 15
- .byte 117,117,120,102,108,111,97,116,116
- .byte 111,100,111,117,98,108,101,0,0,0,0
- .byte 0,0,0,0
+ .quad 14
+ .byte 117,120,102,108,111,97,116,116,111
+ .byte 100,111,117,98,108,101,0
  .globl l0951
 l0951:
- .quad 5
- .byte 117,117,120,115,105,110,0,0
+ .quad 4
+ .byte 117,120,115,105,110,0,0,0
  .globl l0952
 l0952:
- .quad 5
- .byte 117,117,120,99,111,115,0,0
+ .quad 4
+ .byte 117,120,99,111,115,0,0,0
  .globl l0953
 l0953:
- .quad 5
- .byte 117,117,120,116,97,110,0,0
+ .quad 4
+ .byte 117,120,116,97,110,0,0,0
  .globl l0954
 l0954:
- .quad 6
- .byte 117,117,120,97,115,105,110,0
+ .quad 5
+ .byte 117,120,97,115,105,110,0,0
  .globl l0955
 l0955:
- .quad 6
- .byte 117,117,120,97,99,111,115,0
+ .quad 5
+ .byte 117,120,97,99,111,115,0,0
  .globl l0956
 l0956:
- .quad 6
- .byte 117,117,120,97,116,97,110,0
+ .quad 5
+ .byte 117,120,97,116,97,110,0,0
  .globl l0957
 l0957:
- .quad 6
- .byte 117,117,120,115,113,114,116,0
+ .quad 5
+ .byte 117,120,115,113,114,116,0,0
  .globl l0958
 l0958:
- .quad 5
- .byte 117,117,120,101,120,112,0,0
+ .quad 4
+ .byte 117,120,101,120,112,0,0,0
  .globl l0959
 l0959:
- .quad 5
- .byte 117,117,120,108,111,103,0,0
+ .quad 4
+ .byte 117,120,108,111,103,0,0,0
  .globl l0960
 l0960:
- .quad 7
- .byte 117,117,120,97,116,97,110,50,0,0,0
- .byte 0,0,0,0,0
+ .quad 6
+ .byte 117,120,97,116,97,110,50,0
  .globl l0961
 l0961:
  .quad 11
