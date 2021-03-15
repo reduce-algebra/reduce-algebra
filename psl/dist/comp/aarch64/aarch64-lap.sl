@@ -138,8 +138,6 @@
 (de invert-cond (cond)
     (get cond 'inverted-condition))
 
-(compiletime (load addr2id))
- 
 (compiletime
  (if_system x86_64
    (progn
