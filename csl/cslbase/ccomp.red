@@ -2213,8 +2213,8 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
     if reloadenv then <<
        reloadenv := n;
        if n=0 then c!:printf("    RealSave saveEnv(env);\n")
-       else c!:printf("    RealSave saveEnv(env, %a);\n", n) >>
-    else if n neq 0 then c!:printf("    RealSave Workspace(%a);\n", n);
+       else c!:printf("    RealSave saveEnv(env, PushCount(%a));\n", n) >>
+    else if n neq 0 then c!:printf("    RealSave Workspace(PushCount(%a));\n", n);
     if env then c!:printf "%<// copy arguments values to proper place\n";
     for each v in env do
       if flagp(cdr v, 'c!:live_across_call) then

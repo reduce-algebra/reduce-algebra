@@ -251,6 +251,6 @@ February 2021. Change configure.ac as that it does not override CXXFLAGS and
 
 March 2021. Review autoconf files to ensure survival against autoconf 2.71
       without generating excessive warnings, and add a header file #include
-      in FXThread.cpp where gettimeofday() was not oterwise declared.
+      in FXThread.cpp where gettimeofday() was not otherwise declared.
 
 <end of CHANGED>

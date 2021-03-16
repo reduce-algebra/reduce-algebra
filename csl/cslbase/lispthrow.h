@@ -79,12 +79,21 @@ DECLARE_THREAD_LOCAL(LispObject *, stack);
 // arranges that restore() verifies that the stacked value and the one in the
 // simple variable have not got out of step.
 
+class PushCount
+{
+public:
+    int n;
+    PushCount(int count)
+    {   n = count;
+    }
+};
+
 class RealSave
 {
 private:
     LispObject *ssave;
 public:
-    RealSave(int count)
+    RealSave(PushCount count)
     {   ssave = stack;
 // The coding here may look slightly unusual, but is written on the basis
 // that on Windows having stack as a thread_local variable has a side
@@ -92,8 +101,8 @@ public:
 // turns into an explicit memory reference and optimisation of the code is
 // inhibited to an extent that makes a significant difference to overall
 // system performance!
-        stack = ssave + count;
-        for (int i=1; i<=count; i++)
+        stack = ssave + count.n;
+        for (int i=1; i<=count.n; i++)
             ssave[i] = nil;
     }
     RealSave(LispObject a1)
@@ -110,14 +119,14 @@ public:
         if (is_exception(a1)) UNLIKELY my_abort("exception value not trapped");
 #endif // DEBUG
     }
-    RealSave(LispObject a1, int count)
+    RealSave(LispObject a1, PushCount count)
     {   ssave = stack;
-        stack = ssave + count + 1;
+        stack = ssave + count.n + 1;
         ssave[1] = a1;
 #ifdef DEBUG
         if (is_exception(a1)) UNLIKELY my_abort("exception value not trapped");
 #endif // DEBUG
-        for (int i=2; i<=count+1; i++)
+        for (int i=2; i<=count.n+1; i++)
             ssave[i] = nil;
     }
     RealSave(LispObject a1, LispObject a2)
@@ -175,15 +184,15 @@ public:
 #endif // DEBUG
     }
     RealSave(LispObject a1, LispObject a2, LispObject a3,
-             LispObject a4, LispObject a5, int count)
+             LispObject a4, LispObject a5, PushCount count)
     {   ssave = stack;
-        stack = ssave + count + 5;
+        stack = ssave + count.n + 5;
         ssave[1] = a1;
         ssave[2] = a2;
         ssave[3] = a3;
         ssave[4] = a4;
         ssave[5] = a5;
-        for (int i=0; i<count; i++)
+        for (int i=0; i<count.n; i++)
             ssave[i+6] = nil;
 #ifdef DEBUG
         if (is_exception(a1)) UNLIKELY my_abort("exception value not trapped");

@@ -471,7 +471,7 @@ LispObject apply_lambda(LispObject def, LispObject args,
                   cdr(def),                    // body
                   env1,
                   name1,
-                  10);
+                  PushCount(10));
     LispObject &arglist    = save.val(1);
     LispObject &bvl        = save.val(2);
     LispObject &body       = save.val(3);

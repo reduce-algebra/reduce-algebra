@@ -1286,7 +1286,7 @@ int find_program_directory(const char *argv0)
     return 0;
 }
 
-#else WIN32
+#else // WIN32
 
 // Different systems put or do not put underscores in front of these
 // names. My adaptation here should give me a chance to work whichever
