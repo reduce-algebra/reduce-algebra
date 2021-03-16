@@ -74,8 +74,9 @@ LispObject get_pname(LispObject a)
 }
 
 LispObject nil, lisp_true, unset_var;
-LispObject *nilsegment, *stacksegment, *stack, *stackBase,
+LispObject *nilsegment, *stacksegment, *stackBase,
            *stackLimit;
+DEFINE_THREAD_LOCAL(LispObject *, stack, 32);
 std::uintptr_t *C_stackbase, C_stacklimit;
 
 [[noreturn]] void fatal_error(int code, ...)
@@ -141,7 +142,7 @@ LispObject zcons(LispObject a, LispObject b)
     return r1;
 }
 
-thread_local std::uint64_t treehash;
+DEFINE_THREAD_LOCAL(std::uint64_t, treehash, 63);
 
 LispObject make_n_tree1(int n)
 {   if (n == 0)

@@ -39,7 +39,7 @@ static strl line_adhoclist = NULL;
 
 static char line_prompt[50];
 
-static Char line_break_chars[] = {' ', '\t', '\n', '"', '\\', '\'', '`', '@',
+static wchar_t line_break_chars[] = {' ', '\t', '\n', '"', '\\', '\'', '`', '@',
 				  '$', '>', '<', '=', ';', '|', '&', '{', '(',
 				  ',', '\0'};
 
@@ -135,7 +135,7 @@ unsigned char line_complete(EditLine *ignore,int invoking_key)
 
 unsigned char line_fn_complete(EditLine *el,
 			       char *(*complet_func)(const char *, int),
-			       const Char *word_break,
+			       const wchar_t *word_break,
 			       const char *(*app_func)(const char *),
 			       size_t query_items) {
   return (unsigned char )fn_complete(el,

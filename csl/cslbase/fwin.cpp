@@ -36,7 +36,6 @@
  *************************************************************************/
 
 
-//
 // Note that the above terms apply and must persist regardless of where or how
 // this code is used. A copy of this will be included within a modified
 // version of the FOX library and in that context the whole work has to
@@ -46,9 +45,8 @@
 // original author). But this code can also be compiled and used without
 // the GUI components, in that case LGPL obligations do not apply but BSD
 // ones do.
-//
 
-// $Id $
+// $Id$
 
 // The "#ifdef" mess here has been getting out of control. The major
 // choice are:
@@ -63,7 +61,7 @@
 //   so should cover BSD too. Because when this code is built within the
 //   FOX library it has a different configure.ac file to configure it
 //   I can not comfortably rely on the machine-selection abstractions I
-//   use elsewhere in CSL. So I use __APPLE__ to detecet the OSX case and
+//   use elsewhere in CSL. So I use __APPLE__ to detect the OSX case and
 //   WIN32 for Windows - those are set automatically by the compilers that
 //   I use. I do not believe thet I have any code here sensitive to the
 //   distinction between 32 and 64-bit windows, but within the Linux
@@ -77,6 +75,7 @@
 #else
  // HAVE_CONFIG_H
 #define PART_OF_FOX 1
+extern init_thread_locals();
 #endif // HAVE_CONFIG_H
 
 // For the bulk of CSL the tests on C++ dialect are done in "machine.h",
@@ -161,10 +160,8 @@
 extern int fwin_main(int argc, const char *argv[]);
 
 #ifdef WIN32
-
 #include <windows.h>
 #include <io.h>
-
 #endif // WIN32
 
 #include <cstring>
@@ -200,6 +197,7 @@ extern "C" char *getcwd(const char *s, size_t n);
 #include <cerrno>
 
 #ifndef WIN32
+#include <windows.h>
 #include <glob.h>
 #endif // WIN32
 
@@ -207,7 +205,7 @@ extern "C" char *getcwd(const char *s, size_t n);
 #include <dirent.h>
 #elif defined WIN32
 #include <direct.h>
-##else
+#else
 #include <sys/dir.h>
 #endif // HAVE_DIRENT_H
 
@@ -257,13 +255,11 @@ inline void my_assert(bool ok, F&& action)
 #endif //NDEBUG
 }
 
-//
 // I have a bunch of macros that I use for desparation-mode debugging,
 // and in particular when I have bugs that wriggle back into their lairs
 // when I try running under "gdb" or whatever. These print dull messages
 // to stderr. The "do..while" idiom is to keep C syntax safe with regard to
 // semicolons.
-//
 
 #define D do {                                                         \
           const char *_f_ = std::strrchr(__FILE__, '/');               \
@@ -301,19 +297,16 @@ inline void my_assert(bool ok, F&& action)
           } while (0)
 
 
-//
 // The value LONGEST_LEGAL_FILENAME should be seen as a problem wrt
 // buffer overflow! I will just blandly assume throughout all my code that
 // no string that denotes a full file-name (including its path) is ever
 // longer than this.
-//
 #ifndef LONGEST_LEGAL_FILENAME
 #define LONGEST_LEGAL_FILENAME 1024
 #endif // LONGEST_LEGAL_FILENAME
 
 #ifdef DEBUG
 
-//
 // This will be used as in FWIN_LOG(format,arg,...)
 // If DEBUG was enabled it send log information
 // to a file with the name fwin-debug.log: I hope that will not (often)
@@ -321,7 +314,6 @@ inline void my_assert(bool ok, F&& action)
 // set when you first generate log output then the log file will be put
 // there (ie alongside the executable). If not it will go in /tmp. So
 // if debugging you might want to ensure that such a directory exists!
-//
 
 static std::FILE *fwin_logfile = nullptr;
 
@@ -329,7 +321,6 @@ static std::FILE *fwin_logfile = nullptr;
 
 void fwin_write_log(const char *s, ...)
 {
-//
 // I expect vfprintf and fflush to be thread-safe, however the test
 // on fwin_logfile and the code that creates it could lead to a race
 // if two threads both tried to open the log file at the same time. I
@@ -338,25 +329,20 @@ void fwin_write_log(const char *s, ...)
 // FWIN_LOG() before it starts any thread, so that the log file will get
 // created when there is not concurrency to cause confusion. That seems
 // lighter weight than messing with a further critical section here.
-//
     int create = (fwin_logfile == nullptr);
     std::va_list x;
-//
 // Note that I create this file in "a" (append) mode so that previous
 // information there is not lost.
-//
     if (create)
     {   char logfile_name[LONGEST_LEGAL_FILENAME];
         std::memset(logfile_name, 0, sizeof(logfile_name));
         if (std::strcmp(programDir, ".") == 0)
             std::sprintf(logfile_name, "/tmp/%s", LOGFILE_NAME);
 #ifdef __APPLE__
-//
 // If the executable I am running exists as
 //    ...../something.app/Contents/MacOS/something
 // then I will place the log file adjacant to the .app directory rather
 // than in the MacOS directory next to the actual raw executable.
-//
         else if (std::sprintf(logfile_name, "%s.app/Contents/MacOS",
                               programName),
                  std::strlen(programDir) >= std::strlen(logfile_name) &&
@@ -392,7 +378,6 @@ void fwin_write_log(const char *s, ...)
 
 #endif // DEBUG
 
-//
 // The next few are not exactly useful if FOX is not available
 // and hence this code will run in line-mode only. However it is
 // convenient to leave them available.
@@ -408,7 +393,6 @@ void fwin_write_log(const char *s, ...)
 // be found. Anything beyond that would make the size of the about box
 // grow in a way I view as clumsy. The wording I use is as requested (but
 // under LGPL not actually required!) by the FOX authors.
-//
 
 char about_box_title[40]       = "About XXX";
 char about_box_description[40] = "XXX version 1.1";
@@ -429,7 +413,7 @@ delay_callback_t *delay_callback;
 extern const char *my_getenv(const char *s);
 
 #ifdef WIN32
-static int programNameDotCom = 0;
+bool programNameDotCom = false;
 #endif // WIN32
 
 #ifdef __APPLE__
@@ -450,19 +434,15 @@ bool fwin_use_xft = false;
 
 void mac_deal_with_application_bundle(int argc, const char *argv[])
 {
-//
 // If I will be wanting to use a GUI and if I have just loaded an
 // executable that is not within an application bundle then I will
 // use "open" to launch the corresponding application bundle. Doing this
 // makes resources (eg fonts) that are within the bundle available and
 // it also seems to cause things to terminate more neatly.
-//
     if (!macApp)
     {   char xname[LONGEST_LEGAL_FILENAME];
-//
 // Here the binary I launched was NOT being from an application bundle.
 // I will try to re-launch it so it is.
-//
         struct stat buf;
         std::memset(xname, 0, sizeof(xname));
         std::sprintf(xname, "%s.app", fullProgramName);
@@ -474,10 +454,8 @@ void mac_deal_with_application_bundle(int argc, const char *argv[])
             const char **nargs = new const char *[argc+3];
             int i;
 #ifdef DEBUG
-//
 // Since I am about to restart the program I do not want the new version to
 // find that the log file is open and hence not accessible.
-//
             if (fwin_logfile != nullptr)
             {   std::fclose(fwin_logfile);
                 fwin_logfile = nullptr;
@@ -509,12 +487,10 @@ void mac_deal_with_application_bundle(int argc, const char *argv[])
 
 #ifdef WIN32
 
-//
 // This seems to be needed to ensure that if a windows console is closed
 // and you launched your program from a cygwin shell (via the cygwin
 // execv(e) family) it exits nicely. Otherwise it can be retried several
 // times. When that happens it looks really weird!
-//
 BOOL CtrlHandler(DWORD x)
 {   switch (x)
     {   case CTRL_CLOSE_EVENT:
@@ -587,7 +563,6 @@ int windows_checks(int is_windowed)
 // So I will need to make some decisions before actually starting this
 // code, and the file "gui-or-not.txt" in the source tree discusses just
 // what I do.
-//
     if (programNameDotCom && is_windowed == 2)
     {
 // The program was named "xxx.com". I will assume that that means it was
@@ -603,7 +578,6 @@ int windows_checks(int is_windowed)
 // double clicking where I did not want or by specifying an explicit
 // extension when they launch a command from a console prompt. But in such
 // cases I will take the view that they will get what they deserve!
-//
         HANDLE h;
         DWORD w;
         CONSOLE_SCREEN_BUFFER_INFO csb;
@@ -621,12 +595,10 @@ int windows_checks(int is_windowed)
 // will defer that worry since the ".exe" not the ".com" file is the version
 // with windowed use its prime interface.
 //
-//
 // New versions of cygwin install a terminal that is not just a regular
 // DOS window running bash, but is closer to everything a Unix user might
 // expect - however this possibly messes up the tests I make to see if I
 // want to run a terminal or a windowed version of everything.
-//
         const char *ssh = my_getenv("SSH_CLIENT");
         if (ssh != nullptr && *ssh != 0)
         {   FWIN_LOG("SSH_CLIENT set on Windows, so treat as console app\n");
@@ -668,7 +640,6 @@ int windows_checks(int is_windowed)
 // via a pipe then they should EITHER launch the ".com" version or (better)
 // explictly provide a "-w" flag to indicate that the application should
 // work in stream/console mode.
-//
         const char *ssh = my_getenv("SSH_CLIENT");
         if (ssh != nullptr && *ssh != 0)
         {   FWIN_LOG("SSH_CLIENT set\n");
@@ -682,17 +653,14 @@ int windows_checks(int is_windowed)
 
 void sort_out_windows_console(int is_windowed)
 {
-//
 // If I am running under Windows and I have set command line options
 // that tell me to run in a console then I will create one if one does
 // not already exist.
-//
     if (is_windowed == 0)
     {   int consoleCreated = AllocConsole();
         if (consoleCreated)
         {   if (ssh_client)
             {
-//
 // This situation seems totally odd to me. I just launched a Windowed-mode
 // application and normally when I do that it detaches from the console.
 // however rather than having a proper console here I am connected over
@@ -703,7 +671,6 @@ void sort_out_windows_console(int is_windowed)
 // the newly created console....
 // The code I have here is based on empirical observation in cases that
 // most people will probably not trigger!
-//
                 FWIN_LOG("Running windowed mode application via ssh.\n");
             }
             else
@@ -713,11 +680,9 @@ void sort_out_windows_console(int is_windowed)
                 std::freopen("/dev/conout", "w+", stdout);
                 std::freopen("/dev/conout", "w+", stderr);
 #else // __CYGWIN__
-//
 // I try rather hard here to leave things properly connected to
 // the new console. Note opening CONOUT in "w+" mode so it has
 // GENERIC_READ_ACCESS.
-//
                 HANDLE h;
                 std::freopen("CONIN$", "r+", stdin);
                 std::freopen("CONOUT$", "w+", stdout);
@@ -746,15 +711,12 @@ void sort_out_windows_console(int is_windowed)
 
 static int unix_and_osx_checks(int xwindowed)
 {   const char *disp;
-//
 // If stdin or stdout is not from a "tty" I will run in non-windowed mode.
 // This may help when the system is used in scripts. I worry a bit about
 // what the status of stdin/stdout are when launched not from a command line
 // but by clicking on an icon...
-//
     if (xwindowed != 0)
     {
-//
 // On Unix-like systems I will check the DISPLAY variable, and if it is not
 // set I will suppose that I can not create a window. That case will normally
 // arise when you have gained remote access to the system eg via telnet or
@@ -763,14 +725,11 @@ static int unix_and_osx_checks(int xwindowed)
 // string. Note that on a Macintosh when I am using the FOX GUI toolkit (as
 // is the case here) I need X11 and hence DISPLAY. If I was using the Mac
 // native display I would merely omit this test.
-//
         disp = my_getenv("DISPLAY");
         if (disp == nullptr || std::strchr(disp, ':')==nullptr) xwindowed = 0;
     }
-//
 // This may be a proper way to test if I am really running in an application
 // bundle.
-//
     {   CFBundleRef mainBundle = CFBundleGetMainBundle();
         if (mainBundle == nullptr) macApp = 0;
         else
@@ -788,15 +747,12 @@ static int unix_and_osx_checks(int xwindowed)
 // This may help when the system is used in scripts. I worry a bit about
 // what the status of stdin/stdout are when launched not from a command line
 // but by clicking on an icon...
-//
     if (!macApp &&
         (!isatty(fileno(stdin)) || !isatty(fileno(stdout)))) xwindowed = 0;
-//
 // If I am using X11 as my GUI then I am happy to use remote access via
 // SSH since I can be using X forwarding - provided DISPLAY is set all can
 // be well. However on a Macintosh I do NOT want to launch a window if I
 // have connected via ssh since I will not have the desktop forwarded.
-//
     {   const char *ssh = my_getenv("SSH_CLIENT");
         if (ssh != nullptr && *ssh != 0)
         {   FWIN_LOG("SSH_CLIENT set on MacOSX\n");
@@ -811,16 +767,13 @@ static int unix_and_osx_checks(int xwindowed)
 
 static int unix_and_osx_checks(int is_windowed)
 {   const char *disp;
-//
 // If stdin or stdout is not from a "tty" I will run in non-windowed mode.
 // This may help when the system is used in scripts. I worry a bit about
 // what the status of stdin/stdout are when launched not from a command line
 // but by clicking on an icon...
-//
     if (is_windowed != 0)
     {   if (!isatty(fileno(stdin)) ||
             !isatty(fileno(stdout))) is_windowed = 0;
-//
 // On Unix-like systems I will check the DISPLAY variable, and if it is not
 // set I will suppose that I can not create a window. That case will normally
 // arise when you have gained remote access to the system eg via telnet or
@@ -829,7 +782,6 @@ static int unix_and_osx_checks(int is_windowed)
 // string. Note that on a Macintosh when I am using the FOX GUI toolkit (as
 // is the case here) I need X11 and hence DISPLAY. If I was using the Mac
 // native display I would merely omit this test.
-//
         disp = my_getenv("DISPLAY");
         if (disp == nullptr ||
             std::strchr(disp, ':')==nullptr) is_windowed = 0;
@@ -838,7 +790,6 @@ static int unix_and_osx_checks(int is_windowed)
 // This may help when the system is used in scripts. I worry a bit about
 // what the status of stdin/stdout are when launched not from a command line
 // but by clicking on an icon...
-//
     if ((!isatty(fileno(stdin)) ||
          !isatty(fileno(stdout)))) is_windowed = 0;
 // On Unix-like systems I will check the DISPLAY variable, and if it is not
@@ -847,7 +798,6 @@ static int unix_and_osx_checks(int is_windowed)
 // ssh without X forwarding. I will also insist that if set it has a ":" in
 // its value... that is to avoid trouble with it getting set to an empty
 // string.
-//
     disp = my_getenv("DISPLAY");
     if (disp == nullptr ||
         std::strchr(disp, ':')==nullptr) is_windowed = 0;
@@ -863,15 +813,15 @@ static int unix_and_osx_checks(int is_windowed)
 // The condition here is so that I can use fwin as a stand-alone interface
 // other than as part of CSL/Reduce. This could be useful to somebody wanting
 // to use it outside the CSL project
-//
 #if defined PART_OF_FOX || defined CSL
 int fwin_startup(int argc, const char *argv[],
                  fwin_entrypoint *fwin_main)
+{
 #else // defined PART_OF_FOX || defined CSL
 int main(int argc, const char *argv[])
+{   init_thread_locals();
 #endif // defined PART_OF_FOX || defined CSL
-{   int i;
-//
+    int i;
 // I want to know the path to the directory from which this
 // code was launched. Note that in some cases the prints to stderr
 // shown here will be totally ineffective and the code will just seem
@@ -879,7 +829,6 @@ int main(int argc, const char *argv[])
 // has been linked on Windows as a window-mode (as distinct from console-mode)
 // binary, or if it is on a Macintosh not associated with a console. In such
 // cases you will just need to debug the code even without a clue!
-//
     if (argc == 0)
     {   std::fprintf(stderr,
                      "argc == 0. You tried to launch the code in a funny way?\n");
@@ -891,11 +840,9 @@ int main(int argc, const char *argv[])
         return 1;
     }
     texmacs_mode = false;
-//
 // An option "--my-path" just prints the path to the executable
 // and stops. An option "--args" indicates that I should not look at any
 // more arguments - they may be used by the program that is to be run.
-//
     for (i=1; i<argc; i++)
     {   if (std::strcmp(argv[i], "--my-path") == 0)
         {   std::printf("%s\n", programDir);
@@ -905,7 +852,6 @@ int main(int argc, const char *argv[])
     }
 
 #ifdef PART_OF_FOX
-//
 // As the very first thing I will do, I will seek an argument
 // that is just "-w", and if it is present record that I will want to
 // run in text mode, not windowed mode. I also detected "--"
@@ -921,7 +867,6 @@ int main(int argc, const char *argv[])
 // I run as a minimise window (by default) in the "--" case since I can use
 // the window title-bar to report progress even when all output is directed to
 // file.
-//
     windowed = 2;
     for (i=1; i<argc; i++)
     {   if (std::strcmp(argv[i], "--args") == 0) break;
@@ -942,14 +887,12 @@ int main(int argc, const char *argv[])
 #else // HAVE_LIBXFT
             ; // Ignore "-h" option if Xft not available
 #endif // HAVE_LIBXFT
-//
 // Note well that I detect just "--" as an entire argument here, so that
 // extended options "--option" do not interfere.
         else if (std::strcmp(argv[i], "--") == 0 &&
                  windowed != 0) windowed = -1;
     }
     if (texmacs_mode) windowed = 0;
-//
 // If there had not been any command-line option to give direction
 // about whether to run in a window I will use system-dependent
 // schemes to try to decide what to do. The overall policy I want to
@@ -959,7 +902,6 @@ int main(int argc, const char *argv[])
 // other systems if the application has been invoked from a pipe
 // or using input (or output) redirection then that signals that it
 // is expected to use stdin/stdout rather than a GUI.
-//
 #ifdef WIN32
     windowed = windows_checks(windowed);
 #else // WIN32
@@ -967,7 +909,6 @@ int main(int argc, const char *argv[])
 #endif // WIN32
 #endif // PART_OF_FOX
 
-//
 // REGARDLESS of any decisions about windowing made so for things can be
 // forced by command line options.
 //    -w+ forces an attempt to run in a window even if it looks as if that
@@ -981,7 +922,6 @@ int main(int argc, const char *argv[])
 //        windowed mode I will start it off minimised.
 //    --texmacs   force the run NOT to try to create its own window,
 //        because it is being invoked via a pipe from TeXmacs,
-//
     for (i=1; i<argc; i++)
     {   if (std::strcmp(argv[i], "--args") == 0) break;
         else if (std::strcmp(argv[i], "--texmacs") == 0) texmacs_mode = true;
@@ -991,10 +931,8 @@ int main(int argc, const char *argv[])
             else windowed = 0;
             break;
         }
-//
 // Note well that I detect just "--" as an entire argument here, so that
 // extended options "--option" do not interfere.
-//
         else if (std::strcmp(argv[i], "--") == 0 &&
                  windowed != 0) windowed = -1;
     }
@@ -1007,7 +945,6 @@ int main(int argc, const char *argv[])
 // string xxx will do something about screen colours. An empty string
 // will suggest no colouring, the string "-" (as in -b-) whatever default
 // I choose.
-//
     colour_spec = "-";
     for (i=1; i<argc; i++)
     {   if (std::strcmp(argv[i], "--args") == 0) break;
@@ -1104,17 +1041,13 @@ void fwin_restore()
 
 void fwin_putchar(int c)
 {
-//
 // Despite using termed during keyboard input I will just use the
 // ordinary C stream functions for normal output. Provided I do an
 // fflush(stdout) before requesting input I should be OK.
-//
 #ifdef __CYGWIN__
-//
 // If I have built the system under Cygwin then we are running under
 // Windows. To keep files tidy I will (mostly) insert CRs at line-end
 // in case Cygwin does not...
-//
     if (c == '\n') std::putchar('\r');
 #endif // __CYGWIN__
     std::putchar(c);
@@ -1122,9 +1055,7 @@ void fwin_putchar(int c)
 
 void fwin_puts(const char *s)
 {
-//
 // See comment above where putchar() is used...
-//
 #ifdef __CYGWIN__
     while (*s != 0) fwin_putchar(*s++);
 #else // __CYGWIN__
@@ -1136,9 +1067,7 @@ void fwin_puts(const char *s)
 void fwin_printf(const char *fmt, ...)
 {   std::va_list a;
     va_start(a, fmt);
-//
 // See comment above where putchar() is used...
-//
 #ifdef __CYGWIN__
 // NOT reconstructed yet @@@
     std::vfprintf(stdout, fmt, a);
@@ -1150,9 +1079,7 @@ void fwin_printf(const char *fmt, ...)
 
 void fwin_vfprintf(const char *fmt, std::va_list a)
 {
-//
 // See comment above where putchar() is used...
-//
 #ifdef __CYGWIN__
 // Not reconstructed yet @@@
     std::vfprintf(stdout, fmt, a);
@@ -1224,7 +1151,6 @@ int get_current_directory(char *s, size_t n)
     else return std::strlen(s);
 }
 
-//
 // The next procedure is responsible for establishing information about
 // both the "short-form" name of the program launched and the directory
 // it was found in. This latter directory may be a good place to keep
@@ -1234,7 +1160,6 @@ int get_current_directory(char *s, size_t n)
 // Unix/Linux, as one might expect.
 //
 // return non-zero value if failure.
-//
 
 const char *fullProgramName        = "./fwin.exe";
 const char *programName            = "fwin.exe";
@@ -1255,7 +1180,6 @@ int find_program_directory(const char *argv0)
 // a scheme I have that chains to an executable so it can pick which
 // variant to use, so if argv0 looks like a fully rooted windows path
 // I will use it!
-//
     std::strcpy(this_executable, argv0);
 // In argv0 was enclosed in single or double quotes then remove them.
     if (this_executable[0]=='\'')
@@ -1274,7 +1198,7 @@ int find_program_directory(const char *argv0)
             if (c == 0) break;
         }
     }
-    if (!(std::isalpha(this_executable[0]) &&
+     if (!(std::isalpha(this_executable[0]) &&
           this_executable[1] == ':' &&
           this_executable[2] == '\\'))
     {   GetModuleFileName(nullptr, this_executable,
@@ -1284,15 +1208,13 @@ int find_program_directory(const char *argv0)
     std::strncpy(ww, this_executable, sizeof(ww));
     ww[sizeof(ww)-1] = 0;
     w = ww;
-//
 // I turn every "\" into a "/". This make for better uniformity with other
 // platforms.
-//
     while (*w != 0)
     {   if (*w == '\\') *w = '/';
         w++;
     }
-    programNameDotCom = 0;
+    programNameDotCom = false;
     if (ww[0] == 0)      // should never happen - name is empty string!
     {   programDir = ".";
         programName = "fwin";  // nothing really known!
@@ -1305,7 +1227,6 @@ int find_program_directory(const char *argv0)
     std::strcpy(w, ww);
     fullProgramName = w;
     len = std::strlen(ww);
-//
 // If the current program is called c:/aaa/xxx.exe, then the directory
 // is just c:/aaa and the simplified program name is just xxx
 // Similarly if the name is xxx.js I want to strip off the ".js".
@@ -1313,10 +1234,7 @@ int find_program_directory(const char *argv0)
         w[len-3] == '.' &&
         (std::tolower(w[len-2]) == 'j' &&
          std::tolower(w[len-1]) == 's'))
-    {
-#ifdef WIN32
-        programNameDotCom = false;
-#endif
+    {   programNameDotCom = false;
         len -= 3;
         w[len] = 0;
     }
@@ -1332,10 +1250,8 @@ int find_program_directory(const char *argv0)
         len -= 4;
         w[len] = 0;
     }
-//
 // I will strip any "win" prefix from the application name and also any
 // "32" suffix.
-//
     w1 = w;
     if (std::strlen(w) > 2)
     {   w += std::strlen(w) - 2;
@@ -1369,12 +1285,11 @@ int find_program_directory(const char *argv0)
     return 0;
 }
 
-#else // WIN32
+#else WIN32
 
 // Different systems put or do not put underscores in front of these
 // names. My adaptation here should give me a chance to work whichever
 // way round it goes.
-//
 
 #ifndef S_IFMT
 # ifdef __S_IFMT
@@ -1402,14 +1317,12 @@ int find_program_directory(const char *argv0)
 # endif
 #endif // S_ISLNK
 
-//
 // I will not take any action at all to deal with UTF-8 or Unicode issues
 // in filenames or paths. Indeed most of Linux and certainly most of my
 // code will risk terribly confusion with various perfectly ordinary
 // 7-bit characters such as blank (' ') within filenames, so the issue
 // of international alphabets there is something I will not really fuss
 // about yet.
-//
 
 int find_program_directory(const char *argv0)
 {   char pgmname[LONGEST_LEGAL_FILENAME];
@@ -1417,7 +1330,6 @@ int find_program_directory(const char *argv0)
     char *w1;
     int n, n1;
     std::memset(pgmname, 0, sizeof(pgmname));
-//
 // If the main reduce executable is has a full path-name /xxx/yyy/zzz then
 // I will use /xxx/yyy as its directory To find this I need to find the full
 // path for the executable. I ATTEMPT to follow the behaviour of "sh",
@@ -1427,13 +1339,11 @@ int find_program_directory(const char *argv0)
 // component of the program name - what I am doing here is scanning to
 // see what path it might have corresponded to.
 //
-//
 // If the name of the executable starts with a "/" it is already an
 // absolute path name. I believe that if the user types (to the shell)
 // something like $DIR/bin/$PGMNAME or ~user/subdir/pgmname then the
 // environment variables and user-name get expanded out by the shell before
 // the command is actually launched.
-//
     if (argv0 == nullptr ||
         argv0[0] == 0) // Information not there - return
     {   programDir = (const char *)"."; // some sort of default.
@@ -1441,12 +1351,10 @@ int find_program_directory(const char *argv0)
         fullProgramName = (const char *)"./fwin";
         return 0;
     }
-//
 // I will treat 3 cases here
 // (a)   /abc/def/ghi      fully rooted: already an absolute name;
 // (b)   abc/def/ghi       treat as ./abc/def/ghi;
 // (c)   ghi               scan $PATH to see where it may have come from.
-//
     else if (argv0[0] == '/') fullProgramName = argv0;
     else
     {   for (w=argv0; *w!=0 && *w!='/'; w++) {}   // seek a "/"
@@ -1467,13 +1375,11 @@ int find_program_directory(const char *argv0)
         }
         else
         {   const char *path = my_getenv("PATH");
-//
 // I omit checks for names of shell built-in functions, since my code is
 // actually being executed by here. So I get my search path and look
 // for an executable file somewhere on it. I note that the shells back this
 // up with hash tables, and so in cases where "rehash" might be needed this
 // code may become confused.
-//
             struct stat buf;
             uid_t myuid = geteuid(), hisuid;
             gid_t mygid = getegid(), hisgid;
@@ -1483,7 +1389,6 @@ int find_program_directory(const char *argv0)
 // separate them. I suppose it COULD be that somebody used directory names
 // that had embedded colons, and quote marks or escapes in $PATH to allow
 // for that. In such case this code will just fail to cope.
-//
             if (path != nullptr)
             {   while (*path != 0)
                 {   while (*path == ':') path++; // skip over ":"
@@ -1496,7 +1401,6 @@ int find_program_directory(const char *argv0)
 // Here I have separated off the next segment of my $PATH and put it at
 // the start of pgmname. Observe that to avoid buffer overflow I
 // exit abruptly if the entry on $PATH is itself too big for my buffer.
-//
                     pgmname[n++] = '/';
                     std::strcpy(&pgmname[n], argv0);
 // see if the file whose name I have just built up exists at all.
@@ -1504,10 +1408,8 @@ int find_program_directory(const char *argv0)
                     hisuid = buf.st_uid;
                     hisgid = buf.st_gid;
                     protection = buf.st_mode; // info about the file found
-//
 // I now want to check if there is a file of the right name that is
 // executable by the current (effective) user.
-//
                     if (protection & S_IXOTH ||
                         (mygid == hisgid && protection & S_IXGRP) ||
                         (myuid == hisuid && protection & S_IXUSR))
@@ -1522,7 +1424,6 @@ int find_program_directory(const char *argv0)
 // current directory. I want to be able to return an absolute fully
 // rooted path name! So unless the item we have at present starts with "/"
 // I will stick the current directory's location in front.
-//
             if (pgmname[0] != '/')
             {   char temp[LONGEST_LEGAL_FILENAME];
                 std::memset(temp, 0, sizeof(temp));
@@ -1536,10 +1437,8 @@ int find_program_directory(const char *argv0)
             fullProgramName = pgmname;
         }
     }
-//
 // Now if I have a program name I will try to see if it is a symbolic link
 // and if so I will follow it.
-//
     {   struct stat buf;
         char temp[LONGEST_LEGAL_FILENAME];
         std::memset(temp, 0, sizeof(temp));
@@ -1554,7 +1453,6 @@ int find_program_directory(const char *argv0)
     }
 // Now fullProgramName is set up, but may refer to an array that
 // is stack allocated. I need to make it proper!
-//
     w1 = new (std::nothrow) char[1+std::strlen(fullProgramName)];
     if (w1 == nullptr) return 5;           // 5 = new fails
     std::strcpy(w1, fullProgramName);
@@ -1591,7 +1489,6 @@ int find_program_directory(const char *argv0)
     {   char *w2 = w1 + len - 2;
         if (w2[0] == '3' && w2[1] == '2') w2[0] = 0;
     }
-//
 // If I am building a cygwin version I will remove any prefix
 // "cygwin-", "cygwin64-" or "win" from the front of the name of the
 // executable and also any "32" suffix.
@@ -1618,7 +1515,6 @@ int find_program_directory(const char *argv0)
 //   abc/def/fgi/xyz
 // and I need to split it at the final "/" (and by now I very fully expect
 // there to be at least one "/".
-//
     for (n=std::strlen(fullProgramName)-1; n>=0; n--)
         if (fullProgramName[n] == '/') break;
     if (n < 0) return 6;               // 6 = no "/" in full file path
@@ -1628,7 +1524,6 @@ int find_program_directory(const char *argv0)
     w1[n] = 0;
 // Note that if the executable was "/foo" then programDir will end up as ""
 // so that programDir + "/" + programName works out properly.
-//
     programDir = w1;
     n1 = std::strlen(fullProgramName) - n;
     w1 = new (std::nothrow) char[n1];
@@ -1670,7 +1565,6 @@ void fwin_set_lookup(lookup_function *f)
 }
 
 void process_file_name(char *filename, const char *old, size_t n)
-//
 // This procedure maps filenames by expanding some environment
 // variables.  It is very thoroughly system specific, which is why it
 // is in this file.  See also LONGEST_LEGAL_FILENAME in "tags.h" for a
@@ -1709,14 +1603,11 @@ void process_file_name(char *filename, const char *old, size_t n)
 //           should be avoided, however as an experimental place-holder I
 //           may do things with environment variables called HOME etc.
 //
-//
 // I convert file-names of the form aaa/bbb/ccc.ddd into something
 // acceptable to the system being used, even though this may result in
 // some native file titles that include '/' characters becoming unavailable.
 // The reasoning here is that scripts and programs can then use Unix-like
 // names and non-Unix hosts will treat them forgivingly.
-//
-//
 //
 {   int i;
     int c;
@@ -1727,9 +1618,7 @@ void process_file_name(char *filename, const char *old, size_t n)
     }
     o = filename;
     c = *old;
-//
 // First I deal with a leading "~"
-//
     if (c == '~')
     {   old++;
         n--;
@@ -1741,11 +1630,9 @@ void process_file_name(char *filename, const char *old, size_t n)
             *o++ = static_cast<char>(c);
         }
         *o = 0;
-//
 // actually deciding what the home directory is is passed down to a
 // system-specific call, but it is not to be relied upon especially
 // on personal computers.
-//
         if (o == filename)  // '~' on its own
         {   get_home_directory(filename, LONGEST_LEGAL_FILENAME);
             o = filename + std::strlen(filename);
@@ -1755,29 +1642,23 @@ void process_file_name(char *filename, const char *old, size_t n)
             o = filename + std::strlen(filename);
         }
     }
-//
 // Having copies a user-name across (if there was one) I now copy the
 // rest of the file-name, expanding $xxx and ${xxx} as necessary.
-//
     while (n != 0)
     {   c = *old++;
         n--;
-//
 // If I find a "$" that is either at the end of the file-name or that is
 // immediately followed by ".", "/" or "\" then I will not use it for
 // parameter expansion. This at least gives me some help with the RISCOS
 // file-name $.abc.def where the "$" is used to indicate the root of the
 // current disc. Well RISCOS is no longer supported here so this does
 // not worry me a lot!
-//
         if (c == '$' && n != 0 &&
             (c = *old) != '.' && c != '/' && c != '\\')
         {   char *p = o;
             const char *w;
-//
 // I collect the name of the parameter at the end of my file-name buffer,
 // but will over-write it later on when I actually do the expansion.
-//
             if (c == '{')
             {   old++;
                 n--;
@@ -1819,7 +1700,6 @@ void process_file_name(char *filename, const char *old, size_t n)
     }
     *o = 0;
 #ifdef WIN32
-//
 // Now the filename has had $ and ~ prefix things expanded - I "just"
 // need to deal with sub-directory representation issues. Specifically I need
 // to map "/" separators into "\" so that if a user presents a file
@@ -1831,7 +1711,6 @@ void process_file_name(char *filename, const char *old, size_t n)
 // As of September 2004 I will also map an intial sequence
 //         /cygdrive/x/
 // onto    x:\ (ie the Windows style path)
-//
 
     if (std::strncmp(filename, "/cygdrive/", 10) == 0 &&
         filename[11] == '/')
@@ -1841,22 +1720,18 @@ void process_file_name(char *filename, const char *old, size_t n)
         while (*tail != 0) *p++ = *tail++;
         *p = 0;
     }
-//
 // I map "/" characters in MSDOS filenames into "\" so that users
 // can give file names with Unix-like slashes as separators if they want.
 // People who WANT to use filenames with '/' in them will be hurt.
-//
     {   int j;
         char *tail = filename;
         while ((j = *tail) != 0)
         {   if (j == '/') *tail = '\\';
             tail++;
         }
-//
 // stat and friends do not like directories referred to as "\foo\", so check
 // for a trailing slash, being careful to respect directories with names
 // like "\" and "a:\".
-//
         j = std::strlen(filename);
         if (j > 0 && j != 1 && !(j == 3 && *(filename+1) == ':'))
         {   if ( (*(tail - 1) == '\\')) *(tail - 1) = 0;
@@ -1884,7 +1759,6 @@ void process_file_name(char *filename, const char *old, size_t n)
 #endif // WIN32
 }
 
-//
 // datestamps that I store away have given me significant
 // trouble with regard to portability - so now I deal with times by
 // talking to the system in terms of broken down local time (struct tm).
@@ -1913,7 +1787,6 @@ void process_file_name(char *filename, const char *old, size_t n)
 // ignore this oddity! But those who keep systems synchronised at a
 // millisecond or microsecond resolution (GPS anybody?) might need to
 // know I have been sloppy.
-//
 
 void unpack_date(unsigned long int r,
                  int *year, int *mon, int *day,
@@ -1923,13 +1796,11 @@ void unpack_date(unsigned long int r,
     *hour = r%24; r = r/24;
     *day  = r%32; r = r/32;
     *mon  = r%12; r = r/12;
-//
 // Please note that the Standard C "struct tm" structure specifies dates
 // in terms of years since 1900. Thus from the year 2000 on the year will
 // be a value of at least 100, but that is not supposed to be any special
 // cause of disaster. In particular the calculation involving "+70"
 // rather than "+1970" is NOT a bug here!
-//
     *year = 70+r;
 }
 
@@ -1942,12 +1813,10 @@ unsigned long int pack_date(int year, int mon, int day,
     return r*60 + sec;
 }
 
-//
 // getenv() is a mild pain: Windows seems
 // to have a strong preference for upper case names.  To allow for
 // all this I do not call getenv() directly but go via the following
 // code that can patch things up.
-//
 
 const char *my_getenv(const char *s)
 {
@@ -1972,11 +1841,9 @@ int my_system(const char *s)
 #define DO_NOT_USE_GETUID 1   // For MinGW
 
 #ifndef DO_NOT_USE_GETUID
-//
 // "machine.h" should set DO_NOT_USE_GETUID if that function is not
 // properly available. Not having it will make the treatment of
 // (eg) "~xxx/..." in filenames less satisfactory.
-//
 
 #include <pwd.h>
 
@@ -2067,11 +1934,9 @@ void set_filedate(char *name, unsigned long int datestamp,
     SYSTEMTIME st;
     FILETIME ft;
     int yr, mon, day, hr, min, sec;
-//
 // Here datestamp is a time expressed (sort of) in seconds since the start
 // of 1970. * I need to convert it into a broken-down SYSTEMTIME so that I
 // can then re-pack it as a Windows-NT FILETIME....
-//
     unpack_date(datestamp, &yr, &mon, &day, &hr, &min, &sec);
     st.wMilliseconds = 0;
     st.wYear = yr + 1900;  // Windows NT uses full dates since the year 0
@@ -2100,13 +1965,11 @@ void put_fileinfo(date_and_type *p, char *name)
 
 #else // WIN32
 
-//
 // On some Unix variants I may want this declaration inserted and on others
 // it would clash with a system-provided header file. Ugh! With luck the C
 // compiler will invent a suitable calling convention even if a declaration
 // is not present.
 // extern ftruncate(int, int);
-//
 
 int truncate_file(std::FILE *f, long int where)
 {   if (std::fflush(f) != 0) return 1;
@@ -2156,9 +2019,7 @@ void put_fileinfo(date_and_type *p, char *name)
 {   unsigned long int datestamp, filetype;
     struct stat file_info;
     struct std::tm *st;
-//
 // Read file parameters...
-//
     stat(name, &file_info);
     st = std::localtime(&(file_info.st_mtime));
     datestamp = pack_date(st->tm_year, st->tm_mon, st->tm_mday,
@@ -2170,7 +2031,6 @@ void put_fileinfo(date_and_type *p, char *name)
 
 #endif // WIN32
 
-//
 // If I am to process directories I need a set of routines that will
 // scan sub-directories for me.  This is necessarily dependent on
 // the operating system I am running under, hence the conditional compilation
@@ -2192,12 +2052,9 @@ void put_fileinfo(date_and_type *p, char *name)
 //
 // I also provide a similar function scan_files() with the same arguments that
 // does just the same except that it does not recurse into sub-directories,
-//
 
-//
 // For CSL's purposes the following 3 are in syscsl.h, but in general I do not
 // want to use that header with random fwin applications...
-//
 #define SCAN_FILE       0
 #define SCAN_DIR        1
 
@@ -2259,20 +2116,16 @@ void scan_files(string dir, filescan_function *proc)
 std::FILE *open_file(char *filename, const char *old, size_t n,
                      const char *mode, std::FILE *old_file)
 {
-//
 // mode is something like "r" or "w" or "rb", as needed by fopen(),
 // and old_file is nullptr normally, but can be a (FILE *) to indicate
 // the use of freopen rather than fopen.
-//
     std::FILE *ff;
     process_file_name(filename, old, n);
     if (*filename == 0) return nullptr;
     if (old_file == nullptr) ff = std::fopen(filename, mode);
     else ff = std::freopen(filename, mode, old_file);
-//
 // In suitable cases when the first attempt to open the file fails I
 // will try creating any necessary directories and then try again.
-//
     if (ff==nullptr && *mode=='w')
     {   char *p = filename;
         while (*p != 0)
@@ -2397,10 +2250,8 @@ std::time_t to_time_t(TP tp)
 }
 
 bool file_exists(char *filename, const char *old, size_t n, char *tt)
-//
 // This returns YES if the file exists, and as a side-effect copies a
 // textual form of the last-changed-time of the file into the buffer tt.
-//
 {   process_file_name(filename, old, n);
     if (*filename == 0) return false;
     std::error_code ec;
@@ -2473,10 +2324,8 @@ char *get_truename(char *filename, const char *old, size_t n)
             delete [] dir1;
             return nullptr;
         }
-//
 // Axiom-specific hack: truename preserves '/' at the end of
 // a path
-//
         if (old[n-1] == '/' && dir1[std::strlen(dir1)-1] != '/')
         {   n = std::strlen(dir1);
             dir1[n]   = '/';
@@ -2543,12 +2392,10 @@ char *get_truename(char *filename, const char *old, size_t n)
     }
 }
 
-//
 // The tests here are probably rather WRONG_MINDED in that they check the
 // status of the file and report whether its OWNER could read, write or
 // execute it, rather than whether the current user could. However what
 // I do here will hold the fort for now.
-//
 
 
 bool file_readable(char *filename, const char *old, size_t n)
@@ -2624,11 +2471,9 @@ void set_filedate(char *name, unsigned long int datestamp,
     SYSTEMTIME st;
     FILETIME ft;
     int yr, mon, day, hr, min, sec;
-//
 // Here datestamp is a time expressed (sort of) in seconds since the start
 // of 1970. * I need to convert it into a broken-down SYSTEMTIME so that I
 // can then re-pack it as a Windows-NT FILETIME....
-//
     unpack_date(datestamp, &yr, &mon, &day, &hr, &min, &sec);
     st.wMilliseconds = 0;
     st.wYear = yr + 1900;  // Windows NT uses full dates since the year 0
@@ -2657,13 +2502,11 @@ void put_fileinfo(date_and_type *p, char *name)
 
 #else // WIN32
 
-//
 // On some Unix variants I may want this declaration inserted and on others
 // it would clash with a system-provided header file. Ugh! With luck the C
 // compiler will invent a suitable calling convention even if a declaration
 // is not present.
 // extern ftruncate(int, int);
-//
 
 int truncate_file(std::FILE *f, long int where)
 {   if (std::fflush(f) != 0) return 1;
@@ -2713,9 +2556,7 @@ void put_fileinfo(date_and_type *p, char *name)
 {   unsigned long int datestamp, filetype;
     struct stat file_info;
     struct std::tm *st;
-//
 // Read file parameters...
-//
     stat(name, &file_info);
     st = std::localtime(&(file_info.st_mtime));
     datestamp = pack_date(st->tm_year, st->tm_mon, st->tm_mday,
@@ -2727,7 +2568,6 @@ void put_fileinfo(date_and_type *p, char *name)
 
 #endif // WIN32
 
-//
 // If I am to process directories I need a set of routines that will
 // scan sub-directories for me.  This is necessarily dependent on
 // the operating system I am running under, hence the conditional compilation
@@ -2749,21 +2589,16 @@ void put_fileinfo(date_and_type *p, char *name)
 //
 // I also provide a similar function scan_files() with the same arguments that
 // does just the same except that it does not recurse into sub-directories,
-//
 
-//
 // For CSL's purposes the following 3 are in syscsl.h, but in general I do not
 // want to use that header with random fwin applications...
-//
 #define SCAN_FILE       0
 #define SCAN_DIR        1
 
 
-//
 // I use a (static) flag to indicate how sub-directories should be
 // handled, and what to do about case. By default I fold to lower case
 // on windows. setting hostcase non-zero causes case to be preserved.
-//
 
 static int recursive_scan, hostcase = 0;
 
@@ -2804,10 +2639,8 @@ int alphasort_files(const void *a, const void *b)
 }
 
 static void exall(int namelength, filescan_function *proc)
-//
 // This procedure scans a directory-full of files, calling the given procedure
 // to process each one it finds.
-//
 {
 #ifdef EMBEDDED
     std::printf("exall function called - but not implemented here\n");
@@ -2834,16 +2667,12 @@ static void exall(int namelength, filescan_function *proc)
     {   char *p = reinterpret_cast<char *>(
                   &found_files[--n_found_files].cFileName);
         int c;
-//
 // Fill out filename with the actual name I grabbed, i.e. with
 // wild-cards expanded.
-//
         namelength = rootlen+1;
-//
 // I fold DOS filenames into lower case because it does not matter much
 // to DOS and I think it looks better - furthermore it helps when I move
 // archives to other systems.  So I do the same on NT.
-//
         while ((c = *p++) != 0)
         {   if (!hostcase) if (std::isupper(c)) c = std::tolower(c);
             win_filename[namelength++] = static_cast<char>(c);
@@ -2852,19 +2681,15 @@ static void exall(int namelength, filescan_function *proc)
         if (found_files[n_found_files].dwFileAttributes &
             FILE_ATTRIBUTE_DIRECTORY)
         {   if (found_files[n_found_files].cFileName[0] != '.')
-//
 // I filter out directory names that start with '.'.
 // This is to avoid calamity with recursion though chains such as .\.\.\.....
-//
             {   proc(string(win_filename),
                      string(win_filename+scan_leafstart),
                      SCAN_DIR, 0);
                 if (!recursive_scan) continue;
                 std::strcpy(&win_filename[namelength], "\\*.*");
-//
 // Append "\*.*" to the directory-name and try again, thereby scanning
 // its contents.
-//
                 exall(namelength+4, proc);
                 win_filename[namelength] = 0;
             }
@@ -2916,12 +2741,10 @@ void scan_files(string Cdir, filescan_function *proc)
 static char posix_filename[LONGEST_LEGAL_FILENAME];
 static int scan_leafstart = 0;
 
-//
 // The code here uses opendir, readdir and closedir and as such ought to
 // be Posix compatible. The macro USE_DIRECT_H can cause an older variant
 // on this idea to be used. BUt it may need adjustment for different
 // systems.
-//
 
 static char **found_files = nullptr;
 
@@ -2971,10 +2794,8 @@ static void exall(int namelength, filescan_function *proc)
     {   while ((dd = readdir(d)) != nullptr)
         {   char *leafname = dd->d_name;
             char *copyname;
-//
 // readdir hands back both "." and ".." but I had better not recurse
 // into either!
-//
             if (std::strcmp(leafname, ".") == 0 ||
                 std::strcmp(leafname, "..") == 0) continue;
             if (more_files()) break;
@@ -3063,20 +2884,16 @@ void scan_files(string Cdir, filescan_function *proc)
 std::FILE *open_file(char *filename, const char *old, size_t n,
                      const char *mode, std::FILE *old_file)
 {
-//
 // mode is something like "r" or "w" or "rb", as needed by fopen(),
 // and old_file is nullptr normally, but can be a (FILE *) to indicate
 // the use of freopen rather than fopen.
-//
     std::FILE *ff;
     process_file_name(filename, old, n);
     if (*filename == 0) return nullptr;
     if (old_file == nullptr) ff = std::fopen(filename, mode);
     else ff = std::freopen(filename, mode, old_file);
-//
 // In suitable cases when the first attempt to open the file fails I
 // will try creating any necessary directories and then try again.
-//
     if (ff==nullptr && *mode=='w')
     {   char *p = filename;
         while (*p != 0)
@@ -3207,10 +3024,8 @@ void list_directory_members(char *filename, const char *old,
 }
 
 bool file_exists(char *filename, const char *old, size_t n, char *tt)
-//
 // This returns YES if the file exists, and as a side-effect copies a
 // textual form of the last-changed-time of the file into the buffer tt.
-//
 {   struct stat statbuff;
     process_file_name(filename, old, n);
     if (*filename == 0) return false;
@@ -3343,12 +3158,10 @@ char *get_truename(char *filename, const char *old, size_t n)
     }
 }
 
-//
 // The tests here are probably rather WRONG_MINDED in that they check the
 // status of the file and report whether its OWNER could read, write or
 // execute it, rather than whether the current user could. However what
 // I do here will hold the fort for now.
-//
 
 
 bool file_readable(char *filename, const char *old, size_t n)

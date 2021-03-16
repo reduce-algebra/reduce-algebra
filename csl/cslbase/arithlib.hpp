@@ -776,7 +776,7 @@ namespace std
 // guards that avoid it being scanned more than once.
 
 #ifdef CSL
-#include "thread_local.h"
+#include "threadloc.h"
 #else // CSL
 
 // thread_local.h                                 Copyright A C Norman 2019

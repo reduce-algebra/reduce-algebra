@@ -37,12 +37,6 @@
 
 #include "headers.h"
 
-#ifdef WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
-#endif
-
 LispObject nreverse(LispObject a)
 {   LispObject b = nil;
     while (consp(a))

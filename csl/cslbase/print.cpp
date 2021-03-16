@@ -33,14 +33,9 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// $Id $
+// $Id$
 
 #include "headers.h"
-
-#ifdef WIN32
-#include <windows.h>
-#include <process.h>
-#endif
 
 #ifdef SOCKETS
 #include "sockhdr.h"
@@ -1650,7 +1645,7 @@ LispObject Lfind_gnuplot(LispObject env)
 LispObject Lgetpid(LispObject env)
 {
 #ifdef WIN32
-    return onevalue(fixnum_of_int(_getpid()));
+    return onevalue(fixnum_of_int(windowsGetPid()));
 #else
     return onevalue(fixnum_of_int(getpid()));
 #endif
@@ -4684,71 +4679,16 @@ static LispObject Llibrary_name(LispObject env, LispObject lib)
 // the raw numbers!
 //
 
-static char error_name[32];
+#ifndef WIN32
 
-const char *WSAErrName(int i)
+static char error_name[32];const char *WSAErrName(int i)
 {   switch (i)
-{       default:                 std::sprintf(error_name,
-                    "Socket error %d", i);
-            return error_name;
-
-#ifdef WIN32
-
-        case WSAEINTR:           return "WSAEINTR";
-        case WSAEBADF:           return "WSAEBADF";
-        case WSAEACCES:          return "WSAEACCES";
-#ifdef WSAEDISCON
-        case WSAEDISCON:         return "WSAEDISCON";
-#endif
-        case WSAEFAULT:          return "WSAEFAULT";
-        case WSAEINVAL:          return "WSAEINVAL";
-        case WSAEMFILE:          return "WSAEMFILE";
-        case WSAEWOULDBLOCK:     return "WSAEWOULDBLOCK";
-        case WSAEINPROGRESS:     return "WSAEINPROGRESS";
-        case WSAEALREADY:        return "WSAEALREADY";
-        case WSAENOTSOCK:        return "WSAENOTSOCK";
-        case WSAEDESTADDRREQ:    return "WSAEDESTADDRREQ";
-        case WSAEMSGSIZE:        return "WSAEMSGSIZE";
-        case WSAEPROTOTYPE:      return "WSAEPROTOTYPE";
-        case WSAENOPROTOOPT:     return "WSAENOPROTOOPT";
-        case WSAEPROTONOSUPPORT: return "WSAEPROTONOSUPPORT";
-        case WSAESOCKTNOSUPPORT: return "WSAESOCKTNOSUPPORT";
-        case WSAEOPNOTSUPP:      return "WSAEOPNOTSUPP";
-        case WSAEPFNOSUPPORT:    return "WSAEPFNOSUPPORT";
-        case WSAEAFNOSUPPORT:    return "WSAEAFNOSUPPORT";
-        case WSAEADDRINUSE:      return "WSAEADDRINUSE";
-        case WSAEADDRNOTAVAIL:   return "WSAEADDRNOTAVAIL";
-        case WSAENETDOWN:        return "WSAENETDOWN";
-        case WSAENETUNREACH:     return "WSAENETUNREACH";
-        case WSAENETRESET:       return "WSAENETRESET";
-        case WSAECONNABORTED:    return "WSAECONNABORTED";
-        case WSAECONNRESET:      return "WSAECONNRESET";
-        case WSAENOBUFS:         return "WSAENOBUFS";
-        case WSAEISCONN:         return "WSAEISCONN";
-        case WSAENOTCONN:        return "WSAENOTCONN";
-        case WSAESHUTDOWN:       return "WSAESHUTDOWN";
-        case WSAETOOMANYREFS:    return "WSAETOOMANYREFS";
-        case WSAETIMEDOUT:       return "WSAETIMEDOUT";
-        case WSAECONNREFUSED:    return "WSAECONNREFUSED";
-        case WSAELOOP:           return "WSAELOOP";
-        case WSAENAMETOOLONG:    return "WSAENAMETOOLONG";
-        case WSAEHOSTDOWN:       return "WSAEHOSTDOWN";
-        case WSAEHOSTUNREACH:    return "WSAEHOSTUNREACH";
-        case WSASYSNOTREADY:     return "WSASYSNOTREADY";
-        case WSAVERNOTSUPPORTED: return "WSAVERNOTSUPPORTED";
-        case WSANOTINITIALISED:  return "WSANOTINITIALISED";
-        case WSAHOST_NOT_FOUND:  return "WSAHOST_NOT_FOUND";
-        case WSATRY_AGAIN:       return "WSATRY_AGAIN";
-        case WSANO_RECOVERY:     return "WSANO_RECOVERY";
-        case WSANO_DATA:         return "WSANO_DATA";
-
-#else
-
-//
+    {   default:                 std::sprintf(error_name,
+                                              "Socket error %d", i);
+                                 return error_name;
 // When I run under Unix I display both the Unix and Windows form of the
 // error code.  I guess that shows you which of those platforms is the one
 // I am doing initial development on!
-//
         case EINTR:              return "WSAEINTR/EINTR";
         case EBADF:              return "WSAEBADF/EBADF";
         case EACCES:             return "WSAEACCES/EACCES";
@@ -4795,11 +4735,11 @@ const char *WSAErrName(int i)
 //
         case NO_DATA:            return "WSANO_DATA/NO_DATA";
 #endif
+    }
+}
 
 #endif // WIN32
 
-    }
-}
 
 bool sockets_ready = false;
 
@@ -4807,19 +4747,7 @@ int ensure_sockets_ready()
 {   if (!sockets_ready)
     {
 #ifdef WIN32
-//
-// Under Windows the socket stuff is not automatically active, so some
-// system calls have to be made at the start of a run. I demand a
-// Winsock 1.1, and fail if that is not available.
-//
-        WSADATA wsadata;
-        int i = WSAStartup(MAKEWORD(1,1), &wsadata);
-        if (i) return i;   /* Failed to start winsock for some reason */;
-        if (LOBYTE(wsadata.wVersion) != 1 ||
-            HIBYTE(wsadata.wVersion) != 1)
-        {   WSACleanup();
-            return 1;      // Version 1.1 of winsock needed
-        }
+        if (windowsPrepareSockets() != 0) return 1;
 #endif
         sockets_ready = true;
     }

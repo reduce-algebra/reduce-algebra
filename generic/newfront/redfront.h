@@ -78,6 +78,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <ctype.h>
+#include <wchar.h>
 #include <string.h>
 #include <signal.h>
 

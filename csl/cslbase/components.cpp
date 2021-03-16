@@ -1,7 +1,7 @@
-// components.cpp              Copyright (C)  A C Norman, October 2015-2020
+// components.cpp              Copyright (C)  A C Norman, October 2015-2021
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -57,7 +57,7 @@
 #include <cmath>
 
 #ifdef WIN32
-#include <windows.h>
+#include "winsupport.h"
 #else
 #include <pthread.h>
 #include <unistd.h>

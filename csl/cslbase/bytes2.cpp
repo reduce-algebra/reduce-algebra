@@ -91,8 +91,8 @@ size_t xppc;
 //
 #ifdef CHECK_STACK
     {   char *my_stack = reinterpret_cast<char *>(&my_stack);
-        if (native_stack == nullptr) native_stack = native_stack_base =
-                        my_stack;
+        if (native_stack == nullptr)
+            native_stack = native_stack_base = my_stack;
         else if (my_stack + 10000 < native_stack)
         {   native_stack = my_stack;
             trace_printf("\nFunction %s stack depth %d\n",
@@ -138,8 +138,8 @@ size_t xppc;
     A_reg = nil;
 #ifdef CHECK_STACK
 #ifndef CONSERVATIVE
-    if (reinterpret_cast<char *>(fringe) <=
-        reinterpret_cast<char *>(heaplimit))
+    if (reinterpret_cast<char *>(ufringe) <=
+        reinterpret_cast<char *>(uheaplimit))
     {   A_reg = cons_gc_test(A_reg);
         errexit();
     }

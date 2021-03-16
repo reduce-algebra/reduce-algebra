@@ -72,7 +72,7 @@ extern char *line_get_prompt(EditLine *);
 extern char *line_get_rprompt(EditLine *);
 extern unsigned char line_complete(EditLine *,int);
 extern unsigned char line_fn_complete(EditLine *,char *(*)(const char *, int),
-			       const Char *, const char *(*)(const char *),
+			       const wchar_t *, const char *(*)(const char *),
 			       size_t);
 extern char *line_filename_completion_function(const char *, int);
 extern const char *line_append_char_function(const char *);

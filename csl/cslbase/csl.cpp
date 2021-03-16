@@ -126,13 +126,6 @@
 #include <sys/resource.h>
 #endif
 
-#ifdef WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
-#endif
-
-
 // These flags are used to ensure that protected symbols don't get
 // overwritten by default, and that the system keeps quiet about it.
 
@@ -1413,30 +1406,12 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     C_stacklimit = (uintptr_t)C_stackbase - 2*1024*1024 + 0x10000;
 #else // EMBEDDED
 #ifdef WIN32
-    {   HMODULE h = GetModuleHandle(nullptr); // For current executable
-        if (h != nullptr)
-        {   IMAGE_DOS_HEADER *dh = (IMAGE_DOS_HEADER*)h;
-            IMAGE_NT_HEADERS *NTh =
-                (IMAGE_NT_HEADERS*)((BYTE*)dh + dh->e_lfanew);
-            int64_t stackLimit =
-                (int64_t)NTh->OptionalHeader.SizeOfStackReserve;
-// If the limit recovered above is under 200K I will pretend it is
-// just plain wrong and increase it to that. The effect may be that I
-// end up with an untidy stack overflow but at least I get closer to
-// using all the space that I have.
-            if (stackLimit < 200*1024) stackLimit = 200*1024;
-// I also assume that any figure over 20 Mbytes is a mess so ignore it
-            if (stackLimit <= 20*1024*1024)
-            {   // I try to give myself 64K spare...
-                C_stacklimit = (uintptr_t)C_stackbase - stackLimit + 0x10000;
-            }
-        }
-    }
+    win32_stacklimit(C_stacklimit);
 #else // WIN32
 #ifdef HAVE_SYS_RESOURCE_H
     {   struct rlimit r;
         if (getrlimit(RLIMIT_STACK, &r) == 0)
-        {   int64_t stackLimit = (int64_t)r.rlim_cur;
+        {   int64_t maxStackSize = (int64_t)r.rlim_cur;
 // If the user has used ulimit to remove all stack limits I will
 // nevertheless apply one at 20 Mbytes. That is SO much higher than any
 // default as to not hurt ordinary people - and if anybody NEEDS gigabytes
@@ -1444,24 +1419,24 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // of that! Results of RLIM_SAVED_MAX represent a sort of "give up" from
 // getrlimit so I will treat them as failure.
 #if HAVE_DECL_RLIM_SAVED_MAX
-            if (stackLimit == (int64_t)RLIM_SAVED_MAX &&
+            if (maxStackSize == (int64_t)RLIM_SAVED_MAX &&
                 RLIM_SAVED_MAX != RLIM_INFINITY)
             {   /* do nothing */
             }
             else
 #endif
 #if HAVE_DECL_RLIM_SAVED_CUR
-                if (stackLimit == (int64_t)RLIM_SAVED_CUR &&
+                if (maxStackSize == (int64_t)RLIM_SAVED_CUR &&
                     RLIM_SAVED_CUR != RLIM_INFINITY)
                 {   /* do nothing */
                 }
                 else
 #endif
-                    if (stackLimit == (int64_t)RLIM_INFINITY)
-                        stackLimit = 20*1024*1024;
+                    if (maxStackSize == (int64_t)RLIM_INFINITY)
+                        maxStackSize = 20*1024*1024;
 // I view values under 200K as silly and ignore them!
-            if (stackLimit >= 200*1024)
-            {   C_stacklimit = (uintptr_t)C_stackbase - stackLimit + 0x10000;
+            if (maxStackSize >= 200*1024)
+            {   C_stacklimit = (uintptr_t)C_stackbase - maxStackSize + 0x10000;
             }
         }
     }
@@ -3225,16 +3200,17 @@ static int submain(int argc, const char *argv[])
 extern int ENTRYPOINT(int argc, const char *argv[]);
 
 int main(int argc, const char *argv[])
-{   fwin_set_lookup(look_in_lisp_variable);
+{   init_thread_locals();
+    fwin_set_lookup(look_in_lisp_variable);
     return fwin_startup(argc, argv, ENTRYPOINT);
 }
 
 #endif // EMBEDDED
 
-
 int ENTRYPOINT(int argc, const char *argv[])
 {   int res;
 #ifdef EMBEDDED
+    init_thread_locals();
     if ((res = find_program_directory(argv[0])) != 0)
     {   std::fprintf(stderr,
                      "Unable to identify program name and directory (%d)\n", res);

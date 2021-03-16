@@ -86,8 +86,9 @@
 #endif // !WITHOUT_GUI
 
 #include "machine.h"
-
 #include "log.h"
+
+#include "threadloc.h"
 
 #if HAVE_LIBWX
 #include "wxfwin.h"
@@ -212,14 +213,14 @@ inline double CSLpow(double x, double y)
 #endif // HAVE_CRLIBM
 
 #include "tags.h"
-#include "thread_local.h"
+
 #include "cslerror.h"
 #include "externs.h"
 #ifdef CONSERVATIVE
 #include "newallocate.h"
 #else
 #include "allocate.h"
-#endif
+#endif // CONSERVATIVE
 #include "syscsl.h"
 #include "arith.h"
 #include "entries.h"

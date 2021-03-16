@@ -37,9 +37,9 @@
 
 #include "headers.h"
 
-#ifdef WIN32
-#include <conio.h>
-#endif
+//#ifdef WIN32
+//#include <conio.h>
+//#endif
 
 int64_t gc_number = 0;
 int64_t reclaim_trap_count = -1;
@@ -86,7 +86,7 @@ static void copy(LispObject *p)
 // and returns a copy to the pointer.  If scans the copied material to copy
 // all relevent sub-structures to the new semi-space.
 {   char *fr = reinterpret_cast<char *>(reinterpret_cast<uintptr_t>
-                                        (fringe)),
+                                        (lfringe)),
                *vfr = reinterpret_cast<char *>(reinterpret_cast<uintptr_t>(vfringe));
     char *tr_fr = fr, *tr_vfr = vfr;
     void *p1;
@@ -129,9 +129,9 @@ static void copy(LispObject *p)
 // between tests.  Here I do careful tests on every step, and so I can
 // sail much closer to the wind wrt filling up space.
                     if (fr <= reinterpret_cast<char *>(
-                            reinterpret_cast<uintptr_t>(heaplimit) - SPARE + 32))
+                            reinterpret_cast<uintptr_t>(lheaplimit) - SPARE + 32))
                     {   char *hl = reinterpret_cast<char *>(
-                                       static_cast<intptr_t>(heaplimit));
+                                       static_cast<intptr_t>(lheaplimit));
                         void *p;
                         setcar(reinterpret_cast<LispObject>(fr), SPID_GCMARK);
                         if (pages_count == 0) allocate_more_memory();
@@ -143,11 +143,11 @@ static void copy(LispObject *p)
                         p = pages[--pages_count];
                         zero_out(p);
                         new_heap_pages[new_heap_pages_count++] = p;
-                        heaplimit = (intptr_t)p;
+                        lheaplimit = (intptr_t)p;
                         hl = reinterpret_cast<char *>(
-                                 static_cast<intptr_t>(heaplimit));
+                                 static_cast<intptr_t>(lheaplimit));
                         fr = hl + CSL_PAGE_SIZE - sizeof(Cons_Cell);
-                        heaplimit = reinterpret_cast<LispObject>(hl + SPARE);
+                        lheaplimit = reinterpret_cast<LispObject>(hl + SPARE);
                     }
                     setcar(reinterpret_cast<LispObject>(fr), w);
                     setcdr(reinterpret_cast<LispObject>(fr), cdr(a));
@@ -346,7 +346,7 @@ static void copy(LispObject *p)
                         }
                     }
                     else
-                    {   fringe = reinterpret_cast<LispObject>(fr);
+                    {   lfringe = reinterpret_cast<LispObject>(fr);
                         vfringe = reinterpret_cast<LispObject>(vfr);
                         return;        // Final exit when all has been copied
                     }
@@ -424,18 +424,18 @@ static bool reset_limit_registers()
 // reset_limit_registers should only be called when something has run out,
 // so if it is CONS space I will expand the CONS heap, otherwise the VECTOR
 // heap.
-    if (fringe <= heaplimit)
+    if (lfringe <= lheaplimit)
     {   p = pages[--pages_count];
         space_now++;
         zero_out(p);
         heap_pages[heap_pages_count++] = p;
-        heaplimit = (intptr_t)p;
-        fringe = reinterpret_cast<LispObject>(
+        lheaplimit = (intptr_t)p;
+        lfringe = reinterpret_cast<LispObject>(
                      reinterpret_cast<char *>(
-                         static_cast<uintptr_t>(heaplimit)) + CSL_PAGE_SIZE);
-        heaplimit = reinterpret_cast<LispObject>(
+                         static_cast<uintptr_t>(lheaplimit)) + CSL_PAGE_SIZE);
+        lheaplimit = reinterpret_cast<LispObject>(
                         reinterpret_cast<char *>(
-                            static_cast<uintptr_t>(heaplimit)) + SPARE);
+                            static_cast<uintptr_t>(lheaplimit)) + SPARE);
     }
     else
     {   char *vf, *vh;
@@ -519,11 +519,11 @@ static void real_garbage_collector()
 // A first page of (cons-)heap
     zero_out(pp);
     new_heap_pages[new_heap_pages_count++] = pp;
-    heaplimit = reinterpret_cast<intptr_t>(pp);
+    lheaplimit = reinterpret_cast<intptr_t>(pp);
     vl = reinterpret_cast<char *>(
-             static_cast<uintptr_t>(heaplimit));
-    fringe = reinterpret_cast<LispObject>(vl + CSL_PAGE_SIZE);
-    heaplimit = reinterpret_cast<LispObject>(vl + SPARE);
+             static_cast<uintptr_t>(lheaplimit));
+    lfringe = reinterpret_cast<LispObject>(vl + CSL_PAGE_SIZE);
+    lheaplimit = reinterpret_cast<LispObject>(vl + SPARE);
 // A first page of vector heap.
     pp = pages[--pages_count];
     zero_out(pp);

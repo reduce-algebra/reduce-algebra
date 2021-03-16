@@ -33,7 +33,7 @@
 // an LGPL library such as FOX, even though binaries built from the
 // complete work are subject to the LGPL.
 
-// $Id $
+// $Id$
 
 // This supports modest line-editing and history for terminal-mode
 // use of "fwin" applications.
