@@ -75,7 +75,7 @@
 #else
  // HAVE_CONFIG_H
 #define PART_OF_FOX 1
-extern init_thread_locals();
+extern void init_thread_locals();
 #endif // HAVE_CONFIG_H
 
 // For the bulk of CSL the tests on C++ dialect are done in "machine.h",
