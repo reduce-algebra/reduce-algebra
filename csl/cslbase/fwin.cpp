@@ -196,8 +196,9 @@ extern "C" char *getcwd(const char *s, size_t n);
 #include <sys/types.h>
 #include <cerrno>
 
-#ifndef WIN32
+#ifdef WIN32
 #include <windows.h>
+#else // WIN32
 #include <glob.h>
 #endif // WIN32
 
