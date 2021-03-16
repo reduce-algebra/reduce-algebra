@@ -221,7 +221,7 @@ uxwritefloat(buf, flt, convstr)
 /* Tag( uxdoubletofloat )
  */
 void
-uuxdoubletofloat (dbl,flt)
+uxdoubletofloat (dbl,flt)
      double *dbl;
      float  *flt;
 {
@@ -229,7 +229,7 @@ uuxdoubletofloat (dbl,flt)
 }
 
 void
-uuxfloattodouble (flt,dbl)
+uxfloattodouble (flt,dbl)
      float  *flt;             
      double *dbl;             
 {
@@ -238,7 +238,7 @@ uuxfloattodouble (flt,dbl)
 
 /* Functions for fast-math.sl (Unix C replacement for mathlib.) */
 long long
-uuxsin (r, x)
+uxsin (r, x)
      double *r, *x;
 {
     *r = sin( *x );
@@ -248,7 +248,7 @@ uuxsin (r, x)
 }
 
 long long
-uuxcos (r, x)
+uxcos (r, x)
      double *r, *x;
 {
     *r = cos( *x );
@@ -258,7 +258,7 @@ uuxcos (r, x)
 }
 
 long long
-uuxtan (r, x)
+uxtan (r, x)
      double *r, *x;
 {
     *r = tan( *x );
@@ -268,7 +268,7 @@ uuxtan (r, x)
 }
 
 long long
-uuxasin (r, x)
+uxasin (r, x)
      double *r, *x;
 {
     *r = asin( *x );
@@ -278,7 +278,7 @@ if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID); return (
 }
 
 long long
-uuxacos (r, x)
+uxacos (r, x)
      double *r, *x;
 {
     *r = acos( *x );
@@ -288,7 +288,7 @@ uuxacos (r, x)
 }
 
 long long
-uuxatan (r, x)
+uxatan (r, x)
      double *r, *x;
 {
     *r = atan( *x );
@@ -298,7 +298,7 @@ uuxatan (r, x)
 }
 
 long long
-uuxsqrt (r, x)
+uxsqrt (r, x)
      double *r, *x;
 {
     *r = sqrt( *x );
@@ -308,7 +308,7 @@ uuxsqrt (r, x)
 }
 
 long long
-uuxexp (r, x)
+uxexp (r, x)
      double *r, *x;
 {
     *r = exp( *x );
@@ -318,7 +318,7 @@ uuxexp (r, x)
 }
 
 long long
-uuxlog (r, x)
+uxlog (r, x)
      double *r, *x;
 {
     *r = log( *x );
@@ -328,7 +328,7 @@ uuxlog (r, x)
 }
 
 long long
-uuxatan2 (r, y, x)
+uxatan2 (r, y, x)
      double *r, *y, *x;
 {
     *r = atan2( *y, *x );

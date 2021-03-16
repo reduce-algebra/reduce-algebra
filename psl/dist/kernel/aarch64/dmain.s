@@ -2397,8 +2397,8 @@ symfnc:
  .quad undefinedfunction
  .quad undefinedfunction
  .quad undefinedfunction
+ .quad undefinedfunction
  .globl firstkernel
- .quad firstkernel
  .quad firstkernel
  .quad undefinedfunction
  .quad undefinedfunction
