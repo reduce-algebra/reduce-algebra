@@ -351,12 +351,12 @@ class Save
 private:
     LispObject *ssave;
 public:
-    Save(int count)
-    {   ssave = stack;
-        stack = ssave + count;
-        for (int i=1; i<=count; i++)
-            ssave[i] = nil;
-    }
+//  Save(PushCount count)
+//  {   ssave = stack;
+//      stack = ssave + count.n;
+//      for (int i=1; i<=count.n; i++)
+//          ssave[i] = nil;
+//  }
     Save(LispObject a1)
     {   ssave = stack;
         stack = ssave + 1;
@@ -542,12 +542,12 @@ class Save
 private:
     LispObject *ssave;
 public:
-    Save(int count)
-    {   ssave = stack;
-        stack = ssave + count;
-        for (int i=1; i<=count; i++)
-            ssave[i] = nil;
-    }
+//  Save(PushCount count)
+//  {   ssave = stack;
+//      stack = ssave + count.n;
+//      for (int i=1; i<=count.n; i++)
+//          ssave[i] = nil;
+//  }
     Save(LispObject a1)
     {   ssave = stack;
         stack = ssave + 1;
