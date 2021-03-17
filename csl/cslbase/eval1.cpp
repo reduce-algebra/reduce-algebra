@@ -37,12 +37,6 @@
 
 #include "headers.h"
 
-#ifdef WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
-#endif
-
 LispObject nreverse(LispObject a)
 {   LispObject b = nil;
     while (consp(a))
@@ -477,7 +471,7 @@ LispObject apply_lambda(LispObject def, LispObject args,
                   cdr(def),                    // body
                   env1,
                   name1,
-                  10);
+                  PushCount(10));
     LispObject &arglist    = save.val(1);
     LispObject &bvl        = save.val(2);
     LispObject &body       = save.val(3);

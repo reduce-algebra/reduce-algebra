@@ -2069,9 +2069,9 @@ void setup(int restart_flag, double store_size)
                               reinterpret_cast<intptr_t>(p))));
     vheaplimit = static_cast<LispObject>(vfringe + (CSL_PAGE_SIZE - 16));
     p = heap_pages[heap_pages_count++] = allocate_page("heap warm setup");
-    heaplimit = (intptr_t)p;
-    fringe = static_cast<LispObject>(heaplimit + CSL_PAGE_SIZE);
-    heaplimit = static_cast<LispObject>(heaplimit + SPARE);
+    lheaplimit = (intptr_t)p;
+    lfringe = static_cast<LispObject>(lheaplimit + CSL_PAGE_SIZE);
+    lheaplimit = static_cast<LispObject>(lheaplimit + SPARE);
 #endif // !CONSERVATIVE
 
     if ((restart_flag & 1) != 0) warm_setup();

@@ -182,6 +182,7 @@ then
   cd $abssrcdir
   printf "Regenerate autoconf-related files\n"
   find . -name config.cache | xargs rm
+  printf "\n\n+++ About to recreate all autoconf generated files +++\n\n"
   if ! eval $SHELL -c \"./autogen.sh $ac_configure_args\"
   then
     printf "The autogen.sh script seems to have failed. I can not continue\n"
@@ -724,15 +725,15 @@ csl_inplace_cygwin_build ()
     mkdir -p "$abssrcdir/cslbuild/$build"
     cd "$abssrcdir/cslbuild/$build"
   fi
-  setpasscc
   AC_MSG_NOTICE([host=$host buildmc=$buildmc pass_host=$pass_host])
   pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
   doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
           STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \ 
           $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
-          $passcc $pass_build --with-cygwin"
+          $pass_build --with-cygwin"
   AC_MSG_NOTICE([doconfig = $doconfig])
+  printf "\n\n+++ About restart configure steps in proper target directory +++\n\n"
   eval "$doconfig"
   AC_MSG_NOTICE([configuration for cygwin on $target complete])
   cd "$abssrcdir"
@@ -757,7 +758,6 @@ csl_inplace_nativewin_build ()
     mkdir -p "$abssrcdir/cslbuild/$build"
     cd "$abssrcdir/cslbuild/$build"
   fi
-  setpasscc
   if test "$with_windows_layout" = "new"
   then
     cygextra=
@@ -774,8 +774,9 @@ csl_inplace_nativewin_build ()
   doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
           CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
-          $passcc $cygextra $pass_build --host=$host"
+          $cygextra $pass_build --host=$host"
   AC_MSG_NOTICE([doconfig = $doconfig])
+  printf "\n\n+++ About restart configure steps in proper target directory +++\n\n"
   eval "$doconfig"
   AC_MSG_NOTICE([configuration for $target complete])
   cd "$abssrcdir"
@@ -818,13 +819,13 @@ csl_inplace_build ()
 # All other platforms come here...
     mkdir -p "$abssrcdir/cslbuild/$build"
     cd "$abssrcdir/cslbuild/$build"
-    setpasscc
     pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
     doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
-            $passcc $pass_build"
+            $pass_build"
     AC_MSG_NOTICE([doconfig = $doconfig])
+    printf "\n\n+++ About restart configure steps +++\n\n"
     eval "$doconfig"
     cd "$abssrcdir"
     ;;
@@ -839,6 +840,7 @@ psl_inplace_build ()
 # This passes down any configure arguments to the PSL-specific configuration
 # but at present I do not expect any to be relevant.
   pass_build="--with-build=\"$build\""
+  printf "\n\n+++ About to configure for PSL +++\n\n"
   eval "$SHELL $abssrcdir/psl/configure --config-cache $ac_configure_args \
        $pass_build CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" "
@@ -859,6 +861,7 @@ psl_inplace_build ()
         --libdir=\"$builddir/lib\" \
         --includedir=\"$builddir/include\""
   AC_MSG_NOTICE([doconfig = $doconfig])
+  printf "\n\n+++ About to configure crlibm +++\n\n"
   eval "$doconfig"
   cd "$builddir"
 
@@ -876,6 +879,7 @@ psl_inplace_build ()
         --libdir=\"$builddir/lib\" \
         --includedir=\"$builddir/include\""
   AC_MSG_NOTICE([doconfig = $doconfig])
+  printf "\n\n+++ About to configure libedit +++\n\n"
   eval "$doconfig"
 
   cd "$builddir"
@@ -896,6 +900,7 @@ psl_inplace_build ()
         --libdir=\"$builddir/lib\" \
         --includedir=\"$builddir/include\""
   AC_MSG_NOTICE([doconfig = $doconfig])
+  printf "\n\n+++ About to configure redfront +++\n\n"
   eval "$doconfig"
 
   cd "$builddir"
@@ -1096,6 +1101,7 @@ then
         $pass_host $pass_build --without-fox --without-wx"
   fi
   AC_MSG_NOTICE([$doconfig])
+  printf "\n\n+++ About to configure CSL +++\n\n"
   eval "$doconfig"
   cd "$builddir"
 
@@ -1185,6 +1191,7 @@ then
       doconfig="$doconfig --with-gtk"
     fi
     AC_MSG_NOTICE([doconfig = $doconfig])
+    printf "\n\n+++ About to configure wxWidgets +++\n\n"
     eval "$doconfig"
     cd "$builddir"
   elif test "x$with_fox" != "xno"
@@ -1214,6 +1221,7 @@ then
             --libdir=\"$builddir/lib\" \
             --includedir=\"$builddir/include\" \
             $extras"
+    printf "\n\n+++ About to configure FOX +++\n\n"
     AC_MSG_NOTICE([doconfig = $doconfig])
     eval "$doconfig"
     cd "$builddir"
@@ -1242,6 +1250,7 @@ else
         --libdir=\"$builddir/lib\" \
         --includedir=\"$builddir/include\""
   AC_MSG_NOTICE([doconfig = $doconfig])
+  printf "\n\n+++ About to configure crlibm +++\n\n"
   eval "$doconfig"
   cd "$builddir"
 fi
@@ -1268,6 +1277,7 @@ case "`uname -s` `uname -m`" in
           --libdir=\"$builddir/lib\" \
           --includedir=\"$builddir/include\""
   AC_MSG_NOTICE([doconfig = $doconfig])
+  printf "\n\n+++ About to configure libffi +++\n\n"
   eval "$doconfig"
   cd "$builddir"
   ;;
@@ -1292,6 +1302,7 @@ doconfig="$SHELL $abssrcdir/libraries/SoftFloat-3a/source/configure -C \
         --libdir=\"$builddir/lib\" \
         --includedir=\"$builddir/include\""
 AC_MSG_NOTICE([doconfig = $doconfig])
+printf "\n\n+++ About to configure softfloat +++\n\n"
 eval "$doconfig"
 
 cd "$builddir"
@@ -1312,6 +1323,7 @@ doconfig="$SHELL $abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure -C \
         --libdir=\"$builddir/lib\" \
         --includedir=\"$builddir/include\""
 AC_MSG_NOTICE([doconfig = $doconfig])
+printf "\n\n+++ About to configure libedit +++\n\n"
 eval "$doconfig"
 
 cd "$builddir"
@@ -1332,6 +1344,7 @@ doconfig="$SHELL $abssrcdir/generic/newfront/configure -C $nohost \
         --libdir=\"$builddir/lib\" \
         --includedir=\"$builddir/include\""
 AC_MSG_NOTICE([doconfig = $doconfig])
+printf "\n\n+++ About to configure redfront +++\n\n"
 eval "$doconfig"
 
 cd "$builddir"

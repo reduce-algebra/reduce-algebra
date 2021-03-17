@@ -791,7 +791,7 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
     stackcheck(args, ienv);
     errexit();
     RealSave save1(car(args), cdr(args), ienv);    // bvl, body, env
-    RealSave save2(4);
+    RealSave save2(PushCount(4));
     LispObject &bvl        = save1.val(1);
     LispObject &body       = save1.val(2);
     LispObject &env        = save1.val(3);

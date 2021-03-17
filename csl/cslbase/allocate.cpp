@@ -41,19 +41,15 @@
 
 #include "headers.h"
 
-#ifdef WIN32
-#include <windows.h>
-#else // !WIN32
+#ifndef WIN32
 #include <unistd.h>
 #include <sys/mman.h>
 #endif // !WIN32
 
-#if !defined THREAD_LOCAL && !defined WINDOWS_THREAD && !defined ATOMIC
-uintptr_t fringe;
-uintptr_t heaplimit;
+uintptr_t lfringe;
+uintptr_t lheaplimit;
 uintptr_t vfringe;
 uintptr_t vheaplimit;
-#endif
 
 uintptr_t *C_stackbase;
 
@@ -295,16 +291,9 @@ LispObject cons(LispObject a, LispObject b)
     if (is_exception(a) || is_exception(b))
         my_abort("exception value not trapped");
 #endif // DEBUG
-#ifdef ATOMIC
-    LispObject r =
-        static_cast<LispObject>(fringe.fetch_sub(sizeof(Cons_Cell),
-                                std::memory_order_relaxed)) -
-        sizeof(Cons_Cell);
-#else
-    LispObject r = static_cast<LispObject>(fringe -= sizeof(Cons_Cell));
-#endif
+    LispObject r = static_cast<LispObject>(lfringe -= sizeof(Cons_Cell));
 // As coded here I MUST have a safety margin such that at least 4 CONS
-// cells can always be allocated. If I put the heaplimit check before the
+// cells can always be allocated. If I put the lheaplimit check before the
 // code to write car and cdr fields in I would not need that, but then
 // I would need to arrange (or be confident that) the arguments a and b
 // would be safe across the garbage collection and I would need to write
@@ -319,7 +308,7 @@ LispObject cons(LispObject a, LispObject b)
 // capability when garbage collector bugs might relate to the exact place
 // where the garbage collector was called from.
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (uintptr_t)r < (uintptr_t)heaplimit ||
+        (uintptr_t)r < (uintptr_t)lheaplimit ||
         cons_forced(1))
         return reclaim(r, "internal cons", GC_CONS, 0);
     else return r;
@@ -327,14 +316,7 @@ LispObject cons(LispObject a, LispObject b)
 
 LispObject cons_no_gc(LispObject a, LispObject b)
 {
-#ifdef ATOMIC
-    LispObject r =
-        static_cast<LispObject>(fringe.fetch_sub(sizeof(Cons_Cell),
-                                std::memory_order_relaxed)) -
-        sizeof(Cons_Cell);
-#else
-    LispObject r = static_cast<LispObject>(fringe -= sizeof(Cons_Cell));
-#endif
+    LispObject r = static_cast<LispObject>(lfringe -= sizeof(Cons_Cell));
     r += TAG_CONS;
     setcar(r, a);
     setcdr(r, b);
@@ -345,26 +327,19 @@ LispObject cons_no_gc(LispObject a, LispObject b)
 
 LispObject cons_gc_test(LispObject p)
 {   if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (uintptr_t)fringe <= (uintptr_t)heaplimit)
+        (uintptr_t)lfringe <= (uintptr_t)lheaplimit)
         return reclaim(p, "cons gc test", GC_CONS, 0);
     else return p;
 }
 
 LispObject ncons(LispObject a)
 {
-#ifdef ATOMIC
-    LispObject r =
-        static_cast<LispObject>(fringe.fetch_sub(sizeof(Cons_Cell),
-                                std::memory_order_relaxed)) -
-        sizeof(Cons_Cell);
-#else
-    LispObject r = static_cast<LispObject>(fringe -= sizeof(Cons_Cell));
-#endif
+    LispObject r = static_cast<LispObject>(lfringe -= sizeof(Cons_Cell));
     r += TAG_CONS;
     setcar(r, a);
     setcdr(r, nil);
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (uintptr_t)r < (uintptr_t)heaplimit || cons_forced(1))
+        (uintptr_t)r < (uintptr_t)lheaplimit || cons_forced(1))
         return reclaim(r, "internal ncons", GC_CONS, 0);
     else return r;
 }
@@ -372,63 +347,42 @@ LispObject ncons(LispObject a)
 LispObject list2(LispObject a, LispObject b)
 {
 // Note that building two cons cells at once saves some overhead here
-#ifdef ATOMIC
-    LispObject r =
-        static_cast<LispObject>(fringe.fetch_sub(2*sizeof(Cons_Cell),
-                                std::memory_order_relaxed)) -
-        2*sizeof(Cons_Cell);
-#else
-    LispObject r = static_cast<LispObject>(fringe -= 2*sizeof(Cons_Cell));
-#endif
+    LispObject r = static_cast<LispObject>(lfringe -= 2*sizeof(Cons_Cell));
     r += TAG_CONS;
     setcar(r, a);
     setcdr(r, r + sizeof(Cons_Cell));
     setcar(r+sizeof(Cons_Cell), b);
     setcdr(r+sizeof(Cons_Cell), nil);
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (uintptr_t)r < (uintptr_t)heaplimit || cons_forced(2))
+        (uintptr_t)r < (uintptr_t)lheaplimit || cons_forced(2))
         return reclaim(r, "internal list2", GC_CONS, 0);
     else return r;
 }
 
 LispObject list2star(LispObject a, LispObject b, LispObject c)
 {
-#ifdef ATOMIC
-    LispObject r =
-        static_cast<LispObject>(fringe.fetch_sub(2*sizeof(Cons_Cell),
-                                std::memory_order_relaxed)) -
-        2*sizeof(Cons_Cell);
-#else
-    LispObject r = static_cast<LispObject>(fringe -= 2*sizeof(Cons_Cell));
-#endif
+    LispObject r = static_cast<LispObject>(lfringe -= 2*sizeof(Cons_Cell));
     r += TAG_CONS;
     setcar(r, a);
     setcdr(r,  r + sizeof(Cons_Cell));
     setcar(r+sizeof(Cons_Cell), b);
     setcdr(r+sizeof(Cons_Cell), c);
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (uintptr_t)r < (uintptr_t)heaplimit || cons_forced(2))
+        (uintptr_t)r < (uintptr_t)lheaplimit || cons_forced(2))
         return reclaim(r, "internal list2*", GC_CONS, 0);
     else return r;
 }
 
 LispObject list2starrev(LispObject c, LispObject b, LispObject a)
 {
-#ifdef ATOMIC
-    LispObject r =
-        static_cast<LispObject>(fringe.fetch_sub(2*sizeof(Cons_Cell),
-                                std::memory_order_relaxed)) -
-        2*sizeof(Cons_Cell);
-#else
-    LispObject r = static_cast<LispObject>(fringe -= 2*sizeof(Cons_Cell));
-#endif
+    LispObject r = static_cast<LispObject>(lfringe -= 2*sizeof(Cons_Cell));
     r += TAG_CONS;
     setcar(r, a);
     setcdr(r, r + sizeof(Cons_Cell));
     setcar(r+sizeof(Cons_Cell), b);
     setcdr(r+sizeof(Cons_Cell), c);
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (uintptr_t)r < (uintptr_t)heaplimit || cons_forced(2))
+        (uintptr_t)r < (uintptr_t)lheaplimit || cons_forced(2))
         return reclaim(r, "internal list2*", GC_CONS, 0);
     else return r;
 }
@@ -436,14 +390,7 @@ LispObject list2starrev(LispObject c, LispObject b, LispObject a)
 LispObject list3star(LispObject a, LispObject b, LispObject c,
                      LispObject d)
 {
-#ifdef ATOMIC
-    LispObject r =
-        static_cast<LispObject>(fringe.fetch_sub(3*sizeof(Cons_Cell),
-                                std::memory_order_relaxed)) -
-        3*sizeof(Cons_Cell);
-#else
-    LispObject r = static_cast<LispObject>(fringe -= 3*sizeof(Cons_Cell));
-#endif
+    LispObject r = static_cast<LispObject>(lfringe -= 3*sizeof(Cons_Cell));
     r += TAG_CONS;
     setcar(r, a);
     setcdr(r, r + sizeof(Cons_Cell));
@@ -453,7 +400,7 @@ LispObject list3star(LispObject a, LispObject b, LispObject c,
     setcar(r+2*sizeof(Cons_Cell), c);
     setcdr(r+2*sizeof(Cons_Cell), d);
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (uintptr_t)r < (uintptr_t)heaplimit || cons_forced(3))
+        (uintptr_t)r < (uintptr_t)lheaplimit || cons_forced(3))
         return reclaim(r, "internal list3*", GC_CONS, 0);
     else return r;
 }
@@ -461,14 +408,7 @@ LispObject list3star(LispObject a, LispObject b, LispObject c,
 LispObject list4(LispObject a, LispObject b, LispObject c,
                  LispObject d)
 {
-#ifdef ATOMIC
-    LispObject r =
-        static_cast<LispObject>(fringe.fetch_sub(4*sizeof(Cons_Cell),
-                                std::memory_order_relaxed)) -
-        4*sizeof(Cons_Cell);
-#else
-    LispObject r = static_cast<LispObject>(fringe -= 4*sizeof(Cons_Cell));
-#endif
+    LispObject r = static_cast<LispObject>(lfringe -= 4*sizeof(Cons_Cell));
     r += TAG_CONS;
     setcar(r, a);
     setcdr(r, r + sizeof(Cons_Cell));
@@ -481,7 +421,7 @@ LispObject list4(LispObject a, LispObject b, LispObject c,
     setcar(r + 3*sizeof(Cons_Cell), d);
     setcdr(r + 3*sizeof(Cons_Cell), nil);
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (uintptr_t)r < (uintptr_t)heaplimit || cons_forced(4))
+        (uintptr_t)r < (uintptr_t)lheaplimit || cons_forced(4))
         return reclaim(r, "internal list4", GC_CONS, 0);
     else return r;
 }
@@ -490,35 +430,21 @@ LispObject list4(LispObject a, LispObject b, LispObject c,
 
 LispObject acons(LispObject a, LispObject b, LispObject c)
 {
-#ifdef ATOMIC
-    LispObject r =
-        static_cast<LispObject>(fringe.fetch_sub(2*sizeof(Cons_Cell),
-                                std::memory_order_relaxed)) -
-        2*sizeof(Cons_Cell);
-#else
-    LispObject r = static_cast<LispObject>(fringe -= 2*sizeof(Cons_Cell));
-#endif
+    LispObject r = static_cast<LispObject>(lfringe -= 2*sizeof(Cons_Cell));
     r += TAG_CONS;
     setcar(r, r + sizeof(Cons_Cell));
     setcdr(r, c);
     setcar(r+sizeof(Cons_Cell), a);
     setcdr(r+sizeof(Cons_Cell), b);
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (uintptr_t)r < (uintptr_t)heaplimit || cons_forced(2))
+        (uintptr_t)r < (uintptr_t)lheaplimit || cons_forced(2))
         return reclaim(r, "internal acons", GC_CONS, 0);
     else return r;
 }
 
 LispObject acons_no_gc(LispObject a, LispObject b, LispObject c)
 {
-#ifdef ATOMIC
-    LispObject r =
-        static_cast<LispObject>(fringe.fetch_sub(2*sizeof(Cons_Cell),
-                                std::memory_order_relaxed)) -
-        2*sizeof(Cons_Cell);
-#else
-    LispObject r = static_cast<LispObject>(fringe -= 2*sizeof(Cons_Cell));
-#endif
+    LispObject r = static_cast<LispObject>(lfringe -= 2*sizeof(Cons_Cell));
     r += TAG_CONS;
     setcar(r, r + sizeof(Cons_Cell));
     setcdr(r, c);
@@ -529,14 +455,7 @@ LispObject acons_no_gc(LispObject a, LispObject b, LispObject c)
 
 LispObject list3(LispObject a, LispObject b, LispObject c)
 {
-#ifdef ATOMIC
-    LispObject r =
-        static_cast<LispObject>(fringe.fetch_sub(3*sizeof(Cons_Cell),
-                                std::memory_order_relaxed)) -
-        3*sizeof(Cons_Cell);
-#else
-    LispObject r = static_cast<LispObject>(fringe -= 3*sizeof(Cons_Cell));
-#endif
+    LispObject r = static_cast<LispObject>(lfringe -= 3*sizeof(Cons_Cell));
     r += TAG_CONS;
     setcar(r, a);
     setcdr(r, r + sizeof(Cons_Cell));
@@ -546,21 +465,14 @@ LispObject list3(LispObject a, LispObject b, LispObject c)
     setcar(r + 2*sizeof(Cons_Cell), c);
     setcdr(r + 2*sizeof(Cons_Cell), nil);
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (uintptr_t)r < (uintptr_t)heaplimit || cons_forced(3))
+        (uintptr_t)r < (uintptr_t)lheaplimit || cons_forced(3))
         return reclaim(r, "internal list3", GC_CONS, 0);
     else return r;
 }
 
 LispObject list3rev(LispObject c, LispObject b, LispObject a)
 {
-#ifdef ATOMIC
-    LispObject r =
-        static_cast<LispObject>(fringe.fetch_sub(3*sizeof(Cons_Cell),
-                                std::memory_order_relaxed)) -
-        3*sizeof(Cons_Cell);
-#else
-    LispObject r = static_cast<LispObject>(fringe -= 3*sizeof(Cons_Cell));
-#endif
+    LispObject r = static_cast<LispObject>(lfringe -= 3*sizeof(Cons_Cell));
     r += TAG_CONS;
     setcar(r, a);
     setcdr(r, r + sizeof(Cons_Cell));
@@ -570,45 +482,31 @@ LispObject list3rev(LispObject c, LispObject b, LispObject a)
     setcar(r + 2*sizeof(Cons_Cell), c);
     setcdr(r + 2*sizeof(Cons_Cell), nil);
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (uintptr_t)r < (uintptr_t)heaplimit || cons_forced(3))
+        (uintptr_t)r < (uintptr_t)lheaplimit || cons_forced(3))
         return reclaim(r, "internal list3", GC_CONS, 0);
     else return r;
 }
 
 LispObject Lcons(LispObject, LispObject a, LispObject b)
 {
-#ifdef ATOMIC
-    LispObject r =
-        static_cast<LispObject>(fringe.fetch_sub(sizeof(Cons_Cell),
-                                std::memory_order_relaxed)) -
-        sizeof(Cons_Cell);
-#else
-    LispObject r = static_cast<LispObject>(fringe -= sizeof(Cons_Cell));
-#endif
+    LispObject r = static_cast<LispObject>(lfringe -= sizeof(Cons_Cell));
     r += TAG_CONS;
     setcar(r, a);
     setcdr(r, b);
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (uintptr_t)r < (uintptr_t)heaplimit || cons_forced(1))
+        (uintptr_t)r < (uintptr_t)lheaplimit || cons_forced(1))
         return onevalue(reclaim(r, "cons", GC_CONS, 0));
     else return onevalue(r);
 }
 
 LispObject Lxcons(LispObject, LispObject a, LispObject b)
 {
-#ifdef ATOMIC
-    LispObject r =
-        static_cast<LispObject>(fringe.fetch_sub(sizeof(Cons_Cell),
-                                std::memory_order_relaxed)) -
-        sizeof(Cons_Cell);
-#else
-    LispObject r = static_cast<LispObject>(fringe -= sizeof(Cons_Cell));
-#endif
+    LispObject r = static_cast<LispObject>(lfringe -= sizeof(Cons_Cell));
     r += TAG_CONS;
     setcar(r, b);
     setcdr(r, a);
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (uintptr_t)r < (uintptr_t)heaplimit || cons_forced(1))
+        (uintptr_t)r < (uintptr_t)lheaplimit || cons_forced(1))
         return onevalue(reclaim(r, "xcons", GC_CONS, 0));
     else return onevalue(r);
 }
@@ -619,19 +517,12 @@ LispObject Lnilfn(LispObject)
 
 LispObject Lncons(LispObject env, LispObject a)
 {
-#ifdef ATOMIC
-    LispObject r =
-        static_cast<LispObject>(fringe.fetch_sub(sizeof(Cons_Cell),
-                                std::memory_order_relaxed)) -
-        sizeof(Cons_Cell);
-#else
-    LispObject r = static_cast<LispObject>(fringe -= sizeof(Cons_Cell));
-#endif
+    LispObject r = static_cast<LispObject>(lfringe -= sizeof(Cons_Cell));
     r += TAG_CONS;
     setcar(r, a);
     setcdr(r, nil);
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (uintptr_t)r < (uintptr_t)heaplimit || cons_forced(1))
+        (uintptr_t)r < (uintptr_t)lheaplimit || cons_forced(1))
         return onevalue(reclaim(r, "ncons", GC_CONS, 0));
     else return onevalue(r);
 }

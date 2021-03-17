@@ -1,7 +1,7 @@
 // tagifs.cpp                           Copyright (C) A C Norman, 2015-2020
 
 //
-// Re-words C/C++ code to add comments to #else and #endif lines to show
+// Re-works C/C++ code to add comments to #else and #endif lines to show
 // the #if/#ifdef that they refer to.
 //
 

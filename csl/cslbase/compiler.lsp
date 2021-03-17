@@ -4258,16 +4258,16 @@ prog (v) (setq v (car var1350)) (progn (put v (quote c!:location) n) (setq n
 (plus n 1)))) (setq var1350 (cdr var1350)) (go lab1349))))) (cond (reloadenv 
 (progn (setq reloadenv n) (cond ((equal n 0) (c!:printf 
 "    RealSave saveEnv(env);\n")) (t (c!:printf 
-"    RealSave saveEnv(env, %a);\n" n))))) (t (cond ((neq n 0) (c!:printf 
-"    RealSave Workspace(%a);\n" n))))) (cond (env (c!:printf 
-"%<// copy arguments values to proper place\n"))) (prog (var1352) (setq 
-var1352 env) lab1351 (cond ((null var1352) (return nil))) (prog (v) (setq v (
-car var1352)) (cond ((flagp (cdr v) (quote c!:live_across_call)) (c!:printf 
-"    stack[%s] = %s;\n" (minus (get (get (cdr v) (quote c!:chosen)) (quote 
-c!:location))) (cdr v))) (t (c!:printf "    %s = %s;\n" (get (cdr v) (quote 
-c!:chosen)) (cdr v))))) (setq var1352 (cdr var1352)) (go lab1351)) (c!:printf
-"%<// end of prologue\n") (c!:display_flowgraph c!:startpoint) (remflag 
-c!:all_blocks (quote c!:visited))))
+"    RealSave saveEnv(env, PushCount(%a));\n" n))))) (t (cond ((neq n 0) (
+c!:printf "    RealSave Workspace(PushCount(%a));\n" n))))) (cond (env (
+c!:printf "%<// copy arguments values to proper place\n"))) (prog (var1352) (
+setq var1352 env) lab1351 (cond ((null var1352) (return nil))) (prog (v) (
+setq v (car var1352)) (cond ((flagp (cdr v) (quote c!:live_across_call)) (
+c!:printf "    stack[%s] = %s;\n" (minus (get (get (cdr v) (quote c!:chosen))
+(quote c!:location))) (cdr v))) (t (c!:printf "    %s = %s;\n" (get (cdr v) 
+(quote c!:chosen)) (cdr v))))) (setq var1352 (cdr var1352)) (go lab1351)) (
+c!:printf "%<// end of prologue\n") (c!:display_flowgraph c!:startpoint) (
+remflag c!:all_blocks (quote c!:visited))))
 
 (de c!:cand (u env) (prog (w r) (setq w (reverse (cdr u))) (cond ((null w) (
 return (c!:cval nil env)))) (setq r (list (list (quote t) (car w)))) (setq w 

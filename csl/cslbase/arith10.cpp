@@ -63,6 +63,9 @@
 // specifically one with a load of trailing zeros in its binary
 // representation. The code here does some more careful range reduction
 // and so calls the basic version only when it is safer.
+//
+// In very many cases I will be using crlibm and so this hack will not
+// get activated.
 
 
 static double arg_reduce(double a, int *quadrant)

@@ -326,8 +326,15 @@ size_t activePagesCount;
 
 uintptr_t *C_stackbase;   // base of the main thread
 atomic<uint32_t> activeThreads;
-
 //  0x00 : total_threads : lisp_threads : still_busy_threads
+
+
+DEFINE_THREAD_LOCAL(uintptr_t,    threadId);
+DEFINE_THREAD_LOCAL(uintptr_t,    fringe);
+DEFINE_THREAD_LOCAL(Page *,       borrowPages);
+DEFINE_THREAD_LOCAL(uintptr_t,    borrowFringe);
+DEFINE_THREAD_LOCAL(uintptr_t,    borrowLimit);
+DEFINE_THREAD_LOCAL(uintptr_t,    borrowNext);
 
 
 
@@ -600,16 +607,16 @@ LispObject reduce_basic_vector_size(LispObject v, size_t len)
 
 LispObject borrow_n_bytes(size_t n)
 {   for (;;)
-    {   size_t gap=borrowLimit::get() - borrowFringe::get();
+    {   size_t gap=borrowLimit - borrowFringe;
         if (n <= gap)
-        {   uintptr_t r = borrowFringe::get();
-            borrowFringe::set(borrowFringe::get() + n);
+        {   uintptr_t r = borrowFringe;
+            borrowFringe = borrowFringe + n;
             return static_cast<LispObject>(r);
         }
-        if (borrowNext::get() != 0)
-        {   borrowFringe::set(borrowNext::get());
-            borrowLimit::set(((uintptr_t *)borrowFringe::get())[0]);
-            borrowNext::set(((uintptr_t *)borrowFringe::get())[1]);
+        if (borrowNext != 0)
+        {   borrowFringe = borrowNext;
+            borrowLimit = ((uintptr_t *)borrowFringe)[0];
+            borrowNext = ((uintptr_t *)borrowFringe)[1];
             continue;
         }
 // here I need to allocate a new page....
@@ -623,11 +630,11 @@ LispObject borrow_n_bytes(size_t n)
         {   w = freePages;
             freePages = freePages->chain;
         }
-        w->chain = borrowPages::get();
-        borrowPages::set(w);
-        borrowFringe::set(w->fringe);
-        borrowLimit::set(w->limit);
-        borrowNext::set(0);    // BAD....
+        w->chain = borrowPages;
+        borrowPages = w;
+        borrowFringe = w->fringe;
+        borrowLimit = w->limit;
+        borrowNext = 0;    // BAD....
     }
 }
 
@@ -754,8 +761,8 @@ void setVariablesFromPage(Page *p)
 // limit for the current page equal to the fringe, and that will mean
 // that the very first time I try to allocate I will arrange to set up
 // a fresh Chunk. That seems nicer to me than creating that chunk here.
-    uintptr_t thr = threadId::get();
-    fringe::set(limit[thr] = limitBis[thr] = gFringe = p->fringe.load());
+    uintptr_t thr = threadId;
+    fringe = limit[thr] = limitBis[thr] = gFringe = p->fringe.load();
     myChunkBase[thr] = nullptr;
     gLimit = p->limit;
 //    cout << "setVariablesFromPage\r\n";
@@ -913,8 +920,9 @@ void releaseThreadNumber(unsigned int n)
 
 ThreadStartup::ThreadStartup()
 {   // cout << "ThreadStartup" << "\r" << endl;
+    initThreadLocals();
     std::lock_guard<std::mutex> lock(mutexForGc);
-    threadId::set(allocateThreadNumber());
+    threadId = allocateThreadNumber();
 // The update here is just fine while I am in fact single threaded, but I
 // will need to review it when multiple threads can be in play.
     activeThreads.fetch_add(0x00010101);
@@ -923,7 +931,7 @@ ThreadStartup::ThreadStartup()
 ThreadStartup::~ThreadStartup()
 {   // cout << "~ThreadStartup" << "\r" << endl;
     std::lock_guard<std::mutex> lock(mutexForGc);
-    releaseThreadNumber(threadId::get());
+    releaseThreadNumber(threadId);
     activeThreads.fetch_sub(0x00010101);
 }
 
@@ -1137,19 +1145,11 @@ void grab_more_memory(size_t npages)
     }
 }
 
-#if defined WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
-#endif
-
 void init_heap_segments(double d)
 {   cout << "init_heap_segments " << d << "\r" << endl;
+    size_t mem;
 #ifdef WIN32
-    MEMORYSTATUSEX s;
-    s.dwLength = sizeof(s);
-    GlobalMemoryStatusEx(&s);
-    size_t mem = s.ullTotalPhys;
+    mem = getMemorySize();
 #else // WIN32
 // BEWARE: _SC_PHYS_PAGES is a glibc extension and is not mandated by POSIX.
 // However it (maybe obviously) should work on all variants of Linux and
@@ -1180,10 +1180,6 @@ void init_heap_segments(double d)
     if (!SIXTY_FOUR_BIT) d = 1600.0*1024.0*1024.0;
     initHeapSegments(d/1024.0);
 }
-
-#ifdef WIN32
-#include <conio.h>
-#endif
 
 int64_t gc_number = 0;
 int64_t reclaim_trap_count = -1;

@@ -63,11 +63,11 @@
 
 #ifndef __has_cpp_attribute
 #define __has_cpp_attribute(name) 0
-#endif // C++17 support
+#endif // fake C++17 support
 
 #ifndef __has_include
 #define __has_include(name) 0
-#endif // C++17 support
+#endif // fake C++17 support
 
 
 #if !defined HAVE_FILESYSTEM &&  \
@@ -79,7 +79,7 @@
 #include <filesystem>
 #endif // HAVE_FILESYSTEM
 
-// Now I can test __cpp_lib_filesystemto see if std::filesystem is
+// Now I can test __cpp_lib_filesystem to see if std::filesystem is
 // actually available. If I use it I may need to link -lstdc++fs in gcc
 // or -lc++fs in clang!
 
@@ -95,10 +95,10 @@
 #define UNLIKELY
 #endif // __has_cpp_attribute_unlikely
 
-using std::cout;      // Make C++ output as in "cout << "string" << endl;"
-using std::endl;      // a lot nicer.
+using std::cout;      // Make C++ output as in "cout << "string" << endl;" a
+using std::endl;      // lot nicer to write.
 
-using std::int32_t;   // Fixed-width and architeciture-specific width integers
+using std::int32_t;   // Fixed-width and architecture-specific width integers
 using std::int64_t;   // that are really heavily used.
 using std::intptr_t;
 using std::uint32_t;
@@ -205,17 +205,10 @@ using std::atomic;    // If I am going to be multi-threaded then very many
 #define __STDC_FORMAT_MACROS 1
 #endif // define PRId32 etc
 
-#ifdef WIN32
-// The aim here is to avoid use of the Microsoft versions of printf and
-// friends and (hence) allow g++ to parse and check format strings reliably.
-#define __USE_MINGW_ANSI_STDIO 1
+#include "winsupport.h"
 
-#include <winsock.h>
-#include <windows.h>
-
-#else // WIN32
-
-#define unix_posix 1        // Assume all non-windows systems are Unix!
+#ifndef WIN32
+#define unix_posix 1        // Assume all non-windows systems are Unix-like!
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>

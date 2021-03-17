@@ -37,7 +37,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// $Id $
+// $Id$
 
 
 #ifndef ZLIB_DEMO
@@ -1891,15 +1891,15 @@ bool finished_with(int j)
         for (i=0; i<get_dirused(*d); i++)
         {   long int pos = bits32(&d->d[i].D_position);
             if (pos != hwm)
-            {   char *b = 16 + reinterpret_cast<char *>(stack);
+            {   char *b = 16 + (char *)stack;
                 char small_buffer[64];
                 long int len = bits24(&d->d[i].D_size);
                 long int newpos = hwm;
                 while (len != 0)
                 {   size_t n =
                         (size_t)((CSL_PAGE_SIZE - 64 -
-                                  (reinterpret_cast<char *>(stack) - reinterpret_cast<char *>
-                                   (stackBase))) &
+                                  ((char *)stack -
+                                   reinterpret_cast<char *>(stackBase))) &
                                  (~(int32_t)0xff));
 // I only perform compression of the file when I am in the process of stopping,
 // and in that case the Lisp stack is not in use, so I use if as a buffer.

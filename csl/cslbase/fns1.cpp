@@ -38,9 +38,7 @@
 
 #include "headers.h"
 
-#ifdef WIN32
-#include <windows.h>
-#else
+#ifndef WIN32
 #include <dlfcn.h>
 #endif
 

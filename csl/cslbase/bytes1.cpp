@@ -904,14 +904,7 @@ LispObject Lbytecounts_1(LispObject env, LispObject a)
     return onevalue(nil);
 }
 
-// See comments in lispthrow,h re this.
-//#undef stack
-//thread_local LispObject *stack;
-//LispObject **get_stack_addr()
-//{   return &stack;
-//}
-
-LispObject *stack;
+DEFINE_THREAD_LOCAL(LispObject *, stack);
 
 inline void do_freebind(LispObject bvec)
 {   int32_t n, k;
