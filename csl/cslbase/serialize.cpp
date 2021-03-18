@@ -1724,7 +1724,10 @@ down:
                     qfn2(w) = read_function2();
                     qfn3(w) = read_function3();
                     qfn4up(w) = read_function4up();
-                    qcount(w) = countOfValue(read_u64());
+                    {   uint64_t nn = read_u64();
+                        qcountLow(w) = static_cast<uint32_t>(nn);
+                        qcountHigh(w) = static_cast<uint32_t>(nn>>32);
+                    }
 // Now to allow me to feel safe I will put NIL in all the other fields
 // on a provisional basis. They get their proper values later.
                     setvalue(w, nil);
@@ -2890,7 +2893,7 @@ down:
             write_function2(qfn2(p));
             write_function3(qfn3(p));
             write_function4up(qfn4up(p));
-            write_u64(valueOfCount(qcount(p)));
+            write_u64(qcount(p));
             w = p;
             p = qpname(p);
             setpname(w, b);
@@ -3820,7 +3823,8 @@ void warm_setup()
     setheader(nil, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR);
     for (LispObject **p = list_bases; *p!=nullptr; p++) **p = nil;
     *stack = nil;
-    qcount(nil) = zeroCount;
+    qcountLow(nil) = 0;
+    qcountHigh(nil) = 0;
 // Make things GC safe first...
     setvalue(nil, nil);
     setenv(nil, nil);
@@ -4220,7 +4224,7 @@ static int profile_cf(const void *a, const void *b)
 static double itotal_count = 0.0, total_count = 0.0;
 
 static bool count_totals(LispObject x)
-{   uint64_t n = valueOfCount(qcount(x));
+{   uint64_t n = qcount(x);
     if (n == 0) return false; // Ignore items with zero count
     LispObject e = qenv(x);
     if (is_cons(e))
@@ -4247,12 +4251,13 @@ static bool count_totals(LispObject x)
 }
 
 static bool clear_counts(LispObject x)
-{   qcount(x) = zeroCount;
+{   qcountLow(x) = 0;
+    qcountHigh(x) = 0;
     return false;
 }
 
 static bool non_zero_count(LispObject x)
-{   return valueOfCount(qcount(x)) != 0;
+{   return qcount(x) != 0;
 }
 
 LispObject Lmapstore(LispObject env, LispObject a)
@@ -4304,7 +4309,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
         r = nil;
         while (stack != savestack)
         {   LispObject x = *stack;
-            uint64_t n = valueOfCount(qcount(x));
+            uint64_t n = qcount(x);
             if (n == 0) continue;
             LispObject e = qenv(x);
             if (is_cons(e))
@@ -4350,7 +4355,10 @@ LispObject Lmapstore(LispObject env, LispObject a)
                 }
             }
             x = *stack--;
-            if ((what & 1) == 0) qcount(x) = zeroCount;
+            if ((what & 1) == 0)
+            {   qcountLow(x) = 0;
+                qcountHigh(x) = 0;
+            }
         }
     }
     if (what == 0 || what == 1)

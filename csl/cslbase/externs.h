@@ -396,7 +396,7 @@ extern LispObject *stackLimit;
 extern LispObject *stackLimit;
 #endif // !CONSERVATIVE
 
-extern volatile atomic<uintptr_t> event_flag;
+extern atomic<uintptr_t> event_flag;
 
 extern intptr_t nwork;
 

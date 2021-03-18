@@ -865,24 +865,30 @@ psl_inplace_build ()
   eval "$doconfig"
   cd "$builddir"
 
-  AC_MSG_NOTICE([About to configure libedit])
-  mkdir -p libedit
-  cd libedit
-  doconfig="$SHELL $abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure --config-cache \
-        $nohost \
-        CPPFLAGS=\"$CPPFLAGS\" \
-        CFLAGS=\"$CFLAGS\" \
-        CXXFLAGS=\"$CXXFLAGS\" \
-        LDFLAGS=\"$LDFLAGS\" \
-        --enable-widec=yes \
-        --prefix=\"$builddir\" \
-        --libdir=\"$builddir/lib\" \
-        --includedir=\"$builddir/include\""
-  AC_MSG_NOTICE([doconfig = $doconfig])
-  printf "\n\n+++ About to configure libedit +++\n\n"
-  eval "$doconfig"
+  case "$host" in
+  *windows)
+    ;;
+  *)
+    AC_MSG_NOTICE([About to configure libedit])
+    mkdir -p libedit
+    cd libedit
+    doconfig="$SHELL $abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure --config-cache \
+          $nohost \
+          CPPFLAGS=\"$CPPFLAGS\" \
+          CFLAGS=\"$CFLAGS\" \
+          CXXFLAGS=\"$CXXFLAGS\" \
+          LDFLAGS=\"$LDFLAGS\" \
+          --enable-widec=yes \
+          --prefix=\"$builddir\" \
+          --libdir=\"$builddir/lib\" \
+          --includedir=\"$builddir/include\""
+    AC_MSG_NOTICE([doconfig = $doconfig])
+    printf "\n\n+++ About to configure libedit +++\n\n"
+    eval "$doconfig"
 
-  cd "$builddir"
+    cd "$builddir"
+    ;;
+  esac
 
   ln -f -s $abssrcdir/libraries/wineditline .
 

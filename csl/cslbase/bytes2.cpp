@@ -132,7 +132,7 @@ size_t xppc;
 // bytecode but was called just under 2 million times. The overheads of
 // starting up the bytecode interpreter nake that an invalid judgement,
 // and the "+30" here is intended to counterbalance it.
-    incCount(qcount(basic_elt(litvec, 0)), profile_count_mode ? 1 : 30);
+    incCount(basic_elt(litvec, 0), profile_count_mode ? 1 : 30);
 #endif
 //
     A_reg = nil;
@@ -209,7 +209,7 @@ next_opcode:   // This label is so that I can restart what I am doing
     for (;;)
     {
 #ifndef NO_BYTECOUNT
-        if (!profile_count_mode) incCount(qcount(basic_elt(litvec, 0)));
+        if (!profile_count_mode) incCount(basic_elt(litvec, 0));
         total++;
         frequencies[(reinterpret_cast<unsigned char *>(codevec))[ppc]]++;
 #endif
@@ -1671,7 +1671,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     stack = entry_stack;
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
-                    incCount(qcount(basic_elt(litvec, 0)),
+                    incCount(basic_elt(litvec, 0),
                              profile_count_mode ? 1 : 30);
 #endif
                     continue;
@@ -1716,7 +1716,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     *++stack = A_reg;
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
-                    incCount(qcount(basic_elt(litvec, 0)),
+                    incCount(basic_elt(litvec, 0),
                              profile_count_mode ? 1 : 30);
 #endif
                     continue;
@@ -1761,7 +1761,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     *++stack = B_reg; *++stack = A_reg;
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
-                    incCount(qcount(basic_elt(litvec, 0)),
+                    incCount(basic_elt(litvec, 0),
                              profile_count_mode ? 1 : 30);
 #endif
                     continue;
@@ -1806,7 +1806,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     *++stack = r2; *++stack = B_reg; *++stack = A_reg;
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
-                    incCount(qcount(basic_elt(litvec, 0)),
+                    incCount(basic_elt(litvec, 0),
                              profile_count_mode ? 1 : 30);
 #endif
                     continue;
