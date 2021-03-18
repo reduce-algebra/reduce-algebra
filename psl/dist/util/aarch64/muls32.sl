@@ -132,9 +132,9 @@
        '(
          % add carry* to second parameter b
 	 (*Move ($fluid carry*) (reg t1))
-         (ADDS (reg t1) (reg 2) (reg t1))
+         (SUBS (reg xzr) (reg xzr) (reg t1))
          % subtract
-         (SUBS (reg 1) (reg 1) (reg t1))
+         (SBCS (reg 1) (reg 1) (reg 2))
 	 % move new borrow (=not(CF)) to carry* 
 	 (CSET (reg t1) CC)
          (*Move (reg t1) ($FLUID carry*))
