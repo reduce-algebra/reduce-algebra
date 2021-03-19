@@ -1188,7 +1188,7 @@ std::unordered_map<three_args *,size_t> codehash3;
 std::unordered_map<fourup_args *,size_t> codehash4up;
 
 bool insert_codepointer0(no_args *x)
-{   if (codehash0.find(x) == codehash0.end())
+{   if (codehash0.count(x) == 0)
     {   codehash0[x] = codepointers0.size();
         codepointers0.push_back(x);
         return true;
@@ -1197,7 +1197,7 @@ bool insert_codepointer0(no_args *x)
 }
 
 bool insert_codepointer1(one_arg *x)
-{   if (codehash1.find(x) == codehash1.end())
+{   if (codehash1.count(x) == 0)
     {   codehash1[x] = codepointers1.size();
         codepointers1.push_back(x);
         return true;
@@ -1206,7 +1206,7 @@ bool insert_codepointer1(one_arg *x)
 }
 
 bool insert_codepointer2(two_args *x)
-{   if (codehash2.find(x) == codehash2.end())
+{   if (codehash2.count(x) == 0)
     {   codehash2[x] = codepointers2.size();
         codepointers2.push_back(x);
         return true;
@@ -1215,7 +1215,7 @@ bool insert_codepointer2(two_args *x)
 }
 
 bool insert_codepointer3(three_args *x)
-{   if (codehash3.find(x) == codehash3.end())
+{   if (codehash3.count(x) == 0)
     {   codehash3[x] = codepointers3.size();
         codepointers3.push_back(x);
         return true;
@@ -1224,7 +1224,7 @@ bool insert_codepointer3(three_args *x)
 }
 
 bool insert_codepointer4up(fourup_args *x)
-{   if (codehash4up.find(x) == codehash4up.end())
+{   if (codehash4up.count(x) == 0)
     {   codehash4up[x] = codepointers4up.size();
         codepointers4up.push_back(x);
         return true;
