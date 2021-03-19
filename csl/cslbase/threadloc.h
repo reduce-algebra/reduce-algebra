@@ -100,8 +100,10 @@ extern "C"
 // has grabbed enough to conflict. After it has run the Microsoft scheme
 // should remain available for all other purposes.
 
-inline void init_thread_locals()
-{   std::uint64_t map = -1;
+inline void initThreadLocals()
+{   static bool initialised = false;
+    if (initialised) return;
+    std::uint64_t map = -1;
     for (;;)
     {   tls_handle h = TlsAlloc();
         if (h >= 64) my_abort("Failed to grab thread handles");
@@ -110,6 +112,7 @@ inline void init_thread_locals()
     }
     for (int i=0; i<48; i++)
         if ((map & (1U<<i)) == 0) TlsFree(i);
+    initialised = true;
 }
 
 // I abstract away 32 vs 64-bit Windows issues here. The offsets used are from
@@ -195,7 +198,7 @@ public:
     T operator ++()
     {   T v = reinterpret_cast<T>(
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>())
-            + 1;
+            + 1U;
         write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
             reinterpret_cast<void *>(v));
         return v;
@@ -204,13 +207,13 @@ public:
     {   T v = reinterpret_cast<T>(
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>());
         write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            reinterpret_cast<void *>(v + 1));
+            reinterpret_cast<void *>(v + 1U));
         return v;
     }
     T operator --()
     {   T v = reinterpret_cast<T>(
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>())
-            - 1;
+            - 1U;
         write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
             reinterpret_cast<void *>(v));
         return v;
@@ -219,14 +222,14 @@ public:
     {   T v = reinterpret_cast<T>(
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>());
         write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            reinterpret_cast<void *>(v - 1));
+            reinterpret_cast<void *>(v - 1U));
         return v;
     }
     template <typename T1>
     T operator +=(T1 n)
     {   T v = reinterpret_cast<T>(
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>()) +
-            static_cast<intptr_t>(n);
+            static_cast<uintptr_t>(n);
         write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
             reinterpret_cast<void *>(v));
         return v;
@@ -235,7 +238,7 @@ public:
     T operator -=(T1 n)
     {   T v = reinterpret_cast<T>(
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>()) -
-            static_cast<intptr_t>(n);
+            static_cast<uintptr_t>(n);
         write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
             reinterpret_cast<void *>(v));
         return v;
@@ -255,7 +258,7 @@ public:
 
 #else // MICROSOFT TLS
 
-inline void init_thread_locals()
+inline void initThreadLocals()
 {
 }
 
@@ -269,7 +272,7 @@ inline void init_thread_locals()
 
 #else // CONSERVATIVE
 
-inline void init_thread_locals()
+inline void initThreadLocals()
 {
 }
 

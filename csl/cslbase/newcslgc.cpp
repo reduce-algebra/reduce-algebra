@@ -682,7 +682,7 @@ void evacuateFromUnambiguousBases(bool major)
     evacuate(reinterpret_cast<LispObject *>(fastgetsaddr(nil)));
     evacuate(reinterpret_cast<LispObject *>(packageaddr(nil)));
     for (auto p = list_bases; *p!=nullptr; p++) evacuate(*p);
-    for (auto sp=stack;
+    for (LispObject *sp=stack;
          sp>reinterpret_cast<LispObject *>(stackBase); sp--) evacuate(sp);
 // When running the deserialization code I keep references to multiply-
 // used items in repeat_heap, and if garbage collection occurs they must be
