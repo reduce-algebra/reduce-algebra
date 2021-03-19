@@ -549,7 +549,8 @@ static void cold_setup()
     qfn4up(nil) = undefined_4up;
     setheader(nil, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR);
     setvalue(nil, nil);
-    qcount(nil) = zeroCount;
+    qcountLow(nil) = 0;
+    qcountHigh(nil) = 0;
 // When I am debugging CSL I can validate the heap, for instance whenever
 // I allocate vector. I am about to need to call make_string to create a
 // record of the name "nil", and during that call the pname field of nil

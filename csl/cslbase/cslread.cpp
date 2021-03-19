@@ -1259,7 +1259,8 @@ static LispObject Lmake_symbol(LispObject env, LispObject str)
     qfn2(s) = undefined_2;
     qfn3(s) = undefined_3;
     qfn4up(s) = undefined_4up;
-    qcount(s) = zeroCount;      // set counts to zero to be tidy
+    qcountLow(s) = 0;
+    qcountHigh(s) = 0;
     return onevalue(s);
 }
 
@@ -1299,7 +1300,8 @@ LispObject Lgensym(LispObject env)
     qfn2(id) = undefined_2;
     qfn3(id) = undefined_3;
     qfn4up(id) = undefined_4up;
-    qcount(id) = zeroCount;     // to be tidy
+    qcountLow(id) = 0;
+    qcountHigh(id) = 0;
     return onevalue(id);
 }
 
@@ -1345,7 +1347,8 @@ LispObject Lgensym0(LispObject env, LispObject a, const char *suffix)
     qfn2(id) = undefined_2;
     qfn3(id) = undefined_3;
     qfn4up(id) = undefined_4up;
-    qcount(id) = zeroCount;     // to be tidy
+    qcountLow(id) = 0;
+    qcountHigh(id) = 0;
     return onevalue(id);
 }
 
@@ -1396,7 +1399,8 @@ LispObject Lgensym1(LispObject env, LispObject a)
     qfn2(id) = undefined_2;
     qfn3(id) = undefined_3;
     qfn4up(id) = undefined_4up;
-    qcount(id) = zeroCount;     // to be tidy
+    qcountLow(id) = 0;
+    qcountHigh(id) = 0;
     return onevalue(id);
 }
 
@@ -1436,7 +1440,8 @@ LispObject Lgensym2(LispObject env, LispObject a)
     qfn2(id) = undefined_2;
     qfn3(id) = undefined_3;
     qfn4up(id) = undefined_4up;
-    qcount(id) = zeroCount;     // to be tidy
+    qcountLow(id) = 0;
+    qcountHigh(id) = 0;
     return onevalue(id);
 }
 
@@ -1571,7 +1576,8 @@ LispObject iintern(LispObject str, size_t h, LispObject p,
     qfn2(s) = undefined_2;
     qfn3(s) = undefined_3;
     qfn4up(s) = undefined_4up;
-    qcount(s) = zeroCount;
+    qcountLow(s) = 0;
+    qcountHigh(s) = 0;
     Save save(s, str);
 #ifdef COMMON
     if ((p == qvalue(keyword_package) && keyword_package != nil) ||

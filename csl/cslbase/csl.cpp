@@ -2720,7 +2720,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // system can report "events" or "requests" back to the code here. Having
 // a couple in hand for any future thread-supporting system seems a good idea.
 
-volatile atomic<uintptr_t> event_flag(0);
+atomic<uintptr_t> event_flag(0);
 
 // The following function can be called from a signal handler. It just
 // sets a volatile atomic variable, because basically that is the only

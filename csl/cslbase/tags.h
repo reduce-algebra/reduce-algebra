@@ -1497,7 +1497,8 @@ typedef struct Symbol_Head_
     std::atomic<LispObject> fastgets; // to speed up flagp and get
     std::atomic<LispObject> package;  // Home package - a package object
     std::atomic<LispObject> pname;    // A string (always)
-    std::atomic<uint64_t> count;      // for statistics
+    std::atomic<uint32_t> countLow;   // for statistics
+    std::atomic<uint32_t> countHigh;  // for statistics
     no_args *function0;      // Executable code always (no arguments)
     one_arg *function1;      // Executable code always (just 1 arg)
     two_args *function2;     // Executable code always (just 2 args)
@@ -1665,66 +1666,31 @@ inline bool a4a5a6(const char *name, LispObject a4up,
     return false;
 }
 
-// I store qcount as an unsigned 64-bit integer, but to allow for a
-// conservative garbage collector I want it to be garbage collector safe at
-// all times. On a 64-bit machine I can achieve that by arranging that
-// its bottom 4 bits are always TAG_FIXNUM and that when I want to
-// increment it I do so by 0x10. On a 32-bit platform it is slightly
-// harder. I will want to arrange that it is a value of the form
-//        0xnnnnnnn7nnnnnnn7
-// such that on little endian computers if accessed as a pair of adjacent
-// 32-bit values each will look like a fixnum (and hence be GC safe).
-// Incrementing such a value in an atomic manner adds fun to the code!
-//
-// By "safe" here what I mean is that I do not want the count field to
-// be able to be confused with a valid Lisp pointer and this keep some
-// structure unnecessarily pinned.
+// I store qcount as an unsigned 64-bit integer, but because on some
+// 32-bit machines one needs to take extra stape to get support for
+// 64-bit atomic values I will keep it as two 32-bit parts. This is
+// clearly clumsy and will slow things down, but I only access the count
+// field when I am in the bootstrap process not in production code and
+// so I will not worry a lot.
 
-inline atomic<uint64_t>& qcount(LispObject p)
-{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->count;
+inline atomic<uint32_t>& qcountLow(LispObject p)
+{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->countLow;
 }
 
-#ifdef SIXTY_FOUR_BIT
-static const uint64_t zeroCount = TAG_FIXNUM;
-
-inline uint64_t valueOfCount(uint64_t n)
-{   return n >> 4;
+inline atomic<uint32_t>& qcountHigh(LispObject p)
+{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->countHigh;
 }
 
-inline uint64_t countOfValue(uint64_t n)
-{   return (n << 4) + TAG_FIXNUM;
+inline uint64_t qcount(LispObject p)
+{   Symbol_Head *pp = reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL);
+    return static_cast<uint64_t>(pp->countHigh)<<32 | pp->countLow;
 }
 
-inline void incCount(atomic<uint64_t>& n, int m=1)
-{   n.fetch_add(0x10*m);
+inline void incCount(LispObject p, int m=1)
+{   Symbol_Head *pp = reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL);
+    uint32_t low = pp->countLow.fetch_add(m);
+    if ((low+m) < low) pp->countHigh.fetch_add(1);
 }
-
-#else
-static const uint64_t zeroCount =
-    TAG_FIXNUM | (static_cast<uint64_t>(TAG_FIXNUM)<<32);
-
-inline uint64_t valueOfCount(uint64_t n)
-{   return ((n >> 4) & 0x0fffffffU) |
-           ((n >> 8) & 0x00fffffff0000000U);
-}
-
-inline uint64_t countOfValue(uint64_t n)
-{   return zeroCount |
-           ((n & 0x0fffffffU) << 4)  |
-           ((n & 0x00fffffff0000000U) << 8);
-}
-
-inline void incCount(atomic<uint64_t>& n, int m=1)
-{   for (;;)
-    {   uint64_t old = n.load();
-        uint64_t next = old + 0x10*m;
-        if ((next & 0xff00000000U) != (old & 0xff00000000U))
-            next += 0x0000000f00000000U;
-        if (n.compare_exchange_weak(old, next) break;
-    }
-}
-
-#endif
 
 #ifndef HAVE_SOFTFLOAT
 typedef struct _float32_t
