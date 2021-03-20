@@ -6,6 +6,7 @@
 #   scripts/testall.sh [--noregressions]
 #                      [--csl] [--cslboot] [--installed-csl]
 #                      [--csl-XXX] [--cslboot-XXX]
+#                      [--csl=host-triple]
 #                      [--jlisp] [[jlispboot]
 #                      [--psl] [--installed-psl]
 #                      [--uncached] [--install] [--keep] [--just-time]
@@ -19,7 +20,7 @@
 # testing the CSL version. "--keep" preserves some temporary files created
 # during testing and may be useful when debugging this script. "--uncached"
 # runs the tests with symbolic(!*uncached := t);
-# --csl, --psl, --jlisp, --cslbool and --jlispboot select the variants
+# --csl, --psl, --jlisp, --cslboot and --jlispboot select the variants
 # of Reduce to test, and any number of those options can be given. If none
 # are then "--csl --psl" is assumed. --csl-XXX stands for something like
 # --csl-debug, --csl-nothrow, --csl-nothrow-debug or some other collection
@@ -65,7 +66,7 @@ do
   --install | --keep | --uncached)
     extras="$extras $a"
     ;;
-  --csl | --csl-* | --cslboot | --cslboot-* | --jlisp | \
+  --csl | --csl-* | --cslboot | --cslboot-* | --csl=* | --jlisp | \
   --jlispboot | --installed-csl | --psl | --installed-psl)
 # I will build up two lists of the platforms to test, plus a variable.
 #    $platforms will be a sequence of names like "csl psl" etc and is used in

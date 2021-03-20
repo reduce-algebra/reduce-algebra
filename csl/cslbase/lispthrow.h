@@ -38,7 +38,7 @@
 
 // If NO_THROW is defined this uses a flag rather than genuine C++ exceptions!
 
-#define TL_stack 48
+#define TL_stack 49
 DECLARE_THREAD_LOCAL(LispObject *, stack);
 
 // There is a "Lisp Stack" which is separate from the C++ stack. It has

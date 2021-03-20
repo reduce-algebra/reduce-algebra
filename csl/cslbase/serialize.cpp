@@ -3428,7 +3428,8 @@ static LispObject load_module(LispObject env, LispObject file, int option)
     }
 // I will account time spent fast-loading things as "storage management"
 // overhead to be counted as "garbage collector time" rather than
-// regular "cpu time"
+// regular "cpu time" unless --ignore-load-time is specified, and then
+// I will just ignore it totally.
     uint64_t t0 = read_clock();
     if (verbos_flag & 2)
     {   freshline_trace();
@@ -3476,7 +3477,7 @@ static LispObject load_module(LispObject env, LispObject file, int option)
                 setvalue(standard_input, *stack--);
             }
             uint64_t delta = read_clock() - t0b;
-            gc_time += delta;
+            if (!ignoreLoadTime) gc_time += delta;
             base_time += delta;
         }
     };

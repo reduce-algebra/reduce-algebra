@@ -8,16 +8,20 @@
 # The available options are
 #
 #  VERSIONS TO TEST:
-#     --csl       run tests using CSL
-#                 [can also use eg --csl-debug, --csl-nothrow etc]
-#     --cslboot   run tests using CSL "bootstrapreduce"
-#                 [can also use --cslboot-debug etc]
-#     --psl       run tests using PSL
-#     --jlisp     run tests using Jlisp
-#     --jlispboot run tests using Jlisp "bootstrapreduce.jar"
-#     --installed-csl  Use a version installed such that just "redcsl" uses it
-#     --installed-cslboot  Use "bootstrapreduce" from PATH
-#     --installed-psl  Use "redpsl", ie version from PATH
+#     --csl       run tests using CSL,
+#                 [can also use eg --csl-debug, --csl-nothrow etc].
+#     --cslboot   run tests using CSL "bootstrapreduce",
+#                 [can also use --cslboot-debug etc].
+#     --csl=host-triple
+#                 use executable ...cslbuild/host-triple/csl/reduce
+#                 so eg "--csl=x86_64-pc-cygwin-debug" is rather like
+#                 just using "--csl-debug".
+#     --psl       run tests using PSL.
+#     --jlisp     run tests using Jlisp.
+#     --jlispboot run tests using Jlisp "bootstrapreduce.jar".
+#     --installed-csl  Use a version installed as "redcsl" in $PATH.
+#     --installed-cslboot  Use "bootstrapreduce" from PATH.
+#     --installed-psl  Use "redpsl", ie version from PATH.
 #
 #  GENERAL OPTIONS:
 #     --keep      preserve raw intermediate files at end of test, eg for
@@ -105,6 +109,10 @@ do
       platforms="$platforms ${1#--}"
       shift
       ;;
+    --csl=*)
+      platforms="$platforms ${1#--}"
+      shift
+      ;;
     --jlisp)
       slow="yes"
       platforms="$platforms jlisp"
@@ -188,7 +196,7 @@ else
   w=`grep " test " $here/packages/package.map | grep "($p "`
   case $w in
   *$p*) ;;
-  *)    echo "Package $p does not exist for testing purposes"
+  *)    printf "Package $p does not exist for testing purposes\n"
         exit 1
         ;;
   esac
@@ -291,7 +299,7 @@ then
   rlgfile=$here/packages/$d/$p.rlg
 elif test "x$skipmissingrlg" != "x"
 then
-  echo "Missing log file $here/packages/$d/$p.rlg - skipping test!"
+  printf "Missing log file $here/packages/$d/$p.rlg - skipping test!\n"
   exit 1
 else
   rlgfile=/dev/null
@@ -347,8 +355,9 @@ csltest() {
   if test "$variant" = ""
   then
     case $name in
-    installed*)
+    installed* | csl=*)
       fullcommand="$command $CSLFLAGS"
+      name="${name#csl=}"
       ;;
     *)
       fullcommand="$here/bin/$command $CSLFLAGS"
@@ -412,7 +421,7 @@ XXX
     then printf "Diff is in $name-times/$p.rlg.diff "
     else printf "OK " ; rm -f $name-times/$p.rlg.diff $name-times/$p.rlg.orig
   fi
-  echo "Tested on $mc CSL" > $name-times/$p.time
+  printf "Tested on $mc CSL\n" > $name-times/$p.time
   sed -e "1,/END OF REDUCE TEST RUN/d"  <$name-times/$p.rlg.tmp | \
     sed -e '/^1: *$/d;' >>$name-times/$p.time
   if test "x$keep" = "xno"
@@ -485,7 +494,7 @@ XXX
     then printf "Diff is in $name-times/$p.rlg.diff "
     else printf "OK " ; rm -f $name-times/$p.rlg.diff $name-times/$p.rlg.orig
   fi
-  echo "Tested on $mc Jlisp" > $name-times/$p.time
+  printf "Tested on $mc Jlisp\n" > $name-times/$p.time
   sed -e "1,/END OF REDUCE TEST RUN/d"  <$name-times/$p.rlg.tmp | \
     sed -e '/^1: *$/d;' >>$name-times/$p.time
   if test "x$keep" = "xno"
@@ -559,10 +568,10 @@ XXX
     sed -e "$SED1" >$outdir/$p.rlg
   diffBw $outdir/$p.rlg.orig $outdir/$p.rlg >$outdir/$p.rlg.diff
   if test -s $outdir/$p.rlg.diff
-    then echo "diff is in $outdir/$p.rlg.diff"
+    then printf "diff is in $outdir/$p.rlg.diff\n"
     else printf "OK " ; rm -f $outdir/$p.rlg.diff $outdir/$p.rlg.orig
   fi
-  echo "Tested on $mc PSL" > $outdir/$p.time
+  printf "Tested on $mc PSL\n" > $outdir/$p.time
   sed -e "1,/END OF REDUCE TEST RUN/d"  <$outdir/$p.rlg.tmp | \
     sed -e '/^1: /d;' >>$outdir/$p.time
   if test "x$keep" = "xno"
@@ -596,6 +605,9 @@ do
     ;;
   cslboot-*)
     csltest "$pp" "bootstrapreduce" "BootstrapCSL${pp#cslboot}" "${pp#cslboot-}"
+    ;;
+  csl=*)
+    csltest "$pp" "$here/cslbuild/${pp#csl=}/csl/reduce" "${pp#csl=}"
     ;;
   jlisp)
     jlisptest "jlisp" "reduce.jar" "Jlisp"
@@ -677,6 +689,7 @@ then
   base=""
   for sys in $platforms
   do
+    sys="${sys#csl=}"
     if test "x$base" = "x"
     then
       base="$sys"

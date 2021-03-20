@@ -442,6 +442,7 @@ LispObject Lstart_module(LispObject env, LispObject name)
 // (May 2010) !!!!!!!
 // (July 2017) The early 1990s now represent a rather different world. But
 // I still like this story.
+// (March 2021) GOSH this is now from 30 year ago...
 //
             while (k != 3) k++, Iputc(0);
             IcloseOutput();
