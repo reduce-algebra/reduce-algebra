@@ -3152,7 +3152,7 @@ static int submain(int argc, const char *argv[])
     threadMap = -1;
     activeThreads = 0;
     ThreadStartup userThreads;
-    stackBases[threadId::get()] = reinterpret_cast<uintptr_t>(C_stackbase);
+    stackBases[threadId] = reinterpret_cast<uintptr_t>(C_stackbase);
 #endif // CONSERVATIVE
 #ifdef HAVE_CRLIBM
     CrlibmSetup crlibmVar;
@@ -3200,7 +3200,7 @@ static int submain(int argc, const char *argv[])
 extern int ENTRYPOINT(int argc, const char *argv[]);
 
 int main(int argc, const char *argv[])
-{   init_thread_locals();
+{   initThreadLocals();
     fwin_set_lookup(look_in_lisp_variable);
     return fwin_startup(argc, argv, ENTRYPOINT);
 }
@@ -3210,7 +3210,7 @@ int main(int argc, const char *argv[])
 int ENTRYPOINT(int argc, const char *argv[])
 {   int res;
 #ifdef EMBEDDED
-    init_thread_locals();
+    initThreadLocals();
     if ((res = find_program_directory(argv[0])) != 0)
     {   std::fprintf(stderr,
                      "Unable to identify program name and directory (%d)\n", res);

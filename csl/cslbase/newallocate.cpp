@@ -328,6 +328,17 @@ uintptr_t *C_stackbase;   // base of the main thread
 atomic<uint32_t> activeThreads;
 //  0x00 : total_threads : lisp_threads : still_busy_threads
 
+// The variables defined as thread_local here MAY be just rendered as
+// (eg)    "thread_local uintptr_t threadId;"   but on Windows they end
+// up as instances of a slightly strange class that supports assignment
+// from the the specified type and static casts to the specified type, but
+// where more complicated casts (explicit or implicit) may not be tolerated.
+// So there are places where I am obliged to write odd-looking code like
+// ... static_cast<uintptr_t>(threadId) ... or "threadId = static_cast<..."
+// to make the type conversion process especially explicit and simple.
+// I could avoid that if I made the wrapper class rather a lot more
+// compilicated, but I think that transparancy there and a modest amount of
+// redundancy here is the path that leaves me happiest (at present).
 
 DEFINE_THREAD_LOCAL(uintptr_t,    threadId);
 DEFINE_THREAD_LOCAL(uintptr_t,    fringe);
@@ -614,9 +625,11 @@ LispObject borrow_n_bytes(size_t n)
             return static_cast<LispObject>(r);
         }
         if (borrowNext != 0)
-        {   borrowFringe = borrowNext;
-            borrowLimit = ((uintptr_t *)borrowFringe)[0];
-            borrowNext = ((uintptr_t *)borrowFringe)[1];
+        {   borrowFringe = static_cast<uintptr_t>(borrowNext);
+            borrowLimit = reinterpret_cast<uintptr_t *>(
+                static_cast<uintptr_t>(borrowFringe))[0];
+            borrowNext = reinterpret_cast<uintptr_t *>(
+                static_cast<uintptr_t>(borrowFringe))[1];
             continue;
         }
 // here I need to allocate a new page....
@@ -630,7 +643,7 @@ LispObject borrow_n_bytes(size_t n)
         {   w = freePages;
             freePages = freePages->chain;
         }
-        w->chain = borrowPages;
+        w->chain = static_cast<Page *>(borrowPages);
         borrowPages = w;
         borrowFringe = w->fringe;
         borrowLimit = w->limit;
@@ -931,7 +944,7 @@ ThreadStartup::ThreadStartup()
 ThreadStartup::~ThreadStartup()
 {   // cout << "~ThreadStartup" << "\r" << endl;
     std::lock_guard<std::mutex> lock(mutexForGc);
-    releaseThreadNumber(threadId);
+    releaseThreadNumber(static_cast<uintptr_t>(threadId));
     activeThreads.fetch_sub(0x00010101);
 }
 
@@ -1160,7 +1173,7 @@ void init_heap_segments(double d)
 // specialised can patch in their own code here!
     long pageCount = sysconf(_SC_PHYS_PAGES);
     long pageSize = sysconf(_SC_PAGE_SIZE);
-    size_t mem = pageCount*static_cast<size_t>(pageSize);
+    mem = pageCount*static_cast<size_t>(pageSize);
 #endif // WIN32
     mem /= (1024*1024);    // Physical memory now in megabytes
     size_t g3 = 3u*1024u;  // 3Gbytes

@@ -741,9 +741,9 @@ inline int nlz(uint64_t x)
 static const unsigned int maxThreads = 2; // Nicer for debugging!
 
 #define TL_threadId 49
-DECLARE_THREAD_LOCAL(uintptr_t, threadId, TL_threadId);
+DECLARE_THREAD_LOCAL(uintptr_t, threadId);
 #define TL_fringe 49
-DECLARE_THREAD_LOCAL(atomic<uintptr_t>, fringe, TL_fringe);
+DECLARE_THREAD_LOCAL(uintptr_t, fringe);
 
 extern atomic<uintptr_t> limit[maxThreads];
 extern Chunk*                 myChunkBase[maxThreads];
@@ -864,7 +864,7 @@ inline LispObject get_n_bytes(size_t n)
     uintptr_t thr = threadId;
     uintptr_t r = fringe;
     uintptr_t w = limit[thr].load();
-    fringe::set(fringe + n);
+    fringe += n;
 // The simple case completes here. If each chunk is around 16K then only 1
 // CONS in 1000 or so will take the longer route.
     if (fringe <= w) return static_cast<LispObject>(r);
@@ -900,7 +900,7 @@ inline LispObject get_n_bytes(size_t n)
 // each increment gFringe by the largest possible amount then it will not
 // suffer arithmetic overflow. If I have a maximum of 16 threads then I ought
 // to ensure that gLimit+130M > gLimit.
-        fringe::set(r + n);
+        fringe = r + n;
 // I can not use newChunk->dataEnd() on the next line because the chunk does
 // not yet have its length field filled in. And that has to be the case
 // because the region I have set aside for this Chunk may be beyond the end
@@ -958,7 +958,7 @@ inline LispObject get_n_bytes(size_t n)
             if (ok) return static_cast<LispObject>(r);
         }
         gIncrement[thr] = targetChunkSize+n;
-        fringe::set(oldFringe);
+        fringe = oldFringe;
 //        cout << "At " << __WHERE__ << " fringe set to oldFringe = " << hex << oldFringe << dec << "\r" << endl;
     }
     else
@@ -968,7 +968,7 @@ inline LispObject get_n_bytes(size_t n)
         cout << "GC triggered\r\n";
         if (myChunkBase[thr] != nullptr) myChunkBase[thr]->chunkFringe = r;
         gIncrement[thr] = 0;
-        fringe::set(r);
+        fringe = r;
 //        cout << "At " << __WHERE__ << " fringe set to r = " << r << "\r" << endl;
     }
     fringeBis[thr] = fringe;
@@ -1665,7 +1665,7 @@ inline void waitWhileAnotherThreadGarbageCollects()
     {   std::unique_lock<std::mutex> lock(mutexForGc);
         cv_for_gc_complete.wait(lock, [] { return gc_complete; });
     }
-    fringe::set(fringeBis[threadId]);
+    fringe = fringeBis[threadId];
 //    cout << "At " << __WHERE__ << " fringe set to fringeBis = " << fringe << "\r" << endl;
 }
 
@@ -1728,7 +1728,7 @@ inline uintptr_t difficult_n_bytes()
     });
 // At the end the GC can have updated the fringe for each thread,
 // so I need to put its updated value in the correct place.
-    fringe::set(fringeBis[threadId]);
+    fringe = fringeBis[threadId];
 //    cout << "At " << __WHERE__ << " fringe set to fringeBis = " << hex << fringe << dec << "\r" << endl;
     testLayout();
     return result[threadId] - TAG_VECTOR;
@@ -1912,37 +1912,37 @@ extern void setPinnedMajor(uintptr_t p); // used during major GC
 extern void setPinnedMinor(uintptr_t p); // used during minor GC
 
 #define TL_borrowPages 50
-DECLARE_THREAD_LOCAL(Page *, borrowPages, TL_borrowPages);
+DECLARE_THREAD_LOCAL(Page *, borrowPages);
 #define TL_borrowFringe 51
-DECLARE_THREAD_LOCAL(uintptr_t, borrowFringe, TL_borrowFringe);
+DECLARE_THREAD_LOCAL(uintptr_t, borrowFringe);
 #define TL_borrowLimit 52
-DECLARE_THREAD_LOCAL(uintptr_t, borrowLimit, TL_borrowLimit);
+DECLARE_THREAD_LOCAL(uintptr_t, borrowLimit);
 #define TL_borrowNext 53
-DECLARE_THREAD_LOCAL(uintptr_t, borrowNext, TL_borrowNext);
+DECLARE_THREAD_LOCAL(uintptr_t, borrowNext);
 
 class Borrowing
 {
 public:
     Borrowing()
-    {   borrowPages::set(nullptr);
-        borrowFringe::set(0);
-        borrowLimit::set(0);
-        borrowNext::set(0);
+    {   borrowPages = nullptr;
+        borrowFringe = 0;
+        borrowLimit = 0;
+        borrowNext = 0;
     }
     ~Borrowing()
     {   std::lock_guard<std::mutex> lock(mutexForFreePages);
-        while (borrowPages != nullptr)
-        {   if (borrowPages->pageClass.load() == mostlyFreePageTag)
-            {   Page *w = borrowPages->chain;
-                borrowPages->chain = mostlyFreePages;
+        while (static_cast<Page *>(borrowPages) != nullptr)
+        {   if (static_cast<Page *>(borrowPages)->pageClass.load() == mostlyFreePageTag)
+            {   Page *w = static_cast<Page *>(borrowPages)->chain;
+                static_cast<Page *>(borrowPages)->chain = mostlyFreePages;
                 mostlyFreePages = borrowPages;
-                borrowPages::set(w);
+                borrowPages = w;
             }
             else
-            {   Page *w = borrowPages->chain;
-                borrowPages->chain = freePages;
+            {   Page *w = static_cast<Page *>(borrowPages)->chain;
+                static_cast<Page *>(borrowPages)->chain = freePages;
                 freePages = borrowPages;
-                borrowPages::set(w);
+                borrowPages = w;
             }
         }
     }
