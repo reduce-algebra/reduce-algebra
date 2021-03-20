@@ -114,6 +114,7 @@ then
 #
   for sys in $platforms
   do
+    sys=${sys#csl=}
     rm -f $sys-times/*.rlg* $sys-times/showtimes \
           $base-$sys-times-comparison/*.rlg.diff
     mkdir -p $sys-times
@@ -143,34 +144,40 @@ then
 
   for sys in $platforms
   do
+    sys=${sys#csl=}
     echo ")\$ end\$" >> $sys-times/showtimes
   done
 fi
 
 printf "\nSummary of test runs for $platforms\n\n"
 
-for sys in $platforms
-do
-  d=`cd $sys-times; echo *.rlg.diff`
-  if test "$d" != "*.rlg.diff"
-  then
-    printf "\nDifferences for $sys: `echo $d | sed -e 's/\.rlg\.diff//g'`\n"
-  fi
-done
-
-for sys in $platforms
-do
-  if test "$sys" != "$base"
-  then
-    d=`cd $base-$sys-times-comparison; echo *.rlg.diff`
+if test "$just_time" = "no"
+then
+  for sys in $platforms
+  do
+    sys=${sys#csl=}
+    d=`cd $sys-times; echo *.rlg.diff`
     if test "$d" != "*.rlg.diff"
     then
-      printf "\nDifferences between $base and $sys: `echo $d | sed -e 's/\.rlg\.diff//g'`\n"
+      printf "\nDifferences for $sys: `echo $d | sed -e 's/\.rlg\.diff//g'`\n"
     fi
-  fi
-done
+  done
 
-printf "\n"
+  for sys in $platforms
+  do
+    sys=${sys#csl=}
+    if test "$sys" != "$base"
+    then
+      d=`cd $base-$sys-times-comparison; echo *.rlg.diff`
+      if test "$d" != "*.rlg.diff"
+      then
+        printf "\nDifferences between $base and $sys: `echo $d | sed -e 's/\.rlg\.diff//g'`\n"
+      fi
+    fi
+  done
+
+  printf "\n"
+fi
 
 reporttime() {
   name=$1
@@ -214,11 +221,14 @@ do
   installed-cslboot)
     reporttime "installedCSLBOOT" "installed-cslboot-times"
     ;;
-  csl*)
+  csl | csl-*)
     reporttime "CSL${sys#csl}" "$sys-times"
     ;;
   installed-csl)
     reporttime "installedCSL" "installed-csl-times"
+    ;;
+  csl=*)
+    reporttime "${sys#csl=}" "${sys#csl=}-times"
     ;;
   jlisp)
     reporttime "Jlisp" "jlisp-times"
@@ -231,6 +241,9 @@ do
     ;;
   installed-psl)
     reporttime "installedPSL" "installed-psl-times"
+    ;;
+  *)
+    printf "+++ $sys unknown\n"
     ;;
   esac
 done
