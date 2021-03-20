@@ -15,6 +15,9 @@ END_OF_HEAD_EXTRAS
 $smarty->assign('header_title', 'Related Projects');
 
 $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
+<h2>REDUCE user interfaces</h2>
+  <p><a href="https://fjwright.github.io/Run-REDUCE/">Run-REDUCE</a> is an open-source graphical user interface for running any command-line version of REDUCE.  Installers are available for Microsoft Windows 10 and Gnu/Linux distributions based on Debian (e.g. Ubuntu) or Red Hat (e.g. Fedora).  A Java JAR file is also available that should run on any platform that supports JavaFX.
+  </p>
 <h2>REDUCE for mobile devices</h2>
   <p>Please note that the apps listed below are <strong>not supported</strong> by the <a href="https://sourceforge.net/p/reduce-algebra/_members/">REDUCE developers</a>, so any queries should be directed to the app developers.  The links below are provided purely for information and their presence here does not constitute any recommendation by the REDUCE developers.  These apps may not use the latest version of REDUCE and you use them entirely at you own risk!</p>
   <ul>
@@ -28,7 +31,6 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
   <p>There are a number of independent projects that use REDUCE in various ways. These include:</p>
   <ul>
     <li>the <a href="http://www.alltypes.de/">ALLTYPES</a> algebraic language and type system;</li>
-    <li>the <a href="http://axiom-wiki.newsynthesis.org/">MathAction</a> collaborative web interface for Axiom, REDUCE and other computer algebra systems;</li>
     <li><a href="http://mtt.sourceforge.net/">MTT</a>, a set of tools for modeling dynamic physical systems using the bond-graph methodology;</li>
     <li><a href="https://github.com/chakravala/Reduce.jl">Reduce.jl</a>, an interface for calling REDUCE from the Julia language for symbolic manipulation;</li>
     <li>the <a href="https://github.com/agraef/pure-lang/wiki/ScientificComputing">Pure</a> programming language, which has bindings for REDUCE, providing a very interesting environment for doing computer-powered science.</li>
