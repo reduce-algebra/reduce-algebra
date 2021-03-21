@@ -6,6 +6,7 @@
 #   scripts/testall.sh [--noregressions]
 #                      [--csl] [--cslboot] [--installed-csl]
 #                      [--csl-XXX] [--cslboot-XXX]
+#                      [--csl=host-triple]
 #                      [--jlisp] [[jlispboot]
 #                      [--psl] [--installed-psl]
 #                      [--uncached] [--install] [--keep] [--just-time]
@@ -19,7 +20,7 @@
 # testing the CSL version. "--keep" preserves some temporary files created
 # during testing and may be useful when debugging this script. "--uncached"
 # runs the tests with symbolic(!*uncached := t);
-# --csl, --psl, --jlisp, --cslbool and --jlispboot select the variants
+# --csl, --psl, --jlisp, --cslboot and --jlispboot select the variants
 # of Reduce to test, and any number of those options can be given. If none
 # are then "--csl --psl" is assumed. --csl-XXX stands for something like
 # --csl-debug, --csl-nothrow, --csl-nothrow-debug or some other collection
@@ -65,7 +66,7 @@ do
   --install | --keep | --uncached)
     extras="$extras $a"
     ;;
-  --csl | --csl-* | --cslboot | --cslboot-* | --jlisp | \
+  --csl | --csl-* | --cslboot | --cslboot-* | --csl=* | --jlisp | \
   --jlispboot | --installed-csl | --psl | --installed-psl)
 # I will build up two lists of the platforms to test, plus a variable.
 #    $platforms will be a sequence of names like "csl psl" etc and is used in
@@ -113,6 +114,7 @@ then
 #
   for sys in $platforms
   do
+    sys=${sys#csl=}
     rm -f $sys-times/*.rlg* $sys-times/showtimes \
           $base-$sys-times-comparison/*.rlg.diff
     mkdir -p $sys-times
@@ -142,34 +144,40 @@ then
 
   for sys in $platforms
   do
+    sys=${sys#csl=}
     echo ")\$ end\$" >> $sys-times/showtimes
   done
 fi
 
 printf "\nSummary of test runs for $platforms\n\n"
 
-for sys in $platforms
-do
-  d=`cd $sys-times; echo *.rlg.diff`
-  if test "$d" != "*.rlg.diff"
-  then
-    printf "\nDifferences for $sys: `echo $d | sed -e 's/\.rlg\.diff//g'`\n"
-  fi
-done
-
-for sys in $platforms
-do
-  if test "$sys" != "$base"
-  then
-    d=`cd $base-$sys-times-comparison; echo *.rlg.diff`
+if test "$just_time" = "no"
+then
+  for sys in $platforms
+  do
+    sys=${sys#csl=}
+    d=`cd $sys-times; echo *.rlg.diff`
     if test "$d" != "*.rlg.diff"
     then
-      printf "\nDifferences between $base and $sys: `echo $d | sed -e 's/\.rlg\.diff//g'`\n"
+      printf "\nDifferences for $sys: `echo $d | sed -e 's/\.rlg\.diff//g'`\n"
     fi
-  fi
-done
+  done
 
-printf "\n"
+  for sys in $platforms
+  do
+    sys=${sys#csl=}
+    if test "$sys" != "$base"
+    then
+      d=`cd $base-$sys-times-comparison; echo *.rlg.diff`
+      if test "$d" != "*.rlg.diff"
+      then
+        printf "\nDifferences between $base and $sys: `echo $d | sed -e 's/\.rlg\.diff//g'`\n"
+      fi
+    fi
+  done
+
+  printf "\n"
+fi
 
 reporttime() {
   name=$1
@@ -213,11 +221,14 @@ do
   installed-cslboot)
     reporttime "installedCSLBOOT" "installed-cslboot-times"
     ;;
-  csl*)
+  csl | csl-*)
     reporttime "CSL${sys#csl}" "$sys-times"
     ;;
   installed-csl)
     reporttime "installedCSL" "installed-csl-times"
+    ;;
+  csl=*)
+    reporttime "${sys#csl=}" "${sys#csl=}-times"
     ;;
   jlisp)
     reporttime "Jlisp" "jlisp-times"
@@ -230,6 +241,9 @@ do
     ;;
   installed-psl)
     reporttime "installedPSL" "installed-psl-times"
+    ;;
+  *)
+    printf "+++ $sys unknown\n"
     ;;
   esac
 done

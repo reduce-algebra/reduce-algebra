@@ -1338,6 +1338,8 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
 }
 
 bool timeTestCons = false;
+bool gcTest = false;
+bool ignoreLoadTime = false;
 
 #ifndef AVOID_THREADS
 
@@ -1854,6 +1856,29 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 }
             },
 
+#ifdef CONSERVATIVE
+            /*! options [--gc-test] \item [{\ttfamily --gc-test}] \index{{\ttfamily --gc-test}}
+             * --gc-test causes running some test code rather than the full system.
+             * Only activates if "-z" is also specified for a "cold start".
+             */
+            {   "--gc-test", true, true,
+                "--gc-test runs some test code. Need -z as well.",
+                [&](string key, bool hasVal, string val)
+                {   gcTest = true;
+                }
+            },
+#endif // CONSERVATIVE
+
+            /*! options [--cons-test] \item [{\ttfamily --cons-test}] \index{{\ttfamily --cons-test}}
+             * --cons-test causes running some test code rather than the full system.
+             */
+            {   "--cons-test", true, true,
+                "--cons-test runs some test code.",
+                [&](string key, bool hasVal, string val)
+                {   timeTestCons = true;
+                }
+            },
+
             /*! options [--stop-on-error] \item [{\ttfamily --stop-on-error}] \index{{\ttfamily --stop-on-error}}
              * This utterly defeats errorset and arranges that if there is any error that
              * after whatever backtrace might have been generated any inner errorset
@@ -2158,7 +2183,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
             {   "-f", false, false,
                 "-f       Not in use.",
                 [&](string key, bool hasVal, string val)
-                {   timeTestCons = true; // Ha ha!
+                {
                 }
             },
 
@@ -2192,6 +2217,21 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     }
                 }
             },
+
+            /*! options [--ignore-load-time] \item [{\ttfamily --ignore-load-time}] \index{{\ttfamily --ignore-load-time}}
+             * By default the time spend loading or autoloading optional
+             * modules is accounted by CSL as part of "garbage collector time".
+             * If this option is set it is just not recorded at all.
+             */
+//                     --ignore-load-time
+// Do not record time spent loading fasl files.
+            {   "--ignore-load-time", false, false,
+                "--ignore-load-time Do not record time spent fast-loading modules.",
+                [&](string key, bool hasVal, string val)
+                {   ignoreLoadTime = true;
+                }
+            },
+
 
             /*! options [-h] \item [{\ttfamily -h}] \index{{\ttfamily -h}}
              * This option is a left-over. When the X-windows version of the code first
@@ -2661,10 +2701,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // state
     Csrand((uint32_t)initial_random_seed);
 
-//?        uint64_t t0 = read_clock();
-//?        gc_time += t0;
-//?        base_time += t0;
-
     ensure_screen();
     procedural_output = nullptr;
 // OK, if I get this far I will suppose that any messages that report utter
@@ -2689,6 +2725,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     for (auto name : tracedFunctions)
     {   Ltrace(nil, ncons(make_undefined_symbol(name.c_str())));
     }
+    if (ignoreLoadTime) base_time = read_clock();
 }
 
 
@@ -3765,4 +3802,3 @@ PROC_handle PROC_rest(PROC_handle p)
 }
 
 // End of csl.cpp
- 

@@ -740,9 +740,9 @@ inline int nlz(uint64_t x)
 //static const unsigned int maxThreads = 64;
 static const unsigned int maxThreads = 2; // Nicer for debugging!
 
-#define TL_threadId 49
+#define TL_threadId 50
 DECLARE_THREAD_LOCAL(uintptr_t, threadId);
-#define TL_fringe 49
+#define TL_fringe 51
 DECLARE_THREAD_LOCAL(uintptr_t, fringe);
 
 extern atomic<uintptr_t> limit[maxThreads];
@@ -1911,13 +1911,13 @@ extern void setPinned(Page *x,
 extern void setPinnedMajor(uintptr_t p); // used during major GC
 extern void setPinnedMinor(uintptr_t p); // used during minor GC
 
-#define TL_borrowPages 50
+#define TL_borrowPages 52
 DECLARE_THREAD_LOCAL(Page *, borrowPages);
-#define TL_borrowFringe 51
+#define TL_borrowFringe 53
 DECLARE_THREAD_LOCAL(uintptr_t, borrowFringe);
-#define TL_borrowLimit 52
+#define TL_borrowLimit 54
 DECLARE_THREAD_LOCAL(uintptr_t, borrowLimit);
-#define TL_borrowNext 53
+#define TL_borrowNext 55
 DECLARE_THREAD_LOCAL(uintptr_t, borrowNext);
 
 class Borrowing

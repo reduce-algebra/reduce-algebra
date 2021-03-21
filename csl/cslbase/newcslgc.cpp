@@ -785,42 +785,52 @@ bool evacuatePartOfMyOwnChunk()
 // (5) | header | evacuated data | raw data | free space | 
 // (6) | header | evacuated data | free space            |
 //
-// The first three above are full. As garbage collection proceeds it
-// moved material into new regions and when a Chunk there becomes full
-// it is in class (1) and is put in a queue.
-// evacuateFromCopiedData() takes Chunks from this queue and evacuates
-// their content. A Chunk that is part way through being processed will
-// be in state (2) and when scanning is complete it ends up in state (3).
-// While material is being copied each copying thread will have a Chunk
-// that it is placing newly copied material into - state (4).
-// A complication and the reason for all this comments is that at
-// times the GC threads will run out of type (1) Chunks to grab. At that
-// stage they will be copying into a type (4) Chunk. They upgrade it
-// to type (5). As they scan it there are two potential end-points. One
-// is that they fill it up. It becomes type (2) and they allocate a
-// fresh type (1) Chunk to keep copying material into. The other is that
-// they scan covers all the Chunk content and they find themselved in
-// state (6). In a single thread GC state (6) is an endpoint and the GC
-// is ready to complete. However in a multi-thread world it is messier!
-// For so long as at least one thread is not processing a state (6) Chunk
-// the thread must wait. What it is waiting for is for some other thread
-// to create and post a further type (1) Chunk. The GC only terminates
-// when all threads are looking at type (6) Chunks. If a new type (1)
-// Chunk becomes available then the thread should grab it and it becomes
-// of type (2) and its can be worked on until it becomes type (3). That
-// may (or may not!) put material into the type 6 Chunk and if it adds
-// data it may or may not fill it up. If it does fill the Chunk then
-// unusually that will not be put in the queue.
-// Once the type (1) Chunk has been fully processed attention reverts to
-// the saved one that had been type (6). It will now be as in (2), (5)
-// or (6) and can be processed as for the relevant one of those.
-// Thus each GC thread can have 3 Chunks it is aware of:
-// (i)   The one within which its Fringe is that it is allocating new
-//       copied data within.
-// (ii)  One that full of data and that it is part way through evacuating
-//       i.e. as in (2) or (5).
-// (iii) [sometimes] a pending chunk that was type (6). This may be the
-//       same as (i) until it becomes full.
+
+//
+// There can be multiple GC threads. Overall coordination is through
+// an atomic uintptr_t where its value is treated with the low few bits
+// being a count of the number of GC threads that are still busy and bits
+// above that a count of the un-processed Chunks on the Chunk Queue
+// waiting to be scanned. This value is used with a condition variable
+// such that threads can wait until EITHER another Chunk is placed on
+// the queue OR until the magic counter is zero.
+// All threads are signalled either when a Chunk is queued or when a
+// thread becomes idle and decreases the count such that it ends up zero.
+//
+// The early stages of GC run using just one thread and that evacuates
+// from list bases. If while doing so it fills one or nor chunks those
+// are queued for later processing and the count is suitably updated.
+// That thread obviously has a Chunk that it is allocating into.
+// After things are primed all the other threads grab chunks to allocate
+// into and count themselves up as potentially active.
+//
+// At this stage each thread attempts to grab an un-processed chunk.
+// This must be done using a lock-free pop from the Chunk queue. In the
+// middle of a big GC this will tend to succeed - and then the thread
+// evacuates that Chunk fully and restarts itself. Both at the start and
+// end of GC some threads may find that the attempt to grab a Chunk
+// fails.
+// They then see if there us material in their allocation Chunk (cases 4
+// and 5) and evacuate some of it. This may fill the page  so it attains
+// state 2 and subsequently 3. The may go on to fill other pages that
+// they queue. Those situations reduce to the more straghtforward situation.
+// But they may reach state 6 where they are unable to do more.
+// They decrement the counter showing that they are idle. If that
+// leaves an overall zero everybody else is idle and the GC is over. They
+// signal the rest so that they also know.
+// Otherwise they wait for the Condition. If the condition lets them grab
+// a new Chunk to start evacuating then they do so. As they do so they may
+// put more into their allocation Chunk and may (or may not) fill it.
+// Whichever situation applies, once they have completed evacuation of the
+// new page they had grabbed they go back and do as much more as they can to
+// what had been their allocation Chunk. When they have done as much as
+// they can there the situation depends on whether it was still their
+// allocation chunk or if it had ended up filled. Well if they are able to
+// grab a further Chunk from the queue that does not matter much, but if
+// not they may or may now have a newer allocation chunk to attend to.
+
+
+
 
 void evacuateFromCopiedData(bool major)
 {

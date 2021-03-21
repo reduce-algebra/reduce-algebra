@@ -83,10 +83,19 @@
 #include "headers.h"
 
 #ifdef HAVE_CXX17
+
 // In code that at present (February 2021) is disabled with "#if 0"
 // I use the Mersenne Twister generator as set up in arithlib.hpp
 // to set up some ransomized testing for this code. That will only
-// compile if you have a "modern" C++ compiler.
+// compile if you have a "modern" C++ compiler. For use here arithlib.hpp
+// need to know it is being used from within CSL...
+
+#ifndef LISP
+#define LISP 1
+#endif
+#ifndef CSL
+#define CSL 1
+#endif // CSL
 #include "arithlib.hpp"  // For random number support
 #endif
 

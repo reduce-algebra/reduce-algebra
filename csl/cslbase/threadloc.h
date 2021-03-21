@@ -191,10 +191,6 @@ public:
     {   return (T1)
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>();
     }
-    operator void *() const
-    {   return reinterpret_cast<void *>(
-            read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>());
-    }
     T operator ++()
     {   T v = reinterpret_cast<T>(
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>())
@@ -256,6 +252,9 @@ public:
 #define DEFINE_THREAD_LOCAL(T, name) \
    ThreadLocal<T, TL_##name> name
 
+#define DEFINE_INLINE_THREAD_LOCAL(T, name) \
+   inline ThreadLocal<T, TL_##name> name
+
 #else // MICROSOFT TLS
 
 inline void initThreadLocals()
@@ -267,6 +266,9 @@ inline void initThreadLocals()
 
 #define DEFINE_THREAD_LOCAL(T, name) \
    thread_local T name;
+   
+#define DEFINE_INLINE_THREAD_LOCAL(T, name) \
+   inline thread_local T name;
    
 #endif // MICROSOFT_TLS
 
@@ -281,6 +283,9 @@ inline void initThreadLocals()
 
 #define DEFINE_THREAD_LOCAL(T, name) \
    T name;
+   
+#define DEFINE_INLINE_THREAD_LOCAL(T, name) \
+   inline T name;
    
 #endif // CONSERVATIVE
 

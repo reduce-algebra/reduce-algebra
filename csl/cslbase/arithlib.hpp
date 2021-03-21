@@ -491,6 +491,27 @@
 namespace arithlib_implementation
 {
 
+#ifdef CSL
+// For use within CSL I will provide a single thread-local pointer that
+// can be accessed fast even on Windows. All value that are to be
+// thread_local within this library can (eventually) be migrated to live in
+// a chunk of memory referenced by this.
+//
+// The data involved will be
+// (1) Information related to the worker threads for Karatsuba multiplication.
+// (2) Information about the modulus used with modular arithmetic.
+// Note that the allocation of memory when that is done within this library
+// rather that outside it may also need to be thread local if the library is
+// used from a threaded application, but that does not use the special
+// treatment indicated just here.
+
+// While this pointer is defined here it is not at present used! It is for
+// future work.
+
+#define TL_arithlibData 48
+DEFINE_INLINE_THREAD_LOCAL(void *, arithlibData);
+#endif // CSL
+
 // A scheme "arithlib_assert" lets me write in my own code to print the
 // diagnostics. To use this version you must include arithlib.hpp after
 // and other header files that define assert or abort macros.
