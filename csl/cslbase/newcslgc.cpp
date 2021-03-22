@@ -897,7 +897,7 @@ std::condition_variable cvForChunkStack;
 // pushing it back. If that will never happen there should not be
 // any trouble.
 
-inline void pushChunk(Chunk *c)
+void pushChunk(Chunk *c)
 {   c->selfScanPoint = c->dataStart();
     Chunk *old = chunkStack.load();
     do
@@ -915,7 +915,7 @@ inline void pushChunk(Chunk *c)
 
 // This version is lock-free and it return nullptr if the stack is empty.
 
-inline Chunk *popChunk1()
+Chunk *popChunk1()
 {   Chunk *old = chunkStack.load(), *c;
     do
     {   if (old == nullptr) return nullptr;
@@ -927,7 +927,7 @@ inline Chunk *popChunk1()
 // Here is the version for use. If called when the stack is empty it
 // returns nullptr if gcComplete is set, or otherwise it waits.
 
-inline Chunk *popChunk()
+Chunk *popChunk()
 {
 // First try in a lock-free manner.
     Chunk *c = popChunk1();

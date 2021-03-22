@@ -89,7 +89,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
         **p = nil;   
 }
 
-volatile atomic<uintptr_t> event_flag(0);
+atomic<uintptr_t> event_flag(0);
 
 static int col;
 
@@ -185,7 +185,7 @@ void fatal_error(int code, ...)
 int init_flags;
 
 LispObject *stackBase;
-LispObject *stack;
+DEFINE_THREAD_LOCAL(LispObject *, stack);
 
 LispObject *repeat_heap = nullptr;
 size_t repeat_heap_size = 0, repeat_count = 0;
