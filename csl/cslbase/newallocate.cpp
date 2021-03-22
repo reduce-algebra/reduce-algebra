@@ -451,7 +451,7 @@ size_t busyPagesCount = -1, mostlyFreePagesCount = -1,
        freePagesCount = -1, oldPagesCount = -1;
 
 void *heapSegment[16];
-void *heapSegmentBase[16];
+char *heapSegmentBase[16];
 size_t heapSegmentSize[16];
 size_t heapSegmentCount;
 
@@ -810,7 +810,22 @@ bool allocateSegment(size_t n)
     Page *r;
 // If I have C++17 I can rely on alignment constraints and just allocate
 // using new[]
+#ifdef MACINTOSH
+// I would like to use aligned allocation via "new" in the C++17 style, but
+// on the Macintosh that is only supported if your operating system is at
+// least 10.14. That is your operating system not a constraint on the release
+// of the C++ compiler and library! For backwards compatibility at present I
+// set a deployment target of 10.13 so I have to do something different here!
+    {   size_t sz = n+pageSize-1;
+        char *tr = new (std::nothrow) char[sz];
+        heapSegmentBase[heapSegmentCount] = tr;
+        void *trv = reinterpret_cast<void *>(tr);
+        std::align(pageSize, n*pageSize, trv, sz);
+        r = reinterpret_cast<Page *>(trv);
+    }
+#else // MACINTOSH
     r = new (std::nothrow) Page[n/pageSize];
+#endif // MACINTOSH
     if (r == nullptr) return false;
     heapSegment[heapSegmentCount] = r;
     heapSegmentSize[heapSegmentCount] = n;
@@ -1102,7 +1117,13 @@ void initHeapSegments(double storeSize)
 void dropHeapSegments()
 {
     for (size_t i=0; i<heapSegmentCount; i++)
+    {
+#ifdef MACINTOSH
+        delete [] heapSegmentBase[i];
+#else // MACINTOSH
         delete [] static_cast<Page *>(heapSegment[i]);
+#endif // MACINTOSH
+    }
     delete [] reinterpret_cast<Align8 *>(nilSegment);
     delete [] reinterpret_cast<Align8 *>(stackSegment);
 }

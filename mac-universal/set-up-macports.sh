@@ -114,12 +114,12 @@ compile_macports () {
   if test "$name" = "intel"
   then
      printf "macosx_deployment_target 10.13\n" \
-        >> $DEST/etc/macports/macports.conf
+        >> $INTELDEST/etc/macports/macports.conf
   fi
   if test "$name" = "arm"
   then
      printf "macosx_deployment_target 11.0\n" \
-        >> $DEST/etc/macports/macports.conf
+        >> $ARMDEST/etc/macports/macports.conf
   fi
 }
 
@@ -170,3 +170,4 @@ chmod +x $DEST/bin/uupgrade
 uupgrade
 
 # end of script
+

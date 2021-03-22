@@ -205,6 +205,16 @@ then
   AC_DEFINE(AVOID_THREADS, [1], [disable Karatsuba and input local editing so they do not create threads])
 fi
 
+AC_ARG_WITH(threadlocal,
+   AS_HELP_STRING([--without-threadlocal], [Use as experiment to observe overheads]),
+   [],
+   [with_threadlocal="yes"])
+
+if test "x$with_threadlocal" = "xno"
+then
+  AC_DEFINE(AVOID_THREADLOCAL, [1], [disable thread local usage])
+fi
+
 if test "x$BUILTFOR" = "xunknown"
 then
   BUILTFOR=`eval "$SHELL $srcdir/../scripts/findhost.sh $host $ac_configure_args"`
