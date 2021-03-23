@@ -35,6 +35,10 @@
 // $Id: threadloc.h March 2021 arthurcnorman $
 
 
+#ifdef AVOID_THREADLOCAL
+#define thread_local
+#endif //AVOID_THREADLOCAL
+
 #ifdef CONSERVATIVE
 
 // The CONSERVATIVE build of CSL will be working towards support for
@@ -42,7 +46,8 @@
 // not have any user threads and so do not need it, and so I disable it
 // to avoid introducing any overhead, even small.
 
-#if (defined __CYGWIN__ || defined __MINGW32__) && !defined USE_CXX_TLS
+#if (defined __CYGWIN__ || defined __MINGW32__) && \
+    !defined USE_CXX_TLS && !defined AVOID_THREADLOCAL
 #define MICROSOFT_TLS 1
 #endif
 

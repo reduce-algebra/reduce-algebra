@@ -617,7 +617,7 @@ public:
 // can identify which one is relevant rather easily.
 
 extern void *heapSegment[16];
-extern void *heapSegmentBase[16];
+extern char *heapSegmentBase[16];
 extern size_t heapSegmentSize[16];
 extern size_t heapSegmentCount;
 
@@ -851,23 +851,9 @@ namespace REAL
 {
 #endif // DEBUG
 
-inline LispObject get_n_bytes(size_t n)
+inline LispObject get_n_bytes1(size_t n, uintptr_t thr,
+                               uintptr_t r, uintptr_t w)
 {
-// The size passed here MUST be a multiple of 8.
-// I have a thread-local variable fringe, and limit[threadId]
-// is in effect thread-local. These delimit a region of size about
-// targetChunkSize within which allocation can be especially cheap.
-// limit[threadId] is atomic and that indicates that
-// other threads may access it. In particular another thread can set it to
-// zero to cause this thread to synchronize with others to participate in
-// garbage collection.
-    uintptr_t thr = threadId;
-    uintptr_t r = fringe;
-    uintptr_t w = limit[thr].load();
-    fringe += n;
-// The simple case completes here. If each chunk is around 16K then only 1
-// CONS in 1000 or so will take the longer route.
-    if (fringe <= w) return static_cast<LispObject>(r);
 // There are two possibilities here. One is that the new block I need to
 // allocate really will not fit in the current chunk, and the other is that
 // some other thread had set limit[] to zero to force this one to join in
@@ -983,6 +969,28 @@ inline LispObject get_n_bytes(size_t n)
 // been called directly from the main program save that gFringe may have
 // been incremented - possibly beyond gLimit.
     return static_cast<LispObject>(difficult_n_bytes());
+}
+
+inline LispObject get_n_bytes(size_t n)
+{
+// The size passed here MUST be a multiple of 8.
+// I have a thread-local variable fringe, and limit[threadId]
+// is in effect thread-local. These delimit a region of size about
+// targetChunkSize within which allocation can be especially cheap.
+// limit[threadId] is atomic and that indicates that
+// other threads may access it. In particular another thread can set it to
+// zero to cause this thread to synchronize with others to participate in
+// garbage collection.
+    uintptr_t thr = threadId;
+    uintptr_t r = fringe;
+    uintptr_t w = limit[thr].load();
+    fringe += n;
+// The simple case completes here. If each chunk is around 16K then only 1
+// CONS in 1000 or so will take the longer route. I rather hope that the
+// common case will be lifted to be rendered in-line
+    if (fringe <= w) LIKELY return static_cast<LispObject>(r);
+    UNLIKELY
+    return get_n_bytes1(n, threadId, r, w);
 }
 
 #ifdef DEBUG

@@ -35,7 +35,9 @@ fi
 
 for p in $*
 do
-  arm port clean $p
+# I can install the ARM and Intel variants in parallel, and that may
+# save a useful amount of time.
+  ( arm port clean $p
 # If the package or anything that it depends on is already installed then
 # the date-stamp procedure I use later on will not re-process the existing
 # files. If ARM and Intel builds had different dependencies or created
@@ -44,9 +46,11 @@ do
 # I use the "-N" option so that dependencies are installed without asking
 # the user whether that is wanted.
 #
-  arm port -N install $p
+   arm port -N install $p ) &
+  task=$!
   intel port clean $p
   intel port -N install $p
+  wait $task
 done
 
 ${HERE}/umerge.sh
