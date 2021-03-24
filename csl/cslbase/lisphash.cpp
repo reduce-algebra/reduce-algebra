@@ -675,6 +675,15 @@ UNUSED_NAME static bool float_if_exact(LispObject x)
 }
 #endif // HAVE_SOFTFLOAT
 
+// When computing a hash function I will only explore the top of the
+// structure. So if you have two trees of similar shape but with different
+// leaves and the leaves are all far enough down then the two will hash to
+// the same value. The alternative can involve exploring the whole of
+// really huge structures in a way that may not be good.
+
+static const size_t hash_explore_depth = 5;
+static const size_t hash_explore_breadth = 20;
+
 static uint64_t hash_generic_equal(uint64_t r, LispObject key,
                                    int mode, size_t depth)
 {   size_t len;
@@ -696,11 +705,14 @@ static uint64_t hash_generic_equal(uint64_t r, LispObject key,
     }
 // I will iterate along any chain of CONS cells, and put a sort of virtual
 // header word on the front of each cell to keep the calculation robust.
-    while (is_cons(key) && key != nil)
-    {   UPDATE32(r, VIRTUAL_TYPE_CONS | TAG_HDR_IMMED);
-        depth++;
-        r = hash_generic_equal(r, car(key), mode, depth);
-        key = cdr(key);
+    if (depth > hash_explore_depth) UPDATE32(r, 999999); 
+    else
+    {   size_t m = 0;
+        while (is_cons(key) && key != nil && m++ < hash_explore_breadth)
+        {   UPDATE32(r, VIRTUAL_TYPE_CONS | TAG_HDR_IMMED);
+            r = hash_generic_equal(r, car(key), mode, depth+1);
+            key = cdr(key);
+        }
     }
 // Partly because in CSL (in Common Lisp mode) I tagged NIL in an odd way
 // I will compute its hash value specially here.
@@ -709,7 +721,9 @@ static uint64_t hash_generic_equal(uint64_t r, LispObject key,
         return r;
     }
     switch (TAG_BITS & (int32_t)key)
-    {   case TAG_SYMBOL:
+    {   case TAG_CONS:
+            return r;
+        case TAG_SYMBOL:
             if (mode == HASH_AS_SXHASH)
             {   key = get_pname(key);
                 UPDATE32(r, TYPE_SYMBOL | TAG_HDR_IMMED);
@@ -737,7 +751,7 @@ static uint64_t hash_generic_equal(uint64_t r, LispObject key,
 // in the vector so that I get results that are not sensitive to the byte-
 // order used on my host.
                         switch (type_of_header(h))
-                    {       default:
+                        {   default:
                                 return hash_byte_vector(r, key);
                             case TYPE_VEC16_1:
                             case TYPE_VEC16_2:
@@ -757,7 +771,7 @@ static uint64_t hash_generic_equal(uint64_t r, LispObject key,
                         r = hash_eq(r, static_cast<LispObject>(h));
                         data = reinterpret_cast<unsigned char *>(&ucelt(key, 0));
                         len = length_of_byteheader(h) - CELL;
-                        while (len != 0)
+                        while (len-- != 0)
                         {   int c = *data++;
 // The string will be stored in UTF8. A consequence is that any bytes forming
 // part of a character beyond Basic Latin will have their top bit set. I will
@@ -777,7 +791,7 @@ static uint64_t hash_generic_equal(uint64_t r, LispObject key,
             }
 // I will allow for non-simple vectors in whatever style I am in, including
 // allowing non-simple strings and bit-vectors to be handled in special ways.
-            if (is_array_header(h))
+            if (is_array_header(h) && depth <= hash_explore_depth)
             {   LispObject arraytype = elt(key, 0);
                 if (arraytype == string_char_sym)
                     return hash_nonsimple_string(r, key);
@@ -806,11 +820,12 @@ static uint64_t hash_generic_equal(uint64_t r, LispObject key,
 // Need It" and just ignore the issues.
                         UPDATE(r, (uint64_t)h);
                         len = length_of_header(h)/CELL - 1;
-                        while (len != 0)
-                        {   len--;
+                        if (len > hash_explore_breadth)
+                            len = hash_explore_breadth;
+                        if (depth > hash_explore_depth) UPDATE32(r, 999999);
+                        else while (len-- != 0)
                             r = hash_generic_equal(r, elt(key, len),
                                                    mode, depth+1);
-                        }
                         return r;
                     default:
 // the Common Lisp version of EQUAL hashing does not descend vectors.
@@ -1425,6 +1440,5 @@ setup_type const lisphash_setup[] =
     DEF_1("sxhash",         Lsxhash),
     {nullptr,          nullptr, nullptr, nullptr, nullptr, nullptr}
 };
-
 
 // end of lisphash.cpp
