@@ -89,6 +89,10 @@ sigma3(v+4w,v,w);
 sigma3(3v+w,v,w);
 sigma3(-u+2v+4w,v,w);
 
+df(weierstrass1(u, v, w), u);
+weierstrass1(2*u, v, w);
+weierstrass1(i*u, v, w);
+
 on complex;
 m :=6i;
 sigma(m*u,m*v,m*w);
@@ -184,6 +188,24 @@ sigma3(u-2v-6w,v,w)-g1;
 sigma3(u+2v+3w,v,w)-g2;
 sigma3(u+5v+4w,v,w)-g3;
 sigma3(u+3v+5w,v,w)-g4;
+
+l := lattice_generators(4,1);
+lattice_invariants(first l, second l);
+
+l := lattice_generators(2+i, 3+i);
+lattice_invariants(first l, second l);
+
+weierstrass1(0.5, 3, 0);      % special case (g3=0)
+weierstrasszeta1(0.5, 0, 3);  % special case (g2=0)
+weierstrass1(0.5, 4, 1);  % real lattice roots
+weierstrass1(0.5, 4, -1); % ditto -- same discriminant
+weierstrasszeta1(0.5, 1, 2);  % one real & 2 complex-conjugate roots
+weierstrasszeta1(0.5, 1, -2); % ditto -- same discriminant
+weierstrass1(0.5, 4*(2+i)^2, (2+i)^3);  % complex lattice roots (collinear)
+weierstrass1(0.5, 2+i, 2+i);            % complex lattice roots (general)
+
+lattice_roots(2+i, 1+3i);
+quasi_period_factors(2+i, 1+3i);
 
 shut "sfweier.rlg";
 ;end;

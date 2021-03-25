@@ -2327,6 +2327,12 @@ static Box *doMathIt(Box *b1, Box *opt)
     return b1;
 }
 
+static Box *doMathCal(Box *b1, Box *opt)
+{
+    if (b1 == NULL) currentState.currentFont = FntSymbol + currentSize;
+    return b1;
+}
+
 static Box *doSpaceCommand(int w)
 {
     switch (w)
@@ -3128,7 +3134,8 @@ static Keyword texWords[1<<texWordBits] =
     {"diamondsuit",      TeXSymbol, FntSymbol, 0x7d, NULL},
     {"heartsuit",        TeXSymbol, FntSymbol, 0x7e, NULL},
     {"spadesuit",        TeXSymbol, FntSymbol, 0x7f, NULL},
-
+    {"wp",               TeXSymbol, FntItalic, 0x7d, NULL},
+    {"ell",              TeXSymbol, FntItalic, 0x60, NULL},
  //
  // Things to be rendered in Roman since they are function names
 
@@ -3227,6 +3234,7 @@ static Keyword texWords[1<<texWordBits] =
     {"pmod",       TeX1Arg,   0,         0,    (void *)doPmod},
     {"mathrm",     TeX1Arg,   0,         0,    (void *)doMathRm},
     {"mathit",     TeX1Arg,   0,         0,    (void *)doMathIt},
+    {"mathcal",    TeX1Arg,   0,         0,    (void *)doMathCal},    
     {"sqrt",       TeX1Arg,   0,         0,    (void *)doSqrt},
     {"fbox",       TeX1Arg,   0,         0,    (void *)doFbox},
     {"symb",       TeX1Arg,   0,         0,    (void *)doSymb},

@@ -6,49 +6,49 @@
 weierstrass(u+2v+4w,v,w);
 
 
-weierstrass(u,v,w)
+P_w(u,v,w)
 
 a1:=weierstrass(u-2v-6w,v,w);
 
 
-a1 := weierstrass(u,v,w)
+a1 := P_w(u,v,w)
 
 a2:=weierstrass(u+2v+3w,v,w);
 
 
-a2 := weierstrass(u + w,v,w)
+a2 := P_w(u + w,v,w)
 
 a3:=weierstrass(u+5v+4w,v,w);
 
 
-a3 := weierstrass(u + v,v,w)
+a3 := P_w(u + v,v,w)
 
 a4:=weierstrass(u+3v+5w,v,w);
 
 
-a4 := weierstrass(u + v + w,v,w)
+a4 := P_w(u + v + w,v,w)
 
 weierstrass(2v+3w,v,w);
 
 
-lattice_e3(v,w)
+e3(v,w)
 
 weierstrass(5v+2w,v,w);
 
 
-lattice_e1(v,w)
+e1(v,w)
 
 weierstrass(3v+5w,v,w);
 
 
-lattice_e2(v,w)
+e2(v,w)
 
 
 weierstrass(-2u^3,v,w);
 
 
-               3
-weierstrass(2*u ,v,w)
+       3
+P_w(2*u ,v,w)
 
 m :=6;
 
@@ -58,35 +58,35 @@ m := 6
 weierstrass(m*u,m*v,m*w);
 
 
- weierstrass(u,v,w)
---------------------
-         36
+ P_w(u,v,w)
+------------
+     36
 
 
 weierstrassZeta(u+2v+4w,v,w);
 
 
-2*eta1(v,w) + 4*eta3(v,w) + weierstrasszeta(u,v,w)
+2*eta1(v,w) + 4*eta3(v,w) + zeta_w(u,v,w)
 
 b1:=weierstrassZeta(u-2v-6w,v,w);
 
 
-b1 :=  - 2*eta1(v,w) - 6*eta3(v,w) + weierstrasszeta(u,v,w)
+b1 :=  - 2*eta1(v,w) - 6*eta3(v,w) + zeta_w(u,v,w)
 
 b2:=weierstrassZeta(u+2v+3w,v,w);
 
 
-b2 := 2*eta1(v,w) + 2*eta3(v,w) + weierstrasszeta(u + w,v,w)
+b2 := 2*eta1(v,w) + 2*eta3(v,w) + zeta_w(u + w,v,w)
 
 b3:=weierstrassZeta(u+5v+4w,v,w);
 
 
-b3 := 4*eta1(v,w) + 4*eta3(v,w) + weierstrasszeta(u + v,v,w)
+b3 := 4*eta1(v,w) + 4*eta3(v,w) + zeta_w(u + v,v,w)
 
 b4:=weierstrassZeta(u+3v+5w,v,w);
 
 
-b4 := 2*eta1(v,w) + 4*eta3(v,w) + weierstrasszeta(u + v + w,v,w)
+b4 := 2*eta1(v,w) + 4*eta3(v,w) + zeta_w(u + v + w,v,w)
 
 weierstrassZeta(2v+3w,v,w);
 
@@ -101,13 +101,13 @@ weierstrassZeta(5v+4w,v,w);
 weierstrassZeta(3v+5w,v,w);
 
 
-2*eta1(v,w) + 4*eta3(v,w) + weierstrasszeta(v + w,v,w)
+2*eta1(v,w) + 4*eta3(v,w) + zeta_w(v + w,v,w)
 
 
 weierstrassZeta(-u+2w+4v,v,w);
 
 
-4*eta1(v,w) + 2*eta3(v,w) - weierstrasszeta(u,v,w)
+4*eta1(v,w) + 2*eta3(v,w) - zeta_w(u,v,w)
 
 m:= -5;
 
@@ -117,9 +117,9 @@ m := -5
 weierstrassZeta(m*u,m*v,m*w);
 
 
-  - weierstrasszeta(u,v,w)
----------------------------
-             5
+  - zeta_w(u,v,w)
+------------------
+        5
 
 
 
@@ -495,6 +495,25 @@ sigma3(-u+2v+4w,v,w);
                 e
 
 
+df(weierstrass1(u, v, w), u);
+
+
+                    3
+ - sqrt(4*P_w(u|v,w)  - P_w(u|v,w)*v - w)
+
+weierstrass1(2*u, v, w);
+
+
+ P_w(u|16*v,64*w)
+------------------
+        4
+
+weierstrass1(i*u, v, w);
+
+
+ - P_w(u|v, - w)
+
+
 on complex;
 
 
@@ -701,32 +720,32 @@ sigma1(1, 1, 1.6i);
 sigma2(0.2, 1, 1.6i);
 
 
-1.01405333088 + 5.42101086243e-20*i
+1.01405333088
 
 sigma2(0.6, 3, 4.8i);
 
 
-1.01405333088 + 1.62630325873e-19*i
+1.01405333088
 
 sigma2(1.9, 1, 0.6i);
 
 
-1.809244598 + 6.93889390391e-18*i
+1.809244598
 
 sigma2(7.6, 4, 2.4i);
 
 
-1.809244598 + 6.93889390391e-18*i
+1.809244598
 
 sigma2(2, 1, 1.6i)/exp(2*eta1(1,1.6i));
 
 
-1 + 1.34166069148e-18*i
+1
 
 sigma2(3.2i, 1, 1.6i)/exp(2*eta3(1,1.6i)*1.6i);
 
 
-1 - 7.64127484858e-19*i
+1
 
 sigma2(1+1.6i, 1, 1.6i);
 
@@ -907,6 +926,82 @@ sigma3(u+3v+5w,v,w)-g4;
 
 
 0
+
+
+l := lattice_generators(4,1);
+
+
+l := {1.22569469099,1.49672932312*i}
+
+lattice_invariants(first l, second l);
+
+
+{4.0,1,37.0,2.37037037037}
+
+
+l := lattice_generators(2+i, 3+i);
+
+
+l := {1.18034748219 - 0.0824458762258*i,0.631644726227 + 1.12580170872*i}
+
+lattice_invariants(first l, second l);
+
+
+{2.0 + 1.0*i,3.0 + 1.0*i, - 214.0 - 151.0*i,0.0303703703704 + 0.0281481481481*i}
+
+
+weierstrass1(0.5, 3, 0);
+
+
+4.03761735675
+      % special case (g3=0)
+weierstrasszeta1(0.5, 0, 3);
+
+
+1.99933031794 - 7.68191711955e-19*i
+  % special case (g2=0)
+weierstrass1(0.5, 4, 1);
+
+
+4.05244860454
+  % real lattice roots
+weierstrass1(0.5, 4, -1);
+
+
+4.04796905729
+ % ditto -- same discriminant
+weierstrasszeta1(0.5, 1, 2);
+
+
+1.99746907884 - 8.45013581917e-19*i
+  % one real & 2 complex-conjugate roots
+weierstrasszeta1(0.5, 1, -2);
+
+
+1.99836235894
+ % ditto -- same discriminant
+weierstrass1(0.5, 4*(2+i)^2, (2+i)^3);
+
+
+4.1526522003 + 0.229886351282*i
+  % complex lattice roots (collinear)
+weierstrass1(0.5, 2+i, 2+i);
+
+
+4.02950935818 + 0.0147923036032*i
+            % complex lattice roots (general)
+
+lattice_roots(2+i, 1+3i);
+
+
+{0.206255574541 - 0.275007432721*i, - 0.206255574541 + 0.275007432721*i,0}
+
+quasi_period_factors(2+i, 1+3i);
+
+
+{0.314159265359 - 0.157079632679*i, - 0.471238898038 + 0.628318530718*i,
+
+ 0.157079632679 - 0.471238898038*i}
 
 
 shut "sfweier.rlg";
