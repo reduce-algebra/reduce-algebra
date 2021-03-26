@@ -1335,10 +1335,10 @@ put('jacobiam,'fancy!-functionsymbol,"\mathrm{am}");
 put('jacobizeta,'fancy!-functionsymbol,"\mathrm{Z}");
 
 % CSL GUI does not support \mathcal
-if memq('showmath, lispsystem!*) then
+% if memq('showmath, lispsystem!*) then
    % Note "\Epsilon" prints as E
-   put('jacobie,'fancy!-functionsymbol,"\epsilon")
-else
+%   put('jacobie,'fancy!-functionsymbol,"\epsilon")
+% else
    put('jacobie,'fancy!-functionsymbol,"\mathcal{E}");
    
 put('jacobisn,'plain!-functionsymbol,'sn);
@@ -1355,7 +1355,7 @@ put('jacobids,'plain!-functionsymbol,'ds);
 put('jacobidc,'plain!-functionsymbol,'dc);
 put('jacobiam,'plain!-functionsymbol,'am);
 put('jacobizeta,'plain!-functionsymbol,'!Z);
-put('jacobie,'plain!-functionsymbol,'!Epsilon);
+put('jacobie,'plain!-functionsymbol, "E_j");
 
 put('elliptice, 'plain!-functionsymbol, '!E);
 put('elliptick, 'plain!-functionsymbol, '!K);

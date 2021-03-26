@@ -31,6 +31,7 @@
 \ifdefined\VerbMath{\makehashletter
 \(\newcommand{\f}[1]{\texttt{#1}}\)%
 }\fi
+
 The package SPECFN is designed to provide algebraic and numeric manipulations of
 many common special functions, namely:
 
@@ -945,13 +946,10 @@ Note that
 \[\mathrm{E}(k)=\mathcal{E}(\mathrm{K}(k), k)
 =\int_0^{\mathrm{K}(k)} \mathrm{dn}^2(v, k) \,\mathrm{d}v.\]
 
-\emph{Display of the Jacobi E function in \REDUCE} causes some minor difficulty.
-If the GUI supports calligraphic characters there is no problem and it is rendered
-as $\mathcal{E}(u,k)$.
-However, this is currently not the case with the CSL GUI and so it is rendered as $\epsilon$.
-The uppercase version cannot reasonably be used as it is indistinguishable from uppercase E
-which is used for Elliptic E.
-In non-GUI interfaces the Jacobi E function is rendered as Epsilon.
+On a GUI that supports calligraphic characters (NB. this now the case with the
+CSL GUI), there is no problem and it is rendered as $\mathcal{E}(u,k)$
+in accordance with NIST usage.
+On non-GUI interfaces the Jacobi E function is rendered as E\_j.
 
 %\subsection{Ellpitic $\Pi$}
 %
@@ -1137,7 +1135,7 @@ Three main functions of three arguments are defined:
 \ttindex{Weierstrass} \ttindex{WeierstrassZeta}
 \ttindex{sigma}
 \begin{itemize}
-\item  $P_w(u, \omega_1, \omega_3)$ \ --- \ \f{weierstrass(u,omega1,omega3)}
+\item  $\wp(u, \omega_1, \omega_3)$ \ --- \ \f{weierstrass(u,omega1,omega3)}
 \item $\zeta_w(u, \omega_1, \omega_3)$ \ --- \ \f{weierstrassZeta(u,omega1,omega3)}
 \item $\sigma(u, \omega_1, \omega_3)$ \ --- \ \f{sigma(u,omega1,omega3)}
 \end{itemize}
@@ -1145,7 +1143,7 @@ Three main functions of three arguments are defined:
 The notation used is broadly similar used by Lawden \cite{Lawden:89} which is also used in the
 NIST Digital Library of Mathematical Functions \href{https://dlmf.nist.gov/}{DLMF:NIST}. However,
 $\zeta_w$ is used for the Weierstrassian Zeta function to distinguish it from the Riemann Zeta
-function and currently $P_w$ is used for the Weierstrassian elliptic function itself.
+function and the usual symbol $\wp$ is used for the Weierstrassian elliptic function itself.
 
 The two primitive periods of the Weierstrass function are $2\omega_1$ and $2\omega_3$ and these must satisfy
 $\Im(\omega_3/\omega_1) \neq 0$. The two periods are normally numbered so that $\tau = \omega_3/\omega_1$ has
@@ -1179,13 +1177,35 @@ The Weierstrassian function is even and has a pole of order 2 at all lattice poi
 The Zeta and Sigma functions are only quasi-periodic on the lattice. Zeta is odd and has simple poles of residue
 1 at all lattice points. The basic Sigma function $\sigma(u,\omega_1,\omega_3)$ is odd and regular everywhere as is
 the function $\vartheta_1(u,\tau)$ to which it is closely related. It has zeros at all lattice points. All three functions
-$P_w$, $\zeta_w$ and $\sigma$ are homogenous of degrees -2, -1 and +1 respectively. The functions are related by
-\[ P_w(u) = -\zeta_w^\prime(u),\qquad\qquad \zeta_w(u) = \sigma^\prime(u)/\sigma(u),\]
+$\wp$, $\zeta_w$ and $\sigma$ are homogenous of degrees -2, -1 and +1 respectively. The functions are related by
+\[ \wp(u) = -\zeta_w^\prime(u),\qquad\qquad \zeta_w(u) = \sigma^\prime(u)/\sigma(u),\]
 where the lattice parameters have been omitted for conciseness.
 
 Rule sets are provided which implement all the properties such as double periodicity discussed above. For numerical evaluation
 the switches \sw{ROUNDED} and \sw{COMPLEX} must both be ON and all three parameters must be numeric. It is not, however,
 necessary to ensure $\Im(\omega_3/\omega_1) >0$ as the second and third parameters will be swapped if required.
+
+\textbf{Alternative forms of the Weierstrass Functions}
+\hypertarget{WEIERSTRASS1}{}
+\hypertarget{WEIERSTRASSZETA1}{}
+\hypertarget{operator:Weierstrass1}{}
+\hypertarget{operator:WeierstrassZeta1}{}
+\ttindex{Weierstrass1} \ttindex{WeierstrassZeta1}
+
+Two commonly used alternative forms of the Weierstrassian functions in which
+they are regarded as functions of the lattice invariants $g_2$ and $g_3$
+rather than the primitive periods $\omega_1$ and $\omega_3$ are provided:
+\begin{itemize}
+\item  $\wp(u \parallel g_2, g_3)$ \ --- \ \f{weierstrass1(u,g2,g3)}
+\item $\zeta_w(u \parallel g_2, g_3)$ \ --- \ \f{weierstrassZeta1(u,g2,g3)}.
+\end{itemize}
+Note that for output they are distinguished from the two discussed above
+by separating the first and
+second arguments by a vertical bar rather than a comma. The rule for
+differentiation of the Weierstrass function is simpler when expressed in
+this  alternative:
+\[ \wp^\prime(u \parallel g_2,g_3)^2 = 4\,\wp(u \parallel g_2,g_3)^3
+   - g_2\, \wp(u \parallel g_2,g_3) -g_3. \]
 
 \textbf{Other Sigma Functions}
 \hypertarget{SIGMA1}{}
@@ -1205,31 +1225,45 @@ theta functions $\vartheta_2$, $\vartheta_3$ and $\vartheta_4$ respectively; but
 For more information on the properties these sigma functions, see Lawden \cite{Lawden:89};
 they do not appear in the NIST Digital Library of Mathematical Functions, but are included here for completeness.
 
-\subsubsection{Lattice Roots and Quasi-Period Functions}
+\subsubsection{ Quasi-Period Factors \& Lattice Functions}
 \hypertarget{ETA}{}
 \ttindex{lattice\_e1}\ttindex{lattice\_e2}\ttindex{lattice\_e3}
-\index{Lattice roots}\index{Quasi-period functions}
+\ttindex{lattice\_g2}\ttindex{lattice\_g3}\ttindex{lattice\_delta}
+\index{Lattice roots}\index{Lattice invariants}\index{Quasi-period factors}
 
-Six functions are provided:
+Ten functions are provided:
 \begin{itemize}
 \item $e_1(\omega_1, \omega_3)$ \ --- \ \f{lattice\_e1(omega1, omega3)};
 \item $e_2(\omega_1, \omega_3)$ \ --- \ \f{lattice\_e2(omega1, omega3)};
 \item $e_3(\omega_1, \omega_3)$ \ --- \ \f{lattice\_e3(omega1, omega3)};
+\item $g_2(\omega_1, \omega_3)$ \ --- \ \f{lattice\_g2(omega1, omega3)};
+\item $g_3(\omega_1, \omega_3)$ \ --- \ \f{lattice\_g3(omega1, omega3)};
+\item $\Delta(\omega_1, \omega_3)$ \ --- \ \f{lattice\_delta(omega1, omega3)};
+\item $\mathrm{G}(\omega_1, \omega_3)$ \ --- \ \f{lattice\_g(omega1, omega3)};
 \item $\eta_1(\omega_1, \omega_3)$ \ --- \ \f{eta\_1(omega1, omega3)};
 \item $\eta_2(\omega_1, \omega_3)$ \ --- \ \f{eta\_2(omega1, omega3)};
 \item $\eta_3(\omega_1, \omega_3)$ \ --- \ \f{eta\_3(omega1, omega3)}.
 \end{itemize}
 
-These are only operative when the switches \sw{ROUNDED} and \sw{COMPLEX} are ON and their
-arguments are numerical. The first three are referred to as lattice roots and are related to the invariants
-$g_2$ and $g_3$ of the Weierstrassian elliptic function $P_w$. The lattice root $e_2$ also appears in the numerical
+These are operative when the switches \sw{ROUNDED} and \sw{COMPLEX} are ON
+and their arguments are numerical. The first three are referred to as lattice
+roots and are related to the invariants
+$g_2, g_3$, the discriminant $\Delta = g_2^3-27g_3^2$ and a closely related
+invariant $\mathrm{G} = g_2^3/(27 g_3^2)$ of the Weierstrassian
+elliptic function $\wp$. The lattice roots also appears in the numerical
 evaluation of the Weierstrass function. These lattice roots satisfy:
 \[e_1+e_2+e_3=0,\qquad g_2=2(e_1^2+e_2^2+e_3^2),\qquad g_3= 4e_1e_2e_3.\]
+If the discriminant $\Delta$ vanishes or equivalently if $\mathrm{G} = 1$,
+there are at most two distinct lattice roots and the elliptic function
+degeneratesto an elementary one. The advantage of the invariant
+$\mathrm{G}$ is that it is a function of $\tau = \omega_3/\omega_1$ only.
 
 \ttindex{eta\_1}\ttindex{eta\_2}\ttindex{eta\_3}
-The remaining three functions \f{eta\_1}, \f{eta\_2} \& \f{eta\_3} appear in the rules for the quasi-periodicity of
-the four sigma functions and of the Weierstrassian Zeta function. They are also used in the numerical
-evaluation of these functions when the switches \sw{ROUNDED} and \sw{COMPLEX} are ON. The quasi-period relations are:
+The remaining three functions \f{eta\_1}, \f{eta\_2} \& \f{eta\_3} appear in
+the rules for the quasi-periodicity of the four sigma functions and of the
+Weierstrassian Zeta function. They are also used in the numerical
+evaluation of these functions when the switches \sw{ROUNDED} and \sw{COMPLEX}
+are ON. The quasi-period relations are:
 \begin{eqnarray*}
   \zeta_w(u+2\omega_j) & = & \zeta_w(u)+2\eta_j\\
   \sigma(u+2\omega_j) & = & -exp(2\eta_j(u+\omega_j))\sigma(u)\\
@@ -1239,9 +1273,37 @@ evaluation of these functions when the switches \sw{ROUNDED} and \sw{COMPLEX} ar
   \sigma_j(\omega_j) & = & 0,
 \end{eqnarray*}
 where the lattice parameters have been omitted for conciseness and $j,k = 1\ldots 3$.
-The quasi-period functions satisfy
+The quasi-period factors satisfy
 \[\eta_1+\eta_2+\eta_3=0,\qquad
    \eta_1\omega_3-\eta_3\omega_1=\eta_2\omega_1-\eta_1\omega_2=\eta_3\omega_2-\eta_2\omega_3=i\pi/2.\]
+As well as the scalar-valued functions discussed above in this section,
+there are four functions which return a list as their value:
+\ttindex{lattice\_roots}\ttindex{lattice\_invariants}
+\ttindex{lattice\_generators}\ttindex{quasi\_period\_factors}
+\begin{itemize}
+\item \f{lattice\_roots(omega1, omega3)} --- returns $\{e_1,\ e_2,\ e_3\}$;
+\item \f{lattice\_invariants(omega1, omega3)} --- returns
+  $\{g_2,\ g_3,\ \Delta,\ \mathrm{G}\}$;
+\item \f{quasi\_period\_factors(omega1, omega3)}
+  --- returns $\{\eta_1,\ \eta_2,\ \eta_3\}$;
+\item \f{lattice\_generators(g2, g3)}  --- returns $\{\omega_1,\ \omega_3\}$.
+\end{itemize}
+The first three are actually more efficient than calling the requisite
+scalar-valued functions individually and the fourth is used in the numerical
+evaluation of the Weierstrass functions regarded as functions of the
+invariants. These functions are only useful when the switches \sw{ROUNDED} and
+\sw{COMPLEX} are ON and their arguments are all numerical.
+Note that the call sequence:
+\begin{verbatim}
+  lattice_generators(g2,g3);
+  lattice_invariants(first ws, second ws);
+  {first ws, second ws};
+\end{verbatim}
+should reproduce the list \{g2, g3\}, perhaps with small rounding errors. The
+corresponding sequence with the calls to \f{lattice\_generators} and
+\f{lattice\_invariants} interchanged (and g2 \& g3 replaced by w1 \& w3),
+in general, will not produce the same pair of lattice generators since the
+generators are only defined up to a unimodular bilinear transformation.
 
 \subsection{Stirling Numbers}
 \hypertarget{STIRL}{}
@@ -1651,12 +1713,14 @@ $\vartheta_1(u,\tau)$ & \f{elliptictheta1(u,tau)}\\
 $\vartheta_2(u,\tau)$ & \f{elliptictheta2(u,tau)}\\
 $\vartheta_3(u,\tau)$ & \f{elliptictheta3(u,tau)}\\
 $\vartheta_4(u,\tau)$ & \f{elliptictheta4(u,tau)}\\
-$P_z(u,\omega_1, \omega_3)$ & \f{weierstrass(u,omega1,omega3)}\\
-$\zeta_z(u,\omega_1, \omega_3)$ & \f{weierstrasszeta(u,omega1,omega3)}\\
+$\wp(u,\omega_1, \omega_3)$ & \f{weierstrass(u,omega1,omega3)}\\
+$\zeta_w(u,\omega_1, \omega_3)$ & \f{weierstrasszeta(u,omega1,omega3)}\\
 $\sigma(u,\omega_1, \omega_3)$ & \f{sigma(u,omega1,omega3)}\\
 $\sigma_1(u,\omega_1, \omega_3)$ & \f{sigma1(u,omega1,omega3)}\\
 $\sigma_2(u,\omega_1, \omega_3)$ & \f{sigma2(u,omega1,omega3)}\\
-$\sigma_3(u,\omega_1, \omega_3)$ & \f{sigma3(u,omega1,omega3)}\\[5pt]
+$\sigma_3(u,\omega_1, \omega_3)$ & \f{sigma3(u,omega1,omega3)}\\
+$\wp(u \parallel g_2, g_3)$ & \f{weierstrass1(u,g2,g3)}\\
+$\zeta_w(u \parallel g_2, g_3)$ & \f{weierstrasszeta1(u,g2,g3)}\\[5pt]
 \end{tabular}}
 \newpage
 
@@ -1705,3 +1769,4 @@ Catalan's constant & \f{Catalan}\\
 Khinchin's constant & \f{Khinchin}\\
 Golden ratio & \f{Golden\_ratio}\\[5pt]
 \end{tabular}}
+
