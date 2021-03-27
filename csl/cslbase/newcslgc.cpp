@@ -1,7 +1,14 @@
 // File newcslgc.cpp                      Copyright (c) Codemist, 1990-2021
 
 //
-// Garbage collection.
+// Garbage collection. This is a version intended to be conservative
+// from the outset but to be structured so that it can be incrementally
+// entended to be generational, so that it supports threads in the Lisp
+// run time and so that it can at least experiment with concurrency within
+// parts of garbage collection. All that scope for generalisation has
+// caused me repeated pauses in the design process, and various evaluations
+// of performance issues have also meant that getting this going has been a
+// long haul.
 //
 
 /**************************************************************************
@@ -405,26 +412,214 @@ uintptr_t sortPinList(uintptr_t l)
 {   return sortList<uintptr_t, PinChainClass>(l);
 }
 
-// During garbage collection I will allocate items in the half of my memory
-// that has been free up to now.
-// In an earlier draft of this I had a separate bit of code to do that, such
-// that the code was a relative of that in get_n_bytes but did not support
-// concurrency at all. My thought now is that for a major garbage collection
-// I will be abandoning the old half-space and when it is complete I will
-// allocate in the new one - and so a tidy scheme is to make that change-over
-// at the start of the GC and then throughout the copying process I just
-// use the existing get_n_bytes code. Well I will need to review that so
-// that when a Page becomes full I always just allocate a fresh one rather
-// that having any thought of (re-)entering the GC.
-// Doing things this way automatically provides support for multi-thread
-// allocation and so for future experiments with multi-thread copying in
-// the (global) garbage collection. It adds some overhead in that at the end
-// of each Chunk I will need to perform atomic increments, and my fringe and
-// limit values will have to be thread-local - again that would ne essential
-// for parallelism within the GC and I am going to hope it is a modest
-// overhead anyway.
+std::mutex mutexForChunkStack;
+bool gcComplete;
+std::condition_variable cvForChunkStack;
+atomic<Chunk *> chunkStack(nullptr);
 
-bool withinMajorGarbageCollection = false;
+// The lock-free stack as implemented here could fail if the "ABA"
+// scanario arose - but that involved popping an item and later
+// pushing it back. If that will never happen there should not be
+// any trouble.
+
+void pushChunk(Chunk *c)
+{   c->selfScanPoint = c->dataStart();
+    Chunk *old = chunkStack.load();
+    do
+    {   c->chunkStack.store(old);
+    } while (!chunkStack.compare_exchange_weak(old, c));
+    if (old == nullptr)
+    {
+// The critical regiion with no code within it looks really odd! But it
+// is necessary to avoid a race condition in popChunk.
+        {   std::lock_guard<std::mutex> lock(mutexForChunkStack);
+        }
+        cvForChunkStack.notify_all();
+    }
+}
+
+// This version is lock-free and it return nullptr if the stack is empty.
+
+Chunk *popChunk1()
+{   Chunk *old = chunkStack.load(), *c;
+    do
+    {   if (old == nullptr) return nullptr;
+        c = old->chunkStack.load();
+    } while (!chunkStack.compare_exchange_weak(old, c));
+    return old;
+}
+
+// Here is the version for use. If called when the stack is empty it
+// returns nullptr if gcComplete is set, or otherwise it waits.
+
+Chunk *popChunk()
+{
+// First try in a lock-free manner.
+    Chunk *c = popChunk1();
+// ... if that succeds then I can return with only low overhead.
+    if (c != nullptr) return c;
+// ** Point A **
+// Now my first lock-free try failed. Of course a pushChunk() may have
+// happened in the meanwhile - trying again is not a problem! But this time
+// I will lock the mutex first. That will allow any pushChunk that adds
+// to a non-empty stack to complete in a lock-free manner, but a pushChunk
+// on an empty stack will not be able to reach the notify_all step until the
+// mutex is released.
+    std::unique_lock<std::mutex> lock(mutexForChunkStack);
+    while ((c = popChunk1()) == nullptr && !gcComplete)
+    {
+// ** Point B **
+// Sometimes this pop will succeed, eg if pushChunk ran while this thread
+// was at Point A. In such a case the push operation may have performed a
+// notify_all but this thread will not be aware. That could have woken some
+// other thread up and there could have been a whole sequence of pushes and
+// pops around Point A!
+// When popChunk1 fails here it will do so with the mutex locked. That means
+// that any push that could install data will do so onto an empty stack and
+// when it does that it will attempt to lock the mutex and will hence stall.
+// It will first be able to make progress when the lock is released, which
+// will be within the wait call here.
+// Meanwhile other uses of push could have added more items to the
+// stack without problems and other threads may have popped things,
+// including the one set up by the stalled push thread.
+        cvForChunkStack.wait(lock);
+// When the condition variable unlocks the mutex (while it waits), the push
+// can continue. It will perform a notify_all. Because of the activity of
+// other threads the stack could be empty again! But that does not matter
+// too much - the code here will check the stack again in popChunk1.
+// The crucial issue here is the avoidance of a race condition that could
+// lead to pushChunk performing its notify_all while this thread was
+// as Point B. If that happened the wait could deadlock.
+//
+    }
+    return c;
+}
+
+// The short path through the code here is as for the main system, but
+// beyond allocation within a Chunk it takes a different path - which makes
+// sense because here I am already within the GC and so I never need to
+// bring all threads into struct synchronization to start one.
+//
+// I am still concerned about overheads in concurrency support, so the
+// plan at present is to maintain a pool of new standard sized
+// chunks in a little queue. Checking whether the queue is empty and
+// grabbing a chunk from it if not can be done using simple atomic operations
+// if the queue is implemented as a ring-buffer. If a thread either finds
+// that the queue is empty or that it is trying to grab space larger than
+// (say) 2/3 of the standard chunk size (and especially if it is allocating
+// something that would not fit at all in a standard Chunk) it enters a
+// critical region. That can do whatever global activity is required to
+// arrange space for some more Chunks including an oversized one. It will
+// (in a lock-free manner) top the queue up until it is full - (say) 16
+// Chunks. At this level the stack has reserved around 256K of memory.
+// If there have not been overlarge grabs that mess things up it will be
+// possible to unwind some of those allocations in the single thread code at
+// the end of GC, so there is no necessary loss. But at 1/4 Mbyte even if I
+// were to leave it wasted it is not a disaster!
+// The pointers used with the circular buffer are counting Chunks (which are
+// around 16Kbytes) so if on a 32-bit machine I used 32-bit uintptr_t values
+// those would overflow when 2^32 chunks has been used and given that each
+// GC can at worst be allocating from a half-space that would not happen until
+// over 30000 garbage collections had happened. That is not perfect headroom
+// but I will accept it - and on 64-bit machines there is no problem after
+// and imaginable amount of time.
+
+const size_t gcQSize = 16;
+atomic<uintptr_t> gcInQ(0);
+atomic<uintptr_t> gcOutQ(0);
+atomic<Chunk *>   gcQ[gcQSize];
+
+// This is a single producer multiple consumer queue, so the insert operation
+// needs to update data using sequentially consistent atomic operations so
+// that consumers notice, and so that data is in the queue ahead of the
+// pointer being incremented to indicate that. But it does not have to worry
+// about interlocks against other producers.
+
+static void gcEnqueue(Chunk *c)
+{   uintptr_t in = gcInQ;
+    gcQ[in & (gcQSize-1)] = c;
+    in = in+1;
+    if (in == 0) my_abort("GC queue counter wrapped round to zero");
+    gcInQ = in;
+}
+
+static Chunk *grabAnotherChunk(size_t size)
+{
+// Use gFringe to gLimit is possible
+// Skip pinned items if necessary
+// Allocate a totally new page if the above two strategies fail.
+// @@@ not coded yet.
+    my_abort("grabAnotherChunk");
+    return nullptr;
+}
+
+static std::mutex grabNewSegments;
+
+static Chunk *gcReserveMoreChunks(uintptr_t out)
+{   std::lock_guard<std::mutex> lock(grabNewSegments);
+// When I get here there can still be other threads running and incrementing
+// gcOutQ. My task is to insert chunks into the queue until it holds (about)
+// gcQSize.
+    while (gcInQ < gcOutQ + gcQSize)
+    {   gcEnqueue(grabAnotherChunk(targetChunkSize));
+    }
+    return gcQ[out & (gcQSize-1)];
+}
+
+static Chunk *gcDequeue()
+{   uintptr_t out = gcOutQ.fetch_add(1);
+    if (out < gcInQ) LIKELY return gcQ[out & (gcQSize-1)];
+    UNLIKELY
+    return gcReserveMoreChunks(out);
+}
+
+
+LispObject gc_n_bytes1(size_t n, uintptr_t thr,
+                       uintptr_t r, uintptr_t w)
+{   Chunk *newChunk;
+    if (n <= (2*targetChunkSize)/3) LIKELY newChunk = gcDequeue();
+    else
+    UNLIKELY
+    {   std::lock_guard<std::mutex> lock(grabNewSegments);
+        newChunk = grabAnotherChunk(targetChunkSize+n);
+        while (gcInQ < gcOutQ + gcQSize)
+        {   gcEnqueue(grabAnotherChunk(targetChunkSize));
+        }
+    }
+    uintptr_t oldFringe = r;
+    uintptr_t oldLimit = gLimit;
+    uint64_t newLimit = reinterpret_cast<uintptr_t>(newChunk) + targetChunkSize+n;
+    r = newChunk->dataStart();
+    fringe = r + n;
+    Page *p = reinterpret_cast<Page *>((oldFringe-1) & -pageSize);
+    if (myChunkBase[thr] != nullptr) pushChunk(myChunkBase[thr]);
+    myChunkBase[thr] = newChunk;
+    newChunk->length.store(targetChunkSize+n);
+    newChunk->isPinned.store(false);
+    newChunk->pinChain.store(nullptr);
+    size_t chunkNo = p->chunkCount.fetch_add(1);
+    p->chunkMap[chunkNo].store(newChunk);
+    limitBis[thr] = newLimit;
+    limit[thr] = newLimit;
+    testLayout();
+    return static_cast<LispObject>(r);
+}
+
+inline LispObject gc_n_bytes(size_t n)
+{
+// First the path that applies if the allocation will be possible within the
+// current Chunk.
+    uintptr_t thr = threadId;
+    uintptr_t r = fringe;
+    uintptr_t fr1 = r + n;
+    fringe = fr1;
+    uintptr_t w = limit[thr].load();
+    if (fr1 <= w) LIKELY return static_cast<LispObject>(r);
+// Now the case where a fresh Chunk has to be allocated.
+    UNLIKELY
+    return gc_n_bytes1(n, threadId, r, w);
+}
+
 
 // The version here is for single-threaded use only, however my intent is
 // to gradually start adding in the framework for a parallel version. As I
@@ -488,6 +683,7 @@ void evacuate(LispObject *p)
 {   evacuate(reinterpret_cast<atomic<LispObject> *>(p));
 }
 
+bool withinMajorGarbageCollection = false;
 size_t pinnedChunkCount = 0, pinnedPageCount = 0;
 
 void prepareForGarbageCollection(bool major)
@@ -509,7 +705,8 @@ void prepareForGarbageCollection(bool major)
         chunkStack = nullptr;
     }
     else
-    {   cout << "prepare for minor GC not coded yet\r\n";
+    {   withinMajorGarbageCollection = false;
+        cout << "prepare for minor GC not coded yet\r\n";
         my_abort();
     }
 }
@@ -830,7 +1027,7 @@ bool evacuatePartOfMyOwnChunk()
 // not they may or may now have a newer allocation chunk to attend to.
 
 
-
+//@@@@ This is where I need to code stuff!!!
 
 void evacuateFromCopiedData(bool major)
 {
@@ -887,88 +1084,6 @@ atomic<unsigned int> activeHelpers;
 // before gcHelper() is called on in ANY thread the GC should have set
 // activeHelpers to the number of helper threads it is about to activate.
 
-
-std::mutex mutexForChunkStack;
-bool gcComplete;
-std::condition_variable cvForChunkStack;
-
-// The lock-free stack as implemented here could fail if the "ABA"
-// scanario arose - but that involved popping an item and later
-// pushing it back. If that will never happen there should not be
-// any trouble.
-
-void pushChunk(Chunk *c)
-{   c->selfScanPoint = c->dataStart();
-    Chunk *old = chunkStack.load();
-    do
-    {   c->chunkStack.store(old);
-    } while (!chunkStack.compare_exchange_weak(old, c));
-    if (old == nullptr)
-    {
-// The critical regiion with no code within it looks really odd! But it
-// is necessary to avoid a race condition in popChunk.
-        {   std::lock_guard<std::mutex> lock(mutexForChunkStack);
-        }
-        cvForChunkStack.notify_all();
-    }
-}
-
-// This version is lock-free and it return nullptr if the stack is empty.
-
-Chunk *popChunk1()
-{   Chunk *old = chunkStack.load(), *c;
-    do
-    {   if (old == nullptr) return nullptr;
-        c = old->chunkStack.load();
-    } while (!chunkStack.compare_exchange_weak(old, c));
-    return old;
-}
-
-// Here is the version for use. If called when the stack is empty it
-// returns nullptr if gcComplete is set, or otherwise it waits.
-
-Chunk *popChunk()
-{
-// First try in a lock-free manner.
-    Chunk *c = popChunk1();
-// ... if that succeds then I can return with only low overhead.
-    if (c != nullptr) return c;
-// ** Point A **
-// Now my first lock-free try failed. Of course a pushChunk() may have
-// happened in the meanwhile - trying again is not a problem! But this time
-// I will lock the mutex first. That will allow any pushChunk that adds
-// to a non-empty stack to complete in a lock-free manner, but a pushChunk
-// on an empty stack will not be able to reach the notify_all step until the
-// mutex is released.
-    std::unique_lock<std::mutex> lock(mutexForChunkStack);
-    while ((c = popChunk1()) == nullptr && !gcComplete)
-    {
-// ** Point B **
-// Sometimes this pop will succeed, eg if pushChunk ran while this thread
-// was at Point A. In such a case the push operation may have performed a
-// notify_all but this thread will not be aware. That could have woken some
-// other thread up and there could have been a whole sequence of pushes and
-// pops around Point A!
-// When popChunk1 fails here it will do so with the mutex locked. That means
-// that any push that could install data will do so onto an empty stack and
-// when it does that it will attempt to lock the mutex and will hence stall.
-// It will first be able to make progress when the lock is released, which
-// will be within the wait call here.
-// Meanwhile other uses of push could have added more items to the
-// stack without problems and other threads may have popped things,
-// including the one set up by the stalled push thread.
-        cvForChunkStack.wait(lock);
-// When the condition variable unlocks the mutex (while it waits), the push
-// can continue. It will perform a notify_all. Because of the activity of
-// other threads the stack could be empty again! But that does not matter
-// too much - the code here will check the stack again in popChunk1.
-// The crucial issue here is the avoidance of a race condition that could
-// lead to pushChunk performing its notify_all while this thread was
-// as Point B. If that happened the wait could deadlock.
-//
-    }
-    return c;
-}
 
 #ifndef ONLY_USE_ONE_GC_THREAD
 

@@ -254,58 +254,6 @@ public:
     }
 };
 
-extern atomic<Chunk *> chunkStack;
-
-// I have lock-free procedures for pushing and popping Chunks from the
-// chunkStack. These are short and rather tidy functions and in the use I
-// make the "stack" is used more or less as a queue with each Chunk only
-// being placed on it once and only removed once. In more general uses of
-// a lock-free stack one could have a case where one thread starts use
-// of popChunk and gets as far as setting "c". Then another thread proceeds
-// and goes something like
-//    Chunk *a = popChunk();
-//    pushChunk(b);
-//    pushChunk(a);
-// whete the last of those restores the top of the stack to refer to the
-// same Chunk that it had at the start. Then the first thread resumes and
-// its compare_exchange succeeds, but it then leaves the stack in a state
-// where the extra item inserted by the other thread is lost. This is the
-// "ABA problem". It can not arise unless the second thread can push an
-// item that had previously been on the stack. In my use-case this can never
-// happen. Whew.  
-//
-// It is important that any one Chunk be "pushed" just once when it is
-// full and its chunkFringe field has been filled in. Once pushed it would
-// be wrong to insert more data into it. An attempt to push it twice would
-// corrupt the chaining scheme.
-
-// This returns TRUE if the chunk stack was empty before this new chunk
-// was pushed.
-
-// Well the code for these is actually in newcslgc.cpp and there are extra
-// bits of code to deal with synchronization at a higher level!
-
-// inline bool pushChunk(Chunk *c)
-// {   Chunk *old = chunkStack.load();
-//     do
-//     {   c->chunkStack.store(old);
-//     } while (!chunkStack.compare_exchange_weak(old, c));
-//     return (old == nullptr);
-// }
-
-// inline Chunk *popChunk()
-// {   Chunk *old = chunkStack.load();
-//     Chunk *c;
-//     do
-//     {   if (old == nullptr) return nullptr;
-//         c = old->chunkStack.load();
-//     } while (!chunkStack.compare_exchange_weak(old, c));
-//     return old;
-//}
-
-extern void pushChunk(Chunk * c);
-extern Chunk *popChunk();
-
 // I am going to require Pages to be aligned at nice neat boundaries
 // because then if I have an arbitrary address within one I will be able to
 // find the page header using a simple AND operation.
@@ -827,7 +775,6 @@ enum GcStyle
 
 extern GcStyle userGcRequest;
 
-extern bool withinMajorGarbageCollection;
 extern uintptr_t difficult_n_bytes();
 
 inline Header makeHeader(size_t n, int type)   // size is in bytes
@@ -914,14 +861,12 @@ inline LispObject get_n_bytes1(size_t n, uintptr_t thr,
         {
 // Now my allocation of a new chunk has been successful. Before I test if
 // participation in a garbage collection on behalf of some other thread
-// is required that I need to record this chunk in the table of chunks that
-// the page maintains. I also need to fill in the chunk header - well the
+// is required I need to record this chunk in the table of chunks that
+// the page maintains. I also need to fill in the chunk header -- well the
 // pinChain pointer does not need initializing until and unless the page
 // gets pinned, but the isPinned flag must start off false so that when the
 // GC finds an ambiguous pointer within this chunk it knows when that is the
 // first such.
-            if (withinMajorGarbageCollection &&
-                myChunkBase[thr] != nullptr) pushChunk(myChunkBase[thr]);
             myChunkBase[thr] = newChunk;
             newChunk->length.store(targetChunkSize+n);
             newChunk->isPinned.store(false);
@@ -980,15 +925,19 @@ inline LispObject get_n_bytes(size_t n)
 // limit[threadId] is atomic and that indicates that
 // other threads may access it. In particular another thread can set it to
 // zero to cause this thread to synchronize with others to participate in
-// garbage collection.
+// garbage collection. Because on some platforms access to thread-locals is
+// more expensive than use of simple variables or is even achieved via
+// strange C++ trickery, I isolate loading and storing such values into
+// simple statements that transfer values to local variables.
     uintptr_t thr = threadId;
     uintptr_t r = fringe;
+    uintptr_t fr1 = r + n;
+    fringe = fr1;
     uintptr_t w = limit[thr].load();
-    fringe += n;
 // The simple case completes here. If each chunk is around 16K then only 1
 // CONS in 1000 or so will take the longer route. I rather hope that the
 // common case will be lifted to be rendered in-line
-    if (fringe <= w) LIKELY return static_cast<LispObject>(r);
+    if (fr1 <= w) LIKELY return static_cast<LispObject>(r);
     UNLIKELY
     return get_n_bytes1(n, threadId, r, w);
 }
@@ -1305,8 +1254,6 @@ inline void ableToAllocateNewChunk(unsigned int i, size_t n, size_t gap)
     result[i] = newChunk->dataStart() + TAG_VECTOR;
 //    cout << "result[" << i << "] = " << std::hex << result[i] << std::dec << "\r" << endl;
     uintptr_t thr = threadId;
-    if (withinMajorGarbageCollection &&
-        myChunkBase[thr] != nullptr) pushChunk(myChunkBase[thr]);
     myChunkBase[thr] = newChunk;
     request[i] = 0;
 // If I allocate a block here it will need to be alive through an impending
@@ -1363,7 +1310,7 @@ inline void regionInPageIsFull(unsigned int i, size_t n,
         }
     }
 // pendingCount will be a count of the requests NOT satisfied. So I increment
-// if if I do not manage to make an allocation.
+// it if I do not manage to make an allocation.
     if (request[i] != 0) pendingCount++;
 }
 
@@ -1438,11 +1385,13 @@ inline void grabNewCurrentPage(bool preferMostlyFree)
 //  cout << "@@ just allocated a fresh page\r\n";
 }
 
+extern bool withinMajorGarbageCollection;
+
 inline void newRegionNeeded()
 {
 // This where a page is full up. Or at least where the region within a page
 // up to the next pinned region was full up! Or if the user asked for a GC.
-// I wll set padders everywhere even if I might think I have done so
+// I will set padders everywhere even if I might think I have done so
 // already, just so I am certain.
     for (unsigned int i=0; i<maxThreads; i++)
     {   if (myChunkBase[i] != nullptr)
@@ -1957,7 +1906,7 @@ public:
 };
 
 // The following is intended to help me check if allocation is going
-// smoothly. It can be removed once debuuging is complete (ha ha).
+// smoothly. It can be removed once debugging is complete (ha ha).
 
 inline void testLayout()
 {

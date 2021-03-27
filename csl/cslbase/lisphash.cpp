@@ -606,13 +606,24 @@ static uint64_t hash_eql(uint64_t r, LispObject key)
 static uint64_t hash_generic_equal(uint64_t r, LispObject key,
                                    int mode, size_t depth);
 
+#ifdef DEBUG
+static uint64_t hash_generic_equal1(uint64_t r, LispObject key,
+                                    int mode, size_t depth);
+#endif
+
 static uint64_t hash_cl_equal(uint64_t r, LispObject key)
 {   return hash_generic_equal(r, key, HASH_AS_CL_EQUAL, 0);
 }
 
+#ifdef DEBUG
+static uint64_t hash_equal(uint64_t r, LispObject key)
+{   return hash_generic_equal1(r, key, HASH_AS_EQUAL, 0);
+}
+#else // DEBUG
 static uint64_t hash_equal(uint64_t r, LispObject key)
 {   return hash_generic_equal(r, key, HASH_AS_EQUAL, 0);
 }
+#endif // DEBUG
 
 static uint64_t hash_equalp(uint64_t r, LispObject key)
 {   return hash_generic_equal(r, key, HASH_AS_EQUALP, 0);
@@ -853,6 +864,38 @@ static uint64_t hash_generic_equal(uint64_t r, LispObject key,
 // floats generates what this would.
             return hash_eq(r, key);
     }
+}
+
+#define MAX_DEPTH 40000
+
+LispObject trailvec[MAX_DEPTH];
+
+static bool is_cyclic(LispObject key, int trail)
+{   if (is_cons(key))
+    {   for (int i=0; i<trail; i++) 
+            if (trailvec[i] == key) return true;
+        trailvec[trail++] = key;
+        if (trail>=MAX_DEPTH) my_abort("too deep");
+        if (is_cyclic(car(key), trail)) return true;
+        return is_cyclic(cdr(key), trail);
+    }
+    if (is_vector(key) && !vector_holds_binary(vechdr(key)))
+    {   for (int i=0; i<trail; i++) 
+            if (trailvec[i] == key) return true;
+        size_t len = length_of_header(vechdr(key))/CELL - 1;
+        trailvec[trail++] = key;
+        if (trail>=MAX_DEPTH) my_abort("too deep");
+        for (size_t i=0; i<len; i++)
+            if (is_cyclic(elt(key, i), trail)) return true;
+        return false;
+    }
+    return false;
+}
+
+static uint64_t hash_generic_equal1(uint64_t r, LispObject key,
+                                    int mode, size_t depth)
+{   if (is_cyclic(key, 0)) my_abort("Cyclic structure to hash-equal");
+    return hash_generic_equal(r, key, mode, depth);
 }
 
 static bool hash_compare_eq(LispObject key, LispObject hashentry)
