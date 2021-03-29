@@ -545,12 +545,34 @@ static void gcEnqueue(Chunk *c)
 
 static Chunk *grabAnotherChunk(size_t size)
 {
-// Use gFringe to gLimit is possible
-// Skip pinned items if necessary
-// Allocate a totally new page if the above two strategies fail.
-// @@@ not coded yet.
-    my_abort("grabAnotherChunk");
-    return nullptr;
+// This function is called within a critical region and so it does not
+// need to worry about synchronization issues!
+    for (;;)
+    {
+// (1) Use gFringe to gLimit is possible
+        uintptr_t r = gFringe;
+        uintptr_t l = r + size;
+        if (l <= gLimit)
+        {   gFringe = l;
+            return reinterpret_cast<Chunk *>(r);
+        }
+// (2) Skip pinned items if necessary
+        uintptr_t pageEnd = ((r-1) & -pageSize) + pageSize;
+        if (gLimit != pageEnd)
+        {   Chunk *c = reinterpret_cast<Chunk *>(gLimit);
+            gFringe = gLimit + c->length; // past the pinned Chunk
+            gLimit = reinterpret_cast<uintptr_t>(c->pinChain.load());
+            if (gLimit == 0) gLimit = pageEnd;
+            continue;
+        }
+// (3) Allocate a totally new page if the above two strategies fail.
+//     This resets gFringe and gLimit. In a REALLY nasty case I might
+//     be trying to allocate a huge Chunk that is to store a huge vector,
+//     and the Page that I grab could be fragmented with loads of pinned
+//     data, so even this does not guarantee success! If circumstances like
+//     that lead to ultimate failure it is fatal.
+        grabNewCurrentPage(withinMajorGarbageCollection);
+    }
 }
 
 static std::mutex grabNewSegments;
@@ -577,24 +599,29 @@ static Chunk *gcDequeue()
 LispObject gc_n_bytes1(size_t n, uintptr_t thr,
                        uintptr_t r, uintptr_t w)
 {   Chunk *newChunk;
-    if (n <= (2*targetChunkSize)/3) LIKELY newChunk = gcDequeue();
+    size_t nSize;
+    if (n <= (2*targetChunkSize)/3) LIKELY
+    {   newChunk = gcDequeue();
+        nSize = targetChunkSize;   // All Chunks on queue are standard size.
+    }
     else
     UNLIKELY
     {   std::lock_guard<std::mutex> lock(grabNewSegments);
-        newChunk = grabAnotherChunk(targetChunkSize+n);
+        newChunk = grabAnotherChunk(nSize = (targetChunkSize+n));
         while (gcInQ < gcOutQ + gcQSize)
         {   gcEnqueue(grabAnotherChunk(targetChunkSize));
         }
     }
+// nSize is now the size of the next chunk.
     uintptr_t oldFringe = r;
     uintptr_t oldLimit = gLimit;
-    uint64_t newLimit = reinterpret_cast<uintptr_t>(newChunk) + targetChunkSize+n;
+    uint64_t newLimit = reinterpret_cast<uintptr_t>(newChunk) + nSize;
     r = newChunk->dataStart();
     fringe = r + n;
     Page *p = reinterpret_cast<Page *>((oldFringe-1) & -pageSize);
     if (myChunkBase[thr] != nullptr) pushChunk(myChunkBase[thr]);
     myChunkBase[thr] = newChunk;
-    newChunk->length.store(targetChunkSize+n);
+    newChunk->length.store(nSize);
     newChunk->isPinned.store(false);
     newChunk->pinChain.store(nullptr);
     size_t chunkNo = p->chunkCount.fetch_add(1);
@@ -1029,6 +1056,12 @@ bool evacuatePartOfMyOwnChunk()
 
 //@@@@ This is where I need to code stuff!!!
 
+#define ONLY_USE_ONE_GC_THREAD 1
+
+void gcHelper()
+{   cout << "This is an extra thread ready to help evacuateFromCopiedData\n";
+}
+
 void evacuateFromCopiedData(bool major)
 {
 #ifdef ONLY_USE_ONE_GC_THREAD
@@ -1075,7 +1108,7 @@ void evacuateFromCopiedData(bool major)
 // pages are in the right places.
 #else // ONLY_USE_ONE_GC_THREAD
     cout << "Multi-thread evacuateFromCopiedData" << "\r" << endl;
-    my_abort()
+    my_abort();
 #endif // ONLY_USE_ONE_GC_THREAD
 }
 
