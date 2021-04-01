@@ -63,10 +63,16 @@ symbolic procedure ps!:compile(form,depvar,about);
               make!-constantps(simp!* about, form, depvar)>>
          else if get(car form,'ps!:crule) then
                 apply(get(car form,'ps!:crule),list(form,depvar,about))
-         else (if haspoles and at!-a!-pole(cdr haspoles, about) then
-	       % deals with periodic functions with known poles
-                  ps!:compile(list('quotient, 1, car(haspoles) . cdr form),
-		              depvar, about)   
+         else (if haspoles and at!-a!-pole(cdr haspoles, cadr form,
+	                                    depvar, about) then
+	       % deal with periodic functions with known poles
+               begin scalar x;
+	          x:= ps!:compile(list('quotient, 1, car(haspoles) . cdr form),
+		                   depvar, about);
+	          ps!:set!-value(x, car(form) .
+	                              cdr ps!:value(cadr ps!:operands x));
+		  return x;
+	       end 
          else (if tmp then '!:ps!:  .  cdr tmp
                else ps!:unknown!-crule((car form) .
                                        foreach arg in cdr form collect
@@ -76,12 +82,13 @@ symbolic procedure ps!:compile(form,depvar,about);
 	    where haspoles = get(car form, '!*pole!-info))         
       where dfdx=prepsqxx simp!* list('df,ps!:arg!-values form, depvar);
 
-symbolic procedure at!-a!-pole(polelist, exppt);
+symbolic procedure at!-a!-pole(polelist, arg1, depvar, exppt);
 begin scalar pole1, period, res;
+  arg1 := subst(exppt, depvar, arg1);
   pole1 := car polelist;
-  period:=  cadr polelist;
-  if pole1 = exppt then return t;
-  res := reval list('quotient,list('plus, exppt, list('minus, pole1)), period);
+  period :=  cadr polelist;
+  if pole1 = arg1 then return t;
+  res := reval list('quotient,list('plus, arg1, list('minus, pole1)), period);
   return fixp res;
 end;
 
@@ -620,13 +627,13 @@ put('gamma,'ps!:crule,'ps!:gamma!-crule);
 put('psi,'ps!:crule,'ps!:gamma!-crule);
 put('polygamma,'ps!:crule,'ps!:polygamma!-crule);
 
+% info on poles of trig anf hyperbolic functions
 symbolic procedure setup!-poleinfo();
 begin scalar a, b, c, d;
-  a :=  list(list('times, 'i, list('quotient, 'pi, 2)),
-             list('times, 'i, 'pi));
-  b :=  list(0, list('times, 'i, 'pi));
-  c :=  list(list('quotient, 'pi, 2), 'pi);
-  d :=  list(0, 'pi);
+  a := '((times i (quotient pi 2)) (times i pi));
+  b :=  '(0 (times i pi));
+  c :=  '((quotient pi 2) pi);
+  d :=  '(0, pi);
 
   put('tanh, '!*pole!-info, 'coth . a);
   put('sech, '!*pole!-info, 'cosh . a);
