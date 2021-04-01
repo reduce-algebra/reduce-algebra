@@ -63,13 +63,27 @@ symbolic procedure ps!:compile(form,depvar,about);
               make!-constantps(simp!* about, form, depvar)>>
          else if get(car form,'ps!:crule) then
                 apply(get(car form,'ps!:crule),list(form,depvar,about))
+         else (if haspoles and at!-a!-pole(cdr haspoles, about) then
+	       % deals with periodic functions with known poles
+                  ps!:compile(list('quotient, 1, car(haspoles) . cdr form),
+		              depvar, about)   
          else (if tmp then '!:ps!:  .  cdr tmp
                else ps!:unknown!-crule((car form) .
                                        foreach arg in cdr form collect
                                           ps!:compile(arg,depvar,about),
                                        depvar,about))
                  where tmp = assoc(form,knownps))
+	    where haspoles = get(car form, '!*pole!-info))         
       where dfdx=prepsqxx simp!* list('df,ps!:arg!-values form, depvar);
+
+symbolic procedure at!-a!-pole(polelist, exppt);
+begin scalar pole1, period, res;
+  pole1 := car polelist;
+  period:=  cadr polelist;
+  if pole1 = exppt then return t;
+  res := reval list('quotient,list('plus, exppt, list('minus, pole1)), period);
+  return fixp res;
+end;
 
 symbolic procedure make!-ps!-id(id,depvar,about);
 begin scalar ps;
@@ -605,6 +619,26 @@ end;
 put('gamma,'ps!:crule,'ps!:gamma!-crule);
 put('psi,'ps!:crule,'ps!:gamma!-crule);
 put('polygamma,'ps!:crule,'ps!:polygamma!-crule);
+
+symbolic procedure setup!-poleinfo();
+begin scalar a, b, c, d;
+  a :=  list(list('times, 'i, list('quotient, 'pi, 2)),
+             list('times, 'i, 'pi));
+  b :=  list(0, list('times, 'i, 'pi));
+  c :=  list(list('quotient, 'pi, 2), 'pi);
+  d :=  list(0, 'pi);
+
+  put('tanh, '!*pole!-info, 'coth . a);
+  put('sech, '!*pole!-info, 'cosh . a);
+  put('coth, '!*pole!-info, 'tanh . b);
+  put('csch, '!*pole!-info, 'sinh . b);
+  put('tan, '!*pole!-info, 'cot . c);
+  put('sec, '!*pole!-info, 'cos . c);
+  put('cot, '!*pole!-info, 'tan . d);
+  put('csc, '!*pole!-info, 'sin . d);
+end;
+
+symbolic setup!-poleinfo();
 
 endmodule;
 

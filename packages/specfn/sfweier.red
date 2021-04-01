@@ -683,6 +683,9 @@ begin scalar res, oldprec;
   return res;
 end;
 
+% For details of the algorithm used to calculate the lattice generators from the
+% invariants see the DLMF:NIST chapter 23.22(ii) on Lattice Calculations.
+% {https://dlmf.nist.gov/23.22#ii}}.
 
 procedure num_omegas(g2,g3);
 begin scalar l, kk, kk1, m;
