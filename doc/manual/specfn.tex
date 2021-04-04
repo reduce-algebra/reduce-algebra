@@ -31,7 +31,7 @@
 \ifdefined\VerbMath{\makehashletter
 \(\newcommand{\f}[1]{\texttt{#1}}\)%
 }\fi
-
+%
 The package SPECFN is designed to provide algebraic and numeric manipulations of
 many common special functions, namely:
 
@@ -946,7 +946,7 @@ Note that
 \[\mathrm{E}(k)=\mathcal{E}(\mathrm{K}(k), k)
 =\int_0^{\mathrm{K}(k)} \mathrm{dn}^2(v, k) \,\mathrm{d}v.\]
 
-On a GUI that supports calligraphic characters (NB. this now the case with the
+On a GUI that supports calligraphic characters (NB.\ this is now the case with the
 CSL GUI), there is no problem and it is rendered as $\mathcal{E}(u,k)$
 in accordance with NIST usage.
 On non-GUI interfaces the Jacobi E function is rendered as E\_j.
@@ -1196,16 +1196,16 @@ Two commonly used alternative forms of the Weierstrassian functions in which
 they are regarded as functions of the lattice invariants $g_2$ and $g_3$
 rather than the primitive periods $\omega_1$ and $\omega_3$ are provided:
 \begin{itemize}
-\item  $\wp(u \parallel g_2, g_3)$ \ --- \ \f{weierstrass1(u,g2,g3)}
-\item $\zeta_w(u \parallel g_2, g_3)$ \ --- \ \f{weierstrassZeta1(u,g2,g3)}.
+\item  $\wp(u \mid g_2, g_3)$ \ --- \ \f{weierstrass1(u,g2,g3)}
+\item $\zeta_w(u \mid g_2, g_3)$ \ --- \ \f{weierstrassZeta1(u,g2,g3)}.
 \end{itemize}
 Note that for output they are distinguished from the two discussed above
 by separating the first and
 second arguments by a vertical bar rather than a comma. The rule for
 differentiation of the Weierstrass function is simpler when expressed in
 this  alternative:
-\[ \wp^\prime(u \parallel g_2,g_3)^2 = 4\,\wp(u \parallel g_2,g_3)^3
-   - g_2\, \wp(u \parallel g_2,g_3) -g_3. \]
+\[ \wp^\prime(u \mid g_2,g_3)^2 = 4\,\wp(u \mid g_2,g_3)^3
+   - g_2\, \wp(u \mid g_2,g_3) -g_3. \]
 
 \textbf{Other Sigma Functions}
 \hypertarget{SIGMA1}{}
@@ -1250,12 +1250,12 @@ and their arguments are numerical. The first three are referred to as lattice
 roots and are related to the invariants
 $g_2, g_3$, the discriminant $\Delta = g_2^3-27g_3^2$ and a closely related
 invariant $\mathrm{G} = g_2^3/(27 g_3^2)$ of the Weierstrassian
-elliptic function $\wp$. The lattice roots also appears in the numerical
+elliptic function $\wp$. The lattice roots also appear in the numerical
 evaluation of the Weierstrass function. These lattice roots satisfy:
 \[e_1+e_2+e_3=0,\qquad g_2=2(e_1^2+e_2^2+e_3^2),\qquad g_3= 4e_1e_2e_3.\]
 If the discriminant $\Delta$ vanishes or equivalently if $\mathrm{G} = 1$,
 there are at most two distinct lattice roots and the elliptic function
-degeneratesto an elementary one. The advantage of the invariant
+degenerates to an elementary one. The advantage of the invariant
 $\mathrm{G}$ is that it is a function of $\tau = \omega_3/\omega_1$ only.
 
 \ttindex{eta\_1}\ttindex{eta\_2}\ttindex{eta\_3}
@@ -1362,7 +1362,7 @@ are said to be \emph{orthogonal} on open interval $(a, b)$
 \[\int_a^b p_n(x)p_m(x)w(x) \mathrm{d}x = 0 \qquad \mbox{when}\ m \neq n.\]
 This defines each polynomial $p_n(x)$ up to a constant factor $c_n$ which is
 usually fixed by normalisation. If these factors are chosen so that
-\[h_n=\int_a^b (p_n(x))^2 w(x) \mathrm{d}x = 1\qquad\mbox{i.e.\ }
+\[h_n=\int_a^b (p_n(x))^2 w(x) \mathrm{d}x = 1\qquad\mbox{i.e.}\
 c_n=\sqrt{h_n}\]
 then the polynomial set is said to be \emph{orthonormal.}
 An alternative normalisation, that is sometimes used, is to set the leading term
@@ -1723,8 +1723,8 @@ $\sigma(u,\omega_1, \omega_3)$ & \f{sigma(u,omega1,omega3)}\\
 $\sigma_1(u,\omega_1, \omega_3)$ & \f{sigma1(u,omega1,omega3)}\\
 $\sigma_2(u,\omega_1, \omega_3)$ & \f{sigma2(u,omega1,omega3)}\\
 $\sigma_3(u,\omega_1, \omega_3)$ & \f{sigma3(u,omega1,omega3)}\\
-$\wp(u \parallel g_2, g_3)$ & \f{weierstrass1(u,g2,g3)}\\
-$\zeta_w(u \parallel g_2, g_3)$ & \f{weierstrasszeta1(u,g2,g3)}\\[5pt]
+$\wp(u \mid g_2, g_3)$ & \f{weierstrass1(u,g2,g3)}\\
+$\zeta_w(u \mid g_2, g_3)$ & \f{weierstrasszeta1(u,g2,g3)}\\[5pt]
 \end{tabular}}
 \newpage
 
