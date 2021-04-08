@@ -158,11 +158,17 @@ do
   --enable-debug)
     debug=-debug
     ;;
-  --enable-test=no | --disable-test | --enable-experiment=no | disable-experiment)
+  --enable-test=no | --disable-test)
     test=
     ;;
-  --enable-test* | --enable-experiment*)
+  --enable-test*)
     test=-test
+    ;;
+  --enable-experiment=no | disable-experiment)
+    experiment=
+    ;;
+  --enable-experiment*)
+    experiment=-experiment
     ;;
   --with-arithlib=no | --without-arithlib)
     arithlib=
@@ -238,6 +244,6 @@ do
   esac
 done
 
-echo $host$m32$m64$nogui$fox$wx$test$arithlib$conservative$nothrow$debug
+echo $host$m32$m64$nogui$fox$wx$test$experiment$arithlib$conservative$nothrow$debug
 
 exit 0

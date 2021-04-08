@@ -341,10 +341,11 @@ public:
 
 #ifdef CONSERVATIVE
 
-#if 1 // TEMP
+#if 0 // TEMP
 
 // The version here actually saves things to the stack although that ought
-// not to be necessary.
+// not to be necessary. It was provided so I could test some parts of the
+// general system before the GC was actually conservative...
 
 class Save
 {
@@ -479,10 +480,12 @@ public:
     }
 };
 
-#else // 1, TEMP
+#else // TEMP
 
-// Here is the pure noop version which shoudl eventually be used while I am
+// Here is the pure noop version which should eventually be used while I am
 // in the process of textually removing mention of Save all together!
+// Trying the code with it enabled will let me observe just how much
+// overhead the save-to-stack discipline imposes.
 
 class Save
 {
@@ -533,7 +536,7 @@ public:
     {
     }
 };
-#endif // 1, TEMP
+#endif // TEMP
 
 #else // CONSERVATIVE
 

@@ -609,7 +609,7 @@ static uint64_t hash_generic_equal(uint64_t r, LispObject key,
 #ifdef DEBUG
 static uint64_t hash_generic_equal1(uint64_t r, LispObject key,
                                     int mode, size_t depth);
-#endif
+#endif // DEBUG
 
 static uint64_t hash_cl_equal(uint64_t r, LispObject key)
 {   return hash_generic_equal(r, key, HASH_AS_CL_EQUAL, 0);
@@ -892,11 +892,15 @@ static bool is_cyclic(LispObject key, int trail)
     return false;
 }
 
+#ifdef DEBUG
+
 static uint64_t hash_generic_equal1(uint64_t r, LispObject key,
                                     int mode, size_t depth)
 {   if (is_cyclic(key, 0)) my_abort("Cyclic structure to hash-equal");
     return hash_generic_equal(r, key, mode, depth);
 }
+
+#endif // DEBUG
 
 static bool hash_compare_eq(LispObject key, LispObject hashentry)
 {   return (key == hashentry);

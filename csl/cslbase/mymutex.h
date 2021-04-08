@@ -1,10 +1,7 @@
-// version.h                               Copyright (C) 1990-2021 Codemist
+// winmutex.h                                   Copyright (C) 2021 Codemist
 
-#ifndef header_version_h
-#define header_version_h 1
-
-// $Id$
-
+#ifndef header_winmutex_h
+#define header_winmutex_h 1
 
 /**************************************************************************
  * Copyright (C) 2021, Codemist.                         A C Norman       *
@@ -35,12 +32,62 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// Rather than having a simple version I will cause my script
-// (scripts/commit.sh) that is used to update the subversion repository to
-// update the revision number here.
+// $Id: winmutex.h March 2021 arthurcnorman $
 
-#define REVISION 5757
 
-#endif // header_version_h
+#include <mutex>
+#include <cstdint>
+#include <atomic>
 
-// end of version.h
+// The class here is a wrapper for the standard C++ mutex - just supporting
+// the most basic lock and unlock capabilities. The intent is that this
+// can be compiled in-line into about a single atomic increment instruction
+// and thus reduce costs when there is no contention.
+
+#if !defined LIKELY && !defined UNLIKELY
+
+#ifdef __has_cpp_attribute_likely
+#define LIKELY [[likely]]
+#else // __has_cpp_attribute_likely
+#define LIKELY
+#endif // __has_cpp_attribute_likely
+
+#ifdef __has_cpp_attribute_unlikely
+#define UNLIKELY [[unlikely]]
+#else // __has_cpp_attribute_unlikely
+#define UNLIKELY
+#endif // __has_cpp_attribute_unlikely
+
+#endif // LIKELY, UNLIKELY
+
+class wrappedMutex
+{
+private:
+    std::atomic<std::uintptr_t> counter;
+    std::mutex m;
+public:
+    wrappedMutex()
+    {   counter = 0;
+        m.unlock();
+    }
+    void lock()
+    {   if (counter.fetch_add(1) != 0) UNLIKELY m.lock();
+    }
+    void unlock()
+    {   if (counter.fetch_sub(1) != 1) UNLIKELY m.unlock();
+    }
+};
+
+// It appears that under Cygwin the us of std::mutex carries a significant
+// burden even in the case that contention is very low, 
+
+#ifdef __CYGWIN__
+typedef wrappedMutex myMutex;
+#else // __CYGWIN__
+typedef std::mutex myMutex;
+#endif // __CYGWIN__
+
+
+#endif // header_winmutex_h
+
+// end of winmutex.h

@@ -556,6 +556,11 @@ AC_ARG_ENABLE(test,
   [],
   [enable_test="no"])
 
+if test "x$enable_test" = "xyes"
+then
+  AC_DEFINE([TEST], [1], [For use by developers])
+fi
+
 AC_ARG_ENABLE(experiment,
   AS_HELP_STRING([--enable-experiment],
                  [testing-mode version (CSL only)]),
@@ -564,7 +569,7 @@ AC_ARG_ENABLE(experiment,
 
 if test "x$enable_experiment" = "xyes"
 then
-  enable_test="yes"
+  AC_DEFINE([EXPERIMENT], [1], [For use by developers])
 fi
 
 AC_ARG_WITH(arithlib,

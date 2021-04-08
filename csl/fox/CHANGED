@@ -256,5 +256,8 @@ March 2021. Review autoconf files to ensure survival against autoconf 2.71
 March 2021.   FXShowMath.cpp.  Support \wp  as cmmi:0x7d and \ell as cmmi:0x60
               Also allow Math Calligraphic characters csym:0x41 through to 0x5a
 	      by adding support for \mathcal via function doMathCal.
+
+April 2021. Put --enable-test and --enable-experiement to be recognized in
+      configure.ac
 	      
 <end of CHANGED>

@@ -605,14 +605,17 @@ void newRegionNeeded()
             !withinMajorGarbageCollection)
         {   cout << "@@ full GC needed\r\n";
             userGcRequest = GcStyleNone;
+            {   std::lock_guard<std::mutex> lock(mutexForGc);
+                activeHelpers = -activeHelpers;
+            }
+            cvForCopying.notify_all();
             fullGarbageCollect();
         }
         else
         {
-// Here I can just allocate a next page to use... either because memory
-// is less than half full or because I am inside a major garbage collection
-// and the space I am allocating here will count as part of the new region
-// that I am copying everything into.
+// Here I can just allocate a next page to use... because memory is less
+// than half full. At some stage I will want to worry quite hard about
+// fragmentation and the "half full" issue!
             if (previousPage == nullptr) busyPages++;
             previousPage = currentPage;
 // I must talk through an interaction between pinned data and my write
@@ -699,6 +702,20 @@ void releaseOtherThreads()
     cv_for_gc_complete.notify_all();
 }
 
+void ensureOtherThreadsAreIdle()
+{
+// When I get here I know that actveThreads==0 and that all other threads
+// have just decremented that variable and are ready to wait on gc_started.
+// Before I release them from that I will ensure that gc_finished is false so
+// that they do not get over-enthusiastic!
+    {   std::lock_guard<std::mutex> guard(mutexForGc);
+        activeHelpers--;
+        gc_complete = false;
+        gc_started = true;
+    }
+    cv_for_gc_idling.notify_all();
+}
+
 void garbageCollectOnBehalfOfAll()
 {   ensureOtherThreadsAreIdle();
 //    cout << "@@ garbageCollectOnBehalfOfAll called\r\n";
@@ -753,6 +770,7 @@ void waitWhileAnotherThreadGarbageCollects()
 // must not clear gc_started until it has had positive confirmation that
 // all the idle threads have responded.
     {   std::unique_lock<std::mutex> lock(mutexForGc);
+        activeHelpers--;
         cv_for_gc_idling.wait(lock, [] { return gc_started; });
     }
 // To record that threads have paused they can then increment activeThreads
@@ -788,7 +806,7 @@ void waitWhileAnotherThreadGarbageCollects()
 //     a little.
 // (2) Things such as awaiting user input from keyboard or mouse. For such
 //     cases I suspect that the actual blocking call to the keyboard or
-//     mouse handlet will need to be in a separate thread so then the
+//     mouse handler will need to be in a separate thread so then the
 //     main one can wait for both that and for any GC request.
 // There is a bit of a nuisance in that it is only possible to wait on
 // one condition variable at a time. So I think that all of these may end up
@@ -797,8 +815,17 @@ void waitWhileAnotherThreadGarbageCollects()
 // notify same. Well the nature of condition variables is that spurious
 // wake-ups should be tolerated, and the GC use of them should not be that
 // frequent... But still "Ugh!".
-    gcHelper();
+    int helpers;
+    {   std::unique_lock<std::mutex> lock(mutexForGc);
+        cvForCopying.wait(lock,
+            [] { return activeHelpers >= 0; });
+        helpers = activeHelpers;
+    }
+    if (helpers != 0) gcHelper();
 // The gcHelper() function must terminate once it has completed its task.
+// Note that if the thread that actually processes things manages to avoid
+// any genuine GC activity (for instance it just allocates a fresh Page)
+// gcHelper must not do anything!
 //
 // Once the master thread has been notified as above it can go forward and
 // in due course notify gc_complete. Before it does that it must ensure that
@@ -835,6 +862,8 @@ void waitWhileAnotherThreadGarbageCollects()
 // be pinned.
 //
 
+std::condition_variable cvForCopying;
+
 uintptr_t difficult_n_bytes()
 {
 // Every thread that comes here will need to record the value of its
@@ -848,7 +877,7 @@ uintptr_t difficult_n_bytes()
 // has to be done!
     for (unsigned int i=0; i<maxThreads; i++) limit[i].store(0);
     withRecordedStack([&]
-    {
+    {    
 // The next line will count down the number of threads that have entered
 // this synchronization block. The last one to do so can serve as the
 // thread that performs garbage collection, the other will just need to wait.
@@ -873,7 +902,9 @@ uintptr_t difficult_n_bytes()
 // so I need to put its updated value in the correct place.
     fringe = fringeBis[threadId];
 //    cout << "At " << __WHERE__ << " fringe set to fringeBis = " << hex << fringe << dec << "\r" << endl;
+#ifdef DEBUG
     testLayout();
+#endif
     return result[threadId] - TAG_VECTOR;
 }
 
@@ -1070,7 +1101,7 @@ void setUpUsedPage(Page *p)
 // that is not going to be a problem because the first time I try to
 // perform allocation I will find that my chunk is empty and scan to grab
 // another.
-    if (p->pinnedChunks!=nullptr)
+    if (p->pinnedChunks.load()!=nullptr)
         p->limit = reinterpret_cast<uintptr_t>(p->pinnedChunks.load());
     else p->limit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
 }

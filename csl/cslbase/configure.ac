@@ -651,6 +651,28 @@ then
   AC_DEFINE(CONSERVATIVE, [1], [True if GC experiment enabled])
 fi
 
+AC_ARG_ENABLE(test,
+  AS_HELP_STRING([--enable-test],
+                 [testing-mode version (CSL only)]),
+  [],
+  [enable_test="no"])
+
+if test "x$enable_test" = "xyes"
+then
+  AC_DEFINE([TEST], [1], [For use by developers])
+fi
+
+AC_ARG_ENABLE(experiment,
+  AS_HELP_STRING([--enable-experiment],
+                 [testing-mode version (CSL only)]),
+  [],
+  [enable_experiment="no"])
+
+if test "x$enable_experiment" = "xyes"
+then
+  AC_DEFINE([EXPERIMENT], [1], [For use by developers])
+fi
+
 # Want to build with statistic-gathering for the EQUAL function?
 AC_MSG_CHECKING(for trace-equal)
 AC_ARG_ENABLE(trace-equal,
