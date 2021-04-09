@@ -88,7 +88,9 @@
 #include "machine.h"
 #include "log.h"
 
+// The next two are for platform-specific optimisations and cheats.
 #include "threadloc.h"
+#include "mymutex.h"
 
 #if HAVE_LIBWX
 #include "wxfwin.h"

@@ -1,8 +1,11 @@
-// newallocate.h                          Copyright (C) Codemist, 1990-2021
+// newallocate.h                          Copyright (C) Codemist, 2018-2021
 
-// This represents a substantial re-though in April 2020, with the ideas
-// mainly ones that emerged while I was thinking about and implementing a
-// project called Zappa that was intended to explore concurrency in
+// Serious work here started with a check-in in May 2018, but that followed
+// one from some significant time - specifically I had started work on
+// a conservative GC for the VSL Lisp in summer 2012!
+// This version represents a substantial re-though in April 2020, with the
+// ideas mainly ones that emerged while I was thinking about and implementing
+// a project called Zappa that was intended to explore concurrency in
 // garbage collection.
 
 
@@ -40,10 +43,40 @@
 #ifndef header_newallocate_h
 #define header_newallocate_h 1
 
+// There are some places in this file and also in newallocate.cpp and
+// newcslgc.cpp where I write   xxx.load()  to be explicit that I want
+// the underlying object of type T wrapped within a std::atomic<T>. In
+// quite a few of those I would have hoped to be able to write merely xxx,
+// and let C++ type deduction conclude what was intended, and with some
+// versions of clang and gcc that seemed to happen, but with other
+// compilers (well it happens that gcc 8.3.0 on a 32-bit ARM is the one
+// I have noticed most) there were reports of ambiguity or worse. Being
+// explicit only makes the code a bit more verbose so it is not that bad,
+// but what it reveals is that I do not really understand that C++ type
+// system well enough so there may be more marginal cases lurking.
+// On concrete instance was
+//    std::atomic<bool> flag(true);   std::cout << flag;
+// where I at least appeared to need flag.load(), but I am having problems
+// constructing a small example that gives the same trouble that the full
+// version of the code seemed to. Again that alerts me to limits in my
+// C++ skill-set.
+// On looking further I come to suspect that the problems may derive
+// from int128_t.h in the case that the 128-bit integer type is modelled
+// using a class, and then many operations and casts to and from that are
+// introduced often in template definitions that can probably specialise
+// to more things than are good for them, leading to reports of ambiguity
+// in apparently remote parts of the code!
+// So it would be very nice if somebody who undetstands these things
+// a bit better could look at int128_t.h and improve it to avoid it
+// introducing extra type ambiguities...
+
+
 #include "log.h"
 #include <csetjmp>
 
+#ifdef DEBUG
 inline void testLayout();
+#endif // DEBUG
 
 // I have a 4-level hierarchy in my storage allocation scheme. At the
 // large end I ask C++ to give me really large blocks, and I will call
@@ -330,7 +363,7 @@ inline void write_barrier(LispObject *p, LispObject q)
         ((pp = reinterpret_cast<Page *>(
               static_cast<uintptr_t>(q) & -pageSize)) != currentPage &&
           pp != previousPage &&
-          pp->pageClass == busyPageTag))
+          pp->pageClass.load() == busyPageTag))
         return;
     uintptr_t a = reinterpret_cast<uintptr_t>(p);
 // Round down to a Page boundary. Because pages are always allocated
@@ -395,13 +428,13 @@ inline void write_unBarrier(LispObject *p)
 // only done within the garbage collector at a stage where I am only running
 // on one thread I do not need to worry about use of explicitly thread-safe
 // updates, but the items being worked on are still atomic<T> ones,
-    if ((x->dirtyMap[wordAddr] &= ~bit) == 0)
+    if (x->dirtyMap[wordAddr].fetch_and(~bit) == bit)
     {   bit = uptr_1 << (wordAddr%bpw);
         wordAddr /= bpw;
-        if ((x->dirtyMap1[wordAddr] &= ~bit) == 0)
+        if (x->dirtyMap1[wordAddr].fetch_and(~bit) == bit)
         {   bit = uptr_1 << (wordAddr%bpw);
             wordAddr /= bpw;
-            if ((x->dirtyMap2[wordAddr] &= ~bit) == 0)
+            if (x->dirtyMap2[wordAddr].fetch_and(~bit) == bit)
             {   x->hasDirty = false;
 // Here I want to delete the page from the chain of dirty pages. During
 // regular computation I have just a singly linked list but at the
@@ -871,7 +904,9 @@ inline LispObject get_n_bytes1(size_t n, uintptr_t thr,
 // been set to zero and I must participate in a GC.
             limitBis[thr] = newLimit;
             bool ok = limit[thr].compare_exchange_strong(w, newLimit);
+#ifdef DEBUG
             if (ok) testLayout();
+#endif // DEBUG
             if (ok) return static_cast<LispObject>(r);
         }
         gIncrement[thr] = targetChunkSize+n;
@@ -970,13 +1005,13 @@ inline void dump_gets()
     }
 }
 
-#else
+#else // DEBUG
 
 inline void dump_gets()
 {
 }
 
-#endif
+#endif // DEBUG
 
 
 // It will be important to poll frequently because when one thread
@@ -1128,6 +1163,8 @@ extern atomic<uint32_t> activeThreads;
 // of synchronizing for or after garbage collection is something that will
 // involve some care!
 
+extern std::condition_variable cvForCopying;
+extern unsigned int activeHelpers;
 
 extern bool generationalGarbageCollection;
 extern void generationalGarbageCollect();
@@ -1174,19 +1211,6 @@ extern void fullGarbageCollect();
 extern void setUpEmptyPage(Page *p);
 extern void setVariablesFromPage(Page *p);
 extern void saveVariablesToPage(Page *p);
-
-inline void ensureOtherThreadsAreIdle()
-{
-// When I get here I know that actveThreads==0 and that all other threads
-// have just decremented that variable and are ready to wait on gc_started.
-// Before I release them from that I will ensure that gc_finished is false so
-// that they do not get over-enthusiastic!
-    {   std::lock_guard<std::mutex> guard(mutexForGc);
-        gc_complete = false;
-        gc_started = true;
-    }
-    cv_for_gc_idling.notify_all();
-}
 
 inline void restoreGfringe()
 {   size_t inc = 0;
@@ -1267,7 +1291,7 @@ inline void regionInPageIsFull(unsigned int i, size_t n,
 //
 // Take care because gFringe can point at the start of the next consecutive
 // Page.
-    uintptr_t pageEnd = ((gFringe-1) & -pageSize) + pageSize;
+    uintptr_t pageEnd = ((gFringe.load()-1) & -pageSize) + pageSize;
 //    cout << "At " << __WHERE__ << " pageEnd = " << hex << pageEnd << dec << "\r" << endl;
     while (gLimit != pageEnd)
     {   gFringe = gLimit + reinterpret_cast<Chunk *>(gLimit)->length;
@@ -1587,6 +1611,8 @@ public:
     }
 };
 
+#ifdef DEBUG
+
 // The following is intended to help me check if allocation is going
 // smoothly. It can be removed once debugging is complete (ha ha).
 
@@ -1598,6 +1624,8 @@ inline void testLayout()
     my_assert(w <= gFringe.load(), [] {cout << "limit > gFringe\r\n";});
     my_assert(gFringe.load() <= gLimit, [] {cout << "gFringe > gLimit\r\n";});
 }
+
+#endif // DEBUG
 
 #endif // header_newallocate_h
 

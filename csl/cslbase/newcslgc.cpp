@@ -1,4 +1,4 @@
-// File newcslgc.cpp                      Copyright (c) Codemist, 1990-2021
+// File newcslgc.cpp                      Copyright (c) Codemist, 2018-2021
 
 //
 // Garbage collection. This is a version intended to be conservative
@@ -8,7 +8,7 @@
 // parts of garbage collection. All that scope for generalisation has
 // caused me repeated pauses in the design process, and various evaluations
 // of performance issues have also meant that getting this going has been a
-// long haul.
+// long haul. See newallocate.h for a few comments on the time-line!
 //
 
 /**************************************************************************
@@ -415,84 +415,37 @@ uintptr_t sortPinList(uintptr_t l)
 std::mutex mutexForChunkStack;
 bool gcComplete;
 std::condition_variable cvForChunkStack;
-atomic<Chunk *> chunkStack(nullptr);
+Chunk *chunkStack = nullptr;
 
-// The lock-free stack as implemented here could fail if the "ABA"
-// scanario arose - but that involved popping an item and later
-// pushing it back. If that will never happen there should not be
-// any trouble.
+// I originally planned to make this a lock-free data structure, or at
+// lease code it so that it was lock-free most of the time. However I
+// will want to use a condition variable to deal with the issue of
+// whether the queue has any items in it at all, and that rather forces
+// the use of a mutex.
 
 void pushChunk(Chunk *c)
-{   c->selfScanPoint = c->dataStart();
-    Chunk *old = chunkStack.load();
-    do
-    {   c->chunkStack.store(old);
-    } while (!chunkStack.compare_exchange_weak(old, c));
-    if (old == nullptr)
-    {
-// The critical regiion with no code within it looks really odd! But it
-// is necessary to avoid a race condition in popChunk.
-        {   std::lock_guard<std::mutex> lock(mutexForChunkStack);
-        }
-        cvForChunkStack.notify_all();
-    }
+{   std::lock_guard<std::mutex> lock(mutexForChunkStack);
+    c->selfScanPoint = c->dataStart();
+    Chunk *old = chunkStack;
+    c->chunkStack = old;
+    chunkStack = c;
+// If I put a new Chunk onto an otherwise empty queue then I will need to
+// wake up any threads that had been waiting for something to do.
+    if (old == nullptr) cvForChunkStack.notify_all();
 }
 
-// This version is lock-free and it return nullptr if the stack is empty.
-
-Chunk *popChunk1()
-{   Chunk *old = chunkStack.load(), *c;
-    do
-    {   if (old == nullptr) return nullptr;
-        c = old->chunkStack.load();
-    } while (!chunkStack.compare_exchange_weak(old, c));
-    return old;
-}
-
-// Here is the version for use. If called when the stack is empty it
-// returns nullptr if gcComplete is set, or otherwise it waits.
+unsigned int activeHelpers = 0;
 
 Chunk *popChunk()
-{
-// First try in a lock-free manner.
-    Chunk *c = popChunk1();
-// ... if that succeds then I can return with only low overhead.
-    if (c != nullptr) return c;
-// ** Point A **
-// Now my first lock-free try failed. Of course a pushChunk() may have
-// happened in the meanwhile - trying again is not a problem! But this time
-// I will lock the mutex first. That will allow any pushChunk that adds
-// to a non-empty stack to complete in a lock-free manner, but a pushChunk
-// on an empty stack will not be able to reach the notify_all step until the
-// mutex is released.
-    std::unique_lock<std::mutex> lock(mutexForChunkStack);
-    while ((c = popChunk1()) == nullptr && !gcComplete)
-    {
-// ** Point B **
-// Sometimes this pop will succeed, eg if pushChunk ran while this thread
-// was at Point A. In such a case the push operation may have performed a
-// notify_all but this thread will not be aware. That could have woken some
-// other thread up and there could have been a whole sequence of pushes and
-// pops around Point A!
-// When popChunk1 fails here it will do so with the mutex locked. That means
-// that any push that could install data will do so onto an empty stack and
-// when it does that it will attempt to lock the mutex and will hence stall.
-// It will first be able to make progress when the lock is released, which
-// will be within the wait call here.
-// Meanwhile other uses of push could have added more items to the
-// stack without problems and other threads may have popped things,
-// including the one set up by the stalled push thread.
-        cvForChunkStack.wait(lock);
-// When the condition variable unlocks the mutex (while it waits), the push
-// can continue. It will perform a notify_all. Because of the activity of
-// other threads the stack could be empty again! But that does not matter
-// too much - the code here will check the stack again in popChunk1.
-// The crucial issue here is the avoidance of a race condition that could
-// lead to pushChunk performing its notify_all while this thread was
-// as Point B. If that happened the wait could deadlock.
-//
-    }
-    return c;
+{   std::unique_lock<std::mutex> lock(mutexForChunkStack);
+    cvForChunkStack.wait(lock,
+        []{   return chunkStack != nullptr ||
+                     activeHelpers == 0;
+          });
+    Chunk *r = chunkStack;
+    if (r != nullptr) chunkStack = r->chunkStack;
+// I can only return a nullptr here is activeHelpers is zero.
+    return r;
 }
 
 // The short path through the code here is as for the main system, but
@@ -582,7 +535,7 @@ static Chunk *gcReserveMoreChunks(uintptr_t out)
 // When I get here there can still be other threads running and incrementing
 // gcOutQ. My task is to insert chunks into the queue until it holds (about)
 // gcQSize.
-    while (gcInQ < gcOutQ + gcQSize)
+    while (gcInQ.load() < gcOutQ.load() + gcQSize)
     {   gcEnqueue(grabAnotherChunk(targetChunkSize));
     }
     return gcQ[out & (gcQSize-1)];
@@ -595,6 +548,7 @@ static Chunk *gcDequeue()
     return gcReserveMoreChunks(out);
 }
 
+extern void testLayout();
 
 LispObject gc_n_bytes1(size_t n, uintptr_t thr,
                        uintptr_t r, uintptr_t w)
@@ -608,13 +562,13 @@ LispObject gc_n_bytes1(size_t n, uintptr_t thr,
     UNLIKELY
     {   std::lock_guard<std::mutex> lock(grabNewSegments);
         newChunk = grabAnotherChunk(nSize = (targetChunkSize+n));
-        while (gcInQ < gcOutQ + gcQSize)
+        while (gcInQ.load() < gcOutQ.load() + gcQSize)
         {   gcEnqueue(grabAnotherChunk(targetChunkSize));
         }
     }
 // nSize is now the size of the next chunk.
     uintptr_t oldFringe = r;
-    uintptr_t oldLimit = gLimit;
+//  uintptr_t oldLimit = gLimit;
     uint64_t newLimit = reinterpret_cast<uintptr_t>(newChunk) + nSize;
     r = newChunk->dataStart();
     fringe = r + n;
@@ -628,7 +582,9 @@ LispObject gc_n_bytes1(size_t n, uintptr_t thr,
     p->chunkMap[chunkNo].store(newChunk);
     limitBis[thr] = newLimit;
     limit[thr] = newLimit;
+#ifdef DEBUG
     testLayout();
+#endif
     return static_cast<LispObject>(r);
 }
 
@@ -789,7 +745,7 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
     Chunk *c = p->chunkMap[low];
     cout << "pointer is maybe within chunk " << low << " at " << hex << c << dec << "\r" << endl;
     if (!c->pointsWithin(a)) return;
-    cout << "Within that chunk: isPinned = " << c->isPinned << "\r" << endl;
+    cout << "Within that chunk: isPinned = " << c->isPinned.load() << "\r" << endl;
 // Here (a) lies within the range of the chunk c. Every page that has any
 // pinning must record that both by being on a chain of pages with pins
 // and by having a list of its own pinned chunks.
@@ -804,8 +760,8 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
     c->pinChain = p->pinnedChunks.load();
     p->pinnedChunks = c;
 // When a chunk gets pinned then page must be too unless it already has been.
-    cout << "Page hasPinned = " << p->hasPinned << "\r" << endl;
-    if (p->hasPinned) return;
+    cout << "Page hasPinned = " << p->hasPinned.load() << "\r" << endl;
+    if (p->hasPinned.load()) return;
     pinnedPageCount++;
     p->hasPinned = true;
     p->pinChain = globalPinChain;
@@ -817,11 +773,11 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 void scanPinnedChunks(processPinnedChunk *pc)
 {   cout << "scanPinnedChunks globalPinChain = " << hex << globalPinChain << dec << "\r" << endl;
     for (Page *p = globalPinChain; p!=nullptr; p=p->pinChain)
-    {   cout << hex << p << dec << " hasPinned=" << p->hasPinned << "\r" << endl;
+    {   cout << hex << p << dec << " hasPinned=" << p->hasPinned.load() << "\r" << endl;
         if (!p->hasPinned) continue;
-        cout << hex << p << " pinnedChunks=" << p->pinnedChunks << dec << "\r" << endl;
+        cout << hex << p << " pinnedChunks=" << p->pinnedChunks.load() << dec << "\r" << endl;
         for (Chunk *c = p->pinnedChunks; c!=nullptr; c=c->pinChain)
-        {    cout << hex << c << dec << " isPinned=" << c->isPinned << "\r" << endl;
+        {    cout << hex << c << dec << " isPinned=" << c->isPinned.load() << "\r" << endl;
             if (!c->isPinned) continue;
             (*pc)(c);
         }
@@ -1111,8 +1067,6 @@ void evacuateFromCopiedData(bool major)
     my_abort();
 #endif // ONLY_USE_ONE_GC_THREAD
 }
-
-atomic<unsigned int> activeHelpers;
 
 // before gcHelper() is called on in ANY thread the GC should have set
 // activeHelpers to the number of helper threads it is about to activate.
