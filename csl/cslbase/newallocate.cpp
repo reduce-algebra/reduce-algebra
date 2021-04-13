@@ -601,14 +601,9 @@ void newRegionNeeded()
          previousPage == nullptr) &&
         userGcRequest != GcStyleMinor)
     {   if ((busyPagesCount >= freePagesCount+mostlyFreePagesCount ||
-             userGcRequest == GcStyleMajor) &&
-            !withinMajorGarbageCollection)
+             userGcRequest == GcStyleMajor))
         {   cout << "@@ full GC needed\r\n";
             userGcRequest = GcStyleNone;
-            {   std::lock_guard<std::mutex> lock(mutexForGc);
-                activeHelpers = -activeHelpers;
-            }
-            cvForCopying.notify_all();
             fullGarbageCollect();
         }
         else
@@ -709,7 +704,11 @@ void ensureOtherThreadsAreIdle()
 // Before I release them from that I will ensure that gc_finished is false so
 // that they do not get over-enthusiastic!
     {   std::lock_guard<std::mutex> guard(mutexForGc);
-        activeHelpers--;
+// Here I am in the thread that will take the lead in garbage collection. You
+// might reasonably expect that I need to increment activeHelpers here to note
+// that it is busy, but for odd reasons I incremented that variable earlier.
+//      activeHelpers++;  // N.B. *NOT* done here because it was done earlier!
+        chunkStack = nullptr;
         gc_complete = false;
         gc_started = true;
     }
@@ -748,9 +747,24 @@ void garbageCollectOnBehalfOfAll()
         if (pendingCount == 0 &&
             userGcRequest == GcStyleNone) break;
         newRegionNeeded();
+        releaseOtherThreads();
+        return;
     }
+// Here all the GC helper threads may be waiting for a Chunk to copy. There
+// is not going to be one, so I can release them.
+    {   std::lock_guard<std::mutex> lock(mutexForChunkStack);
+        activeHelpers--;
+    }
+    cvForChunkStack.notify_all();
     releaseOtherThreads();
 }
+
+// In due course I wish to experiment with making the "evacuate" step
+// within the GC thread-safe so I can let several threads loose on it
+// at once. I have not done that yet, so I disable the scheme that lets
+// several threads all participate in that action.
+
+#define NO_EXTRA_GC_THREADS 1
 
 extern void gcHelper();
 
@@ -770,7 +784,18 @@ void waitWhileAnotherThreadGarbageCollects()
 // must not clear gc_started until it has had positive confirmation that
 // all the idle threads have responded.
     {   std::unique_lock<std::mutex> lock(mutexForGc);
-        activeHelpers--;
+// I need a count of the number of otherwise idle threads that could join
+// in with GC. So I count them here. There is however an issue - I detect the
+// end of GC by this count decreasing to zero. If I merely incremented here
+// then one of the workers could start, discover that there was nothing (yet!)
+// to do and declare itself idle, leading to the count reaching zero and
+// all workers quitting before things had really go going. So I arrange that
+// the first helper increments the counter on behalf of what will in due
+// course become the leader thread, and then of course that thread will not
+// perform an increment but will know not to exit until all setup has been
+// completed.
+        if (activeHelpers == 0) activeHelpers = 2;
+        else activeHelpers++;
         cv_for_gc_idling.wait(lock, [] { return gc_started; });
     }
 // To record that threads have paused they can then increment activeThreads
@@ -815,13 +840,17 @@ void waitWhileAnotherThreadGarbageCollects()
 // notify same. Well the nature of condition variables is that spurious
 // wake-ups should be tolerated, and the GC use of them should not be that
 // frequent... But still "Ugh!".
-    int helpers;
-    {   std::unique_lock<std::mutex> lock(mutexForGc);
-        cvForCopying.wait(lock,
-            [] { return activeHelpers >= 0; });
-        helpers = activeHelpers;
+#ifdef NO_EXTRA_GC_THREADS
+// If I am not going to try to use multiple threads while performing the
+// copying operation within the GC I need to indicate that this thread has
+// done all the work it is going to.
+    {   std::lock_guard<std::mutex> lock(mutexForGc);
+        activeHelpers--;
     }
-    if (helpers != 0) gcHelper();
+    cvForChunkStack.notify_all();
+#else // NO_EXTRA_GC_THREADS
+    gcHelper();
+#endif // NO_EXTRA_GC_THREADS
 // The gcHelper() function must terminate once it has completed its task.
 // Note that if the thread that actually processes things manages to avoid
 // any genuine GC activity (for instance it just allocates a fresh Page)

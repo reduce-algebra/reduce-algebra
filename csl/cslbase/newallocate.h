@@ -273,6 +273,8 @@ public:
     }
 };
 
+extern Chunk *chunkStack;
+
 // I am going to require Pages to be aligned at nice neat boundaries
 // because then if I have an arbitrary address within one I will be able to
 // find the page header using a simple AND operation.
@@ -939,6 +941,11 @@ inline LispObject get_n_bytes1(size_t n, uintptr_t thr,
 
 inline LispObject get_n_bytes(size_t n)
 {
+#ifdef DEBUG
+    cout << "get_n_bytes(" << n << ")\n";
+    my_assert(n < 8000000, [&] { cout << "size in get_n_bytes = "
+                                      << std::hex << n << std::endl; });
+#endif // DEBUG
 // The size passed here MUST be a multiple of 8.
 // I have a thread-local variable fringe, and limit[threadId]
 // is in effect thread-local. These delimit a region of size about
@@ -958,9 +965,21 @@ inline LispObject get_n_bytes(size_t n)
 // The simple case completes here. If each chunk is around 16K then only 1
 // CONS in 1000 or so will take the longer route. I rather hope that the
 // common case will be lifted to be rendered in-line
-    if (fr1 <= w) LIKELY return static_cast<LispObject>(r);
+    if (fr1 <= w) LIKELY
+    {
+#ifdef DEBUG
+        cout << "= " << std::hex << r << "\n";
+#endif // DEBUG
+        return static_cast<LispObject>(r);
+    }
     UNLIKELY
+#ifdef DEBUG
+    r = get_n_bytes1(n, threadId, r, w);
+    cout << "= " << std::hex << r << "\n";
+    return r;
+#else // DEBUG
     return get_n_bytes1(n, threadId, r, w);
+#endif // DEBUG
 }
 
 #ifdef DEBUG
@@ -1127,9 +1146,11 @@ inline void withRecordedStack(F &&action)
 
 extern std::mutex mutexForGc;
 extern std::mutex mutexForFreePages;
+extern std::mutex mutexForChunkStack;
 extern bool gc_started;
 extern std::condition_variable cv_for_gc_idling;
 extern std::condition_variable cv_for_gc_busy;
+extern std::condition_variable cvForChunkStack;
 extern bool gc_complete;
 extern std::condition_variable cv_for_gc_complete;
 

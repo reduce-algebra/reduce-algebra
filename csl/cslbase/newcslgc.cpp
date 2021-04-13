@@ -412,10 +412,11 @@ uintptr_t sortPinList(uintptr_t l)
 {   return sortList<uintptr_t, PinChainClass>(l);
 }
 
-std::mutex mutexForChunkStack;
 bool gcComplete;
+std::mutex mutexForChunkStack;
 std::condition_variable cvForChunkStack;
 Chunk *chunkStack = nullptr;
+unsigned int activeHelpers = 0;
 
 // I originally planned to make this a lock-free data structure, or at
 // lease code it so that it was lock-free most of the time. However I
@@ -434,17 +435,32 @@ void pushChunk(Chunk *c)
     if (old == nullptr) cvForChunkStack.notify_all();
 }
 
-unsigned int activeHelpers = 0;
-
 Chunk *popChunk()
 {   std::unique_lock<std::mutex> lock(mutexForChunkStack);
+// If I have to wait then while I am waiting I am not active...
+    activeHelpers--;
     cvForChunkStack.wait(lock,
         []{   return chunkStack != nullptr ||
                      activeHelpers == 0;
           });
     Chunk *r = chunkStack;
-    if (r != nullptr) chunkStack = r->chunkStack;
+    if (r != nullptr)
+    {   chunkStack = r->chunkStack;
+// If I manage to grab a chunk to work on I will then become active again.
+        activeHelpers++;
+    }
 // I can only return a nullptr here is activeHelpers is zero.
+    return r;
+}
+
+Chunk *nonblockingPopChunk()
+{   std::unique_lock<std::mutex> lock(mutexForChunkStack);
+// This will grab a Chunk if one is available, but return nullptr if not.
+// If other threads are active one of them might be just abou to push another
+// Chunk, so getting a nullptr here is no a definitive indication that
+// ther is and will never be work to be done.
+    Chunk *r = chunkStack;
+    if (r != nullptr) chunkStack = r->chunkStack;
     return r;
 }
 
@@ -548,6 +564,8 @@ static Chunk *gcDequeue()
     return gcReserveMoreChunks(out);
 }
 
+thread_local Chunk *myBusyChunk = nullptr;
+
 extern void testLayout();
 
 LispObject gc_n_bytes1(size_t n, uintptr_t thr,
@@ -573,7 +591,9 @@ LispObject gc_n_bytes1(size_t n, uintptr_t thr,
     r = newChunk->dataStart();
     fringe = r + n;
     Page *p = reinterpret_cast<Page *>((oldFringe-1) & -pageSize);
-    if (myChunkBase[thr] != nullptr) pushChunk(myChunkBase[thr]);
+    Chunk *justFilled = myChunkBase[thr];
+    if (justFilled != nullptr &&
+        justFilled != myBusyChunk) pushChunk(justFilled);
     myChunkBase[thr] = newChunk;
     newChunk->length.store(nSize);
     newChunk->isPinned.store(false);
@@ -595,14 +615,28 @@ inline LispObject gc_n_bytes(size_t n)
     uintptr_t thr = threadId;
     uintptr_t r = fringe;
     uintptr_t fr1 = r + n;
-    fringe = fr1;
     uintptr_t w = limit[thr].load();
-    if (fr1 <= w) LIKELY return static_cast<LispObject>(r);
+    if (fr1 <= w) LIKELY
+    {   fringe = fr1;
+        return static_cast<LispObject>(r);
+    }
 // Now the case where a fresh Chunk has to be allocated.
     UNLIKELY
     return gc_n_bytes1(n, threadId, r, w);
 }
 
+// Note that I define this guard once here and then also in newallocate.cpp.
+// By undefining it here I can activate the thread-safe code but still only
+// use one thread, and that will be a good thing to do to observe the overhead
+// that synchronization imposes. If that is not too bad and once the thread-
+// safe version is stable I can adjust newallocate.cpp and that would gate
+// more threads in to participare in GC - however until I put in extra
+// work somewhere to create those extra threads there are not any available
+// to help!
+
+#define NO_EXTRA_GC_THREADS 1
+
+#ifdef NO_EXTRA_GC_THREADS
 
 // The version here is for single-threaded use only, however my intent is
 // to gradually start adding in the framework for a parallel version. As I
@@ -620,6 +654,80 @@ inline LispObject gc_n_bytes(size_t n)
 
 void evacuate(atomic<LispObject> *p)
 {
+#ifdef DEBUG
+    cout << "evac " << std::hex << p
+         << " contents " << std::hex << p->load() << "\n";
+#endif
+// Here p is a pointer to a location that is a list-base, ie it contains
+// a valid Lisp object. I want to arrange that the object and all its
+// components are moved to the new half space, and (if necessary) the
+// list base is updated to refer to the copy and a forwarding pointer is left
+// where the original had been. The procedure is:
+//   Let a = *p, ie the object that may need to be copied.
+//   If a is tagged as immediate data do nothing.
+//   [now a is some sort of tagged pointer]
+//   If *a is a forwarding pointer replace the list base with the
+//      object referred to, reconstructing suitable tag bits.
+//   If the address that a refers to is in the free half-space it must be
+//      a pointer to an object that had been pinned last time, so do nothing.
+//   Determine the length, b, of the object that a refers to.
+//   Allocate b byte in the new space and do a simple binary copy of all
+//      of object a to there.
+//   Write in a forwarding pointer.
+//   Update the list-base to refer to the copy.
+// Note that this is a shallow copy operation. A later stage must perform
+// a linear scan of the newly copied material. That stage is not discussed
+// here because this function does not directly cause it to happen.
+//
+    LispObject a = *p;
+    if (is_odds(a) || is_immediate_num(a) || a == nil)
+    {
+#ifdef DEBUG
+        cout << "immediate data & nil: easy" << std::hex << a << "\n";
+#endif // DEBUG
+        return;
+    }
+    LispObject *ap = reinterpret_cast<LispObject *>(a & ~TAG_BITS);
+    LispObject aa = *ap;
+    cout << "item at " << std::hex << p
+         << " is " << a << " [not immediate] "
+         << " without tag bits = " << ap
+         << " and contents of that is " << aa << "\n";
+    if (is_forward(aa))
+    {   *p = aa - TAG_FORWARD + (a&TAG_BITS);
+#ifdef DEBUG
+        cout << "Process forwarding address\n";
+#endif // DEBUG
+        return;
+    }
+// Now I will need to make a copy of the item.
+    size_t len;
+// Finding its length is not too hard here because I have a validly tagged
+// pointer to it.
+    if (is_cons(a)) len = 2*CELL;
+    else if (is_symbol(a)) len = symhdr_length;
+    else len = doubleword_align_up(length_of_header(aa));
+#ifdef DEBUG
+    cout << "about to allocate " << std::dec << len << "bytes\n";
+#endif // DEBUG
+    aa = gc_n_bytes(len);
+#ifdef DEBUG
+    cout << "@ " << std::hex << aa << "\n";
+#endif // DEBUG
+    std::memcpy(reinterpret_cast<void *>(aa), ap, len);
+    *ap = TAG_FORWARD + aa;
+    *p = aa + (a&TAG_BITS);
+}
+
+#else // NO_EXTRA_GC_THREADS
+
+// Here is where I will work on a version that is thread-safe! Just for now
+// it is a direct copy of the unsafe code...
+
+void evacuate(atomic<LispObject> *p)
+{
+#error This need to be made thread-safe!
+
 // Here p is a pointer to a location that is a list-base, ie it contains
 // a valid Lisp object. I want to arrange that the object and all its
 // components are moved to the new half space, and (if necessary) the
@@ -656,11 +764,15 @@ void evacuate(atomic<LispObject> *p)
     if (is_cons(a)) len = 2*CELL;
     else if (is_symbol(a)) len = symhdr_length;
     else len = doubleword_align_up(length_of_header(aa));
-    aa = get_n_bytes(len);
+    aa = gc_n_bytes(len);
     std::memcpy(reinterpret_cast<void *>(aa), ap, len);
     *ap = TAG_FORWARD + aa;
     *p = aa + (a&TAG_BITS);
 }
+
+
+
+#endif // NO_EXTRA_GC_THREADS
 
 void evacuate(LispObject *p)
 {   evacuate(reinterpret_cast<atomic<LispObject> *>(p));
@@ -686,6 +798,11 @@ void prepareForGarbageCollection(bool major)
 // can be the main guard blocking GC threads from trying to run when I do
 // not want them to!
         chunkStack = nullptr;
+// This just sets myBusyChunk for the leading thread, but that is all
+// I need because that is the one that will evacuate from all the list bases
+// and so may fill up some Chunks with copied material, and those Chunks
+// must be put on the stack ready for (other) threads to pick up and scan.
+        myBusyChunk = nullptr;
     }
     else
     {   withinMajorGarbageCollection = false;
@@ -889,6 +1006,52 @@ void evacuateFromDirty()
     my_abort();
 }
 
+// Here are the states that a Chunk can be in:
+//
+// (1) | header | raw data                       | waste |
+// (2) | header | evacuated data | raw data      | waste |
+// (3) | header | evacuated data                 | waste |
+// (4) | header | raw data | free space                  |
+// (5) | header | evacuated data | raw data | free space | 
+// (6) | header | evacuated data | free space            |
+//
+
+//
+// There can be multiple GC threads. Overall coordination is through
+// an atomic uintptr_t where its value is treated with the low few bits
+// being a count of the number of GC threads that are still busy and bits
+// above that a count of the un-processed Chunks on the Chunk Queue
+// waiting to be scanned. This value is used with a condition variable
+// such that threads can wait until EITHER another Chunk is placed on
+// the queue OR until the magic counter is zero.
+// All threads are signalled either when a Chunk is queued or when a
+// thread becomes idle and decreases the count such that it ends up zero.
+//
+// The early stages of GC run using just one thread and that evacuates
+// from list bases. If while doing so it fills one or nor chunks those
+// are queued for later processing and the count is suitably updated.
+// Meanwhile all other threads are waiting for such a Chunk to scan.
+//
+// The general policy then is that each thread starts by trying to tidy up
+// everything in the Chunk it is currently writing to. If it "catches up"
+// there it will grab further Chunks from the queue for as long as it can and
+// scan each of those. In general that will copy more information into its
+// own space, and it may or may not cause allocation of further Chunks.
+// If the queue appears to be empty (which may be a transient situation if
+// other threads happen to be busy scanning blocks that are in fact mostly
+// full of immediate data or material that has already been coped) the thread
+// returns to work on whatever is had been its own output Chunk, and after
+// that whatever has become that.
+
+
+extern void gcHelper();
+
+void evacuateFromCopiedData(bool major)
+{   cout << "evacuateFromCopiedData" << "\r" << endl;
+// This is gcHelper being called from the GC driver thread.
+    gcHelper();
+}
+
 void evacuateOneChunk(Chunk *c)
 {   uintptr_t p = c->dataStart();
     while (p < c->chunkFringe)
@@ -946,159 +1109,159 @@ void evacuateOneChunk(Chunk *c)
     }
 }
 
-void evacuateActiveChunk(Chunk *c)
-{   cout << "evacuateActiveChunk\n";
-    my_abort();
-}
-bool evacuatePartOfMyOwnChunk()
-{   cout << "evacuatePartOfMyOwnChunk\n";
-    my_abort();
-
-}
-
-// Here are the states that a Chunk can be in:
-//
-// (1) | header | raw data                       | waste |
-// (2) | header | evacuated data | raw data      | waste |
-// (3) | header | evacuated data                 | waste |
-// (4) | header | raw data | free space                  |
-// (5) | header | evacuated data | raw data | free space | 
-// (6) | header | evacuated data | free space            |
-//
-
-//
-// There can be multiple GC threads. Overall coordination is through
-// an atomic uintptr_t where its value is treated with the low few bits
-// being a count of the number of GC threads that are still busy and bits
-// above that a count of the un-processed Chunks on the Chunk Queue
-// waiting to be scanned. This value is used with a condition variable
-// such that threads can wait until EITHER another Chunk is placed on
-// the queue OR until the magic counter is zero.
-// All threads are signalled either when a Chunk is queued or when a
-// thread becomes idle and decreases the count such that it ends up zero.
-//
-// The early stages of GC run using just one thread and that evacuates
-// from list bases. If while doing so it fills one or nor chunks those
-// are queued for later processing and the count is suitably updated.
-// That thread obviously has a Chunk that it is allocating into.
-// After things are primed all the other threads grab chunks to allocate
-// into and count themselves up as potentially active.
-//
-// At this stage each thread attempts to grab an un-processed chunk.
-// This must be done using a lock-free pop from the Chunk queue. In the
-// middle of a big GC this will tend to succeed - and then the thread
-// evacuates that Chunk fully and restarts itself. Both at the start and
-// end of GC some threads may find that the attempt to grab a Chunk
-// fails.
-// They then see if there us material in their allocation Chunk (cases 4
-// and 5) and evacuate some of it. This may fill the page  so it attains
-// state 2 and subsequently 3. The may go on to fill other pages that
-// they queue. Those situations reduce to the more straghtforward situation.
-// But they may reach state 6 where they are unable to do more.
-// They decrement the counter showing that they are idle. If that
-// leaves an overall zero everybody else is idle and the GC is over. They
-// signal the rest so that they also know.
-// Otherwise they wait for the Condition. If the condition lets them grab
-// a new Chunk to start evacuating then they do so. As they do so they may
-// put more into their allocation Chunk and may (or may not) fill it.
-// Whichever situation applies, once they have completed evacuation of the
-// new page they had grabbed they go back and do as much more as they can to
-// what had been their allocation Chunk. When they have done as much as
-// they can there the situation depends on whether it was still their
-// allocation chunk or if it had ended up filled. Well if they are able to
-// grab a further Chunk from the queue that does not matter much, but if
-// not they may or may now have a newer allocation chunk to attend to.
-
-
-//@@@@ This is where I need to code stuff!!!
-
-#define ONLY_USE_ONE_GC_THREAD 1
-
-void gcHelper()
-{   cout << "This is an extra thread ready to help evacuateFromCopiedData\n";
-}
-
-void evacuateFromCopiedData(bool major)
+void evacuatePartOfMyOwnChunk()
 {
-#ifdef ONLY_USE_ONE_GC_THREAD
-    cout << "evacuateFromCopiedData" << "\r" << endl;
-// When I get here the list bases have all been evacuated. That will have
-// copied some material into the new space. This copied material may have
-// filled one or more Chunks that are now on the Chunk stack and can be
-// found using popChunk(). In addition there is likely to be a partially
-// filled Chunk that anything more that is to be copied will end up in.
-// In the general case part of the data within such a Chunk may have been
-// evacuated. 
-    do
-    {   Chunk *c;
-// While there is a full Chunk to scan I scan it. This part is simple and
-// straightforward.
-        while ((c = popChunk()) != nullptr)   // popChunk1 ????
-            evacuateOneChunk(c);
-// When I get here there are no full Chunks to scan, but there can be
-// data within the one I have just been copying into. I scan within it.
-// While doing so I naturally allocate further copied data within it.
-// There are two important cases. In one I find that this copied data
-// manages to fill the Chunk (and the code will then allocate a follow-on
-// one, and normal processing would push this Chunk onto the stack. In such
-// a case I can terminate my scan when I reach the end of the Chunk so it
-// is completely processed. By then I may have created not just one but
-// several new Chunks of copied material. The evacuatePartOfMyOwnChunk()
-// function returns true and these will be popped and scanned in turn. It
-// must be arranged that when the Chunk I had already scanned is fetched
-// that it is detected that it has already been processed.
-// The other possibility is that scanning material in the Chunk leads to
-// little or no further allocation. Then scanning must stop when the scan-
-// point catches up with the allocation fringe. In that case the function
-// returns false. But to be ready for the multi-thread case it should also
-// set markers showing how far scanning got. That is because some other
-// thread might push a full Chunk and that could allow the current thread
-// to resume copying from there, thereby filling this Chunk up further. At
-// some stage it will become necessary to continue the scan to process this
-// new data.
-    } while (evacuatePartOfMyOwnChunk());
-// In the single thread GC model when I get here all copied data has been
-// properly scanned, so the new heap is in a good state. All that should need
-// doing to finish off garbage collection will be to ensure that pointers to
-// fringes etc are up to date and that the various chains of free and busy
-// pages are in the right places.
-#else // ONLY_USE_ONE_GC_THREAD
-    cout << "Multi-thread evacuateFromCopiedData" << "\r" << endl;
-    my_abort();
-#endif // ONLY_USE_ONE_GC_THREAD
-}
+// This is the core of the copying GC. It starts by identifying the Chunk
+// that its thread is allocating within.
+// The steps are:
+// (1) The "busy Chunk" will start off in state (4) - ie it will have some
+// data within it (well a degenerate case is that there is in fact no data,
+// but that is not a problem) and it also has some free space at the end. I
+// know the latter because it is the Chunk I am allocating into and if it
+// was full I would have moved on. I guess that a further minor special case
+// is if there is no such Chunk yet - in which case I just allocate one and
+// it will start off empty.
+// (2) The code here points myBusyChunk at that Chunk. That is needed
+// so that when (and if!) allocation fills up that Chunk it will not be
+// enqueued for other threads to scan. It also sets a pointer to the start
+// of data within the Chunk.
+// (3) Data within the Chunk is scanned. Where there are old pointers in it
+// those are "evacuated". Doing this may involve creating copies of lists.
+// These copies may (or may not) fill up the Chunk - when it is filled a
+// new one gets allocated. If scanning leads to creation of second or
+// subsequent Chunks then the full ones get enqueued. The scan can terminate
+// in one of two manners. (a) the Chunk may not become full but all data in
+// it has been inspected or (b) the Chunk may have become full in which
+// case scanning terminates at its end.
+// (4) In a non-blocking mode the code attempts to obtain a Chunk to work on.
+// While that succeeds it scans/evacuates contents. It only continues from
+// this step if there seems to be no data available.
+// (5) If more copying had occured then return to step (3), resetting
+// myActiveChunk to wherever allocation is now active. This will commonly
+// happen if (4) had found more Chunks to scan, and it is easily noticed
+// by checking if fringe has changed.
+// (6) If scanning stopped for lack of data (local or from the queue) the
+// thread must make a blocking request from the Chunk queue (well in fact
+// it is run as a stack). This can either return more memory to be scanned
+// and this is treated as if it had been found at step (4). Or it can
+// report that no more will ever become available, in which case we are
+// finished. 
+    for (;;)
+    {
+// myBusyChunk is set here so because the Chunk being worked on is
+// simultaneously on that has some copied but not cleaned up material in
+// it AND the one in which this thread will be placing any further
+// copied material.
+        myBusyChunk = myChunkBase[threadId];
+        uintptr_t p = myBusyChunk->dataStart();
+        for (;;)
+        {
+// The start of this loop is what I describe as "step (3)" in the
+// above commentary.
+            if (p == fringe)
+            {   Chunk *c1;
+                for (;;)
+                {   while ((c1 = nonblockingPopChunk()) != nullptr)
+                        evacuateOneChunk(c1);
+                    if (fringe == p)
+                    {   c1 = popChunk(); // blocking
+                        if (c1 == nullptr) return;
+                        evacuateOneChunk(c1);
+                        continue;
+                    }
+                    else break;
+                }
+                if (myBusyChunk != myChunkBase[threadId])
+                {   myBusyChunk = myChunkBase[threadId];
+                    p = myBusyChunk->dataStart();
+                }
+                continue;
+            }
+            else if (p >= myBusyChunk->dataEnd())
+            {
+// The test here is based on scanning right up to the very end of the Chunk,
+// so it will be important that when a Chunk overflows that a padder object
+// is inserted to fill any gap at the end. There is then a jolly edge case.
+// If the most recent call to gc_n_bytes() allocated memory that just
+// filled up the Chunk and that was used such that evacuating it did not need
+// and more memory. Then this thread will not have been allocated its
+// next Chunk. However in that case fringe would be set to the same value
+// as dataEnd() and I always check for p==fringe before p>=dataEnd() so this
+// odd case will never lead to trouble here. Phew! Relief!! The fact that
+// I do not hit fringe but do reach dataEnd() must be because a new Chunk
+// had been set up for allocation and fringe points within it, and in that
+// situation myChunkBase[] will have been updated.
+                my_assert(myBusyChunk != myChunkBase[threadId]);
+                myBusyChunk = myChunkBase[threadId];
+                p = myBusyChunk->dataStart();
+                continue;
+            }
+            LispObject *pp = reinterpret_cast<LispObject *>(p);
+// The first word of an object may be one of several possibilities:
+//    Header for vector holding binary data;
+//    Header for vector holding Lisp data;
+//    Header for object with 3 lisp items then binary stuff;
+//    Header for symbol;
+//    anything else (item is a cons cell).
+            LispObject a = *pp;
+            size_t len, len1;
+#ifdef DEBUG
+            cout << "First word @" << std::hex << pp
+                 << " = " << a << "  " << (a & 0x1f) << "\n";
+#endif
+            switch (a & 0x1f) // tag bits plus 2 more
+            {
+// binary literals are C++14, so just for now I will use hex, but I will
+// write what the binary literal would be...
+            case 0x0a: // 0b01010:   // Header for vector of Lisp pointers
+                                     // Note TYPE_STREAM etc is in with this.
+                len = doubleword_align_up(length_of_byteheader(a));
+                if (is_mixed_header(a)) len1 = 4*CELL;
+                else len1 = len;
+                for (size_t i = CELL; i<len1; i += CELL)
+                    evacuate(reinterpret_cast<LispObject *>(p+i));
+                p += len;
+                continue;
 
-// before gcHelper() is called on in ANY thread the GC should have set
-// activeHelpers to the number of helper threads it is about to activate.
+            case 0x12: // 0b10010:   // Header for bit-vector
+                len = doubleword_align_up(length_of_byteheader(a));
+                p += len;
+                continue;
 
-
-#ifndef ONLY_USE_ONE_GC_THREAD
-
-void gcHelper()
-{
-// gcHelper is called from a thread that was active in Lisp but is not the
-// lead thread for the GC. The first thing it must do is to await a Chunk to
-// scan.
-    do
-    {   Chunk *c = popChunk();   // this blocks until a chunk becomes
-                                 // available or until the GC is over.
-        if (c == nullptr)
-        {   activeHelpers--;
-            return;
+            case 0x1a: // 0b11010:   // Header for vector holding binary data
+                len = doubleword_align_up(length_of_byteheader(a));
+                p += len;
+                continue;
+            case 0x02: // 0b00010:   // Symbol headers plus char literals etc
+                if (is_symbol_header(a))
+                {   Symbol_Head *s = reinterpret_cast<Symbol_Head *>(p);
+                    evacuate(&(s->value));
+                    evacuate(&(s->env));
+                    evacuate(&(s->fastgets));
+                    evacuate(&(s->package));
+                    evacuate(&(s->pname));
+                    p += symhdr_length;
+                    continue;
+                }
+                // drop through.
+            default:                 // None of the above cases...
+                                     // ... must be a CONS cell.
+                evacuate(pp);
+                evacuate(pp+1);
+                p += 2*CELL;
+                continue;
+            }
         }
-        do
-        {   evacuateOneChunk(c);
-// I will continue processing chunks for so long as I can find another one
-// without needing to block.
-        } while ((c = popChunk1()) != nullptr);
-// Now I might need to block. If ALL the helper threads block then that
-// may signal that this part of the GC is complete.
-        if (activeHelpers.fetch_sub(1) == 1) return;
-    } while (evacuatePartOfMyOwnChunk());
+    }
 }
 
-#endif // ONLY_USE_ONE_GC_THREAD
-
+void gcHelper()
+{
+// gcHelper is called to evacuate data from Chunks that have already been
+// copied. If none are available and if all GC copying threads agree that
+// they have no work to do then just terminate.
+    evacuatePartOfMyOwnChunk();
+}
 
 void endOfGarbageCollection(bool major)
 {   cout << "endOfGarbageCollection" << "\r" << endl;
@@ -1117,11 +1280,8 @@ void garbageCollect(bool major)
     cout << pinnedPageCount << " pinned Pages\r\n";
 // At this point I am ready to start! I have a fresh part of the heap set
 // up so that get_n_bytes() can grab memory from it. I will have
-// a number of GC threads all blocked by having chunkStack==nullptr
-// and I will need an atomic counter that records how many blocked threads
-// are there.
-//
-// I can start the GC by putting all pinned Chunnks on the queue of Chunks
+// a number of GC threads all waiting for Chunks to scan.
+// I can start the GC by putting all pinned Chunks on the queue of Chunks
 // to be processed. Doing so can release some of the worker threads to
 // start evacuating their contents.
     evacuateFromPinnedItems(major);
