@@ -44,20 +44,107 @@
 
 #include "headers.h"
 
-using std::hex;
-using std::dec;
+// Pinning:
+// When I have an ambigious pointer any object it (might) point at must
+// not be relocated by the GC, and that means that subsequent allocation must
+// work around such static data. What I describe here is my April 2021 set of
+// thoughts, which are a significant update to ones from earlier!
+// There are three stages where these ambiguous pointers impact what I have
+// to do:
+// (1) Identifying them at the start of garbage collection;
+// (2) Responding to them during the garbage collection copying process;
+// (3) Arranging free storage so that subsequent allocation does not
+//     overwrite them.
+// The scheme I use interacts with the general storage allocation procedures
+// that I use, which are themselves conditioned by thoughts of concurrency
+// and thread support.
+//
+// I will comment on (2) first. When I inspect a (precise) pointer during the
+// copy phase of the GC I must check if it in fact points to data that is
+// "pinned" because an ambiguous pointer appears to refer to it. This test
+// has to be made for every pointer considered, and so is speed critical.
+// To spell things out further, if a safe, valid, precise pointer from any
+// list base or from anywhere within the active heap happens to point at a
+// pinned object then it must detect that fact and avoid relocating the
+// object.
+// To make this acceptably fast I will use a bitmap. Given the precise pointer
+// I mask it based on my page size - that gets me to the base of the Page that
+// it lies within. In the header to that page there is a map with 1 bit for
+// each 8-byte unit. If the Page is 8 Mbytes this map is only 128K so as a
+// burden on space it is not a disaster.
+// With that design decision made I now need to cope with (1) and (3). Note
+// that the bitmap I have just discussed must have a bit set to mark the first
+// or header word of every object. Because when it is inspected only precise
+// pointers are in play the state of bits for non-header positions is not
+// important.
+// The hard part of (1) is that an ambiguous pointer may (appear to) point
+// into the middle of a large object that contains binary information. For
+// instance a string or a bignum. Any inspection of data near where the
+// reference points then sees part of that arbitrary material which can
+// not be relied upon to be informative.
+// My resolution of this is to note that for the purposes of allocation in
+// a threaded implementation I have my memory split into "Chunks". These
+// are typically 16Kbytes long but have to be longer when a huge object
+// get allocated, but even when that happens the number of items within any
+// one Chunk will be around 1000 on a 64-bit machine (or up to twice that
+// on a 32-bit system).
+// So when I am recording ambiguous pointers I will take two steps. The
+// easy one is to mark in my bitmap the 8-byte address referenced. If the
+// value was in fact pointing at or very close to the object head that
+// is great, but in general it will mark some memory within an object. The
+// harder part is that I will identify and mark the Chunk containing the
+// address. Well given the pointer I can identify the Page that it lies within
+// using a simple masking operation. Each Page will then need to contain a
+// sorted table of the Chunks within it. There can be at most about 500
+// Chunks so a binary search costs about 9 comparisons. I set a flag in the
+// Chunk header to the effect that it contains pinned data and I push it
+// onto a chain of such Chunks. I am going to expect that when ambiguous
+// pointers are found on the stack that very often a bunch of them will
+// refer to objects allocated at about the same time and that those objects
+// will tend to cluster in memory and hence within a modest number of Chunks.
+// Now after collecting all ambiguous values in the way I need to refine the
+// bitmap so that it has a bit set for the header of each pinned item. I
+// have to perform a linear scan of each Chunk that contains pinned data.
+// For each object present I need to consult the bitmap to see if a bit is
+// set for some address within it. Well for larger objects there are two
+// potential optimisations. The first is that if a bit is already set for
+// the header word it is immaterial whether further bits are set for addresses
+// within the object, so there is no need to check for them. The second is
+// that if checking is needed it can be done 32 or 64 bits at time using
+// word operations on bitmap entries. The first of these will typically
+// arise for quite a lot of cases where and item is pinned - the tough case
+// is when a large vector is not pinned and that has to be verified by
+// inspecting the bitmap for every offset within it.
+// If pinned items are common and widely scattered then each one may trigger
+// the need to scan a whole Chunk near it. So I hope that pinned items are
+// both reasonably uncommon and are well clustered! But the nature of any
+// conservative garbage collection scheme is that there are potential bad
+// cases.
+// Now to issue (3). Allocating around a pinned item has overhead, and so
+// I for later storage allocation purposes I will view whole Chunks as
+// pinned. Well I can take a Chunk that contains pinned items within it and
+// truncate it so it starts with the first pinned item and ends with the last.
+// That is easy and avoids memory waste. However perhaps unexpectedly it has
+// a down-side. If pinned Chunks shrink then new Chunks can be allocated
+// near them. It in turn collects pinned data. Over time one can end up with
+// many small pinned regions. As well as being bad for allocation costs this
+// could give trouble with step (1) as explained above where a table of all
+// Chunks in a page is used. The fixed size for this table could not cope with
+// many many small pinned Chunks.
+// My proposed resolution adds two complications to the simple truncation
+// scheme. First, pinned chunk truncation is only performed if the Page
+// has at most 5 Chunks that contained pinned items (the number 5 is subject
+// to review!) and the Chunk table is made 5 entries larger than it might
+// otherwise have been. Secondly if two Chunks end up pinned and the gap
+// that would end up between them would be lower than the standard Chunk size
+// then those two are consolidated into one bigger Chunk. Well more than just
+// two Chunks may end up merged, leading to an especially large blocked
+// region in worst case behaviour.
+
 
 // Overview of procedure for full garbage collection:
 //
 // I have Pages (8M) and Chunks (16K). Pinning is at a granularity of Chunks.
-//
-// Pinning whole chunks rather than individual objects is a policy I am
-// following to reduce the cost of identifying what needs to be pinned.
-// Very very preliminary measurements suggests that I may end up with
-// around 1% of my memory in pinned Chunks. It looks as if (for a given
-// calculation) the number of pinned pages may not change dramatically
-// as memory is enlarged, so with extra memory the proportion of Pages
-// holding pinned Chunks will tend to shrink.
 //
 // First I will provide a reminder of the fields and data involved in
 // pinning things.
@@ -426,7 +513,6 @@ unsigned int activeHelpers = 0;
 
 void pushChunk(Chunk *c)
 {   std::lock_guard<std::mutex> lock(mutexForChunkStack);
-    c->selfScanPoint = c->dataStart();
     Chunk *old = chunkStack;
     c->chunkStack = old;
     chunkStack = c;
@@ -506,6 +592,7 @@ atomic<Chunk *>   gcQ[gcQSize];
 
 static void gcEnqueue(Chunk *c)
 {   uintptr_t in = gcInQ;
+cout << "Grab another Chunk at " << Addr(c) << "\n";
     gcQ[in & (gcQSize-1)] = c;
     in = in+1;
     if (in == 0) my_abort("GC queue counter wrapped round to zero");
@@ -551,7 +638,7 @@ static Chunk *gcReserveMoreChunks(uintptr_t out)
 // When I get here there can still be other threads running and incrementing
 // gcOutQ. My task is to insert chunks into the queue until it holds (about)
 // gcQSize.
-    while (gcInQ.load() < gcOutQ.load() + gcQSize)
+    while (gcInQ.load() < gcOutQ.load() + gcQSize - 1)
     {   gcEnqueue(grabAnotherChunk(targetChunkSize));
     }
     return gcQ[out & (gcQSize-1)];
@@ -568,8 +655,7 @@ thread_local Chunk *myBusyChunk = nullptr;
 
 extern void testLayout();
 
-LispObject gc_n_bytes1(size_t n, uintptr_t thr,
-                       uintptr_t r, uintptr_t w)
+LispObject gc_n_bytes1(size_t n, uintptr_t thr, uintptr_t r)
 {   Chunk *newChunk;
     size_t nSize;
     if (n <= (2*targetChunkSize)/3) LIKELY
@@ -580,7 +666,7 @@ LispObject gc_n_bytes1(size_t n, uintptr_t thr,
     UNLIKELY
     {   std::lock_guard<std::mutex> lock(grabNewSegments);
         newChunk = grabAnotherChunk(nSize = (targetChunkSize+n));
-        while (gcInQ.load() < gcOutQ.load() + gcQSize)
+        while (gcInQ.load() < gcOutQ.load() + gcQSize - 1)
         {   gcEnqueue(grabAnotherChunk(targetChunkSize));
         }
     }
@@ -595,6 +681,8 @@ LispObject gc_n_bytes1(size_t n, uintptr_t thr,
     if (justFilled != nullptr &&
         justFilled != myBusyChunk) pushChunk(justFilled);
     myChunkBase[thr] = newChunk;
+cout << "New Chunk at " << Addr(newChunk)
+     << " fringe = " << Addr(fringe) << "\n";
     newChunk->length.store(nSize);
     newChunk->isPinned.store(false);
     newChunk->pinChain.store(nullptr);
@@ -612,17 +700,21 @@ inline LispObject gc_n_bytes(size_t n)
 {
 // First the path that applies if the allocation will be possible within the
 // current Chunk.
+cout << "gc_n_bytes " << n << "\n";
     uintptr_t thr = threadId;
     uintptr_t r = fringe;
     uintptr_t fr1 = r + n;
     uintptr_t w = limit[thr].load();
     if (fr1 <= w) LIKELY
     {   fringe = fr1;
+cout << "simple success at " << Addr(r) << "\n";
         return static_cast<LispObject>(r);
     }
 // Now the case where a fresh Chunk has to be allocated.
     UNLIKELY
-    return gc_n_bytes1(n, threadId, r, w);
+    LispObject r1 = gc_n_bytes1(n, threadId, r);
+cout << "complex success at " << Addr(r1) << "\n";
+    return r1;
 }
 
 // Note that I define this guard once here and then also in newallocate.cpp.
@@ -652,11 +744,14 @@ inline LispObject gc_n_bytes(size_t n)
 // so a sufficiently clever compiler could spot what I was doing and mangle
 // my code quite grievously!
 
+bool isPinned(uintptr_t a);
+
 void evacuate(atomic<LispObject> *p)
 {
 #ifdef DEBUG
-    cout << "evac " << std::hex << p
-         << " contents " << std::hex << p->load() << "\n";
+    if (*p != nil)
+        cout << "evac " << Addr(p)
+             << " contents " << Addr(p->load()) << "\n";
 #endif
 // Here p is a pointer to a location that is a list-base, ie it contains
 // a valid Lisp object. I want to arrange that the object and all its
@@ -680,19 +775,22 @@ void evacuate(atomic<LispObject> *p)
 // here because this function does not directly cause it to happen.
 //
     LispObject a = *p;
+    my_assert(a!=0, [] { cout << "zero word in scanning\n"; });
     if (is_odds(a) || is_immediate_num(a) || a == nil)
     {
 #ifdef DEBUG
-        cout << "immediate data & nil: easy" << std::hex << a << "\n";
+        if (a != nil)
+            cout << "immediate data: easy " << Addr(a) << "\n";
 #endif // DEBUG
         return;
     }
+    if (isPinned(a)) return;
     LispObject *ap = reinterpret_cast<LispObject *>(a & ~TAG_BITS);
     LispObject aa = *ap;
-    cout << "item at " << std::hex << p
-         << " is " << a << " [not immediate] "
+    cout << "item at " << Addr(p)
+         << " is " << Addr(a) << " [not immediate] "
          << " without tag bits = " << ap
-         << " and contents of that is " << aa << "\n";
+         << " and contents of that is " << Addr(aa) << "\n";
     if (is_forward(aa))
     {   *p = aa - TAG_FORWARD + (a&TAG_BITS);
 #ifdef DEBUG
@@ -708,11 +806,11 @@ void evacuate(atomic<LispObject> *p)
     else if (is_symbol(a)) len = symhdr_length;
     else len = doubleword_align_up(length_of_header(aa));
 #ifdef DEBUG
-    cout << "about to allocate " << std::dec << len << "bytes\n";
+    cout << "about to allocate " << len << " bytes\n";
 #endif // DEBUG
     aa = gc_n_bytes(len);
 #ifdef DEBUG
-    cout << "@ " << std::hex << aa << "\n";
+    cout << "@ " << Addr(aa) << "\n";
 #endif // DEBUG
     std::memcpy(reinterpret_cast<void *>(aa), ap, len);
     *ap = TAG_FORWARD + aa;
@@ -782,7 +880,7 @@ bool withinMajorGarbageCollection = false;
 size_t pinnedChunkCount = 0, pinnedPageCount = 0;
 
 void prepareForGarbageCollection(bool major)
-{   cout << "prepareForGarbageCollection" << "\r" << endl;
+{   cout << "prepareForGarbageCollection" << endl;
     if (major)
     {   withinMajorGarbageCollection = true;
         oldPages = busyPages;
@@ -803,16 +901,21 @@ void prepareForGarbageCollection(bool major)
 // and so may fill up some Chunks with copied material, and those Chunks
 // must be put on the stack ready for (other) threads to pick up and scan.
         myBusyChunk = nullptr;
+        fringe = limit[threadId];
+// The next line is really rather a cheat. It "allocates zero bytes" but
+// but diving into the allocation code beyond the initial test for easy cases
+// it will allocate a fresh Chunk.
+        gc_n_bytes1(0, threadId, fringe);
     }
     else
     {   withinMajorGarbageCollection = false;
-        cout << "prepare for minor GC not coded yet\r\n";
+        cout << "prepare for minor GC not coded yet\n";
         my_abort();
     }
 }
 
 void clearPinnedInformation(bool major)
-{   cout << "clearPinnedInformation" << "\r" << endl;
+{   cout << "clearPinnedInformation" << endl;
 // Any pages pinned by the previous garbage collection will be recorded
 // via globalPinChain.
    clearAllPins();
@@ -825,9 +928,12 @@ void clearPinnedInformation(bool major)
 // are any such chunks that the page itself is on a list of pages that contain
 // pinned material.
 
+void setPinned(Page *p, uintptr_t a);
+
 void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 {   if (p->chunkCount.load() == 0) return;  // An empty Page.
-    cout << "Ambig " << hex << a << " in non-empty page " << p << dec << "\r" << endl;
+    setPinned(p, a);
+    cout << "Ambig " << Addr(a) << " in non-empty page " << Addr(p) << endl;
 // The list of chunks will be arranged such that the highest address one
 // is first in the list. I will now scan it until I find one such that
 // the chunk has (a) pointing within it, and I should not need many tries
@@ -860,9 +966,9 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
         else low = middle;
     }
     Chunk *c = p->chunkMap[low];
-    cout << "pointer is maybe within chunk " << low << " at " << hex << c << dec << "\r" << endl;
+    cout << "pointer is maybe within chunk " << low << " at " << Addr(c) << endl;
     if (!c->pointsWithin(a)) return;
-    cout << "Within that chunk: isPinned = " << c->isPinned.load() << "\r" << endl;
+    cout << "Within that chunk: isPinned = " << c->isPinned.load() << endl;
 // Here (a) lies within the range of the chunk c. Every page that has any
 // pinning must record that both by being on a chain of pages with pins
 // and by having a list of its own pinned chunks.
@@ -877,7 +983,7 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
     c->pinChain = p->pinnedChunks.load();
     p->pinnedChunks = c;
 // When a chunk gets pinned then page must be too unless it already has been.
-    cout << "Page hasPinned = " << p->hasPinned.load() << "\r" << endl;
+    cout << "Page hasPinned = " << p->hasPinned.load() << endl;
     if (p->hasPinned.load()) return;
     pinnedPageCount++;
     p->hasPinned = true;
@@ -888,13 +994,13 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 // typedef processPinnedChunk(Chunk *c);
 
 void scanPinnedChunks(processPinnedChunk *pc)
-{   cout << "scanPinnedChunks globalPinChain = " << hex << globalPinChain << dec << "\r" << endl;
+{   cout << "scanPinnedChunks globalPinChain = " << Addr(globalPinChain) << endl;
     for (Page *p = globalPinChain; p!=nullptr; p=p->pinChain)
-    {   cout << hex << p << dec << " hasPinned=" << p->hasPinned.load() << "\r" << endl;
+    {   cout << Addr(p) << " hasPinned=" << Addr(p->hasPinned.load()) << endl;
         if (!p->hasPinned) continue;
-        cout << hex << p << " pinnedChunks=" << p->pinnedChunks.load() << dec << "\r" << endl;
+        cout << Addr(p) << " pinnedChunks=" << Addr(p->pinnedChunks.load()) << endl;
         for (Chunk *c = p->pinnedChunks; c!=nullptr; c=c->pinChain)
-        {    cout << hex << c << dec << " isPinned=" << c->isPinned.load() << "\r" << endl;
+        {    cout << Addr(c) << " isPinned=" << c->isPinned.load() << endl;
             if (!c->isPinned) continue;
             (*pc)(c);
         }
@@ -907,6 +1013,7 @@ void clearAllPins()
         for (Chunk *c = p->pinnedChunks; c!=nullptr; c=c->pinChain)
             c->isPinned = false;
         p->pinnedChunks = nullptr;
+        std::memset(p->pinnedMap, 0, sizeof(p->pinnedMap));
     }
     globalPinChain = nullptr;
 }
@@ -936,6 +1043,11 @@ void processAmbiguousValue(bool major, uintptr_t a)
     if (p!=nullptr) processAmbiguousInPage(major, p, a);
 }
 
+// The following function scans the stack for each thread. The address
+// sanitizer gets upset at this when it looks at return addresses and
+// the like, so I need to disable it here...
+
+NO_SANITIZE_ADDRESS
 void identifyPinnedItems(bool major)
 {
 // For each ambiguous value (ie value on the stack associated with
@@ -955,8 +1067,8 @@ void identifyPinnedItems(bool major)
 // way in to the Garbage Collector I have tried quite hard to ensure that
 // last point, but none of this can be guaranteed by reference to the rules
 // of the C++ standard!
-            cout << std::hex << "scan from " << fringe << " to "
-                 << base << std::dec << "\r" << endl;
+            cout << "scan from " << Addr(fringe) << " to "
+                 << Addr(base) << endl;
             for (uintptr_t s=fringe; s<base; s+=sizeof(uintptr_t))
             {   processAmbiguousValue(major,
                                       *reinterpret_cast<uintptr_t *>(s));
@@ -965,8 +1077,50 @@ void identifyPinnedItems(bool major)
     }
 }
 
+//## bool isPinned(uintptr_t a)
+//## {   Page *p = findPage(a);   // May involve 4 or 5 comparisons.
+//## // If the item I am considering is not even within the Lisp heap then I
+//## // will treat it as pinned here.
+//##     if (p == nullptr) return true;
+//## // The page will have a chunkMap which is expected to have been sorted, and
+//## // so I will be able to search it using a binary search.
+//##     size_t low = 0, high = p->chunkCount.load()-1;
+//## // There can be around 500 Chunks in a page and so this binary search can
+//## // involve 9 stages.
+//##     while (low < high)
+//##     {   size_t middle = (low + high + 1)/2;
+//##         if (a < reinterpret_cast<uintptr_t>(p->chunkMap[middle].load()))
+//##             high = middle-1;
+//##         else low = middle;
+//##     }
+//##     Chunk *c = p->chunkMap[low];
+//##     if (!c->pointsWithin(a)) return true; // "points" to eg unused space
+//##     return c->isPinned;
+//## }
+
+bool isPinned(uintptr_t a)
+{   Page *p = reinterpret_cast<Page *>(a & -pageSize);
+    uintptr_t o = (a & (pageSize-1))/8;
+    uintptr_t mask = static_cast<uintptr_t>(1)<<(o&(8*sizeof(uintptr_t)-1));
+    uintptr_t word = p->pinnedMap[o/(8*sizeof(uintptr_t))];
+    return (word & mask) != 0;
+}
+
+void setPinned(uintptr_t a)
+{   Page *p = reinterpret_cast<Page *>(a & -pageSize);
+    uintptr_t o = (a & (pageSize-1))/8;
+    uintptr_t mask = static_cast<uintptr_t>(1)<<(o&(8*sizeof(uintptr_t)-1));
+    p->pinnedMap[o/(8*sizeof(uintptr_t))] |= mask;
+}
+
+void setPinned(Page *p, uintptr_t a)
+{   uintptr_t o = (a & (pageSize-1))/8;
+    uintptr_t mask = static_cast<uintptr_t>(1)<<(o&(8*sizeof(uintptr_t)-1));
+    p->pinnedMap[o/(8*sizeof(uintptr_t))] |= mask;
+}
+
 void evacuateFromUnambiguousBases(bool major)
-{   cout << "evacuateFromUnambiguousBases" << "\r" << endl;
+{   cout << "evacuateFromUnambiguousBases\n";
 // This code has to know where ALL the definitive references to LispObjects
 // are in the C++ code. The main way it achieves this is through a vector
 // "list_bases" that holds the address of every static location involved.
@@ -990,11 +1144,15 @@ void evacuateFromUnambiguousBases(bool major)
     }
 }
 
+void evacuatePinnedInChunk(Chunk *c);
+
 void evacuateFromPinnedItems(bool major)
-{   cout << "evacuateFromPinnedItems" << "\r" << endl;
+{   cout << "evacuateFromPinnedItems\n";
     for (Page *p=globalPinChain; p!=nullptr; p=p->pinChain)
     {   for (Chunk *c=p->pinnedChunks; c!=nullptr; c=c->pinChain)
-            pushChunk(c);
+        {   cout << "Pinned items in " << Addr(c) << " to evacuate\n";
+            evacuatePinnedInChunk(c);
+        }
     }
 }
 
@@ -1002,7 +1160,7 @@ void evacuateFromPinnedItems(bool major)
 // up-pointers that have been introduced by RPLACx style operations.
 
 void evacuateFromDirty()
-{   cout << "evacuateFromDirty" << "\r" << endl;
+{   cout << "evacuateFromDirty\n";
     my_abort();
 }
 
@@ -1047,7 +1205,7 @@ void evacuateFromDirty()
 extern void gcHelper();
 
 void evacuateFromCopiedData(bool major)
-{   cout << "evacuateFromCopiedData" << "\r" << endl;
+{   cout << "evacuateFromCopiedData\n";
 // This is gcHelper being called from the GC driver thread.
     gcHelper();
 }
@@ -1109,6 +1267,71 @@ void evacuateOneChunk(Chunk *c)
     }
 }
 
+// Evacuate event pinned item in the Chunk
+
+void evacuatePinnedInChunk(Chunk *c)
+{   uintptr_t p = c->dataStart();
+    while (p < c->chunkFringe)
+    {   LispObject *pp = reinterpret_cast<LispObject *>(p);
+        cout << "Scanning at " << Addr(p) << " pinned=" << isPinned(p) << "\n";
+// The first word of an object may be one of several possibilities:
+//    Header for vector holding binary data;
+//    Header for vector holding Lisp data;
+//    Header for object with 3 lisp items then binary stuff;
+//    Header for symbol;
+//    anything else (item is a cons cell).
+        LispObject a = *pp;
+        size_t len, len1;
+        switch (a & 0x1f) // tag bits plus 2 more
+        {
+// binary literals are C++14, so just for now I will use hex, but I will
+// write what the binary literal would be...
+        case 0x0a: // 0b01010:   // Header for vector of Lisp pointers
+                                 // Note TYPE_STREAM etc is in with this.
+            len = doubleword_align_up(length_of_byteheader(a));
+            if (is_mixed_header(a)) len1 = 4*CELL;
+            else len1 = len;
+            if (isPinned(p))
+                for (size_t i = CELL; i<len1; i += CELL)
+                    evacuate(reinterpret_cast<LispObject *>(p+i));
+            p += len;
+            continue;
+
+        case 0x12: // 0b10010:   // Header for bit-vector
+            len = doubleword_align_up(length_of_byteheader(a));
+            p += len;
+            continue;
+
+        case 0x1a: // 0b11010:   // Header for vector holding binary data
+            len = doubleword_align_up(length_of_byteheader(a));
+            p += len;
+            continue;
+        case 0x02: // 0b00010:   // Symbol headers plus char literals etc
+            if (is_symbol_header(a))
+            {   if (isPinned(p))
+                {   Symbol_Head *s = reinterpret_cast<Symbol_Head *>(p);
+                    evacuate(&(s->value));
+                    evacuate(&(s->env));
+                    evacuate(&(s->fastgets));
+                    evacuate(&(s->package));
+                    evacuate(&(s->pname));
+                }
+                p += symhdr_length;
+                continue;
+            }
+            // drop through.
+        default:                 // None of the above cases...
+                                 // ... must be a CONS cell.
+            if (isPinned(p))
+            {   evacuate(pp);
+                evacuate(pp+1);
+            }
+            p += 2*CELL;
+            continue;
+        }
+    }
+}
+
 void evacuatePartOfMyOwnChunk()
 {
 // This is the core of the copying GC. It starts by identifying the Chunk
@@ -1146,6 +1369,7 @@ void evacuatePartOfMyOwnChunk()
 // and this is treated as if it had been found at step (4). Or it can
 // report that no more will ever become available, in which case we are
 // finished. 
+    fringe = fringeBis[threadId];
     for (;;)
     {
 // myBusyChunk is set here so because the Chunk being worked on is
@@ -1154,6 +1378,8 @@ void evacuatePartOfMyOwnChunk()
 // copied material.
         myBusyChunk = myChunkBase[threadId];
         uintptr_t p = myBusyChunk->dataStart();
+cout << "Start of data in my Chunk is at " << Addr(p) << "\n";
+cout << "fringe = " << Addr(fringe) << "\n";
         for (;;)
         {
 // The start of this loop is what I describe as "step (3)" in the
@@ -1196,6 +1422,7 @@ void evacuatePartOfMyOwnChunk()
                 p = myBusyChunk->dataStart();
                 continue;
             }
+cout << "scanning at " << Addr(p) << "\n";
             LispObject *pp = reinterpret_cast<LispObject *>(p);
 // The first word of an object may be one of several possibilities:
 //    Header for vector holding binary data;
@@ -1206,9 +1433,22 @@ void evacuatePartOfMyOwnChunk()
             LispObject a = *pp;
             size_t len, len1;
 #ifdef DEBUG
-            cout << "First word @" << std::hex << pp
-                 << " = " << a << "  " << (a & 0x1f) << "\n";
+            cout << "First word of " << Addr(pp)
+                 << " = " << Addr(a) << "  " << (a & 0x1f) << "\n";
+if (is_cons(a)) cout << "a cons pointer\n";
+else if (is_vector(a)) cout << "pointer to a vector of some sort\n";
+else if (is_forward(a)) cout << "forwarding pointer ILLEGAL HERE\n";
+else if (is_symbol(a)) cout << "pointer to a symbol\n";
+else if (is_numbers(a)) cout << "pointer to a symbol\n";
+else if (is_bfloat(a)) cout << "pointer to a boxfloat\n";
+else if (is_fixnum(a)) cout << "pointer to a number\n";
+else if (is_odds(a))
+   if (is_header(a)) cout << "hdr " << Addr(a) << "\n";
+   else cout << "immed " << Addr(a) << "\n";
+else cout << "??? " << Addr(a) << "\n";
 #endif
+            my_assert(!is_forward(a),
+                [] { cout << "Forwarding pointer not expected\n"; });
             switch (a & 0x1f) // tag bits plus 2 more
             {
 // binary literals are C++14, so just for now I will use hex, but I will
@@ -1264,20 +1504,20 @@ void gcHelper()
 }
 
 void endOfGarbageCollection(bool major)
-{   cout << "endOfGarbageCollection" << "\r" << endl;
+{   cout << "endOfGarbageCollection\n";
     my_abort();
 }
 
 void garbageCollect(bool major)
-{   cout << "\r\n+++++ Start of a "
+{   cout << "\n+++++ Start of a "
          << (major ? "major" : "minor")
-         << " GC\r\n";
+         << " GC\n";
     prepareForGarbageCollection(major);
     clearPinnedInformation(major);
     identifyPinnedItems(major);
 // Report on pinning.
-    cout << pinnedChunkCount << " pinned Chunks\r\n";
-    cout << pinnedPageCount << " pinned Pages\r\n";
+    cout << pinnedChunkCount << " pinned Chunks\n";
+    cout << pinnedPageCount << " pinned Pages\n";
 // At this point I am ready to start! I have a fresh part of the heap set
 // up so that get_n_bytes() can grab memory from it. I will have
 // a number of GC threads all waiting for Chunks to scan.
