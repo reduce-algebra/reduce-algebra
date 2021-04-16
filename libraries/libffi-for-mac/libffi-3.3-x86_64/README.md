@@ -1,10 +1,7 @@
-
-libffi-3.3 was released on November 23, 2019.  Check the libffi web
+libffi-3.3 was released on November 23, 2019. Check the libffi web
 page for updates: <URL:http://sourceware.org/libffi/>.
 
-
-What is libffi?
-===============
+# What is libffi?
 
 Compilers for high level languages generate code that follow certain
 conventions. These conventions are necessary, in part, for separate
@@ -23,9 +20,9 @@ bridge from the interpreter program to compiled code.
 The libffi library provides a portable, high level programming
 interface to various calling conventions. This allows a programmer to
 call any function specified by a call interface description at run
-time.  
+time.
 
-FFI stands for Foreign Function Interface.  A foreign function
+FFI stands for Foreign Function Interface. A foreign function
 interface is the popular name for the interface that allows code
 written in one language to call code written in another language. The
 libffi library really only provides the lowest, machine dependent
@@ -33,9 +30,7 @@ layer of a fully featured foreign function interface. A layer must
 exist above libffi that handles type conversions for values passed
 between the two languages.
 
-
-Supported Platforms
-===================
+# Supported Platforms
 
 Libffi has been ported to many different platforms.
 
@@ -116,79 +111,75 @@ tested:
 Please send additional platform test results to
 libffi-discuss@sourceware.org.
 
-Installing libffi
-=================
+# Installing libffi
 
 First you must configure the distribution for your particular
 system. Go to the directory you wish to build libffi in and run the
 "configure" program found in the root directory of the libffi source
-distribution.  Note that building libffi requires a C99 compatible
+distribution. Note that building libffi requires a C99 compatible
 compiler.
 
 If you're building libffi directly from git hosted sources, configure
-won't exist yet; run ./autogen.sh first.  This will require that you
+won't exist yet; run ./autogen.sh first. This will require that you
 install autoconf, automake and libtool.
 
 You may want to tell configure where to install the libffi library and
-header files. To do that, use the ``--prefix`` configure switch.  Libffi
-will install under /usr/local by default. 
+header files. To do that, use the `--prefix` configure switch. Libffi
+will install under /usr/local by default.
 
 If you want to enable extra run-time debugging checks use the the
-``--enable-debug`` configure switch. This is useful when your program dies
-mysteriously while using libffi. 
+`--enable-debug` configure switch. This is useful when your program dies
+mysteriously while using libffi.
 
-Another useful configure switch is ``--enable-purify-safety``. Using this
+Another useful configure switch is `--enable-purify-safety`. Using this
 will add some extra code which will suppress certain warnings when you
-are using Purify with libffi. Only use this switch when using 
+are using Purify with libffi. Only use this switch when using
 Purify, as it will slow down the library.
 
-If you don't want to build documentation, use the ``--disable-docs``
+If you don't want to build documentation, use the `--disable-docs`
 configure switch.
 
 It's also possible to build libffi on Windows platforms with
-Microsoft's Visual C++ compiler.  In this case, use the msvcc.sh
+Microsoft's Visual C++ compiler. In this case, use the msvcc.sh
 wrapper script during configuration like so:
 
     path/to/configure CC=path/to/msvcc.sh CXX=path/to/msvcc.sh LD=link CPP="cl -nologo -EP" CPPFLAGS="-DFFI_BUILDING_DLL"
 
-For 64-bit Windows builds, use ``CC="path/to/msvcc.sh -m64"`` and
-``CXX="path/to/msvcc.sh -m64"``.  You may also need to specify
-``--build`` appropriately.
+For 64-bit Windows builds, use `CC="path/to/msvcc.sh -m64"` and
+`CXX="path/to/msvcc.sh -m64"`. You may also need to specify
+`--build` appropriately.
 
 It is also possible to build libffi on Windows platforms with the LLVM
 project's clang-cl compiler, like below:
 
-    path/to/configure CC="path/to/msvcc.sh -clang-cl" CXX="path/to/msvcc.sh -clang-cl" LD=link CPP="clang-cl -EP" 
+    path/to/configure CC="path/to/msvcc.sh -clang-cl" CXX="path/to/msvcc.sh -clang-cl" LD=link CPP="clang-cl -EP"
 
 When building with MSVC under a MingW environment, you may need to
 remove the line in configure that sets 'fix_srcfile_path' to a 'cygpath'
-command.  ('cygpath' is not present in MingW, and is not required when
+command. ('cygpath' is not present in MingW, and is not required when
 using MingW-style paths.)
 
 To build static library for ARM64 with MSVC using visual studio solution, msvc_build folder have
-   aarch64/Ffi_staticLib.sln
-   required header files in aarch64/aarch64_include/
-
+aarch64/Ffi_staticLib.sln
+required header files in aarch64/aarch64_include/
 
 SPARC Solaris builds require the use of the GNU assembler and linker.
-Point ``AS`` and ``LD`` environment variables at those tool prior to
+Point `AS` and `LD` environment variables at those tool prior to
 configuration.
 
-For iOS builds, the ``libffi.xcodeproj`` Xcode project is available.
+For iOS builds, the `libffi.xcodeproj` Xcode project is available.
 
-Configure has many other options. Use ``configure --help`` to see them all.
+Configure has many other options. Use `configure --help` to see them all.
 
 Once configure has finished, type "make". Note that you must be using
-GNU make.  You can ftp GNU make from ftp.gnu.org:/pub/gnu/make .
+GNU make. You can ftp GNU make from ftp.gnu.org:/pub/gnu/make .
 
 To ensure that libffi is working as advertised, type "make check".
 This will require that you have DejaGNU installed.
 
-To install the library and header files, type ``make install``.
+To install the library and header files, type `make install`.
 
-
-History
-=======
+# History
 
 See the git log for details at http://github.com/libffi/libffi.
 
@@ -201,12 +192,12 @@ See the git log for details at http://github.com/libffi/libffi.
         Add Windows on ARM64 (WOA) support.
         Add Windows 32-bit ARM support.
         Raw java (gcj) API deprecated.
-	Add pre-built PDF documentation to source distribution.
+    Add pre-built PDF documentation to source distribution.
         Many new tests cases and bug fixes.
-        
+
     3.2.1 Nov-12-14
         Build fix for non-iOS AArch64 targets.
-    
+
     3.2 Nov-11-14
         Add C99 Complex Type support (currently only supported on
           s390).
@@ -214,7 +205,7 @@ See the git log for details at http://github.com/libffi/libffi.
           Windows/Linux.
         Add OpenRISC and Cygwin-64 support.
         Bug fixes.
-    
+
     3.1 May-19-14
         Add AArch64 (ARM64) iOS support.
         Add Nios II support.
@@ -227,7 +218,7 @@ See the git log for details at http://github.com/libffi/libffi.
           failures, and respect the $CC and $CXX environment variables.
         Archive off the manually maintained ChangeLog in favor of git
           log.
-    
+
     3.0.13 Mar-17-13
         Add Meta support.
         Add missing Moxie bits.
@@ -237,7 +228,7 @@ See the git log for details at http://github.com/libffi/libffi.
         Fix the install dir location for some platforms when building
           with GCC (OS X, Solaris).
         Fix Cygwin regression.
-    
+
     3.0.12 Feb-11-13
         Add Moxie support.
         Add AArch64 support.
@@ -249,7 +240,7 @@ See the git log for details at http://github.com/libffi/libffi.
         Add support for native vendor compilers on
           Solaris and AIX.
         Work around LLVM/GCC interoperability issue on x86_64.
-    
+
     3.0.11 Apr-11-12
         Lots of build fixes.
         Add support for variadic functions (ffi_prep_cif_var).
@@ -260,7 +251,7 @@ See the git log for details at http://github.com/libffi/libffi.
         Integration with iOS' xcode build tools.
         Fix Octeon and MC68881 support.
         Fix code pessimizations.
-    
+
     3.0.10 Aug-23-11
         Add support for Apple's iOS.
         Add support for ARM VFP ABI.
@@ -274,138 +265,137 @@ See the git log for details at http://github.com/libffi/libffi.
           Solaris compiler.
         Testsuite fixes for Tru64 Unix.
         Additional platform support.
-    
+
     3.0.9 Dec-31-09
         Add AVR32 and win64 ports.  Add ARM softfp support.
         Many fixes for AIX, Solaris, HP-UX, *BSD.
         Several PowerPC and x86-64 bug fixes.
         Build DLL for windows.
-    
+
     3.0.8 Dec-19-08
         Add *BSD, BeOS, and PA-Linux support.
-    
+
     3.0.7 Nov-11-08
         Fix for ppc FreeBSD.
         (thanks to Andreas Tobler)
-    
+
     3.0.6 Jul-17-08
         Fix for closures on sh.
         Mark the sh/sh64 stack as non-executable.
         (both thanks to Kaz Kojima)
-    
+
     3.0.5 Apr-3-08
         Fix libffi.pc file.
         Fix #define ARM for IcedTea users.
         Fix x86 closure bug.
-    
+
     3.0.4 Feb-24-08
         Fix x86 OpenBSD configury.
-    
+
     3.0.3 Feb-22-08
         Enable x86 OpenBSD thanks to Thomas Heller, and
           x86-64 FreeBSD thanks to Björn König and Andreas Tobler.
         Clean up test instruction in README.
-    
+
     3.0.2 Feb-21-08
         Improved x86 FreeBSD support.
         Thanks to Björn König.
-    
+
     3.0.1 Feb-15-08
         Fix instruction cache flushing bug on MIPS.
         Thanks to David Daney.
-    
+
     3.0.0 Feb-15-08
         Many changes, mostly thanks to the GCC project.
         Cygnus Solutions is now Red Hat.
-    
+
       [10 years go by...]
-    
+
     1.20 Oct-5-98
         Raffaele Sena produces ARM port.
-    
+
     1.19 Oct-5-98
         Fixed x86 long double and long long return support.
         m68k bug fixes from Andreas Schwab.
         Patch for DU assembler compatibility for the Alpha from Richard
           Henderson.
-    
+
     1.18 Apr-17-98
         Bug fixes and MIPS configuration changes.
-    
+
     1.17 Feb-24-98
         Bug fixes and m68k port from Andreas Schwab. PowerPC port from
         Geoffrey Keating. Various bug x86, Sparc and MIPS bug fixes.
-    
+
     1.16 Feb-11-98
         Richard Henderson produces Alpha port.
-    
+
     1.15 Dec-4-97
         Fixed an n32 ABI bug. New libtool, auto* support.
-    
+
     1.14 May-13-97
         libtool is now used to generate shared and static libraries.
         Fixed a minor portability problem reported by Russ McManus
         <mcmanr@eq.gs.com>.
-    
+
     1.13 Dec-2-96
         Added --enable-purify-safety to keep Purify from complaining
           about certain low level code.
         Sparc fix for calling functions with < 6 args.
         Linux x86 a.out fix.
-    
+
     1.12 Nov-22-96
-        Added missing ffi_type_void, needed for supporting void return 
-          types. Fixed test case for non MIPS machines. Cygnus Support 
-          is now Cygnus Solutions. 
-    
+        Added missing ffi_type_void, needed for supporting void return
+          types. Fixed test case for non MIPS machines. Cygnus Support
+          is now Cygnus Solutions.
+
     1.11 Oct-30-96
         Added notes about GNU make.
-    
+
     1.10 Oct-29-96
         Added configuration fix for non GNU compilers.
-    
+
     1.09 Oct-29-96
-        Added --enable-debug configure switch. Clean-ups based on LCLint 
-        feedback. ffi_mips.h is always installed. Many configuration 
+        Added --enable-debug configure switch. Clean-ups based on LCLint
+        feedback. ffi_mips.h is always installed. Many configuration
         fixes. Fixed ffitest.c for sparc builds.
-    
+
     1.08 Oct-15-96
         Fixed n32 problem. Many clean-ups.
-    
+
     1.07 Oct-14-96
         Gordon Irlam rewrites v8.S again. Bug fixes.
-    
+
     1.06 Oct-14-96
-        Gordon Irlam improved the sparc port. 
-    
+        Gordon Irlam improved the sparc port.
+
     1.05 Oct-14-96
         Interface changes based on feedback.
-    
+
     1.04 Oct-11-96
         Sparc port complete (modulo struct passing bug).
-    
+
     1.03 Oct-10-96
         Passing struct args, and returning struct values works for
         all architectures/calling conventions. Expanded tests.
-    
+
     1.02 Oct-9-96
         Added SGI n32 support. Fixed bugs in both o32 and Linux support.
         Added "make test".
-    
+
     1.01 Oct-8-96
         Fixed float passing bug in mips version. Restructured some
         of the code. Builds cleanly with SGI tools.
-    
+
     1.00 Oct-7-96
         First release. No public announcement.
 
-Authors & Credits
-=================
+# Authors & Credits
 
 libffi was originally written by Anthony Green <green@moxielogic.com>.
 
 The developers of the GNU Compiler Collection project have made
-innumerable valuable contributions.  See the ChangeLog file for
+innumerable valuable contributions. See the ChangeLog file for
 details.
 
 Some of the ideas behind libffi were inspired by Gianni Mariani's free
@@ -464,7 +454,7 @@ Andreas Tobler has done a tremendous amount of work on the testsuite.
 
 Alex Oliva solved the executable page problem for SElinux.
 
-The list above is almost certainly incomplete and inaccurate.  I'm
+The list above is almost certainly incomplete and inaccurate. I'm
 happy to make corrections or additions upon request.
 
 If you have a problem, or have found a bug, please send a note to the

@@ -1,42 +1,51 @@
+<a name="r38_0600"> <title>matrix_augment</title></a>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>MATRIX_AUGMENT</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
-<a name=r38_0600>
+<p></p>
+<p>Matrix augment, matrix stack:</p>
 
-<title>matrix_augment</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>matrix_augment</em>{&lt;matrix\_list&gt;}
+<p></p>
+<p></p>
+<p>(If you are feeling lazy then the braces can be omitted.)</p>
 
+<p></p>
+<p>&lt;matrix\_list&gt; :- matrices.</p>
 
+<p></p>
+<p>
+  <em>matrix_augment</em>sticks the matrices in &lt;matrix\_list&gt; together
+  horizontally.
+</p>
 
-<b>MATRIX_AUGMENT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-Matrix augment, matrix stack: 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>matrix_augment</em>{&lt;matrix\_list&gt;} 
-<P>
-<P>
-<P>
-(If you are feeling lazy then the braces can be omitted.) 
-<P>
-<P>
-&lt;matrix\_list&gt; :- matrices. 
-<P>
-<P>
-<em>matrix_augment</em>sticks the matrices in &lt;matrix\_list&gt; 
-together horizontally. 
-<P>
-<P>
-<em>matrix_stack</em>sticks the matrices in &lt;matrix\_list&gt; 
-together vertically. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p>
+  <em>matrix_stack</em>sticks the matrices in &lt;matrix\_list&gt; together
+  vertically.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 
 matrix_augment({A,A}); 
 
@@ -62,44 +71,58 @@ matrix_stack(A,A);
   [       ]
   [7  8  9]
 
-</tt></pre><p>Related functions: 
+</tt></pre>
+<p>
+  Related functions:
 
-<a href=r38_0550.html#r38_0577>augment_columns</a>, 
-<a href=r38_0600.html#r38_0615>stack_rows</a>, 
-<a href=r38_0600.html#r38_0616>sub_matrix</a>. 
-<P>
-<P>
+  <a href="r38_0550.html#r38_0577">augment_columns</a>,
+  <a href="r38_0600.html#r38_0615">stack_rows</a>,
+  <a href="r38_0600.html#r38_0616">sub_matrix</a>.
+</p>
 
-<a name=r38_0601>
+<p></p>
+<p>
+  <a name="r38_0601"> <title>matrixp</title></a>
+</p>
 
-<title>matrixp</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>MATRIXP</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>matrixp</em>(&lt;test\_input&gt;)
+<p></p>
+<p></p>
+<p>&lt;test\_input&gt; :- anything you like.</p>
 
-<b>MATRIXP</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>matrixp</em>(&lt;test\_input&gt;) 
-<P>
-<P>
-<P>
-&lt;test\_input&gt; :- anything you like. 
-<P>
-<P>
-<em>matrixp</em>is a boolean function that returns t if the input is a 
-matrix and nil otherwise. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p>
+  <em>matrixp</em>is a boolean function that returns t if the input is a matrix
+  and nil otherwise.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 
 matrixp A; 
 
@@ -110,62 +133,85 @@ matrixp(doodlesackbanana);
 
   nil 
 
-</tt></pre><p>Related functions: 
-<a href=r38_0600.html#r38_0614>squarep</a>, 
-<a href=r38_0600.html#r38_0621>symmetricp</a>. 
-<P>
-<P>
+</tt></pre>
+<p>
+  Related functions: <a href="r38_0600.html#r38_0614">squarep</a>,
+  <a href="r38_0600.html#r38_0621">symmetricp</a>.
+</p>
 
-<a name=r38_0602>
+<p></p>
+<p>
+  <a name="r38_0602"> <title>matrix_stack</title></a>
+</p>
 
-<title>matrix_stack</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>MATRIX_STACK</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p>
+  see:
+  <a href="r38_0600.html#r38_0600">matrix_augment</a>.
+</p>
 
+<p></p>
+<p>
+  <a name="r38_0603"> <title>minor</title></a>
+</p>
 
-<b>MATRIX_STACK</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-see: 
-<a href=r38_0600.html#r38_0600>matrix_augment</a>. 
-<P>
-<P>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>MINOR</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
-<a name=r38_0603>
+<p></p>
+<p></p>
 
-<title>minor</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>minor</em>(&lt;matrix&gt;,&lt;r&gt;,&lt;c&gt;)
+<p></p>
+<p></p>
+<p>
+  &lt;matrix&gt; :- a
+  <a href="r38_0300.html#r38_0345">matrix</a>. &lt;r&gt;,&lt;c&gt; :- positive
+  integers.
+</p>
 
+<p></p>
+<p>
+  <em>minor</em>computes the (&lt;r&gt;,&lt;c&gt;)'th minor of &lt;matrix&gt;.
+  This is created by removing the &lt;r&gt;'th row and the &lt;c&gt;'th column
+  from &lt;matrix&gt;.
+</p>
 
-
-<b>MINOR</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>minor</em>(&lt;matrix&gt;,&lt;r&gt;,&lt;c&gt;) 
-<P>
-<P>
-<P>
-&lt;matrix&gt; :- a 
-<a href=r38_0300.html#r38_0345>matrix</a>. 
-&lt;r&gt;,&lt;c&gt; :- positive integers. 
-<P>
-<P>
-<em>minor</em>computes the (&lt;r&gt;,&lt;c&gt;)'th minor of &lt;matrix&gt;. 
-This is created by removing the &lt;r&gt;'th row and the &lt;c&gt;'th 
-column from &lt;matrix&gt;. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 
 minor(A,1,3); 
 
@@ -173,56 +219,71 @@ minor(A,1,3);
   [    ]
   [7  8]
 
-</tt></pre><p>Related functions: 
+</tt></pre>
+<p>
+  Related functions:
 
-<a href=r38_0600.html#r38_0609>remove_columns</a>, 
-<a href=r38_0600.html#r38_0610>remove_rows</a>. 
-<P>
-<P>
+  <a href="r38_0600.html#r38_0609">remove_columns</a>,
+  <a href="r38_0600.html#r38_0610">remove_rows</a>.
+</p>
 
-<a name=r38_0604>
+<p></p>
+<p>
+  <a name="r38_0604"> <title>mult_columns</title></a>
+</p>
 
-<title>mult_columns</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>MULT_COLUMNS</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p>Mult columns, mult rows:</p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>mult_columns</em>(&lt;matrix&gt;,&lt;column\_list&gt;,&lt;expr&gt;)
+<p></p>
+<p></p>
+<p>
+  &lt;matrix&gt; :- a
+  <a href="r38_0300.html#r38_0345">matrix</a>.
+</p>
 
-<b>MULT_COLUMNS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-Mult columns, mult rows: 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>mult_columns</em>(&lt;matrix&gt;,&lt;column\_list&gt;,&lt;expr&gt;) 
-<P>
-<P>
-<P>
-&lt;matrix&gt; :- a 
-<a href=r38_0300.html#r38_0345>matrix</a>. 
-<P>
-<P>
-&lt;column\_list&gt; :- a positive integer or a list of positive 
- integers. 
-<P>
-<P>
-&lt;expr&gt; :- an algebraic expression. 
-<P>
-<P>
-<em>mult_columns</em>returns a copy of &lt;matrix&gt; in which the 
-columns specified in &lt;column\_list&gt; have been multiplied by 
-&lt;expr&gt;. 
-<P>
-<P>
-<em>mult_rows</em>performs the same task on the rows of &lt;matrix&gt;. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p>
+  &lt;column\_list&gt; :- a positive integer or a list of positive integers.
+</p>
+
+<p></p>
+<p>&lt;expr&gt; :- an algebraic expression.</p>
+
+<p></p>
+<p>
+  <em>mult_columns</em>returns a copy of &lt;matrix&gt; in which the columns
+  specified in &lt;column\_list&gt; have been multiplied by &lt;expr&gt;.
+</p>
+
+<p></p>
+<p><em>mult_rows</em>performs the same task on the rows of &lt;matrix&gt;.</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 
 mult_columns(A,{1,3},x); 
 
@@ -242,71 +303,97 @@ mult_rows(A,2,10);
   [          ]
   [7   8   9 ]
 
-</tt></pre><p>Related functions: 
-<a href=r38_0550.html#r38_0575>add_to_columns</a>, 
-<a href=r38_0550.html#r38_0576>add_to_rows</a>. 
-<P>
-<P>
+</tt></pre>
+<p>
+  Related functions: <a href="r38_0550.html#r38_0575">add_to_columns</a>,
+  <a href="r38_0550.html#r38_0576">add_to_rows</a>.
+</p>
 
-<a name=r38_0605>
+<p></p>
+<p>
+  <a name="r38_0605"> <title>mult_rows</title></a>
+</p>
 
-<title>mult_rows</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>MULT_ROWS</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p>
+  see:
+  <a href="r38_0600.html#r38_0604">mult_columns</a>.
+</p>
 
+<p></p>
+<p>
+  <a name="r38_0606"> <title>pivot</title></a>
+</p>
 
-<b>MULT_ROWS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-see: 
-<a href=r38_0600.html#r38_0604>mult_columns</a>. 
-<P>
-<P>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>PIVOT</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
-<a name=r38_0606>
+<p></p>
+<p></p>
 
-<title>pivot</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>pivot</em>(&lt;matrix&gt;,&lt;r&gt;,&lt;c&gt;)
+<p></p>
+<p></p>
+<p>&lt;matrix&gt; :- a matrix.</p>
 
+<p></p>
+<p>
+  &lt;r&gt;,&lt;c&gt; :- positive integers such that &lt;matrix&gt;(&lt;r&gt;,
+  &lt;c&gt;) neq 0.
+</p>
 
+<p></p>
+<p>
+  <em>pivot</em>pivots &lt;matrix&gt; about it's (&lt;r&gt;,&lt;c&gt;)'th entry.
+</p>
 
-<b>PIVOT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>pivot</em>(&lt;matrix&gt;,&lt;r&gt;,&lt;c&gt;) 
-<P>
-<P>
-<P>
-&lt;matrix&gt; :- a matrix. 
-<P>
-<P>
-&lt;r&gt;,&lt;c&gt; :- positive integers such that &lt;matrix&gt;(&lt;r&gt;, 
- &lt;c&gt;) neq 0. 
-<P>
-<P>
-<em>pivot</em>pivots &lt;matrix&gt; about it's (&lt;r&gt;,&lt;c&gt;)'th 
-entry. 
- <P>
-<P>
-To do this, multiples of the &lt;r&gt;'th row are added to every other 
-row in the matrix. 
-<P>
-<P>
-This means that the &lt;c&gt;'th column will be 0 except for the 
-(&lt;r&gt;,&lt;c&gt;)'th entry. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p>
+  To do this, multiples of the &lt;r&gt;'th row are added to every other row in
+  the matrix.
+</p>
+
+<p></p>
+<p>
+  This means that the &lt;c&gt;'th column will be 0 except for the
+  (&lt;r&gt;,&lt;c&gt;)'th entry.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 
 pivot(A,2,3); 
 
@@ -320,52 +407,70 @@ pivot(A,2,3);
   [1    ---    0]
   [      2      ]
 
-</tt></pre><p>Related functions: 
+</tt></pre>
+<p>
+  Related functions:
 
-<a href=r38_0600.html#r38_0612>rows_pivot</a>. 
-<P>
-<P>
+  <a href="r38_0600.html#r38_0612">rows_pivot</a>.
+</p>
 
-<a name=r38_0607>
+<p></p>
+<p>
+  <a name="r38_0607"> <title>pseudo_inverse</title></a>
+</p>
 
-<title>pseudo_inverse</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>PSEUDO_INVERSE</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>pseudo_inverse</em>(&lt;matrix&gt;)
+<p></p>
+<p></p>
+<p>
+  &lt;matrix&gt; :- a
+  <a href="r38_0300.html#r38_0345">matrix</a>.
+</p>
 
-<b>PSEUDO_INVERSE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>pseudo_inverse</em>(&lt;matrix&gt;) 
-<P>
-<P>
-<P>
-&lt;matrix&gt; :- a 
-<a href=r38_0300.html#r38_0345>matrix</a>. 
-<P>
-<P>
-<em>pseudo_inverse</em>, also known as the Moore-Penrose inverse, 
-computes the pseudo inverse of &lt;matrix&gt;. 
-<P>
-<P>
-Given the singular value decomposition of &lt;matrix&gt;, i.e: 
-A = U*P*V^T, then the pseudo inverse A^-1 is defined by 
-A^-1 = V^T*P^-1*U. 
-<P>
-<P>
-Thus &lt;matrix&gt; * pseudo_inverse(A) = Id. 
-(Id is the identity matrix). 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p>
+  <em>pseudo_inverse</em>, also known as the Moore-Penrose inverse, computes the
+  pseudo inverse of &lt;matrix&gt;.
+</p>
+
+<p></p>
+<p>
+  Given the singular value decomposition of &lt;matrix&gt;, i.e: A = U*P*V^T,
+  then the pseudo inverse A^-1 is defined by A^-1 = V^T*P^-1*U.
+</p>
+
+<p></p>
+<p>
+  Thus &lt;matrix&gt; * pseudo_inverse(A) = Id. (Id is the identity matrix).
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 
 R := mat((1,2,3,4),(9,8,7,6)); 
 
@@ -387,66 +492,82 @@ pseudo_inverse(R);
   [                                        ]
   [  0.249999999995      - 0.0500000000148 ]
 
-</tt></pre><p>Related functions: 
-<a href=r38_0600.html#r38_0617>svd</a>. 
-<P>
-<P>
+</tt></pre>
+<p>Related functions: <a href="r38_0600.html#r38_0617">svd</a>.</p>
 
-<a name=r38_0608>
+<p></p>
+<p>
+  <a name="r38_0608"> <title>random_matrix</title></a>
+</p>
 
-<title>random_matrix</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>RANDOM_MATRIX</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>random_matrix</em>(&lt;r&gt;,&lt;c&gt;,&lt;limit&gt;)
+<p></p>
+<p></p>
+<p>&lt;r&gt;,&lt;c&gt;,&lt;limit&gt; :- positive integers.</p>
 
-<b>RANDOM_MATRIX</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>random_matrix</em>(&lt;r&gt;,&lt;c&gt;,&lt;limit&gt;) 
-<P>
-<P>
-<P>
-&lt;r&gt;,&lt;c&gt;,&lt;limit&gt; :- positive integers. 
-<P>
-<P>
-<em>random_matrix</em>creates an &lt;r&gt; by &lt;c&gt; matrix with random 
-entries in the range -limit &lt;entry &lt;limit. 
-<P>
-<P>
-Switches: 
-<P>
-<P>
-<em>imaginary</em>:- if on then matrix entries are x+i*y where -limit &lt;x,y 
- &lt;&lt;limit&gt;. 
-<P>
-<P>
-<em>not_negative</em>:- if on then 0 &lt;entry &lt;&lt;limit&gt;. In the imagina
-ry 
- case we have 0 &lt;x,y &lt;&lt;limit&gt;. 
-<P>
-<P>
-<em>only_integer</em>:- if on then each entry is an integer. In the imaginary 
-		 case x and y are integers. 
-<P>
-<P>
-<em>symmetric</em>:- if on then the matrix is symmetric. 
-<P>
-<P>
-<em>upper_matrix</em>:- if on then the matrix is upper triangular. 
-<P>
-<P>
-<em>lower_matrix</em>:- if on then the matrix is lower triangular. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p>
+  <em>random_matrix</em>creates an &lt;r&gt; by &lt;c&gt; matrix with random
+  entries in the range -limit &lt;entry &lt;limit.
+</p>
+
+<p></p>
+<p>Switches:</p>
+
+<p></p>
+<p>
+  <em>imaginary</em>:- if on then matrix entries are x+i*y where -limit &lt;x,y
+  &lt;&lt;limit&gt;.
+</p>
+
+<p></p>
+<p>
+  <em>not_negative</em>:- if on then 0 &lt;entry &lt;&lt;limit&gt;. In the
+  imagina ry case we have 0 &lt;x,y &lt;&lt;limit&gt;.
+</p>
+
+<p></p>
+<p>
+  <em>only_integer</em>:- if on then each entry is an integer. In the imaginary
+  case x and y are integers.
+</p>
+
+<p></p>
+<p><em>symmetric</em>:- if on then the matrix is symmetric.</p>
+
+<p></p>
+<p><em>upper_matrix</em>:- if on then the matrix is upper triangular.</p>
+
+<p></p>
+<p><em>lower_matrix</em>:- if on then the matrix is lower triangular.</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 
 on rounded; 
 
@@ -472,44 +593,56 @@ random_matrix(4,4,10);
   [                                          ]
   [    0          0          0      5*i + 52 ]
 
-</tt></pre><p>
-<a name=r38_0609>
+</tt></pre>
+<p>
+  <a name="r38_0609"> <title>remove_columns</title></a>
+</p>
 
-<title>remove_columns</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>REMOVE_COLUMNS</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p>Remove columns, remove rows:</p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>remove_columns</em>(&lt;matrix&gt;,&lt;column\_list&gt;)
+<p></p>
+<p></p>
+<p>
+  &lt;matrix&gt; :- a
+  <a href="r38_0300.html#r38_0345">matrix</a>. &lt;column\_list&gt; :- either a
+  positive integer or a list of positive integers.
+</p>
 
-<b>REMOVE_COLUMNS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-Remove columns, remove rows: 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>remove_columns</em>(&lt;matrix&gt;,&lt;column\_list&gt;) 
-<P>
-<P>
-<P>
-&lt;matrix&gt; :- a 
-<a href=r38_0300.html#r38_0345>matrix</a>. 
-&lt;column\_list&gt; :- either a positive integer or a list of positive 
- integers. 
-<P>
-<P>
-<em>remove_columns</em>removes the columns specified in 
-&lt;column\_list&gt; from &lt;matrix&gt;. 
-<P>
-<P>
-<em>remove_rows</em>performs the same task on the rows of &lt;matrix&gt;. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt> 
+<p></p>
+<p>
+  <em>remove_columns</em>removes the columns specified in &lt;column\_list&gt;
+  from &lt;matrix&gt;.
+</p>
+
+<p></p>
+<p><em>remove_rows</em>performs the same task on the rows of &lt;matrix&gt;.</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt> 
 
 remove_columns(A,2); 
 
@@ -525,82 +658,111 @@ remove_rows(A,{1,3});
 
   [4  5  6]
 
-</tt></pre><p>Related functions: 
-<a href=r38_0600.html#r38_0603>minor</a>. 
-<P>
-<P>
+</tt></pre>
+<p>Related functions: <a href="r38_0600.html#r38_0603">minor</a>.</p>
 
-<a name=r38_0610>
+<p></p>
+<p>
+  <a name="r38_0610"> <title>remove_rows</title></a>
+</p>
 
-<title>remove_rows</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>REMOVE_ROWS</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p>
+  see:
+  <a href="r38_0600.html#r38_0609">remove_columns</a>.
+</p>
 
+<p></p>
+<p>
+  <a name="r38_0611"> <title>row_dim</title></a>
+</p>
 
-<b>REMOVE_ROWS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-see: 
-<a href=r38_0600.html#r38_0609>remove_columns</a>. 
-<P>
-<P>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>ROW_DIM</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
-<a name=r38_0611>
+<p></p>
+<p>
+  see:
+  <a href="r38_0550.html#r38_0584">column_dim</a>.
+</p>
 
-<title>row_dim</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p></p>
+<p>
+  <a name="r38_0612"> <title>rows_pivot</title></a>
+</p>
 
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>ROWS_PIVOT</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
-<b>ROW_DIM</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-see: 
-<a href=r38_0550.html#r38_0584>column_dim</a>. 
-<P>
-<P>
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>rows_pivot</em>(&lt;matrix&gt;,&lt;r&gt;,&lt;c&gt;,{&lt;row\_list&gt;})
+<p></p>
+<p></p>
+<p>&lt;matrix&gt; :- a namerefmatrix.</p>
 
-<a name=r38_0612>
+<p></p>
+<p>
+  &lt;r&gt;,&lt;c&gt; :- positive integers such that &lt;matrix&gt;(&lt;r&gt;,
+  &lt;c&gt;) neq 0.
+</p>
 
-<title>rows_pivot</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p></p>
+<p>&lt;row\_list&gt; :- positive integer or a list of positive integers.</p>
 
+<p></p>
+<p>
+  <em>rows_pivot</em>performs the same task as <em>pivot</em> but applies the
+  pivot only to the rows specified in &lt;row\_list&gt;.
+</p>
 
-
-<b>ROWS_PIVOT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>rows_pivot</em>(&lt;matrix&gt;,&lt;r&gt;,&lt;c&gt;,{&lt;row\_list&gt;}) 
-<P>
-<P>
-<P>
-&lt;matrix&gt; :- a namerefmatrix. 
-<P>
-<P>
-&lt;r&gt;,&lt;c&gt; :- positive integers such that &lt;matrix&gt;(&lt;r&gt;, 
- &lt;c&gt;) neq 0. 
-<P>
-<P>
-&lt;row\_list&gt; :- positive integer or a list of positive integers. 
-<P>
-<P>
-<em>rows_pivot</em>performs the same task as <em>pivot</em> but applies 
-the pivot only to the rows specified in &lt;row\_list&gt;. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 
 N := mat((1,2,3),(4,5,6),(7,8,9),(1,2,3),(4,5,6)); 
 
@@ -631,59 +793,71 @@ rows_pivot(N,2,3,{4,5});
   [             ]
   [0     0     0]
 
-</tt></pre><p>Related functions: 
-<a href=r38_0600.html#r38_0606>pivot</a>. 
-<P>
-<P>
+</tt></pre>
+<p>Related functions: <a href="r38_0600.html#r38_0606">pivot</a>.</p>
 
-<a name=r38_0613>
+<p></p>
+<p>
+  <a name="r38_0613"> <title>simplex</title></a>
+</p>
 
-<title>simplex</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>SIMPLEX</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>simplex</em>(&lt;max/min&gt;,&lt;objective function&gt;, {&lt;linear
+inequalities&gt;})
+<p></p>
+<p></p>
+<p>&lt;max/min&gt; :- either max or min (signifying maximize and minimize).</p>
 
-<b>SIMPLEX</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>simplex</em>(&lt;max/min&gt;,&lt;objective function&gt;, 
-{&lt;linear inequalities&gt;}) 
-<P>
-<P>
-<P>
-&lt;max/min&gt; :- either max or min (signifying maximize and 
-			 minimize). 
-<P>
-<P>
-&lt;objective function&gt; :- the function you are maximizing or 
-			 minimizing. 
-<P>
-<P>
-&lt;linear inequalities&gt; :- the constraint inequalities. Each one must 
- be of the form sum of variables ( 
- &lt;=,=,&gt;=) number. 
-<P>
-<P>
-<em>simplex</em>applies the revised simplex algorithm to find the 
-optimal(either maximum or minimum) value of the 
-&lt;objective function&gt; under the linear inequality constraints. 
-<P>
-<P>
-It returns {optimal value,{ values of variables at this optimal}}. 
-<P>
-<P>
-The algorithm implies that all the variables are non-negative. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p>
+  &lt;objective function&gt; :- the function you are maximizing or minimizing.
+</p>
+
+<p></p>
+<p>
+  &lt;linear inequalities&gt; :- the constraint inequalities. Each one must be
+  of the form sum of variables ( &lt;=,=,&gt;=) number.
+</p>
+
+<p></p>
+<p>
+  <em>simplex</em>applies the revised simplex algorithm to find the
+  optimal(either maximum or minimum) value of the &lt;objective function&gt;
+  under the linear inequality constraints.
+</p>
+
+<p></p>
+<p>It returns {optimal value,{ values of variables at this optimal}}.</p>
+
+<p></p>
+<p>The algorithm implies that all the variables are non-negative.</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 
  simplex(max,x+y,{x&gt;=10,y&gt;=20,x+y&lt;=25}); 
 
@@ -698,38 +872,52 @@ simplex(max,10x+5y+5.5z,{5x+3z&lt;=200,x+0.1y+0.5z&lt;=12,
 
   {525.0,{x=40.0,y=25.0,z=0}}
 
-</tt></pre><p>
-<a name=r38_0614>
+</tt></pre>
+<p>
+  <a name="r38_0614"> <title>squarep</title></a>
+</p>
 
-<title>squarep</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>SQUAREP</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>squarep</em>(&lt;matrix&gt;)
+<p></p>
+<p></p>
+<p>
+  &lt;matrix&gt; :- a
+  <a href="r38_0300.html#r38_0345">matrix</a>.
+</p>
 
-<b>SQUAREP</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>squarep</em>(&lt;matrix&gt;) 
-<P>
-<P>
-<P>
-&lt;matrix&gt; :- a 
-<a href=r38_0300.html#r38_0345>matrix</a>. 
-<P>
-<P>
-<em>squarep</em>is a predicate that returns t if the &lt;matrix&gt; is 
-square and nil otherwise. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p>
+  <em>squarep</em>is a predicate that returns t if the &lt;matrix&gt; is square
+  and nil otherwise.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 
 squarep(mat((1,3,5))); 
 
@@ -738,62 +926,84 @@ squarep(mat((1,3,5)));
 
 squarep(A);
 t
-</tt></pre><p>Related functions: 
-<a href=r38_0600.html#r38_0601>matrixp</a>, 
-<a href=r38_0600.html#r38_0621>symmetricp</a>. 
-<P>
-<P>
+</tt></pre>
+<p>
+  Related functions: <a href="r38_0600.html#r38_0601">matrixp</a>,
+  <a href="r38_0600.html#r38_0621">symmetricp</a>.
+</p>
 
-<a name=r38_0615>
+<p></p>
+<p>
+  <a name="r38_0615"> <title>stack_rows</title></a>
+</p>
 
-<title>stack_rows</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>STACK_ROWS</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p>
+  see:
+  <a href="r38_0550.html#r38_0577">augment_columns</a>.
+</p>
 
+<p></p>
+<p>
+  <a name="r38_0616"> <title>sub_matrix</title></a>
+</p>
 
-<b>STACK_ROWS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-see: 
-<a href=r38_0550.html#r38_0577>augment_columns</a>. 
-<P>
-<P>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>SUB_MATRIX</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
-<a name=r38_0616>
+<p></p>
+<p></p>
 
-<title>sub_matrix</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>sub_matrix</em>(&lt;matrix&gt;,&lt;row\_list&gt;,&lt;column\_list&gt;)
+<p></p>
+<p></p>
+<p>
+  &lt;matrix&gt; :- a matrix. &lt;row\_list&gt;, &lt;column\_list&gt; :- either
+  a positive integer or a list of positive integers.
+</p>
 
+<p></p>
+<p>
+  namesub_matrix produces the matrix consisting of the intersection of the rows
+  specified in &lt;row\_list&gt; and the columns specified in
+  &lt;column\_list&gt;.
+</p>
 
-
-<b>SUB_MATRIX</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>sub_matrix</em>(&lt;matrix&gt;,&lt;row\_list&gt;,&lt;column\_list&gt;) 
-<P>
-<P>
-<P>
-&lt;matrix&gt; :- a matrix. 
-&lt;row\_list&gt;, &lt;column\_list&gt; :- either a positive integer or a 
- list of positive integers. 
-<P>
-<P>
-namesub_matrix produces the matrix consisting of the intersection of 
-the rows specified in &lt;row\_list&gt; and the columns specified in 
-&lt;column\_list&gt;. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 
 sub_matrix(A,{1,3},{2,3}); 
 
@@ -801,73 +1011,89 @@ sub_matrix(A,{1,3},{2,3});
   [    ]
   [8  9]
 
-</tt></pre><p>Related functions: 
+</tt></pre>
+<p>
+  Related functions:
 
-<a href=r38_0550.html#r38_0577>augment_columns</a>, 
-<a href=r38_0600.html#r38_0615>stack_rows</a>. 
-<P>
-<P>
+  <a href="r38_0550.html#r38_0577">augment_columns</a>,
+  <a href="r38_0600.html#r38_0615">stack_rows</a>.
+</p>
 
-<a name=r38_0617>
+<p></p>
+<p>
+  <a name="r38_0617"> <title>svd</title></a>
+</p>
 
-<title>svd</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>SVD</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>Singular value decomposition:</p>
 
-<b>SVD</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
-Singular value decomposition: 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>svd</em>(&lt;matrix&gt;) 
-<P>
-<P>
-<P>
-&lt;matrix&gt; :- a 
-<a href=r38_0300.html#r38_0345>matrix</a> containing only numeric entries. 
-<P>
-<P>
-<em>svd</em>computes the singular value decomposition of &lt;matrix&gt;. 
-<P>
-<P>
-It returns 
-<P>
-<P>
-{U,P,V} 
-<P>
-<P>
-where A = U*P*V^T 
-<P>
-<P>
-and P = diag(sigma(1) ... sigma(n)). 
-<P>
-<P>
-sigma(i) for i= 1 ... n are the singular values of 
-&lt;matrix&gt;. 
-<P>
-<P>
-n is the column dimension of &lt;matrix&gt;. 
-<P>
-<P>
-The singular values of &lt;matrix&gt; are the non-negative square roots 
-of the eigenvalues of A^T*A. 
-<P>
-<P>
-U and V are such that U*U^T = V*V^T = V^T*V = Id. 
-Id is the identity matrix. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>svd</em>(&lt;matrix&gt;)
+<p></p>
+<p></p>
+<p>
+  &lt;matrix&gt; :- a
+  <a href="r38_0300.html#r38_0345">matrix</a> containing only numeric entries.
+</p>
+
+<p></p>
+<p><em>svd</em>computes the singular value decomposition of &lt;matrix&gt;.</p>
+
+<p></p>
+<p>It returns</p>
+
+<p></p>
+<p>{U,P,V}</p>
+
+<p></p>
+<p>where A = U*P*V^T</p>
+
+<p></p>
+<p>and P = diag(sigma(1) ... sigma(n)).</p>
+
+<p></p>
+<p>sigma(i) for i= 1 ... n are the singular values of &lt;matrix&gt;.</p>
+
+<p></p>
+<p>n is the column dimension of &lt;matrix&gt;.</p>
+
+<p></p>
+<p>
+  The singular values of &lt;matrix&gt; are the non-negative square roots of the
+  eigenvalues of A^T*A.
+</p>
+
+<p></p>
+<p>
+  U and V are such that U*U^T = V*V^T = V^T*V = Id. Id is the identity matrix.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 
 Q := mat((1,3),(-4,3)); 
 
@@ -895,45 +1121,58 @@ svd(Q);
    [ - 0.726453707825   - 0.687215403194]
   }
 
-</tt></pre><p>
-<a name=r38_0618>
+</tt></pre>
+<p>
+  <a name="r38_0618"> <title>swap_columns</title></a>
+</p>
 
-<title>swap_columns</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>SWAP_COLUMNS</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p>Swap columns, swap rows:</p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>swap_columns</em>(&lt;matrix&gt;,&lt;c1&gt;,&lt;c2&gt;)
+<p></p>
+<p></p>
+<p>
+  &lt;matrix&gt; :- a
+  <a href="r38_0300.html#r38_0345">matrix</a>.
+</p>
 
-<b>SWAP_COLUMNS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-Swap columns, swap rows: 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>swap_columns</em>(&lt;matrix&gt;,&lt;c1&gt;,&lt;c2&gt;) 
-<P>
-<P>
-<P>
-&lt;matrix&gt; :- a 
-<a href=r38_0300.html#r38_0345>matrix</a>. 
-<P>
-<P>
-&lt;c1&gt;,&lt;c1&gt; :- positive integers. 
- <P>
-<P>
-<em>swap_columns</em>swaps column &lt;c1&gt; of &lt;matrix&gt; with 
-column &lt;c2&gt;. 
-<P>
-<P>
-<em>swap_rows</em>performs the same task on two rows of &lt;matrix&gt;. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p>&lt;c1&gt;,&lt;c1&gt; :- positive integers.</p>
+
+<p></p>
+<p>
+  <em>swap_columns</em>swaps column &lt;c1&gt; of &lt;matrix&gt; with column
+  &lt;c2&gt;.
+</p>
+
+<p></p>
+<p><em>swap_rows</em>performs the same task on two rows of &lt;matrix&gt;.</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 
 swap_columns(A,2,3); 
 
@@ -953,46 +1192,59 @@ swap_rows(A,1,3);
   [       ]
   [1  2  3]
 
-</tt></pre><p>Related functions: 
-<a href=r38_0600.html#r38_0619>swap_entries</a>. 
-<P>
-<P>
+</tt></pre>
+<p>Related functions: <a href="r38_0600.html#r38_0619">swap_entries</a>.</p>
 
-<a name=r38_0619>
+<p></p>
+<p>
+  <a name="r38_0619"> <title>swap_entries</title></a>
+</p>
 
-<title>swap_entries</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>SWAP_ENTRIES</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>swap_entries</em>(&lt;matrix&gt;,{&lt;r1&gt;,&lt;c1&gt;},{&lt;r2&gt;,
+&lt;c2&gt;})
+<p></p>
+<p></p>
+<p>
+  &lt;matrix&gt; :- a
+  <a href="r38_0300.html#r38_0345">matrix</a>.
+</p>
 
-<b>SWAP_ENTRIES</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>swap_entries</em>(&lt;matrix&gt;,{&lt;r1&gt;,&lt;c1&gt;},{&lt;r2&gt;, 
-&lt;c2&gt;}) 
-<P>
-<P>
-<P>
-&lt;matrix&gt; :- a 
-<a href=r38_0300.html#r38_0345>matrix</a>. 
-<P>
-<P>
-&lt;r1&gt;,&lt;c1&gt;,&lt;r2&gt;,&lt;c2&gt; :- positive integers. 
-<P>
-<P>
-<em>swap_entries</em>swaps &lt;matrix&gt;(&lt;r1&gt;,&lt;c1&gt;) with 
-&lt;matrix&gt;(&lt;r2&gt;,&lt;c2&gt;). 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p>&lt;r1&gt;,&lt;c1&gt;,&lt;r2&gt;,&lt;c2&gt; :- positive integers.</p>
+
+<p></p>
+<p>
+  <em>swap_entries</em>swaps &lt;matrix&gt;(&lt;r1&gt;,&lt;c1&gt;) with
+  &lt;matrix&gt;(&lt;r2&gt;,&lt;c2&gt;).
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 
 swap_entries(A,{1,1},{3,3}); 
 
@@ -1002,60 +1254,83 @@ swap_entries(A,{1,1},{3,3});
   [       ]
   [7  8  1]
 
-</tt></pre><p>Related functions: 
-<a href=r38_0600.html#r38_0618>swap_columns</a>, 
-<a href=r38_0600.html#r38_0620>swap_rows</a>. 
-<P>
-<P>
+</tt></pre>
+<p>
+  Related functions: <a href="r38_0600.html#r38_0618">swap_columns</a>,
+  <a href="r38_0600.html#r38_0620">swap_rows</a>.
+</p>
 
-<a name=r38_0620>
+<p></p>
+<p>
+  <a name="r38_0620"> <title>swap_rows</title></a>
+</p>
 
-<title>swap_rows</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>SWAP_ROWS</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p>
+  see:
+  <a href="r38_0600.html#r38_0618">swap_columns</a>.
+</p>
 
+<p></p>
+<p>
+  <a name="r38_0621"> <title>symmetricp</title></a>
+</p>
 
-<b>SWAP_ROWS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-see: 
-<a href=r38_0600.html#r38_0618>swap_columns</a>. 
-<P>
-<P>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>SYMMETRICP</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
-<a name=r38_0621>
+<p></p>
+<p></p>
 
-<title>symmetricp</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>symmetricp</em>(&lt;matrix&gt;)
+<p></p>
+<p></p>
+<p>
+  &lt;matrix&gt; :- a
+  <a href="r38_0300.html#r38_0345">matrix</a>.
+</p>
 
+<p></p>
+<p>
+  <em>symmetricp</em>is a predicate that returns t if the matrix is symmetric
+  and nil otherwise.
+</p>
 
-
-<b>SYMMETRICP</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>symmetricp</em>(&lt;matrix&gt;) 
-<P>
-<P>
-<P>
-&lt;matrix&gt; :- a 
-<a href=r38_0300.html#r38_0345>matrix</a>. 
-<P>
-<P>
-<em>symmetricp</em>is a predicate that returns t if the matrix is symmetric 
-and nil otherwise. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 
 symmetricp(make_identity(11)); 
 
@@ -1066,52 +1341,65 @@ symmetricp(A);
 
   nil
 
-</tt></pre><p>Related functions: 
-<a href=r38_0600.html#r38_0601>matrixp</a>, 
-<a href=r38_0600.html#r38_0614>squarep</a>. 
-<P>
-<P>
+</tt></pre>
+<p>
+  Related functions: <a href="r38_0600.html#r38_0601">matrixp</a>,
+  <a href="r38_0600.html#r38_0614">squarep</a>.
+</p>
 
-<a name=r38_0622>
+<p></p>
+<p>
+  <a name="r38_0622"> <title>toeplitz</title></a>
+</p>
 
-<title>toeplitz</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>TOEPLITZ</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>toeplitz</em>(&lt;expr\_list&gt;)
+<p></p>
+<p></p>
+<p>(If you are feeling lazy then the braces can be omitted.)</p>
 
-<b>TOEPLITZ</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>toeplitz</em>(&lt;expr\_list&gt;) 
-<P>
-<P>
-<P>
-(If you are feeling lazy then the braces can be omitted.) 
-<P>
-<P>
-&lt;expr\_list&gt; :- list of algebraic expressions. 
-<P>
-<P>
-<em>toeplitz</em>creates the toeplitz matrix from the &lt;expr\_list&gt;. 
-<P>
-<P>
-This is a square symmetric matrix in which the first expression is 
-placed on the diagonal and the i'th expression is placed on the (i-1)'th 
-sub and super diagonals. 
-<P>
-<P>
-It has dimension n where n is the number of expressions. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p>&lt;expr\_list&gt; :- list of algebraic expressions.</p>
+
+<p></p>
+<p><em>toeplitz</em>creates the toeplitz matrix from the &lt;expr\_list&gt;.</p>
+
+<p></p>
+<p>
+  This is a square symmetric matrix in which the first expression is placed on
+  the diagonal and the i'th expression is placed on the (i-1)'th sub and super
+  diagonals.
+</p>
+
+<p></p>
+<p>It has dimension n where n is the number of expressions.</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 
 toeplitz({w,x,y,z}); 
 
@@ -1123,47 +1411,61 @@ toeplitz({w,x,y,z});
   [          ]
   [z  y  x  w]
 
-</tt></pre><p>
-<a name=r38_0623>
+</tt></pre>
+<p>
+  <a name="r38_0623"> <title>vandermonde</title></a>
+</p>
 
-<title>vandermonde</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>VANDERMONDE</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>vandermonde</em>({&lt;expr\_list&gt;})
+<p></p>
+<p></p>
+<p>(If you are feeling lazy then the braces can be omitted.)</p>
 
-<b>VANDERMONDE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>vandermonde</em>({&lt;expr\_list&gt;}) 
-<P>
-<P>
-<P>
-(If you are feeling lazy then the braces can be omitted.) 
-<P>
-<P>
-&lt;expr\_list&gt; :- list of algebraic expressions. 
-<P>
-<P>
-<em>vandermonde</em>creates the vandermonde matrix from the 
-&lt;expr\_list&gt;. 
-<P>
-<P>
-This is the square matrix in which the (i,j)'th entry is 
-&lt;expr\_list&gt;(i)^(j-1). 
-<P>
-<P>
-It has dimension n where n is the number of expressions. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>             
+<p></p>
+<p>&lt;expr\_list&gt; :- list of algebraic expressions.</p>
+
+<p></p>
+<p>
+  <em>vandermonde</em>creates the vandermonde matrix from the
+  &lt;expr\_list&gt;.
+</p>
+
+<p></p>
+<p>
+  This is the square matrix in which the (i,j)'th entry is
+  &lt;expr\_list&gt;(i)^(j-1).
+</p>
+
+<p></p>
+<p>It has dimension n where n is the number of expressions.</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>             
 vandermonde({x,2*y,3*z}); 
 
 
@@ -1176,101 +1478,516 @@ vandermonde({x,2*y,3*z});
   [           2]
   [1  3*z  9*z ]
 
-</tt></pre><p>
-<a name=r38_0624>
+</tt></pre>
+<p>
+  <a name="r38_0624"> <title>Linear Algebra package</title></a>
+</p>
 
-<title>Linear Algebra package</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
-<b>Linear Algebra package</b><menu>
-<li><a href=r38_0550.html#r38_0571>Linear Algebra package introduction</a><P>
-<li><a href=r38_0550.html#r38_0572>fast_la switch</a><P>
-<li><a href=r38_0550.html#r38_0573>add_columns operator</a><P>
-<li><a href=r38_0550.html#r38_0574>add_rows operator</a><P>
-<li><a href=r38_0550.html#r38_0575>add_to_columns operator</a><P>
-<li><a href=r38_0550.html#r38_0576>add_to_rows operator</a><P>
-<li><a href=r38_0550.html#r38_0577>augment_columns operator</a><P>
-<li><a href=r38_0550.html#r38_0578>band_matrix operator</a><P>
-<li><a href=r38_0550.html#r38_0579>block_matrix operator</a><P>
-<li><a href=r38_0550.html#r38_0580>char_matrix operator</a><P>
-<li><a href=r38_0550.html#r38_0581>char_poly operator</a><P>
-<li><a href=r38_0550.html#r38_0582>cholesky operator</a><P>
-<li><a href=r38_0550.html#r38_0583>coeff_matrix operator</a><P>
-<li><a href=r38_0550.html#r38_0584>column_dim operator</a><P>
-<li><a href=r38_0550.html#r38_0585>companion operator</a><P>
-<li><a href=r38_0550.html#r38_0586>copy_into operator</a><P>
-<li><a href=r38_0550.html#r38_0587>diagonal operator</a><P>
-<li><a href=r38_0550.html#r38_0588>extend operator</a><P>
-<li><a href=r38_0550.html#r38_0589>find_companion operator</a><P>
-<li><a href=r38_0550.html#r38_0590>get_columns operator</a><P>
-<li><a href=r38_0550.html#r38_0591>get_rows operator</a><P>
-<li><a href=r38_0550.html#r38_0592>gram_schmidt operator</a><P>
-<li><a href=r38_0550.html#r38_0593>hermitian_tp operator</a><P>
-<li><a href=r38_0550.html#r38_0594>hessian operator</a><P>
-<li><a href=r38_0550.html#r38_0595>hilbert operator</a><P>
-<li><a href=r38_0550.html#r38_0596>jacobian operator</a><P>
-<li><a href=r38_0550.html#r38_0597>jordan_block operator</a><P>
-<li><a href=r38_0550.html#r38_0598>lu_decom operator</a><P>
-<li><a href=r38_0550.html#r38_0599>make_identity operator</a><P>
-<li><a href=r38_0600.html#r38_0600>matrix_augment operator</a><P>
-<li><a href=r38_0600.html#r38_0601>matrixp operator</a><P>
-<li><a href=r38_0600.html#r38_0602>matrix_stack operator</a><P>
-<li><a href=r38_0600.html#r38_0603>minor operator</a><P>
-<li><a href=r38_0600.html#r38_0604>mult_columns operator</a><P>
-<li><a href=r38_0600.html#r38_0605>mult_rows operator</a><P>
-<li><a href=r38_0600.html#r38_0606>pivot operator</a><P>
-<li><a href=r38_0600.html#r38_0607>pseudo_inverse operator</a><P>
-<li><a href=r38_0600.html#r38_0608>random_matrix operator</a><P>
-<li><a href=r38_0600.html#r38_0609>remove_columns operator</a><P>
-<li><a href=r38_0600.html#r38_0610>remove_rows operator</a><P>
-<li><a href=r38_0600.html#r38_0611>row_dim operator</a><P>
-<li><a href=r38_0600.html#r38_0612>rows_pivot operator</a><P>
-<li><a href=r38_0600.html#r38_0613>simplex operator</a><P>
-<li><a href=r38_0600.html#r38_0614>squarep operator</a><P>
-<li><a href=r38_0600.html#r38_0615>stack_rows operator</a><P>
-<li><a href=r38_0600.html#r38_0616>sub_matrix operator</a><P>
-<li><a href=r38_0600.html#r38_0617>svd operator</a><P>
-<li><a href=r38_0600.html#r38_0618>swap_columns operator</a><P>
-<li><a href=r38_0600.html#r38_0619>swap_entries operator</a><P>
-<li><a href=r38_0600.html#r38_0620>swap_rows operator</a><P>
-<li><a href=r38_0600.html#r38_0621>symmetricp operator</a><P>
-<li><a href=r38_0600.html#r38_0622>toeplitz operator</a><P>
-<li><a href=r38_0600.html#r38_0623>vandermonde operator</a><P>
-</menu>
-<a name=r38_0625>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p>
+  <b>Linear Algebra package</b
+  ><menu>
+    <li>
+      <a href="r38_0550.html#r38_0571">Linear Algebra package introduction</a>
+      <p>
+        <li>
+          <a href="r38_0550.html#r38_0572">fast_la switch</a>
+          <p>
+            <li>
+              <a href="r38_0550.html#r38_0573">add_columns operator</a>
+              <p>
+                <li>
+                  <a href="r38_0550.html#r38_0574">add_rows operator</a>
+                  <p>
+                    <li>
+                      <a href="r38_0550.html#r38_0575"
+                        >add_to_columns operator</a
+                      >
+                      <p>
+                        <li>
+                          <a href="r38_0550.html#r38_0576"
+                            >add_to_rows operator</a
+                          >
+                          <p>
+                            <li>
+                              <a href="r38_0550.html#r38_0577"
+                                >augment_columns operator</a
+                              >
+                              <p>
+                                <li>
+                                  <a href="r38_0550.html#r38_0578"
+                                    >band_matrix operator</a
+                                  >
+                                  <p>
+                                    <li>
+                                      <a href="r38_0550.html#r38_0579"
+                                        >block_matrix operator</a
+                                      >
+                                      <p>
+                                        <li>
+                                          <a href="r38_0550.html#r38_0580"
+                                            >char_matrix operator</a
+                                          >
+                                          <p>
+                                            <li>
+                                              <a href="r38_0550.html#r38_0581"
+                                                >char_poly operator</a
+                                              >
+                                              <p>
+                                                <li>
+                                                  <a
+                                                    href="r38_0550.html#r38_0582"
+                                                    >cholesky operator</a
+                                                  >
+                                                  <p>
+                                                    <li>
+                                                      <a
+                                                        href="r38_0550.html#r38_0583"
+                                                        >coeff_matrix
+                                                        operator</a
+                                                      >
+                                                      <p>
+                                                        <li>
+                                                          <a
+                                                            href="r38_0550.html#r38_0584"
+                                                            >column_dim
+                                                            operator</a
+                                                          >
+                                                          <p>
+                                                            <li>
+                                                              <a
+                                                                href="r38_0550.html#r38_0585"
+                                                                >companion
+                                                                operator</a
+                                                              >
+                                                              <p>
+                                                                <li>
+                                                                  <a
+                                                                    href="r38_0550.html#r38_0586"
+                                                                    >copy_into
+                                                                    operator</a
+                                                                  >
+                                                                  <p>
+                                                                    <li>
+                                                                      <a
+                                                                        href="r38_0550.html#r38_0587"
+                                                                        >diagonal
+                                                                        operator</a
+                                                                      >
+                                                                      <p>
+                                                                        <li>
+                                                                          <a
+                                                                            href="r38_0550.html#r38_0588"
+                                                                            >extend
+                                                                            operator</a
+                                                                          >
+                                                                          <p>
+                                                                            <li>
+                                                                              <a
+                                                                                href="r38_0550.html#r38_0589"
+                                                                                >find_companion
+                                                                                operator</a
+                                                                              >
+                                                                              <p>
+                                                                                <li>
+                                                                                  <a
+                                                                                    href="r38_0550.html#r38_0590"
+                                                                                    >get_columns
+                                                                                    operator</a
+                                                                                  >
+                                                                                  <p>
+                                                                                    <li>
+                                                                                      <a
+                                                                                        href="r38_0550.html#r38_0591"
+                                                                                        >get_rows
+                                                                                        operator</a
+                                                                                      >
+                                                                                      <p>
+                                                                                        <li>
+                                                                                          <a
+                                                                                            href="r38_0550.html#r38_0592"
+                                                                                            >gram_schmidt
+                                                                                            operator</a
+                                                                                          >
+                                                                                          <p>
+                                                                                            <li>
+                                                                                              <a
+                                                                                                href="r38_0550.html#r38_0593"
+                                                                                                >hermitian_tp
+                                                                                                operator</a
+                                                                                              >
+                                                                                              <p>
+                                                                                                <li>
+                                                                                                  <a
+                                                                                                    href="r38_0550.html#r38_0594"
+                                                                                                    >hessian
+                                                                                                    operator</a
+                                                                                                  >
+                                                                                                  <p>
+                                                                                                    <li>
+                                                                                                      <a
+                                                                                                        href="r38_0550.html#r38_0595"
+                                                                                                        >hilbert
+                                                                                                        operator</a
+                                                                                                      >
+                                                                                                      <p>
+                                                                                                        <li>
+                                                                                                          <a
+                                                                                                            href="r38_0550.html#r38_0596"
+                                                                                                            >jacobian
+                                                                                                            operator</a
+                                                                                                          >
+                                                                                                          <p>
+                                                                                                            <li>
+                                                                                                              <a
+                                                                                                                href="r38_0550.html#r38_0597"
+                                                                                                                >jordan_block
+                                                                                                                operator</a
+                                                                                                              >
+                                                                                                              <p>
+                                                                                                                <li>
+                                                                                                                  <a
+                                                                                                                    href="r38_0550.html#r38_0598"
+                                                                                                                    >lu_decom
+                                                                                                                    operator</a
+                                                                                                                  >
+                                                                                                                  <p>
+                                                                                                                    <li>
+                                                                                                                      <a
+                                                                                                                        href="r38_0550.html#r38_0599"
+                                                                                                                        >make_identity
+                                                                                                                        operator</a
+                                                                                                                      >
+                                                                                                                      <p>
+                                                                                                                        <li>
+                                                                                                                          <a
+                                                                                                                            href="r38_0600.html#r38_0600"
+                                                                                                                            >matrix_augment
+                                                                                                                            operator</a
+                                                                                                                          >
+                                                                                                                          <p>
+                                                                                                                            <li>
+                                                                                                                              <a
+                                                                                                                                href="r38_0600.html#r38_0601"
+                                                                                                                                >matrixp
+                                                                                                                                operator</a
+                                                                                                                              >
+                                                                                                                              <p>
+                                                                                                                                <li>
+                                                                                                                                  <a
+                                                                                                                                    href="r38_0600.html#r38_0602"
+                                                                                                                                    >matrix_stack
+                                                                                                                                    operator</a
+                                                                                                                                  >
+                                                                                                                                  <p>
+                                                                                                                                    <li>
+                                                                                                                                      <a
+                                                                                                                                        href="r38_0600.html#r38_0603"
+                                                                                                                                        >minor
+                                                                                                                                        operator</a
+                                                                                                                                      >
+                                                                                                                                      <p>
+                                                                                                                                        <li>
+                                                                                                                                          <a
+                                                                                                                                            href="r38_0600.html#r38_0604"
+                                                                                                                                            >mult_columns
+                                                                                                                                            operator</a
+                                                                                                                                          >
+                                                                                                                                          <p>
+                                                                                                                                            <li>
+                                                                                                                                              <a
+                                                                                                                                                href="r38_0600.html#r38_0605"
+                                                                                                                                                >mult_rows
+                                                                                                                                                operator</a
+                                                                                                                                              >
+                                                                                                                                              <p>
+                                                                                                                                                <li>
+                                                                                                                                                  <a
+                                                                                                                                                    href="r38_0600.html#r38_0606"
+                                                                                                                                                    >pivot
+                                                                                                                                                    operator</a
+                                                                                                                                                  >
+                                                                                                                                                  <p>
+                                                                                                                                                    <li>
+                                                                                                                                                      <a
+                                                                                                                                                        href="r38_0600.html#r38_0607"
+                                                                                                                                                        >pseudo_inverse
+                                                                                                                                                        operator</a
+                                                                                                                                                      >
+                                                                                                                                                      <p>
+                                                                                                                                                        <li>
+                                                                                                                                                          <a
+                                                                                                                                                            href="r38_0600.html#r38_0608"
+                                                                                                                                                            >random_matrix
+                                                                                                                                                            operator</a
+                                                                                                                                                          >
+                                                                                                                                                          <p>
+                                                                                                                                                            <li>
+                                                                                                                                                              <a
+                                                                                                                                                                href="r38_0600.html#r38_0609"
+                                                                                                                                                                >remove_columns
+                                                                                                                                                                operator</a
+                                                                                                                                                              >
+                                                                                                                                                              <p>
+                                                                                                                                                                <li>
+                                                                                                                                                                  <a
+                                                                                                                                                                    href="r38_0600.html#r38_0610"
+                                                                                                                                                                    >remove_rows
+                                                                                                                                                                    operator</a
+                                                                                                                                                                  >
+                                                                                                                                                                  <p>
+                                                                                                                                                                    <li>
+                                                                                                                                                                      <a
+                                                                                                                                                                        href="r38_0600.html#r38_0611"
+                                                                                                                                                                        >row_dim
+                                                                                                                                                                        operator</a
+                                                                                                                                                                      >
+                                                                                                                                                                      <p>
+                                                                                                                                                                        <li>
+                                                                                                                                                                          <a
+                                                                                                                                                                            href="r38_0600.html#r38_0612"
+                                                                                                                                                                            >rows_pivot
+                                                                                                                                                                            operator</a
+                                                                                                                                                                          >
+                                                                                                                                                                          <p>
+                                                                                                                                                                            <li>
+                                                                                                                                                                              <a
+                                                                                                                                                                                href="r38_0600.html#r38_0613"
+                                                                                                                                                                                >simplex
+                                                                                                                                                                                operator</a
+                                                                                                                                                                              >
+                                                                                                                                                                              <p>
+                                                                                                                                                                                <li>
+                                                                                                                                                                                  <a
+                                                                                                                                                                                    href="r38_0600.html#r38_0614"
+                                                                                                                                                                                    >squarep
+                                                                                                                                                                                    operator</a
+                                                                                                                                                                                  >
+                                                                                                                                                                                  <p>
+                                                                                                                                                                                    <li>
+                                                                                                                                                                                      <a
+                                                                                                                                                                                        href="r38_0600.html#r38_0615"
+                                                                                                                                                                                        >stack_rows
+                                                                                                                                                                                        operator</a
+                                                                                                                                                                                      >
+                                                                                                                                                                                      <p>
+                                                                                                                                                                                        <li>
+                                                                                                                                                                                          <a
+                                                                                                                                                                                            href="r38_0600.html#r38_0616"
+                                                                                                                                                                                            >sub_matrix
+                                                                                                                                                                                            operator</a
+                                                                                                                                                                                          >
+                                                                                                                                                                                          <p>
+                                                                                                                                                                                            <li>
+                                                                                                                                                                                              <a
+                                                                                                                                                                                                href="r38_0600.html#r38_0617"
+                                                                                                                                                                                                >svd
+                                                                                                                                                                                                operator</a
+                                                                                                                                                                                              >
+                                                                                                                                                                                              <p>
+                                                                                                                                                                                                <li>
+                                                                                                                                                                                                  <a
+                                                                                                                                                                                                    href="r38_0600.html#r38_0618"
+                                                                                                                                                                                                    >swap_columns
+                                                                                                                                                                                                    operator</a
+                                                                                                                                                                                                  >
+                                                                                                                                                                                                  <p>
+                                                                                                                                                                                                    <li>
+                                                                                                                                                                                                      <a
+                                                                                                                                                                                                        href="r38_0600.html#r38_0619"
+                                                                                                                                                                                                        >swap_entries
+                                                                                                                                                                                                        operator</a
+                                                                                                                                                                                                      >
+                                                                                                                                                                                                      <p>
+                                                                                                                                                                                                        <li>
+                                                                                                                                                                                                          <a
+                                                                                                                                                                                                            href="r38_0600.html#r38_0620"
+                                                                                                                                                                                                            >swap_rows
+                                                                                                                                                                                                            operator</a
+                                                                                                                                                                                                          >
+                                                                                                                                                                                                          <p>
+                                                                                                                                                                                                            <li>
+                                                                                                                                                                                                              <a
+                                                                                                                                                                                                                href="r38_0600.html#r38_0621"
+                                                                                                                                                                                                                >symmetricp
+                                                                                                                                                                                                                operator</a
+                                                                                                                                                                                                              >
+                                                                                                                                                                                                              <p>
+                                                                                                                                                                                                                <li>
+                                                                                                                                                                                                                  <a
+                                                                                                                                                                                                                    href="r38_0600.html#r38_0622"
+                                                                                                                                                                                                                    >toeplitz
+                                                                                                                                                                                                                    operator</a
+                                                                                                                                                                                                                  >
+                                                                                                                                                                                                                  <p>
+                                                                                                                                                                                                                    <li>
+                                                                                                                                                                                                                      <a
+                                                                                                                                                                                                                        href="r38_0600.html#r38_0623"
+                                                                                                                                                                                                                        >vandermonde
+                                                                                                                                                                                                                        operator</a
+                                                                                                                                                                                                                      >
+                                                                                                                                                                                                                      <p></p>
+                                                                                                                                                                                                                    </li>
+                                                                                                                                                                                                                  </p>
+                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                              </p>
+                                                                                                                                                                                                            </li>
+                                                                                                                                                                                                          </p>
+                                                                                                                                                                                                        </li>
+                                                                                                                                                                                                      </p>
+                                                                                                                                                                                                    </li>
+                                                                                                                                                                                                  </p>
+                                                                                                                                                                                                </li>
+                                                                                                                                                                                              </p>
+                                                                                                                                                                                            </li>
+                                                                                                                                                                                          </p>
+                                                                                                                                                                                        </li>
+                                                                                                                                                                                      </p>
+                                                                                                                                                                                    </li>
+                                                                                                                                                                                  </p>
+                                                                                                                                                                                </li>
+                                                                                                                                                                              </p>
+                                                                                                                                                                            </li>
+                                                                                                                                                                          </p>
+                                                                                                                                                                        </li>
+                                                                                                                                                                      </p>
+                                                                                                                                                                    </li>
+                                                                                                                                                                  </p>
+                                                                                                                                                                </li>
+                                                                                                                                                              </p>
+                                                                                                                                                            </li>
+                                                                                                                                                          </p>
+                                                                                                                                                        </li>
+                                                                                                                                                      </p>
+                                                                                                                                                    </li>
+                                                                                                                                                  </p>
+                                                                                                                                                </li>
+                                                                                                                                              </p>
+                                                                                                                                            </li>
+                                                                                                                                          </p>
+                                                                                                                                        </li>
+                                                                                                                                      </p>
+                                                                                                                                    </li>
+                                                                                                                                  </p>
+                                                                                                                                </li>
+                                                                                                                              </p>
+                                                                                                                            </li>
+                                                                                                                          </p>
+                                                                                                                        </li>
+                                                                                                                      </p>
+                                                                                                                    </li>
+                                                                                                                  </p>
+                                                                                                                </li>
+                                                                                                              </p>
+                                                                                                            </li>
+                                                                                                          </p>
+                                                                                                        </li>
+                                                                                                      </p>
+                                                                                                    </li>
+                                                                                                  </p>
+                                                                                                </li>
+                                                                                              </p>
+                                                                                            </li>
+                                                                                          </p>
+                                                                                        </li>
+                                                                                      </p>
+                                                                                    </li>
+                                                                                  </p>
+                                                                                </li>
+                                                                              </p>
+                                                                            </li>
+                                                                          </p>
+                                                                        </li>
+                                                                      </p>
+                                                                    </li>
+                                                                  </p>
+                                                                </li>
+                                                              </p>
+                                                            </li>
+                                                          </p>
+                                                        </li>
+                                                      </p>
+                                                    </li>
+                                                  </p>
+                                                </li>
+                                              </p>
+                                            </li>
+                                          </p>
+                                        </li>
+                                      </p>
+                                    </li>
+                                  </p>
+                                </li>
+                              </p>
+                            </li>
+                          </p>
+                        </li>
+                      </p>
+                    </li>
+                  </p>
+                </li>
+              </p>
+            </li>
+          </p>
+        </li>
+      </p></li
+  ></menu>
 
-<title>Smithex</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+  <a name="r38_0625"> <title>Smithex</title></a>
+</p>
 
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>SMITHEX</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p>
+  The operator <em>smithex</em> computes the Smith normal form S of a
 
-<b>SMITHEX</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-The operator <em>smithex</em> computes the Smith normal form S of a 
+  <a href="r38_0300.html#r38_0345">matrix</a> A (say). It returns {S,P,P^-1}
+  where P *S*P^-1 = A.
+</p>
 
-<a href=r38_0300.html#r38_0345>matrix</a> A (say). It returns {S,P,P^-1} where P
-*S*P^-1 = A. 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>smithex</em>(&lt;matrix&gt;,&lt;variable&gt;) 
-<P>
-<P>
-&lt;matrix&gt; :- a rectangular 
-<a href=r38_0300.html#r38_0345>matrix</a> of univariate polynomials in 
- &lt;variable&gt;. 
-&lt;variable&gt; :- the variable. 
-<P>
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>smithex</em>(&lt;matrix&gt;,&lt;variable&gt;)
+<p></p>
+<p>
+  &lt;matrix&gt; :- a rectangular
+  <a href="r38_0300.html#r38_0345">matrix</a> of univariate polynomials in
+  &lt;variable&gt;. &lt;variable&gt; :- the variable.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
  a := mat((x,x+1),(0,3*x^2)); 
 
         [x  x + 1]
@@ -1287,39 +2004,52 @@ examples: </H3>
      [    3]    [   2  ]    [         ]
      [0  x ]    [3*x  1]    [-3    -3 ]
 
-</tt></pre><p>
-<a name=r38_0626>
+</tt></pre>
+<p>
+  <a name="r38_0626"> <title>Smithex_int</title></a>
+</p>
 
-<title>Smithex_int</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>SMITHEX\_INT</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p>
+  The operator <em>smithex_int</em> performs the same task as <em>smithex</em>
+  but on matrices containing only integer entries. Namely,
+  <em>smithex_int</em> returns {S,P,P^-1} where S is the smith normal form of
+  the input <a href="r38_0300.html#r38_0345">matrix</a> (A say), and P*S*P^-1 =
+  A.
+</p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>smithex_int</em>(&lt;matrix&gt;)
+<p></p>
+<p>
+  &lt;matrix&gt; :- a rectangular
+  <a href="r38_0300.html#r38_0345">matrix</a> of integer entries.
+</p>
 
-<b>SMITHEX\_INT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-The operator <em>smithex_int</em> performs the same task as <em>smithex</em> 
-but on matrices containing only integer entries. Namely, 
-<em>smithex_int</em> returns {S,P,P^-1} where S is the smith normal 
-form of the input 
-<a href=r38_0300.html#r38_0345>matrix</a> (A say), and P*S*P^-1 = A. 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>smithex_int</em>(&lt;matrix&gt;) 
-<P>
-<P>
-&lt;matrix&gt; :- a rectangular 
-<a href=r38_0300.html#r38_0345>matrix</a> of integer entries. 
-<P>
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
  a := mat((9,-36,30),(-36,192,-180),(30,-180,180)); 
 
 
@@ -1339,61 +2069,78 @@ examples: </H3>
     [         ]    [             ]    [            ] 
     [0  0   60]    [-50  -15  -12]    [0   -1    1 ] 
 
-</tt></pre><p>
-<a name=r38_0627>
+</tt></pre>
+<p>
+  <a name="r38_0627"> <title>Frobenius</title></a>
+</p>
 
-<title>Frobenius</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>FROBENIUS</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p>
+  The operator <em>frobenius</em> computes the <em>frobenius</em> normal form F
+  of a
 
+  <a href="r38_0300.html#r38_0345">matrix</a> (A say). It returns {F,P,P^-1}
+  where P *F*P^-1 = A.
+</p>
 
-<b>FROBENIUS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-The operator <em>frobenius</em> computes the <em>frobenius</em> normal form F of
- a 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>frobenius</em>(&lt;matrix&gt;)
+<p></p>
+<p>
+  &lt;matrix&gt; :- a square
+  <a href="r38_0300.html#r38_0345">matrix</a>.
+</p>
 
-<a href=r38_0300.html#r38_0345>matrix</a> (A say). It returns {F,P,P^-1} where P
-*F*P^-1 = A. 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>frobenius</em>(&lt;matrix&gt;) 
-<P>
-<P>
-&lt;matrix&gt; :- a square 
-<a href=r38_0300.html#r38_0345>matrix</a>. 
-<P>
-<P>
-<P>
-Field Extensions: 
-<P>
-<P>
-By default, calculations are performed in the rational numbers. To 
-extend this field the 
-<a href=r38_0600.html#r38_0635>arnum</a> package can be used. The package must 
-first be loaded by load_package arnum;. The field can now be extended 
-by using the defpoly command. For example, defpoly sqrt2**2-2; will 
-extend the field to include the square root of 2 (now defined by sqrt2). 
-<P>
-<P>
-Modular Arithmetic: 
-<P>
-<P>
-<em>Frobenius</em>can also be calculated in a modular base. To do this 
-first type on modular;. Then setmod p; (where p is a prime) will set 
-the modular base of calculation to p. By further typing on balanced_mod 
-the answer will appear using a symmetric modular representation. See 
+<p></p>
+<p></p>
+<p>Field Extensions:</p>
 
-<a href=r38_0600.html#r38_0628>ratjordan</a> for an example. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p>
+  By default, calculations are performed in the rational numbers. To extend this
+  field the
+  <a href="r38_0600.html#r38_0635">arnum</a> package can be used. The package
+  must first be loaded by load_package arnum;. The field can now be extended by
+  using the defpoly command. For example, defpoly sqrt2**2-2; will extend the
+  field to include the square root of 2 (now defined by sqrt2).
+</p>
+
+<p></p>
+<p>Modular Arithmetic:</p>
+
+<p></p>
+<p>
+  <em>Frobenius</em>can also be calculated in a modular base. To do this first
+  type on modular;. Then setmod p; (where p is a prime) will set the modular
+  base of calculation to p. By further typing on balanced_mod the answer will
+  appear using a symmetric modular representation. See
+
+  <a href="r38_0600.html#r38_0628">ratjordan</a> for an example.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
  a := mat((x,x^2),(3,5*x)); 
 
        [    2 ]
@@ -1436,59 +2183,74 @@ examples: </H3>
                                          [0   ----*sqrt2]
                                          [     14       ]
 
-</tt></pre><p>
-<a name=r38_0628>
+</tt></pre>
+<p>
+  <a name="r38_0628"> <title>Ratjordan</title></a>
+</p>
 
-<title>Ratjordan</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>RATJORDAN</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p>
+  The operator <em>ratjordan</em> computes the rational Jordan normal form R of
+  a <a href="r38_0300.html#r38_0345">matrix</a> (A say). It returns {R,P,P^-1}
+  where P *R*P^-1 = A.
+</p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>ratjordan</em>(&lt;matrix&gt;)
+<p></p>
+<p>
+  &lt;matrix&gt; :- a square
+  <a href="r38_0300.html#r38_0345">matrix</a>.
+</p>
 
-<b>RATJORDAN</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-The operator <em>ratjordan</em> computes the rational Jordan normal form R 
-of a 
-<a href=r38_0300.html#r38_0345>matrix</a> (A say). It returns {R,P,P^-1} where P
-*R*P^-1 = A. 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>ratjordan</em>(&lt;matrix&gt;) 
-<P>
-<P>
-&lt;matrix&gt; :- a square 
-<a href=r38_0300.html#r38_0345>matrix</a>. 
-<P>
-<P>
-<P>
-Field Extensions: 
-<P>
-<P>
-By default, calculations are performed in the rational numbers. To 
-extend this field the <em>arnum</em> package can be used. The package must 
-first be loaded by load_package arnum;. The field can now be extended 
-by using the defpoly command. For example, defpoly sqrt2**2-2; will 
-extend the field to include the square root of 2 (now defined by sqrt2). 
-See 
-<a href=r38_0600.html#r38_0627>frobenius</a> for an example. 
-<P>
-<P>
-Modular Arithmetic: 
-<P>
-<P>
-<em>ratjordan</em>can also be calculated in a modular base. To do this 
-first type on modular;. Then setmod p; (where p is a prime) will set 
-the modular base of calculation to p. By further typing on balanced_mod 
-the answer will appear using a symmetric modular representation. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p>Field Extensions:</p>
+
+<p></p>
+<p>
+  By default, calculations are performed in the rational numbers. To extend this
+  field the <em>arnum</em> package can be used. The package must first be loaded
+  by load_package arnum;. The field can now be extended by using the defpoly
+  command. For example, defpoly sqrt2**2-2; will extend the field to include the
+  square root of 2 (now defined by sqrt2). See
+  <a href="r38_0600.html#r38_0627">frobenius</a> for an example.
+</p>
+
+<p></p>
+<p>Modular Arithmetic:</p>
+
+<p></p>
+<p>
+  <em>ratjordan</em>can also be calculated in a modular base. To do this first
+  type on modular;. Then setmod p; (where p is a prime) will set the modular
+  base of calculation to p. By further typing on balanced_mod the answer will
+  appear using a symmetric modular representation.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
  a := mat((5,4*x),(2,x^2));
 
        [5  4*x]
@@ -1537,64 +2299,78 @@ examples: </H3>
   { [      ],  [       ],  [      ]  }
     [ 0   6]   [ - 4  4]   [1   4 ]
 
-</tt></pre><p>
-<a name=r38_0629>
+</tt></pre>
+<p>
+  <a name="r38_0629"> <title>Jordansymbolic</title></a>
+</p>
 
-<title>Jordansymbolic</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>JORDANSYMBOLIC</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p>
+  The operator <em>jordansymbolic</em> computes the Jordan normal form J of a
+  <a href="r38_0300.html#r38_0345">matrix</a> (A say). It returns {J,L,P,P^-1}
+  where P*J*P^-1 = A. L = {ll,mm} where mm is a name and ll is a list of
+  irreducible factors of p(mm).
+</p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>jordansymbolic</em>(&lt;matrix&gt;)
+<p></p>
+<p>
+  &lt;matrix&gt; :- a square
+  <a href="r38_0300.html#r38_0345">matrix</a>.
+</p>
 
-<b>JORDANSYMBOLIC</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-The operator <em>jordansymbolic</em> computes the Jordan normal form J 
-of a 
-<a href=r38_0300.html#r38_0345>matrix</a> (A say). It returns {J,L,P,P^-1} where
- 
-P*J*P^-1 = A. L = {ll,mm} where mm is a name and ll is a list of 
-irreducible factors of p(mm). 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>jordansymbolic</em>(&lt;matrix&gt;) 
-<P>
-<P>
-&lt;matrix&gt; :- a square 
-<a href=r38_0300.html#r38_0345>matrix</a>. 
-<P>
-<P>
-<P>
-Field Extensions: 
-<P>
-<P>
-By default, calculations are performed in the rational numbers. To 
-extend this field the 
-<a href=r38_0600.html#r38_0635>arnum</a> package can be used. The package must 
-first be loaded by load_package arnum;. The field can now be extended 
-by using the defpoly command. For example, defpoly sqrt2**2-2; will 
-extend the field to include the square root of 2 (now defined by sqrt2). 
-See 
-<a href=r38_0600.html#r38_0627>frobenius</a> for an example. 
-<P>
-<P>
-Modular Arithmetic: 
-<P>
-<P>
-<em>jordansymbolic</em>can also be calculated in a modular base. To do this 
-first type on modular;. Then setmod p; (where p is a prime) will set 
-the modular base of calculation to p. By further typing on balanced_mod 
-the answer will appear using a symmetric modular representation. See 
+<p></p>
+<p></p>
+<p>Field Extensions:</p>
 
-<a href=r38_0600.html#r38_0628>ratjordan</a> for an example. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p>
+  By default, calculations are performed in the rational numbers. To extend this
+  field the
+  <a href="r38_0600.html#r38_0635">arnum</a> package can be used. The package
+  must first be loaded by load_package arnum;. The field can now be extended by
+  using the defpoly command. For example, defpoly sqrt2**2-2; will extend the
+  field to include the square root of 2 (now defined by sqrt2). See
+  <a href="r38_0600.html#r38_0627">frobenius</a> for an example.
+</p>
+
+<p></p>
+<p>Modular Arithmetic:</p>
+
+<p></p>
+<p>
+  <em>jordansymbolic</em>can also be calculated in a modular base. To do this
+  first type on modular;. Then setmod p; (where p is a prime) will set the
+  modular base of calculation to p. By further typing on balanced_mod the answer
+  will appear using a symmetric modular representation. See
+
+  <a href="r38_0600.html#r38_0628">ratjordan</a> for an example.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 
  a := mat((1,y),(2,5*y)); 
 
@@ -1628,57 +2404,71 @@ examples: </H3>
    [   25*y  - 2*y + 1             2*(25*y  - 2*y + 1)       ]
    }
 
-</tt></pre><p>
-<a name=r38_0630>
+</tt></pre>
+<p>
+  <a name="r38_0630"> <title>Jordan</title></a>
+</p>
 
-<title>Jordan</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>JORDAN</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p>
+  The operator <em>jordan</em> computes the Jordan normal form J of a
+  <a href="r38_0300.html#r38_0345">matrix</a> (A say). It returns {J,P,P^-1}
+  where P *J*P^-1 = A.
+</p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>jordan</em>(&lt;matrix&gt;)
+<p></p>
+<p>
+  &lt;matrix&gt; :- a square
+  <a href="r38_0300.html#r38_0345">matrix</a>.
+</p>
 
-<b>JORDAN</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-The operator <em>jordan</em> computes the Jordan normal form J 
-of a 
-<a href=r38_0300.html#r38_0345>matrix</a> (A say). It returns {J,P,P^-1} where P
-*J*P^-1 = A. 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>jordan</em>(&lt;matrix&gt;) 
-<P>
-<P>
-&lt;matrix&gt; :- a square 
-<a href=r38_0300.html#r38_0345>matrix</a>. 
-<P>
-<P>
-<P>
-Field Extensions: 
-By default, calculations are performed in the rational numbers. To 
-extend this field the <em>arnum</em> package can be used. The package must 
-first be loaded by load_package arnum;. The field can now be extended 
-by using the defpoly command. For example, defpoly sqrt2**2-2; will 
-extend the field to include the square root of 2 (now defined by sqrt2). 
-See 
-<a href=r38_0600.html#r38_0627>frobenius</a> for an example. 
-<P>
-<P>
-Modular Arithmetic: 
-<em>Jordan</em> can also be calculated in a modular base. To do this 
-first type on modular;. Then setmod p; (where p is a prime) will set 
-the modular base of calculation to p. By further typing on balanced_mod 
-the answer will appear using a symmetric modular representation. See 
+<p></p>
+<p></p>
+<p>
+  Field Extensions: By default, calculations are performed in the rational
+  numbers. To extend this field the <em>arnum</em> package can be used. The
+  package must first be loaded by load_package arnum;. The field can now be
+  extended by using the defpoly command. For example, defpoly sqrt2**2-2; will
+  extend the field to include the square root of 2 (now defined by sqrt2). See
+  <a href="r38_0600.html#r38_0627">frobenius</a> for an example.
+</p>
 
-<a href=r38_0600.html#r38_0628>ratjordan</a> for an example. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p>
+  Modular Arithmetic:
+  <em>Jordan</em> can also be calculated in a modular base. To do this first
+  type on modular;. Then setmod p; (where p is a prime) will set the modular
+  base of calculation to p. By further typing on balanced_mod the answer will
+  appear using a symmetric modular representation. See
+
+  <a href="r38_0600.html#r38_0628">ratjordan</a> for an example.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 
  a := mat((1,x),(0,x)); 
 
@@ -1709,494 +2499,697 @@ examples: </H3>
    [  0    x - 1]
    }
 
-</tt></pre><p>
-<a name=r38_0631>
+</tt></pre>
+<p>
+  <a name="r38_0631"> <title>Matrix Normal Forms</title></a>
+</p>
 
-<title>Matrix Normal Forms</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
-<b>Matrix Normal Forms</b><menu>
-<li><a href=r38_0600.html#r38_0625>Smithex operator</a><P>
-<li><a href=r38_0600.html#r38_0626>Smithex\_int operator</a><P>
-<li><a href=r38_0600.html#r38_0627>Frobenius operator</a><P>
-<li><a href=r38_0600.html#r38_0628>Ratjordan operator</a><P>
-<li><a href=r38_0600.html#r38_0629>Jordansymbolic operator</a><P>
-<li><a href=r38_0600.html#r38_0630>Jordan operator</a><P>
-</menu>
-<a name=r38_0632>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p>
+  <b>Matrix Normal Forms</b
+  ><menu>
+    <li>
+      <a href="r38_0600.html#r38_0625">Smithex operator</a>
+      <p>
+        <li>
+          <a href="r38_0600.html#r38_0626">Smithex\_int operator</a>
+          <p>
+            <li>
+              <a href="r38_0600.html#r38_0627">Frobenius operator</a>
+              <p>
+                <li>
+                  <a href="r38_0600.html#r38_0628">Ratjordan operator</a>
+                  <p>
+                    <li>
+                      <a href="r38_0600.html#r38_0629"
+                        >Jordansymbolic operator</a
+                      >
+                      <p>
+                        <li>
+                          <a href="r38_0600.html#r38_0630">Jordan operator</a>
+                          <p></p>
+                        </li>
+                      </p>
+                    </li>
+                  </p>
+                </li>
+              </p>
+            </li>
+          </p>
+        </li>
+      </p></li
+  ></menu>
 
-<title>Miscellaneous_Packages</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+  <a name="r38_0632"> <title>Miscellaneous_Packages</title></a>
+</p>
 
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>MISCELLANEOUS PACKAGES</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>introduction</b></p>
 
+<p></p>
+<p>
+  REDUCE includes a large number of packages that have been contributed by users
+  from various fields. Some of these, together with their relevant commands,
+  switches and so on (e.g., the NUMERIC package), have been described elsewhere.
+  This section describes those packages for which no separate help material
+  exists. Each has its own switches, commands, and operators, and some redefine
+  special characters to aid in their notation. However, the brief descriptions
+  given here do not include all such information. Readers are referred to the
+  general package documentation in this case, which can be found, along with the
+  source code, under the subdirectories <em>doc</em> and <em>src</em> in the
+  <em>reduce</em> directory. The
+  <a href="r38_0100.html#r38_0127">load_package</a> command is used to load the
+  files you wish into your system. There will be a short delay while the package
+  is loaded. A package cannot be unloaded. Once it is in your system, it stays
+  there until you end the session. Each package also has a test file, which you
+  will find under its name in the <em>$reduce/xmpl</em> directory.
+</p>
 
-<b>MISCELLANEOUS PACKAGES</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>introduction</b><P>
-<P>
- 
-REDUCE includes a large number of packages that have been contributed by 
-users from various fields. Some of these, together with their relevant 
-commands, switches and so on (e.g., the NUMERIC package), have 
-been described elsewhere. This section describes those packages for which 
-no separate help material exists. Each has its own switches, commands, 
-and operators, and some redefine special characters to aid in their 
-notation. However, the brief descriptions given here do not include all 
-such information. Readers are referred to the general package 
-documentation in this case, which can be found, along with the source 
-code, under the subdirectories <em>doc</em> and <em>src</em> in the 
-<em>reduce</em> directory. The 
-<a href=r38_0100.html#r38_0127>load_package</a> command is used to 
-load the files you wish into your system. There will be a short delay 
-while the package is loaded. A package cannot be unloaded. Once it 
-is in your system, it stays there until you end the session. Each package 
-also has a test file, which you will find under its name in the 
-<em>$reduce/xmpl</em> directory. 
-<P>
-<P>
-Finally, it should be mentioned that such user-contributed packages are 
-unsupported; any questions or problems should be directed to their 
-authors. 
-<P>
-<P>
+<p></p>
+<p>
+  Finally, it should be mentioned that such user-contributed packages are
+  unsupported; any questions or problems should be directed to their authors.
+</p>
 
-<a name=r38_0633>
+<p></p>
+<p>
+  <a name="r38_0633"> <title>ALGINT_package</title></a>
+</p>
 
-<title>ALGINT_package</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>ALGINT</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>package</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>Author: James H. Davenport</p>
 
-<b>ALGINT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>package</b><P>
-<P>
- 
- <P>
-<P>
-Author: James H. Davenport 
-<P>
-<P>
-The <em>algint</em> package provides indefinite integration of square roots. 
-This package, which is an extension of the basic integration package 
-distributed with REDUCE, will analytically integrate a wide range of 
-expressions involving square roots. The 
-<a href=r38_0250.html#r38_0265>algint</a> switch provides for 
-the use of the facilities given by the package, and is automatically turned 
-on when the package is loaded. If you want to return to the standard 
-integration algorithms, turn 
-<a href=r38_0250.html#r38_0265>algint</a> off. An error message is given 
-if you try to turn the 
-<a href=r38_0250.html#r38_0265>algint</a> switch on when its package is not 
-loaded. 
-<P>
-<P>
+<p></p>
+<p>
+  The <em>algint</em> package provides indefinite integration of square roots.
+  This package, which is an extension of the basic integration package
+  distributed with REDUCE, will analytically integrate a wide range of
+  expressions involving square roots. The
+  <a href="r38_0250.html#r38_0265">algint</a> switch provides for the use of the
+  facilities given by the package, and is automatically turned on when the
+  package is loaded. If you want to return to the standard integration
+  algorithms, turn <a href="r38_0250.html#r38_0265">algint</a> off. An error
+  message is given if you try to turn the
+  <a href="r38_0250.html#r38_0265">algint</a> switch on when its package is not
+  loaded.
+</p>
 
-<a name=r38_0634>
+<p></p>
+<p>
+  <a name="r38_0634"> <title>APPLYSYM</title></a>
+</p>
 
-<title>APPLYSYM</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>APPLYSYM</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>package</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>Author: Thomas Wolf</p>
 
-<b>APPLYSYM</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>package</b><P>
-<P>
- 
- <P>
-<P>
-Author: Thomas Wolf 
-<P>
-<P>
-This package provides programs APPLYSYM, QUASILINPDE and DETRAFO for 
-computing with infinitesimal symmetries of differential equations. 
-<P>
-<P>
+<p></p>
+<p>
+  This package provides programs APPLYSYM, QUASILINPDE and DETRAFO for computing
+  with infinitesimal symmetries of differential equations.
+</p>
 
-<a name=r38_0635>
+<p></p>
+<p>
+  <a name="r38_0635"> <title>ARNUM</title></a>
+</p>
 
-<title>ARNUM</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>ARNUM</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>package</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>Author: Eberhard Schruefer</p>
 
-<b>ARNUM</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>package</b><P>
-<P>
- 
- <P>
-<P>
-Author: Eberhard Schruefer 
-<P>
-<P>
-This package provides facilities for handling algebraic numbers as polynomial 
-coefficients in REDUCE calculations. It includes facilities for introducing 
-indeterminates to represent algebraic numbers, for calculating splitting 
-fields, and for factoring and finding greatest common divisors in such 
-domains. 
-<P>
-<P>
+<p></p>
+<p>
+  This package provides facilities for handling algebraic numbers as polynomial
+  coefficients in REDUCE calculations. It includes facilities for introducing
+  indeterminates to represent algebraic numbers, for calculating splitting
+  fields, and for factoring and finding greatest common divisors in such
+  domains.
+</p>
 
-<a name=r38_0636>
+<p></p>
+<p>
+  <a name="r38_0636"> <title>ASSIST</title></a>
+</p>
 
-<title>ASSIST</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>ASSIST</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>package</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>Author: Hubert Caprasse</p>
 
-<b>ASSIST</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>package</b><P>
-<P>
- 
- <P>
-<P>
-Author: Hubert Caprasse 
-<P>
-<P>
-ASSIST contains a large number of additional general purpose functions 
-that allow a user to better adapt REDUCE to various calculational 
-strategies and to make the programming task more straightforward and more 
-efficient. 
-<P>
-<P>
+<p></p>
+<p>
+  ASSIST contains a large number of additional general purpose functions that
+  allow a user to better adapt REDUCE to various calculational strategies and to
+  make the programming task more straightforward and more efficient.
+</p>
 
-<a name=r38_0637>
+<p></p>
+<p>
+  <a name="r38_0637"> <title>AVECTOR</title></a>
+</p>
 
-<title>AVECTOR</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>AVECTOR</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>package</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>Author: David Harper</p>
 
-<b>AVECTOR</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>package</b><P>
-<P>
- 
- <P>
-<P>
-Author: David Harper 
-<P>
-<P>
-This package provides REDUCE with the ability to perform vector algebra 
-using the same notation as scalar algebra. The basic algebraic operations 
-are supported, as are differentiation and integration of vectors with 
-respect to scalar variables, cross product and dot product, component 
-manipulation and application of scalar functions (e.g. cosine) to a vector 
-to yield a vector result. 
-<P>
-<P>
+<p></p>
+<p>
+  This package provides REDUCE with the ability to perform vector algebra using
+  the same notation as scalar algebra. The basic algebraic operations are
+  supported, as are differentiation and integration of vectors with respect to
+  scalar variables, cross product and dot product, component manipulation and
+  application of scalar functions (e.g. cosine) to a vector to yield a vector
+  result.
+</p>
 
-<a name=r38_0638>
+<p></p>
+<p>
+  <a name="r38_0638"> <title>BOOLEAN</title></a>
+</p>
 
-<title>BOOLEAN</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>BOOLEAN</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>package</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>Author: Herbert Melenk</p>
 
-<b>BOOLEAN</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>package</b><P>
-<P>
- 
- <P>
-<P>
-Author: Herbert Melenk 
-<P>
-<P>
-This package supports the computation with boolean expressions in the 
-propositional calculus. The data objects are composed from algebraic 
-expressions connected by the infix boolean operators and, or, 
- implies, equiv, and the unary prefix operator not. 
- Boolean allows you to simplify expressions built from these 
-operators, and to test properties like equivalence, subset property etc. 
-<P>
-<P>
+<p></p>
+<p>
+  This package supports the computation with boolean expressions in the
+  propositional calculus. The data objects are composed from algebraic
+  expressions connected by the infix boolean operators and, or, implies, equiv,
+  and the unary prefix operator not. Boolean allows you to simplify expressions
+  built from these operators, and to test properties like equivalence, subset
+  property etc.
+</p>
 
-<a name=r38_0639>
+<p></p>
+<p>
+  <a name="r38_0639"> <title>CALI</title></a>
+</p>
 
-<title>CALI</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>CALI</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>package</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>Author: Hans-Gert Gr&quot;abe</p>
 
-<b>CALI</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>package</b><P>
-<P>
- 
- <P>
-<P>
-Author: Hans-Gert Gr&quot;abe 
-<P>
-<P>
-This package contains algorithms for computations in commutative algebra 
-closely related to the Groebner algorithm for ideals and modules. Its 
-heart is a new implementation of the Groebner algorithm that also allows 
-for the computation of syzygies. This implementation is also applicable to 
-submodules of free modules with generators represented as rows of a matrix. 
-<P>
-<P>
+<p></p>
+<p>
+  This package contains algorithms for computations in commutative algebra
+  closely related to the Groebner algorithm for ideals and modules. Its heart is
+  a new implementation of the Groebner algorithm that also allows for the
+  computation of syzygies. This implementation is also applicable to submodules
+  of free modules with generators represented as rows of a matrix.
+</p>
 
-<a name=r38_0640>
+<p></p>
+<p>
+  <a name="r38_0640"> <title>CAMAL</title></a>
+</p>
 
-<title>CAMAL</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>CAMAL</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>package</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>Author: John P. Fitch</p>
 
-<b>CAMAL</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>package</b><P>
-<P>
- 
- <P>
-<P>
-Author: John P. Fitch 
-<P>
-<P>
-This package implements in REDUCE the Fourier transform procedures of the 
-CAMAL package for celestial mechanics. 
-<P>
-<P>
+<p></p>
+<p>
+  This package implements in REDUCE the Fourier transform procedures of the
+  CAMAL package for celestial mechanics.
+</p>
 
-<a name=r38_0641>
+<p></p>
+<p>
+  <a name="r38_0641"> <title>CHANGEVR</title></a>
+</p>
 
-<title>CHANGEVR</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>CHANGEVR</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>package</b></p>
 
+<p></p>
+<p>Author: G. Ucoluk</p>
 
+<p></p>
+<p>
+  This package provides facilities for changing the independent variables in a
+  differential equation. It is basically the application of the chain rule.
+</p>
 
-<b>CHANGEVR</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>package</b><P>
-<P>
- 
-Author: G. Ucoluk 
-<P>
-<P>
-This package provides facilities for changing the independent variables in 
-a differential equation. It is basically the application of the chain rule. 
-<P>
-<P>
+<p></p>
+<p>
+  <a name="r38_0642"> <title>COMPACT</title></a>
+</p>
 
-<a name=r38_0642>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>COMPACT</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>package</b></p>
 
-<title>COMPACT</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p></p>
+<p></p>
 
+<p></p>
+<p>Author: Anthony C. Hearn</p>
 
+<p></p>
+<p>
+  COMPACT is a package of functions for the reduction of a polynomial in the
+  presence of side relations. COMPACT applies the side relations to the
+  polynomial so that an equivalent expression results with as few terms as
+  possible. For example, the evaluation of
+</p>
 
-<b>COMPACT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>package</b><P>
-<P>
- 
- <P>
-<P>
-Author: Anthony C. Hearn 
-<P>
-<P>
-COMPACT is a package of functions for the reduction of a polynomial in the 
-presence of side relations. COMPACT applies the side relations to the 
-polynomial so that an equivalent expression results with as few terms as 
-possible. For example, the evaluation of 
-<P>
-<P>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<pre><tt>
      compact(s*(1-sin x^2)+c*(1-cos x^2)+sin x^2+cos x^2,
              {cos x^2+sin x^2=1});
 
-</tt></pre><p>yields the result 
-<p><pre><tt>
+</tt></pre>
+<p>yields the result</p>
+<p></p>
+<pre><tt>
 
               2           2
         SIN(X) *C + COS(X) *S + 1
-</tt></pre><p><P>
-<P>
-The first argument to the operator <em>compact</em> is the expression 
-and the second is a list of side relations that can be 
-equations or simple expressions (implicitly equated to zero). The 
-kernels in the side relations may also be free variables with the 
-same meaning as in rules, e.g. 
-<p><pre><tt>
+</tt></pre>
+<p></p>
+<p></p>
+<p>
+  The first argument to the operator <em>compact</em> is the expression and the
+  second is a list of side relations that can be equations or simple expressions
+  (implicitly equated to zero). The kernels in the side relations may also be
+  free variables with the same meaning as in rules, e.g.
+</p>
+
+<p></p>
+<pre><tt>
      sin_cos_identity :=  {cos ~w^2+sin ~w^2=1}$
      compact(u,in_cos_identity);
-</tt></pre><p><P>
-<P>
-Also the full rule syntax with the replacement operator is allowed here. 
- <P>
-<P>
+</tt></pre>
+<p></p>
+<p></p>
+<p>Also the full rule syntax with the replacement operator is allowed here.</p>
 
-<a name=r38_0643>
+<p></p>
+<p>
+  <a name="r38_0643"> <title>CRACK</title></a>
+</p>
 
-<title>CRACK</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>CRACK</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>package</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>Authors: Andreas Brand, Thomas Wolf</p>
 
-<b>CRACK</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>package</b><P>
-<P>
- 
- <P>
-<P>
-Authors: Andreas Brand, Thomas Wolf 
-<P>
-<P>
-CRACK is a package for solving overdetermined systems of partial or 
-ordinary differential equations (PDEs, ODEs). Examples of programs which 
-make use of CRACK for investigating ODEs (finding symmetries, first 
-integrals, an equivalent Lagrangian or a ``differential factorization'') are 
-included. 
-<P>
-<P>
+<p></p>
+<p>
+  CRACK is a package for solving overdetermined systems of partial or ordinary
+  differential equations (PDEs, ODEs). Examples of programs which make use of
+  CRACK for investigating ODEs (finding symmetries, first integrals, an
+  equivalent Lagrangian or a ``differential factorization'') are included.
+</p>
 
-<a name=r38_0644>
+<p></p>
+<p>
+  <a name="r38_0644"> <title>CVIT</title></a>
+</p>
 
-<title>CVIT</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>CVIT</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>package</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>Authors: V.Ilyin, A.Kryukov, A.Rodionov, A.Taranov</p>
 
-<b>CVIT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>package</b><P>
-<P>
- 
- <P>
-<P>
-Authors: V.Ilyin, A.Kryukov, A.Rodionov, A.Taranov 
-<P>
-<P>
-This package provides an alternative method for computing traces of Dirac 
-gamma matrices, based on an algorithm by Cvitanovich that treats gamma 
-matrices as 3-j symbols. 
-<P>
-<P>
+<p></p>
+<p>
+  This package provides an alternative method for computing traces of Dirac
+  gamma matrices, based on an algorithm by Cvitanovich that treats gamma
+  matrices as 3-j symbols.
+</p>
 
-<a name=r38_0645>
+<p></p>
+<p>
+  <a name="r38_0645"> <title>DEFINT</title></a>
+</p>
 
-<title>DEFINT</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>DEFINT</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>package</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>Authors: Kerry Gaskell, Stanley M. Kameny, Winfried Neun</p>
 
-<b>DEFINT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>package</b><P>
-<P>
- 
- <P>
-<P>
-Authors: Kerry Gaskell, Stanley M. Kameny, Winfried Neun 
-<P>
-<P>
-This package finds the definite integral of an expression in a stated 
-interval. It uses several techniques, including an innovative approach 
-based on the Meijer G-function, and contour integration. 
-<P>
-<P>
+<p></p>
+<p>
+  This package finds the definite integral of an expression in a stated
+  interval. It uses several techniques, including an innovative approach based
+  on the Meijer G-function, and contour integration.
+</p>
 
-<a name=r38_0646>
+<p></p>
+<p>
+  <a name="r38_0646"> <title>DESIR</title></a>
+</p>
 
-<title>DESIR</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>DESIR</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>package</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>Authors: C. Dicrescenzo, F. Richard-Jung, E. Tournier</p>
 
-<b>DESIR</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>package</b><P>
-<P>
- 
- <P>
-<P>
-Authors: C. Dicrescenzo, F. Richard-Jung, E. Tournier 
-<P>
-<P>
-This package enables the basis of formal solutions to be computed for an 
-ordinary homogeneous differential equation with polynomial coefficients 
-over Q of any order, in the neighborhood of zero (regular or irregular 
-singular point, or ordinary point). 
-<P>
-<P>
+<p></p>
+<p>
+  This package enables the basis of formal solutions to be computed for an
+  ordinary homogeneous differential equation with polynomial coefficients over Q
+  of any order, in the neighborhood of zero (regular or irregular singular
+  point, or ordinary point).
+</p>
 
-<a name=r38_0647>
+<p></p>
+<p>
+  <a name="r38_0647"> <title>DFPART</title></a>
+</p>
 
-<title>DFPART</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>DFPART</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>package</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>Author: Herbert Melenk</p>
 
-<b>DFPART</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>package</b><P>
-<P>
- 
- <P>
-<P>
-Author: Herbert Melenk 
-<P>
-<P>
-This package supports computations with total and partial derivatives of 
-formal function objects. Such computations can be useful in the context 
-of differential equations or power series expansions. 
-<P>
-<P>
+<p></p>
+<p>
+  This package supports computations with total and partial derivatives of
+  formal function objects. Such computations can be useful in the context of
+  differential equations or power series expansions.
+</p>
 
-<a name=r38_0648>
+<p></p>
+<p>
+  <a name="r38_0648"> <title>DUMMY</title></a>
+</p>
 
-<title>DUMMY</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>DUMMY</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>package</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>Author: Alain Dresse</p>
 
-<b>DUMMY</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>package</b><P>
-<P>
- 
- <P>
-<P>
-Author: Alain Dresse 
-<P>
-<P>
-This package allows a user to find the canonical form of expressions 
-involving dummy variables. In that way, the simplification of 
-polynomial expressions can be fully done. The indeterminates are general 
-operator objects endowed with as few properties as possible. In that way 
-the package may be used in a large spectrum of applications. 
-<P>
-<P>
+<p></p>
+<p>
+  This package allows a user to find the canonical form of expressions involving
+  dummy variables. In that way, the simplification of polynomial expressions can
+  be fully done. The indeterminates are general operator objects endowed with as
+  few properties as possible. In that way the package may be used in a large
+  spectrum of applications.
+</p>
 
-<a name=r38_0649>
+<p></p>
+<p>
+  <a name="r38_0649"> <title>EXCALC</title></a>
+</p>
 
-<title>EXCALC</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>EXCALC</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>package</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>Author: Eberhard Schruefer</p>
 
-<b>EXCALC</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>package</b><P>
-<P>
- 
- <P>
-<P>
-Author: Eberhard Schruefer 
-<P>
-<P>
-The <em>excalc</em> package is designed for easy use by all who are familiar 
-with the calculus of Modern Differential Geometry. The program is currently 
-able to handle scalar-valued exterior forms, vectors and operations between 
-them, as well as non-scalar valued forms (indexed forms). It is thus an ideal 
-tool for studying differential equations, doing calculations in general 
-relativity and field theories, or doing simple things such as calculating the 
-Laplacian of a tensor field for an arbitrary given frame. 
-<P>
-<P>
+<p></p>
+<p>
+  The <em>excalc</em> package is designed for easy use by all who are familiar
+  with the calculus of Modern Differential Geometry. The program is currently
+  able to handle scalar-valued exterior forms, vectors and operations between
+  them, as well as non-scalar valued forms (indexed forms). It is thus an ideal
+  tool for studying differential equations, doing calculations in general
+  relativity and field theories, or doing simple things such as calculating the
+  Laplacian of a tensor field for an arbitrary given frame.
+</p>
+
+<p></p>
+<p></p>

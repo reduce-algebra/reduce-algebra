@@ -29,41 +29,16 @@
 #
 
 import os
-
 from types import StringType
 
-from PySide.QtCore import Qt
-from PySide.QtCore import Signal
-from PySide.QtCore import QSettings
-
-from PySide.QtGui import QDialog
-from PySide.QtGui import QWidget
-from PySide.QtGui import QListWidget
-from PySide.QtGui import QListWidgetItem
-from PySide.QtGui import QListView
-from PySide.QtGui import QStackedWidget
-from PySide.QtGui import QHBoxLayout
-from PySide.QtGui import QFormLayout
-from PySide.QtGui import QPushButton
-from PySide.QtGui import QVBoxLayout
-from PySide.QtGui import QFontDialog
-from PySide.QtGui import QFont
-from PySide.QtGui import QFontInfo
-from PySide.QtGui import QGroupBox
-from PySide.QtGui import QLabel
-from PySide.QtGui import QCheckBox
-from PySide.QtGui import QLineEdit
-from PySide.QtGui import QFontComboBox
-from PySide.QtGui import QComboBox
-from PySide.QtGui import QFontDatabase
-from PySide.QtGui import QMessageBox
-
-from qrlogging import fontLogger
-from qrlogging import signalLogger
-from qrlogging import traceLogger
-
-from qrdefaults import QtReduceDefaults
-from qrdefaults import QtReduceIconSets
+from PySide.QtCore import QSettings, Qt, Signal
+from PySide.QtGui import (QCheckBox, QComboBox, QDialog, QFont, QFontComboBox,
+                          QFontDatabase, QFontDialog, QFontInfo, QFormLayout,
+                          QGroupBox, QHBoxLayout, QLabel, QLineEdit, QListView,
+                          QListWidget, QListWidgetItem, QMessageBox,
+                          QPushButton, QStackedWidget, QVBoxLayout, QWidget)
+from qrdefaults import QtReduceDefaults, QtReduceIconSets
+from qrlogging import fontLogger, signalLogger, traceLogger
 
 
 class QtReducePreferencePane(QDialog):
@@ -106,10 +81,10 @@ class QtReducePreferencePane(QDialog):
 
         self.setWindowTitle(self.tr("QReduce Preferences"))
 
-    def changePage(self,current,previous):
+    def changePage(self, current, previous):
         if not current:
             current = previous
-        QSettings().setValue("preferences/currentitem",current.text())
+        QSettings().setValue("preferences/currentitem", current.text())
         self.pagesWidget.setCurrentIndex(self.contentsWidget.row(current))
 
     def __createContents(self):
@@ -143,7 +118,7 @@ class QtReducePreferencePane(QDialog):
 
 class QtReduceComboBox(QComboBox):
     def __init__(self):
-        super(QtReduceComboBox,self).__init__()
+        super(QtReduceComboBox, self).__init__()
         self.setFocusPolicy(Qt.NoFocus)
         self.setEditable(False)
 
@@ -151,17 +126,17 @@ class QtReduceComboBox(QComboBox):
 class QtReduceIconSizeComboBox(QtReduceComboBox):
     currentIconSizeChanged = Signal(StringType)
 
-    def __init__(self,parent=None):
-        super(QtReduceIconSizeComboBox,self).__init__()
+    def __init__(self, parent=None):
+        super(QtReduceIconSizeComboBox, self).__init__()
         self.currentIndexChanged.connect(self.currentIndexChangedHandler)
 
-    def currentIndexChangedHandler(self,index):
+    def currentIndexChangedHandler(self, index):
         return self.currentIconSizeChanged.emit(self.currentText())
 
-            
+
 class QtReducePreferencesToolBar(QWidget):
-    def __init__(self,parent=None):
-        super(QtReducePreferencesToolBar,self).__init__(parent)
+    def __init__(self, parent=None):
+        super(QtReducePreferencesToolBar, self).__init__(parent)
 
         settings = QSettings()
 
@@ -172,33 +147,38 @@ class QtReducePreferencesToolBar(QWidget):
         iDbKeys.sort()
         self.iconSetCombo.addItems(iDbKeys)
 
-        settings.setValue("toolbar/iconset","Oxygen") # Hack
+        settings.setValue("toolbar/iconset", "Oxygen")  # Hack
 
-        traceLogger.debug("toolbar/iconset=%s" % settings.value("toolbar/iconset"))
+        traceLogger.debug("toolbar/iconset=%s" %
+                          settings.value("toolbar/iconset"))
 
         self.iconSetCombo.setCurrentIndex(
             self.iconSetCombo.findText(
-                settings.value("toolbar/iconset",QtReduceDefaults.ICONSET)))
+                settings.value("toolbar/iconset", QtReduceDefaults.ICONSET)))
 
         self.iconSizeCombo = QtReduceIconSizeComboBox()
-        self.iconSizeCombo.addItems(["16","22","32"])
+        self.iconSizeCombo.addItems(["16", "22", "32"])
         self.iconSizeCombo.setCurrentIndex(
             self.iconSizeCombo.findText(
-                str(settings.value("toolbar/iconsize",
+                str(
+                    settings.value("toolbar/iconsize",
                                    QtReduceDefaults.ICONSIZE))))
 
         self.showCombo = QtReduceComboBox()
-        self.showCombo.addItems([self.tr("Symbol and Text"),
-                                 self.tr("Only Symbol"),
-                                 self.tr("Only Text")])
-        self.showCombo.setCurrentIndex(self.showCombo.findText(
-            settings.value("toolbar/buttonstyle",
-                           self.tr(QtReduceDefaults.BUTTONSTYLE))))
+        self.showCombo.addItems([
+            self.tr("Symbol and Text"),
+            self.tr("Only Symbol"),
+            self.tr("Only Text")
+        ])
+        self.showCombo.setCurrentIndex(
+            self.showCombo.findText(
+                settings.value("toolbar/buttonstyle",
+                               self.tr(QtReduceDefaults.BUTTONSTYLE))))
 
         toolBarLayout = QFormLayout()
-#        toolBarLayout.addRow(self.tr("Symbol Set"),self.iconSetCombo)
-        toolBarLayout.addRow(self.tr("Symbol Size"),self.iconSizeCombo)
-        toolBarLayout.addRow(self.tr("Show"),self.showCombo)
+        #        toolBarLayout.addRow(self.tr("Symbol Set"),self.iconSetCombo)
+        toolBarLayout.addRow(self.tr("Symbol Size"), self.iconSizeCombo)
+        toolBarLayout.addRow(self.tr("Show"), self.showCombo)
 
         toolBarGroup.setLayout(toolBarLayout)
 
@@ -207,97 +187,95 @@ class QtReducePreferencesToolBar(QWidget):
 
         self.setLayout(mainLayout)
 
-        
+
 class QtReduceFontComboBox(QtReduceComboBox):
     currentFontChanged = Signal(QFont)
 
-    def __init__(self,parent=None):
-        super(QtReduceFontComboBox,self).__init__()
+    def __init__(self, parent=None):
+        super(QtReduceFontComboBox, self).__init__()
         fdb = QFontDatabase()
         l = []
         self.fontDict = {}
         for fam in fdb.families(QFontDatabase.Latin):
             for sty in fdb.styles(fam):
-                if not fam in l and fdb.isFixedPitch(fam,sty) \
-                and not fdb.bold(fam,sty) and not fdb.italic(fam,sty) \
-                and self.__osxHack(fam):
+                if (not fam in l and fdb.isFixedPitch(fam, sty)
+                        and not fdb.bold(fam, sty)
+                        and not fdb.italic(fam, sty) and self.__osxHack(fam)):
                     fontLogger.debug("family=%s, style=%s, isFixedPitch=%s" %
-                                     (fam, sty, fdb.isFixedPitch(fam,sty)))
-                    sizes = fdb.smoothSizes(fam,sty)
+                                     (fam, sty, fdb.isFixedPitch(fam, sty)))
+                    sizes = fdb.smoothSizes(fam, sty)
                     if sizes:
-                        font = fdb.font(fam,sty,sizes[0])
+                        font = fdb.font(fam, sty, sizes[0])
                         if not font.exactMatch():
                             fontLogger.debug("no exactMatch for  %s %s %s" %
-                                             (fam,sty,sizes[0]))
+                                             (fam, sty, sizes[0]))
 
                         l += [fam]
-                        self.fontDict.update({str(fam):font})
+                        self.fontDict.update({str(fam): font})
         l.sort
         self.addItems(l)
         self.currentIndexChanged.connect(self.currentIndexChangedHandler)
 
-    def __osxHack(self,fam):
+    def __osxHack(self, fam):
         if os.uname()[0] != "Darwin":
             return True
-        if fam.find("Andale") != -1 \
-        or fam.find("Bitstream") != -1 \
-        or fam.find("Consolas") != -1 \
-        or fam.find("Courier") != -1 \
-        or fam.find("DejaVu") != -1 \
-        or fam.find("Lucida") != -1 \
-        or fam.find("Monaco") != -1:
+        if (fam.find("Andale") != -1 or fam.find("Bitstream") != -1
+                or fam.find("Consolas") != -1 or fam.find("Courier") != -1
+                or fam.find("DejaVu") != -1 or fam.find("Lucida") != -1
+                or fam.find("Monaco") != -1):
             return True
         return False
 
-    def setCurrentFont(self,font):
+    def setCurrentFont(self, font):
         info = QFontInfo(font)
         self.setCurrentIndex(self.findText(info.family()))
 
     def currentFont(self):
         return self.fontDict[self.currentText()]
 
-    def currentIndexChangedHandler(self,index):
+    def currentIndexChangedHandler(self, index):
         return self.currentFontChanged.emit(self.currentFont())
 
-    
+
 class QtReduceFontSizeComboBox(QtReduceComboBox):
     currentFontSizeChanged = Signal(StringType)
 
-    def __init__(self,parent=None):
-        super(QtReduceFontSizeComboBox,self).__init__()
+    def __init__(self, parent=None):
+        super(QtReduceFontSizeComboBox, self).__init__()
         self.currentIndexChanged.connect(self.currentIndexChangedHandler)
 
     def currentFontSize(self):
         return self.findText(currentSize)
 
-    def currentIndexChangedHandler(self,index):
+    def currentIndexChangedHandler(self, index):
         return self.currentFontSizeChanged.emit(self.currentText())
 
-            
+
 class QtReduceFontSizeComboBoxFs(QtReduceComboBox):
     currentFontSizeChangedFs = Signal(StringType)
 
-    def __init__(self,parent=None):
-        super(QtReduceFontSizeComboBoxFs,self).__init__()
+    def __init__(self, parent=None):
+        super(QtReduceFontSizeComboBoxFs, self).__init__()
         self.currentIndexChanged.connect(self.currentIndexChangedHandler)
 
     def currentFontSize(self):
         return self.findText(currentSize)
 
-    def currentIndexChangedHandler(self,index):
+    def currentIndexChangedHandler(self, index):
         return self.currentFontSizeChangedFs.emit(self.currentText())
 
-            
+
 class QtReducePreferencesWorksheet(QWidget):
-    def __init__(self,parent=None):
-        super(QtReducePreferencesWorksheet,self).__init__(parent)
+    def __init__(self, parent=None):
+        super(QtReducePreferencesWorksheet, self).__init__(parent)
 
         fontGroup = QGroupBox(self.tr("Fonts"))
 
         self.fontCombo = QtReduceFontComboBox(self)
         self.setFocusPolicy(Qt.NoFocus)
         self.fontCombo.setEditable(False)
-        self.fontCombo.setCurrentFont(self.parent().parent().controller.view.font())
+        self.fontCombo.setCurrentFont(
+            self.parent().parent().controller.view.font())
 
         self.sizeCombo = QtReduceFontSizeComboBox()
         self.sizeComboFs = QtReduceFontSizeComboBoxFs()
@@ -305,9 +283,9 @@ class QtReducePreferencesWorksheet(QWidget):
         self.fontCombo.currentFontChanged.connect(self.findSizes)
 
         fontLayout = QFormLayout()
-        fontLayout.addRow(self.tr("General Worksheet Font"),self.fontCombo)
-        fontLayout.addRow(self.tr("Font Size"),self.sizeCombo)
-        fontLayout.addRow(self.tr("Full Screen Font Size"),self.sizeComboFs)
+        fontLayout.addRow(self.tr("General Worksheet Font"), self.fontCombo)
+        fontLayout.addRow(self.tr("Font Size"), self.sizeCombo)
+        fontLayout.addRow(self.tr("Full Screen Font Size"), self.sizeComboFs)
 
         fontGroup.setLayout(fontLayout)
 
@@ -316,7 +294,7 @@ class QtReducePreferencesWorksheet(QWidget):
 
         self.setLayout(mainLayout)
 
-    def findSizes(self,font):
+    def findSizes(self, font):
         fontLogger.debug("font.key()=%s" % font.key())
         fontDatabase = QFontDatabase()
 
@@ -327,12 +305,12 @@ class QtReducePreferencesWorksheet(QWidget):
         self.sizeComboFs.clear()
 
         styleStr = fontDatabase.styleString(font)
-        if fontDatabase.isSmoothlyScalable(font.family(),styleStr):
+        if fontDatabase.isSmoothlyScalable(font.family(), styleStr):
             for size in QFontDatabase.standardSizes():
                 self.sizeCombo.addItem(str(size))
                 self.sizeComboFs.addItem(str(size))
         else:
-            for size in fontDatabase.smoothSizes(font.family(),styleStr):
+            for size in fontDatabase.smoothSizes(font.family(), styleStr):
                 self.sizeCombo.addItem(str(size))
                 self.sizeComboFs.addItem(str(size))
 
@@ -351,8 +329,8 @@ class QtReducePreferencesWorksheet(QWidget):
 
 
 class QtReducePreferencesComputation(QWidget):
-    def __init__(self,parent=None):
-        super(QtReducePreferencesComputation,self).__init__(parent)
+    def __init__(self, parent=None):
+        super(QtReducePreferencesComputation, self).__init__(parent)
 
         reduceGroup = QGroupBox("Reduce")
 
@@ -369,7 +347,7 @@ class QtReducePreferencesComputation(QWidget):
         self.reduceBinary.editingFinished.connect(self.editingFinishedHandler)
 
         reduceLayout = QFormLayout()
-        reduceLayout.addRow(self.tr("Reduce Binary"),self.reduceBinary)
+        reduceLayout.addRow(self.tr("Reduce Binary"), self.reduceBinary)
 
         reduceGroup.setLayout(reduceLayout)
 
@@ -380,7 +358,7 @@ class QtReducePreferencesComputation(QWidget):
 
     def editingFinishedHandler(self):
         settings = QSettings()
-        old = settings.value("computation/reduce",QtReduceDefaults.REDUCE)
+        old = settings.value("computation/reduce", QtReduceDefaults.REDUCE)
         new = self.reduceBinary.text()
         if old == new:
             return
@@ -396,10 +374,10 @@ class QtReducePreferencesComputation(QWidget):
         mbox.setWindowTitle(tit)
         mbox.setText(txt)
         mbox.setInformativeText(itxt)
-        mbox.setStandardButtons(QMessageBox.Yes|QMessageBox.No)
+        mbox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
         button = mbox.exec_()
         if button == QMessageBox.Yes:
-            settings.setValue("computation/reduce",new)
+            settings.setValue("computation/reduce", new)
         else:
             self.reduceBinary.setText(old)
         self.reduceBinary.blockSignals(False)

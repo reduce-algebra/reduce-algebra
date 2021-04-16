@@ -28,51 +28,22 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-import sys
 import os
-
-from PySide.QtCore import QFileInfo
-from PySide.QtCore import QObject
-from PySide.QtCore import QSettings
-from PySide.QtCore import Signal
-from PySide.QtCore import SIGNAL
-from PySide.QtCore import QSize
-from PySide.QtCore import Qt
-
-from PySide.QtGui import QAbstractItemView
-from PySide.QtGui import QApplication
-from PySide.QtGui import QHeaderView
-from PySide.QtGui import QMainWindow
-from PySide.QtGui import QStatusBar
-from PySide.QtGui import QMenu
-from PySide.QtGui import QMenuBar
-from PySide.QtGui import QFont
-from PySide.QtGui import QLabel
-from PySide.QtGui import QFontMetrics
-from PySide.QtGui import QAction
-from PySide.QtGui import QMessageBox
-from PySide.QtGui import QKeySequence
-from PySide.QtGui import QFileDialog
-from PySide.QtGui import QIcon
-from PySide.QtGui import QTableView
-from PySide.QtGui import QToolBar
-from PySide.QtGui import QToolButton
-from PySide.QtGui import QStyle
-from PySide.QtGui import QTextEdit
-
-from qrcontroller import QtReduceController
-
-from qrlogging import signalLogger
-from qrlogging import traceLogger
-
-from qrmodel import QtReduceComputation
-
-from qrpreferences import QtReducePreferencePane
-
-from qrdefaults import QtReduceDefaults
-from qrdefaults import QtReduceIconSets
-
+import sys
 from types import StringType
+
+from PySide.QtCore import (SIGNAL, QFileInfo, QObject, QSettings, QSize, Qt,
+                           Signal)
+from PySide.QtGui import (QAbstractItemView, QAction, QApplication,
+                          QFileDialog, QFont, QFontMetrics, QHeaderView, QIcon,
+                          QKeySequence, QLabel, QMainWindow, QMenu, QMenuBar,
+                          QMessageBox, QStatusBar, QStyle, QTableView,
+                          QTextEdit, QToolBar, QToolButton)
+from qrcontroller import QtReduceController
+from qrdefaults import QtReduceDefaults, QtReduceIconSets
+from qrlogging import signalLogger, traceLogger
+from qrmodel import QtReduceComputation
+from qrpreferences import QtReducePreferencePane
 
 
 class QtReduceMainWindow(QMainWindow):
@@ -83,20 +54,23 @@ class QtReduceMainWindow(QMainWindow):
     # At present, QtReduceMainWindow also exerimentally generates an instance of
     # QtReduceTableView for debugging and verifiying the MVC concept. Probably,
     # this should be better moved into QtReduceController.
-    
+
     iconSetChanged = Signal(StringType)
     iconSizeChanged = Signal(StringType)
     toolButtonStyleChanged = Signal(StringType)
 
     def __init__(self, parent=None):
         super(QtReduceMainWindow, self).__init__(parent)
-        iconSize = QSettings().value("toolbar/iconsize", QtReduceDefaults.ICONSIZE)
-        traceLogger.debug("0######### QtReduceDefaults.ICONSIZE is %s", QtReduceDefaults.ICONSIZE)
+        iconSize = QSettings().value("toolbar/iconsize",
+                                     QtReduceDefaults.ICONSIZE)
+        traceLogger.debug("0######### QtReduceDefaults.ICONSIZE is %s",
+                          QtReduceDefaults.ICONSIZE)
         traceLogger.debug("0######### iconSize is %s", iconSize)
         hugo = QSettings().value("toolbar/hugo", QtReduceDefaults.ICONSIZE)
         traceLogger.debug("0######### hugo is %s", hugo)
 
-        if os.uname()[0] != "Darwin":  # For the Mac the icon is set for the app in qreduce.py.
+        if (os.uname()[0] != "Darwin"
+            ):  # For the Mac the icon is set for the app in qreduce.py.
             self.setWindowIcon(QIcon(sys.path[0] + "/" + "Bumblebee.png"))
         self.setUnifiedTitleAndToolBarOnMac(True)
         self.controller = QtReduceController(self)
@@ -116,26 +90,30 @@ class QtReduceMainWindow(QMainWindow):
         self.rawModelView.setModel(self.controller.model)
 
     def about(self):
-        QMessageBox.about(self, self.tr("About QReduce"),self.tr(
-            '<span style="font-size:x-large;font-weight:bold;color:#000000">'
-            'QReduce'
-            '</span>'
-            '<p>'
-            '<span style="font-weight:normal;">'
-            'Version 0.2'
-            '</span>'
-            '<p>'
-            '<span style="font-weight:normal;">'
-            'A Worksheet-Based GUI '
-            'for the Computer Algebra System Reduce'
-            '</span>'
-            '<p>'
-            '<span style="font-size:small;font-weight:normal;color:#808080">'
-            '&copy; 2009-2014 T. Sturm, 2010 C. Zengler'
-            '</span>'
-            '</span>'))
+        QMessageBox.about(
+            self,
+            self.tr("About QReduce"),
+            self.
+            tr('<span style="font-size:x-large;font-weight:bold;color:#000000">'
+               "QReduce"
+               "</span>"
+               "<p>"
+               '<span style="font-weight:normal;">'
+               "Version 0.2"
+               "</span>"
+               "<p>"
+               '<span style="font-weight:normal;">'
+               "A Worksheet-Based GUI "
+               "for the Computer Algebra System Reduce"
+               "</span>"
+               "<p>"
+               '<span style="font-size:small;font-weight:normal;color:#808080">'
+               "&copy; 2009-2014 T. Sturm, 2010 C. Zengler"
+               "</span>"
+               "</span>"),
+        )
 
-    def closeEvent(self,ev):
+    def closeEvent(self, ev):
         ok = self.__suggestSave()
         if ok:
             if self.isFullScreen():
@@ -145,66 +123,68 @@ class QtReduceMainWindow(QMainWindow):
         else:
             ev.ignore()
 
-    def currentFontChangedHandler(self,font):
+    def currentFontChangedHandler(self, font):
         signalLogger.debug("font=%s" % font)
         self.controller.view.currentFontChangedHandler(font)
-        self.__setWidthByFont(QtReduceDefaults.WIDTH,True)
+        self.__setWidthByFont(QtReduceDefaults.WIDTH, True)
 
-    def currentSizeChangedHandler(self,size):
+    def currentSizeChangedHandler(self, size):
         signalLogger.debug("size=%s" % size)
-        self.controller.view.currentSizeChangedHandler(size, self.isFullScreen())
+        self.controller.view.currentSizeChangedHandler(size,
+                                                       self.isFullScreen())
 
-    def currentSizeChangedHandlerFs(self,size):
-        self.controller.view.currentSizeChangedHandlerFs(size, self.isFullScreen())
+    def currentSizeChangedHandlerFs(self, size):
+        self.controller.view.currentSizeChangedHandlerFs(
+            size, self.isFullScreen())
 
     def license_(self):
         lic = QTextEdit(self)
         lic.setWindowFlags(Qt.Window)
         lic.setWindowTitle("QReduce FreeBSD License")
         font = lic.font()
-        font.setFamily('')
+        font.setFamily("")
         font.setFixedPitch(True)
         font.setKerning(0)
         font.setWeight(QFont.Normal)
         font.setItalic(False)
         lic.setFont(font)
         lic.setText(
-            'Copyright (c) 2009-2014 T. Sturm, 2010 C. Zengler'
-            '<p>'
-            'All rights reserved.'
-            '<p>'
-            'Redistribution and use in source and binary forms, with '
-            'or without modification, are permitted provided that the '
-            'following conditions are met:'
-            '<ol>'
-            '<li>Redistributions of source code must retain the relevant '
-            'copyright notice, this list of conditions and the following '
-            'disclaimer. '
-            '<p>'
-            '<li>Redistributions in binary form must reproduce the above '
-            'copyright notice, this list of conditions and the following '
-            'disclaimer in the documentation and/or other materials '
-            'provided with the distribution. '
-            '</ol>'
-            '<p>'
-            'THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND '
+            "Copyright (c) 2009-2014 T. Sturm, 2010 C. Zengler"
+            "<p>"
+            "All rights reserved."
+            "<p>"
+            "Redistribution and use in source and binary forms, with "
+            "or without modification, are permitted provided that the "
+            "following conditions are met:"
+            "<ol>"
+            "<li>Redistributions of source code must retain the relevant "
+            "copyright notice, this list of conditions and the following "
+            "disclaimer. "
+            "<p>"
+            "<li>Redistributions in binary form must reproduce the above "
+            "copyright notice, this list of conditions and the following "
+            "disclaimer in the documentation and/or other materials "
+            "provided with the distribution. "
+            "</ol>"
+            "<p>"
+            "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND "
             'CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, '
-            'INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF '
-            'MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE '
-            'DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR '
-            'CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, '
-            'SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT '
-            'NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; '
-            'LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) '
-            'HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN '
-            'CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR '
-            'OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS '
-            'SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.'
-            '</span>')
+            "INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF "
+            "MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE "
+            "DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR "
+            "CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, "
+            "SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT "
+            "NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; "
+            "LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) "
+            "HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN "
+            "CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR "
+            "OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS "
+            "SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+            "</span>")
         lic.setReadOnly(True)
-        w = 66 * lic.fontMetrics().width('m')
+        w = 66 * lic.fontMetrics().width("m")
         h = 36 * lic.fontMetrics().height()
-        lic.resize(w,h)
+        lic.resize(w, h)
         lic.show()
         lic.raise_()
 
@@ -214,15 +194,15 @@ class QtReduceMainWindow(QMainWindow):
             return
         title = self.tr("Open Reduce Worksheet")
         fn = self.controller.fileName().__str__()
-        if fn == '':
-            fn = '$HOME'
+        if fn == "":
+            fn = "$HOME"
         path = os.path.dirname(os.path.abspath(fn))
         traceLogger.debug("path=%s" % path)
         filter = self.tr("Reduce Worksheets (*.rws);;All Files (*.*)")
-        fileName = QFileDialog.getOpenFileName(self,title,path,filter)
+        fileName = QFileDialog.getOpenFileName(self, title, path, filter)
         fileName = str(fileName[0])
         traceLogger.debug("fileName=%s" % fileName)
-        if fileName is '':
+        if fileName is "":
             return
         if not fileName.endswith(".rws"):
             fileName += ".rws"
@@ -236,68 +216,69 @@ class QtReduceMainWindow(QMainWindow):
                 return self.controller.open(action.data())
 
     def save(self):
-        if self.controller.fileName() == '':
+        if self.controller.fileName() == "":
             self.saveAs()
         else:
             self.controller.save()
 
     def saveAs(self):
         title = self.tr("Save Reduce Worksheet")
-        path = os.path.dirname(os.path.abspath(self.controller.fileName().__str__()))
+        path = os.path.dirname(
+            os.path.abspath(self.controller.fileName().__str__()))
         filter = self.tr("Reduce Worksheets (*.rws)")
-        fileName = QFileDialog.getSaveFileName(self,title,path,filter)
+        fileName = QFileDialog.getSaveFileName(self, title, path, filter)
         fileName = str(fileName[0])
         traceLogger.debug("fileName=%s" % fileName)
-        if fileName == '':
+        if fileName == "":
             return
         if not fileName.endswith(".rws"):
             fileName += ".rws"
         self.controller.saveAs(fileName)
         self.activateWindow()
 
-    def setTitle(self,fullPath):
+    def setTitle(self, fullPath):
         traceLogger.debug("fullPath=%s" % fullPath)
-        if fullPath is '':
+        if fullPath is "":
             self.setWindowTitle("[*]" + self.tr("Untitled"))
         else:
             info = QFileInfo(fullPath)
             self.setWindowFilePath(info.absolutePath())
             self.setWindowTitle("[*]" + info.fileName())
 
-    def showMessage(self,message):
-	self.statusBar().showMessage(message,0)
+    def showMessage(self, message):
+        self.statusBar().showMessage(message, 0)
 
     def toggleRawModel(self):
         if self.rawModelView.isVisible():
             self.rawModelView.hide()
-            self.rawModelAct.setText('Show Raw Model')
+            self.rawModelAct.setText("Show Raw Model")
         else:
             self.rawModelView.show()
             self.rawModelView.raise_()
-            self.rawModelAct.setText('Hide Raw Model')
+            self.rawModelAct.setText("Hide Raw Model")
 
     def test(self):
         None
 
     def toggleFullScreen(self):
         self.rawModelView.hide()
-        self.rawModelAct.setText('Show Raw Model')
+        self.rawModelAct.setText("Show Raw Model")
         if self.isFullScreen():
             self.showNormal()
             self.rawModelAct.setEnabled(True)
             self.rawModelView.setWindowFlags(Qt.Drawer)
-#            self.addToolBar(Qt.TopToolBarArea,self.toolBar)
+            #            self.addToolBar(Qt.TopToolBarArea,self.toolBar)
             fs = QSettings().value("worksheet/fontsize",
                                    QtReduceDefaults.FONTSIZE)
             self.controller.view.setupFont(fs)
             self.fullScreenAct.setText("Enter Full Screen")
-            self.fullScreenAct.setShortcut(QKeySequence(Qt.ControlModifier|
-                                                        Qt.Key_F))
+            self.fullScreenAct.setShortcut(
+                QKeySequence(Qt.ControlModifier | Qt.Key_F))
             self.__setFullScreenIcons(False)
         else:
             self.showFullScreen()
             self.rawModelAct.setEnabled(False)
-#            self.addToolBar(Qt.LeftToolBarArea,self.toolBar)
+            #            self.addToolBar(Qt.LeftToolBarArea,self.toolBar)
             fs = QSettings().value("worksheet/fontsizefs",
                                    QtReduceDefaults.FONTSIZEFS)
             self.controller.view.setupFont(fs)
@@ -306,24 +287,26 @@ class QtReduceMainWindow(QMainWindow):
             self.__setFullScreenIcons(True)
 
     def updateActionIcons(self):
-        for act in [self.openAct,
-                    self.saveAct,
-                    self.saveAsAct,
-                    self.quitAct,
-                    self.preferencesAct,
-                    self.zoomDefAct,
-                    self.zoomInAct,
-                    self.zoomOutAct,
-                    self.fullScreenAct,
-                    self.insertAboveAct,
-                    self.insertBelowAct,
-                    self.evalAct,
-                    self.abortAct,
-                    self.delOutpAct,
-                    self.rawModelAct,
-                    self.testAct,
-                    self.aboutAct,
-                    self.licenseAct]:
+        for act in [
+                self.openAct,
+                self.saveAct,
+                self.saveAsAct,
+                self.quitAct,
+                self.preferencesAct,
+                self.zoomDefAct,
+                self.zoomInAct,
+                self.zoomOutAct,
+                self.fullScreenAct,
+                self.insertAboveAct,
+                self.insertBelowAct,
+                self.evalAct,
+                self.abortAct,
+                self.delOutpAct,
+                self.rawModelAct,
+                self.testAct,
+                self.aboutAct,
+                self.licenseAct,
+        ]:
             act.setIcon(QtReduceIconSets().icon(act))
 
     def zoomDef(self):
@@ -337,118 +320,171 @@ class QtReduceMainWindow(QMainWindow):
 
     def __createActions(self):
         # Open ...
-        self.openAct = QAction(self.tr("Open ..."), self,
-                               iconText=self.tr("Open ..."),
-                               shortcut=QKeySequence(QKeySequence.Open),
-                               triggered=self.open)
+        self.openAct = QAction(
+            self.tr("Open ..."),
+            self,
+            iconText=self.tr("Open ..."),
+            shortcut=QKeySequence(QKeySequence.Open),
+            triggered=self.open,
+        )
         self.openAct.setMenu(self.recentFileMenu)
 
         # Save
-        self.saveAct = QAction(self.tr("Save"), self,
-                               shortcut=QKeySequence(QKeySequence.Save),
-                               triggered=self.save)
+        self.saveAct = QAction(
+            self.tr("Save"),
+            self,
+            shortcut=QKeySequence(QKeySequence.Save),
+            triggered=self.save,
+        )
 
         # Save As ...
-        self.saveAsAct = QAction(self.tr("Save As ..."), self,
-                                 iconText=self.tr("Save As"),
-                                 shortcut=QKeySequence(QKeySequence.SaveAs),
-                                 triggered=self.saveAs)
+        self.saveAsAct = QAction(
+            self.tr("Save As ..."),
+            self,
+            iconText=self.tr("Save As"),
+            shortcut=QKeySequence(QKeySequence.SaveAs),
+            triggered=self.saveAs,
+        )
 
         # Quit
-        self.quitAct = QAction(self.tr("Quit"), self,
-                               menuRole=QAction.QuitRole,
-                               shortcut=QKeySequence(QKeySequence.Quit),
-                               triggered=self.close)
+        self.quitAct = QAction(
+            self.tr("Quit"),
+            self,
+            menuRole=QAction.QuitRole,
+            shortcut=QKeySequence(QKeySequence.Quit),
+            triggered=self.close,
+        )
 
         # Preferences ...
-        self.preferencesAct = QAction(self.tr("Preferences ..."), self,
-                                      menuRole=QAction.PreferencesRole,
-                                      shortcut=QKeySequence(QKeySequence.Preferences),
-                                      triggered=self.preferencePane.show)
+        self.preferencesAct = QAction(
+            self.tr("Preferences ..."),
+            self,
+            menuRole=QAction.PreferencesRole,
+            shortcut=QKeySequence(QKeySequence.Preferences),
+            triggered=self.preferencePane.show,
+        )
 
         # Zoom Default
-        self.zoomDefAct = QAction(self.tr("Zoom Default"), self,
-                                  shortcut=QKeySequence(Qt.ControlModifier|Qt.Key_Equal),
-                                  triggered=self.zoomDef)
+        self.zoomDefAct = QAction(
+            self.tr("Zoom Default"),
+            self,
+            shortcut=QKeySequence(Qt.ControlModifier | Qt.Key_Equal),
+            triggered=self.zoomDef,
+        )
 
         # Zoom In
-        self.zoomInAct = QAction(self.tr("Zoom In"), self,
-                                 shortcut=QKeySequence(QKeySequence.ZoomIn),
-                                 triggered=self.zoomIn)
+        self.zoomInAct = QAction(
+            self.tr("Zoom In"),
+            self,
+            shortcut=QKeySequence(QKeySequence.ZoomIn),
+            triggered=self.zoomIn,
+        )
 
         # Zoom Out
-        self.zoomOutAct = QAction(self.tr("Zoom Out"), self,
-                                 shortcut=QKeySequence(QKeySequence.ZoomOut),
-                                 triggered=self.zoomOut)
+        self.zoomOutAct = QAction(
+            self.tr("Zoom Out"),
+            self,
+            shortcut=QKeySequence(QKeySequence.ZoomOut),
+            triggered=self.zoomOut,
+        )
 
         # Enter FullScreen
-        self.fullScreenAct = QAction(self.tr("Enter Full Screen"), self,
-                                     shortcut=QKeySequence(Qt.ControlModifier|Qt.Key_F),
-                                     triggered=self.toggleFullScreen)
+        self.fullScreenAct = QAction(
+            self.tr("Enter Full Screen"),
+            self,
+            shortcut=QKeySequence(Qt.ControlModifier | Qt.Key_F),
+            triggered=self.toggleFullScreen,
+        )
 
         # Evaluate Selection
-        self.evalSelAct = QAction(self.tr("Evaluate Selection"), self,
-                               enabled=False,
-                               triggered=self.controller.evaluateSelection)
+        self.evalSelAct = QAction(
+            self.tr("Evaluate Selection"),
+            self,
+            enabled=False,
+            triggered=self.controller.evaluateSelection,
+        )
 
         # Evaluate All
-        self.evalAct = QAction(self.tr("Evaluate All"), self,
-                               enabled=True,
-                               iconText=self.tr("Evaluate All"),
-                               triggered=self.controller.evaluateAll)
+        self.evalAct = QAction(
+            self.tr("Evaluate All"),
+            self,
+            enabled=True,
+            iconText=self.tr("Evaluate All"),
+            triggered=self.controller.evaluateAll,
+        )
 
         # Delete All Output
-        self.delOutpAct = QAction(self.tr("Delete All Output"), self,
-                                  enabled=True,
-                                  iconText=self.tr("Delete All Output"),
-                                  triggered=self.controller.deleteOutput)
+        self.delOutpAct = QAction(
+            self.tr("Delete All Output"),
+            self,
+            enabled=True,
+            iconText=self.tr("Delete All Output"),
+            triggered=self.controller.deleteOutput,
+        )
 
         # Delete Group
-        self.deleteAct = QAction(self.tr("Delete Group"), self,
-                                      shortcut=QKeySequence(Qt.ControlModifier|Qt.Key_Backspace),
-                                      enabled=True,
-                                      triggered=self.controller.deleteRowOrPreviousRow)
+        self.deleteAct = QAction(
+            self.tr("Delete Group"),
+            self,
+            shortcut=QKeySequence(Qt.ControlModifier | Qt.Key_Backspace),
+            enabled=True,
+            triggered=self.controller.deleteRowOrPreviousRow,
+        )
 
         # Insert Group Above
-        self.insertAboveAct = QAction(self.tr("Insert Group Above"), self,
-                                      shortcut=QKeySequence(Qt.ShiftModifier|
-                                                            Qt.ControlModifier|
-                                                            Qt.Key_Return),
-                                      enabled=True,
-                                      triggered=self.controller.insertAbove)
+        self.insertAboveAct = QAction(
+            self.tr("Insert Group Above"),
+            self,
+            shortcut=QKeySequence(Qt.ShiftModifier | Qt.ControlModifier
+                                  | Qt.Key_Return),
+            enabled=True,
+            triggered=self.controller.insertAbove,
+        )
 
         # Insert Group Below
-        self.insertBelowAct = QAction(self.tr("Insert Group Below"), self,
-                                      enabled=True,
-                                      shortcut=QKeySequence(Qt.ControlModifier|Qt.Key_Return),
-                                      triggered=self.controller.insertBelow)
+        self.insertBelowAct = QAction(
+            self.tr("Insert Group Below"),
+            self,
+            enabled=True,
+            shortcut=QKeySequence(Qt.ControlModifier | Qt.Key_Return),
+            triggered=self.controller.insertBelow,
+        )
 
         # Abort Evaluation
-        self.abortAct = QAction(self.tr("Abort Evaluation"), self,
-                                enabled=False,
-                                iconText=self.tr("Abort"),
-                                shortcut=QKeySequence(Qt.AltModifier|Qt.Key_C),
-                                triggered=self.controller.abortComputation)
+        self.abortAct = QAction(
+            self.tr("Abort Evaluation"),
+            self,
+            enabled=False,
+            iconText=self.tr("Abort"),
+            shortcut=QKeySequence(Qt.AltModifier | Qt.Key_C),
+            triggered=self.controller.abortComputation,
+        )
         self.controller.acceptAbort.connect(self.abortAct.setEnabled)
 
         # Show Raw Model
-        self.rawModelAct = QAction(self.tr("Show Raw Model"), self,
-                               enabled=True,
-                               triggered=self.toggleRawModel)
+        self.rawModelAct = QAction(self.tr("Show Raw Model"),
+                                   self,
+                                   enabled=True,
+                                   triggered=self.toggleRawModel)
 
         # A hook for development
-        self.testAct = QAction(self.tr("MainWindow::test"), self,
-                               enabled=True,
-                               shortcut=QKeySequence(Qt.ControlModifier|Qt.Key_T),
-                               triggered=self.test)
+        self.testAct = QAction(
+            self.tr("MainWindow::test"),
+            self,
+            enabled=True,
+            shortcut=QKeySequence(Qt.ControlModifier | Qt.Key_T),
+            triggered=self.test,
+        )
 
         # About
-        self.aboutAct = QAction(self.tr("About"), self,
+        self.aboutAct = QAction(self.tr("About"),
+                                self,
                                 menuRole=QAction.AboutRole,
                                 triggered=self.about)
 
         # License
-        self.licenseAct = QAction(self.tr("License"), self,
+        self.licenseAct = QAction(self.tr("License"),
+                                  self,
                                   triggered=self.license_)
 
         # Icons belong to actions. Technically, they could have been set in the
@@ -456,11 +492,10 @@ class QtReduceMainWindow(QMainWindow):
         # set via the Preferences. Therefore we explicitly set them in a loop in
         # a public method:
         self.updateActionIcons()
-        
+
         # Listen to modifications of the icon set in the Preferences:
         self.iconSetChanged.connect(self.updateActionIcons)
         self.iconSizeChanged.connect(self.updateActionIcons)
-
 
     def __createMenus(self):
         # File
@@ -546,9 +581,12 @@ class QtReduceMainWindow(QMainWindow):
 
     def __createStatusBar(self):
         self.setStatusBar(QtReduceStatusBar(self))
-        self.controller.startComputation.connect(self.statusBar().startComputationHandler)
-        self.controller.endComputation.connect(self.statusBar().endComputationHandler)
-        self.controller.view.cursorPositionChanged.connect(self.statusBar().clearMessage)
+        self.controller.startComputation.connect(
+            self.statusBar().startComputationHandler)
+        self.controller.endComputation.connect(
+            self.statusBar().endComputationHandler)
+        self.controller.view.cursorPositionChanged.connect(
+            self.statusBar().clearMessage)
 
     def __createToolBar(self):
         self.toolBar = QtReduceToolBar(self)
@@ -568,23 +606,24 @@ class QtReduceMainWindow(QMainWindow):
 
         self.iconSetChanged.connect(self.toolBar.refresh)
         self.iconSizeChanged.connect(self.toolBar.iconSizeChanged)
-        self.toolButtonStyleChanged.connect(self.toolBar.toolButtonStyleChanged)
+        self.toolButtonStyleChanged.connect(
+            self.toolBar.toolButtonStyleChanged)
 
     def __initTitleBar(self):
-        self.setTitle(os.path.dirname(''))
+        self.setTitle(os.path.dirname(""))
         self.controller.fileNameChanged.connect(self.setTitle)
         self.controller.modified.connect(self.setWindowModified)
 
     def __savediag(self):
         diag = QMessageBox(self)
         msg = 'Do you want to save the changes in your worksheet "'
-        msg += (self.controller.fileName().split('/')[-1] or 'untitled') + '"?'
+        msg += (self.controller.fileName().split("/")[-1] or "untitled") + '"?'
         diag.setText(msg)
         diag.setInformativeText("Otherwise they will get lost")
         diag.setIcon(QMessageBox.Warning)
-        diag.setStandardButtons(QMessageBox.StandardButton.Discard |
-                                QMessageBox.StandardButton.Cancel |
-                                QMessageBox.StandardButton.Save)
+        diag.setStandardButtons(QMessageBox.StandardButton.Discard
+                                | QMessageBox.StandardButton.Cancel
+                                | QMessageBox.StandardButton.Save)
         diag.setWindowModality(Qt.WindowModal)
         return diag.exec_()
 
@@ -599,26 +638,29 @@ class QtReduceMainWindow(QMainWindow):
                 return False
         return True
 
-    def __resizeByFont(self,columns,lines):
-        mwidth = 72 * self.controller.view.fontMetrics().width('m')
+    def __resizeByFont(self, columns, lines):
+        mwidth = 72 * self.controller.view.fontMetrics().width("m")
         mheight = 9 * self.controller.view.fontMetrics().lineSpacing()
-        self.setMinimumSize(mwidth,mheight)
-        width = columns * self.controller.view.fontMetrics().width('m')
+        self.setMinimumSize(mwidth, mheight)
+        width = columns * self.controller.view.fontMetrics().width("m")
         height = lines * self.controller.view.fontMetrics().lineSpacing()
-        self.resize(width,height)
+        self.resize(width, height)
 
-    def __setWidthByFont(self,n,adaptHeight=False):
+    def __setWidthByFont(self, n, adaptHeight=False):
         oldWidth = self.width()
-        width = n * self.controller.view.fontMetrics().width('m')
-        traceLogger.debug("width=%s, n=%s, family=%s, size=%s" %
-                          (width,n,self.controller.view.font().family(),
-                           self.controller.view.font().pointSize()))
+        width = n * self.controller.view.fontMetrics().width("m")
+        traceLogger.debug("width=%s, n=%s, family=%s, size=%s" % (
+            width,
+            n,
+            self.controller.view.font().family(),
+            self.controller.view.font().pointSize(),
+        ))
         self.setFixedWidth(width)
         if adaptHeight:
-            factor = float(self.width())/float(oldWidth)
-            self.resize(1,int(self.height()*factor))
+            factor = float(self.width()) / float(oldWidth)
+            self.resize(1, int(self.height() * factor))
 
-    def __setFullScreenIcons(self,on):
+    def __setFullScreenIcons(self, on):
         if on:
             self.saveIconSize = QSettings().value("toolbar/iconsize",
                                                   QtReduceDefaults.ICONSIZE)
@@ -632,15 +674,14 @@ class QtReduceMainWindow(QMainWindow):
             self.toolBar.iconSizeChanged(str(self.saveIconSize))
             self.preferencePane.toolBar.iconSizeCombo.setEnabled(True)
 
-    def __setHeightByFont(self,n):
+    def __setHeightByFont(self, n):
         height = n * QFontMetrics(self.controller.view.font()).height()
-        self.resize(1,height)
+        self.resize(1, height)
 
 
 class QtReduceStatusBar(QStatusBar):
-
-    def __init__(self,parent=None):
-        QStatusBar.__init__(self,parent)
+    def __init__(self, parent=None):
+        QStatusBar.__init__(self, parent)
         self.symbolic = None
         font = self.font()
         traceLogger.debug(font.pointSize())
@@ -660,18 +701,18 @@ class QtReduceStatusBar(QStatusBar):
         self.addWidget(self.reduceStatus)
         self.reduceStatus.setText(self.tr("Initializing ..."))
 
-    def startComputationHandler(self,computation):
+    def startComputationHandler(self, computation):
         signalLogger.debug(computation.command)
         signalLogger.debug(computation.status)
         self.__updateStatus(computation.status)
 
-    def endComputationHandler(self,computation):
+    def endComputationHandler(self, computation):
         signalLogger.debug(computation.status)
         self.__updateStatus(computation.status)
-        self.__updateTime(computation.accTime,computation.accGcTime)
+        self.__updateTime(computation.accTime, computation.accGcTime)
         self.__updateMode(computation.symbolic)
 
-    def __updateMode(self,symbolic):
+    def __updateMode(self, symbolic):
         if symbolic != self.symbolic:
             self.symbolic = symbolic
             if self.symbolic:
@@ -679,11 +720,11 @@ class QtReduceStatusBar(QStatusBar):
             else:
                 self.reduceMode.setText(self.tr("Mode: Algebraic"))
 
-    def __updateTime(self,time,gcTime):
-        timeStr = "%.2f s" % (float(time + gcTime)/1000)
+    def __updateTime(self, time, gcTime):
+        timeStr = "%.2f s" % (float(time + gcTime) / 1000)
         self.reduceTime.setText(self.tr("Time: ") + timeStr)
 
-    def __updateStatus(self,status):
+    def __updateStatus(self, status):
         if status == QtReduceComputation.Evaluating:
             self.reduceStatus.setText(self.tr(" Evaluating"))
         else:
@@ -691,9 +732,8 @@ class QtReduceStatusBar(QStatusBar):
 
 
 class QtRecentFileMenu(QMenu):
-
-    def __init__(self,parent=None):
-        super(QtRecentFileMenu,self).__init__(parent)
+    def __init__(self, parent=None):
+        super(QtRecentFileMenu, self).__init__(parent)
 
         self.main = parent
 
@@ -707,27 +747,26 @@ class QtRecentFileMenu(QMenu):
             act.triggered.connect(self.main.openRecentFile)
             self.acts.append(act)
 
-        self.clearAct = QAction(self.tr("Clear Menu"),self)
+        self.clearAct = QAction(self.tr("Clear Menu"), self)
         self.clearAct.triggered.connect(self.clearRecentFiles)
 
-        #self.aboutToShow.connect(self.updateEntries)
-        QObject.connect(
-            self, SIGNAL('aboutToShow()'), self.updateEntries)
+        # self.aboutToShow.connect(self.updateEntries)
+        QObject.connect(self, SIGNAL("aboutToShow()"), self.updateEntries)
 
     def updateEntries(self):
         settings = QSettings()
         settings.sync()
 
         maxRecent = settings.value("menubar/maxrecent",
-                                      QtReduceDefaults.MAXRECENT)
+                                   QtReduceDefaults.MAXRECENT)
 
-        files = settings.value("menubar/recentfiles",[])
+        files = settings.value("menubar/recentfiles", [])
         for f in files:
             if not os.path.exists(f):
                 files.remove(f)
-        settings.setValue("menubar/recentfiles",files)
+        settings.setValue("menubar/recentfiles", files)
 
-        numShow = min(len(files),maxRecent)
+        numShow = min(len(files), maxRecent)
 
         for i in range(numShow):
             text = QFileInfo(files[i]).fileName()
@@ -735,7 +774,7 @@ class QtRecentFileMenu(QMenu):
             self.acts[i].setData(files[i])
             self.acts[i].setVisible(True)
 
-        for j in range(numShow,maxRecent):
+        for j in range(numShow, maxRecent):
             self.acts[j].setVisible(False)
 
         for i in range(maxRecent):
@@ -745,32 +784,31 @@ class QtRecentFileMenu(QMenu):
 
         self.addAction(self.clearAct)
 
-    def addFile(self,fullPath):
+    def addFile(self, fullPath):
         fileName = fullPath
         settings = QSettings()
-        files = settings.value("menubar/recentfiles",[])
+        files = settings.value("menubar/recentfiles", [])
 
         try:
             files.remove(fileName)
         except ValueError:
             pass
 
-        files.insert(0,fileName)
+        files.insert(0, fileName)
 
         maxRecent = settings.value("menubar/maxrecent",
                                    QtReduceDefaults.MAXRECENT)
         del files[maxRecent:]
 
-        settings.setValue("menubar/recentfiles",files)
+        settings.setValue("menubar/recentfiles", files)
 
     def clearRecentFiles(self):
-        QSettings().setValue("menubar/recentfiles",[])
+        QSettings().setValue("menubar/recentfiles", [])
 
 
 class QtReduceToolBar(QToolBar):
-
-    def __init__(self,parent=None):
-        super(QtReduceToolBar,self).__init__(parent)
+    def __init__(self, parent=None):
+        super(QtReduceToolBar, self).__init__(parent)
 
         buttonStyle = QSettings().value("toolbar/buttonstyle",
                                         self.tr(QtReduceDefaults.BUTTONSTYLE))
@@ -778,9 +816,10 @@ class QtReduceToolBar(QToolBar):
 
         iconSize = QSettings().value("toolbar/iconsize",
                                      QtReduceDefaults.ICONSIZE)
-        traceLogger.debug("2######### QtReduceDefaults.ICONSIZE is %s", QtReduceDefaults.ICONSIZE)
+        traceLogger.debug("2######### QtReduceDefaults.ICONSIZE is %s",
+                          QtReduceDefaults.ICONSIZE)
         traceLogger.debug("2######### iconSize is %s", iconSize)
-        self.setIconSize(QSize(int(iconSize),int(iconSize)))
+        self.setIconSize(QSize(int(iconSize), int(iconSize)))
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.contextMenu)
@@ -790,25 +829,26 @@ class QtReduceToolBar(QToolBar):
     def contextMenu(self):
         None
 
-    def iconSizeChanged(self,iconSize):
-        self.setIconSize(QSize(int(iconSize),int(iconSize)))
+    def iconSizeChanged(self, iconSize):
+        self.setIconSize(QSize(int(iconSize), int(iconSize)))
         self.refresh()
 
-    def toolButtonStyleChanged(self,text):
-        QSettings().setValue("toolbar/buttonstyle",text)
+    def toolButtonStyleChanged(self, text):
+        QSettings().setValue("toolbar/buttonstyle", text)
         self.setToolButtonStyleByText(text)
 
-    def setToolButtonStyleByText(self,text):
+    def setToolButtonStyleByText(self, text):
         style = self.__textToToolButtonStyle(text)
         self.setToolButtonStyle(style)
         self.refresh()
 
-    def __textToToolButtonStyle(self,show):
-        traceLogger.debug("show=%s,('%s', '%s', '%s')" %
-                          (show,
-                           self.tr("Symbol and Text"),
-                           self.tr("Only Symbol"),
-                           self.tr("Only Text")))
+    def __textToToolButtonStyle(self, show):
+        traceLogger.debug("show=%s,('%s', '%s', '%s')" % (
+            show,
+            self.tr("Symbol and Text"),
+            self.tr("Only Symbol"),
+            self.tr("Only Text"),
+        ))
         if show == self.tr("Symbol and Text"):
             return Qt.ToolButtonTextUnderIcon
         if show == self.tr("Only Symbol"):
@@ -825,9 +865,8 @@ class QtReduceToolBar(QToolBar):
 
 
 class QtReduceTableView(QTableView):
-
-    def __init__(self,parent=None):
-        super(QtReduceTableView,self).__init__(parent)
+    def __init__(self, parent=None):
+        super(QtReduceTableView, self).__init__(parent)
         font = self.font()
         font.setFamily(QSettings().value("worksheet/fontfamily",
                                          QtReduceDefaults.FONTFAMILY))
@@ -846,6 +885,6 @@ class QtReduceTableView(QTableView):
         self.setSelectionMode(QAbstractItemView.NoSelection)
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
-    def closeEvent(self,e):
+    def closeEvent(self, e):
         self.parent().toggleRawModel()
         e.accept()

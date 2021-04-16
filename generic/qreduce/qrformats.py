@@ -29,29 +29,23 @@
 #
 
 from PySide.QtCore import Qt
-
-from PySide.QtGui import QBrush
-from PySide.QtGui import QTextBlockFormat
-from PySide.QtGui import QTextFrameFormat
-from PySide.QtGui import QColor
-from PySide.QtGui import QFont
-from PySide.QtGui import qRgb
-from PySide.QtGui import QTextCharFormat
-from PySide.QtGui import QTextBlockUserData
-from PySide.QtGui import QTextFormat
+from PySide.QtGui import (QBrush, QColor, QFont, QTextBlockFormat,
+                          QTextBlockUserData, QTextCharFormat, QTextFormat,
+                          QTextFrameFormat, qRgb)
 
 # 0 = Input
 # 1 = Result
 # 2 = No Result
 # 3 = Error
 
+
 class QtReduceFormat(object):
-    GRAY = QColor(qRgb(235,235,238))
+    GRAY = QColor(qRgb(235, 235, 238))
     #    red = QColor(qRgb(250,220,220))
-    RED = QColor(qRgb(250,230,230))
-    DARKRED = QColor(qRgb(0xb0,0,0))
-    DARKBLUE = QColor(qRgb(0,0,0xb0))
-    DARKGRAY = QColor(qRgb(0xa0,0xa0,0xa0))
+    RED = QColor(qRgb(250, 230, 230))
+    DARKRED = QColor(qRgb(0xB0, 0, 0))
+    DARKBLUE = QColor(qRgb(0, 0, 0xB0))
+    DARKGRAY = QColor(qRgb(0xA0, 0xA0, 0xA0))
 
     def __init__(self):
         self.blockFormat = QTextBlockFormat()
@@ -65,20 +59,19 @@ class QtReduceFormat(object):
 
 
 class QtReduceInput(QtReduceFormat):
-
     def __new__(type, *args):
-        if not '_the_instance' in type.__dict__:
+        if not "_the_instance" in type.__dict__:
             type._the_instance = QtReduceFormat.__new__(type)
         return type._the_instance
 
     def __init__(self):
-        if not '_ready' in dir(self):
-            super(QtReduceInput,self).__init__()
+        if not "_ready" in dir(self):
+            super(QtReduceInput, self).__init__()
             self.charFormat.setForeground(QBrush(QtReduceFormat.DARKRED))
             self.showFrames(False)
             self._ready = True
 
-    def showFrames(self,b=False):
+    def showFrames(self, b=False):
         if b:
             self.blockFormat.setBackground(QtReduceFormat.GRAY)
             self.frameFormat.setBorder(1)
@@ -90,12 +83,11 @@ class QtReduceInput(QtReduceFormat):
 
 
 class QtReduceOutput(QtReduceFormat):
-
     def __init__(self):
-        super(QtReduceOutput,self).__init__()
+        super(QtReduceOutput, self).__init__()
         self.blockFormat.setNonBreakableLines(True)
 
-    def showFrames(self,b=False):
+    def showFrames(self, b=False):
         if b:
             self.frameFormat.setBorder(1)
             self.frameFormat.setBorderStyle(QTextFrameFormat.BorderStyle_Solid)
@@ -105,78 +97,73 @@ class QtReduceOutput(QtReduceFormat):
 
 
 class QtReduceResult(QtReduceOutput):
-
     def __new__(type, *args):
-        if not '_the_instance' in type.__dict__:
+        if not "_the_instance" in type.__dict__:
             type._the_instance = QtReduceOutput.__new__(type)
         return type._the_instance
 
     def __init__(self):
-        if not '_ready' in dir(self):
-            super(QtReduceResult,self).__init__()
+        if not "_ready" in dir(self):
+            super(QtReduceResult, self).__init__()
             self.charFormat.setForeground(QtReduceFormat.DARKBLUE)
             self._ready = True
 
 
 class QtReduceNoResult(QtReduceOutput):
-
     def __new__(type, *args):
-        if not '_the_instance' in type.__dict__:
+        if not "_the_instance" in type.__dict__:
             type._the_instance = QtReduceOutput.__new__(type)
         return type._the_instance
 
     def __init__(self):
-        if not '_ready' in dir(self):
-            super(QtReduceNoResult,self).__init__()
+        if not "_ready" in dir(self):
+            super(QtReduceNoResult, self).__init__()
             self.charFormat.setForeground(QtReduceFormat.DARKBLUE)
             self._ready = True
 
 
 class QtReduceError(QtReduceOutput):
-
     def __new__(type, *args):
-        if not '_the_instance' in type.__dict__:
+        if not "_the_instance" in type.__dict__:
             type._the_instance = QtReduceOutput.__new__(type)
         return type._the_instance
 
     def __init__(self):
-        if not '_ready' in dir(self):
-            super(QtReduceError,self).__init__()
+        if not "_ready" in dir(self):
+            super(QtReduceError, self).__init__()
             self.blockFormat.setBackground(QtReduceFormat.RED)
             self.charFormat.setForeground(Qt.black)
             self._ready = True
 
 
 class QtReduceInvalid(QtReduceFormat):
-
     def __new__(type, *args):
-        if not '_the_instance' in type.__dict__:
+        if not "_the_instance" in type.__dict__:
             type._the_instance = QtReduceOutput.__new__(type)
         return type._the_instance
 
     def __init__(self):
-        if not '_ready' in dir(self):
-            super(QtReduceInvalid,self).__init__()
+        if not "_ready" in dir(self):
+            super(QtReduceInvalid, self).__init__()
             self.blockFormat.setBackground(Qt.yellow)
             self._ready = True
 
 
 class QtReduceRowFormat(QTextFrameFormat):
-
     def __new__(type, *args):
-        if not '_the_instance' in type.__dict__:
+        if not "_the_instance" in type.__dict__:
             type._the_instance = QTextFrameFormat.__new__(type)
         return type._the_instance
 
     def __init__(self):
-        if not '_ready' in dir(self):
-            super(QtReduceRowFormat,self).__init__()
+        if not "_ready" in dir(self):
+            super(QtReduceRowFormat, self).__init__()
             self.setPosition(QTextFrameFormat.InFlow)
             self.setLeftMargin(20)
             self.showFrames(False)
             self._ready = True
 
-    def showFrames(self,b=True):
+    def showFrames(self, b=True):
         if b:
             self.setBorder(0.2)
             self.setBorderStyle(QTextFrameFormat.BorderStyle_Solid)

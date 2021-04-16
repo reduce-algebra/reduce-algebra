@@ -1,9 +1,8 @@
 // this is a sample file for reference
-if (typeof(Module) === "undefined") Module = {};
+if (typeof Module === "undefined") Module = {};
 // any arguments put here as strings
-Module["arguments"] = [];
-Module["preInit"] = function () {
-};
-Module["print"] = function(s) {
-    self.postMessage({channel: "stdout", line: s});
+Module.arguments = [];
+Module.preInit = function () {};
+Module.print = function (s) {
+  self.postMessage({ channel: "stdout", line: s });
 };

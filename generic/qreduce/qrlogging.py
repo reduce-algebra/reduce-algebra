@@ -32,7 +32,8 @@ import logging
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 
-formatter = logging.Formatter("%(name)s-%(levelname)s: %(module)s/%(funcName)s: %(message)s")
+formatter = logging.Formatter(
+    "%(name)s-%(levelname)s: %(module)s/%(funcName)s: %(message)s")
 ch.setFormatter(formatter)
 
 signalLogger = logging.getLogger("sig")

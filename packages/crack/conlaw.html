@@ -1,106 +1,131 @@
-<!DOCTYPE HTML PUBLIC "-//SQ//DTD HTML 2.0 + all extensions//EN"
-"hmpro3.dtd">
-<HTML>
-<HEAD>
-<TITLE>ConLaw</TITLE></HEAD>
-<BODY>
-<TABLE BORDER="BORDER">
-<TR>
-<TD>Title</TD>
-<TD><font face="Courier New">CONLAW</font></TD></TR>
-<TR>
-<TD>Author</TD>
-<TD>Thomas Wolf</TD></TR>
-<TR>
-<TD>Short description</TD>
-<TD>
-The package <font face="Courier New">CONLAW</font> computes
-first integrals of ordinary differential equations (ODEs)
-or conservation laws (CLs) of partial differential equations (PDEs)
-or systems of both. Four different approaches to compute CLs
-have been implemented in four different programs 
-<font face="Courier New">CONLAW1</font> ...
-<font face="Courier New">CONLAW4</font>. 
-All use the program 
-<a href="crack.html"><font face="Courier New">CRACK</font></a>
-to solve the overdetermined system of conditions they generate
-and all four versions use a set of common routines placed in the file
-<font face="Courier New">conlaw0.red</font>.
-</TD></TR>
-<TR>
-<TD>Platform</TD>
-<TD>REDUCE, version 3.6, 3.7 or 3.8</TD></TR>
-<TR>
-<TD>System requirements</TD>
-<TD>The memory requirements depend crucially on the
-application. For example, the non-trivial computations in the test file 
-<a href="http://lie.math.brocku.ca/crack/src/conlaw.tst">
-<font face="Courier New">conlaw.tst</font></a>
-have been run in a 8MB session under LINUX. 
-But it is not difficult to increase memory requirements
-indefinitely by simply increasing the order of the 
-conservation laws of PDEs that are to be computed.
-</TD></TR>
-<TR>
-<TD>Installation</TD>
-<TD>In a running REDUCE session either do <br>
-<font face="Courier New"> &nbsp; in "conlaw0.red"$ </font> <br>
-or, in order to speed up computation, either compile it with <br>
-<font face="Courier New"> &nbsp; on comp$ </font> <br>
-before the above command, or, generate a fast-loading compiled file once with <br>
-<font face="Courier New"> &nbsp; faslout "conlaw0"$ </font> <br>
-<font face="Courier New"> &nbsp; in "conlaw0.red"$ </font> <br>
-<font face="Courier New"> &nbsp; faslend$ </font> <br>
-and load that file whenever you want to run 
-<font face="Courier New">CONLAW</font> with <br>
-<font face="Courier New"> &nbsp; load conlaw0$ </font> <br>
-In a similar way proceed with <font face="Courier New">crack.red</font>
-and with <font face="Courier New">
-conlaw1.red,...,conlaw4.red</font> depending on which of the 4 approaches
-shall be applied.
-The above commands assume all files to be in the current directory. 
-</TD></TR>
-<TR>
-<TD>More information/updates </TD>
-<TD>There are available a 
-<a href="http://lie.math.brocku.ca/crack/src/conlaw.tex">manual</a>, a
-<a href="http://lie.math.brocku.ca/crack/src/conlaw.tst">test file</a> and a
-<a href="http://lie.math.brocku.ca/crack/src/conlaw.rlg">log file</a>. <br>
-A detailed comparison of the four methods is given in <br>
-Wolf, T.: <i> A comparison of four approaches to the calculation 
-          of conservation laws</i>, Euro. Jnl of Appl. Math., 
-          <b>13</b>, part 2 (2002) 129-152. <br>
-available as arxiv preprint cs.SC/0301027 and as  
-<a href="http://lie.math.brocku.ca/twolf/papers/conma.dvi">
-<font face="Courier New">dvi,</font></a>
-<a href="http://lie.math.brocku.ca/twolf/papers/conma.ps">
-<font face="Courier New">ps</font></a>  and 
-<a href="http://lie.math.brocku.ca/twolf/papers/conma.pdf">
-<font face="Courier New">pdf</font></a>
-file.<br>
-More related to the computer algebraic issues is the paper <br>
-Wolf, T., Brand, A., Mohammadzadeh, M.:
-          <i> Computer algebra algorithms and routines for the
-          computation of conservation laws and fixing of gauge
-          in differential expressions</i>, J. Symb. Comp.
-          <b>27</b> (1999), 221-238. <br>
-available as  
-<a href="http://lie.math.brocku.ca/twolf/papers/conca.dvi">
-<font face="Courier New">dvi,</font></a>
-<a href="http://lie.math.brocku.ca/twolf/papers/conca.ps">
-<font face="Courier New">ps</font></a>  and 
-<a href="http://lie.math.brocku.ca/twolf/papers/conca.pdf">
-<font face="Courier New">pdf</font></a>
-file.<br>
-<font face="Courier New"> CONLAW </font> can be run from a 
-<a href="http://cathode.maths.qmw.ac.uk/demo.html">web demo</a>
-created by Francis Wright and Arrigo Triulzi
-with problems of restricted size. <br>
-The latest version is available from 
-<a href="http://lie.math.brocku.ca/crack/src/">
-http://lie.math.brocku.ca/crack/src/</a>. <br>
-</TD></TR>
-<TR>
-<TD>Contact</TD>
-<TD>e-mail: <a href="mailto:twolf@brocku.ca">
-Thomas Wolf</a></TD></TR></TABLE></BODY></HTML>
+<!DOCTYPE html PUBLIC "-//SQ//DTD HTML 2.0 + all extensions//EN" "hmpro3.dtd">
+<html>
+  <head>
+    <title>ConLaw</title>
+  </head>
+  <body>
+    <table border="BORDER">
+      <tr>
+        <td>Title</td>
+        <td><font face="Courier New">CONLAW</font></td>
+      </tr>
+      <tr>
+        <td>Author</td>
+        <td>Thomas Wolf</td>
+      </tr>
+      <tr>
+        <td>Short description</td>
+        <td>
+          The package <font face="Courier New">CONLAW</font> computes first
+          integrals of ordinary differential equations (ODEs) or conservation
+          laws (CLs) of partial differential equations (PDEs) or systems of
+          both. Four different approaches to compute CLs have been implemented
+          in four different programs <font face="Courier New">CONLAW1</font> ...
+          <font face="Courier New">CONLAW4</font>. All use the program
+          <a href="crack.html"><font face="Courier New">CRACK</font></a>
+          to solve the overdetermined system of conditions they generate and all
+          four versions use a set of common routines placed in the file
+          <font face="Courier New">conlaw0.red</font>.
+        </td>
+      </tr>
+      <tr>
+        <td>Platform</td>
+        <td>REDUCE, version 3.6, 3.7 or 3.8</td>
+      </tr>
+      <tr>
+        <td>System requirements</td>
+        <td>
+          The memory requirements depend crucially on the application. For
+          example, the non-trivial computations in the test file
+          <a href="http://lie.math.brocku.ca/crack/src/conlaw.tst">
+            <font face="Courier New">conlaw.tst</font></a
+          >
+          have been run in a 8MB session under LINUX. But it is not difficult to
+          increase memory requirements indefinitely by simply increasing the
+          order of the conservation laws of PDEs that are to be computed.
+        </td>
+      </tr>
+      <tr>
+        <td>Installation</td>
+        <td>
+          In a running REDUCE session either do <br />
+          <font face="Courier New"> &nbsp; in "conlaw0.red"$ </font> <br />
+          or, in order to speed up computation, either compile it with <br />
+          <font face="Courier New"> &nbsp; on comp$ </font> <br />
+          before the above command, or, generate a fast-loading compiled file
+          once with <br />
+          <font face="Courier New"> &nbsp; faslout "conlaw0"$ </font> <br />
+          <font face="Courier New"> &nbsp; in "conlaw0.red"$ </font> <br />
+          <font face="Courier New"> &nbsp; faslend$ </font> <br />
+          and load that file whenever you want to run
+          <font face="Courier New">CONLAW</font> with <br />
+          <font face="Courier New"> &nbsp; load conlaw0$ </font> <br />
+          In a similar way proceed with
+          <font face="Courier New">crack.red</font> and with
+          <font face="Courier New"> conlaw1.red,...,conlaw4.red</font> depending
+          on which of the 4 approaches shall be applied. The above commands
+          assume all files to be in the current directory.
+        </td>
+      </tr>
+      <tr>
+        <td>More information/updates</td>
+        <td>
+          There are available a
+          <a href="http://lie.math.brocku.ca/crack/src/conlaw.tex">manual</a>, a
+          <a href="http://lie.math.brocku.ca/crack/src/conlaw.tst">test file</a>
+          and a
+          <a href="http://lie.math.brocku.ca/crack/src/conlaw.rlg">log file</a>.
+          <br />
+          A detailed comparison of the four methods is given in <br />
+          Wolf, T.:
+          <i>
+            A comparison of four approaches to the calculation of conservation
+            laws</i
+          >, Euro. Jnl of Appl. Math., <b>13</b>, part 2 (2002) 129-152. <br />
+          available as arxiv preprint cs.SC/0301027 and as
+          <a href="http://lie.math.brocku.ca/twolf/papers/conma.dvi">
+            <font face="Courier New">dvi,</font></a
+          >
+          <a href="http://lie.math.brocku.ca/twolf/papers/conma.ps">
+            <font face="Courier New">ps</font></a
+          >
+          and
+          <a href="http://lie.math.brocku.ca/twolf/papers/conma.pdf">
+            <font face="Courier New">pdf</font></a
+          >
+          file.<br />
+          More related to the computer algebraic issues is the paper <br />
+          Wolf, T., Brand, A., Mohammadzadeh, M.:
+          <i>
+            Computer algebra algorithms and routines for the computation of
+            conservation laws and fixing of gauge in differential expressions</i
+          >, J. Symb. Comp. <b>27</b> (1999), 221-238. <br />
+          available as
+          <a href="http://lie.math.brocku.ca/twolf/papers/conca.dvi">
+            <font face="Courier New">dvi,</font></a
+          >
+          <a href="http://lie.math.brocku.ca/twolf/papers/conca.ps">
+            <font face="Courier New">ps</font></a
+          >
+          and
+          <a href="http://lie.math.brocku.ca/twolf/papers/conca.pdf">
+            <font face="Courier New">pdf</font></a
+          >
+          file.<br />
+          <font face="Courier New"> CONLAW </font> can be run from a
+          <a href="http://cathode.maths.qmw.ac.uk/demo.html">web demo</a>
+          created by Francis Wright and Arrigo Triulzi with problems of
+          restricted size. <br />
+          The latest version is available from
+          <a href="http://lie.math.brocku.ca/crack/src/">
+            http://lie.math.brocku.ca/crack/src/</a
+          >. <br />
+        </td>
+      </tr>
+      <tr>
+        <td>Contact</td>
+        <td>e-mail: <a href="mailto:twolf@brocku.ca"> Thomas Wolf</a></td>
+      </tr>
+    </table>
+  </body>
+</html>

@@ -28,21 +28,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-from PySide.QtCore import QObject
-from PySide.QtCore import Signal
+from types import BooleanType, StringType
 
-from qrlogging import fontLogger
-from qrlogging import signalLogger
-from qrlogging import traceLogger
-
-from qrmodel import QtReduceComputation
-from qrmodel import QtReduceModel
-
-from qrview import QtReduceFrameView
-from qrview import SubCell
-
-from types import BooleanType
-from types import StringType
+from PySide.QtCore import QObject, Signal
+from qrlogging import fontLogger, signalLogger, traceLogger
+from qrmodel import QtReduceComputation, QtReduceModel
+from qrview import QtReduceFrameView, SubCell
 
 
 class QtReduceController(QObject):
@@ -52,12 +43,12 @@ class QtReduceController(QObject):
     modified = Signal(BooleanType)
     startComputation = Signal(object)
 
-    def __init__(self,parent=None):
-        super(QtReduceController,self).__init__(parent)
+    def __init__(self, parent=None):
+        super(QtReduceController, self).__init__(parent)
 
         self.mainWindow = parent
 
-        self.setFileName('')
+        self.setFileName("")
 
         self.model = QtReduceModel(self)
         self.view = QtReduceFrameView(parent)
@@ -77,14 +68,14 @@ class QtReduceController(QObject):
     def abortComputation(self):
         self.model.abortComputation()
 
-    def computationRequestV(self,row):
+    def computationRequestV(self, row):
         signalLogger.debug("catching row = %d" % row)
         if not self.view.input(row):
             return
-        index = self.model.index(row,0)
-        computation = self.model.data(index,QtReduceModel.RawDataRole)
+        index = self.model.index(row, 0)
+        computation = self.model.data(index, QtReduceModel.RawDataRole)
         computation.command = self.view.input(row)
-        self.model.setData(index,computation,QtReduceModel.RawDataRole)
+        self.model.setData(index, computation, QtReduceModel.RawDataRole)
         self.model.compute(row)
 
     def evaluateAll(self):
@@ -94,29 +85,33 @@ class QtReduceController(QObject):
     def evaluateSelection(self):
         None
 
-    def dataChangedM(self,topLeft,bottomRight):
+    def dataChangedM(self, topLeft, bottomRight):
         if self.updatingModel:
             return
         start = topLeft.row()
         end = bottomRight.row()
-        signalLogger.debug("start = %d, end = %d" % (start,end))
-        for row in range(start,end+1):
-            index = self.model.index(row,0)
-            computation = self.model.data(index,QtReduceModel.RawDataRole)
-            self.setCell(row,computation)
-            if computation.status in [QtReduceComputation.Error,
-                                      QtReduceComputation.Aborted]:
+        signalLogger.debug("start = %d, end = %d" % (start, end))
+        for row in range(start, end + 1):
+            index = self.model.index(row, 0)
+            computation = self.model.data(index, QtReduceModel.RawDataRole)
+            self.setCell(row, computation)
+            if computation.status in [
+                    QtReduceComputation.Error,
+                    QtReduceComputation.Aborted,
+            ]:
                 return
         if row < self.model.rowCount() - 1:
             self.view.gotoRow(row + 1)
 
-    def setCell(self,row,computation):
-        self.view.setCell(row,
-                          computation.c1,
-                          computation.command,
-                          computation.c2,
-                          computation.result,
-                          computation.c3)
+    def setCell(self, row, computation):
+        self.view.setCell(
+            row,
+            computation.c1,
+            computation.command,
+            computation.c2,
+            computation.result,
+            computation.c3,
+        )
         s = computation.status
         if s == QtReduceComputation.NotEvaluated:
             self.view.setNotEvaluated(row)
@@ -125,11 +120,11 @@ class QtReduceController(QObject):
                 result = computation.result
                 if not computation.symbolic:
                     result = self.renderResult(result)
-                self.view.setResult(row,result)
+                self.view.setResult(row, result)
             else:
                 self.view.setNoResult(row)
         elif s == QtReduceComputation.Error:
-            self.view.setError(row,computation.errorText)
+            self.view.setError(row, computation.errorText)
         elif s == QtReduceComputation.Aborted:
             self.view.setAborted(row)
         else:
@@ -145,10 +140,10 @@ class QtReduceController(QObject):
         if self.model.rowCount() == 0:
             self.model.insertRow(0)
 
-    def endComputationM(self,computation):
+    def endComputationM(self, computation):
         signalLogger.debug("catching computation.statCounter = %s,"
                            "status=%s" %
-                           (computation.statCounter,computation.status))
+                           (computation.statCounter, computation.status))
         self.view.setReadOnly(False)
         self.acceptAbort.emit(False)
         self.endComputation.emit(computation)
@@ -181,8 +176,8 @@ class QtReduceController(QObject):
         sc = self.view.subCell()
         if sc.type != SubCell.Root:
             row = sc.row
-            index = self.model.index(row,0)
-            computation = self.model.data(index,QtReduceModel.RawDataRole)
+            index = self.model.index(row, 0)
+            computation = self.model.data(index, QtReduceModel.RawDataRole)
             if sc.type == SubCell.Input:
                 computation.command = sc.content
             elif sc.type == SubCell.C1:
@@ -191,11 +186,11 @@ class QtReduceController(QObject):
                 computation.c2 = sc.content
             elif sc.type == SubCell.C3:
                 computation.c3 = sc.content
-            self.model.setData(index,computation,QtReduceModel.RawDataRole)
+            self.model.setData(index, computation, QtReduceModel.RawDataRole)
         self.modified.emit(True)
         self.updatingModel = False
 
-    def open(self,fileName):
+    def open(self, fileName):
         success = self.model.open(fileName)
         if success:
             self.view.gotoRow(self.model.rowCount() - 1)
@@ -204,47 +199,47 @@ class QtReduceController(QObject):
             self.parent().showMessage(self.tr("Read ") + fileName)
         return
 
-    def renderResult(self,result):
+    def renderResult(self, result):
         traceLogger.debug("result=%s" % result)
-        if result.strip("\\0123456789 ") == '':
-            return result.replace('\\ ','\\\n')
+        if result.strip("\\0123456789 ") == "":
+            return result.replace("\\ ", "\\\n")
         command = "qr_render(" + result.rstrip("$") + ");"
         answer = self.model.reduce.reduce.compute(command)
-        rendered = answer['pretext']
+        rendered = answer["pretext"]
         if rendered:
             rendered = rendered.strip("\n")
         traceLogger.debug("rendered=%s" % rendered)
         return rendered
 
-    def rowsInsertedM(self,parent,start,end):
+    def rowsInsertedM(self, parent, start, end):
         traceLogger.debug("start=%d, end=%d" % (start, end))
-        self.view.insertRows(start,end)
+        self.view.insertRows(start, end)
 
-    def rowsRemovedM(self,parent,start,end):
+    def rowsRemovedM(self, parent, start, end):
         traceLogger.debug("start=%d, end=%d" % (start, end))
-        self.view.removeRows(start,end)
+        self.view.removeRows(start, end)
 
     def save(self):
         if not self.__fileName:
-            traceLogger.critical('empty file name')
+            traceLogger.critical("empty file name")
         self.__saveAs(self.__fileName)
 
-    def saveAs(self,fileName):
+    def saveAs(self, fileName):
         self.__saveAs(fileName)
         self.setFileName(fileName)
 
-    def setFileName(self,name):
+    def setFileName(self, name):
         self.__fileName = name
         self.fileNameChanged.emit(name)
 
-    def startComputationM(self,computation):
+    def startComputationM(self, computation):
         signalLogger.debug("catching computation.command =  %s" %
                            computation.command)
         self.view.setReadOnly(True)
         self.acceptAbort.emit(True)
         self.startComputation.emit(computation)
 
-    def __saveAs(self,fileName):
+    def __saveAs(self, fileName):
         self.model.save(fileName)
         self.modified.emit(False)
         self.parent().showMessage(self.tr("Wrote ") + fileName)

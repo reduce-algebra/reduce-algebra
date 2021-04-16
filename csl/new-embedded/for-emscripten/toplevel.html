@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
     <title>Test of Reduce web-interface</title>
     <!-- This web page is a CRUDE demonstration of Reduce being able to run
          as a web application. Reduce itself is compiled using emscripten
@@ -25,16 +25,20 @@
          polyfil provides some extra compatibility with older browsers.
          mathjax can render TeX.
     -->
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6">
-    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script>
-       MathJax = {
-          chtml: { displayAlign: 'left' }
-       };
+      MathJax = {
+        chtml: { displayAlign: "left" },
+      };
     </script>
-    <script type="text/javascript" async
-       <!-- src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" -->
-       src="./tex-chtml.js">
+    <script
+      type="text/javascript"
+      async
+      <!--
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"
+      --
+    >
+      src="./tex-chtml.js">
     </script>
     <!-- Another component that we are investigating is mathlive, which
          supports an input editor for maths as well as a rendering
@@ -54,118 +58,114 @@
        </script>
     -->
     <script>
-        // This script sets up the initial layout with the input text
-        // area and the "submit" button. It also has the code that sets
-        // things up so that input is passed to Reduce and the output that
-        // comes back is scanned for U+0002 and U+0005 markers and if they
-        // are present then what lies beteen is taken as the description of
-        // some displayable mathematics.
-        window.reduceLatch = 0;
+      // This script sets up the initial layout with the input text
+      // area and the "submit" button. It also has the code that sets
+      // things up so that input is passed to Reduce and the output that
+      // comes back is scanned for U+0002 and U+0005 markers and if they
+      // are present then what lies beteen is taken as the description of
+      // some displayable mathematics.
+      window.reduceLatch = 0;
 
-        let inArea = document.createElement('textarea');
-        inArea.cols = 80;
-        inArea.rows = 10;
-        inArea.setAttribute('id', 'reduce-input');
-        inArea.value = 'int(1/(x^4-1), x);';
+      let inArea = document.createElement("textarea");
+      inArea.cols = 80;
+      inArea.rows = 10;
+      inArea.setAttribute("id", "reduce-input");
+      inArea.value = "int(1/(x^4-1), x);";
 
-        let button = document.createElement('button');
-        button.appendChild(document.createTextNode('Submit'));
-        let worker = new Worker('./reduce.web.js');
-        worker.onmessage = function(event) {
-            if (event.data.channel === 'stdout') {
-                let o = event.data.line;
-// If an empty string is passed (ie asking for a blank line of output)
-// console.log displays an <empty string> message that I view as ugly, so
-// I map blank lines into ones consisting of a single space character.
-                if (o == '') o = ' ';
-// Detect the case where the output line contains some TeX.
-                let n = o.indexOf('\002');
-                var body = document.getElementById("theBody");
-                if (n != -1)
-                {
-// Here I not only strip out the material before the "U+0002" but also the
-// "junk" that reads "latex:\black$\displaystyle" and a final "$U+0005".
-// Those are fragments that the Reduce interface for TeXmacs inserts.
-                    o = o.substring(n+1+26, o.length-2)
-// Reduce puts in "\*" for multiplication, but MathJax does not like that,
-// so I define it away into a narrow space. Well "\," works for now but
-// leads to warnings that as a width specification it is deprecated, so
-// I use "\hspace".
-                    o = '$$'.concat(o.replace(/\\\*/g, '\\hspace{0.167em}'), '$$');
-                    console.log(o);   // For debugging...
-                    var para = document.createElement("P");
-                    var node = document.createTextNode(o);
-                    para.appendChild(node);
-// When a new paragraph containing some maths is inserted I need to instruct
-// MathJax to process and expand it.
-                    MathJax.typesetPromise([para]);
-                    body.insertBefore(para, inArea);
-                }
-                else
-                {   console.log(o);   // For debugging...
-                    var para = document.createElement("P");
-                    var node = document.createTextNode(o);
-                    para.appendChild(node);
-// Textual rather than mathematical output from Reduce gets inserted as is.
-                    body.insertBefore(para, inArea);
-                }
-            }
-        }
-        function sendToReduce(str)
-        {   console.log(str);   // For debugging...
-// This function posts a string to Reduce, which treats it rather as if
-// it had been keyboard input. At the start of a run I use this to send a
-// sequence of commands to Reduce to adjust its input and output processing
-// to suit the needs I have here.
-            let buf = new Uint8Array(str.length+1);
-            for (let i=0; i<str.length; i++)
-                buf[i] = str.charCodeAt(i);
-            buf[str.length] = 0; // nul-terminate for benefit of C/C++.
-            worker.postMessage({
-                funcName: 'insert_buffer',
-                callbackId: '',
-                data: buf
-            });
-        }
-        button.addEventListener('click', event => {
-// need to convert the string to a Uint8Array
-            let str = unescape(encodeURIComponent(inArea.value));
-// The above snippet was found at
-//           https://gist.github.com/emrahgunduz/5c27ff1db650b93c7864
-// Insert the input text so that people can see it...
-            var para = document.createElement("P");//make an p element
-            var node = document.createTextNode(str);//create an innerHTML node
-            para.appendChild(node);//add the text to the p element
-            var body = document.getElementById("theBody");
+      let button = document.createElement("button");
+      button.appendChild(document.createTextNode("Submit"));
+      let worker = new Worker("./reduce.web.js");
+      worker.onmessage = function (event) {
+        if (event.data.channel === "stdout") {
+          let o = event.data.line;
+          // If an empty string is passed (ie asking for a blank line of output)
+          // console.log displays an <empty string> message that I view as ugly, so
+          // I map blank lines into ones consisting of a single space character.
+          if (o == "") o = " ";
+          // Detect the case where the output line contains some TeX.
+          let n = o.indexOf("\002");
+          var body = document.getElementById("theBody");
+          if (n != -1) {
+            // Here I not only strip out the material before the "U+0002" but also the
+            // "junk" that reads "latex:\black$\displaystyle" and a final "$U+0005".
+            // Those are fragments that the Reduce interface for TeXmacs inserts.
+            o = o.substring(n + 1 + 26, o.length - 2);
+            // Reduce puts in "\*" for multiplication, but MathJax does not like that,
+            // so I define it away into a narrow space. Well "\," works for now but
+            // leads to warnings that as a width specification it is deprecated, so
+            // I use "\hspace".
+            o = "$$".concat(o.replace(/\\\*/g, "\\hspace{0.167em}"), "$$");
+            console.log(o); // For debugging...
+            var para = document.createElement("P");
+            var node = document.createTextNode(o);
+            para.appendChild(node);
+            // When a new paragraph containing some maths is inserted I need to instruct
+            // MathJax to process and expand it.
+            MathJax.typesetPromise([para]);
             body.insertBefore(para, inArea);
-            let buf = new Uint8Array(str.length+1);
-            for (let i=0; i<str.length; i++)
-                buf[i] = str.charCodeAt(i);
-            buf[str.length] = 0; // nul-terminate for benefit of C/C++.
-            worker.postMessage({
-                funcName: 'insert_buffer',
-                callbackId: '',
-                data: buf
-            });
+          } else {
+            console.log(o); // For debugging...
+            var para = document.createElement("P");
+            var node = document.createTextNode(o);
+            para.appendChild(node);
+            // Textual rather than mathematical output from Reduce gets inserted as is.
+            body.insertBefore(para, inArea);
+          }
+        }
+      };
+      function sendToReduce(str) {
+        console.log(str); // For debugging...
+        // This function posts a string to Reduce, which treats it rather as if
+        // it had been keyboard input. At the start of a run I use this to send a
+        // sequence of commands to Reduce to adjust its input and output processing
+        // to suit the needs I have here.
+        let buf = new Uint8Array(str.length + 1);
+        for (let i = 0; i < str.length; i++) buf[i] = str.charCodeAt(i);
+        buf[str.length] = 0; // nul-terminate for benefit of C/C++.
+        worker.postMessage({
+          funcName: "insert_buffer",
+          callbackId: "",
+          data: buf,
         });
-        document.addEventListener("DOMContentLoaded", function(event) {
-            document.body.appendChild(inArea);
-            document.body.appendChild(button);
+      }
+      button.addEventListener("click", (event) => {
+        // need to convert the string to a Uint8Array
+        let str = unescape(encodeURIComponent(inArea.value));
+        // The above snippet was found at
+        //           https://gist.github.com/emrahgunduz/5c27ff1db650b93c7864
+        // Insert the input text so that people can see it...
+        var para = document.createElement("P"); //make an p element
+        var node = document.createTextNode(str); //create an innerHTML node
+        para.appendChild(node); //add the text to the p element
+        var body = document.getElementById("theBody");
+        body.insertBefore(para, inArea);
+        let buf = new Uint8Array(str.length + 1);
+        for (let i = 0; i < str.length; i++) buf[i] = str.charCodeAt(i);
+        buf[str.length] = 0; // nul-terminate for benefit of C/C++.
+        worker.postMessage({
+          funcName: "insert_buffer",
+          callbackId: "",
+          data: buf,
         });
-        sendToReduce('<< lisp (!*redefmsg := nil); load_package tmprint;' +
-                     ' on nat; on fancy; off promptnumbers;' +
-                     ' on redfront_mode >>$');
+      });
+      document.addEventListener("DOMContentLoaded", function (event) {
+        document.body.appendChild(inArea);
+        document.body.appendChild(button);
+      });
+      sendToReduce(
+        "<< lisp (!*redefmsg := nil); load_package tmprint;" +
+          " on nat; on fancy; off promptnumbers;" +
+          " on redfront_mode >>$"
+      );
     </script>
-</head>
+  </head>
 
-<body id="theBody">
-
-<!--
+  <body id="theBody">
+    <!--
    This would be use of MathLive... it may turn into a replacement for the
    crude input window I have at present.
    <math-field>f(x)=
    </math-field>
 -->
-
-</body>
+  </body>
 </html>

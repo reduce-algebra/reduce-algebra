@@ -1,35 +1,46 @@
+<a name="r38_0050"> <title>GOTO</title></a>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>GOTO</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>command</b></p>
 
-<a name=r38_0050>
+<p></p>
+<p>
+  Inside a <em>begin</em>...<em>end</em>
+  <a href="r38_0001.html#r38_0041">block</a>, <em>goto</em>, or preferably,
+  <em>go to</em>, transfers flow of control to a labeled statement.
+</p>
 
-<title>GOTO</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p>
+  <em>go to</em>&lt;labeled_statement&gt; or <em>goto</em> &lt;labeled_statement
+  &gt;
+</p>
 
+<p></p>
+<p></p>
+<p>
+  &lt;labeled_statement&gt; is of the form &lt;label&gt; <em>:</em>&lt;statement
+  &gt;
+</p>
 
-
-<b>GOTO</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
-<P>
- 
-Inside a <em>begin</em>...<em>end</em> 
-<a href=r38_0001.html#r38_0041>block</a>, <em>goto</em>, or 
-preferably, <em>go to</em>, transfers flow of control to a labeled statement. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>go to</em>&lt;labeled_statement&gt; or <em>goto</em> &lt;labeled_statement
-&gt; 
-<P>
-<P>
-<P>
-&lt;labeled_statement&gt; is of the form &lt;label&gt; <em>:</em>&lt;statement
-&gt; 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
      procedure dumb(a);
         begin scalar q;
            go to lab;
@@ -47,48 +58,64 @@ dumb(17);
 
   17
 
-</tt></pre><p><em>go to</em>can only be used inside a <em>begin</em>...<em>end
-</em> 
+</tt></pre>
+<p>
+  <em>go to</em>can only be used inside a <em>begin</em>...<em>end </em>
 
-<a href=r38_0001.html#r38_0041>block</a>, and inside 
-the block only statements at the top level can be labeled, not ones inside 
-<em>&lt;&lt;</em>...<em>&gt;&gt;</em>, 
-<a href=r38_0200.html#r38_0228>while</a>...<em>do</em>, etc. 
-<P>
-<P>
-<P>
+  <a href="r38_0001.html#r38_0041">block</a>, and inside the block only
+  statements at the top level can be labeled, not ones inside
+  <em>&lt;&lt;</em>...<em>&gt;&gt;</em>,
+  <a href="r38_0200.html#r38_0228">while</a>...<em>do</em>, etc.
+</p>
 
-<a name=r38_0051>
+<p></p>
+<p></p>
+<p>
+  <a name="r38_0051"> <title>GREATERP</title></a>
+</p>
 
-<title>GREATERP</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>GREATERP</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p>
+  The <em>greaterp</em> logical operator returns true if its first argument is
+  strictly greater than its second argument. As an infix operator it is
+  identical with <em>&gt;</em>.
+</p>
 
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p>
+  <em>greaterp</em>(&lt;expression&gt;,&lt;expression&gt;) or &lt;expression&gt;
+  <em>greaterp</em> &lt;expression&gt;
+</p>
 
-<b>GREATERP</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-The <em>greaterp</em> logical operator returns true if its first argument is 
-strictly greater than its second argument. As an infix operator it is 
-identical with <em>&gt;</em>. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>greaterp</em>(&lt;expression&gt;,&lt;expression&gt;) or &lt;expression&gt; 
-<em>greaterp</em> &lt;expression&gt; 
-<P>
-<P>
-<P>
-&lt;expression&gt; can be any valid REDUCE expression that evaluates to a 
-number. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p>
+  &lt;expression&gt; can be any valid REDUCE expression that evaluates to a
+  number.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 
 a := 20; 
 
@@ -115,57 +142,73 @@ if (a greaterp 18) then write &quot;big&quot; else write &quot;small&quot;;
 
   big
 
-</tt></pre><p>Logical operators can only be used in conditional statements such 
-as 
-<P>
-<P>
+</tt></pre>
+<p>Logical operators can only be used in conditional statements such as</p>
 
-<a href=r38_0050.html#r38_0052>if</a>...<em>then</em>...<em>else</em> 
-or 
-<a href=r38_0050.html#r38_0056>repeat</a>...
-<a href=r38_0200.html#r38_0228>while</a>. 
-<P>
-<P>
-<P>
+<p></p>
+<p>
+  <a href="r38_0050.html#r38_0052">if</a>...<em>then</em>...<em>else</em>
+  or
+  <a href="r38_0050.html#r38_0056">repeat</a>...
+  <a href="r38_0200.html#r38_0228">while</a>.
+</p>
 
-<a name=r38_0052>
+<p></p>
+<p></p>
+<p>
+  <a name="r38_0052"> <title>IF</title></a>
+</p>
 
-<title>IF</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>IF</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>command</b></p>
 
+<p></p>
+<p>
+  The <em>if</em> command is a conditional statement that executes a statement
+  if a condition is true, and optionally another statement if it is not.
+</p>
 
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p>
+  <em>if</em>&lt;condition&gt; <em>then</em> &lt;statement&gt; _ _ _ option(<em
+    >else</em
+  >
+  &lt;statement&gt;)
+</p>
 
-<b>IF</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
-<P>
- 
-The <em>if</em> command is a conditional statement that executes a statement 
-if a condition is true, and optionally another statement if it is not. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>if</em>&lt;condition&gt; <em>then</em> &lt;statement&gt; 
-  _ _ _ option(<em>else</em> &lt;statement&gt;) 
-<P>
-<P>
-<P>
-&lt;condition&gt; must be a logical or comparison operator that evaluates to 
-a 
-<a href=r38_0100.html#r38_0109>boolean value</a>. 
-&lt;statement&gt; must be a single REDUCE statement or a 
+<p></p>
+<p></p>
+<p>
+  &lt;condition&gt; must be a logical or comparison operator that evaluates to a
+  <a href="r38_0100.html#r38_0109">boolean value</a>. &lt;statement&gt; must be
+  a single REDUCE statement or a
 
-<a href=r38_0001.html#r38_0038>group</a> (<em>&lt;&lt;</em>...<em>&gt;&gt;</em>)
- or 
+  <a href="r38_0001.html#r38_0038">group</a>
+  (<em>&lt;&lt;</em>...<em>&gt;&gt;</em>) or
 
-<a href=r38_0001.html#r38_0041>block</a> (<em>begin</em>...<em>end</em>) stateme
-nt. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+  <a href="r38_0001.html#r38_0041">block</a> (<em>begin</em>...<em>end</em>)
+  stateme nt.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 if x = 5 then a := b+c else a := d+f;
 			 
 
@@ -218,116 +261,146 @@ bb := u**(if x &gt; 10 then 2);
          2
   BB := U
 
-</tt></pre><p>An <em>if</em> statement may be used inside an assignment statemen
-t and sets 
-its value depending on the conditions, or used anywhere else an 
-expression would be valid, as shown in the last example. If there is no 
- <em>else</em> clause, the value is 0 if a number is expected, and nothing 
-otherwise. 
-<P>
-<P>
-The <em>else</em> clause may be left out if no action is to be taken if the 
-condition is false. 
-<P>
-<P>
-The condition may be a compound conditional statement using 
-<a href=r38_0001.html#r38_0039>and</a> or 
+</tt></pre>
+<p>
+  An <em>if</em> statement may be used inside an assignment statemen t and sets
+  its value depending on the conditions, or used anywhere else an expression
+  would be valid, as shown in the last example. If there is no
+  <em>else</em> clause, the value is 0 if a number is expected, and nothing
+  otherwise.
+</p>
 
-<a href=r38_0050.html#r38_0054>or</a>. If a non-conditional statement, such as a
- constant, is used by 
-accident, it is assumed to have value true. 
- <P>
-<P>
-Be sure to use 
-<a href=r38_0001.html#r38_0038>group</a> or 
-<a href=r38_0001.html#r38_0041>block</a> statements after 
- <em>then</em> or <em>else</em>. 
-<P>
-<P>
-The <em>if</em> operator is right associative. The following constructions are 
-examples: 
-<P>
-<P>
- _ _ _ (1) 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>if</em>&lt;condition&gt; <em>then</em> <em>if</em> &lt;condition&gt; <em>the
-n</em> 
- &lt;action&gt; <em>else</em> &lt;action&gt; 
-<P>
-<P>
-<P>
-which is equivalent to 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>if</em>&lt;condition&gt; <em>then</em> (<em>if</em> &lt;condition&gt; 
- <em>then</em> &lt;action&gt; <em>else</em> &lt;action&gt;); 
-<P>
-<P>
-<P>
- _ _ _ (2) 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>if</em>&lt;condition&gt; <em>then</em> &lt;action&gt; <em>else if</em> 
- &lt;condition&gt; <em>then</em> &lt;action&gt; <em>else</em> &lt;action&gt; 
-<P>
-<P>
-<P>
-which is equivalent to 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>if</em>&lt;condition&gt; <em>then</em> &lt;action&gt; <em>else</em> 
-<P>
-<P>
-(<em>if</em> &lt;condition&gt; <em>then</em> &lt;action&gt; 
- <em>else</em> &lt;action&gt;). 
-<P>
-<P>
-<P>
-<P>
-<P>
-<P>
+<p></p>
+<p>
+  The <em>else</em> clause may be left out if no action is to be taken if the
+  condition is false.
+</p>
 
-<a name=r38_0053>
+<p></p>
+<p>
+  The condition may be a compound conditional statement using
+  <a href="r38_0001.html#r38_0039">and</a> or
 
-<title>LIST</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+  <a href="r38_0050.html#r38_0054">or</a>. If a non-conditional statement, such
+  as a constant, is used by accident, it is assumed to have value true.
+</p>
 
+<p></p>
+<p>
+  Be sure to use
+  <a href="r38_0001.html#r38_0038">group</a> or
+  <a href="r38_0001.html#r38_0041">block</a> statements after <em>then</em> or
+  <em>else</em>.
+</p>
 
+<p></p>
+<p>
+  The <em>if</em> operator is right associative. The following constructions are
+  examples:
+</p>
 
-<b>LIST</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
-The <em>list</em> operator constructs a list from its arguments. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>list</em>(&lt;item&gt; {,&lt;item&gt;}*) or 
- <em>list</em>() to construct an empty list. 
-<P>
-<P>
-<P>
-&lt;item&gt; can be any REDUCE scalar expression, including another list. 
-Left and right curly brackets can also be used instead of the operator 
-<em>list</em> to construct a list. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p>_ _ _ (1)</p>
+
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p>
+  <em>if</em>&lt;condition&gt; <em>then</em> <em>if</em> &lt;condition&gt;
+  <em>the n</em> &lt;action&gt; <em>else</em> &lt;action&gt;
+</p>
+
+<p></p>
+<p></p>
+<p>which is equivalent to</p>
+
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p>
+  <em>if</em>&lt;condition&gt; <em>then</em> (<em>if</em> &lt;condition&gt;
+  <em>then</em> &lt;action&gt; <em>else</em> &lt;action&gt;);
+</p>
+
+<p></p>
+<p></p>
+<p>_ _ _ (2)</p>
+
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p>
+  <em>if</em>&lt;condition&gt; <em>then</em> &lt;action&gt;
+  <em>else if</em> &lt;condition&gt; <em>then</em> &lt;action&gt;
+  <em>else</em> &lt;action&gt;
+</p>
+
+<p></p>
+<p></p>
+<p>which is equivalent to</p>
+
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p><em>if</em>&lt;condition&gt; <em>then</em> &lt;action&gt; <em>else</em></p>
+
+<p></p>
+<p>
+  (<em>if</em> &lt;condition&gt; <em>then</em> &lt;action&gt;
+  <em>else</em> &lt;action&gt;).
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p>
+  <a name="r38_0053"> <title>LIST</title></a>
+</p>
+
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>LIST</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
+
+<p></p>
+<p></p>
+
+<p></p>
+<p>The <em>list</em> operator constructs a list from its arguments.</p>
+
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p>
+  <em>list</em>(&lt;item&gt; {,&lt;item&gt;}*) or <em>list</em>() to construct
+  an empty list.
+</p>
+
+<p></p>
+<p></p>
+<p>
+  &lt;item&gt; can be any REDUCE scalar expression, including another list. Left
+  and right curly brackets can also be used instead of the operator
+  <em>list</em> to construct a list.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 liss := list(c,b,c,{xx,yy},3x**2+7x+3,df(sin(2*x),x));
 	 
 
@@ -358,50 +431,60 @@ a . emptylis;
 
   {A}
 
-</tt></pre><p>Lists are ordered, hierarchical structures. The elements stay wher
-e you 
-put them, and only change position in the list if you specifically change 
-them. Lists can have nested sublists to any (reasonable) level. The 
+</tt></pre>
+<p>
+  Lists are ordered, hierarchical structures. The elements stay wher e you put
+  them, and only change position in the list if you specifically change them.
+  Lists can have nested sublists to any (reasonable) level. The
 
-<a href=r38_0150.html#r38_0169>part</a> operator can be used to access elements 
-anywhere within a list 
-hierarchy. The 
-<a href=r38_0150.html#r38_0157>length</a> operator counts the 
-number of top-level elements 
-of its list argument; elements that are themselves lists still only 
-count as one element. 
-<P>
-<P>
-<P>
+  <a href="r38_0150.html#r38_0169">part</a> operator can be used to access
+  elements anywhere within a list hierarchy. The
+  <a href="r38_0150.html#r38_0157">length</a> operator counts the number of
+  top-level elements of its list argument; elements that are themselves lists
+  still only count as one element.
+</p>
 
-<a name=r38_0054>
+<p></p>
+<p></p>
+<p>
+  <a name="r38_0054"> <title>OR</title></a>
+</p>
 
-<title>OR</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>OR</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p>
+  The <em>or</em> binary logical operator returns true if either one or both of
+  its arguments is true.
+</p>
 
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p>&lt;logical expression&gt; <em>or</em> &lt;logical expression&gt;</p>
 
-<b>OR</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-The <em>or</em> binary logical operator returns true if either one or 
-both of its arguments is true. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-&lt;logical expression&gt; <em>or</em> &lt;logical expression&gt; 
-<P>
-<P>
-<P>
-&lt;logical expression&gt; must evaluate to true or nil. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p>&lt;logical expression&gt; must evaluate to true or nil.</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 a := 10; 
 
   A := 10 
@@ -427,75 +510,87 @@ if a &lt; 0 or a &gt; 140 then write &quot;not a valid human age&quot;;
 
   not a valid human age
 
-</tt></pre><p>The <em>or</em> operator is left associative: <em>x or y or z</em>
- is equivalent to 
-<em>(x or y)</em> <em>or z</em>. 
-<P>
-<P>
-Logical operators can only be used in conditional expressions, such as 
-<P>
-<P>
+</tt></pre>
+<p>
+  The <em>or</em> operator is left associative: <em>x or y or z</em>
+  is equivalent to
+  <em>(x or y)</em> <em>or z</em>.
+</p>
 
-<a href=r38_0050.html#r38_0052>if</a>...<em>then</em>...<em>else</em> 
-and 
-<a href=r38_0200.html#r38_0228>while</a>...<em>do</em>. 
-<em>or</em> evaluates its arguments in order and quits, returning true, 
-on finding the first true statement. 
-<P>
-<P>
-<P>
+<p></p>
+<p>Logical operators can only be used in conditional expressions, such as</p>
 
-<a name=r38_0055>
+<p></p>
+<p>
+  <a href="r38_0050.html#r38_0052">if</a>...<em>then</em>...<em>else</em>
+  and
+  <a href="r38_0200.html#r38_0228">while</a>...<em>do</em>.
+  <em>or</em> evaluates its arguments in order and quits, returning true, on
+  finding the first true statement.
+</p>
 
-<title>PROCEDURE</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p></p>
+<p></p>
+<p>
+  <a name="r38_0055"> <title>PROCEDURE</title></a>
+</p>
 
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>PROCEDURE</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>command</b></p>
 
+<p></p>
+<p>
+  The <em>procedure</em> command allows you to define a mathematical operation
+  as a function with arguments.
+</p>
 
-<b>PROCEDURE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
-<P>
- 
-The <em>procedure</em> command allows you to define a mathematical operation as 
-a 
-function with arguments. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
- _ _ _ &lt;option&gt; <em>procedure</em> &lt;identifier&gt; 
- (&lt;arg&gt;{,&lt;arg&gt;}+)<em>;</em>&lt;body&gt; 
-<P>
-<P>
-<P>
-The &lt;option&gt; may be 
-<a href=r38_0150.html#r38_0186>algebraic</a> or 
-<a href=r38_0200.html#r38_0221>symbolic</a>, 
-indicating the 
-mode under which the procedure is executed, or 
-<a href=r38_0200.html#r38_0216>real</a> or 
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p>
+  _ _ _ &lt;option&gt; <em>procedure</em> &lt;identifier&gt;
+  (&lt;arg&gt;{,&lt;arg&gt;}+)<em>;</em>&lt;body&gt;
+</p>
 
-<a href=r38_0150.html#r38_0197>integer</a>, indicating the type of answer expect
-ed. The default is 
-algebraic. Real or integer procedures are subtypes of algebraic 
-procedures; type-checking is done on the results of integer procedures, but 
-not on real procedures (in the current REDUCE release). &lt;identifier&gt; 
-may be any valid REDUCE identifier that is not already a procedure name, 
-operator, 
-<a href=r38_0150.html#r38_0188>array</a> or 
-<a href=r38_0300.html#r38_0345>matrix</a>. 
-&lt;arg&gt; is a formal parameter that may be any 
-valid REDUCE identifier. &lt;body&gt; is a single statement (a 
-<a href=r38_0001.html#r38_0038>group</a> 
-or 
-<a href=r38_0001.html#r38_0041>block</a> statement may be used) with the desired
- activities in it. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p>
+  The &lt;option&gt; may be
+  <a href="r38_0150.html#r38_0186">algebraic</a> or
+  <a href="r38_0200.html#r38_0221">symbolic</a>, indicating the mode under which
+  the procedure is executed, or <a href="r38_0200.html#r38_0216">real</a> or
+
+  <a href="r38_0150.html#r38_0197">integer</a>, indicating the type of answer
+  expect ed. The default is algebraic. Real or integer procedures are subtypes
+  of algebraic procedures; type-checking is done on the results of integer
+  procedures, but not on real procedures (in the current REDUCE release).
+  &lt;identifier&gt; may be any valid REDUCE identifier that is not already a
+  procedure name, operator, <a href="r38_0150.html#r38_0188">array</a> or
+  <a href="r38_0300.html#r38_0345">matrix</a>. &lt;arg&gt; is a formal parameter
+  that may be any valid REDUCE identifier. &lt;body&gt; is a single statement (a
+  <a href="r38_0001.html#r38_0038">group</a>
+  or
+  <a href="r38_0001.html#r38_0041">block</a> statement may be used) with the
+  desired activities in it.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 procedure fac(n);
    if not (fixp(n) and n&gt;=0)
      then rederr &quot;Choose nonneg. integer only&quot;
@@ -520,145 +615,171 @@ fac(-5);
 
   ***** choose nonneg. integer only
 
-</tt></pre><p>Procedures are automatically declared as operators upon definition
-. When 
-REDUCE has parsed the procedure definition and successfully converted it to 
-a form for its own use, it prints the name of the procedure. Procedure 
-definitions cannot be nested. Procedures can call other procedures, or can 
-recursively call themselves. Procedure identifiers can be cleared as you 
-would clear an operator. Unlike 
-<a href=r38_0150.html#r38_0199>let</a> statements, new definitions 
-under the same procedure name replace the previous definitions completely. 
-<P>
-<P>
-Be careful not to use the name of a system operator for your own procedure. 
-REDUCE may or may not give you a warning message. If you redefine a system 
-operator in your own procedure, the original function of the system operator 
-is lost for the remainder of the REDUCE session. 
-<P>
-<P>
-Procedures may have none, one, or more than one parameter. A REDUCE 
-parameter is a formal parameter only; the use of x as a parameter in 
-a <em>procedure</em> definition has no connection with a value of x in 
-the REDUCE session, and the results of calling a procedure have no effect 
-on the value of x. If a procedure is called with x as a 
-parameter, the current value of x is used as specified in the 
-computation, but is not changed outside the procedure. 
-Making an assignment statement by <em>:=</em> with a 
-formal parameter on the left-hand side only changes the value of the 
-calling parameter within the procedure. 
-<P>
-<P>
-Using a 
-<a href=r38_0150.html#r38_0199>let</a> statement inside a procedure always chang
-es the value 
-globally: a <em>let</em> with a formal parameter makes the change to the calling
- 
-parameter. <em>let</em> statements cannot be made on local variables inside 
+</tt></pre>
+<p>
+  Procedures are automatically declared as operators upon definition . When
+  REDUCE has parsed the procedure definition and successfully converted it to a
+  form for its own use, it prints the name of the procedure. Procedure
+  definitions cannot be nested. Procedures can call other procedures, or can
+  recursively call themselves. Procedure identifiers can be cleared as you would
+  clear an operator. Unlike <a href="r38_0150.html#r38_0199">let</a> statements,
+  new definitions under the same procedure name replace the previous definitions
+  completely.
+</p>
 
-<a href=r38_0001.html#r38_0040>begin</a>...<em>end</em> 
-<a href=r38_0001.html#r38_0041>block</a><em>s</em>. 
-When 
-<a href=r38_0150.html#r38_0189>clear</a> statements are used on formal 
-parameters, the calling variables associated with them are cleared globally too.
- 
-The use of <em>let</em> or <em>clear</em> statements inside procedures 
-should be done with extreme caution. 
-<P>
-<P>
-Arrays and operators may be used as parameters to procedures. The body of the 
-procedure can contain statements that appropriately manipulate these 
-arguments. Changes are made to values of the calling arrays or operators. 
-Simple expressions can also be used as arguments, in the place of scalar 
-variables. Matrices may not be used as arguments to procedures. 
-<P>
-<P>
-A procedure that has no parameters is called by the procedure name, 
-immediately followed by empty parentheses. The empty parentheses may be left 
-out when writing a procedure with no parameters, but must appear in a call of 
-the procedure. If this is a nuisance to you, use a 
-<a href=r38_0150.html#r38_0199>let</a> statement on 
-the name of the procedure (i.e., <em>let noargs = noargs()</em>) after which 
-you can call the procedure by just its name. 
-<P>
-<P>
-Procedures that have a single argument can leave out the parentheses around 
-it both in the definition and procedure call. (You can use the parentheses if 
-you wish.) Procedures with more than one argument must use parentheses, with 
-the arguments separated by commas. 
-<P>
-<P>
-Procedures often have a <em>begin</em>...<em>end</em> block in them. Inside the 
+<p></p>
+<p>
+  Be careful not to use the name of a system operator for your own procedure.
+  REDUCE may or may not give you a warning message. If you redefine a system
+  operator in your own procedure, the original function of the system operator
+  is lost for the remainder of the REDUCE session.
+</p>
 
-block, local variables are declared using <em>scalar</em>, <em>real</em> or 
-<em>integer</em> declarations. 
-The declarations must be made immediately after the word 
-<em>begin</em>, and if more than one type of declaration is made, they are 
-separated by semicolons. REDUCE currently does no type checking on local 
-variables; <em>real</em> and <em>integer</em> are treated just like <em>scalar
-</em>. 
-Actions take place as specified in the statements inside the block statement. 
-Any identifiers that are not formal parameters or local variables are treated 
-as global variables, and activities involving these identifiers are global in 
-effect. 
-<P>
-<P>
-If a return value is desired from a procedure call, a specific 
+<p></p>
+<p>
+  Procedures may have none, one, or more than one parameter. A REDUCE parameter
+  is a formal parameter only; the use of x as a parameter in a
+  <em>procedure</em> definition has no connection with a value of x in the
+  REDUCE session, and the results of calling a procedure have no effect on the
+  value of x. If a procedure is called with x as a parameter, the current value
+  of x is used as specified in the computation, but is not changed outside the
+  procedure. Making an assignment statement by <em>:=</em> with a formal
+  parameter on the left-hand side only changes the value of the calling
+  parameter within the procedure.
+</p>
 
-<a href=r38_0050.html#r38_0058>return</a> command must be the last statement exe
-cuted before exiting 
-from the procedure. If no <em>return</em> is used, a procedure returns a 
-zero or no value. 
-<P>
-<P>
-Procedures are often written in a file using an editor, then the file 
-is input using the command 
-<a href=r38_0200.html#r38_0231>in</a>. This method allows easy changes in 
-development, and also allows you to load the named procedures whenever 
-you like, by loading the files that contain them. 
-<P>
-<P>
-<P>
+<p></p>
+<p>
+  Using a
+  <a href="r38_0150.html#r38_0199">let</a> statement inside a procedure always
+  chang es the value globally: a <em>let</em> with a formal parameter makes the
+  change to the calling parameter. <em>let</em> statements cannot be made on
+  local variables inside
 
-<a name=r38_0056>
+  <a href="r38_0001.html#r38_0040">begin</a>...<em>end</em>
+  <a href="r38_0001.html#r38_0041">block</a><em>s</em>. When
+  <a href="r38_0150.html#r38_0189">clear</a> statements are used on formal
+  parameters, the calling variables associated with them are cleared globally
+  too. The use of <em>let</em> or <em>clear</em> statements inside procedures
+  should be done with extreme caution.
+</p>
 
-<title>REPEAT</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p></p>
+<p>
+  Arrays and operators may be used as parameters to procedures. The body of the
+  procedure can contain statements that appropriately manipulate these
+  arguments. Changes are made to values of the calling arrays or operators.
+  Simple expressions can also be used as arguments, in the place of scalar
+  variables. Matrices may not be used as arguments to procedures.
+</p>
 
+<p></p>
+<p>
+  A procedure that has no parameters is called by the procedure name,
+  immediately followed by empty parentheses. The empty parentheses may be left
+  out when writing a procedure with no parameters, but must appear in a call of
+  the procedure. If this is a nuisance to you, use a
+  <a href="r38_0150.html#r38_0199">let</a> statement on the name of the
+  procedure (i.e., <em>let noargs = noargs()</em>) after which you can call the
+  procedure by just its name.
+</p>
 
+<p></p>
+<p>
+  Procedures that have a single argument can leave out the parentheses around it
+  both in the definition and procedure call. (You can use the parentheses if you
+  wish.) Procedures with more than one argument must use parentheses, with the
+  arguments separated by commas.
+</p>
 
-<b>REPEAT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
-<P>
- 
- <P>
-<P>
-The 
-<a href=r38_0050.html#r38_0056>repeat</a> command causes repeated execution of a
- statement 
- <em>until</em><P>
-<P>
-the given condition is found to be true. The statement is always executed 
-at least once. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>repeat</em>&lt;statement&gt; <em>until</em> &lt;condition&gt; 
-<P>
-<P>
-<P>
-&lt;statement&gt; can be a single statement, 
-<a href=r38_0001.html#r38_0038>group</a> statement, or 
-a <em>begin</em>...<em>end</em> 
-<a href=r38_0001.html#r38_0041>block</a>. &lt;condition&gt; must be 
-a logical operator that evaluates to true or nil. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p>
+  Procedures often have a <em>begin</em>...<em>end</em> block in them. Inside
+  the block, local variables are declared using <em>scalar</em>,
+  <em>real</em> or <em>integer</em> declarations. The declarations must be made
+  immediately after the word <em>begin</em>, and if more than one type of
+  declaration is made, they are separated by semicolons. REDUCE currently does
+  no type checking on local variables; <em>real</em> and <em>integer</em> are
+  treated just like <em>scalar </em>. Actions take place as specified in the
+  statements inside the block statement. Any identifiers that are not formal
+  parameters or local variables are treated as global variables, and activities
+  involving these identifiers are global in effect.
+</p>
+
+<p></p>
+<p>
+  If a return value is desired from a procedure call, a specific
+
+  <a href="r38_0050.html#r38_0058">return</a> command must be the last statement
+  exe cuted before exiting from the procedure. If no <em>return</em> is used, a
+  procedure returns a zero or no value.
+</p>
+
+<p></p>
+<p>
+  Procedures are often written in a file using an editor, then the file is input
+  using the command
+  <a href="r38_0200.html#r38_0231">in</a>. This method allows easy changes in
+  development, and also allows you to load the named procedures whenever you
+  like, by loading the files that contain them.
+</p>
+
+<p></p>
+<p></p>
+<p>
+  <a name="r38_0056"> <title>REPEAT</title></a>
+</p>
+
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>REPEAT</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>command</b></p>
+
+<p></p>
+<p></p>
+
+<p></p>
+<p>
+  The
+  <a href="r38_0050.html#r38_0056">repeat</a> command causes repeated execution
+  of a statement <em>until</em>
+</p>
+
+<p></p>
+<p>
+  the given condition is found to be true. The statement is always executed at
+  least once.
+</p>
+
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p><em>repeat</em>&lt;statement&gt; <em>until</em> &lt;condition&gt;</p>
+
+<p></p>
+<p></p>
+<p>
+  &lt;statement&gt; can be a single statement,
+  <a href="r38_0001.html#r38_0038">group</a> statement, or a
+  <em>begin</em>...<em>end</em> <a href="r38_0001.html#r38_0041">block</a>.
+  &lt;condition&gt; must be a logical operator that evaluates to true or nil.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 &lt;&lt;m := 4; repeat &lt;&lt;write 100*x*m;m := m-1&gt;&gt; until m = 0&gt;
 &gt;;
 			 
@@ -678,49 +799,64 @@ examples: </H3>
 
   -1
 
-</tt></pre><p><em>repeat</em>must always be followed by an <em>until</em> with a
- condition. 
-Be careful not to generate an infinite loop with a condition that is never 
-true. In the second example, if the condition had been <em>m = 0</em>, it 
-would never have been true since <em>m</em> already had value -2 when the 
-condition was first evaluated. 
-<P>
-<P>
-<P>
+</tt></pre>
+<p>
+  <em>repeat</em>must always be followed by an <em>until</em> with a condition.
+  Be careful not to generate an infinite loop with a condition that is never
+  true. In the second example, if the condition had been <em>m = 0</em>, it
+  would never have been true since <em>m</em> already had value -2 when the
+  condition was first evaluated.
+</p>
 
-<a name=r38_0057>
+<p></p>
+<p></p>
+<p>
+  <a name="r38_0057"> <title>REST</title></a>
+</p>
 
-<title>REST</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>REST</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>
+  The <em>rest</em> operator returns a
+  <a href="r38_0050.html#r38_0053">list</a> containing all but the first element
+  of the list it is given.
+</p>
 
-<b>REST</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
-The <em>rest</em> operator returns a 
-<a href=r38_0050.html#r38_0053>list</a> containing all but the first 
-element of the list it is given. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>rest</em>(&lt;list&gt;) or <em>rest</em> &lt;list&gt; 
-<P>
-<P>
-<P>
-<P>
-&lt;list&gt; must be a non-empty list, but need not have more than one element. 
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p><em>rest</em>(&lt;list&gt;) or <em>rest</em> &lt;list&gt;</p>
 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<p>
+  &lt;list&gt; must be a non-empty list, but need not have more than one
+  element.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 alist := {a,b,c,d}; 
 
   ALIST := {A,B,C,D}; 
@@ -750,38 +886,51 @@ rest clist;
 
   {}
 
-</tt></pre><p>
-<a name=r38_0058>
+</tt></pre>
+<p>
+  <a name="r38_0058"> <title>RETURN</title></a>
+</p>
 
-<title>RETURN</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>RETURN</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>command</b></p>
 
+<p></p>
+<p>
+  The <em>return</em> command causes a value to be returned from inside a
+  <em>begin</em>...<em>end</em> <a href="r38_0001.html#r38_0041">block</a>.
+</p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>begin</em>&lt;statements&gt; <em>return</em> &lt;(expression)&gt;
+<em>end</em>
+<p></p>
+<p></p>
+<p></p>
+<p>
+  &lt;statements&gt; can be any valid REDUCE statements. The value of
+  &lt;expression&gt; is returned.
+</p>
 
-<b>RETURN</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
-<P>
- 
-The <em>return</em> command causes a value to be returned from inside a 
-<em>begin</em>...<em>end</em> 
-<a href=r38_0001.html#r38_0041>block</a>. 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>begin</em>&lt;statements&gt; <em>return</em> &lt;(expression)&gt; 
- <em>end</em><P>
-<P>
-<P>
-<P>
-&lt;statements&gt; can be any valid REDUCE statements. The value of 
-&lt;expression&gt; is returned. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 begin write &quot;yes&quot;; return a end; 
 
   yes
@@ -824,79 +973,95 @@ d;
 
   17
 
-</tt></pre><p>Note in <em>dumb2</em> above that the assignments were made as req
-uested, but 
-the product <em>c*d</em> cannot be accessed. Changing the procedure to read 
-<em>return c*d</em> would remedy this problem. 
-<P>
-<P>
-The <em>return</em> statement is always the last statement executed before 
-leaving the block. If <em>return</em> has no argument, the block is exited but 
-no value is returned. A block statement does not need a <em>return</em> ; 
-the statements inside terminate in their normal fashion without one. 
-In that case no value is returned, although the specified actions inside the 
-block take place. 
-<P>
-<P>
-The <em>return</em> command can be used inside <em>&lt;&lt;</em>...<em>&gt;&gt;
-</em> 
+</tt></pre>
+<p>
+  Note in <em>dumb2</em> above that the assignments were made as req uested, but
+  the product <em>c*d</em> cannot be accessed. Changing the procedure to read
+  <em>return c*d</em> would remedy this problem.
+</p>
 
-<a href=r38_0001.html#r38_0038>group</a> statements and 
+<p></p>
+<p>
+  The <em>return</em> statement is always the last statement executed before
+  leaving the block. If <em>return</em> has no argument, the block is exited but
+  no value is returned. A block statement does not need a <em>return</em> ; the
+  statements inside terminate in their normal fashion without one. In that case
+  no value is returned, although the specified actions inside the block take
+  place.
+</p>
 
-<a href=r38_0050.html#r38_0052>if</a>...<em>then</em>...<em>else</em> commands t
-hat 
-are inside <em>begin</em>...<em>end</em> 
-<a href=r38_0001.html#r38_0041>block</a>s. 
-It is not valid in these constructions that are not inside 
-a <em>begin</em>...<em>end</em> 
- block. It is not valid inside 
-<a href=r38_0001.html#r38_0047>for</a>, 
+<p></p>
+<p>
+  The <em>return</em> command can be used inside <em>&lt;&lt;</em>...<em
+    >&gt;&gt;
+  </em>
 
-<a href=r38_0050.html#r38_0056>repeat</a>...<em>until</em> or 
-<a href=r38_0200.html#r38_0228>while</a>...<em>do</em> 
- loops in any construction. To force early termination from loops, the 
-<em>go to</em>(
-<a href=r38_0050.html#r38_0050>goto</a>) command must be used. 
-When you use nested block statements, a 
-<em>return</em> from an inner block exits returning a value to the next-outermos
-t 
-block, rather than all the way to the outside. 
-<P>
-<P>
-<P>
+  <a href="r38_0001.html#r38_0038">group</a> statements and
 
-<a name=r38_0059>
+  <a href="r38_0050.html#r38_0052">if</a>...<em>then</em>...<em>else</em>
+  commands t hat are inside <em>begin</em>...<em>end</em>
+  <a href="r38_0001.html#r38_0041">block</a>s. It is not valid in these
+  constructions that are not inside a <em>begin</em>...<em>end</em>
+  block. It is not valid inside
+  <a href="r38_0001.html#r38_0047">for</a>,
 
-<title>REVERSE</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+  <a href="r38_0050.html#r38_0056">repeat</a>...<em>until</em> or
+  <a href="r38_0200.html#r38_0228">while</a>...<em>do</em>
+  loops in any construction. To force early termination from loops, the
+  <em>go to</em>( <a href="r38_0050.html#r38_0050">goto</a>) command must be
+  used. When you use nested block statements, a <em>return</em> from an inner
+  block exits returning a value to the next-outermos t block, rather than all
+  the way to the outside.
+</p>
 
+<p></p>
+<p></p>
+<p>
+  <a name="r38_0059"> <title>REVERSE</title></a>
+</p>
 
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>REVERSE</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
-<b>REVERSE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
-The <em>reverse</em> operator returns a 
-<a href=r38_0050.html#r38_0053>list</a> that is the reverse of the 
-list it is given. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>reverse</em>(&lt;list&gt;) or <em>reverse</em> &lt;list&gt; 
-<P>
-<P>
-<P>
-&lt;list&gt; must be a 
-<a href=r38_0050.html#r38_0053>list</a>. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+
+<p></p>
+<p>
+  The <em>reverse</em> operator returns a
+  <a href="r38_0050.html#r38_0053">list</a> that is the reverse of the list it
+  is given.
+</p>
+
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p><em>reverse</em>(&lt;list&gt;) or <em>reverse</em> &lt;list&gt;</p>
+
+<p></p>
+<p></p>
+<p>
+  &lt;list&gt; must be a
+  <a href="r38_0050.html#r38_0053">list</a>.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 aa := {c,b,a,{x**2,z**3},y}; 
 
                  2  3
@@ -914,83 +1079,99 @@ reverse(q . reverse aa);
            2  3
   {C,B,A,{X ,Z },Y,Q}
 
-</tt></pre><p><em>reverse</em>and 
-<a href=r38_0001.html#r38_0043>cons</a> can be used together to add a new elemen
-t to 
-the end of a list (<em>.</em> adds its new element to the beginning). The 
-<em>reverse</em> operator uses a noticeable amount of system resources, 
-especially if the list is long. If you are doing much heavy-duty list 
-manipulation, you should probably design your algorithms to avoid much 
-reversing of lists. A moderate amount of list reversing is no problem. 
-<P>
-<P>
-<P>
+</tt></pre>
+<p>
+  <em>reverse</em>and <a href="r38_0001.html#r38_0043">cons</a> can be used
+  together to add a new elemen t to the end of a list (<em>.</em> adds its new
+  element to the beginning). The <em>reverse</em> operator uses a noticeable
+  amount of system resources, especially if the list is long. If you are doing
+  much heavy-duty list manipulation, you should probably design your algorithms
+  to avoid much reversing of lists. A moderate amount of list reversing is no
+  problem.
+</p>
 
-<a name=r38_0060>
+<p></p>
+<p></p>
+<p>
+  <a name="r38_0060"> <title>RULE</title></a>
+</p>
 
-<title>RULE</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>RULE</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>type</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>
+  A <em>rule</em> is an instruction to replace an algebraic expression or a part
+  of an expression by another one.
+</p>
 
-<b>RULE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>type</b><P>
-<P>
- 
- <P>
-<P>
-A <em>rule</em> is an instruction to replace an algebraic expression 
-or a part of an expression by another one. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-&lt;lhs&gt; =&gt; &lt;rhs&gt; or 
-&lt;lhs&gt; =&gt; &lt;rhs&gt; <em>when</em> &lt;cond&gt; 
-<P>
-<P>
-<P>
-&lt;lhs&gt; is an algebraic expression used as search pattern and 
-&lt;rhs&gt; is an algebraic expression which replaces matches of 
-&lt;rhs&gt;. <em>=&gt;</em> is the operator 
-<a href=r38_0001.html#r38_0026>replace</a>. 
-<P>
-<P>
-&lt;lhs&gt; can contain 
-<a href=r38_0050.html#r38_0061>free variable</a>s which are 
-symbols preceded by a tilde <em>~</em> in their leftmost position 
-in &lt;lhs&gt;. 
-A double tilde marks an 
-<a href=r38_0050.html#r38_0062>optional free variable</a>. 
-If a rule has a <em>when</em> &lt;cond&gt; 
-part it will fire only if the evaluation of &lt;cond&gt; has a 
-result 
-<a href=r38_0100.html#r38_0122>true</a>. &lt;cond&gt; may contain references to 
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p>
+  &lt;lhs&gt; =&gt; &lt;rhs&gt; or &lt;lhs&gt; =&gt; &lt;rhs&gt;
+  <em>when</em> &lt;cond&gt;
+</p>
 
-free variables of &lt;lhs&gt;. 
-<P>
-<P>
-Rules can be collected in a 
-<a href=r38_0050.html#r38_0053>list</a> which then forms a 
- <em>rule list</em>. <em>Rule lists</em> can be used to collect 
-algebraic knowledge for a specific evaluation context. 
-<P>
-<P>
-<em>Rules</em>and <em>rule lists</em> are globally activated and 
-deactivated by 
-<a href=r38_0150.html#r38_0199>let</a>, 
-<a href=r38_0150.html#r38_0195>forall</a>, 
-<a href=r38_0150.html#r38_0190>clearrules</a>. 
-For a single evaluation they can be locally activate by 
-<a href=r38_0200.html#r38_0227>where</a>. 
-The active rules for an operator can be visualized by 
-<a href=r38_0150.html#r38_0178>showrules</a>. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p>
+  &lt;lhs&gt; is an algebraic expression used as search pattern and &lt;rhs&gt;
+  is an algebraic expression which replaces matches of &lt;rhs&gt;.
+  <em>=&gt;</em> is the operator <a href="r38_0001.html#r38_0026">replace</a>.
+</p>
+
+<p></p>
+<p>
+  &lt;lhs&gt; can contain
+  <a href="r38_0050.html#r38_0061">free variable</a>s which are symbols preceded
+  by a tilde <em>~</em> in their leftmost position in &lt;lhs&gt;. A double
+  tilde marks an <a href="r38_0050.html#r38_0062">optional free variable</a>. If
+  a rule has a <em>when</em> &lt;cond&gt; part it will fire only if the
+  evaluation of &lt;cond&gt; has a result
+  <a href="r38_0100.html#r38_0122">true</a>. &lt;cond&gt; may contain references
+  to free variables of &lt;lhs&gt;.
+</p>
+
+<p></p>
+<p>
+  Rules can be collected in a
+  <a href="r38_0050.html#r38_0053">list</a> which then forms a
+  <em>rule list</em>. <em>Rule lists</em> can be used to collect algebraic
+  knowledge for a specific evaluation context.
+</p>
+
+<p></p>
+<p>
+  <em>Rules</em>and <em>rule lists</em> are globally activated and deactivated
+  by <a href="r38_0150.html#r38_0199">let</a>,
+  <a href="r38_0150.html#r38_0195">forall</a>,
+  <a href="r38_0150.html#r38_0190">clearrules</a>. For a single evaluation they
+  can be locally activate by <a href="r38_0200.html#r38_0227">where</a>. The
+  active rules for an operator can be visualized by
+  <a href="r38_0150.html#r38_0178">showrules</a>.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 operator f,g,h; 
 
 let f(x) =&gt; x^2; 
@@ -1011,114 +1192,150 @@ g(3,x);
 
   h(-1,x)
 
-</tt></pre><p>
-<a name=r38_0061>
+</tt></pre>
+<p>
+  <a name="r38_0061"> <title>Free_Variable</title></a>
+</p>
 
-<title>Free_Variable</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>FREE VARIABLE</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>type</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>
+  A variable preceded by a tilde is considered as <em>free variable</em>
+  and stands for an arbitrary part in an algebraic form during pattern matching.
+  Free variables occur in the left-hand sides of
+  <a href="r38_0050.html#r38_0060">rule</a>s, in the side relations for
+  <a href="r38_0600.html#r38_0642">compact</a>
+  and in the first arguments of
+  <a href="r38_0150.html#r38_0163">map</a> and
+  <a href="r38_0150.html#r38_0177">select</a>
+  calls. See
+  <a href="r38_0050.html#r38_0060">rule</a> for examples.
+</p>
 
-<b>FREE VARIABLE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>type</b><P>
-<P>
- 
- <P>
-<P>
-A variable preceded by a tilde is considered as <em>free variable</em> 
-and stands for an arbitrary part in an algebraic form during 
-pattern matching. Free variables occur in the left-hand sides 
-of 
-<a href=r38_0050.html#r38_0060>rule</a>s, in the side relations for 
-<a href=r38_0600.html#r38_0642>compact</a> 
-and in the first arguments of 
-<a href=r38_0150.html#r38_0163>map</a> and 
-<a href=r38_0150.html#r38_0177>select</a> 
-calls. See 
-<a href=r38_0050.html#r38_0060>rule</a> for examples. 
-<P>
-<P>
-In rules also 
-<a href=r38_0050.html#r38_0062>optional free variable</a>s may occur. 
-<P>
-<P>
+<p></p>
+<p>
+  In rules also
+  <a href="r38_0050.html#r38_0062">optional free variable</a>s may occur.
+</p>
 
-<a name=r38_0062>
+<p></p>
+<p>
+  <a name="r38_0062"> <title>Optional_Free_Variable</title></a>
+</p>
 
-<title>Optional_Free_Variable</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>OPTIONAL FREE VARIABLE</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>type</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>
+  A variable preceded by a double tilde is considered as
+  <em>optional free variable</em>
+</p>
 
-<b>OPTIONAL FREE VARIABLE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>type</b><P>
-<P>
- 
- <P>
-<P>
-A variable preceded by a double tilde is considered as 
-<em>optional free variable</em><P>
-<P>
-and stands for an arbitrary part part in an algebraic form during 
-pattern matching. In contrast to ordinary 
-<a href=r38_0050.html#r38_0061>free variable</a>s 
-an operator pattern with an <em>optional free variable</em> 
-matches also if the operand for the variable is missing. In such 
-a case the variable is bound to a neutral value. 
-Optional free variables can be used as 
-<P>
-<P>
-term in a sum: set to 0 if missing, 
-<P>
-<P>
-factor in a product: set to 1 if missing, 
-<P>
-<P>
-exponent: set to 1 if missing 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt></tt></pre><p>Optional free variables are allowed only in the left-h
-and sides 
-of 
-<a href=r38_0050.html#r38_0060>rule</a>s. 
-<P>
-<P>
+<p></p>
+<p>
+  and stands for an arbitrary part part in an algebraic form during pattern
+  matching. In contrast to ordinary
+  <a href="r38_0050.html#r38_0061">free variable</a>s an operator pattern with
+  an <em>optional free variable</em> matches also if the operand for the
+  variable is missing. In such a case the variable is bound to a neutral value.
+  Optional free variables can be used as
+</p>
 
-<a name=r38_0063>
+<p></p>
+<p>term in a sum: set to 0 if missing,</p>
 
-<title>SECOND</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p></p>
+<p>factor in a product: set to 1 if missing,</p>
 
+<p></p>
+<p>exponent: set to 1 if missing</p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt></tt></pre>
+<p>
+  Optional free variables are allowed only in the left-h and sides of
+  <a href="r38_0050.html#r38_0060">rule</a>s.
+</p>
 
-<b>SECOND</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
-The <em>second</em> operator returns the second element of a list. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>second</em>(&lt;list&gt;) or <em>second</em> &lt;list&gt; 
-<P>
-<P>
-<P>
-<P>
-&lt;list&gt; must be a list with at least two elements, to avoid an error 
-message. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p>
+  <a name="r38_0063"> <title>SECOND</title></a>
+</p>
+
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>SECOND</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
+
+<p></p>
+<p></p>
+
+<p></p>
+<p>The <em>second</em> operator returns the second element of a list.</p>
+
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p><em>second</em>(&lt;list&gt;) or <em>second</em> &lt;list&gt;</p>
+
+<p></p>
+<p></p>
+<p></p>
+<p>
+  &lt;list&gt; must be a list with at least two elements, to avoid an error
+  message.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 alist := {a,b,c,d}; 
 
   ALIST := {A,B,C,D} 
@@ -1138,39 +1355,53 @@ second second blist;
 
   BB
 
-</tt></pre><p>
-<a name=r38_0064>
+</tt></pre>
+<p>
+  <a name="r38_0064"> <title>SET</title></a>
+</p>
 
-<title>SET</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>SET</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>
+  The <em>set</em> operator is used for assignments when you want both sides of
+  the assignment statement to be evaluated.
+</p>
 
-<b>SET</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
-The <em>set</em> operator is used for assignments when you want both sides of 
-the assignment statement to be evaluated. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>set</em>(&lt;restricted\_expression&gt;,&lt;expression&gt;) 
-<P>
-<P>
-<P>
-&lt;expression&gt; can be any REDUCE expression; &lt;restricted\_expression&gt; 
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p><em>set</em>(&lt;restricted\_expression&gt;,&lt;expression&gt;)</p>
 
-must be an identifier or an expression that evaluates to an identifier. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p>
+  &lt;expression&gt; can be any REDUCE expression;
+  &lt;restricted\_expression&gt; must be an identifier or an expression that
+  evaluates to an identifier.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 a := y; 
 
   A := Y 
@@ -1208,56 +1439,70 @@ b;
 
   Z
 
-</tt></pre><p>Using an 
-<a href=r38_0150.html#r38_0188>array</a> or 
-<a href=r38_0300.html#r38_0345>matrix</a> reference as the first 
-argument to <em>set</em> has 
-the result of setting the contents of the designated element to 
-<em>set</em>'s second argument. You should be careful to avoid unwanted 
-side effects when you use this facility. 
-<P>
-<P>
-<P>
+</tt></pre>
+<p>
+  Using an <a href="r38_0150.html#r38_0188">array</a> or
+  <a href="r38_0300.html#r38_0345">matrix</a> reference as the first argument to
+  <em>set</em> has the result of setting the contents of the designated element
+  to <em>set</em>'s second argument. You should be careful to avoid unwanted
+  side effects when you use this facility.
+</p>
 
-<a name=r38_0065>
+<p></p>
+<p></p>
+<p>
+  <a name="r38_0065"> <title>SETQ</title></a>
+</p>
 
-<title>SETQ</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>SETQ</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>
+  The <em>setq</em> operator is an infix or prefix binary assignment operator.
+  It is identical to <em>:=</em>.
+</p>
 
-<b>SETQ</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
-The <em>setq</em> operator is an infix or prefix binary assignment operator. 
-It is identical to <em>:=</em>. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>setq</em>(&lt;restricted\_expression&gt;,&lt;expression&gt;) or 
-<P>
-<P>
-&lt;restricted\_expression&gt; <em>setq</em> &lt;expression&gt; 
-<P>
-<P>
-<P>
-&lt;restricted expression&gt; is ordinarily a single identifier, though 
-simple expressions may be used (see Comments below). &lt;expression&gt; can 
-be any valid REDUCE expression. If &lt;expression&gt; is a 
-<a href=r38_0300.html#r38_0345>matrix</a> 
-identifier, then &lt;restricted\_expression&gt; can be a matrix identifier 
-(redimensioned if necessary), which has each element set to the 
-corresponding elements of the identifier on the right-hand side. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p><em>setq</em>(&lt;restricted\_expression&gt;,&lt;expression&gt;) or</p>
+
+<p></p>
+<p>&lt;restricted\_expression&gt; <em>setq</em> &lt;expression&gt;</p>
+
+<p></p>
+<p></p>
+<p>
+  &lt;restricted expression&gt; is ordinarily a single identifier, though simple
+  expressions may be used (see Comments below). &lt;expression&gt; can be any
+  valid REDUCE expression. If &lt;expression&gt; is a
+  <a href="r38_0300.html#r38_0345">matrix</a>
+  identifier, then &lt;restricted\_expression&gt; can be a matrix identifier
+  (redimensioned if necessary), which has each element set to the corresponding
+  elements of the identifier on the right-hand side.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 setq(b,6); 
 
   B := 6 
@@ -1287,72 +1532,93 @@ a1;
 
   - (A2 - 25)
 
-</tt></pre><p>Embedding a <em>setq</em> statement in an expression has the side 
-effect of making 
-the assignment, as shown in the third example above. 
-<P>
-<P>
-Assignments are generally done for identifiers, but may be done for simple 
-expressions as well, subject to the following remarks: 
-<P>
-<P>
- _ _ _ (i) 
-If the left-hand side is an identifier, an operator, or a power, the rule 
-is added to the rule table. 
-<P>
-<P>
- _ _ _ (ii) 
-If the operators <em>- + /</em> appear on the left-hand side, all but the first 
+</tt></pre>
+<p>
+  Embedding a <em>setq</em> statement in an expression has the side effect of
+  making the assignment, as shown in the third example above.
+</p>
 
-term of the expression is moved to the right-hand side. 
-<P>
-<P>
- _ _ _ (iii) 
-If the operator <em>*</em> appears on the left-hand side, any constant terms are
- 
-moved to the right-hand side, but the symbolic factors remain. 
-<P>
-<P>
-Be careful not to make a recursive <em>setq</em> assignment that is not 
-controlled inside a loop statement. The process of resubstitution 
-continues until you get a stack overflow message. <em>setq</em> can be used 
-to attach functionality to operators, as the <em>:=</em> does. 
-<P>
-<P>
-<P>
+<p></p>
+<p>
+  Assignments are generally done for identifiers, but may be done for simple
+  expressions as well, subject to the following remarks:
+</p>
 
-<a name=r38_0066>
+<p></p>
+<p>
+  _ _ _ (i) If the left-hand side is an identifier, an operator, or a power, the
+  rule is added to the rule table.
+</p>
 
-<title>THIRD</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p></p>
+<p>
+  _ _ _ (ii) If the operators <em>- + /</em> appear on the left-hand side, all
+  but the first term of the expression is moved to the right-hand side.
+</p>
 
+<p></p>
+<p>
+  _ _ _ (iii) If the operator <em>*</em> appears on the left-hand side, any
+  constant terms are moved to the right-hand side, but the symbolic factors
+  remain.
+</p>
 
+<p></p>
+<p>
+  Be careful not to make a recursive <em>setq</em> assignment that is not
+  controlled inside a loop statement. The process of resubstitution continues
+  until you get a stack overflow message. <em>setq</em> can be used to attach
+  functionality to operators, as the <em>:=</em> does.
+</p>
 
-<b>THIRD</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
-The <em>third</em> operator returns the third item of a 
-<a href=r38_0050.html#r38_0053>list</a>. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>third</em>(&lt;list&gt;) or <em>third</em> &lt;list&gt; 
-<P>
-<P>
-<P>
-<P>
-&lt;list&gt; must be a list containing at least three items to avoid an error 
-message. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p>
+  <a name="r38_0066"> <title>THIRD</title></a>
+</p>
+
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>THIRD</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
+
+<p></p>
+<p></p>
+
+<p></p>
+<p>
+  The <em>third</em> operator returns the third item of a
+  <a href="r38_0050.html#r38_0053">list</a>.
+</p>
+
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p><em>third</em>(&lt;list&gt;) or <em>third</em> &lt;list&gt;</p>
+
+<p></p>
+<p></p>
+<p></p>
+<p>
+  &lt;list&gt; must be a list containing at least three items to avoid an error
+  message.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 alist := {a,b,c,d}; 
 
   ALIST := {A,B,C,D} 
@@ -1377,131 +1643,523 @@ third blist;
 
   Y
 
-</tt></pre><p>
-<a name=r38_0067>
+</tt></pre>
+<p>
+  <a name="r38_0067"> <title>WHEN</title></a>
+</p>
 
-<title>WHEN</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>WHEN</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>
+  The <em>when</em> operator is used inside a <em>rule</em> to make the
+  execution of the rule depend on a boolean condition which is evaluated at
+  execution time. For the use see <a href="r38_0050.html#r38_0060">rule</a>.
+</p>
 
-<b>WHEN</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
-The <em>when</em> operator is used inside a <em>rule</em> to make the 
-execution of the rule depend on a boolean condition which is 
-evaluated at execution time. For the use see 
-<a href=r38_0050.html#r38_0060>rule</a>. 
-<P>
-<P>
+<p></p>
+<p>
+  <a name="r38_0068"> <title>Syntax</title></a>
+</p>
 
-<a name=r38_0068>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p>
+  <b>Syntax</b
+  ><menu>
+    <li>
+      <a href="r38_0001.html#r38_0020">semicolon command</a>alias= (;)
+      <p>
+        <li>
+          <a href="r38_0001.html#r38_0021">dollar command</a>alias= ($)
+          <p>
+            <li>
+              <a href="r38_0001.html#r38_0022">percent command</a>alias= (%)
+              <p>
+                <li>
+                  <a href="r38_0001.html#r38_0023">dot operator</a>alias= (.)
+                  <p>
+                    <li>
+                      <a href="r38_0050.html#r38_0065">assign operator</a>alias=
+                      (: =)
+                      <p>
+                        <li>
+                          <a href="r38_0001.html#r38_0025">equalsign operator</a
+                          >alias= (=)
+                          <p>
+                            <li>
+                              <a href="r38_0001.html#r38_0026"
+                                >replace operator</a
+                              >alias= (= >)
+                              <p>
+                                <li>
+                                  <a href="r38_0001.html#r38_0027"
+                                    >plussign operator</a
+                                  >alias= (+)
+                                  <p>
+                                    <li>
+                                      <a href="r38_0001.html#r38_0028"
+                                        >minussign operator</a
+                                      >alias= (-)
+                                      <p>
+                                        <li>
+                                          <a href="r38_0001.html#r38_0029"
+                                            >asterisk operator</a
+                                          >alias= (*)
+                                          <p>
+                                            <li>
+                                              <a href="r38_0001.html#r38_0030"
+                                                >slash operator</a
+                                              >alias= (/)
+                                              <p>
+                                                <li>
+                                                  <a
+                                                    href="r38_0001.html#r38_0031"
+                                                    >power operator</a
+                                                  >alias= (* *)
+                                                  <p>
+                                                    <li>
+                                                      <a
+                                                        href="r38_0001.html#r38_0032"
+                                                        >caret operator</a
+                                                      >alias= (^)
+                                                      <p>
+                                                        <li>
+                                                          <a
+                                                            href="r38_0001.html#r38_0033"
+                                                            >geqsign operator</a
+                                                          >alias= (> =)
+                                                          <p>
+                                                            <li>
+                                                              <a
+                                                                href="r38_0001.html#r38_0034"
+                                                                >greater
+                                                                operator</a
+                                                              >alias= (>)
+                                                              <p>
+                                                                <li>
+                                                                  <a
+                                                                    href="r38_0001.html#r38_0035"
+                                                                    >leqsign
+                                                                    operator</a
+                                                                  >alias= (< =)
+                                                                  <p>
+                                                                    <li>
+                                                                      <a
+                                                                        href="r38_0001.html#r38_0036"
+                                                                        >less
+                                                                        operator</a
+                                                                      >alias=
+                                                                      (<)
+                                                                      <p>
+                                                                        <li>
+                                                                          <a
+                                                                            href="r38_0001.html#r38_0037"
+                                                                            >tilde
+                                                                            operator</a
+                                                                          >alias=
+                                                                          (~)
+                                                                          <p>
+                                                                            <li>
+                                                                              <a
+                                                                                href="r38_0001.html#r38_0038"
+                                                                                >group
+                                                                                command</a
+                                                                              >alias=
+                                                                              (<
+                                                                              <)
+                                                                              <p>
+                                                                                <li>
+                                                                                  <a
+                                                                                    href="r38_0001.html#r38_0039"
+                                                                                    >AND
+                                                                                    operator</a
+                                                                                  >
+                                                                                  <p>
+                                                                                    <li>
+                                                                                      <a
+                                                                                        href="r38_0001.html#r38_0040"
+                                                                                        >BEGIN
+                                                                                        command</a
+                                                                                      >
+                                                                                      <p>
+                                                                                        <li>
+                                                                                          <a
+                                                                                            href="r38_0001.html#r38_0041"
+                                                                                            >block
+                                                                                            command</a
+                                                                                          >
+                                                                                          <p>
+                                                                                            <li>
+                                                                                              <a
+                                                                                                href="r38_0001.html#r38_0042"
+                                                                                                >COMMENT
+                                                                                                command</a
+                                                                                              >
+                                                                                              <p>
+                                                                                                <li>
+                                                                                                  <a
+                                                                                                    href="r38_0001.html#r38_0043"
+                                                                                                    >CONS
+                                                                                                    operator</a
+                                                                                                  >
+                                                                                                  <p>
+                                                                                                    <li>
+                                                                                                      <a
+                                                                                                        href="r38_0001.html#r38_0044"
+                                                                                                        >END
+                                                                                                        command</a
+                                                                                                      >
+                                                                                                      <p>
+                                                                                                        <li>
+                                                                                                          <a
+                                                                                                            href="r38_0001.html#r38_0045"
+                                                                                                            >EQUATION
+                                                                                                            type</a
+                                                                                                          >
+                                                                                                          <p>
+                                                                                                            <li>
+                                                                                                              <a
+                                                                                                                href="r38_0001.html#r38_0046"
+                                                                                                                >FIRST
+                                                                                                                operator</a
+                                                                                                              >
+                                                                                                              <p>
+                                                                                                                <li>
+                                                                                                                  <a
+                                                                                                                    href="r38_0001.html#r38_0047"
+                                                                                                                    >FOR
+                                                                                                                    command</a
+                                                                                                                  >
+                                                                                                                  <p>
+                                                                                                                    <li>
+                                                                                                                      <a
+                                                                                                                        href="r38_0001.html#r38_0048"
+                                                                                                                        >FOREACH
+                                                                                                                        command</a
+                                                                                                                      >
+                                                                                                                      <p>
+                                                                                                                        <li>
+                                                                                                                          <a
+                                                                                                                            href="r38_0001.html#r38_0049"
+                                                                                                                            >GEQ
+                                                                                                                            operator</a
+                                                                                                                          >
+                                                                                                                          <p>
+                                                                                                                            <li>
+                                                                                                                              <a
+                                                                                                                                href="r38_0050.html#r38_0050"
+                                                                                                                                >GOTO
+                                                                                                                                command</a
+                                                                                                                              >
+                                                                                                                              <p>
+                                                                                                                                <li>
+                                                                                                                                  <a
+                                                                                                                                    href="r38_0050.html#r38_0051"
+                                                                                                                                    >GREATERP
+                                                                                                                                    operator</a
+                                                                                                                                  >
+                                                                                                                                  <p>
+                                                                                                                                    <li>
+                                                                                                                                      <a
+                                                                                                                                        href="r38_0050.html#r38_0052"
+                                                                                                                                        >IF
+                                                                                                                                        command</a
+                                                                                                                                      >
+                                                                                                                                      <p>
+                                                                                                                                        <li>
+                                                                                                                                          <a
+                                                                                                                                            href="r38_0050.html#r38_0053"
+                                                                                                                                            >LIST
+                                                                                                                                            operator</a
+                                                                                                                                          >
+                                                                                                                                          <p>
+                                                                                                                                            <li>
+                                                                                                                                              <a
+                                                                                                                                                href="r38_0050.html#r38_0054"
+                                                                                                                                                >OR
+                                                                                                                                                operator</a
+                                                                                                                                              >
+                                                                                                                                              <p>
+                                                                                                                                                <li>
+                                                                                                                                                  <a
+                                                                                                                                                    href="r38_0050.html#r38_0055"
+                                                                                                                                                    >PROCEDURE
+                                                                                                                                                    command</a
+                                                                                                                                                  >
+                                                                                                                                                  <p>
+                                                                                                                                                    <li>
+                                                                                                                                                      <a
+                                                                                                                                                        href="r38_0050.html#r38_0056"
+                                                                                                                                                        >REPEAT
+                                                                                                                                                        command</a
+                                                                                                                                                      >
+                                                                                                                                                      <p>
+                                                                                                                                                        <li>
+                                                                                                                                                          <a
+                                                                                                                                                            href="r38_0050.html#r38_0057"
+                                                                                                                                                            >REST
+                                                                                                                                                            operator</a
+                                                                                                                                                          >
+                                                                                                                                                          <p>
+                                                                                                                                                            <li>
+                                                                                                                                                              <a
+                                                                                                                                                                href="r38_0050.html#r38_0058"
+                                                                                                                                                                >RETURN
+                                                                                                                                                                command</a
+                                                                                                                                                              >
+                                                                                                                                                              <p>
+                                                                                                                                                                <li>
+                                                                                                                                                                  <a
+                                                                                                                                                                    href="r38_0050.html#r38_0059"
+                                                                                                                                                                    >REVERSE
+                                                                                                                                                                    operator</a
+                                                                                                                                                                  >
+                                                                                                                                                                  <p>
+                                                                                                                                                                    <li>
+                                                                                                                                                                      <a
+                                                                                                                                                                        href="r38_0050.html#r38_0060"
+                                                                                                                                                                        >RULE
+                                                                                                                                                                        type</a
+                                                                                                                                                                      >
+                                                                                                                                                                      <p>
+                                                                                                                                                                        <li>
+                                                                                                                                                                          <a
+                                                                                                                                                                            href="r38_0050.html#r38_0061"
+                                                                                                                                                                            >Free
+                                                                                                                                                                            Variable
+                                                                                                                                                                            type</a
+                                                                                                                                                                          >
+                                                                                                                                                                          <p>
+                                                                                                                                                                            <li>
+                                                                                                                                                                              <a
+                                                                                                                                                                                href="r38_0050.html#r38_0062"
+                                                                                                                                                                                >Optional
+                                                                                                                                                                                Free
+                                                                                                                                                                                Variable
+                                                                                                                                                                                type</a
+                                                                                                                                                                              >
+                                                                                                                                                                              <p>
+                                                                                                                                                                                <li>
+                                                                                                                                                                                  <a
+                                                                                                                                                                                    href="r38_0050.html#r38_0063"
+                                                                                                                                                                                    >SECOND
+                                                                                                                                                                                    operator</a
+                                                                                                                                                                                  >
+                                                                                                                                                                                  <p>
+                                                                                                                                                                                    <li>
+                                                                                                                                                                                      <a
+                                                                                                                                                                                        href="r38_0050.html#r38_0064"
+                                                                                                                                                                                        >SET
+                                                                                                                                                                                        operator</a
+                                                                                                                                                                                      >
+                                                                                                                                                                                      <p>
+                                                                                                                                                                                        <li>
+                                                                                                                                                                                          <a
+                                                                                                                                                                                            href="r38_0050.html#r38_0065"
+                                                                                                                                                                                            >SETQ
+                                                                                                                                                                                            operator</a
+                                                                                                                                                                                          >
+                                                                                                                                                                                          <p>
+                                                                                                                                                                                            <li>
+                                                                                                                                                                                              <a
+                                                                                                                                                                                                href="r38_0050.html#r38_0066"
+                                                                                                                                                                                                >THIRD
+                                                                                                                                                                                                operator</a
+                                                                                                                                                                                              >
+                                                                                                                                                                                              <p>
+                                                                                                                                                                                                <li>
+                                                                                                                                                                                                  <a
+                                                                                                                                                                                                    href="r38_0050.html#r38_0067"
+                                                                                                                                                                                                    >WHEN
+                                                                                                                                                                                                    operator</a
+                                                                                                                                                                                                  >
+                                                                                                                                                                                                  <p></p>
+                                                                                                                                                                                                </li>
+                                                                                                                                                                                              </p>
+                                                                                                                                                                                            </li>
+                                                                                                                                                                                          </p>
+                                                                                                                                                                                        </li>
+                                                                                                                                                                                      </p>
+                                                                                                                                                                                    </li>
+                                                                                                                                                                                  </p>
+                                                                                                                                                                                </li>
+                                                                                                                                                                              </p>
+                                                                                                                                                                            </li>
+                                                                                                                                                                          </p>
+                                                                                                                                                                        </li>
+                                                                                                                                                                      </p>
+                                                                                                                                                                    </li>
+                                                                                                                                                                  </p>
+                                                                                                                                                                </li>
+                                                                                                                                                              </p>
+                                                                                                                                                            </li>
+                                                                                                                                                          </p>
+                                                                                                                                                        </li>
+                                                                                                                                                      </p>
+                                                                                                                                                    </li>
+                                                                                                                                                  </p>
+                                                                                                                                                </li>
+                                                                                                                                              </p>
+                                                                                                                                            </li>
+                                                                                                                                          </p>
+                                                                                                                                        </li>
+                                                                                                                                      </p>
+                                                                                                                                    </li>
+                                                                                                                                  </p>
+                                                                                                                                </li>
+                                                                                                                              </p>
+                                                                                                                            </li>
+                                                                                                                          </p>
+                                                                                                                        </li>
+                                                                                                                      </p>
+                                                                                                                    </li>
+                                                                                                                  </p>
+                                                                                                                </li>
+                                                                                                              </p>
+                                                                                                            </li>
+                                                                                                          </p>
+                                                                                                        </li>
+                                                                                                      </p>
+                                                                                                    </li>
+                                                                                                  </p>
+                                                                                                </li>
+                                                                                              </p>
+                                                                                            </li>
+                                                                                          </p>
+                                                                                        </li>
+                                                                                      </p>
+                                                                                    </li>
+                                                                                  </p>
+                                                                                </li>
+                                                                              </p>
+                                                                            </li>
+                                                                          </p>
+                                                                        </li>
+                                                                      </p>
+                                                                    </li>
+                                                                  </p>
+                                                                </li>
+                                                              </p>
+                                                            </li>
+                                                          </p>
+                                                        </li>
+                                                      </p>
+                                                    </li>
+                                                  </p>
+                                                </li>
+                                              </p>
+                                            </li>
+                                          </p>
+                                        </li>
+                                      </p>
+                                    </li>
+                                  </p>
+                                </li>
+                              </p>
+                            </li>
+                          </p>
+                        </li>
+                      </p>
+                    </li>
+                  </p>
+                </li>
+              </p>
+            </li>
+          </p>
+        </li>
+      </p></li
+  ></menu>
 
-<title>Syntax</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
-<b>Syntax</b><menu>
-<li><a href=r38_0001.html#r38_0020>semicolon command</a>alias=  (;)<P>
-<li><a href=r38_0001.html#r38_0021>dollar command</a>alias=  ($)<P>
-<li><a href=r38_0001.html#r38_0022>percent command</a>alias=  (%)<P>
-<li><a href=r38_0001.html#r38_0023>dot operator</a>alias=  (.)<P>
-<li><a href=r38_0050.html#r38_0065>assign operator</a>alias=  (: =)<P>
-<li><a href=r38_0001.html#r38_0025>equalsign operator</a>alias=  (=)<P>
-<li><a href=r38_0001.html#r38_0026>replace operator</a>alias=  (= >)<P>
-<li><a href=r38_0001.html#r38_0027>plussign operator</a>alias=  (+)<P>
-<li><a href=r38_0001.html#r38_0028>minussign operator</a>alias=  (-)<P>
-<li><a href=r38_0001.html#r38_0029>asterisk operator</a>alias=  (*)<P>
-<li><a href=r38_0001.html#r38_0030>slash operator</a>alias=  (/)<P>
-<li><a href=r38_0001.html#r38_0031>power operator</a>alias=  (* *)<P>
-<li><a href=r38_0001.html#r38_0032>caret operator</a>alias=  (^)<P>
-<li><a href=r38_0001.html#r38_0033>geqsign operator</a>alias=  (> =)<P>
-<li><a href=r38_0001.html#r38_0034>greater operator</a>alias=  (>)<P>
-<li><a href=r38_0001.html#r38_0035>leqsign operator</a>alias=  (< =)<P>
-<li><a href=r38_0001.html#r38_0036>less operator</a>alias=  (<)<P>
-<li><a href=r38_0001.html#r38_0037>tilde operator</a>alias=  (~)<P>
-<li><a href=r38_0001.html#r38_0038>group command</a>alias=  (< <)<P>
-<li><a href=r38_0001.html#r38_0039>AND operator</a><P>
-<li><a href=r38_0001.html#r38_0040>BEGIN command</a><P>
-<li><a href=r38_0001.html#r38_0041>block command</a><P>
-<li><a href=r38_0001.html#r38_0042>COMMENT command</a><P>
-<li><a href=r38_0001.html#r38_0043>CONS operator</a><P>
-<li><a href=r38_0001.html#r38_0044>END command</a><P>
-<li><a href=r38_0001.html#r38_0045>EQUATION type</a><P>
-<li><a href=r38_0001.html#r38_0046>FIRST operator</a><P>
-<li><a href=r38_0001.html#r38_0047>FOR command</a><P>
-<li><a href=r38_0001.html#r38_0048>FOREACH command</a><P>
-<li><a href=r38_0001.html#r38_0049>GEQ operator</a><P>
-<li><a href=r38_0050.html#r38_0050>GOTO command</a><P>
-<li><a href=r38_0050.html#r38_0051>GREATERP operator</a><P>
-<li><a href=r38_0050.html#r38_0052>IF command</a><P>
-<li><a href=r38_0050.html#r38_0053>LIST operator</a><P>
-<li><a href=r38_0050.html#r38_0054>OR operator</a><P>
-<li><a href=r38_0050.html#r38_0055>PROCEDURE command</a><P>
-<li><a href=r38_0050.html#r38_0056>REPEAT command</a><P>
-<li><a href=r38_0050.html#r38_0057>REST operator</a><P>
-<li><a href=r38_0050.html#r38_0058>RETURN command</a><P>
-<li><a href=r38_0050.html#r38_0059>REVERSE operator</a><P>
-<li><a href=r38_0050.html#r38_0060>RULE type</a><P>
-<li><a href=r38_0050.html#r38_0061>Free Variable type</a><P>
-<li><a href=r38_0050.html#r38_0062>Optional Free Variable type</a><P>
-<li><a href=r38_0050.html#r38_0063>SECOND operator</a><P>
-<li><a href=r38_0050.html#r38_0064>SET operator</a><P>
-<li><a href=r38_0050.html#r38_0065>SETQ operator</a><P>
-<li><a href=r38_0050.html#r38_0066>THIRD operator</a><P>
-<li><a href=r38_0050.html#r38_0067>WHEN operator</a><P>
-</menu>
-<a name=r38_0069>
+  <a name="r38_0069"> <title>ARITHMETIC_OPERATIONS</title></a>
+</p>
 
-<title>ARITHMETIC_OPERATIONS</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>ARITHMETIC\_OPERATIONS</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>introduction</b></p>
 
+<p></p>
+<p>
+  This section considers operations defined in REDUCE that concern numbers, or
+  operators that can operate on numbers in addition, in most cases, to more
+  general expressions.
+</p>
 
+<p></p>
+<p>
+  <a name="r38_0070"> <title>ABS</title></a>
+</p>
 
-<b>ARITHMETIC\_OPERATIONS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>introduction</b><P>
-<P>
- 
-This section considers operations defined in REDUCE that concern numbers, 
-or operators that can operate on numbers in addition, in most cases, to 
-more general expressions. 
-<P>
-<P>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>ABS</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
-<a name=r38_0070>
+<p></p>
+<p></p>
 
-<title>ABS</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p></p>
+<p>The <em>abs</em> operator returns the absolute value of its argument.</p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>abs</em>(&lt;expression&gt;)
+<p></p>
+<p></p>
+<p>&lt;expression&gt; can be any REDUCE scalar expression.</p>
 
-
-<b>ABS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
-The <em>abs</em> operator returns the absolute value of its argument. 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>abs</em>(&lt;expression&gt;) 
-<P>
-<P>
-<P>
-&lt;expression&gt; can be any REDUCE scalar expression. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 abs(-a); 
 
   ABS(A) 
@@ -1526,43 +2184,55 @@ abs(-a);
 
   10
 
-</tt></pre><p>If the argument has had no numeric value assigned to it, such as a
-n 
-identifier or polynomial, <em>abs</em> returns an expression involving 
-<em>abs</em> of its argument, doing as much simplification of the argument 
-as it can, such as dropping any preceding minus sign. 
-<P>
-<P>
-<P>
+</tt></pre>
+<p>
+  If the argument has had no numeric value assigned to it, such as a n
+  identifier or polynomial, <em>abs</em> returns an expression involving
+  <em>abs</em> of its argument, doing as much simplification of the argument as
+  it can, such as dropping any preceding minus sign.
+</p>
 
-<a name=r38_0071>
+<p></p>
+<p></p>
+<p>
+  <a name="r38_0071"> <title>ADJPREC</title></a>
+</p>
 
-<title>ADJPREC</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>ADJPREC</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>switch</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>
+  When a real number is input, it is normally truncated to the
 
-<b>ADJPREC</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>switch</b><P>
-<P>
- 
- <P>
-<P>
-When a real number is input, it is normally truncated to the 
+  <a href="r38_0200.html#r38_0214">precision</a> in effect at the time the
+  number is read. If it is desired to keep the full precision of all numbers
+  input, the switch <em>adjprec</em> (for &lt;adjust precision&gt;) can be
+  turned on. While on, <em>adjprec</em> will automatically increase the
+  precision, when necessary, to match that of any integer or real input, and a
+  message printed to inform the user of the precision increase.
+</p>
 
-<a href=r38_0200.html#r38_0214>precision</a> in 
-effect at the time the number is read. If it is desired to keep the full 
-precision of all numbers input, the switch <em>adjprec</em> 
-(for &lt;adjust precision&gt;) can be turned on. While on, <em>adjprec</em> 
-will automatically increase the precision, when necessary, to match that 
-of any integer or real input, and a message printed to inform the user of 
-the precision increase. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 on rounded; 
 
 1.23456789012345; 
@@ -1575,32 +2245,43 @@ on adjprec;
 1.23456789012345; 
 
 *** precision increased to 15 
-</tt></pre><p>
-<a name=r38_0072>
+</tt></pre>
+<p>
+  <a name="r38_0072"> <title>ARG</title></a>
+</p>
 
-<title>ARG</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>ARG</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>
+  If
+  <a href="r38_0250.html#r38_0274">complex</a> and
+  <a href="r38_0300.html#r38_0330">rounded</a> are on, and arg evaluates to a
+  complex number, <em>arg</em> returns the polar angle of arg, measured in
+  radians. Otherwise an expression in arg is returned.
+</p>
 
-<b>ARG</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
-If 
-<a href=r38_0250.html#r38_0274>complex</a> and 
-<a href=r38_0300.html#r38_0330>rounded</a> are on, and arg 
-evaluates to a complex number, <em>arg</em> returns the polar angle of 
-arg, measured in radians. Otherwise an expression in arg is 
-returned. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 arg(3+4i) 
 
   ARG(3 + 4*I) 
@@ -1617,37 +2298,49 @@ arg a;
 
   ARG(A)
 
-</tt></pre><p>
-<a name=r38_0073>
+</tt></pre>
+<p>
+  <a name="r38_0073"> <title>CEILING</title></a>
+</p>
 
-<title>CEILING</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>CEILING</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>ceiling</em>(&lt;expression&gt;)
+<p></p>
+<p></p>
+<p>
+  This operator returns the ceiling (i.e., the least integer greater than or
+  equal to its argument) if its argument has a numerical value. For negative
+  numbers, this is equivalent to
+  <a href="r38_0050.html#r38_0082">fix</a>. For non-numeric arguments, the value
+  is an expression in the original operator.
+</p>
 
-<b>CEILING</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>ceiling</em>(&lt;expression&gt;) 
-<P>
-<P>
-<P>
-This operator returns the ceiling (i.e., the least integer greater than or 
-equal to its argument) if its argument has a numerical value. For 
-negative numbers, this is equivalent to 
-<a href=r38_0050.html#r38_0082>fix</a>. For non-numeric 
-arguments, the value is an expression in the original operator. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 ceiling 3.4; 
 
   4 
@@ -1672,27 +2365,37 @@ ceiling a;
 
   CEILING(A)
 
-</tt></pre><p>
-<a name=r38_0074>
+</tt></pre>
+<p>
+  <a name="r38_0074"> <title>CHOOSE</title></a>
+</p>
 
-<title>CHOOSE</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>CHOOSE</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p>
+  <em>choose</em>(&lt;m&gt;,&lt;m&gt;) returns the number of ways of choosing
+  &lt;m&gt; objects from a collection of &lt;n&gt; distinct objects --- in other
+  words the binomial coefficient. If &lt;m&gt; and &lt;n&gt; are not positive
+  integers, or m &gt;n, the expression is returned unchanged. than or equal to
+</p>
 
-
-<b>CHOOSE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-<em>choose</em>(&lt;m&gt;,&lt;m&gt;) returns the number of ways of choosing 
-&lt;m&gt; objects from a collection of &lt;n&gt; distinct objects --- in other 
-words the binomial coefficient. If &lt;m&gt; and &lt;n&gt; are not positive 
-integers, or m &gt;n, the expression is returned unchanged. 
-than or equal to 
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 choose(2,3); 
 
   3 
@@ -1707,40 +2410,52 @@ choose(a,b);
 
   CHOOSE(A,B)
 
-</tt></pre><p><P>
-<P>
+</tt></pre>
+<p></p>
+<p></p>
+<p>
+  <a name="r38_0075"> <title>DEG2DMS</title></a>
+</p>
 
-<a name=r38_0075>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>DEG2DMS</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
-<title>DEG2DMS</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p></p>
+<p></p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>deg2dms</em>(&lt;expression&gt;)
+<p></p>
+<p></p>
+<p>
+  In
+  <a href="r38_0300.html#r38_0330">rounded</a> mode, if &lt;expression&gt; is a
+  real number, the operator <em>deg2dms</em> will interpret it as degrees, and
+  convert it to a list containing the equivalent degrees, minutes and seconds.
+  In all other cases, an expression in terms of the original operator is
+  returned.
+</p>
 
-
-<b>DEG2DMS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>deg2dms</em>(&lt;expression&gt;) 
-<P>
-<P>
-<P>
-In 
-<a href=r38_0300.html#r38_0330>rounded</a> mode, if &lt;expression&gt; is a real
- number, the 
-operator <em>deg2dms</em> will interpret it as degrees, and convert it to a 
-list containing the equivalent degrees, minutes and seconds. In all other 
-cases, an expression in terms of the original operator is returned. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 deg2dms 60; 
 
   DEG2DMS(60) 
@@ -1762,38 +2477,49 @@ deg2dms a;
 
   DEG2DMS(A)
 
-</tt></pre><p>
-<a name=r38_0076>
+</tt></pre>
+<p>
+  <a name="r38_0076"> <title>DEG2RAD</title></a>
+</p>
 
-<title>DEG2RAD</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>DEG2RAD</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>deg2rad</em>(&lt;expression&gt;)
+<p></p>
+<p></p>
+<p>
+  In
+  <a href="r38_0300.html#r38_0330">rounded</a> mode, if &lt;expression&gt; is a
+  real number, the operator <em>deg2rad</em> will interpret it as degrees, and
+  convert it to the equivalent radians. In all other cases, an expression in
+  terms of the original operator is returned.
+</p>
 
-<b>DEG2RAD</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>deg2rad</em>(&lt;expression&gt;) 
-<P>
-<P>
-<P>
-In 
-<a href=r38_0300.html#r38_0330>rounded</a> mode, if &lt;expression&gt; is a real
- number, the 
-operator <em>deg2rad</em> will interpret it as degrees, and convert it to 
-the equivalent radians. In all other cases, an expression in terms of the 
-original operator is returned. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 deg2rad 60; 
 
   DEG2RAD(60) 
@@ -1810,42 +2536,56 @@ deg2rad a;
 
   DEG2RAD(A)
 
-</tt></pre><p>
-<a name=r38_0077>
+</tt></pre>
+<p>
+  <a name="r38_0077"> <title>DIFFERENCE</title></a>
+</p>
 
-<title>DIFFERENCE</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>DIFFERENCE</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p>
+  The <em>difference</em> operator may be used as either an infix or prefix
+  binary subtraction operator. It is identical to <em>-</em> as a binary
+  operator.
+</p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>difference</em>(&lt;expression&gt;,&lt;expression&gt;) or
+<p></p>
+<p>
+  &lt;expression&gt; <em>difference</em> &lt;expression&gt; {<em>difference</em>
+  &lt;expression&gt;}*
+</p>
 
-<b>DIFFERENCE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-The <em>difference</em> operator may be used as either an infix or prefix binary
- 
-subtraction operator. It is identical to <em>-</em> as a binary operator. 
-<P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>difference</em>(&lt;expression&gt;,&lt;expression&gt;) or 
-<P>
-<P>
-&lt;expression&gt; <em>difference</em> &lt;expression&gt; 
- {<em>difference</em> &lt;expression&gt;}* 
-<P>
-<P>
-<P>
-&lt;expression&gt; can be a number or any other valid REDUCE expression. Matrix 
+<p></p>
+<p></p>
+<p>
+  &lt;expression&gt; can be a number or any other valid REDUCE expression.
+  Matrix expressions are allowed if they are of the same dimensions.
+</p>
 
-expressions are allowed if they are of the same dimensions. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 
 difference(10,4); 
 
@@ -1863,39 +2603,52 @@ a difference b;
 
   A - B
 
-</tt></pre><p>The <em>difference</em> operator is left associative, as shown in 
-the second 
-example above. 
-<P>
-<P>
-<P>
-<P>
+</tt></pre>
+<p>
+  The <em>difference</em> operator is left associative, as shown in the second
+  example above.
+</p>
 
-<a name=r38_0078>
+<p></p>
+<p></p>
+<p></p>
+<p>
+  <a name="r38_0078"> <title>DILOG</title></a>
+</p>
 
-<title>DILOG</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>DILOG</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>
+  The <em>dilog</em> operator is known to the differentiation and integration
+  operators, but has numeric value attached only at <em>dilog(0)</em>. Dilog is
+  defined by
+</p>
 
-<b>DILOG</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
-The <em>dilog</em> operator is known to the differentiation and integration 
-operators, but has numeric value attached only at <em>dilog(0)</em>. Dilog is 
-defined by 
-<P>
-<P>
-dilog(x) = -int(log(x),x)/(x-1) 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p>dilog(x) = -int(log(x),x)/(x-1)</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 df(dilog(x**2),x); 
 
            2
@@ -1919,38 +2672,49 @@ dilog(0);
   ----
    6
 
-</tt></pre><p>
-<a name=r38_0079>
+</tt></pre>
+<p>
+  <a name="r38_0079"> <title>DMS2DEG</title></a>
+</p>
 
-<title>DMS2DEG</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>DMS2DEG</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>dms2deg</em>(&lt;list&gt;)
+<p></p>
+<p></p>
+<p>
+  In
+  <a href="r38_0300.html#r38_0330">rounded</a> mode, if &lt;list&gt; is a list
+  of th ree real numbers, the operator <em>dms2deg</em> will interpret the list
+  as degrees, minutes and seconds and convert it to the equivalent degrees. In
+  all other cases, an expression in terms of the original operator is returned.
+</p>
 
-<b>DMS2DEG</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>dms2deg</em>(&lt;list&gt;) 
-<P>
-<P>
-<P>
-In 
-<a href=r38_0300.html#r38_0330>rounded</a> mode, if &lt;list&gt; is a list of th
-ree real numbers, 
-the operator <em>dms2deg</em> will interpret the list as degrees, minutes 
-and seconds and convert it to the equivalent degrees. In all other cases, 
-an expression in terms of the original operator is returned. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 dms2deg {42,3,7}; 
 
   DMS2DEG({42,3,7}) 
@@ -1967,38 +2731,49 @@ dms2deg a;
 
   DMS2DEG(A)
 
-</tt></pre><p>
-<a name=r38_0080>
+</tt></pre>
+<p>
+  <a name="r38_0080"> <title>DMS2RAD</title></a>
+</p>
 
-<title>DMS2RAD</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>DMS2RAD</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>dms2rad</em>(&lt;list&gt;)
+<p></p>
+<p></p>
+<p>
+  In
+  <a href="r38_0300.html#r38_0330">rounded</a> mode, if &lt;list&gt; is a list
+  of th ree real numbers, the operator <em>dms2rad</em> will interpret the list
+  as degrees, minutes and seconds and convert it to the equivalent radians. In
+  all other cases, an expression in terms of the original operator is returned.
+</p>
 
-<b>DMS2RAD</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>dms2rad</em>(&lt;list&gt;) 
-<P>
-<P>
-<P>
-In 
-<a href=r38_0300.html#r38_0330>rounded</a> mode, if &lt;list&gt; is a list of th
-ree real numbers, 
-the operator <em>dms2rad</em> will interpret the list as degrees, minutes 
-and seconds and convert it to the equivalent radians. In all other cases, 
-an expression in terms of the original operator is returned. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 dms2rad {42,3,7}; 
 
   DMS2RAD({42,3,7}) 
@@ -2015,38 +2790,49 @@ dms2rad a;
 
   DMS2RAD(A)
 
-</tt></pre><p>
-<a name=r38_0081>
+</tt></pre>
+<p>
+  <a name="r38_0081"> <title>FACTORIAL</title></a>
+</p>
 
-<title>FACTORIAL</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>FACTORIAL</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>factorial</em>(&lt;expression&gt;)
+<p></p>
+<p></p>
+<p>
+  If the argument of <em>factorial</em> is a positive integer or zero, its
+  factorial is returned. Otherwise the result is expressed in terms of the
+  original operator. For more general operations, the
+  <a href="r38_0450.html#r38_0492">gamma</a> operator is available in the
+  <a href="r38_0400.html#r38_0444">Special Function Package</a>.
+</p>
 
-<b>FACTORIAL</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>factorial</em>(&lt;expression&gt;) 
-<P>
-<P>
-<P>
-If the argument of <em>factorial</em> is a positive integer or zero, its 
-factorial is returned. Otherwise the result is expressed in terms of the 
-original operator. For more general operations, the 
-<a href=r38_0450.html#r38_0492>gamma</a> operator 
-is available in the 
-<a href=r38_0400.html#r38_0444>Special Function Package</a>. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 factorial 4; 
 
   24 
@@ -2056,38 +2842,49 @@ factorial 30 ;
 
   265252859812191058636308480000000 
 
-</tt></pre><p>
-<a name=r38_0082>
+</tt></pre>
+<p>
+  <a name="r38_0082"> <title>FIX</title></a>
+</p>
 
-<title>FIX</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>FIX</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>fix</em>(&lt;expression&gt;)
+<p></p>
+<p></p>
+<p>
+  The operator <em>fix</em> returns the integer part of its argument, if that
+  argument has a numerical value. For positive numbers, this is equivalent to
+  <a href="r38_0050.html#r38_0084">floor</a>, and, for negative numbers,
+  <a href="r38_0050.html#r38_0073">ceiling</a>. For non-numeric arguments, the
+  value is an expression in the original operator.
+</p>
 
-<b>FIX</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>fix</em>(&lt;expression&gt;) 
-<P>
-<P>
-<P>
-The operator <em>fix</em> returns the integer part of its argument, if that 
-argument has a numerical value. For positive numbers, this is equivalent 
-to 
-<a href=r38_0050.html#r38_0084>floor</a>, and, for negative numbers, 
-<a href=r38_0050.html#r38_0073>ceiling</a>. For 
-non-numeric arguments, the value is an expression in the original operator. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 fix 3.4; 
 
   3 
@@ -2122,38 +2919,53 @@ fix(a);
 
   FIX(A)
 
-</tt></pre><p>
-<a name=r38_0083>
+</tt></pre>
+<p>
+  <a name="r38_0083"> <title>FIXP</title></a>
+</p>
 
-<title>FIXP</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>FIXP</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>
+  The <em>fixp</em> logical operator returns true if its argument is an integer.
+</p>
 
-<b>FIXP</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
-The <em>fixp</em> logical operator returns true if its argument is an integer. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>fixp</em>(&lt;expression&gt;) or <em>fixp</em> &lt;simple\_expression&gt; 
-<P>
-<P>
-<P>
-&lt;expression&gt; can be any valid REDUCE expression, &lt;simple\_expression
-&gt; 
-must be a single identifier or begin with a prefix operator. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p>
+  <em>fixp</em>(&lt;expression&gt;) or <em>fixp</em> &lt;simple\_expression&gt;
+</p>
+
+<p></p>
+<p></p>
+<p>
+  &lt;expression&gt; can be any valid REDUCE expression, &lt;simple\_expression
+  &gt; must be a single identifier or begin with a prefix operator.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 if fixp 1.5 then write &quot;ok&quot; else write &quot;not&quot;;
 			 
 
@@ -2179,43 +2991,56 @@ if fixp(a) then write &quot;ok&quot; else write &quot;not&quot;;
 
   ok
 
-</tt></pre><p>Logical operators can only be used inside conditional expressions 
-such as 
-<em>if</em>...<em>then</em> or <em>while</em>...<em>do</em>. 
-<P>
-<P>
-<P>
+</tt></pre>
+<p>
+  Logical operators can only be used inside conditional expressions such as
+  <em>if</em>...<em>then</em> or <em>while</em>...<em>do</em>.
+</p>
 
-<a name=r38_0084>
+<p></p>
+<p></p>
+<p>
+  <a name="r38_0084"> <title>FLOOR</title></a>
+</p>
 
-<title>FLOOR</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>FLOOR</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>floor</em>(&lt;expression&gt;)
+<p></p>
+<p></p>
+<p>
+  This operator returns the floor (i.e., the greatest integer less than or equal
+  to its argument) if its argument has a numerical value. For positive numbers,
+  this is equivalent to
+  <a href="r38_0050.html#r38_0082">fix</a>. For non-numeric arguments, the value
+  is an expression in the original operator.
+</p>
 
-<b>FLOOR</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>floor</em>(&lt;expression&gt;) 
-<P>
-<P>
-<P>
-This operator returns the floor (i.e., the greatest integer less than or 
-equal to its argument) if its argument has a numerical value. For 
-positive numbers, this is equivalent to 
-<a href=r38_0050.html#r38_0082>fix</a>. For non-numeric 
-arguments, the value is an expression in the original operator. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 floor 3.4; 
 
   3 
@@ -2240,33 +3065,46 @@ floor a;
 
   FLOOR(A)
 
-</tt></pre><p>
-<a name=r38_0085>
+</tt></pre>
+<p>
+  <a name="r38_0085"> <title>EXPT</title></a>
+</p>
 
-<title>EXPT</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>EXPT</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p>
+  The <em>expt</em> operator is both an infix and prefix binary exponentiation
+  operator. It is identical to <em>^</em> or <em>**</em>.
+</p>
 
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p>
+  <em>expt</em>(&lt;expression&gt;,&lt;expression&gt;) or &lt;expression&gt;
+  <em>expt</em> &lt;expression&gt;
+</p>
 
-<b>EXPT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-The <em>expt</em> operator is both an infix and prefix binary exponentiation 
-operator. It is identical to <em>^</em> or <em>**</em>. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>expt</em>(&lt;expression&gt;,&lt;expression&gt;) 
- or &lt;expression&gt; <em>expt</em> &lt;expression&gt; 
-<P>
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 a expt b; 
 
    B
@@ -2284,50 +3122,67 @@ expt(a,b);
    4      3        2  2        3    4
   X  + 4*X *Y + 6*X *Y  + 4*X*Y  + Y
 
-</tt></pre><p>Scalar expressions may be raised to fractional and floating-point 
-powers. 
-Square matrix expressions may be raised to positive powers, and also to 
-negative powers if non-singular. 
-<P>
-<P>
-<em>expt</em>is left associative. In other words, <em>a expt b expt c</em> is 
-equivalent to <em>a expt (b*c)</em>, not <em>a expt (b expt c)</em>, which 
-would be right associative. 
-<P>
-<P>
-<P>
+</tt></pre>
+<p>
+  Scalar expressions may be raised to fractional and floating-point powers.
+  Square matrix expressions may be raised to positive powers, and also to
+  negative powers if non-singular.
+</p>
 
-<a name=r38_0086>
+<p></p>
+<p>
+  <em>expt</em>is left associative. In other words, <em>a expt b expt c</em> is
+  equivalent to <em>a expt (b*c)</em>, not <em>a expt (b expt c)</em>, which
+  would be right associative.
+</p>
 
-<title>GCD</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p></p>
+<p></p>
+<p>
+  <a name="r38_0086"> <title>GCD</title></a>
+</p>
 
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>GCD</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
-<b>GCD</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
-The <em>gcd</em> operator returns the greatest common divisor of two 
-polynomials. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>gcd</em>(&lt;expression&gt;,&lt;expression&gt;) 
-<P>
-<P>
-<P>
-&lt;expression&gt; must be a polynomial (or integer), otherwise an error 
-occurs. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p>
+  The <em>gcd</em> operator returns the greatest common divisor of two
+  polynomials.
+</p>
+
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p><em>gcd</em>(&lt;expression&gt;,&lt;expression&gt;)</p>
+
+<p></p>
+<p></p>
+<p>
+  &lt;expression&gt; must be a polynomial (or integer), otherwise an error
+  occurs.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 gcd(2*x**2 - 2*y**2,4*x + 4*y); 
 
   2*(X + Y) 
@@ -2342,53 +3197,62 @@ gcd(765,68);
 
   17
 
-</tt></pre><p>The operator <em>gcd</em> described here provides an explicit mean
-s to find the 
-gcd of two expressions. The switch <em>gcd</em> described below simplifies 
-expressions by finding and canceling gcd's at every opportunity. When 
-the switch 
-<a href=r38_0250.html#r38_0286>ezgcd</a> is also on, gcd's are figured using the
- EZ GCD 
-algorithm, which is usually faster. 
-<P>
-<P>
-<P>
+</tt></pre>
+<p>
+  The operator <em>gcd</em> described here provides an explicit mean s to find
+  the gcd of two expressions. The switch <em>gcd</em> described below simplifies
+  expressions by finding and canceling gcd's at every opportunity. When the
+  switch <a href="r38_0250.html#r38_0286">ezgcd</a> is also on, gcd's are
+  figured using the EZ GCD algorithm, which is usually faster.
+</p>
 
-<a name=r38_0087>
+<p></p>
+<p></p>
+<p>
+  <a name="r38_0087"> <title>LN</title></a>
+</p>
 
-<title>LN</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>LN</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>ln</em>(&lt;expression&gt;)
+<p></p>
+<p></p>
+<p>&lt;expression&gt; can be any valid scalar REDUCE expression.</p>
 
-<b>LN</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>ln</em>(&lt;expression&gt;) 
-<P>
-<P>
-<P>
-&lt;expression&gt; can be any valid scalar REDUCE expression. 
-<P>
-<P>
-The <em>ln</em> operator returns the natural logarithm of its argument. 
-However, unlike 
-<a href=r38_0050.html#r38_0088>log</a>, there are no algebraic rules associated 
+<p></p>
+<p>
+  The <em>ln</em> operator returns the natural logarithm of its argument.
+  However, unlike <a href="r38_0050.html#r38_0088">log</a>, there are no
+  algebraic rules associated with it; it will only evaluate when
+  <a href="r38_0300.html#r38_0330">rounded</a> is on, and the argument is a real
+  number.
+</p>
 
-with it; it will only evaluate when 
-<a href=r38_0300.html#r38_0330>rounded</a> is on, and the 
-argument is a real number. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 ln(x); 
 
   LN(X) 
@@ -2420,43 +3284,53 @@ ln e;
 
   1
 
-</tt></pre><p>Because of the restricted algebraic properties of <em>ln</em>, use
-rs are 
-advised to use 
-<a href=r38_0050.html#r38_0088>log</a> whenever possible. 
-<P>
-<P>
-<P>
+</tt></pre>
+<p>
+  Because of the restricted algebraic properties of <em>ln</em>, use rs are
+  advised to use <a href="r38_0050.html#r38_0088">log</a> whenever possible.
+</p>
 
-<a name=r38_0088>
+<p></p>
+<p></p>
+<p>
+  <a name="r38_0088"> <title>LOG</title></a>
+</p>
 
-<title>LOG</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>LOG</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>The <em>log</em> operator returns the natural logarithm of its argument.</p>
 
-<b>LOG</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
-The <em>log</em> operator returns the natural logarithm of its argument. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>log</em>(&lt;expression&gt;) or <em>log</em> &lt;expression&gt; 
-<P>
-<P>
-<P>
-&lt;expression&gt; can be any valid scalar REDUCE expression. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p><em>log</em>(&lt;expression&gt;) or <em>log</em> &lt;expression&gt;</p>
+
+<p></p>
+<p></p>
+<p>&lt;expression&gt; can be any valid scalar REDUCE expression.</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 log(x); 
 
   LOG(X) 
@@ -2478,50 +3352,63 @@ log 4;
 
   1.38629436112
 
-</tt></pre><p><em>log</em>returns a numeric value only when 
-<a href=r38_0300.html#r38_0330>rounded</a> is on. In that 
-case, use of a negative argument for <em>log</em> results in an error 
-message. No error is given on a negative argument when REDUCE is not in 
-that mode. 
-<P>
-<P>
-<P>
+</tt></pre>
+<p>
+  <em>log</em>returns a numeric value only when
+  <a href="r38_0300.html#r38_0330">rounded</a> is on. In that case, use of a
+  negative argument for <em>log</em> results in an error message. No error is
+  given on a negative argument when REDUCE is not in that mode.
+</p>
 
-<a name=r38_0089>
+<p></p>
+<p></p>
+<p>
+  <a name="r38_0089"> <title>LOGB</title></a>
+</p>
 
-<title>LOGB</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>LOGB</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>logb</em>(&lt;expression&gt;,&lt;integer&gt;)
+<p></p>
+<p></p>
+<p>&lt;expression&gt; can be any valid scalar REDUCE expression.</p>
 
-<b>LOGB</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>logb</em>(&lt;expression&gt;,&lt;integer&gt;) 
-<P>
-<P>
-<P>
-&lt;expression&gt; can be any valid scalar REDUCE expression. 
-<P>
-<P>
-The <em>logb</em> operator returns the logarithm of its first argument using 
-the second argument as base. However, unlike 
-<a href=r38_0050.html#r38_0088>log</a>, there are no 
-algebraic rules associated with it; it will only evaluate when 
+<p></p>
+<p>
+  The <em>logb</em> operator returns the logarithm of its first argument using
+  the second argument as base. However, unlike
+  <a href="r38_0050.html#r38_0088">log</a>, there are no algebraic rules
+  associated with it; it will only evaluate when
 
-<a href=r38_0300.html#r38_0330>rounded</a> is on, and the first argument is a re
-al number. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+  <a href="r38_0300.html#r38_0330">rounded</a> is on, and the first argument is
+  a re al number.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 logb(x,2); 
 
   LOGB(X,2) 
@@ -2553,40 +3440,53 @@ logb(2,2);
 
   1
 
-</tt></pre><p>
-<a name=r38_0090>
+</tt></pre>
+<p>
+  <a name="r38_0090"> <title>MAX</title></a>
+</p>
 
-<title>MAX</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>MAX</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>
+  The operator <em>max</em> is an n-ary prefix operator, which returns the
+  largest value in its arguments.
+</p>
 
-<b>MAX</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
-The operator <em>max</em> is an n-ary prefix operator, which returns the largest
- 
-value in its arguments. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>max</em>(&lt;expression&gt;{,&lt;expression&gt;}*) 
-<P>
-<P>
-<P>
-<P>
-&lt;expression&gt; must evaluate to a number. <em>max</em> of an empty list 
-returns 0. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p><em>max</em>(&lt;expression&gt;{,&lt;expression&gt;}*)</p>
+
+<p></p>
+<p></p>
+<p></p>
+<p>
+  &lt;expression&gt; must evaluate to a number. <em>max</em> of an empty list
+  returns 0.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 max(4,6,10,-1); 
 
   10 
@@ -2603,36 +3503,50 @@ max(-5,-10,-a);
 
   -5
 
-</tt></pre><p>
-<a name=r38_0091>
+</tt></pre>
+<p>
+  <a name="r38_0091"> <title>MIN</title></a>
+</p>
 
-<title>MIN</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>MIN</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p>
+  The operator <em>min</em> is an n-ary prefix operator, which returns the
+  smallest value in its arguments.
+</p>
 
-<b>MIN</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
-The operator <em>min</em> is an n-ary prefix operator, which returns the 
-smallest value in its arguments. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>min</em>(&lt;expression&gt;{,&lt;expression&gt;}*) 
-<P>
-<P>
-<P>
-&lt;expression&gt; must evaluate to a number. <em>min</em> of an empty list 
-returns 0. 
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p><em>min</em>(&lt;expression&gt;{,&lt;expression&gt;}*)</p>
+
+<p></p>
+<p></p>
+<p>
+  &lt;expression&gt; must evaluate to a number. <em>min</em> of an empty list
+  returns 0.
+</p>
+
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 min(-3,0,17,2); 
 
   -3 
@@ -2649,38 +3563,49 @@ min(5,10,a);
 
   5
 
-</tt></pre><p><P>
-<P>
+</tt></pre>
+<p></p>
+<p></p>
+<p>
+  <a name="r38_0092"> <title>MINUS</title></a>
+</p>
 
-<a name=r38_0092>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>MINUS</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
-<title>MINUS</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p></p>
+<p>
+  The <em>minus</em> operator is a unary minus, returning the negative of its
+  argument. It is equivalent to the unary <em>-</em>.
+</p>
 
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p><em>minus</em>(&lt;expression&gt;)</p>
 
+<p></p>
+<p></p>
+<p></p>
+<p>&lt;expression&gt; may be any scalar REDUCE expression.</p>
 
-<b>MINUS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-The <em>minus</em> operator is a unary minus, returning the negative of its 
-argument. It is equivalent to the unary <em>-</em>. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>minus</em>(&lt;expression&gt;) 
-<P>
-<P>
-<P>
-<P>
-&lt;expression&gt; may be any scalar REDUCE expression. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 minus(a); 
 
   - A 
@@ -2696,34 +3621,46 @@ minus((x+1)**4);
       4      3      2
   - (X  + 4*X  + 6*X  + 4*X + 1)
 
-</tt></pre><p>
-<a name=r38_0093>
+</tt></pre>
+<p>
+  <a name="r38_0093"> <title>NEXTPRIME</title></a>
+</p>
 
-<title>NEXTPRIME</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>NEXTPRIME</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>nextprime</em>(&lt;expression&gt;)
+<p></p>
+<p></p>
+<p>
+  If the argument of <em>nextprime</em> is an integer, the least prime greater
+  than that argument is returned. Otherwise, a type error results.
+</p>
 
-<b>NEXTPRIME</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>nextprime</em>(&lt;expression&gt;) 
-<P>
-<P>
-<P>
-If the argument of <em>nextprime</em> is an integer, the least prime greater 
-than that argument is returned. Otherwise, a type error results. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 nextprime 5001; 
 
   5003  
@@ -2738,25 +3675,36 @@ nextprime a;
 
   ***** A invalid as integer
 
-</tt></pre><p>
-<a name=r38_0094>
+</tt></pre>
+<p>
+  <a name="r38_0094"> <title>NOCONVERT</title></a>
+</p>
 
-<title>NOCONVERT</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>NOCONVERT</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>switch</b></p>
 
+<p></p>
+<p>
+  Under normal circumstances when <em>rounded</em> is on, REDUCE converts the
+  number 1.0 to the integer 1. If this is not desired, the switch
+  <em>noconvert</em> can be turned on.
+</p>
 
-
-<b>NOCONVERT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>switch</b><P>
-<P>
- 
-Under normal circumstances when <em>rounded</em> is on, REDUCE converts the 
-number 1.0 to the integer 1. If this is not desired, the switch 
-<em>noconvert</em> can be turned on. 
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 on rounded; 
 
 1.0000000000001; 
@@ -2770,39 +3718,51 @@ on noconvert;
 
   1.0 
 
-</tt></pre><p><P>
-<P>
+</tt></pre>
+<p></p>
+<p></p>
+<p>
+  <a name="r38_0095"> <title>NORM</title></a>
+</p>
 
-<a name=r38_0095>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>NORM</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
-<title>NORM</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p></p>
+<p></p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>norm</em>(&lt;expression&gt;)
+<p></p>
+<p></p>
+<p>
+  If <em>rounded</em> is on, and the argument is a real number, &lt;norm&gt;
+  returns its absolute value. If <em>complex</em> is also on, &lt;norm&gt;
+  returns the square root of the sum of squares of the real and imaginary parts
+  of the argument. In all other cases, a result is returned in terms of the
+  original operator.
+</p>
 
-
-<b>NORM</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>norm</em>(&lt;expression&gt;) 
-<P>
-<P>
-<P>
-If <em>rounded</em> is on, and the argument is a real number, &lt;norm&gt; 
-returns its absolute value. If <em>complex</em> is also on, &lt;norm&gt; 
-returns the square root of the sum of squares of the real and imaginary 
-parts of the argument. In all other cases, a result is returned in 
-terms of the original operator. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 norm (-2); 
 
   NORM(-2) 
@@ -2826,36 +3786,48 @@ ws;
 
   5.0
 
-</tt></pre><p>
-<a name=r38_0096>
+</tt></pre>
+<p>
+  <a name="r38_0096"> <title>PERM</title></a>
+</p>
 
-<title>PERM</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>PERM</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+perm(&lt;expression1&gt;,&lt;expression2&gt;)
+<p></p>
+<p></p>
+<p>
+  If &lt;expression1&gt; and &lt;expression2&gt; evaluate to positive integers,
+  <em>perm</em> returns the number of permutations possible in selecting
+  &lt;expression1&gt; objects from &lt;expression2&gt; objects. In other cases,
+  an expression in the original operator is returned.
+</p>
 
-<b>PERM</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
- <P> <H3> 
-syntax: </H3>
-perm(&lt;expression1&gt;,&lt;expression2&gt;) 
-<P>
-<P>
-<P>
-If &lt;expression1&gt; and &lt;expression2&gt; evaluate to positive integers, 
-<em>perm</em> returns the number of permutations possible in selecting 
-&lt;expression1&gt; objects from &lt;expression2&gt; objects. 
-In other cases, an expression in the original operator is returned. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 perm(1,1); 
 
   1 
@@ -2875,46 +3847,60 @@ perm(a,b);
 
   PERM(A,B)
 
-</tt></pre><p>
-<a name=r38_0097>
+</tt></pre>
+<p>
+  <a name="r38_0097"> <title>PLUS</title></a>
+</p>
 
-<title>PLUS</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>PLUS</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p>
+  The <em>plus</em> operator is both an infix and prefix n-ary addition
+  operator. It exists because of the way in which REDUCE handles such operators
+  internally, and is not recommended for use in algebraic mode programming.
+  <a href="r38_0001.html#r38_0027">plussign</a>, which has the identical effect,
+  sho uld be used instead.
+</p>
 
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p>
+  <em>plus</em>(&lt;expression&gt;,&lt;expression&gt;{,&lt;expression&gt;} *) or
+</p>
 
-<b>PLUS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-The <em>plus</em> operator is both an infix and prefix n-ary addition 
-operator. It exists because of the way in which REDUCE handles such 
-operators internally, and is not recommended for use in algebraic mode 
-programming. 
-<a href=r38_0001.html#r38_0027>plussign</a>, which has the identical effect, sho
-uld be 
-used instead. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>plus</em>(&lt;expression&gt;,&lt;expression&gt;{,&lt;expression&gt;} 
-*) or 
-<P>
-<P>
-&lt;expression&gt; <em>plus</em> &lt;expression&gt; {<em>plus</em> &lt;expressio
-n&gt;}* 
-<P>
-<P>
-<P>
-&lt;expression&gt; can be any valid REDUCE expression, including matrix 
-expressions of the same dimensions. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p>
+  &lt;expression&gt; <em>plus</em> &lt;expression&gt; {<em>plus</em>
+  &lt;expressio n&gt;}*
+</p>
+
+<p></p>
+<p></p>
+<p>
+  &lt;expression&gt; can be any valid REDUCE expression, including matrix
+  expressions of the same dimensions.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 a plus b plus c plus d; 
 
   A + B + C + D 
@@ -2933,44 +3919,56 @@ plus(x**2,y**2);
    2    2
   X  + Y
 
-</tt></pre><p>
-<a name=r38_0098>
+</tt></pre>
+<p>
+  <a name="r38_0098"> <title>QUOTIENT</title></a>
+</p>
 
-<title>QUOTIENT</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>QUOTIENT</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p>
+  The <em>quotient</em> operator is both an infix and prefix binary operator
+  that returns the quotient of its first argument divided by its second. It is
+  also a unary <a href="r38_0100.html#r38_0101">recip</a>rocal operator. It is
+  identical to <em>/ </em> and
 
+  <a href="r38_0001.html#r38_0030">slash</a>.
+</p>
 
-<b>QUOTIENT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
-The <em>quotient</em> operator is both an infix and prefix binary operator that 
+<p></p>
+<h3>syntax:</h3>
+<p></p>
+<p>
+  <em>quotient</em>(&lt;expression&gt;,&lt;expression&gt;) or &lt;expression&gt;
+  <em>quotient</em> &lt;expression&gt; or <em>quotient</em>(&lt;expression&gt;)
+  or <em>quotient</em> &lt;expression&gt;
+</p>
 
-returns the quotient of its first argument divided by its second. It is 
-also a unary 
-<a href=r38_0100.html#r38_0101>recip</a>rocal operator. It is identical to <em>/
-</em> and 
+<p></p>
+<p></p>
+<p>
+  &lt;expression&gt; can be any valid REDUCE scalar expression. Matrix
+  expressions can also be used if the second expression is invertible and the
+  matrices are of the correct dimensions.
+</p>
 
-<a href=r38_0001.html#r38_0030>slash</a>. 
- <P> <H3> 
-syntax: </H3>
-<P>
-<P>
-<em>quotient</em>(&lt;expression&gt;,&lt;expression&gt;) or 
-&lt;expression&gt; <em>quotient</em> &lt;expression&gt; or 
-<em>quotient</em>(&lt;expression&gt;) or 
-<em>quotient</em> &lt;expression&gt; 
-<P>
-<P>
-<P>
-&lt;expression&gt; can be any valid REDUCE scalar expression. Matrix 
-expressions can also be used if the second expression is invertible and the 
-matrices are of the correct dimensions. 
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 quotient(a,x+1); 
 
     A
@@ -3023,52 +4021,66 @@ inverse := quotient m;
   INVERSE(2,2) := ----------
                   A*D - B*C
 
-</tt></pre><p><P>
-<P>
-The <em>quotient</em> operator is left associative: <em>a quotient b quotient c
-</em> 
-is equivalent to <em>(a quotient b) quotient c</em>. 
-<P>
-<P>
-If a matrix argument to the unary <em>quotient</em> is not invertible, or if the
- 
-second matrix argument to the binary quotient is not invertible, an error 
-message is given. 
-<P>
-<P>
-<P>
+</tt></pre>
+<p></p>
+<p></p>
+<p>
+  The <em>quotient</em> operator is left associative:
+  <em>a quotient b quotient c </em> is equivalent to
+  <em>(a quotient b) quotient c</em>.
+</p>
 
-<a name=r38_0099>
+<p></p>
+<p>
+  If a matrix argument to the unary <em>quotient</em> is not invertible, or if
+  the second matrix argument to the binary quotient is not invertible, an error
+  message is given.
+</p>
 
-<title>RAD2DEG</title></a>
-<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
-E"></p>
-<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<p></p>
+<p></p>
+<p>
+  <a name="r38_0099"> <title>RAD2DEG</title></a>
+</p>
 
+<p align="centre">
+  <img
+    src="redlogo.gif"
+    width="621"
+    height="60"
+    border="0"
+    alt="REDUC
+E"
+  />
+</p>
+<b><a href="r38_idx.html">INDEX</a></b>
+<p></p>
+<p><b>RAD2DEG</b> _ _ _ _ _ _ _ _ _ _ _ _ <b>operator</b></p>
 
+<p></p>
+<p></p>
 
-<b>RAD2DEG</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
-<P>
- 
- <P>
-<P>
- <P> <H3> 
-syntax: </H3>
-<em>rad2deg</em>(&lt;expression&gt;) 
-<P>
-<P>
-<P>
-In 
-<a href=r38_0300.html#r38_0330>rounded</a> mode, if &lt;expression&gt; is a real
- number, the 
-operator <em>rad2deg</em> will interpret it as radians, and convert it to 
-the equivalent degrees. In all other cases, an expression in terms of the 
-original operator is returned. 
-<P>
-<P>
- <P> <H3> 
-examples: </H3>
-<p><pre><tt>
+<p></p>
+<p></p>
+<p></p>
+<h3>syntax:</h3>
+<em>rad2deg</em>(&lt;expression&gt;)
+<p></p>
+<p></p>
+<p>
+  In
+  <a href="r38_0300.html#r38_0330">rounded</a> mode, if &lt;expression&gt; is a
+  real number, the operator <em>rad2deg</em> will interpret it as radians, and
+  convert it to the equivalent degrees. In all other cases, an expression in
+  terms of the original operator is returned.
+</p>
+
+<p></p>
+<p></p>
+<p></p>
+<h3>examples:</h3>
+<p></p>
+<pre><tt>
 rad2deg 1; 
 
   RAD2DEG(1) 
@@ -3085,4 +4097,5 @@ rad2deg a;
 
   RAD2DEG(A)
 
-</tt></pre><p>
+</tt></pre>
+<p></p>
