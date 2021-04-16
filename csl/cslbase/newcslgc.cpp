@@ -675,7 +675,7 @@ LispObject gc_n_bytes1(size_t n, uintptr_t thr, uintptr_t r)
 //  uintptr_t oldLimit = gLimit;
     uint64_t newLimit = reinterpret_cast<uintptr_t>(newChunk) + nSize;
     r = newChunk->dataStart();
-    fringe = r + n;
+    fringeBis[threadId] = fringe = r + n;
     Page *p = reinterpret_cast<Page *>((oldFringe-1) & -pageSize);
     Chunk *justFilled = myChunkBase[thr];
     if (justFilled != nullptr &&
@@ -693,6 +693,8 @@ cout << "New Chunk at " << Addr(newChunk)
 #ifdef DEBUG
     testLayout();
 #endif
+cout << "gc_n_bytes1 = " << Addr(r) << " fringe = " << Addr(fringe) << "\n";
+cout << "limit = " << Addr(limit[threadId].load()) << "\n";
     return static_cast<LispObject>(r);
 }
 
@@ -749,7 +751,7 @@ bool isPinned(uintptr_t a);
 void evacuate(atomic<LispObject> *p)
 {
 #ifdef DEBUG
-    if (*p != nil)
+    if (p->load() != nil)
         cout << "evac " << Addr(p)
              << " contents " << Addr(p->load()) << "\n";
 #endif
@@ -904,7 +906,9 @@ void prepareForGarbageCollection(bool major)
         fringe = limit[threadId];
 // The next line is really rather a cheat. It "allocates zero bytes" but
 // but diving into the allocation code beyond the initial test for easy cases
-// it will allocate a fresh Chunk.
+// it will allocate a fresh Chunk. I set myBusyChunk so that the allocation
+// of the new Chunk does not mark the existing one as needing scanning.
+        myBusyChunk = myChunkBase[threadId];
         gc_n_bytes1(0, threadId, fringe);
     }
     else
@@ -1058,8 +1062,8 @@ void identifyPinnedItems(bool major)
 // page since nothing else will ever be moved.
     for (unsigned int thr=0; thr<maxThreads; thr++)
     {   if ((threadMap & threadBit(thr)) == 0)
-        {   uintptr_t base = stackBases[thr];
-            uintptr_t fringe = stackFringes[thr];
+        {   uintptr_t sbase = stackBases[thr];
+            uintptr_t sfringe = stackFringes[thr];
 // Here I am supposing that for each thread the (C++) stack is a single
 // block of memory, that it is aligned as a sizeof(LispObject) boundary
 // and that EVERY interesting value is present on the stack with no change
@@ -1067,9 +1071,9 @@ void identifyPinnedItems(bool major)
 // way in to the Garbage Collector I have tried quite hard to ensure that
 // last point, but none of this can be guaranteed by reference to the rules
 // of the C++ standard!
-            cout << "scan from " << Addr(fringe) << " to "
-                 << Addr(base) << endl;
-            for (uintptr_t s=fringe; s<base; s+=sizeof(uintptr_t))
+            cout << "scan from " << Addr(sfringe) << " to "
+                 << Addr(sbase) << endl;
+            for (uintptr_t s=sfringe; s<sbase; s+=sizeof(uintptr_t))
             {   processAmbiguousValue(major,
                                       *reinterpret_cast<uintptr_t *>(s));
             }
