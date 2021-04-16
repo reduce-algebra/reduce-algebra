@@ -178,6 +178,12 @@ using std::atomic;    // If I am going to be multi-threaded then very many
 #define INLINE_VAR UNUSED_NAME static
 #endif // inline variables
 
+#if defined(__clang__) || defined (__GNUC__)
+# define NO_SANITIZE_ADDRESS __attribute__((no_sanitize_address))
+#else
+# define NO_SANITIZE_ADDRESS
+#endif
+
 // With really old versions of C++ you may not be able to write
 // large literal integers without some decoration. So e.g.
 // 0x7fffffffffffffff might count as an overflow. In those old days you

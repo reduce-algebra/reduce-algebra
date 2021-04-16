@@ -249,17 +249,10 @@ public:
 // end of the next free block (using pinChain - and if that is nullptr the
 // relevant limit is the end of the page.
     atomic<Chunk *>pinChain;
-// During GC it is sometimes necessary for the GC to scan material
-// within the chunk that it itself is allocating copied stull within. It
-// may in fact do this in several stages, each processing material until
-// everything currently in that chunk is tidy. But then it may find another
-// Chunk to scan and that can add a bit more. This pointer has to be
-// initialized in every Chunk that is a candidate for scanning.
-    atomic<uintptr_t> selfScanPoint;
 // The rest of the chunk is the region within which data is kept.
 // Its size will be such that the entire Chunk has length a specified by
 // its first word.
-    atomic<LispObject>usableSpace[];
+    alignas(8) atomic<LispObject>usableSpace[];
 // Now I can have some accessor (etc) methods:
 //
     uintptr_t dataStart()
@@ -282,9 +275,12 @@ extern Chunk *chunkStack;
 // I will allocate chunks that have size AT LEAST targetChunkSize/2. When
 // That means I can be confident that no page will every end up with more
 // than chunksPerPage chunks (and the numeric value with 8M pages and 16K
-// chunks is 1024).
+// chunks is 512).
+// I allow extraChunks beyond that so that I can let the GC set up up
+// to that many small Chunks around pinned data.
 
-static const size_t chunksPerPage = 2*pageSize/targetChunkSize;
+static const size_t extraChunks = 5;
+static const size_t chunksPerPage = 2*pageSize/targetChunkSize + extraChunks;
 
 class alignas(pageSize) Page
 {
@@ -320,6 +316,7 @@ public:
     atomic<bool> hasDirty;
     atomic<Page *>dirtyChain;
     atomic<Page *>dirtyChainBack;
+    uintptr_t pinnedMap[bitmapSize]; // for header words of pinned items.
 
     alignas(64) atomic<LispObject> data[2];   // The real data in the page.
 // The data[] field really extends up to make the overall size of
@@ -549,7 +546,7 @@ inline void clearAllDirtyBits()
     dirtyPages = nullptr;
 }
 
-// The code that implements pinning is in cslgc.cpp. In some respects the
+// The code that implements pinning is in newcslgc.cpp. In some respects the
 // capabilities it provides are a bit like those of my write barrier in that
 // I can record the fact that some address is to be pinned and I can scan
 // all regions containig pinned data. There are three crucial differences:
@@ -560,7 +557,8 @@ inline void clearAllDirtyBits()
 //     marked. For pinning I only pin to the granularity of a Chunk.
 // (3) The pinning operation is run from a single thread, while the write
 //     barrier could be used simultaneously from multiple threads, so the
-//     letter needs much more care over thread safety.
+//     latter needs much more care over thread safety.
+// See newcslgc.cpp for more commentary.
 
 extern void processAmbiguousValue(bool major, uintptr_t a);
 typedef void processPinnedChunk(Chunk *c);
@@ -634,6 +632,43 @@ inline int findHeapSegment(uintptr_t p)
         p >= reinterpret_cast<uintptr_t>(heapSegment[n]) +
         heapSegmentSize[n]) return -1;
     return n;
+}
+
+// If I print addresses "naturally" I tend to get huge numbers with lots of
+// leading digits - especially on a 64-bit system. This little function
+// maps addresses to offsets within their heap segment. It is not really going
+// to help a huge amount of you have multiple segments each full with
+// gigabytes of data, but may east early debugging on small cases quite
+// a lot!
+// If a value p is an address within the data region of a Page then
+// the display will be of the form "#offset:pagenumber" if in the first
+// heapsegment and "#offset:pagenumber:segmentnumber" otherwise. An offset
+// of zero should correspond to the start of the first Chunk within the Page,
+// and so the first bit of allocated user data lies (on a 64-bit machine)
+// at address #28:0 because there happen to be 5 words of header in the
+// Chunk.
+
+inline const char *Addr(uintptr_t p)
+{   static char r[20];
+    int hs = findHeapSegment(p);
+    if (hs != -1)
+    {   uintptr_t o = p - reinterpret_cast<uintptr_t>(heapSegment[hs]);
+        uintptr_t pNum = o/pageSize;
+        uintptr_t pOff = o%pageSize;
+        if (pOff >= offsetof(Page, data))
+        {   pOff -= offsetof(Page, data);
+            if (hs == 0) sprintf(r, "#%" PRIxPTR ":%" PRIxPTR, pOff, pNum);
+            else sprintf(r, "#%" PRIxPTR ":%" PRIxPTR ":%d", pOff, pNum, hs);
+            return r;
+        }
+    }
+    sprintf(r, "%" PRIxPTR, p);
+    return r;
+}
+
+template <typename T>
+inline const char *Addr(T p)
+{   return Addr((uintptr_t)p);
 }
 
 // This finds a page that a potential pointer p is within, or returns nullptr
@@ -913,21 +948,21 @@ inline LispObject get_n_bytes1(size_t n, uintptr_t thr,
         }
         gIncrement[thr] = targetChunkSize+n;
         fringe = oldFringe;
-//        cout << "At " << __WHERE__ << " fringe set to oldFringe = " << hex << oldFringe << dec << "\r" << endl;
+//        cout << "At " << __WHERE__ << " fringe set to oldFringe = " Addr(oldFringe) << endl;
     }
     else
     {
 // Here I am about to be forced to participate in garbage collection,
 // typically for the benefit of some other thread.
-        cout << "GC triggered\r\n";
+        cout << "GC triggered\n";
         if (myChunkBase[thr] != nullptr) myChunkBase[thr]->chunkFringe = r;
         gIncrement[thr] = 0;
         fringe = r;
-//        cout << "At " << __WHERE__ << " fringe set to r = " << r << "\r" << endl;
+//        cout << "At " << __WHERE__ << " fringe set to r = " << Addr(r) << endl;
     }
     fringeBis[thr] = fringe;
 //    cout << "At " << __WHERE__ << " fringeBis[" << thr
-//         << "] = " << hex << fringeBis[thr] << dec << "\r" << endl;
+//         << "] = " << Addr(fringeBis[thr]) << endl;
     request[thr] = n;
 // Here I can not complete the work with this inline function because
 // either I have run out of space for a new chunk or because some
@@ -968,14 +1003,14 @@ inline LispObject get_n_bytes(size_t n)
     if (fr1 <= w) LIKELY
     {
 #ifdef DEBUG
-        cout << "= " << std::hex << r << "\n";
+        cout << "= " << Addr(r) << "\n";
 #endif // DEBUG
         return static_cast<LispObject>(r);
     }
     UNLIKELY
 #ifdef DEBUG
     r = get_n_bytes1(n, threadId, r, w);
-    cout << "= " << std::hex << r << "\n";
+    cout << "= " << Addr(r) << "\n";
     return r;
 #else // DEBUG
     return get_n_bytes1(n, threadId, r, w);
@@ -993,14 +1028,14 @@ inline unsigned int get_trace = 0x7fffffff; // 514572-10;
 inline LispObject previousCons = 0;
 
 inline LispObject get_n_bytes(size_t n)
-{   if (++get_count >= get_trace) cout << "get_n_bytes " << n << "\r\n";
+{   if (++get_count >= get_trace) cout << "get_n_bytes " << n << "\n";
     LispObject r = REAL::get_n_bytes(n);
-    if (get_count >= get_trace) cout << hex << r << dec << "\r\n";
+    if (get_count >= get_trace) cout << Addr(r) << "\n";
     for (int i=0; i<8; i++)
-        my_assert(r != get_value[i], []{ cout << "repeat result\r\n";});
+        my_assert(r != get_value[i], []{ cout << "repeat result\n";});
     get_size[get_count & 7] = n;
     get_value[get_count & 7] = r;
-    my_assert(r > previousCons, []{ cout << "non-increasing allocation\r\n"; });
+    my_assert(r > previousCons, []{ cout << "non-increasing allocation\n"; });
     previousCons = r;
     return r;
 }
@@ -1009,7 +1044,7 @@ extern void crudeprin(LispObject a);
 extern void crudeprint(LispObject a);
 
 inline void dump_gets()
-{   cout << "get_count = " << get_count << "\r\n";
+{   cout << "get_count = " << get_count << "\n";
     for (int i=1; i<=8; i++)
     {   LispObject v = get_value[(get_count+i)&7];
         cout << (8-i) << "... "
@@ -1020,7 +1055,7 @@ inline void dump_gets()
             cout << " . ";
             crudeprin(cdr(v));
         }
-        cout << "\r\n";
+        cout << "\n";
     }
 }
 
@@ -1050,7 +1085,7 @@ inline void poll()
 // allocation request for zero bytes.
         fringeBis[thr] = fringe;
 //        cout << "Polling at " << __WHERE__ << "fringeBis[" << thr
-//             << " = " << hex << fringeBis[thr] << dec << "\r" << endl;
+//             << " = " << Addr(fringeBis[thr]) << endl;
         request[thr] = 0;
         gIncrement[thr] = 0;
         static_cast<void>(difficult_n_bytes());
@@ -1237,7 +1272,7 @@ inline void restoreGfringe()
 {   size_t inc = 0;
     for (unsigned int i=0; i<maxThreads; i++)
     {   result[i] = nil;
-//        cout << "result[" << i << "] = nil = " << std::hex << nil << std::dec << "\r" << endl;
+//        cout << "result[" << i << "] = nil = " << Addr(nil) << endl;
         inc += gIncrement[i];
         gIncrement[i] = 0;
     }
@@ -1254,13 +1289,13 @@ inline void fitsWithinExistingGap(unsigned int i, size_t n, size_t gap)
 {
 // The request made will fit within the existing Chunk for thraed i.
     result[i] = fringeBis[i] + TAG_VECTOR;
-//    cout << "result[" << i << "] = " << std::hex << result[i] << std::dec << "\r" << endl;
+//    cout << "result[" << i << "] = " << Addr(result[i]) << endl;
 // If I fill in a result for this I set it to show it does not need any more.
     request[i] = 0;
     setHeaderWord(result[i]-TAG_VECTOR, n, TYPE_VEC32);
     fringeBis[i] += n;
 //    cout << "At " << __WHERE__ << "fringeBis[" << i
-//         << " = " << hex << fringeBis[i] << dec << "\r" << endl;
+//         << " = " Addr(fringeBis[i]) << endl;
     gap -= n;
 // Make the end of the Chunk safe. This Chunk is not full, but a GC that is
 // (probably) about to happen can need to scan it so its chunkFringe info
@@ -1274,7 +1309,7 @@ inline void ableToAllocateNewChunk(unsigned int i, size_t n, size_t gap)
 // OK I can allocate a new Chunk for one of the threads here. First I should
 // insert padding so that the tail end of the previous chunk is tidily
 // filled in.
-//    cout << "At " << __WHERE__ << " ableToAllocateNewChunk\r\n";
+//    cout << "At " << __WHERE__ << " ableToAllocateNewChunk\n";
     myChunkBase[i]->chunkFringe = fringeBis[i];
     Chunk *newChunk = reinterpret_cast<Chunk *>(gFringe.load());
     newChunk->length = n+targetChunkSize;
@@ -1283,7 +1318,7 @@ inline void ableToAllocateNewChunk(unsigned int i, size_t n, size_t gap)
     size_t chunkNo = currentPage->chunkCount.fetch_add(1);
     currentPage->chunkMap[chunkNo].store(newChunk);
     result[i] = newChunk->dataStart() + TAG_VECTOR;
-//    cout << "result[" << i << "] = " << std::hex << result[i] << std::dec << "\r" << endl;
+//    cout << "result[" << i << "] = " << Addr(result[i]) << endl;
     uintptr_t thr = threadId;
     myChunkBase[thr] = newChunk;
     request[i] = 0;
@@ -1292,11 +1327,11 @@ inline void ableToAllocateNewChunk(unsigned int i, size_t n, size_t gap)
 // vector with binary content.
 //    LispObject rr = result[i];
     my_assert(findPage(result[i]) != nullptr); // @@@
-//    cout << std::hex << result[i] << " " << rr << "\r" << endl;
+//    cout << Addr(result[i]) << " " << Addr(rr) << endl;
     setHeaderWord(result[i]-TAG_VECTOR, n, TYPE_VEC32);
     fringeBis[i] = newChunk->dataStart() + n;
 //    cout << "At " << __WHERE__ << " fringeBis[" << i
-//         << "] = " << hex << fringeBis[i] << dec << "\r" << endl;
+//         << "] = " << Addr(fringeBis[i]) << endl;
     gFringe = limitBis[i] = limit[i] =
               fringeBis[i] + targetChunkSize;
 }
@@ -1307,20 +1342,20 @@ inline void regionInPageIsFull(unsigned int i, size_t n,
 // Here the current region in the Page is full. I may either have reached the
 // very end of the page or I may have merely run up against a pinned Chunk
 // within it.
-//    cout << "At " << __WHERE__ << " gFringe = " << hex << gFringe << dec << "\r" << endl;
-//    cout << "At " << __WHERE__ << " pageSize = " << hex << pageSize << dec << "\r" << endl;
+//    cout << "At " << __WHERE__ << " gFringe = " << Addr(gFringe) << endl;
+//    cout << "At " << __WHERE__ << " pageSize = " << Addr(pageSize) << endl;
 //
 // Take care because gFringe can point at the start of the next consecutive
 // Page.
     uintptr_t pageEnd = ((gFringe.load()-1) & -pageSize) + pageSize;
-//    cout << "At " << __WHERE__ << " pageEnd = " << hex << pageEnd << dec << "\r" << endl;
+//    cout << "At " << __WHERE__ << " pageEnd = " << Addr(pageEnd) << endl;
     while (gLimit != pageEnd)
     {   gFringe = gLimit + reinterpret_cast<Chunk *>(gLimit)->length;
         gLimit = reinterpret_cast<uintptr_t>(
             reinterpret_cast<Chunk *>(gLimit)->pinChain.load());
-//        cout << "At " << __WHERE__ << " gLimit = " << hex << gLimit << dec << "\r" << endl;
+//        cout << "At " << __WHERE__ << " gLimit = " << Addr(gLimit) << endl;
         if (gLimit == 0) gLimit = pageEnd;
-//        cout << "At " << __WHERE__ << " gLimit = " << hex << gLimit << dec << "\r" << endl;
+//        cout << "At " << __WHERE__ << " gLimit = " << Addr(gLimit) << endl;
         size_t gap1 = gLimit - gFringe;
         myChunkBase[i]->chunkFringe = fringeBis[i];
         if (n+targetChunkSize < gap1)
@@ -1335,7 +1370,7 @@ inline void regionInPageIsFull(unsigned int i, size_t n,
             setHeaderWord(result[i]-TAG_VECTOR, n, TYPE_VEC32);
             fringeBis[i] = gFringe.load() + n;
 //            cout << "At " << __WHERE__ << "fringeBis[" << i
-//                 << " = " << hex << fringeBis[i] << dec << "\r" << endl;
+//                 << " = " << Addr(fringeBis[i]) << endl;
             gFringe = limitBis[i] = limit[i] = fringeBis[i] + targetChunkSize;
             break;
         }
@@ -1360,7 +1395,7 @@ inline void tryToSatisfyAtLeastOneThread(unsigned int &pendingCount)
             uintptr_t f = fringeBis[i];
             uintptr_t l = limitBis[i];
 //            cout << "At " << __WHERE__ << " fringeBis[" << i
-//                 << "] = " << hex << f << "and l = " << l << dec << "\r" << endl;
+//                 << "] = " << Addr(f) << "and l = " << Addr(l_ << endl;
             size_t gap = l - f;
             if (n <= gap) fitsWithinExistingGap(i, n, gap);
             else
@@ -1392,7 +1427,7 @@ inline void grabNewCurrentPage(bool preferMostlyFree)
     else
     {   currentPage = mostlyFreePages;
         my_assert(currentPage != nullptr,
-            [&]{ cout << "Utterly out of memory" << "\r" << endl;
+            [&]{ cout << "Utterly out of memory" << endl;
                  std::exit(99); });
         mostlyFreePages = mostlyFreePages->chain;
         mostlyFreePagesCount--;
@@ -1405,15 +1440,15 @@ inline void grabNewCurrentPage(bool preferMostlyFree)
 // the first available block allowing for any pinned chunks within the page.
     gFringe = currentPage->fringe.load();
     gLimit = currentPage->limit;
-//  cout << "At " << __WHERE__ << " gFringe = " << hex << gFringe << dec << "\r" << endl;
-//  cout << "At " << __WHERE__ << " gLimit = " << hex << gLimit << dec << "\r" << endl;
+//  cout << "At " << __WHERE__ << " gFringe = " << Addr(gFringe) << endl;
+//  cout << "At " << __WHERE__ << " gLimit = " << Addr(gLimit) << endl;
 // Every thread will now need to grab its own fresh chunk!
     for (unsigned int k=0; k<maxThreads; k++)
         limit[k] = fringeBis[k] = limitBis[k] = gFringe;
 //  cout << "At " << __WHERE__
 //  << " fringeBis[k] = limitBis[k] = gFringe = "
-//  << hex << gFringe << dec << "\r" << endl;
-//  cout << "@@ just allocated a fresh page\r\n";
+//  << Addr(gFringe) << endl;
+//  cout << "@@ just allocated a fresh page\n";
 }
 
 extern bool withinMajorGarbageCollection;
@@ -1641,9 +1676,9 @@ inline void testLayout()
 {
     uintptr_t r = fringe;
     uintptr_t w = limit[threadId].load();
-    my_assert(w==0 || r <= w, [] { cout << "fringe > limit\r\n"; });
-    my_assert(w <= gFringe.load(), [] {cout << "limit > gFringe\r\n";});
-    my_assert(gFringe.load() <= gLimit, [] {cout << "gFringe > gLimit\r\n";});
+    my_assert(w==0 || r <= w, [] { cout << "fringe > limit\n"; });
+    my_assert(w <= gFringe.load(), [] {cout << "limit > gFringe\n";});
+    my_assert(gFringe.load() <= gLimit, [] {cout << "gFringe > gLimit\n";});
 }
 
 #endif // DEBUG

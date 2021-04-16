@@ -1559,9 +1559,9 @@ void init_heap_segments(double d)
 // _SC_PHYS_PAGES will (often?) be available there. That covers some of the
 // more important platforms so anybody with some alternative that is more
 // specialised can patch in their own code here!
-    long pageCount = sysconf(_SC_PHYS_PAGES);
-    long pageSize = sysconf(_SC_PAGE_SIZE);
-    mem = pageCount*static_cast<size_t>(pageSize);
+    long sysPageCount = sysconf(_SC_PHYS_PAGES);
+    long sysPageSize = sysconf(_SC_PAGE_SIZE);
+    mem = sysPageCount*static_cast<size_t>(sysPageSize);
 #endif // WIN32
     mem /= (1024*1024);    // Physical memory now in megabytes
     size_t g3 = 3u*1024u;  // 3Gbytes
