@@ -224,10 +224,7 @@ extern bool allocateSegment(size_t);
 // When a Chunk has been used and is full, its chunkFringe will be set to
 // identify the end of the last allocated item in it. Often this will be
 // before its length is all used up, because the item to be allocated next
-// might be bigger than the remaining available block of memory. In the
-// case that the Chunk ends up pinned and garbage collection leaves this
-// Chunk as part of a MostlyFree Page the length can be decreased down to
-// chunkFringe, just slightly reclaiming the waste space.
+// might be bigger than the remaining available block of memory.
 
 class Chunk
 {
@@ -561,8 +558,6 @@ inline void clearAllDirtyBits()
 // See newcslgc.cpp for more commentary.
 
 extern void processAmbiguousValue(bool major, uintptr_t a);
-typedef void processPinnedChunk(Chunk *c);
-extern void scanPinnedChunks(processPinnedChunk *pc);
 extern void clearAllPins();
 
 extern uint64_t threadMap;
