@@ -706,8 +706,11 @@ void ensureOtherThreadsAreIdle()
     {   std::lock_guard<std::mutex> guard(mutexForGc);
 // Here I am in the thread that will take the lead in garbage collection. You
 // might reasonably expect that I need to increment activeHelpers here to note
-// that it is busy, but for odd reasons I incremented that variable earlier.
-//      activeHelpers++;  // N.B. *NOT* done here because it was done earlier!
+// that it is busy. However it was important that the value never reach zero
+// for other helper threads, so if there are any others at all the first of
+// those incremented it on behalf of this thread. So save only in the case
+// there are no other helper threads I must NOT increment it here!
+        if (activeHelpers == 0) activeHelpers = 1;
         chunkStack = nullptr;
         gc_complete = false;
         gc_started = true;

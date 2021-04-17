@@ -178,8 +178,14 @@ using std::atomic;    // If I am going to be multi-threaded then very many
 #define INLINE_VAR UNUSED_NAME static
 #endif // inline variables
 
-#if defined(__clang__) || defined (__GNUC__)
-# define NO_SANITIZE_ADDRESS __attribute__((no_sanitize_address))
+#if __has_cpp_attribute(gnu::no_sanitize)
+// If I build with the address sanitizer that protects me against reading
+// all my stack. However with a conservative garbage collector I want to
+// do just that. Well I am not interested in return addresses and the like
+// but I do not have an easy way to avoid reading them along with all the
+// useful contents of stack frames. The annotation lets me disable checks
+// for the single function where that matters.
+# define NO_SANITIZE_ADDRESS [[gnu::no_sanitize("address")]]
 #else
 # define NO_SANITIZE_ADDRESS
 #endif
@@ -202,6 +208,10 @@ using std::atomic;    // If I am going to be multi-threaded then very many
 // magic symbols __STDC_CONSTANT_MACROS and __STDC_FORMAT_MACROS (which
 // helps for printf etc) and always write large-value literals in the
 // way that ancient systems and C required.
+//
+// I am still concerned about expressions such as (1<<48) where if the "1"
+// is treated as a 32-bit integer the shift left will overflow.
+
 
 #ifndef __STDC_CONSTANT_MACROS
 #define __STDC_CONSTANT_MACROS 1

@@ -68,6 +68,7 @@ extern LispObject Lposn(LispObject env);
 extern LispObject Lread(LispObject env);
 extern LispObject Lreadch(LispObject env);
 extern LispObject Lrtell(LispObject env);
+extern LispObject Lstop0(LispObject env);
 extern LispObject Lterpri(LispObject env);
 extern LispObject Ltime(LispObject env);
 extern LispObject Ltmpnam(LispObject env);

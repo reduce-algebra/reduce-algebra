@@ -593,12 +593,19 @@ static void cold_setup()
     if (gcTest)    // if "--gc-test" was on command line.
     {   std::printf("\n: Conservative code - run a simple test of the GC\n\n");
         simple_print(nil);
-        std::printf("\r\n");
+        std::printf("\n");
+        LispObject r = nil;
+// I am expecting that the list (9 8 7 6 5 4 3 2 1) will be preserved
+// with the head element and the next having an ambiguous references to
+// them but the other cells ending up copied. So (9 . ) and (8 . ) will
+// be pinned and (7 6 5 4 3 2 1) will be copied...
+        for (int i=0; i<10; i++)
+            r = cons(fixnum_of_int(i), r);
         Lgc0(nil);
         simple_print(nil);
-        std::printf("\r\n");
-        std::printf("Now abort()...\n");
-        my_abort();
+        std::printf("\n");
+        std::printf("Now exit ...\n");
+        Lstop0(nil);
     }
 #endif // CONSERVATIVE
     setvalue(nil, get_basic_vector_init(sizeof(Package), nil));
