@@ -972,8 +972,8 @@ inline LispObject get_n_bytes1(size_t n, uintptr_t thr,
 inline LispObject get_n_bytes(size_t n)
 {
 #ifdef DEBUG
-    cout << "get_n_bytes(" << n << ")\n";
-    my_assert(n < 8000000, [&] { cout << "size in get_n_bytes = "
+    cout << "get_n_bytes(" << n << ")  ";
+    my_assert(n < 8000000, [&] { cout << "\nsize in get_n_bytes = "
                                       << std::hex << n << std::endl; });
 #endif // DEBUG
 // The size passed here MUST be a multiple of 8.
@@ -1176,12 +1176,12 @@ inline void withRecordedStack(F &&action)
 
 extern std::mutex mutexForGc;
 extern std::mutex mutexForFreePages;
-extern std::mutex mutexForChunkStack;
 extern bool gc_started;
+extern bool gc_complete;
 extern std::condition_variable cv_for_gc_idling;
 extern std::condition_variable cv_for_gc_busy;
 extern std::condition_variable cvForChunkStack;
-extern bool gc_complete;
+extern std::condition_variable cvForCopying;
 extern std::condition_variable cv_for_gc_complete;
 
 // I am going to put the code that synchronizes threads for garbage
@@ -1214,7 +1214,6 @@ extern atomic<uint32_t> activeThreads;
 // of synchronizing for or after garbage collection is something that will
 // involve some care!
 
-extern std::condition_variable cvForCopying;
 extern unsigned int activeHelpers;
 
 extern bool generationalGarbageCollection;
@@ -1260,6 +1259,7 @@ extern void fullGarbageCollect();
 // all other threads. Ught this feels heavy-handed and messy!
 
 extern void setUpEmptyPage(Page *p);
+extern void setUpMostlyEmptyPage(Page *p);
 extern void setVariablesFromPage(Page *p);
 extern void saveVariablesToPage(Page *p);
 
@@ -1297,38 +1297,6 @@ inline void fitsWithinExistingGap(unsigned int i, size_t n, size_t gap)
 // must be filled in.
 // If I get here during a GC 
     myChunkBase[i]->chunkFringe = fringeBis[i];
-}
-
-inline void ableToAllocateNewChunk(unsigned int i, size_t n, size_t gap)
-{
-// OK I can allocate a new Chunk for one of the threads here. First I should
-// insert padding so that the tail end of the previous chunk is tidily
-// filled in.
-//    cout << "At " << __WHERE__ << " ableToAllocateNewChunk\n";
-    myChunkBase[i]->chunkFringe = fringeBis[i];
-    Chunk *newChunk = reinterpret_cast<Chunk *>(gFringe.load());
-    newChunk->length = n+targetChunkSize;
-    newChunk->isPinned = false;
-    newChunk->pinChain = nullptr;
-    size_t chunkNo = currentPage->chunkCount.fetch_add(1);
-    currentPage->chunkMap[chunkNo].store(newChunk);
-    result[i] = newChunk->dataStart() + TAG_VECTOR;
-//    cout << "result[" << i << "] = " << Addr(result[i]) << endl;
-    uintptr_t thr = threadId;
-    myChunkBase[thr] = newChunk;
-    request[i] = 0;
-// If I allocate a block here it will need to be alive through an impending
-// garbage collection, so I will make it seem like a respectable Lisp
-// vector with binary content.
-//    LispObject rr = result[i];
-    my_assert(findPage(result[i]) != nullptr); // @@@
-//    cout << Addr(result[i]) << " " << Addr(rr) << endl;
-    setHeaderWord(result[i]-TAG_VECTOR, n, TYPE_VEC32);
-    fringeBis[i] = newChunk->dataStart() + n;
-//    cout << "At " << __WHERE__ << " fringeBis[" << i
-//         << "] = " << Addr(fringeBis[i]) << endl;
-    gFringe = limitBis[i] = limit[i] =
-              fringeBis[i] + targetChunkSize;
 }
 
 inline void regionInPageIsFull(unsigned int i, size_t n,
@@ -1373,39 +1341,6 @@ inline void regionInPageIsFull(unsigned int i, size_t n,
 // pendingCount will be a count of the requests NOT satisfied. So I increment
 // it if I do not manage to make an allocation.
     if (request[i] != 0) pendingCount++;
-}
-
-inline void tryToSatisfyAtLeastOneThread(unsigned int &pendingCount)
-{   for (unsigned int i=0; i<maxThreads; i++)
-    {   size_t n = request[i];
-// Check if request (i) can be satisfied trivially. First I try within
-// its current chunk, because the garbage collection may have been triggered
-// by some other thread and the chunk for (i) may have plenty of space left.
-        if (n != 0)
-        {
-// Thread i may not be making a request, either because it participated in
-// this GC because of poll() not allocation or because somehow I have already
-// managed to satisfy the request it make, and result[i] contains a reference
-// to the memory block it needs.
-            uintptr_t f = fringeBis[i];
-            uintptr_t l = limitBis[i];
-//            cout << "At " << __WHERE__ << " fringeBis[" << i
-//                 << "] = " << Addr(f) << "and l = " << Addr(l_ << endl;
-            size_t gap = l - f;
-            if (n <= gap) fitsWithinExistingGap(i, n, gap);
-            else
-            {   size_t gap1 = gLimit - gFringe;
-// If the current chunk for (i) is full I will see if I can allocate another
-// one. This can be possible if GC was triggered by another thread that was
-// trying to allocate a huge object - so huge that it would have pushed
-// gFringe beyong gLimit but this thread is making a simple request such
-// that a more or less standard sized chunk will suffice.
-                if (n+targetChunkSize < gap1)
-                    ableToAllocateNewChunk(i, n, gap);
-                else regionInPageIsFull(i, n, gap, pendingCount);
-            }
-        }
-    }
 }
 
 inline void grabNewCurrentPage(bool preferMostlyFree)
@@ -1677,6 +1612,12 @@ inline void testLayout()
 }
 
 #endif // DEBUG
+
+extern void gcTestCode(); // temporary and for debugging.
+
+// I will arrange that if the GC takes more than this time waiting on a
+// condition variable it will abort.
+INLINE_VAR const std::chrono::seconds cvTimeout(10);
 
 #endif // header_newallocate_h
 

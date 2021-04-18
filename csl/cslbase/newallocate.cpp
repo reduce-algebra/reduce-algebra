@@ -681,10 +681,13 @@ void releaseOtherThreads()
 // Note that if my entire system had only one thread then the condition
 // tested here would always be true and the computation would not pause at
 // all.
-        cv_for_gc_busy.wait(lock,
-                            []{   uint32_t n = activeThreads.load();
-                                  return (n & 0xff) == ((n>>8) & 0xff) - 1;
-                              });
+        bool st =
+            cv_for_gc_busy.wait_until(lock,
+                std::chrono::steady_clock::now() + cvTimeout,
+                []{   uint32_t n = activeThreads.load();
+                      return (n & 0xff) == ((n>>8) & 0xff) - 1;
+                  });
+        if (!st) my_abort("condition variable timed out");
     }
 // OK, so now I know that all the other threads are ready to wait on
 // gc_finished, so I ensure that useful variables are set ready for next
@@ -716,6 +719,71 @@ void ensureOtherThreadsAreIdle()
         gc_started = true;
     }
     cv_for_gc_idling.notify_all();
+}
+
+void ableToAllocateNewChunk(unsigned int i, size_t n, size_t gap)
+{
+// OK I can allocate a new Chunk for one of the threads here. First I should
+// insert padding so that the tail end of the previous chunk is tidily
+// filled in.
+//    cout << "At " << __WHERE__ << " ableToAllocateNewChunk\n";
+    myChunkBase[i]->chunkFringe = fringeBis[i];
+    Chunk *newChunk = reinterpret_cast<Chunk *>(gFringe.load());
+    newChunk->length = n+targetChunkSize;
+    newChunk->isPinned = false;
+    newChunk->pinChain = nullptr;
+    size_t chunkNo = currentPage->chunkCount.fetch_add(1);
+    currentPage->chunkMap[chunkNo].store(newChunk);
+    result[i] = newChunk->dataStart() + TAG_VECTOR;
+//    cout << "result[" << i << "] = " << Addr(result[i]) << endl;
+    uintptr_t thr = threadId;
+    myChunkBase[thr] = newChunk;
+    request[i] = 0;
+// If I allocate a block here it will need to be alive through an impending
+// garbage collection, so I will make it seem like a respectable Lisp
+// vector with binary content.
+//    LispObject rr = result[i];
+    my_assert(findPage(result[i]) != nullptr); // @@@
+//    cout << Addr(result[i]) << " " << Addr(rr) << endl;
+    setHeaderWord(result[i]-TAG_VECTOR, n, TYPE_VEC32);
+    fringeBis[i] = newChunk->dataStart() + n;
+//    cout << "At " << __WHERE__ << " fringeBis[" << i
+//         << "] = " << Addr(fringeBis[i]) << endl;
+    gFringe = limitBis[i] = limit[i] =
+              fringeBis[i] + targetChunkSize;
+}
+
+void tryToSatisfyAtLeastOneThread(unsigned int &pendingCount)
+{   for (unsigned int i=0; i<maxThreads; i++)
+    {   size_t n = request[i];
+// Check if request (i) can be satisfied trivially. First I try within
+// its current chunk, because the garbage collection may have been triggered
+// by some other thread and the chunk for (i) may have plenty of space left.
+        if (n != 0)
+        {
+// Thread i may not be making a request, either because it participated in
+// this GC because of poll() not allocation or because somehow I have already
+// managed to satisfy the request it make, and result[i] contains a reference
+// to the memory block it needs.
+            uintptr_t f = fringeBis[i];
+            uintptr_t l = limitBis[i];
+//            cout << "At " << __WHERE__ << " fringeBis[" << i
+//                 << "] = " << Addr(f) << "and l = " << Addr(l_ << endl;
+            size_t gap = l - f;
+            if (n <= gap) fitsWithinExistingGap(i, n, gap);
+            else
+            {   size_t gap1 = gLimit - gFringe;
+// If the current chunk for (i) is full I will see if I can allocate another
+// one. This can be possible if GC was triggered by another thread that was
+// trying to allocate a huge object - so huge that it would have pushed
+// gFringe beyong gLimit but this thread is making a simple request such
+// that a more or less standard sized chunk will suffice.
+                if (n+targetChunkSize < gap1)
+                    ableToAllocateNewChunk(i, n, gap);
+                else regionInPageIsFull(i, n, gap, pendingCount);
+            }
+        }
+    }
 }
 
 void garbageCollectOnBehalfOfAll()
@@ -755,7 +823,7 @@ void garbageCollectOnBehalfOfAll()
     }
 // Here all the GC helper threads may be waiting for a Chunk to copy. There
 // is not going to be one, so I can release them.
-    {   std::lock_guard<std::mutex> lock(mutexForChunkStack);
+    {   std::lock_guard<std::mutex> lock(mutexForGc);
         activeHelpers--;
     }
     cvForChunkStack.notify_all();
@@ -799,7 +867,11 @@ void waitWhileAnotherThreadGarbageCollects()
 // completed.
         if (activeHelpers == 0) activeHelpers = 2;
         else activeHelpers++;
-        cv_for_gc_idling.wait(lock, [] { return gc_started; });
+        bool st =
+            cv_for_gc_idling.wait_until(lock,
+                std::chrono::steady_clock::now() + cvTimeout,
+                [] { return gc_started; });
+        if (!st) my_abort("condition variable timed out");
     }
 // To record that threads have paused they can then increment activeThreads
 // again. When one of them increments it to the value threadcount-1 I will
@@ -865,7 +937,11 @@ void waitWhileAnotherThreadGarbageCollects()
 // reflect that it is busy again and made certain that gc_started is false
 // again so that everything is tidily ready for next time.
     {   std::unique_lock<std::mutex> lock(mutexForGc);
-        cv_for_gc_complete.wait(lock, [] { return gc_complete; });
+        bool st =
+            cv_for_gc_complete.wait_until(lock,
+                std::chrono::steady_clock::now() + cvTimeout,
+                [] { return gc_complete; });
+        if (!st) my_abort("condition variable timed out");
     }
     fringe = fringeBis[threadId];
 //    cout << "At " << __WHERE__ << " fringe set to fringeBis = " << fringe << "\r" << endl;
@@ -1053,14 +1129,13 @@ LispObject borrow_vector(int tag, int type, size_t n)
     else return borrow_basic_vector(tag, type, n);
 }
 
-// This code sets up an empty page - it is ONLY intended for use at the
-// start of a run when there can not be any pinned items present anywhere.
+// This code sets up an empty page - it is ONLY intended for use when
+// there can are not any pinned items present.
 // I put the code here adjacent to the code that allocates from the list of
 // pages so that the setup and use can be compared.
 
 void setUpEmptyPage(Page *p)
-{   p->chain = nullptr;
-    p->chunkCount = 0;
+{   p->chunkCount = 0;
     p->chunkMapSorted = false;
     for (size_t i=0; i<sizeof(p->dirtyMap)/sizeof(p->dirtyMap[0]); i++)
         p->dirtyMap[i] = 0;
@@ -1070,14 +1145,39 @@ void setUpEmptyPage(Page *p)
         p->dirtyMap2[i] = 0;
     p->hasDirty = false;
     p->dirtyChain = nullptr;
-    p->hasPinned = false;
-    p->pinChain = nullptr;
-    p->pinnedChunks = nullptr;
     p->chain = freePages;
     freePages = p;
     p->pageClass = freePageTag;
     p->fringe = reinterpret_cast<uintptr_t>(&p->data);
     p->limit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
+}
+
+// This code sets up an "mostly empty page" - it is used from the GC at a
+// stage when information about pinned material has been set up as part
+// of the Page contents.
+
+// At present this is a copt of the code that sets up fully empty pages
+// and so it is BROKEN.
+
+void setUpMostlyEmptyPage(Page *p)
+{
+    p->chunkCount = 0;
+    p->chunkMapSorted = false;
+    for (Chunk *c=p->pinnedChunks; c!=nullptr; c=c->pinChain)
+        p->chunkMap[p->chunkCount++] = c;
+    p->fringe = reinterpret_cast<uintptr_t>(&p->data);
+    p->limit = reinterpret_cast<uintptr_t>(p->pinnedChunks.load());
+    for (size_t i=0; i<sizeof(p->dirtyMap)/sizeof(p->dirtyMap[0]); i++)
+        p->dirtyMap[i] = 0;
+    for (size_t i=0; i<sizeof(p->dirtyMap1)/sizeof(p->dirtyMap1[0]); i++)
+        p->dirtyMap1[i] = 0;
+    for (size_t i=0; i<sizeof(p->dirtyMap2)/sizeof(p->dirtyMap2[0]); i++)
+        p->dirtyMap2[i] = 0;
+    p->hasDirty = false;
+    p->dirtyChain = nullptr;
+    p->chain = mostlyFreePages;
+    mostlyFreePages = p;
+    p->pageClass = mostlyFreePageTag;
 }
 
 // Now something that takes a page where it must be left free apart from

@@ -52,14 +52,15 @@
 // There are three stages where these ambiguous pointers impact what I have
 // to do:
 // (1) Identifying them at the start of garbage collection;
-// (2) Responding to them during the garbage collection copying process;
-// (3) Arranging free storage so that subsequent allocation does not
+// (2) Tracing and processing data pointed at from pinned regions;
+// (3) Coping with pointers from live data to pinned items;
+// (4) Arranging free storage so that subsequent allocation does not
 //     overwrite them.
 // The scheme I use interacts with the general storage allocation procedures
 // that I use, which are themselves conditioned by thoughts of concurrency
 // and thread support.
 //
-// I will comment on (2) first. When I inspect a (precise) pointer during the
+// I will comment on (3) first. When I inspect a (precise) pointer during the
 // copy phase of the GC I must check if it in fact points to data that is
 // "pinned" because an ambiguous pointer appears to refer to it. This test
 // has to be made for every pointer considered, and so is speed critical.
@@ -72,11 +73,11 @@
 // it lies within. In the header to that page there is a map with 1 bit for
 // each 8-byte unit. If the Page is 8 Mbytes this map is only 128K so as a
 // burden on space it is not a disaster.
-// With that design decision made I now need to cope with (1) and (3). Note
-// that the bitmap I have just discussed must have a bit set to mark the first
-// or header word of every object. Because when it is inspected only precise
-// pointers are in play the state of bits for non-header positions is not
-// important.
+// With that design decision made I now need to cope with the other issues.
+// Note that the bitmap I have just discussed must have a bit set to mark
+// the first or header word of every object. That is because when it is
+// inspected only precise pointers and so pointers refer to that header.
+// It would not make sense to have to check for pin-bits elsewhere!
 // The hard part of (1) is that an ambiguous pointer may (appear to) point
 // into the middle of a large object that contains binary information. For
 // instance a string or a bignum. Any inspection of data near where the
@@ -102,25 +103,25 @@
 // pointers are found on the stack that very often a bunch of them will
 // refer to objects allocated at about the same time and that those objects
 // will tend to cluster in memory and hence within a modest number of Chunks.
-// Now after collecting all ambiguous values in the way I need to refine the
-// bitmap so that it has a bit set for the header of each pinned item. I
+// After collecting all ambiguous values in that way I need to refine the
+// bitmaps so that they have a bit set for the header of each pinned item. I
 // have to perform a linear scan of each Chunk that contains pinned data.
 // For each object present I need to consult the bitmap to see if a bit is
-// set for some address within it. Well for larger objects there are two
-// potential optimisations. The first is that if a bit is already set for
-// the header word it is immaterial whether further bits are set for addresses
-// within the object, so there is no need to check for them. The second is
-// that if checking is needed it can be done 32 or 64 bits at time using
-// word operations on bitmap entries. The first of these will typically
-// arise for quite a lot of cases where and item is pinned - the tough case
-// is when a large vector is not pinned and that has to be verified by
-// inspecting the bitmap for every offset within it.
-// If pinned items are common and widely scattered then each one may trigger
-// the need to scan a whole Chunk near it. So I hope that pinned items are
-// both reasonably uncommon and are well clustered! But the nature of any
-// conservative garbage collection scheme is that there are potential bad
-// cases.
-// Now to issue (3). Allocating around a pinned item has overhead, and so
+// set for some address within it. While doing so I will clear any bits
+// associated with non-header locations. This can be optimised by using
+// the fact that I can use word operations in the bitmap to check 32 or
+// 64 locations at at time. In the first version of the code I will not
+// do that optimizations - and ideally at a later stage I will measure to
+// see itf it is liable to be useful.
+// For (2) I note that each Chunk that contains pinned material is also
+// liable to contain non-pinned stuff, and as I evacuate from fields in
+// pinned data I may move some of that non-pinned data. That leaves behind
+// forwarding pointers. Their presence would make a linear scan of the
+// Chunk less pleasant (although not impossible!) if I did it based on
+// parsing the data. But by virtue of having arranges that the bitmap only
+// has pinned bits for the heads of pinned items I can use it to help me
+// visit just the pinned material.
+// Now to issue (4). Allocating around a pinned item has overhead, and so
 // I for later storage allocation purposes I will view whole Chunks as
 // pinned. Well I can take a Chunk that contains pinned items within it and
 // truncate it so it starts with the first pinned item and ends with the last.
@@ -139,8 +140,10 @@
 // that would end up between them would be lower than the standard Chunk size
 // then those two are consolidated into one bigger Chunk. Well more than just
 // two Chunks may end up merged, leading to an especially large blocked
-// region in worst case behaviour.
-
+// region in worst case behaviour. For a first implementation I will not
+// perform this truncation - it may in fact be a micro-optimisation that
+// would not improve things enough to be justified.
+//
 
 // Overview of procedure for full garbage collection:
 //
@@ -500,9 +503,8 @@ uintptr_t sortPinList(uintptr_t l)
 }
 
 bool gcComplete;
-std::mutex mutexForChunkStack;
-std::condition_variable cvForChunkStack;
 Chunk *chunkStack = nullptr;
+std::condition_variable cvForChunkStack;
 unsigned int activeHelpers = 0;
 
 // I originally planned to make this a lock-free data structure, or at
@@ -512,7 +514,7 @@ unsigned int activeHelpers = 0;
 // the use of a mutex.
 
 void pushChunk(Chunk *c)
-{   std::lock_guard<std::mutex> lock(mutexForChunkStack);
+{   std::lock_guard<std::mutex> lock(mutexForGc);
     Chunk *old = chunkStack;
     cout << "Push " << Addr(c) << " onto queue [" << Addr(old) << "]\n";
     c->chunkStack = old;
@@ -523,13 +525,16 @@ void pushChunk(Chunk *c)
 }
 
 Chunk *popChunk()
-{   std::unique_lock<std::mutex> lock(mutexForChunkStack);
+{   std::unique_lock<std::mutex> lock(mutexForGc);
 // If I have to wait then while I am waiting I am not active...
     activeHelpers--;
-    cvForChunkStack.wait(lock,
-        []{   return chunkStack != nullptr ||
-                     activeHelpers == 0;
-          });
+    bool st =
+        cvForChunkStack.wait_until(lock,
+            std::chrono::steady_clock::now() + cvTimeout,
+            []{   return chunkStack != nullptr ||
+                         activeHelpers == 0;
+              });
+    if (!st) my_abort("condition variable timed out");
     Chunk *r = chunkStack;
     if (r != nullptr)
     {   chunkStack = r->chunkStack;
@@ -541,7 +546,7 @@ Chunk *popChunk()
 }
 
 Chunk *nonblockingPopChunk()
-{   std::unique_lock<std::mutex> lock(mutexForChunkStack);
+{   std::lock_guard<std::mutex> lock(mutexForGc);
 // This will grab a Chunk if one is available, but return nullptr if not.
 // If other threads are active one of them might be just abou to push another
 // Chunk, so getting a nullptr here is no a definitive indication that
@@ -715,7 +720,15 @@ cout << "simple success at " << Addr(r) << " leaves fringe = " << Addr(fringe) <
     }
 // Now the case where a fresh Chunk has to be allocated.
     UNLIKELY
-    if (myChunkBase[thr] != nullptr) myChunkBase[thr]->chunkFringe = r;
+    Chunk *c = myChunkBase[thr];
+// If I am going to have to allocate a new Chunk and if there is actually
+// one in use at present then I need to record where the existing Chunk ends
+// and insert a padder to fill up to its end.
+    if (c != nullptr)
+    {   c->chunkFringe = r;
+        size_t gap = w - r;
+        if (gap != 0) setHeaderWord(r, gap);
+    }
     LispObject r1 = gc_n_bytes1(n, threadId, r);
 cout << "complex success at " << Addr(r1) << "\n";
     return r1;
@@ -753,6 +766,7 @@ bool isPinned(uintptr_t a);
 void evacuate(atomic<LispObject> *p)
 {
 #ifdef DEBUG
+// I am silent on NIL because otherwise I am overall too noisy.
     if (p->load() != nil)
         cout << "evac " << Addr(p)
              << " contents " << Addr(p->load()) << "\n";
@@ -931,15 +945,51 @@ void clearPinnedInformation(bool major)
    clearAllPins();
 }
 
+// The version of IsPinned here requires its argument to be a valid
+// LispObject that is not immediate data. Or at least the word address
+// of a valid object. It it was a value that amounted to an illegal
+// memory address there would be trouble.
+
+bool isPinned(uintptr_t a)
+{   Page *p = reinterpret_cast<Page *>(a & -pageSize);
+    uintptr_t o = (a & (pageSize-1))/8;
+    uintptr_t mask = static_cast<uintptr_t>(1)<<(o&(8*sizeof(uintptr_t)-1));
+    uintptr_t word = p->pinnedMap[o/(8*sizeof(uintptr_t))];
+    return (word & mask) != 0;
+}
+
+void setPinned(uintptr_t a)
+{   Page *p = reinterpret_cast<Page *>(a & -pageSize);
+    uintptr_t o = (a & (pageSize-1))/8;
+    uintptr_t mask = static_cast<uintptr_t>(1)<<(o&(8*sizeof(uintptr_t)-1));
+    p->pinnedMap[o/(8*sizeof(uintptr_t))] |= mask;
+}
+
+void setPinned(Page *p, uintptr_t a)
+{   uintptr_t o = (a & (pageSize-1))/8;
+    uintptr_t mask = static_cast<uintptr_t>(1)<<(o&(8*sizeof(uintptr_t)-1));
+    p->pinnedMap[o/(8*sizeof(uintptr_t))] |= mask;
+}
+
+void clearPinned(uintptr_t a)
+{   Page *p = reinterpret_cast<Page *>(a & -pageSize);
+    uintptr_t o = (a & (pageSize-1))/8;
+    uintptr_t mask = static_cast<uintptr_t>(1)<<(o&(8*sizeof(uintptr_t)-1));
+    p->pinnedMap[o/(8*sizeof(uintptr_t))] &= ~mask;
+}
+
+void clearPinned(Page *p, uintptr_t a)
+{   uintptr_t o = (a & (pageSize-1))/8;
+    uintptr_t mask = static_cast<uintptr_t>(1)<<(o&(8*sizeof(uintptr_t)-1));
+    p->pinnedMap[o/(8*sizeof(uintptr_t))] &= ~mask;
+}
+
 // Each page consists of a header followed by a number of chunks. There may
 // be unused space in the page after the last chunk. For the purposes of
 // pinning I want to identify the chunk (if any) that (a) points into, and
 // arrange that it is on a per-page list of pinned chunks and that if there
 // are any such chunks that the page itself is on a list of pages that contain
 // pinned material.
-
-void setPinned(Page *p, uintptr_t a);
-void setPinned(uintptr_t a);
 
 void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 {   if (p->chunkCount.load() == 0) return;  // An empty Page.
@@ -1062,7 +1112,7 @@ void identifyPinnedItems(bool major)
 // way in to the Garbage Collector I have tried quite hard to ensure that
 // last point, but none of this can be guaranteed by reference to the rules
 // of the C++ standard!
-            cout << "scan from " << Addr(sfringe) << " to "
+            cout << "scan stack from " << Addr(sfringe) << " to "
                  << Addr(sbase) << endl;
             for (uintptr_t s=sfringe; s<sbase; s+=sizeof(uintptr_t))
             {   processAmbiguousValue(major,
@@ -1072,20 +1122,17 @@ void identifyPinnedItems(bool major)
     }
 }
 
-// A further though that I have not yet followed through on. At a
-// later stage I will call evacuatePinnedInChunk which needs to
-// identify and process each pinned items within the Chunk. As
-// currently coded that scans all the objects in the Chunk, pinned or
-// not. If I make the code here remove any pin bits that do not relate to
-// object headers it will not complicate matters very much here, but would
-// then mean that evacuatePinnedInChunk could just scan its bitmap to
-// direct it to exactly the items it needed to look at. That would reduce
-// the work there.
+// This not only ensures that the bitmap identifies the head of every
+// pinned item, but it also arranges that no addresses with objects are
+// marked. This is relied upon by evacuatePinnedInChunk.
 
 void findHeadersOfPinnedItems()
 {   for (Page *p=globalPinChain; p!=nullptr; p=p->pinChain)
     {   for (Chunk *c=p->pinnedChunks; c!=nullptr; c=c->pinChain)
         {   uintptr_t p = c->dataStart();
+    cout << "Hunting through pinned chunk: data " << Addr(c->dataStart())
+         << " to " << Addr(c->chunkFringe.load())
+         << " end " << Addr(c->dataEnd()) << "\n";
             while (p < c->chunkFringe)
             {   LispObject *pp = reinterpret_cast<LispObject *>(p);
 // In the loop here p will point in turn at each item in the Chunk. I know
@@ -1105,26 +1152,31 @@ void findHeadersOfPinnedItems()
                                          // Note TYPE_STREAM etc is in with this.
                 case 0x12: // 0b10010:   // Header for bit-vector
                 case 0x1a: // 0b11010:   // Header for vector holding binary data
-                    len = doubleword_align_up(length_of_byteheader(a));
+// I demand that length_of_header() gives a proper length for byte- and
+// bit-vectors at least as far as the number of words that are used.
+                    len = doubleword_align_up(length_of_header(a));
 // On a 64-bit nachine this is one probe per LispObject. On a 32-bit one
 // because my pinning bitmap has a resolution of 8 bytes I will handle
 // two LispObjects at a time.
 // Here is where I could probably improve things by consulting multiple
 // bits in the bitmap at once...
-                    for (size_t i = 8; i<len; i += 8)
+                    for (size_t i=8; i<len; i+=8)
                     {   if (isPinned(p+i))
                         {   setPinned(p);
+                            clearPinned(p+i);
                             break;
                         }
                     }
+                    my_assert(len != 0, "zero length vector of some sort");
                     p += len;
                     continue;
 
                 case 0x02: // 0b00010:   // Symbol headers plus char literals etc
                     if (is_symbol_header(a))
-                    {   for (size_t i = 8; i<symhdr_length; i += 8)
+                    {   for (size_t i=8; i<symhdr_length; i+=8)
                         {   if (isPinned(p+i))
                             {   setPinned(p);
+                                clearPinned(p+i);
                                 break;
                             }
                         }
@@ -1135,37 +1187,16 @@ void findHeadersOfPinnedItems()
                 default:                 // None of the above cases...
                                          // ... must be a CONS cell.
 // Only need an extra probe on 64-bit platforms.
-                    if (SIXTY_FOUR_BIT && isPinned(p+CELL)) setPinned(p);
+                    if (SIXTY_FOUR_BIT && isPinned(p+CELL))
+                    {   setPinned(p);
+                        clearPinned(p+CELL);
+                    }
                     p += 2*CELL;
                     continue;
                 }
             }
         }
     }
-}
-
-// The version here requires its argument to be a valid LispObject that
-// is not immediate data. Or at least the word address of a valid object.
-
-bool isPinned(uintptr_t a)
-{   Page *p = reinterpret_cast<Page *>(a & -pageSize);
-    uintptr_t o = (a & (pageSize-1))/8;
-    uintptr_t mask = static_cast<uintptr_t>(1)<<(o&(8*sizeof(uintptr_t)-1));
-    uintptr_t word = p->pinnedMap[o/(8*sizeof(uintptr_t))];
-    return (word & mask) != 0;
-}
-
-void setPinned(uintptr_t a)
-{   Page *p = reinterpret_cast<Page *>(a & -pageSize);
-    uintptr_t o = (a & (pageSize-1))/8;
-    uintptr_t mask = static_cast<uintptr_t>(1)<<(o&(8*sizeof(uintptr_t)-1));
-    p->pinnedMap[o/(8*sizeof(uintptr_t))] |= mask;
-}
-
-void setPinned(Page *p, uintptr_t a)
-{   uintptr_t o = (a & (pageSize-1))/8;
-    uintptr_t mask = static_cast<uintptr_t>(1)<<(o&(8*sizeof(uintptr_t)-1));
-    p->pinnedMap[o/(8*sizeof(uintptr_t))] |= mask;
 }
 
 void evacuateFromUnambiguousBases(bool major)
@@ -1193,7 +1224,86 @@ void evacuateFromUnambiguousBases(bool major)
     }
 }
 
-void evacuatePinnedInChunk(Chunk *c);
+// Evacuate every pinned item in the Chunk
+
+void evacuatePinnedInChunk(Chunk *c)
+{   uintptr_t p = c->dataStart();
+    cout << "Pinned chunk has data " << Addr(c->dataStart())
+         << " to " << Addr(c->chunkFringe.load())
+         << " end " << Addr(c->dataEnd()) << "\n";
+    while (p < c->chunkFringe)
+    {
+// I could skip up to 512 bytes at a time by using word operations on the
+// bitmap, and if I did then the fact that there are only 32 (64-bit) words
+// in the bitmap makes this whole scan feel not too bad.
+        if (!isPinned(p))
+        {   p += 8;
+            continue;
+        }
+        LispObject *pp = reinterpret_cast<LispObject *>(p);
+        cout << "Scanning pinned item at " << Addr(p) << "\n";
+        LispObject a = *pp;
+cout << "Item at " << Addr(pp) << " = " << std::hex << a
+     << std::dec << " = " << Addr(a) << "\n";
+        my_assert(a != 0, "zero item in heap");
+        my_assert(!is_forward(a), "forwarding pointer found");
+        size_t len, len1;
+        switch (a & 0x1f) // tag bits plus 2 more
+        {
+// binary literals are C++14, so just for now I will use hex, but I will
+// write what the binary literal would be...
+        case 0x0a: // 0b01010:   // Header for vector of Lisp pointers
+                                 // Note TYPE_STREAM etc is in with this.
+            len = doubleword_align_up(length_of_header(a));
+            if (is_mixed_header(a)) len1 = 4*CELL;
+            else len1 = len;
+            cout << "vector (" << std::hex << a << std::dec << ") uses " << len << " bytes\n";
+            if (len == 0) cout << "At " << Addr(pp) << " up to " << Addr(c->chunkFringe.load()) << "\n";
+            for (size_t i = CELL; i<len1; i += CELL)
+                evacuate(reinterpret_cast<LispObject *>(p+i));
+            my_assert(len != 0, "lisp vector size zero");
+            p += len;
+            continue;
+
+        case 0x12: // 0b10010:   // Header for bit-vector
+            len = doubleword_align_up(length_of_header(a));
+            my_assert(len != 0, "bit vector size zero");
+            cout << "bit-vector uses " << len << " bytes\n";
+            p += len;
+            continue;
+
+        case 0x1a: // 0b11010:   // Header for vector holding binary data
+            len = doubleword_align_up(length_of_header(a));
+            my_assert(len != 0, "binary vector size zero");
+            cout << "binary-vector uses " << len << " bytes\n";
+            p += len;
+            continue;
+
+        case 0x02: // 0b00010:   // Symbol headers plus char literals etc
+            if (is_symbol_header(a))
+            {   Symbol_Head *s = reinterpret_cast<Symbol_Head *>(p);
+                evacuate(&(s->value));
+                evacuate(&(s->env));
+                evacuate(&(s->fastgets));
+                evacuate(&(s->package));
+                evacuate(&(s->pname));
+                cout << "symbol uses " << symhdr_length << " bytes\n";
+                cout << "inc from " << Addr(p) << " to " << Addr(p+symhdr_length) << "\n";
+                p += symhdr_length;
+                continue;
+            }
+            // drop through.
+        default:                 // None of the above cases...
+                                 // ... must be a CONS cell.
+            evacuate(pp);
+            evacuate(pp+1);
+            cout << "cons cell uses " << (2*CELL) << " bytes\n";
+            p += 2*CELL;
+            continue;
+        }
+    }
+}
+
 
 void evacuateFromPinnedItems(bool major)
 {   cout << "evacuateFromPinnedItems\n";
@@ -1277,7 +1387,7 @@ void evacuateOneChunk(Chunk *c)
 // write what the binary literal would be...
         case 0x0a: // 0b01010:   // Header for vector of Lisp pointers
                                  // Note TYPE_STREAM etc is in with this.
-            len = doubleword_align_up(length_of_byteheader(a));
+            len = doubleword_align_up(length_of_header(a));
             if (is_mixed_header(a)) len1 = 4*CELL;
             else len1 = len;
             for (size_t i = CELL; i<len1; i += CELL)
@@ -1286,12 +1396,12 @@ void evacuateOneChunk(Chunk *c)
             continue;
 
         case 0x12: // 0b10010:   // Header for bit-vector
-            len = doubleword_align_up(length_of_byteheader(a));
+            len = doubleword_align_up(length_of_header(a));
             p += len;
             continue;
 
         case 0x1a: // 0b11010:   // Header for vector holding binary data
-            len = doubleword_align_up(length_of_byteheader(a));
+            len = doubleword_align_up(length_of_header(a));
             p += len;
             continue;
         case 0x02: // 0b00010:   // Symbol headers plus char literals etc
@@ -1310,71 +1420,6 @@ void evacuateOneChunk(Chunk *c)
                                  // ... must be a CONS cell.
             evacuate(pp);
             evacuate(pp+1);
-            p += 2*CELL;
-            continue;
-        }
-    }
-}
-
-// Evacuate event pinned item in the Chunk
-
-void evacuatePinnedInChunk(Chunk *c)
-{   uintptr_t p = c->dataStart();
-    while (p < c->chunkFringe)
-    {   LispObject *pp = reinterpret_cast<LispObject *>(p);
-        cout << "Scanning at " << Addr(p) << " pinned=" << isPinned(p) << "\n";
-// The first word of an object may be one of several possibilities:
-//    Header for vector holding binary data;
-//    Header for vector holding Lisp data;
-//    Header for object with 3 lisp items then binary stuff;
-//    Header for symbol;
-//    anything else (item is a cons cell).
-        LispObject a = *pp;
-        size_t len, len1;
-        switch (a & 0x1f) // tag bits plus 2 more
-        {
-// binary literals are C++14, so just for now I will use hex, but I will
-// write what the binary literal would be...
-        case 0x0a: // 0b01010:   // Header for vector of Lisp pointers
-                                 // Note TYPE_STREAM etc is in with this.
-            len = doubleword_align_up(length_of_byteheader(a));
-            if (is_mixed_header(a)) len1 = 4*CELL;
-            else len1 = len;
-            if (isPinned(p))
-                for (size_t i = CELL; i<len1; i += CELL)
-                    evacuate(reinterpret_cast<LispObject *>(p+i));
-            p += len;
-            continue;
-
-        case 0x12: // 0b10010:   // Header for bit-vector
-            len = doubleword_align_up(length_of_byteheader(a));
-            p += len;
-            continue;
-
-        case 0x1a: // 0b11010:   // Header for vector holding binary data
-            len = doubleword_align_up(length_of_byteheader(a));
-            p += len;
-            continue;
-        case 0x02: // 0b00010:   // Symbol headers plus char literals etc
-            if (is_symbol_header(a))
-            {   if (isPinned(p))
-                {   Symbol_Head *s = reinterpret_cast<Symbol_Head *>(p);
-                    evacuate(&(s->value));
-                    evacuate(&(s->env));
-                    evacuate(&(s->fastgets));
-                    evacuate(&(s->package));
-                    evacuate(&(s->pname));
-                }
-                p += symhdr_length;
-                continue;
-            }
-            // drop through.
-        default:                 // None of the above cases...
-                                 // ... must be a CONS cell.
-            if (isPinned(p))
-            {   evacuate(pp);
-                evacuate(pp+1);
-            }
             p += 2*CELL;
             continue;
         }
@@ -1473,7 +1518,7 @@ cout << "fringe = " << Addr(fringe) << "\n";
                 p = myBusyChunk->dataStart();
                 continue;
             }
-cout << "scanning at " << Addr(p) << "\n";
+cout << "scanning (1) at " << Addr(p) << "\n";
             LispObject *pp = reinterpret_cast<LispObject *>(p);
 // The first word of an object may be one of several possibilities:
 //    Header for vector holding binary data;
@@ -1485,7 +1530,7 @@ cout << "scanning at " << Addr(p) << "\n";
             size_t len, len1;
 #ifdef DEBUG
             cout << "First word of " << Addr(pp)
-                 << " = " << Addr(a) << "  " << (a & 0x1f) << "\n";
+                 << " = " << Addr(a) << "  " << std::hex << (a & 0x1f) << "\n";
 if (is_cons(a)) cout << "a cons pointer\n";
 else if (is_vector(a)) cout << "pointer to a vector of some sort\n";
 else if (is_forward(a)) cout << "forwarding pointer ILLEGAL HERE\n";
@@ -1494,7 +1539,11 @@ else if (is_numbers(a)) cout << "pointer to a symbol\n";
 else if (is_bfloat(a)) cout << "pointer to a boxfloat\n";
 else if (is_fixnum(a)) cout << "pointer to a number\n";
 else if (is_odds(a))
-   if (is_header(a)) cout << "hdr " << Addr(a) << "\n";
+   if (is_header(a))
+   {   cout << "header found " << Addr(a) << "   ";
+       cout << std::hex << length_of_header(a) << ":"
+            << ((a & header_mask)>>Tw) << ":" << (a & TAG_BITS) << "\n";
+   }
    else cout << "immed " << Addr(a) << "\n";
 else cout << "??? " << Addr(a) << "\n";
 #endif
@@ -1506,7 +1555,7 @@ else cout << "??? " << Addr(a) << "\n";
 // write what the binary literal would be...
             case 0x0a: // 0b01010:   // Header for vector of Lisp pointers
                                      // Note TYPE_STREAM etc is in with this.
-                len = doubleword_align_up(length_of_byteheader(a));
+                len = doubleword_align_up(length_of_header(a));
                 if (is_mixed_header(a)) len1 = 4*CELL;
                 else len1 = len;
                 for (size_t i = CELL; i<len1; i += CELL)
@@ -1515,12 +1564,12 @@ else cout << "??? " << Addr(a) << "\n";
                 continue;
 
             case 0x12: // 0b10010:   // Header for bit-vector
-                len = doubleword_align_up(length_of_byteheader(a));
+                len = doubleword_align_up(length_of_header(a));
                 p += len;
                 continue;
 
             case 0x1a: // 0b11010:   // Header for vector holding binary data
-                len = doubleword_align_up(length_of_byteheader(a));
+                len = doubleword_align_up(length_of_header(a));
                 p += len;
                 continue;
             case 0x02: // 0b00010:   // Symbol headers plus char literals etc
@@ -1556,17 +1605,49 @@ void gcHelper()
 
 void endOfGarbageCollection(bool major)
 {   cout << "endOfGarbageCollection\n";
-    Lstop0(nil);
+// Here all non-pinned live data has been copied to fresh space, so all
+// the pages chained up in oldPages can be grabbed and recycled. If such
+// a page has no pinned material in it goes in freePages and freePagesCount
+// gets incremented. If it has pinned stuff then it needs a sort of free
+// chain set up within it to allow for allocation around that, and it then
+// goes in mostlyFreePages.
+    while (oldPages!=nullptr)
+    {   Page *p = oldPages;
+        oldPages = oldPages->chain;
+        if (p->hasPinned)
+        {   setUpMostlyEmptyPage(p);
+            mostlyFreePagesCount++;
+        }
+        else
+        {   setUpEmptyPage(p);
+            freePagesCount++;
+        }
+    }
+}
+
+void tellTime(const char *s,
+              std::chrono::high_resolution_clock::time_point start,
+              std::chrono::high_resolution_clock::time_point finish)
+{   std::chrono::duration<double, std::micro> elapsed = finish-start;
+    std::chrono::nanoseconds t =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
+    cout << s << ": " << std::dec << std::fixed << std::setprecision(3)
+         << (t.count()/1000.0) << " usec\n";
 }
 
 void garbageCollect(bool major)
 {   cout << "\n+++++ Start of a "
          << (major ? "major" : "minor")
          << " GC\n";
+    auto gcTime1 = std::chrono::high_resolution_clock::now();
     prepareForGarbageCollection(major);
+    auto gcTime2 = std::chrono::high_resolution_clock::now();
     clearPinnedInformation(major);
+    auto gcTime3 = std::chrono::high_resolution_clock::now();
     identifyPinnedItems(major);
+    auto gcTime4 = std::chrono::high_resolution_clock::now();
     findHeadersOfPinnedItems();
+    auto gcTime5 = std::chrono::high_resolution_clock::now();
 // Report on pinning.
     cout << pinnedChunkCount << " pinned Chunks\n";
     cout << pinnedPageCount << " pinned Pages\n";
@@ -1577,6 +1658,7 @@ void garbageCollect(bool major)
 // to be processed. Doing so can release some of the worker threads to
 // start evacuating their contents.
     evacuateFromPinnedItems(major);
+    auto gcTime6 = std::chrono::high_resolution_clock::now();
 // Next, and running as the main thread, I evacuate everything that
 // is referenced from a precise list-base. These list-bases are the
 // fixed variables used by the Lisp system and all items on the Lisp stack.
@@ -1584,22 +1666,39 @@ void garbageCollect(bool major)
 // fixed variables thread-local and having one stack per thread, but for now
 // I do not!
     evacuateFromUnambiguousBases(major);
+    auto gcTime7 = std::chrono::high_resolution_clock::now();
 // If I am running a minor GC I will need to deal with "up-pointers" where
 // a RPLACx style operation updated old data so that it now points at
 // something new enough that the GC may move it.
     if (!major) evacuateFromDirty();
+    auto gcTime8 = std::chrono::high_resolution_clock::now();
 // Having got everything started I can let the main thread join in with the
 // sort of processing that all the worker threads are involved in. This
 // scans data that has just been copied and processes anything that it refers
 // to. In many respects the hardest part of designing how this works is
 // getting a proper termination condition.
     evacuateFromCopiedData(major);
+    auto gcTime9 = std::chrono::high_resolution_clock::now();
 // Now all relevant data has been copied from old to new space. I need to
 // tidy up by releasing the old space so it becomes available for re-use.
 // I also need to ensure that the fringe and limit pointers used by the
 // GC helper threads are transferred so that they become usable by ordinary
 // worker threads. 
     endOfGarbageCollection(major);
+    auto gcTime10 = std::chrono::high_resolution_clock::now();
+// The timings reported here will at present be deeply misleading because
+// they include the time taken by all the debug printing. But at a later
+// stage when I disable that the display from here may help me judge
+// which parts of the GC deserve the greatest attention by way of tuning.
+    tellTime("prepare               ", gcTime1, gcTime2);
+    tellTime("clear pins            ", gcTime2, gcTime3);
+    tellTime("identify pinned       ", gcTime3, gcTime4);
+    tellTime("get headers of pinned ", gcTime4, gcTime5);
+    tellTime("evac from pinned      ", gcTime5, gcTime6);
+    tellTime("evac from precise     ", gcTime6, gcTime7);
+    tellTime("evac from dirty       ", gcTime7, gcTime8);
+    tellTime("eval from copied      ", gcTime8, gcTime9);
+    tellTime("tidy up               ", gcTime9, gcTime10);
 }
 
 // This flag generally controls whether a generational collector will be
