@@ -949,7 +949,7 @@ inline LispObject get_n_bytes1(size_t n, uintptr_t thr,
     {
 // Here I am about to be forced to participate in garbage collection,
 // typically for the benefit of some other thread.
-        cout << "GC triggered\n";
+        if (gcTrace) cout << "GC triggered\n";
         if (myChunkBase[thr] != nullptr) myChunkBase[thr]->chunkFringe = r;
         gIncrement[thr] = 0;
         fringe = r;
@@ -972,7 +972,7 @@ inline LispObject get_n_bytes1(size_t n, uintptr_t thr,
 inline LispObject get_n_bytes(size_t n)
 {
 #ifdef DEBUG
-    cout << "get_n_bytes(" << n << ")  ";
+    if (gcTrace) cout << "get_n_bytes(" << n << ")  ";
     my_assert(n < 8000000, [&] { cout << "\nsize in get_n_bytes = "
                                       << std::hex << n << std::endl; });
 #endif // DEBUG
@@ -998,14 +998,14 @@ inline LispObject get_n_bytes(size_t n)
     if (fr1 <= w) LIKELY
     {
 #ifdef DEBUG
-        cout << "= " << Addr(r) << "\n";
+        if (gcTrace) cout << "= " << Addr(r) << "\n";
 #endif // DEBUG
         return static_cast<LispObject>(r);
     }
     UNLIKELY
 #ifdef DEBUG
     r = get_n_bytes1(n, threadId, r, w);
-    cout << "= " << Addr(r) << "\n";
+    if (gcTrace) cout << "= " << Addr(r) << "\n";
     return r;
 #else // DEBUG
     return get_n_bytes1(n, threadId, r, w);
@@ -1616,8 +1616,13 @@ inline void testLayout()
 extern void gcTestCode(); // temporary and for debugging.
 
 // I will arrange that if the GC takes more than this time waiting on a
-// condition variable it will abort.
-INLINE_VAR const std::chrono::seconds cvTimeout(10);
+// condition variable it will abort. Such timeouts are dangerous in various
+// various ways and the amount of time it could make sense to allow will
+// depend on the speed of the computer in use. However while I am only
+// using one thread there ought not be to any contention and no thread
+// should ever stall during GC, so having a short period here is not a
+// big issue.
+INLINE_VAR const std::chrono::seconds cvTimeout(1);
 
 #endif // header_newallocate_h
 

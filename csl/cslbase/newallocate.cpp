@@ -1134,15 +1134,38 @@ LispObject borrow_vector(int tag, int type, size_t n)
 // I put the code here adjacent to the code that allocates from the list of
 // pages so that the setup and use can be compared.
 
+// In some early testing the times reported from (apparently) this little
+// function seemed terrible, so the local switch to a high optimization
+// level is to see if that is the issue!
+
+#pragma GCC push_options
+#pragma GCC optimize(3)
+
 void setUpEmptyPage(Page *p)
 {   p->chunkCount = 0;
     p->chunkMapSorted = false;
+#ifdef SAFE
     for (size_t i=0; i<sizeof(p->dirtyMap)/sizeof(p->dirtyMap[0]); i++)
         p->dirtyMap[i] = 0;
     for (size_t i=0; i<sizeof(p->dirtyMap1)/sizeof(p->dirtyMap1[0]); i++)
         p->dirtyMap1[i] = 0;
     for (size_t i=0; i<sizeof(p->dirtyMap2)/sizeof(p->dirtyMap2[0]); i++)
         p->dirtyMap2[i] = 0;
+#else
+// Here rather than setting each word to zero with an atomic write I
+// use memory fences to (try to!) ensure global sequential ordering and
+// I use memset to clear the block of memory, HOPING that the representation
+// in memory of simple and atomic integers will be identical. This is not
+// standards-conforming.
+    std::atomic_thread_fence(std::memory_order::memory_order_seq_cst);
+    std::memset(reinterpret_cast<void *>(&p->dirtyMap),
+                0, sizeof(p->dirtyMap));
+    std::memset(reinterpret_cast<void *>(&p->dirtyMap1),
+                0, sizeof(p->dirtyMap1));
+    std::memset(reinterpret_cast<void *>(&p->dirtyMap2),
+                0, sizeof(p->dirtyMap2));
+    std::atomic_thread_fence(std::memory_order::memory_order_seq_cst);
+#endif
     p->hasDirty = false;
     p->dirtyChain = nullptr;
     p->chain = freePages;
@@ -1156,9 +1179,6 @@ void setUpEmptyPage(Page *p)
 // stage when information about pinned material has been set up as part
 // of the Page contents.
 
-// At present this is a copt of the code that sets up fully empty pages
-// and so it is BROKEN.
-
 void setUpMostlyEmptyPage(Page *p)
 {
     p->chunkCount = 0;
@@ -1167,18 +1187,37 @@ void setUpMostlyEmptyPage(Page *p)
         p->chunkMap[p->chunkCount++] = c;
     p->fringe = reinterpret_cast<uintptr_t>(&p->data);
     p->limit = reinterpret_cast<uintptr_t>(p->pinnedChunks.load());
+#ifdef SAFE
     for (size_t i=0; i<sizeof(p->dirtyMap)/sizeof(p->dirtyMap[0]); i++)
         p->dirtyMap[i] = 0;
     for (size_t i=0; i<sizeof(p->dirtyMap1)/sizeof(p->dirtyMap1[0]); i++)
         p->dirtyMap1[i] = 0;
     for (size_t i=0; i<sizeof(p->dirtyMap2)/sizeof(p->dirtyMap2[0]); i++)
         p->dirtyMap2[i] = 0;
+#else
+// Here rather than setting each word to zero with an atomic write I
+// use memory fences to (try to!) ensure global sequential ordering and
+// I use memset to clear the block of memory, HOPING that the representation
+// in memory of simple and atomic integers will be identical. This is not
+// standards-conforming.
+    std::atomic_thread_fence(std::memory_order::memory_order_seq_cst);
+    std::memset(reinterpret_cast<void *>(&p->dirtyMap),
+                0, sizeof(p->dirtyMap));
+    std::memset(reinterpret_cast<void *>(&p->dirtyMap1),
+                0, sizeof(p->dirtyMap1));
+    std::memset(reinterpret_cast<void *>(&p->dirtyMap2),
+                0, sizeof(p->dirtyMap2));
+    std::atomic_thread_fence(std::memory_order::memory_order_seq_cst);
+#endif
     p->hasDirty = false;
     p->dirtyChain = nullptr;
     p->chain = mostlyFreePages;
     mostlyFreePages = p;
     p->pageClass = mostlyFreePageTag;
 }
+
+#pragma GCC pop_options
+
 
 // Now something that takes a page where it must be left free apart from
 // any pinned Chunks within it. The fringe and limit fields must be set up

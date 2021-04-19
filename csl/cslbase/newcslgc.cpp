@@ -516,7 +516,7 @@ unsigned int activeHelpers = 0;
 void pushChunk(Chunk *c)
 {   std::lock_guard<std::mutex> lock(mutexForGc);
     Chunk *old = chunkStack;
-    cout << "Push " << Addr(c) << " onto queue [" << Addr(old) << "]\n";
+    if (gcTrace) cout << "Push " << Addr(c) << " onto queue [" << Addr(old) << "]\n";
     c->chunkStack = old;
     chunkStack = c;
 // If I put a new Chunk onto an otherwise empty queue then I will need to
@@ -598,7 +598,7 @@ atomic<Chunk *>   gcQ[gcQSize];
 
 static void gcEnqueue(Chunk *c)
 {   uintptr_t in = gcInQ;
-cout << "Grab another Chunk at " << Addr(c) << "\n";
+if (gcTrace) cout << "Grab another Chunk at " << Addr(c) << "\n";
     gcQ[in & (gcQSize-1)] = c;
     in = in+1;
     if (in == 0) Lstop0(nil); // wrap in queue pointer
@@ -687,7 +687,7 @@ LispObject gc_n_bytes1(size_t n, uintptr_t thr, uintptr_t r)
     if (justFilled != nullptr &&
         justFilled != myBusyChunk) pushChunk(justFilled);
     myChunkBase[thr] = newChunk;
-cout << "New Chunk at " << Addr(newChunk)
+if (gcTrace) cout << "New Chunk at " << Addr(newChunk)
      << " fringe = " << Addr(fringe) << "\n";
     newChunk->length.store(nSize);
     newChunk->isPinned.store(false);
@@ -699,8 +699,8 @@ cout << "New Chunk at " << Addr(newChunk)
 #ifdef DEBUG
     testLayout();
 #endif
-cout << "gc_n_bytes1 = " << Addr(r) << " fringe = " << Addr(fringe) << "\n";
-cout << "limit = " << Addr(limit[threadId].load()) << "\n";
+if (gcTrace) cout << "gc_n_bytes1 = " << Addr(r) << " fringe = " << Addr(fringe) << "\n";
+if (gcTrace) cout << "limit = " << Addr(limit[threadId].load()) << "\n";
     return static_cast<LispObject>(r);
 }
 
@@ -708,14 +708,14 @@ inline LispObject gc_n_bytes(size_t n)
 {
 // First the path that applies if the allocation will be possible within the
 // current Chunk.
-cout << "gc_n_bytes " << n << " with fringe = " << Addr(fringe) << "\n";
+if (gcTrace) cout << "gc_n_bytes " << n << " with fringe = " << Addr(fringe) << "\n";
     uintptr_t thr = threadId;
     uintptr_t r = fringe;
     uintptr_t fr1 = r + n;
     uintptr_t w = limit[thr].load();
     if (fr1 <= w) LIKELY
     {   fringe = fr1;
-cout << "simple success at " << Addr(r) << " leaves fringe = " << Addr(fringe) << "\n";
+if (gcTrace) cout << "simple success at " << Addr(r) << " leaves fringe = " << Addr(fringe) << "\n";
         return static_cast<LispObject>(r);
     }
 // Now the case where a fresh Chunk has to be allocated.
@@ -730,7 +730,7 @@ cout << "simple success at " << Addr(r) << " leaves fringe = " << Addr(fringe) <
         if (gap != 0) setHeaderWord(r, gap);
     }
     LispObject r1 = gc_n_bytes1(n, threadId, r);
-cout << "complex success at " << Addr(r1) << "\n";
+if (gcTrace) cout << "complex success at " << Addr(r1) << "\n";
     return r1;
 }
 
@@ -768,7 +768,7 @@ void evacuate(atomic<LispObject> *p)
 #ifdef DEBUG
 // I am silent on NIL because otherwise I am overall too noisy.
     if (p->load() != nil)
-        cout << "evac " << Addr(p)
+        if (gcTrace) cout << "evac " << Addr(p)
              << " contents " << Addr(p->load()) << "\n";
 #endif
 // Here p is a pointer to a location that is a list-base, ie it contains
@@ -805,21 +805,21 @@ void evacuate(atomic<LispObject> *p)
     {
 #ifdef DEBUG
         if (a != nil)
-            cout << "immediate data: easy " << Addr(a) << "\n";
+            if (gcTrace) cout << "immediate data: easy " << Addr(a) << "\n";
 #endif // DEBUG
         return;
     }
     if (isPinned(a)) return;
     LispObject *ap = reinterpret_cast<LispObject *>(a & ~TAG_BITS);
     LispObject aa = *ap;
-    cout << "item at " << Addr(p)
+    if (gcTrace) cout << "item at " << Addr(p)
          << " is " << Addr(a) << " [not immediate] "
          << " without tag bits = " << ap
          << " and contents of that is " << Addr(aa) << "\n";
     if (is_forward(aa))
     {   *p = aa - TAG_FORWARD + (a&TAG_BITS);
 #ifdef DEBUG
-        cout << "Process forwarding address\n";
+        if (gcTrace) cout << "Process forwarding address\n";
 #endif // DEBUG
         return;
     }
@@ -831,11 +831,11 @@ void evacuate(atomic<LispObject> *p)
     else if (is_symbol(a)) len = symhdr_length;
     else len = doubleword_align_up(length_of_header(aa));
 #ifdef DEBUG
-    cout << "about to allocate " << len << " bytes\n";
+    if (gcTrace) cout << "about to allocate " << len << " bytes\n";
 #endif // DEBUG
     aa = gc_n_bytes(len);
 #ifdef DEBUG
-    cout << "@ " << Addr(aa) << "\n";
+    if (gcTrace) cout << "@ " << Addr(aa) << "\n";
 #endif // DEBUG
     std::memcpy(reinterpret_cast<void *>(aa), ap, len);
     *ap = TAG_FORWARD + aa;
@@ -905,7 +905,7 @@ bool withinMajorGarbageCollection = false;
 size_t pinnedChunkCount = 0, pinnedPageCount = 0;
 
 void prepareForGarbageCollection(bool major)
-{   cout << "prepareForGarbageCollection" << endl;
+{   if (gcTrace) cout << "prepareForGarbageCollection" << endl;
     if (major)
     {   withinMajorGarbageCollection = true;
         oldPages = busyPages;
@@ -933,13 +933,13 @@ void prepareForGarbageCollection(bool major)
     }
     else
     {   withinMajorGarbageCollection = false;
-        cout << "prepare for minor GC not coded yet\n";
+        if (gcTrace) cout << "prepare for minor GC not coded yet\n";
         Lstop0(nil);
     }
 }
 
 void clearPinnedInformation(bool major)
-{   cout << "clearPinnedInformation" << endl;
+{   if (gcTrace) cout << "clearPinnedInformation" << endl;
 // Any pages pinned by the previous garbage collection will be recorded
 // via globalPinChain.
    clearAllPins();
@@ -994,7 +994,7 @@ void clearPinned(Page *p, uintptr_t a)
 void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 {   if (p->chunkCount.load() == 0) return;  // An empty Page.
     setPinned(p, a);
-    cout << "Ambig " << Addr(a) << " in non-empty page " << Addr(p) << endl;
+    if (gcTrace) cout << "Ambig " << Addr(a) << " in non-empty page " << Addr(p) << endl;
 // The list of chunks will be arranged such that the highest address one
 // is first in the list. I will now scan it until I find one such that
 // the chunk has (a) pointing within it, and I should not need many tries
@@ -1027,9 +1027,9 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
         else low = middle;
     }
     Chunk *c = p->chunkMap[low];
-    cout << "pointer is maybe within chunk " << low << " at " << Addr(c) << endl;
+    if (gcTrace) cout << "pointer is maybe within chunk " << low << " at " << Addr(c) << endl;
     if (!c->pointsWithin(a)) return;
-    cout << "Within that chunk: isPinned = " << c->isPinned.load() << endl;
+    if (gcTrace) cout << "Within that chunk: isPinned = " << c->isPinned.load() << endl;
 // Here (a) lies within the range of the chunk c. Every page that has any
 // pinning must record that both by being on a chain of pages with pins
 // and by having a list of its own pinned chunks.
@@ -1044,7 +1044,7 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
     c->pinChain = p->pinnedChunks.load();
     p->pinnedChunks = c;
 // When a chunk gets pinned then page must be too unless it already has been.
-    cout << "Page hasPinned = " << p->hasPinned.load() << endl;
+    if (gcTrace) cout << "Page hasPinned = " << p->hasPinned.load() << endl;
     if (p->hasPinned.load()) return;
     pinnedPageCount++;
     p->hasPinned = true;
@@ -1112,7 +1112,7 @@ void identifyPinnedItems(bool major)
 // way in to the Garbage Collector I have tried quite hard to ensure that
 // last point, but none of this can be guaranteed by reference to the rules
 // of the C++ standard!
-            cout << "scan stack from " << Addr(sfringe) << " to "
+            if (gcTrace) cout << "scan stack from " << Addr(sfringe) << " to "
                  << Addr(sbase) << endl;
             for (uintptr_t s=sfringe; s<sbase; s+=sizeof(uintptr_t))
             {   processAmbiguousValue(major,
@@ -1130,7 +1130,7 @@ void findHeadersOfPinnedItems()
 {   for (Page *p=globalPinChain; p!=nullptr; p=p->pinChain)
     {   for (Chunk *c=p->pinnedChunks; c!=nullptr; c=c->pinChain)
         {   uintptr_t p = c->dataStart();
-    cout << "Hunting through pinned chunk: data " << Addr(c->dataStart())
+    if (gcTrace) cout << "Hunting through pinned chunk: data " << Addr(c->dataStart())
          << " to " << Addr(c->chunkFringe.load())
          << " end " << Addr(c->dataEnd()) << "\n";
             while (p < c->chunkFringe)
@@ -1200,7 +1200,7 @@ void findHeadersOfPinnedItems()
 }
 
 void evacuateFromUnambiguousBases(bool major)
-{   cout << "evacuateFromUnambiguousBases\n";
+{   if (gcTrace) cout << "evacuateFromUnambiguousBases\n";
 // This code has to know where ALL the definitive references to LispObjects
 // are in the C++ code. The main way it achieves this is through a vector
 // "list_bases" that holds the address of every static location involved.
@@ -1228,7 +1228,7 @@ void evacuateFromUnambiguousBases(bool major)
 
 void evacuatePinnedInChunk(Chunk *c)
 {   uintptr_t p = c->dataStart();
-    cout << "Pinned chunk has data " << Addr(c->dataStart())
+    if (gcTrace) cout << "Pinned chunk has data " << Addr(c->dataStart())
          << " to " << Addr(c->chunkFringe.load())
          << " end " << Addr(c->dataEnd()) << "\n";
     while (p < c->chunkFringe)
@@ -1241,9 +1241,9 @@ void evacuatePinnedInChunk(Chunk *c)
             continue;
         }
         LispObject *pp = reinterpret_cast<LispObject *>(p);
-        cout << "Scanning pinned item at " << Addr(p) << "\n";
+        if (gcTrace) cout << "Scanning pinned item at " << Addr(p) << "\n";
         LispObject a = *pp;
-cout << "Item at " << Addr(pp) << " = " << std::hex << a
+if (gcTrace) cout << "Item at " << Addr(pp) << " = " << std::hex << a
      << std::dec << " = " << Addr(a) << "\n";
         my_assert(a != 0, "zero item in heap");
         my_assert(!is_forward(a), "forwarding pointer found");
@@ -1257,8 +1257,8 @@ cout << "Item at " << Addr(pp) << " = " << std::hex << a
             len = doubleword_align_up(length_of_header(a));
             if (is_mixed_header(a)) len1 = 4*CELL;
             else len1 = len;
-            cout << "vector (" << std::hex << a << std::dec << ") uses " << len << " bytes\n";
-            if (len == 0) cout << "At " << Addr(pp) << " up to " << Addr(c->chunkFringe.load()) << "\n";
+            if (gcTrace) cout << "vector (" << std::hex << a << std::dec << ") uses " << len << " bytes\n";
+            if (len == 0) if (gcTrace) cout << "At " << Addr(pp) << " up to " << Addr(c->chunkFringe.load()) << "\n";
             for (size_t i = CELL; i<len1; i += CELL)
                 evacuate(reinterpret_cast<LispObject *>(p+i));
             my_assert(len != 0, "lisp vector size zero");
@@ -1268,14 +1268,14 @@ cout << "Item at " << Addr(pp) << " = " << std::hex << a
         case 0x12: // 0b10010:   // Header for bit-vector
             len = doubleword_align_up(length_of_header(a));
             my_assert(len != 0, "bit vector size zero");
-            cout << "bit-vector uses " << len << " bytes\n";
+            if (gcTrace) cout << "bit-vector uses " << len << " bytes\n";
             p += len;
             continue;
 
         case 0x1a: // 0b11010:   // Header for vector holding binary data
             len = doubleword_align_up(length_of_header(a));
             my_assert(len != 0, "binary vector size zero");
-            cout << "binary-vector uses " << len << " bytes\n";
+            if (gcTrace) cout << "binary-vector uses " << len << " bytes\n";
             p += len;
             continue;
 
@@ -1287,8 +1287,8 @@ cout << "Item at " << Addr(pp) << " = " << std::hex << a
                 evacuate(&(s->fastgets));
                 evacuate(&(s->package));
                 evacuate(&(s->pname));
-                cout << "symbol uses " << symhdr_length << " bytes\n";
-                cout << "inc from " << Addr(p) << " to " << Addr(p+symhdr_length) << "\n";
+                if (gcTrace) cout << "symbol uses " << symhdr_length << " bytes\n";
+                if (gcTrace) cout << "inc from " << Addr(p) << " to " << Addr(p+symhdr_length) << "\n";
                 p += symhdr_length;
                 continue;
             }
@@ -1297,7 +1297,7 @@ cout << "Item at " << Addr(pp) << " = " << std::hex << a
                                  // ... must be a CONS cell.
             evacuate(pp);
             evacuate(pp+1);
-            cout << "cons cell uses " << (2*CELL) << " bytes\n";
+            if (gcTrace) cout << "cons cell uses " << (2*CELL) << " bytes\n";
             p += 2*CELL;
             continue;
         }
@@ -1306,10 +1306,10 @@ cout << "Item at " << Addr(pp) << " = " << std::hex << a
 
 
 void evacuateFromPinnedItems(bool major)
-{   cout << "evacuateFromPinnedItems\n";
+{   if (gcTrace) cout << "evacuateFromPinnedItems\n";
     for (Page *p=globalPinChain; p!=nullptr; p=p->pinChain)
     {   for (Chunk *c=p->pinnedChunks; c!=nullptr; c=c->pinChain)
-        {   cout << "Pinned items in " << Addr(c) << " to evacuate\n";
+        {   if (gcTrace) cout << "Pinned items in " << Addr(c) << " to evacuate\n";
             evacuatePinnedInChunk(c);
         }
     }
@@ -1319,7 +1319,7 @@ void evacuateFromPinnedItems(bool major)
 // up-pointers that have been introduced by RPLACx style operations.
 
 void evacuateFromDirty()
-{   cout << "evacuateFromDirty\n";
+{   if (gcTrace) cout << "evacuateFromDirty\n";
     Lstop0(nil);
 }
 
@@ -1364,7 +1364,7 @@ void evacuateFromDirty()
 extern void gcHelper();
 
 void evacuateFromCopiedData(bool major)
-{   cout << "evacuateFromCopiedData\n";
+{   if (gcTrace) cout << "evacuateFromCopiedData\n";
 // This is gcHelper being called from the GC driver thread.
     gcHelper();
 }
@@ -1471,8 +1471,8 @@ void evacuatePartOfMyOwnChunk()
 // copied material.
         myBusyChunk = myChunkBase[threadId];
         uintptr_t p = myBusyChunk->dataStart();
-cout << "Start of data in my Chunk is at " << Addr(p) << "\n";
-cout << "fringe = " << Addr(fringe) << "\n";
+if (gcTrace) cout << "Start of data in my Chunk is at " << Addr(p) << "\n";
+if (gcTrace) cout << "fringe = " << Addr(fringe) << "\n";
         for (;;)
         {
 // The start of this loop is what I describe as "step (3)" in the
@@ -1481,13 +1481,13 @@ cout << "fringe = " << Addr(fringe) << "\n";
             {   Chunk *c1;
                 for (;;)
                 {   while ((c1 = nonblockingPopChunk()) != nullptr)
-                    {   cout << "another chunk at " << Addr(c1) << " from queue\n";
+                    {   if (gcTrace) cout << "another chunk at " << Addr(c1) << " from queue\n";
                         evacuateOneChunk(c1);
                     }
                     if (fringe == p)
                     {   c1 = popChunk(); // blocking
                         if (c1 == nullptr) return;
-                        cout << "!Another chunk at " << Addr(c1) << " from queue\n";
+                        if (gcTrace) cout << "!Another chunk at " << Addr(c1) << " from queue\n";
                         evacuateOneChunk(c1);
                         continue;
                     }
@@ -1518,7 +1518,7 @@ cout << "fringe = " << Addr(fringe) << "\n";
                 p = myBusyChunk->dataStart();
                 continue;
             }
-cout << "scanning (1) at " << Addr(p) << "\n";
+if (gcTrace) cout << "scanning (1) at " << Addr(p) << "\n";
             LispObject *pp = reinterpret_cast<LispObject *>(p);
 // The first word of an object may be one of several possibilities:
 //    Header for vector holding binary data;
@@ -1529,23 +1529,26 @@ cout << "scanning (1) at " << Addr(p) << "\n";
             LispObject a = *pp;
             size_t len, len1;
 #ifdef DEBUG
-            cout << "First word of " << Addr(pp)
+            if (gcTrace) cout << "First word of " << Addr(pp)
                  << " = " << Addr(a) << "  " << std::hex << (a & 0x1f) << "\n";
-if (is_cons(a)) cout << "a cons pointer\n";
-else if (is_vector(a)) cout << "pointer to a vector of some sort\n";
-else if (is_forward(a)) cout << "forwarding pointer ILLEGAL HERE\n";
-else if (is_symbol(a)) cout << "pointer to a symbol\n";
-else if (is_numbers(a)) cout << "pointer to a symbol\n";
-else if (is_bfloat(a)) cout << "pointer to a boxfloat\n";
-else if (is_fixnum(a)) cout << "pointer to a number\n";
-else if (is_odds(a))
-   if (is_header(a))
-   {   cout << "header found " << Addr(a) << "   ";
-       cout << std::hex << length_of_header(a) << ":"
-            << ((a & header_mask)>>Tw) << ":" << (a & TAG_BITS) << "\n";
-   }
-   else cout << "immed " << Addr(a) << "\n";
-else cout << "??? " << Addr(a) << "\n";
+if (gcTrace)
+{   if (is_cons(a)) cout << "a cons pointer\n";
+    else if (is_vector(a)) cout << "pointer to a vector of some sort\n";
+    else if (is_forward(a)) cout << "forwarding pointer ILLEGAL HERE\n";
+    else if (is_symbol(a)) cout << "pointer to a symbol\n";
+    else if (is_numbers(a)) cout << "pointer to a symbol\n";
+    else if (is_bfloat(a)) cout << "pointer to a boxfloat\n";
+    else if (is_fixnum(a)) cout << "pointer to a number\n";
+    else if (is_odds(a))
+    {   if (is_header(a))
+        {   cout << "header found " << Addr(a) << "   ";
+            cout << std::hex << length_of_header(a) << ":"
+                 << ((a & header_mask)>>Tw) << ":" << (a & TAG_BITS) << "\n";
+        }
+        else cout << "immed " << Addr(a) << "\n";
+    }
+    else cout << "??? " << Addr(a) << "\n";
+}
 #endif
             my_assert(!is_forward(a),
                 [] { cout << "Forwarding pointer not expected\n"; });
@@ -1604,13 +1607,14 @@ void gcHelper()
 }
 
 void endOfGarbageCollection(bool major)
-{   cout << "endOfGarbageCollection\n";
+{   if (gcTrace) cout << "endOfGarbageCollection\n";
 // Here all non-pinned live data has been copied to fresh space, so all
 // the pages chained up in oldPages can be grabbed and recycled. If such
 // a page has no pinned material in it goes in freePages and freePagesCount
 // gets incremented. If it has pinned stuff then it needs a sort of free
 // chain set up within it to allow for allocation around that, and it then
 // goes in mostlyFreePages.
+    int count = 0;
     while (oldPages!=nullptr)
     {   Page *p = oldPages;
         oldPages = oldPages->chain;
@@ -1622,7 +1626,19 @@ void endOfGarbageCollection(bool major)
         {   setUpEmptyPage(p);
             freePagesCount++;
         }
+        count++;
     }
+    cout << count << " pages moved from oldPages to emptyPages\n";
+#ifdef DEBUG
+    LispObject a = standard_input;
+    cout << "\nstdin = " << std::flush; simple_print(a);
+    if (is_symbol(a)) a = qvalue(a);
+    cout << "\n value = " << std::flush;
+    simple_print(a);
+    cout << std::endl;
+    if (is_vector(a))
+        std::printf("val=%" PRIxPTR "  hdr(val)=%" PRIxPTR "\n", a, vechdr(a));
+#endif // DEBUG
 }
 
 void tellTime(const char *s,
@@ -1636,7 +1652,7 @@ void tellTime(const char *s,
 }
 
 void garbageCollect(bool major)
-{   cout << "\n+++++ Start of a "
+{   if (gcTrace) cout << "\n+++++ Start of a "
          << (major ? "major" : "minor")
          << " GC\n";
     auto gcTime1 = std::chrono::high_resolution_clock::now();
@@ -1649,8 +1665,8 @@ void garbageCollect(bool major)
     findHeadersOfPinnedItems();
     auto gcTime5 = std::chrono::high_resolution_clock::now();
 // Report on pinning.
-    cout << pinnedChunkCount << " pinned Chunks\n";
-    cout << pinnedPageCount << " pinned Pages\n";
+    if (gcTrace) cout << pinnedChunkCount << " pinned Chunks\n";
+    if (gcTrace) cout << pinnedPageCount << " pinned Pages\n";
 // At this point I am ready to start! I have a fresh part of the heap set
 // up so that get_n_bytes() can grab memory from it. I will have
 // a number of GC threads all waiting for Chunks to scan.
@@ -1697,7 +1713,7 @@ void garbageCollect(bool major)
     tellTime("evac from pinned      ", gcTime5, gcTime6);
     tellTime("evac from precise     ", gcTime6, gcTime7);
     tellTime("evac from dirty       ", gcTime7, gcTime8);
-    tellTime("eval from copied      ", gcTime8, gcTime9);
+    tellTime("evac from copied      ", gcTime8, gcTime9);
     tellTime("tidy up               ", gcTime9, gcTime10);
 }
 

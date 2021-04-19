@@ -394,6 +394,7 @@ extern uintptr_t vxor_chain;
 extern LispObject *stackLimit;
 
 extern bool gcTest;
+extern bool gcTrace;
 
 #else // !CONSERVATIVE
 extern LispObject *stackLimit;
