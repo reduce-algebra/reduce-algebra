@@ -38,6 +38,7 @@
 #ifndef header_log_h
 #define header_log_h 1
 
+#include <iostream>
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
@@ -63,6 +64,20 @@
 {   std::fprintf(stderr, "\n\n!!! Aborting: %s\n\n", msg);
     std::fflush(stderr);
     std::exit(EXIT_FAILURE);
+}
+
+inline void my_assert(bool ok, const char *msg)
+{   if (!ok)
+    {   std::cout << "\n+++ " << msg << std::endl;
+        my_abort();
+    }
+}
+
+inline void my_assert(bool ok, std::string msg)
+{   if (!ok)
+    {   std::cout << "\n+++ " << msg << std::endl;
+        my_abort();
+    }
 }
 
 template <typename F>

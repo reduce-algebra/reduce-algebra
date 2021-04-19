@@ -4035,18 +4035,18 @@ static LispObject Lprinbinary2(LispObject env, LispObject a,
 }
 
 LispObject Lposn(LispObject)
-{   return onevalue(
-               fixnum_of_int((int32_t)
-                             other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
-                                     qvalue(standard_output))));
+{   if (standard_output == nil) return fixnum_of_int(0);
+    return onevalue(
+        fixnum_of_int(
+            other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
+                qvalue(standard_output))));
 }
 
 LispObject Lposn_1(LispObject, LispObject stream)
 {   if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     return onevalue(fixnum_of_int(
-                        (int32_t)other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
-                                stream)));
+        other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN, stream)));
 }
 
 LispObject Llposn(LispObject)
