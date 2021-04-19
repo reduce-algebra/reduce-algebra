@@ -39,7 +39,7 @@ mk4ht htlatex ${JOBNAME} ${CONFIG},${SECTIONINGDEPTH}
 # FJW 2020-12-28 This step seems to be redundant:
 # LC_CTYPE=C sed -e 's#https://reduce-_algebra\.sourceforge\.io/#https://reduce-algebra.sourceforge.io/#' ${JOBNAME}.html >index.html
 
-# index.html is used by the CSL REDUCE GUI, so...
-cp ${JOBNAME}.html index.html
+# index.html is used locally by the CSL REDUCE GUI, so...
+if [ ! "$1" = 'for-sf' ]; then cp ${JOBNAME}.html index.html; fi
 
 exit 0
