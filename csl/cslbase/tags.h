@@ -75,8 +75,8 @@ extern LispObject nil;
 #  define PAGE_BITS             23
 #endif // PAGE_BITS
 
-#define PAGE_POWER_OF_TWO       (((size_t)1) << PAGE_BITS)
-#define CSL_PAGE_SIZE           (PAGE_POWER_OF_TWO)
+#define PAGE_POWER_OF_TWO       (static_cast<size_t>(1) << PAGE_BITS)
+#define CSL_PAGE_SIZE           PAGE_POWER_OF_TWO
 
 //
 // On 64-bit systems I will limit myself to 2 Terabytes, while on 32-bit
@@ -87,13 +87,13 @@ extern LispObject nil;
 #ifndef MAX_HEAPSIZE
 #define MAX_HEAPBITS         (SIXTY_FOUR_BIT ? 41 : 31)
 // The number here is measured in megabytes so it is always reasonably small.
-#define MAX_HEAPSIZE         (((size_t)1) << (MAX_HEAPBITS-20))
+#define MAX_HEAPSIZE         (static_cast<size_t>(1) << (MAX_HEAPBITS-20))
 #endif // MAX_HEAPSIZE
 
-#define MEGABYTE                ((size_t)0x100000)
+#define MEGABYTE                static_cast<size_t>(0x100000)
 
 #ifndef INITIAL_HEAPSIZE
-#define INITIAL_HEAPSIZE         ((SIXTY_FOUR_BIT ? 768 : 128) * MEGABYTE)
+#define INITIAL_HEAPSIZE         ((SIXTY_FOUR_BIT ? 768u : 128u) * MEGABYTE)
 #endif // MAX_HEAPSIZE
 
 #if PAGE_BITS >= 20
@@ -129,7 +129,7 @@ public:
 // The macro CELL had better have either the value 4 or 8. It is the
 // size of the basic unit of memory within which CSL works.
 
-#define CELL ((size_t)sizeof(LispObject))
+#define CELL sizeof(LispObject)
 
 // LispObject is a datatype where the low 3 bits are used as tags -
 // this idea works provided all memory addresses needed can be kept
@@ -692,12 +692,12 @@ inline unsigned int type_of_header(Header h)
 // object in bytes. NOT in words.
 
 inline size_t length_of_header(Header h)
-{   return ((static_cast<size_t>(h)) >> (Tw+7)) << 2;
+{   return (static_cast<size_t>(h) >> (Tw+7)) << 2;
 }
 
 // length_of_bitheader returns a length in bits.
 inline size_t length_of_bitheader(Header h)
-{   return ((static_cast<size_t>(h)) >> (Tw+2)) - 31;
+{   return (static_cast<size_t>(h) >> (Tw+2)) - 31;
 }
 
 // length_of_byteheader returns a length in bytes, and so compatible with what
@@ -705,12 +705,12 @@ inline size_t length_of_bitheader(Header h)
 
 
 inline size_t length_of_byteheader(Header h)
-{   return ((static_cast<size_t>(h)) >> (Tw+5))  - 3;
+{   return (static_cast<size_t>(h) >> (Tw+5))  - 3;
 }
 
 // length_of_hwordheader gives the number of halfwords used.
 inline size_t length_of_hwordheader(Header h)
-{   return ((static_cast<size_t>(h)) >> (Tw+6)) - 1;
+{   return (static_cast<size_t>(h) >> (Tw+6)) - 1;
 }
 
 inline Header bitvechdr_(size_t n)
@@ -1202,7 +1202,8 @@ inline double& basic_delt(LispObject v, size_t n)
 // the upper one allows vectors to get MUCH MUCH bigger.
 
 #define LOG2_VECTOR_CHUNK_BYTES  (PAGE_BITS-2)
-#define VECTOR_CHUNK_BYTES  ((size_t)(((size_t)1)<<LOG2_VECTOR_CHUNK_BYTES))
+#define VECTOR_CHUNK_BYTES \
+    static_cast<size_t>(static_cast<size_t>(1)<<LOG2_VECTOR_CHUNK_BYTES)
 
 // With the above large vectors are represented in chunks each of which is
 // 1 Megabyte in size. That is smaller than the storage allocation chunk size

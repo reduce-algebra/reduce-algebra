@@ -81,11 +81,10 @@ void debugprint1(LispObject a, int depth)
     else if (is_symbol(a))
     {   LispObject pn = qpname(a);
         if (is_string(pn))
-        {   unsigned int len = static_cast<unsigned int>(length_of_byteheader(
-                                   vechdr(pn)));
-            if (CELL<len &&
-                len < 64) std::printf("%.*s", static_cast<int>(len-CELL), &celt(pn,
-                                          0));
+        {   unsigned int len = static_cast<unsigned int>(
+                length_of_byteheader(vechdr(pn)));
+            if (CELL<len && len < 64)
+                std::printf("%.*s", static_cast<int>(len-CELL), &celt(pn, 0));
             else std::printf("<symbol with pname hdr %p>",
                                  reinterpret_cast<void *>(vechdr(pn)));
         }
@@ -113,12 +112,10 @@ void debugprint(LispObject a, int depth)
     std::fflush(stdout);
 }
 
-//
 // At present CSL is single threaded - at least as regards file IO - and
 // using the unlocked versions of putc and getc can be a MAJOR saving.
 // I put these macros here not in soem header to try to keep me reminded
 // that if threads ever happened I would need to do my own buffering.
-//
 
 #ifdef HAVE_GETC_UNLOCKED
 #define GETC(x) getc_unlocked((FILE *)(x))
@@ -149,7 +146,6 @@ int32_t terminal_line_length = (int32_t)0x80000000;
 
 #define default_terminal_line_length fwin_linelength
 
-//
 // The next line is a clue to the unsafe nature of a Standard C library!
 // I want to implement "printf-like" functions of my own, but need to
 // process the characters others than via a normal (FILE *) object. So I
@@ -161,7 +157,6 @@ int32_t terminal_line_length = (int32_t)0x80000000;
 // discipline of myself in all uses...
 //
 // The 1999 C standard introduced vsnprintf and solves this worry!
-//
 #define VPRINTF_CHUNK 2048
 
 void ensure_screen()
@@ -238,7 +233,6 @@ void trace_printf(const char *fmt, ...)
 
 LispObject Ltyo(LispObject env, LispObject a)
 {
-//
 // Print a character given its character code.  NOTE that in earlier
 // versions of CSL this always printed to the standard output regardless
 // of what output stream was selected. Such a curious behaviour was
@@ -246,7 +240,6 @@ LispObject Ltyo(LispObject env, LispObject a)
 // odd behaviour (eg caused graphics effects).  Now tyo is a more
 // sensible function for use across all systems. To be generous it
 // accepts either a character or a numeric code.
-//
     int c;
     LispObject stream = qvalue(standard_output);
     if (a == CHAR_EOF || a == fixnum_of_int(-1)) return onevalue(a);
@@ -424,9 +417,7 @@ int32_t write_action_spool(int32_t op, LispObject)
             case WRITE_FLUSH:
                 if (spool_file != nullptr) std::fflush(spool_file);
                 return 0;
-//
 // In many respects this behaves just like terminal output.
-//
             case WRITE_SET_LINELENGTH_DEFAULT:
                 w = terminal_line_length;
                 terminal_line_length = 0x80000000;
@@ -705,17 +696,14 @@ LispObject Lget_output_stream_string(LispObject env, LispObject a)
     {   n--;
 // /* The list can now contain big characters that need to re-expand to
 // utf-8 form here.
-//
         celt(a, n) = int_of_fixnum(car(w));
         w = cdr(w);
     }
     return a;
 }
 
-//
 // (make-function-stream 'fn) makes a stream where output just passes
 // characters to the given function.
-//
 
 LispObject Lmake_function_stream(LispObject env, LispObject a)
 {   LispObject w;
@@ -805,10 +793,8 @@ int char_to_spool(int c, LispObject stream)
 
 #endif
 
-//
 // Note that characters come through this interface as a sequence of
 // bytes, with ones whose code is over 0x7f sent as a sequence using utf-8.
-//
 int char_to_file(int c, LispObject stream)
 {   if (++io_kilo >= 1024)
     {   io_kilo = 0;
@@ -998,13 +984,11 @@ static LispObject Lfilep(LispObject env, LispObject name)
 }
 
 LispObject Ltmpnam1(LispObject env, LispObject extn)
-//
 // Returns a string that is suitable for use as the name of a temporary
 // file and that has the given extension. Note that this is generally NOT
 // a fully secure thing to use, since after tmpnam() has generated the
 // name but before you get around to doing anything with the file
 // somebody else may do something that interferes.
-//
 {   const char *suffix;
     const char *suffix1;
     size_t suffixlen = 0;
@@ -1017,7 +1001,6 @@ LispObject Ltmpnam1(LispObject env, LispObject extn)
 }
 
 LispObject Ltmpnam(LispObject env)
-//
 // Returns a string that is suitable for use as the name of a temporary
 // file. Note that this is generally NOT a comfortable thing to use,
 // since after tmpnam() has generated the name but before you get around
@@ -1032,18 +1015,15 @@ LispObject Ltmpnam(LispObject env)
 // my own approximation to tmpnam. My version may well be even less
 // respectable than the standard one, but using it avoids linker messages
 // that are clearly intended to be useful but which are in fact a nuisance.
-//
 {   return onevalue(make_string(CSLtmpnam("tmp", 3)));
 }
 
 LispObject Ltmpdir(LispObject env)
-//
 // Returns a string that is suitable for use as the name of a directory
 // to hold temporary files. Does not have a trailing "/", so will be
 // "/tmp" on Unix and something like "c:\xxx\yyy" on Windows. On Cygwin
 // it is in "mixed" mode, so the dircetory is indicated with "x:" but "/"
 // rather than "\" is used as the path separator.
-//
 {   return onevalue(make_string(CSLtmpdir()));
 }
 
@@ -1056,7 +1036,6 @@ std::FILE *myopen(const char *f, const char *m)
 #define fopen(a, b) myopen(a, b)
 #endif
 
-//
 // The Common Lisp keywords for OPEN are a horrid mess. I arrange to decode
 // the syntax of the keywords in a Lisp-coded wrapper function, and in that
 // code I will also fill in default values for any that needs same. I then
@@ -1086,7 +1065,6 @@ std::FILE *myopen(const char *f, const char *m)
 //
 // 0 x xx xxx xx   regular file
 // 1 x xx xxx xx   open as a pipe
-//
 
 #define DIRECTION_MASK               0x3
 #define DIRECTION_PROBE              0x0
@@ -1173,12 +1151,10 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
                     case IF_MISSING_ERROR:
                         error(1, err_open_failed, name);
                     case IF_MISSING_CREATE:
-//
 // I thing that people who go (open xxx :direction :probe
 //                                      :if-does-not-exist :create)
 // are to be considered unduly enthusiastic, but I will still try to do what
 // they tell me to!
-//
                         file = open_file(filename, w, static_cast<size_t>(len), "w", nullptr);
                         if (file == nullptr) error(1, err_open_failed, name);
                         std::fclose(file);
@@ -1206,12 +1182,10 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
                                          static_cast<size_t>(len), "w", nullptr);
                         if (file == nullptr) error(1, err_open_failed, name);
                         std::fclose(file);
-//
 // I use fopen(xx,"w") to create the file, then close it again and re-open
 // for input, so that concurrent tasks can see the file now existing but
 // only open for reading. If opening the file I just created fails I will
 // give up.
-//
                         file = open_file(filename, w, static_cast<size_t>(len),
                                          (d & OPEN_BINARY ? "rb" : "r"),
                                          nullptr);
@@ -1225,12 +1199,10 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
 
         case DIRECTION_OUTPUT:
         case DIRECTION_IO:
-//
 // I will start by trying to open the file to see if it exists. By using
 // mode "r+" I will only open it if I am able to obtain write-access, and
 // in some cases I will then be able to make use of the file. The fact that
 // it will have been opened for IO not just output will not harm me.
-//
             file = open_file(filename, w, static_cast<size_t>(len),
                              (d & OPEN_BINARY ? "r+b" : "r+"),
                              nullptr);
@@ -1247,13 +1219,11 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
                         std::fclose(file);
                         return onevalue(nil);
                     case IF_EXISTS_RENAME:
-//
 // When I open a file with :if-exists :rename I will always rename to
 // a fixed target, "oldfile.bak". If the rename fails I will not worry too
 // much. I imagine some people would rather that the name I renamed to was
 // based on the original file-name, but that seems excessive to me. And I
 // would have little sympathy for users who relied on it!
-//
                         std::fclose(file);
                         file = nullptr;
                         rename_file(filename, w, static_cast<size_t>(len),
@@ -1262,11 +1232,9 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
                     case IF_EXISTS_ERROR:
                         std::fclose(file);
                         error(1, err_open_failed, name);
-//
 // Working through the standard C library the ideas of :new-version,
 // :supersede and :rename-and-delete seem rather odd, so I will just treat
 // them all as :new-version.
-//
                     case IF_EXISTS_SUPERSEDE:
                     case IF_EXISTS_RENAME_AND_DELETE:
                     case IF_EXISTS_NEW_VERSION:
@@ -1361,9 +1329,7 @@ LispObject Lwrs(LispObject env, LispObject a)
 
 LispObject Lclose(LispObject env, LispObject a)
 {
-//
 // I will not allow anybody to close the terminal streams
-//
     if (a == nil ||
         a == lisp_terminal_io) return onevalue(nil);
     else if (!is_stream(a)) return aerror1("close", a);
@@ -1394,12 +1360,10 @@ extern void *panel;
 
 LispObject Lmath_display(LispObject env, LispObject a)
 {
-//
 // In all cases where maths display is not supported (ie if output is
 // not directly to a window that has been built with SHOWMATH
 // option) this returns nil and does not do anything at all exciting. If there
 // is the possibility of maths output the cases supported here are:
-//
 // nil  ) Enquire if maths display is available, return T if so;
 // or 0 )
 // 1      Enquire if a spool file is present;
@@ -1407,48 +1371,35 @@ LispObject Lmath_display(LispObject env, LispObject a)
 // 3      Indicate that local maths buffer is now complete and pass
 //        its contents (which may be several lines) to the front end
 //        display engine.
-//
 #if defined HAVE_LIBFOX || defined HAVE_LIBWX
     if (a == nil || a == fixnum_of_int(0)) // test if showmath available
     {
-//
 // Disable maths specials if output is NOT to the terminal. Observe that often
 // standard_output will be a synonym for direct terminal access.
-//
         LispObject std = qvalue(standard_output);
-//
 // GUI_TEST is the FXTerminal object, or corresponding wxWidgets object.
 // If it is nullptr that means that I had selected non-windowed mode....
-//
         if (GUI_TEST == nullptr) return onevalue(nil);
-//
 // With CSL I have all these curious ways of ending up with standard output
 // redirected to elsewhere! In any such case I want this code to report "not
 // directly to a maths-aware window".
-//
         if (alternative_stdout != nullptr ||
             procedural_output != nullptr) return onevalue(nil);
-//
 // I allow for synonym streams (which are probably only used in Common Lisp
 // mode). I do NOT allow for broadcast streams. I then check if the current
 // output stream would end up executing char_to_terminal to write a character.
-//
         while ((character_stream_writer *)stream_write_fn(
                    std) == char_to_synonym)
             std = stream_write_data(std);
         if ((character_stream_writer *)stream_write_fn(std) !=
             char_to_terminal) return onevalue(nil);
-//
 // Now I believe I am attached to a screen that can display maths.
-//
         return onevalue(lisp_true);
     }
     else if (a == fixnum_of_int(1))        // test if spool file in use
     {
-//
 // Note that I let this say TRUE if a spool file is in use regardless
 // of whether maths display is to be used...
-//
         if (spool_file == nullptr) return onevalue(nil);
         else return onevalue(lisp_true);
     }
@@ -1626,10 +1577,8 @@ LispObject Lfind_gnuplot(LispObject env)
     char *s;
     find_gnuplot(filename);
     s = filename;
-//
 // Because the path will be used in a command I will put quote marks
 // around it so that embedded whitespace does not cause a calamity.
-//
     while (*s != 0) s++;
     *s++ = '"';
     *s = 0;
@@ -1680,9 +1629,7 @@ LispObject Lrename_file(LispObject env, LispObject from,
     return onevalue(Lispify_predicate(to_len == 0));
 }
 
-//
 // This function is a call-back from the file-scanning routine.
-//
 
 static void make_dir_list(string name, string leafname, int why, long int size)
 {   LispObject w = make_string(leafname.c_str());
@@ -1710,20 +1657,16 @@ LispObject Llist_directory(LispObject env, LispObject name)
 
 int escaped_printing;
 
-//
 // I should make WRS save tmprint_flag so that it always refers to
 // a setting of the stream currently in use, ie active_stream. That should
 // not be hard but I will do it later. @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-//
 int tmprint_flag = 0;
 
 static void outprefix(bool blankp, int32_t len)
-//
 // This function takes most of the responsibility for splitting lines.
 // when called we are about to print an item with (len) characters.
 // If blankp is true we need to display a blank or newline before
 // the item.
-//
 {   int32_t line_length =
         other_write_action(WRITE_GET_INFO+WRITE_GET_LINE_LENGTH,
                            active_stream);
@@ -1760,16 +1703,12 @@ static void prin_buf(char *buf, int blankp)
     }
 }
 
-//
 // I want the floating point print style that I use to match the
 // one used by PSL rather carefully. So here is some code so that
 // everything I do about it is in one place.
-//
 
 
-//
 // Two crummy little functions to delete and insert chars from strings.
-//
 
 static void char_del(char *s)
 {   while (*s != 0)
@@ -1947,10 +1886,8 @@ static void fp_sprint128(char *buff, float128_t x, int prec,
 
 static int32_t local_gensym_count;
 
-//
 // This checks if the sequence in the string starting at offset k is
 // of the form "WORD;" where WORD is made up of just alphanumerics.
-//
 static int maybemagic(LispObject v, int k, int len)
 {   while (k<len)
     {   int c = celt(v, k) & 0xff;
@@ -1987,15 +1924,41 @@ static void putc_utf8(int n)
     }
 }
 
+#ifdef DEBUG
+LispObject last1=0, last2=0, last3=0, last4=0;
+#endif
+
 LispObject internal_prin(LispObject uu, int blankp)
-{   LispObject w;
+{
+#ifdef DEBUG
+    if (uu==last1)
+    {   std::printf("#last1#");
+        return uu;
+    }
+    if (uu==last2)
+    {   std::printf("#last2#");
+        return uu;
+    }
+    if (uu==last3)
+    {   std::printf("#last3#");
+        return uu;
+    }
+    if (uu==last4)
+    {   std::printf("#last4#");
+        return uu;
+    }
+    last4 = last3;
+    last3 = last2;
+    last3 = last1;
+    last1 = uu;
+#endif
+    LispObject w;
     size_t len, lenchars, k;
     char my_buff[128];
     int bl = blankp & 2;
     RealSave save(uu);
     LispObject &u = save.val(1);
 #ifdef COMMON
-//
 // There is a fairly shameless FUDGE here. When I come to need to print
 // the package part of a symbol as in ppp:xxx (or even |)p(|::|.| if I
 // have names with silly characters in them) I will have a STRING that is the
@@ -2004,7 +1967,6 @@ LispObject internal_prin(LispObject uu, int blankp)
 // otherwise a simple boolean), and when this is detected I go and join the
 // code for printing symbols. But in that case I MUST have been passed
 // a (simple) string, or else things can collapse utterly.
-//
     blankp &= 1;
     if (bl != 0)
     {   w = u;
@@ -2030,12 +1992,9 @@ restart:
                 putc_stream('?', active_stream);
                 return nil;
             }
-// This use of the stack is clumsy and when I have the conservative
-// GC stable I can clean it up. However for now the reyeared reference
-// to stack[0] makes it hard to clean away.
             outprefix(blankp, 1);
             putc_stream('(', active_stream);
-            internal_prin(car(stack[0]), 0);
+            internal_prin(car(u), 0);
             w = u;
             while (is_cons(w = cdr(w)) && w != 0)
             {
@@ -2092,7 +2051,6 @@ restart:
             {   intptr_t v = int_of_fixnum(u);
                 int width = escape_width(escaped_printing);
                 uintptr_t mask;
-//
 // The printing style adopted here for negative numbers follows that used in
 // the big number printing code.  A prefix "~" stands for an infinite initial
 // string of 'f' digits, and what follows will be exactly one 'f' (just to
@@ -2105,7 +2063,6 @@ restart:
 // only allows for the range 0 to 63, and that is just as well since I put
 // characters in a buffer (my_buff) which would almost fill up at the
 // widest...
-//
                 len = 0;
                 if (v < 0)
                 {   mask = ((uintptr_t)0xf)<<(8*sizeof(intptr_t)-4);
@@ -2168,9 +2125,7 @@ restart:
                     k = '1';
                 }
                 else k = '0';
-//
 // /* Width specifier not processed here (yet), sorry.
-//
                 mask = ((uintptr_t)1)<<(8*sizeof(intptr_t)-1);
                 while (((uintptr_t)v & mask) == 0 && mask != 1) mask = mask >> 1;
                 while (mask != 0)
@@ -2185,7 +2140,6 @@ restart:
             break;
 
         case TAG_HDR_IMMED:
-//
 // A SPID is an object used internally by CSL in various places, and the
 // rules of the system are that it ought never to be visible to the user.
 // I print it here in case it arises because of a bug, or while I am testing.
@@ -2195,10 +2149,8 @@ restart:
             if (is_spid(u))
             {   switch (u & 0xffff)
                 {
-//
 // The decoding of readable names for SPIDs here is somewhat over the top
 // except while somebdy is hard at work debugging....
-//
                     case SPID_NIL:     std::strcpy(my_buff, "SPID_NIL");     break;
                     case SPID_FBIND:   std::strcpy(my_buff, "SPID_FBIND");   break;
                     case SPID_CATCH:   std::strcpy(my_buff, "SPID_CATCH");   break;
@@ -2235,10 +2187,8 @@ restart:
                 for (k=0; k<len; k++) putc_stream(my_buff[k], active_stream);
                 return nil;
             }
-//
 // Assume if is a CHAR here. I may need to think hard about Unicode and utf8
 // here...
-//
             outprefix(blankp, escaped_printing & escape_yes ? 3 : 1);
             if (u != CHAR_EOF)
 // I know that a char is immediate data and so does not need GC protection
@@ -2254,14 +2204,15 @@ restart:
 #ifdef COMMON
         print_non_simple_string:
 #endif
+            my_assert(len >= 0 && len < CSL_PAGE_SIZE);
             switch (type_of_header(h))
             {   case TYPE_BPS_1:
                 case TYPE_BPS_2:
                 case TYPE_BPS_3:
                 case TYPE_BPS_4:
                     len = length_of_byteheader(h) - CELL;
+                    my_assert(len >= 0 && len < CSL_PAGE_SIZE);
                     outprefix(blankp, 3+2*len);
-//
 // At some stage I should look at all the special notations that use "#"
 // and ensure that none clash. Well here we go...
 //   #Gnnn            gensym    I note that no HTML5 entity names would clash!
@@ -2289,17 +2240,14 @@ restart:
 //   #Udigits;        ) extended input symbol
 //   #hexdigs;        )
 //   #Xhexdigs;       )
-//
                     putc_stream('#', active_stream);
                     putc_stream('[', active_stream);
                     for (k = 0; k < len; k++)
-                    {   int ch = celt(stack[0], k);
-//
+                    {   int ch = celt(u, k);
 // Code vectors are not ever going to be re-readable (huh - I suppose there
 // is no big reason why they should not be!) so I split them across multiple
 // lines if that seems useful.  Anyway a reader for them could understand to
 // expect that.
-//
                         outprefix(false, 2);
                         putc_stream(hexdig[(ch >> 4) & 0xf], active_stream);
                         putc_stream(hexdig[ch & 0xf], active_stream);
@@ -2312,6 +2260,7 @@ restart:
                 case TYPE_STRING_3:
                 case TYPE_STRING_4:
                     len = length_of_byteheader(h) - CELL;
+                    my_assert(len >= 0 && len < CSL_PAGE_SIZE);
                     {   int32_t slen = 0;
 // /*
 // Getting the width of strings that contain tabs correct here is
@@ -2320,29 +2269,25 @@ restart:
 // (including allowance for any pending blank that may be needed).
 // And while I consider this, what about a string that contains
 // a newline character?
-//
                         if (escaped_printing & escape_yes)
                         {   for (k = 0; k < len; k++)
-                            {   int ch = celt(stack[0], k) & 0xff;
-//
+                            {   int ch = celt(u, k) & 0xff;
 // See later for an explanation of the extra lengths indicated here...
 // but in short they are for #xxxx; and #xxxxxx;
 // Under cygwin (and potentially on other platforms in certain locales)
 // case folding can change the number of utf-bytes or hex characters
 // needed to specify a character. To avoid potential pain I will
 // always display using at least 4 hex digits.
-//
                                 if ((ch & 0xc0) == 0x80) /* nothing */;
                                 else if ((ch & 0xe0) == 0xc0) slen += 6;
                                 else if ((ch & 0xf0) == 0xe0) slen += 6;
                                 else if ((ch & 0x80) == 0x80) slen += 8;
                                 else if (ch == '"') slen += 2;
                                 else if (ch == '#' &&
-                                         maybemagic(stack[0], k+1, len))
+                                         maybemagic(u, k+1, len))
                                     slen += 6;  // render as #hash;WORD;
 #ifdef COMMON
                                 else if (ch == '\\') slen += 2;
-//
 // I now guard this with "#ifdef COMMON". It is associated with displaying
 // control characters within strings as escapes, as in a newline within a
 // string being printed as \0a. Unless the code that reads strings back in
@@ -2350,7 +2295,6 @@ restart:
 // reader (and the reader in Reduce) do not... However Reduce does now
 // understand things like #NewLine; and #0a; so I should use that notation!
 // Any character in the range u+00 to u+1f can be rendered as #xx;
-//
                                 else if (std::iscntrl(ch)) slen += 3;
 #else
                                 else if (ch <= 0x1f) slen += 4;
@@ -2361,18 +2305,16 @@ restart:
                         }
                         else
                         {   for (k=0; k < len; k++)
-                                if ((celt(stack[0], k) & 0xc0) != 0x80) slen++;
+                                if ((celt(u, k) & 0xc0) != 0x80) slen++;
                         }
                         outprefix(blankp, slen);
-//
 // I will write out the fast, easy, common case here, ie "princ" where
 // I do not have to do anything special with odd characters.
-//
                         if (!(escaped_printing &
                               (escape_yes | escape_fold_down |
                                escape_fold_up | escape_capitalize)))
                         {   for (k = 0; k < len; k++)
-                            {   int ch = celt(stack[0], k);
+                            {   int ch = celt(u, k);
                                 putc_stream(ch, active_stream);
                             }
                         }
@@ -2380,12 +2322,10 @@ restart:
                         {   if (escaped_printing & escape_yes)
                                 putc_stream('"', active_stream);
                             for (k = 0; k < len; k++)
-                            {   int ch = celt(stack[0], k) & 0xff;
+                            {   int ch = celt(u, k) & 0xff;
 #ifdef COMMON
-//
 // In Common Lisp mode I do something special with '"' and '\', and
 // any control characters get mapped onto an escape sequence.
-//
                                 const char *hexdig = "0123456789abcdef";
                                 if ((escaped_printing & escape_yes) &&
                                     (ch == '"' || ch == '\\'))
@@ -2398,25 +2338,21 @@ restart:
                                     putc_stream(hexdig[ch & 0xf], active_stream);
                                 }
 #else
-//
 // In Standard Lisp mode when I get a '"'  I print two doublequote. And that
 // will be the only special case! Well no - I will print control characters
 // in the form #xx; in escaped mode.
-//
                                 if ((escaped_printing & escape_yes) && ch == '"')
                                 {   putc_stream('"', active_stream);
                                     putc_stream('"', active_stream);
                                 }
 #endif
-//
 // If a string contains text like "...#WORD;..." where WORD could possibly
 // be something decoded specially on re-input then the output here will
 // be rendered as "...#hash;WORD;..." which will defeat the #-introduced
 // sequence from being treated as something that represents an extended
 // character.
-//
                                 else if (ch == '#' &&
-                                         maybemagic(stack[0], k+1, len))
+                                         maybemagic(u, k+1, len))
                                 {   putc_stream('#', active_stream);
                                     putc_stream('h', active_stream);
                                     putc_stream('a', active_stream);
@@ -2424,28 +2360,24 @@ restart:
                                     putc_stream('h', active_stream);
                                     putc_stream(';', active_stream);
                                 }
-//
 // The first byte of any multi-byte utf-8 sequence will be a code that is
 // at least 0xc0. In such cases I will represent the wide character as
 // one of #xxx;, #xxxx; or #xxxxxx; depending on how many bytes were used.
 // in some cases that will leave a leading zero in the representation. Or
 // if I am not displaying with escape_yes I just need to case fold it.
 // Well if I am doing an EXPLODE then this adjustment is not called for.
-//
                                 else if (ch >= 0xc0)
                                 {   int32_t n = 0;
                                     if ((ch & 0xe0) == 0xc0) // 2 byte
                                     {   n = ch & 0x1f;
                                         k++;
-                                        ch = celt(stack[0], k);
+                                        ch = celt(u, k);
                                         n = (n << 6) | (ch & 0x3f);
-//
 // There is a portability issue here. ON some platforms (and perhaps with
 // some locales set) you may find (for instance) case conversion between
 // small; and large Greek letters (as in the TeX notation \gamma vd \Gamma),
 // while in others only basic Latin characters will get case converted. This
 // effect may show up in the utf8-in-list regression test.
-//
                                         if (escaped_printing & escape_fold_down)
                                             n = std::towlower(n);
                                         else if (escaped_printing & escape_fold_up)
@@ -2465,10 +2397,10 @@ restart:
                                     else if ((ch & 0xf0) == 0xe0) // 3 byte
                                     {   n = ch & 0x0f;
                                         k++;
-                                        ch = celt(stack[0], k);
+                                        ch = celt(u, k);
                                         n = (n << 6) | (ch & 0x3f);
                                         k++;
-                                        ch = celt(stack[0], k);
+                                        ch = celt(u, k);
                                         n = (n << 6) | (ch & 0x3f);
                                         if (escaped_printing & escape_fold_down)
                                             n = std::towlower(n);
@@ -2488,19 +2420,17 @@ restart:
                                     else // assume 4 byte
                                     {   n = ch & 0x07;
                                         k++;
-                                        ch = celt(stack[0], k);
+                                        ch = celt(u, k);
                                         n = (n << 6) | (ch & 0x3f);
                                         k++;
-                                        ch = celt(stack[0], k);
+                                        ch = celt(u, k);
                                         n = (n << 6) | (ch & 0x3f);
                                         k++;
-                                        ch = celt(stack[0], k);
+                                        ch = celt(u, k);
                                         n = (n << 6) | (ch & 0x3f);
-//
 // When case folding if the code-point is beyond U+ffff and I am on a machine
 // where sizeof(wchar_t) is 2 (eg Windows) I will not case fold. Gosh that
 // seems an obscure situation!
-//
                                         if (sizeof(wchar_t) == 4 || n < 0x10000)
                                         {   if (escaped_printing & escape_fold_down)
                                                 n = std::towlower(n);
@@ -2522,9 +2452,7 @@ restart:
                                     }
                                 }
                                 else
-//
 // Here I have a character in the range u+0000 to u+007f.
-//
                                 {   if (escaped_printing & escape_fold_down)
                                         ch = std::tolower(ch);
                                     else if (escaped_printing & escape_fold_up)
@@ -2587,7 +2515,7 @@ restart:
                 case TYPE_BITVEC_32:  bl = 32; break;
 #ifdef COMMON
                 case TYPE_STRUCTURE:
-                    if (elt(stack[0], 0) == package_symbol)
+                    if (elt(u, 0) == package_symbol)
                     {   outprefix(blankp, 3);
                         putc_stream('#', active_stream);
                         putc_stream('P', active_stream);
@@ -2606,23 +2534,19 @@ restart:
 #endif
                 case TYPE_ARRAY:
 #ifdef COMMON
-                {   LispObject dims = elt(stack[0], 1);
-//
+                {   LispObject dims = elt(u, 1);
 // I suppose that really I need to deal with non-simple bitvectors too.
 // And generally get Common Lisp style array printing "right".
-//
                     if (consp(dims) && !consp(cdr(dims)) &&
-                        elt(stack[0], 0) == string_char_sym)
+                        elt(u, 0) == string_char_sym)
                     {   len = int_of_fixnum(car(dims));
-                        dims = elt(stack[0], 5);   // Fill pointer
+                        dims = elt(u, 5);   // Fill pointer
                         if (is_fixnum(dims)) len = int_of_fixnum(dims);
-                        stack[0] = elt(stack[0], 2);
-//
+                        u = elt(u, 2);
 // The demand here is that the object within the non-simple-string was
 // a simple string, so I can restart printing to deal with it. This will
 // not support strings that were over-large so got represented in
 // chunks. Tough luck about that for now!
-//
                         h = TYPE_STRING_1;
                         goto print_non_simple_string;
                     }
@@ -2677,7 +2601,7 @@ restart:
 #endif
                         for (k=0; k<len; k+=CELL)
                         {   LispObject vv = *reinterpret_cast<LispObject *>(
-                                                (reinterpret_cast<char *>(stack[0]) +
+                                                (reinterpret_cast<char *>(u) +
                                                  (CELL - TAG_VECTOR) + k));
                             internal_prin(vv, (k != 0) ? 1 : 0);
                         }
@@ -2712,17 +2636,17 @@ restart:
                     }
                     else
 #endif
-                    {   internal_prin(elt(stack[0], 0), 0);
+                    {   internal_prin(elt(u, 0), 0);
                         outprefix(false, 1);
-                        internal_prin(elt(stack[0], 1), 1);
+                        internal_prin(elt(u, 1), 1);
                         outprefix(false, 1);
-                        internal_prin(elt(stack[0], 2), 1);
+                        internal_prin(elt(u, 2), 1);
                     }
                     for (k=3*CELL; k<len; k+=CELL)
                     {   std::sprintf(my_buff, "%.8lx",
                                      static_cast<long>(
                                          *reinterpret_cast<LispObject *>(
-                                             reinterpret_cast<char *>(stack[0]) +
+                                             reinterpret_cast<char *>(u) +
                                              (CELL - TAG_VECTOR) + k)));
                         prin_buf(my_buff, true);
                     }
@@ -2739,7 +2663,7 @@ restart:
                     putc_stream('#', active_stream); putc_stream('V', active_stream);
                     putc_stream('8', active_stream); putc_stream('(', active_stream);
                     for (k=0; k<len; k++)
-                    {   std::sprintf(my_buff, "%d", static_cast<int>(scelt(stack[0], k)));
+                    {   std::sprintf(my_buff, "%d", static_cast<int>(scelt(u, k)));
                         prin_buf(my_buff, k != 0);
                     }
                     outprefix(false, 1);
@@ -2748,12 +2672,13 @@ restart:
                 case TYPE_VEC16_1:
                 case TYPE_VEC16_2:
                     len = length_of_hwordheader(h);
+                    my_assert(len < CSL_PAGE_SIZE/2);
                     outprefix(blankp, 5);
                     putc_stream('#', active_stream); putc_stream('V', active_stream);
                     putc_stream('1', active_stream); putc_stream('6', active_stream);
                     putc_stream('(', active_stream);
                     for (k=0; k<len; k++)
-                    {   std::sprintf(my_buff, "%d", static_cast<int>(helt(stack[0], k)));
+                    {   std::sprintf(my_buff, "%d", static_cast<int>(helt(u, k)));
                         prin_buf(my_buff, k != 0);
                     }
                     outprefix(false, 1);
@@ -2766,7 +2691,7 @@ restart:
                     putc_stream('(', active_stream);
                     len = len >> 2;
                     for (k=0; k<len; k++)
-                    {   std::sprintf(my_buff, "%ld", static_cast<long>(ielt32(stack[0],
+                    {   std::sprintf(my_buff, "%ld", static_cast<long>(ielt32(u,
                                      k)));
                         prin_buf(my_buff, k != 0);
                     }
@@ -2779,7 +2704,7 @@ restart:
                     putc_stream('S', active_stream); putc_stream('(', active_stream);
                     len = len >> 2;
                     for (k=0; k<len; k++)
-                    {   fp_sprint(my_buff, static_cast<double>(felt(stack[0], k)),
+                    {   fp_sprint(my_buff, static_cast<double>(felt(u, k)),
                                   print_precision, 'f');
                         prin_buf(my_buff, k != 0);
                     }
@@ -2792,7 +2717,7 @@ restart:
                     putc_stream('D', active_stream); putc_stream('(', active_stream);
                     len = (len-CELL)/8;
                     for (k=0; k<len; k++)
-                    {   fp_sprint(my_buff, delt(stack[0], k),
+                    {   fp_sprint(my_buff, delt(u, k),
                                   print_precision, 'e');
                         prin_buf(my_buff, k != 0);
                     }
@@ -2806,7 +2731,7 @@ restart:
             putc_stream('#', active_stream), putc_stream('*', active_stream);
             {   int z, q;
                 for (k = 0; k < len-1; k++)
-                {   z = ucelt(stack[0], k);
+                {   z = ucelt(u, k);
                     for (q=0; q<8; q++)
                     {   if (z & 1) putc_stream('1', active_stream);
                         else putc_stream('0', active_stream);
@@ -2814,7 +2739,7 @@ restart:
                     }
                 }
                 if (len != 0)   // Empty bitvec
-                {   z = ucelt(stack[0], len-1);
+                {   z = ucelt(u, len-1);
                     for (q=0; q<bl; q++)
                     {   if (z & 1) putc_stream('1', active_stream);
                         else putc_stream('0', active_stream);
@@ -2825,10 +2750,8 @@ restart:
             return nil;
         }
 
-//
 // It seems probable that I could never get here, but this "return" is
 // just in case, as a safety measure.
-//
         return nil;
 
         case TAG_SYMBOL:
@@ -2864,13 +2787,11 @@ restart:
                 int raised = 0;
 #ifdef COMMON
                 int pkgid = 0;  // No package marker needed
-//
 //  0    no package marker needed
 //  1    display as #:xxx      (ie as a gensym)
 //  2    display as :xxx       (ie in keyword package)
 //  3    display as ppp:xxx    (external in its home package)
 //  4    display as ppp::xxx   (internal in its home package)
-//
                 if (escaped_printing & escape_yes)
                 {   if (!is_symbol(u)) pkgid = 0;  // Support for a HACK
                     else if (qpackage(u) == nil) pkgid = 1; // gensym
@@ -2890,12 +2811,10 @@ restart:
                             errexit();
                             if (mv_2 != nil && w == u)
                             {   pkgid = 0;
-//
 // Here I update the cache it that keeps telling me that the symbol is
 // is "available" in the package that is current at present. I guess that
 // I need to clear this bit if I unintern or otherwise mess around with
 // package structures.
-//
                                 qheader(u) |= k;
                             }
                             else if (qheader(u) & SYM_EXTERN_IN_HOME) pkgid = 3;
@@ -2906,20 +2825,19 @@ restart:
                 }
 #endif
                 len = length_of_byteheader(h);  // counts in bytes
+                my_assert(len>=CELL && len < CSL_PAGE_SIZE);
                 lenchars = 0;
 // Now see how many characters that is, allowing for utf-8 encoding
                 for (k=0; k<(len-CELL); k++)
                     if ((celt(w, k) & 0xc0) != 0x80) lenchars++;
-//
 // When I come to print things I will assume that I want them re-readable
 // with values of !*raise and !*lower as in effect when the printing took
 // place, and insert escape characters accordingly.  I optimise the case
 // of printing without any effects...
-//
                 if (!(escaped_printing &
                       (escape_yes | escape_fold_down |
                        escape_fold_up | escape_capitalize)))
-                {   stack[0] = w;
+                {   u = w;
                     len -= CELL;
 #ifdef COMMON
                     switch (pkgid)
@@ -2932,11 +2850,9 @@ restart:
                             break;
                         case 3:
                         case 4:
-//
 // The issue of line breaks is maybe horrid here! I probably need to
 // assess the print width of both the package name and the basic
 // part of the name somewhere around here.
-//
                             internal_prin(packname_(qpackage(u)), blankp | 2);
                             putc_stream(':', active_stream);
                             if (pkgid == 4) putc_stream(':', active_stream);
@@ -2948,25 +2864,21 @@ restart:
                     outprefix(blankp, lenchars);
 #endif
                     for (k = 0; k < len; k++)
-                    {   int ch = ucelt(stack[0], k);
-//
+                    {   int ch = ucelt(u, k);
 // Specially for the benefit of "tmprint.red" I arrange to switch off
 // line-wrapping if I have a "\x02" character but switch it back on after
 // "\x05". I should probably also restore things to a normal state on any
 // exception/backtrace.
-//
                         if (ch == 2) tmprint_flag = 1;
-//
 // The next is pretty much a horrible fudge, but I believe that people
 // might only be using prin2 on an end-of-file character by accident and
 // my internal representation is not a valid utf-8 packing of a codepoint
 // in the Unicode range, so putting a textual form that people might
 // at least recognise is perhaps kinder.
-//
                         if (ch == 0xf7 &&
-                            ucelt(stack[0], k+1) == 0xbf &&
-                            ucelt(stack[0], k+2) == 0xbf &&
-                            ucelt(stack[0], k+3) == 0xbf)
+                            ucelt(u, k+1) == 0xbf &&
+                            ucelt(u, k+2) == 0xbf &&
+                            ucelt(u, k+3) == 0xbf)
                         {   putc_stream('$', active_stream);
                             putc_stream('E', active_stream);
                             putc_stream('O', active_stream);
@@ -2980,23 +2892,19 @@ restart:
                     }
                 }
                 else
-//
 // Now I have prin1 rather than prin2, or prin2 but with case folding.
 // thus the fun really begins.
-//
                 {   int extralen = 0;
                     if (qvalue(lower_symbol) != nil) raised = -1;
                     else if (qvalue(raise_symbol) != nil) raised = 1;
-                    stack[0] = w;
+                    u = w;
                     len -= CELL;
-//
 // A horrid case here - digits are special at the start of names so need
 // escaping with a "!" there even though they do not within the body of the
 // symbol. In Stanndard Lisp the same is true for "_" and in Common Lisp
 // for ".".
-//
                     if (len > 0)
-                    {   int ch = celt(stack[0], 0);
+                    {   int ch = celt(u, 0);
                         if (escaped_printing & escape_yes &&
                             (std::isdigit(static_cast<unsigned char>(ch))
 #ifdef COMMON
@@ -3011,15 +2919,12 @@ restart:
 // symbols with tabs in their names... At present I do not. Anyway I need a
 // first scan of the material to assess how many character positions will
 // be needed when I print it.
-//
                     for (k = 0; k < len; k++)
-                    {   int ch = celt(stack[0], k);
-//
+                    {   int ch = celt(u, k);
 // If I have escape_yes set then I will map multibyte sequences onto
 // #xxxx; or #xxxxxx; using 5 or 7 extra characters. If the only reason
 // I am here is because of case folding I will leave extended characters
 // alone.
-//
                         if ((ch & 0xc0) == 0x80) continue;
                         else if ((ch & 0xe0) == 0xc0 &&
                                  (escaped_printing & escape_yes)) slen += 5, extralen++;
@@ -3035,14 +2940,12 @@ restart:
 #ifdef COMMON
                                  (ch=='.' || ch=='\\' || ch=='|') ||
 #endif
-//
 // Here ch is certain to be in the range u+0000 to u+007f. Since I am
 // rendering all characters over u+007f as escape sequences and all have an
 // escape character prefix already there is no extra work needed to cover
 // case folding for any of them. Whew. Well that depends on it being the case
 // that case folding never moves something from the up to u+ffff up to
 // the u+10000 and above range (or vice versa).
-//
                                  (!is_constituent(ch) ||
 #ifdef COMMON
                                   (ch=='.' || ch=='\\' || ch=='|' || ch==':') ||
@@ -3053,7 +2956,6 @@ restart:
                         slen++;
                     }
 #ifdef COMMON
-//
 // The |xxx| notation is where the "2" here comes from, but that does not
 // make full allowance for names with '\\' in them. Tough! But view that
 // as yet another place where the code could need upgrading.
@@ -3062,7 +2964,6 @@ restart:
 // printname itself, extralen is the number of "!" characters that Standard
 // Lisp mode would use. If extralen is non zero I will need to use "|"
 // notation here in Common Lisp mode.
-//
                     if (extralen != 0) extralen = 2;
                     switch (pkgid)
                     {   case 1: outprefix(blankp, slen+extralen+2);
@@ -3086,7 +2987,6 @@ restart:
 #ifdef COMMON
                     if (extralen != 0) putc_stream('|', active_stream);
 #endif
-//
 // I need to deal with the first character of the name specially... but
 // only if it is one of the magic characters that needs special escaping at
 // the start of a name but not otherwise! So I will detect such cases and
@@ -3095,29 +2995,24 @@ restart:
 // if I am going to display exotic names enclosed in vertical bars.
 // I am glad that none of "_" and "0" to "9" impact on case folding or
 // utf-8 encoding!
-//
 #ifndef COMMON
                     if (len > 0)
-                    {   int ch = celt(stack[0], 0);
+                    {   int ch = celt(u, 0);
                         if (ch == '_' ||
                             (ch >= '0' && ch <= '9'))
                             putc_stream(ESCAPE_CHAR, active_stream);
                     }
 #endif
-//
 // Now display the characters that make up the name.
-//
                     for (k = 0; k < len; k++)
-                    {   int ch = ucelt(stack[0], k);
+                    {   int ch = ucelt(u, k);
 #ifdef COMMON
                         if (ch == '\\' || ch=='|')
                             putc_stream(ESCAPE_CHAR, active_stream);
 #else
-//
 // If I am case folding then I hope I am not also putting in escape
 // marks. Well at present I will NEVER combine escape_fold_xxx with
 // escape_yes, so I am safe here!
-//
                         if (!(escaped_printing &
                               (escape_fold_down | escape_fold_up |
                                escape_capitalize)) &&
@@ -3127,18 +3022,16 @@ restart:
                              (raised > 0 && std::islower(static_cast<unsigned char>(ch)))))
                             putc_stream(ESCAPE_CHAR, active_stream);
 #endif
-//
 // If I am case-folding I may need to extract an utf-8 multi-byte
 // sequence, case fold and then display it. And since I am doing
 // prin1 then if I am not exploding I need to display multi-byte
 // objects as escape sequences using "#".
-//
                         if (ch >= 0xc0)
                         {   int32_t n = 0;
                             if ((ch & 0xe0) == 0xc0) // 2 byte
                             {   n = ch & 0x1f;
                                 k++;
-                                ch = celt(stack[0], k);
+                                ch = celt(u, k);
                                 n = (n << 6) | (ch & 0x3f);
                                 if (escaped_printing & escape_fold_down)
                                     n = std::towlower(n);
@@ -3159,10 +3052,10 @@ restart:
                             else if ((ch & 0xf0) == 0xe0) // 3 byte
                             {   n = ch & 0x0f;
                                 k++;
-                                ch = celt(stack[0], k);
+                                ch = celt(u, k);
                                 n = (n << 6) | (ch & 0x3f);
                                 k++;
-                                ch = celt(stack[0], k);
+                                ch = celt(u, k);
                                 n = (n << 6) | (ch & 0x3f);
                                 if (escaped_printing & escape_fold_down)
                                     n = std::towlower(n);
@@ -3182,19 +3075,17 @@ restart:
                             else // assume 4 byte
                             {   n = ch & 0x07;
                                 k++;
-                                ch = celt(stack[0], k);
+                                ch = celt(u, k);
                                 n = (n << 6) | (ch & 0x3f);
                                 k++;
-                                ch = celt(stack[0], k);
+                                ch = celt(u, k);
                                 n = (n << 6) | (ch & 0x3f);
                                 k++;
-                                ch = celt(stack[0], k);
+                                ch = celt(u, k);
                                 n = (n << 6) | (ch & 0x3f);
-//
 // When case folding if the code-point is beyond U+ffff and I am on a machine
 // where sizeof(wchar_t) is 2 (eg Windows) I will not case fold. Gosh that
 // seems an obscure situation!
-//
                                 if (sizeof(wchar_t) == 4 || n < 0x10000)
                                 {   if (escaped_printing & escape_fold_down)
                                         n = std::towlower(n);
@@ -3255,11 +3146,9 @@ restart:
                                        static_cast<double>(single_float_val(u)), print_precision, 'f');
                     break;
                 case TYPE_DOUBLE_FLOAT:
-//
 // Hexadecimal printing of floating point numbers is only provided for
 // here to help with nasty low-level debugging.  The output will not be
 // directly re-readable.
-//
                     if (escaped_printing & escape_checksum)
                     {   int64_t v = intfloat64_t_val(u);
                         std::sprintf(my_buff, "@F%.8" PRIx64, v);
@@ -3435,6 +3324,9 @@ LispObject prin(LispObject u)
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     internal_prin(u, 0);
     save.restore(u);
     return u;
@@ -3444,6 +3336,9 @@ LispObject prin_to_terminal(LispObject u)
 {   escaped_printing = escape_yes;
     active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     ignore_error(internal_prin(u, 0));
     ensure_screen();
     return nil;
@@ -3453,6 +3348,9 @@ LispObject prin_to_stdout(LispObject u)
 {   escaped_printing = escape_yes;
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = lisp_standard_output;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     ignore_error(internal_prin(u, 0));
     ensure_screen();
     return nil;
@@ -3462,6 +3360,9 @@ LispObject prin_to_error(LispObject u)
 {   escaped_printing = escape_yes;
     active_stream = qvalue(error_output);
     if (!is_stream(active_stream)) active_stream = lisp_error_output;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     ignore_error(internal_prin(u, 0));
     ensure_screen();
     return nil;
@@ -3471,6 +3372,9 @@ LispObject prin_to_trace(LispObject u)
 {   escaped_printing = escape_yes;
     active_stream = qvalue(trace_output);
     if (!is_stream(active_stream)) active_stream = lisp_trace_output;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     ignore_error(internal_prin(u, 0));
     ensure_screen();
     return nil;
@@ -3486,6 +3390,9 @@ LispObject prinhex_to_trace(const char *msg, LispObject u)
     if (!is_stream(active_stream)) active_stream = lisp_trace_output;
     if (c != 0) putc_stream('\n', active_stream);
     trace_printf("## %s: ", msg);
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     ignore_error(internal_prin(u, escape_yes+escape_hex));
     putc_stream('\n', active_stream);
     ensure_screen();
@@ -3496,6 +3403,9 @@ LispObject prin_to_debug(LispObject u)
 {   escaped_printing = escape_yes;
     active_stream = qvalue(debug_io);
     if (!is_stream(active_stream)) active_stream = lisp_debug_io;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     ignore_error(internal_prin(u, 0));
     ensure_screen();
     return nil;
@@ -3505,6 +3415,9 @@ LispObject prin_to_query(LispObject u)
 {   escaped_printing = escape_yes;
     active_stream = qvalue(query_io);
     if (!is_stream(active_stream)) active_stream = lisp_query_io;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     ignore_error(internal_prin(u, 0));
     ensure_screen();
     return nil;
@@ -3596,7 +3509,7 @@ LispObject loop_print_terminal(LispObject o)
 
 LispObject prinraw(LispObject u)
 {   Header h;
-    int32_t len, i;
+    size_t len;
     char b[40], *p;
     Save save(u);
     active_stream = qvalue(standard_output);
@@ -3604,11 +3517,9 @@ LispObject prinraw(LispObject u)
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
     if (is_fixnum(u))
     {
-//
 // The following line wants to print a long-long 64-bit value but the
 // format specifier %.16llx is not universally available, so I use two 32-bit
 // chunks.
-//
         unsigned long long w = static_cast<unsigned long long>(u);
         unsigned long long hi = w >> 32, lo = w;
         std::sprintf(b, "%.8x%.8x", static_cast<int>(hi),
@@ -3617,7 +3528,8 @@ LispObject prinraw(LispObject u)
     }
     if (is_numbers(u) && type_of_header(h = numhdr(u)) == TYPE_BIGNUM)
     {   len = length_of_header(h);
-        for (i=CELL; i<len; i+=4)
+        my_assert(len>=CELL && len < CSL_PAGE_SIZE);
+        for (size_t i=CELL; i<len; i+=4)
         {   std::sprintf(b, "%.8x ", (uint32_t)bignum_digits(u)[(i-CELL)/4]);
             for (p=b; *p!=0; p++) putc_stream(*p, active_stream);
         }
@@ -3625,7 +3537,8 @@ LispObject prinraw(LispObject u)
 #ifdef ARITHLIB
     else if (is_numbers(u) && type_of_header(h) == TYPE_NEW_BIGNUM)
     {   len = length_of_header(h);
-        for (i=8; i<len; i+=8)
+        my_assert(len>=8 && len < CSL_PAGE_SIZE);
+        for (size_t i=8; i<len; i+=8)
         {   std::sprintf(b, "%.16" PRIx64 " ",
                          *(uint64_t *)(reinterpret_cast<char *>(u) - TAG_NUMBERS + i));
             for (p=b; *p!=0; p++) putc_stream(*p, active_stream);
@@ -3633,7 +3546,7 @@ LispObject prinraw(LispObject u)
     }
 #endif // ARITHLIB
     else
-    {   for (i=0; i<11; i++)
+    {   for (size_t i=0; i<11; i++)
             putc_stream("<NotNumber>"[i], active_stream);
     }
     save.restore(u);
@@ -3646,6 +3559,9 @@ static LispObject prinhex(LispObject u, int n)
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     internal_prin(u, 0);
     save.restore(u);
     return u;
@@ -3657,6 +3573,9 @@ static LispObject prinoctal(LispObject u, int n)
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     internal_prin(u, 0);
     save.restore(u);
     return u;
@@ -3668,6 +3587,9 @@ static LispObject prinbinary(LispObject u, int n)
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     internal_prin(u, 0);
     save.restore(u);
     return u;
@@ -3679,6 +3601,9 @@ LispObject princ(LispObject u)
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     internal_prin(u, 0);
     save.restore(u);
     return u;
@@ -3692,6 +3617,9 @@ LispObject print(LispObject u)
     if (!is_stream(stream)) stream = lisp_terminal_io;
     active_stream = stream;
     putc_stream('\n', stream);
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     internal_prin(u, 0);
     save.restore(u);
     return u;
@@ -3705,6 +3633,9 @@ LispObject printc(LispObject u)
     if (!is_stream(stream)) stream = lisp_terminal_io;
     active_stream = stream;
     putc_stream('\n', stream);
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     internal_prin(u, 0);
     save.restore(u);
     return u;
@@ -3728,12 +3659,10 @@ static int char_to_list_state = 0;
 
 int char_to_list(int c, LispObject f)
 {   LispObject k;
-//
 // Codes that are large have to be converted back into utf-8 form.
 // Characters in the range 0 to u+00ff are kept cached in a vector
 // so that lookup is especially fast. Beyond that involves checking the
 // oblist and (if necessary) creating a fresh symbol.
-//
     c &= 0xff;
     if (c <= 0x7f);  // Simple character
     else if ((c & 0xc0) == 0x80) // Continuation byte
@@ -3814,6 +3743,9 @@ static LispObject explode(LispObject u)
     set_stream_write_fn(lisp_work_stream, char_to_list);
     set_stream_write_other(lisp_work_stream, write_action_list);
     active_stream = lisp_work_stream;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     internal_prin(u, 0);
     u = stream_write_data(lisp_work_stream);
     stream_write_data(lisp_work_stream) = nil;
@@ -3839,17 +3771,18 @@ void checksum(LispObject u)
     active_stream = lisp_work_stream;
     CSL_MD5_Init();
     local_gensym_count = checksum_count = 0;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     internal_prin(u, 0);
     stream_write_data(lisp_work_stream) = nil;
     if (checksum_count != 0) CSL_MD5_Update(checksum_buffer, checksum_count);
 }
 
-//
 // code_to_list is used by exploden and explodecn. Also by
 // make-string-output-stream. I want it to collect a list of codes
 // not bytes, but by the time I get here things have been utf-8 encoded,
 // so I need to unwind that. Ugh.
-//
 
 static int32_t code_to_list_state = 0;
 
@@ -3880,10 +3813,8 @@ int code_to_list(int c, LispObject f)
         save.restore(f);
     }
     stream_write_data(f) = k;
-//
 // In this case the "position" must not pay attention to
 // tabs or newlines.
-//
     stream_char_pos(f)++;
     return 0;
 }
@@ -3893,13 +3824,15 @@ static LispObject exploden(LispObject u)
     set_stream_write_fn(lisp_work_stream, code_to_list);
     set_stream_write_other(lisp_work_stream, write_action_list);
     active_stream = lisp_work_stream;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     internal_prin(u, 0);
     u = stream_write_data(lisp_work_stream);
     stream_write_data(lisp_work_stream) = nil;
     return nreverse(u);
 }
 
-//
 // To cope with the needs of windowed implementations I am (unilaterally)
 // altering the specification of the LINELENGTH function that I implement.
 // The new rules are:
@@ -3914,7 +3847,6 @@ static LispObject exploden(LispObject u)
 // window on their screen. The linelength function inspects and sets
 // information for the current standard output stream, and separate
 // record is kept of the linelength associated with each stream.
-//
 
 LispObject Llinelength(LispObject env, LispObject a)
 {   int32_t oll;
@@ -3966,6 +3898,9 @@ LispObject Lprin(LispObject env, LispObject a)
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     internal_prin(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
@@ -4064,6 +3999,9 @@ LispObject Lprinc_upcase(LispObject env, LispObject a)
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     internal_prin(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
@@ -4076,6 +4014,9 @@ LispObject Lprinc_downcase(LispObject env, LispObject a)
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     internal_prin(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
@@ -4088,6 +4029,9 @@ LispObject Lprinc(LispObject env, LispObject a)
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     internal_prin(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
@@ -4100,6 +4044,9 @@ LispObject Lprin2a(LispObject env, LispObject a)
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     internal_prin(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
@@ -4110,10 +4057,8 @@ char memory_print_buffer[MAX_PROMPT_LENGTH];
 
 int count_character(int c, LispObject f)
 {   int n = stream_byte_pos(f);
-//
 // In bad cases the memory_print_buffer will expire part way through
 // a multi-byte character. I will tidy that up somewhere else!
-//
     if (n < MAX_PROMPT_LENGTH-1)
     {   memory_print_buffer[n] = static_cast<char>(c);
         memory_print_buffer[n+1] = 0;
@@ -4125,10 +4070,8 @@ int count_character(int c, LispObject f)
 
 LispObject Llengthc(LispObject env, LispObject a)
 {
-//
 // This counts a TAB as having width 1. It counts the number of bytes
 // used to print the argument.
-//
     escaped_printing = escape_nolinebreak;
     set_stream_write_fn(lisp_work_stream, count_character);
     memory_print_buffer[0] = 0;
@@ -4136,6 +4079,9 @@ LispObject Llengthc(LispObject env, LispObject a)
     stream_byte_pos(lisp_work_stream) = 0;
     stream_char_pos(lisp_work_stream) = 0;
     active_stream = lisp_work_stream;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     internal_prin(a, 0);
     return onevalue(fixnum_of_int(stream_byte_pos(lisp_work_stream)));
 }
@@ -4143,10 +4089,8 @@ LispObject Llengthc(LispObject env, LispObject a)
 
 LispObject Lwidelengthc(LispObject env, LispObject a)
 {
-//
 // Like lengthc but counts characters (by ignoring bytes that
 //& are 10xxxxxx in binary).
-//
     escaped_printing = escape_nolinebreak;
     set_stream_write_fn(lisp_work_stream, count_character);
     memory_print_buffer[0] = 0;
@@ -4154,6 +4098,9 @@ LispObject Lwidelengthc(LispObject env, LispObject a)
     stream_byte_pos(lisp_work_stream) = 0;
     stream_char_pos(lisp_work_stream) = 0;
     active_stream = lisp_work_stream;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     internal_prin(a, 0);
     return onevalue(fixnum_of_int(stream_char_pos(lisp_work_stream)));
 }
@@ -4171,6 +4118,7 @@ LispObject Ldebug_print(LispObject env, LispObject a)
     h = vechdr(a);
     if (!is_string_header(h)) return Lprint(env, a);
     len = length_of_byteheader(h) - CELL;
+    my_assert(len < CSL_PAGE_SIZE);
     p = reinterpret_cast<const char *>(&celt(a, 0));
     for (i=0; i<len; i++)
     {   Save save(a);
@@ -4211,6 +4159,9 @@ LispObject Lprint(LispObject env, LispObject a)
     escaped_printing = escape_yes;
     active_stream = stream;
     putc_stream('\n', stream);
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     internal_prin(a, 0);
 #else
     escaped_printing = escape_yes;
@@ -4232,6 +4183,9 @@ LispObject Lprintc(LispObject env, LispObject a)
     escaped_printing = 0;
     active_stream = stream;
     putc_stream('\n', stream);
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     internal_prin(a, 0);
 #else
     escaped_printing = 0;
@@ -4367,12 +4321,10 @@ LispObject Lexplode2ucn(LispObject env, LispObject a)
     return onevalue(exploden(a));
 }
 
-//
 // Now a bunch of binary file access code, as required for the RAND simulation
 // package.  Note that these are NOT smoothly integrated with the use of
 // variables like *standard-output* to hold file handles, but I will leave them
 // pending until other things are more stable... or until they are needed!
-//
 
 static std::FILE *binary_outfile, *binary_infile;
 
@@ -4413,6 +4365,9 @@ static LispObject Lbinary_prin1(LispObject env, LispObject a)
     set_stream_write_other(lisp_work_stream, write_action_file);
     set_stream_file(lisp_work_stream, binary_outfile);
     active_stream = lisp_work_stream;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     internal_prin(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
@@ -4426,6 +4381,9 @@ static LispObject Lbinary_princ(LispObject, LispObject a)
     set_stream_write_other(lisp_work_stream, write_action_file);
     set_stream_file(lisp_work_stream, binary_outfile);
     active_stream = lisp_work_stream;
+#ifdef DEBUG
+    last1 = last2 = last3 = last4 = 0;
+#endif
     internal_prin(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
@@ -4603,14 +4561,12 @@ static LispObject Lbinary_close_input(LispObject env)
     return onevalue(nil);
 }
 
-//
 // (open-library "file" dirn) opens a new library (for use with the
 // fasl mechanism etc). If dirn=nil (or not specified) the library is
 // opened for input only. If dirn is non-nil an attempt is made to open
 // the library so that it can be updated, and if it does not exist to start
 // with it is created. The resulting handle can be passed to close-library
 // or used in the variables input-libraries or output-library.
-//
 
 std::vector<faslFileRecord> fasl_files;
 
@@ -4672,12 +4628,10 @@ static LispObject Llibrary_name(LispObject env, LispObject lib)
 
 #ifdef SOCKETS
 
-//
 // If a Winsock function fails it leaves an error code that
 // WSAGetLastError() can retrieve. This function converts the numeric
 // codes to some printable text. Still cryptic, but maybe better than
 // the raw numbers!
-//
 
 #ifndef WIN32
 
@@ -4730,9 +4684,7 @@ static char error_name[32];const char *WSAErrName(int i)
         case TRY_AGAIN:          return "WSATRY_AGAIN/TRY_AGAIN";
         case NO_RECOVERY:        return "WSANO_RECOVERY/NO_RECOVERY";
 #ifdef never
-//
 // Duplicated EINTR, at least on Linux.
-//
         case NO_DATA:            return "WSANO_DATA/NO_DATA";
 #endif
     }
@@ -4756,13 +4708,11 @@ int ensure_sockets_ready()
 
 #define SOCKET_BUFFER_SIZE 256
 
-//
 // A stream attached to a socket is represented by putting the socket handle
 // into the field that would otherwise hold a FILE. The stream_read_data
 // field then holds a string. The first 4 characters of this contain
 // two packed integers saying how much buffered data is available,
 // and then there is just a chunk of buffered text.
-//
 
 int char_from_socket(LispObject stream)
 {   int ch = stream_pushed_char(stream);
@@ -4770,11 +4720,9 @@ int char_from_socket(LispObject stream)
     {   LispObject w = stream_read_data(stream);
         int32_t sb_data = ielt32(w, 0);
         int sb_start = sb_data & 0xffff, sb_end = (sb_data >> 16) & 0xffff;
-//
 // Note use of ucelt in the next line even if char is a signed type. This
 // is because getc() etc are expected to return an UNSIGNED char cast to
 // an int.
-//
         if (sb_start != sb_end) ch = ucelt(w, sb_start++);
         else
         {   ch = recv((SOCKET)(intptr_t)(std::FILE *)stream_file(stream),
@@ -4797,9 +4745,7 @@ int char_from_socket(LispObject stream)
     return ch;
 }
 
-//
 // Seek and tell will be just quiet no-ops on socket streams.
-//
 
 int32_t read_action_socket(int32_t op, LispObject f)
 {   if (op < -1) return 0;
@@ -4836,10 +4782,8 @@ int fetch_response(char *buffer, LispObject r)
         buffer[i] = static_cast<char>(ch);
         if (ch == 0x0a)
         {   buffer[i] = 0;
-//
 // The keys returned at the start of a response line are supposed to be
 // case insensitive, so I fold things to lower case right here.
-//
             for (i=0; buffer[i]!=0 && buffer[i]!=' '; i++)
                 buffer[i] = static_cast<char>(std::tolower(static_cast<unsigned char>
                                               (buffer[i])));
@@ -4871,18 +4815,14 @@ start_again:
     if (len >= sizeof(filename)) len = sizeof(filename)-1;
     std::memcpy(filename, w, len);
     filename[len] = 0;
-//
 // I want to parse the URL. I leave the result as a collection of
 // pointers (usually to the start of text within the URL itself, but
 // sometimes elsewhere, together with lengths of the substrings as found.
-//
     user = pass = proto = hostaddr = port = path = " ";
     nuser = npass = nproto = nhostaddr = nport = npath = 0;
     p = filename;
-//
 // If the start of the URL is of the form "xyz:" with xyz alphanumeric
 // then that is a protocol name, and I will force it into lower case.
-//
     for (i=0; i<len; i++)
         if (!std::isalnum(static_cast<unsigned char>(p[i]))) break;
     if (p[i] == ':')
@@ -4895,14 +4835,11 @@ start_again:
             oldp[i] = static_cast<char>(std::tolower(static_cast<unsigned char>
                                         (oldp[i])));
     }
-//
 // After any protocol specification I may have a host name, introduced
 // by "//".
-//
     if (p[0] == '/' && p[1] == '/')
     {   p += 2;
         len -= 2;
-//
 // If the URL (sans protocol) contains a "@" then I will take it to be
 // in the form
 //      user:password@hostaddr/...
@@ -4912,7 +4849,6 @@ start_again:
 // enclosed in quote marks ("), although since I scan for the "@" from
 // the right and for the ":" from the left these are not needed at all,
 // so if I notice them here all I have to do is to discard them!
-//
         for (i=len; i>0; i--)
             if (p[i-1] == '@') break;
         if (i > 0)
@@ -4928,11 +4864,9 @@ start_again:
                     pass++, npass -= 2;
             }
         }
-//
 // Now what is left is a host, port number and path, written as
 //     hostaddr:port/... but note that the "/" should be treated as
 // part of the path-name.
-//
         hostaddr = p;
         for (;;)
         {   switch (hostaddr[nhostaddr])
@@ -4969,10 +4903,8 @@ start_again:
     path = p;
     npath = len;
     if (npath == 0) path = "/", npath = 1;  // Default path
-//
 // If a protocol was not explicitly given I will try to deduce one from the
 // start of the name of the hostaddr. Failing that I will just use a default.
-//
     if (nproto == 0)
     {   if (std::strncmp(hostaddr, "www.", 4) == 0 ||
             std::strncmp(hostaddr, "wwwcgi.", 7) == 0)
@@ -4984,11 +4916,9 @@ start_again:
             nproto = 3;
         }
     }
-//
 // If the user gave an explicit port number I will try to use it. If the
 // port was not numeric I ignore it and drop down to trying to use
 // a default port based on the selected protocol.
-//
     if (nport != 0)
     {   int w;
         std::memcpy(filename1, port, nport);
@@ -5000,18 +4930,14 @@ start_again:
     {   if (nproto == 3 && std::memcmp(proto, "ftp", 3) == 0) nport = 21;
         else if (nproto == 4 &&
                  std::memcmp(proto, "http", 4) == 0) nport = 80;
-//
 // Elsewhere I have code that can call on an external "scp" program to support
 // a secure-fetch scheme, but I will NOT include that here.
-//
         else return aerror("Unknown protocol");
     }
-//
 // If no host-name was given then the object concerned is on the
 // local machine. This is a funny case maybe, but I will just chain
 // through and open it as an ordinary file (without regard to
 // protocol etc).
-//
     if (nhostaddr == 0)
     {   std::FILE *file = open_file(filename1, path, static_cast<size_t>(npath), "r",
                                     nullptr);
@@ -5036,10 +4962,8 @@ start_again:
         }
     }
 #ifdef DEBUG
-//
 // The trace print here is not needed in the long term but certainly
 // helps while I am doing initial tests.
-//
     trace_printf(
         "User <%.*s> Pass <%.*s> Proto <%.*s>\n"
         "Host <%.*s> Port <%d> Path <%.*s>\n",
@@ -5067,10 +4991,8 @@ start_again:
         sockin.sin_family = AF_INET;
         sockin.sin_port = htons(nport);
         sockin.sin_addr.s_addr = hostnum;
-//
 // Because there can be quite tedious delays in network fetches I will
 // log that I am trying to make contact.
-//
         trace_printf("Contacting %.*s...\n", nhostaddr, hostaddr);
         ensure_screen();
         if (connect(s, (struct sockaddr *)&sockin,
@@ -5086,7 +5008,6 @@ start_again:
 
 // MD addition from webcore.c
     i = std::strlen(filename1);
-//
 // Certainly if the Web server I am accessing is the one that comes as
 // standard with Windows NT I need to reassure it that I want the document
 // returned to me WHATEVER its media type is. If I do not add in the
@@ -5094,7 +5015,6 @@ start_again:
 // text (?)
 // Note that above I write "*|*" where I only really mean a "/" in the
 // middle but where C comment conventions intrude!
-//
     std::sprintf(&filename1[i], "Accept: */*\x0d\x0a\x0d\x0a");
 
     if (send(s, filename1, std::strlen(filename1), 0) == SOCKET_ERROR)
@@ -5128,18 +5048,14 @@ start_again:
         return onevalue(nil);
     }
 
-//
 // I check if the first line returned is in the form "HTTP/n.n nnn " and if
 // it is not I assume that I have reached an HTTP/0.9 server and all the
 // text that comes back will be the body.
-//
     {   int major, minor;
-//
 // I will not worry much about just which version of HTTP the system reports
 // that it is using, provided it says something! I expect to see the return
 // code as a three digit number. I verify that it is in the range 0 to 999 but
 // do not check for (and thus reject) illegal responses such as 0000200.
-//
         if (std::sscanf(filename1,
                         "http/%d.%d %d", &major, &minor, &retcode) != 3 ||
             retcode < 0 || retcode > 999)
@@ -5149,12 +5065,10 @@ start_again:
             return onevalue(nil);
         }
     }
-//
 // In this code I treat all unexpected responses as errors and I do not
 // attempt to continue. This is sometimes going to be overly pessimistic
 // and RFC1945 tells me that I should treat unidentified codes as the
 // n00 variant thereupon.
-//
     switch (retcode)
 {       default:retcode = 0;
             break;
@@ -5176,11 +5090,9 @@ start_again:
             }
             while (std::memcmp(filename1, "location: ", 10) != 0);
             if (retcode == 0) break;
-//
 // At present I take a somewhat simplistic view of redirection, and just
 // look for the first alternative URL and start my entire unpicking
 // process afresh from there.
-//
             for (i = 10; filename1[i] == ' '; i++);
             w = &filename1[i];
             while (filename1[i]!=' ' && filename1[i]!=0) i++;
@@ -5209,10 +5121,8 @@ start_again:
         return onevalue(nil);
     }
 
-//
 // Skip further information returned by the server until a line containing
 // just the end-of-line marker is fetched
-//
     do
     {   for (i = 0; i < LONGEST_LEGAL_FILENAME; i++)
         {   int ch = char_from_socket(r);

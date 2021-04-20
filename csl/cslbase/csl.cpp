@@ -268,6 +268,31 @@ void DebugTrace(const char *fmt, int i)
     std::fflush(stderr);
 }
 
+// Errors that arise while I am trying to display an error report would
+// represent trouble, so I make some attempt to deal with that here...
+
+int errorDepth = 0;
+int errorCount = 0;
+
+class errorNest
+{
+public:
+    errorNest()
+    {   errorDepth++;
+        errorCount++;
+        if (errorDepth > 3) my_abort("error nesting");
+#ifdef DEBUG
+// In normal rather than debug usage there could be many many errors
+// raised and handled by errorset, so I must not give up. But while debugging
+// I can be a bit more energetic.
+        if (errorCount > 10) my_abort("too many errors");
+#endif
+    }
+    ~errorNest()
+    {   errorDepth--;
+    }
+};
+
 // error_message_table was defined in cslerror.h since that way I can keep its
 // contents textually close to the definitions of the message codes that it
 // has to relate to.
@@ -282,7 +307,8 @@ LispObject error(int nargs, int code, ...)
 // will be a message plus a value and so on.  I will expect that the
 // number of actual args here is well within any limits that I ought to
 // impose.
-{   std::va_list a;
+{   errorNest safe;
+    std::va_list a;
     int i;
     LispObject w1;
     LispObject *w = reinterpret_cast<LispObject *>(&work_1);
@@ -323,7 +349,8 @@ LispObject error(int nargs, int code, ...)
 
 LispObject cerror(int nargs, int code1, int code2, ...)
 // nargs indicated the number of EXTRA args after code1 & code2.
-{   LispObject w1;
+{   errorNest safe;
+    LispObject w1;
     std::va_list a;
     int i;
     LispObject *w = reinterpret_cast<LispObject *>(&work_1);
@@ -357,14 +384,16 @@ LispObject cerror(int nargs, int code1, int code2, ...)
 
 // This can be used when a resource expires...
 LispObject resource_exceeded()
-{   exit_reason = UNWIND_RESOURCE;
+{   errorNest safe;
+    exit_reason = UNWIND_RESOURCE;
     exit_value = exit_tag = nil;
     exit_count = 0;
     THROW(LispResource);
 }
 
 LispObject interrupted()
-{   LispObject w;
+{   errorNest safe;
+    LispObject w;
     char save_prompt[80];
 // If I have a windowed system I expect that the mechanism for
 // raising an exception will have had a menu that gave me a chance
@@ -427,7 +456,8 @@ LispObject interrupted()
 }
 
 LispObject aerror(const char *s)
-{   LispObject w;
+{   errorNest safe;
+    LispObject w;
     if (miscflags & HEADLINE_FLAG)
         err_printf("+++ Error bad args for %s\n", s);
     if ((w = qvalue(break_function)) != nil &&
@@ -445,7 +475,8 @@ LispObject aerror(const char *s)
 }
 
 LispObject aerror0(const char *s)
-{   LispObject w;
+{   errorNest safe;
+    LispObject w;
     if (miscflags & HEADLINE_FLAG)
         err_printf("+++ Error: %s\n", s);
     if ((w = qvalue(break_function)) != nil &&
@@ -463,7 +494,8 @@ LispObject aerror0(const char *s)
 }
 
 LispObject aerror1(const char *s, LispObject a)
-{   LispObject w;
+{   errorNest safe;
+    LispObject w;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
         loop_print_error(a);
@@ -484,7 +516,8 @@ LispObject aerror1(const char *s, LispObject a)
 }
 
 LispObject aerror2(const char *s, LispObject a, LispObject b)
-{   LispObject w;
+{   errorNest safe;
+    LispObject w;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
         loop_print_error(a);
@@ -507,7 +540,8 @@ LispObject aerror2(const char *s, LispObject a, LispObject b)
 }
 
 LispObject aerror2(const char *s, const char *a, LispObject b)
-{   LispObject w;
+{   errorNest safe;
+    LispObject w;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s %s ", s, a);
         loop_print_error(b);
@@ -529,7 +563,8 @@ LispObject aerror2(const char *s, const char *a, LispObject b)
 
 LispObject aerror3(const char *s, LispObject a, LispObject b,
                    LispObject c)
-{   LispObject w;
+{   errorNest safe;
+    LispObject w;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
         loop_print_error(a);
@@ -554,7 +589,8 @@ LispObject aerror3(const char *s, LispObject a, LispObject b,
 }
 
 static LispObject wrong(int given, int wanted, LispObject env)
-{   char msg[64];
+{   errorNest safe;
+    char msg[64];
     if (wanted == 4)
         std::sprintf(msg,
                      "Function called with %d args where more then three wanted",
@@ -574,7 +610,8 @@ static LispObject wrong(int given, int wanted, LispObject env)
 }
 
 static LispObject wrong(int given, LispObject env)
-{   char msg[64];
+{   errorNest safe;
+    char msg[64];
     if (given == 4)
         std::sprintf(msg,
                      "Function called incorrectly with more than 3 args");
@@ -707,7 +744,7 @@ LispObject bad_specialn(LispObject, int, ...)
 }
 
 void fatal_error(int code, ...)
-{
+{   errorNest safe;
 // Note that FATAL error messages are sent to the terminal, not to the
 // error output stream. This is because the error output stream may be
 // corrupted in such dire circumstances.
@@ -1339,6 +1376,7 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
 
 bool timeTestCons = false;
 bool gcTest = false;
+bool gcTrace = false;
 bool ignoreLoadTime = false;
 
 #ifndef AVOID_THREADS
@@ -1865,6 +1903,15 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 "--gc-test runs some test code. Need -z as well.",
                 [&](string key, bool hasVal, string val)
                 {   gcTest = true;
+                }
+            },
+            /*! options [--gc-trace] \item [{\ttfamily --gc-trace}] \index{{\ttfamily --gc-trace}}
+             * --gc-trace leads to copious debugging trace output from garbage collection.
+             */
+            {   "--gc-trace", true, true,
+                "--gc-trace copious logging from garbage collection.",
+                [&](string key, bool hasVal, string val)
+                {   gcTrace = true;
                 }
             },
 #endif // CONSERVATIVE
