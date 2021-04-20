@@ -202,6 +202,20 @@ static const size_t pageSize = 8*1024*1024;      // Use 8 Mbyte pages
 // at the start of each Chunk.
 static const size_t targetChunkSize = 16*1024;   // Target chunk size
 
+// every Page will be on one of the lists freePages, mostlyFreePages,
+// busyPages, oldPages or borrowPages. When space is first allocated only
+// the chain and pageClass fields will be set and the page will be
+// "pending" and it will be on freePages. On first use SetUpEmptyPage
+// will fix it up.
+// After any use its class will match the chain that it is on, save
+// that during GC things on oldPages will be tagged as busy, because
+// oldPages is just where the list busyPages gets put while material is
+// copied out of the memory there. And Pages in borrowPages will either
+// be free or mostlyFree, with counts of pages not impacted by borrowing.
+
+// Each chain has an associated counter noting how many Pages of that
+// variety are present.
+
 // It may be useful to arrange that each page has a field in it that
 // explains its status. In particular when an ambiguous pointer refers into
 // a page it can be useful for it to have a simple test to see if that page
@@ -209,11 +223,12 @@ static const size_t targetChunkSize = 16*1024;   // Target chunk size
 
 enum PageClass
 {   reservedPageTag   = 0x00,     // Reserved value, never used.
+    pendingPageTag    = 0x01,     // Not yet initialised.
 
-    freePageTag       = 0x01,     // All the data area in this page is free.
-    mostlyFreePageTag = 0x02,     // Mostly empty page but with
+    freePageTag       = 0x02,     // All the data area in this page is free.
+    mostlyFreePageTag = 0x03,     // Mostly empty page but with
                                   //    some pinned data within it.
-    busyPageTag       = 0x03,     // Page contains active data.
+    busyPageTag       = 0x04,     // Page contains active data.
 };
 
 extern bool allocateSegment(size_t);
@@ -1353,6 +1368,8 @@ inline void grabNewCurrentPage(bool preferMostlyFree)
     {   currentPage = freePages;
         freePages = freePages->chain;
         freePagesCount--;
+        if (currentPage->pageClass==pendingPageTag)
+            setUpEmptyPage(currentPage);
     }
     else
     {   currentPage = mostlyFreePages;

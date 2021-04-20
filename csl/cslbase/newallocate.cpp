@@ -435,7 +435,7 @@ DEFINE_THREAD_LOCAL(uintptr_t,    borrowNext);
 // The initializeation here is intended to make the code more fragile
 // so that unless I initialize elsewhere I stand a good chance of seeing
 // a prompt sigsegv.
-static Page *px = reinterpret_cast<Page *>(-0x5a5a5a5aU);
+static Page *px = reinterpret_cast<Page *>(0xeffeceabaddecade);
 
 Page *currentPage = px;     // Where allocation is happening. The "nursery".
 Page *previousPage = px;    // A page that was recently the current one.
@@ -1090,6 +1090,7 @@ LispObject borrow_n_bytes(size_t n)
         else
         {   w = freePages;
             freePages = freePages->chain;
+            if (w->pageClass==pendingPageTag) setUpEmptyPage(w);
         }
         w->chain = static_cast<Page *>(borrowPages);
         borrowPages = w;
@@ -1136,13 +1137,17 @@ LispObject borrow_vector(int tag, int type, size_t n)
 
 // In some early testing the times reported from (apparently) this little
 // function seemed terrible, so the local switch to a high optimization
-// level is to see if that is the issue!
+// level is to see if that is the issue! Aha the optimisation level and the
+// extra costs of using atomic map entries where NOT the issue, but I will
+// leave the scheme that set up local change in optimisation level present
+// (but commented out) as a reminder of how to do that.
 
-#pragma GCC push_options
-#pragma GCC optimize(3)
+//#pragma GCC push_options
+//#pragma GCC optimize(3)
 
 void setUpEmptyPage(Page *p)
-{   p->chunkCount = 0;
+{
+    p->chunkCount = 0;
     p->chunkMapSorted = false;
 #ifdef SAFE
     for (size_t i=0; i<sizeof(p->dirtyMap)/sizeof(p->dirtyMap[0]); i++)
@@ -1168,8 +1173,6 @@ void setUpEmptyPage(Page *p)
 #endif
     p->hasDirty = false;
     p->dirtyChain = nullptr;
-    p->chain = freePages;
-    freePages = p;
     p->pageClass = freePageTag;
     p->fringe = reinterpret_cast<uintptr_t>(&p->data);
     p->limit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
@@ -1211,13 +1214,10 @@ void setUpMostlyEmptyPage(Page *p)
 #endif
     p->hasDirty = false;
     p->dirtyChain = nullptr;
-    p->chain = mostlyFreePages;
-    mostlyFreePages = p;
     p->pageClass = mostlyFreePageTag;
 }
 
-#pragma GCC pop_options
-
+//#pragma GCC pop_options
 
 // Now something that takes a page where it must be left free apart from
 // any pinned Chunks within it. The fringe and limit fields must be set up
@@ -1352,8 +1352,13 @@ bool allocateSegment(size_t n)
     {   Page *p =
             reinterpret_cast<Page *>(
                 reinterpret_cast<char *>(r) + k - CSL_PAGE_SIZE);
-// Keep a chain of all the pages.
-        setUpEmptyPage(p);
+// Keep a chain of all the pages. When allocate here I give a page
+// a "pending" status, which means that not much of it has been
+// initialised. When it is first grabbed from the freePages list it
+// must be more thoroughly initialised.
+        p->chain = freePages;
+        p->pageClass = pendingPageTag;
+        freePages = p;
         freePagesCount++;
     }
     cout << freePagesCount << " pages available\r\n";
@@ -1540,10 +1545,13 @@ void initHeapSegments(double storeSize)
         new (std::nothrow) Align8[CSL_PAGE_SIZE/8]);
     if (stackSegment == nullptr) fatal_error(err_no_store);
     stackBase = reinterpret_cast<LispObject *>(stackSegment);
+// Ensure that I have a currentPage.
     previousPage = nullptr;
     currentPage = freePages;
     freePages = freePages->chain;
     freePagesCount--;
+    if (currentPage->pageClass==pendingPageTag) setUpEmptyPage(currentPage);
+    currentPage->pageClass = busyPageTag;
     currentPage->chain = nullptr;
     busyPages = currentPage;
     busyPagesCount = 1;
@@ -1717,7 +1725,7 @@ void init_heap_segments(double d)
     if (K < mem) mem = K;
     if (d == 0.0) d = 1024.0*1024.0*mem; // back to bytes
     if (maxStoreSize != 0.0 && maxStoreSize < d) d = maxStoreSize;
-// I have to pass the amount to initHeapSegments inkilobytes. On a 32-bit
+// I have to pass the amount to initHeapSegments in kilobytes. On a 32-bit
 // machine I will limit myself to 1.6G here, because trying to use 2G or
 // more starts to risk muddle with sign bits and address arithmetic overflow.
     if (!SIXTY_FOUR_BIT) d = 1600.0*1024.0*1024.0;

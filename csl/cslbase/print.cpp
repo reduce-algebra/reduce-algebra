@@ -1924,35 +1924,8 @@ static void putc_utf8(int n)
     }
 }
 
-#ifdef DEBUG
-LispObject last1=0, last2=0, last3=0, last4=0;
-#endif
-
 LispObject internal_prin(LispObject uu, int blankp)
-{
-#ifdef DEBUG
-    if (uu==last1)
-    {   std::printf("#last1#");
-        return uu;
-    }
-    if (uu==last2)
-    {   std::printf("#last2#");
-        return uu;
-    }
-    if (uu==last3)
-    {   std::printf("#last3#");
-        return uu;
-    }
-    if (uu==last4)
-    {   std::printf("#last4#");
-        return uu;
-    }
-    last4 = last3;
-    last3 = last2;
-    last3 = last1;
-    last1 = uu;
-#endif
-    LispObject w;
+{   LispObject w;
     size_t len, lenchars, k;
     char my_buff[128];
     int bl = blankp & 2;
@@ -3324,9 +3297,6 @@ LispObject prin(LispObject u)
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     internal_prin(u, 0);
     save.restore(u);
     return u;
@@ -3336,9 +3306,6 @@ LispObject prin_to_terminal(LispObject u)
 {   escaped_printing = escape_yes;
     active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     ignore_error(internal_prin(u, 0));
     ensure_screen();
     return nil;
@@ -3348,9 +3315,6 @@ LispObject prin_to_stdout(LispObject u)
 {   escaped_printing = escape_yes;
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = lisp_standard_output;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     ignore_error(internal_prin(u, 0));
     ensure_screen();
     return nil;
@@ -3360,9 +3324,6 @@ LispObject prin_to_error(LispObject u)
 {   escaped_printing = escape_yes;
     active_stream = qvalue(error_output);
     if (!is_stream(active_stream)) active_stream = lisp_error_output;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     ignore_error(internal_prin(u, 0));
     ensure_screen();
     return nil;
@@ -3372,9 +3333,6 @@ LispObject prin_to_trace(LispObject u)
 {   escaped_printing = escape_yes;
     active_stream = qvalue(trace_output);
     if (!is_stream(active_stream)) active_stream = lisp_trace_output;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     ignore_error(internal_prin(u, 0));
     ensure_screen();
     return nil;
@@ -3390,9 +3348,6 @@ LispObject prinhex_to_trace(const char *msg, LispObject u)
     if (!is_stream(active_stream)) active_stream = lisp_trace_output;
     if (c != 0) putc_stream('\n', active_stream);
     trace_printf("## %s: ", msg);
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     ignore_error(internal_prin(u, escape_yes+escape_hex));
     putc_stream('\n', active_stream);
     ensure_screen();
@@ -3403,9 +3358,6 @@ LispObject prin_to_debug(LispObject u)
 {   escaped_printing = escape_yes;
     active_stream = qvalue(debug_io);
     if (!is_stream(active_stream)) active_stream = lisp_debug_io;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     ignore_error(internal_prin(u, 0));
     ensure_screen();
     return nil;
@@ -3415,9 +3367,6 @@ LispObject prin_to_query(LispObject u)
 {   escaped_printing = escape_yes;
     active_stream = qvalue(query_io);
     if (!is_stream(active_stream)) active_stream = lisp_query_io;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     ignore_error(internal_prin(u, 0));
     ensure_screen();
     return nil;
@@ -3559,9 +3508,6 @@ static LispObject prinhex(LispObject u, int n)
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     internal_prin(u, 0);
     save.restore(u);
     return u;
@@ -3573,9 +3519,6 @@ static LispObject prinoctal(LispObject u, int n)
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     internal_prin(u, 0);
     save.restore(u);
     return u;
@@ -3587,9 +3530,6 @@ static LispObject prinbinary(LispObject u, int n)
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     internal_prin(u, 0);
     save.restore(u);
     return u;
@@ -3601,9 +3541,6 @@ LispObject princ(LispObject u)
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     internal_prin(u, 0);
     save.restore(u);
     return u;
@@ -3617,9 +3554,6 @@ LispObject print(LispObject u)
     if (!is_stream(stream)) stream = lisp_terminal_io;
     active_stream = stream;
     putc_stream('\n', stream);
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     internal_prin(u, 0);
     save.restore(u);
     return u;
@@ -3633,9 +3567,6 @@ LispObject printc(LispObject u)
     if (!is_stream(stream)) stream = lisp_terminal_io;
     active_stream = stream;
     putc_stream('\n', stream);
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     internal_prin(u, 0);
     save.restore(u);
     return u;
@@ -3743,9 +3674,6 @@ static LispObject explode(LispObject u)
     set_stream_write_fn(lisp_work_stream, char_to_list);
     set_stream_write_other(lisp_work_stream, write_action_list);
     active_stream = lisp_work_stream;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     internal_prin(u, 0);
     u = stream_write_data(lisp_work_stream);
     stream_write_data(lisp_work_stream) = nil;
@@ -3771,9 +3699,6 @@ void checksum(LispObject u)
     active_stream = lisp_work_stream;
     CSL_MD5_Init();
     local_gensym_count = checksum_count = 0;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     internal_prin(u, 0);
     stream_write_data(lisp_work_stream) = nil;
     if (checksum_count != 0) CSL_MD5_Update(checksum_buffer, checksum_count);
@@ -3824,9 +3749,6 @@ static LispObject exploden(LispObject u)
     set_stream_write_fn(lisp_work_stream, code_to_list);
     set_stream_write_other(lisp_work_stream, write_action_list);
     active_stream = lisp_work_stream;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     internal_prin(u, 0);
     u = stream_write_data(lisp_work_stream);
     stream_write_data(lisp_work_stream) = nil;
@@ -3898,9 +3820,6 @@ LispObject Lprin(LispObject env, LispObject a)
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     internal_prin(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
@@ -3999,9 +3918,6 @@ LispObject Lprinc_upcase(LispObject env, LispObject a)
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     internal_prin(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
@@ -4014,9 +3930,6 @@ LispObject Lprinc_downcase(LispObject env, LispObject a)
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     internal_prin(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
@@ -4029,9 +3942,6 @@ LispObject Lprinc(LispObject env, LispObject a)
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     internal_prin(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
@@ -4044,9 +3954,6 @@ LispObject Lprin2a(LispObject env, LispObject a)
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     internal_prin(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
@@ -4079,9 +3986,6 @@ LispObject Llengthc(LispObject env, LispObject a)
     stream_byte_pos(lisp_work_stream) = 0;
     stream_char_pos(lisp_work_stream) = 0;
     active_stream = lisp_work_stream;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     internal_prin(a, 0);
     return onevalue(fixnum_of_int(stream_byte_pos(lisp_work_stream)));
 }
@@ -4098,9 +4002,6 @@ LispObject Lwidelengthc(LispObject env, LispObject a)
     stream_byte_pos(lisp_work_stream) = 0;
     stream_char_pos(lisp_work_stream) = 0;
     active_stream = lisp_work_stream;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     internal_prin(a, 0);
     return onevalue(fixnum_of_int(stream_char_pos(lisp_work_stream)));
 }
@@ -4159,9 +4060,6 @@ LispObject Lprint(LispObject env, LispObject a)
     escaped_printing = escape_yes;
     active_stream = stream;
     putc_stream('\n', stream);
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     internal_prin(a, 0);
 #else
     escaped_printing = escape_yes;
@@ -4183,9 +4081,6 @@ LispObject Lprintc(LispObject env, LispObject a)
     escaped_printing = 0;
     active_stream = stream;
     putc_stream('\n', stream);
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     internal_prin(a, 0);
 #else
     escaped_printing = 0;
@@ -4365,9 +4260,6 @@ static LispObject Lbinary_prin1(LispObject env, LispObject a)
     set_stream_write_other(lisp_work_stream, write_action_file);
     set_stream_file(lisp_work_stream, binary_outfile);
     active_stream = lisp_work_stream;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     internal_prin(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
@@ -4381,9 +4273,6 @@ static LispObject Lbinary_princ(LispObject, LispObject a)
     set_stream_write_other(lisp_work_stream, write_action_file);
     set_stream_file(lisp_work_stream, binary_outfile);
     active_stream = lisp_work_stream;
-#ifdef DEBUG
-    last1 = last2 = last3 = last4 = 0;
-#endif
     internal_prin(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
