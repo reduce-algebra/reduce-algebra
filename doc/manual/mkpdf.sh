@@ -10,8 +10,14 @@ RUNS=0
 NEED_BIBTEX=0
 
 # Remove .ind file and .aux files that could be left over from a
-# tex4ht run and may cause obscure complaints from a PDF run:
-rm -f ${JOBNAME}.ind *.aux
+# TeX4ht build and may cause obscure complaints from a PDF build, but
+# add an new skeleton .ind file to get a correct Index entry in the
+# PDF Table of Contents:
+rm -f *.aux
+cat > ${JOBNAME}.ind <<EOF
+\begin{theindex}
+\end{theindex}
+EOF
 
 # Run latex until it no longer complains about cross references
 until [ ${SUCCESS} = 1 ] ; do
@@ -49,5 +55,7 @@ if test -f ${JOBNAME}.idx ; then
   makeindex ${JOBNAME}
   pdflatex ${JOBNAME}
 fi
+
+echo 'RUNS =' $RUNS
 
 exit 0
