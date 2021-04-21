@@ -590,7 +590,10 @@ static void cold_setup()
 // the conservative GC is active.
 //
 #ifdef CONSERVATIVE
-    if (gcTest) gcTestCode();   // if "--gc-test" was on command line.
+    if (gcTest)
+    {   gcTestCode();   // if "--gc-test" was on command line.
+        return;
+    }
 #endif // CONSERVATIVE
     setvalue(nil, get_basic_vector_init(sizeof(Package), nil));
 #ifdef COMMON

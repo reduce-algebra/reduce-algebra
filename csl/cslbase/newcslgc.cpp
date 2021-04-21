@@ -211,7 +211,7 @@
 // contain pinned Chunks this time, and within each such Page I can identify
 // those Chunks easily. 
 //
-// Now move busyPages to OldPages and set up a new CurrentPage. While
+// Now move busyPages to oldPages and set up a new CurrentPage. While
 // performing a major GC always allocate a MOSTLYFREE page rather than a
 // fully free one if possible. This is because doing to embeds the previously
 // pinned data among newly copies data. Much of it is liable NOT to be
@@ -912,9 +912,9 @@ void prepareForGarbageCollection(bool major)
         oldPagesCount = busyPagesCount;
         busyPages = nullptr;
         busyPagesCount = 0;
-        currentPage->chain = oldPages;
-        oldPages = currentPage;
-        oldPagesCount++;
+// Having moved all the bust pages to oldPages I can set up a fresh
+// current page to be the start of the "new half-space" that I will
+// copy things into.
         grabNewCurrentPage(true);
         pinnedChunkCount = pinnedPageCount = 0;
 // I will want chunkStack empty basically all the time because that
@@ -1284,6 +1284,7 @@ if (gcTrace) cout << "Item at " << Addr(pp) << " = " << std::hex << a
             {   Symbol_Head *s = reinterpret_cast<Symbol_Head *>(p);
                 evacuate(&(s->value));
                 evacuate(&(s->env));
+                evacuate(&(s->plist));
                 evacuate(&(s->fastgets));
                 evacuate(&(s->package));
                 evacuate(&(s->pname));
@@ -1409,6 +1410,7 @@ void evacuateOneChunk(Chunk *c)
             {   Symbol_Head *s = reinterpret_cast<Symbol_Head *>(p);
                 evacuate(&(s->value));
                 evacuate(&(s->env));
+                evacuate(&(s->plist));
                 evacuate(&(s->fastgets));
                 evacuate(&(s->package));
                 evacuate(&(s->pname));
@@ -1580,6 +1582,7 @@ if (gcTrace)
                 {   Symbol_Head *s = reinterpret_cast<Symbol_Head *>(p);
                     evacuate(&(s->value));
                     evacuate(&(s->env));
+                    evacuate(&(s->plist));
                     evacuate(&(s->fastgets));
                     evacuate(&(s->package));
                     evacuate(&(s->pname));
@@ -1620,25 +1623,18 @@ void endOfGarbageCollection(bool major)
         oldPages = oldPages->chain;
         if (p->hasPinned)
         {   setUpMostlyEmptyPage(p);
+            p->chain = mostlyFreePages;
+            mostlyFreePages = p;
             mostlyFreePagesCount++;
         }
         else
         {   setUpEmptyPage(p);
+            p->chain = freePages;
+            freePages = p;
             freePagesCount++;
         }
         count++;
     }
-    cout << count << " pages moved from oldPages to emptyPages\n";
-#ifdef DEBUG
-    LispObject a = standard_input;
-    cout << "\nstdin = " << std::flush; simple_print(a);
-    if (is_symbol(a)) a = qvalue(a);
-    cout << "\n value = " << std::flush;
-    simple_print(a);
-    cout << std::endl;
-    if (is_vector(a))
-        std::printf("val=%" PRIxPTR "  hdr(val)=%" PRIxPTR "\n", a, vechdr(a));
-#endif // DEBUG
 }
 
 void tellTime(const char *s,
@@ -1650,6 +1646,8 @@ void tellTime(const char *s,
     cout << s << ": " << std::dec << std::fixed << std::setprecision(3)
          << (t.count()/1000.0) << " usec\n";
 }
+
+void validatePointers();
 
 void garbageCollect(bool major)
 {   if (gcTrace) cout << "\n+++++ Start of a "
@@ -1715,6 +1713,20 @@ void garbageCollect(bool major)
     tellTime("evac from dirty       ", gcTime7, gcTime8);
     tellTime("evac from copied      ", gcTime8, gcTime9);
     tellTime("tidy up               ", gcTime9, gcTime10);
+#ifdef DEBUG
+    LispObject a = standard_input;
+    cout << "\nstdin = " << std::flush; simple_print(a);
+    if (is_symbol(a)) a = qvalue(a);
+    cout << "\n value = " << std::flush;
+    simple_print(a);
+    cout << std::endl;
+    if (is_vector(a))
+        std::printf("val=%" PRIxPTR "  hdr(val)=%" PRIxPTR "\n", a, vechdr(a));
+#endif // DEBUG
+#ifdef DEBUG
+// Just to test things!
+    validatePointers();
+#endif // DEBUG
 }
 
 // This flag generally controls whether a generational collector will be
@@ -1732,5 +1744,174 @@ void generationalGarbageCollect()
 void fullGarbageCollect()
 {   garbageCollect(true);
 }
+
+
+//==================
+
+#ifdef DEBUG
+
+static const size_t hashSize = 0x100000;
+static LispObject visitedHash[hashSize];
+
+bool inActivePage(LispObject a)
+{   // Not done yet!
+    return true;
+}
+
+void clearRepeats()
+{   memset(visitedHash, 0, sizeof(visitedHash));
+}
+
+void validateForGC(LispObject a)
+{   size_t h = ((a*3141592653589793237u) >> 40) & (hashSize-1);
+    for (;;)
+    {   if (visitedHash[h] == a) return;
+        else if (visitedHash[h] == 0)
+        {   visitedHash[h] = a;
+            break;
+        }
+        h = (h + 1) & (hashSize-1);
+    }
+    if (is_immediate(a)) return;
+    my_assert(inActivePage(a));
+    my_assert(!is_forward(*reinterpret_cast<LispObject *>(a - (a&TAG_BITS))));
+    if (is_cons(a))
+    {   validateForGC(car(a));
+        validateForGC(cdr(a));
+        return;
+    }
+    if (is_symbol(a))
+    {   validateForGC(qvalue(a));
+        validateForGC(qenv(a));
+        validateForGC(qplist(a));
+        validateForGC(qfastgets(a));
+        validateForGC(qpackage(a));
+        validateForGC(qpname(a));
+        return;
+    }
+//    if (is_vector(a)) 
+}
+
+void validateUnambiguousBases(bool major)
+{   if (gcTrace) cout << "evacuateFromUnambiguousBases\n";
+// This code has to know where ALL the definitive references to LispObjects
+// are in the C++ code. The main way it achieves this is through a vector
+// "list_bases" that holds the address of every static location involved.
+// That vector is about 200 items long. In addition the dedicated Lisp
+// stack has to be processed.
+    validateForGC(*reinterpret_cast<LispObject *>(valueaddr(nil)));
+    validateForGC(*reinterpret_cast<LispObject *>(envaddr(nil)));
+    validateForGC(*reinterpret_cast<LispObject *>(plistaddr(nil)));
+    validateForGC(*reinterpret_cast<LispObject *>(pnameaddr(nil)));
+    validateForGC(*reinterpret_cast<LispObject *>(fastgetsaddr(nil)));
+    validateForGC(*reinterpret_cast<LispObject *>(packageaddr(nil)));
+    for (auto p = list_bases; *p!=nullptr; p++) validateForGC(**p);
+    for (LispObject *sp=stack;
+         sp>reinterpret_cast<LispObject *>(stackBase); sp--) validateForGC(*sp);
+// When running the deserialization code I keep references to multiply-
+// used items in repeat_heap, and if garbage collection occurs they must be
+// updated.
+    if (repeat_heap != nullptr)
+    {   for (size_t i=1; i<=repeat_count; i++)
+            validateForGC(repeat_heap[i]);
+    }
+}
+
+void validatePinnedInChunk(Chunk *c)
+{   uintptr_t p = c->dataStart();
+    if (gcTrace) cout << "Pinned chunk has data " << Addr(c->dataStart())
+         << " to " << Addr(c->chunkFringe.load())
+         << " end " << Addr(c->dataEnd()) << "\n";
+    while (p < c->chunkFringe)
+    {
+// I could skip up to 512 bytes at a time by using word operations on the
+// bitmap, and if I did then the fact that there are only 32 (64-bit) words
+// in the bitmap makes this whole scan feel not too bad.
+        if (!isPinned(p))
+        {   p += 8;
+            continue;
+        }
+        LispObject *pp = reinterpret_cast<LispObject *>(p);
+        if (gcTrace) cout << "Scanning pinned item at " << Addr(p) << "\n";
+        LispObject a = *pp;
+if (gcTrace) cout << "Item at " << Addr(pp) << " = " << std::hex << a
+     << std::dec << " = " << Addr(a) << "\n";
+        my_assert(a != 0, "zero item in heap");
+        my_assert(!is_forward(a), "forwarding pointer found");
+        size_t len, len1;
+        switch (a & 0x1f) // tag bits plus 2 more
+        {
+// binary literals are C++14, so just for now I will use hex, but I will
+// write what the binary literal would be...
+        case 0x0a: // 0b01010:   // Header for vector of Lisp pointers
+                                 // Note TYPE_STREAM etc is in with this.
+            len = doubleword_align_up(length_of_header(a));
+            if (is_mixed_header(a)) len1 = 4*CELL;
+            else len1 = len;
+            if (gcTrace) cout << "vector (" << std::hex << a << std::dec << ") uses " << len << " bytes\n";
+            if (len == 0) if (gcTrace) cout << "At " << Addr(pp) << " up to " << Addr(c->chunkFringe.load()) << "\n";
+            for (size_t i = CELL; i<len1; i += CELL)
+                validateForGC(*reinterpret_cast<LispObject *>(p+i));
+            my_assert(len != 0, "lisp vector size zero");
+            p += len;
+            continue;
+
+        case 0x12: // 0b10010:   // Header for bit-vector
+            len = doubleword_align_up(length_of_header(a));
+            my_assert(len != 0, "bit vector size zero");
+            if (gcTrace) cout << "bit-vector uses " << len << " bytes\n";
+            p += len;
+            continue;
+
+        case 0x1a: // 0b11010:   // Header for vector holding binary data
+            len = doubleword_align_up(length_of_header(a));
+            my_assert(len != 0, "binary vector size zero");
+            if (gcTrace) cout << "binary-vector uses " << len << " bytes\n";
+            p += len;
+            continue;
+
+        case 0x02: // 0b00010:   // Symbol headers plus char literals etc
+            if (is_symbol_header(a))
+            {   Symbol_Head *s = reinterpret_cast<Symbol_Head *>(p);
+                validateForGC(s->value);
+                validateForGC(s->env);
+                validateForGC(s->plist);
+                validateForGC(s->fastgets);
+                validateForGC(s->package);
+                validateForGC(s->pname);
+                if (gcTrace) cout << "symbol uses " << symhdr_length << " bytes\n";
+                if (gcTrace) cout << "inc from " << Addr(p) << " to " << Addr(p+symhdr_length) << "\n";
+                p += symhdr_length;
+                continue;
+            }
+            // drop through.
+        default:                 // None of the above cases...
+                                 // ... must be a CONS cell.
+            validateForGC(pp[0]);
+            validateForGC(pp[1]);
+            if (gcTrace) cout << "cons cell uses " << (2*CELL) << " bytes\n";
+            p += 2*CELL;
+            continue;
+        }
+    }
+}
+
+void validatePinnedItems(bool major)
+{   if (gcTrace) cout << "evacuateFromPinnedItems\n";
+    for (Page *p=globalPinChain; p!=nullptr; p=p->pinChain)
+    {   for (Chunk *c=p->pinnedChunks; c!=nullptr; c=c->pinChain)
+        {   if (gcTrace) cout << "Pinned items in " << Addr(c) << " to evacuate\n";
+            validatePinnedInChunk(c);
+        }
+    }
+}
+
+void validatePointers()
+{   clearRepeats();
+    validateUnambiguousBases(true);
+    validatePinnedItems(true);
+}
+
+#endif // DEBUG
 
 // end of file newcslgc.cpp
