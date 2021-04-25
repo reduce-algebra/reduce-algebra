@@ -1,0 +1,77 @@
+This is an attempt to reconstruct a version of Reduce 2 as it was in the
+early 1970s. It starts with the file REDUCE.RED which is based on material
+recovered from archives of Tony Hearn's filespace at SAIL. Thanks are due
+to those who discovered and decoded the files there and who, through Tony,
+led to it being possible to release them here.
+
+REDUCE.RED is all in Rlisp and contains a version of an Rlisp parser. There
+were also bootstrap Rlisp parsers in raw Lisp as part of the SAIL archive,
+however identifying a version that would mesh gracefully with this version
+of the full system was a challenge.
+
+
+So the way that this build has progressed so far is as follows - note that
+I have (so far) only tested on Windows/cygwin, but it is plausible that
+it will behave the same on other platforms - and also the it will build
+using PSL rather than CSL as the supporting Lisp.
+
+(a) A file reduce.red.patched was created by hand from REDUCE.RED. The
+major change was that REDUCE.RED has a number of instances of the syntax
+"NOT a infix_op b", for instance "NOT U MEMBER FACTORS!*". At some later
+stage I believe it was concluded that code such as "not flag = nil" would
+cause confusion as to whether the intent was "(not flag) = nil" or
+"not (flag = nil)" and the Reduce parser was updated so that the syntax was
+deemed faulty. The file reduce.red.patched has extra parentheses inserted
+to resolve the potential ambiguity and allow a current Reduce to parse it
+without complaint.
+
+(b) A script "tolisp.sh" uses an existing local (modern) Reduce to parse
+the file and expand it into Lisp. The script does a bit of tidying up of the
+output it generates, but not everything! The result is an initial version
+of a version of Reduce directly coded in Lisp: "reduce.lsp.initial".
+
+(c) A script "build2.sh" sets up a few initial definitions and re-definitions
+and then reads in reduce.lsp to create a notionally complete image for
+Reduce 2. The file reduce.lsp is a hand edited version of reduce.lsp.initial
+where the adjustments relate to compatibility with the current version of
+Lisp used. Where convenient changes are made by having definitions or
+redefintions present in build.sh, but some are make directly in reduce.lsp.
+File comparison against reduce.lsp.initial makes it possible to see what has
+been done!
+
+(d) "csl -w -i reduce2.img" followed by "(begin)" then starts the copy
+of Reduce that has just been made. I hope that in a while and once it
+works a bit better a set of examples showing off its capabilities can
+be included here. It can now manage "df((alpha + beta)**3, beta);" and
+display a plausible result. Better than that the script "test2.sh" tries
+it out on the "standard" Reduce test file. The early parts of that
+succeed. It fails when it tried to use the command "solve" which seems not
+to be available here, and the high enrgy physics tests crash in a way that
+still needs debugging.
+
+(e) buildvsl.sh uses the files vsl/vsl.c and vsl/vsl.lsp to build a small
+footprint Lisp system, and then uses that to build this version of Reduce.
+There is no compiler and at the time of writing this note some incompatibility
+and testvsl.sh does not get as far as test2.sh. Observe the nice small size
+of both the redvsl executable and the image file.
+However the binaries created by buildvsl.sh can be launched by
+   ./vslred -i vslred.img
+   (begin)
+and of course testing of Reduce internals can be done from the Lisp prompt
+before trying to (begin).
+
+
+
+
+Note:
+  The input line in the Reduce test file that reads
+            FOR I:=1:10 DO WRITE A(I):= I*A(I-1);
+parses to something involving a call to VARPRI with an argument that includes
+the symbol "I". Within varpri this gets evaluated. The variable is bound by
+the FOR loop and the evaluation from within varpri gives an "undefined
+variable" complaint unless I is treated as fluid. So to let the test run I
+have an odd-looking statement (fluid '(i)) early in test2.sh.
+
+
+                                               Arthur Norman, April 2021
+

@@ -1,5 +1,4 @@
 // stream.h                              Copyright (C) Codemist, 1995-2021
-
 //
 // Header defining the structure of stream objects in CSL, and also
 // the format for "library" files used with the fast-load mechanism.
@@ -48,8 +47,7 @@ typedef int character_stream_reader(LispObject);
 typedef int character_stream_writer(int, LispObject);
 typedef int32_t other_stream_op(int32_t, LispObject);
 
-extern LispObject Lopen(LispObject env, LispObject name,
-                        LispObject dir);
+extern LispObject Lopen(LispObject env, LispObject name, LispObject dir);
 
 //
 // The values used here are placed where characters might be, or possibly
@@ -73,6 +71,7 @@ extern int code_to_list(int c, LispObject f);
 extern int count_character(int c, LispObject f);
 extern int binary_outchar(int c, LispObject f);
 extern int char_to_function(int c, LispObject f);
+
 #if defined HAVE_LIBFOX || defined HAVE_LIBWX
 extern int char_to_math(int c, LispObject f);
 extern int char_to_spool(int c, LispObject f);
@@ -86,6 +85,7 @@ extern int32_t write_action_broadcast(int32_t c, LispObject f);
 extern int32_t write_action_twoway(int32_t c, LispObject f);
 extern int32_t write_action_illegal(int32_t c, LispObject f);
 extern int32_t write_action_list(int32_t c, LispObject f);
+
 #if defined HAVE_LIBFOX || defined HAVE_LIBWX
 extern int32_t write_action_math(int32_t c, LispObject f);
 extern int32_t write_action_spool(int32_t c, LispObject f);

@@ -86,7 +86,7 @@ void debugprint1(LispObject a, int depth)
             if (CELL<len && len < 64)
                 std::printf("%.*s", static_cast<int>(len-CELL), &celt(pn, 0));
             else std::printf("<symbol with pname hdr %p>",
-                                 reinterpret_cast<void *>(vechdr(pn)));
+                                 reinterpret_cast<void *>(vechdr(pn).load()));
         }
         else std::printf("<symbol with odd pname>");
     }

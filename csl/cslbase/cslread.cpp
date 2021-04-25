@@ -723,8 +723,8 @@ LispObject make_symbol(char const *s, int restartp,
 #endif
         std::strcpy(reinterpret_cast<char *>(&boffo_char(0)), s);
 start_again:
-    v = iintern(boffo, std::strlen(reinterpret_cast<char *>(&boffo_char(
-                                       0))), CP, 0);
+    v = iintern(boffo, std::strlen(
+        reinterpret_cast<char *>(&boffo_char(0))), CP, 0);
     if (first_try) v0 = v;
 // I instate the definition given if (a) the definition is a real
 // one (ie not for an undefined function) and if (b) either I am doing a cold
@@ -2196,7 +2196,7 @@ static LispObject list_to_vector(LispObject l)
     save.restore(l);
     len = 0;
     while (consp(l))
-    {   elt(p, len) = car(l);
+    {   elt(p, len) = car(l).load();
         len++;
         l = cdr(l);
     }
@@ -3054,7 +3054,14 @@ int32_t read_action_synonym(int32_t c, LispObject f)
 {   int32_t r;
     LispObject f1;
     f1 = qvalue(stream_read_data(f));
-    if (!is_stream(f1)) return aerror1("bad synonym stream", f1);
+//@@@    if (!is_stream(f1)) return aerror1("bad synonym stream", f1);
+    if (!is_stream(f1))
+    {   cout << "bad synonym stream " << Addr(f1) << "\n";
+        cout << "header = " << std::hex << vechdr(f1) << std::dec << "\n";
+        simple_print(stream_type(f));
+        simple_print(stream_write_data(f));
+        return aerror("bad synonym stream");
+    }
     r = other_read_action(c, f1);
     if (c == READ_CLOSE)
     {   set_stream_read_fn(f, char_from_illegal);
@@ -3257,7 +3264,7 @@ int char_from_list(LispObject f)
                 io_now++;
             }
             ch = car(stream_read_data(f));
-            stream_read_data(f) = cdr(stream_read_data(f));
+            stream_read_data(f) = cdr(stream_read_data(f)).load();
         }
 // here I tend towards generosity - a symbol stands for the first character
 // of its name, and character objects and numbers (representing internal

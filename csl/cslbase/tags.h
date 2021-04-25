@@ -409,16 +409,14 @@ extern bool valid_address(void *pointer);
 // arguments relating to that. The default relaxed behaviour should be best
 // for performance if not multi-thread consistency.
 
-inline LispObject car(LispObject p,
-                      std::memory_order mo=std::memory_order_relaxed)
+inline atomic<LispObject> &car(LispObject p)
 {   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid car");
-    return (reinterpret_cast<Cons_Cell *>(p))->car.load(mo);
+    return reinterpret_cast<Cons_Cell *>(p)->car;
 }
 
-inline LispObject cdr(LispObject p,
-                      std::memory_order mo=std::memory_order_relaxed)
+inline atomic<LispObject> &cdr(LispObject p)
 {   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid cdr");
-    return (reinterpret_cast<Cons_Cell *>(p))->cdr.load(mo);
+    return reinterpret_cast<Cons_Cell *>(p)->cdr;
 }
 
 inline void setcar(LispObject p, LispObject q,
@@ -672,10 +670,8 @@ inline bool vector_holds_binary(Header h)
 #define SPID_NOPROP     (TAG_SPID+(0x0b<<(Tw+4)))  // fastget entry is empty
 #define SPID_LIBRARY    (TAG_SPID+(0x0c<<(Tw+4)))  // + 0xnnn00000 offset
 
-inline Header vechdr(LispObject v,
-                     std::memory_order mo=std::memory_order_relaxed)
-{   return (reinterpret_cast<atomic<Header> *>
-            (reinterpret_cast<char *>(v) - TAG_VECTOR))->load(mo);
+inline atomic<Header> &vechdr(LispObject v)
+{   return *reinterpret_cast<atomic<Header> *>(v - TAG_VECTOR);
 }
 
 inline void setvechdr(LispObject v, Header h,
@@ -989,16 +985,12 @@ inline bool vector_f128(LispObject n)
 #define TYPE_NEW_BIGNUM     ( 0x7d <<Tw)  // Temporary provision!
 #define TYPE_LONG_FLOAT     ( 0x7f <<Tw)
 
-inline Header numhdr(LispObject v,
-                     std::memory_order mo = std::memory_order_relaxed)
-{   return (reinterpret_cast<atomic<Header> *>
-            (reinterpret_cast<char *>(v) - TAG_NUMBERS))->load(mo);
+inline atomic<Header> &numhdr(LispObject v)
+{   return *reinterpret_cast<atomic<Header> *>(v - TAG_NUMBERS);
 }
 
-inline Header flthdr(LispObject v,
-                     std::memory_order mo = std::memory_order_relaxed)
-{   return (reinterpret_cast<atomic<Header> *>
-            (reinterpret_cast<char *>(v) - TAG_BOXFLOAT))->load(mo);
+inline atomic<Header> &flthdr(LispObject v)
+{   return *reinterpret_cast<atomic<Header> *>(v - TAG_BOXFLOAT);
 }
 
 inline void setnumhdr(LispObject v, Header h,
@@ -1510,39 +1502,32 @@ typedef struct Symbol_Head_
 #define MAX_FASTGET_SIZE  63
 // I have up to 63 "fast" tags for PUT/GET/FLAG/FLAGP
 
-inline Header qheader(LispObject p,
-                      std::memory_order mo=std::memory_order_relaxed)
-{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->header.load(mo);
+inline atomic<Header> &qheader(LispObject p)
+{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->header;
 }
 
-inline LispObject qvalue(LispObject p,
-                         std::memory_order mo=std::memory_order_relaxed)
-{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->value.load(mo);
+inline atomic<LispObject> &qvalue(LispObject p)
+{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->value;
 }
 
-inline LispObject qenv(LispObject p,
-                       std::memory_order mo=std::memory_order_relaxed)
-{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->env.load(mo);
+inline atomic<LispObject> &qenv(LispObject p)
+{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->env;
 }
 
-inline LispObject qplist(LispObject p,
-                         std::memory_order mo=std::memory_order_relaxed)
-{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->plist.load(mo);
+inline atomic<LispObject> &qplist(LispObject p)
+{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->plist;
 }
 
-inline LispObject qfastgets(LispObject p,
-                            std::memory_order mo=std::memory_order_relaxed)
-{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->fastgets.load(mo);
+inline atomic<LispObject> &qfastgets(LispObject p)
+{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->fastgets;
 }
 
-inline LispObject qpackage(LispObject p,
-                           std::memory_order mo=std::memory_order_relaxed)
-{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->package.load(mo);
+inline atomic<LispObject> &qpackage(LispObject p)
+{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->package;
 }
 
-inline LispObject qpname(LispObject p,
-                         std::memory_order mo=std::memory_order_relaxed)
-{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->pname.load(mo);
+inline atomic<LispObject> &qpname(LispObject p)
+{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->pname;
 }
 
 inline atomic<LispObject> *valueaddr(LispObject p)

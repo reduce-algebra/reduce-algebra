@@ -828,7 +828,7 @@ LispObject Llist_to_vector(LispObject env, LispObject a)
     v = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
     errexit();
     save.restore(a);
-    for(n=0; consp(a); a = cdr(a), n++) elt(v, n) = car(a);
+    for(n=0; consp(a); a = cdr(a), n++) elt(v, n) = car(a).load();
     return onevalue(v);
 }
 

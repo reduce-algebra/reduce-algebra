@@ -1320,11 +1320,9 @@ LispObject Lsxhash(LispObject env, LispObject key)
 
 /////////////////////////////////////////////////////////////////////
 
-// This is simplified printing and sends its output to stderr. It is ONLY
+// This is simplified printing and sends its output to stdout. It is ONLY
 // intended for use while debugging. I will use if when printing trace
-// and backtrace output.. that gives up on having flexible control over
-// diagnostic output or redirecting it to somewhere other than stderr
-// (in non-windowed mode) or the screen (in windowed mode).
+// and backtrace output..
 // I want it to be able to cope with looped up structures so I will use
 // and EQ-keyed hash table to detect places where the structure is
 // reentrant.
@@ -1335,47 +1333,51 @@ static int simple_column = 0;
 
 void simple_lineend(int n)
 {   if (simple_column + n > 70)
-    {   std::fprintf(stderr, "\n");
+    {   std::printf("\n");
         simple_column = n;
     }
     else simple_column += n;
 }
 
-void simple_print1(LispObject x)
+void simple_prin1(LispObject x)
 {   char buffer[40];
     if (x == nil)
     {   simple_lineend(3);
-        std::fprintf(stderr, "nil");
+        std::printf("nil");
         return;
     }
     if (x == 0)
     {   simple_lineend(3);
-        std::fprintf(stderr, "@0@");
+        std::printf("@0@");
+        return;
+    }
+    if (is_forward(x))
+    {   std::printf("Forward_%" PRIxPTR, (intptr_t)x);
         return;
     }
     if (is_cons(x))
     {   const char *sep = "(";
         while (consp(x))
         {   simple_lineend(1);
-            std::fprintf(stderr, "%s", sep);
+            std::printf("%s", sep);
             sep = " ";
-            simple_print1(car(x));
+            simple_prin1(car(x));
             x = cdr(x);
         }
         if (x != nil)
         {   simple_lineend(3);
-            std::fprintf(stderr, " . ");
-            simple_print1(x);
+            std::printf(" . ");
+            simple_prin1(x);
         }
         simple_lineend(3);
-        std::fprintf(stderr, ")");
+        std::printf(")");
         return;
     }
     else if (is_fixnum(x))
     {   int k = std::sprintf(buffer, "%" PRId64,
                              (int64_t)int_of_fixnum(x));
         simple_lineend(k);
-        std::fprintf(stderr, "%s", buffer);
+        std::printf("%s", buffer);
         return;
     }
     else if (is_symbol(x))
@@ -1383,7 +1385,7 @@ void simple_print1(LispObject x)
         x = qpname(x);
         len = length_of_byteheader(vechdr(x)) - CELL;
         simple_lineend(len);
-        std::fprintf(stderr, "%.*s", static_cast<int>(len),
+        std::printf("%.*s", static_cast<int>(len),
                      reinterpret_cast<const char *>(&celt(x, 0)));
     }
     else if (is_vector(x))
@@ -1391,40 +1393,40 @@ void simple_print1(LispObject x)
         if (is_string(x))
         {   len = length_of_byteheader(vechdr(x)) - CELL;
             simple_lineend(len+2);
-            std::fprintf(stderr, "\"%.*s\"", static_cast<int>(len),
+            std::printf("\"%.*s\"", static_cast<int>(len),
                          reinterpret_cast<const char *>(&celt(x, 0)));
             return;
         }
         else if (vector_holds_binary(vechdr(x)) &&
                  vector_i8(vechdr(x)))
         {   len = length_of_byteheader(vechdr(x)) - CELL;
-            std::fprintf(stderr, "<Header is %" PRIx64 ">",
+            std::printf("<Header is %" PRIx64 ">",
                          static_cast<uint64_t>(vechdr(x)));
             simple_lineend(2*len+3);
-            std::fprintf(stderr, "#8[");
+            std::printf("#8[");
             for (size_t i=0; i<len; i++)
             {   simple_lineend(2);
-                std::fprintf(stderr, "%.2x", celt(x, i) & 0xff);
+                std::printf("%.2x", celt(x, i) & 0xff);
             }
-            std::fprintf(stderr, "]");
+            std::printf("]");
             return;
         }
         len = (int64_t)(length_of_header(vechdr(x))/CELL - 1);
         int nn = std::sprintf(buffer, "[%" PRId64 ":", (int64_t)len);
         simple_lineend(nn);
-        std::fprintf(stderr, "%s", buffer);
+        std::printf("%s", buffer);
         for (i=0; i<len; i++)
         {   simple_lineend(1);
-            std::fprintf(stderr, " ");
+            std::printf(" ");
             if (i > 2 && is_mixed_header(vechdr(x)))
             {   nn = std::sprintf(buffer, "%" PRIx64, (uint64_t)elt(x, i));
                 simple_lineend(nn);
-                std::fprintf(stderr, "%s", buffer);
+                std::printf("%s", buffer);
             }
-            else simple_print1(elt(x, i));
+            else simple_prin1(elt(x, i));
         }
         simple_lineend(1);
-        std::fprintf(stderr, "]");
+        std::printf("]");
         return;
     }
     else if (is_numbers(x) && is_bignum(x))
@@ -1438,7 +1440,7 @@ void simple_print1(LispObject x)
             if (i == len) clen = std::sprintf(buffer, "@#%d", d);
             else clen = std::sprintf(buffer, ":%u", d);
             simple_lineend(clen);
-            std::fprintf(stderr, "%s", buffer);
+            std::printf("%s", buffer);
         }
         return;
     }
@@ -1450,20 +1452,29 @@ void simple_print1(LispObject x)
 // the memory address the data lies at!
         int clen = std::sprintf(buffer, "@%" PRIx64 "@", (int64_t)x);
         simple_lineend(clen);
-        std::fprintf(stderr, "%s", buffer);
+        std::printf("%s", buffer);
         return;
     }
 }
 
+void simple_prin1(atomic<LispObject> x)
+{   simple_prin1(x.load());
+}
+
 void simple_print(LispObject x)
-{   simple_column = 0;
-    simple_print1(x);
+{   simple_prin1(x);
+    std::printf("\n");
+    simple_column = 0;
+}
+
+void simple_print(atomic<LispObject> x)
+{   simple_print(x.load());
 }
 
 void simple_msg(const char *s, LispObject x)
-{   std::fprintf(stderr, "%s", s);
+{   std::printf("%s", s);
     simple_print(x);
-    std::fprintf(stderr, "\n");
+    std::printf("\n");
 }
 
 setup_type const lisphash_setup[] =

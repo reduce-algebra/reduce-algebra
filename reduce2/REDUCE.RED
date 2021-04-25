@@ -1,0 +1,6035 @@
+SYSTEM!* := 'TENEX;
+
+%DATE OF LAST SYSTEM UPDATE;
+
+DATE!* := "25-MAR-73";
+
+%R E D U C E PREPROCESSOR FOR P D P 1 0;
+
+SYMBOLIC PROCEDURE NEWFORM U;
+   DEFLIST(U,'NEWFORM);
+
+SYMBOLIC PROCEDURE NEWNAM U;
+   DEFLIST(U,'NEWNAM);
+
+SYMBOLIC PROCEDURE DEFLIST(L,V);
+   IF NULL L THEN NIL
+    ELSE PROG2(PUTPROP(CAAR L,CADAR L,V),CAAR L) . DEFLIST(CDR L,V);
+
+NEWNAM ('(
+	(DIGIT NUMBERP)
+	(ERROR ERR)
+	(EXPLODE EXPLODEC)
+	(FLAGP GET)
+	(GETEL EVAL)
+	(GTS EVAL)
+	(NCONS NCONSX)
+	(REMOVE REMOVEX)
+	(STRINGP ATOM)
+	(!*APPLY APPLY)
+	(!*EVAL EVAL)
+	(!*!*DOLLAR (QUOTE !$))
+	(!*!*EOF (QUOTE !$EOF!$))
+	(!*!*ESC (QUOTE !#))
+	(!*!*FMARK (QUOTE !&))
+	(!*!*QMARK (QUOTE !'))
+	(!*!*XMARK (QUOTE !!))
+));
+
+NEWFORM ('(
+	(EQUAL (LAMBDA (U V)
+	  (COND ((AND (NUMBERP V) (LESSP (ABS V) 1000)) 
+		(LIST (QUOTE EQ) U V))
+	    (T (LIST (QUOTE EQUAL) U V)))))
+	(ERRORSET (LAMBDA (U V) (LIST (QUOTE ERRSET)
+		(LIST (QUOTE EVAL) U) V)))
+	(MAP (LAMBDA (U V) (LIST (QUOTE MAP) V U)))
+	(MAPLIST (LAMBDA (U V) (LIST (QUOTE MAPLIST) V U)))
+	(MAPCAR (LAMBDA (U V) (LIST (QUOTE MAPCAR) V U)))
+	(PTS (LAMBDA (U V) (LIST (QUOTE SET) U V)))
+	(PUT (LAMBDA (U V W) (LIST (QUOTE PUTPROP) U W V)))
+));
+
+SYMBOLIC PROCEDURE LOSE U;
+   BEGIN
+    A:	IF NULL U THEN RETURN NIL;
+	PUT(CAR U,'LOSE,T);
+	U := CDR U;
+	GO TO A
+   END;
+
+%The following definition does not allow for compilation of functions
+%during REDUCE execution;
+
+SYMBOLIC PROCEDURE PUTD(NAME,VARLIS,BODY,TYPE);
+   PUT(NAME,TYPE,LIST('LAMBDA,VARLIS,BODY));
+
+%LISTING OF SPECIAL VARIABLES;
+
+%THE FOLLOWING ARE EXTENDED VARIABLES IN REDUCE;
+
+SPECIAL (!*S!*,!*S1!*);
+
+%THE FOLLOWING VARIABLE IS USED AS A FUNCTIONAL ARGUMENT;
+
+SPECIAL !*PI!*;
+
+
+%STANDARD LISP FUNCTIONS NOT DEFINED IN LISP 1.6;
+
+SYMBOLIC PROCEDURE COMPRESS U;
+   IF NUMBERP CAR U THEN MAKNAM U ELSE READLIST U;
+
+SYMBOLIC PROCEDURE FLAG(U,V);
+   BEGIN
+    A:	IF NULL U THEN RETURN NIL;
+	PUT(CAR U,V,T);
+	U := CDR U;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE REMFLAG(U,V);
+   BEGIN
+    A:	IF NULL U THEN RETURN NIL;
+	REMPROP(CAR U,V);
+	U := CDR U;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE GETD U;
+   BEGIN SCALAR X;
+	X := GETL(U,'(EXPR FEXPR SUBR FSUBR LSUBR MACRO));
+	RETURN IF X AND NULL GET(U,'!*!*ARRAY) THEN CADR X
+	        ELSE NIL
+   END;
+
+SYMBOLIC PROCEDURE GLOBAL U;
+   BEGIN
+    A:	IF NULL U THEN RETURN NIL;
+	PUT(CAR U,'SPECIAL,T);
+	SET(CAR U,NIL);
+	U := CDR U;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE FIXP N;
+   NUMBERP N AND (N EQ 0 + N) OR NULL(CADR N EQ 'FLONUM);
+
+SYMBOLIC PROCEDURE /N;
+   QUOTIENT(1,N);
+
+SYMBOLIC PROCEDURE !*ARRAY U;
+   BEGIN
+    A:	IF NULL U THEN RETURN NIL;
+	EVAL('ARRAY . (CAAR U . (T . CDAR U)));
+	U := CDR U;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE SETEL(U,V);
+   EVAL LIST('STORE,U,LIST('QUOTE,V));
+
+LOSE '(ARLIST MKARRAY !*ARRAY EVAL GETEL1 SETEL);
+
+SYMBOLIC PROCEDURE OPEN(U,V);
+   BEGIN
+	 EVAL (V . (MKAT U . U));
+	 IF V EQ 'INPUT THEN IPL!* := U . IPL!*
+	  ELSE OPL!* := U . OPL!*;
+	 RETURN U
+   END;
+
+SYMBOLIC PROCEDURE RDS U;
+   IF NULL U THEN INC(NIL,NIL)
+    ELSE IF MEMBER(U,IPL!*) THEN INC(MKAT U,NIL)
+    ELSE REDERR ("RDS GIVEN CLOSED FILE" . U);
+
+SYMBOLIC PROCEDURE WRS U;
+   IF NULL U THEN OUTC(NIL,NIL)
+    ELSE IF MEMBER(U,OPL!*) THEN OUTC(MKAT U,NIL)
+    ELSE REDERR ("WRS GIVEN CLOSED FILE" . U);
+
+SYMBOLIC PROCEDURE CLOSE U;
+   IF NULL U THEN NIL
+    ELSE IF MEMBER(U,IPL!*)
+     THEN INC(IF NULL(U=IFL!*) THEN INC(MKAT U,NIL) ELSE NIL,T)
+    ELSE IF MEMBER(U,OPL!*)
+       THEN OUTC(IF NULL(U=OFL!*) THEN OUTC(MKAT U,NIL) ELSE NIL,T)
+    ELSE REDERR ("CLOSE GIVEN CLOSED FILE" . U);
+
+SYMBOLIC PROCEDURE MKAT U;
+   BEGIN SCALAR Z;
+	U := FLATTEN U;
+    A:	IF NULL U THEN RETURN COMPRESS Z;
+	Z := NCONC(DELETE('!:,EXPLODE CAR U),Z);
+	U := CDR U;
+	GO TO A
+   END;
+
+%REDUCE FUNCTIONS WITH SYSTEM DEPENDENT PROPERTIES;
+
+SYMBOLIC PROCEDURE TOKEN;
+   BEGIN SCALAR X;
+	 SCANSET();
+	TTYPE!* := X := SCAN();
+	SCANRESET();
+	RETURN IF X=0 THEN INTERN SCNVAL
+		ELSE IF X=1 THEN LIST('STRING,SCNVAL)
+		ELSE IF X=2 THEN SCNVAL 
+		ELSE IF SCNVAL = 39 THEN LIST('QUOTE,RREAD())
+		ELSE INTERN ASCII SCNVAL
+   END;
+
+SYMBOLIC PROCEDURE DELCP U;
+   MEMBER(U,'(!; !$ !b	 ));
+
+SYMBOLIC PROCEDURE LITER X;
+   NULL NUMBERP X AND
+   (X := LSH (MAKNUM(CAAR GET(X,'PNAME),'FIXNUM),-11))>64
+    AND 91>X;
+
+SYMBOLIC PROCEDURE MKVAR(U,V);
+   U;
+
+%SYMBOLIC PROCEDURE READCH!*;
+%   (LAMBDA X; IF X MEMBER '(10 11 12 13) THEN READCH!*()
+%		ELSE IF X>47 AND X<58 THEN X-48 
+%		ELSE INTERN ASCII X)
+%	TYI();
+
+%NEWNAM '((READCH READCH!*));
+
+%SYMBOLIC PROCEDURE MKSTRING U;
+%   MAKNAM MAPCON(U,FUNCTION (LAMBDA J; LIST ('!!,CAR J)));
+
+%SYMBOLIC PROCEDURE SEPRP U;
+%   U MEMBER '(!  !	 );
+
+
+LOSE '(TOKEN);
+
+NEWNAM '((SCAN SCAN!*));
+
+SYMBOLIC PROCEDURE OUTDEF(NAME,VARLIS,BODY,TYPE);
+   BEGIN
+	TERPRI();
+	PRINC "(DEFPROP ";
+	PRINC NAME;
+	PRINC " ";
+	TERPRI();
+	SPRINT(LIST('LAMBDA,VARLIS,BODY),2,0);
+	PRINC " ";
+	TERPRI();
+	SPRINT(TYPE,1,1);
+	PRINC ")";
+	TERPRI()
+   END;
+
+SYMBOLIC PROCEDURE DFPRINT U;
+   BEGIN SPRINT(U,2,0); TERPRI(); TERPRI() END;
+
+PUT('DEFN,'SIMPFG,'((T (ED T))));
+
+%REDUCE FUNCTIONS HANDLING IO;
+
+SYMBOLIC PROCEDURE INOUT(U,V);
+   BEGIN SCALAR DEV,FL,!*S!*,!*S1!*;
+	DEV := 'DSK!:;
+	ECHOL!* := !*ECHO;
+    A:  IF NULL U THEN GO TO D ELSE IF NULL DEVP CAR U THEN GO TO B;
+	DEV := CAR U;
+	U := CDR U;
+	GO TO A;
+    B:  IF V EQ 'OUTPUT THEN GO TO C;
+	FL := LIST(DEV,MKFIL CAR U);
+	IF MEMBER(FL,IPL!*) THEN GO TO B1;
+	OPEN(FL,V);
+    B1: RDS (IFL!* := FL);
+	IF NULL ATOM CADR FL AND MEMBER(CDADR FL,'(LSP LAP SL))
+	 THEN GO TO L;
+	!*ECHO := IECHO!*;
+	BEGIN1();
+    B2:	U := CDR U;
+	GO TO A;
+    C:  IF (CAR U EQ 'L) OR (DEV EQ 'LPT!:) THEN FL := '(LPT!:)
+	 ELSE IF CAR U EQ 'T THEN GO TO E
+	 ELSE FL := LIST(DEV,MKFIL CAR U);
+	IF MEMBER(FL,OPL!*) THEN GO TO C1;
+	OPEN(FL,V);
+    C1: WRS (OFL!* := FL);
+	LINELENGTH 68;
+    D:  IF V EQ 'INPUT THEN REFG();
+	RETURN NIL;
+    E:  OFL!* := NIL;
+	WRS NIL;
+	RETURN NIL;
+    L:	IF CDADR FL EQ 'LAP THEN IBASE := 8;
+    L1:	IF CDADR FL EQ 'SL THEN GO TO SL;
+	!*S!* := ERRSET(READ(),T);
+	IF ATOM !*S!* OR CDR !*S!* THEN GO TO L2;
+	!*S!* := CAR !*S!*;
+    L11:IF !*DEFN THEN GO TO L3;
+	!*S!* := ERRSET(EVAL !*S!*,T);
+	IF ATOM !*S!* OR CDR !*S!* THEN GO TO L2;
+	PRINT CAR !*S!*;
+	TERPRI();
+	GO TO L1;
+    L2:	IBASE := 10;
+	ENDIFL FL;
+	IF !*S!* EQ !*!*EOF THEN GO TO B2
+	 ELSE REDERR "ERROR TERMINATION";
+   L3:	DFPRINT !*S!*;
+	GO TO L1;
+    SL:	!*S!* := ERRSET(READ(),T);
+	IF ATOM !*S!* OR CDR !*S!* THEN GO TO L2;
+	!*S1!* := ERRSET(READ(),T);
+	IF ATOM !*S1!* OR CDR !*S1!* THEN GO TO L2;
+	IF CAR !*S!* EQ 'DEFINE THEN !*S!* := LIST('DEFINE!*,MKQUOTE 
+	 MAPCAR(CAAR !*S1!*,FUNCTION REFORM))
+	 ELSE !*S!* := REFORM(CAR !*S!* 
+			. MAPCAR(CAR !*S1!*,FUNCTION (LAMBDA J;
+						 MKQUOTE REFORM J)));
+	GO TO L11
+   END;
+
+SYMBOLIC PROCEDURE REFORM U;
+   IF ATOM U THEN IF NUMBERP U THEN U 
+	           ELSE (LAMBDA X; IF X THEN REFORM X ELSE U)
+		        GET(U,'NEWNAM)
+    ELSE IF CAR U EQ 'QUOTE THEN U
+   ELSE IF CAR U EQ 'COND THEN 'COND . MAPCAR(CDR U,
+	FUNCTION (LAMBDA J; LIST(REFORM CAR J,REFORM CADR J)))
+   ELSE IF CAR U EQ 'PROG THEN PROG2(RPLACD(CDR U,MAPCAR(CDDR U,FUNCTION REFORM)),U)
+    ELSE IF CAR U EQ 'LAMBDA THEN PROG2(RPLACA(CDDR U,REFORM CADDR U),U)
+   ELSE MKFORM(CAR U,MAPCAR(CDR U,FUNCTION REFORM));
+
+
+SYMBOLIC PROCEDURE SHUT U;
+   BEGIN SCALAR X;
+    A:  IF NULL U THEN RETURN NIL
+	ELSE IF DEVP CAR U THEN GO TO D
+	ELSE IF CAR U EQ 'L THEN X := '(LPT!:)
+	ELSE X := LIST('DSK!:,MKFIL CAR U);
+    A1: IF MEMBER(X,OPL!*) THEN GO TO B
+	 ELSE IF NULL MEMBER(X,IPL!*)
+	  THEN REDERR LIST(X,"NOT OPEN");
+	ENDIFL X;
+	GO TO C;
+    B:  CLOSE X;
+	OPL!* := DELETE(X,OPL!*);
+	IF NULL(X=OFL!*) THEN GO TO C;
+	OFL!* := NIL;
+	WRS NIL;
+    C:  U := CDR U;
+	GO TO A;
+    D:  IF NULL CDR U OR CDDR U THEN GO TO ERR;
+	X := LIST(CAR U,CADR U);
+	U := CDR U;
+	GO TO A1;
+    ERR:REDERR LIST("CLOSE FORMAT",U)
+   END;
+
+SYMBOLIC PROCEDURE DEVP U;
+   IF ATOM U THEN CAR REVERSE EXPLODE U EQ '!: ELSE NULL(CAR U EQ 'CONS);
+
+SYMBOLIC PROCEDURE MKFIL U;
+   IF ATOM U THEN U
+    ELSE IF NUMBERP CAR U THEN U
+    ELSE IF CAR U EQ 'CONS THEN CADR U . CADDR U
+    ELSE REDERR "FILE FORMAT" ;
+
+OPL!* := NIL;
+
+LOSE '(INOUT SHUT);
+
+
+%REDUCE FUNCTIONS HANDLING INTERACTIVE FEATURES;
+
+SYMBOLIC PROCEDURE PAUSE;
+   BEGIN 
+	IF NULL IFL!* THEN RETURN NIL
+	 ELSE IF NULL ERFG!* OR NULL CLOC!* THEN GO TO C
+	 ELSE IF YESP 'EDIT!? THEN GO TO A
+	 ELSE IF NULL FLG!* THEN GO TO C;
+	FLG!* := SOS!* := NIL;
+	!*APPLY('SHUT,LIST IFL!*);
+	RETURN NIL;
+    A:	CONTL!* := NIL;
+	IF NULL OFL!* THEN GO TO B;
+	LPRIM LIST(OFL!*,"SHUT");
+	!*APPLY('SHUT,LIST OFL!*);
+    B:	RETURN EDIT1(CLOC!*,NIL);
+    C:   IF YESP 'CONT!? THEN RETURN NIL;
+	REFG();
+	CONTL!* := IFL!* . CONTL!*;
+	IFL!* := NIL;
+	IPL!* := CDR IPL!*;
+	RDS NIL;
+	IF ERFG!* THEN RETURN 'NO
+   END;
+
+SYMBOLIC PROCEDURE YESP U;
+   BEGIN SCALAR X,Y;
+	IF IFL!* THEN RDS NIL;
+	IF OFL!* THEN WRS NIL;
+	IF ATOM U THEN PRINC U ELSE LPRI U;
+	TERPRI();
+    A:  X := READ();
+	TERPRI();
+	IF (X EQ 'Y AND (Y := T)) OR X EQ 'N THEN GO TO B;
+	PRINC "TYPE Y OR N";
+	GO TO A;
+    B:  IF OFL!* THEN WRS OFL!*;
+	IF IFL!* THEN RDS IFL!*;
+	CURSYM!* := '!*SEMICOL!*;
+	RETURN Y
+   END;
+
+SYMBOLIC PROCEDURE CONT;
+   BEGIN
+	IF NULL CONTL!* THEN REDERR "NO FILE OPEN";
+	REFG();
+	IFL!* := CAR CONTL!*;
+	CONTL!* := CDR CONTL!*;
+	IPL!* := IFL!* . IPL!*;
+	RDS IFL!*;
+	BEGIN1()
+   END;
+
+FLAG ('(CONT),'IGNORE);
+
+SYMBOLIC PROCEDURE PRINTTY U;
+   BEGIN
+	IF NULL !*FORT AND !*NAT THEN PRINT U;
+	IF NULL OFL!* THEN RETURN NIL;
+	OUTC(NIL,NIL);
+	PRINT U;
+	OUTC(MKAT OFL!*,T)
+   END;
+
+SYMBOLIC PROCEDURE REDMSG1(U,V);
+   YESP LIST('DECLARE,U,V,"? (Y/N)");
+
+DEFLIST ('((PAUSE ENDSTAT) (CONT ENDSTAT)),'STAT);
+
+ECHOL!* := NIL;
+
+%FUNCTIONS FOR TIMING EXECUTION;
+
+SYMBOLIC PROCEDURE STIME U;
+   BEGIN SCALAR X;
+	X := GTS U;
+	PTS(U,!*EVAL '(TIME NIL));
+	TERPRI();
+	PRINC !*DIF(GTS U,X);
+	PRINC " ";
+	PRINC 'MS;
+	TERPRI()
+   END;
+
+SYMBOLIC PROCEDURE TIMSTAT;
+   PROG2(SCAN!*(),'(STIME (QUOTE TIME2!*)));
+
+DEFLIST ('((TIME TIMSTAT)),'STAT);
+
+FLAG ('(STIME),'DIRECT);
+
+%INTRODUCTION OF SPECIAL CHARACTER STRINGS;
+
+SWITCH!* := '(
+	(!$ NIL !*SEMICOL!* NIL)
+	(125 NIL !*SEMICOL!* NIL)
+	(!; NIL !*SEMICOL!* NIL)
+	(!+ NIL PLUS NIL ! !+! )
+	(!- NIL DIFFERENCE NIL ! !-! )
+	(!* !* TIMES EXPT)
+	(!/ NIL QUOTIENT NIL)
+	(!= NIL EQUAL NIL)
+	(!, NIL !*COMMA!* NIL)
+	(!( NIL !*LPAR!* NIL)
+	(!) NIL !*RPAR!* NIL)
+	(!: != !*COLON!* SETQ NIL ! !:!=! )
+	(!. NIL CONS NIL)
+	(!< != LESSP LEQ)
+	(!> != GREATERP GEQ)
+);
+
+%CHARACTERS PECULIAR TO THE PDP-10 IMPLEMENTATION;
+
+NEWNAM '(
+	(!b EXPT)
+	(!b SETQ)
+);
+
+BEGIN SCALAR X;
+	X := SWITCH!*;
+    A:	IF NULL X THEN RETURN NIL
+	 ELSE IF NUMBERP CAAR X THEN RPLACA(CAR X,INTERN ASCII CAAR X);
+	X := CDR X;
+	GO TO A
+   END;
+
+
+
+%FUNCTION DEFINITIONS TO BE 'LOST';
+
+LOSE '(ABS ASSOC SIMPGTS);
+
+%DEFINITION OF BEGIN;
+
+SYMBOLIC PROCEDURE BEGIN;
+   BEGIN
+	TIME1!* := TIME2!* := !*EVAL '(TIME NIL);
+	!*INT := T;
+	!*ECHO := NIL;
+	CONTL!* :=  IFL!* := IPL!* := OFL!* := OPL!* := NIL;
+	IF DATE!* EQ NIL THEN GO TO A;
+	PRINC "REDUCE 2 (";
+	PRINC DATE!*;
+	PRINC ") ...";
+	TERPRI();
+	DATE!* := NIL;
+	IF SYSTEM!* NEQ 'TENEX THEN GO TO A;
+	PRINC "FOR HELP, TYPE HELP<ALTMODE>";
+	TERPRI();
+  A:	!*MODE := IMODE!*;
+	CRCHAR!* := '! ;
+	BEGIN1();
+	PRINC "ENTERING LISP...";
+	TERPRI()
+   END;
+
+%DEFINITION OF INITL;
+
+DEFLIST ('(
+(INITL (LAMBDA NIL
+ (PROG (X)
+	(GETSYM SUBR SCANINIT LETTER IGNORE SCAN SCANSET SCANRESET)
+	(SCANINIT 37 13 34 34 33)
+	(MAPCAR (FUNCTION IGNORE) IGLIST!*)
+	(SETQ KLIST NIL)
+	(SETQ BASE (SETQ IBASE 10))
+	(SETQ LLENGTH!* 67)
+	(SETQ !*NOPOINT T)
+	(DDTIN NIL)
+	(NOUUO NIL)
+	(BAKGAG NIL)
+	(SETQ IECHO!* T)
+	(SETQ IMODE!* (QUOTE ALGEBRAIC))
+	(REMPROP (QUOTE DF) (QUOTE FEXPR))
+	(OUTC NIL T)
+	(REMPROP (QUOTE INITL) (QUOTE EXPR))
+	(COND ((GETD (QUOTE APNINIT)) (APNINIT)))
+	(COND ((GETD (QUOTE MODINIT)) (MODINIT)))
+	(COND ((GETD (QUOTE INITFN)) (INITFN (QUOTE BEGIN))))
+	(EXCISE))))
+
+), 'EXPR);
+
+IGLIST!* := '(9 10 12 13 31 32);
+
+DEFLIST ('((RETRY ENDSTAT)),'STAT);
+
+SCNVAL := NIL;
+
+PUTSYM SCNVAL GET('SCNVAL,'VALUE);
+
+%Definition of ORDERP in LAP;
+
+PUT('!*!*NULL,'NEWNAM,ASCII 0);
+
+LAP(ORDERP,SUBR);
+!*!*NULL(104960,1,2);
+!*!*NULL(112640,1,C 0);
+MOVEI(1,'T);
+POPJ P;
+NIL;
+
+
+%END OF   P D P   R E D U C E PREPROCESSOR;
+
+%*********************************************************************
+%*********************************************************************
+%*********************************************************************
+%*********************************************************************
+
+%			R   E	D   U	C   E
+
+%	    A	SYSTEM   FOR	ALGEBRAIC    MANIPULATION
+
+%*********************************************************************
+%*********************************************************************
+%*********************************************************************
+%********************************************************************;
+
+%                                 by
+
+%                          Anthony C. Hearn
+
+%                         University of Utah
+
+%*********************************************************************
+%*********************************************************************
+
+%	REDUCE   is   a   program   designed  for  general   algebraic
+%computations of interest to mathematicians, physicists and engineers.
+%It  is  defined here in its own language, which is general enough for
+%the complete definition of any LISP-like calculation.
+
+%	This program and description are divided into three parts. In
+%the  first,  the  translator from REDUCE to the intermediate language
+%LISP is defined. This  section  is  self-contained  and  may  be  run
+%independent  of  the  remainder  of  the  program. The second section
+%defines the basic algebraic evaluator and its  associated  functions.
+%The  procedures in this section call each other in a non-modular way,
+%and should therefore be run intact. Finally, in  the  third  section,
+%various  modules which supplement the main program are defined. These
+%modules may be run independently of each other except where noted.
+
+%	This program is  preceded  by  a  small  LISP  program  which
+%initiates  the  boot-strapping  of  the  translator. In addition, the
+%system expects a Standard LISP system for support plus a  few  REDUCE
+%functions  which are system dependent, so that a preprocessor is also
+%necessary.
+
+%	The numbers which precede various sub-section titles refer to
+%the  sections  in  the  REDUCE  User's  Manual  where these items are
+%defined;
+
+
+%*********************************************************************
+%*********************************************************************
+%*********************************************************************
+
+%                              SECTION 1
+
+%                  THE    R E D U C E    TRANSLATOR
+
+%*********************************************************************
+%*********************************************************************
+%********************************************************************;
+
+
+SYMBOLIC;  %This program is defined in symbolic mode;
+
+
+%*********************************************************************
+%                GLOBAL VARIABLES USED IN TRANSLATOR
+%********************************************************************;
+
+%	 There are two classes of global variables used in  this  part
+%of  REDUCE.   The  first class are those which must be initialized at
+%the top level of the program. These are as follows;
+
+BLOCKP!* := NIL;	%keeps track of which block is active;
+DEFL!* := '((!*!*ARRAY . ARRAY));
+			%list of variable type indicators and names;
+ERFG!* := NIL;		%indicates that an input error has occurred;
+INITL!* := '(BLOCKP!* ERFG!* OUTL!* VARS!*);
+			%list of variables initialized in BEGIN1;
+LETL!* := NIL;		%used in algebraic mode for special delimiters;
+MATP!*:=NIL;		%used to indicate that a matrix expression has
+			%been read;
+OUTL!* := NIL;		%storage for output of input line;
+PRECLIS!*:= '(OR AND NOT MEMBER EQUAL NEQ EQ GEQ GREATERP LEQ
+	      LESSP PLUS DIFFERENCE TIMES QUOTIENT EXPT CONS);
+			%precedence list of infix operators;
+TTYPE!* := NIL;		%current token type;
+TYPE!* := NIL;		%passes procedural type in procedure defined by
+			%an assignment statement;
+VARS!* := NIL;		%list of current bound variables during parse;
+!*DEFN:=NIL;		%indicates that LISP code should be output;
+!*ECHO := NIL;		%indicates echoing of input;
+!*MSG:=NIL;		%flag to indicate whether messages should be
+			%printed;
+!*NAT := NIL;		%used in algebraic mode to denote 'natural'
+			%output. Must be on in symbolic mode to
+			%ensure input echoing;
+
+%	 The  second  class  are  those  global  variables  which  are
+%initialized within some function, although they do not appear in that
+%function's variable list.  These are;
+
+% CRCHAR!*		next character in input line
+% CURSYM!*		current symbol (i. e. identifier, parenthesis,
+%			delimiter, e.t.c,) in input line
+% IFL!*			input file name- set in BEGIN to NIL
+% IPL!*			input file list- set in BEGIN to NIL
+% KEY!*			stores first word read in command - set in 
+			%COMMAND
+% KEY1!*		current key-word being analyzed - set in RLIS1;
+% OFL!*			output file name- set in BEGIN to NIL
+% OPL!*			output file list- set in BEGIN to NIL
+% PROGRAM!*		current input program
+% PROGRAML!*		stores input program when error occurs for a 
+%			later restart
+% SEMIC!*		current delimiter character (used to decide
+%			whether to print result of calculation)
+% TMODE!*		holds current mode during temporary change;
+% *ANS			used in algebraic mode to store top level
+%			value
+% *FORT			used in algebraic mode to denote FORTRAN
+%			output
+% !*MODE		current mode of calculation
+% !*INT  		indicates interactive system use;
+
+
+%*********************************************************************
+%                       2.10.4 GO TO STATEMENT
+%********************************************************************;
+
+%	 It is necessary to introduce the  GO  TO  statement  at  this
+%point  as  part of the boot-strapping process.  A general description
+%of the method of statement implementation is given later;
+
+SYMBOLIC PROCEDURE GOSTAT;
+   BEGIN SCALAR VAR;
+	VAR := IF SCAN() EQ 'TO THEN SCAN() ELSE CURSYM!*;
+	SCAN();
+	RETURN LIST('GO,VAR)
+   END;
+
+PUT('GO,'STAT,'GOSTAT);
+
+NEWNAM '((GOTO GO));
+
+
+%*********************************************************************
+%                2.5 INITIALIZATION OF INFIX OPERATORS
+%********************************************************************;
+
+%	 Several operators in REDUCE are used in an infix form  (e.g.,
+%+,-   ).  The  internal  alphanumeric  names  associated  with  these
+%operators are contained in  the  global  variable  SWITCH*  which  is
+%defined  in  the  system  dependent  section  of  this  program. This
+%association, and the precedence of each infix  operator,  is  set  in
+%this section.  We  also  associate  printing  characters  with  each
+%internal alphameric name as well;
+
+DEFLIST ('(
+   (NOT NOT)
+   (PLUS PLUS)
+   (DIFFERENCE MINUS)
+   (MINUS MINUS)
+   (TIMES TIMES)
+   (QUOTIENT RECIP)
+   (RECIP RECIP)
+ ), 'UNARY);
+
+FLAG ('(AND OR PLUS TIMES EQUAL !*COMMA!*),'NARY);
+
+FLAG ('(CONS SETQ),'RIGHT);
+
+DEFLIST ('((MINUS PLUS) (RECIP TIMES)),'ALT);
+
+SYMBOLIC PROCEDURE MKPREC;
+   BEGIN SCALAR X,Y,Z;
+	X := '!*COMMA!* . 'SETQ . PRECLIS!*;
+	Y := 1;
+    A:  IF NULL X THEN RETURN NIL;
+	PUT(CAR X,'INFIX,Y);
+	IF Z := GET(CAR X,'UNARY) THEN PUT(Z,'INFIX,Y);
+	X := CDR X;
+	Y := Y+1;
+	GO TO A
+   END;
+
+BEGIN SCALAR W,X,Y,Z;
+	MKPREC();
+	X := SWITCH!*;
+    A:	IF NULL X THEN RETURN NIL;
+	W := CDAR X;
+	PUT(CAAR X,'SWITCH!*,W);
+	Y := LIST(CAAR X,CAAR X);
+	PUT(CADR W,'PRTCH,Y);
+	IF Z := GET(CADR W,'UNARY) THEN PUT(Z,'PRTCH,Y);
+	IF NULL CAR (Y := CDDR W) THEN GO TO B;
+	Z := COMPRESS LIST(CAAR X,CAR W);
+	PUT(CAR Y,'PRTCH,LIST(Z,Z));
+    B:	IF NULL CDR Y THEN GO TO C
+	 ELSE IF CADR Y THEN RPLACA(GET(CADR W,'PRTCH),CADR Y);
+	IF CDDR Y THEN RPLACA(GET(CAR Y,'PRTCH),CADDR Y);
+    C:	X := CDR X;
+	GO TO A
+ END;
+
+
+%*********************************************************************
+%                          REDUCE SUPERVISOR
+%********************************************************************;
+
+%      The true REDUCE supervisory function is BEGIN, again defined in
+%the system dependent part of this program.  However, most of the work
+%is  done  by  BEGIN1,  which  is  called  by  BEGIN  for  every  file
+%encountered on input;
+
+SYMBOLIC PROCEDURE TERPRIX;
+   BEGIN
+	IF !*DEFN OR NULL (!*ECHO AND !*NAT OR ERFG!*) THEN GO TO A;
+	MAPCAR(REVERSE OUTL!*,FUNCTION PRINC);
+	TERPRI();
+  A:	OUTL!*:=NIL
+   END;
+
+SYMBOLIC PROCEDURE DELETE(U,V);
+   IF NULL V THEN NIL
+    ELSE IF U=CAR V THEN CDR V
+    ELSE CAR V . DELETE(U,CDR V);
+
+SYMBOLIC PROCEDURE FLAGP!*!*(U,V);
+   ATOM U AND NULL NUMBERP U AND FLAGP(U,V);
+
+SYMBOLIC PROCEDURE BEGIN1;
+   BEGIN SCALAR RESULT;
+	CURSYM!* := '!*SEMICOL!* ;
+    A:	IF !*ECHO AND !*NAT 
+	 	OR !*INT AND NULL IFL!* AND NULL OFL!*
+	  THEN TERPRI();
+	IF !*TEST THEN STIME 'TIME2!*;
+	IF TMODE!* AND (!*MODE := TMODE!*) THEN TMODE!* := NIL;
+	MAPCAR(INITL!*,FUNCTION SINITL);
+	IF CURSYM!* EQ 'END THEN GO TO ND0;
+	PROGRAM!* := ERRORSET('(COMMAND),T);
+	IF ATOM PROGRAM!* OR CDR PROGRAM!* THEN GO TO ERR1;
+	PROGRAM!* := CAR PROGRAM!*;
+	IF EQCAR(PROGRAM!*,'!*COMMA!*) THEN GO TO ER
+	 ELSE IF CURSYM!* EQ 'END THEN GO TO ND0;
+	PROGRAM!* := IF EQCAR(PROGRAM!*,'RETRY) THEN PROGRAML!*
+		     ELSE MKEX PROGRAM!*;
+	IF !*DEFN THEN GO TO D;
+    B:  TERPRIX();
+	RESULT := ERRORSET(GTS 'PROGRAM!*,T);
+	IF ATOM RESULT OR CDR RESULT OR ERFG!* THEN GO TO ERR2
+	 ELSE IF !*DEFN THEN GO TO A;
+	RESULT := CAR RESULT;
+	IF SEMIC!* EQ '!;
+	  THEN IF !*MODE EQ 'SYMBOLIC THEN PROG2(PRINT RESULT,TERPRI())
+	 ELSE IF RESULT THEN PROG2(TERPRI!* T,
+				   VARPRI(RESULT,ASSGNL PROGRAM!*,T))
+	 ELSE NIL;
+	IF !*MODE NEQ 'SYMBOLIC AND RESULT THEN !*ANS := RESULT;
+	GO TO A;
+    D:	IF FLAGP!*!*(KEY!*,'IGNORE) OR EQCAR(PROGRAM!*,'QUOTE)
+	  THEN GO TO B;
+	DFPRINT PROGRAM!*;
+	IF FLAGP!*!*(KEY!*,'EVAL) THEN GO TO B;
+	GO TO A;
+    ND0:COMM1 'END;
+	TERPRIX();
+    ND1:RETURN ENDIFL IFL!*;
+    ERR1:
+	IF PROGRAM!* EQ !*!*ESC AND LIST TOKEN() THEN GO TO A
+	 ELSE IF NULL(PROGRAM!* EQ !*!*EOF) THEN GO TO ERR3;
+	GO TO ND1;
+    ER: LPRIE IF NULL ATOM CADR PROGRAM!*
+		  THEN LIST(CAADR PROGRAM!*,"UNDEFINED")
+		 ELSE "SYNTAX ERROR";
+	GO TO ERR3;
+    ERR2:
+	PROGRAML!* := PROGRAM!*;
+    ERR3:
+	COMM1 T;
+	IF NULL ERFG!* OR ERFG!* EQ 'HOLD
+	 THEN LPRIE "ERROR TERMINATION *****";
+	ERFG!* := T;
+	IF !*INT AND !*EVAL LIST 'PAUSE EQ 'NO THEN RETURN NIL;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE ENDIFL U;
+   BEGIN
+	IF U THEN GO TO A;
+	MAPCAR(APPEND(IPL!*,OPL!*),FUNCTION CLOSE);
+	IPL!* := OPL!* := OFL!* :=  NIL;
+	RETURN NIL;
+    A:	CLOSE U;
+	IPL!*:=DELETE(U,IPL!*);
+	IF IFL!* THEN RDS(IFL!*:=IF IPL!* THEN CAR IPL!* ELSE NIL)
+   END;
+
+SYMBOLIC PROCEDURE ASSGNL U;
+   IF ATOM U OR NULL (CAR U MEMBER '(PTS SETK SETQ)) THEN NIL
+    ELSE IF ATOM CADR U THEN MKQUOTE CADR U . ASSGNL CADDR U
+    ELSE CADR U . ASSGNL CADDR U;
+
+SYMBOLIC PROCEDURE SINITL U;
+   PTS(U,GET(U,'INITL));
+
+FLAG ('(IN OUT ON OFF SHUT),'IGNORE);
+
+
+%*********************************************************************
+%              IDENTIFIER AND RESERVED CHARACTER READING
+%********************************************************************;
+
+%	 The   function  TOKEN  defined  below  is  used  for  reading
+%identifiers and reserved characters (such as  parentheses  and  infix
+%operators).   It  is  called  by the function SCAN,  which translates
+%reserved characters into their internal name, and sets up the  output
+%of  the  input line.  The following definitions of TOKEN and SCAN are
+%quite general, but also inefficient.   THE READING PROCESS CAN  OFTEN
+%BE  SPEEDED  UP  BY  A  FACTOR  OF AS MUCH AS FIVE IF THESE FUNCTIONS
+%(ESPECIALLY TOKEN) ARE CODED IN ASSEMBLY LANGUAGE;
+
+SYMBOLIC PROCEDURE PRINCX U;
+  OUTL!*:=U . OUTL!*;
+
+SYMBOLIC PROCEDURE TOKEN;
+   BEGIN SCALAR X,Y,Z;
+	X := CRCHAR!*;
+    A:	IF SEPRP X THEN GO TO SEPR
+	 ELSE IF DIGIT X THEN GO TO NUMBER
+	 ELSE IF LITER X THEN GO TO LETTER
+	 ELSE IF X EQ !*!*XMARK THEN GO TO ESCAPE
+	 ELSE IF X EQ !*!*QMARK THEN GO TO QUOTE
+	 ELSE IF X EQ !*!*SMARK THEN GO TO STRING;
+	TTYPE!* := 3;
+	IF DELCP X THEN GO TO D;
+	NXTSYM!* := X;
+    A1:	CRCHAR!* := READCH();
+	GO TO C;
+    ESCAPE: 
+	X := READCH();
+    LETTER:
+	TTYPE!* := 0;
+    LET1:
+	Y := X . Y;
+	IF DIGIT (X := READCH()) OR LITER X THEN GO TO LET1
+	 ELSE IF X EQ !*!*XMARK THEN GO TO ESCAPE;
+    B:	NXTSYM!* := COMPRESS REVERSE Y;
+	CRCHAR!* := X;
+    C:	RETURN NXTSYM!*;
+    NUMBER:	
+	TTYPE!* := 2;
+    NUM1:
+	Y := X . Y;
+	Z := X;
+	IF DIGIT (X := READCH()) 
+	   OR X EQ '!.
+	   OR X EQ 'E
+	   OR Z EQ 'E
+	  THEN GO TO NUM1
+	 ELSE GO TO B;
+    QUOTE:
+	CRCHAR!* := READCH();
+	NXTSYM!* := MKQUOTE RREAD();
+	TTYPE!* := 4;
+	GO TO C;
+    STRING:
+	IF (X := READCH()) EQ !*!*SMARK THEN GO TO S1;
+	Y := X . Y;
+	GO TO STRING;
+    S1:	NXTSYM!* := LIST('STRING,MKSTRING REVERSE Y);
+	TTYPE!* := 1;
+	GO TO A1;
+    SEPR:
+	X := READCH();
+	GO TO A;
+    D:	NXTSYM!* := X;
+	CRCHAR!* := '! ;
+	GO TO C
+   END;
+
+SYMBOLIC PROCEDURE MKQUOTE U;
+   LIST('QUOTE,U);
+
+SYMBOLIC PROCEDURE PTOKEN;
+   BEGIN SCALAR X;
+	X := TOKEN();
+	PRINCX X;
+	IF NULL (X EQ '!() OR NULL (X EQ '!)) THEN PRINCX " ";
+	RETURN X
+   END;
+
+SYMBOLIC PROCEDURE RREAD1;
+   BEGIN SCALAR X,Y;
+	X := PTOKEN();
+	IF NULL (TTYPE!*=3) THEN RETURN X
+	 ELSE IF X EQ '!( THEN RETURN RRDLS()
+	 ELSE IF NULL (X EQ '!+ OR X EQ '!-) THEN RETURN X;
+	Y := PTOKEN();
+	IF NULL NUMBERP Y 
+	  THEN PROG2(NXTSYM!* := " ",SYMERR("SYNTAX ERROR",NIL))
+	 ELSE IF X EQ '!- THEN Y := !*APPLY('MINUS,LIST Y);
+	RETURN Y
+   END;
+
+SYMBOLIC PROCEDURE RRDLS;
+   BEGIN SCALAR X,Y;
+	X := RREAD1();
+	IF NULL (TTYPE!*=3) THEN GO TO A
+	 ELSE IF X EQ '!) THEN RETURN NIL
+	 ELSE IF NULL (X EQ '!.) THEN GO TO A;
+	X := RREAD1();
+	Y := PTOKEN();
+	IF NULL (TTYPE!*=3) OR NULL (Y EQ '!))
+	  THEN PROG2(NXTSYM!* := " ",SYMERR("DOT CONTEXT ERROR",NIL))
+	 ELSE RETURN X;
+    A:	RETURN (X . RRDLS())
+   END;
+
+SYMBOLIC PROCEDURE RREAD;
+   PROG2(PRINCX " '",RREAD1());
+
+SYMBOLIC PROCEDURE SCAN;
+   BEGIN SCALAR X;
+	IF NULL (CURSYM!* EQ '!*SEMICOL!*) THEN GO TO B;
+    A:	TERPRIX();
+	NXTSYM!* := TOKEN();
+  B:	IF NULL ATOM NXTSYM!* THEN GO TO Q1
+	 ELSE IF NXTSYM!* EQ 'ELSE THEN TERPRIX();
+	PRINCX NXTSYM!*;
+    C:	IF NUMBERP NXTSYM!* THEN GO TO L
+	 ELSE IF (X:=GET(NXTSYM!*,'NEWNAM)) AND (NXTSYM!*:=X) 
+	  THEN GO TO C
+	 ELSE IF NXTSYM!* EQ 'COMMENT THEN GO TO COMM
+	 ELSE IF NXTSYM!* EQ !*!*ESC THEN ERROR !*!*ESC
+	 ELSE IF NULL(TTYPE!* = 3) THEN GO TO L
+	 ELSE IF NXTSYM!* EQ !*!*QMARK THEN GO TO QUOTE
+	 ELSE IF NULL (X:= GET(NXTSYM!*,'SWITCH!*)) THEN GO TO L
+	 ELSE IF CADR X EQ '!*SEMICOL!* THEN GO TO DELIM;
+	NXTSYM!* := TOKEN();
+	IF CAR X AND NXTSYM!* EQ CAR X THEN GO TO SW1
+	 ELSE CURSYM!*:=CADR X;
+	IF CURSYM!* EQ '!*RPAR!* THEN GO TO L2
+	 ELSE RETURN CURSYM!*;
+  SW1:  PRINCX NXTSYM!*;
+	CURSYM!*:=CADDR X;
+	NXTSYM!* := TOKEN();
+	RETURN CURSYM!*;
+  COMM: PRINCX CRCHAR!*;
+	IF DELCP CRCHAR!* THEN GO TO COM1;
+	CRCHAR!* := READCH();
+	GO TO COMM;
+ COM1:	CRCHAR!* := '! ;
+	TERPRIX();
+	GO TO A;
+  DELIM:
+	SEMIC!*:=NXTSYM!*;
+	RETURN (CURSYM!*:='!*SEMICOL!*);
+  QUOTE:
+	NXTSYM!* := MKQUOTE RREAD();
+	GO TO L;
+    Q1:	IF NULL (CAR NXTSYM!* EQ 'STRING) THEN GO TO L;
+	PRINCX " ";
+	PRINCX CADR(NXTSYM!* := 'QUOTE . CDR NXTSYM!*);
+  L:	CURSYM!*:=NXTSYM!*;
+  L1:	NXTSYM!* := TOKEN();
+  L2:	IF NUMBERP NXTSYM!* 
+	   OR (ATOM NXTSYM!* AND NULL GET(NXTSYM!*,'SWITCH!*))
+	  THEN PRINCX " ";
+	RETURN CURSYM!*
+   END;
+
+
+%*********************************************************************
+%                         EXPRESSION READING
+%********************************************************************;
+
+%	 The conversion of a REDUCE expression to LISP prefix form  is
+%carried  out  by  the  function  XREAD.   This function initiates the
+%scanning process, and then calls the  auxiliary  function  XREAD1  to
+%perform  the  actual  parsing. Both XREAD and XREAD1 are used by many
+%functions whenever an expression must be read;
+
+FLAG ('(END !*COLON!* !*SEMICOL!*),'DELIM);
+
+SYMBOLIC PROCEDURE EQCAR(U,V);
+   NULL ATOM U AND CAR U EQ V;
+
+SYMBOLIC PROCEDURE MKEX U;
+   IF !*MODE EQ 'SYMBOLIC THEN U ELSE APROC U;
+
+SYMBOLIC PROCEDURE MKFORM(U,V);
+   BEGIN SCALAR X;
+	RETURN IF ATOM U AND (X:= GET(U,'NEWFORM)) THEN !*APPLY(X,V)
+	        ELSE U . V
+ END;
+
+SYMBOLIC PROCEDURE REMCOMMA U;
+   IF EQCAR(U,'!*COMMA!*) THEN CDR U ELSE LIST U;
+
+SYMBOLIC PROCEDURE XREAD1 U;
+   BEGIN SCALAR V,W,X,Y,Z,Z1,Z2;
+	% V: EXPRESSION BEING BUILT
+	% W: PREFIX OPERATOR STACK
+	% X: INFIX OPERATOR STACK
+	% Y: INFIX VALUE OR STAT PROPERTY
+	% Z: CURRENT SYMBOL
+	% Z1: NEXT SYMBOL
+	% Z2: TEMPORARY STORAGE;
+  A:	Z:=CURSYM!*;
+  A1:	IF NULL ATOM Z OR NUMBERP Z THEN Y:=NIL
+	 ELSE IF FLAGP(Z,'DELIM) THEN GO TO DELIMIT
+	 ELSE IF Z EQ '!*LPAR!* THEN GO TO LPAREN
+	 ELSE IF Z EQ '!*RPAR!* THEN GO TO RPAREN
+	 ELSE IF Y:=GET(Z,'INFIX) THEN GO TO INFX
+	 ELSE IF Y:=GET(Z,'STAT) THEN GO TO STAT;
+  A2:	W := Z . W;
+  NEXT: Z:=SCAN();
+	GO TO A1;
+  N1:	Y := NIL;
+	W := Z . W;
+  N2:	Z := Z1;
+	GO TO A1;
+  LPAREN:
+	Y:= NIL;
+	IF SCAN() EQ '!*RPAR!* THEN GO TO LP1;
+	Z:=XREAD1 IF EQCAR(W,'MAT) THEN MATP!*:='MAT ELSE 'PAREN;
+	IF U EQ 'MAT THEN Z:= REMCOMMA Z
+	 ELSE IF EQCAR(Z,'!*COMMA!*) THEN GO TO LP2;
+	GO TO A2;
+  LP1:  IF W THEN W:= MKFORM(CAR W,NIL) . CDR W;
+	GO TO NEXT;
+  LP2:  IF NULL W THEN GO TO LP3
+	 ELSE W := MKFORM(CAR W,CDR Z) . CDR W;
+	GO TO NEXT;
+  LP3:  IF U EQ 'LAMBDA THEN GO TO A2 ELSE GO TO ERR1;
+  RPAREN:
+	IF NULL U THEN GO TO ERR2 ELSE GO TO END1;
+  INFX:	IF Z EQ '!*COMMA!* OR NULL ATOM (Z1 := SCAN())
+		OR NUMBERP Z1 THEN GO TO IN1
+	 ELSE IF Z1 EQ '!*RPAR!*%infix operator used as variable;
+		OR Z1 EQ '!*COMMA!*
+		OR FLAGP(Z1,'DELIM)
+	  THEN GO TO N1
+	 ELSE IF Z1 EQ '!*LPAR!*%infix operator in prefix position;
+		    AND EQCAR(Z1 := XREAD 'PAREN,'!*COMMA!*)
+		    AND (Z := Z . CDR Z1)
+	  THEN GO TO A1;
+  IN1:	IF W THEN GO TO UNWIND
+	 ELSE IF NULL(Z := GET(Z,'UNARY)) THEN GO TO ERR4;
+	V := '!*!*UN!*!* . V;
+	GO TO PR1;
+  UNWIND:
+	Z2:=MKVAR(CAR W,Z);
+  UN1:  W:= CDR W;
+	IF NULL W THEN GO TO UN2
+	 ELSE IF NUMBERP CAR W
+		 OR (NULL ATOM CAR W AND NULL(!*MODE EQ 'SYMBOLIC))
+	  THEN GO TO ERR5;
+	Z2 := MKFORM(CAR W,LIST Z2);
+	GO TO UN1;
+  UN2:  V:= Z2 . V;
+  PRECED:
+	IF NULL X THEN GO TO PR4
+	 ELSE IF Y<CAAR X
+	   OR (Y=CAAR X
+	       AND ((Z EQ CDAR X AND NULL FLAGP(Z,'NARY)
+				 AND NULL FLAGP(Z,'RIGHT))
+			     OR GET(CDAR X,'ALT)))
+	  THEN GO TO PR2;
+  PR1:  X:= (Y . Z) . X;
+	IF NULL(Z EQ '!*COMMA!*) THEN GO TO N2
+	 ELSE IF CDR X OR NULL U OR U MEMBER '(LAMBDA MAT PAREN)
+	  THEN GO TO NEXT
+	 ELSE GO TO END2;
+  PR2:  IF CDAR X EQ 'SETQ THEN GO TO ASSIGN
+	 ELSE IF CADR V EQ '!*!*UN!*!* THEN GO TO UNARY;
+  PR21:	Z2 := MKFORM(CDAR X,
+		     IF EQCAR(CAR V,CDAR X) AND FLAGP(CDAR X,'NARY)
+		       THEN (CADR V . CDAR V)
+		      ELSE LIST(CADR V,CAR V));
+  PR3:	X:= CDR X;
+	V := Z2 . CDDR V;
+	GO TO PRECED;
+  UNARY:
+	IF CAR V EQ '!*!*UN!*!* THEN GO TO PR1
+	 ELSE Z2 := MKFORM(CDAR X,LIST CAR V);
+	GO TO PR3;
+  STAT:	IF FLAGP(Z,'GO) OR NULL(U EQ 'PROC) AND (FLAGP(Y,'ENDSTAT) 
+		OR (NULL DELCP NXTSYM!* AND NULL (NXTSYM!* EQ '!,)))
+	  THEN GO TO S1;
+	Y := NIL;
+	GO TO A2;
+  S1:	W:= !*APPLY(Y,NIL) . W;
+	Y:=NIL;
+	GO TO A;
+  ASSIGN:
+	V := MKEX CAR V . CDR V;
+	IF NUMBERP CADR V OR NULL CADR V THEN GO TO ERR1
+	 ELSE IF NULL ATOM CADR V THEN GO TO AS3
+	 ELSE IF U EQ 'FOR THEN GO TO AS2
+	 ELSE IF !*MODE EQ 'SYMBOLIC OR PROGVR CADR V THEN GO TO PR21;
+    AS1:Z2 := MKFORM('SETK,LIST(MKARG CADR V,CAR V));
+	GO TO PR3;
+    AS2:Z2 := LIST('SETQ,CADR V,CAR V);
+	GO TO PR3;
+    AS3:IF NULL ATOM CAADR V THEN GO TO ERR1
+	 ELSE IF NULL (!*MODE EQ 'SYMBOLIC) THEN GO TO AS1
+	 ELSE IF GET(CAADR V,'!*!*ARRAY)
+	  THEN Z2 := MKFORM('SETEL,LIST(MKARG CADR V,CAR V))
+	 ELSE IF TYPE!* THEN GO TO AS2
+	 ELSE Z2 := PROCSTAT1(CADR V,CAR V,'EXPR);
+	GO TO PR3;
+  DELIMIT:
+	IF NULL U AND FLAGP(Z,'NODEL) THEN GO TO ERR1
+	 ELSE IF U MEMBER '(MAT PAREN) THEN GO TO ERR3;
+  END1: IF Y THEN GO TO ERR1
+	 ELSE IF NULL V AND NULL W AND NULL X THEN RETURN NIL;
+	Y:=0;
+	GO TO UNWIND;
+  PR4:  IF NULL(Y=0) THEN GO TO PR1;
+  END2: IF NULL CDR V THEN RETURN CAR V;
+  ERR1: SYMERR("SYNTAX ERROR",NIL);
+  ERR2: SYMERR("TOO MANY RIGHT PARENTHESES",NIL);
+  ERR3: SYMERR("TOO FEW RIGHT PARENTHESES",NIL);
+  ERR4: SYMERR("REDUNDANT OPERATOR",NIL);
+  ERR5: SYMERR("MISSING OPERATOR",NIL)
+   END;
+
+FLAG ('(ENDSTAT MODESTAT RETSTAT TIMSTAT),'ENDSTAT);
+
+FLAG ('(ELSE WHILE),'NODEL);
+
+FLAG ('(BEGIN),'GO);
+
+SYMBOLIC PROCEDURE XREAD U;
+   PROG2(SCAN(),XREAD1 U);
+
+SYMBOLIC PROCEDURE COMMAND;
+   BEGIN SCAN(); KEY!* := CURSYM!*; RETURN XREAD1 NIL END;
+
+SYMBOLIC PROCEDURE REMNAM U;
+   %removes NEWNAMs and NEWFORMs from identifiers;
+   BEGIN
+    A:	IF NULL U THEN RETURN NIL;
+	REMPROP(CAR U,'NEWNAM);
+	REMPROP(CAR U,'NEWFORM);
+	U := CDR U;
+	GO TO A
+   END;
+
+FLAG ('(NEWNAM NEWFORM REMNAM LOSE),'EVAL);
+
+
+%*********************************************************************
+%        FUNCTIONS FOR PRINTING DIAGNOSTIC AND ERROR MESSAGES
+%********************************************************************;
+
+SYMBOLIC PROCEDURE LPRI U;
+   BEGIN
+    A:  IF NULL U THEN RETURN NIL;
+	PRINC CAR U;
+	PRINC " ";
+	U := CDR U;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE LPRIW (U,V);
+   BEGIN SCALAR X;
+	TERPRIX();
+	U := U . IF V AND (ATOM V OR STRINGP V) THEN LIST V ELSE V;
+	IF OFL!* AND (!*FORT OR NOT !*NAT) THEN GO TO C;
+    A:	LPRI U;
+	TERPRI();
+	IF NULL X THEN GO TO B;
+	WRS X;
+	RETURN NIL;
+    B:  IF NULL OFL!* THEN RETURN NIL;
+    C:  X := OFL!*;
+	WRS NIL;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE LPRIM U;
+   LPRIW("***",U);
+
+SYMBOLIC PROCEDURE LPRIE U;
+   BEGIN ERFG!* := T; TERPRI(); LPRIW ("*****",U) END;
+
+SYMBOLIC PROCEDURE REDERR U;
+   BEGIN LPRIE U; TERPRI(); ERROR NIL END;
+
+SYMBOLIC PROCEDURE SYMERR(U,V);
+   BEGIN SCALAR X;
+	ERFG!* := T;
+	IF NUMBERP CURSYM!* OR NOT(X := GET(CURSYM!*,'PRTCH))
+	  THEN X := CURSYM!*
+	 ELSE X := CAR X;
+	TERPRI();
+	OUTL!*:=CAR OUTL!* . '!$!$!$ . CDR OUTL!*;
+	COMM1 T;
+	IF NULL V THEN LPRIE U 
+	 ELSE LPRIE(X . ('INVALID .
+		     (IF U THEN LIST('IN,U,'STATEMENT) ELSE NIL)));
+	ERROR NIL
+   END;
+
+
+%*********************************************************************
+%                           2.10 STATEMENTS
+%********************************************************************;
+
+%	 With  the  exception  of  assignment  statements,  which  are
+%handled by XREAD, statements in REDUCE are introduced by a  key-word,
+%which  initiates  a  reading  process peculiar to that statement. The
+%key-word is recognized (in XREAD1)  by  the  indicator  STAT  on  its
+%property list.	The   corresponding  property  is  the  name  of  the
+%function (of no arguments) which carries out the reading sequence. We
+%begin  by  introducing  several  statements  which are necessary in a
+%basic system. Later on, we introduce statements which are part of the
+%complete   system,   but   may   be   omitted  if  the  corresponding
+%constructions are not required.
+
+%	 System users may add new statements to REDUCE by putting  the
+%name  of  the  statement reading function on the property list of the
+%new key-word with the indicator STAT. The reading function  could  be
+%defined  as  a  new  function or be a function already in the system.
+%Several applications only  require  that  the  arguments  be  grouped
+%together  and  quoted  (such as IN, OUT, etc). To help with this, the
+%following two general statement reading functions are available. They
+%are used in this translator by ARRAY defined later. The function RLIS
+%reads a list of arguments, but returns it as  one  argument,  whereas
+%NORLIS returns a list of arguments;
+
+SYMBOLIC PROCEDURE PROGVR VAR;
+   IF NOT ATOM VAR THEN NIL
+    ELSE IF NUMBERP VAR OR FLAGP(VAR,'SHARE) THEN T
+    ELSE BEGIN SCALAR X;
+	IF X := GET(VAR,'DATATYPE) THEN RETURN CAR X END;
+
+SYMBOLIC PROCEDURE MKARG U;
+   IF NULL U THEN NIL
+    ELSE IF ATOM U THEN IF PROGVR U THEN U ELSE MKQUOTE U
+    ELSE IF FLAGP!*!*(CAR U,'NOCHANGE) AND NOT FLAGP(KEY1!*,'QUOTE)
+     THEN U
+    ELSE IF CAR U EQ 'QUOTE THEN MKQUOTE U
+    ELSE IF CAR U EQ 'GTS THEN U
+    ELSE 'LIST . MAPCAR(U,FUNCTION MKARG);
+
+SYMBOLIC PROCEDURE RLIS1 U;
+   BEGIN SCALAR X,Y;
+	IF NOT(X := GET(CURSYM!*,'STATFN)) THEN X := CURSYM!*;
+	IF FLAGP!*!*(SCAN(),'DELIM) THEN RETURN LIST X;
+	Y := REMCOMMA XREAD1 NIL;
+	IF U THEN Y := LIST Y;
+	KEY1!* := X;
+	X := IF NOT U EQ 'FLAGOP THEN (X . MAPCAR(Y,FUNCTION MKARG))
+	 ELSE MKPROG(NIL,LIST('FLAG,'QUOTE . Y,MKQUOTE X) . 
+			 GET(X,'SIMPFG));
+	KEY1!* := NIL;
+	RETURN X
+   END;
+
+SYMBOLIC PROCEDURE RLIS;
+   RLIS1 T;
+
+SYMBOLIC PROCEDURE NORLIS;
+   RLIS1 NIL;
+
+SYMBOLIC PROCEDURE RLISF;
+   RLIS1 'FLAGOP;
+
+SYMBOLIC PROCEDURE FLAGOP U;
+   BEGIN
+    A:	IF NULL U THEN RETURN NIL;
+	PUT(CAR U,'STAT,'RLISF);
+	U := CDR U;
+	GO TO A
+   END;
+
+PUT('FLAGOP,'STAT,'RLIS);
+
+FLAG ('(COND PROG PTS QUOTE SETQ),'NOCHANGE);
+
+
+%*********************************************************************
+%                            2.7 COMMENTS
+%********************************************************************;
+
+SYMBOLIC PROCEDURE COMM1 U;
+   BEGIN
+	IF U EQ 'END THEN GO TO B;
+  A:	IF CURSYM!* EQ '!*SEMICOL!*
+	   OR (U EQ 'END
+		 AND (CURSYM!* MEMBER '(END ELSE UNTIL !*RPAR!*)))
+	  THEN RETURN NIL;
+  B:	SCAN();
+	GO TO A
+   END;
+
+
+%*********************************************************************
+%                    2.10.2 CONDITIONAL STATEMENT
+%********************************************************************;
+
+SYMBOLIC PROCEDURE ACONC(U,V);
+   NCONC(U,LIST V);
+
+SYMBOLIC PROCEDURE IFSTAT;
+   BEGIN SCALAR CONDX,CONDIT;
+	FLAG(LETL!*,'DELIM);
+    A:  CONDX := XREAD T;
+	REMFLAG(LETL!*,'DELIM);
+	IF NOT CURSYM!* EQ 'THEN THEN GO TO C;
+	CONDIT := ACONC(CONDIT,LIST(MKEX CONDX,MKEX XREAD T));
+	IF NOT CURSYM!* EQ 'ELSE
+	  THEN CONDIT := ACONC(CONDIT,'((QUOTE T) (QUOTE NIL)))
+	 ELSE IF SCAN() EQ 'IF THEN GO TO A
+	 ELSE CONDIT := ACONC(CONDIT,LIST(T,MKEX XREAD1 T));
+    B:  RETURN ('COND . CONDIT);
+    C:  IF NOT CURSYM!* MEMBER LETL!* THEN SYMERR('IF,T);
+	RETURN IFLET CONDX
+   END;
+
+PUT('IF,'STAT,'IFSTAT);
+
+FLAG ('(THEN ELSE),'DELIM);
+
+
+%*********************************************************************
+%                      2.10.5 COMPOUND STATEMENT
+%********************************************************************;
+
+SYMBOLIC PROCEDURE FLAGTYPE(U,V);
+   BEGIN SCALAR X,Y,Z;
+	VARS!* := APPEND(U,VARS!*);
+    A:  IF NULL U THEN RETURN REVERSE Z;
+	X := CAR U;
+	IF NUMBERP X OR NOT ATOM X THEN SYMERR("SYNTAX ERROR",NIL);
+	Y := GET(X,'DATATYPE);
+	PUT(X,'DATATYPE,V . Y);
+	Z := X . Z;
+	U := CDR U;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE DECL U;
+   BEGIN SCALAR V,W,VARLIS;
+    A:  IF CURSYM!* EQ '!*SEMICOL!* THEN GO TO B;
+	IF NOT FLAGP!*!*(CURSYM!*,'TYPE) THEN RETURN VARLIS;
+	W := CURSYM!*;
+	IF SCAN() EQ 'PROCEDURE THEN RETURN PROCSTAT();
+	V := FLAGTYPE(REMCOMMA XREAD1 NIL,W);
+	VARLIS := APPEND(V,VARLIS);
+	NOT CURSYM!* EQ '!*SEMICOL!* AND SYMERR(NIL,T);
+	IF NULL U THEN GO TO C;		%top level declaration;
+   B:	SCAN();
+	GO TO A;
+    C:	FLAG (VARLIS,'SHARE);
+	GLOBAL VARLIS;
+	U := LIST MKFORM('FLAG,LIST(MKQUOTE VARLIS,MKQUOTE 'SHARE));
+    D: 	IF NULL VARLIS THEN RETURN MKPROG(NIL,U);
+	U := MKFORM('PTS,LIST(MKQUOTE CAR VARLIS,NIL)) . U;
+	VARLIS := CDR VARLIS;
+	GO TO D
+   END;
+
+FLAG ('(REAL INTEGER SCALAR),'TYPE);
+
+SYMBOLIC PROCEDURE MKPROG(U,V);
+   'PROG . (U . V);
+
+SYMBOLIC PROCEDURE SETDIFF(U,V);
+   IF NULL V THEN U ELSE SETDIFF(DELETE(CAR V,U),CDR V);
+
+SYMBOLIC PROCEDURE REMTYPE VARLIS;
+   BEGIN SCALAR X,Y;
+	VARS!* := SETDIFF(VARS!*,VARLIS);
+    A:  IF NULL VARLIS THEN RETURN NIL;
+	X := CAR VARLIS;
+	Y := CDR GET(X,'DATATYPE);
+	IF Y THEN PUT(X,'DATATYPE,Y) ELSE REMPROP(X,'DATATYPE);
+	VARLIS := CDR VARLIS;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE BLOCKSTAT;
+   BEGIN SCALAR X,HOLD,VARLIS;
+	BLOCKP!* := NIL . BLOCKP!*;
+	SCAN();
+	IF CURSYM!* MEMBER '(NIL !*RPAR!*) THEN ERROR !*!*ESC;
+	VARLIS := DECL T;
+    A:  IF CURSYM!* EQ 'END THEN GO TO B;
+	X := XREAD1 NIL;
+	IF EQCAR(X,'END) THEN GO TO C
+	 ELSE IF NOT CURSYM!* EQ '!*COLON!* THEN X := MKEX X;
+	NOT CURSYM!* EQ 'END AND SCAN();
+	IF X THEN HOLD := ACONC(HOLD,X);
+	GO TO A;
+    B:  COMM1 'END;
+    C:  REMTYPE VARLIS;
+	BLOCKP!* := CDR BLOCKP!*;
+	RETURN MKPROG(VARLIS,HOLD)
+   END;
+
+SYMBOLIC PROCEDURE DECSTAT;
+   %this function is needed only for top level declarations;
+   DECL NIL;
+
+DEFLIST ('((INTEGER DECSTAT) (REAL DECSTAT) (SCALAR DECSTAT)),'STAT);
+
+PUT('BEGIN,'STAT,'BLOCKSTAT);
+
+
+%*********************************************************************
+%                       2.10.6 RETURN STATEMENT
+%********************************************************************;
+
+SYMBOLIC PROCEDURE RETSTAT;
+   IF NOT BLOCKP!* THEN SYMERR(NIL,T)
+    ELSE LIST('RETURN,
+	      IF FLAGP!*!*(SCAN(),'DELIM) THEN NIL ELSE MKEX XREAD1 T);
+
+PUT('RETURN,'STAT,'RETSTAT);
+
+
+%*********************************************************************
+%                    6. EVALUATION MODE STATEMENT
+%********************************************************************;
+
+SYMBOLIC PROCEDURE MODESTAT;
+   BEGIN SCALAR X;
+	X:= IF CURSYM!* EQ 'LISP THEN 'SYMBOLIC ELSE CURSYM!*;
+	IF FLAGP!*!*(SCAN(),'DELIM) THEN RETURN NOT(!*MODE:=X);
+	TMODE!* := !*MODE;
+	!*MODE := X;
+	RETURN XREAD1 NIL
+   END;
+
+%The boot-strapping process requires that  the  STAT  properties  for
+%the various modes be added at the end of the next sub-section;
+
+
+%*********************************************************************
+%                      2.17 PROCEDURE STATEMENT
+%********************************************************************;
+
+SYMBOLIC PROCEDURE PROCSTAT1(U,BODY,TYPE);
+   BEGIN SCALAR NAME,VARLIS;
+	NAME := CAR U;
+	IF NULL NAME OR NOT ATOM NAME OR NUMBERP NAME
+	    THEN REDERR LIST(NAME,"INVALID PROCEDURE NAME")
+	 ELSE IF FLAGP(NAME,'LOSE) THEN RETURN NIL
+	 ELSE IF NOT GETD NAME THEN FLAG(LIST NAME,'FNC);
+	IF EQCAR(BODY,'PROG) THEN VARLIS := CADR BODY;
+	IF VARLIS THEN RPLACA(CDR BODY,SETDIFF(VARLIS,CDR U));
+	VARLIS := CDR U;
+	IF FLAGP(NAME,'FNC) THEN GO TO A;
+	LPRIM LIST(NAME,'REDEFINED);
+  A:	IF !*DEFN THEN OUTDEF(NAME,VARLIS,BODY,TYPE)
+	 ELSE PUTD(NAME,VARLIS,BODY,TYPE);
+	REMFLAG(LIST NAME,'FNC);
+	RETURN IF !*MODE EQ 'SYMBOLIC THEN MKQUOTE NAME
+		ELSE MKFORM('FLAG,LIST(MKQUOTE LIST NAME,
+					MKQUOTE 'OPFN));
+   END;
+
+SYMBOLIC PROCEDURE PROCSTAT;
+   BEGIN SCALAR X,Y,Z;
+	TYPE!* := IF CURSYM!* EQ 'PROCEDURE THEN 'EXPR ELSE CURSYM!*;
+	X := IF NOT(CURSYM!* EQ 'PROCEDURE OR SCAN() EQ 'PROCEDURE)
+		THEN PROG2(FNAME!* := CURSYM!*,XREAD1 NIL)
+	      ELSE PROG2(FNAME!* := SCAN(),XREAD1 'PROC);
+	IF ATOM X THEN X:=LIST X ELSE IF CAR X EQ 'SETQ THEN GO TO B;
+	Y := FLAGTYPE(CDR X,'SCALAR);
+	Z := MKEX XREAD T;
+	REMTYPE Y;
+    A:	Z := PROCSTAT1(X,Z,TYPE!*);
+	TYPE!* := NIL;
+	RETURN Z;
+    B:	IF NOT !*MODE EQ 'SYMBOLIC 
+	 THEN PROG2(TYPE!* := NIL,SYMERR("SYNTAX ERROR",NIL));
+	Z := CADDR X;
+	X := CADR X;
+	GO TO A
+   END;
+
+DEFLIST ('((PROCEDURE PROCSTAT) (FEXPR PROCSTAT) (MACRO PROCSTAT)),
+	'STAT);
+
+DEFLIST ('((ALGEBRAIC MODESTAT) (LISP MODESTAT) (SYMBOLIC MODESTAT)),
+	 'STAT);
+
+
+%*********************************************************************
+%                         2.19 END STATEMENT
+%********************************************************************;
+
+SYMBOLIC PROCEDURE ENDSTAT;
+  %This procedure can also be used for any key-words  which  take  no
+  %arguments;
+   BEGIN SCALAR X;
+	X := CURSYM!*;
+	COMM1 'END;
+	RETURN LIST X
+   END;
+
+PUT('END,'STAT,'ENDSTAT);
+
+
+%*********************************************************************
+%                      SOME ARITHMETIC FUNCTIONS
+%********************************************************************;
+
+SYMBOLIC PROCEDURE M**N;
+   BEGIN INTEGER P; SCALAR Q;
+	IF MINUSP N THEN RETURN 1.0/M**(-N)
+	 ELSE IF N=0 OR M=1 THEN RETURN 1;
+	P := 1;
+  A:	Q := DIVIDE(N,2);
+	IF CDR Q = 0 THEN GO TO B;
+	P := M*P;
+	IF CAR Q = 0 THEN RETURN P;
+  B:	N := CAR Q;
+	M := M*M;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE U>=V;
+   U=V OR U>V;
+
+SYMBOLIC PROCEDURE U<=V;
+   U=V OR U<V;
+
+SYMBOLIC PROCEDURE U NEQ V;
+   NOT U=V;
+
+%The function names GREATEQ, LESSEQ and UNEQ are no longer supported;
+
+DEFLIST ('((GREATEQ GEQ) (LESSEQ LEQ) (UNEQ NEQ)),'NEWNAM);
+
+
+%*********************************************************************
+%*********************************************************************
+%                         MODULAR STATEMENTS
+%*********************************************************************
+%********************************************************************;
+
+%	 The  remaining  statements  defined in this section are truly
+%modular, and any may be omitted if desired.
+
+
+%*********************************************************************
+%          2.5 FUNCTIONS FOR INTRODUCING NEW INFIX OPERATORS
+%********************************************************************;
+
+SYMBOLIC PROCEDURE INFSTAT;
+   BEGIN SCALAR X;
+	 X := REMCOMMA XREAD NIL;
+	 IF !*MODE EQ 'ALGEBRAIC THEN MAPCAR(X,FUNCTION MKOP);
+	 PRECLIS!* := APPEND(REVERSE X,PRECLIS!*);
+	 MKPREC()
+   END;
+
+SYMBOLIC PROCEDURE PRECSTAT;
+   BEGIN SCALAR X;
+	X := REMCOMMA XREAD NIL;
+	RETURN PRECSET(CAR X,CADR X)
+   END;
+
+SYMBOLIC PROCEDURE PRECSET(X,Y);
+   BEGIN SCALAR W,Z;
+	 PRECLIS!* := DELETE(X,PRECLIS!*);
+	 W := PRECLIS!*;
+    A:   IF NULL W THEN REDERR LIST (Y,"NOT FOUND")
+	  ELSE IF Y EQ CAR W THEN GO TO B;
+	 Z := CAR W . Z;
+	 W := CDR W;
+	 GO TO A;
+    B:   PRECLIS!* := NCONC(REVERSE Z,CAR W . (X . CDR W));
+	 MKPREC()
+   END;
+
+PUT('INFIX,'STAT,'INFSTAT);
+
+PUT('PRECEDENCE,'STAT,'PRECSTAT);
+
+FLAG('(INFIX PRECEDENCE),'EVAL);
+
+
+%*********************************************************************
+%                        2.10.3 FOR STATEMENT
+%********************************************************************;
+
+SYMBOLIC PROCEDURE FLATTEN U;
+   IF NULL U THEN NIL
+    ELSE IF ATOM U THEN LIST U
+    ELSE IF ATOM CAR U THEN CAR U . FLATTEN CDR U
+    ELSE NCONC(FLATTEN CAR U,FLATTEN CDR U);
+
+SYMBOLIC PROCEDURE PROGCHK U;
+   BEGIN SCALAR X;
+	 IF NOT EQCAR(U,'PROG) OR CADR U THEN RETURN NIL;
+	 U := CDR U;
+    A:   U := CDR U;
+	 IF NULL U THEN RETURN REVERSE X
+	  ELSE IF ATOM CAR U THEN GO TO B
+	  ELSE IF EQCAR(CAR U,'RETURN) THEN GO TO RET
+	  ELSE IF EQCAR(CAR U,'PROG) THEN GO TO B
+	  ELSE IF 'RETURN MEMBER FLATTEN CAR U THEN RETURN NIL;
+    B:   X := CAR U . X;
+	 GO TO A;
+    RET: IF CDR U THEN RETURN NIL
+	  ELSE IF NOT ATOM CADAR U THEN X := CADAR U . X;
+	 GO TO A
+   END;
+
+SYMBOLIC PROCEDURE ADFORM(U,V,W);
+   IF NULL W THEN NIL
+    ELSE IF V=CAR W
+     THEN BEGIN SCALAR X;
+		X := PROGCHK U;
+		RETURN IF NULL X THEN U . CDR W ELSE APPEND(X,CDR W)
+	    END 
+    ELSE CAR W . ADFORM(U,V,CDR W);
+
+SYMBOLIC PROCEDURE FORLOOP;
+   BEGIN SCALAR CURS,EXP,INCR,INDX,CONDLIST,BODY,FLG,FNC,LAB1,LAB2;
+	 FNC := GENSYM();
+	 EXP := XREAD1 'FOR;
+	 IF CAR EXP EQ '!*COMMA!* AND EQCAR(CADR EXP,'SETQ)
+	     THEN EXP := LIST(NIL,
+			      CADADR EXP,
+			      '!*COMMA!* . NCONC(CDDADR EXP,
+						CDDR EXP))
+	  ELSE IF NOT CAR EXP MEMBER '(SETQ EQUAL) THEN GO TO ERR;
+	 EXP := CDR EXP;
+	 IF NOT ATOM (INDX := CAR EXP) OR NUMBERP INDX THEN GO TO ERR;
+	 INDX := CAR FLAGTYPE(LIST INDX,'INTEGER);
+	 EXP := REMCOMMA CADR EXP;
+    A1:  IF NULL EXP THEN GO TO B2
+	  ELSE IF CDR EXP THEN FLG := T
+	  ELSE IF CURSYM!* EQ 'STEP THEN GO TO B1
+	  ELSE IF CURSYM!* EQ '!*COLON!* THEN GO TO BB;
+	 CONDLIST := NCONC(CONDLIST,
+			   LIST(LIST('SETQ,INDX,CAR EXP),LIST FNC));
+    B0:  EXP := CDR EXP;
+	 GO TO A1;
+    B1:  INCR := MKEX XREAD NIL;
+	 IF NOT (CURS := CURSYM!*) MEMBER '(UNTIL WHILE)
+	  THEN GO TO ERR;
+    AA:  LAB1 := GENSYM();
+	 LAB2 := GENSYM();
+	 CONDLIST := ACONC(CONDLIST,LIST('SETQ,INDX,CAR EXP));
+	 EXP := REMCOMMA XREAD T;
+	 BODY := MKEX CAR EXP;
+	 CONDLIST :=
+	    NCONC(CONDLIST,LIST(LAB1,LIST('COND,
+	      LIST(IF CURS EQ 'UNTIL THEN IF NUMBERP INCR
+		THEN LIST(IF MINUSP INCR THEN 'LESSP ELSE 'GREATERP,
+			  INDX,
+			  BODY)
+	       ELSE LIST('MINUSP,LIST('TIMES,LIST('DIFFERENCE,
+						  BODY,
+				  		  INDX),
+					INCR))
+	      ELSE LIST('NOT,BODY),LIST('GO,LAB2))),
+				LIST FNC,
+				LIST('SETQ,
+				     INDX,
+				     LIST('PLUS,INDX,INCR)),
+				LIST('GO,LAB1),
+				LAB2));
+	 CDR EXP AND (FLG := T);
+	 GO TO B0;
+    BB:  INCR := 1;
+	 CURS := 'UNTIL;
+	 GO TO AA;
+    B2:  IF NULL CONDLIST THEN GO TO ERR
+	  ELSE IF CURS:=GET(CURSYM!*,'BIN) THEN GO TO C
+	  ELSE IF NOT CURSYM!* EQ 'DO THEN GO TO ERR;
+	 BODY := MKEX XREAD NIL;
+    B:   IF FLG THEN PUTD(FNC,NIL,BODY,'DEFINE)
+	  ELSE CONDLIST := ADFORM(BODY,LIST FNC,CONDLIST);
+	 REMTYPE LIST INDX;
+	 RETURN MKPROG(INDX . EXP,CONDLIST);
+    C:   EXP := GENSYM();
+	 BODY := LIST('SETQ,
+		      EXP,
+		      LIST(CAR CURS,
+			   LIST('SIMP,MKEX XREAD T),
+			   EXP));
+	 CONDLIST := LIST('SETQ,EXP,MKQUOTE CDR CURS) .
+			       ACONC(CONDLIST,
+					   LIST('RETURN,
+						LIST('MK!*SQ,EXP)));
+	 EXP := LIST EXP;
+	 GO TO B;
+    ERR: SYMERR('FOR,T)
+   END;
+
+SYMBOLIC PROCEDURE FORSTAT;
+   IF SCAN() EQ 'ALL THEN FORALLFN() ELSE FORLOOP();
+
+PUT('FOR,'STAT,'FORSTAT);
+
+FLAG ('(STEP DO UNTIL WHILE),'DELIM);
+
+
+%*********************************************************************
+%                       2.11.2 ARRAY STATEMENT
+%********************************************************************;
+
+SYMBOLIC PROCEDURE DEFP(U,V);
+   BEGIN SCALAR W;
+	IF NOT ATOM U OR NUMBERP U THEN ERRPRI2(U,'HOLD);
+	W := DEFL!*;
+    A:	IF NULL W THEN RETURN NIL ELSE IF GET(U,CAAR W) THEN GO TO B;
+	W := CDR W;
+	GO TO A;
+    B:	W := CDAR W;
+	IF NULL V THEN GO TO C;
+	U := LIST(U,"ALREADY DEFINED AS",W);
+	IF V EQ W THEN LPRIM U ELSE LPRIE U;
+    C:	RETURN W
+   END;
+
+SYMBOLIC PROCEDURE NUMLIS U;
+   NULL U OR (NUMBERP CAR U AND NUMLIS CDR U);
+
+SYMBOLIC PROCEDURE ARRAYFN U;
+   BEGIN SCALAR X,Y;
+    A:	IF NULL U THEN RETURN NIL;
+	X := CAR U;
+	IF ATOM X THEN ERRPRI2(X,T)
+	 ELSE IF DEFP(CAR X,'ARRAY) THEN GO TO B;
+	Y := IF !*MODE EQ 'SYMBOLIC THEN CDR X ELSE REVLIS CDR X;
+	IF NOT NUMLIS Y
+	  THEN LPRIE LIST("INCORRECT ARRAY ARGUMENTS FOR",CAR X);
+	PUT(CAR X,'!*!*ARRAY,Y);
+	!*ARRAY LIST (CAR X . ADD1LIS Y);
+    B:	U := CDR U;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE ADD1LIS U;
+   IF NULL U THEN NIL ELSE (CAR U+1) . ADD1LIS CDR U;
+
+PUT('ARRAY,'STAT,'RLIS);
+
+PUT('ARRAY,'STATFN,'ARRAYFN);
+
+FLAG ('(ARRAY),'EVAL);
+
+% ARRAY HANDLING FUNCTIONS DEFINED WITHOUT LISP ARRAY FEATURE;
+
+SYMBOLIC PROCEDURE ARLIST(U,N);
+   IF N=0 THEN NIL ELSE MKARRAY U . ARLIST(U,N-1);
+
+SYMBOLIC PROCEDURE MKARRAY U;
+   IF NULL U THEN NIL ELSE ARLIST(CDR U,CAR U);
+
+SYMBOLIC PROCEDURE !*ARRAY U;
+   BEGIN
+    A:	IF NULL U THEN RETURN NIL;
+	PUT(CAAR U,'ARRAY,MKARRAY CDAR U);
+	U := CDR U;
+	GO TO A
+    END;
+
+SYMBOLIC PROCEDURE GETEL1(U,V);
+   IF NULL V THEN U ELSE GETEL1(NTH(U,CAR V+1),CDR V);
+
+SYMBOLIC PROCEDURE GETEL U;
+   GETEL1(GET(CAR U,'ARRAY),CDR U);
+
+SYMBOLIC PROCEDURE SETEL(U,V);
+   BEGIN SCALAR X,N;
+	X := REVERSE CDR U;
+	N := CAR X;
+	X := GETEL1(GET(CAR U,'ARRAY),REVERSE CDR X);
+  A:	IF N = 0 THEN RETURN RPLACA(X,V);
+	N := N-1;
+	X := CDR X;
+	GO TO A
+  END;
+
+
+%*********************************************************************
+%                      2.11.3 ON/OFF STATEMENTS
+%********************************************************************;
+
+SYMBOLIC PROCEDURE ASSOC(U,V);
+   IF NULL V THEN NIL
+    ELSE IF U EQ CAAR V THEN CAR V
+    ELSE ASSOC(U,CDR V);
+
+SYMBOLIC PROCEDURE ON1 U;
+   BEGIN SCALAR X,Y,Z;
+	X := REMCOMMA XREAD NIL;
+    A:	IF NULL X THEN RETURN MKPROG(NIL,Z)
+	 ELSE IF NOT ATOM CAR X OR NUMBERP CAR X THEN GO TO C;
+	Z := MKFORM('SETQ,
+		  LIST(COMPRESS APPEND(EXPLODE "*",EXPLODE CAR X),
+		       MKVAR(U,NIL))) . Z;
+	IF Y := ASSOC(U,GET(CAR X,'SIMPFG))
+	  THEN Z := APPEND(MAPCAR(CDR Y,FUNCTION MKFORML),Z);
+    B:	X := CDR X;
+	GO TO A;
+    C:	LPRIE LIST(CAR X,"INVALID ARGUMENT");
+	GO TO B
+   END;
+
+SYMBOLIC PROCEDURE MKFORML U;
+   MKFORM(CAR U,CDR U);
+
+SYMBOLIC PROCEDURE ONSTAT;
+   ON1 T;
+
+SYMBOLIC PROCEDURE OFFSTAT;
+   ON1 NIL;
+
+PUT('ON,'STAT,'ONSTAT);
+
+PUT('OFF,'STAT,'OFFSTAT);
+
+LOSE '(ASSOC);
+
+%*********************************************************************
+%                          DEFINE STATEMENT
+%********************************************************************;
+
+SYMBOLIC PROCEDURE DEFSTAT;
+   BEGIN SCALAR X,Y;
+    A:	X := SCAN();
+    B:	IF FLAGP!*!*(X,'DELIM) THEN RETURN NIL
+	 ELSE IF X EQ '!*COMMA!* THEN GO TO A
+	 ELSE IF NOT ATOM X OR NUMBERP X THEN GO TO ER;
+	Y := SCAN();
+	IF NOT Y EQ 'EQUAL THEN GO TO ER;
+	PUT(X,'NEWNAM,XREAD T);
+	X := CURSYM!*;
+	GO TO B;
+    ER:	SYMERR('DEFINE,T)
+   END;
+
+PUT('DEFINE,'STAT,'DEFSTAT);
+
+
+%*********************************************************************
+%                        3.2.4 WRITE STATEMENT
+%********************************************************************;
+
+SYMBOLIC PROCEDURE WRITSTAT;
+   BEGIN SCALAR MODE,X,Y,Z;
+	MODE := EQ(!*MODE,'SYMBOLIC);
+	X := REMCOMMA XREAD 'LAMBDA;
+    A:  IF NULL X
+	  THEN RETURN MKPROG(NIL,(IF MODE THEN MKFORM('TERPRI,NIL)
+				  ELSE MKFORM('TERPRI!*,LIST T))
+					. Y)
+	 ELSE IF NOT MODE THEN GO TO C;
+	Z := MKFORM('PRINC,LIST CAR X);
+	IF NULL CDR X THEN Z := LIST('RETURN,Z);
+    B:	Y := ACONC(Y,Z);
+	X := CDR X;
+	GO TO A;
+    C:	Z := MKEX CAR X;
+	Z := MKFORM('VARPRI,LIST(Z,MKQUOTE ASSGNL Z,NOT CDR X));
+	GO TO B
+   END;
+
+PUT('WRITE,'STAT,'WRITSTAT);
+
+
+%*********************************************************************
+%                        6.6 LAMBDA STATEMENT
+%********************************************************************;
+
+SYMBOLIC PROCEDURE LAMSTAT;
+   BEGIN SCALAR X,Y;
+	IF NOT !*MODE EQ 'SYMBOLIC THEN SYMERR("ALGEBRAIC",T);
+	X:= XREAD 'LAMBDA;
+	FLAGTYPE(X := IF NULL X THEN NIL ELSE REMCOMMA X,'SCALAR);
+	Y := LIST('LAMBDA,X,XREAD T);
+	REMTYPE X;
+	RETURN Y
+   END;
+
+PUT ('LAMBDA,'STAT,'LAMSTAT);
+
+
+%*********************************************************************
+%*********************************************************************
+%       REDUCE FUNCTIONS FOR HANDLING INPUT AND OUTPUT OF FILES
+%*********************************************************************
+%********************************************************************;
+
+SYMBOLIC PROCEDURE REFG;
+   BEGIN SCALAR X;
+	X := ECHOL!*;
+	ECHOL!* := !*ECHO;
+	!*ECHO := X
+   END;
+
+SYMBOLIC PROCEDURE INOUT(U,V);
+   BEGIN SCALAR FL;
+	ECHOL!* := !*ECHO;
+	INTL!* := !*INT;
+    A:  IF NULL U THEN GO TO D;
+	FL := CAR U;
+	IF V EQ 'OUTPUT THEN GO TO C
+	 ELSE IF FL EQ 'T THEN GO TO L
+	 ELSE IF FL MEMBER IPL!* THEN GO TO B1;
+	OPEN(FL,V);
+	IF NULL (FL MEMBER IPL!*) THEN IPL!* := FL . IPL!*;
+    B1: RDS (IFL!* := FL);
+	!*ECHO := IECHO!*;
+	!*INT := NIL;
+	BEGIN1();
+	U := CDR U;
+	GO TO A;
+  C:	IF FL EQ 'T THEN GO TO M ELSE IF FL MEMBER OPL!* THEN GO TO C1;
+	OPEN(FL,V);
+	IF NULL (FL MEMBER OPL!*) THEN OPL!* := FL . OPL!*;
+    C1: WRS (OFL!* := FL);
+    D:  IF V EQ 'INPUT THEN REFG();
+	RETURN NIL;
+    L:	RDS(IFL!* := NIL);
+	GO TO D;
+    M:  OFL!* := NIL;
+	WRS NIL
+   END;
+
+SYMBOLIC PROCEDURE SHUT U;
+   BEGIN SCALAR X;
+    A:  IF NULL U THEN RETURN NIL
+	 ELSE IF X MEMBER OPL!* THEN GO TO B
+	 ELSE IF NOT X MEMBER IPL!* THEN REDERR LIST(X,"NOT OPEN");
+	ENDIFL X;
+	GO TO C;
+    B:  CLOSE X;
+	OPL!* := DELETE(X,OPL!*);
+	IF NOT X=OFL!* THEN GO TO C;
+	OFL!* := NIL;
+	WRS NIL;
+    C:  U := CDR U;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE IN U;
+   INOUT(U,'INPUT);
+
+SYMBOLIC PROCEDURE OUT U;
+   INOUT(U,'OUTPUT);
+
+DEFLIST ('((IN RLIS) (OUT RLIS) (SHUT RLIS)),'STAT);
+
+
+
+%*********************************************************************
+%*********************************************************************
+%*********************************************************************
+
+%			       SECTION 2
+
+%		    THE REDUCE ALGEBRAIC PROCESSOR
+
+%*********************************************************************
+%*********************************************************************
+%********************************************************************;
+
+
+%*********************************************************************
+%	      GLOBAL VARIABLES REFERENCED IN THIS SECTION
+%********************************************************************;
+
+ARBL!* := NIL;  	%list of arbitrary vars in LET statements;
+DEFL!* := '((SIMPFN . OPERATOR) (MATRIX . MATRIX) (!*!*ARRAY . ARRAY));
+DEPL!* := NIL;  	%list of dependencies among kernels;
+DNL!* := NIL;		%output control flag: puts powers in denom;
+DSUBL!* := NIL; 	%list of previously calculated derivatives of
+			% expressions;
+EXLIST!* := '((!*));	%property list for standard forms used as
+			% kernels;
+EXPTL!* := NIL; 	%list of exprs with non-integer exponents;
+FACTORS!* := NIL;	%list of output factors;
+FRASC!* := NIL; 	%association list for free variables in
+			%substitution rules;
+FRLIS!* := NIL; 	%list of renamed free variables to be found in
+			%substitutions;
+INITL!* := APPEND('(SUBFG!* SSTACK!* SUB2!* TSTACK!*),INITL!*);
+LETL!* := '(LET MATCH CLEAR SAVEAS);	%special delimiters;
+SSTACK!* := 0;  	%keeps track of substitution level;
+SLIMIT!* := 30; 	%substitution level limit;
+TYPL!* := NIL;		%list of non-scalar type checking functions;
+MATP!* := NIL;  	%indicates that matrices have been read;
+MCHFG!* := NIL; 	%indicates that a pattern match occurred during
+			%a cycle of the matching routines;
+MCOND!* := NIL; 	%used for temporary storage of a conditional
+			%expression in a substitution;
+MOD!* := NIL;		%modular base, NIL for integer arithmetic;
+MUL!* := NIL;		%list of additional evaluations needed in a
+			%given multiplication;
+NCMP!* := NIL;		%flag indicating non-commutative multiplication
+			%mode;
+OFL!* := NIL;		%current output file name;
+ORDN!* := 0;		%order of current variable in ORDER statement;
+PRIN!* := NIL;  	%turned on during algebraic output conversion;
+RPLIS!* := NIL;		%used to store evaluated expressions in
+			%standard form;
+SUBFG!* := T;		%flag to indicate whether substitution
+			%is required during evaluation;
+SUBL!* := NIL;		%list of previously evaluated expressions;
+SUB2!* := NIL;  	%indicates need for call of RESIMP;
+UPL!* := NIL;		%controls upward movement of powers in extended
+			%output package;
+WTL!* := NIL;		%tells that a WEIGHT assignment has been made;
+!*ALLFAC := T;		%factoring option for extended output package;
+!*ANS := 0;		%the expression workspace;
+!*DIV := NIL;		%division option for extended output package;
+!*EXP := T;		%expansion control flag;
+!*FLOAT := NIL;		%floating arithmetic mode flag;
+!*GCD := NIL;		%greatest common divisor mode flag;
+!*HIPOW := NIL;		%highest power encountered during COEFF evaln;
+!*MATCH := NIL; 	%list of pattern matching rules;
+!*MCD := T;		%common denominator control flag;
+!*MODE := 'SYMBOLIC;	%current evaluation mode;
+!*MSG := T;		%flag controlling message printing;
+!*NERO := NIL;		%flag to suppress printing of zeros;
+!*OUTP := NIL;		%holds prefix output form for extended output 
+			%package;
+!*SMALL := NIL; 	%indicates that a small system is operating;
+!*PRI := NOT !*SMALL;	%indicates that fancy output is required;
+!*RAT := NIL;		%flag indicating rational mode for output;
+!*RESUBS := T;		%flag indicating that resubstition is required;
+!*SQVAR!*:='(T);	%variable used by *SQ expressions to control
+			%resimplification;
+!*SUPER := NIL;		%super substitution mode (not documented yet);
+!*XDN := T;		%flag indicating that denominators should be
+			%expanded;
+
+%initial values of some global variables in BEGIN1 loops;
+
+PUT('TSTACK!*,'INITL,0);
+
+PUT('SSTACK!*,'INITL,0);
+
+PUT('SUBFG!*,'INITL,T);
+
+
+%*********************************************************************
+%  ALGEBRAIC MODE FUNCTIONS AND DECLARATIONS REFERENCED IN SECTION 1
+%********************************************************************;
+
+SYMBOLIC PROCEDURE APROC U;
+   IF NULL U THEN NIL
+    ELSE IF ATOM U
+     THEN IF NUMBERP U AND FIXP U THEN U ELSE LIST('AEVAL,MKARG U)
+    ELSE IF FLAGP(CAR U,'NOCHANGE) OR GET(CAR U,'STAT) THEN U
+    ELSE IF FLAGP(CAR U,'DIRECT)
+     THEN CAR U . MAPCAR(CDR U,FUNCTION APROC)
+    ELSE IF NOT (ATOM KEY!* AND GET!*(KEY!*,'STAT))
+	    AND NULL VARS!* AND NOT !*DEFN AND NOT BLOCKP!* 
+	  THEN MKQUOTE AEVAL U
+    ELSE LIST('AEVAL,MKARG U);
+
+FLAG ('(SETK SETEL ARRAYFN VARPRI),'NOCHANGE);
+
+FLAG ('(OR AND NOT MEMBER EQUAL NEQ EQ GEQ GREATERP LEQ REMAINDER
+	LESSP NUMBERP ORDP FLAG),'DIRECT);
+
+DEFLIST ('((SUM (ADDSQ . (NIL . 1))) (PRODUCT (MULTSQ . (1 . 1)))),
+	 'BIN);
+
+FLAG ('(SUM PRODUCT),'DELIM);
+
+FLAG ('(SUM PRODUCT),'NODEL);
+
+DEFLIST ('((EXP ((NIL (RMSUBS1)) (T (RMSUBS))))
+	(MCD ((NIL (RMSUBS)) (T (RMSUBS))))
+	(FORT ((NIL (SETQ !*NAT NAT!*!*))
+		(T (SETQ NAT!*!* !*NAT) (SETQ !*NAT NIL))))
+	(GCD ((T (RMSUBS))))
+	(FLOAT ((T (RMSUBS))))),'SIMPFG);
+
+%*********************************************************************
+%     EXPLICIT NAMES OF SOME FUNCTIONS REFERENCING STANDARD FORMS
+%********************************************************************;
+
+NEWNAM '(
+	(ADD CONS)
+	(LC CDAR)
+	(LDEG CDAAR)
+	(LT CAR)
+	(MULT CONS)
+	(MVAR CAAAR)
+	(LPOW CAAR)
+	(NUMR CAR)
+	(DENR CDR)
+	(TC CDR)
+   );
+
+NEWFORM '((RED (LAMBDA (U) (LIST (QUOTE CDR) U)))
+	  (DIV (LAMBDA (U V) (LIST (QUOTE CONS) U V))));
+
+INFIX MULT,ADD,DIV;
+
+
+%*********************************************************************
+%			   GENERAL FUNCTIONS
+%********************************************************************;
+
+SYMBOLIC PROCEDURE ABS N;
+   IF MINUSP N THEN  - N ELSE N;
+
+SYMBOLIC PROCEDURE ASSOC(U,V);
+   IF NULL V THEN NIL
+    ELSE IF U EQ CAAR V THEN CAR V
+    ELSE ASSOC(U,CDR V);
+
+SYMBOLIC PROCEDURE ASSOC!*(U,V);
+   IF NULL V THEN NIL
+    ELSE IF U=CAAR V THEN CAR V
+    ELSE ASSOC!*(U,CDR V);
+
+SYMBOLIC PROCEDURE ATOMLIS U;
+   NULL U OR (ATOM CAR U AND ATOMLIS CDR U);
+
+SYMBOLIC PROCEDURE CARX U;
+   IF NULL CDR U THEN CAR U
+    ELSE REDERR LIST("MISMATCH OF ARGUMENTS",U);
+
+SYMBOLIC PROCEDURE DELASC(U,V);
+   IF NULL V THEN NIL
+    ELSE IF ATOM CAR V OR U NEQ CAAR V THEN CAR V . DELASC(U,CDR V)
+    ELSE CDR V;
+
+SYMBOLIC PROCEDURE GET!*(U,V);
+   IF NUMBERP U THEN NIL ELSE GET(U,V);
+
+SYMBOLIC PROCEDURE MAPCON(X,!*PI!*);
+   IF NULL X THEN NIL ELSE NCONC(!*PI!* X,MAPCON(CDR X,!*PI!*));
+
+SYMBOLIC PROCEDURE MAPCONS(U,!*S!*);
+   MAPCAR(U,FUNCTION (LAMBDA J; !*S!* . J));
+
+SYMBOLIC PROCEDURE MAPPEND(U,!*S!*);
+   MAPCAR(U,FUNCTION (LAMBDA J; APPEND(!*S!*,J)));
+
+SYMBOLIC PROCEDURE NCONS(U,V);
+   IF NULL U THEN V ELSE U . V;
+
+SYMBOLIC PROCEDURE NLIST(U,N);
+   IF N=0 THEN NIL ELSE U . NLIST(U,N-1);
+
+SYMBOLIC PROCEDURE NTH(U,N);
+   CAR PNTH(U,N);
+
+SYMBOLIC PROCEDURE PNTH(U,N);
+   IF NULL U THEN REDERR "ELEMENT OUT OF BOUNDS"
+    ELSE IF N=1 THEN U
+    ELSE PNTH(CDR U,N-1);
+
+SYMBOLIC PROCEDURE PAIR(X,Y);
+   IF NULL X AND NULL Y THEN NIL
+    ELSE IF NULL X OR NULL Y
+       THEN REDERR LIST("MISMATCH OF ARGUMENTS",X,Y)
+    ELSE (CAR X . CAR Y) . PAIR(CDR X,CDR Y);
+
+SYMBOLIC PROCEDURE PERMP(U,V);
+   IF NULL U THEN T
+    ELSE IF CAR U EQ CAR V THEN PERMP(CDR U,CDR V)
+    ELSE NOT PERMP(CDR U,SUBST(CAR V,CAR U,CDR V));
+
+SYMBOLIC PROCEDURE POSN(U,V);
+   IF U EQ CAR V THEN 1 ELSE POSN(U,CDR V)+1;
+
+SYMBOLIC PROCEDURE REVPR U;
+   CDR U . CAR U;
+
+SYMBOLIC PROCEDURE RPLACW(U,V);
+   IF ATOM U OR ATOM V THEN ERRACH LIST('RPLACW,U,V)
+    ELSE RPLACD(RPLACA(U,CAR V),CDR V);
+
+SYMBOLIC PROCEDURE REPEATS X;
+   IF NULL X THEN NIL
+    ELSE IF CAR X MEMBER CDR X THEN CAR X . REPEATS CDR X
+    ELSE REPEATS CDR X;
+
+SYMBOLIC PROCEDURE SPACES N;
+   IF N=0 THEN NIL ELSE PROG2(PRINC " ",SPACES(N-1));
+
+SYMBOLIC PROCEDURE SUBLA(U,V);
+   IF NULL U OR NULL V THEN V
+    ELSE IF ATOM V THEN (LAMBDA X; IF X THEN CDR X ELSE V) ASSOC(V,U)
+    ELSE SUBLA(U,CAR V) . SUBLA(U,CDR V);
+
+SYMBOLIC PROCEDURE SUBLIS(U,V);
+   BEGIN SCALAR X;
+	IF NULL U THEN RETURN V;
+	X := U;
+  A:	IF NULL X THEN RETURN IF ATOM V
+		   OR (X := SUBLIS(U,CAR V) . SUBLIS(U,CDR V)) = V
+		 THEN V
+		ELSE X
+	 ELSE IF V = CAAR X THEN RETURN CDAR X;
+	X := CDR X;
+	GO TO A
+  END;
+
+SYMBOLIC PROCEDURE UNION(X,Y);
+   IF NULL X THEN Y
+    ELSE UNION(CDR X,IF CAR X MEMBER Y THEN Y ELSE CAR X . Y);
+
+SYMBOLIC PROCEDURE XN(U,V);
+   IF NULL U THEN NIL
+    ELSE IF CAR U MEMBER V THEN CAR U . XN(CDR U,DELETE(CAR U,V))
+    ELSE XN(CDR U,V);
+
+
+%*********************************************************************
+%	 FUNCTIONS FOR PRINTING DIAGNOSTIC AND ERROR MESSAGES
+%********************************************************************;
+
+SYMBOLIC PROCEDURE MESPRI(U,V,W,X,Y);
+   BEGIN SCALAR NAT1,Z;
+	IF NULL Y AND NULL !*MSG THEN RETURN NIL;
+	NAT1 := !*NAT;
+	!*NAT := NIL;
+	IF OFL!* AND (!*FORT OR NOT NAT1) THEN GO TO C;
+    A:  LPRI ((IF NULL Y THEN "***" ELSE "*****")
+		 . IF U AND ATOM U THEN LIST U ELSE U);
+	MAPRIN V;
+	PRINC " ";
+	LPRI IF W AND ATOM W THEN LIST W ELSE W;
+	MAPRIN X;
+	TERPRI();
+	IF NULL Z THEN GO TO B;
+	WRS Z;
+	GO TO D;
+    B:  IF NULL OFL!* THEN GO TO D;
+    C:  WRS NIL;
+	Z := OFL!*;
+	GO TO A;
+    D:  !*NAT := NAT1;
+	IF Y THEN IF Y EQ 'HOLD THEN ERFG!* := Y ELSE ERROR NIL
+   END;
+
+SYMBOLIC PROCEDURE ERRACH U;
+   BEGIN
+	TERPRI!* T;
+	LPRIE "CATASTROPHIC ERROR *****";
+	PRINTTY U;
+	LPRIW(" ",NIL);
+	REDERR "PLEASE SEND OUTPUT AND INPUT LISTING TO A C HEARN "
+   END;
+
+SYMBOLIC PROCEDURE ERRPRI1 U;
+   MESPRI("SUBSTITUTION FOR",U,"NOT ALLOWED",NIL,'HOLD);
+
+SYMBOLIC PROCEDURE ERRPRI2(U,V);
+   MESPRI("SYNTAX",U,"INCORRECT",NIL,V);
+
+SYMBOLIC PROCEDURE REDMSG(U,V);
+  BEGIN
+   IF NULL !*MSG THEN NIL
+    ELSE IF NULL IFL!* AND !*INT
+     THEN IF REDMSG1(U,V) THEN NIL ELSE ERROR NIL
+    ELSE LPRIM LIST(U,'DECLARED,V);
+   IF NOT V EQ 'OPERATOR THEN RETURN;
+   MESPRI("PLEASE DO NOT DECLARE OPERATORS BY DEFAULT",
+	  NIL,NIL,NIL,NIL);
+   MESPRI("IF YOU DO, YOUR PROGRAM MAY NOT RUN CORRECTLY",
+	  NIL,NIL,NIL,NIL);
+   MESPRI("IN FUTURE RELEASES OF REDUCE",NIL,NIL,NIL,NIL)
+  END;
+
+%*********************************************************************
+%	  FUNCTIONS FOR ALGEBRAIC EVALUATION OF PREFIX FORMS
+%********************************************************************;
+
+SYMBOLIC PROCEDURE REVAL U;
+   REVAL1(U,T);
+
+SYMBOLIC PROCEDURE AEVAL U;
+   REVAL1(U,NIL);
+
+SYMBOLIC PROCEDURE REVAL1(U,V);
+   BEGIN SCALAR X,Y;
+	IF NUMBERP U AND FIXP U THEN RETURN U
+	 ELSE IF ATOM U THEN NIL
+	 ELSE IF CAR U EQ '!*COMMA!* THEN ERRPRI2(U,T)
+	 ELSE IF CAR U EQ '!*SQ AND CADDR U THEN GO TO B;
+	MAPCAR(RPLIS!*,FUNCTION (LAMBDA J; RPLACW(CDR J,CAR J)));
+	RPLIS!* := NIL;
+	X := LIST U;
+	Y := TYPL!*;
+    A:  IF NULL Y THEN GO TO B
+	 ELSE IF !*APPLY(CAR Y,X)
+	  THEN RETURN !*APPLY(GET(CAR Y,'EVFN),X);
+	Y := CDR Y;
+	GO TO A;
+    B:  U := SIMP!* U;
+	IF NULL V THEN RETURN MK!*SQ U;
+	U := PREPSQ U;
+	RETURN IF EQCAR(U,'MINUS) AND NUMBERP CADR U THEN -CADR U
+		ELSE U
+   END;
+
+SYMBOLIC PROCEDURE REVLIS U;
+   MAPCAR(U,FUNCTION REVAL);
+
+SYMBOLIC PROCEDURE REVOP(U,V);
+   (LAMBDA X; IF NULL V OR NUMLIS CDR X THEN X
+       ELSE REDERR LIST("NON-NUMERICAL ARGUMENT IN",CAR U))
+   (CAR U . REVLIS CDR U);
+
+SYMBOLIC PROCEDURE MK!*SQ U;
+   IF NULL NUMR U THEN 0
+    ELSE IF ATOM NUMR U AND DENR U=1 THEN NUMR U
+    ELSE '!*SQ . U . !*SQVAR!*;
+
+
+%*********************************************************************
+%      FUNCTIONS FOR CONVERTING PREFIX FORMS INTO CANONICAL FORM
+%********************************************************************;
+
+SYMBOLIC PROCEDURE SIMP!* U;
+   BEGIN SCALAR X;
+	IF EQCAR(U,'!*SQ!*) AND CADDR U THEN RETURN CADR U;
+	X := MUL!*;
+	MUL!* := NIL;
+	U:= SIMP U;
+    A:  IF NULL MUL!* THEN GO TO B;
+	U:= !*APPLY(CAR MUL!*,LIST U);
+	MUL!*:= CDR MUL!*;
+	GO TO A;
+    B:  MUL!* := X;
+	RETURN SUBS2 U
+   END;
+
+SYMBOLIC PROCEDURE SUBS2 U;
+   BEGIN 
+	IF SUB2!* THEN U := RESIMP U;
+	IF NULL !*MATCH OR NULL SUBFG!* THEN GO TO A
+	 ELSE IF !*SMALL THEN REDERR "LARGER SYSTEM NEEDED";
+	U := SUBS3Q U;
+    A:  RETURN U
+   END;
+
+SYMBOLIC PROCEDURE SIMP U;
+   BEGIN SCALAR X;
+    A:  IF ATOM U THEN RETURN SIMPATOM U
+	 ELSE IF NOT ATOM CAR U OR NUMBERP CAR U THEN GO TO E
+	 ELSE IF FLAGP(CAR U,'OPFN)
+	  THEN U := !*EVAL(CAR U . MAPCAR(CDR U,FUNCTION MKQUOTE))
+	 ELSE IF X := GET(CAR U,'SIMPFN)
+	    THEN RETURN IF X EQ 'IDEN THEN SIMPIDEN U
+			  ELSE !*EVAL(X . LIST MKQUOTE CDR U)
+	 ELSE IF (X := OPMTCH U) THEN RETURN SIMP X
+	 ELSE IF GET(CAR U,'!*!*ARRAY) THEN GO TO D
+	 ELSE IF (X := GET(CAR U,'MATRIX)) THEN GO TO M
+	 ELSE IF GET(CAR U,'INFIX) THEN GO TO E
+	 ELSE IF CAR U MEMBER '(COND PROG) THEN U := !*EVAL U
+	 ELSE PROG2(REDMSG(CAR U,'OPERATOR),MKOP CAR U);
+	GO TO A;
+    D:  U := REVOP(U,T);
+	U := GETEL U;
+	GO TO A;
+    M:  IF NOT EQCAR(X,'MAT) THEN REDERR LIST('MATRIX,CAR U,"NOT SET")
+	ELSE IF NOT NUMLIS (U := REVLIS CDR U) OR LENGTH U NEQ 2
+	 THEN GO TO E;
+	U := NTH(NTH(CDR X,CAR U),CADR U);
+	GO TO A;
+    E:  ERRPRI2(U,T)
+   END;
+
+SYMBOLIC PROCEDURE SIMPATOM U;
+   BEGIN SCALAR Z;
+	IF NULL U THEN GO TO A
+	 ELSE IF NOT NUMBERP U THEN GO TO C
+	 ELSE IF U=0 THEN GO TO A
+	 ELSE IF NOT FIXP U THEN GO TO B
+	 ELSE IF NULL MOD!* OR (U := CMOD U) NEQ 0
+	  THEN RETURN U . 1;
+    A:  RETURN NIL . 1;
+    B:  IF !*FLOAT THEN RETURN U . 1;
+	Z := FIX (1000000*U);
+	Z := (LAMBDA N; (Z/N) . (1000000/N)) GCDN(1000000,Z);
+	MESPRI(NIL,U,"REPRESENTED BY",LIST('QUOTIENT,CAR Z,CDR Z),NIL);
+	RETURN Z;
+    C:  IF FLAGP(U,'SHARE) THEN RETURN SIMP !*EVAL U;
+	Z := TYPL!*;
+    D:  IF NULL Z THEN RETURN MKSQ(U,1)
+	 ELSE IF !*APPLY(CAR Z,LIST U)
+	  THEN REDERR LIST(GET(CAR Z,'NAME),U,"USED AS SCALAR");
+	Z := CDR Z;
+	GO TO D
+   END;
+
+SYMBOLIC PROCEDURE MKOP U;
+   IF NUMBERP U OR NOT ATOM U
+     THEN REDERR LIST(U,"CANNOT BE AN OPERATOR")
+    ELSE IF NULL U THEN REDERR "LOCAL VARIABLE USED AS OPERATOR"
+    ELSE IF DEFP(U,'OPERATOR) THEN NIL
+    ELSE IF U MEMBER FRLIS!*
+       THEN REDERR LIST("OPERATOR",U,"CANNOT BE ARBITRARY")
+    ELSE PUT(U,'SIMPFN,'IDEN);
+
+SYMBOLIC PROCEDURE SIMPCAR U;
+   SIMP CAR U;
+
+
+%*********************************************************************
+%	    SIMPLIFICATION FUNCTIONS FOR EXPLICIT OPERATORS
+%********************************************************************;
+
+SYMBOLIC PROCEDURE SIMPEXPT U;
+   BEGIN SCALAR FLG,M,N,X;
+	N := SIMP CARX CDR U;
+	U := CAR U;
+    A:  M := CAR N;
+    A1: IF U=1 THEN RETURN (1 . 1)
+	 ELSE IF NOT ATOM M OR CDR N NEQ 1 THEN GO TO NONUMEXP;
+	%integer exponent;
+	IF NULL M THEN RETURN IF U=0 THEN REDERR " 0/0 FORMED"
+				ELSE 1 . 1
+	 ELSE IF NOT ATOM U THEN GO TO NONATOM
+	 ELSE IF NUMBERP U THEN RETURN
+		IF U=0 THEN IF MINUSP M THEN REDERR "ZERO DENOMINATOR"
+		 ELSE IF NULL M THEN REDERR " 0/0 FORMED"
+		 ELSE NIL . 1
+		 ELSE IF MINUSP M THEN IF !*MCD THEN 1 . (U**(-M))
+				    ELSE IF U=-1 THEN (U**(-M)) . 1
+				  ELSE (1 . (U**(-M))) . 1
+		 ELSE (U**M) . 1
+	 ELSE IF FLAGP(U,'SHARE) THEN GO TO NONATOM
+	 ELSE IF NOT MINUSP M OR NOT !*MCD THEN RETURN MKSQ(U,M)
+	 ELSE IF NULL CDR (X := MKSP(U,-M)) THEN RETURN INVSQ CAR X
+	 ELSE RETURN LIST(1,X . 1);
+    NONATOM:
+	IF NOT FIXP M THEN GO TO NONUMEXP;
+	X := SIMP U;
+	IF NOT MINUSP M THEN RETURN EXPTSQ(X,M)
+	 ELSE IF !*MCD THEN RETURN INVSQ EXPTSQ(X,-M)
+	 ELSE IF NULL CAR X THEN REDERR "ZERO DENOMINATOR";
+    NONUMEXP:
+	IF ATOM U THEN GO TO B
+	 ELSE IF CAR U EQ 'TIMES THEN GO TO TIMS
+	 ELSE IF CAR U EQ 'QUOTIENT THEN GO TO QUOT
+	 ELSE IF CAR U EQ 'EXPT THEN GO TO EXP
+	 ELSE IF CAR U EQ 'MINUS AND NUMBERP M AND CDR N=1
+	  THEN RETURN MULTSQ(SIMPEXPT LIST(-1,M),
+			     SIMPEXPT LIST(CADR U,M))
+	 ELSE IF FLG THEN GO TO B;
+	FLG := T;
+	U := PREPSQ IF NULL X THEN SIMP U ELSE X;
+	GO TO A1;
+    B:  IF U=0 THEN RETURN NIL . 1;
+	IF NOT NUMBERP M THEN M := PREPF M;
+	IF M MEMBER FRLIS!* THEN RETURN LIST ((U . M) . 1) . 1;
+	N := PREPF CDR N;
+	IF !*MCD OR CDR X NEQ 1 OR NOT NUMBERP M OR N NEQ 1
+	  THEN GO TO C
+   %     ELSE IF MINUSF CAR X THEN RETURN MULTSQ(SIMPEXPT LIST(-1,M),
+   %    			SIMPEXPT LIST(PREPF NEGF CAR X,M));
+	 ELSE IF CAR U EQ 'PLUS
+	  THEN RETURN MKSQ(U,M); %to make pattern matching work;
+    C:	IF !*SMALL THEN REDERR "LARGER SYSTEM NEEDED"
+	 ELSE RETURN SIMPX1(U,M,N);
+    EXP:N := MULTSQ(SIMP CADDR U,N);
+	U := CADR U;
+	GO TO A;
+    QUOT:
+	N := PREPSQ N;
+	RETURN MULTSQ(SIMPEXPT LIST(CADR U,N),
+		      SIMPEXPT LIST(CADDR U,LIST('MINUS,N)));
+    TIMS:
+	N := PREPSQ N;
+	X := SIMPEXPT LIST(CADR U,N);
+	U := CDDR U;
+    T1: IF NULL U THEN RETURN X;
+	X := MULTSQ(SIMPEXPT LIST(CAR U,N),X);
+	U := CDR U;
+	GO TO T1
+   END;
+
+PUT('EXPT,'SIMPFN,'SIMPEXPT);
+
+SYMBOLIC PROCEDURE SIMPX1(U,M,N);
+   %U,M and N are prefix expressions;
+   %Value is the standard quotient expression for U**(M/N);
+   BEGIN SCALAR FLG,Z;
+    A:	IF NUMBERP M AND FIXP M THEN GO TO E
+	 ELSE IF ATOM M THEN GO TO B
+	 ELSE IF CAR M EQ 'MINUS THEN GO TO MNS
+	 ELSE IF CAR M EQ 'PLUS THEN GO TO PLS
+	 ELSE IF CAR M EQ 'TIMES AND NUMBERP CADR M AND FIXP CADR M
+	  THEN GO TO TMS;
+    B:	Z := 1;
+    C:	U := LIST('EXPT,U,IF N=1 THEN M ELSE LIST('QUOTIENT,M,N));
+	IF NOT U MEMBER EXPTL!* THEN EXPTL!* := U . EXPTL!*;
+    D:	RETURN MKSQ(U,IF FLG THEN -Z ELSE Z);
+    E:	Z := M;
+	IF N=1 THEN GO TO D;
+	M := 1;
+	GO TO C;
+    MNS: M := CADR M;
+	IF !*MCD THEN RETURN INVSQ SIMPX1(U,M,N);
+	FLG := NOT FLG;
+	GO TO A;
+    PLS: Z := 1 . 1;
+    PL1: M := CDR M;
+	IF NULL M THEN RETURN Z;
+	Z := MULTSQ(SIMPX1(U,
+			IF FLG THEN LIST('MINUS,CAR M) ELSE CAR M,N),
+		    Z);
+	GO TO PL1;
+    TMS: Z := GCDN(N,CADR M);
+	N := N/Z;
+	Z := CADR M/Z;
+	M := RETIMES CDDR M;
+	GO TO C
+   END;
+
+SYMBOLIC PROCEDURE INVSQ U;
+   IF NULL U THEN REDERR "ZERO DENOMINATOR"
+    ELSE NORMSQ REVPR U;
+
+SYMBOLIC PROCEDURE SIMPIDEN U;
+   BEGIN SCALAR Y,Z;
+	U:= REVOP(U,NIL);
+	IF NULL SUBFG!* THEN GO TO C
+	 ELSE IF FLAGP(CAR U,'LINEAR) AND (Z := FORMLNR U) NEQ U
+	  THEN RETURN SIMP Z
+	 ELSE IF Z := OPMTCH U THEN RETURN SIMP Z
+	 ELSE IF FLAGP(CAR U,'SYMMETRIC) THEN U := CAR U . ORDN CDR U
+	 ELSE IF FLAGP(CAR U,'ANTISYMMETRIC) THEN GO TO D;
+    C:  U := MKSQ(U,1);
+	RETURN IF Y THEN NEGSQ U ELSE U;
+    D:  IF REPEATS CDR U THEN RETURN (NIL . 1)
+	 ELSE IF NOT PERMP(Z := ORDN CDR U,CDR U) THEN Y := T;
+	U := CAR U . Z;
+	GO TO C
+   END;
+
+SYMBOLIC PROCEDURE SIMPDIFF U;
+   ADDSQ(SIMPCAR U,SIMPMINUS CDR U);
+
+PUT('DIFFERENCE,'SIMPFN,'SIMPDIFF);
+
+SYMBOLIC PROCEDURE SIMPMINUS U;
+   NEGSQ SIMP CARX U;
+
+PUT('MINUS,'SIMPFN,'SIMPMINUS);
+
+SYMBOLIC PROCEDURE SIMPPLUS U;
+   BEGIN SCALAR Z;
+	Z := NIL . 1;
+    A:  IF NULL U THEN RETURN Z;
+	Z := ADDSQ(SIMPCAR U,Z);
+	U := CDR U;
+	GO TO A
+   END;
+
+PUT('PLUS,'SIMPFN,'SIMPPLUS);
+
+SYMBOLIC PROCEDURE SIMPQUOT U;
+   MULTSQ(SIMPCAR U,SIMPRECIP CDR U);
+
+PUT('QUOTIENT,'SIMPFN,'SIMPQUOT);
+
+SYMBOLIC PROCEDURE SIMPRECIP U;
+   IF NULL !*MCD THEN SIMPEXPT LIST(CARX U,-1)
+    ELSE INVSQ SIMP CARX U;
+
+PUT('RECIP,'SIMPFN,'SIMPRECIP);
+
+SYMBOLIC PROCEDURE SIMPTIMES U;
+   BEGIN SCALAR X,Y;
+	IF TSTACK!* NEQ 0 OR NULL MUL!* THEN GO TO A0;
+	Y := MUL!*;
+	MUL!* := NIL;
+    A0: TSTACK!* := TSTACK!*+1;
+	X := SIMPCAR U;
+    A:  U := CDR U;
+	IF NULL CAR X THEN RETURN (NIL . 1)
+	 ELSE IF NULL U THEN GO TO B;
+	X := MULTSQ(X,SIMPCAR U);
+	GO TO A;
+    B:  IF NULL MUL!* OR TSTACK!*>1 THEN GO TO C;
+	X:= !*APPLY(CAR MUL!*,LIST X);
+	MUL!*:= CDR MUL!*;
+	GO TO B;
+   C:	TSTACK!* := TSTACK!*-1;
+	IF TSTACK!* = 0 THEN MUL!* := Y;
+	RETURN X;
+   END;
+
+PUT('TIMES,'SIMPFN,'SIMPTIMES);
+
+SYMBOLIC PROCEDURE SIMPGTS U;
+   SIMP !*EVAL ('GTS . U);
+
+PUT('GTS,'SIMPFN,'SIMPGTS);
+
+SYMBOLIC PROCEDURE SIMP!*SQ U;
+   IF NULL CADR U THEN RESIMP CAR U ELSE CAR U;
+
+PUT('!*SQ,'SIMPFN,'SIMP!*SQ);
+
+
+%*********************************************************************
+%                FUNCTIONS FOR SUBSTITUTION OF KERNELS
+%********************************************************************;
+
+SYMBOLIC PROCEDURE SIMPSUB U;
+   BEGIN SCALAR X,Z,Z1;
+   A:	IF NULL CDR U THEN GO TO D
+	 ELSE IF NOT EQEXPR CAR U THEN ERRPRI2(CAR U,T);
+	X := CADAR U;
+	Z1 := TYPL!*;
+    B:	IF NULL Z1 THEN GO TO B1
+	 ELSE IF !*APPLY(CAR Z1,LIST X) THEN GO TO C;
+	Z1 := CDR Z1;
+	GO TO B;
+    B1:	X := SIMP0 X;
+	IF NOT KERNP X THEN ERROR ERRPRI1 CADAR U;
+	X := CAAAAR X;
+    C:	Z := (X . CADDAR U) . Z;
+	U := CDR U;
+	GO TO A;
+    D:	U := SIMP!* CAR U;
+	RETURN MULTSQ(SUBF(NUMR U,Z),SUBF(DENR U,Z))
+  END;
+
+SYMBOLIC PROCEDURE SUBF(U,L);
+   %U is a standard form,
+   %L an association list of substitutions of the form 
+   %(<kernel> . <substitution>).
+   %Value is the standard quotient for substituted expression.
+   %Algorithm used is essentially Horner's rule.
+   %Procedure depends on explicit data structure for standard form;
+   IF NULL U OR NUMB U THEN U . 1
+    ELSE BEGIN INTEGER M,N; SCALAR EXP,KERN,W,X,Y,Y1,Z;
+	KERN := CAR LPOW U;
+	IF NOT ATOM KERN AND NOT ATOM CAR KERN
+	  THEN KERN := LIST('!*SQ,KERN . 1,NIL);
+	Z := NIL . 1;
+    A:	IF NULL U OR DEG(U,KERN)=0 THEN GO TO B;
+	Y := CAR U . Y;
+	U := CDR U;
+	GO TO A;
+    B:	IF L AND (EXP := SUBLIS(L,KERN)) = KERN THEN GO TO F
+	 ELSE IF NULL L THEN EXP := IF KERN EQ 'K!* THEN 1 ELSE KERN;
+    C:	W := 1 . 1;
+	N := 0;
+	IF CDAAR Y<0 THEN GO TO H;
+	X := SIMP EXP;
+	IF NULL L AND KERNP X AND CAR LPOW NUMR X EQ KERN 
+	  THEN GO TO F
+	 ELSE IF NULL NUMR X THEN GO TO E;   %Substitution of 0;
+    D:	M := CDAAR Y;
+	W := MULTSQ(EXPTSQ(X,M-N),W);
+	N := M;
+	Z := ADDSQ(MULTSQ(W,SUBF(CDAR Y,L)),Z);
+	Y := CDR Y;
+	IF Y THEN GO TO D;
+    E:	RETURN ADDSQ(Z,SUBF(U,L));
+    F:	Z := ADDSQ(MULTPQ(CAAR Y,SUBF(CDAR Y,L)),Z);
+	Y := CDR Y;
+	IF Y THEN GO TO F ELSE GO TO E;
+    H:	%Substitution for negative powers;
+	X := SIMPRECIP LIST EXP;
+    J:	Y1 := CAR Y . Y1;
+	Y := CDR Y;
+	IF Y AND CDAAR Y<0 THEN GO TO J;
+    K:	M := -CDAAR Y1;
+	W := MULTSQ(EXPTSQ(X,M-N),W);
+	N := M;
+	Z := ADDSQ(MULTSQ(W,SUBF(CDAR Y1,L)),Z);
+	Y1 := CDR Y1;
+	IF Y1 THEN GO TO K ELSE IF Y THEN GO TO C ELSE GO TO E
+    END;
+
+SYMBOLIC PROCEDURE RESIMP U;
+   %U is a standard quotient.
+   %Value is the resimplified standard quotient;
+   MULTSQ(SUBF(NUMR U,NIL),INVSQ SUBF(DENR U,NIL));
+
+PUT('SUB,'SIMPFN,'SIMPSUB);
+
+SYMBOLIC PROCEDURE EQEXPR U;
+   EQCAR(U,'EQUAL) AND CDDR U AND NULL CDDDR U;
+
+SYMBOLIC PROCEDURE KERNP U;
+   CDR U=1 AND NOT ATOM CAR U AND NOT ATOM CAAR U
+	AND NULL CDAR U AND CDAAR U=1 AND CDAAAR U=1;
+
+
+%*********************************************************************
+%	FUNCTIONS FOR ADDING AND MULTIPLYING STANDARD QUOTIENTS
+%********************************************************************;
+
+SYMBOLIC PROCEDURE ADDSQ(U,V);
+   %U and V are standard quotients.
+   %Value is canonical sum of U and V;
+   IF NULL NUMR U THEN V
+    ELSE IF NULL NUMR V THEN U
+    ELSE IF DENR U=1 AND DENR V=1 THEN ADDF(NUMR U,NUMR V) DIV 1
+    ELSE BEGIN SCALAR W,X,Y,Z;
+	X := GCDF(DENR U,DENR V);
+	W := DIVF(DENR U,X) DIV DIVF(DENR V,X);
+	Y := ADDF(MULTF(NUMR U,DENR W),MULTF(NUMR V,NUMR W));
+	IF NULL Y THEN RETURN NIL DIV 1;
+	Z := MULTF(DENR U,DENR W);
+	IF X=1 THEN RETURN Y DIV Z;
+	X := GCDF(Y,X);
+	RETURN IF X=1 THEN Y DIV Z ELSE DIVF(Y,X) DIV DIVF(Z,X)
+    END;
+
+
+SYMBOLIC PROCEDURE MULTSQ(U,V);
+   %U and V are standard quotients.
+   %Value is canonical product of U and V;
+   IF NULL NUMR U OR NULL NUMR V THEN NIL DIV 1
+    ELSE IF DENR U=1 AND DENR V=1 THEN MULTF(NUMR U,NUMR V) DIV 1
+    ELSE BEGIN SCALAR X,Y;
+	X := GCDF(DENR V,NUMR U);
+	Y := GCDF(DENR U,NUMR V);
+	RETURN MULTF(DIVF(NUMR U,X),DIVF(NUMR V,Y))
+		DIV MULTF(DIVF(DENR U,Y),DIVF(DENR V,X))
+    END;
+
+SYMBOLIC PROCEDURE NEGSQ U;
+   NEGF NUMR U DIV DENR U;
+
+SYMBOLIC PROCEDURE MULTPQ(U,V);
+   MULTSQ(LIST(U . 1) . 1,V);
+
+
+%*********************************************************************
+%         FUNCTIONS FOR ADDING AND MULTIPLYING STANDARD FORMS
+%********************************************************************;
+
+SYMBOLIC PROCEDURE ADDF(U,V);
+   IF NULL U THEN V
+    ELSE IF NULL V THEN U
+    ELSE IF ATOM U THEN ADDN(U,V)
+    ELSE IF ATOM CAR U THEN ADDR(U,V)
+    ELSE IF ATOM V THEN ADDN(V,U)
+    ELSE IF ATOM CAR V THEN ADDR(V,U)
+    ELSE IF CAAR U = CAAR V
+       THEN (LAMBDA (X,Y); IF NULL X THEN Y ELSE (CAAR U . X) . Y)
+		(ADDF(CDAR U,CDAR V),ADDF(CDR U,CDR V))
+    ELSE IF (LAMBDA (J,K);
+	       IF CAR J EQ CAR K THEN CDR J>CDR K 
+		ELSE IF NCMP!* THEN NCMORDP(CAR J,CAR K)
+		ELSE ORDERP(CAR J,CAR K))
+	     (CAAR U,CAAR V)
+     THEN CAR U . ADDF(CDR U,V)
+    ELSE CAR V . ADDF(U,CDR V);
+
+SYMBOLIC PROCEDURE ADDN(N,V);
+   IF NULL V THEN N
+    ELSE IF ATOM V THEN (LAMBDA M; IF M=0 THEN NIL ELSE M)
+	(IF NULL MOD!* THEN N+V ELSE CPLUS(CMOD N,CMOD V))
+    ELSE IF ATOM CAR V THEN MKFR(N*CDR V+CAR V,CDR V)
+    ELSE CAR V . ADDN(N,CDR V);
+
+SYMBOLIC PROCEDURE MKFR(U,V);
+   IF U=0 THEN NIL
+    ELSE IF !*FLOAT THEN (1.0*U)/V
+    ELSE IF MINUSP V THEN MKFR(-U,-V)
+    ELSE (LAMBDA M;
+	  (LAMBDA (N1,N2); IF N2=1 THEN N1 ELSE N1 . N2) (U/M,V/M))
+       GCDN(U,V);
+
+SYMBOLIC PROCEDURE ADDR(U,V);
+   IF NULL V THEN U
+    ELSE IF ATOM V THEN MKFR(CDR U*V+CAR U,CDR U)
+    ELSE IF ATOM CAR V THEN MKFR(CAR U*CDR V+CDR U*CAR V,CDR U*CDR V)
+    ELSE CAR V . ADDR(U,CDR V);
+
+SYMBOLIC PROCEDURE MULTF(U,V);
+   BEGIN SCALAR X,Y,Z;
+    A0: IF NULL U OR NULL V THEN RETURN NIL
+	 ELSE IF ATOM U THEN RETURN MULTN(U,V)
+	 ELSE IF ATOM CAR U THEN RETURN MULTR(U,V)
+	 ELSE IF ATOM V THEN RETURN MULTN(V,U)
+	 ELSE IF ATOM CAR V THEN RETURN MULTR(V,U)
+	 ELSE IF !*EXP OR NCMP!* OR X THEN GO TO A;
+	U := MKSFPF(U,1);
+	V := MKSFPF(V,1);
+	X := T;
+	GO TO A0;
+    A:  X := CAAAR U;
+	Y := CAAAR V;
+	IF NOT NCMP!* THEN GO TO A1
+	 ELSE IF NOT ATOM X AND FLAGP!*!*(CAR X,'NONCOM) THEN GO TO B
+	 ELSE IF NOT ATOM Y AND FLAGP!*!*(CAR Y,'NONCOM) THEN GO TO A2;
+    A1:	IF X EQ Y THEN GO TO C
+	 ELSE IF ORDERP(X,Y) THEN GO TO B;
+    A2:	X := MULTF(U,CDAR V);
+	Y := MULTF(U,CDR V);
+	RETURN (IF NULL X THEN Y ELSE (CAAR V . X) . Y);
+    B: X := MULTF(CDAR U,V);
+	Y := MULTF(CDR U,V);
+	RETURN (IF NULL X THEN Y ELSE (CAAR U . X) . Y);
+    C:  X := IF (Z := CDAAR U + CDAAR V) = 0 THEN LIST (1 . 1)
+	     ELSE MKSP(X,Z);
+	Y := ADDF(MULTF(LIST CAR U,CDR V),MULTF(CDR U,V));
+	RETURN (IF NULL CDR X
+		  THEN IF NULL CAAR X THEN Y
+			ELSE ADDF(MULTF(CAAR X,
+					MULTF(CDAR U,
+					IF CDAR X=1 THEN CDAR V
+					 ELSE MULTF(MKSQF(1 . CDAR X),
+						    CDAR V))),
+				    Y)
+		 ELSE IF NULL (U := MULTF(CDAR U,CDAR V)) THEN Y
+		 ELSE IF NULL !*MCD THEN ADDF(LIST(X . U),Y)
+		 ELSE (X . U) . Y)
+   END;
+
+SYMBOLIC PROCEDURE MULTF2(U,V);
+   MULTF(LIST (U . 1),V);
+
+SYMBOLIC PROCEDURE MULTN(N,V);
+   IF NULL V THEN NIL
+    ELSE IF N=1 THEN V
+    ELSE IF ATOM V THEN IF NULL MOD!* THEN N*V
+	 ELSE (LAMBDA M; IF M=0 THEN NIL ELSE M) CTIMES(CMOD N,CMOD V)
+    ELSE IF ATOM CAR V THEN MKFR(N*CAR V,CDR V)
+    ELSE (CAAR V . MULTN(N,CDAR V)) . MULTN(N,CDR V);
+
+SYMBOLIC PROCEDURE MULTR(U,V);
+   IF NULL V THEN NIL
+    ELSE IF ATOM V THEN MKFR(CAR U*V,CDR U)
+    ELSE IF ATOM CAR V THEN MKFR(CAR U*CAR V,CDR U*CDR V)
+    ELSE (CAAR V . MULTR(U,CDAR V)) . MULTR(U,CDR V);
+
+SYMBOLIC PROCEDURE NEGF U;
+   MULTN(-1,U);
+
+
+%*********************************************************************
+%		 FUNCTIONS FOR DIVIDING STANDARD FORMS
+%********************************************************************;
+
+SYMBOLIC PROCEDURE DIVF(P,Q);
+   IF NULL P THEN NIL
+    ELSE IF P=Q THEN 1
+    ELSE IF Q=1 THEN P
+    ELSE IF ATOM Q
+       THEN IF MOD!* THEN MULTN(CRECIP Q,P)
+	     ELSE IF !*FLOAT THEN MULTN(1.0/Q,P)
+	     ELSE IF ATOM P
+	      THEN (LAMBDA Z; IF CDR Z=0 THEN CAR Z
+				ELSE IF NOT !*MCD THEN MKFR(P,Q)
+				ELSE NIL)
+			 DIVIDE(P,Q)
+		ELSE IF ATOM CAR P THEN MKFR(CAR P,CDR P*Q)
+	     ELSE DIVK(CAAR P,P,Q)
+    ELSE IF ATOM CAR Q THEN MULTR(REVPR Q,P)
+    ELSE IF NUMB P THEN NIL
+    ELSE (LAMBDA (X,Y);
+	  IF CAR X EQ CAR Y
+	      THEN (LAMBDA N;
+		 IF NOT MINUSP N OR NOT !*MCD
+		     THEN (LAMBDA W;
+			IF W
+			    THEN (LAMBDA (V,Y);
+			       IF NULL Y THEN V
+				ELSE (LAMBDA Z;
+				      IF Z THEN APPEND(V,Z) ELSE NIL)
+				   DIVF(Y,Q))
+			    (IF N=0 THEN W
+			      ELSE LIST (MKSP(CAR X,N) . W),
+			     ADDF(P,
+				  MULTF(IF N=0 THEN Q
+					 ELSE MULTF2(MKSP(CAR X,N),Q),
+					NEGF W))) ELSE NIL)
+		     (DIVF(CDAR P,CDAR Q)) ELSE NIL)
+	      (CDR X-CDR Y)
+	   ELSE IF ORDERP(CAR X,CAR Y) THEN DIVK(X,P,Q) ELSE NIL)
+       (CAAR P,CAAR Q);
+
+SYMBOLIC PROCEDURE DIVK(X,P,Q);
+   (LAMBDA W;
+	IF W THEN IF NULL CDR P THEN LIST (X . W)
+		   ELSE (LAMBDA Y; IF Y THEN (X . W) . Y ELSE NIL)
+			  DIVF(CDR P,Q)
+	 ELSE NIL)
+      DIVF(CDAR P,Q);
+
+
+%*********************************************************************
+%		BASIC GREATEST COMMON DIVISOR ROUTINES
+%********************************************************************;
+
+SYMBOLIC PROCEDURE GCDN(P,Q);
+   IF Q = 0 THEN ABS P ELSE GCDN(Q,REMAINDER(P,Q));
+
+SYMBOLIC PROCEDURE COMFAC P;
+  %P is a non-atomic standard form
+  %CAR of result is lowest common power of leading kernel in
+  %every term in P (or NIL). CDR is gcd of all coefficients of
+  %powers of leading kernel;
+   BEGIN SCALAR X,Y;
+	IF NULL CDR P THEN RETURN CAR P;
+	Y := MVAR P;  %leading kernel;
+    A:  IF DEG(P,Y)=0 THEN RETURN NIL . GCD2(X,P)
+	 ELSE IF NULL CDR P THEN RETURN CAAR P . GCD2(X,CDAR P)
+	 ELSE IF X=1 THEN GO TO B
+	 ELSE X := GCD2(X,CDAR P);
+    B:	P := CDR P;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE DEG(U,VAR);
+   IF NUMB U OR NOT CAAAR U EQ VAR THEN 0 ELSE CDAAR U;
+
+SYMBOLIC PROCEDURE NUMB U;
+   ATOM U OR ATOM CAR U;
+
+SYMBOLIC PROCEDURE GCDF(U,V);
+   IF U=1 OR V=1 OR !*FLOAT THEN 1 ELSE ABSF GCD2(U,V);
+
+SYMBOLIC PROCEDURE GCD2(U,V);
+   IF NULL U THEN V
+    ELSE IF NULL V THEN U
+    ELSE IF U=1 OR V=1 THEN 1
+    ELSE IF U=V THEN U
+    ELSE IF ATOM U
+     THEN IF ATOM V THEN GCDN(U,V)
+	    ELSE IF ATOM CAR V THEN 1
+	    ELSE GCD2(CDR V,GCD2(U,CDAR V))
+    ELSE IF ATOM CAR U THEN 1
+    ELSE IF ATOM V THEN GCD2(CDR U,GCD2(V,CDAR U))
+    ELSE IF ATOM CAR V THEN 1
+    ELSE (LAMBDA (X,Y);
+	  IF X EQ Y THEN (LAMBDA (J,K); (LAMBDA L;
+		IF NULL CAR J OR NULL CAR K THEN L
+		 ELSE MULTOP(IF CDAR J>CDAR K THEN CAR K ELSE CAR J,L))
+	     MULTF(IF NULL !*GCD THEN 1
+		    ELSE GCDK(DIVF(U,GCDL J),DIVF(V,GCDL K)),
+		   GCD2(CDR J,CDR K)))
+	    (COMFAC U,COMFAC V)
+	   ELSE IF ORDOP(X,Y) THEN GCD2(CDR COMFAC U,V)
+	   ELSE GCD2(CDR COMFAC V,U))
+       (CAAAR U,CAAAR V);
+
+SYMBOLIC PROCEDURE GCDL U;
+   IF NULL CAR U THEN CDR U ELSE LIST U;
+
+SYMBOLIC PROCEDURE MINUSF U;
+   %U is a standard form.
+   %Value is T if U has a negative leading numerical coeff,
+   %NIL otherwise;
+   IF NULL U THEN NIL
+    ELSE IF ATOM U THEN MINUSP U
+    ELSE IF ATOM CAR U THEN MINUSP CAR U
+    ELSE MINUSF LC U;
+
+SYMBOLIC PROCEDURE ABSF U;
+   %U is a standard form
+   %value is a standard form in which the leading power has a
+   %positive coefficient;
+   IF MINUSF U THEN NEGF U ELSE U;
+
+SYMBOLIC PROCEDURE NORMSQ U;
+   %U is a standard quotient
+   %value is a standard quotient in which the leading power
+   %of the denominator has a positive numerical coefficient;
+   IF MINUSF DENR U THEN NEGF NUMR U DIV NEGF DENR U ELSE U;
+
+
+%*********************************************************************
+%	    FUNCTIONS FOR INTERNAL ORDERING OF EXPRESSIONS
+%********************************************************************;
+
+SYMBOLIC PROCEDURE ORDAD(A,U);
+   IF NULL U THEN LIST A
+    ELSE IF ORDP(A,CAR U) THEN A . U
+    ELSE CAR U . ORDAD(A,CDR U);
+
+SYMBOLIC PROCEDURE ORDN U;
+   IF NULL U THEN NIL
+    ELSE IF NULL CDR U THEN U
+    ELSE IF NULL CDDR U THEN ORD2(CAR U,CADR U)
+    ELSE ORDAD(CAR U,ORDN CDR U);
+
+SYMBOLIC PROCEDURE ORD2(U,V);
+   IF ORDP(U,V) THEN LIST(U,V) ELSE LIST(V,U);
+
+SYMBOLIC PROCEDURE ORDP(U,V);
+   IF NULL U THEN NULL V
+    ELSE IF NULL V THEN T
+    ELSE IF ATOM U
+       THEN IF ATOM V
+		THEN IF NUMBERP U THEN NUMBERP V AND NOT U<V
+		      ELSE IF NUMBERP V THEN T ELSE ORDERP(U,V)
+	     ELSE T
+    ELSE IF ATOM V THEN NIL
+    ELSE IF CAR U=CAR V THEN ORDP(CDR U,CDR V)
+    ELSE ORDP(CAR U,CAR V);
+
+
+%*********************************************************************
+%	   FUNCTIONS FOR RAISING CANONICAL FORMS TO A POWER
+%********************************************************************;
+
+SYMBOLIC PROCEDURE EXPTSQ(U,N);
+   BEGIN SCALAR M,X;
+	IF N=1 OR NULL CAR U THEN RETURN U
+	 ELSE IF N<0 THEN RETURN SIMPEXPT LIST(MK!*SQ U,N)
+	  ELSE IF NULL !*EXP
+	     THEN RETURN (MKSFPF(CAR U,N) . MKSFPF(CDR U,N));
+	X := 1 . 1;
+    A:  M := N/2;
+	IF N=2*M THEN GO TO B;
+	X := MULTSQ(U,X);
+	IF M=0 THEN RETURN X;
+    B:  N := M;
+	U := MULTSQ(U,U);
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE EXPTF(U,N);
+   IF !*EXP OR KERNLP U THEN EXPTF1(U,N) ELSE MKSFPF(U,N);
+
+SYMBOLIC PROCEDURE EXPTF1(U,N);
+   IF N=0 THEN 1 ELSE MULTF(U,EXPTF1(U,N-1));
+
+
+%*********************************************************************
+%		 FUNCTIONS FOR MAKING STANDARD POWERS
+%********************************************************************;
+
+SYMBOLIC PROCEDURE MKSP(U,P);
+   BEGIN SCALAR V,X,Y;
+	U := FKERN U;
+	V := CDDR U;
+    A:  IF NULL V THEN GO TO B
+	 ELSE IF NULL SUBFG!* THEN SUB2!* := T
+	 ELSE IF X := ASSOC('ASYMP,V) THEN GO TO L1
+	 ELSE IF X := ASSOC('REP,V) THEN GO TO L2;
+    B:  RETURN GETPOWER(U,P);
+    L1: IF NOT P<CDR X THEN RETURN LIST (NIL . 1);
+	V := DELASC(CAR X,V);
+	GO TO A;
+    L2: V := CDDDR X;
+	Y := CADDR X;
+	IF Y NEQ 1 AND P<Y THEN GO TO B
+	 ELSE IF CAR V THEN GO TO L3;
+	SUBL!* := V . SUBL!*;
+	Y := SIMPCAR CDR X;
+    L21:RPLACA(V,MK!*SQ Y);
+	GO TO L31;
+    L3: Y := SIMPCAR V;
+	IF EQCAR(CAR V,'!*SQ) AND NULL CADDAR V THEN GO TO L21;
+    L31:V := Y;
+	X := CADDR X;
+	IF X=1 THEN RETURN LIST EXPTSQ(V,P);
+	Y := DIVIDE(P,X);
+	V := EXPTSQ(V,CAR Y);
+	IF NOT CDR Y=0 THEN V := MULTPQ(GETPOWER(U,CDR Y),V);
+	RETURN LIST V
+   END;
+
+SYMBOLIC PROCEDURE MKSP!*(U,P);
+   %U is a kernel and P a power.
+   %Value is the standard power of U**P;
+   GETPOWER(FKERN U,P);
+
+SYMBOLIC PROCEDURE FKERN U;
+   BEGIN SCALAR V;
+	IF NOT ATOM U THEN GO TO A0
+	 ELSE IF V := GET(U,'APROP) THEN RETURN V;
+	V := LIST(U,NIL);
+	PUT(U,'APROP,V);
+	RETURN V;
+    A0: IF NOT ATOM CAR U THEN V := EXLIST!*
+	 ELSE IF NOT (V := GET(CAR U,'KLIST)) THEN GO TO B;
+    A:  IF U=CAAR V THEN RETURN CAR V
+	 ELSE IF ORDP(U,CAAR V)
+	    THEN RETURN CAR RPLACW(V,LIST(U,NIL) . (CAR V . CDR V))
+	 ELSE IF NULL CDR V
+	    THEN RETURN CADR RPLACD(V,LIST LIST(U,NIL));
+	V := CDR V;
+	GO TO A;
+    B:  V := LIST LIST(U,NIL);
+	PUT(CAR U,'KLIST,V);
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE GETPOWER(U,N);
+   BEGIN SCALAR V;
+	IF SUBFG!* AND NOT ASSOC('USED!*,CDR U)
+	    THEN ACONC(U,LIST 'USED!*);
+	V := CADR U;
+	IF NULL V THEN RETURN CAAR RPLACA(CDR U,LIST (CAR U . N));
+    A:  IF N=CDAR V THEN RETURN CAR V
+	 ELSE IF N<CDAR V
+	    THEN RETURN CAR RPLACW(V,(CAAR V . N) . (CAR V . CDR V))
+	 ELSE IF NULL CDR V
+	    THEN RETURN CADR RPLACD(V,LIST (CAAR V . N));
+	V := CDR V;
+	GO TO A
+   END;
+
+
+%*********************************************************************
+%	   FUNCTIONS FOR MAKING STANDARD FORMS AND QUOTIENTS
+%********************************************************************;
+
+SYMBOLIC PROCEDURE MKSF(U,N);
+   (LAMBDA X;
+	 IF NULL CDR X
+	     THEN IF CDAR X=1 THEN CAAR X
+		   ELSE MULTF(MKSQF (1 . CDAR X),CAAR X)
+	  ELSE LIST (X . 1))
+      MKSP(U,N);
+
+SYMBOLIC PROCEDURE MKSFPF(U,N);
+   IF NOT MINUSP N AND KERNLP U THEN EXPTF1(U,N)
+    ELSE IF ATOM U THEN 1 . (U**(-N))
+    ELSE IF ATOM CAR U THEN (CDR U**(-N)) . (CAR U**(-N))
+    ELSE MKSF(U,N);
+
+SYMBOLIC PROCEDURE MKSQF U;
+   BEGIN
+	IF NULL CAR U THEN RETURN NIL
+	 ELSE IF DENR U=1 THEN RETURN NUMR U
+	 ELSE IF NULL !*MCD
+	  THEN RETURN MULTF(CAR U,
+			   MKSQF SIMPEXPT LIST(MK!*SQ(CDR U . 1),-1));
+	SUB2!* := T;
+	RETURN IF !*EXP
+		 THEN MULTF(CAR U,MKSF(MK!*SQ(1 . MKSFPF(CDR U,1)),1))
+		ELSE MKSF(MK!*SQ(CAR U . MKSFPF(CDR U,1)),1)
+   END;
+
+SYMBOLIC PROCEDURE MKSQ(U,N);
+   BEGIN SCALAR X,Y;
+	IF NULL SUBFG!* OR NOT(Y := ASSOC!*(U,WTL!*)) THEN GO TO A
+	 ELSE IF NULL CAR(Y := MKSQ('K!*,N*CDR Y)) THEN RETURN Y;
+    A:  X := MKSP(U,N);
+	IF NULL CDR X THEN X := CAR X ELSE X := LIST(X . 1) . 1;
+	RETURN IF Y THEN MULTSQ(Y,X) ELSE X
+   END;
+
+
+%*********************************************************************
+%	  FUNCTIONS WHICH APPLY BASIC PATTERN MATCHING RULES
+%********************************************************************;
+
+SYMBOLIC PROCEDURE EMTCH U;
+   IF ATOM U THEN U ELSE (LAMBDA X; IF X THEN X ELSE U) OPMTCH U;
+
+SYMBOLIC PROCEDURE OPMTCH U;
+   BEGIN SCALAR X,Y;
+	X := GET(CAR U,'OPMTCH);
+	IF SUBFG!* THEN GO TO A ELSE IF X THEN SUB2!* := T;
+	RETURN NIL;
+    A:  IF NULL X THEN RETURN;
+	Y := MCHARG(CDR U,CAAR X,CAR U);
+    B:  IF NULL Y THEN GO TO C
+	 ELSE IF !*EVAL SUBLA(CAR Y,CDADAR X)
+	  THEN RETURN SUBLA(CAR Y,CADDAR X);
+	Y := CDR Y;
+	GO TO B;
+    C:  X := CDR X;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE MCHARG(U,V,W);
+   %procedure to determine if an argument list matches given template;
+   %U is argument list of operator W;
+   %V is argument list template being matched against;
+   %if there is no match, value is NIL,
+   %otherwise a list of lists of free variable pairings;
+   IF NULL U AND NULL V THEN LIST NIL
+    ELSE IF FLAGP(W,'SYMMETRIC) THEN MCHSARG(U,V,W)
+    ELSE IF FLAGP(W,'ANTISYMMETRIC) THEN MCHASARG(U,V,W)
+    ELSE BEGIN INTEGER M,N;
+	M := LENGTH U;
+	N := LENGTH V;
+    A:	IF NOT MTP V THEN GO TO C
+	 ELSE IF M=N THEN GO TO B
+	 ELSE IF N NEQ 2 OR NOT FLAGP(W,'NARY) OR M<2 THEN RETURN
+	 ELSE U := CDR MKBIN(W,U);
+    B:	RETURN LIST PAIR(V,MAPCAR(U,FUNCTION EMTCH));
+    C:	RETURN IF M NEQ N THEN NIL ELSE MCHARG2(U,V,LIST NIL)
+   END;
+
+SYMBOLIC PROCEDURE MCHARG2(U,V,W);
+   %matches compatible list U against template V;
+   BEGIN SCALAR Y,Z;
+	IF NULL U THEN RETURN W;
+	Y := MCHK(CAR U,CAR V);
+	U := CDR U;
+	V := CDR V;
+    A:	IF NULL Y THEN RETURN Z;
+	Z := NCONC(MCHARG2(U,SUBLA(CAR Y,V),MAPPEND(W,CAR Y)),Z);
+	Y := CDR Y;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE MCHK(U,V);
+   IF U=V THEN LIST NIL
+    ELSE IF ATOM V 
+	   THEN IF V MEMBER FRLIS!* THEN LIST LIST (V . U) ELSE NIL
+    ELSE IF ATOM U THEN NIL
+    ELSE IF CAR U EQ CAR V THEN MCHARG(CDR U,CDR V,CAR U)
+    ELSE NIL;
+
+SYMBOLIC PROCEDURE MKBIN(U,V);
+   IF NULL CDDR V THEN U . V ELSE LIST(U,CAR V,MKBIN(U,CDR V));
+
+SYMBOLIC PROCEDURE MTP V;
+   NULL V OR (CAR V MEMBER FRLIS!* AND NOT CAR V MEMBER CDR V
+       AND MTP CDR V);
+
+
+%*********************************************************************
+%     FUNCTIONS FOR CONVERTING CANONICAL FORMS INTO PREFIX FORMS
+%********************************************************************;
+
+SYMBOLIC PROCEDURE PREPSQ U;
+   IF NULL CAR U THEN 0 ELSE SQFORM(U,FUNCTION PREPF);
+
+SYMBOLIC PROCEDURE SQFORM(U,!*PI!*);
+   (LAMBDA (X,Y); IF Y=1 THEN X ELSE LIST('QUOTIENT,X,Y))
+      (!*PI!* CAR U,!*PI!* CDR U);
+
+SYMBOLIC PROCEDURE PREPF U;
+   REPLUS PREPF1(U,NIL);
+
+SYMBOLIC PROCEDURE PREPF1(U,V);
+   IF NULL U THEN NIL
+    ELSE IF ATOM U
+     THEN LIST RETIMES((IF MINUSP U THEN LIST('MINUS,-U) ELSE U)
+			. EXCHK(V,NIL))
+    ELSE IF ATOM CAR U
+     THEN LIST RETIMES((IF MINUSP CAR U
+			 THEN LIST('MINUS,LIST('QUOTIENT,-CAR U,CDR U))
+			 ELSE LIST('QUOTIENT,CAR U,CDR U))
+				. EXCHK(V,NIL))
+    ELSE NCONC(PREPF1(CDAR U,IF CAAAR U EQ 'K!* THEN V ELSE CAAR U . V)
+	       ,PREPF1(CDR U,V));
+
+SYMBOLIC PROCEDURE EXCHK(U,V);
+   IF NULL U THEN V
+    ELSE IF CDAR U=1 THEN EXCHK(CDR U,SQCHK CAAR U . V)
+    ELSE EXCHK(CDR U,LIST('EXPT,SQCHK CAAR U,CDAR U) . V);
+
+SYMBOLIC PROCEDURE REPLUS U;
+   IF ATOM U THEN U ELSE IF NULL CDR U THEN CAR U ELSE 'PLUS . U;
+
+SYMBOLIC PROCEDURE RETIMES U;
+   BEGIN SCALAR X,Y;
+    A:  IF NULL U THEN GO TO D
+	 ELSE IF CAR U=1 THEN GO TO C
+	 ELSE IF NOT EQCAR(CAR U,'MINUS) THEN GO TO B;
+	X := NOT X;
+	IF CADAR U=1 THEN GO TO C ELSE U := CADAR U . CDR U;
+    B:  Y := CAR U . Y;
+    C:  U := CDR U;
+	GO TO A;
+    D:  Y := IF NULL Y THEN 1
+		ELSE IF CDR Y THEN 'TIMES . REVERSE Y ELSE CAR Y;
+	RETURN IF X THEN LIST('MINUS,Y) ELSE Y
+   END;
+
+SYMBOLIC PROCEDURE SQCHK U;
+   IF ATOM U THEN (LAMBDA X; IF X THEN X ELSE U) GET(U,'NEWNAM)
+    ELSE IF CAR U EQ '!*SQ THEN PREPSQ CADR U
+    ELSE IF CAR U EQ 'EXPT AND CADDR U=1 THEN CADR U
+    ELSE IF ATOM CAR U THEN U ELSE PREPF U;
+
+
+%*********************************************************************
+%	       BASIC OUTPUT PACKAGE FOR CANONICAL FORMS
+%********************************************************************;
+
+DEFLIST ('((!*SQ SQPRINT)),'SPECPRN);
+
+SYMBOLIC PROCEDURE SQPRINT U;
+   BEGIN SCALAR Z;
+	Z := ORIG!*;
+	IF !*NAT AND POSN!*<20 THEN ORIG!* := POSN!*;
+	IF !*PRI THEN GO TO C
+	 ELSE IF CDAR U NEQ 1 THEN GO TO B
+	 ELSE XPRINF(CAAR U,NIL,NIL);
+    A:  RETURN (ORIG!* := Z);
+    B:  PRINC!* "(";
+	XPRINF(CAAR U,NIL,NIL);
+	PRINC!* ") / (";;
+	XPRINF(CDAR U,NIL,NIL);
+	PRINC!* ")";
+	GO TO A;
+    C:  MAPRIN(!*OUTP := PREPSQ!* CAR U);
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE VARPRI(U,V,W);
+   BEGIN SCALAR X,Y;
+   %U is expression being printed
+   %V is a list of expressions assigned to U
+   %W is a flag which is true if expr is last in current set;
+	IF !*NERO AND U=0 AND V THEN RETURN NIL;
+	IF !*FORT THEN GO TO FORT;
+	X := TYPL!*;
+    A:  IF NULL X THEN GO TO B
+	 ELSE IF !*APPLY(CAR X,LIST U) AND (Y:= GET(CAR X,'PRIFN))
+	  THEN RETURN !*APPLY(Y,LIST(U,V,W));
+	X := CDR X;
+	GO TO A;
+    B:  IF NULL V THEN GO TO C;
+	INPRINT('SETQ,GET('SETQ,'INFIX),MAPCAR(V,FUNCTION !*EVAL));
+	OPRIN 'SETQ;
+    C:  MAPRIN U;
+	IF NULL W THEN RETURN NIL
+	 ELSE IF NOT !*NAT AND NOT !*FORT THEN PRINC!* !*!*DOLLAR;
+	TERPRI!*(NOT !*NAT);
+	RETURN;
+    FORT:
+	COUNT!* := 1;
+	IF ATOM U AND NOT NUMBERP U THEN GO TO C;
+	FORTVAR!* := IF NULL V OR NOT ATOM(V:= !*EVAL CAR V) THEN 'ANS
+		      ELSE V;
+	IF POSN!*>5 THEN GO TO C;
+	SPACES 6;
+	PRINC FORTVAR!*;
+	OPRIN 'EQUAL;
+	POSN!* := LENGTH EXPLODE FORTVAR!*+7;
+	GO TO C
+   END;
+
+
+SYMBOLIC PROCEDURE XPRINF(U,V,W);
+   %U is a standard form.
+   %V is a flag which is true if a term has preceded current form.
+   %W is a flag which is true if form is part of a standard term;
+   %Procedure prints the form and returns NIL;
+   BEGIN
+    A:  IF NULL U THEN RETURN NIL
+	 ELSE IF NOT NUMB U THEN GO TO B
+	 ELSE IF MINUSF U THEN GO TO A1
+	 ELSE IF V THEN OPRIN 'PLUS;
+    A0: IF NOT W OR U NEQ 1
+	  THEN IF ATOM U THEN PRINC!* U
+		 ELSE MAPRIN LIST('QUOTIENT,CAR U,CDR U);
+	RETURN;
+    A1: OPRIN 'MINUS;
+	U := IF ATOM U THEN -U ELSE (-CAR U) . CDR U;
+	GO TO A0;
+    B:  XPRINT(CAR U,V);
+	U := CDR U;
+	V := T;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE XPRINT(U,V);
+   %U is a standard term.
+   %V is a flag which is true if a term has preceded this term.
+   %Procedure prints the term and returns NIL;
+   BEGIN SCALAR FLG;
+	FLG := NOT ATOM CDR U AND CDDR U;
+	IF NOT FLG THEN GO TO A ELSE IF V THEN OPRIN 'PLUS;
+	PRINC!* "(";
+    A:  XPRINF(CDR U,IF FLG THEN NIL ELSE V,NOT FLG);
+	IF FLG THEN PRINC!* ")";
+	IF NOT ATOM CDR U OR NOT ABS CDR U = 1 THEN OPRIN 'TIMES;
+	U := CAR U;
+	IF ATOM CAR U THEN PRINC!* CAR U
+	 ELSE IF NOT ATOM CAAR U OR CAAR U EQ '!*SQ THEN GO TO C
+	 ELSE IF CAAR U EQ 'PLUS THEN MAPRINT(CAR U,100)
+	 ELSE MAPRIN CAR U;
+    B:  IF CDR U=1 THEN RETURN;
+	OPRIN 'EXPT;
+	PRINC!* CDR U;
+	IF NOT !*NAT THEN RETURN;
+	YCOORD!* := YCOORD!*-1;
+	IF YMIN!*>YCOORD!* THEN YMIN!* := YCOORD!*;
+	RETURN;
+    C:  PRINC!* "(";
+	IF NOT ATOM CAAR U THEN XPRINF(CAR U,NIL,NIL)
+	 ELSE SQPRINT CDAR U;
+	PRINC!* ")";
+	GO TO B
+   END;
+
+
+%*********************************************************************
+%	       FUNCTIONS FOR PRINTING PREFIX EXPRESSIONS
+%********************************************************************;
+
+%Global variables referenced in this sub-section;
+!*ECHO := NIL;
+COUNT!*:=1;
+LLENGTH!*:=67;
+OBRKP!* := T;
+ORIG!*:=0;
+PLINE!* := NIL;
+!*CARDNO:=20;
+!*FORT:=NIL;
+!*LIST := NIL;
+!*NAT := T;
+FORTVAR!* := 'ANS;
+POSN!* := 0;
+YCOORD!* := 0;
+YMAX!* := 0;
+YMIN!* := 0;
+
+FLAG ('(!*CARDNO),'SHARE);
+
+SYMBOLIC PROCEDURE MATHPRINT L;
+   BEGIN TERPRI!* T; MAPRIN L; TERPRI!* T END;
+
+SYMBOLIC PROCEDURE MAPRIN U;
+   MAPRINT(U,0);
+
+SYMBOLIC PROCEDURE MAPRINT(L,P);
+   BEGIN SCALAR X,Y;
+	IF NULL L THEN RETURN NIL
+	 ELSE IF ATOM L THEN GO TO B
+	 ELSE IF STRINGP L THEN RETURN PRINC!* L
+	 ELSE IF NOT ATOM CAR L THEN MAPRINT(CAR L,P)
+	 ELSE IF X := GET(CAR L,'INFIX) THEN GO TO A
+	 ELSE IF X := GET(CAR L,'SPECPRN)
+	    THEN RETURN !*APPLY(X,LIST CDR L) ELSE PRINC!* CAR L;
+	PRINC!* "(";
+	OBRKP!* := NIL;
+	INPRINT('!*COMMA!*,0,CDR L);
+	OBRKP!* := T;
+    E:  RETURN PRINC!* ")";
+    B:  IF NUMBERP L THEN GO TO D
+	 ELSE IF X := GET(L,'OLDNAM) THEN RETURN MAPRINT(X,P);
+    C:  RETURN PRINC!* L;
+    D:  IF NOT MINUSP L THEN GO TO C;
+	PRINC!* "(";
+	PRINC!* L;
+	GO TO E;
+    A:  P := NOT X>P;
+	IF NOT P THEN GO TO G;
+	Y := ORIG!*;
+	PRINC!* "(";
+	IF POSN!*<15 THEN ORIG!* := POSN!*;
+    G:  INPRINT(CAR L,X,CDR L);
+	IF NOT P THEN RETURN NIL;
+	PRINC!* ")";
+	ORIG!* := Y
+   END;
+
+SYMBOLIC PROCEDURE INPRINT(OP,P,L);
+   BEGIN
+	IF GET(OP,'ALT) THEN GO TO A;
+	MAPRINT(CAR L,P);
+    A0:	L := CDR L;
+    A:  IF NULL L THEN RETURN NIL
+	 ELSE IF NOT ATOM CAR L AND OP EQ GET!*(CAAR L,'ALT)
+	  THEN GO TO B;
+	OPRIN OP;
+    B:  MAPRINT(CAR L,P);
+	IF NOT !*NAT OR NOT OP EQ 'EXPT THEN GO TO A0;
+	YCOORD!* := YCOORD!*-1;
+	IF YMIN!*>YCOORD!* THEN YMIN!* := YCOORD!*;
+	GO TO A0
+   END;
+
+SYMBOLIC PROCEDURE OPRIN OP;
+   (LAMBDA X;
+	 IF NULL X THEN PRINC!* OP
+	  ELSE IF !*FORT THEN PRINC!* CADR X
+	  ELSE IF !*LIST AND OBRKP!* AND OP MEMBER '(PLUS MINUS)
+	   THEN BEGIN TERPRI!* T; PRINC!* CAR X END
+	  ELSE IF !*NAT AND OP EQ 'EXPT
+	  THEN BEGIN
+		YCOORD!* := YCOORD!*+1;
+		IF YCOORD!*>YMAX!* THEN YMAX!* := YCOORD!*
+	       END
+	 ELSE PRINC!* CAR X)
+      GET(OP,'PRTCH);
+
+SYMBOLIC PROCEDURE PRINC!* U;
+   BEGIN INTEGER M,N; SCALAR V;
+	V := EXPLODE U;
+	N := LENGTH V;
+	IF N>LLENGTH!* THEN GO TO D;
+    A:  M := POSN!*+N;
+	IF !*FORT THEN GO TO F1
+	 ELSE IF M>LLENGTH!* THEN GO TO C
+	 ELSE IF NOT !*NAT THEN PRINC U
+	 ELSE PLINE!* := (((POSN!* . M) . YCOORD!*) . U) . PLINE!*;
+    B:  RETURN (POSN!* := M);
+    C:  TERPRI!* T;
+	GO TO A;
+    D:  %identifier longer than one line;
+	IF !*FORT THEN REDERR LIST(U,"TOO LONG FOR FORTRAN")
+	 ELSE IF NOT !*NAT THEN GO TO D4;
+    D1: M := POSN!*;
+    D2: IF M = LLENGTH!* THEN GO TO D3;
+	PRINC!* CAR V;
+	M := M+1;
+	V := CDR V;
+	IF NULL V THEN GO TO B;
+	GO TO D2;
+    D3: TERPRI!* T;
+	GO TO D1;
+    D4: PRINC U;
+	M := REMAINDER(N,LLENGTH!*);
+	GO TO B;
+    F1: %FORTRAN output;
+	IF COUNT!*=!*CARDNO AND (U EQ '!+ OR U EQ '!-)
+	  THEN GO TO F4
+	 ELSE IF M<LLENGTH!* THEN GO TO F2;
+	TERPRI();
+	SPACES 5;
+	PRINC 'X;
+	POSN!* := N+6;
+	COUNT!* := COUNT!* + 1;
+	GO TO F3;
+    F2: POSN!* := M;
+    F3: RETURN PRINC U;
+    F4: %card continuation limit exceeded;
+	TERPRI();
+	SPACES 6;
+	PRINC FORTVAR!*;
+	OPRIN 'EQUAL;
+	PRINC FORTVAR!*;
+	POSN!* := 20;
+	GO TO F3
+   END;
+
+SYMBOLIC PROCEDURE TERPRI!* U;
+   BEGIN INTEGER N;
+	IF !*FORT THEN GO TO D
+	 ELSE IF NOT PLINE!* OR NOT !*NAT THEN GO TO B;
+	N := YMAX!*;
+	PLINE!* := REVERSE PLINE!*;
+    A:	SCPRINT(PLINE!*,N);
+	TERPRI();
+	IF N= YMIN!* THEN GO TO B;
+	N := N-1;
+	GO TO A;
+    B:	IF U THEN TERPRI();
+    C:	PLINE!* := NIL;
+	POSN!* := ORIG!*;
+	YCOORD!* := YMAX!* := YMIN!* := 0;
+	RETURN;
+    D:	IF POSN!*=ORIG!* THEN GO TO C;
+	COUNT!* := 1;
+	GO TO B
+   END;
+
+SYMBOLIC PROCEDURE SCPRINT(U,N);
+   BEGIN SCALAR M;
+	POSN!* := 0;
+    A:  IF NULL U THEN RETURN NIL
+	 ELSE IF NOT CDAAR U=N THEN GO TO B
+	 ELSE IF NOT MINUSP(M:= CAAAAR U-POSN!*) THEN SPACES M;
+	PRINC CDAR U;
+	POSN!* := CDAAAR U;
+    B:  U := CDR U;
+	GO TO A
+   END;
+
+
+%*********************************************************************
+%			 2.19 FOR ALL COMMAND
+%********************************************************************;
+
+SYMBOLIC PROCEDURE FORALLFN;
+   BEGIN
+	FLAG(LETL!*,'DELIM);
+	ARBL!* := REMCOMMA XREAD NIL;
+	REMFLAG(LETL!*,'DELIM);
+	RETURN IFLET1()
+   END;
+
+SYMBOLIC PROCEDURE IFLET U;
+   BEGIN
+	MCOND!* := MKEX U;
+	RETURN IFLET1()
+   END;
+
+SYMBOLIC PROCEDURE IFLET1;
+   BEGIN SCALAR X,Y,Z;
+	Z := ARBL!*;
+	IF (X := XN(Z,VARS!*)) THEN REDERR ("TYPE CONFLICT FOR" . X);
+	X := MAPCAR(Z,FUNCTION NEWVAR);
+	Y := PAIR(Z,X);
+	VARS!* := APPEND(X,VARS!*);
+	MCOND!* := SUBLA(Y,MCOND!*);
+	FRLIS!* := UNION(X,FRLIS!*);
+	Z := LIST XREAD1 NIL;
+	IF MCOND!*
+	    THEN Z := MKFORM('SETQ,
+			   LIST('MCOND!*,MKQUOTE MCOND!*)) . Z;
+	IF Y THEN Z := MKFORM('SETQ,
+			   LIST('FRASC!*,MKQUOTE Y)) .
+			MKFORM('SETQ,
+			    LIST('FRLIS!*,
+			    MKQUOTE FRLIS!*)) . Z;
+	MCOND!* := NIL;
+	VARS!* := SETDIFF(VARS!*,X);
+	ARBL!* := NIL;
+	RETURN MKPROG(NIL,Z)
+   END;
+
+SYMBOLIC PROCEDURE ARB U;
+   CAR(ARBL!* := U . ARBL!*);
+
+NEWFORM '((ARB (LAMBDA (U) (ARB U))));
+
+SYMBOLIC PROCEDURE NEWVAR U;
+   COMPRESS (!*!*FMARK . EXPLODE U);
+
+PUT('FORALL,'STAT,'FORALLFN);
+
+
+%*********************************************************************
+%		      2.19 SUBSTITUTION COMMANDS
+%********************************************************************;
+
+SYMBOLIC PROCEDURE LET U;
+   LET0(U,NIL);
+
+SYMBOLIC PROCEDURE LET0(U,V);
+   BEGIN
+    A:   IF NULL U THEN RETURN (MCOND!* := FRASC!* := NIL)
+	  ELSE IF NOT EQEXPR CAR U THEN ERRPRI2(CAR U,'HOLD)
+	  ELSE LET2(CADAR U,CAR CDDAR U,V,T);
+	 U := CDR U;
+	 GO TO A
+   END;
+
+SYMBOLIC PROCEDURE LET1(U,V);
+   LET2(U,V,NIL,T);
+
+SYMBOLIC PROCEDURE LET2(U,V,W,B);
+   BEGIN SCALAR FLG,X,Y,Z;
+	%check for free variables;
+	IF ATOM U
+		OR NULL FRASC!*
+		OR NOT(FLG := XN(MAPCAR(FRASC!*,FUNCTION CAR),
+				FLATTEN U))
+	 THEN GO TO A;
+	U := SUBLA(FRASC!*,U);
+	IF EQCAR(V,'!*SQ) THEN V := LIST(CAR V,CADR V,NIL);
+	V := SUBLA(FRASC!*,V);
+    A:  X := U;
+	IF NUMBERP X THEN GO TO LER1;
+	Y := TYPL!*;
+    B:  IF NULL Y THEN GO TO C
+	 ELSE IF (Z := !*APPLY(CAR Y,LIST X)) OR !*APPLY(CAR Y,LIST V)
+	  THEN RETURN !*APPLY(GET(CAR Y,'LETFN),
+				LIST(X,V,GET(CAR Y,'NAME),B,Z));
+	Y := CDR Y;
+	GO TO B;
+    C:  IF NOT ATOM X THEN GO TO NONATOM
+	 ELSE IF (Y := GET(X,'OLDNAM)) AND NOT Y MEMBER FLATTEN V
+	  THEN LET2(Y,V,W,B);
+	IF B THEN GO TO D;
+	%We remove all conceivable properties when an atom is cleared;
+	REMPROP(X,'NEWNAM);
+	REMPROP(X,'OLDNAM);
+	REMPROP(X,'OPMTCH);
+	REMPROP(X,'APROP);
+	REMPROP(X,'KLIST);
+	REMPROP(X,'MATRIX);
+	IF NOT (Y := GET(X,'!*!*ARRAY)) THEN GO TO C1;
+	%reinitialize array elements to 0;
+	!*ARRAY LIST(X . ADD1LIS Y);
+    C1:	RMSUBS(); %since all kernel lists are gone;
+	RETURN NIL;
+    D:  X := SIMP0 X;
+	IF NOT CDR X=1 THEN GO TO LER1
+	 ELSE IF W OR FLG OR NUMB CAR X OR CDAR X OR CDAAR X NEQ 1
+	 THEN GO TO PRODCT;
+    NONPDT:	%replacement for non-products;
+	X := CAAAR X;
+	Z := FKERN CAR X;
+	IF NULL B THEN RETURN RPLACD(CDR Z,NIL)
+	 ELSE IF ASSOC('USED!*,CDR Z) THEN RMSUBS2();
+	XADD(IF V=0 AND NOT CDR X=1 THEN 'ASYMP . CDR X
+	      ELSE LIST('REP,V,CDR X,NIL),
+	     CDR Z,
+	     SQCHK CAR Z,
+	     T);
+	RPLACW(Z,DELASC('DFN,Z));
+	RETURN NIL;
+    NONATOM:	%replacement for non-atomic expression;
+	IF NOT ATOM CAR X OR NUMBERP CAR X THEN GO TO LER2
+	 ELSE IF GET(CAR X,'!*!*ARRAY) THEN GO TO ARR
+	 ELSE IF CAR X EQ 'DF THEN GO TO DIFF
+	 ELSE IF (Y := GET(CAR X,'MATRIX)) THEN RETURN LETMTR(U,V,Y)
+	 ELSE IF NOT GET(CAR X,'SIMPFN) THEN GO TO LER3
+	 ELSE GO TO D;
+    PRODCT:	%replacement of products;
+	IF NOT (Y := KERNLP CAR X) THEN GO TO N
+	 ELSE IF Y NEQ 1 THEN GO TO LER1;
+	RMSUBS();
+	X := KLISTT CAR X;
+	Y := LIST(W . (IF MCOND!* THEN MCOND!* ELSE T),V,NIL);
+	IF W OR CDR X OR CDAR X NEQ 1
+	  THEN RETURN (!*MATCH := XADD(X . Y,!*MATCH,U,B));
+	X := CAAR X;
+	IF ATOM X THEN GO TO LER1;
+	RETURN PUT(CAR X,
+		   'OPMTCH,
+		   XADD(CDR X . Y,GET(CAR X,'OPMTCH),U,B));
+    DIFF:	%rules for differentiation;
+	IF NULL LETDF(U,V,W,X,B) THEN GO TO D ELSE RETURN;
+    ARR:	%array replacements;
+	IF (Z := ASSOC!*(X,GET(CAR X,'KLIST))) AND ASSOC('USED!*,CDR Z)
+	  THEN RMSUBS2();
+	SETEL(REVOP(X,T),V);
+	RETURN NIL;
+    N:  IF !*SUPER AND (X:= MKSFPF(CAR X,1) . 1) THEN GO TO NONPDT;
+    LER1:RETURN ERRPRI1 U;
+    LER2:RETURN ERRPRI2(U,'HOLD);
+    LER3:REDMSG(CAR X,'OPERATOR);
+	MKOP CAR X;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE SIMP0 U;
+   BEGIN SCALAR X;
+	X := SUBFG!* . SUB2!*;
+	SUBFG!* := NIL;
+	U := SIMP U;
+	SUBFG!* := CAR X;
+	SUB2!* := CDR X;
+	RETURN U
+   END;
+
+SYMBOLIC PROCEDURE MATCH U;
+   LET0(U,T);
+
+SYMBOLIC PROCEDURE CLEAR U;
+   BEGIN
+	RMSUBS();
+    A:  IF NULL U THEN RETURN (MCOND!* := FRASC!* := NIL);
+	LET2(CAR U,NIL,NIL,NIL);
+	U := CDR U;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE SETK(U,V);
+   PROG2(LET1(IF ATOM U THEN U ELSE REVOP(U,NIL),V),V);
+
+SYMBOLIC PROCEDURE KLISTT U;
+   IF ATOM U THEN NIL ELSE CAAR U . KLISTT CDR CARX U;
+
+SYMBOLIC PROCEDURE KERNLP U;
+   IF NUMB U THEN U ELSE IF NULL CDR U THEN KERNLP CDAR U ELSE NIL;
+
+SYMBOLIC PROCEDURE RMSUBS;
+   PROG2(RMSUBS1(),RMSUBS2());
+
+SYMBOLIC PROCEDURE RMSUBS2;
+   PROG2(RPLACA(!*SQVAR!*,NIL),!*SQVAR!* := LIST T);
+
+SYMBOLIC PROCEDURE RMSUBS1;
+   BEGIN
+	MAP(APPEND(DSUBL!*,SUBL!*),
+	    FUNCTION (LAMBDA J; RPLACA(CAR J,NIL)));
+	DSUBL!* := SUBL!* := NIL
+   END;
+
+SYMBOLIC PROCEDURE XADD(U,V,W,B);
+   BEGIN SCALAR X;
+	X := ASSOC!*(CAR U,V);
+	IF NULL X THEN GO TO C ELSE IF NULL B THEN GO TO B1;
+	RMSUBS1();
+	RPLACD(X,CDR U);
+    A:  RETURN V;
+    B1: V := DELETE(X,V);
+	GO TO A;
+    C:  IF NULL B THEN MESPRI(NIL,W,"NOT FOUND",NIL,NIL)
+	 ELSE V := ACONC(V,U);
+	GO TO A
+   END;
+
+PUT('CLEAR,'STAT,'RLIS);
+
+PUT('LET,'STAT,'RLIS);
+
+PUT('MATCH,'STAT,'RLIS);
+
+FLAG ('(LET MATCH),'QUOTE);
+
+
+%*********************************************************************
+%			 VARIOUS DECLARATIONS
+%********************************************************************;
+
+SYMBOLIC PROCEDURE OPSTAT;
+   BEGIN SCALAR X,Y;
+	X := CURSYM!*;
+	Y := REMCOMMA XREAD NIL;
+	RETURN
+	 IF !*MODE EQ 'SYMBOLIC
+	   THEN MKPROG(NIL,LIST MKFORM('FLAG,LIST(MKQUOTE Y,
+						  MKQUOTE 'OPFN)))
+	  ELSE IF X NEQ 'OPERATOR
+	   THEN IF EQCAR(CAR Y,'PROG) THEN CAR Y
+		 ELSE X . MAPCAR(LIST Y,FUNCTION MKARG)
+	  ELSE IF KEY!* NEQ 'OPERATOR AND GET(KEY!*,'FN)
+	   THEN (LAMBDA !*S!*; MKPROG(NIL,MAPCAR(Y,FUNCTION (LAMBDA J;
+			   MKFORM('PUT,LIST(MKQUOTE J,!*S!*,!*S!*))))))
+		MKQUOTE GET(KEY!*,'FN)
+	  ELSE MKPROG(NIL,LIST MKFORM('MAPCAR,LIST(MKQUOTE Y,
+						   '(FUNCTION MKOP))))
+   END;
+
+PUT('OPERATOR,'STAT,'OPSTAT);
+
+
+SYMBOLIC PROCEDURE DEN U;
+   MK!*SQ (DENR SIMP!* U . 1);
+
+SYMBOLIC PROCEDURE NUM U;
+   MK!*SQ (NUMR SIMP!* U . 1);
+
+FLAG ('(DEN NUM),'OPFN);
+
+SYMBOLIC PROCEDURE SAVEAS U;
+   BEGIN LET1(U,!*ANS) END;
+
+PUT('SAVEAS,'STAT,'NORLIS);
+
+SYMBOLIC PROCEDURE TERMS U;
+   TERMS1 CAR SIMP!* U;
+
+FLAG ('(TERMS),'OPFN);
+
+SYMBOLIC PROCEDURE TERMS1 U;
+   BEGIN INTEGER N;
+	N := 0;
+    A:  IF NULL U THEN RETURN N ELSE IF ATOM U THEN RETURN N+1;
+	N := N + TERMS1 CDAR U;
+	U := CDR U;
+	GO TO A
+   END;
+
+
+%THE FOLLOWING COMMANDS ARE NO LONGER SUPPORTED;
+
+SYMBOLIC PROCEDURE DENOM U;
+   LET1(U,MK!*SQ (CDR SIMP !*ANS . 1));
+
+SYMBOLIC PROCEDURE NUMER U;
+   LET1(U,MK!*SQ (CAR SIMP !*ANS . 1));
+
+SYMBOLIC PROCEDURE ND(U,V);
+   PROG2(NUMER U,DENOM V);
+
+PUT('DENOM,'STAT,'NORLIS);
+
+PUT('NUMER,'STAT,'NORLIS);
+
+PUT('ND,'STAT,'NORLIS);
+
+
+%*********************************************************************
+%     INTRODUCTION OF ELEMENTARY FUNCTIONS AND RESERVED VARIABLES
+%********************************************************************;
+
+DEFLIST ('((COS IDEN) (SIN IDEN) (LOG IDEN)),'SIMPFN);
+
+LET1 ('(EXPT I 2),-1);
+
+LET1 ('(LOG E),1);
+
+LET1 ('(LOG 1),0);
+
+LET1('(COS 0),1);
+
+LET1 ('(SIN 0),0);
+
+DEFLIST ('((EXPT (((X Y) TIMES Y (EXPT X (PLUS Y (MINUS 1))))
+		  ((X Y) TIMES (LOG X) (EXPT X Y))))
+	   (LOG (((X) QUOTIENT 1 X)))
+	   (COS (((X) MINUS (SIN X))))
+	   (SIN (((X) COS X)))),'DFN);
+
+DEFLIST ('((COS ((((MINUS !*!*!*X)) (NIL . T) (COS !*!*!*X) NIL)))
+	   (SIN ((((MINUS !*!*!*X)) (NIL . T)
+			 (MINUS (SIN !*!*!*X)) NIL)))),
+	'OPMTCH);
+
+FRLIS!* := '(!*!*!*X);
+
+FLAGOP SHARE;
+
+FLAG ('(!*ANS !*MODE),'SHARE);
+
+
+%*********************************************************************
+%*********************************************************************
+%*********************************************************************
+
+%			       SECTION 3
+
+%		      SPECIFIC ALGEBRAIC PACKAGES
+
+%*********************************************************************
+%*********************************************************************
+%********************************************************************;
+
+
+%*********************************************************************
+%All these packages except where noted are self-contained and  any  or
+%all may be omitted as required;
+%********************************************************************;
+
+
+%*********************************************************************
+%*********************************************************************
+%			DIFFERENTIATION PACKAGE
+%*********************************************************************
+%********************************************************************;
+
+SYMBOLIC PROCEDURE SIMPDF U;
+   %U is a list of forms, the first an expression and the remainder
+   %kernels and numbers.
+   %Value is derivative of first form wrt rest of list;
+   BEGIN SCALAR V,X,Y;
+	IF NULL SUBFG!* THEN RETURN MKSQ('DF . U,1);
+	V := CDR U;
+	U := SIMPCAR U;
+    A:  IF NULL V OR NULL NUMR U THEN RETURN U;
+	X := IF NULL Y OR Y=0 THEN SIMPCAR V ELSE Y;
+	IF NULL KERNP X THEN GO TO E;
+	X := CAAAAR X;
+	V := CDR V;
+	IF NULL V THEN GO TO C;
+	Y := SIMPCAR V;
+	IF NULL NUMR Y THEN GO TO D
+	 ELSE IF NOT DENR Y=1 OR NOT NUMBERP NUMR Y THEN GO TO C;
+	Y := CAR Y;
+	V := CDR V;
+    B:	IF Y=0 THEN GO TO A;
+	U := DIFFSQ(U,X);
+	Y := Y-1;
+	GO TO B;
+    C:	U := DIFFSQ(U,X);
+	GO TO A;
+    D:	Y := NIL;
+	V := CDR V;
+	GO TO A;
+    E:  MESPRI("DIFFERENTIATION WRT",PREPSQ X,"NOT ALLOWED",NIL,T)
+   END;
+
+PUT('DF,'SIMPFN,'SIMPDF);
+
+SYMBOLIC PROCEDURE DIFFSQ(U,V);
+   %U is a standard quotient, V a kernel.
+   %Value is the standard quotient derivative of U wrt V.
+   %Algorithm: df(x/y,z)= (x'-(x/y)*y')/y;
+   MULTSQ(ADDSQ(DIFFF(NUMR U,V),NEGSQ MULTSQ(U,DIFFF(DENR U,V))),
+	  1 DIV DENR U);
+
+SYMBOLIC PROCEDURE DIFFF(U,V);
+   %U is a standard form, V a kernel.
+   %Value is the standard quotient derivative of U wrt V;
+   IF NUMB U THEN NIL . 1
+    ELSE ADDSQ(ADDSQ(MULTPQ(LPOW U,DIFFF(LC U,V)),
+			MULTSQ(LC U DIV 1,DIFFP(LPOW U,V))),
+	       DIFFF(RED U,V));
+
+
+SYMBOLIC PROCEDURE DIFFP(U,V);
+   %U is a standard power, V a kernel.
+   %Value is the standard quotient derivative of U wrt V;
+   BEGIN SCALAR W,X,X1,Y,Z;
+	Y := FKERN CAR U;
+	IF CAR U EQ V AND (W := 1 . 1) THEN GO TO E
+	 ELSE IF ATOM CAR U
+		OR (ATOM CAAR U AND GET(CAAR U,'!*!*ARRAY))
+	  THEN GO TO F
+	 ELSE IF (X := ASSOC('DFN,CDDR Y)) AND (X := ASSOC(V,CADR X))
+		AND (W := CDR X) THEN GO TO E	%deriv known;
+	 ELSE IF (NOT ATOM CAAR U AND (W:= DIFFF(CAR U,V)))
+		  OR (CAAR U EQ '!*SQ AND (W:= DIFFSQ(CADAR U,V)))
+	  THEN GO TO C  %extended kernel found;
+	 ELSE IF (X:= GET!*(CAAR U,'DFN)) THEN NIL
+	 ELSE IF CAAR U EQ 'PLUS AND (W:=DIFFSQ(SIMPCAR U,V))
+	  THEN GO TO C;
+	X1 := X;
+	Z := CDAR U;
+    A:  W := DIFFSQ(SIMP CAR Z,V) . W;
+	IF CAAR W AND NULL CAR X1 THEN GO TO H;%unknown deriv;
+	X1 := CDR X1;
+	Z := CDR Z;
+	IF Z AND X1 THEN GO TO A
+	 ELSE IF Z OR X1 THEN GO TO H;  %arguments do not match;
+	X1 := REVERSE W;
+	Z := CDAR U;
+	W := NIL . 1;
+    B:  %computation of kernel derivative;
+	IF CAAR X1
+	  THEN W := ADDSQ(MULTSQ(CAR X1,SIMP SUBLA(PAIR(CAAR X,Z),
+						   CDAR X)),
+			  W);
+	X := CDR X;
+	X1 := CDR X1;
+	IF X1 THEN GO TO B;
+    C:  %save calculated deriv in case it is used again;
+	IF X := ASSOC('DFN,CDDR Y) THEN GO TO D
+	 ELSE ACONC(Y,X := LIST('DFN,NIL));
+	DSUBL!* := CDR X . DSUBL!*;
+    D:  RPLACA(CDR X,XADD(V . W,CADR X,NIL,T));
+	IF NULL CAR X THEN GO TO F;
+    E:  %allowance for power;
+	%first check to see if kernel has weight;
+	IF (X := ASSOC(CAR U,WTL!*))
+	  THEN W := MULTPQ(MKSP('K!*,-CDR X),W);
+	RETURN IF CDR U=1 THEN W
+		ELSE MULTSQ(MULTF2(GETPOWER(Y,CDR U-1),CDR U) . 1,W);
+    F:  %check for possible unused substitution rule;
+	IF NOT ASSOC('REP,CDDR Y) THEN RETURN NIL . 1;
+	W := MKSQ(LIST('DF,CAR U,V),1);
+	GO TO E;
+    H:  %final check for possible kernel deriv;
+	W := IF CAAR U EQ 'DF THEN 'DF . CADAR U . DERAD(V,CDDAR U)
+	      ELSE LIST('DF,CAR U,V);
+	W := IF (X := OPMTCH W) THEN SIMP X
+	      ELSE MKSQ(W,1);
+	GO TO E
+   END;
+
+SYMBOLIC PROCEDURE DERAD(U,V);
+   IF NULL V THEN LIST U
+    ELSE IF NUMBERP CAR V THEN CAR V . DERAD(U,CDR V)
+    ELSE  IF U=CAR V THEN IF CDR V AND NUMBERP CADR V
+			   THEN U . (CADR V + 1) . CDDR V
+			  ELSE U . 2 . CDR V
+    ELSE IF ORDP(U,CAR V) THEN U . V
+    ELSE CAR V . DERAD(U,CDR V);
+
+SYMBOLIC PROCEDURE LETDF(U,V,W,X,B);
+   BEGIN SCALAR Z;
+	IF (NOT ATOMLIS CADR X AND CDDDR X) OR NUMBERP CAADR X
+	  THEN RETURN LIST ERRPRI1 U
+	 ELSE IF NOT DEFP(CAADR X,NIL) THEN GO TO LER3;
+    A:  IF NOT FRLP CDADR X
+		OR NOT FRLP CDDR X
+		OR NOT CADDR X MEMBER CDADR X
+	 THEN RETURN NIL;
+	Z := POSN(CADDR X,CDADR X);
+	IF NOT GET(CAADR X,'DFN)
+	    THEN PUT(CAADR X,
+		     'DFN,
+		     NLIST(NIL,LENGTH CDADR X));
+	W := GET(CAADR X,'DFN);
+    B:	IF NULL W OR Z=0 THEN RETURN ERRPRI1 U
+	 ELSE IF Z NEQ 1 THEN GO TO C
+	 ELSE IF CAR W 
+	  THEN MESPRI("ASSIGNMENT FOR",X,"REDEFINED",NIL,NIL);
+	RETURN RPLACA(W,CDADR X . V);
+    C:	W := CDR W;
+	Z := Z-1;
+	GO TO B;
+    LER3:REDMSG(CAADR X,'OPERATOR);
+	MKOP CAADR X;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE FRLP U;
+   NULL U OR (CAR U MEMBER FRLIS!* AND FRLP CDR U);
+
+
+%*********************************************************************
+%*********************************************************************
+%      FUNCTIONS WHICH APPLY MORE GENERAL PATTERN MATCHING RULES
+%*********************************************************************
+%********************************************************************;
+
+%*********************************************************************
+%                   FUNCTIONS FOR MATCHING PRODUCTS
+%********************************************************************;
+
+SYMBOLIC PROCEDURE SUBS3Q U;
+   %U is a standard quotient.
+   %Value is a standard quotient with all product substitutions made;
+   BEGIN SCALAR X;
+	X := MCHFG!*;   %Save value in case we are in inner loop;
+	MCHFG!* := NIL;
+	U := MULTSQ(SUBS3F NUMR U,INVSQ SUBS3F DENR U);
+	MCHFG!* := X;
+	RETURN U
+   END;
+
+SYMBOLIC PROCEDURE SUBS3F U;
+   %U is a standard form.
+   %Value is a standard quotient with all product substitutions made;
+   SUBS3F1(U,!*MATCH,T);
+
+SYMBOLIC PROCEDURE SUBS3F1(U,L,BOOL);
+   %U is a standard form.
+   %L is a list of possible matches.
+   %BOOL is a boolean variable which is true if we are at top level.
+   %Value is a standard quotient with all product substitutions made;
+   BEGIN SCALAR X,Z;
+   	Z := NIL . 1;
+    A:	IF NULL U THEN RETURN Z
+ 	 ELSE IF NUMB U THEN RETURN ADDSQ(Z,U DIV 1);
+	X := SUBS3T(LT U,L);
+	IF NOT BOOL				%not top level;
+	 OR NOT MCHFG!* THEN GO TO B;		%no replacement made;
+	MCHFG!* := NIL;
+	IF !*RESUBS THEN X := SUBS3Q X;		%make another pass;
+    B:	Z := ADDSQ(Z,X);
+	U := CDR U;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE SUBS3T(U,V);
+   %U is a standard term, V a list of matching templates.
+   %Value is a standard quotient for the substituted term;
+   BEGIN SCALAR X,Y,Z;
+	X := MTCHK(CAR U,IF NUMB CDR U THEN SIZCHK(V,1) ELSE V);
+	IF NULL X THEN GO TO A			%lpow doesn't match;
+	 ELSE IF NULL CAAR X THEN GO TO B;	%complete match found;
+	Y := SUBS3F1(CDR U,X,NIL);		%check tc for match;
+	IF MCHFG!* THEN RETURN MULTPQ(CAR U,Y);
+    A:	RETURN LIST U DIV 1;			%no match;
+    B:	X := CDDAR X;		%list(<subst value>,<denoms>);
+	Z := CAADR X;		%leading denom;
+	MCHFG!* := NIL;		%initialize for tc check;
+	Y := SUBS3F1(CDR U,!*MATCH,NIL);
+	MCHFG!* := T;
+	IF CAR Z NEQ CAAR U THEN ERRACH('SUBS3T,U,X)   %just in case;
+	 ELSE IF Z NEQ CAR U	%powers don't match;
+	  THEN Y := MULTPQ(MKSP!*(CAAR U,CDAR U-CDR Z),Y);
+	Y := MULTSQ(SIMPCAR X,Y);
+	X := CDADR X;
+	IF NULL X THEN RETURN Y;
+	Z := 1;
+    C:	U := !*MCD;		%unwind remaining denoms;
+	IF NULL X THEN GO TO D;
+	Z := LIST (MKSP!*(CAAR X,IF U THEN CDAR X ELSE -CDAR X) . Z);
+	X := CDR X;
+	GO TO C;
+    D:	RETURN IF U THEN CAR Y DIV MULTF(Z,CDR Y)
+	        ELSE MULTF(Z,CAR Y) DIV CDR Y
+   END;
+
+SYMBOLIC PROCEDURE SIZCHK(U,N);
+   IF NULL U THEN NIL
+    ELSE IF LENGTH CAAR U>N THEN SIZCHK(CDR U,N)
+    ELSE CAR U . SIZCHK(CDR U,N);
+
+SYMBOLIC PROCEDURE MTCHK(U,V1);
+   %U is a standard power, V1 a list of matching templates.
+   %If a match is made, value is of the form:
+   %list list(NIL,<boolean form>,<subst value>,<denoms>),
+   %otherwise value is an updated list of templates;
+   BEGIN SCALAR FLG,V,W,X,Y,Z;
+	FLG := NOT ATOM CAR U AND FLAGP!*!*(CAAR U,'NONCOM);
+    A0: IF NULL V1 THEN RETURN Z;
+	V := CAR V1;
+	W := CAR V;
+    A:  IF NULL W THEN GO TO D
+	 ELSE IF U=CAR W THEN GO TO B1
+	 ELSE IF (NOT CDAR W MEMBER FRLIS!*
+		AND ((CAADR V AND NOT CDR U=CDAR W)
+		OR (IF !*MCD THEN CDR U<CDAR W
+		    ELSE MINUSP(CDR U*CDAR W) OR ABS CDR U<ABS CDAR W))
+		OR NOT (Y := MCHK(CAR U,CAAR W)))
+	     THEN GO TO C
+	 ELSE IF CDAR W MEMBER FRLIS!*
+	    THEN Y := MAPCONS(Y,CDAR W . CDR U);
+    B:  IF NULL Y THEN GO TO C
+	 ELSE IF CAR (X := SUBLA(CAR Y,DELETE(CAR W,CAR V))
+				. LIST(SUBLA(CAR Y,CADR V),
+				      SUBLA(CAR Y,CADDR V),
+				      SUBLA(CAR Y,CAR W)
+					  . CADDDR V))
+	  THEN Z := X . Z
+	 ELSE IF !*EVAL SUBLA(CAR Y,CDADR V) THEN RETURN LIST X;
+	Y := CDR Y;
+	GO TO B;
+    B1: Y := LIST NIL;
+	GO TO B;
+    C:  IF FLG THEN GO TO C1;
+	W := CDR W;
+	GO TO A;
+    C1: IF CADDDR V AND NOT NOCP CADDDR V THEN GO TO E;
+    D:  Z := APPEND(Z,LIST V);
+    E:  V1 := CDR V1;
+	GO TO A0
+   END;
+
+SYMBOLIC PROCEDURE NOCP U;
+   NULL U OR (ATOM CAAR U OR NOT FLAGP!*!*(CAAAR U,'NONCOM) AND NOCP
+  CDR U);
+
+
+%*********************************************************************
+%    FUNCTIONS FOR MATCHING SYMMETRIC AND ANTISYMMETRIC OPERATORS
+%********************************************************************;
+
+SYMBOLIC PROCEDURE MCHSARG(!*S!*,V,W);
+   BEGIN SCALAR Y,Z; INTEGER M,N;
+	M := LENGTH !*S!*;
+	N := LENGTH V;
+	IF NOT MTP V THEN GO TO B
+	 ELSE IF N NEQ 2 OR NOT FLAGP(W,'NARY) OR M<N THEN RETURN
+	 ELSE !*S!* := CDR MKBIN(W,!*S!*);
+	RETURN MAPLIST(PERMUTATIONS V, FUNCTION (LAMBDA J;
+			PAIR(CAR J,!*S!*)));
+    B:	IF M NEQ N THEN RETURN;
+	Y := PERMUTATIONS !*S!*;
+    C:	IF NULL Y THEN RETURN Z;
+	Z := NCONC(MCHARG2(CAR Y,V,LIST NIL),Z);
+	Y := CDR Y;
+	GO TO C
+   END;
+
+SYMBOLIC PROCEDURE MCHASARG(U,V,W);
+   REDERR "NOT YET IMPLEMENTED";
+
+SYMBOLIC PROCEDURE PERMUTATIONS !*S!*;
+   IF NULL !*S!* THEN LIST !*S!*
+    ELSE MAPCON(!*S!*,
+		FUNCTION (LAMBDA J;
+		   MAPCONS(PERMUTATIONS DELETE(CAR J,!*S!*),CAR J)));
+
+FLAGOP ANTISYMMETRIC,SYMMETRIC;
+
+FLAG ('(PLUS TIMES CONS),'SYMMETRIC);
+
+
+%*********************************************************************
+%*********************************************************************
+%                  EXPLICIT POWER POLYNOMIAL PACKAGE
+%*********************************************************************
+%********************************************************************;
+
+%TO BE ADDED;
+
+
+%*********************************************************************
+%*********************************************************************
+%		EXTENDED OUTPUT PACKAGE FOR EXPRESSIONS
+%*********************************************************************
+%********************************************************************;
+
+SYMBOLIC PROCEDURE FACTOR U;
+   FACTOR1(U,T,'FACTORS!*);
+
+SYMBOLIC PROCEDURE FACTOR1(U,V,W);
+   BEGIN SCALAR X,Y;
+	Y := GTS W;
+    A:  IF NULL U THEN GO TO B
+	 ELSE IF KERNP (X := SIMPCAR U)
+		  OR (!*SUPER AND KERNP (X:= MKSFPF(X,1)))
+	  THEN GO TO C
+	 ELSE ERRPRI2(CAR U,'HOLD);
+	GO TO D;
+    C:  X := CAAAAR X;
+	IF V THEN Y := X . Y
+	 ELSE IF NOT X MEMBER Y
+	  THEN MESPRI(NIL,CAR U,"NOT FOUND",NIL,NIL)
+	 ELSE Y := DELETE(X,Y);
+    D:  U := CDR U;
+	GO TO A;
+    B:  PTS(W,Y)
+   END;
+
+SYMBOLIC PROCEDURE REMFAC U;
+   FACTOR1(U,NIL,'FACTORS!*);
+
+PUT('FACTOR,'STAT,'RLIS);
+
+PUT('REMFAC,'STAT,'RLIS);
+
+SYMBOLIC PROCEDURE ORDER U;
+   BEGIN
+    A:   IF NULL U THEN RETURN NIL
+	  ELSE IF NOT ATOM CAR U OR NUMBERP CAR U THEN GO TO B;
+	 PUT(CAR U,'ORDER,ORDN!*);
+	 ORDN!* := ORDN!*+1;
+    B:   U := CDR U;
+	 GO TO A
+   END;
+
+PUT('ORDER,'STAT,'RLIS);
+
+SYMBOLIC PROCEDURE UP U;
+   FACTOR1(U,T,'UPL!*);
+
+SYMBOLIC PROCEDURE DOWN U;
+   FACTOR1(U,T,'DNL!*);
+
+DEFLIST ('((UP RLIS) (DOWN RLIS)),'STAT);
+
+SYMBOLIC PROCEDURE FORMOP U;
+   IF NUMB U THEN U
+    ELSE ADDOF(MULTOP(CAAR U,FORMOP CDAR U),FORMOP CDR U);
+
+SYMBOLIC PROCEDURE ADDOF(U,V);
+   IF NULL U THEN V
+    ELSE IF NULL V THEN U
+    ELSE IF NUMB U THEN CAR V . ADDOF(U,CDR V)
+    ELSE IF NUMB V THEN ADDOF(V,U)
+    ELSE IF CAAR U=CAAR V
+       THEN (CAAR U . ADDOF(CDAR U,CDAR V)) . ADDOF(CDR U,CDR V)
+    ELSE IF ORDOP(CAAR U,CAAR V) THEN CAR U . ADDOF(CDR U,V)
+    ELSE CAR V . ADDOF(U,CDR V);
+
+SYMBOLIC PROCEDURE MULTOP(U,V);
+   IF NULL PRIN!* THEN MULTF2(U,V)
+    ELSE IF CAR U EQ 'K!* THEN V
+    ELSE MULTOP1(U,V);
+
+SYMBOLIC PROCEDURE MULTOP1(U,V);
+   IF NULL V THEN NIL
+    ELSE IF NUMB V OR ORDOP(U,CAAR V) THEN LIST (U . V)
+    ELSE (CAAR V . MULTOP1(U,CDAR V)) . MULTOP1(U,CDR V);
+
+SYMBOLIC PROCEDURE ORDOP(U,V);
+   IF NULL U THEN NULL V
+    ELSE IF NULL V THEN T
+    ELSE IF NULL PRIN!* THEN ORDERP(U,V)
+    ELSE IF U MEMBER FACTORS!* AND NOT V MEMBER FACTORS!* THEN T
+    ELSE IF V MEMBER FACTORS!* AND NOT U MEMBER FACTORS!* THEN NIL
+    ELSE IF ATOM U
+       THEN IF ATOM V
+		THEN IF NUMBERP U THEN NUMBERP V AND NOT U<V
+		      ELSE IF NUMBERP V THEN T
+		      ELSE IF ORDN!*=0 THEN ORDERP(U,V)
+		      ELSE (LAMBDA (X,Y);
+			    IF X AND Y THEN X<Y
+			     ELSE IF X THEN T
+			     ELSE IF Y THEN NIL
+			     ELSE ORDERP(U,V))
+			 (GET(U,'ORDER),GET(V,'ORDER))
+	     ELSE IF U MEMBER FACTORS!* THEN T
+	     ELSE NOT CAR V MEMBER FACTORS!*
+    ELSE IF ATOM V THEN CAR U MEMBER FACTORS!*
+    ELSE IF CAR U=CAR V THEN ORDOP(CDR U,CDR V)
+    ELSE ORDOP(CAR U,CAR V);
+
+SYMBOLIC PROCEDURE DIVOF(P,Q);
+   IF NULL P THEN NIL
+    ELSE IF P=Q THEN 1
+    ELSE IF Q=1 THEN P
+    ELSE IF ATOM Q
+       THEN IF ATOM P THEN MKFR(P,Q)
+	     ELSE IF ATOM CAR P THEN MKFR(CAR P,Q*CDR P)
+	     ELSE (CAAR P . DIVOF(CDAR P,Q)) . DIVOF(CDR P,Q)
+    ELSE IF ATOM CAR Q
+	  THEN IF ATOM P THEN MKFR(P*CDR Q,CAR Q)
+	  ELSE IF ATOM CAR P THEN MKFR(CAR P*CDR Q,CDR P*CAR Q)
+	  ELSE (CAAR P . DIVOF(CDAR P,Q)) . DIVOF(CDR P,Q)
+    ELSE IF NUMB P
+       THEN LIST ((CAAAR Q . ( - CDAAR Q)) . DIVOF(P,CDR CARX Q))
+    ELSE (LAMBDA (X,Y);
+	  IF CAR X EQ CAR Y
+	      THEN (LAMBDA (N,W,Z);
+		 IF N=0 THEN ADDOF(W,Z)
+		  ELSE ((CAR Y . N) . W) . Z)
+	      (CDR X-CDR Y,
+	       DIVOF(CDAR P,CDR CARX Q),
+	       DIVOF(CDR P,Q))
+	   ELSE IF ORDOP(CAR X,CAR Y)
+	      THEN (X . DIVOF(CDAR P,Q)) . DIVOF(CDR P,Q)
+	   ELSE LIST ((CAR Y . ( - CDR Y)) . DIVOF(P,CDR CARX Q)))
+       (CAAR P,CAAR Q);
+
+SYMBOLIC PROCEDURE CKRN U;
+   BEGIN SCALAR X;
+	IF NUMB U THEN RETURN U;
+    A:  X := GCK2(CKRN CDAR U,X);
+	IF NULL CDR U THEN RETURN LIST(CAAR U . X)
+	 ELSE IF NUMB CDR U OR NOT CAAAR U EQ CAAADR U
+	  THEN RETURN GCK2(CKRN CDR U,X);
+	U := CDR U;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE GCK2(U,V);
+   IF NULL V THEN U
+    ELSE IF U=V THEN U
+    ELSE IF NUMB U THEN IF NUMB V
+	THEN IF ATOM U AND ATOM V AND NOT !*FLOAT THEN GCDN(U,V) ELSE 1
+	ELSE GCK2(U,CDARX V)
+    ELSE IF NUMB V THEN GCK2(CDARX U,V)
+    ELSE (LAMBDA (X,Y);
+	IF CAR X EQ CAR Y
+	  THEN LIST((IF CDR X>CDR Y THEN Y ELSE X) .
+		    GCK2(CDARX U,CDARX V))
+	 ELSE IF ORDOP(CAR X,CAR Y) THEN GCK2(CDARX U,V)
+	 ELSE GCK2(U,CDARX V))
+    (CAAR U,CAAR V);
+
+SYMBOLIC PROCEDURE CDARX U;
+   CDR CARX U;
+
+SYMBOLIC PROCEDURE PREPSQ!* U;
+   BEGIN
+	IF NULL CAR U THEN RETURN 0;
+	PRIN!* := FACTORS!* OR ORDN!* NEQ 0 OR WTL!*;
+	IF PRIN!* THEN U := FORMOP CAR U . FORMOP CDR U;
+	U := IF !*RAT OR (NOT !*FLOAT AND !*DIV) OR UPL!* OR DNL!*
+	    THEN REPLUS PREPSQ!*1(CAR U,NIL,CDR U)
+	  ELSE SQFORM(U,FUNCTION(LAMBDA J; REPLUS PREPSQ!*1(J,NIL,1)));
+	PRIN!* := NIL;
+	RETURN U
+   END;
+
+SYMBOLIC PROCEDURE PREPSQ!*1(U,V,W);
+   BEGIN SCALAR X,Y,Z;
+	IF NULL U THEN RETURN NIL
+	 ELSE IF NOT NUMB U AND (CAAAR U MEMBER FACTORS!* OR (NOT
+		ATOM CAAAR U AND CAAAAR U MEMBER FACTORS!*))
+	    THEN RETURN NCONC(PREPSQ!*1(CDAR U,CAAR U . V,W),
+			      PREPSQ!*1(CDR U,V,W))
+	 ELSE IF NULL KERNLP U THEN GO TO A;
+	U := MKKL(V,U);
+	V := NIL;
+    A:  X := IF NULL !*ALLFAC THEN 1 ELSE CKRN U;
+	IF NULL DNL!* THEN GO TO A1;
+	Z := CKRN!*(X,DNL!*);
+	X := DIVOF(X,Z);
+	U := DIVOF(U,Z);
+	W := DIVOF(W,Z);
+    A1: Y := CKRN W;
+	IF NULL UPL!* THEN GO TO A2;
+	Z := CKRN!*(Y,UPL!*);
+	Y := DIVOF(Y,Z);
+	U := DIVOF(U,Z);
+	W := DIVOF(W,Z);
+    A2: IF NULL !*DIV AND NULL !*FLOAT THEN Y := GCD2(X,Y);
+	U := NORMSQ (DIVOF(U,Y) . DIVOF(W,Y));
+	IF !*GCD AND NULL !*DIV AND NULL PRIN!* THEN U := CANCEL U;
+	X := DIVOF(X,Y);
+	IF !*ALLFAC AND NULL !*DIV AND X NEQ CAR U THEN GO TO B
+	 ELSE IF NULL V THEN GO TO D;
+	V := EXCHK(V,NIL);
+	GO TO C;
+    D:  U := PREPSQ U;
+	RETURN IF EQCAR(U,'PLUS) THEN CDR U ELSE LIST U;
+    B:  IF X=1 AND NULL V THEN GO TO D;
+	U := DIVOF(CAR U,X) . CDR U;
+	V := PREPF MKKL(V,X);
+	IF U=1 . 1 THEN RETURN V
+	 ELSE IF EQCAR(V,'TIMES) THEN V := CDR V
+	 ELSE V := LIST V;
+    C:  RETURN LIST RETIMES ACONC(V,PREPSQ U)
+   END;
+
+SYMBOLIC PROCEDURE CANCEL U;
+   MULTSQ(CAR U . 1,1 . CDR U);
+
+SYMBOLIC PROCEDURE MKKL(U,V);
+   IF NULL U THEN V ELSE MKKL(CDR U,LIST (CAR U . V));
+
+SYMBOLIC PROCEDURE CKRN!*(U,V);
+   IF NULL U THEN ERRACH 'CKRN!*
+    ELSE IF NUMB U THEN 1
+    ELSE IF CAAAR U MEMBER V
+       THEN LIST (CAAR U . CKRN!*(CDR CARX U,V))
+    ELSE CKRN!*(CDR CARX U,V);
+
+
+%*********************************************************************
+%*********************************************************************
+%	POLYNOMIAL REMAINDER SEQUENCE GCD PACKAGE (NON-MODULAR)
+%*********************************************************************
+%********************************************************************;
+
+SYMBOLIC PROCEDURE GCDK(U,V);
+   %Improved subresultant gcd algorithm;
+   %U and V are primitive polynomials in the main variable VAR;
+   %result is gcd of U and V;
+   BEGIN SCALAR BETA,F1,F2,PSI,PSI1,TAU,TAU1,TAU2,VAR,W;
+	INTEGER D1,D2,D3,M,N;
+	IF U=V THEN RETURN U;
+    A0:	IF NUMB U OR DEG(V,(VAR := MVAR U))=0 THEN RETURN 1;
+	TAU1 := 1;
+	IF (D2 := LDEG U-LDEG V)>0 THEN GO TO B
+	 ELSE IF D2<0 THEN GO TO A;
+	V := CADDR REMK(U,V);
+	IF NULL V THEN RETURN U ELSE IF ATOM V THEN RETURN 1;
+	V := DIVF(V,GCDL COMFAC V);
+	GO TO A0;
+    A:	D2 := -D2;
+	W := U;
+	U := V;
+	V := W;
+    B:  W := REMK(U,V);
+	D1 := CAR W;			%delta(I-1);
+	M := D2+1-CADR W;		%number of missing powers;
+	W := CADDR W;
+	IF NULL W THEN RETURN DIVF(V,GCDL COMFAC V)
+	 ELSE IF DEG(W,VAR)=0 THEN RETURN 1;
+	F1 := LC V;			%leading coefficient of V;
+	N :=  D2*(D1-1)-M*D1;		%exponent to be tested;
+	TAU := IF N>0 THEN EXPTF(F1,N) ELSE 1;
+	IF NULL BETA THEN GO TO C;	%first time through (I=3);
+	PSI := DIVF(EXPTF(NEGF MULTF(TAU2,F2),D3),EXPTF(PSI1,D3-1));
+	BETA := NEGF DIVF(MULTF(TAU,MULTF(F2,EXPTF(PSI,D2))),
+			    EXPTF(TAU1,D2+1));
+	GO TO D;
+    C:  BETA := MULTF((-1)**(D2+1),TAU);
+	PSI := -1;
+    D:  U := V;
+	V := DIVF(W,BETA);
+	IF NULL V THEN ERRACH "GCDK DIVISION FAILED";
+	D3 := D2;
+	D2 := D1;
+	F2 := F1;
+	PSI1 := PSI;
+	TAU2 := TAU1;
+	TAU1 := MULTF(TAU,EXPTF(F1,M));
+	GO TO B
+   END;
+
+SYMBOLIC PROCEDURE REMK(U,V);
+   %modified pseudo-remainder algorithm
+   %U and V are polynomials,
+   %value is a list of (ldeg V - ldeg modified prem(U,V)),
+   % number of powers of lc(V) and modified prem(U,V);
+   BEGIN SCALAR F1,VAR,X; INTEGER K,L,N;
+	F1 := LC V;
+	VAR := MVAR V;
+	N := LDEG V;
+	L := 0; 	%count of number of powers of F1 needed;
+    A:  K := DEG(U,VAR)-N;
+	IF K<0 THEN RETURN LIST(-K,L,U);
+	X := NEGF MULTF(LC U,RED V);
+	IF K>0 THEN X := MULTF2(MKSP(VAR,K),X);
+	U := ADDF(MULTF(F1,RED U),X);
+	L := L+1;
+	GO TO A
+   END;
+
+
+%*********************************************************************
+%*********************************************************************
+%		      3.7 COEFF OPERATOR PACKAGE
+%*********************************************************************
+%********************************************************************;
+
+%*********************************************************************
+%                  REQUIRES EXTENDED OUTPUT PACKAGE
+%********************************************************************;
+
+SYMBOLIC PROCEDURE COEFF(U,V,W);
+   BEGIN SCALAR X,Y,Z;
+	IF NOT ATOM V THEN V := REVAL V;
+	X := FACTORS!*;
+	FACTORS!* := LIST V;
+	U := SIMP!* U;
+	PRIN!* := T;
+	Y := FORMOP CAR U . FORMOP CDR U;
+	PRIN!* := NIL;
+	IF NOT ATOM CDR Y
+	  THEN MESPRI("COEFF GIVEN EXPRESSION",
+		      "WITH DENOMINATOR",NIL,PREPF CDR Y,NIL);
+	U := CDR Y;
+	Y := CAR Y;
+	IF NULL Y THEN GO TO B0;
+    A:  IF NUMB Y OR NOT CAAAR Y=V THEN GO TO B;
+	Z := (CDAAR Y . PREPSQ!* CANCEL (CDAR Y . U)) . Z;
+	Y := CDR Y;
+	GO TO A;
+    B:  IF NULL Y THEN GO TO B1;
+    B0: Z := (0 . PREPSQ!* CANCEL (Y . U)) . Z;
+    B1: IF (NOT ATOM W AND ATOM CAR W
+			 AND (Y := GET!*(CAR W,'!*!*ARRAY)))
+	     OR (ATOM W AND (Y := GET!*(W,'!*!*ARRAY)) AND NULL CDR Y)
+	 THEN GO TO G;
+	Y := EXPLODE W;
+	W := NIL;
+  C:	W := LIST('EQUAL,COMPRESS APPEND(Y,EXPLODE CAAR Z),CDAR Z) . W;
+	IF NULL CDR Z THEN GO TO D;
+	Z := CDR Z;
+	GO TO C;
+    D:  SETK('!*HIPOW,CAAR Z);
+	LET0(W,NIL);
+	IF !*MSG
+	  THEN LPRIM ACONC(MAPLIST(W,FUNCTION CADAR),"ARE NON ZERO");
+    E:  FACTORS!* := X;
+	RETURN REVAL '!*HIPOW;
+    G:  Z := REVERSE Z;
+	IF ATOM W THEN W := LIST(W,'TIMES);
+	SETK('!*HIPOW,CAAR Z);
+	Y := PAIR(CDR W,Y);
+    G0: IF 'TIMES MEMBER FLATTEN CAAR Y THEN GO TO G1;
+	Y := CDR Y;
+	GO TO G0;
+    G1:	Y := CDAR Y-REVAL SUBST(0,'TIMES,CAAR Y);
+	IF CAAR Z>Y THEN REDERR "ARRAY TOO SMALL" ;
+	W := REVOP SUBST(Y,'TIMES,W);
+    H:  IF NULL Z OR NOT Y=CAAR Z THEN SETEL(W,0)
+	 ELSE PROG2(SETEL(W,CDAR Z),Z := CDR Z);
+	IF Y=0 THEN GO TO E;
+	Y := Y-1;
+	GO TO H
+   END;
+
+FLAG ('(COEFF),'OPFN);
+
+
+%THE FOLLOWING COMMAND IS NO LONGER SUPPORTED;
+
+SYMBOLIC PROCEDURE MKCOEFF(U,V);
+   BEGIN COEFF(!*ANS,U,V) END;
+
+PUT('MKCOEFF,'STAT,'NORLIS);
+
+
+%*********************************************************************
+%*********************************************************************
+%		    5.3 ASYMPTOTIC COMMAND PACKAGE
+%********************************************************************;
+%********************************************************************;
+
+SYMBOLIC PROCEDURE WEIGHT U;
+   BEGIN SCALAR Y,Z;
+	RMSUBS();
+    A:  IF NULL U THEN RETURN NIL
+	 ELSE IF NOT EQEXPR CAR U THEN GO TO ER;
+	Y := SIMP0 CADAR U;
+	Z := REVAL CADDAR U;
+	IF NOT KERNP Y OR NOT (NUMBERP Z AND FIXP Z AND NOT MINUSP Z)
+	  THEN GO TO ER;
+	Y := CAAAAR Y;
+	WTL!* :=  (Y . Z) . WTL!*;
+    B:  U := CDR U;
+	GO TO A;
+    ER: ERRPRI2(CAR U,'HOLD);
+	GO TO B
+   END;
+
+SYMBOLIC PROCEDURE WTLEVEL N;
+   BEGIN SCALAR X;
+	N := REVAL N;
+	IF NOT(NUMBERP N AND FIXP N AND NOT MINUSP N) THEN ERRPRI2 N;
+	N := N+1;
+	X := ASSOC('ASYMP,CDDR FKERN 'K!*);
+	IF N=CDR X THEN RETURN NIL ELSE IF N<=CDR X THEN RMSUBS2();
+	RMSUBS1();
+	RPLACD(X,N)
+   END;
+
+DEFLIST ('((WEIGHT RLIS) (WTLEVEL NORLIS)),'STAT);
+
+LET1 ('(EXPT K!* 2),0);
+
+
+%*********************************************************************
+%*********************************************************************
+%	  SIMPLIFICATION FUNCTIONS FOR NON-SCALAR QUANTITIES
+%*********************************************************************
+%********************************************************************;
+
+SYMBOLIC PROCEDURE NSSIMP(U,V);
+   %U is a prefix expression involving non-commuting
+   %quantities. Result is an expression of the form
+   % SUM R(I)*PRODUCT M(I,J) where the R(I) are standard
+   %quotients and the M(I,J) non-commuting expressions;
+   %N. B: the products in M(I,J) are returned in reverse order
+   %(to facilitate, e.g., matrix augmentation);
+   BEGIN SCALAR W,X,Y,Z;
+	U := DSIMP(U,V);
+    A:  IF NULL U THEN RETURN Z;
+	W := CAR U;
+    C:  IF NULL W THEN GO TO D
+	 ELSE IF NUMBERP CAR W
+		 OR NOT(EQCAR(CAR W,'!*DIV) OR !*APPLY(V,LIST CAR W))
+	  THEN X := ACONC(X,CAR W)
+	 ELSE Y := ACONC(Y,CAR W);
+	W := CDR W;
+	GO TO C;
+    D:  IF NULL Y THEN GO TO ER;
+    E:  Z := ADDNS(((IF NULL X THEN 1 . 1 ELSE SIMPTIMES X) . Y),Z);
+	U := CDR U;
+	X := Y:= NIL;
+	GO TO A;
+    ER: Y := GET(V,'NAME);
+	IF ATOM CAR X AND NOT NUMBERP CAR X
+	  THEN IF NOT FLAGP(CAR X,GET(Y,'FN)) THEN REDMSG(CAR X,Y)
+	    ELSE REDERR LIST(Y,X,"NOT SET")
+	 ELSE REDERR LIST("MISSING",Y,X);
+	PUT(CAR X,Y,Y);
+	Y := LIST CAR X;
+	X := CDR X;
+	GO TO E
+   END;
+
+SYMBOLIC PROCEDURE DSIMP(U,!*S!*);
+   %result is a list of lists representing a sum of products;
+   %N. B: symbols are in reverse order in product list;
+   IF NUMBERP U THEN LIST LIST U
+    ELSE IF ATOM U THEN (LAMBDA W; (LAMBDA X;
+	IF X AND NOT X EQ W AND SUBFG!* THEN DSIMP(X,!*S!*)
+	 ELSE IF FLAGP(U,'SHARE) THEN DSIMP(!*EVAL U,!*S!*)
+	 ELSE PROG2(FLAG(LIST U,'USED!*),LIST LIST U))
+     GET(U,W))
+    GET(!*S!*,'NAME)
+    ELSE IF CAR U EQ 'PLUS
+     THEN MAPCON(CDR U,FUNCTION (LAMBDA J; DSIMP(CAR J,!*S!*)))
+    ELSE IF CAR U EQ 'DIFFERENCE
+     THEN NCONC(DSIMP(CADR U,!*S!*),
+		DSIMP('MINUS . CDDR U,!*S!*))
+    ELSE IF CAR U EQ 'MINUS
+     THEN DSIMPTIMES(LIST(-1,CARX CDR U),!*S!*)
+    ELSE IF CAR U EQ 'TIMES
+     THEN DSIMPTIMES(CDR U,!*S!*)
+    ELSE IF CAR U EQ 'QUOTIENT
+     THEN DSIMPTIMES(LIST(CADR U, LIST('RECIP,CARX CDDR U)),!*S!*)
+    ELSE IF NOT !*APPLY(!*S!*,LIST U) THEN LIST LIST U
+    ELSE IF CAR U EQ 'RECIP THEN LIST LIST LIST('!*DIV,CARX CDR U)
+    ELSE IF CAR U EQ 'EXPT THEN (LAMBDA Z;
+       IF NOT NUMBERP Z OR NOT FIXP Z THEN ERRPRI2(U,T)
+	ELSE IF MINUSP Z
+	 THEN LIST LIST LIST('!*DIV,'TIMES . NLIST(CADR U,-Z))
+	ELSE DSIMPTIMES(NLIST(CADR U,Z),!*S!*))
+      REVAL CADDR U
+    ELSE IF CAR U EQ 'MAT THEN LIST LIST U
+    ELSE IF GET(CAR U,'!*!*ARRAY)
+       THEN DSIMP(GETEL REVOP(U,T),!*S!*)
+    ELSE (LAMBDA X; IF X THEN DSIMP(X,!*S!*)
+		     ELSE (LAMBDA Y; IF Y THEN DSIMP(Y,!*S!*)
+					  ELSE LIST LIST U)
+				OPMTCH REVOP(U,NIL))
+	OPMTCH U;
+
+SYMBOLIC PROCEDURE DSIMPTIMES(U,V);
+   IF NULL U THEN ERRACH 'DSIMPTIMES
+    ELSE IF NULL CDR U THEN DSIMP(CAR U,V)
+    ELSE (LAMBDA !*S!*;
+	  MAPCON(DSIMPTIMES(CDR U,V),
+		 FUNCTION (LAMBDA J; MAPPEND(!*S!*,CAR J))))
+       DSIMP(CAR U,V);
+
+SYMBOLIC PROCEDURE ADDNS(U,V);
+   IF NULL V THEN LIST U
+    ELSE IF CDR U=CDAR V
+       THEN (LAMBDA X; IF NULL CAR X THEN CDR V
+			 ELSE (X . CDR U) . CDR V)
+       ADDSQ(CAR U,CAAR V)
+    ELSE IF ORDP(CDR U,CDAR V) THEN U . V
+    ELSE CAR V . ADDNS(U,CDR V);
+
+SYMBOLIC PROCEDURE NSLET(U,V,W,B,FLG);
+   BEGIN
+	IF FLG THEN GO TO A
+	 ELSE IF NOT ATOM U THEN REDERR LIST("TYPE CONFLICT FOR",U);
+	REDMSG(U,W);
+	PUT(U,W,W);
+    A:  IF NULL B THEN GO TO C
+	 ELSE IF ATOM U THEN FLAGP(U,'USED!*);
+	RMSUBS2();
+    C:  IF NOT ATOM U
+	  THEN IF GET(CAR U,'!*!*ARRAY)
+		 THEN SETEL(REVOP(U,T),IF B THEN V ELSE NIL)
+		ELSE PUT(CAR U,'OPMTCH,XADD(CDR U .
+		    LIST(NIL . (IF MCOND!* THEN MCOND!* ELSE T),V,NIL),
+			GET(CAR U,'OPMTCH),U,B))
+	 ELSE IF NULL B THEN REMPROP(U,W)
+	 ELSE PUT(U,W,V)
+   END;
+
+SYMBOLIC PROCEDURE NSP(U,V);
+   IF NUMBERP U THEN NIL
+    ELSE IF ATOM U THEN GET(U,V)
+			  OR (FLAGP(U,'SHARE) AND NSP(!*EVAL U,V))
+    ELSE IF CAR U MEMBER '(TIMES QUOTIENT) THEN NSOR(CDR U,V)
+    ELSE IF CAR U MEMBER '(PLUS DIFFERENCE MINUS EXPT RECIP)
+     THEN NSP(CADR U,V)
+    ELSE FLAGP(CAR U,GET(V,'FN));
+
+SYMBOLIC PROCEDURE NSOR(U,V);
+   U AND (NSP(CAR U,V) OR NSOR(CDR U,V));
+
+
+%*********************************************************************
+%*********************************************************************
+%			    MATRIX PACKAGE
+%*********************************************************************
+%********************************************************************;
+
+%*********************************************************************
+%     REQUIRES SIMPLIFICATION FUNCTIONS FOR NON-SCALAR QUANTITIES
+%********************************************************************;
+
+TYPL!* := UNION('(MATP),TYPL!*);
+
+SYMBOLIC PROCEDURE MATRIX U;
+   %declares list U as matrices;
+   BEGIN SCALAR V,W; INTEGER N;
+	MATP!* := T;		%tells system we have matrices;
+    A:  IF NULL U THEN RETURN NIL
+	 ELSE IF ATOM CAR U AND NOT DEFP(CAR U,'MATRIX)
+	  THEN PUT(CAR U,'MATRIX,'MATRIX)
+	 ELSE IF NOT ATOM CAAR U OR NUMBERP CAAR U
+		OR LENGTH (V := REVLIS CDAR U) NEQ 2 OR NOT NUMLIS V
+	  THEN GO TO ER
+	 ELSE IF NOT DEFP(CAAR U,'MATRIX) THEN GO TO C;
+    B:  U := CDR U;
+	GO TO A;
+    C:  N := CAR V;
+    D:  IF N=0 THEN GO TO E;
+	W := NZERO CADR V . W;
+	N := N-1;
+	GO TO D;
+    E:  PUT(CAAR U,'MATRIX,'MAT . W);
+	W := NIL;
+	GO TO B;
+    ER: ERRPRI2(CAR U,'HOLD);
+	GO TO B
+   END;
+
+PUT('MATRIX,'STAT,'OPSTAT);
+
+SYMBOLIC PROCEDURE NZERO N;
+   %returns a list of N zeros;
+   IF N=0 THEN NIL ELSE 0 . NZERO(N-1);
+
+SYMBOLIC PROCEDURE MATP U;
+   %predicate which tests for matrix expressions;
+   NSP(U,'MATRIX);
+
+PUT('MAT,'MATFN,'MATFN);
+
+PUT('TP,'MATFN,'TP);
+
+PUT('MATP,'LETFN,'NSLET);
+
+PUT('MATP,'NAME,'MATRIX);
+
+PUT('MATRIX,'FN,'MATFN);
+
+PUT('MATP,'EVFN,'MATSM);
+
+PUT('MATP,'PRIFN,'MATPRI!*);
+
+SYMBOLIC PROCEDURE MAPC2(U,!*PI!*);
+   MAPCAR(U,FUNCTION (LAMBDA J; MAPCAR(J,FUNCTION (LAMBDA K;
+		      !*PI!* K))));
+
+SYMBOLIC PROCEDURE MATSM U;
+   %matrix expression simplification function;
+   BEGIN 
+	U := MATSM1 U;
+	RETURN IF NULL CDR U AND NULL CDAR U THEN MK!*SQ2 CAAR U
+		ELSE 'MAT . MAPC2(U,FUNCTION MK!*SQ2)
+   END;
+
+SYMBOLIC PROCEDURE MK!*SQ2 U;
+   MK!*SQ SUBS2 U;
+
+SYMBOLIC PROCEDURE MATSM1 U;
+   BEGIN SCALAR X,Y;
+	U := NSSIMP(U,'MATP);
+    A:  IF NULL U THEN RETURN X;
+	Y := MULTSM(CAAR U,MTIMES CDAR U);
+	X := IF NULL X THEN Y ELSE ADDM(X,Y);
+	U := CDR U;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE MTIMES U;
+   %returns matrix canonical form for matrix symbol product U;
+   BEGIN SCALAR X,Y,Z; INTEGER N;
+    A:  IF NULL U THEN RETURN Z
+	 ELSE IF EQCAR(CAR U,'!*DIV) THEN GO TO D
+	 ELSE IF ATOM CAR U THEN GO TO ER
+	 ELSE IF CAAR U EQ 'MAT THEN X := MAPC2(CDAR U,FUNCTION SIMP)
+	 ELSE IF (X := GET(CAAR U,'MATFN)) AND X NEQ 'MATFN
+	  THEN X := !*APPLY(X,LIST MATSM1 CARX CDAR U)
+	 ELSE GO TO ER;
+	Z := IF NULL Z THEN X
+	      ELSE IF NULL CDR Z AND NULL CDAR Z THEN MULTSM(CAAR Z,X)
+	      ELSE MULTM(X,Z);
+    C:  U := CDR U;
+	GO TO A;
+    D:  Y := MATSM1 CADAR U;
+	IF (N := LENGTH CAR Y) NEQ LENGTH Y OR (Z AND N NEQ LENGTH Z)
+	  THEN REDERR "MATRIX MISMATCH"
+	 ELSE IF NULL CDR Y AND NULL CDAR Y THEN GO TO E;
+	X := SUBFG!*;
+	SUBFG!* := NIL;
+	Z := RHSIDE(BACKSUB(BAREISS
+		AUGMENT(Y,IF NULL Z THEN GENERATEIDENT N ELSE Z),
+		N),
+		N);
+	SUBFG!* := X;
+	GO TO C;
+    E:  IF NULL CAAAR Y THEN REDERR "ZERO DENOMINATOR";
+	Y := REVPR CAAR Y;
+	Z := IF NULL Z THEN LIST LIST Y ELSE MULTSM(Y,Z);
+	GO TO C;
+    ER: REDERR LIST('MATRIX,CAR U,"NOT SET")
+   END;
+
+SYMBOLIC PROCEDURE ADDM(U,V);
+   %returns sum of two matrix canonical forms U and V;
+   MAPCAR(ADDM1(U,V,FUNCTION CONS),
+	  FUNCTION (LAMBDA J; ADDM1(CAR J,CDR J,FUNCTION ADDSQ)));
+
+SYMBOLIC PROCEDURE ADDM1(U,V,!*PI!*);
+   IF NULL U AND NULL V THEN NIL
+    ELSE IF NULL U OR NULL V THEN REDERR "MATRIX MISMATCH"
+    ELSE !*PI!*(CAR U,CAR V) . ADDM1(CDR U,CDR V,!*PI!*);
+
+SYMBOLIC PROCEDURE TP U;
+   %returns transpose of the matrix canonical form U;
+   %U is destroyed during evaluation;
+   BEGIN SCALAR V,W,X,Y,Z;
+	V := W := LIST NIL;
+    A:  IF NULL CAR U THEN RETURN CDR V;
+	X := U;
+	Y := Z := LIST NIL;
+    B:  IF NULL X THEN GO TO C;
+	Z := CDR RPLACD(Z,LIST CAAR X);
+	X := CDR RPLACA(X,CDAR X);
+	GO TO B;
+    C:  W := CDR RPLACD(W,LIST CDR Y);
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE SCALPROD(U,V);
+   %returns scalar product of two lists (vectors) U and V;
+   IF NULL U AND NULL V THEN NIL . 1
+    ELSE IF NULL U OR NULL V THEN REDERR "MATRIX MISMATCH"
+    ELSE ADDSQ(MULTSQ(CAR U,CAR V),SCALPROD(CDR U,CDR V));
+
+SYMBOLIC PROCEDURE MULTM(U,V);
+   %returns matrix product of two matrix canonical forms U and V;
+    (LAMBDA !*S!*;
+	MAPCAR(U, FUNCTION (LAMBDA !*S1!*;
+	       MAPCAR(!*S!*,FUNCTION (LAMBDA K; SCALPROD(!*S1!*,K))))))
+     TP V;
+
+SYMBOLIC PROCEDURE MULTSM(!*S!*,U);
+   %returns product of standard quotient !*S!* and matrix standard
+   %form U;
+   IF !*S!* = 1 . 1 THEN U
+    ELSE MAPC2(U,FUNCTION (LAMBDA J; MULTSQ(!*S!*,J)));
+
+SYMBOLIC PROCEDURE LETMTR(U,V,Y);
+   %substitution for matrix elements;
+   BEGIN SCALAR Z;
+	IF NOT EQCAR(Y,'MAT) THEN REDERR LIST('MATRIX,CAR U,"NOT SET")
+	 ELSE IF NOT NUMLIS (Z := REVLIS CDR U) OR LENGTH Z NEQ 2
+	  THEN RETURN ERRPRI2(U,'HOLD);
+	RPLACA(PNTH(NTH(CDR Y,CAR Z),CADR Z),V);
+   END;
+
+SYMBOLIC PROCEDURE MATPRI!*(U,V,W);
+   %symbolic interface to VARPRI;
+   MATPRI(CDR U,IF V THEN !*EVAL CAR V ELSE NIL);
+
+SYMBOLIC PROCEDURE MATPRI(U,X);
+   %prints a matrix canonical form U with name X;
+   BEGIN SCALAR V,M,N;
+	M := 1;
+	IF NULL X THEN X := 'MAT;
+    A:  IF NULL U THEN RETURN NIL;
+	N := 1;
+	V := CAR U;
+    B:  IF NULL V THEN GO TO C
+	 ELSE IF CAR V=0 AND !*NERO THEN GO TO B1;
+	MAPRIN LIST(X,M,N);
+	OPRIN 'SETQ;
+	ORIG!* := POSN!*;
+	MAPRIN CAR V;
+	IF NULL !*NAT AND NULL !*FORT THEN PRINC !*!*DOLLAR;
+	ORIG!* := 0;
+	TERPRI!* T;
+    B1: V := CDR V;
+	N := N+1;
+	GO TO B;
+    C:  U := CDR U;
+	M := M+1;
+	GO TO A
+   END;
+
+
+%*********************************************************************
+%		       MATRIX INVERSION ROUTINES
+%********************************************************************;
+
+SYMBOLIC PROCEDURE AUGMENT(U,V);
+   IF NULL U THEN NIL ELSE APPEND(CAR U,CAR V) . AUGMENT(CDR U,CDR V);
+
+SYMBOLIC PROCEDURE GENERATEIDENT N;
+  %returns matrix canonical form of identity matrix of order N;
+   BEGIN INTEGER I,J; SCALAR U,V;
+	I:= 1;
+    A:  IF I>N THEN RETURN V;
+	U:= NIL;
+	J:= 1;
+    B:  IF J>N THEN GO TO C
+	 ELSE U:= ((IF I=J THEN 1 ELSE NIL) . 1) . U;
+	J:= J+1;
+	GO TO B;
+    C:  I:= I+1;
+	V:= U . V;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE RHSIDE(U,M);
+   IF NULL U THEN NIL ELSE PNTH(CAR U,M+1) . RHSIDE(CDR U,M);
+
+SYMBOLIC PROCEDURE BAREISS U;
+   %The  2-step  integer  preserving  elimination method  of  Bareiss
+   %based  on  the  implementation  of  Lipson;
+   %value  of  procedure  may  be  NIL  if  U is  singular  and   the
+   %triangularized form of U (in matrix standard form) otherwise;
+   BEGIN SCALAR AA,C0,CI1,CI2,IK1,IJ,KK1,KJ,K1J,K1K1,UI,U1,X;
+	INTEGER K,K1;
+	%U1 points to K-1th row of U
+	%UI points to Ith row of U
+	%IJ points to U(I,J)
+	%K1J points to U(K-1,J)
+	%KJ points to U(K,J)
+	%IK1 points to U(I,K-1)
+	%KK1 points to U(K,K-1)
+	%K1K1 points to U(K-1,K-1)
+	%M in comments is number of rows in U
+	%N in comments is number of columns in U;
+	AA:= 1 . 1;			%A:= 1;
+	K:= 2;
+	K1:=1;
+	U1:=U;
+	GO TO PIVOT;
+   AGN: U1 := CDR U1;
+	IF NULL CDR U1 OR NULL CDDR U1 THEN RETURN U;
+	AA:=NTH(CAR U1,K);		%AA := U(K,K);
+	K:=K+2;
+	K1:=K-1;
+	U1:=CDR U1;
+   PIVOT:  %pivot algorithm;
+	K1J:= K1K1 := PNTH(CAR U1,K1);
+	IF CAR K1K1 NEQ NIL . 1 THEN GO TO L2;
+	UI:= CDR U1;			%I := K;
+   L:	IF NULL UI THEN RETURN NIL
+	 ELSE IF CAR(IJ:= PNTH(CAR UI,K1))=NIL . 1
+	  THEN GO TO L1;
+   L0:  IF NULL IJ THEN GO TO L2;
+	X:= CAR IJ;
+	RPLACA(IJ,NEGSQ CAR K1J);
+	RPLACA(K1J,X);
+	IJ:= CDR IJ;
+	K1J:= CDR K1J;
+	GO TO L0;
+   L1:  UI:= CDR UI;
+	GO TO L;
+   L2:  UI:= CDR U1;			%I:= K;
+   L21: IF NULL UI THEN RETURN NIL;	%IF I>M THEN RETURN NIL;
+	IJ:= PNTH(CAR UI,K1);
+	C0:= ADDSQ1(MULTSQ1(CAR K1K1,CADR IJ),
+		    NEGSQ MULTSQ1(CADR K1K1,CAR IJ));
+	IF C0 NEQ NIL . 1 THEN GO TO L3;
+	UI:= CDR UI;			%I:= I+1;
+	GO TO L21;
+   L3:  C0:= DIVSQ(C0,AA);
+	KK1 := KJ := PNTH(CADR U1,K1);  %KK1 := U(K,K-1);
+	IF CDR U1 AND NULL CDDR U1 THEN GO TO EV0
+	 ELSE IF UI EQ CDR U1 THEN GO TO COMP;
+   L31: IF NULL IJ THEN GO TO COMP;	%IF I>N THEN GO TO COMP;
+	X:= CAR IJ;
+	RPLACA(IJ,NEGSQ CAR KJ);
+	RPLACA(KJ,X);
+	IJ:= CDR IJ;
+	KJ:= CDR KJ;
+	GO TO L31;
+	%pivoting complete;
+    COMP:
+	IF NULL CDR U1 THEN GO TO EV;
+	UI:= CDDR U1;			%I:= K+1;
+    COMP1:
+	IF NULL UI THEN GO TO EV;	%IF I>M THEN GO TO EV;
+	IK1:= PNTH(CAR UI,K1);
+	CI1:= DIVSQ(ADDSQ1(MULTSQ1(CADR K1K1,CAR IK1),
+			   NEGSQ MULTSQ1(CAR K1K1,CADR IK1)),
+		     AA);
+	CI2:= DIVSQ(ADDSQ1(MULTSQ1(CAR KK1,CADR IK1),
+			   NEGSQ MULTSQ1(CADR KK1,CAR IK1)),
+		     AA);
+	IF NULL CDDR K1K1 THEN GO TO COMP3;%IF J>N THEN GO TO COMP3;
+	IJ:= CDDR IK1;  		%J:= K+1;
+	KJ:= CDDR KK1;
+	K1J:= CDDR K1K1;
+    COMP2:
+	IF NULL IJ THEN GO TO COMP3;
+	RPLACA(IJ,DIVSQ(ADDSQ1(MULTSQ1(CAR IJ,C0),
+			       ADDSQ1(MULTSQ1(CAR KJ,CI1),
+				  MULTSQ1(CAR K1J, CI2))),
+		     AA));
+	IJ:= CDR IJ;
+	KJ:= CDR KJ;
+	K1J:= CDR K1J;
+	GO TO COMP2;
+    COMP3:
+	CI1 := CI2 := NIL;
+	UI:= CDR UI;
+	GO TO COMP1;
+    EV0:IF C0 = NIL . 1 THEN RETURN NIL;
+    EV: KJ := CDR KK1;
+	X := CDDR K1K1; 		%X := U(K-1,K+1);
+	RPLACA(KJ,C0);
+    EV1:KJ:= CDR KJ;
+	IF NULL KJ THEN GO TO AGN;
+	RPLACA(KJ,DIVSQ(ADDSQ1(MULTSQ1(CAR K1K1,CAR KJ),
+			       NEGSQ MULTSQ1(CAR KK1,CAR X)),
+		     AA));
+	X := CDR X;
+	GO TO EV1
+   END;
+
+SYMBOLIC PROCEDURE BACKSUB(U,M);
+   BEGIN SCALAR IDET,IJ,IJJ,RI,SUMM,UJ,UR; INTEGER I,JJ;
+   %N in comments is number of columns in U;
+	IF NULL U THEN REDERR "SINGULAR MATRIX";
+	UR := REVERSE U;
+	I := M;
+	RI := CAR UR;
+	IJ := PNTH(RI,M);		%J := M;
+	IDET := REVPR CAR IJ;		%IDET := 1/U(I,J);
+	IF NULL CDR IDET THEN REDERR "SINGULAR MATRIX";
+    ROWM:
+	IJ := CDR IJ;			%J := J+1;
+	IF NULL IJ THEN GO TO ROWS;	%IF J>N THEN GO TO ROWS;
+	RPLACA(IJ,MULTSQ1(CAR IJ,IDET));%U(I,J) := U(I,J)*IDET;
+	GO TO ROWM;
+    ROWS:
+	I := I-1;
+	UR := CDR UR;
+	IF NULL UR THEN RETURN U;	%IF I=0 THEN RETURN U;
+	RI := CAR UR;
+	JJ := M+1;
+	IJJ:=PNTH(RI,JJ);
+    R2: IF NULL IJJ THEN GO TO ROWS;	%IF JJ>N THEN GO TO ROWS;
+	IJ := PNTH(RI,I);		%J := I;
+	IDET := CAR IJ; 		%IDET := U(I,I);
+	UJ := PNTH(U,I);
+	SUMM := NIL . 1;		%SUMM := 0;
+    R3: UJ := CDR UJ;			%J := J+1;
+	IF NULL UJ THEN GO TO R4;	%IF J>M THEN GO TO R4;
+	IJ := CDR IJ;
+	SUMM := ADDSQ1(SUMM,MULTSQ1(CAR IJ,	%SUMM:=SUMM+U(I,J);
+			      NTH(CAR UJ,JJ))); %	  * U(J,JJ);
+	GO TO R3;
+    R4: RPLACA(IJJ,DIVSQ(ADDSQ1(CAR IJJ,	%U(I,J):=(U(I,J)-SUMM);
+			    NEGSQ SUMM),IDET)); %	  /IDET;
+	JJ := JJ+1;
+	IJJ := CDR IJJ;
+	GO TO R2
+   END;
+
+SYMBOLIC PROCEDURE DIVF!*(U,V);
+   IF NULL U THEN NIL
+    ELSE (LAMBDA X; IF NULL X THEN ERRACH "DIVISION FAILED" ELSE X)
+	  DIVF(U,V);
+
+SYMBOLIC PROCEDURE DIVSQ(U,V);
+   IF !*GCD THEN MULTSQ(U,REVPR V)
+    ELSE DIVF!*(CAR U,CAR V) . DIVF!*(CDR U, CDR V);
+
+SYMBOLIC PROCEDURE MULTSQ1(U,V);
+   IF !*GCD THEN MULTSQ(U,V)
+    ELSE MULTF(CAR U,CAR V) . MULTF(CDR U,CDR V);
+
+SYMBOLIC PROCEDURE ADDSQ1(U,V);
+   IF !*GCD THEN ADDSQ(U,V)
+    ELSE IF CDR U=CDR V THEN ADDF(CAR U,CAR V) . CDR U
+    ELSE BEGIN SCALAR X;
+	X := GCDF(CDR U,CDR V);
+	X := DIVF(CDR U,X) DIV DIVF(CDR V,X);
+	RETURN ADDF(MULTF(CDR X,CAR U),MULTF(CAR X,CAR V))
+		     DIV MULTF(CDR X,CDR U)
+      END;
+
+
+%*********************************************************************
+%		    DETERMINANT AND TRACE ROUTINES
+%********************************************************************;
+
+SYMBOLIC PROCEDURE SIMPDET U;
+   DETQ MATSM1 CARX U;
+
+SYMBOLIC PROCEDURE DETQ U;
+   BEGIN SCALAR X; INTEGER N;
+	N := LENGTH U;
+	IF N NEQ LENGTH CAR U THEN REDERR "NON SQUARE MATRIX";
+	X := SUBFG!*;
+	SUBFG!* := NIL;
+	U := BAREISS U;
+	SUBFG!* := X;
+	RETURN IF NULL U THEN NIL . 1 ELSE NTH(NTH(U,N),N)
+   END;
+
+PUT('DET,'SIMPFN,'SIMPDET);
+
+SYMBOLIC PROCEDURE SIMPTRACE U;
+   BEGIN INTEGER N; SCALAR Z;
+	U:=  MATSM1 CARX U;
+	IF LENGTH U NEQ LENGTH CAR U
+	  THEN REDERR "NON SQUARE MATRIX";
+	Z:= NIL . 1;
+	N:= 1;
+    A:  IF NULL U THEN RETURN Z;
+	Z:= ADDSQ(NTH(CAR U,N),Z);
+	U:= CDR U;
+	N:= N+1;
+	GO TO A
+   END;
+
+PUT('TRACE,'SIMPFN,'SIMPTRACE);
+
+
+%*********************************************************************
+%*********************************************************************
+%                     HIGH ENERGY PHYSICS PACKAGE
+%*********************************************************************
+%********************************************************************;
+
+%*********************************************************************
+%     REQUIRES SIMPLIFICATION FUNCTIONS FOR NON-SCALAR QUANTITIES
+%********************************************************************;
+
+
+%*********************************************************************
+%             GLOBAL VARIABLES REFERENCED IN THIS PACKAGE
+%********************************************************************;
+
+TYPL!* := UNION('(VECTORP),TYPL!*);
+GAMIDEN!* := NIL;
+INDICES!* := NIL;	%list of indices in High Energy Physics
+			%tensor expressions;
+% SUBFG!*	
+% NCMP!*		;
+
+
+%*********************************************************************
+%                         SOME DECLARATIONS
+%********************************************************************;
+
+DEFLIST ('((CONS SIMPDOT)),'SIMPFN);
+
+SYMBOLIC PROCEDURE VECTOR U;
+   VECTOR1 U;
+
+SYMBOLIC PROCEDURE VECTOR1 U;
+   MAP(U,FUNCTION (LAMBDA J; PUT(CAR J,'VECTOR,'VECTOR)));
+
+SYMBOLIC PROCEDURE VECTORP U;
+   NSP(U,'VECTOR);
+
+PUT('VECTOR,'STAT,'OPSTAT);
+
+PUT('VECTOR,'FN,'VECFN);
+
+PUT('VECTORP,'LETFN,'NSLET);
+
+PUT('VECTORP,'NAME,'VECTOR);
+
+PUT('VECTORP,'EVFN,'VEVAL);
+
+SYMBOLIC PROCEDURE INDEX U;
+   BEGIN VECTOR1 U; RMSUBS(); INDICES!* := UNION(INDICES!*,U) END;
+
+SYMBOLIC PROCEDURE REMIND U;
+   BEGIN INDICES!* := SETDIFF(INDICES!*,U) END;
+
+SYMBOLIC PROCEDURE MASS U;
+   BEGIN
+   A:	IF NULL U THEN RETURN NIL;
+	PUT(CADAR U,'MASS,CADDAR U);
+	PUT(CADAR U,'VECTOR,'VECTOR);
+	U := CDR U;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE MSHELL U;
+   BEGIN SCALAR X,Z;
+    A:  IF NULL U THEN RETURN LET0(Z,NIL);
+	X := GETMAS CAR U;
+	Z := LIST('EQUAL,LIST('CONS,CAR U,CAR U),LIST('EXPT,X,2)) . Z;
+	U := CDR U;
+	GO TO A
+   END;
+
+DEFLIST('((MSHELL RLIS) (MASS RLIS) (INDEX RLIS) (REMIND RLIS)),'STAT);
+
+
+%*********************************************************************
+%          FUNCTIONS FOR SIMPLIFYING HIGH ENERGY EXPRESSIONS
+%********************************************************************;
+
+SYMBOLIC PROCEDURE VEVAL U;
+   BEGIN SCALAR Z;
+	U := NSSIMP(U,'VECTORP);
+    A:	IF NULL U THEN RETURN REPLUS Z
+	 ELSE IF NULL CDAR U THEN REDERR "MISSING VECTOR"
+	 ELSE IF CDDAR U THEN REDERR LIST("REDUNDANT VECTOR",CDAR U);
+	Z := ACONC(Z,RETIMES(PREPSQ CAAR U . CDAR U));
+	U := CDR U;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE ISIMPQ U;
+   MULTSQ(ISIMP NUMR U DIV 1,1 DIV DENR U);
+
+SYMBOLIC PROCEDURE ISIMP U;
+   ISIMP1(U,INDICES!*,NIL,NIL,NIL);
+
+SYMBOLIC PROCEDURE ISIMP1(U,I,V,W,X);
+   IF NULL U THEN NIL
+    ELSE IF NUMB U
+       THEN IF X THEN MULTF(U,SPUR0(CAR X,I,V,W,CDR X))
+	     ELSE IF V THEN REDERR APPEND("UNMATCHED INDEX ERROR",I)
+	     ELSE IF W THEN MULTF(EMULT W,ISIMP1(U,I,V,NIL,X))
+	     ELSE U
+    ELSE ADDF(ISIMP2(CAR U,I,V,W,X),ISIMP1(CDR U,I,V,W,X));
+
+SYMBOLIC PROCEDURE ISIMP2(U,I,V,W,X);
+   BEGIN SCALAR Z;
+	IF ATOM (Z := CAAR U) THEN GO TO A
+	 ELSE IF CAR Z EQ 'CONS AND XN(CDR Z,I)
+	    THEN RETURN DOTSUM(U,I,V,W,X)
+	 ELSE IF CAR Z EQ 'G
+	  THEN GO TO B
+	 ELSE IF CAR Z EQ 'EPS THEN RETURN ESUM(U,I,V,W,X);
+    A:  RETURN MULTF2(CAR U,ISIMP1(CDR U,I,V,W,X));
+    B:	Z := GADD(APPN(CDDR Z,CDAR U),X,CADR Z);
+	RETURN ISIMP1(MULTN(NB CAR Z,CDR U),I,V,W,CDR Z)
+   END;
+
+SYMBOLIC PROCEDURE NB U;
+   IF U THEN 1 ELSE -1;
+
+SYMBOLIC PROCEDURE DOTSUM(U,I,V,W,X);
+   BEGIN SCALAR I1,N,U1,U2,V1,Y,Z;
+	N := CDAR U;
+	IF NOT (CAR (U1 := CDAAR U) MEMBER I) THEN U1 := REVERSE U1;
+	U2 := CADR U1;
+	U1 := CAR U1;
+	V1 := CDR U;
+	IF N=2 THEN GO TO H ELSE IF N NEQ 1 THEN REDERR U;
+    A:  IF NOT (U1 MEMBER I)
+	    THEN RETURN MULTF(MKDOT(U1,U2),ISIMP1(V1,I1,V,W,X));
+    A1: I1 := DELETE(U1,I);
+	IF U1 EQ U2 THEN RETURN MULTN(4,ISIMP1(V1,I1,V,W,X))
+	 ELSE IF NOT (Z := ASSOC(U1,V)) THEN GO TO C
+	 ELSE IF U2 MEMBER I THEN GO TO D;
+	U1 := CDR Z;
+	GO TO E;
+    C:  IF Z := MEMLIS(U1,X)
+	    THEN RETURN ISIMP1(V1,
+			      I1,
+			      V,
+			      W,
+			      SUBST(U2,U1,Z) . DELETE(Z,X))
+	 ELSE IF Z := MEMLIS(U1,W)
+	    THEN RETURN ESUM((('EPS . SUBST(U2,U1,Z)) . 1) . V1,
+			     I1,
+			     V,
+			     DELETE(Z,W),
+			     X)
+	 ELSE IF U2 MEMBER I AND NULL Y THEN GO TO G;
+	RETURN ISIMP1(V1,I,(U1 . U2) . V,W,X);
+    D:  U1 := U2;
+	U2 := CDR Z;
+    E:  I := I1;
+	V := DELETE(Z,V);
+	GO TO A;
+    G:  Y := T;
+	Z := U1;
+	U1 := U2;
+	U2 := Z;
+	GO TO A1;
+    H:  IF U1 EQ U2 THEN REDERR U;
+	I := I1 := DELETE(U1,I);
+	U1 := U2;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE VMULT U;
+   BEGIN SCALAR Z;
+	Z := LIST LIST '(1 . 1);
+    A:	IF NULL U THEN RETURN Z;
+	Z := VMULT1(NSSIMP(CAR U,'VECTORP),Z);
+	IF NULL Z THEN RETURN NIL;
+	U := CDR U;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE VMULT1(!*S!*,V);
+   BEGIN SCALAR Z;
+	IF NULL V THEN RETURN NIL;
+    A:	IF NULL !*S!* THEN RETURN Z
+	 ELSE IF CDDAR !*S!*
+	  THEN REDERR("REDUNDANT VECTOR" . CDAR !*S!*);
+	Z := NCONC(Z,MAPCAR(V,FUNCTION (LAMBDA J;
+	      MULTSQ(CAR J,CAAR !*S!*) . APPEND(CDR J,CDAR !*S!*))));
+	!*S!* := CDR !*S!*;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE SIMPDOT U;
+   MKVARG(U,FUNCTION DOTORD);
+
+SYMBOLIC PROCEDURE DOTORD U;
+   PROG2(IF XN(U,INDICES!*) AND NOT MEMBER('ISIMPQ,MUL!*)
+	   THEN MUL!* := ACONC(MUL!*,'ISIMPQ) ELSE NIL,
+	IF 'A MEMBER U
+	  THEN REDERR "A REPRESENTS ONLY GAMMA5 IN VECTOR EXPRESSIONS"
+	 ELSE MKSQ('CONS . ORD2(CAR U,CARX CDR U),1));
+
+SYMBOLIC PROCEDURE MKVARG(U,!*PI!*);
+   BEGIN SCALAR Z;
+	U := VMULT U;
+	Z := NIL . 1;
+    A:  IF NULL U THEN RETURN Z;
+	Z := ADDSQ(MULTSQ(!*PI!* CDAR U,CAAR U),Z);
+	U := CDR U;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE MKDOT(U,V);
+   MKSF('CONS . ORD2(U,V),1);
+
+SYMBOLIC PROCEDURE GETMAS U;
+   (LAMBDA X; IF X THEN X ELSE REDERR LIST(U,"HAS NO MASS"))
+      GET!*(U,'MASS);
+
+
+%*********************************************************************
+%           FUNCTIONS FOR SIMPLIFYING DIRAC GAMMA MATRICES
+%********************************************************************;
+
+PUT('G,'SIMPFN,'SIMPGAMMA);
+
+FLAGOP NONCOM,NOSPUR;
+
+FLAG ('(G),'NONCOM);
+
+SYMBOLIC PROCEDURE NCMORDP(U,V);
+   IF NOT ATOM U AND ATOM CAR U AND FLAGP(CAR U,'NONCOM)
+     THEN IF NOT ATOM V AND FLAGP!*!*(CAR V,'NONCOM) THEN ORDERP(U,V)
+	   ELSE T
+    ELSE IF NOT ATOM V AND ATOM CAR V AND FLAGP(CAR V,'NONCOM) THEN NIL
+    ELSE ORDERP(U,V);
+
+SYMBOLIC PROCEDURE SPUR U;
+   PROG2(RMSUBS(),
+	 MAP(U,FUNCTION (LAMBDA J;
+		   PROG2(REMFLAG(LIST CAR J,'NOSPUR),
+			 REMFLAG(LIST CAR J,'REDUCE)))));
+
+PUT('SPUR,'STAT,'RLIS);
+
+SYMBOLIC PROCEDURE SIMPGAMMA !*S!*;
+   IF NULL !*S!* OR NULL CDR !*S!*
+       THEN REDERR "MISSING ARGUMENTS FOR G OPERATOR"
+    ELSE BEGIN
+	GAMIDEN!* := UNION(LIST CAR !*S!*,GAMIDEN!*);
+	IF NOT MEMBER('ISIMPQ,MUL!*) THEN MUL!*:= ACONC(MUL!*,'ISIMPQ);
+	NCMP!* := T;
+	RETURN MKVARG(CDR !*S!*,FUNCTION (LAMBDA J;
+				 MKGF(J,CAR !*S!*) . 1))
+    END;
+
+SYMBOLIC PROCEDURE GADD(U,V,L);
+   BEGIN SCALAR W,X; INTEGER N;
+	N := 0;			%number of gamma5 interchanges;
+	IF NOT (X := ASSOC(L,V)) THEN GO TO A;
+	V := DELETE(X,V);
+	W := CDDR X;		%list being built;
+	X := CADR X;		%true if gamma5 remains;
+    A:	IF NULL U THEN RETURN ((REMAINDER(N,2)=0) . (L . X . W) . V)
+	 ELSE IF CAR U EQ 'A THEN GO TO C
+	 ELSE W := CAR U . W;
+    B:	U := CDR U;
+	GO TO A;
+    C:	X := NOT X;
+	N := LENGTH W + N;
+	GO TO B
+   END;
+
+SYMBOLIC PROCEDURE MKG(U,L);
+   LIST ((('G . (L . U)) . 1) . 1);
+
+SYMBOLIC PROCEDURE MKA L;
+   MKG(LIST 'A,L);
+
+SYMBOLIC PROCEDURE MKGF(U,L);
+   MKSF('G . (L . U),1);
+
+SYMBOLIC PROCEDURE MKG1(U,L);
+   IF NOT FLAGP(L,'NOSPUR) THEN MKG(U,L) ELSE MKGF(U,L);
+
+%*********************************************************************
+%       FUNCTIONS FOR COMPUTING TRACES OF DIRAC GAMMA MATRICES
+%********************************************************************;
+
+SYMBOLIC PROCEDURE SPUR0(U,I,V1,V2,V3);
+   BEGIN SCALAR L,W,I1,KAHP,Z; INTEGER N;
+	L := CAR U;
+	N := 1;
+	Z := CADR U;
+	U := REVERSE CDDR U;
+	IF Z THEN U := 'A . U;	%gamma5 remains;
+	IF GET(L,'NOSPUR) THEN GO TO A
+	ELSE IF (CAR U EQ 'A AND (LENGTH U<5 OR EVENP U))
+	        OR (NOT (CAR U EQ 'A) AND NOT EVENP U)
+	 THEN RETURN NIL
+	ELSE IF NULL I THEN GO TO END0;
+    A:  IF NULL U THEN GO TO END1
+	 ELSE IF CAR U MEMBER I THEN GO TO B;
+    A1: W := CAR U . W;
+	U := CDR U;
+	GO TO A;
+    B:  IF CAR U MEMBER CDR U THEN GO TO KAH1
+	 ELSE IF CAR U MEMBER I1 THEN GO TO A1
+	 ELSE IF Z := BASSOC(CAR U,V1) THEN GO TO E
+	 ELSE IF Z := MEMLIS(CAR U,V2)
+	    THEN RETURN 
+		IF FLAGP(L,'NOSPUR) AND NULL V1 AND NULL V3
+		   AND NULL CDR V2
+		 THEN MULTF(MKGF(APPEND(REVERSE W,U),L),
+		  	    MULTN(N,MKEPS1 Z))
+	      ELSE MULTN(N,ISIMP1(SPUR0(L . NIL . APPEND(REVERSE U,W),
+				  NIL,
+				  V1,
+				  DELETE(Z,V2),
+				  V3),
+			    I,
+			    NIL,
+			    LIST Z,
+			    NIL))
+	 ELSE IF Z := MEMLIS(CAR U,V3) THEN GO TO C
+	 ELSE REDERR LIST("UNMATCHED INDEX",CAR U);
+    C:  V3 := DELETE(Z,V3);
+	KAHP := NIL;
+	IF FLAGP(L,'NOSPUR) AND FLAGP(CAR Z,'NOSPUR)
+	  THEN REDERR "NOT YET IMPLEMENTED"
+	 ELSE IF FLAGP(CAR Z,'NOSPUR) THEN KAHP := CAR Z;
+	Z := CDR Z;
+	I1 := CAR Z;
+	Z := REVERSE CDR Z;
+	IF I1 THEN Z := 'A . Z;
+	I1 := NIL;
+    C1: IF CAR U EQ CAR Z THEN GO TO D;
+	I1 := CAR Z . I1;
+	Z := CDR Z;
+	GO TO C1;
+    D:  Z := CDR Z;
+	I := DELETE(CAR U,I);
+	U := CDR U;
+	IF NOT FLAGP(L,'NOSPUR) THEN GO TO D0;
+	W := W . (U . (I1 . Z));
+	I1 := CAR W;
+	Z := CADR W;
+	U := CADDR W;
+	W := CDDDR W;
+    D0: W := REVERSE W;
+	IF (NULL U OR NOT EQCAR(W,'A)) AND (U := APPEND(U,W))
+	 THEN GO TO D1
+	ELSE IF NOT EVENP U THEN N := -N;
+	U := 'A . APPEND(U,CDR W);
+    D1: IF KAHP THEN L := KAHP;
+	Z := MULTF(MKG(REVERSE I1,L),
+		   MULTF(BRACE(U,L,I),MULTN(N,MKG1(Z,L))));
+	Z := ISIMP1(Z,I,V1,V2,V3);
+	IF NULL Z OR (Z := DIVF(Z,2)) THEN RETURN Z
+	 ELSE ERRACH LIST('SPUR0,N,I,V1,V2,V3);
+    E:  V1 := DELETE(Z,V1);
+	I := DELETE(CAR W,I);
+	U := OTHER(CAR U,Z) . CDR U;
+	GO TO A;
+    KAH1:IF CAR U EQ CADR U THEN GO TO K2;
+	KAHP := T;
+	I1 := CAR U . I1;
+	GO TO A1;
+    K2: I := DELETE(CAR U,I);
+	U := CDDR U;
+	N := 4*N;
+	GO TO A;
+    END0:W := REVERSE U;
+    END1:IF KAHP THEN GO TO END2
+	  ELSE IF NULL (Z := SPURR(W,L,NIL,1)) THEN RETURN NIL
+	  ELSE RETURN IF GET('EPS,'KLIST) AND NOT FLAGP(L,'NOSPUR)
+		    THEN ISIMP1(MULTN(N,Z),I,V1,V2,V3)
+		   ELSE MULTF(Z,ISIMP1(N,I,V1,V2,V3));
+    END2:
+	Z := MULTF(KAHANE(REVERSE W,I1,L),N);
+	RETURN ISIMP1(Z,SETDIFF(I,I1),V1,V2,V3)
+   END;
+
+SYMBOLIC PROCEDURE APPN(U,N);
+   IF N=1 THEN U ELSE APPEND(U,APPN(U,N-1));
+
+SYMBOLIC PROCEDURE OTHER(U,V);
+   IF U EQ CAR V THEN CDR V ELSE CAR V;
+
+SYMBOLIC PROCEDURE KAHANE(U,I,L);
+   %The Kahane algorithm for Dirac matrix string reduction
+   %Ref: Kahane, J., Journ. Math. Phys. 9 (1968) 1732-1738;
+   BEGIN SCALAR K,M,P,R,V,W,X,Y,Z;
+	K := 0;
+    MARK:
+	IF EQCAR(U,'A) THEN GO TO A1;
+    A:  P := NOT P;		%vector parity;
+	IF NULL U THEN GO TO D ELSE IF CAR U MEMBER I THEN GO TO C;
+    A1: W := ACONC(W,CAR U);
+    B:  U := CDR U;
+	GO TO A;
+    C:  Y := CAR U . P;
+	Z := (X . (Y . W)) . Z;
+	X := Y;
+	W := NIL;
+	K := K+1;
+	GO TO B;
+    D:  Z := (NIL . (X . W)) . Z;
+	%BEWARE ... END OF STRING HAS OPPOSITE CONVENTION;
+    PASS2:
+	M := 1;
+    L1: IF NULL Z THEN GO TO L9;
+	U := CAAR Z;
+	X := CADAR Z;
+	W := CDDAR Z;
+	Z := CDR Z;
+	M := M+1;
+	IF NULL U THEN GO TO L2
+	 ELSE IF (CAR U EQ CAR X) AND EXC(X,CDR U) THEN GO TO L7;
+	W := REVERSE W;
+	R := T;
+    L2: P := NOT EXC(X,R);
+	X := CAR X;
+	Y := NIL;
+    L3: IF NULL Z THEN ERRACH "UNMATCHED INDEX IN KAHANE"
+	  ELSE IF (X EQ CAR (I := CADAR Z)) AND NOT EXC(I,P)
+	   THEN GO TO L5 
+	  ELSE IF (X EQ CAR (I := CAAR Z)) AND EXC(I,P) THEN GO TO L4;
+	Y := CAR Z . Y;
+	Z := CDR Z;
+	GO TO L3;
+    L4: X := CADAR Z;
+	W := APPR(CDDAR Z,W);
+	R := T;
+	GO TO L6;
+    L5: X := CAAR Z;
+	W := APPEND(CDDAR Z,W);
+	R := NIL;
+    L6: Z := APPR(Y,CDR Z);
+	IF NULL X THEN GO TO L8
+	 ELSE IF NOT EQCAR(U,CAR X) THEN GO TO L2;
+    L7: IF W AND CDR U THEN W := ACONC(CDR W,CAR W);
+	V := MULTF(BRACE(W,L,NIL),V);	%V := ('BRACE . L . W) . V;
+	GO TO L1;
+    L8: V := MKG(W,L);			%V := LIST('G . L . W);
+	Z := REVERSE Z;
+	K := K/2;
+	GO TO L1;
+    L9: U := 2**K;
+	IF NOT (REMAINDER(K-M,2) = 0) THEN U :=  - U;
+	RETURN MULTN(U,V)		%RETURN 'TIMES . U . V;
+   END;
+
+SYMBOLIC PROCEDURE APPR(U,V);
+   IF NULL U THEN V ELSE APPR(CDR U,CAR U . V);
+
+SYMBOLIC PROCEDURE EXC(U,V);
+   IF NULL CDR U THEN V ELSE NOT V;
+
+SYMBOLIC PROCEDURE BRACE(U,L,I);
+   IF NULL U THEN 2
+    ELSE IF XN(I,U) OR FLAGP(L,'NOSPUR)
+     THEN ADDF(MKG1(U,L),MKG1(REVERSE U,L))
+    ELSE IF CAR U EQ 'A
+       THEN IF EVENP U THEN ADDF(MKG(U,L),
+				 MULTN(-1,MKG('A . REVERSE CDR U,L)))
+	     ELSE MULTF(MKA L,SPR2(CDR U,L,2,NIL))
+    ELSE IF EVENP U THEN SPR2(U,L,2,NIL)
+    ELSE SPR1(U,L,2,NIL);
+
+SYMBOLIC PROCEDURE SPR1(U,L,N,B);
+   IF NULL U THEN NIL
+    ELSE IF NULL CDR U THEN MULTN(N,MKG1(U,L))
+    ELSE BEGIN SCALAR M,X,Z;
+	       X := U;
+	       M := 0;
+	  A:   IF NULL X THEN RETURN Z;
+	       Z:= ADDF(MULTF(MKG1(LIST CAR X,L),
+			      IF NULL B THEN SPURR(REMOVE(U,M),L,NIL,N)
+			       ELSE SPR1(REMOVE(U,M),L,N,NIL)),
+			 Z);
+	       X := CDR X;
+	       N :=  - N;
+	       M := M+1;
+	       GO TO A
+    END;
+
+SYMBOLIC PROCEDURE REMOVE(X,N);
+   IF NULL X THEN NIL
+    ELSE IF N=0 THEN CDR X
+    ELSE CAR X . REMOVE(CDR X,N-1);
+
+SYMBOLIC PROCEDURE SPR2(U,L,N,B);
+   IF NULL CDDR U AND NULL B THEN MULTN(N,MKDOT(CAR U,CADR U))
+    ELSE (LAMBDA X; IF B THEN ADDF(SPR1(U,L,N,B),X) ELSE X)
+       ADDF(SPURR(U,L,NIL,N),
+	     MULTF(MKA L,SPURR(APPEND(U,LIST 'A),L,NIL,N)));
+
+SYMBOLIC PROCEDURE EVENP U;
+   NULL U OR NOT EVENP CDR U;
+
+SYMBOLIC PROCEDURE BASSOC(U,V);
+   IF NULL V THEN NIL
+    ELSE IF U EQ CAAR V OR U EQ CDAR V THEN CAR V
+    ELSE BASSOC(U,CDR V);
+
+SYMBOLIC PROCEDURE MEMLIS(U,V);
+   IF NULL V THEN NIL
+    ELSE IF U MEMBER CAR V THEN CAR V
+    ELSE MEMLIS(U,CDR V);
+
+SYMBOLIC PROCEDURE SPURR(U,L,V,N);
+   BEGIN SCALAR M,W,X,Y,Z;
+    A:  IF NULL U THEN GO TO B
+	 ELSE IF CAR U MEMBER CDR U THEN GO TO G;
+	V := CAR U . V;
+	U := CDR U;
+	GO TO A;
+    B:  RETURN IF NULL V THEN N
+	 ELSE IF FLAGP(L,'NOSPUR) THEN MULTN(N,MKGF(V,L))
+	 ELSE SPRGEN(V,N);
+    G:  X := CAR U;
+	Y := CDR U;
+	W := Y;
+	M := 0;
+    H:  IF X EQ CAR W
+	  THEN RETURN ADDF(MULTF(MKDOT(X,X),SPURR(DELETE(X,Y),L,V,N)),
+			     Z);
+	Z := ADDF(MULTF(MKDOT(X,CAR W),SPURR(REMOVE(Y,M),L,V,2*N)),Z);
+	W := CDR W;
+	N :=  - N;
+	M := M+1;
+	GO TO H
+   END;
+
+SYMBOLIC PROCEDURE SPRGEN(V,N);
+   BEGIN SCALAR X,Z;
+	IF NOT (CAR V EQ 'A) THEN RETURN SPRGEN1(V,N)
+	 ELSE IF NULL (X := COMB(V := CDR V,4)) THEN RETURN NIL
+	ELSE IF NULL CDR X THEN GO TO E;
+    C:  IF NULL X THEN RETURN MULTF2(MKSP('I,1),Z);
+	Z := ADDF(MULTN(ASIGN(CAR X,V,N),
+			MULTF(MKEPS1 CAR X,
+			      SPRGEN1(SETDIFF(V,CAR X),1))),
+		  Z);
+    D:  X := CDR X;
+	GO TO C;
+    E:  Z := MULTN(N,MKEPS1 CAR X);
+	GO TO D
+   END;
+
+SYMBOLIC PROCEDURE ASIGN(U,V,N);
+   IF NULL U THEN N ELSE ASIGN(CDR U,V,ASIGN1(CAR U,V,-1)*N);
+
+SYMBOLIC PROCEDURE ASIGN1(U,V,N);
+   IF U EQ CAR V THEN N ELSE ASIGN1(U,CDR V,-N);
+
+SYMBOLIC PROCEDURE SPRGEN1(U,N);
+   IF NULL U THEN NIL
+    ELSE IF NULL CDDR U THEN MULTN(N,MKDOT(CAR U,CADR U))
+    ELSE BEGIN SCALAR W,X,Y,Z;
+	       X := CAR U;
+	       U := CDR U;
+	       Y := U;
+	  A:   IF NULL U THEN RETURN Z
+		ELSE IF NULL (W := MKDOT(X,CAR U)) THEN GO TO B;
+	       Z := ADDF(MULTF(W,SPRGEN1(DELETE(CAR U,Y),N)),Z);
+	  B:   N :=  - N;
+	       U := CDR U;
+	       GO TO A
+    END;
+
+
+%*********************************************************************
+%                    FUNCTIONS FOR EPSILON ALGEBRA
+%********************************************************************;
+
+
+PUT('EPS,'SIMPFN,'SIMPEPS);
+
+SYMBOLIC PROCEDURE COMB(U,N);
+   %value is list of all combinations of N elements from the list U;
+   BEGIN SCALAR V; INTEGER M;
+	IF N=0 THEN RETURN LIST NIL
+	 ELSE IF (M:=LENGTH U-N)<0 THEN RETURN NIL;
+    A:  IF M=0 THEN RETURN U . V;
+	V := NCONC(V,MAPCONS(COMB(CDR U,N-1),CAR U));
+	U := CDR U;
+	M := M-1;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE SIMPEPS U;
+   MKVARG(U,
+	  FUNCTION (LAMBDA J;
+		(IF REPEATS J THEN NIL ELSE MKEPS1 J) . 1));
+
+SYMBOLIC PROCEDURE MKEPS1 U;
+   PROG2(IF XN(U,INDICES!*) AND NOT MEMBER('ISIMPQ,MUL!*)
+	   THEN MUL!* := ACONC(MUL!*,'ISIMPQ) ELSE NIL,
+     (LAMBDA X; MULTN(NB PERMP(X,U),MKSF('EPS . X,1))) ORDN U);
+
+SYMBOLIC PROCEDURE ESUM(U,I,V,W,X);
+   BEGIN SCALAR Y,Z,Z1;
+	Z := CAR U;
+	U := CDR U;
+	IF CDR Z NEQ 1
+	 THEN U := MULTF(EXPTF(MKEPS1 CDAR Z,CDR Z-1),U);
+	Z := CDAR Z;
+    A:  IF REPEATS Z THEN RETURN NIL;
+    B:  IF NULL Z THEN RETURN ISIMP1(U,I,V,REVERSE Y . W,X)
+	 ELSE IF NOT (CAR Z MEMBER I) THEN GO TO D
+	 ELSE IF NOT (Z1 := BASSOC(CAR Z,V)) THEN GO TO C;
+	V := DELETE(Z1,V);
+	I := DELETE(CAR Z,I);
+	Z := APPEND(REVERSE Y,OTHER(CAR Z,Z1) . CDR Z);
+	Y := NIL;
+	GO TO A;
+    C:  IF Z1 := MEMLIS(CAR Z,W) THEN GO TO C1
+ 	 ELSE RETURN ISIMP1(U,I,V,APPEND(REVERSE Y,Z) . W,X);
+    C1: Z := APPEND(REVERSE Y,Z);
+	Y := XN(I,XN(Z,Z1));
+	RETURN ISIMP1(MULTF(EMULT1(Z1,Z,Y),U),
+		      SETDIFF(I,Y),
+		      V,
+		      DELETE(Z1,W),
+		      X);
+    D:  Y := CAR Z . Y;
+	Z := CDR Z;
+	GO TO B
+   END;
+
+SYMBOLIC PROCEDURE EMULT U;
+   IF NULL CDR U THEN MKEPS1(CAR U,1)
+    ELSE IF NULL CDDR U THEN EMULT1(CAR U,CADR U,NIL)
+    ELSE MULTF(EMULT1(CAR U,CADR U,NIL),EMULT CDDR U);
+
+SYMBOLIC PROCEDURE EMULT1(U,V,I);
+   (LAMBDA (X,!*S!*);
+	 (LAMBDA (M,N);
+	       IF M=4 THEN 24*N
+		ELSE IF M=3 THEN MULTN(6*N,MKDOT(CAR X,CAR !*S!*))
+		ELSE MULTN(N*(IF M = 0 THEN 1 ELSE M),
+			   CAR DETQ MAPLIST(X,
+				FUNCTION (LAMBDA !*S1!*;
+				   MAPLIST(!*S!*,
+				      FUNCTION (LAMBDA J;
+					 MKDOT(CAR !*S1!*,CAR J)
+					 . 1))))))
+	    (LENGTH I,
+	     (LAMBDA J; NB IF PERMP(U,APPEND(I,X)) THEN NOT J ELSE J)
+		PERMP(V,APPEND(I,!*S!*))))
+      (SETDIFF(U,I),SETDIFF(V,I));
+
+
+%*********************************************************************
+%*********************************************************************
+%			LINEAR OPERATOR PACKAGE
+%*********************************************************************
+%********************************************************************;
+
+
+%*********************************************************************
+%      FUNCTIONS FOR DEFINING AND CHECKING EXPRESSION DEPENDENCY
+%********************************************************************;
+
+SYMBOLIC PROCEDURE DEPEND1(U,V);
+   BEGIN SCALAR X,Y,Z;
+	IF NOT ATOM CAR U OR NUMBERP CAR U THEN ERRPRI2(CAR U,T);
+	X := LIST(CAR U,REVAL CADR U);
+	Y := ASSOC(CAR X,DEPL!*);
+	IF Y THEN IF V THEN RPLACD(Y,UNION(CDR X,CDR Y))
+		   ELSE IF (Z := SETDIFF(CDR Y,CDR X)) THEN RPLACD(Y,Z)
+		   ELSE DEPL!* := DELETE(Y,DEPL!*)
+	 ELSE IF NULL V THEN NIL
+	 ELSE DEPL!* := X . DEPL!*
+   END;
+
+SYMBOLIC PROCEDURE DEPEND U;
+   DEPEND1(U,T);
+
+SYMBOLIC PROCEDURE NODEPEND U;
+   DEPEND1(U,NIL);
+
+PUT('DEPEND,'STAT,'RLIS);
+
+PUT('NODEPEND,'STAT,'RLIS);
+
+SYMBOLIC PROCEDURE DEPDL2(X,V);
+   IF NULL X THEN NIL
+    ELSE IF V MEMBER ASSOC(CAR X,DEPL!*) THEN T
+    ELSE DEPDL2(CDR X,V);
+
+SYMBOLIC PROCEDURE DEPDL1(X,V);
+   IF NULL V THEN NIL
+    ELSE IF DEPDL2(X,CAR V) THEN T
+    ELSE DEPDL1(X,CDR V);
+
+SYMBOLIC PROCEDURE FLVAR U;
+   BEGIN SCALAR X;
+    A:  IF NULL U THEN RETURN X
+	 ELSE IF ATOM U THEN RETURN UNION(LIST U,X);
+	X := UNION(FLVAR CAR U,X);
+	U := CDR U;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE DEPENDL(U,V);
+   (LAMBDA X; XN(X,V) OR (DEPL!* AND DEPDL1(X,V))) FLVAR U;
+
+
+%*********************************************************************
+%	      FUNCTIONS FOR SIMPLIFYING LINEAR OPERATORS
+%********************************************************************;
+
+FLAGOP LINEAR;
+
+PUT('LINEAR,'SIMPFG,'((RMSUBS)));
+
+SYMBOLIC PROCEDURE FORMLNTMS(U,V,W,X);
+   BEGIN SCALAR Y,Z;
+    A:  IF NULL V THEN RETURN IF NULL Z THEN X
+		ELSE 'TIMES . ACONC(REVERSE Z,
+		     IF NULL CDR Y THEN FORMLNR(U . CAR Y . W)
+		      ELSE U . ('TIMES . REVERSE Y) . W)
+	 ELSE IF DEPENDL(CAR V,W) THEN Y := CAR V . Y
+	 ELSE Z := CAR V . Z;
+	V := CDR V;
+	GO TO A
+   END;
+
+SYMBOLIC PROCEDURE FORMLNR U;
+  (LAMBDA (!*S!*,Y,!*S1!*);
+   IF Y = 1 THEN U
+    ELSE IF NOT DEPENDL(Y,!*S1!*)
+     THEN LIST('TIMES,Y,!*S!* . 1 . !*S1!*)
+    ELSE IF ATOM Y THEN U
+    ELSE IF CAR Y EQ 'PLUS THEN 'PLUS . MAPCAR(CDR Y,
+		FUNCTION (LAMBDA J; FORMLNR (!*S!* . J . !*S1!*)))
+    ELSE IF CAR Y EQ 'MINUS
+     THEN LIST('MINUS,FORMLNR(!*S!* . CADR Y . !*S1!*))
+    ELSE IF CAR Y EQ 'DIFFERENCE
+     THEN LIST('DIFFERENCE,FORMLNR(!*S!* . CADR Y . !*S1!*),
+			   FORMLNR(!*S!* . CADDR Y . !*S1!*))
+    ELSE IF CAR Y EQ 'TIMES THEN FORMLNTMS(!*S!*,CDR Y,!*S1!*,U)
+    ELSE IF CAR Y EQ 'QUOTIENT AND NOT DEPENDL(CADDR Y,!*S1!*)
+     THEN LIST('QUOTIENT,FORMLNR(!*S!* . CADR Y . !*S1!*),CADDR Y)
+    ELSE IF CAR Y EQ 'RECIP AND NOT DEPENDL(CADR Y,!*S1!*)
+     THEN LIST('QUOTIENT,!*S!* . 1 . !*S1!*,CADR Y)
+    ELSE U)
+   (CAR U,CADR U,CDDR U);
+
+
+IECHO!* := T;
+
+IMODE!* := 'ALGEBRAIC;
+
+DATE!* := "AUG-10-73";
+
+END;
