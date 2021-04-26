@@ -5,20 +5,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="description" content="The REDUCE Computer Algebra System" />
-    <meta name="keywords" content="Open Source, Software, Development, Developers, Projects, Downloads, SF.net, SourceForge, 
-                                   BSD License, Science/Research, OS Portable (Source code to work with many OS platforms), 
+    <meta name="keywords" content="Open Source, Software, Development, Developers, Projects, Downloads, SF.net, SourceForge,
+                                   BSD License, Science/Research, OS Portable (Source code to work with many OS platforms),
                                    Mathematics, Lisp, REDUCE, reduce-algebra, computer algebra system, CAS" />
     {block name=title}
     <title>{$page_title|default: "REDUCE $header_title"}</title>
     {/block}
     <link rel="canonical" href="https://reduce-algebra.sourceforge.io{$SCRIPT_NAME}" />
     <link rel="icon" type="image/png" href="/images/icon.png" />
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous" />
-    <link rel="stylesheet" href="/StyleSheet.css" />
-    {block name=style}
-    {$head_extras|default:''}
-    {/block}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+          integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l"
+          crossorigin="anonymous">
+    <link rel="stylesheet" href="/StyleSheet.css" /> {block
+    name=style} {$head_extras|default:''} {/block}
   </head>
   <body>
     <div class="container-fluid">
@@ -57,14 +56,12 @@
     <!-- The slim version of jQuery does not include ajax (or effects)
          and so cannot be used because I use ajax on the documentation
          page! -->
-    <script
-      src="https://code.jquery.com/jquery-3.3.1.min.js"
-      integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-      crossorigin="anonymous"></script>
-    <script
-      src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
-      integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
-      crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js"
+            integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF"
+            crossorigin="anonymous"></script>
     {block name=javascript}{/block}
   </body>
 </html>

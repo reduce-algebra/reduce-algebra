@@ -27,5 +27,6 @@
 {/block}
 
 {block name=javascript}
-<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/latest.js?config=TeX-MML-AM_CHTML' async='async'></script>
+<!-- Use the same URL as used for the HTML manual for cache efficiency. -->
+<script id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"></script>
 {/block}

@@ -5,10 +5,10 @@
       {* navMenuItem is defined in /../php/Smarty/plugins/function.navMenuItem.php *}
       {navMenuItem href='/index.php' label='Home' title='The REDUCE Computer Algebra System'}
       {navMenuItem href='/features.php' label='Features' title='REDUCE features and design characteristics'}
-      {navMenuItem href='/obtaining.php' label='Obtaining REDUCE' title='Guidance on downloading REDUCE from SourceForge'}
+      {navMenuItem href='/obtaining.php' label='Obtain and Run' title='How to download, install and run REDUCE'}
       {navMenuItem href='/documentation.php' label='Documentation' title='User guides for REDUCE, its packages and Lisp systems'}
-      {navMenuItem href='/books.php' label='Books' title='Books about REDUCE'}
-      {navMenuItem href='/support.php' label='Support' title='Answers to questions about using REDUCE'}
+      {navMenuItem href='/books.php' label='Books' title='Details of books about REDUCE'}
+      {navMenuItem href='/support.php' label='Support Q & A' title='Answers to questions about using REDUCE'}
       {navMenuItem href='/tutorials.php' label='Tutorials' title='Simple examples of using REDUCE'}
       {navMenuItem href='/packages.php' label='External Packages' title='External packages that use REDUCE'}
       {navMenuItem href='/helpwanted.php' label='Help Wanted!' title='Join the REDUCE developer community!'}

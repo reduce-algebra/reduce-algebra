@@ -115,56 +115,42 @@ LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol,
            echo_symbol;
 LispObject codevec, litvec, supervisor, B_reg, savedef, comp_symbol;
 LispObject compiler_symbol, faslvec, tracedfn, lisp_terminal_io;
-LispObject lisp_standard_output, lisp_standard_input,
-           lisp_error_output;
+LispObject lisp_standard_output, lisp_standard_input, lisp_error_output;
 LispObject lisp_trace_output, lisp_debug_io, lisp_query_io;
-LispObject prompt_thing, faslgensyms, prinl_symbol, emsg_star,
-           redef_msg;
+LispObject prompt_thing, faslgensyms, prinl_symbol, emsg_star, redef_msg;
 LispObject current_function, expr_symbol, fexpr_symbol, macro_symbol;
-LispObject big_divisor, big_dividend, big_quotient, big_fake1,
-           big_fake2;
+LispObject big_divisor, big_dividend, big_quotient, big_fake1, big_fake2;
 LispObject active_stream, current_module;
 LispObject autoload_symbol, features_symbol, lisp_package;
 LispObject sys_hash_table, sxhash_hash_table;
 LispObject help_index, cfunarg, lex_words, get_counts, fastget_names;
-LispObject input_libraries, output_library, current_file,
-           break_function;
+LispObject input_libraries, output_library, current_file, break_function;
 LispObject standard_output, standard_input, debug_io;
-LispObject error_output, query_io, terminal_io, trace_output,
-           fasl_stream;
+LispObject error_output, query_io, terminal_io, trace_output, fasl_stream;
 LispObject startup_symbol, mv_call_symbol, traceprint_symbol,
            load_source_symbol;
-LispObject load_selected_source_symbol, bytecoded_symbol,
-           funcall_symbol;
-LispObject gchook, resources, callstack, procstack, procmem,
-           trap_time;
+LispObject load_selected_source_symbol, bytecoded_symbol, funcall_symbol;
+LispObject gchook, resources, callstack, procstack, procmem, trap_time;
 LispObject used_space, avail_space, eof_symbol, call_stack;
-LispObject nicknames_symbol, use_symbol, and_symbol, or_symbol,
-           not_symbol;
-LispObject reader_workspace, named_character, read_float_format,
-           short_float;
-LispObject single_float, double_float, long_float, bit_symbol,
-           pathname_symbol;
+LispObject nicknames_symbol, use_symbol, and_symbol, or_symbol, not_symbol;
+LispObject reader_workspace, named_character, read_float_format, short_float;
+LispObject single_float, double_float, long_float, bit_symbol, pathname_symbol;
 LispObject print_array_sym, read_base, initial_element;
 LispObject builtin0_symbol, builtin1_symbol, builtin2_symbol;
 LispObject builtin3_symbol, builtin4_symbol;
 
 LispObject workbase[51];
 
-LispObject user_base_0, user_base_1, user_base_2, user_base_3,
-           user_base_4;
-LispObject user_base_5, user_base_6, user_base_7, user_base_8,
-           user_base_9;
+LispObject user_base_0, user_base_1, user_base_2, user_base_3, user_base_4;
+LispObject user_base_5, user_base_6, user_base_7, user_base_8, user_base_9;
 
 LispObject eq_hash_tables;
 
 char program_name[64] = {0};
 
-//
 // The tables here are slightly oddly formatted. Every other entry is
 // nullptr (reserved for other uses...) and each string has a single character
 // stuck on its front that is also used as a marker elsewhere...
-//
 
 char **loadable_packages = nullptr, **switches = nullptr;
 
@@ -196,12 +182,10 @@ entry_point0 entries_table0[] =
 
 entry_point1 entries_table1[] =
 {
-//
 // All values that can go in the function cells of symbols to stand for
 // special interpreter activity are kept here. In most cases where there
 // is an entrypoint there is a corresponding one that behaves just the
 // same except that it has tracing enabled.
-//
     {0,                                 "illegal"},
 // A few special forms that are set up manually so slip through the normal
 // scheme...
@@ -254,10 +238,8 @@ entry_point2 entries_table2[] =
     {hardopt_2,                         "hardopt_2"},
     {byteoptrest_2,                     "byteoptrest_2"},
     {hardoptrest_2,                     "hardoptrest_2"},
-//
 // The batch here relate to function re-work that discards unwanted
 // extra arguments.
-//
     {f2_as_0,                           "2->0"},
     {f2_as_1,                           "2->1"},
     {f2_as_2,                           "2->2"},
@@ -392,10 +374,8 @@ setup_type const *setup_tables[] =
     u50_setup, u51_setup, u52_setup, u53_setup, u54_setup,
     u55_setup, u56_setup, u57_setup, u58_setup, u59_setup,
     u60_setup,
-//
 // I also include the kernel setup tables, but I put a nullptr in this
 // table so it is easy to see where they start.
-//
     nullptr,
     arith06_setup, arith08_setup, arith10_setup, arith12_setup,
     arith13_setup, char_setup, eval1_setup, eval2_setup, eval3_setup,
@@ -407,13 +387,11 @@ setup_type const *setup_tables[] =
     nullptr
 };
 
-//
 // If C code is to be instated (via c!:install calls in u01.lsp etc) there
 // needs to be a verification that the file u01.c and the file u01.lsp (etc)
 // are in step. So once for each such file this does the check. It should
 // only happen when the system is being built and ought not to be a big
 // performance issue.
-//
 
 static LispObject Lcheck_c_code(LispObject env, LispObject name,
                                 LispObject lc1, LispObject lc2, LispObject a4up)
@@ -462,10 +440,8 @@ static LispObject Lcheck_c_code(LispObject env, LispObject name,
 }
 
 setup_type const restart_setup[] =
-//
 // things that are in modules that do not define enough Lisp entrypoints
 // to be worth giving separate entry-tables.
-//
 {   DEF_0("~load-spid",         Lload_spid),
     DEF_1("~is-spid",           Lis_spid),
     DEF_1("~spid-to-nil",       Lspid_to_nil),
@@ -576,7 +552,6 @@ static void cold_setup()
 // This has in fact been done as part of the general initialization of
 // list-bases, but I repeat it here for extra clarity.
     current_package = nil;
-//
 // The code here is generally coded on the supposition that there will NEVER
 // be a garbage collection here, so all issues of error recovery related
 // tests can be omitted. That makes this code much cleaner! It means that
@@ -588,7 +563,6 @@ static void cold_setup()
 //
 // Well garbage collection even at this early stage should now be valid when
 // the conservative GC is active.
-//
 #ifdef CONSERVATIVE
     if (gcTest)
     {   gcTestCode();   // if "--gc-test" was on command line.
@@ -608,37 +582,30 @@ static void cold_setup()
 #ifdef COMMON
     packname_(static_cast<LispObject>(CP)) = make_string("LISP");
 #endif
-//
 // The size chosen here is only an initial size - the hash table in a package
 // can grow later on if needbe - but I ought to ensure that the initial
 // size is big enough for the built-in symbols that Lisp creates in
 // this restart code.  The size must be a power of 2. I want the object
 // table to have the same number of entries regardless of whether I am on
 // a 32 or 64-bit machine to make cross-loading of images possible.
-//
-    packint_(static_cast<LispObject>(CP)) = get_basic_vector_init(CELL*
-                                            (1+INIT_OBVECI_SIZE), fixnum_of_int(0));
-    packflags_(static_cast<LispObject>(CP)) = fixnum_of_int(
-                ++package_bits);
+    packint_(static_cast<LispObject>(CP)) =
+        get_basic_vector_init(CELL*(1+INIT_OBVECI_SIZE), fixnum_of_int(0));
+    packflags_(static_cast<LispObject>(CP)) = fixnum_of_int(++package_bits);
 #ifdef COMMON
-//
 // Common Lisp also has "external" symbols to allow for...
-//
     packnint_(static_cast<LispObject>(CP)) = fixnum_of_int(0);
-    packext_(static_cast<LispObject>(CP)) = get_basic_vector_init(CELL*
-                                            (1+INIT_OBVECX_SIZE), fixnum_of_int(0));
-    packnext_(static_cast<LispObject>(CP)) = fixnum_of_int(
-                1); // Allow for nil
+    packext_(static_cast<LispObject>(CP)) =
+        get_basic_vector_init(CELL*(1+INIT_OBVECX_SIZE), fixnum_of_int(0));
+    packnext_(static_cast<LispObject>(CP)) = fixnum_of_int(1);
     {   size_t i = (size_t)(hash_lisp_string(qpname(nil)) &
                             (INIT_OBVECX_SIZE - 1));
         elt(packext_(static_cast<LispObject>(CP)), i) = nil;
     }
 #else
-    packnint_(static_cast<LispObject>(CP)) = fixnum_of_int(
-                1); // Allow for nil
+    packnint_(static_cast<LispObject>(CP)) = fixnum_of_int(1);
 // Place NIL into the table.
     {   size_t i = (size_t)(hash_lisp_string(qpname(nil)) &
-                            (INIT_OBVECI_SIZE - 1));
+                   (INIT_OBVECI_SIZE - 1));
         elt(packint_(static_cast<LispObject>(CP)), i) = nil;
     }
 #endif
@@ -647,26 +614,22 @@ static void cold_setup()
     current_modulus = 1;
 // a fastget entry of 0 means no fastget stuff present, and so in the 6-bit
 // field I have the values 1-63 are available.
-//
     fastget_size = 63;
     package_bits = 0;
     modulus_is_large = 0;
     unset_var = nil;
-//
 // there had better not be a need for garbage collection here...
 // ... or elsewhere in setup, since the world is not yet put together.
 // Ditto interrupts.
-//
 #define boffo_size 256
     boffo = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+boffo_size);
-    std::memset(reinterpret_cast<void *>(reinterpret_cast<char *>
-                                         (boffo) + (CELL - TAG_VECTOR)), '@', boffo_size);
-//
+    std::memset(reinterpret_cast<void *>(
+        reinterpret_cast<char *>(boffo) + (CELL - TAG_VECTOR)),
+        '@', boffo_size);
 // The next line has hidden depths.  When it is obeyed during cold start
 // the C variable *package* has the value nil, hence make_symbol
 // looks in the value cell of nil to find the package to intern wrt. Once
 // this has been done I can put nil back how it ought to have been!
-//
     current_package          = make_undefined_fluid("*package*");
     lisp_package             = qpackage(nil);
     setvalue(current_package,  lisp_package);
@@ -679,9 +642,7 @@ static void cold_setup()
         make_undefined_global("~indefinite-value~");
     setvalue(unset_var,        unset_var);
 //@@@@@@@@@@@@@@@@@@@    Lunintern(nil, unset_var);
-//
 // Now in some minor sense the world is in a self-consistent state
-//
     lisp_true           = make_undefined_global("t");
     setvalue(lisp_true,   lisp_true);
     savedef             = make_undefined_symbol("*savedef");
@@ -814,19 +775,15 @@ static void cold_setup()
     sys_hash_table = Lmkhash_1(nil, fixnum_of_int(2));    // EQUAL
     sxhash_hash_table = Lmkhash_1(nil, fixnum_of_int(0)); // EQ
     get_counts = Lmkhash_1(nil, fixnum_of_int(0));        // EQ
-//
 // I make the vector that can hold the names used for "fast" get tags big
 // enough for the largest possible number.
-//
     fastget_names = get_basic_vector_init((MAX_FASTGET_SIZE+2)*CELL,
                                           SPID_NOPROP);
-//
 // The next bit is a horrid fudge, used in read.c (function orderp) to
 // support REDUCE. It ensures that the flag 'noncom is subject to an
 // optimisation for flag/flagp that allows it to be tested for using a
 // simple bit-test.  This MUST use entry zero (coded as 1 here!).
 // Also I insist that 'lose be the second fastget thing!
-//
     {   LispObject nc = make_undefined_symbol("noncom");
         setheader(nc, qheader(nc) | (1L << SYM_FASTGET_SHIFT));
         elt(fastget_names, 0) = nc;
@@ -834,10 +791,8 @@ static void cold_setup()
         setheader(nc, qheader(nc) | (2L << SYM_FASTGET_SHIFT));
         elt(fastget_names, 1) = nc;
     }
-//
 // I create the stream objects just once at cold-start time, but every time I
 // restart I will fill in their components in the standard way again.
-//
     lisp_work_stream = make_stream_handle();
     lisp_terminal_io = make_stream_handle();
     lisp_standard_output = make_stream_handle();
@@ -855,20 +810,16 @@ static void cold_setup()
 
 LispObject set_up_functions(int restart_flag)
 {
-//
 // All symbols that have a pointer to C code in their function cell must
 // be set up whether we are in a warm OR a cold start state, because the
 // actual addresses associated with C entrypoints will vary from version
 // to version of the binary of the system.
-//
     size_t i;
 #ifdef COMMON
-//
 // In Common Lisp mode it could be that the user had something other than the
 // LISP package active when the image was saved. But I want all the symbols
 // that I create or restore here to be in the LISP (or sometimes keyword)
 // package. So I temporarily reset the package here...
-//
     LispObject saved_package = CP;
     CP = find_package("LISP", 4);
 #endif
@@ -926,10 +877,8 @@ LispObject set_up_functions(int restart_flag)
                     restart_flag, Lload_selected_source0,
                     Lload_selected_source, G2Wother, G3Wother,
                     G4Wother);
-//
 // The main bunch of symbols can be handed using a table that
 // gives names and values.
-//
     for (i=0; eval2_setup[i].name != nullptr; i++)
     {   LispObject v = make_symbol(eval2_setup[i].name,
                                    restart_flag,
@@ -968,10 +917,8 @@ LispObject set_up_functions(int restart_flag)
 #ifdef ARITHLIB
     create_symbols(arith_setup, restart_flag);
 #endif
-//
 // Although almost everything is mapped into upper case in a Common Lisp
 // world, I will preserve the case of symbols defined in u01 to u60.
-//
     for (i=0; setup_tables[i]!=nullptr; i++)
         create_symbols(setup_tables[i], restart_flag | 2);
 
@@ -1050,7 +997,6 @@ LispObject set_up_variables(int restart_flag)
     output_library = make_undefined_symbol("output-library");
     setvalue(output_library, (output_directory & 0x80000000u) != 0 ? nil :
              SPID_LIBRARY + (((int32_t)(output_directory&0x3ff))<<20));
-//
 // The Lisp variable lispsystem* gets set here. (in Common mode it is
 // the variable *features*)
 // Its value is a list.
@@ -1074,7 +1020,6 @@ LispObject set_up_variables(int restart_flag)
 // In Common mode the tags on the *features* list are generally in the
 // keyword package. Otherwise they are just regular symbols. This makes it
 // slightly hard to use code that tests this list in a generic environment!
-//
 
     /*!!! csl
      */
@@ -1245,12 +1190,10 @@ LispObject set_up_variables(int restart_flag)
 
         w = cons(make_keyword(OPSYS), nil);
 #if defined WIN64 || defined __WIN64__ || defined WIN32
-//
 // In the WIN64 case I will ALSO tell the user than I am "win32". This is
 // a curious thing to do maybe, but is because historically win32 may have
 // been used as a "windows" test, and win64 is in general terms a
 // compatible extension so all win32 options ought still to be available.
-//
         w = cons(make_keyword("win32"), w);
 #endif
 #if defined WIN64 || defined __WIN64__
@@ -1302,9 +1245,7 @@ LispObject set_up_variables(int restart_flag)
                  w = cons(make_keyword("CCL"), w);
                  w = cons(make_keyword("COMMON-LISP"), w);
 
-
 #else // !COMMON
-
 
         w = acons(make_keyword("opsys"),
                   make_undefined_symbol(OPSYS), w);
@@ -1341,6 +1282,9 @@ LispObject set_up_variables(int restart_flag)
 #ifdef EXPERIMENT
         w = cons(make_keyword("experiment"), w);
 #endif
+#ifdef CONSERVATIVE
+        w = cons(make_keyword("conservative"), w);
+#endif
 #ifdef EMBEDDED
         w = cons(make_keyword("embedded"), w);
 #endif
@@ -1359,7 +1303,6 @@ LispObject set_up_variables(int restart_flag)
 // It could be the case that SHOWMATH is compiled in but the necessary
 // fonts were not located. Or if they were there but "--" has been used to
 // redirect standard output to a file.
-//
             if (showmathInitialised &&
                 alternative_stdout == nullptr)
             {   w = cons(make_keyword("showmath"), w);
@@ -1374,7 +1317,6 @@ LispObject set_up_variables(int restart_flag)
 // It could be the case that SHOWMATH is compiled in but the necessary
 // fonts were not located. Or if they were there but "--" has been used to
 // redirect standard output to a file.
-//
             if (showmathInitialised &&
                 alternative_stdout == nullptr)
             {   w = cons(make_keyword("showmath"), w);
@@ -1393,11 +1335,9 @@ LispObject set_up_variables(int restart_flag)
         w = acons(make_keyword("name"), make_string(IMPNAME), w);
         w = acons(make_keyword("revision"), fixnum_of_int(REVISION), w);
         w = cons(make_keyword("csl"), w);
-//
 // Ha Ha a trick here - if a symbol ADDSQ is defined I view this image
 // as being one for REDUCE and push that information onto lispsystem*,
 // and I also reset the "about box" information (if using fwin).
-//
         w1 = make_undefined_symbol("addsq");
         if (qfn1(w1) != undefined_1)
         {   w = cons(make_keyword("reduce"), w);
@@ -1412,13 +1352,11 @@ LispObject set_up_variables(int restart_flag)
                 std::sprintf(about_box_description, "%.*s",
                              (n > 31 ? 31 : n),
                              reinterpret_cast<const char *>(&celt(w1, 0)));
-//
 // The provision here is that if variables called "author!*" and
 // "author2!*" exist with strings as values then those values will
 // appear in the "about box". See a commentary in the file fwin.c about
 // possibly non-obvious constraints on what text you may properly place
 // in these strings.
-//
                 w1 = qvalue(make_undefined_symbol("author1*"));
                 if (is_vector(w1) &&
                     is_string_header(vechdr(w1)))
@@ -1448,11 +1386,9 @@ LispObject set_up_variables(int restart_flag)
         setvalue(n, w);
 #endif // COMMON
     }
-//
 // lispargs* and full-lispargs!* give access to command line args used at
 // launch. lispargs!* just contains anything beyond the keyword "--args"
 // while full-lispargs contains everything.
-//
     {   LispObject aa = nil, faa = nil;
         LispObject n = make_undefined_symbol("lispargs*");
         int i, seen_args_keyword=0;
@@ -1469,14 +1405,12 @@ LispObject set_up_variables(int restart_flag)
         n = make_undefined_fluid("full-lispargs*");
         setvalue(n, faa);
     }
-//
 // Floating point characteristics are taken from <cfloat> where it is
 // supposed that the C compiler involved has got the values correct.
 // I do this every time the system is loaded rather than just when an
 // image is cold-created. This is because an image file may have been created
 // on a system differing from the one on which it is used. Maybe in fact
 // IEEE arithmetic is ALMOST universal and I am being too cautious here?
-//
     make_constant("short-float-epsilon",
                   pack_short_float(16.0*FLT_EPSILON));
     make_constant("single-float-epsilon",
@@ -1487,10 +1421,8 @@ LispObject set_up_variables(int restart_flag)
 // liable to be incorrect!
     make_constant("long-float-epsilon",
                   make_boxfloat(DBL_EPSILON, TYPE_LONG_FLOAT));
-//
 // I assume that I have a radix 2 representation, and float-negative-epsilon
 // is just half float-epsilon. Correct me if I am wrong...
-//
     make_constant("short-float-negative-epsilon",
                   pack_short_float(16.0*FLT_EPSILON/2.0));
     make_constant("single-float-negative-epsilon",
@@ -1500,11 +1432,9 @@ LispObject set_up_variables(int restart_flag)
 // For now "long" = "double"
     make_constant("long-float-negative-epsilon",
                   make_boxfloat(DBL_EPSILON/2.0, TYPE_LONG_FLOAT));
-//
 // I hope that the C header file gets extremal values correct. Note that
 // because pack_short_float() truncates (rather than rounding) it should give
 // correct values for most-positive-short-float etc
-//
     make_constant("most-positive-short-float",
                   pack_short_float(FLT_MAX));
     make_constant("most-positive-single-float",
@@ -1513,10 +1443,8 @@ LispObject set_up_variables(int restart_flag)
                   make_boxfloat(DBL_MAX, TYPE_DOUBLE_FLOAT));
     make_constant("most-positive-long-float",
                   make_boxfloat(DBL_MAX, TYPE_LONG_FLOAT));
-//
 // Here I assume that the floating point representation is sign-and-magnitude
 // and hence symmetric about zero.
-//
     make_constant("most-negative-short-float",
                   pack_short_float(-FLT_MAX));
     make_constant("most-negative-single-float",
@@ -1525,14 +1453,12 @@ LispObject set_up_variables(int restart_flag)
                   make_boxfloat(-DBL_MAX, TYPE_DOUBLE_FLOAT));
     make_constant("most-negative-long-float",
                   make_boxfloat(-DBL_MAX, TYPE_LONG_FLOAT));
-//
 // The "least-xxx" set of values did not consider the case of denormalised
 // numbers too carefully in ClTl-1, so in ClTl-2 there are elaborations. I
 // believe that a proper C header file <cfloat> will make the macros that
 // I use here refer to NORMALISED values, so the numeric results I use
 // here will not be quite proper (ie there are smaller floats that are
 // un-normalised). But I will ignore that worry just for now.
-//
     make_constant("least-positive-short-float",
                   pack_short_float(FLT_MIN));
     make_constant("least-positive-single-float",
@@ -1549,10 +1475,8 @@ LispObject set_up_variables(int restart_flag)
                   make_boxfloat(-DBL_MIN, TYPE_DOUBLE_FLOAT));
     make_constant("least-negative-long-float",
                   make_boxfloat(-DBL_MIN, TYPE_LONG_FLOAT));
-//
 // The bunch here are intended to be NORMALISED numbers, while the unqualified
 // ones above may not be.
-//
     make_constant("least-positive-normalized-short-float",
                   pack_short_float(FLT_MIN));
     make_constant("least-positive-normalized-single-float",
@@ -1592,14 +1516,12 @@ LispObject set_up_variables(int restart_flag)
         f = lisp_standard_input;
         stream_type(f) = make_undefined_symbol("synonym-stream");
 #ifdef COMMON
-//
 // If I do not have COMMON defined I will take a slight short cut here and
 // make reading from *standard-input* read directly from the terminal. For
 // full Common Lisp compatibility I think *standard-input* is required to
 // be a synonym stream that will dynamically look at the value of the variable
 // *terminal-io* every time it does anything. Ugh, since people who assign to
 // or re-bind *terminal-io* seem to me to be asking for terrible trouble!
-//
         set_stream_read_fn(f, char_from_synonym);
 #else
         set_stream_read_fn(f, char_from_terminal);
@@ -1717,13 +1639,11 @@ LispObject set_up_variables(int restart_flag)
             {   v = make_string(s);
                 v = Lexplodec(nil, v);
                 v = Lcompress(nil, v);
-//
 // The above will first make the value in -Dname=value into a string,
 // then explode it into a list, and compress back - the effect is as if the
 // original value had been passed through the regular Lisp READ function,
 // so symbols, numbers and even s-expressions can be parsed.  If the
 // parsing fails I (silently) treat the value as just NIL.
-//
             }
             save.restore(n);
             setheader(n, qheader(n) | SYM_SPECIAL_VAR);
@@ -1775,7 +1695,6 @@ LispObject set_up_variables(int restart_flag)
             my_exit();
         END_CATCH
     }
-//
 // Now if I have the FWIN windowed system I look in the Lisp variables
 //    loadable-packages!*
 //    switches!*
@@ -1786,7 +1705,6 @@ LispObject set_up_variables(int restart_flag)
 // JUST ONCE. This may be limiting (in particular it means that menus get
 // set at the very start of a run ONLY) but should only be visible to those
 // who call restart!-csl.
-//
     if (loadable_packages == nullptr && switches==nullptr)
     {   LispObject w1 = qvalue(make_undefined_symbol("loadable-packages*"));
         LispObject w2;
@@ -1838,14 +1756,12 @@ LispObject set_up_variables(int restart_flag)
                 w4 = make_undefined_symbol(sname);
                 v = new (std::nothrow) char[n1+2];
                 if (v == nullptr) break;
-//
 // The first character records the current state of the switch. With FWIN
 // I have entries that say "x" for "I am not at present active" which copes
 // with switches that will become relevant only when a package of code is
 // loaded. I will scan from time to time to update my information - I guess
 // that I can put in a hook that triggers review after any module has been
 // loaded. See the function review_switch_settings() the follows...
-//
                 if (qvalue(w4) == nil) v[0] = 'n';
                 else if (qvalue(w4) == unset_var) v[0] = 'x';
                 else v[0] = 'y';
@@ -1866,10 +1782,8 @@ LispObject set_up_variables(int restart_flag)
 }
 
 #ifndef COMMON
-
-//
 // This alse reviews the list of loaded packages...
-//
+
 void review_switch_settings()
 {   LispObject sw = qvalue(make_undefined_symbol("switches*"));
     while (consp(sw))
@@ -1967,7 +1881,6 @@ void get_user_files_checksum(unsigned char *b)
 
 void setup(int restart_flag, double store_size)
 {
-//
 // restart_flag is a set of options passed as a bitmap:
 //    1       Do a warm start, ie re-load a heap image.
 //            The alternative is a cold start that should only
@@ -1976,7 +1889,6 @@ void setup(int restart_flag, double store_size)
 //            The alternative is to assume that memory has already been
 //            allocated, and to re-use what there is.
 //    4, 8, ...   not used yet!
-//
     int32_t i;
     if ((restart_flag & 2) != 0) init_heap_segments(store_size);
     garbage_collection_permitted = false;
@@ -2020,11 +1932,9 @@ void setup(int restart_flag, double store_size)
                 my_exit();
             }
         }
-//
 // To make things more responsive for the user I will display a
 // banner rather early (before reading the bulk of the image file).
 // The banner that I will display is one provided to be by PRESERVE.
-//
         {   char b[64];
             if (IopenRoot(filename, BANNER_CODE, 0)) b[0] = 0;
             else
@@ -2033,11 +1943,9 @@ void setup(int restart_flag, double store_size)
 // normally be too short to benefit.
                 IcloseInput();
             }
-//
 // A banner set via startup-banner takes precedence over one from preserve.
 // But as a very special hack I detect if --texmacs was on the command
 // line and in that case I stay quiet...
-//
             if (!texmacs_mode)
             {   if (b[0] != 0)
                 {   term_printf("%s\n", b);
@@ -2077,14 +1985,12 @@ void setup(int restart_flag, double store_size)
     if (init_flags & INIT_QUIET) Lverbos(nil, fixnum_of_int(1));
     if (init_flags & INIT_VERBOSE) Lverbos(nil, fixnum_of_int(3));
 #ifndef CONSERVATIVE
-//
 // Here I grab more memory (if I am allowed to) until the proportion of the
 // heap active at the end of garbage collection is less than 1/2.  If the
 // attempt to grab more memory fails I clear the bit in init_flags that
 // allows me to try to expand, so I will not waste time again.
 // The aim of keeping the heap less than half full is an heuristic and
 // could be adjusted on the basis of experience with this code.
-//
     if ((init_flags & INIT_EXPANDABLE) != 0)
     {   int32_t more = heap_pages_count + vheap_pages_count;
         more = 3 *more - pages_count;
@@ -2100,12 +2006,10 @@ void setup(int restart_flag, double store_size)
     }
 #endif
     {   int32_t w = 0;
-//
 // The total store allocated is that used plus that free, including the
 // page set aside for the Lisp stack. I had better report this in Kbytes
 // which should then be sort of OK up to a total of 4000 Gbytes before the
 // unsigned long overflows on me.
-//
         if (init_flags & INIT_VERBOSE)
         {   unsigned long m =
                 (static_cast<unsigned long>(CSL_PAGE_SIZE/1000))*(pages_count+w+1);
@@ -2345,7 +2249,6 @@ LispObject *list_bases[] =
     nullptr              // Used to mark the end of the table.
 };
 
-//
 // June 2015: I am now going to try MD5 code from Alexander Peslyak
 // (Solar Designer). The code is public domain and all I do here is provide
 // wrappers so it appears to the bulk of CSL just as the previous version had.
@@ -2356,10 +2259,10 @@ LispObject *list_bases[] =
 // wrong, but moving to the alternative public domain implementation seemed
 // both a good way to verify that the existing code I had was wrong and to end
 // up with something clean and tidy for the future.
-//
+
 // Please note that these days MD5 is not considered cryptographically secure,
 // and the implementation here will not be robust against side-attacks etc.
-// The proper uses hare are as a checksum fur use when chance rather than
+// The proper uses here are as a checksum fur use when chance rather than
 // malice is the opponent.
 //
 // The Checksums here are used in two areas in CSL:

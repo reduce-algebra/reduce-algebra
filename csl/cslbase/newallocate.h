@@ -676,6 +676,10 @@ inline const char *Addr(uintptr_t p)
     return r;
 }
 
+inline const char *Addr(atomic<LispObject> p)
+{   return Addr(p.load());
+}
+
 template <typename T>
 inline const char *Addr(T p)
 {   return Addr((uintptr_t)p);

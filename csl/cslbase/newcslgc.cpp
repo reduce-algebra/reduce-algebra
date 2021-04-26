@@ -760,16 +760,15 @@ if (gcTrace) cout << "complex success at " << Addr(r1) << "\n";
 // fences etc. This assumption is going to violate strict aliasing rules and
 // so a sufficiently clever compiler could spot what I was doing and mangle
 // my code quite grievously!
-
+ 
 bool isPinned(uintptr_t a);
 
-void evacuate(atomic<LispObject> *p)
+void evacuate(atomic<LispObject> &a)
 {
 #ifdef DEBUG
 // I am silent on NIL because otherwise I am overall too noisy.
-    if (p->load() != nil)
-        if (gcTrace) cout << "evac " << Addr(p)
-             << " contents " << Addr(p->load()) << "\n";
+    if (a.load()!=nil)
+        if (gcTrace) cout << "evacuating " << Addr(a.load()) << "\n";
 #endif
 // Here p is a pointer to a location that is a list-base, ie it contains
 // a valid Lisp object. I want to arrange that the object and all its
@@ -792,32 +791,30 @@ void evacuate(atomic<LispObject> *p)
 // a linear scan of the newly copied material. That stage is not discussed
 // here because this function does not directly cause it to happen.
 //
-    LispObject a = *p;
-    if (a==0)
-    {   cout << "zero word in scanning\n";
-        Lstop0(nil);
-    }
-    if(is_forward(a))
-    {   cout << "forwarding ptr in scanning\n";
-        Lstop0(nil);
-    }
-    if (is_odds(a) || is_immediate_num(a) || a == nil)
+    my_assert(a!=0, "zero word in scanning");
+    my_assert(!is_forward(a), "forwarding ptr in scanning");
+    if (is_immediate(a) || a == nil)
     {
 #ifdef DEBUG
         if (a != nil)
-            if (gcTrace) cout << "immediate data: easy " << Addr(a) << "\n";
+            if (gcTrace) cout << "immediate data: easy " << Addr(a.load()) << "\n";
 #endif // DEBUG
         return;
     }
-    if (isPinned(a)) return;
+    if (isPinned(a))
+    {   if (gcTrace)
+        {   cout << "precise ptr to pinned " << Addr(a.load()) << "\n";
+            cout << "pinned item is ";
+            simple_print(a);
+        }
+        return;
+    }
     LispObject *ap = reinterpret_cast<LispObject *>(a & ~TAG_BITS);
     LispObject aa = *ap;
-    if (gcTrace) cout << "item at " << Addr(p)
-         << " is " << Addr(a) << " [not immediate] "
-         << " without tag bits = " << ap
-         << " and contents of that is " << Addr(aa) << "\n";
+    if (gcTrace) cout << "item is " << Addr(a.load()) << " [not immediate] "
+         << " contents of that is " << Addr(aa) << "\n";
     if (is_forward(aa))
-    {   *p = aa - TAG_FORWARD + (a&TAG_BITS);
+    {   a = aa - TAG_FORWARD + (a&TAG_BITS);
 #ifdef DEBUG
         if (gcTrace) cout << "Process forwarding address\n";
 #endif // DEBUG
@@ -839,7 +836,7 @@ void evacuate(atomic<LispObject> *p)
 #endif // DEBUG
     std::memcpy(reinterpret_cast<void *>(aa), ap, len);
     *ap = TAG_FORWARD + aa;
-    *p = aa + (a&TAG_BITS);
+    a = aa + (a&TAG_BITS);
 }
 
 #else // NO_EXTRA_GC_THREADS
@@ -897,8 +894,10 @@ void evacuate(atomic<LispObject> *p)
 
 #endif // NO_EXTRA_GC_THREADS
 
-void evacuate(LispObject *p)
-{   evacuate(reinterpret_cast<atomic<LispObject> *>(p));
+void evacuate(LispObject &p)
+{   atomic<LispObject> ap(p);
+    evacuate(ap);
+    p = ap.load();
 }
 
 bool withinMajorGarbageCollection = false;
@@ -1206,21 +1205,21 @@ void evacuateFromUnambiguousBases(bool major)
 // "list_bases" that holds the address of every static location involved.
 // That vector is about 200 items long. In addition the dedicated Lisp
 // stack has to be processed.
-    evacuate(reinterpret_cast<LispObject *>(valueaddr(nil)));
-    evacuate(reinterpret_cast<LispObject *>(envaddr(nil)));
-    evacuate(reinterpret_cast<LispObject *>(plistaddr(nil)));
-    evacuate(reinterpret_cast<LispObject *>(pnameaddr(nil)));
-    evacuate(reinterpret_cast<LispObject *>(fastgetsaddr(nil)));
-    evacuate(reinterpret_cast<LispObject *>(packageaddr(nil)));
-    for (auto p = list_bases; *p!=nullptr; p++) evacuate(*p);
+    evacuate(qvalue(nil));
+    evacuate(qenv(nil));
+    evacuate(qplist(nil));
+    evacuate(qpname(nil));
+    evacuate(qfastgets(nil));
+    evacuate(qpackage(nil));
+    for (auto p = list_bases; *p!=nullptr; p++) evacuate(**p);
     for (LispObject *sp=stack;
-         sp>reinterpret_cast<LispObject *>(stackBase); sp--) evacuate(sp);
+         sp>reinterpret_cast<LispObject *>(stackBase); sp--) evacuate(*sp);
 // When running the deserialization code I keep references to multiply-
 // used items in repeat_heap, and if garbage collection occurs they must be
 // updated.
     if (repeat_heap != nullptr)
     {   for (size_t i=1; i<=repeat_count; i++)
-            evacuate(&repeat_heap[i]);
+            evacuate(repeat_heap[i]);
     }
 }
 
@@ -1240,11 +1239,14 @@ void evacuatePinnedInChunk(Chunk *c)
         {   p += 8;
             continue;
         }
+// Here p is the (word address of) the start of a valid pinned object. By
+// inspecting its first word I can deduce its type - that word could be
+// a header of some sort of vector or if a symbol.
         LispObject *pp = reinterpret_cast<LispObject *>(p);
         if (gcTrace) cout << "Scanning pinned item at " << Addr(p) << "\n";
         LispObject a = *pp;
-if (gcTrace) cout << "Item at " << Addr(pp) << " = " << std::hex << a
-     << std::dec << " = " << Addr(a) << "\n";
+        if (gcTrace) cout << "Item at " << Addr(pp) << " = " << std::hex << a
+                          << std::dec << " = " << Addr(a) << "\n";
         my_assert(a != 0, "zero item in heap");
         my_assert(!is_forward(a), "forwarding pointer found");
         size_t len, len1;
@@ -1255,12 +1257,19 @@ if (gcTrace) cout << "Item at " << Addr(pp) << " = " << std::hex << a
         case 0x0a: // 0b01010:   // Header for vector of Lisp pointers
                                  // Note TYPE_STREAM etc is in with this.
             len = doubleword_align_up(length_of_header(a));
-            if (is_mixed_header(a)) len1 = 4*CELL;
+            if (is_mixed_header(a))
+            {   if (gcTrace) cout << "Mixed/Stream header\n";
+                len1 = 4*CELL;
+            }
             else len1 = len;
             if (gcTrace) cout << "vector (" << std::hex << a << std::dec << ") uses " << len << " bytes\n";
             if (len == 0) if (gcTrace) cout << "At " << Addr(pp) << " up to " << Addr(c->chunkFringe.load()) << "\n";
+            if (gcTrace)
+            {   cout << "Pinned lisp vector: "; 
+                simple_print(p+TAG_VECTOR);
+            }
             for (size_t i = CELL; i<len1; i += CELL)
-                evacuate(reinterpret_cast<LispObject *>(p+i));
+                evacuate(*reinterpret_cast<atomic<LispObject>*>(p+i));
             my_assert(len != 0, "lisp vector size zero");
             p += len;
             continue;
@@ -1269,6 +1278,10 @@ if (gcTrace) cout << "Item at " << Addr(pp) << " = " << std::hex << a
             len = doubleword_align_up(length_of_header(a));
             my_assert(len != 0, "bit vector size zero");
             if (gcTrace) cout << "bit-vector uses " << len << " bytes\n";
+            if (gcTrace)
+            {   cout << "Pinned bit vector: ";
+                simple_print(p+TAG_VECTOR);
+            }
             p += len;
             continue;
 
@@ -1276,18 +1289,26 @@ if (gcTrace) cout << "Item at " << Addr(pp) << " = " << std::hex << a
             len = doubleword_align_up(length_of_header(a));
             my_assert(len != 0, "binary vector size zero");
             if (gcTrace) cout << "binary-vector uses " << len << " bytes\n";
+            if (gcTrace)
+            {   cout << "Pinned binary vector: ";
+                simple_print(p+TAG_VECTOR);
+            }
             p += len;
             continue;
 
         case 0x02: // 0b00010:   // Symbol headers plus char literals etc
             if (is_symbol_header(a))
             {   Symbol_Head *s = reinterpret_cast<Symbol_Head *>(p);
-                evacuate(&(s->value));
-                evacuate(&(s->env));
-                evacuate(&(s->plist));
-                evacuate(&(s->fastgets));
-                evacuate(&(s->package));
-                evacuate(&(s->pname));
+                if (gcTrace)
+                {   cout << "Pinned symbol: ";
+                    simple_print(p+TAG_SYMBOL);
+                }
+                evacuate(s->value);
+                evacuate(s->env);
+                evacuate(s->plist);
+                evacuate(s->fastgets);
+                evacuate(s->package);
+                evacuate(s->pname);
                 if (gcTrace) cout << "symbol uses " << symhdr_length << " bytes\n";
                 if (gcTrace) cout << "inc from " << Addr(p) << " to " << Addr(p+symhdr_length) << "\n";
                 p += symhdr_length;
@@ -1296,8 +1317,12 @@ if (gcTrace) cout << "Item at " << Addr(pp) << " = " << std::hex << a
             // drop through.
         default:                 // None of the above cases...
                                  // ... must be a CONS cell.
-            evacuate(pp);
-            evacuate(pp+1);
+            if (gcTrace)
+            {   cout << "Pinned cons cell: ";
+                simple_print(p+TAG_CONS);
+            }
+            evacuate(pp[0]);
+            evacuate(pp[1]);
             if (gcTrace) cout << "cons cell uses " << (2*CELL) << " bytes\n";
             p += 2*CELL;
             continue;
@@ -1392,7 +1417,7 @@ void evacuateOneChunk(Chunk *c)
             if (is_mixed_header(a)) len1 = 4*CELL;
             else len1 = len;
             for (size_t i = CELL; i<len1; i += CELL)
-                evacuate(reinterpret_cast<LispObject *>(p+i));
+                evacuate(*reinterpret_cast<LispObject *>(p+i));
             p += len;
             continue;
 
@@ -1408,20 +1433,20 @@ void evacuateOneChunk(Chunk *c)
         case 0x02: // 0b00010:   // Symbol headers plus char literals etc
             if (is_symbol_header(a))
             {   Symbol_Head *s = reinterpret_cast<Symbol_Head *>(p);
-                evacuate(&(s->value));
-                evacuate(&(s->env));
-                evacuate(&(s->plist));
-                evacuate(&(s->fastgets));
-                evacuate(&(s->package));
-                evacuate(&(s->pname));
+                evacuate(s->value);
+                evacuate(s->env);
+                evacuate(s->plist);
+                evacuate(s->fastgets);
+                evacuate(s->package);
+                evacuate(s->pname);
                 p += symhdr_length;
                 continue;
             }
             // drop through.
         default:                 // None of the above cases...
                                  // ... must be a CONS cell.
-            evacuate(pp);
-            evacuate(pp+1);
+            evacuate(pp[0]);
+            evacuate(pp[1]);
             p += 2*CELL;
             continue;
         }
@@ -1552,8 +1577,7 @@ if (gcTrace)
     else cout << "??? " << Addr(a) << "\n";
 }
 #endif
-            my_assert(!is_forward(a),
-                [] { cout << "Forwarding pointer not expected\n"; });
+            my_assert(!is_forward(a), "Forwarding pointer not expected");
             switch (a & 0x1f) // tag bits plus 2 more
             {
 // binary literals are C++14, so just for now I will use hex, but I will
@@ -1564,7 +1588,7 @@ if (gcTrace)
                 if (is_mixed_header(a)) len1 = 4*CELL;
                 else len1 = len;
                 for (size_t i = CELL; i<len1; i += CELL)
-                    evacuate(reinterpret_cast<LispObject *>(p+i));
+                    evacuate(*reinterpret_cast<LispObject *>(p+i));
                 p += len;
                 continue;
 
@@ -1580,20 +1604,20 @@ if (gcTrace)
             case 0x02: // 0b00010:   // Symbol headers plus char literals etc
                 if (is_symbol_header(a))
                 {   Symbol_Head *s = reinterpret_cast<Symbol_Head *>(p);
-                    evacuate(&(s->value));
-                    evacuate(&(s->env));
-                    evacuate(&(s->plist));
-                    evacuate(&(s->fastgets));
-                    evacuate(&(s->package));
-                    evacuate(&(s->pname));
+                    evacuate(s->value);
+                    evacuate(s->env);
+                    evacuate(s->plist);
+                    evacuate(s->fastgets);
+                    evacuate(s->package);
+                    evacuate(s->pname);
                     p += symhdr_length;
                     continue;
                 }
                 // drop through.
             default:                 // None of the above cases...
                                      // ... must be a CONS cell.
-                evacuate(pp);
-                evacuate(pp+1);
+                evacuate(pp[0]);
+                evacuate(pp[1]);
                 p += 2*CELL;
                 continue;
             }
@@ -1716,17 +1740,32 @@ void garbageCollect(bool major)
 #ifdef DEBUG
     LispObject a = standard_input;
     cout << "\nstdin = " << std::flush; simple_print(a);
+    cout << "hdr= " << std::hex << qheader(a) << "\n";
     if (is_symbol(a)) a = qvalue(a);
     cout << "\n value = " << std::flush;
     simple_print(a);
-    cout << std::endl;
-    if (is_vector(a))
-        std::printf("val=%" PRIxPTR "  hdr(val)=%" PRIxPTR "\n", a, vechdr(a));
+    cout << std::hex << vechdr(a) << std::dec << "\n";
+    a = standard_output;
+    cout << "\nstdout = " << std::flush; simple_print(a);
+    cout << "hdr= " << std::hex << qheader(a) << "\n";
+    if (is_symbol(a)) a = qvalue(a);
+    cout << "\n value = " << std::flush;
+    simple_print(a);
+    cout << std::hex << vechdr(a) << std::dec << "\n";
+    a = terminal_io;
+    cout << "\nterminal-io = " << std::flush; simple_print(a);
+    cout << "hdr= " << std::hex << qheader(a) << "\n";
+    if (is_symbol(a)) a = qvalue(a);
+    cout << "\n value = " << std::flush;
+    simple_print(a);
+    cout << std::hex << vechdr(a) << std::dec << "\n";
 #endif // DEBUG
 #ifdef DEBUG
 // Just to test things!
     validatePointers();
 #endif // DEBUG
+    cout << "try printing!" << endl;
+    Lprint(nil, a); // To see if printing works here
 }
 
 // This flag generally controls whether a generational collector will be
@@ -1754,8 +1793,9 @@ static const size_t hashSize = 0x100000;
 static LispObject visitedHash[hashSize];
 
 bool inActivePage(LispObject a)
-{   // Not done yet!
-    return true;
+{   if (a==0 || a==nil || is_immediate(a)) return true;
+    Page *p = reinterpret_cast<Page *>(a & -pageSize);
+    return p->pageClass == busyPageTag || p->pageClass == mostlyFreePageTag;
 }
 
 void clearRepeats()
@@ -1773,8 +1813,8 @@ void validateForGC(LispObject a)
         h = (h + 1) & (hashSize-1);
     }
     if (is_immediate(a)) return;
-    my_assert(inActivePage(a));
-    my_assert(!is_forward(*reinterpret_cast<LispObject *>(a - (a&TAG_BITS))));
+    my_assert(inActivePage(a), "item is not in active page");
+    my_assert(!is_forward(a), "forwarding pointer in validateForGC");
     if (is_cons(a))
     {   validateForGC(car(a));
         validateForGC(cdr(a));
@@ -1793,24 +1833,27 @@ void validateForGC(LispObject a)
 }
 
 void validateUnambiguousBases(bool major)
-{   if (gcTrace) cout << "evacuateFromUnambiguousBases\n";
+{   if (gcTrace) cout << "validateFromUnambiguousBases\n";
 // This code has to know where ALL the definitive references to LispObjects
 // are in the C++ code. The main way it achieves this is through a vector
 // "list_bases" that holds the address of every static location involved.
 // That vector is about 200 items long. In addition the dedicated Lisp
 // stack has to be processed.
-    validateForGC(*reinterpret_cast<LispObject *>(valueaddr(nil)));
-    validateForGC(*reinterpret_cast<LispObject *>(envaddr(nil)));
-    validateForGC(*reinterpret_cast<LispObject *>(plistaddr(nil)));
-    validateForGC(*reinterpret_cast<LispObject *>(pnameaddr(nil)));
-    validateForGC(*reinterpret_cast<LispObject *>(fastgetsaddr(nil)));
-    validateForGC(*reinterpret_cast<LispObject *>(packageaddr(nil)));
+    validateForGC(qvalue(nil));
+    validateForGC(qenv(nil));
+    validateForGC(qplist(nil));
+    validateForGC(qpname(nil));
+    validateForGC(qfastgets(nil));
+    validateForGC(qpackage(nil));
+    if (gcTrace) cout << "validate regular list bases\n";
     for (auto p = list_bases; *p!=nullptr; p++) validateForGC(**p);
+    if (gcTrace) cout << "validate lisp stack\n";
     for (LispObject *sp=stack;
          sp>reinterpret_cast<LispObject *>(stackBase); sp--) validateForGC(*sp);
 // When running the deserialization code I keep references to multiply-
 // used items in repeat_heap, and if garbage collection occurs they must be
 // updated.
+    if (gcTrace) cout << "validate repeat heap\n";
     if (repeat_heap != nullptr)
     {   for (size_t i=1; i<=repeat_count; i++)
             validateForGC(repeat_heap[i]);
@@ -1897,10 +1940,10 @@ if (gcTrace) cout << "Item at " << Addr(pp) << " = " << std::hex << a
 }
 
 void validatePinnedItems(bool major)
-{   if (gcTrace) cout << "evacuateFromPinnedItems\n";
+{   if (gcTrace) cout << "validate Pinned Items\n";
     for (Page *p=globalPinChain; p!=nullptr; p=p->pinChain)
     {   for (Chunk *c=p->pinnedChunks; c!=nullptr; c=c->pinChain)
-        {   if (gcTrace) cout << "Pinned items in " << Addr(c) << " to evacuate\n";
+        {   if (gcTrace) cout << "Pinned items in " << Addr(c) << " to check\n";
             validatePinnedInChunk(c);
         }
     }
@@ -1910,6 +1953,7 @@ void validatePointers()
 {   clearRepeats();
     validateUnambiguousBases(true);
     validatePinnedItems(true);
+    if (gcTrace) cout << "Validation complete\n";
 }
 
 #endif // DEBUG

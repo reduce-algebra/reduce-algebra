@@ -647,19 +647,19 @@ LispObject got_0_wanted_other(LispObject env)
 
 
 LispObject got_1_wanted_0(LispObject env, LispObject a1)
-{   return wrong(0, 1, env);
+{   return wrong(1, 0, env);
 }
 
 LispObject got_1_wanted_2(LispObject env, LispObject a1)
-{   return wrong(2, 1, env);
+{   return wrong(1, 2, env);
 }
 
 LispObject got_1_wanted_3(LispObject env, LispObject a1)
-{   return wrong(3, 1, env);
+{   return wrong(1, 3, env);
 }
 
 LispObject got_1_wanted_4up(LispObject env, LispObject a1)
-{   return wrong(4, 1, env);
+{   return wrong(1, 4, env);
 }
 
 LispObject got_1_wanted_other(LispObject env, LispObject a1)
@@ -668,19 +668,19 @@ LispObject got_1_wanted_other(LispObject env, LispObject a1)
 
 
 LispObject got_2_wanted_0(LispObject env, LispObject a1, LispObject a2)
-{   return wrong(0, 2, env);
+{   return wrong(2, 0, env);
 }
 
 LispObject got_2_wanted_1(LispObject env, LispObject a1, LispObject a2)
-{   return wrong(1, 2, env);
+{   return wrong(2, 1, env);
 }
 
 LispObject got_2_wanted_3(LispObject env, LispObject a1, LispObject a2)
-{   return wrong(3, 2, env);
+{   return wrong(2, 3, env);
 }
 
 LispObject got_2_wanted_4up(LispObject env, LispObject a1, LispObject a2)
-{   return wrong(4, 2, env);
+{   return wrong(2, 4, env);
 }
 
 LispObject got_2_wanted_other(LispObject env, LispObject a1, LispObject a2)
@@ -690,22 +690,22 @@ LispObject got_2_wanted_other(LispObject env, LispObject a1, LispObject a2)
 
 LispObject got_3_wanted_0(LispObject env, LispObject a1,
                           LispObject a2, LispObject a3)
-{   return wrong(0, 3, env);
+{   return wrong(3, 0,env);
 }
 
 LispObject got_3_wanted_1(LispObject env, LispObject a1,
                           LispObject a2, LispObject a3)
-{   return wrong(1, 3, env);
+{   return wrong(3, 1, env);
 }
 
 LispObject got_3_wanted_2(LispObject env, LispObject a1,
                           LispObject a2, LispObject a3)
-{   return wrong(2, 3, env);
+{   return wrong(3, 2, env);
 }
 
 LispObject got_3_wanted_4up(LispObject env, LispObject a1,
                             LispObject a2, LispObject a3)
-{   return wrong(4, 3, env);
+{   return wrong(3, 4, env);
 }
 
 LispObject got_3_wanted_other(LispObject env, LispObject a1,
@@ -716,22 +716,22 @@ LispObject got_3_wanted_other(LispObject env, LispObject a1,
 
 LispObject got_4up_wanted_0(LispObject env, LispObject a1, LispObject a2,
                             LispObject a3, LispObject a4up)
-{   return wrong(0, 4, env);
+{   return wrong(4, 0, env);
 }
 
 LispObject got_4up_wanted_1(LispObject env, LispObject a1, LispObject a2,
                             LispObject a3, LispObject a4up)
-{   return wrong(1, 4, env);
+{   return wrong(4, 1, env);
 }
 
 LispObject got_4up_wanted_2(LispObject env, LispObject a1, LispObject a2,
                             LispObject a3, LispObject a4up)
-{   return wrong(2, 4, env);
+{   return wrong(4, 2, env);
 }
 
 LispObject got_4up_wanted_3(LispObject env, LispObject a1, LispObject a2,
                             LispObject a3, LispObject a4up)
-{   return wrong(3, 4, env);
+{   return wrong(4, 3, env);
 }
 
 LispObject got_4up_wanted_other(LispObject env, LispObject a1, LispObject a2,
@@ -3838,14 +3838,12 @@ const char *PROC_string_data(PROC_handle p)
 
 PROC_handle PROC_first(PROC_handle p)
 {   return reinterpret_cast<PROC_handle>(
-               reinterpret_cast<LispObject>(
-                   car(reinterpret_cast<LispObject>(p))));
+                   car(reinterpret_cast<LispObject>(p)).load());
 }
 
 PROC_handle PROC_rest(PROC_handle p)
 {   return reinterpret_cast<PROC_handle>(
-               reinterpret_cast<LispObject>(
-                   cdr(reinterpret_cast<LispObject>(p))));
+                   cdr(reinterpret_cast<LispObject>(p)).load());
 }
 
 // End of csl.cpp
