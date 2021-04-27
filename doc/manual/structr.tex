@@ -27,7 +27,7 @@ determinant operator \texttt{DET}\ttindextype{DET}{operator} because the relevan
 evaluation function calculates the appropriate determinant, and the
 operator \texttt{DET} no longer appears.  On the other hand, the evaluation
 process may leave some residual functions of the relevant operator.  For
-example, with the operator \texttt{COS}, a residual expression like 
+example, with the operator \texttt{COS}, a residual expression like
 \texttt{COS(X)} may remain after evaluation unless a rule for the reduction of
 cosines into exponentials, for example, were introduced.  These residual
 functions of an operator are termed \emph{kernels}\index{Kernel} and are
@@ -72,7 +72,7 @@ We see that kernel forms can usually be used as generalized variables, and
 most algebraic properties associated with variables may also be associated
 with kernels.
 
-\section{The Expression Workspace}\index{Workspace}
+\section{The Expression Workspace}\index{Workspace}\label{Workspace}
 
 Several mechanisms are available for saving and retrieving previously
 evaluated expressions.  The simplest of these refers to the last algebraic
@@ -116,7 +116,7 @@ command can be used.
         for all x saveas h(x);
 \end{verbatim}
 
-with the above expression would mean that \texttt{h(z)} evaluates to 
+with the above expression would mean that \texttt{h(z)} evaluates to
 \texttt{2*Y+2*Z}.
 
 A further method for referencing more than the last expression is described
@@ -165,7 +165,7 @@ We now describe a number of switches and declarations that are available
 for controlling output formats. It should be noted, however, that the
 transformation of large expressions to produce these varied output formats
 can take a lot of computing time and space. If a user wishes to speed up
-the printing of the output in such cases, he can turn off the switch 
+the printing of the output in such cases, he can turn off the switch
 \sw{PRI}\ttindexswitch{PRI}. If this is done, then output is produced in one fixed
 format, which basically reflects the internal form of the expression, and
 none of the options below apply. \sw{PRI} is normally on.
@@ -534,8 +534,8 @@ First, when the switch \sw{FORT}\ttindex{FORT} is on, the system will
 print expressions in a FORTRAN notation.  Expressions begin in column
 seven.  If an expression extends over one line, a continuation mark (.)
 followed by a blank appears on subsequent cards.  After a certain number
-of lines have been produced (according to the value of the variable 
-\var{CARD\_NO}),\ttindextype{CARD\_NO}{shared global variable} 
+of lines have been produced (according to the value of the variable
+\var{CARD\_NO}),\ttindextype{CARD\_NO}{shared global variable}
 a new expression is started.  If the
 expression printed arises from an assignment to a variable, the variable
 is printed as the name of the expression.  Otherwise the expression is
