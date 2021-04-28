@@ -1,7 +1,5 @@
 <?php  // -*-mhtml-*-
 
-// FIXME Manual links below need to be looked up rather than hard-coded!
-
 require_once('../php/Smarty/setup.php');
 $smarty = new Smarty_REDUCE();
 
@@ -89,45 +87,45 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
   release.</dd>
   <dt>Portability</dt>
   <dd>Careful design for portability means REDUCE is often available
-  on new or uncommon machines soon after their release. This has led
-  to significant user communities throughout the world. At the present
-  time, REDUCE is readily available on essentially all computers.</dd>
+    on new or uncommon machines soon after their release. This has led
+    to significant user communities throughout the world. At the
+    present time, REDUCE is readily available on essentially all
+    computers.</dd>
   <dt>Uniformity</dt>
   <dd>Even though REDUCE is supported with different Lisps on many
-  different platforms, much attention has been paid to making all
-  versions perform in the same manner regardless of implementation. As
-  a result, users can have confidence that their calculations will not
-  behave differently if they move them to a different machine.</dd>
+    different platforms, much attention has been paid to making all
+    versions perform in the same manner regardless of
+    implementation. As a result, users can have confidence that their
+    calculations will not behave differently if they move them to a
+    different machine.</dd>
   <dt>Algebraic focus</dt>
   <dd>REDUCE aims at being part of a complete scientific environment
-  rather than being the complete environment itself. As a result,
-  users can take advantage of other state-of-the-art systems
-  specializing in numerical and graphical calculations, rather than
-  depend on just one system to provide everything. To this end, REDUCE
-  provides facilities for writing results in a form
-  compatible <a href="/manual/manualse120.html#x168-65600016.28">with
-  common numerical programming languages</a> (such as C or Fortran)
-  or <a href="/manual/manualse152.html#x220-100500016.60">document
-  processors</a> such
-  as <span class="latex">L<sup>a</sup>T<sub>e</sub>X</span>.</dd>
+    rather than being the complete environment itself. As a result,
+    users can take advantage of other state-of-the-art systems
+    specializing in numerical and graphical calculations, rather than
+    depend on just one system to provide everything. To this end,
+    REDUCE provides facilities for writing results in a form
+    compatible
+    <a class="manual-lookup" title="GENTRAN">with common numerical
+      programming languages</a> (such as C or Fortran) or
+    <a class="manual-lookup" title="RLFI">document processors</a> such
+    as <span class="latex">L<sup>a</sup>T<sub>e</sub>X</span>.</dd>
   <dt>State-of-the-art algorithms</dt>
   <dd>Another advantage of an &quot;open&quot; system is that there is
-  a shared development effort involving both distributors and
-  users. As a result, it is easier to keep the code up-to-date, with
-  the best current algorithms being used soon after their
-  development. At the present time, we believe REDUCE has superior
-  code for solving non-linear polynomial equations
-  using <a href="/manual/manualse122.html#x170-67000016.30">Gr&ouml;bner
-  bases</a>, real and
-  complex <a href="/manual/manualse153.html#x221-100700016.61">root
-  finding</a> to any
-  precision, <a href="/manual/manualse116.html#x164-59300016.24">exterior
-  calculus</a> calculations
-  and <a href="/manual/manualse156.html#x224-103300016.64">optimized
-  numerical code generation</a> among others. Its simplification
-  strategy, using a combination of efficient polynomial manipulation
-  and flexible pattern matching is focused on giving users as natural
-  a result as possible without excessive programming.</dd>
+    a shared development effort involving both distributors and
+    users. As a result, it is easier to keep the code up-to-date, with
+    the best current algorithms being used soon after their
+    development. At the present time, we believe REDUCE has superior
+    code for solving non-linear polynomial equations using
+    <a class="manual-lookup" title="GROEBNER">Gr&ouml;bner bases</a>,
+    real and complex <a class="manual-lookup" title="ROOTS">root
+    finding</a> to any precision, <a class="manual-lookup"
+    title="EXCALC">exterior calculus</a> calculations
+    and <a class="manual-lookup" title="SCOPE">optimized numerical
+    code generation</a> among others. Its simplification strategy,
+    using a combination of efficient polynomial manipulation and
+    flexible pattern matching is focused on giving users as natural a
+    result as possible without excessive programming.</dd>
 </dl>
 <h2>Specialist packages</h2>
 <p>
@@ -136,16 +134,16 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
   chosen for a given calculation because of its widespread use in a
   particular application area, with existing packages and templates
   being used to speed up problem solving. As evidenced by
-  approximately 1000 reports listed in the
-  current <a href="bibliography.php">bibliography</a>, REDUCE has a
-  large and dedicated user community working in just about every
-  branch of computational science and engineering. A large number of
-  special purpose packages are available in support of this, with many
+  approximately 1000 reports listed in the current
+  <a href="bibliography.php">bibliography</a>, REDUCE has a large and
+  dedicated user community working in just about every branch of
+  computational science and engineering. A large number of special
+  purpose packages are available in support of this, with many
   contributed by users.
 </p>
 END_OF_MAIN_CONTENT
 );
 
-$smarty->display('main.tpl');
+$smarty->display('features.tpl');
 
 ?>
