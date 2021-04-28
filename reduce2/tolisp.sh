@@ -6,6 +6,7 @@ lisp;
 remflag(oblist(), 'eval)$
 remflag(oblist(), 'lose)$
 for each x in oblist() do remprop(x, 'number!-of!-arguments)$
+for each x in oblist() do remprop(x, 'inline)$
 for each x in oblist() do if eqcar(getd x, 'macro) then <<
   print x;
   remob x >>$

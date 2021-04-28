@@ -217,6 +217,9 @@ csl -w -i- -o reduce2.img -l build2.log <<'XX'
 (rdf "reduce.lsp")
 quit
 
+(setq !*msg nil)
+(setq !*echo nil)
+
 (preserve)
 
 XX

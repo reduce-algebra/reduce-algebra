@@ -5,9 +5,6 @@ time csl -w -i reduce2.img -l test2.log <<'XX'
                        % errorset to disable diagnostics and make
                        % unwinding silent. Sometimes useful for
                        % debugging.
-(mkop 'f)
-(mkop 'gp)
-(mkop 'g)
 (begin)
                                                                                 
 COMMENT SOME EXAMPLES OF THE  F O R  STATEMENT;                                 

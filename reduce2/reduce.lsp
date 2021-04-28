@@ -434,7 +434,7 @@ a (cond
   (prog nil
     (setq time1!* (setq time2!* (!*eval '(time nil))))
     (setq !*int t)
-    (setq !*echo t) % ACN change!
+    (setq !*echo nil)
     (setq contl!* (setq ifl!* (setq ipl!* (setq ofl!* (setq opl!* nil)))) )
     (cond ((eq date!* nil) (go a)))
     (princ "REDUCE 2 (")
@@ -1167,7 +1167,15 @@ d   (cond ((null varlis) (return (mkprog nil u))))
 
 (flag '(real integer scalar) 'type)
 
-(de mkprog (u v) (cons 'prog (cons u v)))
+% The code here assumed that the interpreter (at least) used shallow binding
+% so that if user-code expanded to something with (prog (...)...) in it then
+% the variables would be bound in such a way that EVAL could later on access
+% them. In particular that applied in the case of a look like "for i:=1:10.."
+% and the code in VARPRI could use EVAL, leading to moans about undefined
+% variables on some Lisps.
+(de mkprog (u v)
+  (progn (fluid u)
+    (cons 'prog (cons u v))))
 
 (de setdiff (u v) (cond ((null v) u) (t (setdiff (delete (car v) u) (cdr v)))) )
 
@@ -2349,10 +2357,7 @@ d   (setq u (simp!* (car u)))
         (setq y (cdr y))
         (cond (y (go d)))
   e     (return (addsq z (subf u l)))
-  f     (setq z
-          (addsq
-            (multsq (cons (list (cons (caar y) 1)) 1) (subf (cdar y) l))
-            z))
+  f     (setq z (addsq (multpq (caar y) (subf (cdar y) l)) z))
         (setq y (cdr y))
         (cond (y (go f)) (t (go e)))
   h     (setq x (simprecip (list exp)))
@@ -2754,9 +2759,7 @@ l31 (setq v y)
     (cond ((equal x 1) (return (list (exptsq v p)))) )
     (setq y (divide p x))
     (setq v (exptsq v (car y)))
-    (cond
-      ((not (equal (cdr y) 0))
-        (setq v (multsq (cons (list (cons (getpower u (cdr y)) 1)) 1) v))))
+    (cond ((not (equal (cdr y) 0)) (setq v (multpq (getpower u (cdr y)) v))))
     (return (list v))))
 
 (de mksp!* (u p) (getpower (fkern u) p))
@@ -3597,7 +3600,7 @@ e   (mespri "DIFFERENTIATION WRT" (prepsq x) "NOT ALLOWED" nil t)))
     ((numb u) (cons nil 1))
     (t (addsq
         (addsq
-          (multsq (cons (list (cons (caar u) 1)) 1) (difff (cdar u) v))
+          (multpq (caar u) (difff (cdar u) v))
           (multsq (cons (cdar u) 1) (diffp (caar u) v)))
         (difff (cdr u) v)))) )
 
@@ -3646,8 +3649,7 @@ d   (rplaca (cdr x) (xadd (cons v w) (cadr x) nil t))
     (cond ((null (car x)) (go f)))
 e   (cond
       ((setq x (assoc (car u) wtl!*))
-        (setq w
-          (multsq (cons (list (cons (mksp 'k!* (minus (cdr x))) 1)) 1) w))))
+        (setq w (multpq (mksp 'k!* (minus (cdr x))) w))))
     (return
       (cond
         ((equal (cdr u) 1) w)
@@ -3744,12 +3746,7 @@ b   (setq x (cddar x))
     (cond
       ((neq (car z) (caar u)) (errach 'subs3t u x))
       ((neq z (car u))
-        (setq y
-          (multsq
-            (cons
-              (list (cons (mksp!* (caar u) (difference (cdar u) (cdr z))) 1))
-              1)
-            y))))
+        (setq y (multpq (mksp!* (caar u) (difference (cdar u) (cdr z))) y))))
     (setq y (multsq (simpcar x) y))
     (setq x (cdadr x))
     (cond ((null x) (return y)))
@@ -5034,7 +5031,7 @@ a   (cond ((null u) (return z)))
         (return
           (mkvarg
             (cdr !*s!*)
-            (function (lambda (j) (cons (cons j (car !*s!*)) 1)))) ))) ))
+            (function (lambda (j) (cons (mkgf j (car !*s!*)) 1)))) ))) ))
 
 (de gadd (u v l)
   (prog (w x n)
@@ -5061,7 +5058,7 @@ c   (setq x (not x))
 
 (de mkgf (u l) (mksf (cons 'g (cons l u)) 1))
 
-(de mkg1 (u l) (cond ((not (flagp l 'nospur)) (mkg u l)) (t (cons u l))))
+(de mkg1 (u l) (cond ((not (flagp l 'nospur)) (mkg u l)) (t (mkgf u l))))
 
 (de spur0 (u i v1 v2 v3)
   (prog (l w i1 kahp z n)
@@ -5074,8 +5071,8 @@ c   (setq x (not x))
     (cond
       ((get l 'nospur) (go a))
       ((or
-         (and (eq (car u) 'a) (or (lessp (length u) 5) (evenp u)))
-         (and (not (eq (car u) 'a)) (not (evenp u))))
+         (and (eq (car u) 'a) (or (lessp (length u) 5) (!*evenp u)))
+         (and (not (eq (car u) 'a)) (not (!*evenp u))))
         (return nil))
       ((null i) (go end0)))
 a   (cond ((null u) (go end1)) ((member (car u) i) (go b)))
@@ -5090,7 +5087,7 @@ b   (cond
         (return
           (cond
             ((and (flagp l 'nospur) (null v1) (null v3) (null (cdr v2)))
-              (multf (cons (append (reverse w) u) l) (multn n (mkeps1 z))))
+              (multf (mkgf (append (reverse w) u) l) (multn n (mkeps1 z))))
             (t (multn
                 n
                 (isimp1
@@ -5133,7 +5130,7 @@ d   (setq z (cdr z))
 d0  (setq w (reverse w))
     (cond
       ((and (or (null u) (not (eqcar w 'a))) (setq u (append u w))) (go d1))
-      ((not (evenp u)) (setq n (minus n))))
+      ((not (!*evenp u)) (setq n (minus n))))
     (setq u (cons 'a (append u (cdr w))))
 d1  (cond (kahp (setq l kahp)))
     (setq z
@@ -5239,12 +5236,12 @@ l9  (setq u (expt 2 k))
     ((or (xn i u) (flagp l 'nospur)) (addf (mkg1 u l) (mkg1 (reverse u) l)))
     ((eq (car u) 'a)
       (cond
-        ((evenp u)
+        ((!*evenp u)
           (addf
             (mkg u l)
             (multn (minus 1) (mkg (cons 'a (reverse (cdr u))) l))))
         (t (multf (mka l) (spr2 (cdr u) l 2 nil)))) )
-    ((evenp u) (spr2 u l 2 nil))
+    ((!*evenp u) (spr2 u l 2 nil))
     (t (spr1 u l 2 nil))))
 
 (de spr1 (u l n b)
@@ -5282,7 +5279,7 @@ l9  (setq u (expt 2 k))
           (spurr u l nil n)
           (multf (mka l) (spurr (append u (list 'a)) l nil n)))) )))
 
-(de evenp (u) (or (null u) (not (evenp (cdr u)))) )
+(de !*evenp (u) (or (null u) (not (!*evenp (cdr u)))) )
 
 (de bassoc (u v)
   (cond
@@ -5302,7 +5299,7 @@ a   (cond ((null u) (go b)) ((member (car u) (cdr u)) (go g)))
 b   (return
       (cond
         ((null v) n)
-        ((flagp l 'nospur) (multn n (cons v l)))
+        ((flagp l 'nospur) (multn n (mkgf v l)))
         (t (sprgen v n))))
 g   (setq x (car u))
     (setq y (cdr u))

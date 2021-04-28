@@ -2336,10 +2336,7 @@ d   (setq u (simp!* (car u)))
         (setq y (cdr y))
         (cond (y (go d)))
   e     (return (addsq z (subf u l)))
-  f     (setq z
-          (addsq
-            (multsq (cons (list (cons (caar y) 1)) 1) (subf (cdar y) l))
-            z))
+  f     (setq z (addsq (multpq (caar y) (subf (cdar y) l)) z))
         (setq y (cdr y))
         (cond (y (go f)) (t (go e)))
   h     (setq x (simprecip (list exp)))
@@ -2741,9 +2738,7 @@ l31 (setq v y)
     (cond ((equal x 1) (return (list (exptsq v p)))) )
     (setq y (divide p x))
     (setq v (exptsq v (car y)))
-    (cond
-      ((not (equal (cdr y) 0))
-        (setq v (multsq (cons (list (cons (getpower u (cdr y)) 1)) 1) v))))
+    (cond ((not (equal (cdr y) 0)) (setq v (multpq (getpower u (cdr y)) v))))
     (return (list v))))
 
 (de mksp!* (u p) (getpower (fkern u) p))
@@ -3592,7 +3587,7 @@ e   (mespri "DIFFERENTIATION WRT" (prepsq x) "NOT ALLOWED" nil t)))
     ((numb u) (cons nil 1))
     (t (addsq
         (addsq
-          (multsq (cons (list (cons (caar u) 1)) 1) (difff (cdar u) v))
+          (multpq (caar u) (difff (cdar u) v))
           (multsq (cons (cdar u) 1) (diffp (caar u) v)))
         (difff (cdr u) v)))) )
 
@@ -3641,8 +3636,7 @@ d   (rplaca (cdr x) (xadd (cons v w) (cadr x) nil t))
     (cond ((null (car x)) (go f)))
 e   (cond
       ((setq x (assoc (car u) wtl!*))
-        (setq w
-          (multsq (cons (list (cons (mksp 'k!* (minus (cdr x))) 1)) 1) w))))
+        (setq w (multpq (mksp 'k!* (minus (cdr x))) w))))
     (return
       (cond
         ((equal (cdr u) 1) w)
@@ -3733,7 +3727,7 @@ b   (setq z (addsq z x))
     (setq x (mtchk (car u) (cond ((numb (cdr u)) (sizchk v 1)) (t v))))
     (cond ((null x) (go a)) ((null (caar x)) (go b)))
     (setq y (subs3f1 (cdr u) x nil))
-    (cond (mchfg!* (return (multsq (cons (list (cons (car u) 1)) 1) y))))
+    (cond (mchfg!* (return (multpq (car u) y))))
 a   (return (cons (list u) 1))
 b   (setq x (cddar x))
     (setq z (caadr x))
@@ -3743,12 +3737,7 @@ b   (setq x (cddar x))
     (cond
       ((neq (car z) (caar u)) (errach 'subs3t u x))
       ((neq z (car u))
-        (setq y
-          (multsq
-            (cons
-              (list (cons (mksp!* (caar u) (difference (cdar u) (cdr z))) 1))
-              1)
-            y))))
+        (setq y (multpq (mksp!* (caar u) (difference (cdar u) (cdr z))) y))))
     (setq y (multsq (simpcar x) y))
     (setq x (cdadr x))
     (cond ((null x) (return y)))
@@ -5051,7 +5040,7 @@ a   (cond ((null u) (return z)))
         (return
           (mkvarg
             (cdr !*s!*)
-            (function (lambda (j) (cons (cons j (car !*s!*)) 1)))) ))) ))
+            (function (lambda (j) (cons (mkgf j (car !*s!*)) 1)))) ))) ))
 
 (de gadd (u v l)
   (prog (w x n)
@@ -5078,7 +5067,7 @@ c   (setq x (not x))
 
 (de mkgf (u l) (mksf (cons 'g (cons l u)) 1))
 
-(de mkg1 (u l) (cond ((not (flagp l 'nospur)) (mkg u l)) (t (cons u l))))
+(de mkg1 (u l) (cond ((not (flagp l 'nospur)) (mkg u l)) (t (mkgf u l))))
 
 (put
   'spur0
@@ -5111,7 +5100,7 @@ b   (cond
         (return
           (cond
             ((and (flagp l 'nospur) (null v1) (null v3) (null (cdr v2)))
-              (multf (cons (append (reverse w) u) l) (multn n (mkeps1 z))))
+              (multf (mkgf (append (reverse w) u) l) (multn n (mkeps1 z))))
             (t (multn
                 n
                 (isimp1
@@ -5335,7 +5324,7 @@ a   (cond ((null u) (go b)) ((member (car u) (cdr u)) (go g)))
 b   (return
       (cond
         ((null v) n)
-        ((flagp l 'nospur) (multn n (cons v l)))
+        ((flagp l 'nospur) (multn n (mkgf v l)))
         (t (sprgen v n))))
 g   (setq x (car u))
     (setq y (cdr u))
