@@ -22,7 +22,9 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
     <small>[ <a href="manual.html"
                 title="a multi-page HTML document">HTML</a> |
       <a href="manual.pdf">PDF</a> ]</small> provides a comprehensive
-    guide to the REDUCE language and the supported packages;
+    guide to the REDUCE language and the supported packages
+    <small> [<a href="/manual-lookup.php">note on external
+        linking</a>]</small>;
   </li>
   <li>
     the <a href="/switches.php">switch summary</a> provides an
