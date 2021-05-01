@@ -3,11 +3,27 @@
 
 {block name=javascript}
 <script>
-  // Non-interactive use:
   queryString = location.search;
   if (queryString.length > 0) {
+      // Non-interactive use:
       queryString = decodeURIComponent(queryString.substring(1));
       processQueryString(queryString);
+  } else {
+      // Interactive use:
+      $("body").css("display", "inherit");
+      // $("span.href").append(location.href);
+      $("span.href").append(location.origin + location.pathname);
+      $("#Button1").click(Go);
+      $("body").keypress(
+          function (event) {
+	      if (event.keyCode == 13) Go();
+          })
+  }
+
+  function Go() {
+      queryString = $("#Text1").val();
+      if (queryString.length > 0)
+	  processQueryString(queryString);
   }
 
   function processQueryString(queryString) {
@@ -27,23 +43,6 @@
 			     filename = tocAnchor.attr("href");
 			 location.replace("/manual/" + filename)
 		     })
-  }
-
-  // Interactive use:
-  $("span.href").append(location.href);
-
-  $("#Button1").click(Go);
-
-  $("body").keypress(
-      function (event) {
-	  if (event.keyCode == 13) Go();
-      })
-
-  function Go() {
-      queryString = $("#Text1").val();
-      if (queryString.length > 0) {
-	  processQueryString(queryString);
-      }
   }
 </script>
 {/block}
