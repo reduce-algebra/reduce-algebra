@@ -5,6 +5,9 @@ $smarty = new Smarty_REDUCE();
 
 $smarty->assign('head_extras', <<< END_OF_HEAD_EXTRAS
 <style type="text/css">
+  body {
+      display: none;
+  }
   #form {
       text-align: center;
   }
@@ -22,15 +25,14 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
   Internal links within the HTML version of the REDUCE manual should
   not be used externally because they may change when the manual is
   rebuilt from source, which typically happens a few times a year.
-  Instead, use this page to look up any page in the REDUCE manual.
-  Normally, you should use a URL of the
-  form <a href="#"><span class="href"></span>?<em>query
-  string</em></a>, where <em>query string</em> is any (case-sensitive)
-  string of characters that appear uniquely in the title of an entry
-  in the <a href="/manual/manual.html">REDUCE manual table of
-  contents</a>.  For example, these links should reliably access
-  appropriate sections of the manual describing the <strong>User
-  Contributed Packages</strong>:
+  Instead, use a URL of the form
+  <a href="#"><span class="href"></span>?<em>query string</em></a>,
+  where <em>query string</em> is any (case-sensitive) string of
+  characters that appears uniquely in the title of an entry in
+  the <a href="/manual/manual.html">REDUCE manual table of
+  contents</a>.  (Don&apos;t use section numbers, which may change.)
+  For example, these links should reliably access appropriate sections
+  of the manual describing <strong>User Contributed Packages</strong>:
 </p>
 <ul>
   <li><a href="?EXCALC"><span class="href"></span>?EXCALC</a></li>
