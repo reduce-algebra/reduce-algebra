@@ -637,7 +637,7 @@ asserted procedure cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory, ans: B
    begin scalar w,co,remvl,newj,cvl,coe,ww;
       integer c,count,delc,oldcol,comax,comaxn;
       if !*rlqegsd then
- 	 f := rl_gsd(f,theo);
+ 	 f := rl_gsn(f,theo,'dnf);
       cvl := varl;
       co := co_new();
       if rl_op f eq 'or then
@@ -833,7 +833,7 @@ asserted procedure cl_esetsubst(f: QfFormula, v: Kernel, eset: List, vl: KernelL
 	    theo := union(theo,car w);
 	    elimres := rl_simpl(cdr w,theo,-1);
 	    if !*rlqegsd then
-	       elimres := rl_gsd(elimres,theo);
+	       elimres := rl_gsn(elimres,theo,'dnf);
 	    if elimres eq 'true then <<
 	       an := cl_updans(v,a,u,f,an,ans);
 	       for each vv in vl do
