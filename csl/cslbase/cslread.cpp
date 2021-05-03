@@ -3056,10 +3056,13 @@ int32_t read_action_synonym(int32_t c, LispObject f)
     f1 = qvalue(stream_read_data(f));
 //@@@    if (!is_stream(f1)) return aerror1("bad synonym stream", f1);
     if (!is_stream(f1))
-    {   cout << "bad synonym stream " << Addr(f1) << "\n";
+    {
+#if defined CONSERVATIVE && defined DEBUG
+        cout << "bad synonym stream " << Addr(f1) << "\n";
         cout << "header = " << std::hex << vechdr(f1) << std::dec << "\n";
         simple_print(stream_type(f));
         simple_print(stream_write_data(f));
+#endif
         return aerror("bad synonym stream");
     }
     r = other_read_action(c, f1);
