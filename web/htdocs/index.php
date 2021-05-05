@@ -5,6 +5,11 @@
 require_once('../php/Smarty/setup.php');
 $smarty = new Smarty_REDUCE();
 
+/*
+This is purely for the site map; the page title is set in index.tpl:
+$smarty->assign('page_title', 'REDUCE Computer Algebra System');
+*/
+
 $smarty->assign('header_title', 'What is REDUCE?');
 
 $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
