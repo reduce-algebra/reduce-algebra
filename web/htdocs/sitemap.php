@@ -23,19 +23,22 @@ function processDir(string $dir) {
                 echo "<tr><td>$file</td><td>&mdash; <i>folder</i> &mdash;</td><td></td></tr>\n";
                 processDir("$file/*"); // recurse!
             }
-        } elseif (preg_match('/^[^.]*$|\.(html|pdf|php)$/', $file, $matches)) {
-            echo "<tr><td><a href='$file'>$file</a></td>";
-            echo '<td>', fileTitle($file, count($matches) == 2 ? $matches[1] : ''), '</td>';
-            echo '<td>', date('d M Y', filemtime($file)), "</td></tr>\n";
-        }
+        } elseif (preg_match('/^[^.]+$|\.([^.]+)$/', $file, $matches))
+              processFile($file, count($matches) == 2 ? $matches[1] : '');
     }
 }
 
-function fileTitle(string $file, string $ext) : string {
-    // Return a title for the document file $file with extension $ext.
-    $title = '';
+function processFile(string $file, string $ext) {
+    // Display details (URL, page title, last modified date) for the
+    // document file $file with extension $ext if appropriate.
+    $ext = strtoupper($ext);
     switch ($ext) {
-    case 'html':
+    case 'CSS': case 'PNG': return;
+    case '':
+        $title = '&mdash; <i>text file</i> &mdash;';
+        break;
+    case 'HTML':
+        $title = '';
         if ($handle = @fopen($file, 'r')) {
             for ($i = 0; ($line = fgets($handle)) !== false && $i < 25; $i++) {
                 if (preg_match('/<title>(.*)<\/title>/', $line, $matches)) {
@@ -46,29 +49,27 @@ function fileTitle(string $file, string $ext) : string {
             fclose($handle);
         }
         break;
-    case 'pdf':
-        $title = '&mdash; <i>PDF file</i> &mdash;';
-        break;
-    case 'php':
-        $title = '&mdash; <i>non-browsable PHP file</i> &mdash;';
+    case 'PHP':
+        $title = '&mdash; <i>PHP file</i> &mdash;';
         if ($handle = @fopen($file, 'r')) {
             for ($i = 0; ($line = fgets($handle)) !== false && $i < 25; $i++) {
                 if (preg_match('/\$smarty->assign\(\'(page_title|header_title)\',\s*\'(.*)\'\);/',
                                $line, $matches)) {
-                    if ($matches[1] == 'page_title')
-                        $title = "<b>$matches[2]</b>";
-                    else
-                        $title = "<b>REDUCE $matches[2]</b>";
+                    $title = $matches[2];
+                    if ($matches[1] == 'header_title') $title = "REDUCE $title";
+                    $title = "<b>$title</b>";
                     break;
                 }
             }
             fclose($handle);
         }
         break;
-    default:
-        $title = '&mdash; <i>text file</i> &mdash;';
+    default: // GZ, PDF, PS, RED, TAR, TXT, ZIP, ...
+        $title = '&mdash; <i>' . $ext . ' file</i> &mdash;';
     }
-    return $title;
+    echo "<tr><td><a href='$file'>$file</a></td>";
+    echo '<td>', $title, '</td>';
+    echo '<td>', date('d M Y', filemtime($file)), "</td></tr>\n";
 }
 ?>
 </table>
