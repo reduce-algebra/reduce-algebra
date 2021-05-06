@@ -99,6 +99,12 @@
 
 #endif // LIKELY, UNLIKELY
 
+#ifdef __GNUC__
+#define NOINLINE [[gnu::noinline]]
+#else
+#define NOINLINE
+#endif // __GNUC__
+
 using std::cout;      // Make C++ output as in "cout << "string" << endl;" a
 using std::endl;      // lot nicer to write.
 

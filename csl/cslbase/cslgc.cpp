@@ -501,7 +501,7 @@ static void real_garbage_collector()
 {
 // I lift the real garbage collector to a separate function mainly
 // so that I can set breakpoints on it!
-    for (int i=0; i<=LOG2_VECTOR_CHUNK_BYTES; i++)
+    for (size_t i=0; i<=LOG2_VECTOR_CHUNK_BYTES; i++)
         free_vectors[i] = 0;
 
     cons_cells = symbol_heads = strings = user_vectors =

@@ -74,10 +74,6 @@
 #include "log.h"
 #include <csetjmp>
 
-#ifdef DEBUG
-inline void testLayout();
-#endif // DEBUG
-
 // I have a 4-level hierarchy in my storage allocation scheme. At the
 // large end I ask C++ to give me really large blocks, and I will call
 // these "segments". I do not grab all the memory I might need right from
@@ -202,35 +198,6 @@ static const size_t pageSize = 8*1024*1024;      // Use 8 Mbyte pages
 // at the start of each Chunk.
 static const size_t targetChunkSize = 16*1024;   // Target chunk size
 
-// every Page will be on one of the lists freePages, mostlyFreePages,
-// busyPages, oldPages or borrowPages. When space is first allocated only
-// the chain and pageClass fields will be set and the page will be
-// "pending" and it will be on freePages. On first use SetUpEmptyPage
-// will fix it up.
-// After any use its class will match the chain that it is on, save
-// that during GC things on oldPages will be tagged as busy, because
-// oldPages is just where the list busyPages gets put while material is
-// copied out of the memory there. And Pages in borrowPages will either
-// be free or mostlyFree, with counts of pages not impacted by borrowing.
-
-// Each chain has an associated counter noting how many Pages of that
-// variety are present.
-
-// It may be useful to arrange that each page has a field in it that
-// explains its status. In particular when an ambiguous pointer refers into
-// a page it can be useful for it to have a simple test to see if that page
-// is in use or not. The enumeration here lists the possibilities.
-
-enum PageClass
-{   reservedPageTag   = 0x00,     // Reserved value, never used.
-    pendingPageTag    = 0x01,     // Not yet initialised.
-
-    freePageTag       = 0x02,     // All the data area in this page is free.
-    mostlyFreePageTag = 0x03,     // Mostly empty page but with
-                                  //    some pinned data within it.
-    busyPageTag       = 0x04,     // Page contains active data.
-};
-
 extern bool allocateSegment(size_t);
 
 // Each Chunk has a header that contains various information, including in
@@ -245,9 +212,15 @@ class Chunk
 {
 public:
     atomic<uintptr_t> length;
+// chunkFringe gets set when I Chunk is complete and at that stage there
+// will be valid data from usableSpace (aka dataStart()) up as far as
+// chunkFringe, but the region from there out the length may not be
+// initialised.
     atomic<uintptr_t> chunkFringe;
     atomic<bool> isPinned;
-    atomic<Chunk *>chunkStack;
+// pinnedObjects is a "fake" list of the objects present in a Chunk where
+// isPinned is true. 
+    atomic<LispObject> pinnedObjects;
 // At the start of garbage collection as I collect a chain of pinned chunks
 // those chunks may appear on the list in arbitrary order, but at the end
 // of garbage collection if a Page has a number of pinned Chunks within it
@@ -258,9 +231,13 @@ public:
 // the whole page. When that region gets full the gLimit pointer either
 // tells me that I have used up the entire page, or the pinned chunk it
 // points at lets me find the new gFringe (using the length field) and the
-// end of the next free block (using pinChain - and if that is nullptr the
-// relevant limit is the end of the page.
-    atomic<Chunk *>pinChain;
+// end of the next free block (using chunkPinChain - and if that is nullptr
+// the relevant limit is the end of the page.
+    atomic<Chunk *>chunkPinChain;
+// pendingChunks is used to track Chunks that need scanning in the GC because
+// old objects have been copied there but the fields within those objects
+// may not have been fixed up yet.
+    atomic<Chunk *>pendingChunks;
 // The rest of the chunk is the region within which data is kept.
 // Its size will be such that the entire Chunk has length a specified by
 // its first word.
@@ -276,9 +253,18 @@ public:
     bool pointsWithin(uintptr_t p)
     {   return p >= dataStart() && p < chunkFringe;
     }
+// Because gdb is a little awkward to use with atomic fields I provide
+// some access functions here...
+    uintptr_t Flength() { return length.load(); }
+    uintptr_t FchunkFringe() { return chunkFringe.load(); }
+    bool FisPinned() { return isPinned.load(); }
+    LispObject FpinnedObjects() { return pinnedObjects.load(); }
+    Chunk *FchunkPinChain() { return chunkPinChain.load(); }
+    Chunk *FpendingChunks() { return pendingChunks.load(); }
+
 };
 
-extern Chunk *chunkStack;
+extern Chunk *pendingChunks;
 
 // I am going to require Pages to be aligned at nice neat boundaries
 // because then if I have an arbitrary address within one I will be able to
@@ -295,21 +281,22 @@ static const size_t extraChunks = 5;
 static const size_t chunksPerPage = 2*pageSize/targetChunkSize + extraChunks;
 
 class alignas(pageSize) Page
+
 {
 public:
     atomic <Page *>chain;
     atomic<uintptr_t>fringe;
     atomic<uintptr_t>limit;
-    atomic<PageClass> pageClass;
     atomic<bool> hasPinned;
-    atomic<Page *> pinChain;
-    atomic<Chunk *> pinnedChunks;
+    atomic<Page *> pagePinChain;
+    atomic<Chunk *> chunkPinChain;
 // In general I expect chunks all to be at least targetChunkSize large,
 // but fragmentation may mean I end up with some that are smaller. I
 // need a table showing all the chunks in the page and I will limit its size
 // in such a way that only in extreme cases will it set a limit.
     bool chunkMapSorted;
     atomic<size_t> chunkCount;
+    size_t stableChunkCount;
     atomic<Chunk *> chunkMap[chunksPerPage];
     static const size_t pageWords = pageSize/sizeof(LispObject);
     static const size_t bpw = 8*sizeof(uintptr_t);// bits per word in map.
@@ -326,27 +313,50 @@ public:
     atomic<uintptr_t> dirtyMap1[bitmap1Size];
     atomic<uintptr_t> dirtyMap2[bitmap2Size];
     atomic<bool> hasDirty;
-    atomic<Page *>dirtyChain;
-    atomic<Page *>dirtyChainBack;
+    atomic<Page *>dirtyPageChain;
+    atomic<Page *>dirtyPageChainBack;
     uintptr_t pinnedMap[bitmapSize]; // for header words of pinned items.
 
     alignas(64) atomic<LispObject> data[2];   // The real data in the page.
 // The data[] field really extends up to make the overall size of
 // the page be pageSize.
+
+    Page     *Fchain()         { return chain.load(); }
+    uintptr_t Ffringe()        { return fringe.load(); }                 
+    uintptr_t Flimit()         { return limit.load(); }
+    bool      FhasPinned()     { return hasPinned.load(); }
+    Page     *FpagePinChain()  { return pagePinChain.load(); }
+    Chunk    *FchunkPinChain() { return chunkPinChain.load(); }
+    size_t    FchunkCount()    { return chunkCount.load(); }
+    Chunk    *FchunkMap(int n) { return chunkMap[n].load(); }
+    uintptr_t FdirtyMap(int n) { return dirtyMap[n].load(); }
+    uintptr_t FdirtyMap1(int n){ return dirtyMap1[n].load(); }
+    uintptr_t FdirtyMap2(int n){ return dirtyMap2[n].load(); }
+    bool      FhasDirty()      { return hasDirty.load(); } 
+    Page     *FdirtyPageChain(){ return dirtyPageChain.load(); }
+    Page     *FdirtyPageChainBack(){ return dirtyPageChainBack.load(); }
 };
 
-extern Page *currentPage;       // Where allocation is happening.
+extern Page *freePages;         // Free and clear of pinning.
+extern Page *mostlyFreePages;   // Free apart from a little pinned data.
+extern Page *partlyFreePages;   // Free but with significant pinned data.
+extern Page *busyPages;         // All pages that are in use (including above).
+extern thread_local Page *borrowedPages;
+                                // Used for transient data
+
+extern size_t freePagesCount;
+extern size_t mostlyFreePagesCount;
+extern size_t partlyFreePagesCount;
+extern size_t busyPagesCount;
+// There should never be borrowed pages during a GC and so I will not record
+// a count of them.
+
+extern Page *currentPage;       // Where allocation is happening. Has gFringe
+                                // and gLimit.
 extern Page *previousPage;      // Previous currentPage. Evacuated by
                                 // the generational collector.
-extern Page *busyPages;         // All pages that are in use (including above).
-extern Page *mostlyFreePages;   // Free apart from some pinned data.
-extern Page *freePages;         // Free and clear of pinning.
-extern Page *oldPages;          // Used during garbage collection.
-
-extern size_t busyPagesCount;
-extern size_t mostlyFreePagesCount;
-extern size_t freePagesCount;
-extern size_t oldPagesCount;
+extern Page *stablePage;        // Where minor GC allocated stuff. Has
+                                // sFringe and sLimit.
 
 // First I will give code that implements the write-barrier. It is passed
 // the address of a valid Lisp location - that can be one of &car(x),
@@ -356,7 +366,9 @@ extern size_t oldPagesCount;
 // in the Lisp heap it can easily find the relevant page...
 
 extern atomic<Page *> dirtyPages;
-extern Page *globalPinChain;
+extern Page *pagesPinChain;
+
+inline Page *FdirtyPages() { return dirtyPages.load(); }
 
 inline void write_barrier(LispObject *p, LispObject q)
 {   *p = q;
@@ -365,7 +377,7 @@ inline void write_barrier(LispObject *p, LispObject q)
 // generational collector will not move I do not need to do anything. And
 // maybe the tests for that situation are cheap enough that the test is
 // a good idea. Note that NIL is a very special case - it is tagged as a
-// pointer but it lives outside the main heap. Note here that q should
+// pointer but it lives outside the main heap. Also here that q will
 // be a valid (precise) LispObject and hence is a pointer to an address
 // strictly within a page.
     Page *pp;
@@ -373,8 +385,7 @@ inline void write_barrier(LispObject *p, LispObject q)
         !is_pointer_type(q) ||
         ((pp = reinterpret_cast<Page *>(
               static_cast<uintptr_t>(q) & -pageSize)) != currentPage &&
-          pp != previousPage &&
-          pp->pageClass.load() == busyPageTag))
+          pp != previousPage))
         return;
     uintptr_t a = reinterpret_cast<uintptr_t>(p);
 // Round down to a Page boundary. Because pages are always allocated
@@ -391,7 +402,7 @@ inline void write_barrier(LispObject *p, LispObject q)
     size_t wordAddr = offset/bpw;
 // Recording what is dirty is one thing but later on I will need to be
 // able to inspect every dirty word, and that means I need to scan
-// the recorded information fairly rapidly. The idea i use is that a dirty
+// the recorded information fairly rapidly. The idea I use is that a dirty
 // word is recorded via a bit in a per-page bitmap. That needs 1 bit per
 // 64-bits on a 64-bit machine or 1 per 32 on a 32-bit machine.
 // Making must be possible from multiple threads, hence the may is made using
@@ -416,7 +427,7 @@ inline void write_barrier(LispObject *p, LispObject q)
             {   x->hasDirty.store(true);
                 for (;;)
                 {   Page *old = dirtyPages;
-                    x->dirtyChain.store(old);
+                    x->dirtyPageChain.store(old);
                     if (dirtyPages.compare_exchange_weak(old, x)) break;
                 }
             }
@@ -452,11 +463,11 @@ inline void write_unBarrier(LispObject *p)
 // start of garbage collection I can scan that and set up dirtyChainBack
 // entries on each page involved so that I have a two-way list, and then
 // the deletion here can have unit cost.
-                Page *prev = x->dirtyChainBack;
-                Page *next = x->dirtyChain;
+                Page *prev = x->dirtyPageChainBack;
+                Page *next = x->dirtyPageChain;
                 if (prev == nullptr) dirtyPages = next;
-                else prev->dirtyChain = next;
-                if (next != nullptr) next->dirtyChainBack = prev;
+                else prev->dirtyPageChain = next;
+                if (next != nullptr) next->dirtyPageChainBack = prev;
             }
         }
     }
@@ -466,8 +477,8 @@ inline void write_unBarrier(LispObject *p)
 
 inline void fillInBackChains()
 {   Page *prev = nullptr;
-    for (Page *p=dirtyPages; p!=nullptr; p=p->dirtyChain)
-    {   p->dirtyChainBack = prev;
+    for (Page *p=dirtyPages; p!=nullptr; p=p->dirtyPageChain)
+    {   p->dirtyPageChainBack = prev;
         prev = p;
     }
 }
@@ -493,7 +504,7 @@ typedef void processDirtyCell(atomic<LispObject> *a);
 extern int nlz(uint64_t a);
 
 inline void scanDirtyCells(processDirtyCell fn)
-{   for (Page *p=dirtyPages; p!=nullptr; p=p->dirtyChain.load())
+{   for (Page *p=dirtyPages; p!=nullptr; p=p->dirtyPageChain.load())
     {   if (!p->hasDirty) continue;
         for (size_t i2=0; i2<sizeof(p->dirtyMap2)/sizeof(p->dirtyMap2[0]);
              i2++)
@@ -528,7 +539,7 @@ inline void scanDirtyCells(processDirtyCell fn)
 // hence needs protecting if there is an up-reference to it.
 
 inline void clearAllDirtyBits()
-{   for (Page *p=dirtyPages; p!=nullptr; p=p->dirtyChain.load())
+{   for (Page *p=dirtyPages; p!=nullptr; p=p->dirtyPageChain.load())
     {   if (!p->hasDirty) continue;
         p->hasDirty = false;
 
@@ -561,7 +572,7 @@ inline void clearAllDirtyBits()
 // The code that implements pinning is in newcslgc.cpp. In some respects the
 // capabilities it provides are a bit like those of my write barrier in that
 // I can record the fact that some address is to be pinned and I can scan
-// all regions containig pinned data. There are three crucial differences:
+// all regions containing pinned data. There are three crucial differences:
 // (1) The address I ask to pin may not even be a pointer to anywhere within
 //     the Lisp heap - while that used with the write barrier is guaranteed
 //     to be a precise reference to a valid Lisp cell.
@@ -659,7 +670,7 @@ inline int findHeapSegment(uintptr_t p)
 // Chunk.
 
 inline const char *Addr(uintptr_t p)
-{   static char r[20];
+{   static char r[40];
     int hs = findHeapSegment(p);
     if (hs != -1)
     {   uintptr_t o = p - reinterpret_cast<uintptr_t>(heapSegment[hs]);
@@ -667,16 +678,18 @@ inline const char *Addr(uintptr_t p)
         uintptr_t pOff = o%pageSize;
         if (pOff >= offsetof(Page, data))
         {   pOff -= offsetof(Page, data);
-            if (hs == 0) sprintf(r, "#%" PRIxPTR ":%" PRIxPTR, pOff, pNum);
-            else sprintf(r, "#%" PRIxPTR ":%" PRIxPTR ":%d", pOff, pNum, hs);
+            if (hs == 0) std::snprintf(r, sizeof(r),
+                "#%" PRIxPTR ":%" PRIxPTR, pOff, pNum);
+            else std::snprintf(r, sizeof(r),
+                "#%" PRIxPTR ":%" PRIxPTR ":%d", pOff, pNum, hs);
             return r;
         }
     }
-    sprintf(r, "%" PRIxPTR, p);
+    std::snprintf(r, sizeof(r), "%" PRIxPTR, p);
     return r;
 }
 
-inline const char *Addr(atomic<LispObject> p)
+inline const char *Addr(atomic<LispObject> &p)
 {   return Addr(p.load());
 }
 
@@ -773,6 +786,10 @@ extern size_t                 gIncrement[maxThreads];
 extern atomic<uintptr_t>      gFringe;
 extern uintptr_t              gLimit;
 
+inline uintptr_t Flimit(int n) { return limit[n].load(); }
+inline uintptr_t FgFringe()    { return gFringe.load(); }
+
+
 // With the scheme I have here when an 8 Mbyte page gets full all of it
 // will be scheduled for evacuation (ie garbage collection). In the extreme
 // case that I had 64 active threads but only one was performing allocation
@@ -864,12 +881,16 @@ inline void setHeaderWord(uintptr_t a, size_t n, int type=TYPE_PADDER)
 
 
 #ifdef DEBUG
+extern void testLayout();
+#endif // DEBUG
+
+#ifdef DEBUG
 namespace REAL
 {
 #endif // DEBUG
 
-inline LispObject get_n_bytes1(size_t n, uintptr_t thr,
-                               uintptr_t r, uintptr_t w)
+inline LispObject get_n_bytes(size_t n, uintptr_t thr,
+                              uintptr_t r, uintptr_t w)
 {
 // There are two possibilities here. One is that the new block I need to
 // allocate really will not fit in the current chunk, and the other is that
@@ -940,7 +961,7 @@ inline LispObject get_n_bytes1(size_t n, uintptr_t thr,
             myChunkBase[thr] = newChunk;
             newChunk->length.store(targetChunkSize+n);
             newChunk->isPinned.store(false);
-            newChunk->pinChain.store(nullptr);
+            newChunk->chunkPinChain.store(nullptr);
             size_t chunkNo = p->chunkCount.fetch_add(1);
             p->chunkMap[chunkNo].store(newChunk);
 // I wish to write back limit[thr] but it is possible that in
@@ -994,6 +1015,7 @@ inline LispObject get_n_bytes(size_t n)
     if (gcTrace) cout << "get_n_bytes(" << n << ")  ";
     my_assert(n < 8000000, [&] { cout << "\nsize in get_n_bytes = "
                                       << std::hex << n << std::endl; });
+    testLayout();
 #endif // DEBUG
 // The size passed here MUST be a multiple of 8.
 // I have a thread-local variable fringe, and limit[threadId]
@@ -1017,17 +1039,19 @@ inline LispObject get_n_bytes(size_t n)
     if (fr1 <= w) LIKELY
     {
 #ifdef DEBUG
+        testLayout();
         if (gcTrace) cout << "= " << Addr(r) << "\n";
 #endif // DEBUG
         return static_cast<LispObject>(r);
     }
     UNLIKELY
 #ifdef DEBUG
-    r = get_n_bytes1(n, threadId, r, w);
+    r = get_n_bytes(n, threadId, r, w);
     if (gcTrace) cout << "= " << Addr(r) << "\n";
+    testLayout();
     return r;
 #else // DEBUG
-    return get_n_bytes1(n, threadId, r, w);
+    return get_n_bytes(n, threadId, r, w);
 #endif // DEBUG
 }
 
@@ -1152,16 +1176,23 @@ extern std::jmp_buf *buffer_pointer;
 // is that other threads may need to garbage collect, and that involves
 // getting every thread into synchronization - one that is blocked will not
 // be able to participate actively in that! Yes another plausible user-case
-// is the code performing a "sleep" operation.kx
+// is the code performing a "sleep" operation.
 
 extern uintptr_t stackBases[maxThreads];
 extern uintptr_t stackFringes[maxThreads];
 
+// The use of "NOINLINE inline" may look odd. "NOINLINE" probably expands
+// to an annotation [[gnu::noinline]] that should prevent the compiler
+// from some sorts of optimisation so that I expect that the jmp_buf will
+// be within a stack frame associated with this code, and hence the register
+// values I expect to be stored there will be found by a stack scan done by
+// the conservative garbage collector. The "inline" has the quite distinct
+// purpose and meaning - it is so that the definition can appear in a header
+// file included by multiple compilation units without that leading to
+// multiple definitions. 
+
 template <typename F>
-#ifdef __GNUC__
-[[gnu::noinline]]
-#endif // __GNUC__
-inline void may_block(F &&action)
+NOINLINE inline void may_block(F &&action)
 {   std::jmp_buf buffer;
     buffer_pointer = &buffer;
 // ASSUME that setjmp dumps all the machine registers into the jmp_buf.
@@ -1178,10 +1209,7 @@ inline void may_block(F &&action)
 };
 
 template <typename F>
-#ifdef __GNUC__
-[[gnu::noinline]]
-#endif // __GNUC__
-inline void withRecordedStack(F &&action)
+NOINLINE inline void withRecordedStack(F &&action)
 {   std::jmp_buf buffer;
     buffer_pointer = &buffer;
     if (setjmp(buffer) == 0)
@@ -1210,6 +1238,8 @@ extern std::condition_variable cv_for_gc_complete;
 // would increase the risk of confusion.
 
 extern atomic<uint32_t> activeThreads;
+inline uint32_t FactiveThreads() { return activeThreads.load(); }
+
 //  0x00 : total_threads : lisp_threads : still_busy_threads
 //
 // The meaning of all those is as follows:
@@ -1334,7 +1364,7 @@ inline void regionInPageIsFull(unsigned int i, size_t n,
     while (gLimit != pageEnd)
     {   gFringe = gLimit + reinterpret_cast<Chunk *>(gLimit)->length;
         gLimit = reinterpret_cast<uintptr_t>(
-            reinterpret_cast<Chunk *>(gLimit)->pinChain.load());
+            reinterpret_cast<Chunk *>(gLimit)->chunkPinChain.load());
 //        cout << "At " << __WHERE__ << " gLimit = " << Addr(gLimit) << endl;
         if (gLimit == 0) gLimit = pageEnd;
 //        cout << "At " << __WHERE__ << " gLimit = " << Addr(gLimit) << endl;
@@ -1362,6 +1392,10 @@ inline void regionInPageIsFull(unsigned int i, size_t n,
     if (request[i] != 0) pendingCount++;
 }
 
+// As coded here this will never retrieve from partlyFreePages. I will need
+// to adjust that later when I actually place items on that list. I think
+// that will only become relevant when I am perfroming a minor GC.
+
 inline void grabNewCurrentPage(bool preferMostlyFree)
 {   if (preferMostlyFree && mostlyFreePages != nullptr)
     {   currentPage = mostlyFreePages;
@@ -1372,8 +1406,11 @@ inline void grabNewCurrentPage(bool preferMostlyFree)
     {   currentPage = freePages;
         freePages = freePages->chain;
         freePagesCount--;
-        if (currentPage->pageClass==pendingPageTag)
-            setUpEmptyPage(currentPage);
+// When I take something from freePages it may not have been initialised
+// at all or it may contain more or less arbitrary mess left over from when
+// the garbage collector put it on that list, so I will initialise all of
+// its contents here.
+        setUpEmptyPage(currentPage);
     }
     else
     {   currentPage = mostlyFreePages;
@@ -1383,7 +1420,6 @@ inline void grabNewCurrentPage(bool preferMostlyFree)
         mostlyFreePages = mostlyFreePages->chain;
         mostlyFreePagesCount--;
     }
-    currentPage->pageClass = busyPageTag;
     currentPage->chain = busyPages;
     busyPages = currentPage;
     busyPagesCount++;
@@ -1581,6 +1617,21 @@ extern void setPinned(Page *x,
 extern void setPinnedMajor(uintptr_t p); // used during major GC
 extern void setPinnedMinor(uintptr_t p); // used during minor GC
 
+// "Borrowing" is a concept that I introduce for use as part of the
+// Lisp implementation. The key place that it is used is when a hash
+// table needs to be re-hashed, and a particular case of that is a table
+// keyed on EQ when garbage collection has just relocated all the contents.
+// If I have an ephemeral GC I will probably not be copying the table itself
+// and so I can not re-hash as part of that process. So what I want to do
+// is to "borrow" some space from the part of the memory pool that is not
+// currently in use. I can then copy the table data into that and then
+// transfer it back hashing it using the new set of hash values that
+// relocation of data has led to. There is no heap allocation while that
+// copy and re-hash is happening and when it is done the borrowed memory can
+// be returned to the general free pool. In the middle of a run there will
+// need to be plenty of free space to make available because there has to be
+// enough for all live data to be copied into by a full GC.
+
 #define TL_borrowPages 52
 DECLARE_THREAD_LOCAL(Page *, borrowPages);
 #define TL_borrowFringe 53
@@ -1601,8 +1652,11 @@ public:
     }
     ~Borrowing()
     {   std::lock_guard<std::mutex> lock(mutexForFreePages);
+// At present I will never borrow a partlyFreePage and when I release a
+// borrowed page it can go back on freePages or mostlyFreePages based on
+// a test to see if it has any Chunks in it.
         while (static_cast<Page *>(borrowPages) != nullptr)
-        {   if (static_cast<Page *>(borrowPages)->pageClass.load() == mostlyFreePageTag)
+        {   if (static_cast<Page *>(borrowPages)->chunkCount.load() != 0)
             {   Page *w = static_cast<Page *>(borrowPages)->chain;
                 static_cast<Page *>(borrowPages)->chain = mostlyFreePages;
                 mostlyFreePages = borrowPages;
@@ -1618,6 +1672,21 @@ public:
     }
 };
 
+extern void gcTestCode(); // temporary and for debugging.
+
+// I will arrange that if the GC takes more than this time waiting on a
+// condition variable it will abort. Such timeouts are dangerous in various
+// various ways and the amount of time it could make sense to allow will
+// depend on the speed of the computer in use. However while I am only
+// using one thread there ought not be to any contention and no thread
+// should ever stall during GC, so having a short period here is not a
+// big issue. When I have multiple threads the value set here will need
+// to be thought about much more carefully, or the timeout may have to
+// be withdrawn! It seems certain that I should arrange that the time limit
+// here is as long as the slowest garbage collection.
+
+INLINE_VAR const std::chrono::seconds cvTimeout(1);
+
 #ifdef DEBUG
 
 // The following is intended to help me check if allocation is going
@@ -1628,22 +1697,10 @@ inline void testLayout()
     uintptr_t r = fringe;
     uintptr_t w = limit[threadId].load();
     my_assert(w==0 || r <= w, [] { cout << "fringe > limit\n"; });
-    my_assert(w <= gFringe.load(), [] {cout << "limit > gFringe\n";});
     my_assert(gFringe.load() <= gLimit, [] {cout << "gFringe > gLimit\n";});
 }
 
 #endif // DEBUG
-
-extern void gcTestCode(); // temporary and for debugging.
-
-// I will arrange that if the GC takes more than this time waiting on a
-// condition variable it will abort. Such timeouts are dangerous in various
-// various ways and the amount of time it could make sense to allow will
-// depend on the speed of the computer in use. However while I am only
-// using one thread there ought not be to any contention and no thread
-// should ever stall during GC, so having a short period here is not a
-// big issue.
-INLINE_VAR const std::chrono::seconds cvTimeout(1);
 
 #endif // header_newallocate_h
 

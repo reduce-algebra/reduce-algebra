@@ -163,9 +163,7 @@ inline const char *where(const char *file, int line)
 
 #endif // !__OPTIMIZE__
 
-#ifndef LONGEST_LEGAL_FILENAME
-#define LONGEST_LEGAL_FILENAME 1024
-#endif // LONGEST_LEGAL_FILENAME
+static const size_t LONGEST_LEGAL_FILENAME_1 = 1024;
 
 // This is maybe a more principled scheme that sends its output to a file
 // debug.log, typically in the current directory but failing that in /tmp.
@@ -185,7 +183,7 @@ inline void printlog(const char *s, ...)
 {   static std::FILE *logfile = nullptr;
     std::va_list x;
     if (logfile == nullptr)
-    {   char logfile_name[LONGEST_LEGAL_FILENAME];
+    {   char logfile_name[LONGEST_LEGAL_FILENAME_1];
         std::memset(logfile_name, 0, sizeof(logfile_name));
         if (std::strcmp(programDir, ".") == 0)
             std::sprintf(logfile_name, "/tmp/%s", LOGFILE_NAME);
