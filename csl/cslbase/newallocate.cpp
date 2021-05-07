@@ -440,12 +440,12 @@ static Page *px = reinterpret_cast<Page *>(0xeffeceabaddecade);
 Page *currentPage = px;     // Where allocation is happening. The "nursery".
 Page *previousPage = px;    // A page that was recently the current one.
 Page *busyPages = px;       // Chained list of pages that contain live data.
-Page *oldPages = px;        // Page from which live stuff is being evacuated.
 Page *mostlyFreePages = px; // Chained list of pages that the GC has mostly
                             // cleared but that have some pinned data left
                             // in them.
 Page *freePages = px;       // Chained list of pages that are not currently
                             // in use and that contain no useful information.
+Page *oldPages = px;        // Page from which live stuff is being evacuated.
 
 size_t busyPagesCount = -1, mostlyFreePagesCount = -1,
        freePagesCount = -1, oldPagesCount = -1;
@@ -711,7 +711,7 @@ void ableToAllocateNewChunk(unsigned int i, size_t n, size_t gap)
     myChunkBase[i]->chunkFringe = fringeBis[i];
     Chunk *newChunk = reinterpret_cast<Chunk *>(gFringe.load());
     newChunk->length = n+targetChunkSize;
-    newChunk->isPinned = false;
+    newChunk->isPinned = 0;
     newChunk->chunkPinChain = nullptr;
     size_t chunkNo = currentPage->chunkCount.fetch_add(1);
     currentPage->chunkMap[chunkNo].store(newChunk);
@@ -1334,6 +1334,7 @@ bool allocateSegment(size_t n)
                 reinterpret_cast<char *>(r) + k - CSL_PAGE_SIZE);
 // Keep a chain of all the pages.
         p->chain = freePages;
+        p->chunkCount = 0; // Should be enough to mark it as empty.
         freePages = p;
         freePagesCount++;
     }
@@ -1347,7 +1348,7 @@ size_t vheap_pages_count = 0;
 bool garbage_collection_permitted = true;
 bool force_verbos = false;
 atomic<Page *> dirtyPages;
-Page *globalPinChain;
+Page *pagesPinChain;
 
 // gc-forcer(a, b) should arrange that a garbage collection is triggered
 // when at most A cons-sized units of consing happens or when at most
@@ -1494,7 +1495,7 @@ void initHeapSegments(double storeSize)
         result[i] = 0;
         gIncrement[i] = 0U;
     }
-    globalPinChain = nullptr;
+    pagesPinChain = nullptr;
 // I will make the default initial store size around 64M on a 64-bit
 // machine and 2048M on a 64-bit system. If the user specified a "-K" option
 // they can override this, and also the system will tend to allocate more

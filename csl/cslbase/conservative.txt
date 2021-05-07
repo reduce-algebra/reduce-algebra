@@ -29,6 +29,7 @@ becomes full. Pages are all on one of five chains:
    partlyFreePages
    busyPages
    borrowedPages
+[and during GC oldPages]
 and each will always have a field called chunkCount set in a header. A
 page with chunkCount=0 does not have any data stored within it. Two pages
 are noted specially for the benefit of minor GCs - currentPage and
@@ -139,7 +140,7 @@ one. If ordinary than at this stage set a bit in the pinMap for the
 doubleword that v references provided that is within the data region of
 the chunk up to chunkFringe. Tag the chunk as containing (new) pinned
 material and put chain it via chunkPinChain on its page. It it was a chunk
-that had been pinned by a previous GC traverse its pinnedObjects list and for
+that had been pinned by a previous GC traverse its pinnedObjects and for
 each object there test if v lies within the object. If so then set
 a bit in pinMap and here that can be at the head of the object to be
 pinned. Note that this completes investigation of ambiguous pointers
@@ -154,18 +155,32 @@ list of the chunks. Some of those will be newly pinned chunks and some
 continued pinning of currently pinned material. So it is straightforward
 to scan all the chunks that are involved. If they were previously pinned
 than the stuff pinned now is a subset of the material on their pinnedObjects
-list. Create a new version of that list in fresh space and store a reference
+Create a new version of that in fresh space and store a reference
 to that in the pinnedObjects field. For previously ordinary chunks it is
 necessary to perform a parse-and-scan of the chunk content to find the
 head address of each newly pinned item by checking for a mark bit that
 corresponds to anywhere within the object and migrating it to mark the
-header. Again create a list to go in pinnedObjects.
-The pinnedObjects list is a little delicate. If some ambiguous value pointed
-into it and it was a standard list then that could lead to all of it ending
-up preserved, and that would be undesirable. So it gets created as a "list"
-but where all pointers in it as tagged as fixnums (ie as immediate data).
-That way if a cell in it is pointed at by something wild only that call
-gets saved.
+header. Again create a data structure to go in pinnedObjects.
+The pinnedObjects information is a little delicate. If some ambiguous value
+pointed into it and it was a standard list then that could lead to all of
+it ending up preserved, and that would be undesirable. Also while processing
+a new pin I have to search through it. So it gets created as a vector
+but where all pointers in it as tagged as fixnums (ie as immediate data) and
+where the vector type is "padder". That way if a cell in it is pointed at by
+something wild nothing bad happens. This structure is created before anything
+else is copied into the new heap pages and so a sort of extensible allocation
+may be possible - save for the problem that the information associated with
+different chunks is not accumulated all at once. Oh dear! However the pinned
+addresses in each chunk are close together so I can collect a single vector
+of all pinned items in the new heap. When it is complete I sort it, then the
+material associated with each chunk will be in a compact block. For each
+pinned chunk I then do a binary search lookup that finds the start of that
+block, and with that if the chunk knows how many pinned items lie within
+it I have all the information that I need.
+While allocating the new block I may run out of space by using memory up
+as far as the page limit - in that situation I need to move on to a new
+region within that page or even a new page, copying across what I have
+already set up.
 By the end of this phase the page pinMaps contain marks against the first
 word of each pinned item. 
 (5) I can now start evacuation. This is the process of migrating data from

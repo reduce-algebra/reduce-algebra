@@ -217,9 +217,10 @@ public:
 // chunkFringe, but the region from there out the length may not be
 // initialised.
     atomic<uintptr_t> chunkFringe;
-    atomic<bool> isPinned;
-// pinnedObjects is a "fake" list of the objects present in a Chunk where
-// isPinned is true. 
+// pinnedObjects is a reference for identifyingobjects present in a Chunk
+// where isPinned is true. isPinned is an integer showing how many pinned
+// items are present in the chunk.
+    atomic<size_t> isPinned;
     atomic<LispObject> pinnedObjects;
 // At the start of garbage collection as I collect a chain of pinned chunks
 // those chunks may appear on the list in arbitrary order, but at the end
@@ -257,7 +258,7 @@ public:
 // some access functions here...
     uintptr_t Flength() { return length.load(); }
     uintptr_t FchunkFringe() { return chunkFringe.load(); }
-    bool FisPinned() { return isPinned.load(); }
+    size_t FisPinned() { return isPinned.load(); }
     LispObject FpinnedObjects() { return pinnedObjects.load(); }
     Chunk *FchunkPinChain() { return chunkPinChain.load(); }
     Chunk *FpendingChunks() { return pendingChunks.load(); }
@@ -284,7 +285,10 @@ class alignas(pageSize) Page
 
 {
 public:
+// I put chain and chunkCount consecutive to help cache access when a
+// new page is set up. This is a very minor optimisation!
     atomic <Page *>chain;
+    atomic<size_t> chunkCount;
     atomic<uintptr_t>fringe;
     atomic<uintptr_t>limit;
     atomic<bool> hasPinned;
@@ -295,8 +299,6 @@ public:
 // need a table showing all the chunks in the page and I will limit its size
 // in such a way that only in extreme cases will it set a limit.
     bool chunkMapSorted;
-    atomic<size_t> chunkCount;
-    size_t stableChunkCount;
     atomic<Chunk *> chunkMap[chunksPerPage];
     static const size_t pageWords = pageSize/sizeof(LispObject);
     static const size_t bpw = 8*sizeof(uintptr_t);// bits per word in map.
@@ -343,6 +345,7 @@ extern Page *partlyFreePages;   // Free but with significant pinned data.
 extern Page *busyPages;         // All pages that are in use (including above).
 extern thread_local Page *borrowedPages;
                                 // Used for transient data
+extern Page *oldPages;          // Used during GC.
 
 extern size_t freePagesCount;
 extern size_t mostlyFreePagesCount;
@@ -350,6 +353,7 @@ extern size_t partlyFreePagesCount;
 extern size_t busyPagesCount;
 // There should never be borrowed pages during a GC and so I will not record
 // a count of them.
+extern size_t oldPagesCount;
 
 extern Page *currentPage;       // Where allocation is happening. Has gFringe
                                 // and gLimit.
@@ -955,12 +959,12 @@ inline LispObject get_n_bytes(size_t n, uintptr_t thr,
 // is required I need to record this chunk in the table of chunks that
 // the page maintains. I also need to fill in the chunk header -- well the
 // pinChain pointer does not need initializing until and unless the page
-// gets pinned, but the isPinned flag must start off false so that when the
+// gets pinned, but the isPinned flag must start off zero so that when the
 // GC finds an ambiguous pointer within this chunk it knows when that is the
 // first such.
             myChunkBase[thr] = newChunk;
             newChunk->length.store(targetChunkSize+n);
-            newChunk->isPinned.store(false);
+            newChunk->isPinned.store(0);
             newChunk->chunkPinChain.store(nullptr);
             size_t chunkNo = p->chunkCount.fetch_add(1);
             p->chunkMap[chunkNo].store(newChunk);
@@ -1373,7 +1377,7 @@ inline void regionInPageIsFull(unsigned int i, size_t n,
         if (n+targetChunkSize < gap1)
         {   Chunk *c = reinterpret_cast<Chunk *>(gFringe.load());
             c->length = n + targetChunkSize;
-            c->isPinned = false;
+            c->isPinned = 0;
             size_t chunkNo = currentPage->chunkCount.fetch_add(1);
             currentPage->chunkMap[chunkNo].store(c);
             myChunkBase[i] = c;
