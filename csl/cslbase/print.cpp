@@ -4664,8 +4664,8 @@ int32_t read_action_socket(int32_t op, LispObject f)
 
 
 int fetch_response(char *buffer, LispObject r)
-{   int i;
-    for (i = 0; i < LONGEST_LEGAL_FILENAME; i++)
+{   size_t i;
+    for (i = 0; i<LONGEST_LEGAL_FILENAME; i++)
     {   int ch = char_from_socket(r);
         if (ch == EOF) return 1;
         buffer[i] = static_cast<char>(ch);

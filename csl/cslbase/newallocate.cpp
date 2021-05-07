@@ -640,25 +640,6 @@ void newRegionNeeded()
 // This is all OK provided X is tagged using the write barrier and that it
 // never gets tagged as "clean" again until it is seen pointing to something
 // that is in the stage part of the heap. 
-//
-// Now I have written out the above I believe that my game-plan should be
-// that (a) unless desparate I never make a page that has some pinned stuff
-// on it "current" - after garbage collection pages that are free apart from
-// some pinned chunks are treated as being in quarantine for so long as the
-// pinning persists.
-// (b) Whenever I do anything that notices a (precise) pointer to a pinned
-// item then the location holding that pointer is tagged as dirty. That
-// issue becomes critical when the dirty location ends up in the stable
-// region or in a partly-pinned page.
-// (c) all "mostly free" pages are considered to be previous pages so that
-// if items in them are NOT (now) pinned those items can be evacuated
-// out from them even on a minor GC. And if a chunk ends up with no
-// current pins and if all live data is evacuated from it then its space
-// is available for re-use, and if the page ends up with no pinned chunks
-// it becomes a fully free page.
-// In the light of the above discussion I will use a fully free page next
-// if there is one. In pathological situations I may need to drop back
-// and use a mostly-free one.
             {   std::lock_guard<std::mutex> guard(mutexForFreePages);
                 grabNewCurrentPage(withinMajorGarbageCollection);
             }
@@ -714,7 +695,7 @@ void ensureOtherThreadsAreIdle()
 // those incremented it on behalf of this thread. So save only in the case
 // there are no other helper threads I must NOT increment it here!
         if (activeHelpers == 0) activeHelpers = 1;
-        chunkStack = nullptr;
+        pendingChunks = nullptr;
         gc_complete = false;
         gc_started = true;
     }
@@ -731,7 +712,7 @@ void ableToAllocateNewChunk(unsigned int i, size_t n, size_t gap)
     Chunk *newChunk = reinterpret_cast<Chunk *>(gFringe.load());
     newChunk->length = n+targetChunkSize;
     newChunk->isPinned = false;
-    newChunk->pinChain = nullptr;
+    newChunk->chunkPinChain = nullptr;
     size_t chunkNo = currentPage->chunkCount.fetch_add(1);
     currentPage->chunkMap[chunkNo].store(newChunk);
     result[i] = newChunk->dataStart() + TAG_VECTOR;
@@ -743,7 +724,7 @@ void ableToAllocateNewChunk(unsigned int i, size_t n, size_t gap)
 // garbage collection, so I will make it seem like a respectable Lisp
 // vector with binary content.
 //    LispObject rr = result[i];
-    my_assert(findPage(result[i]) != nullptr); // @@@
+    my_assert(findPage(result[i]) != nullptr);
 //    cout << Addr(result[i]) << " " << Addr(rr) << endl;
     setHeaderWord(result[i]-TAG_VECTOR, n, TYPE_VEC32);
     fringeBis[i] = newChunk->dataStart() + n;
@@ -888,8 +869,8 @@ void waitWhileAnotherThreadGarbageCollects()
 // limit pointers associated with this thread get set to GC new space after
 // the thread has got around to participating in GC but before the helper
 // here does very much. However about the first thing that this Helper will
-// do will be to wait for chunkStack to become non-empty, so provided I set
-// everything up before I push any Chunks (and provided I keep chunkStack
+// do will be to wait for pendingChunks to become non-empty, so provided I set
+// everything up before I push any Chunks (and provided I keep pendingChunks
 // empty between GCs) I will be OK! There is one more potential issue.
 // If a thread had been about to block (perhaps on in IO request or perhaps
 // just because it is a user thread needing to block on a user-managed mutex)
@@ -1090,7 +1071,7 @@ LispObject borrow_n_bytes(size_t n)
         else
         {   w = freePages;
             freePages = freePages->chain;
-            if (w->pageClass==pendingPageTag) setUpEmptyPage(w);
+            setUpEmptyPage(w);
         }
         w->chain = static_cast<Page *>(borrowPages);
         borrowPages = w;
@@ -1172,8 +1153,7 @@ void setUpEmptyPage(Page *p)
     std::atomic_thread_fence(std::memory_order::memory_order_seq_cst);
 #endif
     p->hasDirty = false;
-    p->dirtyChain = nullptr;
-    p->pageClass = freePageTag;
+    p->dirtyPageChain = nullptr;
     p->fringe = reinterpret_cast<uintptr_t>(&p->data);
     p->limit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
 }
@@ -1186,10 +1166,10 @@ void setUpMostlyEmptyPage(Page *p)
 {
     p->chunkCount = 0;
     p->chunkMapSorted = false;
-    for (Chunk *c=p->pinnedChunks; c!=nullptr; c=c->pinChain)
+    for (Chunk *c=p->chunkPinChain; c!=nullptr; c=c->chunkPinChain)
         p->chunkMap[p->chunkCount++] = c;
     p->fringe = reinterpret_cast<uintptr_t>(&p->data);
-    p->limit = reinterpret_cast<uintptr_t>(p->pinnedChunks.load());
+    p->limit = reinterpret_cast<uintptr_t>(p->chunkPinChain.load());
 #ifdef SAFE
     for (size_t i=0; i<sizeof(p->dirtyMap)/sizeof(p->dirtyMap[0]); i++)
         p->dirtyMap[i] = 0;
@@ -1213,16 +1193,14 @@ void setUpMostlyEmptyPage(Page *p)
     std::atomic_thread_fence(std::memory_order::memory_order_seq_cst);
 #endif
     p->hasDirty = false;
-    p->dirtyChain = nullptr;
-    p->pageClass = mostlyFreePageTag;
+    p->dirtyPageChain = nullptr;
 }
 
 //#pragma GCC pop_options
 
 // Now something that takes a page where it must be left free apart from
 // any pinned Chunks within it. The fringe and limit fields must be set up
-// to reflect them. Note that this does NOT alter the "chain" field or set
-// pageClass - those must be dealt with otherwise.
+// to reflect them. Note that this does NOT alter the "chain" field.
 // The page concerned MUST have some clear space on it. If it was
 // enirely full of pinned chunks this code would fail.
 
@@ -1236,11 +1214,11 @@ void setUpUsedPage(Page *p)
     for (size_t i=0; i<sizeof(p->dirtyMap2)/sizeof(p->dirtyMap2[0]); i++)
         p->dirtyMap2[i] = 0;
     p->hasDirty = false;
-    p->dirtyChain = nullptr;
-// Those Chunks that are on the pinChain need to be put into chunkMap..
+    p->dirtyPageChain = nullptr;
+// Those Chunks that are on the chunkPinChain need to be put into chunkMap..
 // other chunks will get added as they are allocated, but the pinned ones
 // are there right from the start.
-    for (Chunk *c = p->pinnedChunks; c!=nullptr; c=c->pinChain)
+    for (Chunk *c = p->chunkPinChain; c!=nullptr; c=c->chunkPinChain)
         p->chunkMap[p->chunkCount++] = c;
 // I want the pinned chunks sorted so that the lowest address one comes
 // first. That will ensure that when one comes to skip past a pinned
@@ -1257,10 +1235,10 @@ void setUpUsedPage(Page *p)
                    return aaa < bbb ? -1 :
                           aaa > bbb ? 1 : 0;
                });
-    p->pinnedChunks = nullptr;
+    p->chunkPinChain = nullptr;
     for (size_t i=p->chunkCount; i!=0; i--)
-    {   p->chunkMap[i].load()->pinChain = p->pinnedChunks.load();
-        p->pinnedChunks = p->chunkMap[i].load();
+    {   p->chunkMap[i].load()->chunkPinChain = p->chunkPinChain.load();
+        p->chunkPinChain = p->chunkMap[i].load();
     }
 // Start as if the page is utterly empty.
     p->fringe = reinterpret_cast<uintptr_t>(&p->data);
@@ -1272,8 +1250,8 @@ void setUpUsedPage(Page *p)
 // that is not going to be a problem because the first time I try to
 // perform allocation I will find that my chunk is empty and scan to grab
 // another.
-    if (p->pinnedChunks.load()!=nullptr)
-        p->limit = reinterpret_cast<uintptr_t>(p->pinnedChunks.load());
+    if (p->chunkPinChain.load()!=nullptr)
+        p->limit = reinterpret_cast<uintptr_t>(p->chunkPinChain.load());
     else p->limit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
 }
 
@@ -1290,7 +1268,7 @@ void setVariablesFromPage(Page *p)
     myChunkBase[thr] = nullptr;
     gLimit = p->limit;
 //    cout << "setVariablesFromPage\r\n";
-//    cout << "At " << __WHERE__ << " gFringe = " << std::hex << gFringe << "\r" << endl;
+//    cout << "At " << __WHERE__ << " gFringe = " << std::hex << gFringe.load() << "\r" << endl;
 //    cout << "At " << __WHERE__ << " gLimit = " << std::hex << gLimit << "\r" << endl;
 //    cout << std::dec;
 }
@@ -1307,11 +1285,13 @@ void setVariablesFromPage(Page *p)
 bool allocateSegment(size_t n)
 {
 // I will round up the size to allocate so it is a multiple of the
-// page size. Note that this will be quite a large value!
+// page size, ie of 8 Mbytes.
     n = (n + pageSize - 1) & -pageSize;
     Page *r;
 // If I have C++17 I can rely on alignment constraints and just allocate
-// using new[]
+// using new[]. And for this CONSERVATIVE version I will insist on C++17,
+// at least until it is all working at which stage I can check how much pain
+// there would be in using older compilers.
 #ifdef MACINTOSH
 // I would like to use aligned allocation via "new" in the C++17 style, but
 // on the Macintosh that is only supported if your operating system is at
@@ -1346,18 +1326,14 @@ bool allocateSegment(size_t n)
 // r now refers to a new segment of size n, I want to structure it into
 // pages.
 //
-//  for (size_t k=0; k<n; k+=CSL_PAGE_SIZE)
+//  for (size_t k=CSL_PAGE_SIZE; k<=n; k+=CSL_PAGE_SIZE)
 // Go forwards or backwards!
     for (size_t k=n; k!=0; k-=CSL_PAGE_SIZE)
     {   Page *p =
             reinterpret_cast<Page *>(
                 reinterpret_cast<char *>(r) + k - CSL_PAGE_SIZE);
-// Keep a chain of all the pages. When allocate here I give a page
-// a "pending" status, which means that not much of it has been
-// initialised. When it is first grabbed from the freePages list it
-// must be more thoroughly initialised.
+// Keep a chain of all the pages.
         p->chain = freePages;
-        p->pageClass = pendingPageTag;
         freePages = p;
         freePagesCount++;
     }
@@ -1550,8 +1526,7 @@ void initHeapSegments(double storeSize)
     currentPage = freePages;
     freePages = freePages->chain;
     freePagesCount--;
-    if (currentPage->pageClass==pendingPageTag) setUpEmptyPage(currentPage);
-    currentPage->pageClass = busyPageTag;
+    setUpEmptyPage(currentPage);
     currentPage->chain = nullptr;
     busyPages = currentPage;
     busyPagesCount = 1;

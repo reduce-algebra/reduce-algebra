@@ -1,56 +1,46 @@
 #! /bin/bash
 
-l=""
-for x in cslbuild/*/csl/Makefile
-do
-  x="${x%%/csl/Makefile}"
-  x="${x##*/}"
-  l="$l $x"
-done
+# This script is here to bring all currently configured copies of the
+# CSL versuion of Reduce up to date using parallel builds that try to
+# exploit all available CPU cores. It works by creating a temporary
+# Makefile in /tmp/makeall and using it with "-j N" where N is the number
+# of available processor cores. One step in a rebuild can involve remaking
+# bootstrapreduce and using it to compile selected parts of the main Reduce
+# source into C++ code in cslbuild/generated-c/u*.cpp. This should be
+# done on just one architecture before others try to use the results. The
+# selected architecture for this will be the one in the alphabetically first
+# build directory within cslbuild. Under windows this will typically be
+# cslbuild/x86_64-pc-cygwin which is a reasonable choice.
+#
+# If configuration or building in any directory failed or fails here then
+# this parallel attempt may lead to diagnostics interleaved with other
+# more successful output, so trying again with "make" in a failed directory
+# may be a good plan.
 
-m="/tmp/parmake"
-printf "# Makefile for Reduce\n" > $m
-printf "all:\t$l\n\n" >> $m
-
-# I have seen cases where Makefile exists but config.status has got lost
-# so in such cases I will try to recreate it.
-
+printf "SUBDIRS = \\" > /tmp/makeall
+printf "\n" >> /tmp/makeall
 first=""
-second=""
-for x in $l
+for x in `ls -d cslbuild/*/csl`
 do
-  if ! test -f cslbuild/$x/csl/config.status
+  if test "$first" = ""
   then
-    pushd cslbuild/$x
-    ./config.status --recheck
-    popd
+echo setting first = $x
+    first=$x
   fi
-  case $x in
-  *conservative* | *arithlib*)
-# Do *NOT* build these at present since they will not yet work!
-    ;;
-  *-*-*-*)
-    if test "$second" = ""
-    then
-      second="$x"
-    fi
-    ;;
-  *)
-    if test "$first" = ""
-    then
-      first="$x"
-    fi
-  esac
+  printf "\t$x \\" >> /tmp/makeall
+  printf "\n" >> /tmp/makeall
+# rm -f $x/reduce.img $x/reduce-u01.o
 done
+printf "\n\n" >> /tmp/makeall
+printf "default:\tall\n\n" >> /tmp/makeall
+printf "\$(SUBDIRS)::\n\t\$(MAKE) -C \$@ \$(MAKECMDGOALS)\n\n" >> /tmp/makeall
+printf "all clean :\t\$(SUBDIRS)\n" >> /tmp/makeall
 
+echo first = $first
 if test "$first" = ""
 then
-  first="$second"
-fi
-
-if test "$first" = ""
-then
-  exit 0
+  printf "\n+++ You need to run ./configure --with-csl .. before this\n"
+  exit 1
 fi
 
 if test "`uname -s`" = "Darwin"
@@ -64,19 +54,6 @@ else
   BOOT=bootstrapreduce.img
 fi
 
-# I need to ensure that if the generated C++ code needs rebuilding that
-# that is done once (sequentially). I will use the first build target that
-# does not have any suffices.
-
-$GNU_MAKE cslbuild/$first/csl/reduce-u01.o
-
-for x in $l
-do
-  printf "$x:\n\techo Building for $x\n" >> $m
-  printf "\t\$(MAKE) -C cslbuild/$x/csl > $x.log 2>&1\n" >> $m
-  printf "\t\$(MAKE) -C cslbuild/$x/csl $BOOT > $x.log 2>&1\n\n" >> $m
-done
-
 if test "`which nproc`" != "" && test "$?" = "0"
 then
   N=`nproc`
@@ -89,17 +66,38 @@ else
   fi
 fi
 
-time $GNU_MAKE -j $N -f $m
+# This initial use of "make" is to ensure that the generatd C++ code
+# in cslbuild/generated-c is up to date.
 
-for x in $l
+time $GNU_MAKE -j $N -C $first reduce-u01.o
+
+if test $? != 0
+then
+  printf "Rebuilding generated-c seems to have failed\n"
+  exit 1
+fi
+
+time $GNU_MAKE -j $N -f /tmp/makeall
+
+# As a small check for success I will look for a "reduce.img" in each
+# directory considered
+
+err=0
+for x in `ls -d cslbuild/*/csl`
 do
-  if ! test -f cslbuild/$x/csl/$RED
-  then
-    printf "Issue with cslbuild/$x/csl/$RED\n"
-  fi
-  if ! test -f cslbuild/$x/csl/$BOOT
-  then
-    printf "Issue with cslbuild/$x/csl/$BOOT\n"
+  y=${x#cslbuild/}
+  y=${y%/csl}
+  s=`stat -c%s $x/reduce.img 2>/dev/null`
+  if test $? != 0 || test "$s" = ""
+  then  
+    printf "$y failed\n"
+    err=1
+  else
+    d=`stat -c%y $x/reduce.img`
+    d=${d%.*}
+    printf "$y size=$s date=$d\n"
   fi
 done
+
+exit $err
 

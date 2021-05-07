@@ -112,7 +112,20 @@
 // the fact that I can use word operations in the bitmap to check 32 or
 // 64 locations at at time. In the first version of the code I will not
 // do that optimizations - and ideally at a later stage I will measure to
-// see itf it is liable to be useful.
+// see if it is liable to be useful.
+// HMMMM - later on I note that an ambiguous pointer must only lead to
+// pinning if it refers either within data allocated from the start of the
+// previous GC onwards. The procedure above copes for that provided the
+// pointer is within a newish Chunk. But one any Busy or MostlyFree page
+// there can also be Chunks left over by the previous GC just because they
+// used to contain pinned data. The regions within them that are not
+// actually pinned may contain the remains of old evacuated structure
+// and that must never be pinned. So my new plan is that when during GC
+// I have found the starts of every pinned item I form a list to record
+// that. At the start of the next GC when I identify the Chunk that an
+// address is within it it was a pinned chunk I will need to scan the
+// data from this list to see if I have a possible reference to something
+// that might be live.
 // For (2) I note that each Chunk that contains pinned material is also
 // liable to contain non-pinned stuff, and as I evacuate from fields in
 // pinned data I may move some of that non-pinned data. That leaves behind
@@ -162,10 +175,10 @@
 // ambiguous pointer and then pointsWithin() tests if the address is within
 // the used data portion of that Chunk. If so an isPinned flag indicates
 // whether the Chunk is a pinned one and when it first becomes pinned it is
-// pushed on the pages pinnedChunks list using its pinChain field.
+// pushed on the pages pinnedChunks list using its chunkPinChain field.
 // When the first Chunk on a Page is pinned the hasPinned flag in the
 // Page is set and the Page is pushed onto globalPinChain through its
-// pinChain field.
+// pagePinChain field.
 // Note that the process of pinning something never creates a new Chunk, so
 // the chunkMap just needs to be as established while allocation within the
 // Page was happening, and the it only needs sorting once at the start of
@@ -178,7 +191,7 @@
 // sorted and with that done pinnedChunks can be re-created in ascending
 // order. Then fringe and limit are set up within the Page. limit will
 // point to the first pinned Chunk. That will have a length field indicating
-// where there is free space beyond it and a pinChain entry that refers to
+// where there is free space beyond it and a chunkPinChain entry that refers to
 // the start of the next pinned Chunk (and hence the end of the free region).
 //
 // Pages are classified as BUSY, MOSTLYFREE or FREE and have a pageClass
@@ -203,10 +216,10 @@
 // freePages.
 //
 // During early stages of Garbage Collection all BUSY pages and all MOSTLYFREE
-// ones will need their chunkMaps. Neither need any pinChain information.
+// ones will need their chunkMaps. Neither need any pagePinChain information.
 // At the time I sort the chunkMap (ie when I find the first pin in the
 // Page) I must reset the isPinned flag on all Chunks in that page and
-// chear the pinChain. Then while pinning a Chunk those two get updated.
+// chear the pagePinChain. Then while pinning a Chunk those two get updated.
 // The situation after that is that I end up with a list of the Pages that
 // contain pinned Chunks this time, and within each such Page I can identify
 // those Chunks easily. 
@@ -503,7 +516,7 @@ uintptr_t sortPinList(uintptr_t l)
 }
 
 bool gcComplete;
-Chunk *chunkStack = nullptr;
+Chunk *pendingChunks = nullptr;
 std::condition_variable cvForChunkStack;
 unsigned int activeHelpers = 0;
 
@@ -515,10 +528,10 @@ unsigned int activeHelpers = 0;
 
 void pushChunk(Chunk *c)
 {   std::lock_guard<std::mutex> lock(mutexForGc);
-    Chunk *old = chunkStack;
+    Chunk *old = pendingChunks;
     if (gcTrace) cout << "Push " << Addr(c) << " onto queue [" << Addr(old) << "]\n";
-    c->chunkStack = old;
-    chunkStack = c;
+    c->pendingChunks = old;
+    pendingChunks = c;
 // If I put a new Chunk onto an otherwise empty queue then I will need to
 // wake up any threads that had been waiting for something to do.
     if (old == nullptr) cvForChunkStack.notify_all();
@@ -531,13 +544,13 @@ Chunk *popChunk()
     bool st =
         cvForChunkStack.wait_until(lock,
             std::chrono::steady_clock::now() + cvTimeout,
-            []{   return chunkStack != nullptr ||
+            []{   return pendingChunks != nullptr ||
                          activeHelpers == 0;
               });
     if (!st) my_abort("condition variable timed out");
-    Chunk *r = chunkStack;
+    Chunk *r = pendingChunks;
     if (r != nullptr)
-    {   chunkStack = r->chunkStack;
+    {   pendingChunks = r->pendingChunks;
 // If I manage to grab a chunk to work on I will then become active again.
         activeHelpers++;
     }
@@ -551,8 +564,8 @@ Chunk *nonblockingPopChunk()
 // If other threads are active one of them might be just abou to push another
 // Chunk, so getting a nullptr here is no a definitive indication that
 // ther is and will never be work to be done.
-    Chunk *r = chunkStack;
-    if (r != nullptr) chunkStack = r->chunkStack;
+    Chunk *r = pendingChunks;
+    if (r != nullptr) pendingChunks = r->pendingChunks;
     return r;
 }
 
@@ -623,7 +636,7 @@ static Chunk *grabAnotherChunk(size_t size)
         if (gLimit != pageEnd)
         {   Chunk *c = reinterpret_cast<Chunk *>(gLimit);
             gFringe = gLimit + c->length; // past the pinned Chunk
-            gLimit = reinterpret_cast<uintptr_t>(c->pinChain.load());
+            gLimit = reinterpret_cast<uintptr_t>(c->chunkPinChain.load());
             if (gLimit == 0) gLimit = pageEnd;
             continue;
         }
@@ -691,7 +704,7 @@ if (gcTrace) cout << "New Chunk at " << Addr(newChunk)
      << " fringe = " << Addr(fringe) << "\n";
     newChunk->length.store(nSize);
     newChunk->isPinned.store(false);
-    newChunk->pinChain.store(nullptr);
+    newChunk->chunkPinChain.store(nullptr);
     size_t chunkNo = p->chunkCount.fetch_add(1);
     p->chunkMap[chunkNo].store(newChunk);
     limitBis[thr] = newLimit;
@@ -734,6 +747,110 @@ if (gcTrace) cout << "complex success at " << Addr(r1) << "\n";
     return r1;
 }
 
+// "fake" cons cells can be used to create lists that the garbage collector
+// will see as cells containing two fixnums (ie immediate data) but the
+// (fake) car field is really a reference to an 8-byte aligned address that
+// is the first word of a pinned object and the cdr is really chaining.
+// These lists will not survive over a GC, the fields within them will not
+// be altered by a GC even if an ambiguous pointer happens to identify a
+// cell, and if that happens then only that cell, not its neighbours, will
+// end up pinned.
+
+// Now I have an issue here. These are allocated while I am investigating
+// ambiguous pointers. So if I have several ambiguous pointers then a
+// first one can cause me to allocate space here (in the new half-space).
+// A second one might then refer to somewhere close to where I made that
+// allocation. The painful case is if the Page I had grabbed to allocate
+// within contained some data pinned by previous GCs. Then current references
+// into it (including ambiguous ones) may be valid. To be able to 
+
+void prepareToFake()
+{
+}
+
+void endedFaking()
+{
+}
+
+LispObject faken_bytes1(size_t n, uintptr_t thr, uintptr_t r)
+{   Chunk *newChunk;
+    size_t nSize;
+    if (n <= (2*targetChunkSize)/3) LIKELY
+    {   newChunk = gcDequeue();
+        nSize = targetChunkSize;   // All Chunks on queue are standard size.
+    }
+    else
+    UNLIKELY
+    {   std::lock_guard<std::mutex> lock(grabNewSegments);
+        newChunk = grabAnotherChunk(nSize = (targetChunkSize+n));
+        while (gcInQ.load() < gcOutQ.load() + gcQSize - 1)
+        {   gcEnqueue(grabAnotherChunk(targetChunkSize));
+        }
+    }
+// nSize is now the size of the next chunk.
+    uintptr_t oldFringe = r;
+    uint64_t newLimit = reinterpret_cast<uintptr_t>(newChunk) + nSize;
+    r = newChunk->dataStart();
+    fringeBis[threadId] = fringe = r + n;
+    Page *p = reinterpret_cast<Page *>((oldFringe-1) & -pageSize);
+    Chunk *justFilled = myChunkBase[thr];
+    if (justFilled != nullptr &&
+        justFilled != myBusyChunk) pushChunk(justFilled);
+    myChunkBase[thr] = newChunk;
+if (gcTrace) cout << "New Chunk at " << Addr(newChunk)
+     << " fringe = " << Addr(fringe) << "\n";
+    newChunk->length.store(nSize);
+    newChunk->isPinned.store(false);
+    newChunk->chunkPinChain.store(nullptr);
+    size_t chunkNo = p->chunkCount.fetch_add(1);
+    p->chunkMap[chunkNo].store(newChunk);
+    limitBis[thr] = newLimit;
+    limit[thr] = newLimit;
+if (gcTrace) cout << "fake_n_bytes1 = " << Addr(r) << " fringe = " << Addr(fringe) << "\n";
+if (gcTrace) cout << "limit = " << Addr(limit[threadId].load()) << "\n";
+    return static_cast<LispObject>(r);
+}
+
+inline LispObject fake_n_bytes(size_t n)
+{
+    if (gcTrace) cout << "fake_n_bytes " << n << " with fringe = " << Addr(fringe) << "\n";
+    uintptr_t thr = threadId;
+    uintptr_t r = fringe;
+    uintptr_t fr1 = r + n;
+    uintptr_t w = limit[thr].load();
+    if (fr1 <= w) LIKELY
+    {   fringe = fr1;
+        if (gcTrace) cout << "simple success at " << Addr(r) << " leaves fringe = " << Addr(fringe) << "\n";
+        return static_cast<LispObject>(r);
+    }
+// Now the case where a fresh Chunk has to be allocated.
+    UNLIKELY
+    Chunk *c = myChunkBase[thr];
+    if (c != nullptr)
+    {   c->chunkFringe = r;
+        size_t gap = w - r;
+        if (gap != 0) setHeaderWord(r, gap);
+    }
+    LispObject r1 = fake_n_bytes1(n, threadId, r);
+    if (gcTrace) cout << "complex success at " << Addr(r1) << "\n";
+    return r1;
+}
+
+LispObject fakeCons(uintptr_t objhead, LispObject next)
+{   LispObject r = fake_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
+    setcar(r, objhead + TAG_FIXNUM);
+    setcdr(r, next);
+    return r + TAG_FIXNUM - TAG_CONS;
+}
+
+uintptr_t fakeCar(LispObject u)
+{   return car(u - TAG_FIXNUM + TAG_CONS) - TAG_FIXNUM;
+}
+
+LispObject fakeCdr(LispObject u)
+{   return cdr(u - TAG_FIXNUM + TAG_CONS);
+}
+
 // Note that I define this guard once here and then also in newallocate.cpp.
 // By undefining it here I can activate the thread-safe code but still only
 // use one thread, and that will be a good thing to do to observe the overhead
@@ -768,7 +885,7 @@ void evacuate(atomic<LispObject> &a)
 #ifdef DEBUG
 // I am silent on NIL because otherwise I am overall too noisy.
     if (a.load()!=nil)
-        if (gcTrace) cout << "evacuating " << Addr(a.load()) << "\n";
+        if (gcTrace) cout << "evacuating " << Addr(a) << "\n";
 #endif
 // Here p is a pointer to a location that is a list-base, ie it contains
 // a valid Lisp object. I want to arrange that the object and all its
@@ -916,16 +1033,16 @@ void prepareForGarbageCollection(bool major)
 // copy things into.
         grabNewCurrentPage(true);
         pinnedChunkCount = pinnedPageCount = 0;
-// I will want chunkStack empty basically all the time because that
+// I will want pendingChunks empty basically all the time because that
 // can be the main guard blocking GC threads from trying to run when I do
 // not want them to!
-        chunkStack = nullptr;
+        pendingChunks = nullptr;
 // The next bit is really rather a cheat. It "allocates zero bytes" but
 // but diving into the allocation code beyond the initial test for easy cases
 // it will allocate a fresh Chunk. I set myBusyChunk so that the allocation
 // of the new Chunk does not mark the existing one as needing scanning.
         myBusyChunk = myChunkBase[threadId];
-        if (myBusyChunk != nullptr) myBusyChunk->chunkFringe = fringe;
+        if (myBusyChunk != nullptr) myBusyChunk->chunkFringe.store(fringe);
         myChunkBase[threadId] = myBusyChunk = nullptr;
         fringe = limit[threadId];
         gc_n_bytes1(0, threadId, fringe);
@@ -989,11 +1106,30 @@ void clearPinned(Page *p, uintptr_t a)
 // arrange that it is on a per-page list of pinned chunks and that if there
 // are any such chunks that the page itself is on a list of pages that contain
 // pinned material.
+// I must ignore any value that points other than within a genuine valid live
+// object that was either pinned by the previous GC or allocated during or
+// since it. So I start by identifying which Chunk (if any) an address lies
+// within. Chunks can have a flag wasPinned that records their status at
+// the end of the previous GC. If that is NOT set then all addresses within
+// the chunk from its (data) start to its fringe are valid. If wasPinned is
+// set I need to check in great detail whether the address is within one
+// of the objects in the chunk that had let to it being pinned. Well
+// wasPinned is not a boolean, it is a list (albeit with its pointers tagged
+// as TAG_FIXNUM!) of such items. The pointers are represented as fixnums
+// because the list is ephemeral and I do not want this GC to view it as
+// data to be traced through and preserved.
 
 void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
-{   if (p->chunkCount.load() == 0) return;  // An empty Page.
-    setPinned(p, a);
-    if (gcTrace) cout << "Ambig " << Addr(a) << " in non-empty page " << Addr(p) << endl;
+{   PageClass pc = p->pageClass;
+// If the page is pending or empty that any apparent pointer into it is
+// not of interest. Note that at the very start of a run much of the
+// memory will only have pageTag and chain fields filled in, and that is
+// why it is important to do this check using only those.
+    if (pc != busyPageTag &&
+        pc != mostlyFreePageTag) return;  // An empty Page.
+    if (gcTrace)
+        cout << "Ambig " << Addr(a) << " in non-empty page "
+             << Addr(p) << endl;
 // The list of chunks will be arranged such that the highest address one
 // is first in the list. I will now scan it until I find one such that
 // the chunk has (a) pointing within it, and I should not need many tries
@@ -1025,10 +1161,52 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
             high = middle-1;
         else low = middle;
     }
+// Ha ha - another issue that I do not think is a problem but that deserves
+// a comment. At the start of GC I will have tidied up all existing Pages and
+// the Chunks within them. But as I scan ambiguous pointers here I can
+// set up "fake cons" lists that point to where pinned items are. Doing so
+// involves allocating a new Chunk or Chunks to store those lists in, and
+// those go in a new Page. A slighly later ambiguous pointer could refer
+// to Part of this new data. the Page's chunkMap gets sorted once when the
+// first ambiguous pointer hits the Page and in that case the Chunk can
+// be identified, and because this is an active chunk (not one pinned from
+// last time) a bit gets set in the associated bitmap. Subsequent pinned items
+// can extend the "fake list" and spill over into another Chunk - and that
+// can leave the chunkMap for the page not properly sorted. So ambiguous
+// pointers in that region may or may not identify a Chunk to taint. If they
+// do not then that does not matter because then no pin will be recorded and
+// the data here really does not want to count as pinned! But the pad thing
+// here is that Chunks in the new page can end up on the list of ones
+// containing pinned data amd they may then be subject to a linear scan so
+// that the pinning can be put on object heads. That is dangerous because the
+// Chunk may not be tidy at the end. And the same sort of issue may mean that
+// the pinning can be confused by an ambiguous address towards the end of
+// the Chunk well beyond the bits that have been filled in. Oh dear!
+// So I must be able to identify such Pages and not pin within them, or
+// to be more precise only pin things in them that had been pinned during
+// a previous GC. To cope there I will need to be able to identify Chunks that
+// already existed even when new ones are allocated around them.
+// OK so how can I fix this? Well the most painful case I can see is if the
+// GC starts to build new data in a mostlyFree Page. Or in a succession of
+// same.
+//  
+
     Chunk *c = p->chunkMap[low];
     if (gcTrace) cout << "pointer is maybe within chunk " << low << " at " << Addr(c) << endl;
-    if (!c->pointsWithin(a)) return;
+    if (c->wasPinned != TAG_FIXNUM)
+    {   bool valid = false;
+        for (LispObject ch=c->wasPinned; ch!=TAG_FIXNUM; ch=cdr(ch&~TAG_BITS))
+        {   if ((a&~TAG_BITS) == (car(ch&~TAG_BITS)&~TAG_BITS))
+            // needs to be "a points within" not "=="
+            {   valid = true;
+                break;
+            }
+        }
+        if (!valid) return;
+    }
+    else if (!c->pointsWithin(a)) return;
     if (gcTrace) cout << "Within that chunk: isPinned = " << c->isPinned.load() << endl;
+    setPinned(p, a);
 // Here (a) lies within the range of the chunk c. Every page that has any
 // pinning must record that both by being on a chain of pages with pins
 // and by having a list of its own pinned chunks.
@@ -1040,21 +1218,21 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 // everything atomic<> so that later on if other threads happen to look you
 // you know they will see updates, I do not need to worry about race
 // conditions while I form the chain of pinned chunks and pages.
-    c->pinChain = p->pinnedChunks.load();
+    c->chunkPinChain = p->pinnedChunks.load();
     p->pinnedChunks = c;
 // When a chunk gets pinned then page must be too unless it already has been.
     if (gcTrace) cout << "Page hasPinned = " << p->hasPinned.load() << endl;
     if (p->hasPinned.load()) return;
     pinnedPageCount++;
     p->hasPinned = true;
-    p->pinChain = globalPinChain;
+    p->pagePinChain = globalPinChain;
     globalPinChain = p;
 }
 
 void clearAllPins()
-{   for (Page *p = globalPinChain; p!=nullptr; p=p->pinChain)
+{   for (Page *p = globalPinChain; p!=nullptr; p=p->pagePinChain)
     {   p->hasPinned = false;
-        for (Chunk *c = p->pinnedChunks; c!=nullptr; c=c->pinChain)
+        for (Chunk *c = p->pinnedChunks; c!=nullptr; c=c->chunkPinChain)
             c->isPinned = false;
         p->pinnedChunks = nullptr;
         std::memset(p->pinnedMap, 0, sizeof(p->pinnedMap));
@@ -1080,11 +1258,11 @@ void processAmbiguousValue(bool major, uintptr_t a)
     {   uintptr_t previousBase =
             reinterpret_cast<uintptr_t>(previousPage);
         if (previousBase <= a && a < previousBase+pageSize)
-            processAmbiguousInPage(major, previousPage, a);
+            processAmbiguousInPage(false, previousPage, a);
         return;
     }
     Page *p = findPage(a);
-    if (p!=nullptr) processAmbiguousInPage(major, p, a);
+    if (p!=nullptr) processAmbiguousInPage(true, p, a);
 }
 
 // The following function scans the stack for each thread. The address
@@ -1124,19 +1302,45 @@ void identifyPinnedItems(bool major)
 // This not only ensures that the bitmap identifies the head of every
 // pinned item, but it also arranges that no addresses with objects are
 // marked. This is relied upon by evacuatePinnedInChunk.
+//
+// There can be two sorts of Chunks here. On is a Chunk that contained
+// pinned items during the previous GC, and has a non-empty wasPinned
+// chain. If it had pinned items during the previous GC then those pinned
+// objects were the only valid ones within it. The rest of the space may
+// contain objects that were either dead at the start of the previous GC
+// or that got evacuated and so have a forwarding address in their first
+// word. If the Chunk has continued to be pinned over several GCs then
+// all pointers in old data in it (including the forwarding addresses)
+// can refer to locations that are no longer valid. So the ONLY data
+// that is valid there is the stuff that was pinned last time. Some
+// of that may remain pinned and the bitmap entry for object heads must
+// reflect that. Some may now now be pinned and will be evacuated (or not)
+// later. The Chunk can not be subject to any linear scan based on its
+// contents, but it will have a wasPinned list that identified the objects
+// pinned last time. This must be replaced with a freshly allocated
+// new list documenting what both used to be and still is pinned.
+// Other Chunks may be ones that have more recent data in. These two
+// situations are mutually exclusive. A non-pinned Chunk should be
+// such that it can be scanned linearly so that object heads can be
+// identified and a again pinned items within it must end up on a
+// freshly created wasPinned list.
 
 void findHeadersOfPinnedItems()
-{   for (Page *p=globalPinChain; p!=nullptr; p=p->pinChain)
-    {   for (Chunk *c=p->pinnedChunks; c!=nullptr; c=c->pinChain)
+{   for (Page *p=globalPinChain; p!=nullptr; p=p->pagePinChain)
+    {   for (Chunk *c=p->pinnedChunks; c!=nullptr; c=c->chunkPinChain)
         {   uintptr_t p = c->dataStart();
-    if (gcTrace) cout << "Hunting through pinned chunk: data " << Addr(c->dataStart())
-         << " to " << Addr(c->chunkFringe.load())
-         << " end " << Addr(c->dataEnd()) << "\n";
-            while (p < c->chunkFringe)
+            if (gcTrace) cout << "Hunting through pinned chunk: data "
+                << Addr(c->dataStart())
+                << " to " << Addr(c->chunkFringe.load())
+                << " end " << Addr(c->dataEnd()) << "\n";
+            if (c->wasPinned != TAG_FIXNUM)
+            {
+            }
+            else while (p < c->chunkFringe)
             {   LispObject *pp = reinterpret_cast<LispObject *>(p);
 // In the loop here p will point in turn at each item in the Chunk. I know
 // that some items in the Chunk are pinned, but the pinning bitmap may
-// until here not tag the header word. So when I have an item of size > 8
+// (until here) not tag the header word. So when I have an item of size > 8
 // I need to check isPinned() on all subsequent words and if one is
 // marked I need to setPinned() on the header. A crude version can just do
 // a linear scan word by word while a cleverer one would use the bitmap
@@ -1165,6 +1369,19 @@ void findHeadersOfPinnedItems()
                             clearPinned(p+i);
                             break;
                         }
+                    }
+                    if (isPinned(p))
+                    {   LispObject ch = gc_n_bytes(2*CELL);
+// I am going to make a chain of all pinned items. But I do not want
+// ambiguous pointers to the chain to cause it ot its contents to
+// get pinned in any significant way and the list is only needed until
+// the start phases of the next GC. I tag the references in it as fixnums
+// which lets me work with them and keeps all but the low 3 bits intact,
+// but which - as immediate data - will not complicate pinning in the
+// next GC.
+                        car(ch) = p + TAG_FIXNUM;
+                        cdr(ch) = c->wasPinned.load();
+                        c->wasPinned = ch + TAG_FIXNUM;
                     }
                     my_assert(len != 0, "zero length vector of some sort");
                     p += len;
@@ -1333,8 +1550,8 @@ void evacuatePinnedInChunk(Chunk *c)
 
 void evacuateFromPinnedItems(bool major)
 {   if (gcTrace) cout << "evacuateFromPinnedItems\n";
-    for (Page *p=globalPinChain; p!=nullptr; p=p->pinChain)
-    {   for (Chunk *c=p->pinnedChunks; c!=nullptr; c=c->pinChain)
+    for (Page *p=globalPinChain; p!=nullptr; p=p->pagePinChain)
+    {   for (Chunk *c=p->pinnedChunks; c!=nullptr; c=c->chunkPinChain)
         {   if (gcTrace) cout << "Pinned items in " << Addr(c) << " to evacuate\n";
             evacuatePinnedInChunk(c);
         }
@@ -1762,10 +1979,11 @@ void garbageCollect(bool major)
 #endif // DEBUG
 #ifdef DEBUG
 // Just to test things!
+    testLayout();
     validatePointers();
-#endif // DEBUG
     cout << "try printing!" << endl;
     Lprint(nil, a); // To see if printing works here
+#endif // DEBUG
 }
 
 // This flag generally controls whether a generational collector will be
@@ -1941,8 +2159,8 @@ if (gcTrace) cout << "Item at " << Addr(pp) << " = " << std::hex << a
 
 void validatePinnedItems(bool major)
 {   if (gcTrace) cout << "validate Pinned Items\n";
-    for (Page *p=globalPinChain; p!=nullptr; p=p->pinChain)
-    {   for (Chunk *c=p->pinnedChunks; c!=nullptr; c=c->pinChain)
+    for (Page *p=globalPinChain; p!=nullptr; p=p->pagePinChain)
+    {   for (Chunk *c=p->pinnedChunks; c!=nullptr; c=c->chunkPinChain)
         {   if (gcTrace) cout << "Pinned items in " << Addr(c) << " to check\n";
             validatePinnedInChunk(c);
         }
@@ -1957,5 +2175,40 @@ void validatePointers()
 }
 
 #endif // DEBUG
+
+// These functions whose initial letter is "F" are ones that give me
+// access to the value of atomic items in Chunk, Page and globally. I have
+// these because gdb (at least on some platforms) will not let me go (eg)
+// "print gFringe.load()" because it has inlined the load function. So I
+// use "print FgFringe()" instead. Well if FgFringe() is defined in a header
+// as an inline function and then never referenced in the code it is omitted
+// totally and so is not available for debugging. So this function is here
+// to contain rather stupid references to all these "F" functions. I disable
+// optimisation when I compile it to try to ensure that it serves the purpose
+// of making external references to all the functions. It would not be a very
+// good idea to call this!
+
+#pragma GCC optimize("0")
+
+void getInlineFunctionsDefined()
+{   Chunk c;
+    (void)c.Flength();
+    (void)c.FchunkFringe();
+    (void)c.FwasPinned();
+    (void)c.FisPinned();
+    (void)c.FpendingChunks();
+    Page p;
+    (void)p.Ffringe();
+    (void)p.Flimit();
+    (void)p.FpageClass();
+    (void)p.FhasPinned();
+    (void)p.FpagePinChain();
+    (void)p.FpinnedChunks();
+    (void)p.FchunkCount();
+    (void)p.FchunkMap(0);
+    (void)Flimit(0);
+    (void)FgFringe();
+    (void)FactiveThreads();
+}
 
 // end of file newcslgc.cpp

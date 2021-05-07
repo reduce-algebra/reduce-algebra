@@ -396,6 +396,7 @@ symbolic eval '
     (wrs (setq o (open "$name-times/$p.showtime" 'output)))
     (print (list "$p" cpu_time gc_time))
     (wrs nil)
+    (terpri)
     (prin2 "Time: ") (prin2 "$p")
     (prin2 "  ") (prin2 cpu_time)
     (prin2 "  ") (prin2 gc_time)
@@ -635,6 +636,8 @@ done
 #   test1.sh --psl --csl --jlisp    uses PSL as the base
 # There is no merit in trying to do comparisons if only one system
 # had been tested, so I will detect and filter that case...
+# If the base absolute time was under 250ms I will tag the ration with
+# a "?" a spotentially unreliable.
 
 first=""
 more="no"
@@ -651,37 +654,47 @@ done
 if test "$more" = "yes"
 then
 
-#== This does not work with my adjusted time reporting! I will come back and
-#== fix it later, but often the ratios it displays are pretty uncertain
-#== because of jitter in timings.
-#==
-#== # Append on the end of the output line a list of speed ratios.
-#==   base=""
-#==   for sys in $platforms
-#==   do
-#==     tt=`grep ^Time $sys-times/$p.time | \
-#==         sed -e 's/.*(counter 1): //; s/ms.*//'`
-#== # base gets set to the time recorded for the first platform in the list.
-#==     if test "x$base" = "x"
-#==     then
-#== # If the recorded time is zero (which at least sometimes comes out
-#== # as the string "0 " here) I will set a base-time of 1 so that I
-#== # avoid division by zero later on.
-#==       if test "x$tt" = "x" || test "x$tt" = "x0" || test "x$tt" = "x0 "
-#==       then
-#==         base="1"
-#==       else
-#==         base="$tt"
-#==       fi
-#==     fi
-#== # If "dc" is not available then the following line leaves ratio empty.
-#==     ratio=`printf "1k $tt 100 * $base / pq" | dc 2> /dev/null`
-#==     if test "x$ratio" = "x"
-#==     then
-#==       ratio="?"
-#==     fi
-#==     printf "$sys:${ratio}%% "
-#==   done
+# Append on the end of the output line a list of speed ratios.
+  base=""
+  none="yes"
+  for sys in $platforms
+  do
+# Each file packageName.showtime will contain just one line of the form
+#       ("packageName" cputime gctime)
+# where the times are recorded in milliseconds.
+    tt=`cat $sys-times/$p.showtime | \
+        sed -e 's/[^ ]* //; s/ .*//'`
+# base gets set to the time recorded for the first platform in the list.
+    
+    if test "$none" = "yes"
+    then
+# If the recorded time is zero (which at least sometimes comes out
+# as the string "0 " here) I will set a base-time of 1 so that I
+# avoid division by zero later on.
+      if test "$tt" = "" || test "$tt" = "0" || test "$tt" = "0 "
+      then
+        base="1"
+      else
+        base="$tt"
+      fi
+    fi
+# If "dc" is not available then the following line leaves ratio empty.
+    ratio=`printf "1k $tt 100 * $base / pq" | dc 2> /dev/null`
+    if test "x$ratio" = "x"
+    then
+      ratio="?"
+    fi
+    reliable=""
+    if test "$base" -lt 250
+    then
+      reliable="?"
+    fi
+    if test "$none" = "no"
+    then
+      printf "$sys:$reliable${ratio}%% "
+    fi
+    none="no"
+  done
   printf "\n"
 
 # Now if any test logs disagree (using the first platform to define
@@ -713,4 +726,3 @@ rm -f $p.howlong.tmp
 exit 0
 
 # end of test
-
