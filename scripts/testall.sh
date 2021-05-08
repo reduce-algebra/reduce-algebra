@@ -127,7 +127,6 @@ then
 
   for p in $packages
   do
-    echo "Test package $p"
     $here/scripts/test1.sh $extras $plist $p
   done
 
@@ -137,7 +136,6 @@ then
     do
       p=${p1%.tst}
       p=${p##*/}
-      echo "Test regression case $p"
       $here/scripts/test1.sh $extras $plist regressions $p
     done
   fi

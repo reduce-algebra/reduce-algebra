@@ -636,8 +636,8 @@ done
 #   test1.sh --psl --csl --jlisp    uses PSL as the base
 # There is no merit in trying to do comparisons if only one system
 # had been tested, so I will detect and filter that case...
-# If the base absolute time was under 250ms I will tag the ration with
-# a "?" a spotentially unreliable.
+# If the base absolute time was under 500ms I will tag the ratio with
+# a "?" as potentially unreliable.
 
 first=""
 more="no"
@@ -685,7 +685,7 @@ then
       ratio="?"
     fi
     reliable=""
-    if test "$base" -lt 250
+    if test "$base" -lt 500
     then
       reliable="?"
     fi
