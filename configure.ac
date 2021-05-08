@@ -544,6 +544,12 @@ AC_ARG_ENABLE(debug,
   [],
   [enable_debug="no"])
 
+AC_ARG_ENABLE(profile,
+  AS_HELP_STRING([--enable-profile],
+                 [compile for profiling (CSL only)]),
+  [],
+  [enable_profile="no"])
+
 AC_ARG_ENABLE(conservative,
   AS_HELP_STRING([--enable-conservative],
                  [garbage collect option: testing and development use (CSL only)]),

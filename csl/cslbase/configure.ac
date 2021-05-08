@@ -38,6 +38,7 @@
 # Special flags that can be used here:
 #
 #   --enable-debug    Switch on debugging.
+#   --enable-profile  build for profiling at the C++ level
 #
 #   --with-cygwin     Build native cygwin X11 based system, 
 #   --with-smallpage  build in way that may be better for small embedded
@@ -1335,34 +1336,20 @@ then
 # NSA="-fno-strict-aliasing"
   if test "x$enable_debug" = "xyes"
   then
-# I could put "-pg" in option list. For gcc (at least on many platforms) this
-# will enabling profiling so that "gprof" can be used after a run to observe
-# where there were hot-spots. If I get keen I will put in extra tests here to
-# check if the "-pg" option is at least acceptable to the compiler... but
-# for now it is something that one puts in by manually editing this file or
-# the eventual Makefile. Well if --enable-conservative is set I will use it!
-# That is because the extra costs of atomic access to memory can be extreme
-# and the impact of that hard to predict (at least for me) so I feel I need
-# profiling while I develop.
-# However recent versions of MacOS do not support it and attempts to use it
-# are treated as errors!
-#   PROFILE="-pg"
-    PROFILE=""
-    CFLAGS="${CFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
-    CXXFLAGS="${CXXFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
-    DLL_CFLAGS="${DLL_CFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
-    LDFLAGS="${LDFLAGS} -g ${PROFILE}"
-#    if test "x$enable_conservative" = "xyes"
-#    then
-#      CFLAGS="${CFLAGS} -pg"
-#      CXXFLAGS="${CXXFLAGS} -pg"
-#      DLL_CFLAGS="${DLL_CFLAGS} -pg"
-#      LDFLAGS="${LDFLAGS} -pg"
-#    fi
+    CFLAGS="${CFLAGS} ${NSA} ${LOWOPT} -g -DDEBUG=1 -Wall"
+    CXXFLAGS="${CXXFLAGS} ${NSA} ${LOWOPT} -g -DDEBUG=1 -Wall"
+    DLL_CFLAGS="${DLL_CFLAGS} ${NSA} ${LOWOPT} -g -DDEBUG=1 -Wall"
+    LDFLAGS="${LDFLAGS} -g"
   else
     CFLAGS="$CFLAGS ${NSA} ${HIGHOPT} -Wall"
     CXXFLAGS="$CXXFLAGS ${NSA} ${HIGHOPT} -Wall"
     DLL_CFLAGS="${DLL_CFLAGS} ${NSA} ${HIGHOPT}"
+  fi
+  if test "x$enable_profile" = "xyes"
+  then
+    CXXFLAGS="$CXXFLAGS -pg"
+    LDFLAGS="$LDFLAGS -pg"
+    STRIP="echo"
   fi
   if test "x$enable_static" = "xyes"
   then
