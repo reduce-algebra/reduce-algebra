@@ -1301,17 +1301,39 @@ LispObject Lclr_hash_0(LispObject env)
 // (but I am NOT allowed to pay attention to package information) and almost
 // everything else can just return a code based on the type of the object.
 // The result is obliged to be a positive fixnum.
-// the Common Lisp version of EQUAL does no descend vectors, but the
-// obligation I have here is kust that things thar are (CL-)EQUAL must yield
+// the Common Lisp version of EQUAL does not descend vectors, but the
+// obligation I have here is just that things that are (CL-)EQUAL must yield
 // the same hash value, so I can afford to descend and that seems kinder to me.
 // Common Lisp also says that this function should always terminate even for
 // cyclic structures. Yuk that adds an extra unwelcome level of mess, which
 // I will ignore for now.
 
 LispObject Lsxhash(LispObject env, LispObject key)
-{   Lclr_hash(nil, sxhash_hash_table);
-    uint64_t h = hash_generic_equal(0, key, HASH_AS_SXHASH, 0);
-    Lclr_hash(nil, sxhash_hash_table); // Just to tidy up.
+{   uint64_t h;
+    if (is_symbol(key))
+    {   key = get_pname(key);
+        h = 1;
+// The value returned is supposed to be cross-platform consistent and so
+// I can not work word at a time - i need to work byte at a time.
+        for (size_t i=0; i<bytes_in_vector(key); i++)
+            h = 0x123456789ab*ucelt(key, i);
+    }
+    else if (is_fixnum(key))
+    {   h = int_of_fixnum(key);
+    }
+    else if (is_simple_string(key))
+    {   h = 2;
+        for (size_t i=0; i<bytes_in_vector(key); i++)
+            h = 0x123456789ab*ucelt(key, i);
+    }
+    else
+    {   Lclr_hash(nil, sxhash_hash_table);
+// This case has the serious extra overhead and pain of protection against
+// reentrant structures. So use on vectors or lists of any sort (apart from
+// simple strings) is bad.
+        h = hash_generic_equal(0, key, HASH_AS_SXHASH, 0);
+        Lclr_hash(nil, sxhash_hash_table); // Just to tidy up.
+    }
     h = h ^ (h >> 32);
     h = (h ^ (h >> 16)) &
         0x03ffffff; // ensure it will be a positive fixnum

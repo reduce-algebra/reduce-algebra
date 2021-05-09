@@ -350,13 +350,15 @@ static LispObject Lsilent_system(LispObject env, LispObject a)
 
 // This will only hash basic strings, not extended ones.
 
-static uint64_t hash_lisp_string_with_length(LispObject s, size_t n)
+#ifdef GOOD_BUT_SLOWER
+
+static uint64_t hash_lisp_string(LispObject s, size_t n)
 {   uint64_t h = crc64(n-CELL, &basic_celt(s, 0), n-CELL);
 // crc64 will produce a 64-bit hash value that is expected to be pretty
 // reasonable, however the way I use this will be to look at just some
 // number of low bits. The raw CRC does not cascade information evenly into
 // all bits. To get the low-order bits better scrambled I will mix in some
-// informationm from higher up. The shift amounts I use are chosen so they
+// information from higher up. The shift amounts I use are chosen so they
 // are not obvious multiples of 8, since the character sequences that I
 // hash are streams of BYTES not BITS. The use of "+" rather than "^" to
 // merge in information from high order bits lets carry propagation mix
@@ -367,16 +369,51 @@ static uint64_t hash_lisp_string_with_length(LispObject s, size_t n)
     return h + (h >> 12);
 }
 
+#else // GOOD_BUT_SLOWER
+
+static uint64_t hash_lisp_string(LispObject s, size_t n)
+{   uint64_t h = n;
+//@ int nn = n-CELL;
+// Here I will hash sizeof(intptr_t) bytes at a time. 
+    uintptr_t *p = reinterpret_cast<uintptr_t *>(s-TAG_VECTOR+CELL);
+    n -= CELL;
+    while (n >= sizeof(uintptr_t))
+    {   h = h*0x800000020001U + *p++; // The multiplier is prime but
+                                      // multiply can be shift & add.
+        n -= 8;
+    }
+    if (n != 0) // Here I need to get rid of data from beyond the end
+                // of the string.
+    {   uintptr_t final = *p;
+        size_t shift = 8*(sizeof(uintptr_t)-n);
+#ifdef LITTLEENDIAN
+        final <<= shift;
+#else // LITTLEENDIAN
+        final >>= shift;
+#endif // LITTLEENDIAN
+        h = h*0x800000020001U + final;
+    }
+// The calculation thus far will have tended to concentrate entropy in the
+// high bits of h, so I will distribute them just a bit better.
+    h -= (h >> 37);
+    h *= 141592653589U; // A rather arbitrary prime
+    h -= (h >> 31);
+//@ std::printf("H: <%.*s> %" PRIx64 "\n",
+//@     nn, reinterpret_cast<char *>(s-TAG_VECTOR+CELL), h);
+    return h;
+}
+
+#endif
+
+
 uint64_t hash_lisp_string(LispObject s)
 // Argument is a (lisp) string.  Return a 64 bit hash value.
-{   return hash_lisp_string_with_length(s,
-                                        length_of_byteheader(vechdr(s)));
+{   return hash_lisp_string(s, length_of_byteheader(vechdr(s)));
 }
 
 static int value_in_radix(int c, int radix)
 {   if (c < 0 || c > 0xff) return -1;
-    if (std::isdigit(c)) c = c -
-                                 '0';    // Assumes digit codes are consecutive
+    if (std::isdigit(c)) c = c - '0'; // Assumes digit codes are consecutive
     else if (std::isalpha(c)) c = std::tolower(c) - 'a' + 10;
     else return -1;
     if (c < radix) return c;
@@ -790,8 +827,7 @@ start_again:
     return v;
 }
 
-static bool add_to_hash(LispObject s, LispObject vector,
-                        uint64_t hash)
+static bool add_to_hash(LispObject s, LispObject vector, uint64_t hash)
 // Adds an item into a hash table given that it is known that it is not
 // already there.
 {   size_t size = cells_in_vector(vector);
@@ -849,21 +885,14 @@ static LispObject rehash(LispObject v, int grow)
 
 #ifdef COMMON
 
-static LispObject add_to_externals(LispObject s,
-                                   LispObject p, uint64_t hash)
+static LispObject add_to_externals(LispObject s, LispObject p, uint64_t hash)
 {   LispObject n = packnext_(p);
     LispObject v = packext_(p);
     size_t used = cells_in_vector(v);
-// n is (16*sym_count+TAG_FIXNUM)             [Lisp fixnum for sym_count]
-// used = CELL*(spaces+TAG_FIXNUM)
-// The effect is that I trigger a re-hash if the table reaches 62%
-// loading.  For small vectors when I re-hash I will double the
-// table size, for large ones I will roughly multiply the amount of
-// allocated space by 1.5.
-// The effect will be that small packages will often be fairly lightly
-// loaded (down to 31% just after an expansion) while very large ones will
-// be kept at least a bit closer to the 62% mark.
-    if ((uint32_t)n/10u > used/CELL)
+// I trigger a re-hash if the table reaches 50% loading.  Then I double
+// its size. The effect is that it will remain between 25 and 50% full -
+// really rather lightly loaded.
+    if (static_cast<dize_t>(2*int_of_fixnum(n)) > used)
     {   stackcheck(s, p);
         Save save(s, p);
         v = rehash(v, 1);
@@ -879,12 +908,11 @@ static LispObject add_to_externals(LispObject s,
 
 #endif
 
-static LispObject add_to_internals(LispObject s,
-                                   LispObject p, uint64_t hash)
+static LispObject add_to_internals(LispObject s, LispObject p, uint64_t hash)
 {   LispObject n = packnint_(p);
     LispObject v = packint_(p);
     size_t used = cells_in_vector(v);
-    if ((uint32_t)n/10u > used/CELL)
+    if (static_cast<size_t>(2*int_of_fixnum(n)) > used)
     {   stackcheck(s, p, v);
         Save save(s, p);
         v = rehash(v, 1);
@@ -892,7 +920,7 @@ static LispObject add_to_internals(LispObject s,
         save.restore(s, p);
         packint_(p) = v;
     }
-    packnint_(p) = static_cast<LispObject>((int32_t)n + (1<<4));
+    packnint_(p) = n + (1<<4);
     // increment as a Lisp fixnum
     add_to_hash(s, v, hash);
     return nil;
@@ -1475,7 +1503,7 @@ LispObject iintern(LispObject str, size_t h, LispObject p,
 // NB in CSL mode only one value is returned.
 {   LispObject r;
     stackcheck(str, p);
-    uint64_t hash = hash_lisp_string_with_length(str, h+CELL);
+    uint64_t hash = hash_lisp_string(str, h+CELL);
 // find-external-symbol will not look at the internals
     if (str_is_ok != 4)
     {   r = lookup(str, h, packint_(p), hash);
@@ -1688,19 +1716,22 @@ static LispObject Lextern(LispObject env, LispObject sym,
 // a find-package as necessary.
 {   if (!is_symbol(sym)) return onevalue(nil);
     if (remob(sym, packint_(package)))
-    {   LispObject n = packnint_(package);
-        LispObject v = packint_(package);
-        size_t used = length_of_header(vechdr(v)) - CELL;
+    {
+#if 0
+// If somebody does a very large number of calls to intern followed by
+// a large number of calls to remob that can lead to severe costs as the
+// hash table is repeatedly enlarged and reduced in size, rehashing each
+// time. So at least for now I will let the table stay large after all
+// those interns.
+#endif
 // I will shrink a hash table if a sequence of remob-style operations,
 // which will especially include the case where a symbol ceases to be
 // internal to a package so that it can be external, leaves the table
-// less than 25% full. Note that normal growth is supposed to leave these
-// tables between 35 and 70% full, so the activity here will not be
-// triggered frivolously.  However note the following oddity: if a package
-// is of minimum size (8 entries in the hash table) then rehashing will not
-// cause it to shrink (but it will rehash and hence tidy it up). Hence
-// every remob on such a table will cause it to be re-hashed.
-        if ((size_t)n < used && used>(CELL*INIT_OBVECI_SIZE+CELL))
+// distinctly empty.
+        size_t n = int_of_fixnum(packnint_(package));
+        LispObject v = packint_(package);
+        size_t used = cells_in_vector(v);
+        if (n < used/6 && used>INIT_OBVECI_SIZE)
         {   stackcheck(sym, package, v);
             Save save(sym, package);
             v = rehash(v), -1);
@@ -1784,12 +1815,13 @@ LispObject Lunintern_2(LispObject env, LispObject sym, LispObject pp)
     if ((qheader(sym) & SYM_C_DEF) != 0)
         return aerror1("remob on function with kernel definition", sym);
     if (remob(sym, packint_(package)))
-    {   LispObject n = packnint_(package);
+    {
+#if 0
+#endif
+        size_t n = int_of_fixnum(packnint_(package));
         LispObject v = packint_(package);
-        size_t used = length_of_header(vechdr(v)) - CELL;
-// I think that the next lien is playing silly whatsits wrt the representation
-// of the fixnum n and its numeric meaning...
-        if ((size_t)n < used && used>(CELL*INIT_OBVECI_SIZE+CELL))
+        size_t used = cells_in_vector(v);
+        if (n < used/6 && used>INIT_OBVECI_SIZE)
         {   stackcheck(package, v);
             Save save(package);
             v = rehash(v, -1);
@@ -1802,11 +1834,13 @@ LispObject Lunintern_2(LispObject env, LispObject sym, LispObject pp)
     }
 #ifdef COMMON
     if (remob(sym, packext_(package)))
-    {   LispObject n = packnext_(package);
+    {
+#if 0
+#endif
+        size_t n = int_of_fixnum(packnext_(package));
         LispObject v = packext_(package);
-        size_t used = length_of_header(vechdr(v)) - CELL;
-        else used = CHUNK_SIZE*used;
-        if ((size_t)n < used && used>(CELL*INIT_OBVECX_SIZE+CELL))
+        size_t used = cells_in_vector(v);
+        if (n < used/6 && used>INIT_OBVECX_SIZE)
         {   stackcheck(package, v);
             Save save(package);
             v = rehash(v, -1);
@@ -2433,7 +2467,7 @@ static LispObject backquote_expander(LispObject a)
 #if 0
 // For quite some while I did not understand what I was supposed to do with
 // nested backquotes, but PSL showed me what was required. Excet that since I
-// expaqnd backquotes while reading I do not need to do this here!
+// expand backquotes while reading I do not need to do this here!
     if (f == backquote_symbol)
     {   a = backquote_expander(car(cdr(a)));
         if (a == nil) return a;

@@ -3,17 +3,18 @@
 <html>
     <head>
         <style>
+         /* Hide sub-folders for initial display */
+         tr[data-level='1'], tr[data-level='2'] {
+             display: none;
+         }
          td:not(:first-child) {
-             padding-left: 10px;
+             padding-left: 1em;
          }
          tr[data-level='1'] > td:first-child {
-             padding-left: 10px;
+             padding-left: 1.5em;
          }
          tr[data-level='2'] > td:first-child {
-             padding-left: 20px;
-         }
-         tr.folder > td:first-child {
-             cursor: pointer;
+             padding-left: 3em;
          }
          tr.folder:not(.expanded) > td:first-child::before {
              content: "⊞ ";
@@ -84,7 +85,7 @@ function processFile(string $file, string $ext, int $level) {
             $title = '&mdash; <i>' . $ext . ' file</i> &mdash;';
     }
     echo "<tr data-level='$level'><td><a href='$file'>$file</a></td>";
-    echo '<td>', $title, '</td>';
+    echo "<td>$title</td>";
     echo '<td>', date('d M Y', filemtime($file)), "</td></tr>\n";
 }
 ?>
@@ -95,8 +96,17 @@ function processFile(string $file, string $ext, int $level) {
                 crossorigin="anonymous"></script>
 
         <script>
-         $("tr[data-level=1],tr[data-level=2]").hide();
-         $("tr.folder > td:first-child").click(function() {
+         // Strip leading folders from file names:
+         $("tr[data-level=1],tr[data-level=2]")
+             .find("td:first-child > a, td:first-child:not(:has(a))")
+             .text(function(n, current) {
+                 /* var pos = current.lastIndexOf("/");
+                  * return pos == -1 ? current : current.substring(pos+1); */
+                 return current.substring(current.lastIndexOf("/") + 1);
+             });
+
+         // Register a click handler on folder name cells:
+         $("tr.folder > td:first-child").css("cursor", "pointer").click(function() {
              var $folderTr = $(this).closest("tr"); // folder table row
              var folderLevel = $folderTr.toggleClass("expanded").data("level");
              var hiding = !$folderTr.hasClass("expanded"); // collapsing folder
@@ -105,7 +115,7 @@ function processFile(string $file, string $ext, int $level) {
                  var level = $this.data("level");
                  if (level == folderLevel) return false; // below this subfolder
                  if (hiding) $this.hide().removeClass("expanded"); // hide all descendants
-                 else if (level == folderLevel+1) $this.show(); // show only children
+                 else if (level == folderLevel+1) $this.show(); // but show only children
              })
          });
         </script>

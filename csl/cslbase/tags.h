@@ -690,8 +690,8 @@ inline size_t length_of_bitheader(Header h)
 {   return (static_cast<size_t>(h) >> (Tw+2)) - 31;
 }
 
-// length_of_byteheader returns a length in bytes, and so compatible with what
-// length_of_header used to do on byte arrays (and hence strings)
+// length_of_byteheader returns a length in bytes, and so compatible with
+// what length_of_header used to do on byte arrays (and hence strings)
 
 
 inline size_t length_of_byteheader(Header h)
@@ -1093,6 +1093,11 @@ inline bool is_string_header(Header h)
 {   return (type_of_header(h) & (0x1f<<Tw)) == TYPE_STRING_1;
 }
 
+inline bool is_simple_string(LispObject n)
+{   if (!is_vector(n)) return false;
+    else return is_string_header(vechdr(n));
+}
+
 inline bool is_string(LispObject n)
 {   if (!is_vector(n)) return false;
     else if (is_basic_vector(n)) return is_string_header(vechdr(n));
@@ -1224,7 +1229,8 @@ inline double& basic_delt(LispObject v, size_t n)
 // that they can only be up to around 4 Mbytes in size - which on a 64-bit
 // system means that a normal Lisp vector can only have up to around half
 // a million elements. Using a two-level structure with TYPE_INDEXVEC for
-// the upper one allows vectors to get MUCH MUCH bigger.
+// the upper one allows vectors to get MUCH MUCH bigger. This scheme
+// builds vectors out of 
 
 static constexpr size_t LOG2_VECTOR_CHUNK_BYTES = PAGE_BITS-2;
 static constexpr size_t VECTOR_CHUNK_BYTES =

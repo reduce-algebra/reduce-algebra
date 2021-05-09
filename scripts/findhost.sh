@@ -134,6 +134,7 @@ then
 fi
 
 debug=
+profile=
 test=
 arithlib=
 conservative=
@@ -157,6 +158,12 @@ do
     ;;
   --enable-debug)
     debug=-debug
+    ;;
+  --enable-profile=no | --disable-profile)
+    profile=
+    ;;
+  --enable-profile)
+    profile=-p
     ;;
   --enable-test=no | --disable-test)
     test=
@@ -244,6 +251,6 @@ do
   esac
 done
 
-echo $host$m32$m64$nogui$fox$wx$test$experiment$arithlib$conservative$nothrow$debug
+echo $host$m32$m64$nogui$fox$wx$test$experiment$arithlib$conservative$nothrow$debug$profile
 
 exit 0

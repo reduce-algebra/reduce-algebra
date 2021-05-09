@@ -659,6 +659,7 @@ then
   none="yes"
   for sys in $platforms
   do
+    sys="${sys#csl=}"
 # Each file packageName.showtime will contain just one line of the form
 #       ("packageName" cputime gctime)
 # where the times are recorded in milliseconds.
