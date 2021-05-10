@@ -41,10 +41,11 @@ then
   do
     if test -x $here/../pslbuild/$hx/psl/$ap.exe
     then
-      STORE=16000000
       if test -f $here/../pslbuild/$hx/psl/64
       then
         STORE=$($here/pslmem64.sh)
+      else
+        STORE=$($here/pslmem32.sh)
       fi
       bin="$here/../pslbuild/$hx/psl/$ap.exe"
       binw=`cygpath -w $bin`
@@ -54,7 +55,7 @@ then
 #     rm -f $here/../bin/$scr
 #     echo "exec $bin -td 16000000 -f $img \$*" > $here/../bin/$scr
 #     chmod +x $here/../bin/$scr
-      exec $bin -td $STORE -f $img $*
+      exec $bin -td $STORE -f $img $PSLFLAGS $*
       exit 0
     fi
   done
@@ -63,10 +64,11 @@ else
   do
     if test -x $here/../pslbuild/$host$hx/psl/$ap
     then
-      STORE=16000000
       if test -f $here/../pslbuild/$host$hx/psl/64
       then
         STORE=$($here/pslmem64.sh)
+      else
+        STORE=$($here/pslmem32.sh)
       fi
       bin="$here/../pslbuild/$host$hx/psl/$ap"
       export fasl="$here/../pslbuild/$host$hx/red"
@@ -88,7 +90,7 @@ else
           fi
         fi
       fi
-      exec $bin -td $STORE -f $here/../pslbuild/$host$hx/red/reduce.img $*
+      exec $bin -td $STORE -f $here/../pslbuild/$host$hx/red/reduce.img $PSLFLAGS $*
       exit 0
     fi
   done
