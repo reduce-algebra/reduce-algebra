@@ -62,6 +62,8 @@ module 'cdiffx;
 %%    pfu=put_functions_used;
 
 
+fluid '(allowed_opr forbidden_opr);
+
 % losop
 
 lisp operator losop;
@@ -139,11 +141,11 @@ lisp operator clean;
 lisp procedure clean i;
    begin scalar ol;
       ol:=cdr operator_coeff(list('equ,i),'ext);
-      if car ol neq 0 then equ(pte(te+1)):=car ol;
+      if car ol neq 0 then equ(pte(equations_used()+1)):=car ol;
       for each el in cdr ol do
     	 equ(pte(te+1)):=caddr el;
       equ(i):=0;
-      return te;
+      return equations_used();
    end$
 
 procedure prl(m,n,l);

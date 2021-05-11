@@ -860,6 +860,8 @@ deflist('((sigma 3) (sigma1 3) (sigma2 3) (sigma3 3)
 	  (lattice_generators 2) (quasi_period_factors 2)
         ), 'number!-of!-args);
 
+fluid '(fancy!-pos!* fancy!-texpos fancy!-line!*);
+
 symbolic procedure fancy!-weier u;
  fancy!-level
   begin scalar args;

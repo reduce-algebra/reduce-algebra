@@ -187,6 +187,8 @@ put('type_ratpoly,'psopfn,'ttttype_ratpoly);
 % ----------------------------------------------------------------------
 % ----------------------------------------------------------------------
 
+fluid '(profile_time!*);
+
 symbolic procedure start;
 begin
         return (profile_time!*:= {'list, time(), gctime()});

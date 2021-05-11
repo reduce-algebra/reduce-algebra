@@ -120,7 +120,7 @@ symbolic procedure prod!-split!-exp(u,v);
    begin scalar x,y,z,w,klst,lst;
 %     lst := kernels(numr u,nil);
       lst := kernels numr u;
-%     lst := kernels1denr u,lst);
+%     lst := kernels1(denr u,lst);
       lst := kernels1(denr u,lst);
    a:
       if null lst then go to b;

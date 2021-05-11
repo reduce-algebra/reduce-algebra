@@ -310,6 +310,8 @@ putv(!*digit2ch, 14, '!E)$ putv(!*digit2ch, 15, '!F)$
 put('periodic, 'prifn, 'print_periodic);
 put('periodic,'fancy!-prifn,'fancy!-periodic);
 
+fluid '(fancy!-pos!* fancy!-texpos fancy!-line!*);
+
 symbolic procedure fancy!-periodic(u);
 fancy!-level
   begin scalar w0, ip, npp, pp, base, neg_flag, l2, l3;

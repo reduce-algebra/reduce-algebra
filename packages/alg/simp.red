@@ -174,17 +174,19 @@ symbolic procedure subs2 u;
 % really keen person wanting to tune behaviour here could go
 % "lisp alglist_limit!* := nnnn;" for suitable nnnn and experiment to
 % see just what works best for them.
+% As of 2021 the PSL implementation of hash tables also starts to creak when
+% one has very very many items stored.
 
 global '(alglist_count!* alglist_limit!*);
 alglist_count!* := 0;
-alglist_limit!* := 1000000;
+alglist_limit!* := 100000;
 
 inline procedure add_to_alglist(key, val, l);
 <<
   if null l or alglist_count!* > alglist_limit!* then begin
      scalar newl;
      alglist_count!* := 0;
-     newl := mkhash(10, 3, 2.0);
+     newl := mkhash(1000, 3, 2.0);
      puthash(key, newl, val);
      return newl end
   else <<

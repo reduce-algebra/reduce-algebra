@@ -772,6 +772,11 @@ inline procedure putv16(v, n, x); putv(v, n, x);
 
 inline procedure getv16(v, n); getv(v, n);
 
+% Not in PSL yet...
+symbolic procedure clrhash table;
+  if valid!-hashtable(table, 'clrhash) then
+    for i := 1:upbv table do putv(table, i, nil);
+
 symbolic procedure trap!-floating!-overflow bool;
   << if bool then fp!-except!-mode!* := 1
       else fp!-except!-mode!* := 0;

@@ -38,12 +38,9 @@
 
 #include "headers.h"
 
-//
 // I am now situation where all internal data is Unicode,
 // stored in strings in utf-8 format.
-//
 
-//
 // For many character functions I will permit the argument to be either
 // a character object (Common Lisp syntax #\x) or a symbol. If it is a
 // symbol the "character" tested will be the first one in the print-name,
@@ -57,7 +54,6 @@
 // is probably safe. If it were not I could just redefine this as
 // a null expansion in Common Lisp mode.
 // NB gensyms are OK here since I only need the 1st char of the base-name
-//
 
 LispObject characterify_string(LispObject pn)
 {   int n, w, len = length_of_byteheader(vechdr(pn)) - CELL;
@@ -137,12 +133,10 @@ LispObject char_to_id(int ch)
 }
 
 
-//
 // Characters have 3 bits of FONT, then 21 of CODE.
 // FONT information is only used in COMMON mode, if then.
 // Indeed newer released on the Common Lisp standard give up on font
 // as part of a character object.
-//
 
 static LispObject Lchar_downcase(LispObject, LispObject a)
 {   int cc;
@@ -170,11 +164,9 @@ LispObject Lcharacter(LispObject env, LispObject a)
     {   Header h = vechdr(a);
         if (is_string_header(h))
             return onevalue(characterify_string(a));
-//
 // /* The issue of strings (especially non-simple ones) and the ELT function
 // and wide characters has NOT BEEN THOUGHT THROUGH. So this bit is a
 // mess.
-//
         else if (stringp(a))
         {   LispObject w = Lelt(nil, a, fixnum_of_int(0));
             return onevalue(w);
@@ -295,7 +287,6 @@ static LispObject Llower_case_p(LispObject env, LispObject a)
     return onevalue(nil);
 }
 
-
 LispObject Ldigit_char_p_2(LispObject env, LispObject a,
                            LispObject radix)
 {   int cc;
@@ -390,21 +381,17 @@ LispObject Lspecial_char(LispObject, LispObject a)
         default:
             return aerror("special-char");
     }
-//
 // What about this and Standard Lisp mode?  Well it still hands back
 // a "character object", and these are generally not at all useful in
 // Standard Lisp.  Two exceptions occur - first character objects are
 // valid in lists handed to compress, and secondly the character object
 // for end-of-file is used for that in Standard Lisp mode. Well no - I am
 // now moving to use a symbol for end-of-file...
-//
     return onevalue(a);
 }
 
-//
 // Given an integer this returns a list of bytes that are the utf-8 encoding
 // for that value.
-//
 LispObject Lutf8_encode(LispObject env, LispObject a)
 {   int c;
     if (!is_fixnum(a)) return aerror1("utf8-encode", a);
@@ -424,10 +411,8 @@ LispObject Lutf8_encode(LispObject env, LispObject a)
                               fixnum_of_int(0x80 | (c & 0x3f))));
 }
 
-//
 // Given four unsigned byte values this should reconstruct the value
 // indicated by the utf-8 sequence ofthem.
-//
 static LispObject utf8_decode(int c1, int c2, int c3, int c4)
 {   int32_t n;
     switch (c1 & 0xf0)
@@ -517,14 +502,30 @@ LispObject Lutf8_decode_1(LispObject env, LispObject a)
     return utf8_decode(int_of_fixnum(a) & 0xff, -1, -1, -1);
 }
 
+// id2int is a curious function! If given an argument that is a symbol
+// or string containing just one (unicode) character it will return the
+// associated numeric code, with a special case of -1 for the end of
+// file marker. Otherwise for strings and symbols it returns a fairly
+// arbitrary fixnum based on all the characters present.
+
+LispObject Lid2int(LispObject, LispObject a)
+{   if (is_symbol(a)) a = qpname(a);
+    if (!is_simple_string(a)) return aerror1("id2int", a);
+    a = characterify(a);
+    if (a == CHAR_EOF) return onevalue(fixnum_of_int(-1));
+    if (is_char(a)) return onevalue(fixnum_of_int(code_of_char(a)));
+    uint32_t w = 12345;
+    for (size_t i=CELL; i<length_of_byteheader(vechdr(a)); i++)
+        w = w*19937 + ucelt(a, i);
+    return onevalue(fixnum_of_int(w & 0x07ffffff));
+}
+
 LispObject Lchar_code(LispObject, LispObject a)
 {   a = characterify(a);
     if (!is_char(a)) return aerror("char-code");
-//
 // Note the special treatment of EOF here, and that characterify accepts
 // integers, symbols and strings and disentangled UTF-8 encoding to return
 // something that encapsulated the codepoint that is wanted.
-//
     if (a == CHAR_EOF) return onevalue(fixnum_of_int(-1));
     return onevalue(fixnum_of_int(code_of_char(a)));
 }
@@ -590,11 +591,9 @@ static LispObject Lmake_char_1(LispObject, LispObject a)
 {   return Lmake_char_3(nil, a, fixnum_of_int(0), fixnum_of_int(0));
 }
 
-//
 // Character comparisons are VERY like the arithmetic ones, but need
 // only deal with character objects, which are immediate data and
 // in general terms nicer.
-//
 
 static bool chartest(LispObject c)
 {   if (!is_char(c))
@@ -878,12 +877,10 @@ static LispObject Lchar_leq_0(LispObject env)
 }
 
 
-//
 // Character comparisons are VERY like the arithmetic ones, but need
 // only deal with character objects, which are immediate data and
 // in general terms nicer.  These versions look only at the code, not
 // at the case or the bits attributes.
-//
 
 static LispObject casefold(LispObject c)
 {   int cc;
@@ -1215,13 +1212,10 @@ static LispObject Lcharacter_leq_0(LispObject env)
 }
 
 
-//
 // I will also put some versions of string comparisons here - the versions
 // implemented this way will have no keyword args.
-//
 
 
-//
 // get_char_vec(v, &high, &offset) is used in places where v is expected
 // to be a string or symbol. It returns a simple vector, which the celt()
 // macro can access, and sets high & offset. The string will then
@@ -1229,7 +1223,6 @@ static LispObject Lcharacter_leq_0(LispObject env)
 // value needs to be added. If the input is not a proper string then nil
 // will be returned. THIS HAS NOT BEEN REVIEWED for issues of utf=8
 // packing.
-//
 
 static LispObject get_char_vec(LispObject v, int32_t *high,
                                int32_t *offset)
@@ -1273,10 +1266,8 @@ static LispObject Lstring_greaterp_2(LispObject env,
             else return onevalue(fixnum_of_int(i));
         }
         else if (i == la) return onevalue(nil);
-//
 // String comparisons here go byte by byte. I believe that this is
 // actually OK despite utf-8 packing.
-//
         ca = ucelt(a, i+oa);
         cb = ucelt(b, i+ob);
         if (ca == cb) continue;
@@ -1504,6 +1495,7 @@ setup_type const char_setup[] =
     {"digit-char",              G0Wother, Ldigit_char_1, Ldigit_char_2, Ldigit_char_3, G4Wother},
     {"digit-char-p",            G0Wother, Ldigit_char_p_1, Ldigit_char_p_2, G3Wother, G4Wother},
     DEF_1("graphic-char-p",     Lgraphic_char_p),
+    DEF_1("id2int",             Lid2int),
     DEF_1("int-char",           Lint_char),
     DEF_1("lower-case-p",       Llower_case_p),
     {"make-char",               G0Wother, Lmake_char_1, Lmake_char_2, Lmake_char_3, G4Wother},

@@ -611,7 +611,7 @@ bool no_arg_traceflags[sizeof(no_arg_functions)/sizeof(
    BI(Lfloatp,            "floatp",                  21),  \
    BI(Lsymbol_specialp,   "fluidp",                  22),  \
    BI(Lgc,                "reclaim",                 23),  \
-   BI(Lgensym1,           "gensym1",                 24),  \
+   BI(Lgensym,            "gensym1",                 24),  \
    BI(Lgetenv,            "getenv",                  25),  \
    BI(Lsymbol_globalp,    "globalp",                 26),  \
    BI(Liadd1,             "iadd1",                   27),  \

@@ -3025,6 +3025,8 @@ symbolic procedure restore_interactive_prompt$
 
 %-------
 
+fluid '(promptstring!*);
+
 symbolic procedure change_prompt$
   begin scalar !*usermode$
     if null promptstring!* then promptstring!* := "";

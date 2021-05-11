@@ -3181,6 +3181,10 @@ c!:current_contents c!:all_blocks c!:registers c!:stacklocs)))
 (de c!:alphanumeric (a b) (prog nil (setq a (compress (cddr (explodec a)))) (
 setq b (compress (cddr (explodec b)))) (return (lessp a b))))
 
+(fluid (quote (my_gensym_counter)))
+
+(setq my_gensym_counter 0)
+
 (de c!:reset_gensyms nil (progn (remflag c!:used (quote c!:live_across_call))
 (remflag c!:used (quote c!:visited)) (prog nil lab1220 (cond ((null c!:used)
 (return nil))) (progn (remprop (car c!:used) (quote c!:contents)) (remprop (
@@ -5003,7 +5007,7 @@ c!:c_entrypoint "Lflagp") (flagp c!:c_entrypoint "Lflagp") (flagpcar
 c!:c_entrypoint "Lflagpcar") (float c!:c_entrypoint "Lfloat") (floatp 
 c!:c_entrypoint "Lfloatp") (fluidp c!:c_entrypoint "Lsymbol_specialp") (gcdn 
 c!:c_entrypoint "Lgcd_2") (gctime c!:c_entrypoint "Lgctime") (gensym 
-c!:c_entrypoint "Lgensym") (gensym1 c!:c_entrypoint "Lgensym1") (geq 
+c!:c_entrypoint "Lgensym") (gensym1 c!:c_entrypoint "Lgensym") (geq 
 c!:c_entrypoint "Lgeq_2") (get!* c!:c_entrypoint "Lget") (getenv 
 c!:c_entrypoint "Lgetenv") (getv c!:c_entrypoint "Lgetv") (svref 
 c!:c_entrypoint "Lgetv") (globalp c!:c_entrypoint "Lsymbol_globalp") (

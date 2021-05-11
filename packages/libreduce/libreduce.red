@@ -160,6 +160,8 @@ if lr_pslp() then
 else
    copyd('setpchar,'lr_setpchar!-csl);
 
+global '(!*lessspace);
+
 procedure lr_yesp!-psl(u);
    begin scalar ifl,ofl,x,y;
       if ifl!* then <<

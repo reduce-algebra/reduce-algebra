@@ -81,6 +81,8 @@ symbolic procedure assgn_indxpri u;
         then indxpri1 car u
       else indxpri(if null cadr u then car u else caadr u, car u)>>;
 
+fluid '(fancy!-texpos);
+
 symbolic procedure xindvarprt(l,p);
   % Thanks to Herbert Melenk.
   fancy!-level

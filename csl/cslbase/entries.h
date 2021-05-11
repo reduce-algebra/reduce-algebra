@@ -202,7 +202,7 @@ extern LispObject Lgc(LispObject env, LispObject a);
 extern LispObject Lgc_forcer1(LispObject env, LispObject a);
 extern LispObject Lgensym0(LispObject env, LispObject a,
                            const char *s);
-extern LispObject Lgensym1(LispObject env, LispObject a);
+extern LispObject Lgensym(LispObject env, LispObject a);
 extern LispObject Lgensym2(LispObject env, LispObject a);
 extern LispObject Lgetd(LispObject env, LispObject a);
 extern LispObject Lgetenv(LispObject env, LispObject a);

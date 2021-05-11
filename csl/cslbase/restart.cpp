@@ -122,7 +122,7 @@ LispObject current_function, expr_symbol, fexpr_symbol, macro_symbol;
 LispObject big_divisor, big_dividend, big_quotient, big_fake1, big_fake2;
 LispObject active_stream, current_module;
 LispObject autoload_symbol, features_symbol, lisp_package;
-LispObject sys_hash_table, sxhash_hash_table;
+LispObject sys_hash_table; //@, sxhash_hash_table;
 LispObject help_index, cfunarg, lex_words, get_counts, fastget_names;
 LispObject input_libraries, output_library, current_file, break_function;
 LispObject standard_output, standard_input, debug_io;
@@ -773,7 +773,7 @@ static void cold_setup()
     setvalue(redef_msg,        lisp_true);
 
     sys_hash_table = Lmkhash_1(nil, fixnum_of_int(2));    // EQUAL
-    sxhash_hash_table = Lmkhash_1(nil, fixnum_of_int(0)); // EQ
+//@ sxhash_hash_table = Lmkhash_1(nil, fixnum_of_int(0)); // EQ
     get_counts = Lmkhash_1(nil, fixnum_of_int(0));        // EQ
 // I make the vector that can hold the names used for "fast" get tags big
 // enough for the largest possible number.
@@ -2044,7 +2044,7 @@ LispObject *list_bases[] =
     &boffo,
     &charvec,
     &sys_hash_table,
-    &sxhash_hash_table,
+//@ &sxhash_hash_table,
     &help_index,
     &gensym_base,
     &err_table,

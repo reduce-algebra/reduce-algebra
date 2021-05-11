@@ -290,7 +290,7 @@ symbolic procedure ev_superfun_even(superf1,superf_scal);
   % The superfunctions must have been checked in the procedure
   % nijenhuis_bracket!
   begin
-    scalar tempvar,tempmind,tempdvar,ntempdvar,tempres,der_even;
+    scalar tempvar,tempmind,tempdvar,ntempdvar,tempres,der_even, exprtemp;
     tempres:=
     for each el in all_parametric_der!* collect
     <<
@@ -317,7 +317,7 @@ symbolic procedure ev_superfun_odd(superf1,superf_scal);
   % The superfunctions must have been checked in the procedure
   % nijenhuis_bracket!
   begin
-    scalar tempovar,tempmind,ntempovar,tempres,der_odd;
+    scalar tempovar,tempmind,ntempovar,tempres,der_odd,exprtemp;
     tempres:=
     for each el in all_parametric_odd!* collect
     <<

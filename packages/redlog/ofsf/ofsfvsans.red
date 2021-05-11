@@ -32,6 +32,8 @@ copyright('ofsfvsans, "(c) 2017 M. Kosta, T. Sturm");
 % TODO: Rename [ctx] to [anual] within this module to avoid confusion
 % with ctx in an AEX.
 
+fluid '(deg!-type!-code!-alist!*);
+
 asserted procedure vsdb_computeAns(db: VSdb): AList;
    % Compute answers to existential sentences: entry point.
    begin scalar nd;

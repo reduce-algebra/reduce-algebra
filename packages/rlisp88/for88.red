@@ -73,6 +73,8 @@ forbinops!* := '((append append) (collect cons) (count plus2)
 % NB:  We need to reset FOR and LET delims if an error occurs.  It's
 % probably best to do this in the begin1 loop.
 
+fluid '(cursym!*);
+
 symbolic procedure forstat88;
    begin scalar !*blockp,x;
       if x := get(scan(),'forloops!*) then return lispapply(x,nil);
