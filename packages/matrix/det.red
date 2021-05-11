@@ -46,7 +46,7 @@ COMMENT Some general purpose hashing functions;
 
 flag('(array),'eval);      % Declared again for bootstrapping purposes.
 
-#if (and (memq 'csl lispsystem!*) (not (memq 'vsl lispsystem!*)))
+#if t % (and (memq 'csl lispsystem!*) (not (memq 'vsl lispsystem!*)))
 
 % Use hash tables...
 
@@ -56,10 +56,13 @@ fluid '(!$hash);
 symbolic procedure matrix_gethash key;
   begin
     scalar r;
-    r := gethash(key, !$hash, '!*nothing!*);
-    if r = '!*nothing!* then return nil
+    r := gethash(key, !$hash);
+    if r = nil then return nil
     else return (key . r)
   end;
+
+% With the version of matrix_gethash that I have here it would cause
+% trouble if you passed a second arg that was nil to matrix_puthash.
 
 symbolic procedure matrix_puthash(key,valu);
   puthash(key, !$hash, valu);
@@ -126,6 +129,8 @@ symbolic procedure detq1(u,len,ignnum);
                                         z)>>;
                    sign := not sign>>;
           n2 := 2*n2>>;
+% z is a standard quotient and hence never NIL, and that makes this use
+% of hash tables safe!
       matrix_puthash(ignnum,z);
       return z
    end;
