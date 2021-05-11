@@ -75,7 +75,7 @@ begin scalar base, n, d, res, neg_flag;
    base := if cdr u then ieval cadr u else 10;
    if base < 2 or base > 16 then
       rederr "rational2periodic: base must be >=2 and <= 16";
-   u := car u;
+   u := aeval car u;
    if eqcar(u, 'minus) then <<
       u := cadr u, neg_flag := t; >>;
    u := r2p!-num!-den u;
@@ -328,22 +328,19 @@ fancy!-level
     >>;
 
     if neg_flag then fancy!-prin2!*("-", 0);
-    foreach d in ip do fancy!-prin2!*(getv(!*digit2ch, d), 0);
+        fancy!-prin2!*('!\mathrm!{, 0);
+        foreach d in ip do fancy!-prin2!*(getv(!*digit2ch, d), 0);
+	fancy!-prin2!*('!}, 0);
     if l2 > 0 or l3 > 0 then <<
-      fancy!-prin2!*(".", 0);
-      foreach d in npp do fancy!-prin2!*(getv(!*digit2ch, d), 0);
-      if l3 > 0 then
-         if memq('showmath, lispsystem!*) then <<
-            % ****  hack to enclose periodic part in brackets 
-            % ****  rather than overlining for CSL GUI
-	    fancy!-prin2!*('![, 0);
-            foreach d in pp do fancy!-prin2!*(getv(!*digit2ch, d), 0);
-            fancy!-prin2!*('!], 0)
-	 >> else <<  % **** works for TeXmacs & Run-Reduce
-	    fancy!-prin2!*('!\overline!{, 0);
-            foreach d in pp do fancy!-prin2!*(getv(!*digit2ch, d), 0);
-            fancy!-prin2!*('!}, 0)
-	 >>;   
+        fancy!-prin2!*(".", 0);
+        fancy!-prin2!*('!\mathrm!{, 0);
+        foreach d in npp do fancy!-prin2!*(getv(!*digit2ch, d), 0);
+	fancy!-prin2!*('!}, 0);
+        if l3 > 0 then <<
+           fancy!-prin2!*('!\overline!{!\mathrm!{, 0);
+           foreach d in pp do fancy!-prin2!*(getv(!*digit2ch, d), 0);
+           fancy!-prin2!*('!}!}, 0);
+      >>;   
     >>;
     % print number base as a subscript if it is not 10
     if base neq 10 then <<

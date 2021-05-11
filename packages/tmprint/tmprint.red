@@ -873,6 +873,9 @@ for each x in '(
   do put(x, 'texcharwidth, 1);
 
 put('!\not, 'texcharwidth, 0);
+put('!\bar, 'texcharwidth, 0);
+put('!\overline, 'texcharwidth, 0);
+put('!\underline, 'texcharwidth, 0);
 
 for each x in '(
    !\sin     !\cos     !\tan     !\cot     !\sec     !\csc

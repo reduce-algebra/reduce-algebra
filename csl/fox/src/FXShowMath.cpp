@@ -25,7 +25,7 @@
 *                                                                             *
 * I had intended to permit this code to be used subject to the FOX addendum   *
 * that permits static linking, but that is not feasible given the non-        *
-* transitive nature of that addendum, hence this has to be under just LGPL.   *
+* transitive nature of that addendum, hence this ha sto be under just LGPL.   *
 ******************************************************************************/
 
 // However as a special exception to LGPL 2.1 I grant permission for my code
@@ -67,7 +67,6 @@
 #error On non-Windows systems I need Xft.
 #endif
 #endif
-
 #include "fwin.h"
 #include <fx.h>
 
@@ -279,6 +278,7 @@ TeXState currentState;
 #define BoxMatrix      0x05
 #define BoxFrame       0x06
 #define BoxTop         0x07
+#define BoxLined       0x08
 
 #define NestMask       0xf0  // I use 0x0c bits for size information...
 #define BoxTower       0x00  // one item over another, does not centre items
@@ -291,6 +291,10 @@ TeXState currentState;
 #define BoxBothScripts 0x70
 #define BoxOverstrike  0x80
 #define BoxPadSpace    0x90
+
+#define LineMask       0xf0
+#define BoxOver        0x00
+#define BoxUnder       0x10
 
 #define SymTypeMask    0xf0
 #define SymStar        0x00
@@ -391,6 +395,8 @@ static Box *makeNest3Box(int style, Box *b1, Box *b2, Box *b3)
     b->nest3.dx1 = b->nest3.dy1 = 0;
     b->nest3.dx2 = b->nest3.dy2 = 0;
     b->nest3.dx3 = b->nest3.dy3 = 0;
+
+
     return b;
 }
 
@@ -417,6 +423,20 @@ Box *makeTopBox(Box *b0)
     b->top.sub = b0;
     b->top.chunk = chunkStart;
     b->top.measuredSize = -1;
+    return b;
+}
+
+static Box *makeLinedBox(int style, Box *b1)
+{
+    Box *b = (Box *)poolAllocate(sizeof(LinedBox));
+    b->bar.type = BoxLined;
+    b->bar.flags = style + currentSize;
+    b->bar.height = 0;
+    b->bar.depth = 0;
+    b->bar.width = 0;
+    b->bar.th = 0;
+    b->bar.td = 0;
+    b->bar.sub = b1;
     return b;
 }
 
@@ -1582,10 +1602,335 @@ static int balanceColumns(Box *b, int col, int xgap, int ygap)
     return 1;
 }
 
+
+bool hasTall(const char s[], int len, int start, int ff)
+{ int c;
+  for (int n=start; n < len; n++)
+    { c = s[n];
+      switch (ff)
+	{ // some of these may be wrong due to font remapping, but Roman
+	  // and Greek letters and digits should be OK
+	case FntItalic:
+	  {
+	  if ((c>='A' && c <= 'Z')||(c>= 0x00 && c<= 0x0a))
+	    return true;   // Uppercase Roman & Greek letters + digits
+	  // i and j may get replaced by \imath and \jmath resp. later 
+	  if(c=='j' || c=='i') return hasTall(s, len, n+1, ff);
+	  switch (c)
+	    {
+	    case 'b': case 'd': case 'f': case 'h': case 'k':
+	    case 'l': case 't': case '6': case '8':  // only two digits!
+	    case 0x0c: case 0x0e: case 0x10: case 0x12: case 0x15: case 0x18:
+	      // beta, delta, zeta, theta, lambda, xi
+	    case 0x1e: case 0x1f: case 0x20: case 0x23: case 0x3d: case 0x40:
+	      // phi, chi, psi, vartheta, '/', \partial
+	    case 0x60: case 0x5b: case 0x5c: case 0x5e: case 0x7e: case 0x7f:
+	      // \ell, \flat, \natural, \sharp, \vec, \caret
+	      return true;
+	    }
+	  break;
+	  }
+	case FntRoman:
+	  {
+	  if ((c>='A' && c <= 'Z')||(c>='0' && c<='9')||
+	      (c>= 0x00 && c<= 0x0f)||(c>=0x21 && c<= 0x2b) ||
+	      (c>= 0x12 && c<= 0x17)||(c>=0x5b && c<= 0x60))
+	    return true;   // Uppercase Roman & Greek letters, digits
+	                   // & ligatures plus various symbols !, #, $ etc.
+	  // i and j may get replaced by undotted versions later 
+	  if(c=='j' || c=='i') return hasTall(s, len, n+1, ff);
+	  switch (c)
+	    {
+	    case 'b': case 'd': case 'f': case 'h': case 'k':
+	    case 'l': case 't':
+	    case 0x19: case 0x1d: case 0x1e: case 0x1f: case 0x2f: case 0x3f: 
+	      // \ss, \OE, \AE, \O, '/', '?'
+	    case 0x40: case 0x7d: case 0x7e: case 0x7f:
+	      // '@', double-quotes, \tilde, \" 
+	      return true;
+	    }
+	  break;
+	  }
+	case FntSymbol:
+	  {  // A real hotch potch  of symbols -- some tall, some deep!
+	    if ((c>= 0x40 && c <= 'Z') ||(c>=0x71 && c<=0x7f)||
+	        // Uppercase Calligraphic letters plus \Aleph
+		(c>=0x5b && c<= 0x6f) ||(c>= 0x02 && c<= 0x1f)||
+	        (c>= 0x30 && c<= 0x36)||(c>= 0x38 && c<= 0x3f))
+	        // various symbols
+	      return true; 
+	  switch (c)
+	    { 
+	    case 0x22: case 0x23: case 0x25: case 0x36: case 0x37:
+	    case 0x2a: case 0x2b: case 0x2d: case 0x2e: 
+	      return true;
+	    }
+	  break;
+	  }
+	default:
+	  if (DEBUGFONT & 4) {
+	    printf("hasTall -- Font Family ff=%d\n",ff);
+	    fflush(stdout);
+	  }
+	}
+    }
+  return false;
+}
+
+bool hasDeep(const char s[], int len, int ff)
+{ int c;
+  for (int n=0; n < len; n++)
+    { c = s[n];
+      switch (ff)
+	{ // some of these may be wrong due to font remapping, but Roman
+	  // and Greek letters & digits should be OK
+	case FntItalic:
+	  {
+	    switch (c)
+	      {
+	      case 'f': case 'g': case 'j': case 'p': case 'q': case 'y':
+	      case '3': case '4': case '5': case '7': case '9':  // 5 digits
+	      case 0x0c: case 0x0d: case 0x10: case 0x11: case 0x16:
+		// beta, gamma, zeta, eta, mu
+	      case 0x18: case 0x1a: case 0x1e: case 0x1f: case 0x20:
+		// xi, rho, phi, chi, psi
+	      case 0x25: case 0x26: case 0x27: case 0x7c: case 0x7d:
+		// varrho, varsigma, varphi, \jmath, \wp
+	      case 0x3d: case 0x5c: case 0x5d:
+		// '/', \natural, \sharp
+		return true;  
+	      }
+	    break;
+	  }
+	case FntRoman:
+	  {
+	    switch (c)
+	      {
+	      case 'f': case 'g': case 'j': case 'p': case 'q': case 'y':
+	      case 0x11: case 0x23: case 0x28: case 0x29: case 0x2f:
+		// undotted j, '#', '(', '(', '\'
+		return true;  
+	      }
+	    break;
+	  }
+	case FntSymbol:
+	  {
+	    if ((c>= 0x12 && c<= 0x17)||(c>= 0x1a && c<= 0x1f)||
+		(c>= 0x62 && c<= 0x70)||(c>= 0x78 && c<= 0x7f))
+	      return true;
+	    switch (c)
+	      {
+	      case 0x07: case 0x0d: case 0x22: case 0x23: case 0x25: case 0x26:
+	      case 0x2a: case 0x2b: case 0x2d: case 0x2e: case 0x35: case 0x36:
+		// 
+		return true;  
+	      }
+	    break;
+	  }
+	default:
+	  if (DEBUGFONT & 4) {
+	    printf("hasDeep -- Font Family ff=%d\n",ff);
+	    fflush(stdout);
+	  }
+	}
+    }
+  return false;
+}
+
+void removeDots1(char s[], int len, int ff)
+{
+  for (int n=0; n < len; n++)
+    {
+      if(s[n] == 'i')
+	{ if(ff ==  FntItalic) s[n] = 0x7b;
+	  else if(ff == FntRoman) s[n] = 0x10;
+	};
+      if(s[n] == 'j')
+	{ if(ff ==  FntItalic) s[n] = 0x7c;
+	  else if(ff == FntRoman) s[n] = 0x11;
+	}
+    }
+}
+
 void measureBox(Box *b)
 {
     b->top.measuredSize = -1;
     measureBox1(b);
+}
+
+int TextHeight(Box *b)
+{ short int bh;
+  int font = b->text.flags & FontMask;
+  int f = font & FontSizeMask;
+  switch (b->text.type)
+    {
+    case BoxText:
+        bh = mathFontHeight[f];
+	if (!hasTall(b->text.text, b->text.n, 0, font & FontFamilyMask))
+	  // this crude estimate seems to be OK
+	  bh = 2*bh/3;
+	break;
+    case BoxNest:
+      {
+	//	NestBox *n = &(b->nest);
+	switch (b->nest.flags & NestMask)
+	  {
+	  case BoxBeside: case BoxAdjacent:
+	    bh = intmax(TextHeight(b->nest.sub1), TextHeight(b->nest.sub2));
+	    break;
+	  case BoxSubscript:
+	    bh = TextHeight(b->nest.sub1); break;
+	  default:
+	    bh = b->nest.height;
+	  }
+	break;
+      }
+    case BoxBracket: case BoxMatrix: case BoxFrame: case BoxNest3:
+      bh = b->text.height; break;
+    case BoxSym:  // this crude estimate seems to be OK
+      bh = 2*(b->text.height)/3;  break;
+    case BoxLined:
+      {      
+	LinedBox *lb = &(b->bar);
+	bh = lb->th;
+      }
+
+      //	switch (b->bar.flags & LineMask)
+      //	  {
+      //	  case BoxOver:
+      //	    bh = b->bar.th; break;
+      //	  case BoxUnder:
+      //	    bh = b->bar.height;
+      //	  }
+      if (DEBUGFONT & 4)  printf("Lined Type=%d\n", b->bar.flags & LineMask);
+    }
+    if (DEBUGFONT & 4)
+      { printf("TextHeight:  BoxType=%d  bh=%d\n",
+	       b->text.type, bh);
+	fflush(stdout);
+      }
+    return bh;  
+}
+
+int TextDepth(Box *b)
+{ short int bd;
+  int f = b->text.flags & FontSizeMask;
+  int font = b->text.flags & FontMask;
+  switch (b->text.type)
+    {
+    case BoxText:
+        bd = mathFontDepth[f];
+	if (!hasDeep(b->text.text, b->text.n, font & FontFamilyMask))
+	  // this crude estimate seems to be OK
+	  bd = bd/3;
+	break;
+    case BoxNest:
+      {
+	//	NestBox *n = &(b->nest);
+	switch (b->nest.flags & NestMask)
+	  {
+	  case BoxBeside: case BoxAdjacent:
+	    bd = intmax(TextDepth(b->nest.sub1), TextDepth(b->nest.sub2));
+	    break;
+	  case BoxSuperscript:
+	    bd = TextDepth(b->nest.sub1); break;
+	  default:
+	    bd = b->nest.depth;
+	  }
+	break;
+      }
+    case BoxBracket: case BoxMatrix: case BoxFrame: case BoxNest3:
+      bd = b->text.depth; break;
+    case BoxSym:   // this crude estimate seems to be OK
+      bd = (b->text.depth)/3; break;
+    case BoxLined:
+      {      
+	LinedBox *lb = &(b->bar);
+	bd = lb->td;
+      }
+      // switch (b->bar.flags & LineMask)
+      //   {
+      //   case BoxOver:
+      //     bd = b->bar.depth; break;
+      //   case BoxUnder:
+      //     bd = b->bar.td;
+      //   }
+      if (DEBUGFONT & 4)  printf("Lined Type=%d\n", b->bar.flags & LineMask);
+    }
+  if (DEBUGFONT & 4)
+    { printf("TextDepth:  BoxType=%d  bd=%d\n",
+	     b->text.type, bd);
+      fflush(stdout);
+    }
+  return bd;
+}
+
+void removeDots(Box *b)
+{
+  int font = b->text.flags & FontFamilyMask;
+  if (b->text.type == BoxTop) {
+    removeDots(b->top.sub);
+    return;
+  }
+  switch (b->text.type) {
+  case BoxText:
+    removeDots1(b->text.text, b->text.n, font);
+    return;
+  case BoxNest:
+    {
+      NestBox *n = &(b->nest);
+      switch (n->flags & NestMask)
+        {
+	case BoxBeside: case BoxAdjacent:
+	  removeDots(n->sub1);
+	  removeDots(n->sub2);
+	  return;
+	case BoxSubscript:
+	  removeDots(n->sub1);
+	  return;
+	default:
+	  return;
+	}
+    }
+  case BoxBracket: case BoxMatrix: case BoxFrame: case BoxNest3: case BoxSym:
+    return;
+  case BoxLined:
+    {
+      // nested under/overlining
+      LinedBox *lb = &(b->bar);
+      if ((lb->flags & LineMask) == BoxUnder)
+	removeDots(lb->sub);
+      return;
+    }
+  default:
+    return;
+  }
+}
+
+int barAdjust(int ch, int font)
+{
+// For an italic character that is tall and leans across to the right,
+// the overline needs to extend slightly.
+// The adjustment is produced here and is really a bit of a fudge
+// and differs somewhat from that in italicAdjust.  
+    int w = mathFontWidth[font];
+    if((font & FontFamilyMask) == FntItalic) {  
+	// Uppercase Roman & Greek letters
+      if ((ch>='A' && ch <= 'Z')||(ch>= 0x00 && ch<= 0x0a)) return (w+6)/8;
+	   
+      switch (ch)
+      {
+        case 'b': case 'd': case 'f': case 'h': case 'k':
+        case 'l': case 't':
+        case 0x0c: case 0x0e: case 0x10: case 0x12: case 0x15: case 0x18:
+	  // beta, delta, zeta, theta, lambda, xi
+        case  0x1e: case 0x1f: case 0x20: case 0x23: case 0x60: case 0x7d:
+	  // phi, chi, psi, vartheta, \ell, \jmath
+          return (w+6)/8;
+        default:
+            return 0;
+      }
+    } else return 0;
 }
 
 int italicAdjust(int ch, int font)
@@ -1672,6 +2017,7 @@ void measureBox1(Box *b)
     MatrixBox *m;
     BracketBox *bb;
     TopBox *tt;
+    LinedBox *lb;
 #ifdef WIN32
     int utflength;
     int l;
@@ -1906,6 +2252,7 @@ case BoxNest:
                 fflush(stdout);
             }
             return;
+
     case BoxStack:     //     Aaaaaaaa
                        // -->    Bb
             {   measureBox1(n->sub1);
@@ -2239,10 +2586,60 @@ case BoxTop:               // top-level wrapper for boxes.
         tt->depth = tt->sub->text.depth;
         tt->measuredSize = mathFontSize;
         return;
-default:
-        printf("Measure unknown box type %d: failing\n", b->text.type);
-        fflush(stdout);
-        return;
+    case BoxLined:  // For overlined or underlined characters
+      { lb = &(b->bar);
+	  measureBox1(lb->sub);
+	  lb->width = lb->sub->text.width;
+	  lb->height = lb->sub->text.height;
+	  lb->depth = lb->sub->text.depth;
+	  lb->td = TextDepth(lb->sub);
+	  lb->th = TextHeight(lb->sub);
+	  f = lb->flags & FontSizeMask;
+	
+	  h = mathFontHeight[f];
+	  d = mathFontDepth[f];
+	  h1 = (h + d + 12)/25;
+	  if (h1 <= 0) h1 = 1;
+
+	  switch (lb->flags & LineMask)
+	    {
+	    case BoxOver:
+	      if (lb->th >= (7*h-5)/9 - h1)
+		// replace i and j by undotted symbols
+		// this estimate is a 'pure' hack
+		removeDots(lb->sub);
+	      // allow for height of overbar
+	      lb->th += 2*h1;
+	      if (lb->th > lb->height)
+		lb->height = lb->th;  //increase box height if necessary
+	      // italic correction to line length
+	      if (lb->sub->text.type == BoxText)
+		{ const char *ss1 = lb->sub->text.text;
+		  int len =  lb->sub->text.n;
+		  w = barAdjust(ss1[len-1],
+				lb->sub->text.flags & FontMask);
+		  lb->width += w;      
+		}
+
+	      break;
+	    case BoxUnder:
+	      // allow for depth of underline
+	      lb->td += 2*h1;
+	      if (lb->td > lb->depth)
+		lb->depth = lb->td;  // increase box depth if necessary
+	    }
+	  if (DEBUGFONT & 4)
+	    { printf("Lined h=%d d=%d w=%d th=%d td=%d\n",
+		     lb->height, lb->depth, lb->width, lb->th, lb->td);
+	      printf("h1=%d\n", h1);
+	      fflush(stdout);
+	    }
+	  return;
+      }
+    default:
+      printf("Measure unknown box type %d: failing\n", b->text.type);
+      fflush(stdout);
+      return;
     }
 }
 
@@ -2455,6 +2852,18 @@ static Box *doStackrel(Box *b1, Box *b2)
     if (b1 == NULL) return b2;
     else if (b2 == NULL) return b1;
     return makeNestBox(BoxStack, b1, b2);
+}
+
+static Box *doOver(Box *b)
+{
+    if (b == NULL) return b;
+    return makeLinedBox(BoxOver, b);
+}
+
+static Box *doUnder(Box *b)
+{
+    if (b == NULL) return b;
+    return makeLinedBox(BoxUnder, b);
 }
 
 #if 0
@@ -3234,10 +3643,13 @@ static Keyword texWords[1<<texWordBits] =
     {"pmod",       TeX1Arg,   0,         0,    (void *)doPmod},
     {"mathrm",     TeX1Arg,   0,         0,    (void *)doMathRm},
     {"mathit",     TeX1Arg,   0,         0,    (void *)doMathIt},
-    {"mathcal",    TeX1Arg,   0,         0,    (void *)doMathCal},    
+    {"mathcal",    TeX1Arg,   0,         0,    (void *)doMathCal},
     {"sqrt",       TeX1Arg,   0,         0,    (void *)doSqrt},
     {"fbox",       TeX1Arg,   0,         0,    (void *)doFbox},
     {"symb",       TeX1Arg,   0,         0,    (void *)doSymb},
+    {"bar",        TeX1Arg,   0,         0,    (void *)doOver},
+    {"overline",   TeX1Arg,   0,         0,    (void *)doOver},
+    {"underline",  TeX1Arg,   0,         0,    (void *)doUnder},
 //
 // TeX things that take two arguments, as in
 //              \word {arg1} {arg2}
@@ -4717,6 +5129,7 @@ void paintBox(FXDC *dc, Box *b, int x, int y)
     TextBox *t;
     SymBox *s;
     BracketBox *bb;
+    LinedBox *lb;
     int h1, d1;
     switch (b->text.type)
     {
@@ -4847,14 +5260,37 @@ case BoxBracket:
             if (h <= 0) h = 1;  // ensure bar is at least 1 pixel tall
             dc->fillRectangle(x+bb->dx, y-bb->height-h, bb->sub->text.width, h);
         }
-        if (bb->sub1 != NULL)
+      if (bb->sub1 != NULL)
             paintBox(dc, bb->sub1, x+bb->dx1, y+bb->dy1);
         return;
+case BoxLined:
+     {  lb = (LinedBox *)b;
+        int f = lb->flags & FontSizeMask;
+        int h = mathFontHeight[f];
+        int d = mathFontDepth[f];
+        h1 = (h + d + 12)/25; 
+	if (h1 <= 0) h1 = 1;
+	paintBox(dc, lb->sub, x, y);
+        switch (lb->flags & LineMask)
+        {
+	  case BoxOver:   // draw line over
+	     dc->fillRectangle(x, y-lb->th, lb->width, h1);
+	     return;
+	  case BoxUnder:  // draw line under
+             dc->fillRectangle(x, y+lb->td-h1, lb->width, h1);
+	     return;
+          default:
+             printf("Paint unknown lined box type -- failing\n");
+             fflush(stdout);
+             return;
+	}
+     }
 case BoxMatrix:
         if (DEBUGFONT & 1)
-        {   dc->drawRectangle(x,
+	  {   dc->drawRectangle(x,
                   y-b->matrix.height,
-                  b->matrix.width,
+
+				b->matrix.width,
                   b->matrix.depth + b->matrix.height);
         }
         paintBox(dc, b->matrix.sub, x, y + b->matrix.dy);
@@ -4878,7 +5314,7 @@ case BoxNest:
             if (h <= 0) h = 1;  // ensure bar is at least 1 pixel tall
             dc->fillRectangle(x, y-h/2-dy, b->nest.width, h);
         }
-        return;
+	return;
 case BoxNest3:
         paintBox(dc, b->nest3.sub1, x + b->nest3.dx1, y + b->nest3.dy1);
         paintBox(dc, b->nest3.sub2, x + b->nest3.dx2, y + b->nest3.dy2);

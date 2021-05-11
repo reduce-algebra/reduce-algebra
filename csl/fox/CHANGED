@@ -259,5 +259,8 @@ March 2021.   FXShowMath.cpp.  Support \wp  as cmmi:0x7d and \ell as cmmi:0x60
 
 April 2021. Put --enable-test and --enable-experiement to be recognized in
       configure.ac
+
+May  2021.    FXShowMath.cpp & FXShowMath.h: Added support for a new Box type
+     	      LinedBox and for \bar, \overline and \underline -- Alan Barnes
 	      
 <end of CHANGED>
