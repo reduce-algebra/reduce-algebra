@@ -158,6 +158,8 @@ begin scalar l;
   return l
 end$
 
+fluid '(promptstring!*);
+
 symbolic procedure change_prompt$
 begin scalar !*usermode$
   if null promptstring!* then promptstring!* := "";

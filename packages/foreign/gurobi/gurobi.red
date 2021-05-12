@@ -100,49 +100,57 @@ procedure gurobi_newmodel(n, m);
 % a future world where fluid and global are handled differently from one another
 % it could cause real pain.
 
-inline procedure gurobi_newdoublearray(n);
+% The following used all to be defined as "inline". When the inline functions
+% were expanded that left a reference to the fluid variable at the point of
+% call and in places the fluids had not been declated properly. Since these
+% do calls external to Reduce any overhead in having these is utterly minor
+% compared against use of the foreign function interface and the potential
+% costs within the external package - and so I have put these back to being
+% ordinary fubnctions which leave the code cleaner and safer. ACN May 2021.
+
+procedure gurobi_newdoublearray(n);
    call!-foreign!-function(gurobi_newdoublearray!*, 'int32, n, 'int64);
 
-inline procedure gurobi_setdoublearray(a, i, x);
+procedure gurobi_setdoublearray(a, i, x);
    call!-foreign!-function(gurobi_setdoublearray!*, 'int64, a, 'int32, i, 'double, x);
 
-inline procedure gurobi_freedoublearray(a);
+procedure gurobi_freedoublearray(a);
    call!-foreign!-function(gurobi_freedoublearray!*, 'int64, a);
 
-inline procedure gurobi_pushtoval(x);
+procedure gurobi_pushtoval(x);
    call!-foreign!-function(gurobi_pushtoval!*, 'double, x);
 
-inline procedure gurobi_addconstr(relstr, val, c);
+procedure gurobi_addconstr(relstr, val, c);
    call!-foreign!-function(gurobi_addconstr!*, 'string, relstr, 'int64, val, 'double, c);
 
-inline procedure gurobi_addconstrfast(relstr, c);
+procedure gurobi_addconstrfast(relstr, c);
    call!-foreign!-function(gurobi_addconstrfast!*, 'string, relstr, 'double, c);
 
-inline procedure gurobi_numvars();
+procedure gurobi_numvars();
    call!-foreign!-function(gurobi_numvars!*, 'int32);
 
-inline procedure gurobi_negconstr1();
+procedure gurobi_negconstr1();
    call!-foreign!-function gurobi_negconstr1!*;
 
-inline procedure gurobi_negconstr(n);
+procedure gurobi_negconstr(n);
    call!-foreign!-function(gurobi_negconstr!*, 'int32, n);
 
-inline procedure gurobi_delconstr1();
+procedure gurobi_delconstr1();
    call!-foreign!-function gurobi_delconstr1!*;
 
-inline procedure gurobi_delconstr(n);
+procedure gurobi_delconstr(n);
    call!-foreign!-function(gurobi_delconstr!*, 'int32, n);
 
-inline procedure gurobi_updatemodel();
+procedure gurobi_updatemodel();
    call!-foreign!-function gurobi_updatemodel!*;
 
-inline procedure gurobi_write(fn);
+procedure gurobi_write(fn);
    call!-foreign!-function(gurobi_write!*, 'string, fn);
 
-inline procedure gurobi_getsol(i);
+procedure gurobi_getsol(i);
    call!-foreign!-function(gurobi_getsol!*, 'int32, i, 'double);
 
-inline procedure gurobi_freemodel();
+procedure gurobi_freemodel();
    call!-foreign!-function(gurobi_freemodel!*);
 
 procedure gurobi_optimize();

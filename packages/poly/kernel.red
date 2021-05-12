@@ -30,11 +30,9 @@ module kernel;   % Functions for operations on kernels.
 
 global '(exlist!* kprops!*);
 
-!#if (or (memq 'csl lispsystem!*) (memq 'vsl lispsystem))
-
 global '(kernhash);
 
-kernhash := mkhash(20, 3, nil);
+kernhash := mkhash(1000, 3, nil);
 
 symbolic procedure fkern u;
 % Finds the unique "p-list" reference to the kernel U.  The choice of
@@ -75,33 +73,32 @@ symbolic procedure resetklist(x, v);
     for each u in v do puthash(car u, kernhash, u);
     put(x, 'klist, v) >>;
 
-!#else
-symbolic procedure fkern u;
-   % Finds the unique "p-list" reference to the kernel U.  The choice of
-   % the search and merge used here has a strong influence on some
-   % timings.  The ordered list used here is also used by prepsq* to
-   % order factors in printed output, so cannot be unilaterally changed.
-   begin scalar x,y;
-        if atom u then return list(u,nil)
-         else if x := get(car u,'fkernfn) then return apply1(x,u);
-        y := if atom car u then get(car u,'klist) else exlist!*;
-        if not (x := assoc(u,y))
-          then <<x := list(u,nil);
-                 y := ordad(x,y);
-                 if atom car u
-                   then <<kprops!* := union(list car u,kprops!*);
-                          put(car u,'klist,y)>>
-                  else exlist!* := y>>;
-        return x
-   end;
+% This is a version from before when hash tables were available.
 
-symbolic inline procedure remklist x;
-  remprop(x, 'klist);
-
-symbolic procedure resetklist(x, v);
-  put(x, 'klist, v);
-
-!#endif
+%- symbolic procedure fkern u;
+%-    % Finds the unique "p-list" reference to the kernel U.  The choice of
+%-    % the search and merge used here has a strong influence on some
+%-    % timings.  The ordered list used here is also used by prepsq* to
+%-    % order factors in printed output, so cannot be unilaterally changed.
+%-    begin scalar x,y;
+%-         if atom u then return list(u,nil)
+%-          else if x := get(car u,'fkernfn) then return apply1(x,u);
+%-         y := if atom car u then get(car u,'klist) else exlist!*;
+%-         if not (x := assoc(u,y))
+%-           then <<x := list(u,nil);
+%-                  y := ordad(x,y);
+%-                  if atom car u
+%-                    then <<kprops!* := union(list car u,kprops!*);
+%-                           put(car u,'klist,y)>>
+%-                   else exlist!* := y>>;
+%-         return x
+%-    end;
+%-
+%- symbolic inline procedure remklist x;
+%-   remprop(x, 'klist);
+%-
+%- symbolic procedure resetklist(x, v);
+%-   put(x, 'klist, v);
 
 symbolic procedure kernels u;
    % Returns list of kernels in standard form u.
@@ -111,10 +108,10 @@ symbolic procedure kernels1(u,v);
    % We append to end of list to put kernels in the right order, even
    % though a cons on the front of the list would be faster.
    if domainp u then v
-    else kernels1(lc u,
-                  kernels1(red u,
-                           if x memq v then v else append(v,list x)))
-         where x=mvar u;
+   else kernels1(lc u,
+                 kernels1(red u,
+                          ((if x memq v then v else append(v,list x))
+                           where x=mvar u)));
 
 symbolic procedure kernp u;
    % True if U is standard quotient representation for a kernel.

@@ -165,7 +165,7 @@ LispObject Lvalidate_package(LispObject env, LispObject p)
     return onevalue(nil);
 }
 
-LispObject Lvalidate_package0(LispObject env)
+LispObject Lvalidate_package(LispObject env)
 {   return Lvalidate_package(env, CP);
 }
 
@@ -1232,9 +1232,10 @@ static uint64_t removed_hash;
 
 static bool remob(LispObject sym, LispObject v)
 // Searches a hash table for a symbol with name matching the given string,
-// and remove it.
-{   if (qheader(sym) & SYM_ANY_GENSYM) return
-            false; // gensym case is easy!
+// and remove it from the package-hashtable v.
+{   if (qheader(sym) & SYM_ANY_GENSYM ||
+        qpackage(sym) == nil) return false; // gensym case is easy!
+    setpackage(sym, nil);
     LispObject str = qpname(sym);
     validate_string(str);
 #ifdef COMMON
@@ -1380,7 +1381,7 @@ LispObject Lgensym0(LispObject env, LispObject a, const char *suffix)
     return onevalue(id);
 }
 
-LispObject Lgensym1(LispObject env, LispObject a)
+LispObject Lgensym(LispObject env, LispObject a)
 // Lisp function (gensym1 base) creates an uninterned symbol with odd name.
 // The case (gensym <number>) is DEPRECATED by the Common Lisp standards
 // committee and so I will not implement it at least for now.
@@ -1704,7 +1705,7 @@ static LispObject Lfind_symbol(LispObject env, LispObject str,
     return iintern(str, length_of_byteheader(h) - CELL, p, 3);
 }
 
-LispObject Lfind_symbol_1(LispObject env, LispObject str)
+LispObject Lfind_symbol(LispObject env, LispObject str)
 {   return Lfind_symbol(env, str, CP);
 }
 
@@ -1717,13 +1718,6 @@ static LispObject Lextern(LispObject env, LispObject sym,
 {   if (!is_symbol(sym)) return onevalue(nil);
     if (remob(sym, packint_(package)))
     {
-#if 0
-// If somebody does a very large number of calls to intern followed by
-// a large number of calls to remob that can lead to severe costs as the
-// hash table is repeatedly enlarged and reduced in size, rehashing each
-// time. So at least for now I will let the table stay large after all
-// those interns.
-#endif
 // I will shrink a hash table if a sequence of remob-style operations,
 // which will especially include the case where a symbol ceases to be
 // internal to a package so that it can be external, leaves the table
@@ -1748,7 +1742,7 @@ static LispObject Lextern(LispObject env, LispObject sym,
     return onevalue(nil);// no action if it was not internal in this package
 }
 
-static LispObject Lextern_1(LispObject env, LispObject str)
+static LispObject Lextern(LispObject env, LispObject str)
 {   return Lextern(env, str, CP);
 }
 
@@ -1771,7 +1765,7 @@ static LispObject Limport(LispObject env, LispObject sym,
     return onevalue(nil);
 }
 
-static LispObject Limport_1(LispObject env, LispObject str)
+static LispObject Limport(LispObject env, LispObject str)
 {   return Limport(env, str, CP);
 }
 
@@ -1796,7 +1790,7 @@ LispObject ndelete(LispObject a, LispObject l)
     return l;
 }
 
-LispObject Lunintern_2(LispObject env, LispObject sym, LispObject pp)
+LispObject Lunintern(LispObject env, LispObject sym, LispObject pp)
 {   LispObject package;
 #ifdef COMMON
     {   Save save(sym);
@@ -1808,6 +1802,7 @@ LispObject Lunintern_2(LispObject env, LispObject sym, LispObject pp)
     package = pp;
 #endif
     if (!is_symbol(sym)) return onevalue(nil);
+    if (qpackage(sym) == nil) return onevalue(nil);
     if (qpackage(sym) == package) setpackage(sym,nil);
 #ifdef COMMON
     packshade_(package) = ndelete(sym, packshade_(package));
@@ -1815,10 +1810,7 @@ LispObject Lunintern_2(LispObject env, LispObject sym, LispObject pp)
     if ((qheader(sym) & SYM_C_DEF) != 0)
         return aerror1("remob on function with kernel definition", sym);
     if (remob(sym, packint_(package)))
-    {
-#if 0
-#endif
-        size_t n = int_of_fixnum(packnint_(package));
+    {   size_t n = int_of_fixnum(packnint_(package));
         LispObject v = packint_(package);
         size_t used = cells_in_vector(v);
         if (n < used/6 && used>INIT_OBVECI_SIZE)
@@ -1856,7 +1848,7 @@ LispObject Lunintern_2(LispObject env, LispObject sym, LispObject pp)
 }
 
 LispObject Lunintern(LispObject env, LispObject str)
-{   return Lunintern_2(env, str, CP);
+{   return Lunintern(env, str, CP);
 }
 
 // If I have a window system then getting characters from the keyboard
@@ -3272,7 +3264,7 @@ public:
     }
 };
 
-LispObject Lread_1(LispObject env, LispObject stream)
+LispObject Lread(LispObject env, LispObject stream)
 {   int cursave = curchar;
     save_stream RAII(Lrds(stream, nil), cursave);
     reader_workspace = nil;
@@ -3805,7 +3797,7 @@ LispObject Lspool(LispObject env, LispObject file)
     return onevalue(nil);
 }
 
-static LispObject Lspool0(LispObject env)
+static LispObject Lspool(LispObject env)
 {   return Lspool(env, nil);
 }
 
@@ -4134,7 +4126,7 @@ LispObject Lreadbyte(LispObject env, LispObject stream)
     else return fixnum_of_int(ch & 0xff);
 }
 
-LispObject Lreadch1(LispObject env, LispObject stream)
+LispObject Lreadch(LispObject env, LispObject stream)
 {   LispObject w;
     int ch;
     if (!is_stream(stream)) stream = qvalue(terminal_io);
@@ -4152,7 +4144,7 @@ LispObject Lreadch1(LispObject env, LispObject stream)
 }
 
 LispObject Lreadch(LispObject env)
-{   return Lreadch1(env, qvalue(standard_input));
+{   return Lreadch(env, qvalue(standard_input));
 }
 
 LispObject Lpeekch2(LispObject env, LispObject type,
@@ -4182,7 +4174,7 @@ LispObject Lpeekch2(LispObject env, LispObject type,
     return onevalue(w);
 }
 
-LispObject Lpeekch1(LispObject env, LispObject type)
+LispObject Lpeekch(LispObject env, LispObject type)
 {   return Lpeekch2(env, type, qvalue(standard_input));
 }
 
@@ -4242,7 +4234,7 @@ setup_type const read_setup[] =
     DEF_1("rseekend",       Lrseekend),
 #endif
     {"rtell",               Lrtell, Lrtell_1, G2Wother, G3Wother, G4Wother},
-    DEF_1("gensym1",        Lgensym1),
+    DEF_1("gensym1",        Lgensym),
     DEF_1("gensym2",        Lgensym2),
     DEF_1("gensymp",        Lgensymp),
     DEF_1("reset-gensym",   Lreset_gensym),
@@ -4250,14 +4242,14 @@ setup_type const read_setup[] =
     DEF_2("orderp",         Lorderp),
     {"rdf",                 G0Wother, Lrdf1, Lrdf2, Lrdf3, Lrdfn},
     DEF_1("rds",            Lrds),
-    {"peekch",              Lpeekch, Lpeekch1, Lpeekch2, G3Wother, G4Wother},
-    {"readch",              Lreadch, Lreadch1, G2Wother, G3Wother, G4Wother},
+    {"peekch",              Lpeekch, Lpeekch, Lpeekch2, G3Wother, G4Wother},
+    {"readch",              Lreadch, Lreadch, G2Wother, G3Wother, G4Wother},
     DEF_1("readb",          Lreadbyte),
     {"unreadch",            G0Wother, Lunreadch, Lunreadch2, G3W1, G4W1},
     {"readline",            Lreadline, Lreadline1, G2Wother, G3Wother, G4Wother},
     DEF_1("setpchar",       Lsetpchar),
-    {"spool",               Lspool0, Lspool, G2Wother, G3Wother, G4Wother},
-    {"dribble",             Lspool0, Lspool, G2Wother, G3Wother, G4Wother},
+    {"spool",               Lspool, Lspool, G2Wother, G3Wother, G4Wother},
+    {"dribble",             Lspool, Lspool, G2Wother, G3Wother, G4Wother},
     DEF_1("system",         Lsystem),
     DEF_1("silent-system",  Lsilent_system),
     DEF_0("~tyi",           Ltyi),
@@ -4268,20 +4260,20 @@ setup_type const read_setup[] =
     DEF_0("where-was-that", Lwhere_was_that),
     DEF_1("compress",       Lcompress),
     DEF_1("compress1",      Lcompress),
-    {"read",                Lread, Lread_1, G2Wother, G3Wother, G4Wother},
+    {"read",                Lread, Lread, G2Wother, G3Wother, G4Wother},
     {"intern",              G0Wother, Lintern, Lintern_2, G3Wother, G4Wother},
-    {"gensym",              Lgensym, Lgensym1, G2Wother, G3Wother, G4Wother},
+    {"gensym",              Lgensym, Lgensym, G2Wother, G3Wother, G4Wother},
     DEF_2("ordp",           Lorderp),
-    {"unintern",            G0Wother, Lunintern, Lunintern_2, G3Wother, G4Wother},
-    {"remob",               G0Wother, Lunintern, Lunintern_2, G3Wother, G4Wother},
+    {"unintern",            G0Wother, Lunintern, Lunintern, G3Wother, G4Wother},
+    {"remob",               G0Wother, Lunintern, Lunintern, G3Wother, G4Wother},
     DEF_1("make-symbol",    Lmake_symbol),
     DEF_1("symbols-in",     Lsymbols_in),
-    {"validate-package",    Lvalidate_package0, Lvalidate_package, G2Wother, G3Wother, G4Wother},
+    {"validate-package",    Lvalidate_package, Lvalidate_package, G2Wother, G3Wother, G4Wother},
 #ifdef COMMON
 // The package system...
-    {"extern",              G0Wother, Lextern_1, Lextern, G3Wother, G4Wother},
-    {"import*",             G0Wother, Limport_1, Limport, G3Wother, G4Wother},
-    {"find-symbol",         G0Wother, Lfind_symbol_1, Lfind_symbol, G3Wother, G4Wother},
+    {"extern",              G0Wother, Lextern, Lextern, G3Wother, G4Wother},
+    {"import*",             G0Wother, Limport, Limport, G3Wother, G4Wother},
+    {"find-symbol",         G0Wother, Lfind_symbol, Lfind_symbol, G3Wother, G4Wother},
     DEF_1("find-package",   Lfind_package),
     {"make-package",        G0Wother, Lmake_package_1, Lmake_package_2, Lmake_package_3, LMake_package_4up},
     DEF_2("use-package*",   Luse_package),

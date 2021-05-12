@@ -46,20 +46,23 @@ COMMENT Some general purpose hashing functions;
 
 flag('(array),'eval);      % Declared again for bootstrapping purposes.
 
-#if (and (memq 'csl lispsystem!*) (not (memq 'vsl lispsystem!*)))
+#if t % (and (memq 'csl lispsystem!*) (not (memq 'vsl lispsystem!*)))
 
-% Use the CSL hash tables...
+% Use hash tables...
 
 fluid '(!$hash);
-!$hash := mkhash(5,3,nil);
+!$hash := mkhash(200,3,nil);
 
 symbolic procedure matrix_gethash key;
   begin
     scalar r;
-    r := gethash(key, !$hash, '!*nothing!*);
-    if r = '!*nothing!* then return nil
+    r := gethash(key, !$hash);
+    if r = nil then return nil
     else return (key . r)
   end;
+
+% With the version of matrix_gethash that I have here it would cause
+% trouble if you passed a second arg that was nil to matrix_puthash.
 
 symbolic procedure matrix_puthash(key,valu);
   puthash(key, !$hash, valu);
@@ -69,22 +72,22 @@ symbolic procedure matrix_clrhash();
 
 #else
 
-array !$hash 64;  % General array for hashing.
+array !$hash 256;  % General array for hashing.
 
 symbolic procedure matrix_gethash key;
    % Access previously saved element.
-   assoc(key,!$hash(remainder(key,64)));
+   assoc(key,!$hash(remainder(key,256)));
 
 symbolic procedure matrix_puthash(key,valu);
    begin integer k; scalar buk;
-      k := remainder(key,64);
+      k := remainder(key,256);
       buk := (key . valu) . !$hash k;
       !$hash k := buk;
       return car buk
    end;
 
 symbolic procedure matrix_clrhash;
-   for i := 0:64 do !$hash i := nil;
+   for i := 0:256 do !$hash i := nil;
 
 #endif
 
@@ -126,6 +129,8 @@ symbolic procedure detq1(u,len,ignnum);
                                         z)>>;
                    sign := not sign>>;
           n2 := 2*n2>>;
+% z is a standard quotient and hence never NIL, and that makes this use
+% of hash tables safe!
       matrix_puthash(ignnum,z);
       return z
    end;

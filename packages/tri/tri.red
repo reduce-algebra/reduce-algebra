@@ -1237,7 +1237,7 @@ symbolic procedure setpagewidth(hsize);
 symbolic procedure setbreak(hsize,tol);
 << settolerance(tol); setpagewidth(hsize) >>;
 
-inline procedure badness(hlen,ibadness);
+symbolic procedure badness(hlen,ibadness);
 % The badness is 100*(hlen/hss)**3, corrected for indentation badness
 begin
   real r;
@@ -1250,9 +1250,17 @@ inline procedure isactive(x);       not numberp x;
 inline procedure ispassive(x);      numberp x;
 inline procedure isdelta(x);        cdddr x;
 inline procedure addup(x);          if x then eval('plus.x) else 0;
-inline procedure tpush(stack,item); stack:=item.stack;
 
-inline procedure tpop(stack);
+% tpush and tpop both assign to the variable whose name is passed as their
+% first argument. "inline" procedures do not guarantee to support that and
+% may be accessed as merely ordinary procedures (for instance in a build
+% intended for analysis or debugging). So these have to use the older "smacro"
+% scheme that always performs textual expansion. Otherwise th4ey could have
+% been defined as macros.
+
+smacro procedure tpush(stack,item); stack:=item.stack;
+
+smacro procedure tpop(stack);
   if null stack then nil % Error
   else begin scalar z; z:=car stack; stack:=cdr stack; return(z) end;
 
@@ -1411,12 +1419,16 @@ inline procedure tailof(deltanode);    cddddr deltanode;
 symbolic procedure offsetitem(item);
   concatenate list('!\!o!f!f!{,item,'!} );
 
-inline procedure stepahead(ptr,val);
-<< if ispassive car ptr then val:=val+car ptr else val:=val+caar ptr;
-   ptr:=cdr ptr
->>;
+% This can not be an inline procedure because it assigns to its second
+% argument. But it is only used in one place so I have moved the code there.
+%- smacro procedure stepahead(ptr,val);
+%- << if ispassive car ptr then val:=val+car ptr else val:=val+caar ptr;
+%-    ptr:=cdr ptr
+%- >>;
 
-inline procedure findindent(offt,ptr);
+fluid '(lastoff lastptr lastindent deltastack);
+
+symbolic procedure findindent(offt,ptr);
 if offt=lastoff and ptr=lastptr then lastindent else
 begin % search the deltastack for previous indentation
   scalar node,p,stack; integer tot;
@@ -1523,7 +1535,10 @@ begin
      rplaca(cdr base,total);   % replace penalty by total width so far
      bottom:=cdr bottom;       % depart from this delta node
      while bottom and (ispassive(car bottom) or not isdelta(car bottom))
-     do stepahead(bottom,total); % move to next delta node in list
+     do <<
+       if ispassive car bottom then total:=total+car bottom
+       else total:=total+caar bottom;
+       bottom:=cdr bottom >>;
   >>;
   bottom:=deltastack; feasible:=-1; top:=nil;
   while bottom do              % loop thru the delta-node stack
@@ -1601,6 +1616,8 @@ begin
     else << length:=length+1; flag:=nil >>;
   return length
 end;
+
+fluid '(nlflag indent cc);
 
 inline procedure tri_newline();
   if nlflag then cc:=indent

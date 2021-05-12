@@ -95,7 +95,7 @@ procedure rl_services2jsonPrintList(l, indent);
    end;
 
 procedure rl_services2jsonPrint(x, indent);
-   begin scalar l, ll;
+   begin scalar l, ll, c;
       if not x then
       	 return ioto_prin2 "{}";
       if idp x or numberp x then

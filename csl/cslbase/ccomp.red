@@ -1,4 +1,4 @@
-% "ccomp.red"                                Copyright 1991-2020,  Codemist
+% "ccomp.red"                                Copyright 1991-2021,  Codemist
 %
 % Compiler that turns Lisp code into C in a way that fits in
 % with the conventions used with CSL/CCL
@@ -7,7 +7,7 @@
 
 
 %%
-%% Copyright (C) 2020, following the master REDUCE source files.          *
+%% Copyright (C) 2021, following the master REDUCE source files.          *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *
@@ -298,6 +298,9 @@ symbolic procedure c!:alphanumeric(a, b);
     return a < b
   end;
 
+fluid '(my_gensym_counter);
+my_gensym_counter := 0;
+
 symbolic procedure c!:reset_gensyms();
  << remflag(c!:used, 'c!:live_across_call);
     remflag(c!:used, 'c!:visited);
@@ -317,13 +320,6 @@ symbolic procedure c!:reset_gensyms();
          wrs o end;
       c!:used := cdr c!:used >>;
       my_gensym_counter := 0 >>;
-
-!#if common!-lisp!-mode
-
-fluid '(my_gensym_counter);
-my_gensym_counter := 0;
-
-!#endif
 
 symbolic procedure c!:my_gensym();
   begin
@@ -3582,7 +3578,7 @@ null (c!:c_entrypoint_list := '(
    (gcdn                   c!:c_entrypoint "Lgcd_2")
    (gctime                 c!:c_entrypoint "Lgctime")
    (gensym                 c!:c_entrypoint "Lgensym")
-   (gensym1                c!:c_entrypoint "Lgensym1")
+   (gensym1                c!:c_entrypoint "Lgensym")
    (geq                    c!:c_entrypoint "Lgeq_2")
    (get!*                  c!:c_entrypoint "Lget")
 %  (get                    c!:c_entrypoint "Lget")

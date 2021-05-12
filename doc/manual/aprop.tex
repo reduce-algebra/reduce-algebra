@@ -81,6 +81,32 @@ functions \texttt{log, asin, acos, atanh, acosh} etc. and
 \texttt{sqrt} fail to be self-conjugate on their branch cuts (which are all
 subsets of the real axis).
 
+\section{Declaring Complex Conjugates}
+\ttindextype{COMPLEX\_CONJUGATES}{declaration}
+\hypertarget{command:COMPLEX_CONJUGATES}{}
+The argument \texttt{u} of a declaration \texttt{COMPLEX\_CONJUGATES} should
+consist of one or more (comma-separated) lists of two identifiers.
+This declaration associates the two identifiers as
+mutual complex-conjugates. If the first is an operator, the second is
+also declared as an operator, if it is not one already. A fancy print symbol 
+is automatically constructed and installed for the second identifier
+from that of the first by adding over-lining. For example:
+\begin{verbatim} 
+      operator f;
+      complex_conjugates {f, fbar}, {z, zb};
+      conj zb     -> z
+      conj(f(z))  -> fbar(zb)  
+\end{verbatim}
+This will associate \f{f} \& \f{fbar} and \texttt{z} \& \texttt{zb}
+as mutual complex conjugates and declare \f{fbar} as an operator.
+On graphical interfaces \texttt{zb} and \f{fbar} will be rendered as
+$\overline{z}$ and $\overline{f}$ respectively. If the first identifier
+already has a \emph{fancy special symbol} defined, this will be over-lined
+to produce the fancy print symbol for the second identifier.
+Should the user not wish to have a fancy print symbol automatically generated,
+they may instead use explicit \f{LET} statements as described in the 
+subsection on the \hyperlink{CONJ}{operator \texttt{CONJ}}.
+
 \section{Declaring Expressions Positive or Negative}
 
 Detailed knowlege about the sign of expressions allows {\REDUCE}

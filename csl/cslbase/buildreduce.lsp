@@ -747,7 +747,7 @@ symbolic procedure get_configuration_data();
 symbolic procedure build_reduce_modules names;
   begin
     scalar w;
-    if boundp 'interpreted and interpreted then !*nocompile := t;
+    if boundp 'interpreted and eval 'interpreted then !*nocompile := t;
     !*comp := null !*nocompile;
 
 !#if !*savedef

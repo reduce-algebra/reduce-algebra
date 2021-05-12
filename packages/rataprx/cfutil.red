@@ -402,6 +402,8 @@ begin scalar v, x, n;
   return 'contfrac . list(car u, car cf!:convlist1 v, 'list . v);
 end;
 
+fluid '(ps!:order!-limit);
+
 symbolic procedure cf!:euler1(u, x, n);
 begin scalar coeflist, ps, nextterm, lastterm, a, b, c, d, j, k;
   ps := car simpps1(u, x, 0);  

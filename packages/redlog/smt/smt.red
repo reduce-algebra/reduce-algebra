@@ -330,6 +330,8 @@ procedure smt_processPrintAssertions(form);
       prin2 2
    >>;
 
+global '(!*pretty!-symmetric);
+
 procedure smt_processPrintAssertions1(form);
    begin scalar svsymm;
       smt_checkAlConsistency();
@@ -538,7 +540,7 @@ procedure smt_fromRl(f);
    end;
 
 procedure smt_fromRlAt(f);
-   begin scalar opal, op, w;
+   begin scalar opal, op, w, lhs;
       op := rl_op f;
       lhs := prepf ofsf_arg2l f;
       if op eq 'neq then
@@ -549,7 +551,7 @@ procedure smt_fromRlAt(f);
    end;
 
 procedure smt_fromRlTerm(u);
-   begin scalar op, argl, opal;
+   begin scalar op, argl, opal, w;
       if numberp u or idp u then
       	 return u;
       op . argl := u;

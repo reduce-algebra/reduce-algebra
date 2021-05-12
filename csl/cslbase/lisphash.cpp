@@ -693,7 +693,7 @@ UNUSED_NAME static bool float_if_exact(LispObject x)
 // really huge structures in a way that may not be good.
 
 static const size_t hash_explore_depth = 5;
-static const size_t hash_explore_breadth = 20;
+static const size_t hash_explore_breadth = 10;
 
 static uint64_t hash_generic_equal(uint64_t r, LispObject key,
                                    int mode, size_t depth)
@@ -706,14 +706,14 @@ static uint64_t hash_generic_equal(uint64_t r, LispObject key,
         my_exit();
     }
 #endif
-    if (mode == HASH_AS_SXHASH)
-    {   LispObject prev = Lget_hash_2(nil, key, sxhash_hash_table);
-        if (prev != nil)
-        {   UPDATE32(r, VIRTUAL_TYPE_REF | TAG_HDR_IMMED);
-            return hash_eq(r, prev);
-        }
-        Lput_hash(nil, key, sxhash_hash_table, fixnum_of_int(depth));
-    }
+//@ if (mode == HASH_AS_SXHASH)
+//@ {   LispObject prev = Lget_hash_2(nil, key, sxhash_hash_table);
+//@     if (prev != nil)
+//@     {   UPDATE32(r, VIRTUAL_TYPE_REF | TAG_HDR_IMMED);
+//@         return hash_eq(r, prev);
+//@     }
+//@     Lput_hash(nil, key, sxhash_hash_table, fixnum_of_int(depth));
+//@ }
 // I will iterate along any chain of CONS cells, and put a sort of virtual
 // header word on the front of each cell to keep the calculation robust.
     if (depth > hash_explore_depth) UPDATE32(r, 999999); 
@@ -796,7 +796,7 @@ static uint64_t hash_generic_equal(uint64_t r, LispObject key,
             if (is_bitvec_header(h))
             {
 // I always hash bitvectors byte by byte - this may be slower than going
-// word by word but is safer for sxhash, and the situatio is not expected
+// word by word but is safer for sxhash, and the situation is not expected
 // to be common.
                 return hash_byte_vector(r, key);
             }
@@ -1305,8 +1305,11 @@ LispObject Lclr_hash_0(LispObject env)
 // obligation I have here is just that things that are (CL-)EQUAL must yield
 // the same hash value, so I can afford to descend and that seems kinder to me.
 // Common Lisp also says that this function should always terminate even for
-// cyclic structures. Yuk that adds an extra unwelcome level of mess, which
-// I will ignore for now.
+// cyclic structures. Yuk that adds an extra unwelcome level of mess, and
+// in an earlier revision I traversed the entire structure with an extra
+// hash table to detect cycles. I now have a limit to the depth that I
+// investigate and that renders the code safe against cycles, so I do not
+// need the cost and complication of the extra hash table.
 
 LispObject Lsxhash(LispObject env, LispObject key)
 {   uint64_t h;
@@ -1327,12 +1330,9 @@ LispObject Lsxhash(LispObject env, LispObject key)
             h = 0x123456789ab*ucelt(key, i);
     }
     else
-    {   Lclr_hash(nil, sxhash_hash_table);
-// This case has the serious extra overhead and pain of protection against
-// reentrant structures. So use on vectors or lists of any sort (apart from
-// simple strings) is bad.
+    {   //@ Lclr_hash(nil, sxhash_hash_table);
         h = hash_generic_equal(0, key, HASH_AS_SXHASH, 0);
-        Lclr_hash(nil, sxhash_hash_table); // Just to tidy up.
+//@     Lclr_hash(nil, sxhash_hash_table); // Just to tidy up.
     }
     h = h ^ (h >> 32);
     h = (h ^ (h >> 16)) &

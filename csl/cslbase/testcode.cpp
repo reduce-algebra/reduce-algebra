@@ -100,7 +100,7 @@ void gcTestCode()
         startup_symbol      = make_undefined_symbol("system-startup");
 
     sys_hash_table = Lmkhash_1(nil, fixnum_of_int(2));    // EQUAL
-    sxhash_hash_table = Lmkhash_1(nil, fixnum_of_int(0)); // EQ
+//@ sxhash_hash_table = Lmkhash_1(nil, fixnum_of_int(0)); // EQ
     get_counts = Lmkhash_1(nil, fixnum_of_int(0));        // EQ
     fastget_names = get_basic_vector_init((MAX_FASTGET_SIZE+2)*CELL,
                                           SPID_NOPROP);

@@ -82,7 +82,11 @@ For example:
 
 Note that in defining the rule \texttt{conj z => z!*},\ the rule
 \texttt{conj z!*  => z} is (in effect) automatically defined and
-\emph{should not} be entered by the user.
+\emph{should not} be entered by the user.  A more convenient method of
+associating two identifiers as mutual complex-conjugates is to use the
+\texttt{COMPLEX\_CONJUGATES} declaration as described in the section
+\hyperlink{command:COMPLEX_CONJUGATES}{Declaring Complex Conjugates}.
+
 The main use of rules for \texttt{CONJ} is to associate two identifiers
 as complex conjugates as in the examples above. In addition rules of the form
 \texttt{let conj(z)=>z, conj(w)=>-w} may be used. They imply that
@@ -112,8 +116,10 @@ defining the mathematically equivalent rules:
 
 Note also that the standard elementary functions and their inverses
 (where appropriate) are automatically defined to be
-  \texttt{SELFCONJUGATE}\ttindextype{SELFCONJUGATE}{declaration} so that
- \texttt{conj(f(z)) => f(conj(z))}.
+\texttt{SELFCONJUGATE}\ttindextype{SELFCONJUGATE}{declaration} so that
+\texttt{conj(f(z))} is simplified to \texttt{f(conj(z))}. User-defined
+operators may be declared to be self-conjugate with the declaration
+\hyperlink{command:SELFCONJUGATE}{\texttt{SELFCONJUGATE}}.
 
 \subsection{FACTORIAL}\ttindex{FACTORIAL}
 \hypertarget{operator:FACTORIAL}{}

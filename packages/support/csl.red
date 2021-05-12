@@ -150,11 +150,12 @@ symbolic procedure find!!maxbflexp();
 
 flag('(find!!maxbflexp), 'lose);
 
-inline procedure int2id x; % Turns 8-bit value into name. Only OK is under 0x80
+inline procedure int2id x; % Turns 8-bit value into name. Only OK if under 0x80
   intern list2string list x;
 
-inline procedure id2int x; % Gets first octet of UTF-8 form of name
-  car string2list x;
+%inline procedure id2int x; % Gets first character of UTF-8 form of name
+%  car string2list x;       % Well this versuin was the first octet, but the
+                            % version now built into CSL is better.
 
 symbolic macro procedure bothtimes u;
    list('eval!-when, '(compile load eval), cadr u);

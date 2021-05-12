@@ -558,6 +558,8 @@ symbolic procedure indvarprt u;
 
 put('indvarprt,'expt,'inbrackets);
 
+fluid '(fancy!-pos!* fancy!-texpos fancy!-line!*);
+
 symbolic procedure xindvarprt_tens(l,p);
   % An extension of the function XINDVARPRT of  EXCALC.
   fancy!-level

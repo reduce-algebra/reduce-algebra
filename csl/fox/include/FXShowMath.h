@@ -133,6 +133,16 @@ typedef struct TopBox
     int measuredSize;
 } TopBox;
 
+  typedef struct LinedBox
+{
+    // a "LinedBox" is used to represent an underlined or overlined item 
+    unsigned char type, flags;
+    short int height, depth, width;
+    short int th, td;   //text height and depth
+    union Box *sub;
+} LinedBox;
+
+  
 typedef union Box
 {
     TextBox text;
@@ -143,6 +153,7 @@ typedef union Box
     MatrixBox matrix;
     FrameBox frame;
     TopBox top;
+    LinedBox bar;
 } Box;
 
 extern Box *makeTopBox(Box *b);

@@ -1777,7 +1777,7 @@ down:
                         }
                         if (c == SER_GENSYM || c == SER_DUPGENSYM)
                         {   GC_PROTECT(prev = copy_string(boffo, boffop));
-                            GC_PROTECT(prev = Lgensym1(nil, prev));
+                            GC_PROTECT(prev = Lgensym(nil, prev));
                         }
                         else GC_PROTECT(prev = iintern(boffo, (int32_t)boffop, CP, 0));
                         *(atomic<LispObject>*)p = prev;

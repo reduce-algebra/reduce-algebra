@@ -89,7 +89,7 @@ fluid '(!*print!-array!*
 
 fluid '(!*prinl_visited_nodes!* !*prinl_index!* );
 
-!*prinl_visited_nodes!* := mkhash(10, 0, 1.5)$
+!*prinl_visited_nodes!* := mkhash(200, 0, 1.5)$
 
 symbolic procedure p_prinl0(x, escaped);
 % print x even if it has loops in it. If escaped is true then printing

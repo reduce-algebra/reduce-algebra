@@ -32,7 +32,7 @@ imports big2sys, bigp, floatloworder, floathighorder, gtneg, gtpos,
 
 exports ashift, msd!:, fl2bf, integerp!:, normbf, oddintp, preci!:;
 
-fluid '(bbits!* dirchar!*);
+fluid '(bbits!* dirchar!* outputhandler!* !*gc!-hook!* lessspace!*);
 
 global '(bfz!* bitsperword tempdir!*);
 

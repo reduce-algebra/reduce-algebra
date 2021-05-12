@@ -608,6 +608,57 @@ let atan_rules;
 
 clear atan_rules;
 
+% added by A. Barnes to facilitate use of symbolic complex conjugates
+% and to automatically add the appropriate fancy symbol property to
+% the complex conjugate. May 2021.
+
+symbolic procedure !*bar u;
+  % construct an overlined fancy-symbol for the complex conjugate of u
+  if (stringp u or idp u) then
+    list2string(append(explode2 "\overline {", 
+                    append(explode2 u, explode2 '!})))
+  else typerr(u, "a string or identifier");
+
+% The following procedure needs to be in alg/elem.red (not poly/compopr.red)
+% for bootstrapping reasons.
+
+put('complex_conjugates, 'stat, 'rlis);
+
+symbolic procedure complex_conjugates u;
+  %% u should consist of one (or more, comma-separated) lists of
+  %% two identifiers. It associates the two identifiers as mutual
+  %% complex-conjugates. If the first is an operator, the second is
+  %% also declared as an operator, if necessary. A fancy!-print symbol 
+  %% is automatically constructed and installed for the second identifier
+  %% from that of the first -- by adding overlining.
+begin scalar v, conjv, fsym, rs;
+  foreach pr in u do  <<
+    if atom pr or not (car pr = 'list and length(cdr pr) = 2) then
+       typerr(u, "a 2-element list");
+    if not idp(v := cadr pr) then
+       typerr(v, "identifier"); 
+    if not idp(conjv := caddr pr) then
+       typerr(conjv, "identifier");
+ 
+     rs := {'list, {'replaceby, {'conj, v}, conjv}} . rs;
+
+     if get(v, 'simpfn) then <<
+        if not get(conjv, 'simpfn) then
+       	   put(conjv, 'simpfn, 'simpiden);
+        if not (fsym := get(v, 'fancy!-functionsymbol)) then
+      	   put(conjv, 'fancy!-functionsymbol, !*bar v)
+        else
+           put(conjv, 'fancy!-functionsymbol, !*bar fsym);
+     >>
+     else
+        if not (fsym := get(v, 'fancy!-special!-symbol)) then
+      	   put(conjv, 'fancy!-special!-symbol, !*bar v)
+        else
+           put(conjv, 'fancy!-special!-symbol, !*bar fsym);
+  >>;
+  rs := 'list . rs;
+  algebraic let rs;
+end;
 
 repart(pi) := pi$       % $ used for bootstrapping purposes.
 impart(pi) := 0$

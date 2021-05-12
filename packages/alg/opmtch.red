@@ -62,7 +62,7 @@ symbolic inline procedure assoc_lookup(u, table);
   else gethash(u, table);
 
 symbolic inline procedure assoc_add(u, q, table);
- << if null table then table := mkhash(20, 3, 2.0);
+ << if null table then table := mkhash(200, 3, 2.0);
     puthash(u, table, u . q);
     table >>;
 
