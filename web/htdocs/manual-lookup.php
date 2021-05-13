@@ -24,6 +24,10 @@ if ($doc->loadHTMLFile('manual/manual.html')) {
         <head>
             <meta charset="utf-8" />
             <title>REDUCE Manual Lookup Error</title>
+            <style>
+             body {max-width: 40em; margin-left: auto; margin-right: auto;
+                 font-family: Arial, Helvetica, sans-serif;}
+            </style>
         </head>
         <body style="font-family: Arial, Helvetica, sans-serif;">
             <h1>REDUCE Manual Lookup Error</h1>
@@ -33,7 +37,7 @@ if ($doc->loadHTMLFile('manual/manual.html')) {
             </p>
 	    <p>
                 Please email this error message to
-                <a href="mailto:fjwright@users.sourceforge.net?subject=REDUCE%20web%20site">fjwright@users.sourceforge.net</a>,
+                <a href="mailto:fjwright@users.sourceforge.net?subject=REDUCE%20web%20site">fjwright@users.sourceforge.net</a>.
             </p>
         </body>
     </html>
