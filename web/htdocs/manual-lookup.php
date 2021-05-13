@@ -1,13 +1,50 @@
-<?php  // -*-mhtml-*-
+<?php
+$queryString = $_SERVER['QUERY_STRING'];
+if ($queryString):
+
+$doc = new DOMDocument();
+libxml_use_internal_errors(true);
+if ($doc->loadHTMLFile('manual/manual.html')) {
+    // Use XPath to extract the href attribute of the contents item containing the query string:
+    $xpath = new DOMXpath($doc);
+    $href = $xpath->query("/html/body/div[@class='tableofcontents']/span/a[contains(.,'$queryString')]/@href");
+    if ($href->length == 1) {
+        // If precisely one contents item is found, display the corresponding page:
+        header("Location: manual/{$href->item(0)->nodeValue}");
+    } else {
+        // Otherwise, display the contents page:
+        header('Location: manual/manual.html');
+    }
+    exit;
+} // else fall through to the error message page below...
+?>
+
+    <!DOCTYPE html>
+    <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+        <head>
+            <meta charset="utf-8" />
+            <title>REDUCE Manual Lookup Error</title>
+        </head>
+        <body style="font-family: Arial, Helvetica, sans-serif;">
+            <h1>REDUCE Manual Lookup Error</h1>
+	    <p>
+                The REDUCE manual lookup facility failed to load the
+	        contents page.  Sorry.  This should not happen!
+            </p>
+	    <p>
+                Please email this error message to
+                <a href="mailto:fjwright@users.sourceforge.net?subject=REDUCE%20web%20site">fjwright@users.sourceforge.net</a>,
+            </p>
+        </body>
+    </html>
+
+<?php else:
 
 require_once('../php/Smarty/setup.php');
 $smarty = new Smarty_REDUCE();
 
 $smarty->assign('head_extras', <<< END_OF_HEAD_EXTRAS
 <style type="text/css">
-  body {
-      display: none;
-  }
   #form {
       text-align: center;
   }
@@ -61,4 +98,4 @@ END_OF_MAIN_CONTENT
 
 $smarty->display('manual-lookup.tpl');
 
-?>
+endif; ?>

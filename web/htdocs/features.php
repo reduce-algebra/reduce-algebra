@@ -105,10 +105,9 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
     specializing in numerical and graphical calculations, rather than
     depend on just one system to provide everything. To this end,
     REDUCE provides facilities for writing results in a form
-    compatible
-    <a class="manual-lookup" title="GENTRAN">with common numerical
-      programming languages</a> (such as C or Fortran) or
-    <a class="manual-lookup" title="RLFI">document processors</a> such
+    compatible <a href="manual-lookup.php?GENTRAN">with common
+    numerical programming languages</a> (such as C or Fortran) or
+    <a href="manual-lookup.php?RLFI">document processors</a> such
     as <span class="latex">L<sup>a</sup>T<sub>e</sub>X</span>.</dd>
   <dt>State-of-the-art algorithms</dt>
   <dd>Another advantage of an &quot;open&quot; system is that there is
@@ -117,15 +116,15 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
     the best current algorithms being used soon after their
     development. At the present time, we believe REDUCE has superior
     code for solving non-linear polynomial equations using
-    <a class="manual-lookup" title="GROEBNER">Gr&ouml;bner bases</a>,
-    real and complex <a class="manual-lookup" title="ROOTS">root
-    finding</a> to any precision, <a class="manual-lookup"
-    title="EXCALC">exterior calculus</a> calculations
-    and <a class="manual-lookup" title="SCOPE">optimized numerical
-    code generation</a> among others. Its simplification strategy,
-    using a combination of efficient polynomial manipulation and
-    flexible pattern matching is focused on giving users as natural a
-    result as possible without excessive programming.</dd>
+    <a href="manual-lookup.php?GROEBNER">Gr&ouml;bner bases</a>, real
+    and complex <a href="manual-lookup.php?ROOTS">root finding</a> to
+    any precision, <a href="manual-lookup.php?EXCALC">exterior
+    calculus</a> calculations and
+    <a href="manual-lookup.php?SCOPE">optimized numerical code
+    generation</a> among others. Its simplification strategy, using a
+    combination of efficient polynomial manipulation and flexible
+    pattern matching is focused on giving users as natural a result as
+    possible without excessive programming.</dd>
 </dl>
 <h2>Specialist packages</h2>
 <p>
@@ -144,6 +143,6 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 END_OF_MAIN_CONTENT
 );
 
-$smarty->display('features.tpl');
+$smarty->display('main.tpl');
 
 ?>
