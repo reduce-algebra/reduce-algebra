@@ -133,7 +133,8 @@ symbolic procedure addpf(u,v);
 
 symbolic procedure addmpf(u,v);
    if null v then u
-    else if ldpf v = 1 then 1 .* addsq(lc u,lc v) .+ nil
+    else if ldpf v = 1 then
+      (if numr x then 1 .* x .+ nil else nil) where x = addsq(lc u,lc v)
     else lt v .+ addmpf(u,red v);
 
 symbolic procedure addmpsf(u,v);

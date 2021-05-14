@@ -66,7 +66,7 @@ flag('(prin2 ) ,'opfn); % To make it available in the alg. mode.
 % 2. New functions closely related to existing ones.
 
 symbolic procedure oddp u$
-% Tests if integer U is odd. Is also defined in EXCALC;
+% Tests if integer U is odd. 
 not evenp u;
 
 flag('(oddp),'boolean);

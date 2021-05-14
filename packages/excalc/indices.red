@@ -260,11 +260,11 @@ symbolic procedure mappl(u,v,w,bool);
 % This first version is the reference code, but it recurses on its third
 % argument w, which can be a very long list.
 
-symbolic procedure chksymmetries!&subst(u,v,w,bool);
-   if null w then nil
-    else ((if x then x . chksymmetries!&subst(u,v,cdr w,bool)
-            else chksymmetries!&subst(u,v,cdr w,bool))
-           where x = chksymmetries!&sub1(u,v,car w,bool));
+%symbolic procedure chksymmetries!&subst(u,v,w,bool);
+%   if null w then nil
+%    else ((if x then x . chksymmetries!&subst(u,v,cdr w,bool)
+%            else chksymmetries!&subst(u,v,cdr w,bool))
+%           where x = chksymmetries!&sub1(u,v,car w,bool));
 
 % This is a non-recursive version of the same...
 

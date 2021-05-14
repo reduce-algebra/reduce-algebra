@@ -54,6 +54,7 @@ symbolic procedure deg!*form u;
            else if x memq '(plus minus difference quotient) then
                      deg!*form cadr u
            else if x eq 'times then deg!*farg cdr u
+           else if x eq '!*sq then deg!*form prepsq simp!* u
            else if x eq 'crossprod then 1
            else if x eq 'rot then 1
            else if x eq 'dotprod then nil

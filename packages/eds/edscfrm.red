@@ -320,9 +320,9 @@ symbolic procedure !*rule2prefix r;
       if eqcar(a,'!*sq) then prepsq!* cadr a else a;
 
 
-symbolic procedure texpricfrm(u,v,w);
-   % Have to hide coframing from TRI's makeprefix
-   TeXvarpri('texpriedsop . !*cfrm2a u,v,w);
+%symbolic procedure texpricfrm(u,v,w);
+%   % Have to hide coframing from TRI's makeprefix
+%   TeXvarpri('texpriedsop . !*cfrm2a u,v,w);
 
 
 symbolic procedure texpricfrm(u,v,w);
