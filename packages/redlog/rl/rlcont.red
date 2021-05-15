@@ -78,8 +78,11 @@ procedure rl_set!$(argl);
       	 >> else
 	    argl := w . for each x in cdr argl collect reval x
       >>;
+      % load at least the packages for the chosen context before approximating
+      % the current revision in rl_about
+      w := rl_set argl;
       if not rl_cid!* then rl_about();
-      return 'list . rl_set argl
+      return 'list . w
    end;
 
 procedure rl_set(argl);
