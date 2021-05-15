@@ -49,7 +49,7 @@ symbolic procedure partitwedge u;
             else mkuniquewedge xpndwedge u;
 
 
-symbolic procedure oddp m;
+symbolic procedure exc_oddp m;
    if not fixp m then typerr(m,"integer") else remainder(m,2) neq 0;
 
 symbolic procedure mksgnsq u;
@@ -122,7 +122,7 @@ symbolic procedure wedget2(u,v);
 
 symbolic procedure wedgek2(u,v,w);
    if u eq car v and null eqcar(u,'wedge)
-      then if (fixp n and oddp n) where n = deg!*form u then nil
+      then if (fixp n and exc_oddp n) where n = deg!*form u then nil
             else multpfsq(wedgef(u . v),mksgnsq w)
     else if eqcar(car v,'wedge) then wedgek2(u,cdar v,w)
     else if eqcar(u,'wedge)

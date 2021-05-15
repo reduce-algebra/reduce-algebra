@@ -83,55 +83,55 @@ symbolic procedure xvarlistp x;
    null x or xvarp car x and xvarlistp cdr x;
 
 
-symbolic procedure addmpf(u,v);
+%symbolic procedure addmpf(u,v);
 % add extra test for vanishing coefficient
-   if null v then u
-    else if ldpf v = 1 then
-      (if numr x then 1 .* x .+ nil) where x = addsq(lc u,lc v)
-    else lt v .+ addmpf(u,red v);
+%   if null v then u
+%    else if ldpf v = 1 then
+%      (if numr x then 1 .* x .+ nil) where x = addsq(lc u,lc v)
+%    else lt v .+ addmpf(u,red v);
 
 
-symbolic procedure deg!*form u;
+%symbolic procedure deg!*form u;
 %U is a prefix expression. Result is the degree of u;
 % add !*sq prefix forms
-   if atom u then get!*fdeg u
-    else (if flagp(x,'indexvar) then get!*ifdeg u
-           else if x eq 'wedge then deg!*farg cdr u
-           else if x eq 'd then addd(1,deg!*form cadr u)
-           else if x eq 'hodge then addf(dimex!*,negf deg!*form cadr u)
-           else if x eq 'partdf then if cddr u then nil else -1
-           else if x eq 'liedf then deg!*form caddr u
-           else if x eq 'innerprod then addd(-1,deg!*form caddr u)
-           else if x memq '(plus minus difference quotient) then
-                     deg!*form cadr u
-           else if x eq 'times then deg!*farg cdr u
-           else if x eq '!*sq then deg!*form prepsq simp!* u
-           else nil) where x = car u;
+%   if atom u then get!*fdeg u
+%    else (if flagp(x,'indexvar) then get!*ifdeg u
+%           else if x eq 'wedge then deg!*farg cdr u
+%           else if x eq 'd then addd(1,deg!*form cadr u)
+%           else if x eq 'hodge then addf(dimex!*,negf deg!*form cadr u)
+%           else if x eq 'partdf then if cddr u then nil else -1
+%           else if x eq 'liedf then deg!*form caddr u
+%           else if x eq 'innerprod then addd(-1,deg!*form caddr u)
+%           else if x memq '(plus minus difference quotient) then
+%                     deg!*form cadr u
+%           else if x eq 'times then deg!*farg cdr u
+%           else if x eq '!*sq then deg!*form prepsq simp!* u
+%           else nil) where x = car u;
 
 
 % The following two routines are copied from the development version of
 % excalc to overcome an error message "+++ oddp nil" in the CSL version.
 
 
-symbolic procedure oddp m;
-   if not fixp m then typerr(m,"integer") else remainder(m,2) neq 0;
+%symbolic procedure oddp m;
+%   if not fixp m then typerr(m,"integer") else remainder(m,2) neq 0;
 
 
-symbolic procedure wedgek2(u,v,w);
-   if u eq car v and null eqcar(u,'wedge)
-      then if (fixp n and oddp n) where n = deg!*form u then nil
-            else multpfsq(wedgef(u . v),mksgnsq w)
-    else if eqcar(car v,'wedge) then wedgek2(u,cdar v,w)
-    else if eqcar(u,'wedge)
-            then multpfsq(wedgewedge(cdr u,v),mksgnsq w)
-    else if wedgeordp(u,car v)
-            then multpfsq(wedgef(u . v),mksgnsq w)
-    else if cdr v
-            then wedgepf2(!*k2pf car v,
-                          wedgek2(u,cdr v,addf(w,multf(deg!*form u,
-                                                   deg!*form car v))))
-    else multpfsq(wedgef list(car v,u),
-                  mksgnsq addf(w,multf(deg!*form u,deg!*form car v)));
+%symbolic procedure wedgek2(u,v,w);
+%   if u eq car v and null eqcar(u,'wedge)
+%      then if (fixp n and oddp n) where n = deg!*form u then nil
+%            else multpfsq(wedgef(u . v),mksgnsq w)
+%    else if eqcar(car v,'wedge) then wedgek2(u,cdar v,w)
+%    else if eqcar(u,'wedge)
+%            then multpfsq(wedgewedge(cdr u,v),mksgnsq w)
+%    else if wedgeordp(u,car v)
+%            then multpfsq(wedgef(u . v),mksgnsq w)
+%    else if cdr v
+%            then wedgepf2(!*k2pf car v,
+%                          wedgek2(u,cdr v,addf(w,multf(deg!*form u,
+%                                                   deg!*form car v))))
+%    else multpfsq(wedgef list(car v,u),
+%                  mksgnsq addf(w,multf(deg!*form u,deg!*form car v)));
 
 
 endmodule;

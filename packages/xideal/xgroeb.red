@@ -85,7 +85,7 @@ symbolic procedure storexvars p;
    xvarlist!* := sort(xvarlist!*,'worderp);
    xdegreelist!*
       := (1 . 0) . foreach k in xvarlist!* collect k . xdegree k;
-   zerodivs!*:= foreach v in xvarlist!* join if oddp xdegree v then {v};
+   zerodivs!*:= foreach v in xvarlist!* join if exc_oddp xdegree v then {v};
    if fixp dimex!* and dimex!* < foreach v in xvarlist!* sum xdegree v
      then rerror(xideal,0,
              "too many independent p-forms in XIDEAL (check SPACEDIM)");

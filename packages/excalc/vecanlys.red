@@ -64,10 +64,10 @@ symbolic procedure !3dfunctions u;
 
 rlistat '(!3dfunctions);
 
-symbolic procedure basis u;
+symbolic procedure basis_vectors u;
    cofram(for each j in u collect cdr j,nil);
 
-rlistat '(basis);
+rlistat '(basis_vectors);
 
 symbolic procedure simpgrad u;
    !*pf2sq partitgradient u;
