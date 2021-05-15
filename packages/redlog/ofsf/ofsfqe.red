@@ -2966,7 +2966,7 @@ asserted procedure ofsf_preqeGoodEql(f: Formula, qvl: List): DottedPair;
 	 >>;
       if !*rlverbose then
 	 ioto_tprin2 {"+++ computing minimum vertex cover of ", el, " ... "};
-      vcl := lto_vertexCover(el, nil) where !*rlverbose=t;
+      vcl := lto_vertexCover(el, t) where !*rlverbose=t;
       if !*rlverbose then
 	 ioto_prin2t {vcl};
       evl := lto_setminus(vl, vcl);
