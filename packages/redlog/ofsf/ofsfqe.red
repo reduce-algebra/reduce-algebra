@@ -2910,12 +2910,21 @@ asserted procedure ofsf_qeg(f: Formula): Formula;
 	 rl_mkn('and, cdr case . car case)), nil, -1)
    end;
 
-asserted procedure ofsf_preqe(f: Formula): DottedPair;
+asserted procedure ofsf_preqe(f: Formula, theo: List, exact: Boolean): DottedPair;
+   ofsf_preqe1(f, theo, exact, nil, nil);
+
+asserted procedure ofsf_preqea(f: Formula, theo: List, exact: Boolean): DottedPair;
+   ofsf_preqe1(f, theo, exact, nil, t);
+
+asserted procedure ofsf_pregqe(f: Formula, theo: List, exact: Boolean): DottedPair;
+   ofsf_preqe1(f, theo, exact, t, nil);
+
+asserted procedure ofsf_preqe1(f: Formula, theo: List, exact: Boolean, generic: Boolean, answer: Boolean): DottedPair;
    % Apply the vertex cover method to painlessly eliminate some variables via
    % Gaussian elimination.
    begin
-      scalar ql, varll, bvl, evl, eql, g, theo;
-      f := rl_simpl(rl_pnf f, nil, -1);
+      scalar ql, varll, bvl, evl, rvl, eql, g, theo, w, ans;
+      f := rl_simpl(rl_pnf f, theo, -1);
       if not rl_quap rl_op f then
 	 return nil . f;
       {ql, varll, g, bvl} := cl_split f;
@@ -2923,24 +2932,41 @@ asserted procedure ofsf_preqe(f: Formula): DottedPair;
  	 return nil . f;
       if rl_op g neq 'and then
 	 return nil . f;
-      evl . eql := ofsf_preqeGoodEql(g, car varll);
+      evl . eql := ofsf_preqeGoodEql(g, car varll, exact);
       if null evl then
 	 return nil . f;
       evl := sort(evl, 'ordp);
       % When there are too few equations we must drop some good variables:
       for i := 1 : length evl - length eql do
 	 evl := cdr evl;
+      rvl := reverse sort(lto_setminus(car varll, evl), 'ordp);
       for each v in reverse evl do
 	 g := rl_mkq('ex, v, g);
       if !*rlverbose then
 	 ioto_tprin2t "+++ starting qe, which should do only Gauss steps";
-      theo . g := cl_gqe(g, nil, nil);
-      for each v in reverse sort(lto_setminus(car varll, evl), 'ordp) do
+      if generic then <<
+      	 theo . g := cl_gqe(g, theo, nil);
+      	 for each v in rvl do
+	    g := rl_mkq('ex, v, g);
+      	 return theo . g
+      >>;
+      if answer then <<
+	 w := cl_qea(g, theo);
+	 w := for each pr in w collect <<
+	    g := car pr;
+      	    for each v in rvl do
+	       g := rl_mkq('ex, v, g);
+	    g . cdr pr
+	 >>;
+	 return w
+      >>;
+      g := cl_qe(g, theo);
+      for each v in rvl do
 	 g := rl_mkq('ex, v, g);
-      return theo . g
+      return g
    end;
 
-asserted procedure ofsf_preqeGoodEql(f: Formula, qvl: List): DottedPair;
+asserted procedure ofsf_preqeGoodEql(f: Formula, qvl: List, exact: Boolean): DottedPair;
    % We have a primitive formula, [qvl] are the ex-quantified variables, [f] is
    % the matrix. Returns [evl . eql], where [evl] is a (maximum) list of
    % variables that can be Gauss-eliminated, and [eql] is a list of equations
@@ -2966,7 +2992,7 @@ asserted procedure ofsf_preqeGoodEql(f: Formula, qvl: List): DottedPair;
 	 >>;
       if !*rlverbose then
 	 ioto_tprin2 {"+++ computing minimum vertex cover of ", el, " ... "};
-      vcl := lto_vertexCover(el, t) where !*rlverbose=t;
+      vcl := lto_vertexCover(el, t, exact) where !*rlverbose=nil;
       if !*rlverbose then
 	 ioto_prin2t {vcl};
       evl := lto_setminus(vl, vcl);

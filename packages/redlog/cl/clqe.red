@@ -669,7 +669,7 @@ asserted procedure cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory, ans: B
 	       >>)
 	    else <<
 	       if c=0 then <<
-	       	  ioto_tprin2t {"-- left: ",length cvl};
+	       	  ioto_tprin2t {"-- left: ",length cvl," ", cvl};
 		  c := co_length(co) + 1
 	       >>;
 	       ioto_nterpri(length explode c + 4);

@@ -256,6 +256,8 @@ put('ofsf,'rl_services,'(
    (rl_vsl!* . vsl_vsl)
    (rl_sign!* . cl_sign)
    (rl_preqe!* . ofsf_preqe)
+   (rl_preqea!* . ofsf_preqea)
+   (rl_pregqe!* . ofsf_pregqe)
    (rl_mathematica!* . mma_mathematica)
    (rl_qepcad!* . qepcad_qepcad)
    (rl_nra2qf!* . cl_nra2qf)
