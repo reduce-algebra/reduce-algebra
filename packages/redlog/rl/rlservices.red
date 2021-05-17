@@ -481,25 +481,18 @@ rl_service {
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
    arg = {pos = 3, name = exact, type = Flag, default = yes, doc = "use exact vertex cover"},
-   returns = {type = Formula},
-   mode = both};
-
-rl_service {
-   name = preqea,
-   doc = "pre-quantifier elimination (domain R only)",
-   arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
-   arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
-   arg = {pos = 3, name = exact, type = Flag, default = yes, doc = "use exact vertex cover"},
-   returns = {type = List(Pair(Formula, List(Assignment(Any))))},
-   mode = both};
-
-rl_service {
-   name = pregqe,
-   doc = "pre-quantifier elimination (domain R only)",
-   arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
-   arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
-   arg = {pos = 3, name = exact, type = Flag, default = yes, doc = "use exact vertex cover"},
    returns = {type = Pair(List(Atom), Formula)},
+   mode = both};
+
+rl_service {
+   name = vcreduce,
+   doc = "extended generic vertex cover reduction method (domain R only)",
+   arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
+   arg = {pos = 2, name = variables, type = List(Variable), doc = "to be eliminated"},
+   arg = {pos = 3, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
+   arg = {pos = 4, name = nogen, type = Flag, default = no, doc = "do not generate assumptions on variables"},
+   arg = {pos = 5, name = exact, type = Flag, default = yes, doc = "use exact vertex cover"},
+   returns = {type = Triplet(Formula, List(Assignment(Any)), List(Atom))},
    mode = both};
 
 rl_service {

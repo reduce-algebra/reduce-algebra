@@ -345,12 +345,15 @@ asserted procedure cl_gqea(f: Formula, theo: Theory, xbvl: KernelL): Elimination
    % for an interpretation of the parameters, then [f] holds, and $A_i$
    % describes a satisfying sample point. Accesses the switch [rlqepnf]; if
    % [rlqepnf] is on, then [f] must be prenex.
-   begin scalar er,!*rlqegen,!*rlsipw,!*rlsipo,!*rlqeans;
+   begin scalar er, theo, eqr, !*rlqegen, !*rlsipw, !*rlsipo, !*rlqeans;
       !*rlsipw := !*rlqegen := !*rlqeans := t;
       er := cl_qe1(f,theo,xbvl);
       if rl_exceptionp er then
 	 return er;
-      return cl_mkER(rl_thsimpl cl_erTh er,cl_erEQR er)
+      theo := rl_thsimpl cl_erTh er;
+      eqr := for each pr in cl_erEQR er collect
+	 rl_simpl(car pr, theo, -1) . cdr pr;
+      return cl_mkER(theo, eqr)
    end;
 
 rl_provideService rl_lqe = cl_lqe
