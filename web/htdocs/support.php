@@ -1,11 +1,9 @@
-<?php  // -*-mhtml-*-
+<?php
+$header_title = 'Support Questions and Answers';
+include 'include/begin-head.php';
+include 'include/begin-body.php';
 
-require_once('../php/Smarty/setup.php');
-$smarty = new Smarty_REDUCE();
-
-$smarty->assign('header_title', 'Support Questions and Answers');
-
-$smarty->assign('Q_A', array(
+$Q_A = array(
 
 array(
 'Q' => 'What is REDUCE?',
@@ -385,8 +383,37 @@ array(
   CSL REDUCE in command-line mode by starting it using the command</p>
 <p><code>redcsl --nogui</code> or <code>redcsl -w</code></p>')
 
-));
-
-$smarty->display('support.tpl');
-
+);
 ?>
+
+<p>Click on a question to show (or hide) its answer.</p>
+<div class="accordion" id="Q_A_accordion">
+    <?php foreach ($Q_A as $index => $item): ?>
+        <div class="card">
+            <div class="card-header" id="heading<?=$index?>">
+                <h5 class="mb-0">
+	            <button class="btn btn-link collapsed" type="button"
+                            data-toggle="collapse" data-target="#collapse<?=$index?>"
+                            aria-expanded="false" aria-controls="collapse<?=$index?>">
+	                <?=$index+1?>. <?=$item['Q']?>
+	            </button>
+                </h5>
+            </div>
+            <div id="collapse<?=$index?>" class="collapse"
+                 aria-labelledby="heading<?=$index?>" data-parent="#Q_A_accordion">
+                <div class="card-body">
+	            <?=$item['A']?>
+                </div>
+            </div>
+        </div>
+    <?php endforeach; ?>
+</div>
+
+</div><!-- opened in begin-body.php -->
+
+<?php
+include 'include/footer.php';
+?>
+
+</body>
+</html>
