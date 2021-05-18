@@ -99,7 +99,7 @@ put('return,'n_formfn,'n_formreturn);
 
 put('rblock,'n_formfn,'n_formblock);
 
-symbolic procedure read_type;
+symbolic procedure read_type4;
    % This is a very restricted parser for type expressions.
    begin scalar y,z;
       y := scan();
@@ -122,7 +122,7 @@ symbolic procedure read_param_list u;
   b:  if not idp x then typerr(x,"parameter");
       y := scan();
       if y = '!*colon!* then <<
-         x := x . read_type();
+         x := x . read_type4();
          y := cursym!* >>
        else x := x . 'generic;
       if y = '!*comma!* then << z := x . z; x := scan(); go to b >>

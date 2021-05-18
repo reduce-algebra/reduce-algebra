@@ -164,16 +164,16 @@ symbolic procedure listunion(x,y);
                          if car x member y then delete(car x,y) else y);
 
 
-symbolic procedure sublistp(x,y);
-   % x,y:list -> sublistp:bool
-   null x or car x member y and sublistp(cdr x,delete(car x,y));
+%symbolic procedure sublistp(x,y);
+%   % x,y:list -> sublistp:bool
+%   null x or car x member y and sublistp(cdr x,delete(car x,y));
 
 
-symbolic procedure listdiff(x,y);
-   % x,y:list -> listdiff:list
-   if null y then x
-   else if null x then nil
-   else listdiff(delete(car y,x),cdr y);
+%symbolic procedure listdiff(x,y);
+%   % x,y:list -> listdiff:list
+%   if null y then x
+%   else if null x then nil
+%   else listdiff(delete(car y,x),cdr y);
 
 endmodule;
 

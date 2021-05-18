@@ -232,9 +232,10 @@ symbolic procedure scal!*list(s,l);
   if null l then nil else
      dm!: (s * car l) . scal!*list(s,cdr l) ;
 
-symbolic procedure innerprod(u,v);
+% Renamed innerprod to innerproduct here to avoid a name clash.
+symbolic procedure innerproduct(u,v);
      if null u then 0 else
-     dm!: ( car u * car v + innerprod(cdr u,cdr v) );
+     dm!: ( car u * car v + innerproduct(cdr u,cdr v) );
 
 symbolic procedure conjlist u;
 dm!:(if not !*complex then u else
@@ -242,11 +243,11 @@ dm!:(if not !*complex then u else
        repartf x - numr apply(get(dmode!*,'ivalue),'(nil))*impartf x );
 
 symbolic procedure normlist u;
-  dm!:(sqrt innerprod(u, conjlist u));
+  dm!:(sqrt innerproduct(u, conjlist u));
 
 symbolic procedure mat!*list(m,v);
     if null cdr m then scal!*list(car v,car m) else
-    for each r in m collect innerprod(r,v);
+    for each r in m collect innerproduct(r,v);
 
 symbolic procedure num!-sqrtf a;
    if domainp a then

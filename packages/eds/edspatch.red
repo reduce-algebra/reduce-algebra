@@ -298,9 +298,9 @@ symbolic procedure solvesparsecheck(sys,vl);
    end;
 
 
-symbolic procedure solvevarordp(x,y);
-   cadr x < cadr y or
-   cadr x = cadr y and cddr x < cddr y;
+%symbolic procedure solvevarordp(x,y);
+%   cadr x < cadr y or
+%   cadr x = cadr y and cddr x < cddr y;
 
 symbolic procedure solvevarordp1(x,y);
    % This is incomplete, since it is not transitive
@@ -308,14 +308,14 @@ symbolic procedure solvevarordp1(x,y);
    not depends(y,x) and ordop(x,y);
 
 
-symbolic procedure solvevaradjust u;
-   begin scalar v,y;
-   if null u then return nil;
-   v := foreach x in u join
-              << y := assoc(x,depl!*);
-            if null y or null xnp(cdr y,u) then {x} >>;
-   return nconc(solvevaradjust setdiff(u,v),v);
-   end;
+%symbolic procedure solvevaradjust u;
+%   begin scalar v,y;
+%   if null u then return nil;
+%   v := foreach x in u join
+%              << y := assoc(x,depl!*);
+%            if null y or null xnp(cdr y,u) then {x} >>;
+%   return nconc(solvevaradjust setdiff(u,v),v);
+%   end;
 
 % Usually solve goes to the Cramer method since the expressions
 % contain exponentials. The Bareiss code should work, so disable this.
