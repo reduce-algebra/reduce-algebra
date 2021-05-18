@@ -2911,20 +2911,11 @@ asserted procedure ofsf_qeg(f: Formula): Formula;
    end;
 
 asserted procedure ofsf_preqe(f: Formula, theo: List, exact: Boolean): DottedPair;
-   ofsf_preqe1(f, theo, exact, nil, nil);
-
-asserted procedure ofsf_preqea(f: Formula, theo: List, exact: Boolean): DottedPair;
-   ofsf_preqe1(f, theo, exact, nil, t);
-
-asserted procedure ofsf_pregqe(f: Formula, theo: List, exact: Boolean): DottedPair;
-   ofsf_preqe1(f, theo, exact, t, nil);
-
-asserted procedure ofsf_preqe1(f: Formula, theo: List, exact: Boolean, generic: Boolean, answer: Boolean): DottedPair;
    % Apply the vertex cover method to painlessly eliminate some variables via
    % Gaussian elimination.
    begin
-      scalar ql, varll, bvl, evl, rvl, eql, g, theo, w, ans;
-      f := rl_simpl(rl_pnf f, theo, -1);
+      scalar ql, varll, bvl, evl, eql, g, theo;
+      f := rl_simpl(rl_pnf f, nil, -1);
       if not rl_quap rl_op f then
 	 return nil . f;
       {ql, varll, g, bvl} := cl_split f;
@@ -2939,35 +2930,116 @@ asserted procedure ofsf_preqe1(f: Formula, theo: List, exact: Boolean, generic: 
       % When there are too few equations we must drop some good variables:
       for i := 1 : length evl - length eql do
 	 evl := cdr evl;
-      rvl := reverse sort(lto_setminus(car varll, evl), 'ordp);
       for each v in reverse evl do
 	 g := rl_mkq('ex, v, g);
       if !*rlverbose then
 	 ioto_tprin2t "+++ starting qe, which should do only Gauss steps";
-      if generic then <<
-      	 theo . g := cl_gqe(g, theo, nil);
-      	 for each v in rvl do
-	    g := rl_mkq('ex, v, g);
-      	 return theo . g
-      >>;
-      if answer then <<
-	 w := cl_qea(g, theo);
-	 w := for each pr in w collect <<
-	    g := car pr;
-      	    for each v in rvl do
-	       g := rl_mkq('ex, v, g);
-	    g . cdr pr
-	 >>;
-	 return w
-      >>;
-      g := cl_qe(g, theo);
-      for each v in rvl do
+      theo . g := cl_gqe(g, theo, nil);
+      for each v in reverse sort(lto_setminus(car varll, evl), 'ordp) do
 	 g := rl_mkq('ex, v, g);
-      return g
+      return theo . g
+   end;
+
+asserted procedure ofsf_vcreduce(f: Formula, variables: List, theo: List, nogen: Boolean, exact: Boolean): DottedPair;
+   begin scalar ans, linl, misl, res, rest, theo0, v, w, !*rlsiexpla;
+      f := rl_simpl(f, theo, -1);
+      theo0 := theo;
+      {linl, misl, rest} := ofsf_vcreducePartitionVars(f, variables, exact);
+      linl := sort(linl, 'ordp);
+      misl := sort(misl, 'ordp);
+      if !*rlverbose then
+ 	 ioto_tprin2 {"+++ Eliminating ", linl, "; ", misl, ": "};
+      for each v in append(linl, misl) do <<
+	 if !*rlverbose then ioto_prin2 {"[", v, ":"};
+	 if ofsf_vcreduceStillGood(v, f, variables) then <<
+      	    w := cl_gqea(rl_mkq('ex, v, f), theo, nil) where !*rlverbose=nil;
+	    theo := car w;
+	    f := caar cdr w;
+	    ans := cadar cdr w . ans;
+      	    if !*rlverbose then ioto_prin2 "ok] "
+	 >>
+      >>;
+      res := {f, ofsf_vcreduceBacksub ans, lto_setminus(theo, theo0)};
+      if !*rlverbose then terpri();
+      return res
+   end;
+
+asserted procedure ofsf_vcreducePartitionVars(f: Formula, variables: List, exact: Boolean): List;
+   % Returns {linear variables, max independent set, rest}
+   begin scalar argl, terml, all, misl, vl, el, vcl;
+      argl := if rl_op f eq 'and then rl_argn f else {f};
+      for each s in argl do
+	 if rl_op s eq 'equal then <<
+	    terml := ofsf_preqeGoodPoly(ofsf_arg2l s, variables);
+	    if terml then <<
+	       for each term in terml do <<
+		  all := union(all, term);
+		  if cdr term then <<
+		     vl := union(vl, term);
+		     % construct all edges from term:
+		     for each rvl1 on term do
+		     	for each v in cdr rvl1 do
+		     	   el := lto_insert(car rvl1 . v, el)
+	       	  >>
+	       >>
+	    >>
+	 >>;
+      if !*rlverbose then
+	 ioto_tprin2 {"+++ computing minimum vertex cover of ", el, ": "};
+      vcl := lto_vertexCover(el, exact) where !*rlverbose=nil;
+      if !*rlverbose then
+	 ioto_prin2t {vcl};
+      misl := lto_setminus(vl, vcl);
+      return {lto_setminus(all, vl), misl, lto_setminus(variables, all)}
+   end;
+
+asserted procedure ofsf_vcreduceStillGood(v: Id, f: Formula, variables: List): Boolean;
+   begin scalar argl, at, p, rp, lckl, foundv, foundpoly;
+      if f eq 'true then <<
+	 if !*rlverbose then ioto_prin2 "gone] ";
+	 return nil
+      >>;
+      argl := if rl_op f eq 'and then rl_argn f else {f};
+      while not foundpoly and argl do <<
+	 at := pop argl;
+	 p := ofsf_arg2l at;
+	 if v memq kernels p then <<
+	    foundv := t;
+	    if rl_op at eq 'equal then <<
+	       rp := sfto_reorder(p, v);
+	       if ldeg rp = 1 then <<
+		  lckl := intersection(kernels lc rp, variables);
+		  if not (lckl and cdr lckl) then
+	       	     foundpoly := t
+	       >>
+	    >>
+	 >>
+      >>;
+      if foundpoly then
+	 return t;
+      if !*rlverbose then
+	 if foundv then
+ 	    ioto_prin2 "failed] "
+	 else
+ 	    ioto_prin2 "gone] ";
+      return nil
+   end;
+
+asserted procedure ofsf_vcreduceBacksub(ans: Alist): Alist;
+   begin scalar subl, w;
+      if !*rlverbose then ioto_tprin2 "+++ Back-substitution: ";
+      w := for each pr in ans collect <<
+      	 if !*rlverbose then ioto_prin2 {"[", car pr};
+	 pr := car pr . prepsq subsq(simp cdr pr, subl);
+	 push(pr, subl);
+      	 if !*rlverbose then ioto_prin2 "] ";
+	 pr
+      >>;
+      return sort(w, function ordpcar)
    end;
 
 asserted procedure ofsf_preqeGoodEql(f: Formula, qvl: List, exact: Boolean): DottedPair;
-   % We have a primitive formula, [qvl] are the ex-quantified variables, [f] is
+   % [f] is a primitive formula, [qvl] are the ex-quantified variables, [f] is
    % the matrix. Returns [evl . eql], where [evl] is a (maximum) list of
    % variables that can be Gauss-eliminated, and [eql] is a list of equations
    % associated with occurring variables.
@@ -2991,8 +3063,8 @@ asserted procedure ofsf_preqeGoodEql(f: Formula, qvl: List, exact: Boolean): Dot
 	    >>
 	 >>;
       if !*rlverbose then
-	 ioto_tprin2 {"+++ computing minimum vertex cover of ", el, " ... "};
-      vcl := lto_vertexCover(el, t, exact) where !*rlverbose=nil;
+	 ioto_tprin2 {"+++ computing minimum vertex cover of ", el, ": "};
+      vcl := lto_vertexCover(el, exact) where !*rlverbose=nil;
       if !*rlverbose then
 	 ioto_prin2t {vcl};
       evl := lto_setminus(vl, vcl);

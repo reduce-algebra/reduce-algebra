@@ -17,4 +17,4 @@ RedirectMatch "/(.*)\.htm$" "/$1.php"
 
 Options +Indexes
 
-ErrorDocument 404 /ErrorDocument404.php
+ErrorDocument 404 /include/ErrorDocument404.php
