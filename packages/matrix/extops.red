@@ -49,17 +49,17 @@ symbolic procedure !*ex2sf u;
    else if car lpow u = nil then subs2chk lc u
    else car lpow u .** 1 .* subs2chk lc u .+ !*ex2sf red u;
 
-symbolic procedure extmult(u,v);
-   % u,v: ex -> extmult: ex
-   % Special exterior multiplication routine.  Degree of form v is
-   % arbitrary, u is a one-form.
-   if null u or null v then nil
-    else (if x then cdr x .* (if car x then negf c!:subs2multf(lc u,lc v)
-                               else c!:subs2multf(lc u,lc v))
-                          .+ extadd(extmult(!*t2f lt u,red v),
-                                    extmult(red u,v))
-           else extadd(extmult(red u,v),extmult(!*t2f lt u,red v)))
-          where x = ordexn(car lpow u,lpow v);
+%symbolic procedure extmult(u,v);
+%   % u,v: ex -> extmult: ex
+%   % Special exterior multiplication routine.  Degree of form v is
+%   % arbitrary, u is a one-form.
+%   if null u or null v then nil
+%    else (if x then cdr x .* (if car x then negf c!:subs2multf(lc u,lc v)
+%                               else c!:subs2multf(lc u,lc v))
+%                          .+ extadd(extmult(!*t2f lt u,red v),
+%                                    extmult(red u,v))
+%           else extadd(extmult(red u,v),extmult(!*t2f lt u,red v)))
+%          where x = ordexn(car lpow u,lpow v);
 
 % Now an iterative rather than recursive version. Se also b!:extmult
 % in resultnt.red where a similar transformation has been applied.

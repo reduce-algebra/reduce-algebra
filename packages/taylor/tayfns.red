@@ -559,13 +559,22 @@ symbolic procedure taysimpatan u;
   end;
 
 symbolic procedure taysimpatan!*(fn,tay);
-   begin scalar result,tay1;
+   begin scalar result,tay1,flg;
      if fn memq '(atan acot)
        then tay := multtaylorsq(tay,simp 'i);
      tay1 := cst!-taylor!*(1 ./ 1,taytemplate tay);
      tay := quottaylor(addtaylor(tay1,tay),
                        addtaylor(tay1,negtaylor tay));
-     result := multsq(taysimplog {'log,tay},1 ./ 2);
+     %
+     % if the constant term is -1, take care to replace log(-1) by i*pi
+     %
+     if get!-cst!-coeff tay = '(-1 . 1) then flg := t;
+     result := taysimplog {'log,tay};
+     if flg and Taylor!-kernel!-sq!-p result
+       then set!-taycfsq(assoc(make!-cst!-powerlist taytemplate tay,taycoefflist tay),
+                         simp '(times i pi))
+	 where tay := mvar numr result;
+     result := multsq(result,1 ./ 2);
      if fn eq 'atan then result := quotsq(result,simp 'i)
       else if fn eq 'acot then result := multsq(result,simp 'i);
      return taysimpsq!* result
