@@ -81,6 +81,11 @@ module taylor;
 %*****************************************************************
 %
 %
+% 19-May-2021    2.3a
+%
+%   Minor improvement of calculation of atan/atanh and friends:
+%    Replace log(-1) by i*pi where appropriate.
+%
 % 30-Mar-2020    2.3
 %   Changed interface to global mul!* variable:
 %    Previously, every occurence of a Taylor kernel in simplication had
@@ -89,6 +94,7 @@ module taylor;
 %   Now the interface is via a new function taysimpsq!-from-mul that sets
 %    a fluid taynomul!* to indicate that mul!* should not be modified in
 %    inferior calls to simplification. This reduces run time slightly.
+%
 %
 % 22-Jun-2018    2.2g
 %   When a taylor series is computed via differentiation, the constant term is
@@ -134,6 +140,7 @@ module taylor;
 %   Minor improvement in procedure taylorexpand!-samevar: do not signal
 %    an error if we are content with the terms we got (i.e. third
 %    argument flg is nil.
+%
 %
 % 16-Apr-1997    2.1f
 %   Slight improvement in tracing output (inline Taylor!-trace).

@@ -881,6 +881,13 @@ taylor(sin x,x, -1, 6);
 
 taylor(sin x,x, -1/2, 6);
 
+COMMENT Test improved output for certain cases of atan/atanh and friends,
+        avoiding a log(-1) term ;
+
+taylor(atan cot x,x,0,5);
+
+taylor(atanh coth x,x,0,5);
+
 %%% showtime;
 
 COMMENT That's all, folks;
