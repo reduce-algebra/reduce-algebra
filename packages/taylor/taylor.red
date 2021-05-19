@@ -7,7 +7,7 @@ module taylor;
 %
 %****************************************************************
 %
-%  Copyright (C) 1989--2020 by Rainer M. Schoepf, all rights reserved.
+%  Copyright (C) 1989--2021 by Rainer M. Schoepf, all rights reserved.
 %
 %
 %  Error reports please to: <reduce-algebra-developers@lists.sourceforge.net>
@@ -975,8 +975,8 @@ taylorprintterms := 5;         % Only this nubmer of non-zero terms
                                % in progress to indicate that the error
                                % might disappear if the order is
                                % increased.
-taylor!:version := "2.3";      % version number of the package
-taylor!:date!* := "30-Mar-2020"; % release date
+taylor!:version := "2.3a";      % version number of the package
+taylor!:date!* := "19-May-2021"; % release date
 
 if !*verboseload then
   << terpri ();
