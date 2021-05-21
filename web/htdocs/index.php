@@ -59,8 +59,8 @@ include 'include/begin-body.php';
 <p>
     REDUCE (and its complete source code) is
     <a href="obtaining.php">available free of charge</a> for most
-    common computing systems, in some cases in <a href="#versions">more
-        than one version</a> for the same machine. The
+    common computing systems, in some cases in <a href="versions.php">more
+        than one version</a> for the same machine.  The
     <a href="documentation.php">manual and other support documents</a> and
     <a href="tutorials.php">tutorials</a> are also included in the
     distributions.

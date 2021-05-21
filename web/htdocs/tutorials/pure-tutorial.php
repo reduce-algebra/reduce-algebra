@@ -1,26 +1,25 @@
 <?php
+$header_title = 'Tutorial: Pure Mathematics';
+include '../include/begin-head.php';
+include '../include/begin-body.php';
+?>
 
-require_once('../../php/Smarty/setup.php');
-$smarty = new Smarty_REDUCE();
+<p><a href="https://sourceforge.net/users/fjwright/">Francis Wright</a>, June 2018</p>
 
-$smarty->assign('header_title', 'Tutorial: Pure Mathematics');
+<div class="accordion" id="P_S_accordion">
 
-$smarty->assign('preamble',  <<< END_OF_PREAMBLE
-    <p><a href="https://sourceforge.net/users/fjwright/">Francis Wright</a>, June 2018</p>
-END_OF_PREAMBLE
-);
-
-$smarty->assign('P_S', array(
-
-    // MTH4104 Introduction to Algebra Exam 2014 Q2
-    array(
-        'P' => '<ol style="list-style: lower-alpha">
-  <li>Use the Euclidean algorithm to compute \(\gcd(426,330)\).</li>
-  <li>Find a solution to the equation
-    \[ 426k + 330\ell = \gcd(426,330) \]
-    where \(k\) and \(\ell\) are integers.</li>
-</ol>',
-        'S' => '% This problem is not algebraic and we need integer Euclidean division, so...
+    <div>
+        <!-- Problem MTH4104 Introduction to Algebra Exam 2014 Q2 -->
+	<div>
+            <ol style="list-style: lower-alpha">
+                <li>Use the Euclidean algorithm to compute \(\gcd(426,330)\).</li>
+                <li>Find a solution to the equation
+                    \[ 426k + 330\ell = \gcd(426,330) \]
+                    where \(k\) and \(\ell\) are integers.</li>
+            </ol>
+        </div>
+        <!-- Solution -->
+        <pre>% This problem is not algebraic and we need integer Euclidean division, so...
 symbolic$
 
 gcd(426, 330);
@@ -42,31 +41,40 @@ write "{k,l} = ", qq$
 % Check:
 426*first qq + 330*second qq;
 
-algebraic$'),
+algebraic$</pre>
+    </div>
 
-    // Q3
-    array(
-        'P' => 'Solve the following system of equations over \(\mathbb{Z}_{11}\) for \(x\) and \(y\).
-  \[
-  \begin{eqnarray*}
-  [4]_{11} x + [7]_{11} y &=& [4]_{11} \\\\
-  [2]_{11} x + [6]_{11} y &=& [1]_{11}.
-  \end{eqnarray*}
-  \]
-Check your answer.',
-        'S' => 'setmod 11; on modular;
+    <div>
+        <!-- Problem Q3 -->
+        <div>
+            Solve the following system of equations over
+            \(\mathbb{Z}_{11}\) for \(x\) and \(y\).
+            \[
+            \begin{eqnarray*}
+            [4]_{11} x + [7]_{11} y &=& [4]_{11} \\
+            [2]_{11} x + [6]_{11} y &=& [1]_{11}.
+            \end{eqnarray*}
+            \]
+            Check your answer.
+        </div>
+        <!-- Solution -->
+        <pre>setmod 11; on modular;
 eqns := {4x + 7y = 4, 2x + 6y = 1};
 solve eqns;
 % Check:
 sub(ws, eqns);
-off modular;'),
+off modular;</pre>
+    </div>
 
-    // Q5
-    array(
-        'P' => 'Prove, using mathematical induction, that
-\[ 12 \mid (7^n -3^{n+1} +2) \]
-for all natural numbers \(n \ge 0\).',
-        'S' => '% First, explore the problem:
+    <div>
+        <!-- Problem Q5 -->
+        <div>
+            Prove, using mathematical induction, that
+            \[ 12 \mid (7^n -3^{n+1} +2) \]
+            for all natural numbers \(n \ge 0\).
+        </div>
+        <!-- Solution -->
+        <pre>% First, explore the problem:
 operator d; let d(~n) => 7^n-3^(n+1)+2;
 for n := 0:5 collect d(n);
 for n := 0:5 collect remainder(d(n), 12);
@@ -74,30 +82,36 @@ d(n+1) - d(n);
 % This is divisible by 12, because 7^n and 3^n must both be odd, so (7^n - 3^n) must be even.
 % Base case: d(0) = 0 is divisible by 12.
 % Induction step: Suppose 12|d(n).
-% Then 12|d(n+1) because d(n+1) = d(n) + 6(7^n - 3^n) and both summands are divisible by 12.'),
+% Then 12|d(n+1) because d(n+1) = d(n) + 6(7^n - 3^n) and both summands are divisible by 12.</pre>
+    </div>
 
-    // Q8
-    array(
-        'P' => 'Let the operations of addition and multiplication on the set
-  \[ K = \{at+bu : a,b\in\mathbb{R}\}, \]
-  where \(t\) and \(u\) are formal symbols, be defined as follows:
-  \[
-  \begin{eqnarray*}
-  (at+bu)+(ct+du) &=& (a+c)t+(b+d)u, \\\\
-  (at+bu) \cdot (ct+du) &=& (ac+ad+bc-bd)t+(-ac+ad+bc+bd)u.
-  \end{eqnarray*}
-  \]
-<ol style="list-style: lower-alpha">
-  <li>Compute \((\frac12 t - \frac12 u)^2\) and express the result in the form \(at+bu\).</li>
-  <li>Find a multiplicative identity in \(K\), and prove that the multiplication
-    in \(K\) satisfies the identity law.</li>
-  <li>Specify a bijection \(f : \mathbb{C}\to K\) such that
-    \(f(\alpha+\beta) = f(\alpha)+ f(\beta)\) and \(f(\alpha\beta) =
-    f(\alpha) f(\beta)\) for all complex numbers \(\alpha\) and
-    \(\beta\).<br />
-    [Such a bijection is called an <em>isomorphism</em> of rings.]</li>
-</ol>',
-        'S' => '% Two general elements of K are
+    <div>
+        <!-- Problem Q8 -->
+        <div>
+            Let the operations of addition and multiplication on the set
+            \[ K = \{at+bu : a,b\in\mathbb{R}\}, \]
+            where \(t\) and \(u\) are formal symbols, be defined as follows:
+            \[
+            \begin{eqnarray*}
+            (at+bu)+(ct+du) &=& (a+c)t+(b+d)u, \\
+            (at+bu) \cdot (ct+du) &=& (ac+ad+bc-bd)t+(-ac+ad+bc+bd)u.
+            \end{eqnarray*}
+            \]
+            <ol style="list-style: lower-alpha">
+                <li>Compute \((\frac12 t - \frac12 u)^2\) and express
+                the result in the form \(at+bu\).</li>
+                <li>Find a multiplicative identity in \(K\), and prove
+                    that the multiplication in \(K\) satisfies the
+                    identity law.</li>
+                <li>Specify a bijection \(f : \mathbb{C}\to K\) such
+                    that \(f(\alpha+\beta) = f(\alpha)+ f(\beta)\) and
+                    \(f(\alpha\beta) = f(\alpha) f(\beta)\) for all
+                    complex numbers \(\alpha\) and \(\beta\).<br />
+                    [Such a bijection is called an <em>isomorphism</em> of rings.]</li>
+            </ol>
+        </div>
+        <!-- Solution -->
+        <pre>% Two general elements of K are
 k1 := a*t+b*u$  k2 := c*t+d*u$
 operator kplus, ktimes;
 let kplus(~k1,~k2) =>
@@ -142,10 +156,11 @@ lhs ws - rhs ws$
 {coefn(ws,i,0), coefn(ws,i,1)}$  % i.e real and imaginary parts
 solve(ws, {a,b});
 % which specifies k1 uniquely for any complex number (c + i*d).
-off div;')
+off div;</pre>
+    </div>
 
-));
+</div>
 
-$smarty->display('tutorial.tpl');
-
+<?php
+include '../include/end-tutorial.php';
 ?>

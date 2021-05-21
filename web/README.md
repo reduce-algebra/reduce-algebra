@@ -1,51 +1,43 @@
 Files for the REDUCE web site
 =============================
 
-Francis Wright, April 2021
+Francis Wright, May 2021
 
-The REDUCE web site can be accessed using the URLs [https://reduce-algebra.sourceforge.io/](https://reduce-algebra.sourceforge.io/), [http://reduce-algebra.com](http://reduce-algebra.com), etc.
+The REDUCE web site can be accessed using the URLs [https://reduce-algebra.sourceforge.io/](https://reduce-algebra.sourceforge.io/), [http://reduce-algebra.com](http://reduce-algebra.com), [http://www.reduce-algebra.com](http://www.reduce-algebra.com), etc. (where the latter are DNS aliases and the reduce-algebra.com domain is paid for by Tony Hearn).
 
 This directory, namely `trunk/web`, in the Subversion repository corresponds to the directory `/home/project-web/reduce-algebra/` on the SourceForge web server and is the parent of the web server document root directory, `htdocs`.  The main directory structure on the web server is as shown below but not all files and directories are checked into the repository.  Files that are missing from the repository can be obtained elsewhere or generated from files available elsewhere in the repository.  In particular, the main REDUCE-related documentation files can be generated from source files in the repository at `trunk/doc`.
 
-The primary technology used to support this web site is the Bootstrap front-end toolkit and the Smarty template engine.  The general setup is described in more detail below.
+The primary technology used to support this web site is PHP, jQuery and the Bootstrap front-end toolkit.  The general setup is described in more detail below.
 
 Web server directory structure
 ------------------------------
 
 	+---htdocs
-	|       Data files for the web pages
+	|   |   PHP code and data files for the web pages
+    |   \---include
+    |           Incomplete PHP code files included in other files
 	|
 	+---php
-	|   +---SimplePie
-	|   |       PHP source code, all available from elsewhere
-	|   \---Smarty
-	|           PHP source code, mostly available from elsewhere
+	|   \---SimplePie
+	|           PHP source code, all available from elsewhere
 	|
-	+---simplepie
-	|   \---cache
-	|           Files written by the web server
-	|
-	\---smarty
-	    +---templates
-	    |       Template files for the web pages
-	    \---templates_c
-	            Files written by the web server
+	\---simplepie
+	    \---cache
+	            Files written by the web server (PHP)
 
 PHP libraries
 -------------
 
 I use the [SimplePie](http://simplepie.org/) PHP library to display RSS feeds.  It is installed in the `php` directory (see above) on the REDUCE web server and is currently at version 1.5 (released on 17 April 2017).
 
-I use the [Smarty](https://www.smarty.net/) PHP template engine to manage the main structure of the web site.  It is installed in the `php` directory (see above) on the REDUCE web server and is currently at version 3.1.33 (released on 17 September 2018).  To update Smarty, copy everything except the file `SmartyBC.class.php` in the `libs` folder in the distributed archive to the web server directory `php/Smarty`.  Beware that I have added the file `setup.php`, which is required to configure Smarty, and a few files in the `plugins` directory.  Don't delete these files or simply replace the whole Smarty directory!  The main structural page markup is stored in Smarty template files, into which the data in the web pages in `htdocs` is inserted by Smarty.
-
-The directory `simplepie` contains the SimplePie cache directory and the directory `smarty` contains the Smarty templates and cached templates.  The source for the templates is in the `smarty/templates` directory, although the web server uses the cached versions in the `smarty/templates_c` directory.  It seems that directories that need to be writable by the web server, such as these cache directories, must be outside the `htdocs` directory.
+The directory `simplepie` contains the SimplePie cache directory.  It seems that directories that need to be writable by the web server, such as this cache directory, must be outside the `htdocs` directory.
 
 Style and JavaScript files
 --------------------------
 
-These are loaded in the template files.  The web site uses two style files, which are loaded in the head section of `smarty/templates/main.tpl`.  These are the Bootstrap style file, which is loaded dynamically from `cdn.jsdelivr.net`, and the local style file `htdocs/StyleSheet.css`.
+These are loaded in include files.  The web site uses two style files, which are loaded in the head element in `htdocs/include/begin-head.php`.  These are the Bootstrap style file, which is loaded dynamically from `cdn.jsdelivr.net`, and the local style file `htdocs/StyleSheet.css`.
 
-The [jQuery](https://jquery.com/) and [Bootstrap](https://getbootstrap.com/) JavaScript libraries are loaded at the bottom of `smarty/templates/main.tpl`.  jQuery is at version 3.6.0 and Bootstrap is at version 4.6.0.  The tutorial pages also use the latest version (automatically) of the [MathJax](https://www.mathjax.org/) JavaScript library and some pages, such as `features.php`, use a few lines of local JavaScript.  Such additional JavaScript is included in a block named `javascript` at the bottom of their template files.  (The HTML REDUCE manual pages also use Mathjax, but these are independent HTML pages outside the Smarty template framework; see below.)
+The [jQuery](https://jquery.com/) and [Bootstrap](https://getbootstrap.com/) JavaScript libraries are loaded at the bottom of `htdocs/include/footer.php`.  jQuery is at version 3.6.0 and Bootstrap is at version 4.6.0.  The tutorial pages also use the latest version (automatically) of the [MathJax](https://www.mathjax.org/) JavaScript library and several pages use a few lines of local JavaScript (mainly jQuery) in a script element below where `htdocs/include/footer.php` is included.  (The HTML REDUCE manual pages also use MathJax, but these are independent HTML pages outside the main PHP framework; see below.)
 
 Search
 ------
