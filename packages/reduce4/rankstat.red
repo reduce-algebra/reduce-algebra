@@ -259,7 +259,7 @@ symbolic procedure installstat;
         x := errorset!*(list('read_param_list,nil),nil);
         if errorp x then go to c;
         x := car x;
-        if cursym!* eq '!*colon!* then mode := read_type();
+        if cursym!* eq '!*colon!* then mode := read_type4();
         if null(cursym!* eq 'mapped_to) then go to c;
         y := scan();
         if not(scan() eq '!*semicol!*) then go to c;

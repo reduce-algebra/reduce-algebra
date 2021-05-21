@@ -72,7 +72,7 @@ symbolic procedure read_package_name;
                  then if scan() eq '!*semicol!*
                          then return n . {reversip(x . z)};
      assertion:
-      x := x . read_type();
+      x := x . read_type4();
       y := cursym!*;
       go to b
    end;
