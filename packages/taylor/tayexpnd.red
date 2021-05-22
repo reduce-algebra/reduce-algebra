@@ -31,21 +31,21 @@ module tayexpnd;
 %*****************************************************************
 
 
-exports taylorexpand;
+exports taylorexpand, taylorexpand!-diff;
 
 imports
 
 % from the REDUCE kernel:
-        !*k2q, !*p2q, .*, .+, ./, aeval, addsq, apply1, denr,
+        !*f2q, !*k2q, !*p2q, .*, .+, ./, aeval, addsq, apply1, denr,
         dependsl, dfn_prop, diffsq, domainp, eqcar, error1, errorp,
-        errorset!*, exptsq, kernp, lastpair, lc, let, lpow, lprim,
-        mk!*sq, mkquote, mksq, multsq, mvar, nconc!*, neq, nlist, nth,
-        numr, operator, prepsq, quotsq, red, rederr, setcar, sfp,
-        simp!*, subsq, subtrsq,
+        errorset!*, exptsq, kernp, lastpair, lc, let, lpow,
+        mk!*sq, mkquote, mkrn, mksq, multsq, mvar, nconc!*, neq, nlist, nth,
+        numr, operator, prepsq, quotsq, red, rule!-list, setcar, sfp,
+        simp!*, simpexpt1, smemqlp, subtrsq, unwind!-protect,
 
 % from the header module:
         !*tay2q, cst!-taylor!*, has!-taylor!*, make!-cst!-coefficient,
-        make!-taylor!*, prune!-coefflist, set!-tayorig, taycfpl,
+        make!-taylor!*, preptayexp, prune!-coefflist, set!-tayorig, taycfpl,
         taycfsq, taycoefflist, tayflags, taylor!*p,
         taylor!-kernel!-sq!-p, taylor!-trace, taylor!-trace!-mprint,
         taylor!:, taymakecoeff, tayorig, taytemplate, taytpelnext,

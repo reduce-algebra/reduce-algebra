@@ -387,6 +387,44 @@ sub (y=0, ws);
 4
 
 
+COMMENT Or to evaluate the Taylor expression at the expansion point;
+
+
+taylor(e^x,x,a,2);
+
+
+                    a
+ a    a            e          2            3
+e  + e *(x - a) + ----*(x - a)  + O((x - a) )
+                   2
+
+sub(x=a,ws);
+
+
+ a
+e
+
+
+taylor(e^(x+y),x,a,2,y,b,2);
+
+
+                            a + b
+ a + b    a + b            e              2    a + b
+e      + e     *(y - b) + --------*(y - b)  + e     *(x - a)
+                             2
+
+    a + b                                        3        3
+ + e     *(y - b)*(x - a) + (4 terms) + O((x - a) ,(y - b) )
+
+sub(x=a,ws);
+
+
+                            a + b
+ a + b    a + b            e              2            3
+e      + e     *(y - b) + --------*(y - b)  + O((y - b) )
+                             2
+
+
 COMMENT This package has three switches:
         TAYLORKEEPORIGINAL, TAYLORAUTOEXPAND, and TAYLORAUTOCOMBINE;
 
@@ -2602,28 +2640,31 @@ gamma(a) + gamma(a)*psi(a)*(x - a)
 taylor(gamma(x),x,-1,3);
 
 
-***** Psi undefined for nonpositive integer argument -1 
+          -1
+ - (x + 1)   + euler_gamma - 1
 
-***** Zero divisor in computation of constant term 
+                    2                      2
+     - 6*euler_gamma  + 12*euler_gamma - pi  - 12
+ + -----------------------------------------------*(x + 1) + (4*zeta(3)
+                         12
 
-***** Psi undefined for nonpositive integer argument -1 
+                   3                2                 2                      2
+    + 2*euler_gamma  - 6*euler_gamma  + euler_gamma*pi  + 12*euler_gamma - pi
 
-***** Error during expansion (possible singularity!) 
+                    2
+    - 12)/12*(x + 1)  + ( - 160*zeta(3)*euler_gamma + 160*zeta(3)
 
-***** Psi undefined for nonpositive integer argument -1 
+                    4                 3                 2   2                  2
+    - 20*euler_gamma  + 80*euler_gamma  - 20*euler_gamma *pi  - 240*euler_gamma
 
-***** Error during expansion (possible singularity!) 
+                       2                         4        2                   3
+    + 40*euler_gamma*pi  + 480*euler_gamma - 3*pi  - 40*pi  - 480)/480*(x + 1)
 
-***** Psi undefined for nonpositive integer argument -1 
-
-***** Error during expansion (possible singularity!) 
-
-***** Psi undefined for nonpositive integer argument -1 
-
-***** Error during expansion (possible singularity!) 
+            4
+ + O((x + 1) )
 
 
-taylor(gamma(1+x),x,0, 6);
+taylor(gamma(1+x),x,0,4);
 
 
                                   2     2
@@ -2641,8 +2682,75 @@ taylor(gamma(1+x),x,0, 6);
  + -------------------------------------------------------------------------*x
                                       480
 
-                  7
- + (2 terms) + O(x )
+      5
+ + O(x )
+
+
+taylor(gamma(x),x,0,4);
+
+
+                                  2     2
+ -1                  6*euler_gamma  + pi
+x   - euler_gamma + ----------------------*x
+                              12
+
+                                3                 2
+     - 4*zeta(3) - 2*euler_gamma  - euler_gamma*pi    2
+ + -------------------------------------------------*x
+                          12
+
+                                            4                 2   2       4
+    160*zeta(3)*euler_gamma + 20*euler_gamma  + 20*euler_gamma *pi  + 3*pi    3
+ + -------------------------------------------------------------------------*x
+                                      480
+
+                 5
+ + (1 term) + O(x )
+
+
+taylor(gamma(x),x,-1,4);
+
+
+          -1
+ - (x + 1)   + euler_gamma - 1
+
+                    2                      2
+     - 6*euler_gamma  + 12*euler_gamma - pi  - 12
+ + -----------------------------------------------*(x + 1) + (4*zeta(3)
+                         12
+
+                   3                2                 2                      2
+    + 2*euler_gamma  - 6*euler_gamma  + euler_gamma*pi  + 12*euler_gamma - pi
+
+                    2
+    - 12)/12*(x + 1)  + ( - 160*zeta(3)*euler_gamma + 160*zeta(3)
+
+                    4                 3                 2   2                  2
+    - 20*euler_gamma  + 80*euler_gamma  - 20*euler_gamma *pi  - 240*euler_gamma
+
+                       2                         4        2                   3
+    + 40*euler_gamma*pi  + 480*euler_gamma - 3*pi  - 40*pi  - 480)/480*(x + 1)
+
+                       5
+ + (1 term) + O((x + 1) )
+
+
+taylor(psi(x),x,0,4);
+
+
+                          2                      4
+    -1                  pi                2    pi    3                 5
+ - x   - euler_gamma + -----*x - zeta(3)*x  + -----*x  + (1 term) + O(x )
+                         6                     90
+
+
+taylor(polygamma(3,x),x,0,4);
+
+
+           4                        6
+   -4    pi                     4*pi    2                3                 5
+6*x   + ----- - 24*zeta(5)*x + -------*x  - 120*zeta(7)*x  + (1 term) + O(x )
+         15                      63
 
 
 COMMENT Test printing for negative expansion point;

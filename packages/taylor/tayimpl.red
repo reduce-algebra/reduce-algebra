@@ -37,12 +37,15 @@ exports implicit_taylor, inverse_taylor;
 imports
 
 % from the REDUCE kernel:
-        !*f2q, !*n2f, diffsq, errorp, errorset!*, invsq, mkquote,
-        mk!*sq, mvar, negsq, numr, quotsq, typerr, simp!*,
+        !*f2q, !*n2f, diffsq, errorp, errorset!*, invsq, leq, mkquote,
+        mk!*sq, mvar, negsq, numr, quotsq, reversip, simp!*, subeval, typerr,
 
 % from the header module:
         has!-taylor!*, make!-taylor!*, taylor!-kernel!-sq!-p,
         taymakecoeff,
+
+% from module tayintro:
+        taylor!-error,
 
 % from module taybasic:
         addtaylor, multtaylor, multtaylorsq,
@@ -53,8 +56,14 @@ imports
 % from module tayexpnd:
         taylorexpand,
 
+% from module tayconv:
+        preptaylor!*1,
+
 % from module taysubst:
         subsubtaylor;
+
+
+fluid '(!*trtaylor);
 
 
 symbolic procedure implicit_taylor(f,x,y,x0,y0,n);

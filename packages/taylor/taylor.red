@@ -80,6 +80,17 @@ module taylor;
 %
 %*****************************************************************
 %
+% 22-May-2021    2.4
+%
+%   Add taylorsimpfn for Gamma, Psi, and Polygamma.
+%    This allows expansion about the poles are the non-negative integers.
+%
+%   Fix a bug: substitution of a taylor variable by the coressponding
+%    expansion point returned an incorrect result.
+%
+%   A bit of cleanup: add missing declarations of global or fluid variables,
+%    remove unused local variables, update imports declarations.
+%
 %
 % 19-May-2021    2.3a
 %
@@ -900,7 +911,7 @@ module taylor;
 
 create!-package('(taylor tayintro tayutils tayintrf tayexpnd taybasic
                   taysimp      taysubst  taydiff  tayconv     tayprint
-                  tayfront tayfns tayrevrt tayimpl taypart),
+                  tayfront tayfns tayrevrt tayimpl taypart taygamma),
                 '(contrib taylor));
 
 
@@ -975,8 +986,8 @@ taylorprintterms := 5;         % Only this nubmer of non-zero terms
                                % in progress to indicate that the error
                                % might disappear if the order is
                                % increased.
-taylor!:version := "2.3a";      % version number of the package
-taylor!:date!* := "19-May-2021"; % release date
+taylor!:version := "2.4";      % version number of the package
+taylor!:date!* := "22-May-2021"; % release date
 
 if !*verboseload then
   << terpri ();
@@ -989,7 +1000,7 @@ if !*verboseload then
 
 
 
-exports !*tay2f, !*tay2q, !*TayExp2q, copy!-list, cst!-taylor!*,
+exports !*q2tayexp, !*tay2f, !*tay2q, !*TayExp2q, copy!-list, cst!-taylor!*,
         get!-degree, get!-degreelist, has!-taylor!*, has!-tayvars,
         make!-cst!-coefficient, make!-cst!-coefflis,
         make!-cst!-powerlist, make!-taylor!*, multintocoefflist,
@@ -1010,7 +1021,7 @@ imports
 
 % from REDUCE kernel: 
         !*f2q, !*i2rn, !*p2f, !*p2q, !:minusp, confusion, domainp,
-        eqcar, kernp, lastpair, lc, ldeg, lpriw, mathprint, mk!*sq,
+        eqcar, kernp, lastpair, lc, ldeg, lpri, mathprint, mk!*sq,
         mksp, multsq, mvar, nlist, numr, over, prin2t, red, resimp,
         rndifference!:, rnminus!:, rnminusp!:, rnplus!:, rnprep!:,
         rnquotient!:, rntimes!:, simprn, smember, subs2, subs2!*,
