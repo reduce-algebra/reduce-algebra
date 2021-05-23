@@ -36,9 +36,10 @@ exports simptaylor, simptaylor!*, taylorexpand$
 imports
 
 % from the REDUCE kernel:
-        !*f2q, aconc!*, denr, depends, diffsq, eqcar, kernp, lastpair,
-        leq, lprim, mkquote, mksq, multsq, mvar, neq, nth, numr, over,
-        prepsq, revlis, reversip, simp, simp!*, subs2, subsq, typerr,
+        !*f2q, aconc!*, denr, depends, diffsq, eqcar, errorset!*, kernp,
+	lastpair, leq, lprim, mkquote, mksq, multsq, mvar, neq, nth, numr,
+	ordad, over, prepsq, resetklist, revlis, reversip, simp, simp!*,
+	subs2, subsq, typerr, union,
 
 % from the header module:
         !*tay2q, get!-degree, has!-taylor!*, has!-tayvars,
@@ -59,6 +60,9 @@ imports
 % from module taybasic:
         invtaylor1, quottaylor1,
 
+% from module TaySimp:
+        taysimpsq,
+
 % from module Tayconv:
         preptaylor!*;
 
@@ -66,7 +70,7 @@ imports
 fluid '(!*backtrace !*precise !*tayinternal!* !*taylorkeeporiginal !*taylorautocombine taynomul!*
         frlis!* subfg!*);
 
-global '(mul!*);
+global '(kprops!* mul!*);
 
 COMMENT The following statement forces all expressions to be
         re-simplified if the switch `taylorautocombine' is set to on,

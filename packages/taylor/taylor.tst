@@ -119,6 +119,14 @@ sub (x=4, xx1);
 
 sub (y=0, ws);
 
+COMMENT Or to evaluate the Taylor expression at the expansion point;
+
+taylor(e^x,x,a,2);
+sub(x=a,ws);
+
+taylor(e^(x+y),x,a,2,y,b,2);
+sub(x=a,ws);
+
 COMMENT This package has three switches:
         TAYLORKEEPORIGINAL, TAYLORAUTOEXPAND, and TAYLORAUTOCOMBINE;
 
@@ -873,7 +881,15 @@ taylor(gamma(x),x,a,3);
 
 taylor(gamma(x),x,-1,3);
 
-taylor(gamma(1+x),x,0, 6);
+taylor(gamma(1+x),x,0,4);
+
+taylor(gamma(x),x,0,4);
+
+taylor(gamma(x),x,-1,4);
+
+taylor(psi(x),x,0,4);
+
+taylor(polygamma(3,x),x,0,4);
 
 COMMENT Test printing for negative expansion point;
 

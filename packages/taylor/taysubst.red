@@ -36,9 +36,8 @@ exports subsubtaylor$
 imports
 
 % from the REDUCE kernel:
-        addsq, denr, depends, domainp, eqcar, exptsq, invsq, lc, ldeg,
-        mkrn, multsq, mvar, nlist, nth, numr, prepsq, red,
-        replace!-nth!-nth, reval, reversip, simp!*, simprn, sort,
+        addsq, denr, depends, exptsq, invsq, multsq, nlist, nth, numr,
+	prepsq, replace!-nth!-nth, reval, reversip, simp!*, sort,
         subeval1, subs2!*, subsq, subtrsq, typerr,
 
 % from the header module:
@@ -86,16 +85,17 @@ symbolic procedure subsubtaylor(l,v);
         % problem is to distinguish kernels that are constant
         % expressions (e.g. sin (acos (4))) from others.
         %
-        then begin scalar temp;
+        then begin scalar temp,w,about; integer pos,pos1;
          temp := simp!* cdr p;
-         if constant!-sq!-p temp
-          then begin scalar about,ll,w,y,z; integer pos,pos1;
-            %
-            % Determine the position of the variable
-            %
-            w := var!-is!-nth(tp,car p);
-            pos := car w;
-            pos1 := cdr w;
+         %
+         % Determine the position of the variable
+         %
+         w := var!-is!-nth(tp,car p);
+         pos := car w;
+         pos1 := cdr w;
+         about := taytpelpoint nth(tp,pos);
+         if constant!-sq!-p temp or about = cdr p
+          then begin scalar ll,y,z;
             if not null nth(nth(pl,pos),pos1)
               then taylor!-error('invalid!-subst,
                             "multiple substitution for same variable");
@@ -103,7 +103,6 @@ symbolic procedure subsubtaylor(l,v);
             %
             % Calculate the difference (new_variable - expansion_point)
             %
-            about := taytpelpoint nth(tp,pos);
             if about eq 'infinity
               then if null numr temp
                 then taylor!-error!*('zero!-denom,"Taylor Substitution")

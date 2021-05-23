@@ -136,7 +136,7 @@ symbolic procedure tayrevert1(tp,cf,el,i,okrnl,krnl);
   %  krnl the new kernel.
   %
   taylor!:
-  begin scalar first,incr,newtp,newcf,newpoint,newel,u,u!-k,v,w,x,x1,n,
+  begin scalar first,incr,newtp,newcf,newpoint,u,u!-k,v,w,x,x1,n,
                expo,upper;
     %
     % First step: reorder the coefflist as if the okrnl appears
@@ -259,7 +259,7 @@ COMMENT The mechanism for a first order pole is very simple:
 
 symbolic procedure tayrevert1pole (tp, cf, el, i, okrnl, krnl,
                                    newcf, newtp);
-  begin scalar x, y, z;
+  begin scalar x, y;
     cf := taycoefflist invtaylor make!-taylor!*(cf,tp,nil,nil);
     x := tayrevert1 (tp, cf, el, i, okrnl, krnl);
     y := taytemplate x;

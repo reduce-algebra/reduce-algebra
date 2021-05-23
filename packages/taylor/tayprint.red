@@ -36,7 +36,7 @@ exports taylor!*print, taylor!*print1;
 imports
 
 % from the REDUCE kernel:
-        denr, eqcar, fmprint, kernp, lastpair, maprint, mvar, numr,
+        denr, eqcar, fmprint, kernp, lastpair, list2string, maprint, mvar, numr,
         prepsq, simp!*, smemq, typerr,
 
 % from the header module:

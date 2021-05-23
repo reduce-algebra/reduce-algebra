@@ -36,12 +36,7 @@ exports taylor!*part;
 imports
 
 % from the REDUCE kernel:
-        !*a2k, aeval, eqcar, parterr, rederr, revalsetp1, simp!*,
-        typerr,
-
-% from the header module:
-        make!-taylor!*, taycoefflist, tayflags, taylortemplate,
-        tayorig,
+        nth, parterr,
 
 % from module TayConv:
         preptaylor!*;

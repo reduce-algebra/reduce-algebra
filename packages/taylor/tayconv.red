@@ -51,7 +51,7 @@ fluid '(convert!-taylor!*
 
 symbolic procedure preptaylor!*1 (coefflist, template, no!-of!-terms);
   replus for each cc in coefflist join
-    begin scalar x; integer count;
+    begin scalar x;
       if taylor!-truncation!-flag then return nil;
       x := preptaylor!*2 (cc, template);
       if null x or null no!-of!-terms then return x;

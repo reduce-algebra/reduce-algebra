@@ -45,7 +45,8 @@ exports add!-degrees, add!.comp!.tp!., check!-for!-cst!-taylor,
 imports
 
 % from the REDUCE kernel:
-        ./, gcdn, geq, lastpair, mkrn, neq, nth, numr, reversip,
+        ./, domainp, eqcar, gcdn, geq, lastpair, lc, ldeg, mkrn, mvar,
+	neq, nth, numr, red, reversip, simprn,
 
 % from the header module:
         !*tay2q, get!-degree, get!-degreelist, make!-cst!-powerlist,

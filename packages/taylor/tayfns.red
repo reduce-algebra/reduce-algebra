@@ -45,9 +45,9 @@ imports
 
 % from the header module:
         !*tay2q, !*TayExp2q, constant!-sq!-p, cst!-taylor!*,
-        find!-non!-zero, get!-degree, has!-tayvars,
+        find!-non!-zero, get!-degree, has!-tayvars, make!-cst!-coefflis,
         make!-cst!-powerlist, make!-taylor!*, prune!-coefflist,
-        set!-taycoefflist, set!-tayflags, set!-tayorig, taycfpl,
+        set!-taycoefflist, set!-taycfsq, set!-tayflags, set!-tayorig, taycfpl,
         taycfsq, taycoefflist, tayflags, taygetcoeff, taylor!*p,
         taylor!-kernel!-sq!-p, taylor!:, taymakecoeff, tayorig,
         taytemplate, taytpelnext, taytpelorder, taytpelpoint,

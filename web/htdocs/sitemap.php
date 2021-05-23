@@ -1,33 +1,58 @@
-<?php declare(strict_types=1)?>
-<!DOCTYPE html>
-<html>
-    <head>
-        <style>
-         /* Hide sub-folders for initial display */
-         tr[data-level='1'], tr[data-level='2'] {
-             display: none;
-         }
-         td:not(:first-child) {
-             padding-left: 1em;
-         }
-         tr[data-level='1'] > td:first-child {
-             padding-left: 1.5em;
-         }
-         tr[data-level='2'] > td:first-child {
-             padding-left: 3em;
-         }
-         tr.folder:not(.expanded) > td:first-child::before {
-             content: "⊞ ";
-         }
-         tr.folder.expanded > td:first-child::before {
-             content: "⊟ ";
-         }
-        </style>
-    </head>
-    <body>
+<?php declare(strict_types=1);
+$header_title = 'Site Map';
+include 'include/begin-head.php';
+?>
 
-        <table>
-            <tr><th>URL</th><th>Page Title / Description</th><th>Date</th></tr>
+<style>
+ /* Hide sub-folders for initial display */
+ tr[data-level='1'], tr[data-level='2'] {
+     display: none;
+ }
+ table {
+     margin-left: auto; margin-right: auto;
+ }
+ tr:first-child {
+     border-bottom: thin solid black;
+ }
+ th:not(:first-child), td:not(:first-child) {
+     padding-left: 1em;
+ }
+ td:nth-child(3) {
+     white-space: nowrap;
+ }
+ tr[data-level='1'] > td:first-child {
+     padding-left: 1.5em;
+ }
+ tr[data-level='2'] > td:first-child {
+     padding-left: 3em;
+ }
+ tr.folder:not(.expanded) > td:first-child::before {
+     content: "⊞ ";
+ }
+ tr.folder.expanded > td:first-child::before {
+     content: "⊟ ";
+ }
+</style>
+
+<?php
+include 'include/begin-body.php';
+?>
+
+<p>
+    The table below shows all the pages, documents and folders
+    available on this web site, sorted alphabetically by URL.  Only
+    the final component of each URL is displayed.  Clicking on a page
+    or document URL opens that page or document.  Clicking on a (bold)
+    folder URL expands or collapses the folder contents.  A collapsed
+    folder URL is preceded by the symbol ⊞ and an expanded folder URL
+    is preceded by the symbol ⊟.  The table displays the title of a
+    page if it has one, otherwise it displays a brief description of
+    the item.  The table also shows the date on which each page or
+    document was last modified on the web server, which probably
+    implies either a change or at least a review of the content.
+</p>
+<table>
+    <tr><th>URL</th><th>Page Title / Description</th><th>Date</th></tr>
 <?php
 processDir('*', 0);
 
@@ -35,7 +60,7 @@ function processDir(string $dir, int $level) {
     // Process all files in each directory recursively.
     foreach (glob($dir) as $file) {
         if (is_dir($file)) {
-            if ($file != 'images') {
+            if ($file != 'images' && $file != 'include') {
                 echo "<tr data-level='$level' class='folder'><td><b>$file</b></td>";
                 echo "<td>&mdash; <i>folder</i> &mdash;</td><td></td></tr>\n";
                 processDir("$file/*", $level + 1); // recurse!
@@ -57,7 +82,7 @@ function processFile(string $file, string $ext, int $level) {
         case 'HTML':
             $title = '&mdash; <i>HTML file</i> &mdash;';
             if ($handle = @fopen($file, 'r')) {
-                for ($i = 0; ($line = fgets($handle)) !== false && $i < 25; $i++) {
+                for ($i = 0; ($line = fgets($handle)) !== false && $i < 5; $i++) {
                     if (preg_match('/<title>(.*)<\/title>/', $line, $matches) && $matches[1]) {
                         $title = "<b>$matches[1]</b>";
                         break;
@@ -70,7 +95,7 @@ function processFile(string $file, string $ext, int $level) {
             $title = '&mdash; <i>PHP file</i> &mdash;';
             if ($handle = @fopen($file, 'r')) {
                 for ($i = 0; ($line = fgets($handle)) !== false && $i < 25; $i++) {
-                    if (preg_match('/\$smarty->assign\(\'(page_title|header_title)\',\s*\'(.*)\'\);/',
+                    if (preg_match('/\$(page_title|header_title)\s*=\s*\'(.*)\'/',
                                    $line, $matches)) {
                         $title = $matches[2];
                         if ($matches[1] == 'header_title') $title = "REDUCE $title";
@@ -89,35 +114,38 @@ function processFile(string $file, string $ext, int $level) {
     echo '<td>', date('d M Y', filemtime($file)), "</td></tr>\n";
 }
 ?>
-        </table>
+</table>
 
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"
-                integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
-                crossorigin="anonymous"></script>
+</div><!-- opened in begin-body.php -->
 
-        <script>
-         // Strip leading folders from file names:
-         $("tr[data-level=1],tr[data-level=2]")
-             .find("td:first-child > a, td:first-child:not(:has(a))")
-             .text(function(n, current) {
-                 /* var pos = current.lastIndexOf("/");
-                  * return pos == -1 ? current : current.substring(pos+1); */
-                 return current.substring(current.lastIndexOf("/") + 1);
-             });
+<?php
+include 'include/footer.php';
+?>
 
-         // Register a click handler on folder name cells:
-         $("tr.folder > td:first-child").css("cursor", "pointer").click(function() {
-             var $folderTr = $(this).closest("tr"); // folder table row
-             var folderLevel = $folderTr.toggleClass("expanded").data("level");
-             var hiding = !$folderTr.hasClass("expanded"); // collapsing folder
-             $folderTr.nextAll().each(function(){
-                 var $this = $(this); // a table row below the folder table row
-                 var level = $this.data("level");
-                 if (level == folderLevel) return false; // below this subfolder
-                 if (hiding) $this.hide().removeClass("expanded"); // hide all descendants
-                 else if (level == folderLevel+1) $this.show(); // but show only children
-             })
-         });
-        </script>
-    </body>
+<script>
+ // Strip leading folders from file names:
+ $("tr[data-level=1],tr[data-level=2]")
+     .find("td:first-child > a, td:first-child:not(:has(a))")
+     .text(function(n, current) {
+         /* var pos = current.lastIndexOf("/");
+          * return pos == -1 ? current : current.substring(pos+1); */
+         return current.substring(current.lastIndexOf("/") + 1);
+     });
+
+ // Register a click handler on folder name cells:
+ $("tr.folder > td:first-child").css("cursor", "pointer").click(function() {
+     var $folderTr = $(this).closest("tr"); // folder table row
+     var folderLevel = $folderTr.toggleClass("expanded").data("level");
+     var hiding = !$folderTr.hasClass("expanded"); // collapsing folder
+     $folderTr.nextAll().each(function(){
+         var $this = $(this); // a table row below the folder table row
+         var level = $this.data("level");
+         if (level == folderLevel) return false; // below this subfolder
+         if (hiding) $this.hide().removeClass("expanded"); // hide all descendants
+         else if (level == folderLevel+1) $this.show(); // but show only children
+     })
+ });
+</script>
+
+</body>
 </html>

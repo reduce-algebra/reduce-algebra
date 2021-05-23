@@ -43,9 +43,10 @@ imports
         prepsq, prin2t, rerror,
 
 % from the header module
-        taytpelvars;
+        taylor!-trace, taytpelvars;
 
-fluid '(!*tayexpanding!* !*tayrestart!* taylor!:date!* taylor!:version);
+fluid '(!*tayexpanding!* !*tayrestart!* !*trtaylor taylor!:date!*
+        taylor!:version);
 
 symbolic procedure var!-is!-nth(tp,var);
   %
@@ -135,7 +136,7 @@ symbolic procedure taylor!-error (type, info);
   % called if a normal error occurs.
   % type is the type of error, info the error info.
   %
-  begin scalar msg; integer errno;
+  begin scalar msg; %integer errno;
     msg := if type eq 'not!-a!-unit then "Not a unit in argument to"
             else if type eq 'wrong!-no!-args
              then "Wrong number of arguments to"
