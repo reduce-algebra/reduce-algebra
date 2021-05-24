@@ -3,9 +3,6 @@ load_package redlog;
 
 rlset ibalp;
 
-Redlog Revision 5404 of 2020-09-20, 15:40:23Z
-(c) 1992-2020 T. Sturm and A. Dolzmann (www.redlog.eu)
-type ?; for help
 
 
 {}

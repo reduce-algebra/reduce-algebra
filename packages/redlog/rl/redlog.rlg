@@ -5,9 +5,6 @@ on rlverbose;
 % Ordered fields standard form:
 rlset ofsf;
 
-Redlog Revision 5404 of 2020-09-20, 15:40:23Z
-(c) 1992-2020 T. Sturm and A. Dolzmann (www.redlog.eu)
-type ?; for help
 
 {}
 
@@ -144,7 +141,7 @@ rlqe ex(x,a*x**2+b*x+c>0);
 
 ++++ Entering cl_qe
 ---- (ex x) [BFS: depth 0]
--- left: 1
+-- left: 1 (x)
 [1e(12)] [DEL:0/1]
 +++ Final simplification ... 12 -> 9
 
@@ -176,7 +173,7 @@ rlqe(ex(x,a*x**2+b*x+c>0),{a<0});
 
 ++++ Entering cl_qe
 ---- (ex x) [BFS: depth 0]
--- left: 1
+-- left: 1 (x)
 [1e(1)] [DEL:0/1]
 +++ Final simplification ... 1 -> 1
 
@@ -187,7 +184,7 @@ rlqe(ex(x,a*x**2+b*x+c>0),{a<0});
 rlgqe ex(x,a*x**2+b*x+c>0);
 
 ---- (ex x) [BFS: depth 0]
--- left: 1
+-- left: 1 (x)
 [1e!(4)] [DEL:0/1]
 +++ Final simplification ... 4 -> 2
 
@@ -207,9 +204,9 @@ rlqe ex({x,y},(for i:=1:5 product mkid(a,i)*x**10-mkid(b,i)*y**2)<=0);
 
 ++++ Entering cl_qe
 ---- (ex x y) [BFS: depth 0]
--- left: 2
+-- left: 2 (y x)
 [1(y^2)(x^10)(SVF).e(37)] 
--- left: 1
+-- left: 1 (x)
 [6e(37)] [5e(5)] [4e(5)] [3e(5)] [2e(5)] [1e(5)] [DEL:0/7]
 +++ Final simplification ... 61 -> 0
 
@@ -220,7 +217,7 @@ sol := rlqe ex(x,a1*a2*x**2+b*x+c>0);
 
 ++++ Entering cl_qe
 ---- (ex x) [BFS: depth 0]
--- left: 1
+-- left: 1 (x)
 [1e(22)] [DEL:0/1]
 +++ Final simplification ... 22 -> 16
 

@@ -3,13 +3,6 @@
 rlset(talp, {o, 0}, {s, 1});
 
 
-*** revision missing on talp/talpsiat 
-
-*** revision missing on talp/talpbnf 
-Redlog Revision 5404 of 2020-09-20, 15:40:23Z
-(c) 1992-2020 T. Sturm and A. Dolzmann (www.redlog.eu)
-type ?; for help
-
 {}
 
 

@@ -19,6 +19,7 @@ include 'include/begin-head.php';
  }
  td:nth-child(3) {
      white-space: nowrap;
+     text-align: center;
  }
  tr[data-level='1'] > td:first-child {
      padding-left: 1.5em;
@@ -39,17 +40,18 @@ include 'include/begin-body.php';
 ?>
 
 <p>
-    The table below shows all the pages, documents and folders
-    available on this web site, sorted alphabetically by URL.  Only
-    the final component of each URL is displayed.  Clicking on a page
-    or document URL opens that page or document.  Clicking on a (bold)
-    folder URL expands or collapses the folder contents.  A collapsed
-    folder URL is preceded by the symbol ⊞ and an expanded folder URL
-    is preceded by the symbol ⊟.  The table displays the title of a
-    page if it has one, otherwise it displays a brief description of
-    the item.  The table also shows the date on which each page or
-    document was last modified on the web server, which probably
-    implies either a change or at least a review of the content.
+    The table below displays all the pages, documents, files and
+    folders that are directly available to users on this web site,
+    sorted alphabetically by URL.  Only the final component of each
+    URL is displayed.  Clicking on a page or document URL opens that
+    page or document.  Clicking on a (bold) folder URL expands or
+    collapses the folder contents.  A collapsed folder URL is preceded
+    by the symbol ⊞ and an expanded folder URL is preceded by the
+    symbol ⊟.  The table displays the title of a page if it has one,
+    otherwise it displays a brief description of the item.  The table
+    also shows the date on which each page or document was last
+    modified on the web server, which probably implies either a change
+    or at least a review of the content.
 </p>
 <table>
     <tr><th>URL</th><th>Page Title / Description</th><th>Date</th></tr>

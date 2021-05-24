@@ -5,6 +5,7 @@ $page_title = 'REDUCE Computer Algebra System';
 $header_title = 'What is REDUCE?';
 include 'include/begin-head.php';
 ?>
+<meta name="google-site-verification" content="pKr8xVCb35NVMHejjhvma4js1wsSweNQ_8vTVJqWFeA" />
 
 <style type="text/css">
  #main img {
