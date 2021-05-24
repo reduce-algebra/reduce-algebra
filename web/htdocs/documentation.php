@@ -3,14 +3,8 @@ $header_title = 'Documentation';
 include 'include/begin-head.php';
 ?>
 
-<style type="text/css">
- #contrib > span.chapterToc > a {
-     font-size: x-large;
- }
-</style>
-
 <base href="/manual/" />
-<!-- *** Beware that relative URLs on this page are relative to "/manual/". *** -->
+<!-- *** Beware that relative URLs on this page are relative to "/manual/" for the  User Contributed Packages. *** -->
 
 <?php
 include 'include/begin-body.php';
@@ -79,8 +73,38 @@ include 'include/begin-body.php';
     dynamically generated links into the HTML version of the REDUCE
     User&apos;s Manual.
 </p>
-<div id="contrib">
-    <p>A list of user-contributed packages is being generated...</p>
+<div>
+    <?php
+    $doc = new DOMDocument();
+    libxml_use_internal_errors(true);
+    if ($doc->loadHTMLFile('manual/manual.html')) {
+        // Use XPath to extract the User Contributed Packages links in the Table of Contents:
+        $xpath = new DOMXpath($doc);
+        $chapterAnchor = $xpath->query(
+            "/html/body/div[@class='tableofcontents']/span[@class='chapterToc']/a[.='User Contributed Packages']")->item(0);
+        $chapterAnchor->removeAttribute('id');
+        echo "<span style='font-size:x-large'>{$doc->saveHTML($chapterAnchor)}</span><br/>\n";
+        $sectionSpans = $xpath->query("parent::span/following-sibling::span", $chapterAnchor);
+        foreach ($sectionSpans as $sectionSpan) {
+            if ($sectionSpan->getAttribute('class') == 'chapterToc') break;
+            $sectionAnchor = $sectionSpan->getElementsByTagName('a')->item(0);
+            $sectionAnchor->removeAttribute('id');
+            $sectionAnchorString = utf8_decode($doc->saveHTML($sectionAnchor));
+            // Embolden the package name (before the colon):
+            $sectionAnchorString = preg_replace('/>(.*):/', '><b>$1</b>:', $sectionAnchorString);
+            echo "&emsp;&emsp;$sectionAnchorString<br/>\n";
+        }
+    } else { ?>
+        <h2>REDUCE Manual Contents Error</h2>
+	<p>
+            Failed to load the REDUCE manual contents page.  Sorry.
+	    This should not happen!
+        </p>
+	<p>
+            Please email this error message to
+            <a href="mailto:fjwright@users.sourceforge.net?subject=REDUCE%20web%20site">fjwright@users.sourceforge.net</a>.
+        </p>
+    <?php } ?>
 </div>
 
 </div><!-- opened in begin-body.php -->
@@ -88,28 +112,6 @@ include 'include/begin-body.php';
 <?php
 include 'include/footer.php';
 ?>
-
-<!-- *** Re-implement this in PHP! *** -->
-<script>
- $("#contrib").
-          load("/manual/manual.html div.tableofcontents > *",
-               function() {  // invoked once as a method of each element of the jQuery object
-                   $("#contrib > span.chapterToc:has(a:contains(User Contributed Packages))").prevAll().remove()
-                   $("#contrib > span.chapterToc:nth(1)").nextAll().addBack().remove()
-                   // Remove numbering from heading:
-                   $("#contrib > span.chapterToc").contents().first().remove()
-                   $("#contrib > span.sectionToc").each(function() {
-                       var $this = $(this)
-                       // Replace numbering of package with space:
-                       $this.contents().first().replaceWith("&emsp;&emsp;")
-                       // Embolden the package name (before colon):
-                       $this.find("a").html(function(n, current){
-                           var ind = current.search(":");
-                           return "<b>" + current.substring(0, ind) + "</b>" + current.substring(ind)
-                       })
-                   })
-          })
-</script>
 
 </body>
 </html>
