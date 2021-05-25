@@ -26,7 +26,7 @@ module dint;  % Definite integration support.
 %
 
 
-fluid '(!*precise);
+fluid '(!*hold!-int!* !*precise);
 
 % If you go "on acn;" then definite integration will use a small stanza of
 % experimental code (from A C Norman, hence the name of the switch) that
@@ -51,9 +51,11 @@ symbolic procedure simpdint u;
       result := simpdint1 u;
       << if dmod then onoff(dmod,t);
          if cflag then onoff('complex,t)>> where !*msg := nil;
-	 % if rounded or complex mode was switched off during integration,
+	 % If rounded or complex mode was switched off during integration,
 	 %  resimplification of the result is needed after restoring the domain mode
-	 if dmod or cflag then result := resimp result;
+	 % Set !*hold!-int!* to t to avoid infinite recursion when integration
+	 %  had failed.
+	 if dmod or cflag then result := resimp result where !*hold!-int!* := t;
       	 return result;
    end;
 

@@ -1,0 +1,157 @@
+
+COMMENT Infinite recursion in integration triggered by error in num_int,
+        see https://sourceforge.net/p/reduce-algebra/discussion/899364/thread/33f6aac3a2/ ;
+
+
+x^s;
+
+
+ s
+x
+
+
+load_package numeric;
+
+
+showrules expt;
+
+
+  i*pi
+{e     => -1,
+
+  (i*pi)/2
+ e         => i,
+
+                   1/2
+ (~a + sqrt(~c)*~b)    => **w when symbolic(setk(**w,unnest-sqrt-sqrt(a,b,c))),
+
+                1/2
+ (~a + sqrt(~c))    => **w when symbolic(setk(**w,unnest-sqrt-sqrt(a,1,c))),
+
+   logb(~x,~b)
+ ~a            => x when a=b,
+
+   log10(~x)
+ 10          => x,
+
+      ~y           y - 1
+ df(~x  ,~x) => y*x     ,
+
+      ~y                y
+ df(~x  ,~y) => log(x)*x ,
+
+  2
+ i  => -1,
+
+        2     2
+ abs(~x)  => x  when symbolic(not(*precise)) or realvaluedp(x)}
+ showrules exp;
+
+
+{exp(~n*arbint(~k)*i*pi + ~~x)
+
+  => exp((if evenp(n) then 0 else 1)*i*pi*arbint(k) + x) when fixp(n),
+
+             x
+ exp(~x) => e }
+
+on trnumeric;
+
+ num_int(x**s, x=(0.0 .. 1.0));
+
+
+                    s
+1 level integrate :x  over 0..1
+No bounded antiderivative found
+No usable Chebyshev approximation found
+Starting adaptive multilevel quadrature
+
+***** s invalid as number
+
+***** Cannot numerically evaluate integral 
+
+showrules expt;
+
+
+  i*pi
+{e     => -1,
+
+  (i*pi)/2
+ e         => i,
+
+  ~n*acosh(~x)           2          n
+ e             => (sqrt(x  - 1) + x)  when numberp(n),
+
+  ~n*asinh(~x)           2          n
+ e             => (sqrt(x  + 1) + x)  when numberp(n),
+
+  acosh(~x)          2
+ e          => sqrt(x  - 1) + x,
+
+  asinh(~x)          2
+ e          => sqrt(x  + 1) + x,
+
+                   1/2
+ (~a + sqrt(~c)*~b)    => **w when symbolic(setk(**w,unnest-sqrt-sqrt(a,b,c))),
+
+                1/2
+ (~a + sqrt(~c))    => **w when symbolic(setk(**w,unnest-sqrt-sqrt(a,1,c))),
+
+   logb(~x,~b)
+ ~a            => x when a=b,
+
+   log10(~x)
+ 10          => x,
+
+      ~y           y - 1
+ df(~x  ,~x) => y*x     ,
+
+      ~y                y
+ df(~x  ,~y) => log(x)*x ,
+
+  2
+ i  => -1,
+
+        2     2
+ abs(~x)  => x  when symbolic(not(*precise)) or realvaluedp(x)}
+ showrules exp;
+
+
+             x
+{exp(~x) => e ,
+
+ exp(~n*arbint(~k)*i*pi + ~~x)
+
+  => exp((if evenp(n) then 0 else 1)*i*pi*arbint(k) + x) when fixp(n)}
+
+
+lisp dmode!*;
+
+
+load_package defint;
+
+
+off rounded;
+
+
+
+int(x**s, x, 0, 1);
+
+
+   1
+-------
+ s + 1
+
+on rounded;
+
+
+int(x**s, x, 0, 1);
+
+
+   1
+-------
+ s + 1
+
+
+end;
+

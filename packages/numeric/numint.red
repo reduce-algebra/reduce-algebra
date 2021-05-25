@@ -164,7 +164,7 @@ symbolic procedure intrd1a(fcn,x,lo,hi,p);
     oldmode:=switch!-mode!-rd nil;
     w:= errorset(
         {'boundseval,mkquote{u, {'equal,x,{'!*interval!*, loo, hii}}}},
-                             nil,nil) where !*msg=nil;
+                             nil,nil) where !*msg=nil,!*protfg:=t;
     switch!-mode!-rd oldmode;
 
     if not smemq('int,u) and not errorp w then
@@ -185,7 +185,9 @@ symbolic procedure intrd1a(fcn,x,lo,hi,p);
     cbound := dm!: (acc /(hii - loo));
     ord := 20;
   chebloop:
-    u := chebcoeffs(fcn,x,loo,hii,ord);
+    u := errorset({'chebcoeffs,mkquote fcn,mkquote x,mkquote loo,mkquote hii,mkquote ord},
+                  nil,nil) where !*msg=nil,!*protfg:=t;
+    if errorp u then goto chebexit else u := car u;
     uu := reverse u;
     if int!-chebconverges(uu,acc,cbound) then
     <<
@@ -194,6 +196,7 @@ symbolic procedure intrd1a(fcn,x,lo,hi,p);
                            chebeval(u,nil,loo,hii,lo)};
     >>;
     if null w and ord<60 then <<ord:=ord+20; goto chebloop>>;
+  chebexit:
     switch!-mode!-rd oldmode;
     if w then
     <<if !*trnumeric then
@@ -231,15 +234,16 @@ symbolic procedure  int!-chebmax(u,mx);
 % ----------------- adaptive multilevel quadrature
 
 symbolic procedure intrd2 (e,vars,p);
-   begin scalar acc,r,oldmode,!*noequiv;
+   begin scalar acc,r,oldmode,callee,!*noequiv;
     vars := nil;
     oldmode:=switch!-mode!-rd nil;
     acc := !:!:quotient(1,expt(10,accuracy!*));
     e := reval e;
-    r := if null cdr p then intrduni(e,p,acc) else
-          intrdmulti(e,p,acc);
+    callee := if null cdr p then 'intrduni else 'intrdmulti;
+    r := errorset({callee,mkquote e,mkquote p,mkquote acc},nil,nil);
     switch!-mode!-rd oldmode;
-    return r;
+    if errorp r then rederr "Cannot numerically evaluate integral"
+     else return car r;
   end;
 
 symbolic procedure intevaluate1(e,x,v);
