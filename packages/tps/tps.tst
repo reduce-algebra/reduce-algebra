@@ -95,7 +95,7 @@ psexplim 6;
 ps(gamma x,x,1);
 ps(psi x,x,1);
 ps(gamma x,x,0);
-ps(psi,x,-1);
+ps(psi x,x,-1);  % corrects typo in previous test file
 ps(polygamma(3,x),x,0);
 ps(gamma(1+x),x,0);
 ps(psi(3+x),x,-3);
@@ -132,5 +132,40 @@ tmp:=ps(sin a*sin x,x,a^3);
 % incorrect in previous version
 tmp := ps(int(tmp,a),x,a^3);
 psfunction tmp;
+
+psexplim 6;
+% tests of recent updates (May 2021)
+
+% expansion about poles
+ps(csc x,x,0);
+ps(tan x,x,pi/2);
+tmp:=ps(tanh x,x,3*i*pi/2);
+tmp1:=ps(coth x,x,3*i*pi/2);
+tmp1*tmp;
+
+% ditto for Jacobi elliptic functions
+load specfn;
+
+tmp:= ps(jacobins(x,k),x,0);
+tmp1 := ps(jacobisn(x,k),x,0);
+tmp1*tmp;
+
+ps(jacobidn(x,k),x, i*ellipticK!'(k));
+
+% Weierstrass functions
+% at a pole
+ps(weierstrass1(x,g2,g3),x,0);
+
+tmp := ps(weierstrassZeta1(x,g2,g3),x,0);
+-df(tmp,x);
+
+% regular expansion pt
+
+ps(weierstrass(x,omega1, omega3), x,omega3);
+tmp := ps(weierstrass(x,omega1, omega3), x,omega1);
+tmp1 := ps(weierstrassZeta(x,omega1, omega3), x,omega1);
+
+
+df(tmp1,x)/tmp;
 
 end;

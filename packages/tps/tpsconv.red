@@ -93,21 +93,21 @@ symbolic procedure ps!:big!-o(ps, ord);
   %
   % Generates a big-O notation for power series
   %
-    "O" . ps!:mkpow(ps!:mkvar ps,
+    '!O . ps!:mkpow(ps!:mkvar ps,
                     ord, (ps!:expansion!-point ps = 'ps!:inf));
 
 symbolic procedure ps!:print1 u;
 begin scalar prepexpr, rest;
     prepexpr := prep!:ps(u, ps!:exp!-lim);
-    if null ps!:expansion!-point u then
-       rest := nil
-    else if !*psprintorder then 
+    if !*psprintorder then 
        rest := {ps!:big!-o(u, ps!:exp!-lim+1)}
     else
        rest := {'!.!.!.};
 
     return
-       if not eqcar (prepexpr, 'plus) then
+        if ps!:expression u = 'full
+	    and ps!:exp!-lim  >= ps!:last!-term u then prepexpr
+       else if not eqcar (prepexpr, 'plus) then
           'plus . (prepexpr or 0) . rest
        else
           nconc (prepexpr, rest);
@@ -121,11 +121,9 @@ symbolic procedure ps!:print(u,p);
   else if null !*nat then
              maprint('ps . (ps!:value u) . (ps!:depvar u) .
                    {(if about = 'ps!:inf then 'infinity
-                     else if about = nil then 'undefined else about)
+                     else about)
                       where about = ps!:expansion!-point u},
                 p)
-  else if constantpsp u then
-             maprint(prepsqxx ps!:get!-term(u, 0), p)
   else maprint(ps!:print1 u, p);
 
 symbolic procedure ps!:print0 u;

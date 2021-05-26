@@ -38,7 +38,7 @@ module tpscomp; % Compile prefix expression into network of
 
 %fluid '(unknowns !*exp knownps ps!:max!-order ps!:specials dfdx);
 fluid '(unknowns !*exp  knownps ps!:max!-order ps!:specials
-        ps!:level ps!:max!-level);
+        ps!:level ps!:max!-level !*ratarg);
 
 ps!:specials := list('psrev, 'pscomp, 'int);
 
@@ -49,84 +49,257 @@ symbolic procedure ps!:compile(form,depvar,about);
           make!-ps!-id(form,depvar,about)
    else  if ps!:numberp form then form
    else if ps!:p form then
-      if (ps!:expansion!-point form=about)and(ps!:depvar form=depvar)
+      if (ps!:expansion!-point form=about) and (ps!:depvar form=depvar)
         then form
       else ps!:compile(ps!:value form,depvar,about)
    else if memq(rator form, ps!:specials) then
       apply(get(car form,'ps!:crule), list(form,depvar,about))
-   else (if dfdx=0 then
-           << about:=(rator form).(foreach arg in rands form collect
-                           if ps!:p arg then
-                              << ps!:find!-order arg;
-                                 prepsq ps!:evaluate(arg,0)>>
-                           else subst(about,depvar,arg));
-              make!-constantps(simp!* about, form, depvar)>>
-         else if get(car form,'ps!:crule) then
-                apply(get(car form,'ps!:crule),list(form,depvar,about))
-         else (if haspoles and at!-a!-pole(cdr haspoles, cadr form,
-	                                    depvar, about) then
-	       % deal with periodic functions with known poles
-               begin scalar x;
-	          x:= ps!:compile(list('quotient, 1, car(haspoles) . cdr form),
-		                   depvar, about);
-	          ps!:set!-value(x, car(form) .
-	                              cdr ps!:value(cadr ps!:operands x));
-		  return x;
-	       end 
-         else (if tmp then '!:ps!:  .  cdr tmp
-               else ps!:unknown!-crule((car form) .
-                                       foreach arg in cdr form collect
-                                          ps!:compile(arg,depvar,about),
-                                       depvar,about))
-                 where tmp = assoc(form,knownps))
-	    where haspoles = get(car form, '!*pole!-info))         
-      where dfdx=prepsqxx simp!* list('df,ps!:arg!-values form, depvar);
+   else begin scalar polefn, tmp, ispoly;
+      % modified May 2021 to use a begin block to faciliate extensions
+      tmp := prepsqxx simp!* list('df,ps!:arg!-values form, depvar);
+      if tmp = 0 then <<
+         tmp := (rator form).
+	    (foreach arg in rands form collect
+                if ps!:p arg then <<
+                   ps!:find!-order arg;
+                   prepsq ps!:evaluate(arg,0)
+		>>
+                else subst(about,depvar,arg));
+	 tmp := simp!* tmp;
+	 if tmp = '(nil . 1) then
+	    return 0
+	 else
+            return make!-constantps(tmp, form, depvar, about );
+      >>;
 
-symbolic procedure at!-a!-pole(polelist, arg1, depvar, exppt);
-begin scalar pole1, period, res;
-  arg1 := subst(exppt, depvar, arg1);
-  pole1 := car polelist;
-  period :=  cadr polelist;
-  if pole1 = arg1 then return t;
-  res := reval list('quotient,list('plus, arg1, list('minus, pole1)), period);
-  return fixp res;
+      % optimisation to represent polynomials as a single complete ps.
+      begin scalar !*ratarg := t;
+        tmp := reval form;
+	if about = 'ps!:inf then
+	   tmp := reval subst(list('quotient, 1, depvar), depvar, tmp);
+        tmp := cdr coeffeval list(tmp, depvar);
+        ispoly := t;
+        foreach c in tmp do
+	     ispoly := (ispoly and null depends(c, depvar));
+        if ispoly and about neq 0 and about neq 'ps!:inf then <<
+           tmp := reval subst(list('plus, depvar, about), depvar, form);
+           tmp := cdr coeffeval list(tmp, depvar);
+        >>;
+      end;
+      if ispoly then return make!-poly!-ps(form, depvar, about, tmp);
+
+      if get(car form,'ps!:crule) then
+         return apply(get(car form,'ps!:crule),list(form,depvar,about));
+
+      % generalisation of the mechanism to expand a special function
+      % about one of its poles.
+      polefn := get(car form, '!*polefn);
+      if polefn then <<
+         % deal with functions with known poles
+         tmp := apply(polefn, list(form, depvar, about)); 
+         if tmp then return tmp;
+      >>;
+      tmp := assoc(form,knownps);
+      if tmp then
+         return '!:ps!:  .  cdr tmp
+      else
+         return ps!:unknown!-crule(
+              (car form) . foreach arg in cdr form collect
+                              ps!:compile(arg,depvar,about), depvar,about);
+   end;
+
+foreach fn in '(csc cot sec tan csch coth sech tanh) do
+   put(fn, '!*polefn, 'trig!-hyp!-polefn);
+
+symbolic procedure trig!-hyp!-polefn(form, depvar, exppt);
+  % returns nil if there is no pole at the expansion point
+  % otherwise returns the power series of 1/reciprocal function.
+begin scalar arg1, tmp, f, fp, p, r;
+   arg1 := subst(exppt, depvar, cadr form);
+   f := car form;
+   if (f = 'csc) or (f = 'cot) or (f = 'csch) or (f = 'coth) then
+      if (f = 'csc) or (f = 'cot) then <<
+         fp := 0;
+         p := 'pi;
+         if f = 'cot then
+	    r := 'tan
+	 else
+	    r := 'sin;
+      >>
+      else <<
+         fp := 0;
+         p := '(times i pi);
+	 if f = 'csch then
+	    r := 'sinh
+	 else
+	    r := 'tanh;
+      >>
+   else if (f = 'sec) or (f = 'tan) then <<
+           fp := '(quotient pi 2);
+           p := 'pi;
+	   if f = 'sec then
+	       r := 'cos
+	   else
+	       r := 'cot;	   
+        >>
+   else if (f = 'sech) or (f = 'tanh) then <<
+           fp := '(times i (quotient pi 2));
+           p := '(times i pi);
+  	   if f = 'sech then
+	      r := 'cosh
+	   else
+	      r := 'coth;	   
+        >>;
+	
+   tmp := reval list('quotient,list('difference, arg1, fp), p);
+   if fixp tmp then <<
+      tmp:= ps!:compile(list('quotient, 1, r . cdr form), depvar, exppt);
+      ps!:set!-value(tmp, car(form) . cdr ps!:value(cadr ps!:operands tmp));
+      return tmp;
+   >>
+   else
+      return nil;
+end;
+
+deflist('((jacobisn jacobins) (jacobicn jacobinc) (jacobidn jacobind)
+          (jacobins jacobisn) (jacobinc jacobicn) (jacobind jacobidn)
+          (jacobisc jacobics) (jacobisd jacobids) (jacobics jacobisc)
+	  (jacobicd jacobidc) (jacobids jacobisd) (jacobidc jacobicd)
+	  ), 'recipfn);
+
+foreach fn in '(jacobisn jacobicn jacobidn jacobins jacobinc jacobind
+                jacobisc jacobisd jacobics jacobicd jacobids jacobidc) do
+   put(fn, '!*polefn, 'jacobi!-polefn);
+
+
+symbolic procedure jacobi!-polefn(form, depvar, exppt);
+  % returns nil if there is no pole at the expansion point
+  % otherwise returns the power series of 1/reciprocal function.
+begin scalar arg1, arg2, tmp, f, m, n, r;
+   arg1 := subst(exppt, depvar, cadr form);
+   arg2 := caddr form;
+   f := car form;
+   if depends(arg2, depvar) then
+   % can't handle this case yet, so give up and let ps!:unknown!-crule try.
+      return nil;
+
+   begin scalar !*ratarg := t;
+      tmp := reval arg1;
+      tmp := cdr coeffeval list(tmp, list('ellipticK, arg2));
+   end;
+
+   if length tmp > 1 then m := cadr tmp else m := 0;
+   n := reval list('quotient, list('times, 'i, car tmp),
+                              list('ellipticK!', arg2));
+   if not(length tmp <= 2 and fixp m and fixp n) then return nil;  
+
+   if (f = 'jacobisn) or (f = 'jacobicn) or (f = 'jacobidn) then
+      <<if not evenp m or evenp n then return nil>>
+   else if (f = 'jacobidc) or (f = 'jacobinc) or (f = 'jacobisc) then
+      <<if  evenp m or not evenp n then return nil>>
+   else if (f = 'jacobicd) or (f = 'jacobisd) or (f = 'jacobind) then
+      <<if  evenp m or evenp n then return nil>>
+   else if  not evenp m or not evenp n then return nil;
+
+   r := get(f, 'recipfn);
+   tmp := ps!:compile(list('quotient, 1, r . cdr form), depvar, exppt);
+   ps!:set!-value(tmp, car(form) . cdr ps!:value(cadr ps!:operands tmp));
+   return tmp;
+end;
+
+put('weierstrass, '!*polefn, 'weier!-polefn);
+put('weierstrass1, '!*polefn, 'weier!-polefn);
+put('weierstrassZeta, '!*polefn, 'weier!-polefn);
+put('weierstrassZeta1, '!*polefn, 'weier!-polefn);
+
+symbolic procedure weier!-polefn(form, depvar, exppt);
+begin scalar arg1, arg2, arg3, tmp, tmp1, f, m, n, r;
+   arg1 := subst(exppt, depvar, cadr form);
+   arg2 := caddr form;
+   arg3 := cadddr form;
+   f := car form;
+   if depends(arg2, depvar) or depends(arg3, depvar) then
+   % can't handle this case yet, so give up and let ps!:unknown!-crule try.
+       return nil;
+
+   if f = 'weierstrass1 or f = 'weierstrassZeta1 then <<
+      tmp := list('lattice_omega1, arg2, arg3);
+      arg3 := list('lattice_omega3, arg2, arg3);
+      arg2 := tmp;
+   >>;
+   
+   begin scalar !*ratarg := t;
+      tmp := reval arg1;
+      tmp := cdr coeffeval list(tmp, arg2);
+   end;
+
+   if length tmp > 1 then m := cadr tmp else m := 0;
+   n := reval list('quotient, reval car tmp, arg3);
+   if not(length tmp <= 2 and fixp m and fixp n and evenp m and evenp n) then
+     % at a regular point
+     return simppstay2(form, depvar, exppt, nil);
+     
+   if f = 'weierstrass or f = 'weierstrassZeta then r := 'RW!*   
+   else r := 'RW1!*;
+   
+   tmp := simppstay2(r . cdr form, depvar, exppt, nil);
+   tmp := ps!:quotient!-crule(list('quotient, 1, tmp), depvar, exppt);
+   tmp1 := cdr ps!:value(cadr ps!:operands tmp);
+   if f = 'weierstrassZeta or f = 'weierstrassZeta1 then <<
+       tmp := ps!:int!-crule(list('int, tmp, depvar), depvar, exppt);
+       tmp := reval (list
+	          ('difference,
+	              list('plus, list('times, m, list('eta1, arg2, arg3)),
+ 	                          list('times, n, list('eta3, arg2, arg3))),
+		      tmp));
+        tmp := ps!:compile(tmp, depvar, exppt);
+   >>;
+   ps!:set!-value(tmp, car(form) . tmp1);
+   return tmp;
 end;
 
 symbolic procedure make!-ps!-id(id,depvar,about);
 begin scalar ps;
-  ps:=make!-ps(id,id,depvar,about);
+  ps:=make!-ps('full, id, depvar, about);
   if id=depvar then
       if about='ps!:inf then <<
          ps!:set!-order(ps, -1);
-         ps!:set!-terms(ps, list (0 . (1 ./ 1)))>>
+         ps!:set!-terms(ps, list (0 . (1 ./ 1)));
+	 ps!:set!-last!-term(ps,-1);>>
       else <<
          about :=  if idp about then !*k2q about
                    else if ps!:numberp about then !*n2f about ./ 1
                    else simp!* about;
          if numr about then <<
             ps!:set!-order(ps, 0);
-            ps!:set!-terms(ps, list(0 . about, 1 . (1 ./ 1)))>>
+            ps!:set!-terms(ps, list(0 . about, 1 . (1 ./ 1)));
+	    ps!:set!-last!-term(ps,1);
+	 >>
          else <<
             ps!:set!-order(ps, 1);
-            ps!:set!-terms(ps, list(0 . (1 ./ 1)))>>
+            ps!:set!-terms(ps, list(0 . (1 ./ 1)));
+	    ps!:set!-last!-term(ps,1);>>
        >>
   else <<
      ps!:set!-order(ps, 0);
-     ps!:set!-terms(ps, list(0 .  !*k2q id))>>;
-  ps!:set!-last!-term(ps,ps!:max!-order);
+     ps!:set!-terms(ps, list(0 .  !*k2q id));
+     ps!:set!-last!-term(ps,0);
+  >>;
   return ps
 end;
 
-symbolic procedure make!-constantps(u,v,d);
+symbolic procedure make!-constantps(u,v,d,a);
 % u is a constant standard quotient, v is a corresponding prefix form
 begin scalar ps;
+      if u = '(nil . 1) then return u;	
       ps:=get('tps,'tag) . mkvect 7;
       ps!:set!-order(ps,0);
-      ps!:set!-expression(ps, 'psconstant);
+      ps!:set!-expression(ps, 'full);
       ps!:set!-value(ps, v);
-      ps!:set!-last!-term(ps,ps!:max!-order);
+      ps!:set!-last!-term(ps,0);
       ps!:set!-terms(ps,list(0 . u));
       ps!:set!-depvar(ps,d);
+      ps!:set!-expansion!-point(ps,a);      
       putv(cdr ps, 7, !*sqvar!*);
       return ps
 end;
@@ -140,6 +313,29 @@ begin scalar ps;
       ps!:set!-depvar(ps,depvar);
       ps!:set!-expansion!-point(ps,about);
       ps!:set!-last!-term(ps,-1);
+      putv(cdr ps, 7, !*sqvar!*);
+      return ps;
+end;
+
+symbolic procedure make!-poly!-ps(form,depvar,about, coefflist);
+begin scalar ps, ordsetp, len;
+      ps:=get('tps,'tag) . mkvect 7;
+      ps!:set!-expression(ps, 'full);
+      ps!:set!-value(ps,form);
+      ps!:set!-depvar(ps,depvar);
+      ps!:set!-expansion!-point(ps,about);
+      ps!:set!-last!-term(ps, -1);
+      len := length(coefflist)-1;
+      for n := 0:len do <<
+         if car coefflist neq 0 then <<
+            if not ordsetp then <<
+               ps!:set!-order(ps, n);
+ 	       ordsetp := t;
+  	    >>;
+            ps!:set!-term(ps, n, simp!* car coefflist);
+	 >>;
+         coefflist := cdr coefflist;
+      >>;
       putv(cdr ps, 7, !*sqvar!*);
       return ps;
 end;
@@ -241,7 +437,7 @@ begin scalar prod, variables, constants;
          a:= make!-ps(list('psmult, prod, variables),
                       ps!:arg!-values a,d,n)
       else
-         return make!-constantps(prod, ps!:arg!-values a, d);
+         return make!-constantps(prod, ps!:arg!-values a, d,n);
       ps!:find!-order a;
       return a>>;
 end;
@@ -313,7 +509,7 @@ begin scalar r,arg1, psord, intvar, x;
      else  % expansion about infinity
          if (psord < 2) and (ps!:evaluate(arg1,1) neq (nil ./ 1)) then
            rerror(tps,13,"Logarithmic Singularity at Infinity");
- ps!:find!-order r;
+  ps!:find!-order r;
   return r;
 end;
 
@@ -626,26 +822,6 @@ end;
 put('gamma,'ps!:crule,'ps!:gamma!-crule);
 put('psi,'ps!:crule,'ps!:gamma!-crule);
 put('polygamma,'ps!:crule,'ps!:polygamma!-crule);
-
-% info on poles of trig anf hyperbolic functions
-symbolic procedure setup!-poleinfo();
-begin scalar a, b, c, d;
-  a := '((times i (quotient pi 2)) (times i pi));
-  b :=  '(0 (times i pi));
-  c :=  '((quotient pi 2) pi);
-  d :=  '(0, pi);
-
-  put('tanh, '!*pole!-info, 'coth . a);
-  put('sech, '!*pole!-info, 'cosh . a);
-  put('coth, '!*pole!-info, 'tanh . b);
-  put('csch, '!*pole!-info, 'sinh . b);
-  put('tan, '!*pole!-info, 'cot . c);
-  put('sec, '!*pole!-info, 'cos . c);
-  put('cot, '!*pole!-info, 'tan . d);
-  put('csc, '!*pole!-info, 'sin . d);
-end;
-
-symbolic setup!-poleinfo();
 
 endmodule;
 
