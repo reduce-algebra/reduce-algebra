@@ -22,26 +22,17 @@ bare-psl <<'XX' | tee buildpsl.log
 (de seprp (u) (or (eq u '! ) (eq u !$eol!$) (eq u '!
 )))
 
-(on comp)
 (de orderp (u v)
-   (prog (i j k l m)
+   (prog ()
+      (setq u (explode2 u))
+      (setq v (explode2 v))
+      (while (and u v (eq (car u) (car v)))
+         (setq u (cdr u) v (cdr v)))
       (cond
-         ((idp u) (setq u (strinf (symnam (idinf u)))) )
-         (t (return (typerr u "identifier"))))
-      (cond
-         ((idp v) (setq v (strinf (symnam (idinf v)))) )
-         (t (return (typerr v "identifier"))))
-      (setq i 0)
-      (setq j (strlen u))
-      (setq k (strlen v))
-a     (cond
-         ((null (eq (setq l (strbyt u i)) (setq m (strbyt v i))))
-            (return (ilessp l m)))
-         ((eq i j) (return (null (igreaterp j k))))
-         ((eq i k) (return nil)))
-      (setq i (iplus2 i 1))
-      (go a)))
-(off comp)
+         ((and u v)
+            (return (lessp (id2int (car u)) (id2int (car v)))))
+         (v (return t))
+         (t (return nil)))))
 
 (de stop (x) (exitlisp))
 
