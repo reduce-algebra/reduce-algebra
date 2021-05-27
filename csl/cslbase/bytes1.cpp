@@ -40,14 +40,11 @@
 
 #include "bytes.h"
 
-//
 // I can arrange that the option that allows me to count the number of byte
 // opcodes that are executed also lets me collect statistics on which
 // indicators are most heavily used with PUT and GET.
-//
 
 #ifndef NO_BYTECOUNT
-//
 // RECORD_GET can be set to track all used of PUT, GET, FLAG and FLAGP. This
 // may be useful when deciding which tags should be treated specially as
 // "fastget" ones, but that decision is not going to be reviwed at all often
@@ -78,7 +75,6 @@ void record_get(LispObject tag, bool found)
 #endif
 }
 
-//
 // Here is a short essay on the interaction between flags and properties.
 // It is written because the issue appears to be delicate, especially in the
 // face of a scheme that I use to speed things up.
@@ -102,12 +98,10 @@ void record_get(LispObject tag, bool found)
 //     symbol.
 // (h) As a consequence of (g) REMPROP and REMFLAG are really the same
 //     operation.
-//
 
 LispObject get(LispObject a, LispObject b, LispObject c)
 {   LispObject pl, prev, w;
     int n;
-//
 // In CSL mode plists are structured like association lists, and
 // NOT as lists with alternate tags and values.  There is also
 // a bitmap that can provide a fast test for the presence of a
@@ -117,7 +111,6 @@ LispObject get(LispObject a, LispObject b, LispObject c)
 // do so by making the symbol-plist function map from what I use here to
 // that. And symbol-plist already has to do special things to cope with
 // the "fastget" mechanism that I have...
-//
     if (!symbolp(a))
     {
 #ifdef RECORD_GET
@@ -198,10 +191,8 @@ LispObject get(LispObject a, LispObject b, LispObject c)
     }
     for (;;)
     {   w = car(pl);
-//
 // If I find the item anywhere beyond the first two places in the plist I
 // migrate it up to the front so that next time will be faster
-//
         if (car(w) == b)   // found - do move to top operation.
         {   write_barrier(cdraddr(prev), cdr(pl));
             write_barrier(cdraddr(pl), qplist(a));
@@ -386,10 +377,8 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
     }
     for (;;)
     {   w = car(pl);
-//
 // If I find the item anywhere beyond the first two places in the plist I
 // migrate it up to the front so that next time will be faster
-//
         if (car(w) == b)
         {   write_barrier(cdraddr(prev), cdr(pl));
             write_barrier(cdraddr(pl), qplist(a));
@@ -416,13 +405,11 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
     }
 }
 
-LispObject Lget_3(LispObject, LispObject a, LispObject b,
-                  LispObject c)
+LispObject Lget_3(LispObject, LispObject a, LispObject b, LispObject c)
 {   return onevalue(get(a, b, c));
 }
 
-LispObject Lputprop(LispObject env, LispObject a, LispObject b,
-                    LispObject c)
+LispObject Lputprop(LispObject env, LispObject a, LispObject b, LispObject c)
 {   return onevalue(putprop(a, b, c));
 }
 
@@ -510,10 +497,8 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
     }
     for (;;)
     {   w = car(pl);
-//
 // If I find the item anywhere beyond the first two places in the plist I
 // migrate it up to the front so that next time will be faster
-//
         if (car(w) == b)
         {   write_barrier(cdraddr(prev), cdr(pl));
             write_barrier(cdraddr(pl), qplist(a));
@@ -634,10 +619,8 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
     }
     for (;;)
     {   w = car(pl);
-//
 // If I find the item anywhere beyond the first two places in the plist I
 // migrate it up to the front so that next time will be faster
-//
         if (car(w) == b)
         {   write_barrier(cdraddr(prev), cdr(pl));
             write_barrier(cdraddr(pl), qplist(a));
@@ -669,11 +652,9 @@ LispObject Lflag(LispObject env, LispObject a, LispObject b)
     {   LispObject v = car(a), pl;
         a = cdr(a);
         if (!symbolp(v)) continue;
-//
 // I store FLAGS just as if they were PROPERTIES that have the value
 // T, so after (flag '(a b c) 'd) if anybody goes (get 'a 'd) they get back
 // the value T.
-//
         if (n)
         {   pl = qfastgets(v);
             if (pl == nil)
@@ -778,14 +759,12 @@ LispObject Lplist(LispObject env, LispObject a)
 }
 
 #ifndef NO_BYTECOUNT
-//
 // Unless NO_BYTECOUNT is set I keep two sorts of counts - first
 // ones that show how many bytecodes are executed in each separate
 // piece of code that the user runs.  These can be inspected by
 // calling MAPSTORE.  Then ones that show (overall) which particular
 // byte opcodes are most heavily used.  This information is displayed
 // when you call BYTECOUNTS.
-//
 extern bool profile_count_mode;
 
 #include "opnames.cpp"
@@ -992,9 +971,7 @@ inline void do_pvrestore()
 }
 
 inline LispObject encapsulate_sp(LispObject *sp)
-//
 // Creates a boxed up representation of a pointer into the stack.
-//
 {   LispObject w = get_basic_vector(TAG_VECTOR, TYPE_SP, 2*CELL);
     errexit();
     basic_elt(w, 0) = reinterpret_cast<LispObject>(sp);
@@ -1348,14 +1325,12 @@ LispObject bytestream_interpret(size_t ppc, LispObject lit,
                                 LispObject *entry_stack)
 #ifdef CHECK_STACK
 {
-//
 // Here I have a wrapper function that is used to help me track
 // ultra deep recursions! This is only used when CHECK_STACK had been
 // defined at compile-time, and I view any performance consequences as
 // utterly unimportant provided it sometimes allows me to discover
 // what is leading to uncontrolled recursion. This must not trigger a GC
 // until it calls bytestread_interpret1.
-//
     LispObject w;
     int len = 0;
     call_stack = cons_no_gc(lit, call_stack);

@@ -120,9 +120,11 @@
 // its name (often just "G"). When a gensym is first printed it gets
 // allocated a sequence number and its name is expanded to something like
 // "G0751". In the serialization code the stub of the name is recovered and
-// included in the bye-stream along with a marker indicating that the
+// included in the byte-stream along with a marker indicating that the
 // symbol is a gensym. The effect is then the version that is read back has
-// "not yet printed" status.
+// "not yet printed" status. But because the serialization preserves sharing
+// each expression multiple references to the same gensym within a single
+// serialization end up properly linked.
 //
 // The other treatment of symbols is for use when this code is checkpointing
 // a running system. It treats symbols as merely a variation on vector or
@@ -2597,7 +2599,7 @@ up:
 // a list of all the material that has to go in the module. And then for
 // the savedef stuff again it will be given a list whose length is equal to
 // the number of functions begin defined. At present that will generate a
-// faiurly long stream of "list4*" opcodes, and it seems clear that having
+// fairly long stream of "list4*" opcodes, and it seems clear that having
 // a general case for long unshared lists would at least count as tidy.
 // I may think about implementing that later, but the absolute space overhead
 // here is only 2 bits per function being defined in each list, so it may
@@ -3378,6 +3380,17 @@ LispObject Lserialize1(LispObject env, LispObject a)
     return onevalue(nil);
 }
 
+void check_no_gensyms(LispObject u)
+{  if (is_symbol(u))
+   {   if ((qheader(u) & SYM_ANY_GENSYM) != 0 ||
+           qpackage(u) == nil)
+       {   trace_printf("+++ Warning: gensym present in definition: ");
+           prin_to_trace(u);
+           trace_printf("\n");
+       }
+   }
+}
+
 // This is a single function that will implement load-module,
 // load-source and select-source.
 
@@ -3545,9 +3558,30 @@ static LispObject load_module(LispObject env, LispObject file, int option)
                         LispObject v1 = car(p1 = cdr(p1));
                         putprop(n1, t1, v1);
                     }
-                    else putprop(name, savedef, def);
-                    errexit();
-                    save1.restore(name, file, r);
+                    else
+                    {   Save save2(def);
+                        putprop(name, savedef_symbol, def);
+                        errexit();
+                        save1.restore(name, file, r);
+                        save2.restore(def);
+                        check_no_gensyms(def);
+                        LispObject n = Lmd60(nil, def);
+                        save2.restore(def);
+// If RECORD_GET is defined than get() can call puthash to note its use, and
+// in extreme case that can force hash table expansion and through that
+// garbage collection. I will take a view here that RECORD_GET is not
+// enabled for mere users.
+                        LispObject old = get(name, savedefs_symbol);
+// Only insert it on the property if it is not already present.
+                        if (Lassoc(nil, n, old) == nil)
+                        {   def = acons(n, def, old);
+                            save1.restore(name, file, r);
+                            errexit();
+                            putprop(name, savedefs_symbol, def);
+                            errexit();
+                            save1.restore(name, file, r);
+                        }
+                    }
                 }
 // Build up a list of the names of all functions whose !*savedef information
 // has been established.
@@ -4305,7 +4339,8 @@ LispObject Lmapstore(LispObject env, LispObject a)
 // onto the (Lisp) stack. That is a place where those refernces are safe
 // across GCs. Then the symbols can be removed one at a time until the stack
 // is back at its original level. I do the transfers to and from the stack
-// with explicit visible code to stress exactly what is happening. 
+// with explicit visible code to stress exactly what is happening.
+// NOTE that this may place a LOT of items on the (Lisp) stack.
         push_all_symbols(non_zero_count);
         r = nil;
         while (stack != savestack)
@@ -4314,9 +4349,9 @@ LispObject Lmapstore(LispObject env, LispObject a)
             if (n == 0) continue;
             LispObject e = qenv(x);
             if (is_cons(e))
-            {   e = car(e);
-                if (is_bps(e))
-                {   size_t clen = length_of_byteheader(vechdr(e)) - CELL;
+            {   LispObject ee = car(e);
+                if (is_bps(ee))
+                {   size_t clen = length_of_byteheader(vechdr(ee)) - CELL;
                     double w = static_cast<double>(n)/static_cast<double>(clen);
                     if (w/total_count > 0.00001 ||
                         static_cast<double>(n)/itotal_count > 0.0001)
@@ -4333,6 +4368,13 @@ LispObject Lmapstore(LispObject env, LispObject a)
                             buff[buffp].w = 100.0*w/total_count;
                             buff[buffp].n = 100.0*static_cast<double>(n)/itotal_count;
                             buff[buffp].n1 = n;
+                            ee = cdr(e);
+// The name I will record the statistics against here will be the name that
+// the function originally had. This matters if you define a function (say FF)
+// and copy it to GG and then use GG intensively. I want that to show up as
+// heavy use of FF. In such a case FF may be listed more than once in the
+// output, once for direct calls and another for use of GG.
+                            if (is_vector(ee)) x = basic_elt(ee, 0);
                             LispObject pn = qpname(x);
                             size_t npn = length_of_byteheader(vechdr(pn)) - CELL;
                             if (npn >= 40) npn = 39;
@@ -4346,6 +4388,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
                             Save save(r);
                             w1 = make_lisp_integer64(n);
                             errexit();
+                            x = basic_elt(cdr(qenv(x)), 0);
                             w1 = list3(x, fixnum_of_int(clen), w1);
                             errexit();
                             save.restore(r);

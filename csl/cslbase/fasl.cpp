@@ -56,13 +56,31 @@
 // into a FASL file the definition is written into the file, but whether
 // it is instated onto the property list depends on the circumstances
 // associated with loading the module.
+// An additional mess is that in a full system there may be several
+// conflicting definitions associated with the same name, and the !*savedef
+// promperty can cope with just one. But having used that for some time I
+// can not compfortably change it. So now there will be a second property
+// !*savedefs (note plural) which is an association list of the form
+//  ((checksum . definition) ...). So if there are multiple definitions that
+// are identical they lead to just one entry, but of there are several that
+// differ they are all kept (subject to clashes in the md60 checksums).
+// Note that if the definition being instated has been constructed by some
+// processing scheme that introduced gensyms then the checksums may be
+// unreliable. So at least for a while I will put in some code that scans
+// the data being checksummed and issues a message if a gensym or other
+// uninterned symbol is seen.
+// A special feature of the CSL checksumming and fasl-write/read code is that
+// checksums of structures containing gensyms are liable to be preserved,
+// as will the gensym status of relevant symbols. I might view that as
+// clever and non-obvious, but it is important here for cases where function
+// definitions have been macroexpanded.
 //
-// When load!-module is used to load the code this extra information
+// When load!-module is used to load the code this extra !*savedef information
 // is ignored.
 //
-// There is however a scheme that can load !*savedef properties without
-// processing and of the other parts of the FASL file. This is the function
-// load!-source.
+// There is however a scheme that can load !*savedef and !*savedefs
+// properties without processing and of the other parts of the FASL file.
+// This is the function load!-source.
 // Neither random executable things nor compiled code get loaded by this. A
 // particular thing to note is that if the compiled module was such that
 // normal loading of it with load!-module led to subsidiary modules being

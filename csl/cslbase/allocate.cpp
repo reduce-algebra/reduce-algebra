@@ -662,7 +662,7 @@ void get_borrowed_page()
 #ifdef DEBUG
         my_abort("memory full");
 #endif
-        Lstop1(nil, fixnum_of_int(1));
+        Lstop(nil, fixnum_of_int(1));
     }
     void *p = pages[--borrowed_pages_count];
     zero_out(p);

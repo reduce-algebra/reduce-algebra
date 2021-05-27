@@ -40,6 +40,8 @@ caaddr u)) (list (quote mkquote) (list (quote cdr) g)))) (list (quote cons) (
 quote (quote progn)) (mkquote (cdddr u))))) (return (list (quote dm) (cadr u)
 (list g (quote !&optional) (gensym)) w))))
 
+(flag (quote (copyd)) (quote lose))
+
 (de oem!-supervisor nil (print (eval (read))))
 
 (de break!-loop (a) (prog (prompt ifile ofile u v) (setq ifile (rds 
@@ -55,21 +57,8 @@ terpri) (princ "else form for evaluation") (terpri))) (t (progn (prin "=> ")
 (prinl (car v)) (terpri))))))))))) (go top) exit (rds ifile) (wrs ofile) (
 setpchar prompt) (return nil)))
 
-(global (quote (s!:gensym!-serial)))
-
-(setq s!:gensym!-serial 0)
-
-(de s!:stamp (n) (cond ((lessp n 0) (append (s!:stamp (minus n)) (quote (!-))
-)) (t (cond ((equal n 0) nil) (t (cons (schar 
-"0123456789abcdefghijklmnopqrstuvwxyz" (remainder n 36)) (s!:stamp (truncate 
-n 36))))))))
-
-(de dated!-name (base) (intern (list2string (append (explodec base) (cons (
-quote !_) (append (reverse (s!:stamp (datestamp))) (cons (quote !_) (explodec
-(setq s!:gensym!-serial (plus s!:gensym!-serial 1))))))))))
-
 (de hashtagged!-name (base value) (intern (list2string (append (explodec base
-) (cons (quote !_) (s!:stamp (md60 value)))))))
+) (cons (quote !_) (explodehex (md60 value)))))))
 
 (remflag (quote (sort sortip)) (quote lose))
 

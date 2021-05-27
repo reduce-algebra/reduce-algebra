@@ -92,13 +92,10 @@ intptr_t nwork;
 unsigned int exit_count;
 uint64_t gensym_ser;
 intptr_t print_precision, miscflags;
-intptr_t current_modulus, fastget_size, package_bits,
-         modulus_is_large;
+intptr_t current_modulus, fastget_size, package_bits, modulus_is_large;
 LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
-LispObject quote_symbol, function_symbol, comma_symbol,
-           comma_at_symbol;
-LispObject cons_symbol, eval_symbol, apply_symbol, work_symbol,
-           evalhook;
+LispObject quote_symbol, function_symbol, comma_symbol, comma_at_symbol;
+LispObject cons_symbol, eval_symbol, apply_symbol, work_symbol, evalhook;
 LispObject list_symbol, liststar_symbol, eq_symbol, eql_symbol;
 LispObject cl_equal_symbol, equal_symbol, equalp_symbol;
 LispObject go_symbol, cond_symbol;
@@ -109,11 +106,10 @@ LispObject gcknt_symbol, external_symbol, inherited_symbol;
 LispObject gensym_base, string_char_sym, boffo;
 LispObject key_key, allow_other_keys, aux_key;
 LispObject err_table, format_symbol, progn_symbol, expand_def_symbol;
-LispObject allow_key_key, declare_symbol, special_symbol,
-           large_modulus;
-LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol,
-           echo_symbol;
-LispObject codevec, litvec, supervisor, B_reg, savedef, comp_symbol;
+LispObject allow_key_key, declare_symbol, special_symbol, large_modulus;
+LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol, echo_symbol;
+LispObject codevec, litvec, supervisor, B_reg;
+LispObject savedef_symbol, savedefs_symbol, lose_symbol, comp_symbol;
 LispObject compiler_symbol, faslvec, tracedfn, lisp_terminal_io;
 LispObject lisp_standard_output, lisp_standard_input, lisp_error_output;
 LispObject lisp_trace_output, lisp_debug_io, lisp_query_io;
@@ -121,23 +117,21 @@ LispObject prompt_thing, faslgensyms, prinl_symbol, emsg_star, redef_msg;
 LispObject current_function, expr_symbol, fexpr_symbol, macro_symbol;
 LispObject big_divisor, big_dividend, big_quotient, big_fake1, big_fake2;
 LispObject active_stream, current_module;
-LispObject autoload_symbol, features_symbol, lisp_package;
-LispObject sys_hash_table; //@, sxhash_hash_table;
+LispObject autoload_symbol, features_symbol, lisp_package, sys_hash_table;
 LispObject help_index, cfunarg, lex_words, get_counts, fastget_names;
 LispObject input_libraries, output_library, current_file, break_function;
-LispObject standard_output, standard_input, debug_io;
-LispObject error_output, query_io, terminal_io, trace_output, fasl_stream;
-LispObject startup_symbol, mv_call_symbol, traceprint_symbol,
-           load_source_symbol;
+LispObject standard_output, standard_input, debug_io, error_output;
+LispObject query_io, terminal_io, trace_output, fasl_stream, startup_symbol;
+LispObject mv_call_symbol, traceprint_symbol, load_source_symbol;
 LispObject load_selected_source_symbol, bytecoded_symbol, funcall_symbol;
 LispObject gchook, resources, callstack, procstack, procmem, trap_time;
 LispObject used_space, avail_space, eof_symbol, call_stack;
 LispObject nicknames_symbol, use_symbol, and_symbol, or_symbol, not_symbol;
 LispObject reader_workspace, named_character, read_float_format, short_float;
-LispObject single_float, double_float, long_float, bit_symbol, pathname_symbol;
-LispObject print_array_sym, read_base, initial_element;
-LispObject builtin0_symbol, builtin1_symbol, builtin2_symbol;
-LispObject builtin3_symbol, builtin4_symbol;
+LispObject single_float, double_float, long_float, bit_symbol;
+LispObject pathname_symbol, print_array_sym, read_base;
+LispObject initial_element, builtin0_symbol, builtin1_symbol;
+LispObject builtin2_symbol, builtin3_symbol, builtin4_symbol;
 
 LispObject workbase[51];
 
@@ -402,11 +396,11 @@ static LispObject Lcheck_c_code(LispObject env, LispObject name,
     const char *sname;
     size_t i;
     LispObject lc3 = arg4("check-c-code", a4up);
-// This is called as when the system is about to install some linke between
+// This is called as when the system is about to install some links between
 // Lisp and code that has been compiled into C++. It is given 4 arguments:
 //   (check-c-code name-of-module-of-C++-code
 //       c1 c2 c3)     % 3 parts of a checksum
-// It looks at the setup table sfo rall the modules it is aware of. For
+// It looks at the setup tables for all the modules it is aware of. For
 // each such the final entry will be of the form
 //    {nullptr, "module-name", "checksum info", ...}
 // and it sees if the information from there matches what it is looking for.
@@ -462,8 +456,8 @@ setup_type const restart_setup[] =
     DEF_2("set-help-file",      Lset_help_file),
     {"mapstore",                Lmapstore0, Lmapstore, G2Wother, G3Wother, G4Wother},
     DEF_1("verbos",             Lverbos),
-    {"gc",                      Lgc0, Lgc, G2Wother, G3Wother, G4Wother},
-    {"reclaim",                 Lgc0, Lgc, G2Wother, G3Wother, G4Wother},
+    {"gc",                      Lgc, Lgc, G2Wother, G3Wother, G4Wother},
+    {"reclaim",                 Lgc, Lgc, G2Wother, G3Wother, G4Wother},
     DEF_1("reclaim-trap",       Lreclaim_trap),
     DEF_1("reclaim-stack-limit",Lreclaim_stack_limit),
     {"resource-limit",          G0Wother, G1Wother, Lresource_limit_2, Lresource_limit_3, Lresource_limit_4up},
@@ -627,9 +621,12 @@ static void cold_setup()
         reinterpret_cast<char *>(boffo) + (CELL - TAG_VECTOR)),
         '@', boffo_size);
 // The next line has hidden depths.  When it is obeyed during cold start
-// the C variable *package* has the value nil, hence make_symbol
-// looks in the value cell of nil to find the package to intern wrt. Once
-// this has been done I can put nil back how it ought to have been!
+// the C variable *package* has the value nil (because I will not have
+// got as far as creating the Lisp-style variable for it to refer to), hence
+// make_symbol looks in the value cell of nil to find the package to intern
+// wrt. Once this has been done I can put nil back how it ought to have been,
+// and then I can create the Lisp symbol !*package" and put everything in a
+// respectable state!
     current_package          = make_undefined_fluid("*package*");
     lisp_package             = qpackage(nil);
     setvalue(current_package,  lisp_package);
@@ -645,7 +642,9 @@ static void cold_setup()
 // Now in some minor sense the world is in a self-consistent state
     lisp_true           = make_undefined_global("t");
     setvalue(lisp_true,   lisp_true);
-    savedef             = make_undefined_symbol("*savedef");
+    savedef_symbol      = make_undefined_symbol("*savedef");
+    savedefs_symbol     = make_undefined_symbol("*savedefs");
+    lose_symbol         = make_undefined_symbol("lose");
     comma_symbol        = make_undefined_symbol("~comma");
     comma_at_symbol     = make_undefined_symbol("~comma-at");
     lambda              = make_undefined_symbol("lambda");
@@ -2101,7 +2100,9 @@ LispObject *list_bases[] =
     &raise_symbol,
     &redef_msg,
     &rest_key,
-    &savedef,
+    &savedef_symbol,
+    &savedefs_symbol,
+    &lose_symbol,
     &string_char_sym,
     &unset_var,
     &work_symbol,
@@ -2292,6 +2293,5 @@ void CSL_MD5_Final(unsigned char *md)
 }
 
 #include "testcode.cpp" // Temporary for debugging
-
 
 // end of restart.cpp

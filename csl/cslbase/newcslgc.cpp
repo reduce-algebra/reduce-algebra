@@ -614,7 +614,7 @@ static void gcEnqueue(Chunk *c)
 if (gcTrace) cout << "Grab another Chunk at " << Addr(c) << "\n";
     gcQ[in & (gcQSize-1)] = c;
     in = in+1;
-    if (in == 0) Lstop0(nil); // wrap in queue pointer
+    if (in == 0) Lstop(nil); // wrap in queue pointer
     gcInQ = in;
 }
 
@@ -946,7 +946,7 @@ void prepareForGarbageCollection(bool major)
     else
     {   withinMajorGarbageCollection = false;
         if (gcTrace) cout << "prepare for minor GC not coded yet\n";
-        Lstop0(nil);
+        Lstop(nil);
     }
 }
 
@@ -1457,7 +1457,7 @@ void evacuateFromPinnedItems(bool major)
 
 void evacuateFromDirty()
 {   if (gcTrace) cout << "evacuateFromDirty\n";
-    Lstop0(nil);
+    Lstop(nil);
 }
 
 // Here are the states that a Chunk can be in:

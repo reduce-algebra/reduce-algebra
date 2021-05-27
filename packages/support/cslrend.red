@@ -780,29 +780,28 @@ symbolic procedure concat2(u,v); concat(u,v);
 symbolic procedure concat(u,v);
    list2string append(string2list u, string2list v);
 
-remflag('(copyd), 'lose);
-
-symbolic procedure copyd(new,old);
-% Copy the function definition from old id to new. For CSL this plays
-% extra games with the '!*savedef property. The extra behaviour was
-% originally to favour the Reduce "patching" scheme but that is no longer
-% in use...
-   begin scalar x;
-      x := getd old;
-% If loading with !*savedef = '!*savedef then the actual definitions
-% do not get loaded, but the source forms do...
-      if null x then progn(
-        if not (!*savedef = '!*savedef)
-          then rerror('rlisp,1,list(old,"has no definition in copyd")) )
-      else progn(putd(new,car x,cdr x),
-                 if flagp(old, 'lose) then flag(list new, 'lose) );
-% The transfer of the saved definition is needed if the REDUCE "patch"
-% mechanism is to work fully properly.
-      if (x := get(old, '!*savedef)) then put(new, '!*savedef, x);
-      return new
-   end;
-
-flag('(copyd), 'lose);
+% This is now in CSL already
+%
+%remflag('(copyd), 'lose);
+%
+%symbolic procedure copyd(dest, src);
+%% Copy the function definition from src to dest. For CSL this plays
+%% extra games with the '!*savedef and !*savedefs properties.
+%   begin scalar x;
+%      x := getd src;
+%% If loading with !*savedef = '!*savedef then the actual definitions
+%% do not get loaded, but the source forms do...
+%      if null x then progn(
+%        if not (!*savedef = '!*savedef)
+%          then rerror('rlisp,1,list(src,"has no definition in copyd")) )
+%      else progn(putd(dest,car x,cdr x),
+%                 if flagp(src, 'lose) then flag(list dest, 'lose) );
+%      if (x := get(src, '!*savedef)) then put(dest, '!*savedef, x);
+%      if (x := get(src, '!*savedefs)) then put(dest, '!*savedefs, x);
+%      return dest
+%   end;
+%
+%flag('(copyd), 'lose);
 
 % CSL defined a function called VECTOR but Reduce wants to as well, so I
 % will move the CSL one out of the way. I rather dislike this.

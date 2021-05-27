@@ -1667,12 +1667,13 @@ LispObject Lmd5string(LispObject env, LispObject a)
 // would be clumsy overkill.
 //
 // Note that this version really does compute md5 and then just return the
-// low 60 bits. A previous implementation that I had went to some trouible
+// low 59 bits. A previous implementation that I had went to some trouble
 // to ensure that the value returned was always represented as a bignum,
 // and specifically that the top 32 bits of that value were never all zero.
-// I now forget my exact reasoning for doing that, and it was clerarly a
-// rather odd thing to do! On a 64-bit machine a 60-bit value will be
-// a fixnum half the time (ie when its most significant bit is zero).
+// I now forget my exact reasoning for doing that, and it was clearly a
+// rather odd thing to do! On a 64-bit machine a 59-bit value will always
+// be a fixnum, and this is why (despite the function name!) I only keep
+// 59 bits.
 
 LispObject Lmd60(LispObject env, LispObject a)
 {   unsigned char md[16];
@@ -1704,7 +1705,11 @@ LispObject Lmd60(LispObject env, LispObject a)
     CSL_MD5_Final(md);
     v0 = md[0] + (md[1]<<8) + (md[2]<<16) + (md[3]<<24);
     v1 = md[4] + (md[5]<<8) + (md[6]<<16) + (md[7]<<24);
-    a = make_lisp_unsigned64((uint64_t)v1<<32 | v0);
+    uint64_t v = (uint64_t)v1<<32 | v0;
+// I discard 4 bits to allow for fixnum tag bits and one more so that the
+// number does not extend into the fixnum's sign bit. Of course on a 32-bit
+// machine it will almost always be a bignum using 2 digits.
+    a = make_lisp_unsigned64(v >> 5);
 //  validate_number("MD60", a, a, a);
     return onevalue(a);
 }

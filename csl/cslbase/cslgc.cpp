@@ -50,7 +50,7 @@ static intptr_t cons_cells, symbol_heads, strings, user_vectors,
        big_numbers, box_floats, bytestreams, other_mem,
        litvecs, getvecs;
 
-LispObject Lgc0(LispObject env)
+LispObject Lgc(LispObject env)
 {   return Lgc(env, lisp_true);
 }
 
@@ -729,7 +729,7 @@ void reclaim(const char *why, int stg_class)
         ensure_screen();
         my_exit();    // totally drastic...
     }
-    if (stop_after_gc) Lstop1(nil, fixnum_of_int(0));
+    if (stop_after_gc) Lstop(nil, fixnum_of_int(0));
     if ((space_limit >= 0 && space_now > space_limit) ||
         (time_limit >= 0 && time_now > time_limit) ||
         (io_limit >= 0 && io_now > io_limit))

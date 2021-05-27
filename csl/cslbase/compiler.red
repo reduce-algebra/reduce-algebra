@@ -1,10 +1,10 @@
 %
 % Compiler from Lisp into byte-codes for use with CSL/CCL.
-%       Copyright (C) Codemist, 1990-2020
+%       Copyright (C) Codemist, 1990-2021
 %
 
 %%
-%% Copyright (C) 2020,                                 A C Norman, Codemist
+%% Copyright (C) 2021,                                 A C Norman, Codemist
 %%
 %% Redistribution and use in source and binary forms, with or without
 %% modification, are permitted provided that the following conditions are
@@ -32,6 +32,26 @@
 %% DAMAGE.
 %%
 
+% The compiler in this file and in "ccomp.red" that it incoporates can
+% perform several related conversions:
+% (1) With "on comp;" the standard top-level uses this to compile
+% function definitions into bytecode form. With "off comp;" definitions
+% can be introduced that will initially be interpreted, but by using the
+% function "compile" they can be turned into bytecode.
+%
+% (2) Following "faslout MODULENAME;" functions are compiled into
+% bytecode form but that gets written into a "fasl" (for FAStLoad) file
+% that can be loaded and used later.
+%
+% (3) Via a protocol used defined in ccomp.red and used in make-c-code.red
+% definitions can be mapped into C++ code plus a Lisp-coded fragment of
+% initialization. The resulting C++ can then be compiled and used as
+% part of an enhanced Lisp system with the faster implementation of the
+% functions so processed.
+%
+% When code has been compiled into C++ and incorporated a definition as in
+% (1) or (2) needs to instantiate the C++ version rather than create a
+% bytecoded variant.
 
 % $Id$
 
@@ -2107,23 +2127,22 @@ symbolic procedure s!:comfunction(x, env, context);
         g := hashtagged!-name('lambda, cdr x);
 % If I find an expression (FUNCTION (LAMBDA ...)) I will create a lexical
 % closure.  In other cases FUNCTION behaves just like QUOTE.
-        w := s!:compile1(g, cadr x, cddr x,
-                         list(cdr env, s!:current_exitlab,
-                              s!:current_proglabels, s!:local_macros) .
-                           s!:lexical_env);
         if s!:used_lexicals then
-            w := s!:compile1(g, gensym() . cadr x, cddr x,
-                         list(cdr env, s!:current_exitlab,
-                              s!:current_proglabels, s!:local_macros) .
-                           s!:lexical_env);
-        s!:other_defs := append(w, s!:other_defs);
+            s!:compile1(g, (gensym() . cadr x), cddr x,
+                list(cdr env, s!:current_exitlab,
+                    s!:current_proglabels, s!:local_macros) . s!:lexical_env)
+        else s!:compile1(g, cadr x, cddr x,
+            list(cdr env, s!:current_exitlab,
+                s!:current_proglabels, s!:local_macros) . s!:lexical_env);
         s!:loadliteral(g, env);
         w := length cdr env;
         if s!:used_lexicals then <<
 % If the lambda expression did not use any non-local lexical references
 % then it does not need a closure, so I can load its value slightly more
-% efficiently and also permit tal=il-call optimisation in the function
-% that loads it.
+% efficiently and also permit tail-call optimisation in the function
+% that loads it. If it did use non-local lexical references it has to be
+% wrapped up in a closure, and when the closure is activated that will
+% provide the special first argument arranged for earlier.
             s!:has_closure := t;
             if w > 4095 then error(0, "stack frame > 4095")
             else if w > 255 then
@@ -3078,7 +3097,7 @@ symbolic procedure s!:comunwind!-protect(x, env, context);
     s!:comval(cadr x, env, context);
 % PROTECT may use the top three stack locations, and must use them to
 % store the current set of values and exit status.  It is implicitly done
-% by the forced jump that is taken on a failure...
+% by the forced jump that is taken on a failure.
     s!:outopcode0('PROTECT, '(PROTECT));
     s!:set_label g;
     rplaca(cdr env, 0);
@@ -3620,7 +3639,7 @@ symbolic procedure s!:comeval!-when(x, env, context);
     scalar y;
     x := cdr x;
     y := car x;
-princ "COMPILING eval-when: "; print y; print x;
+    princ "COMPILING eval-when: "; print y; print x;
     x := 'progn . cdr x;
     if memq('compile, y) then eval x;
     if memq('load, y) then <<
@@ -4912,17 +4931,54 @@ symbolic procedure s!:any_fluid l;
 
 % s!:compile1 directs the compilation of a single function, and bind all the
 % major fluids used by the compilation process
+% major fluids used by the compilation process. It pushes the generated
+% code into s!:other_defs in the form
+%    (name . nargs . bytecodes . env-vec)
+% Thus the top-level use of this will be
+%    s!:other_defs := nil;
+%    s!:compile1(...);   % may in fact generate several definitions
+%    process each result in s!:other_defs.
+% In the case of in-core compilation the result is just passed to
+% symbol!-set!-definition. Otherwise it does to s!:fslout2, and that
+% arranges to record !*savedef information for incorporation in the fasl
+% file but then puts a call to symbol!-set!-definition there.
+% But let me remind myself about symbol!-set!-definition. If its second
+% argument is (n . bytecode . env) it sets up a bytecoded function, but if
+% its second arg is a symbol it in effect behaves as copyd. So if we
+% try to compile a function fff, the definition has checksum nnn and
+% if nnn is in the list get(fff, 'c!:version) then instead of the normal
+% result I will return (name . ff'nnn) [where nnn is rendered in hex).
 
 symbolic procedure s!:compile1(name, args, body, s!:lexical_env);
   begin
     scalar w, aargs, oargs, oinit, restarg, svars, nargs, nopts, env, fluids,
            s!:current_function, s!:current_label, s!:current_block,
            s!:current_size, s!:current_procedure, s!:current_exitlab,
-           s!:current_proglabels, s!:other_defs, local_decs, s!:has_closure,
+           s!:current_proglabels, local_decs, s!:has_closure,
            s!:local_macros, s!:recent_literals, s!:a_reg_values, w1, w2,
            s!:current_count, s!:env_alist, s!:maybe_values, checksum;
-% If there is a lexical environment present I will set the checksum to 0
-% and thus prevent any native compilation (for now at least)
+    checksum := md60 (args . body);
+    if member(checksum, get(name, 'c!-version)) then <<
+% If I now compile the definition of a function ff and there is a C++-coded
+% version of it available then I will instate from that C++ version. However
+% there is a special extra issue. If ff is defined as say
+%    (de ff (x) ... (function (lambda (y) ...)) ...)
+% then during a proper compilation (either into C or into bytecodes) the
+% compiler would have synthesised a function defintion for a few function
+% as if a definition (de lambda-NNNNN (y) ...) [where NNNNN is a hex checksum
+% of the body of this function]. If ff was compiled into C++ then lambda-NNNNN
+% will have been to, so it is vital that a use of symbol!-set!-definition
+% for the embedded lambda be set up. This can be arranges by pushing
+% (symbol!-set!-definition 'lambda-NNNNN lambda-NNNNN~~MMMMM) onto
+% s!:other-defs. In fact precise identification of embedded lambdas is not
+% vital because of some extra symbol!-set!-definition calls are generated
+% those will not have any bad effects because the checksums mean they will
+% just move stuff around for symbols that will not be otherwise used.
+       s!:scan_for_embedded_lambdas body;
+       w2 := compress
+          append(explode name, '!! . '!~ . '!! . '!~ . explodehex checksum);
+       s!:other_defs := (name . w2) . s!:other_defs;
+       return nil >>;
     if s!:lexical_env then checksum := 0
     else checksum := md60 (name . args . body);
     s!:current_function := name;
@@ -4982,10 +5038,11 @@ symbolic procedure s!:compile1(name, args, body, s!:lexical_env);
     for each v in append(svars, args) do
        if globalp v or keywordp v then
            error(0, list("attempt to bind global or keyword", v));
-    if oinit then
-       return s!:compile2(name, nargs, nopts,
-                          args, oargs, restarg, body, local_decs,
-                          checksum);
+    if oinit then <<
+       s!:compile2(name, nargs, nopts,
+                   args, oargs, restarg, body, local_decs,
+                   checksum);
+       return nil >>;
     w := nil;
     for each v in args do w := s!:instate_local_decs(v, local_decs, w);
 % I will not even attempt recursion removal from functions that have
@@ -5072,21 +5129,98 @@ more:
             if posn() neq 0 then terpri();
             princ "+++ "; prin name; princ " compiled as link to ";
             princ car w1; terpri() >>;
-        return (name . nargs . nil . car w1) . s!:other_defs >>;
+        s!:other_defs := (name . nargs . nil . car w1) . s!:other_defs;
+        return nil >>;
     s!:comval(body, env, 0);
     s!:cancel_local_decs w;
 % This returns a list of values suitable for handing to symbol-set-definition
     if restarg then nopts := nopts + 512;
     nargs := nargs + 256*nopts;
-    return (name . nargs . s!:endprocedure(name, env, checksum)) . s!:other_defs;
+    s!:other_defs :=
+       (name . nargs . s!:endprocedure(name, env, checksum)) . s!:other_defs;
   end;
 
+% This checks if an expression is of the form
+%    (LAMBDA list_of_symbols one_item)
+% or that wrapped as (QUOTE lambda_expression) or (FUNCTION lambda_expression)
 
+symbolic procedure s!:looks_like_lambda u;
+  begin
+    scalar v;
+    if (eqcar(u, 'quote) or eqcar(u, 'function)) and
+       not atom cdr u and null cddr u then u := cadr u;
+    if not eqcar(u, 'lambda) then return nil;
+    if atom (u := cdr u) then return nil;      % just (LAMBDA)
+    v := car u;
+ top:
+    if null v then goto vars_ok;
+    if atom v then return nil;
+    if not symbolp car v then return nil;       % (LAMBDA (.. junk ..) ..)
+    v := cdr v;
+    go to top;
+ vars_ok:
+    u := cdr u;                                 % Test for (LAMBDA (vars))
+    if atom u or not null cdr u then return nil;% and (LAMBDA (vars) A B...)
+    return t
+  end;
 
+symbolic procedure s!:scan_for_embedded_lambdas u;
+  if atom u then nil
+  else if not eqcar(u, 'lambda) then <<
+    s!:scan_for_embedded_lambdas car u;
+    s!:scan_for_embedded_lambdas cdr u >>
+  else begin
+    scalar name, checksum, bvl, body;
+    if not zerop posn() then terpri(); princ "Start LAMBDA: "; print u;
+    s!:scan_for_embedded_lambdas car u; % There could be nested lambdas!
+    s!:scan_for_embedded_lambdas cdr u;
+    name := hashtagged!-name('lambda, u);
+    if atom (u := cdr u) then return nil;
+    checksum := md60 u;
+    princ "hashtagged name = "; prin name; princ " checksum = ";
+    prinhex checksum; terpri();
+    bvl := car u;
+    u := cdr u;
+    if atom u then return nil;
+% Now u had been of the form (lambda bvl body...) and actually I do not mind
+% if it is not actually used (eg it could be part of data not used as code
+% ever) because what I do with it is checksum protected.
+    u := name . compress
+       append(explode name, '!! . '!~ . '!! . '!~ . explodehex checksum);
+    if not zerop posn() then terpri(); princ "Within LAMBDA: "; print u;
+    s!:other_defs := u . s!:other_defs;
+  end;
 
-
-end;
-
+symbolic procedure s!:scan_for_embedded_lambdas_fasl u;
+  if atom u then nil
+  else if not eqcar(u, 'lambda) then <<
+    s!:scan_for_embedded_lambdas_fasl car u;
+    s!:scan_for_embedded_lambdas_fasl cdr u >>
+  else begin
+    scalar name, checksum, bvl, body;
+    if not zerop posn() then terpri(); princ "Start LAMBDA: "; print u;
+    s!:scan_for_embedded_lambdas_fasl car u; % There could be nested lambdas!
+    s!:scan_for_embedded_lambdas_fasl cdr u;
+    name := hashtagged!-name('lambda, u);
+    if atom (u := cdr u) then return nil;
+    checksum := md60 u;
+    princ "hashtagged name = "; prin name; princ " checksum = ";
+    prinhex checksum; terpri();
+    bvl := car u;
+    u := cdr u;
+    if atom u then return nil;
+% Now u had been of the form (lambda bvl body...) and actually I do not mind
+% if it is not actually used (eg it could be part of data not used as code
+% ever) because what I do with it is checksum protected.
+    u := name . compress
+       append(explode name, '!! . '!~ . '!! . '!~ . explodehex checksum);
+    if not zerop posn() then terpri(); princ "Within LAMBDA: "; print u;
+    s!:other_defs := u . s!:other_defs;
+    s!:fasl_code :=
+       list('symbol!-set!-definition,
+          mkquote car u,
+          mkquote cdr u) . s!:fasl_code;
+  end;
 
 symbolic procedure s!:compile2(name, nargs, nopts,
                                args, oargs, restarg, body, local_decs,
@@ -5180,8 +5314,8 @@ symbolic procedure s!:compile2(name, nargs, nopts,
     nopts := nopts + 256;     % Always have complex &optional here
     if restarg then nopts := nopts + 512;
     nargs := nargs + 256*nopts;
-    return (name . nargs . s!:endprocedure(name, env, checksum)) .
-           s!:other_defs;
+    s!:other_defs := (name . nargs . s!:endprocedure(name, env, checksum)) .
+                     s!:other_defs;
   end;
 
 
@@ -5330,45 +5464,41 @@ symbolic procedure s!:fslout1(u, loadonly);
     else if eqcar(u, 'de) or eqcar(u, 'defun) then <<
         u := cdr u;
         if (w := get(car u, 'c!-version)) and
-            w = md60 (car u . cadr u . s!:fully_macroexpand_list cddr u) then <<
+           (w := member(md60 (cadr u . s!:fully_macroexpand_list cddr u), w))
+        then <<
             if not zerop posn() then terpri();
             princ "+++ "; prin car u;
-            printc " not compiled (C++ version available)";
-            s!:fasl_code := list('restore!-c!-code, mkquote car u) . s!:fasl_code >>
+            printc " has a C++ version available.";
+            s!:scan_for_embedded_lambdas_fasl cddr u;
+            s!:fasl_code :=
+              list('symbol!-set!-definition,
+                   mkquote car u,
+                   mkquote compress append(explode car u,
+                     '!! . '!~ . '!! . '!~ . explodehex car w)) .
+                s!:fasl_code >>
         else if flagp(car u, 'lose) then <<
             princ "+++ "; prin car u;
             printc " not compiled (LOSE flag)" >>
-        else <<
-            if w := get(car u, 'c!-version) then <<
-                princ "+++ "; prin car u;
-                princ " reports C version with checksum ";
-                print w;
-                print "+++ differing from this version:";
-                w := car u . cadr u . s!:fully_macroexpand_list cddr u;
-                princ "::: "; prettyprint w;
-                princ "+++ which has checksum "; print md60 w >>;
-            for each p in s!:compile1(car u, cadr u, cddr u, nil) do 
-                s!:fslout2(p, u) >> >>
+        else begin
+           scalar s!:other_defs;
+           s!:compile1(car u, cadr u, cddr u, nil);
+           for each p in s!:other_defs do s!:fslout2(p, u)
+           end >>
     else if eqcar(u, 'dm) or eqcar(u, 'defmacro) then begin
         scalar g;
         g := hashtagged!-name(cadr u, cddr u);
         u := cdr u;
-% At present (and maybe for ever?) macros can not be compiled into C.
-%
-%       if (w := get(car u, 'c!-version)) and
-%           md60 u = w then <<
-%           if not zerop posn() then terpri();
-%           princ "+++ "; prin car u;
-%           printc " not compiled (C++ version available)";
-%           return nil >>
-%       else 
         if flagp(car u, 'lose) then <<
             princ "+++ "; prin car u;
             printc " not compiled (LOSE flag)";
             return nil >>;
         w := cadr u;
         if w and null cdr w then w := car w . '!&optional . gensym() . nil;
-        for each p in s!:compile1(g, w, cddr u, nil) do s!:fslout2(p, u);
+        begin
+           scalar s!:other_defs;
+           s!:compile1(g, w, cddr u, nil);
+           for each p in s!:other_defs do s!:fslout2(p, u)
+        end;
         s!:fasl_code := list('dm, car u, '(u !&optional e), list(g, 'u, 'e)) . s!:fasl_code
       end    
     else if eqcar(u, 'putd) then begin
@@ -5411,17 +5541,30 @@ symbolic procedure s!:fslout1(u, loadonly);
                   if numberp w then w else cadr w) . s!:fasl_savedef >>
   end;
 
+% Here p will be one of the items in the list produced by s!:compile1
+
 symbolic procedure s!:fslout2(p, u);
   begin
     scalar name, nargs, code, env, w;
     name := car p;
+    if atom cdr p then <<
+       if !*savedef then
+          s!:fasl_savedef :=
+             list(name, 'copied, 'from, cdr p) . s!:fasl_savedef;
+       s!:fasl_code :=
+          list('symbol!-set!-definition,
+             mkquote name,
+             mkquote cdr p) . s!:fasl_code;
+       return nil >>;
     nargs := cadr p;
     code := caddr p;
     env := cdddr p;
     if !*savedef and name = car u then <<
-% I associate the saved definition with the top-level function
-% that is being defined, and ignore any embedded lambda expressions. Note that
-% the material put on s!:fasldefs is not executable code, it is just data.
+% Note that the material put on s!:fasldefs is not executable code, it
+% is just data.
+% However it is fully macroexpanded and that really risks there being
+% gensyms in it... However that is OK because the FASL mechanism that I
+% have and also preserve/restart preserve gensym status!
         s!:fasl_savedef :=
             list(name, 'lambda . cadr u . s!:fully_macroexpand_list cddr u) .
                 s!:fasl_savedef >>;
@@ -5430,7 +5573,7 @@ symbolic procedure s!:fslout2(p, u);
     s!:fasl_code :=
         list('symbol!-set!-definition,
              mkquote name,
-             mkquote (nargs .  code . env)) . s!:fasl_code
+             mkquote (nargs . code . env)) . s!:fasl_code
   end;
 
 remprop('faslend, 'stat);
@@ -5456,8 +5599,7 @@ symbolic procedure faslend;
 % The second is "saved source" information and is a list in the form
 % ((name definition) (name definition) ...) and is only non-nil if !*savedef
 % was set at compile-time.
-    write!-module('progn . nreverse s!:fasl_code,
-                  nreverse s!:fasl_savedef);
+    write!-module('progn . nreverse s!:fasl_code, nreverse s!:fasl_savedef);
     start!-module nil;
     princ "Completed FASL files for ";
     print car s!:faslmod_name;
@@ -5526,166 +5668,6 @@ symbolic procedure faslout u;
 
 put('faslout, 'stat, 'rlis);
 
-symbolic procedure s!:c_supervisor;
-  begin
-    scalar u, w, !*echo;
-top:u := errorset('(read), t, !*backtrace);
-    if atom u then return;      % failed, or maybe EOF
-    u := car u;
-    if u = !$eof!$ then return; % end of file
-    if not atom u then u := macroexpand u; % In case it expands into (DE ...)
-    if atom u then go to top
-% the apply('c_end, nil) is here because c_end has a "stat" property
-% and so it will mis-parse if I just write "c_end()".  Yuk.
-    else if eqcar(u, 'c_end) then return apply('c_end, nil)
-!#if common!-lisp!-mode
-    else if eqcar(u, 'load) then << <<
-       w := open(u := eval cadr u, !:direction, !:input,
-                                   !:if!-does!-not!-exist, nil);
-!#else
-    else if eqcar(u, 'rdf) then <<
-       w := open(u := eval cadr u, 'input);
-!#endif
-       if w then <<
-          terpri();
-          princ "Reading file "; prin u; terpri();
-          w := rds w;
-          s!:c_supervisor();
-          princ "End of file "; prin u; terpri();
-          close rds w
-       >>
-       else << princ "Failed to open file "; prin u; terpri() >> >>
-!#if common!-lisp!-mode
-       >> where !*package!* = !*package!*
-!#endif
-    else s!:cout0 u;
-    go to top
-  end;
-
-symbolic procedure s!:cout0 u;
-   s!:cout1(u, nil);
-
-symbolic procedure s!:cout1(u, loadonly);
-  begin
-    scalar s!:into_c;
-    s!:into_c := t;
-    if not atom u then u := macroexpand u;
-    if atom u then return nil
-    else if eqcar(u, 'progn) then <<
-       for each v in cdr u do s!:cout1(v, loadonly);
-       return >>
-    else if eqcar(u, 'eval!-when) then return begin
-      scalar w;
-      w := cadr u;
-      u := 'progn . cddr u;
-      if memq('compile, w) and not loadonly then eval u;
-      if memq('load, w) then s!:cout1(u, t);
-      return nil end
-% When called from REDUCE the treatment of things flagged as EVAL here
-% will end up leading to them getting evaluated twice.  Often this will
-% not matter - a case where I have had to be careful is in (c_end) which
-% can thus be called twice: the second call must be ignored.
-    else if flagp(car u, 'eval) or
-% The special treatment here is so that (setq x (carcheck 0)) will get
-% picked up as needing compile-time evaluation.
-          (car u = 'setq and not atom caddr u and flagp(caaddr u, 'eval)) then
-       if not loadonly then errorset(u, t, !*backtrace);
-!#if common!-lisp!-mode
-    if eqcar(u, 'load) then << begin
-       scalar w;
-       w := open(u := eval cadr u, !:direction, !:input,
-                                   !:if!-does!-not!-exist, nil);
-!#else
-    if eqcar(u, 'rdf) then begin
-       scalar w;
-       w := open(u := eval cadr u, 'input);
-!#endif
-       if w then <<
-          princ "Reading file "; prin u; terpri();
-          w := rds w;
-          s!:c_supervisor();
-          princ "End of file "; prin u; terpri();
-          close rds w
-       >>
-       else << princ "Failed to open file "; prin u; terpri() >> end
-!#if common!-lisp!-mode
-       >> where !*package!* = !*package!*
-!#endif
-    else if eqcar(u, 'de) or eqcar(u, 'defun) then begin
-        scalar w;
-        u := cdr u;
-        w := s!:compile1(car u, cadr u, cddr u, nil);
-        for each p in w do s!:cgen(car p, cadr p, caddr p, cdddr p)
-      end
-    else if eqcar(u, 'dm) or eqcar(u, 'defmacro) then begin
-        scalar w, g;
-        g := hashtagged!-name(cadr u, cddr u);
-        u := cdr u;
-        w := cadr u;  % List of bound vars. Either (u) or (u &optional e) (?)
-        if w and null cdr w then w := car w . '!&optional . gensym() . nil;
-        w := s!:compile1(g, w, cddr u, nil);
-        for each p in w do s!:cgen(car p, cadr p, caddr p, cdddr p);
-        s!:cinit list('dm, car u, '(u !&optional e), list(g, 'u, 'e))
-      end    
-    else if eqcar(u, 'putd) then begin
-% If people put (putd 'name 'expr '(lambda ...)) in their file I will
-% expand it out as if it had been a (de name ...) [similarly for macros].
-% This is done at least once in REDUCE.
-      scalar a1, a2, a3;
-      a1 := cadr u; a2 := caddr u; a3 := cadddr u;
-      if eqcar(a1, 'quote) and
-         (a2 = '(quote expr) or a2 = '(quote macro)) and
-         (eqcar(a3, 'quote) or eqcar(a3, 'function)) and
-         eqcar(cadr a3, 'lambda) then <<
-         a1 := cadr a1; a2 := cadr a2; a3 := cadr a3;
-         u := (if a2 = 'expr then 'de else 'dm) . a1 . cdr a3;
-         s!:cout1(u, loadonly) >>
-      else s!:cinit u end
-    else if not eqcar(u, 'c_end) and
-            not eqcar(u, 'carcheck) then s!:cinit u
-  end;
-
-fluid '(s!:cmod_name);
-
-symbolic procedure c_end;
-  begin
-    if null s!:cmod_name then return nil;
-    s!:cend();
-    dfprint!* := s!:dfprintsave;
-    !*defn := nil;
-    !*comp := cdr s!:cmod_name;
-    s!:cmod_name := nil;
-    return nil
-  end;
-
-put('c_end, 'stat, 'endstat);
-
-symbolic procedure c_out u;
-  begin
-    terpri();
-    princ "C_OUT ";
-    prin u; princ ": IN files;  or type in expressions"; terpri();
-    princ "When all done, execute C_END;"; terpri();
-% I permit the argument to be either a name, or a list of one item
-% that is a name.  The idea here is that when called from RLISP it is
-% most convenient for the call to map onto (c_out '(xxx)), while direct
-% use from Lisp favours (c_out 'xxx)
-    if not atom u then u := car u;
-    if null s!:cstart u then <<
-       if posn() neq 0 then terpri();
-       princ "+++ Failed to open C output file"; terpri();
-       return nil >>;
-    s!:cmod_name := u . !*comp;
-    s!:dfprintsave := dfprint!*;
-    dfprint!* := 's!:cout0;
-    !*defn := t;
-    !*comp := nil;
-    if getd 'begin then return nil;
-    s!:c_supervisor();
-  end;
-
-put('c_out, 'stat, 'rlis);
-
 symbolic procedure s!:compile!-file!*(fromfile,
                                       !&optional, tofile, verbose, !*pwrds);
   begin
@@ -5747,7 +5729,7 @@ symbolic procedure compd(name, type, defn);
     scalar g, !*comp;
     !*comp := t;
     if eqcar(defn, 'lambda) then << 
-       g := dated!-name type;
+       g := hashtagged!-name(type, defn);
        symbol!-set!-definition(g, defn);
        compile list g;
        defn := g >>;
@@ -5803,13 +5785,14 @@ symbolic procedure s!:compile0 name;
              if posn() neq 0 then terpri();
              princ "+++ "; prin name; princ " was already compiled";
              terpri() >> >>
-       else <<
+       else begin
+          scalar s!:other_defs;
           if !*savedef then
              put(name, '!*savedef,
                        'lambda . args . s!:fully_macroexpand_list defn);
-          w := s!:compile1(name, args, defn, nil);
-          for each p in w do
-             symbol!-set!-definition(car p, cdr p) >> >>
+          s!:compile1(name, args, defn, nil);
+          for each p in s!:other_defs do
+             symbol!-set!-definition(car p, cdr p) end >>
   end;
 
 symbolic procedure s!:fully_macroexpand_list l;
@@ -5946,7 +5929,7 @@ symbolic procedure compile l;
      return l
   end;
 
-% These days I am putting the compiler that generates C in with
+% These days I am putting the compiler that generates C++ in with
 % the bytecode compiler...
 
 in "$cslbase/ccomp.red"$

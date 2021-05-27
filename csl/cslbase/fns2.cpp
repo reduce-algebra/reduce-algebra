@@ -47,8 +47,7 @@ LispObject Lget_bps(LispObject env, LispObject n)
 
 void set_fns(LispObject a, no_args *f0, one_arg *f1, two_args *f2,
              three_args *f3, fourup_args *f4up)
-{   if ((qheader(a) & (SYM_C_DEF | SYM_CODEPTR)) ==
-        (SYM_C_DEF | SYM_CODEPTR))
+{   if ((qheader(a) & SYM_CODEPTR) != 0)
     {   if (symbol_protect_flag)
         {   if (warn_about_protected_symbols)
             {   trace_printf("+++ WARNING: protected function ");
@@ -195,6 +194,7 @@ LispObject Lsymbol_fn_cell(LispObject env, LispObject a)
 // do not guarantee everything.
 {   const char *s0, *s1, *s2, *s3, *s4up;
     if (!symbolp(a)) return onevalue(nil);
+    freshline_trace();
     s0 = show_fn0(qfn0(a));
     s1 = show_fn1(qfn1(a));
     s2 = show_fn2(qfn2(a));
@@ -218,7 +218,6 @@ LispObject Lobject_header(LispObject env, LispObject a)
         else if ((h & SYM_GLOBAL_VAR) != 0) trace_printf(" global");
         if ((h & SYM_SPECIAL_FORM) != 0) trace_printf(" special-form");
         if ((h & SYM_MACRO) != 0) trace_printf(" macro");
-        if ((h & SYM_C_DEF) != 0) trace_printf(" C-def");
         if ((h & SYM_CODEPTR) != 0) trace_printf(" codeptr");
         if ((h & SYM_ANY_GENSYM) != 0) trace_printf(" any-gensym");
         if ((h & SYM_TRACED) != 0) trace_printf(" traced");
@@ -407,8 +406,7 @@ LispObject Lsymbol_env(LispObject env, LispObject a)
 
 LispObject Lsymbol_set_env(LispObject env, LispObject a, LispObject b)
 {   if (!is_symbol(a)) return aerror1("symbol-set-env", a);
-    if ((qheader(a) & (SYM_C_DEF | SYM_CODEPTR)) ==
-        (SYM_C_DEF | SYM_CODEPTR)) return onevalue(nil);
+    if ((qheader(a) & SYM_CODEPTR) != 0) return onevalue(nil);
     setenv(a, b);
     return onevalue(b);
 }
@@ -426,10 +424,10 @@ LispObject Lsymbol_protect(LispObject env, LispObject a, LispObject b)
 {   Header h;
     if (!is_symbol(a)) return onevalue(nil);
     h = qheader(a);
-    if (b == nil) setheader(a, h & ~(SYM_CODEPTR | SYM_C_DEF));
-    else setheader(a, h | SYM_CODEPTR | SYM_C_DEF);
-    h &= (SYM_CODEPTR | SYM_C_DEF);
-    return onevalue(Lispify_predicate(h == (SYM_CODEPTR | SYM_C_DEF)));
+    if (b == nil) setheader(a, h & ~SYM_CODEPTR);
+    else setheader(a, h | SYM_CODEPTR);
+    h &= SYM_CODEPTR;
+    return onevalue(Lispify_predicate(h!= 0));
 }
 
 // (symbol-make-fastget 'xxx nil)   returns current information, nil if no
@@ -485,18 +483,6 @@ static LispObject deleqip(LispObject a, LispObject l)
         }
     }
     return r;
-}
-
-void lose_C_def(LispObject a)
-{
-// None of the code here can cause garbage collection.
-    LispObject b = get(a, unset_var, nil), c;
-    Lremprop(nil, a, unset_var);
-    setheader(a, qheader(a) & ~SYM_C_DEF);
-    c = get(b, work_symbol, nil);
-    c = deleqip(a, c);
-    if (c == nil) Lremprop(nil, b, work_symbol);
-    else putprop(b, work_symbol, c);
 }
 
 static bool restore_fn_cell(LispObject a, char *name,
@@ -568,13 +554,11 @@ LispObject Lsymbol_set_definition(LispObject env,
 // Something flagged with the CODEPTR bit is a gensym manufactured to
 // stand for a compiled-code object. It should NOT be reset!
         (qheader(a) & (SYM_SPECIAL_FORM | SYM_CODEPTR)) != 0)
-    {   if (qheader(a) & SYM_C_DEF) return onevalue(nil);
         return aerror1("symbol-set-definition", a);
-    }
-    set_fns(a, undefined_0, undefined_1, undefined_2, undefined_3,
-            undefined_4up); // Tidy up first
+    set_fns(a, undefined_0, undefined_1,
+               undefined_2, undefined_3,
+               undefined_4up); // Tidy up first
     setenv(a, a);
-    if ((qheader(a) & SYM_C_DEF) != 0) lose_C_def(a);
     if (b == nil) return onevalue(b); // set defn to nil to undefine
     else if (symbolp(b))
     {
@@ -589,24 +573,6 @@ LispObject Lsymbol_set_definition(LispObject env,
         setheader(a, qheader(a) & ~SYM_MACRO);
         {   set_fns(a, qfn0(b), qfn1(b), qfn2(b), qfn3(b), qfn4up(b));
             setenv(a, qenv(b));
-// In order that checkpoint files can be made there is some very
-// ugly fooling around here for functions that are defined in the C coded
-// kernel.  Sorry.
-            if ((qheader(b) & SYM_C_DEF) != 0)
-            {   LispObject c = get(b, unset_var, nil);
-                if (c == nil) c = b;
-                Save save(a, c);
-                putprop(a, unset_var, c);
-                errexit();
-                save.restore(a, c);
-                LispObject aaa = cons(a, get(c, work_symbol, nil));
-                errexit();
-                save.restore(a, c);
-                putprop(a, work_symbol, aaa);
-                errexit();
-                save.restore(a, c);
-                b = c;
-            }
         }
     }
     else if (!consp(b)) return aerror1("symbol-set-definition", b);
@@ -636,7 +602,7 @@ LispObject Lsymbol_set_definition(LispObject env,
         }
         else if (flagbits != 0 || nopts != 0)
         {   switch(flagbits)
-        {       default:
+            {   default:
                 case 0:  // easy case optional arguments
                     set_fns(a, byteopt_0, byteopt_1, byteopt_2, byteopt_3, byteopt_4up);
                     break;
@@ -727,18 +693,61 @@ LispObject Lremd(LispObject env, LispObject a)
     if (!is_symbol(a) ||
         (qheader(a) & SYM_SPECIAL_FORM) != 0)
         return aerror1("remd", a);
-    if ((qheader(a) & (SYM_C_DEF | SYM_CODEPTR)) ==
-        (SYM_C_DEF | SYM_CODEPTR)) return onevalue(nil);
+    if ((qheader(a) & SYM_CODEPTR) != 0) return onevalue(nil);
     res = Lgetd(nil, a);
     if (res == nil) return onevalue(nil); // no definition to remove
 // I treat an explicit use of remd as a redefinition, and ensure that
 // restarting a preserved image will not put the definition back.
     setheader(a, qheader(a) & ~SYM_MACRO);
-    if ((qheader(a) & SYM_C_DEF) != 0) lose_C_def(a);
     set_fns(a, undefined_0, undefined_1, undefined_2, undefined_3,
             undefined_4up);
     setenv(a, a);
     return onevalue(res);
+}
+
+// symbolic procedure copyd(dest, src);
+// % Copy the function definition from src to dest. For CSL this plays
+// % extra games with the '!*savedef and !*savedefs properties.
+//    begin scalar x;
+//       x := getd src;
+// % If loading with !*savedef = '!*savedef then the actual definitions
+// % do not get loaded, but the source forms do...
+//       if null x then <<
+//         if not (!*savedef = '!*savedef)
+//           then rerror('rlisp,1,list(src,"has no definition in copyd")) >>
+//       else <<
+//         putd(dest,car x,cdr x);
+//         if flagp(src, 'lose) then flag(list dest, 'lose) >>;
+//       if (x := get(src, '!*savedef)) then put(dest, '!*savedef, x);
+//       if (x := get(src, '!*savedefs)) then put(dest, '!*savedefs, x);
+//       return dest
+//    end;
+
+LispObject Lcopyd(LispObject env, LispObject dest, LispObject src)
+{   Save save(dest, src);
+    if (!is_symbol(dest)) return aerror1("copyd", dest);
+    LispObject x = Lgetd(nil, src);
+    save.restore(dest, src);
+    if (x == nil)
+    {   if (qvalue(savedef_symbol) != savedef_symbol)
+            return aerror1("undefined function passed to copyd", src);
+    }
+    qfn0(dest) = qfn0(src);
+    qfn1(dest) = qfn1(src);
+    qfn2(dest) = qfn2(src);
+    qfn3(dest) = qfn3(src);
+    qfn4up(dest) = qfn4up(src);
+    qenv(dest) = qenv(src).load();
+    LispObject w = get(src, savedef_symbol, nil);
+    if (w != nil) putprop(dest, savedef_symbol, w);
+    save.restore(dest, src);
+    w = get(src, savedefs_symbol, nil);
+    if (w != nil) putprop(dest, savedefs_symbol, w);
+    save.restore(dest, src);
+    w = get(src, lose_symbol, nil);
+    if (w != nil) putprop(dest, lose_symbol, w);
+    save.restore(dest, src);
+    return onevalue(dest);
 }
 
 // For set-autoload the first argument must be a symbol that will name
@@ -761,19 +770,15 @@ LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
     if (!(qfn0(a) == undefined_0 && qfn1(a) == undefined_1 &&
           qfn2(a) == undefined_2 && qfn3(a) == undefined_3 &&
           qfn4up(a) == undefined_4up)) return onevalue(nil);
-    if ((qheader(a) & (SYM_C_DEF | SYM_CODEPTR)) ==
-        (SYM_C_DEF | SYM_CODEPTR)) return onevalue(nil);
+    if ((qheader(a) & SYM_CODEPTR) != 0) return onevalue(nil);
     {   Save save(a, b);
         if (consp(b)) res = cons(a, b);
         else res = list2(a, b);
         errexit();
         save.restore(a, b);
     }
-// I treat an explicit use of set-autoload as a redefinition, and ensure that
-// restarting a preserved image will not put the definition back.  Note that
-// I will not allow autoloadable macros...
+// I will not support autoloadable macros.
     setheader(a, qheader(a) & ~SYM_MACRO);
-    if ((qheader(a) & SYM_C_DEF) != 0) lose_C_def(a);
     set_fns(a, autoload_0, autoload_1, autoload_2, autoload_3,
             autoload_4up);
     setenv(a, res);
@@ -965,7 +970,7 @@ LispObject Lsymbol_package(LispObject env, LispObject a)
 static LispObject Lrestart_lisp2(LispObject env,
                                  LispObject a, LispObject b)
 // If the argument is given as nil then this is a cold-start, and when
-// I begin again it would be a VERY good idea to do a (load!-module 'compat)
+// I begin again it would be a VERY good idea to do a (load!-module compat)
 // rather promptly (otherwise some Lisp functions will not work at all).
 // I do not automate that because this function is intended for use in
 // delicate system rebuilding contexts and I want the user to have ultimate
@@ -3262,6 +3267,7 @@ setup_type const funcs2_setup[] =
     DEF_2("equalp",             Lequalp),
     DEF_1("endp",               Lendp),
     DEF_1("getd",               Lgetd),
+    DEF_2("copyd",              Lcopyd),
     DEF_1("last",               Llast),
     DEF_1("lastpair",           Llastpair),
     DEF_1("length",             Llength),

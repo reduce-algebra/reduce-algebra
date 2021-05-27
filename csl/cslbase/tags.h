@@ -729,12 +729,11 @@ static constexpr uintptr_t  SYM_GLOBAL_VAR    = 0x00000100; // (global '(xxx))
 static constexpr uintptr_t  SYM_KEYWORD_VAR   = 0x00000180; // (keyword '(xxx))
 static constexpr uintptr_t  SYM_SPECIAL_FORM  = 0x00000200; // eg. COND, QUOTE
 static constexpr uintptr_t  SYM_MACRO         = 0x00000400; // (putd 'xxx 'macro ...)
-static constexpr uintptr_t  SYM_C_DEF         = 0x00000800; // has definition from C kernel
-static constexpr uintptr_t  SYM_CODEPTR       = 0x00001000; // just carries code pointer
-static constexpr uintptr_t  SYM_ANY_GENSYM    = 0x00002000; // gensym, printed or not
-static constexpr uintptr_t  SYM_TRACED        = 0x00004000; // function is traced.
-static constexpr uintptr_t  SYM_TRACESET      = 0x00008000; // traceset support
-static constexpr uintptr_t  SYM_TAGGED        = 0x00010000; // used for special versions
+static constexpr uintptr_t  SYM_CODEPTR       = 0x00000800; // just carries code pointer
+static constexpr uintptr_t  SYM_ANY_GENSYM    = 0x00001000; // gensym, printed or not
+static constexpr uintptr_t  SYM_TRACED        = 0x00002000; // function is traced.
+static constexpr uintptr_t  SYM_TRACESET      = 0x00004000; // traceset support
+static constexpr uintptr_t  SYM_TAGGED        = 0x00008000; // used for special versions
 static constexpr uintptr_t  SYM_FASTGET_MASK  = 0x007e0000; // used to support "fast" gets
 static constexpr uintptr_t  SYM_FASTGET_SHIFT = 17;
 //

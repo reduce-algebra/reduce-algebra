@@ -3572,6 +3572,17 @@ LispObject printc(LispObject u)
     return u;
 }
 
+LispObject freshline_stdout()
+{   LispObject stream = qvalue(standard_output);
+    if (!is_stream(stream)) stream = qvalue(terminal_io);
+    if (!is_stream(stream)) stream = lisp_terminal_io;
+    if (other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
+                           stream) != 0)
+        putc_stream('\n', stream);
+    return nil;
+}
+
+
 LispObject freshline_trace()
 {   if (other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
                            qvalue(trace_output)) != 0)

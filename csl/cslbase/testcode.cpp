@@ -116,11 +116,11 @@ void gcTestCode()
     set_up_variables(0);
 
 
-    Lgc0(nil);
+    Lgc(nil);
     cout << "\nFirst GC over\n";
-    Lgc0(nil);
+    Lgc(nil);
     cout << "\nSecond GC over\n";
-    Lgc0(nil);
+    Lgc(nil);
     cout << "\nThird GC over\n";
 // Probably broken now!
 }

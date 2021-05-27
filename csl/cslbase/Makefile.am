@@ -2228,7 +2228,7 @@ partial-c-code:	$(BOOTSTRAPREDUCE_IMG) $(gensrc)/profile.dat
 
 # full-c-code is a target only activated manually.
 
-full-c-code:	$(BOOTSTRAPREDUCE_IMG) $(gensrc)/profile.dat machinid.cpp
+full-c-code:	$(BOOTSTRAPREDUCE_IMG) $(gensrc)/profile.dat
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
 	./bootstrapreduce$(COM) -w $(CSLFLAGS) \

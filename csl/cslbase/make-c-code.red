@@ -1,7 +1,7 @@
-% make-c-code.red                          Copyright (C) Codemist 2016-2020
+% make-c-code.red                          Copyright (C) Codemist 2016-2021
 
 %**************************************************************************
-%* Copyright (C) 2020, Codemist.                         A C Norman       *
+%* Copyright (C) 2021, Codemist.                         A C Norman       *
 %*                                                                        *
 %* Redistribution and use in source and binary forms, with or without     *
 %* modification, are permitted provided that the following conditions are *
@@ -97,7 +97,7 @@ enable!-errorset(3, 3);
 
 fluid '(fnames size_per_file force_count how_many everything cx);
 
-if boundp 'full_c_code and full_c_code then everything := t
+if boundp 'full_c_code and eval 'full_c_code then everything := t
 else everything := nil;
 
 fnames := '(      "u01" "u02" "u03" "u04"
@@ -115,10 +115,17 @@ fnames := '(      "u01" "u02" "u03" "u04"
             "u60"
 );
 
+% As of mid 2021 a size_per_file of 74000 and a limit of 21000 functions
+% to be converted allows all of Reduce to be mapped into C++ within the
+% file u01.cppp to u60.cpp. Each of those source files can be up to 1.5
+% megabytes, 60000 lines of generated C++. On one sample build this resulted
+% in the Reduce executable being about 21 Mbytes. Which these days may even
+% not count as being too bad!
+
 if boundp 'size_per_file and
    numberp (cx := compress explodec size_per_file) and
    cx > 100 and cx < 200000 then size_per_file := cx
-else if everything then size_per_file := 60000
+else if everything then size_per_file := 74000
 else size_per_file := 7000;
 
 << terpri(); princ "size_per_file = "; print size_per_file; nil >>;
@@ -139,22 +146,24 @@ force_count := 5;
 % continuity. You may experiment with
 %     make c-code how_many=nnnn
 % and do so either to see how the speed/space tradeoff goes or because you
-% are ocncerned about a possible bug in the Lisp to C compilation step. My
+% are concerned about a possible bug in the Lisp to C compilation step. My
 % current measurements suggest that 3500 gives reasonable trade off for
 % build of the executable vs. performance. However for use with an embedded
-% system with limited memort I might suggest say 500.
+% system with limited memory I might suggest say 500.
 
 begin
   scalar e;
   e := getenv "HOW_MANY";
   if e then <<
-    fluid '(how_many);
     how_many := compress explodec e >>
 end;
 
-if not boundp 'how_many then how_many := 3500
-else << how_many := compress explodec how_many;
-        if not numberp how_many then how_many := 3500 >>;
+if not numberp how_many and not stringp how_many then <<
+  if everything then how_many := 25000
+  else how_many := 3500 >>
+else <<
+  how_many := compress explodec how_many;
+  if not numberp how_many then how_many := 3500 >>;
 
 << terpri(); princ "how_many = "; print how_many; nil >>;
 
@@ -169,42 +178,58 @@ global '(omitted at_start at_end);
 % them soon!!!
 
 omitted := '(
-    s!:prinl0               % uses unwind-protect
-    prinl                   % Ha ha - this being turned into C makes it seem
-                            % available before it really is!
-
-    compile!-file!*         % &optional
-    s!:compile!-file!*      % &optional
-    fetch!-url              % &optional
-
+% The "bootstrapping issues" are eg cases where some function gets called
+% from buildreduce.lsp at a stage before it has got as far as ensuring that
+% the C++ code has been fully integrated into the Lisp world by scanning
+% u*.lsp etc. I can potentially investigate and fix this... but it may
+% be that each case has its own wrinkles.
     begin                   % bootstrapping issue
     module2!-to!-file       % ditto
-    olderfaslp              % ditto (some time I will investigate and
-                            % maybe fix these "bootstrapping" issues...
+    olderfaslp              % ditto
     package!-remake2        % ditto
     update!-fasl2           % ditto
     upd!-fasl1              % ditto
     update_prompt           % ditto
+    prinl                   % ditto
+    fluid                   % the env cells of these get out of step during..
+    global                  % a bootstrap build if they are compiled here.
+    aftergcsystemhook       % On slow machines the C code may not end up
+                            % fully usable quite early enough?
 
-    linelength              % horrid use of copyd etc in tmprint.red
-    setpchar                % horrid use of copyd.. also in tmprint.red
-    ordp                    % redefined in helphy/noncom2 and spde/spde
-    unit                    % name conflict.
+% Some items in the CSL code use the Common Lisp &optional scheme and I
+% have not arranged for the conversion into C++ to deal with that, I could
+% but it would probably be more work than is justified.
+    compile!-file!*         % &optional
+    s!:compile!-file!*      % &optional
+    fetch!-url              % &optional
 
+% These ones maybe just need some debugging work to make them work!
     pasf_bapprox            % Unknown issue!
     divdm                   %
     gck2                    %
     !:recip                 %
     cr!:minus               %
+    mkcopy                  %
 
+
+% In my original scheme for compilation into C/C++ there were big problems
+% if the code had multiple confliccting definitions and where it used
+% putd/getd/copyd to move definitions from one place to another. There can
+% still be problems but I hope that a newer (2021) scheme will make these
+% less challenging and I will be able to remove some of these from the
+% exclusion list.
+
+    linelength              % horrid use of copyd etc in tmprint.red
+    setpchar                % horrid use of copyd.. also in tmprint.red
+    ordp                    % redefined in helphy/noncom2 and spde/spde
+    unit                    % name conflict.
     typerr                  % typerr and symerr are defined in makereduce.lsp
     symerr                  % but there are different versions elsewhere.
+    ordp                    % In the kerbel
 
-    fluid                   % the env cells of these get out of step during..
-    global                  % a bootstrap build if they are compiled here.
-
-    aftergcsystemhook       % On slow machines the C code may not end up
-                            % fully usable quite early enough?
+% unwind-protect and catch could now almost certainly be supported by the
+% compiler, and then the following become eligible for optimisation. The
+% move from use of C to C++ simplifies this quite significantly.
 
     knowledge_about         % unwind-protect
     let00                   % ditto
@@ -214,33 +239,25 @@ omitted := '(
     subeval                 % ditto
     ezgcdf                  % ditto
     transcendentalcase      % ditto
+    p_prinl0                % ditto
+    s!:prinl0               % ditto
+    prem                    % ditto
+    taylorexpand            % ditto
+    taylorexpand!-diff      % ditto
 
+    errorset_with_timeout   % catch
+    probably_zero           % ditto
+    read_one_rubi_test      % ditto
+    safe_evaluate           % ditto
     );
 
-% There is a bit of a mess-up if something that has been given an autoload
-% stub gets compiled into C so I will try to identify any such and mark
-% them as unsuitable for compilation.
-
-for each x in oblist() do
-  begin
-    scalar d;
-    if eqcar(d := getd(x), 'expr) and
-       consp cdr d and consp cddr d and consp cdddr d then <<
-    d := cadddr d;
-    if eqcar(d, 'do!-autoload) then <<
-      princ "+++ "; prin x; printc " looks like an autoload stub. Omit here";
-      omitted := x . omitted >> >>
-  end;
-   
 at_start := '(
     );
 
 at_end := '(
     );
 
-
 on comp;
-
 
 load!-module 'remake;
 
@@ -254,7 +271,17 @@ w_reduce := requests := nil;
 
 symbolic procedure read_profile_data file;
   begin
-    scalar w0, w1;
+    scalar ee, w0, w1;
+% The enable!-errorset is to do with controlling the visibility of
+% error messages if the file containig profile data does not exist or
+% if the data within it is corrupted. This is here because the code
+% tries to scan a file "unprofile.dat" where people could have put
+% manually selected entries. But in most cases that file will not be
+% present. The use of "errorset(X,nil,nil)" would normally make
+% errors silent, but for debugging reasons I may have overridden that
+% gobally though this file. I want to restore the normal state just in
+% this segment.
+    ee := enable!-errorset(0, 3);
     if not errorp(w0 := errorset(list('open, file, ''input), nil, nil)) then <<
       w0 := rds car w0;
       while not errorp (w1 := errorset('(read), nil, nil)) and
@@ -265,7 +292,8 @@ symbolic procedure read_profile_data file;
 %    ((module-name f-name1 f_name2 ...) (module-name ...) ...)
 % where within each module the requested functions have been listed in
 % order of priority.
-      close rds w0 >>
+      close rds w0 >>;
+    enable!-errorset(car ee, cdr ee)
   end;
 
 off echo;
@@ -275,90 +303,75 @@ read_profile_data "$destdir/unprofile.dat";
 
 on echo;
 
-symbolic procedure membercar(a, l);
-  if null l then nil
-  else if a = caar l then t
-  else membercar(a, cdr l);
-
 symbolic procedure do_partial();
 begin
-  scalar fg, k;
+  scalar fg;
+% I will load source definitions of everything available. That will include
+% much that is not actually needed, but will be simplest and safest.
+  load!-source();
+% First discard the modules names.
   requests := for each x in requests collect cdr x$
-
-% Now I will merge in suggestions from all modules in
-% breadth-first order of priority
-% Ie if I have modules A, B, C and D (with A=alg) and each has in it
-% functions a1, a2, a3 ... (in priority odder) then I will make up a list
-% here that goes
+% Now I will merge in suggestions from all packages in breadth-first
+% order of priority
+% Ie if I have modules A, B, C and D and each has in it functions a1, a2,
+% a3 ... (in priority order) then I will make up a list like
+%   a1 b1 c1 d2   a2 b2 c2 d2   a3 b3 c3 d3   a4 b4 c4 d4 ...
 %
-%   a1 a2 a3 ... an b1 c1 d2 b2 c2 d2 b3 c3 d3 b4 c4 d4 ...
-%
-% so that the first n items from A get priority and after that B, C and D
-% will get about balanced treatment if I have to truncate the list at
-% some stage.
-
+% so that all packages A, B, C and D will get about balanced treatment
+% when I need to truncate the list at some stage. I do this except that
+% if a function has already been picked I do not pick it again (and the
+% package voting for it in effect misses out in that round). The output
+% from this will be built up (at first in reversed order) in w_reduce.
   fg := t;
   while fg do <<
     fg := nil;
     for each x on requests do
+% Here x is of the form (((fname checksum size count) ...) ...)
+% w_reduce will be just a list of names, but with no repeats.
+% A feature of me doing things this way will be the if there are multiple
+% versions of any single function and ONE of them gets picked for
+% compilation into C++ I will treat them all that way.
       if car x then <<
-        if k := assoc(caaar x, w_reduce) then <<
-          if not (cadr k = cadaar x) then <<
-             prin caaar x; printc " has multiple definition";
-             princ "   keep version with checksum: "; print cadr k;
-             princ "   ignore: "; print cadaar x;
-             terpri() >> >>
-% ORDP is a special case because I have put a version of it into the
-% CSL kernel by hand, and any redefinition here would be unfriendly and
-% might clash with that.
-        else if caaar x = 'ordp then printc "Ignoring ORDP (!)"	
-        else w_reduce := caar x . w_reduce;
+% I will include things just once provided they have an associated saved
+% definition and they are not on the exclusions list.
+        if not member(caaar x, w_reduce)
+           and not member(caaar x, omitted) and
+           get(caaar x, '!*savedefs) then <<
+          if cdr get(caaar x, '!*savedefs) then <<
+            if not zerop posn() then terpri();
+            princ "+++ "; prin caaar x; printc " has multiple definitions" >>;
+          w_reduce := caaar x . w_reduce >>;
         fg := t;
         rplaca(x, cdar x) >> >>;
 
-
-% Now I scan all pre-compiled modules to recover source versions of the
-% selected REDUCE functions. The values put as load!-selected!-source
-% properties are checksums of the recovered definitions that I would be
-% prepared to accept.
-
-  for each n in w_reduce do put(car n, 'load!-selected!-source, cadr n);
-
-  w_reduce := for each n in w_reduce collect car n$
-
-% Discard things that give trouble...
-  for each x in omitted do w_reduce := delete(x, w_reduce);
-
 % Compile some specific things first and others last. The ability to
 % override the normal priority order may be useful when I want to
-% force-compile some functions for testing purposes.
+% force-compile some functions for testing purposes. When I have any
+% such specially selected cases I will display their associated definitions
+% here because I will probably be in a debugging context.
 
   for each x in append(at_start, at_end) do <<
-    prin x; princ " "; print get(x, '!*savedef) >>;
+    prin x; princ " "; print get(x, '!*savedefs) >>;
 
-  w_reduce := append(at_start, append(nreverse w_reduce, at_end))$
+  w_reduce := append(at_start, append(nreverse w_reduce, at_end));
 
-  load!-selected!-source()
 end;
+
+% This will set up to turn every function whose definition I can find
+% (and that is not on the exclusions list) into C++.
 
 symbolic procedure do_total();
 <<load!-source();
-
-% Hah but I really want the core versions of anything that might get redefined
-% to be the one left - so I will re-load all the core modules!
-for each m in loaded!-modules!* do load!-source m;
-
   w_reduce := nil;
-
   for each x in oblist() do
-    if get(x, '!*savedef) and not memq(x, omitted) then
+    if get(x, '!*savedefs) and not memq(x, omitted) then
       w_reduce := x . w_reduce;
 
   w_reduce := nreverse w_reduce$ % Now in alphabetic order, which seems neat.
 
+% Put at_at_start and at_end items where they need to be.
   for each x in at_start do w_reduce := delete(x, w_reduce);
   for each x in at_end do w_reduce := delete(x, w_reduce);
-
   w_reduce := append(at_start, append(w_reduce, at_end)) >>;
 
 symbolic procedure listsize(x, n);
@@ -368,37 +381,40 @@ symbolic procedure listsize(x, n);
 
 symbolic procedure generate_cpp();
   begin
-    scalar count;
+    scalar count, name, bulk, total, defn;
     count := 0;
 
-    while fnames do begin
-      scalar name, bulk, total, defn;
+    while fnames do
+    begin
+      scalar name, bulk, total;
       name := car fnames;
       princ "About to create "; printc name;
       c!:ccompilestart(name, name, "$destdir");
       bulk := 0;
-      while bulk < size_per_file and w_reduce and how_many > 0 do begin
-        scalar name, defn;
+      while bulk < size_per_file and w_reduce and how_many > 0 do
+      begin
+        scalar name, defns;
         name := car w_reduce;
-        if null (defn := get(name, '!*savedef)) then <<
+        if null (defns := get(name, '!*savedefs)) then <<
           princ "+++ "; prin name;
           printc ": no saved definition found";
           w_reduce := cdr w_reduce >>
-        else <<
-          bulk := listsize(defn, bulk);
+        else for each defn in defns do <<
+          bulk := listsize(cdr defn, bulk);
           if bulk < size_per_file then <<
             count := count+1;
             princ count;
             princ ": ";
-            c!:ccmpout1 ('de . name . cdr defn);
+            c!:ccmpout1 ('de . name . cddr defn);
             how_many := how_many - 1;
-            w_reduce := cdr w_reduce >> >> end;
+            w_reduce := cdr w_reduce >> >>
+      end;
       eval '(c!-end);
       fnames := cdr fnames
     end;
 
     terpri();
-    printc "*** End of compilation from REDUCE into C ***";
+    printc "*** End of compilation from REDUCE into C++ ***";
     terpri();
 
     total := count;
@@ -407,11 +423,12 @@ symbolic procedure generate_cpp();
     if null w_reduce then printc "No more functions need compiling into C"
     else while bulk < 50 and w_reduce do
       begin
+        scalar defns;
         name := car w_reduce;
-        if null (defn := get(name, '!*savedef)) then <<
+        if null (defns := get(name, '!*savedefs)) then <<
           princ "+++ "; prin name; printc ": no saved definition found";
           w_reduce := cdr w_reduce >>
-        else <<
+        else for each defn in defns do <<
           bulk := bulk+1;
           princ (count := count+1);
           princ ": ";
@@ -419,7 +436,7 @@ symbolic procedure generate_cpp();
           w_reduce := cdr w_reduce >> end;
 
     terpri();
-    prin total; printc " functions compiled into C"
+    prin total; printc " functions compiled into C++"
   end;
 
 symbolic procedure completion();
@@ -449,5 +466,4 @@ off fastfor, fastvector, unsafecar;
   completion() >>;
 
 quit;
-
 

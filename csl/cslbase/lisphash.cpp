@@ -1106,6 +1106,10 @@ LispObject Lget_hash_2(LispObject env, LispObject key, LispObject tab)
 {   return Lget_hash(env, key, tab, nil);
 }
 
+#ifdef DEBUG
+size_t fullest_hash_table = 0;
+#endif
+
 LispObject Lput_hash(LispObject env,
                      LispObject key, LispObject tab, LispObject val)
 {   STACK_SANITY;
@@ -1121,6 +1125,9 @@ LispObject Lput_hash(LispObject env,
     }
     set_hash_operations(tab);
     size_t count = int_of_fixnum(basic_elt(tab, HASH_COUNT));
+#ifdef DEBUG
+    if (count > fullest_hash_table) fullest_hash_table = count;
+#endif
     if (5*count > 4*h_table_size) needs_rehashing = true;
 // I will rehash either if I have to because there has been a garbage
 // collection since the last operation on the table (and hence hash codes
