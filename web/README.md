@@ -21,16 +21,19 @@ Web server directory structure
 	|   \---SimplePie
 	|           PHP source code, all available from elsewhere
 	|
-	\---simplepie
-	    \---cache
-	            Files written by the web server (PHP)
+	+---simplepie
+	|   \---cache
+	|           Files written by the web server (PHP)
+	|
+	\---sitemap
+	        Cache file written by the web server (PHP)
 
 PHP libraries
 -------------
 
 I use the [SimplePie](http://simplepie.org/) PHP library to display RSS feeds.  It is installed in the `php` directory (see above) on the REDUCE web server and is currently at version 1.5 (released on 17 April 2017).
 
-The directory `simplepie` contains the SimplePie cache directory.  It seems that directories that need to be writable by the web server, such as this cache directory, must be outside the `htdocs` directory.
+The directory `simplepie` contains the SimplePie cache directory.  It seems that directories that need to be writable by the web server, such as this cache directory, must be outside the `htdocs` directory and have the correct permissions explicitly set; see [Project Web Filesystem Permissions](https://sourceforge.net/p/forge/documentation/Project%20Web%20Filesystem%20Permissions/).
 
 Style and JavaScript files
 --------------------------
