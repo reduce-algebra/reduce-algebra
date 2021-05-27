@@ -141,7 +141,7 @@ symbolic procedure ps!:operator!:(op,u,v);
           x0:= ps!:expansion!-point u;
           y0:= ps!:expansion!-point v;
           if x0 and y0 then
-             if x0 eq y0 and x eq y then nil
+             if x0 = y0 and x = y then nil
              else if x0 neq y0 then
                rerror(tps,29,
                       list("power series expansion points differ in ",
@@ -155,7 +155,7 @@ symbolic procedure ps!:operator!:(op,u,v);
        >>;
         if null x0 then  % both are constant power series
            << if x and y then
-                if x eq y then nil else
+                if x = y then nil else
                   rerror(tps,31,
                   list("power series dependent variables differ in ",
                         op))
@@ -168,7 +168,7 @@ symbolic procedure ps!:operator!:(op,u,v);
               else
                  return make!-constantps(value, prepsqxx value, x) >>;
         if x and y then
-          if x eq y then nil
+          if x = y then nil
           else rerror(tps,32,
                   list("power series dependent variables differ in ",
                         op))

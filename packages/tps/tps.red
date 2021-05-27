@@ -190,7 +190,8 @@ symbolic inline procedure ps!:operands ps;
 symbolic procedure ps!:get!-term(ps,i);
     (lambda(psorder, pslast);
        if i<psorder then nil ./ 1
-       else if i>pslast then nil
+       else if i>pslast then
+            if ps!:expression(ps) = 'full then nil ./ 1 else nil
        else begin scalar term;
                term:=assoc(i-psorder, ps!:terms ps);
                return if term then cdr term

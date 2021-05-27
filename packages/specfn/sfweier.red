@@ -36,6 +36,7 @@ operator sigma, sigma1, sigma2, sigma3;
 operator eta1, eta2, eta3;
 operator lattice_e1, lattice_e2, lattice_e3;
 operator lattice_g2, lattice_g3, lattice_delta, lattice_g;
+operator lattice_omega1, lattice_omega3;
 %######################################################################
 
 sigma_rules :=
@@ -177,7 +178,11 @@ weierstrass_rules :=
    weierstrass(~w1, ~w1, ~w3)  => lattice_e1(w1,w3),
    weierstrass(~w3, ~w1, ~w3)  => lattice_e3(w1,w3),
    weierstrass(~w1+~w3, ~w1, ~w3) => lattice_e2(w1,w3),
-   
+
+   df(weierstrass(~u,~w1,~w3),u) =>
+       -sqrt(4*weierstrass(u,w1,w3)^3
+             - lattice_g2(w1,w3)*weierstrass(u,w1,w3) - lattice_g3(w1,w2)),
+
    % double periodicity
    weierstrass((~~u + ~k*~w1)/~~d, ~w1, ~w3) =>
       (begin scalar m, arg;
@@ -239,7 +244,8 @@ weierZeta_rules :=
    weierstrassZeta(~u,-~w1,~w3) => weierstrassZeta(u,w3,w1),
    weierstrassZeta(~w1,~w1,~w3) => eta1(w1,w3),
    weierstrassZeta(~w3,~w1,~w3) => eta3(w1,w3),
-
+   weierstrassZeta(~w1+~w3,~w1,~w3) => eta1(w1,w3)+eta3(w1,w3),
+   
    df(weierstrassZeta(~u,~w1,~w3),~u)  => -weierstrass(u,w1,w3),
 
  % quasi-periodicity
@@ -667,7 +673,6 @@ begin scalar z, p1, rp1, nump1, nump2;
   return {2*z*w1, nump1, nump2};
 end;
 
-
 %##################################################################
 % Alternative forms of the Weierstrass functions
 
@@ -831,6 +836,10 @@ put('lattice_delta, 'fancy!-functionsymbol, "\Delta");
 put('lattice_g, 'fancy!-functionsymbol, "\mathrm{G}");
 put('lattice_g2, 'fancy!-symbol!-length, 4);
 put('lattice_g3, 'fancy!-symbol!-length, 4);
+put('lattice_omega1, 'fancy!-functionsymbol, "\omega_1");
+put('lattice_omega3, 'fancy!-functionsymbol, "\omega_3");
+put('lattice_omega1, 'fancy!-symbol!-length, 4);
+put('lattice_omega3, 'fancy!-symbol!-length, 4);
 
 put('lattice_g2, 'prifn, 'plain!-symbol);
 put('lattic_g2, 'plain!-functionsymbol, 'g2);
@@ -841,13 +850,18 @@ put('lattice_delta, 'prifn, 'plain!-symbol);
 put('lattice_g, 'plain!-functionsymbol, '!G);
 put('lattice_g, 'prifn, 'plain!-symbol);
 
+put('lattice_omega1, 'prifn, 'plain!-symbol);
+put('lattice_omega1, 'plain!-functionsymbol, 'w1);
+put('lattice_omega3, 'prifn, 'plain!-symbol);
+put('lattice_omega3, 'plain!-functionsymbol, 'w3);
+
 % The next 2 declarations enable better checking of the number
 % of arguments by simpiden
 
 flag('(sigma sigma1 sigma2 sigma3 weierstrass weierstrassZeta
        eta1 eta2 eta3 lattice_e1 lattice_e2 lattice_e3 
        lattice_g2 lattice_g3  lattice_delta lattice_g
-       weierstrass1 weierstrasszeta1
+       lattice_omega1 lattice_omega3 weierstrass1 weierstrasszeta1
       ), 'specfn);
 
 
@@ -858,6 +872,7 @@ deflist('((sigma 3) (sigma1 3) (sigma2 3) (sigma3 3)
 	  (lattice_g2 2) (lattice_g3 2)  (lattice_delta 2) (lattice_g 2)
 	  (weierstrass1 3) (weierstrasszeta1 3)
 	  (lattice_generators 2) (quasi_period_factors 2)
+	  (lattice_omega1 2) (lattice_omega3 2)
         ), 'number!-of!-args);
 
 fluid '(fancy!-pos!* fancy!-texpos fancy!-line!*);
@@ -884,6 +899,64 @@ begin;
     prin2!* ")";
     return u;
 end;
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% The following are needed to support power series expansions of
+% Weierstrass functions about their (double) poles. The two operators
+% RW!* and RW1!* are the reciprocals of weierstrassZeta & weierstrassZeta1
+% respectively. They are not really intended for use at top level.
+
+operator RW!*, RW1!*;
+
+weier!-recip!-rules := {
+  df(RW!*(~x, ~w1, ~w3), x) =>
+      sqrt(4 RW!*(x,w1, w3) -
+          lattice_g2(w1,w3)*RW!*(x,w1,w3)^3 -lattice_g3(w1,w3)*RW!*(x,w1,w3)^4),
+
+  df(RW1!*(~x, ~g2, ~g3), x) =>
+      sqrt(4 RW1!*(x, g2, g3) -
+            g2 * *RW1!*(x, g2, g3)^3 - g3 * *RW1!*(x, g2, g3)^4),
+
+  RW!*(0,~w1,~w3) => 0,
+  RW1!*(0,~g2,~g3) => 0,
+  RW!*(-~u,~w1,~w3) => RW!*(u,w1,w3),
+  RW1!*(-~u,~w1,~w3) => RW1!*(u,w1,w3),
+
+  RW!*((~~u + ~k*~w1)/~~d, ~w1, ~w3) =>
+      (begin scalar m, arg;
+         m := fix repart(k/(2*d));
+	 arg := u/d + (k/d-2*m)*w1;
+         return RW!*(arg, w1, w3); 
+      end)
+      when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
+
+   RW!*((~~u + ~k*~w3)/~~d, ~w1, ~w3) =>
+      (begin scalar m, arg;
+         m := fix repart(k/(2*d));
+	 arg := u/d + (k/d-2*m)*w3;
+         return RW!*(arg, w1, w3);
+      end)
+      when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
+
+
+  RW1!*((~~u + ~k*lattice_omega1(~g2,~g3))/~~d, ~g2, ~g3) =>
+      (begin scalar m, arg;
+         m := fix repart(k/(2*d));
+	 arg := u/d + (k/d-2*m)*lattice_omega1(g2,g3);
+         return RW1!*(arg, g2, g3); 
+      end)
+      when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
+
+   RW1!*((~~u + ~k*lattice_omega3(~g2,~g3))/~~d, ~g2, ~g3) =>
+      (begin scalar m, arg;
+         m := fix repart(k/(2*d));
+	 arg := u/d + (k/d-2*m)*lattice_omega3(g2,g3);
+         return RW1!*(arg, g2, g3); 
+      end)
+      when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d))
+  
+}$
+let weier!-recip!-rules$
 
 endmodule;
 end;
