@@ -116,8 +116,8 @@ LispObject lisp_trace_output, lisp_debug_io, lisp_query_io;
 LispObject prompt_thing, faslgensyms, prinl_symbol, emsg_star, redef_msg;
 LispObject current_function, expr_symbol, fexpr_symbol, macro_symbol;
 LispObject big_divisor, big_dividend, big_quotient, big_fake1, big_fake2;
-LispObject active_stream, current_module;
-LispObject autoload_symbol, features_symbol, lisp_package, sys_hash_table;
+LispObject active_stream, current_module, autoload_symbol, features_symbol;
+LispObject lisp_package, sys_hash_table, rehash_vec1, rehash_vec2;
 LispObject help_index, cfunarg, lex_words, get_counts, fastget_names;
 LispObject input_libraries, output_library, current_file, break_function;
 LispObject standard_output, standard_input, debug_io, error_output;
@@ -771,8 +771,9 @@ static void cold_setup()
     setvalue(emsg_star,        nil);
     setvalue(redef_msg,        lisp_true);
 
+    rehash_vec1 = get_basic_vector_init(CELL*(1+REHASHVEC_SIZE), nil);
+    rehash_vec2 = get_basic_vector_init(CELL*(1+REHASHVEC_SIZE), nil);
     sys_hash_table = Lmkhash_1(nil, fixnum_of_int(2));    // EQUAL
-//@ sxhash_hash_table = Lmkhash_1(nil, fixnum_of_int(0)); // EQ
     get_counts = Lmkhash_1(nil, fixnum_of_int(0));        // EQ
 // I make the vector that can hold the names used for "fast" get tags big
 // enough for the largest possible number.
@@ -2042,8 +2043,9 @@ LispObject *list_bases[] =
     &lisp_package,
     &boffo,
     &charvec,
+    &rehash_vec1,
+    &rehash_vec2,
     &sys_hash_table,
-//@ &sxhash_hash_table,
     &help_index,
     &gensym_base,
     &err_table,

@@ -934,6 +934,23 @@ LispObject Lapply3(LispObject env, LispObject fn,
     return Lapply_2(env, fn, a1);
 }
 
+LispObject Lapply4(LispObject env, LispObject fn,
+                   LispObject a1, LispObject a2, LispObject a3up)
+{   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
+    {   LispObject a3, a4;
+        if (a4a5("apply4", a3up, a3, a4)) return nil;
+        return (*qfn4up(fn))(fn, a1, a2, a3, cdr(a3up));
+    }
+    LispObject a3, a4;
+    if (a4a5("apply3", a3up, a3, a4)) return nil;
+    {   Save save(env, fn);
+        a1 = list4(a1, a2, a3, a4);
+        save.restore(env, fn);
+    }
+    errexit();
+    return Lapply_2(env, fn, a1);
+}
+
 // Finally I can have (FUNCALL fn a1 ...) which behaves like
 // APPLY0, APPLY1,... for few arguments and continues passing more
 // of its own arguments to the called function.
@@ -1822,6 +1839,7 @@ setup_type const eval1_setup[] =
     DEF_2("apply1",     Lapply1),
     DEF_3("apply2",     Lapply2),
     DEF_4up("apply3",   Lapply3),
+    DEF_4up("apply4",   Lapply4),
     DEF_1("evlis",      Levlis),
     {"funcall",         G0Wother, Lfuncall_1, Lfuncall_2, Lfuncall_3, Lfuncall_4up},
     {"funcall*",        G0Wother, Lfuncall_1, Lfuncall_2, Lfuncall_3, Lfuncall_4up},

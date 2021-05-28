@@ -2184,9 +2184,8 @@ return (s!:comcall x env context))))))))
 quote function)) (return (s!:improve (cons (cadar u) (cdr u)))))) (setq n (
 length (cdr u))) (setq u (cond ((equal n 0) (cons (quote apply0) u)) (t (cond
 ((equal n 1) (cons (quote apply1) u)) (t (cond ((equal n 2) (cons (quote 
-apply2) u)) (t (cond ((equal n 3) (cons (quote apply3) u)) (t (cond ((equal n
-4) (cons (quote apply4) u)) (t (cons (quote funcall) u)))))))))))) (return u
-)))
+apply2) u)) (t (cond ((equal n 3) (cons (quote apply3) u)) (t (cons (quote 
+funcall) u)))))))))) (return u)))
 
 (put (quote funcall) (quote s!:tidy_fn) (quote s!:imp_funcall))
 
