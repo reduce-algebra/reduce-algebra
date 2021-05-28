@@ -1717,7 +1717,7 @@ uint64_t reclaim_trigger_count = 0, reclaim_trigger_target = 0;
 //       big_numbers, box_floats, bytestreams, other_mem,
 //       litvecs, getvecs;
 
-LispObject Lgc0(LispObject env)
+LispObject Lgc(LispObject env)
 {   return Lgc(env, fixnum_of_int(1));
 }
 

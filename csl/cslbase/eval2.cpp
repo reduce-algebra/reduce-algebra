@@ -528,8 +528,7 @@ static LispObject defun_fn(LispObject args, LispObject)
         {   LispObject fv;
             if (qheader(fname) & SYM_SPECIAL_FORM)
                 return error(1, err_redef_special, fname);
-            if ((qheader(fname) & (SYM_C_DEF | SYM_CODEPTR)) ==
-                (SYM_C_DEF | SYM_CODEPTR)) return onevalue(fname);
+            if ((qheader(fname) & SYM_CODEPTR) != 0) return onevalue(fname);
             if (flagged_lose(fname))
             {   debug_printf("\n+++ ");
                 loop_print_debug(fname);
@@ -537,7 +536,6 @@ static LispObject defun_fn(LispObject args, LispObject)
                 return onevalue(nil);
             }
             setheader(fname, qheader(fname) & ~SYM_MACRO);
-            if ((qheader(fname) & SYM_C_DEF) != 0) lose_C_def(fname);
             if (qfn1(fname) != undefined_1)
             {   if (qvalue(redef_msg) != nil)
                 {   debug_printf("\n+++ ");
@@ -584,20 +582,15 @@ static LispObject defmacro_fn(LispObject args, LispObject)
             args = cons(list3(car(bvl), opt_key, Lgensym(nil)),
                         cdr(args));
         if (is_symbol(fname))
-        {   if ((qheader(fname) & (SYM_C_DEF | SYM_CODEPTR)) ==
-                (SYM_C_DEF | SYM_CODEPTR)) return onevalue(fname);
+        {   if ((qheader(fname) & SYM_CODEPTR) != 0) return onevalue(fname);
             setheader(fname, qheader(fname) | SYM_MACRO);
 // Note that a name can have a definition as a macro and as a special form,
 // and in that case the qfn() cell gives the special form and the qenv()
 // cell the macro definition.  Otherwise at present I put 'undefined'
 // in the qfn() cell, but in due course I will want something else as better
 // protection against compiled code improperly attempting to call a macro.
-// Note also that if the symbol was a special form before I do not want
-// to clear the C_DEF flag, since the special form must be re-instated when
-// I reload the system.
             if ((qheader(fname) & SYM_SPECIAL_FORM) == 0)
-            {   setheader(fname, qheader(fname) & ~SYM_C_DEF);
-                if (qfn1(fname) != undefined_1 &&
+            {   if (qfn1(fname) != undefined_1 &&
                     qvalue(redef_msg) != nil)
                 {   debug_printf("\n+++ ");
                     loop_print_debug(fname);

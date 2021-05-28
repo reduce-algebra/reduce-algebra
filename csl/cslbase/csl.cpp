@@ -902,8 +902,8 @@ void my_exit()
 // waiting on some semaphore or external trigger!
 //
 // I need to distinguish between my_exit() which is called in cases that
-// represent system errors from Lstop1() which is what arises if the user
-// attempts to exit. Lstop1() will "throw an exception" - I put that phrase
+// represent system errors from Lstop() which is what arises if the user
+// attempts to exit. Lstop() will "throw an exception" - I put that phrase
 // in quotes because for the benefit of emscripten that might be just setting
 // a flag and exiting so as to have a software simulated exception scheme.
 // In a thread that can terminate the thread. In the main program it has to
@@ -2859,7 +2859,7 @@ LispObject respond_to_stack_event()
 // Each of the messages that I might be sent comes in a separate bit, so
 // here I have to test each bit. I will test the bits in some sort of
 // order because I will only perform one major operation!
-    if ((f&RECEIVE_QUIT) != 0) return Lstop1(nil, fixnum_of_int(0));
+    if ((f&RECEIVE_QUIT) != 0) return Lstop(nil, fixnum_of_int(0));
     if ((f&RECEIVE_TICK) != 0)
     {   //fwin_acknowledge_tick();
 #if !defined EMBEDDED && !defined WITHOUT_GUI
@@ -3050,6 +3050,11 @@ int cslfinish(character_writer *w)
                     Nhget, Nhgetp, Nhgetp/static_cast<double>(Nhget),
                     Nhput1, Nhputp1, Nhputp1/static_cast<double>(Nhput1),
                     Nhput2, Nhputp2, Nhputp2/static_cast<double>(Nhput2));
+#endif
+#ifdef DEBUG
+        term_printf("intern_count = %" PRIu64 "\n", (uint64_t)intern_count);
+        term_printf("fullest_package = %" PRIu64 "\n", (uint64_t)fullest_package);
+        term_printf("fullest_hash_table = %" PRIu64 "\n", (uint64_t)fullest_hash_table);
 #endif
         term_printf("\n\nEnd of Lisp run after %" PRId64 ".%.2" PRId64
                     "+%" PRId64 ".%.2" PRId64 " seconds\n",

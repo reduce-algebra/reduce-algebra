@@ -1438,9 +1438,7 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
 // can find it on the property list - in that case I will re-use it.
         while (b != nil)
         {   LispObject c = car(b);
-            if ((qheader(c) & (SYM_C_DEF | SYM_CODEPTR)) ==
-                (SYM_CODEPTR | (qheader(a) & SYM_C_DEF)))
-                return onevalue(c);
+            if ((qheader(c) & SYM_CODEPTR) != 0) return onevalue(c);
             b = cdr(b);
         }
         {   Save save(a);
@@ -1480,27 +1478,6 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
         setheader(b, qheader(b) ^ (SYM_UNPRINTED_GENSYM | SYM_ANY_GENSYM |
                                    SYM_CODEPTR));
 #endif
-        if ((qheader(a) & SYM_C_DEF) != 0)
-        {   LispObject c, w;
-            c = get(a, unset_var, nil);
-            if (c == nil) c = a;
-            {   RealSave save(a, b);
-                {   RealSave save1(c);
-                    setheader(b, qheader(b) | SYM_C_DEF);
-                    putprop(b, unset_var, c);
-                    errexit();
-                    c = save.val(2);
-                    w = get(c, work_symbol, nil);
-                    errexit();
-                    w = cons(b, w);
-                    errexit();
-                    save1.restore(c);
-                }
-                putprop(c, work_symbol, w);
-                errexit();
-                save.restore(a, b);
-            }
-        }
         return onevalue(b);
     }
 }
@@ -1517,8 +1494,7 @@ LispObject Lcodep(LispObject env, LispObject a)
 // carry compiled code objects.  It returns NIL on the symbols that
 // are normally used by the user.
 {   if (!symbolp(a)) return onevalue(nil);
-    if ((qheader(a) & (SYM_CODEPTR | SYM_C_DEF)) == SYM_CODEPTR)
-        return onevalue(lisp_true);
+    if ((qheader(a) & SYM_CODEPTR) != 0) return onevalue(lisp_true);
     else return onevalue(nil);
 }
 
@@ -1680,7 +1656,7 @@ LispObject get_vector_init(size_t n, LispObject val)
     return p;
 }
 
-LispObject Lstop1(LispObject env, LispObject code)
+LispObject Lstop(LispObject env, LispObject code)
 {   if (!is_fixnum(code)) return aerror("stop");
     if (Lposn(nil) != fixnum_of_int(0)) Lterpri(nil);
     exit_value = code;
@@ -1690,8 +1666,8 @@ LispObject Lstop1(LispObject env, LispObject code)
     THROW(LispRestart);
 }
 
-LispObject Lstop0(LispObject env)
-{   return Lstop1(env, fixnum_of_int(0));
+LispObject Lstop(LispObject env)
+{   return Lstop(env, fixnum_of_int(0));
 }
 
 uint64_t base_time;
@@ -2554,7 +2530,7 @@ setup_type const funcs1_setup[] =
     DEF_2("set",                Lset),
     DEF_1("makeunbound",        Lmakeunbound),
     DEF_1("special-form-p",     Lspecial_form_p),
-    {"stop",                    Lstop0, Lstop1, G2Wother, G3Wother, G4Wother},
+    {"stop",                    Lstop, Lstop, G2Wother, G3Wother, G4Wother},
     DEF_1("symbol-function",    Lsymbol_function),
     DEF_1("symbol-value",       Lsymbol_value),
     DEF_0("time",               Ltime),

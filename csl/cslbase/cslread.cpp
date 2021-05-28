@@ -765,18 +765,15 @@ start_again:
     if (first_try) v0 = v;
 // I instate the definition given if (a) the definition is a real
 // one (ie not for an undefined function) and if (b) either I am doing a cold
-// start or the name is still marked as having a definition in the form
-// of C code (or if I gave first_try false which is when I am going round
-// again and doing rather curious things...)
+// start or if I gave first_try false which is when I am going round
+// again and doing rather curious things...
     if (f1 != undefined_1)
-    {   if ((restartp & 1)==0 || (qheader(v) & SYM_C_DEF) != 0 ||
-            !first_try)
+    {   if ((restartp & 1)==0 || !first_try)
         {   qfn0(v) = f0;
             qfn1(v) = f1;
             qfn2(v) = f2;
             qfn3(v) = f3;
             qfn4up(v) = f4up;
-            setheader(v, qheader(v) | SYM_C_DEF);
         }
         else
         {   int l = std::strlen(reinterpret_cast<char *>(&boffo_char(0)));
@@ -921,6 +918,10 @@ static LispObject add_to_internals(LispObject s, LispObject p, uint64_t hash)
         packint_(p) = v;
     }
     packnint_(p) = n + (1<<4);
+#ifdef DEBUG
+    if ((size_t)int_of_fixnum(packnint_(p)) > fullest_package)
+        fullest_package = int_of_fixnum(packnint_(p));
+#endif
     // increment as a Lisp fixnum
     add_to_hash(s, v, hash);
     return nil;
@@ -1639,10 +1640,18 @@ LispObject Lintern_2(LispObject env, LispObject str, LispObject pp)
 {   return Lintern(env, str); // Ignores the package for now!
 }
 
+#ifdef DEBUG
+size_t intern_count = 0;
+size_t fullest_package = 0;
+#endif
+
 LispObject Lintern(LispObject env, LispObject str)
 // Lisp entrypoint for (intern ..)
 {   Header h;
     LispObject p;
+#ifdef DEBUG
+    intern_count++;
+#endif
 #ifdef COMMON
     Save save(str);
     p = Lfind_package(nil, pp);
@@ -1807,8 +1816,6 @@ LispObject Lunintern(LispObject env, LispObject sym, LispObject pp)
 #ifdef COMMON
     packshade_(package) = ndelete(sym, packshade_(package));
 #endif
-    if ((qheader(sym) & SYM_C_DEF) != 0)
-        return aerror1("remob on function with kernel definition", sym);
     if (remob(sym, packint_(package)))
     {   size_t n = int_of_fixnum(packnint_(package));
         LispObject v = packint_(package);

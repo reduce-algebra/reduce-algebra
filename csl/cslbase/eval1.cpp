@@ -1686,7 +1686,7 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
 // Exiting from the sub-task would in fact detach from the shared data
 // segment, but I do the detaching explictly to feel tidy.
         shmdt(shared);
-        return Lstop1(nil, fixnum_of_int(0));
+        return Lstop(nil, fixnum_of_int(0));
     }
     else
     {
@@ -1709,7 +1709,7 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
                      my_exit());
             write_result(nil, r2, shared+PARSIZE);
             shmdt(shared);
-            return Lstop1(nil, fixnum_of_int(0));
+            return Lstop(nil, fixnum_of_int(0));
         }
         else
         {

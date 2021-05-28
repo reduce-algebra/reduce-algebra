@@ -433,8 +433,8 @@ asserted procedure rl_helpPrintDocal(docal: Alist);
       >>
    end;
 
-procedure alistp(l);
-   null l or listp l and pairp car l and alistp cdr l;
+%procedure alistp(l);  % provided in alg/general.red and this version clashes
+%   null l or listp l and pairp car l and alistp cdr l;
 
 asserted procedure rl_printParagraph(s: String);
    <<

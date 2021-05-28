@@ -1,13 +1,12 @@
-% extras.red                               Copyright (C) Codemist 2004-2020
+% extras.red                               Copyright (C) Codemist 2004-2021
 %
 % Additional useful functions to have in a Lisp environment.
 %
 
-
 %
 %
 %/**************************************************************************
-% * Copyright (C) 2020, Codemist.                         A C Norman       *
+% * Copyright (C) 2021, Codemist.                         A C Norman       *
 % *                                                                        *
 % * Redistribution and use in source and binary forms, with or without     *
 % * modification, are permitted provided that the following conditions are *
@@ -64,6 +63,8 @@ symbolic macro procedure df(u, !&optional, env);
     return list('dm, cadr u, list(g, '!&optional, gensym()), w);
   end;
 
+flag('(copyd), 'lose); % Now build into the CSL core
+
 % The following small function is just used for testing the CSL OEM
 % interface code...
 
@@ -117,39 +118,6 @@ exit:
     return nil
   end;
 
-
-% dated!-name manufactures a symbol that is expected to be unique - but
-% there will in fact be no strict guarantee of that.  The name is made up out
-% of a base part provided by the caller, then a chunk that encodes the
-% date and time of day that the function was called (accurate to around
-% a second, typically). Finally a serial number that starts off as 1 when
-% the "extras" module is loaded into a copy of Lisp.  Two copies of Lisp
-% running at the same time could lead to clashes here.  But names of this
-% sort seem to be needed for inclusion in files and other places where
-% re-readability is vital.
-
-global '(s!:gensym!-serial);
-
-s!:gensym!-serial := 0;
-
-symbolic procedure s!:stamp n;
-% Converts an integer (which will in fact be a timestamp, an about
-% 2^29 or 2^30 in value) into a sequence of letters and digits by
-% converting to base 36 (with the digits ending up in the "wrong"
-% order).  Used only when generating probably-unique-identifiers to
-% use as names for internally generated functions.
-   if n < 0 then append(s!:stamp(-n), '(!-))
-   else if n = 0 then nil
-   else schar("0123456789abcdefghijklmnopqrstuvwxyz", remainder(n, 36)) .
-        s!:stamp truncate(n ,36);
-
-symbolic procedure dated!-name base;
-   intern list2string 
-      append(explodec base, 
-         '!_ . append(reverse s!:stamp datestamp(),
-             '!_ . explodec(s!:gensym!-serial := s!:gensym!-serial + 1)));
-
-
 % hashtagged!-name(base, value) manufactures a name based on the
 % base together with a hash-value computed from the "value". This
 % is expected to be a reliable signature (but clashes are of course
@@ -161,7 +129,7 @@ symbolic procedure dated!-name base;
 
 symbolic procedure hashtagged!-name(base, value);
    intern list2string 
-      append(explodec base, '!_ . s!:stamp md60 value);
+      append(explodec base, '!_ . explodehex md60 value);
 
 %
 % Sorting

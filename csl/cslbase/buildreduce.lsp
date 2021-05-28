@@ -54,7 +54,7 @@
    (setq w (errorset '!*backtrace nil nil))
    (cond
       ((or (atom w) (null (car w))) (setq !*backtrace nil))
-      (t (enable!-errorset 3 3)
+      (t % (enable!-errorset 3 3)
          (setq !*backtrace t))))
 
 (cond
@@ -68,23 +68,19 @@
             (or (boundp 'force_c_code)
                 (null (memq 'embedded lispsystem!*)))) (progn
 
-   (de c!:install (name env c!-version !&optional c1)
-      (cond
-        (c1 (check!-c!-code name env c!-version c1))
-        (t (progn
-              (put name 'c!-version c!-version)
-              (cond (env (prog (v n)
-                 (setq v (mkvect (sub1 (length env))))
-                 (setq n 0)
-            top  (cond
-                    ((null env) (progn
-                     (put name 'funarg v)
-                     (return (symbol!-set!-env name v)))))
-                 (putv v n (car env))
-                 (setq n (add1 n))
-                 (setq env (cdr env))
-                 (go top))))
-              name))))
+   (de c!:install (name env checksum)
+      (prog (basename n v)
+          (setq basename (car env))
+          (put basename 'c!-version
+             (union (list checksum) (get basename 'c!-version)))
+          (setq v (mkvect (sub1 (length env))))
+          (setq n 0)
+     top  (cond
+             ((null env) (return (symbol!-set!-env name v))))
+          (putv v n (car env))
+          (setq n (add1 n))
+          (setq env (cdr env))
+          (go top)))
 
    (prog (name names)
       (setq names '(
@@ -609,23 +605,26 @@ if modulep 'cslcompat then load!-module 'cslcompat;
 % Note that Jlisp will use a different scheme to get the literal-vectors
 % of translated functions installed.
 
-symbolic procedure c!:install(name, env, c!-version, !&optional, c1);
+% After this a function F that has one or more C++ optimised variants will
+% have a c!-version property that is a list of hash codes. If the integer H
+% is present in that list then sprintf("%s~~%x", F, H) (so to speak!) will
+% be tha name of an optimised version matching checksum H. Given that
+% it will be proper to replace (de F ...) with (copyd 'F~~H 'F) so as
+% to get the optimised version in place.
+
+symbolic procedure c!:install(name, env, checksum);
   begin
-    scalar v, n;
-    if c1 then return check!-c!-code(name, env, c!-version, c1);
-    put(name, 'c!-version, c!-version);
-    if null env then return name;
+    scalar basename, v, n;
+    basename := car env;
+    put(basename, 'c!-version,
+      union(list checksum, get(basename, 'c!-version)));
     v := mkvect sub1 length env;
     n := 0;
     while env do <<
       putv(v, n, car env);
       n := n + 1;
       env := cdr env >>;
-% I only instate the environment if there is nothing useful there at
-% present. This is a rather dubious test!
-    if symbol!-env name = nil or
-       symbol!-env name = name then symbol!-set!-env(name, v);
-    put(name, 'funarg, v);
+    symbol!-set!-env(name, v);
     return name;
   end;
 
@@ -713,7 +712,7 @@ symbolic procedure get_configuration_data();
     reduce_regression_tests := nil;
 % The embedded build may not support the list!-directory function and so
 % I arrange that if it fails I just omit being aware of the regression
-% test scripts. Soon the embedded system (built ising C++17) will in fact
+% test scripts. Soon the embedded system (built using C++17) will in fact
 % support this!
     if memq('embedded, lispsystem!*) then rdf("$srcdir/regressions.list")
     else <<
@@ -1626,8 +1625,7 @@ symbolic restart!-csl nil;
                      (zerop (cdr (assoc 'c!-code lispsystem!*)))))
 (make!-special '!*noinlines)
 (prog (w)
-   (setq w (errorset 'noinlines nil nil))
-   (setq !*noinlines (and (not (atom w)) (car w)))
+   (setq !*noinlines (and (boundp 'noinlines) (eval 'noinlines)))
    (print (list '!*noinlines 'set 'to !*noinlines)))
 (make!-special '!*native_code)
 (setq !*native_code nil)

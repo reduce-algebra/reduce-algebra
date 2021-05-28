@@ -5,7 +5,6 @@
 %
 %                                                        A C Norman
 
-
 %%
 %% Copyright (C) 2021, following the master REDUCE source files.          *
 %%                                                                        *
@@ -641,13 +640,15 @@ symbolic procedure c!:local_fluidp(v, decs);
 
 fluid '(proglabs blockstack localdecs);
 
-symbolic procedure c!:cfndef(c!:current_procedure,
-                             c!:current_c_name, argsbody, checksum);
+% c!:cfndef(car u, cname, lispname, checksum, cdr u);
+
+symbolic procedure c!:cfndef(c!:current_procedure, c!:current_c_name,
+                             lispname, checksum, argsbody);
   begin
     scalar env, n, w, c!:current_args, c!:current_block, restart_label,
            c!:current_contents, c!:all_blocks, entrypoint, exitpoint, args1,
            c!:registers, c!:stacklocs, literal_vector, reloadenv, does_call,
-           blockstack, proglabs, args, body, localdecs, varargs, c!:stack;
+           blockstack, proglabs, args, body, localdecs, varargs;
     args := car argsbody;
     body := cdr argsbody;
 % If there is a (DECLARE (SPECIAL ...)) extract it here, aned leave a body
@@ -758,8 +759,7 @@ symbolic procedure c!:cfndef(c!:current_procedure,
     c!:printf("}\n\n");
     wrs O_file;
 
-    L_contents := (c!:current_procedure . literal_vector . checksum) .
-                  L_contents;
+    L_contents := (lispname . literal_vector . checksum) . L_contents;
     return nil
   end;
 
@@ -817,7 +817,7 @@ c!:char_mappings := '(
 
 fluid '(c!:names_so_far);
 
-symbolic procedure c!:inv_name n;
+symbolic procedure c!:inv_name(n, checksum);
   begin
     scalar r, w;
 % The next bit ararnges that if there are several definitions of the
@@ -846,6 +846,7 @@ symbolic procedure c!:inv_name n;
 !#endif
       else if w := atsoc(c, c!:char_mappings) then r := cdr w . r
       else r := '!Z . r >>;
+    r := append(reverse explodehex checksum, r);
     r := '!" . r;
 !#if common!-lisp!-mode
     return compress1 reverse r
@@ -868,7 +869,7 @@ symbolic procedure c!:ccmpout1 u;
 
 symbolic procedure c!:ccmpout1a u;
   begin
-    scalar w, checksum;
+    scalar file, checksum, cname, lispname;
     if atom u then return nil
     else if eqcar(u, 'progn) then <<
        for each v in cdr u do c!:ccmpout1a v;
@@ -879,40 +880,32 @@ symbolic procedure c!:ccmpout1a u;
        errorset(u, t, !*backtrace);
     if eqcar(u, 'rdf) then begin
 !#if common!-lisp!-mode
-       w := open(u := eval cadr u, !:direction, !:input,
+       file := open(u := eval cadr u, !:direction, !:input,
                  !:if!-does!_not!-exist, nil);
 !#else
-       w := open(u := eval cadr u, 'input);
+       file := open(u := eval cadr u, 'input);
 !#endif
-       if w then <<
+       if file then <<
           princ "Reading file "; print u;
-          w := rds w;
+          file := rds file;
           c!:ccompilesupervisor();
           princ "End of file "; print u;
-          close rds w >>
+          close rds file >>
        else << princ "Failed to open file "; print u >> end
 !#if common!-lisp!-mode
     else if eqcar(u, 'defun) then return c!:ccmpout1a macroexpand u
 !#endif
     else if eqcar(u, 'de) then <<
         u := cdr u;
-        checksum := md60 u;
-!#if common!-lisp!-mode
-        w := compress1 ('!" . append(explodec package!-name
-                                       symbol!-package car u,
-                        '!@ . '!@ . append(explodec symbol!-name car u,
-                        append(explodec "@@Builtin", '(!")))));
-        w := intern w;
-        c!:defnames := list(car u, c!:inv_name car u, length cadr u, w, checksum) . c!:defnames;
-!#else
-        c!:defnames := list(car u, c!:inv_name car u, length cadr u, checksum) . c!:defnames;
-!#endif
-%       if posn() neq 0 then terpri();
+        checksum := md60 cdr u;
+        lispname := compress append(explode car u,
+                 '!! . '!~ . '!! . '!~ . explodehex checksum);
+        cname := c!:inv_name(car u, checksum);
+        c!:defnames := list(lispname, cname, length cadr u, checksum) .
+                       c!:defnames;
+        if posn() > 10 then terpri();
         princ "Compiling "; prin caar c!:defnames; princ " ... ";
-        c!:cfndef(caar c!:defnames, cadar c!:defnames, cdr u, checksum);
-!#if common!-lisp!-mode
-        L_contents := (w . car L_contents) . cdr L_contents;
-!#endif
+        c!:cfndef(car u, cname, lispname, checksum, cdr u);
         terpri() >>
   end;
 
@@ -984,30 +977,25 @@ princ "C file = "; print name;
   end;
 
 symbolic procedure C!-end;
-  C!-end1 t;
-
-procedure C!-end1 create_lfile;
   begin
     scalar checksum, c1, c2, c3, stubs;
     wrs C_file;
     if explodec Setup_name = explodec 'stubs then <<
       stubs := t;
       Setup_name := "u01" >>;
-    if create_lfile then
-       c!:printf("\n\nsetup_type const %s_setup[] =\n{\n", Setup_name)
-    else c!:printf("\n\nsetup_type const_1 %s_setup[] =\n{\n", Setup_name);
+    c!:printf("\n\nsetup_type const %s_setup[] =\n{\n", Setup_name);
     c!:defnames := reverse c!:defnames;
     while c!:defnames do begin
-       scalar name, nargs, f0, f1, f2, f3, f4up;
-!#if common!-lisp!-mode
-       name := cadddr car c!:defnames;
-       checksum := cadddr cdar c!:defnames;
-!#else
-       name := caar c!:defnames;
-       checksum := cadddr car c!:defnames;
-!#endif
-       f0 := cadar c!:defnames;
-       nargs := caddar c!:defnames;
+       scalar w, name, nargs, f0, f1, f2, f3, f4up;
+% The item in c!:defnames is
+%    (lisp-name c-name nargs checksum)
+       w := car c!:defnames;
+       name := car w;              % name of Lisp function to be defined.
+       f0 := car (w := cdr w);     % name of the C++ function
+       nargs := car (w := cdr w);
+       checksum := car (w := cdr w);
+% the c-name is then the name of a version of the function with 0,1, ... args
+% as indicated by nargs.
        if nargs = 0 then <<
           f1 := "G1W0"; f2 := "G2W0"; f3 := "G3W0"; f4up := "G4W0" >>
        else if nargs = 1 then <<
@@ -1018,18 +1006,10 @@ procedure C!-end1 create_lfile;
           f3 := f0; f0 := "G0W3"; f1 := "G1W3"; f2 := "G2W3"; f4up := "G4W3" >>
        else <<
           f4up := f0; f0 := "G0W4up"; f1 := "G1W4up"; f2 := "G2W4up"; f3 := "G3W4up" >>;
-       if create_lfile then c!:printf("    {\q%s\q,%t%s,%t%s,%t%s,%t%s,%t%s},\n",
-                                      name, 32, f0, 42, f1, 52, f2, 62, f3, 72, f4up)
-       else
-       begin
-          scalar c1, c2;
-          c1 := divide(checksum, expt(2, 31));
-          c2 := cdr c1;
-          c1 := car c1;
-          c!:printf("    {\q%s\q, %t%s, %t%s, %t%s, %t%s, %t%s, %t%s, %t%s},\n",
-                    name, 24, f0, 40, f1, 52, f2, 64, f3, 76, f4up)
-       end;
-       c!:defnames := cdr c!:defnames end;
+       c!:printf("    {\q%s\q,%t%s,%t%s,%t%s,%t%s,%t%s},\n",
+                 name, 32, f0, 42, f1, 52, f2, 62, f3, 72, f4up);
+       c!:defnames := cdr c!:defnames
+    end;
     c3 := checksum := md60 L_contents;
     c1 := remainder(c3, 10000000);
     c3 := c3 / 10000000;
@@ -1057,70 +1037,65 @@ procedure C!-end1 create_lfile;
       c!:printf("\n\n") >>;
         c!:printf "%<// end of generated code\n";
     close C_file;
-    if create_lfile then <<
 !#if common!-lisp!-mode
-       L_file := open(L_file, !:direction, !:output);
+    L_file := open(L_file, !:direction, !:output);
 !#else
-       L_file := open(L_file, 'output);
+    L_file := open(L_file, 'output);
 !#endif
-       wrs L_file;
-       linelength 72;
-       terpri();
+    wrs L_file;
+    linelength 72;
+    terpri();
 !#if common!-lisp!-mode
-       princ ";;;  "; 
+    princ ";;;  "; 
 !#else
-       princ "% ";
+    princ "% ";
 !#endif
-       princ Setup_name;
-       princ ".lsp"; ttab 20;
-       princ "Machine generated Lisp";
-%      princ "  "; princ date();  % I omit the date now because it makes
-                                  % file comparisons messier
-       terpri(); terpri();
+    princ Setup_name;
+    princ ".lsp"; ttab 20;
+    princ "Machine generated Lisp";
+%   princ "  "; princ date();  % I omit the date now because it makes
+                               % file comparisons messier
+    terpri(); terpri();
+% The next line will be of the form
+%     (check!-c!-code "modulename" n1 n2 n3)
+% where the 3 numbers are each part of a checksum. It will identify a module
+% built into Lisp with the given name (often one of "u01" .. "u60") and
+% check that it was marked in the C++ source with a checksum matching the
+% values passed as n1, n2 and n3. If that is not the case then this ".lsp"
+% file is being loaded into a version of CSL build from a different version
+% of its corresponding ".cpp" file and that would be an error.
+    princ "(check!-c!-code ";
+    princ '!"; princ Setup_name; princ '!";
+    princ " "; princ checksum; printc ")";
+    terpri();
+% If this file and the underlying CSL code match then each function from the
+% compiled code can have extra data installed in it using the data here. In
+% particular this will install an "environment" in symbol header of a
+% function that now has a C++ definition. It also sets a property list entry
+% that should allow the loading of a module to copy the correct definition
+% into its final place.
+    for each x in reverse L_contents do <<
+       princ "(c!:install '";
+       prin car x;
+       princ " '";
+       prin cadr x;
+       princ " ";
+       prin cddr x;
+       princ ")";
+       terpri(); terpri() >>;
+    terpri();
 !#if common!-lisp!-mode
-       princ "(in-package lisp)"; terpri(); terpri();
-       princ "(c::install ";
+    princ ";;; End of generated Lisp code";
 !#else
-       princ "(c!:install ";
+    princ "% End of generated Lisp code";
 !#endif
-       princ '!"; princ Setup_name; princ '!";
-       princ " "; princ checksum; printc ")";
-       terpri();
-       for each x in reverse L_contents do <<
-!#if common!-lisp!-mode
-          princ "(c::install '";
-          prin car x;
-          princ " '";
-          x := cdr x;
-!#else
-          princ "(c!:install '";
-!#endif
-          prin car x;
-          princ " '";
-          prin cadr x;
-!#if (not common!-lisp!-mode)
-          princ " ";
-          prin cddr x;
-!#endif
-          princ ")";
-          terpri(); terpri() >>;
-       terpri();
-!#if common!-lisp!-mode
-       princ ";;; End of generated Lisp code";
-!#else
-       princ "% End of generated Lisp code";
-!#endif
-       c!:reset_gensyms();
-       terpri(); terpri();
-       L_contents := nil;
-       wrs O_file;
-       close L_file;
-       !*defn := nil;
-       dfprint!* := dfprintsave >>
-    else <<
-       checksum := checksum . reverse L_contents;
-       L_contents := nil;
-       return checksum >>
+    c!:reset_gensyms();
+    terpri(); terpri();
+    L_contents := nil;
+    wrs O_file;
+    close L_file;
+    !*defn := nil;
+    dfprint!* := dfprintsave
   end;
 
 put('C!-end, 'stat, 'endstat);
@@ -1581,7 +1556,7 @@ symbolic procedure c!:pcall(op, r1, r2, r3);
        c!:printf("));\n") >>
 !#if 0
 % The qsum package redefines simpexpt while executing a function by that
-% name in a way that might be interacting really basly with this!
+% name in a way that might be interacting really badly with this!
     else if car r3 = c!:current_procedure then <<
        c!:printf("    %v = %s(basic_elt(env, 0)", r1, c!:current_c_name);
        for each a in r2 do c!:printf(", %v", a);

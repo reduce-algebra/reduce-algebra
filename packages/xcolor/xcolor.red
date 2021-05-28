@@ -140,7 +140,7 @@ symbolic inline procedure zcoefp g0$ null numr getcoef g0$
 
 symbolic inline procedure mkcopyg0 g0$
   %--------------------------------------------------------------------
-  % Make a copy of structure g0 without copying coeffitient.
+  % Make a copy of structure g0 without copying coefficient.
   %--------------------------------------------------------------------
   getcoef g0 . mkcopy getvl g0$
 
@@ -205,7 +205,20 @@ symbolic procedure mkcopy u$
   %--------------------------------------------------------------------
   % Make a copy of any structures.
   %--------------------------------------------------------------------
-  if atom u then u else mkcopy car u . mkcopy cdr u$
+% if atom u then u else mkcopy car u . mkcopy cdr u$
+  begin       % The above definition, while simple, does not
+              % optimise well with the CSL compiler that targets
+              % C++, and in particular as of the May 2021 version of
+              % that compiler it led to a recursive implementation (just
+              % as the code suggests!) that caused stack overflow. The
+              % following messier version is intended to avoid trouble
+              % by being explicitly iterative in the CDR direction.
+    scalar r;
+    while not atom u do <<
+      r := mkcopy car u . r;
+      u := cdr u >>;
+    return reversip2(r, u)
+  end$
 
 symbolic inline procedure revv(v,e)$
   %--------------------------------------------------------------------

@@ -410,11 +410,9 @@ extern intptr_t print_precision, miscflags;
 extern intptr_t current_modulus, fastget_size, package_bits;
 extern intptr_t modulus_is_large;
 
-extern LispObject lisp_true, lambda, funarg, unset_var, opt_key,
-       rest_key;
+extern LispObject lisp_true, lambda, funarg, unset_var, opt_key,rest_key;
 extern LispObject quote_symbol, function_symbol, comma_symbol;
-extern LispObject comma_at_symbol, cons_symbol, eval_symbol,
-       apply_symbol;
+extern LispObject comma_at_symbol, cons_symbol, eval_symbol, apply_symbol;
 extern LispObject list_symbol, liststar_symbol, eq_symbol, eql_symbol;
 extern LispObject cl_equal_symbol, equal_symbol, equalp_symbol;
 extern LispObject work_symbol, evalhook, applyhook, macroexpand_hook;
@@ -423,13 +421,11 @@ extern LispObject append_symbol, exit_tag, exit_value, catch_tags;
 extern LispObject current_package, startfn;
 extern LispObject gensym_base, string_char_sym, boffo;
 extern LispObject err_table, progn_symbol, gcknt_symbol;
-extern LispObject lisp_work_stream, charvec, raise_symbol,
-       lower_symbol;
+extern LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol;
 extern LispObject echo_symbol, codevec, litvec, supervisor, B_reg;
-extern LispObject savedef, comp_symbol, compiler_symbol, faslvec;
-extern LispObject tracedfn, lisp_terminal_io;
-extern LispObject lisp_standard_output, lisp_standard_input,
-       lisp_error_output;
+extern LispObject savedef_symbol, savedefs_symbol, lose_symbol, comp_symbol;
+extern LispObject compiler_symbol, faslvec, tracedfn, lisp_terminal_io;
+extern LispObject lisp_standard_output, lisp_standard_input, lisp_error_output;
 extern LispObject lisp_trace_output, lisp_debug_io, lisp_query_io;
 extern LispObject prompt_thing, faslgensyms;
 extern LispObject prinl_symbol, emsg_star, redef_msg;
@@ -457,91 +453,75 @@ extern LispObject declare_symbol, special_symbol, large_modulus;
 extern LispObject used_space, avail_space, eof_symbol, call_stack;
 extern LispObject nicknames_symbol, use_symbol, and_symbol, or_symbol;
 extern LispObject not_symbol, reader_workspace, named_character;
-extern LispObject read_float_format, short_float, single_float,
-       double_float;
-extern LispObject long_float, bit_symbol, pathname_symbol,
-       print_array_sym;
+extern LispObject read_float_format, short_float, single_float, double_float;
+extern LispObject long_float, bit_symbol, pathname_symbol, print_array_sym;
 extern LispObject read_base, initial_element;
 extern LispObject builtin0_symbol, builtin1_symbol, builtin2_symbol;
 extern LispObject builtin3_symbol, builtin4_symbol;
 
 #ifdef OPENMATH
-extern LispObject om_openFileDev(LispObject env, int nargs, ...);
-extern LispObject om_openStringDev(LispObject env, LispObject lstr,
-                                   LispObject lenc);
-extern LispObject om_closeDev(LispObject env, LispObject dev);
-extern LispObject om_setDevEncoding(LispObject env, LispObject ldev,
-                                    LispObject lenc);
-extern LispObject om_makeConn(LispObject env, LispObject ltimeout);
-extern LispObject om_closeConn(LispObject env, LispObject lconn);
-extern LispObject om_getConnInDevice(LispObject env,
-                                     LispObject lconn);
-extern LispObject om_getConnOutDevice(LispObject env,
-                                      LispObject lconn);
-extern LispObject om_connectTCP(LispObject env, int nargs, ...);
-extern LispObject om_bindTCP(LispObject env, LispObject lconn,
-                             LispObject lport);
-extern LispObject om_putApp(LispObject env, LispObject ldev);
-extern LispObject om_putEndApp(LispObject env, LispObject ldev);
-extern LispObject om_putAtp(LispObject env, LispObject ldev);
-extern LispObject om_putEndAtp(LispObject env, LispObject ldev);
-extern LispObject om_putAttr(LispObject env, LispObject ldev);
-extern LispObject om_putEndAttr(LispObject env, LispObject ldev);
-extern LispObject om_putBind(LispObject env, LispObject ldev);
-extern LispObject om_putEndBind(LispObject env, LispObject ldev);
-extern LispObject om_putBVar(LispObject env, LispObject ldev);
-extern LispObject om_putEndBVar(LispObject env, LispObject ldev);
-extern LispObject om_putError(LispObject env, LispObject ldev);
-extern LispObject om_putEndError(LispObject env, LispObject ldev);
-extern LispObject om_putObject(LispObject env, LispObject ldev);
-extern LispObject om_putEndObject(LispObject env, LispObject ldev);
-extern LispObject om_putInt(LispObject env, LispObject ldev,
-                            LispObject val);
-extern LispObject om_putFloat(LispObject env, LispObject ldev,
-                              LispObject val);
-extern LispObject om_putByteArray(LispObject env, LispObject ldev,
-                                  LispObject val);
-extern LispObject om_putVar(LispObject env, LispObject ldev,
-                            LispObject val);
-extern LispObject om_putString(LispObject env, LispObject ldev,
-                               LispObject val);
-extern LispObject om_putSymbol(LispObject env, LispObject ldev,
-                               LispObject val);
-extern LispObject om_putSymbol2(LispObject env, int nargs, ...);
-extern LispObject om_getApp(LispObject env, LispObject ldev);
-extern LispObject om_getEndApp(LispObject env, LispObject ldev);
-extern LispObject om_getAtp(LispObject env, LispObject ldev);
-extern LispObject om_getEndAtp(LispObject env, LispObject ldev);
-extern LispObject om_getAttr(LispObject env, LispObject ldev);
-extern LispObject om_getEndAttr(LispObject env, LispObject ldev);
-extern LispObject om_getBind(LispObject env, LispObject ldev);
-extern LispObject om_getEndBind(LispObject env, LispObject ldev);
-extern LispObject om_getBVar(LispObject env, LispObject ldev);
-extern LispObject om_getEndBVar(LispObject env, LispObject ldev);
-extern LispObject om_getError(LispObject env, LispObject ldev);
-extern LispObject om_getEndError(LispObject env, LispObject ldev);
-extern LispObject om_getObject(LispObject env, LispObject ldev);
-extern LispObject om_getEndObject(LispObject env, LispObject ldev);
-extern LispObject om_getInt(LispObject env, LispObject ldev);
-extern LispObject om_getFloat(LispObject env, LispObject ldev);
-extern LispObject om_getByteArray(LispObject env, LispObject ldev);
-extern LispObject om_getVar(LispObject env, LispObject ldev);
-extern LispObject om_getString(LispObject env, LispObject ldev);
-extern LispObject om_getSymbol(LispObject env, LispObject ldev);
-extern LispObject om_getType(LispObject env, LispObject ldev);
+extern LispObject om_openFileDev(LispObject, int nargs, ...);
+extern LispObject om_openStringDev(LispObject, LispObject, LispObject);
+extern LispObject om_closeDev(LispObject, LispObject);
+extern LispObject om_setDevEncoding(LispObject, LispObject, LispObject);
+extern LispObject om_makeConn(LispObject, LispObject);
+extern LispObject om_closeConn(LispObject, LispObject);
+extern LispObject om_getConnInDevice(LispObject, LispObject);
+extern LispObject om_getConnOutDevice(LispObject, LispObject);
+extern LispObject om_connectTCP(LispObject, int nargs, ...);
+extern LispObject om_bindTCP(LispObject, LispObject, LispObject);
+extern LispObject om_putApp(LispObject, LispObject);
+extern LispObject om_putEndApp(LispObject, LispObject);
+extern LispObject om_putAtp(LispObject, LispObject);
+extern LispObject om_putEndAtp(LispObject, LispObject);
+extern LispObject om_putAttr(LispObject, LispObject);
+extern LispObject om_putEndAttr(LispObject, LispObject);
+extern LispObject om_putBind(LispObject, LispObject);
+extern LispObject om_putEndBind(LispObject, LispObject);
+extern LispObject om_putBVar(LispObject, LispObject);
+extern LispObject om_putEndBVar(LispObject, LispObject);
+extern LispObject om_putError(LispObject, LispObject);
+extern LispObject om_putEndError(LispObject, LispObject);
+extern LispObject om_putObject(LispObject, LispObject);
+extern LispObject om_putEndObject(LispObject, LispObject);
+extern LispObject om_putInt(LispObject, LispObject, LispObject);
+extern LispObject om_putFloat(LispObject, LispObject, LispObject);
+extern LispObject om_putByteArray(LispObject, LispObject, LispObject);
+extern LispObject om_putVar(LispObject, LispObject, LispObject);
+extern LispObject om_putString(LispObject, LispObject, LispObject);
+extern LispObject om_putSymbol(LispObject, LispObject, LispObject);
+extern LispObject om_putSymbol2(LispObject, int nargs, ...);
+extern LispObject om_getApp(LispObject, LispObject);
+extern LispObject om_getEndApp(LispObject, LispObject);
+extern LispObject om_getAtp(LispObject, LispObject);
+extern LispObject om_getEndAtp(LispObject, LispObject);
+extern LispObject om_getAttr(LispObject, LispObject);
+extern LispObject om_getEndAttr(LispObject, LispObject);
+extern LispObject om_getBind(LispObject, LispObject);
+extern LispObject om_getEndBind(LispObject, LispObject);
+extern LispObject om_getBVar(LispObject, LispObject);
+extern LispObject om_getEndBVar(LispObject, LispObject);
+extern LispObject om_getError(LispObject, LispObject);
+extern LispObject om_getEndError(LispObject, LispObject);
+extern LispObject om_getObject(LispObject, LispObject);
+extern LispObject om_getEndObject(LispObject, LispObject);
+extern LispObject om_getInt(LispObject, LispObject);
+extern LispObject om_getFloat(LispObject, LispObject);
+extern LispObject om_getByteArray(LispObject, LispObject);
+extern LispObject om_getVar(LispObject, LispObject);
+extern LispObject om_getString(LispObject, LispObject);
+extern LispObject om_getSymbol(LispObject, LispObject);
+extern LispObject om_getType(LispObject, LispObject);
 
-extern LispObject om_stringToStringPtr(LispObject env,
-                                       LispObject lstr);
-extern LispObject om_stringPtrToString(LispObject env,
-                                       LispObject lpstr);
+extern LispObject om_stringToStringPtr(LispObject, LispObject);
+extern LispObject om_stringPtrToString(LispObject, LispObject);
 
-extern LispObject om_read(LispObject env, LispObject dev);
-extern LispObject om_supportsCD(LispObject env, LispObject lcd);
-extern LispObject om_supportsSymbol(LispObject env, LispObject lcd,
-                                    LispObject lsym);
-extern LispObject om_listCDs(LispObject env, int nargs, ...);
-extern LispObject om_listSymbols(LispObject env, LispObject lcd);
-extern LispObject om_whichCDs(LispObject env, LispObject lsym);
+extern LispObject om_read(LispObject, LispObject dev);
+extern LispObject om_supportsCD(LispObject, LispObject);
+extern LispObject om_supportsSymbol(LispObject, LispObject, LispObject);
+extern LispObject om_listCDs(LispObject, int nargs, ...);
+extern LispObject om_listSymbols(LispObject, LispObject);
+extern LispObject om_whichCDs(LispObject, LispObject);
 #endif
 
 extern LispObject workbase[51];
@@ -728,7 +708,7 @@ extern const char *compiler_command[], *import_data[],
 
 extern LispObject encapsulate_pointer(void *);
 extern void *extract_pointer(LispObject a);
-extern LispObject Lencapsulatedp(LispObject env, LispObject a);
+extern LispObject Lencapsulatedp(LispObject, LispObject a);
 typedef void initfn(LispObject *, LispObject **,
                     LispObject * volatile *);
 
@@ -832,6 +812,7 @@ extern LispObject  bytestream_interpret(size_t ppc, LispObject lit,
                                         LispObject *entry_stack);
 extern bool        complex_stringp(LispObject a);
 extern LispObject  copy_string(LispObject a, size_t n);
+extern LispObject  freshline_stdout();
 extern LispObject  freshline_trace();
 extern LispObject  freshline_debug();
 extern LispObject  cons(LispObject a, LispObject b);
@@ -875,24 +856,21 @@ extern LispObject  reduce_vector_size(LispObject n, size_t length);
 extern void        prepare_for_borrowing();
 
 inline void zero_out(void *p)
-{   char *p1 = reinterpret_cast<char *>(doubleword_align_up(
-                                            reinterpret_cast<uintptr_t>(p)));
+{   char *p1 = reinterpret_cast<char *>(
+        doubleword_align_up(reinterpret_cast<uintptr_t>(p)));
     std::memset(p1, 0, CSL_PAGE_SIZE);
 }
-extern LispObject borrow_basic_vector(int tag, int type,
-                                      size_t length);
+extern LispObject borrow_basic_vector(int tag, int type, size_t length);
 extern LispObject borrow_vector(int tag, int type, size_t length);
 extern void       finished_borrowing();
 extern uint64_t   hash_lisp_string(LispObject s);
-extern void lose_C_def(LispObject a);
 extern bool       geq2(LispObject a, LispObject b);
 extern bool       greaterp2(LispObject a, LispObject b);
 extern bool       lesseq2(LispObject a, LispObject b);
 extern bool       lessp2(LispObject a, LispObject b);
 extern LispObject list2(LispObject a, LispObject b);
 extern LispObject list2star(LispObject a, LispObject b, LispObject c);
-extern LispObject list2starrev(LispObject a, LispObject b,
-                               LispObject c);
+extern LispObject list2starrev(LispObject a, LispObject b, LispObject c);
 extern LispObject list3(LispObject a, LispObject b, LispObject c);
 extern LispObject list3rev(LispObject a, LispObject b, LispObject c);
 extern LispObject list3star(LispObject a, LispObject b,
@@ -929,8 +907,7 @@ extern LispObject prin(LispObject u);
 extern void debugprint(LispObject a, int depth=10);
 extern void debugprint(const char *s, LispObject a);
 extern void debugprint(const char *s);
-extern const char *get_string_data(LispObject a, const char *why,
-                                   size_t &len);
+extern const char *get_string_data(LispObject a, const char *why, size_t &len);
 extern LispObject prin_to_stdout(LispObject u);
 extern LispObject prin_to_terminal(LispObject u);
 extern LispObject prin_to_debug(LispObject u);
@@ -1190,6 +1167,12 @@ extern bool symbol_protect_flag, warn_about_protected_symbols;
 extern uint64_t Nhget, Nhgetp, Nhput1, Nhputp1, Nhput2, Nhputp2,
        Nhputtmp;
 extern uint64_t Noget, Nogetp, Noput, Noputp, Noputtmp;
+#endif
+
+#ifdef DEBUG
+extern size_t intern_count;
+extern size_t fullest_package;
+extern size_t fullest_hash_table;
 #endif
 
 #endif // header_externs_h

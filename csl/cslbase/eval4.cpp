@@ -665,7 +665,7 @@ bool no_arg_traceflags[sizeof(no_arg_functions)/sizeof(
    BI(Lspecial_char,      "special-char",            75),  \
    BI(Lspecial_form_p,    "special-form-p",          76),  \
    BI(Lspool,             "spool",                   77),  \
-   BI((one_arg *)Lstop1,  "stop",                    78),  \
+   BI((one_arg *)Lstop,   "stop",                    78),  \
    BI(Lstringp,           "stringp",                 79),  \
    BI(Lsub1,              "sub1",                    80),  \
    BI(Lsymbol_env,        "symbol-env",              81),  \

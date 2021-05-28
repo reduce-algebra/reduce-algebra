@@ -216,7 +216,7 @@ LispObject allow_key_key, declare_symbol, special_symbol,
            large_modulus;
 LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol,
            echo_symbol;
-LispObject codevec, litvec, supervisor, B_reg, savedef, comp_symbol;
+LispObject codevec, litvec, supervisor, B_reg, savedef, savedefs, comp_symbol;
 LispObject compiler_symbol, faslvec, tracedfn, lisp_terminal_io;
 LispObject lisp_standard_output, lisp_standard_input,
            lisp_error_output;
@@ -332,6 +332,7 @@ LispObject *list_bases[] =
     &redef_msg,
     &rest_key,
     &savedef,
+    &savedefs,
     &string_char_sym,
     &unset_var,
     &work_symbol,
