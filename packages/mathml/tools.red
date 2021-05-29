@@ -186,7 +186,7 @@ end;
 symbolic procedure butes( str );
 begin scalar cha;
 cha:=car str;
-return if (cha='!  or cha='!$) then <<'(); >>
+return if (cha='!  or cha='!$) then nil
         else  cons(car str, butes cdr str);
 end;
 

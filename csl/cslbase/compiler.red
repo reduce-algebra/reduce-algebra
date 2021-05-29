@@ -4078,7 +4078,6 @@ symbolic procedure s!:imp_funcall u;
       else if n = 1 then 'apply1 . u
       else if n = 2 then 'apply2 . u
       else if n = 3 then 'apply3 . u
-      else if n = 4 then 'apply4 . u
       else 'funcall . u;
 !#if record!-use!-of!-funcall
 % If this flag is set when the compiler is built then every "funcall" in the

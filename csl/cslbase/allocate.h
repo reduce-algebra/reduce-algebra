@@ -122,6 +122,80 @@ public:
     }
 };
 
+inline LispObject cons(LispObject a, LispObject b)
+{
+#ifdef DEBUG
+    if (is_exception(a) || is_exception(b))
+        my_abort("exception value not trapped");
+#endif // DEBUG
+    LispObject r = static_cast<LispObject>(lfringe -= sizeof(Cons_Cell));
+// As coded here I MUST have a safety margin such that at least 4 CONS
+// cells can always be allocated. If I put the lheaplimit check before the
+// code to write car and cdr fields in I would not need that, but then
+// I would need to arrange (or be confident that) the arguments a and b
+// would be safe across the garbage collection and I would need to write
+// them in place after it.
+    r += TAG_CONS;
+    setcar(r, a);
+    setcdr(r, b);
+// cons_forced() always returns false unless this is a debug build. When it
+// is a debug build the extra cost does not worry me. The scheme can then be
+// used to trigger a full garbage collection after exactly some known number
+// of CONS operations have been performed, and that may be a valuable
+// capability when garbage collector bugs might relate to the exact place
+// where the garbage collector was called from.
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (uintptr_t)r < (uintptr_t)lheaplimit ||
+        cons_forced(1))
+        return reclaim(r, "internal cons", GC_CONS, 0);
+    else return r;
+}
+
+inline LispObject cons_no_gc(LispObject a, LispObject b)
+{
+    LispObject r = static_cast<LispObject>(lfringe -= sizeof(Cons_Cell));
+    r += TAG_CONS;
+    setcar(r, a);
+    setcdr(r, b);
+    return r;
+}
+
+// cons_gc_test() MUST be called after any sequence of cons_no_gc() calls.
+
+inline LispObject cons_gc_test(LispObject p)
+{   if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (uintptr_t)lfringe <= (uintptr_t)lheaplimit)
+        return reclaim(p, "cons gc test", GC_CONS, 0);
+    else return p;
+}
+
+inline LispObject ncons(LispObject a)
+{
+    LispObject r = static_cast<LispObject>(lfringe -= sizeof(Cons_Cell));
+    r += TAG_CONS;
+    setcar(r, a);
+    setcdr(r, nil);
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (uintptr_t)r < (uintptr_t)lheaplimit || cons_forced(1))
+        return reclaim(r, "internal ncons", GC_CONS, 0);
+    else return r;
+}
+
+inline LispObject list2(LispObject a, LispObject b)
+{
+// Note that building two cons cells at once saves some overhead here
+    LispObject r = static_cast<LispObject>(lfringe -= 2*sizeof(Cons_Cell));
+    r += TAG_CONS;
+    setcar(r, a);
+    setcdr(r, r + sizeof(Cons_Cell));
+    setcar(r+sizeof(Cons_Cell), b);
+    setcdr(r+sizeof(Cons_Cell), nil);
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (uintptr_t)r < (uintptr_t)lheaplimit || cons_forced(2))
+        return reclaim(r, "internal list2", GC_CONS, 0);
+    else return r;
+}
+
 #endif // header_allocate_h
 
 // end of allocate.h

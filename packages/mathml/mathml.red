@@ -267,9 +267,8 @@ symbolic procedure get_content();
 begin scalar d;
  d:=();
  while (ch:=readch()) neq '!< and ch neq !$eof!$
-do
-    if ch neq space and id2int(ch)>10 then
-d:=cons(ch,d);
+ do
+    if ch neq space and id2int(ch)>10 then d:=cons(ch,d);
  if d neq nil then d:=cons('!$,d);
  return d;
 end;
@@ -331,9 +330,9 @@ end;
 
 symbolic procedure butes( str );
 %Removes all attributes to a token.
-begin cha;
+begin scalar cha;
 cha:=car str;
-return if (cha='!  or cha='!$) then <<'(); >>
+return if (cha='!  or cha='!$) then nil
         else  cons(car str, butes cdr str);
 end;
 

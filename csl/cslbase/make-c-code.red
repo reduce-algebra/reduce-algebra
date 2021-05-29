@@ -191,6 +191,12 @@ omitted := '(
     upd!-fasl1              % ditto
     update_prompt           % ditto
     prinl                   % ditto
+    printl
+    princl
+    printcl
+    s!:prinl0
+    s!:prinl1
+    s!:prinl2
     fluid                   % the env cells of these get out of step during..
     global                  % a bootstrap build if they are compiled here.
     aftergcsystemhook       % On slow machines the C code may not end up
@@ -209,7 +215,7 @@ omitted := '(
     gck2                    %
     !:recip                 %
     cr!:minus               %
-    mkcopy                  %
+%   mkcopy                  %
 
 
 % In my original scheme for compilation into C/C++ there were big problems
@@ -225,7 +231,6 @@ omitted := '(
     unit                    % name conflict.
     typerr                  % typerr and symerr are defined in makereduce.lsp
     symerr                  % but there are different versions elsewhere.
-    ordp                    % In the kerbel
 
 % unwind-protect and catch could now almost certainly be supported by the
 % compiler, and then the following become eligible for optimisation. The
@@ -310,7 +315,7 @@ begin
 % much that is not actually needed, but will be simplest and safest.
   load!-source();
 % First discard the modules names.
-  requests := for each x in requests collect cdr x$
+  requests := reverse for each x in requests collect cdr x$
 % Now I will merge in suggestions from all packages in breadth-first
 % order of priority
 % Ie if I have modules A, B, C and D and each has in it functions a1, a2,

@@ -976,8 +976,10 @@ LispObject Lget_hash(LispObject env, LispObject key, LispObject tab,
 // triggered while a borrowed vector is still in use.
         Borrowing borrowObject;
         LispObject oldkeys =
+            h_table_size <= REHASHVEC_SIZE ? rehash_vec1 :
             borrow_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*(h_table_size+1));
         LispObject oldvals = v_table == nil ? nil :
+                             h_table_size <= REHASHVEC_SIZE ? rehash_vec2 :
                              borrow_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*(h_table_size+1));
         size_t load = 0;
 // Copy live data to the borrowed space and make the existing table empty.
@@ -1203,8 +1205,10 @@ LispObject Lput_hash(LispObject env,
 // Note that "borrowed" vectors are not garbage collector safe. And that
 // allocating them can not trigger garbage collection.
             LispObject oldkeys =
+                h_table_size <= REHASHVEC_SIZE ? rehash_vec1 :
                 borrow_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*(h_table_size+1));
             LispObject oldvals = v_table == nil ? nil :
+                                 h_table_size <= REHASHVEC_SIZE ? rehash_vec2 :
                                  borrow_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*(h_table_size+1));
             size_t load = 0;
             for (size_t i=0; i<h_table_size; i++)

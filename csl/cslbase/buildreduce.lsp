@@ -42,8 +42,7 @@
 
 (make!-special '!*noinlines)
 (prog (w)
-   (setq w (errorset 'noinlines nil nil))
-   (setq !*noinlines (and (not (atom w)) (car w)))
+   (setq !*noinlines (and (boundp 'noinlines) (eval 'noinlines)))
    (print (list '!*noinlines 'set 'to !*noinlines)))
 
 % A command-line flag "-g" sets the variable !*backtrace and so can activate
