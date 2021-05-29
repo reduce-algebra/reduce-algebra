@@ -1674,6 +1674,11 @@ inline bool a4a5a6(const char *name, LispObject a4up,
 // clearly clumsy and will slow things down, but I only access the count
 // field when I am in the bootstrap process not in production code and
 // so I will not worry a lot.
+// Furthermore I will use the low 22 bits of this field not as a count but
+// as a serial number for the symbol concerned, accessible via id2Int.
+// This allows for around 4 million symbols (including gensyms) before the
+// field wraps. It leaves 42 bits for the genuine bytecount. That could
+// overflow on a calculation that lasted an hour or so!
 
 inline atomic<uint32_t>& qcountLow(LispObject p)
 {   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->countLow;
@@ -1685,12 +1690,15 @@ inline atomic<uint32_t>& qcountHigh(LispObject p)
 
 inline uint64_t qcount(LispObject p)
 {   Symbol_Head *pp = reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL);
-    return static_cast<uint64_t>(pp->countHigh)<<32 | pp->countLow;
+    return (static_cast<uint64_t>(pp->countHigh)<<32 | pp->countLow)>>22;
 }
 
-inline void incCount(LispObject p, int m=1)
+// The amount that the count should be incremented here must not be
+// greater than 1023.
+
+inline void incCount(LispObject p, uint32_t m=1)
 {   Symbol_Head *pp = reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL);
-    uint32_t low = pp->countLow.fetch_add(m);
+    uint32_t low = pp->countLow.fetch_add(m<<22);
     if ((low+m) < low) pp->countHigh.fetch_add(1);
 }
 

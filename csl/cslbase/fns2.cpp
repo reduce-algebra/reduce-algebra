@@ -2616,6 +2616,10 @@ LispObject Ldeleq(LispObject env, LispObject aa, LispObject bb)
     return onevalue(bb);
 }
 
+LispObject Ldeleqip(LispObject env, LispObject aa, LispObject bb)
+{   return onevalue(deleqip(aa, bb));
+}
+
 LispObject Lnconc(LispObject env, LispObject a, LispObject b)
 {   LispObject c;
     if (!consp(a)) return onevalue(b);
@@ -3295,6 +3299,7 @@ setup_type const funcs2_setup[] =
     DEF_1("prop",               Lplist),
     DEF_2("delete",             Ldelete),
     DEF_2("deleq",              Ldeleq),
+    DEF_2("deleqip",            Ldeleqip),
     {"preserve",                Lpreserve_0, Lpreserve_1, Lpreserve_2, Lpreserve_3, G4Wother},
     DEF_1("mkvect",             Lmkvect),
     DEF_2("nconc",              Lnconc),

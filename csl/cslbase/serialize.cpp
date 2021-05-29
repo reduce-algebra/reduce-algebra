@@ -1765,9 +1765,10 @@ down:
 // HAHAHA - if BOFFO does not exist properly at this stage then I am in
 // deep trouble. But these opcodes will only be used at times I am
 // serializing for re-loading into a working Lisp. Note that the whole
-// issue of the interaction between serialization and a package system is
-// not thought through at present - things will be read in in the
-// current package (to the extent that such a concept exists or makes sense).
+// issue of the interaction between serialization and a Comm Lisp style
+// package system is not thought through at present - things will be read
+// in in the current package (to the extent that such a concept exists or
+// makes sense).
 // Well what I say above is not quite true after all. Serialization is used
 // for FASL files, so a FASL file that used a symbol with an absurdly
 // long name could lead to boffo overflow here, triggering garbage collection.
@@ -2895,7 +2896,11 @@ down:
             write_function2(qfn2(p));
             write_function3(qfn3(p));
             write_function4up(qfn4up(p));
-            write_u64(qcount(p));
+// Here I want to capture the symbol serial number as well as the byte-count.
+            {   uint64_t countField =
+                    static_cast<uint64_t>(qcountHigh(p))<<32 | qcountLow(p);
+                write_u64(countField);
+            }
             w = p;
             p = qpname(p);
             setpname(w, b);
@@ -3816,6 +3821,7 @@ void write_everything()
 
     write_u64(miscflags);
     write_u64(gensym_ser);
+    write_u64(symbol_sequence);
     write_u64(print_precision);
     write_u64(current_modulus);
     write_u64(fastget_size);
@@ -3858,7 +3864,7 @@ void warm_setup()
     setheader(nil, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR);
     for (LispObject **p = list_bases; *p!=nullptr; p++) **p = nil;
     *stack = nil;
-    qcountLow(nil) = 0;
+    qcountLow(nil) = 256;
     qcountHigh(nil) = 0;
 // Make things GC safe first...
     setvalue(nil, nil);
@@ -3885,6 +3891,7 @@ void warm_setup()
 
     miscflags = read_u64();
     gensym_ser = read_u64();
+    symbol_sequence = read_u64();
     print_precision = read_u64();
     current_modulus = read_u64();
     fastget_size = read_u64();
@@ -4286,7 +4293,7 @@ static bool count_totals(LispObject x)
 }
 
 static bool clear_counts(LispObject x)
-{   qcountLow(x) = 0;
+{   qcountLow(x) &= 0x3fffffU;  // leave the serial number in place.
     qcountHigh(x) = 0;
     return false;
 }
@@ -4400,7 +4407,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
             }
             x = *stack--;
             if ((what & 1) == 0)
-            {   qcountLow(x) = 0;
+            {   qcountLow(x) &= 0x3fffffU;
                 qcountHigh(x) = 0;
             }
         }

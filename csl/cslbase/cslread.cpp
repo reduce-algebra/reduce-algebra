@@ -747,7 +747,7 @@ LispObject make_symbol(char const *s, int restartp,
 // For COMMON Lisp I will make all the built-in symbols upper case, unless
 // the "2" bit of restartp is set...
     char const *p1 = s;
-    char *p2 = reinterpret_cast<char *>()&boffo_char(0);
+    char *p2 = reinterpret_cast<char *>(&boffo_char(0));
     int c;
     if ((restartp & 2) == 0)
     {   while ((c = *p1++) != 0)
@@ -1289,6 +1289,13 @@ static LispObject Lmake_symbol(LispObject env, LispObject str)
     qfn2(s) = undefined_2;
     qfn3(s) = undefined_3;
     qfn4up(s) = undefined_4up;
+// If a symbol is created uninterned it will not have a serial number to
+// start with. If somebody calls id2int on it I will allocate a serial
+// number. If then it gets interned then that number ought to persist, and
+// if a regular symbol is remob'd its serial number should persist.
+// I will view having the low 22 bits of qcountLow all zero and not being
+// the item char_0_symbol as the mark of something that has not yet been
+// allocated a sequence number.
     qcountLow(s) = 0;
     qcountHigh(s) = 0;
     return onevalue(s);
@@ -1494,6 +1501,8 @@ static LispObject Lreset_gensym(LispObject env, LispObject a)
     return fixnum_of_int(old);
 }
 
+uint32_t symbol_sequence = 0;
+
 LispObject iintern(LispObject str, size_t h, LispObject p,
                    int str_is_ok)
 // Look up the first h chars of the string str with respect to the package p.
@@ -1606,7 +1615,7 @@ LispObject iintern(LispObject str, size_t h, LispObject p,
     qfn2(s) = undefined_2;
     qfn3(s) = undefined_3;
     qfn4up(s) = undefined_4up;
-    qcountLow(s) = 0;
+    qcountLow(s) = (symbol_sequence++ & 0x3fffff);
     qcountHigh(s) = 0;
     Save save(s, str);
 #ifdef COMMON

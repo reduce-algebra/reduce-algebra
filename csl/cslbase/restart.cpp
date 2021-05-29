@@ -98,7 +98,7 @@ LispObject quote_symbol, function_symbol, comma_symbol, comma_at_symbol;
 LispObject cons_symbol, eval_symbol, apply_symbol, work_symbol, evalhook;
 LispObject list_symbol, liststar_symbol, eq_symbol, eql_symbol;
 LispObject cl_equal_symbol, equal_symbol, equalp_symbol;
-LispObject go_symbol, cond_symbol;
+LispObject go_symbol, cond_symbol, char_0_symbol;
 LispObject applyhook, macroexpand_hook, append_symbol, exit_tag;
 LispObject exit_value, catch_tags, keyword_package, current_package;
 LispObject startfn, all_packages, package_symbol, internal_symbol;
@@ -519,7 +519,7 @@ static void cold_setup()
     qfn4up(nil) = undefined_4up;
     setheader(nil, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR);
     setvalue(nil, nil);
-    qcountLow(nil) = 0;
+    qcountLow(nil) = 256;
     qcountHigh(nil) = 0;
 // When I am debugging CSL I can validate the heap, for instance whenever
 // I allocate vector. I am about to need to call make_string to create a
@@ -625,8 +625,9 @@ static void cold_setup()
 // got as far as creating the Lisp-style variable for it to refer to), hence
 // make_symbol looks in the value cell of nil to find the package to intern
 // wrt. Once this has been done I can put nil back how it ought to have been,
-// and then I can create the Lisp symbol !*package" and put everything in a
+// and then I can create the Lisp symbol !*package!*" and put everything in a
 // respectable state!
+    symbol_sequence = 257;
     current_package          = make_undefined_fluid("*package*");
     lisp_package             = qpackage(nil);
     setvalue(current_package,  lisp_package);
@@ -638,7 +639,28 @@ static void cold_setup()
     unset_var                =
         make_undefined_global("~indefinite-value~");
     setvalue(unset_var,        unset_var);
+// I have not set up NIL, !*PACKAGE!* and !~INDEFINITE!-VALUE!~ with
+// sequence number 256, 257 and 258. So now I set up 256 character symbols
+// such that they each get the correct sequence number.
+    symbol_sequence = 0;
+    for (int i=0; i<256; i++)
+    {   int len;
+        if (i <= 0x7f)
+        {   boffo_char(0) = i;
+            boffo_char(1) = 0;
+            len = 1;
+        }
+        else
+        {   boffo_char(0) = 0xc0 | (i >> 6);    // utf-8
+            boffo_char(1) = 0x80 | (i & 0x3f);
+            boffo_char(2) = 0;
+            len = 2;
+        }
+        LispObject v = iintern(boffo, len, CP, 0);
+        if (i == 0) char_0_symbol = v;
+    }
 //@@@@@@@@@@@@@@@@@@@    Lunintern(nil, unset_var);
+    symbol_sequence = 259;
 // Now in some minor sense the world is in a self-consistent state
     lisp_true           = make_undefined_global("t");
     setvalue(lisp_true,   lisp_true);
@@ -2058,6 +2080,7 @@ LispObject *list_bases[] =
     &current_function,
     &active_stream,
     &current_module,
+    &char_0_symbol,
     &autoload_symbol,
     &big_divisor,
     &big_dividend,

@@ -411,7 +411,7 @@ extern intptr_t current_modulus, fastget_size, package_bits;
 extern intptr_t modulus_is_large;
 
 extern LispObject lisp_true, lambda, funarg, unset_var, opt_key,rest_key;
-extern LispObject quote_symbol, function_symbol, comma_symbol;
+extern LispObject char_0_symbol, quote_symbol, function_symbol, comma_symbol;
 extern LispObject comma_at_symbol, cons_symbol, eval_symbol, apply_symbol;
 extern LispObject list_symbol, liststar_symbol, eq_symbol, eql_symbol;
 extern LispObject cl_equal_symbol, equal_symbol, equalp_symbol;
@@ -576,6 +576,7 @@ extern std::FILE *binary_read_file;
 
 extern std::FILE *binary_write_file;
 
+extern uint32_t symbol_sequence;
 extern size_t boffop;
 extern void packcharacter(int c);
 extern void packbyte(int c);
