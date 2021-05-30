@@ -93,7 +93,12 @@ extern bool file_readable(char *a, const char *b, size_t n);
 
 namespace FX {
 
-static int DEBUGFONT = 0;
+// By compiling with -DDEBUGFONT=NNN the debug printing can be enabled.
+#ifndef DEBUGFONT
+#define DEBUGFONT 0
+#endif
+
+static const int debugFont = DEBUGFONT;
 
 // I make the size of my memory pool depend on the size of a pointer
 // because the size of box components depends on that. The setting here
@@ -1259,7 +1264,7 @@ static int bracketCount(int flags, int height, int depth)
 
 static int bracketWidth(char type, int flags, int height, int depth)
 {
-    int n = bracketCount(flags, height, depth);
+    int n = bracketCount(flags, height, depth), w;
 // n is the size of bracket needed, measured in units of 0.5 times the
 // normal cmex font height
     int fnt = FntExtension, ch = 0x00;
@@ -1449,10 +1454,14 @@ static int bracketWidth(char type, int flags, int height, int depth)
         ss[0] = 0xc0 | ((ss[0] & 0xff) >> 6);
         nn = 2;
     }
-    return ((FXFont *)ff)->getTextWidth(ss, nn);
+    w = ((FXFont *)ff)->getTextWidth(ss, nn);
 #else
-    return xfWidth(ff, ss, 1);
+    w = xfWidth(ff, ss, 1);
 #endif
+    if (debugFont & 16)
+        printf("bracket %c size %d code %.2x %.2x width %d\n",
+            type, n, ss[0], ss[1], w);
+    return w;
 }
 
 static int bracketHeightDepth(char type, int flags, int height, int depth)
@@ -1508,13 +1517,13 @@ static int widthOfColumn(Box *b, int col)
 static int maxWidthInColumn(Box *b, int col)
 {
     int r = -1;
-    if (DEBUGFONT & 2) printf("find max width in column %d\n", col);
+    if (debugFont & 2) printf("find max width in column %d\n", col);
     while (b->nest.type == BoxNest &&
            b->nest.flags == BoxTower)
     {   int w = widthOfColumn(b->nest.sub2, col);
-        if (DEBUGFONT & 2) printf("width in column %d is %d\n", col, w);
+        if (debugFont & 2) printf("width in column %d is %d\n", col, w);
         if (w > r) r = w;
-        if (DEBUGFONT & 2) printf("max now %d\n", r);
+        if (debugFont & 2) printf("max now %d\n", r);
         b = b->nest.sub1;
     }
     return r;
@@ -1527,7 +1536,7 @@ static void setOneWidth(Box *b, int col, int w, int xgap)
 {
     int c0 = col;
     Box *b0 = b;
-    if (DEBUGFONT & 2) printf("force width of column %d to %d in one row\n", col, w);
+    if (debugFont & 2) printf("force width of column %d to %d in one row\n", col, w);
     while (col != 0)
     {   if (b->nest.type != BoxNest ||
             b->nest.flags != BoxBeside) return;
@@ -1540,7 +1549,7 @@ static void setOneWidth(Box *b, int col, int w, int xgap)
 // matrix.
     int w0 = b->nest.sub2->text.width;  // current width of cell
     int extra = w - w0;
-    if (DEBUGFONT & 2) printf("extra width needed = %d\n", extra);
+    if (debugFont & 2) printf("extra width needed = %d\n", extra);
     b->nest.dx2 += extra/2;             // centre the item
 // Now all the enclosing boxes have got wider, so I need to adjust their
 // record of their width.
@@ -1548,7 +1557,7 @@ static void setOneWidth(Box *b, int col, int w, int xgap)
     {   b0->nest.width += extra;
         return;
     }
-    if (DEBUGFONT & 2) printf("Now need to insert intercolumn gap\n");
+    if (debugFont & 2) printf("Now need to insert intercolumn gap\n");
     while (c0 > 0)
     {   b0->nest.width += extra + xgap;
         b0->nest.dx2 += extra + xgap;
@@ -1569,14 +1578,14 @@ static void setWidthsAndCentre(Box *b, int col, int w, int xgap, int ygap)
         b0 = b0->nest.sub1;
     }
     int dy = ygap*(n-1);
-    if (DEBUGFONT & 2) printf("force width of column %d to %d\n", col, w);
+    if (debugFont & 2) printf("force width of column %d to %d\n", col, w);
     while (b->nest.type == BoxNest &&
            b->nest.flags == BoxTower)
     {   setOneWidth(b->nest.sub2, col, w, xgap);
 // I have meddled with the width of an item in one row so the node here needs
 // its width changed to match.
         b->nest.width = b->nest.sub2->nest.width;
-        if (DEBUGFONT & 2) printf("Width of row is now %d\n", b->nest.width);
+        if (debugFont & 2) printf("Width of row is now %d\n", b->nest.width);
         b->nest.depth += dy;
         b->nest.dy2 += dy;
         dy -= ygap;
@@ -1593,12 +1602,12 @@ static void setWidthsAndCentre(Box *b, int col, int w, int xgap, int ygap)
 
 static int balanceColumns(Box *b, int col, int xgap, int ygap)
 {
-    if (DEBUGFONT & 2) printf("balance column %d\n", col);
+    if (debugFont & 2) printf("balance column %d\n", col);
     int w = maxWidthInColumn(b, col);
-    if (DEBUGFONT & 2) printf("column %d width = %d\n", col, w);
+    if (debugFont & 2) printf("column %d width = %d\n", col, w);
     if (w < 0) return 0;
     setWidthsAndCentre(b, col, w, xgap, ygap);
-    if (DEBUGFONT & 2) printf("column %d balanced\n", col);
+    if (debugFont & 2) printf("column %d balanced\n", col);
     return 1;
 }
 
@@ -1668,7 +1677,7 @@ bool hasTall(const char s[], int len, int start, int ff)
 	  break;
 	  }
 	default:
-	  if (DEBUGFONT & 4) {
+	  if (debugFont & 4) {
 	    printf("hasTall -- Font Family ff=%d\n",ff);
 	    fflush(stdout);
 	  }
@@ -1728,7 +1737,7 @@ bool hasDeep(const char s[], int len, int ff)
 	    break;
 	  }
 	default:
-	  if (DEBUGFONT & 4) {
+	  if (debugFont & 4) {
 	    printf("hasDeep -- Font Family ff=%d\n",ff);
 	    fflush(stdout);
 	  }
@@ -1802,9 +1811,9 @@ int TextHeight(Box *b)
       //	  case BoxUnder:
       //	    bh = b->bar.height;
       //	  }
-      if (DEBUGFONT & 4)  printf("Lined Type=%d\n", b->bar.flags & LineMask);
+      if (debugFont & 4)  printf("Lined Type=%d\n", b->bar.flags & LineMask);
     }
-    if (DEBUGFONT & 4)
+    if (debugFont & 4)
       { printf("TextHeight:  BoxType=%d  bh=%d\n",
 	       b->text.type, bh);
 	fflush(stdout);
@@ -1855,9 +1864,9 @@ int TextDepth(Box *b)
       //   case BoxUnder:
       //     bd = b->bar.td;
       //   }
-      if (DEBUGFONT & 4)  printf("Lined Type=%d\n", b->bar.flags & LineMask);
+      if (debugFont & 4)  printf("Lined Type=%d\n", b->bar.flags & LineMask);
     }
-  if (DEBUGFONT & 4)
+  if (debugFont & 4)
     { printf("TextDepth:  BoxType=%d  bd=%d\n",
 	     b->text.type, bd);
       fflush(stdout);
@@ -2023,7 +2032,7 @@ void measureBox1(Box *b)
     int l;
     char *ss;
 #endif
-    if (DEBUGFONT & 4)
+    if (debugFont & 4)
     {   printf("measureBox1(%p)\n", b); fflush(stdout);
         printf("type = %d\n", b->text.type); fflush(stdout);
     }
@@ -2072,12 +2081,12 @@ case BoxSym:
         }
 case BoxText:
         t = &(b->text);
-        if (DEBUGFONT & 4)
+        if (debugFont & 4)
         {   printf("text = <%s>\n", t->text);
             fflush(stdout);
         }
         ff = mathFont[t->flags & FontMask];
-        if (DEBUGFONT & 4)
+        if (debugFont & 4)
         {   printf("fontid = %.2x font = %p\n", t->flags, ff);
             fflush(stdout);
         }
@@ -2131,7 +2140,7 @@ case BoxText:
             h = (bigH + hd)/2;
             d = (bigH - hd)/2;
         }
-        if (DEBUGFONT & 4)
+        if (debugFont & 4)
         {   printf("text \"%s\" is size h=%d d=%d w=%d\n", t->text, h, d, w);
             fflush(stdout);
         }
@@ -2244,7 +2253,7 @@ case BoxNest:
                 n->dx2 = (n->width - n->sub2->text.width)/2;
                 n->dy2 = n->sub2->text.height + rh - delta;
             }
-            if (DEBUGFONT & 4)
+            if (debugFont & 4)
             {   printf("Above h=%d d=%d w=%d\n",
                        n->height, n->depth, n->width);
                 printf("dx1=%d dy1=%d dx2=%d dy2=%d\n",
@@ -2266,7 +2275,7 @@ case BoxNest:
                 n->dx2 = (n->width - n->sub2->text.width)/2;
                 n->dy2 = 0;
             }
-            if (DEBUGFONT & 4)
+            if (debugFont & 4)
             {   printf("Above h=%d d=%d w=%d\n",
                        n->height, n->depth, n->width);
                 printf("dx1=%d dy1=%d dx2=%d dy2=%d\n",
@@ -2285,7 +2294,7 @@ case BoxNest:
             n->dy1 = -(n->sub1->text.depth + n->sub2->text.height);
             n->dx2 = 0;
             n->dy2 = 0;
-            if (DEBUGFONT & 4)
+            if (debugFont & 4)
             {   printf("Above h=%d d=%d w=%d\n",
                        n->height, n->depth, n->width);
                 printf("dx1=%d dy1=%d dx2=%d dy2=%d\n",
@@ -2321,7 +2330,7 @@ case BoxNest:
             n->dy1 = 0;
             n->dx2 = n->sub1->text.width;
             n->dy2 = 0;
-            if (DEBUGFONT & 4)
+            if (debugFont & 4)
             {   printf("Beside h=%d d=%d w=%d\n",
                        n->height, n->depth, n->width);
                 printf("dx1=%d dy1=%d dx2=%d dy2=%d\n",
@@ -2340,7 +2349,7 @@ case BoxNest:
             n->dy1 = 0;
             n->dx2 = n->sub1->text.width - w;
             n->dy2 = 0;
-            if (DEBUGFONT & 4)
+            if (debugFont & 4)
             {   printf("Adjacent h=%d d=%d w=%d\n",
                        n->height, n->depth, n->width);
                 printf("dx1=%d dy1=%d dx2=%d dy2=%d\n",
@@ -2364,7 +2373,7 @@ case BoxNest:
                 n->dy1 = 0;
                 n->dx2 = (n->width - n->sub2->text.width)/2;
                 n->dy2 = n->sub1->text.depth + n->sub2->text.height;
-                if (DEBUGFONT & 4)
+                if (debugFont & 4)
                 {   printf("Special subscript h=%d d=%d w=%d\n",
                            n->height, n->depth, n->width);
                     printf("dx1=%d dy1=%d dx2=%d dy2=%d\n",
@@ -2384,7 +2393,7 @@ case BoxNest:
             n->dy2 = dy;
             n->height = intmax(n->sub1->text.height, n->sub2->text.height - dy);
             n->depth = intmax(n->sub1->text.depth, n->sub2->text.depth + dy);
-            if (DEBUGFONT & 4)
+            if (debugFont & 4)
             {   printf("Subscript h=%d d=%d w=%d\n",
                        n->height, n->depth, n->width);
                 printf("dx1=%d dy1=%d dx2=%d dy2=%d\n",
@@ -2405,7 +2414,7 @@ case BoxNest:
                 n->dy1 = 0;
                 n->dx2 = (n->width - n->sub2->text.width)/2;
                 n->dy2 = -(n->sub1->text.height + n->sub2->text.depth);
-                if (DEBUGFONT & 4)
+                if (debugFont & 4)
                 {   printf("Special superscript h=%d d=%d w=%d\n",
                            n->height, n->depth, n->width);
                     printf("dx1=%d dy1=%d dx2=%d dy2=%d\n",
@@ -2441,7 +2450,7 @@ case BoxNest:
             n->dy2 = -dy;
             n->height = intmax(n->sub1->text.height, n->sub2->text.height + dy);
             n->depth = intmax(n->sub1->text.depth, n->sub2->text.depth - dy);
-            if (DEBUGFONT & 4)
+            if (debugFont & 4)
             {   printf("Superscript h=%d d=%d w=%d\n",
                        n->height, n->depth, n->width);
                 printf("dx1=%d dy1=%d dx2=%d dy2=%d\n",
@@ -2460,7 +2469,7 @@ case BoxNest:
             n->dy1 = 0;
             n->dx2 = (n->width - n->sub2->text.width)/2;
             n->dy2 = 0;
-            if (DEBUGFONT & 4)
+            if (debugFont & 4)
             {   printf("Overstrike h=%d d=%d w=%d\n",
                        n->height, n->depth, n->width);
                 printf("dx1=%d dy1=%d dx2=%d dy2=%d\n",
@@ -2476,7 +2485,7 @@ case BoxNest:
             n->depth = n->sub1->text.depth;
             n->dx1 = w;
             n->dy1 = 0;
-            if (DEBUGFONT & 4)
+            if (debugFont & 4)
             {   printf("PadSpace h=%d d=%d w=%d\n",
                        n->height, n->depth, n->width);
                 printf("dx1=%d dy1=%d dx2=%d dy2=%d\n",
@@ -2516,7 +2525,7 @@ case BoxNest3:
                 n3->dy2 = n3->sub1->text.depth + n3->sub2->text.height;
                 n3->dx3 = (n3->width - n3->sub3->text.width)/2;
                 n3->dy3 = -(n3->sub1->text.height + n3->sub3->text.depth);
-                if (DEBUGFONT & 4)
+                if (debugFont & 4)
                 {   printf("Special Bothscripts h=%d d=%d w=%d\n",
                            n3->height, n3->depth, n3->width);
                     printf("dx1=%d dy1=%d dx2=%d dy2=%d\n",
@@ -2556,7 +2565,7 @@ case BoxNest3:
             n3->depth =
                intmax(n3->sub1->text.depth,
                   intmax(n3->sub2->text.depth + dy, n3->sub3->text.depth - dy));
-            if (DEBUGFONT & 4)
+            if (debugFont & 4)
             {   printf("Bothscripts h=%d d=%d w=%d\n",
                        n3->height, n3->depth, n3->width);
                 printf("dx1=%d dy1=%d dx2=%d dy2=%d\n",
@@ -2628,7 +2637,7 @@ case BoxTop:               // top-level wrapper for boxes.
 	      if (lb->td > lb->depth)
 		lb->depth = lb->td;  // increase box depth if necessary
 	    }
-	  if (DEBUGFONT & 4)
+	  if (debugFont & 4)
 	    { printf("Lined h=%d d=%d w=%d th=%d td=%d\n",
 		     lb->height, lb->depth, lb->width, lb->th, lb->td);
 	      printf("h1=%d\n", h1);
@@ -4536,7 +4545,7 @@ case '[':   case ']':
         lexerBuffer[0] = curChar;
         lexerBuffer[1] = 0;
         lexLength = 1;
-        if (DEBUGFONT & 8) printf("lexer special char %s\n", lexerBuffer);
+        if (debugFont & 8) printf("lexer special char %s\n", lexerBuffer);
         lexKey = lookupHash(lexerBuffer);
         lexType = lexSpecial;
         curChar = (*nextChar)();
@@ -4710,7 +4719,7 @@ Box *parseTeX(getTeXchar *fn, int owner)
     poolStartChunk(owner);
     curChar = (*nextChar)();
     nextSymbol();
-    if (DEBUGFONT & 8) printf("lexType = %d\n", lexType);
+    if (debugFont & 8) printf("lexType = %d\n", lexType);
 // That has got the lexer ready - now I can do the REAL parsing!
 // I do my parsing here in \displaymath mode, so the font I will use
 // by default will be an italic one.
@@ -5224,7 +5233,7 @@ case BoxText:
             drawText1(dc, x, y - t->height/4, "\x3d", t->n);
         else if (t->n != 1 || (t->text[0] & 0xff) != 0xc6)
             drawText1(dc, x, y, t->text, t->n);
-        if (DEBUGFONT & 1)
+        if (debugFont & 1)
         {   dc->drawRectangle(x, y, t->width, t->depth);
             dc->drawRectangle(x, y - t->height, t->width, t->height);
         }
@@ -5240,7 +5249,7 @@ case BoxBracket:
             h1 += (h + d + 12)/25; // make contents seem taller
                                    // to leave gap before overbar
         }
-        if (DEBUGFONT & 1)
+        if (debugFont & 1)
         {   dc->drawRectangle(x, y, bb->width, bb->depth);
             dc->drawRectangle(x, y - bb->height, bb->width, bb->height);
         }
@@ -5286,7 +5295,7 @@ case BoxLined:
 	}
      }
 case BoxMatrix:
-        if (DEBUGFONT & 1)
+        if (debugFont & 1)
 	  {   dc->drawRectangle(x,
                   y-b->matrix.height,
 
@@ -5296,7 +5305,7 @@ case BoxMatrix:
         paintBox(dc, b->matrix.sub, x, y + b->matrix.dy);
         return;
 case BoxNest:
-        if (DEBUGFONT & 1)
+        if (debugFont & 1)
         {   dc->drawRectangle(x,
                   y-b->nest.height,
                   b->nest.width,
