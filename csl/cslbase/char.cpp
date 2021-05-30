@@ -506,35 +506,24 @@ LispObject Lutf8_decode_1(LispObject env, LispObject a)
 // cheap code as I can get away with that will agree with PSL behaviour.
 // If the argument is a symbol with a single 8-bit character as its name
 // then the value is the character code. Well by "8-bit character" I mean
-// a character un the range U+00 to U+FF.
+// a character in the range U+00 to U+FF, and those beyond 0x7f will be
+// stored internally as 2-byte utf-8 sequences..
 // If the argument is nil then the value is 128 (for PSL compatibility).
-// Otherwise it is a fixnum based on the name that is not guaranteed to
-// be either small or unique but which may make sense as a sort of hash
-// value on the name... which is what parts of redlog want from it.
-//
-// Except when used as a sort of hash value any code that uses this and
-// thinks that it returns any sort of character code is outdated and
-// unaware of Unicode!
+// Otherwise it is a fixnum that is some sort of sequence number. No two
+// symbols should return the same value, save that the field holding the
+// sequence number is only 22 bits wide, so after around 4 million distinct
+// values things will wrap.
 
 LispObject Lid2int(LispObject, LispObject a)
-{   if (a == nil) return onevalue(fixnum_of_int(128));
-    if (is_symbol(a)) a = qpname(a);
-    if (!is_simple_string(a)) return aerror1("id2int", a);
-    size_t len = length_of_byteheader(vechdr(a)) - CELL;
-    if (len == 1) return onevalue(fixnum_of_int(ucelt(a, 0)));
-    if (len == 2) // Maybe 2-byte UTF as 0b11000087, 0x10654321
-    {   int c0 = ucelt(a, 0), c1 = ucelt(a, 1);
-        if ((c0 & 0xfc) == 0xc0 &&
-            (c1 & 0xc0) == 0x80)
-            return onevalue(fixnum_of_int((c0 & 0x3)<<6 | (c1 & 0x3f)));
-        else return onevalue(fixnum_of_int(c0<<8 | c1));
+{   if (!is_symbol(a)) return aerror1("id2int", a);
+    uint32_t n = qcountLow(a) & 0x3fffffU;
+// If the symbol did not have a sequence number yet allocate it one. This
+// can happen if it was created as an uninterned value or a gensym.
+    if (n == 0 && a != char_0_symbol)
+    {   n = symbol_sequence++ & 0x3fffffU;
+        qcountLow(a) = (qcountLow(a) & ~0x3fffffU) | n;
     }
-    else if (len == 3) return onevalue(fixnum_of_int(
-        ucelt(a,0)<<16 | ucelt(a,1)<<8 | ucelt(a, 2)));
-    unsigned int w = ucelt(a, 0);
-    if (len > 8) len = 8;
-    for (size_t i=1; i<len; i++) w = w*169U + ucelt(a, i);
-    return onevalue(fixnum_of_int(w & 0x07ffffff));
+    return onevalue(fixnum_of_int(n));
 }
 
 LispObject Lchar_code(LispObject, LispObject a)

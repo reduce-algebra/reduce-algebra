@@ -360,7 +360,7 @@ begin scalar res, vswitch;
  res:=nil;
  vswitch:=nil;
 %  FLUID '(safe_atts char ch atts count temp space temp2);
- space:=int2id(32);
+ space:='! ;
  count:=0;
  ch:=readch();
  temp2:=nil;

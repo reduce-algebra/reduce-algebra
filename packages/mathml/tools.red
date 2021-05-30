@@ -76,7 +76,7 @@ begin scalar token,safe_atts;
  char:=nil;
  if atts neq nil then safe_atts:=atts;
  atts:=nil;
- if ch eq int2id(10) then ch:=readch();
+ if ch eq !$eol!$ then ch:=readch();
  if ch neq !$eof!$ then <<
    if ch=space then while (ch:=readch())=space do
    else
@@ -112,7 +112,7 @@ symbolic procedure get_content();
 begin scalar d, d2;
  d:='();
  while (ch:=readch()) neq '!< and ch neq !$eof!$  do <<
-   if ch neq int2id(10) then
+   if ch neq !$eol!$ then
    d:=cons(ch,d)
  >>;
  d2:=delall('!  , d);
