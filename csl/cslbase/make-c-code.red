@@ -339,8 +339,7 @@ begin
       if car x then <<
 % I will include things just once provided they have an associated saved
 % definition and they are not on the exclusions list.
-        if not member(caaar x, w_reduce)
-           and not member(caaar x, omitted) and
+        if not member(caaar x, w_reduce) and
            get(caaar x, '!*savedefs) then <<
           if cdr get(caaar x, '!*savedefs) then <<
             if not zerop posn() then terpri();
@@ -369,8 +368,7 @@ symbolic procedure do_total();
 <<load!-source();
   w_reduce := nil;
   for each x in oblist() do
-    if get(x, '!*savedefs) and not memq(x, omitted) then
-      w_reduce := x . w_reduce;
+    if get(x, '!*savedefs) then w_reduce := x . w_reduce;
 
   w_reduce := nreverse w_reduce$ % Now in alphabetic order, which seems neat.
 
@@ -403,6 +401,10 @@ symbolic procedure generate_cpp();
         if null (defns := get(name, '!*savedefs)) then <<
           princ "+++ "; prin name;
           printc ": no saved definition found";
+          w_reduce := cdr w_reduce >>
+        else if member(name, omitted) then <<
+          princ "+++++ "; prin name;
+          printc ": in list of special-case omissions";
           w_reduce := cdr w_reduce >>
         else for each defn in defns do <<
           bulk := listsize(cdr defn, bulk);

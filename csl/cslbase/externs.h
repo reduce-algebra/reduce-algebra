@@ -433,7 +433,7 @@ extern LispObject expr_symbol, fexpr_symbol, macro_symbol;
 extern LispObject big_divisor, big_dividend, big_quotient;
 extern LispObject big_fake1, big_fake2, active_stream, current_module;
 extern LispObject mv_call_symbol, features_symbol, lisp_package;
-#define REHASHVEC_SIZE 100
+#define REHASHVEC_SIZE 1000
 extern LispObject sys_hash_table, rehash_vec1, rehash_vec2;
 extern LispObject help_index, cfunarg, lex_words;
 extern LispObject get_counts, fastget_names, input_libraries;

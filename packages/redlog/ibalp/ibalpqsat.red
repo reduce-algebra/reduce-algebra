@@ -1917,18 +1917,38 @@ procedure ibalp_readform(f);
 procedure ibalp_clmember(x,l);
    l and (ibalp_cequal(x,car l) or ibalp_clmember(x,cdr l));
 
+%procedure ibalp_cequal(c1,c2);
+%   begin scalar poslitl1,neglitl1,poslitl2,neglitl2;
+%      poslitl1 := for each v in ibalp_clause!-getposlit c1 collect
+%	 ibalp_var!-getid v;
+%      poslitl2 := for each v in ibalp_clause!-getposlit c2 collect
+%	 ibalp_var!-getid v;
+%      if not lto_setequalq(poslitl1,poslitl2) then
+%	 return nil;
+%      neglitl1 := for each v in ibalp_clause!-getneglit c1 collect
+%	 ibalp_var!-getid v;
+%      neglitl2 := for each v in ibalp_clause!-getneglit c2 collect
+%	 ibalp_var!-getid v;
+%      return lto_setequalq(neglitl1,neglitl2)
+%   end;
+
+% This function is an incredible hot-spot for ibalp. lto_setequal is
+% a test for unordered list equality so the ordering in poslit1 etc
+% does not matter, so building them up using cons not collect should
+% not impact the results, and it is cheaper! Not be a huge amount, but
+% this function is so heavily used that every little helps.
+
 procedure ibalp_cequal(c1,c2);
    begin scalar poslitl1,neglitl1,poslitl2,neglitl2;
-      poslitl1 := for each v in ibalp_clause!-getposlit c1 collect
-	 ibalp_var!-getid v;
-      poslitl2 := for each v in ibalp_clause!-getposlit c2 collect
-	 ibalp_var!-getid v;
-      if not lto_setequalq(poslitl1,poslitl2) then
-	 return nil;
-      neglitl1 := for each v in ibalp_clause!-getneglit c1 collect
-	 ibalp_var!-getid v;
-      neglitl2 := for each v in ibalp_clause!-getneglit c2 collect
-	 ibalp_var!-getid v;
+      for each v in ibalp_clause!-getposlit c1 do
+	 poslitl1 := ibalp_var!-getid v. poslitl1;
+      for each v in ibalp_clause!-getposlit c2 do
+	 poslitl2 := ibalp_var!-getid v. poslitl2;
+      if not lto_setequalq(poslitl1,poslitl2) then return nil;
+      for each v in ibalp_clause!-getneglit c1 do
+	 neglitl1 := ibalp_var!-getid v . neglitl1;
+      for each v in ibalp_clause!-getneglit c2 do
+	 neglitl2 := ibalp_var!-getid v . neglitl2;
       return lto_setequalq(neglitl1,neglitl2)
    end;
 
