@@ -136,6 +136,7 @@ endif !exeext
 .PHONY:	bootstraprecompile
 .PHONY:	recompile
 .PHONY:	profile
+.PHONY:	profile-install
 .PHONY:	c-code
 .PHONY:	just-c-code
 .PHONY:	standard-c-code
@@ -2115,6 +2116,12 @@ profile:	$(BOOTSTRAPREDUCE_IMG)
 	chmod 664 $(gensrc)/*
 	$(MAKE) standard-c-code
 
+# After profiling you may wish to invoke this to put the new profile
+# information where it would be picked up if you remove cslbuild and
+# start afresh using configure/
+profile-install:
+	cp $(gensrc)/profile.dat* $(reduce)/csl/generated-c
+
 $(gensrc)/profile.dat:	$(csl)/generated-c/profile.dat
 	-$(TRACE)mkdir -p $(gensrc)
 	$(CP) $(csl)/generated-c/profile.dat $(gensrc)
@@ -2228,7 +2235,7 @@ partial-c-code:	$(BOOTSTRAPREDUCE_IMG) $(gensrc)/profile.dat
 
 # full-c-code is a target only activated manually.
 
-full-c-code:	$(BOOTSTRAPREDUCE_IMG) $(gensrc)/profile.dat
+full-c-code:	$(BOOTSTRAPREDUCE_IMG)
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
 	./bootstrapreduce$(COM) -w $(CSLFLAGS) \

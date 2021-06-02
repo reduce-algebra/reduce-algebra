@@ -728,10 +728,7 @@ symbolic procedure get_configuration_data();
              put(r1, 'folder, "regressions");
              reduce_regression_tests :=
                 r1 . reduce_regression_tests >> >> >>;
-% I will run the "alg" test twice! This is for the benefit of Java where the
-% first time will be seriously slowed down by the need to JIT almost
-% everything.
-    reduce_test_cases := 'alg . append(reduce_test_cases, reduce_regression_tests);
+    reduce_test_cases := append(reduce_test_cases, reduce_regression_tests);
     for each x in w do
        if member('csl, cddr x) then put(car x, 'folder, cadr x);
 %   princ "reduce_base_modules: "; print reduce_base_modules;
@@ -988,7 +985,7 @@ symbolic procedure profile_a_package names;
                                                explodec car names);
        quitfn := getd 'quit;
        remd 'quit;
-       putd('quit, 'expr, 'posn);
+       putd('quit, 'expr, 'posn);  % Some harmless temp replacement for quit!
        mapstore 4;  % reset counts;
        !*errcont := t;
 % I try hard to arrange that even if the test fails I can continue and that
@@ -1016,9 +1013,7 @@ symbolic procedure profile_a_package names;
        load!-source(); % Need source versions of all code here
        w1 := nil;
        while w do <<
-           w2 := get(caar w, '!*savedef);
-           if eqcar(w2, 'lambda) then w1 := (caar w . md60 (caar w . cdr w2) .
-                                             cadar w . caddar w) . w1;
+           w1 := list(caar w, cadar w, caddar w) . w1;
            w := cdr w >>;
        w := w1;
        % I collect the top 350 functions as used by each test, not because all
@@ -1026,20 +1021,20 @@ symbolic procedure profile_a_package names;
        % of information here and discard unwanted parts later on.
        for i := 1:349 do if w1 then w1 := cdr w1;
        if w1 then rplacd(w1, nil);
-       % princ "MODULE "; prin car names; princ " suggests ";
-       % print for each z in w collect car z;
        w1 := open("profile.dat", 'append);
        w1 := wrs w1;
        linelength 80;
        if atom rr then printc "% +++++ Error: Resource limit exceeded";
-       princ "% @@@@@ Resources used: "; print !*resources!*;
-       princ "("; prin car names; terpri();
+       princ "("; prin car names; ttab 20;
+       princ "% Resources used by "; prin car names;
+       princ ": "; print !*resources!*;
+       printc "% name                    code size  bytecodes used";
        for each n in w do <<
            princ "  ("; prin car n; princ " ";
-           if posn() > 30 then << terpri(); ttab 30 >>;
-           prin cadr n;
-           % I also display the counts just to help me debug & for interest.
-           princ " "; prin caddr n; princ " "; princ cdddr n;
+           if posn() > 31 then terpri();
+           ttab(34-length explodec cadr n);
+           prin cadr n; princ " ";
+           ttab(46-length explodec caddr n); princ caddr n;
            printc ")" >>;
        printc "  )";
        terpri();
