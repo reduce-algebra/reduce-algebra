@@ -1698,8 +1698,9 @@ inline uint64_t qcount(LispObject p)
 
 inline void incCount(LispObject p, uint32_t m=1)
 {   Symbol_Head *pp = reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL);
-    uint32_t low = pp->countLow.fetch_add(m<<22);
-    if ((low+m) < low) pp->countHigh.fetch_add(1);
+    m <<= 22;
+    uint32_t low = pp->countLow.fetch_add(m);
+    if (low+m < low) pp->countHigh.fetch_add(1);
 }
 
 #ifndef HAVE_SOFTFLOAT

@@ -215,7 +215,6 @@ omitted := '(
     gck2                    %
     !:recip                 %
     cr!:minus               %
-%   mkcopy                  %
 
 
 % In my original scheme for compilation into C/C++ there were big problems
@@ -225,12 +224,11 @@ omitted := '(
 % less challenging and I will be able to remove some of these from the
 % exclusion list.
 
-    linelength              % horrid use of copyd etc in tmprint.red
-    setpchar                % horrid use of copyd.. also in tmprint.red
-    ordp                    % redefined in helphy/noncom2 and spde/spde
-    unit                    % name conflict.
-    typerr                  % typerr and symerr are defined in makereduce.lsp
-    symerr                  % but there are different versions elsewhere.
+%   linelength              % horrid use of copyd etc in tmprint.red
+%   setpchar                % horrid use of copyd.. also in tmprint.red
+%   unit                    % name conflict.
+%   typerr                  % typerr and symerr are defined in makereduce.lsp
+%   symerr                  % but there are different versions elsewhere.
 
 % unwind-protect and catch could now almost certainly be supported by the
 % compiler, and then the following become eligible for optimisation. The
@@ -338,7 +336,11 @@ begin
 % compilation into C++ I will treat them all that way.
       if car x then <<
 % I will include things just once provided they have an associated saved
-% definition and they are not on the exclusions list.
+% definition and they are not on the exclusions list. Furthermore I do not
+% need to worry about checksums from the profiling any more: if some function
+% is names in ANY of the sections of the profile data I am going to turn
+% all versions of that function into C++, and the scheme I now use arranges
+% that doing so should not lead to complications.
         if not member(caaar x, w_reduce) and
            get(caaar x, '!*savedefs) then <<
           if cdr get(caaar x, '!*savedefs) then <<
@@ -384,15 +386,14 @@ symbolic procedure listsize(x, n);
 
 symbolic procedure generate_cpp();
   begin
-    scalar count, name, bulk, total, defn;
+    scalar total, bulk, count;
     count := 0;
-
     while fnames do
     begin
-      scalar name, bulk, total;
-      name := car fnames;
-      princ "About to create "; printc name;
-      c!:ccompilestart(name, name, "$destdir");
+      scalar modname, defn;
+      modname := car fnames;
+      princ "About to create "; printc modname;
+      c!:ccompilestart(modname, modname, "$destdir");
       bulk := 0;
       while bulk < size_per_file and w_reduce and how_many > 0 do
       begin

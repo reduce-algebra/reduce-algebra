@@ -123,7 +123,7 @@ size_t xppc;
     codevec = car(lit);
     litvec = cdr(lit);
 #ifndef NO_BYTECOUNT
-// Attribute 30-bytecode overhead to entry sequence. This is a pretty
+// Attribute 10-bytecode overhead to entry sequence. This is a pretty
 // arbitrary number, but the idea is that when I am profiling I want to
 // end up ranking funtions as by their overall contribution to cost.
 // If I only counted byte opcodes obeyed within functions then a
@@ -131,8 +131,13 @@ size_t xppc;
 // be recorded as as more critical than one that used only a single
 // bytecode but was called just under 2 million times. The overheads of
 // starting up the bytecode interpreter nake that an invalid judgement,
-// and the "+30" here is intended to counterbalance it.
-    incCount(basic_elt(litvec, 0), profile_count_mode ? 1 : 30);
+// and the "+10" here is intended to counterbalance it.
+// Note that I count "byte opcodes obeyed" with no attempt to consider
+// the fact that some opcodes are very cheap and some rather expensive. I
+// could potentially change the code so that each individual bytecode
+// incremented the count by an amount intended to stand for its expected
+// cost. I do not think that is worthwhile!
+    incCount(basic_elt(litvec, 0), profile_count_mode ? 1 : 10);
 #endif
 //
     A_reg = nil;
@@ -1672,7 +1677,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
                     incCount(basic_elt(litvec, 0),
-                             profile_count_mode ? 1 : 30);
+                             profile_count_mode ? 1 : 10);
 #endif
                     continue;
                 }
@@ -1717,7 +1722,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
                     incCount(basic_elt(litvec, 0),
-                             profile_count_mode ? 1 : 30);
+                             profile_count_mode ? 1 : 10);
 #endif
                     continue;
                 }
@@ -1762,7 +1767,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
                     incCount(basic_elt(litvec, 0),
-                             profile_count_mode ? 1 : 30);
+                             profile_count_mode ? 1 : 10);
 #endif
                     continue;
                 }
@@ -1807,7 +1812,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
                     incCount(basic_elt(litvec, 0),
-                             profile_count_mode ? 1 : 30);
+                             profile_count_mode ? 1 : 10);
 #endif
                     continue;
                 }
