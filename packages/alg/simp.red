@@ -181,7 +181,7 @@ global '(alglist_count!* alglist_limit!*);
 alglist_count!* := 0;
 alglist_limit!* := 100000;
 
-inline procedure add_to_alglist(key, val, l);
+symbolic inline procedure add_to_alglist(key, val, l);
 <<
   if null l or alglist_count!* > alglist_limit!* then begin
      scalar newl;
@@ -195,11 +195,11 @@ inline procedure add_to_alglist(key, val, l);
     l >>
 >>;
 
-inline procedure search_alglist(key, l);
+symbolic inline procedure search_alglist(key, l);
   if null l then nil
   else gethash(key, l);
 
-symbolic procedure delete_from_alglist(key, l);
+symbolic inline procedure delete_from_alglist(key, l);
   if null l then nil
   else << remhash(key, l); l >>;
 
@@ -208,10 +208,10 @@ symbolic procedure delete_from_alglist(key, l);
 % If genuine hash tables are not available I maintain the previous
 % association-list model, albeit now lifted by a level of abstraction.
 
-inline procedure add_to_alglist(key, val, l);
+symbolic inline procedure add_to_alglist(key, val, l);
   (key . val) . l;
 
-inline procedure search_alglist(key, l);
+symbolic inline procedure search_alglist(key, l);
   begin
     scalar r;
     r := assoc(key, l);
@@ -219,7 +219,7 @@ inline procedure search_alglist(key, l);
     else return cdr r
   end;
 
-symbolic procedure delete_from_alglist(key, l);
+symbolic inline procedure delete_from_alglist(key, l);
   delasc(key, l);
 
 #endif
@@ -372,10 +372,10 @@ symbolic procedure mkop u;
      else put(u,'simpfn,'simpiden)
    end;
 
-symbolic procedure operatorp u;
+symbolic inline procedure operatorp u;
     gettype u eq 'operator;
 
-symbolic procedure simpcar u;
+symbolic inline procedure simpcar u;
    simp car u;
 
 put('quote,'simpfn,'simpcar);
@@ -416,7 +416,7 @@ flag('(share),'eval);
 
 % ***** SIMPLIFICATION FUNCTIONS FOR EXPLICIT OPERATORS - EXP *****
 
-symbolic procedure simpexpon u;
+symbolic inline procedure simpexpon u;
    % Exponents must not use non-integer arithmetic unless NUMVAL is on,
    % in which case DOMAINVALCHK must know the mode.
    simpexpon1(u,'simp!*);
@@ -428,7 +428,7 @@ symbolic procedure simpexpon1(u,v);
 
 fluid '(!*qsum!-simpexpt);
 
-symbolic procedure simpexpt u;
+symbolic inline procedure simpexpt u;
    if !*qsum!-simpexpt then qsum!-simpexpt u
    else basic!-simpexpt u;
 
@@ -1025,7 +1025,7 @@ symbolic procedure iroot!-ceiling(m,n);
    %least integer greater or equal to M/N);
    (lambda x; if cdr x=0 then car x else car x+1) divide(m,n);
 
-symbolic procedure mkexpt(u,n);
+symbolic inline procedure mkexpt(u,n);
    if n=1 then u else list('expt,u,n);
 
 % The following definition is due to Eberhard Schruefer.

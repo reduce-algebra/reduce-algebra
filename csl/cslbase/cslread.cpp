@@ -432,7 +432,7 @@ LispObject intern(size_t len, bool escaped)
     for (i=0; i<len; i++)
     {   int c = boffo_char(i);
         switch (numberp)
-    {       default:
+        {   default:
                 break;
             case 0:
                 if (c == '+' || c == '-')
@@ -567,7 +567,7 @@ LispObject intern(size_t len, bool escaped)
     }
 // Here the item has been scanned, and it is known if it is numeric!
     switch (numberp)
-{       default:
+    {   default:
 // Not a number... look up in package system
 #ifdef COMMON
             if (!escaped && boffo_char(0) == ':')
@@ -760,8 +760,9 @@ LispObject make_symbol(char const *s, int restartp,
 #endif
         std::strcpy(reinterpret_cast<char *>(&boffo_char(0)), s);
 start_again:
-    v = iintern(boffo, std::strlen(
-        reinterpret_cast<char *>(&boffo_char(0))), CP, 0);
+    size_t len = std::strlen(reinterpret_cast<char *>(&boffo_char(0)));
+    if (len == 0) len = 1; // Special case so I can create symbol for U+00
+    v = iintern(boffo, len, CP, 0);
     if (first_try) v0 = v;
 // I instate the definition given if (a) the definition is a real
 // one (ie not for an undefined function) and if (b) either I am doing a cold
@@ -2296,7 +2297,7 @@ static LispObject read_hash(LispObject stream)
         while (curchar <= 0xff && std::isdigit(curchar));
     }
     switch (curchar)
-{       default:
+    {   default:
 //      error("Unknown # escape");
             return pack_char(0, '#');
 #ifdef COMMON
@@ -3392,19 +3393,54 @@ LispObject Lcompress(LispObject env, LispObject stream)
     return onevalue(env);
 }
 
+// As against the old version this folds much of the internal working into
+// this function to try to avoid overhead...
+
 LispObject Llist_to_string(LispObject env, LispObject stream)
-{   int n = CELL, k;
+{   size_t n = 0;
     LispObject str;
-    char *s;
-    stream_read_data(lisp_work_stream) = stream;
-    set_stream_read_fn(lisp_work_stream, char_from_list);
-    set_stream_read_other(lisp_work_stream, read_action_list);
-    stream_pushed_char(lisp_work_stream) = NOT_CHAR;
-    while (consp(stream)) n++, stream = cdr(stream);
-    str = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, n);
-    s = reinterpret_cast<char *>(str) + CELL - TAG_VECTOR;
-    for (k=CELL; k<n;
-         k++) *s++ = static_cast<char>(char_from_list(lisp_work_stream));
+    for (str=stream; consp(str); str=cdr(str)) n++;
+    str = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
+    char *s = &celt(str, 0);
+    size_t k;
+    for (k=0; k<n; k++)
+    {   LispObject ch = car(stream);
+        stream = cdr(stream);
+        int r;
+        if (is_symbol(ch))
+        {   ch = qpname(ch);
+            switch (length_of_byteheader(vechdr(ch)))
+            {   case CELL:
+                    r = '?';
+                    break;
+// This is optimised for the situation where the symbol name is of length 1
+// and the (single) character there is in the range U+00 to U+7f
+                case CELL+1:
+                    r = ucelt(ch, 0);
+                    if (r <= 0x7f) break;
+                    // drop-through
+                default:
+                    r = code_of_char(characterify_string(ch));
+            }
+        }
+        else if (is_vector(ch) && is_string(ch))
+        {   switch (length_of_byteheader(vechdr(ch)))
+            {   case CELL:
+                    r = '?';
+                    break;
+                case CELL+1:
+                    r = ucelt(ch, 0);
+                    if (r <= 0x7f) break;
+                    // drop-through
+                default:
+                    r = code_of_char(characterify_string(ch));
+            }
+        }
+        else if (is_char(ch)) r = code_of_char(ch);
+        else if (is_fixnum(ch)) r = int_of_fixnum(ch);
+        else r = '?';    // Bad item in the list
+        *s++ = r;
+    }
     for (; (k&7) != 0; k++) *s++ = 0; // zero-pad final doubleword
     return onevalue(str);
 }

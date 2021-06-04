@@ -57,12 +57,12 @@ symbolic procedure getpower(u,n);
 %       go to a
 %   end;
 
-symbolic procedure mksp(u,p);
+symbolic inline procedure mksp(u,p);
    %U is a (non-unique) kernel and P a non-zero integer
    %Value is the standard power for U**P;
    getpower(fkern u,p);
 
-symbolic procedure u to p;
+symbolic inline procedure u to p;
    %U is a (unique) kernel and P a non-zero integer;
    %Value is the standard power of U**P;
    u . p;

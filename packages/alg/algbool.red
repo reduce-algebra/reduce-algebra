@@ -45,7 +45,7 @@ put('equal,'boolfn,'evalequal);
 
 put('equal,'rtypefn,'quoteequation);
 
-symbolic procedure quoteequation u; 'equation;
+symbolic inline procedure quoteequation u; 'equation;
 
 symbolic procedure evalgreaterp(u,v);
    (lambda x;
@@ -56,19 +56,19 @@ symbolic procedure evalgreaterp(u,v);
 
 put('greaterp,'boolfn,'evalgreaterp);
 
-symbolic procedure evalgeq(u,v); not evallessp(u,v);
+symbolic inline procedure evalgeq(u,v); not evallessp(u,v);
 
 put('geq,'boolfn,'evalgeq);
 
-symbolic procedure evallessp(u,v); evalgreaterp(v,u);
+symbolic inline procedure evallessp(u,v); evalgreaterp(v,u);
 
 put('lessp,'boolfn,'evallessp);
 
-symbolic procedure evalleq(u,v); not evalgreaterp(u,v);
+symbolic inline procedure evalleq(u,v); not evalgreaterp(u,v);
 
 put('leq,'boolfn,'evalleq);
 
-symbolic procedure evalneq(u,v); not evalequal(u,v);
+symbolic inline procedure evalneq(u,v); not evalequal(u,v);
 
 put('neq,'boolfn,'evalneq);
 

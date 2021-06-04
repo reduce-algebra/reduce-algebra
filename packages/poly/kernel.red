@@ -100,7 +100,7 @@ symbolic procedure resetklist(x, v);
 %- symbolic procedure resetklist(x, v);
 %-   put(x, 'klist, v);
 
-symbolic procedure kernels u;
+symbolic inline procedure kernels u;
    % Returns list of kernels in standard form u.
    kernels1(u,nil);
 

@@ -61,7 +61,7 @@ infix .^,.*,.+,./;
 
 % Observe a function definition using infix notation here...
 
-inline procedure u .+ v; % Standard (polynomial) addition constructor.
+symbolic inline procedure u .+ v; % Standard (polynomial) addition constructor.
    u . v;
 
 accessors lt . red, (lpow . lc) . !_, ((mvar . ldeg) . !_) . !_;
@@ -72,10 +72,10 @@ accessors !_pvar!_ . pdeg;
 
 accessors numr . denr;
 
-inline procedure u .* v;  % Standard form multiplication constructor.
+symbolic inline procedure u .* v;  % Standard form multiplication constructor.
    u . v;
 
-inline procedure u ./ v; % Constructor for standard quotient.
+symbolic inline procedure u ./ v; % Constructor for standard quotient.
    u . v;
 
 symbolic inline procedure domainp u; atom u or atom car u;
@@ -84,7 +84,7 @@ symbolic inline procedure domainp u; atom u or atom car u;
 % Procedures for converting between parts of standard quotients and
 % prefix forms.
 
-symbolic procedure !*a2f u;
+symbolic inline procedure !*a2f u;
    % U is an algebraic expression. Value is the equivalent form
    % or an error if conversion is not possible;
    !*q2f simp!* u;
@@ -119,13 +119,13 @@ symbolic procedure !*ff2a(u,v);
    % Converts ratio of two forms U and V to a prefix form.
    (if wtl!* then prepsq x else mk!*sq x) where x = cancel( u ./ v);
 
-inline procedure !*f2a u; prepf u;
+symbolic inline procedure !*f2a u; prepf u;
 
-inline procedure !*f2q u;
+symbolic inline procedure !*f2q u;
    % U is a standard form, value is a standard quotient.
    u . 1;
 
-inline procedure !*k2f u;
+symbolic inline procedure !*k2f u;
    % U is a kernel, value is a standard form.
    list((u .** 1) . 1);
 
@@ -137,23 +137,23 @@ symbolic inline procedure !*kk2q u;
    % U is a non-unique kernel, value is a standard quotient.
    list(mksp(u,1) .* 1) ./ 1;
 
-inline procedure !*k2q u;
+symbolic inline procedure !*k2q u;
    % U is a kernel, value is a standard quotient.
    list((u .** 1) . 1) . 1;
 
-symbolic procedure !*n2f u;
+symbolic inline procedure !*n2f u;
    % U is a number. Value is a standard form.
    if zerop u then nil else u;
 
-inline procedure !*p2f u;
+symbolic inline procedure !*p2f u;
    % U is a standard power, value is a standard form.
    list(u . 1);
 
-inline procedure !*p2q u;
+symbolic inline procedure !*p2q u;
    % U is a standard power, value is a standard quotient.
    list(u . 1) . 1;
 
-symbolic procedure !*q2a u;
+symbolic inline procedure !*q2a u;
    % U is a standard quotient, value is an algebraic expression.
    !*q2a1(u,!*nosq);
 
@@ -169,11 +169,11 @@ symbolic procedure !*q2k u;
    % conversion not possible.
    if kernp u then mvar numr u else typerr(prepsq u,'kernel);
 
-inline procedure !*t2f u;
+symbolic inline procedure !*t2f u;
    % U is a standard term, value is a standard form.
    list u;
 
-inline procedure !*t2q u;
+symbolic inline procedure !*t2q u;
    % U is a standard term, value is a standard quotient.
    list u . 1;
 

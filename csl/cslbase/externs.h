@@ -410,6 +410,9 @@ extern intptr_t print_precision, miscflags;
 extern intptr_t current_modulus, fastget_size, package_bits;
 extern intptr_t modulus_is_large;
 
+extern LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
+extern LispObject quote_symbol, function_symbol, comma_symbol;
+extern LispObject comma_at_symbol, cons_symbol, eval_symbol, apply_symbol;
 extern LispObject lisp_true, lambda, funarg, unset_var, opt_key,rest_key;
 extern LispObject char_0_symbol, quote_symbol, function_symbol, comma_symbol;
 extern LispObject comma_at_symbol, cons_symbol, eval_symbol, apply_symbol;
@@ -418,7 +421,7 @@ extern LispObject cl_equal_symbol, equal_symbol, equalp_symbol;
 extern LispObject work_symbol, evalhook, applyhook, macroexpand_hook;
 extern LispObject go_symbol, cond_symbol;
 extern LispObject append_symbol, exit_tag, exit_value, catch_tags;
-extern LispObject current_package, startfn;
+extern LispObject current_package, explode_table, startfn;
 extern LispObject gensym_base, string_char_sym, boffo;
 extern LispObject err_table, progn_symbol, gcknt_symbol;
 extern LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol;
@@ -514,8 +517,8 @@ extern LispObject om_getString(LispObject, LispObject);
 extern LispObject om_getSymbol(LispObject, LispObject);
 extern LispObject om_getType(LispObject, LispObject);
 
-extern LispObject om_stringToStringPtr(LispObject, LispObject);
-extern LispObject om_stringPtrToString(LispObject, LispObject);
+extern LispObject om_stringToStringPtr(LispObject env, LispObject lstr);
+extern LispObject om_stringPtrToString(LispObject env, LispObject lpstr);
 
 extern LispObject om_read(LispObject, LispObject dev);
 extern LispObject om_supportsCD(LispObject, LispObject);
@@ -814,6 +817,7 @@ extern LispObject  bytestream_interpret(size_t ppc, LispObject lit,
                                         LispObject *entry_stack);
 extern bool        complex_stringp(LispObject a);
 extern LispObject  copy_string(LispObject a, size_t n);
+extern LispObject  characterify_string(LispObject str);
 extern LispObject  freshline_stdout();
 extern LispObject  freshline_trace();
 extern LispObject  freshline_debug();

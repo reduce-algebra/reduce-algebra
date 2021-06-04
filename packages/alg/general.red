@@ -47,7 +47,7 @@ symbolic procedure eqexpr u;
 
 flag('(eq equal),'equalopr);
 
-symbolic procedure evenp x; remainder(x,2)=0;
+symbolic inline procedure evenp x; remainder(x,2)=0;
 
 flag('(evenp),'opfn);  % Make a symbolic operator.
 
@@ -68,7 +68,7 @@ symbolic procedure mappend(u,v);
 symbolic procedure nlist(u,n);
    if n=0 then nil else u . nlist(u,n-1);
 
-symbolic procedure nth(u,n);
+symbolic inline procedure nth(u,n);
    car pnth(u,n);
 
 symbolic procedure pnth(u,n);
@@ -87,7 +87,7 @@ symbolic procedure permutations u;
    if null u then list u
     else for each j in u join mapcons(permutations delete(j,u),j);
 
-symbolic procedure posintegerp u;
+symbolic inline procedure posintegerp u;
    % True if U is a positive (non-zero) integer.
    fixp u and u>0;
 
@@ -103,12 +103,18 @@ symbolic procedure repasc(u,v,w);
     else if u = caar w then (u . v) . cdr w
     else car w . repasc(u,v,cdr w);
 
+symbolic procedure repascq(u,v,w);
+   % Replaces value of key U by V in association list W with EQ test.
+   if null w then rerror(alg,7,list("key",u,"not found"))
+    else if u eq caar w then (u . v) . cdr w
+    else car w . repascq(u,v,cdr w);
+
 symbolic procedure repeats x;
    if null x then nil
     else if car x member cdr x then car x . repeats cdr x
     else repeats cdr x;
 
-symbolic procedure revpr u;
+symbolic inline procedure revpr u;
    cdr u . car u;
 
 symbolic procedure smember(u,v);
@@ -152,21 +158,21 @@ symbolic procedure xnp(u,v);
 % are included just once. So some of the functions defined here may be
 % a little specialist and not used in very many places.
 
-inline procedure !*k2pf u;
+symbolic inline procedure !*k2pf u;
    u .* (1 ./ 1) .+ nil;
 
-inline procedure negpf u;
+symbolic inline procedure negpf u;
    multpfsq(u,(-1) ./ 1);
 
-inline procedure lowerind u;
+symbolic inline procedure lowerind u;
    list('minus,u);
 
 % The next two are from excalc.
 
-inline procedure get!*fdeg u;
+symbolic inline procedure get!*fdeg u;
    (if x then car x else nil) where x = get(u,'fdegree);
 
-inline procedure get!*ifdeg u;
+symbolic inline procedure get!*ifdeg u;
    (if x then cdr x else nil)
     where x = assoc(length cdr u,get(car u,'ifdegree));
 
@@ -195,11 +201,11 @@ for i := 0:15 do putv(ints!-as!-symbols!*, i,
 % Make a symbols whose name is the sequence of digits from the
 % number u. This (!*num2id 37) will give !37.
  
-symbolic procedure !*num2id u;
+symbolic inline procedure !*num2id u;
    if u <= 15 and u >= 0 then getv(ints!-as!-symbols!*, u)
-   else intern compress('!! . explode u);
+   else intern list2string explode u;
 
-symbolic procedure add!+vector!+to!+list(vector1, vectorlist);
+symbolic inline procedure add!+vector!+to!+list(vector1, vectorlist);
 % returns a list of vectors consisting of vectorlist with vector1
 % added at the end. Used in symmetry and linalg packages.
    append(vectorlist, list vector1);
@@ -229,33 +235,34 @@ symbolic procedure revalnuminterval(u,num);
 symbolic procedure alistp l;
    null l or (pairp l and pairp car l and alistp cdr l);
 
-symbolic procedure greaterpcar(u, v);
+symbolic inline procedure greaterpcar(u, v);
   car u > car v;
 
-symbolic procedure lesspcar(u, v);
+symbolic inline procedure lesspcar(u, v);
   car u < car v;
 
-symbolic procedure greaterpcdr(a, b);
+symbolic inline procedure greaterpcdr(a, b);
   cdr a > cdr b;
 
-symbolic procedure lesspcdr(u, v);
+symbolic inline procedure lesspcdr(u, v);
   cdr u < cdr v;
 
-symbolic procedure identity!-function x;
+symbolic inline procedure identity!-function x;
   x;
 
-symbolic procedure ordpcar(u, v);
+symbolic inline procedure ordpcar(u, v);
   ordp(car u, car v);
 
-symbolic procedure ordpcadr(u, v);
+symbolic inline procedure ordpcadr(u, v);
   ordp(cadr u, cadr v);
 
-symbolic procedure ordopcadr(u, v);
+symbolic inline procedure ordopcadr(u, v);
   ordop(cadr u, cadr v);
 
-symbolic procedure arg1of2(u, v); u;
+symbolic inline procedure arg1of2(u, v); u;
 
-symbolic procedure arg2of2(u, v); v;
+symbolic inline procedure arg2of2(u, v); v;
+
 endmodule;
 
 end;

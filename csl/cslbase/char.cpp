@@ -101,14 +101,9 @@ LispObject characterify(LispObject c)
 LispObject char_to_id(int ch)
 {   LispObject w;
     int n;
-    if (ch == -1) return onevalue(eof_symbol);
+    if (ch < 0) return onevalue(eof_symbol);
     ch &= 0x001fffff;
-    if (ch <= 0xff &&
-        ((w = elt(charvec, ch)) != nil)) return onevalue(w);
-    if (ch <= 0x7f)
-    {   celt(boffo, 0) = ch;
-        n = 1;
-    }
+    if (ch <= 0xff) return onevalue(basic_elt(charvec, ch));
     else if (ch <= 0x7ff)
     {   celt(boffo, 0) = 0xc0 + (ch>>6);
         celt(boffo, 1) = 0x80 + (ch & 0x3f);

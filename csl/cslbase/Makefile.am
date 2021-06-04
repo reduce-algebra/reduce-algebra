@@ -2088,21 +2088,13 @@ boot.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 profile:	$(BOOTSTRAPREDUCE_IMG)
 	$(TRACE)mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	if test -f $(INLINE_DEFS); \
-	then mv $(INLINE_DEFS) old-inline-defs.dat; \
-	else touch old-inline-defs.dat; \
-	fi
+	rm -f $(INLINE_DEFS)
 	touch $(INLINE_DEFS)
 	$(RM) -f $(BOOTSTRAPREDUCE_IMG)
 	$(MAKE) $(AM_MAKEFLAGS) $(BOOTSTRAPREDUCE_IMG)
 	chmod 664 $(gensrc)/*
-	if diff $(INLINE_DEFS) old-inline-defs.dat > /dev/null; \
-	then \
-	  echo "Inline definitions have not changed"; \
-	  else \
-	  $(RM) $(BOOTSTRAPREDUCE_IMG); \
-	  $(MAKE) $(AM_MAKEFLAGS) $(BOOTSTRAPREDUCE_IMG); \
-	fi
+	$(RM) $(BOOTSTRAPREDUCE_IMG)
+	$(MAKE) $(AM_MAKEFLAGS) $(BOOTSTRAPREDUCE_IMG)
 	./bootstrapreduce$(COM) \
 		-w $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/profile.red \
@@ -2139,33 +2131,15 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 # that has ALL the inline definitions available. To ensure that things are
 # clean I discard any old inline definition database. To ensure that even
 # forward references to inlines are expanded I do the build twice.
-	if test -f $(INLINE_DEFS); \
-	then mv $(INLINE_DEFS) old-inline-defs.dat; \
-	else touch old-inline-defs.dat; \
-	fi
+	rm -f $(INLINE_DEFS)
 	touch $(INLINE_DEFS)
 	$(RM) -f $(BOOTSTRAPREDUCE_IMG)
 	$(MAKE) $(AM_MAKEFLAGS) $(BOOTSTRAPREDUCE_IMG)
 	chmod 664 $(gensrc)/*
-	if diff $(INLINE_DEFS) old-inline-defs.dat > /dev/null; \
-	then \
-	  echo "Inline definitions have not changed"; \
-	  else \
-	  $(RM) $(BOOTSTRAPREDUCE_IMG); \
-	  $(MAKE) $(AM_MAKEFLAGS) $(BOOTSTRAPREDUCE_IMG); \
-	fi
+	$(RM) -f $(BOOTSTRAPREDUCE_IMG)
+	$(MAKE) $(AM_MAKEFLAGS) $(BOOTSTRAPREDUCE_IMG)
 	$(MAKE) $(AM_MAKEFLAGS) just-c-code
 	chmod 664 $(gensrc)/*
-# If the inline-defs file has not changed I will restore the old one. Its
-# contents will be just what I would have seen in the new one but its
-# datestamp will be older and that can help avoid unnecessary rebuilding.
-	if diff $(INLINE_DEFS) old-inline-defs.dat > /dev/null; \
-	then \
-	  echo "Inline definitions have not changed"; \
-	  mv old-inline-defs.dat $(INLINE_DEFS); \
-	else \
-	  $(RM) -f old-inline-defs.dat; \
-	fi
 	mv $(gensrc)/make.tmp $(gensrc)/make.stamp
 
 # This target assumes that $(BOOTSTRAPREDUCE_IMG) is up to date and on that

@@ -4165,8 +4165,53 @@ LispObject Leject(LispObject env)
     return onevalue(nil);
 }
 
+// I am going to take special action on exploding just a fixnum because
+// I believe that parts of Reduce do that especially often.
+
 LispObject Lexplode(LispObject env, LispObject a)
-{   escaped_printing = escape_yes+escape_nolinebreak+escape_exploding;
+{
+#ifdef EXPERIMENTAL
+// The code here is broken in some manner, but I want it checked in so I
+// can test and debug on a range of platforms! Normal builds will not
+// use the broken code vecause of the "#ifdef EXPERIMENTAL"
+    if (is_fixnum(a))
+    {   intptr_t n = int_of_fixnum(a);
+        if (0<=n && n<100)
+        {   LispObject r = basic_elt(explode_table, n);
+            if (r != nil) return onevalue(r);
+        }
+        bool sign;
+        if (n < 0)
+        {   n = -n;
+            sign = true;
+        }
+        else sign = false;
+std::cout << "sign = " << sign << " and n = " << n << "\n";
+        unsigned char buffer[32];
+        int k = 0;
+        while (n >= 10)
+        {   buffer[k++] = '0' + n%10;
+            n = n/10;
+        }
+        buffer[k++] = '0' + n;
+        if (sign) buffer[k++] = '-';
+buffer[k] = 0; std::cout << "nn= {" << buffer << "}\n";
+        LispObject r = nil;
+        for (int i=0; i<k; i++)
+            r = cons(char_to_id(buffer[i]), r);
+cout << "result: ";
+prin_to_stdout(r); cout << "\n";
+escaped_printing = escape_yes+escape_nolinebreak+escape_exploding;
+cout << "About to explode: ";
+LispObject r1 = explode(a);
+cout << "result of explode = ";
+prin_to_stdout(r1); cout << "\n";
+if (!equal(r, r1)) return aerror1("explode", a);
+cout << "success\n";
+        return onevalue(r1);
+    }
+#endif // EXPERIMENTAL
+    escaped_printing = escape_yes+escape_nolinebreak+escape_exploding;
     return onevalue(explode(a));
 }
 
@@ -4189,7 +4234,49 @@ LispObject Lexplodebinary(LispObject env, LispObject a)
 }
 
 LispObject Lexplodec(LispObject env, LispObject a)
-{   escaped_printing = escape_nolinebreak+escape_exploding;
+{
+#ifdef EXPERIMENTAL
+// The code here is broken in some manner, but I want it checked in so I
+// can test and debug on a range of platforms! Normal builds will not
+// use the broken code vecause of the "#ifdef EXPERIMENTAL"
+    if (is_fixnum(a))
+    {   intptr_t n = int_of_fixnum(a);
+        if (0<=n && n<100)
+        {   LispObject r = basic_elt(explode_table, n);
+            if (r != nil) return onevalue(r);
+        }
+        bool sign;
+        if (n < 0)
+        {   n = -n;
+            sign = true;
+        }
+        else sign = false;
+std::cout << "sign = " << sign << " and n = " << n << "\n";
+        unsigned char buffer[32];
+        int k = 0;
+        while (n >= 10)
+        {   buffer[k++] = '0' + n%10;
+            n = n/10;
+        }
+        buffer[k++] = '0' + n;
+        if (sign) buffer[k++] = '-';
+buffer[k] = 0; std::cout << "nn= {" << buffer << "}\n";
+        LispObject r = nil;
+        for (int i=0; i<k; i++)
+            r = cons(char_to_id(buffer[i]), r);
+cout << "result: ";
+prin_to_stdout(r); cout << "\n";
+escaped_printing = escape_nolinebreak+escape_exploding;
+cout << "About to explode: ";
+LispObject r1 = explode(a);
+cout << "result of explode = ";
+prin_to_stdout(r1); cout << "\n";
+if (!equal(r, r1)) return aerror1("explodec", a);
+cout << "success\n";
+        return onevalue(r1);
+    }
+#endif // EXPERIMENTAL
+    escaped_printing = escape_nolinebreak+escape_exploding;
     return onevalue(explode(a));
 }
 
