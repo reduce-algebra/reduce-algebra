@@ -83,7 +83,7 @@ symbolic procedure multsq(u,v);
 
 symbolic procedure negsq u; negf numr u ./ denr u;
 
-inline procedure multpq(u,v);
+symbolic inline procedure multpq(u,v);
    multsq(!*p2q u,v);
 
 symbolic procedure cancel u;
@@ -171,7 +171,7 @@ symbolic procedure adddm(u,v);
 % in poly.red
 % symbolic inline procedure domainp u; atom u or atom car u;
 
-symbolic procedure noncomp u;
+symbolic inline procedure noncomp u;
    !*ncmp and noncomp1 u;
 
 symbolic procedure noncomp1 u;
@@ -193,7 +193,7 @@ symbolic procedure noncomlistp u;
 % who really understand the physop code will feel like working on that at
 % some time. 
 
-symbolic procedure multf(u, v);
+symbolic inline procedure multf(u, v);
   if !*physop!-loaded then physop!-multf(u, v)
   else poly!-multf(u, v);
 
@@ -234,7 +234,7 @@ symbolic procedure poly!-multf(u,v);
         return if null x then y else lpow v .* x .+ y
    end;
 
-symbolic procedure noncomfp u;
+symbolic inline procedure noncomfp u;
    % It's possible that ncmp!* would work here.
    !*ncmp and noncomfp1 u;
 
@@ -284,7 +284,7 @@ symbolic procedure multdm(u,v);
            times2(u,v)
     else dcombine(u,v,'times);
 
-inline procedure multpf(u,v); multf(!*p2f u,v);
+symbolic inline procedure multpf(u,v); multf(!*p2f u,v);
 
 symbolic procedure negf u;
    if null u then nil
@@ -513,7 +513,7 @@ symbolic procedure sub2chk u;
 
 % ***** FUNCTIONS FOR DIVIDING STANDARD FORMS *****
 
-symbolic procedure quotsq(u,v);
+symbolic inline procedure quotsq(u,v);
    multsq(u,invsq v);
 
 symbolic procedure quotf!*(u,v);
@@ -525,7 +525,7 @@ symbolic procedure quotf!*(u,v);
                  where y=rationalizesq(u ./ v))
           where x=quotf(u,v);
 
-symbolic procedure quotf(u,v);
+symbolic inline procedure quotf(u,v);
    quotf1(u,v) where !*exp = t;
 
 symbolic procedure quotf1(p,q);

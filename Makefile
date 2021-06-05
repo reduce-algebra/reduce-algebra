@@ -22,7 +22,7 @@
 #   [make install] Work in progress at this stage.
 
 
-.PHONY: dist all csl psl csl-sanity-test snapshot install
+.PHONY: dist all csl psl csl-sanity-test profile snapshot install
 
 # When debugging it may be useful to invoke scripts/make.sh in a noisy way...
 # as in "make VERBOSE=-v"
@@ -32,6 +32,12 @@
 
 all:
 	+$(SHELL) $(VERBOSE) scripts/make.sh $(MAKECMDGOALS)
+
+# The next will re-profile Reduce. It uses the first configured version
+# in the cslbuild directory.
+
+profile:
+	cd `ls -d cslbuild/*/csl | head -1` && make profile
 
 # This script tries a fairly basic sanity check to see if the
 # support-tools, include files and libraries needed to build the

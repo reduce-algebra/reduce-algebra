@@ -122,11 +122,32 @@ asserted procedure lto_transposip(l: List): List;
       return reversip res
    end;
 
+% Here each integer n has getv(int2id_table*, n) a symbol with name !n
+% and for each such symbol get('!n, int2id!*) = n. The table gets expanded
+% and new symbols set up as you call lto_int2id.
+
+global '(int2id_table!*);
+int2id_table!* := mkvect(-1);
+
 asserted procedure lto_int2id(n: Integer): Id;
-   intern compress('!! . explode n);
+   if n <= upbv int2id_table!* then getv(int2id_table!*, n)
+   else begin
+% Here I need to expand the table.
+      scalar w := mkvect(2*n), s;
+      s := upbv int2id_table!*;
+      for i := 0:s do putv(w, i, getv(int2id_table!*, i));
+      for i := s+1:2*n do <<
+         s := intern compress('!! . explode i);
+         putv(w, i, s);
+         put(s, 'id2int!*, i) >>;
+      int2id_table!* := w;
+      return getv(int2id_table!*, n);
+   end;
+
+lto_int2id 30;  % Pre-populate the table.
 
 asserted procedure lto_id2int(a: Id): Integer;
-   compress cdr explode a;
+   get(a, 'id2int!*);
 
 asserted procedure lto_alpatch(key: Id, val: Any, al: Alist): Alist;
    % List tools alist patch. [key] is an interned identifier, [val] is
@@ -167,7 +188,7 @@ asserted procedure lto_catsoc(key: Id, al: Alist): Any;
    % List tools conditional atsoc. [key] is an identifier; [al] is an
    % alist $((k_1 . e_1),...,(k_n . e_n))$. Returns $e_i$ if [key] is
    % [eq] to $k_i$, [nil] else.
-   (if x then cdr x) where x=atsoc(key,al);
+   (if x then cdr x else nil) where x=atsoc(key,al);
 
 asserted procedure lto_natsoc(key: Id, al: Alist): Any;
    % List tools conditional number atsoc. [key] is an identifier; [al]
@@ -291,12 +312,7 @@ asserted procedure lto_stringGreaterP(s1: String, s2: String): Boolean;
    not lto_stringLeq(s1, s2);
 
 asserted procedure lto_string2id(s: String): Id;
-   begin scalar w;
-      w := explodec s;
-      if not lto_alphap car w then
-	 w := '!! . w;
-      return intern compress w
-   end;
+   intern s;       % This us what intern does!
 
 asserted procedure lto_max(l: List): Any;
    if null l then '(minus infinity) else lto_max1 l;
@@ -304,7 +320,11 @@ asserted procedure lto_max(l: List): Any;
 asserted procedure lto_max1(l: List): Integer;
    % List tools maximum of a list. [l] is a list of integers. Returns
    % the maximum of [l].
-   if null cdr l then car l else max(car l,lto_max1 cdr l);
+   begin    % A version that will not consume unbounded stack.
+      scalar r := car l;
+      for each x in cdr l do r := max(x, r);
+      return r;
+   end;
 
 asserted procedure lto_min(l: List): Atom;
    if null l then 'infinity else lto_min1 l;
@@ -312,7 +332,11 @@ asserted procedure lto_min(l: List): Atom;
 asserted procedure lto_min1(l: List): Integer;
    % List tools minimum of a list. [l] is a list of integers. Returns
    % the maximum of [l].
-   if null cdr l then car l else min(car l,lto_min1 cdr l);
+   begin    % A version that will not consume unbounded stack.
+      scalar r := car l;
+      for each x in cdr l do r := min(x, r);
+      return r;
+   end;
 
 asserted procedure lto_ravg(l: List): Floating;
    % Rounded arithmetic mean of a list. [l] is a list of integers. Returns a
@@ -366,7 +390,7 @@ on1 'rlsetequalqhash;
 
 asserted procedure lto_setequalq(s1: List, s2: List): Boolean;
    % s1 and s2 are lists of identifiers not containing any duplicates.
-   begin scalar c,a1,a2,svs1,svs2,w; integer n1,n2;
+   begin scalar c,a1,w;
       w := if !*rlsetequalqhash then
  	 lto_hashequalq(s1,s2)
       else
@@ -528,8 +552,16 @@ asserted procedure lto_apply2nthip(l: List, n: Integer, fun: Applicable, xargl: 
       return l
    end;
 
-asserted procedure lto_hashid(id: Id): Integer;
-   % id2int is not Standard Lisp.
+%asserted procedure lto_hashid(id: Id): Integer;
+%   % id2int is not Standard Lisp. Note that this is not a very good hash
+%   % function in that the range of values returned is fairly low and if
+%   % you have names all introduced together they are liable to get
+%   % consecutive value codes. These limitations seem to be there on both
+%   % PSL and CSL
+%   id2int id;
+
+% At present it seems that I can not have both inline and asserted together.
+inline procedure lto_hashid id;   % performance critical
    id2int id;
 
 asserted procedure lto_delq(x: Any, l: List): List;
@@ -585,15 +617,19 @@ asserted procedure lto_list2vector(l: List): Vector;
    end;
 
 asserted procedure lto_at2str(s: Atom): String;
-   % Convert atom to string. id2string is not Standard Lisp exists in both CSL
-   % and PSL. In the else-case e.g. lto_at2str('!") would fail.
-   if idp s then
-      id2string s
-   else
-      compress('!" . reversip('!" . reversip explode s));
+% Convert atom to string.
+   if idp s then id2string s
+% id2string is not Standard Lisp but exists in both CSL and PSL.
+   else if stringp s then s
+   else list2string explode2 s;
+% list2string is a Reduce function that is not upset by embedded double
+% quote marks. However it may not be safe against Unicode Characters beyond
+% the Basic Latin Block (ie U+00 to U+7f).
 
 inline procedure lto_fastgensym();
    <<
+% Despite the name of this function I expect it to be impressively more
+% expensive than just using gensym() under CSL! 
       if !*rlgensymintern then intern w else remob w;
       w
    >> where w = compress('!! . '!_ . 'k . explode(cdr rlgensymfast!* := cdr rlgensymfast!* + 1));
@@ -603,6 +639,9 @@ inline procedure lto_gensym();
 
 asserted procedure lto_gensym1(base: Id): Id;
    begin scalar l, w; integer c;
+% Unless the name for the symbol really matters this is going to be
+% a lot more costly then just gensym(), and so it only seems useful if the
+% generated name will appear in output returned to the user.
       c := atsoc(base, rlgensymcountal!*);
       if c then
       	 cdr c := cdr c + 1
@@ -637,15 +676,11 @@ asserted procedure lto_0listp(l: List): Boolean;
    null l or eqn(car l, 0) and lto_0listp cdr l;
 
 asserted procedure lto_alphap(x: Id): ExtraBoolean;
-   begin scalar alphabet, c, l;
-      alphabet := '(!a !b !c !d !e !f !g !h !i !j !k !l !m
-		 !n !o !p !q !r !s !t !u !v !w !x !y !z
-	 		!A !B !C !D !E !F !G !H !I !J !K !L !M
-			   !N !O !P !Q !R !S !T !U !V !W !X !Y !Z);
+   begin scalar c, l;
       c := t;
       l := explode x;
       while c and l do
-	 c := pop l memq alphabet;
+	 c := liter pop l;
       return c
    end;
 

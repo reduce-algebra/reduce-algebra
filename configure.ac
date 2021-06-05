@@ -1049,10 +1049,10 @@ then
     then
       LDFLAGS="$LDFLAGS -L/opt/local/lib"
     fi
-    CPPFLAGS="$CPPFLAGS -mmacosx-version-min=10.13"
-    CFLAGS="$CFLAGS -mmacosx-version-min=10.13"
-    CXXFLAGS="$CXXFLAGS -mmacosx-version-min=10.13"
-    LDFLAGS="$LDFLAGS -mmacosx-version-min=10.13"
+#   CPPFLAGS="$CPPFLAGS -mmacosx-version-min=10.13"
+#   CFLAGS="$CFLAGS -mmacosx-version-min=10.13"
+#   CXXFLAGS="$CXXFLAGS -mmacosx-version-min=10.13"
+#   LDFLAGS="$LDFLAGS -mmacosx-version-min=10.13"
     ;;
   esac
 
@@ -1143,8 +1143,8 @@ then
       MACARCH="--enable-macosx_arch=x86_64" 
       extras="--with-xft --with-xim"
       wx="--with-cocoa \
-          --with-macosx-version-min=10.13 \
           $MACARCH "
+#         --with-macosx-version-min=10.13
       ;;
     *)
 # On most non-windowed platforms Xft is a very good idea! And I am now
