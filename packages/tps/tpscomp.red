@@ -241,6 +241,10 @@ begin scalar arg1, arg2, arg3, tmp, tmp1, f, m, n, r;
      
    if f = 'weierstrass or f = 'weierstrassZeta then r := 'RW!*   
    else r := 'RW1!*;
+
+   % Using the standard tps expansion here gives the wrong result,
+   % we must use taylor expansion ??!! The standard method seems OK
+   % for regular points but taylor expansion used as a precaution above
    
    tmp := simppstay2(r . cdr form, depvar, exppt, nil);
    tmp := ps!:quotient!-crule(list('quotient, 1, tmp), depvar, exppt);

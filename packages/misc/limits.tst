@@ -99,6 +99,14 @@ limit(log(x^2)-log(x^2+8x),x,infinity); % 0
 limit(sqrt(x+5)-sqrt x,x,infinity); % 0
 limit(2^(log x),x,0); % 0
 
+% Additional examples with cot testing the removal of a long-standing kludge
+% and recent updates to tps to handle expansion about poles.
+limit(cot x,x,0);  % infinity
+limit!-(cot x,x,0); % -infinity
+limit(cot x/coth x, x, 0);  % 1
+limit(cot x/coth x, x, pi); % infinity
+limit(cot x/coth x, x, i*pi); % 0
+
 % Additional examples
 limit((sin tan x-tan sin x)/(asin atan x-atan asin x),x,0); % 1
 
