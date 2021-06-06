@@ -382,25 +382,6 @@ load_package trigsimp$ % load_package instead of load to load recursively all
 % a3*u^(3*p)+ a1*u^p the power u^(3*p) is not represented as (u^p)^3 .
 % So exponents are still to be avoided in crineq.red .
 
-%>>>>>>>> The next fix  corrects printing of Gaussian integers 
-%         (integer complex numbers under ON NAT and ON COMPLEX 
-%         to avoid printing of (:gi: 0 . 1) for i
-% Author: Winfried Neun Nov 2009
-
-% 14 Sep 2010, it seems the current REDUCE does all correctly now
-% so the procedure is commented out for now.
-
-%symbolic procedure add_prin_char(u,n)$
-%if null !*nat then if get(u, 'dname) then prin1 u  % <-- This line is extra.
-%                                     else 
-%if stringp u or get(u,'switch!*) or digit u
-%   or get(car explode2 u,'switch!*) then prin2 u
-%                                    else prin1 u
-%              else <<
-% pline!* := (((posn!* . n) . ycoord!*) . u) .  pline!*;
-% posn!* := n
-%>>$
-
 endmodule$
 
 

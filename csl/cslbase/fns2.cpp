@@ -411,6 +411,26 @@ LispObject Lsymbol_set_env(LispObject env, LispObject a, LispObject b)
     return onevalue(b);
 }
 
+// Return the number of byte opcodes executed within this function, counting
+// an extra 10 for each time a bytecoded version of it is entered at all.
+
+LispObject Lsymbol_count(LispObject env, LispObject a)
+{   if (!symbolp(a)) return onevalue(nil);
+    return onevalue(make_lisp_unsigned64(qcount(a)));
+}
+
+// Find the length in bytes of a bytecoded definition of this function.
+
+LispObject Lsymbol_bytelength(LispObject env, LispObject a)
+{   if (!symbolp(a)) return onevalue(nil);
+    LispObject e = qenv(a);
+    if (!is_cons(e)) return onevalue(fixnum_of_int(0));
+    e = car(e);
+    if (!is_bps(e)) return onevalue(fixnum_of_int(0));
+    size_t len = length_of_byteheader(vechdr(e)) - CELL;
+    return onevalue(make_lisp_unsigned64(len));
+}
+
 LispObject Lsymbol_fastgets(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
     return onevalue(qfastgets(a));
@@ -3277,6 +3297,8 @@ setup_type const funcs2_setup[] =
     DEF_1("length",             Llength),
     DEF_1("make-bps",           Lget_bps),
     DEF_1("symbol-env",         Lsymbol_env),
+    DEF_1("symbol-count",       Lsymbol_count),
+    DEF_1("symbol-bytelength",  Lsymbol_bytelength),
     {"symbol-make-fastget",     G0Wother, Lsymbol_make_fastget1, Lsymbol_make_fastget, G3Wother, G4Wother},
     DEF_1("symbol-fastgets",    Lsymbol_fastgets),
     DEF_1("object-header",      Lobject_header),

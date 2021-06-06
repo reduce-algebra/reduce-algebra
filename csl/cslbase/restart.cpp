@@ -103,7 +103,7 @@ LispObject applyhook, macroexpand_hook, append_symbol, exit_tag;
 LispObject exit_value, catch_tags, keyword_package, current_package;
 LispObject startfn, all_packages, package_symbol, internal_symbol;
 LispObject gcknt_symbol, external_symbol, inherited_symbol;
-LispObject gensym_base, string_char_sym, boffo, explode_table;
+LispObject gensym_base, string_char_sym, boffo;
 LispObject key_key, allow_other_keys, aux_key;
 LispObject err_table, format_symbol, progn_symbol, expand_def_symbol;
 LispObject allow_key_key, declare_symbol, special_symbol, large_modulus;
@@ -635,7 +635,6 @@ static void cold_setup()
     setpackage(nil,            lisp_package);
     setpackage(current_package,lisp_package);
 
-    explode_table = get_vector_init(CELL*101, nil);
     B_reg = nil;                             // safe for GC
     unset_var                =
         make_undefined_global("~indefinite-value~");
@@ -829,8 +828,6 @@ static void cold_setup()
     procstack = nil;
     procmem = get_basic_vector_init(CELL*100, nil); // 0 to 99
     procstackp = 0;
-    for (int i=0; i<100; i++)
-        basic_elt(explode_table, i) = Lexplode(nil, fixnum_of_int(i));
 }
 
 LispObject set_up_functions(int restart_flag)
@@ -2082,7 +2079,6 @@ LispObject *list_bases[] =
     &catch_tags,
     &lisp_package,
     &boffo,
-    &explode_table,
     &charvec,
     &rehash_vec1,
     &rehash_vec2,

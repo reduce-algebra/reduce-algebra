@@ -1,9 +1,0 @@
-2017-12-17
-The revision of wxWidgets that I am using is from git on the above date.
-
-This file records that fact and is used by "make" so that when its date
-stamp changes a fresh copy of wxWidgets will be unpacked for use. There is
-no check that the revision information quoted here matches the one that gets
-unpacked, but the details included here guarantee a textual change in this
-file any time I update things, and that means that date-stamps will change,
-leading to rebuilding.

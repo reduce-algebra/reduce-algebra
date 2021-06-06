@@ -1504,8 +1504,7 @@ static LispObject Lreset_gensym(LispObject env, LispObject a)
 
 uint32_t symbol_sequence = 0;
 
-LispObject iintern(LispObject str, size_t h, LispObject p,
-                   int str_is_ok)
+LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
 // Look up the first h chars of the string str with respect to the package p.
 // The last arg is a boolean that allows me to decide if (when a new symbol
 // has to be created) the string must be copied.  If h differs from the
@@ -1670,6 +1669,10 @@ LispObject Lintern(LispObject env, LispObject str)
 #else
     p = CP;
 #endif
+// If you try to intern a symbol and it is already present in the
+// package you are trying to intern it in then just return it without
+// needing to do anything to it.
+    if (symbolp(str) && qpackage(str) == p) return onevalue(str);
 #ifdef COMMON
     if (complex_stringp(str))
     {   Save save1(p);

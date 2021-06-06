@@ -280,12 +280,13 @@ public:
     errorNest()
     {   errorDepth++;
         errorCount++;
-        if (errorDepth > 3) my_abort("error nesting");
+        if (errorDepth > 4) my_abort("error nesting");
 #ifdef DEBUG
 // In normal rather than debug usage there could be many many errors
 // raised and handled by errorset, so I must not give up. But while debugging
-// I can be a bit more energetic.
-        if (errorCount > 10) my_abort("too many errors");
+// I can be a bit more energetic. If I make this too small I will not be able
+// to profile the code in debug mode!
+        if (errorCount > 1000) my_abort("too many errors");
 #endif
     }
     ~errorNest()
