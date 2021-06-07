@@ -72,7 +72,7 @@ procedure my_getv(v,n);
       getv(v,n)
    >>;
 
-procedure ibalp_qsat!-initoptions();
+inline procedure ibalp_qsat!-initoptions();
    % Initialise the options. Sets default values for all options.
    ibalp_qsat!-setoptionl({'zmom,5,1,1.2,200});
 
@@ -110,7 +110,7 @@ procedure ibalp_qsat!-setoptionl(optionl);
       return ibalp_qsat!-getoptionl();
    end;
 
-procedure ibalp_qsat!-getoption(opt);
+inline procedure ibalp_qsat!-getoption(opt);
    % Get option. [opt] is one of the options heuristic, res_start,
    % first_val, res_inc or clause_del. Returns the corresponding
    % option.
@@ -1098,10 +1098,10 @@ procedure ibalp_simplify(dvar,dval,clause,clausel,varal);
       return (clausel . varal)
    end;
 
-procedure ibalp_lenisone(l);
+inline procedure ibalp_lenisone(l);
    l and null cdr l;
 
-procedure ibalp_commonlenisone(l1,l2);
+inline procedure ibalp_commonlenisone(l1,l2);
    % l1 and l2 are lists, which are not both empty.
    null l1 and ibalp_lenisone l2 or null l2 and ibalp_lenisone l1;
 
@@ -1574,18 +1574,18 @@ procedure ibalp_cec(clausel);
    else
       ibalp_cec cdr clausel;
 
-procedure ibalp_emptyclausep(clause);
+inline procedure ibalp_emptyclausep(clause);
    null ibalp_clause!-getsat clause and
       eqn(ibalp_clause!-getactpos clause,0) and
       eqn(ibalp_clause!-getactneg clause,0);
 
-procedure ibalp_csat(clausel);
+inline procedure ibalp_csat(clausel);
    % Check SAT. [clausel] is the list of clauses. Returns [t] if all
    % the clauses are true, else [nil].
    null clausel or (ibalp_clause!-getsat car clausel
       and ibalp_csat cdr clausel);
 
-procedure ibalp_cv(varal);
+inline procedure ibalp_cv(varal);
    % Choose a variable. [varal] is the A-List of variables. Returns a
    % unset variable.
    if null ibalp_var!-getval cdar varal then
@@ -1856,19 +1856,19 @@ procedure ibalp_getnewwl(clause);
       return wl
    end;
 
-procedure ibalp_iscnf(f);
+inline procedure ibalp_iscnf(f);
    ibalp_clausep f or (rl_op f eq 'and and ibalp_clauselp rl_argn f);
 
 procedure ibalp_clauselp(l);
    null l or (ibalp_clausep car l and ibalp_clauselp cdr l);
 
-procedure ibalp_clausep(s);
+inline procedure ibalp_clausep(s);
    ibalp_litp s or (rl_op s eq 'or and ibalp_litlp rl_argn s);
 
 procedure ibalp_litlp(l);
    null l or (ibalp_litp car l and ibalp_litlp cdr l);
 
-procedure ibalp_litp(s);
+inline procedure ibalp_litp(s);
    ibalp_atomp s or (rl_op s eq 'not and ibalp_atomp rl_arg1 s);
 
 procedure ibalp_atomp(s);
@@ -1983,7 +1983,7 @@ procedure ibalp_redclause(clause);
 procedure ibalp_vmember(v,vl);
    vl and (ibalp_vequal(v,car vl) or ibalp_vmember(v,cdr vl));
 
-procedure ibalp_vequal(v1,v2);
+inline procedure ibalp_vequal(v1,v2);
    ibalp_var!-getid v1 eq ibalp_var!-getid v2;
 
 procedure ibalp_readclause(c,varal);
@@ -2239,7 +2239,7 @@ procedure ibalp_convcnf(clausel,varal,qsat);
 procedure ibalp_var!-mkid(tok);
    % Turn a number into a identifier. [tok] is a number. Returns an
    % identifier.
-   intern compress ('v . 'a . 'r . explode tok);
+   intern list2string ('v . 'a . 'r . explode tok);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% QSAT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -2790,7 +2790,7 @@ procedure ibalp_qsat!-isec(clause);
       return ec
    end;
 
-procedure ibalp_qsat!-csat(clausel);
+inline procedure ibalp_qsat!-csat(clausel);
    % Check if the formula is satisfied. [clausel] is the List of
    % clauses. Returns [t] if all clauses are satisfied, [nil] else.
    ibalp_csat clausel;

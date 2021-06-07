@@ -421,7 +421,7 @@ extern LispObject cl_equal_symbol, equal_symbol, equalp_symbol;
 extern LispObject work_symbol, evalhook, applyhook, macroexpand_hook;
 extern LispObject go_symbol, cond_symbol;
 extern LispObject append_symbol, exit_tag, exit_value, catch_tags;
-extern LispObject current_package, explode_table, startfn;
+extern LispObject current_package, startfn;
 extern LispObject gensym_base, string_char_sym, boffo;
 extern LispObject err_table, progn_symbol, gcknt_symbol;
 extern LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol;

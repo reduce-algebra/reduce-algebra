@@ -940,16 +940,16 @@ symbolic procedure test_a_package names;
 symbolic procedure profile_compare_fn(p, q);
   begin
     scalar a, b;
-    a := (float caddr p/float cadr p);
-    b := (float caddr q/float cadr q);
-    if a < b then return t
-    else if a > b then return nil
+    a := cadddr p;
+    b := cadddr q;
+    if a > b then return t
+    else if a < b then return nil
     else return ordp(p, q)   % Use alpha ordering on function
                              % if counts match exactly.
   end;
 
 %
-% This function runs a test file and sorts out what the top 350
+% This function runs a test file and sorts out what the top 1000
 % functions in it. It appends their names to "profile.dat".
 %
 
@@ -990,8 +990,8 @@ symbolic procedure profile_a_package names;
        !*errcont := t;
 % I try hard to arrange that even if the test fails I can continue and that
 % input & output file selection is not messed up for me.
-       w := wrs nil;   w1 := rds nil;
-       wrs w;          rds w1;
+       w := wrs nil; w1 := rds nil;
+       wrs w; rds w1;
        rr := resource!-limit(list('errorset,
                                   mkquote list('in_list1, mkquote packge, t),
                                   nil, nil),
@@ -999,11 +999,25 @@ symbolic procedure profile_a_package names;
                              conslimit,
                              10000,% allow ten megabytes of I/O
                              -1);  % Do not limit Lisp-level errors at all
-       wrs w;          rds w1;
+       wrs w; rds w1;
+#if nil
+       w := for each x in mapstore 2 collect
+           list(car x, cadr x, caddr x, float caddr x/float cadr x);
+#else
+       w := nil;
+       for each s in oblist() do <<
+           w1 := symbol!-bytelength s;
+           if not zerop w1 and not zerop symbol!-count s then
+               w := list(s, w1, symbol!-count s,
+                   float symbol!-count s / float w1) . w >>;
+#endif
+princ "Blah: "; print sort(w, function orderp);
+       w := sort(w, function profile_compare_fn);
+       w1 := cadddr car w;
+       for each x in w do rplaca(cdddr x, 100.0*cadddr x/w1);
        erfg!* := nil;
        terpri();
        putd('quit, car quitfn, cdr quitfn);
-       w := sort(mapstore 2, function profile_compare_fn);
        begin
           scalar oo;
           oo := wrs open("buildlogs/flaguse.log", 'append);
@@ -1011,16 +1025,6 @@ symbolic procedure profile_a_package names;
           close wrs oo;
        end;
        load!-source(); % Need source versions of all code here
-       w1 := nil;
-       while w do <<
-           w1 := list(caar w, cadar w, caddar w) . w1;
-           w := cdr w >>;
-       w := w1;
-       % I collect the top 350 functions as used by each test, not because all
-       % that many will be wanted but because I might as well record plenty
-       % of information here and discard unwanted parts later on.
-       for i := 1:349 do if w1 then w1 := cdr w1;
-       if w1 then rplacd(w1, nil);
        w1 := open("profile.dat", 'append);
        w1 := wrs w1;
        linelength 80;
@@ -1028,13 +1032,15 @@ symbolic procedure profile_a_package names;
        princ "("; prin car names; ttab 20;
        princ "% Resources used by "; prin car names;
        princ ": "; print !*resources!*;
-       printc "% name                    code size  bytecodes used";
+       princ"%  name                                     code size";
+       printc "  bytecodes used  ratio";
        for each n in w do <<
            princ "  ("; prin car n; princ " ";
-           if posn() > 31 then terpri();
-           ttab(34-length explodec cadr n);
+           if posn() > 47 then terpri();
+           ttab(52-length explodec cadr n);
            prin cadr n; princ " ";
-           ttab(46-length explodec caddr n); princ caddr n;
+           ttab(64-length explodec caddr n); princ caddr n;
+           ttab(77-length explodec cadddr n); princ cadddr n;
            printc ")" >>;
        printc "  )";
        terpri();

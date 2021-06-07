@@ -4024,16 +4024,24 @@ down:
         case TAG_SYMBOL:
             debug_record("push_symbols SYMBOL");
             if (address_used(p - TAG_SYMBOL)) goto up;
-//          {   LispObject pn = qpname(p);
-//              if (is_string(pn))
-//                  trace_printf(": %.*s\n",
-//                      (int)length_of_byteheader(vechdr(pn))-CELL, &celt(pn, 0));
-//          }
+#if 0
+            {   LispObject pn = qpname(p);
+                if (is_string(pn))
+                    trace_printf(": %.*s",
+                        (int)length_of_byteheader(vechdr(pn))-CELL, &celt(pn, 0));
+            }
+#endif
 // I will stop 256 bytes before letting the stack overflow.
             if ((uintptr_t)stack+256 < (uintptr_t)stackLimit)
             {   if ((*pp)(p)) *++stack = p;
+#if 0
+                else trace_printf(" IGNORED");
+#endif
             }
             else fail = true; // I must keep traversing to restore things.
+#if 0
+            trace_printf("\n");
+#endif
             mark_address_as_used(p - TAG_SYMBOL);
             w = p;
             p = qpname(p);
@@ -4155,7 +4163,8 @@ up:
 
 static bool push_all_symbols(symbol_processor_predicate *pp)
 {   map_releaser RAII;
-    for (LispObject *s=stackBase+1; s<=stack; s++)
+    LispObject *oldStack = stack;
+    for (LispObject *s=stackBase+1; s<=oldStack; s++)
     {   std::sprintf(trigger, "Stack@%p", s);
         if (push_symbols(pp, *s)) return true;
     }
@@ -4175,6 +4184,7 @@ static bool push_all_symbols(symbol_processor_predicate *pp)
     {   std::sprintf(trigger, "list base %p push", reinterpret_cast<void *>(**p));
         if (push_symbols(pp, **p)) return true;
     }
+//  std::cout << "push_all_symbols: " << (stack-oldStack) << "\n"; // @@@
     return false;
 }
 
@@ -4243,7 +4253,7 @@ typedef struct mapstore_item
 {   double w;
     double n;
     uint64_t n1;
-    char name[40]; // I will truncate names to 39 chars
+    char name[64]; // I will truncate names to 63 chars
 } mapstore_item;
 
 bool profile_count_mode = false;
@@ -4325,18 +4335,18 @@ LispObject Lmapstore(LispObject env, LispObject a)
     what &= 7;
     if (what == 4)
     {   stack_restorer RAII;
-        push_all_symbols(clear_counts);
+        if (push_all_symbols(clear_counts)) return aerror("mapstore");
         return onevalue(nil);
     }
     if (what == 0 || what == 1)   // needed if I am printing
-    {   buff = new (std::nothrow) mapstore_item[100];
+    {   buff = new (std::nothrow) mapstore_item[2000];
         if (buff == nullptr) return onevalue(nil); // fail
         buffp = 0;
-        buffn = 100;
+        buffn = 2000;
     }
     {   stack_restorer RAII;
         itotal_count = total_count = 0.0;
-        push_all_symbols(count_totals);
+        if (push_all_symbols(count_totals)) return aerror("mapstore");
     }
     LispObject r;
     {   stack_restorer RAII;
@@ -4349,59 +4359,66 @@ LispObject Lmapstore(LispObject env, LispObject a)
 // with explicit visible code to stress exactly what is happening.
 // NOTE that this may place a LOT of items on the (Lisp) stack.
         push_all_symbols(non_zero_count);
+std::cout << "serialize.cpp:4354 " << (stack-savestack) << "\n";
         r = nil;
         while (stack != savestack)
         {   LispObject x = *stack;
             uint64_t n = qcount(x);
-            if (n == 0) continue;
+            if (n == 0)
+            {   stack--;
+                continue;
+            }
             LispObject e = qenv(x);
             if (is_cons(e))
             {   LispObject ee = car(e);
                 if (is_bps(ee))
                 {   size_t clen = length_of_byteheader(vechdr(ee)) - CELL;
                     double w = static_cast<double>(n)/static_cast<double>(clen);
-                    if (w/total_count > 0.00001 ||
-                        static_cast<double>(n)/itotal_count > 0.0001)
-                    {   if (what == 0 || what == 1)
-                        {   if (buffp == buffn)
-                            {   buffn += 100;
-                                mapstore_item *bigger  = new (std::nothrow)
-                                    mapstore_item[buffn];
-                                if (bigger == nullptr) return onevalue(nil);
-                                std::memcpy(bigger, buff, (buffn-100)*sizeof(mapstore_item));
-                                delete [] buff;
-                                buff = bigger;
-                            }
-                            buff[buffp].w = 100.0*w/total_count;
-                            buff[buffp].n = 100.0*static_cast<double>(n)/itotal_count;
-                            buff[buffp].n1 = n;
-                            ee = cdr(e);
+                    if (what == 0 || what == 1)
+                    {   if (buffp >= buffn-5)
+                        {   buffn += 1000;
+                            mapstore_item *bigger =
+                                new (std::nothrow) mapstore_item[buffn];
+                            if (bigger == nullptr) return onevalue(nil);
+                            std::memcpy(bigger, buff,
+                                (buffn-1000)*sizeof(mapstore_item));
+                            delete [] buff;
+                            buff = bigger;
+                        }
+                        buff[buffp].w = 100.0*w/total_count;
+                        buff[buffp].n =
+                            100.0*static_cast<double>(n)/itotal_count;
+                        buff[buffp].n1 = n;
+                        ee = cdr(e);
 // The name I will record the statistics against here will be the name that
 // the function originally had. This matters if you define a function (say FF)
 // and copy it to GG and then use GG intensively. I want that to show up as
 // heavy use of FF. In such a case FF may be listed more than once in the
 // output, once for direct calls and another for use of GG.
-                            if (is_vector(ee)) x = basic_elt(ee, 0);
-                            LispObject pn = qpname(x);
-                            size_t npn = length_of_byteheader(vechdr(pn)) - CELL;
-                            if (npn >= 40) npn = 39;
-                            std::strncpy(buff[buffp].name, reinterpret_cast<const char *>(&basic_celt(pn, 0)), npn);
-                            buff[buffp].name[npn] = 0; 
-                            buffp++;
-                        }
-                        if (what == 2 || what == 3)
-                        {   LispObject w1;
+                        if (is_vector(ee)) x = basic_elt(ee, 0);
+                        LispObject pn = qpname(x);
+                        size_t npn = length_of_byteheader(vechdr(pn)) - CELL;
+                        size_t limit = sizeof(buff[0].name);
+                        if (npn >= limit) npn = limit-1;
+                        std::strncpy(buff[buffp].name,
+                            reinterpret_cast<const char *>(&basic_celt(pn, 0)),
+                            npn);
+                        buff[buffp].name[npn] = 0; 
+                        buffp++;
+                    }
+                    if (what == 2 || what == 3)
+                    {   LispObject w1;
 // Result is a list of items ((name size bytes-executed) ...).
-                            Save save(r);
-                            w1 = make_lisp_integer64(n);
-                            errexit();
-                            x = basic_elt(cdr(qenv(x)), 0);
-                            w1 = list3(x, fixnum_of_int(clen), w1);
-                            errexit();
-                            save.restore(r);
-                            r = cons(w1, r);
-                            errexit();
-                        }
+                        Save save(r, x);
+                        w1 = make_lisp_unsigned64(n);
+                        errexit();
+                        save.restore(r, x);
+                        x = basic_elt(cdr(qenv(x)), 0);
+                        w1 = list3(x, fixnum_of_int(clen), w1);
+                        errexit();
+                        save.restore(r, x);
+                        r = cons(w1, r);
+                        errexit();
                     }
                 }
             }
@@ -4414,7 +4431,8 @@ LispObject Lmapstore(LispObject env, LispObject a)
     }
     if (what == 0 || what == 1)
     {   double running = 0.0;
-        std::qsort(reinterpret_cast<void *>(buff), buffp, sizeof(buff[0]), profile_cf);
+        std::qsort(reinterpret_cast<void *>(buff), buffp,
+                   sizeof(buff[0]), profile_cf);
         trace_printf("\n  Value  %%bytes (So far) MBytecodes Function name\n");
         for (size_t j=0; j<buffp; j++)
         {   running += buff[j].n;

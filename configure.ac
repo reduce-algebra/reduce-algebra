@@ -813,10 +813,14 @@ csl_inplace_build ()
 # When I configure I will install a default "profile.dat" if there is
 # not one in place already, but the user can always regenerate a newer
 # local version of the profile.
+# Well in csl/generated-c I keep what I expect to be the "previous released
+# profile" as profile.dat.old, and if the user has their own profile.dat
+# matching that I will install the newer replacement for them.
   if test ! -d "$abssrcdir/cslbuild/$GENERATED_C" ||
-     test ! -f "$abssrcdir/cslbuild/$GENERATED_C/profile.dat"
+     test ! -f "$abssrcdir/cslbuild/$GENERATED_C/profile.dat" ||
+     diff "$abssrcdir/cslbuild/$GENERATED_C/profile.dat" \
+          "$abssrcdir/csl/$GENERATED_C/profile.dat.old" >/dev/null
   then
-    rm -rf "$abssrcdir/cslbuild/$GENERATED_C"
     mkdir -p "$abssrcdir/cslbuild/$GENERATED_C"
     cp -r "$abssrcdir/csl/$GENERATED_C" "$abssrcdir/cslbuild"
   fi

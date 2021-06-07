@@ -972,13 +972,9 @@ public:
     ~tidy_intersect()
     {   LispObject w = *b;
         while (consp(w))
-        {
-#ifdef DEBUG
-            LispObject ss = car(w);
-            if (!is_symbol(ss)) my_abort("Not a symbol in tidy_intersection");
-#endif
-            setheader(car(w),
-                      qheader(car(w)) & ~static_cast<Header>(SYM_TAGGED));
+        {   LispObject ss = car(w);
+            if (is_symbol(ss))
+                setheader(ss, qheader(ss) & ~static_cast<Header>(SYM_TAGGED));
             w = cdr(w);
         }
     }
@@ -996,8 +992,8 @@ LispObject Lintersect_symlist(LispObject env, LispObject a,
 // Now for each item in (a) push it onto a result list (r) if it a
 // symbol that is tagged, i.e. if it was present in b.
     RealSave save(b);
-//  LispObject &bb = save.val(1);
-    {   tidy_intersect tidy(&stack[0]);
+    LispObject &bb = save.val(1);
+    {   tidy_intersect tidy(&bb);
         while (consp(a))
         {   LispObject x = car(a);
             if (is_symbol(x) && (qheader(x) & SYM_TAGGED))
@@ -1055,13 +1051,9 @@ public:
     ~tidy_union()
     {   LispObject w = *b;
         while (consp(w))
-        {
-#ifdef DEBUG
-            LispObject ss = car(w);
-            if (!is_symbol(ss)) my_abort("Not a symbol in tidy_union");
-#endif
-            setheader(car(w),
-                      qheader(car(w)) & ~static_cast<Header>(SYM_TAGGED));
+        {   LispObject ss = car(w);
+            if (is_symbol(ss))
+                setheader(ss, qheader(ss) & ~static_cast<Header>(SYM_TAGGED));
             w = cdr(w);
         }
     }
@@ -1078,7 +1070,7 @@ LispObject Lunion_symlist(LispObject env, LispObject a, LispObject b)
 // Now for each item in a push it onto a result list (r) if it a
 // symbol that is NOT tagged, i.e. if it was not present in b.
     RealSave save(b);
-//  LispObject bb = save.val(1);
+    LispObject &bb = save.val(1);
 // I want to be able to traverse the list (b) at the end of this
 // clearing tag bits. And this must be GC safe, so I save b on the
 // stack. The destructor for the tidy_union must then access this and
@@ -1087,7 +1079,7 @@ LispObject Lunion_symlist(LispObject env, LispObject a, LispObject b)
 // state. I pass a very explicit stack address here because trying to be
 // more abstract about things pushed too hard against edges of my C++
 // understanding!
-    {   tidy_union tidy(&stack[0]);
+    {   tidy_union tidy(&bb);
         while (consp(a))
         {   LispObject x = car(a);
             if (is_symbol(x) && (qheader(x) & SYM_TAGGED) == 0)

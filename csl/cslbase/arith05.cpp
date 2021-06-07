@@ -74,7 +74,7 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
             std::printf("[%.8lx should be a fixnum]",
                         static_cast<long>(bignum_digits(u)[0]));
         if (SIXTY_FOUR_BIT && len == 8)
-        {   int64_t v = (bignum_digits64(u, 1)<<31) +
+        {   int64_t v = ASL(bignum_digits64(u, 1), 31) +
                         bignum_digits(u)[0];
             if (valid_as_fixnum(v))
                 std::printf("[%.8lx should be fixnum]", static_cast<long>(d1));

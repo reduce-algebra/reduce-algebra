@@ -32,8 +32,12 @@ TRACE =
 AM_CPPFLAGS = $(TRACE)
 AM_LDFLAGS  = $(TRACE)
 
+if debug
+reduce_CPPFLAGS = $(TRACE) -DREDUCE_PROMPTS=1
+else !debug
 reduce_CPPFLAGS = $(TRACE) -DNO_BYTECOUNT=1 -DREDUCE_PROMPTS=1
-#
+endif !debug
+
 # At least on a temporary basis I will make CSL keep profiling
 # information. This is because that will help me debug the profile
 # collection code and is acceptable because maybe only very few people use
@@ -2085,7 +2089,7 @@ boot.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 		-D@reduce=$(CYGREDUCE) \
 		-o boot.img -- buildlogs/boot.log
 
-profile:	$(BOOTSTRAPREDUCE_IMG)
+profile:
 	$(TRACE)mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
 	rm -f $(INLINE_DEFS)
@@ -2106,13 +2110,14 @@ profile:	$(BOOTSTRAPREDUCE_IMG)
 	-$(CP) $(gensrc)/profile.dat $(gensrc)/profile.dat.old
 	mv profile.dat $(gensrc)
 	chmod 664 $(gensrc)/*
-	$(MAKE) standard-c-code
+	$(MAKE) just-c-code
 
 # After profiling you may wish to invoke this to put the new profile
 # information where it would be picked up if you remove cslbuild and
-# start afresh using configure/
+# start afresh using configure.
 profile-install:
-	cp $(gensrc)/profile.dat* $(reduce)/csl/generated-c
+	-$(CP) $(reduce)/csl/generated-c/profile.dat $(reduce)/csl/generated-c/profile.dat.old
+	$(CP) $(gensrc)/profile.dat $(reduce)/csl/generated-c
 
 $(gensrc)/profile.dat:	$(csl)/generated-c/profile.dat
 	-$(TRACE)mkdir -p $(gensrc)

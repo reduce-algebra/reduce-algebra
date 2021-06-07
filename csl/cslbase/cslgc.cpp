@@ -419,7 +419,7 @@ static bool reset_limit_registers()
             full = !allocate_more_memory();
     }
     else full = (pages_count <=
-                     heap_pages_count + (3*vheap_pages_count + 1)/2);
+                 heap_pages_count + (3*vheap_pages_count + 1)/2);
     if (full) return false;
 // reset_limit_registers should only be called when something has run out,
 // so if it is CONS space I will expand the CONS heap, otherwise the VECTOR
@@ -611,9 +611,8 @@ void reclaim(const char *why, int stg_class)
     }
 
     gc_number++;
-    if (!valid_as_fixnum(gc_number)) gc_number =
-            0; // wrap round on 32-bit
-    // machines if too big.
+    if (!valid_as_fixnum(gc_number)) gc_number = 0; // wrap round on 32-bit
+                                                    // machines if too big.
     setvalue(gcknt_symbol, fixnum_of_int(gc_number));
 
 #ifdef WITH_GUI

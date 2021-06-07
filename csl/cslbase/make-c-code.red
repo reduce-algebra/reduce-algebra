@@ -292,28 +292,24 @@ symbolic procedure read_profile_data file;
         requests := car w1 . requests;
         princ "Use data for "; print caar w1 >>;
 % The data structure read in here will be of the form
-%    ((module-name f-name1 f_name2 ...) (module-name ...) ...)
+%    ((module-name (f-name1 ..) (f_name2 ..) ...) (module-name ...) ...)
 % where within each module the requested functions have been listed in
 % order of priority.
       close rds w0 >>;
     enable!-errorset(car ee, cdr ee)
   end;
 
-off echo;
-
-read_profile_data "$destdir/profile.dat";
-read_profile_data "$destdir/unprofile.dat";
-
-on echo;
-
 symbolic procedure do_partial();
 begin
-  scalar fg;
+  scalar fg, !*echo;
+  read_profile_data "$destdir/profile.dat";
+  read_profile_data "$destdir/unprofile.dat";
 % I will load source definitions of everything available. That will include
 % much that is not actually needed, but will be simplest and safest.
   load!-source();
 % First discard the modules names.
   requests := reverse for each x in requests collect cdr x$
+
 % Now I will merge in suggestions from all packages in breadth-first
 % order of priority
 % Ie if I have modules A, B, C and D and each has in it functions a1, a2,
@@ -322,18 +318,23 @@ begin
 %
 % so that all packages A, B, C and D will get about balanced treatment
 % when I need to truncate the list at some stage. I do this except that
-% if a function has already been picked I do not pick it again (and the
-% package voting for it in effect misses out in that round). The output
-% from this will be built up (at first in reversed order) in w_reduce.
+% if a function has already been picked I will ignore it and look for the
+% next choice made by that module's test.
+% The output from this will be built up (at first in reversed order)
+% in w_reduce.
   fg := t;
   while fg do <<
     fg := nil;
-    for each x on requests do
+    for each x on requests do <<
 % Here x is of the form (((fname checksum size count) ...) ...)
 % w_reduce will be just a list of names, but with no repeats.
 % A feature of me doing things this way will be the if there are multiple
 % versions of any single function and ONE of them gets picked for
 % compilation into C++ I will treat them all that way.
+% Start by skipping cases that have already been scheduled for compilation.
+      while car x and member(caaar x, w_reduce) do
+         rplaca(x, cdar x);
+% Now compile the next function (if there is one).
       if car x then <<
 % I will include things just once provided they have an associated saved
 % definition and they are not on the exclusions list. Furthermore I do not
@@ -341,14 +342,13 @@ begin
 % is names in ANY of the sections of the profile data I am going to turn
 % all versions of that function into C++, and the scheme I now use arranges
 % that doing so should not lead to complications.
-        if not member(caaar x, w_reduce) and
-           get(caaar x, '!*savedefs) then <<
+        if get(caaar x, '!*savedefs) then <<
           if cdr get(caaar x, '!*savedefs) then <<
             if not zerop posn() then terpri();
             princ "+++ "; prin caaar x; printc " has multiple definitions" >>;
           w_reduce := caaar x . w_reduce >>;
         fg := t;
-        rplaca(x, cdar x) >> >>;
+        rplaca(x, cdar x) >> >> >>;
 
 % Compile some specific things first and others last. The ability to
 % override the normal priority order may be useful when I want to
@@ -359,7 +359,7 @@ begin
   for each x in append(at_start, at_end) do <<
     prin x; princ " "; print get(x, '!*savedefs) >>;
 
-  w_reduce := append(at_start, append(nreverse w_reduce, at_end));
+  w_reduce := append(at_start, append(reverse w_reduce, at_end));
 
 end;
 
@@ -399,6 +399,7 @@ symbolic procedure generate_cpp();
       begin
         scalar name, defns;
         name := car w_reduce;
+        w_reduce := cdr w_reduce;
         if null (defns := get(name, '!*savedefs)) then <<
           princ "+++ "; prin name;
           printc ": no saved definition found";
@@ -407,15 +408,14 @@ symbolic procedure generate_cpp();
           princ "+++++ "; prin name;
           printc ": in list of special-case omissions";
           w_reduce := cdr w_reduce >>
-        else for each defn in defns do <<
-          bulk := listsize(cdr defn, bulk);
-          if bulk < size_per_file then <<
-            count := count+1;
+        else <<
+          bulk := listsize(defns, bulk);
+          count := count+1;
+          how_many := how_many - 1;
+          for each defn in defns do <<
             princ count;
             princ ": ";
-            c!:ccmpout1 ('de . name . cddr defn);
-            how_many := how_many - 1;
-            w_reduce := cdr w_reduce >> >>
+            c!:ccmpout1 ('de . name . cddr defn) >> >>
       end;
       eval '(c!-end);
       fnames := cdr fnames
@@ -431,7 +431,7 @@ symbolic procedure generate_cpp();
     if null w_reduce then printc "No more functions need compiling into C"
     else while bulk < 50 and w_reduce do
       begin
-        scalar defns;
+        scalar name, defns;
         name := car w_reduce;
         if null (defns := get(name, '!*savedefs)) then <<
           princ "+++ "; prin name; printc ": no saved definition found";
@@ -451,10 +451,12 @@ symbolic procedure completion();
   begin
     scalar p;
     terpri();
-    printc "Top 20 things to compile are...";
+    printc "Top 64 things to compile are...";
     p := w_reduce;
-    for i := 1:20 do if p then <<
-      print car p;
+    for i := 1:64 do if p then <<
+      prin car p;
+      if remainder(i, 4) = 0 then terpri()
+      else ttab(18*remainder(i, 4));
       p := cdr p >>;
 
     verbos nil;

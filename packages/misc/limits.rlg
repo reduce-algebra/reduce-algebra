@@ -445,6 +445,34 @@ limit(2^(log x),x,0);
 0
  % 0
 
+% Additional examples with cot testing the removal of a long-standing kludge
+% and recent updates to tps to handle expansion about poles.
+limit(cot x,x,0);
+
+
+infinity
+  % infinity
+limit!-(cot x,x,0);
+
+
+ - infinity
+ % -infinity
+limit(cot x/coth x, x, 0);
+
+
+1
+  % 1
+limit(cot x/coth x, x, pi);
+
+
+infinity
+ % infinity
+limit(cot x/coth x, x, i*pi);
+
+
+0
+ % 0
+
 % Additional examples
 limit((sin tan x-tan sin x)/(asin atan x-atan asin x),x,0);
 
@@ -905,4 +933,3 @@ off rounded;
 
 
 end;
-

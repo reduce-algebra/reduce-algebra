@@ -759,17 +759,23 @@ static constexpr uintptr_t  SYM_UNPRINTED_GENSYM= 0x00800000; // not-yet-printed
 typedef struct Symbol_Head_
 {   std::atomic<Header> header;       // Header as for other vector-like types
     std::atomic<LispObject> value;    // Global or special value cell
+//
     std::atomic<LispObject> env;      // Extra stuff to help function cell
     std::atomic<LispObject> plist;    // A list
+//
     std::atomic<LispObject> fastgets; // to speed up flagp and get
     std::atomic<LispObject> package;  // Home package - a package object
+//
     std::atomic<LispObject> pname;    // A string (always)
     std::atomic<uint32_t> countLow;   // for statistics
     std::atomic<uint32_t> countHigh;  // for statistics
+//
     no_args *function0;      // Executable code always (no arguments)
     one_arg *function1;      // Executable code always (just 1 arg)
+//
     two_args *function2;     // Executable code always (just 2 args)
     three_args *function3;   // Executable code always (just 3 args)
+//
     fourup_args *function4up;// Executable code always (3 args + list of rest)
 } Symbol_Head;
 

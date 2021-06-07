@@ -128,8 +128,8 @@ symbolic procedure countof(u,v);
       else countof(u,car v)+countof(u,cdr v);
 
 symbolic procedure simplimit u;
-   % The kludgey handling of cot needs to be fixed some day.
-   begin scalar fn,exprn,var,val,old,v,result,!*precise;
+%  The kludgey handling of cot has been removed as no longer needed. AB
+   begin scalar fn,exprn,var,val,v,result,!*precise;
      if length u neq 4
        then rerror(limit,1,
                    {"Improper number of arguments to",car u,"operator"});
@@ -138,13 +138,9 @@ symbolic procedure simplimit u;
        mathprint u;
      >>;
      fn:= car u; exprn := cadr u; var := !*a2k caddr u; val := cadddr u;
-     old := get('cot,'opmtch);
-     put('cot,'opmtch,
-         '(((!~x) (nil . t) (quotient (cos !~x) (sin !~x)) nil)));
      %% rebind !*protfg so that errors are not shown
      v := errorset!*({'apply,mkquote fn,mkquote {exprn,var,val}},nil)
-		where !*protfg := t;
-     put('cot,'opmtch,old);
+ 		where !*protfg := t;
      result := if errorp v or (v := car v) = aeval 'failed
                  then mksq({fn,aeval exprn,var,val},1)
                 else simp!* v;

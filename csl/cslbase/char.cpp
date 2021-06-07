@@ -513,7 +513,9 @@ LispObject Lid2int(LispObject, LispObject a)
 {   if (!is_symbol(a)) return aerror1("id2int", a);
     uint32_t n = qcountLow(a) & 0x3fffffU;
 // If the symbol did not have a sequence number yet allocate it one. This
-// can happen if it was created as an uninterned value or a gensym.
+// can happen if it was created as an uninterned value or a gensym. Well
+// there is a special case for the symbol whose name is U+00 because that
+// has a genuine zero sequence number!
     if (n == 0 && a != char_0_symbol)
     {   n = symbol_sequence++ & 0x3fffffU;
         qcountLow(a) = (qcountLow(a) & ~0x3fffffU) | n;
