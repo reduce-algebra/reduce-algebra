@@ -636,7 +636,8 @@ procedure ofsf_smt2ReadAt(form);
       w := atsoc(op, '((!>!= . geq) (!<!= . leq) (!< . lessp) (!> . greaterp)
    	 (!= . equal)));
       if not w then
-	 cl_smt2ReadError {"error: expecting logical symbol but found ", op};
+	 error(99, lto_sconcat2(
+	    "expecting logic symbol but found ", id2string op));
       op := cdr w;
       lhs := ofsf_smt2ReadTerm cadr form;
       rhs := ofsf_smt2ReadTerm caddr form;
@@ -653,7 +654,8 @@ procedure ofsf_smt2ReadTerm1(u);
       op := car u;
       w := atsoc(op, '((!+ . plus) (!- . minus) (!* . times) (!/ . quotient)));
       if not w then
-	 cl_smt2ReadError {"error: expecting arithmetic symbol but found ", op};
+	 error(99, lto_sconcat2(
+	    "expecting arithmetic symbol but found ", id2string op));
       op := cdr w;
       if op eq 'minus and cddr u then
 	 op := 'difference;

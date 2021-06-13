@@ -81,7 +81,7 @@ procedure rl_set!$(argl);
       % load at least the packages for the chosen context before approximating
       % the current revision in rl_about
       w := rl_set argl;
-      if not rl_cid!* then rl_about();
+      if not w then rl_about();
       return 'list . w
    end;
 

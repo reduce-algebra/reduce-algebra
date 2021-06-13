@@ -37,13 +37,12 @@ procedure cl_apply2ats(f,client);
    cl_apply2ats1(f,client,nil);
 
 procedure cl_apply2ats1(f,client,clpl);
-   % Common logic apply to atomic formulas variant. [f] is formula;
-   % [client] is a function $[client](a,p_1,...,p_n)$; [clpl] is a
-   % list $(s_1,...,s_n)$; the first argument $a$ of [clpl] is an
-   % atomic formula, the specifications of the remaining arguments
-   % $p_1,...,p_n$ are met by the entries $s_1,...,s_n$ of [clpl]; the
-   % return value of [client] is an atomic formula. Returns a formula
-   % derived from [f] by replacing each atomic formula $\alpha$ by
+   % Common logic apply to atomic formulas variant. [f] is formula; [client] is
+   % a function $[client](a,p_1,...,p_n)$; [clpl] is a list $(s_1,...,s_n)$; the
+   % first argument $a$ of [client] is an atomic formula, the specifications of
+   % the remaining arguments $p_1,...,p_n$ are met by the entries $s_1,...,s_n$
+   % of [clpl]; the return value of [client] is an atomic formula. Returns a
+   % formula derived from [f] by replacing each atomic formula $\alpha$ by
    % $[client](\alpha,s_1,...,s_n)$.
    begin scalar op;
       op := rl_op f;
@@ -883,12 +882,12 @@ procedure cl_smt2PrefixPrint(op, argl);
 
 rl_provideService rl_smt2Read = cl_smt2Read using rl_smt2ReadAt;
 
-fluid '(!*smtsplain);
+fluid '(!*smtplain);
 fluid '(smt_assertionl!*);
 
 procedure cl_smt2Read(file);
    % [file] is a string.
-   begin scalar filech, oldch, w, form, smt_assertionl!*, !*smtsplain, raise;
+   begin scalar filech, oldch, w, form, smt_assertionl!*, !*smtplain, raise;
       !*smtsplain := t;
       raise := !*raise;
       !*raise := !*lower := nil;

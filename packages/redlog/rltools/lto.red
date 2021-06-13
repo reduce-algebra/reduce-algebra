@@ -29,8 +29,6 @@ copyright('lto, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-operator setminus;
-
 asserted procedure lto_insert(x: Any, l: List): List;
    % List tools insert. [x] is any S-expression, [l] is a list. Conses
    % [x] to [l] if [x] is not already member of [l].
@@ -146,8 +144,11 @@ asserted procedure lto_int2id(n: Integer): Id;
 
 lto_int2id 30;  % Pre-populate the table.
 
-asserted procedure lto_id2int(a: Id): Integer;
+asserted procedure lto_id2int_acn(a: Id): Integer;
    get(a, 'id2int!*);
+
+asserted procedure lto_id2int(a: Id): Integer;
+   compress cdr explode a;
 
 asserted procedure lto_alpatch(key: Id, val: Any, al: Alist): Alist;
    % List tools alist patch. [key] is an interned identifier, [val] is
