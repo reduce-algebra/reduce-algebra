@@ -829,8 +829,11 @@ defautoload(ra_x, ranum, expr, 0);
 defautoload(ra_y, ranum, expr, 0);
 
 % Smt
-operator smt;
-defautoload(smt, smt, expr, 0);
+switch smtabout, smtprompt;
+on1 'smtabout;
+on1 'smtprompt;
+put('smt, 'psopfn, 'smt_smt);
+defautoload(smt_smt, smt, expr, 1);
 
 operator smt_mainloop;
 defautoload(smt_mainloop, smt, expr, 0);
