@@ -103,8 +103,7 @@ switch rlsism,rlsichk,rlsiidem,rlsiatadv,rlsipd,rlsiexpl,rlsiexpla,rlsiso,
    rlcaddnfformula,rlcadprojonly,rlcadpreponly,
    rlcadextonly,rlcadverbose,rlcadfasteval,
    rlcadfulldimonly,rlcadtrimtree,rlcadrawformula,
-   rlanuexverbose,
-   rlanuexgcdnormalize,rlanuexsgnopt,rlcaddecdeg,
+   rlanuexverbose,rlanuexgcdnormalize,rlanuexsgnopt,rlcaddecdeg,
    rlcadte,rlcadpbfvs,rlqefb,rlxopt,rlxoptsb,rlxoptpl,rlxoptri,rlxoptric,
    rlxoptses,rlxoptrir,rlourdet,rlvmatvb,rlhqetfcsplit,rlhqetfcfullsplit,
    rlhqetfcfast,rlhqevb,rlhqevarsel,rlhqevarselx,rlhqedim0,rlhqetheory,
@@ -112,7 +111,9 @@ switch rlsism,rlsichk,rlsiidem,rlsiatadv,rlsipd,rlsiexpl,rlsiexpla,rlsiso,
    rlqeaprecise,rlqefilterbounds,rlsifaco,rlqelog,rlqeprecise,rlqevarseltry,
    rlsid,rlsiplugtheo,rlenffac,rlenffacne,rlplsimpl,rlbrkcxk,rlqeidentify,
    rlqedyn,rlqesubf,rlqevb,rlqevbold,rlgetrtypecar,rlvsllog,rlvsllearn,
-   rlqestdans,rlqestdansvb,rlqefullans,rlqebacksub,rlqestdansq,rlqestdansint;
+   rlqestdans,rlqestdansvb,rlqefullans,rlqebacksub,rlqestdansq,rlqestdansint,
+
+switch rlabout;  % for banner with rlset; initialized in in support/entry.red
 
 % Global
 on1 'rlbrop;

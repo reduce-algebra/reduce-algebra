@@ -1,3 +1,5 @@
+off rlabout;
+
 % Natural Numbers as Elements of a Term Algebra
 
 rlset(talp, {o, 0}, {s, 1});

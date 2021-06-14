@@ -329,8 +329,6 @@ SED1='/^Total time taken:/d;
       /^time to formulate/d;
       /\*\*\* turned off switch/d;
       /^>> accum\. cpu time :/d;
-      /^Redlog Revision /d;
-      /T. Sturm and A. Dolzmann (www.redlog.eu)/d;
       /^max_gc_int :/d;
       /^max_gc_fac :/d'
 

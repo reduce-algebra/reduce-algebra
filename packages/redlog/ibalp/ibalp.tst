@@ -1,4 +1,4 @@
-load_package redlog;
+off rlabout;
 rlset ibalp;
 
 % Formula ii8c1.cnf of the Dimacs II benchmark set

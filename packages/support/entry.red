@@ -758,6 +758,9 @@ defautoload(rl_excp, rlsupport, expr, 1);
 
 % Redlog entry points
 
+switch rlabout;
+on1 'rlabout;
+
 put('rlset, 'psopfn, 'rl_set!$);
 defautoload(rl_set!$, redlog, expr, 1);
 
