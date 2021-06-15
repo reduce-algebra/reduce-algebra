@@ -1,6 +1,5 @@
-load_package redlog;
+off rlabout;
 rlset(qqe,ofsf);
-off rlverbose;
 
 % Examples from C. Strasser's diploma thesis
 % Ch.10. Software Verifikation, p.171

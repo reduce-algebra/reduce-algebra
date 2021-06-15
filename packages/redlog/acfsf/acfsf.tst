@@ -1,3 +1,4 @@
+off rlabout;
 rlset acfsf;
 
 sub(x=a, x=0 and a=0 and ex(x, x=y) and ex(a, x<>a));
