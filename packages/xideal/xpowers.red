@@ -57,7 +57,7 @@ symbolic procedure xorder u;
 put('wedge,'xorder,'xord_deglex);
 
 
-symbolic procedure xval f;
+symbolic inline procedure xval f;
    % f:pf -> xval:mon
    wedgefax lpow f;
 

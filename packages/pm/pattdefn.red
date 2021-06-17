@@ -34,28 +34,28 @@ fluid('(freevars op r p i upb
 % Binding routines.  These would be more efficient with a more direct
 % mechanism.
 
-symbolic procedure bind(u, v);         %push the value of v onto the
+symbolic inline procedure bind(u, v);   %push the value of v onto the
    put(u,'binding,v.get(u,'binding))$   %binding stack of u
 
-symbolic procedure binding(u);              %Top most binding on stack
+symbolic inline procedure binding(u);   %Top most binding on stack
    (lambda x; if x then car x) get(u,'binding)$
 
-symbolic procedure unbind(u);                  %pop binding off stack
+symbolic inline procedure unbind(u);    %pop binding off stack
    put(u,'binding, cdr get(u,'binding))$
 
-symbolic procedure newenv(u);           % Mark a new environment.
+symbolic inline procedure newenv(u);    % Mark a new environment.
    bind(u, 'unbound)$                   % Give UNIFY lexical scoping.
 
-symbolic procedure restorenv(u);        % Should include error checks?
+symbolic inline procedure restorenv(u); % Should include error checks?
    unbind(u)$
 
-symbolic procedure pm!:free(u);       % Is u a pm unbound free variable?
+symbolic inline procedure pm!:free(u);  % Is u a pm unbound free variable?
    binding(u) eq 'unbound$
 
-symbolic procedure bound(u);           % Is u a pm bound free variable?
+symbolic inline procedure bound(u);     % Is u a pm bound free variable?
    (lambda x;  x and (x neq 'unbound)) binding u;
 
-symbolic procedure meq(u,v);
+symbolic inline procedure meq(u,v);
  (lambda x;
 %    (if (x and (x neq 'unbound)) then x else u) eq meval v )
      (if (x and (x neq 'unbound)) then x else u) = v)
@@ -74,7 +74,7 @@ symbolic procedure meq(u,v);
 % However m(f(1_=natp 1),f(?a_=natp ?a)), where natp(?x) :- t, will not
 % work.
 
-symbolic procedure mval(u); u;
+symbolic inline procedure mval(u); u;
 %===>   if not atom u then (reval bsubs(car u)) . cdr u
 %===>   else bsubs u;
 
@@ -85,16 +85,16 @@ symbolic procedure bsubs(u);
    else if atom u then if bound(u) then binding u else u
    else for each j in u collect bsubs j;
 
-symbolic procedure ident(op);
+symbolic inline procedure ident(op);
 get(op,'identity)$
 
-symbolic procedure genp(u);
+symbolic inline procedure genp(u);
    atom u and (get(u,'gen) or mgenp(u))$
 
-symbolic procedure mgenp(u);
+symbolic inline procedure mgenp(u);
    atom u and get(u,'mgen)$
 
-symbolic procedure suchp u;             %Is this a such that condition?
+symbolic inline procedure suchp u;     %Is this a such that condition?
    not atom u and car u eq 'such!-that$
 
 % False if any SUCH conditions are in wich all free variable are bound

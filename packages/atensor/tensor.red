@@ -99,7 +99,7 @@ symbolic procedure t_minus1(u,v)$
   if null u then reversip v
   else t_minus1(cdr u,(caar u . pv_neg cdar u) . v)$
 
-symbolic procedure t_minusp u$ nil$
+symbolic inline procedure t_minusp u$ nil$
 
 symbolic procedure t_plus(u,v)$
   if atom cdr u
@@ -211,7 +211,7 @@ symbolic procedure l_split(lst,n,lst1)$
   if n<=0 then (reversip lst1) . lst
   else l_split(cdr lst,n-1,car lst . lst1)$
 
-symbolic procedure unpkpv(pv)$
+symbolic inline procedure unpkpv(pv)$
   unpkpv1(pv,nil)$
 
 symbolic procedure unpkpv1(pv,upv)$
@@ -264,7 +264,7 @@ symbolic procedure t_fuse3(t1,t2)$
                                                   %  Aug. 06, 1994
        )$
 
-symbolic procedure addmultsym(t1,t2)$             % AK, Nov. 20, 1994
+symbolic inline procedure addmultsym(t1,t2)$             % AK, Nov. 20, 1994
   addmsym(t1,t2,caar t1,caar t2)$
 
 symbolic procedure addmsym(t1,t2,k1,k2)$
@@ -318,7 +318,7 @@ symbolic procedure msymperm0(th1,th2,k1,k2)$
     return pfind(append(w1,w2),zl) . zl$
   end$
 
-symbolic procedure addmultsym_(t1,t2)$ nil$
+symbolic inline procedure addmultsym_(t1,t2)$ nil$
 
 symbolic procedure addmultsym__(t1,t2)$
   if caaar t1 neq caaar t2
@@ -359,12 +359,12 @@ symbolic procedure pkpv(pv,ppv)$
   if null pv then reversip ppv
   else pkpv(cdr pv,(caar pv . pkp cdar pv) . ppv)$
 
-symbolic procedure t_difference(u,v)$
+symbolic inline procedure t_difference(u,v)$
   t_plus(u,t_minus v)$
 
-symbolic procedure t_zerop(u)$ null cdr u$
+symbolic inline procedure t_zerop(u)$ null cdr u$
 
-symbolic procedure t_onep u$ cdr u = 1$
+symbolic inline procedure t_onep u$ cdr u = 1$
 
 symbolic procedure t_prep u$                         % mod. AK 28/03/96
   (if not(cddr caadr u = 1) then 'quotient . x . list cddr caadr u
@@ -380,12 +380,12 @@ symbolic procedure t_prep1(u,v)$
 
 %symbolic procedure t_prep u$ th2pe(cadr u,cddr u)$
 
-symbolic procedure t_pri(u)$ t_pri1(u,nil)$
+symbolic inline procedure t_pri(u)$ t_pri1(u,nil)$
 
-symbolic procedure t_intequiv u$
+symbolic inline procedure t_intequiv u$
   atom cdr u$
 
-symbolic procedure i2tensor n$
+symbolic inline procedure i2tensor n$
   '!:tensor . n$
 
 symbolic procedure t_expt(u,n)$

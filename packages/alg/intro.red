@@ -292,7 +292,7 @@ symbolic procedure typerr(u,v);
 %                 ***** ALGEBRAIC MODE DECLARATIONS *****
 
 flag ('(aeval cond getel go prog progn prog2 return
-        reval setq setk setel assgnpri !*s2i),'nochange);
+        reval reval1 setq setk setel assgnpri !*s2i),'nochange);
 
 flag ('(or and not member memq equal neq eq geq greaterp leq
         fixp lessp numberp ordp freeof),'boolean);

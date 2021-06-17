@@ -461,7 +461,7 @@ this purpose are as follows;
 
 flag('(iplus itimes iplus2 itimes2 iadd1 isub1 iminus iminusp
        idifference iquotient iremainder ilessp igreaterp ileq igeq
-       izerop ionep iequal apply1 apply2 apply3), 'lose);
+       izerop ionep iequal apply1 apply2 apply3 setcar setcdr), 'lose);
 
 flag('(fp!-infinite fp!-nan fp!-finite fp!-subnorm), 'lose);
 

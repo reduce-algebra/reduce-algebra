@@ -209,13 +209,13 @@ procedure cgb_a2s!-psys(l);
 procedure cgb_a2s2!-psys(fl);
    for each x in fl collect cgp_f2cgp x;
 
-procedure cgb_xvars!-psys(l,vl);
+inline procedure cgb_xvars!-psys(l,vl);
    cgb_vars(l,vl);
 
-procedure cgb_xvars!-psys2(l,cd,vl);
+inline procedure cgb_xvars!-psys2(l,cd,vl);
    cgb_vars(l,vl);
 
-procedure cgb_xvars!-psys3(l,cd,xvl,vl);
+inline procedure cgb_xvars!-psys3(l,cd,xvl,vl);
    cgb_vars(l,vl);
 
 procedure cgb_s2a!-cgb(u);
@@ -223,7 +223,7 @@ procedure cgb_s2a!-cgb(u);
    % [u] is a list of CGP's. Returns an AMPSYS.
    'list . for each x in u collect cgp_2a x;
 
-procedure cgb_s2s!-cgb(l);
+inline procedure cgb_s2s!-cgb(l);
    cgb_cgb!-sfl l;
 
 procedure cgb_s2a!-gsys(u);
@@ -240,7 +240,7 @@ procedure cgb_s2a!-bra(bra);
 procedure cgb_s2s!-gsys(u);
    for each bra in u collect cgb_s2s!-bra bra;
 
-procedure cgb_s2s!-bra(bra);
+inline procedure cgb_s2s!-bra(bra);
    {bra_cd bra,cgb_s2s!-cgb bra_system bra};
 
 procedure cgb_a2s!-gsys(u);
@@ -289,16 +289,16 @@ procedure cgb_cdp(cd);
       return not err
    end;
 
-procedure cgb_a2s2!-cd(cd);
+inline procedure cgb_a2s2!-cd(cd);
    cd;
 
-procedure cgb_a2s!-varl(varl);
+inline procedure cgb_a2s!-varl(varl);
    cdr varl;
 
-procedure cgb_a2s2!-varl(varl);
+inline procedure cgb_a2s2!-varl(varl);
    varl;
 
-procedure cgb_cleanup(u,v);  % Do not use reval.
+inline procedure cgb_cleanup(u,v);  % Do not use reval.
    u;
 
 procedure cgb_interface!$(fname,a2sl1,a2sl2,defl,xvfn,s2a,s2s,s,smp,argl);
@@ -738,7 +738,7 @@ procedure cd_cleanup(oc);
    % selected. Return value unspecified.
    rl_set oc where !*msg=nil;
 
-procedure cd_falsep(cd);
+inline procedure cd_falsep(cd);
    % Condion false predicate. [cd] is a CD. Returns bool. If [t] is
    % retunred then the condion [cd] is inconsistent.
    eqcar(cd,'false);
@@ -825,29 +825,29 @@ procedure cpr_mk(f,h);
       return cpr_mk1(ttt,f,h,ev_max!#(sf,sh))
    end;
 
-procedure cpr_mk1(lcm,p1,p2,sugar);
+inline procedure cpr_mk1(lcm,p1,p2,sugar);
    % Critical pair make subroutine. [lcm] is an EV, the lcm of [evlmon
    % p1] and [evlmon p2]; [p1] and [p2] are CGP's with red HC; [sugar]
    % is a machine integer, the sugar of the S-polynomials of [p1] and
    % [p2]. Returns a CPR.
    {lcm,p1,p2,sugar};
 
-procedure cpr_lcm(cpr);
+inline procedure cpr_lcm(cpr);
    % Critical pair lcm. [cpr] is a critical pair. Returns the lcm part
    % of [cpr].
    car cpr;
 
-procedure cpr_p1(cpr);
+inline procedure cpr_p1(cpr);
    % Critical pair p1. [cpr] is a critical pair. Returns the p1 part
    % of [cpr].
    cadr cpr;
 
-procedure cpr_p2(cpr);
+inline procedure cpr_p2(cpr);
    % Critical pair p2. [cpr] is a critical pair. Returns the p2 part
    % of [cpr].
    caddr cpr;
 
-procedure cpr_sugar(cpr);
+inline procedure cpr_sugar(cpr);
    % Critical pair suger. [cpr] is a critical pair. Returns the sugar
    % part of [cpr].
    cadddr cpr;
@@ -1014,22 +1014,22 @@ module bra;
 %DS
 % <BRA> ::= (<CD>,<SYSTEM>,<CPRL>)
 
-procedure bra_cd(br);
+inline procedure bra_cd(br);
    % Branch condition. [br] is a BRA. Returns a CD, the condition part
    % of [br].
    car br;
 
-procedure bra_system(br);
+inline procedure bra_system(br);
    % Branch system. [br] is a BRA. Returns a list of CGP's, the
    % system part of [br].
    cadr br;
 
-procedure bra_cprl(br);
+inline procedure bra_cprl(br);
    % Branch critical pair list. [br] is a BRA. Returns a list of
    % CPR's, the pairs part of [br].
    caddr br;
 
-procedure bra_mk(cd,system,cprl);
+inline procedure bra_mk(cd,system,cprl);
    % Branch make. [cd] is a CD; [system] is a list of CGP's with red
    % HT's; [cprl] is a list of CPR's. Returns a BRA.
    {cd,system,cprl};
@@ -1062,7 +1062,7 @@ procedure bra_ext(bra,cd,scp);
       return bra_mk(cd,nconc(sy,{scp}),d)
    end;
 
-procedure bra_ordp(b1,b2);
+inline procedure bra_ordp(b1,b2);
    % Branch order predicate. [b1] and [b2] are branches. Returns bool.
    cd_ordp(bra_cd b1,bra_cd b2);
 
@@ -1087,7 +1087,7 @@ procedure gsy_init(l,theo,xvars);
       return s
    end;
 
-procedure gsy_normalize(l);
+inline procedure gsy_normalize(l);
    % Groebner system normalize. [l] is a GSY. Returns a GSY.
    sort(gsy_normalize1 l,'bra_ordp);
 
@@ -1113,27 +1113,27 @@ module cgp;
 % <CI> ::= 'unknown | 'red | 'green | 'zero | ('mixed . <WTL>) | green_colored
 % <WTL> ::= (...,<EV>,...)
 
-procedure cgp_mk(hp,rp,sugar,number,ci);
+inline procedure cgp_mk(hp,rp,sugar,number,ci);
    % CGP make. [hp] and [rp] are DIP's; [sugar] and [number] are
    % machine numbers; [ci] is an S-expr.
    {'cgp,hp,rp,sugar,number,ci};
 
-procedure cgp_hp(cgp);
+inline procedure cgp_hp(cgp);
    % CGP head polynomial. [cgp] is a CGP. Returns a DIP, the head
    % polynomial part of [cgp].
    cadr cgp;
 
-procedure cgp_rp(cgp);
+inline procedure cgp_rp(cgp);
    % CGP rest polynomial. [cgp] is a CGP. Returns a DIP, the rest
    % polynomial part of [cgp].
    caddr cgp;
 
-procedure cgp_sugar(cgp);
+inline procedure cgp_sugar(cgp);
    % CGP sugar. [cgp] is a CGP. Returns a machine number, the sugar
    % part of [cgp].
    cadddr cgp;
 
-procedure cgp_number(cgp);
+inline procedure cgp_number(cgp);
    % CGP number. [cgp] is a CGP. Returns a machine number, the number
    % part of [cgp].
    nth(cgp,5);
@@ -1143,88 +1143,88 @@ procedure cgp_ci(cgp);
    %  information of [cgp].
    nth(cgp,6);
 
-procedure cgp_init(vars,sm,sx);
+inline procedure cgp_init(vars,sm,sx);
    % CGP init. [vars] is a list of variables. Returns an S-expr.
    % Initializing the DIP package.
    dip_init(vars,sm,sx);
 
-procedure cgp_cleanup(l);
+inline procedure cgp_cleanup(l);
    % CGP clean-up. [l] is an S-expr returned by calling [cgp_init].
    dip_cleanup(l);
 
-procedure cgp_lbc(u);
+inline procedure cgp_lbc(u);
    % CGP leading base coefficient. [u] is a CGP. Returns the HC of the
    % rest part of [u].
    dip_lbc cgp_rp u;
 
-procedure cgp_evlmon(u);
+inline procedure cgp_evlmon(u);
    % CGP exponent vector of leading monomial. [u] is a CGP. Returns
    % the HT of the rest part of [u].
    dip_evlmon cgp_rp u;
 
-procedure cgp_zerop(u);
+inline procedure cgp_zerop(u);
    % CGP zero predicate. [u] is a CGP. Returns [T] if [u] is the zero
    % polynomial.
    null cgp_hp u and null cgp_rp u;
 
-procedure cgp_greenp(u);
+inline procedure cgp_greenp(u);
    % CGP green predicate. [u] is a CGP. Returns [T] if [u] is
    % completely green colored.
    null cgp_rp u;
 
-procedure cgp_monp(u);
+inline procedure cgp_monp(u);
    % CGP monomial predicate. [u] is a CGP. Returns [T] if [u] is a monomial.
    null cgp_hp u and dip_monp cgp_rp u;
 
-procedure cgp_zero();
+inline procedure cgp_zero();
    % CGP zero. No argument. Returns the zero polynomial.
    cgp_mk(nil,nil,nil,nil,'zero);
 
-procedure cgp_one();
+inline procedure cgp_one();
    % CGP one. No argument. Returns a CGP, the polynomial one in CGP
    % representation.
    cgp_mk(nil,dip_one(),0,nil,'red);
 
-procedure cgp_tdeg(u);
+inline procedure cgp_tdeg(u);
    % CGP total degree. [u] is a CGP. Returns the total degree of the
    % rest polynomial of [u].
    dip_tdeg cgp_rp u;
 
-procedure cgp_mred(cgp);
+inline procedure cgp_mred(cgp);
    % CGP monomial reductum. [cgp] is a CGP. Returns a CGP $p$. $p$ is
    % computed from [cgp] by deleting the HM of the rest part of [cgp].
    cgp_mk(cgp_hp cgp,dip_mred cgp_rp cgp,cgp_sugar cgp,nil,'unknown);
 
-procedure cgp_cp(cgp);
+inline procedure cgp_cp(cgp);
    % CGP copy. [cgp] is a CGP. Returns a CGP, the top-level copy of
    % [cgpl
    cgp_mk(cgp_hp cgp,cgp_rp cgp,cgp_sugar cgp,cgp_number cgp,cgp_ci cgp);
 
-procedure cgp_f2cgp(u);
+inline procedure cgp_f2cgp(u);
    % CGP form to cgp. [u] is a SF. Returns a CGP.
    cgp_mk(nil,dip_f2dip u,nil,nil,'unknown);
 
-procedure cgp_2a(u);
+inline procedure cgp_2a(u);
    % CGP to algebraic. [u] is a CGP. Returns the AM representation of
    % [u].
    dip_2a dip_append(cgp_hp u,cgp_rp u);
 
-procedure cgp_2f(u);
+inline procedure cgp_2f(u);
    % CGP to algebraic. [u] is a CGP. Returns the AM representation of
    % [u].
    dip_2f dip_append(cgp_hp u,cgp_rp u);
 
-procedure cgp_enumerate(p);
+inline procedure cgp_enumerate(p);
    % CGP enumerate. [p] is a CGP. Returns a CGP. Sets the number of
    % [p] destructively to the next free number.
    cgp_setnumber(p,cgp_pcount!* := cgp_pcount!* #+ 1);
 
-procedure cgp_unitp(p);
+inline procedure cgp_unitp(p);
    % CGP unit predicate. [p] is a CGP with red HT. Returns [T] if [p]
    % is a unit.
    cgp_rp p and ev_zero!? cgp_evlmon p;
 
-procedure cgp_setnumber(p,n);
+inline procedure cgp_setnumber(p,n);
    % CGP set number. [p] is a CGP; [n] is a machine number. Returns a
    % CGP. Sets the number of [p] destructively to [n].
    <<
@@ -1232,7 +1232,7 @@ procedure cgp_setnumber(p,n);
       p
    >>;
 
-procedure cgp_setsugar(p,s);
+inline procedure cgp_setsugar(p,s);
    % CGP set sugar. [p] is a CGP; [s] is a machine number. Returns a
    % CGP. Sets the sugar of [p] destructively to [s].
    <<
@@ -1240,7 +1240,7 @@ procedure cgp_setsugar(p,s);
       p
    >>;
 
-procedure cgp_setci(p,tg);
+inline procedure cgp_setci(p,tg);
    % CGP set coloring information. [p] is a CGP; [tg] is an S-expr.
    % Returns a CGP. Sets the coloring information of [p] destructively
    % to [s].
@@ -1385,7 +1385,7 @@ procedure cgp_shift1(p,xvars);
       return cgp_mk(hp,rp,cgp_sugar p,cgp_number p,cgp_ci p)
    end;
 
-procedure cgp_shift!-gen(p);
+inline procedure cgp_shift!-gen(p);
    % CGP shift generic case. [p] is a CGP, which is neither zero nor
    % green. Returns a [CGP]. Shifts all leading green monomials from
    % the rest part into the head part, i.e. we do nothing because
@@ -1500,7 +1500,7 @@ procedure cgp_lsort(pl);
    % CGP list sort. pl is a list of CGP's. Returns a list of CGP's.
    sort(pl,function cgp_comp);
 
-procedure cgp_comp(p1,p2);
+inline procedure cgp_comp(p1,p2);
    dip_comp(cgp_rp p1,cgp_rp p2);
 
 endmodule;  % cgp

@@ -173,7 +173,7 @@ procedure talp_mkalop(f);
       f
    >>;
 
-procedure talp_unmkalop(f);
+inline procedure talp_unmkalop(f);
    % Term algebra lisp prefix unmake algebraic operator. [f] is an
    % identifier. Return value unspecified.
    algebraic clear f;
@@ -190,11 +190,11 @@ procedure talp_mkinvop(f,i);
    % given parts starting with INV_.
    intern compress nconc(explode compress nconc(explode 'inv_,{f}),explode i);
 
-procedure talp_getl();
+inline procedure talp_getl();
    % Term algebra Lisp prefix get language.
    talp_lang!*;
 
-procedure talp_getextl();
+inline procedure talp_getextl();
    % Term algebra Lisp prefix get extended language.
    talp_extlang!*;
 
@@ -205,7 +205,7 @@ procedure talp_prepat(atf);
       {talp_op atf,talp_prepterm talp_arg2l atf, talp_prepterm talp_arg2r atf}
    else atf;
 
-procedure talp_lengthat(atf);
+inline procedure talp_lengthat(atf);
    % Term algebra Lisp prefix length of atomic formula. [atf] is an
    % atomic formula. Returns length of [atf].
    length talp_argl atf;
@@ -224,12 +224,12 @@ procedure talp_simpterm(term);
       return talp_mkn(talp_op term,obj)
    end;
 
-procedure talp_resimpterm(term);
+inline procedure talp_resimpterm(term);
    % Term algebra Lisp prefix resimplify term. [term] is a Lisp prefix
    % term.  Returns resimplified [term].
    talp_simpterm term;
 
-procedure talp_prepterm(term);
+inline procedure talp_prepterm(term);
    % Term algebra Lisp prefix prep term. [term] is a Lisp prefix term.
    % Returns Lisp prefix term.
    talp_simpterm term;
@@ -254,32 +254,32 @@ procedure talp_resimpat(atf);
    talp_mk2(talp_op atf,
       talp_resimpterm talp_arg2l atf,talp_resimpterm talp_arg2r atf);
 
-procedure talp_opp(op);
+inline procedure talp_opp(op);
    % Term algebra Lisp prefix operator predicate. [op] is an
    % S-expression. Returns [nil] if op is not a relation.
    op memq '(equal neq);
 
-procedure talp_op(at);
+inline procedure talp_op(at);
    % Term algebra Lisp prefix operator. [at] is an atomic formula
    % $R(lhs,rhs)$. Returns $R$.
    car at;
 
-procedure talp_fop(term);
+inline procedure talp_fop(term);
    % Term algebra Lisp prefix function operator. [term] is a term $(F
    % args)$. Returns $F$.
    car term;
 
-procedure talp_arg2l(at);
+inline procedure talp_arg2l(at);
    % Term algebra Lisp prefix argument binary operator left hand
    % side. [at] is an atomic formula $R(lhs,rhs)$. Returns $lhs$.
    cadr at;
 
-procedure talp_arg2r(at);
+inline procedure talp_arg2r(at);
    % Term algebra Lisp prefix argument binary operator right hand
    % side. [at] is an atomic formula $R(lhs,rhs)$. Returns $rhs$.
    caddr at;
 
-procedure talp_argl(f);
+inline procedure talp_argl(f);
    % Term algebra Lisp prefix argument list. [f] is a formula.
    % Returns the list of arguments of [f].
    cdr f;
@@ -301,35 +301,35 @@ procedure talp_invn(term);
    % $inv_{fs,no}(arg)$. Returns the corresponding number $no$.
    compress {cadr cddddr explode2 talp_op term};
 
-procedure talp_invarg(term);
+inline procedure talp_invarg(term);
    % Term algebra Lisp prefix ['inv]-term's argument. [term] is a term
    % $inv_{fs,no}(arg)$. Returns the argument $arg$.
    cadr term;
 
-procedure talp_mkinv(inv,term);
+inline procedure talp_mkinv(inv,term);
    % Term algebra Lisp prefix make ['inv]-term. [inv] is $inv_fi$,
    % [term] is a term. Returns the term $inv_fi (term)$.
    inv . {term};
 
-procedure talp_mk2(op,lhs,rhs);
+inline procedure talp_mk2(op,lhs,rhs);
    % Term algebra Lisp prefix make atomic formula for binary
    % operator. [op] is ['equal] or ['neq], [lhs] and [rhs] are
    % terms. Returns the atomic formula $[op]([lhs],[rhs])$.
    {op,lhs,rhs};
 
-procedure talp_mkn(op,argl);
+inline procedure talp_mkn(op,argl);
    % Term algebra Lisp prefix make atomic formula for n-ary operator.
    % [op] is ['equal] or ['neq], [argl] is a list $(lhs,rhs)$ of
    % terms.  Returns the atomic formula $[op](lhs,rhs)$.
    op . argl;
 
-procedure talp_mktn(op,argl);
+inline procedure talp_mktn(op,argl);
    % Term algebra Lisp prefix make term for n-ary operator.  [op] is
    % an identifier, [argl] is a list of terms.  Returns the term
    % $([op] [argl])$.
    op . argl;
 
-procedure talp_fargl(term);
+inline procedure talp_fargl(term);
    % Term algebra Lisp prefix function's argument list. [term] is
    % $f(argl)$. Returns $argl$.
    cdr term;

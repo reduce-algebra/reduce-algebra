@@ -51,7 +51,13 @@ symbolic procedure chknewnam u;
               else x
    end;
 
+% The syntax "symbolic inline procedure" may not be available at this
+% stage if things are being build with a carefull bootstrap process that
+% uses a Lisp-coded parser for a subset of rlisp, so I set up the information
+% by hand.
+
 symbolic procedure mkvar(u,v); u;
+put('mkvar, 'inline, '(lambda (u v) u));
 
 symbolic procedure remcomma u;
    if eqcar(u,'!*comma!*) then cdr u else list u;

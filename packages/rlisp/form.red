@@ -230,6 +230,7 @@ flag('(cond and or list list!* plus times logand logor
 symbolic procedure argsofopr u;
    % This function may be optimizable in various implementations.
    get(u,'number!-of!-args);
+put('argsofopr, 'inline, '(lambda (u) (get u 'number!-of!-args)));
 
 fluid '(!*revalp);
 !*revalp := t;
@@ -370,6 +371,7 @@ symbolic procedure !*!*a2s(u,vars);
     else list(!*!*a2sfn,u);
 
 symbolic procedure !*!*s2a(u,vars); u;
+put('!*!*s2a, 'inline, '(lambda (u vars) u));
 
 symbolic procedure formc(u, vars, mode);
    %this needs to be generalized;
@@ -411,6 +413,7 @@ symbolic procedure !*s2i u;
 put('integer,'symbolic,'identity);
 
 symbolic procedure identity(u,vars); u;
+put('identity, 'inline, '(lambda (u vars) u));
 
 symbolic procedure formbool(u,vars,mode);
    if mode = 'symbolic then formc(u,vars,mode)

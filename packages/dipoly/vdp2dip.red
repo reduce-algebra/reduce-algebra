@@ -281,7 +281,7 @@ symbolic procedure dip2vdp u;
 
 inline procedure makedipzero();nil;
 
-symbolic procedure vdpredzero!? u;dipzero!? dipmred vdppoly u;
+symbolic inline procedure vdpredzero!? u;dipzero!? dipmred vdppoly u;
 
 symbolic procedure vdplastmon u;
  % Return bc. ev of last monomial of u.
@@ -290,24 +290,24 @@ symbolic procedure vdplastmon u;
     while not dipzero!? u and not dipzero!? dipmred u do u:=dipmred u;
     return diplbc u.dipevlmon u end;
 
-symbolic procedure vbczero!? u;bczero!? u;
+symbolic inline procedure vbczero!? u;bczero!? u;
 
 symbolic procedure vbcnumber u;
  if pairp u and numberp car u and 1=cdr u then cdr u else nil;
 
-symbolic procedure vbcfi u;bcfd u;
+symbolic inline procedure vbcfi u;bcfd u;
 
-symbolic procedure a2vbc u;a2bc u;
+symbolic inline procedure a2vbc u;a2bc u;
 
-symbolic procedure vbcquot(u,v);bcquot(u,v);
+symbolic inline procedure vbcquot(u,v);bcquot(u,v);
 
-symbolic procedure vbcneg u;bcneg u;
+symbolic inline procedure vbcneg u;bcneg u;
 
 symbolic procedure vbcabs u;if vbcminus!? u then bcneg u else u;
 
-symbolic procedure vbcone!? u;bcone!? u;
+symbolic inline procedure vbcone!? u;bcone!? u;
 
-symbolic procedure vbcprod(u,v);bcprod(u,v);
+symbolic inline procedure vbcprod(u,v);bcprod(u,v);
 
 % Initializing vdp - dip polynomial package.
 symbolic procedure vdpinit2 vars;
@@ -317,7 +317,7 @@ symbolic procedure vdpinit2 vars;
   vdpvars!*:=dipvars!*:=vars;torder2 vdpsortmode!*;
   return oldorder end;
 
-symbolic procedure vdpcleanup();dipevlist!*:={nil};
+symbolic inline procedure vdpcleanup();dipevlist!*:={nil};
 
 symbolic procedure vdpred u;
  begin scalar r,s;r:=dipmred vdppoly u;
@@ -382,9 +382,9 @@ symbolic procedure a2vdp u;
   else(makevdp(diplbc r,dipevlmon r,r)where r=a2dip u);
 
 % Vdp to prefix.
-symbolic procedure vdp2a u;dip2a vdppoly u;
+symbolic inline procedure vdp2a u;dip2a vdppoly u;
 
-symbolic procedure vbc2a u;bc2a u;
+symbolic inline procedure vbc2a u;bc2a u;
 
 % Form to vdp.
 symbolic procedure f2vdp u;
@@ -392,7 +392,7 @@ symbolic procedure f2vdp u;
   else(makevdp(diplbc r,dipevlmon r,r)where r=f2dip u);
 
 % Vdp to form.
-symbolic procedure vdp2f u;dip2f vdppoly u;
+symbolic inline procedure vdp2f u;dip2f vdppoly u;
 
 % Vdp from monomial.
 symbolic procedure vdpfmon(coef,vev);
@@ -420,22 +420,22 @@ symbolic procedure vdpmonadd(coef,vev,vdp);
   else vdpsum(vdp,vdpfmon(coef,vev))
 )where c=vevcomp(vev,vdpevlmon vdp);
 
-symbolic procedure vdpzero();a2vdp 0;
+symbolic inline procedure vdpzero();a2vdp 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %  Comparing of exponent vectors:
 %
 
-symbolic procedure vdpvevlcomp(p1,p2);dipevlcomp(vdppoly p1,vdppoly p2);
+symbolic inline procedure vdpvevlcomp(p1,p2);dipevlcomp(vdppoly p1,vdppoly p2);
 
-symbolic procedure vevilcompless!?(e1,e2);1=evilcomp(e2,e1);
+symbolic inline procedure vevilcompless!?(e1,e2);1=evilcomp(e2,e1);
 
-symbolic procedure vevilcomp(e1,e2);evilcomp(e1,e2);
+symbolic inline procedure vevilcomp(e1,e2);evilcomp(e1,e2);
 
-symbolic procedure vevcompless!?(e1,e2);1=evcomp(e2,e1);
+symbolic inline procedure vevcompless!?(e1,e2);1=evcomp(e2,e1);
 
-symbolic procedure vevcomp(e1,e2);evcomp(e1,e2);
+symbolic inline procedure vevcomp(e1,e2);evcomp(e1,e2);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -448,7 +448,7 @@ symbolic procedure vdpcontent d;
  if vdpzero!? d then a2bc 0 else
  <<d:=vdppoly d;dipnumcontent(dipmred d,diplbc d)>>;
 
-symbolic procedure vdpcontent1(d,c);dipnumcontent(vdppoly d,c);
+symbolic inline procedure vdpcontent1(d,c);dipnumcontent(vdppoly d,c);
 
 symbolic procedure dipnumcontent(d,c);
  if bcone!? c or dipzero!? d then c
@@ -474,7 +474,7 @@ symbolic procedure dipcontenti1(n,ev,p1);
 symbolic procedure vdpcontenti d;
  vdpcontent d.if !*groebrm then vdpmonfac d else nil;
 
-symbolic procedure vdpmonfac d;dipmonfac vdppoly d;
+symbolic inline procedure vdpmonfac d;dipmonfac vdppoly d;
 
 symbolic procedure dipmonfac p;
 % Exponent list of the common monomial factor.
@@ -487,7 +487,7 @@ symbolic procedure dipmonfac1(ev,p1);
   else dipmonfac1(dipcontevmin(ev,dipevlmon p1),dipmred p1);
 
 % vdpcoeffcientsfromdomain?
-symbolic procedure vdpcoeffcientsfromdomain!? w;
+symbolic inline procedure vdpcoeffcientsfromdomain!? w;
  dipcoeffcientsfromdomain!? vdppoly w;
 
 symbolic procedure dipcoeffcientsfromdomain!? w;
@@ -495,7 +495,7 @@ symbolic procedure dipcoeffcientsfromdomain!? w;
 (if bcdomain!? v then dipcoeffcientsfromdomain!? dipmred w
      else nil)where v=diplbc w;
 
-symbolic procedure vdplength f;diplength vdppoly f;
+symbolic inline procedure vdplength f;diplength vdppoly f;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -521,9 +521,9 @@ symbolic procedure evequal(e1,e2);
   else if null e2 then evequal(e1,'(0))
   else 0=(car e1 #- car e2)and evequal(cdr e1,cdr e2);
 
-symbolic procedure vdplcm p;diplcm vdppoly p;
+symbolic inline procedure vdplcm p;diplcm vdppoly p;
 
-symbolic procedure vdprectoint(p,q);dip2vdp diprectoint(vdppoly p,q);
+symbolic inline procedure vdprectoint(p,q);dip2vdp diprectoint(vdppoly p,q);
 
 symbolic procedure vdpsimpcont(p);
  begin scalar r,q;q:=vdppoly p;
@@ -558,7 +558,7 @@ symbolic procedure dipsimpconti p;
  return(if lco and not evzero!? evdif(dipevlmon res,lco)
             then lco else nil).res end;
 
-symbolic procedure vdpreduceconti(p,co,vev);
+symbolic inline procedure vdpreduceconti(p,co,vev);
 % Divide polynomial p by monomial from co and vev.
  vdpdivmon(p,co,vev);
 
@@ -627,7 +627,7 @@ symbolic procedure dipcontlowerev e1;
    <<prin2 " ***** exponent reduction : ";prin2t reverse res>>;
    return reversip res end;
 
-symbolic procedure dipappendmon(dip,bc,ev);append(dip,dipfmon(bc,ev));
+symbolic inline procedure dipappendmon(dip,bc,ev);append(dip,dipfmon(bc,ev));
 
 inline procedure dipnconcmon(dip,bc,ev);nconc(dip,dipfmon(bc,ev));
 
@@ -809,11 +809,11 @@ symbolic procedure vdpprint1x(u,v,max);
 
 symbolic procedure dipprin2 u;<<if posn()>69 then terprit 2;prin2 u>>;
 
-symbolic procedure vdpsave u;u;
+symbolic inline procedure vdpsave u;u;
 
 % switching between term order modes
 
-symbolic procedure torder2 u;dipsortingmode u;
+symbolic inline procedure torder2 u;dipsortingmode u;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -858,7 +858,7 @@ symbolic procedure dipsubs21 u;
 
 % conversion standard form to dip
 
-symbolic procedure f2dip u;f2dip1(u,evzero(),bcfd 1);
+symbolic inline procedure f2dip u;f2dip1(u,evzero(),bcfd 1);
 
 symbolic procedure f2dip1(u,ev,bc);
 % f to dip conversion : scan the standard form. ev
@@ -897,6 +897,6 @@ symbolic procedure evinsert(ev,v,dg,vars);
   else if car vars=v then dg.cdr ev
   else car ev.evinsert(cdr ev,v,dg,cdr vars);
 
-symbolic procedure vdpcondense f;dipcondense car cdddr f;
+symbolic inline procedure vdpcondense f;dipcondense car cdddr f;
 
 endmodule;;end;

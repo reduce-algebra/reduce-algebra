@@ -64,7 +64,7 @@ create!-package('(spde),'(contrib spde));
 %  if not getd 'ratfunpri then load ratprin;
 %  end$
 
-symbolic procedure prload; nil;
+symbolic inline procedure prload; nil;
 
  %*******************************************************************$
  %              Auxiliary RLISP procedures                           $
@@ -99,7 +99,7 @@ symbolic procedure prload; nil;
  symbolic procedure lastmem u$
  if cdr u then lastmem cdr u else car u$
 
- symbolic procedure xmember(u,v)$ reverse member(u,reverse v)$
+ symbolic inline procedure xmember(u,v)$ reverse member(u,reverse v)$
 
  symbolic procedure sacar(a,u)$
  if atom u then nil else
@@ -134,7 +134,7 @@ symbolic procedure prload; nil;
  if not u then nil else
  if pairp car u then (car u) . prlist cdr u else prlist cdr u$
 
- symbolic procedure appends(u,v,w)$ append(u,append(v,w))$
+ symbolic inline procedure appends(u,v,w)$ append(u,append(v,w))$
 
  symbolic procedure propa(fn,u)$
  %FN is predicate of a single argument, U a list;
@@ -183,10 +183,10 @@ symbolic procedure prload; nil;
    return w;
    end$
 
- symbolic procedure leqgrt(l,i,j)$
+ symbolic inline procedure leqgrt(l,i,j)$
  i leq j and eqn(l,i) or i geq add1 j$
 
- symbolic procedure fidep u$
+ symbolic inline procedure fidep u$
  assoc(u,depl!*) and cdr assoc(u,depl!*)$
 
  symbolic procedure mkdep u$
@@ -202,15 +202,15 @@ symbolic procedure prload; nil;
    return compress('!" . u)
    end$
 
- symbolic procedure terpri2$ <<terpri(); terpri()>>$
+ symbolic inline procedure terpri2$ <<terpri(); terpri()>>$
 
  %*******************************************************************$
  %    Auxiliary procedures for manipulating standard forms           $
  %*******************************************************************$
 
- symbolic procedure lcf u$ not domainp u and lc u$
+ symbolic inline procedure lcf u$ not domainp u and lc u$
 
- symbolic procedure minus!-f u$
+ symbolic inline procedure minus!-f u$
  %U is s.f., returns T if lnc U is negative;
  minusf numr simp reval u$
 
@@ -241,7 +241,7 @@ symbolic procedure prload; nil;
 
  lisp operator lengthf$
 
- symbolic procedure diford u$ lengthn cddr u$
+ symbolic inline procedure diford u$ lengthn cddr u$
 
  symbolic procedure adiff(u,v)$
  %U is kernel with CAR part DF, V is kernel;
@@ -273,11 +273,11 @@ symbolic procedure prload; nil;
  %Returns T if u is monomial;
  domainp u or not red u and monop lc u$
 
- symbolic procedure solvef(u,v)$ car solve0(prepf u,v)$
+ symbolic inline procedure solvef(u,v)$ car solve0(prepf u,v)$
 
- symbolic procedure comfacn u$  lnc ckrn u$
+ symbolic inline procedure comfacn u$  lnc ckrn u$
 
- symbolic procedure remfacn u$ quotf(u,lnc ckrn u)$
+ symbolic inline procedure remfacn u$ quotf(u,lnc ckrn u)$
 
  %*******************************************************************$
  %     Procedures for manipulating l.d.f.'s, U is always l.d.f.      $
@@ -850,7 +850,7 @@ symbolic procedure prload; nil;
    return equal(subst('cxx,p,u),subst('cxx,q,v));
    end$
 
- symbolic procedure numgen$ length get('gen,'kvalue)$
+ symbolic inline procedure numgen$ length get('gen,'kvalue)$
 
  symbolic operator numgen$
 

@@ -161,19 +161,19 @@ procedure qqe_patch!-ctag(qqecid2,qqeal,rlal);
       put('qqe,rlal,w)
    end;
 
-procedure qqe_exit();
+inline procedure qqe_exit();
    ;
 
-procedure qqe_lengthat(f);
+inline procedure qqe_lengthat(f);
    2;
 
-procedure qqe_prepat(f);
+inline procedure qqe_prepat(f);
    f;
 
-procedure qqe_simpat(f);
+inline procedure qqe_simpat(f);
    f;
 
-procedure qqe_prepterm(f);
+inline procedure qqe_prepterm(f);
    f;
 
 procedure qqe_chsimpat(f);
@@ -207,51 +207,65 @@ procedure qqe_chsimpterm1(term);
       return arg;
    end;
 
-procedure qqe_op(atf);
+inline procedure qqe_op(atf);
    % QQE operator. [atf] is an atomic formula
    % $R(t_1,t_2)$. Returns $R$.
    car atf;
 
-procedure qqe_lhs(atf);
+inline procedure qqe_lhs(atf);
    cadr atf;
 
-procedure qqe_rhs(atf);
+inline procedure qqe_rhs(atf);
    caddr atf;
 
-procedure qqe_arg2l(atf);
+inline procedure qqe_arg2l(atf);
    % qqe binary operator left hand side argument. [atf] is
    % an atomic formula $R(t_1,t_2)$. Returns $t_1$.
    cadr atf;
 
-procedure qqe_arg2r(atf);
+inline procedure qqe_arg2r(atf);
    % qqe binary operator right hand side argument. [atf] is
    % an atomic formula $R(t_1,t_2)$. Returns $t_2$.
    caddr atf;
 
-procedure qqe_argn(atf);
+inline procedure qqe_argn(atf);
    % qqe binary operator right hand side argument. [atf] is
    % an atomic formula $R(t_1,t_2)$. Returns the list $(t_1,t_2)$.
    {cadr atf,caddr atf};
 
-procedure qqe_mk2(op,lhs,rhs);
+inline procedure qqe_mk2(op,lhs,rhs);
    % qqe constructor for binary operator. [op] is a relation
    % [lhs] and [rhs] are terms. Returns the atomic formula
    % $[op]([lhs],[rhs])$.
    {op,lhs,rhs};
 
-procedure qqe_0mk2(op,lhs);
+inline procedure qqe_0mk2(op,lhs);
    % qqe zero constructor for binary operator. [op] is a
    % relation [lhs] is a term. Returns the atomic formula
    % $[op]([lhs],0)$.
    {op,lhs,nil};
 
-procedure qqe_mkn(op,argl);
+inline procedure qqe_mkn(op,argl);
    % qqe constructor for binary operator. [op] is a relation
    % [argl] is a list $(t_1,t_2)$ of terms. Returns the atomic formula
    % $[op](t_1,t_2)$.
    {op,car argl,cadr argl};
 
-procedure qqe_rqopp(op);
+% I would have liked to consider a compiler optimisation of
+%    x memq '(a b c)
+% into (x  eq'a) or (x eq 'b) or (x eq 'c)) thus removing the loop
+% and list traversal of memq. However I would in fact need to turn it into
+%    if x eq 'a then '(a b c)
+%    else of x eq 'b then '(b c)
+%    else if x eq c then '(c)
+%    else nil
+% and that feels ugly. However by making this function "inline" there is
+% chance that its use will end up revealing that it is used in a test context
+% like "if x memq '(a b c) then..." and in that case the optimisation
+% does become valid. Doing this will only make sense if x is a simple
+% variable or if steps are taken to arrange that it only gets evaluated once.
+
+inline procedure qqe_rqopp(op);
    % qqe relation queue type operator predicate. [op] is an
    % S-expression. Returns [nil] if op is not a relation with queue
    % type arguments.
@@ -260,7 +274,7 @@ procedure qqe_rqopp(op);
 % should be replaced later in favour of dynamic application to
 % different basic theories, for example:
 % if rlset = ofsf then qqe_rbopp -> ofsf_opp
-procedure qqe_rbopp(op);
+inline procedure qqe_rbopp(op);
    % qqe relation basic type operator predicate. [op] is an
    % S-expression. Returns [nil] if op is not a relation with
    % basic type arguments.
@@ -271,17 +285,17 @@ procedure qqe_rbopp(op);
 %%    % qqe logic unary operator
 %%    op = 'neg;
 
-procedure qqe_ropp(op);
+inline procedure qqe_ropp(op);
    % qqe relation operator predicate. [op] is an
    % S-expression. Returns [nil] if op is not a relation.
    qqe_rqopp op or qqe_rbopp op;
 
-procedure qqe_qopp(op);
+inline procedure qqe_qopp(op);
    % qqe queue operator predicate. [op] is an
    % S-expression. Returns [nil] if op is not a function of queue type.
    op memq '(radd ladd lhead rhead ltail rtail);
 
-procedure qqe_qopheadp(op);
+inline procedure qqe_qopheadp(op);
    % qqe queue operator lhead or rhead predicate. [op] is an
    % S-expression. Returns [nil] if op is not lhead or rhead.
    op memq '(lhead rhead);
@@ -452,12 +466,12 @@ procedure qqe_arg!-check!-lb!-rb(u);
        >>;
    end;
 
-procedure qqe_qoptailp(op);
+inline procedure qqe_qoptailp(op);
     % qqe queue operator rtail or ltail. [op] is a
     % S-expression. Returns [nil] if op is not rtail or ltail.
     if op memq '(rtail ltail) then t;
 
-procedure qqe_qopaddp(op);
+inline procedure qqe_qopaddp(op);
    % qqe queue operator ladd or radd. [op] is a
     % S-expression. Returns [nil] if op is not ladd or radd.
     if op memq '(ladd radd) then t;
@@ -476,7 +490,7 @@ procedure qqe_id!-nyt!-branchb(u);
    if atom u then (qqe_btidp u or qqe_nytidp u)
    else not(qqe_qopaddp car u or qqe_qoptailp car u);
 
-procedure qqe_btid(u);
+inline procedure qqe_btid(u);
     % qqe basic type identifier. [u] is atom.
     % Set idtype on basic type. Error msg if idtype of u
     % is queue.
@@ -484,7 +498,7 @@ procedure qqe_btid(u);
     %    else
     put(u,'idtype,'bt);
 
-procedure qqe_qtid(u);
+inline procedure qqe_qtid(u);
     % qqe queue type identifier. [u] is atom.
     % Set idtype on queue type. Error msg if idtype of u
     % is basic.
@@ -492,23 +506,23 @@ procedure qqe_qtid(u);
     %    else
     put(u,'idtype,'qt);
 
-procedure qqe_niltid(u);
+inline procedure qqe_niltid(u);
    % qqe nil type identifier. [u] is atom.
    % Set idtype on nil. Needed for rollback of typed identifiers
    % while processing incorrect formula.
    put(u,'idtype,nil);
 
-procedure qqe_btidp(u);
+inline procedure qqe_btidp(u);
     % qqe basic type identifier predicate. [u] is atom.
     % Returns [idtype] of u. Return [nil] if idtype is not yet set.
     get(u,'idtype) = 'bt;
 
-procedure qqe_qtidp(u);
+inline procedure qqe_qtidp(u);
     % qqe queue type identifier predicate. [u] is atom.
     % Returns [idtype] of u. Return [nil] if idtype is not yet set.
     get(u,'idtype) = 'qt;
 
-procedure qqe_nytidp(u);
+inline procedure qqe_nytidp(u);
    % qqe queue not yet set type identifier predicate. [u] is atom.
    % Returns [true] if idtype is not set, [nil] if idtype is set.
    get(u, 'idtype) = nil;

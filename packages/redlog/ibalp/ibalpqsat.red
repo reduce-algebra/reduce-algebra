@@ -2150,7 +2150,7 @@ procedure ibalp_process!-var(clause,varal,id,val);
    % the A-List of variables; [id] is a number; [val] is the value of
    % the variable. Returns the new A-List of variables.
    begin scalar h,var;
-      id := intern compress('!! . explode id);
+      id := intern list2string explode2 id;
       if h := atsoc(id,varal) then
 	 var := cdr h
       else <<
@@ -2239,7 +2239,7 @@ procedure ibalp_convcnf(clausel,varal,qsat);
 procedure ibalp_var!-mkid(tok);
    % Turn a number into a identifier. [tok] is a number. Returns an
    % identifier.
-   intern list2string ('v . 'a . 'r . explode tok);
+   intern list2string ('v . 'a . 'r . explode2 tok);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% QSAT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

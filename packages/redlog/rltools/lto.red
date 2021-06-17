@@ -128,14 +128,15 @@ global '(int2id_table!*);
 int2id_table!* := mkvect(-1);
 
 asserted procedure lto_int2id(n: Integer): Id;
-   if n <= upbv int2id_table!* then getv(int2id_table!*, n)
+   if n >= 0 and n <= upbv int2id_table!* then getv(int2id_table!*, n)
+   else if n < 0 or n >= 1000 then intern list2string explode2 n
    else begin
 % Here I need to expand the table.
       scalar w := mkvect(2*n), s;
       s := upbv int2id_table!*;
       for i := 0:s do putv(w, i, getv(int2id_table!*, i));
       for i := s+1:2*n do <<
-         s := intern compress('!! . explode i);
+         s := intern list2string explode2 i;
          putv(w, i, s);
          put(s, 'id2int!*, i) >>;
       int2id_table!* := w;
@@ -145,7 +146,13 @@ asserted procedure lto_int2id(n: Integer): Id;
 lto_int2id 30;  % Pre-populate the table.
 
 asserted procedure lto_id2int_acn(a: Id): Integer;
-   get(a, 'id2int!*);
+  begin
+    scalar r := get(a, 'id2int!*);
+    if null r then <<
+      r := compress explode2 a;
+      put(a, 'id2int!*, r) >>;
+    return r
+  end;
 
 asserted procedure lto_id2int(a: Id): Integer;
    compress cdr explode a;
@@ -270,19 +277,26 @@ procedure lto_sconcat2(s1,s2);
    % List tools string concatenation 2. [s1] and [s2] are strings.
    % Returns a string. The returned string is the concatenation
    % [s1][s2].
-   compress append(reversip cdr reversip explode s1,cdr explode s2);
+   list2string append(explode2 s2, explode2 s2);
 
 asserted procedure lto_sconcat(l: List): String;
    % List tools string concatenation. [l] is a list of strings.
    % Returns a string. The returned string is the concatenation of all
    % strings in [l].
-   if l then
-      if cdr l then
- 	 lto_sconcat2(car l,lto_sconcat cdr l)
-      else
-	 car l
-   else
-      "";
+%   if l then          % this version explodes and reconstitutes all but the
+%      if cdr l then   % first string multiple times,
+% 	 lto_sconcat2(car l,lto_sconcat cdr l)
+%      else
+%	 car l
+%   else
+%      "";
+   begin
+     scalar r;
+     for each s in reverse l do
+       if null r then r := explode2 s
+       else r := append(explode2 s, r);
+     return list2string r
+   end;
 
 asserted procedure lto_substr(s: String, n: Integer, m: Integer): ExtraBoolean;
    % Return the n character substring starting at m, or nil.
@@ -306,8 +320,13 @@ asserted procedure lto_substr(s: String, n: Integer, m: Integer): ExtraBoolean;
       return compress reversip('!" . res)
    end;
 
+% The next function looks very odd to me. Basically wrong! Eg its behaviour
+% on a string like "ab;cd" or "1234" is problematic in that compress will
+% probably create just the symbol 'ab in the first case and the number 1234
+% in the second, which will upset intern.
 asserted procedure lto_stringLeq(s1: String, s2: String): Boolean;
    ordp(intern compress explodec s1, intern compress explodec s2);
+%  ordp(intern s1, intern s2);   % is this what is intended?
 
 asserted procedure lto_stringGreaterP(s1: String, s2: String): Boolean;
    not lto_stringLeq(s1, s2);
@@ -558,11 +577,18 @@ asserted procedure lto_apply2nthip(l: List, n: Integer, fun: Applicable, xargl: 
 %   % function in that the range of values returned is fairly low and if
 %   % you have names all introduced together they are liable to get
 %   % consecutive value codes. These limitations seem to be there on both
-%   % PSL and CSL
+%   % PSL and CSL. Well as of mid June 2021 CSL is being changed so that
+%   % id2int returns 0-255 for U+00 to U+FF, 256 for nil but then well
+%   % spread out values up to around 4000000 for other symbols, such that
+%   % those values might act as half-decent hash values.
 %   id2int id;
 
 % At present it seems that I can not have both inline and asserted together.
-inline procedure lto_hashid id;   % performance critical
+% This function is so heavily used by some parts of the code that making it
+% "inline" makes an overall difference to performance. Possibly in the future
+% the assert package will be upgraded to support "asserted inline" for use in
+% cases where functions and both very small and very heavily used. As here!
+inline procedure lto_hashid id;
    id2int id;
 
 asserted procedure lto_delq(x: Any, l: List): List;
@@ -687,6 +713,12 @@ asserted procedure lto_alphap(x: Id): ExtraBoolean;
 
 asserted procedure lto_upcase(s: String): String;
    compress for each c in explode s collect lto_charUpcase c;
+
+% The next two functions should retrieve the case-adjusted version of
+% letters using GET not atsoc. The search to case-fold Z or z and
+% in particular all characters that are not alphabetic will involve
+% scanning all the way down the association lists. So this is slow as
+% well as ugly! 
 
 asserted procedure lto_charUpcase(c: Id): Id;
    begin scalar table;

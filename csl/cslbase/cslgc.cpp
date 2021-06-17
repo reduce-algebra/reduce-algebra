@@ -71,6 +71,8 @@ LispObject Lverbos(LispObject env, LispObject a)
     if (a == nil) code = 0;
     else if (is_fixnum(a)) code = static_cast<int>(int_of_fixnum(a));
     else code = 1;
+// (enable!-errorset 3 3) will also force GC messages to appear.
+    if (errorset_min == 3 && code == 0) code = 1;
     miscflags = (miscflags & ~GC_MSG_BITS) | (code & GC_MSG_BITS);
     return onevalue(fixnum_of_int(old_code));
 }
@@ -632,7 +634,7 @@ void reclaim(const char *why, int stg_class)
 // sense if GC messages are almost always disabled - maybe that will
 // be the case!
         report_time(t, gct);
-        time_now = read_clock();
+        time_now = read_clock()/1000;
         if ((verbos_flag & 1) || force_verbos)
         {   freshline_trace();
             trace_printf(
@@ -652,7 +654,7 @@ void reclaim(const char *why, int stg_class)
 // At present messages go to the normal output stream, which only makes
 // sense if GC messages are almost always disabled - maybe that will
 // be the case!
-        time_now = t0;
+        time_now = t0/1000;
         if ((time_limit >= 0 && time_now > time_limit) ||
             (io_limit >= 0 && io_now > io_limit))
             resource_exceeded();

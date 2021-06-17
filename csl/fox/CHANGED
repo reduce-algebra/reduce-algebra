@@ -262,5 +262,8 @@ April 2021. Put --enable-test and --enable-experiement to be recognized in
 
 May  2021.    FXShowMath.cpp & FXShowMath.h: Added support for a new Box type
      	      LinedBox and for \bar, \overline and \underline -- Alan Barnes
+
+June 2021.    A few more lines in FXShowMath.cpp so that debugging of the
+              width of glyphs can be more easily debugged.
 	      
 <end of CHANGED>

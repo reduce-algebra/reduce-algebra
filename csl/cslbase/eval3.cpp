@@ -878,7 +878,9 @@ static LispObject errorset3(LispObject env,
     errorset_msg = nullptr;
     TRY
         r = eval(form, nil);
-    CATCH(LispError)
+    CATCH(LispResource)
+        RETHROW;
+    ANOTHER_CATCH(LispError)
 // I am not going to catch exceptions such as the ones that restart the
 // system - only ones that couunt as "errors".
         miscflags = (flags & BACKTRACE_MSG_BITS) |
@@ -983,12 +985,9 @@ LispObject Lerrorset_2(LispObject env, LispObject form,
 // Note that code within CSL can call the C function resource_exceeded() to
 // note that resources have expired.
 
-int64_t time_base = 0,   space_base = 0,   io_base = 0,
-        errors_base = 0;
-int64_t time_now = 0,    space_now = 0,    io_now = 0,
-        errors_now = 0;
-int64_t time_limit = -1, space_limit = -1, io_limit = -1,
-        errors_limit = 0;
+int64_t time_base = 0,   space_base = 0,   io_base = 0,   errors_base = 0;
+int64_t time_now = 0,    space_now = 0,    io_now = 0,    errors_now = 0;
+int64_t time_limit = -1, space_limit = -1, io_limit = -1, errors_limit = 0;
 int64_t Cstack_base = 0,   Lispstack_base = 0;
 int64_t Cstack_now = 0,    Lispstack_now = 0;
 int64_t Cstack_limit = -1, Lispstack_limit = -1;
@@ -1054,8 +1053,9 @@ static LispObject resource_limit7(LispObject env,
 // I can get thrown back here in four important ways:
 // (1) The calculation succeeds.
 // (2) It fails with a regular Lisp error.
-// (3) It fails because it raises a C-level signal.
+// [ (3) It fails because it raises a C-level signal. ... maybe no longer!]
 // (4) It fails by raising a resource-exhausted complaint.
+    time_now = read_clock()/1000;
     TRY
         time_base   = time_now;
         space_base  = space_now;
@@ -1067,7 +1067,7 @@ static LispObject resource_limit7(LispObject env,
 // my clock resolution at 1 sec if I specified "1" I could do so just a
 // smidgin before the clock time and end up with no slack at all.
             if (lltime == 0 || lltime == 1) lltime = 2;
-            w = time_base + lltime;
+            w = time_base + 1000*lltime;
             if (time_limit >= 0 && time_limit < w) w = time_limit;
             time_limit = w;
         }

@@ -37,7 +37,7 @@ module cde_tools; % CDE package, procedures of general utility
 %
 % Various utility procedures for working on lists.
 
-symbolic procedure cde_alglistp(l);
+symbolic inline procedure cde_alglistp(l);
 % Check if l is an algebraic list
  (listp l) and ((car l) equal 'list);
 
@@ -56,7 +56,7 @@ symbolic procedure cde_list2id l;
    if atom l then rederr "argument for cde_list2id must be a list"
     else intern compress for each i in l join explode i;
 
-symbolic procedure cde_list_to_ids l;
+symbolic inline procedure cde_list_to_ids l;
   % Enables an algebraic mode version of cde_list2ids
   cde_list2id cdr l;
 
@@ -249,11 +249,11 @@ symbolic procedure cde_create_indices l;
     else nil;
   end;
 
-symbolic procedure cde_mal(ll);
+symbolic inline procedure cde_mal(ll);
   % Make an Rlisp list into an algebraic list
   cons('list,ll);
 
-symbolic procedure cde_tools();
+symbolic inline procedure cde_tools();
 % This is a place for possible initialization routines.
    nil;
 

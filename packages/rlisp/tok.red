@@ -98,6 +98,7 @@ curline!* := 1;
 %
 symbolic procedure bytelist2string u;
   list2string u;
+put('bytelist2string, 'inline, '(lambda (u) (list2string u)));
 
 % Given a string (that may contain bytes that are over 127) return a list
 % of positive small integers out of the raw byte data.
@@ -120,6 +121,7 @@ symbolic procedure string2bytelist u;
 %
 symbolic procedure bytelist2id u;
   intern list2string u;
+put('bytelist2id, 'inline, '(lambda (u) (intern (list2string u))));
 
 % Make a character (ie a symbol whose name is one character long)
 % out of the integer in the range 0-127. Note that this function
@@ -150,6 +152,7 @@ symbolic procedure bytelist2id u;
 
 symbolic procedure string!-store1(s, n, c);
   string!-store(s, n, c);
+put('string!-store1, 'inline, '(lambda (s n c) (string!-store s n c)));
 
 symbolic procedure string!-store2(s, n, c1, c2);
   << string!-store(s, n, c1);
@@ -230,6 +233,7 @@ symbolic procedure list2widestring u;
 %
 symbolic procedure list2wideid u;
   intern list2widestring u;
+put('list2wideid, 'inline, '(lambda (u) (intern (list2widestring u))));
 
 % Ditto but starting with a single integer
 %
@@ -297,12 +301,14 @@ symbolic procedure widestring2list u;
 %
 symbolic procedure id2bytelist u;
   string2bytelist id2string u;
+put('id2bytelist, 'inline, '(lambda (u) (string2bytelist (id2string u))));
 
 % Return a list of integers corresponding to the characters that make
 % up the name of the symbol u assuming it is encoded using utf-8.
 %
 symbolic procedure wideid2list u;
   widestring2list id2string u;
+put('wideid2list, 'inline, '(lambda (u) (widestring2list (id2string u))));
 
 % The argument should be an identifier denoting a single character. It
 % mey neverthless use multiple bytes. Return the integer code for the
@@ -310,6 +316,7 @@ symbolic procedure wideid2list u;
 %
 symbolic procedure wideid2int u;
   car wideid2list u;
+put('wideid2int, 'inline, '(lambda (u) (car (wideint2list u))));
 
 
 % Find the number of bytes that would be printed if the argument
@@ -394,7 +401,7 @@ symbolic procedure prin2x u;
 % arise if those versions are used!
 %
 % I will note (although it is not dealt with here) that later on in
-% token1 I will make "#if", "#else", "#elif", "#endif", "#eval" and
+% token I will make "#if", "#else", "#elif", "#endif", "#eval" and
 % "#define" special cases of tokens that can be written without needing
 % the initial "#" to be escaped. Thus I want the words involved there
 % to be disjoint from the ones I use for character entities.
@@ -719,7 +726,7 @@ fluid '(!*line!-marker !*file!-marker);
 % This is a big ugly procedure with a lot of GOTO statements. It is overdue
 % for re-work.
 
-symbolic procedure token1;
+symbolic procedure token;
 %
 % The current syntax for an identifier is that it starts with a letter (or
 % an escaped character) and can continue with letters, digits or underscores.
@@ -977,10 +984,6 @@ symbolic procedure tokbquote;
 
 put('!`,'tokprop,'tokbquote);
 
-symbolic procedure token;
-   %This provides a hook for a faster TOKEN;
-   token1();
-
 symbolic procedure filenderr;
    begin
       curescaped!* := nil;
@@ -1052,6 +1055,7 @@ symbolic procedure delcp u;
    % Returns true if U is a semicolon, dollar sign, or other delimiter.
    % This definition replaces the one in the BOOT file.
    flagp(u,'delchar);
+put('delcp, 'inline, '(lambda (u) (flagp u 'delchar)));
 
 flag('(!; !$),'delchar);
 
@@ -1129,6 +1133,7 @@ symbolic procedure addcomment u;
  %    then cursym!* := 'comment . aconc(reversip commentlist!*,u)
  %   else
      cursym!* := u;
+put('addcomment, 'inline, '(lambda (u) (setq cursym!* u)));
 
 symbolic procedure scan;
    begin scalar bool,x,y;

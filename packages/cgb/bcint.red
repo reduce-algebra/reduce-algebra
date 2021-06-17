@@ -37,35 +37,35 @@ lisp <<
 module bcint;
 % Implementation of base coefficients using integers.
 
-procedure bc_zero();
+symbolic inline procedure bc_zero();
    0;
 
-procedure bc_zero!?(u);
+symbolic inline procedure bc_zero!?(u);
    eqn(u,0);
 
-procedure bc_abs(u);
+symbolic inline procedure bc_abs(u);
    abs u;
 
-procedure bc_one!?(u);
+symbolic inline procedure bc_one!?(u);
    eqn(u,1);
 
-procedure bc_2sq(u);
+symbolic inline procedure bc_2sq(u);
    simp u;
 
-procedure bc_a2bc(u);
+symbolic inline procedure bc_a2bc(u);
    % Converts the algebraic (kernel) u into a base coefficient.
    u;
 
-procedure bc_fd(a);
+symbolic inline procedure bc_fd(a);
    a;
 
-procedure bc_neg(u);
+symbolic inline procedure bc_neg(u);
    % Base coefficient negative. u is a base coefficient. bc_neg(u)
    % returns the negative of the base coefficient u, a base
    % coefficient.
    -u;
 
-procedure bc_prod(a,b);
+symbolic procedure bc_prod(a,b);
    if eqn(a,1) then
       b
    else if eqn(b,1) then
@@ -73,13 +73,13 @@ procedure bc_prod(a,b);
    else
       times2(a,b);
 
-procedure bc_quot(a,b);
+symbolic procedure bc_quot(a,b);
    if eqn(b,1) then
       a
    else
       quotientx(a,b);
 
-procedure bc_sum(a,b);
+symbolic procedure bc_sum(a,b);
    % Base coefficient sum. u and v are base coefficients. bcsum(u,v)
    % calculates u+v and returns a base coefficient.
    if eqn(a,0) then
@@ -89,31 +89,31 @@ procedure bc_sum(a,b);
    else
       plus2(a,b);
 
-procedure bc_pmon(var,dg);
+symbolic procedure bc_pmon(var,dg);
    % Parameter monomial.
    rederr "parametric coefficients not supported over bcint";
 
-procedure bc_minus!?(u);
+symbolic inline procedure bc_minus!?(u);
    % Boolean function. Returns true if u is a negative base coeff.
    u < 0;
 
-procedure bc_2a(u);
+symbolic inline procedure bc_2a(u);
    % Returns the prefix equivalent of the base coefficient u.
    u;
 
-procedure bc_gcd(u,v);
+symbolic procedure bc_gcd(u,v);
    gcdn(u,v);
 
-procedure bc_mkat(op,bc);
+symbolic procedure bc_mkat(op,bc);
    {op,numr simp bc,nil};
 
-procedure bc_dcont(bc);
+symbolic inline procedure bc_dcont(bc);
    bc;
 
-procedure bc_2d(bc);
+symbolic inline procedure bc_2d(bc);
    bc;
 
-procedure bc_vars(bc);
+symbolic inline procedure bc_vars(bc);
    nil;
 
 endmodule;  % bcint
