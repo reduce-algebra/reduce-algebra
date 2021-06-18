@@ -215,7 +215,7 @@ procedure dvfsf_susibin2(rold,rnew,nlhs,nrhs,nlev);
    else
       nil;
 
-procedure dvfsf_susipost(atl,knowl);
+inline procedure dvfsf_susipost(atl,knowl);
    % Discretely valued field standad form susi post simplification. [atl] is a
    % list of atomic formulas. [knowl] is a KNOWL. Returns a list
    % $\lambda$ of atomic formulas, such that
@@ -223,7 +223,7 @@ procedure dvfsf_susipost(atl,knowl);
    % $\bigwedge[knowl]\land\bigwedge[atl]$
    atl;
 
-procedure dvfsf_susitf(at,knowl);
+inline procedure dvfsf_susitf(at,knowl);
    % Discretely valued field standard form susi transform. [at] is an
    % atomic formula, [knowl] is a knowledge. Returns an atomic formula
    % $\alpha$ such that $\alpha\land\bigwedge[knowl]$ is equivalent to

@@ -1135,6 +1135,11 @@ public:
                        exit_count, exit_reason);
             my_abort("stack consistency");
         }
+#if defined DEBUG && !defined NO_THROW //@@@
+        if (!std::uncaught_exception())
+        {   err_printf("unwinding the stack\n");
+        }
+#endif
     }
 };
 

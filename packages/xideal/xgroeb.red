@@ -202,7 +202,7 @@ symbolic procedure xprint_basis(s,p);
 
 
 
-symbolic procedure xpolyindex x;
+symbolic inline procedure xpolyindex x;
    length(x member reverse xpolylist!*);
 
 

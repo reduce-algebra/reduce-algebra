@@ -176,7 +176,7 @@ procedure gb_s2a!-gbx(l);
       gb_s2a!-gb l
    >>;
 
-procedure gb_s2s!-gb(l);
+inline procedure gb_s2s!-gb(l);
    gb_gb!-sfl l;
 
 procedure gb_s2a!-gsys(l);
@@ -187,34 +187,34 @@ procedure gb_s2s!-gsys(l);
    for each x in l collect
       {rl_smkn('and,car x),gb_s2s!-gb cadr x};
 
-procedure gb_a2s!-pol(p);
+inline procedure gb_a2s!-pol(p);
    numr simp reval p;
 
-procedure gb_a2s2!-pol(p);
+inline procedure gb_a2s2!-pol(p);
    vdp_f2vdp p;
 
-procedure gb_s2a!-pol(p);
+inline procedure gb_s2a!-pol(p);
    vdp_2a p;
 
-procedure gb_s2s!-pol(p);
+inline procedure gb_s2s!-pol(p);
    vdp_2sq p;
 
-procedure gb_dummy1(dummy);
+inline procedure gb_dummy1(dummy);
    nil;
 
-procedure gb_xvars!-psys(l,vl);
+inline procedure gb_xvars!-psys(l,vl);
    gb_vars(l,vl);
 
-procedure gb_xvars!-psys2(l,cd,vl);
+inline procedure gb_xvars!-psys2(l,cd,vl);
    gb_vars(l,vl);
 
-procedure gb_xvars!-psys3(l,cd,xvarl,vl);
+inline procedure gb_xvars!-psys3(l,cd,xvarl,vl);
    gb_vars(l,vl);
 
-procedure gb_xvars!-ppsys(p,l,vl);
+inline procedure gb_xvars!-ppsys(p,l,vl);
    gb_vars(p . l,vl);
 
-procedure gb_cleanup(u,v);
+inline procedure gb_cleanup(u,v);
    u;
 
 procedure gb_interface!$(fname,a2sl1,a2sl2,defl,xvfn,s2a,s2s,s,smp,argl);
@@ -362,16 +362,16 @@ procedure gb_ltb(l);
    for each p in l collect
       vdp_fmon(bc_a2bc 1,vdp_evlmon p);
 
-procedure gb_gbggsys0(p,dummy,dummy1);
+inline procedure gb_gbggsys0(p,dummy,dummy1);
    gb_gbgsys p;
 
-procedure gb_gbgsys0(p,dummy);
+inline procedure gb_gbgsys0(p,dummy);
    gb_gbgsys p;
 
-procedure gb_gbgsys(p);
+inline procedure gb_gbgsys(p);
    {{nil,gb_gb p,nil}};
 
-procedure gb_gb0(p,dummy);
+inline procedure gb_gb0(p,dummy);
    gb_gb p;
 
 procedure gb_gb(p);
@@ -667,7 +667,7 @@ procedure gb_traverso!-final(g);
       if not gb_searchinlist(vdp_evlmon car rg,cdr rg) then
 	 {vdp_remplist gb_simpcontnormalform gb_normalform(car rg,cdr rg)};
 
-procedure gb_buchcrit4t(e1,e2);
+inline procedure gb_buchcrit4t(e1,e2);
    % nonconstructive test of lcm(e1,e2) = e1 + e2 equivalent: no
    % matches of nonzero elements.
    not ev_disjointp(e1,e2);
@@ -797,7 +797,7 @@ procedure gb_strange!-reduction(s,p1,p2);
       return s
    end;
 
-procedure gb_buch!-ev_divides!?(vev1,vev2);
+inline procedure gb_buch!-ev_divides!?(vev1,vev2);
    % Test if vev1 divides vev2 for exponent vectors vev1 and vev2.
    ev_mtest!?(vev2,vev1);
 
@@ -905,7 +905,7 @@ procedure gb_contentcontrol(u);
 	 ioto_prin2 {"<",cgb_contcount!*,"> "}
    >>;
 
-procedure gb_min!#(a,b);
+inline procedure gb_min!#(a,b);
    if a #< b then a else b;
 
 procedure gb_shift(f,f1);
@@ -1021,19 +1021,19 @@ module vdp;
 %DS MONOMIAL
 % A VDP, such that the polynomial contains one monomial.
 
-procedure vdp_lbc(u);
+inline procedure vdp_lbc(u);
    caddr u;
 
-procedure vdp_evlmon(u);
+inline procedure vdp_evlmon(u);
    cadr u;
 
-procedure vdp_poly(u);
+inline procedure vdp_poly(u);
    car cdddr u;
 
-procedure vdp_zero!?(u);
+inline procedure vdp_zero!?(u);
    null vdp_poly u;
 
-procedure vdp_plist(u);
+inline procedure vdp_plist(u);
    cadr cdddr u;
 
 procedure vdp_remplist(u);
@@ -1044,22 +1044,22 @@ procedure vdp_remplist(u);
       u
    >>;
 
-procedure vdp_number(f);
+inline procedure vdp_number(f);
    vdp_getprop(f,'number) or 0;
 
 procedure vdp_sugar(f);
    if (vdp_zero!? f or not(!*cgbsugar)) then 0 else vdp_getprop(f,'sugar) or 0;
 
-procedure vdp_unit!?(p);
+inline procedure vdp_unit!?(p);
    not vdp_zero!? p and ev_zero!? vdp_evlmon p;
 
-procedure vdp_make(vbc,vev,form);
+inline procedure vdp_make(vbc,vev,form);
    {'vdp,vev,vbc,form,nil};
 
-procedure vdp_monp(u);
+inline procedure vdp_monp(u);
    dip_monp vdp_poly u;
 
-procedure vdp_tdeg(u);
+inline procedure vdp_tdeg(u);
    dip_tdeg vdp_poly u;
 
 procedure vdp_fdip(u);
@@ -1093,13 +1093,13 @@ procedure vdp_bcquot(p,c);
       return r
    end;
 
-procedure vdp_content(p);
+inline procedure vdp_content(p);
    dip_contenti vdp_poly p;
 
-procedure vdp_content1(d,c);
+inline procedure vdp_content1(d,c);
    dip_contenti1(vdp_poly d,c);
 
-procedure vdp_length(f);
+inline procedure vdp_length(f);
    dip_length vdp_poly f;
 
 procedure vdp_bcprod(p,b);
@@ -1130,7 +1130,7 @@ procedure vdp_prod(d1,d2);
       return r
    end;
 
-procedure vdp_zero();
+inline procedure vdp_zero();
    vdp_make('invalid,'invalid,nil);
 
 procedure vdp_mred(u);
@@ -1143,7 +1143,7 @@ procedure vdp_mred(u);
       return r
   end;
 
-procedure vdp_condense(f);
+inline procedure vdp_condense(f);
    dip_condense vdp_poly f;
 
 procedure vdp_setsugar(p,s);
@@ -1152,7 +1152,7 @@ procedure vdp_setsugar(p,s);
    % property of [p] is set to [s].
    if not !*cgbsugar then p else vdp_putprop(p,'sugar,s);
 
-procedure vdp_setnumber(p,n);
+inline procedure vdp_setnumber(p,n);
    vdp_putprop(p,'number,n);
 
 procedure vdp_putprop(poly,prop,val);
@@ -1179,16 +1179,16 @@ procedure vdp_fmon(coef,vev);
       return r
    end;
 
-procedure vdp_2a(u);
+inline procedure vdp_2a(u);
    dip_2a vdp_poly u;
 
-procedure vdp_2f(u);
+inline procedure vdp_2f(u);
    dip_2f vdp_poly u;
 
-procedure vdp_2sq(u);
+inline procedure vdp_2sq(u);
    dip_2sq vdp_poly u;
 
-procedure vdp_init(vars,sm,sx);
+inline procedure vdp_init(vars,sm,sx);
    % Initializing vdp-dip polynomial package.
    dip_init(vars,sm,sx);
 
@@ -1225,7 +1225,7 @@ procedure vdp_lsort(pl);
    % polynomial list of pl.
    sort(pl,function vdp_evlcomp);
 
-procedure vdp_evlcomp(p1,p2);  % nicht auf das HM?
+inline procedure vdp_evlcomp(p1,p2);  % nicht auf das HM?
    dip_evlcomp(vdp_poly p1,vdp_poly p2);
 
 procedure vdp_ilcomb(v1,c1,t1,v2,c2,t2);

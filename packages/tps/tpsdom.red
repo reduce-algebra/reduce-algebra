@@ -75,7 +75,7 @@ symbolic procedure psintequiv!: u;
                where x = get(car u,'intequivfn)
   else nil;
 
-symbolic procedure i2ps u;
+symbolic inline procedure i2ps u;
    u;
 
 symbolic procedure !*d2ps u;
@@ -91,19 +91,19 @@ symbolic procedure !*d2ps u;
 %     return ps
 %   end;
 
-symbolic procedure ps!:minusp!: u;
+symbolic inline procedure ps!:minusp!: u;
    nil;   % what else makes sense?
 
-symbolic procedure ps!:plus!:(u,v);
+symbolic inline procedure ps!:plus!:(u,v);
    ps!:operator!:('plus,u,v);
 
-symbolic procedure ps!:difference!:(u,v);
+symbolic inline procedure ps!:difference!:(u,v);
    ps!:operator!:('difference,u,v);
 
-symbolic procedure ps!:times!:(u,v);
+symbolic inline procedure ps!:times!:(u,v);
    ps!:operator!:('times,u,v);
 
-symbolic procedure ps!:quotient!:(u,v);
+symbolic inline procedure ps!:quotient!:(u,v);
    ps!:operator!:('quotient,u,v);
 
 
@@ -180,13 +180,13 @@ symbolic procedure ps!:operator!:(op,u,v);
         return u;
   end;
 
-symbolic procedure ps!:zerop!: u;
+symbolic inline procedure ps!:zerop!: u;
  (numberp v and zerop v) where v=ps!:value u;
 
-symbolic procedure ps!:onep!: u;
+symbolic inline procedure ps!:onep!: u;
   onep ps!:value u;
 
-symbolic procedure ps!:prepfn!: u;
+symbolic inline procedure ps!:prepfn!: u;
    u;
 
 % symbolic procedure ps!:abs!: u;

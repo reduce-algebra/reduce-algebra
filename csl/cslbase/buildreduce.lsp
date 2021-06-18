@@ -1,4 +1,4 @@
-% "buildreduce.lsp"                        Copyright (C) Codemist 2016-2020
+% "buildreduce.lsp"                        Copyright (C) Codemist 2016-2021
 %
 % Build a CSL REDUCE.
 %
@@ -1000,18 +1000,8 @@ symbolic procedure profile_a_package names;
                              10000,% allow ten megabytes of I/O
                              -1);  % Do not limit Lisp-level errors at all
        wrs w; rds w1;
-#if nil
        w := for each x in mapstore 2 collect
            list(car x, cadr x, caddr x, float caddr x/float cadr x);
-#else
-       w := nil;
-       for each s in oblist() do <<
-           w1 := symbol!-bytelength s;
-           if not zerop w1 and not zerop symbol!-count s then
-               w := list(s, w1, symbol!-count s,
-                   float symbol!-count s / float w1) . w >>;
-#endif
-princ "Blah: "; print sort(w, function orderp);
        w := sort(w, function profile_compare_fn);
        w1 := cadddr car w;
        for each x in w do rplaca(cdddr x, 100.0*cadddr x/w1);

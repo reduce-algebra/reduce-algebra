@@ -407,10 +407,10 @@ procedure ibalp_subt(al,u);
       return car u . for each arg in cdr u collect ibalp_subt(al,arg)
    end;
 
-procedure ibalp_subalchk(al);
+inline procedure ibalp_subalchk(al);
    ;
 
-procedure ibalp_eqnrhskernels(x);
+inline procedure ibalp_eqnrhskernels(x);
    ibalp_varlt cdr x;
 
 procedure ibalp_simpterm(u);
@@ -446,16 +446,16 @@ procedure ibalp_simpatom(u);
  	 typerr({"string",u},"Boolean term")
    end;
 
-procedure ibalp_prepterm(u);
+inline procedure ibalp_prepterm(u);
    u;
 
-procedure ibalp_boolfp(op);
+inline procedure ibalp_boolfp(op);
    op memq '(bnot band bor bimpl brepl bequiv);
 
-procedure ibalp_resimpterm(u);
+inline procedure ibalp_resimpterm(u);
    ibalp_simpterm u;
 
-procedure ibalp_prepat(f);
+inline procedure ibalp_prepat(f);
    % Prep atomic formula. [f] is a IBALP atomic formula. Returns [f]
    % in Lisp prefix form.
    f;
@@ -476,48 +476,48 @@ procedure ibalp_simpat(u);
    % formula.
    ibalp_mk2(car u,ibalp_simpterm cadr u,ibalp_simpterm caddr u);
 
-procedure ibalp_op(atf);
+inline procedure ibalp_op(atf);
    % Get operator. [atf] is an atomic formula $(R,t_1,t_2)$. Returns
    % $R$ which is $=$.
    car atf;
 
-procedure ibalp_atfp(f);
+inline procedure ibalp_atfp(f);
    % Atomic formula predicate. [f] is a
    % formula. Returns t is and only if [f] is an atomic formula.
    ibalp_op f memq '(equal neq);
 
-procedure ibalp_arg1(atf);
+inline procedure ibalp_arg1(atf);
    % Unary operator argument. [atf] is an atomic formula $R(t)$.
    % Returns $t$.
    cadr atf;
 
-procedure ibalp_arg2l(atf);
+inline procedure ibalp_arg2l(atf);
    % Binary operator left hand side argument. [atf] is an atomic
    % formula $R(t_1,t_2)$. Returns $t_1$.
    cadr atf;
 
-procedure ibalp_arg2r(atf);
+inline procedure ibalp_arg2r(atf);
    % Binary operator right hand side argument. [atf] is an atomic
    % formula $R(t_1,t_2)$. Returns $t_2$.
    caddr atf;
 
-procedure ibalp_argn(atf);
+inline procedure ibalp_argn(atf);
    % n-ary operator argument list. [atf] is an atomic formula
    % $(R,t_1,...,t_n)$. Returns the list $(t_1,...,t_n)$.
    cdr atf;
 
-procedure ibalp_mk2(op,lhs,rhs);
+inline procedure ibalp_mk2(op,lhs,rhs);
    % Make atomic formula for binary operator. [op] is one of the
    % operators [equal], [neq]; [lhs] and [rhs] are terms. Returns the
    % atomic formula $[op]([lhs],[rhs])$.
    {op,lhs,rhs};
 
-procedure ibalp_1mk2(op,lhs);
+inline procedure ibalp_1mk2(op,lhs);
    % Make zero right hand atomic formula for binary operator. [op] is
    % the operator [equal]. Returns the atomic formula $[op]([lhs],0)$.
    {op,lhs,1};
 
-procedure ibalp_mkn(op,argl);
+inline procedure ibalp_mkn(op,argl);
    % Make atomic formula for n-ary operator. [op] is one of the
    % operators [equal], [neq]; [argl] is a list $(t_1,t_2)$ of terms.
    % Returns the atomic formula $(op,t_1,t_2)$.
@@ -603,10 +603,10 @@ procedure ibalp_sacat(a1,a2,gor);
 
 %%% --- this part might become ibalpmisc.red --- %%%
 
-procedure ibalp_atab(f);
+inline procedure ibalp_atab(f);
    cl_atab cl_simpl(f,nil,-1);
 
-procedure ibalp_itab(f);
+inline procedure ibalp_itab(f);
    cl_itab cl_simpl(f,nil,-1);
 
 procedure ibalp_a2cdl(atml);
@@ -637,10 +637,10 @@ procedure ibalp_ordatp(a1,a2);
       return ibalp_ordrelp(ibalp_op a1,ibalp_op a2)
    end;
 
-procedure ibalp_ordp(u1,u2);
+inline procedure ibalp_ordp(u1,u2);
    ordp(!*k2f u1,!*k2f u2);
 
-procedure ibalp_ordrelp(r1,r2);
+inline procedure ibalp_ordrelp(r1,r2);
    not not (r2 memq (r1 memq '(equal neq)));
 
 procedure ibalp_negateat(atf);
@@ -648,7 +648,7 @@ procedure ibalp_negateat(atf);
    % Returns an atomic formula equivalent to $\lnot [atf]$.
    ibalp_mk2(ibalp_op atf,ibalp_arg2l atf,ibalp_negatet ibalp_arg2r atf);
 
-procedure ibalp_negatet(u);
+inline procedure ibalp_negatet(u);
    if u = 0 then 1 else if u = 1 then 0 else {'bnot,u};
 
 procedure seidl_negateat(atf);
@@ -781,19 +781,19 @@ procedure ibalp_varlt1(u,vl);
       return vl
    end;
 
-procedure ibalp_transform(v, f, vl, an, theo, ans, bvl);
+inline procedure ibalp_transform(v, f, vl, an, theo, ans, bvl);
    % Transform formula. [f] is a quantifier-free formula; [v] is a
    % variable. Returns $([f] . nil)$. This behavior informs [cl_qe]
    % that there no transformation possible.
    nil;
 
-procedure ibalp_trygauss(f,v,theo,ans,bvl);
+inline procedure ibalp_trygauss(f,v,theo,ans,bvl);
    % Try Gauss. [f] is a quantifier-free formula; [v] is a variable.
    % Returns [failed]. This behavior informs [cl_qe] that there no
    % Gauss elimination possible.
    'failed;
 
-procedure ibalp_specelim(f,vl,theo,ans,bvl);
+inline procedure ibalp_specelim(f,vl,theo,ans,bvl);
    % Special elimination. [f] is a quantifier-free formula; [vl] is a
    % list of variables; [theo] is a theory; [ans] is Bool; [bvl] is
    % the list of bound variables. Returns [failed]. This behavior
@@ -875,7 +875,7 @@ procedure ibalp_translat(atf,v,theo,pos,ans);
    else
       ibalp_mkalp('equal,{1});
 
-procedure ibalp_mkalp(tag,l);
+inline procedure ibalp_mkalp(tag,l);
    % Make alist pair. [tag] is a key; [l] is an entry. Returns an ALP.
    {tag . l} . {tag . 1};
 

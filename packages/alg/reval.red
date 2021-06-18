@@ -35,10 +35,10 @@ switch listargs;
 
 global '(!*resubs !*sqvar!* !*val);
 
-symbolic procedure reval u;
+symbolic inline procedure reval u;
    reval1(u,t);
 
-symbolic procedure aeval u;
+symbolic inline procedure aeval u;
    reval1(u,nil);
 
 symbolic procedure aeval!* u;
@@ -294,7 +294,7 @@ deflist('
    (!*sq (lambda (x) nil))
  ),'rtypefn);
 
-symbolic procedure getrtypecar u; getrtype car u;
+symbolic inline procedure getrtypecar u; getrtype car u;
 
 symbolic procedure getrtypeor u;
    u and (getrtype car u or getrtypeor cdr u);

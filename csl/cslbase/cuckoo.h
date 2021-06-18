@@ -270,7 +270,7 @@ static cuckoo_inline std::uint32_t cuckoo_lookup(
 // the location where it was placed. It does not fill in any associated
 // data - just the key. If it fails after a large number of operations that
 // shuffle the table it returns (uint32_t)(-1). If it does that then it will
-// leave a hash-table entry in cuckoo_pending_item. Note verey well that in
+// leave a hash-table entry in cuckoo_pending_item. Note very well that in
 // general that will be one of they keys that had previously been inserted
 // rather than the new one. One possible use for this would be to fix a table
 // size and insert all your keys - some may fail so you collect them so they

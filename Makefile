@@ -39,6 +39,9 @@ all:
 profile:
 	cd `ls -d cslbuild/*/csl | head -1` && make profile
 
+profile-install:
+	cd `ls -d cslbuild/*/csl | head -1` && make profile-install
+
 # This script tries a fairly basic sanity check to see if the
 # support-tools, include files and libraries needed to build the
 # CSL version of Reduce are available. It is NOT a perfect test but

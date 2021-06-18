@@ -64,7 +64,7 @@ put('expt, '!:fs!:, 'fs!:expt!:);
 
 % Conversion functions
 
-symbolic procedure i2fourier u;
+symbolic inline procedure i2fourier u;
   if dmode!*='!:fs!: then !*d2fourier u else u;
 
 symbolic procedure !*d2fourier u;
@@ -89,7 +89,7 @@ begin scalar fourier;
      return get('fourier,'tag) . fourier
 end;
 
-symbolic procedure fs!:minusp!:(x); fs!:minusp cdr x;
+symbolic inline procedure fs!:minusp!:(x); fs!:minusp cdr x;
 
 symbolic procedure fs!:minusp x;
 if null x then nil else
@@ -216,10 +216,10 @@ rerror(fourier, 98, "Unimplemented");
 symbolic procedure fs!:gcd!:(x,y);
 rerror(fourier, 98, "Unimplemented");
 
-symbolic procedure fs!:difference!:(x,y);
+symbolic inline procedure fs!:difference!:(x,y);
    fs!:plus!:(x, fs!:negate!: y);
 
-symbolic procedure fs!:negate!: x;
+symbolic inline procedure fs!:negate!: x;
   get('fourier,'tag) . fs!:negate cdr x;
 
 symbolic procedure fs!:negate x;
@@ -246,9 +246,9 @@ symbolic procedure fs!:onep u;
   null fs!:next u and
   onep fs!:coeff u and fs!:null!-angle u and fs!:fn(u) = 'cos;
 
-symbolic procedure fs!:prepfn!:(x); x;
+symbolic inline procedure fs!:prepfn!:(x); x;
 
-symbolic procedure simpfs u; u;
+symbolic inline procedure simpfs u; u;
 
 put('!:fs!:,'simpfn,'simpfs);
 

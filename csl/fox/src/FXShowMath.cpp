@@ -805,8 +805,19 @@ static int convertGlyphs(const char *s, int len)
 static int xfWidth(void *ff, const char *s, int len)
 {
     XGlyphInfo w;
+    if (debugFont & 16)
+    {   printf("xfWidth");
+        for (int i=0; i<len; i++) printf(" %.2x", s[i] & 0xff);
+        printf("\n");
+    }
     len = convertGlyphs(s, len);
+    if (debugFont & 16)
+    {   printf("after convertGlyphs");
+        for (int i=0; i<len; i++) printf(" %.2x", s[i] & 0xff);
+        printf("\n");
+    }
     XftGlyphExtents(dpy, (XftFont *)ff, glyphs, len, &w);
+    if (debugFont & 16) printf("width = %d\n", w.xOff);
 // Observe that I believe that I want xOff, the "advance" figure, rather
 // than width here.
     return w.xOff;
@@ -1459,8 +1470,8 @@ static int bracketWidth(char type, int flags, int height, int depth)
     w = xfWidth(ff, ss, 1);
 #endif
     if (debugFont & 16)
-        printf("bracket %c size %d code %.2x %.2x width %d\n",
-            type, n, ss[0], ss[1], w);
+        printf("bracket %c size %d code %.2x width %d\n",
+            type, n, ss[0], w);
     return w;
 }
 

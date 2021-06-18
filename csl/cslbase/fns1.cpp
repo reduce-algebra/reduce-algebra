@@ -528,6 +528,21 @@ LispObject Lrplacd(LispObject, LispObject a, LispObject b)
     return onevalue(a);
 }
 
+// setcar and setcdr are like rplaca and rplacd save that they hand back
+// arg2 as their result rather than arg1.
+
+LispObject Lsetcar(LispObject, LispObject a, LispObject b)
+{   if (!consp(a)) return error(1, err_bad_rplac, a);
+    write_barrier(caraddr(a), b);
+    return onevalue(b);
+}
+
+LispObject Lsetcdr(LispObject, LispObject a, LispObject b)
+{   if (!consp(a)) return error(1, err_bad_rplac, a);
+    write_barrier(cdraddr(a), b);
+    return onevalue(b);
+}
+
 LispObject Lsymbolp(LispObject env, LispObject a)
 {   return onevalue(Lispify_predicate(symbolp(a)));
 }
@@ -1139,6 +1154,8 @@ LispObject Lenable_errorset(LispObject env, LispObject a,
         default: // case 3:
             break;
     }
+    if (errorset_min == 3 && (miscflags & GC_MSG_BITS) == 0)
+        miscflags = (miscflags & ~GC_MSG_BITS) | 1;
     return r;
 }
 
@@ -2519,6 +2536,8 @@ setup_type const funcs1_setup[] =
     {"representation",          G0Wother, Lrepresentation1, Lrepresentation2, G3Wother, G4Wother},
     DEF_2("rplaca",             Lrplaca),
     DEF_2("rplacd",             Lrplacd),
+    DEF_2("setcar",             Lsetcar),
+    DEF_2("setcdr",             Lsetcdr),
     DEF_2("set",                Lset),
     DEF_1("makeunbound",        Lmakeunbound),
     DEF_1("special-form-p",     Lspecial_form_p),

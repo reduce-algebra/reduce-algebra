@@ -17,6 +17,22 @@ cslbuild = $(reduce)/cslbuild
 packages = $(reduce)/packages
 generic = $(reduce)/generic
 
+NCPUS := $(shell if test "`which nproc 2>/dev/null`" != "" && test "$$?" = "0"; \
+	then \
+	  N=`nproc`; \
+	else \
+	  if test "`which sysctl 2>/dev/null`" != "" && test "$$?" = "0"; \
+	  then \
+	    N=`sysctl -n hw.ncpu`; \
+	  else \
+	    N=2; \
+	  fi; \
+	fi; echo $$N )
+
+cpucount:
+	echo $(NCPUS)
+
+
 ACLOCAL_AMFLAGS = -I m4
 
 # I want to be able to see what gets built and why, so here is a GNU
@@ -783,7 +799,7 @@ SHARED=$(cslbase)/fwin.h $(cslbase)/log.h $(cslbase)/termed.h \
 
 $(FOXDEPS):	$(csl)/fox/CHANGED $(SHARED)
 	@printf "About to build FOX for %s\n" `pwd`
-	$(TRACE)@cd ../fox && $(MAKE) install
+	$(TRACE)@cd ../fox && $(MAKE) -j$(NCPUS) install
 
 
 if crlibm
@@ -824,7 +840,7 @@ endif conservative
 
 $(CRLIBMDEPS):
 	@printf "About to build crlibm for %s\n" `pwd`
-	$(TRACE)@cd ../crlibm && $(MAKE) install
+	$(TRACE)@cd ../crlibm && $(MAKE) -j$(NCPUS) install
 
 else !crlibm
 CRINC =
@@ -868,7 +884,7 @@ endif conservative
 
 $(LIBFFIDEPS):
 	@printf "About to build libffi for %s\n" `pwd`
-	$(TRACE)@cd ../libffi && $(MAKE) install
+	$(TRACE)@cd ../libffi && $(MAKE) -j$(NCPUS) install
 
 SOFTFLOATDEPS=../lib/libsoftfloat.a ../include/softfloat.h
 
@@ -905,7 +921,7 @@ endif conservative
 
 $(SOFTFLOATDEPS):
 	@printf "About to build softfloat for %s\n" `pwd`
-	$(TRACE)@cd ../softfloat && $(MAKE) install
+	$(TRACE)@cd ../softfloat && $(MAKE) -j$(NCPUS) install
 
 # Note that all the compilation of these files must be performed using
 # a Make "default" action so that the dependencies shown here are not
@@ -1164,7 +1180,7 @@ WXDEPS=../bin/wx-config
 
 ../bin/wx-config:	$(csl)/wxWidgets/wxWidgets_revision
 	@printf "About to build wxWidgets for %s\n" `pwd`
-	$(TRACE)@cd ../wxWidgets && $(MAKE) install
+	$(TRACE)@cd ../wxWidgets && $(MAKE) -j$(NCPUS) install
 
 wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
 	-$(RM) -f wxfontdemo$(EXEEXT)
@@ -2110,7 +2126,7 @@ profile:
 	-$(CP) $(gensrc)/profile.dat $(gensrc)/profile.dat.old
 	mv profile.dat $(gensrc)
 	chmod 664 $(gensrc)/*
-	$(MAKE) just-c-code
+	$(MAKE) -j$(NCPUS) just-c-code
 
 # After profiling you may wish to invoke this to put the new profile
 # information where it would be picked up if you remove cslbuild and
@@ -2143,7 +2159,7 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 	chmod 664 $(gensrc)/*
 	$(RM) -f $(BOOTSTRAPREDUCE_IMG)
 	$(MAKE) $(AM_MAKEFLAGS) $(BOOTSTRAPREDUCE_IMG)
-	$(MAKE) $(AM_MAKEFLAGS) just-c-code
+	$(MAKE) $(AM_MAKEFLAGS) -j$(NCPUS) just-c-code
 	chmod 664 $(gensrc)/*
 	mv $(gensrc)/make.tmp $(gensrc)/make.stamp
 
@@ -2195,7 +2211,7 @@ standard-c-code $(generated_lisp):	$(gensrc)/make.stamp
 	  $(RM) -f $(gensrc)/make.stamp; \
 	  $(MAKE) $(AM_MAKEFLAGS) $(gensrc)/make.stamp; \
 	  $(RM) -f $(generated-objects); \
-	  $(MAKE) $(AM_MAKEFLAGS) reduce; \
+	  $(MAKE) $(AM_MAKEFLAGS) -j$(NCPUS) reduce; \
 	fi
 
 

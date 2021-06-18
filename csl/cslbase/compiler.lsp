@@ -865,6 +865,20 @@ get (car u) (quote s!:tidy_fn))) (return (funcall w u))) (t (cond ((setq w (
 get (car u) (quote s!:newname))) (return (s!:improve (cons w (cdr u))))) (t (
 return u)))))))))
 
+(de s!:imp_cond_predicate (u) (cond ((and (eqcar u (quote memq)) (atom (cadr 
+u)) (eqcar (caddr u) (quote quote))) (cons (quote or) (prog (var1057 var1058)
+(setq var1057 (cadr (caddr u))) lab1056 (cond ((null var1057) (return (
+reversip var1058)))) (prog (v) (setq v (car var1057)) (setq var1058 (cons (
+list (quote eq) (cadr u) (mkquote v)) var1058))) (setq var1057 (cdr var1057))
+(go lab1056)))) (t u)))
+
+(de s!:imp_cond (u) (cons (quote cond) (prog (var1060 var1061) (setq var1060 
+(cdr u)) lab1059 (cond ((null var1060) (return (reversip var1061)))) (prog (s
+) (setq s (car var1060)) (setq var1061 (cons (cons (s!:imp_cond_predicate (
+car s)) (cdr s)) var1061))) (setq var1060 (cdr var1060)) (go lab1059))))
+
+(put (quote cond) (quote s!:tidy_fn) (quote s!:imp_cond))
+
 (de s!:imp_minus (u) (prog (a) (setq a (s!:improve (cadr u))) (return (cond (
 (numberp a) (minus a)) (t (cond ((or (eqcar a (quote minus)) (eqcar a (quote 
 iminus))) (cadr a)) (t (cond ((eqcar a (quote difference)) (s!:improve (list 
@@ -885,10 +899,10 @@ idifference)) (s!:improve (list (quote idifference) (caddr a) (cadr a)))) (t
 (put (quote !1!-) (quote s!:tidy_fn) (quote s!:imp_1!-))
 
 (de s!:imp_times (u) (prog (a b) (cond ((not (equal (length u) 3)) (return (
-cons (car u) (prog (var1057 var1058) (setq var1057 (cdr u)) lab1056 (cond ((
-null var1057) (return (reversip var1058)))) (prog (v) (setq v (car var1057)) 
-(setq var1058 (cons (s!:improve v) var1058))) (setq var1057 (cdr var1057)) (
-go lab1056)))))) (setq a (s!:improve (cadr u))) (setq b (s!:improve (caddr u)
+cons (car u) (prog (var1063 var1064) (setq var1063 (cdr u)) lab1062 (cond ((
+null var1063) (return (reversip var1064)))) (prog (v) (setq v (car var1063)) 
+(setq var1064 (cons (s!:improve v) var1064))) (setq var1063 (cdr var1063)) (
+go lab1062)))))) (setq a (s!:improve (cadr u))) (setq b (s!:improve (caddr u)
 )) (return (cond ((equal a 1) b) (t (cond ((equal b 1) a) (t (cond ((equal a 
 (minus 1)) (s!:imp_minus (list (quote minus) b))) (t (cond ((equal b (minus 1
 )) (s!:imp_minus (list (quote minus) a))) (t (list (car u) a b))))))))))))
@@ -896,10 +910,10 @@ go lab1056)))))) (setq a (s!:improve (cadr u))) (setq b (s!:improve (caddr u)
 (put (quote times) (quote s!:tidy_fn) (quote s!:imp_times))
 
 (de s!:imp_itimes (u) (prog (a b) (cond ((not (equal (length u) 3)) (return (
-cons (car u) (prog (var1060 var1061) (setq var1060 (cdr u)) lab1059 (cond ((
-null var1060) (return (reversip var1061)))) (prog (v) (setq v (car var1060)) 
-(setq var1061 (cons (s!:improve v) var1061))) (setq var1060 (cdr var1060)) (
-go lab1059)))))) (setq a (s!:improve (cadr u))) (setq b (s!:improve (caddr u)
+cons (car u) (prog (var1066 var1067) (setq var1066 (cdr u)) lab1065 (cond ((
+null var1066) (return (reversip var1067)))) (prog (v) (setq v (car var1066)) 
+(setq var1067 (cons (s!:improve v) var1067))) (setq var1066 (cdr var1066)) (
+go lab1065)))))) (setq a (s!:improve (cadr u))) (setq b (s!:improve (caddr u)
 )) (return (cond ((equal a 1) b) (t (cond ((equal b 1) a) (t (cond ((equal a 
 (minus 1)) (s!:imp_minus (list (quote iminus) b))) (t (cond ((equal b (minus 
 1)) (s!:imp_minus (list (quote iminus) a))) (t (list (car u) a b))))))))))))
@@ -1040,29 +1054,29 @@ car x))) (return nil))) (cond ((setq h (get (car x) (quote s!:helpeasy))) (
 return (funcall h x))) (t (return nil)))))
 
 (de s!:instate_local_decs (v d w) (prog (fg) (cond ((fluidp v) (return w))) (
-prog (var1063) (setq var1063 d) lab1062 (cond ((null var1063) (return nil))) 
-(prog (z) (setq z (car var1063)) (cond ((and (eqcar z (quote special)) (memq 
-v (cdr z))) (setq fg t)))) (setq var1063 (cdr var1063)) (go lab1062)) (cond (
+prog (var1069) (setq var1069 d) lab1068 (cond ((null var1069) (return nil))) 
+(prog (z) (setq z (car var1069)) (cond ((and (eqcar z (quote special)) (memq 
+v (cdr z))) (setq fg t)))) (setq var1069 (cdr var1069)) (go lab1068)) (cond (
 fg (progn (make!-special v) (setq w (cons v w))))) (return w)))
 
-(de s!:residual_local_decs (d w) (prog nil (prog (var1067) (setq var1067 d) 
-lab1066 (cond ((null var1067) (return nil))) (prog (z) (setq z (car var1067))
-(cond ((eqcar z (quote special)) (prog (var1065) (setq var1065 (cdr z)) 
-lab1064 (cond ((null var1065) (return nil))) (prog (v) (setq v (car var1065))
+(de s!:residual_local_decs (d w) (prog nil (prog (var1073) (setq var1073 d) 
+lab1072 (cond ((null var1073) (return nil))) (prog (z) (setq z (car var1073))
+(cond ((eqcar z (quote special)) (prog (var1071) (setq var1071 (cdr z)) 
+lab1070 (cond ((null var1071) (return nil))) (prog (v) (setq v (car var1071))
 (cond ((and (not (fluidp v)) (not (globalp v)) (not (keywordp v))) (progn (
-make!-special v) (setq w (cons v w)))))) (setq var1065 (cdr var1065)) (go 
-lab1064))))) (setq var1067 (cdr var1067)) (go lab1066)) (return w)))
+make!-special v) (setq w (cons v w)))))) (setq var1071 (cdr var1071)) (go 
+lab1070))))) (setq var1073 (cdr var1073)) (go lab1072)) (return w)))
 
 (de s!:cancel_local_decs (w) (unfluid w))
 
 (de s!:find_local_decs (body isprog) (prog (w local_decs) (cond ((and (not 
 isprog) body (null (cdr body)) (eqcar (car body) (quote progn))) (setq body (
-cdar body)))) (prog nil lab1068 (cond ((null (and body (or (eqcar (car body) 
+cdar body)))) (prog nil lab1074 (cond ((null (and body (or (eqcar (car body) 
 (quote declare)) (stringp (car body))))) (return nil))) (progn (cond ((
 stringp (car body)) (setq w (cons (car body) w))) (t (setq local_decs (append
-local_decs (cdar body))))) (setq body (cdr body))) (go lab1068)) (prog nil 
-lab1069 (cond ((null w) (return nil))) (progn (setq body (cons (car w) body))
-(setq w (cdr w))) (go lab1069)) (return (cons local_decs body))))
+local_decs (cdar body))))) (setq body (cdr body))) (go lab1074)) (prog nil 
+lab1075 (cond ((null w) (return nil))) (progn (setq body (cons (car w) body))
+(setq w (cdr w))) (go lab1075)) (return (cons local_decs body))))
 
 (de s!:comlambda (bvl body args env context) (prog (s nbvl fluids fl1 w 
 local_decs) (cond ((and (equal context 0) s!:maybe_values) (s!:outopcode0 (
@@ -1070,25 +1084,25 @@ quote ONEVALUE) (quote (onevalue))))) (setq nbvl (setq s (cdr env))) (setq
 body (s!:find_local_decs body nil)) (setq local_decs (car body)) (setq body (
 cdr body)) (cond ((atom body) (setq body nil)) (t (cond ((atom (cdr body)) (
 setq body (car body))) (t (setq body (cons (quote progn) body)))))) (setq w 
-nil) (prog (var1071) (setq var1071 bvl) lab1070 (cond ((null var1071) (return
-nil))) (prog (v) (setq v (car var1071)) (setq w (s!:instate_local_decs v 
-local_decs w))) (setq var1071 (cdr var1071)) (go lab1070)) (prog (var1073) (
-setq var1073 bvl) lab1072 (cond ((null var1073) (return nil))) (prog (v) (
-setq v (car var1073)) (progn (cond ((or (globalp v) (keywordp v)) (error 0 (
+nil) (prog (var1077) (setq var1077 bvl) lab1076 (cond ((null var1077) (return
+nil))) (prog (v) (setq v (car var1077)) (setq w (s!:instate_local_decs v 
+local_decs w))) (setq var1077 (cdr var1077)) (go lab1076)) (prog (var1079) (
+setq var1079 bvl) lab1078 (cond ((null var1079) (return nil))) (prog (v) (
+setq v (car var1079)) (progn (cond ((or (globalp v) (keywordp v)) (error 0 (
 list "attempt to bind global" v)))) (cond ((fluidp v) (prog (g) (setq g (
 gensym)) (setq nbvl (cons g nbvl)) (setq fl1 (cons v fl1)) (setq fluids (cons
 (cons v g) fluids)))) (t (setq nbvl (cons v nbvl)))) (cond ((equal (car args
 ) nil) (s!:outstack 1)) (t (progn (s!:comval (car args) env 1) (s!:outopcode0
 (quote PUSH) (quote (PUSH)))))) (rplacd env (cons 0 (cdr env))) (setq args (
-cdr args)))) (setq var1073 (cdr var1073)) (go lab1072)) (rplacd env nbvl) (
+cdr args)))) (setq var1079 (cdr var1079)) (go lab1078)) (rplacd env nbvl) (
 cond (fluids (progn (setq fl1 (s!:vecof fl1)) (s!:outopcode1lit (quote 
-FREEBIND) fl1 env) (prog (var1075) (setq var1075 (cons nil fluids)) lab1074 (
-cond ((null var1075) (return nil))) (prog (v) (setq v (car var1075)) (rplacd 
-env (cons 0 (cdr env)))) (setq var1075 (cdr var1075)) (go lab1074)) (rplacd 
-env (cons (plus 2 (length fluids)) (cdr env))) (prog (var1077) (setq var1077 
-fluids) lab1076 (cond ((null var1077) (return nil))) (prog (v) (setq v (car 
-var1077)) (s!:comval (list (quote setq) (car v) (cdr v)) env 2)) (setq 
-var1077 (cdr var1077)) (go lab1076))))) (setq w (s!:residual_local_decs 
+FREEBIND) fl1 env) (prog (var1081) (setq var1081 (cons nil fluids)) lab1080 (
+cond ((null var1081) (return nil))) (prog (v) (setq v (car var1081)) (rplacd 
+env (cons 0 (cdr env)))) (setq var1081 (cdr var1081)) (go lab1080)) (rplacd 
+env (cons (plus 2 (length fluids)) (cdr env))) (prog (var1083) (setq var1083 
+fluids) lab1082 (cond ((null var1083) (return nil))) (prog (v) (setq v (car 
+var1083)) (s!:comval (list (quote setq) (car v) (cdr v)) env 2)) (setq 
+var1083 (cdr var1083)) (go lab1082))))) (setq w (s!:residual_local_decs 
 local_decs w)) (s!:comval body env 1) (s!:cancel_local_decs w) (cond (fluids 
 (s!:outopcode0 (quote FREERSTR) (quote (FREERSTR))))) (s!:outlose (length bvl
 )) (rplacd env s)))
@@ -1109,22 +1123,22 @@ s!:maybe_values) (s!:outopcode0 (quote ONEVALUE) (quote (onevalue))))) (cond
 (de s!:comval_m (x env context s!:local_macros) (s!:comval x env context))
 
 (de s!:comflet (x env context) (prog (w r g save) (setq save (cdr env)) (prog
-(var1079) (setq var1079 (cadr x)) lab1078 (cond ((null var1079) (return nil)
-)) (prog (d) (setq d (car var1079)) (progn (setq g (gensym)) (s!:comval (list
+(var1085) (setq var1085 (cadr x)) lab1084 (cond ((null var1085) (return nil)
+)) (prog (d) (setq d (car var1085)) (progn (setq g (gensym)) (s!:comval (list
 (quote function) (cons (quote lambda) (cdr d))) env context) (s!:outopcode0 
 (quote PUSH) (quote (PUSH))) (rplacd env (cons g (cdr env))) (setq r (cons (
-cons (car d) g) r)))) (setq var1079 (cdr var1079)) (go lab1078)) (s!:comval_m
+cons (car d) g) r)))) (setq var1085 (cdr var1085)) (go lab1084)) (s!:comval_m
 (cons (quote progn) (cddr x)) env context (append r s!:local_macros)) (
 s!:outlose (length (cadr x))) (rplacd env save)))
 
 (put (quote flet) (quote s!:compfn) (function s!:comflet))
 
-(de s!:comlabels (x env context) (prog (w w1 r g) (prog (var1081) (setq 
-var1081 (cadr x)) lab1080 (cond ((null var1081) (return nil))) (prog (d) (
-setq d (car var1081)) (progn (setq g (gensym)) (setq w (cons (list (quote 
+(de s!:comlabels (x env context) (prog (w w1 r g) (prog (var1087) (setq 
+var1087 (cadr x)) lab1086 (cond ((null var1087) (return nil))) (prog (d) (
+setq d (car var1087)) (progn (setq g (gensym)) (setq w (cons (list (quote 
 setq) g (list (quote function) (cons (quote lambda) (cdr d)))) w)) (setq w1 (
-cons (list g) w1)) (setq r (cons (cons (car d) g) r)))) (setq var1081 (cdr 
-var1081)) (go lab1080)) (setq x (cons (quote let) (cons (reverse w1) (append 
+cons (list g) w1)) (setq r (cons (cons (car d) g) r)))) (setq var1087 (cdr 
+var1087)) (go lab1086)) (setq x (cons (quote let) (cons (reverse w1) (append 
 w (cddr x))))) (return (s!:comval_m x env context (append r s!:local_macros))
 )))
 
@@ -1136,9 +1150,9 @@ env context (append (cadr x) s!:local_macros)))
 (put (quote macrolet) (quote s!:compfn) (function s!:commacrolet))
 
 (de s!:local_macro (fn) (prog (w y) (setq w (cons (list nil nil nil 
-s!:local_macros) s!:lexical_env)) (prog nil lab1082 (cond ((null w) (return 
+s!:local_macros) s!:lexical_env)) (prog nil lab1088 (cond ((null w) (return 
 nil))) (progn (setq y (atsoc fn (cadddr (car w)))) (cond (y (setq w nil)) (t 
-(setq w (cdr w))))) (go lab1082)) (return y)))
+(setq w (cdr w))))) (go lab1088)) (return y)))
 
 (de s!:comfunction (x env context) (progn (cond ((and (equal context 0) 
 s!:maybe_values) (s!:outopcode0 (quote ONEVALUE) (quote (onevalue))))) (cond 
@@ -1179,8 +1193,8 @@ LOADLOC4 LOADLOC5 LOADLOC6 LOADLOC7 LOADLOC8 LOADLOC9 LOADLOC10 LOADLOC11))))
 s!:maybe_values) (s!:outopcode0 (quote ONEVALUE) (quote (onevalue))))) (cond 
 ((greaterp context 1) (return nil)) (t (cond ((or (null x) (not (symbolp x)))
 (return (s!:loadliteral x env)))))) (setq n 0) (setq w (cdr env)) (prog nil 
-lab1083 (cond ((null (and w (not (eqcar w x)))) (return nil))) (progn (setq n
-(add1 n)) (setq w (cdr w))) (go lab1083)) (cond (w (progn (setq w (cons (
+lab1089 (cond ((null (and w (not (eqcar w x)))) (return nil))) (progn (setq n
+(add1 n)) (setq w (cdr w))) (go lab1089)) (cond (w (progn (setq w (cons (
 quote loc) w)) (cond ((member!*!* w s!:a_reg_values) (return nil)) (t (progn 
 (cond ((lessp n 12) (s!:outopcode0 (getv s!:loadlocs n) (list (quote LOADLOC)
 x))) (t (cond ((greaterp n 4095) (error 0 "stack frame > 4095")) (t (cond ((
@@ -1198,9 +1212,9 @@ s!:outopcode1lit (quote LOADFREE) x env) (setq s!:a_reg_values (list w))))
 (flag (quote (t !$EOL!$ !$EOF!$)) (quote constant!?))
 
 (de s!:islocal (x env) (prog (n w) (cond ((or (null x) (not (symbolp x)) (eq 
-x t)) (return 99999))) (setq n 0) (setq w (cdr env)) (prog nil lab1084 (cond 
+x t)) (return 99999))) (setq n 0) (setq w (cdr env)) (prog nil lab1090 (cond 
 ((null (and w (not (eqcar w x)))) (return nil))) (progn (setq n (add1 n)) (
-setq w (cdr w))) (go lab1084)) (cond (w (return n)) (t (return 99999)))))
+setq w (cdr w))) (go lab1090)) (cond (w (return n)) (t (return 99999)))))
 
 (de s!:load2 (a b env) (progn (cond ((s!:iseasy b) (prog (wa wb w) (setq wa (
 s!:islocal a env)) (setq wb (s!:islocal b env)) (cond ((and (lessp wa 4) (
@@ -1243,10 +1257,10 @@ lessp apply1 eq equal getv qgetv eqcar)) (quote s!:twoarg))
 
 (de s!:comcall (x env context) (prog (fn args nargs op s w1 w2 w3 sw) (setq 
 fn (car x)) (cond ((not (symbolp fn)) (error 0 
-"non-symbol used in function position"))) (setq args (prog (var1086 var1087) 
-(setq var1086 (cdr x)) lab1085 (cond ((null var1086) (return (reversip 
-var1087)))) (prog (v) (setq v (car var1086)) (setq var1087 (cons (s!:improve 
-v) var1087))) (setq var1086 (cdr var1086)) (go lab1085))) (setq nargs (length
+"non-symbol used in function position"))) (setq args (prog (var1092 var1093) 
+(setq var1092 (cdr x)) lab1091 (cond ((null var1092) (return (reversip 
+var1093)))) (prog (v) (setq v (car var1092)) (setq var1093 (cons (s!:improve 
+v) var1093))) (setq var1092 (cdr var1092)) (go lab1091))) (setq nargs (length
 args)) (setq s (cdr env)) (cond ((and (equal context 0) s!:maybe_values) (
 s!:outopcode0 (quote ONEVALUE) (quote (onevalue))))) (cond ((equal nargs 0) (
 cond ((setq w2 (get fn (quote s!:builtin0))) (s!:outopcode1 (quote BUILTIN0) 
@@ -1290,12 +1304,12 @@ nargs 4))) (not (and (equal fn (quote apply4)) (equal nargs 5)))) (progn (
 setq w1 (car args)) (setq args (cdr args)) (setq w2 (car args)) (setq args (
 cdr args)) (setq w3 (car args)) (setq args (cdr args)) (setq args (list w1 w2
 w3 (cons (quote list) args))) (setq nargs 4)))) (setq largs (reverse args)) 
-(prog (var1089) (setq var1089 (reverse (cddr largs))) lab1088 (cond ((null 
-var1089) (return nil))) (prog (a) (setq a (car var1089)) (progn (cond ((null 
+(prog (var1095) (setq var1095 (reverse (cddr largs))) lab1094 (cond ((null 
+var1095) (return nil))) (prog (a) (setq a (car var1095)) (progn (cond ((null 
 a) (s!:outstack 1)) (t (progn (s!:comval a env 1) (cond ((equal nargs 4) (
 s!:outopcode0 (quote PUSH) (quote (PUSHA4)))) (t (s!:outopcode0 (quote PUSH) 
 (quote (PUSHARG)))))))) (rplacd env (cons 0 (cdr env))) (setq s!:a_reg_values
-nil))) (setq var1089 (cdr var1089)) (go lab1088)) (cond ((s!:load2 (cadr 
+nil))) (setq var1095 (cdr var1095)) (go lab1094)) (cond ((s!:load2 (cadr 
 largs) (car largs) env) (s!:outopcode0 (quote SWOP) (quote (SWOP))))) (cond (
 (and (equal fn (quote apply3)) (equal nargs 4)) (s!:outopcode0 (quote APPLY3)
 (quote (APPLY3)))) (t (cond ((and (equal fn (quote apply4)) (equal nargs 5))
@@ -1503,9 +1517,9 @@ quote iminusp) a) env context))) (t (return (s!:comcall x env context))))))
 (put (quote ilessp) (quote s!:compfn) (function s!:comilessp))
 
 (de s!:comprogn (x env context) (progn (setq x (cdr x)) (cond ((null x) (
-s!:comval nil env context)) (t (prog (a) (setq a (car x)) (prog nil lab1090 (
+s!:comval nil env context)) (t (prog (a) (setq a (car x)) (prog nil lab1096 (
 cond ((null (setq x (cdr x))) (return nil))) (progn (s!:comval a env (cond ((
-geq context 4) context) (t 2))) (setq a (car x))) (go lab1090)) (s!:comval a 
+geq context 4) context) (t 2))) (setq a (car x))) (go lab1096)) (s!:comval a 
 env context))))))
 
 (put (quote progn) (quote s!:compfn) (function s!:comprogn))
@@ -1513,10 +1527,10 @@ env context))))))
 (de s!:comprog1 (x env context) (prog nil (setq x (cdr x)) (cond ((null x) (
 return (s!:comval nil env context)))) (s!:comval (car x) env context) (cond (
 (null (setq x (cdr x))) (return nil))) (s!:outopcode0 (quote PUSH) (quote (
-PUSH))) (rplacd env (cons 0 (cdr env))) (prog (var1092) (setq var1092 x) 
-lab1091 (cond ((null var1092) (return nil))) (prog (a) (setq a (car var1092))
-(s!:comval a env (cond ((geq context 4) context) (t 2)))) (setq var1092 (cdr
-var1092)) (go lab1091)) (s!:outopcode0 (quote POP) (quote (POP))) (rplacd 
+PUSH))) (rplacd env (cons 0 (cdr env))) (prog (var1098) (setq var1098 x) 
+lab1097 (cond ((null var1098) (return nil))) (prog (a) (setq a (car var1098))
+(s!:comval a env (cond ((geq context 4) context) (t 2)))) (setq var1098 (cdr
+var1098)) (go lab1097)) (s!:outopcode0 (quote POP) (quote (POP))) (rplacd 
 env (cddr env))))
 
 (put (quote prog1) (quote s!:compfn) (function s!:comprog1))
@@ -1527,9 +1541,9 @@ return (s!:comval nil env context)))) (setq a (car x)) (s!:comval a env (cond
 
 (put (quote prog2) (quote s!:compfn) (function s!:comprog2))
 
-(de s!:outstack (n) (prog (w a) (setq w s!:current_block) (prog nil lab1093 (
+(de s!:outstack (n) (prog (w a) (setq w s!:current_block) (prog nil lab1099 (
 cond ((null (and w (not (atom (car w))))) (return nil))) (setq w (cdr w)) (go
-lab1093)) (cond ((eqcar w (quote PUSHNIL)) (setq a 1)) (t (cond ((eqcar w (
+lab1099)) (cond ((eqcar w (quote PUSHNIL)) (setq a 1)) (t (cond ((eqcar w (
 quote PUSHNIL2)) (setq a 2)) (t (cond ((eqcar w (quote PUSHNIL3)) (setq a 3))
 (t (cond ((and w (numberp (setq a (car w))) (not (equal a 255)) (eqcar (cdr 
 w) (quote PUSHNILS))) (progn (setq w (cdr w)) (setq s!:current_size (
@@ -1542,9 +1556,9 @@ quote PUSHNIL3) (quote (PUSHNIL3)))) (t (cond ((greaterp n 255) (progn (
 s!:outopcode1 (quote PUSHNILS) 255 255) (s!:outstack (difference n 255)))) (t
 (cond ((greaterp n 3) (s!:outopcode1 (quote PUSHNILS) n n)))))))))))))
 
-(de s!:outlose (n) (prog (w a) (setq w s!:current_block) (prog nil lab1094 (
+(de s!:outlose (n) (prog (w a) (setq w s!:current_block) (prog nil lab1100 (
 cond ((null (and w (not (atom (car w))))) (return nil))) (setq w (cdr w)) (go
-lab1094)) (cond ((eqcar w (quote LOSE)) (setq a 1)) (t (cond ((eqcar w (
+lab1100)) (cond ((eqcar w (quote LOSE)) (setq a 1)) (t (cond ((eqcar w (
 quote LOSE2)) (setq a 2)) (t (cond ((eqcar w (quote LOSE3)) (setq a 3)) (t (
 cond ((and w (numberp (setq a (car w))) (not (equal a 255)) (eqcar (cdr w) (
 quote LOSES))) (progn (setq w (cdr w)) (setq s!:current_size (difference 
@@ -1559,34 +1573,34 @@ quote LOSES) n n)))))))))))))
 
 (de s!:comprog (x env context) (prog (labs s bvl fluids n body local_decs w) 
 (setq body (s!:find_local_decs (cddr x) t)) (setq local_decs (car body)) (
-setq body (cdr body)) (setq n 0) (prog (var1096) (setq var1096 (cadr x)) 
-lab1095 (cond ((null var1096) (return nil))) (prog (v) (setq v (car var1096))
-(setq w (s!:instate_local_decs v local_decs w))) (setq var1096 (cdr var1096)
-) (go lab1095)) (prog (var1098) (setq var1098 (cadr x)) lab1097 (cond ((null 
-var1098) (return nil))) (prog (v) (setq v (car var1098)) (progn (cond ((or (
+setq body (cdr body)) (setq n 0) (prog (var1102) (setq var1102 (cadr x)) 
+lab1101 (cond ((null var1102) (return nil))) (prog (v) (setq v (car var1102))
+(setq w (s!:instate_local_decs v local_decs w))) (setq var1102 (cdr var1102)
+) (go lab1101)) (prog (var1104) (setq var1104 (cadr x)) lab1103 (cond ((null 
+var1104) (return nil))) (prog (v) (setq v (car var1104)) (progn (cond ((or (
 globalp v) (keywordp v)) (error 0 (list "attempt to bind global or keyword" v
 )))) (cond ((fluidp v) (setq fluids (cons v fluids))) (t (progn (setq n (plus
-n 1)) (setq bvl (cons v bvl))))))) (setq var1098 (cdr var1098)) (go lab1097)
+n 1)) (setq bvl (cons v bvl))))))) (setq var1104 (cdr var1104)) (go lab1103)
 ) (setq s (cdr env)) (setq s!:current_exitlab (cons (cons nil (cons (gensym) 
 s)) s!:current_exitlab)) (s!:outstack n) (rplacd env (append bvl (cdr env))) 
 (cond (fluids (prog (fl1) (setq fl1 (s!:vecof fluids)) (s!:outopcode1lit (
-quote FREEBIND) fl1 env) (prog (var1100) (setq var1100 (cons nil fluids)) 
-lab1099 (cond ((null var1100) (return nil))) (prog (v) (setq v (car var1100))
-(rplacd env (cons 0 (cdr env)))) (setq var1100 (cdr var1100)) (go lab1099)) 
+quote FREEBIND) fl1 env) (prog (var1106) (setq var1106 (cons nil fluids)) 
+lab1105 (cond ((null var1106) (return nil))) (prog (v) (setq v (car var1106))
+(rplacd env (cons 0 (cdr env)))) (setq var1106 (cdr var1106)) (go lab1105)) 
 (rplacd env (cons (plus 2 (length fluids)) (cdr env))) (cond ((equal context 
-0) (setq context 1)))))) (prog (var1102) (setq var1102 body) lab1101 (cond ((
-null var1102) (return nil))) (prog (a) (setq a (car var1102)) (cond ((atom a)
+0) (setq context 1)))))) (prog (var1108) (setq var1108 body) lab1107 (cond ((
+null var1108) (return nil))) (prog (a) (setq a (car var1108)) (cond ((atom a)
 (progn (cond ((atsoc a labs) (progn (cond ((not (null a)) (progn (cond ((neq
 (posn) 0) (terpri))) (princ "+++++ label ") (prin a) (princ 
 " multiply defined") (terpri)))))) (t (setq labs (cons (cons a (cons (cons (
-gensym) (cdr env)) nil)) labs)))))))) (setq var1102 (cdr var1102)) (go 
-lab1101)) (setq s!:current_proglabels (cons labs s!:current_proglabels)) (
-setq w (s!:residual_local_decs local_decs w)) (prog (var1104) (setq var1104 
-body) lab1103 (cond ((null var1104) (return nil))) (prog (a) (setq a (car 
-var1104)) (cond ((not (atom a)) (progn (cond ((not (eqcar a (quote quote))) (
+gensym) (cdr env)) nil)) labs)))))))) (setq var1108 (cdr var1108)) (go 
+lab1107)) (setq s!:current_proglabels (cons labs s!:current_proglabels)) (
+setq w (s!:residual_local_decs local_decs w)) (prog (var1110) (setq var1110 
+body) lab1109 (cond ((null var1110) (return nil))) (prog (a) (setq a (car 
+var1110)) (cond ((not (atom a)) (progn (cond ((not (eqcar a (quote quote))) (
 s!:comval a env (plus context 4)))))) (t (prog (d) (setq d (atsoc a labs)) (
 cond ((null (cddr d)) (progn (rplacd (cdr d) t) (s!:set_label (caadr d)))))))
-)) (setq var1104 (cdr var1104)) (go lab1103)) (s!:cancel_local_decs w) (
+)) (setq var1110 (cdr var1110)) (go lab1109)) (s!:cancel_local_decs w) (
 s!:comval nil env context) (cond (fluids (s!:outopcode0 (quote FREERSTR) (
 quote (FREERSTR))))) (s!:outlose n) (rplacd env s) (s!:set_label (cadar 
 s!:current_exitlab)) (setq s!:current_exitlab (cdr s!:current_exitlab)) (setq
@@ -1594,19 +1608,19 @@ s!:current_proglabels (cdr s!:current_proglabels))))
 
 (put (quote prog) (quote s!:compfn) (function s!:comprog))
 
-(de s!:comtagbody (x env context) (prog (labs) (prog (var1106) (setq var1106 
-(cdr x)) lab1105 (cond ((null var1106) (return nil))) (prog (a) (setq a (car 
-var1106)) (cond ((atom a) (progn (cond ((atsoc a labs) (progn (cond ((not (
+(de s!:comtagbody (x env context) (prog (labs) (prog (var1112) (setq var1112 
+(cdr x)) lab1111 (cond ((null var1112) (return nil))) (prog (a) (setq a (car 
+var1112)) (cond ((atom a) (progn (cond ((atsoc a labs) (progn (cond ((not (
 null a)) (progn (cond ((neq (posn) 0) (terpri))) (princ "+++++ label ") (prin
 a) (princ " multiply defined") (terpri)))))) (t (setq labs (cons (cons a (
-cons (cons (gensym) (cdr env)) nil)) labs)))))))) (setq var1106 (cdr var1106)
-) (go lab1105)) (setq s!:current_proglabels (cons labs s!:current_proglabels)
-) (prog (var1108) (setq var1108 (cdr x)) lab1107 (cond ((null var1108) (
-return nil))) (prog (a) (setq a (car var1108)) (cond ((not (atom a)) (progn (
+cons (cons (gensym) (cdr env)) nil)) labs)))))))) (setq var1112 (cdr var1112)
+) (go lab1111)) (setq s!:current_proglabels (cons labs s!:current_proglabels)
+) (prog (var1114) (setq var1114 (cdr x)) lab1113 (cond ((null var1114) (
+return nil))) (prog (a) (setq a (car var1114)) (cond ((not (atom a)) (progn (
 cond ((not (eqcar a (quote quote))) (s!:comval a env (plus context 4)))))) (t
 (prog (d) (setq d (atsoc a labs)) (cond ((null (cddr d)) (progn (rplacd (cdr
-d) t) (s!:set_label (caadr d))))))))) (setq var1108 (cdr var1108)) (go 
-lab1107)) (s!:comval nil env context) (setq s!:current_proglabels (cdr 
+d) t) (s!:set_label (caadr d))))))))) (setq var1114 (cdr var1114)) (go 
+lab1113)) (s!:comval nil env context) (setq s!:current_proglabels (cdr 
 s!:current_proglabels))))
 
 (put (quote tagbody) (quote s!:compfn) (function s!:comtagbody))
@@ -1672,12 +1686,12 @@ UNPROTECT))) (rplacd env (cddddr env))))
 
 (put (quote declare) (quote s!:compfn) (function s!:comdeclare))
 
-(de s!:expand_let (vl b) (prog (vars vals) (prog (var1110) (setq var1110 vl) 
-lab1109 (cond ((null var1110) (return nil))) (prog (v) (setq v (car var1110))
+(de s!:expand_let (vl b) (prog (vars vals) (prog (var1116) (setq var1116 vl) 
+lab1115 (cond ((null var1116) (return nil))) (prog (v) (setq v (car var1116))
 (cond ((atom v) (progn (setq vars (cons v vars)) (setq vals (cons nil vals))
 )) (t (cond ((atom (cdr v)) (progn (setq vars (cons (car v) vars)) (setq vals
 (cons nil vals)))) (t (progn (setq vars (cons (car v) vars)) (setq vals (
-cons (cadr v) vals)))))))) (setq var1110 (cdr var1110)) (go lab1109)) (return
+cons (cadr v) vals)))))))) (setq var1116 (cdr var1116)) (go lab1115)) (return
 (list (cons (cons (quote lambda) (cons vars b)) vals)))))
 
 (de s!:comlet (x env context) (s!:comval (cons (quote progn) (s!:expand_let (
@@ -1686,16 +1700,16 @@ cadr x) (cddr x))) env context))
 (put (quote !~let) (quote s!:compfn) (function s!:comlet))
 
 (de s!:expand_let!* (vl local_decs b) (prog (r var val) (setq r (cons (cons (
-quote declare) local_decs) b)) (prog (var1114) (setq var1114 (reverse vl)) 
-lab1113 (cond ((null var1114) (return nil))) (prog (x) (setq x (car var1114))
+quote declare) local_decs) b)) (prog (var1120) (setq var1120 (reverse vl)) 
+lab1119 (cond ((null var1120) (return nil))) (prog (x) (setq x (car var1120))
 (progn (setq val nil) (cond ((atom x) (setq var x)) (t (cond ((atom (cdr x))
 (setq var (car x))) (t (progn (setq var (car x)) (setq val (cadr x))))))) (
-prog (var1112) (setq var1112 local_decs) lab1111 (cond ((null var1112) (
-return nil))) (prog (z) (setq z (car var1112)) (cond ((eqcar z (quote special
+prog (var1118) (setq var1118 local_decs) lab1117 (cond ((null var1118) (
+return nil))) (prog (z) (setq z (car var1118)) (cond ((eqcar z (quote special
 )) (cond ((memq var (cdr z)) (setq r (cons (list (quote declare) (list (quote
-special) var)) r))))))) (setq var1112 (cdr var1112)) (go lab1111)) (setq r (
-list (list (cons (quote lambda) (cons (list var) r)) val))))) (setq var1114 (
-cdr var1114)) (go lab1113)) (cond ((eqcar (car r) (quote declare)) (setq r (
+special) var)) r))))))) (setq var1118 (cdr var1118)) (go lab1117)) (setq r (
+list (list (cons (quote lambda) (cons (list var) r)) val))))) (setq var1120 (
+cdr var1120)) (go lab1119)) (cond ((eqcar (car r) (quote declare)) (setq r (
 list (cons (quote lambda) (cons nil r))))) (t (setq r (cons (quote progn) r))
 )) (return r)))
 
@@ -1705,13 +1719,13 @@ context))))
 
 (put (quote let!*) (quote s!:compfn) (function s!:comlet!*))
 
-(de s!:restore_stack (e1 e2) (prog (n) (setq n 0) (prog nil lab1116 (cond ((
+(de s!:restore_stack (e1 e2) (prog (n) (setq n 0) (prog nil lab1122 (cond ((
 null (not (equal e1 e2))) (return nil))) (progn (cond ((null e1) (error 0 
 "bad block nesting with GO or RETURN-FROM"))) (cond ((and (numberp (car e1)) 
 (greaterp (car e1) 2)) (progn (cond ((not (zerop n)) (s!:outlose n))) (setq n
 (car e1)) (s!:outopcode0 (quote FREERSTR) (quote (FREERSTR))) (prog (i) (
-setq i 1) lab1115 (cond ((minusp (times 1 (difference n i))) (return nil))) (
-setq e1 (cdr e1)) (setq i (plus i 1)) (go lab1115)) (setq n 0))) (t (cond ((
+setq i 1) lab1121 (cond ((minusp (times 1 (difference n i))) (return nil))) (
+setq e1 (cdr e1)) (setq i (plus i 1)) (go lab1121)) (setq n 0))) (t (cond ((
 equal (car e1) (quote (catch))) (progn (cond ((not (zerop n)) (s!:outlose n))
 ) (s!:outopcode0 (quote UNCATCH) (quote (UNCATCH))) (setq e1 (cdddr e1)) (
 setq n 0))) (t (cond ((eqcar (car e1) (quote unwind!-protect)) (progn (cond (
@@ -1721,13 +1735,13 @@ quote UNPROTECT) (quote (UNPROTECT))) (setq e1 (cdddr e1)) (setq n 0))) (t (
 cond ((equal (car e1) (quote (pvbind))) (progn (cond ((not (zerop n)) (
 s!:outlose n))) (s!:outopcode0 (quote PVRESTORE) (quote (PVRESTORE))) (setq 
 e1 (cddr e1)) (setq n 0))) (t (progn (setq e1 (cdr e1)) (setq n (plus n 1))))
-)))))))) (go lab1116)) (cond ((not (zerop n)) (s!:outlose n)))))
+)))))))) (go lab1122)) (cond ((not (zerop n)) (s!:outlose n)))))
 
 (de s!:comgo (x env context) (prog (pl d) (cond ((lessp context 4) (progn (
 princ "go not in program context") (terpri)))) (setq pl s!:current_proglabels
-) (prog nil lab1117 (cond ((null (and pl (null d))) (return nil))) (progn (
+) (prog nil lab1123 (cond ((null (and pl (null d))) (return nil))) (progn (
 setq d (atsoc (cadr x) (car pl))) (cond ((null d) (setq pl (cdr pl))))) (go 
-lab1117)) (cond ((null d) (progn (cond ((neq (posn) 0) (terpri))) (princ 
+lab1123)) (cond ((null d) (progn (cond ((neq (posn) 0) (terpri))) (princ 
 "+++++ label ") (prin (cadr x)) (princ " not set") (terpri) (return nil)))) (
 setq d (cadr d)) (s!:restore_stack (cdr env) (cdr d)) (s!:outjump (quote JUMP
 ) (car d))))
@@ -1783,8 +1797,8 @@ top))))))) remacro (cond ((and (not (atom w)) (setq w1 (macro!-function (car
 w)))) (progn (setq w (funcall w1 w)) (cond ((or (atom w) (eqcar w (quote 
 quote)) (get (car w) (quote s!:testfn)) (get (car w) (quote s!:compilermacro)
 )) (progn (setq x w) (go top)))) (go remacro)))) (s!:comval x env 1) (setq w 
-s!:current_block) (prog nil lab1118 (cond ((null (and w (not (atom (car w))))
-) (return nil))) (setq w (cdr w)) (go lab1118)) (setq j (quote (JUMPNIL . 
+s!:current_block) (prog nil lab1124 (cond ((null (and w (not (atom (car w))))
+) (return nil))) (setq w (cdr w)) (go lab1124)) (setq j (quote (JUMPNIL . 
 JUMPT))) (cond (w (progn (setq w1 (car w)) (setq w (cdr w)) (cond ((equal w1 
 (quote STORELOC0)) (progn (setq s!:current_block w) (setq s!:current_size (
 difference s!:current_size 1)) (setq j (quote (JUMPST0NIL . JUMPST0T))))) (t 
@@ -1821,13 +1835,13 @@ quote JUMPNATOM) lab)) (t (s!:outjump (quote JUMPATOM) lab)))))
 (put (quote consp) (quote s!:testfn) (function s!:testconsp))
 
 (de s!:comcond (x env context) (prog (l1 l2 w) (setq l1 (gensym)) (prog nil 
-lab1119 (cond ((null (setq x (cdr x))) (return nil))) (progn (setq w (car x))
+lab1125 (cond ((null (setq x (cdr x))) (return nil))) (progn (setq w (car x))
 (cond ((atom (cdr w)) (progn (s!:comval (car w) env 1) (s!:outjump (quote 
 JUMPT) l1) (setq l2 nil))) (t (progn (cond ((equal (car w) t) (setq l2 nil)) 
 (t (progn (setq l2 (gensym)) (s!:jumpif nil (car w) env l2)))) (setq w (cdr w
 )) (cond ((null (cdr w)) (setq w (car w))) (t (setq w (cons (quote progn) w))
 )) (s!:comval w env context) (cond (l2 (progn (s!:outjump (quote JUMP) l1) (
-s!:set_label l2))) (t (setq x (quote (nil))))))))) (go lab1119)) (cond (l2 (
+s!:set_label l2))) (t (setq x (quote (nil))))))))) (go lab1125)) (cond (l2 (
 s!:comval nil env context))) (s!:set_label l1)))
 
 (put (quote cond) (quote s!:compfn) (function s!:comcond))
@@ -1853,16 +1867,16 @@ quote not) (cadr x)) (cddr x)) env context))
 (put (quote unless) (quote s!:compfn) (function s!:comunless))
 
 (de s!:comicase (x env context) (prog (l1 labs labassoc w) (setq x (cdr x)) (
-prog (var1121) (setq var1121 (cdr x)) lab1120 (cond ((null var1121) (return 
-nil))) (prog (v) (setq v (car var1121)) (progn (setq w (assoc!*!* v labassoc)
+prog (var1127) (setq var1127 (cdr x)) lab1126 (cond ((null var1127) (return 
+nil))) (prog (v) (setq v (car var1127)) (progn (setq w (assoc!*!* v labassoc)
 ) (cond (w (setq l1 (cons (cdr w) l1))) (t (progn (setq l1 (gensym)) (setq 
 labs (cons l1 labs)) (setq labassoc (cons (cons v l1) labassoc))))))) (setq 
-var1121 (cdr var1121)) (go lab1120)) (s!:comval (car x) env 1) (s!:outjump (
-quote ICASE) (reversip labs)) (setq l1 (gensym)) (prog (var1123) (setq 
-var1123 labassoc) lab1122 (cond ((null var1123) (return nil))) (prog (v) (
-setq v (car var1123)) (progn (s!:set_label (cdr v)) (s!:comval (car v) env 
-context) (s!:outjump (quote JUMP) l1))) (setq var1123 (cdr var1123)) (go 
-lab1122)) (s!:set_label l1)))
+var1127 (cdr var1127)) (go lab1126)) (s!:comval (car x) env 1) (s!:outjump (
+quote ICASE) (reversip labs)) (setq l1 (gensym)) (prog (var1129) (setq 
+var1129 labassoc) lab1128 (cond ((null var1129) (return nil))) (prog (v) (
+setq v (car var1129)) (progn (s!:set_label (cdr v)) (s!:comval (car v) env 
+context) (s!:outjump (quote JUMP) l1))) (setq var1129 (cdr var1129)) (go 
+lab1128)) (s!:set_label l1)))
 
 (put (quote s!:icase) (quote s!:compfn) (function s!:comicase))
 
@@ -1881,65 +1895,65 @@ lab) (flag (list lab) (quote s!:jumpliteql)) (s!:outopcode0 (quote POP) (
 quote (POP))))))))
 
 (de s!:casebranch (sw env dflt) (prog (size w w1 r g) (setq size (plus 4 (
-truncate (length sw) 2))) (prog nil lab1124 (cond ((null (or (equal (
+truncate (length sw) 2))) (prog nil lab1130 (cond ((null (or (equal (
 remainder size 2) 0) (equal (remainder size 3) 0) (equal (remainder size 5) 0
 ) (equal (remainder size 13) 0))) (return nil))) (setq size (plus size 1)) (
-go lab1124)) (prog (var1126) (setq var1126 sw) lab1125 (cond ((null var1126) 
-(return nil))) (prog (p) (setq p (car var1126)) (progn (setq w (remainder (
+go lab1130)) (prog (var1132) (setq var1132 sw) lab1131 (cond ((null var1132) 
+(return nil))) (prog (p) (setq p (car var1132)) (progn (setq w (remainder (
 eqlhash (car p)) size)) (setq w1 (assoc!*!* w r)) (cond (w1 (rplacd (cdr w1) 
 (cons p (cddr w1)))) (t (setq r (cons (list w (gensym) p) r)))))) (setq 
-var1126 (cdr var1126)) (go lab1125)) (s!:outopcode0 (quote PUSH) (quote (PUSH
+var1132 (cdr var1132)) (go lab1131)) (s!:outopcode0 (quote PUSH) (quote (PUSH
 ))) (rplacd env (cons 0 (cdr env))) (s!:outopcode1lit (quote CALL1) (quote 
 eqlhash) env) (s!:loadliteral size env) (setq g (gensym)) (s!:outopcode1 (
 quote BUILTIN2) (get (quote iremainder) (quote s!:builtin2)) (quote 
-iremainder)) (s!:outjump (quote ICASE) (cons g (prog (i var1128) (setq i 0) 
-lab1127 (cond ((minusp (times 1 (difference (difference size 1) i))) (return 
-(reversip var1128)))) (setq var1128 (cons (progn (setq w (assoc!*!* i r)) (
-cond (w (cadr w)) (t g))) var1128)) (setq i (plus i 1)) (go lab1127)))) (prog
-(var1132) (setq var1132 r) lab1131 (cond ((null var1132) (return nil))) (
-prog (p) (setq p (car var1132)) (progn (s!:set_label (cadr p)) (s!:outopcode0
-(quote POP) (quote (POP))) (prog (var1130) (setq var1130 (cddr p)) lab1129 (
-cond ((null var1130) (return nil))) (prog (q) (setq q (car var1130)) (
-s!:jumpliteql (car q) (cdr q) env)) (setq var1130 (cdr var1130)) (go lab1129)
-) (s!:outjump (quote JUMP) dflt))) (setq var1132 (cdr var1132)) (go lab1131))
+iremainder)) (s!:outjump (quote ICASE) (cons g (prog (i var1134) (setq i 0) 
+lab1133 (cond ((minusp (times 1 (difference (difference size 1) i))) (return 
+(reversip var1134)))) (setq var1134 (cons (progn (setq w (assoc!*!* i r)) (
+cond (w (cadr w)) (t g))) var1134)) (setq i (plus i 1)) (go lab1133)))) (prog
+(var1138) (setq var1138 r) lab1137 (cond ((null var1138) (return nil))) (
+prog (p) (setq p (car var1138)) (progn (s!:set_label (cadr p)) (s!:outopcode0
+(quote POP) (quote (POP))) (prog (var1136) (setq var1136 (cddr p)) lab1135 (
+cond ((null var1136) (return nil))) (prog (q) (setq q (car var1136)) (
+s!:jumpliteql (car q) (cdr q) env)) (setq var1136 (cdr var1136)) (go lab1135)
+) (s!:outjump (quote JUMP) dflt))) (setq var1138 (cdr var1138)) (go lab1137))
 (s!:set_label g) (s!:outopcode0 (quote POP) (quote (POP))) (s!:outjump (
 quote JUMP) dflt) (rplacd env (cddr env))))
 
 (de s!:comcase (x env context) (prog (keyform blocks v w g dflt sw keys 
 nonnum) (setq x (cdr x)) (setq keyform (car x)) (prog (y) (setq y (cdr x)) 
-lab1135 (cond ((null y) (return nil))) (progn (setq w (assoc!*!* (cdar y) 
+lab1141 (cond ((null y) (return nil))) (progn (setq w (assoc!*!* (cdar y) 
 blocks)) (cond (w (setq g (cdr w))) (t (progn (setq g (gensym)) (setq blocks 
 (cons (cons (cdar y) g) blocks))))) (setq w (caar y)) (cond ((and (null (cdr 
 y)) (or (equal w t) (equal w (quote otherwise)))) (setq dflt g)) (t (progn (
-cond ((atom w) (setq w (list w)))) (prog (var1134) (setq var1134 w) lab1133 (
-cond ((null var1134) (return nil))) (prog (n) (setq n (car var1134)) (progn (
+cond ((atom w) (setq w (list w)))) (prog (var1140) (setq var1140 w) lab1139 (
+cond ((null var1140) (return nil))) (prog (n) (setq n (car var1140)) (progn (
 cond ((or (idp n) (characterp n) (numberp n)) (progn (cond ((not (fixp n)) (
 setq nonnum t))) (setq keys (cons n keys)) (setq sw (cons (cons n g) sw)))) (
-t (error 0 (list "illegal case label" n)))))) (setq var1134 (cdr var1134)) (
-go lab1133)))))) (setq y (cdr y)) (go lab1135)) (cond ((null dflt) (progn (
+t (error 0 (list "illegal case label" n)))))) (setq var1140 (cdr var1140)) (
+go lab1139)))))) (setq y (cdr y)) (go lab1141)) (cond ((null dflt) (progn (
 cond ((setq w (assoc!*!* nil blocks)) (setq dflt (cdr w))) (t (setq blocks (
 cons (cons nil (setq dflt (gensym))) blocks))))))) (cond ((not nonnum) (progn
 (setq keys (sort keys (function lessp))) (setq nonnum (car keys)) (setq g (
 lastcar keys)) (cond ((lessp (difference g nonnum) (times 2 (length keys))) (
 progn (cond ((not (equal nonnum 0)) (progn (setq keyform (list (quote 
-xdifference) keyform nonnum)) (setq sw (prog (var1137 var1138) (setq var1137 
-sw) lab1136 (cond ((null var1137) (return (reversip var1138)))) (prog (y) (
-setq y (car var1137)) (setq var1138 (cons (cons (difference (car y) nonnum) (
-cdr y)) var1138))) (setq var1137 (cdr var1137)) (go lab1136)))))) (s!:comval 
-keyform env 1) (setq w nil) (prog (i) (setq i 0) lab1139 (cond ((minusp (
+xdifference) keyform nonnum)) (setq sw (prog (var1143 var1144) (setq var1143 
+sw) lab1142 (cond ((null var1143) (return (reversip var1144)))) (prog (y) (
+setq y (car var1143)) (setq var1144 (cons (cons (difference (car y) nonnum) (
+cdr y)) var1144))) (setq var1143 (cdr var1143)) (go lab1142)))))) (s!:comval 
+keyform env 1) (setq w nil) (prog (i) (setq i 0) lab1145 (cond ((minusp (
 times 1 (difference g i))) (return nil))) (cond ((setq v (assoc!*!* i sw)) (
 setq w (cons (cdr v) w))) (t (setq w (cons dflt w)))) (setq i (plus i 1)) (go
-lab1139)) (setq w (cons dflt (reversip w))) (s!:outjump (quote ICASE) w) (
+lab1145)) (setq w (cons dflt (reversip w))) (s!:outjump (quote ICASE) w) (
 setq nonnum nil))) (t (setq nonnum t)))))) (cond (nonnum (progn (s!:comval 
-keyform env 1) (cond ((lessp (length sw) 7) (progn (prog (var1141) (setq 
-var1141 sw) lab1140 (cond ((null var1141) (return nil))) (prog (y) (setq y (
-car var1141)) (s!:jumpliteql (car y) (cdr y) env)) (setq var1141 (cdr var1141
-)) (go lab1140)) (s!:outjump (quote JUMP) dflt))) (t (s!:casebranch sw env 
-dflt)))))) (setq g (gensym)) (prog (var1143) (setq var1143 blocks) lab1142 (
-cond ((null var1143) (return nil))) (prog (v) (setq v (car var1143)) (progn (
+keyform env 1) (cond ((lessp (length sw) 7) (progn (prog (var1147) (setq 
+var1147 sw) lab1146 (cond ((null var1147) (return nil))) (prog (y) (setq y (
+car var1147)) (s!:jumpliteql (car y) (cdr y) env)) (setq var1147 (cdr var1147
+)) (go lab1146)) (s!:outjump (quote JUMP) dflt))) (t (s!:casebranch sw env 
+dflt)))))) (setq g (gensym)) (prog (var1149) (setq var1149 blocks) lab1148 (
+cond ((null var1149) (return nil))) (prog (v) (setq v (car var1149)) (progn (
 s!:set_label (cdr v)) (cond ((flagp (cdr v) (quote s!:jumpliteql)) (
 s!:outlose 1))) (s!:comval (cons (quote progn) (car v)) env context) (
-s!:outjump (quote JUMP) g))) (setq var1143 (cdr var1143)) (go lab1142)) (
+s!:outjump (quote JUMP) g))) (setq var1149 (cdr var1149)) (go lab1148)) (
 s!:set_label g)))
 
 (put (quote case) (quote s!:compfn) (function s!:comcase))
@@ -1960,24 +1974,24 @@ quote load) y) (progn (cond (dfprint!* (apply1 dfprint!* x)))))) (cond ((memq
 (put (quote the) (quote s!:compfn) (function s!:comthe))
 
 (de s!:comand (x env context) (prog (l) (setq l (gensym)) (setq x (cdr x)) (
-s!:comval (car x) env 1) (prog nil lab1144 (cond ((null (setq x (cdr x))) (
+s!:comval (car x) env 1) (prog nil lab1150 (cond ((null (setq x (cdr x))) (
 return nil))) (progn (s!:outjump (quote JUMPNIL) l) (s!:comval (car x) env 1)
-) (go lab1144)) (s!:set_label l)))
+) (go lab1150)) (s!:set_label l)))
 
 (put (quote and) (quote s!:compfn) (function s!:comand))
 
 (de s!:comor (x env context) (prog (l) (setq l (gensym)) (setq x (cdr x)) (
-s!:comval (car x) env 1) (prog nil lab1145 (cond ((null (setq x (cdr x))) (
+s!:comval (car x) env 1) (prog nil lab1151 (cond ((null (setq x (cdr x))) (
 return nil))) (progn (s!:outjump (quote JUMPT) l) (s!:comval (car x) env 1)) 
-(go lab1145)) (s!:set_label l)))
+(go lab1151)) (s!:set_label l)))
 
 (put (quote or) (quote s!:compfn) (function s!:comor))
 
 (de s!:combool (neg x env lab) (prog (fn) (setq fn (eqcar x (quote or))) (
-cond ((eq fn neg) (prog nil lab1146 (cond ((null (setq x (cdr x))) (return 
-nil))) (s!:jumpif fn (car x) env lab) (go lab1146))) (t (progn (setq neg (
-gensym)) (prog nil lab1147 (cond ((null (setq x (cdr x))) (return nil))) (
-s!:jumpif fn (car x) env neg) (go lab1147)) (s!:outjump (quote JUMP) lab) (
+cond ((eq fn neg) (prog nil lab1152 (cond ((null (setq x (cdr x))) (return 
+nil))) (s!:jumpif fn (car x) env lab) (go lab1152))) (t (progn (setq neg (
+gensym)) (prog nil lab1153 (cond ((null (setq x (cdr x))) (return nil))) (
+s!:jumpif fn (car x) env neg) (go lab1153)) (s!:outjump (quote JUMP) lab) (
 s!:set_label neg))))))
 
 (put (quote and) (quote s!:testfn) (function s!:combool))
@@ -2075,9 +2089,9 @@ STORELOC4 STORELOC5 STORELOC6 STORELOC7))))
 (de s!:comsetq (x env context) (prog (n w var) (setq x (cdr x)) (cond ((null 
 x) (return nil))) (cond ((or (not (symbolp (car x))) (null (cdr x))) (return 
 (error 0 (list "bad args for setq" x))))) (s!:comval (cadr x) env 1) (setq 
-var (car x)) (setq n 0) (setq w (cdr env)) (prog nil lab1148 (cond ((null (
+var (car x)) (setq n 0) (setq w (cdr env)) (prog nil lab1154 (cond ((null (
 and w (not (eqcar w var)))) (return nil))) (progn (setq n (add1 n)) (setq w (
-cdr w))) (go lab1148)) (cond (w (progn (cond ((not (member!*!* (cons (quote 
+cdr w))) (go lab1154)) (cond (w (progn (cond ((not (member!*!* (cons (quote 
 loc) w) s!:a_reg_values)) (setq s!:a_reg_values (cons (cons (quote loc) w) 
 s!:a_reg_values)))) (cond ((lessp n 8) (s!:outopcode0 (getv s!:storelocs n) (
 list (quote storeloc) var))) (t (cond ((greaterp n 4095) (error 0 
@@ -2107,11 +2121,11 @@ x) (cadr x) (car w)) env context)) (t (s!:comlonglist x env context)))))))))
 
 (de s!:comlonglist (x env context) (prog nil (s!:comval (list (quote list3rev
 ) (car x) (cadr x) (caddr x)) env 1) (setq x (cdddr x)) (rplacd env (cons 0 (
-cdr env))) (prog nil lab1149 (cond ((null (and (cdr x) (cddr x))) (return nil
+cdr env))) (prog nil lab1155 (cond ((null (and (cdr x) (cddr x))) (return nil
 ))) (progn (setq s!:a_reg_values nil) (s!:outopcode0 (quote PUSH) (quote (
 PUSHA3))) (cond ((s!:load2 (car x) (cadr x) env) (s!:outopcode0 (quote SWOP) 
 (quote (SWOP))))) (s!:outopcode1lit (quote CALL3) (quote list2!*rev) env) (
-setq x (cddr x))) (go lab1149)) (s!:outopcode0 (quote PUSH) (quote (PUSH))) (
+setq x (cddr x))) (go lab1155)) (s!:outopcode0 (quote PUSH) (quote (PUSH))) (
 cond ((null (cdr x)) (progn (s!:comval (car x) env 1) (s!:outopcode0 (quote 
 POP) (quote (POP))) (s!:outopcode1lit (quote CALL2) (quote nrevlist) env))) (
 t (progn (cond ((s!:load2 (car x) (cadr x) env) (s!:outopcode0 (quote SWOP) (
@@ -2143,10 +2157,10 @@ context)))))))))))
 (put (quote cons) (quote s!:compfn) (function s!:comcons))
 
 (de s!:commv!-call (x env context) (prog (fn args) (setq fn (cadr x)) (setq 
-args (prog (var1151 var1152) (setq var1151 (cddr x)) lab1150 (cond ((null 
-var1151) (return (reversip var1152)))) (prog (v) (setq v (car var1151)) (setq
-var1152 (cons (list (quote mv!-list!*) v) var1152))) (setq var1151 (cdr 
-var1151)) (go lab1150))) (setq args (expand args (quote append))) (cond ((not
+args (prog (var1157 var1158) (setq var1157 (cddr x)) lab1156 (cond ((null 
+var1157) (return (reversip var1158)))) (prog (v) (setq v (car var1157)) (setq
+var1158 (cons (list (quote mv!-list!*) v) var1158))) (setq var1157 (cdr 
+var1157)) (go lab1156))) (setq args (expand args (quote append))) (cond ((not
 (equal fn (quote (function list)))) (setq args (list (quote apply) fn args))
 )) (s!:comval args env context)))
 
@@ -2157,10 +2171,10 @@ var1151)) (go lab1150))) (setq args (expand args (quote append))) (cond ((not
 ) (return (s!:comval nil env context))) (t (cond ((null (cdr x)) (return (
 s!:comval (car x) env context)))))) (s!:comval (list (quote mv!-list!*) (car 
 x)) env context) (s!:outopcode0 (quote PUSH) (quote (PUSH))) (rplacd env (
-cons 0 (cdr env))) (prog (var1154) (setq var1154 x) lab1153 (cond ((null 
-var1154) (return nil))) (prog (a) (setq a (car var1154)) (s!:comval a env (
-cond ((geq context 4) context) (t 2)))) (setq var1154 (cdr var1154)) (go 
-lab1153)) (s!:outopcode0 (quote POP) (quote (POP))) (rplacd env (cddr env)) (
+cons 0 (cdr env))) (prog (var1160) (setq var1160 x) lab1159 (cond ((null 
+var1160) (return nil))) (prog (a) (setq a (car var1160)) (s!:comval a env (
+cond ((geq context 4) context) (t 2)))) (setq var1160 (cdr var1160)) (go 
+lab1159)) (s!:outopcode0 (quote POP) (quote (POP))) (rplacd env (cddr env)) (
 s!:loadliteral (quote values) env) (s!:outopcode1 (quote BUILTIN2) (get (
 quote apply1) (quote s!:builtin2)) (quote apply1))))
 
@@ -2342,10 +2356,10 @@ r s closed) (setq fn (car fnargs)) (cond ((greaterp context 1) (progn (cond
 maplist)) (setq fn (quote map))))))))) (cond ((or (equal fn (quote mapc)) (
 equal fn (quote mapcar)) (equal fn (quote mapcan))) (setq carp t))) (setq 
 fnargs (cdr fnargs)) (cond ((atom fnargs) (error 0 
-"bad arguments to map function"))) (setq fn1 (cadr fnargs)) (prog nil lab1155
+"bad arguments to map function"))) (setq fn1 (cadr fnargs)) (prog nil lab1161
 (cond ((null (or (eqcar fn1 (quote function)) (and (eqcar fn1 (quote quote))
 (eqcar (cadr fn1) (quote lambda))))) (return nil))) (progn (setq fn1 (cadr 
-fn1)) (setq closed t)) (go lab1155)) (setq args (car fnargs)) (setq l1 (
+fn1)) (setq closed t)) (go lab1161)) (setq args (car fnargs)) (setq l1 (
 gensym)) (setq r (gensym)) (setq s (gensym)) (setq var (gensym)) (setq avar 
 var) (cond (carp (setq avar (list (quote car) avar)))) (cond (closed (setq 
 fn1 (list fn1 avar))) (t (setq fn1 (list (quote funcall) fn1 avar)))) (setq 
@@ -2393,23 +2407,23 @@ equal))) nil))
 
 (de load_source_database (filename) (prog (a b) (clear_source_database) (setq
 a (open filename (quote input))) (cond ((null a) (return nil))) (setq a (rds
-a)) (prog nil lab1156 (cond ((null (setq b (read))) (return nil))) (puthash 
-(car b) !*where_defined!* (cdr b)) (go lab1156)) (close (rds a)) (return nil)
+a)) (prog nil lab1162 (cond ((null (setq b (read))) (return nil))) (puthash 
+(car b) !*where_defined!* (cdr b)) (go lab1162)) (close (rds a)) (return nil)
 ))
 
 (de save_source_database (filename) (prog (a) (setq a (open filename (quote 
-output))) (cond ((null a) (return nil))) (setq a (wrs a)) (prog (var1158) (
-setq var1158 (sort (hashcontents !*where_defined!*) (function orderp))) 
-lab1157 (cond ((null var1158) (return nil))) (prog (z) (setq z (car var1158))
-(progn (prin z) (terpri))) (setq var1158 (cdr var1158)) (go lab1157)) (princ
+output))) (cond ((null a) (return nil))) (setq a (wrs a)) (prog (var1164) (
+setq var1164 (sort (hashcontents !*where_defined!*) (function orderp))) 
+lab1163 (cond ((null var1164) (return nil))) (prog (z) (setq z (car var1164))
+(progn (prin z) (terpri))) (setq var1164 (cdr var1164)) (go lab1163)) (princ
 nil) (terpri) (wrs a) (setq !*where_defined!* nil) (return nil)))
 
 (de display_source_database nil (prog (w) (cond ((null !*where_defined!*) (
 return nil))) (setq w (hashcontents !*where_defined!*)) (setq w (sort w (
-function orderp))) (terpri) (prog (var1160) (setq var1160 w) lab1159 (cond ((
-null var1160) (return nil))) (prog (x) (setq x (car var1160)) (progn (princ (
-car x)) (ttab 40) (prin (cdr x)) (terpri))) (setq var1160 (cdr var1160)) (go 
-lab1159))))
+function orderp))) (terpri) (prog (var1166) (setq var1166 w) lab1165 (cond ((
+null var1166) (return nil))) (prog (x) (setq x (car var1166)) (progn (princ (
+car x)) (ttab 40) (prin (cdr x)) (terpri))) (setq var1166 (cdr var1166)) (go 
+lab1165))))
 
 (fluid (quote (s!:r2i_simple_recurse s!:r2i_cons_recurse)))
 
@@ -2440,10 +2454,10 @@ nreverse) (car v) body)))))))))))))))))))))
 (de s!:r2iand (l) (cond ((null l) t) (t (cond ((null (cdr l)) (car l)) (t (
 list (quote cond) (list (car l) (s!:r2iand (cdr l)))))))))
 
-(de s!:r2ior (l) (cond ((null l) nil) (t (cons (quote cond) (prog (var1162 
-var1163) (setq var1162 l) lab1161 (cond ((null var1162) (return (reversip 
-var1163)))) (prog (x) (setq x (car var1162)) (setq var1163 (cons (list x) 
-var1163))) (setq var1162 (cdr var1162)) (go lab1161))))))
+(de s!:r2ior (l) (cond ((null l) nil) (t (prog (r) (prog nil lab1167 (cond ((
+null (cdr l)) (return nil))) (progn (setq r (cons (list (car l)) r)) (setq l 
+(cdr l))) (go lab1167)) (setq r (cons (list t (car l)) r)) (return (cons (
+quote cond) (reverse r)))))))
 
 (de s!:r2icond (name args b lab v) (cond ((null b) (list (list t (list (quote
 return) (list (quote nreverse) (car v)))))) (t (cond ((null (cdar b)) (progn
@@ -2592,43 +2606,43 @@ s!:current_function name) (setq s!:current_count 0) (cond (!*where_defined!*
 setq body (s!:find_local_decs body nil)) (setq local_decs (car body)) (setq 
 body (cdr body)) (cond ((atom body) (setq body nil)) (t (cond ((null (cdr 
 body)) (setq body (car body))) (t (setq body (cons (quote progn) body)))))) (
-setq nargs (setq nopts 0)) (prog nil lab1164 (cond ((null (and args (not (
+setq nargs (setq nopts 0)) (prog nil lab1168 (cond ((null (and args (not (
 eqcar args (quote !&optional))) (not (eqcar args (quote !&rest))))) (return 
 nil))) (progn (cond ((or (equal (car args) (quote !&key)) (equal (car args) (
 quote !&aux))) (error 0 "&key/&aux"))) (setq aargs (cons (car args) aargs)) (
-setq nargs (plus nargs 1)) (setq args (cdr args))) (go lab1164)) (cond ((
+setq nargs (plus nargs 1)) (setq args (cdr args))) (go lab1168)) (cond ((
 eqcar args (quote !&optional)) (progn (setq args (cdr args)) (prog nil 
-lab1166 (cond ((null (and args (not (eqcar args (quote !&rest))))) (return 
+lab1170 (cond ((null (and args (not (eqcar args (quote !&rest))))) (return 
 nil))) (progn (cond ((or (equal (car args) (quote !&key)) (equal (car args) (
-quote !&aux))) (error 0 "&key/&aux"))) (setq w (car args)) (prog nil lab1165 
+quote !&aux))) (error 0 "&key/&aux"))) (setq w (car args)) (prog nil lab1169 
 (cond ((null (and (not (atom w)) (or (atom (cdr w)) (equal (cdr w) (quote (
-nil)))))) (return nil))) (setq w (car w)) (go lab1165)) (setq args (cdr args)
+nil)))))) (return nil))) (setq w (car w)) (go lab1169)) (setq args (cdr args)
 ) (setq oargs (cons w oargs)) (setq nopts (plus nopts 1)) (cond ((atom w) (
 setq aargs (cons w aargs))) (t (progn (setq oinit t) (setq aargs (cons (car w
 ) aargs)) (cond ((not (atom (cddr w))) (setq svars (cons (caddr w) svars)))))
-))) (go lab1166))))) (cond ((eqcar args (quote !&rest)) (progn (setq w (cadr 
+))) (go lab1170))))) (cond ((eqcar args (quote !&rest)) (progn (setq w (cadr 
 args)) (setq aargs (cons w aargs)) (setq restarg w) (setq args (cddr args)) (
 cond (args (error 0 "&rest arg not at end")))))) (setq args (reverse aargs)) 
-(setq oargs (reverse oargs)) (prog (var1168) (setq var1168 (append svars args
-)) lab1167 (cond ((null var1168) (return nil))) (prog (v) (setq v (car 
-var1168)) (cond ((or (globalp v) (keywordp v)) (error 0 (list 
-"attempt to bind global or keyword" v))))) (setq var1168 (cdr var1168)) (go 
-lab1167)) (cond (oinit (progn (s!:compile2 name nargs nopts args oargs 
-restarg body local_decs checksum) (return nil)))) (setq w nil) (prog (var1170
-) (setq var1170 args) lab1169 (cond ((null var1170) (return nil))) (prog (v) 
-(setq v (car var1170)) (setq w (s!:instate_local_decs v local_decs w))) (setq
-var1170 (cdr var1170)) (go lab1169)) (cond ((and !*r2i (null oargs) (null 
+(setq oargs (reverse oargs)) (prog (var1172) (setq var1172 (append svars args
+)) lab1171 (cond ((null var1172) (return nil))) (prog (v) (setq v (car 
+var1172)) (cond ((or (globalp v) (keywordp v)) (error 0 (list 
+"attempt to bind global or keyword" v))))) (setq var1172 (cdr var1172)) (go 
+lab1171)) (cond (oinit (progn (s!:compile2 name nargs nopts args oargs 
+restarg body local_decs checksum) (return nil)))) (setq w nil) (prog (var1174
+) (setq var1174 args) lab1173 (cond ((null var1174) (return nil))) (prog (v) 
+(setq v (car var1174)) (setq w (s!:instate_local_decs v local_decs w))) (setq
+var1174 (cdr var1174)) (go lab1173)) (cond ((and !*r2i (null oargs) (null 
 restarg)) (setq body (s!:r2i name args body)))) (prog (v) (setq v args) 
-lab1171 (cond ((null v) (return nil))) (progn (cond ((fluidp (car v)) (prog (
+lab1175 (cond ((null v) (return nil))) (progn (cond ((fluidp (car v)) (prog (
 g) (setq g (gensym)) (setq fluids (cons (cons (car v) g) fluids)) (rplaca v g
-))))) (setq v (cdr v)) (go lab1171)) (cond (fluids (progn (setq body (list (
-list (quote return) body))) (prog (var1173) (setq var1173 fluids) lab1172 (
-cond ((null var1173) (return nil))) (prog (v) (setq v (car var1173)) (setq 
-body (cons (list (quote setq) (car v) (cdr v)) body))) (setq var1173 (cdr 
-var1173)) (go lab1172)) (setq body (cons (quote prog) (cons (prog (var1175 
-var1176) (setq var1175 fluids) lab1174 (cond ((null var1175) (return (
-reversip var1176)))) (prog (v) (setq v (car var1175)) (setq var1176 (cons (
-car v) var1176))) (setq var1175 (cdr var1175)) (go lab1174)) body)))))) (setq
+))))) (setq v (cdr v)) (go lab1175)) (cond (fluids (progn (setq body (list (
+list (quote return) body))) (prog (var1177) (setq var1177 fluids) lab1176 (
+cond ((null var1177) (return nil))) (prog (v) (setq v (car var1177)) (setq 
+body (cons (list (quote setq) (car v) (cdr v)) body))) (setq var1177 (cdr 
+var1177)) (go lab1176)) (setq body (cons (quote prog) (cons (prog (var1179 
+var1180) (setq var1179 fluids) lab1178 (cond ((null var1179) (return (
+reversip var1180)))) (prog (v) (setq v (car var1179)) (setq var1180 (cons (
+car v) var1180))) (setq var1179 (cdr var1179)) (go lab1178)) body)))))) (setq
 env (cons (mkhash (quote equal)) (reverse args))) (puthash name (car env) (
 cons 10000000 nil)) (setq w (s!:residual_local_decs local_decs w)) (
 s!:start_procedure nargs nopts restarg) (setq w1 body) more (cond ((atom w1) 
@@ -2691,15 +2705,15 @@ princ "Within LAMBDA: ") (print u) (setq s!:other_defs (cons u s!:other_defs)
 car u)) (mkquote (cdr u))) s!:fasl_code))))))))
 
 (de s!:compile2 (name nargs nopts args oargs restarg body local_decs checksum
-) (prog (fluids env penv g v init atend w) (prog (var1178) (setq var1178 args
-) lab1177 (cond ((null var1178) (return nil))) (prog (v) (setq v (car var1178
-)) (progn (setq env (cons 0 env)) (setq penv (cons env penv)))) (setq var1178
-(cdr var1178)) (go lab1177)) (setq env (cons (mkhash (quote equal)) env)) (
+) (prog (fluids env penv g v init atend w) (prog (var1182) (setq var1182 args
+) lab1181 (cond ((null var1182) (return nil))) (prog (v) (setq v (car var1182
+)) (progn (setq env (cons 0 env)) (setq penv (cons env penv)))) (setq var1182
+(cdr var1182)) (go lab1181)) (setq env (cons (mkhash (quote equal)) env)) (
 puthash name (car env) (cons 10000000 nil)) (setq penv (reversip penv)) (cond
 (restarg (setq oargs (append oargs (quote (0)))))) (prog (i) (setq i 1) 
-lab1179 (cond ((minusp (times 1 (difference nargs i))) (return nil))) (setq 
-oargs (cons 0 oargs)) (setq i (plus i 1)) (go lab1179)) (s!:start_procedure 
-nargs nopts restarg) (prog nil lab1180 (cond ((null args) (return nil))) (
+lab1183 (cond ((minusp (times 1 (difference nargs i))) (return nil))) (setq 
+oargs (cons 0 oargs)) (setq i (plus i 1)) (go lab1183)) (s!:start_procedure 
+nargs nopts restarg) (prog nil lab1184 (cond ((null args) (return nil))) (
 progn (setq v (car args)) (setq init (car oargs)) (cond ((equal init 0) (
 progn (setq w (s!:instate_local_decs v local_decs w)) (cond ((fluidp v) (
 progn (setq g (gensym)) (rplaca (car penv) g) (s!:outopcode1lit (quote 
@@ -2726,20 +2740,20 @@ s!:outopcode1lit (quote FREEBIND) (s!:vecof (list v)) env) (rplacd env (cons
 3 (cons 0 (cons 0 (cdr env))))) (s!:comval (list (quote setq) v g) env 1) (
 setq atend (cons (quote FREERSTR) atend)))) (t (rplaca (car penv) v)))))) (
 setq args (cdr args)) (setq oargs (cdr oargs)) (setq penv (cdr penv))) (go 
-lab1180)) (setq w (s!:residual_local_decs local_decs w)) (s!:comval body env 
-0) (prog nil lab1181 (cond ((null atend) (return nil))) (progn (s!:outopcode0
-(car atend) (list (car atend))) (setq atend (cdr atend))) (go lab1181)) (
+lab1184)) (setq w (s!:residual_local_decs local_decs w)) (s!:comval body env 
+0) (prog nil lab1185 (cond ((null atend) (return nil))) (progn (s!:outopcode0
+(car atend) (list (car atend))) (setq atend (cdr atend))) (go lab1185)) (
 s!:cancel_local_decs w) (setq nopts (plus nopts 256)) (cond (restarg (setq 
 nopts (plus nopts 512)))) (setq nargs (plus nargs (times 256 nopts))) (setq 
 s!:other_defs (cons (cons name (cons nargs (s!:endprocedure name env checksum
 ))) s!:other_defs))))
 
-(de compile!-all nil (prog (var1183) (setq var1183 (reverse (oblist))) 
-lab1182 (cond ((null var1183) (return nil))) (prog (x) (setq x (car var1183))
+(de compile!-all nil (prog (var1187) (setq var1187 (reverse (oblist))) 
+lab1186 (cond ((null var1187) (return nil))) (prog (x) (setq x (car var1187))
 (prog (w) (setq w (getd x)) (cond ((and (or (eqcar w (quote expr)) (eqcar w 
 (quote macro))) (eqcar (cdr w) (quote lambda))) (progn (princ "Compile: ") (
 prin x) (terpri) (errorset (list (quote compile) (mkquote (list x))) t t)))))
-) (setq var1183 (cdr var1183)) (go lab1182)))
+) (setq var1187 (cdr var1187)) (go lab1186)))
 
 (flag (quote (rds deflist flag fluid global keyword remprop remflag unfluid 
 unkeyword unglobal dm defmacro carcheck faslend c_end)) (quote eval))
@@ -2765,9 +2779,9 @@ top)))
 
 (de s!:fslout1 (u loadonly) (prog (w) (cond ((not (atom u)) (setq u (
 macroexpand u)))) (cond ((atom u) (return nil)) (t (cond ((eqcar u (quote 
-progn)) (progn (prog (var1185) (setq var1185 (cdr u)) lab1184 (cond ((null 
-var1185) (return nil))) (prog (v) (setq v (car var1185)) (s!:fslout1 v 
-loadonly)) (setq var1185 (cdr var1185)) (go lab1184)) (return nil))) (t (cond
+progn)) (progn (prog (var1189) (setq var1189 (cdr u)) lab1188 (cond ((null 
+var1189) (return nil))) (prog (v) (setq v (car var1189)) (s!:fslout1 v 
+loadonly)) (setq var1189 (cdr var1189)) (go lab1188)) (return nil))) (t (cond
 ((eqcar u (quote eval!-when)) (return (prog nil (setq w (cadr u)) (setq u (
 cons (quote progn) (cddr u))) (cond ((and (memq (quote compile) w) (not 
 loadonly)) (eval u))) (cond ((memq (quote load) w) (s!:fslout1 u t))) (return
@@ -2790,18 +2804,18 @@ u)) (mkquote (compress (append (explode (car u)) (cons (quote !!) (cons (
 quote !~) (cons (quote !!) (cons (quote !~) (explodehex (car w)))))))))) 
 s!:fasl_code)))) (t (cond ((flagp (car u) (quote lose)) (progn (princ "+++ ")
 (prin (car u)) (printc " not compiled (LOSE flag)"))) (t (prog (
-s!:other_defs) (s!:compile1 (car u) (cadr u) (cddr u) nil) (prog (var1187) (
-setq var1187 s!:other_defs) lab1186 (cond ((null var1187) (return nil))) (
-prog (p) (setq p (car var1187)) (s!:fslout2 p u)) (setq var1187 (cdr var1187)
-) (go lab1186))))))))) (t (cond ((or (eqcar u (quote dm)) (eqcar u (quote 
+s!:other_defs) (s!:compile1 (car u) (cadr u) (cddr u) nil) (prog (var1191) (
+setq var1191 s!:other_defs) lab1190 (cond ((null var1191) (return nil))) (
+prog (p) (setq p (car var1191)) (s!:fslout2 p u)) (setq var1191 (cdr var1191)
+) (go lab1190))))))))) (t (cond ((or (eqcar u (quote dm)) (eqcar u (quote 
 defmacro))) (prog (g) (setq g (hashtagged!-name (cadr u) (cddr u))) (setq u (
 cdr u)) (cond ((flagp (car u) (quote lose)) (progn (princ "+++ ") (prin (car 
 u)) (printc " not compiled (LOSE flag)") (return nil)))) (setq w (cadr u)) (
 cond ((and w (null (cdr w))) (setq w (cons (car w) (cons (quote !&optional) (
 cons (gensym) nil)))))) (prog (s!:other_defs) (s!:compile1 g w (cddr u) nil) 
-(prog (var1189) (setq var1189 s!:other_defs) lab1188 (cond ((null var1189) (
-return nil))) (prog (p) (setq p (car var1189)) (s!:fslout2 p u)) (setq 
-var1189 (cdr var1189)) (go lab1188))) (setq s!:fasl_code (cons (list (quote 
+(prog (var1193) (setq var1193 s!:other_defs) lab1192 (cond ((null var1193) (
+return nil))) (prog (p) (setq p (car var1193)) (s!:fslout2 p u)) (setq 
+var1193 (cdr var1193)) (go lab1192))) (setq s!:fasl_code (cons (list (quote 
 dm) (car u) (quote (u !&optional e)) (list g (quote u) (quote e))) 
 s!:fasl_code)))) (t (cond ((eqcar u (quote putd)) (prog (a1 a2 a3) (setq a1 (
 cadr u)) (setq a2 (caddr u)) (setq a3 (cadddr u)) (cond ((and (eqcar a1 (
@@ -2845,18 +2859,18 @@ nil)))
 
 (put (quote faslend) (quote stat) (quote endstat))
 
-(de s!:file (s) (prog (r) (setq s (reverse (explodec s))) (prog nil lab1190 (
+(de s!:file (s) (prog (r) (setq s (reverse (explodec s))) (prog nil lab1194 (
 cond ((null (and s (not (or (eqcar s (quote !/)) (eqcar s (quote !\)))))) (
-return nil))) (progn (setq r (cons (car s) r)) (setq s (cdr s))) (go lab1190)
+return nil))) (progn (setq r (cons (car s) r)) (setq s (cdr s))) (go lab1194)
 ) (return (list2string r))))
 
 (de s!:trim!.c (s) (prog (r) (setq s (reverse (explodec s))) (cond ((eqcar s 
 (quote c)) (progn (setq s (cdr s)) (cond ((eqcar s (quote !.)) (setq s (cdr s
 ))))))) (return (list2string (reverse s)))))
 
-(de s!:dir (s) (prog nil (setq s (reverse (explodec s))) (prog nil lab1191 (
+(de s!:dir (s) (prog nil (setq s (reverse (explodec s))) (prog nil lab1195 (
 cond ((null (and s (not (or (eqcar s (quote !/)) (eqcar s (quote !\)))))) (
-return nil))) (setq s (cdr s)) (go lab1191)) (cond (s (setq s (cdr s)))) (
+return nil))) (setq s (cdr s)) (go lab1195)) (cond (s (setq s (cdr s)))) (
 cond ((null s) (return ".")) (t (return (list2string (reverse s)))))))
 
 (de faslout (u) (prog nil (terpri) (princ "FASLOUT ") (prin u) (princ 
@@ -2908,15 +2922,15 @@ stringp args) (progn (cond (!*pwrds (progn (cond ((neq (posn) 0) (terpri))) (
 princ "+++ ") (prin name) (princ " was already compiled") (terpri)))))) (t (
 prog (s!:other_defs) (cond (!*savedef (put name (quote !*savedef) (cons (
 quote lambda) (cons args (s!:fully_macroexpand_list defn)))))) (s!:compile1 
-name args defn nil) (prog (var1193) (setq var1193 s!:other_defs) lab1192 (
-cond ((null var1193) (return nil))) (prog (p) (setq p (car var1193)) (
-symbol!-set!-definition (car p) (cdr p))) (setq var1193 (cdr var1193)) (go 
-lab1192))))))))))))
+name args defn nil) (prog (var1197) (setq var1197 s!:other_defs) lab1196 (
+cond ((null var1197) (return nil))) (prog (p) (setq p (car var1197)) (
+symbol!-set!-definition (car p) (cdr p))) (setq var1197 (cdr var1197)) (go 
+lab1196))))))))))))
 
-(de s!:fully_macroexpand_list (l) (cond ((atom l) l) (t (prog (var1195 
-var1196) (setq var1195 l) lab1194 (cond ((null var1195) (return (reversip 
-var1196)))) (prog (u) (setq u (car var1195)) (setq var1196 (cons (
-s!:fully_macroexpand u) var1196))) (setq var1195 (cdr var1195)) (go lab1194))
+(de s!:fully_macroexpand_list (l) (cond ((atom l) l) (t (prog (var1199 
+var1200) (setq var1199 l) lab1198 (cond ((null var1199) (return (reversip 
+var1200)))) (prog (u) (setq u (car var1199)) (setq var1200 (cons (
+s!:fully_macroexpand u) var1200))) (setq var1199 (cdr var1199)) (go lab1198))
 )))
 
 (de s!:fully_macroexpand (x) (prog (helper) (cond ((or (atom x) (eqcar x (
@@ -2931,10 +2945,10 @@ s!:fully_macroexpand_list (cdr x))))))))))))))))
 
 (de s!:expandfunction (u) u)
 
-(de s!:expandflet (u) (cons (car u) (cons (prog (var1198 var1199) (setq 
-var1198 (cadr u)) lab1197 (cond ((null var1198) (return (reversip var1199))))
-(prog (b) (setq b (car var1198)) (setq var1199 (cons (s!:expandfletvars b) 
-var1199))) (setq var1198 (cdr var1198)) (go lab1197)) (
+(de s!:expandflet (u) (cons (car u) (cons (prog (var1202 var1203) (setq 
+var1202 (cadr u)) lab1201 (cond ((null var1202) (return (reversip var1203))))
+(prog (b) (setq b (car var1202)) (setq var1203 (cons (s!:expandfletvars b) 
+var1203))) (setq var1202 (cdr var1202)) (go lab1201)) (
 s!:fully_macroexpand_list (cddr u)))))
 
 (de s!:expandfletvars (b) (cons (car b) (cons (cadr b) (
@@ -2957,11 +2971,11 @@ s!:fully_macroexpand_list (cddr u)))))
 
 (de s!:expanddeclare (u) u)
 
-(de s!:expandlet (u) (cons (car u) (cons (prog (var1201 var1202) (setq 
-var1201 (cadr u)) lab1200 (cond ((null var1201) (return (reversip var1202))))
-(prog (x) (setq x (car var1201)) (setq var1202 (cons (
-s!:fully_macroexpand_list x) var1202))) (setq var1201 (cdr var1201)) (go 
-lab1200)) (s!:fully_macroexpand_list (cddr u)))))
+(de s!:expandlet (u) (cons (car u) (cons (prog (var1205 var1206) (setq 
+var1205 (cadr u)) lab1204 (cond ((null var1205) (return (reversip var1206))))
+(prog (x) (setq x (car var1205)) (setq var1206 (cons (
+s!:fully_macroexpand_list x) var1206))) (setq var1205 (cdr var1205)) (go 
+lab1204)) (s!:fully_macroexpand_list (cddr u)))))
 
 (de s!:expandlet!* (u) (s!:expandlet u))
 
@@ -2970,16 +2984,16 @@ lab1200)) (s!:fully_macroexpand_list (cddr u)))))
 (de s!:expandreturn!-from (u) (cons (car u) (cons (cadr u) (
 s!:fully_macroexpand_list (cddr u)))))
 
-(de s!:expandcond (u) (cons (car u) (prog (var1204 var1205) (setq var1204 (
-cdr u)) lab1203 (cond ((null var1204) (return (reversip var1205)))) (prog (x)
-(setq x (car var1204)) (setq var1205 (cons (s!:fully_macroexpand_list x) 
-var1205))) (setq var1204 (cdr var1204)) (go lab1203))))
+(de s!:expandcond (u) (cons (car u) (prog (var1208 var1209) (setq var1208 (
+cdr u)) lab1207 (cond ((null var1208) (return (reversip var1209)))) (prog (x)
+(setq x (car var1208)) (setq var1209 (cons (s!:fully_macroexpand_list x) 
+var1209))) (setq var1208 (cdr var1208)) (go lab1207))))
 
 (de s!:expandcase (u) (cons (car u) (cons (s!:fully_macroexpand (cadr u)) (
-prog (var1207 var1208) (setq var1207 (cddr u)) lab1206 (cond ((null var1207) 
-(return (reversip var1208)))) (prog (x) (setq x (car var1207)) (setq var1208 
-(cons (cons (car x) (s!:fully_macroexpand_list (cdr x))) var1208))) (setq 
-var1207 (cdr var1207)) (go lab1206)))))
+prog (var1211 var1212) (setq var1211 (cddr u)) lab1210 (cond ((null var1211) 
+(return (reversip var1212)))) (prog (x) (setq x (car var1211)) (setq var1212 
+(cons (cons (car x) (s!:fully_macroexpand_list (cdr x))) var1212))) (setq 
+var1211 (cdr var1211)) (go lab1210)))))
 
 (de s!:expandeval!-when (u) (cons (car u) (cons (cadr u) (
 s!:fully_macroexpand_list (cddr u)))))
@@ -3029,9 +3043,9 @@ s!:fully_macroexpand_list (cddr u)))))
 s!:expandmv!-call))
 
 (de compile (l) (prog nil (cond ((and (atom l) (not (null l))) (setq l (list 
-l)))) (prog (var1210) (setq var1210 l) lab1209 (cond ((null var1210) (return 
-nil))) (prog (name) (setq name (car var1210)) (errorset (list (quote 
-s!:compile0) (mkquote name)) t t)) (setq var1210 (cdr var1210)) (go lab1209))
+l)))) (prog (var1214) (setq var1214 l) lab1213 (cond ((null var1214) (return 
+nil))) (prog (name) (setq name (car var1214)) (errorset (list (quote 
+s!:compile0) (mkquote name)) t t)) (setq var1214 (cdr var1214)) (go lab1213))
 (return l)))
 
 
@@ -3052,7 +3066,7 @@ quote list) (cddr u))))
 (flag (quote (c!:printf)) (quote variadic))
 
 (de c!:printf1 (fmt args) (prog (a c) (setq fmt (explode2 fmt)) (prog nil 
-lab1211 (cond ((null fmt) (return nil))) (progn (setq c (car fmt)) (setq fmt 
+lab1215 (cond ((null fmt) (return nil))) (progn (setq c (car fmt)) (setq fmt 
 (cdr fmt)) (cond ((and (equal c (quote !\)) (or (equal (car fmt) (quote !n)) 
 (equal (car fmt) (quote !N)))) (progn (terpri) (setq fmt (cdr fmt)))) (t (
 cond ((and (equal c (quote !\)) (or (equal (car fmt) (quote !q)) (equal (car 
@@ -3066,16 +3080,16 @@ c!:safeprin a)) (t (cond ((or (equal c (quote !a)) (equal c (quote !A))) (
 prin a)) (t (cond ((or (equal c (quote !t)) (equal c (quote !T))) (ttab a)) (
 t (cond ((equal c (quote !<)) (progn (setq args (cons nil args)) (cond ((
 greaterp (posn) 70) (terpri))))) (t (princ a))))))))))) (cond (args (setq 
-args (cdr args)))) (setq fmt (cdr fmt)))) (t (princ c)))))))) (go lab1211))))
+args (cdr args)))) (setq fmt (cdr fmt)))) (t (princ c)))))))) (go lab1215))))
 
-(de c!:safeprin (x) (prog (n lastc) (setq n 0) (prog (var1213) (setq var1213 
-(explode x)) lab1212 (cond ((null var1213) (return nil))) (prog (c) (setq c (
-car var1213)) (progn (cond ((and (greaterp n 120) (equal c (quote ! ))) (
+(de c!:safeprin (x) (prog (n lastc) (setq n 0) (prog (var1217) (setq var1217 
+(explode x)) lab1216 (cond ((null var1217) (return nil))) (prog (c) (setq c (
+car var1217)) (progn (cond ((and (greaterp n 120) (equal c (quote ! ))) (
 progn (terpri) (prin2 "//") (setq n 2))) (t (cond ((and (greaterp n 150) (neq
 c !$eol!$)) (progn (terpri) (prin2 "// ") (setq n 3))) (t (setq n (plus n 1)
 ))))) (cond ((and (equal lastc (quote !\)) (equal c !$eol!$)) (princ 
 " (backslash)"))) (setq lastc c) (princ c) (cond ((equal c !$eol!$) (progn (
-princ "//") (setq n 2)))))) (setq var1213 (cdr var1213)) (go lab1212)) (cond 
+princ "//") (setq n 2)))))) (setq var1217 (cdr var1217)) (go lab1216)) (cond 
 ((equal lastc (quote !\)) (princ " (backslash)")))))
 
 (de c!:valid_fndef (args body) (cond ((or (memq (quote !&optional) args) (
@@ -3162,7 +3176,7 @@ setq b (compress (cddr (explodec b)))) (return (lessp a b))))
 (setq my_gensym_counter 0)
 
 (de c!:reset_gensyms nil (progn (remflag c!:used (quote c!:live_across_call))
-(remflag c!:used (quote c!:visited)) (prog nil lab1214 (cond ((null c!:used)
+(remflag c!:used (quote c!:visited)) (prog nil lab1218 (cond ((null c!:used)
 (return nil))) (progn (remprop (car c!:used) (quote c!:contents)) (remprop (
 car c!:used) (quote c!:why)) (remprop (car c!:used) (quote c!:where_to)) (
 remprop (car c!:used) (quote c!:count)) (remprop (car c!:used) (quote c!:live
@@ -3170,7 +3184,7 @@ remprop (car c!:used) (quote c!:count)) (remprop (car c!:used) (quote c!:live
 c!:chosen)) (remprop (car c!:used) (quote c!:location)) (cond ((plist (car 
 c!:used)) (prog (o) (setq o (wrs nil)) (princ "+++++ ") (prin (car c!:used)) 
 (princ " ") (prin (plist (car c!:used))) (terpri) (wrs o)))) (setq c!:used (
-cdr c!:used))) (go lab1214)) (setq my_gensym_counter 0)))
+cdr c!:used))) (go lab1218)) (setq my_gensym_counter 0)))
 
 (de c!:my_gensym nil (prog (w) (setq w (compress1 (cons (quote !v) (cons (
 quote !_) (explodec (setq my_gensym_counter (plus my_gensym_counter 1))))))) 
@@ -3218,18 +3232,18 @@ car c!:stack)) (setq c!:stack (cdr c!:stack)) (setq c!:current_block (car w))
 c!:endblock (quote inner_block) b) (c!:startblock l)))
 
 (de c!:clambda (bvl body args env) (prog (w w1 fluids env1 decs) (setq env1 (
-car env)) (setq w (prog (var1216 var1217) (setq var1216 args) lab1215 (cond (
-(null var1216) (return (reversip var1217)))) (prog (a) (setq a (car var1216))
-(setq var1217 (cons (c!:cval a env) var1217))) (setq var1216 (cdr var1216)) 
-(go lab1215))) (setq w1 (s!:find_local_decs body nil)) (setq localdecs (cons 
+car env)) (setq w (prog (var1220 var1221) (setq var1220 args) lab1219 (cond (
+(null var1220) (return (reversip var1221)))) (prog (a) (setq a (car var1220))
+(setq var1221 (cons (c!:cval a env) var1221))) (setq var1220 (cdr var1220)) 
+(go lab1219))) (setq w1 (s!:find_local_decs body nil)) (setq localdecs (cons 
 (car w1) localdecs)) (setq w1 (cdr w1)) (cond ((null w1) (setq body nil)) (t 
 (cond ((null (cdr w1)) (setq body (car w1))) (t (setq body (cons (quote progn
-) w1)))))) (prog (var1219) (setq var1219 bvl) lab1218 (cond ((null var1219) (
-return nil))) (prog (x) (setq x (car var1219)) (cond ((and (not (fluidp x)) (
+) w1)))))) (prog (var1223) (setq var1223 bvl) lab1222 (cond ((null var1223) (
+return nil))) (prog (x) (setq x (car var1223)) (cond ((and (not (fluidp x)) (
 not (globalp x)) (c!:local_fluidp x localdecs)) (progn (make!-special x) (
-setq decs (cons x decs)))))) (setq var1219 (cdr var1219)) (go lab1218)) (prog
-(var1221) (setq var1221 bvl) lab1220 (cond ((null var1221) (return nil))) (
-prog (v) (setq v (car var1221)) (progn (cond ((globalp v) (prog (oo) (setq oo
+setq decs (cons x decs)))))) (setq var1223 (cdr var1223)) (go lab1222)) (prog
+(var1225) (setq var1225 bvl) lab1224 (cond ((null var1225) (return nil))) (
+prog (v) (setq v (car var1225)) (progn (cond ((globalp v) (prog (oo) (setq oo
 (wrs nil)) (princ "+++++ ") (prin v) (princ 
 " converted from GLOBAL to FLUID") (terpri) (wrs oo) (unglobal (list v)) (
 fluid (list v))))) (cond ((fluidp v) (progn (setq fluids (cons (cons v (
@@ -3238,12 +3252,12 @@ c!:newreg)) fluids)) (flag (list (cdar fluids)) (quote c!:live_across_call))
 c!:start_nested_context) (c!:outop (quote fluidbind) (cdar fluids) v (
 c!:find_literal v)) (c!:outop (quote strglob) (car w) v (c!:find_literal v)))
 ) (t (progn (setq env1 (cons (cons v (c!:newreg)) env1)) (c!:outop (quote 
-movr) (cdar env1) nil (car w))))) (setq w (cdr w)))) (setq var1221 (cdr 
-var1221)) (go lab1220)) (setq env (cons env1 (append fluids (cdr env)))) (
-setq w (c!:cval body env)) (prog (var1223) (setq var1223 fluids) lab1222 (
-cond ((null var1223) (return nil))) (prog (v) (setq v (car var1223)) (progn (
+movr) (cdar env1) nil (car w))))) (setq w (cdr w)))) (setq var1225 (cdr 
+var1225)) (go lab1224)) (setq env (cons env1 (append fluids (cdr env)))) (
+setq w (c!:cval body env)) (prog (var1227) (setq var1227 fluids) lab1226 (
+cond ((null var1227) (return nil))) (prog (v) (setq v (car var1227)) (progn (
 c!:end_nested_context) (c!:outop (quote fluidunbind) (cdr v) (car v) (
-c!:find_literal (car v))))) (setq var1223 (cdr var1223)) (go lab1222)) (
+c!:find_literal (car v))))) (setq var1227 (cdr var1227)) (go lab1226)) (
 unfluid decs) (setq localdecs (cdr localdecs)) (return w)))
 
 (de c!:locally_bound (x env) (atsoc x (car env)))
@@ -3253,8 +3267,8 @@ unfluid decs) (setq localdecs (cdr localdecs)) (return w)))
 (fluid (quote (literal_vector)))
 
 (de c!:find_literal (x) (prog (n w) (setq w literal_vector) (setq n 0) (prog 
-nil lab1224 (cond ((null (and w (not (equal (car w) x)))) (return nil))) (
-progn (setq n (plus n 1)) (setq w (cdr w))) (go lab1224)) (cond ((null w) (
+nil lab1228 (cond ((null (and w (not (equal (car w) x)))) (return nil))) (
+progn (setq n (plus n 1)) (setq w (cdr w))) (go lab1228)) (cond ((null w) (
 setq literal_vector (append literal_vector (list x))))) (return n)))
 
 (de c!:catom (x env) (prog (v w) (setq v (c!:newreg)) (cond ((or (null x) (
@@ -3282,14 +3296,14 @@ c!:cval x env)) (c!:endblock (list (quote ifnull) r) (list d2 d1)))))))))
 
 (de c!:has_calls_1 (a b) (cond ((or (equal a b) (not (atom a)) (memq a 
 c!:visited)) nil) (t (prog (has_call) (setq c!:visited (cons a c!:visited)) (
-prog (var1226) (setq var1226 (get a (quote c!:contents))) lab1225 (cond ((
-null var1226) (return nil))) (prog (z) (setq z (car var1226)) (cond ((eqcar z
-(quote call)) (setq has_call t)))) (setq var1226 (cdr var1226)) (go lab1225)
+prog (var1230) (setq var1230 (get a (quote c!:contents))) lab1229 (cond ((
+null var1230) (return nil))) (prog (z) (setq z (car var1230)) (cond ((eqcar z
+(quote call)) (setq has_call t)))) (setq var1230 (cdr var1230)) (go lab1229)
 ) (cond (has_call (return (prog (c!:visited) (return (c!:can_reach a b)))))) 
-(prog (var1228) (setq var1228 (get a (quote c!:where_to))) lab1227 (cond ((
-null var1228) (return nil))) (prog (d) (setq d (car var1228)) (cond ((
-c!:has_calls_1 d b) (setq has_call t)))) (setq var1228 (cdr var1228)) (go 
-lab1227)) (return has_call)))))
+(prog (var1232) (setq var1232 (get a (quote c!:where_to))) lab1231 (cond ((
+null var1232) (return nil))) (prog (d) (setq d (car var1232)) (cond ((
+c!:has_calls_1 d b) (setq has_call t)))) (setq var1232 (cdr var1232)) (go 
+lab1231)) (return has_call)))))
 
 (de c!:can_reach (a b) (cond ((equal a b) t) (t (cond ((or (not (atom a)) (
 memq a c!:visited)) nil) (t (progn (setq c!:visited (cons a c!:visited)) (
@@ -3298,9 +3312,9 @@ c!:any_can_reach (get a (quote c!:where_to)) b)))))))
 (de c!:any_can_reach (l b) (cond ((null l) nil) (t (cond ((c!:can_reach (car 
 l) b) t) (t (c!:any_can_reach (cdr l) b))))))
 
-(de c!:evalargs (args env) (prog (r) (prog (var1230) (setq var1230 args) 
-lab1229 (cond ((null var1230) (return nil))) (prog (a) (setq a (car var1230))
-(setq r (cons (c!:cval a env) r))) (setq var1230 (cdr var1230)) (go lab1229)
+(de c!:evalargs (args env) (prog (r) (prog (var1234) (setq var1234 args) 
+lab1233 (cond ((null var1234) (return nil))) (prog (a) (setq a (car var1234))
+(setq r (cons (c!:cval a env) r))) (setq var1234 (cdr var1234)) (go lab1233)
 ) (return (reversip r))))
 
 (de c!:ccall1 (fn args env) (prog (tasks merge r val) (setq fn (list fn (cdr 
@@ -3333,45 +3347,45 @@ body (cons (quote progn) body)))))) (setq localdecs (list (car w))) (
 c!:reset_gensyms) (wrs C_file) (linelength 200) (c!:printf 
 "\n\n// Code for %a\n\n" c!:current_procedure) (c!:find_literal 
 c!:current_procedure) (setq c!:current_args args) (setq varargs (geq (length 
-args) 4)) (prog (var1232) (setq var1232 args) lab1231 (cond ((null var1232) (
-return nil))) (prog (v) (setq v (car var1232)) (cond ((or (equal v (quote 
+args) 4)) (prog (var1236) (setq var1236 args) lab1235 (cond ((null var1236) (
+return nil))) (prog (v) (setq v (car var1236)) (cond ((or (equal v (quote 
 !&optional)) (equal v (quote !&rest))) (error 0 
 "&optional and &rest not supported by this compiler (yet)")) (t (cond ((
 globalp v) (prog (oo) (setq oo (wrs nil)) (princ "+++++ ") (prin v) (princ 
 " converted from GLOBAL to FLUID") (terpri) (wrs oo) (unglobal (list v)) (
 fluid (list v)) (setq n (cons (cons v (c!:my_gensym)) n)))) (t (cond ((or (
 fluidp v) (c!:local_fluidp v localdecs)) (setq n (cons (cons v (c!:my_gensym)
-) n))))))))) (setq var1232 (cdr var1232)) (go lab1231)) (cond (!*r2i (setq 
+) n))))))))) (setq var1236 (cdr var1236)) (go lab1235)) (cond (!*r2i (setq 
 body (s!:r2i c!:current_procedure args body)))) (setq restart_label (
 c!:my_gensym)) (setq body (list (quote c!:private_tagbody) restart_label body
 )) (cond (n (progn (setq body (list (list (quote return) body))) (setq args (
-subla n args)) (prog (var1234) (setq var1234 n) lab1233 (cond ((null var1234)
-(return nil))) (prog (v) (setq v (car var1234)) (setq body (cons (list (
-quote setq) (car v) (cdr v)) body))) (setq var1234 (cdr var1234)) (go lab1233
-)) (setq body (cons (quote !~prog) (cons (prog (var1236 var1237) (setq 
-var1236 (reverse n)) lab1235 (cond ((null var1236) (return (reversip var1237)
-))) (prog (v) (setq v (car var1236)) (setq var1237 (cons (car v) var1237))) (
-setq var1236 (cdr var1236)) (go lab1235)) body)))))) (c!:printf 
+subla n args)) (prog (var1238) (setq var1238 n) lab1237 (cond ((null var1238)
+(return nil))) (prog (v) (setq v (car var1238)) (setq body (cons (list (
+quote setq) (car v) (cdr v)) body))) (setq var1238 (cdr var1238)) (go lab1237
+)) (setq body (cons (quote !~prog) (cons (prog (var1240 var1241) (setq 
+var1240 (reverse n)) lab1239 (cond ((null var1240) (return (reversip var1241)
+))) (prog (v) (setq v (car var1240)) (setq var1241 (cons (car v) var1241))) (
+setq var1240 (cdr var1240)) (go lab1239)) body)))))) (c!:printf 
 "static LispObject %s(LispObject env" c!:current_c_name) (setq env nil) (cond
-(varargs (progn (prog (var1239) (setq var1239 (list (car args) (cadr args) (
-caddr args))) lab1238 (cond ((null var1239) (return nil))) (prog (x) (setq x 
-(car var1239)) (prog (aa) (c!:printf ",") (cond (n (progn (c!:printf 
+(varargs (progn (prog (var1243) (setq var1243 (list (car args) (cadr args) (
+caddr args))) lab1242 (cond ((null var1243) (return nil))) (prog (x) (setq x 
+(car var1243)) (prog (aa) (c!:printf ",") (cond (n (progn (c!:printf 
 "\n                        ") (setq n nil))) (t (setq n t))) (setq aa (
 c!:my_gensym)) (setq env (cons (cons x aa) env)) (setq c!:registers (cons aa 
 c!:registers)) (setq args1 (cons aa args1)) (c!:printf " LispObject %s" aa)))
-(setq var1239 (cdr var1239)) (go lab1238)) (c!:printf ", LispObject _a4up_")
-)) (t (progn (setq n t) (prog (var1241) (setq var1241 args) lab1240 (cond ((
-null var1241) (return nil))) (prog (x) (setq x (car var1241)) (prog (aa) (
+(setq var1243 (cdr var1243)) (go lab1242)) (c!:printf ", LispObject _a4up_")
+)) (t (progn (setq n t) (prog (var1245) (setq var1245 args) lab1244 (cond ((
+null var1245) (return nil))) (prog (x) (setq x (car var1245)) (prog (aa) (
 c!:printf ",") (cond (n (progn (c!:printf "\n                        ") (setq
 n nil))) (t (setq n t))) (setq aa (c!:my_gensym)) (setq env (cons (cons x aa
 ) env)) (setq c!:registers (cons aa c!:registers)) (setq args1 (cons aa args1
-)) (c!:printf " LispObject %s" aa))) (setq var1241 (cdr var1241)) (go lab1240
+)) (c!:printf " LispObject %s" aa))) (setq var1245 (cdr var1245)) (go lab1244
 ))))) (c!:printf ")\n{\n") (c!:printf "    env = qenv(env);\n") (cond (
-varargs (prog (var1243) (setq var1243 (cdddr args)) lab1242 (cond ((null 
-var1243) (return nil))) (prog (x) (setq x (car var1243)) (prog (aa) (setq aa 
+varargs (prog (var1247) (setq var1247 (cdddr args)) lab1246 (cond ((null 
+var1247) (return nil))) (prog (x) (setq x (car var1247)) (prog (aa) (setq aa 
 (c!:my_gensym)) (setq env (cons (cons x aa) env)) (setq c!:registers (cons aa
-c!:registers)) (setq args1 (cons aa args1)))) (setq var1243 (cdr var1243)) (
-go lab1242)))) (c!:startblock (setq entrypoint (c!:my_gensym))) (setq 
+c!:registers)) (setq args1 (cons aa args1)))) (setq var1247 (cdr var1247)) (
+go lab1246)))) (c!:startblock (setq entrypoint (c!:my_gensym))) (setq 
 exitpoint c!:current_block) (c!:endblock (quote goto) (list (list (c!:cval 
 body (cons env nil))))) (c!:optimise_flowgraph entrypoint c!:all_blocks env (
 cons (length args) c!:current_procedure) (reverse args1) varargs) (c!:printf 
@@ -3408,25 +3422,25 @@ c!:ccompilesupervisor) (princ "End of file ") (print u) (close (rds w)))) (t
 c!:names_so_far)) (setq w (plus (cdr w) 1))) (t (setq w 0))) (setq 
 c!:names_so_far (cons (cons n w) c!:names_so_far)) (setq r (quote (!C !C !"))
 ) (cond ((not (zerop w)) (setq r (append (reverse (explodec w)) r)))) (setq r
-(cons (quote !_) r)) (prog (var1245) (setq var1245 (explode2 n)) lab1244 (
-cond ((null var1245) (return nil))) (prog (c) (setq c (car var1245)) (progn (
+(cons (quote !_) r)) (prog (var1249) (setq var1249 (explode2 n)) lab1248 (
+cond ((null var1249) (return nil))) (prog (c) (setq c (car var1249)) (progn (
 cond ((equal c (quote _)) (setq r (cons (quote _) r))) (t (cond ((or (liter c
 ) (digit c)) (setq r (cons c r))) (t (cond ((setq w (atsoc c c!:char_mappings
 )) (setq r (cons (cdr w) r))) (t (setq r (cons (quote !Z) r)))))))))) (setq 
-var1245 (cdr var1245)) (go lab1244)) (setq r (append (reverse (explodehex 
+var1249 (cdr var1249)) (go lab1248)) (setq r (append (reverse (explodehex 
 checksum)) r)) (setq r (cons (quote !") r)) (return (compress (reverse r)))))
 
 (fluid (quote (c!:defnames pending_functions)))
 
 (de c!:ccmpout1 (u) (prog (pending_functions) (setq pending_functions (list u
-)) (prog nil lab1246 (cond ((null pending_functions) (return nil))) (progn (
+)) (prog nil lab1250 (cond ((null pending_functions) (return nil))) (progn (
 setq u (car pending_functions)) (setq pending_functions (cdr 
-pending_functions)) (c!:ccmpout1a u)) (go lab1246))))
+pending_functions)) (c!:ccmpout1a u)) (go lab1250))))
 
 (de c!:ccmpout1a (u) (prog (file checksum cname lispname) (cond ((atom u) (
-return nil)) (t (cond ((eqcar u (quote progn)) (progn (prog (var1248) (setq 
-var1248 (cdr u)) lab1247 (cond ((null var1248) (return nil))) (prog (v) (setq
-v (car var1248)) (c!:ccmpout1a v)) (setq var1248 (cdr var1248)) (go lab1247)
+return nil)) (t (cond ((eqcar u (quote progn)) (progn (prog (var1252) (setq 
+var1252 (cdr u)) lab1251 (cond ((null var1252) (return nil))) (prog (v) (setq
+v (car var1252)) (c!:ccmpout1a v)) (setq var1252 (cdr var1252)) (go lab1251)
 ) (return nil))) (t (cond ((eqcar u (quote C!-end)) nil) (t (cond ((or (flagp
 (car u) (quote eval)) (and (equal (car u) (quote setq)) (not (atom (caddr u)
 )) (flagp (caaddr u) (quote eval)))) (errorset u t !*backtrace))))))))) (cond
@@ -3456,9 +3470,9 @@ cond ((memq (quote win32) lispsystem!*) (setq name (c!:concat dir (c!:concat
 "C file = ") (print name) (setq C_file (open (c!:concat name ".cpp") (quote 
 output))) (setq L_file (c!:concat name ".lsp")) (setq L_contents nil) (setq 
 c!:names_so_far nil) (setq o (reverse (explode (date!-and!-time)))) (prog (i)
-(setq i 1) lab1249 (cond ((minusp (times 1 (difference 5 i))) (return nil)))
+(setq i 1) lab1253 (cond ((minusp (times 1 (difference 5 i))) (return nil)))
 (progn (setq d (cons (car o) d)) (setq o (cdr o))) (setq i (plus i 1)) (go 
-lab1249)) (setq d (cons (quote !-) d)) (setq o (cdddr (cdddr (cddddr o)))) (
+lab1253)) (setq d (cons (quote !-) d)) (setq o (cdddr (cdddr (cddddr o)))) (
 setq w o) (setq o (cdddr o)) (setq d (cons (caddr o) (cons (cadr o) (cons (
 car o) d)))) (setq d (compress (cons (quote !") (cons (cadr w) (cons (car w) 
 (cons (quote !-) d)))))) (setq O_file (wrs C_file)) (setq c!:defnames nil) (
@@ -3469,7 +3483,7 @@ c!:printf "#include \qheaders.h\q\n\n") (wrs O_file) (return nil)))
 (de C!-end nil (prog (checksum c1 c2 c3 stubs) (wrs C_file) (cond ((equal (
 explodec Setup_name) (explodec (quote stubs))) (progn (setq stubs t) (setq 
 Setup_name "u01")))) (c!:printf "\n\nsetup_type const %s_setup[] =\n{\n" 
-Setup_name) (setq c!:defnames (reverse c!:defnames)) (prog nil lab1250 (cond 
+Setup_name) (setq c!:defnames (reverse c!:defnames)) (prog nil lab1254 (cond 
 ((null c!:defnames) (return nil))) (prog (w name nargs f0 f1 f2 f3 f4up) (
 setq w (car c!:defnames)) (setq name (car w)) (setq f0 (car (setq w (cdr w)))
 ) (setq nargs (car (setq w (cdr w)))) (setq checksum (car (setq w (cdr w)))) 
@@ -3482,7 +3496,7 @@ f3 f0) (setq f0 "G0W3") (setq f1 "G1W3") (setq f2 "G2W3") (setq f4up "G4W3"))
 ) (t (progn (setq f4up f0) (setq f0 "G0W4up") (setq f1 "G1W4up") (setq f2 
 "G2W4up") (setq f3 "G3W4up")))))))))) (c!:printf 
 "    {\q%s\q,%t%s,%t%s,%t%s,%t%s,%t%s},\n" name 32 f0 42 f1 52 f2 62 f3 72 
-f4up) (setq c!:defnames (cdr c!:defnames))) (go lab1250)) (setq c3 (setq 
+f4up) (setq c!:defnames (cdr c!:defnames))) (go lab1254)) (setq c3 (setq 
 checksum (md60 L_contents))) (setq c1 (remainder c3 10000000)) (setq c3 (
 quotient c3 10000000)) (setq c2 (remainder c3 10000000)) (setq c3 (quotient 
 c3 10000000)) (setq checksum (list2string (append (explodec c3) (cons (quote 
@@ -3492,7 +3506,7 @@ c!:printf "            reinterpret_cast<uintptr_t>(%a)),\n" Setup_name) (
 c!:printf "        reinterpret_cast<one_arg *>(\n") (c!:printf 
 "            reinterpret_cast<uintptr_t>(%a)),\n" checksum) (c!:printf 
 "        nullptr, nullptr, nullptr}\n};\n\n") (cond (stubs (progn (prog (i) (
-setq i 2) lab1251 (cond ((minusp (times 1 (difference 60 i))) (return nil))) 
+setq i 2) lab1255 (cond ((minusp (times 1 (difference 60 i))) (return nil))) 
 (progn (c!:printf "setup_type const u") (cond ((lessp i 10) (c!:printf "0")))
 (c!:printf "%s_setup[] = {\n" i) (c!:printf "    {nullptr, \n") (c!:printf 
 "        reinterpret_cast<no_args *>(\n") (c!:printf 
@@ -3500,16 +3514,16 @@ setq i 2) lab1251 (cond ((minusp (times 1 (difference 60 i))) (return nil)))
 "        reinterpret_cast<one_arg *>(\n") (c!:printf 
 "            reinterpret_cast<uintptr_t>(%a)),\n" checksum) (c!:printf 
 "        nullptr, nullptr, nullptr}\n};\n\n")) (setq i (plus i 1)) (go 
-lab1251)) (c!:printf "\n\n")))) (c!:printf "%<// end of generated code\n") (
+lab1255)) (c!:printf "\n\n")))) (c!:printf "%<// end of generated code\n") (
 close C_file) (setq L_file (open L_file (quote output))) (wrs L_file) (
 linelength 72) (terpri) (princ "% ") (princ Setup_name) (princ ".lsp") (ttab 
 20) (princ "Machine generated Lisp") (terpri) (terpri) (princ 
 "(check!-c!-code ") (princ (quote !")) (princ Setup_name) (princ (quote !")) 
-(princ " ") (princ checksum) (printc ")") (terpri) (prog (var1253) (setq 
-var1253 (reverse L_contents)) lab1252 (cond ((null var1253) (return nil))) (
-prog (x) (setq x (car var1253)) (progn (princ "(c!:install '") (prin (car x))
+(princ " ") (princ checksum) (printc ")") (terpri) (prog (var1257) (setq 
+var1257 (reverse L_contents)) lab1256 (cond ((null var1257) (return nil))) (
+prog (x) (setq x (car var1257)) (progn (princ "(c!:install '") (prin (car x))
 (princ " '") (prin (cadr x)) (princ " ") (prin (cddr x)) (princ ")") (terpri
-) (terpri))) (setq var1253 (cdr var1253)) (go lab1252)) (terpri) (princ 
+) (terpri))) (setq var1257 (cdr var1257)) (go lab1256)) (terpri) (princ 
 "% End of generated Lisp code") (c!:reset_gensyms) (terpri) (terpri) (setq 
 L_contents nil) (wrs O_file) (close L_file) (setq !*defn nil) (setq dfprint!*
 dfprintsave)))
@@ -3536,26 +3550,26 @@ where_to next) nil) (t (cond ((atom where_to) (c!:printf "    goto %s;\n"
 where_to)) (t (progn (c!:printf "    ") (c!:pgoto where_to)))))) (return nil)
 )) (t (cond ((eqcar (car why) (quote call)) (return (prog (args locs g w) (
 cond ((setq w (get (cadar why) (quote c!:direct_entrypoint))) (progn (prog (
-var1255) (setq var1255 (cdr why)) lab1254 (cond ((null var1255) (return nil))
-) (prog (a) (setq a (car var1255)) (cond ((flagp a (quote c!:live_across_call
+var1259) (setq var1259 (cdr why)) lab1258 (cond ((null var1259) (return nil))
+) (prog (a) (setq a (car var1259)) (cond ((flagp a (quote c!:live_across_call
 )) (progn (cond ((null g) (c!:printf "    {\n"))) (setq g (c!:my_gensym)) (
 c!:printf "        LispObject %s = %v;\n" g a) (setq args (cons g args)))) (t
-(setq args (cons a args))))) (setq var1255 (cdr var1255)) (go lab1254)) (
+(setq args (cons a args))))) (setq var1259 (cdr var1259)) (go lab1258)) (
 cond (g (c!:printf "    "))) (c!:printf "    return %s(" (cdr w)) (setq args 
 (reversip args)) (cond (args (progn (c!:printf "%v" (car args)) (prog (
-var1257) (setq var1257 (cdr args)) lab1256 (cond ((null var1257) (return nil)
-)) (prog (a) (setq a (car var1257)) (c!:printf ", %v" a)) (setq var1257 (cdr 
-var1257)) (go lab1256))))) (c!:printf ");\n") (cond (g (c!:printf "    }\n"))
+var1261) (setq var1261 (cdr args)) lab1260 (cond ((null var1261) (return nil)
+)) (prog (a) (setq a (car var1261)) (c!:printf ", %v" a)) (setq var1261 (cdr 
+var1261)) (go lab1260))))) (c!:printf ");\n") (cond (g (c!:printf "    }\n"))
 ))) (t (cond ((setq w (get (cadar why) (quote c!:c_entrypoint))) (progn (prog
-(var1259) (setq var1259 (cdr why)) lab1258 (cond ((null var1259) (return nil
-))) (prog (a) (setq a (car var1259)) (cond ((flagp a (quote 
+(var1263) (setq var1263 (cdr why)) lab1262 (cond ((null var1263) (return nil
+))) (prog (a) (setq a (car var1263)) (cond ((flagp a (quote 
 c!:live_across_call)) (progn (cond ((null g) (c!:printf "    {\n"))) (setq g 
 (c!:my_gensym)) (c!:printf "        LispObject %s = %v;\n" g a) (setq args (
-cons g args)))) (t (setq args (cons a args))))) (setq var1259 (cdr var1259)) 
-(go lab1258)) (c!:printf "        return %s(nil" w) (prog (var1261) (setq 
-var1261 (reversip args)) lab1260 (cond ((null var1261) (return nil))) (prog (
-a) (setq a (car var1261)) (c!:printf ", %v" a)) (setq var1261 (cdr var1261)) 
-(go lab1260)) (c!:printf ");\n") (cond (g (c!:printf "    }\n"))))) (t (prog 
+cons g args)))) (t (setq args (cons a args))))) (setq var1263 (cdr var1263)) 
+(go lab1262)) (c!:printf "        return %s(nil" w) (prog (var1265) (setq 
+var1265 (reversip args)) lab1264 (cond ((null var1265) (return nil))) (prog (
+a) (setq a (car var1265)) (c!:printf ", %v" a)) (setq var1265 (cdr var1265)) 
+(go lab1264)) (c!:printf ");\n") (cond (g (c!:printf "    }\n"))))) (t (prog 
 (nargs) (setq nargs (length (cdr why))) (c!:printf "    {") (c!:printf 
 "   LispObject fn = basic_elt(env, %s); %<// %c\n" (c!:find_literal (cadar 
 why)) (cadar why)) (cond ((equal nargs 0) (c!:printf 
@@ -3563,9 +3577,9 @@ why)) (cadar why)) (cond ((equal nargs 0) (c!:printf
 "        return (*qfn1(fn))(fn")) (t (cond ((equal nargs 2) (c!:printf 
 "        return (*qfn2(fn))(fn")) (t (cond ((equal nargs 3) (c!:printf 
 "        return (*qfn3(fn))(fn")) (t (c!:printf 
-"        return (*qfn4up(fn))(fn"))))))))) (prog (var1263) (setq var1263 (cdr
-why)) lab1262 (cond ((null var1263) (return nil))) (prog (a) (setq a (car 
-var1263)) (c!:printf ", %v" a)) (setq var1263 (cdr var1263)) (go lab1262)) (
+"        return (*qfn4up(fn))(fn"))))))))) (prog (var1267) (setq var1267 (cdr
+why)) lab1266 (cond ((null var1267) (return nil))) (prog (a) (setq a (car 
+var1267)) (c!:printf ", %v" a)) (setq var1267 (cdr var1267)) (go lab1266)) (
 c!:printf ");\n    }\n")))))) (return nil))))))) (setq helper (get (car why) 
 (quote c!:exit_helper))) (cond ((null helper) (error 0 (list 
 "Bad exit condition" why)))) (c!:printf "    if (") (funcall helper (cdr why)
@@ -3858,20 +3872,20 @@ minus (get r1 (quote c!:location))))))
 (de c!:pcall (op r1 r2 r3) (prog (w boolfn) (cond ((setq w (get (car r3) (
 quote c!:direct_entrypoint))) (progn (cond ((flagp (intern (cdr w)) (quote 
 c!:noreturn)) (c!:printf "    %s(" (cdr w))) (t (c!:printf "    %v = %s(" r1 
-(cdr w)))) (cond (r2 (progn (c!:printf "%v" (car r2)) (prog (var1265) (setq 
-var1265 (cdr r2)) lab1264 (cond ((null var1265) (return nil))) (prog (a) (
-setq a (car var1265)) (c!:printf ", %v" a)) (setq var1265 (cdr var1265)) (go 
-lab1264))))) (c!:printf ");\n"))) (t (cond ((setq w (get (car r3) (quote 
+(cdr w)))) (cond (r2 (progn (c!:printf "%v" (car r2)) (prog (var1269) (setq 
+var1269 (cdr r2)) lab1268 (cond ((null var1269) (return nil))) (prog (a) (
+setq a (car var1269)) (c!:printf ", %v" a)) (setq var1269 (cdr var1269)) (go 
+lab1268))))) (c!:printf ");\n"))) (t (cond ((setq w (get (car r3) (quote 
 c!:direct_predicate))) (progn (setq boolfn t) (c!:printf 
 "    %v = static_cast<LispObject>(%s(" r1 (cdr w)) (cond (r2 (progn (
-c!:printf "%v" (car r2)) (prog (var1267) (setq var1267 (cdr r2)) lab1266 (
-cond ((null var1267) (return nil))) (prog (a) (setq a (car var1267)) (
-c!:printf ", %v" a)) (setq var1267 (cdr var1267)) (go lab1266))))) (c!:printf
+c!:printf "%v" (car r2)) (prog (var1271) (setq var1271 (cdr r2)) lab1270 (
+cond ((null var1271) (return nil))) (prog (a) (setq a (car var1271)) (
+c!:printf ", %v" a)) (setq var1271 (cdr var1271)) (go lab1270))))) (c!:printf
 "));\n"))) (t (cond ((setq w (get (car r3) (quote c!:c_entrypoint))) (progn 
 (cond ((flagp (intern w) (quote c!:noreturn)) (c!:printf "    %s(nil" w)) (t 
-(c!:printf "    %v = %s(nil" r1 w))) (prog (var1269) (setq var1269 r2) 
-lab1268 (cond ((null var1269) (return nil))) (prog (a) (setq a (car var1269))
-(c!:printf ", %v" a)) (setq var1269 (cdr var1269)) (go lab1268)) (c!:printf 
+(c!:printf "    %v = %s(nil" r1 w))) (prog (var1273) (setq var1273 r2) 
+lab1272 (cond ((null var1273) (return nil))) (prog (a) (setq a (car var1273))
+(c!:printf ", %v" a)) (setq var1273 (cdr var1273)) (go lab1272)) (c!:printf 
 ");\n"))) (t (prog (nargs) (setq nargs (length r2)) (c!:printf 
 "    {   LispObject fn = basic_elt(env, %s); %<// %c\n" (c!:find_literal (car
 r3)) (car r3)) (cond ((equal nargs 0) (c!:printf 
@@ -3879,9 +3893,9 @@ r3)) (car r3)) (cond ((equal nargs 0) (c!:printf
 "        %v = (*qfn1(fn))(fn" r1)) (t (cond ((equal nargs 2) (c!:printf 
 "        %v = (*qfn2(fn))(fn" r1)) (t (cond ((equal nargs 3) (c!:printf 
 "        %v = (*qfn3(fn))(fn" r1)) (t (c!:printf 
-"        %v = (*qfn4up(fn))(fn" r1))))))))) (prog (var1271) (setq var1271 r2)
-lab1270 (cond ((null var1271) (return nil))) (prog (a) (setq a (car var1271)
-) (c!:printf ", %v" a)) (setq var1271 (cdr var1271)) (go lab1270)) (c!:printf
+"        %v = (*qfn4up(fn))(fn" r1))))))))) (prog (var1275) (setq var1275 r2)
+lab1274 (cond ((null var1275) (return nil))) (prog (a) (setq a (car var1275)
+) (c!:printf ", %v" a)) (setq var1275 (cdr var1275)) (go lab1274)) (c!:printf
 ");\n    }\n")))))))) (cond ((not (flagp (car r3) (quote c!:no_errors))) (
 c!:printf "    errexit();\n"))) (cond (boolfn (c!:printf 
 "    %v = %v ? lisp_true : nil;\n" r1 r1)))))
@@ -3942,18 +3956,18 @@ cdr where_to)) (return nil))) (cond ((and (neq (cadr where_to) next) (atom (
 cadr where_to))) (flag (list (cadr where_to)) (quote c!:visited))))))
 
 (de c!:display_flowgraph (s) (prog (why where_to s s1) (prog (b) (setq b (
-reverse c!:all_blocks)) lab1272 (cond ((null b) (return nil))) (progn (setq s
+reverse c!:all_blocks)) lab1276 (cond ((null b) (return nil))) (progn (setq s
 (car b)) (cond ((cdr b) (setq s1 (cadr b))) (t (setq s1 nil))) (setq why (
 get s (quote c!:why))) (setq where_to (get s (quote c!:where_to))) (
-c!:flag_exit_label why where_to s1)) (setq b (cdr b)) (go lab1272)) (prog (b)
-(setq b (reverse c!:all_blocks)) lab1275 (cond ((null b) (return nil))) (
+c!:flag_exit_label why where_to s1)) (setq b (cdr b)) (go lab1276)) (prog (b)
+(setq b (reverse c!:all_blocks)) lab1279 (cond ((null b) (return nil))) (
 progn (setq s (car b)) (cond ((cdr b) (setq s1 (cadr b))) (t (setq s1 nil))) 
-(cond ((flagp s (quote c!:visited)) (c!:printf "%s:\n" s))) (prog (var1274) (
-setq var1274 (reverse (get s (quote c!:contents)))) lab1273 (cond ((null 
-var1274) (return nil))) (prog (k) (setq k (car var1274)) (c!:print_opcode k))
-(setq var1274 (cdr var1274)) (go lab1273)) (setq why (get s (quote c!:why)))
+(cond ((flagp s (quote c!:visited)) (c!:printf "%s:\n" s))) (prog (var1278) (
+setq var1278 (reverse (get s (quote c!:contents)))) lab1277 (cond ((null 
+var1278) (return nil))) (prog (k) (setq k (car var1278)) (c!:print_opcode k))
+(setq var1278 (cdr var1278)) (go lab1277)) (setq why (get s (quote c!:why)))
 (setq where_to (get s (quote c!:where_to))) (c!:print_exit_condition why 
-where_to s1)) (setq b (cdr b)) (go lab1275))))
+where_to s1)) (setq b (cdr b)) (go lab1279))))
 
 (fluid (quote (c!:startpoint)))
 
@@ -3962,14 +3976,14 @@ atom s)) (return s)) (t (cond ((flagp s (quote c!:visited)) (progn (setq n (
 get s (quote c!:count))) (cond ((null n) (setq n 1)) (t (setq n (plus n 1))))
 (put s (quote c!:count) n) (return s)))))) (flag (list s) (quote c!:visited)
 ) (setq contents (get s (quote c!:contents))) (setq why (get s (quote c!:why)
-)) (setq where_to (prog (var1277 var1278) (setq var1277 (get s (quote 
-c!:where_to))) lab1276 (cond ((null var1277) (return (reversip var1278)))) (
-prog (z) (setq z (car var1277)) (setq var1278 (cons (c!:branch_chain z count)
-var1278))) (setq var1277 (cdr var1277)) (go lab1276))) (prog nil lab1279 (
+)) (setq where_to (prog (var1281 var1282) (setq var1281 (get s (quote 
+c!:where_to))) lab1280 (cond ((null var1281) (return (reversip var1282)))) (
+prog (z) (setq z (car var1281)) (setq var1282 (cons (c!:branch_chain z count)
+var1282))) (setq var1281 (cdr var1281)) (go lab1280))) (prog nil lab1283 (
 cond ((null (and contents (eqcar (car contents) (quote movr)) (equal why (
 quote goto)) (not (atom (car where_to))) (equal (caar where_to) (cadr (car 
 contents))))) (return nil))) (progn (setq where_to (list (list (cadddr (car 
-contents))))) (setq contents (cdr contents))) (go lab1279)) (put s (quote 
+contents))))) (setq contents (cdr contents))) (go lab1283)) (put s (quote 
 c!:contents) contents) (put s (quote c!:where_to) where_to) (cond ((and (null
 contents) (equal why (quote goto))) (progn (remflag (list s) (quote 
 c!:visited)) (return (car where_to))))) (cond (count (progn (setq n (get s (
@@ -3983,16 +3997,16 @@ op) (quote c!:read_r3)) (put op (quote c!:code) (function c!:builtin_one))))
 list op) (quote c!:read_r2)) (flag (list op) (quote c!:read_r3)) (put op (
 quote c!:code) (function c!:builtin_two))))
 
-(prog (var1281) (setq var1281 (quote (car cdr qcar qcdr null not atom numberp
-fixp iminusp iminus iadd1 isub1 modular!-minus))) lab1280 (cond ((null 
-var1281) (return nil))) (prog (n) (setq n (car var1281)) (c!:one_operand n)) 
-(setq var1281 (cdr var1281)) (go lab1280))
+(prog (var1285) (setq var1285 (quote (car cdr qcar qcdr null not atom numberp
+fixp iminusp iminus iadd1 isub1 modular!-minus))) lab1284 (cond ((null 
+var1285) (return nil))) (prog (n) (setq n (car var1285)) (c!:one_operand n)) 
+(setq var1285 (cdr var1285)) (go lab1284))
 
-(prog (var1283) (setq var1283 (quote (eq equal atsoc memq iplus2 idifference 
+(prog (var1287) (setq var1287 (quote (eq equal atsoc memq iplus2 idifference 
 assoc member itimes2 ilessp igreaterp qgetv get modular!-plus 
-modular!-difference))) lab1282 (cond ((null var1283) (return nil))) (prog (n)
-(setq n (car var1283)) (c!:two_operands n)) (setq var1283 (cdr var1283)) (go
-lab1282))
+modular!-difference))) lab1286 (cond ((null var1287) (return nil))) (prog (n)
+(setq n (car var1287)) (c!:two_operands n)) (setq var1287 (cdr var1287)) (go
+lab1286))
 
 (flag (quote (movr movk movk1 ldrglob call reloadenv fluidbind fastget 
 fastflag)) (quote c!:set_r1))
@@ -4009,18 +4023,18 @@ fastflag)) (quote c!:set_r1))
 c!:side_effect))
 
 (de c!:live_variable_analysis (c!:all_blocks) (prog (changed z) (prog nil 
-lab1290 (progn (setq changed nil) (prog (var1289) (setq var1289 c!:all_blocks
-) lab1288 (cond ((null var1289) (return nil))) (prog (b) (setq b (car var1289
-)) (prog (w live) (prog (var1285) (setq var1285 (get b (quote c!:where_to))) 
-lab1284 (cond ((null var1285) (return nil))) (prog (x) (setq x (car var1285))
+lab1294 (progn (setq changed nil) (prog (var1293) (setq var1293 c!:all_blocks
+) lab1292 (cond ((null var1293) (return nil))) (prog (b) (setq b (car var1293
+)) (prog (w live) (prog (var1289) (setq var1289 (get b (quote c!:where_to))) 
+lab1288 (cond ((null var1289) (return nil))) (prog (x) (setq x (car var1289))
 (cond ((atom x) (setq live (union live (get x (quote c!:live))))) (t (setq 
-live (union live x))))) (setq var1285 (cdr var1285)) (go lab1284)) (setq w (
+live (union live x))))) (setq var1289 (cdr var1289)) (go lab1288)) (setq w (
 get b (quote c!:why))) (cond ((not (atom w)) (progn (setq live (union live (
 cdr w))) (cond ((and (eqcar (car w) (quote call)) (not (get (cadar w) (quote 
 c!:direct_entrypoint))) (not (get (cadar w) (quote c!:c_entrypoint)))) (progn
-(setq live (union (quote (env)) live)))))))) (prog (var1287) (setq var1287 (
-get b (quote c!:contents))) lab1286 (cond ((null var1287) (return nil))) (
-prog (s) (setq s (car var1287)) (prog (op r1 r2 r3) (setq op (car s)) (setq 
+(setq live (union (quote (env)) live)))))))) (prog (var1291) (setq var1291 (
+get b (quote c!:contents))) lab1290 (cond ((null var1291) (return nil))) (
+prog (s) (setq s (car var1291)) (prog (op r1 r2 r3) (setq op (car s)) (setq 
 r1 (cadr s)) (setq r2 (caddr s)) (setq r3 (cadddr s)) (cond ((flagp op (quote
 c!:set_r1)) (cond ((memq r1 live) (setq live (delete r1 live))) (t (cond ((
 flagp op (quote c!:side_effect)) nil) (t (setq op (quote nop)))))))) (cond ((
@@ -4030,15 +4044,15 @@ flagp op (quote c!:read_r3)) (setq live (union live (list r3))))) (cond ((
 equal op (quote call)) (progn (setq does_call t) (cond ((not (flagp (car r3) 
 (quote c!:no_errors))) (flag live (quote c!:live_across_call)))) (setq live (
 union live r2))))) (cond ((flagp op (quote c!:read_env)) (setq live (union 
-live (quote (env)))))))) (setq var1287 (cdr var1287)) (go lab1286)) (setq 
+live (quote (env)))))))) (setq var1291 (cdr var1291)) (go lab1290)) (setq 
 live (sort live (function orderp))) (cond ((not (equal live (get b (quote 
 c!:live)))) (progn (put b (quote c!:live) live) (setq changed t)))))) (setq 
-var1289 (cdr var1289)) (go lab1288))) (cond ((null (not changed)) (go lab1290
+var1293 (cdr var1293)) (go lab1292))) (cond ((null (not changed)) (go lab1294
 )))) (setq z c!:registers) (setq c!:registers (setq c!:stacklocs nil)) (prog 
-(var1292) (setq var1292 z) lab1291 (cond ((null var1292) (return nil))) (prog
-(r) (setq r (car var1292)) (cond ((flagp r (quote c!:live_across_call)) (
+(var1296) (setq var1296 z) lab1295 (cond ((null var1296) (return nil))) (prog
+(r) (setq r (car var1296)) (cond ((flagp r (quote c!:live_across_call)) (
 setq c!:stacklocs (cons r c!:stacklocs))) (t (setq c!:registers (cons r 
-c!:registers))))) (setq var1292 (cdr var1292)) (go lab1291))))
+c!:registers))))) (setq var1296 (cdr var1296)) (go lab1295))))
 
 (de c!:insert1 (a b) (cond ((memq a b) b) (t (cons a b))))
 
@@ -4047,73 +4061,73 @@ b (quote c!:live_across_call))) (progn (put a (quote c!:clash) (c!:insert1 b
 (get a (quote c!:clash)))) (put b (quote c!:clash) (c!:insert1 a (get b (
 quote c!:clash))))))))
 
-(de c!:build_clash_matrix (c!:all_blocks) (prog nil (prog (var1300) (setq 
-var1300 c!:all_blocks) lab1299 (cond ((null var1300) (return nil))) (prog (b)
-(setq b (car var1300)) (prog (live w) (prog (var1294) (setq var1294 (get b (
-quote c!:where_to))) lab1293 (cond ((null var1294) (return nil))) (prog (x) (
-setq x (car var1294)) (cond ((atom x) (setq live (union live (get x (quote 
-c!:live))))) (t (setq live (union live x))))) (setq var1294 (cdr var1294)) (
-go lab1293)) (setq w (get b (quote c!:why))) (cond ((not (atom w)) (progn (
+(de c!:build_clash_matrix (c!:all_blocks) (prog nil (prog (var1304) (setq 
+var1304 c!:all_blocks) lab1303 (cond ((null var1304) (return nil))) (prog (b)
+(setq b (car var1304)) (prog (live w) (prog (var1298) (setq var1298 (get b (
+quote c!:where_to))) lab1297 (cond ((null var1298) (return nil))) (prog (x) (
+setq x (car var1298)) (cond ((atom x) (setq live (union live (get x (quote 
+c!:live))))) (t (setq live (union live x))))) (setq var1298 (cdr var1298)) (
+go lab1297)) (setq w (get b (quote c!:why))) (cond ((not (atom w)) (progn (
 setq live (union live (cdr w))) (cond ((and (eqcar (car w) (quote call)) (not
 (get (cadar w) (quote c!:direct_entrypoint))) (not (get (cadar w) (quote 
 c!:c_entrypoint)))) (setq live (union (quote (env)) live))))))) (prog (
-var1298) (setq var1298 (get b (quote c!:contents))) lab1297 (cond ((null 
-var1298) (return nil))) (prog (s) (setq s (car var1298)) (prog (op r1 r2 r3) 
+var1302) (setq var1302 (get b (quote c!:contents))) lab1301 (cond ((null 
+var1302) (return nil))) (prog (s) (setq s (car var1302)) (prog (op r1 r2 r3) 
 (setq op (car s)) (setq r1 (cadr s)) (setq r2 (caddr s)) (setq r3 (cadddr s))
 (cond ((or (equal op (quote reloadenv)) (equal op (quote fluidbind))) (setq 
 reloadenv t))) (cond ((flagp op (quote c!:set_r1)) (cond ((memq r1 live) (
-progn (setq live (delete r1 live)) (prog (var1296) (setq var1296 live) 
-lab1295 (cond ((null var1296) (return nil))) (prog (v) (setq v (car var1296))
-(c!:clash r1 v)) (setq var1296 (cdr var1296)) (go lab1295)))) (t (cond ((
+progn (setq live (delete r1 live)) (prog (var1300) (setq var1300 live) 
+lab1299 (cond ((null var1300) (return nil))) (prog (v) (setq v (car var1300))
+(c!:clash r1 v)) (setq var1300 (cdr var1300)) (go lab1299)))) (t (cond ((
 flagp op (quote c!:side_effect)) nil) (t (progn (setq op (quote nop)) (rplacd
 s (cons (car s) (cdr s))) (rplaca s op)))))))) (cond ((flagp op (quote 
 c!:read_r1)) (setq live (union live (list r1))))) (cond ((flagp op (quote 
 c!:read_r2)) (setq live (union live (list r2))))) (cond ((flagp op (quote 
 c!:read_r3)) (setq live (union live (list r3))))) (cond ((equal op (quote 
 call)) (setq live (union live r2)))) (cond ((flagp op (quote c!:read_env)) (
-setq live (union live (quote (env)))))))) (setq var1298 (cdr var1298)) (go 
-lab1297)))) (setq var1300 (cdr var1300)) (go lab1299)) (return nil)))
+setq live (union live (quote (env)))))))) (setq var1302 (cdr var1302)) (go 
+lab1301)))) (setq var1304 (cdr var1304)) (go lab1303)) (return nil)))
 
 (de c!:allocate_registers (rl) (prog (schedule neighbours allocation) (setq 
-neighbours 0) (prog nil lab1304 (cond ((null rl) (return nil))) (prog (w x) (
-setq w rl) (prog nil lab1301 (cond ((null (and w (greaterp (length (setq x (
+neighbours 0) (prog nil lab1308 (cond ((null rl) (return nil))) (prog (w x) (
+setq w rl) (prog nil lab1305 (cond ((null (and w (greaterp (length (setq x (
 get (car w) (quote c!:clash)))) neighbours))) (return nil))) (setq w (cdr w))
-(go lab1301)) (cond (w (progn (setq schedule (cons (car w) schedule)) (setq 
-rl (deleq (car w) rl)) (prog (var1303) (setq var1303 x) lab1302 (cond ((null 
-var1303) (return nil))) (prog (r) (setq r (car var1303)) (put r (quote 
-c!:clash) (deleq (car w) (get r (quote c!:clash))))) (setq var1303 (cdr 
-var1303)) (go lab1302)))) (t (setq neighbours (plus neighbours 1))))) (go 
-lab1304)) (prog (var1308) (setq var1308 schedule) lab1307 (cond ((null 
-var1308) (return nil))) (prog (r) (setq r (car var1308)) (prog (poss) (setq 
-poss allocation) (prog (var1306) (setq var1306 (get r (quote c!:clash))) 
-lab1305 (cond ((null var1306) (return nil))) (prog (x) (setq x (car var1306))
-(setq poss (deleq (get x (quote c!:chosen)) poss))) (setq var1306 (cdr 
-var1306)) (go lab1305)) (cond ((null poss) (progn (setq poss (c!:my_gensym)) 
+(go lab1305)) (cond (w (progn (setq schedule (cons (car w) schedule)) (setq 
+rl (deleq (car w) rl)) (prog (var1307) (setq var1307 x) lab1306 (cond ((null 
+var1307) (return nil))) (prog (r) (setq r (car var1307)) (put r (quote 
+c!:clash) (deleq (car w) (get r (quote c!:clash))))) (setq var1307 (cdr 
+var1307)) (go lab1306)))) (t (setq neighbours (plus neighbours 1))))) (go 
+lab1308)) (prog (var1312) (setq var1312 schedule) lab1311 (cond ((null 
+var1312) (return nil))) (prog (r) (setq r (car var1312)) (prog (poss) (setq 
+poss allocation) (prog (var1310) (setq var1310 (get r (quote c!:clash))) 
+lab1309 (cond ((null var1310) (return nil))) (prog (x) (setq x (car var1310))
+(setq poss (deleq (get x (quote c!:chosen)) poss))) (setq var1310 (cdr 
+var1310)) (go lab1309)) (cond ((null poss) (progn (setq poss (c!:my_gensym)) 
 (setq allocation (append allocation (list poss))))) (t (setq poss (car poss))
-)) (put r (quote c!:chosen) poss))) (setq var1308 (cdr var1308)) (go lab1307)
+)) (put r (quote c!:chosen) poss))) (setq var1312 (cdr var1312)) (go lab1311)
 ) (return allocation)))
 
-(de c!:remove_nops (c!:all_blocks) (prog (var1318) (setq var1318 
-c!:all_blocks) lab1317 (cond ((null var1318) (return nil))) (prog (b) (setq b
-(car var1318)) (prog (r) (prog (var1313) (setq var1313 (get b (quote 
-c!:contents))) lab1312 (cond ((null var1313) (return nil))) (prog (s) (setq s
-(car var1313)) (cond ((not (eqcar s (quote nop))) (prog (op r1 r2 r3) (setq 
+(de c!:remove_nops (c!:all_blocks) (prog (var1322) (setq var1322 
+c!:all_blocks) lab1321 (cond ((null var1322) (return nil))) (prog (b) (setq b
+(car var1322)) (prog (r) (prog (var1317) (setq var1317 (get b (quote 
+c!:contents))) lab1316 (cond ((null var1317) (return nil))) (prog (s) (setq s
+(car var1317)) (cond ((not (eqcar s (quote nop))) (prog (op r1 r2 r3) (setq 
 op (car s)) (setq r1 (cadr s)) (setq r2 (caddr s)) (setq r3 (cadddr s)) (cond
 ((or (flagp op (quote c!:set_r1)) (flagp op (quote c!:read_r1))) (setq r1 (
 get r1 (quote c!:chosen))))) (cond ((flagp op (quote c!:read_r2)) (setq r2 (
 get r2 (quote c!:chosen))))) (cond ((flagp op (quote c!:read_r3)) (setq r3 (
 get r3 (quote c!:chosen))))) (cond ((equal op (quote call)) (setq r2 (prog (
-var1310 var1311) (setq var1310 r2) lab1309 (cond ((null var1310) (return (
-reversip var1311)))) (prog (v) (setq v (car var1310)) (setq var1311 (cons (
-get v (quote c!:chosen)) var1311))) (setq var1310 (cdr var1310)) (go lab1309)
+var1314 var1315) (setq var1314 r2) lab1313 (cond ((null var1314) (return (
+reversip var1315)))) (prog (v) (setq v (car var1314)) (setq var1315 (cons (
+get v (quote c!:chosen)) var1315))) (setq var1314 (cdr var1314)) (go lab1313)
 )))) (cond ((not (and (equal op (quote movr)) (equal r1 r3))) (setq r (cons (
-list op r1 r2 r3) r)))))))) (setq var1313 (cdr var1313)) (go lab1312)) (put b
+list op r1 r2 r3) r)))))))) (setq var1317 (cdr var1317)) (go lab1316)) (put b
 (quote c!:contents) (reverse r)) (setq r (get b (quote c!:why))) (cond ((not
-(atom r)) (put b (quote c!:why) (cons (car r) (prog (var1315 var1316) (setq 
-var1315 (cdr r)) lab1314 (cond ((null var1315) (return (reversip var1316)))) 
-(prog (v) (setq v (car var1315)) (setq var1316 (cons (get v (quote c!:chosen)
-) var1316))) (setq var1315 (cdr var1315)) (go lab1314)))))))) (setq var1318 (
-cdr var1318)) (go lab1317)))
+(atom r)) (put b (quote c!:why) (cons (car r) (prog (var1319 var1320) (setq 
+var1319 (cdr r)) lab1318 (cond ((null var1319) (return (reversip var1320)))) 
+(prog (v) (setq v (car var1319)) (setq var1320 (cons (get v (quote c!:chosen)
+) var1320))) (setq var1319 (cdr var1319)) (go lab1318)))))))) (setq var1322 (
+cdr var1322)) (go lab1321)))
 
 (de c!:assign (u v c) (cond ((flagp u (quote fluid)) (cons (list (quote 
 strglob) v u (c!:find_literal u)) c)) (t (cons (list (quote movr) u nil v) c)
@@ -4121,20 +4135,20 @@ strglob) v u (c!:find_literal u)) c)) (t (cons (list (quote movr) u nil v) c)
 
 (de c!:insert_tailcall (b) (prog (why dest contents fcall res w) (setq why (
 get b (quote c!:why))) (setq dest (get b (quote c!:where_to))) (setq contents
-(get b (quote c!:contents))) (prog nil lab1319 (cond ((null (and contents (
+(get b (quote c!:contents))) (prog nil lab1323 (cond ((null (and contents (
 not (eqcar (car contents) (quote call))))) (return nil))) (progn (setq w (
-cons (car contents) w)) (setq contents (cdr contents))) (go lab1319)) (cond (
+cons (car contents) w)) (setq contents (cdr contents))) (go lab1323)) (cond (
 (null contents) (return nil))) (setq fcall (car contents)) (setq contents (
-cdr contents)) (setq res (cadr fcall)) (prog nil lab1320 (cond ((null w) (
+cdr contents)) (setq res (cadr fcall)) (prog nil lab1324 (cond ((null w) (
 return nil))) (progn (cond ((eqcar (car w) (quote reloadenv)) (setq w (cdr w)
 )) (t (cond ((and (eqcar (car w) (quote movr)) (equal (cadddr (car w)) res)) 
 (progn (setq res (cadr (car w))) (setq w (cdr w)))) (t (setq res (setq w nil)
-)))))) (go lab1320)) (cond ((null res) (return nil))) (cond ((c!:does_return 
+)))))) (go lab1324)) (cond ((null res) (return nil))) (cond ((c!:does_return 
 res why dest) (cond ((and (equal (car (cadddr fcall)) c!:current_procedure) (
-lessp (length c!:current_args) 4)) (progn (prog (var1322) (setq var1322 (pair
-c!:current_args (caddr fcall))) lab1321 (cond ((null var1322) (return nil)))
-(prog (p) (setq p (car var1322)) (setq contents (c!:assign (car p) (cdr p) 
-contents))) (setq var1322 (cdr var1322)) (go lab1321)) (put b (quote 
+lessp (length c!:current_args) 4)) (progn (prog (var1326) (setq var1326 (pair
+c!:current_args (caddr fcall))) lab1325 (cond ((null var1326) (return nil)))
+(prog (p) (setq p (car var1326)) (setq contents (c!:assign (car p) (cdr p) 
+contents))) (setq var1326 (cdr var1326)) (go lab1325)) (put b (quote 
 c!:contents) contents) (put b (quote c!:why) (quote goto)) (put b (quote 
 c!:where_to) (list restart_label)))) (t (progn (put b (quote c!:contents) 
 contents) (put b (quote c!:why) (cons (list (quote call) (car (cadddr fcall))
@@ -4144,71 +4158,71 @@ contents) (put b (quote c!:why) (cons (list (quote call) (car (cadddr fcall))
 nil) (t (cond ((not (atom (car where_to))) (equal res (caar where_to))) (t (
 prog (contents) (setq where_to (car where_to)) (setq contents (reverse (get 
 where_to (quote c!:contents)))) (setq why (get where_to (quote c!:why))) (
-setq where_to (get where_to (quote c!:where_to))) (prog nil lab1323 (cond ((
+setq where_to (get where_to (quote c!:where_to))) (prog nil lab1327 (cond ((
 null contents) (return nil))) (cond ((eqcar (car contents) (quote reloadenv))
 (setq contents (cdr contents))) (t (cond ((and (eqcar (car contents) (quote 
 movr)) (equal (cadddr (car contents)) res)) (progn (setq res (cadr (car 
 contents))) (setq contents (cdr contents)))) (t (setq res (setq contents nil)
-))))) (go lab1323)) (cond ((null res) (return nil)) (t (return (
+))))) (go lab1327)) (cond ((null res) (return nil)) (t (return (
 c!:does_return res why where_to))))))))))
 
 (de showblock (l) (prog nil (cond (!*noisy (progn (prin l) (printc ":") (prog
-(var1325) (setq var1325 (get l (quote c!:contents))) lab1324 (cond ((null 
-var1325) (return nil))) (prog (i) (setq i (car var1325)) (progn (princ "  ") 
-(print i))) (setq var1325 (cdr var1325)) (go lab1324)) (princ "  ") (prin (
+(var1329) (setq var1329 (get l (quote c!:contents))) lab1328 (cond ((null 
+var1329) (return nil))) (prog (i) (setq i (car var1329)) (progn (princ "  ") 
+(print i))) (setq var1329 (cdr var1329)) (go lab1328)) (princ "  ") (prin (
 get l (quote c!:why))) (princ " ") (print (get l (quote c!:where_to))))))))
 
-(de showblocklist (l) (prog (var1327) (setq var1327 l) lab1326 (cond ((null 
-var1327) (return nil))) (prog (q) (setq q (car var1327)) (showblock q)) (setq
-var1327 (cdr var1327)) (go lab1326)))
+(de showblocklist (l) (prog (var1331) (setq var1331 l) lab1330 (cond ((null 
+var1331) (return nil))) (prog (q) (setq q (car var1331)) (showblock q)) (setq
+var1331 (cdr var1331)) (go lab1330)))
 
-(de c!:flatten (b) (prog (w r inner) (showblocklist b) (prog nil lab1330 (
+(de c!:flatten (b) (prog (w r inner) (showblocklist b) (prog nil lab1334 (
 cond ((null b) (return nil))) (progn (cond ((equal (get (car b) (quote c!:why
 )) (quote inner_block)) (progn (setq inner (get (car b) (quote c!:where_to)))
 (cond (!*noisy (progn (printc "This is an inner block") (showblocklist inner
 )))) (setq w (c!:flatten inner)) (cond (!*noisy (progn (printc 
 "Inner block flattened") (showblocklist w)))) (put (car b) (quote c!:why) (
 quote goto)) (put (car b) (quote c!:where_to) (list (car inner))) (setq r (
-cons (car b) r)) (prog (var1329) (setq var1329 (reverse w)) lab1328 (cond ((
-null var1329) (return nil))) (prog (x) (setq x (car var1329)) (setq r (cons x
-r))) (setq var1329 (cdr var1329)) (go lab1328)))) (t (setq r (cons (car b) r
-)))) (setq b (cdr b))) (go lab1330)) (cond (!*noisy (progn (printc 
+cons (car b) r)) (prog (var1333) (setq var1333 (reverse w)) lab1332 (cond ((
+null var1333) (return nil))) (prog (x) (setq x (car var1333)) (setq r (cons x
+r))) (setq var1333 (cdr var1333)) (go lab1332)))) (t (setq r (cons (car b) r
+)))) (setq b (cdr b))) (go lab1334)) (cond (!*noisy (progn (printc 
 "Whole block flattened") (showblocklist (reverse r))))) (return r)))
 
 (de c!:optimise_flowgraph (c!:startpoint c!:all_blocks env argch args varargs
 ) (prog (w n locs stacks) (printc "#if 0 // Start of trace output") (setq 
-c!:all_blocks (c!:flatten (reverse c!:all_blocks))) (prog (var1332) (setq 
-var1332 c!:all_blocks) lab1331 (cond ((null var1332) (return nil))) (prog (b)
-(setq b (car var1332)) (c!:insert_tailcall b)) (setq var1332 (cdr var1332)) 
-(go lab1331)) (cond (!*noisy (progn (printc "now do live variable stuff") (
+c!:all_blocks (c!:flatten (reverse c!:all_blocks))) (prog (var1336) (setq 
+var1336 c!:all_blocks) lab1335 (cond ((null var1336) (return nil))) (prog (b)
+(setq b (car var1336)) (c!:insert_tailcall b)) (setq var1336 (cdr var1336)) 
+(go lab1335)) (cond (!*noisy (progn (printc "now do live variable stuff") (
 showblocklist c!:all_blocks)))) (c!:live_variable_analysis c!:all_blocks) (
 cond (!*noisy (progn (printc "now build clash list") (princ "reloadenv = ") (
 print reloadenv) (showblocklist c!:all_blocks)))) (c!:build_clash_matrix 
 c!:all_blocks) (cond (!*noisy (progn (princ "reloadenv = ") (print reloadenv)
-))) (prog (var1336) (setq var1336 env) lab1335 (cond ((null var1336) (return 
-nil))) (prog (u) (setq u (car var1336)) (prog (var1334) (setq var1334 env) 
-lab1333 (cond ((null var1334) (return nil))) (prog (v) (setq v (car var1334))
-(c!:clash (cdr u) (cdr v))) (setq var1334 (cdr var1334)) (go lab1333))) (
-setq var1336 (cdr var1336)) (go lab1335)) (setq locs (c!:allocate_registers 
+))) (prog (var1340) (setq var1340 env) lab1339 (cond ((null var1340) (return 
+nil))) (prog (u) (setq u (car var1340)) (prog (var1338) (setq var1338 env) 
+lab1337 (cond ((null var1338) (return nil))) (prog (v) (setq v (car var1338))
+(c!:clash (cdr u) (cdr v))) (setq var1338 (cdr var1338)) (go lab1337))) (
+setq var1340 (cdr var1340)) (go lab1339)) (setq locs (c!:allocate_registers 
 c!:registers)) (setq stacks (c!:allocate_registers c!:stacklocs)) (flag 
 stacks (quote c!:live_across_call)) (cond (!*noisy (progn (printc 
 "before remove nops") (showblocklist c!:all_blocks)))) (c!:remove_nops 
 c!:all_blocks) (cond (!*noisy (progn (printc "after remove nops") (
 showblocklist c!:all_blocks)))) (printc "#endif // End of trace output") (
 cond (locs (progn (c!:printf "    UNUSED_NAME LispObject %s" (car locs)) (
-prog (var1338) (setq var1338 (cdr locs)) lab1337 (cond ((null var1338) (
-return nil))) (prog (v) (setq v (car var1338)) (c!:printf ", %s" v)) (setq 
-var1338 (cdr var1338)) (go lab1337)) (c!:printf ";\n")))) (cond ((or stacks 
+prog (var1342) (setq var1342 (cdr locs)) lab1341 (cond ((null var1342) (
+return nil))) (prog (v) (setq v (car var1342)) (c!:printf ", %s" v)) (setq 
+var1342 (cdr var1342)) (go lab1341)) (c!:printf ";\n")))) (cond ((or stacks 
 reloadenv) (c!:printf "    stack_restorer stack_restorer_var;\n"))) (cond ((
 and varargs args) (progn (setq w " ") (c!:printf "    LispObject") (prog (
-var1340) (setq var1340 (cdddr args)) lab1339 (cond ((null var1340) (return 
-nil))) (prog (v) (setq v (car var1340)) (progn (c!:printf "%s%s" w v) (setq w
-", "))) (setq var1340 (cdr var1340)) (go lab1339)) (c!:printf ";\n") (prog (
-var1342) (setq var1342 (cdddr args)) lab1341 (cond ((null var1342) (return 
-nil))) (prog (v) (setq v (car var1342)) (progn (c!:printf 
+var1344) (setq var1344 (cdddr args)) lab1343 (cond ((null var1344) (return 
+nil))) (prog (v) (setq v (car var1344)) (progn (c!:printf "%s%s" w v) (setq w
+", "))) (setq var1344 (cdr var1344)) (go lab1343)) (c!:printf ";\n") (prog (
+var1346) (setq var1346 (cdddr args)) lab1345 (cond ((null var1346) (return 
+nil))) (prog (v) (setq v (car var1346)) (progn (c!:printf 
 "    if (_a4up_ == nil)\n        aerror1(\qnot enough arguments provided\q, basic_elt(env, 0));\n"
 ) (c!:printf "    %s = car(_a4up_); _a4up_ = cdr(_a4up_);\n" v))) (setq 
-var1342 (cdr var1342)) (go lab1341)) (c!:printf 
+var1346 (cdr var1346)) (go lab1345)) (c!:printf 
 "    if (_a4up_ != nil)\n        aerror1(\qtoo many arguments provided\q, basic_elt(env, 0));\n"
 )))) (c!:printf "#ifdef CHECK_STACK\n") (c!:printf "    if_check_stack;\n") (
 c!:printf "#endif\n") (cond (does_call (progn (c!:printf 
@@ -4228,27 +4242,27 @@ cond ((not (null w)) (progn (c!:printf ", %s" (car w)) (setq w (cdr w)) (cond
 not (null w)) (c!:printf ", _a4up_")))))))))))) (c!:printf ");\n    }\n") (
 c!:printf "#endif // CONSERVATIVE\n")))) (setq n 0) (cond (stacks (progn (
 c!:printf "%<// space for vars preserved across procedure calls\n") (prog (
-var1344) (setq var1344 stacks) lab1343 (cond ((null var1344) (return nil))) (
-prog (v) (setq v (car var1344)) (progn (put v (quote c!:location) n) (setq n 
-(plus n 1)))) (setq var1344 (cdr var1344)) (go lab1343))))) (cond (reloadenv 
+var1348) (setq var1348 stacks) lab1347 (cond ((null var1348) (return nil))) (
+prog (v) (setq v (car var1348)) (progn (put v (quote c!:location) n) (setq n 
+(plus n 1)))) (setq var1348 (cdr var1348)) (go lab1347))))) (cond (reloadenv 
 (progn (setq reloadenv n) (cond ((equal n 0) (c!:printf 
 "    RealSave saveEnv(env);\n")) (t (c!:printf 
 "    RealSave saveEnv(env, PushCount(%a));\n" n))))) (t (cond ((neq n 0) (
 c!:printf "    RealSave Workspace(PushCount(%a));\n" n))))) (cond (env (
-c!:printf "%<// copy arguments values to proper place\n"))) (prog (var1346) (
-setq var1346 env) lab1345 (cond ((null var1346) (return nil))) (prog (v) (
-setq v (car var1346)) (cond ((flagp (cdr v) (quote c!:live_across_call)) (
+c!:printf "%<// copy arguments values to proper place\n"))) (prog (var1350) (
+setq var1350 env) lab1349 (cond ((null var1350) (return nil))) (prog (v) (
+setq v (car var1350)) (cond ((flagp (cdr v) (quote c!:live_across_call)) (
 c!:printf "    stack[%s] = %s;\n" (minus (get (get (cdr v) (quote c!:chosen))
 (quote c!:location))) (cdr v))) (t (c!:printf "    %s = %s;\n" (get (cdr v) 
-(quote c!:chosen)) (cdr v))))) (setq var1346 (cdr var1346)) (go lab1345)) (
+(quote c!:chosen)) (cdr v))))) (setq var1350 (cdr var1350)) (go lab1349)) (
 c!:printf "%<// end of prologue\n") (c!:display_flowgraph c!:startpoint) (
 remflag c!:all_blocks (quote c!:visited))))
 
 (de c!:cand (u env) (prog (w r) (setq w (reverse (cdr u))) (cond ((null w) (
 return (c!:cval nil env)))) (setq r (list (list (quote t) (car w)))) (setq w 
-(cdr w)) (prog (var1348) (setq var1348 w) lab1347 (cond ((null var1348) (
-return nil))) (prog (z) (setq z (car var1348)) (setq r (cons (list (list (
-quote null) z) nil) r))) (setq var1348 (cdr var1348)) (go lab1347)) (setq r (
+(cdr w)) (prog (var1352) (setq var1352 w) lab1351 (cond ((null var1352) (
+return nil))) (prog (z) (setq z (car var1352)) (setq r (cons (list (list (
+quote null) z) nil) r))) (setq var1352 (cdr var1352)) (go lab1351)) (setq r (
 cons (quote cond) r)) (return (c!:cval r env))))
 
 (put (quote and) (quote c!:code) (function c!:cand))
@@ -4262,14 +4276,14 @@ cons (quote cond) r)) (return (c!:cval r env))))
 (put (quote compiler!-let) (quote c!:code) (function c!:ccompiler_let))
 
 (de c!:ccond (u env) (prog (v join) (setq v (c!:newreg)) (setq join (
-c!:my_gensym)) (prog (var1350) (setq var1350 (cdr u)) lab1349 (cond ((null 
-var1350) (return nil))) (prog (c) (setq c (car var1350)) (prog (l1 l2) (setq 
+c!:my_gensym)) (prog (var1354) (setq var1354 (cdr u)) lab1353 (cond ((null 
+var1354) (return nil))) (prog (c) (setq c (car var1354)) (prog (l1 l2) (setq 
 l1 (c!:my_gensym)) (setq l2 (c!:my_gensym)) (cond ((atom (cdr c)) (progn (
 c!:outop (quote movr) v nil (c!:cval (car c) env)) (c!:endblock (list (quote 
 ifnull) v) (list l2 join)))) (t (progn (c!:cjumpif (car c) env l1 l2) (
 c!:startblock l1) (c!:outop (quote movr) v nil (c!:cval (cons (quote progn) (
 cdr c)) env)) (c!:endblock (quote goto) (list join))))) (c!:startblock l2))) 
-(setq var1350 (cdr var1350)) (go lab1349)) (c!:outop (quote movk1) v nil nil)
+(setq var1354 (cdr var1354)) (go lab1353)) (c!:outop (quote movk1) v nil nil)
 (c!:endblock (quote goto) (list join)) (c!:startblock join) (return v)))
 
 (put (quote cond) (quote c!:code) (function c!:ccond))
@@ -4315,9 +4329,9 @@ c!:valid_fndef (cadar x) (cddar x)))))))))))))))
 
 (put (quote function) (quote c!:valid) (function c!:valid_function))
 
-(de c!:cgo (u env) (prog (w w1) (setq w1 proglabs) (prog nil lab1351 (cond ((
+(de c!:cgo (u env) (prog (w w1) (setq w1 proglabs) (prog nil lab1355 (cond ((
 null (and (null w) w1)) (return nil))) (progn (setq w (assoc!*!* (cadr u) (
-car w1))) (setq w1 (cdr w1))) (go lab1351)) (cond ((null w) (error 0 (list u 
+car w1))) (setq w1 (cdr w1))) (go lab1355)) (cond ((null w) (error 0 (list u 
 "label not set")))) (c!:endblock (quote goto) (list (cadr w))) (return nil)))
 
 (put (quote go) (quote c!:code) (function c!:cgo))
@@ -4339,13 +4353,13 @@ join)) (c!:startblock join) (return v)))
 (put (quote labels) (quote c!:code) (function c!:clabels))
 
 (de c!:expand!-let (vl b) (cond ((null vl) (cons (quote progn) b)) (t (cond (
-(null (cdr vl)) (c!:expand!-let!* vl b)) (t (prog (vars vals) (prog (var1353)
-(setq var1353 vl) lab1352 (cond ((null var1353) (return nil))) (prog (v) (
-setq v (car var1353)) (cond ((atom v) (progn (setq vars (cons v vars)) (setq 
+(null (cdr vl)) (c!:expand!-let!* vl b)) (t (prog (vars vals) (prog (var1357)
+(setq var1357 vl) lab1356 (cond ((null var1357) (return nil))) (prog (v) (
+setq v (car var1357)) (cond ((atom v) (progn (setq vars (cons v vars)) (setq 
 vals (cons nil vals)))) (t (cond ((atom (cdr v)) (progn (setq vars (cons (car
 v) vars)) (setq vals (cons nil vals)))) (t (progn (setq vars (cons (car v) 
-vars)) (setq vals (cons (cadr v) vals)))))))) (setq var1353 (cdr var1353)) (
-go lab1352)) (return (cons (cons (quote lambda) (cons vars b)) vals))))))))
+vars)) (setq vals (cons (cadr v) vals)))))))) (setq var1357 (cdr var1357)) (
+go lab1356)) (return (cons (cons (quote lambda) (cons vars b)) vals))))))))
 
 (de c!:clet (x env) (c!:cval (c!:expand!-let (cadr x) (cddr x)) env))
 
@@ -4381,9 +4395,9 @@ caddr u) (cadddr u) (cons (quote list) (cddddr u))) env))))))))))))))
 (put (quote list) (quote c!:code) (function c!:clist))
 
 (de c!:clist!* (u env) (prog (v) (setq u (reverse (cdr u))) (setq v (car u)) 
-(prog (var1355) (setq var1355 (cdr u)) lab1354 (cond ((null var1355) (return 
-nil))) (prog (a) (setq a (car var1355)) (setq v (list (quote cons) a v))) (
-setq var1355 (cdr var1355)) (go lab1354)) (return (c!:cval v env))))
+(prog (var1359) (setq var1359 (cdr u)) lab1358 (cond ((null var1359) (return 
+nil))) (prog (a) (setq a (car var1359)) (setq v (list (quote cons) a v))) (
+setq var1359 (cdr var1359)) (go lab1358)) (return (c!:cval v env))))
 
 (put (quote list!*) (quote c!:code) (function c!:clist!*))
 
@@ -4445,10 +4459,10 @@ c!:cmultiple_value_call))
 c!:cmultiple_value_prog1))
 
 (de c!:cor (u env) (prog (next done v r) (setq v (c!:newreg)) (setq done (
-c!:my_gensym)) (setq u (cdr u)) (prog nil lab1356 (cond ((null (cdr u)) (
+c!:my_gensym)) (setq u (cdr u)) (prog nil lab1360 (cond ((null (cdr u)) (
 return nil))) (progn (setq next (c!:my_gensym)) (c!:outop (quote movr) v nil 
 (c!:cval (car u) env)) (setq u (cdr u)) (c!:endblock (list (quote ifnull) v) 
-(list next done)) (c!:startblock next)) (go lab1356)) (c!:outop (quote movr) 
+(list next done)) (c!:startblock next)) (go lab1360)) (c!:outop (quote movr) 
 v nil (c!:cval (car u) env)) (c!:endblock (quote goto) (list done)) (
 c!:startblock done) (return v)))
 
@@ -4457,12 +4471,12 @@ c!:startblock done) (return v)))
 (de c!:cprog (u env) (prog (w w1 bvl local_proglabs progret progexit fluids 
 env1 body decs) (setq env1 (car env)) (setq bvl (cadr u)) (setq w (
 s!:find_local_decs (cddr u) t)) (setq body (cdr w)) (setq localdecs (cons (
-car w) localdecs)) (prog (var1358) (setq var1358 bvl) lab1357 (cond ((null 
-var1358) (return nil))) (prog (v) (setq v (car var1358)) (progn (cond ((and (
+car w) localdecs)) (prog (var1362) (setq var1362 bvl) lab1361 (cond ((null 
+var1362) (return nil))) (prog (v) (setq v (car var1362)) (progn (cond ((and (
 not (globalp v)) (not (fluidp v)) (c!:local_fluidp v localdecs)) (progn (
-make!-special v) (setq decs (cons v decs))))))) (setq var1358 (cdr var1358)) 
-(go lab1357)) (prog (var1360) (setq var1360 bvl) lab1359 (cond ((null var1360
-) (return nil))) (prog (v) (setq v (car var1360)) (progn (cond ((globalp v) (
+make!-special v) (setq decs (cons v decs))))))) (setq var1362 (cdr var1362)) 
+(go lab1361)) (prog (var1364) (setq var1364 bvl) lab1363 (cond ((null var1364
+) (return nil))) (prog (v) (setq v (car var1364)) (progn (cond ((globalp v) (
 prog (oo) (setq oo (wrs nil)) (princ "+++++ ") (prin v) (princ 
 " converted from GLOBAL to FLUID") (terpri) (wrs oo) (unglobal (list v)) (
 fluid (list v))))) (cond ((fluidp v) (progn (setq fluids (cons (cons v (
@@ -4471,26 +4485,26 @@ c!:newreg)) fluids)) (flag (list (cdar fluids)) (quote c!:live_across_call))
 c!:start_nested_context) (c!:outop (quote fluidbind) (cdar fluids) v (
 c!:find_literal v)) (cond ((eqcar u (quote prog)) (c!:outop (quote nilglob) 
 nil v (c!:find_literal v)))))) (t (progn (setq env1 (cons (cons v (c!:newreg)
-) env1)) (c!:outop (quote movk1) (cdar env1) nil nil)))))) (setq var1360 (cdr
-var1360)) (go lab1359)) (setq env (cons env1 (append fluids (cdr env)))) (
+) env1)) (c!:outop (quote movk1) (cdar env1) nil nil)))))) (setq var1364 (cdr
+var1364)) (go lab1363)) (setq env (cons env1 (append fluids (cdr env)))) (
 setq u body) (setq progret (c!:newreg)) (setq progexit (c!:my_gensym)) (setq 
 blockstack (cons (cons nil (cons progret progexit)) blockstack)) (prog (
-var1362) (setq var1362 u) lab1361 (cond ((null var1362) (return nil))) (prog 
-(a) (setq a (car var1362)) (cond ((atom a) (cond ((atsoc a local_proglabs) (
+var1366) (setq var1366 u) lab1365 (cond ((null var1366) (return nil))) (prog 
+(a) (setq a (car var1366)) (cond ((atom a) (cond ((atsoc a local_proglabs) (
 progn (cond ((not (null a)) (progn (setq w (wrs nil)) (princ 
 "+++++ multiply defined label: ") (prin a) (terpri) (wrs w)))))) (t (setq 
 local_proglabs (cons (list a (c!:my_gensym)) local_proglabs))))))) (setq 
-var1362 (cdr var1362)) (go lab1361)) (setq proglabs (cons local_proglabs 
-proglabs)) (prog (var1364) (setq var1364 u) lab1363 (cond ((null var1364) (
-return nil))) (prog (a) (setq a (car var1364)) (cond ((atom a) (progn (setq w
+var1366 (cdr var1366)) (go lab1365)) (setq proglabs (cons local_proglabs 
+proglabs)) (prog (var1368) (setq var1368 u) lab1367 (cond ((null var1368) (
+return nil))) (prog (a) (setq a (car var1368)) (cond ((atom a) (progn (setq w
 (cdr (assoc!*!* a local_proglabs))) (cond ((null (cdr w)) (progn (rplacd w t
 ) (c!:endblock (quote goto) (list (car w))) (c!:startblock (car w))))))) (t (
-c!:cval a env)))) (setq var1364 (cdr var1364)) (go lab1363)) (c!:outop (quote
+c!:cval a env)))) (setq var1368 (cdr var1368)) (go lab1367)) (c!:outop (quote
 movk1) progret nil nil) (c!:endblock (quote goto) (list progexit)) (
-c!:startblock progexit) (prog (var1366) (setq var1366 fluids) lab1365 (cond (
-(null var1366) (return nil))) (prog (v) (setq v (car var1366)) (progn (
+c!:startblock progexit) (prog (var1370) (setq var1370 fluids) lab1369 (cond (
+(null var1370) (return nil))) (prog (v) (setq v (car var1370)) (progn (
 c!:end_nested_context) (c!:outop (quote fluidunbind) (cdr v) (car v) (
-c!:find_literal (car v))))) (setq var1366 (cdr var1366)) (go lab1365)) (setq 
+c!:find_literal (car v))))) (setq var1370 (cdr var1370)) (go lab1369)) (setq 
 blockstack (cdr blockstack)) (setq proglabs (cdr proglabs)) (unfluid decs) (
 setq localdecs (cdr localdecs)) (return progret)))
 
@@ -4522,9 +4536,9 @@ quote progn) (cddr u)) (list (quote return) g))) (setq g (list (quote progn)
 (put (quote prog2) (quote c!:code) (function c!:cprog2))
 
 (de c!:cprogn (u env) (prog (r) (setq u (cdr u)) (cond ((equal u nil) (setq u
-(quote (nil))))) (prog (var1368) (setq var1368 u) lab1367 (cond ((null 
-var1368) (return nil))) (prog (s) (setq s (car var1368)) (setq r (c!:cval s 
-env))) (setq var1368 (cdr var1368)) (go lab1367)) (return r)))
+(quote (nil))))) (prog (var1372) (setq var1372 u) lab1371 (cond ((null 
+var1372) (return nil))) (prog (s) (setq s (car var1372)) (setq r (c!:cval s 
+env))) (setq var1372 (cdr var1372)) (go lab1371)) (return r)))
 
 (put (quote progn) (quote c!:code) (function c!:cprogn))
 
@@ -4564,10 +4578,10 @@ c!:find_literal u)))))))) (return v)))
 
 (de c!:cprivate_tagbody (u env) (prog nil (setq u (cdr u)) (c!:endblock (
 quote goto) (list (car u))) (c!:startblock (car u)) (setq c!:current_args (
-prog (var1370 var1371) (setq var1370 c!:current_args) lab1369 (cond ((null 
-var1370) (return (reversip var1371)))) (prog (v) (setq v (car var1370)) (setq
-var1371 (cons (prog (z) (setq z (assoc!*!* v (car env))) (return (cond (z (
-cdr z)) (t v)))) var1371))) (setq var1370 (cdr var1370)) (go lab1369))) (
+prog (var1374 var1375) (setq var1374 c!:current_args) lab1373 (cond ((null 
+var1374) (return (reversip var1375)))) (prog (v) (setq v (car var1374)) (setq
+var1375 (cons (prog (z) (setq z (assoc!*!* v (car env))) (return (cond (z (
+cdr z)) (t v)))) var1375))) (setq var1374 (cdr var1374)) (go lab1373))) (
 return (c!:cval (cadr u) env))))
 
 (put (quote c!:private_tagbody) (quote c!:code) (function c!:cprivate_tagbody
@@ -4603,9 +4617,9 @@ c!:startblock l2) (c!:outop (quote movk1) v nil nil) (c!:endblock (quote goto
 closed) (setq fn (car fnargs)) (cond ((or (equal fn (quote mapc)) (equal fn (
 quote mapcar)) (equal fn (quote mapcan))) (setq carp t))) (setq fnargs (cdr 
 fnargs)) (cond ((atom fnargs) (error 0 "bad arguments to map function"))) (
-setq fn1 (cadr fnargs)) (prog nil lab1372 (cond ((null (or (eqcar fn1 (quote 
+setq fn1 (cadr fnargs)) (prog nil lab1376 (cond ((null (or (eqcar fn1 (quote 
 function)) (and (eqcar fn1 (quote quote)) (eqcar (cadr fn1) (quote lambda))))
-) (return nil))) (progn (setq fn1 (cadr fn1)) (setq closed t)) (go lab1372)) 
+) (return nil))) (progn (setq fn1 (cadr fn1)) (setq closed t)) (go lab1376)) 
 (setq args (car fnargs)) (setq l1 (c!:my_gensym)) (setq r (c!:my_gensym)) (
 setq s (c!:my_gensym)) (setq var (c!:my_gensym)) (setq avar var) (cond (carp 
 (setq avar (list (quote car) avar)))) (cond (closed (setq fn1 (list fn1 avar)
@@ -4640,10 +4654,10 @@ atom (cdr s))) (setq s (cdr s)) (go l2))) moveon (go l1))))))))) (return fn))
 (put (quote mapcan) (quote c!:compile_macro) (function c!:expand_map))
 
 (de c!:expand_carcdr (x) (prog (name) (setq name (cdr (reverse (cdr (explode2
-(car x)))))) (setq x (cadr x)) (prog (var1374) (setq var1374 name) lab1373 (
-cond ((null var1374) (return nil))) (prog (v) (setq v (car var1374)) (setq x 
+(car x)))))) (setq x (cadr x)) (prog (var1378) (setq var1378 name) lab1377 (
+cond ((null var1378) (return nil))) (prog (v) (setq v (car var1378)) (setq x 
 (list (cond ((equal v (quote a)) (quote car)) (t (quote cdr))) x))) (setq 
-var1374 (cdr var1374)) (go lab1373)) (return x)))
+var1378 (cdr var1378)) (go lab1377)) (return x)))
 
 (progn (put (quote caar) (quote c!:compile_macro) (function c!:expand_carcdr)
 ) (put (quote cadr) (quote c!:compile_macro) (function c!:expand_carcdr)) (
@@ -4693,11 +4707,11 @@ cadr rr)) (c!:outop (quote movr) (setq r (c!:newreg)) nil (car rr)) (return r
 (de c!:narg (x env) (c!:cval (expand (cdr x) (get (car x) (quote 
 c!:binary_version))) env))
 
-(prog (var1376) (setq var1376 (quote ((plus plus2) (times times2) (iplus 
-iplus2) (itimes itimes2)))) lab1375 (cond ((null var1376) (return nil))) (
-prog (n) (setq n (car var1376)) (progn (put (car n) (quote c!:binary_version)
-(cadr n)) (put (car n) (quote c!:code) (function c!:narg)))) (setq var1376 (
-cdr var1376)) (go lab1375))
+(prog (var1380) (setq var1380 (quote ((plus plus2) (times times2) (iplus 
+iplus2) (itimes itimes2)))) lab1379 (cond ((null var1380) (return nil))) (
+prog (n) (setq n (car var1380)) (progn (put (car n) (quote c!:binary_version)
+(cadr n)) (put (car n) (quote c!:code) (function c!:narg)))) (setq var1380 (
+cdr var1380)) (go lab1379))
 
 (de c!:cplus2 (u env) (prog (a b) (setq a (s!:improve (cadr u))) (setq b (
 s!:improve (caddr u))) (return (cond ((and (numberp a) (numberp b)) (c!:cval 
@@ -4925,18 +4939,18 @@ d2))))
 
 (put (quote igreaterp) (quote c!:ctest) (function c!:ctestigreaterp))
 
-(de c!:ctestand (x env d1 d2) (prog (next) (prog (var1378) (setq var1378 (cdr
-x)) lab1377 (cond ((null var1378) (return nil))) (prog (a) (setq a (car 
-var1378)) (progn (setq next (c!:my_gensym)) (c!:cjumpif a env next d2) (
-c!:startblock next))) (setq var1378 (cdr var1378)) (go lab1377)) (c!:endblock
+(de c!:ctestand (x env d1 d2) (prog (next) (prog (var1382) (setq var1382 (cdr
+x)) lab1381 (cond ((null var1382) (return nil))) (prog (a) (setq a (car 
+var1382)) (progn (setq next (c!:my_gensym)) (c!:cjumpif a env next d2) (
+c!:startblock next))) (setq var1382 (cdr var1382)) (go lab1381)) (c!:endblock
 (quote goto) (list d1))))
 
 (put (quote and) (quote c!:ctest) (function c!:ctestand))
 
-(de c!:ctestor (x env d1 d2) (prog (next) (prog (var1380) (setq var1380 (cdr 
-x)) lab1379 (cond ((null var1380) (return nil))) (prog (a) (setq a (car 
-var1380)) (progn (setq next (c!:my_gensym)) (c!:cjumpif a env d1 next) (
-c!:startblock next))) (setq var1380 (cdr var1380)) (go lab1379)) (c!:endblock
+(de c!:ctestor (x env d1 d2) (prog (next) (prog (var1384) (setq var1384 (cdr 
+x)) lab1383 (cond ((null var1384) (return nil))) (prog (a) (setq a (car 
+var1384)) (progn (setq next (c!:my_gensym)) (c!:cjumpif a env d1 next) (
+c!:startblock next))) (setq var1384 (cdr var1384)) (go lab1383)) (c!:endblock
 (quote goto) (list d2))))
 
 (put (quote or) (quote c!:ctest) (function c!:ctestor))
@@ -5072,9 +5086,9 @@ c!:c_entrypoint "Lreadch") (sublis c!:c_entrypoint "Lsublis") (vectorp
 c!:c_entrypoint "Lsimple_vectorp") (get c!:direct_entrypoint (2 . "get"))))))
 )
 
-(prog (var1382) (setq var1382 c!:c_entrypoint_list) lab1381 (cond ((null 
-var1382) (return nil))) (prog (x) (setq x (car var1382)) (put (car x) (cadr x
-) (caddr x))) (setq var1382 (cdr var1382)) (go lab1381))
+(prog (var1386) (setq var1386 c!:c_entrypoint_list) lab1385 (cond ((null 
+var1386) (return nil))) (prog (x) (setq x (car var1386)) (put (car x) (cadr x
+) (caddr x))) (setq var1386 (cdr var1386)) (go lab1385))
 
 (flag (quote (atom atsoc codep constantp deleq digit endp eq eqcar evenp eql 
 fixp flagp flagpcar floatp get globalp iadd1 idifference idp igreaterp ilessp

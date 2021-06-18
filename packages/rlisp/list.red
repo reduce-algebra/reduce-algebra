@@ -39,6 +39,7 @@ put('list,'tag,'list);
 put('list,'rtypefn,'quotelist);
 
 symbolic procedure quotelist u; 'list;
+put('quotelist, 'inline, '(lambda (u) 'list));
 
 % Parsing interface.
 
@@ -117,6 +118,7 @@ symbolic procedure listeval(u,v);
 symbolic procedure makelist u;
    % Make a list out of elements in u.
    'list . u;
+put('makelist, 'inline, '(lambda (u) (cons 'list u)));
 
 
 % Length interface.
@@ -124,6 +126,7 @@ symbolic procedure makelist u;
 put('list,'lengthfn,'lengthcdr);
 
 symbolic procedure lengthcdr u; length cdr u;
+put('lengthcdr, 'inline, '(lambda (u) (length (cdr u))));
 
 
 % Printing interface.
@@ -158,6 +161,7 @@ symbolic procedure listpri l;
 symbolic procedure treesizep(u,n);
    % true if u has recursively more pairs than n.
    treesizep1(u,n)=0;
+put('treesizep, 'inline, '(lambda (u n) (zerop (treesizep1 u n))));
 
 symbolic procedure treesizep1(u,n);
    if atom u then n - 1
@@ -183,7 +187,8 @@ symbolic procedure listeval0 u;
 % First, second, third and rest are designed so that only the relevant
 % elements need be fully evaluated.
 
-symbolic inline procedure rlistp u; eqcar(u,'list);
+symbolic procedure rlistp u; eqcar(u,'list);
+put('rlistp, 'inline, '(lambda (u) (eqcar u 'list)));
 
 symbolic procedure rfirst u;
    begin scalar x;

@@ -25,18 +25,18 @@ module invbcomp;
 
 
 %----------------------------------------------------------------------
-symbolic procedure c_zero();  nil$           %  REPRESENTATION OF ZERO
+symbolic inline procedure c_zero();  nil$    %  REPRESENTATION OF ZERO
 %----------------------------------------------------------------------
-symbolic procedure cneg(c);                  %  - C
+symbolic inline procedure cneg(c);           %  - C
 negf c$
 %----------------------------------------------------------------------
-symbolic procedure csum(c1,c2);              %   C1 + C2
+symbolic inline procedure csum(c1,c2);       %   C1 + C2
 addf(c1,c2);
 %----------------------------------------------------------------------
-symbolic procedure cprod(c1,c2);             %   C1 * C2
+symbolic inline procedure cprod(c1,c2);      %   C1 * C2
 multf(c1,c2);
 %----------------------------------------------------------------------
-symbolic procedure cdiv(c1,c2);               %   C1/C2
+symbolic inline procedure cdiv(c1,c2);        %   C1/C2
 numr resimp(c1 . c2);
 %----------------------------------------------------------------------
 symbolic procedure trass(id,value);  % tracing of assignments
@@ -52,7 +52,7 @@ if ord jet = 0 then 0 else 1
 symbolic procedure ord(jet);
 if ordering = 'lex then eval('plus . jet) else car jet$
 %----------------------------------------------------------------------
-symbolic procedure ljet(p); caar p$
+symbolic inline procedure ljet(p); caar p$
 %----------------------------------------------------------------------
 symbolic procedure sub01(v,u);
 %%% replace each x in u by < if x=v then 1 else 0 >
@@ -141,7 +141,7 @@ end;
 symbolic procedure pneg(p);                  %  - P
 for each x in p collect car(x).cneg(cdr(x));
 %-----------------------------------------------------------------------
-symbolic procedure pdif(p1,p2);              %  P1 - P2
+symbolic inline procedure pdif(p1,p2);       %  P1 - P2
 psum(p1,pneg p2);
 %-----------------------------------------------------------------------
 symbolic procedure dd(d1,d2);   %  uses fluid vjets!*
@@ -263,7 +263,7 @@ else algebraic write str," := ",
 lisp prepsq !*di2q(list car p, varlist!*)," + ",
 lisp prepsq !*di2q(cdr p, varlist!*);
 %----------------------------------------------------------------------
-symbolic procedure addgt(u);
+symbolic inline procedure addgt(u);
 if ordering = 'lex then u else eval('plus.u) . u$
 %-----------------------------------------------------------------------
 symbolic procedure printsys(str,gg!*);
@@ -396,7 +396,7 @@ l: gg1 := reverse gg!*;
    m: stat(); if p <= lb then dim gg!*;
 end;
 %-----------------------------------------------------------------------
-symbolic procedure njets(n,q);   % number of jets of n vars and order q
+symbolic inline procedure njets(n,q); % number of jets of n vars and order q
 combin(q,q+n-1);
 %----------------------------------------------------------------------
 symbolic procedure combin(m,n);    % number of combinations of m from n

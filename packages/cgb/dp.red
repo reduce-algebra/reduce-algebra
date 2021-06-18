@@ -61,30 +61,30 @@ endmodule;  % dp
 
 module bcsq;
 
-procedure bc_zero();
+inline procedure bc_zero();
    nil ./ 1;
 
-procedure bc_zero!?(u);
+inline procedure bc_zero!?(u);
    null numr u;
 
-procedure bc_abs(u);
+inline procedure bc_abs(u);
    absf numr u ./ denr u;
 
-procedure bc_one!?(u);
+inline procedure bc_one!?(u);
    numr u = 1 and denr u = 1;
 
-procedure bc_2sq(u);
+inline procedure bc_2sq(u);
    u;
 
-procedure bc_a2bc(u);
+inline procedure bc_a2bc(u);
    % Converts the algebraic (kernel) u into a base coefficient.
    simp!* u;
 
-procedure bc_fd(a);
+inline procedure bc_fd(a);
    % Base coefficient from domain element.
    a ./ 1;
 
-procedure bc_neg(u);
+inline procedure bc_neg(u);
    % Base coefficient negative. u is a base coefficient. bc_neg(u)
    % returns the negative of the base coefficient u, a base
    % coefficient.
@@ -114,7 +114,7 @@ procedure bc_prod(a,b);
 %%    else
 %%       quotsq(a,b);
 
-procedure bc_quot(a,b);
+inline procedure bc_quot(a,b);
    quotsq(a,b);
 
 procedure bc_sum(a,b);
@@ -140,7 +140,7 @@ procedure bc_minus!?(u);
    else
       minusf numr u;
 
-procedure bc_2a(u);
+inline procedure bc_2a(u);
    % Returns the prefix equivalent of the base coefficient u.
    prepsq u;
 
@@ -153,13 +153,13 @@ procedure bc_gcd(u,v);
    else
       1 ./ 1;
 
-procedure bc_mkat(op,bc);
+inline procedure bc_mkat(op,bc);
    {op,numr bc,nil};
 
-procedure bc_dcont(bc);
+inline procedure bc_dcont(bc);
    sfto_dcontentf numr bc;
 
-procedure bc_2d(bc);
+inline procedure bc_2d(bc);
    numr bc or 0;
 
 procedure bc_vars(bc);
@@ -169,19 +169,19 @@ endmodule;  % bcsq
 
 module ev;
 
-procedure ev_max!#(a,b);
+inline procedure ev_max!#(a,b);
    if a #> b then a else b;
 
-procedure ev_init();
+inline procedure ev_init();
    ;
 
-procedure ev_member(ev,evl);
+inline procedure ev_member(ev,evl);
    ev member evl;
 
-procedure ev_divides!?(ev1,ev2);
+inline procedure ev_divides!?(ev1,ev2);
    ev_mtest!?(ev2,ev1);
 
-procedure ev_sdivp(ev1,ev2);
+inline procedure ev_sdivp(ev1,ev2);
    ev1 neq ev2 and ev_divides!?(ev1,ev2);
 
 procedure ev_xrevgradlexcomp(e1,e2);
@@ -271,7 +271,7 @@ procedure ev_mtest!?(e1,e2);
       return r
    end;
 
-procedure ev_2a(e);
+inline procedure ev_2a(e);
    % Returns list of prefix equivalents of exponent vector e.
    ev_2a1(e,dip_vars!*);
 
@@ -312,7 +312,7 @@ procedure ev_zero();
 procedure ev_zero!?(ev);
    null ev or (car ev=0 and ev_zero!? cdr ev);
 
-procedure ev_compless!?(e1,e2);
+inline procedure ev_compless!?(e1,e2);
    ev_comp(e2,e1) #= 1;
 
 procedure ev_comp(e1,e2);
@@ -381,13 +381,13 @@ endmodule;  % ev
 
 module dip;
 
-procedure dip_fmon(a,e);
+inline procedure dip_fmon(a,e);
    % Distributive polynomial from monomial. a is a base coefficient
    % and e is an exponent vector. dip_fmon(a,e) returns a distributive
    % polynomial with e as exponent vector and a as base coefficient.
    e . a . nil;
 
-procedure dip_moncomp(a,e,p);
+inline procedure dip_moncomp(a,e,p);
    % Distributive polynomial monomial composition. a is a base
    % coefficient, e is an exponent vector and p is a distributive
    % polynomial. dipmoncomp(a,e,p) returns a distributive polynomial
@@ -395,19 +395,19 @@ procedure dip_moncomp(a,e,p);
    % monomial and a as leading base coefficient.
    e . a . p;
 
-procedure dip_mred(p);
+inline procedure dip_mred(p);
    % Distributive polynomial reductum. p is a distributive polynomial
    % dipmred(p) returns the reductum of the distributive polynomial p,
    % a distributive polynomial.
    cddr p;
 
-procedure dip_lbc(p);
+inline procedure dip_lbc(p);
    % Distributive polynomial leading base coefficient. p is a
    % distributive polynomial. dip_lbc(p) returns the leading base
    % coefficient of p.
    cadr p;
 
-procedure dip_evlmon(p);
+inline procedure dip_evlmon(p);
    % Distributive polynomial exponent vector leading monomial. p is a
    % distributive polynomial. dipevlmon(p) returns the exponent vector
    % of the leading monomial of p.
@@ -467,10 +467,10 @@ procedure dip_cleanup(l);
       dip_evlist!* := car l
    >>;
 
-procedure dip_monp(u);
+inline procedure dip_monp(u);
    u and not cddr u;
 
-procedure dip_2f(u);
+inline procedure dip_2f(u);
    numr dip_2sq u;
 
 procedure dip_2sq(u);
@@ -484,7 +484,7 @@ procedure dip_lmon2sq(bc,ev);
    % convert a monomial into a standard quotient.
    multsq(bc_2sq bc,ev_2f(ev,dip_vars!*) ./ 1);
 
-procedure dip_f2dip(u);
+inline procedure dip_f2dip(u);
    dip_f2dip1(u,ev_zero(),bc_fd 1);
 
 procedure dip_f2dip1(u,ev,bc);
@@ -573,7 +573,7 @@ procedure dip_sum(p1,p2);
       return w
    end;
 
-procedure dip_2a(u);
+inline procedure dip_2a(u);
    % Returns prefix equivalent of distributive polynomial u.
    if null u then 0 else dip_replus dip_2a1 u;
 
@@ -612,7 +612,7 @@ procedure dip_simpcont(p);
       return dip_reduceconti(p,c)
    end;
 
-procedure dip_contenti(p);
+inline procedure dip_contenti(p);
    dip_contenti1(p,bc_zero());
 
 procedure dip_contenti1(p,c);
@@ -645,7 +645,7 @@ procedure dip_reduceconti(p,c);
 %%       >>;
 %%    end;
 
-procedure dip_condense(f);
+inline procedure dip_condense(f);
    f;
 
 procedure dip_evlcomp(p1,p2);
@@ -708,7 +708,7 @@ procedure dip_tdeg(p);
    else
       max(ev_tdeg dip_evlmon p,dip_tdeg dip_mred p);
 
-procedure dip_append(p1,p2);
+inline procedure dip_append(p1,p2);
    append(p1,p2);
 
 procedure dip_cp(p);
@@ -927,10 +927,10 @@ procedure dip_comp(p1,p2);
       return dip_comp(dip_mred p1,dip_mred p2)
    end;
 
-procedure dip_comp1(p1,p2);
+inline procedure dip_comp1(p1,p2);
    ev_comp(dip_evlmon p1,dip_evlmon p2);
 
-procedure dip_one();
+inline procedure dip_one();
    % Distributive polynomial one. Nor argument. Returns the DIP
    % representation of 1 in the current polynomial ring.
    dip_fmon(bc_a2bc 1,ev_zero());

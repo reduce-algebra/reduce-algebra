@@ -27,6 +27,7 @@ module smacro;  % Support for SMACRO expansion
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 %
 % This function expands an  invocation of a SMACRO.
@@ -102,7 +103,7 @@ module smacro;  % Support for SMACRO expansion
 % may also need to know that a symbol at the top level of a prog names a
 % label not a variable (and ditto (GO x)).
 %
-%   smacro procedure f x; while a do print (a := cdr a);
+%   smacro procedure f a; while a do print (a := cdr a);
 %   x := '(1 2 3); f x; print x;
 % Depending on expansion style this prints different values at the end.
 %
@@ -165,6 +166,49 @@ symbolic procedure applsmacro(u,vals,name);
 %             if not eqcar(cadr w,'setq)
 %               then <<prin2 "*** inline: "; print cdr w>>;
               return w>>
+   end;
+
+% Consider
+%   inline procedure foo(x, y); << rplaca(x, 1); y >>;
+%   ... foo (v, car v) ...
+% Here the arguments in the call are all side-effect free and the body of
+% the function only mentions each formal parameter once, so it might
+% feel it was safe to substiture and the call would get expanded to read
+% << rplaca(v, 1); car v >> which yields the result 1. However with a
+% proper call-by-value model you would get the previous value of car v
+% from before the rplaca operation happened.
+% Another case to consider is
+%   inline procedure foo x; << print x; do_something(); print x >>;
+%   ... foo(car v) ...
+% and if the structure referenced by v is accessible via some other route
+% then do_something() might update it - messing with the second call to print.
+% There may be two cases that are liable to arise frequently enough to matter
+% and that are simple enough to feel safe...
+%   symbolic procedure foo(x); x;
+%   symbolic procedure foo(x); some_function(x, A, B, ...);
+% where A, B etc do not mention or depend on x.
+% Of course in real life most instances of calls to inline functions would
+% not be problematic however they were expanded, but it is best to have the
+% code here so that it can cope with pathological cases.
+
+
+symbolic procedure applinline(u,vals,name);
+   % U is smacro body of form (lambda <varlist> <body>), VALS is
+   % argument list, NAME is name of the inline function.
+   % in general this can just generate ((lambda varlist body) vals).
+   begin
+      scalar varlist := cadr u, body := caddr u;
+      inlineinfo := list(name, varlist, body);
+      if length varlist neq length vals then
+         rerror(rlisp,15,list("Argument mismatch for inline function",name));
+      if !*loginlines then log_inlines(varlist, body, vals);
+      if length varlist = 1 and
+         (body = car varlist or
+          (not atom body and atom car body and car body neq car varlist and
+           eqcar(cdr body, car varlist) and
+           not smember(car varlist, cddr body))) then
+         return subla!-q(pair(varlist,vals),body)
+      else return (u . vals)
    end;
 
 % In my analysis here I am going to be slightly sloppy in my traversal
@@ -260,15 +304,32 @@ symbolic procedure log_freevars_list(varlist, u, isprog);
   else if log_freevars(varlist, car u) then t
   else log_freevars_list(varlist, cdr u, isprog);
 
+% This allows one level of call to car .. cddr as well as variables and
+% literals.
+
 symbolic procedure no!-side!-effectp u;
-   if atom u then numberp u or (idp u and not(fluidp u or globalp u))
+   if atom u then numberp u or stringp u or u=nil or u=t or
+                  (idp u and not(fluidp u or globalp u))
     else if car u = 'quote then t
     else if flagp(car u,'nosideeffects)
-     then no!-side!-effect!-listp cdr u
+     then very!-no!-side!-effect!-listp cdr u
+    else nil;
+
+% This version will not allow function calls.
+
+symbolic procedure very!-no!-side!-effectp u;
+   if atom u then numberp u or stringp u or u=nil or u=t or
+                  (idp u and not(fluidp u or globalp u))
+    else if car u = 'quote then t
     else nil;
 
 symbolic procedure no!-side!-effect!-listp u;
-   null u or no!-side!-effectp car u and no!-side!-effect!-listp cdr u;
+   null u or (no!-side!-effectp car u and
+              no!-side!-effect!-listp cdr u);
+
+symbolic procedure very!-no!-side!-effect!-listp u;
+   null u or (very!-no!-side!-effectp car u and
+              very!-no!-side!-effect!-listp cdr u);
 
 % This list USED to have CONS in it, which would grant expansion of
 % inlines the right to duplicate expressions with CONS in them - and
@@ -278,9 +339,11 @@ symbolic procedure no!-side!-effect!-listp u;
 flag('(car cdr
        caar cadr cdar cddr
 % The expansion code is willing to duplicate expressions that use things
-% flagged as side-effect free. I am not certain whether the following
-% are sensible to duplicate calls of...
-       caaar caadr cadar caddr cdaar cdadr cddar cdddr
+% flagged as side-effect free. Even if something does not have side
+% effects it may not make sense to be willing to evaluate it multiple times,
+% but my code here would allow "car cdr cdr cdr cdr cdr x" to be
+% multiply evaluated even though it would not allow "cadddr cddr x". That
+% is not terribly
        ),'nosideeffects);
 
 % Here are some more things that do not have side effects.
@@ -423,14 +486,15 @@ symbolic procedure expand_accessor(u, path, r);
                    mkquote list('lambda, '(u), makecarcdr(path, 'u)));
          if !*defn then lispeval p;
          r := p . r
-      end
-    else <<
-       r := list('de, u, '(u), makecarcdr(path, 'u)) . r;
-       r := list('put, mkquote u, ''setqfn,
-          mkquote list('lambda, '(u v),
-                         list(get(car path, 'mutator),
-                              makecarcdr(cdr path, 'u),
-                              'v))) . r >>;
+      end;
+% Even if I introduce an inline definition I should instate a normal
+% function as well.
+    r := list('de, u, '(u), makecarcdr(path, 'u)) . r;
+    r := list('put, mkquote u, ''setqfn,
+       mkquote list('lambda, '(u v),
+                      list(get(car path, 'mutator),
+                           makecarcdr(cdr path, 'u),
+                           'v))) . r;
     u := intern list2string append('(s e t !_), explode2 u);
     r := list('put, mkquote u, ''number!-of!-args, 2) . r;
     if not !*noinlines then
@@ -442,11 +506,11 @@ symbolic procedure expand_accessor(u, path, r);
                                'v)));
          if !*defn then lispeval p;
          r := p . r
-       end
-    else r := list('de, u, '(u v),
-                   list(get(car path, 'mutator),
-                        makecarcdr(cdr path, 'u),
-                        'v)) . r;
+       end;
+    r := list('de, u, '(u v),
+              list(get(car path, 'mutator),
+                   makecarcdr(cdr path, 'u),
+                   'v)) . r;
     r >>;
 
 flag('(putc), 'eval);

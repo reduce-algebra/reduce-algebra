@@ -1717,6 +1717,28 @@ symbolic procedure s!:improve u;
     else return u
   end;
 
+% Here I map
+%    if a memq '(x y z) then ...
+% to if a eq 'x or a eq 'y or a eq 'z then ... if a is a simple
+% variable. The use of EQ in the expansion is only sensible if
+% x, y and z are things where EQ will work reliably, but the coder
+% has indicate dthat through the use of MEMQ rather than MEMBER.
+
+
+symbolic procedure s!:imp_cond_predicate u;
+  if eqcar(u, 'memq) and
+     atom cadr u and
+     eqcar(caddr u, 'quote) then
+     'or . for each v in cadr caddr u collect
+           list('eq, cadr u, mkquote v)
+  else u;
+
+symbolic procedure s!:imp_cond u;
+  'cond . for each s in cdr u collect
+          (s!:imp_cond_predicate car s . cdr s);
+
+put('cond, 's!:tidy_fn, 's!:imp_cond);
+
 symbolic procedure s!:imp_minus u;
   begin
     scalar a;
@@ -4703,9 +4725,18 @@ symbolic procedure s!:r2iand l;
   else if null cdr l then car l
   else list('cond, list(car l, s!:r2iand cdr l));
 
+% I map (OR a b c) into  (COND (a) (b) (t c))
+
 symbolic procedure s!:r2ior l;
   if null l then nil
-  else 'cond . for each x in l collect list x;
+  else begin
+    scalar r;
+    while cdr l do <<
+      r := (list car l) . r;
+      l := cdr l >>;
+    r := list(t, car l) . r;
+    return 'cond . reverse r
+  end; 
 
 symbolic procedure s!:r2icond(name, args, b, lab, v);
   if null b then list list(t, list('return, list('nreverse, car v)))

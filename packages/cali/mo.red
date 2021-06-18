@@ -92,12 +92,12 @@ symbolic procedure mo!=shorten m;
 
 % ------------- comparisions of monomials -----------------
 
-symbolic procedure mo_zero;  nil . mo!=deglist nil;
+symbolic inline procedure mo_zero;  nil . mo!=deglist nil;
 % Returns the unit monomial x^0.
 
-symbolic procedure mo_zero!? u; mo!=zero car u;
+symbolic inline procedure mo_zero!? u; mo!=zero car u;
 
-symbolic procedure mo!=zero u;
+symbolic inline procedure mo!=zero u;
     null u or car u = 0 and mo!=zero cdr u;
 
 symbolic procedure mo_equal!?(m1,m2);
@@ -147,7 +147,7 @@ symbolic procedure mo!=lexcomp(e1,e2);
 
 % ---------- manipulation of the module component --------
 
-symbolic procedure mo_comp v;
+symbolic inline procedure mo_comp v;
 % Retuns the module component of v.
     if null car v then 0 else caar v;
 

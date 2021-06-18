@@ -4184,7 +4184,6 @@ static bool push_all_symbols(symbol_processor_predicate *pp)
     {   std::sprintf(trigger, "list base %p push", reinterpret_cast<void *>(**p));
         if (push_symbols(pp, **p)) return true;
     }
-//  std::cout << "push_all_symbols: " << (stack-oldStack) << "\n"; // @@@
     return false;
 }
 
@@ -4359,7 +4358,6 @@ LispObject Lmapstore(LispObject env, LispObject a)
 // with explicit visible code to stress exactly what is happening.
 // NOTE that this may place a LOT of items on the (Lisp) stack.
         push_all_symbols(non_zero_count);
-std::cout << "serialize.cpp:4354 " << (stack-savestack) << "\n";
         r = nil;
         while (stack != savestack)
         {   LispObject x = *stack;
