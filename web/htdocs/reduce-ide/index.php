@@ -56,9 +56,9 @@ include '../include/begin-body.php';
     <li>
         Customize the Emacs user option <code>package-archives</code>
         to add a new archive with the URL
-        &quot;<a href="https://reduce-algebra.sourceforge.io/reduce-ide/packages/">https://reduce-algebra.sourceforge.io/reduce-ide/packages/</a>&quot;.
+        <code>https://reduce-algebra.sourceforge.io/reduce-ide/packages/</code>.
         You can give this archive any name you like, such as
-        &quot;reduce-ide&quot;.  If the option <code>package-archives</code>
+        <code>reduce-ide</code>.  If the option <code>package-archives</code>
         is not immediately available then you can access it via the
         customization group <code>package</code>.
     </li>
@@ -87,16 +87,17 @@ include '../include/begin-body.php';
 </p>
 <p>
     An alternative way to install the latest complete REDUCE IDE
-    package is to open the
-    <a href="https://reduce-algebra.sourceforge.io/reduce-ide/packages/">REDUCE
-        IDE packages directory</a> in a web browser, download the latest
+    package is to open the <a href="packages/">REDUCE IDE packages
+    directory</a> in a web browser, download the latest
     <code>reduce-ide</code> package file (which will have a name of the form
     <code>reduce-ide-<em>version</em>.tar</code>), then run the Emacs command
     <code>package-install-file</code> and give it the full pathname of the
     <code>reduce-ide</code> package file you just downloaded.
 </p>
 <p>Feedback is welcome.</p>
-<address><a href="https://sourceforge.net/u/fjwright">Francis Wright</a></address>
+<address>
+    <a href="https://sites.google.com/site/fjwcentaur/feedback">Francis Wright</a>
+</address>
 
 </div><!-- opened in begin-body.php -->
 

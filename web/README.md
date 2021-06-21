@@ -1,7 +1,7 @@
 Files for the REDUCE web site
 =============================
 
-Francis Wright, May 2021
+Francis Wright, June 2021
 
 The REDUCE web site can be accessed using the URLs [https://reduce-algebra.sourceforge.io/](https://reduce-algebra.sourceforge.io/), [http://reduce-algebra.com](http://reduce-algebra.com), [http://www.reduce-algebra.com](http://www.reduce-algebra.com), etc. (where the latter are DNS aliases and the reduce-algebra.com domain is paid for by Tony Hearn).
 
@@ -45,7 +45,7 @@ The [jQuery](https://jquery.com/) and [Bootstrap](https://getbootstrap.com/) Jav
 Search
 ------
 
-The search facility uses a [Google Custom Search Engine](https://cse.google.com/cse/) (CSE) based in my private Google account.  The directory `trunk/web/search` in the Subversion repository contains two files, `annotations.xml` and `cse.xml` that specify respectively what Goolge calls the CSE annotations and the CSE context.  (They are **not** required on the web server.)  These two files show how the custom search is configured: the annotations are a list of included and excluded web sites; the context is the look and feel (i.e. layout and styling).  This information may be useful if the search facility needs to be moved to a new Google account, and it should be possible to upload the two files to configure a new custom search, although they might need some editing first.
+The search facility uses a [Google Custom Search Engine](https://cse.google.com/cse/) (CSE) based in my private Google account.  (Beware that this is now called Programmable Search!)  The directory `trunk/web/search` in the Subversion repository contains two files, `annotations.xml` and `cse.xml` that specify respectively what Goolge calls the CSE annotations and the CSE context.  (They are **not** required on the web server.)  These two files show how the custom search is configured: the annotations are a list of included and excluded web sites; the context is the look and feel (i.e. layout and styling).  This information may be useful if the search facility needs to be moved to a new Google account, and it should be possible to upload the two files to configure a new custom search, although they might need some editing first.
 
 Local development and testing
 -----------------------------

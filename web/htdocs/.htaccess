@@ -15,6 +15,7 @@ Redirect "/manual/manual-pdf.html" "/manual/manual.html"
 # Must *not* match .html here!
 RedirectMatch "/(.*)\.htm$" "/$1.php"
 
+DirectoryIndex index.php index.html
 Options +Indexes
 
 ErrorDocument 404 /include/ErrorDocument404.php

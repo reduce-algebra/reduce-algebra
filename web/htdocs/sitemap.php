@@ -273,18 +273,22 @@ include 'include/footer.php';
      });
 
  // Register a click handler on folder name cells:
- $("#SiteMap tr.folder > td:first-child").css("cursor", "pointer").click(function() {
-     var $folderTr = $(this).closest("tr"); // folder table row
-     var folderLevel = $folderTr.toggleClass("expanded").data("level");
-     var hiding = !$folderTr.hasClass("expanded"); // collapsing folder
-     $folderTr.nextAll().each(function(){
-         var $this = $(this); // a table row below the folder table row
-         var level = $this.data("level");
-         if (level == folderLevel) return false; // below this subfolder
-         if (hiding) $this.hide().removeClass("expanded"); // hide all descendants
-         else if (level == folderLevel+1) $this.show(); // but show only children
-     })
- });
+ $("#SiteMap tr.folder > td:first-child")
+     .attr("title", "Expand folder")
+     .css("cursor", "pointer").click(function() {
+         let $this = $(this); // folder name cell
+         let $folderTr = $this.closest("tr"); // folder table row
+         let folderLevel = $folderTr.toggleClass("expanded").data("level");
+         let hiding = !$folderTr.hasClass("expanded"); // collapsing folder
+         $this.attr("title", hiding ? "Expand folder" : "Collapse folder");
+         $folderTr.nextAll().each(function(){
+             let $this = $(this); // a table row below the folder table row
+             let level = $this.data("level");
+             if (level == folderLevel) return false; // below this subfolder
+             if (hiding) $this.hide().removeClass("expanded"); // hide all descendants
+             else if (level == folderLevel+1) $this.show(); // but show only children
+         })
+     });
 </script>
 
         </body>

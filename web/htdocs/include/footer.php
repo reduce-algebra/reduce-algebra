@@ -19,7 +19,7 @@
         <p>
             Please report broken links (both in-coming and out-going), other
             errors or suggestions for improvement to
-            <a href="https://sourceforge.net/users/fjwright/">webmaster</a>.
+            <a href="https://sites.google.com/site/fjwcentaur/feedback">webmaster</a>.
         </p>
         <p>This web page should be
             <a href="javascript:void(location.href =
@@ -31,15 +31,15 @@
     </div>
 </footer>
 
-</div>
-</div>
+    </div>
+    </div>
 
-<!-- The slim version of jQuery does not include ajax (or effects)
-     and so cannot be used because I use ajax on the documentation
-     page! -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"
-        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
-        crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js"
-        integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF"
-        crossorigin="anonymous"></script>
+    <!-- The slim version of jQuery does not include ajax (or effects)
+         and so cannot be used because I use ajax on the documentation
+         page! -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js"
+            integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF"
+            crossorigin="anonymous"></script>
