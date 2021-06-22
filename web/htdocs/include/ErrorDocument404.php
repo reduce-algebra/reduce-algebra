@@ -31,7 +31,7 @@
 	<p>
 	    If you think this is a server error then please email this
 	    error message to
-            <a href="mailto:fjwright@users.sourceforge.net?subject=REDUCE%20web%20site">fjwright@users.sourceforge.net</a>
+            <a href="https://sites.google.com/site/fjwcentaur/feedback">webmaster</a>
             and if appropriate include the URL of the page containing
             the link you tried to access.
         </p>
