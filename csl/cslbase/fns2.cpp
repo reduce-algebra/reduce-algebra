@@ -2508,27 +2508,84 @@ LispObject Lappend_1(LispObject, LispObject a)
 {   return onevalue(a);
 }
 
+// LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
+// {   LispObject r = nil;
+//     {   Save save(b);
+//         stackcheck(a, r);
+//         while (consp(a))
+//         {   LispObject cara = car(a);
+//             a = cdr(a);
+//             Save save1(a);
+//             r = cons(cara, r);
+//             errexit();
+//             save1.restore(a);
+//         }
+//         save.restore(b);
+//     }
+//     while (r != nil)
+//     {   a = cdr(r);
+//         write_barrier(cdraddr(r), b);
+//         b = r;
+//         r = a;
+//     }
+//     return onevalue(b);
+// }
+
+// New version that tries to improve speed - at the cost of some
+// extra complication.
+
 LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
-{   LispObject r = nil;
-    {   Save save(b);
-        stackcheck(a, r);
-        while (consp(a))
-        {   LispObject cara = car(a);
-            a = cdr(a);
-            Save save1(a);
-            r = cons(cara, r);
-            errexit();
-            save1.restore(a);
+{
+    if (!consp(a)) return onevalue(b);
+    LispObject a1 = car(a);
+    a = cdr(a);
+    if (!consp(a)) return onevalue(cons(a1, b));
+    LispObject a2 = car(a);
+    a = cdr (a);
+    if (!consp(a)) return onevalue(list2star(a1, a2, b));
+    LispObject a3 = car(a);
+    a = cdr (a);
+    if (!consp(a)) return onevalue(list3star(a1, a2, a3, b));
+    LispObject front, p;
+    {   Save save(a, b);
+        front = list3(a1, a2, a3);
+        save.restore(a, b);
+        p = cdr(cdr(front));
+    }
+    for (;;)
+    {   a1 = car(a);
+        a = cdr(a);
+        if (!consp(a))
+        {   Save save(front);
+            b = cons(a1, b);
+            write_barrier(cdraddr(p), b);
+            save.restore(front);
+            return onevalue(front);
         }
-        save.restore(b);
+        a2 = car(a);
+        a = cdr(a);
+        if (!consp(a))
+        {   Save save(front);
+            b = list2star(a1, a2, b);
+            write_barrier(cdraddr(p), b);
+            save.restore(front);
+            return onevalue(front);
+        }
+        a3 = car(a);
+        a = cdr(a);
+        if (!consp(a))
+        {   Save save(front);
+            b = list3star(a1, a2, a3, b);
+            write_barrier(cdraddr(p), b);
+            save.restore(front);
+            return onevalue(front);
+        }
+        Save save(front, p, a, b);
+        LispObject w = list3(a1, a2, a3);
+        save.restore(front, p, a, b);
+        write_barrier(cdraddr(p), w);
+        p = cdr(cdr(w));
     }
-    while (r != nil)
-    {   a = cdr(r);
-        write_barrier(cdraddr(r), b);
-        b = r;
-        r = a;
-    }
-    return onevalue(b);
 }
 
 LispObject Lappend_3(LispObject env, LispObject a, LispObject b,

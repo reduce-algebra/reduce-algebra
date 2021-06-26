@@ -138,7 +138,7 @@ AC_ARG_WITH(ffi,
   [],
   [with_ffi="yes"])
 
-if test "x$with_ffi" = "xno"
+if test "$with_ffi" = "no"
 then
   AC_DEFINE(WITHOUT_FFI, [1], [remove the foreign function support])
 fi
@@ -181,7 +181,7 @@ AC_ARG_WITH(crlibm,
    [],
    [with_crlibm="yes"])
 
-if test "x$with_crlibm" != "xno"
+if test "$with_crlibm" != "no"
 then
   AC_DEFINE(HAVE_CRLIBM, [1], [Correct Rounding maths library should be used])
 fi
@@ -191,7 +191,7 @@ AC_ARG_WITH(softfloat,
    [],
    [with_softfloat="yes"])
 
-if test "x$with_softfloat" != "xno"
+if test "$with_softfloat" != "no"
 then
   AC_DEFINE(HAVE_SOFTFLOAT, [1], [support for 128-bit long double/float128_t])
 fi
@@ -201,7 +201,7 @@ AC_ARG_WITH(threads,
    [],
    [with_threads="yes"])
 
-if test "x$with_threads" = "xno"
+if test "$with_threads" = "no"
 then
   AC_DEFINE(AVOID_THREADS, [1], [disable Karatsuba and input local editing so they do not create threads])
 fi
@@ -211,12 +211,12 @@ AC_ARG_WITH(threadlocal,
    [],
    [with_threadlocal="yes"])
 
-if test "x$with_threadlocal" = "xno"
+if test "$with_threadlocal" = "no"
 then
   AC_DEFINE(AVOID_THREADLOCAL, [1], [disable thread local usage])
 fi
 
-if test "x$BUILTFOR" = "xunknown"
+if test "$BUILTFOR" = "unknown"
 then
   BUILTFOR=`eval "$SHELL $srcdir/../scripts/findhost.sh $host $ac_configure_args"`
   AC_MSG_NOTICE([Build platform detected as $BUILTFOR])
@@ -274,9 +274,9 @@ AC_ARG_WITH(force,
   [],
   [with_force="no"])
 
-if test "x$with_fox" != "xno" || test "x$with_wx" != "xno"
+if test "$with_fox" != "no" || test "$with_wx" != "no"
 then
-  if test "x$with_gui" = "xno"
+  if test "$with_gui" = "no"
   then
     AC_MSG_ERROR([Have asked for Fox or wXWidgets but no GUI at all])
   fi
@@ -285,13 +285,13 @@ else
   with_gui="no"
 fi
 
-if test "x$with_gui" = "xno"
+if test "$with_gui" = "no"
 then
   with_fox="no"
   with_wx="no"
 fi
 
-if test "x$with_gui" != "xno"
+if test "$with_gui" != "no"
 then
 # This symbol is now deprecated in favour of testing the state of
 # WITHOUT_GUI which has the opposite sense but whihc I hope captures
@@ -299,7 +299,7 @@ then
   AC_DEFINE(WINDOW_SYSTEM,[1],[True for a (potentially) Windowed system])
 fi
 
-if test "x$with_gui" = "xno"
+if test "$with_gui" = "no"
 then
   AC_DEFINE(WITHOUT_GUI,[1],[Not even an attempt at support for GUI])
 fi
@@ -318,17 +318,17 @@ AC_SUBST(OBJDUMP)
 # (cygwin or native style) and are wanting to create a DLL to be loaded
 # by my code.
 
-if test "x$WINDRES" = "x"
+if test "$WINDRES" = ""
 then
   AC_CHECK_TOOL(WINDRES, windres, windres)
 fi
 
-if test "x$DLLTOOL" = "x"
+if test "$DLLTOOL" = ""
 then
   AC_CHECK_TOOL(DLLTOOL, dlltool, dlltool)
 fi
 
-if test "x$OBJDUMP" = "x"
+if test "$OBJDUMP" = ""
 then
   AC_CHECK_TOOL(OBJDUMP, objdump, objdump)
 fi
@@ -346,7 +346,7 @@ case $host in
   CPPFLAGS="$CPPFLAGS -fmax-errors=10"
   CFLAGS="$CFLAGS -mfsgsbase"
   CXXFLAGS="$CXXFLAGS -mfsgsbase"
-  if test "x$with_cygwin" != "xno"
+  if test "$with_cygwin" != "no"
   then
 # The next line may ALMOST count as a lie, but under raw cygwin the world
 # is closer to Unix than to Windows so this does make some sense!
@@ -359,7 +359,7 @@ case $host in
 # at least until April 2020 without it you have trouble linking code that
 # has "extern thread_local" entities when you are an a 64-bit cygwin world.
     LDFLAGS="$LDFLAGS -Wl,--image-base,0x10000000"
-    if test "x$with_gui" != "xno"
+    if test "$with_gui" != "no"
     then
       LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
     fi
@@ -415,31 +415,31 @@ case $host in
 # something here! The paths shown here are the ones I find installed on
 # Solaris 10 x86 from the Software Companion DVD. This all seems pretty
 # HORRID to me!
-  if test "x$CC" = "x"
+  if test "$CC" = ""
   then
     AC_PATH_PROGS(CC, gcc, gcc, [/usr/sfw/bin:$PATH])
   fi
-  if test "x$CXX" = "x"
+  if test "$CXX" = ""
   then
     AC_PATH_PROGS(CXX, g++, g++, [/usr/sfw/bin:$PATH])
   fi 
-  if test "x$MAKE" = "x"
+  if test "$MAKE" = ""
   then
     AC_PATH_PROGS(MAKE, [gmake make], make, [/usr/sfw/bin:$PATH])
   fi
-  if test "x$AR" = "x"
+  if test "$AR" = ""
   then
     AC_PATH_PROGS(AR, [gar ar], ar, [/usr/sfw/bin:$PATH])
   fi
-  if test "x$STRIP" = "x"
+  if test "$STRIP" = ""
   then
     AC_PATH_PROGS(STRIP, [gstrip strip], strip, [/usr/sfw/bin:$PATH])
   fi
-  if test "x$SED" = "x"
+  if test "$SED" = ""
   then
     AC_PATH_PROGS(SED, [gsed sed], sed, [/usr/sfw/bin:$PATH])
   fi
-  if test "x$with_gui" != "xno"
+  if test "$with_gui" != "no"
   then
     LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
   fi
@@ -470,7 +470,7 @@ case $host in
   XLIBS="-lXext -lX11 -lXft -lfontconfig -lc"
   macintosh_build="yes"
   darwin_build="yes"
-  if test "x$CC$CXX" = "x" || (test "x$CC" = "xgcc" && test "x$CXX" = "xg++")
+  if test "$CC$CXX" = "" || (test "$CC" = "gcc" && test "$CXX" = "g++")
   then
 # The following line was suggested by the libEDIT configuration files.
 # Even though I no longer use libEDIT I will keep it!
@@ -504,7 +504,7 @@ case $host in
 *-freebsd*)
   AC_MSG_NOTICE([Building on FreeBSD])
   AC_DEFINE(UNIX,[1],[True if we are running on Unix, Linux, BSD etc])
-  if test "x$target" = "x"
+  if test "$target" = ""
   then
     xtarget="$host"
   else
@@ -518,9 +518,9 @@ case $host in
 # To survive 64-bit Linux the next line seems needed. I will leave it for
 # BSD since is a /usr/X11R6/lib64 directory does not exist no harm will
 # be done.
-  if test "x$with_gui" != "xno"
+  if test "$with_gui" != "no"
   then
-    if test "x$cross_compiling" != "xyes"
+    if test "$cross_compiling" != "yes"
     then
       AC_CHECK_FILE([/usr/X11R6/lib64],[XLL=lib64],[XLL=lib])
     else
@@ -538,7 +538,7 @@ case $host in
   AC_MSG_NOTICE([host=$host, target=$target])
   AC_DEFINE(UNIX,[1],[True if we are running on Unix, Linux, BSD etc])
   linux_build="yes"
-  if test "x$target" = "x"
+  if test "$target" = ""
   then
     xtarget="$host"
   else
@@ -550,9 +550,9 @@ case $host in
      ;;
   esac
 # To survive 64-bit Linux the next line seems needed.
-  if test "x$with_gui" != "xno"
+  if test "$with_gui" != "no"
   then
-    if test "x$cross_compiling" != "xyes"
+    if test "$cross_compiling" != "yes"
     then
       AC_CHECK_FILE([/usr/X11R6/lib64],[XLL=lib64],[XLL=lib])
     else
@@ -568,19 +568,19 @@ esac
 # In some cases there may be explicitly GNU versions of various utilities,
 # and I will perhaps use them if I find them.
 
-if test "x$MAKE" = "x"
+if test "$MAKE" = ""
 then
   AC_CHECK_PROGS(MAKE,[gmake make],[make])
 fi
-if test "x$AR" = "x"
+if test "$AR" = ""
 then
   AC_CHECK_PROGS(AR,[gar ar],[ar])
 fi
-if test "x$STRIP" = "x"
+if test "$STRIP" = ""
 then
   AC_CHECK_PROGS(STRIP,[gstrip strip],[echo])
 fi
-if test "x$SED" = "x"
+if test "$SED" = ""
 then
   AC_CHECK_PROGS(SED,[gsed sed],[sed])
 fi
@@ -627,7 +627,7 @@ AC_ARG_ENABLE(profile,
   [enable_profile="no"])
 AC_MSG_RESULT([$enable_profile])
 
-if test "x$enable_debug" = "xyes"
+if test "$enable_debug" = "yes"
 then
   foxdir="$foxdir-debug"
 fi
@@ -647,7 +647,7 @@ AC_ARG_ENABLE(conservative,
   [enable_conservative="no"])
 AC_MSG_RESULT([$enable_conservative])
 
-if test "x$enable_conservative" = "xyes"
+if test "$enable_conservative" = "yes"
 then
   AC_DEFINE(CONSERVATIVE, [1], [True if GC experiment enabled])
 fi
@@ -658,7 +658,7 @@ AC_ARG_ENABLE(test,
   [],
   [enable_test="no"])
 
-if test "x$enable_test" = "xyes"
+if test "$enable_test" = "yes"
 then
   AC_DEFINE([TEST], [1], [For use by developers])
 fi
@@ -669,7 +669,7 @@ AC_ARG_ENABLE(experiment,
   [],
   [enable_experiment="no"])
 
-if test "x$enable_experiment" = "xyes"
+if test "$enable_experiment" = "yes"
 then
   AC_DEFINE([EXPERIMENT], [1], [For use by developers])
 fi
@@ -683,7 +683,7 @@ AC_ARG_ENABLE(trace-equal,
   [enable_trace_equal="no"])
 AC_MSG_RESULT([$enable_trace_equal])
 
-if test "x$enable_trace_equal" = "xyes"
+if test "$enable_trace_equal" = "yes"
 then
   AC_DEFINE(TRACED_EQUAL, [1], [True if EQUAL should be profiled])
 fi
@@ -704,7 +704,7 @@ AC_ARG_WITH(arithlib,
   [with_arithlib="no"])
 AC_MSG_RESULT([$with_arithlib])
 
-if test "x$with_arithlib" = "xyes"
+if test "$with_arithlib" = "yes"
 then
   CPPFLAGS="$CPPFLAGS -DARITHLIB=1"
   AC_DEFINE(ARITHLIB, [1], [Work on a transition to use of arithlib.hpp for bignums])
@@ -716,7 +716,7 @@ AC_ARG_WITH(throw,
   [],
   [with_throw="yes"])
 
-if test "x$with_throw" = "xno"
+if test "$with_throw" = "no"
 then
   AC_DEFINE(NO_THROW, [1], [Avoid use of catch and throw])
 fi
@@ -730,12 +730,12 @@ AC_ARG_ENABLE(embedded,
   [enable_embedded="no"])
 AC_MSG_RESULT([$enable_embedded])
 
-if test "x$enable_embedded" = "xyes"
+if test "$enable_embedded" = "yes"
 then
   AC_DEFINE(EMBEDDED, [1], [True if this is with no GUI and aimed at embedded use])
 fi
 
-if test "x$x86" = "xyes"
+if test "$x86" = "yes"
 then
   AC_DEFINE(X86, [1], [True if Intel or AMD (64-bit only these days)])
 fi
@@ -797,12 +797,12 @@ then
   fi
 fi
 
-if test "x$XLIBS" != "x"
+if test "$XLIBS" != ""
 then
   AC_PATH_X
 fi
 
-if test "x$enable_debug" = "xyes"
+if test "$enable_debug" = "yes"
 then
 # In debugging mode I will use -fsanitise=address if it is available.
   OLDCXXFLAGS="$CXXFLAGS"
@@ -827,7 +827,7 @@ fi
 # Perhaps this is now an issue of ancient history?
 
 AC_MSG_NOTICE([Checking for "--hash-style=both"])
-if test "x$GCC" = "xyes"
+if test "$GCC" = "yes"
 then
   OLDLDFLAGS="$LDFLAGS"
   LDFLAGS="$LDFLAGS -Wl,--hash-style=both"
@@ -856,7 +856,7 @@ AC_RUN_IFELSE([AC_LANG_PROGRAM([[]],
   [arithmetic_shifts="no"],    # False
   [arithmetic_shifts="no"])    # Cross-compiling
 AC_MSG_NOTICE([Signed shifts status [yes for arithmetic] : $arithmetic_shifts])
-if test "x$arithmetic_shifts" = "xyes"
+if test "$arithmetic_shifts" = "yes"
 then
   AC_DEFINE(SIGNED_SHIFTS_ARE_ARITHMETIC, [1], [Not guaranteed by ANSI spec])
 fi
@@ -896,7 +896,7 @@ fi
 #   [AC_MSG_NOTICE([std::atomic<T> width 16 available])],
 #   [maybe_need_libatomic="yes"])
 #
-# if test "x$maybe_need_libatomic" = "xyes"
+# if test "$maybe_need_libatomic" = "yes"
 # then
 #   LIBS="$LIBS -latomic"
 #   AC_LINK_IFELSE([
@@ -1020,7 +1020,7 @@ AC_LINK_IFELSE(
      ])
   ])
 
-if test "x$linux_build" = "xyes"
+if test "$linux_build" = "yes"
 then
 # This is done on ALL Linux (etc) hosts, and that is potentially dodgy.
 # So let me explain what it is about. If one builds on Ubuntu without this
@@ -1045,14 +1045,14 @@ fi
 # FAIL. In some cases it can lead to a compiler warning but then be
 # ignored.
 
-if test "x$windows_build" != "xyes"
+if test "$windows_build" != "yes"
 then
-  if test "x$macintosh_build" != "xyes"
+  if test "$macintosh_build" != "yes"
   then
 # If I am using gcc then I would like to use the flag "-rdynamic" when I
 # link. I must test and avoid using if if it will cause failure
     AC_MSG_NOTICE([Checking for "-rdynamic"])
-    if test "x$GCC" = "xyes"
+    if test "$GCC" = "yes"
     then
       OLDLDFLAGS="$LDFLAGS"
       LDFLAGS="$LDFLAGS -rdynamic"
@@ -1089,12 +1089,12 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <cstdio>]],
 AC_MSG_NOTICE([CPPFLAGS now = $CPPFLAGS])
 
 
-if test "x$darwin_build" = "xyes"
+if test "$darwin_build" = "yes"
 then
 # I COULD be trying to build on raw Darwin without MacOS present, and in that
 # case Carbon etc will not be available.
   AC_MSG_NOTICE([Checking for "-framework"])
-  if test "x$GCC" = "xyes"
+  if test "$GCC" = "yes"
   then
     OLDLDFLAGS="$LDFLAGS"
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
@@ -1107,7 +1107,7 @@ then
     framework_available="no"
   fi
   AC_MSG_NOTICE([framework=$framework_available])
-  if test "x$framework_available" = "xyes"
+  if test "$framework_available" = "yes"
   then
     AC_DEFINE(MAC_FRAMEWORK,[1],[Apple MacOS frameworks available])
   fi
@@ -1120,10 +1120,10 @@ fi
 # load to a warning that it has no effect, so I will avoid even trying to
 # activate it then (for x86 all case is position independent anyway).
 
-if test "x$windows_build" != "xyes"
+if test "$windows_build" != "yes"
 then
   AC_MSG_NOTICE([Checking for "-fPIC"])
-  if test "x$GCC" = "xyes"
+  if test "$GCC" = "yes"
   then
     OLDCFLAGS="$CFLAGS"
     CFLAGS="$CFLAGS -fPIC"
@@ -1137,13 +1137,13 @@ then
   fi
   AC_MSG_NOTICE([-fPIC=$fpic_available])
 
-  if test "x$fpic_available" = "xyes"
+  if test "$fpic_available" = "yes"
   then
     DLL_CFLAGS="$DLL_CFLAGS -fPIC"
   fi
 fi
 
-if test "x$solaris" = "xyes"
+if test "$solaris" = "yes"
 then
 # I believe that the Sun C compilers need a "-mt" flag so here I check if
 # such a flag is accepted and if so I will use it.
@@ -1155,10 +1155,10 @@ then
                  [CFLAGS="$OLDCFLAGS"])
 fi
 
-if test "x$with_lto" != "xno"
+if test "$with_lto" != "no"
 then
   AC_MSG_NOTICE([Checking for link time optimisation capability (LTO)])
-  if test "x$GCC" = "xyes"
+  if test "$GCC" = "yes"
   then
     OLDCFLAGS="$CFLAGS"
     OLDLDFLAGS="$LDFLAGS"
@@ -1175,9 +1175,9 @@ then
   fi
 fi
 
-if test "x$with_gui" != "xno"
+if test "$with_gui" != "no"
 then
-  if (test "x$windows_build" != "xyes" || test "x$with_cygwin" != "xno")
+  if (test "$windows_build" != "yes" || test "$with_cygwin" != "no")
   then
 # I will not even look for Xft if I am building for win32 rather than X.
 #
@@ -1188,7 +1188,7 @@ then
                      [Can be used to disable use of XFT. Default is yes]),
       [],
       [with_xft="yes"])
-    if test "x$with_xft" != "xno" && test "x$cross_compiling" != "xyes"
+    if test "$with_xft" != "no" && test "$cross_compiling" != "yes"
     then
       AC_PATH_PROGS(XFT_CONFIG, xft-config, [no],
         [/usr/local/bin:/usr/X11R6/bin:/usr/sfw/bin:/usr/csw/bin:$PATH])
@@ -1250,7 +1250,7 @@ then
     fi
   fi
 
-  if test "x$xft_found" != "xyes"
+  if test "$xft_found" != "yes"
   then
 # Now a search without the benefit of helper tools.
     xft_found="yes"
@@ -1301,7 +1301,7 @@ AC_MSG_RESULT([$enable_static])
 # settings are applied if the compiler is detected as gcc.
 
 LOWOPT="-O0"
-if test "x$HIGHOPT" = "x"
+if test "$HIGHOPT" = ""
 then
   HIGHOPT="-O3"
 fi
@@ -1318,7 +1318,7 @@ AC_ARG_WITH(smallpage,
    [],
    [with_smallpage="no"])
 
-if test "x$with_smallpage" != "xno"
+if test "$with_smallpage" != "no"
 then
 # Using 19 bits here causes allocation in pages each of which is 512Kbytes,
 # rather than the default 4M pages. A key limitation this introduces is that
@@ -1327,14 +1327,14 @@ then
   CFLAGS="$CFLAGS -DPAGE_BITS=19"
 fi
 
-if test "x$GCC" = "xyes"
+if test "$GCC" = "yes"
 then
 # At one stage I was concerned about "strict aliasing" so disabled the
 # exploitation of it. It still seems delicate in places, but experience is
 # now that enough works that I will allow g++ to optimise enthusiastically!
   NSA=
 # NSA="-fno-strict-aliasing"
-  if test "x$enable_debug" = "xyes"
+  if test "$enable_debug" = "yes"
   then
     CFLAGS="${CFLAGS} ${NSA} ${LOWOPT} -g -DDEBUG=1 -Wall"
     CXXFLAGS="${CXXFLAGS} ${NSA} ${LOWOPT} -g -DDEBUG=1 -Wall"
@@ -1345,19 +1345,19 @@ then
     CXXFLAGS="$CXXFLAGS ${NSA} ${HIGHOPT} -Wall"
     DLL_CFLAGS="${DLL_CFLAGS} ${NSA} ${HIGHOPT}"
   fi
-  if test "x$enable_profile" = "xyes"
+  if test "$enable_profile" = "yes"
   then
     CXXFLAGS="$CXXFLAGS -pg"
     LDFLAGS="$LDFLAGS -pg"
     STRIP="echo"
   fi
-  if test "x$enable_static" = "xyes"
+  if test "$enable_static" = "yes"
   then
     LDFLAGS="${LDFLAGS} -static"
     AC_MSG_NOTICE([including -static in linker flags])
   fi
 else
-  if test "x$enable_debug" = "xyes"
+  if test "$enable_debug" = "yes"
   then
     CFLAGS="${CFLAGS} -g -DDEBUG=1"
     CXXFLAGS="${CXXFLAGS} -g -DDEBUG=1"
@@ -1380,7 +1380,7 @@ AC_SEARCH_LIBS([pthread_create], [pthread])
 AC_SEARCH_LIBS([pthread_mutex_init], [pthread])
 AC_SEARCH_LIBS([pthread_mutexattr_settype], [pthread])
 
-if test "x$with_gui" != "xno"
+if test "$with_gui" != "no"
 then
   LIBS="$XLIBS $LIBS"
 fi
@@ -1399,7 +1399,7 @@ fi
 # confusing! So now I will just check for each header and then work out later
 # on if I have enough to support what I need.
 
-if test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes"
+if test "$windows_build" != "yes" || test "$with_cygwin" = "yes"
 then
   AC_CHECK_HEADERS(termios.h sys/ioctl.h)
 
@@ -1479,7 +1479,7 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(,
  AC_MSG_RESULT([yes])],
 [have_builtin_clz=no
  AC_MSG_RESULT([no])])
-if test x$have_builtin_clz = xyes
+if test "$have_builtin_clz" = "yes"
 then
   AC_DEFINE([HAVE___BUILTIN_CLZ], [1],
             [Define to 1 if the compiler support __builtin_clz.])
@@ -1492,7 +1492,7 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(,
  AC_MSG_RESULT([yes])],
 [have_builtin_ctz=no
  AC_MSG_RESULT([no])])
-if test x$have_builtin_ctz = xyes
+if test "$have_builtin_ctz" = "yes"
 then
   AC_DEFINE([HAVE___BUILTIN_CTZ], [1],
             [Define to 1 if the compiler support __builtin_ctz.])
@@ -1508,10 +1508,10 @@ AC_SEARCH_LIBS([deflate], [z])
 # However Solarix 10 x86 seems to misdetect Xrender when in
 # 64-bit mode so I fudge that away here.
 
-if test "x$with_gui" != "xno" &&
-   test "x$solaris" != "xyes" &&
-   (test "x$windows_build" != "xyes" ||
-     test "x$with_cygwin" = "xyes")
+if test "$with_gui" != "no" &&
+   test "$solaris" != "yes" &&
+   (test "$windows_build" != "yes" ||
+     test "$with_cygwin" = "yes")
 then
   AC_SEARCH_LIBS([XRenderCreateCursor], [Xrender])
   AC_SEARCH_LIBS([XcursorImageCreate], [Xcursor])
@@ -1616,7 +1616,7 @@ AC_CHECK_FUNCS([_getc_nolock _putc_nolock])
 # available.
 AC_CHECK_FUNCS([csqrt])
    
-if test x$ac_cv_header_sys_resource_h = "xyes"
+if test "$ac_cv_header_sys_resource_h" = "yes"
 then
   AC_CHECK_DECLS([RLIM_SAVED_CUR, RLIM_SAVED_MAX], [], [],
     [[#include <sys/resource.h>]])
@@ -1625,14 +1625,14 @@ fi
 AC_SUBST(FOX_INCLUDES)
 AC_SUBST(FOX_LIBS)
 
-if test "x$with_fox" != "xno"
+if test "$with_fox" != "no"
 then
   FOX_INCLUDES="-I ../include/fox-1.6"
   FOX_LIBS="-lFOX-1.6"
   AC_DEFINE(HAVE_LIBFOX, [1], [Fox library present])
 fi
 
-if test "x$with_wx" != "xno"
+if test "$with_wx" != "no"
 then
   AC_DEFINE(HAVE_LIBWX, [1], [wxWidgets library will be used])
 fi
@@ -1641,7 +1641,7 @@ fi
 # The extra libraries listed here seem to need to be scanned last.
 #
 
-if test "x$windows_build" = "xyes"
+if test "$windows_build" = "yes"
 then
   case $CC in
   x86_64-w64-*)
@@ -1653,7 +1653,7 @@ then
   esac
 fi
 
-if test "x$macintosh_build" = "xyes"
+if test "$macintosh_build" = "yes"
 then
 # 10.0  Cheetah       )
 # 10.1  Puma          )
@@ -1708,7 +1708,7 @@ then
 # I am not distributing them, merely links to them. Hmm I will try to
 # avoid overriding the linker arrangements in the case that somebody has
 # configured for use without a GUI.
-  if test "x$with_gui" = "xyes"
+  if test "$with_gui" = "yes"
   then
     if test -d /opt/local/lib
     then 
@@ -1742,7 +1742,7 @@ then
       $LL/libexpat.a \
       -lpthread \
       -ldl"
-    if test "x$with_wx" = "xyes"
+    if test "$with_wx" = "yes"
     then
       LIBS="$LIBS $LL/libiconv.a $LL/libz.a $LL/libpng.a"
     fi
@@ -1762,7 +1762,7 @@ fi
 
 AC_CHECK_PROGS(CYGPATH,[cygpath],[no])
 
-if test "x$windows_build" != "xyes" && test "x$with_wx" != "xno"
+if test "$windows_build" != "yes" && test "$with_wx" != "no"
 then
 # The "xpm" files use to establish icons for wxWindows lead to a lot
 # of ugly warnings about casts from strings to (char *) unless I disable
@@ -1776,8 +1776,11 @@ HOST="$host"
 AC_SUBST(CYGWIN_FLAVOUR)
 CYGWIN_FLAVOUR="x86_64"
 
-# The nexy couple are to do with making it possible to use GNU make
-# conditionals within Makefile.am
+# The next couple are to do with making it possible to use GNU make
+# conditionals within Makefile.am. The issue here is that automake used
+# (eg) "endif" as one of its directives so a simple attempt to write a
+# "make" conditional will confuse it. With these definitions the conditional
+# can be written with one of these spellings.
 AC_SUBST(ELSEWORD)
 ELSEWORD="else"
 AC_SUBST(ENDIFWORD)

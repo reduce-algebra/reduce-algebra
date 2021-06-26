@@ -17,21 +17,17 @@ cslbuild = $(reduce)/cslbuild
 packages = $(reduce)/packages
 generic = $(reduce)/generic
 
-NCPUS := $(shell if test "`which nproc 2>/dev/null`" != "" && test "$$?" = "0"; \
-	then \
-	  N=`nproc`; \
-	else \
-	  if test "`which sysctl 2>/dev/null`" != "" && test "$$?" = "0"; \
-	  then \
-	    N=`sysctl -n hw.ncpu`; \
-	  else \
-	    N=2; \
-	  fi; \
-	fi; echo $$N )
+# By default I will try a parallel make using as many CPUs as seem to be
+# reported as available, but by specifying "-j" or "--jobs=" explicitly the
+# user can override.
 
-cpucount:
-	echo $(NCPUS)
-
+ifeq "0" "$(MAKELEVEL)"
+MAKEFLAGS := -j$(shell nproc || sysctl -n hw.ncpu || printf "1") $(MAKEFLAGS)
+# Note that both automake and make itself use the word "endif", so if I
+# write that here it will be interpreted by automake. Well to get round that
+# I arrange that configure.ac sets up ENDIFWORD as a symbol that expands
+# into the "endif" that I want!
+@ENDIFWORD@
 
 ACLOCAL_AMFLAGS = -I m4
 
@@ -235,6 +231,12 @@ COM=.exe
 else !cygwin
 if gui
 COM=.com
+CSLCOM=csl$(COM)
+FLATCSLCOM=flatcsl$(COM)
+BOOTSTRAPREDUCECOM=bootstrapreduce$(COM)
+REDUCECOM=reduce$(COM)
+FWINDEMOCOM=fwindemo$(COM)
+WXPSLCOM=wxpsl$(COM)
 else !gui
 COM=.exe
 endif !gui
@@ -614,7 +616,6 @@ endif cygwin
 endif !windows
 
 dyndemo$(EXEEXT): $(dyndemo_OBJECTS) $(dyndemo_DEPENDENCIES)
-	-$(RM) -f dyndemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)dyndemo$(EXEEXT) $(dyndemo_OBJECTS) $(LIBS)
 if !debug
 if !darwin
@@ -797,9 +798,9 @@ endif !fox
 SHARED=$(cslbase)/fwin.h $(cslbase)/log.h $(cslbase)/termed.h \
 	$(cslbase)/fwin.cpp $(cslbase)/termed.cpp 
 
-$(FOXDEPS):	$(csl)/fox/CHANGED $(SHARED)
-	@printf "About to build FOX for %s\n" `pwd`
-	$(TRACE)@cd ../fox && $(MAKE) -j$(NCPUS) install
+$(FOXDEPS) &:	$(csl)/fox/CHANGED $(SHARED)
+	@printf "About to build FOX for %s ($@)\n" `pwd`
+	$(TRACE)@cd ../fox && $(MAKE) && $(MAKE) install
 
 
 if crlibm
@@ -838,9 +839,9 @@ if conservative
 alloctest_DEPENDENCIES += $(CRLIBMDEPS)
 endif conservative
 
-$(CRLIBMDEPS):
-	@printf "About to build crlibm for %s\n" `pwd`
-	$(TRACE)@cd ../crlibm && $(MAKE) -j$(NCPUS) install
+$(CRLIBMDEPS) &:
+	@printf "About to build crlibm for %s ($@)\n" `pwd`
+	$(TRACE)@cd ../crlibm && $(MAKE) install
 
 else !crlibm
 CRINC =
@@ -882,9 +883,9 @@ if conservative
 alloctest_DEPENDENCIES += $(LIBFFIDEPS)
 endif conservative
 
-$(LIBFFIDEPS):
-	@printf "About to build libffi for %s\n" `pwd`
-	$(TRACE)@cd ../libffi && $(MAKE) -j$(NCPUS) install
+$(LIBFFIDEPS) &:
+	@printf "About to build libffi for %s ($@)\n" `pwd`
+	$(TRACE)@cd ../libffi && $(MAKE) install
 
 SOFTFLOATDEPS=../lib/libsoftfloat.a ../include/softfloat.h
 
@@ -919,230 +920,239 @@ if conservative
 alloctest_DEPENDENCIES    += $(SOFTFLOATDEPS)
 endif conservative
 
-$(SOFTFLOATDEPS):
-	@printf "About to build softfloat for %s\n" `pwd`
-	$(TRACE)@cd ../softfloat && $(MAKE) -j$(NCPUS) install
+$(SOFTFLOATDEPS) &:
+	@printf "About to build softfloat for %s ($@)\n" `pwd`
+	$(TRACE)@cd ../softfloat && $(MAKE) install
 
 # Note that all the compilation of these files must be performed using
 # a Make "default" action so that the dependencies shown here are not
 # taken as specifing conflicting actions.
 
 if arithlib
-csl-arith-setup.$(OBJEXT):	$(SOFTFLOATDEP)
-csl-arith-plus.$(OBJEXT):	$(SOFTFLOATDEP)
-csl-arith-times.$(OBJEXT):	$(SOFTFLOATDEP)
-csl-arith-float.$(OBJEXT):	$(SOFTFLOATDEP)
-csl-arith-gcdn.$(OBJEXT):	$(SOFTFLOATDEP)
-csl-arith-print.$(OBJEXT):	$(SOFTFLOATDEP)
-csl-arith-compare.$(OBJEXT):	$(SOFTFLOATDEP)
-csl-arith-logops.$(OBJEXT):	$(SOFTFLOATDEP)
-csl-arith-modular.$(OBJEXT):	$(SOFTFLOATDEP)
-csl-arith-float128.$(OBJEXT):	$(SOFTFLOATDEP)
+csl-arith-setup.$(OBJEXT):	$(HDRS)
+csl-arith-plus.$(OBJEXT):	$(HDRS)
+csl-arith-times.$(OBJEXT):	$(HDRS)
+csl-arith-float.$(OBJEXT):	$(HDRS)
+csl-arith-gcdn.$(OBJEXT):	$(HDRS)
+csl-arith-print.$(OBJEXT):	$(HDRS)
+csl-arith-compare.$(OBJEXT):	$(HDRS)
+csl-arith-logops.$(OBJEXT):	$(HDRS)
+csl-arith-modular.$(OBJEXT):	$(HDRS)
+csl-arith-float128.$(OBJEXT):	$(HDRS)
 
-bootstrapreduce-arith-setup.$(OBJEXT):	$(SOFTFLOATDEP)
-bootstrapreduce-arith-plus.$(OBJEXT):	$(SOFTFLOATDEP)
-bootstrapreduce-arith-times.$(OBJEXT):	$(SOFTFLOATDEP)
-bootstrapreduce-arith-float.$(OBJEXT):	$(SOFTFLOATDEP)
-bootstrapreduce-arith-gcdn.$(OBJEXT):	$(SOFTFLOATDEP)
-bootstrapreduce-arith-print.$(OBJEXT):	$(SOFTFLOATDEP)
-bootstrapreduce-arith-compare.$(OBJEXT):	$(SOFTFLOATDEP)
-bootstrapreduce-arith-logops.$(OBJEXT):	$(SOFTFLOATDEP)
-bootstrapreduce-arith-modular.$(OBJEXT):	$(SOFTFLOATDEP)
-bootstrapreduce-arith-float128.$(OBJEXT):	$(SOFTFLOATDEP)
+bootstrapreduce-arith-setup.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith-plus.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith-times.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith-float.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith-gcdn.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith-print.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith-compare.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith-logops.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith-modular.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith-float128.$(OBJEXT):	$(HDRS)
 
-reduce-arith-setup.$(OBJEXT):	$(SOFTFLOATDEP)
-reduce-arith-plus.$(OBJEXT):	$(SOFTFLOATDEP)
-reduce-arith-times.$(OBJEXT):	$(SOFTFLOATDEP)
-reduce-arith-float.$(OBJEXT):	$(SOFTFLOATDEP)
-reduce-arith-gcdn.$(OBJEXT):	$(SOFTFLOATDEP)
-reduce-arith-print.$(OBJEXT):	$(SOFTFLOATDEP)
-reduce-arith-compare.$(OBJEXT):	$(SOFTFLOATDEP)
-reduce-arith-logops.$(OBJEXT):	$(SOFTFLOATDEP)
-reduce-arith-modular.$(OBJEXT):	$(SOFTFLOATDEP)
-reduce-arith-float128.$(OBJEXT):	$(SOFTFLOATDEP)
+reduce-arith-setup.$(OBJEXT):	$(HDRS)
+reduce-arith-plus.$(OBJEXT):	$(HDRS)
+reduce-arith-times.$(OBJEXT):	$(HDRS)
+reduce-arith-float.$(OBJEXT):	$(HDRS)
+reduce-arith-gcdn.$(OBJEXT):	$(HDRS)
+reduce-arith-print.$(OBJEXT):	$(HDRS)
+reduce-arith-compare.$(OBJEXT):	$(HDRS)
+reduce-arith-logops.$(OBJEXT):	$(HDRS)
+reduce-arith-modular.$(OBJEXT):	$(HDRS)
+reduce-arith-float128.$(OBJEXT):	$(HDRS)
 
 endif arithlib
 
-csl-allocate.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-arith01.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-arith02.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-arith03.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-arith04.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-arith05.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-arith06.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-arith07.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-arith08.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-arith09.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-arith10.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-arith11.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-arith12.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-arith13.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-arith14.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-isprime.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-bytes1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-char.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-csl.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-cslmpi.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-cslread.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-eval1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-eval2.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-eval3.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-eval4.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-fasl.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-fns1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-fns2.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-fns3.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-lisphash.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-cslgc.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-ompsetup.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-openmath.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-preserve.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-print.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-pro.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-restart.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-stubs.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-sysfwin.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-allocate.$(OBJEXT):	$(HDRS)
+csl-arith01.$(OBJEXT):	$(HDRS)
+csl-arith02.$(OBJEXT):	$(HDRS)
+csl-arith03.$(OBJEXT):	$(HDRS)
+csl-arith04.$(OBJEXT):	$(HDRS)
+csl-arith05.$(OBJEXT):	$(HDRS)
+csl-arith06.$(OBJEXT):	$(HDRS)
+csl-arith07.$(OBJEXT):	$(HDRS)
+csl-arith08.$(OBJEXT):	$(HDRS)
+csl-arith09.$(OBJEXT):	$(HDRS)
+csl-arith10.$(OBJEXT):	$(HDRS)
+csl-arith11.$(OBJEXT):	$(HDRS)
+csl-arith12.$(OBJEXT):	$(HDRS)
+csl-arith13.$(OBJEXT):	$(HDRS)
+csl-arith14.$(OBJEXT):	$(HDRS)
+csl-isprime.$(OBJEXT):	$(HDRS)
+csl-bytes1.$(OBJEXT):	$(HDRS)
+csl-char.$(OBJEXT):	$(HDRS)
+csl-csl.$(OBJEXT):	$(HDRS)
+csl-cslmpi.$(OBJEXT):	$(HDRS)
+csl-cslread.$(OBJEXT):	$(HDRS)
+csl-eval1.$(OBJEXT):	$(HDRS)
+csl-eval2.$(OBJEXT):	$(HDRS)
+csl-eval3.$(OBJEXT):	$(HDRS)
+csl-eval4.$(OBJEXT):	$(HDRS)
+csl-fasl.$(OBJEXT):	$(HDRS)
+csl-fns1.$(OBJEXT):	$(HDRS)
+csl-fns2.$(OBJEXT):	$(HDRS)
+csl-fns3.$(OBJEXT):	$(HDRS)
+csl-lisphash.$(OBJEXT):	$(HDRS)
+csl-cslgc.$(OBJEXT):	$(HDRS)
+csl-ompsetup.$(OBJEXT):	$(HDRS)
+csl-openmath.$(OBJEXT):	$(HDRS)
+csl-preserve.$(OBJEXT):	$(HDRS)
+csl-print.$(OBJEXT):	$(HDRS)
+csl-pro.$(OBJEXT):	$(HDRS)
+csl-restart.$(OBJEXT):	$(HDRS)
+csl-stubs.$(OBJEXT):	$(HDRS)
+csl-sysfwin.$(OBJEXT):	$(HDRS)
+csl-serialize.$(OBJEXT):	$(HDRS)
+csl-winsupport.$(OBJEXT):	$(HDRS)
+csl-inthash.$(OBJEXT):	$(HDRS)
 
-bootstrapreduce-allocate.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-arith01.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-arith02.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-arith03.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-arith04.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-arith05.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-arith06.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-arith07.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-arith08.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-arith09.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-arith10.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-arith11.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-arith12.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-arith13.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-arith14.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-isprime.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-bytes1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-char.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-csl.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-cslmpi.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-cslread.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-eval1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-eval2.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-eval3.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-eval4.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-fasl.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-fns1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-fns2.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-fns3.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-lisphash.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-cslgc.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-ompsetup.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-openmath.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-preserve.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-print.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-pro.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-restart.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-stubs.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-sysfwin.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-allocate.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith01.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith02.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith03.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith04.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith05.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith06.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith07.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith08.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith09.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith10.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith11.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith12.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith13.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith14.$(OBJEXT):	$(HDRS)
+bootstrapreduce-isprime.$(OBJEXT):	$(HDRS)
+bootstrapreduce-bytes1.$(OBJEXT):	$(HDRS)
+bootstrapreduce-char.$(OBJEXT):	$(HDRS)
+bootstrapreduce-csl.$(OBJEXT):	$(HDRS)
+bootstrapreduce-cslmpi.$(OBJEXT):	$(HDRS)
+bootstrapreduce-cslread.$(OBJEXT):	$(HDRS)
+bootstrapreduce-eval1.$(OBJEXT):	$(HDRS)
+bootstrapreduce-eval2.$(OBJEXT):	$(HDRS)
+bootstrapreduce-eval3.$(OBJEXT):	$(HDRS)
+bootstrapreduce-eval4.$(OBJEXT):	$(HDRS)
+bootstrapreduce-fasl.$(OBJEXT):	$(HDRS)
+bootstrapreduce-fns1.$(OBJEXT):	$(HDRS)
+bootstrapreduce-fns2.$(OBJEXT):	$(HDRS)
+bootstrapreduce-fns3.$(OBJEXT):	$(HDRS)
+bootstrapreduce-lisphash.$(OBJEXT):	$(HDRS)
+bootstrapreduce-cslgc.$(OBJEXT):	$(HDRS)
+bootstrapreduce-ompsetup.$(OBJEXT):	$(HDRS)
+bootstrapreduce-openmath.$(OBJEXT):	$(HDRS)
+bootstrapreduce-preserve.$(OBJEXT):	$(HDRS)
+bootstrapreduce-print.$(OBJEXT):	$(HDRS)
+bootstrapreduce-pro.$(OBJEXT):	$(HDRS)
+bootstrapreduce-restart.$(OBJEXT):	$(HDRS)
+bootstrapreduce-stubs.$(OBJEXT):	$(HDRS)
+bootstrapreduce-sysfwin.$(OBJEXT):	$(HDRS)
+bootstrapreduce-serialize.$(OBJEXT):	$(HDRS)
+bootstrapreduce-winsupport.$(OBJEXT):	$(HDRS)
+bootstrapreduce-inthash.$(OBJEXT):	$(HDRS)
 
-reduce-allocate.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-arith01.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-arith02.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-arith03.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-arith04.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-arith05.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-arith06.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-arith07.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-arith08.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-arith09.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-arith10.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-arith11.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-arith12.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-arith13.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-arith14.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-isprime.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-bytes1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-char.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-csl.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-cslmpi.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-cslread.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-eval1.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-eval2.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-eval3.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-eval4.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-fasl.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-fns1.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-fns2.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-fns3.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-lisphash.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-cslgc.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-ompsetup.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-openmath.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-preserve.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-print.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-pro.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-restart.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-stubs.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-sysfwin.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-allocate.$(OBJEXT):	$(HDRS)
+reduce-arith01.$(OBJEXT):	$(HDRS)
+reduce-arith02.$(OBJEXT):	$(HDRS)
+reduce-arith03.$(OBJEXT):	$(HDRS)
+reduce-arith04.$(OBJEXT):	$(HDRS)
+reduce-arith05.$(OBJEXT):	$(HDRS)
+reduce-arith06.$(OBJEXT):	$(HDRS)
+reduce-arith07.$(OBJEXT):	$(HDRS)
+reduce-arith08.$(OBJEXT):	$(HDRS)
+reduce-arith09.$(OBJEXT):	$(HDRS)
+reduce-arith10.$(OBJEXT):	$(HDRS)
+reduce-arith11.$(OBJEXT):	$(HDRS)
+reduce-arith12.$(OBJEXT):	$(HDRS)
+reduce-arith13.$(OBJEXT):	$(HDRS)
+reduce-arith14.$(OBJEXT):	$(HDRS)
+reduce-isprime.$(OBJEXT):	$(HDRS)
+reduce-bytes1.$(OBJEXT):	$(HDRS)
+reduce-char.$(OBJEXT):		$(HDRS)
+reduce-csl.$(OBJEXT):		$(HDRS)
+reduce-cslmpi.$(OBJEXT):	$(HDRS)
+reduce-cslread.$(OBJEXT):	$(HDRS)
+reduce-eval1.$(OBJEXT):		$(HDRS)
+reduce-eval2.$(OBJEXT):		$(HDRS)
+reduce-eval3.$(OBJEXT):		$(HDRS)
+reduce-eval4.$(OBJEXT):		$(HDRS)
+reduce-fasl.$(OBJEXT):		$(HDRS)
+reduce-fns1.$(OBJEXT):		$(HDRS)
+reduce-fns2.$(OBJEXT):		$(HDRS)
+reduce-fns3.$(OBJEXT):		$(HDRS)
+reduce-lisphash.$(OBJEXT):	$(HDRS)
+reduce-cslgc.$(OBJEXT):		$(HDRS)
+reduce-ompsetup.$(OBJEXT):	$(HDRS)
+reduce-openmath.$(OBJEXT):	$(HDRS)
+reduce-preserve.$(OBJEXT):	$(HDRS)
+reduce-print.$(OBJEXT):		$(HDRS)
+reduce-pro.$(OBJEXT):		$(HDRS)
+reduce-restart.$(OBJEXT):	$(HDRS)
+reduce-stubs.$(OBJEXT):		$(HDRS)
+reduce-sysfwin.$(OBJEXT):	$(HDRS)
+reduce-serialize.$(OBJEXT):	$(HDRS)
+reduce-winsupport.$(OBJEXT):	$(HDRS)
+reduce-inthash.$(OBJEXT):	$(HDRS)
 
-reduce-u01.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u02.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u03.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u04.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u05.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u06.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u07.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u08.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u09.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u10.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u11.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u12.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u13.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u14.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u15.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u16.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u17.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u18.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u19.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u20.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u21.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u22.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u23.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u24.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u25.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u26.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u27.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u28.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u29.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u30.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u31.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u32.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u33.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u34.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u35.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u36.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u37.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u38.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u39.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u40.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u41.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u42.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u43.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u44.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u45.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u46.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u47.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u48.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u49.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u50.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u51.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u52.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u53.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u54.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u55.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u56.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u57.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u58.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u59.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-u60.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u01.$(OBJEXT):	$(HDRS)
+reduce-u02.$(OBJEXT):	$(HDRS)
+reduce-u03.$(OBJEXT):	$(HDRS)
+reduce-u04.$(OBJEXT):	$(HDRS)
+reduce-u05.$(OBJEXT):	$(HDRS)
+reduce-u06.$(OBJEXT):	$(HDRS)
+reduce-u07.$(OBJEXT):	$(HDRS)
+reduce-u08.$(OBJEXT):	$(HDRS)
+reduce-u09.$(OBJEXT):	$(HDRS)
+reduce-u10.$(OBJEXT):	$(HDRS)
+reduce-u11.$(OBJEXT):	$(HDRS)
+reduce-u12.$(OBJEXT):	$(HDRS)
+reduce-u13.$(OBJEXT):	$(HDRS)
+reduce-u14.$(OBJEXT):	$(HDRS)
+reduce-u15.$(OBJEXT):	$(HDRS)
+reduce-u16.$(OBJEXT):	$(HDRS)
+reduce-u17.$(OBJEXT):	$(HDRS)
+reduce-u18.$(OBJEXT):	$(HDRS)
+reduce-u19.$(OBJEXT):	$(HDRS)
+reduce-u20.$(OBJEXT):	$(HDRS)
+reduce-u21.$(OBJEXT):	$(HDRS)
+reduce-u22.$(OBJEXT):	$(HDRS)
+reduce-u23.$(OBJEXT):	$(HDRS)
+reduce-u24.$(OBJEXT):	$(HDRS)
+reduce-u25.$(OBJEXT):	$(HDRS)
+reduce-u26.$(OBJEXT):	$(HDRS)
+reduce-u27.$(OBJEXT):	$(HDRS)
+reduce-u28.$(OBJEXT):	$(HDRS)
+reduce-u29.$(OBJEXT):	$(HDRS)
+reduce-u30.$(OBJEXT):	$(HDRS)
+reduce-u31.$(OBJEXT):	$(HDRS)
+reduce-u32.$(OBJEXT):	$(HDRS)
+reduce-u33.$(OBJEXT):	$(HDRS)
+reduce-u34.$(OBJEXT):	$(HDRS)
+reduce-u35.$(OBJEXT):	$(HDRS)
+reduce-u36.$(OBJEXT):	$(HDRS)
+reduce-u37.$(OBJEXT):	$(HDRS)
+reduce-u38.$(OBJEXT):	$(HDRS)
+reduce-u39.$(OBJEXT):	$(HDRS)
+reduce-u40.$(OBJEXT):	$(HDRS)
+reduce-u41.$(OBJEXT):	$(HDRS)
+reduce-u42.$(OBJEXT):	$(HDRS)
+reduce-u43.$(OBJEXT):	$(HDRS)
+reduce-u44.$(OBJEXT):	$(HDRS)
+reduce-u45.$(OBJEXT):	$(HDRS)
+reduce-u46.$(OBJEXT):	$(HDRS)
+reduce-u47.$(OBJEXT):	$(HDRS)
+reduce-u48.$(OBJEXT):	$(HDRS)
+reduce-u49.$(OBJEXT):	$(HDRS)
+reduce-u50.$(OBJEXT):	$(HDRS)
+reduce-u51.$(OBJEXT):	$(HDRS)
+reduce-u52.$(OBJEXT):	$(HDRS)
+reduce-u53.$(OBJEXT):	$(HDRS)
+reduce-u54.$(OBJEXT):	$(HDRS)
+reduce-u55.$(OBJEXT):	$(HDRS)
+reduce-u56.$(OBJEXT):	$(HDRS)
+reduce-u57.$(OBJEXT):	$(HDRS)
+reduce-u58.$(OBJEXT):	$(HDRS)
+reduce-u59.$(OBJEXT):	$(HDRS)
+reduce-u60.$(OBJEXT):	$(HDRS)
 
 # If one of the major foundations of this Makefile has a date later than that
 # on fxver.h then make does a futile recursion to try to fix it and in the
@@ -1164,7 +1174,7 @@ $(csl)/wxWidgets/wxWidgets_revision:	\
 	a=$${a##* } ; \
 	b=$${a%.tar.bz2} ; \
 	cd .. ; \
-	rm -rf wxWidgets ; \
+	$(RM) -rf wxWidgets ; \
 	tar xfj support-packages/$$a ; \
 	chmod -R +rw wxWidgets ; \
 	cp $(csl)/support-packages/wxWidgets_revision wxWidgets ; \
@@ -1178,12 +1188,11 @@ $(csl)/wxWidgets/wxWidgets_revision:	\
 
 WXDEPS=../bin/wx-config
 
-../bin/wx-config:	$(csl)/wxWidgets/wxWidgets_revision
-	@printf "About to build wxWidgets for %s\n" `pwd`
-	$(TRACE)@cd ../wxWidgets && $(MAKE) -j$(NCPUS) install
+../bin/wx-config &:	$(csl)/wxWidgets/wxWidgets_revision
+	@printf "About to build wxWidgets for %s ($@)\n" `pwd`
+	$(TRACE)@cd ../wxWidgets && $(MAKE) install
 
 wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
-	-$(RM) -f wxfontdemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)wxfontdemo$(EXEEXT) $(wxfontdemo_OBJECTS) $(wxfontdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 if !debug
 if !darwin
@@ -1195,7 +1204,6 @@ if mac_framework
 endif mac_framework
 
 wxfontdemo1$(EXEEXT): $(wxfontdemo1_OBJECTS) $(wxfontdemo1_DEPENDENCIES) $(WXDEPS)
-	-$(RM) -f wxfontdemo1$(EXEEXT)
 	$(CXXLINKTO) $(DEST)wxfontdemo1$(EXEEXT) $(wxfontdemo1_OBJECTS) $(wxfontdemo1_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 if !debug
 if !darwin
@@ -1207,7 +1215,6 @@ if mac_framework
 endif mac_framework
 
 wxdvi$(EXEEXT): $(wxdvi_OBJECTS) $(wxdvi_DEPENDENCIES) $(WXDEPS)
-	-$(RM) -f wxdvi$(EXEEXT)
 	$(CXXLINKTO) $(DEST)wxdvi$(EXEEXT) $(wxdvi_OBJECTS) $(wxdvi_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 if !debug
 if !darwin
@@ -1219,7 +1226,6 @@ if mac_framework
 endif mac_framework
 
 wxshowmath$(EXEEXT): $(wxshowmath_OBJECTS) $(wxshowmath_DEPENDENCIES) $(WXDEPS)
-	-$(RM) -f wxshowmath$(EXEEXT)
 	$(CXXLINKTO) $(DEST)wxshowmath$(EXEEXT) $(wxshowmath_OBJECTS) $(wxshowmath_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 if !debug
 if !darwin
@@ -1231,7 +1237,6 @@ if mac_framework
 endif mac_framework
 
 wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) $(WXDEPS)
-	-$(RM) -f wxdemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)wxdemo$(EXEEXT) $(wxdemo_OBJECTS) $(wxdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 if !debug
 if !darwin
@@ -1243,7 +1248,6 @@ if mac_framework
 endif mac_framework
 
 wxshowmathdemo$(EXEEXT): $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_DEPENDENCIES) $(WXDEPS)
-	-$(RM) -f wxshowmathdemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)wxshowmathdemo$(EXEEXT) $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 if !debug
 if !darwin
@@ -1258,13 +1262,25 @@ else !wx
 WXDEPS=
 endif !wx
 
-csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
-	-$(RM) -f csl$(EXEEXT)
+HDRS = $(FOXDEPS) $(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+
+csl$(EXEEXT):	$(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS) $(CSLCOM)
 if windows
+# In a way that may be seen as strange I want to end up with 3 executables
+# for CSL. The most obvious is "csl.exe" which I link from all the object
+# files. Then "csl.com" is the same but linked as a console mode application.
+# Finally "csl" without an extension is a shell script that I copy from
+# the cslbase directory. Cygwin has "interesting" behaviour with regard to
+# the related filenames "csl" and "csl.exe", and what it does makes sense in
+# almost all situations and one would not normally have files with both names
+# present: I can arrange that I do have both and do not become (too) confused
+# ny putting "csl" in place using "mv" not "cp".
 if gui
-	$(CP) $(cslbase)/csl .
+	$(CP) $(cslbase)/csl csl-temp
+	mv -f csl-temp csl
 else !gui
-	$(CP) $(cslbase)/csl-nogui .
+	$(CP) $(cslbase)/csl-nogui csl-nogui-temp
+	mv -f csl-nogui-temp csl
 endif !gui
 if !cygwin
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
@@ -1274,20 +1290,9 @@ if !cygwin
 endif !cygwin
 endif windows
 	$(CXXLINKTO) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
-if windows
-if gui
-	-$(RM) -f csl$(COM)
-	$(CXXLINKTO) $(DEST)csl$(COM) $(csl_OBJECTS) $(csl_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
-endif gui
-endif windows
 if !debug
 if !darwin
 	$(STRIP) csl$(EXEEXT)
-if windows
-if gui
-	$(STRIP) csl$(COM)
-endif gui
-endif windows
 endif !darwin
 endif !debug
 if wx
@@ -1302,13 +1307,22 @@ endif mac_framework
 
 endif !wx
 
-flatcsl$(EXEEXT): $(flatcsl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
-	-$(RM) -f csl$(EXEEXT)
 if windows
 if gui
-	$(CP) $(cslbase)/csl .
+csl$(COM):	$(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS)
+	$(CXXLINKTO) $(DEST)csl$(COM) $(csl_OBJECTS) $(csl_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
+	$(STRIP) csl$(COM)
+endif gui
+endif windows
+
+flatcsl$(EXEEXT):	$(flatcsl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS) $(FLATCSLCOM)
+if windows
+if gui
+	$(CP) $(cslbase)/csl csl-temp
+	mv -f csl-temp csl
 else !gui
-	$(CP) $(cslbase)/csl-nogui .
+	$(CP) $(cslbase)/csl-nogui csl-nogui-temp
+	mv -f csl-nogui-temp csl
 endif !gui
 if !cygwin
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
@@ -1318,20 +1332,9 @@ if !cygwin
 endif !cygwin
 endif windows
 	$(CXXLINKTO) $(DEST)flatcsl$(EXEEXT) $(flatcsl_OBJECTS) $(flatcsl_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
-if windows
-if gui
-	-$(RM) -f csl$(COM)
-	$(CXXLINKTO) $(DEST)flatcsl$(COM) $(flatcsl_OBJECTS) $(flatcsl_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
-endif gui
-endif windows
 if !debug
 if !darwin
 	$(STRIP) flatcsl$(EXEEXT)
-if windows
-if gui
-	$(STRIP) flatcsl$(COM)
-endif gui
-endif windows
 endif !darwin
 endif !debug
 if wx
@@ -1346,23 +1349,30 @@ endif mac_framework
 
 endif !wx
 
+if windows
+if gui
+flatcsl$(COM):	$(flatcsl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS)
+	$(CXXLINKTO) $(DEST)flatcsl$(COM) $(flatcsl_OBJECTS) $(flatcsl_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
+	$(STRIP) flatcsl$(COM)
+endif gui
+endif windows
+
 contest$(EXEEXT): $(contest_OBJECTS) $(contest_DEPENDENCIES)
-	-$(RM) -f contest$(EXEEXT)
 	$(CXXLINKTO) $(DEST)contest$(EXEEXT) $(contest_OBJECTS) $(contest_LDADD) $(AM_LIBS) $(LIBS)
 
 alloctest$(EXEEXT): $(alloctest_OBJECTS) $(alloctest_DEPENDENCIES)
-	-$(RM) -f alloctest$(EXEEXT)
 	$(CXXLINKTO) $(DEST)alloctest$(EXEEXT) $(alloctest_OBJECTS) $(alloctest_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 
-reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
-			$(WXDEPS) $(generated_lisp)
-	-$(RM) -f reduce$(EXEEXT)
+reduce$(EXEEXT):	$(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
+			$(WXDEPS) $(generated_lisp) $(HDRS) $(REDUCECOM)
 if windows
 # See "gui-or-not.txt" for an explanation of what this is about...
 if gui
-	$(CP) $(cslbase)/reduce .
+	$(CP) $(cslbase)/reduce reduce-temp
+	mv reduce-temp reduce
 else !gui
-	$(CP) $(cslbase)/reduce-nogui .
+	$(CP) $(cslbase)/reduce-nogui reduce-nogui-temp
+	mv -f reduce-nogui-temp reduce
 endif !gui
 if !cygwin
 	if test "x$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
@@ -1372,22 +1382,9 @@ if !cygwin
 endif !cygwin
 endif windows
 	$(CXXLINKTO) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
-if windows
-if gui
-	-$(RM) -f reduce$(COM)
-	$(CXXLINKTO) $(DEST)reduce$(COM) $(reduce_OBJECTS) $(reduce_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
-endif gui
-#	$(DLLTOOL) --def $(REDUCEEXEDEF) --output-lib libreduceexe.a
-#	$(DLLTOOL) --def $(REDUCECOMDEF) --output-lib libreducecom.a
-endif windows
 if !debug
 if !darwin
 	$(STRIP) reduce$(EXEEXT)
-if windows
-if gui
-	$(STRIP) reduce$(COM)
-endif gui
-endif windows
 endif !darwin
 endif !debug
 if wx
@@ -1415,11 +1412,20 @@ if mac_framework
 endif mac_framework
 endif !wx
 
-bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
-	-$(RM) -f bootstrapreduce$(EXEEXT)
+if windows
+if gui
+reduce$(COM):	$(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
+			$(WXDEPS) $(generated_lisp) $(HDRS)
+	$(CXXLINKTO) $(DEST)reduce$(COM) $(reduce_OBJECTS) $(reduce_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
+	$(STRIP) reduce$(COM)
+endif gui
+endif windows
+
+bootstrapreduce$(EXEEXT):	$(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS) $(BOOTSTRAPREDUCECOM)
 if windows
 # See "gui-or-not.txt" for an explanation of what this is about...
-	$(CP) $(cslbase)/bootstrapreduce .
+	$(CP) $(cslbase)/bootstrapreduce bootstrapreduce-temp
+	mv -f bootstrapreduce-temp bootstrapreduce
 if !cygwin
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
 	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
@@ -1428,20 +1434,9 @@ if !cygwin
 endif !cygwin
 endif windows
 	$(CXXLINKTO) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
-if windows
-if gui
-	-$(RM) -f bootstraprreduce$(COM)
-	$(CXXLINKTO) $(DEST)bootstrapreduce$(COM) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
-endif gui
-endif windows
 if !debug
 if !darwin
 	$(STRIP) bootstrapreduce$(EXEEXT)
-if windows
-if gui
-	$(STRIP) bootstrapreduce$(COM)
-endif gui
-endif windows
 endif !darwin
 endif !debug
 if wx
@@ -1457,13 +1452,22 @@ endif !wx
 if windows
 endif windows
 
-fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
-	-$(RM) -f fwindemo$(EXEEXT)
 if windows
 if gui
-	$(CP) $(cslbase)/fwindemo .
+bootstrapreduce$(COM):	$(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS)
+	$(CXXLINKTO) $(DEST)bootstrapreduce$(COM) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
+	$(STRIP) bootstrapreduce$(COM)
+endif gui
+endif windows
+
+fwindemo$(EXEEXT):	$(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS) $(FWINDEMOCOM)
+if windows
+if gui
+	$(CP) $(cslbase)/fwindemo fwindemo-temp
+	mv -f fwindemo-temp fwindemo
 else !gui
-	$(CP) $(cslbase)/fwindemo-nogui .
+	$(CP) $(cslbase)/fwindemo-nogui fwindemo-nogui-temp
+	mv -f fwindemo-nogui-temp fwindemo
 endif !gui
 if !cygwin
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
@@ -1473,20 +1477,9 @@ if !cygwin
 endif !cygwin
 endif windows
 	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
-if windows
-if gui
-	-$(RM) -f fwindemo$(COM)
-	$(CXXLINKTO) $(DEST)fwindemo$(COM) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
-endif gui
-endif windows
 if !debug
 if !darwin
 	$(STRIP) fwindemo$(EXEEXT)
-if windows
-if gui
-	$(STRIP) fwindemo$(COM)
-endif gui
-endif windows
 endif !darwin
 endif !debug
 if wx
@@ -1495,24 +1488,20 @@ if mac_framework
 endif mac_framework
 endif wx
 
-if wx
-wxpsl$(EXEEXT): $(wxpsl_OBJECTS) $(wxpsl_DEPENDENCIES) $(WXDEPS)
-	-$(RM) -f wxpsl$(EXEEXT)
-	$(CXXLINKTO) $(DEST)wxpsl$(EXEEXT) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 if windows
 if gui
-	-$(RM) -f wxpsl$(COM)
-	$(CXXLINKTO) $(DEST)wxpsl$(COM) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
+fwindemo$(COM):	$(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS)
+	$(CXXLINKTO) $(DEST)fwindemo$(COM ) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
+	$(STRIP) fwindemo$(COM)
 endif gui
 endif windows
+
+if wx
+wxpsl$(EXEEXT):	$(wxpsl_OBJECTS) $(wxpsl_DEPENDENCIES) $(WXDEPS) $(WXPSLCOM)
+	$(CXXLINKTO) $(DEST)wxpsl$(EXEEXT) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 if !debug
 if !darwin
 	$(STRIP) wxpsl$(EXEEXT)
-if windows
-if gui
-	$(STRIP) wxpsl$(COM)
-endif gui
-endif windows
 endif !darwin
 endif !debug
 if mac_framework
@@ -1520,10 +1509,17 @@ if mac_framework
 endif mac_framework
 endif wx
 
+if windows
+if gui
+wxpsl$(COM):	$(wxpsl_OBJECTS) $(wxpsl_DEPENDENCIES) $(WXDEPS)
+	$(CXXLINKTO) $(DEST)wxpsl$(COM) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
+	$(STRIP) wxpsl$(COM)
+endif gui
+endif windows
+
 if fox
 
 fontdemo$(EXEEXT): $(fontdemo_OBJECTS) $(fontdemo_DEPENDENCIES) $(FOXDEPS)
-	-$(RM) -f fontdemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)fontdemo$(EXEEXT) $(fontdemo_OBJECTS) $(fontdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 if !debug
 if !darwin
@@ -1532,7 +1528,6 @@ endif !darwin
 endif !debug
 
 foxdemo$(EXEEXT): $(foxdemo_OBJECTS) $(foxdemo_DEPENDENCIES) $(FOXDEPS)
-	-$(RM) -f foxdemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)foxdemo$(EXEEXT) $(foxdemo_OBJECTS) $(foxdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 if !debug
 if !darwin
@@ -1541,7 +1536,6 @@ endif !darwin
 endif !debug
 
 showmathdemo$(EXEEXT): $(showmathdemo_OBJECTS) $(showmathdemo_DEPENDENCIES) $(FOXDEPS)
-	-$(RM) -f showmathdemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)showmathdemo$(EXEEXT) $(showmathdemo_OBJECTS) $(showmathdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 if !debug
 if !darwin
@@ -1550,49 +1544,6 @@ endif !darwin
 endif !debug
 
 endif fox
-
-if gui
-if windows
-if !cygwin
-
-csl$(COM):	csl.exe
-## Recover from the removal of csl.com
-	if test -f csl.com; then touch csl.com; else \
-	  $(RM) -f csl.exe; \
-	  $(MAKE) $(AM_MAKEFLAGS) csl.exe; \
-	fi
-
-flatcsl$(COM):	flatcsl.exe
-## Recover from the removal of flatcsl.com
-	if test -f flatcsl.com; then touch flatcsl.com; else \
-	  $(RM) -f flatcsl.exe; \
-	  $(MAKE) $(AM_MAKEFLAGS) flatcsl.exe; \
-	fi
-
-reduce$(COM):	reduce.exe
-## Recover from the removal of reduce.com
-	if test -f reduce.com; then touch reduce.com; else \
-	  $(RM) -f reduce.exe; \
-	  $(MAKE) $(AM_MAKEFLAGS) reduce.exe; \
-	fi
-
-fwindemo$(COM):	fwindemo.exe
-## Recover from the removal of fwindemo.com
-	if test -f fwindemo.com; then touch fwindemo.com; else \
-	  $(RM) -f fwindemo.exe; \
-	  $(MAKE) $(AM_MAKEFLAGS) fwindemo.exe; \
-	fi
-
-wxpsl$(COM):	wxpsl.exe
-## Recover from the removal of wxpsl.com
-	if test -f wxpsl.com; then touch wxpsl.com; else \
-	  $(RM) -f wxpsl.exe; \
-	  $(MAKE) $(AM_MAKEFLAGS) wxpsl.exe; \
-	fi
-
-endif !cygwin
-endif windows
-endif gui
 
 # Here you could take the view that I am lazy in that I take
 # just one file in the font directory as a signature that it has been
@@ -1673,23 +1624,23 @@ endif wx
 
 else !cygwin
 if gui
-$(plain_csl):	csl.exe csl$(COM)
+$(plain_csl):	csl.exe
 	echo "$(MAKE) csl.exe is preferred"
 
-$(plain_flatcsl):	flatcsl.exe flatcsl$(COM)
+$(plain_flatcsl):	flatcsl.exe
 	echo "$(MAKE) flatcsl.exe is preferred"
 
-$(plain_reduce):	reduce.exe reduce$(COM)
+$(plain_reduce):	reduce.exe
 	echo "$(MAKE) reduce.exe is preferred"
 
 $(plain_bootstrapreduce):	bootstrapreduce.exe
 	echo "$(MAKE) bootstrapreduce.exe is preferred"
 
-$(plain_fwindemo):	fwindemo.exe fwindemo$(COM)
+$(plain_fwindemo):	fwindemo.exe
 	echo "$(MAKE) fwindemo.exe is preferred"
 
 if wx
-$(plain_wxpsl):	wxpsl.exe wxpsl$(COM)
+$(plain_wxpsl):	wxpsl.exe
 	echo "$(MAKE) wxpsl.exe is preferred"
 endif wx
 
@@ -1769,7 +1720,6 @@ $(plain_alloctest):	alloctest.exe
 endif exeext
 
 termdemo$(EXEEXT): $(termdemo_OBJECTS) $(termdemo_DEPENDENCIES)
-	-$(RM) -f termdemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)termdemo$(EXEEXT) $(termdemo_LDADD) $(termdemo_OBJECTS) $(LIBS)
 if !debug
 if !darwin
@@ -1931,11 +1881,7 @@ reduce.dep:
 	$(TRACE)touch reduce.dep
 
 $(REDUCE_IMG):	reduce$(COM) $(reducedep) $(generated_lisp)
-	-$(TRACE)$(RM) -rf $(REDUCE_IMG)
-# I will make the REDUCE image file a directory rather than a single
-# file... This is achieved by specifying its name here with a trailing "/",
-# but I could have also have just made a directory with the right name
-# before starting the build job.
+	-$(TRACE): > $(REDUCE_IMG)
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 # A reasonable person might ask what all the "chmod 664 $(gensrc)/* commands
@@ -1967,36 +1913,14 @@ $(REDUCE_IMG):	reduce$(COM) $(reducedep) $(generated_lisp)
 	then $(CP) $(REDUCE_IMG) $(gensrc); fi
 	chmod 664 $(gensrc)/*
 
-# This is a temporary target "reduce.dir" to create the image as a directory
-# rather than as a single file.
-
-reduce.dir:	reduce$(COM) $(reducedep) $(generated_lisp)
-	-$(TRACE)$(RM) -rf reduce.img
-# I will make the REDUCE image file a directory rather than a single
-# file... This is achieved by specifying its name here with a trailing "/",
-# but I could have also have just made a directory with the right name
-# before starting the build job.
-	mkdir -p buildlogs
-	chmod 664 $(gensrc)/*
-	./reduce$(COM) -w -z $(CSLFLAGS) \
-		-Dno_init_file \
-		$(CYGSRC)/buildreduce.lsp \
-		-D@srcdir=$(CYGSRC) \
-		-D@reduce=$(CYGREDUCE) \
-		-o ./reduce.img/ \
-		-- buildlogs/reduce.log \
-		-j reduce.dep
-	chmod 664 $(gensrc)/*
-
 # "make bootstraprecompile which=<module-name>" and "make recompile which="
 # recompile just one package, assuming everything else is properly up to
 # date (at least if the image file exists at all) and they end up by
 # stamping all files so that a subsequent "make test" etc will not cause
 # unwanted extra recompilation.
 
-bootstraprecompile:
+bootstraprecompile:	$(HDRS) bootstrapreduce.img
 	chmod 664 $(gensrc)/*
-	if ! test -f $(BOOTSTRAPREDUCE_IMG); then $(MAKE) $(BOOTSTRAPREDUCE_IMG); fi
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
 	./bootstrapreduce$(COM) -v -w $(CSLFLAGS) \
@@ -2006,11 +1930,9 @@ bootstraprecompile:
 		-D@reduce=$(CYGREDUCE) \
 		-l buildlogs/$(which).log -Dwhich=$(which)
 	chmod 664 $(gensrc)/*
-	$(MAKE) -t $(BOOTSTRAPREDUCE_IMG) > /dev/null
 
-recompile:
+recompile:	$(HDRS) reduce.img
 	chmod 664 $(gensrc)/*
-	if ! test -f $(REDUCE_IMG); then $(MAKE) $(REDUCE_IMG); fi
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
 	./reduce$(COM) -v -w $(CSLFLAGS) \
@@ -2020,15 +1942,14 @@ recompile:
 		-D@reduce=$(CYGREDUCE) \
 		-l buildlogs/$(which).log -Dwhich=$(which)
 	chmod 664 $(gensrc)/*
-	$(MAKE) -t $(REDUCE_IMG) > /dev/null
 
 # Pseudo-targets with names like "packagename.bootfasl" and "packagename.fasl"
 # can be used to trigger recompilation of just a single package.
 
-%.bootfasl:
+%.bootfasl:	$(HDRS)
 	$(MAKE) bootstraprecompile which=$*
 
-%.fasl:
+%.fasl:	$(HDRS)
 	$(MAKE) recompile which=$*
 
 
@@ -2057,7 +1978,7 @@ bootstrapreduce.dep:
 	$(TRACE)touch bootstrapreduce.dep
 
 $(BOOTSTRAPREDUCE_IMG):	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
-	-$(TRACE)$(RM) -f $(BOOTSTRAPREDUCE_IMG)
+	-$(TRACE): > $(BOOTSTRAPREDUCE_IMG)
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 	chmod 664 $(gensrc)/*
@@ -2074,7 +1995,7 @@ $(BOOTSTRAPREDUCE_IMG):	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 	chmod 664 $(gensrc)/*
 
 noinlines.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
-	-$(TRACE)$(RM) -f noinlines.img
+	-$(TRACE): > -f noinlines.img
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 	chmod 664 $(gensrc)/*
@@ -2094,7 +2015,7 @@ noinlines.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 # intermediate step.
 
 boot.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
-	-$(TRACE)$(RM) -f boot.img
+	-$(TRACE): > boot.img
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 	chmod 664 $(gensrc)/*
@@ -2105,16 +2026,15 @@ boot.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 		-D@reduce=$(CYGREDUCE) \
 		-o boot.img -- buildlogs/boot.log
 
-profile:
+profile:	$(HDRS)
 	$(TRACE)mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	rm -f $(INLINE_DEFS)
-	touch $(INLINE_DEFS)
-	$(RM) -f $(BOOTSTRAPREDUCE_IMG)
-	$(MAKE) $(AM_MAKEFLAGS) $(BOOTSTRAPREDUCE_IMG)
+	: > $(INLINE_DEFS)
+	$(RM) $(BOOTSTRAPREDUCE_IMG)
+	$(MAKE) $(BOOTSTRAPREDUCE_IMG)
 	chmod 664 $(gensrc)/*
 	$(RM) $(BOOTSTRAPREDUCE_IMG)
-	$(MAKE) $(AM_MAKEFLAGS) $(BOOTSTRAPREDUCE_IMG)
+	$(MAKE) $(BOOTSTRAPREDUCE_IMG)
 	./bootstrapreduce$(COM) \
 		-w $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/profile.red \
@@ -2126,7 +2046,7 @@ profile:
 	-$(CP) $(gensrc)/profile.dat $(gensrc)/profile.dat.old
 	mv profile.dat $(gensrc)
 	chmod 664 $(gensrc)/*
-	$(MAKE) -j$(NCPUS) just-c-code
+	$(MAKE) just-c-code
 
 # After profiling you may wish to invoke this to put the new profile
 # information where it would be picked up if you remove cslbuild and
@@ -2143,7 +2063,7 @@ $(gensrc)/profile.dat:	$(csl)/generated-c/profile.dat
 c-code:	$(gensrc)/make.stamp
 
 $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
-		$(cslbase)/make-c-code.red $(cslbase)/compiler.lsp
+		$(cslbase)/make-c-code.red $(cslbase)/compiler.lsp $(HDRS)
 	chmod 664 $(gensrc)/*
 	$(TRACE)$(RM) -f $(gensrc)/make.tmp
 	touch $(gensrc)/make.tmp
@@ -2152,14 +2072,13 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 # that has ALL the inline definitions available. To ensure that things are
 # clean I discard any old inline definition database. To ensure that even
 # forward references to inlines are expanded I do the build twice.
-	rm -f $(INLINE_DEFS)
-	touch $(INLINE_DEFS)
+	: > $(INLINE_DEFS)
 	$(RM) -f $(BOOTSTRAPREDUCE_IMG)
-	$(MAKE) $(AM_MAKEFLAGS) $(BOOTSTRAPREDUCE_IMG)
+	$(MAKE) $(BOOTSTRAPREDUCE_IMG)
 	chmod 664 $(gensrc)/*
 	$(RM) -f $(BOOTSTRAPREDUCE_IMG)
-	$(MAKE) $(AM_MAKEFLAGS) $(BOOTSTRAPREDUCE_IMG)
-	$(MAKE) $(AM_MAKEFLAGS) -j$(NCPUS) just-c-code
+	$(MAKE) $(BOOTSTRAPREDUCE_IMG)
+	$(MAKE) just-c-code
 	chmod 664 $(gensrc)/*
 	mv $(gensrc)/make.tmp $(gensrc)/make.stamp
 
@@ -2167,7 +2086,7 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 # basis regenerates the C++ code. It is really only intended for direct use
 # while debugging.
 
-just-c-code:
+just-c-code:	$(BOOTSTRAPREDUCE_IMG)
 	./bootstrapreduce$(COM) -i- -w $(CSLFLAGS) \
 		-Dno_init_file \
 		$(CYGSRC)/make-c-code.red \
@@ -2181,7 +2100,8 @@ just-c-code:
 # by "make".
 # See section 27.9 of the Automake manual where it discusses
 # adding a lock to cope with any races.. Well maybe soon while I am about
-# it I will implement what they suggest! Soon.
+# it I will implement what they suggest! Soon. But meanwhile DO NOT DELETE
+# GENERATED FILES BUT LEAVE MAKE.STAMP PRESENT.
 
 $(generated_objects):	$(gensrc)/make.stamp $(bootstrapreducedep) \
 		$(gensrc)/profile.dat
@@ -2202,22 +2122,22 @@ $(generated_objects):	$(gensrc)/make.stamp $(bootstrapreducedep) \
 # I rather hope that the delay while C-code is re-created is long enough
 # to let any previous steps complete.
 
-$(generated_source_deps):	$(gensrc)/make.stamp
+$(generated_source_deps) &:	$(gensrc)/make.stamp $(HDRS)
 	$(MAKE) standard_c_code
 
-standard-c-code $(generated_lisp):	$(gensrc)/make.stamp
+standard-c-code $(generated_lisp):	$(gensrc)/make.stamp $(HDRS)
 ## Recover from the removal of $@
 	if test -f $@; then touch $@; else \
 	  $(RM) -f $(gensrc)/make.stamp; \
-	  $(MAKE) $(AM_MAKEFLAGS) $(gensrc)/make.stamp; \
+	  $(MAKE) $(gensrc)/make.stamp; \
 	  $(RM) -f $(generated-objects); \
-	  $(MAKE) $(AM_MAKEFLAGS) -j$(NCPUS) reduce; \
+	  $(MAKE) reduce; \
 	fi
 
 
 # partial-c-code is a target only activated manually.
 
-partial-c-code:	$(BOOTSTRAPREDUCE_IMG) $(gensrc)/profile.dat
+partial-c-code:	$(BOOTSTRAPREDUCE_IMG) $(gensrc)/profile.dat $(HDRS)
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
 	./bootstrapreduce$(COM) -w $(CSLFLAGS) \
@@ -2317,8 +2237,6 @@ countall:	$(REDUCE_IMG)
 		-Dcpulimit=30000 -Dconslimit=$(conslimit) \
 		-- testlogs/countreduce.log
 
-
-
 endif valgrind
 
 test1:	$(REDUCE_IMG)
@@ -2370,7 +2288,7 @@ csl.dep:
 	$(TRACE)touch csl.dep
 
 $(CSL_IMG):	csl$(COM) $(csldep)
-	-$(TRACE)$(RM) -rf $(CSL_IMG)
+	-$(TRACE): > $(CSL_IMG)
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 	./csl$(COM) -w -v -z $(CSLFLAGS) \
@@ -2383,7 +2301,7 @@ $(CSL_IMG):	csl$(COM) $(csldep)
 
 
 csli.img:	csl$(COM) $(csldep)
-	-$(TRACE)$(RM) -rf csli.img
+	-$(TRACE): > csli.img
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 	./csl$(COM) -w -v -z $(CSLFLAGS) \
@@ -2391,17 +2309,6 @@ csli.img:	csl$(COM) $(csldep)
 		-D@cslbase="$(CYGSRC)" \
 		-o csli.img -L buildlogs/csli.img.log \
 		-j csl.dep
-
-
-csl.dir:	csl$(COM) $(csldep)
-	-$(TRACE)$(RM) -rf csl.img
-	mkdir -p buildlogs
-	./csl$(COM) -w -v -z $(CSLFLAGS) \
-		"$(CYGSRC)/buildcsl.lsp" \
-		-o ./csl.img/ -D@cslbase="$(CYGSRC)" \
-		-- buildlogs/csl.img.log \
-		-j csl.dep
-
 
 
 if fox
@@ -2488,7 +2395,7 @@ $(reduce)/bin/rfcsl$(EXEEXT): \
 		$(generic)/newfront/redline.c \
 		$(generic)/newfront/redparent.c \
 		$(generic)/newfront/redsig.c \
-		$(generic)/newfront/redstrings.c
+		$(generic)/newfront/redstrings.c $(HDRS)
 	@printf "About to build redfront for %s\n" `pwd`; \
 	cd ../redfront && $(MAKE)
 

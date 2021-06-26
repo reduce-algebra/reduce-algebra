@@ -1283,9 +1283,10 @@ flag('(fastflag), 'c!:uses_nil);
 symbolic procedure c!:pcar(op, r1, r2, r3);
   begin
     if not !*unsafecar then <<
+        c!:printf("#ifndef UNSAFE_CAR\n");
         c!:printf("    if (!car_legal(%v)) UNLIKELY return carerror(%v);\n", r3, r3);
-        c!:printf("    %v = car(%v);\n", r1, r3) >>
-    else c!:printf("    %v = car(%v);\n", r1, r3)
+        c!:printf("#endif\n") >>;
+    c!:printf("    %v = car(%v);\n", r1, r3)
   end;
 
 put('car, 'c!:opcode_printer, function c!:pcar);
@@ -1293,9 +1294,10 @@ put('car, 'c!:opcode_printer, function c!:pcar);
 symbolic procedure c!:pcdr(op, r1, r2, r3);
   begin
     if not !*unsafecar then <<
+        c!:printf("#ifndef UNSAFE_CAR\n");
         c!:printf("    if (!car_legal(%v)) UNLIKELY return cdrerror(%v);\n", r3, r3);
-        c!:printf("    %v = cdr(%v);\n", r1, r3) >>
-    else c!:printf("    %v = cdr(%v);\n", r1, r3)
+        c!:printf("#endif\n") >>;
+    c!:printf("    %v = cdr(%v);\n", r1, r3)
   end;
 
 put('cdr, 'c!:opcode_printer, function c!:pcdr);
@@ -1478,15 +1480,19 @@ put('qputv, 'c!:opcode_printer, function c!:pqputv);
 
 symbolic procedure c!:prplaca(op, r1, r2, r3);
  <<
+  c!:printf("#ifndef UNSAFE_CAR\n");
   c!:printf("    if (!car_legal(%v)) UNLIKELY return rplaca_fails(%v);\n", r2, r2);
-  c!:printf("    setcar(%v, %v);\n", r2, r3) >>;
+  c!:printf("#endif\n");
+  c!:printf("    write_barrier(caraddr(%v), %v);\n", r2, r3) >>;
 
 put('rplaca, 'c!:opcode_printer, function c!:prplaca);
 
 symbolic procedure c!:prplacd(op, r1, r2, r3);
  <<
+  c!:printf("#ifndef UNSAFE_CAR\n");
   c!:printf("    if (!car_legal(%v)) UNLIKELY return rplacd_fails(%v);\n", r2, r2);
-  c!:printf("    setcdr(%v, %v);\n", r2, r3) >>;
+  c!:printf("#endif\n");
+  c!:printf("    write_barrier(cdraddr(%v), %v);\n", r2, r3) >>;
 
 put('rplacd, 'c!:opcode_printer, function c!:prplacd);
 

@@ -51,7 +51,7 @@ AC_PROG_CC
 on_windows="no"
 on_linux="no"
 
-case $CC in
+case `$CC --version` in
 *w64-mingw32*)
   native_win="yes"
   ;;

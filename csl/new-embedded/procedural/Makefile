@@ -41,14 +41,14 @@ all:	reduce
 
 reduce:		allocate.o arith01.o arith02.o arith03.o arith04.o arith05.o \
 		arith06.o arith07.o arith08.o arith09.o arith10.o \
-		arith11.o arith12.o arith13.o arith14.o bytes.o char.o driver.o \
+		arith11.o arith12.o arith13.o arith14.o bytes1.o char.o driver.o \
 		embedcsl.o cslmpi.o cslread.o eval1.o eval2.o eval3.o \
 		eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o cslgc.o lisphash.o \
 		isprime.o preserve.o print.o restart.o sysfwin.o termed.o \
 		inthash.o serialize.o stubs.o
 	$(CC) allocate.o arith01.o arith02.o arith03.o arith04.o arith05.o \
 		arith06.o arith07.o arith08.o arith09.o arith10.o \
-		arith11.o arith12.o arith13.o arith14.o bytes.o char.o driver.o \
+		arith11.o arith12.o arith13.o arith14.o bytes1.o char.o driver.o \
 		embedcsl.o cslmpi.o cslread.o eval1.o eval2.o eval3.o \
 		eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o cslgc.o lisphash.o \
 		isprime.o preserve.o print.o restart.o sysfwin.o termed.o \
@@ -57,7 +57,7 @@ reduce:		allocate.o arith01.o arith02.o arith03.o arith04.o arith05.o \
 	cp ../reduce.img .
 
 .cpp.o:
-	$(CC) $(CPPFLAGS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) -DNO_BYTECOUNTS=1 -c -o $@ $<
 
 clean:
 	-rm -f *.o reduce hello reduce.img
@@ -86,7 +86,6 @@ arith11.o:	$(S)/arith11.cpp $(HEADERS)
 arith12.o:	$(S)/arith12.cpp $(HEADERS)
 arith13.o:	$(S)/arith13.cpp $(HEADERS)
 arith14.o:	$(S)/arith14.cpp $(HEADERS)
-bytes.o:	$(S)/bytes.cpp $(HEADERS)
 bytes1.o:	$(S)/bytes1.cpp $(S)/opnames.cpp $(HEADERS)
 char.o:		$(S)/char.cpp $(HEADERS)
 csl.o:		$(S)/csl.cpp $(HEADERS)

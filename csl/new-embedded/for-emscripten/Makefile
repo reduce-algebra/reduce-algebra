@@ -127,15 +127,15 @@ bootstrapreduce:	bootstrapreduce.js
 	$(CXX) $(CPPFLAGS) $(NODEOPTS) -c -o $@ $<
 
 .cpp.oo:
-	$(CXX) $(CPPFLAGS) $(NODEOPTS) -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(NODEOPTS) -DNO_BYTECOUNTS=1 -c -o $@ $<
 
 .cpp.xo:
-	$(CXX) $(CPPFLAGS) -DBUILTIN_IMAGE=1 $(NODEOPTS) -c -o $@ $<
+	$(CXX) $(CPPFLAGS) -DBUILTIN_IMAGE=1 $(NODEOPTS) -DNO_BYTECOUNTS=1 -c -o $@ $<
 
 # don't use NODEOPTS here, because we want a virtual FS
 .cpp.yo:
 	$(CXX) $(CPPFLAGS) -DBUILTIN_IMAGE=1 -DPROCEDURAL_WASM_XX=1 \
-		$(ASYNCIFY_OPTS) -c -o $@ $<
+		$(ASYNCIFY_OPTS) -DNO_BYTECOUNTS=1 -c -o $@ $<
 
 #csl.yo: csl.cpp
 #	$(CXX) $(CPPFLAGS) $(ASYNCIFY_OPTS) -c -o $@ $<

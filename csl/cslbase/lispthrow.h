@@ -1135,9 +1135,17 @@ public:
                        exit_count, exit_reason);
             my_abort("stack consistency");
         }
-#if defined DEBUG && !defined NO_THROW //@@@
-        if (!std::uncaught_exception())
-        {   err_printf("unwinding the stack\n");
+// This was used at a stage of heavy debugging - I leave it in as comment
+// in case I ever need to reinstate it.
+#if defined DEBUG && !defined NO_THROW && 0
+#ifdef __cpp_lib_uncaught_exceptions
+        if (std::uncaught_exceptions() == 0) UNLIKELY
+#else // __cpp_lib_uncaught_exceptions
+        if (!std::uncaught_exception()) UNLIKELY
+#endif // __cpp_lib_uncaught_exceptions
+        {   printf("unwinding the stack (lispthrow.h line 1144)\n");
+// I can not use trace_printf or err_prinf here because this can arise
+// before the Lisp IO streams have been set up.
         }
 #endif
     }
@@ -1288,17 +1296,23 @@ public:
 //    if_error(a = construct_a_list(), a = nil);
 //    ignore_error(print_a_message());
 
-#define if_error(a, b)                       \
-    TRY                                      \
-        a;                                   \
-    CATCH(LispError)                         \
-        b;                                   \
+#define if_error(a, b)                        \
+    TRY                                       \
+        a;                                    \
+    CATCH(LispResource)                       \
+    {   RETHROW;                              \
+    }                                         \
+    ANOTHER_CATCH(LispError)                  \
+        b;                                    \
     END_CATCH
 
 #define ignore_error(a)                       \
     TRY                                       \
         a;                                    \
-    CATCH(LispError)                          \
+    CATCH(LispResource)                       \
+    {   RETHROW;                              \
+    }                                         \
+    ANOTHER_CATCH(LispError)                  \
     {}                                        \
     END_CATCH
 
