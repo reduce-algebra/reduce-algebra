@@ -94,14 +94,14 @@ include/crlibm.h lib/libcrlibm.a:	emflags.sh make-crlibm.sh
 
 bootstrapreduce.js:	allocate.o arith01.o arith02.o arith03.o arith04.o \
 		arith05.o arith06.o arith07.o arith08.o arith09.o arith10.o \
-		arith11.o arith12.o arith13.o arith14.o bytes.o char.o \
+		arith11.o arith12.o arith13.o arith14.o bytes1.o char.o \
 		csl.o cslmpi.o cslread.o eval1.o eval2.o eval3.o \
 		eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o cslgc.o lisphash.o \
 		isprime.o preserve.o print.o restart.o sysfwin.o termed.o \
 		inthash.o serialize.o stubs.o lib/libcrlibm.a
 	$(CXX) allocate.o arith01.o arith02.o arith03.o arith04.o arith05.o \
 		arith06.o arith07.o arith08.o arith09.o arith10.o \
-		arith11.o arith12.o arith13.o arith14.o bytes.o char.o \
+		arith11.o arith12.o arith13.o arith14.o bytes1.o char.o \
 		csl.o cslmpi.o cslread.o eval1.o eval2.o eval3.o \
 		eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o cslgc.o lisphash.o \
 		isprime.o preserve.o print.o restart.o sysfwin.o termed.o \
@@ -164,28 +164,28 @@ c-code:	bootstrapreduce.img
 reduce.js:	allocate.oo arith01.oo arith02.oo arith03.oo arith04.oo \
 		arith05.oo arith06.oo arith07.oo arith08.oo arith09.oo \
 		arith10.oo arith11.oo arith12.oo arith13.oo arith14.oo \
-		bytes.oo char.oo csl.oo cslmpi.oo cslread.oo eval1.oo \
+		bytes1.oo char.oo csl.oo cslmpi.oo cslread.oo eval1.oo \
 		eval2.oo eval3.oo eval4.oo fasl.oo fns1.oo fns2.oo fns3.oo \
 		fwin.oo cslgc.oo lisphash.oo isprime.oo preserve.oo print.oo \
 		restart.oo sysfwin.oo termed.oo inthash.oo serialize.oo \
 		u01.oo u02.oo u03.oo u04.oo u05.oo u06.oo u07.oo u08.oo u09.oo u10.oo \
 	        u11.oo u12.oo u13.oo u14.oo u15.oo u16.oo u17.oo u18.oo u19.oo u20.oo \
-        	u21.oo u22.oo u23.oo u24.oo u25.oo u26.oo u27.oo u28.oo u29.oo u30.oo \
+		u21.oo u22.oo u23.oo u24.oo u25.oo u26.oo u27.oo u28.oo u29.oo u30.oo \
 	        u31.oo u32.oo u33.oo u34.oo u35.oo u36.oo u37.oo u38.oo u39.oo u40.oo \
-        	u41.oo u42.oo u43.oo u44.oo u45.oo u46.oo u47.oo u48.oo u49.oo u50.oo \
+		u41.oo u42.oo u43.oo u44.oo u45.oo u46.oo u47.oo u48.oo u49.oo u50.oo \
 	        u51.oo u52.oo u53.oo u54.oo u55.oo u56.oo u57.oo u58.oo u59.oo u60.oo
 	$(CXX) allocate.oo arith01.oo arith02.oo arith03.oo arith04.oo \
 		arith05.oo arith06.oo arith07.oo arith08.oo arith09.oo \
 		arith10.oo arith11.oo arith12.oo arith13.oo arith14.oo \
-		bytes.oo char.oo csl.oo cslmpi.oo cslread.oo eval1.oo \
+		bytes1.oo char.oo csl.oo cslmpi.oo cslread.oo eval1.oo \
 		eval2.oo eval3.oo eval4.oo fasl.oo fns1.oo fns2.oo fns3.oo \
 		fwin.oo cslgc.oo lisphash.oo isprime.oo preserve.oo print.oo \
 		restart.oo sysfwin.oo termed.oo inthash.oo serialize.oo \
 		u01.oo u02.oo u03.oo u04.oo u05.oo u06.oo u07.oo u08.oo u09.oo u10.oo \
 	        u11.oo u12.oo u13.oo u14.oo u15.oo u16.oo u17.oo u18.oo u19.oo u20.oo \
-        	u21.oo u22.oo u23.oo u24.oo u25.oo u26.oo u27.oo u28.oo u29.oo u30.oo \
+		u21.oo u22.oo u23.oo u24.oo u25.oo u26.oo u27.oo u28.oo u29.oo u30.oo \
 	        u31.oo u32.oo u33.oo u34.oo u35.oo u36.oo u37.oo u38.oo u39.oo u40.oo \
-        	u41.oo u42.oo u43.oo u44.oo u45.oo u46.oo u47.oo u48.oo u49.oo u50.oo \
+		u41.oo u42.oo u43.oo u44.oo u45.oo u46.oo u47.oo u48.oo u49.oo u50.oo \
 	        u51.oo u52.oo u53.oo u54.oo u55.oo u56.oo u57.oo u58.oo u59.oo u60.oo \
 		$(LDFLAGS) $(NODEOPTS) $(LIBS) $(JSOPTS) -o reduce.js
 
@@ -194,29 +194,29 @@ reduce.js:	allocate.oo arith01.oo arith02.oo arith03.oo arith04.oo \
 reducex.js:	allocate.xo arith01.xo arith02.xo arith03.xo arith04.xo \
 		arith05.xo arith06.xo arith07.xo arith08.xo arith09.xo \
 		arith10.xo arith11.xo arith12.xo arith13.xo arith14.xo \
-		bytes.xo char.xo csl.xo cslmpi.xo cslread.xo eval1.xo \
+		bytes1.xo char.xo csl.xo cslmpi.xo cslread.xo eval1.xo \
 		eval2.xo eval3.xo eval4.xo fasl.xo fns1.xo fns2.xo fns3.xo \
 		fwin.xo cslgc.xo lisphash.xo isprime.xo preserve.xo print.xo \
 		restart.xo sysfwin.xo termed.xo inthash.xo serialize.xo \
 		u01.xo u02.xo u03.xo u04.xo u05.xo u06.xo u07.xo u08.xo u09.xo u10.xo \
 	        u11.xo u12.xo u13.xo u14.xo u15.xo u16.xo u17.xo u18.xo u19.xo u20.xo \
-        	u21.xo u22.xo u23.xo u24.xo u25.xo u26.xo u27.xo u28.xo u29.xo u30.xo \
+		u21.xo u22.xo u23.xo u24.xo u25.xo u26.xo u27.xo u28.xo u29.xo u30.xo \
 	        u31.xo u32.xo u33.xo u34.xo u35.xo u36.xo u37.xo u38.xo u39.xo u40.xo \
-        	u41.xo u42.xo u43.xo u44.xo u45.xo u46.xo u47.xo u48.xo u49.xo u50.xo \
+		u41.xo u42.xo u43.xo u44.xo u45.xo u46.xo u47.xo u48.xo u49.xo u50.xo \
 	        u51.xo u52.xo u53.xo u54.xo u55.xo u56.xo u57.xo u58.xo u59.xo u60.xo
 	$(CXX) allocate.xo arith01.xo arith02.xo arith03.xo arith04.xo \
 		arith05.xo arith06.xo arith07.xo arith08.xo arith09.xo \
 		arith10.xo arith11.xo arith12.xo arith13.xo arith14.xo \
-		bytes.xo char.xo csl.xo cslmpi.xo cslread.xo eval1.xo \
+		bytes1.xo char.xo csl.xo cslmpi.xo cslread.xo eval1.xo \
 		eval2.xo eval3.xo eval4.xo fasl.xo fns1.xo fns2.xo fns3.xo \
 		fwin.xo cslgc.xo lisphash.xo isprime.xo preserve.xo print.xo \
 		restart.xo sysfwin.xo termed.xo inthash.xo serialize.xo \
 		u01.xo u02.xo u03.xo u04.xo u05.xo u06.xo u07.xo u08.xo u09.xo u10.xo \
 	        u11.xo u12.xo u13.xo u14.xo u15.xo u16.xo u17.xo u18.xo u19.xo u20.xo \
 	        u21.xo u22.xo u23.xo u24.xo u25.xo u26.xo u27.xo u28.xo u29.xo u30.xo \
-        	u31.xo u32.xo u33.xo u34.xo u35.xo u36.xo u37.xo u38.xo u39.xo u40.xo \
+		u31.xo u32.xo u33.xo u34.xo u35.xo u36.xo u37.xo u38.xo u39.xo u40.xo \
 	        u41.xo u42.xo u43.xo u44.xo u45.xo u46.xo u47.xo u48.xo u49.xo u50.xo \
-        	u51.xo u52.xo u53.xo u54.xo u55.xo u56.xo u57.xo u58.xo u59.xo u60.xo \
+		u51.xo u52.xo u53.xo u54.xo u55.xo u56.xo u57.xo u58.xo u59.xo u60.xo \
 		$(LDFLAGS) $(NODEOPTS) $(LIBS) $(JSOPTS) -o reducex.js
 
 # The web-based (non-node) version
@@ -226,7 +226,7 @@ INSERT_BUFFER = '_insert_buffer'
 reduce.web.wasm:	allocate.yo arith01.yo arith02.yo arith03.yo \
 		arith04.yo arith05.yo arith06.yo arith07.yo arith08.yo \
 		arith09.yo arith10.yo arith11.yo arith12.yo arith13.yo \
-		arith14.yo bytes.yo char.yo csl.yo cslmpi.yo cslread.yo \
+		arith14.yo bytes1.yo char.yo csl.yo cslmpi.yo cslread.yo \
 		eval1.yo eval2.yo eval3.yo eval4.yo fasl.yo fns1.yo fns2.yo \
 		fns3.yo fwin.yo cslgc.yo lisphash.yo isprime.yo preserve.yo \
 		print.yo restart.yo sysfwin.yo termed.yo inthash.yo \
@@ -240,7 +240,7 @@ reduce.web.wasm:	allocate.yo arith01.yo arith02.yo arith03.yo \
 	$(CXX) allocate.yo arith01.yo arith02.yo arith03.yo arith04.yo \
 		arith05.yo arith06.yo arith07.yo arith08.yo arith09.yo \
 		arith10.yo arith11.yo arith12.yo arith13.yo arith14.yo \
-		bytes.yo char.yo csl.yo cslmpi.yo cslread.yo eval1.yo \
+		bytes1.yo char.yo csl.yo cslmpi.yo cslread.yo eval1.yo \
 		eval2.yo eval3.yo eval4.yo fasl.yo fns1.yo fns2.yo fns3.yo \
 		fwin.yo cslgc.yo lisphash.yo isprime.yo preserve.yo print.yo \
 		restart.yo sysfwin.yo termed.yo inthash.yo serialize.yo \
@@ -304,7 +304,6 @@ arith11.o:	$(S)/arith11.cpp $(HEADERS)
 arith12.o:	$(S)/arith12.cpp $(HEADERS)
 arith13.o:	$(S)/arith13.cpp $(HEADERS)
 arith14.o:	$(S)/arith14.cpp $(HEADERS)
-bytes.o:	$(S)/bytes.cpp $(HEADERS)
 bytes1.o:	$(S)/bytes1.cpp $(S)/opnames.cpp $(HEADERS)
 char.o:		$(S)/char.cpp $(HEADERS)
 csl.o:		$(S)/csl.cpp $(HEADERS)
@@ -350,7 +349,6 @@ arith11.oo:	$(S)/arith11.cpp $(HEADERS)
 arith12.oo:	$(S)/arith12.cpp $(HEADERS)
 arith13.oo:	$(S)/arith13.cpp $(HEADERS)
 arith14.oo:	$(S)/arith14.cpp $(HEADERS)
-bytes.oo:	$(S)/bytes.cpp $(HEADERS)
 bytes1.oo:	$(S)/bytes1.cpp $(S)/opnames.cpp $(HEADERS)
 char.oo:	$(S)/char.cpp $(HEADERS)
 csl.oo:		$(S)/csl.cpp $(HEADERS)
@@ -453,7 +451,6 @@ arith11.xo:	$(S)/arith11.cpp $(HEADERS)
 arith12.xo:	$(S)/arith12.cpp $(HEADERS)
 arith13.xo:	$(S)/arith13.cpp $(HEADERS)
 arith14.xo:	$(S)/arith14.cpp $(HEADERS)
-bytes.xo:	$(S)/bytes.cpp $(HEADERS)
 bytes1.xo:	$(S)/bytes1.cpp $(S)/opnames.cpp $(HEADERS)
 char.xo:	$(S)/char.cpp $(HEADERS)
 csl.xo:		$(S)/csl.cpp $(HEADERS)
@@ -556,7 +553,6 @@ arith11.yo:	$(S)/arith11.cpp $(HEADERS)
 arith12.yo:	$(S)/arith12.cpp $(HEADERS)
 arith13.yo:	$(S)/arith13.cpp $(HEADERS)
 arith14.yo:	$(S)/arith14.cpp $(HEADERS)
-bytes.yo:	$(S)/bytes.cpp $(HEADERS)
 bytes1.yo:	$(S)/bytes1.cpp $(S)/opnames.cpp $(HEADERS)
 char.yo:	$(S)/char.cpp $(HEADERS)
 csl.yo:		$(S)/csl.cpp $(HEADERS)
