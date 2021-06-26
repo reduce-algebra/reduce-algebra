@@ -66,7 +66,7 @@ else
   fi
 fi
 
-# This initial use of "make" is to ensure that the generatd C++ code
+# This initial use of "make" is to ensure that the generated C++ code
 # in cslbuild/generated-c is up to date.
 
 time $GNU_MAKE -j $N -C $first reduce-u01.o

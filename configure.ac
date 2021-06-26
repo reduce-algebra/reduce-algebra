@@ -106,7 +106,7 @@ AC_ARG_WITH(autogen,
   [],
   [with_autogen="yes"])
 
-if test "x$with_autogen" = "xyes"
+if test "$with_autogen" = "yes"
 then
 
   if ! which autoconf > /dev/null 2> /dev/null
@@ -181,7 +181,7 @@ then
   here=`pwd`
   cd $abssrcdir
   printf "Regenerate autoconf-related files\n"
-  find . -name config.cache | xargs rm
+  find . -name config.cache | xargs rm -f
   printf "\n\n+++ About to recreate all autoconf generated files +++\n\n"
   if ! eval $SHELL -c \"./autogen.sh $ac_configure_args\"
   then
@@ -215,20 +215,22 @@ AC_ARG_WITH(psl,
   [],
   [with_psl="no"])
 
+AC_ARG_WITH(both,
+  AS_HELP_STRING([--with-both], [Use both the CSL and PSL Lisp systems]),
+  [],
+  [with_both="no"])
+
+if test "$with_both" != "no"
+then
+  with_csl="yes"
+  with_psl="yes"
+fi
+
 # Ensure that at least one Lisp system is selected
-if test "x$with_psl" = "xno" && test "x$with_csl" = "xno"
+if test "$with_psl" = "no" && test "$with_csl" = "no"
 then
   AC_MSG_ERROR(
     [you must specify either --with-csl or --with-psl to select a Lisp])
-fi
-
-if test "x$with_psl" != "xno" && test "x$with_csl" != "xno"
-then
-  AC_MSG_ERROR(
-    [If you want to build both CSL and PSL versions then you will
-need to run the configure script twice, once with --with-csl and any
-other relevent options and once with --with-psl and any relevant PSL
-options. After that you may use "make" and both systems should be made.])
 fi
 
 AC_ARG_WITH(gui,
@@ -269,14 +271,14 @@ AC_ARG_WITH(fox,
   [],
   [with_fox="default"])
 
-if test "x$with_psl" != "xno"
+if test "$with_psl" != "no" && test "$with_csl" = "no"
 then
   with_fox=no
   with_wx=no
   with_gui=no
 fi
 
-if test "x$with_csl" != "xno"
+if test "$with_csl" != "no"
 then
 # This is where I unpack a new copy of  wxWidgets if I need to.
 
@@ -302,18 +304,18 @@ then
 # same as "--without-fox" (etc). I use "--with-fox=default" as the situation
 # if the user does not specify "--with-fox" at all.
 
-  if test "x$with_gui" = "xno" && (test "x$with_fox" != "xdefault" || test "x$with_wx" != "xdefault")
+  if test "$with_gui" = "no" && (test "$with_fox" != "default" || test "$with_wx" != "default")
   then
     AC_MSG_ERROR([If you say --without-gui you must not say --with-fox or --with-wx as well
 (or even --without-fox or --without-wx)])
   fi
-  if test "x$with_fox" != "xdefault" && test "x$with_wx" != "xdefault"
+  if test "$with_fox" != "default" && test "$with_wx" != "default"
   then
     AC_MSG_ERROR([You must not say --with-fox (or --without-fox) and --with-wx
 (or --without-wx) at the same time])
   fi
 
-  if test "x$with_gui" = "xno"
+  if test "$with_gui" = "no"
   then
     with_fox="no"
     with_wx="no"
@@ -377,7 +379,7 @@ then
 
 # Now at most one of with_wx and with_fox will be "yes". They could both
 # be "no".
-  if test "x$with_wx" != "xno"
+  if test "$with_wx" != "no"
   then
     d=`pwd`
     cd $abssrcdir/csl/support-packages
@@ -562,7 +564,7 @@ AC_ARG_ENABLE(test,
   [],
   [enable_test="no"])
 
-if test "x$enable_test" = "xyes"
+if test "$enable_test" = "yes"
 then
   AC_DEFINE([TEST], [1], [For use by developers])
 fi
@@ -573,7 +575,7 @@ AC_ARG_ENABLE(experiment,
   [],
   [enable_experiment="no"])
 
-if test "x$enable_experiment" = "xyes"
+if test "$enable_experiment" = "yes"
 then
   AC_DEFINE([EXPERIMENT], [1], [For use by developers])
 fi
@@ -643,7 +645,7 @@ printf "in-place build attempt = $inplace\n"
 
 AC_MSG_NOTICE([host=$host args=$ac_configure_args])
 
-if test "x$with_psl" != "xno"
+if test "$with_psl" != "no"
 then
   case $host in
   *windows | *cygwin)
@@ -939,11 +941,11 @@ yes)
 # host-specific subdirectory so I will divert things!
 # When testing if --with-csl etc got passed I should check that the option
 # NO was NOT given rather than that the option yes was.
-  if test "x$with_csl" != "xno"
+  if test "$with_csl" != "no"
   then
     csl_inplace_build
   fi
-  if test "x$with_psl" != "xno"
+  if test "$with_psl" != "no"
   then
     psl_inplace_build
   fi
@@ -1023,7 +1025,7 @@ then
   esac
 fi
 
-if test "x$with_csl" != "xno"
+if test "$with_csl" != "no"
 then
 # Here I have a bunch of sub-directories that I need to configure
 
@@ -1064,11 +1066,11 @@ then
 # if I am building for the natural target.
   AC_MSG_NOTICE([host=$host build=$build])
   pass_host="--host=$host"
-  if test "x$with_cygwin" != "xno"
+  if test "$with_cygwin" != "no"
   then
     pass_host=""
-    if test "x$host" != "xx86_64-unknown-cygwin" &&
-       test "x$host" != "xx86_64-pc-cygwin"
+    if test "$host" != "x86_64-unknown-cygwin" &&
+       test "$host" != "x86_64-pc-cygwin"
     then
       pass_host="--host=$host"
     fi
@@ -1076,7 +1078,7 @@ then
 
   AC_MSG_NOTICE([with_cygwin=$with_cygwin pass_host=$pass_host])
 
-  if test "x$with_wx" != "xno"
+  if test "$with_wx" != "no"
   then
 # A short essay to explain why I pass down "--host=$host" here. There are
 # two points. The first is that I cope with 64-bit windows by use of
@@ -1099,7 +1101,7 @@ then
         CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
         $pass_host --with-wx=\"$with_wx\" $pass_build --without-fox"
-  elif test "x$with_fox" != "xno"
+  elif test "$with_fox" != "no"
   then
     pass_build="--with-build=\"$build\""
     setpasscc
@@ -1131,7 +1133,7 @@ then
 
   case $host in
     *cygwin*)
-      if test "x$with_cygwin" != "xyes"
+      if test "$with_cygwin" != "yes"
       then
         AC_MSG_NOTICE([gcc will be used in mingw mode.])
       else
@@ -1159,7 +1161,7 @@ then
       ;;
   esac
 
-  if test "x$with_wx" != "xno"
+  if test "$with_wx" != "no"
   then
     mkdir wxWidgets
     cd wxWidgets
@@ -1201,13 +1203,13 @@ then
             --prefix=\"$builddir\" \
             --libdir=\"$builddir/lib\" \
             --includedir=\"$builddir/include\""
-    if test "x$enable_debug" != "xno"
+    if test "$enable_debug" != "no"
     then
       doconfig="$doconfig --enable-debug"
     else
       doconfig="$doconfig --disable-debug"
     fi
-    if test "x$with_cygwin" != "xno"
+    if test "$with_cygwin" != "no"
     then
       doconfig="$doconfig --with-gtk"
     fi
@@ -1215,7 +1217,7 @@ then
     printf "\n\n+++ About to configure wxWidgets +++\n\n"
     eval "$doconfig"
     cd "$builddir"
-  elif test "x$with_fox" != "xno"
+  elif test "$with_fox" != "no"
   then
     AC_MSG_NOTICE([About to configure FOX])
     mkdir -p fox/src
@@ -1252,7 +1254,7 @@ fi
 
 AC_MSG_NOTICE([GUI toolkit config spawned])
 
-if test "x$with_crlibm" = "xno"
+if test "$with_crlibm" = "no"
 then
   AC_MSG_NOTICE([crlibm will not be used here])
 else
@@ -1374,12 +1376,12 @@ AC_MSG_NOTICE([All sub-packages have had their configure script launched])
 
 ###############################################################################
 
-AM_CONDITIONAL(csl, test "x$with_csl" != "xno")
-AM_CONDITIONAL(psl, test "x$with_psl" != "xno")
-AM_CONDITIONAL(cslpsl, test "x$with_csl" != "xno" && test "x$with_psl" != "xno")
-AM_CONDITIONAL(fox, test "x$with_fox" != "xno")
-AM_CONDITIONAL(wx,  test "x$with_wx" != "xno")
-AM_CONDITIONAL(crlibm, test "x$with_crlibm" != "xno")
+AM_CONDITIONAL(csl, test "$with_csl" != "no")
+AM_CONDITIONAL(psl, test "$with_psl" != "no")
+AM_CONDITIONAL(cslpsl, test "$with_csl" != "no" && test "$with_psl" != "no")
+AM_CONDITIONAL(fox, test "$with_fox" != "no")
+AM_CONDITIONAL(wx,  test "$with_wx" != "no")
+AM_CONDITIONAL(crlibm, test "$with_crlibm" != "no")
 
 AC_MSG_NOTICE([final output from top level configuration])
 
