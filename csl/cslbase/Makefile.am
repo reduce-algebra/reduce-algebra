@@ -1,4 +1,4 @@
-## process this file with automake to create Makefile.
+### process this file with automake to create Makefile.
 
 
 ## and then use autoconf to create ./configure. Finally run that
@@ -21,13 +21,7 @@ generic = $(reduce)/generic
 # reported as available, but by specifying "-j" or "--jobs=" explicitly the
 # user can override.
 
-ifeq "0" "$(MAKELEVEL)"
-MAKEFLAGS := -j$(shell nproc || sysctl -n hw.ncpu || printf "1") $(MAKEFLAGS)
-# Note that both automake and make itself use the word "endif", so if I
-# write that here it will be interpreted by automake. Well to get round that
-# I arrange that configure.ac sets up ENDIFWORD as a symbol that expands
-# into the "endif" that I want!
-@ENDIFWORD@
+@PARALLEL_BUILD@
 
 ACLOCAL_AMFLAGS = -I m4
 
@@ -1979,9 +1973,20 @@ bootstrapreduce.dep:
 
 $(BOOTSTRAPREDUCE_IMG):	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 	-$(TRACE): > $(BOOTSTRAPREDUCE_IMG)
+	: > $(INLINE_DEFS)
+# To ensure I am tidy I first make inline-defs.dat empty and then
+# build the image file twice in a row, so that forward references
+# to inline functions get handled well.
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 	chmod 664 $(gensrc)/*
+	./bootstrapreduce$(COM) \
+		-w -z -x $(CSLFLAGS) -Dno_init_file \
+		$(CYGSRC)/buildreduce.lsp \
+		-D@srcdir=$(CYGSRC) \
+		-D@reduce=$(CYGREDUCE) \
+		-o- -- buildlogs/bootstrapreduce.log \
+		-j bootstrapreduce.dep
 	./bootstrapreduce$(COM) \
 		-w -z -x $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
@@ -2026,15 +2031,9 @@ boot.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 		-D@reduce=$(CYGREDUCE) \
 		-o boot.img -- buildlogs/boot.log
 
-profile:	$(HDRS)
+profile:	$(HDRS) $(BOOTSTRAPREDUCE_IMG)
 	$(TRACE)mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	: > $(INLINE_DEFS)
-	$(RM) $(BOOTSTRAPREDUCE_IMG)
-	$(MAKE) $(BOOTSTRAPREDUCE_IMG)
-	chmod 664 $(gensrc)/*
-	$(RM) $(BOOTSTRAPREDUCE_IMG)
-	$(MAKE) $(BOOTSTRAPREDUCE_IMG)
 	./bootstrapreduce$(COM) \
 		-w $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/profile.red \
@@ -2063,21 +2062,13 @@ $(gensrc)/profile.dat:	$(csl)/generated-c/profile.dat
 c-code:	$(gensrc)/make.stamp
 
 $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
-		$(cslbase)/make-c-code.red $(cslbase)/compiler.lsp $(HDRS)
+		$(cslbase)/make-c-code.red $(cslbase)/compiler.lsp \
+		$(HDRS) $(BOOTSTRAPREDUCE_IMG)
 	chmod 664 $(gensrc)/*
 	$(TRACE)$(RM) -f $(gensrc)/make.tmp
 	touch $(gensrc)/make.tmp
 	mkdir -p buildlogs
-# I want the C code to be created from a version of the boostrap code
-# that has ALL the inline definitions available. To ensure that things are
-# clean I discard any old inline definition database. To ensure that even
-# forward references to inlines are expanded I do the build twice.
-	: > $(INLINE_DEFS)
-	$(RM) -f $(BOOTSTRAPREDUCE_IMG)
-	$(MAKE) $(BOOTSTRAPREDUCE_IMG)
 	chmod 664 $(gensrc)/*
-	$(RM) -f $(BOOTSTRAPREDUCE_IMG)
-	$(MAKE) $(BOOTSTRAPREDUCE_IMG)
 	$(MAKE) just-c-code
 	chmod 664 $(gensrc)/*
 	mv $(gensrc)/make.tmp $(gensrc)/make.stamp

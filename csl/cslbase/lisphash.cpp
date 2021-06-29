@@ -1385,7 +1385,7 @@ void simple_prin1(LispObject x)
         return;
     }
     if (is_forward(x))
-    {   std::printf("Forward_%" PRIxPTR, (intptr_t)x);
+    {   std::printf("Forward_%" PRIx64, static_cast<uint64_t>(x));
         return;
     }
     if (is_cons(x))

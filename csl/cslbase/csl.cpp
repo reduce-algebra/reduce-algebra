@@ -2906,6 +2906,7 @@ static void low_level_signal_handler(int signo);
 
 void set_up_signal_handlers()
 {
+#ifndef NO_SIGNALS
 #ifdef USE_SIGALTSTACK
 // If I get a SIGSEGV that is caused by a stack overflow then I am in
 // a world of pain because the regular stack does not have space to run my
@@ -2942,6 +2943,7 @@ void set_up_signal_handlers()
     std::signal(SIGSEGV, low_level_signal_handler);
     std::signal(SIGTERM, low_level_signal_handler);
 #endif // HAVE_SIGACTION
+#endif // NO_SIGNALS
 }
 
 #ifdef HAVE_SIGACTION
@@ -2951,6 +2953,7 @@ static void low_level_signal_handler(int signo, siginfo_t *si,
 static void low_level_signal_handler(int signo)
 #endif // !HAVE_SIGACTION
 {
+#ifndef NO_SIGNALS
 // There are really very restrictive rules about what I can do in a
 // signal handler and remain safe. And the exceptions that are trapped
 // (and activate this code) are either caused by internal system failure
@@ -2974,6 +2977,7 @@ static void low_level_signal_handler(int signo)
     std::abort();
 #endif // HAVE__EXIT
 #endif // HAVE_QUICK_EXIT
+#endif // NO_SIGNALS
 }
 
 // This is the "standard" route into CSL activity - it uses file-names

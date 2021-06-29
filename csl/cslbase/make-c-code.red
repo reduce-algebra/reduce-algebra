@@ -125,8 +125,8 @@ fnames := '(      "u01" "u02" "u03" "u04"
 if boundp 'size_per_file and
    numberp (cx := compress explodec size_per_file) and
    cx > 100 and cx < 200000 then size_per_file := cx
-else if everything then size_per_file := 74000
-else size_per_file := 7000;
+else if everything then size_per_file := 80000
+else size_per_file := 10000;
 
 << terpri(); princ "size_per_file = "; print size_per_file; nil >>;
 
@@ -140,16 +140,13 @@ else size_per_file := 7000;
 
 force_count := 5;
 
-% You may well ask "what is it with the number 3500 here". Well that sets
-% a default number of functions to be compiled into C that matches the
-% number I used historically, and hence it provides a safe level of
-% continuity. You may experiment with
+% You may well ask "what is it this variable how_many?" Well that sets
+% a limit on the number of functions to be compiled into C++.
 %     make c-code how_many=nnnn
 % and do so either to see how the speed/space tradeoff goes or because you
-% are concerned about a possible bug in the Lisp to C compilation step. My
-% current measurements suggest that 3500 gives reasonable trade off for
-% build of the executable vs. performance. However for use with an embedded
-% system with limited memory I might suggest say 500.
+% are concerned about a possible bug in the Lisp to C compilation step.
+% If it is set to nil (the default) then the number of functions translated is
+% just set by the size_per_file limit.
 
 begin
   scalar e;
@@ -158,14 +155,10 @@ begin
     how_many := compress explodec e >>
 end;
 
-if not numberp how_many and not stringp how_many then <<
-  if everything then how_many := 25000
-  else how_many := 3500 >>
+if not numberp how_many and not stringp how_many then how_many := nil
 else <<
   how_many := compress explodec how_many;
-  if not numberp how_many then how_many := 3500 >>;
-
-<< terpri(); princ "how_many = "; print how_many; nil >>;
+  if not numberp how_many then how_many := nil >>;
 
 global '(omitted at_start at_end);
 
@@ -395,7 +388,9 @@ symbolic procedure generate_cpp();
       princ "About to create "; printc modname;
       c!:ccompilestart(modname, modname, "$destdir");
       bulk := 0;
-      while bulk < size_per_file and w_reduce and how_many > 0 do
+      while bulk < size_per_file and
+            w_reduce and
+            (null how_many or how_many > 0) do
       begin
         scalar name, defns;
         name := car w_reduce;
@@ -411,7 +406,7 @@ symbolic procedure generate_cpp();
         else <<
           bulk := listsize(defns, bulk);
           count := count+1;
-          how_many := how_many - 1;
+          if how_many then how_many := how_many - 1;
           for each defn in defns do <<
             princ count;
             princ ": ";

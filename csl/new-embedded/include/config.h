@@ -46,7 +46,7 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
-#define HAVE_SIGACTION
+// #define HAVE_SIGACTION
 
 #define HAVE_STDINT_H 1
 
@@ -100,3 +100,4 @@
 
 #define WITHOUT_FFI 1
 #define AVOID_THREADS 1
+#define NO_SIGNALS 1

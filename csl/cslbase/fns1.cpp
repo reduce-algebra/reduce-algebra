@@ -1968,7 +1968,40 @@ LispObject Lindirect(LispObject, LispObject a)
                         static_cast<intptr_t>(sixty_four_bits(a))));
 }
 
-#ifndef WITHOUT_FFI
+#ifdef WITHOUT_FFI
+
+// If FFI is not available all these functions just return nil.
+
+LispObject Lopen_foreign_library(LispObject env, LispObject name)
+{   return onevalue(nil);
+}
+
+LispObject Lfind_foreign_function(LispObject env, LispObject name,
+                                  LispObject lib)
+{   return onevalue(nil);
+}
+
+LispObject Lcallf_1(LispObject env, LispObject entry)
+{   return onevalue(nil);
+}
+
+LispObject Lcallf_4up(LispObject env, LispObject a1, LispObject a2,
+                      LispObject a3, LispObject a4up)
+{   return onevalue(nil);
+}
+
+
+LispObject Lcallf_3(LispObject env, LispObject entry, LispObject a1,
+                    LispObject a2)
+{   return onevalue(nil);
+}
+
+
+LispObject Lcallf_2(LispObject env, LispObject entry, LispObject a1)
+{   return onevalue(nil);
+}
+
+#else // WITHOUT_FFI
 
 // A basic foreign function interface...
 
@@ -2357,6 +2390,8 @@ LispObject Lcallf_2(LispObject env, LispObject entry, LispObject a1)
 {   return callf_n(entry, ncons(a1));
 }
 
+#endif // WITHOUT_FFI
+
 // It may be useful to pass callbacks into CSL to a foreign function so that
 // they can be stored and used...
 
@@ -2433,8 +2468,6 @@ static LispObject Lget_callback(LispObject env, LispObject a)
     }
     return onevalue(make_lisp_integer64(reinterpret_cast<LispObject>(r)));
 }
-
-#endif // WITHOUT_FFI
 
 // This is a rather silly function put in here to help me debug exception
 // handling. It raises a SIGSEGV.
@@ -2595,12 +2628,10 @@ setup_type const funcs1_setup[] =
     DEF_1("stringp",            Lstringp),
     DEF_1("threevectorp",       Lthreevectorp),
     DEF_1("vectorp",            Lsimple_vectorp),
-#ifndef WITHOUT_FFI
     DEF_1("open-foreign-library",  Lopen_foreign_library),
     DEF_2("find-foreign-function", Lfind_foreign_function),
     {"call-foreign-function",   G0Wother, Lcallf_1, Lcallf_2, Lcallf_3, Lcallf_4up},
     DEF_1("get-callback",       Lget_callback),
-#endif // WITHOUT_FFI
     {"gc-forcer",               G0Wother, Lgc_forcer1, Lgc_forcer, G3Wother, G4Wother},
     DEF_1("sigsegv",            Lsigsegv),
     {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}

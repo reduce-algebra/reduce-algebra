@@ -1776,18 +1776,6 @@ HOST="$host"
 AC_SUBST(CYGWIN_FLAVOUR)
 CYGWIN_FLAVOUR="x86_64"
 
-# The next couple are to do with making it possible to use GNU make
-# conditionals within Makefile.am. The issue here is that automake used
-# (eg) "endif" as one of its directives so a simple attempt to write a
-# "make" conditional will confuse it. With these definitions the conditional
-# can be written with one of these spellings.
-AC_SUBST(ELSEWORD)
-ELSEWORD="else"
-AC_SUBST(ENDIFWORD)
-ENDIFWORD="endif"
-AC_SUBST(EQUALS)
-EQUALS="="
-
 # The next two lines are prompted by the possibility that there might be
 # system versions of one of the libraries that I build a private version of.
 # If I put the "-I" and "-L" directive for my own versions right at the
@@ -1801,6 +1789,19 @@ LDFLAGS="-L../lib $LDFLAGS"
 #
 # Make some things available for conditional segments of a Makefile
 #
+
+# The 
+PARALLEL_BUILD='
+ifeq "0" "$(MAKELEVEL)"
+junk1 := $(shell echo Ho Ho Ho MAKEFLAGS=#$(MAKEFLAGS)# 1>&2)
+ifeq "" "$(findstring --jobserver,$(MAKEFLAGS))"
+junk2 := $(shell echo Ha Ha Ha MAKEFLAGS=#$(MAKEFLAGS)# 1>&2)
+MAKEFLAGS := -j$(shell nproc || sysctl -n hw.ncpu || printf "1") $(MAKEFLAGS)
+endif
+endif
+'
+AC_SUBST([PARALLEL_BUILD])
+AM_SUBST_NOTMAKE([PARALLEL_BUILD])
 
 AM_CONDITIONAL(x86, test "$x86" = "yes")
 AM_CONDITIONAL(windows, test "$windows_build" = "yes")

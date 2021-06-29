@@ -25,7 +25,6 @@
 .PHONY:	all
 
 all:
-	printf "Build everythinng\n";
 
 # "targets" needs to be a list of all the targets that I will delegate...
 # ... and "dirs" is a list of the directories within which they live.
@@ -34,7 +33,7 @@ all:
 # because I want that to map to building the default target in all CSL
 # variants. But in Windows I can make csl.exe and csl.com available.
 
-csltargets := all clean \
+csltargets := \
 	csl.exe csl.com csl.img \
 	bootstrapreduce bootstrapreduce.exe \
 		bootstrapreduce.com bootstrapreduce.img \
@@ -59,7 +58,7 @@ csltargets := all clean \
 # Some of the CSL targets want to be run in just ONE of the build
 # directories.
 
-csltargets1 := all clean \
+csltargets1 := \
 	profile profile-install c-code just-c-code \
 	standard-c-code partial-c-code full-c-code \
 	j-code smacros countall
@@ -105,7 +104,7 @@ main\:\:reduce.img:		$(csldirs1)\:\:reduce.img
 # The list of psltargets is extracted from psl/Makefile.am, and if new
 # targets are introduced there then this list will need updating
 
-psltargets := all clean \
+psltargets := \
 	force red/bootstrap.img \
 	red/mma.awk red.qepcad.awk tryboot \
 	deps/core-packages.psl-make deps/core-packages.psl-depend \
@@ -113,13 +112,17 @@ psltargets := all clean \
 	red/reduce.img install-exex-local uninstall-local
 psldirs := $(wildcard pslbuild/*-*-*)
 
+commontargets = all clean
+
 # Find the number of available cpus and insert "-j N" if you are a top-level
 # invocation of "make". If the user specified "-j N" or "--jobs=N" then
 # their setting takes precedence and specifically "-j1" can be used to
 # force a sequential build.
 
 ifeq "0" "$(MAKELEVEL)"
+ifeq "" "$(findstring --jobserver,$(MAKEFLAGS))"
 MAKEFLAGS := -j$(shell nproc || sysctl -n hw.ncpu || printf "1") $(MAKEFLAGS)
+endif
 endif
 
 # fulltargets ends up as a list showing each directory paired with every
@@ -140,9 +143,15 @@ fullpsltargets := $(shell for d in $(psldirs); \
 		do for t in $(psltargets); \
 		  do printf "%s\\:\\:%s " "$$d" "$$t"; done; done)
 
+fullcommontargets := $(shell for d in $(csldirs) $(psldirs); \
+		do for t in $(commontargets); \
+		  do printf "%s\\:\\:%s " "$$d" "$$t"; done; done)
+
+
 .PHONY:	show \
-	$(csltargets) $(fullcsltargets) $(csltargets1) $(fullcsltargets1) \
-	$(psltargets) $(fullpsltargets)
+	$(csltargets) $(fullcsltargets) $(csltargets1) $(commontargets) \
+	$(fullcsltargets1) $(psltargets) $(fullpsltargets) \
+	$(fullcommontargets)
 
 # The next line makes (eg) an attempt to build p1 in fact lead to
 # a build request for each of d1::p1, d2::p1 etc. With gnu make it appears
@@ -154,6 +163,7 @@ fullpsltargets := $(shell for d in $(psldirs); \
 cslcmd = for i in $(csldirs)\; do echo $$$$i\:\:$$@\; done
 cslcmd1 = for i in $(csldirs1)\; do echo $$$$i\:\:$$@\; done
 pslcmd = for i in $(psldirs)\; do echo $$$$i\:\:$$@\; done
+commoncmd = for i in $(csldirs) $(psldirs)\; do echo $$$$i\:\:$$@\; done
 
 
 $(csltargets):	$$(shell $(cslcmd))
@@ -165,10 +175,13 @@ $(csltargets1):	$$(shell $(cslcmd1))
 $(psltargets):	$$(shell $(pslcmd))
 	@printf "+++ make $@: $<"
 
+$(commontargets):	$$(shell $(commoncmd))
+	@printf "+++ make $@: $<"
+
 # Now I arrange that "make d1::p1" triggers "cd d1; make p1" so that p1
 # gets built within the directory d1.
 
-$(fullcsltargets) $(fullcsltargets1) $(fullpsltargets):
+$(fullcsltargets) $(fullcsltargets1) $(fullpsltargets) $(fullcommontargets):
 	@a="$@" && d="$${a%%::*}" && t="$${a##*::}" && \
 		printf "Build in %s for %s\n" "$$d" "$$t" && \
 		cd "$$d" && $(MAKE) "$$t"
@@ -178,16 +191,17 @@ $(fullcsltargets) $(fullcsltargets1) $(fullpsltargets):
 
 show:
 	@printf "MAKELEVEL = %s\n" "$(MAKELEVEL)"
-	@printf "ncpus = %s\n" "$(ncpus)"
-	@printf "optncpus = %s\n" "$(optncpus)"
+	@printf "MAKEFLAGS = %s\n" "$(MAKEFLAGS)"
 	@printf "csltargets = %s\n" "$(csltargets)"
 	@printf "csltargets1 = %s\n" "$(csltargets1)"
 	@printf "psltargets = %s\n" "$(psltargets)"
+	@printf "commontargets = %s\n" "$(commontargets)"
 	@printf "csldirs = %s\n" "$(csldirs)"
 	@printf "csldirs1 = %s\n" "$(csldirs1)"
 	@printf "psldirs = %s\n" "$(psldirs)"
 	@printf "fullcsltargets = %s\n" "$(fullcsltargets)"
 	@printf "fullcsltargets1 = %s\n" "$(fullcsltargets1)"
 	@printf "fullpsltargets = %s\n" "$(fullpsltargets)"
+	@printf "fullcommontargets = %s\n" "$(fullcommontargets)"
 
 # end of Makefile
