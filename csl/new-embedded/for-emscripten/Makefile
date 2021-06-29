@@ -87,7 +87,7 @@ R=../../..
 
 VPATH=$(S)
 
-all:	reduce.js reduce.img image.cpp
+all:	reduce.js reduce.img image.cpp reduce.web.wasm
 
 include/crlibm.h lib/libcrlibm.a:	emflags.sh make-crlibm.sh
 	./make-crlibm.sh
@@ -118,11 +118,14 @@ bootstrapreduce:	bootstrapreduce.js
 # I'm also going to add .yo for object files which have been compiled
 # with the asynchronous javascript IO library (just so we don't have
 # to rebuild each time we want to switch between node/browser), and .xo for
-# for a copy of Reduce to be run using node nut with its "image file" stored
+# for a copy of Reduce to be run using node but with its "image file" stored
 # as static data within the executable.
 
 .SUFFIXES:	.oo .xo .yo
 
+# I do not set NO_BYTECOUNTS on the .cpp.o target because that is used to
+# make bootstrapreduce.js which can be used for profiling - an action which
+# relies on bytecounts.
 .cpp.o:
 	$(CXX) $(CPPFLAGS) $(NODEOPTS) -c -o $@ $<
 
@@ -137,10 +140,6 @@ bootstrapreduce:	bootstrapreduce.js
 	$(CXX) $(CPPFLAGS) -DBUILTIN_IMAGE=1 -DPROCEDURAL_WASM_XX=1 \
 		$(ASYNCIFY_OPTS) -DNO_BYTECOUNTS=1 -c -o $@ $<
 
-#csl.yo: csl.cpp
-#	$(CXX) $(CPPFLAGS) $(ASYNCIFY_OPTS) -c -o $@ $<
-#cslread.yo: cslread.cpp
-#	$(CXX) $(CPPFLAGS) $(ASYNCIFY_OPTS) -c -o $@ $<
 # Create the bootstrapreduce.img file
 
 bootstrapreduce.img:	bootstrapreduce.js
@@ -642,7 +641,7 @@ u60.yo:		$(S)/u60.cpp $(HEADERS)
 
 clean:
 	-rm -f *.o *.oo *.xo *.yo reduce* *.log make-image* image.cpp
-	-rm -f bootstrapreduce* *.bak *.map
+	-rm -f bootstrapreduce* *.bak *.map http.pid
 	-rm -rf crlibm include lib bin jscsl-times
 
 # end of Makefile
