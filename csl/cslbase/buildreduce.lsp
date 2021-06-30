@@ -105,7 +105,8 @@
          (setq name (compress (cons '!"
             (append (explodec "$reduce/cslbuild/generated-c/")
                     (cdr (explode name))))))))
-      (rdf name)
+      (prog (!*echo)
+         (rdf name))
       (go top)))))
 
 (rdf "$srcdir/fastgets.lsp")
@@ -647,7 +648,7 @@ for each name in '(
       name := compress('!" .
                  append(explodec "$reduce/cslbuild/generated-c/",
                         cdr explode name));
-   rdf name >>;
+   begin scalar !*echo; rdf name; end  >>;
 
 !#endif  % jlisp
 

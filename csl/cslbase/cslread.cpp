@@ -371,26 +371,34 @@ static uint64_t hash_lisp_string(LispObject s, size_t n)
 
 #else // GOOD_BUT_SLOWER
 
+// Here I will hash the string in units of 64 bits on a 64-bit machine
+// and 32-bits on a 32-bit one. I take care with the final word of data
+// so that I do not assume that the string is nul-padded.
+
 static uint64_t hash_lisp_string(LispObject s, size_t n)
 {   uint64_t h = n;
-//@ int nn = n-CELL;
-// Here I will hash sizeof(intptr_t) bytes at a time. 
+// Here I will hash sizeof(intptr_t) bytes at a time.
     uintptr_t *p = reinterpret_cast<uintptr_t *>(s-TAG_VECTOR+CELL);
     n -= CELL;
+//  fprintf(stderr, "About to hash <%.*s> length %d\n", (int)n, (char *)p, (int)n);
     while (n >= sizeof(uintptr_t))
-    {   h = h*0x800000020001U + *p++; // The multiplier is prime but
+    {   // fprintf(stderr, "%" PRIx64 " ", static_cast<uint64_t>(*p));
+        h = h*0x800000020001U + *p++; // The multiplier is prime but
                                       // multiply can be shift & add.
-        n -= 8;
+        n -= sizeof(uintptr_t);
     }
     if (n != 0) // Here I need to get rid of data from beyond the end
                 // of the string.
-    {   uintptr_t final = *p;
-        size_t shift = 8*(sizeof(uintptr_t)-n);
-#ifdef LITTLEENDIAN
-        final <<= shift;
-#else // LITTLEENDIAN
-        final >>= shift;
-#endif // LITTLEENDIAN
+    {   uint64_t final = *p;
+        int shift = 8*(sizeof(uintptr_t) - n);
+        uint64_t mask = -static_cast<uintptr_t>(1);
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+        mask = mask >> shift;
+#else // __ORDER__LITTLE_ENDIAN__
+        mask = mask << shift;
+#endif // __ORDER_LITTLE__ENDIAN__
+        final &= mask;
+//      fprintf(stderr, "%" PRIx64 " ", final);
         h = h*0x800000020001U + final;
     }
 // The calculation thus far will have tended to concentrate entropy in the
@@ -398,8 +406,7 @@ static uint64_t hash_lisp_string(LispObject s, size_t n)
     h -= (h >> 37);
     h *= 141592653589U; // A rather arbitrary prime
     h -= (h >> 31);
-//@ std::printf("H: <%.*s> %" PRIx64 "\n",
-//@     nn, reinterpret_cast<char *>(s-TAG_VECTOR+CELL), h);
+//  fprintf(stderr, " => %" PRIx64 "\n", h);
     return h;
 }
 
