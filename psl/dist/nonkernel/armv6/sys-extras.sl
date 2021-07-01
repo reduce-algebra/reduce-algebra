@@ -239,8 +239,8 @@
 		  (eq rest 0))
 	     % OK, so the instruction is actually LDR Rx,[Rx]
 	     % Check whether the two preceding instructions are the appropriate ADD/SUB
-	     (let ((instr1 (wgetv addr -5))
-		   (instr2 (wgetv addr -4))
+	     (let ((instr1 (wgetv adr -5))
+		   (instr2 (wgetv adr -4))
 		   (regno (wand 16#f bit-pattern))
 		   (offset))
 	       (cond ((and (eq (wshift instr1 -16) 16#e28f)            % ADD Ry,PC
@@ -259,7 +259,7 @@
 				(wdifference 32 (wtimes2 2 (wand 16#f (wshift -8 instr2)))))))
 		      % offset is relative to first ADD instruction + 2 * addressingunitsperitem
 		      % adr is 5 words after first ADD instruction, so subtract 3 words to add 8 bytes
-		      (wgetv (wplus2 addr offset) -3))
+		      (wgetv (wplus2 adr offset) -3))
 		     ((and (eq (wshift instr1 -16) 16#e24f)            % SUB Ry,PC
 			   (eq (wand 16#f (wshift instr1 -12)) regno)  % Rx=Ry
 			   (eq (wshift instr2 -20) 16#e24)	       % SUB Ry,Rz
@@ -276,7 +276,7 @@
 				(wdifference 32 (wtimes2 2 (wand 16#f (wshift -8 instr2)))))))
 		      % offset is relative to first ADD instruction + 2 * addressingunitsperitem
 		      % adr is 5 words after first ADD instruction, so subtract 3 words to add 8 bytes
-		      (wgetv (wdifference addr offset) -3))
+		      (wgetv (wdifference adr offset) -3))
 		     (t nil)))
 	       )
 	    (t nil))))
