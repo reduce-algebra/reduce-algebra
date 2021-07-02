@@ -348,7 +348,8 @@ system. For terminating and activating them use the {\REDUCE}
 command \texttt{plotshow}.  Example:
 \begin{verbatim}
      gnuplot(set,polar);
-     gnuplot(set,noparametric);
+     gnuplot(unset,parametric);
+     gnuplot(set,dummy,x);
      gnuplot(plot, x*sin x);
      plotshow;
 \end{verbatim}
