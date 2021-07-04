@@ -350,30 +350,14 @@ static LispObject Lsilent_system(LispObject env, LispObject a)
 
 // This will only hash basic strings, not extended ones.
 
-#ifdef GOOD_BUT_SLOWER
-
-static uint64_t hash_lisp_string(LispObject s, size_t n)
-{   uint64_t h = crc64(n-CELL, &basic_celt(s, 0), n-CELL);
-// crc64 will produce a 64-bit hash value that is expected to be pretty
-// reasonable, however the way I use this will be to look at just some
-// number of low bits. The raw CRC does not cascade information evenly into
-// all bits. To get the low-order bits better scrambled I will mix in some
-// information from higher up. The shift amounts I use are chosen so they
-// are not obvious multiples of 8, since the character sequences that I
-// hash are streams of BYTES not BITS. The use of "+" rather than "^" to
-// merge in information from high order bits lets carry propagation mix
-// things up just a little more.
-    h += h >> 31;
-    h += h >> 7;
-    h += h >> 15;
-    return h + (h >> 12);
-}
-
-#else // GOOD_BUT_SLOWER
-
 // Here I will hash the string in units of 64 bits on a 64-bit machine
 // and 32-bits on a 32-bit one. I take care with the final word of data
-// so that I do not assume that the string is nul-padded.
+// so that I do not assume that the string is nul-padded. Also the "string"
+// passed might be the string-buffer "boffo" and in that case its header
+// word indicates the buffer size and the amount of data really in play
+// is just n, with no certainty that bytes beyond n are zero. So while
+// I make the hash value depend on the string length I use n for that not the
+// header word.
 
 static uint64_t hash_lisp_string(LispObject s, size_t n)
 {   uint64_t h = n;
@@ -409,9 +393,6 @@ static uint64_t hash_lisp_string(LispObject s, size_t n)
 //  fprintf(stderr, " => %" PRIx64 "\n", h);
     return h;
 }
-
-#endif
-
 
 uint64_t hash_lisp_string(LispObject s)
 // Argument is a (lisp) string.  Return a 64 bit hash value.
@@ -1449,6 +1430,10 @@ LispObject Lgensym(LispObject env, LispObject a)
     return onevalue(id);
 }
 
+LispObject Lgensym1(LispObject env, LispObject a)
+{   return Lgensym(env, a);
+}
+
 LispObject Lgensym2(LispObject env, LispObject a)
 // Lisp function (gensym2 base) whose name is exactly that given by the
 // argument.  This might be UNHELPFUL if one tried to print the value
@@ -1997,7 +1982,7 @@ static int raw_char_from_terminal()
 // I am liable to have set up a pending stack event - given that
 // I am about to respond here by doing a "throw" I will cancel it.
         event_flag.store(0);
-        THROW(LispError);
+        THROW(LispSimpleError);
     }
     if (qvalue(echo_symbol) != nil || force_echo)
     {   LispObject stream = qvalue(standard_output);

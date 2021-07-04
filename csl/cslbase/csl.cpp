@@ -345,7 +345,7 @@ LispObject error(int nargs, int code, ...)
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    THROW(LispError);
+    THROW(LispSimpleError);
 }
 
 LispObject cerror(int nargs, int code1, int code2, ...)
@@ -380,7 +380,7 @@ LispObject cerror(int nargs, int code1, int code2, ...)
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    THROW(LispError);
+    THROW(LispSimpleError);
 }
 
 // This can be used when a resource expires...
@@ -453,7 +453,7 @@ LispObject interrupted()
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    THROW(LispError);
+    THROW(LispSimpleError);
 }
 
 LispObject aerror(const char *s)
@@ -472,7 +472,7 @@ LispObject aerror(const char *s)
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    THROW(LispError);
+    THROW(LispSimpleError);
 }
 
 LispObject aerror0(const char *s)
@@ -491,7 +491,7 @@ LispObject aerror0(const char *s)
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    THROW(LispError);
+    THROW(LispSimpleError);
 }
 
 LispObject aerror1(const char *s, LispObject a)
@@ -513,7 +513,7 @@ LispObject aerror1(const char *s, LispObject a)
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    THROW(LispError);
+    THROW(LispSimpleError);
 }
 
 LispObject aerror2(const char *s, LispObject a, LispObject b)
@@ -537,7 +537,7 @@ LispObject aerror2(const char *s, LispObject a, LispObject b)
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    THROW(LispError);
+    THROW(LispSimpleError);
 }
 
 LispObject aerror2(const char *s, const char *a, LispObject b)
@@ -559,7 +559,7 @@ LispObject aerror2(const char *s, const char *a, LispObject b)
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    THROW(LispError);
+    THROW(LispSimpleError);
 }
 
 LispObject aerror3(const char *s, LispObject a, LispObject b,
@@ -586,7 +586,7 @@ LispObject aerror3(const char *s, LispObject a, LispObject b,
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    THROW(LispError);
+    THROW(LispSimpleError);
 }
 
 static LispObject wrong(int given, int wanted, LispObject env)
@@ -2878,13 +2878,13 @@ LispObject respond_to_stack_event()
     {   exit_reason = UNWIND_ERROR;
         exit_value = exit_tag = nil;
         exit_count = 0;
-        THROW(LispError);
+        THROW(LispSimpleError);
     }
     if ((f&RECEIVE_INTERRUPT) != 0)
     {   exit_reason = UNWIND_UNWIND;
         exit_value = exit_tag = nil;
         exit_count = 0;
-        THROW(LispError);
+        THROW(LispSimpleError);
     }
     if ((f&RECEIVE_BREAK_LOOP) != 0)
     {

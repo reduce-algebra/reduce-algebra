@@ -4,8 +4,11 @@
 # make trace facility.
 
 TRACE = $(warning TRACE: $@ :: $?)
-
 ACLOCAL_AMFLAGS = -I m4
+# Even if invoked with "make -j" the build here should not be
+# attempted in parallel mode, at least until it has been reviewed
+# carefully.
+.NOTPARALLEL:
 
 srcdir = @srcdir@
 VPATH = @srcdir@

@@ -17,6 +17,19 @@ cslbuild = $(reduce)/cslbuild
 packages = $(reduce)/packages
 generic = $(reduce)/generic
 
+if windows
+if !cygwin
+
+# When I build for native windows I will check whether there is a parallel
+# cygwin build and if so copy some binaries across from it. These lines
+# help to ensure that I do not try that if the cygwin version has not been
+# configured.
+
+@CYGWIN_DIR@
+
+endif !cygwin
+endif windows
+
 # By default I will try a parallel make using as many CPUs as seem to be
 # reported as available, but by specifying "-j" or "--jobs=" explicitly the
 # user can override.
@@ -332,7 +345,7 @@ core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 # line numbers that relate to the expanded version...
 
 %.cxx:	%.cpp
-	echo CXX -E $<
+	@printf "CXX -E $<\n"
 	@printf "$(BUILTFOR) "
 	$(AM_V_CXX)$(CXXCOMPILE) -E -o $@ $<
 	astyle -n $@
@@ -343,7 +356,7 @@ core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 # form of foo.
 
 %.s:	%.cpp
-	@echo CXX -S $<
+	@printf "CXX -S $<\n"
 	@printf "$(BUILTFOR) "
 	$(AM_V_CXX)$(CXXCOMPILE) -S -o $@ $<
 
@@ -1163,19 +1176,19 @@ if wx
 
 $(csl)/wxWidgets/wxWidgets_revision:	\
 		$(csl)/support-packages/wxWidgets_revision
-	$(TRACE) ( cd $(csl)/support-packages ; \
-	a=`echo wxWidgets-*-*-*.tar.bz2` ; \
-	a=$${a##* } ; \
-	b=$${a%.tar.bz2} ; \
-	cd .. ; \
-	$(RM) -rf wxWidgets ; \
-	tar xfj support-packages/$$a ; \
-	chmod -R +rw wxWidgets ; \
-	cp $(csl)/support-packages/wxWidgets_revision wxWidgets ; \
-        cd wxWidgets ; \
-        ./autogen.sh ; \
-        cd .. ; \
-	echo wxWidgets unpacked from archive $$a )
+	$(TRACE) ( cd $(csl)/support-packages && \
+	a="wxWidgets-*-*-*.tar.bz2" && \
+	a=$${a##* } && \
+	b=$${a%.tar.bz2} && \
+	cd .. && \
+	$(RM) -rf wxWidgets && \
+	tar xfj support-packages/$$a && \
+	chmod -R +rw wxWidgets && \
+	cp $(csl)/support-packages/wxWidgets_revision wxWidgets && \
+        cd wxWidgets && \
+        ./autogen.sh && \
+        cd .. && \
+	printf "wxWidgets unpacked from archive $$a\n" )
 
 # I use wx-config as my main and only indication that wxwidgets has been
 # built and installed.
@@ -1258,7 +1271,7 @@ endif !wx
 
 HDRS = $(FOXDEPS) $(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 
-csl$(EXEEXT):	$(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS) $(CSLCOM)
+csl$(EXEEXT):	$(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS) $(CSLCOM) $(CYG_CSL)
 if windows
 # In a way that may be seen as strange I want to end up with 3 executables
 # for CSL. The most obvious is "csl.exe" which I link from all the object
@@ -1277,10 +1290,7 @@ else !gui
 	mv -f csl-nogui-temp csl
 endif !gui
 if !cygwin
-	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
-	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
-	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) csl.exe; fi
-	if test -x $(with_cygbuild64)/csl/csl.exe; then $(CP) $(with_cygbuild64)/csl/csl.exe cygwin64-csl.exe; fi
+	if test -x "$(CYG_CSL)"; then $(CP) "$(CYG_CSL)" cygwin64-csl.exe; fi
 endif !cygwin
 endif windows
 	$(CXXLINKTO) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
@@ -1309,7 +1319,7 @@ csl$(COM):	$(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS)
 endif gui
 endif windows
 
-flatcsl$(EXEEXT):	$(flatcsl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS) $(FLATCSLCOM)
+flatcsl$(EXEEXT):	$(flatcsl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS) $(FLATCSLCOM) $(CYG_FLATCSL)
 if windows
 if gui
 	$(CP) $(cslbase)/csl csl-temp
@@ -1319,10 +1329,7 @@ else !gui
 	mv -f csl-nogui-temp csl
 endif !gui
 if !cygwin
-	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
-	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
-	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) flatcsl.exe; fi
-	if test -x $(with_cygbuild64)/csl/flatcsl.exe; then $(CP) $(with_cygbuild64)/csl/flatcsl.exe cygwin64-flatcsl.exe; fi
+	if test -x "$(CYG_FLATCSL)"; then $(CP) "$(CYG_FLATCSL)" cygwin64-flatcsl.exe; fi
 endif !cygwin
 endif windows
 	$(CXXLINKTO) $(DEST)flatcsl$(EXEEXT) $(flatcsl_OBJECTS) $(flatcsl_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
@@ -1358,7 +1365,7 @@ alloctest$(EXEEXT): $(alloctest_OBJECTS) $(alloctest_DEPENDENCIES)
 	$(CXXLINKTO) $(DEST)alloctest$(EXEEXT) $(alloctest_OBJECTS) $(alloctest_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 
 reduce$(EXEEXT):	$(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
-			$(WXDEPS) $(generated_lisp) $(HDRS) $(REDUCECOM)
+			$(WXDEPS) $(generated_lisp) $(HDRS) $(REDUCECOM) $(CYG_REDUCE)
 if windows
 # See "gui-or-not.txt" for an explanation of what this is about...
 if gui
@@ -1369,10 +1376,7 @@ else !gui
 	mv -f reduce-nogui-temp reduce
 endif !gui
 if !cygwin
-	if test "x$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
-	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
-	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) reduce.exe; fi
-	if test -x $(with_cygbuild64)/csl/reduce.exe; then $(CP) $(with_cygbuild64)/csl/reduce.exe cygwin64-reduce.exe; fi
+	if test -x "$(CYG_REDUCE)"; then $(CP) "$(CYG_REDUCE)" cygwin64-reduce.exe; fi
 endif !cygwin
 endif windows
 	$(CXXLINKTO) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
@@ -1415,16 +1419,13 @@ reduce$(COM):	$(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
 endif gui
 endif windows
 
-bootstrapreduce$(EXEEXT):	$(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS) $(BOOTSTRAPREDUCECOM)
+bootstrapreduce$(EXEEXT):	$(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS) $(BOOTSTRAPREDUCECOM) $(CYG_BOOTSTRAPREDUCE)
 if windows
 # See "gui-or-not.txt" for an explanation of what this is about...
 	$(CP) $(cslbase)/bootstrapreduce bootstrapreduce-temp
 	mv -f bootstrapreduce-temp bootstrapreduce
 if !cygwin
-	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
-	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
-	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) bootstrapreduce.exe; fi
-	if test -x $(with_cygbuild64)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild64)/csl/bootstrapreduce.exe cygwin64-bootstrapreduce.exe; fi
+	if test -x "$(CYG_BOOTSTRAPREDUCE)"; then $(CP) "$(CYG_BOOTSTRAPREDUCE)" cygwin64-bootstrapreduce.exe; fi
 endif !cygwin
 endif windows
 	$(CXXLINKTO) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
@@ -1454,7 +1455,7 @@ bootstrapreduce$(COM):	$(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES
 endif gui
 endif windows
 
-fwindemo$(EXEEXT):	$(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS) $(FWINDEMOCOM)
+fwindemo$(EXEEXT):	$(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS) $(FWINDEMOCOM) $(CYG_FWINDEMO)
 if windows
 if gui
 	$(CP) $(cslbase)/fwindemo fwindemo-temp
@@ -1464,10 +1465,7 @@ else !gui
 	mv -f fwindemo-nogui-temp fwindemo
 endif !gui
 if !cygwin
-	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
-	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
-	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) fwindemo.exe; fi
-	if test -x $(with_cygbuild64)/csl/fwindemo.exe; then $(CP) $(with_cygbuild64)/csl/fwindemo.exe cygwin64-fwindemo.exe; fi
+	if test -x "$(CYG_FWINDEMO)" then $(CP) "$(CYG_FWINDEMO)" cygwin64-fwindemo.exe; fi
 endif !cygwin
 endif windows
 	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
@@ -1547,7 +1545,7 @@ endif fox
 reduce.$(fontsdir)/$(samplefont):	$(cslbase)/fonts
 if wx
 if mac_framework
-	echo reduce.wxfonts not used on the Mac with wxWidgets
+	printf "reduce.wxfonts not used on the Mac with wxWidgets\n"
 else !mac_framework
 	-$(TRACE)$(RM) -rf reduce.$(fontsdir)
 	-mkdir -p reduce.$(fontsdir)
@@ -1597,76 +1595,76 @@ if exeext
 
 if cygwin
 $(plain_csl):	csl.exe
-	echo "$(MAKE) csl.exe is preferred"
+	printf "$(MAKE) csl.exe is preferred\n"
 
 $(plain_flatcsl):	flatcsl.exe
-	echo "$(MAKE) flatcsl.exe is preferred"
+	printf "$(MAKE) flatcsl.exe is preferred\n"
 
 $(plain_reduce):	reduce.exe
-	echo "$(MAKE) reduce.exe is preferred"
+	printf "$(MAKE) reduce.exe is preferred\n"
 
 $(plain_bootstrapreduce):	bootstrapreduce.exe
-	echo "$(MAKE) bootstrapreduce.exe is preferred"
+	printf "$(MAKE) bootstrapreduce.exe is preferred\n"
 
 $(plain_fwindemo):	fwindemo.exe
-	echo "$(MAKE) fwindemo.exe is preferred"
+	printf "$(MAKE) fwindemo.exe is preferred\n"
 
 if wx
 $(plain_wxpsl):	wxpsl.exe
-	echo "$(MAKE) wxpsl.exe is preferred"
+	printf "$(MAKE) wxpsl.exe is preferred\n"
 endif wx
 
 else !cygwin
 if gui
 $(plain_csl):	csl.exe
-	echo "$(MAKE) csl.exe is preferred"
+	printf "$(MAKE) csl.exe is preferred\n"
 
 $(plain_flatcsl):	flatcsl.exe
-	echo "$(MAKE) flatcsl.exe is preferred"
+	printf "$(MAKE) flatcsl.exe is preferred\n"
 
 $(plain_reduce):	reduce.exe
-	echo "$(MAKE) reduce.exe is preferred"
+	printf "$(MAKE) reduce.exe is preferred\n"
 
 $(plain_bootstrapreduce):	bootstrapreduce.exe
-	echo "$(MAKE) bootstrapreduce.exe is preferred"
+	printf "$(MAKE) bootstrapreduce.exe is preferred\n"
 
 $(plain_fwindemo):	fwindemo.exe
-	echo "$(MAKE) fwindemo.exe is preferred"
+	printf "$(MAKE) fwindemo.exe is preferred\n"
 
 if wx
 $(plain_wxpsl):	wxpsl.exe
-	echo "$(MAKE) wxpsl.exe is preferred"
+	printf "$(MAKE) wxpsl.exe is preferred\n"
 endif wx
 
 
 else !gui
 $(plain_csl):	csl.exe
-	echo "$(MAKE) csl.exe is preferred"
+	printf "$(MAKE) csl.exe is preferred\n"
 
 $(plain_flatcsl):	flatcsl.exe
-	echo "$(MAKE) flatcsl.exe is preferred"
+	printf "$(MAKE) flatcsl.exe is preferred\n"
 
 $(plain_reduce):	reduce.exe
-	echo "$(MAKE) reduce.exe is preferred"
+	printf "$(MAKE) reduce.exe is preferred\n"
 
 $(plain_bootstrapreduce):	bootstrapreduce.exe
-	echo "$(MAKE) bootstrapreduce.exe is preferred"
+	printf "$(MAKE) bootstrapreduce.exe is preferred\n"
 
 $(plain_fwindemo):	fwindemo.exe
-	echo "$(MAKE) fwindemo.exe is preferred"
+	printf "$(MAKE) fwindemo.exe is preferred\n"
 
 endif !gui
 endif !cygwin
 if fox
 
 $(plain_foxdemo):	foxdemo.exe
-	echo "$(MAKE) foxdemo.exe is preferred"
+	printf "$(MAKE) foxdemo.exe is preferred\n"
 
 $(plain_fontdemo):	fontdemo.exe
-	echo "$(MAKE) fontdemo.exe is preferred"
+	printf "$(MAKE) fontdemo.exe is preferred\n"
 
 $(plain_showmathdemo):	showmathdemo.exe
-	echo "$(MAKE) showmathdemo.exe is preferred"
+	printf "$(MAKE) showmathdemo.exe is preferred\n"
 
 
 endif fox
@@ -1674,42 +1672,42 @@ endif fox
 if wx
 
 $(plain_wxdemo):	wxdemo.exe
-	echo "$(MAKE) wxdemo.exe is preferred"
+	printf "$(MAKE) wxdemo.exe is preferred\n"
 
 $(plain_wxfontdemo):	wxfontdemo.exe
-	echo "$(MAKE) wxfontdemo.exe is preferred"
+	printf "$(MAKE) wxfontdemo.exe is preferred\n"
 
 $(plain_wxfontdemo1):	wxfontdemo1.exe
-	echo "$(MAKE) wxfontdemo1.exe is preferred"
+	printf "$(MAKE) wxfontdemo1.exe is preferred\n"
 
 $(plain_wxdvi):	wxdvi.exe
-	echo "$(MAKE) wxdvi.exe is preferred"
+	printf "$(MAKE) wxdvi.exe is preferred\n"
 
 $(plain_wxshowmath):	wxshowmath.exe
-	echo "$(MAKE) wxshowmath.exe is preferred"
+	printf "$(MAKE) wxshowmath.exe is preferred\n"
 
 $(plain_wxshowmathdemo):	wxshowmathdemo.exe
-	echo "$(MAKE) wxshowmathdemo.exe is preferred"
+	printf "$(MAKE) wxshowmathdemo.exe is preferred\n"
 
 endif wx
 
 $(plain_termdemo):	termdemo.exe
-	echo "$(MAKE) termdemo.exe is preferred"
+	printf "$(MAKE) termdemo.exe is preferred\n"
 
 $(plain_dyndemo):	dyndemo.exe
-	echo "$(MAKE) dyndemo.exe is preferred"
+	printf "$(MAKE) dyndemo.exe is preferred\n"
 
 $(plain_zlibdemo):	zlibdemo.exe
-	echo "$(MAKE) zlibdemo.exe is preferred"
+	printf "$(MAKE) zlibdemo.exe is preferred\n"
 
 $(plain_gctest):	gctest.exe
-	echo "$(MAKE) gctest.exe is preferred"
+	printf "$(MAKE) gctest.exe is preferred\n"
 
 $(plain_contest):	contest.exe
-	echo "$(MAKE) contest.exe is preferred"
+	printf "$(MAKE) contest.exe is preferred\n"
 
 $(plain_alloctest):	alloctest.exe
-	echo "$(MAKE) alloctest.exe is preferred"
+	printf "$(MAKE) alloctest.exe is preferred\n"
 
 endif exeext
 
@@ -1877,7 +1875,7 @@ reduce.dep:
 $(REDUCE_IMG):	reduce$(COM) $(reducedep) $(generated_lisp)
 	-$(TRACE): > $(REDUCE_IMG)
 	mkdir -p buildlogs
-	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
+	@ww=`pwd`&& printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 # A reasonable person might ask what all the "chmod 664 $(gensrc)/* commands
 # are doing here. Well they are because if you run under a cygwin (mintty)
 # shell but execute that native windows (mingw-style) version of Reduce and
@@ -1978,7 +1976,7 @@ $(BOOTSTRAPREDUCE_IMG):	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 # build the image file twice in a row, so that forward references
 # to inline functions get handled well.
 	mkdir -p buildlogs
-	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
+	@ww=`pwd`&& printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 	chmod 664 $(gensrc)/*
 	./bootstrapreduce$(COM) \
 		-w -z -x $(CSLFLAGS) -Dno_init_file \
@@ -2002,7 +2000,7 @@ $(BOOTSTRAPREDUCE_IMG):	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 noinlines.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 	-$(TRACE): > -f noinlines.img
 	mkdir -p buildlogs
-	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
+	@ww=`pwd`&& printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 	chmod 664 $(gensrc)/*
 	./bootstrapreduce$(COM) \
 		-w -z -x $(CSLFLAGS) -Dno_init_file \
@@ -2022,7 +2020,7 @@ noinlines.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 boot.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 	-$(TRACE): > boot.img
 	mkdir -p buildlogs
-	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
+	@ww=`pwd` && printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 	chmod 664 $(gensrc)/*
 	./bootstrapreduce$(COM) \
 		-w -z $(CSLFLAGS) -Dno_init_file \
@@ -2172,7 +2170,7 @@ smacros smacros.red:	$(BOOTSTRAPREDUCE_IMG)
 		$(CYGSRC)/make-smacros.red \
 		-Dhow_many=$(how_many) -Dhow_big=$(how_big) \
 		-L buildlogs/smacros.log
-	echo You may now copy smacros.red to trunk/packages/support
+	printf "You may now copy smacros.red to trunk/packages/support\n"
 
 testslow:	$(BOOTSTRAPREDUCE_IMG)
 	mkdir -p testlogs
@@ -2281,7 +2279,7 @@ csl.dep:
 $(CSL_IMG):	csl$(COM) $(csldep)
 	-$(TRACE): > $(CSL_IMG)
 	mkdir -p buildlogs
-	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
+	@ww=`pwd` && printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 	./csl$(COM) -w -v -z $(CSLFLAGS) \
 		"$(CYGSRC)/buildcsl.lsp" \
 		-D@cslbase="$(CYGSRC)" \
@@ -2294,7 +2292,7 @@ $(CSL_IMG):	csl$(COM) $(csldep)
 csli.img:	csl$(COM) $(csldep)
 	-$(TRACE): > csli.img
 	mkdir -p buildlogs
-	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
+	@ww=`pwd` && printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 	./csl$(COM) -w -v -z $(CSLFLAGS) \
 		"$(CYGSRC)/buildcsli.lsp" \
 		-D@cslbase="$(CYGSRC)" \
@@ -2350,7 +2348,7 @@ NAME=windows64
 else !win64
 NAME=$(BUILD)
 endif !win64
-	echo ARCHITECTURE=$(ARCHITECTURE)  NAME=$(NAME)
+	printf "ARCHITECTURE=$(ARCHITECTURE)  NAME=$(NAME)\n"
 if windows
 	-$(RM) -f reduce-windows-$(shell date +%Y%m%d).zip
 	-$(RM) -rf reduce-$(NAME)-$(shell date +%Y%m%d)
@@ -2393,7 +2391,7 @@ $(reduce)/bin/rfcsl$(EXEEXT): \
 endif redfront
 
 showhost:
-	echo host = $(HOST)
+	printf "host = $(HOST)\n"
 
 # Now I am going to put some customized and rather odd install stuff. When I
 # have this working I will want to put in matching uninstall code, but for
@@ -2411,19 +2409,19 @@ forinstall:	reduce$(EXEEXT) reduce.img \
 
 if cygwin
 install-exec-local:	reduce.exe reduce.img bootstrapreduce.exe bootstrapreduce.img csl.exe csl.img
-	echo install for cygwin not implemented
+	printf "Install for cygwin not implemented\n"
 	exit 1
 
 else !cygwin
 if mac_framework
 install-exec-local:	reduce $(REDUCE_IMG) bootstrapreduce $(BOOTSTRAPREDUCE_IMG) csl $(CSL_IMG)
-	echo install for macintosh not implemented
+	printf "Install for macintosh not implemented\n"
 	exit 1
 
 else !mac_framework
 if windows
 install-exec-local:	reduce.exe reduce.img bootstrapreduce.exe bootstrapreduce.img csl.exe csl.img
-	echo install for windows not implemented
+	printf "Install for windows not implemented\n"
 	exit 1
 
 else !windows
@@ -2431,7 +2429,7 @@ install-exec-local:	reduce reduce.img bootstrapreduce bootstrapreduce.img csl cs
 # This version is mainly for Linux... It follows the directory layout used
 # in the "debianbuild" directory, but a user can override a fair amount of
 # that by going e.g. "make INSTALL libdir=... docdir=..."
-	echo install for Linux, Unix etc into destdir=$(DESTDIR) prefix=$(DESTDIR)$(prefix)
+	printf "Install for Linux, Unix etc into destdir=$(DESTDIR) prefix=$(DESTDIR)$(prefix)\n"
 	rm -rf $(DESTDIR)$(libdir)/reduce/cslbuild
 	rm -rf $(DESTDIR)$(prefix)/share/reduce/cslbuild
 	rm -rf $(DESTDIR)$(prefix)/share/reduce/fonts
@@ -2463,7 +2461,7 @@ install-exec-local:	reduce reduce.img bootstrapreduce bootstrapreduce.img csl cs
 	chmod +x $(DESTDIR)$(prefix)/bin/csl
 	chmod +x $(DESTDIR)$(prefix)/bin/bootstrapreduce
 	chmod +x $(DESTDIR)$(prefix)/bin/redcsl
-	echo Installed for CSL in $(DESTDIR)$(prefix)
+	printf "Installed for CSL in $(DESTDIR)$(prefix)\n"
 
 endif !windows
 endif !mac_framework
@@ -2471,24 +2469,24 @@ endif !cygwin
 
 if cygwin
 uninstall-local:
-	echo uninstall for cygwin not implemented
+	printf "Uninstall for cygwin not implemented\n"
 	exit 1
 
 else !cygwin
 if mac_framework
 uninstall-local:
-	echo uninstall for macintosh not implemented
+	printf "Uninstall for macintosh not implemented\n"
 	exit 1
 
 else !mac_framework
 if windows
 uninstall-local:
-	echo uninstall for windows not implemented
+	printf "Uninstall for windows not implemented\n"
 	exit 1
 
 else !windows
 uninstall-local:
-	echo uninstall for Linux, Unix etc into destdir=$(DESTDIR) prefix=$(DESTDIR)$(prefix)
+	printf "Uninstall for Linux, Unix etc into destdir=$(DESTDIR) prefix=$(DESTDIR)$(prefix)\n"
 	rm -rf $(DESTDIR)$(libdir)/reduce/cslbuild
 	rm -rf $(DESTDIR)$(prefix)/share/reduce/cslbuild
 	rm -rf $(DESTDIR)$(prefix)/share/reduce/fonts
@@ -2497,15 +2495,15 @@ uninstall-local:
 	rm -f $(DESTDIR)$(prefix)/bin/bootstrapreduce
 	rm -f $(DESTDIR)$(prefix)/bin/redcsl
 	rm -f $(DESTDIR)$(mandir)/redcsl.1
-	echo Uninstalled for CSL in $(DESTDIR)$(prefix)
+	printf "Uninstalled for CSL in $(DESTDIR)$(prefix)\n"
 
 endif !windows
 endif !mac_framework
 endif !cygwin
 
 install-data-local:
-	echo " "
+	printf "\n"
 
-am__v_CXX_0 = @echo "[$(BUILTFOR)] CXX   " $@; 
+am__v_CXX_0 = @printf "[$(BUILTFOR)] CXX   $@\n"; 
 
 # end of Makefile

@@ -494,6 +494,11 @@ AC_ARG_WITH(cygbuild,
   [],
   [with_cygbuild="unknown"])
 
+AC_ARG_WITH(cygbuild64,
+  AS_HELP_STRING([--with-cygbuild64], [Used internally to control build directory]),
+  [],
+  [with_cygbuild64="unknown"])
+
 AC_ARG_WITH(force,
   AS_HELP_STRING([--with-force], [Forces refresh of windows varients]),
   [],
@@ -804,7 +809,7 @@ csl_inplace_windows_build ()
 # I am going to suppose that all the compilers I could possibly want
 # are installed. That means I do not need to put in code here to test that!
   AC_MSG_NOTICE([Configure cygwin64 version])
-  csl_inplace_cygwin_build "x86_64-pc-cygwin" "--with-cygwin64"
+  csl_inplace_cygwin_build "x86_64-pc-cygwin"
   AC_MSG_NOTICE([Configure windows64 version])
   csl_inplace_nativewin_build "x86_64-pc-windows" "x86_64-w64-mingw32"
 }

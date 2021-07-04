@@ -1010,7 +1010,7 @@ LispObject set_up_variables(int restart_flag)
 // as a 64-bit numeric value. When it is re-loaded that value is packed
 // as a number - either a fixnum or a bignum as relevant. So the FAKE
 // nature of big_fake1 and big_fake2 will lead to the ser8ialization process
-// reloading fixnums if one is on a 64-bit machine. Thus defeating the whole
+// reloading fixnums when using a 64-bit machine. Thus defeating the whole
 // point of them!
     big_fake1 = make_one_word_bignum(0);
     big_fake2 = make_two_word_bignum(0, 0);
@@ -1019,9 +1019,10 @@ LispObject set_up_variables(int restart_flag)
     big_divisor = make_four_word_bignum(0, 0, 0, 0);
     big_dividend = make_four_word_bignum(0, 0, 0, 0);
     big_quotient = make_four_word_bignum(0, 0, 0, 0);
-    setvalue(macroexpand_hook, funcall_symbol =
-                 make_symbol("funcall", restart_flag, G0Wother, Lfuncall_1, Lfuncall_2,
-                             Lfuncall_3, Lfuncall_4up));
+    setvalue(macroexpand_hook,
+        funcall_symbol =
+            make_symbol("funcall", restart_flag, G0Wother, Lfuncall_1,
+                        Lfuncall_2, Lfuncall_3, Lfuncall_4up));
     input_libraries = make_undefined_symbol("input-libraries");
     setheader(input_libraries,
               qheader(input_libraries) | SYM_SPECIAL_VAR);
