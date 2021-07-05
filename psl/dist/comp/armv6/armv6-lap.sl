@@ -91,7 +91,7 @@
 	*trlapopt
 	*big-endian*    		% True if big-endian version
 	shift-ops*			% known armv6 shift operations
-	comment*                        % optional comment in lap output
+	lapcomment*                     % optional comment in lap output
 %	*cond*
 %	*set*
 	*OpNameList*
@@ -188,6 +188,11 @@
 	(ErrorPrintF "*** %p: base 16#%x, length 10#%d bytes" 
 		(foreach X in Entries* collect (first (car X))) 
 				CodeBase* CodeSize*))) 
+
+% If writing into memory, flush the caches
+
+    (cond ((not *WritingFaslFile)
+	   (clear_cache CodeBase* (wplus2 CodeBase* CodeSize*))))
 
     (return (and LapReturnValue*	  % return nil if LapReturnValue* is not set
 	     (MkCODE LapReturnValue*))))) % How does this point at the code?
@@ -1062,7 +1067,7 @@
 (put 'float 'InstructionDepositFunction 'DepositFloat)
 
 (de AddLapComment (X)
-    (setq comment* (cdr X))
+    (setq lapcomment* (cdr X))
     )
 
 (put 'comment 'InstructionDepositFunction 'AddLapComment)

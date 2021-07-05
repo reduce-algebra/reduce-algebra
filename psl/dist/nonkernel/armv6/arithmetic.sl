@@ -458,7 +458,6 @@
 (compiletime
  (dm wquotient2 (u)
      (let ((divisor (gensym)))
-     (print (cdr u))
      `(let ((,divisor ,(caddr u)))
 	(if (eq ,divisor 0)
 	    (continuableerror 99 "Division by zero" (list 'quotient ,(cadr u) ,divisor))

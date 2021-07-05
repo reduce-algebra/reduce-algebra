@@ -957,7 +957,9 @@ error
 (if_system 32 (progn
 
 (ds ieeezerop(u)
-   (and (weq (floathiword u) 0)
+   % ieee zero may have the sign bit set to indicate -0.0,
+   % so shift the leftmost bit off the machine word before comparing with 0
+   (and (weq (wshift (floathiword u) 1) 0)
         (weq (floatloword u) 0)))
 
 (ds

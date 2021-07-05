@@ -611,7 +611,7 @@
 	   ((0 1) (isys2int (wminus x)))                  % posint negint
 	   ((2)   (sys2int (wminus (fixval (fixinf x))))) % fixnum
 	   ((3)   (bigminus x))                           % bignum
-	   ((4)   (floatdifference '0.0 x))               %floatnum            
+	   ((4)   (floatminus x))                         %floatnum            
 	   (nil   (nonnumber1error x 'minus))
 )) 
 
