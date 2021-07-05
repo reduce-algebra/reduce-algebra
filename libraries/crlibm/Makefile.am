@@ -56,6 +56,13 @@ libcrlibm_a_LIBADD = scs_lib/scs_private.o scs_lib/addition_scs.o  \
 
 include_HEADERS = crlibm.h
 
+# Because scs_lib must be built before the stuff in this directory
+# (as indicated in the SUBDIRS setting) a parallel build that rushed ahead
+# in the current directory could fail. I might cope with this by putting some
+# explicit dependencies between things here and the files generated within
+# scs_lib but rather than sorting out just what is necessary there I will
+# fall back on a sequential build.
+.NOTPARALLEL:
 SUBDIRS = scs_lib . tests
 
 # Add your compiler here. Default is assumed to be gcc.

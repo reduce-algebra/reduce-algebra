@@ -1841,7 +1841,9 @@ setup_type const eval1_setup[] =
     DEF_4up("apply3",   Lapply3),
     DEF_4up("apply4",   Lapply4),
     DEF_1("evlis",      Levlis),
-    {"funcall",         G0Wother, Lfuncall_1, Lfuncall_2, Lfuncall_3, Lfuncall_4up},
+// The symbol "funcall" gets set up manually in restart.cpp, so I should not
+// include it in the list here.
+//  {"funcall",         G0Wother, Lfuncall_1, Lfuncall_2, Lfuncall_3, Lfuncall_4up},
     {"funcall*",        G0Wother, Lfuncall_1, Lfuncall_2, Lfuncall_3, Lfuncall_4up},
     DEF_2("parallel",   Lparallel),
     DEF_1("sleep",      Lsleep),

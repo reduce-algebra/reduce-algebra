@@ -164,7 +164,9 @@ static LispObject prog_fn(LispObject iargs, LispObject ienv)
 // It could be that the RETURN(-FROM) is heading to be handled by some
 // enclosing block.
         else RETHROW;
-    ANOTHER_CATCH(LispError)
+    ANOTHER_CATCH(LispResource)
+        RETHROW;
+    ANOTHER_CATCH(LispSimpleError)
         int _reason = exit_reason;
         if (SHOW_FNAME)
         {   err_printf("\nEvaluating: "); // A bit of backtrace on errors
@@ -575,7 +577,9 @@ LispObject tagbody_fn(LispObject args1, LispObject env1)
 // Re-throw the LispGo exception to try again at some outer level.
             exit_reason = _reason;
             RETHROW;
-        ANOTHER_CATCH(LispError)
+        ANOTHER_CATCH(LispResource)
+            RETHROW;
+        ANOTHER_CATCH(LispSimpleError)
             int _reason = exit_reason;
             if (SHOW_FNAME)
             {   err_printf("\nEvaluating: ");
@@ -880,7 +884,7 @@ static LispObject errorset3(LispObject env,
         r = eval(form, nil);
     CATCH(LispResource)
         RETHROW;
-    ANOTHER_CATCH(LispError)
+    ANOTHER_CATCH(LispSimpleError)
 // I am not going to catch exceptions such as the ones that restart the
 // system - only ones that couunt as "errors".
         miscflags = (flags & BACKTRACE_MSG_BITS) |

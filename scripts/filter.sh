@@ -36,14 +36,15 @@ do
   *--with*-xim* | \
   *--with-arithlib* | \
   *--with-build* | \
-  *--with-csl* | \
   *--with-cyg* | \
   *--with-force* | \
   *--with-lto* | \
   *--with-m32* | \
   *--with-m64* | \
   *--with-mingw* | \
+  *--with-csl* | \
   *--with-psl* | \
+  *--with-both* | \
   *--with-pslbuild* | \
   *--with-smallpage*)
     ;;

@@ -1565,10 +1565,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                     case UNWIND_THROW:     THROW(LispThrow);
                     case UNWIND_RESTART:   THROW(LispRestart);
                     case UNWIND_RESOURCE:  THROW(LispResource);
-                    case UNWIND_ERROR:     THROW(LispError);
-                    case UNWIND_FNAME:     THROW(LispError);
-                    case UNWIND_UNWIND:    THROW(LispError);
-                    default:               THROW(LispError);
+                    case UNWIND_ERROR:     THROW(LispSimpleError);
+                    case UNWIND_FNAME:     THROW(LispSimpleError);
+                    case UNWIND_UNWIND:    THROW(LispSimpleError);
+                    default:               THROW(LispSimpleError);
                 }
 
             case OP_THROW:

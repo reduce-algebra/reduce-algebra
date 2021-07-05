@@ -120,6 +120,11 @@ AC_ARG_WITH(psl,
   [],
   [with_psl="no"])
 
+AC_ARG_WITH(both,
+  AS_HELP_STRING([--with-csl], [Use both Lisp systems]),
+  [with_csl="yes"],
+  [with_csl="no"])
+
 # By configuring "--without-redfront" you can avoid having a CSL built
 # making an attempt to compile and instate the newfront version of redfront.
 
@@ -167,7 +172,12 @@ AC_ARG_WITH(cygbuild,
    [],
    [with_cygbuild=""])
 
-AC_SUBST(with_cygbuild)
+AC_ARG_WITH(cygwin64,
+   AS_HELP_STRING([--with-cygwin64], [used if I wish to call the cygwin version]),
+   [],
+   [with_cygwin64=""])
+
+AC_SUBST(with_cygwin64)
 
 AC_ARG_WITH(cygbuild64,
    AS_HELP_STRING([--with-cygbuild64], [used if I wish to call the 64-bit cygwin version]),
@@ -1788,20 +1798,35 @@ LDFLAGS="-L../lib $LDFLAGS"
 
 #
 # Make some things available for conditional segments of a Makefile
-#
+# When using automake there is a conflict between automake conditionals,
+# which get processed somewhat early, and Makefile ones that are handled
+# only when "make" is invoked. The trick here will be used to insert a
+# Makefile conditional that sets up for parallel builds in cases that
+# the invocation of "make" is a top level one.
 
-# The 
 PARALLEL_BUILD='
 ifeq "0" "$(MAKELEVEL)"
-junk1 := $(shell echo Ho Ho Ho MAKEFLAGS=#$(MAKEFLAGS)# 1>&2)
-ifeq "" "$(findstring --jobserver,$(MAKEFLAGS))"
-junk2 := $(shell echo Ha Ha Ha MAKEFLAGS=#$(MAKEFLAGS)# 1>&2)
 MAKEFLAGS := -j$(shell nproc || sysctl -n hw.ncpu || printf "1") $(MAKEFLAGS)
-endif
 endif
 '
 AC_SUBST([PARALLEL_BUILD])
 AM_SUBST_NOTMAKE([PARALLEL_BUILD])
+
+CYGWIN_DIR='
+ifneq (, $(shell if test -d "$(with_cygbuild64)"; then echo "yes"; fi))
+CYG_CSL = $(with_cygbuild64)/csl/csl.exe
+CYG_FLATCSL = $(with_cygbuild64)/csl/flatcsl.exe
+CYG_BOOTSTRAPREDUCE = $(with_cygbuild64)/csl/bootstrapreduce.exe
+CYG_REDUCE = $(with_cygbuild64)/csl/reduce.exe
+CYG_FWINDEMO = $(with_cygbuild64)/csl/fwindemo.exe
+.PHONY:	$(CYG_CSL) $(CYG_FLATCSL) $(CYG_BOOTSTRAPREDUCE) \
+		$(CYG_REDUCE) $(CYG_FWINDEMO)
+$(CYG_CSL) $(CYG_FLATCSL) $(CYG_BOOTSTRAPREDUCE) $(CYG_REDUCE) $(CYG_FWINDEMO):
+	$(MAKE) -C $(with_cygbuild64)/csl $(notdir $@)
+endif
+'
+AC_SUBST([CYGWIN_DIR])
+AM_SUBST_NOTMAKE([CYGWIN_DIR])
 
 AM_CONDITIONAL(x86, test "$x86" = "yes")
 AM_CONDITIONAL(windows, test "$windows_build" = "yes")

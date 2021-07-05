@@ -879,7 +879,7 @@ public:
 //        RETHROW;
 //      ANOTHER_CATCH(AnotherExceptionName)
 //        recovery code
-//      END_CATCH;
+//      END_CATCH
 //
 // Note that there are no "{}" delimiters written. There are some severe
 // constraints! First I have to use a limited number of "exception" types,
@@ -892,7 +892,7 @@ public:
 // the behaviour are because the body of the TRY is wrapped up as the
 // body of a function (well a lambda-expression) so that within it THROW and
 // the exception-testing macros can use "return" to escape from it. So
-// if you look at the expanaion of TRY s1; CATCH(T) s2; END_CATCH; it is
+// if you look at the expanaion of TRY s1; CATCH(T) s2; END_CATCH it is
 // along the lines of
 //    ([&]()->LispObject { s1; return nil })();
 //    if (exceptionFlag & T) { exceptionFlag = LispNormal; s2; }
@@ -915,9 +915,10 @@ enum LispExceptionTag
 // LispNormal is for circumstances when no throw-like situation is in play. 
     LispNormal      = 0x00,
 
-// The next three are all varieties of error states.
-    LispError       = 0x03,
-    LispResource    = 0x01,
+// The next two are varieties of error state.
+//  LispError       = 0x03,   // I should never use this!
+    LispSimpleError = 0x01,
+    LispResource    = 0x02,
 
 // Now thee that are used to implement Lisp control structures within
 // the interpreter.
@@ -944,7 +945,7 @@ enum LispExceptionTag
 
 
 #define SPID_LispException    (SPID_ERROR+(static_cast<int>(LispException)<<20))
-#define SPID_Error            (SPID_ERROR+(static_cast<int>(LispError)<<20))
+#define SPID_SimpleError      (SPID_ERROR+(static_cast<int>(LispSimpleError)<<20))
 #define SPID_Resource         (SPID_ERROR+(static_cast<int>(LispResource)<<20))
 #define SPID_Go               (SPID_ERROR+(static_cast<int>(LispGo)<<20))
 #define SPID_ReturnFrom       (SPID_ERROR+(static_cast<int>(LispReturnFrom)<<20))
@@ -954,16 +955,12 @@ enum LispExceptionTag
 
 inline LispExceptionTag exceptionFlag = LispNormal;
 
-inline bool errorState()
-{   return (exceptionFlag & LispError) != 0;
-}
 inline bool exceptionPending()
 {   return exceptionFlag != LispNormal;
 }
 
-#define errexit()  if (exceptionPending()) UNLIKELY return SPID_Error
-#define errexitint()  if (exceptionPending()) UNLIKELY return static_cast<int>(SPID_Error)
-//#define errexitvoid()  if (exceptionPending()) UNLIKELY return
+#define errexit()  if (exceptionPending()) UNLIKELY return SPID_ERROR+(exceptionFlag<<20)
+#define errexitint()  if (exceptionPending()) UNLIKELY return SPID_ERROR+(exceptionFlag<<20)
 
 #define TRY ([&]()->LispObject { SaveStack save_stack_Object ## __LINE__;
 
@@ -984,42 +981,59 @@ inline int exceptionLine = -1;
 
 #define CATCH(flavour) \
    return nil;})(); if ((exceptionFlag & flavour) != 0) UNLIKELY \
-   {   [[maybe_unused]] LispExceptionTag saveException = exceptionFlag; exceptionFlag = LispNormal;
+   {   [[maybe_unused]] LispExceptionTag saveException = exceptionFlag; \
+       exceptionFlag = LispNormal;
 
 #define ANOTHER_CATCH(flavour) \
    } else if ((exceptionFlag & flavour) != 0) UNLIKELY \
-   {   [[maybe_unused]] LispExceptionTag saveException = exceptionFlag; exceptionFlag = LispNormal;
+   {   [[maybe_unused]] LispExceptionTag saveException = exceptionFlag; \
+       exceptionFlag = LispNormal;
 
-#define RETHROW do { exceptionFlag = saveException; \
-                     return SPID_Error; } while(false)
+#define RETHROW do \
+    { exceptionFlag = saveException; \
+      return SPID_ERROR+(saveException<<20); } while(false)
 
-#define END_CATCH } else if (exceptionPending()) UNLIKELY return SPID_Error;
+#define END_CATCH } \
+    else if (exceptionPending()) \
+        UNLIKELY return SPID_ERROR+(exceptionFlag<<20);
 
 #else // NO_THROW
 
 struct LispException : public std::exception
 {   virtual const char *what() const throw()
-    {   return "Generic Lisp Exception";
+    {   return "Lisp Generic Exception";
     }
 };
-
-// Exceptions that count as "Errors" are or inherit from LispError, and
-// unwinding from one of them should lead to a backtrace.
 
 struct LispError : public LispException
 {   virtual const char *what() const throw()
-    {   return "Lisp Error";
+    {   return "Lisp Error or Resource Limit Event";
     }
 };
 
+// When one unwinds because of a LispSimpleError firstly there is a
+// possibility that a backtrace will be displayed, and secondly that
+// errorset() might catch the error.
+
+struct LispSimpleError : public LispError
+{   virtual const char *what() const throw()
+    {   return "Lisp Simple Error";
+    }
+};
+
+// Unwinding on a LispResource will not cause a backtrace to be displayed
+// and it can only be caught by resource-limit(), not by errorset().
+
 struct LispResource : public LispError
 {   virtual const char *what() const throw()
-    {   return "Lisp Resouce Limiter";
+    {   return "Lisp Resouce Limit Event";
     }
 };
 
 // Things that are not LispErrors are exceptions used to the system to
-// support Lisp features - GO, RETURN, THROW and RESTART.
+// support Lisp features - GO, RETURN, THROW and RESTART. So they do some
+// unwinding but do not lead to backtraces and are caught by code associated
+// with their particular purpose.
 
 struct LispGo : public LispException
 {   virtual const char *what() const throw()
@@ -1271,7 +1285,9 @@ public:
 #define on_backtrace(a, b)                  \
     TRY                                     \
         a;                                  \
-    CATCH(LispError)                        \
+    CATCH(LispResource)                     \
+        RETHROW;                            \
+    ANOTHER_CATCH(LispSimpleError)          \
         int _reason = exit_reason;          \
         b;                                  \
         exit_reason = _reason;              \
@@ -1281,7 +1297,9 @@ public:
 #define on_backtrace_void(a, b)             \
     TRY                                     \
         a;                                  \
-    CATCH(LispError)                        \
+    CATCH(LispResource)                     \
+        RETHROW;                            \
+    ANOTHER_CATCH(LispSimpleError)          \
         int _reason = exit_reason;          \
         b;                                  \
         exit_reason = _reason;              \
@@ -1302,7 +1320,7 @@ public:
     CATCH(LispResource)                       \
     {   RETHROW;                              \
     }                                         \
-    ANOTHER_CATCH(LispError)                  \
+    ANOTHER_CATCH(LispSimpleError)            \
         b;                                    \
     END_CATCH
 
@@ -1312,7 +1330,7 @@ public:
     CATCH(LispResource)                       \
     {   RETHROW;                              \
     }                                         \
-    ANOTHER_CATCH(LispError)                  \
+    ANOTHER_CATCH(LispSimpleError)            \
     {}                                        \
     END_CATCH
 

@@ -248,7 +248,9 @@ static LispObject block_fn(LispObject iargs, LispObject ienv)
             if (exit_tag == my_tag)
                 return nvalues(exit_value, exit_count);
             else RETHROW;
-        ANOTHER_CATCH(LispError)
+        ANOTHER_CATCH(LispResource)
+            RETHROW;
+        ANOTHER_CATCH(LispSimpleError)
             int _reason = exit_reason;
             err_printf("\nEvaluating: ");
             loop_print_error(car(args));

@@ -121,7 +121,9 @@ LispObject bytecoded_1(LispObject def, LispObject a)
     LispObject r;
     TRY
         r = bytestream_interpret(CELL-TAG_VECTOR, def, stack-1);
-    CATCH(LispError)
+    CATCH(LispResource)
+        RETHROW;
+    ANOTHER_CATCH(LispSimpleError)
         int _reason = exit_reason;
         if (SHOW_ARGS)
         {   err_printf("Arg1: ");
@@ -148,7 +150,9 @@ LispObject bytecoded_2(LispObject def, LispObject a, LispObject b)
     LispObject r;
     TRY
         r = bytestream_interpret(CELL-TAG_VECTOR, def, stack-2);
-    CATCH(LispError)
+    CATCH(LispResource)
+        RETHROW;
+    ANOTHER_CATCH(LispSimpleError)
         int _reason = exit_reason;
         if (SHOW_ARGS)
         {   err_printf("Arg 1: ");
@@ -177,7 +181,9 @@ LispObject bytecoded_3(LispObject def, LispObject a, LispObject b,
     LispObject r;
     TRY
         r = bytestream_interpret(CELL-TAG_VECTOR, def, stack-3);
-    CATCH(LispError)
+    CATCH(LispResource)
+        RETHROW;
+    ANOTHER_CATCH(LispSimpleError)
         int _reason = exit_reason;
         if (SHOW_ARGS)
         {   err_printf("Arg1: ");
@@ -223,7 +229,9 @@ LispObject bytecoded_4up(LispObject def, LispObject a1, LispObject a2,
     }
     TRY
         r = bytestream_interpret(CELL-TAG_VECTOR+1, def, stack-nargs);
-    CATCH(LispError)
+    CATCH(LispResource)
+        RETHROW;
+    ANOTHER_CATCH(LispSimpleError)
         int _reason = exit_reason;
         if (SHOW_ARGS)
         {   for (int i=1; i<=nargs; i++)
@@ -365,7 +373,9 @@ static LispObject byteopt(LispObject def, LispObject a1,
     }
     TRY
         r = bytestream_interpret(CELL-TAG_VECTOR+2, def, stack-nargs);
-    CATCH(LispError)
+    CATCH(LispResource)
+        RETHROW;
+    ANOTHER_CATCH(LispSimpleError)
         int _reason = exit_reason;
         if (SHOW_ARGS)
         {   for (i=1; i<=nargs; i++)

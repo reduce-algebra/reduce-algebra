@@ -18,6 +18,8 @@ CXXFLAGS = @CXXFLAGS@ @X_CFLAGS@
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include
 # ACN change to use abs_top_builddir - an absolute pathname...
 RESWRAP  = $(abs_top_builddir)/utils/reswrap$(EXEEXT)
+$(RESWRAP):
+	$(MAKE) -C $(abs_top_builddir)/utils reswrap$(EXEEXT)
 SUFFIXES = .gif .bmp
 
 noinst_DATA =
@@ -478,11 +480,11 @@ $(ICONS)
 
 $(srcdir)/FXApp.cpp: $(srcdir)/icons.h
 
-$(srcdir)/icons.h: $(ICONS)
+$(srcdir)/icons.h: $(ICONS) $(RESWRAP)
 	cd $(srcdir) && $(RESWRAP) -i -n FX -o icons.h $(ICONS)
 
 
-$(srcdir)/icons.cpp: $(ICONS)
+$(srcdir)/icons.cpp: $(ICONS) $(RESWRAP)
 	cd $(srcdir) && $(RESWRAP) -e -n FX -o icons.cpp $(ICONS)
 
 

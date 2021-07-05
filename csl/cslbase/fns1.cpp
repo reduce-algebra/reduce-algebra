@@ -1190,7 +1190,7 @@ LispObject Lunwind(LispObject env)
                   UNWIND_UNWIND;
     exit_count = 0;
     exit_tag = nil;
-    THROW(LispError);
+    THROW(LispSimpleError);
 }
 
 // If the variable *break-function* has as its value a symbol, and that
@@ -1255,7 +1255,7 @@ LispObject error_N(LispObject args)
                   UNWIND_UNWIND;
     exit_count = 0;
     exit_tag = nil;
-    THROW(LispError);
+    THROW(LispSimpleError);
 }
 
 LispObject Lerror_1(LispObject env, LispObject a1)
@@ -1300,7 +1300,7 @@ LispObject Lerror_0(LispObject env)
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    THROW(LispError);
+    THROW(LispSimpleError);
 }
 
 LispObject Lmake_special(LispObject, LispObject a)
