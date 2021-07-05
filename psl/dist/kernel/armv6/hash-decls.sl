@@ -40,8 +40,11 @@
 %
 % Special values for labelling unoccupied slots:
 %
-
+(compiletime (load if-system))
+(if_system x86_64
+(define-constant deleted-slot-value -1)
 (define-constant deleted-slot-value  16#ffffffff)
+)
 (define-constant empty-slot-value    0)
 
 %
