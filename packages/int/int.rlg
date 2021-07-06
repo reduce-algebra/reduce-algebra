@@ -2190,6 +2190,14 @@ testint(1/(x*sqrt(x^2-1-x^4)),x);
              5    3
             x  - x  + x
 
+%testint(1/(y*sqrt(y-1-y^2)),y); % commented out because wrong answer
+testint(1/sqrt(y-1-y^2),y);
+
+
+          2*y - 1
+ - asinh(---------)*i
+          sqrt(3)
+
 
 % Examples from James Davenport's thesis:
 
@@ -3098,7 +3106,7 @@ symbolic summarize!-integral!-test();
 
                 *****     SUMMARY OF INTEGRAL TESTS     *****
 
-Number of integrals tested: 283
+Number of integrals tested: 284
 
 
 
@@ -3217,10 +3225,3 @@ sqrt( - cos(x) + 1)
 
 end;
 
-Tested on x86_64-unknown-ubuntu16.04 CSL
-Time (counter 1): 1380 ms  plus GC time: 70 ms
-
-End of Lisp run after 1.43+0.09 seconds
-real 1.73
-user 1.62
-sys 0.06

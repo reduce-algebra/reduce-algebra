@@ -376,6 +376,8 @@ testint(x/sqrt(1-x^4),x);
 testint(1/(x*sqrt(1+x^4)),x);
 testint(x/sqrt(1+x^2+x^4),x);
 testint(1/(x*sqrt(x^2-1-x^4)),x);
+%testint(1/(y*sqrt(y-1-y^2)),y); % commented out because wrong answer
+testint(1/sqrt(y-1-y^2),y);
 
 % Examples from James Davenport's thesis:
 
