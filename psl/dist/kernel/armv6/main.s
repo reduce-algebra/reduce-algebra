@@ -888,6 +888,7 @@ l0132:
  bne l0133
  add r0, r0, #4
  ldrsb r0, [r0, r1]
+ and r0, r0, #255
  mov r0, r0, lsl #5
  orr r0, r0, #30
  mov r0, r0, ror #5

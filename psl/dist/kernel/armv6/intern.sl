@@ -114,7 +114,7 @@
 	bps-string
 	new-id)
     (if (= string-len 0)
-      (mkid (strbyt string-inf 0))
+      (mkid (wand 16#ff (strbyt string-inf 0)))
       (if (occupied-slot? (setq hash-table-index (hash-into-table name)))
 	(mkid (hash-table-entry hash-table-index))
 	(progn 
@@ -174,7 +174,7 @@
 	 (do (setf result 
 	       (^ result (<< (strbyt inf i) 
 			     (- (- bitsperword 8) i))))))
-    (wremainder result hash-table-size)
+    (wremainder_unsigned result hash-table-size)
     ))
 
 (off fast-integers)
