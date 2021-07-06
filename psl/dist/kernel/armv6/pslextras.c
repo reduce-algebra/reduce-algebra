@@ -261,6 +261,11 @@ int wremainder(int x, int y)
 	return (x % y);
 }
 
+unsigned int wremainder_unsigned(unsigned int x, unsigned int y)
+{
+	return (x % y);
+}
+
 int wxdivide(int x, int y, int * rem)
 {
         int q = x / y;

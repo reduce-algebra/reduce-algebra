@@ -123,10 +123,8 @@
 (external-function os_startup_hook      (pargc pargv))
 (external-function os_cleanup_hook      ())
 (external-function get_execfilepath     ())
+(external-function clear_cache          (start end))
 (external-function wquotient 		(x y))
-(external-function wremainder		(x y))
-(external-function wxdivide             (x y rem))
-(external-function wxquotientdouble     (dlo dhi quot rem))
 
  
 % Defined in pslextras.c
@@ -143,6 +141,10 @@
 (external-function external_strlen     (strptr))
 (external-function external_setenv     (varstring valstring))
 (external-function external_getenv     (envstring))
+(external-function wremainder          (x y))
+(external-function wremainder_unsigned (x y))
+(external-function wxdivide            (x y rem))
+(external-function wxquotientdouble    (dlo dhi quot rem))
 (external-function uxfloat             (buffer integer))
 (external-function uxfix               (buffer))
 (external-function uxassign            (arg1-buffer arg2-buffer))

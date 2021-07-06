@@ -116,6 +116,9 @@
 	(do-relocation-new code-base code-size bit-table local-id-table)
 	(do-relocation code-base code-size bit-table local-id-table))
 
+    % Flush the caches
+    (clear_cache code-base (wplus2 code-base (wtimes2 code-size addressingunitsperitem)))
+
     % Call the init code
     (let ((temp code-base-hack))  % avoid use of fluid binding
       (setf code-base-hack code-base)
