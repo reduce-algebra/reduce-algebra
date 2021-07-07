@@ -6,6 +6,7 @@ if ($queryString):
 $doc = new DOMDocument();
 libxml_use_internal_errors(true);
 if ($doc->loadHTMLFile('manual/manual.html')) {
+    $queryString = urldecode($queryString);
     // Use XPath to extract the href attribute of the contents item containing the query string:
     $xpath = new DOMXpath($doc);
     $href = $xpath->query("/html/body/div[@class='tableofcontents']/span/a[contains(.,'$queryString')]/@href");
