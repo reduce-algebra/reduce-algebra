@@ -113,6 +113,7 @@ cd psl
 (load!-package 'poly)
 (load!-package 'arith)
 (load!-package 'alg)
+(load!-package 'rtools)
 (load!-package 'mathpr)
 (load!-package 'entry)
 (setq version!* (compress (append

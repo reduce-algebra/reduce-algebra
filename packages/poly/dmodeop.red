@@ -58,17 +58,13 @@ symbolic procedure dividef(m,n);
 symbolic procedure !:expt(u,n);
    % Raises domain element U to integer power N.  Value is a domain
    % element.
-   if null u then if n=0 then rerror(poly,11,"0/0 formed") else nil
+   if null u then if n=0 then rerror(poly,11,"0**0 formed") else nil
     else if n=0 then 1
     else if n=1 then u
     else if u=1 then 1
     else if n<0
      then !:recip !:expt(if not fieldp u then mkratnum u else u,-n)
     else if atom u then u**n
-%    Moved into the exponentiation method of !:mod!:
-%    else if car u eq '!:mod!:
-%     then (lambda x; if x=0 then nil else if x=1 then 1 else car u . x)
-%          general!-modular!-expt(cdr u,n)
     else begin scalar v,w,x;
       if x := get(car u,'expt)
          then return apply2(x,u,n);

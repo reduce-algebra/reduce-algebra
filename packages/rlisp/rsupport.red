@@ -264,7 +264,7 @@ symbolic procedure assgnpri(u, v, w);
 
 %% nil will be done later, needs more modifications to the parser
 %put('nil,'map!-reserved,'nil!-reserved);
-% The following doesn work, as get('reserved!-nil,'oldnam) returns nil
+% The following doesn't work, as get('reserved!-nil,'oldnam) returns nil
 %put('nil!-reserved,'oldnam,'nil);
 
 endmodule;

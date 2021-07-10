@@ -299,6 +299,12 @@ symbolic inline procedure getrtypecar u; getrtype car u;
 symbolic procedure getrtypeor u;
    u and (getrtype car u or getrtypeor cdr u);
 
+symbolic procedure eqexpr u;
+   % Returns true if U is an equation or similar structure
+   % (e.g., a rule).
+   not atom u
+      and flagp(car u,'equalopr) and cddr u and null cdddr u;
+
 symbolic procedure !*eqn2a u;
    % If u is an equation a=b, it is converted to an equivalent equation
    % a-b=0, or if a=0, b=0.  Otherwise u is returned converted to true

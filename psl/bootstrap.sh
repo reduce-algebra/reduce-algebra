@@ -192,6 +192,7 @@ rds(xxx := open("$reduce/packages/support/build.red",'input));
 (load!-package!-sources 'pslrend 'support)
 (load!-package!-sources 'poly 'poly)
 (load!-package!-sources 'alg 'alg)
+(load!-package!-sources 'rtools 'rtools)
 (load!-package!-sources 'arith 'arith)  %  Needed by roots, specfn*, (psl).
 (load!-package!-sources 'entry 'support)
 (load!-package!-sources 'remake 'support)
