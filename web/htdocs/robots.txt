@@ -2,3 +2,4 @@ User-agent: *
 Disallow: /images/
 Disallow: /include/
 Disallow: /sitemap.php
+Disallow: /web-reduce/
