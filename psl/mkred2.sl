@@ -10,6 +10,8 @@
 
 (load!-package 'alg)
 
+(load!-package 'rtools)
+
 (load!-package 'mathpr)
 
 (load!-package 'entry)

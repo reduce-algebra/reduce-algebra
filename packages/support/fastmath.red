@@ -222,7 +222,7 @@ symbolic procedure tanh x;
    '(sin cos tan sind cosd tand cotd secd cscd asin acos atan
      asecd acscd atan2d atan2 sqrt exp log hypot cosh sinh tanh)
           do
-     if getd intern bldmsg("%w%w",'ux,u) then flag(list u,'lose)
+     if getd intern compress ('u . 'x . explode u) then flag(list u,'lose)
    ) where !*lower=nil;
 
 

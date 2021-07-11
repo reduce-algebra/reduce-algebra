@@ -862,9 +862,16 @@ extern LispObject  reduce_vector_size(LispObject n, size_t length);
 extern void        prepare_for_borrowing();
 
 inline void zero_out(void *p)
-{   char *p1 = reinterpret_cast<char *>(
+{
+#if 0
+// At an earlier stage I explicitly zeroed out pages of memory with the
+// view that if things went wrong that would avoid confusion when looking
+// at the wreckage. Now is the time to cease putting in that extra
+// overhead.
+    char *p1 = reinterpret_cast<char *>(
         doubleword_align_up(reinterpret_cast<uintptr_t>(p)));
     std::memset(p1, 0, CSL_PAGE_SIZE);
+#endif // 0
 }
 extern LispObject borrow_basic_vector(int tag, int type, size_t length);
 extern LispObject borrow_vector(int tag, int type, size_t length);

@@ -183,6 +183,36 @@ flag ('(in in_tex out shut),'eval);
 
 flag ('(in in_tex out shut),'ignore);
 
+% At this stage in the bootstrapping the character "_" may need an escape
+% character ahead of it, even though in the final system that is not
+% necessary.
+
+macro procedure rlisp!_printf u;
+   list('printf!_internal, cadr u, 'list . cddr u);
+
+macro procedure rlisp!_bldmsg u;
+  list('bldmsg!_internal, cadr u, 'list . cddr u);
+
+flag('(rlisp!_printf rlisp!_bldmsg), 'variadic);
+
+% There is a significant issue here. PSL has functions printf and
+% bldmsg built in to its kernel. They are defined as regular functions
+% that take an indefinite number of arguments., and it looks to me
+% If I overwrite those definitions with the macro that I use here
+% the result is disaster. Instead I define my macros with the private
+% names rlisp_printf and rlisp_bldmsg then get rlisp to map the names
+% printf and bldmsg onto those.
+% I follow this path on both CSL and PSL even though there are no terrible
+% clashes with CSL.
+% Furthermore the "internal" functions that the macros expand into calls
+% to are not defined until rtools, so these functions must not be used until
+% then, althout having the macros here means that calls to them may be
+% present in the code.
+
+put('printf, 'newnam, 'rlisp!_printf);
+put('bldmsg, 'newnam, 'rlisp!_bldmsg);
+put('prinl,  'newnam, 'rlisp!_prinl);
+
 endmodule;
 
 end;

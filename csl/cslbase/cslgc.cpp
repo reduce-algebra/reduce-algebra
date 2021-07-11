@@ -558,15 +558,19 @@ static void real_garbage_collector()
 // Throw away the old semi-space - it is now junk.
     while (heap_pages_count!=0)
     {   void *spare = heap_pages[--heap_pages_count];
+#if 0
 // I will fill the old space with explicit rubbish in the hope that that
 // will generate failures as promptly as possible if it somehow gets
 // referenced...
         std::memset(spare, 0x55, (size_t)CSL_PAGE_SIZE);
+#endif // 0
         pages[pages_count++] = spare;
     }
     while (vheap_pages_count!=0)
     {   void *spare = vheap_pages[--vheap_pages_count];
+#if 0
         std::memset(spare, 0xaa, (size_t)CSL_PAGE_SIZE);
+#endif // 0
         pages[pages_count++] = spare;
     }
 // Flip the descriptors for the old and new semi-spaces.

@@ -576,6 +576,8 @@ rds(xxx := open("$reduce/packages/support/build.red", 'input));
 
 (load!-package!-sources 'alg 'alg)
 
+(load!-package!-sources 'rtools 'rtools)
+
 (load!-package!-sources 'arith 'arith)  %  Needed by roots, specfn*, (psl).
 
 (load!-package!-sources 'entry 'support)
@@ -1650,6 +1652,8 @@ symbolic restart!-csl nil;
 (load!-package 'arith)
 
 (load!-package 'alg)
+
+(load!-package 'rtools)
 
 (load!-package 'mathpr)
 

@@ -343,6 +343,19 @@ put('algebraic,'symbolic,'!*!*a2s);
 
 put('symbolic,'algebraic,'!*!*s2a);
 
+symbolic procedure smember(u,v);
+   %determines if S-expression U is a member of V at any level;
+   if u=v then t
+    else if atom v then nil
+    else smember(u,car v) or smember(u,cdr v);
+
+symbolic procedure smemql(u,v);
+   %Returns those members of id list U contained in V at any
+   %level (excluding quoted expressions);
+   if null u then nil
+    else if smemq(car u,v) then car u . smemql(cdr u,v)
+    else smemql(cdr u,v);
+
 symbolic procedure !*!*a2s(u,vars);
    % It would be nice if we could include the ATSOC(U,VARS) line,
    % since in many cases that would save recomputation. However,

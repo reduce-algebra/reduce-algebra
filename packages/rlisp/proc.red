@@ -126,7 +126,7 @@ symbolic procedure formproc(u,vars,mode);
         varlis := cadr u;
 #endif
         body := caddr u;
-      	if pairp cdddr u then info := cadddr u; 
+        if pairp cdddr u then info := cadddr u; 
         x := if eqcar(body,'rblock) then cadr body else nil;
         y := pairxvars(varlis,x,vars,mode);
         if x then body := car body . rplaca!*(cdr body,cdr y);
@@ -180,7 +180,7 @@ symbolic procedure formproc(u,vars,mode);
                               mkquote type,
                               mkquote list('lambda,varlis,body));
                  if !*defn then lispeval body >>;
-	body := proc!-add!-info(name,info,body);
+        body := proc!-add!-info(name,info,body);
         if not(mode = 'symbolic)
           then body :=
               mkprogn(list('flag,mkquote list name,mkquote 'opfn),body);
@@ -214,10 +214,10 @@ put('procedure,'formfn,'formproc);
 symbolic procedure formde(u, vars, mode);
    if mode = 'symbolic then      
       formproc(
-     	 list('procedure, cadr u, 'symbolic, 'expr, caddr u,
-	      if null cddddr u then cadddr u else 'progn . cdddr u),
-     	    vars,
-     	    mode)
+         list('procedure, cadr u, 'symbolic, 'expr, caddr u,
+            if null cddddr u then cadddr u else 'progn . cdddr u),
+            vars,
+            mode)
     else ('list . algid(car u,vars) . formlis(cdr u, vars,mode));
 
 put('de,'formfn,'formde);
@@ -467,17 +467,17 @@ symbolic procedure collect_cdrs u;
   else cdar u . collect_cdrs cdr u;
 
 symbolic procedure procstat1 mode;
-   begin scalar bool, u, type, x, y, z, file, line, info;
+   begin scalar bool, u, type, x, y, z, file, line:=curline!*, info;
 % Note the file and line that this procedure is in. This will be the
 % location that the procedure statement starts on.
 % I can tag it with the file name and line where it was defined, and that
 % may be really helpful in some debugging context.
-      if ifl!* then << file := car ifl!*;
+      file := if ifl!* then car ifl!* else "-";
 % By using intern I turn the string that is the file-name into a symbol.
 % That arranges that when the file-name is used multiple times only one
 % copy is kept in memory.
-	 info := list('defined!-in!-file . intern simplify!-filename file,                                                                                                                                    'defined!-on!-line . line) >>
-       else file = "-";
+       info := list('defined!-in!-file . intern simplify!-filename file,
+                    'defined!-on!-line . line);
 % I think that erfg!* will be set if we have already suffered an error, so
 % we may be parsing in a sort of recovery mode.
       bool := erfg!*;
@@ -524,7 +524,8 @@ symbolic procedure procstat1 mode;
 % where "unit" denotes nothing (ie not having any arguments), "general" is
 % where the type had not been specified, and otherwise at present types
 % are merely symbols.
-	       info := ('procedure_type . 'arrow . make_tuple_type cdar x . cdr x) . info;
+               info := ('procedure_type . 'arrow .
+                        make_tuple_type cdar x . cdr x) . info;
                x := car x;
                fname!* := car x;
                x := fname!* . collect_cars cdr x;

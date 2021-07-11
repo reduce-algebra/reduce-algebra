@@ -51,6 +51,7 @@ red/bootstrap.img:	psl/* \
 		$(reducec)/packages/rlisp/*.red \
 		$(reducec)/packages/alg/*.red  \
 		$(reducec)/packages/poly/* \
+		$(reducec)/packages/rtools/* \
 		$(reducec)/packages/arith/*.red \
 		red/mma.awk red/qepcad.awk
 	$(srcdir)/bootstrap.sh $(BUILD)

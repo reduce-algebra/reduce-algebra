@@ -26,12 +26,11 @@ module alg;  % Header module for alg package.
 %
 
 
-create!-package('(alg alg!-form intro general farith numsup genmod
-                  random smallmod zfactor sort reval algbool simp
-                  exptchk simplog logsort sub order forall eqn rmsubs
-                  algdcl opmtch prep extout depend str coeff weight
-                  linop elem showrule nestrad maxmin nssimp part map
-                  spcfnint),
+create!-package('(alg alg!-form intro lifted farith numsup zfactor
+                  reval algbool simp exptchk simplog logsort sub
+                  order forall eqn rmsubs algdcl opmtch prep extout
+                  depend str coeff weight linop elem showrule nestrad
+                  maxmin nssimp part map spcfnint),
                 nil);
 
 flag('(alg),'core_package);

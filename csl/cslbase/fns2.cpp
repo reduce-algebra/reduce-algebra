@@ -282,6 +282,8 @@ LispObject Lsymbol_argcount(LispObject env, LispObject a)
 // where the flags has a 1 bit if missing &optional args are to be left
 // for the bytecoded stuff to unpick, otherwise they should be mapped to nil
 // somewhere. The 2 bit is present if a &rest argument is present.
+// WELL as of July 2021 I will be kinder with non-bytecoded functions that
+// take exactly 0, 1 2 or 3 args.
 {   no_args *f0;
     one_arg *f1;
     two_args *f2;
@@ -296,6 +298,20 @@ LispObject Lsymbol_argcount(LispObject env, LispObject a)
     f2 = qfn2(a);
     f3 = qfn3(a);
     f4up = qfn4up(a);
+// If a function in the kernel takea a fixed number of args then all its
+// function cells other than the operative one will contain entrypoints
+// of code to report the error.
+    if (f1==G1W0 && f2==G2W0 && f3==G3W0 && f4up==G4W0)
+        return onevalue(fixnum_of_int(0));
+    if (f0==G0W1 && f2==G2W1 && f3==G3W1 && f4up==G4W1)
+        return onevalue(fixnum_of_int(1));
+    if (f0==G0W2 && f1==G1W2 && f3==G3W2 && f4up==G4W2)
+        return onevalue(fixnum_of_int(2));
+    if (f0==G0W3 && f1==G1W3 && f2==G2W3 && f4up==G4W3)
+        return onevalue(fixnum_of_int(3));
+// If a function takes 4 or more arguments all I can see is that
+// its definition is in qfn4up() and I have no obvious way to tell whether
+// it wants 4, 5, 6 or whatever args.
     r = qenv(a);
     if (!consp(r)) return onevalue(nil);
     r = car(r);

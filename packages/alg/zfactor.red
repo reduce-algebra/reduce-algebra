@@ -110,6 +110,10 @@ global '(!*last!-prime!-squared!* !*primelist!*
 
 !*last!-prime!-squared!* := !*last!-prime!-in!-list!*^2;
 
+symbolic inline procedure evenp x; remainder(x,2)=0;
+
+flag('(evenp),'opfn);  % Make a symbolic operator.
+
 symbolic procedure add!-factor(n,l);
    (lambda (p); if p then << rplacd(p,add1 cdr p); l>> else (n . 1) . l)
       if pairp l then if n>(caar l) then nil else assoc(n,l) else nil;

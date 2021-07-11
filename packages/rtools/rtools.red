@@ -1,6 +1,6 @@
-% module rlisp;  % Header module for rlisp package.
+module rtoools;  % Header module for rtools package.
 
-% Author: Anthony C. Hearn.
+% Author: Anthony C. Hearn and others.
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -26,30 +26,12 @@
 %
 
 
-global '(date!* patch!-date!* version!*);
+create!-package('(rtools general rprintf random genmod smallmod
+                  sort charname rtrace),
+                nil);
 
-create!-package('(rlisp module newtok rsupport slfns superv tok xread
-                  lpri parser block form proc forstat loops statmisc
-                  smacro io infix switch where list array inter),
-                 nil);
+flag('(rtools),'core_package);
 
-flag('(rlisp), 'core!_package);
-
-date!* := date();
-
-fluid '(revision!*);
-if null version!* then <<
-  if null revision!* then version!* := "REDUCE"
-  else version!* :=
-    compress ('!" . append (explode2 "REDUCE (",
-      append(explode2 revision!*, '(!) !")))) >>;
-
-% Hook to Rlisp88.
-
-put('rlisp88, 'simpfg, '((t (load!-package 'rlisp88) (rlisp88!_on))));
-
-flag('(rlisp88), 'switch);
-
-% endmodule;
+endmodule;
 
 end;
