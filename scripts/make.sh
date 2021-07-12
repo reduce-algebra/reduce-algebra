@@ -87,7 +87,7 @@ printf "Current machine tag is %s\n" "$host"
 # installed it for themselves. Some BSD variants will build imported
 # packages in /pkg/bin so I look there too...
 
-if test "$MAKE" = ""
+if test "x$MAKE" = "x"
 then
   if test -x /usr/sfw/bin/gmake
   then MAKE=/usr/sfw/bin/gmake
@@ -124,6 +124,18 @@ then
   esac
 fi
 
+firstcsl=""
+if test "x$list" != "x"
+then
+  for x in $list
+  do
+    if test "x$firstcsl" = "x" && test -f "$x/csl/Makefile"
+    then
+      firstcsl="$x"
+    fi
+  done
+fi
+
 if test "$buildpsl" = "yes"
 then
   case "$os" in
@@ -135,6 +147,17 @@ then
     ;;
   esac
 fi
+
+# I will - now - always try building all possible versions in parallel,
+# except that I will ensure that I re-create the generated C++ stuff first
+# if that needs doing.
+case $args in
+# If I am making bootstrapreduce or bootstrapreduce.img or csl or csl.img or
+# one of the demo programs I do not need the generated C code...
+*bootstrap* | *csl* | *demo* | *psl*)
+  firstcsl=""
+  ;;
+esac
 
 for l in $list
 do
@@ -160,7 +183,13 @@ do
       ;;
     esac
     cd ${l}
-    printf "++ Build in directory %s\n" `pwd`
+    if test "x$firstcsl" != "x"
+    then
+      $PREFIX $MAKE c-code
+      rc1=$?
+      rc=$(($rc1 > $rc ? $rc1 : $rc)) 
+      firstcsl=""
+    fi
     $PREFIX $MAKE $flags $args MYFLAGS="$flags" 
     rc1=$?
     rc=$(($rc1 > $rc ? $rc1 : $rc)) 
