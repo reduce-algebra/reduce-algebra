@@ -95,7 +95,7 @@
   (prog (here x)
     (unless (member 'addr2id options*)
       (load addr2id))
-    (setq here (loc here))
+    (setq here (if on-altstack* stack-pointer* (loc here)))
     (for % start a little before here
      (from i here (wshift stacklowerbound 5)
 	   (wminus
