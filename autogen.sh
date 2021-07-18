@@ -116,7 +116,7 @@ L="./scripts ./libraries/crlibm ./libraries/$LIBEDIT_VERSION \
 case $a in
 *--without-psl* | *with-psl=no*)
   ;;
-*--with-psl*)
+*--with-psl* | *--with-both*)
   L="$L ./psl"
   ;;
 *)
@@ -137,9 +137,9 @@ case $a in
 esac
 
 case $a in
-*--without-csl* | *with-csl=no*)
+*--without-csl* | *--with-csl=no*)
   ;;
-*--with-csl*)
+*--with-csl* | *--with-both*)
   L="$L ./csl ./csl/cslbase ./csl/cslbase-nothrow ./libraries/SoftFloat-3a/source"
 # On Apple m1 (ie arm64) I will want to build a universal version of the
 # libffi library and that is done in a way that differs from standrad builds.
@@ -179,14 +179,14 @@ do
       ( printf "$d: $LIBTOOLIZE/aclocal/autoreconf -i -v\n" && \
         $LIBTOOLIZE --copy && \
         aclocal && \
-        autoreconf -i ) &
+        autoreconf -f -i -v ) &
       procids="$procids $!"
     else
       printf "$d: $LIBTOOLIZE --force --copy; aclocal --force\n"
       $LIBTOOLIZE --force --copy
-      printf "$d: aclocal/autoreconf -f -i\n"
+      printf "$d: aclocal/autoreconf -f -i -v\n"
       aclocal --force
-      autoreconf -f -i
+      autoreconf -f -i -v
     fi
     cd $here
   fi
