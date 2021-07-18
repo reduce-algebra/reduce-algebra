@@ -11,11 +11,21 @@
 
 # Note that this tries to identify all potentially relevent build
 # directories that contain a "Makefile", that being used as a signature
-# that they have been configured. It allows for suffixes "-m32" "-m64"
-# and "-debug" as in scripts/findhost.sh.
+# that they have been configured. It allows for suffixes such as
+# "-debug" as in scripts/findhost.sh.
 
 # It also tries to build both CSL and PSL setups when they have been
 # configured.
+
+# To help with a migration to a new scheme here I will arrange that
+# if the user has gone "export NEW=NEW" then Makefile.new will be activated
+
+if test "$NEW" = "NEW"
+then
+  printf "+++ Using Makefile.new +++\n"
+  make -f Makefile.new $*
+  exit $!
+fi
 
 printf "MFLAGS=<%s> MKFLAGS=<%s> MAKECMDGOALS=<%s> args=<%s>\n" \
        "$MFLAGS"    "$MKFLAGS"   "$MAKECMDGOALS"   "$*"
@@ -24,7 +34,6 @@ args=""
 flags=""
 buildcsl="no"
 buildpsl="no"
-rc=0
 
 for a in $*
 do
@@ -87,7 +96,7 @@ printf "Current machine tag is %s\n" "$host"
 # installed it for themselves. Some BSD variants will build imported
 # packages in /pkg/bin so I look there too...
 
-if test "x$MAKE" = "x"
+if test "$MAKE" = ""
 then
   if test -x /usr/sfw/bin/gmake
   then MAKE=/usr/sfw/bin/gmake
@@ -109,31 +118,23 @@ fi
 
 procids=""
 
-rc=0
-
 list=""
 if test "$buildcsl" = "yes"
 then
   case "$os" in
   *cygwin* | *windows*)
-    list="cslbuild/*-cygwin* cslbuild/*-windows*"
+    list="cslbuild/*-cygwin*/csl cslbuild/*-windows*/csl"
     ;;
   *)
-    list="cslbuild/*${host}*"
+    list="cslbuild/*${host}*/csl"
     ;;
   esac
 fi
 
-firstcsl=""
-if test "x$list" != "x"
+firstcsl=${list%% *}
+if ! test -f "$firstcsl/Makefile"
 then
-  for x in $list
-  do
-    if test "x$firstcsl" = "x" && test -f "$x/csl/Makefile"
-    then
-      firstcsl="$x"
-    fi
-  done
+  firstcsl=""
 fi
 
 if test "$buildpsl" = "yes"
@@ -148,9 +149,6 @@ then
   esac
 fi
 
-# I will - now - always try building all possible versions in parallel,
-# except that I will ensure that I re-create the generated C++ stuff first
-# if that needs doing.
 case $args in
 # If I am making bootstrapreduce or bootstrapreduce.img or csl or csl.img or
 # one of the demo programs I do not need the generated C code...
@@ -159,44 +157,36 @@ case $args in
   ;;
 esac
 
-for l in $list
+printf "Will build for\n";
+for dd in $list
 do
-  case $l in
-  i686*cygwin*)
-    x86_64-w64-mingw32-g++ ?/other-cygwin.cpp -DFORCE32=1 -o cyg32
-    PREFIX=./cyg32
-    ;;
-  *)
-    PREFIX=
-    ;;
-  esac
-  if test -f ${l}/Makefile
+  printf "  $dd\n"
+done
+
+if test "$firstcsl" != ""
+then
+  $MAKE -C "$firstcsl" c-code MYFLAGS="$flags"
+  rc=$?
+else
+  rc=0
+fi
+
+for dd in $list
+do
+  if test -f $dd/Makefile
   then
-    h=`pwd`
-    case $l in
-    i686*cygwin*)
-      x86_64-w64-mingw32-g++ csl/cslbase/other-cygwin.cpp -DFORCE32=1 -o cyg32
-      PREFIX=$h/cyg32
-      ;;
-    *)
-      PREFIX=
-      ;;
-    esac
-    cd ${l}
-    if test "x$firstcsl" != "x"
-    then
-      $PREFIX $MAKE c-code
-      rc1=$?
-      rc=$(($rc1 > $rc ? $rc1 : $rc)) 
-      firstcsl=""
-    fi
-    $PREFIX $MAKE $flags $args MYFLAGS="$flags" 
+    printf "++ Build in directory $dd\n"
+    $MAKE -C $dd $flags $args MYFLAGS="$flags"
     rc1=$?
     rc=$(($rc1 > $rc ? $rc1 : $rc)) 
-    cd "$h"
   fi
 done
 
-printf "\nReduce build tasks finished with highest return code $rc\n"
+if test "$rc" = "0"
+then
+  printf "\nReduce build tasks finished.\n"
+else
+  printf "\nReduce build tasks finished: Highest return code $rc\n"
+fi
 
 exit $rc

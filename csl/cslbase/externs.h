@@ -1099,6 +1099,7 @@ typedef struct setup_type
     two_args *two;
     three_args *three;
     fourup_args *fourup;
+    int nargs;
 } setup_type;
 
 // In many cases a function will take a fixed number of arguments,

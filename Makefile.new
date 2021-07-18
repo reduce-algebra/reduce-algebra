@@ -8,12 +8,14 @@
 ###########################################################################
 ###########################################################################
 
-# There are two things that this Makefile is trying to do. Firstly there
-# will be multiple versions of some code in a number of directories. Here I
-# these are the multiple build directories within cslbuild and pslbuild.
-# When I go "make target" I want that target re-built in each relevant
-# directory. I will be able to put explicit targets here
-# for artefacts that I do not want delegated that way.
+# There are two things that this Makefile is trying to do.
+#
+# Firstly there are multiple variant build directories (within cslbuild
+# and pslbuild). When I go "make target" I generally want that target
+# re-built in each relevant directory.
+# However there need to be some targets which only get run in one of
+# the variants.
+#
 # Secondly I want the builds all to run in parallel, even across the
 # multiple directories. By default if you invoke "make" it will use as
 # much parallelism as you have available "cpus". If you explicitly indicate
@@ -21,24 +23,15 @@
 # to the setting you specified, so "make -j 1" reverts to sequential builds
 # everywhere.
 #
-# This Makefile takes a while to start up because it is tabululating for
-# itself all possible combinations of targets and build directories.
-
-.PHONY:	csl psl all
-
-all:
-
-# "targets" needs to be a list of all the targets that I will delegate...
-# ... and "dirs" is a list of the directories within which they live.
-
-# A sort of nasty issue is that I can not make just "csl" a target here
-# because I want that to map to building the default target in all CSL
-# variants. But in Windows I can make csl.exe and csl.com available.
+# A messy issue is that of the phrase "relevent directory" above. Here I am
+# supporting both a CSL and a PSL Lisp and for instance "bootstrapreduce.exe"
+# and "c-code" are only relevant in the CSL world, while "all" applies
+# everywhere.
 
 csltargets := \
 	csl.exe csl.com csl.img \
 	bootstrapreduce bootstrapreduce.exe \
-		bootstrapreduce.com bootstrapreduce.img \
+	bootstrapreduce.com bootstrapreduce.img \
 	reduce reduce.exe reduce.com reduce.img \
 	flatcsl flatcsl.exe flatcsl.com flatcsl.img \
 	fwindemo fwindemo.exe fwindemo.com \
@@ -67,41 +60,7 @@ csltargets1 := \
 
 csldirs := $(wildcard cslbuild/*-*-*/csl)
 
-csldirs1 := $(shell d1="$(csldirs)" && echo $${d1%% *})
-
-# I will have a small number of special targets for use while testing
-# and developing. These just abbreviate fuller targets, so for instance on
-# Windows "make cygwin::reduce.img" should build the straightforward
-# version of Reduce under cygwin, while on all systems "make main::reduce.img"
-# builds the version for the "first" configured directory.
-
-.PHONY:	cygwin\:\:csl cygwin\:\:csl.img cygwin\:\:bootstrapreduce \
-		cygwin\:\:bootstrapreduce.img cygwin\:\:reduce \
-		cygwin\:\:reduce.img windows\:\:csl windows\:\:csl.img \
-		windows\:\:bootstrapreduce windows\:\:bootstrapreduce.img \
-		windows\:\:reduce windows\:\:reduce.img main\:\:csl \
-		main\:\:csl.img main\:\:bootstrapreduce \
-		main\:\:bootstrapreduce.img main\:\:reduce main\:\:reduce.img
-
-cygwin\:\:csl:			cslbuild/x86_64-pc-cygwin/csl\:\:csl
-cygwin\:\:csl.img:		cslbuild/x86_64-pc-cygwin/csl\:\:csl.img
-cygwin\:\:bootstrapreduce:	cslbuild/x86_64-pc-cygwin/csl\:\:bootstrapreduce
-cygwin\:\:bootstrapreduce.img:	cslbuild/x86_64-pc-cygwin/csl\:\:bootstrapreduce.img
-cygwin\:\:reduce:		cslbuild/x86_64-pc-cygwin/csl\:\:reduce
-cygwin\:\:preduce.img:		cslbuild/x86_64-pc-cygwin/csl\:\:reduce.img
-windows\:\:csl:			cslbuild/x86_64-pc-windows/csl\:\:csl
-windows\:\:csl.img:		cslbuild/x86_64-pc-windows/csl\:\:csl.img
-windows\:\:bootstrapreduce:	cslbuild/x86_64-pc-windows/csl\:\:bootstrapreduce
-windows\:\:bootstrapreduce.img:	cslbuild/x86_64-pc-windows/csl\:\:bootstrapreduce.img
-windows\:\:reduce:		cslbuild/x86_64-pc-windows/csl\:\:reduce
-windows\:\:reduce.img:		cslbuild/x86_64-pc-windows/csl\:\:reduce.img
-main\:\:csl:			$(csldirs1)\:\:csl
-main\:\:csl.img:		$(csldirs1)\:\:csl.img
-main\:\:bootstrapreduce:	$(csldirs1)\:\:bootstrapreduce
-main\:\:bootstrapreduce.img:	$(csldirs1)\:\:bootstrapreduce.img
-main\:\:reduce:			$(csldirs1)\:\:reduce
-main\:\:reduce.img:		$(csldirs1)\:\:reduce.img
-
+csldirs1 := $(firstword $(csldirs))
 
 # The list of psltargets is extracted from psl/Makefile.am, and if new
 # targets are introduced there then this list will need updating
@@ -112,9 +71,12 @@ psltargets := \
 	deps/core-packages.psl-make deps/core-packages.psl-depend \
 	deps/noncore-packages.psl-make deps/noncore-packages.psl-depend \
 	red/reduce.img install-exex-local uninstall-local
+
 psldirs := $(wildcard pslbuild/*-*-*)
 
-bothtargets = all clean
+bothtargets = __all install uninstall
+
+bothdirs := $(csldirs) $(psldirs)
 
 # Find the number of available cpus and insert "-j N" if you are a top-level
 # invocation of "make". If the user specified "-j N" or "--jobs=N" then
@@ -125,89 +87,85 @@ ifeq "0" "$(MAKELEVEL)"
 MAKEFLAGS := -j$(shell nproc || sysctl -n hw.ncpu || printf "1") $(MAKEFLAGS)
 endif
 
-# fulltargets ends up as a list showing each directory paired with every
-# target that will be within it. The two components are separated with a
-# double colon - which is a character sequence not expected to arise in any
-# real directory or target name, if only because casual use of it could
-# confuse "make".
+.PHONY:	all $(bothtargets) $(csltargets) $(csltargets1) $(psltargets) clean
 
+all:	__all
+	printf "Everything rebuilt\n"
 
-fullcsltargets := \
-	$(foreach d,$(csldirs), \
-		$(foreach t,$(csltargets),$d\:\:$t))
+clean:
+	for d in `find cslbuild -name Makefile` `find pslbuild -name Makefile`; \
+	do $(MAKE) -C `dirname $$d` clean; \
+	   $(MAKE) -C `dirname $d` uninstall; \
+	done
+	rm -rf cslbuild/generated-c/*.img cslbuild/generated-c/u*
 
-fullcsltargets1 := \
-	$(foreach d,$(csldirs1), \
-		$(foreach t,$(csltargets1),$d\:\:$t))
+$(bothtargets):
+	@c="$(bothdirs)" && t=$@ && ( printf "# Faked up Makefile\n" && \
+	i=1 && \
+	printf ".PHONY:\t" && \
+	for d in $$c; \
+	do printf " __$$i"; \
+	   i=$$(($$i+1)); \
+	done && \
+	printf "\n\n" && \
+	i=1 && \
+	printf "all:\t" && \
+	for d in $$c; \
+	do printf " __$$i"; \
+	   i=$$(($$i+1)); \
+	done && \
+	printf "\n\n" && \
+	i=1 && \
+	for d in $$c; \
+	do printf "__$$i:\n\t$(MAKE) -C $$d $$t\n\n"; \
+	   i=$$(($$i+1)); \
+	done ) | $(MAKE) -f -
 
-fullpsltargets := \
-	$(foreach d,$(psldirs), \
-		$(foreach t,$(psltargets),$d\:\:$t))
+$(csltargets):
+	@c="$(csldirs)" && t=$@ && ( printf "# Faked up Makefile\n" && \
+	i=1 && \
+	printf ".PHONY:\t" && \
+	for d in $$c; \
+	do printf " __$$i"; \
+	   i=$$(($$i+1)); \
+	done && \
+	printf "\n\n" && \
+	i=1 && \
+	printf "all:\t" && \
+	for d in $$c; \
+	do printf " __$$i"; \
+	   i=$$(($$i+1)); \
+	done && \
+	printf "\n\n" && \
+	i=1 && \
+	for d in $$c; \
+	do printf "__$$i:\n\t$(MAKE) -C $$d $$t\n\n"; \
+	   i=$$(($$i+1)); \
+	done ) | $(MAKE) -f -
 
-fullbothtargets := \
-	$(foreach d,$(csldirs) $(psldirs), \
-		$(foreach t,$(bothtargets),$d\:\:$t))
+$(csltargets1):
+	$(MAKE) -C $(csldirs1) $@; \
 
-.PHONY:	show \
-	$(csltargets) $(fullcsltargets) $(csltargets1) $(bothtargets) \
-	$(fullcsltargets1) $(psltargets) $(fullpsltargets) \
-	$(fullbothtargets)
-
-# The next line makes (eg) an attempt to build p1 in fact lead to
-# a build request for each of d1::p1, d2::p1 etc. by setting up dependencies.
-
-# Here are three alternatives to use of $(shell) that I had tried without
-# success:
-#$(Xtargets):	$(foreach d,$(Xdirs), $d\:\:$@)
-#$(Xtargets):	$(patsubst %,%\:\:$@, $(Xdirs))
-#$(Xtargets):	$(Xdirs:%=%\:\:$@)
-
-.SECONDEXPANSION:
-
-cslcmd = for i in $(csldirs)\; do echo $$$$i\:\:$$@\; done
-cslcmd1 = for i in $(csldirs1)\; do echo $$$$i\:\:$$@\; done
-pslcmd = for i in $(psldirs)\; do echo $$$$i\:\:$$@\; done
-bothcmd = for i in $(csldirs) $(psldirs)\; do echo $$$$i\:\:$$@\; done
-
-$(csltargets) csl:	$$(shell $(cslcmd))
-	@printf "+++ make [CSL] $@: $^\n"
-
-$(csltargets1):	$$(shell $(cslcmd1))
-	@printf "+++ make [CSL1] $@: $^\n"
-
-$(psltargets) psl:	$$(shell $(pslcmd))
-	@printf "+++ make [PSL] $@: $^\n"
-
-$(bothtargets) all:	$$(shell $(bothcmd))
-	@printf "+++ make [both] $@: $^\n"
-
-# Now I arrange that "make d1::p1" triggers "make -C d1 p1" so that p1
-# gets built within the directory d1.
-
-# $(patsubst %,%\:\:%, $(csldirs) $(psldirs)):
-#	@a="$@" && printf "Build in $${a%%::*} for $${a##*::}\n" && \
-#		   $(MAKE) -C "$${a%%::*}" "$${a##*::}"
-
-$(fullcsltargets) $(fullcsltargets1) $(fullpsltargets) $(fullbothtargets):
-	@a="$@" && printf "Build in $${a%%::*} for $${a##*::}\n" && \
-		   $(MAKE) -C "$${a%%::*}" "$${a##*::}"
-
-# While debugging (at least) I wanted a target that displays some
-# of the information I have collected... "make show" does that.
-
-show:
-	@printf "MAKELEVEL = %s\n" "$(MAKELEVEL)"
-	@printf "MAKEFLAGS = %s\n" "$(MAKEFLAGS)"
-	@printf "csltargets = %s\n" "$(csltargets)"
-	@printf "csltargets1 = %s\n" "$(csltargets1)"
-	@printf "psltargets = %s\n" "$(psltargets)"
-	@printf "bothtargets = %s\n" "$(bothtargets)"
-	@printf "csldirs = %s\n" "$(csldirs)"
-	@printf "csldirs1 = %s\n" "$(csldirs1)"
-	@printf "psldirs = %s\n" "$(psldirs)"
-	@printf "fullcsltargets = %s\n" "$(fullcsltargets)"
-	@printf "fullcsltargets1 = %s\n" "$(fullcsltargets1)"
-	@printf "fullpsltargets = %s\n" "$(fullpsltargets)"
-	@printf "fullbothtargets = %s\n" "$(fullbothtargets)"
+$(psltargets):
+	@c="$(psldirs)" && t=$@ && ( printf "# Faked up Makefile\n" && \
+	i=1 && \
+	printf ".PHONY:\t" && \
+	for d in $$c; \
+	do printf " __$$i"; \
+	   i=$$(($$i+1)); \
+	done && \
+	printf "\n\n" && \
+	i=1 && \
+	printf "all:\t" && \
+	for d in $$c; \
+	do printf " __$$i"; \
+	   i=$$(($$i+1)); \
+	done && \
+	printf "\n\n" && \
+	i=1 && \
+	for d in $$c; \
+	do printf "__$$i:\n\t$(MAKE) -C $$d $$t\n\n"; \
+	   i=$$(($$i+1)); \
+	done ) | $(MAKE) -f -
 
 # end of Makefile

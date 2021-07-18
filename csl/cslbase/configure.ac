@@ -1819,10 +1819,27 @@ CYG_FLATCSL = $(with_cygbuild64)/csl/flatcsl.exe
 CYG_BOOTSTRAPREDUCE = $(with_cygbuild64)/csl/bootstrapreduce.exe
 CYG_REDUCE = $(with_cygbuild64)/csl/reduce.exe
 CYG_FWINDEMO = $(with_cygbuild64)/csl/fwindemo.exe
-.PHONY:	$(CYG_CSL) $(CYG_FLATCSL) $(CYG_BOOTSTRAPREDUCE) \
-		$(CYG_REDUCE) $(CYG_FWINDEMO)
-$(CYG_CSL) $(CYG_FLATCSL) $(CYG_BOOTSTRAPREDUCE) $(CYG_REDUCE) $(CYG_FWINDEMO):
+
+$(CYG_CSL):
+	@printf "About to make %s in directory %s from %s\n" "$(notdir $@)" "$(with_cygbuild64)" "`pwd`"
 	$(MAKE) -C $(with_cygbuild64)/csl $(notdir $@)
+
+$(CYG_FLATCSL):
+	@printf "About to make %s in directory %s from %s\n" "$(notdir $@)" "$(with_cygbuild64)" "`pwd`"
+	$(MAKE) -C $(with_cygbuild64)/csl $(notdir $@)
+
+$(CYG_BOOTSTRAPREDUCE):
+	@printf "About to make %s in directory %s from %s\n" "$(notdir $@)" "$(with_cygbuild64)" "`pwd`"
+	$(MAKE) -C $(with_cygbuild64)/csl $(notdir $@)
+
+$(CYG_REDUCE):
+	@printf "About to make %s in directory %s from %s\n" "$(notdir $@)" "$(with_cygbuild64)" "`pwd`"
+	$(MAKE) -C $(with_cygbuild64)/csl $(notdir $@)
+
+$(CYG_FWINDEMO):
+	@printf "About to make %s in directory %s from %s\n" "$(notdir $@)" "$(with_cygbuild64)" "`pwd`"
+	$(MAKE) -C $(with_cygbuild64)/csl $(notdir $@)
+
 endif
 '
 AC_SUBST([CYGWIN_DIR])
