@@ -5,6 +5,7 @@ let inputListIndex = 0;
 let maxInputListIndex = -1;
 
 function sendInput(event) {
+    if (noOutput) return; // REDUCE not yet loaded!
     // Strip trailing white space from the input:
     let text = inputTextArea.value.replace(/\s+^/, "");
     if (text.length > 0) {
@@ -26,7 +27,8 @@ function sendInput(event) {
 
 sendButton.addEventListener('click', sendInput);
 
-function earlierInput() {
+function earlierInput(event) {
+    event.preventDefault();
     if (inputListIndex > 0) {
         inputTextArea.value = inputList[--inputListIndex];
         if (inputListIndex <= maxInputListIndex)
@@ -34,12 +36,13 @@ function earlierInput() {
     }
     if (inputListIndex == 0)
         earlierButton.disabled = true;
-    inputTextArea.focus()
+    inputTextArea.focus();
 }
 
 earlierButton.addEventListener('click', earlierInput);
 
-function laterInput() {
+function laterInput(event) {
+    event.preventDefault();
     if (inputListIndex < maxInputListIndex) {
         inputTextArea.value = inputList[++inputListIndex];
     } else {
@@ -52,7 +55,7 @@ function laterInput() {
     if (inputListIndex > maxInputListIndex) {
         laterButton.disabled = true;
     }
-    inputTextArea.focus()
+    inputTextArea.focus();
 }
 
 laterButton.addEventListener('click', laterInput);
@@ -64,10 +67,10 @@ inputTextArea.addEventListener("keydown", event => {
                 sendInput(event);
                 break;
             case "ArrowUp":
-                earlierInput();
+                earlierInput(event);
                 break;
             case "ArrowDown":
-                laterInput();
+                laterInput(event);
         }
     }
 });

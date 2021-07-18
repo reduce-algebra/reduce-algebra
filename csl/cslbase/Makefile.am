@@ -805,9 +805,9 @@ endif !fox
 SHARED=$(cslbase)/fwin.h $(cslbase)/log.h $(cslbase)/termed.h \
 	$(cslbase)/fwin.cpp $(cslbase)/termed.cpp 
 
-$(FOXDEPS) &:	$(csl)/fox/CHANGED $(SHARED)
+$(FOXDEPS):	$(csl)/fox/CHANGED $(SHARED)
 	@printf "About to build FOX for %s ($@)\n" `pwd`
-	$(TRACE)@cd ../fox && $(MAKE) && $(MAKE) install
+	$(TRACE)@$(MAKE) -C ../fox install
 
 
 if crlibm
@@ -846,9 +846,9 @@ if conservative
 alloctest_DEPENDENCIES += $(CRLIBMDEPS)
 endif conservative
 
-$(CRLIBMDEPS) &:
+$(CRLIBMDEPS):
 	@printf "About to build crlibm for %s ($@)\n" `pwd`
-	$(TRACE)@cd ../crlibm && $(MAKE) install
+	$(TRACE)@$(MAKE) -C ../crlibm install
 
 else !crlibm
 CRINC =
@@ -890,9 +890,9 @@ if conservative
 alloctest_DEPENDENCIES += $(LIBFFIDEPS)
 endif conservative
 
-$(LIBFFIDEPS) &:
+$(LIBFFIDEPS):
 	@printf "About to build libffi for %s ($@)\n" `pwd`
-	$(TRACE)@cd ../libffi && $(MAKE) install
+	$(TRACE)@$(MAKE) -C ../libffi install
 
 SOFTFLOATDEPS=../lib/libsoftfloat.a ../include/softfloat.h
 
@@ -927,9 +927,9 @@ if conservative
 alloctest_DEPENDENCIES    += $(SOFTFLOATDEPS)
 endif conservative
 
-$(SOFTFLOATDEPS) &:
+$(SOFTFLOATDEPS):
 	@printf "About to build softfloat for %s ($@)\n" `pwd`
-	$(TRACE)@cd ../softfloat && $(MAKE) install
+	$(TRACE)@$(MAKE) -C ../softfloat install
 
 # Note that all the compilation of these files must be performed using
 # a Make "default" action so that the dependencies shown here are not
@@ -1195,9 +1195,9 @@ $(csl)/wxWidgets/wxWidgets_revision:	\
 
 WXDEPS=../bin/wx-config
 
-../bin/wx-config &:	$(csl)/wxWidgets/wxWidgets_revision
+../bin/wx-config:	$(csl)/wxWidgets/wxWidgets_revision
 	@printf "About to build wxWidgets for %s ($@)\n" `pwd`
-	$(TRACE)@cd ../wxWidgets && $(MAKE) install
+	$(TRACE)@$(MAKE) -C ../wxWidgets install
 
 wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
 	$(CXXLINKTO) $(DEST)wxfontdemo$(EXEEXT) $(wxfontdemo_OBJECTS) $(wxfontdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
@@ -1272,6 +1272,7 @@ endif !wx
 HDRS = $(FOXDEPS) $(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 
 csl$(EXEEXT):	$(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS) $(CSLCOM) $(CYG_CSL)
+	@printf "Relinking $@ because of $?\n"
 if windows
 # In a way that may be seen as strange I want to end up with 3 executables
 # for CSL. The most obvious is "csl.exe" which I link from all the object
@@ -1314,12 +1315,14 @@ endif !wx
 if windows
 if gui
 csl$(COM):	$(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS)
+	@printf "Relinking $@ because of $?\n"
 	$(CXXLINKTO) $(DEST)csl$(COM) $(csl_OBJECTS) $(csl_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 	$(STRIP) csl$(COM)
 endif gui
 endif windows
 
 flatcsl$(EXEEXT):	$(flatcsl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS) $(FLATCSLCOM) $(CYG_FLATCSL)
+	@printf "Relinking $@ because of $?\n"
 if windows
 if gui
 	$(CP) $(cslbase)/csl csl-temp
@@ -1353,19 +1356,23 @@ endif !wx
 if windows
 if gui
 flatcsl$(COM):	$(flatcsl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS)
+	@printf "Relinking $@ because of $?\n"
 	$(CXXLINKTO) $(DEST)flatcsl$(COM) $(flatcsl_OBJECTS) $(flatcsl_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 	$(STRIP) flatcsl$(COM)
 endif gui
 endif windows
 
 contest$(EXEEXT): $(contest_OBJECTS) $(contest_DEPENDENCIES)
+	@printf "Relinking $@ because of $?\n"
 	$(CXXLINKTO) $(DEST)contest$(EXEEXT) $(contest_OBJECTS) $(contest_LDADD) $(AM_LIBS) $(LIBS)
 
 alloctest$(EXEEXT): $(alloctest_OBJECTS) $(alloctest_DEPENDENCIES)
+	@printf "Relinking $@ because of $?\n"
 	$(CXXLINKTO) $(DEST)alloctest$(EXEEXT) $(alloctest_OBJECTS) $(alloctest_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 
 reduce$(EXEEXT):	$(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
 			$(WXDEPS) $(generated_lisp) $(HDRS) $(REDUCECOM) $(CYG_REDUCE)
+	@printf "Relinking $@ because of $?\n"
 if windows
 # See "gui-or-not.txt" for an explanation of what this is about...
 if gui
@@ -1414,12 +1421,17 @@ if windows
 if gui
 reduce$(COM):	$(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
 			$(WXDEPS) $(generated_lisp) $(HDRS)
+	@printf "Relinking $@ because of $?\n"
 	$(CXXLINKTO) $(DEST)reduce$(COM) $(reduce_OBJECTS) $(reduce_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 	$(STRIP) reduce$(COM)
 endif gui
 endif windows
 
-bootstrapreduce$(EXEEXT):	$(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS) $(BOOTSTRAPREDUCECOM) $(CYG_BOOTSTRAPREDUCE)
+bootstrapreduce$(EXEEXT):	$(bootstrapreduce_OBJECTS) \
+		$(bootstrapreduce_DEPENDENCIES) $(FOXDEPS) \
+		$(WXDEPS) $(HDRS) $(BOOTSTRAPREDUCECOM) \
+		$(CYG_BOOTSTRAPREDUCE)
+	@printf "Relinking $@ because of $?\n"
 if windows
 # See "gui-or-not.txt" for an explanation of what this is about...
 	$(CP) $(cslbase)/bootstrapreduce bootstrapreduce-temp
@@ -1450,12 +1462,14 @@ endif windows
 if windows
 if gui
 bootstrapreduce$(COM):	$(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS)
+	@printf "Relinking $@ because of $?\n"
 	$(CXXLINKTO) $(DEST)bootstrapreduce$(COM) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 	$(STRIP) bootstrapreduce$(COM)
 endif gui
 endif windows
 
 fwindemo$(EXEEXT):	$(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS) $(FWINDEMOCOM) $(CYG_FWINDEMO)
+	@printf "Relinking $@ because of $?\n"
 if windows
 if gui
 	$(CP) $(cslbase)/fwindemo fwindemo-temp
@@ -1483,6 +1497,7 @@ endif wx
 if windows
 if gui
 fwindemo$(COM):	$(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS)
+	@printf "Relinking $@ because of $?\n"
 	$(CXXLINKTO) $(DEST)fwindemo$(COM ) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 	$(STRIP) fwindemo$(COM)
 endif gui
@@ -1490,6 +1505,7 @@ endif windows
 
 if wx
 wxpsl$(EXEEXT):	$(wxpsl_OBJECTS) $(wxpsl_DEPENDENCIES) $(WXDEPS) $(WXPSLCOM)
+	@printf "Relinking $@ because of $?\n"
 	$(CXXLINKTO) $(DEST)wxpsl$(EXEEXT) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 if !debug
 if !darwin
@@ -1504,6 +1520,7 @@ endif wx
 if windows
 if gui
 wxpsl$(COM):	$(wxpsl_OBJECTS) $(wxpsl_DEPENDENCIES) $(WXDEPS)
+	@printf "Relinking $@ because of $?\n"
 	$(CXXLINKTO) $(DEST)wxpsl$(COM) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 	$(STRIP) wxpsl$(COM)
 endif gui
@@ -1512,6 +1529,7 @@ endif windows
 if fox
 
 fontdemo$(EXEEXT): $(fontdemo_OBJECTS) $(fontdemo_DEPENDENCIES) $(FOXDEPS)
+	@printf "Relinking $@ because of $?\n"
 	$(CXXLINKTO) $(DEST)fontdemo$(EXEEXT) $(fontdemo_OBJECTS) $(fontdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 if !debug
 if !darwin
@@ -1520,6 +1538,7 @@ endif !darwin
 endif !debug
 
 foxdemo$(EXEEXT): $(foxdemo_OBJECTS) $(foxdemo_DEPENDENCIES) $(FOXDEPS)
+	@printf "Relinking $@ because of $?\n"
 	$(CXXLINKTO) $(DEST)foxdemo$(EXEEXT) $(foxdemo_OBJECTS) $(foxdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 if !debug
 if !darwin
@@ -1528,6 +1547,7 @@ endif !darwin
 endif !debug
 
 showmathdemo$(EXEEXT): $(showmathdemo_OBJECTS) $(showmathdemo_DEPENDENCIES) $(FOXDEPS)
+	@printf "Relinking $@ because of $?\n"
 	$(CXXLINKTO) $(DEST)showmathdemo$(EXEEXT) $(showmathdemo_OBJECTS) $(showmathdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 if !debug
 if !darwin
@@ -1712,6 +1732,7 @@ $(plain_alloctest):	alloctest.exe
 endif exeext
 
 termdemo$(EXEEXT): $(termdemo_OBJECTS) $(termdemo_DEPENDENCIES)
+	@printf "Relinking $@ because of $?\n"
 	$(CXXLINKTO) $(DEST)termdemo$(EXEEXT) $(termdemo_LDADD) $(termdemo_OBJECTS) $(LIBS)
 if !debug
 if !darwin
@@ -2111,7 +2132,7 @@ $(generated_objects):	$(gensrc)/make.stamp $(bootstrapreducedep) \
 # I rather hope that the delay while C-code is re-created is long enough
 # to let any previous steps complete.
 
-$(generated_source_deps) &:	$(gensrc)/make.stamp $(HDRS)
+$(generated_source_deps):	$(gensrc)/make.stamp $(HDRS)
 	$(MAKE) standard_c_code
 
 standard-c-code $(generated_lisp):	$(gensrc)/make.stamp $(HDRS)
@@ -2385,8 +2406,9 @@ $(reduce)/bin/rfcsl$(EXEEXT): \
 		$(generic)/newfront/redparent.c \
 		$(generic)/newfront/redsig.c \
 		$(generic)/newfront/redstrings.c $(HDRS)
+	@printf "Relinking $@ because of $?\n"
 	@printf "About to build redfront for %s\n" `pwd`; \
-	cd ../redfront && $(MAKE)
+	$(MAKE) -C ../redfront
 
 endif redfront
 
@@ -2410,7 +2432,6 @@ forinstall:	reduce$(EXEEXT) reduce.img \
 if cygwin
 install-exec-local:	reduce.exe reduce.img bootstrapreduce.exe bootstrapreduce.img csl.exe csl.img
 	printf "Install for cygwin not implemented\n"
-	exit 1
 
 else !cygwin
 if mac_framework
@@ -2470,19 +2491,16 @@ endif !cygwin
 if cygwin
 uninstall-local:
 	printf "Uninstall for cygwin not implemented\n"
-	exit 1
 
 else !cygwin
 if mac_framework
 uninstall-local:
 	printf "Uninstall for macintosh not implemented\n"
-	exit 1
 
 else !mac_framework
 if windows
 uninstall-local:
 	printf "Uninstall for windows not implemented\n"
-	exit 1
 
 else !windows
 uninstall-local:
