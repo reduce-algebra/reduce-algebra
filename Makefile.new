@@ -87,19 +87,9 @@ ifeq "0" "$(MAKELEVEL)"
 MAKEFLAGS := -j$(shell nproc || sysctl -n hw.ncpu || printf "1") $(MAKEFLAGS)
 endif
 
-.PHONY:	all $(bothtargets) $(csltargets) $(csltargets1) $(psltargets) clean
+.PHONY:	all $(bothtargets) clean $(csltargets) $(csltargets1) $(psltargets)
 
-all:	__all
-	printf "Everything rebuilt\n"
-
-clean:
-	for d in `find cslbuild -name Makefile` `find pslbuild -name Makefile`; \
-	do $(MAKE) -C `dirname $$d` clean; \
-	   $(MAKE) -C `dirname $d` uninstall; \
-	done
-	rm -rf cslbuild/generated-c/*.img cslbuild/generated-c/u*
-
-$(bothtargets):
+all $(bothtargets):
 	@c="$(bothdirs)" && t=$@ && ( printf "# Faked up Makefile\n" && \
 	i=1 && \
 	printf ".PHONY:\t" && \
@@ -120,6 +110,13 @@ $(bothtargets):
 	do printf "__$$i:\n\t$(MAKE) -C $$d $$t\n\n"; \
 	   i=$$(($$i+1)); \
 	done ) | $(MAKE) -f -
+
+clean:
+	for d in `find cslbuild -name Makefile` `find pslbuild -name Makefile`; \
+	do $(MAKE) -C `dirname $$d` clean; \
+	   $(MAKE) -C `dirname $d` uninstall; \
+	done
+	rm -rf cslbuild/generated-c/*.img cslbuild/generated-c/u*
 
 $(csltargets):
 	@c="$(csldirs)" && t=$@ && ( printf "# Faked up Makefile\n" && \
