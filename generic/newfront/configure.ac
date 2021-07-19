@@ -135,6 +135,9 @@ AC_ARG_WITH(win32bit,
 AC_ARG_WITH(c32,
   AS_HELP_STRING([--with-c32], [not relevent here]))
 
+AC_ARG_WITH(both,
+  AS_HELP_STRING([--with-both], [not relevent here]))
+
 
 AM_CONDITIONAL(DEBUG,   test "x$debug" = "xyes")
 AM_CONDITIONAL(WINDOWS, test "x$on_windows" = "xyes")

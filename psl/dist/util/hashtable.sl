@@ -60,10 +60,11 @@
 
 (setq *sxhash-max-depth* 5)
 
-(define-constant *sxhash-cons-default-value* 261835505)
+% This is the constant 261835505, truncated to 27bits, in order to make it an inum (posint/negint)
+(define-constant *sxhash-cons-default-value* 127617777)
 
 % This is the golden ration times 2^32
-%(define-constant !#hash-multiplier!# (wconst 16#9E3779B9))
+(define-constant !#hash-multiplier!# 16#9E3779B9)
 
 % For reference: golden ration times 2^64 is 16#9e3779b97f4a7c15
 
@@ -77,11 +78,14 @@
  (progn
    (when (equal bitsperword 64)
      (ds sxhash-float (o) (wshift (floathighorder o) -8))
+     (ds get-hash-multiplier () !#hash-multiplier!#)
      )
    (when (equal bitsperword 32)
      (ds sxhash-float (o)
 	 (wshift (wxor (floathighorder o) (floatloworder o)) -8))
      )
+     % Truncate *sxhash-cons-default-value* to 27bits, in order to make it an inum (posint/negint)
+     (ds get-hash-multiplier () (int2sys !#hash-multiplier!#))
    ))
 
 (de sxhash-float-x (o) (sxhash-float o))
@@ -216,7 +220,7 @@
       t))
 
 (ds hash-to-key (key shftamount mask)
-    (wplus2 1 (wand (wshift (wtimes2 (sxhash key) (wconst 16#9E3779B9)) shftamount) mask)))
+    (wplus2 1 (wand (wshift (wtimes2 (sxhash key) (get-hash-multiplier)) shftamount) mask)))
 
 (de puthash (key table value)
     (if (valid-hashtable table 'puthash)

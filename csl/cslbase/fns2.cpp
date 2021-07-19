@@ -275,7 +275,7 @@ LispObject Lobject_header(LispObject env, LispObject a)
 }
 
 LispObject Lsymbol_argcount(LispObject env, LispObject a)
-// For debugging use. Only valid if the function involved
+// For debugging use. Mostly only valid if the function involved
 // is byte-coded. For simple functions taking a fixed number of args the
 // result is an integer. Otherwise it is a list of 3 items
 //   (fewest-legal-args most-args-before-&rest flags)
@@ -298,9 +298,9 @@ LispObject Lsymbol_argcount(LispObject env, LispObject a)
     f2 = qfn2(a);
     f3 = qfn3(a);
     f4up = qfn4up(a);
-// If a function in the kernel takea a fixed number of args then all its
+// If a function in the kernel takes a fixed number of args then all its
 // function cells other than the operative one will contain entrypoints
-// of code to report the error.
+// of code to report the error. Actually the code 
     if (f1==G1W0 && f2==G2W0 && f3==G3W0 && f4up==G4W0)
         return onevalue(fixnum_of_int(0));
     if (f0==G0W1 && f2==G2W1 && f3==G3W1 && f4up==G4W1)
@@ -312,6 +312,25 @@ LispObject Lsymbol_argcount(LispObject env, LispObject a)
 // If a function takes 4 or more arguments all I can see is that
 // its definition is in qfn4up() and I have no obvious way to tell whether
 // it wants 4, 5, 6 or whatever args.
+//
+// If s sunction is interpreted all the function calls refer back to the
+// interpreter, and the env cell is the lambda expression.
+    if (f0 == interpreted_0)
+    {   r = car(qenv(a));  // argument list
+        int n = 0;
+// If any of the Common Lisp "magic words" appear I will give up.
+        while (consp(r))
+        {   if (!symbolp(car(r)) ||
+                car(r) == opt_key ||
+                car(r) == rest_key ||
+                car(r) == key_key ||
+                car(r) == aux_key ||
+                car(r) == allow_other_keys) return onevalue(nil);
+            n++;
+            r = cdr(r);
+        }
+        return onevalue(fixnum_of_int(n));      
+    }
     r = qenv(a);
     if (!consp(r)) return onevalue(nil);
     r = car(r);

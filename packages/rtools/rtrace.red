@@ -34,7 +34,7 @@ module rtrace; % Crude tracing but with output compatible across Lisps
 % with file-comprisons on log files. The output may in fact not be
 % independent of the Lisp. One particular issue is that when a function
 % is recursive the calls to itself may go via the mechanism that lets this
-% code interfect them, it may take shortcuts, or the recursion may have been
+% code intercept them, it may take shortcuts, or the recursion may have been
 % mapped onto iteration.
 %
 % I do not provide a simple!-untrace function, and I do not protect against
@@ -54,11 +54,40 @@ module rtrace; % Crude tracing but with output compatible across Lisps
 copyd('!~!~saved_getd, 'getd);
 copyd('!~!~saved_putd, 'putd);
 
+% I will need to know how many arguments the function I am going to trace
+% has, and I will not be able to cope with FEXPRS or &opt or &rest, and
+% with CSL I will not manage to extract that information in the case of
+% some built-in functions that take 4 or more arguments.
+
+#if (memq 'psl lispsystem!*)
+
+symbolic procedure s!:argcount fn;
+  begin
+    scalar n;
+    if fixp (n := get(fn, 'number!-of!-args)) then return n;
+    n := getd fn;
+    if not eqcar(n, 'expr) then return nil;
+    n := cdr n;
+    if codep n then return code!-number!-of!-arguments n
+    else if eqcar(n, 'lambda) then return length cadr n
+    else return nil
+  end;
+
+#else
+
+symbolic procedure s!:argcount fn;
+  begin
+    scalar n;
+    if (n := get(fn, number!-of!-args)) then return n
+    else if (n := symbol!-argcount fn) then return n
+    else return nil
+  end;
+
+#endif
+
 symbolic procedure s!:traced!-version(fn, nargs, newfn);
   begin
-    scalar v := for i := 1:nargs collect gensym(),
-           r := gensym(), p, k;
-    k := 0;
+    scalar r := gensym(), k := 0, v := for i := 1:nargs collect gensym(), p;
     p := list('prog, list r,
             '(cond ((null (zerop (posn))) (terpri))),
             list('prin2, "Entering "),
@@ -79,17 +108,19 @@ symbolic procedure s!:traced!-version(fn, nargs, newfn);
    
 symbolic procedure s!:trace fn;
   begin
-    scalar d := !~!~saved_getd fn,
-           g := intern list2string append(explode2 "~saved_", explode2 fn);
-    if not eqcar(d, 'expr) then <<
+    scalar d := !~!~saved_getd fn, nargs, !*redefmsg,
+           g := intern list2string append(explode2 "~saved_", explode2 fn),
+           !*comp := t, !*pwrds := nil;
+    if not eqcar(d, 'expr) or
+       null (nargs := s!:argcount fn) then <<
        if not zerop posn() then terpri();
        prin2 "+++ ";
-       print fm;
+       prin1 fn;
        prin2 " not traceable";
        return terpri() >>;
     !~!~saved_putd(g, car d, cdr d);
-    !~!~saved~putd(fn, 'expr,
-       s!:traced!-version(fn, get(fn, 'number!-of!-args), g));
+    !~!~saved_putd(fn, 'expr,
+       s!:traced!-version(fn, nargs, g));
   end;
 
 symbolic procedure simple!-trace l;
