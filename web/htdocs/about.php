@@ -1,6 +1,6 @@
 <?php
 $header_title = 'History and Contributors';
-include 'include/begin-head.php';
+include './include/begin-head.php';
 ?>
 
 <style type="text/css">
@@ -10,7 +10,7 @@ include 'include/begin-head.php';
 </style>
 
 <?php
-include 'include/begin-body.php';
+include './include/begin-body.php';
 ?>
 
 <h2>A brief history of REDUCE</h2>
@@ -90,7 +90,7 @@ include 'include/begin-body.php';
 </div><!-- opened in begin-body.php -->
 
 <?php
-include 'include/footer.php';
+include './include/footer.php';
 ?>
 
 </body>

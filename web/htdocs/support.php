@@ -1,7 +1,7 @@
 <?php
 $header_title = 'Support Questions and Answers';
-include 'include/begin-head.php';
-include 'include/begin-body.php';
+include './include/begin-head.php';
+include './include/begin-body.php';
 
 $Q_A = array(
 
@@ -388,20 +388,18 @@ array(
 
 <p>Click on a question to show (or hide) its answer.</p>
 <div class="accordion" id="Q_A_accordion">
-    <?php foreach ($Q_A as $index => $item): ?>
-        <div class="card">
-            <div class="card-header" id="heading<?=$index?>">
-                <h5 class="mb-0">
-	            <button class="btn btn-link collapsed" type="button"
-                            data-toggle="collapse" data-target="#collapse<?=$index?>"
-                            aria-expanded="false" aria-controls="collapse<?=$index?>">
-	                <?=$index+1?>. <?=$item['Q']?>
-	            </button>
-                </h5>
-            </div>
-            <div id="collapse<?=$index?>" class="collapse"
-                 aria-labelledby="heading<?=$index?>" data-parent="#Q_A_accordion">
-                <div class="card-body">
+    <?php foreach ($Q_A as $index => $item): $index1 = $index+1 ?>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="heading<?=$index1?>">
+                <button class="accordion-button collapsed" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#collapse<?=$index1?>"
+                        aria-expanded="true" aria-controls="collapse<?=$index1?>">
+	            <?=$index1?>.&nbsp;<?=$item['Q']?>
+                </button>
+            </h2>
+            <div id="collapse<?=$index1?>" class="accordion-collapse collapse"
+                 aria-labelledby="heading<?=$index1?>" data-bs-parent="#Q_A_accordion">
+                <div class="accordion-body">
 	            <?=$item['A']?>
                 </div>
             </div>
@@ -412,7 +410,7 @@ array(
 </div><!-- opened in begin-body.php -->
 
 <?php
-include 'include/footer.php';
+include './include/footer.php';
 ?>
 
 </body>

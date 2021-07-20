@@ -1,7 +1,7 @@
 <?php
 $page_title = 'Search the REDUCE Web Site';
 $header_title = 'Search the REDUCE Web Site';
-include 'include/begin-head.php';
+include './include/begin-head.php';
 ?>
 
 <style type="text/css">
@@ -11,7 +11,7 @@ include 'include/begin-head.php';
 </style>
 
 <?php
-include 'include/begin-body.php';
+include './include/begin-body.php';
 ?>
 
 <p style="text-align: center">
@@ -26,7 +26,7 @@ include 'include/begin-body.php';
 </div><!-- opened in begin-body.php -->
 
 <?php
-include 'include/footer.php';
+include './include/footer.php';
 ?>
 
 </body>

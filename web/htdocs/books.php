@@ -1,6 +1,6 @@
 <?php
 $header_title = 'Books';
-include 'include/begin-head.php';
+include './include/begin-head.php';
 ?>
 
 <style type="text/css">
@@ -20,6 +20,7 @@ include 'include/begin-head.php';
  }
 
  #main > div.row {
+     margin-left: 0.5em;
      min-height: 110px;
      font-size: 90%;
  }
@@ -46,7 +47,7 @@ include 'include/begin-head.php';
 </style>
 
 <?php
-include 'include/begin-body.php';
+include './include/begin-body.php';
 ?>
 
 <p>
@@ -188,7 +189,7 @@ foreach ($secondary_books as $book): ?>
 </div><!-- opened in begin-body.php -->
 
 <?php
-include 'include/footer.php';
+include './include/footer.php';
 ?>
 
 </body>

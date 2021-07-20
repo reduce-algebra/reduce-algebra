@@ -1,7 +1,7 @@
 <?php
 $page_title = 'Obtain and Run REDUCE';
 $header_title = 'How to Obtain and Run REDUCE';
-include 'include/begin-head.php';
+include './include/begin-head.php';
 ?>
 
 <style type="text/css">
@@ -12,7 +12,7 @@ include 'include/begin-head.php';
 </style>
 
 <?php
-include 'include/begin-body.php';
+include './include/begin-body.php';
 ?>
 
 <p>
@@ -270,7 +270,7 @@ int(ws,x);</code></pre>
 </div><!-- opened in begin-body.php -->
 
 <?php
-include 'include/footer.php';
+include './include/footer.php';
 ?>
 
 </body>

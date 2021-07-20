@@ -1,7 +1,7 @@
 <?php
 $header_title = 'Switch Summary';
-include 'include/begin-head.php';
-include 'include/begin-body.php';
+include './include/begin-head.php';
+include './include/begin-body.php';
 ?>
 
 <p>
@@ -241,7 +241,7 @@ $switchesB = array(
 </div><!-- opened in begin-body.php -->
 
 <?php
-include 'include/footer.php';
+include './include/footer.php';
 ?>
 
 </body>

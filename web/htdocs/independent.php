@@ -1,8 +1,8 @@
 <?php
 $page_title = 'Independent Distributions of REDUCE';
 $header_title = 'Independent Distributions';
-include 'include/begin-head.php';
-include 'include/begin-body.php';
+include './include/begin-head.php';
+include './include/begin-body.php';
 ?>
 
 <p>
@@ -24,7 +24,7 @@ include 'include/begin-body.php';
 </div><!-- opened in begin-body.php -->
 
 <?php
-include 'include/footer.php';
+include './include/footer.php';
 ?>
 
 </body>

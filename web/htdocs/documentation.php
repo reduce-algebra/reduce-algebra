@@ -1,13 +1,13 @@
 <?php
 $header_title = 'Documentation';
-include 'include/begin-head.php';
+include './include/begin-head.php';
 ?>
 
 <base href="/manual/" />
 <!-- *** Beware that relative URLs on this page are relative to "/manual/" for the  User Contributed Packages. *** -->
 
 <?php
-include 'include/begin-body.php';
+include './include/begin-body.php';
 ?>
 
 <p>
@@ -110,7 +110,7 @@ include 'include/begin-body.php';
 </div><!-- opened in begin-body.php -->
 
 <?php
-include 'include/footer.php';
+include './include/footer.php';
 ?>
 
 </body>

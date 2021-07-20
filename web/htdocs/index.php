@@ -3,7 +3,7 @@
 <?php
 $page_title = 'REDUCE Computer Algebra System';
 $header_title = 'What is REDUCE?';
-include 'include/begin-head.php';
+include './include/begin-head.php';
 ?>
 <meta name="google-site-verification" content="pKr8xVCb35NVMHejjhvma4js1wsSweNQ_8vTVJqWFeA" />
 
@@ -33,7 +33,7 @@ include 'include/begin-head.php';
 
 <?php
 $main_class = 'col-md-6 col-xl-6';
-include 'include/begin-body.php';
+include './include/begin-body.php';
 ?>
 
 <p>
@@ -111,7 +111,7 @@ include 'include/begin-body.php';
 
 <?php
 $footer_class='col-xl-2';
-include 'include/footer.php';
+include './include/footer.php';
 ?>
 
 </body>
