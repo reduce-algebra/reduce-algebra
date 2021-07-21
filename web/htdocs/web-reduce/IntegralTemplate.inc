@@ -14,18 +14,18 @@
 				</p>
 				<div class="container-fluid" style="text-align: center">
 					<div style="display: inline-block; vertical-align: middle">
-						<input type="text" size="3" /><br />
-						<span style="font-size: 300%; color: red">∫</span><br />
+						<input type="text" size="3" />
+						<div style="margin-top: -1rem; font-size: 300%; color: red">∫</div>
 						<input type="text" size="3" />
 					</div>
 					<div style="display: inline-block; vertical-align: middle">
-						<input type="text" size="3" /><br />
-						<span style="font-size: 300%; color: green">∫</span><br />
+						<input type="text" size="3" />
+						<div style="margin-top: -1rem; font-size: 300%; color: green">∫</div>
 						<input type="text" size="3" />
 					</div>
 					<div style="display: inline-block; vertical-align: middle">
-						<input type="text" size="3" /><br />
-						<span style="font-size: 300%; color: blue">∫</span><br />
+						<input type="text" size="3" />
+						<div style="margin-top: -1rem; font-size: 300%; color: blue">∫</div>
 						<input type="text" size="3" />
 					</div>
 					<input type="text" size="25" value="ws" />
@@ -109,8 +109,8 @@
 				const intVar = intVarTextFields[i].value.trim();
 				if (intVar.length != 0) {
 					text = "int(" + text;
-					const lowLim = limTextFields[i][0].value.trim();
-					const upLim = limTextFields[i][1].value.trim();
+					const lowLim = limTextFields[i][1].value.trim();
+					const upLim = limTextFields[i][0].value.trim();
 					const indefInt = (lowLim.length == 0);
 					if ((indefInt) != (upLim.length == 0)) {
 						// boolean != is equivalent to exclusive or.
