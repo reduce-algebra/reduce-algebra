@@ -5,15 +5,16 @@ include '../include/begin-body.php';
 ?>
 
 <p><a href="https://sourceforge.net/users/fjwright/">Francis Wright</a>, June 2018</p>
+<p>
+    Click on a problem header to show/hide my REDUCE solution.
+</p>
 
 <div class="accordion" id="P_S_accordion">
 
     <div>
         <!-- Problem MTH4100 2014 Q1(a) -->
-	<div>
-            Find the set of all \(x \in \mathbb{R}\) which satisfy the inequality
-	    \[ |x - 1| \le x^2 - 1. \]
-        </div>
+        Find the set of all \(x \in \mathbb{R}\) which satisfy the inequality
+	\[ |x - 1| \le x^2 - 1. \]
         <!-- Solution -->
         <pre>plot({abs(x-1), x^2-1}, x=(-3 .. 3));
 % Clearly, the problem is equivalent to -(x-1) <= x^2-1.
@@ -23,15 +24,13 @@ solve(-(x-1)=x^2-1);
 
     <div>
         <!-- Problem MTH4100 2014 Q1(b) -->
-	<div>
-            Let \[ f(x) = \frac{x^2 - 4x + 4}{x^2 - x - 2} \]
-	    for all \(x \in \mathbb{R} \setminus \{-1, 2\}\).
-	    Determine whether each of the following limits exist,
-	    giving the value if it exists:
-	    \[ \lim_{x \to -1} f(x); \quad \lim_{x \to 2} f(x); \quad \lim_{x \to \infty} f(x). \]
-	    Determine whether \(f\) has a continuous extension at \(x = -1\) or \(x = 2\),
-	    defining the extension if it exists.
-        </div>
+        Let \[ f(x) = \frac{x^2 - 4x + 4}{x^2 - x - 2} \]
+	for all \(x \in \mathbb{R} \setminus \{-1, 2\}\).
+	Determine whether each of the following limits exist,
+	giving the value if it exists:
+	\[ \lim_{x \to -1} f(x); \quad \lim_{x \to 2} f(x); \quad \lim_{x \to \infty} f(x). \]
+	Determine whether \(f\) has a continuous extension at \(x = -1\) or \(x = 2\),
+	defining the extension if it exists.
         <!-- Solution -->
         <pre>f := (x^2-4x+4)/(x^2-x-2);
 limit(f, x, -1);  % i.e. no finite limit
@@ -44,19 +43,15 @@ on gcd;  f;  off gcd;
 
     <div>
         <!-- Problem MTH4100 2014 Q1(c) -->
-	<div>
-            Determine the derivative of the function arctan.
-        </div>
+        Determine the derivative of the function arctan.
         <!-- Solution -->
         <pre>df(atan x, x);</pre>
     </div>
 
     <div>
         <!-- Problem MTH4100 2014 Q1(d) -->
-	<div>
-            Find the equation of the tangent to the curve
-	    \(y^3 + x^2y - 3x + 1 = 0\) at the point \((1, 1)\).
-        </div>
+        Find the equation of the tangent to the curve
+	\(y^3 + x^2y - 3x + 1 = 0\) at the point \((1, 1)\).
         <!-- Solution -->
         <pre>depend y, x;  curve := y^3 + x^2*y - 3x + 1; % = 0
 df(curve, x);
@@ -71,10 +66,8 @@ nodepend y, x;</pre>
 
     <div>
         <!-- Problem MTH4100 2014 Q1(e) -->
-	<div>
-            Find the area of the region bounded above by the curve
-	    \(x^2 + y^2 = 2\) and below by the curve \(y = x^2\).
-        </div>
+        Find the area of the region bounded above by the curve
+	\(x^2 + y^2 = 2\) and below by the curve \(y = x^2\).
         <!-- Solution -->
         <pre>solve(x^2 + y^2 = 2, y);
 above := rhs first ws;
@@ -85,9 +78,7 @@ int(above - below, x, -1, 1);</pre>
 
     <div>
         <!-- Problem MTH4100 2014 Q1(f) -->
-	<div>
-            Evaluate \[ \int (x + 2) \ln(x - 3) \, dx . \]
-        </div>
+        Evaluate \[ \int (x + 2) \ln(x - 3) \, dx . \]
         <!-- Solution -->
         <pre>define ln = log;  % or just use log instead of ln
 int((x+2)*ln(x-3), x);
@@ -95,41 +86,38 @@ int((x+2)*ln(x-3), x);
 factor log;  ws;</pre>
     </div>
 
-
     <div>
         <!-- Problem MTH4100 2014 Q2 -->
-	<div>
-            Consider the curve \(y = f(x)\) for the function \(f(x) = 3x^\frac23(5 - x)\).
-            <ol style="list-style: lower-alpha">
-	        <li>
-                    Identify the domain of \(f\) and determine whether
-	            or not \(f\) is an even function or an odd
-	            function.
-                </li>
-	        <li>
-                    Find \(f'(x)\) and \(f''(x)\).
-                </li>
-	        <li>
-                    Find the critical points of \(f\), determine where
-	            \(f\) is increasing or decreasing, and determine
-	            the behavior of \(f\) at each of its critical
-	            points.
-                </li>
-	        <li>
-                    Find the inflexion points for \(f\), if any occur,
-	            and determine the concavity of the curve.
-                </li>
-	        <li>
-                    Determine the behavior of \(f(x)\) as \(x \to
-	            \pm\infty\) and identify any asymptotes.
-                </li>
-	        <li>
-                    Plot key points, such as intercepts, critical
-	            points, and points of inflexion, and sketch the
-	            curve.
-                </li>
-	    </ol>
-        </div>
+        Consider the curve \(y = f(x)\) for the function \(f(x) = 3x^\frac23(5 - x)\).
+        <ol style="list-style: lower-alpha">
+	    <li>
+                Identify the domain of \(f\) and determine whether
+	        or not \(f\) is an even function or an odd
+	        function.
+            </li>
+	    <li>
+                Find \(f'(x)\) and \(f''(x)\).
+            </li>
+	    <li>
+                Find the critical points of \(f\), determine where
+	        \(f\) is increasing or decreasing, and determine
+	        the behavior of \(f\) at each of its critical
+	        points.
+            </li>
+	    <li>
+                Find the inflexion points for \(f\), if any occur,
+	        and determine the concavity of the curve.
+            </li>
+	    <li>
+                Determine the behavior of \(f(x)\) as \(x \to
+	        \pm\infty\) and identify any asymptotes.
+            </li>
+	    <li>
+                Plot key points, such as intercepts, critical
+	        points, and points of inflexion, and sketch the
+	        curve.
+            </li>
+	</ol>
         <!-- Solution -->
         <pre>operator f;  let f(~x) => 3x^(2/3)*(5-x);
 % Domain is x >= 0 since x^(2/3) is undefined for x < 0.
@@ -148,25 +136,20 @@ limit(f(x), x, infinity);
 plot(f(x), x=(0 .. 6));</pre>
     </div>
 
-
     <div>
         <!-- Problem MTH4101 2014 Q1(a) -->
-	<div>
-            Consider the function \[ f(x, y) = \frac{2x - xy - 3y + 6}{y - 2}, y \not= 2. \]
-	    Find the limit of \(f\) as \((x, y) \to (1, 2)\).
-        </div>
+        Consider the function \[ f(x, y) = \frac{2x - xy - 3y + 6}{y - 2}, y \not= 2. \]
+	Find the limit of \(f\) as \((x, y) \to (1, 2)\).
         <!-- Solution -->
         <pre>f := (2x - x*y -3y + 6)/(y - 2);  sub(x=1, y=2, f);</pre>
     </div>
 
     <div>
         <!-- Problem MTH4101 2014 Q1(b) -->
-	<div>
-            Find the directional derivative of the function
-	    \[f(x, y, z) = xy + xz + yz\]
-	    at the point \((-1, 1, -2)\) in the direction of the vector
-	    \(\mathbf{A} = \mathbf{i} - 2\mathbf{j} + 2\mathbf{k}\).
-        </div>
+        Find the directional derivative of the function
+	\[f(x, y, z) = xy + xz + yz\]
+	at the point \((-1, 1, -2)\) in the direction of the vector
+	\(\mathbf{A} = \mathbf{i} - 2\mathbf{j} + 2\mathbf{k}\).
         <!-- Solution -->
         <pre>f := x*y + x*z + y*z;
 load_package avector;
@@ -178,10 +161,8 @@ g dot (A/vmod A);</pre>
 
     <div>
         <!-- Problem MTH4101 2014 Q1(c) -->
-	<div>
-            Find the linearisation of \[f(x, y) = 7x + 3y - 11\]
-	    at the point \((2, 3)\).
-        </div>
+        Find the linearisation of \[f(x, y) = 7x + 3y - 11\]
+	at the point \((2, 3)\).
         <!-- Solution -->
         <pre>f := 7x + 3y - 11;
 {df(f,x), df(f,y), f};
@@ -191,10 +172,8 @@ x*first ws + y*second ws + third ws;</pre>
 
     <div>
         <!-- Problem MTH4101 2014 Q1(d) -->
-	<div>
-            Obtain the limit as \(n \to \infty\) for the sequence
-	    \[ a_n = \left(1 + \frac5n\right)^n. \]
-        </div>
+        Obtain the limit as \(n \to \infty\) for the sequence
+	\[ a_n = \left(1 + \frac5n\right)^n. \]
         <!-- Solution -->
         <pre>an := (1 + 5/n)^n;
 limit(an, n, infinity);</pre>
@@ -202,9 +181,7 @@ limit(an, n, infinity);</pre>
 
     <div>
         <!-- Problem MTH4101 2014 Q1(e) -->
-	<div>
-            Find the sum of the series \[ \sum_{k=0}^\infty (-2)^k \frac3{4^k}. \]
-        </div>
+        Find the sum of the series \[ \sum_{k=0}^\infty (-2)^k \frac3{4^k}. \]
         <!-- Solution -->
         <pre>% Must do some of the work by hand for this example!
 % s := (-2)^k*3/4^k;  % doesn't simplify (even with on combineexpt), so
@@ -215,11 +192,9 @@ sum(s, k, 0, infinity);  % obviously should evaluate to 2.
 
     <div>
         <!-- Problem MTH4101 2014 Q1(f) -->
-	<div>
-            Sketch the region of integration and evaluate the integral
-	    \[ \int_0^1 \int_y^\sqrt y (3x - 1) \, dx \, dy. \]
-	    Then reverse the order of integration and re-evaluate the integral.
-        </div>
+        Sketch the region of integration and evaluate the integral
+	\[ \int_0^1 \int_y^\sqrt y (3x - 1) \, dx \, dy. \]
+	Then reverse the order of integration and re-evaluate the integral.
         <!-- Solution -->
         <pre>plot({x,x^2}, x=(0 .. 1));
 % As in the question:
@@ -230,10 +205,8 @@ int( int(3x-1, y, x^2, x), x, 0, 1);</pre>
 
     <div>
         <!-- Problem MTH4101 2014 Q1(g) -->
-	<div>
-            Find the Jacobian \(\partial(x,y,z)/\partial(u,v,w)\) for the
-	    transformation \(x = v + 2w, y = u + vw, z = uv^2.\)
-        </div>
+        Find the Jacobian \(\partial(x,y,z)/\partial(u,v,w)\) for the
+	transformation \(x = v + 2w, y = u + vw, z = uv^2.\)
         <!-- Solution -->
         <pre>load_package linalg;
 mat_jacobian({v+2w, u+v*w, u*v^2}, {u, v, w});</pre>
@@ -241,10 +214,8 @@ mat_jacobian({v+2w, u+v*w, u*v^2}, {u, v, w});</pre>
 
     <div>
         <!-- Problem MTH4101 2014 Q1(h) -->
-	<div>
-            Solve the differential equation \[ \frac{dy}{dx} = e^{y-x} \]
-	    and confirm the solution.
-        </div>
+        Solve the differential equation \[ \frac{dy}{dx} = e^{y-x} \]
+	and confirm the solution.
         <!-- Solution -->
         <pre>depend y, x;  df(y,x) = exp(y-x);
 saveas ode;
@@ -256,16 +227,13 @@ sub(ws, ode);
 nodepend y, x;</pre>
     </div>
 
-
     <div>
         <!-- Problem MTH4101 2014 Q2(c) -->
-	<div>
-            Let \[ f(x,y) = \frac{x^2}4 + y^2. \]
-	    Sketch the level curve \(f = 2\).
-	    Calculate the gradient vector \(\nabla f\) at the point
-	    \((2, -1)\) and sketch it. Then calculate the equation for the
-	    tangent line to the level curve at the same point and sketch it.
-        </div>
+        Let \[ f(x,y) = \frac{x^2}4 + y^2. \]
+	Sketch the level curve \(f = 2\).
+	Calculate the gradient vector \(\nabla f\) at the point
+	\((2, -1)\) and sketch it. Then calculate the equation for the
+	tangent line to the level curve at the same point and sketch it.
         <!-- Solution -->
         <pre>f := x^2/4 + y^2;
 plot(f - 2 = 0, x = (-3 .. 3), y = (-2 .. 2));
@@ -290,17 +258,14 @@ plot({rhs first ws, rhs second ws, y_tangent},
 x = (-2 sqrt 2+eps .. 2 sqrt 2-eps), y = (-sqrt 2+eps .. sqrt 2-eps));</pre>
     </div>
 
-
     <div>
         <!-- Problem MTH4101 2014 Q3 -->
-	<div>
-            Use the method of Lagrange multipliers to find the extreme points of
-	    the function \[ f(x,y) = xy \]
-	    subject to the condition \[ x^2 + y^2 = 9. \]
-	    Determine the value of the function \(f\) at each of the extreme points.
-        </div>
+        Use the method of Lagrange multipliers to find the extreme points of
+	the function \[ f(x,y) = xy \]
+	subject to the condition \[ x^2 + y^2 = 9. \]
+	Determine the value of the function \(f\) at each of the extreme points.
         <!-- Solution -->
-<pre>f := x*y;
+        <pre>f := x*y;
 g := x^2 + y^2 - 9;  % = 0
 % Define a Lagrangian function L with Lagrange multiplier lam and find its critical points:
 L := f - lam*g;
@@ -310,12 +275,9 @@ for each soln in solns do write append(rest soln, sub(soln, {f, g}));
 % Hence x = y = +/- 3/sqrt 2 are maxima with f = 9/2 and x = -y = +/- 3/sqrt 2 are minima with f = -9/2.</pre>
     </div>
 
-
     <div>
         <!-- Problem MTH4101 2014 Q5(b) -->
-	<div>
-            Find the Taylor series generated by \(f(x) = e^{2x}\) at \(x = 0\).
-        </div>
+        Find the Taylor series generated by \(f(x) = e^{2x}\) at \(x = 0\).
         <!-- Solution -->
         <pre>f := exp(2x);
 df(f,x,1);  df(f,x,2);  df(f,x,3);

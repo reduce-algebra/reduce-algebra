@@ -1,6 +1,6 @@
 #! /bin/bash -v
 
-bare-psl <<'XX' | tee buildpsl.log
+bare-psl <<'XX' | tee buildpsl2.log
 
 % The mess here is because I want to be able to define some functions
 % for use in the reduce sources so that they match historical versions -
@@ -35,6 +35,8 @@ bare-psl <<'XX' | tee buildpsl.log
          (t (return nil)))))
 
 (de stop (x) (exitlisp))
+
+(de compute-prompt-string (x y) "")
 
 (global '(nameChanges))
 

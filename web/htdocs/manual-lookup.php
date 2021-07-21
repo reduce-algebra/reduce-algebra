@@ -45,7 +45,7 @@ if ($doc->loadHTMLFile('manual/manual.html')) {
     </html>
 
 <?php else:
-include 'include/begin-head.php';
+include './include/begin-head.php';
 ?>
 
     <style type="text/css">
@@ -58,7 +58,7 @@ include 'include/begin-head.php';
     </style>
 
     <?php
-    include 'include/begin-body.php';
+    include './include/begin-body.php';
     ?>
 
     <p>
@@ -100,10 +100,15 @@ include 'include/begin-head.php';
 </div><!-- opened in begin-body.php -->
 
 <?php
-include 'include/footer.php';
+include './include/footer.php';
 endif;
 ?>
 
+<!-- The slim version of jQuery does not include ajax (or effects)
+     and I use ajax on the documentation page! -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+        crossorigin="anonymous"></script>
 <script>
  // $("span.href").append(location.href);
  $("span.href").append(location.origin + location.pathname);

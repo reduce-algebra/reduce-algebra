@@ -26,7 +26,7 @@ elseif ($_SERVER['QUERY_STRING'] == 'show-cache'):
 <?php
 exit;
 endif;
-include 'include/begin-head.php';
+include './include/begin-head.php';
 ?>
 
 <style>
@@ -65,7 +65,7 @@ include 'include/begin-head.php';
 </style>
 
 <?php
-include 'include/begin-body.php';
+include './include/begin-body.php';
 
 // $sitemap is an array of arrays that stores the site map table, in
 // which each row is an array of the form
@@ -80,7 +80,7 @@ function processDir(string $dir, int $level) {
                 $sitemap[] = array(false, $level, $file);
                 processDir("$file/*", $level + 1); // recurse!
             }
-        } elseif ($file != 'robots.txt') {
+        } elseif ($file != 'robots.txt' && !preg_match('/\.(?:inc|js|wasm)$/', $file)) {
             processFile($file, $level);
         }
     }
@@ -169,16 +169,15 @@ if ($recache) {
 if (isset($time)) $time = microtime(true) - $time;
 ?>
 
-<ul class="nav nav-tabs nav-justified" role="tablist">
-    <li class="nav-item" role="presentation">
-        <a class="nav-link active" id="SiteMap-tab" data-toggle="tab" href="#SiteMap"
-           role="tab" aria-controls="SiteMap" aria-selected="true">Site Map</a>
-    </li>
-    <li class="nav-item" role="presentation">
-        <a class="nav-link" id="RecentUpdates-tab" data-toggle="tab" href="#RecentUpdates"
-           role="tab" aria-controls="RecentUpdates" aria-selected="false">Recent Updates</a>
-    </li>
-</ul>
+<nav>
+    <div class="nav nav-tabs nav-justified" role="tablist">
+        <button class="nav-link active" id="SiteMap-tab" data-bs-toggle="tab" data-bs-target="#SiteMap" type="button"
+                role="tab" aria-controls="SiteMap" aria-selected="true">Site Map</button>
+        <button class="nav-link" id="RecentUpdates-tab" data-bs-toggle="tab" data-bs-target="#RecentUpdates" type="button"
+                role="tab" aria-controls="RecentUpdates" aria-selected="false">Recent Updates</button>
+    </div>
+</nav>
+
 <div class="tab-content">
     <div class="tab-pane fade show active" id="SiteMap"
          role="tabpanel" aria-labelledby="SiteMap-tab">
@@ -256,40 +255,45 @@ if (isset($time)) $time = microtime(true) - $time;
 </div>
 <?php if (isset($time)) printf("<p>Time to build site map: %.3f seconds</p>\n", $time); ?>
 
-</div><!-- opened in begin-body.php -->
+    </div><!-- opened in begin-body.php -->
 
-<?php
-include 'include/footer.php';
-?>
+    <!-- The slim version of jQuery does not include ajax (or effects)
+         and I use ajax on the documentation page! -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>
+    <script>
+     // Strip leading folders from file names:
+     $("#SiteMap tr[data-level=1],tr[data-level=2]")
+         .find("td:first-child > a, td:first-child:not(:has(a))")
+         .text(function(n, current) {
+             /* var pos = current.lastIndexOf("/");
+              * return pos == -1 ? current : current.substring(pos+1); */
+             return current.substring(current.lastIndexOf("/") + 1);
+         });
 
-<script>
- // Strip leading folders from file names:
- $("#SiteMap tr[data-level=1],tr[data-level=2]")
-     .find("td:first-child > a, td:first-child:not(:has(a))")
-     .text(function(n, current) {
-         /* var pos = current.lastIndexOf("/");
-          * return pos == -1 ? current : current.substring(pos+1); */
-         return current.substring(current.lastIndexOf("/") + 1);
-     });
+     // Register a click handler on folder name cells:
+     $("#SiteMap tr.folder > td:first-child")
+         .attr("title", "Expand folder")
+         .css("cursor", "pointer").click(function() {
+             let $this = $(this); // folder name cell
+             let $folderTr = $this.closest("tr"); // folder table row
+             let folderLevel = $folderTr.toggleClass("expanded").data("level");
+             let hiding = !$folderTr.hasClass("expanded"); // collapsing folder
+             $this.attr("title", hiding ? "Expand folder" : "Collapse folder");
+             $folderTr.nextAll().each(function(){
+                 let $this = $(this); // a table row below the folder table row
+                 let level = $this.data("level");
+                 if (level == folderLevel) return false; // below this subfolder
+                 if (hiding) $this.hide().removeClass("expanded"); // hide all descendants
+                 else if (level == folderLevel+1) $this.show(); // but show only children
+             })
+         });
+    </script>
 
- // Register a click handler on folder name cells:
- $("#SiteMap tr.folder > td:first-child")
-     .attr("title", "Expand folder")
-     .css("cursor", "pointer").click(function() {
-         let $this = $(this); // folder name cell
-         let $folderTr = $this.closest("tr"); // folder table row
-         let folderLevel = $folderTr.toggleClass("expanded").data("level");
-         let hiding = !$folderTr.hasClass("expanded"); // collapsing folder
-         $this.attr("title", hiding ? "Expand folder" : "Collapse folder");
-         $folderTr.nextAll().each(function(){
-             let $this = $(this); // a table row below the folder table row
-             let level = $this.data("level");
-             if (level == folderLevel) return false; // below this subfolder
-             if (hiding) $this.hide().removeClass("expanded"); // hide all descendants
-             else if (level == folderLevel+1) $this.show(); // but show only children
-         })
-     });
-</script>
+    <?php
+    include './include/footer.php';
+    ?>
 
-        </body>
-    </html>
+</body>
+</html>
