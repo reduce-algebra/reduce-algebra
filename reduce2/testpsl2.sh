@@ -2,6 +2,8 @@
 
 time $pxk/bpsl -td 1000 -f redpsl2.img <<'XX' | tee testpsl2.log
 (begin)
+
+on echo; off int;
                                                                                 
 COMMENT SOME EXAMPLES OF THE  F O R  STATEMENT;                                 
                                                                                 
@@ -126,7 +128,10 @@ WRITE "THE COMPTON CROSS-SECTION IS ",!*ANS;
 COMMENT END OF FIRST PHYSICS EXAMPLE;                                           
                                                                                 
 OFF DIV;                                                                        
-                                                                                
+
+off usermode;
+ON backtrace;
+VECTOR P1,P3;       
 COMMENT ANOTHER PHYSICS EXAMPLE;                                                
 FACTOR MM,P1.P3;                                                                
 INDEX X1,Y1,Z;                                                                  
@@ -156,7 +161,8 @@ OFF MSG$ ON NERO$
                                                                                 
 COMMENT HERE WE INTRODUCE THE COVARIANT AND CONTRAVARIANT METRICS;              
                                                                                 
-ARRAY GG(3,3),H(3,3),X(3)$                                                      
+OPERATOR P1,Q1,X$
+ARRAY GG(3,3),H(3,3)$                                                      
 FOR I:=0:3 DO FOR J:=0:3 DO GG(I,J):=H(I,J):=0$                                 
 GG(0,0):=E**(Q1(X(1)))$                                                         
 GG(1,1):=-E**(P1(X(1)))$                                                        
@@ -170,11 +176,12 @@ COMMENT GENERATE CHRISTOFFEL SYMBOLS AND STORE IN ARRAYS
       CS1 AND CS2;                                                              
                                                                                 
 ARRAY CS1(3,3,3)$                                                               
+symbolic tr(simpdf,simpcar,kernp,diffsq,diffp);
 FOR I:=0:3 DO  FOR J:=I:3                                                       
    DO  FOR K:=0:3 DO                                                            
        CS1(J,I,K) := CS1(I,J,K):=(DF(GG(I,K),X(J))+DF(GG(J,K),X(I))             
        -DF(GG(I,J),X(K)))/2$                                                    
-                                                                                
+t                                                                                
                                                                                 
 ARRAY CS2(3,3,3)$                                                               
 FOR I:= 0:3 DO  FOR J:=I:3                                                      

@@ -4418,6 +4418,7 @@ er  (errpri2 (car u) 'hold)
 (de matp (u) (nsp u 'matrix))
 
 (put 'mat 'matfn 'matfn)
+(flag '(mat) 'matfn)
 
 (put 'tp 'matfn 'tp)
 
@@ -5070,6 +5071,7 @@ c   (setq x (not x))
     (cond (z (setq u (cons 'a u))))
     (cond
       ((get l 'nospur) (go a))
+      ((null u) (go end1))
       ((or
          (and (eq (car u) 'a) (or (lessp (length u) 5) (!*evenp u)))
          (and (not (eq (car u) 'a)) (not (!*evenp u))))
