@@ -60,7 +60,8 @@
 
 scriptpath=$BASH_ARGV
 scriptdir=`dirname $scriptpath`
-export proot=`realpath $scriptdir/..`
+cd $scriptdir/..; export proot=`pwd`; cd $OLDPWD
+#export proot=`realpath $scriptdir/..`
 #export proot=/mounts/software/rainer/reduce-algebra/code/trunk/psl
 
 export psl=$proot/dist          # Top of PSL tree.
