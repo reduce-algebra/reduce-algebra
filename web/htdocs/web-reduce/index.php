@@ -11,7 +11,7 @@ include '../include/begin-head.php';
  #OutputDiv {
      border: medium black solid;
      height: 25em;
-     resize: both;
+     resize: vertical;
      overflow: auto;
  }
 
@@ -94,8 +94,8 @@ include '../include/begin-body.php';
                     <a class="nav-link dropdown-toggle" href="#" id="HelpMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">Help
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="HelpMenuLink">
-                        <li><a class="dropdown-item" href="about.html" target="_blank" title="Opens in a new tab.">About Web REDUCE</a></li>
-                        <li><a class="dropdown-item disabled" href="#">Web REDUCE User Guide</a></li>
+                        <li><a class="dropdown-item" href="about.php" target="_blank" title="Opens in a new tab.">About Web REDUCE</a></li>
+                        <li><a class="dropdown-item" href="UserGuide.php" target="_blank" title="Opens in a new tab.">Web REDUCE User Guide</a></li>
                         <li><a class="dropdown-item" href="/manual/manual.html" target="_blank" title="Opens in a new tab.">REDUCE Manual</a></li>
                     </ul>
                 </li>

@@ -176,7 +176,8 @@ symbolic procedure limit0(exp,x,a);
               then mk!*sq y
            else if neq(a,0) then limit00(subsq(exp1,{x .
               {'plus,a,x}}),x)
-           else limit00(exp1,x)>> where y=nil) end;
+           else limit00(exp1,x)>> where y=nil)
+   end;
 
 %%
 %% RmS: limit!-expcombine detects expressions of the form
@@ -276,8 +277,9 @@ symbolic procedure pwrdenp(p,x);
    else lcm(pwrdenp(car p,x),pwrdenp(cdr p,x));
 
 symbolic procedure limitset(ex,x,a);
- begin scalar result;
+ begin scalar result,ex_in;
  if !*trlimit then <<
+    ex_in := ex;
     prin2!* "Limit ("; prin2!* trlimitlevel!*; prin2!* "): Trying power series expansion using ";
    prin2!* if !*usetaylor then "Taylor w.r.t." else "TPS w.r.t.";
    mathprint x; prin2!* "around";
@@ -301,7 +303,7 @@ symbolic procedure limitset(ex,x,a);
    if null result then << prin2!* "Limit ("; prin2!* trlimitlevel!*; prin2!* "): Expansion failed"; terpri!* t; >>
     else <<
      prin2!* "Limit ("; prin2!* trlimitlevel!*; prin2!* "): Power series expansion gives"; terpri!* t;
-     mathprint result;
+     mathprint {'replaceby,ex_in,result};
      >>;
  >>;
  return result
@@ -625,8 +627,9 @@ symbolic procedure limfix(ex,x,a);
     where val=limitset(ex,x,a);
 
 symbolic procedure limitest(ex,x,a);
-   (begin scalar result;
+   (begin scalar result,ex_in;
       if !*trlimit then <<
+	 ex_in := ex;
 	 prin2!* "Limit ("; prin2!* trlimitlevel!*; prin2!* "): Entering limitest for"; 
 	 mathprint ex;
 	 prin2!* "w.r.t. variable"; mathprint x;
@@ -645,7 +648,7 @@ symbolic procedure limitest(ex,x,a);
     ret:
   if !*trlimit then <<
      prin2!* "Limit ("; prin2!* trlimitlevel!*; prin2!* "): limitest returns"; terpri!* t;
-     mathprint result;
+     mathprint {'replaceby,ex_in,result};
   >>;
   return result;
    end) where trlimitlevel!*=trlimitlevel!*+1;

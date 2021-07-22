@@ -224,6 +224,8 @@ To make them all work it will be best to define a separate limit
 evaluator, either to be used separately, or to be used when the present 
 evaluator has failed.$
 
+limit(x/(1+e^x),x,infinity);
+
 limit((e+1)^(x^2)/e^x,x,infinity); % infinity
 limit(e^x-e^(x-1/x^2),x,infinity); % infinity
 limit(1/(e^x-e^(x-1/x^2)),x,infinity); % infinity

@@ -122,7 +122,7 @@ Not yet implemented:
 
 
 symbolic procedure simp!-trig!-arg u;
-   begin scalar r,okord,!*mcd,!*exp,dmode!*;
+   begin scalar r,okord,!*mcd,!*exp,!*factor,dmode!*;
      okord := setkorder '(pi);
      !*mcd := !*exp := t;
      r := simp u;
@@ -132,23 +132,24 @@ symbolic procedure simp!-trig!-arg u;
 
 
 symbolic procedure pi_split u;
-   begin scalar du,nu,l;
+ % looks for a term linear in pi
+ % returns a pair of the coeff of the linear term and u
+   begin scalar du,nu,ddeg,dlc,l;
      nu := numr u;
      du := denr u;
-     a: if domainp nu or null(mvar nu eq 'pi) then return nil . u;
-        if ldeg nu < (if domainp du then 1 else ldeg du + 1)
-           then return nil . u;
-        if ldeg nu = (if domainp du then 1 else ldeg du + 1)
-           then <<if null l
-                    then l := quotsq(lc nu ./ 1,
-                                     (if domainp du then du else lc du) ./ 1)
-                   else if quotsq(lc nu ./ 1,
-                                  (if domainp du then du else lc du) ./ 1) neq l
-                    then return nil . u;
-                  if domainp du or null red du then return l . u;
-                  du := red du>>;
-        nu := red nu;
-        go to a
+  a: if domainp nu or mvar nu neq 'pi then return nil . u;
+     ddeg := if domainp du or mvar nu neq 'pi then 0 else ldeg du;
+     if ldeg nu <= ddeg then return nil . u;
+     if ldeg nu = ddeg+1 then <<
+          dlc := if domainp du then du else lc du;
+          if null l
+            then l := quotsq(lc nu ./ 1,dlc ./ 1)
+           else if quotsq(lc nu ./ 1,dlc ./ 1) neq l
+            then return nil . u;
+          if domainp du or null red du then return l . u;
+         du := red du>>;
+      nu := red nu;
+      go to a
    end;
 
 

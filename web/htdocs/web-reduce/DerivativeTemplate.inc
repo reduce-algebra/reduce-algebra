@@ -13,12 +13,12 @@
             <a href="/manual-lookup.php?DF%20Operator" target="_blank" title="Opens in a new tab.">DF Operator</a></small>
 				</p>
 				<div class="container-fluid">
-					<div class="mx-auto" style="width: 200px;">
-						<div class="center">
-							∂<sup></sup>
-							<input type="text" size="18" value="ws" />
+					<div class="mx-auto" style="width: 15rem;">
+						<div class="text-center">
+							∂ <sup></sup>
+							<input type="text" size="21" value="ws" />
 						</div>
-						<div class="center" style="margin-top: 5px; border-top: thin solid black; padding-top: 5px;">
+						<div class="text-center" style="margin-top: 5px; border-top: thin solid black; padding-top: 5px;">
 							∂<input type="text" size="1" data-index="0" value="x" /><sup><input type="text" size="1" data-index="0" style="font-style: normal" /></sup>
 							∂<input type="text" size="1" data-index="1" /><sup><input type="text" size="1" data-index="1" style="font-style: normal" /></sup>
 							∂<input type="text" size="1" data-index="2" /><sup><input type="text" size="1" data-index="2" style="font-style: normal" /></sup>

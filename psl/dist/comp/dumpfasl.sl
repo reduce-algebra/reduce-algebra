@@ -1,10 +1,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
 % File:         PC:DUMPFASL.SL 
 % Title:        Code for showing some contents of a FASL file: symbols, relocation
 % Author:       Rainer Schöpf
 % Created:      08 February 2019
-% Modified:     
+% Modified:     08 June 2021
 % Status:       Open Source: BSD License
 % Mode:         Lisp 
 %
@@ -44,6 +43,8 @@
   (prog (fid                  % file pointer 
 	 local-id-count       % number of ids in the file
 	 local-id-table       % table for mapping local ID numbers to global ID numbers.
+	 readcount            % number of words in local-id-table
+	 current-offset	      % current offset into input file
 	 code-size            % number of words of code
 	 code-base            % location of the start of the code
 	 init-function-address% Offset into the code of the init function
@@ -53,6 +54,7 @@
 	 Btop
 	 )
 
+    (printf "Dumpfasl of file %s%n" file)
     % Open the file
     (setf fid (binaryopenread file))
 
@@ -64,21 +66,30 @@
 	(return nil)
 	)
     (setq mode (wshift mode -16))
+    (setq current-offset 1)
 
     % Read in the ID table.
-    (setf local-id-table (dumpfasl-read-id-table fid))
+    (setf (cons readcount local-id-table) (dumpfasl-read-id-table fid))
+    (printf "ID table has size %d (%x) words%n" readcount readcount)
+    (setq current-offset (plus2 current-offset readcount))
 
     % Read the code.
     (setf code-size (binaryread fid)) % Size of code segment in words
     (setf code-base (gtbps code-size)) % Allocate space in BPS
     (setq Btop (GtBPS 0))              % pointer to top of alloc. BPS
     (setf init-function-address (binaryread fid))
-    (printf "Code has size %d (%x), init function at relative address %d (%x)%n"
-	    code-size code-size init-function-address init-function-address)
+    (setq current-offset (plus2 current-offset 2))
+    (printf "Code has size %d (%x) words at offset %d (%x) words,%n init function at relative address %d (%x)%n"
+	    code-size code-size
+	    current-offset current-offset
+	    init-function-address init-function-address)
     (binaryreadblock fid (loc (wgetv code-base 0)) code-size)
+    (setq current-offset (plus current-offset code-size 2))
 
     % Read the bit table
     (setf bit-table-size (binaryread fid))
+    (printf "Fasl bittable has size %d (%x) wirds%n" bit-table-size bit-table-size)
+    (setq current-offset (plus2 current-offset bit-table-size))
     (setq bit-table (mkwrds (gtwrds bit-table-size)))
     (binaryreadblock fid (loc (words-fetch bit-table 0)) bit-table-size)
 
@@ -214,19 +225,24 @@
 
   (let* ((local-id-count  (binaryread fid))
 	 (id-table        (mkwrds (gtwrds (wplus2 local-id-count 1))))
-	 x)
+         (readcount 1)
+	 x
+	 n)
 
     (printf "ID table has %d entries:%n" local-id-count)
     (for 
      (from i 0 local-id-count)
      (do (setf (wgetv tokenbuffer 0) (binaryread fid)) % word is length of ID name
+         (setq readcount (add1 readcount))
+     	 (setq n (strpack (wgetv tokenbuffer 0)))
 	 (binaryreadblock fid
 			  (loc (wgetv tokenbuffer 1)) 
-			  (strpack (wgetv tokenbuffer 0)))
+			  n)
+	 (setq readcount (plus2 readcount n))
 	 (setq x (faslin-intern (mkstr (loc (wgetv tokenbuffer 0)))))
 	 (printf "%d: %w - %d%n" i x (idinf x))
 	 (setf (words-fetch id-table i) (idinf x))
 	 ))
-    id-table
+    (cons readcount id-table)
     ))
 
