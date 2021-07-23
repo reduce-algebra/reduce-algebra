@@ -6,7 +6,7 @@
                 <img src="/images/icon.png" alt="" />
             </a>
             <span class="mx-auto">REDUCE</span>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navmenu">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navmenu">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <!-- The following link is hidden on the search page! -->
