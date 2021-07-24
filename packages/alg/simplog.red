@@ -68,7 +68,7 @@ symbolic procedure simplog u;
      	   then simplogbn(x,get!-log!-base u,t)
     	      % log(e^x) = x, log10(10^x) = x
     	   else if eqcar(x,'expt) and cadr x = (if car u eq 'log10 then 10 else 'e)
-     	   then simp caddr x 
+     	   then simp caddr x
     	   else if eqcar(x,'quotient) and cadr x=1
       	      and (null !*precise or realvaluedp caddr x)
      	   then negsq simpiden(car u . cddr x)
@@ -87,10 +87,10 @@ symbolic procedure simplogb u;
     else if caddr u = 'e then simplog {'log,x}
     % logb(x,10) = log10(x)
     else if reval {'difference,10,caddr u} = 0 then simplog {'log10,x}
-    else if fixp x then simplogbn(x,caddr u,nil)
+    else if fixp x and not dmode!* then simplogbn(x,caddr u,nil)
     % logb(a^x,a) = x
     else if eqcar(x,'expt) and reval {'difference,cadr x,caddr u} = 0
-     then simp caddr x 
+     then simp caddr x
     else if eqcar(x,'quotient) and cadr x=1
       and (null !*precise or realvaluedp caddr x)
      then negsq simpiden {car u, caddr x, caddr u}
