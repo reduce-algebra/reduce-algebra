@@ -11,6 +11,7 @@ include '../include/begin-body.php';
     <li><a href="#TemplatesMenu">The Templates Menu</a></li>
     <li><a href="#FunctionsMenu">The Functions Menu</a></li>
     <li><a href="#HelpMenu">The Help Menu</a></li>
+    <li><a href="#Debugging">Debugging Web REDUCE</a></li>
 </ul>
 
 <h2 id="MainPage">The Main Page</h2>
@@ -77,17 +78,20 @@ include '../include/begin-body.php';
         </tr>
     </tbody>
 </table>
-<p>where <em>Enter</em> is the <em>Return</em> or <em>Enter</em>
+<p>
+    where <em>Enter</em> is the <em>Return</em> or <em>Enter</em>
     key and <em>UpArrow</em> / <em>DownArrow</em> are the cursor up /
     down keys, respectively.
 </p>
-<p>Sending input to REDUCE strips any trailing white space and
+<p>
+    Sending input to REDUCE strips any trailing white space and
     normally auto-terminates it by adding a semicolon if there was no
     final terminator.  However, holding the <em>Shift</em> key while
     clicking on the <em>Send Input</em> button or pressing
     <em>Control+Enter</em> suppresses auto-termination.
 </p>
-<p>You can edit previous input recalled into the input editor as
+<p>
+    You can edit previous input recalled into the input editor as
     necessary and then send it to REDUCE.  Input can be multi-line, in
     which case REDUCE processes all the lines together.  The
     <em>Send Input</em> action is disabled until REDUCE is running,
@@ -97,7 +101,15 @@ include '../include/begin-body.php';
 
 <h2 id="ViewMenu">The View Menu</h2>
 <p>
-    The <em>View</em> menu provides the following items:</p>
+    The <em>View</em> menu provides the following items:
+</p>
+<h3>I/O Colouring</h3>
+<p>
+    Selecting this item causes Web REDUCE to display input coloured
+    red and output coloured blue in the Input/Output Display;
+    otherwise the default colour (normally black) is used for both
+    input and output.
+</p>
 <h3>Typeset Maths</h3>
 <p>
     Selecting this item causes Web REDUCE to display algebraic-mode
@@ -161,7 +173,8 @@ include '../include/begin-body.php';
     The <em>Templates</em> menu provides the following items:
 </p>
 <h3>Derivative...</h3>
-<p>This template supports (partial) differentiation involving up to
+<p>
+    This template supports (partial) differentiation involving up to
     three independent variables, each to arbitrary order.  The orders
     must be explicit positive integers and the total order
     automatically updates to reflect the number of independent
@@ -172,18 +185,21 @@ include '../include/begin-body.php';
     <em>x</em>, but both can be changed.
 </p>
 <h3>Integral...</h3>
-<p>This template supports both indefinite and definite integration: if
+<p>
+    This template supports both indefinite and definite integration: if
     both limits are omitted then the integral is indefinite; if both
     limits are specified then the integral is definite.  The integrand
     defaults to <em>ws</em> and the integration variable defaults
-    to <em>x</em>, but both can be changed.</p>
-<p>By default, the template provides a single integral, but if you
+    to <em>x</em>, but both can be changed.
+</p>
+<p>
+    By default, the template provides a single integral, but if you
     enter another integration variable in a box to the right of the
     primary integration variable then an additional integral appears
     wrapping the previous integral, thus supporting double and triple
-    integrals.  Matching &int; and <em>d</em> symbol
-    pairs have the same colour (blue, green or red) to facilitate
-    adding limits to the right &int; symbol.
+    integrals.  Matching &int; and <em>d</em> symbol pairs have the
+    same colour (blue, green or red) to facilitate adding limits to
+    the right &int; symbol.
 </p>
 
 <h2 id="FunctionsMenu">The Functions Menu</h2>
@@ -236,6 +252,16 @@ include '../include/begin-body.php';
 <h3>About Run-REDUCE</h3>
 <p>
     Information about Web REDUCE, including its limitations.
+</p>
+
+<h2 id="Debugging">Debugging Web REDUCE</h2>
+
+<p>
+    If the main Web REDUCE page is opened with the query string
+    <code>?debug</code>, i.e. <code>/web-reduce?debug</code>, then
+    input to and output from REDUCE is logged to your web browser's
+    JavaScript console (by calling <code>console.log()</code>).  This
+    facility is intended for developers.
 </p>
 
 <address>Francis Wright, July 2021</address>

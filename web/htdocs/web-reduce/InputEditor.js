@@ -14,8 +14,7 @@ function sendInput(event) {
             let c = text[text.length - 1];
             if (!(c == ';' || c == '$')) text += ";";
         }
-        sendToOutputDiv(text);
-        sendToReduce(text);
+        sendToReduceAndEcho(text);
         inputListIndex = inputList.push(text);
         maxInputListIndex = inputListIndex - 1;
         inputTextArea.value = "";

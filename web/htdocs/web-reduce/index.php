@@ -4,18 +4,18 @@ $header_title = 'Web REDUCE';
 include '../include/begin-head.php';
 ?>
 <style type="text/css">
- #OutputDiv, textarea {
+ #IODisplayDiv, textarea {
      width: 100%
  }
 
- #OutputDiv {
+ #IODisplayDiv {
      border: medium black solid;
      height: 25em;
      resize: vertical;
      overflow: auto;
  }
 
- #OutputDiv > pre {
+ #IODisplayDiv > pre {
      margin: 0;
  }
 
@@ -36,6 +36,7 @@ include '../include/begin-head.php';
      font-style: italic;
  }
 </style>
+
 <script>
  MathJax = {
      tex: {
@@ -62,6 +63,10 @@ include '../include/begin-body.php';
                     <a class="nav-link dropdown-toggle" href="#" id="ViewMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">View
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="ViewMenuLink">
+                        <li class="dropdown-item">
+                            <input id="IOColouringCheckbox" type="checkbox" checked="checked" />
+                            <label for="IOColouringCheckbox">I/O Colouring</label>
+                        </li>
                         <li class="dropdown-item">
                             <input id="TypesetMathsCheckbox" type="checkbox" checked="checked" disabled="disabled" />
                             <label for="TypesetMathsCheckbox">Typeset Maths</label>
@@ -105,9 +110,9 @@ include '../include/begin-body.php';
 </nav>
 
 <div class="labelling">
-    <label for="OutputDiv"><strong>Input/Output Display</strong></label>
+    <label for="IODisplayDiv"><strong>Input/Output Display</strong></label>
 </div>
-<div id="OutputDiv">
+<div id="IODisplayDiv">
     REDUCE is loading. Please wait...
 </div>
 <div class="labelling">
