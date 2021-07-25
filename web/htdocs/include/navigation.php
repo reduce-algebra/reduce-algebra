@@ -20,6 +20,7 @@
         </path>
       </svg>', 'Search the REDUCE web site');
             navMenuItem('/sitemap.php', 'Site Map / Recent', 'Full REDUCE site map and recently updated files');
+            navMenuItem('/web-reduce/about.php?start', 'Web REDUCE', 'Run REDUCE as a web app in your web browser');
             ?>
         </ul>
 
