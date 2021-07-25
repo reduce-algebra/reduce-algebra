@@ -97,13 +97,20 @@ symbolic procedure p_prinl0(x, escaped);
   begin
     scalar !*prinl_index!*;
     !*prinl_index!*:=0;
-% Clear the hash table AFTER use, so that the junk that goes into it does
-% not gobble memory between calls to prinl. This relies on unwind!-protect
-% to make sure that it is indeed always cleared. Errors (eg ^C) during the
-% clean-up operation could lead to curious displays in the next use of
-% prinl.
-    unwind!-protect(<< p_prinl1(x, 0); p_prinl2(x, 0, escaped, nil) >>,
-                    clrhash !*prinl_visited_nodes!*);
+% Clear the hash table both before and after use. Clearing after is done so
+% that material left in the table does not clog up memory, but it is
+% imaginable that there could be a failure part way through either filling
+% in the table or using it (eg the user might interrupt lengthy printing).
+% that could leave the hash table populated, and that is why I feel I need
+% to clear it before use. An alternative strategy would be to create a
+% fresh hash table  for each call to p_prinl0 but that then adds space and
+% time costs particularly to a sequence of calls each of which prints
+% rather small. I arrange in CSL that clearing a hash table that already
+% knows it is empty will be cheap.
+    clrhash !*prinl_visited_nodes!*
+    p_prinl1(x, 0);
+    p_prinl2(x, 0, escaped, nil);
+    clrhash !*prinl_visited_nodes!*;
     return x
   end;
 

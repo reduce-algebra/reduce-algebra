@@ -439,8 +439,8 @@ symbolic procedure knowledge_about(op,arg,top);
      or null !*elem!-inherit then nil else
     (begin scalar r,old;
        old:=get(top,'opmtch); put(top,'opmtch,nil);
-       unwind!-protect(r:= errorset!*({'aeval,mkquote{op,arg}},nil),
-                       put(top,'opmtch,old));
+       r:= errorset!*({'aeval,mkquote{op,arg}},nil);
+       put(top,'opmtch,old);
        return not errorp r and not smemq(op,car r)
              and not smemq(top,car r);
     end) where varstack!*=nil;

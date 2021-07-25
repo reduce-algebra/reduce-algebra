@@ -242,14 +242,10 @@ symbolic procedure s!:prinl0(x,!*prinl!-fn!*);
   begin
     scalar !*prinl!-index!*;
     !*prinl!-index!*:=0;
-% Clear the hash table AFTER use, so that the junk that goes into it does
-% not gobble memory between calls to prinl. This relies on unwind!-protect
-% to make sure that it is indeed always cleared. Errors (eg ^C) during the
-% clean-up operation could lead to curious displays in the next use of
-% prinl. Also of course bugs in the implementation of unwind!-protect...
-%   clrhash !*prinl!-visited!-nodes!*;
-    unwind!-protect(<< s!:prinl1(x, 0); s!:prinl2(x, 0) >>,
-                    clrhash !*prinl!-visited!-nodes!*);
+    clrhash !*prinl!-visited!-nodes!*;
+    s!:prinl1(x, 0);
+    s!:prinl2(x, 0)l
+    clrhash !*prinl!-visited!-nodes!*;
     return x
   end;
 

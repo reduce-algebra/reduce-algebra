@@ -437,33 +437,30 @@ symbolic procedure symbol!-name x;
 % A function to expand a filename glob (pattern) via a pipe
 %  A couple of tricky issues here:
 %    a) set *raise to nil so that upper case characters in strings are not changed to lower case
-%    b) unwind-protect so that (global) raise is always restored to its former value
-%    c) Unix Bourne shell returns the pattern string if no match, so check for this
+%    b) Unix Bourne shell returns the pattern string if no match, so check for this
 
+% [2021: note that !*raise is now fluid so can be rebount to nil and that
+%  means that unwind-protect is no longer needed.]
 symbolic procedure glob!-filenames pat;
   if not stringp pat then rederr " glob!-filenames needs a string parameter"
-   else begin scalar cmd,chan,oldchan,filelist,strbuf,chr,raise;
+   else begin scalar cmd,chan,oldchan,filelist,strbuf,chr,!*raise;
 !#if (or (memq 'win32 lispsystem!*) (memq 'win64 lispsystem!*) (memq 'cygwin lispsystem!*))
      cmd := "cmd /C FOR %%H IN (%w) DO @ECHO %%H";
 !#else
      cmd := "sh -c 'for h in %w ; do echo $h ;done'";
 !#endif
-     raise := !*raise; !*raise := nil;
-     unwind!-protect(
-       <<cmd := bldmsg(cmd,pat);
-         chan := pipe!-open(cmd,'input);
-         if chan=0 then return rederr "error opening pipe";
-         oldchan := rds chan;
-         strbuf := nil;
-         while (chr := readch()) neq !$eof!$ do <<
-           if chr neq !$eol!$
-             then strbuf := chr . strbuf    % collect character for filename
-            else <<                         % eol - finish filename
-	     filelist := (list2string reversip strbuf) . filelist;
-             strbuf := nil>>;
-         >>;
-         close rds oldchan>>,
-       !*raise := raise);
+     cmd := bldmsg(cmd,pat);
+     chan := pipe!-open(cmd,'input);
+     if chan=0 then return rederr "error opening pipe";
+     oldchan := rds chan;
+     strbuf := nil;
+     while (chr := readch()) neq !$eof!$ do <<
+       if chr neq !$eol!$
+         then strbuf := chr . strbuf    % collect character for filename
+         else <<                         % eol - finish filename
+	   filelist := (list2string reversip strbuf) . filelist;
+           strbuf := nil>> >>;
+     close rds oldchan;
 !#if (not (or (memq 'win32 lispsystem!*) (memq 'win64 lispsystem!*) (memq 'cygwin lispsystem!*)))
      if null cdr filelist and car filelist = pat then return nil;
 !#endif

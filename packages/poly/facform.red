@@ -74,8 +74,7 @@ symbolic procedure factorize u;
         then typerr(!*force!-prime,"prime");
       u := if dmode!* and not(dmode!* memq '(!:rd!: !:cr!:))
          then if get(dmode!*,'factorfn)
-                 then begin scalar !*factor;
-                        !*factor := t;
+                 then begin scalar !*factor := t;
                          return fctrf u
                       end
            else rerror(poly,14,
@@ -165,16 +164,27 @@ symbolic procedure pairlist2list u;
 % The function that  used to be called factorf will now be called
 % internal!-factorf instead.
 
-symbolic procedure factorf u;
+symbolic inline procedure factorf u;
   fctrf u;
 
 symbolic procedure fctrf u;
    % U is a standard form. Value is a factored form.
    % The function FACTORF is an assumed entry point to a more complete
    % factorization module.  It returns a form power list.
+   if domainp u then list u
+   % If I have A*x**n with numeric A then I can return (A  ((((x.1).1)) . n) )
+   % as a sufficiently simple special case that I will detect and use it.
+   else if null red u and domainp lc u then
+      list(lc u, (((mvar u .** 1) .* 1) .+ nil) . ldeg u)
+   % A*x + B with numeric A and B can turn into (gcd(A,B), ((A/g)x+(B/g)) . 1)
+   else if ldeg u = 1 and domainp lc u and domainp red u then begin
+      scalar g := gcdf(lc u, red u);
+      if minusf lc u then g := negf g;
+      return list(g, ((lpow u .* quotf(lc u, g)) .+ quotf(red u, g)) . 1)
+      end
+   else
    (begin scalar !*ezgcd,!*gcd,denom,x,y;
-      if domainp u then return list u
-       else if ncmp!* and not noncomfp u then ncmp!* := nil;
+      if ncmp!* and not noncomfp u then ncmp!* := nil;
       !*gcd := t;
       if null !*limitedfactors and null dmode!* then !*ezgcd := t;
       if null !*mcd

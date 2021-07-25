@@ -1893,7 +1893,12 @@ reduce.prototypes:	prototypes
 reduce.dep:
 	$(TRACE)touch reduce.dep
 
-$(REDUCE_IMG):	reduce$(COM) $(reducedep) $(generated_lisp)
+# By making reduce.img depend on both reduce.exe and reduce.com I ensure
+# that both get built. However on non-Windows platforms reduce$(COM) expands
+# to be just the same name as reduce$(EXEEXT) and so all I have is a repeated
+# prerequisite, which ought not to hurt.
+
+$(REDUCE_IMG):	reduce$(EXEEXT) reduce$(COM) $(reducedep) $(generated_lisp)
 	-$(TRACE): > $(REDUCE_IMG)
 	mkdir -p buildlogs
 	@ww=`pwd`&& printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"

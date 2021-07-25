@@ -1275,7 +1275,8 @@ LispObject Lclr_hash(LispObject env, LispObject tab)
          type_of_header(vechdr(tab)) != TYPE_HASHX))
         return aerror1("clrhash", tab);
     set_hash_operations(tab);
-    basic_elt(tab, HASH_COUNT) = fixnum_of_int(0);
+    if (basic_elt(tab, HASH_COUNT) == fixnum_of_int(0)) return onevalue(nil);
+    set_hash_operations(tab);
     int sh = int_of_fixnum(basic_elt(tab, HASH_SHIFT));
     size_t size = ((size_t)1)<<(64-sh);
     if (size > (1<<4))

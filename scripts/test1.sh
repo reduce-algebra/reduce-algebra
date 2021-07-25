@@ -183,15 +183,15 @@ p=${1:-alg}
 if test "x$p" = "xregressions"
 then
   r=${2:-aug-29-2011}
-  printf "Regression test $r: "
+  printf "Regression test %s\n                     " "$r:"
   p="$r"
   d="regressions"
 else
   if test "x$2" = "x"
   then
-    printf "Testing $p: "
+    printf "Testing %-12s " "$p:"
   else
-    printf "Testing $p/$2: "
+    printf "Testing %-12s " "$p/$2:"
   fi
   w=`grep " test " $here/packages/package.map | grep "($p "`
   case $w in
@@ -690,7 +690,7 @@ then
     fi
     if test "$none" = "no"
     then
-      printf "$sys:$reliable${ratio}%% "
+      printf "$sys:%8s " "$reliable$ratio%"
     fi
     none="no"
   done
