@@ -209,42 +209,16 @@ omitted := '(
     !:recip                 %
     cr!:minus               %
 
-
-% In my original scheme for compilation into C/C++ there were big problems
-% if the code had multiple confliccting definitions and where it used
-% putd/getd/copyd to move definitions from one place to another. There can
-% still be problems but I hope that a newer (2021) scheme will make these
-% less challenging and I will be able to remove some of these from the
-% exclusion list.
-
-%   linelength              % horrid use of copyd etc in tmprint.red
-%   setpchar                % horrid use of copyd.. also in tmprint.red
-%   unit                    % name conflict.
-%   typerr                  % typerr and symerr are defined in makereduce.lsp
-%   symerr                  % but there are different versions elsewhere.
-
 % unwind-protect and catch could now almost certainly be supported by the
 % compiler, and then the following become eligible for optimisation. The
 % move from use of C to C++ simplifies this quite significantly.
 
-    knowledge_about         % unwind-protect
-    let00                   % ditto
-    evalletsub2             % ditto
-    clear                   % ditto
-    reval!-without          % ditto
-    subeval                 % ditto
-    ezgcdf                  % ditto
-    transcendentalcase      % ditto
-    p_prinl0                % ditto
-    s!:prinl0               % ditto
-    prem                    % ditto
-    taylorexpand            % ditto
-    taylorexpand!-diff      % ditto
+    prem                    % unwind-protect
 
     errorset_with_timeout   % catch
-    probably_zero           % ditto
-    read_one_rubi_test      % ditto
-    safe_evaluate           % ditto
+    probably_zero           % ditto    just in rubi-red
+    read_one_rubi_test      % ditto    just in rubi-red
+    safe_evaluate           % ditto    just in rubi-red
     );
 
 at_start := '(
@@ -300,6 +274,16 @@ begin
 % I will load source definitions of everything available. That will include
 % much that is not actually needed, but will be simplest and safest.
   load!-source();
+% The next few lines are something of a cheat! The test case for pasf
+% does not seen to have special hot-spots in the way that most others do,
+% and it makes heavy use of very general algebra. Thus when I scan it here
+% the result is general benefit by the pasf-specific bits of code seem not
+% to end up given sufficient priority. To work around that I will include it
+% in the list 3 times! Doing so will let me get further down its list of
+% suggestions and I hope the effect will be generally beneficial!
+  fg := requests;
+  while fg and not eqcar(car fg, 'pasf) do fg := cdr fg;
+  if fg then requests := car fg . car fg . requests;
 % First discard the modules names.
   requests := reverse for each x in requests collect cdr x$
 

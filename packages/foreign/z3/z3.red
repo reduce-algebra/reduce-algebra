@@ -30,7 +30,7 @@ copyright('z3, "(c) 2013-2017 M. Kosta, T. Sturm");
 %
 
 
-#if (memq 'csl lispsystem!*)
+#if (and (memq 'csl lispsystem!*) (getd 'open!-foreign!-library))
 
 compiletime load!-package 'rltools;
 

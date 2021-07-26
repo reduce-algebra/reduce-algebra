@@ -66,18 +66,13 @@ symbolic procedure ezgcdf(u,v);
    begin scalar erfgx,kordx,x;
       erfgx := erfg!*;
       kordx := kord!*;
-      unwind!-protect(
-        x := errorset2{'ezgcdf1,mkquote u,mkquote v},
-% I am going to hope that the activity that checks for and potentially raises
-% a timeout trap can not happen during the "if null errorp x" test here.
-% Also the previous version of this code had a "return" inside the use of
-% "unwind-protect" and hence not in what used to be known as "program context".
-        << if errorp x then without!-timeout <<
+      x := errorset2{'ezgcdf1,mkquote u,mkquote v};
+      if errorp x then without!-timeout <<
              % If ezgcdf fails, erfg!* can be set to t,
              % (e.g., in invlap(c/(p^3/8-9p^2/4+27/2*p-27)^2,p,t)), and
              % the kernel order not properly reset.
-             erfg!* := erfgx;
-             setkorder kordx >> >>);
+         erfg!* := erfgx;
+         setkorder kordx >>;
       if null errorp x then return first x
       else return gcdf1(u,v)
    end;

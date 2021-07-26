@@ -317,6 +317,10 @@ symbolic procedure prem(r,v,var);
       else
       <<
         rule_list := {'expt,var,dr}=>0;
+% This is now one of the very few uses of unwind!-protect. It is here because
+% the rules set up by the "let" must be cleared, even if something fails
+% within the "reval". This could be changed to use errorset but that might
+% be uglier.
         unwind!-protect(<<
               let rule_list;
               r := reval r >>,

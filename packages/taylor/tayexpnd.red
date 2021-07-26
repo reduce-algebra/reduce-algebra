@@ -41,7 +41,7 @@ imports
         errorset!*, exptsq, kernp, lastpair, lc, let, lpow,
         mk!*sq, mkquote, mkrn, mksq, multsq, mvar, nconc!*, neq, nlist, nth,
         numr, operator, prepsq, quotsq, red, rule!-list, setcar, sfp,
-        simp!*, simpexpt1, smemqlp, subtrsq, unwind!-protect,
+        simp!*, simpexpt1, smemqlp, subtrsq,
 
 % from the header module:
         !*tay2q, cst!-taylor!*, has!-taylor!*, make!-cst!-coefficient,
@@ -119,10 +119,9 @@ symbolic procedure taylorexpand(sq,tp);
       !*tayexpanding!* := t;
     restart:
       !*tayrestart!* := nil;
-      unwind!-protect(
-      	 result := errorset!*({'taylorexpand1,mkquote sq,mkquote ll,'t},
-	                      !*trtaylor),
-         put('taylor!*,'klist,oldklist));
+      result := errorset!*({'taylorexpand1,mkquote sq,mkquote ll,'t},
+                           !*trtaylor);
+      put('taylor!*,'klist,oldklist);
       if null errorp result
         then <<result := car result;
                if cycles>0 and taylor!-kernel!-sq!-p result
@@ -165,9 +164,9 @@ symbolic procedure taylorexpand1(sq,ll,flg);
                     ") with template", 
                     for each el in ll collect 
                       {taytpelvars el,
-		       taytpelpoint el,
-		       preptayexp taytpelorder el,
-		       preptayexp taytpelnext el}};
+                       taytpelpoint el,
+                       preptayexp taytpelorder el,
+                       preptayexp taytpelnext el}};
      taylor!-trace!-mprint mk!*sq sq;
      if denr sq = 1
        then result := taysimpsq!* taylorexpand!-sf(numr sq,lll,t)
@@ -267,9 +266,9 @@ symbolic procedure taylorexpand!-sf(sf,ll,flg);
                     ") with template", 
                     for each el in ll collect 
                       {taytpelvars el,
-		       taytpelpoint el,
-		       preptayexp taytpelorder el,
-		       preptayexp taytpelnext el}};
+                       taytpelpoint el,
+                       preptayexp taytpelorder el,
+                       preptayexp taytpelnext el}};
      taylor!-trace!-mprint mk!*sq !*f2q sf;
      x := nil ./ 1;
      rest := sf;
@@ -334,9 +333,9 @@ symbolic procedure taylorexpand!-sp(sp,ll,flg);
                    ") with template", 
                    for each el in ll collect 
                       {taytpelvars el,
-		       taytpelpoint el,
-		       preptayexp taytpelorder el,
-		       preptayexp taytpelnext el}};
+                       taytpelpoint el,
+                       preptayexp taytpelorder el,
+                       preptayexp taytpelnext el}};
     taylor!-trace!-mprint mk!*sq !*p2q sp;
     vars := taytpvars ll;
     krnl := car sp;
@@ -350,7 +349,7 @@ symbolic procedure taylorexpand!-sp(sp,ll,flg);
      else if eqcar(krnl,'expt) and cadr krnl memq vars and
               eqcar(caddr krnl,'quotient) and fixp cadr caddr krnl and fixp caddr caddr krnl
       then <<pow := mkrn(cdr sp * cadr caddr krnl,caddr caddr krnl);
-	     sk := !*tay2q!* make!-pow!-taylor!*(cadr krnl, pow,ll);
+             sk := !*tay2q!* make!-pow!-taylor!*(cadr krnl, pow,ll);
              pow := 1>>
      else if sfp krnl then sk := taylorexpand!-sf(krnl,ll,flg)
      else if (sk := assoc({sp,ll},car !*taylor!-assoc!-list!*))
@@ -416,7 +415,7 @@ symbolic procedure make!-pow!-taylor!*(krnl,pow,ll);
      if !*taylorkeeporiginal
        then torig := if eqcar(pow,'!:rn!:)
                        then simpexpt1(krnl,cdr pow,t)
-		      else mksq(krnl,pow);
+                      else mksq(krnl,pow);
 %     if ordr < pow
 %       then
              ll := replace!-nth(ll,pos,
@@ -511,20 +510,18 @@ symbolic procedure taylorexpand!-diff(krnl,ll,flg);
     %
     if null atom krnl and get(car krnl,dfn_prop krnl)
       then <<
-	 %
-	 % Remove shift rules for psi as they
-	 % interfere with the expansion process
-	 %
-	 gammaflg := smemqlp('(gamma psi polygamma),krnl);
-	 if gammaflg then rule!-list('(psi_rules),nil);
-	 unwind!-protect(
-            (result := errorset!*({'taylorexpand!-diff1,
-	                          mkquote krnl,mkquote ll,mkquote flg},
-                                  !*backtrace)
+         %
+         % Remove shift rules for psi as they
+         % interfere with the expansion process
+         %
+         gammaflg := smemqlp('(gamma psi polygamma),krnl);
+         if gammaflg then rule!-list('(psi_rules),nil);
+         result := errorset!*({'taylorexpand!-diff1,
+                              mkquote krnl,mkquote ll,mkquote flg},
+                              !*backtrace)
                where !*!*taylorexpand!-diff!-cache!*!* :=
-                   !*!*taylorexpand!-diff!-cache!*!*),
-	    if gammaflg then rule!-list('(psi_rules),t))
-        >>;
+                   !*!*taylorexpand!-diff!-cache!*!*;
+         if gammaflg then rule!-list('(psi_rules),t) >>;
     %
     % If this fails we fall back to simple differentiation and
     %  substitution at the expansion point.
@@ -593,11 +590,11 @@ symbolic procedure taylorexpand!-diff2(sq,el,flg);
      %
      if not null sterm then c0 := nil ./ 1
       else <<
-	 c0 := errorset!*({'subsq,mkquote sq,
-	                   mkquote for each var in taytpelvars el collect (var . taytpelpoint el)},
-	                  !*trtaylor);
+         c0 := errorset!*({'subsq,mkquote sq,
+                           mkquote for each var in taytpelvars el collect (var . taytpelpoint el)},
+                          !*trtaylor);
          if errorp c0 then taylor!-error('zero!-denom,"computation of constant term")
-	 else c0 := car c0 >>;
+         else c0 := car c0 >>;
 
      l0 := {nzerolist length taytpelvars el};
 
@@ -638,7 +635,7 @@ algebraic let {
 %%  taylorsingularity(gamma(~x),~y,~y0) => 1/x + psi(1) when sub(foreach y1 in y collect y1=y0,x)=0
 %%  taylorsingularity(psi(~x),~y,~y0) => -1/x + psi(1) when sub(foreach y1 in y collect y1=y0,x)=0,
 %%  taylorsingularity(polygamma(~n,~x),~y,~y0) => (if evenp n then -1 else 1)*factorial(n)/x^(n+1) + polygamma(n,1) 
-%%     	      	       	     	      	       	  when fixp n and n>0 and sub(foreach y1 in y collect y1=y0,x)=0
+%%                                                 when fixp n and n>0 and sub(foreach y1 in y collect y1=y0,x)=0
 
 
 symbolic procedure taylorexpand!-samevar(u,ll,flg);

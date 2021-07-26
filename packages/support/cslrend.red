@@ -768,40 +768,12 @@ flag('(threevectorp), 'lose);
 
 deflist('((imports rlis)),'stat);
 
-flag('(sort stable!-sort stable!-sortip reversip2),'lose);
-
-% We also need this.
-
-flag('(lengthc),'lose);
-flag('(widelengthc),'lose);
-
-symbolic procedure concat2(u,v); concat(u,v);
+flag('(reversip2 lengthc widelengthc),'lose);
 
 symbolic procedure concat(u,v);
    list2string append(string2list u, string2list v);
 
-% This is now in CSL already
-%
-%remflag('(copyd), 'lose);
-%
-%symbolic procedure copyd(dest, src);
-%% Copy the function definition from src to dest. For CSL this plays
-%% extra games with the '!*savedef and !*savedefs properties.
-%   begin scalar x;
-%      x := getd src;
-%% If loading with !*savedef = '!*savedef then the actual definitions
-%% do not get loaded, but the source forms do...
-%      if null x then progn(
-%        if not (!*savedef = '!*savedef)
-%          then rerror('rlisp,1,list(src,"has no definition in copyd")) )
-%      else progn(putd(dest,car x,cdr x),
-%                 if flagp(src, 'lose) then flag(list dest, 'lose) );
-%      if (x := get(src, '!*savedef)) then put(dest, '!*savedef, x);
-%      if (x := get(src, '!*savedefs)) then put(dest, '!*savedefs, x);
-%      return dest
-%   end;
-%
-%flag('(copyd), 'lose);
+symbolic procedure concat2(u,v); concat(u,v);
 
 % CSL defined a function called VECTOR but Reduce wants to as well, so I
 % will move the CSL one out of the way. I rather dislike this.
@@ -824,11 +796,6 @@ symbolic procedure test_package m;
 
 flag('(test_package), 'opfn);
 
-% Foreign functions are EXPERIMENTAL in CSL at the time I put this in,
-% but the function to invoke one is variadic...
-
-flag('(call!-foreign!-function), 'variadic);
-
 % These functions (in CSL) have optional arguments args or default
 % values for final arguments, and so it is unhelpful to generate
 % warning messages about excess or missing arguments.
@@ -848,9 +815,8 @@ flag('(load!-source load!-selected!-source gcd gcdn lcmn complex
        char!> char!>!= char!= digit!-char digit!-char!-p windows!-heading
        open!-library prinhex prinoctal prinbinary make!-broadcast!-stream
        make!-concatenated!-stream make!-string!-input!-stream
-       mkhash gethash puthash remhash clrhash mknewhash
-       getnewhash putnewhash remnewhash clrnewhash library!-members
-       resource!-limit errorset gc!-forcer
+       mkhash gethash puthash remhash clrhash library!-members
+       resource!-limit errorset gc!-forcer call!-foreign!-function
        representation stop float round floor ceiling truncate), 'variadic);
 
 % Arrange (for PSL compatibility) that "on gc;" and "off gc;" switch
@@ -865,7 +831,7 @@ global '(!*psl !*csl);
 
 % Suppress RCREF error message about special being called with the wrong number of arguments
 
-flag('(special),'naryargs);
+flag('(special), 'naryargs);
 
 endmodule;
 
