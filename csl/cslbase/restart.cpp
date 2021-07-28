@@ -1270,18 +1270,21 @@ LispObject set_up_variables(int restart_flag)
         w = cons(make_keyword("PARALLEL", w);
 #endif
 #ifdef DEBUG
-                 w = cons(make_keyword("DEBUG"), w);
+        w = cons(make_keyword("DEBUG"), w);
+#endif
+#ifndef NO_BYTECOUNTS
+        w = cons(make_keyword("BYTECOUNTS"), w);
 #endif
 #ifdef EXPERIMENT
-                 w = cons(make_keyword("EXPERIMENT"), w);
+        w = cons(make_keyword("EXPERIMENT"), w);
 #endif
-                 w = cons(make_keyword("RECORD_GET"), w);
-                 w = acons(make_keyword("EXECUTABLE"),
-                           make_string(fullProgramName), w);
-                 w = acons(make_keyword("NAME"), make_string(IMPNAME), w);
-                 w = acons(make_keyword("REVISION"), fixnum_of_int(REVISION), w);
-                 w = cons(make_keyword("CCL"), w);
-                 w = cons(make_keyword("COMMON-LISP"), w);
+        w = cons(make_keyword("RECORD_GET"), w);
+        w = acons(make_keyword("EXECUTABLE"),
+                  make_string(fullProgramName), w);
+        w = acons(make_keyword("NAME"), make_string(IMPNAME), w);
+        w = acons(make_keyword("REVISION"), fixnum_of_int(REVISION), w);
+        w = cons(make_keyword("CCL"), w);
+        w = cons(make_keyword("COMMON-LISP"), w);
 
 #else // !COMMON
 
@@ -1316,6 +1319,9 @@ LispObject set_up_variables(int restart_flag)
 #endif
 #ifdef DEBUG
         w = cons(make_keyword("debug"), w);
+#endif
+#ifndef NO_BYTECOUNTS
+        w = cons(make_keyword("bytecounts"), w);
 #endif
 #ifdef EXPERIMENT
         w = cons(make_keyword("experiment"), w);

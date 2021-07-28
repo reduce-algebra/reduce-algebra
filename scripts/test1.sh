@@ -381,19 +381,28 @@ on errcont;
 $loader
 lisp (testdirectory:="$dd");
 lisp random_new_seed 1;
+lisp if memq('bytecounts, lispsystem!*) then mapstore 4;
 resettime1;
 write "START OF REDUCE TEST RUN ON $mc"$ in "$f"; write "END OF REDUCE TEST RUN"$
 % What follows is in Lisp to avoid parsing issues if some packages are loaded!
 symbolic eval '
-  (prog (cpu_time gc_time o)
+  (prog (cpu_time gc_time o w)
     (setq cpu_time  (difference (time) otime1!*))
     (setq gc_time   (difference (gctime) ogctime1!*))
+    (cond ((memq 'bytecounts lispsystem!*)
+           (setq w (mapstore 2))))
     (cond
       ((memq 'psl lispsystem!*)
        (setq cpu_time (difference cpu_time gc_time))))
     (wrs (setq o (open "$name-times/$p.showtime" 'output)))
     (print (list "$p" cpu_time gc_time))
     (wrs nil)
+    (cond ((memq 'bytecounts lispsystem!*)
+           (wrs (setq o (open "$name-times/$p.bytecounts" 'output)))
+           (dolist (a (sort w 'greaterpcaddr))
+              (prin1 (car a)) (ttab 40) (prin1 (cadr a))
+              (ttab 50) (print (caddr a)))
+           (wrs nil)))
     (terpri)
     (prin2 "Time: ") (prin2 "$p")
     (prin2 "  ") (prin2 cpu_time)
