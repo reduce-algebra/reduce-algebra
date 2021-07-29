@@ -12,6 +12,9 @@
 #                 [can also use eg --csl-debug, --csl-nothrow etc].
 #     --cslboot   run tests using CSL "bootstrapreduce",
 #                 [can also use --cslboot-debug etc].
+#     --cslboot1  run tests using CSL "bootstrapreduce",
+#                 but collect just counts of procedure entries not full
+#                 bytecode use.
 #     --csl=host-triple
 #                 use executable ...cslbuild/host-triple/csl/reduce
 #                 so eg "--csl=x86_64-pc-cygwin-debug" is rather like
@@ -104,7 +107,7 @@ do
       platforms="$platforms ${1#--}"
       shift
       ;;
-    --cslboot | --installed-cslboot | --cslboot-*)
+    --cslboot | --cslboot1 | --installed-cslboot | --cslboot-*)
       slow="yes"
       platforms="$platforms ${1#--}"
       shift
@@ -349,6 +352,9 @@ csltest() {
   command=$2
   showname=$3
   variant="$4"
+  profilemode=4
+  profilemode1=2
+  profilename="bytecounts"
 
   if test "$variant" = ""
   then
@@ -358,6 +364,13 @@ csltest() {
       name="${name#csl=}"
       ;;
     *)
+      if test "$name" = "cslboot1"
+      then
+        profilemode=12
+        profilemode1=10
+        profilename="callcounts"
+        name="cslboot"
+      fi
       fullcommand="$here/bin/$command $CSLFLAGS"
       ;;
     esac
@@ -372,7 +385,8 @@ csltest() {
   fi
 
   mkdir -p $name-times
-  $timeoutcmd $timecmd sh -c "$fullcommand $extras -v -w $otherflags > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+  $timeoutcmd $timecmd sh -c "$fullcommand $extras -v -w $otherflags > \
+    $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
@@ -381,16 +395,16 @@ on errcont;
 $loader
 lisp (testdirectory:="$dd");
 lisp random_new_seed 1;
-lisp if memq('bytecounts, lispsystem!*) then mapstore 4;
+lisp if memq('bytecounts, lispsystem!*) then mapstore $profilemode;
 resettime1;
 write "START OF REDUCE TEST RUN ON $mc"$ in "$f"; write "END OF REDUCE TEST RUN"$
 % What follows is in Lisp to avoid parsing issues if some packages are loaded!
 symbolic eval '
-  (prog (cpu_time gc_time o w)
+  (prog (cpu_time gc_time o w tot)
     (setq cpu_time  (difference (time) otime1!*))
     (setq gc_time   (difference (gctime) ogctime1!*))
     (cond ((memq 'bytecounts lispsystem!*)
-           (setq w (mapstore 2))))
+           (setq w (mapstore $profilemode1))))
     (cond
       ((memq 'psl lispsystem!*)
        (setq cpu_time (difference cpu_time gc_time))))
@@ -398,10 +412,16 @@ symbolic eval '
     (print (list "$p" cpu_time gc_time))
     (wrs nil)
     (cond ((memq 'bytecounts lispsystem!*)
-           (wrs (setq o (open "$name-times/$p.bytecounts" 'output)))
+           (wrs (setq o (open "$name-times/$p.$profilename" 'output)))
+           (setq tot 0)
+           (dolist (a w) (setq tot (plus tot (caddr a))))
+           (set!-print!-precision 3)
+% Display code size, bytes in this function and pecentage of total
            (dolist (a (sort w 'greaterpcaddr))
               (prin1 (car a)) (ttab 40) (prin1 (cadr a))
-              (ttab 50) (print (caddr a)))
+              (ttab 50) (prin1 (caddr a))
+              (ttab 60) (prin1 (quotient (times 100.0 (caddr a)) tot))
+              (prin2 "%") (terpri))
            (wrs nil)))
     (terpri)
     (prin2 "Time: ") (prin2 "$p")
@@ -608,7 +628,7 @@ do
   csl-*)
     csltest "$pp" "reduce" "CSL${pp#csl}" "${pp#csl-}"
     ;;
-  cslboot | installed-cslboot)
+  cslboot | cslboot1 | installed-cslboot)
     csltest "$pp" "bootstrapreduce" "BootstrapCSL"
     ;;
   cslboot-*)
@@ -667,6 +687,10 @@ then
   for sys in $platforms
   do
     sys="${sys#csl=}"
+    if test "$sys" = "cslboot1"
+    then
+      sys="cslboot"
+    fi
 # Each file packageName.showtime will contain just one line of the form
 #       ("packageName" cputime gctime)
 # where the times are recorded in milliseconds.
@@ -711,6 +735,10 @@ then
   for sys in $platforms
   do
     sys="${sys#csl=}"
+    if test "$sys" = "cslboot1"
+    then
+      sys="cslboot"
+    fi
     if test "x$base" = "x"
     then
       base="$sys"

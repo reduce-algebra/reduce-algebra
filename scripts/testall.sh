@@ -5,7 +5,7 @@
 # Usage:
 #   scripts/testall.sh [--noregressions]
 #                      [--csl] [--cslboot] [--installed-csl]
-#                      [--csl-XXX] [--cslboot-XXX]
+#                      [--csl-XXX] [--cslboot-XXX] [--cslboot1]
 #                      [--csl=host-triple]
 #                      [--jlisp] [[jlispboot]
 #                      [--psl] [--installed-psl]
@@ -66,8 +66,8 @@ do
   --install | --keep | --uncached)
     extras="$extras $a"
     ;;
-  --csl | --csl-* | --cslboot | --cslboot-* | --csl=* | --jlisp | \
-  --jlispboot | --installed-csl | --psl | --installed-psl)
+  --csl | --csl-* | --cslboot | --cslboot1 | --cslboot-* | --csl=* | \
+  --jlisp | --jlispboot | --installed-csl | --psl | --installed-psl)
 # I will build up two lists of the platforms to test, plus a variable.
 #    $platforms will be a sequence of names like "csl psl" etc and is used in
 #       this file to deal with directories within which logs accumulate.
@@ -115,6 +115,10 @@ then
   for sys in $platforms
   do
     sys=${sys#csl=}
+    if test "$sys" = "cslboot1"
+    then
+      sys="cslboot"
+    fi
     rm -f $sys-times/*.rlg* $sys-times/showtimes \
           $base-$sys-times-comparison/*.rlg.diff
     mkdir -p $sys-times
@@ -143,6 +147,10 @@ then
   for sys in $platforms
   do
     sys=${sys#csl=}
+    if test "$sys" = "cslboot1"
+    then
+      sys="cslboot"
+    fi
     echo ")\$ end\$" >> $sys-times/showtimes
   done
 fi
@@ -213,6 +221,9 @@ XXX
 for sys in $platforms
 do
   case $sys in
+  cslboot1)
+    reporttime "CSLBOOT1" "cslboot-times"
+    ;;
   cslboot*)
     reporttime "CSLBOOT${sys#cslboot}" "$sys-times"
     ;;

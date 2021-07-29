@@ -1631,7 +1631,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 // single operand byte.  Cases where the offset does not fit into this
 // will go via BIGCALL.
 // Note that the argument count can only ever be 0, 1, 2, 3 or 4, so
-// codes 5, 6 and 7 ar enot used. Hmmm I could provide a JCALL2R option
+// codes 5, 6 and 7 are not used. Hmmm I could provide a JCALL2R option
 // if I wanted!
                 w = next_byte;
                 fname = w & 0x1f;
@@ -1676,8 +1676,15 @@ next_opcode:   // This label is so that I can restart what I am doing
                     stack = entry_stack;
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
-                    incCount(basic_elt(litvec, 0),
-                             profile_count_mode ? 1 : 10);
+// Here I treat this in the statistics as a single increment of the
+// counter whether I am counting just function entries or the total
+// number of bytes executed. Well it is a little more complicated than
+// that. If this is a "JCALL self" and I am only counting function entries
+// then I will not increment the count, because this just counts as a jump
+// back to the top of the current procedure. However a JCALL to any other
+// function will be counted.
+                    if (!profile_count_mode || fname != 0)
+                        incCount(basic_elt(litvec, 0));
 #endif
                     continue;
                 }
@@ -1721,8 +1728,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                     *++stack = A_reg;
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
-                    incCount(basic_elt(litvec, 0),
-                             profile_count_mode ? 1 : 10);
+                    if (!profile_count_mode || fname != 0)
+                      incCount(basic_elt(litvec, 0));
 #endif
                     continue;
                 }
@@ -1766,8 +1773,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                     *++stack = B_reg; *++stack = A_reg;
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
-                    incCount(basic_elt(litvec, 0),
-                             profile_count_mode ? 1 : 10);
+                    if (!profile_count_mode || fname != 0)
+                        incCount(basic_elt(litvec, 0));
 #endif
                     continue;
                 }
@@ -1811,8 +1818,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                     *++stack = r2; *++stack = B_reg; *++stack = A_reg;
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
-                    incCount(basic_elt(litvec, 0),
-                             profile_count_mode ? 1 : 10);
+                    if (!profile_count_mode || fname != 0)
+                        incCount(basic_elt(litvec, 0));
 #endif
                     continue;
                 }
