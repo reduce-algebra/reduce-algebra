@@ -172,7 +172,7 @@ include '../include/begin-body.php';
 <p>
     The <em>Templates</em> menu provides the following items:
 </p>
-<h3>Derivative...</h3>
+<h3>Derivative&hellip;</h3>
 <p>
     This template supports (partial) differentiation involving up to
     three independent variables, each to arbitrary order.  The orders
@@ -184,7 +184,7 @@ include '../include/begin-body.php';
     <em>ws</em> and the first independent variable defaults to
     <em>x</em>, but both can be changed.
 </p>
-<h3>Integral...</h3>
+<h3>Integral&hellip;</h3>
 <p>
     This template supports both indefinite and definite integration: if
     both limits are omitted then the integral is indefinite; if both
@@ -227,12 +227,17 @@ include '../include/begin-body.php';
 <p>
     The <em>Functions</em> menu provides the following items:
 </p>
-<h3>Exp, Log, Power, etc...</h3>
+<h3>Exp, Log, Power, etc&hellip;</h3>
 <p>
     This provides the exponential function, various logarithms, power
     and roots (surds or radicals), factorial and binomial
-    coefficients, and the <em>hypot</em> and <em>atan<sub>2</sub></em>
-    functions.
+    coefficients, and the hypot and atan<sub>2</sub> functions.
+</p>
+<h3>Gamma &amp; Beta Functions, etc&hellip;</h3>
+<p>
+    This provides the Gamma, Beta, digamma, polygamma, normalized
+    incomplete Gamma and Beta, and dilogarithm functions, Pochhammer's
+    symbols, binomial coefficients and the Riemann zeta function.
 </p>
 
 <h2 id="HelpMenu">The Help Menu</h2>

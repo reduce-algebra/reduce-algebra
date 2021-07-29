@@ -35,6 +35,38 @@ include '../include/begin-head.php';
      text-align: center;
      font-style: italic;
  }
+
+ table.function-templates {
+     table-layout: fixed;
+     width: 90%;
+     margin-left: auto;
+     margin-right: auto;
+     border-collapse: separate;
+     border-spacing: 10px;
+ }
+
+ table.function-templates td {
+     text-align: center;
+     padding-top: 5px;
+     padding-bottom: 5px;
+ }
+
+ table.function-templates td.selected {
+     outline: auto blue medium;
+ }
+
+ table.function-templates p {
+     margin-top: -5px;
+     margin-bottom: 5px;
+ }
+
+ .fs-big {
+     font-size: 150%;
+ }
+
+ .fs-normal {
+     font-size: medium;
+ }
 </style>
 
 <script>
@@ -82,8 +114,8 @@ include '../include/begin-body.php';
                     <a class="nav-link dropdown-toggle" href="#" id="TemplatesMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">Templates
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="TemplatesMenuLink">
-                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#DerivativeTemplate">Derivative...</a></li>
-                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#IntegralTemplate">Integral...</a></li>
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#DerivativeTemplate">Derivative&hellip;</a></li>
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#IntegralTemplate">Integral&hellip;</a></li>
                     </ul>
                 </li>
                 <!-- Functions Menu -->
@@ -91,7 +123,8 @@ include '../include/begin-body.php';
                     <a class="nav-link dropdown-toggle" href="#" id="FunctionsMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">Functions
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="FunctionsMenuLink">
-                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#ExpLogFunctions">Exp, Log, Power, Root, etc...</a></li>
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#ExpLogFunctions">Exp, Log, Power, Root, etc&hellip;</a></li>
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#GammaEtcFunctions">Gamma &amp; Beta Functions, etc&hellip;</a></li>
                     </ul>
                 </li>
                 <!-- Help Menu -->
@@ -113,7 +146,7 @@ include '../include/begin-body.php';
     <label for="IODisplayDiv"><strong>Input/Output Display</strong></label>
 </div>
 <div id="IODisplayDiv">
-    REDUCE is loading. Please wait...
+    REDUCE is loading. Please wait&hellip;
 </div>
 <div class="labelling">
     <label for="InputTextArea"><strong>Input Editor</strong></label>
@@ -138,8 +171,11 @@ include '../include/begin-body.php';
     <script src="InputEditor.js"></script>
 
     <!-- Modal Dialogues -->
-    <?php include './DerivativeTemplate.inc' ?>
-    <?php include './IntegralTemplate.inc' ?>
-    <?php include './ExpLogFunctions.inc' ?>
+    <?php
+    include './DerivativeTemplate.inc';
+    include './IntegralTemplate.inc';
+    include './ExpLogFunctions.inc';
+    include './GammaEtcFunctions.inc';
+    ?>
 </body>
 </html>

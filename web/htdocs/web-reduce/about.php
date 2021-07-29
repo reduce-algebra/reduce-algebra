@@ -51,7 +51,7 @@ if ($_SERVER['QUERY_STRING']): ?>
         from any source and paste it into the Web REDUCE input editor.
         This works well, at least up to several hundred lines of
         input, <strong>subject to the <code>load_package</code>
-            proviso below</strong>.
+            provisos below</strong>.
     </li>
     <li>
         Web REDUCE does not support compiling or loading user modules
@@ -59,10 +59,15 @@ if ($_SERVER['QUERY_STRING']): ?>
         REDUCE packages, which as usual either autoload or can be
         loaded explicitly with the
         <a href="/manual-lookup.php?User%20Contributed%20Packages"><code>load_package</code></a>
-        command.  <strong>But note that a <code>load_package</code>
-            statement must always be alone in its own input</strong> because
-        of the asynchronous nature of JavaScript.
-    </li>
+        command.  <strong>But note that, because of the asynchronous
+            nature of JavaScript, a <code>load_package</code>
+            statement must always be alone in its own input</strong> and
+        autoload may not always work correctly.  This applies in
+        particular if an autoloaded package defines new input syntax.
+        Therefore, before using the <code>mat</code> matrix input
+        operator, you need to execute <code>load_package matrix;</code>
+        otherwise you may get an <code>end-of-file</code> error (see below).
+   </li>
     <li>
         Web REDUCE does not provide any input prompts, unlike conventional
         REDUCE.  This limits the usefulness of the standard REDUCE
@@ -85,8 +90,9 @@ if ($_SERVER['QUERY_STRING']): ?>
     <li>
         Any kind of comment at the end of input causes an
         <code>end-of-file</code> error.  Similarly, the first time the
-        <code>mat</code> operator is used <strong>may</strong>
-        cause an <code>end-of-file</code> error.  In both cases REDUCE
+        <code>mat</code> operator is used (without first loading the
+        <code>matrix</code> package) may cause an
+        <code>end-of-file</code> error.  In both cases REDUCE
         recovers, and re-inputting <code>mat</code> seems to work.
     </li>
     <li>
@@ -126,7 +132,7 @@ if ($_SERVER['QUERY_STRING']): ?>
     library, which is also used elsewhere on the REDUCE web site.
 </p>
 
-<address>Francis Wright, July 2021</address>
+<address><a href="https://sites.google.com/site/fjwcentaur/feedback">Francis Wright</a>, July 2021</address>
 
 </div><!-- opened in begin-body.php -->
 <?php include '../include/footer.php'; ?>
