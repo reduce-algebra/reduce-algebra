@@ -88,8 +88,6 @@ if memq('vsl, lispsystem!*) then
 % princ!-upcase princ!-downcase
        union intersection
        threevectorp
-       sort
-% stable!-sort stable!-sortip
        lengthc prin2 princ substq),'lose)
 else
    flag('(atsoc copy eqcar gcdn geq lastpair leq mkquote neq reversip
@@ -104,8 +102,7 @@ else
        logb log10 sec secd sech sin sind sinh sqrt tan tand tanh fix
        ceiling floor round clrhash puthash gethash remhash
        princ!-upcase princ!-downcase union intersection
-       threevectorp
-       sort stable!-sort stable!-sortip lengthc prin2 princ substq
+       threevectorp lengthc prin2 princ substq
        string!-store1 string!-store2 string!-store3 string!-store4), 'lose);
 
 

@@ -161,17 +161,22 @@ symbolic procedure idcomp1(u,v);
 
 % Comparison functions and special cases for sorting.
 
-% The next two are now provided in general.red
-
 %symbolic procedure lesspcar(u,v); car u < car v;
+symbolic procedure greaterpcar(a,b); car a > car b;
+
 %symbolic procedure lesspcdr(u,v); cdr u < cdr v;
+symbolic procedure greaterpcdr(a,b); cdr a > cdr b;
+
+symbolic procedure lesspcadr(a,b); cadr a < cadr b;
+symbolic procedure greaterpcadr(a,b); cadr a > cadr b;
+
+symbolic procedure lesspcaddr(a,b); caddr a < caddr b;
+symbolic procedure greaterpcaddr(a,b); caddr a > caddr b;
+
+symbolic procedure lesspcdadr(a,b); cdadr a < cdadr b;
 
 symbolic procedure lessppair(a,b);
     if car a = car b then cdr a<cdr b else car a<car b;
-
-symbolic procedure greaterpcdr(a,b); cdr a > cdr b;
-
-symbolic procedure lesspcdadr(a,b); cdadr a < cdadr b;
 
 symbolic procedure lesspdeg(a,b);
    if domainp b then nil else if domainp a then t else ldeg a<ldeg b;
