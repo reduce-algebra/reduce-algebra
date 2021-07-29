@@ -25,6 +25,7 @@ module sqfrnorm;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*pvar listofallsqrts);
 

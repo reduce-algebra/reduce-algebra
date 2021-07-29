@@ -25,6 +25,7 @@ module mathmlom;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*f!* safe_atts char ch atts omfuncs!*
         interval!* mmltypes!* constantsom!*

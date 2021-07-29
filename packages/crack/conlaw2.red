@@ -28,6 +28,7 @@
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 symbolic fluid '(print_ logoprint_ potint_ facint_ adjust_fnc flin_ 
                  done_trafo inverse_trafo_list_incomplete no_current)$
 

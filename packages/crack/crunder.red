@@ -29,6 +29,7 @@ module underdetde$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 symbolic procedure undetalg(arglist)$
 % parametric solution of single underdetermined algebraic equations
 % checking whether there is one equation with 2 functions with at least 

@@ -27,6 +27,7 @@ module systems;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(kord!* xtruncate!* !*arbvars !*edssloppy cfrmcob!*);
 global '(indxl!*);

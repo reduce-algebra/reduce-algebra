@@ -22,6 +22,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 install getd(u:variable):generic -> getd1;
 
 install get(u:variable,v:variable):generic -> get;

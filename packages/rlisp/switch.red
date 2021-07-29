@@ -27,6 +27,7 @@ module switch;  % Support for switches and ON and OFF statements.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 global '(!*switchcheck switchlist!* switchtree!* switchstring!*);
 

@@ -25,6 +25,7 @@ module pf;  % Compute partial fractions for an expression.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 COMMENT PF is the top level operator for finding the partial fractions
 of an expression.  It returns the partial fractions as a list.

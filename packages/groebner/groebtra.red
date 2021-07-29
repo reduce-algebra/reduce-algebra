@@ -30,6 +30,7 @@ module groebtra;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 switch groebopt,groebfac,trgroeb,trgroebs,trgroeb1,
        trgroebr,groebstat,groebprot;
 

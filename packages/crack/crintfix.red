@@ -31,6 +31,7 @@ module intfix$  % Further fixes to the integration package.
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 if lisp !*comp then apply1('load!-package, 'int)$   
 
 fluid '(!*depend !*nolnr !*failhard)$ 

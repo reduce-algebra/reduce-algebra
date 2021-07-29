@@ -26,6 +26,7 @@ module mkset;  % Define a set as a list of expressions enclosed by
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(orig!* posn!*);
 

@@ -27,6 +27,7 @@ module cde_weaklynl;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 % % *****************************************************************
 % Authors and maintainers: M. Casati, P. Lorenzoni, D. Valeri, R. Vitolo
 % web: https://gdeq.org/Weakly_nonlocal_Poisson_brackets

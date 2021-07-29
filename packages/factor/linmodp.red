@@ -25,6 +25,7 @@ module linmodp;  % Routines for solving linear equations mod p.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(prime!-base);
 

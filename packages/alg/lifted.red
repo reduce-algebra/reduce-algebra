@@ -27,6 +27,8 @@ module lifted;   % Functions previously defined in multiple modules
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
+
 % In earlier versions of Reduce there were various functions where the
 % definition were replicated in several places. When these are pure
 % duplicates it seems good to lift the definitions to here so that they

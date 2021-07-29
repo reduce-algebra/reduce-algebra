@@ -33,6 +33,7 @@ module math;  % Mathematical Package for REDUCE.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 %*******************************************************************
 %**                                                               **

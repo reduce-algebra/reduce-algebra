@@ -25,6 +25,7 @@ module distrib;  % Routines for manipulating distributed forms.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(indexlist sqrtlist zlist);
 

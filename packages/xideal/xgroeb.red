@@ -27,6 +27,7 @@ module xgroeb;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*xfullreduce !*trxideal !*twosided !*trxmod
         xpolylist!* xvarlist!* zerodivs!* xtruncate!*

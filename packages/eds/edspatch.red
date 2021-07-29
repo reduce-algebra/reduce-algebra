@@ -27,6 +27,7 @@ module edspatch;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*edsverbose !*edsdebug !*arbvars !*varopt !*groebopt
         !*solveinconsistent depl!*);

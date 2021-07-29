@@ -23,6 +23,7 @@ module polyexns;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % Additional functions which manipulate polynomials.
 

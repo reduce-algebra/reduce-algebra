@@ -23,6 +23,7 @@ module ring;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 COMMENT
 

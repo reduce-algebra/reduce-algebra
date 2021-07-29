@@ -27,6 +27,7 @@ module exptchk;   % Check expt products for further simplification.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*combineexpt);
 

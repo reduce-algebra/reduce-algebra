@@ -25,6 +25,7 @@ module degform;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(frlis!*);
 

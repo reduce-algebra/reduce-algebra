@@ -5,7 +5,7 @@ module equivalence$
 %  Author: Thomas Wolf
 %  1996
 %
-% $Id: crequsol.red,v 1.2 1998/04/28 21:32:11 arrigo Exp $
+% $Id$
 %
 
 % BSDlicense: *****************************************************************

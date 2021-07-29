@@ -36,6 +36,7 @@ module bcoeff;% Computation of base coefficients.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 symbolic procedure bcint2op(a1,a2,op);
  if null dmode!* and

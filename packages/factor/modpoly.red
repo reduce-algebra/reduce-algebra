@@ -27,6 +27,7 @@ module modpoly;   % Routines for performing arithmetic on multivariate
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(current!-modulus
         exact!-quotient!-flag

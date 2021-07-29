@@ -25,6 +25,7 @@ module csolve;   % routines to do with the C constants.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*trint ccount cmap cmatrix cval loglist neweqn);
 

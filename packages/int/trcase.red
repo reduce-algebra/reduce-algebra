@@ -26,6 +26,7 @@ module trcase;  % Driving routine for integration of transcendental fns.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*backtrace
         !*failhard

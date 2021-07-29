@@ -27,6 +27,7 @@ module rmsubs;   % Remove system wide standard quotient substitutions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(alglist!*);
 

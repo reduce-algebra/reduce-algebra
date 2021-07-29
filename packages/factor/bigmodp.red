@@ -26,6 +26,7 @@ module bigmodp; % Modular polynomial arithmetic where the modulus may
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(current!-modulus modulus!/2);
 

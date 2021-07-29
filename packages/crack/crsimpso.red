@@ -30,6 +30,7 @@ module simpsolution$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 symbolic operator dropredundant$
 
 symbolic procedure dropredundant(ex,fl,vl,unequ)$

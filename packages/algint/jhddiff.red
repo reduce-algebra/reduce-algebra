@@ -25,6 +25,7 @@ module jhddiff;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % Differentiation routines for algebraic expressions;
 symbolic procedure !*diffsq(u,v);

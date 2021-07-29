@@ -25,6 +25,7 @@ module ezgcdf; % Polynomial GCD algorithms.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*exp
         !*gcd

@@ -27,6 +27,7 @@ module bfelem;  % Bigfloat elementary constants and functions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % Modifications by: Anthony C. Hearn, Jed B. Marti, Stanley L. Kameny.
 % Changed for binary arithmetic by Iain Beckingham and Rainer M. Schoepf

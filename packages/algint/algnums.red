@@ -25,6 +25,7 @@ module algnums;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 exports denr!-algno;
 

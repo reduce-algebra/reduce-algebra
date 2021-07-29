@@ -23,6 +23,7 @@ module cde_init; % CDE package initialization file
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 % % *****************************************************************
 % Author and maintainer: Raffaele Vitolo
 % Dipartimento di Matematica, Universita' del Salento (Lecce, Italy)

@@ -25,6 +25,7 @@ module reval4;   % Support for REDUCE 4 evaluation.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % The following selectors and constructors could be inlines.
 

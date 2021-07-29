@@ -28,6 +28,7 @@ module inequalities$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 symbolic procedure simplifySQ(p,ftem,fctr,en,sepa)$ 
 %
 % - p is a standard quotient which is simplified so that the 

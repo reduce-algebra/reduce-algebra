@@ -25,6 +25,7 @@ module phantoms;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*trint cancellationlist inequalitystack lhs magiclist nindex
         termsused);

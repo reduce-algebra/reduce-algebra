@@ -29,6 +29,7 @@ module integration$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 symbolic procedure ldlist(p,f,vl)$
 % provides a reverse list of leading derivatives of f in p, vl is list
 % of variables

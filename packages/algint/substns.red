@@ -25,6 +25,7 @@ module substns;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 exports xsubstitutep,xsubstitutesq,substitutevec,substitutesq,subzero,
         subzero2,pvarsub;

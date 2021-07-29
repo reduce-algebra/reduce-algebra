@@ -27,6 +27,7 @@ module defint;  % Special functions integrator package for REDUCE.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 load_package limits,specfn2;
 

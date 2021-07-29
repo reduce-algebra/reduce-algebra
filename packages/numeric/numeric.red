@@ -29,6 +29,7 @@ module numeric;  % Header module for the numeric package and
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 create!-package('(numeric numeval numsolve gauss newton steepstd
                   bounds numint numfit chebysh rungeku),

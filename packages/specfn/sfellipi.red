@@ -25,6 +25,7 @@ module sfellipi;  % Procedures and Rules for Elliptic Integrals.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 algebraic;
 

@@ -33,6 +33,7 @@ module bibasis_polynom;
 % POSSIBILITY OF SUCH DAMAGE.
 
 
+% $Id$
 %----------------------------------------------------------------------------
 % poly k_1 + ... k_n = k_1 . ... . k_n . (nil . nil)
 

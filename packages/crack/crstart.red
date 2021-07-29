@@ -28,6 +28,7 @@ module crstart;
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 loadtime setcrackflags();
 
 endmodule;

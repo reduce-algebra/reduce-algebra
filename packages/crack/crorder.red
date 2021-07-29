@@ -6,7 +6,7 @@ module crackorder$
 % Description:	Multiple orderings support	
 % Author:	Arrigo Triulzi
 %
-% $Id: crorder.red,v 1.21 1998/06/08 14:38:18 arrigo Exp $
+% $Id$
 %
 % !FIXME! codep is better substituted by getd as codep works only with
 % compiled code, oops.

@@ -25,6 +25,7 @@ module log2atan;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % Modified by:  Anthony C. Hearn.
 

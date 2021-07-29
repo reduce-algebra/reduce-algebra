@@ -23,6 +23,7 @@ module auxitens;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % this module introduces basic manipulation functions
 % for handling indices and tensor structure

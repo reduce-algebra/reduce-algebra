@@ -25,6 +25,7 @@ module slfns;  % Complete list of Standard LISP functions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*argnochk);
 global '(slfns!*);

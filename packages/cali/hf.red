@@ -23,6 +23,7 @@ module hf;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 COMMENT
 

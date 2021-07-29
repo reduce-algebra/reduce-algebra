@@ -23,6 +23,7 @@ module assist; % Header Module valid for REDUCE versions from 3.5 to 3.7.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 create!-package('(assist sl2psl switchxt baglist hcvctors genpurfn
                   control polyexns transfns vectorop grassman matrext

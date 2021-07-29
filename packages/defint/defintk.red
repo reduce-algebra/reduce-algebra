@@ -23,6 +23,7 @@ module defintk;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % A rule set to test for the validity of the thirty-five cases for
 % the validity of the integration of a product of two Meijer

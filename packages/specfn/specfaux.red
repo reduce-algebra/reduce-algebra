@@ -26,6 +26,7 @@ module specfaux;  % (Mostly) Auxiliary functions for
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 create!-package ('(specfaux
                    sfbdata),

@@ -25,6 +25,7 @@ module hidden;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*trint
         !*trjhd

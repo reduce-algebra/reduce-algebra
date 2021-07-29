@@ -25,6 +25,7 @@ module ppsoln;  % Solve surd eqns, mainly by principle of powers method.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*complex !*msg !*numval !*ppsoln);
 

@@ -25,6 +25,7 @@ module hodge;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 global '(dimex!* sgn!* detm!* basisforml!*);
 

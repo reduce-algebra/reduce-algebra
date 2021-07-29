@@ -27,6 +27,7 @@ module dfpart;  % support of generic differentiation.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 create!-package('(dfpart),'(contrib misc));
 

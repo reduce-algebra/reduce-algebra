@@ -23,6 +23,7 @@ module perms;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % returns product of two permutations
 

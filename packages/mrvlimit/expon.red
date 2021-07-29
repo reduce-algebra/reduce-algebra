@@ -29,6 +29,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 module expon;
 load_package taylor;

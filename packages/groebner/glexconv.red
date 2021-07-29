@@ -24,6 +24,7 @@ module glexconv;% Newbase - algorithm :
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 flag('(gvarslast),'share);
 

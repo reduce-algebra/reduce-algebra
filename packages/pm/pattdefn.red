@@ -27,6 +27,7 @@ module pattdefn; %Notational conveniences and low level routines for the
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid('(freevars op r p i upb
         identity expand acontract mcontract comb count symm ))$

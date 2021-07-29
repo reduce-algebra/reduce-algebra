@@ -27,6 +27,7 @@ module xcrit;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 COMMENT. Critical pairs are stored as
 

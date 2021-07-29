@@ -26,6 +26,7 @@ module fps;       % a package for the algorithmic calculation
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % REDUCE version by: Winfried Neun, ZIB Berlin.
 %     (September 1994)

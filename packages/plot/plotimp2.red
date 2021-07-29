@@ -25,6 +25,7 @@ module plotimp2; % Implicit plot: compute the varity {x,y|f(x,y)=c}.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % data structure:
 %

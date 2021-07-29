@@ -25,6 +25,7 @@ module pattperm;   % Rest of unify --- argument permutation, etc.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % When sym!-assoc is off, PM does not force normal generic variables to
 % take more than one argument if a multi-generic symbol is present. This

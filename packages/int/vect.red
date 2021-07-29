@@ -26,6 +26,7 @@ module vect;  % Vector support routines.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 exports mkuniquevect,mkvec,mkvecf2q,mkidenm,copyvec,vecsort,swap,
         non!-null!-vec,mkvect2;

@@ -28,6 +28,7 @@ module lie1234;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 algebraic;
 operator liealg,comtab;

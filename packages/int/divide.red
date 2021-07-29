@@ -25,6 +25,7 @@ module divide;  % Exact division of standard forms to give a S Q.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*trdiv !*trint resid sqrtlist zlist);
 

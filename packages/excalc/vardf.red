@@ -25,6 +25,7 @@ module vardf;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(depl!* kord!*);
 

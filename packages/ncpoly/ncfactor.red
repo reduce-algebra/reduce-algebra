@@ -25,6 +25,7 @@ module ncfactor;  % factorization for non-commutative polynomials.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % version 1.4: using the commutative factorizer as preprocessor.
 % Oct 2001: using "solve", hoping, that the user did not switch off 'varopt'.

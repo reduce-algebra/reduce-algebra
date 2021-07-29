@@ -33,6 +33,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 % Declaration of two switches.
 % _mathml_ allows all output to be printed in mathml.
 % _both_ allows all output to be printed in mathml and in normal reduce

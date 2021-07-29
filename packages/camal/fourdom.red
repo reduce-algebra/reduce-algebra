@@ -25,6 +25,7 @@ module fourdom; % Domain definitions for angles and fourier series
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 global '(domainlist!*);
 

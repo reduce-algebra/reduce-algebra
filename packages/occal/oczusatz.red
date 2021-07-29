@@ -25,6 +25,7 @@ module oczusatz;
 % POSSIBILITY OF SUCH DAMAGE.
 
 
+% $Id: $
 COMMENT Redefinitions and additions for REDUCE 3.5;
 
 COMMENT redefinition of rnfactor!: -- not needed in future versions;

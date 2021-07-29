@@ -26,6 +26,7 @@ module gnupldrv; % main GNUPLOT driver.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(plotstyle!* !*trplot !*plotkeep);
 

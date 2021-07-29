@@ -25,6 +25,7 @@ module hurwp;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Version REDUCE 3.6     05/1991
 

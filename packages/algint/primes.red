@@ -25,6 +25,7 @@ module primes;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % exports nextprime,jhd!-primep;
 % JHD!-PRIMEP replaced by the primep from "module zfactor" 8.Sept.1988

@@ -27,6 +27,7 @@ module intro;  % Introductory material for algebraic mode.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*cref !*exp !*factor !*fort !*ifactor !*intstr !*lcm !*mcd
         !*msg !*mode !*nat !*nero !*period !*precise !*pri !*protfg

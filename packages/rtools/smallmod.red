@@ -25,6 +25,7 @@ module smallmod; % Small integer modular arithmetic used in factorizer.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Note: when balanced_mod is on, the results here are not always in
 % range. *modular2f is used to correct this.

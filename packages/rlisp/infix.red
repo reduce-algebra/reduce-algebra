@@ -27,6 +27,7 @@ module infix; % Functions for introducing new infix operators.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*mode);
 

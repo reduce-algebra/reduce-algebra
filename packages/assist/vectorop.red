@@ -23,6 +23,7 @@ module vectorop;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % This small module makes basic operation between EXPLICIT
 % vectors available. They are assumed to be represented by

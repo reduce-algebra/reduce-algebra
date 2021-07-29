@@ -25,6 +25,7 @@ module sum;  % Driver for various sum capabilities.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 create!-package('(sum sum2 complx prod),'(contrib sum));
 % create!-package('(sum sum2 complx prod zeilberg),'(contrib sum));

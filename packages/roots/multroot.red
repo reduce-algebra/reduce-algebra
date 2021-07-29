@@ -30,6 +30,7 @@ module multroot;  % Code for solving polynomial sets solvable by
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 COMMENT  modules allroot, bfauxil, bfdoer, bfdoer2, complxp, rootaux and
          realroot needed also;

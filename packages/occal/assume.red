@@ -25,6 +25,7 @@ module assume;
 % POSSIBILITY OF SUCH DAMAGE.
 
 
+% $Id: $
 symbolic procedure assume!-fact u;
   for each x in u do assume1 x;
 

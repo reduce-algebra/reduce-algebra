@@ -25,6 +25,7 @@ module frames;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 global '(basisforml!* basisvectorl!* keepl!* naturalframe2coframe
          dbaseform2base2form dimex!* indxl!* naturalvector2framevector

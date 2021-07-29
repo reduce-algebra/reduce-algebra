@@ -28,6 +28,7 @@ module rungeku;  % Numeric solution of ODE's with Runge-Kutta.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*noequiv accuracy!*);
 global '(iterations!* !*trnumeric);

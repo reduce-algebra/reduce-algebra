@@ -420,7 +420,7 @@ symbolic eval '
            (dolist (a (sort w 'greaterpcaddr))
               (prin1 (car a)) (ttab 40) (prin1 (cadr a))
               (ttab 50) (prin1 (caddr a))
-              (ttab 60) (prin1 (quotient (times 100.0 (caddr a)) tot))
+              (ttab 64) (prin1 (quotient (times 100.0 (caddr a)) tot))
               (prin2 "%") (terpri))
            (wrs nil)))
     (terpri)

@@ -30,6 +30,7 @@ module conj;  % Rationalize denoms of standard quotients by conjugate
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*algint !*rationalize !*structure dmode!* kord!* powlis!*);
 

@@ -26,6 +26,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 module nlopt;
 
 #if (memq 'csl lispsystem!*)

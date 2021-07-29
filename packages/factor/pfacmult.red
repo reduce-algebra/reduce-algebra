@@ -25,6 +25,7 @@ module pfacmult; % multivariate modular factorization.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Reduction of multivariate modular factorization to univariate
 % factorization by Kroneckers map.

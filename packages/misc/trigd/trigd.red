@@ -29,6 +29,7 @@ module trigd;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Support for trig functions with arguments in degrees
 % Written by A Barnes, March 2015

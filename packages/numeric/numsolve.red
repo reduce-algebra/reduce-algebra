@@ -29,6 +29,7 @@ module numsolve;  % root finding.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*noequiv accuracy!* !*exptexpand);
 global '(iterations!* !*trnumeric erfg!*);

@@ -25,6 +25,7 @@ module ineq; % Inequalities and linear optimization.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Driver for solving inequalities and inequality systems.
 

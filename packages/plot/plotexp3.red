@@ -25,6 +25,7 @@ module plotexp3; % Computing surface z=f(x,y) with regular grid.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % A rectangular grid is encoded as list of rows.
 % A row is a list of points.

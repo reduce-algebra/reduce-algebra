@@ -33,6 +33,7 @@ module bibasis_monom;
 % POSSIBILITY OF SUCH DAMAGE.
 
 
+% $Id$
 inline procedure bibasis_insert(y, x); rplaca(rplacd(y, car(y) . cdr(y)), x);
 inline procedure bibasis_remove(y); rplacd(rplaca(y, cadr(y)), cddr(y));
 

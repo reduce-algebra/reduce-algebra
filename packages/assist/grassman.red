@@ -23,6 +23,7 @@ module grassman;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % fichier de manipulation des variables de Grassmann.
 % RATIONAL functions involving Grasman variables inside the

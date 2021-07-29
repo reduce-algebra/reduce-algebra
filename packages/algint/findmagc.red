@@ -25,6 +25,7 @@ module findmagc;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*tra magiclist);
 

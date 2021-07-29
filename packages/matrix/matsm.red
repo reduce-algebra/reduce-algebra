@@ -27,6 +27,7 @@ module matsm; % Simplification of matrices.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % This module is rife with essential references to RPLAC-based
 % functions.

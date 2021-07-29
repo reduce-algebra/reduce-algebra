@@ -25,6 +25,7 @@ module oc_simple_read;
 % POSSIBILITY OF SUCH DAMAGE.
 
 
+% $Id: $
 global '(!$eof!$ !$eol!$);
 
 fluid '(ocparse!:curline);

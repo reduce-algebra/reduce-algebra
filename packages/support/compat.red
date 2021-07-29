@@ -25,6 +25,7 @@ module compat;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*usermode);
 

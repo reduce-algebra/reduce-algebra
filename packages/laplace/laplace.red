@@ -25,6 +25,7 @@ module laplace;  % Package for Laplace and inverse Laplace transforms.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Date:  24 October 1988.
 

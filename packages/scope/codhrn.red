@@ -55,6 +55,7 @@ module ghorner;   % Generalized Horner support.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 global '(!*algpri autohorn);
 

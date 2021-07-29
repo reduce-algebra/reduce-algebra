@@ -41,6 +41,7 @@ module basis$
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 %===================================
 % basis ::= (v1 v2 ...)

@@ -25,6 +25,7 @@ module algfn;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % Check if an expression is in a pure algebraic extension of
 % Q(all "constants")(var).

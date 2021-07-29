@@ -23,6 +23,7 @@ module intrfc;    %%  GENTRAN Parsing Routines & Control Functions  %%
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 %%  Author:  Barbara L. Gates  %%
 %%  December 1986              %%

@@ -28,6 +28,7 @@ module tok; % Identifier and reserved character reading.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 % Parts of the coding style here look antique and ugly with lots of
 % goto statements. The notations for  "for" and "while" loops are not
 % used here.

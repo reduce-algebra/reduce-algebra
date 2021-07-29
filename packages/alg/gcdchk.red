@@ -25,6 +25,7 @@ module gcdchk;   % Check for a unit gcd using modular arithmetic.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % Modifications by: Anthony C. Hearn.
 

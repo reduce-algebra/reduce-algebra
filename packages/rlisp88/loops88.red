@@ -25,6 +25,7 @@ module loops88;  % Rlisp88 looping forms other than the FOR statement.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*blockp loopdelimslist!*);
 

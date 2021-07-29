@@ -27,6 +27,7 @@ module order; % Functions for internal ordering of expressions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(kord!*);
 global '(!*physop!-loaded);

@@ -25,6 +25,7 @@ module ratprin;   % Printing standard quotients.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Modifications by: Anthony C. Hearn & A. C. Norman.
 

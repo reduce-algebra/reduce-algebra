@@ -30,6 +30,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 module cuba_main;
 
 % The next line is unsatisfactory (for much the reason it was in Redlog)

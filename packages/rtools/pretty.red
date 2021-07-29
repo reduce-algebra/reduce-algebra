@@ -25,6 +25,7 @@ module pretty;  % Print list structures in an indented format.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 create!-package('(pretty),'(util));
 

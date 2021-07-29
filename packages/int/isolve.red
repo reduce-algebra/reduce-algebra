@@ -26,6 +26,7 @@ module isolve;   % Routines for solving the final reduction equation.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*trint
         badpart

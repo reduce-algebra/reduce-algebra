@@ -23,6 +23,7 @@ module switchxt;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 switch distribute;
 

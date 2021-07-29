@@ -23,6 +23,7 @@ module cvitmap;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
   exports calc_spur$
   imports simp!*,reval,calc_map_tar ,calc_den_tar,spaces$

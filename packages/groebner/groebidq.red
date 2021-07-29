@@ -29,6 +29,7 @@ switch groebfac,groebrm,trgroeb,trgroebs,trgroebr,groebstat;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 !*groebidqbasis:=t;       % Default : basis from idq .
 

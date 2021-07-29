@@ -28,6 +28,7 @@ module opmtch; % Functions that apply basic pattern matching rules.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*uncached frlis!* matchlength!* subfg!*);
 

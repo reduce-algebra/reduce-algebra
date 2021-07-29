@@ -25,6 +25,7 @@ module entry;   % Entry points for self-loading modules.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Using a modified version of the defautoload function of Eric Benson
 % and Martin L. Griss.

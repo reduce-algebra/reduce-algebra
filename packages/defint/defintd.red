@@ -23,6 +23,7 @@ module defintd;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(mellincoef mellin!-coefficients!* mellin!-transforms!*);
 

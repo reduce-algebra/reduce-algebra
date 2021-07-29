@@ -23,6 +23,7 @@ module cde_cdcalc; % CDE package, calculus with C-differential operators
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 % % *****************************************************************
 % Author and maintainer: Raffaele Vitolo
 % Dipartimento di Matematica, Universita' del Salento (Lecce, Italy)

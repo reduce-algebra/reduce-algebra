@@ -25,6 +25,7 @@ module partitsf;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(alglist!* !*exp);
 

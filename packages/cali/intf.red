@@ -23,6 +23,7 @@ module intf;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 COMMENT
 

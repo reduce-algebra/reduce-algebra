@@ -43,6 +43,7 @@ symbolic procedure groebsearchinlist(vev,g);
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 symbolic procedure groeblistadd(poly,stru);
 % Add one polynomial to the tree;

@@ -31,6 +31,7 @@ module sfbes;  % Procedures and Rules for the Bessel functions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % These are specific to the Schoepf/Beckingham binary bigfloats, though
 % easily adapted, and they should only be used with n and z both

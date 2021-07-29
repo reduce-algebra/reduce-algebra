@@ -1,6 +1,6 @@
 module simptrig; % Simplification for trigonometric and hyperbolic functions.
 
-% Author: Alan Barnes, Rainer Schöpf, Eberhard Schruefer and others.
+% Author: Alan Barnes, Rainer Schvpf, Eberhard Schruefer and others.
 
 % Copyright (c) 2015 Reduce developers
 
@@ -27,9 +27,11 @@ module simptrig; % Simplification for trigonometric and hyperbolic functions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-comment First attempt to define simplification functions for trigonometric functions;
+% $Id$
 
-comment remove the rules replaced by simpfn ;
+% First attempt to define simplification functions for trigonometric functions.
+
+% remove the rules replaced by simpfn ;
 
 algebraic;
 

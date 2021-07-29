@@ -27,6 +27,7 @@ module kernel;   % Functions for operations on kernels.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 global '(exlist!* kprops!*);
 
@@ -100,18 +101,83 @@ symbolic procedure resetklist(x, v);
 %- symbolic procedure resetklist(x, v);
 %-   put(x, 'klist, v);
 
-symbolic inline procedure kernels u;
-   % Returns list of kernels in standard form u.
-   kernels1(u,nil);
+%  symbolic inline procedure kernels u;
+%     % Returns list of kernels in standard form u.
+%     kernels1(u,nil);
 
-symbolic procedure kernels1(u,v);
-   % We append to end of list to put kernels in the right order, even
-   % though a cons on the front of the list would be faster.
-   if domainp u then v
-   else kernels1(lc u,
-                 kernels1(red u,
-                          ((if x memq v then v else append(v,list x))
-                           where x=mvar u)));
+%  symbolic procedure kernels1(u,v);
+%     % We append to end of list to put kernels in the right order, even
+%     % though a cons on the front of the list would be faster.
+%     if domainp u then v
+%     else kernels1(lc u,
+%                   kernels1(red u,
+%                            ((if x memq v then v else append(v,list x))
+%                             where x=mvar u)));
+
+% The above comments says "the right order" but is not very specific about
+% what that is!
+% Well if we have a polynomial A*x**n+B the kernels come out in the
+% order {x, B, A} in the case that no kernel is repeated in the form.
+% If the kernel x is in A or C it is not repeated.
+
+symbolic procedure kernels u;
+  reversip kernels1(u, nil);
+
+% Now a simple re-formulation, but note that although this avoids the
+% heavy use of APPEND it still recurses in the CDR direction, and for
+% large polynomials that could lead to a lot of stack use.
+
+% symbolic procedure kernels1(u, v);
+%   if domainp u then v
+%   else begin
+%     scalar x := mvar u;
+%     if not memq(x, v) then v := x . v;
+%     v := kernels1(red u, v);
+%     return kernels1(lc u, v)
+%   end;
+
+% A witty case re ordering might be
+%     (p*z)*a^2 + (q*z)*a + (r*z)
+% where the ordering needs to end up
+%   {a, r, z, q, p}
+% so I need to arrange that the first time I come across the "z" is when
+% I traverse the entire structure in the CDR direction, but then "q" has to
+% be seen before "p". I deal with that by using a list that I construct
+% that is in effect models the stack used in the previous version.
+
+symbolic procedure kernels1(u, v);
+  if domainp u then v
+  else begin
+    scalar x := mvar u, u1, w;
+    if not memq(x, v) then v := x . v;
+    u1 := red u;
+    while not domainp u1 do <<
+      if mvar u1 neq x then <<
+        x := mvar u1;
+        if not memq(x, v) then v := x . v >>;
+      w := lc u1 . w;
+      u1 := red u1 >>;
+      while w do <<
+        v := kernels1(car w, v);
+        w := cdr w >>;
+    return kernels1(lc u, v)
+  end;
+
+%  % While testing I will use both the original and my new version and
+%  % check that they deliver identical results.
+%
+%  symbolic procedure kernels u;
+%    begin
+%      scalar a := old!-kernels u,
+%             b := new!-kernels u;
+%      if a = b then return a;
+%      terpri();
+%      prin2 "kernels failure"; terpri();
+%      print u;
+%      print a;
+%      print b;
+%      error1()
+%    end;
 
 symbolic procedure kernp u;
    % True if U is standard quotient representation for a kernel.

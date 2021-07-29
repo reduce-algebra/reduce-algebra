@@ -25,6 +25,7 @@ module dint;  % Definite integration support.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*hold!-int!* !*precise);
 

@@ -28,6 +28,7 @@ module decoupling$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 symbolic fluid '(form_chnpair)$  % channel pair for piping into FORM
 
 symbolic procedure high_prio_decoupling(arglist)$

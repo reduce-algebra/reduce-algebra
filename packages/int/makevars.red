@@ -25,6 +25,7 @@ module makevars; % Make dummy variables for integration process.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*gensymlist!* !*purerisch);
 

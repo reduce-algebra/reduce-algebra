@@ -27,6 +27,7 @@ module zeilberg; % An implementation of the Gosper and Zeilberger
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 
 % Reduce version 3.6

@@ -25,6 +25,7 @@ module condense;  % unify exponent vectors for lower memory consumption.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 dipevlist!*:={nil};
 

@@ -23,6 +23,7 @@ module constre;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 algebraic procedure constantre(cap_r,leadcoeff,dffpointer,k,x);
 

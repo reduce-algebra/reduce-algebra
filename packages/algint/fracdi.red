@@ -25,6 +25,7 @@ module fracdi;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(basic!-listofallsqrts basic!-listofnewsqrts expsub intvar
     sqrt!-intvar);

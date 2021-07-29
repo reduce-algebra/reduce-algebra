@@ -29,6 +29,7 @@ module comprd; % *** Support for Complex Rounded Arithmetic.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 COMMENT this module defines a complex rounded as:
 

@@ -25,6 +25,7 @@ module abasic;   % Basic definitions for algebraic function integrator.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % Modifications by: Anthony C. Hearn.
 

@@ -26,6 +26,7 @@ module tpscomp; % Compile prefix expression into network of
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % The compiler is rule driven by looking for a compilation rule (crule)
 % property on the property list of the operator.  If a rule does not

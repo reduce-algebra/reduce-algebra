@@ -23,6 +23,7 @@ module prime; % corrected version | 15.6.1995
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 
 COMMENT

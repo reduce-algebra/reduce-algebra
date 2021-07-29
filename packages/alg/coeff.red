@@ -29,6 +29,7 @@ module coeff;  % Routines for finding coefficients of forms.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*ratarg);
 

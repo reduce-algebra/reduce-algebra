@@ -33,6 +33,7 @@ module bibasis; % Comput boolean involutive basis of polynomial ideal.
 % POSSIBILITY OF SUCH DAMAGE.
 
 create!-package('(bibasis bibasis_monom bibasis_polynom
+% $Id$
                   bibasis_triple bibasis_janet_tree bibasis_qset
                   bibasis_tset bibasis_involutive bibasis_interface), 
                 nil);

@@ -25,6 +25,7 @@ module redio; % General Purpose I/O package, sorting and positioning.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Modified by: Anthony C. Hearn.
 

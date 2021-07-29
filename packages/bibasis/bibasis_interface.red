@@ -33,6 +33,7 @@ module bibasis_interface;
 % POSSIBILITY OF SUCH DAMAGE.
 
 
+% $Id$
 inline procedure mk_sq(a); list('!*sq, a, t);
 
 

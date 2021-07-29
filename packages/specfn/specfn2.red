@@ -26,6 +26,7 @@ module specfn2;  % Part 2 of the Special functions package for REDUCE.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Major modifications by: Winfried Neun, ZIB Berlin.
 

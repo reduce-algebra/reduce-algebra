@@ -30,6 +30,7 @@ module scope;  % Header module for SCOPE package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 create!-package('(scope codctl restore minlngth codmat codopt codad1
                   codad2 coddec codpri codgen codhrn codstr coddom),

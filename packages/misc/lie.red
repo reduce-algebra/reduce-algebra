@@ -27,6 +27,7 @@ module lie; % Header module for classification of Lie algebras.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 create!-package('(lie liendmc1 lie1234),'(contrib lie));
 

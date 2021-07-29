@@ -33,6 +33,7 @@ module dummy2$
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 global '(!*basis); fluid '(!*debug)$
 

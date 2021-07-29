@@ -33,6 +33,7 @@
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 create!-package('(liepde), nil);     
 
 symbolic fluid '(print_ logoprint_ adjust_fnc proc_list_

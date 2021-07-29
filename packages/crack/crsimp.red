@@ -30,6 +30,7 @@ module simplifications$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 symbolic procedure signchange(g)$  %  #### to be dropped? still used in crint
 %  ensure, that the first term is positive
 if pairp g then

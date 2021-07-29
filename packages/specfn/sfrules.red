@@ -23,6 +23,7 @@ module sfrules;  % Rules for definite integration.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 algebraic;
 

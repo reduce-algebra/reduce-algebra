@@ -23,6 +23,7 @@ module opertens;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % This module generalizes CANONICAL to make it active
 % on expressions which are arguments of OPERATORS. The typical

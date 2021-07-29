@@ -29,6 +29,7 @@ module crackstar$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 symbolic operator crackshell$
 symbolic procedure crackshell$
 begin scalar s$ 

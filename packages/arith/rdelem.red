@@ -23,6 +23,7 @@ module rdelem;  % Elementary functions in rounded domain.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 exports deg2rad!*, quotient!:, rad2deg!*, rdacos!*, rdacosd!*,
         rdacosh!*, rdacot!*, rdacotd!*, rdacoth!*, rdacsc!*, rdacscd!*,

@@ -31,6 +31,7 @@ module matarg;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 symbolic procedure mkmatrix(n,m);
    'mat . (for i:=1:n collect

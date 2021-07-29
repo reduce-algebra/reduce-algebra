@@ -23,6 +23,7 @@ module hilbertp;% Computing Hilbert Polynomial from the Hilbert series.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 symbolic procedure newhilbi(bas,var,vars);
  begin scalar baslt,n,u,grad,h,joa,a,ii,dim0,varx,dmode!*,!*modular;

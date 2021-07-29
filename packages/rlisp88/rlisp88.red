@@ -25,6 +25,7 @@ module rlisp88;   % Support for the RLISP '88 superset.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*minusliter !*mode !*oldminusliter !*rlisp88 forbinops!*
         oldmode!*);

@@ -26,6 +26,7 @@ module rubi!-red; % Header for REDUCE integration package based on RUBI
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 %
 % *NOTE*
 % At present the code here does NOT use the Rubi rewrites to perform any

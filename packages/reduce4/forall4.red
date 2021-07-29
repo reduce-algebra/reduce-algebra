@@ -25,6 +25,7 @@ module forall4;  % Support for "let" etc. statements in REDUCE 4.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % For the time being, we are defaulting to the REDUCE 3 model until we
 % decide how such rules should be handled.

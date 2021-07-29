@@ -23,6 +23,7 @@ module dummy; % Header Module for REDUCE versions from 3.5 to 3.7.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 create!-package('(dummy perms backtrck dummycnt),'(contrib assist));
 

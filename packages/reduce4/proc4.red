@@ -27,6 +27,7 @@ module proc4;  % Support for REDUCE 4 procedures.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*specification_reduce !*specification);
 

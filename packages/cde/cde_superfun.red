@@ -23,6 +23,7 @@ module cde_superfun; % CDE package, data structure for superfunctions
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 % % *****************************************************************
 % Author and maintainer: Raffaele Vitolo
 % Dipartimento di Matematica, Universita' del Salento (Lecce, Italy)

@@ -27,6 +27,7 @@ module edsequiv;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(xtruncate!*);
 

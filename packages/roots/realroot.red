@@ -31,6 +31,7 @@ module realroot; % Routines for finding real roots of polynomials,
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 COMMENT   modules bfauxil, bfdoer, bfdoer2, complxp, allroot and rootaux
  needed also;

@@ -23,6 +23,7 @@ module parray; % multidimensional arrays.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 symbolic procedure mk!-p!-array3(nx,ny,nz);
   <<for i:=0:nx do iputv(w,i,mk!-p!-array2(ny,nz)); w>>

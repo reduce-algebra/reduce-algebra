@@ -24,6 +24,7 @@ module smithex; % Computation of the Smithex normal form of a matrix.           
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 % The function smithex computes the Smith normal form S of an n by m
 % rectangular matrix of univariate polynomials in x.
 %

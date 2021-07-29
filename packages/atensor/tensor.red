@@ -35,6 +35,7 @@ module tensor$
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*debug)$
 switch debug$

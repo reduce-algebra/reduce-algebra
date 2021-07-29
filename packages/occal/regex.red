@@ -2,6 +2,8 @@ module regex;
 
 % Copyright 1994 by Rainer Schoepf and ZIB.
 
+% $Id: $
+
 COMMENT a regular expression matcher;
 
 fluid '(!*trregex !*trregexmatch);

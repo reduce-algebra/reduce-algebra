@@ -24,6 +24,7 @@ module cde_diffcon; % CDE package, computation of the
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 % % *****************************************************************
 % Author and maintainer: Raffaele Vitolo
 % Dipartimento di Matematica, Universita' del Salento (Lecce, Italy)

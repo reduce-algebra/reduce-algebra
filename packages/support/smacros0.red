@@ -23,6 +23,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % This file is one that can be copied to become just smacros.red in case
 % you want a version with no "extra" smacros. Eg because you are concerned

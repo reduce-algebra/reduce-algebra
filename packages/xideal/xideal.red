@@ -122,6 +122,7 @@ module xideal;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Need EXCALC loaded first.
 

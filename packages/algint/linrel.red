@@ -25,6 +25,7 @@ module linrel;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 symbolic procedure firstlinearrelation(m,n);
 % Returns vector giving first linear relation between

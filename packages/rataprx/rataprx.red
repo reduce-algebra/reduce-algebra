@@ -27,6 +27,7 @@ module rataprx;  % Rational Approximations Package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Send questions or comments to Winfried Neun (neun@zib.de), please.
 

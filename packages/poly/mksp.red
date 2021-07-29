@@ -27,6 +27,7 @@ module mksp; % Functions for making standard powers.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % This module has a non-trivial use of ACONC.
 

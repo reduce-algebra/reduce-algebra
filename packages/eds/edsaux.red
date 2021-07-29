@@ -27,6 +27,7 @@ module edsaux;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*edsverbose !*edsdebug);
 

@@ -25,6 +25,7 @@ imports factor;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 symbolic procedure groebfactorize (h,abort1,g,g99);
   begin scalar r,tim,gctim,h1,groebactualg99!*,groebfabort!*,test;

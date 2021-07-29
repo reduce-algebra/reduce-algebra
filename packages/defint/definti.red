@@ -23,6 +23,7 @@ module definti;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % A rule set to test for the validity of the seven cases for the
 % integration of a single Meijer G-function.

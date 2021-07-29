@@ -23,6 +23,7 @@ module defint0;  % Rules for definite integration.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 global '(unknown_tst product_tst transform_tst transform_lst);
 

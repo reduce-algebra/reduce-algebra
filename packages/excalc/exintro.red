@@ -25,6 +25,7 @@ module exintro;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(depl!* metricd!* metricu!*);
 

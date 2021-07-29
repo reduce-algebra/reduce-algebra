@@ -23,6 +23,7 @@ module randpoly;  % A random (generalized) polynomial generator
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % F.J.Wright@Maths.QMW.ac.uk, 14 July 1994
 

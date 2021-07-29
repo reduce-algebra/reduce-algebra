@@ -23,6 +23,7 @@ module avector;   % Vector algebra and calculus package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 create!-package('(avector),'(contrib avector));
 

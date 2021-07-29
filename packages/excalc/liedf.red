@@ -25,6 +25,7 @@ module liedf;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 global '(commutator!-of!-framevectors);
 

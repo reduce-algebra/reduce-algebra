@@ -25,6 +25,7 @@ module tpsdom; % Domain definitions for truncated power series.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(ps!:exp!-lim ps!:max!-order);
 global '(domainlist!*);

@@ -32,6 +32,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  Here start the functions in charge of parsing MathML and printing                   %

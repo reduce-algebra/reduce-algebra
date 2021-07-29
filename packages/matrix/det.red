@@ -25,6 +25,7 @@ module det;   % Determinant and trace routines.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*cramer !*rounded asymplis!* bareiss!-step!-size!* kord!*
         powlis!* powlis1!* subfg!* wtl!*);

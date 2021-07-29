@@ -25,6 +25,7 @@ module findres;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*gcd
         !*tra

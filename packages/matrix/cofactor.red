@@ -25,6 +25,7 @@ module cofactor;   % Cofactor operator.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 COMMENT
 

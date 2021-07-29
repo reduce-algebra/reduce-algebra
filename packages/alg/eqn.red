@@ -27,6 +27,7 @@ module eqn;   % Support for equations as top level structures.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % At the moment "EQUAL" is the tag for such structures.
 

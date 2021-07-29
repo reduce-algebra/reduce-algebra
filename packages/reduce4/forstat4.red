@@ -27,6 +27,7 @@ module forstat4;   % Definition of REDUCE 4 FOR loops.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 put('for,'n_formfn,'n_formfor);
 

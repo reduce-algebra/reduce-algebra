@@ -28,6 +28,7 @@ module dmode; % Functions for defining and using poly domain modes.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 COMMENT
    *** Description of Definition Requirements for Domain arithmetics ***

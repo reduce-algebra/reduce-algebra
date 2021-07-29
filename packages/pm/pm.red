@@ -25,6 +25,7 @@ module pm;   % The PM Pattern Matcher.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 create!-package('(pm pmpatch pattdefn pmintrfc pattperm unify pmrules),
                 '(contrib pm));

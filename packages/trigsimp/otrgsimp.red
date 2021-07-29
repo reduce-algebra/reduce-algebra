@@ -28,6 +28,7 @@ module trigsimp; % User controlled simplification
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 #if (memq 'psl lispsystem!*)
   flag('(trigsmp1),'lap);

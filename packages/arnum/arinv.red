@@ -25,6 +25,7 @@ module arinv;   % Routines for inversion of algebraic numbers.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(dmode!*);
 

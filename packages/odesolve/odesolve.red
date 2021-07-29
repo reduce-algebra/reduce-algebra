@@ -26,6 +26,7 @@ module odesolve$  % Header for ordinary differential equation solver
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 algebraic odesolve_version := "ODESolve 1.065"$
 

@@ -23,6 +23,7 @@ module makefour;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 %% User interface; all rather iffy at present
 

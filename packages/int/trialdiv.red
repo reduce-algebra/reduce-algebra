@@ -25,6 +25,7 @@ module trialdiv;  % Trial division routines.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*trint intvar loglist tanlist);
 

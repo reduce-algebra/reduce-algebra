@@ -27,6 +27,7 @@ module decrep;  % Periodic Decimal Representation.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 % Date:   April 2019.
 
 symbolic; procedure digits2num(x, base);

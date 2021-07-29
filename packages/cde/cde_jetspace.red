@@ -23,6 +23,7 @@ module cde_jetspace; % CDE package, routines for the definition of jetspace
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 % % *****************************************************************
 % Author and maintainer: Raffaele Vitolo
 % Dipartimento di Matematica, Universita' del Salento (Lecce, Italy)

@@ -29,6 +29,7 @@ module gensep_lin$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 symbolic procedure quick_gen_separation(arglist)$   
 % Indirect separation of a pde
 if vl_ then % otherwise not possible --> save time

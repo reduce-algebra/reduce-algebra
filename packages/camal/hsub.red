@@ -23,6 +23,7 @@ module hsub;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 %% Harmonic substitution: the CAMAL HSUB operation, as well as other
 %% substitutions.

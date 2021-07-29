@@ -25,6 +25,7 @@ module simplog;  % Simplify logarithms.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*intflag!* !*noneglogs !*expandlogs);
 

@@ -25,6 +25,7 @@ module horner; % Convert an expression into a nested Horner product.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*exp !*div);
 
