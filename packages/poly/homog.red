@@ -26,6 +26,7 @@ module homog; % Procedures for factorization of homogeneous polynomials.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 
 symbolic procedure homogp s;

@@ -41,6 +41,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 module spludcmp;
 

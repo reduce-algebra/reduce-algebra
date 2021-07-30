@@ -24,6 +24,7 @@ load crack,conlaw0,conlaw1,conlaw2,conlaw3,conlaw4,liepde,applysym$
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 in "crack.tst";
 
 end$

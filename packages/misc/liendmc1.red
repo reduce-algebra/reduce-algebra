@@ -28,6 +28,7 @@ module liendmc1; % N-dimensional Lie algebras with 1-dimensional derived
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 algebraic;
 operator heisenberg,commutative,lie_algebra;

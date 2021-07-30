@@ -28,6 +28,7 @@ module reduce_patches$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 %% Redefinition of diffp is no longer needed
 
 %%symbolic fluid '(!*fjwflag)$ % for diffp() below

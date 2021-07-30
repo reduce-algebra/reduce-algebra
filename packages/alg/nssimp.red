@@ -27,6 +27,7 @@ module nssimp;  % Simplification functions for non-scalar quantities.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*div frlis!* subfg!*);
 

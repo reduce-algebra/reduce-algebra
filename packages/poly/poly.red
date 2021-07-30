@@ -27,6 +27,7 @@ module poly;  % Header module and low-level support for poly package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 create!-package('(poly polrep polydiv quotf gcd exptf kernel mksp reord dmode
                  dmodeop rational rnelem gint cpxrn compopr modular

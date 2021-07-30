@@ -23,6 +23,7 @@ module gentens;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % This module defines the characteristics of 'generic' tensors.
 % 'generic' means: any nimbers of indices, no transformation

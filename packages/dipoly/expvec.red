@@ -23,6 +23,7 @@ module expvec;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Specific support for distributive polynomial exponent vectors
 

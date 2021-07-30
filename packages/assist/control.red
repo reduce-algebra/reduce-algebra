@@ -23,6 +23,7 @@ module control;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*revpri);
 

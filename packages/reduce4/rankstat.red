@@ -25,6 +25,7 @@ module rankstat;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(curmodule!*);
 

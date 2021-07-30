@@ -31,6 +31,7 @@ module lmatrix;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 switch mod_was_on;  % Used internally to keep track of the modular
                     % switch.

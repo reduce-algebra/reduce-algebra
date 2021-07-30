@@ -25,6 +25,7 @@ module modsolve; % Solve modular.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Algebraic interface: m_solve(eqn/eqnlist [,variables]).
 

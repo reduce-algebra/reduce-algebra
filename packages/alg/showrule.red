@@ -26,11 +26,10 @@ module showrule; % Display rules for an operator.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-
 % Modified by: Francis J. Wright <F.J.Wright@Maths.QMW.ac.uk>
 % Time-stamp: <10 November 1998>
 
-% $Id: showrule.red 1.2 1998-11-10 08:33:09+00 fjw Exp $
+% $Id$
 
 global '(!*match);
 

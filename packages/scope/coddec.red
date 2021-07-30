@@ -54,6 +54,7 @@ module coddec;  % Functions for generating declarations.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 symbolic$
 

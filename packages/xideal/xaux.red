@@ -27,6 +27,7 @@ module xaux;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 
 COMMENT.  The routines in EXCALC sometimes use a new type, here called

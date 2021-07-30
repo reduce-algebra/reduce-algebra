@@ -22,6 +22,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 omfuncs!*:=
 '((oma . (omair))
 (oms . (omsir))

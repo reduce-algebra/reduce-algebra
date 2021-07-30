@@ -25,6 +25,7 @@ module fixsubf;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*nosubs asymplis!* dmode!* ncmp!*);
 

@@ -27,6 +27,7 @@ module xmodule; % Support for "exemplary" module use.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 remprop('xmodule,'newnam);
 

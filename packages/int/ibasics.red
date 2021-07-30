@@ -25,6 +25,7 @@ module ibasics;   % Some basic support routines for integrator.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*backtrace !*gcd !*sqfree !*trint indexlist sqrtflag sqrtlist
         varlist zlist);

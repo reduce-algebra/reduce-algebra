@@ -25,6 +25,7 @@ module spcfnint; % Simplification rules for special functions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 symbolic;
 

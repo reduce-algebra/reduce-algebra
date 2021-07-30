@@ -5,7 +5,7 @@ module structural_eqns$
 %  Author: Thomas Wolf
 %  1998
 %
-% $Id: crstruc.red $
+% $Id$
 %
 
 % BSDlicense: *****************************************************************

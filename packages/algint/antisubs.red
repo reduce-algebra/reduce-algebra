@@ -25,6 +25,7 @@ module antisubs;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 exports antisubs;
 

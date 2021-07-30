@@ -25,6 +25,7 @@ module logsort;  % Combine sums of logs.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 global '(domainlist!*);
 

@@ -27,6 +27,7 @@ module restrict;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 COMMENT. Data structures:
 

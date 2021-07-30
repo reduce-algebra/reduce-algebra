@@ -23,6 +23,7 @@ module tpssum;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Written by Alan Barnes.  September 1990
 % Allows power series whose general term is given to be manipulated.

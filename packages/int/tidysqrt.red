@@ -26,6 +26,7 @@ module tidysqrt;  % General tidying up of square roots.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 exports sqrt2top,tidysqrt;
 

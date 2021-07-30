@@ -23,6 +23,7 @@ module genpurfn;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 inline procedure be_last u;
 delete(lastcar u, u);

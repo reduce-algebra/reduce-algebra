@@ -23,6 +23,7 @@ module hdiff;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 %% Harmonic differentiation and Integration.
 

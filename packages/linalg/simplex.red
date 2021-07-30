@@ -42,6 +42,7 @@ module simplex;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 if not get('leq,'simpfn) then
 <<

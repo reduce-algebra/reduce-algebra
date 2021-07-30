@@ -29,6 +29,7 @@ module groebmes;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 symbolic procedure groebpairprint(p);
 << groebmessff(" pair(",cadr p,nil);

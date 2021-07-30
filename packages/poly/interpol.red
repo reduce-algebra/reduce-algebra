@@ -25,6 +25,7 @@ module interpol; % polynomial interpolation (Aitken & Neville).
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 symbolic procedure interpol(fc,x,pts);
    % find a polynomial f(x) such that holds:

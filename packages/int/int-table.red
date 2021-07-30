@@ -25,6 +25,7 @@ module int!-table;  % Definition of integrals by means of patterns.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 algebraic;
 

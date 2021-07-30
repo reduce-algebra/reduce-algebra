@@ -23,6 +23,7 @@ module cantens; % header module tested for REDUCE 3.6 and 3.7.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 create!-package('(cantens ctintro auxitens gentens spaces
                    partitns checkind opertens contrtns),

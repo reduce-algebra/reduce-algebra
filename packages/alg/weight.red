@@ -27,6 +27,7 @@ module weight; % Asymptotic command package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % Modified by F.J. Wright@Maths.QMW.ac.uk, 18 May 1994,
 % mainly to return the previous settings rather than nothing.

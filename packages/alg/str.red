@@ -27,6 +27,7 @@ module str;  % Routines for structuring expressions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*fort !*nat !*savestructr scountr svar svarlis);
 

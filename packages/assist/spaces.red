@@ -24,6 +24,7 @@ module spaces; % definition and general properties
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 lisp remflag(list 'minus,'intfn);
 

@@ -28,6 +28,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 module nlopt_main;
 
 off lower;

@@ -1,6 +1,4 @@
 % ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
 % (c) 1998 A. Dolzmann, A. Seidl, T. Sturm, 2012 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
@@ -28,6 +26,8 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 %
+% $Id$
+
 % Following is the revision history from the old CVS, which I am keeping for
 % documentation purposes for now. TS
 %

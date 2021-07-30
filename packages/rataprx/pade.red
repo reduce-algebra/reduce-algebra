@@ -25,6 +25,7 @@ module pade;  % Pade' Approximations.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Date: 15/6/95.
 % General code tidy-up by Alan Barnes, march 2019

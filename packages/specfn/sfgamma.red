@@ -25,6 +25,7 @@ module sfgamma;   % Gamma function procedures and rules for REDUCE.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 %remprop('igamma,'simpfn);
 %remprop('polygamma,'simpfn);

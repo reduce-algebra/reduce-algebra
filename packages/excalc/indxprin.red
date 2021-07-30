@@ -25,6 +25,7 @@ module indxprin; % Functions for special print.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*nat !*nero !*revpri obrkp!* orig!* pline!* posn!* ycoord!*
         ymax!* ymin!* fancy!-pos!* fancy!-line!*);

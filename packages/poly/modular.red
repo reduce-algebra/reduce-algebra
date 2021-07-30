@@ -27,6 +27,7 @@ module modular; % *** Tables for modular integers ***.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 global '(domainlist!*);
 

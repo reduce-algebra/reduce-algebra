@@ -25,6 +25,7 @@ module sfgen;   % Handy functions used by the special functions package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 exports sq2bf!*,sf!*eval;
 

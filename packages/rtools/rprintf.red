@@ -30,6 +30,7 @@ module rprintf; % formatted printing
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 % I will support bldmsg by having versions of the print primitives that
 % dump characters in a list...
 

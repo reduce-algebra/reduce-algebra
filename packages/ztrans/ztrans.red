@@ -26,6 +26,7 @@ module ztrans; % Calculation of Z transformation and inverse.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % ZTRANS: Z transformation, see
 % Bronstein, Semendjajew: Taschenbuch der Mathematik, 4.4.4

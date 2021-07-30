@@ -25,6 +25,7 @@ module algint; % Header for REDUCE algebraic integration package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 create!-package('(algint afactor algfn antisubs coates coatesid findmagc
                   findres finitise fixsubf fracdi genus intbasis jhddiff

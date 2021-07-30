@@ -27,6 +27,7 @@ module gcd; % Greatest common divisor routines.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*exp !*anygcd !*ezgcd !*gcd !*heu!-gcd !*mcd asymplis!* dmode!*
         !*combineexpt);

@@ -25,6 +25,7 @@ module defintx;  % Code for definite integration using contour methods.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 load_package solve,misc;
 

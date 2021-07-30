@@ -66,6 +66,7 @@ module interface_diffelim$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 fluid '(!*allfac !*nat depl!* !*msg !*int semic!* !*echo !*diffelimverbosity!*
         eqname_)$
 

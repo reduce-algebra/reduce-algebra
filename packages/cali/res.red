@@ -23,6 +23,7 @@ module res;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 COMMENT
 

@@ -23,6 +23,7 @@ module contrtns;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 global '(dimex!* sgn!*  signat!* spaces!* numindxl!* pair_id_num!*) ;
 

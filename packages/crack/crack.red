@@ -56,6 +56,7 @@ other packages$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 % The 'rlisp flag is relevant if this module was loaded into an image used to
 % recompile itself into a fasl-file. Because then the functions are present,
 % and that could lead to them NOT being put in the fasl file. That could

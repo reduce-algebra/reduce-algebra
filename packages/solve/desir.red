@@ -23,6 +23,7 @@ module desir;  % Special case differential equation solver.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 create!-package('(desir),'(solve));
 

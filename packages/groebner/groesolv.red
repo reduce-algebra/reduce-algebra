@@ -24,6 +24,7 @@ module groesolv;% Tools for solving systems of polynomials(and poly-
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 %   Authors:     H. Melenk(ZI Berlin,Germany)
 %                H. M Moeller(when this module was written Fernuniversitaet Hagen,

@@ -22,6 +22,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 COMMENT
 
   The following routines can handle scalar expressions that are composed out

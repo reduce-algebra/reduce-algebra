@@ -23,6 +23,7 @@ module csl;  % Support for fast floating point arithmetic in CSL.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 imports ash, ash1, logand, msd;
 

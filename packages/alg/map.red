@@ -25,6 +25,7 @@ module map;  % Mapping univariate functions to composite objects.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % Syntax: map(unary-function,linear-structure-or-matrix)
 %

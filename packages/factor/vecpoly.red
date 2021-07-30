@@ -25,6 +25,7 @@ module vecpoly;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(current!-modulus safe!-flag);
 

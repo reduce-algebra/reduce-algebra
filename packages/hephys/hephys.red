@@ -30,6 +30,7 @@ module hephys;   % Support for high energy physics calculations.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 create!-package('(hephys),'(appl));
 

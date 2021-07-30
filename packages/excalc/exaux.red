@@ -25,6 +25,7 @@ module exaux;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*nat);
 

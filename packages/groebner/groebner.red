@@ -26,6 +26,7 @@ module groebner;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % module structure:
 %     GROEBNER  package + GROEBNR2 package

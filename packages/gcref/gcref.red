@@ -1,6 +1,4 @@
 % ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
 % (c) 2001 A. Dolzmann and T. Sturm, 2011 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
@@ -27,6 +25,8 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
+
+% $Id$
 
 lisp <<
    fluid '(gcref_rcsid!* gcref_copyright!*);

@@ -23,6 +23,7 @@ module hypergeomrsolve;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*tracefps);
 

@@ -23,6 +23,7 @@ module jordan; % Computation of the Jordan normal form of a matrix.             
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 load!-package 'matrix;  %  Otherwise setmat can fail (letmtr undefined).
 

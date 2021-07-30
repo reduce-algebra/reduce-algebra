@@ -25,6 +25,7 @@ module xprint; % Display sums, products and integrals in 2D.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Print some things using PC characters that will make some things
 % look really pretty.  Note that the effect can depend on you having

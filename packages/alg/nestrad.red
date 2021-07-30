@@ -25,6 +25,7 @@ module nestrad; % Simplify nested square roots.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % Modifications by: A. C. Hearn:
 

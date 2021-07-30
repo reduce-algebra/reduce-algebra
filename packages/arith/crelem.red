@@ -23,6 +23,8 @@ module crelem; % Complex elementary functions for complex rounded.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
+
 imports !*rd2cr, bflessp, bfminusp, cr!:differ, cr!:minus, cr!:plus,
         cr!:quotient, cr!:times, cr!:zerop, cr2i!*, crhalf!*, cri!*,
         cri!/2, crprcd, crrl, deg2rad!*, gf2cr!:, gfsqrt, i2cr!*,

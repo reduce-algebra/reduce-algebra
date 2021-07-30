@@ -30,6 +30,7 @@ module shortening$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 symbolic procedure alg_length_reduction(arglist)$  
 % Do one length-reducing combination of two equations
 % If cadddr arglist(=:p) is =pdes or =nil then shorten anyone with anyone

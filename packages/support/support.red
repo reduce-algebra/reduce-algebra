@@ -25,6 +25,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 % Use "!#if" rather than "#if" for bootstrapping reasons.
 
 !#if (memq 'psl lispsystem!*)

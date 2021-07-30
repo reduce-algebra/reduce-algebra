@@ -24,6 +24,7 @@ module modsqrt; % SQRT n mod p, n integer, p prime.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Winfried Neun:  added legendre_symbol as an algebraic operator.
 

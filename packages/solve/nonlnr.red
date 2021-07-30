@@ -25,6 +25,7 @@ module nonlnr; % Interface to Groebner code for solving non-linear eqns.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*trnonlnr vars!*);
 

@@ -7,9 +7,9 @@
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 			</div>
 			<div class="modal-body">
-				<p class="center"><small>The integrand and first integration variable are required. Enter additional integration variables to create a double or triple integral and display additional ∫ and d symbol pairs, which nest and their colours show how they match. Each pair of limits must be both empty, giving an indefinite integral, or both specified, giving a definite integral.</small></p>
-				<p class="center">
-					<small>REDUCE Manual:&nbsp;
+				<p class="text-center"><small>The integrand and first integration variable are required. Enter additional integration variables to create a double or triple integral and display additional ∫ and d symbol pairs, which nest and their colours show how they match. Each pair of limits must be both empty, giving an indefinite integral, or both specified, giving a definite integral.</small></p>
+				<p class="text-center">
+					<small>REDUCE Manual:&ensp;
             <a href="/manual-lookup.php?INT%20Operator" target="_blank" title="Opens in a new tab.">INT Operator</a></small>
 				</p>
 				<div class="container-fluid" style="text-align: center">

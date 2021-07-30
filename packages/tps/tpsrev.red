@@ -26,6 +26,7 @@ module tpsrev; % Power Series Reversion & Composition
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 
 % If y is a power series in x then psreverse expresses x as a power

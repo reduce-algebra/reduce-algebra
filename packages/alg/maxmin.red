@@ -25,6 +25,7 @@ module maxmin;  % Support for generalized MAX and MIN.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % Provide support for the MAX and MIN functions to allow:-
 %     any number domain;

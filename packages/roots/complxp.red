@@ -30,6 +30,7 @@ module complxp; % Support for complex polynomial solution.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 COMMENT   support for modules allroot and realroot;
 

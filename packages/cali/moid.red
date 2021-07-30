@@ -23,6 +23,7 @@ module moid;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 COMMENT
 

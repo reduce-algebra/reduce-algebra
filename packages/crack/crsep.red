@@ -29,6 +29,7 @@ module separation$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 symbolic procedure get_separ_pde(pdes)$
 % Find the directly separable PDE with the most variables
 begin scalar p,m$

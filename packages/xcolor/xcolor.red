@@ -43,6 +43,7 @@ module xcolor;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 %----------------------------------------------------------------------
 %                         xColor package.

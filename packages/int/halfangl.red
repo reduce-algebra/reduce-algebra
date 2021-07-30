@@ -26,6 +26,7 @@ module halfangl;  % Routines for conversion to half angle tangents.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*gcd);
 

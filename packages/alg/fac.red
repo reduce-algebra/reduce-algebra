@@ -25,6 +25,7 @@ module fac;  % Support "factor" as an operator.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 global '(!*micro!-version);
 

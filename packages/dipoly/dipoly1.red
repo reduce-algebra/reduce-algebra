@@ -26,6 +26,7 @@ module dipoly1;% Distributive polynomial algorithms.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Modification of the function 'dipprodin' by Arthur Norman (august 2002,
 % REDUCE 3.7).

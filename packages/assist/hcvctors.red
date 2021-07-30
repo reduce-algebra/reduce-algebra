@@ -23,6 +23,7 @@ module hcvctors;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % The following set of symbolic procedures allow to manipulate
 % indices of vectors in the same way as for lists. Coercion from array

@@ -25,6 +25,7 @@ module specprin;   % Printing other special forms.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid  '(!*fort
          !*nat

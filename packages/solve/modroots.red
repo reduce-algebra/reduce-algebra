@@ -26,6 +26,7 @@ module modroots; % Roots of a univariate polynomial mod m,
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Algebraic interface: m_roots(polynomial, modulus);
 

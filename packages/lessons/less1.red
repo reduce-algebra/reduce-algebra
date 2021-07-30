@@ -5,6 +5,7 @@ COMMENT
                          David R. Stoutemyer
                          University of Hawaii
 
+% $Id: $
 
 COMMENT This is lesson 1 of 7 interactive lessons about the REDUCE
 system for computer symbolic mathematics.  These lessons presume an

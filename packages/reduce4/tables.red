@@ -27,6 +27,7 @@ module tables;  % Specific tables for REDUCE 4.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % These modules are separated from those in reduce4, since the latter
 % are needed to compile the former.

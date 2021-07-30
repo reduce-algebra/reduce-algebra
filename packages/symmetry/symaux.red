@@ -25,6 +25,7 @@ module symaux;  %  Data for symmetry package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 create!-package('(symaux
                   symatvec

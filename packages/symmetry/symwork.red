@@ -33,6 +33,7 @@ module symwork;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 
 % symwork.red

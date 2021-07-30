@@ -38,6 +38,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 module spchlsky;
 

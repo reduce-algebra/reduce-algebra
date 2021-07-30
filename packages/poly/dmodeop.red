@@ -27,6 +27,7 @@ module dmodeop;  % Generic operators for domain arithmetic.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % internal dividef;
 

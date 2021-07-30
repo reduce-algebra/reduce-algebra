@@ -23,6 +23,7 @@ module pmrules2;  % More rules for PM Pattern matcher.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 % NOTE:  This module is supplied for information purposes only.  It
 %        still needs work to run properly in REDUCE 3.4.  However,
 %        the examples are sufficiently useful that the module is

@@ -30,6 +30,7 @@ module smlbflot;   % Basic support for bigfloat arithmetic.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % Last change made Oct 6, 1999.
 

@@ -29,6 +29,7 @@ module groebsor;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 symbolic procedure groebcplistsortin(p,pl);
 % Distributive polynomial critical pair list sort. pl is a

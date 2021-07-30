@@ -28,6 +28,7 @@ module poly_GB$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 symbolic procedure find_Singular$
    % Check the installation of Singular
    % Singular is not distributed together with Crack and thus the

@@ -27,6 +27,7 @@ module compactf; % Algorithms for compacting algebraic expressions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(frlis!* mv!-vars!*);
 

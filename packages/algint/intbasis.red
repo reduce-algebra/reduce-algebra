@@ -25,6 +25,7 @@ module intbasis;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*tra !*trmin excoatespoles intvar previousbasis taylorasslist
         taylorvariable);

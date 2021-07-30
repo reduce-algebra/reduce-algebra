@@ -25,6 +25,7 @@ module nagell;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*tra !*trmin intvar);
 

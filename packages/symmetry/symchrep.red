@@ -33,6 +33,7 @@ module symchrep;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 
 % symchrep.red

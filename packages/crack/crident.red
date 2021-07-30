@@ -29,6 +29,7 @@ module identities$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 symbolic procedure drop_idty(id)$
 % recycles a name of an identity
 <<setprop(id,nil)$

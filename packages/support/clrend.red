@@ -32,6 +32,7 @@ module rend; % CL REDUCE "back-end".
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(lispsystem!*);
 

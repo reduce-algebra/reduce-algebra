@@ -27,6 +27,7 @@ module patches; % Patches to correct problems in current release.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % With the full source available to everybody the value of distributing
 % a separate module of patches is no longer that high, so this file is

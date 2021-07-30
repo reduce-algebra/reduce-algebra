@@ -25,6 +25,7 @@ module tpseval; % Evaluator for truncated power series.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % The evaluator interprets the results of the compilation phase and
 % is also rule driven until I get round to getting the compilation

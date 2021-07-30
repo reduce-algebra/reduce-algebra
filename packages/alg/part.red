@@ -27,6 +27,7 @@ module part;  % Access and updates parts of an algebraic expression.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*intstr);
 

@@ -30,6 +30,7 @@ module pltpara; % Computing parametric curve.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 symbolic procedure plotevalpara1(x);
   begin scalar xlo,xhi,ylo,yhi,rx,ry,fcn,fcns,pts;

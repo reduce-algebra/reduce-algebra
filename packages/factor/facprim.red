@@ -25,6 +25,7 @@ module facprim;   % Factorize a primitive multivariate polynomial.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Modifications by: Arthur C. Norman, Anthony C. Hearn.
 

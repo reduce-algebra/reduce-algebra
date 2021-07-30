@@ -81,6 +81,7 @@ module linalg;   % The Linear Algebra package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 load_package matrix;
 

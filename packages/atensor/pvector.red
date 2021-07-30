@@ -39,6 +39,7 @@ module pvector$
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 %       p-vector is a list of b-vectors.
 %       b-vector is a <coeff> . <permutation>.

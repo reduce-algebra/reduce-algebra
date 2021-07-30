@@ -25,6 +25,7 @@ module camal;  % Package for calculations in celestial mechanics.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 create!-package('(camal fourdom fourplus makefour hsub hdiff),
                 '(contrib camal));

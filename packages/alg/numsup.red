@@ -27,6 +27,7 @@ module numsup;   % Numerical support for basic algebra package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 %  Numerical greatest common divisor.
 

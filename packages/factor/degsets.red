@@ -25,6 +25,7 @@ module degsets;   % Degree set processing.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*trallfac
         !*trfac

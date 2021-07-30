@@ -25,6 +25,7 @@ module finitise;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*tra intvar);
 

@@ -25,6 +25,7 @@ module alg;  % Header module for alg package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 create!-package('(alg alg!-form intro lifted farith numsup zfactor
                   reval algbool simp exptchk simplog logsort sub

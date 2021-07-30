@@ -25,6 +25,7 @@ module sfweier;  % Procedures and Rules for Weierstrass Elliptic functions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 % See e.g.: DF Lawden, Elliptic Functions & Applications, Springer-Verlag
 % (App Math Sci series #80) 1989
 

@@ -23,6 +23,7 @@ module substexp;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 algebraic;
 

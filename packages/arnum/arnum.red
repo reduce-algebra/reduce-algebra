@@ -25,6 +25,7 @@ module arnum;  % Support for algebraic rationals.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 create!-package('(arnum arinv),'(contrib arnum));
 

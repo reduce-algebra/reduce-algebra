@@ -25,6 +25,7 @@ module solvetab;   % Simplification rules for SOLVE.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Modifications by: Anthony C. Hearn, Donald R. Morrison, Rainer
 %                   Schoepf, Herbert Melenk and Winfried Neun.

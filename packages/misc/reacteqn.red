@@ -29,6 +29,7 @@ create!-package('(reacteqn),'(contrib misc));
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Introduce operators for chemical equations.
 

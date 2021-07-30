@@ -25,6 +25,7 @@ module goutput;  % GENTRAN Code Formatting & Printing and Error Handler
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 %%  Author:  Barbara L. Gates  %%
 %%  December 1986              %%

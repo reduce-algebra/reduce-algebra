@@ -29,6 +29,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 ranks print u : {bool} -> bool,
       print u : {list} -> list,
       print u : {noval} -> noval,

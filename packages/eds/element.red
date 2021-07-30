@@ -27,6 +27,7 @@ module element;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 COMMENT. At present, the Cartan-Kaehler construction is used, as by
 Wahlquist, to reduce the problem to linear algebra. This fails for

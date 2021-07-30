@@ -29,6 +29,7 @@ module rounded; % *** Support for Arbitrary Rounded Arithmetic.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 COMMENT this module defines a rounded object as a list with two fields:
 

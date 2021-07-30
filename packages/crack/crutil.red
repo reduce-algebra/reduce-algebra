@@ -35,6 +35,7 @@ module utilities$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 symbolic procedure drop_dec_with(de1,de2,rl)$
 % drop de1 from the 'dec_with or 'dec_with_rl list of de2
 % currently for all orderings

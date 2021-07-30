@@ -42,6 +42,7 @@ switch f90$
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*gendecs)$
 switch gendecs$

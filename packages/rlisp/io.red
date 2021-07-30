@@ -27,6 +27,7 @@ module io; % Functions for handling input and output of files.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*echo !*int !*reduce4 semic!* ifl!* curline!*);
 

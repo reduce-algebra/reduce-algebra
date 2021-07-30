@@ -26,6 +26,7 @@ module sfsums;   % Calculation of infinite sums of reciprocal
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 algebraic <<
 

@@ -27,6 +27,7 @@ module specfac;   % Splitting of low degree polynomials.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*keepsqrts !*sub2 !*surds knowndiscrimsign kord!* zlist);
 

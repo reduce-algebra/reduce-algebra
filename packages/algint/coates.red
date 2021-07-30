@@ -25,6 +25,7 @@ module coates;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*tra !*trmin !*galois intvar magiclist nestedsqrts
         previousbasis sqrt!-intvar taylorasslist thisplace

@@ -27,6 +27,7 @@ module zfactor;  % Integer factorization.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 exports nextprime, primep, zfactor, zfactor1, nrootnn;
 

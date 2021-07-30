@@ -25,6 +25,7 @@ module genus;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*galois
         !*tra

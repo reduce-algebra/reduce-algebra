@@ -27,6 +27,7 @@ module algdcl;  % Various declarations.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 global '(preclis!* ws);
 

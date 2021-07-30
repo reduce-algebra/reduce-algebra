@@ -23,6 +23,7 @@ module matrext;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % This module defines additional utility functions for manipulating
 % matrices.  Coercions to BAG and LIST structures are defined.

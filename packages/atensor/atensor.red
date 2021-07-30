@@ -23,6 +23,7 @@ module atensor; % Header module for atensor package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 %======================================================
 %       Author:         A.Kryukov (kryukov@theory.npi.msu.su)

@@ -27,6 +27,7 @@ module proc;   % Procedure statement.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*argnochk !*noinlines !*loginlines !*redeflg!* fname!* ftype!*
         !*strict_argcount !*comp ifl!* curline!*);

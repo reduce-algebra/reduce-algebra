@@ -31,6 +31,7 @@ module groebspa;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 
 symbolic procedure vevunion(e1,e2);

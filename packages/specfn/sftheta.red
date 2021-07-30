@@ -25,6 +25,7 @@ module sftheta;  % Procedures and Rules for Jacobi Theta Functions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 % Substantial additions and corrections by Alan Barnes, 2019
 % Numerical procedures for the derivatives of theta functions, Feb. 2021.
 

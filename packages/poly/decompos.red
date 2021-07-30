@@ -42,6 +42,7 @@ module decompos; % Decomposition of polynomials f(x) = g(h(x)).
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 global '(decomposegensym!*);
 

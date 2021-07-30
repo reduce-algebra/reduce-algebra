@@ -25,6 +25,7 @@ module coatesid;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*tra intvar magiclist taylorasslist taylorvariable);
 

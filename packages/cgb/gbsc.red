@@ -1,6 +1,4 @@
 % ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
 % Copyright (c) 2003-2009 Andreas Dolzmann and Lorenz Gilch
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
@@ -27,6 +25,8 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
+
+% $Id$
 
 lisp <<
    fluid '(gbsc_rcsid!* gbsc_copyright!*);

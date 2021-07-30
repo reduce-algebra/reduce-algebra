@@ -27,6 +27,7 @@ module linop; % Linear operator package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*intstr);
 

@@ -30,6 +30,7 @@ module codmat;  %  Support for matrix optimization.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % -------------------------------------------------------------------- ;
 % The module CODMAT consists of two parts:                             ;

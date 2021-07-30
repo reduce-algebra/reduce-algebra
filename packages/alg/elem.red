@@ -28,6 +28,7 @@ module elem; % Simplification rules for elementary functions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*!*sqrt !*complex !*keepsqrts !*precise !*precise_complex
         !*rounded dmode!* !*elem!-inherit);

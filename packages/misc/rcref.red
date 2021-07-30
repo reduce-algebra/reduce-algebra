@@ -26,6 +26,7 @@ module rcref; % Cross reference program.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Requires REDIO and SORT support.
 

@@ -25,6 +25,7 @@ module quotfx;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 COMMENT in many calls to QUOTF, the result is not checked for NIL
 because the caller is sure there will be no remainder, e.g. if the

@@ -25,6 +25,7 @@ module ncdip; % Non-commutative distributive polynomials.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 symbolic procedure ncdsetup!* u;
  % U is a list of algebraic arguments:

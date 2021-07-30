@@ -26,6 +26,7 @@ module a2dip;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 % Repeat of inlines defined in vdp2dip.
 
 inline procedure dipfmon(a,e);

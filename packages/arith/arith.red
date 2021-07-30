@@ -23,6 +23,7 @@ module arith;  % Header module for real arith package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % Last updated Dec 14, 1992
 

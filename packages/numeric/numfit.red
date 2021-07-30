@@ -27,6 +27,7 @@ module numfit; % approximation of functions with least spares.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*noequiv accuracy!* singularities!*);
 global '(iterations !*trnumeric numfit_count!*);

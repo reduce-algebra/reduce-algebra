@@ -25,6 +25,7 @@ module zmodule;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*galois
         !*tra

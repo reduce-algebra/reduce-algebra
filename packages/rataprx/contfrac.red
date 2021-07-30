@@ -25,6 +25,7 @@ module contfrac;  % Continued fractions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Date:   August 1995.
 % Substantial revisions and additions by Alan Barnes, March 2019.

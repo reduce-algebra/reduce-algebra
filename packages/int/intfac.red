@@ -25,6 +25,7 @@ module intfac;   % Interface between integrator and factorizer.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Based on earlier versions by James Davenport, Mary Ann Moore and
 % Arthur Norman.

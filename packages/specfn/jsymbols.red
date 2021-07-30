@@ -26,6 +26,7 @@ module jsymbols;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Date:   March 1994
 

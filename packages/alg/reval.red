@@ -27,6 +27,7 @@ module reval; % Functions for algebraic evaluation of prefix forms.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*combineexpt !*exp !*intstr !*listargs !*mcd !*resimp alglist!*
         dmode!* subfg!* varstack!* frlis!*);

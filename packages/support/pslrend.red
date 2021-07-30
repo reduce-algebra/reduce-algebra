@@ -25,6 +25,7 @@ module pslrend; % PSL REDUCE "back-end".
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Except where noted, this works with both PSL 3.2 and PSL 3.4.
 

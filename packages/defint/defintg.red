@@ -23,6 +23,7 @@ module defintg;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*precise);
 

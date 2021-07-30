@@ -23,6 +23,7 @@ module conlaw;  % Conservation laws using CRACK
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % This header file by FJW, 28 July 1998
 

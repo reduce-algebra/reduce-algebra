@@ -25,6 +25,7 @@ module mathpr;  % Header module for mathpr package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 create!-package('(mathpr mprint sqprint ratprin dfprin % prend specprin
                   fortpri),

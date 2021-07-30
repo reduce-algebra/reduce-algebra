@@ -26,6 +26,7 @@ module harmonic; % Solid & spherical harmonics.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Date:   March 1994
 

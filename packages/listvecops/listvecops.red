@@ -27,6 +27,7 @@ module listvecops;   % Vector operations on lists.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 create!-package('(listvecops),nil);
 
 global '(cursym!*);

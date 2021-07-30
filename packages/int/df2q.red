@@ -25,6 +25,7 @@ module df2q;   % Conversion from distributive to standard forms.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(indexlist zlist);
 

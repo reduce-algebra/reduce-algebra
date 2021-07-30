@@ -25,6 +25,7 @@ module idexf;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 global '(exfideal!*);
 

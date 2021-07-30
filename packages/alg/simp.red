@@ -30,6 +30,7 @@ module simp; % Functions to convert prefix forms into canonical forms.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*allfac !*div);
 

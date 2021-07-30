@@ -25,6 +25,7 @@ module polineq; % Solve univariate polynomial inequality systems;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % All rights reserved.
 

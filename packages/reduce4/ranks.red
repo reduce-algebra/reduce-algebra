@@ -25,6 +25,7 @@ module ranks;  % Rank operations.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(zero);
 

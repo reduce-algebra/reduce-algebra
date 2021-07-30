@@ -27,6 +27,7 @@ module alg!-form;   % Some particular algebraic mode analysis functions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 global '(inputbuflis!* resultbuflis!* ws);
 

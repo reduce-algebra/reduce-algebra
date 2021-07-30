@@ -26,6 +26,7 @@ module residue; % Calculation of residues
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % needs taylor package for execution.
 

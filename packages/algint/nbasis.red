@@ -25,6 +25,7 @@ module nbasis;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*tra nestedsqrts sqrt!-intvar taylorasslist);
 

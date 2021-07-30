@@ -34,6 +34,7 @@ module ftr;  % Various utilities for working with files and modules.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % NOTE: This module uses Standard Lisp global *RAISE as a fluid.
 

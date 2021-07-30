@@ -58,6 +58,7 @@ END COMMENT;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 % ----------- manipulations of the degree part --------------------
 
 symbolic procedure mo!=sprod(a,b);

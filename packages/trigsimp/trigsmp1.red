@@ -23,6 +23,7 @@ module trigsmp1$  % Collection of rule sets.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Revised by FJW, 22 June 1998
 

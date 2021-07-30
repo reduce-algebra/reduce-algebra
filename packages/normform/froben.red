@@ -23,6 +23,7 @@ module froben; % Computation of the frobenius normal form of a matrix.          
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % The function frobenius computes the Frobenius normal form F of a
 % matrix A, the transformation matrix P and its inverse P^(-1).

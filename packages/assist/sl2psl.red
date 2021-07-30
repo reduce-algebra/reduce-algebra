@@ -23,6 +23,7 @@ module sl2psl; % Definitions of functions in PSL but not SL.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % Some of these are already in the standard REDUCE now.
 

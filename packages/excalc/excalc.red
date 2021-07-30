@@ -25,6 +25,7 @@ module excalc; % header for EXCALC, a differential geometry package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 
 %*********************************************************************;

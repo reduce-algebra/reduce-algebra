@@ -1,6 +1,4 @@
 % ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
 % (c) 2001 Dolzmann, Gilch, Sturm, Tsirou, 2013 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
@@ -27,7 +25,9 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-%
+
+% $Id$
+
 % Following is the revision history from the old CVS, which I am keeping for
 % documentation purposes for now. TS
 % ----------------------------------------------------------------------

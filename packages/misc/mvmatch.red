@@ -27,6 +27,7 @@ module mvmatch;  % Side relation matching against expressions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 symbolic procedure mv!-compact(u,v,w);
    % Compares a multivariate form u with a multivariate form template v

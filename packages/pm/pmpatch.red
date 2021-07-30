@@ -26,6 +26,7 @@ module pmpatch; % Patches to make pattern matcher run in REDUCE 3.4.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % remflag('(evenp),'opfn);
 

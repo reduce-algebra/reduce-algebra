@@ -25,6 +25,7 @@ module for88;   % Definition of Rlisp88 FOR statement.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*fastfor binops!* loopdelimslist!*);
 

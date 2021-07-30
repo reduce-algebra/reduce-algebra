@@ -24,6 +24,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 
 COMMENT
+% $Id: $
 
 The code in this file implements determination of signs of expressions;
 

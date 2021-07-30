@@ -24,6 +24,7 @@ module brsltnt_bmap.red;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 % Author: Eberhard Schruefer                          Copyright (c) 2019
 
 % Resultant via Bezout's matrix construction. The calulation of the determinant

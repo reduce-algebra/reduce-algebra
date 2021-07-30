@@ -25,6 +25,7 @@ module modlineq;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*tra !*trmin current!-modulus sqrts!-mod!-prime);
 

@@ -25,6 +25,7 @@ module coeffts;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*trfac
         alphalist

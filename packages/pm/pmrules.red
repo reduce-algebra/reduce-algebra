@@ -25,6 +25,7 @@ module pmrules;   % Basic rules for PM pattern matcher.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 algebraic;
 

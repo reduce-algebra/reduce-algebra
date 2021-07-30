@@ -27,6 +27,7 @@ module definta;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 transform_lst := '();
 

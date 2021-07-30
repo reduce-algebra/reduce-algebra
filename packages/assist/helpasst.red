@@ -23,6 +23,7 @@ module helpasst;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 algebraic procedure assist();
 <<write " Argument of ASSISTHELP must be an integer between 3 and 14. ";

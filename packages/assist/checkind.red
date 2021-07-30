@@ -23,6 +23,7 @@ module checkind;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % This modules contains procedures to detect indices,
 % check the coherence (variance) of expressions (sum), (free indices)

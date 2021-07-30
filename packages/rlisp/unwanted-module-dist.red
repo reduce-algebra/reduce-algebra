@@ -27,6 +27,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % fluid '(!*backtrace !*mode !*redefmsg !*usermode);
 fluid '(!*backtrace !*mode);

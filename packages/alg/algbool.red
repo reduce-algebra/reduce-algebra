@@ -27,6 +27,7 @@ module algbool; % Evaluation functions for algebraic boolean operators.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 symbolic procedure evalequal(u,v);
    begin scalar x;

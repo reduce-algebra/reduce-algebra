@@ -25,6 +25,7 @@ module innerprd;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(subfg!*);
 

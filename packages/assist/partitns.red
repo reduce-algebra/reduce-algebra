@@ -23,6 +23,7 @@ module partitns;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 % definitions of particular tensors.
 

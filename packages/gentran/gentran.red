@@ -25,6 +25,7 @@ module gentran;  % Header module for gentran package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Modifications by:  Michael C. Dewar.
 

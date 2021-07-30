@@ -23,6 +23,7 @@ module baglist$
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 global('(!:flaglis !:proplis));
 

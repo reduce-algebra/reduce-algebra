@@ -29,6 +29,7 @@ module resultante$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 % Whenever a row of the Bezout matrix is calculated a common
 % factor of the head polynomials is calculated and divided out.
 % Then a common factor of each Bezout polynomial and their

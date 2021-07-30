@@ -31,6 +31,8 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
+
 this is a short guide to the installation and use of the algebraic number
 package.  some familiarity with terms from galois Theory is assumed as is
 familiarity with reduce. the routines were developed under reduce 3.1 and

@@ -26,6 +26,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 module cuba;
 
 #if (memq 'csl lispsystem!*)

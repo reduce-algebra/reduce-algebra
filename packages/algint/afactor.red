@@ -25,6 +25,7 @@ module afactor;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*galois !*noextend !*sqfree !*trfield afactorvar listofnewsqrts
         monicpart varlist zlist sqrtlist sqrtflag indexlist);

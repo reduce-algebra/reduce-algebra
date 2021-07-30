@@ -25,6 +25,7 @@ module nestdom; % nested domain: domain elements are standard quotients
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % Original version by Herbert Melenk, 1993(?)
 

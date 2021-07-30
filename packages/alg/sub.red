@@ -27,6 +27,7 @@ module sub; % Functions for substituting in standard forms.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*nosqrts asymplis!* dmode!* errmsg!* ncmp!* sublist!* wtl!*);
 

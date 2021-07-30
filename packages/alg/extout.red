@@ -27,6 +27,7 @@ module extout; % Extended output package for expressions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*allfac !*div !*mcd !*noequiv !*pri !*rat factors!* kord!*
   !*combinelogs wtl!*);

@@ -25,6 +25,7 @@ module farith;  % Operators for fast arithmetic.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 symbolic procedure iplus2(u,v); u+v;
 

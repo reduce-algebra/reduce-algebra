@@ -29,6 +29,7 @@ module kronf;   % Kronecker factorization of univariate forms.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % exports linfacf,quadfacf;
 

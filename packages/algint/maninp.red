@@ -25,6 +25,7 @@ module maninp;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(intvar);
 

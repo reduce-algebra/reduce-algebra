@@ -25,6 +25,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % This file defines functions, variables and declarations needed to
 % make REDUCE and the underlying CSL system compatible, and which need

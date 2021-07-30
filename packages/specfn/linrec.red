@@ -23,6 +23,7 @@ module linrec;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 % solves (simple in) homogenous linear recursion relation REC which
 % has to have the form var(n)... with initial conditions

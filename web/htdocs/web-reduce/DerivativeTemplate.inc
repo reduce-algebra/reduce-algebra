@@ -7,9 +7,9 @@
 		<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 	  </div>
 	  <div class="modal-body">
-		<p class="center"><small>The dependent variable or expression and an independent variable are required. Other fields may be left empty. Superscripts represent orders, which unless empty must be positive integers.</small></p>
-		<p class="center">
-		  <small>REDUCE Manual:&nbsp;
+		<p class="text-center"><small>The dependent variable or expression and an independent variable are required. Other fields may be left empty. Superscripts represent orders, which unless empty must be positive integers.</small></p>
+		<p class="text-center">
+		  <small>REDUCE Manual:&ensp;
             <a href="/manual-lookup.php?DF%20Operator" target="_blank" title="Opens in a new tab.">DF Operator</a></small>
 		</p>
 		<div class="container-fluid text-center">

@@ -27,6 +27,7 @@ module write;  % Miscellaneous statement definitions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 % ***** DEFINE STATEMENT *****
 
 remprop('define,'stat);

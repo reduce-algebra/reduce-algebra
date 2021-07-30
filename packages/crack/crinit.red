@@ -29,6 +29,7 @@ module crackinit$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 % variables that can change during a computation, for example, interactively
 % and that are backed up in crackmain calls, i.e. they are passed on, NOT back
 

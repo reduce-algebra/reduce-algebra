@@ -28,6 +28,7 @@ module forall; % FOR ALL and LET-related commands.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 fluid '(!*resimp !*sub2 alglist!* arbl!* asymplis!* frasc!* wtl!*);
 

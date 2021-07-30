@@ -27,6 +27,7 @@ module subs2q;  % Routines for substituting for powers.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 fluid '(!*exp !*mcd !*structure !*sub2 alglist!* dmode!* frlis!*);
 

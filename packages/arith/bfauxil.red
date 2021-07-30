@@ -29,6 +29,7 @@ module bfauxil; % Support for the roots package and ROUNDED domain.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id$
 
 COMMENT   support for modules allroot and isoroot, and for ROUNDED
  domain logic;

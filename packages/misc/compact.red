@@ -27,6 +27,7 @@ module compact;  % Header module for compact code.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 create!-package('(compact mv mvmatch reddom compactf comfac),
                 '(contrib compact));

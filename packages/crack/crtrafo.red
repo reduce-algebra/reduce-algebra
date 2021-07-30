@@ -30,6 +30,7 @@ module transform$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% $Id$
 symbolic procedure Input_Trafo(pdes)$
 begin scalar ulist,vlist,u,v,ylist,xlist,yslist,xslist,xl2,
              notallowed,full_simplify,singul,h,vl_bak,yplist,xplist$

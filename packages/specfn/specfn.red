@@ -27,6 +27,7 @@ module specfn;  % Special functions package for REDUCE.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
 
 %  ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  %
 %                                                                %
