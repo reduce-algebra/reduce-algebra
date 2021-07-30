@@ -25,7 +25,7 @@ module killingvec;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 fluid '(metricd!*);
 
 global '(basisforml!* basisvectorl!* naturalvector2framevector);

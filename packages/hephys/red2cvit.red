@@ -23,7 +23,7 @@ module red2cvit;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % COPYRIGHT (C) 1988,1990,INSTITUTE OF NUCLEAR PHYSICS,MOSCOW STATE
 %                          UNIV.

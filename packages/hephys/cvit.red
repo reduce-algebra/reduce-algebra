@@ -30,7 +30,7 @@ module cvit;   % Header module for CVIT package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % 07.06.90 all MAP replaced by MAP_   RT
 % 08.06.90 SOME MACROS FROM CVITMAP FILE ADDED to section IV RT

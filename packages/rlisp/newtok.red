@@ -27,7 +27,7 @@ module newtok;  % Functions for introducing infix tokens to the system.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*msg !*redeflg!*);
 

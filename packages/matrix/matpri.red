@@ -26,7 +26,7 @@ module matpri;   % Matrix printing routines.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*nat obrkp!* orig!* pline!* posn!* ycoord!* ymax!* ymin!*);
 

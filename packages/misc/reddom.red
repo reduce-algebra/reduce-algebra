@@ -27,7 +27,7 @@ module reddom;   % Reduction of domain elements.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(mv!-vars!*);
 

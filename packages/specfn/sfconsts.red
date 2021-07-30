@@ -24,7 +24,7 @@ module sfconsts; % Constants from pecial functions such as Euler_Gamma,
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %%algebraic let Euler_gamma => compute_Euler_gamma();
 %%

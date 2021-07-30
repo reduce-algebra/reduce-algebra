@@ -26,7 +26,7 @@ module simpsqrt;   % Simplify square roots.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*galois !*pvar !*tra !*trint basic!-listofallsqrts
         gaussiani basic!-listofnewsqrts intvar knowntobeindep

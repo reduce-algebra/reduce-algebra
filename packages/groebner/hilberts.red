@@ -27,7 +27,7 @@ module hilberts;% Hilbert series of a set of Monomials .
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 COMMENT
 

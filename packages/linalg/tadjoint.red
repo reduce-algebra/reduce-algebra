@@ -37,7 +37,7 @@ module tadjoint;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 symbolic inline procedure mksq!*mat in_mat;
 %

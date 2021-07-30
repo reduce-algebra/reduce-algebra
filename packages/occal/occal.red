@@ -25,7 +25,7 @@ module occal;
 % POSSIBILITY OF SUCH DAMAGE.
 
 
-% $Id: $
+% $Id$
 create!-package('(occal
 %                  oczusatz
 %		  ocvars

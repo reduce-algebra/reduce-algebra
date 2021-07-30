@@ -27,7 +27,7 @@ module forstat;   % Definition of REDUCE FOR loops.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*blockp !*fastfor !*modular);
 

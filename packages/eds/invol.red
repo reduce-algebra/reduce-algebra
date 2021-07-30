@@ -27,7 +27,7 @@ module invol;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*edsverbose !*edsdebug !*edssloppy !*genpos !*ranpos);
 

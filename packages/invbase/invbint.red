@@ -23,7 +23,7 @@ module invbint; % Algebraic mode interface to invbase.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 symbolic procedure invtorder u;
   begin scalar w,o;

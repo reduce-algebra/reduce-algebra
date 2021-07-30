@@ -25,7 +25,7 @@ module pfactor;  % Factorization of polynomials modulo p.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*balanced_mod
         !*gcd

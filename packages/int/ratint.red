@@ -25,7 +25,7 @@ module ratint;   % Support for direct rational integration.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 symbolic procedure rationalintegrate(x,var);
     begin     scalar n,d;

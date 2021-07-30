@@ -30,7 +30,7 @@ module fortpri; % FORTRAN output package for expressions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid  '(!*fort
          !*fortupper

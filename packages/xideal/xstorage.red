@@ -27,7 +27,7 @@ module xstorage;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 COMMENT. Critical pairs and polynomials are stored in a search tree,
          called an xset here:

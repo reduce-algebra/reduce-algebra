@@ -28,7 +28,7 @@ module steepstd;  % Optimization and root finding with method of
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*noequiv accuracy!*);
 global '(iterations!* !*trnumeric);

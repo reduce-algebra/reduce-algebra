@@ -25,7 +25,7 @@ module plotsynt; % Support for the syntax of the plot command.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(bye!-actions!*);
 

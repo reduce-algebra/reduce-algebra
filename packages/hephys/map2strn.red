@@ -23,7 +23,7 @@ module map2strn;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %************* TRANSFORMATION OF MAP TO STRAND **********************$
 %                                                                    $

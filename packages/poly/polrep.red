@@ -27,7 +27,7 @@ module polrep; % Arithmetic operations on standard forms and quotients.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*asymp!* !*exp !*factor !*gcd !*lcm !*mcd !*rationalize frlis!*
         !*roundall !*rounded !*sqfree !*sub2 asymplis!* dmode!* subfg!*

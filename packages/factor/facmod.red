@@ -25,7 +25,7 @@ module facmod; % Modular factorization: discover the factor count mod p.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(current!-modulus
         dpoly

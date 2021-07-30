@@ -28,7 +28,7 @@ flag ('(groebrestriction groebresmax gvarslast groebprotfile gltb),'share);
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 symbolic procedure gsorteval pars;
 % reformat a polynomial or a list of polynomials by a distributive

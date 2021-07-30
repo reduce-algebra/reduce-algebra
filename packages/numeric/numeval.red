@@ -23,7 +23,7 @@ module numeval; % numeric evaluation of algebraic expressions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Control of accuracy and precision.
 %

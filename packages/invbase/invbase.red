@@ -31,7 +31,7 @@ module invbase; % Computing involutive basis of polynomial system.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Minor fixes by John Fitch.
 

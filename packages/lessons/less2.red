@@ -5,7 +5,7 @@ COMMENT
                          David R. Stoutemyer
                          University of Hawaii
 
-% $Id: $
+% $Id$
 
 COMMENT This is lesson 2 of 7 REDUCE lessons.  Please refrain from
 using variables beginning with the letters F through H during the

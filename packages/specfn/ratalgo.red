@@ -23,7 +23,7 @@ module ratalgo;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % rational algorithm for FPS package
 

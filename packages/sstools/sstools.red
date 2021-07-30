@@ -37,7 +37,7 @@ create!-package('(sstools),nil);
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 global '(!*sstools!-loaded);
 

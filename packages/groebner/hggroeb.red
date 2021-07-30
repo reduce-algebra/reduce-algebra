@@ -23,7 +23,7 @@ module hggroeb; % Homogeneous Graded Grobner bases.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %    Buchberger algorithm for homogeneous graded polynomial
 %    systems. d1 and d2 are positive integers (d2 may be

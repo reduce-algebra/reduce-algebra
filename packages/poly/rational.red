@@ -27,7 +27,7 @@ module rational; % *** Tables for rational numbers ***.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 global '(domainlist!*);
 

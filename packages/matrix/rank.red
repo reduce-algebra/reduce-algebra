@@ -25,7 +25,7 @@ module rank;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Module for calculating the rank of a matrix or a system of linear
 % equations.

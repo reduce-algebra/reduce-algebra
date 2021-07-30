@@ -27,7 +27,7 @@ module edsuser;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 
 fluid '(alglist!* subfg!* !*arbvars xvars!*);

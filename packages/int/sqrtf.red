@@ -25,7 +25,7 @@ module sqrtf;   % Square root of standard forms.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*noextend zlist);
 

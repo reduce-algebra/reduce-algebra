@@ -23,7 +23,7 @@ module odepatch$  % Patches to standard REDUCE facilities
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % F.J.Wright@Maths.QMW.ac.uk, Time-stamp: <18 September 2000>
 

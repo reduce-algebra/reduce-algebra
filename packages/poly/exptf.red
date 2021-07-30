@@ -27,7 +27,7 @@ module exptf; % Functions for raising canonical forms to a power.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*exp);
 

@@ -25,7 +25,7 @@ module kuechl;% Walking faster,B . Amrhrein,O . Gloor,W . Kuechlin
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Version 3 with a rational local solution(after letters from H.M.Moeller).
 % Version 4 with keeping the polynomials as DIPs converting only

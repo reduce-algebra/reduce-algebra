@@ -27,7 +27,7 @@ module solve;   % Solve one or more algebraic equations.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 create!-package('(solve solve1 ppsoln solvelnr glsolve solvealg solvetab
                   quartic),nil);

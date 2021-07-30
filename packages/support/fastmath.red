@@ -25,7 +25,7 @@ module fastmath;  % Definitions of key functions in the math module of
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 global '(!!deg2rad !!rad2deg !!floatbits !!log2);
 

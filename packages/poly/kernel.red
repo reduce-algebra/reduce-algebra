@@ -27,7 +27,7 @@ module kernel;   % Functions for operations on kernels.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 global '(exlist!* kprops!*);
 

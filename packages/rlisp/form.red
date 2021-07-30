@@ -29,7 +29,7 @@ module form;  % Performs a mode analysis of parsed forms.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 fluid '(!*!*a2sfn !*comp !*cref !*defn !*mode !*reduce4 !*rlisp88
         current!-modulus fname!* ftype!* !*strict_argcount
         !*argnochk);

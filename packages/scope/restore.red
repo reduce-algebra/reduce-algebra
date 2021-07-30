@@ -23,7 +23,7 @@ module restore;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(prefixlist);
 

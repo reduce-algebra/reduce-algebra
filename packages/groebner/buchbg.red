@@ -26,7 +26,7 @@ module buchbg;% Central Groebner base code: Buchberger algorithm.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 flag('(groebrestriction groebresmax gvarslast groebmonfac
            groebprotfile glterms),'share);

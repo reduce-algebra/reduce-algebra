@@ -27,7 +27,7 @@ module block4;   % REDUCE 4 block statement and related operators.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(blockrestype!*);
 

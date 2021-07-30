@@ -26,7 +26,7 @@ module boolean; % Propositional calculus support.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % A form in propositional calculus is transformed to a canonical DNF
 % (disjuinct normal form) and then converted back to a or-not-form.

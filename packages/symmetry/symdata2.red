@@ -25,7 +25,7 @@ module symdata2; %  Symmetry data, part 2.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 set!*elems!*group('c6,'(id rc6 r2c6 r3c6 r4c6 r5c6))$
 set!*generators('c6,'(rc6))$

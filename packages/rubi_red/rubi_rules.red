@@ -30,7 +30,7 @@ module 'rubi_rules;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % I now have something that is basically a horrible trick that results
 % in the parsing of rule-files being performed while this source file

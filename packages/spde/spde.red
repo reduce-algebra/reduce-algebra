@@ -25,7 +25,7 @@ module spde;  % Determine Lie symmetries of partial differential eqns.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
  %*******************************************************************$
  %                                                                   $

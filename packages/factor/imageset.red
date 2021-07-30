@@ -25,7 +25,7 @@ module imageset;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*force!-prime
         !*force!-zero!-set

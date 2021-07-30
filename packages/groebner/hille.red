@@ -28,7 +28,7 @@ module hille; % Hillebrand decomposition of a zero - dimensional polynomial
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % triang4: groeposthillebrand: interface for the solver (for zero -
 % dimensional polynomial ideals).

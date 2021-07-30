@@ -28,7 +28,7 @@ module limits;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %% Revised 23 Mar 1993.  Version 1.4.
 

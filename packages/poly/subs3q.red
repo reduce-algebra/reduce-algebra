@@ -27,7 +27,7 @@ module subs3q; % Routines for matching products.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*mcd powlis1!* !*sub2 subfg!*);
 

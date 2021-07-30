@@ -27,7 +27,7 @@ module primfac;   % Primitive square free polynomial factorization.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*intfac !*surds dmode!* intvar kernlist!* knowndiscrimsign);
 

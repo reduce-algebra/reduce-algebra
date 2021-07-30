@@ -52,7 +52,7 @@ module igamma;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % --------------------------- global variables ----------------------------
 

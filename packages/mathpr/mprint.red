@@ -27,7 +27,7 @@ module mprint; % Basic output package for symbolic expressions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid  '(!*fort
          !*list

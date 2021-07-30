@@ -27,7 +27,7 @@ module comfac;   % Multivariate common factor/content routines.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 symbolic inline procedure domain!-gcd(u,v); gcdn(u,v);
 

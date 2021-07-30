@@ -32,7 +32,7 @@ module nrstroot; % Routines for finding the root of a polynomial which
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 COMMENT   modules bfdoer, bfdoer2, complxp, allroot, and rootaux of
 roots.red needed also;

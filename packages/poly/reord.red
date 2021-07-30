@@ -27,7 +27,7 @@ module reord; % Functions for reordering standard forms.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(alglist!* kord!* ncmp!*);
 

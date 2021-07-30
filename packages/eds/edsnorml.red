@@ -27,7 +27,7 @@ module edsnormal;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 COMMENT. The next section contains routines for putting an EDS into
 "normal" form. An EDS S is in "normal" form if

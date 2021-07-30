@@ -25,7 +25,7 @@ module interfac;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Modifications by: Anthony C. Hearn.
 

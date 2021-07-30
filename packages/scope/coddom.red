@@ -29,7 +29,7 @@ module coddom;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 symbolic$
 

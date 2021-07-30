@@ -30,7 +30,7 @@ module  codpri;  % Support for visualizing output.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 symbolic$
 

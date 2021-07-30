@@ -33,7 +33,7 @@ module fmprint; % Fancy output package for symbolic expressions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %   8-Sep-94
 %               introduced data driven formatting (print-format)

@@ -25,7 +25,7 @@ module ztrrules;  % Ztrans ruleset.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 algebraic <<
 ztransrules := {

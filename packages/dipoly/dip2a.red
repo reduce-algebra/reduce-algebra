@@ -23,7 +23,7 @@ module dip2a;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Functions for converting distributive forms into prefix forms
 

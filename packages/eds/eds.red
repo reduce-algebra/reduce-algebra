@@ -80,7 +80,7 @@ module eds;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 
 % Other packages which must be loaded at run-time.

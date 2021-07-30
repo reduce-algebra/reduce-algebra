@@ -27,7 +27,7 @@ module tableaux;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 COMMENT. Tableaux are stored internally in a tagged matrix of 1-forms:
 

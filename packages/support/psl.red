@@ -23,7 +23,7 @@ module psl;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 imports big2sys, bigp, floatloworder, floathighorder, gtneg, gtpos,
         i2bf!:, idifference, igetv, ilessp, iminus, inf, iplus, isub1,

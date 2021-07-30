@@ -25,7 +25,7 @@ module forder;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 global '(keepl!* wedgemtch!* lftshft!* indxl!*);
 

@@ -27,7 +27,7 @@ module general;   % General functions for the support of REDUCE.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 global '(!!arbint);
 
 !!arbint := 0; % Index for arbitrary constants.

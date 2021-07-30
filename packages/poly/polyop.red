@@ -29,7 +29,7 @@ module polyop; % Functions for algebraic mode operations on polynomials.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % This code has been modified to be consistent with the rules
 

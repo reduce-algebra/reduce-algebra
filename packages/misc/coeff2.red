@@ -36,7 +36,7 @@ module coeff2;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 %======================================================;
-% $Id: $
+% $Id$
 % following functions are available in algebraic mode.
 %------------------------------------------------------
 % coeff2(F,X1,X2,...,XN):  

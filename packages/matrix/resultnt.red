@@ -25,7 +25,7 @@ module resultnt;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Modifications by: Anthony C. Hearn, Winfried Neun.
 

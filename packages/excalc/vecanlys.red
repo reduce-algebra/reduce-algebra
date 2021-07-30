@@ -23,7 +23,7 @@ module vecanlys;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Author: Eberhard Schruefer
 

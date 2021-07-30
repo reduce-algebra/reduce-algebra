@@ -27,7 +27,7 @@ module edscfrm;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 COMMENT. An EDS coframing is stored in a list:
 

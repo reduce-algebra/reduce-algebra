@@ -25,7 +25,7 @@ module package4;   % Package support for REDUCE 4.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 remd 'package; % Don't interfere with existing.
 

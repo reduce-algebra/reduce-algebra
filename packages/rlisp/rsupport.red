@@ -27,7 +27,7 @@ module rsupport;   % Basic functions needed to support RLISP and REDUCE.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*backtrace !*comp);
 

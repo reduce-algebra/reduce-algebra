@@ -26,7 +26,7 @@ module sfbinom;   % Procedures for computing Binomial coefficients
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % The next 2 declarations enable better checking of number of arguments
 % by simpiden

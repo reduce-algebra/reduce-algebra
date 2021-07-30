@@ -27,7 +27,7 @@ module xreduct;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 
 fluid '(!*trxmod !*trxideal xtruncate!*);

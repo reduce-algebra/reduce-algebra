@@ -34,7 +34,7 @@ module smithex1;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 
 

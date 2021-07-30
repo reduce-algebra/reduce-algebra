@@ -25,7 +25,7 @@ module cfutil;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Various utilities for continued fractions
 % A. Barnes, February 2019

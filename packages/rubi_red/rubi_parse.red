@@ -31,7 +31,7 @@ module 'rubi_parse;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(trap!-time!*);
 

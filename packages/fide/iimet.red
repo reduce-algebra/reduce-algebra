@@ -26,7 +26,7 @@ module iimet;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 global '(cursym!* !*val dimension!*)$
 fluid '(!*exp alglist!*)$

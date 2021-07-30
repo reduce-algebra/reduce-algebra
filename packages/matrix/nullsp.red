@@ -25,7 +25,7 @@ module nullsp;  % Compute the nullspace (basis vectors) of a matrix.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Algorithm:  Rational Gaussian elimination with standard qutotients.
 

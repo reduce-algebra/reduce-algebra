@@ -27,7 +27,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % The code here is loaded rather early in the bootstrap process, and so
 % is processed by a provisional rather than the final version of the

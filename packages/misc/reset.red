@@ -23,7 +23,7 @@ module reset;  % Code to reset REDUCE to the initial state.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % John Fitch, Codemist Ltd 1988 <jpff@maths.bath.ac.uk>
 % Given to the REDUCE community for what it is worth.

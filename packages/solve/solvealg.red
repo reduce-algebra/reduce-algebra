@@ -29,7 +29,7 @@ module solvealg;  % Solution of equations and systems which can
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 % August 1992: added material for
 %    rule set for reduction of trig. polynomial terms to
 %      elementary expressions in sin and cos,

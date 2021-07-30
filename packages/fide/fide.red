@@ -26,7 +26,7 @@ module fide; % FInite difference method for partial Differential Eqn
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Version: 1.1.2 for REDUCE 3.6, May 29, 1995.
 

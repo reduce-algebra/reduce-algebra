@@ -25,7 +25,7 @@ module sfbdata;  % Generate necessary data for Bernoulli computation.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(compute!-bernoulli);
 

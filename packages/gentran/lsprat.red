@@ -33,7 +33,7 @@ module lsprat;    %%  GENTRAN LISP-to-RATFOR Translation Module  %%
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 
 symbolic$

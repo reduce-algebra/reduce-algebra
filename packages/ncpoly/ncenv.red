@@ -31,7 +31,7 @@ module ncenv; % Non-communtative polynomial ring environment.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 share ncpi!-brackets!*,ncpi!-comm!-rules!*,ncpi!-name!-rules!*;
 

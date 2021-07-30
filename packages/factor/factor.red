@@ -25,7 +25,7 @@ module factor;  % Header for factorizer.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 create!-package('(factor bigmodp degsets facprim facmod facuni % factrr
                   imageset pfactor vecpoly pfacmult),

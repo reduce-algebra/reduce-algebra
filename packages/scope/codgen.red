@@ -29,7 +29,7 @@ module codgen;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 lisp$
 global '(!*for!* !*do!*)$ % Gentran-globals used in makedecs.

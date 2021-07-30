@@ -25,7 +25,7 @@ module vdpcom;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 flag('(vdpprintmax),'share);
 vdpprintmax:=5;

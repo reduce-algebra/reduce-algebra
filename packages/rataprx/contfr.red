@@ -31,7 +31,7 @@ module contfr;  % Simultaneous approximation of a real number by a
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 symbolic procedure contfract2(u, inexact, b1, n);
  % compute continued fraction until the numerator exceeds b1
  % or the approximation has reached system precision

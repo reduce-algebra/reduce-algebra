@@ -27,7 +27,7 @@ module glmat; % Routines for inverting matrices and finding eigen-values
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*cramer !*factor !*gcd !*sqfree !*sub2 kord!*);
 

@@ -27,7 +27,7 @@ module tdconv; % Procedures for conversion of internal & external
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 symbolic procedure setunion(l1,l2);
    % Union of two sets.
       if null l2 then l1

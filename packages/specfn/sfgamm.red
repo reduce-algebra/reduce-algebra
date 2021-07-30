@@ -25,7 +25,7 @@ module sfgamm;   % Gamma function procedures and rules for REDUCE.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 imports complex!*off!*switch, complex!*restore!*switch, sf!*eval;
 

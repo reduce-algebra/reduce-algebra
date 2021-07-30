@@ -25,7 +25,7 @@ module complx;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %******************************************************************
 %*******        SPLIT REAL AND IMAGINARY PART    ******************

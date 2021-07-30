@@ -30,7 +30,7 @@ module sum2; % Auxiliary package for summation in finite terms.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Usage:
 %         sum(expression,variable[,lower[,upper]]);

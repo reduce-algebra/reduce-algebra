@@ -27,7 +27,7 @@ module smacro;  % Support for SMACRO expansion
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %
 % This function expands an  invocation of a SMACRO.

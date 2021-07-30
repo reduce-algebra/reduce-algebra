@@ -27,7 +27,7 @@ module edspde;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(xvars!* kord!* depl!* dependencies);
 global '(indxl!*);

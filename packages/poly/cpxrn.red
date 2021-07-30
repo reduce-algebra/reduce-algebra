@@ -27,7 +27,7 @@ module cpxrn; % *** Support for Complex Rationals.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 COMMENT this module defines a complex rational as:
 

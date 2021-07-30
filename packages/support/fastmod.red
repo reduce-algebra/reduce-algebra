@@ -25,7 +25,7 @@ module fastmod; % fast computation with modular numbers.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %
 %    ( a * b ) mod current!-modulus

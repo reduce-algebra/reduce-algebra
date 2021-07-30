@@ -27,7 +27,7 @@ module dfprin;     % Printing for derivatives plus other options
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*fort !*nat !*noarg depl!* posn!*);
 

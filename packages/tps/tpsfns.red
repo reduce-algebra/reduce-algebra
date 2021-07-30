@@ -29,7 +29,7 @@ module tpsfns;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*numval);
 

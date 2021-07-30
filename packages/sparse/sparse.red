@@ -25,7 +25,7 @@ module sparse;  % Header for Sparse Matrix package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 load_package linalg;
 

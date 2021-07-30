@@ -26,7 +26,7 @@ module extops;  % Support for exterior multiplication.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 COMMENT. Data structure for simple exterior forms is
 

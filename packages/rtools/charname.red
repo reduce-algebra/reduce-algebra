@@ -27,7 +27,7 @@ module charname; % Set up names for extended characters
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 % The data here is derived from the HTML Living Standard at
 % http://whatwg.org which notes on its contents page
 % "Copyright 2004-2011 Apple Computer, Inc., Mozilla Foundation,

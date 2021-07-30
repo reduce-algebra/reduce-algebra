@@ -25,7 +25,7 @@ module charpol;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Version REDUCE 3.6     05/1991.
 

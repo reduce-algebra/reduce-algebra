@@ -27,7 +27,7 @@ module matproc;   %  Support for matrix valued procedures.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 global '(cursym!*);
 
 symbolic procedure readmatproc;

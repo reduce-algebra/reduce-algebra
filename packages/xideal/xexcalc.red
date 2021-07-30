@@ -27,7 +27,7 @@ module xexcalc;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 COMMENT. The core routines in EXCALC have symbols:
 

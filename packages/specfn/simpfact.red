@@ -23,7 +23,7 @@ module simpfact;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %  Simplification for quotients containing factorials
 

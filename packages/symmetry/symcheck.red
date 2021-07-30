@@ -33,7 +33,7 @@ module symcheck;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 
 % symcheck.red

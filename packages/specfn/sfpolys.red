@@ -27,7 +27,7 @@ module sfpolys;   % Assorted Polynomials
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 % Revision 6. April 1995, using explicit formulae for the orthogonal
 %                       polynomials (Abramowitz/Stegun 22.3)
 % Revision  December 1995 by Wolfram Koepf

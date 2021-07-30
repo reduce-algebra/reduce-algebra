@@ -26,7 +26,7 @@ create!-package('(groebnr2 groebman glexconv groebmes groebrst groebtra%groebres
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 load!-package 'groebner;
 

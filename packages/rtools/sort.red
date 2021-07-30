@@ -25,7 +25,7 @@ module sort;  % A simple sorting routine.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 symbolic procedure stable!-sortip(l, pred);
    % As stable!-sort, but over-writes the input list to make the output.

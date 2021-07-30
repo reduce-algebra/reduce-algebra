@@ -36,7 +36,7 @@ module taylor;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 %
-% $Id: $
+% $Id$
 %
 %
 %  This package implements a new data structure:

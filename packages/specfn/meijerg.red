@@ -25,7 +25,7 @@ module MeijerG;  % Meijer's G-function.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Major modifications by: Winfried Neun, ZIB Berlin.
 

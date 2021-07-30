@@ -33,7 +33,7 @@ module symatvec;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 
 % symatvec.red

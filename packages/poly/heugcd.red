@@ -23,7 +23,7 @@ module heugcd;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %Authors: James Davenport & Julian Padget
 

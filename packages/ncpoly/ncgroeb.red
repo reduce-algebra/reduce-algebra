@@ -25,7 +25,7 @@ module ncgroeb; % Groebner for noncommutative one sided ideals.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Following Carlo Traverso's model.
 

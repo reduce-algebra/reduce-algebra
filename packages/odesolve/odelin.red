@@ -23,7 +23,7 @@ module odelin$  % Simple linear ODE solver
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % F.J.Wright@Maths.QMW.ac.uk, Time-stamp: <14 September 2000>
 

@@ -25,7 +25,7 @@ module templt;    %%  GENTRAN Template Processing Routines  %%
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %%  Author:  Barbara L. Gates  %%
 %%  December 1986              %%

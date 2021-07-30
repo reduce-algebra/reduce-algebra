@@ -27,7 +27,7 @@ module xpowers;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 COMMENT.  Factor ordering within a product is decided using the current
 kernel order.  Term ordering is decided by ordering of the valuation of

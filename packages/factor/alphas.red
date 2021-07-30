@@ -25,7 +25,7 @@ module alphas;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(alphalist current!-modulus hensel!-growth!-size
         number!-of!-factors);

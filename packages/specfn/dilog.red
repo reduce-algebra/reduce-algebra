@@ -23,7 +23,7 @@ module dilog;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Dilogarithm Integral and Polylogarithm function
 % Lerch Phi

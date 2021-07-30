@@ -25,7 +25,7 @@ module gint;  % Support for gaussian integers (complex numbers).
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 global '(domainlist!*);
 

@@ -23,7 +23,7 @@ module matrices;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Almost generic definition (i.e. independent of datastructure of
 % elements). With this it should be possible to have matrices

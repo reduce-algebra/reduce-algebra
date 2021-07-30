@@ -27,7 +27,7 @@ module quartic;  % Procedures for solving cubic, quadratic and quartic
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*sub2 !*rounded !*trigform dmode!*);
 

@@ -43,7 +43,7 @@ module rlfi;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % History:
 %     Ver. 1.01    17/11/1989   ******

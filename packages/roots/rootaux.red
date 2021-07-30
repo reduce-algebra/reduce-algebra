@@ -30,7 +30,7 @@ module rootaux; % Support for allroot, previously in realroot.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 global '(!!nfpd max!-acc!-incr lm!#);
 

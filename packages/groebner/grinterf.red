@@ -21,7 +21,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 module grinterf;% Interface of Groebner package to reduce.
 % Entry points to the main module and general interface support.

@@ -28,7 +28,7 @@ module subs4q; % Routines for matching quotients.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 symbolic procedure subs4q u;
    % U is a standard quotient,

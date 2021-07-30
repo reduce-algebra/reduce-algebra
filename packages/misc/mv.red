@@ -27,7 +27,7 @@ module mv; % Operations on multivariate forms.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % These inlines are local to this module.
 

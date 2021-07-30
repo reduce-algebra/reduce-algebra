@@ -25,7 +25,7 @@ module rdebug; % REDUCE print extension for PSL's debug commands.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %         June 1994
 

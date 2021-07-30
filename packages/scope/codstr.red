@@ -41,7 +41,7 @@ symbolic$
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % ------------------------------------------------------------------- ;
 % This is a generalization of the STRUCTR-command. Instead of one     ;

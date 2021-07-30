@@ -27,7 +27,7 @@ module specbess;  % Special functions package; Bessel and relatives.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 remprop('BesselI,'simpfn);
 remprop('BesselJ,'simpfn);

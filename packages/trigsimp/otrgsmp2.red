@@ -23,7 +23,7 @@ module trigsmp2;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Executable code.
 

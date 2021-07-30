@@ -26,7 +26,7 @@ module int; % Header for REDUCE integration package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Note that at one point, INT had been flagged SIMP0FN.  However, that
 % lead to problems when the arguments of INT contained pattern

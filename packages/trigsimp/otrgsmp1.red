@@ -23,7 +23,7 @@ module trigsmp1;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Collection of rule sets.
 
