@@ -25,7 +25,7 @@ module genmod; % Modular arithmetic where the modulus may be any size.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Modifications by: John Abbott.
 

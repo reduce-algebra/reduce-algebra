@@ -30,7 +30,7 @@ module allroot; % Routines for solving real polynomials by iteration.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 COMMENT   modules bfauxil, bfdoer, bfdoer2, complxp, rootaux, realroot,
  nrstroot and multroot needed also;

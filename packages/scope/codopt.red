@@ -29,7 +29,7 @@ module codopt;   % Generalization of Breuer's Growth Factor Algorithm.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 symbolic$
 

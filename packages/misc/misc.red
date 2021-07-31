@@ -23,7 +23,7 @@ module misc;    % Miscellaneous algebraic code.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 create!-package('(misc),nil);
 

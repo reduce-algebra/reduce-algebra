@@ -25,7 +25,7 @@ module ezgcd;  % Header module for ezgcd package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 create!-package('(ezgcd alphas coeffts ezgcdf facmisc facstr interfac
                   linmodp mhensfns modpoly multihen unihens),

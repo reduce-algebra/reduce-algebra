@@ -24,7 +24,7 @@ module gnuintfc; % REDUCE-gnuplot interface.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % The file complements the (notionally) generic file "gnuplot.red" to
 % provide system-specific interfaces between REDUCE and the gnuplot

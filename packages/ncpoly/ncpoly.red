@@ -28,7 +28,7 @@ module ncpoly; % Computing in non-commutative polynomial rings and
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 create!-package ('(ncpoly ncenv ncdip ncgroeb ncfactor ncout),
                  '(contrib ncpoly));

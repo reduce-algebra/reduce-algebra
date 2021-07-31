@@ -23,7 +23,7 @@ module tayutils;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %*****************************************************************
 %

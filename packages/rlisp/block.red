@@ -27,7 +27,7 @@ module block;   % Block statement and related operators.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*blockp !*novarmsg !*rlisp88);
 

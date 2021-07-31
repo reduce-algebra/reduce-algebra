@@ -25,7 +25,7 @@ module random;  % Random Number Generator.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Entrypoints:
 %     random_new_seed n Re-seed the random number generator

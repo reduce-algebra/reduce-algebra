@@ -25,7 +25,7 @@ module table1;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(zero);
 

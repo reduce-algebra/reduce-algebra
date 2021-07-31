@@ -24,7 +24,7 @@ module recsimpl; % Simplification of expressions involving recursions
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Wolfram Koepf, ZIB Berlin , May 1994
 

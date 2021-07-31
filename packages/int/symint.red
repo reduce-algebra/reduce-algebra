@@ -25,7 +25,7 @@ module symint;  % Improved simplification of symbolic integrals
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % An extension of simpint1 in module driver (by Mary Ann Moore, Arthur
 % C. Norman and John P. Fitch) to provide better simplification of

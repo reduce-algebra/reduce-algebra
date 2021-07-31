@@ -23,7 +23,7 @@ module odeintfc$  % Enhanced ODE solver interface
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % F.J.Wright@Maths.QMW.ac.uk, Time-stamp: <30 October 2000>
 

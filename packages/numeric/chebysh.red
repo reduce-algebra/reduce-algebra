@@ -29,7 +29,7 @@ module chebysh;  % Chebyshev approximation.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 put('chebyshev_fit,'psopfn,'(lambda(u)(chebysheveval u 'fit)));
 put('chebyshev_eval,'psopfn,'(lambda(u)(chebysheveval u 'eval)));

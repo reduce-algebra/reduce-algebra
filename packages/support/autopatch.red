@@ -25,7 +25,7 @@ module autopatch; % Fetch and update patches fasl file.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Modifications by: Anthony C. Hearn.
 

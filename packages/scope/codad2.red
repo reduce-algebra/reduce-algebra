@@ -29,7 +29,7 @@ module codad2;   % Facilities applied after optimization.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 symbolic$
 

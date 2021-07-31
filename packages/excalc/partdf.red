@@ -26,7 +26,7 @@ module partdf;   % Adaption of df module.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(alglist!* depl!* frlis!* posn!* subfg!* wtl!* fancy!-pos!*
         fancy!-line!*);

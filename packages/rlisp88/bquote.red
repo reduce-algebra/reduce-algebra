@@ -27,7 +27,7 @@ module bquote;   % Support for backquote.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Lisp parsing case.
 

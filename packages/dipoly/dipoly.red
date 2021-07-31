@@ -46,7 +46,7 @@ module dipoly;% Header module for dipoly package .
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % For the time being,this contains the inlines that used to be in
 % consel,and repeats those in bcoeff .

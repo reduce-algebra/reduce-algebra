@@ -27,7 +27,7 @@ module matrix;  % Header for matrix package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % This module has one reference to rplaca.
 

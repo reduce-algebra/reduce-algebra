@@ -25,7 +25,7 @@ module modsr; % Modular Solve and Roots.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 create!-package('(modsr modsqrt modroots modsolve),'(solve));
 

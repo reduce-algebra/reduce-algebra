@@ -23,7 +23,7 @@ module sfairy;  % Procedures and Rules for the Airy functions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %***********************************************************************
 %

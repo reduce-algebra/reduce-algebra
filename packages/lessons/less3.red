@@ -9,7 +9,7 @@ COMMENT
                             Herbert Melenk
                       Konrad-Zuse-Zentrum Berlin
                                    
-% $Id: $
+% $Id$
 
 COMMENT This is lesson 3 of 7 REDUCE lessons.  Please refrain from
 using variables beginning with the letters F through H during the

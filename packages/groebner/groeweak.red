@@ -23,7 +23,7 @@ module groeweak;% Weak test for f ~ 0 modulo g .
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 switch groebweak;
 

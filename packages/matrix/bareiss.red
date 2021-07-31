@@ -26,7 +26,7 @@ module bareiss; % Inversion routines using the Bareiss 2-step method.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % This module is rife with essential references to RPLAC-based
 % functions.

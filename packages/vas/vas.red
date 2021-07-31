@@ -1359,7 +1359,7 @@ module sets;  % Operators for basic set theory.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %% WARNING: This module patches mk!*sq.
 

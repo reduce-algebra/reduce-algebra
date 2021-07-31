@@ -25,7 +25,7 @@ module simp4;   % REDUCE 4 extensions for simplification.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(zero);
 

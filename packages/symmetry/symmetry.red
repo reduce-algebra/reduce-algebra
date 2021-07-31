@@ -38,7 +38,7 @@ module symmetry;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Abstract:
 % ---------

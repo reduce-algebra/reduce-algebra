@@ -26,7 +26,7 @@ module sfother;   % Rulesets for the Struve H and L functions, Lommel
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % The aim is to re-express in terms % of other (more `standard') special
 % functions. No numerical approximation code.

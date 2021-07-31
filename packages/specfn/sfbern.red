@@ -25,7 +25,7 @@ module sfbern;   % Procedures for computing Bernoulli numbers.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Module for Euler numbers added by Kerry Gaskell, Sep 1993
 

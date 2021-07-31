@@ -25,7 +25,7 @@ module excalc!-lists;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 symbolic procedure exdflist(u,v);
    'list . exdfl1 listeval(car u,v);

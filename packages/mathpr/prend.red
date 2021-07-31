@@ -25,7 +25,7 @@ module prend;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*clisp);
 

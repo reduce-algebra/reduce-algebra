@@ -54,7 +54,7 @@ module tri;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 %
-% $Id: $
+% $Id$
 %
 %
 %                              Section Survey

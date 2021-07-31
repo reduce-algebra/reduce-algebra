@@ -23,7 +23,7 @@ module prod;  % Module for production of finite terms.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %       Author: F.Kako                      Hiroshima Univ.
 %                               Mon Sep. 7, 1987.

@@ -26,7 +26,7 @@ module pmintrfc;  % Interface for pattern matcher.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % For some reason, this doesn't like being compiled as a module.
 

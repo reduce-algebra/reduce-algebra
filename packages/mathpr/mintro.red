@@ -22,7 +22,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 COMMENT
 I have put in support for the things that the Twente brigade had, and
 indeed when used with care they have jolly good effects on readability.

@@ -27,7 +27,7 @@ module rsolve;  % Rational and integer zeros of a univariate polynomial
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % ***** NOT QUITE COMPATIBLE WITH VERSION 1, 6 Jul 1994 *****
 

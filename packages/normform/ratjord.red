@@ -23,7 +23,7 @@ module ratjord; %Computation of rational Jordan normal form of a matrix.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % The function ratjordan computes the rational Jordan normal form R of
 % a matrix A, the transformation matrix P and its inverse P^(-1).

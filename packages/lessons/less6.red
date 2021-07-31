@@ -5,7 +5,7 @@ COMMENT
                          David R. Stoutemyer
                          University of Hawaii
  
-% $Id: $
+% $Id$
  
 COMMENT This is lesson 6 of 7 REDUCE lessons.  A prerequisite is to
 read an introductory text about LISP, such as "A Concise Introduction

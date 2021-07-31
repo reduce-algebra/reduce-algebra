@@ -25,7 +25,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 global '(date!* patch!-date!* version!*);
 

@@ -25,7 +25,7 @@ module ocstruct;  % Alternate routines for structuring expressions.
 % POSSIBILITY OF SUCH DAMAGE.
 
 
-% $Id: $
+% $Id$
 fluid '(svar svarlis);
 
 global '(varnam!*);

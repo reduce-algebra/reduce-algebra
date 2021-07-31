@@ -25,7 +25,7 @@ module exdf;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(subfg!*);
 

@@ -29,7 +29,7 @@ module superv; % REDUCE supervisory functions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*debug
         !*defn

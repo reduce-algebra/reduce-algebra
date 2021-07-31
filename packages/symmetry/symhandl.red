@@ -33,7 +33,7 @@ module symhandl;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %  symhandl.red
 

@@ -25,7 +25,7 @@ module facstr;   % Reconstruction of factors.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Modifications by: Arthur C. Norman, Anthony C. Hearn.
 

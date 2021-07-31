@@ -53,7 +53,7 @@ module normform; % Package for the computation of several normal forms.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 create!-package('(normform jordan jordsymb ratjord froben matarg
                   smithex smithex1),'(contrib normform));

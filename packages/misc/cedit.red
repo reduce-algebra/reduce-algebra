@@ -25,7 +25,7 @@ module cedit; % REDUCE input string editor.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 create!-package('(cedit),'(util));
 

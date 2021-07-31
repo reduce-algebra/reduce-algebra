@@ -23,7 +23,7 @@ module mathml;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Version 5 August 1999
 

@@ -25,7 +25,7 @@ module sfkummer; % Functions and rules for the Kummer M and U functions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 imports complex!*on!*switch, complex!*off!*switch,
    complex!*restore!*switch, sq2bf!*;

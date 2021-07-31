@@ -25,7 +25,7 @@ module hacksqrt;  % Routines for manipulation of sqrt expressions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(nestedsqrts thisplace);
 

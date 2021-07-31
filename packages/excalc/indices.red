@@ -25,7 +25,7 @@ module indices;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*exp !*msg !*nat !*sub2 alglist!* fancy!-pos!* fancy!-line!*
         frasc!* subfg!* metricd!* metricu!*);

@@ -23,7 +23,7 @@ module tayprint;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %*****************************************************************
 %

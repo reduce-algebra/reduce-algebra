@@ -34,7 +34,7 @@ fluid '(current!-modulus
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 global '(largest!-small!-modulus pseudo!-primes teeny!-primes);
 

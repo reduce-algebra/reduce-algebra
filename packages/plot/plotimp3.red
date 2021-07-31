@@ -25,7 +25,7 @@ module plotimp3; % Implicit plot: compute the varity {x,y,z|f(x,y,z)=0}.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % data structure: cubes.
 

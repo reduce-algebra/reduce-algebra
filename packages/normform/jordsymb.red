@@ -23,7 +23,7 @@ module jordsymb; % Computation of the Jordan normal form of a matrix.           
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % The function jordansymbolic computes the Jordan normal form J of a
 % matrix A, the transformation matrix P and its inverse P^(-1).

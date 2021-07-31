@@ -25,7 +25,7 @@ module wedge;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 global '(dimex!* lftshft!* wedgemtch!*);
 

@@ -23,7 +23,7 @@ module polydiv;  % Enhanced polynomial division.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 % Francis Wright, 1995, 2020.
 
 % Define (or redefine) the following polynomial division operators:

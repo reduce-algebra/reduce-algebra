@@ -26,7 +26,7 @@ module tps; % Extendible Power Series.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 
 % A power series object is a tagged tuple of the following form:

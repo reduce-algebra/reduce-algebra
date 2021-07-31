@@ -23,7 +23,7 @@ module solve1; % Fundamental SOLVE procedures.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*allbranch !*arbvars !*exp !*ezgcd !*fullroots !*limitedfactors
         !*multiplicities !*notseparate !*numval !*numval!* !*precise

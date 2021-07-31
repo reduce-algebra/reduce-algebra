@@ -26,7 +26,7 @@ module sfpsi; % Procedures relevant to the digamma, polygamma & zeta
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Added: PSI_SIMP.RED  F.J.Wright, 2 July 1993
 %        The polygamma rules are added by Y.K. Man on 9 July 1993

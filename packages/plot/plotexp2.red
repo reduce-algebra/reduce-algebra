@@ -23,7 +23,7 @@ module plotexp2; % Compute explicit 2-dim graph y=f(x);
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 symbolic procedure ploteval2x(x,y);
   begin scalar xlo,xhi,ylo,yhi,rx,ry,fp,fcn,fcns,pts;

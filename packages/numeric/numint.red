@@ -25,7 +25,7 @@ module numint; % compute a numerical integral
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
      % Version March 1993
 

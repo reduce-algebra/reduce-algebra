@@ -25,7 +25,7 @@ module lievalfm;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 symbolic procedure liebrackstat;
    begin scalar x;

@@ -33,7 +33,7 @@ module trigsmp2$  % TrigSimp executable code
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 
 % (FJW) To do:

@@ -25,7 +25,7 @@ module xvect; % Support for vectors with adaptive length.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Note: CSL version uses 1024, PSL 128.
 

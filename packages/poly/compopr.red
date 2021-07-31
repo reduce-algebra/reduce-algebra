@@ -27,7 +27,7 @@ module compopr;   % Operators on Complex Expressions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*exp !*factor kord!*);
 

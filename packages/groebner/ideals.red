@@ -28,7 +28,7 @@ module ideals;          % operators for polynomial ideals.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 create!-package('(ideals),'(contrib groebner));
 

@@ -29,7 +29,7 @@ module codad1;  % Description of some procedures.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 symbolic$
 

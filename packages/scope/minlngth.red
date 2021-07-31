@@ -23,7 +23,7 @@ module minlngth;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %----------------------------------------------------------------------
 %  Minimum length provisions.

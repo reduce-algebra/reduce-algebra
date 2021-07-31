@@ -27,7 +27,7 @@ module rvector; % Definition of RLISP vectors and operations on them.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*fastvector);
 

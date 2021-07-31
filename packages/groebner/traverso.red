@@ -23,7 +23,7 @@ module traverso;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Buchberger algorithm base on "sugar" strategy;
 % see Giovini-Mora-Niesi-Robbiano-Traverso:

@@ -26,7 +26,7 @@ module multihen;   %  Hensel construction for the multivariate case.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*overshoot
         !*trfac

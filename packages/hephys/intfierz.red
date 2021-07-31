@@ -23,7 +23,7 @@ module intfierz; % Interface with Rodionov-Fierzing Routine.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
   exports  calc_map_tar,calc_den_tar,pre!-calc!-map_ $
   imports    mk!-numr,map_!-to!-strand $

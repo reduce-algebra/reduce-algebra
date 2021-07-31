@@ -27,7 +27,7 @@ module mstruct;  % A tiny structure package for Standard Lisp.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 COMMENT
 

@@ -25,7 +25,7 @@ module ocinterf;
 % POSSIBILITY OF SUCH DAMAGE.
 
 
-% $Id: $
+% $Id$
 fluid '(!*oc!-dynamic!-variables!*
         !*oc!-control!-variables!*
         !*oc!-abbreviations!*

@@ -23,7 +23,7 @@ module gnuplot;  % REDUCE interface for gnuplot graphics.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 create!-package('(gnuplot gnuintfc gnupldrv),nil);
 

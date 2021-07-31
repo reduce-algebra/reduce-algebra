@@ -26,7 +26,7 @@ module qsum; % summation of q-hypergeometric terms
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 algebraic;
 

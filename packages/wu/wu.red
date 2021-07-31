@@ -31,7 +31,7 @@ module wu;   % Simple implementation of the Wu algorithm.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % First distributed version: 8 July 90
 % Bug fixes in wupseudodivide, and misc other changes: 28 Aug 90

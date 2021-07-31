@@ -27,7 +27,7 @@ module nout; % Output of noncom polynomials.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 symbolic procedure nc_compact u;
  % write a polynomial in factored form.

@@ -27,7 +27,7 @@ module where;  % Support for a where construct.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % global '(fixedpreclis!*);
 

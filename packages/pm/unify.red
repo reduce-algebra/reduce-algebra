@@ -26,7 +26,7 @@ module unify;   % Main part of unify code.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % The switch semantic, default on, controls use of semantic matching.
 

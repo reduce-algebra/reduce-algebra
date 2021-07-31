@@ -27,7 +27,7 @@ module edseval;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 COMMENT. A simple exterior differential system is stored in a list:
 

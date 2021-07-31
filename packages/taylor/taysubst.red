@@ -23,7 +23,7 @@ module taysubst;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %*****************************************************************
 %

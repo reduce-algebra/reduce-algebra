@@ -25,7 +25,7 @@ module dipprint;   %/* printing routines for distributive polynomials*/
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 symbolic procedure diplprint u;
 %    Prints a list of distributive polynomials using dipprint

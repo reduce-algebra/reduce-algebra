@@ -26,7 +26,7 @@ module rprint;  % The Standard LISP to REDUCE pretty-printer.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 create!-package('(rprint),'(util));
 

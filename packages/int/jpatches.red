@@ -25,7 +25,7 @@ module jpatches;   % Routines for manipulating sf's with power folding.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*noncomp sqrtflag);
 

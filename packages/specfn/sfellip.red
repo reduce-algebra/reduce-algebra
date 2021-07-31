@@ -25,7 +25,7 @@ module sfellip;  % Procedures and Rules for Elliptic functions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 % Substantial revisions by Alan Barnes, 2019
 
 % In the original version the parameter m in the Jacobi functions

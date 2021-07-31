@@ -27,7 +27,7 @@ module reduce4; % Support for REDUCE 4 interface to REDUCE 3.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 create!-package('(reduce4 form4 block4 proc4 forstat4 struct4 reval4
                   simp4 forall4 rankstat ranks tower package4),

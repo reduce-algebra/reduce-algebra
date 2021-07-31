@@ -27,7 +27,7 @@ module lpri; % Functions for printing diagnostic and error messages.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*defn !*echo !*fort !*int !*msg !*nat !*protfg errmsg!* curline!*);
 

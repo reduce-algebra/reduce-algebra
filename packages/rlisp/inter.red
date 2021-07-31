@@ -27,7 +27,7 @@ module inter; % Functions for interactive support.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*echo !*int trap!-time!* ifl!* curline!*);
 

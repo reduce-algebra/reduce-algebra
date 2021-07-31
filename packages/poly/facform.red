@@ -29,7 +29,7 @@ module facform;  % Factored form representation for standard form polys.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Integer factors?
 

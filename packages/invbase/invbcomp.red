@@ -23,7 +23,7 @@ module invbcomp;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %----------------------------------------------------------------------
 symbolic inline procedure c_zero();  nil$    %  REPRESENTATION OF ZERO

@@ -25,7 +25,7 @@ module rtoools;  % Header module for rtools package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 create!-package('(rtools general rprintf random genmod smallmod
                   sort charname rtrace),

@@ -43,7 +43,7 @@ module susy2;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 algebraic;
 operator !@f_f,!@g_g,newton,delta,b_part,bf_part,pg,chan,s_part,prykr,prykl;

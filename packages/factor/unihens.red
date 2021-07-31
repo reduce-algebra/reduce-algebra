@@ -27,7 +27,7 @@ module unihens;  % Univariate case of Hensel code with quadratic growth.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*linear
         !*overshoot

@@ -25,7 +25,7 @@ module linineq; % Linear inequalities and linear optimization.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Version 1     January 1990
 % Version 1.1   February 1990

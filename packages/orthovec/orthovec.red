@@ -23,7 +23,7 @@ module orthovec;  % 3-D vector calculus package.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 create!-package('(orthovec),'(contrib avector));
 

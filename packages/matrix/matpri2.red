@@ -25,7 +25,7 @@ module matpri; % matrix prettyprinter
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 global '(!&count!& !&m!-p!-flag!& !&name !&namearray);
 

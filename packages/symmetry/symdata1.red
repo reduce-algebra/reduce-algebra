@@ -25,7 +25,7 @@ module symdata1;  %  Data for symmetry package, part 1.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 set!*elems!*group('z2,'(id sz2))$
 set!*generators('z2,'(sz2))$

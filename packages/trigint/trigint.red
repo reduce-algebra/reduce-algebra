@@ -34,7 +34,7 @@ module trigint;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 create!-package ('(trigint),nil);
 

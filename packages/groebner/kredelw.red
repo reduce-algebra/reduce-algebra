@@ -25,7 +25,7 @@ module kredelw;% Kredel Weispfenning algorithm .
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 symbolic procedure gdimension_eval u;
 begin integer n,m;

@@ -39,7 +39,7 @@ module newton;  % root finding with generalized Newton methods.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*noequiv accuracy!* !*invjacobi !*rounded);
 global '(iterations!* !*trnumeric erfg!*);

@@ -23,7 +23,7 @@ module simplede;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*precise fps_search_depth !*protfg ps!:order!-limit);
 

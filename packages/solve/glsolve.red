@@ -28,7 +28,7 @@ module glsolve; % Routines for solving a general system of linear
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % The number of equations and the number of unknowns are arbitrary.
 % I.e. the system can be under- or overdetermined.

@@ -27,7 +27,7 @@ module rtrace; % Crude tracing but with output compatible across Lisps
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % The intent of simple!-trace is that the ouput that it leads to should
 % match as between CSL, PSL and other Lisp systems, while the native trace

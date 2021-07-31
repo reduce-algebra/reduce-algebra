@@ -27,7 +27,7 @@ module contact;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 
 global '(indxl!* !*sqvar!*);

@@ -23,7 +23,7 @@ module gparser;    %%  GENTRAN Parser Module  %%
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %%  Author:  Barbara L. Gates  %%
 %%  December 1986              %%

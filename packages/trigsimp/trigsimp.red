@@ -28,7 +28,7 @@ module trigsimp;  % User controlled simplification
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Revised by Francis J. Wright <F.J.Wright@Maths.QMW.ac.uk>
 

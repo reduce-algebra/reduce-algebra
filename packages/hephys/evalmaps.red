@@ -23,7 +23,7 @@ module evalmaps;  % Interaction with alg mode: variant without nonlocs;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
   exports    strand!-alg!-top $
   imports    color!-strand,contract!-strand $

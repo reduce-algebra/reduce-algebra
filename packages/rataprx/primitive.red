@@ -23,7 +23,7 @@ module primitive; % Include primitive module alterations to solve.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*cramer bareiss!-step!-size!*);
 

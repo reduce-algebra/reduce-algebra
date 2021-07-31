@@ -31,7 +31,7 @@ module groext; % author: Herbert Melenk, ZIB Berlin.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 create!-package('(groext),'(contrib groebner));
 

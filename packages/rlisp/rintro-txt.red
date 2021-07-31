@@ -25,7 +25,7 @@ module rintro!-txt;  % Description of non-local variables used in RLISP.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % These must be initialized at the top level of the program.
 

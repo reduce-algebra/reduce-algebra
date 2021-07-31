@@ -26,7 +26,7 @@ module driver;  % Driving routines for integration program.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*algint
         !*backtrace

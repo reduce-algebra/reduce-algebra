@@ -23,7 +23,7 @@ module utils;   %%  GENTRAN Utility Functions  %%
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %%  Author:  Barbara L. Gates  %%
 %%  December 1986              %%

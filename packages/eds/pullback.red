@@ -27,7 +27,7 @@ module pullback;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 COMMENT. Data structure:
 

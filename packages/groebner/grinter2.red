@@ -24,7 +24,7 @@ module grinter2;% Interface of Groebner package to REDUCE:
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 symbolic procedure groebnr2entry(fn,u);
 <<groebnr2load();apply(get(fn,'psopfn),{u})>>;
 

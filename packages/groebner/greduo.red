@@ -24,7 +24,7 @@ module greduo;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 global'(gorder gorders greduce_result);
 

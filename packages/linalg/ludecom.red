@@ -40,7 +40,7 @@ module ludecom;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 
 

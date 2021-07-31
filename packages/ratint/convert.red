@@ -22,7 +22,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %ammend the output of ratint, converting complex logs to real arctans, and
 %providing alternative forms for the answer

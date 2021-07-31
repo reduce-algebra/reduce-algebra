@@ -25,7 +25,7 @@ module form4;   % Type analysis for REDUCE 4.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(!*specification !*specification_reduce !*generate_retracts
         !*instantiate);

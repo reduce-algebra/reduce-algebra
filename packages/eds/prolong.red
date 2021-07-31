@@ -27,7 +27,7 @@ module prolong;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 
 fluid '(!*edsverbose !*edsdebug !*arbvars !*varopt !*groebopt

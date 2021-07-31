@@ -25,7 +25,7 @@ module indsymm;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(indl);   % Needed by Common Lisp.
 

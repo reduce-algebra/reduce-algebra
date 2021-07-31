@@ -27,7 +27,7 @@ module sqprint;   % Routines for printing standard forms and quotients.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % Modified by A. C. Norman, 1987.
 

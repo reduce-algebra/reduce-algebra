@@ -25,7 +25,7 @@ module discret; % Data for discretization.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 algebraic;
 

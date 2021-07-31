@@ -23,7 +23,7 @@ module fide1;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 create!-package('(fide1 expres iimet),'(contrib fide));
 

@@ -28,7 +28,7 @@ module bounds;   % Upper and lower bound of a
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 put('bounds,'psopfn,'boundseval);
 put('bounds!-rd,'psopfn,'boundsevalrd);

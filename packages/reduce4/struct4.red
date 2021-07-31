@@ -25,7 +25,7 @@ module structure; % REDUCE 4 support for indexed structures.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % These definitions are very careful about bounds checking. Appropriate
 % optimizations in a given system might really speed things up.

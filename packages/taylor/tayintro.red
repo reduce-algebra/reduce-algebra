@@ -23,7 +23,7 @@ module tayintro;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 %*****************************************************************
 %

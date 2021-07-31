@@ -25,7 +25,7 @@ module contents;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 fluid '(content indexlist sqfr varlist zlist);   % clogflag
 

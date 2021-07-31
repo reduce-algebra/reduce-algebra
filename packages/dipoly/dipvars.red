@@ -27,7 +27,7 @@ module dipvars;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 symbolic procedure dipvars u;
 %   Returns list of variables in prefix form u

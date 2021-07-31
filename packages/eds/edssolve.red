@@ -27,7 +27,7 @@ module edssolve;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 COMMENT. The EDS solve routines are interfaces to the general REDUCE
 solver, presenting the results in a form more useful in EDS. The most

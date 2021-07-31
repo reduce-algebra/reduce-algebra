@@ -23,7 +23,7 @@ module turtle;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 % REDUCE implementation of Turtle Graphics
 

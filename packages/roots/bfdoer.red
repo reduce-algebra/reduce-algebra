@@ -33,7 +33,7 @@ module bfdoer; % routines for doing bfloat arithmetic, mixed float
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 COMMENT  support for allroot and realroot modules;
 

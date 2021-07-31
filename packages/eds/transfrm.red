@@ -27,7 +27,7 @@ module transfrm;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 COMMENT. Data structure:
 
