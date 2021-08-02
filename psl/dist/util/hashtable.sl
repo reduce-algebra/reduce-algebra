@@ -61,6 +61,7 @@
 (setq *sxhash-max-depth* 5)
 
 % This is the constant 261835505, truncated to 27bits, in order to make it an inum (posint/negint)
+%(define-constant *sxhash-cons-default-value* 261835505)
 (define-constant *sxhash-cons-default-value* 127617777)
 
 % This is the golden ration times 2^32
@@ -83,9 +84,8 @@
    (when (equal bitsperword 32)
      (ds sxhash-float (o)
 	 (wshift (wxor (floathighorder o) (floatloworder o)) -8))
-     )
-     % Truncate *sxhash-cons-default-value* to 27bits, in order to make it an inum (posint/negint)
      (ds get-hash-multiplier () (int2sys !#hash-multiplier!#))
+     )
    ))
 
 (de sxhash-float-x (o) (sxhash-float o))
@@ -260,7 +260,7 @@
 			    (assoc key v)))
 	      (if found (return (cdr found))))))
     
-(de remhash (key table value)
+(de remhash (key table)
     (if (valid-hashtable table 'remhash)
         (prog (x comp len mask shftamount hkey v found)
 	      (setq x (cdr (igetv table 0)))
@@ -275,6 +275,6 @@
 	      %% In the following use the more efficient destructive versions delqip and deletip
 	      (if found (iputv table hkey
 			       (if (eq comp 'eq)
-				   (delqip comp found)
-				 (deletip comp found))))
+				   (delqip found v)
+				 (deletip found v))))
 	  )))
