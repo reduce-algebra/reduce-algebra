@@ -37,8 +37,8 @@ exports difftaylorwrttayvar;
 imports
 
 % from the REDUCE kernel:
-        !*k2q, !*n2f, depends, diffsq, lastpair, ldepends, multsq, negsq,
-        nth, over,
+        !*n2f, depends, diffsq, lastpair, ldepends, multsq, negsq,
+        nth, over, simp!*,
 
 % from the header module:
         !*tay2q, !*TayExp2q, make!-cst!-coefflis, make!-taylor!*,
@@ -86,7 +86,7 @@ symbolic procedure difftaylor (u,kernel);
     for each el in taytemplate u do
       if depends(taytpelpoint el,kernel)
         then begin scalar f;
-               f := negsq diffsq(!*k2q taytpelpoint el,kernel);
+               f := negsq diffsq(simp!* taytpelpoint el,kernel);
                for each var in taytpelvars el do
                  d := addtaylor(d,
                         multtaylorsq(difftaylorwrttayvar(u,var),f));

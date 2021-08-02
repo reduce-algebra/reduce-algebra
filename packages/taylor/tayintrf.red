@@ -88,14 +88,13 @@ symbolic procedure tayfkern u;
     if !*tayinternal!* then return u;
     % rest of code borrowed from fkern
     y := get('taylor!*,'klist);
-% Here I will do the potentially slow search using assoc rather than
-% hash table lookup.
-    x := assoc(u,y);
+% Here I used to do the potentially slow search using assoc, but am now
+% using hash table lookup.
+    %x := assoc(u,y);
+    x := gethash(u, kernhash);
     if null x
       then <<x := list(u,nil);
-#if (memq 'csl lispsystem!*)
              puthash(u, kernhash, x);
-#endif
              y := ordad(x,y);
              kprops!* := union('(taylor!*),kprops!*);
              put('taylor!*,'klist,y)>>;
