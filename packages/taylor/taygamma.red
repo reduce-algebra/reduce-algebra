@@ -37,11 +37,10 @@ exports taysimpGamma, taysimpPsi, taysimpPolyGamma;
 imports
 
 % from the REDUCE kernel:
-        !*f2q, !*k2q, denr, eqcar, mk!*sq, mksq, mvar, nfactorial, numr, over,
-        simp!*,
+        !*f2q, denr, eqcar, mk!*sq, mksq, mvar, nfactorial, numr, over, simp!*,
 
 % from the header module:
-        cst!-taylor!*, make!-cst!-powerlist, prune!-coefflist,
+        !*tay2q, cst!-taylor!*, make!-cst!-powerlist, prune!-coefflist,
         set!-tayorig, taycfpl, taycoefflist, taylor!-kernel!-sq!-p, TayOrig,
         taytemplate,
 
@@ -134,7 +133,7 @@ symbolic procedure taysimpGamma!*(tay,count);
      >>;
      if !*taylorkeeporiginal and TayOrig tay
        then set!-tayorig(tay1,{'Gamma,TayOrig tay});
-     return !*k2q tay1;
+     return !*tay2q tay1;
    end;
 
 put('Gamma,'taylorsimpfn,'taysimpGamma);
@@ -186,7 +185,7 @@ symbolic procedure taysimpPsi!*(tay,count);
      >>;
      if !*taylorkeeporiginal and TayOrig tay
        then set!-tayorig(tay1,{'Psi,TayOrig tay});
-     return !*k2q tay1;
+     return !*tay2q tay1;
    end;
 
 put('Psi,'taylorsimpfn,'taysimpPsi);
@@ -239,7 +238,7 @@ symbolic procedure taysimpPolyGamma!*(tay,n,count);
      >>;
      if !*taylorkeeporiginal and TayOrig tay
        then set!-tayorig(tay1,{'PolyGamma,n,TayOrig tay});
-     return !*k2q tay1;
+     return !*tay2q tay1;
    end;
 
 put('PolyGamma,'taylorsimpfn,'taysimpPolyGamma);

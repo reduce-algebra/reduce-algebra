@@ -125,10 +125,9 @@ symbolic procedure subsubtaylor(l,v);
                     else delete!-nth!-nth(taycfpl cc,pos,pos1);
               exponent := nth(nth(taycfpl cc,pos),pos1);
               z := if exponent = 0 then taycfsq cc
-                     else if exponent < 0 and null numr temp
-                      then taylor!-error!*('zero!-denom,
-                                         "Taylor Substitution")
-                     else multsq(taycfsq cc,exptsq(temp,exponent));
+                    else if exponent < 0 and null numr temp
+                     then taylor!-error!*('zero!-denom,"Taylor Substitution")
+                    else multsq(taycfsq cc,exptsq(temp,exponent));
               y := assoc(w,ll);
               if y then set!-taycfsq(y,subs2!* addsq(taycfsq y,z))
                else if not null numr (z := subs2!* z)

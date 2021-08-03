@@ -81,6 +81,13 @@ module taylor;
 %
 %*****************************************************************
 %
+% 01-Aug-2021    2.4a
+%
+%   Correct a case that may lead to non-unique kernels in the expansion
+%    point and in expansion of Gamma, psi, and polygamma.
+%
+%   Make tracing output more readable.
+%
 % 22-May-2021    2.4
 %
 %   Add taylorsimpfn for Gamma, Psi, and Polygamma.
@@ -987,8 +994,8 @@ taylorprintterms := 5;         % Only this nubmer of non-zero terms
                                % in progress to indicate that the error
                                % might disappear if the order is
                                % increased.
-taylor!:version := "2.4";      % version number of the package
-taylor!:date!* := "22-May-2021"; % release date
+taylor!:version := "2.4a";      % version number of the package
+taylor!:date!* := "01-Aug-2021"; % release date
 
 if !*verboseload then
   << terpri ();
@@ -1418,7 +1425,12 @@ symbolic inline procedure !*tay2q u;
 COMMENT some procedures for tracing;
 
 symbolic smacro procedure taylor!-trace u;
-   if !*trtaylor then << lpri("Taylor: " . if u and atom u then list u else u); terpri()>>;
+   if !*trtaylor then << lpri("Taylor trace:" . if u and atom u then list u else u); terpri()>>;
+
+symbolic smacro procedure taylor!-trace!-with!-level(level,u);
+   if !*trtaylor then <<
+      lpri("Taylor trace (level" . compress('!" . nconc(explode2 level,'(!) !: !"))) . if u and atom u then list u else u);
+      terpri()>>;
 
 symbolic smacro procedure taylor!-trace!-mprint u;
    if !*trtaylor then mathprint u;

@@ -136,7 +136,7 @@ symbolic procedure taysimpf u;
       %  Taylor parts.  Taylor s.t.'s are simplified accordingly.
       % A domain element can never be a Taylor kernel.
       %
-      <<if domainp u then notay := addsq(!*f2q u,notay)
+      <<if domainp u then notay := addsq(!*d2q u,notay)
          else if not has!-taylor!* car u
           then notay := addsq(notay,!*t2q car u)
          else <<x := taysimpt car u;

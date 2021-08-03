@@ -49,6 +49,7 @@ imports
         make!-taylor!*, preptayexp, prune!-coefflist, set!-tayorig, taycfpl,
         taycfsq, taycoefflist, tayflags, taylor!*p,
         taylor!-kernel!-sq!-p, taylor!-trace, taylor!-trace!-mprint,
+        taylor!-trace!-with!-level,
         taylor!:, taymakecoeff, tayorig, taytemplate, taytpelnext,
         taytpelorder, taytpelpoint, taytpelvars, taytpvars, tayvars,
 
@@ -161,13 +162,13 @@ symbolic procedure taylorexpand1(sq,ll,flg);
         or oldresult and taytemplate oldresult = taytemplate result
        then taylor!-error('max_cycles,count - 1);
      oldresult := result;
-     taylor!-trace {"expanding s.q. (level", !*taylor!-expansion!-level!*, 
-                    ") with template", 
+     taylor!-trace!-with!-level(!*taylor!-expansion!-level!*,
+                   {"expanding s.q. with template", 
                     for each el in ll collect 
                       {taytpelvars el,
                        taytpelpoint el,
                        preptayexp taytpelorder el,
-                       preptayexp taytpelnext el}};
+                       preptayexp taytpelnext el}});
      taylor!-trace!-mprint mk!*sq sq;
      if denr sq = 1
        then result := taysimpsq!* taylorexpand!-sf(numr sq,lll,t)
@@ -250,7 +251,7 @@ symbolic procedure taylorexpand1(sq,ll,flg);
      result := truncate!-taylor!*(result,ll);
      if !*taylorkeeporiginal then set!-tayorig(result,sq);
      result := !*tay2q result;
-     taylor!-trace {"result of expanding s.q. (level", !*taylor!-expansion!-level!*, ") is"};
+     taylor!-trace!-with!-level(!*taylor!-expansion!-level!*, {"result of expanding s.q. is"});
      taylor!-trace!-mprint mk!*sq result;
      return result
   end;
@@ -263,13 +264,13 @@ symbolic procedure taylorexpand!-sf(sf,ll,flg);
      count := count + 1;
      if count > !*taylor!-max!-precision!-cycles!*
        then taylor!-error('max_cycles,count - 1);
-     taylor!-trace {"expanding s.f. (level", !*taylor!-expansion!-level!*,
-                    ") with template", 
+     taylor!-trace!-with!-level(!*taylor!-expansion!-level!*,
+ 	           {"expanding s.f. with template", 
                     for each el in ll collect 
                       {taytpelvars el,
                        taytpelpoint el,
                        preptayexp taytpelorder el,
-                       preptayexp taytpelnext el}};
+                       preptayexp taytpelnext el}});
      taylor!-trace!-mprint mk!*sq !*f2q sf;
      x := nil ./ 1;
      rest := sf;
@@ -319,7 +320,7 @@ symbolic procedure taylorexpand!-sf(sf,ll,flg);
                            "result =",mvar numr x,
                            "new =",lll};
                         goto restart>>>>>>;
-     taylor!-trace {"result of expanding s.f. (level", !*taylor!-expansion!-level!*, ") is"};
+     taylor!-trace!-with!-level(!*taylor!-expansion!-level!*, {"result of expanding s.f. is"});
      taylor!-trace!-mprint mk!*sq x;
      return x
   end;
@@ -330,13 +331,13 @@ symbolic procedure taylorexpand!-sp(sp,ll,flg);
    begin scalar fn,krnl,pow,sk,vars;
 %    if (sk := assoc({sp,ll},car !*taylor!-assoc!-list!*))
 %      then return cdr sk;
-    taylor!-trace {"expanding s.p. (level", !*taylor!-expansion!-level!*,
-                   ") with template", 
+    taylor!-trace!-with!-level(!*taylor!-expansion!-level!*,
+                  {"expanding s.p. with template", 
                    for each el in ll collect 
                       {taytpelvars el,
                        taytpelpoint el,
                        preptayexp taytpelorder el,
-                       preptayexp taytpelnext el}};
+                       preptayexp taytpelnext el}});
     taylor!-trace!-mprint mk!*sq !*p2q sp;
     vars := taytpvars ll;
     krnl := car sp;
@@ -399,7 +400,7 @@ symbolic procedure taylorexpand!-sp(sp,ll,flg);
              if taylor!-kernel!-sq!-p sk
                then taylor!-add!-to!-cache(
                       sp,taytemplate mvar numr sk,sk)>>;
-    taylor!-trace {"result of expanding s.p. (level", !*taylor!-expansion!-level!*, ") is"};
+    taylor!-trace!-with!-level(!*taylor!-expansion!-level!*,{"result of expanding s.p. is"});
     taylor!-trace!-mprint mk!*sq sk;
     return sk
   end;

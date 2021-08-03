@@ -2019,10 +2019,13 @@ operator_diff_rules := {
   df(gy(~x,~y),~y) => gyy(x,y),
 
   df(axx(~x,~y),~x) => axxx(x,y),
+  df(axx(~x,~y),~y) => axxy(x,y),
   df(axy(~x,~y),~x) => axxy(x,y),
+  df(axy(~x,~y),~y) => axyy(x,y),
   df(ayy(~x,~y),~x) => axyy(x,y),
   df(ayy(~x,~y),~y) => ayyy(x,y),
   df(fxx(~x,~y),~x) => fxxx(x,y),
+  df(fxx(~x,~y),~y) => fxxy(x,y),
   df(fxy(~x,~y),~x) => fxxy(x,y),
   df(fxy(~x,~y),~y) => fxyy(x,y),
   df(fyy(~x,~y),~x) => fxyy(x,y),
@@ -2034,15 +2037,21 @@ operator_diff_rules := {
   df(gyy(~x,~y),~x) => gxyy(x,y),
   df(gyy(~x,~y),~y) => gyyy(x,y),
 
+  df(axxx(~x,~y),~y) => axxxy(x,y),
   df(axyy(~x,~y),~x) => axxyy(x,y),
   df(axxy(~x,~y),~x) => axxxy(x,y),
   df(ayyy(~x,~y),~x) => axyyy(x,y),
+  df(fxxx(~x,~y),~y) => fxxxy(x,y),
   df(fxxy(~x,~y),~x) => fxxxy(x,y),
   df(fxyy(~x,~y),~x) => fxxyy(x,y),
+  df(fxyy(~x,~y),~y) => fxyyy(x,y),
   df(fyyy(~x,~y),~x) => fxyyy(x,y),
   df(gxxx(~x,~y),~x) => gxxxx(x,y),
+  df(gxxx(~x,~y),~y) => gxxxy(x,y),
   df(gxxy(~x,~y),~x) => gxxxy(x,y),
+  df(gxxy(~x,~y),~y) => gxxyy(x,y),
   df(gxyy(~x,~y),~x) => gxxyy(x,y),
+  df(gxyy(~x,~y),~y) => gxyyy(x,y),
   df(gyyy(~x,~y),~x) => gxyyy(x,y),
   df(gyyy(~x,~y),~y) => gyyyy(x,y),
 
@@ -2099,13 +2108,19 @@ operator_diff_rules := {df(a(~x,~y),~x) => ax(x,y),
 
    df(axx(~x,~y),~x) => axxx(x,y),
 
+   df(axx(~x,~y),~y) => axxy(x,y),
+
    df(axy(~x,~y),~x) => axxy(x,y),
+
+   df(axy(~x,~y),~y) => axyy(x,y),
 
    df(ayy(~x,~y),~x) => axyy(x,y),
 
    df(ayy(~x,~y),~y) => ayyy(x,y),
 
    df(fxx(~x,~y),~x) => fxxx(x,y),
+
+   df(fxx(~x,~y),~y) => fxxy(x,y),
 
    df(fxy(~x,~y),~x) => fxxy(x,y),
 
@@ -2127,23 +2142,35 @@ operator_diff_rules := {df(a(~x,~y),~x) => ax(x,y),
 
    df(gyy(~x,~y),~y) => gyyy(x,y),
 
+   df(axxx(~x,~y),~y) => axxxy(x,y),
+
    df(axyy(~x,~y),~x) => axxyy(x,y),
 
    df(axxy(~x,~y),~x) => axxxy(x,y),
 
    df(ayyy(~x,~y),~x) => axyyy(x,y),
 
+   df(fxxx(~x,~y),~y) => fxxxy(x,y),
+
    df(fxxy(~x,~y),~x) => fxxxy(x,y),
 
    df(fxyy(~x,~y),~x) => fxxyy(x,y),
+
+   df(fxyy(~x,~y),~y) => fxyyy(x,y),
 
    df(fyyy(~x,~y),~x) => fxyyy(x,y),
 
    df(gxxx(~x,~y),~x) => gxxxx(x,y),
 
+   df(gxxx(~x,~y),~y) => gxxxy(x,y),
+
    df(gxxy(~x,~y),~x) => gxxxy(x,y),
 
+   df(gxxy(~x,~y),~y) => gxxyy(x,y),
+
    df(gxyy(~x,~y),~x) => gxxyy(x,y),
+
+   df(gxyy(~x,~y),~y) => gxyyy(x,y),
 
    df(gyyy(~x,~y),~x) => gxyyy(x,y),
 
