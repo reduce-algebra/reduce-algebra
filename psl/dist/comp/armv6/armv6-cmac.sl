@@ -30,6 +30,10 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 (on fast-integers)
 
@@ -654,7 +658,7 @@
                        OpenCodeSequence)
                       ((setq OpenCodeSequence
                              (get FunctionName 'OpenCode))
-		       % check whether the opncode sequence ends with *Call
+		       % check whether the opencode sequence ends with *Call
 		       % and replace it with *JCall
 		       (if (eqcar (lastcar OpenCodeSequence) '*Call)
 			   (progn
@@ -670,8 +674,7 @@
 		       % check that there isn't another *Call somewhere
 		       (if (atsoc '*Call OpenCodeSequence)
 			   (stderror
-			    (bldmsg "Cannot have *Call in opencode sequence for %w")
-			    FunctionName)
+			    (bldmsg "Cannot have *Call in opencode sequence for %w" FunctionName))
 			 OpenCodeSequence
 			 ))
                       (t (CMacroPatternExpand (list FunctionName)
@@ -821,19 +824,6 @@
                                (SUB (reg t2) (reg t2) (reg t3))
                                (*Move (reg t2) ArgOne)))
 
-(put 'wdivide 'opencode
-     % returns (signed) quotient and puts remainder in *second-value*
-     '( % save dividend and divisor on stack
-        (*Push (reg 1))
-        (*Push (reg 2))
-        (*Call wquotient)
-	(*Pop (reg t2))
-	(*Pop (reg t1))
-	% calculate remainder as t1-q*t2
-	(MUL (reg 2) (reg 1) (reg t2))
-	(SUB (reg 2) (reg t1) (reg 2))
-        (*Move (reg 2) (fluid *second-value*))
-      ))
 
 (de *WNegate(ARG1)
  (Expand1OperandCMacro ARG1 '*WNegate))
