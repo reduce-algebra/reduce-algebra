@@ -1105,8 +1105,12 @@
                          (ArgFour ArgThree))
      ((regp imm8-rotatedp) (CMP ArgOne ArgTwo)
                          (ArgFour ArgThree))
-%% ((imm8-rotatedp regp (CMP ArgTwo ArgOne)
-%%                       (ArgFive ArgThree))
+     ((regp imm8-neg-rotatedp) (CMN ArgOne (minus ArgTwo))
+                         (ArgFour ArgThree))
+     ((imm8-rotatedp regp) (CMP ArgTwo ArgOne)
+                         (ArgFive ArgThree))
+     ((imm8-neg-rotatedp regp) (CMN ArgTwo (minus ArgOne))
+                         (ArgFive ArgThree))
      ((regp anyp)       (*Move ArgTwo (reg t3))
                          (CMP ArgOne (reg t3))
                          (ArgFour ArgThree))
@@ -1116,9 +1120,15 @@
      ((anyp imm8-rotatedp) (*Move ArgOne (reg t3))
                          (CMP (reg t3) ArgTwo)
                          (ArgFour ArgThree))
-%% ((imm8-rotatedp anyp) (*Move ArgTwo (reg t2))
-%%                       (CMP (reg t2) ArgOne)
-%%                       (ArgFive ArgThree))
+     ((anyp imm8-neg-rotatedp) (*Move ArgOne (reg t3))
+                         (CMN (reg t3) (minus ArgTwo))
+                         (ArgFour ArgThree))
+     ((imm8-rotatedp anyp) (*Move ArgTwo (reg t3))
+                         (CMP (reg t3) ArgOne)
+                         (ArgFive ArgThree))
+     ((imm8-neg-rotatedp anyp) (*Move ArgTwo (reg t3))
+                         (CMN (reg t3) (minus ArgOne))
+                         (ArgFive ArgThree))
      (                   (*Move ArgOne (reg t1))
                          (*Move ArgTwo (reg t2))
                          (CMP (reg t1) (reg t2))
@@ -1143,27 +1153,27 @@
 (DefCMacro *JumpNotEQ)
 
 (de *JumpNotEQ(Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(bne . 'bne)))
+        (*JumpIF ArgOne ArgTwo Lbl '(bne . bne)))
 
 (DefCMacro *JumpWlessp)
 
 (de *JumpWlessp (Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(blt . bge)))
+        (*JumpIF ArgOne ArgTwo Lbl '(blt . bgt)))
 
 (DefCMacro *JumpWgreaterp)
 
 (de *JumpwGreaterp (Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(bgt . ble)))
+        (*JumpIF ArgOne ArgTwo Lbl '(bgt . blt)))
 
 (DefCMacro *JumpWleq)
 
 (de  *JumpWleq(Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(ble . bgt)))
+        (*JumpIF ArgOne ArgTwo Lbl '(ble . bge)))
 
 (DefCMacro *JumpWgeq)
 
 (de *jumpWgeq (Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(bge . blt)))
+        (*JumpIF ArgOne ArgTwo Lbl '(bge . ble)))
 
 % --------------------
 

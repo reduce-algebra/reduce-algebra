@@ -500,7 +500,10 @@
 
 (de initializesymfnc ()
   (dataprintgloballabel (findgloballabel 'symfnc))
-  (for (from i 0 256 1) (do (initsymfnc1 (int2id i))))
+  (for (from i 0 255 1) (do (initsymfnc1 (int2id i))))
+  %% Treat nil (idnumber 256) separately, to be sure that the cross compiler isn't using it
+  %% internally for a different symbol (e.g. with older ports where nil's idnumber is 128)
+  (dataprintundefinedfunctioncell)
   (foreach x in (car orderedidlist*) do (initsymfnc1 x)))
 
 (de initsymfnc1 (x)

@@ -431,6 +431,9 @@
 	 (setq x (wand 16#ffffffff x))
 	 (decode-32bit-imm8-rotated x)))
 
+(de imm8-neg-rotatedp (x)
+    (and (Inump x) (imm8-rotatedp (wminus x))))
+
 (de sixteenbit-p (x)
     (and (fixp x) (eq (wand 16#ffff x) x)))
 
