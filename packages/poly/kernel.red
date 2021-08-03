@@ -152,7 +152,7 @@ symbolic procedure kernels1(u, v);
     if not memq(x, v) then v := x . v;
     u1 := red u;
     while not domainp u1 do <<
-      if mvar u1 neq x then <<
+      if not(mvar u1 eq x) then <<
         x := mvar u1;
         if not memq(x, v) then v := x . v >>;
       w := lc u1 . w;
