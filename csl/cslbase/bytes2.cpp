@@ -311,7 +311,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 continue;
 
             case OP_STOREFREE:
-                if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
+                if ((qheader(basic_elt(litvec, 0)).load() & SYM_TRACESET) != 0)
                 {   Save save(A_reg);
                     print_traceset(current_byte, A_reg);
                     errexit();
@@ -322,7 +322,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 continue;
 
             case OP_STOREFREE1:
-                if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
+                if ((qheader(basic_elt(litvec, 0)).load() & SYM_TRACESET) != 0)
                 {   Save save(A_reg);
                     print_traceset(1, A_reg);
                     errexit();
@@ -332,7 +332,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 continue;
 
             case OP_STOREFREE2:
-                if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
+                if ((qheader(basic_elt(litvec, 0)).load() & SYM_TRACESET) != 0)
                 {   Save save(A_reg);
                     print_traceset(2, A_reg);
                     errexit();
@@ -342,7 +342,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 continue;
 
             case OP_STOREFREE3:
-                if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
+                if ((qheader(basic_elt(litvec, 0)).load() & SYM_TRACESET) != 0)
                 {   Save save(A_reg);
                     print_traceset(3, A_reg);
                     errexit();
@@ -569,7 +569,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (is_symbol(B_reg))   // can optimise this case, I guess
                 {   f1 = qfn1(B_reg);
                     *++stack = B_reg;
-                    if ((qheader(B_reg) & SYM_TRACED) != 0)
+                    if ((qheader(B_reg).load() & SYM_TRACED) != 0)
                         A_reg = traced_call1(basic_elt(litvec, 0), f1, B_reg, A_reg);
                     else A_reg = f1(B_reg, A_reg);
                     errexit();
@@ -590,7 +590,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (is_symbol(r2))   // can optimise this case, I guess
                 {   f2 = qfn2(r2);
                     stack--;
-                    if ((qheader(r2) & SYM_TRACED) != 0)
+                    if ((qheader(r2).load() & SYM_TRACED) != 0)
                         A_reg = traced_call2(basic_elt(litvec, 0), f2, r2, B_reg, A_reg);
                     else A_reg = f2(r2, B_reg, A_reg);
                     errexit();
@@ -614,7 +614,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 r2 = *stack;
                 if (is_symbol(r2))   // can optimise this case, I guess
                 {   f3 = qfn3(r2);
-                    if ((qheader(r2) & SYM_TRACED) != 0)
+                    if ((qheader(r2).load() & SYM_TRACED) != 0)
                         A_reg = traced_call3(basic_elt(litvec, 0), f3, r2, r1, B_reg, A_reg);
                     else A_reg = f3(r2, r1, B_reg, A_reg);
                     stack--;
@@ -642,7 +642,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                         save.restore(r2, r3, r1, B_reg);
                     }
                     f4up = qfn4up(r2);
-                    if ((qheader(r2) & SYM_TRACED) != 0)
+                    if ((qheader(r2).load() & SYM_TRACED) != 0)
                         A_reg = traced_call4up(basic_elt(litvec, 0), f4up, r2, r3, r1, B_reg,
                                                A_reg);
                     else A_reg = f4up(r2, r3, r1, B_reg, A_reg);
@@ -1066,127 +1066,135 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_JUMPFREE1NIL:
                 xppc = ppc;
                 ppc++;
-                if (qvalue(basic_elt(litvec, 1)) == nil) short_jump(ppc, xppc);
+                if (qvalue(basic_elt(litvec, 1)).load() == nil)
+                    short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFREE1T:
                 xppc = ppc;
                 ppc++;
-                if (qvalue(basic_elt(litvec, 1)) != nil) short_jump(ppc, xppc);
+                if (qvalue(basic_elt(litvec, 1)).load() != nil)
+                    short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFREE2NIL:
                 xppc = ppc;
                 ppc++;
-                if (qvalue(basic_elt(litvec, 2)) == nil) short_jump(ppc, xppc);
+                if (qvalue(basic_elt(litvec, 2)).load() == nil)
+                    short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFREE2T:
                 xppc = ppc;
                 ppc++;
-                if (qvalue(basic_elt(litvec, 2)) != nil) short_jump(ppc, xppc);
+                if (qvalue(basic_elt(litvec, 2)).load() != nil)
+                    short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFREE3NIL:
                 xppc = ppc;
                 ppc++;
-                if (qvalue(basic_elt(litvec, 3)) == nil) short_jump(ppc, xppc);
+                if (qvalue(basic_elt(litvec, 3)).load() == nil)
+                    short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFREE3T:
                 xppc = ppc;
                 ppc++;
-                if (qvalue(basic_elt(litvec, 3)) != nil) short_jump(ppc, xppc);
+                if (qvalue(basic_elt(litvec, 3)).load() != nil)
+                    short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFREE4NIL:
                 xppc = ppc;
                 ppc++;
-                if (qvalue(basic_elt(litvec, 4)) == nil) short_jump(ppc, xppc);
+                if (qvalue(basic_elt(litvec, 4)).load() == nil)
+                    short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFREE4T:
                 xppc = ppc;
                 ppc++;
-                if (qvalue(basic_elt(litvec, 4)) != nil) short_jump(ppc, xppc);
+                if (qvalue(basic_elt(litvec, 4)).load() != nil)
+                    short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT1EQ:
                 xppc = ppc;
                 ppc++;
-                if (static_cast<LispObject>(basic_elt(litvec,
-                                                      1)) == A_reg) short_jump(ppc, xppc);
+                if (static_cast<LispObject>(basic_elt(litvec, 1)) == A_reg)
+                    short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT1NE:
                 xppc = ppc;
                 ppc++;
-                if (static_cast<LispObject>(basic_elt(litvec,
-                                                      1)) != A_reg) short_jump(ppc, xppc);
+                if (static_cast<LispObject>(basic_elt(litvec, 1)) != A_reg)
+                    short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT2EQ:
                 xppc = ppc;
                 ppc++;
-                if (static_cast<LispObject>(basic_elt(litvec,
-                                                      2)) == A_reg) short_jump(ppc, xppc);
+                if (static_cast<LispObject>(basic_elt(litvec, 2)) == A_reg)
+                    short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT2NE:
                 xppc = ppc;
                 ppc++;
-                if (static_cast<LispObject>(basic_elt(litvec,
-                                                      2)) != A_reg) short_jump(ppc, xppc);
+                if (static_cast<LispObject>(basic_elt(litvec, 2)) != A_reg)
+                    short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT3EQ:
                 xppc = ppc;
                 ppc++;
-                if (static_cast<LispObject>(basic_elt(litvec,
-                                                      3)) == A_reg) short_jump(ppc, xppc);
+                if (static_cast<LispObject>(basic_elt(litvec, 3)) == A_reg)
+                    short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT3NE:
                 xppc = ppc;
                 ppc++;
-                if (static_cast<LispObject>(basic_elt(litvec,
-                                                      3)) != A_reg) short_jump(ppc, xppc);
+                if (static_cast<LispObject>(basic_elt(litvec, 3)) != A_reg)
+                    short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT4EQ:
                 xppc = ppc;
                 ppc++;
-                if (static_cast<LispObject>(basic_elt(litvec,
-                                                      4)) == A_reg) short_jump(ppc, xppc);
+                if (static_cast<LispObject>(basic_elt(litvec, 4)) == A_reg)
+                    short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT4NE:
                 xppc = ppc;
                 ppc++;
-                if (static_cast<LispObject>(basic_elt(litvec,
-                                                      4)) != A_reg) short_jump(ppc, xppc);
+                if (static_cast<LispObject>(basic_elt(litvec, 4)) != A_reg)
+                    short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFREENIL:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (qvalue(basic_elt(litvec, w)) == nil) short_jump(ppc, xppc);
+                if (qvalue(basic_elt(litvec, w)).load() == nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFREET:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (qvalue(basic_elt(litvec, w)) != nil) short_jump(ppc, xppc);
+                if (qvalue(basic_elt(litvec, w)).load() != nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLITEQ:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (static_cast<LispObject>(basic_elt(litvec,
-                                                      w)) == A_reg) short_jump(ppc, xppc);
+                if (static_cast<LispObject>(
+                    basic_elt(litvec, w)) == A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLITNE:
@@ -1618,7 +1626,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 //
                 f0 = qfn0(r1);
 // CALL0:  A=fn()
-                if ((qheader(r1) & SYM_TRACED) != 0)
+                if ((qheader(r1).load() & SYM_TRACED) != 0)
                     A_reg = traced_call0(basic_elt(litvec, 0), f0, r1);
                 else A_reg = f0(r1);
                 assert(A_reg != 0);
@@ -1662,7 +1670,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 // some pointers and go back to the top of the code of the bytecode
 // interpreter.
                 if (f0 == bytecoded_0 &&
-                    (qheader(r1) & SYM_TRACED) == 0)
+                    (qheader(r1).load() & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
                     codevec = car(lit);
                     litvec = cdr(lit);
@@ -1691,14 +1699,14 @@ next_opcode:   // This label is so that I can restart what I am doing
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = cdr(callstack);
-                if ((qheader(r1) & SYM_TRACED) != 0)
+                if ((qheader(r1).load() & SYM_TRACED) != 0)
                     A_reg = traced_call0(basic_elt(litvec, 0), f0, r1);
                 else A_reg = f0(r1);
                 errexit();
 //              return A_reg;
                 return nil;
 #else
-                if ((qheader(r1) & SYM_TRACED) != 0)
+                if ((qheader(r1).load() & SYM_TRACED) != 0)
                     A_reg = traced_call0(basic_elt(litvec, 0), f0, r1);
                 else A_reg = f0(r1);
                 return nil;
@@ -1713,7 +1721,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     save.restore(r1);
                 }
                 if (f1 == bytecoded_1 &&
-                    (qheader(r1) & SYM_TRACED) == 0)
+                    (qheader(r1).load() & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
                     codevec = car(lit);
                     litvec = cdr(lit);
@@ -1736,13 +1744,13 @@ next_opcode:   // This label is so that I can restart what I am doing
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = cdr(callstack);
-                if ((qheader(r1) & SYM_TRACED) != 0)
+                if ((qheader(r1).load() & SYM_TRACED) != 0)
                     A_reg = traced_call1(basic_elt(litvec, 0), f1, r1, A_reg);
                 else A_reg = f1(r1, A_reg);
 //              return A_reg;
                 return nil;
 #else
-                if ((qheader(r1) & SYM_TRACED) != 0)
+                if ((qheader(r1).load() & SYM_TRACED) != 0)
                     A_reg = traced_call1(basic_elt(litvec, 0), f1, r1, A_reg);
                 else A_reg = f1(r1, A_reg);
                 return nil;
@@ -1758,7 +1766,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     save.restore(r1);
                 }
                 if (f2 == bytecoded_2 &&
-                    (qheader(r1) & SYM_TRACED) == 0)
+                    (qheader(r1).load() & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
                     codevec = car(lit);
                     litvec = cdr(lit);
@@ -1781,13 +1789,13 @@ next_opcode:   // This label is so that I can restart what I am doing
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = cdr(callstack);
-                if ((qheader(r1) & SYM_TRACED) != 0)
+                if ((qheader(r1).load() & SYM_TRACED) != 0)
                     A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, B_reg, A_reg);
                 else A_reg = f2(r1, B_reg, A_reg);
 //              return A_reg;
                 return nil;
 #else
-                if ((qheader(r1) & SYM_TRACED) != 0)
+                if ((qheader(r1).load() & SYM_TRACED) != 0)
                     A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, B_reg, A_reg);
                 else A_reg = f2(r1, B_reg, A_reg);
                 return nil;
@@ -1803,7 +1811,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 }
                 r2 = *stack--;
                 if (f3 == bytecoded_3 &&
-                    (qheader(r1) & SYM_TRACED) == 0)
+                    (qheader(r1).load() & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
                     codevec = car(lit);
                     litvec = cdr(lit);
@@ -1826,13 +1834,13 @@ next_opcode:   // This label is so that I can restart what I am doing
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = cdr(callstack);
-                if ((qheader(r1) & SYM_TRACED) != 0)
+                if ((qheader(r1).load() & SYM_TRACED) != 0)
                     A_reg = traced_call3(basic_elt(litvec, 0), f3, r1, r2, B_reg, A_reg);
                 else A_reg = f3(r1, r2, B_reg, A_reg);
 //              return A_reg;
                 return nil;
 #else
-                if ((qheader(r1) & SYM_TRACED) != 0)
+                if ((qheader(r1).load() & SYM_TRACED) != 0)
                     A_reg = traced_call3(basic_elt(litvec, 0), f3, r1, r2, B_reg, A_reg);
                 else A_reg = f3(r1, r2, B_reg, A_reg);
                 return nil;
@@ -1896,7 +1904,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                         A_reg = qvalue(basic_elt(litvec, fname));
                         continue;
                     case 7:
-                        if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
+                        if ((qheader(basic_elt(litvec, 0)).load() & SYM_TRACESET) != 0)
                         {   Save save(A_reg);
                             print_traceset(fname, A_reg);
                             errexit();
@@ -1936,7 +1944,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 // might itself do a JCALL and corrupt them!  Also I know that the current
 // function is bytecoded, so I avoid the overhead of (re-)discovering that.
 //
-                if ((qheader(basic_elt(litvec, 0)) & SYM_TRACED) != 0)
+                if ((qheader(basic_elt(litvec, 0)).load() & SYM_TRACED) != 0)
                 {   fname = 0;
                     goto call1;
                 }
@@ -1976,7 +1984,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 debug_record_symbol(r1);
                 f1 = qfn1(r1);
 // CALL1:   A=fn(A);
-                if ((qheader(r1) & SYM_TRACED) != 0)
+                if ((qheader(r1).load() & SYM_TRACED) != 0)
                     A_reg = traced_call1(basic_elt(litvec, 0), f1, r1, A_reg);
                 else A_reg = f1(r1, A_reg);
                 assert(A_reg != 0);
@@ -1984,7 +1992,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 continue;
 
             case OP_CALL2_0:
-                if ((qheader(basic_elt(litvec, 0)) & SYM_TRACED) != 0)
+                if ((qheader(basic_elt(litvec, 0)).load() & SYM_TRACED) != 0)
                 {   fname = 0;
                     goto call2;
                 }
@@ -2021,7 +2029,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 debug_record_symbol(r1);
                 f2 = qfn2(r1);
 // CALL2:   A=fn(B,A);
-                if ((qheader(r1) & SYM_TRACED) != 0)
+                if ((qheader(r1).load() & SYM_TRACED) != 0)
                     A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, B_reg, A_reg);
                 else A_reg = f2(r1, B_reg, A_reg);
                 assert(A_reg != 0);
@@ -2035,7 +2043,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 debug_record_symbol(r1);
                 f2 = qfn2(r1);
 // CALL2R:   A=fn(A,B); NOTE arg order reversed
-                if ((qheader(r1) & SYM_TRACED) != 0)
+                if ((qheader(r1).load() & SYM_TRACED) != 0)
                     A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, A_reg, B_reg);
                 else A_reg = f2(r1, A_reg, B_reg);
                 assert(A_reg != 0);
@@ -2050,7 +2058,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 f3 = qfn3(r1);
 // CALL3:   A=fn(pop(),B,A);
                 r2 = *stack--;
-                if ((qheader(r1) & SYM_TRACED) != 0)
+                if ((qheader(r1).load() & SYM_TRACED) != 0)
                     A_reg = traced_call3(basic_elt(litvec, 0), f3, r1, r2, B_reg, A_reg);
                 else A_reg = f3(r1, r2, B_reg, A_reg);
                 assert(A_reg != 0);
@@ -2677,7 +2685,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 // If the tag matches exit_tag then I must reset pc based on offset (r2)
 // and continue. NB need to restore A_reg from exit_value.
             w = int_of_fixnum(r2);
-            if (car(r1) == SPID_PROTECT)
+            if (car(r1).load() == SPID_PROTECT)
             {   // This is an UNWIND catcher
                 *++stack =exit_tag; *++stack = fixnum_of_int(exit_reason);
                 *++stack = Lmv_list(nil, exit_value);

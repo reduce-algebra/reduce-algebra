@@ -2736,10 +2736,11 @@ restart:
 // a digest of a printed representation and is needed if digests are to
 // be acceptably consistent across lisp images.
             if (escaped_printing & escape_checksum)
-            {   if ((qheader(u) & (SYM_CODEPTR+SYM_ANY_GENSYM)) == SYM_ANY_GENSYM)
+            {   if ((qheader(u).load() & (SYM_CODEPTR+SYM_ANY_GENSYM)) ==
+                    SYM_ANY_GENSYM)
                 {   LispObject al = stream_write_data(active_stream);
                     while (al != nil &&
-                           car(car(al)) != u) al = cdr(al);
+                           car(car(al)).load() != u) al = cdr(al);
                     if (al == nil)
                     {   al = acons(u, fixnum_of_int(local_gensym_count),
                                    stream_write_data(active_stream));
@@ -2868,8 +2869,8 @@ restart:
 // Now I have prin1 rather than prin2, or prin2 but with case folding.
 // thus the fun really begins.
                 {   int extralen = 0;
-                    if (qvalue(lower_symbol) != nil) raised = -1;
-                    else if (qvalue(raise_symbol) != nil) raised = 1;
+                    if (qvalue(lower_symbol).load() != nil) raised = -1;
+                    else if (qvalue(raise_symbol).load() != nil) raised = 1;
                     u = w;
                     len -= CELL;
 // A horrid case here - digits are special at the start of names so need

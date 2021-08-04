@@ -98,7 +98,7 @@ restart:
         else
         {   while (env != nil)
             {   LispObject p = car(env);
-                if (car(p) == u)
+                if (car(p).load() == u)
                 {   LispObject v =cdr(p);
 // If a variable is lexically bound to the value work_symbol that means
 // that the symbol has been (lexically) declared to be special, so its
@@ -156,7 +156,7 @@ restart:
 // binding of a function, either as a regular function or as a macro
 // (i.e. flet or macrolet).  The structure of the list distinguishes
 // between these two cases.
-                    if (cdr(w) == fn && is_cons(w = car(w)) && w!=nil)
+                    if (cdr(w).load() == fn && is_cons(w = car(w)) && w!=nil)
                     {   p = car(w);
 // p will now be (funarg env bvl ...body...) for a simple local
 // function definition, or (bvl ...body...) with the bvl non-atomic
@@ -235,7 +235,7 @@ restart:
 // so that if I have at most 3 and if the function is a symbol I do
 // things rather directly.
         LispObject eargs = nil;
-        if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
+        if (is_symbol(fn) && (qheader(fn).load() & SYM_TRACED) == 0)
         {   if (args == nil) return (*qfn0(fn))(fn);
             LispObject a1 = car(args);
             {   Save save(fn, args, env);
@@ -328,7 +328,8 @@ static bool check_no_unwanted_keys(LispObject restarg,
     is_ok:
         restarg = cdr(restarg);
         if (restarg==nil) return true;  // odd length list
-        if (k == allow_key_key && car(restarg) != nil) return false; // OK
+        if (k == allow_key_key &&
+            car(restarg).load() != nil) return false; // OK
         restarg = cdr(restarg);
     }
     return odd_key_found;
@@ -339,7 +340,7 @@ static bool check_keyargs_even(LispObject restarg)
 // the keyword package. Return true in BAD case.
 {   while (restarg!=nil)
     {   LispObject q = car(restarg);
-        if (!is_symbol(q) || qpackage(q) != qvalue(keyword_package))
+        if (!is_symbol(q) || qpackage(q).load() != qvalue(keyword_package))
             return true;
         restarg = cdr(restarg);
         if (restarg==nil) return true;      // Odd length is wrong
@@ -372,7 +373,7 @@ static LispObject key_lookup(LispObject keyname, LispObject args)
 {   while (args!=nil)
     {   LispObject next = cdr(args);
         if (next==nil) return nil;
-        if (car(args) == keyname) return next;
+        if (car(args).load() == keyname) return next;
         else args = cdr(next);
     }
     return nil;
@@ -386,7 +387,7 @@ inline LispObject instate_binding(LispObject var, LispObject val,
                                   LispObject &w)
 {   Header h;
 // Complain if the varianble that somebody is attempting to bind seems bad.
-    if (!is_symbol(var) || (qheader(var) & SYM_GLOBAL_VAR)!=0)
+    if (!is_symbol(var) || (qheader(var).load() & SYM_GLOBAL_VAR)!=0)
         return error(1, err_bad_bvl, var);
     h = qheader(var);
 // Special variables have their old value saved in the association list
@@ -407,7 +408,7 @@ inline LispObject instate_binding(LispObject var, LispObject val,
 // declared special, so I scan the environment. I clobber local declarations
 // when I use them so that they do not get applied multiple times.
         for (w = local_decs1; w!=nil; w = cdr(w))
-        {   if (car(w) == var)
+        {   if (car(w).load() == var)
             {   setcar(w, fixnum_of_int(0)); // decl is used up
                 env = acons(var, work_symbol, env);
                 errexit();
@@ -501,7 +502,7 @@ LispObject apply_lambda(LispObject def, LispObject args,
             body = cons(p, body);  // other atoms get stuck back on body.
             break;
         }
-        if (car(p) != declare_symbol)
+        if (car(p).load() != declare_symbol)
         {   body = cons(p, body);  // something other than a "declare".
             errexit();
             break;
@@ -513,7 +514,7 @@ LispObject apply_lambda(LispObject def, LispObject args,
         for (v = cdr(p); consp(v); v = cdr(v))
         {   v1 = car(v);
 // scan looking for (SPECIAL ...)
-            if (!consp(v1) || car(v1) != special_symbol) continue;
+            if (!consp(v1) || car(v1).load() != special_symbol) continue;
             // here v1 says (special ...)
             for (v1=cdr(v1); consp(v1); v1 = cdr(v1))
             {   local_decs = cons(car(v1), local_decs);
@@ -892,13 +893,13 @@ LispObject Lapply_3(LispObject env, LispObject fn, LispObject a1,
 // name of the function indicates the number of arguments to be involved.
 
 LispObject Lapply0(LispObject env, LispObject fn)
-{   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
+{   if (is_symbol(fn) && (qheader(fn).load() & SYM_TRACED) == 0)
         return (*qfn0(fn))(fn);
     return Lapply_2(env, fn, nil);
 }
 
 LispObject Lapply1(LispObject env, LispObject fn, LispObject a1)
-{   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
+{   if (is_symbol(fn) && (qheader(fn).load() & SYM_TRACED) == 0)
         return (*qfn1(fn))(fn, a1);
     Save save(fn, env);
     a1 = ncons(a1);
@@ -909,7 +910,7 @@ LispObject Lapply1(LispObject env, LispObject fn, LispObject a1)
 
 LispObject Lapply2(LispObject env, LispObject fn,
                    LispObject a1, LispObject a2)
-{   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
+{   if (is_symbol(fn) && (qheader(fn).load() & SYM_TRACED) == 0)
         return (*qfn2(fn))(fn, a1, a2);
     {   Save save(env, fn);
         a1 = list2(a1, a2);
@@ -921,7 +922,7 @@ LispObject Lapply2(LispObject env, LispObject fn,
 
 LispObject Lapply3(LispObject env, LispObject fn,
                    LispObject a1, LispObject a2, LispObject a3up)
-{   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
+{   if (is_symbol(fn) && (qheader(fn).load() & SYM_TRACED) == 0)
     {   LispObject a3 = arg4("apply3", a3up);
         return (*qfn3(fn))(fn, a1, a2, a3);
     }
@@ -936,7 +937,7 @@ LispObject Lapply3(LispObject env, LispObject fn,
 
 LispObject Lapply4(LispObject env, LispObject fn,
                    LispObject a1, LispObject a2, LispObject a3up)
-{   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
+{   if (is_symbol(fn) && (qheader(fn).load() & SYM_TRACED) == 0)
     {   LispObject a3, a4;
         if (a4a5("apply4", a3up, a3, a4)) return nil;
         return (*qfn4up(fn))(fn, a1, a2, a3, cdr(a3up));
@@ -956,13 +957,13 @@ LispObject Lapply4(LispObject env, LispObject fn,
 // of its own arguments to the called function.
 
 LispObject Lfuncall_1(LispObject env, LispObject fn)
-{   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
+{   if (is_symbol(fn) && (qheader(fn).load() & SYM_TRACED) == 0)
         return (*qfn0(fn))(fn);
     return Lapply_2(env, fn, nil);
 }
 
 LispObject Lfuncall_2(LispObject env, LispObject fn, LispObject a1)
-{   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
+{   if (is_symbol(fn) && (qheader(fn).load() & SYM_TRACED) == 0)
         return (*qfn1(fn))(fn, a1);
     {   Save save(env, fn);
         a1 = ncons(a1);
@@ -974,7 +975,7 @@ LispObject Lfuncall_2(LispObject env, LispObject fn, LispObject a1)
 
 LispObject Lfuncall_3(LispObject env, LispObject fn,
                       LispObject a1, LispObject a2)
-{   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
+{   if (is_symbol(fn) && (qheader(fn).load() & SYM_TRACED) == 0)
         return (*qfn2(fn))(fn, a1, a2);
     {   Save save(env, fn);
         a1 = list2(a1, a2);
@@ -986,8 +987,9 @@ LispObject Lfuncall_3(LispObject env, LispObject fn,
 
 LispObject Lfuncall_4up(LispObject env, LispObject fn,
                         LispObject a1, LispObject a2, LispObject a3up)
-{   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
-    {   if (cdr(a3up) == nil) return (*qfn3(fn))(fn, a1, a2, car(a3up));
+{   if (is_symbol(fn) && (qheader(fn).load() & SYM_TRACED) == 0)
+    {   if (cdr(a3up).load() == nil)
+            return (*qfn3(fn))(fn, a1, a2, car(a3up));
         else return (*qfn4up(fn))(fn, a1, a2, car(a3up), cdr(a3up));
     }
     {   Save save(env, fn);
@@ -1238,7 +1240,7 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
         {   LispObject p;
             for (p=env; p!=nil; p=cdr(p))
             {   LispObject w = car(p);
-                if (cdr(w) == f && is_cons(w = car(w)) && w!=nil)
+                if (cdr(w).load() == f && is_cons(w = car(w)) && w!=nil)
                 {   p = car(w);
                     if (p == funarg) // ordinary function
                     {   mv_2 = nil;
@@ -1270,7 +1272,7 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
             }
         }
 // If there is no local macro definition I need to look for a global one
-        if (symbolp(f) && (qheader(f) & SYM_MACRO) != 0)
+        if (symbolp(f) && (qheader(f).load() & SYM_MACRO) != 0)
         {   done = qvalue(macroexpand_hook);
             if (done == unset_var)
                 return error(1, err_macroex_hook, macroexpand_hook);

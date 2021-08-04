@@ -2834,8 +2834,8 @@ down:
 //      GGGnnnn_nnn_nnn_nnn
 // with some number of groups of 3 digits on the end and then a group
 // of 4. This code loses that part of the name.
-                if ((isgensym = (qheader(p) & SYM_ANY_GENSYM) != 0) &&
-                    (qheader(p) & SYM_UNPRINTED_GENSYM) == 0)
+                if ((isgensym = (qheader(p).load() & SYM_ANY_GENSYM) != 0) &&
+                    (qheader(p).load() & SYM_UNPRINTED_GENSYM) == 0)
                 {   while (basic_celt(w, n-4) == '_') n -= 4;
                     n -= 4;
                 }
@@ -3387,8 +3387,8 @@ LispObject Lserialize1(LispObject env, LispObject a)
 
 void check_no_gensyms(LispObject u)
 {  if (is_symbol(u))
-   {   if ((qheader(u) & SYM_ANY_GENSYM) != 0 ||
-           qpackage(u) == nil)
+   {   if ((qheader(u).load() & SYM_ANY_GENSYM) != 0 ||
+           qpackage(u).load() == nil)
        {   trace_printf("+++ Warning: gensym present in definition: ");
            prin_to_trace(u);
            trace_printf("\n");
@@ -4201,12 +4201,12 @@ static bool interesting(LispObject x)
             if (static_cast<LispObject>(basic_elt(ff, i)) != SPID_NOPROP) return true;
     }
     return (qfn1(x) != undefined_1 ||
-            qplist(x) != nil ||
-            qvalue(x) != unset_var);
+            qplist(x).load() != nil ||
+            qvalue(x).load() != unset_var);
 }
 
 static bool not_gensym(LispObject x)
-{   return ((qheader(x) & (SYM_CODEPTR | SYM_ANY_GENSYM))== 0);
+{   return ((qheader(x).load() & (SYM_CODEPTR | SYM_ANY_GENSYM))== 0);
 }
 
 // Return an unsorted list of all symbols present in the current world.
@@ -4302,7 +4302,8 @@ static bool count_totals(LispObject x)
 }
 
 static bool clear_counts(LispObject x)
-{   qcountLow(x) &= 0x3fffffU;  // leave the serial number in place.
+{   qcountLow(x) = qcountLow(x).load() & 0x3fffffU;
+    // leave the serial number in place.
     qcountHigh(x) = 0;
     return false;
 }
@@ -4422,7 +4423,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
             }
             x = *stack--;
             if ((what & 1) == 0)
-            {   qcountLow(x) &= 0x3fffffU;
+            {   qcountLow(x) = qcountLow(x).load() & 0x3fffffU;
                 qcountHigh(x) = 0;
             }
         }

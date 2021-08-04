@@ -215,7 +215,7 @@ extend_by_one_word:
         (!SIXTY_FOUR_BIT && ((lenb & 1) == 0)))
 // Here there was a padder word that I can expand into.
     {   bignum_digits(c)[lenb] = aa;
-        setnumhdr(c, numhdr(c) + pack_hdrlength(1));
+        setnumhdr(c, numhdr(c).load() + pack_hdrlength(1));
         return c;
     }
 // Need to allocate more space to grow into. I need to grow by just 4 bytes.
@@ -1084,7 +1084,7 @@ static LispObject timesbb(LispObject a, LispObject b)
 // doubleword alignment that is used here this can sometimes be done very
 // easily, and other times it involves forging a short bit of dummy data
 // to fill in a gap that gets left in the heap.
-    setnumhdr(c, numhdr(c) - pack_hdrlength(1));
+    setnumhdr(c, numhdr(c).load() - pack_hdrlength(1));
     if ((SIXTY_FOUR_BIT && ((lenc & 1) == 0)) ||
         (!SIXTY_FOUR_BIT && ((lenc & 1) != 0)))
         bignum_digits(c)[lenc-1] = 0; // tidy up
@@ -1093,7 +1093,7 @@ static LispObject timesbb(LispObject a, LispObject b)
     return c;
 chop2:
 // Trim two words from the number c
-    setnumhdr(c, numhdr(c) - pack_hdrlength(2));
+    setnumhdr(c, numhdr(c).load() - pack_hdrlength(2));
     lenc -= 2;
     bignum_digits(c)[lenc] = 0;
     if (SIXTY_FOUR_BIT) lenc = (lenc + 1) & ~1;

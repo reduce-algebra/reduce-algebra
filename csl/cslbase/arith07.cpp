@@ -147,7 +147,7 @@ LispObject negateb(LispObject a)
 // least two words to deal with here.
         if (carry == -1 && (bignum_digits(b)[i-1] & 0x40000000) != 0)
         {   bignum_digits(b)[i-1] |= ~0x7fffffff;
-            setnumhdr(b, numhdr(b) - pack_hdrlength(1));
+            setnumhdr(b, numhdr(b).load() - pack_hdrlength(1));
             if (SIXTY_FOUR_BIT)
             {   if ((i & 1) != 0) bignum_digits(b)[i] = 0;
                 else *reinterpret_cast<Header *>(&bignum_digits(b)[i]) = make_bighdr(
