@@ -2080,7 +2080,7 @@ restart:
                 {   width--;
                     mask = (mask<<3) | 0x7;
                 }
-                while (--width > 0) my_bu
+                while (--width > 0) my_buff[len++] = static_cast<char>(k);
                 std::sprintf(&my_buff[len], "%" PRIo64,
                     static_cast<int64_t>(v));
             }
