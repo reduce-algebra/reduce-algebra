@@ -824,7 +824,6 @@
                                (SUB (reg t2) (reg t2) (reg t3))
                                (*Move (reg t2) ArgOne)))
 
-
 (de *WNegate(ARG1)
  (Expand1OperandCMacro ARG1 '*WNegate))
  
