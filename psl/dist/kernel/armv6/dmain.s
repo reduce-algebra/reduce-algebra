@@ -2395,8 +2395,8 @@ symfnc:
  .long undefinedfunction
  .long undefinedfunction
  .long undefinedfunction
+ .long undefinedfunction
  .globl firstkernel
- .long firstkernel
  .long firstkernel
  .long undefinedfunction
  .long undefinedfunction
