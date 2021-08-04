@@ -270,7 +270,9 @@
 	(putmem (wplus2 m 16) (getmem (wplus2 a 12)))
 	(putmem (wplus2 m 20) n)	% replace *TheCalledID* by actual id of called function
 	(putmem (wplus2 m 24) (getmem (wplus2 a 20)))
-	   % now plant it
+        % flush cache
+        (clear_cache m (wplus2 m 32))
+	% now plant it
 	(setf (getmem (wplus2 symfnc (wtimes2 n 4))) (wplus2 m 4))
 	  ))
 

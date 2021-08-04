@@ -30,6 +30,10 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 (on fast-integers)
 
@@ -654,7 +658,7 @@
                        OpenCodeSequence)
                       ((setq OpenCodeSequence
                              (get FunctionName 'OpenCode))
-		       % check whether the opncode sequence ends with *Call
+		       % check whether the opencode sequence ends with *Call
 		       % and replace it with *JCall
 		       (if (eqcar (lastcar OpenCodeSequence) '*Call)
 			   (progn
@@ -670,8 +674,7 @@
 		       % check that there isn't another *Call somewhere
 		       (if (atsoc '*Call OpenCodeSequence)
 			   (stderror
-			    (bldmsg "Cannot have *Call in opencode sequence for %w")
-			    FunctionName)
+			    (bldmsg "Cannot have *Call in opencode sequence for %w" FunctionName))
 			 OpenCodeSequence
 			 ))
                       (t (CMacroPatternExpand (list FunctionName)
@@ -821,19 +824,6 @@
                                (SUB (reg t2) (reg t2) (reg t3))
                                (*Move (reg t2) ArgOne)))
 
-(put 'wdivide 'opencode
-     % returns (signed) quotient and puts remainder in *second-value*
-     '( % save dividend and divisor on stack
-        (*Push (reg 1))
-        (*Push (reg 2))
-        (*Call wquotient)
-	(*Pop (reg t2))
-	(*Pop (reg t1))
-	% calculate remainder as t1-q*t2
-	(MUL (reg 2) (reg 1) (reg t2))
-	(SUB (reg 2) (reg t1) (reg 2))
-        (*Move (reg 2) (fluid *second-value*))
-      ))
 
 (de *WNegate(ARG1)
  (Expand1OperandCMacro ARG1 '*WNegate))
@@ -1105,8 +1095,12 @@
                          (ArgFour ArgThree))
      ((regp imm8-rotatedp) (CMP ArgOne ArgTwo)
                          (ArgFour ArgThree))
-%% ((imm8-rotatedp regp (CMP ArgTwo ArgOne)
-%%                       (ArgFive ArgThree))
+     ((regp imm8-neg-rotatedp) (CMN ArgOne (minus ArgTwo))
+                         (ArgFour ArgThree))
+     ((imm8-rotatedp regp) (CMP ArgTwo ArgOne)
+                         (ArgFive ArgThree))
+     ((imm8-neg-rotatedp regp) (CMN ArgTwo (minus ArgOne))
+                         (ArgFive ArgThree))
      ((regp anyp)       (*Move ArgTwo (reg t3))
                          (CMP ArgOne (reg t3))
                          (ArgFour ArgThree))
@@ -1116,9 +1110,15 @@
      ((anyp imm8-rotatedp) (*Move ArgOne (reg t3))
                          (CMP (reg t3) ArgTwo)
                          (ArgFour ArgThree))
-%% ((imm8-rotatedp anyp) (*Move ArgTwo (reg t2))
-%%                       (CMP (reg t2) ArgOne)
-%%                       (ArgFive ArgThree))
+     ((anyp imm8-neg-rotatedp) (*Move ArgOne (reg t3))
+                         (CMN (reg t3) (minus ArgTwo))
+                         (ArgFour ArgThree))
+     ((imm8-rotatedp anyp) (*Move ArgTwo (reg t3))
+                         (CMP (reg t3) ArgOne)
+                         (ArgFive ArgThree))
+     ((imm8-neg-rotatedp anyp) (*Move ArgTwo (reg t3))
+                         (CMN (reg t3) (minus ArgOne))
+                         (ArgFive ArgThree))
      (                   (*Move ArgOne (reg t1))
                          (*Move ArgTwo (reg t2))
                          (CMP (reg t1) (reg t2))
@@ -1143,27 +1143,27 @@
 (DefCMacro *JumpNotEQ)
 
 (de *JumpNotEQ(Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(bne . 'bne)))
+        (*JumpIF ArgOne ArgTwo Lbl '(bne . bne)))
 
 (DefCMacro *JumpWlessp)
 
 (de *JumpWlessp (Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(blt . bge)))
+        (*JumpIF ArgOne ArgTwo Lbl '(blt . bgt)))
 
 (DefCMacro *JumpWgreaterp)
 
 (de *JumpwGreaterp (Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(bgt . ble)))
+        (*JumpIF ArgOne ArgTwo Lbl '(bgt . blt)))
 
 (DefCMacro *JumpWleq)
 
 (de  *JumpWleq(Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(ble . bgt)))
+        (*JumpIF ArgOne ArgTwo Lbl '(ble . bge)))
 
 (DefCMacro *JumpWgeq)
 
 (de *jumpWgeq (Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(bge . blt)))
+        (*JumpIF ArgOne ArgTwo Lbl '(bge . ble)))
 
 % --------------------
 

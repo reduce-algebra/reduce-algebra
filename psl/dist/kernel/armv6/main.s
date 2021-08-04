@@ -1047,13 +1047,11 @@ l0149:
  ldr r7, l0141
  ldr r7, [r11, r7, lsl #2]
  add r0, r0, r7
- mov r5, #0
- ldr r6, [r0]
- cmp r5, r6
+ ldr r7, [r0]
+ cmp r7, #0
  bne l0150
- ldr r5, [sp, #12]
- mvn r6, #0
- cmp r5, r6
+ ldr r7, [sp, #12]
+ cmn r7, #1
  beq l0151
  ldr r0, [sp, #12]
  b l0152
@@ -1068,13 +1066,11 @@ l0150:
  ldr r7, l0141
  ldr r7, [r11, r7, lsl #2]
  add r1, r1, r7
- mvn r5, #0
- ldr r6, [r1]
- cmp r5, r6
+ ldr r7, [r1]
+ cmn r7, #1
  bne l0154
- ldr r5, [sp, #12]
- mvn r6, #0
- cmp r5, r6
+ ldr r7, [sp, #12]
+ cmn r7, #1
  bne l0155
  ldr r5, [sp, #8]
  str r5, [sp, #12]
@@ -2202,21 +2198,19 @@ l0280:
 gtid:
  stmdb sp!, {lr}
  str r12, [sp, #-4]!
- mov r5, #0
 @ ($global nextsymbol)
  ldr r7, l0275
- ldr r6, [r11, r7, lsl #2]
- cmp r5, r6
+ ldr r7, [r11, r7, lsl #2]
+ cmp r7, #0
  bne l0281
 @ (idloc reclaim)
  ldr r7, l0276
  ldr r6, [r10, r7, lsl #2]
  blx r6
- mov r5, #0
 @ ($global nextsymbol)
  ldr r7, l0275
- ldr r6, [r11, r7, lsl #2]
- cmp r5, r6
+ ldr r7, [r11, r7, lsl #2]
+ cmp r7, #0
  bne l0281
  ldr r0, l0277
 @ (idloc kernel-fatal-error)
