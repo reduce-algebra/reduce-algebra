@@ -2080,7 +2080,7 @@ restart:
                 {   width--;
                     mask = (mask<<3) | 0x7;
                 }
-                while (--width > 0) my_buff[len++] = static_cast<char>(k);
+                while (--width > 0) my_bu
                 std::sprintf(&my_buff[len], "%" PRIo64,
                     static_cast<int64_t>(v));
             }
@@ -2151,8 +2151,9 @@ restart:
                         else std::sprintf(my_buff, "#{%.124s}",
                                           fasl_files[u].name);
                         break;
-                    default:           std::sprintf(my_buff, "SPID_%lx",
-                                                        static_cast<long>((u >> 8) & 0x00ffffff));
+                    default:
+                        std::sprintf(my_buff, "SPID_%lx",
+                            static_cast<long>((u >> 8) & 0x00ffffff));
                         break;
                 }
                 len = std::strlen(my_buff);

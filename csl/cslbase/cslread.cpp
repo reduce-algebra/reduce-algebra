@@ -3097,7 +3097,8 @@ int32_t read_action_synonym(int32_t c, LispObject f)
     {
 #if defined CONSERVATIVE && defined DEBUG
         cout << "bad synonym stream " << Addr(f1) << "\n";
-        cout << "header = " << std::hex << vechdr(f1) << std::dec << "\n";
+        cout << "header = " << std::hex << vechdr(f1).load()
+             << std::dec << "\n";
         simple_print(stream_type(f));
         simple_print(stream_write_data(f));
 #endif

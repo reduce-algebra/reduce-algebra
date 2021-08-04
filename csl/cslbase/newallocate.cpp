@@ -1787,7 +1787,8 @@ LispObject Lgctest_0(LispObject env)
             LispObject b = a;
             for (unsigned int j=i; j!=static_cast<unsigned int>(-1); j--)
             {   if (!is_cons(b)) my_abort("gc test failure");
-                if (car(b) != fixnum_of_int(j)) my_abort("gc test failure");
+                if (car(b).load() != fixnum_of_int(j))
+                    my_abort("gc test failure");
                 b = cdr(b);
             }
             if (b != nil) my_abort("gc test failure");
@@ -1805,10 +1806,10 @@ LispObject Lgctest_1(LispObject env, LispObject a1)
     b = a;
     for (unsigned int j=n-1; j!=static_cast<unsigned int>(-1); j--)
     {   if (!is_cons(b)) goto failing2;
-        if (car(b) != fixnum_of_int(j))
+        if (car(b).load() != fixnum_of_int(j))
         {   cout << "Fail3 case with j = " << std::dec << j << "\r" << endl
                  << " fixnum_of_int(j) = " << std::hex << fixnum_of_int(j) << "\r" << endl
-                 << " car(b) = " << car(b) << " which differs" << "\r" << endl
+                 << " car(b) = " << car(b).load() << " which differs" << "\r" << endl
                  << " " << (n-1-j) << " items down the list" << "\r" << endl;
             goto failing3; //<<<<<<<<<
         }
@@ -1818,30 +1819,30 @@ LispObject Lgctest_1(LispObject env, LispObject a1)
     return nil;
 failing2:
     cout << "Crashed2 " << std::hex << "b = " << b
-         << " car(b) = " << car(b) << "\r" << endl;
+         << " car(b) = " << car(b).load() << "\r" << endl;
     cout << "n = " << n << "\r" << endl;
     for (int z=1; z<10; z++)
-    {   cout << std::dec << (car(b)/16) << " ";
+    {   cout << std::dec << (car(b).load()/16) << " ";
         b = cdr(b);
     }
     cout << "\r" << endl;
     return nil;
 failing3:
     cout << "Crashed3 " << std::hex << "b = " << b
-         << " car(b) = " << car(b) << "\r" << endl;
+         << " car(b) = " << car(b).load() << "\r" << endl;
     cout << "n = " << n << "\r" << endl;
     for (int z=1; z<10; z++)
-    {   cout << std::dec << (car(b)/16) << " ";
+    {   cout << std::dec << (car(b).load()/16) << " ";
         b = cdr(b);
     }
     cout << "\r" << endl;
     return nil;
 failing4:
     cout << "Crashed4 " << std::hex << "b = " << b
-         << " car(b) = " << car(b) << "\r" << endl;
+         << " car(b) = " << car(b).load() << "\r" << endl;
     cout << "n = " << n << "\r" << endl;
     for (int z=1; z<10; z++)
-    {   cout << std::dec << (car(b)/16) << " ";
+    {   cout << std::dec << (car(b).load()/16) << " ";
         b = cdr(b);
     }
     cout << "\r" << endl;
