@@ -38,6 +38,12 @@
 %
 % 3-Apr-90 (Winfried Neun)
 % added support for new car and cdr scheme in modr/m
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 
 % ------------------------------------------------------------
@@ -1060,8 +1066,8 @@
 
 (de DepositFloat (X)                    % this will not work in cross-assembly
 (progn (setq X (FltInf (second X))) 
-    (DepositWord (FloatlowOrder X)) 
-    (DepositWord (FloathighOrder X))))
+    (DepositWord (FloathighOrder X)) 
+    (DepositWord (FloatlowOrder X))))
 
 (put 'fullword 'InstructionDepositFunction 'DepositWordBlock)
 (put 'halfword 'InstructionDepositFunction 'DepositHalfWordBlock)

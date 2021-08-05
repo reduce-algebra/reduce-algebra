@@ -804,12 +804,12 @@ void evacuate(atomic<LispObject> &a)
 // a linear scan of the newly copied material. That stage is not discussed
 // here because this function does not directly cause it to happen.
 //
-    my_assert(a!=0, "zero word in scanning");
+    my_assert(a.load() != 0, "zero word in scanning");
     my_assert(!is_forward(a), "forwarding ptr in scanning");
-    if (is_immediate(a) || a == nil)
+    if (is_immediate(a) || a.load() == nil)
     {
 #ifdef DEBUG
-        if (a != nil)
+        if (a.load() != nil)
             if (gcTrace) cout << "immediate data: easy " << Addr(a.load()) << "\n";
 #endif // DEBUG
         return;
@@ -822,12 +822,12 @@ void evacuate(atomic<LispObject> &a)
         }
         return;
     }
-    LispObject *ap = reinterpret_cast<LispObject *>(a & ~TAG_BITS);
+    LispObject *ap = reinterpret_cast<LispObject *>(a.load() & ~TAG_BITS);
     LispObject aa = *ap;
     if (gcTrace) cout << "item is " << Addr(a.load()) << " [not immediate] "
          << " contents of that is " << Addr(aa) << "\n";
     if (is_forward(aa))
-    {   a = aa - TAG_FORWARD + (a&TAG_BITS);
+    {   a = aa - TAG_FORWARD + (a.load() & TAG_BITS);
 #ifdef DEBUG
         if (gcTrace) cout << "Process forwarding address\n";
 #endif // DEBUG
@@ -849,7 +849,7 @@ void evacuate(atomic<LispObject> &a)
 #endif // DEBUG
     std::memcpy(reinterpret_cast<void *>(aa), ap, len);
     *ap = TAG_FORWARD + aa;
-    a = aa + (a&TAG_BITS);
+    a = aa + (a.load() & TAG_BITS);
 }
 
 #else // NO_EXTRA_GC_THREADS
@@ -1020,7 +1020,7 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 // not of interest. Note that at the very start of a run much of the
 // memory will only have pageTag and chain fields filled in, and that is
 // why it is important to do this check using only those.
-{   if (p->chunkCount == 0) return;  // An empty Page.
+{   if (p->chunkCount.load() == 0) return;  // An empty Page.
     if (gcTrace)
         cout << "Ambig " << Addr(a) << " in non-empty page "
              << Addr(p) << endl;
@@ -1087,10 +1087,10 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 
     Chunk *c = p->chunkMap[low];
     if (gcTrace) cout << "pointer is maybe within chunk " << low << " at " << Addr(c) << endl;
-    if (c->pinnedObjects != TAG_FIXNUM)
+    if (c->pinnedObjects.load() != TAG_FIXNUM)
     {   bool valid = false;
         for (LispObject ch=c->pinnedObjects; ch!=TAG_FIXNUM; ch=cdr(ch&~TAG_BITS))
-        {   if ((a&~TAG_BITS) == (car(ch&~TAG_BITS)&~TAG_BITS))
+        {   if ((a&~TAG_BITS) == (car(ch&~TAG_BITS).load() & ~TAG_BITS))
             // needs to be "a points within" not "=="
             {   valid = true;
                 break;
@@ -1105,7 +1105,7 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 // pinning must record that both by being on a chain of pages with pins
 // and by having a list of its own pinned chunks.
 // If the chunk is already tagged as pinned there is no need to do so again.
-    if (c->isPinned != 0) return;
+    if (c->isPinned.load() != 0) return;
     c->isPinned++;
     pinnedChunkCount++;
 // Note that a single thread looks at ambiguous pointers so while I want
@@ -1227,7 +1227,7 @@ void findHeadersOfPinnedItems()
                 << Addr(c->dataStart())
                 << " to " << Addr(c->chunkFringe.load())
                 << " end " << Addr(c->dataEnd()) << "\n";
-            if (c->pinnedObjects != TAG_FIXNUM)
+            if (c->pinnedObjects.load() != TAG_FIXNUM)
             {
             }
             else while (p < c->chunkFringe)
@@ -1851,25 +1851,25 @@ void garbageCollect(bool major)
 #ifdef DEBUG
     LispObject a = standard_input;
     cout << "\nstdin = " << std::flush; simple_print(a);
-    cout << "hdr= " << std::hex << qheader(a) << "\n";
+    cout << "hdr= " << std::hex << qheader(a).load() << "\n";
     if (is_symbol(a)) a = qvalue(a);
     cout << "\n value = " << std::flush;
     simple_print(a);
-    cout << std::hex << vechdr(a) << std::dec << "\n";
+    cout << std::hex << vechdr(a).load() << std::dec << "\n";
     a = standard_output;
     cout << "\nstdout = " << std::flush; simple_print(a);
-    cout << "hdr= " << std::hex << qheader(a) << "\n";
+    cout << "hdr= " << std::hex << qheader(a).load() << "\n";
     if (is_symbol(a)) a = qvalue(a);
     cout << "\n value = " << std::flush;
     simple_print(a);
-    cout << std::hex << vechdr(a) << std::dec << "\n";
+    cout << std::hex << vechdr(a).load() << std::dec << "\n";
     a = terminal_io;
     cout << "\nterminal-io = " << std::flush; simple_print(a);
-    cout << "hdr= " << std::hex << qheader(a) << "\n";
+    cout << "hdr= " << std::hex << qheader(a).load() << "\n";
     if (is_symbol(a)) a = qvalue(a);
     cout << "\n value = " << std::flush;
     simple_print(a);
-    cout << std::hex << vechdr(a) << std::dec << "\n";
+    cout << std::hex << vechdr(a).load() << std::dec << "\n";
 #endif // DEBUG
 #ifdef DEBUG
 // Just to test things!
@@ -1907,7 +1907,7 @@ static LispObject visitedHash[hashSize];
 bool inActivePage(LispObject a)
 {   if (a==0 || a==nil || is_immediate(a)) return true;
     Page *p = reinterpret_cast<Page *>(a & -pageSize);
-    return p->chunkCount != 0;
+    return p->chunkCount.load() != 0;
 }
 
 void clearRepeats()

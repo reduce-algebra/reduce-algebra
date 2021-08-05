@@ -939,7 +939,7 @@ LispObject shrink_bignum(LispObject a, size_t lena)
     if (lena == olen) return a;
 // Here I had allocated too much space, so I have to trim it off and
 // put a dummy vector in to pad out the heap.
-    setnumhdr(a, numhdr(a) - pack_hdrlength(olen-lena));
+    setnumhdr(a, numhdr(a).load() - pack_hdrlength(olen-lena));
     msd = bignum_digits(a)[lena];
     if ((msd & 0x40000000) != 0) bignum_digits(a)[lena] = msd |
                 ~0x7fffffff;

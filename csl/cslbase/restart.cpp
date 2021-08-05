@@ -485,13 +485,13 @@ static void count_symbols(setup_type const s[])
 
 static LispObject make_undefined_fluid(const char *name)
 {   LispObject v = make_undefined_symbol(name);
-    setheader(v, qheader(v) | SYM_SPECIAL_VAR);
+    setheader(v, qheader(v).load() | SYM_SPECIAL_VAR);
     return v;
 }
 
 static LispObject make_undefined_global(const char *name)
 {   LispObject v = make_undefined_symbol(name);
-    setheader(v, qheader(v) | SYM_GLOBAL_VAR);
+    setheader(v, qheader(v).load() | SYM_GLOBAL_VAR);
     return v;
 }
 
@@ -807,10 +807,10 @@ static void cold_setup()
 // simple bit-test.  This MUST use entry zero (coded as 1 here!).
 // Also I insist that 'lose be the second fastget thing!
     {   LispObject nc = make_undefined_symbol("noncom");
-        setheader(nc, qheader(nc) | (1L << SYM_FASTGET_SHIFT));
+        setheader(nc, qheader(nc).load() | (1L << SYM_FASTGET_SHIFT));
         elt(fastget_names, 0) = nc;
         nc = make_undefined_symbol("lose");
-        setheader(nc, qheader(nc) | (2L << SYM_FASTGET_SHIFT));
+        setheader(nc, qheader(nc).load() | (2L << SYM_FASTGET_SHIFT));
         elt(fastget_names, 1) = nc;
     }
 // I create the stream objects just once at cold-start time, but every time I
@@ -849,27 +849,27 @@ LispObject set_up_functions(int restart_flag)
                                            bad_specialfn_0, function_fn, bad_specialfn_2, bad_specialfn_3,
                                            bad_specialfn_4up);
     setheader(function_symbol,
-              qheader(function_symbol) | SYM_SPECIAL_FORM);
+              qheader(function_symbol).load() | SYM_SPECIAL_FORM);
     quote_symbol             = make_symbol("quote", restart_flag,
                                            bad_specialfn_0, quote_fn, bad_specialfn_2, bad_specialfn_3,
                                            bad_specialfn_4up);
-    setheader(quote_symbol, qheader(quote_symbol) | SYM_SPECIAL_FORM);
+    setheader(quote_symbol, qheader(quote_symbol).load() | SYM_SPECIAL_FORM);
     go_symbol                = make_symbol("go", restart_flag,
                                            bad_specialfn_0, go_fn, bad_specialfn_2, bad_specialfn_3,
                                            bad_specialfn_4up);
-    setheader(go_symbol, qheader(go_symbol) | SYM_SPECIAL_FORM);
+    setheader(go_symbol, qheader(go_symbol).load() | SYM_SPECIAL_FORM);
     cond_symbol              = make_symbol("cond", restart_flag,
                                            bad_specialfn_0, cond_fn, bad_specialfn_2, bad_specialfn_3,
                                            bad_specialfn_4up);
-    setheader(cond_symbol, qheader(cond_symbol) | SYM_SPECIAL_FORM);
+    setheader(cond_symbol, qheader(cond_symbol).load() | SYM_SPECIAL_FORM);
     progn_symbol             = make_symbol("progn", restart_flag,
                                            bad_specialfn_0, progn_fn, bad_specialfn_2, bad_specialfn_3,
                                            bad_specialfn_4up);
-    setheader(progn_symbol, qheader(progn_symbol) | SYM_SPECIAL_FORM);
+    setheader(progn_symbol, qheader(progn_symbol).load() | SYM_SPECIAL_FORM);
     declare_symbol           = make_symbol("declare", restart_flag,
                                            bad_specialfn_0, declare_fn, bad_specialfn_2, bad_specialfn_3,
                                            bad_specialfn_4up);
-    setheader(declare_symbol, qheader(declare_symbol) | SYM_SPECIAL_FORM);
+    setheader(declare_symbol, qheader(declare_symbol).load() | SYM_SPECIAL_FORM);
     special_symbol           = make_undefined_symbol("special");
     large_modulus            = fixnum_of_int(1);
     cons_symbol              = make_symbol("cons", restart_flag, G0W1,
@@ -909,7 +909,7 @@ LispObject set_up_functions(int restart_flag)
                                    eval2_setup[i].two,
                                    eval2_setup[i].three,
                                    eval2_setup[i].fourup);
-        setheader(v, qheader(v) | SYM_SPECIAL_FORM);
+        setheader(v, qheader(v).load() | SYM_SPECIAL_FORM);
     }
     for (i=0; eval3_setup[i].name != nullptr; i++)
     {   LispObject v = make_symbol(eval3_setup[i].name,
@@ -919,7 +919,7 @@ LispObject set_up_functions(int restart_flag)
                                    eval3_setup[i].two,
                                    eval3_setup[1].three,
                                    eval3_setup[i].fourup);
-        setheader(v, qheader(v) | SYM_SPECIAL_FORM);
+        setheader(v, qheader(v).load() | SYM_SPECIAL_FORM);
     }
     create_symbols(arith06_setup, restart_flag);
     create_symbols(arith08_setup, restart_flag);
@@ -1025,7 +1025,7 @@ LispObject set_up_variables(int restart_flag)
                         Lfuncall_2, Lfuncall_3, Lfuncall_4up));
     input_libraries = make_undefined_symbol("input-libraries");
     setheader(input_libraries,
-              qheader(input_libraries) | SYM_SPECIAL_VAR);
+              qheader(input_libraries).load() | SYM_SPECIAL_VAR);
     setvalue(input_libraries, nil);
     for (i=fasl_files.size(); i!=0; i--)
         if (fasl_files[i-1].inUse)
@@ -1237,7 +1237,7 @@ LispObject set_up_variables(int restart_flag)
 #if defined WIN64 || defined __WIN64__
         w = cons(make_keyword("win64"), w);
 #endif
-        setheader(n, qheader(n) | SYM_SPECIAL_VAR);
+        setheader(n, qheader(n).load() | SYM_SPECIAL_VAR);
 #endif
         defined_symbols = 0;
         for (i=0; setup_tables[i]!=nullptr;
@@ -1426,7 +1426,7 @@ LispObject set_up_variables(int restart_flag)
                 std::strcpy(about_box_rights_2, "Codemist");
             }
         }
-        setheader(n, qheader(n) | SYM_SPECIAL_VAR);
+        setheader(n, qheader(n).load() | SYM_SPECIAL_VAR);
         setvalue(n, w);
 #endif // COMMON
     }
@@ -1444,7 +1444,7 @@ LispObject set_up_variables(int restart_flag)
         }
         aa = Lreverse(nil, aa);
         faa = Lreverse(nil, faa);
-        setheader(n, qheader(n) | SYM_SPECIAL_VAR);
+        setheader(n, qheader(n).load() | SYM_SPECIAL_VAR);
         setvalue(n, aa);
         n = make_undefined_fluid("full-lispargs*");
         setvalue(n, faa);
@@ -1690,7 +1690,7 @@ LispObject set_up_variables(int restart_flag)
 // parsing fails I (silently) treat the value as just NIL.
             }
             save.restore(n);
-            setheader(n, qheader(n) | SYM_SPECIAL_VAR);
+            setheader(n, qheader(n).load() | SYM_SPECIAL_VAR);
             setvalue(n, v);
         }
     }
@@ -1709,7 +1709,7 @@ LispObject set_up_variables(int restart_flag)
             if (std::strlen(s) == 0) v = lisp_true;
             else v = make_string(s);
             save.restore(n);
-            setheader(n, qheader(n) | SYM_SPECIAL_VAR);
+            setheader(n, qheader(n).load() | SYM_SPECIAL_VAR);
             setvalue(n, v);
         }
     }
@@ -1806,8 +1806,8 @@ LispObject set_up_variables(int restart_flag)
 // loaded. I will scan from time to time to update my information - I guess
 // that I can put in a hook that triggers review after any module has been
 // loaded. See the function review_switch_settings() the follows...
-                if (qvalue(w4) == nil) v[0] = 'n';
-                else if (qvalue(w4) == unset_var) v[0] = 'x';
+                if (qvalue(w4).load() == nil) v[0] = 'n';
+                else if (qvalue(w4).load() == unset_var) v[0] = 'x';
                 else v[0] = 'y';
                 std::memcpy(v+1, &celt(w3, 0), n1);
                 v[n1+1] = 0;
@@ -1849,12 +1849,12 @@ void review_switch_settings()
         }
         if ((v=*p) == nullptr) continue;
         starsw = make_undefined_symbol(sname);
-        if (qvalue(starsw) == nil) switch(*v)
+        if (qvalue(starsw).load() == nil) switch(*v)
             {   case 'y':  *v = 0x3f&'N'; break;
                 case 'n':                 break;
                 case 'x':  *v = 'N';      break;
             }
-        else if (qvalue(starsw) == unset_var) switch(*v)
+        else if (qvalue(starsw).load() == unset_var) switch(*v)
             {   case 'y':  *v = 'X';      break;
                 case 'n':  *v = 'X';      break;
                 case 'x':                 break;

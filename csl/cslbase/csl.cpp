@@ -3384,7 +3384,7 @@ int PROC_prepare_for_web_top_level()
 int char_from_string()
 {   int c = *proc_data_string;
     if (c == 0) return EOF;
-    if (qvalue(echo_symbol) != nil &&
+    if (qvalue(echo_symbol).load() != nil &&
         procedural_output != nullptr) (*procedural_output)(c);
     proc_data_string++;
     return c;
