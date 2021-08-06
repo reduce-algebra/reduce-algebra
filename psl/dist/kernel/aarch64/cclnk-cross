@@ -1,0 +1,5 @@
+/usr/bin/aarch64-linux-gnu-gcc-7 -march=armv8.1-a -no-pie -Wall -o bpsl -g  -DBPSSIZE=20500000 bps.c bpsheap.c echo.c file-status.c float.c \
+   os-hooks.c pslextras.c pslsocket.c pwd-fn.c sigs.c unix-io.c \
+   creloc.c \
+   -DLINUX main.o dmain.o -lm -ldl
+
