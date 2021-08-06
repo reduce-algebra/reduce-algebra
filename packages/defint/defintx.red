@@ -243,9 +243,9 @@ symbolic procedure zpsubsq x;
 symbolic procedure degreeof(p,var);
    % p is a standard form.
    % Note that limit returns "failed" as a structure, not an id.
-   % Also, the limit code has problems with bessels at the present time.
+   % Also, the limit code has problems with bessels and Fresnel integrals at the present time.
   % if smemq('besseli,p) then !*k2q 'failed else
-  if smemql ('(BesselJ BesselK BesselY BesselI),p) then !*k2q 'failed else
+  if smemql ('(BesselJ BesselK BesselY BesselI Fresnel_S,Fresnel_C),p) then !*k2q 'failed else
   (if null car de then de else
     <<%if d then onoff(d := get(d,'dname),nil);
       if d then setdmode(get(d,'dname),nil);

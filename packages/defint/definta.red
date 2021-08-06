@@ -651,10 +651,10 @@ else
       % << m := alpha;
       %    n := beta>>;
 
-      if !*trdefint then <<
-      	 prin2t "Substituting ";
-      	 mathprint {'expt,intvar,reval {'quotient,m,n}}
-      >>;
+      % if !*trdefint then <<
+      %   prin2t "Substituting ";
+      %   mathprint {'expt,intvar,reval {'quotient,m,n}}
+      % >>;
       
       k := reval algebraic(((k + 1)/alpha) - 1);
       coef := reval algebraic(coef/alpha);
