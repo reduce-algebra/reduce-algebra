@@ -10,4 +10,11 @@
 # meminfo();
 #
 
-echo 16000000
+case `uname -m` in
+    *arm*)
+      echo 80000000
+      ;;
+    *)
+      echo 16000000
+      ;;
+esac

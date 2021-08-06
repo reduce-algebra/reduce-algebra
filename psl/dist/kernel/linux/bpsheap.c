@@ -78,6 +78,8 @@ long unexec();
 #define BPSSIZE         1600000    /* Default bps size in number of bytes */
 #endif
 
+extern int Debug;
+
 char *  imagefile;
 char *  abs_imagefile = NULL; /* like imagefile, but as an absolute path */
 int     max_image_size;
@@ -89,6 +91,7 @@ extern int  alreadysetupbpsandheap;
 extern int  hashtable;
 extern char bps[];
 extern int  symval;
+extern int  symprp;
 extern int  lastbps;
 extern int  nextbps;
 extern int  bpslowerbound;
@@ -242,6 +245,19 @@ setupbpsandheap(argc,argv)
         hlb = heaplowerbound; hub = heapupperbound;
         hl =  heaplast; htb = heaptrapbound;
     /* save the new values around restore of the old ones */
+	if (Debug > 0) {
+	  printf("symbol table size = %lu (%lX), symbol table address = %lu (%lx)\n"
+		 "bpssize = %lu (%lX), bps address =  %lu (%lX)\n"
+		 "heapsize = %lu (%lX), heap address = %lu (%lX), heaplast = %lu (%lX)\nTotal image size = %ld (%lX)\n",
+		 (long unsigned) 5*(&symprp - &symval), (long unsigned) 5*(&symprp - &symval),
+		 (long unsigned) &symval, (long unsigned) &symval,
+		 bpssize, bpssize,
+		 bpslowerbound, bpslowerbound,
+		 heapupperbound - heaplowerbound, heapupperbound - heaplowerbound,
+		 heaplowerbound, heaplowerbound,
+		 hl, hl,
+		 (unsigned long) sbrk(0), (unsigned long) sbrk(0));
+	}
 
 //       printf("Loading image file :%s \n",imagefile); 
        imago = fopen (imagefile,"r");
@@ -256,6 +272,13 @@ setupbpsandheap(argc,argv)
                   printf(" %x != %x, %x != %x\n", bpscontrol[0], headerword [0], bpscontrol[1], headerword[1]);
 		  exit (-19); }
        fread (headerword,4,4,imago);
+	if (Debug > 0) {
+	  printf("symbol table: %lu (%lX) bytes\n",headerword[0],headerword[0]);
+	  printf("heap: %lu (%lx) bytes\n",headerword[1],headerword[1]);
+	  printf("hash table: %lu (%lX) bytes\n",headerword[2],headerword[2]);
+	  printf("BPS: %lu (%lX) bytes\n",headerword[3],headerword[3]);
+	}
+
        hugo = fread (&symval,1,headerword[0],imago);
        if (hugo != headerword[0]) read_error();
 
@@ -422,6 +445,10 @@ int increment;
 
   if ((current_size_in_bytes +  increment) >= max_image_size)
     return(0);
+
+  if (Debug > 0) {
+    fprintf(stderr,"Trying to increase heap size by %d bytes\n",increment);
+  }
 
   if ((int)sbrk(increment) == -1)     /* the sbrk failed. */
      return(0);

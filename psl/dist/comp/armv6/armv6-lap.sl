@@ -1066,8 +1066,8 @@
 
 (de DepositFloat (X)                    % this will not work in cross-assembly
 (progn (setq X (FltInf (second X))) 
-    (DepositWord (FloathighOrder X)) 
-    (DepositWord (FloatlowOrder X))))
+    (DepositWord (FloatlowOrder X)) 
+    (DepositWord (FloathighOrder X))))
 
 (put 'fullword 'InstructionDepositFunction 'DepositWordBlock)
 (put 'halfword 'InstructionDepositFunction 'DepositHalfWordBlock)
