@@ -314,6 +314,10 @@ put('matrixproc,'stat,'readmatproc);
 
 % ODESolve entry point.
 
+fluid '(!*trode);
+
+switch trode;
+
 put('odesolve,'psopfn,'odesolve!-eval);
 
 defautoload(odesolve!-eval,odesolve);

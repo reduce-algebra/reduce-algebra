@@ -348,7 +348,7 @@ printf("total %llx %llx %llx\n",heapsize_in_bytes , current_size_in_bytes,total)
 	if (hugo != headerword[2]) read_error("hash table",hugo,headerword[2]);
 	hugo = fread ((char*)bpslowerbound,1,headerword[3],imago);
 	if (hugo != headerword[3]) read_error("BPS",hugo,headerword[3]);
-	__builtin___clear_cache((void *)bpslowerbound,(void *)bpslowerbound+headerword[3]);
+	__builtin___clear_cache((void *)bpslowerbound,(void *)(bpslowerbound+headerword[3]));
 	fclose (imago);
 	if (memset || diff != 0) {
 	  oldheaplowerbound = ohlb; oldheapupperbound = ohub;
