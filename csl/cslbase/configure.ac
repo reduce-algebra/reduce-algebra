@@ -1806,7 +1806,7 @@ LDFLAGS="-L../lib $LDFLAGS"
 
 PARALLEL_BUILD='
 ifeq "0" "$(MAKELEVEL)"
-MAKEFLAGS := -j$(shell nproc || sysctl -n hw.ncpu || printf "1") $(MAKEFLAGS)
+MAKEFLAGS := -j$(shell nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || printf "1") $(MAKEFLAGS)
 endif
 '
 AC_SUBST([PARALLEL_BUILD])
