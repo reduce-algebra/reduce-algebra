@@ -2,11 +2,12 @@
 % However, the code did not care about theories for fallback QE at all, which
 % became apparent with this example.
 
+off rlabout;
+
+
+
 rlset r;
 
-Redlog Revision 5828 of 2021-06-17, 19:22:15Z
-(c) 1992-2021 T. Sturm and A. Dolzmann (www.redlog.eu)
-type ?; for help
 
 {}
 
