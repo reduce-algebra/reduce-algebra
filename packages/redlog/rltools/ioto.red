@@ -217,6 +217,33 @@ asserted procedure ioto_sxread(s: String): Any;
       return xread t
    end;
 
+asserted procedure ioto_sprin2(s: Any): String;
+   % This function is a variant of mathprint that prints into strings instead of
+   % stdout. It is expected to work with both "off nat" and "on nat." utf8 is
+   % ignored, Fortran printing is not supported, and TeX printing via
+   % tri/tri.red has not been considered so far. With "on nat" linelength() is
+   % used. Leading and training newlines are trimmed. The "on nat" string prints
+   % nicely with prin2t.
+   %
+   begin scalar outputhandler!*, rlsmaprinbuf!*, !*utf8, ll, str;
+      outputhandler!* := 'ioto_smaprinoh;
+      % terpri!*() around maprin appears to be necessary for proper
+      % initialization and finalization; compare mathprint in mathpr/mprint.red.
+      % We use nil as an argument to supress newlines around our string.
+      ll := linelength(2^(32-5)-1);
+      if !*nat then
+ 	 terpri!* nil;
+      prin2!* s;
+      if !*nat then
+ 	 terpri!* nil;
+      % Trim one trailing newline (and preceding escape char):
+      if !*nat then
+      	 rlsmaprinbuf!* := cddr rlsmaprinbuf!*;
+      str := id2string compress reversip rlsmaprinbuf!*;
+      linelength ll;
+      return str
+   end;
+
 asserted procedure ioto_smaprin(u: List): String;
    % This function is a variant of mathprint that prints into strings instead of
    % stdout. It is expected to work with both "off nat" and "on nat." utf8 is
