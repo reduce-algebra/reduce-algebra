@@ -98,8 +98,6 @@ procedure cl_atnum(f);
       if rl_bquap op then
 	 return (cl_atnum(rl_mat f) + cl_atnum(rl_b f));
       if rl_tvalp op then return 0;
-      if (w := rl_external(op,'cl_atnum)) then
-	 return apply(w,{f});
       % [f] is an atomic formula.
       return 1
    end;
@@ -136,8 +134,6 @@ procedure cl_depth(f);
    	 return 1 + max(cl_depth rl_arg2l f,cl_depth rl_arg2r f);
       if rl_tvalp f or cl_atfp f then
    	 return 0;
-      if (w := rl_external(rl_op f,'cl_depth)) then
-   	 return apply(w,{f});
       rederr {"cl_depth: unknown operator ",rl_op f}
    end;
 
@@ -669,7 +665,7 @@ procedure cl_replace1(f,sal);
       if rl_boolp op then
     	 return rl_mkn(op,for each subf in rl_argn f collect
 	    cl_replace(subf,sal));
-      % [f] is an atomic formula or external.
+      % [f] is an atomic formula
       return f
    end;
 

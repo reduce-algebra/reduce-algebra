@@ -132,8 +132,6 @@ procedure cl_pnf2(phi);
  	 return cl_pnf2!-junctor(phi);
       if rl_tvalp op then
  	 return {phi};
-      if (w := rl_external(op,'cl_pnf2)) then
-	 return apply(w,{phi});
       if rl_cxp op then
  	 rederr{"cl_pnf2():",op,"invalid as operator"};
       return {phi}

@@ -94,7 +94,7 @@ fluid '(fancy!-line!* fancy!-pos!*);
 
 fluid '(!*strict_argcount);
 
-switch rlsism,rlsichk,rlsiidem,rlsiatadv,rlsipd,rlsiexpl,rlsiexpla,rlsiso,
+switch rlsism,rlsiatadv,rlsipd,rlsiexpl,rlsiexpla,rlsiso,
    rlsisocx,rlsipw,rlsipo,rlverbose,rlrealtime,rlidentify,rlgssub,
    rlgsrad,rlgsred,rlgsprod,rlqepnf,rlqedfs,rlparallel,rlopt1s,rlbrop,
    rlbnfsm,rlsimpl,rlsifac,rlqegsd,rlgserf,rlbnfsac,rlgsvb,rlqesr,rlqeheu,
@@ -167,8 +167,6 @@ off1 'rlqeaprecise;     % Possibly avoid epsilon and infinity with rlqea.
 % rlsimpl
 on1 'rlsiso;
 on1 'rlsisocx;  % simplifier sort complex subformulas
-on1 'rlsiidem;
-on1 'rlsichk;
 on1 'rlsism;
 off1 'rlsipw;
 on1 'rlsipo;
@@ -683,33 +681,9 @@ inline procedure rl_tvalp(x);
    % Returns non-[nil] iff [x] is one of ['true], ['false].
    x eq 'true or x eq 'false;
 
-inline procedure rl_externalp(x);
-   get(x,'rl_external);
-
 inline procedure rl_cxp(x);
    % Reduce logic complex, i.e., non-atomic, operator predicate.
-   rl_tvalp x or rl_boolp x or rl_quap x or rl_bquap x or rl_externalp x;
-
-procedure rl_external(x,f);
-   begin scalar w;
-      w := get(x,'rl_external);
-      if w then <<
-	 w := atsoc(f,w);
-      	 if w then
-	    return cdr w
-      >>
-   end;
-
-procedure rl_mkexternal(x,f,xf);
-   begin scalar al,w;
-      al := get(x,'rl_external);
-      w := atsoc(f,al);
-      if w then
-	 cdr w := xf
-      else
-	 al := (f . xf) . al;
-      return put(x,'rl_external,al)
-   end;
+   rl_tvalp x or rl_boolp x or rl_quap x or rl_bquap x;
 
 endmodule;  % [redlog]
 
