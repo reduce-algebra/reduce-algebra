@@ -667,13 +667,11 @@ rl_service {
    arg = {pos = 11, name = sipd, type = Switch, doc = "degree parity decompositon"},
    arg = {pos = 12, name = sisocx, type = Switch, doc = "sort non-atomic subformulas"},
    arg = {pos = 13, name = sid, type = Switch, doc = "smart simplification of derivatives (domain 'padic' only)"},
-   arg = {pos = 14, name = sichk, type = Switch, doc = "check for equal nonatomic sibling formulas"},
    % xargs are ignored - PSL has a limit of 14 parameters
-   xarg = {pos = 15, name = siatadv, type = Switch},
-   xarg = {pos = 16, name = sitsqspl, type = Switch},
-   xarg = {pos = 17, name = siidem, type = Switch},
-   xarg = {pos = 18, name = siso, type = Switch},
-   xarg = {pos = 19, name = sism, type = Switch},
+   xarg = {pos = 14, name = siatadv, type = Switch},
+   xarg = {pos = 15, name = sitsqspl, type = Switch},
+   xarg = {pos = 16, name = siso, type = Switch},
+   xarg = {pos = 17, name = sism, type = Switch},
    returns = {type = Formula},
    mode = both};
 

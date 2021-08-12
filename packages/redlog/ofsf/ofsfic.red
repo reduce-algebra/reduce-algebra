@@ -912,13 +912,12 @@ procedure ofsfic!*cl_qeatal1(f,v,theo,flg,ans);
    end;
 
 procedure ofsfic!*cl_simpl(f,atl,n);
-   % Common logic simplify. [f] is a formula; [atl] is a list of
-   % atomic formulas, which are considered to describe a theory; [n]
-   % is an integer. Depends on switches [!*rlsism], [!*rlsichk],
-   % [!*rlsiso], [!*rlsiidem]. Returns the identifier [inctheo] or a
-   % formula. [inctheo] means that [atl] is inconsistent. Else the
-   % result is [f], simplified (wrt. [atl]). For non-negative [n],
-   % simplification stops at level [n].
+   % Common logic simplify. [f] is a formula; [atl] is a list of atomic
+   % formulas, which are considered to describe a theory; [n] is an integer.
+   % Depends on switches [!*rlsism] [!*rlsiso]. Returns the identifier [inctheo]
+   % or a formula. [inctheo] means that [atl] is inconsistent. Else the result
+   % is [f], simplified (wrt. [atl]). For non-negative [n], simplification stops
+   % at level [n].
    begin scalar w;
       if null !*rlsism then
 	 return cl_simpl1(f,nil,n,nil);
@@ -937,10 +936,9 @@ procedure ofsfic!*cl_simpl(f,atl,n);
    end;
 
 procedure cl_simpl1!-tagged(f,knowl,n,sop);
-   % Common logic simplify. [f] is a formula; [knowl] is an IRL; [n]
-   % is an integer; [sop] is a CL operator. Depends on switches
-   % [!*rlsism], [!*rlsichk], [!*rlsiso], [!*rlsiidem]. Returns a
-   % formula. Simplifies [f] recursively using [knowl].
+   % Common logic simplify. [f] is a formula; [knowl] is an IRL; [n] is an
+   % integer; [sop] is a CL operator. Depends on switches [!*rlsism],
+   % [!*rlsiso]. Returns a formula. Simplifies [f] recursively using [knowl].
    begin scalar op,result,w,newknowl;
       if eqn(n, 0) then
  	 return {f, nil};
@@ -977,8 +975,6 @@ procedure cl_simpl1!-tagged(f,knowl,n,sop);
  	    knowl := rl_smrmknowl(knowl, rl_var f);
 	 return cl_simplbq(f, knowl, n)
       >>;
-      if (w := rl_external(op, 'cl_simpl)) then
-	 return apply(w, {f});
       w := cl_simplat(f, sop);
       if !*rlsism then <<
 	 op := rl_op w;
@@ -1115,7 +1111,7 @@ procedure cl_smsimpl!-junct1!-tagged(op,atl,col,knowl,newknowl,n,break);
 		  natl := {car argl, tagl} . natl;
 		  argl := cdr argl
 	       >>;
-	       if !*rlsiidem and natl then <<
+	       if natl then <<
 		  col := nconc(reversip sicol, col);
 		  sicol := nil
 	       >>;
@@ -1127,10 +1123,8 @@ procedure cl_smsimpl!-junct1!-tagged(op,atl,col,knowl,newknowl,n,break);
  	       else
  		  ttagl := append(tagl, ttagl)
 	    >> else <<  % [w] is atomic.
-	       if !*rlsiidem then <<
-		  col := nconc(reversip sicol,col);
-		  sicol := nil
-	       >>;
+	       col := nconc(reversip sicol,col);
+	       sicol := nil;
 	       natl := {{w, tagl}}
 	    >>;
 	 if natl then <<
@@ -1160,13 +1154,10 @@ procedure cl_smsimpl!-junct2!-tagged(op,sicol,knowl,newknowl,n,break,tagl);
       atl := car atl;
       if atl eq break then
 	 return {{break}, tagl};
-      if !*rlsichk then <<
-	 w := sicol;
-	 sicol := nil;
-	 for each x in w do
- 	    sicol := ofsfic_carinsert(x, sicol)
-      >> else
-	 sicol := reversip sicol;
+      w := sicol;
+      sicol := nil;
+      for each x in w do
+	 sicol := ofsfic_carinsert(x, sicol);
       if !*rlsiso then <<
 	 atl := sort(atl, 'rl_ordatp);
 	 if !*rlsisocx then

@@ -47,10 +47,10 @@ exports cl_atfp,cl_cxfp,cl_atflp,cl_ncflp,cl_dnfp,cl_cnfp,cl_bnfp,cl_simpl,
    cl_ifstruct,cl_surep,cl_splt;
 
 fluid '(cl_identify!-atl!* cl_pal!* cl_lps!* cl_theo!*
-   !*rlidentify !*rlsichk !*rlsism !*rlsiexpla !*rlbnfsm !*rlverbose
-   !*rlsiidem !*rlsiso !*rlqepnf !*rlqedfs !*rlqeans !*rlqegsd !*rlqeheu
+   !*rlidentify !*rlsism !*rlsiexpla !*rlbnfsm !*rlverbose
+   !*rlsiso !*rlqepnf !*rlqedfs !*rlqeans !*rlqegsd !*rlqeheu
    !*rlqegen !*rlbnfsac !*rltnft !*rlsipw !*rlsipo !*rlqevarsel
-   !*rlspgs !*rlsithok !*rlqefb !*rlqelocal !*rlresi !*rlqeprecise
+   !*rlspgs !*rlqefb !*rlqelocal !*rlresi !*rlqeprecise
    !*rlqeaprecise !*rlqestdans !*slat);
 
 struct Formula;
@@ -62,6 +62,7 @@ struct Theory asserted by listp;
 struct TheoryFormulaPair asserted by pairp;
 struct KernelL asserted by listp;
 struct Quantifier asserted by idp;
+struct Atom asserted by cl_atfp;
 
 procedure cl_atfp(x);
    % Common logic atomic formula predicate. [x] is a formula. Returns

@@ -77,8 +77,6 @@ procedure rl_prepfof1(f);
 	 return {op,rl_var f,rl_prepfof1 rl_b f,rl_prepfof1 rl_mat f};
       if rl_boolp op then
 	 return op . for each x in rl_argn f collect rl_prepfof1 x;
-      if (w := rl_external(op,'rl_prepfof1)) then
-	 return apply(w,{f});
       % [f] is atomic.
       return apply(get(car rl_cid!*,'rl_prepat),{f})
    end;
@@ -232,8 +230,6 @@ procedure rl_resimp(u);
       >>;
       if rl_boolp op then
 	 return rl_mkn(op,for each x in rl_argn u collect rl_resimp x);
-      if (w := rl_external(op,'rl_resimp)) then
-	 return apply(w,{u});
       return apply(get(car rl_cid!*,'rl_resimpat),{u})
    end;
 

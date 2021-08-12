@@ -2,6 +2,8 @@
 % However, the code did not care about theories for fallback QE at all, which
 % became apparent with this example.
 
+off rlabout;
+
 rlset r;
 
 phi := all(x, ex(y, x^2 + x*y + b > 0 and x + a*y^2 + b <= 0));
