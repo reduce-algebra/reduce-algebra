@@ -59,6 +59,9 @@
 %  Added external_strlen and external_getenv.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+ $Id$
+
 */
  
 #include <stdlib.h>

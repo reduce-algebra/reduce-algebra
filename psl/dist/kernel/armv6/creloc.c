@@ -40,6 +40,9 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+ $Id$
+
 */
 
 #include <stdio.h>
@@ -67,9 +70,10 @@ void creloc (unsigned int array[], int len, int diff, unsigned int lowb, unsigne
 #endif
 	  if ( tag < 23  && (inf > lowb) && (inf < uppb))
                   {array[i] += diff;}
-          if (tag == 23 && inf < 1000000)
-                  { skip = (inf +5) /4  +1 ;} //strpack
-             else if (tag==25 && inf < 1000000) { skip = inf + 2;}
+          if (tag == 23 && inf < 1000000) {       /* hbytes */
+                  if ( inf == 0x7ffffff ) inf = -1;  //handle zero length strings correctly
+                  skip = (inf +5) /4  +1 ;} //strpack
+             else if (tag==25 && inf < 1000000) { if ( inf == 0xfffffff ) inf = -1; skip = inf + 2;}
              else if (tag==26 && inf < 1000000) { skip = 1;} // work on the vect contents
 // One has to make sure that bignums are *NOT* vectors in gc, but WORD-VECT.
 #ifdef DEBUG
