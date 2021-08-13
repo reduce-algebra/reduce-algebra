@@ -55,6 +55,9 @@
 %  a sed script will be used to convert the _variables of C to VARIABLES of
 %  PSL.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+ $Id$
+
 */
 
 #include <stdio.h>
@@ -225,11 +228,12 @@ setupbpsandheap(argc,argv)
   max_image_size = power(2, _infbitlength_); /* 1 more than allowable size */
 
   if ((heapsize_in_bytes + current_size_in_bytes) >= max_image_size) {
-    heapsize_in_bytes = max_image_size - current_size_in_bytes;
+    if (Debug > 0) {
+      printf("Size requested (%ld,%lx) will result in pointer values larger than\n",(heapsize_in_bytes + current_size_in_bytes),(heapsize_in_bytes + current_size_in_bytes));
+      printf(" PSL items can handle (%ld,%lx). Will allocate maximum size instead.\n\n",max_image_size,max_image_size);
+    }
+    heapsize_in_bytes = max_image_size - current_size_in_bytes - sizeof(void*);
     total = heapsize_in_bytes + bpssize;
-/*    printf("Size requested will result in pointer values larger than\n");
-    printf(" PSL items can handle. Will allocate maximum size instead.\n\n");
-*/
   }
 
 #if (NUMBEROFHEAPS == 2)

@@ -43,10 +43,6 @@
 
 (fluid '(*second-value* carry*))
 
-(ds wdivide (x y)
-    (let ((t1 x) (t2 y) (q (wquotient x y)))
-      (setq *second-value* (wdifference t1 (wtimes2 q t2)))
-      q))
 
 (put 'wtimesdouble 'opencode
      % Called with two parameters of maximum bbase size

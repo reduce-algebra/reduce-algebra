@@ -284,6 +284,9 @@
 
 (fi 16#af imul ((G v)(E v)))
 
+(fi 16#bc bsf  ((G v)(E v)))
+(fi 16#bd bsr  ((G v)(E v)))
+
 (fi 16#d6 (sse movq) ((W) (V)))
 (fi 16#db (sse pand) ((V) (W)))
 (fi 16#df (sse pandn) ((V) (W)))

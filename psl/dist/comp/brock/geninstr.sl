@@ -576,6 +576,12 @@ nil)
 (instr SAHF ()                 OP-byte       16#9E)
 (instr WAIT ()                 OP-byte       16#9B)
 
+(instI BSF (effa reg)          OP-reg-effa-2 16#0F 16#BC)
+(instI BSR (effa reg)          OP-reg-effa-2 16#0F 16#BD)
+
+%(instI LZCNT (effa reg)        OP-reg-effa-2 16#F3 rex 16#0F 16#BD)
+%(instI POPCNT (effa reg)       OP-reg-effa-2 16#F3 rex 16#0F 16#B8)
+
 %(instr SETeq (reg)             OP-set        2#00001111 10010100 11000000)
 %(instr SETne (reg)             OP-set        2#00001111 10010101 11000000)
 

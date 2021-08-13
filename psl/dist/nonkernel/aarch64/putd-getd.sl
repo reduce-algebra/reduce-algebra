@@ -271,6 +271,8 @@
 	(putmem (wplus2 m 24) n)
         % 1 fullword for compiledcallinginterpreted
 	(putmem (wplus2 m 32) (getmem (wplus2 a 24)))
+	% flush cache
+        (clear_cache m (wplus2 m 40))
 	% now plant it
 	(setf (getmem (wplus2 symfnc (wtimes2 n 8))) (wplus2 m 8))
 	  ))
