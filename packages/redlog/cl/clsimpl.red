@@ -1,4 +1,5 @@
-module clsimpl;  % Common logic simplification
+module clsimpl;
+% Common logic simplification
 
 revision('clsimpl, "$Id$");
 
@@ -541,18 +542,18 @@ asserted procedure cl_identifyat(atf: Atom): Atom;
 % single non-generic black box rl_negateat. rl_negateat must return an atomic
 % formula.
 
-procedure cl_smcpknowl(knowl);
+asserted procedure cl_smcpknowl(knowl: Alist): Alist;
    % Common logic smart simplifier copy knowledge. [knowl] is a
    % knowledge base. Returns a toplevel copy of [knowl].
    for each p in knowl collect p;
 
-procedure cl_smrmknowl(knowl, v);
+asserted procedure cl_smrmknowl(knowl: Alist, v: Id): Alist;
    % Common logic smart simplifier remove knowledge. [knowl] is a
    % knowledge base; [v] is a variable. Returns a knowledge base.
    % Removes all knowledge involving [v] from the knowledge base.
    nil;
 
-procedure cl_smupdknowl(op, atl, knowl, n);
+asserted procedure cl_smupdknowl(op: Id, atl: List, knowl: Alist, n: Integer): Alist;
    % Common logic smart simplifier update knowledge. [op] is one of the
    % operators [and], [or]; [atl] is a list of atomic formulas; [knowl] is
    % knowledge base; [n] is an integer. Returns a knowledge base. If [op] is
@@ -575,7 +576,7 @@ procedure cl_smupdknowl(op, atl, knowl, n);
       	 return knowl
    end;
 
-procedure cl_smupdknowl1(op, at, knowl, n);
+asserted procedure cl_smupdknowl1(op: Id, at: Atom, knowl: Alist, n: Integer): Alist;
    begin scalar ent, contra;
       if op eq 'or then <<
       	 ent := rl_negateat at;
@@ -591,7 +592,7 @@ procedure cl_smupdknowl1(op, at, knowl, n);
       return knowl := (ent . n) . knowl
    end;
 
-procedure cl_smmkatl(op, knowl, newknowl, n);
+asserted procedure cl_smmkatl(op: Id, knowl: Alist, newknowl: Alist, n: Integer): List;
    % Common logic smart simplifier make atomic formula list. [op] is
    % one of the operators [and], [or]; [knowl], [newknowl] are
    % knowledge bases; [n] is an integer. Returns a list of atomic
@@ -605,7 +606,7 @@ procedure cl_smmkatl(op, knowl, newknowl, n);
       return res
    end;
 
-procedure cl_smsimpl!-impl(atprem, atconcl, oldknowl, newknowl, n);
+asserted procedure cl_smsimpl!-impl(atprem: Atom, atconcl: Atom, oldknowl: Any, newknowl: Any, n: Integer): Formula;
    % Common logic smart simplifier simplify implication. [atprem] and
    % [atconcl] are atomic formulas; [oldknowl] and [newknowl] are
    % knowledge bases; [n] is an integer. Returns a formula.
@@ -618,7 +619,7 @@ procedure cl_smsimpl!-impl(atprem, atconcl, oldknowl, newknowl, n);
       return rl_mk2('impl, atprem, atconcl)
    end;
 
-procedure cl_smsimpl!-equiv1(lhs, rhs, oldknowl, newknowl, n);
+asserted procedure cl_smsimpl!-equiv1(lhs: Formula, rhs: Formula, oldknowl: Any, newknowl: Any, n: Integer): Formula;
    % Common logic smart simplifier simplify equivalence. [lhs] and
    % [rhs] are atomic formulas; [oldknowl] and [newknowl] are
    % knowledge bases; [n] is an integer. Returns a formula.
@@ -636,7 +637,7 @@ procedure cl_smsimpl!-equiv1(lhs, rhs, oldknowl, newknowl, n);
       return rl_mk2('equiv, rhs, lhs)
    end;
 
-procedure cl_siaddatl(atl, c);
+asserted procedure cl_siaddatl(atl: List, c: Formula): Formula;
    % Common logic simplifying add atomic formula list. [atl] is a list
    % of atomic formulas; [c] is [true], [false], a simplified atomic
    % formula, or a simplified conjunction of atomic formulas. Returns
@@ -651,9 +652,10 @@ procedure cl_siaddatl(atl, c);
 	 return 'false;
       sicd := if c eq 'true then
  	 nil
-      else if cl_cxfp c then
- 	 rl_argn c
-      else
+      else if cl_cxfp c then <<
+	 ASSERT( rl_op c eq 'and );
+         rl_argn c
+      >> else
 	 {c};
       w := rl_smupdknowl('and, nconc(atl, sicd), nil, 1);
       if w eq 'false then
@@ -665,141 +667,9 @@ procedure cl_siaddatl(atl, c);
       return rl_smkn('and, w)
    end;
 
-%DS
-% <KNOWL> ::= (..., <LAT>, ...)
-% <LAT> ::= (<ATOMIC FORMULA> . <LABEL>)
-% <LABEL> ::= <INTEGER> | ['ignore]
-
-% Black boxes:
-% rl_susipost
-% rl_susitf
-% rl_susibin
-
-procedure cl_susimkatl(op, knowl, newknowl, n);
-   % Common logic susi make atomic formula list. [op] is one of the
-   % operators [and], [or]; [knowl], [newknowl] are KNOWL's; [n] is an
-   % integer. Returns a list $L$ of atomic formulas. All knowledge
-   % tagged with [n] is extraced from [newknowl] into $L$.
-   begin scalar res;
-      res := for each pair in newknowl join
-	 if cdr pair = n then {car pair};
-      if null res then return nil;
-      res := rl_susipost(res, knowl);  % TRUE | FALSE | INCTHEO | atl
-      if rl_tvalp res then
-	 return {cl_cflip(res, op eq 'and)};
-      if res eq 'inctheo then 	              % Das hatte man auch frueher
-	 return cl_cflip('false, op eq 'and);  % wissen koennen.
-      if op eq 'or then
-      	 res := for each at in res collect rl_negateat at;
-      res := for each at in res collect rl_susitf(at, knowl);
-      return res
-   end;
-
-procedure cl_susicpknowl(knowl);
-   % Common logic susi copy knowledge. [knowl] is a KNOWL. Returns a
-   % KNOWL. Copies the toplevel and the LAT's of [knowl].
-   for each p in knowl collect (car p . cdr p);
-
-procedure cl_susiupdknowl(op, atl, knowl, n);
-   % Common logic susi update knowledge. [op] is one of the operators
-   % [and], [or]; [atl] is a list of (simplified) atomic formulas;
-   % [knowl] is a KNOWL; [n] is the current level. Returns a KNOWL.
-   % Destructively updates [knowl] wrt. the [atl] information.
-   begin scalar at;
-      while atl do <<
-	 at := car atl;
-	 atl := cdr atl;
-      	 knowl := cl_susiupdknowl1(op, at, knowl, n);
-	 if knowl eq 'false then <<
-	    atl := nil;
-	    at := 'break
-	 >>
-      >>;
-      if at eq 'break then
-	 return 'false
-      else
-      	 return knowl
-   end;
-
-procedure cl_susiupdknowl1(op, at, knowl, n);
-   % Common logic susi update knowledge subroutine. [op] is one of
-   % [and], [or]; [at] is a (simplified) atomic formula; [knowl] is a
-   % KNOWL; [n] is the current level. Returns a KNOWL. Destructively
-   % updates [knowl] wrt. [at].
-   if op eq 'and then
-      cl_susiupdknowl2((at . n), knowl, n)
-   else % We know [op eq 'or]
-      cl_susiupdknowl2(((rl_negateat at) . n), knowl, n);
-
-procedure cl_susiupdknowl2(lat, knowl, n);
-   % Common logic susi update knowledge subroutine. [lat] is a LAT;
-   % [knowl] is a KNOWL; [n] is the current level. Returns a KNOWL.
-   % Destructively updates [knowl] wrt. [lat].
-   begin scalar a, w, sck, ignflg, delflg, addl, term;
-      sck := knowl;
-      while sck do <<
-	 a := car sck;
-	 sck := cdr sck;
-	 w := rl_susibin(a, lat); % 'true | 'false | nil | {commands, ...}
-	 if w eq 'false then  % What happens with atoms neq false ???
-	    sck := nil
-	 else <<
-	    w := cl_susiinter(w, knowl, a);
-	    addl := nconc(addl, cadr w);
-	    knowl := car w;
-	    if caddr w then
-	       ignflg := t;
-	    if cadddr w then <<
-	       delflg := t;
-	       sck := nil
-	    >>
-	 >>
-      >>;
-      if w eq 'false then return 'false;
-      if null delflg then <<
-	 % if ignflg then cdr lat := 'ignore;
-	 knowl := lat . knowl
-      >>;
-      while addl do <<
-	 knowl := cl_susiupdknowl2(car addl, knowl, n);
-	 if knowl eq 'false then
-	    addl := nil
-	 else
-	    addl := cdr addl
-      >>;
-      return knowl;
-   end;
-
-procedure cl_susiinter(prg, knowl, a);
-   % Common logic susi interpreter. [prg] is a SUSIPRG; [knowl] is a
-   % KNOWL; [a] is a LAT. Returns a list
-   % $(\kappa,\alpha,\iota,\delta)$, where $\kappa$ and $\alpha$ are
-   % KNOWL's; $\iota$ and $\delta$ are flags.
-   begin scalar addl, ignflg, delflg;
-      for each p in prg do
-	 if car p eq 'delete or car p eq 'ignore then
-%%       	 if car p eq 'ignore then
-%% 	    if cdr p then <<
-%% 	       ignflg := T;
-%% 	       addl := cdr p . addl;
-%% 	    >> else
-%% 	       cdr a := 'ignore
-%%       	 else if car p eq 'delete then
-	    if cdr p then
-	       delflg := t
-	    else
-	       knowl := lto_delqip(a, knowl)
-      	 else if car p eq 'add then
-	    addl := cdr p . addl;
-     return {knowl, addl, ignflg, delflg}
-   end;
-
-procedure cl_susiminlevel(l1, l2);
-   if l1 eq 'ignore then l2 else if l2 eq 'ignore then l1 else min(l1, l2);
-
 rl_provideService rl_qesil = cl_qesil;
 
-asserted procedure cl_qesil(fl: List, theo: List);
+asserted procedure cl_qesil(fl: List, theo: List): List;
    % QE-based simplification of a list of formulas. Eliminated formulas that are
    % implied by the conjunction of all others.
    begin scalar prem, test, sol, res; integer n;
