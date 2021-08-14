@@ -1,3 +1,7 @@
+off rlabout;
+
+
+
 rlset reals;
 
 
@@ -338,8 +342,8 @@ a + d1 - 1 = 0 and a + 2*d1 - 2 <= 0 and a + 3*d1 - 2 < 0 and 2*a + 3*d1 - 3 > 0
 
 end;
 
-Tested on alfred running Linux 4.4.38.1.amd64-smp x86_64 CSL
-Time (counter 1): 6759 ms  plus GC time: 209 ms
-1: real 7.26
-user 7.15
-sys 0.04
+Tested on londo.fritz.box running Darwin 20.6.0 x86_64 CSL
+Time (counter 1): 2850 ms  plus GC time: 80 ms
+1: real         3.51
+user         3.13
+sys          0.30

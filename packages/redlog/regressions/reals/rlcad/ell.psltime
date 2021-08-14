@@ -1,6 +1,6 @@
-Tested on alfred running Linux 4.4.38.1.amd64-smp x86_64 PSL
-Time (counter 1): 4820 ms
+Tested on londo.fritz.box running Darwin 20.6.0 x86_64 PSL
+Time (counter 1): 3610 ms
 Quitting
-real 5.50
-user 4.90
-sys 0.51
+real         4.99
+user         3.73
+sys          0.84

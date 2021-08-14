@@ -1,9 +1,11 @@
 % Information Flow Control, Nonlinear Variant
 
+off rlabout;
+
+
+
 rlset z;
 
-
-*** turned on switch rlsusi 
 
 {}
 
@@ -34,8 +36,8 @@ bex _k2 [ - a  + 2*a*b - b  - 2 <= _k2 <= a  - 2*a*b + b  + 2] (a - b < 0
 
 end;
 
-Tested on alfred running Linux 4.4.38.1.amd64-smp x86_64 CSL
-Time (counter 1): 30 ms  plus GC time: 40 ms
-1: real 0.32
-user 0.21
-sys 0.03
+Tested on londo.fritz.box running Darwin 20.6.0 x86_64 CSL
+Time (counter 1): 20 ms  plus GC time: 30 ms
+1: real         0.41
+user         0.24
+sys          0.14

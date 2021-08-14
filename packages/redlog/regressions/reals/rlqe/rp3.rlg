@@ -1,6 +1,10 @@
 % Test rlqe (linear)
 % Rectangle Problem with b normalized to 1
 
+off rlabout;
+
+
+
 rlset reals;
 
 
@@ -441,8 +445,8 @@ d1 - 1 > 0 and a - 2 <= 0 and a - 1 >= 0 and a - 2*d1 - 1 >= 0
 
 end;
 
-Tested on alfred running Linux 4.4.38.1.amd64-smp x86_64 CSL
-Time (counter 1): 109380 ms  plus GC time: 14379 ms
-1: real 125.68
-user 125.27
-sys 0.32
+Tested on londo.fritz.box running Darwin 20.6.0 x86_64 CSL
+Time (counter 1): 56970 ms  plus GC time: 2980 ms
+1: real        60.65
+user        60.14
+sys          0.37
