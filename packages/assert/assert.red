@@ -369,6 +369,7 @@ procedure formassert(u,vars,mode);
    else
       '(cond (nil nil));
 
+put('ASSERT, 'formfn, 'formassert);
 put('assert, 'formfn, 'formassert);
 
 procedure assert_assert(u, vars, mode);
