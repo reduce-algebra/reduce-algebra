@@ -1,3 +1,5 @@
+off rlabout;
+
 rlset reals;
 
 testseries1 := q >= 0 and q - 40 <= 0 and n >= 0 and n - td = 0 and i2 =

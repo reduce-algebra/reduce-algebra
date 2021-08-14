@@ -1,3 +1,5 @@
+off rlabout;
+
 % Positive qe:
 % Examples from
 % Boulier et al. 2007

@@ -1,5 +1,7 @@
 % Information Flow Control, Nonlinear Variant
 
+off rlabout;
+
 rlset z;
 
 phi := ex(n,

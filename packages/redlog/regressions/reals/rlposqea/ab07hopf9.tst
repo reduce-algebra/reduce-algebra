@@ -4,6 +4,8 @@
 % http://dx.doi.org/10.1007/978-3-540-73433-8_6
 % for n=9 they prove that a Hopf bifurcation exists
 
+off rlabout;
+
 rlset r;
 
 ab2007_hopf_n_9 := ex(vv2,ex(vv1,ex(vv3,(( - vv1 < 0 and - vv3 < 0) and

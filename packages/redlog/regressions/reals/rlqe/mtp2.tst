@@ -1,6 +1,8 @@
 % Testing rlqe (xopt-qe)
 % Multi-Index Transportation Problem
 
+off rlabout;
+
 rlset reals;
 
 mtp2 := ex(x11,ex(x12,ex(x13,ex(x21,ex(x22,ex(x23,ex(x31,ex(x32,ex(x33,

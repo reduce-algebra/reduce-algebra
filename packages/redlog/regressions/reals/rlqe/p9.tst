@@ -8,6 +8,8 @@
 % sequences $x_1, x_2, \dots$ and $x_{1+9}, x_{2+9}, \dots$ are always
 % identical.
 
+off rlabout;
+
 rlset reals;
 
 p9 := rlall((for i:=1:9 mkand

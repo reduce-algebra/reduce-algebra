@@ -1,6 +1,8 @@
 % Gatermann Mass Action Kinetics
 % Highly non-linear.
 
+off rlabout;
+
 rlset reals;
 
 gatermann := ex(vv3,ex(vv2,ex(vv1,vv3 > 0 and vv2 > 0 and vv1 > 0 and
