@@ -33,46 +33,6 @@ copyright('dvfsfsism, "(c) 1995-2009 A. Dolzmann, T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
 
-procedure dvfsf_smupdknowl(op,atl,knowl,n);
-   % Discretely valued field smart simplification update knowledge.
-   % [op] is one of [and], [or]; [atl] is a list of (simplified)
-   % atomic formulas; [knowl] is a conjunctive IRL; [n] is the current
-   % level. Returns an IRL. Destructively updates [knowl] wrt. the
-   % [atl] information. Accesses the switch [rlsusi].
-   if !*rlsusi then
-      cl_susiupdknowl(op,atl,knowl,n)
-   else
-      cl_smupdknowl(op,atl,knowl,n);
-
-procedure dvfsf_smrmknowl(knowl,v);
-   % Discretely valued field smart simplification remove from
-   % knowledge. [knowl] is an IRL; [v] is a variable. Returns an IRL.
-   % Destructively removes all information about [v] from [knowl].
-   % Accesses the switch [rlsusi].
-   if !*rlsusi then
-      dvfsf_susirmknowl(knowl,v)
-   else
-      cl_smrmknowl(knowl,v);
-
-procedure dvfsf_smcpknowl(knowl);
-   % Discretely valued field smart simplification copy knowledge.
-   % [knowl] is an IRL. Returns an IRL. Copies [knowl]. Accesses the
-   % switch [rlsusi].
-   if !*rlsusi then
-      cl_susicpknowl(knowl)
-   else
-      cl_smcpknowl(knowl);
-
-procedure dvfsf_smmkatl(op,knowl,newknowl,n);
-   % Discretely valued field smart simplification make atomic formula
-   % list. [op] is one of [and], [or]; [oldknowl] and [newknowl] are
-   % IRL's; [n] is an integer. Returns a list of atomic formulas.
-   % Accesses the switch [rlsusi].
-   if !*rlsusi then
-      cl_susimkatl(op,knowl,newknowl,n)
-   else
-      cl_smmkatl(op,knowl,newknowl,n);
-
 procedure dvfsf_susirmknowl(knowl,v);
    % Discretely valued field susi remove knowledge. [knowl] is a
    % KNOWL; [v] is a variable. Returns a KNOWL. Remove all information

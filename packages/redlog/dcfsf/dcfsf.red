@@ -83,11 +83,6 @@ put('dcfsf,'rl_params,'(
    (rl_multsurep!* . acfsf_multsurep)
    (rl_fbqe!* . cl_fbqe)));
 
-% Switches
-put('dcfsf,'rl_cswitches,'(
-   (rlsusi . nil)
-));
-
 % Services
 put('dcfsf,'rl_services,'(
    (rl_subfof!* . cl_subfof)

@@ -36,7 +36,7 @@ copyright('pasf, "(c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010-2017 T. St
 create!-package('(pasf pasfbnf pasfmisc pasfnf pasfsiat
    pasfqe pasfsism pasfresolve),nil);
 
-fluid '(!*rlnzden !*rlposden !*rladdcond !*rlqeasri !*rlsusi !*rlsifac !*rlbrkcxk !*utf8);
+fluid '(!*rlnzden !*rlposden !*rladdcond !*rlqeasri !*rlsifac !*rlbrkcxk !*utf8);
 
 load!-package 'redlog;
 loadtime load!-package 'cl;
@@ -107,8 +107,7 @@ off1 'rlsiverbose;
 
 % Switches automaticly handled on context change
 put('pasf,'rl_cswitches,'(
-   (rlsism . t)
-   (rlsusi . t)));
+   (rlsism . t)));
 
 % Parameters
 put('pasf,'rl_params,'(
@@ -128,10 +127,10 @@ put('pasf,'rl_params,'(
    (rl_sacat!* . pasf_sacat)
    (rl_sacatlp!* . cl_sacatlp)
    (rl_varlat!* . pasf_varlat)
-   (rl_smupdknowl!* . pasf_smwupdknowl)
-   (rl_smrmknowl!* . pasf_smwrmknowl)
-   (rl_smcpknowl!* . pasf_smwcpknowl)
-   (rl_smmkatl!* . pasf_smwmkatl)
+   (rl_smupdknowl!* . cl_susiupdknowl)
+   (rl_smrmknowl!* . pasf_susirmknowl)
+   (rl_smcpknowl!* . cl_susicpknowl)
+   (rl_smmkatl!* . cl_susimkatl)
    (rl_smsimpl!-impl!* . cl_smsimpl!-impl)
    (rl_smsimpl!-equiv1!* . cl_smsimpl!-equiv1)
    (rl_susibin!* . pasf_susibin)
