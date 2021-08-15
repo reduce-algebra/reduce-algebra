@@ -34,6 +34,8 @@
 #     --uncached  run tests with symbolic(!*uncached := t);
 #     --skip-missing-rlg
 #                 do not run test when the .rlg file is missing
+#     --no-timeout
+#                 do not limit the time for test runs
 #
 # For --csl and --cslboot the end of the name can be some subset of
 # CSL variant builds. As of early 2021 this is some of the following
@@ -89,6 +91,7 @@ keep="no"
 slow="no"
 uncached=""
 skipmissingrlg=""
+notimeout="no"
 
 # I allow any number of the keyword arguments in any order. I will pick
 # off and process arguments for so long as any are available. This will
@@ -136,6 +139,10 @@ do
       ;;
     --skip-missing-rlg)
       skipmissingrlg="yes"
+      shift
+      ;;
+    --no-timeout)
+      notimeout="yes"
       shift
       ;;
     --install)
@@ -249,7 +256,8 @@ else
   fi
 fi
 
-# If I can I will limit the time that each test script can possibly use.
+# If I can I will limit the time that each test script can possibly use,
+# except when the --notimeout switch is set.
 # I would like to make the limit such that everything has a decent chance of
 # running to completion but that tests that get stuck do not delay me
 # unduly. The most extreme test at the time of writing this is stoolls which
@@ -259,6 +267,11 @@ fi
 # of that. Well I will qualify that the bootstrap version -- especially if
 # built with debug options enabled - can be much slower, so if one of the
 # tests is for that I will increase the limit significantly.
+
+if test "$notimeout" = "yes"
+then
+  timeoutcmd="" 
+fi
 
 if test "x$timeoutcmd" != "x"
 then
