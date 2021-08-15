@@ -9,12 +9,9 @@ else
     exit 1
 fi
 
-qe=/CW/local/QE/qepcad/qesource
-PATH=$PATH:$qe/bin
-
 timings=$root/$date/timings
-trunk=$root/$date/trunk
-regressions=$trunk/packages/redlog/regressions
+redlogtest=$root/$date/trunk/generic/redlog/redlogtest
+regressions=$root/$date/trunk/packages/redlog/regressions
 
 rm -rf $timings/csl-times $timings/psl-times $timings/csl-psl-times-comparison
 
@@ -22,7 +19,7 @@ cd $regressions
 
 tests=(*/*/*.tst)
 
-parallel -j$cores -u $trunk/generic/redlogtest/rltest1.sh $root $date {} ::: ${tests[@]}
+parallel -j$cores -u $redlogtest/rltest1.sh $root $date {} ::: ${tests[@]}
 
 printf "\ntotal number of tests:\n ${#tests[@]}\n"
 
