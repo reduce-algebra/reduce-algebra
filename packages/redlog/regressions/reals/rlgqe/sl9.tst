@@ -1,4 +1,7 @@
 % Steiner--Lehmus Theorem
+
+off rlabout;
+
 rlset reals;
 
 h1 := u2>=0 and x1>=0$

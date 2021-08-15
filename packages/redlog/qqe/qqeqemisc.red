@@ -1,8 +1,10 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2005-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module qqeqemisc;
+% Quantifier elimination for queues miscellaneous helping functions.
+
+revision('qqeqemisc, "$Id$");
+
+copyright('qqeqemisc, "Copyright (c) 2005-2009 A. Dolzmann and T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,16 +29,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(qqe_qemisc_rcsid!* qqe_qemisc_copyright!*);
-   qqe_qemisc_rcsid!* :=
-      "$Id$";
-   qqe_qemisc_copyright!* := "Copyright (c) 2005-2009 A. Dolzmann and T. Sturm"
->>;
- 
-module qqeqemisc;
-% Quantifier elimination for queues miscellaneous helping functions.
 
 % do i have to list them a second time here!?! as these are fluids of
 % module qqeqe.red and qqeqemisc is only submodule of that. !!!

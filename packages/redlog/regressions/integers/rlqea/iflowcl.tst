@@ -1,5 +1,7 @@
 % Information Flow Control
 
+off rlabout;
+
 rlset z;
 
 sec := (a < b and cong(a+b,0,2) and 2*n = a+b and

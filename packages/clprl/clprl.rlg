@@ -310,8 +310,6 @@ rlset(padics,101);
 *** p is set to 101 
 
 
-*** turned on switch rlsusi 
-
 {r}
 
 
@@ -338,10 +336,3 @@ false
 
 end;
 
-Tested on x86_64-mac_10.11_elcapitan-darwin15.0.0 CSL
-Time (counter 1): 850 ms  plus GC time: 50 ms
-
-End of Lisp run after 0.85+0.21 seconds
-real         1.25
-user         1.15
-sys          0.09

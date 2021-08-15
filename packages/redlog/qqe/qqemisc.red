@@ -1,8 +1,10 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2005-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module qqemisc;
+% qqe miscellaneous. Submodule of [qqe].
+
+revision('qqemisc, "$Id$");
+
+copyright('qqemisc, "Copyright (c) 2005-2009 A. Dolzmann and T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,17 +29,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(qqe_misc_rcsid!* qqe_misc_copyright!*);
-   qqe_misc_rcsid!* :=
-      "$Id$";
-   qqe_misc_copyright!* :=
-      "Copyright (c) 2005-2009 A. Dolzmann and T. Sturm"
->>;
-
-module qqemisc;
-% qqe miscellaneous. Submodule of [qqe].
 
 procedure qqe_prefix!-length(pref);
    % Queue quantifier elimination prefix length. [pref] is a term 

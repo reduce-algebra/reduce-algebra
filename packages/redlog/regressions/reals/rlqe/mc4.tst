@@ -3,6 +3,8 @@
 % THE Computer Journal 36(5), 432--438, 1993.
 % The examples are given on page 436 and 437.
 
+off rlabout;
+
 rlset reals;
 
 % Open unit ball with center at the origin in $R^3$.

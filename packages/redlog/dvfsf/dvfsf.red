@@ -40,7 +40,6 @@ load!-package 'cl;
 exports dvfsf_enter,dvfsf_exit,dvfsf_simpterm,dvfsf_prepat,dvfsf_resimpat,
    dvfsf_lengthat,dvfsf_chsimpat,dvfsf_simpat,dvfsf_op,dvfsf_arg2l,dvfsf_arg2r,
    dvfsf_argn,dvfsf_mk2,dvfsf_0mk2,dvfsf_mkn,dvfsf_opp,dvfsf_simplat1,
-   dvfsf_smupdknowl,dvfsf_smrmknowl,dvfsf_smcpknowl,dvfsf_smmkatl,
    dvfsf_susirmknowl,dvfsf_varsel,dvfsf_translat,dvfsf_elimset,dvfsf_qesubcq,
    dvfsf_qesubq,dvfsf_transform,dvfsf_trygauss,dvfsf_qemkans,
    dvfsf_ordatp,dvfsf_varlat,dvfsf_varsubstat,dvfsf_negateat,dvfsf_fctrat,
@@ -48,16 +47,16 @@ exports dvfsf_enter,dvfsf_exit,dvfsf_simpterm,dvfsf_prepat,dvfsf_resimpat,
    dvfsf_eqnrhskernels,dvfsf_structat,dvfsf_ifstructat,dvfsf_termmlat,
    dvfsf_explats,dvfsf_mkcanonic;
 
-fluid '(!*rlverbose dvfsf_p!* !*rlsiexpl !*rlsiexpla !*rlsifac !*rlsusi);
+fluid '(!*rlverbose dvfsf_p!* !*rlsiexpl !*rlsiexpla !*rlsifac);
 
 flag('(dvfsf),'rl_package);
 
 % Parameters
 put('dvfsf,'rl_params,'(
-   (rl_smupdknowl!* . dvfsf_smupdknowl)
-   (rl_smrmknowl!* . dvfsf_smrmknowl)
-   (rl_smcpknowl!* . dvfsf_smcpknowl)
-   (rl_smmkatl!* . dvfsf_smmkatl)
+   (rl_smupdknowl!* . cl_susiupdknowl)
+   (rl_smrmknowl!* . dvfsf_susirmknowl)
+   (rl_smcpknowl!* . cl_susicpknowl)
+   (rl_smmkatl!* . cl_susimkatl)
    (rl_smsimpl!-impl!* . cl_smsimpl!-impl)
    (rl_smsimpl!-equiv1!* . cl_smsimpl!-equiv1)
    (rl_sacatlp!* . cl_sacatlp)
@@ -95,7 +94,6 @@ put('dvfsf,'rl_params,'(
 put('dvfsf,'rl_cswitches,'(
    (rlqeheu . nil)
    (rlqedfs . nil)
-   (rlsusi . t)
 ));
 
 % Services

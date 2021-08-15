@@ -8,6 +8,10 @@
 % sequences $x_1, x_2, \dots$ and $x_{1+9}, x_{2+9}, \dots$ are always
 % identical.
 
+off rlabout;
+
+
+
 rlset reals;
 
 
@@ -29,8 +33,8 @@ true
 
 end;
 
-Tested on alfred running Linux 4.4.38.1.amd64-smp x86_64 CSL
-Time (counter 1): 320 ms  plus GC time: 39 ms
-1: real 0.67
-user 0.53
-sys 0.05
+Tested on londo.fritz.box running Darwin 20.6.0 x86_64 CSL
+Time (counter 1): 210 ms  plus GC time: 30 ms
+1: real         0.66
+user         0.42
+sys          0.19

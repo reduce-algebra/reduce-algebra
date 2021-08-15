@@ -1,6 +1,8 @@
 % Testing rlqe (xopt-qe)
 % Multi-Index Transportation Problem
 
+off rlabout;
+
 rlset reals;
 
 mtp3 :=

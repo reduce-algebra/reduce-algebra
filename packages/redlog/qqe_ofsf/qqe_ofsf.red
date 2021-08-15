@@ -49,15 +49,12 @@ put('qqe_ofsf,'rl_params,'(
    (rl_ordatp!* . qqe_ofsf_ordatp) %% to do
    (rl_qemkans!* . ofsf_qemkans) %% belongs to qe -should this be wrapped?
    (rl_simplat1!* . qqe_ofsf_simplat1)
-   (rl_smupdknowl!* . qqe_ofsf_smwupdknowl) %!!!
-   (rl_smrmknowl!* . qqe_ofsf_smwrmknowl) %!!!
-   (rl_smcpknowl!* . qqe_ofsf_smwcpknowl)
-   (rl_smmkatl!* . qqe_ofsf_smwmkatl)
+   (rl_smupdknowl!* . qqe_ofsf_smupdknowl) %!!!
+   (rl_smrmknowl!* . qqe_ofsf_smrmknowl) %!!!
+   (rl_smcpknowl!* . qqe_ofsf_smcpknowl)
+   (rl_smmkatl!* . qqe_ofsf_smmkatl)
    (rl_smsimpl!-impl!* . cl_smsimpl!-impl) % to check
    (rl_smsimpl!-equiv1!* . cl_smsimpl!-equiv1) % to check
-%%   (rl_susipost!* . ofsf_susipost) % susi will not be needed (?)
-%%   (rl_susitf!* . ofsf_susitf) %!!!
-%%   (rl_susibin!* . ofsf_susibin)
    (rl_negateat!* . qqe_ofsf_negateat)
    (rl_varlat!* . qqe_ofsf_varlat)
    (rl_varsubstat!* . qqe_ofsf_varsubstat)
@@ -360,34 +357,6 @@ procedure qqe_ofsf_varlat(atform);
 
 % originally module qqesism;
 % qqe smart simplification. Submodule of [qqe].
-
-procedure qqe_ofsf_smwupdknowl(op,atl,knowl,n);
-   % Ordered field standard form smart simplification wrapper update
-   % knowledge.
-   if !*rlsusi then
-      cl_susiupdknowl(op,atl,knowl,n)
-   else
-      qqe_ofsf_smupdknowl(op,atl,knowl,n);
-
-procedure qqe_ofsf_smwrmknowl(knowl,v);
-%%    if !*rlsusi then %% susi shouldn't be set
-%%       qqe_susirmknowl(knowl,v)
-      qqe_ofsf_smrmknowl(knowl,v);
-
-procedure qqe_ofsf_smwcpknowl(knowl);
-%%    if !*rlsusi then %% susi shouldn't be set
-%%       cl_susicpknowl(knowl)
-%%    else
-      qqe_ofsf_smcpknowl(knowl);
-
-procedure qqe_ofsf_smwmkatl(op,knowl,newknowl,n);
-%%    if !*rlsusi then %% susi shouldn't be set
-%%       cl_susimkatl(op,knowl,newknowl,n)
-%%    else
-      qqe_ofsf_smmkatl(op,knowl,newknowl,n);
-
-% The black boxes are rl_smsimpl!-impl and rl_smsimpl!-equiv1 are set
-% correctly for both the regular smart simplifier and for susi.
 
 %DS
 % <irl> ::= (<ir>,...)

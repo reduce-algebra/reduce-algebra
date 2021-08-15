@@ -1,6 +1,8 @@
 % Test rlqe (linear)
 % Rectangle Problem with b normalized to 1
 
+off rlabout;
+
 rlset reals;
 
 rp3 := ex(x1,ex(x2,ex(x3,ex(y1,ex(y2,ex(y3,ex(d2,ex(d3,all(u,all(v,a -

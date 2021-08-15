@@ -4,8 +4,6 @@ off rlabout;
 rlset pasf;
 
 
-*** turned on switch rlsusi 
-
 {}
 
 off rlverbose;

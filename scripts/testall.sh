@@ -10,6 +10,7 @@
 #                      [--jlisp] [[jlispboot]
 #                      [--psl] [--installed-psl]
 #                      [--uncached] [--install] [--keep] [--just-time]
+#                      [--skip-missing-rlg] [--no-timeout]
 #
 # If present the argument "--noregressions" must come first and it
 # causes the script to avoid running the regression tests. This may be useful
@@ -19,7 +20,9 @@
 # a fresh set of reference logs being places in the source tree based on
 # testing the CSL version. "--keep" preserves some temporary files created
 # during testing and may be useful when debugging this script. "--uncached"
-# runs the tests with symbolic(!*uncached := t);
+# runs the tests with symbolic(!*uncached := t).
+# --skip-missing-rlg skips the .tst files that don't have a corressponding .rlg
+# file. --no-timeout places no restrictions on the runtime of the tests.
 # --csl, --psl, --jlisp, --cslboot and --jlispboot select the variants
 # of Reduce to test, and any number of those options can be given. If none
 # are then "--csl --psl" is assumed. --csl-XXX stands for something like
@@ -63,7 +66,7 @@ for a in $*
 do
   case $a
   in
-  --install | --keep | --uncached)
+  --install | --keep | --uncached | --skip-missing-rlg | --no-timeout)
     extras="$extras $a"
     ;;
   --csl | --csl-* | --cslboot | --cslboot1 | --cslboot-* | --csl=* | \

@@ -794,8 +794,6 @@ rlset dvfsf;
 
 
 
-*** turned on switch rlsusi 
-
 {acfsf}
 
 sub(x=a,x=0 and a=0 and ex(x,x=y) and ex(a,x~a));
@@ -813,12 +811,9 @@ rlset dvfsf;
 
 *** turned on switch rlqedfs 
 
-
 *** p is being cleared 
 
 
-
-*** turned on switch rlsusi 
 
 {dvfsf}
 
@@ -844,12 +839,9 @@ rlset(dvfsf,100003);
 
 *** turned on switch rlqedfs 
 
-
 *** p is set to 100003 
 
 
-
-*** turned on switch rlsusi 
 
 {dvfsf}
 
@@ -870,12 +862,9 @@ rlset(dvfsf);
 
 *** turned on switch rlqedfs 
 
-
 *** p is being cleared 
 
 
-
-*** turned on switch rlsusi 
 
 {dvfsf,100003}
 
@@ -914,7 +903,6 @@ rlset dcfsf;
 *** turned on switch rlqeheu 
 
 *** turned on switch rlqedfs 
-
 
 {dvfsf}
 
@@ -973,8 +961,6 @@ rlset dvfsf;
 
 
 
-*** turned on switch rlsusi 
-
 {dcfsf}
 
 rlqe f;
@@ -988,7 +974,6 @@ rlset ofsf;
 *** turned on switch rlqeheu 
 
 *** turned on switch rlqedfs 
-
 
 {dvfsf}
 

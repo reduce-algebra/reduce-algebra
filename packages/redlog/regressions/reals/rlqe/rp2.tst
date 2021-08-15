@@ -1,6 +1,8 @@
 % Test rlqe (linear)
 % Rectangle Problem
 
+off rlabout;
+
 rlset reals;
 
 rp2 := ex(x1,ex(x2,ex(y1,ex(y2,ex(d2,all(u,all(v,((a > 0 and b > 0 and

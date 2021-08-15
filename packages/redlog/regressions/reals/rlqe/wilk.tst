@@ -2,6 +2,8 @@
 
 % Wilkinson's polynomial. Tests how fast root isolation is.
 
+off rlabout;
+
 rlset reals;
 
 wilk := ex(x,8388608*x**20 + 1761607681*x**19 + 172931153920*x**18 +

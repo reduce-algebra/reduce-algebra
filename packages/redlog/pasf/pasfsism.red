@@ -30,42 +30,6 @@ copyright('pasfsism, "(c) 2003-2009 A. Dolzmann, A. Seidl, and T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-procedure pasf_smwupdknowl(op,atl,knowl,n);
-   % Presburger arithmetic standard form update knowledge. [op] is an
-   % operator; [atl] is the list of atomic formulas to add to the knowledge;
-   % [knowl] is a knowledge; [n] is the level. Returns modified knowledge.
-   if !*rlsusi then
-      cl_susiupdknowl(op,atl,knowl,n)
-   else
-      cl_smupdknowl(op,atl,knowl,n);
-
-procedure pasf_smwrmknowl(knowl,v);
-   % Presburger arithmetic standard form remove variable from the
-   % knowledge. [knowl] is a knowledge; [v] is the variable to remove. Returns
-   % modified knowledge.
-   if !*rlsusi then
-      pasf_susirmknowl(knowl,v)
-   else
-      cl_smrmknowl(knowl,v);
-
-procedure pasf_smwcpknowl(knowl);
-   % Presburger arithmetic standard form copy knowledge. [knowl] is a
-   % knowledge. Returns a copy of the knowledge.
-   if !*rlsusi then
-      cl_susicpknowl(knowl)
-   else
-      cl_smcpknowl(knowl);
-
-procedure pasf_smwmkatl(op,knowl,newknowl,n);
-   % Presburger arithmetic standard form make atomic formula list. [op] is an
-   % operator; [knowl] is a knowledge; [newknowl] is a knowledge; [n] is the
-   % current level. Returns an atomic formula list. For detailed documentation
-   % refer to clsimpl.red.
-   if !*rlsusi then
-      cl_susimkatl(op,knowl,newknowl,n)
-   else
-      cl_smmkatl(op,knowl,newknowl,n);
-
 procedure pasf_susirmknowl(knowl,v);
    % Presburger arithmetic standard form remove knowledge. [knowl] is a
    % knowledge; [v] is a variable. Returns a knowledge. Removes all

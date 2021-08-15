@@ -1,6 +1,8 @@
 % Testing CAD
 % Solotareff's problem (cubic) [Ho92] (in [CJ98], p. 211)
 
+off rlabout;
+
 rlset reals;
 
 solo2 := ex({x,y},1<=4*a<=7 and -3<=4*b<=3 and -1<=x<=0 and 0<=y<=1 and
