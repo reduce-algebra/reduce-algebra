@@ -9,8 +9,8 @@ else
     exit 1
 fi
 
-qe=/CW/local/QE/qepcad/qesource
-PATH=$PATH:$qe/bin
+export qe=/CW/local/QE/qepcad/qesource
+export PATH=$PATH:$qe/bin
 
 timings=$root/$date/timings
 trunk=$root/$date/trunk
