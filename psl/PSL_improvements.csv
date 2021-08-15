@@ -4,23 +4,26 @@ Print NaN/Inf correctly;ok;ok;-;ok;ok;ok;ok;ok;;
 Fix for PSL compiler: id constant? Property;ok;ok;-;ok;ok;ok;ok;ok;;
 (quotient 0.0 0.0);ok;ok;-;ok;ok;ok;ok;ok;;
 Get-image-path etc.;ok;ok;-;ok;ok;ok;ok;ok;;
-Lisp disassembler;ok;ok;-;ok;ok;ok;ok;ok;;
+Lisp disassembler;ok;ok;-;ok;ok;ok;ok;ok;ok;
 Better 64bit code in Compiler for x86_64;n/a;ok;n/a;ok;n/a;;n/a;;n/a;n/a
 exploden and friends;done;done;-;done;done;done;done;done;;
 Reading high order bit chars from terminal;ok;ok;-;ok;ok;ok;ok;ok;;
 PSL land bignum/smallnum;;ok;-;ok;ok;ok;ok;ok;;
-Improvements to line breaking in output;ok;ok;-;ok;ok;ok;ok;ok;;
-PSL scantable for 256 chars;ok;ok;-;ok;ok;ok;ok;ok;;
+Improvements to line breaking in output;ok;ok;-;ok;ok;ok;ok;ok;ok;ok
+PSL scantable for 256 chars;ok;ok;-;ok;ok;ok;ok;ok;ok;ok
 Reasonable default heap size;ok;ok;-;ok;ok;ok;ok;ok;;
-Printing of chars with high order bit set;ok;ok;-;ok;ok;ok;ok;ok;;
+Printing of chars with high order bit set;ok;ok;-;ok;ok;ok;ok;ok;ok;ok
 Increase default size of binding stack;;ok;-;ok;;ok;;ok;;
 Increase default size of symbol table;;ok;-;ok;;ok;;ok;;
 Unicode support;;experimental code;-;;;;;;;
 Inline floating point ops;;experimental code;-;;;;;;;
-PSL for ARM;n/a;n/a;n/a;n/a;n/a;n/a;n/a;n/a;;
+PSL for ARM;n/a;n/a;n/a;n/a;n/a;n/a;n/a;n/a;ok;
 PSL for RISC-V;n/a;n/a;n/a;n/a;n/a;n/a;n/a;n/a;n/a;n/a
-Extend special symbol table slots for single character ids from 128 to 256;;;-;;;;;;;
-Use crlibm for float functions;ok;ok;-;ok;ok;ok;ok;ok;;
-Proper support for IEEE non-finite numbers (e.g. correct handling in equal and eqn);ok;ok;-;ok;ok;ok;ok;ok;;
-Correction to debug module;ok;ok;-;ok;ok;ok;ok;ok;;
-Hashtable implementation;ok;ok;-;ok;;;;ok;;
+Extend special symbol table slots for single character ids from 128 to 256;;;-;;;;;;ok;ok
+Use crlibm for float functions;ok;ok;-;ok;ok;ok;ok;ok;ok;ok
+Proper support for IEEE non-finite numbers (e.g. correct handling in equal and eqn);ok;ok;-;ok;ok;ok;ok;ok;ok;ok
+Correction to debug module;ok;ok;-;ok;ok;ok;ok;ok;ok;ok
+Hashtable implementation;ok;ok;-;ok;;;;ok;ok;ok
+BSR/BSF Instructions for i386 and x86_64;done;done;-;;;;;;n/a;n/a
+Correct line breaking when printing bignums;ok;;-;;;;;;ok;
+Fix compiler bug for i386 and x86_64 when optimizing move to stack;ok;;-;;;;;;n/a;n/a
