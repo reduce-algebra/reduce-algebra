@@ -10,7 +10,7 @@ else
 fi
 
 timings=$root/$date/timings
-redlogtest=$root/$date/trunk/generic/redlog/redlogtest
+redlogtest=$root/$date/trunk/generic/redlogtest
 regressions=$root/$date/trunk/packages/redlog/regressions
 
 rm -rf $timings/csl-times $timings/psl-times $timings/csl-psl-times-comparison
