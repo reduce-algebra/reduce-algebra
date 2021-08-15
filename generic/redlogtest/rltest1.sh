@@ -1,4 +1,4 @@
-#! /bin/bash 
+#!/bin/bash 
 
 if test $# = 3; then
     root=$1
@@ -15,15 +15,7 @@ regressions=$trunk/packages/redlog/regressions
 d=$(dirname $rootedp)
 p=$(basename $rootedp .tst)
 
-mc="$(uname -n) running $(uname -srm)"
-
-# Always use the external time command, even if the shell has a time builtin. Do
-# not collect times if no external time command can be found.
-export timecmd=`type -P time`
-if test "x$timecmd" != "x"
-then
-    timecmd="$timecmd -p"
-fi
+export timecmd="/usr/bin/time -p"
 
 f="$regressions/$d/$p.tst"
 
@@ -35,36 +27,31 @@ mkdir -p $timings/csl-times/$d
 mkdir -p $timings/psl-times/$d
 
 ( howlong=$timings/csl-times/$d/$p.howlong.tmp
-  $timecmd sh -c "$trunk/bin/redcsl -w > $timings/csl-times/$d/$p.rlg.tmp" <<XXX 2>$howlong
+  $timecmd sh -c "$trunk/bin/redcsl -w > $timings/csl-times/$d/$p.rlg.tmp" <<EOF 2>$howlong
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
-%off pwrds;
 on errcont;
-lisp (testdirectory:="$d");
-lisp random_new_seed 1;
 resettime1;
-write "START OF REDUCE TEST RUN ON $mc"$ in "$f"; write "END OF REDUCE TEST RUN"$
+write "START OF REDUCE TEST RUN"$ in "$f"; write "END OF REDUCE TEST RUN"$
 showtime1$
 quit$
-XXX
+EOF
   cat $howlong >> $timings/csl-times/$d/$p.rlg.tmp
   rm -f $howlong ) &
 ( howlong=$timings/psl-times/$d/$p.howlong.tmp
-  $timecmd sh -c "$trunk/bin/redpsl > $timings/psl-times/$d/$p.rlg.tmp" <<XXX 2>$howlong
+  $timecmd sh -c "$trunk/bin/redpsl > $timings/psl-times/$d/$p.rlg.tmp" <<EOF 2>$howlong
 off int;
 symbolic linelength 80;
 symbolic(!*redefmsg := nil);
 symbolic(!*redeflg!* := nil);
-%off pwrds;
 on errcont;
-lisp (testdirectory:="$d");
 lisp random_new_seed 1;
 resettime1;
-write "START OF REDUCE TEST RUN on $mc"$ in "$f"; write "END OF REDUCE TEST RUN"$
+write "START OF REDUCE TEST RUN"$ in "$f"; write "END OF REDUCE TEST RUN"$
 showtime1$
 quit$	
-XXX
+EOF
   cat $howlong >> $timings/psl-times/$d/$p.rlg.tmp
   rm -f $howlong ) &
 wait

@@ -23,19 +23,19 @@ log "$0 starting"
 
 date=$(date +%Y-%m-%d)
 
-bin=$HOME/bin
 base=$root/$date
 log=$base/log
 timings=$base/timings
 trunk=$base/trunk
+bin=$trunk/generic/redlogtest
 regressions=$trunk/packages/redlog/regressions
 
-log "bin         = $bin"
 log "root        = $root"
 log "base        = $base"
 log "log         = $log"
 log "timings     = $timings"
 log "trunk       = $trunk"
+log "bin         = $bin"
 log "regressions = $regressions"
 log "save        = $save"
 log "cores       = $cores"
