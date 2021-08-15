@@ -12,7 +12,7 @@
 
 case `uname -m` in
     *arm*)
-      echo 80000000
+      echo 110000000
       ;;
     *)
       echo 16000000
