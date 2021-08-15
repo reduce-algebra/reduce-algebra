@@ -26,4 +26,4 @@ Correction to debug module;ok;ok;-;ok;ok;ok;ok;ok;ok;ok
 Hashtable implementation;ok;ok;-;ok;;;;ok;ok;ok
 BSR/BSF Instructions for i386 and x86_64;done;done;-;;;;;;n/a;n/a
 Correct line breaking when printing bignums;ok;;-;;;;;;ok;
-Fix compiler bug for i386 and x86_64 when optimizing move to stack;ok;;-;;;;;;n/a;n/a
+Fix compiler bug for i386 and x86_64 when optimizing move to stack;ok;ok;-;;;;;;n/a;n/a

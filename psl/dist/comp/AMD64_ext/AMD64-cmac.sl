@@ -164,7 +164,7 @@
  
 %---------------------------------------------------------
 % The following set of predicates describes certain classes of
-% register classes. RegP tests if the ophe operand is a valid x86_64 register.%
+% register classes. RegP tests if the operand is a valid x86_64 register.%
 %
 % RegP  any x86_64 register
 % FakeRegP tests for argument register numbers greater than LastActualReg
@@ -177,11 +177,11 @@
     (AND (eqcar Regname 'reg)
 	 (MemQ (cadr RegName) 
 	  '( 1  2  3  4  5 st t1 t2 rax rcx rdx rbx rsp rbp rsi rdi
-	     eax ebx ecx edx esi edi r8 r9 r10 r11 r12 r13 r14 r15
+             eax ebx ecx edx esi edi r8 r9 r10 r11 r12 r13 r14 r15
              nil heaplast heaptrapbound
 	     bndstkptr bndstklowerbound
 	     bndstkupperbound t3 t4
-	     al  cl ax cx es cs ss ds fs gs))))
+             al cl ax cx es cs ss ds fs gs))))
  
 (DefList '((RAX   1) (RBX   2) (ebx  2) (RCX   3) (RDX   4) (RBP   5) )
 	 'RegisterNumber)
@@ -937,10 +937,7 @@
     (cond
       ((ZeroP framesize)
 	NIL)
-      (T `(  % (*move (reg 1) (displacement (reg st) ,(minus (plus framesize 28)) ))
-	     % (cmp 500(reg st))
-	     % (jle (indirect(entry stackoverflow)))
-	     (sub ,framesize (reg st)))))))
+      (T `((sub ,framesize (reg st)))))))
 
   % a special pass in compiler will do the job
 
@@ -1065,10 +1062,7 @@ nopreload
 		   (*move (reg t1) (reg t2))
 		   (*wplus2 (Reg t2) ,lng)
 		   (cmp   (reg t2) (reg BndstkUpperBound))
-	    %  (jge   ,hugo)
-		%  (*call Bstackoverflow) %(jg    (entry Bstackoverflow))
-		%,hugo
-	   (jle (indirect(entry Bstackoverflow)))
+                   (jle (indirect(entry Bstackoverflow)))
 		   (*move (Reg t2) ($fluid BndstkPtr))  )) %start of code
  
       (setq list (append initload list))
@@ -1130,10 +1124,7 @@ preload  (setq initload
 		   (*move (reg t1) (reg t2))
 		   (*wplus2 (Reg t2) ,lng)
 		   (cmp  (reg t2) (reg BndstkUpperBound))
-	   %   (jge  ,kuno)
-	   %   (*call Bstackoverflow) %(jg    (entry Bstackoverflow))
-	   %  ,kuno
-	   (jle (indirect(entry Bstackoverflow)))
+                   (jle (indirect(entry Bstackoverflow)))
 		   (*move (Reg t2) ($fluid BndstkPtr))  )) %start of code
 
      (setq list (append initload list))
@@ -1195,10 +1186,7 @@ preload  (setq initload
       (setq list `((*move (reg t1) (reg t2))
 		   (sub   ,lng (reg t2))
 		   (cmp   (reg t2) (reg BndstkLowerBound))
-	    %  (jle   ,otto)
-		%  (*call Bstackunderflow) %(jl    (entry Bstackunderflow))
-		% ,otto
-	   (jg    (indirect (entry Bstackunderflow)))
+                   (jg    (indirect (entry Bstackunderflow)))
 		   (*move (Reg t2) ($fluid BndstkPtr))  )) %start of code
  
      (setq list (append initload list))
@@ -1400,31 +1388,31 @@ preload  (setq initload
 		     (wait)))) 
 	 'opencode)
 
+%% *Alloc sets the variable NAlloc*. Define a new CMacro *SetNAlloc* to
+%%  be used when *Alloc is optimized away.
+(de *SetNAlloc* (framesize)
+  (setq NAlloc* framesize))
+
+(DefCMacro *SetNAlloc*)
+
 (de &stopt (u)
-  % OPTFN: Convert MOVEs + ALLOCS into PUSHES
+  % OPTFN: Convert MOVEs + ALLOCS into PUSHES + SetNAlloc*
   % U: inverse sequence of cmacros.
-  % 486: instruction for stack protection should be first one.
   (cond ((atom (cdr u)) NIL)
 	((and (equal (caadr u) '*alloc) (equal llngth& 1)
 	      (equal (cddar u) '((frame 1))))
 	 (rplacw u (append `((*push ,(cadar u))
-%WN
-			% (*move (reg 1) (displacement (reg st) -32))
-			% (jle (indirect(entry stackoverflow)))
-			% (cmp 500(reg st))
-			)
-			    (cddr u))))
+%RmS
+                             (*SetNAlloc* 1))
+			   (cddr u))))
 	((and (equal (caadr u) '*move) (equal (caaddr u) '*alloc)
 	      (equal llngth& 2) (equal (cddar u) '((frame 2)))
 	      (equal (cddadr u) '((frame 1))))
 	 (rplacw u
 		 (cons (list '*push (cadadr u))
 		     (cons (list '*push (cadar u)) 
-		       (append  '((*move (reg 1) (reg 1))) %(*move (reg 1) (displacement (reg st) -32)))
-%WN
-			% '((jle (indirect(entry stackoverflow)))
-			%   (cmp 500(reg st)))
-		     (cdddr u)))))
+		       (append  '((*SetNAlloc* 2))
+      		       	   	(cdddr u)))))
 )))
 
 
