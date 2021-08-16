@@ -29,14 +29,6 @@ copyright('talpsism, "(c) 2004-2009 A. Dolzmann, T. Sturm, 2016 T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-procedure talp_smwupdknowl(op,atl,knowl,n);
-   % Term algebra Lisp prefix smart simplification wrapper update
-   % knowledge.
-   if !*rlsusi then
-      cl_smupdknowl(op,atl,knowl,n)
-   else
-      talp_smupdknowl(op,atl,knowl,n);
-
 procedure talp_smupdknowl(op,atl,knowl,n);
    % Term algebra Lisp prefix smart simplifier update knowledge. [op]
    % is one of the operators [and], [or]; [atl] is a list of atomic
@@ -119,33 +111,6 @@ procedure talp_chkknowl(atf,knowl);
       >> else return nil;
       return result
    end;
-
-procedure talp_smwrmknowl(knowl,v);
-   if !*rlsusi then
-      cl_susirmknowl(knowl,v)
-   else
-      cl_smrmknowl(knowl,v);
-
-procedure talp_smwcpknowl(knowl);
-   if !*rlsusi then
-      cl_susicpknowl(knowl)
-   else
-      cl_smcpknowl(knowl);
-
-procedure talp_smwmkatl(op,knowl,newknowl,n);
-   if !*rlsusi then
-      cl_susimkatl(op,knowl,newknowl,n)
-   else
-      cl_smmkatl(op,knowl,newknowl,n);
-
-procedure talp_susibin(old,new);
-   nil;
-
-procedure talp_susipost(atl,knowl);
-   atl;
-
-procedure talp_susitf(at,knowl);
-   at;
 
 operator rltrygs;
 
