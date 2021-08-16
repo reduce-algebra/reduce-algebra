@@ -121,7 +121,6 @@ put('ibalp,'rl_services,'(
 
 % Switches
 put('ibalp,'rl_cswitches,'(
-   (rlsism . t)
    (lower . nil)
    (raise . nil)));
 
