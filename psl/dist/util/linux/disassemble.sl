@@ -233,8 +233,11 @@
 (fi 16#8e Jle ((j v)))
 (fi 16#8f Jnle((j v)))
 
-
 (fi 16#af imul ((G v)(E v)))
+
+(fi 16#bc bsf  ((G v)(E v)))
+(fi 16#bd bsr  ((G v)(E v)))
+
 
 (dm make-the-instructions(u)
   `(progn

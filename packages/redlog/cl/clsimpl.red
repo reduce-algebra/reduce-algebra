@@ -35,8 +35,8 @@ copyright('clsimpl, "(c) 1995-2021 A. Dolzmann, T. Sturm");
 
 rl_provideService rl_simpl = cl_simpl using
    rl_negateat, rl_simplat1, rl_smupdknowl, rl_smrmknowl, rl_smcpknowl,
-   rl_smmkatl, rl_smsimpl!-impl, rl_smsimpl!-equiv1, rl_ordatp, rl_susipost,
-   rl_susitf, rl_susibin, rl_b2terml, rl_simplb, rl_b2atl, rl_bsatp;
+   rl_smmkatl, rl_ordatp, rl_susipost, rl_susitf, rl_susibin, rl_b2terml,
+   rl_simplb, rl_b2atl, rl_bsatp;
 
 asserted procedure cl_simpl(f: Formula, atl: List, n: Integer): Formula;
    % Common logic simplify. [f] is a formula; [atl] is a list of atomic
@@ -451,7 +451,7 @@ asserted procedure cl_smsimpl!-imprep!-atprem(atprem: Atom, concl: Formula, know
    begin scalar w, newknowl;
       newknowl := rl_smcpknowl knowl;
       if cl_atfp concl then
-	 return rl_smsimpl!-impl(atprem, concl, knowl, newknowl, n);
+	 return cl_smsimpl!-impl(atprem, concl, knowl, newknowl, n);
       newknowl := rl_smupdknowl('and, {atprem}, newknowl, n);
       if newknowl eq 'false then
 	 return 'true;
@@ -459,7 +459,7 @@ asserted procedure cl_smsimpl!-imprep!-atprem(atprem: Atom, concl: Formula, know
       if w := cl_smtvchk!-impl(atprem, concl) then
 	 return w;
       if cl_atfp concl then
-	 return rl_smsimpl!-impl(atprem, concl, knowl, newknowl, n);
+	 return cl_smsimpl!-impl(atprem, concl, knowl, newknowl, n);
       return rl_mk2('impl, atprem, concl)
    end;
 
@@ -476,8 +476,22 @@ asserted procedure cl_smsimpl!-imprep!-atconcl(prem: Formula, atconcl: Atom, kno
       if w := cl_smtvchk!-impl(prem, atconcl) then
 	 return w;
       if cl_atfp prem then
-	 return rl_smsimpl!-impl(prem, atconcl, knowl, newknowl, n);
+	 return cl_smsimpl!-impl(prem, atconcl, knowl, newknowl, n);
       return rl_mk2('impl, prem, atconcl)
+   end;
+
+asserted procedure cl_smsimpl!-impl(atprem: Atom, atconcl: Atom, oldknowl: Any, newknowl: Any, n: Integer): Formula;
+   % Common logic smart simplifier simplify implication. [atprem] and [atconcl]
+   % are atomic formulas; [oldknowl] and [newknowl] are knowledge bases; [n] is
+   % an integer. Returns a formula. This once was a generic implementation of a
+   % blackbox.
+   begin scalar w;
+      w := cl_simpl1(rl_nnf rl_mk2('impl, atprem, atconcl), oldknowl, n, nil);
+      if rl_tvalp w or cl_atfp w then
+ 	 return w;
+      atprem := cl_simpl1(atprem, oldknowl, n, 'prem);
+      atconcl := cl_simpl1(atconcl, oldknowl, n, 'concl);
+      return rl_mk2('impl, atprem, atconcl)
    end;
 
 asserted procedure cl_smtvchk!-equiv(lhs: Formula, rhs: Formula): Formula;
@@ -504,7 +518,26 @@ asserted procedure cl_smsimpl!-equiv(lhs: Formula, rhs: Formula, knowl: Any, n: 
       	 return rl_mk2('equiv, rhs, lhs)
       >>;
       newknowl := rl_smcpknowl(knowl);
-      return rl_smsimpl!-equiv1(lhs, rhs, knowl, newknowl, n)
+      return cl_smsimpl!-equiv1(lhs, rhs, knowl, newknowl, n)
+   end;
+
+asserted procedure cl_smsimpl!-equiv1(lhs: Formula, rhs: Formula, oldknowl: Any, newknowl: Any, n: Integer): Formula;
+   % Common logic smart simplifier simplify equivalence. [lhs] and
+   % [rhs] are atomic formulas; [oldknowl] and [newknowl] are
+   % knowledge bases; [n] is an integer. Returns a formula. This once was a
+   % generic implementation of a blackbox.
+   begin scalar w, x;
+      w := cl_simpl1(rl_nnf rl_mk2('equiv, lhs, rhs), oldknowl, n, nil);
+      if rl_tvalp w or cl_atfp w then
+ 	 return w;
+      x := rl_argn w;
+      if cl_atfp car x and cl_atfp cadr x and null cddr x then
+	 return w;
+      lhs := cl_simpl1(lhs, oldknowl, n, 'equiv);
+      rhs := cl_simpl1(rhs, oldknowl, n, 'equiv);
+      if cl_ordp(lhs, rhs) then
+	 return rl_mk2('equiv, lhs, rhs);
+      return rl_mk2('equiv, rhs, lhs)
    end;
 
 asserted procedure cl_ordp(f1: Formula, f2: Formula): Boolean;
@@ -606,36 +639,8 @@ asserted procedure cl_smmkatl(op: Id, knowl: Alist, newknowl: Alist, n: Integer)
       return res
    end;
 
-asserted procedure cl_smsimpl!-impl(atprem: Atom, atconcl: Atom, oldknowl: Any, newknowl: Any, n: Integer): Formula;
-   % Common logic smart simplifier simplify implication. [atprem] and
-   % [atconcl] are atomic formulas; [oldknowl] and [newknowl] are
-   % knowledge bases; [n] is an integer. Returns a formula.
-   begin scalar w;
-      w := cl_simpl1(rl_nnf rl_mk2('impl, atprem, atconcl), oldknowl, n, nil);
-      if rl_tvalp w or cl_atfp w then
- 	 return w;
-      atprem := cl_simpl1(atprem, oldknowl, n, 'prem);
-      atconcl := cl_simpl1(atconcl, oldknowl, n, 'concl);
-      return rl_mk2('impl, atprem, atconcl)
-   end;
-
-asserted procedure cl_smsimpl!-equiv1(lhs: Formula, rhs: Formula, oldknowl: Any, newknowl: Any, n: Integer): Formula;
-   % Common logic smart simplifier simplify equivalence. [lhs] and
-   % [rhs] are atomic formulas; [oldknowl] and [newknowl] are
-   % knowledge bases; [n] is an integer. Returns a formula.
-   begin scalar w, x;
-      w := cl_simpl1(rl_nnf rl_mk2('equiv, lhs, rhs), oldknowl, n, nil);
-      if rl_tvalp w or cl_atfp w then
- 	 return w;
-      x := rl_argn w;
-      if cl_atfp car x and cl_atfp cadr x and null cddr x then
-	 return w;
-      lhs := cl_simpl1(lhs, oldknowl, n, 'equiv);
-      rhs := cl_simpl1(rhs, oldknowl, n, 'equiv);
-      if cl_ordp(lhs, rhs) then
-	 return rl_mk2('equiv, lhs, rhs);
-      return rl_mk2('equiv, rhs, lhs)
-   end;
+rl_provideService rl_qesil = cl_qesil;
+% SM only. Used by CGB
 
 asserted procedure cl_siaddatl(atl: List, c: Formula): Formula;
    % Common logic simplifying add atomic formula list. [atl] is a list

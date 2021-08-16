@@ -45,8 +45,6 @@ exports talp_enter,talp_exit,talp_mkalop,talp_unmkalop,talp_get!-invs,
 
 global '(talp_lang!* talp_extlang!*);
 
-fluid '(!*rlsusi);
-
 flag('(talp),'rl_package);
 
 switch talpqegauss;
@@ -57,15 +55,10 @@ on1 'talpqp;
 
 % Parameters
 put('talp,'rl_params,'(
-   (rl_smupdknowl!* . talp_smwupdknowl)
-   (rl_smrmknowl!* . talp_smwrmknowl)
-   (rl_smcpknowl!* . talp_smwcpknowl)
-   (rl_smmkatl!* . talp_smwmkatl)
-   (rl_smsimpl!-impl!* . cl_smsimpl!-impl)
-   (rl_smsimpl!-equiv1!* . cl_smsimpl!-equiv1)
-   (rl_susibin!* . talp_susibin)
-   (rl_susipost!* . talp_susipost)
-   (rl_susitf!* . talp_susitf)
+   (rl_smupdknowl!* . talp_smupdknowl)
+   (rl_smrmknowl!* . cl_smrmknowl)
+   (rl_smcpknowl!* . cl_smcpknowl)
+   (rl_smmkatl!* . cl_smmkatl)
    (rl_a2cdl!* . talp_a2cdl)
    (rl_tordp!* . talp_tordp)
    (rl_subsumption!* . talp_subsumption)
@@ -82,9 +75,6 @@ put('talp,'rl_params,'(
    (rl_varsubstat!* . talp_varsubstat)
    (rl_ordatp!* . talp_ordatp)
    (rl_op!* . talp_op) ));
-
-% Switches
-put('talp,'rl_cswitches, '((rlsism . t)));
 
 % Services
 put('talp,'rl_services,'(

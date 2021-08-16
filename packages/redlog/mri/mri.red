@@ -64,8 +64,6 @@ put('mri,'rl_params,'(
    (rl_subalchk!* . null)
    (rl_eqnrhskernels!* . mri_eqnrhskernels)
    (rl_bnfsimpl!* . cl_bnfsimpl)
-   (rl_smsimpl!-impl!* . cl_smsimpl!-impl)
-   (rl_smsimpl!-equiv1!* . cl_smsimpl!-equiv1)
    (rl_susibin!* . mri_susibin)
    (rl_susipost!* . mri_susipost)
    (rl_susitf!* . mri_susitf)));

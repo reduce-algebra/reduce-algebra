@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PU:NBIG32a.SL 
+% File:         PXU:NBIG32a.SL 
 % Description:  Vector based BIGNUM package with INUM operations 
 % Author:       M. L. Griss & B Morrison 
 % Created:      25 June 1982 
@@ -45,6 +45,10 @@
 %  changed bread so that long numbers can be read with less bignum overhead 
 % 24-Jan-89 (Herbert Melenk)
 %  enlarged bigit length up to word size - 2
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% $Id$
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -701,7 +705,7 @@ error
 	(setq snu (bbminusp u))
 	(setq snv (bbminusp v))
 	% Note that these are not extra-boolean, i.e.                      
-	% for positive numbers MBinusP returns nil, for                    
+	% for positive numbers BBMinusP returns nil, for                    
 	% negative it returns its argument. Thus the                       
 	% test (SnU=SnV) does not reliably compare the signs of            
 	% U and V;                                                         
@@ -1086,12 +1090,12 @@ error
      (cond (sn (channelwritechar channel (char !-))))
      (cond
        ((neq myobase 10)
-	(channelwritesysinteger channel myobase 10)
-	(channelwritechar channel (char !#))))
+        (channelwritesysinteger channel myobase 10)
+        (channelwritechar channel (char !#))))
      (setq ob (if (eq ob 10) 1000000
-	       (progn
-		(setq ob (itimes2 ob ob))  % ob should be < 6 bits
-		(setq ob (itimes2 (itimes2 ob ob) ob)))))
+               (progn
+                (setq ob (itimes2 ob ob))  % ob should be < 6 bits
+                (setq ob (itimes2 (itimes2 ob ob) ob)))))
      (bprin channel v2 ob)
      (setq outputbase!* myobase ))
 
@@ -1289,13 +1293,19 @@ error
 
 (de recursivechannelprin1 (channel u level)
   (if (bigp u)
-    (bchannelprin2 channel u)
+    (if (eq channel 4) % flatsize etc
+      (checklinefit (times2 10 (bsize u)) channel 'bchannelprin2 u)
+      (checklinefit (flatsize u) channel 'bchannelprin2 u))
+%    (bchannelprin2 channel u)
     (oldchannelprin1 channel u level))
   u)
 
 (de recursivechannelprin2 (channel u level)
   (if (bigp u)
-    (bchannelprin2 channel u)
+    (if (eq channel 4) % flatsize etc
+      (checklinefit (times2 10 (bsize u)) channel 'bchannelprin2 u)
+      (checklinefit (flatsize2 u) channel 'bchannelprin2 u))
+%    (bchannelprin2 channel u)
     (oldchannelprin2 channel u level))
   u)
 
@@ -1544,7 +1554,7 @@ error
   (progn % IEEE double arithmetic
    (setq BigFloatHi!* (btimes2 (bsub1 (btwopower 53)) (btwopower 971)))
    (setq BigFloatLow!* (bminus BigFloatHi!*))))
- 
+
 
 (prog (y syshi syslo)
 	% Lowest value of Ai                                               
@@ -1557,7 +1567,7 @@ error
      (setq FloatSysHi!* (float SysHi))
      (setq FloatSysLow!* (float SysLo))
 )
- 
+
 (if_system IEEE
     (let ((one 1))
          (setq ieee-hidden-bit* (lshift bone* 16#34))))

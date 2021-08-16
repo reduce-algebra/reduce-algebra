@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PU:NBIG32a.SL 
+% File:         PXU:NBIG32a.SL 
 % Description:  Vector based BIGNUM package with INUM operations 
 % Author:       M. L. Griss & B Morrison 
 % Created:      25 June 1982 
@@ -58,6 +58,10 @@
 %
 % NOTE that bbase* is no longer an inum! So we use open coded functions
 % to access the values of bbase* and logicalbits*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% $Id$
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (compiletime (load muls32 fast-vector vfvect inum if-system double32))
@@ -701,7 +705,7 @@ error
 	(setq snu (bbminusp u))
 	(setq snv (bbminusp v))
 	% Note that these are not extra-boolean, i.e.                      
-	% for positive numbers MBinusP returns nil, for                    
+	% for positive numbers BBMinusP returns nil, for                    
 	% negative it returns its argument. Thus the                       
 	% test (SnU=SnV) does not reliably compare the signs of            
 	% U and V;                                                         
@@ -1290,13 +1294,19 @@ error
 
 (de recursivechannelprin1 (channel u level)
   (if (bigp u)
-    (bchannelprin2 channel u)
+    (if (eq channel 4) % flatsize etc
+      (checklinefit (times2 10 (bsize u)) channel 'bchannelprin2 u)
+      (checklinefit (flatsize u) channel 'bchannelprin2 u))
+%    (bchannelprin2 channel u)
     (oldchannelprin1 channel u level))
   u)
 
 (de recursivechannelprin2 (channel u level)
   (if (bigp u)
-    (bchannelprin2 channel u)
+    (if (eq channel 4) % flatsize etc
+      (checklinefit (times2 10 (bsize u)) channel 'bchannelprin2 u)
+      (checklinefit (flatsize2 u) channel 'bchannelprin2 u))
+%    (bchannelprin2 channel u)
     (oldchannelprin2 channel u level))
   u)
 
@@ -1545,7 +1555,7 @@ error
   (progn % IEEE double arithmetic
    (setq BigFloatHi!* (btimes2 (bsub1 (btwopower 53)) (btwopower 971)))
    (setq BigFloatLow!* (bminus BigFloatHi!*))))
- 
+
 
 (prog (y syshi syslo)
 	% Lowest value of Ai                                               
@@ -1558,7 +1568,7 @@ error
      (setq FloatSysHi!* (float SysHi))
      (setq FloatSysLow!* (float SysLo))
 )
- 
+
 (if_system IEEE
     (let ((one 1))
          (setq ieee-hidden-bit* (lshift bone* 16#34))))

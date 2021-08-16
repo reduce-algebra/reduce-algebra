@@ -108,8 +108,6 @@ put('ofsf,'rl_params,'(
    (rl_smrmknowl!* . ofsf_smwrmknowl)
    (rl_smcpknowl!* . ofsf_smwcpknowl)
    (rl_smmkatl!* . ofsf_smwmkatl)
-   (rl_smsimpl!-impl!* . cl_smsimpl!-impl)
-   (rl_smsimpl!-equiv1!* . cl_smsimpl!-equiv1)
    (rl_susipost!* . ofsf_susipost)
    (rl_susitf!* . ofsf_susitf)
    (rl_susibin!* . ofsf_susibin)

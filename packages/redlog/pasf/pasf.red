@@ -131,8 +131,6 @@ put('pasf,'rl_params,'(
    (rl_smrmknowl!* . pasf_susirmknowl)
    (rl_smcpknowl!* . cl_susicpknowl)
    (rl_smmkatl!* . cl_susimkatl)
-   (rl_smsimpl!-impl!* . cl_smsimpl!-impl)
-   (rl_smsimpl!-equiv1!* . cl_smsimpl!-equiv1)
    (rl_susibin!* . pasf_susibin)
    (rl_susipost!* . pasf_susipost)
    (rl_susitf!* . pasf_susitf)
