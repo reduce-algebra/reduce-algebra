@@ -57,8 +57,6 @@ put('dvfsf,'rl_params,'(
    (rl_smrmknowl!* . dvfsf_susirmknowl)
    (rl_smcpknowl!* . cl_susicpknowl)
    (rl_smmkatl!* . cl_susimkatl)
-   (rl_smsimpl!-impl!* . cl_smsimpl!-impl)
-   (rl_smsimpl!-equiv1!* . cl_smsimpl!-equiv1)
    (rl_sacatlp!* . cl_sacatlp)
    (rl_sacat!* . cl_sacat)
    (rl_ordatp!* . dvfsf_ordatp)

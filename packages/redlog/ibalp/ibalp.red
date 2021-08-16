@@ -60,8 +60,6 @@ put('ibalp,'rl_params,'(
    (rl_smrmknowl!* . cl_smrmknowl)
    (rl_smcpknowl!* . cl_smcpknowl)
    (rl_smmkatl!* . cl_smmkatl)
-   (rl_smsimpl!-impl!* . cl_smsimpl!-impl)
-   (rl_smsimpl!-equiv1!* . cl_smsimpl!-equiv1)
    (rl_elimset!* . ibalp_elimset)
    (rl_translat!* . ibalp_translat)
    (rl_varsel!* . ibalp_varsel)

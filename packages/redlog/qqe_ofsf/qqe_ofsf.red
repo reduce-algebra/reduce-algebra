@@ -53,8 +53,6 @@ put('qqe_ofsf,'rl_params,'(
    (rl_smrmknowl!* . qqe_ofsf_smrmknowl) %!!!
    (rl_smcpknowl!* . qqe_ofsf_smcpknowl)
    (rl_smmkatl!* . qqe_ofsf_smmkatl)
-   (rl_smsimpl!-impl!* . cl_smsimpl!-impl) % to check
-   (rl_smsimpl!-equiv1!* . cl_smsimpl!-equiv1) % to check
    (rl_negateat!* . qqe_ofsf_negateat)
    (rl_varlat!* . qqe_ofsf_varlat)
    (rl_varsubstat!* . qqe_ofsf_varsubstat)

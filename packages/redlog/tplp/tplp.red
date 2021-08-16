@@ -76,8 +76,6 @@ put('tplp,'rl_services,'(
    (rl_smrmknowl!* . cl_smrmknowl)
    (rl_smcpknowl!* . cl_smcpknowl)
    (rl_smmkatl!* . cl_smmkatl)
-   (rl_smsimpl!-impl!* . cl_smsimpl!-impl)
-   (rl_smsimpl!-equiv1!* . cl_smsimpl!-equiv1)
    (rl_simplat1!* . tplp_simplat1)
    (rl_ordatp!* . ordop)
    (rl_varl!* . cl_varl)

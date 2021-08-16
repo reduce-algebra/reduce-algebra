@@ -63,8 +63,6 @@ put('dcfsf,'rl_params,'(
    (rl_smrmknowl!* . dcfsf_smrmknowl)
    (rl_smcpknowl!* . dcfsf_smcpknowl)
    (rl_smmkatl!* . dcfsf_smmkatl)
-   (rl_smsimpl!-impl!* . cl_smsimpl!-impl)
-   (rl_smsimpl!-equiv1!* . cl_smsimpl!-equiv1)
    (rl_negateat!* . dcfsf_negateat)
    (rl_varlat!* . dcfsf_varlat)
    (rl_varsubstat!* . dcfsf_varsubstat)

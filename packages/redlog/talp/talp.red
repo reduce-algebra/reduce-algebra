@@ -61,8 +61,6 @@ put('talp,'rl_params,'(
    (rl_smrmknowl!* . talp_smwrmknowl)
    (rl_smcpknowl!* . talp_smwcpknowl)
    (rl_smmkatl!* . talp_smwmkatl)
-   (rl_smsimpl!-impl!* . cl_smsimpl!-impl)
-   (rl_smsimpl!-equiv1!* . cl_smsimpl!-equiv1)
    (rl_susibin!* . talp_susibin)
    (rl_susipost!* . talp_susipost)
    (rl_susitf!* . talp_susitf)

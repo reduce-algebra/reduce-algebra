@@ -69,8 +69,6 @@ put('acfsf,'rl_params,'(
    (rl_smrmknowl!* . acfsf_smrmknowl)
    (rl_smcpknowl!* . acfsf_smcpknowl)
    (rl_smmkatl!* . acfsf_smmkatl)
-   (rl_smsimpl!-impl!* . cl_smsimpl!-impl)
-   (rl_smsimpl!-equiv1!* . cl_smsimpl!-equiv1)
    (rl_negateat!* . acfsf_negateat)
    (rl_varlat!* . acfsf_varlat)
    (rl_varsubstat!* . acfsf_varsubstat)
