@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2008-2009 Thomas Sturm
-% ----------------------------------------------------------------------
+module mri_pasf;
+
+revision('mri_pasf, "$Id$");
+
+copyright('mri_pasf, "Copyright (c) 2008-2021 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,15 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(mri_pasf_rcsid!* mri_pasf_copyright!*);
-   mri_pasf_rcsid!* :=
-      "$Id$";
-   mri_pasf_copyright!* := "Copyright (c) 2008-2009 T. Sturm"
->>;
-
-module mri_pasf;
 
 load!-package 'redlog;
 load!-package 'pasf;

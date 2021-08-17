@@ -2,7 +2,7 @@ module mriqe;
 
 revision('mriqe, "$Id$");
 
-copyright('mriqe, "(c) 2008-2017 T. Sturm");
+copyright('mriqe, "(c) 2008-2021 T. Sturm");
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions

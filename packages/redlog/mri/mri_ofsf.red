@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2008-2009 Thomas Sturm
-% ----------------------------------------------------------------------
+module mri_ofsf;
+
+revision('mri_ofsf, "$Id$");
+
+copyright('mri_ofsf, "(c) 2008-2021 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,15 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(mri_ofsf_rcsid!* mri_ofsf_copyright!*);
-   mri_ofsf_rcsid!* :=
-      "$Id$";
-   mri_ofsf_copyright!* := "Copyright (c) 2008-2009 T. Sturm"
->>;
-
-module mri_ofsf;
 
 load!-package 'redlog;
 load!-package 'ofsf;
