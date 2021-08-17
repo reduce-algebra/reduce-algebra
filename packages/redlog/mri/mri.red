@@ -2,7 +2,7 @@ module mri;  % Mixed real-integer quantifier elimination.
 
 revision('mri, "$Id$");
 
-copyright('mri, "(c) 2008-2017 T. Sturm");
+copyright('mri, "(c) 2008-2021 T. Sturm");
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -48,13 +48,14 @@ flag('(mri_chsimpat),'full);
 flag('(mri_simpat),'full);
 flag('(equal neq leq geq lessp greaterp),'spaced);
 
-put('mri,'rl_cswitches,'(
-   (rlsism . nil)));
-
 % Parameters
 put('mri,'rl_params,'(
    (rl_simplat1!* . mri_simplat1)
    (rl_op!* . mri_op)
+   (rl_smupdknowl!* . cl_smupdknowl)
+   (rl_smrmknowl!* . cl_smrmknowl)
+   (rl_smcpknowl!* . cl_smcpknowl)
+   (rl_smmkatl!* . cl_smmkatl)
    (rl_negateat!* . mri_negateat)
    (rl_tordp!* . ordp)
    (rl_simplb!* . mri_simplb)
@@ -63,10 +64,7 @@ put('mri,'rl_params,'(
    (rl_subat!* . mri_subat)
    (rl_subalchk!* . null)
    (rl_eqnrhskernels!* . mri_eqnrhskernels)
-   (rl_bnfsimpl!* . cl_bnfsimpl)
-   (rl_susibin!* . mri_susibin)
-   (rl_susipost!* . mri_susipost)
-   (rl_susitf!* . mri_susitf)));
+   (rl_bnfsimpl!* . cl_bnfsimpl)));
 
 % Services
 put('mri,'rl_services,'(
