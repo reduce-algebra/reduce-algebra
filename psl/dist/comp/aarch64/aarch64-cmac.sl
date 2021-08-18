@@ -688,7 +688,7 @@
                        OpenCodeSequence)
                       ((setq OpenCodeSequence
                              (get FunctionName 'OpenCode))
-		       % check whether the opncode sequence ends with *Call
+		       % check whether the opencode sequence ends with *Call
 		       % and replace it with *JCall
 		       (if (eqcar (lastcar OpenCodeSequence) '*Call)
 			   (progn
@@ -704,8 +704,7 @@
 		       % check that there isn't another *Call somewhere
 		       (if (atsoc '*Call OpenCodeSequence)
 			   (stderror
-			    (bldmsg "Cannot have *Call in opencode sequence for %w")
-			    FunctionName)
+			    (bldmsg "Cannot have *Call in opencode sequence for %w" FunctionName))
 			 OpenCodeSequence
 			 ))
                       (t (CMacroPatternExpand (list FunctionName)
@@ -1285,6 +1284,22 @@
 
 (&OneReg '(Byte PutByte HalfWord PutHalfWord))
 
+%% Some special operations: counting leading and trailing zeroes
+
+(put 'leadingzeroes-intrinsic 'opencode '((clz (reg 1) (reg 1))))
+
+(put 'trailingzeroes-intrinsic 'opencode
+     '((neg (reg 2) (reg 1) 0)		% negate number
+       (and (reg 1) (reg 1) (reg 2))	% after AND only the least significant 1-bit remains
+       (clz (reg 1) (reg 1))            % compute 31 - count of leading zeroes
+       (cbnz (reg 1) (labelgen templabel))
+       (mov (reg 2) (wconst 31))
+       (sub (reg 1) (reg 2) (reg 1))
+       (labelref templabel)
+       ))
+(put 'trailingzeroes-intrinsic 'destroys '((reg 1)(reg 2)))
+
+
 (on fast-integers)
 
 
@@ -1294,7 +1309,7 @@
  deflist '((*wfix ((ldr (reg d0) (indirect (reg 1)))
                    (fcvtas (reg x0) (reg d0))))
            (*wfloat ((scvtf (reg d0) (reg 1))
-                     (str (reg d0) (indirect (reg 1)))))
+                     (str (reg d0) (indirect (reg 2)))))
            (*fgreaterp
                     ((ldr (reg d0) (indirect (reg 1)))
                      (ldr (reg d1) (indirect (reg 2)))
