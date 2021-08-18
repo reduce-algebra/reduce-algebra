@@ -914,13 +914,11 @@ procedure ofsfic!*cl_qeatal1(f,v,theo,flg,ans);
 procedure ofsfic!*cl_simpl(f,atl,n);
    % Common logic simplify. [f] is a formula; [atl] is a list of atomic
    % formulas, which are considered to describe a theory; [n] is an integer.
-   % Depends on switches [!*rlsism] [!*rlsiso]. Returns the identifier [inctheo]
-   % or a formula. [inctheo] means that [atl] is inconsistent. Else the result
-   % is [f], simplified (wrt. [atl]). For non-negative [n], simplification stops
-   % at level [n].
+   % Depends on switch [!*rlsiso]. Returns the identifier [inctheo] or a
+   % formula. [inctheo] means that [atl] is inconsistent. Else the result is
+   % [f], simplified (wrt. [atl]). For non-negative [n], simplification stops at
+   % level [n].
    begin scalar w;
-      if null !*rlsism then
-	 return cl_simpl1(f,nil,n,nil);
       atl := cl_sitheo atl;
       if atl eq 'inctheo then
 	 return 'inctheo;
@@ -937,8 +935,8 @@ procedure ofsfic!*cl_simpl(f,atl,n);
 
 procedure cl_simpl1!-tagged(f,knowl,n,sop);
    % Common logic simplify. [f] is a formula; [knowl] is an IRL; [n] is an
-   % integer; [sop] is a CL operator. Depends on switches [!*rlsism],
-   % [!*rlsiso]. Returns a formula. Simplifies [f] recursively using [knowl].
+   % integer; [sop] is a CL operator. Depends on switch [!*rlsiso]. Returns a
+   % formula. Simplifies [f] recursively using [knowl].
    begin scalar op,result,w,newknowl;
       if eqn(n, 0) then
  	 return {f, nil};
@@ -962,7 +960,7 @@ procedure cl_simpl1!-tagged(f,knowl,n,sop);
 	 return {cl_negate!-invol car result, cadr result}
       >>;
       if rl_quap op then <<
-	 if !*rlsism then knowl := rl_smrmknowl(knowl, rl_var f);
+	 knowl := rl_smrmknowl(knowl, rl_var f);
 	 % CHANGED TO n FROM n-1
 	 result := cl_simpl1!-tagged(rl_mat f, knowl, n, op);
 	 if rl_tvalp car result then return result;
@@ -971,43 +969,38 @@ procedure cl_simpl1!-tagged(f,knowl,n,sop);
 	 return {rl_mkq(op,rl_var f,car result), cadr result}
       >>;
       if rl_bquap op then <<
-	 if !*rlsism then
- 	    knowl := rl_smrmknowl(knowl, rl_var f);
+	 knowl := rl_smrmknowl(knowl, rl_var f);
 	 return cl_simplbq(f, knowl, n)
       >>;
       w := cl_simplat(f, sop);
-      if !*rlsism then <<
-	 op := rl_op w;
-	 if rl_junctp op then <<
-	    w := cl_smsimpl!-junct!-tagged(op, rl_argn w, knowl, n);
-	    return {rl_smkn(op, car w), cadr w}
-	 >>;
-	 if rl_tvalp op then <<
-	    if eqn(n, -1) then
- 	       return {w, {0}};
-	    return {w, {{0}, 'arb, n}};
-	 >>;
-	 % [w] is atomic.
-	 newknowl := ofsf_smupdknowl!-tagged('and, w, {-1}, rl_smcpknowl knowl, n);
-	 if newknowl eq 'false then <<
-	    if eqn(n, -1) then
- 	       return {{'false}, ofsfic_extracttags ofsfic_prunetag ic_taglistremfalse rlqeicdata!*};
-	    return {{'false}, ic_taglistremfalse rlqeicdata!*}
-	 >>;
-	 w := ofsf_smmkatl!-tagged('and, knowl, newknowl, n);
-	 return if car w eq 'false then w else {rl_smkn('and, car w), cadr w}
+      op := rl_op w;
+      if rl_junctp op then <<
+	 w := cl_smsimpl!-junct!-tagged(op, rl_argn w, knowl, n);
+	 return {rl_smkn(op, car w), cadr w}
       >>;
-      if w then
-	 return w;
-      rederr {"cl_simpl1(): unknown operator",op}
+      if rl_tvalp op then <<
+	 if eqn(n, -1) then
+	    return {w, {0}};
+	 return {w, {{0}, 'arb, n}};
+      >>;
+      % [w] is atomic.
+      newknowl := ofsf_smupdknowl!-tagged('and, w, {-1}, rl_smcpknowl knowl, n);
+      if newknowl eq 'false then <<
+	 if eqn(n, -1) then
+	    return {{'false}, ofsfic_extracttags ofsfic_prunetag ic_taglistremfalse rlqeicdata!*};
+	 return {{'false}, ic_taglistremfalse rlqeicdata!*}
+      >>;
+      w := ofsf_smmkatl!-tagged('and, knowl, newknowl, n);
+      return if car w eq 'false then
+ 	 w
+      else
+ 	 {rl_smkn('and, car w), cadr w}
    end;
 
 procedure cl_smsimpl!-junct!-tagged(op,junct,knowl,n);
    % Common logic smart simplify. [op] is one of [and], [or]; [junct]
    % is a list of formulas; [knowl] is an IRL; [n] is an integer.
-   % Returns a list of formulas. Accesses the switch [!*rlsism]. With
-   % [!*rlsism] on sophisticated simplifications are applied to
-   % [junct].
+   % Returns a list of formulas.
    begin scalar break,w,atl,col,newknowl,k,atflist,l,l2,l3,rel,at;
       newknowl := rl_smcpknowl knowl;
       break := cl_cflip('false, op eq 'and);

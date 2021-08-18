@@ -627,7 +627,7 @@ procedure pasf_exprng2(f);
 procedure pasf_exprng(f);
    % Expand range. [f] is a weakly quantifier-free formula. Returns a
    % quantifier-free formula.
-   begin scalar op, w, !*rlsism;
+   begin scalar op, w;
       op := rl_op f;
       if op eq 'and then
 	 return pasf_exprng!-gand('and, rl_argn f, 'true, 'false);
@@ -641,7 +641,7 @@ procedure pasf_exprng(f);
 	    rl_var f, rl_b f, rl_mat f, 'or, 'false, 'true);
       if rl_boolp op then <<
 	 w := for each subf in rl_argn f collect pasf_exprng subf;
-	 return cl_simpl(rl_smkn(op, w), nil, -1)
+	 return cl_simplbasic(rl_smkn(op, w), nil, -1)
       >>;
       % [f] is atomic or a truth value.
       return f

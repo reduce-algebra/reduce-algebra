@@ -1,8 +1,11 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2005-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module qqeqe;
+% Quantifier elimination for queues. Module with algorithms for elimination
+% process.
+
+revision('qqeqe, "$Id$");
+
+copyright('qqeqe, "Copyright (c) 2005-2021 A. Dolzmann and T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,19 +30,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(qqe_qe_rcsid!* qqe_qe_copyright!*);
-   qqe_qe_rcsid!* :=
-      "$Id$";
-   qqe_qe_copyright!* := "Copyright (c) 2005-2009 A. Dolzmann and T. Sturm"
->>;
-
-module qqeqe;
-% Quantifierelimination for queues. Module with algorithms
-% for elimination process.
-
-
 
 fluid '(qqe_resf!*  % list of atomic formulas not containing the 
                        % bounded variable -qvar-, which actually has
@@ -69,9 +59,6 @@ fluid '(qqe_resf!*  % list of atomic formulas not containing the
    qqe_bqu!-list!*    % list of quantifiers of basic type
    % qqe_id_counter!*   % counts the number of new id's already used
    );
-
-imports qqeqemisc.red;
-
 
 procedure qqe_satlengths(minlength, maxlength, lcm, lara);
    % Queue quantifier elimination saturation lengths. Returns a list of

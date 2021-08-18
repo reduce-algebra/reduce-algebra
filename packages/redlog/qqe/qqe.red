@@ -41,8 +41,7 @@ load!-package 'redlog;
 
 exports qqe_chsimpat;
 
-fluid '(qqe_marked!-ids!-rollback!* qqe_qadd!-location!*
-   qqe_elimb!* qqe_debug!* !*rlsism);
+fluid '(qqe_marked!-ids!-rollback!* qqe_qadd!-location!* qqe_elimb!* qqe_debug!*);
 
 flag('(qqe),'rl_package);
 
@@ -98,8 +97,6 @@ algebraic operator ltail;
 put('ladd,'qqe_number!-of!-args,1);
 
 flag('(qqe_chsimpat),'full);
-!*rlsism := nil;
-%else failure in simplifier cl_simpl  -> context switch
 
 procedure qqe_enter(argl);
    begin scalar w,qqecid2;

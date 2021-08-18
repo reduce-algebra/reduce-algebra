@@ -94,7 +94,7 @@ fluid '(fancy!-line!* fancy!-pos!*);
 
 fluid '(!*strict_argcount);
 
-switch rlsism,rlsiatadv,rlsipd,rlsiexpl,rlsiexpla,rlsiso,
+switch rlsiatadv,rlsipd,rlsiexpl,rlsiexpla,rlsiso,
    rlsisocx,rlsipw,rlsipo,rlverbose,rlrealtime,rlidentify,rlgssub,
    rlgsrad,rlgsred,rlgsprod,rlqepnf,rlqedfs,rlparallel,rlopt1s,rlbrop,
    rlbnfsm,rlsimpl,rlsifac,rlqegsd,rlgserf,rlbnfsac,rlgsvb,rlqesr,rlqeheu,
@@ -167,7 +167,6 @@ off1 'rlqeaprecise;     % Possibly avoid epsilon and infinity with rlqea.
 % rlsimpl
 on1 'rlsiso;
 on1 'rlsisocx;  % simplifier sort complex subformulas
-on1 'rlsism;
 off1 'rlsipw;
 on1 'rlsipo;
 on1 'rlsiatadv;

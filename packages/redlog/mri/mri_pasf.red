@@ -39,9 +39,6 @@ rl_bbiadd('mri_pasf,'rl_negateat!*,'mri_negateat);
 %rl_bbiadd('mri_pasf,'rl_simplb!*,'mri_simplb);  % for now
 %rl_bbiadd('mri_pasf,'rl_bsatp!*,'mri_bsatp);    % for now
 
-rl_cswadd('mri_pasf,'rlsism,nil);
-rl_cswadd('mri_pasf,'rlsusi,nil);
-
 endmodule;
 
 end;  % of file
