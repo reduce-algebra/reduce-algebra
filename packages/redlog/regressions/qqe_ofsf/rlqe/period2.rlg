@@ -51,7 +51,7 @@ and rhead(ltail(ltail(ltail(rtail(rtail(q))))))
 end;
 
 Tested on  csl
-Time (counter 1): 70 ms  plus GC time: 30 ms
-1: real         0.51
-user         0.30
-sys          0.17
+Time (counter 1): 60 ms  plus GC time: 40 ms
+1: real 0.31
+user 0.27
+sys 0.05

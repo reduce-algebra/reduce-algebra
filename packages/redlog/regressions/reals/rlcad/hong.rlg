@@ -22,8 +22,8 @@ b > 0 and a < 0
 
 end;
 
-Tested on londo.fritz.box running Darwin 20.6.0 x86_64 CSL
-Time (counter 1): 960 ms  plus GC time: 80 ms
-1: real         1.55
-user         1.24
-sys          0.26
+Tested on  csl
+Time (counter 1): 930 ms  plus GC time: 40 ms
+1: real 1.31
+user 1.14
+sys 0.18

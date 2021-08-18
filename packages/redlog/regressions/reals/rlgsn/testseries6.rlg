@@ -686,8 +686,8 @@ or (20*z - 161 >= 0 and 60*z - 599 < 0 and 2*td - 300*z + 1015 = 0
 
 end;
 
-Tested on londo.fritz.box running Darwin 20.6.0 x86_64 CSL
-Time (counter 1): 560 ms  plus GC time: 60 ms
-1: real         1.01
-user         0.81
-sys          0.17
+Tested on  csl
+Time (counter 1): 500 ms  plus GC time: 40 ms
+1: real 0.78
+user 0.70
+sys 0.09

@@ -170,7 +170,7 @@ false
 end;
 
 Tested on  csl
-Time (counter 1): 20 ms  plus GC time: 40 ms
-1: real         0.42
-user         0.24
-sys          0.15
+Time (counter 1): 50 ms  plus GC time: 10 ms
+1: real 0.26
+user 0.23
+sys 0.03

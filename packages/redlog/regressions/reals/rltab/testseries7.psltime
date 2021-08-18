@@ -1,6 +1,6 @@
-Tested on londo.fritz.box running Darwin 20.6.0 x86_64 PSL
-Time (counter 1): 1560 ms
+Tested on  psl
+Time (counter 1): 810 ms
 Quitting
-real         2.37
-user         1.70
-sys          0.29
+real 1.05
+user 0.94
+sys 0.11

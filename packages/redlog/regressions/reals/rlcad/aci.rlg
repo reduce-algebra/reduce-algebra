@@ -199,8 +199,8 @@ s - tt > 0 and q - r - s + tt < 0 and b - c > 0
 
 end;
 
-Tested on londo.fritz.box running Darwin 20.6.0 x86_64 CSL
-Time (counter 1): 1370 ms  plus GC time: 70 ms
-1: real         1.91
-user         1.64
-sys          0.23
+Tested on  csl
+Time (counter 1): 1370 ms  plus GC time: 30 ms
+1: real 1.67
+user 1.56
+sys 0.12

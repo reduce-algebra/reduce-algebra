@@ -62,8 +62,8 @@ q <> 0 and p > 0 and 2*p  - 8*p*r + 9*q  <= 0
 
 end;
 
-Tested on londo.fritz.box running Darwin 20.6.0 x86_64 CSL
-Time (counter 1): 300 ms  plus GC time: 50 ms
-1: real         0.70
-user         0.52
-sys          0.14
+Tested on  csl
+Time (counter 1): 270 ms  plus GC time: 60 ms
+1: real 0.56
+user 0.49
+sys 0.08

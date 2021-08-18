@@ -1268,8 +1268,8 @@ or (400*q + 9*td - 20050 > 0
 
 end;
 
-Tested on londo.fritz.box running Darwin 20.6.0 x86_64 CSL
-Time (counter 1): 36450 ms  plus GC time: 240 ms
-1: real        38.21
-user        36.88
-sys          0.49
+Tested on  csl
+Time (counter 1): 29150 ms  plus GC time: 140 ms
+1: real 29.94
+user 29.45
+sys 0.47

@@ -423,8 +423,8 @@ and 8937500*n + 638281250*p1 + 5106250*q - 950000*td - 190000000*z - 7640077821
 
 end;
 
-Tested on londo.fritz.box running Darwin 20.6.0 x86_64 CSL
-Time (counter 1): 7020 ms  plus GC time: 110 ms
-1: real         8.13
-user         7.36
-sys          0.45
+Tested on  csl
+Time (counter 1): 4640 ms  plus GC time: 60 ms
+1: real 5.09
+user 4.86
+sys 0.23

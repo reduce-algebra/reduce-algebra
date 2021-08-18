@@ -91,8 +91,8 @@ d1 > 0 and b > 0 and b - d1 > 0 and a > 0 and a - b = 0 and a - b - d1 >= 0) or
 
 end;
 
-Tested on londo.fritz.box running Darwin 20.6.0 x86_64 CSL
-Time (counter 1): 170 ms  plus GC time: 50 ms
-1: real         0.58
-user         0.41
-sys          0.14
+Tested on  csl
+Time (counter 1): 130 ms  plus GC time: 50 ms
+1: real 0.41
+user 0.35
+sys 0.06

@@ -33,8 +33,8 @@ b <> 0 and a - c + 1 >= 0 and a - c - 1 <= 0 and a + c - 1 <= 0
 
 end;
 
-Tested on londo.fritz.box running Darwin 20.6.0 x86_64 CSL
+Tested on  csl
 Time (counter 1): 50 ms  plus GC time: 40 ms
-1: real       123.90
-user       119.52
-sys          2.12
+1: real 53.89
+user 52.71
+sys 1.13
