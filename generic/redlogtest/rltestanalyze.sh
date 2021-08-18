@@ -38,7 +38,7 @@ for lisp in csl psl; do
 	Lisp=PSL
     fi
 echo "------------------------------------------------------------------------------------------------------------------------------"
-    printf "%-30s %12s %12s %12s %8s %12s %12s %12s %8s  %-4s\n" "$Lisp Test" RefCPU CPU "" DeltaCPU RefGC GC "" DeltaGC ""
+    printf "%-31s %12s %12s %12s %8s %12s %12s %12s %8s  %-4s\n" "$Lisp Test" RefCPU CPU "" DeltaCPU RefGC GC "" DeltaGC ""
 echo "------------------------------------------------------------------------------------------------------------------------------"
 
     cd $regressions
@@ -93,7 +93,7 @@ echo "--------------------------------------------------------------------------
 	    significant=""
 	fi
 
-	printf "%-30s %12d %12s %12s %8s %12s %12d %12s %8s  %-4s\n" $p $refcpu $cpu $deltacpu $pcpu $refgc $gc $deltagc $pgc "$significant"
+	printf "%-31s %12d %12s %12s %8s %12s %12d %12s %8s  %-4s\n" $p $refcpu $cpu $deltacpu $pcpu $refgc $gc $deltagc $pgc "$significant"
 
 	echo "$date;$lisp;$p;$refcpu;$cpu;$deltacpu;$refgc;$gc;$deltagc" >> $log/regression-times.csv
     done
