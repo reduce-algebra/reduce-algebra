@@ -27,8 +27,8 @@ if [ ! -f $timefile ]; then
     echo "date;lisp;test;refcpu;cpu;deltacpu;refgc;gc;deltagc" > $timefile
 fi
 
-dline="==============================================================================================================================="
-line="-------------------------------------------------------------------------------------------------------------------------------"
+dline=$(printf "%127s" | tr " " =)
+line=$(printf "%127s" | tr " " -)
 fmt="%-31s %12s %12s %12s %8s %12s %12s %12s %8s  %-4s\n"
 
 echo $dline
@@ -43,7 +43,7 @@ for lisp in csl psl; do
     fi
     echo $line
     printf "$fmt" "$Lisp Test" RefCPU CPU "" DeltaCPU RefGC GC "" DeltaGC ""
-    echo $dline
+    echo $line
 
     cd $regressions
     for a in */*/*.tst; do
