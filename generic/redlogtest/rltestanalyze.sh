@@ -42,7 +42,7 @@ for lisp in csl psl; do
 	Lisp=PSL
     fi
     echo $line
-    printf $fmt "$Lisp Test" RefCPU CPU "" DeltaCPU RefGC GC "" DeltaGC ""
+    printf "$fmt" "$Lisp Test" RefCPU CPU "" DeltaCPU RefGC GC "" DeltaGC ""
     echo $dline
 
     cd $regressions
@@ -97,7 +97,7 @@ for lisp in csl psl; do
 	    significant=""
 	fi
 
-	printf $fmt $p $refcpu $cpu $deltacpu $pcpu $refgc $gc $deltagc $pgc "$significant"
+	printf "$fmt" $p $refcpu $cpu $deltacpu $pcpu $refgc $gc $deltagc $pgc "$significant"
 
 	echo "$date;$lisp;$p;$refcpu;$cpu;$deltacpu;$refgc;$gc;$deltagc" >> $log/regression-times.csv
     done
@@ -120,7 +120,7 @@ for lisp in csl psl; do
 	Lisp=PSL
     fi
     echo $line
-    printf $fmt "$Lisp Test" RefCPU CPU "" DeltaCPU RefGC GC "" DeltaGC
+    printf "$fmt" "$Lisp Test" RefCPU CPU "" DeltaCPU RefGC GC "" DeltaGC
     echo $line
 
     cd $regressions
@@ -169,7 +169,7 @@ for lisp in csl psl; do
 		deltagc=+$deltagc
 	    fi
 
-	    printf $fmt $p $refcpu $cpu $deltacpu $pcpu $refgc $gc $deltagc $pgc
+	    printf "$fmt" $p $refcpu $cpu $deltacpu $pcpu $refgc $gc $deltagc $pgc
 	fi
     done
     echo $significant
