@@ -25,8 +25,8 @@ rlcad solo2;
 
 end;
 
-Tested on londo.fritz.box running Darwin 20.6.0 x86_64 CSL
-Time (counter 1): 180 ms  plus GC time: 50 ms
-1: real         0.60
-user         0.42
-sys          0.15
+Tested on  csl
+Time (counter 1): 200 ms  plus GC time: 40 ms
+1: real 0.45
+user 0.40
+sys 0.05

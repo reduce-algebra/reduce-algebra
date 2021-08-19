@@ -41,13 +41,11 @@ rl_provideService rl_simpl = cl_simpl using
 asserted procedure cl_simpl(f: Formula, atl: List, n: Integer): Formula;
    % Common logic simplify. [f] is a formula; [atl] is a list of atomic
    % formulas, which are considered to describe a theory; [n] is an integer.
-   % Depends on switches [!*rlsism], [!*rlsiso]. Returns the identifier
-   % [inctheo] or a formula. [inctheo] means that [atl] is inconsistent. Else
-   % the result is [f], simplified (wrt. [atl]). For non-negative [n],
-   % simplification stops at level [n].
+   % Depends on switch [!*rlsiso]. Returns the identifier [inctheo] or a
+   % formula. [inctheo] means that [atl] is inconsistent. Else the result is
+   % [f], simplified (wrt. [atl]). For non-negative [n], simplification stops at
+   % level [n].
    begin scalar w;
-      if null !*rlsism then
- 	 return cl_simpl1(f, nil, n, nil);
       atl := cl_sitheo atl;
       if atl eq 'inctheo then
 	 return rl_exc 'inctheo;
@@ -82,8 +80,8 @@ asserted procedure cl_sitheo(atl: List);
 
 asserted procedure cl_simpl1(f: Formula, knowl: Any, n: Integer, sop: Id): Formula;
    % Common logic simplify. [f] is a formula; [knowl] is an IRL; [n] is an
-   % integer; [sop] is a CL operator. Depends on switches [!*rlsism],
-   % [!*rlsiso]. Returns a formula. Simplifies [f] recursively using [knowl].
+   % integer; [sop] is a CL operator. Depends on switch [!*rlsiso]. Returns a
+   % formula. Simplifies [f] recursively using [knowl].
    begin scalar op, result, w, newknowl;
       if eqn(n,0) then
  	 return f;
@@ -101,8 +99,7 @@ asserted procedure cl_simpl1(f: Formula, knowl: Any, n: Integer, sop: Id): Formu
     	 return cl_negate!-invol(result)
       >>;
       if rl_quap op then <<
-	 if !*rlsism then
- 	    knowl := rl_smrmknowl(knowl, rl_var f);
+	 knowl := rl_smrmknowl(knowl, rl_var f);
     	 result := cl_simpl1(rl_mat f, knowl, n-1, op);
     	 if rl_tvalp result then
  	    return result;
@@ -111,8 +108,7 @@ asserted procedure cl_simpl1(f: Formula, knowl: Any, n: Integer, sop: Id): Formu
     	 return rl_mkq(op, rl_var f, result)
       >>;
       if rl_bquap op then <<
-	 if !*rlsism then
- 	    knowl := rl_smrmknowl(knowl, rl_var f);
+	 knowl := rl_smrmknowl(knowl, rl_var f);
        	 return cl_simplbq(f, knowl, n)
       >>;
       if op eq 'impl then
@@ -122,24 +118,19 @@ asserted procedure cl_simpl1(f: Formula, knowl: Any, n: Integer, sop: Id): Formu
       if op eq 'equiv then
 	 return cl_smsimpl!-equiv(rl_arg2l f, rl_arg2r f, knowl, n);
       w := cl_simplat(f,sop);
-      if !*rlsism then <<
-	 op := rl_op w;
-	 if rl_junctp op then
-	    return rl_smkn(op, cl_smsimpl!-junct(op, rl_argn w, knowl, n));
-	 if rl_tvalp op then
- 	    return w;
-	 ASSERT( cl_atfp w );
-	 newknowl := rl_smupdknowl('and, {w}, rl_smcpknowl knowl, n);
-	 if newknowl eq 'false then
- 	    return 'false;
-	 w := rl_smmkatl('and, knowl, newknowl, n);
-	 if w eq 'false then
- 	    return 'false;
-	 return rl_smkn('and, w)
-      >>;
-      if w then
- 	 return w;
-      rederr {"cl_simpl1(): unknown operator", op}
+      op := rl_op w;
+      if rl_junctp op then
+	 return rl_smkn(op, cl_smsimpl!-junct(op, rl_argn w, knowl, n));
+      if rl_tvalp op then
+	 return w;
+      ASSERT( cl_atfp w );
+      newknowl := rl_smupdknowl('and, {w}, rl_smcpknowl knowl, n);
+      if newknowl eq 'false then
+	 return 'false;
+      w := rl_smmkatl('and, knowl, newknowl, n);
+      if w eq 'false then
+	 return 'false;
+      return rl_smkn('and, w)
    end;
 
 asserted procedure cl_simplbq(f: Formula, knowl: Any, n: Integer): Formula;
@@ -152,8 +143,7 @@ asserted procedure cl_simplbq(f: Formula, knowl: Any, n: Integer): Formula;
       % Context-dependent bound simplification
       b := rl_simplb(rl_b f, rl_var f);
       % Bound's information to knowledge
-      if !*rlsism then
-	 knowl := rl_smupdknowl('and, rl_b2atl(b, rl_var f), knowl, n);
+      knowl := rl_smupdknowl('and, rl_b2atl(b, rl_var f), knowl, n);
       % Matrix simplification detects trivial cases
       mtx := cl_simpl1(rl_mat f, knowl, n-1, rl_op f);
       f := cl_simpltb(rl_op f, rl_var f, b, mtx);
@@ -273,12 +263,8 @@ asserted procedure cl_gand!-col(fl: List, n: Integer, gand: Id, knowl: Any): Lis
 asserted procedure cl_smsimpl!-junct(op: Id, junct: List, knowl: Any, n: Integer): List;
    % Common logic smart simplify. [op] is one of [and], [or]; [junct]
    % is a list of formulas; [knowl] is an IRL; [n] is an integer.
-   % Returns a list of formulas. Accesses the switch [!*rlsism]. With
-   % [!*rlsism] on sophisticated simplifications are applied to
-   % [junct].
+   % Returns a list of formulas.
    begin scalar break, w, atl, col, newknowl, a, wop, argl, sicol, natl;
-      if not !*rlsism then
-	 return cl_gand!-col(junct, n, op, nil);
       newknowl := rl_smcpknowl knowl;
       break := cl_cflip('false, op eq 'and);
       for each subf in junct do <<
@@ -395,8 +381,6 @@ asserted procedure cl_smsimpl!-imprep(prem: Formula, concl: Formula, knowl: Any,
    % formulas; [knowl] is an IRL; [n] is an integer. Returns a formula
    % equivalent to [prem impl concl] assuming [knowl].
    begin
-      if not !*rlsism then
-	 return cl_imprep!-col(prem, concl, knowl, n);
       if cl_atfp prem then
  	 prem := cl_simplat(prem, 'prem);
       if cl_atfp concl then
@@ -512,7 +496,7 @@ asserted procedure cl_smsimpl!-equiv(lhs: Formula, rhs: Formula, knowl: Any, n: 
 	 return w;
       if lhs = rhs then
  	 return 'true;
-      if null !*rlsism or cl_cxfp lhs or cl_cxfp rhs then <<
+      if cl_cxfp lhs or cl_cxfp rhs then <<
       	 if cl_ordp(lhs, rhs) then
  	    return rl_mk2('equiv, lhs, rhs);
       	 return rl_mk2('equiv, rhs, lhs)
@@ -565,8 +549,7 @@ asserted procedure cl_identifyat(atf: Atom): Atom;
       if rl_tvalp atf then return atf;
       if (w := lto_hmember(atf, cl_identify!-atl!*, 'cl_identifyathfn)) then
  	 return car w;
-      cl_identify!-atl!* :=
-	 lto_hinsert(atf, cl_identify!-atl!*, 'cl_identifyathfn);
+      cl_identify!-atl!* := lto_hinsert(atf, cl_identify!-atl!*, 'cl_identifyathfn);
       return atf
    end;
 

@@ -1858,8 +1858,8 @@ or (3*c + 2 = 0 and b + 1 > 0 and 3*b + 1 < 0 and 3*b  - 1 <= 0 and 3*a - 1 = 0)
 
 end;
 
-Tested on londo.fritz.box running Darwin 20.6.0 x86_64 CSL
-Time (counter 1): 5150 ms  plus GC time: 70 ms
-1: real         5.72
-user         5.39
-sys          0.27
+Tested on  csl
+Time (counter 1): 5150 ms  plus GC time: 80 ms
+1: real 5.62
+user 5.37
+sys 0.25

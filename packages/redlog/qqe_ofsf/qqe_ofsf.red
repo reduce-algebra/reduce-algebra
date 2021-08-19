@@ -2,7 +2,7 @@ module qqe_ofsf;
 
 revision('qqe_ofsf, "$Id$");
 
-copyright('qqe_ofsf, "(c) 2005-2009 A. Dolzmann, T. Sturm, 2017 T. Sturm");
+copyright('qqe_ofsf, "(c) 2005-2021 A. Dolzmann, T. Sturm");
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -49,10 +49,10 @@ put('qqe_ofsf,'rl_params,'(
    (rl_ordatp!* . qqe_ofsf_ordatp) %% to do
    (rl_qemkans!* . ofsf_qemkans) %% belongs to qe -should this be wrapped?
    (rl_simplat1!* . qqe_ofsf_simplat1)
-   (rl_smupdknowl!* . qqe_ofsf_smupdknowl) %!!!
-   (rl_smrmknowl!* . qqe_ofsf_smrmknowl) %!!!
-   (rl_smcpknowl!* . qqe_ofsf_smcpknowl)
-   (rl_smmkatl!* . qqe_ofsf_smmkatl)
+   (rl_smupdknowl!* . qqe_ofsf_smupdknowl)
+   (rl_smrmknowl!* . cl_smrmknowl)
+   (rl_smcpknowl!* . cl_smcpknowl)
+   (rl_smmkatl!* . cl_smmkatl)
    (rl_negateat!* . qqe_ofsf_negateat)
    (rl_varlat!* . qqe_ofsf_varlat)
    (rl_varsubstat!* . qqe_ofsf_varsubstat)
@@ -98,7 +98,7 @@ put('qqe_ofsf,'rl_params,'(
 put('qqe_ofsf,'rl_services,'(
    (rl_subfof!* . cl_subfof)
    (rl_identifyonoff!* . cl_identifyonoff)
-   (rl_simpl!* . cl_simpl)
+   (rl_simpl!* . cl_simplbasic)
    (rl_thsimpl!* . ofsf_thsimpl) %% belongs to qe
    (rl_nnf!* . cl_nnf)
    (rl_nnfnot!* . cl_nnfnot)
@@ -255,6 +255,41 @@ procedure qqe_ofsf_chsimpterm(term);
       >>;
    end;
 
+asserted procedure qqe_ofsf_smupdknowl(op: Id, atl: List, knowl: Alist, n: Integer): Alist;
+   % Smart simplifier update knowledge. [op] is one of the operators [and],
+   % [or]; [atl] is a list of atomic formulas; [knowl] is knowledge base; [n] is
+   % an integer. Returns a knowledge base. If [op] is [and], then all knowledge
+   % in [atl] is added to the [knowl] with the tag [n]. If [op] is [or], then
+   % the negation of all knowledge in [atl] is added to [knowl].
+   begin scalar at;
+      while atl do <<
+	 at := pop atl;
+      	 knowl := qqe_ofsf_smupdknowl1(op, at, knowl, n);
+	 if knowl eq 'false then <<
+	    atl := nil;
+	    at := 'break
+	 >>
+      >>;
+      if at eq 'break then
+	 return 'false
+      else
+      	 return knowl
+   end;
+
+asserted procedure qqe_ofsf_smupdknowl1(op: Id, at: Atom, knowl: Alist, n: Integer): Alist;
+   begin scalar ent, contra;
+      if op eq 'or then <<
+      	 ent := rl_negateat at;
+      	 contra := at
+      >> else <<
+      	 ent := at;
+      	 contra := rl_negateat at
+      >>;
+      if assoc(ent, knowl) then
+	 return knowl;
+      return knowl := (ent . n) . knowl
+   end;
+
 procedure qqe_ofsf_simplat1(f,sop);
    << if (x memq '(true false)) or (qqe_rqopp qqe_op f) then x
    else ofsf_simplat1(x, sop) >>
@@ -294,9 +329,12 @@ procedure qqe_ofsf_lnegrel(r);
    % QQE Ordered field standard form logically negate relation. [r] is a
    % relation. Returns a relation $R$ such that for terms $t_1$, $t_2$
    % we have $R(t_1,t_2)$ equivalent to $\lnot [r](t_1,t_2)$.
-   if r eq 'qequal then 'qneq
-   else if r eq 'qneq then 'qequal
-   else ofsf_lnegrel r;
+   if r eq 'qequal then
+      'qneq
+   else if r eq 'qneq then
+      'qequal
+   else
+      ofsf_lnegrel r;
 
 procedure qqe_ofsf_negateat(f);
    % QQE Ordered field standard form negate atomic formula. [f] is an
@@ -352,194 +390,6 @@ procedure qqe_ofsf_varlat(atform);
          where at=qqe_ofsf_prepat atform;
 
 %ENDCS Ab hier, besser richtige Wrapper schreiben
-
-% originally module qqesism;
-% qqe smart simplification. Submodule of [qqe].
-
-%DS
-% <irl> ::= (<ir>,...)
-% <ir> ::= <para> . <db>
-% <db> ::= (<le>,...)
-% <le> ::= <label> . <entry>
-% <label> ::= <integer>
-% <entry> ::= <of relation> . <standard quotient>
-
-procedure qqe_ofsf_smrmknowl(knowl,v);
-   % Qqe remove from knowledge. [knowl] is an
-   % IRL; [v] is a variable. Returns an IRL. Destructively removes any
-   % information about [v] from [knowl].
-   if null knowl then
-      nil
-   else if v member kernels caar knowl then
-      qqe_ofsf_smrmknowl(cdr knowl,v)
-   else <<
-      cdr knowl := qqe_ofsf_smrmknowl(cdr knowl,v);
-      knowl
-   >>;
-
-procedure qqe_ofsf_smcpknowl(knowl);
-   for each ir in knowl collect
-      car ir . append(cdr ir,nil);
-
-procedure qqe_ofsf_smupdknowl(op,atl,knowl,n);
-   % Qqe update knowledge. [op] is one of
-   % [and], [or]; [atl] is a list of (simplified) atomic formulas;
-   % [knowl] is a conjunctive IRL; [n] is the current level. Returns
-   % an IRL. Destructively updates [knowl] wrt. the [atl] information.
-   begin scalar w,ir,a;
-      while atl do <<
-	 a := if op eq 'and then car atl else qqe_ofsf_negateat car atl;
-	 atl := cdr atl;
-	 ir := qqe_at2ir(a,n);
-	 if w := assoc(car ir,knowl) then <<
-	    cdr w := ofsf_sminsert(cadr ir,cdr w);
-	    if cdr w eq 'false then <<
-	       atl := nil;
-	       knowl := 'false
-	    >>  % else [ofsf_sminsert] has updated [cdr w] destructively.
-	 >> else
-	    knowl := ir . knowl
-      >>;
-      return knowl
-   end;
-
-procedure qqe_ofsf_smmkatl(op,oldknowl,newknowl,n);
-   % Qqe make atomic formula list. [op] is one
-   % of [and], [or]; [oldknowl] and [newknowl] are IRL's; [n] is an
-   % integer. Returns a list of atomic formulas. Depends on switch
-   % [rlsipw].
-   if op eq 'and then
-      qqe_ofsf_smmkatl!-and(oldknowl,newknowl,n)
-   else  % [op eq 'or]
-      qqe_ofsf_smmkatl!-or(oldknowl,newknowl,n);
-
-procedure qqe_ofsf_smmkatl!-and(oldknowl,newknowl,n);
-   begin scalar w;
-      if not !*rlsipw and !*rlsipo then
-	 return qqe_ofsf_irl2atl('and,newknowl,n);
-      return for each ir in newknowl join <<
-	 w := atsoc(car ir,oldknowl);
-	 if null w then qqe_ofsf_ir2atl('and,ir,n) else
-            qqe_ofsf_smmkatl!-and1(w,ir,n)
-      >>;
-   end;
-
-procedure qqe_ofsf_smmkatl!-and1(oir,nir,n);
-   begin scalar w,parasq;
-      parasq := !*f2q car nir;
-      return for each le in cdr nir join
-      if car le = n then <<
-	 if cadr le memq '(lessp greaterp) and
- 	    (w := qqe_ofsf_smmkat!-and2(cdr oir,cdr le,parasq))
- 	 then
-	    {w}
-	 else
-	    {qqe_ofsf_entry2at('and,cdr le,parasq)}
-      >>
-   end;
-
-procedure qqe_ofsf_smmkat!-and2(odb,ne,parasq);
-   % Qqe smart simplify make atomic formula.
-   % [odb] is a DB; [ne] is an entry with its relation being one of
-   % [lessp], [greaterp]; [parasq] is a numerical SQ. Returns an
-   % atomic formula.
-   begin scalar w;
-      w := qqe_ofsf_smdbgetrel(cdr ne,odb);
-      if w eq 'neq then
-	 (if !*rlsipw then <<
-      	    if car ne eq 'lessp then
- 	       return qqe_ofsf_entry2at('and,'leq . cdr ne,parasq);
-	    % We know [car ne eq 'greaterp].
-	    return qqe_ofsf_entry2at('and,'geq . cdr ne,parasq)
-      	 >>)
-      else if w memq '(leq geq) then
-	 if not !*rlsipo then
- 	    return qqe_ofsf_entry2at('and,'neq . cdr ne,parasq)
-   end;
-
-procedure qqe_ofsf_smmkatl!-or(oldknowl,newknowl,n);
-   begin scalar w;
-      return for each ir in newknowl join <<
-	 w := atsoc(car ir,oldknowl);
-	 if null w then qqe_ofsf_ir2atl('or,ir,n)
-         else qqe_ofsf_smmkatl!-or1(w,ir,n)
-      >>;
-   end;
-
-procedure qqe_ofsf_smmkatl!-or1(oir,nir,n);
-   begin scalar w,parasq;
-      parasq := !*f2q car nir;
-      return for each le in cdr nir join
-      if car le = n then <<
-	 if cadr le memq '(lessp greaterp equal) and
- 	    (w := ofsf_ofsf_smmkat!-or2(cdr oir,cdr le,parasq))
- 	 then
-	    {w}
-	 else
-	    {qqe_ofsf_entry2at('or,cdr le,parasq)}
-      >>
-   end;
-
-procedure qqe_ofsf_smmkat!-or2(odb,ne,parasq);
-   begin scalar w;
-      w := qqe_ofsf_smdbgetrel(cdr ne,odb);
-      if w eq 'neq then
-	 (if not !*rlsipw then <<
-      	    if car ne eq 'lessp then
- 	       return qqe_ofsf_entry2at('or,'leq . cdr ne,parasq);
-	    % We know [car ne eq 'greaterp]!
-	    return qqe_ofsf_entry2at('or,'geq . cdr ne,parasq)
-      	 >>)
-      else if w memq '(leq geq) then <<
-	 if car ne memq '(lessp greaterp) then
-	    return qqe_ofsf_entry2at('or,'neq . cdr ne,parasq);
-      	 % We know [car ne eq 'equal].
-	 if !*rlsipo then
-	    return qqe_ofsf_entry2at('or,ofsf_ofsf_anegrel w . cdr ne,parasq)
-      >>
-   end;
-
-procedure qqe_ofsf_smdbgetrel(abssq,db);
-   if abssq = cddar db then
-      cadar db
-   else if cdr db then
-      qqe_ofsf_smdbgetrel(abssq,cdr db);
-
-procedure qqe_ofsf_at2ir(atf,n);
-   % Qqe atomic formula to IR. [atf] is an
-   % atomic formula; [n] is an integer. Returns the IR representing
-   % [atf] on level [n].
-   begin scalar op,par,abs,c;
-      op := ofsf_op atf;
-      abs := par := ofsf_arg2l atf;
-      while not domainp abs do abs := red abs;
-      par := addf(par,negf abs);
-      c := sfto_dcontentf(par);
-      par := quotf(par,c);
-      abs := quotsq(!*f2q abs,!*f2q c);
-      return par . {n . (op . abs)}
-   end;
-
-procedure qqe_ofsf_irl2atl(op,irl,n);
-   % Qqe IRL to atomic formula list. [irl] is
-   % an IRL; [n] is an integer. Returns a list of atomic formulas
-   % containing the level-[n] atforms encoded in IRL.
-   for each ir in irl join qqe_ofsf_ir2atl(op,ir,n);
-
-procedure qqe_ofsf_ir2atl(op,ir,n);
-   (for each le in cdr ir join
-      if car le = n then {qqe_ofsf_entry2at(op,cdr le,a)}) where a=!*f2q car ir;
-
-procedure qqe_ofsf_entry2at(op,entry,parasq);
-   if !*rlidentify then
-      cl_identifyat qqe_ofsf_entry2at1(op,entry,parasq)
-   else
-      qqe_ofsf_entry2at1(op,entry,parasq);
-
-procedure qqe_ofsf_entry2at1(op,entry,parasq);
-   ofsf_0mk2(qqe_ofsf_clnegrel(car entry,op eq 'and),numr addsq(parasq,cdr entry));
-
-% originally endmodule ofsfsism;
 
 procedure qqe_ofsf_mk2(op,lhs,rhs);
    % later

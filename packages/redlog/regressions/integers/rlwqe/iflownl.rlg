@@ -36,8 +36,8 @@ bex _k2 [ - a  + 2*a*b - b  - 2 <= _k2 <= a  - 2*a*b + b  + 2] (a - b < 0
 
 end;
 
-Tested on londo.fritz.box running Darwin 20.6.0 x86_64 CSL
-Time (counter 1): 20 ms  plus GC time: 30 ms
-1: real         0.41
-user         0.24
-sys          0.14
+Tested on  csl
+Time (counter 1): 30 ms  plus GC time: 20 ms
+1: real 0.26
+user 0.21
+sys 0.05

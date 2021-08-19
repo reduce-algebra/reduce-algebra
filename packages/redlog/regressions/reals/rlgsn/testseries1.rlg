@@ -473,8 +473,8 @@ or (300*z - 2621 >= 0 and 2700*z - 25957 < 0 and q = 0 and n - td = 0
 
 end;
 
-Tested on londo.fritz.box running Darwin 20.6.0 x86_64 CSL
-Time (counter 1): 410 ms  plus GC time: 50 ms
-1: real         0.90
-user         0.64
-sys          0.20
+Tested on  csl
+Time (counter 1): 340 ms  plus GC time: 40 ms
+1: real 0.62
+user 0.52
+sys 0.10

@@ -1792,8 +1792,8 @@ and ((80*i2 + 250*p1 + 2*q - 1697 < 0 and 80*i2 + 250*p1 + 2*q - 1457 > 0
 
 end;
 
-Tested on londo.fritz.box running Darwin 20.6.0 x86_64 CSL
-Time (counter 1): 40910 ms  plus GC time: 260 ms
-1: real        42.22
-user        41.37
-sys          0.42
+Tested on  csl
+Time (counter 1): 34860 ms  plus GC time: 220 ms
+1: real 35.72
+user 35.22
+sys 0.49

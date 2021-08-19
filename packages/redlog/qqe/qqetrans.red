@@ -1,8 +1,10 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2005-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module qqetrans;
+% Queue quantifier elimination translation module. Submodule of qqe.
+
+revision('qqetrans, "$Id$");
+
+copyright('qqetrans, "Copyright (c) 2005-2009 A. Dolzmann and T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,16 +29,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(qqe_trans_rcsid!* qqe_trans_copyright!*);
-   qqe_trans_rcsid!* :=
-      "$Id$";
-   qqe_trans_copyright!* := "Copyright (c) 2005-2009 A. Dolzmann and T. Sturm"
->>;
-
-module qqetrans;
-% Queue quantor elimination translation module. Submodule of [qqe].
 
 exports qqe_la2lth;
 

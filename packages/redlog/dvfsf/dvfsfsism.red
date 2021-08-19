@@ -2,7 +2,7 @@ module dvfsfsism;
 % Discretely valued field standard form simplify smart. Submodule of
 % [dvfsf]. This module provides the black boxes [rl_smupdknowl],
 % [rl_smrmknowl], [rl_smcpknowl], [rl_smmkatl], and [rl_susirmknowl]
-% to [cl_simpl]. They are used with switch [rlsism] on.
+% to [cl_simpl].
 
 revision('dvfsfsism, "$Id$");
 

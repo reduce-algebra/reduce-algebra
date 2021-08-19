@@ -1,5 +1,5 @@
-Tested on londo.fritz.box running Darwin 20.6.0 x86_64 CSL
-Time (counter 1): 660 ms  plus GC time: 70 ms
-1: real         1.13
-user         0.91
-sys          0.18
+Tested on  csl
+Time (counter 1): 530 ms  plus GC time: 20 ms
+1: real 0.81
+user 0.70
+sys 0.12

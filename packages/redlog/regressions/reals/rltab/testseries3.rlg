@@ -60,8 +60,8 @@ td - 450 >= 0 and q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 >= 0 and (
 
 end;
 
-Tested on londo.fritz.box running Darwin 20.6.0 x86_64 CSL
-Time (counter 1): 240 ms  plus GC time: 60 ms
-1: real         0.83
-user         0.51
-sys          0.23
+Tested on  csl
+Time (counter 1): 160 ms  plus GC time: 30 ms
+1: real 0.42
+user 0.32
+sys 0.10

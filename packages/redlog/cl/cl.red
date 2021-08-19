@@ -3,7 +3,7 @@ module cl;
 
 revision('cl, "$Id$");
 
-copyright('cl, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
+copyright('cl, "(c) 1995-2021 A. Dolzmann, T. Sturm");
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -30,7 +30,7 @@ copyright('cl, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-create!-package('(cl clsimpl clsusi clbnf clnf clqe cltab clmisc clresolv), nil);
+create!-package('(cl clsimpl clsimplbasic clsusi clbnf clnf clqe cltab clmisc clresolv), nil);
 
 load!-package 'redlog;
 
@@ -48,7 +48,7 @@ exports cl_atfp,cl_cxfp,cl_atflp,cl_ncflp,cl_dnfp,cl_cnfp,cl_bnfp,cl_simpl,
    cl_ifstruct,cl_surep,cl_splt;
 
 fluid '(cl_identify!-atl!* cl_pal!* cl_lps!* cl_theo!*
-   !*rlidentify !*rlsism !*rlsiexpla !*rlbnfsm !*rlverbose
+   !*rlidentify !*rlsiexpla !*rlbnfsm !*rlverbose
    !*rlsiso !*rlqepnf !*rlqedfs !*rlqeans !*rlqegsd !*rlqeheu
    !*rlqegen !*rlbnfsac !*rltnft !*rlsipw !*rlsipo !*rlqevarsel
    !*rlspgs !*rlqefb !*rlqelocal !*rlresi !*rlqeprecise

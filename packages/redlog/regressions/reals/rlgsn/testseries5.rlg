@@ -147,8 +147,8 @@ or (9*td - 20050 = 0 and q > 0 and q - 40 <= 0 and 2*p1 - 7 >= 0
 
 end;
 
-Tested on londo.fritz.box running Darwin 20.6.0 x86_64 CSL
-Time (counter 1): 50 ms  plus GC time: 60 ms
-1: real         0.45
-user         0.29
-sys          0.13
+Tested on  csl
+Time (counter 1): 90 ms  plus GC time: 10 ms
+1: real 0.30
+user 0.26
+sys 0.04

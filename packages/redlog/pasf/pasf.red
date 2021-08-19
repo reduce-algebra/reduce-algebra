@@ -105,10 +105,6 @@ off1 'rlpasfvb;
 switch rlsiverbose;
 off1 'rlsiverbose;
 
-% Switches automaticly handled on context change
-put('pasf,'rl_cswitches,'(
-   (rlsism . t)));
-
 % Parameters
 put('pasf,'rl_params,'(
    (rl_subat!* . pasf_subat)
