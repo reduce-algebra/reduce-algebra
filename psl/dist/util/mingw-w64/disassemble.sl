@@ -1,10 +1,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:  pxu/disassemble.sl -  disassembler for i486 
+% File:  pxu/disassemble.sl -  disassembler for x86_64
 %
 % Author: H. Melenk , ZIB Berlin
 %
 % Date :  4-May-1994
+% Status: Open Source: BSD License
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -283,6 +284,11 @@
 
 (fi 16#af imul ((G v)(E v)))
 
+(fi 16#a3 bt   ((E v)(G v)))
+(fi 16#ba bt   ((E v)(I b)))
+(fi 16#bc bsf  ((G v)(E v)))
+(fi 16#bd bsr  ((G v)(E v)))
+
 (fi 16#d6 (sse movq) ((W) (V)))
 (fi 16#db (sse pand) ((V) (W)))
 (fi 16#df (sse pandn) ((V) (W)))
@@ -372,7 +378,7 @@
   (prog (r reg* xreg* byte-operand* x)
     (setq x (decode-operands-special-pattern-cases bytes* lth* pat))
     (when (and x (pairp x)) (setq pat x))
-    (when (eqcar pat nil) (go done))
+    (when (or (null pat) (eqcar pat nil)) (go done))
     (push (cons 'op1 (decode-operand1 (pop pat) t)) r)
     (when pat
         (push (cons 'op2 (decode-operand1 (pop pat) nil)) r))
@@ -463,22 +469,21 @@
          (decode-sib p mod))
         ((and (eq mod 0)(eq rm 5))
                   % probably a sym*** reference
-         (setq  lth* (plus 4 lth*))
-         (setq w (bytes2word))
-         (setq wabs (plus addr* w lth*))
-         (cond ((and (xgreaterp wabs symfnc)
-                     (xgreaterp symfnchigh wabs))
-                (setq *comment
-                      (bldmsg " -> %w" 
-                       (safe-int2id (wshift (wdifference wabs symfnc) -3)))))
-               ((and (xgreaterp wabs symval)
-                     (xgreaterp symvalhigh wabs))
-                (setq *comment
+	 (setq  lth* (plus 4 lth*))
+	 (setq w (bytes2word))
+	 (setq wabs (plus addr* w lth*))
+	 (cond ((and (xgreaterp wabs symfnc)
+		     (xgreaterp symfnchigh wabs))
+		(setq *comment
+                      (bldmsg " -> %w" (safe-int2id (wshift (wdifference wabs symfnc) -3)))))
+	       ((and (xgreaterp wabs symval)
+		     (xgreaterp symvalhigh wabs))
+		(setq *comment
                       (bldmsg " -> %w" 
                        (safe-int2id (wshift (wdifference wabs symval) -3))))))
-         (if *gassyntax 
-             (bldmsg "%w(%%rip)" w)
-           (bldmsg "[rip%w0x%x]" (if (wlessp w 0) "-" "+") (if (wlessp w 0) (wminus w) w))))
+	 (if *gassyntax 
+	     (bldmsg "%w(%%rip)" w)
+	   (bldmsg "[rip%w0x%x]" (if (wlessp w 0) "-" "+") (if (wlessp w 0) (wminus w) w))))
         ((eq mod 0) (if *gassyntax
 			(bldmsg "(%%%w)" (reg-m rm))
 		      (bldmsg "[%w]" (reg-m rm) )))

@@ -233,8 +233,13 @@
 (fi 16#8e Jle ((j v)))
 (fi 16#8f Jnle((j v)))
 
-
 (fi 16#af imul ((G v)(E v)))
+
+(fi 16#a3 bt   ((E v)(G v)))
+(fi 16#ba bt   ((E v)(I b)))
+(fi 16#bc bsf  ((G v)(E v)))
+(fi 16#bd bsr  ((G v)(E v)))
+
 
 (dm make-the-instructions(u)
   `(progn
@@ -272,7 +277,7 @@
 
 (de decode-operands(bytes* lth* pat)
   (prog (r reg*)
-    (when (eqcar pat nil) (go done))
+    (when (or (null pat) (eqcar pat nil)) (go done))
     (push (cons 'op1 (decode-operand1 (pop pat))) r)
     (when pat
         (push (cons 'op2 (decode-operand1 (pop pat))) r))

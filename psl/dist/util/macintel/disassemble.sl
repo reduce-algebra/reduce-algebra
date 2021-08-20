@@ -5,7 +5,9 @@
 % Author: H. Melenk , ZIB Berlin
 %
 % Date :  4-May-1994
-% Status:         Open Source: BSD License
+% Status: Open Source: BSD License
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -30,6 +32,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
 % Revisions:
 %
 
@@ -152,6 +155,8 @@
 
 (fi 16#61 popa  nil)
 
+(fi 16#68 push ((I v)))
+
 (fi 16#70 jo ((j b)))
 (fi 16#71 jno ((j b)))
 (fi 16#72 jb ((j b)))
@@ -185,11 +190,11 @@
 
 (fi 16#a0 mov (AL (O b)) (eax (O v)) ((O b) AL) ((O v) EAX))
 
-(fi 16#b0 mov ((I b) AL)((I b) CL)((I b) DL)((I b) BL)
-              ((I b) AH)((I b) CH)((I b) DH)((I b) BH))
+(fi 16#b0 mov (AL (I b))(CL (I b))(DL (I b))(BL (I b))
+              (AH (I b))(CH (I b))(DH (I b))(BH (I b)))
 
-(fi 16#b8 mov ((I v) EAX)((I v) ECX)((I v) ECX)((I v) EBX)
-              ((I v) ESP)((I v) EBP)((I v) ESI)((I v) EDI))
+(fi 16#b8 mov (EAX (I v))(ECX (I v))(EDX (I v))(EBX (I v))
+              (ESP (I v))(EBP (I v))(ESI (I v))(EDI (I v)))
 
 (fi 16#c0 shift ((E b)(I b)) ((E v)(I b)))
 
@@ -202,6 +207,8 @@
 (fi 16#e8 call ((A v)))
 
 (fi 16#e9 jmp ((J v)) ((A p)) ((J b)))
+
+(fi 16#f6  Grp3 ((E b)) ((E v)))
 
 (fi 16#ff  Grp5 ((E v)))   % grp5
 
@@ -226,8 +233,13 @@
 (fi 16#8e Jle ((j v)))
 (fi 16#8f Jnle((j v)))
 
-
 (fi 16#af imul ((G v)(E v)))
+
+(fi 16#a3 bt   ((E v)(G v)))
+(fi 16#ba bt   ((E v)(I b)))
+(fi 16#bc bsf  ((G v)(E v)))
+(fi 16#bd bsr  ((G v)(E v)))
+
 
 (dm make-the-instructions(u)
   `(progn
@@ -265,7 +277,7 @@
 
 (de decode-operands(bytes* lth* pat)
   (prog (r reg*)
-    (when (eqcar pat nil) (go done))
+    (when (or (null pat) (eqcar pat nil)) (go done))
     (push (cons 'op1 (decode-operand1 (pop pat))) r)
     (when pat
         (push (cons 'op2 (decode-operand1 (pop pat))) r))
@@ -297,10 +309,10 @@
          (setq  lth* (add1 lth*))
 	 (setq w (pop bytes*))
 	 (when (greaterp w 127)(setq w (difference w 256)))
-         (plus addr* w))
+         (plus addr* w 2))
         ((equal p '(J v))
          (setq  lth* (plus 4 lth*))
-         (plus addr* (bytes2word)))
+         (plus addr* (bytes2word) 5))
            % mod R/M
         ((eqcar p 'E) (decode-modrm p))
         ((eqcar p 'R) (decode-modrm p))
@@ -346,7 +358,11 @@
         ((eq mod 0) (bldmsg "[%w]" (reg-m rm)))
         ((eq mod 1) 
               (setq  lth* (add1 lth*))
-              (bldmsg "[%w+%w]" (reg-m rm)(pop bytes*)))
+	      (let ((b (pop bytes*)))
+		% b is unsigned, convert to signed byte
+		(if (greaterp b 127)
+		    (setq b (wdifference b 256)))
+		(bldmsg "[%w%w%w]" (reg-m rm) (if (wlessp b 0) "" "+") b)))
         ((eq mod 2) 
               (setq  lth* (plus 4 lth*))
               (bldmsg "[%w+%w]" (reg-m rm) (bytes2word)))
@@ -413,15 +429,28 @@
 
 (de namegrp1()
  (cond ((eq regnr* 000) 'add)
+       ((eq regnr* 2#001) 'or)
        ((eq regnr* 2#010) 'adc)
-       ((eq regnr* 2#101) 'sub)
        ((eq regnr* 2#011) 'sbb)
+       ((eq regnr* 2#100) 'and)
+       ((eq regnr* 2#101) 'sub)
+       ((eq regnr* 2#110) 'xor)
        ((eq regnr* 2#111) 'cmp)))
 
 (de namegrp5()
  (cond 
        ((eq regnr* 2#010) 'call)
        ((eq regnr* 2#100) 'jump)
+       ))
+
+(de namegrp3()
+ (cond ((eq regnr* 000) 'test)
+       ((eq regnr* 2#010) 'not)
+       ((eq regnr* 2#011) 'neg)
+       ((eq regnr* 2#100) 'mul)
+       ((eq regnr* 2#101) 'imul)
+       ((eq regnr* 2#110) 'div)
+       ((eq regnr* 2#111) 'idiv)
        ))
 
 (de nameshift()
@@ -521,6 +550,7 @@ loop
 
          (when (eq name 'grp1) (setq name (namegrp1)))
          (when (eq name 'grp5) (setq name (namegrp5)))
+         (when (eq name 'grp3) (setq name (namegrp3)))
          (when (eq name 'shift)(setq name ( nameshift)))
 
          (cond ((atsoc 'op2 instr)
@@ -551,7 +581,7 @@ loop
          (prinblx (subla instr pat))
          (prin2 "    ")
 
-         (when *comment (ttab 55) (prin2 *comment))
+         (when *comment (ttab 60) (prin2 *comment))
          (setq *comment nil)
          (setq base (plus2 base lth))
          (setq lc (add1 lc))
