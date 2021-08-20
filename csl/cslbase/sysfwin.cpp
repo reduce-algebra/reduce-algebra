@@ -235,7 +235,7 @@ char *look_in_lisp_variable(char *o, int prefix)
 //
 // If the variable $name was undefined then I use an empty replacement
 // text for it. Otherwise I need to look harder at its value.
-    if (qvalue(var).load() == unset_var) return o;
+    if (qvalue(var) == unset_var) return o;
     else
     {   intptr_t len;
         var = qvalue(var);

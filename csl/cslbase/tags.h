@@ -383,15 +383,6 @@ inline bool car_legal(LispObject p)
 // only once it has been created, and so the worst issues of inter-thread
 // synchronization will not arise.
 
-// There are some uglinesses here. So for instance a comparison between
-// a atomic<int> and an int (using ++ or !=) is liable to be reported
-// as ambigious, and so in a dozen cases where that (or addition) happens
-// I have put in explicit casts to unpack from the atomic value, or
-// maybe more frequently write things like "if (car(x).load() == nil)"
-// rather than the more obvious "if (car(x) == nil)". The C++ ambiguity
-// complaints in this area seem to vary from compiler to compiler and
-// possibly as between 32 and 64-bit systems and I do not really understand!
-
 typedef struct Cons_Cell_
 {   atomic<LispObject> car;
     atomic<LispObject> cdr;
@@ -1641,7 +1632,7 @@ extern LispObject aerror1(const char *s, LispObject a);
 // extract them..
 
 inline LispObject arg4(const char *name, LispObject a4up)
-{   if (cdr(a4up).load() != nil) return aerror1(name, a4up);
+{   if (cdr(a4up) != nil) return aerror1(name, a4up);
                           // Too many args provided
     return car(a4up);
 }
@@ -1651,7 +1642,7 @@ inline bool a4a5(const char *name, LispObject a4up,
 {   a4 = car(a4up);
     a4up = cdr(a4up);
     if (a4up==nil ||
-        cdr(a4up).load() != nil)
+        cdr(a4up) != nil)
     {   aerror1(name, a4up);     // wrong number
         return true;
     }
@@ -1670,7 +1661,7 @@ inline bool a4a5a6(const char *name, LispObject a4up,
     a5 = car(a4up);
     a4up = cdr(a4up);
     if (a4up==nil ||
-        cdr(a4up).load() != nil)
+        cdr(a4up) != nil)
     {   aerror1(name, a4up); // wrong number
         return true;
     }

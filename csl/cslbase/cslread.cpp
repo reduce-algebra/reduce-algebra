@@ -1014,14 +1014,14 @@ static int ordersymbol(LispObject v1, LispObject v2)
     int c;
     size_t l1, l2;
 #ifndef COMMON
-    if (qheader(v1).load() & SYM_UNPRINTED_GENSYM)
+    if (qheader(v1) & SYM_UNPRINTED_GENSYM)
     {   Save save(v2);
         pn1 = get_pname(v1);
         errexit();
         save.restore(v2);
         pn2 = qpname(v2);
     }
-    if (qheader(v2).load() & SYM_UNPRINTED_GENSYM)
+    if (qheader(v2) & SYM_UNPRINTED_GENSYM)
     {   Save save(pn1);
         pn2 = get_pname(v2);
         errexit();
@@ -1223,8 +1223,8 @@ static uint64_t removed_hash;
 static bool remob(LispObject sym, LispObject v)
 // Searches a hash table for a symbol with name matching the given string,
 // and remove it from the package-hashtable v.
-{   if (qheader(sym).load() & SYM_ANY_GENSYM ||
-        qpackage(sym).load() == nil) return false; // gensym case is easy!
+{   if (qheader(sym) & SYM_ANY_GENSYM ||
+        qpackage(sym) == nil) return false; // gensym case is easy!
     setpackage(sym, nil);
     LispObject str = qpname(sym);
     validate_string(str);
@@ -1477,8 +1477,8 @@ LispObject Lgensym2(LispObject env, LispObject a)
 
 static LispObject Lgensymp(LispObject env, LispObject a)
 {   if (is_symbol(a) &&
-        (qheader(a).load() & SYM_CODEPTR) == 0 &&
-        (qheader(a).load() & SYM_ANY_GENSYM) != 0) return onevalue(lisp_true);
+        (qheader(a) & SYM_CODEPTR) == 0 &&
+        (qheader(a) & SYM_ANY_GENSYM) != 0) return onevalue(lisp_true);
     else return onevalue(nil);
 }
 
@@ -1664,7 +1664,7 @@ LispObject Lintern(LispObject env, LispObject str)
 // If you try to intern a symbol and it is already present in the
 // package you are trying to intern it in then just return it without
 // needing to do anything to it.
-    if (symbolp(str) && qpackage(str).load() == p) return onevalue(str);
+    if (symbolp(str) && qpackage(str) == p) return onevalue(str);
 #ifdef COMMON
     if (complex_stringp(str))
     {   Save save1(p);
@@ -1816,8 +1816,8 @@ LispObject Lunintern(LispObject env, LispObject sym, LispObject pp)
     package = pp;
 #endif
     if (!is_symbol(sym)) return onevalue(nil);
-    if (qpackage(sym).load() == nil) return onevalue(nil);
-    if (qpackage(sym).load() == package) setpackage(sym,nil);
+    if (qpackage(sym) == nil) return onevalue(nil);
+    if (qpackage(sym) == package) setpackage(sym,nil);
 #ifdef COMMON
     packshade_(package) = ndelete(sym, packshade_(package));
 #endif
@@ -1984,7 +1984,7 @@ static int raw_char_from_terminal()
         event_flag.store(0);
         THROW(LispSimpleError);
     }
-    if (qvalue(echo_symbol).load() != nil || force_echo)
+    if (qvalue(echo_symbol) != nil || force_echo)
     {   LispObject stream = qvalue(standard_output);
         if (!is_stream(stream)) stream = qvalue(terminal_io);
         if (!is_stream(stream)) stream = lisp_terminal_io;
@@ -2234,7 +2234,7 @@ static LispObject list_to_vector(LispObject l)
     save.restore(l);
     len = 0;
     while (consp(l))
-    {   elt(p, len) = car(l).load();
+    {   elt(p, len) = static_cast<LispObject>(car(l));
         len++;
         l = cdr(l);
     }
@@ -2480,7 +2480,7 @@ static LispObject backquote_expander(LispObject a)
     }
 #endif
     if (f == comma_symbol) return car(cdr(a));
-    if (consp(f) && car(f).load() == comma_at_symbol)
+    if (consp(f) && car(f) == comma_at_symbol)
     {   w1 = car(cdr(f));
         Save save(w1);
         a = backquote_expander(cdr(a));
@@ -2815,9 +2815,9 @@ static LispObject read_s(LispObject stream)
 #endif
                         if (curchar != EOF &&
                             (curchar<=0xffff || sizeof(wchar_t)==4))
-                        {   if (qvalue(lower_symbol).load() != nil)
+                        {   if (qvalue(lower_symbol) != nil)
                                 curchar = std::towlower(curchar);
-                            else if (qvalue(raise_symbol).load() != nil)
+                            else if (qvalue(raise_symbol) != nil)
                                 curchar = std::towupper(curchar);
                         }
                     }
@@ -2855,9 +2855,9 @@ static LispObject read_s(LispObject stream)
                         }
 #endif
                         else if (curchar<=0xffff || sizeof(wchar_t)==4)
-                        {   if (qvalue(lower_symbol).load() != nil)
+                        {   if (qvalue(lower_symbol) != nil)
                                 curchar = std::towlower(curchar);
-                            else if (qvalue(raise_symbol).load() != nil)
+                            else if (qvalue(raise_symbol) != nil)
                                 curchar = std::towupper(curchar);
                         }
 #ifdef COMMON
@@ -2984,7 +2984,7 @@ static int raw_char_from_file(LispObject stream)
     }
     ch = GETC(stream_file(stream));
     if (ch == EOF) return EOF;
-    if (qvalue(echo_symbol).load() != nil || force_echo)
+    if (qvalue(echo_symbol) != nil || force_echo)
     {   LispObject stream1 = qvalue(standard_output);
         if (!is_stream(stream1)) stream1 = qvalue(terminal_io);
         if (!is_stream(stream1)) stream1 = lisp_terminal_io;
@@ -3097,7 +3097,7 @@ int32_t read_action_synonym(int32_t c, LispObject f)
     {
 #if defined CONSERVATIVE && defined DEBUG
         cout << "bad synonym stream " << Addr(f1) << "\n";
-        cout << "header = " << std::hex << vechdr(f1).load()
+        cout << "header = " << std::hex << static_cast<Header>(vechdr(f1))
              << std::dec << "\n";
         simple_print(stream_type(f));
         simple_print(stream_write_data(f));
@@ -3306,7 +3306,8 @@ int char_from_list(LispObject f)
                 io_now++;
             }
             ch = car(stream_read_data(f));
-            stream_read_data(f) = cdr(stream_read_data(f)).load();
+            stream_read_data(f) =
+                static_cast<LispObject>(cdr(stream_read_data(f)));
         }
 // here I tend towards generosity - a symbol stands for the first character
 // of its name, and character objects and numbers (representing internal
@@ -3329,7 +3330,7 @@ int char_from_vector(LispObject f)
 {   LispObject ch = stream_pushed_char(f);
     if (ch == NOT_CHAR)
     {   unsigned char *v = reinterpret_cast<unsigned char *>(
-                               reinterpret_cast<std::FILE *>(stream_file(f).load()));
+                               static_cast<std::FILE *>(stream_file(f)));
         if (v == nullptr) ch = EOF;
         else
         {   if (++kilo >= 1024)
@@ -3523,7 +3524,7 @@ LispObject read_eval_print(int noisy)
             return nil;
         }
 
-        if (qvalue(standard_input).load() == lisp_terminal_io &&
+        if (qvalue(standard_input) == lisp_terminal_io &&
             spool_file != nullptr &&
             non_terminal_input == nullptr) PUTC('\n', spool_file);
 
@@ -3787,7 +3788,7 @@ LispObject Lrdf3(LispObject env, LispObject file, LispObject noisy,
 
 LispObject Lrdfn(LispObject env, LispObject file, LispObject noisy,
                  LispObject verbose, LispObject nofile)
-{   if (cdr(nofile).load() != nil) return aerror("too many args for rdf/load");
+{   if (cdr(nofile) != nil) return aerror("too many args for rdf/load");
     nofile = car(nofile);
     return Lrdf4(env, file, noisy, verbose, nofile);
 }
@@ -4183,8 +4184,8 @@ LispObject Lreadch(LispObject env, LispObject stream)
     if (ch == EOF || ch == CTRL_D) w = eof_symbol;
     else
     {   if (ch <= 0xffff || sizeof(wchar_t)==4)
-        {   if (qvalue(lower_symbol).load() != nil) ch = std::towlower(ch);
-            else if (qvalue(raise_symbol).load() != nil) ch = std::towupper(ch);
+        {   if (qvalue(lower_symbol) != nil) ch = std::towlower(ch);
+            else if (qvalue(raise_symbol) != nil) ch = std::towupper(ch);
         }
         w = char_to_id(ch);
     }
@@ -4214,8 +4215,8 @@ LispObject Lpeekch2(LispObject env, LispObject type,
     if (ch == EOF || ch == CTRL_D) w = eof_symbol;
     else
     {   if (ch <= 0xffff || sizeof(wchar_t)==4)
-        {   if (qvalue(lower_symbol).load() != nil) ch = std::towlower(ch);
-            else if (qvalue(raise_symbol).load() != nil) ch = std::towupper(ch);
+        {   if (qvalue(lower_symbol) != nil) ch = std::towlower(ch);
+            else if (qvalue(raise_symbol) != nil) ch = std::towupper(ch);
         }
         w = char_to_id(ch);
     }

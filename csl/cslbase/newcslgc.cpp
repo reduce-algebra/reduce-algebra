@@ -636,7 +636,8 @@ static Chunk *grabAnotherChunk(size_t size)
         if (gLimit != pageEnd)
         {   Chunk *c = reinterpret_cast<Chunk *>(gLimit);
             gFringe = gLimit + c->length; // past the pinned Chunk
-            gLimit = reinterpret_cast<uintptr_t>(c->chunkPinChain.load());
+            gLimit = reinterpret_cast<uintptr_t>(
+                         static_cast<Chunk *>(c->chunkPinChain));
             if (gLimit == 0) gLimit = pageEnd;
             continue;
         }
@@ -657,7 +658,7 @@ static Chunk *gcReserveMoreChunks(uintptr_t out)
 // When I get here there can still be other threads running and incrementing
 // gcOutQ. My task is to insert chunks into the queue until it holds (about)
 // gcQSize.
-    while (gcInQ.load() < gcOutQ.load() + gcQSize - 1)
+    while (gcInQ < static_cast<uintptr_t>(gcOutQ) + gcQSize - 1)
     {   gcEnqueue(grabAnotherChunk(targetChunkSize));
     }
     return gcQ[out & (gcQSize-1)];
@@ -685,7 +686,7 @@ LispObject gc_n_bytes1(size_t n, uintptr_t thr, uintptr_t r)
     UNLIKELY
     {   std::lock_guard<std::mutex> lock(grabNewSegments);
         newChunk = grabAnotherChunk(nSize = (targetChunkSize+n));
-        while (gcInQ.load() < gcOutQ.load() + gcQSize - 1)
+        while (gcInQ < static_cast<uintptr_t>(gcOutQ) + gcQSize - 1)
         {   gcEnqueue(grabAnotherChunk(targetChunkSize));
         }
     }
@@ -713,7 +714,7 @@ if (gcTrace) cout << "New Chunk at " << Addr(newChunk)
     testLayout();
 #endif
 if (gcTrace) cout << "gc_n_bytes1 = " << Addr(r) << " fringe = " << Addr(fringe) << "\n";
-if (gcTrace) cout << "limit = " << Addr(limit[threadId].load()) << "\n";
+if (gcTrace) cout << "limit = " << Addr(limit[threadId]) << "\n";
     return static_cast<LispObject>(r);
 }
 
@@ -725,7 +726,7 @@ if (gcTrace) cout << "gc_n_bytes " << n << " with fringe = " << Addr(fringe) << 
     uintptr_t thr = threadId;
     uintptr_t r = fringe;
     uintptr_t fr1 = r + n;
-    uintptr_t w = limit[thr].load();
+    uintptr_t w = limit[thr];
     if (fr1 <= w) LIKELY
     {   fringe = fr1;
 if (gcTrace) cout << "simple success at " << Addr(r) << " leaves fringe = " << Addr(fringe) << "\n";
@@ -780,7 +781,7 @@ void evacuate(atomic<LispObject> &a)
 {
 #ifdef DEBUG
 // I am silent on NIL because otherwise I am overall too noisy.
-    if (a.load()!=nil)
+    if (a!=nil)
         if (gcTrace) cout << "evacuating " << Addr(a) << "\n";
 #endif
 // Here p is a pointer to a location that is a list-base, ie it contains
@@ -804,30 +805,30 @@ void evacuate(atomic<LispObject> &a)
 // a linear scan of the newly copied material. That stage is not discussed
 // here because this function does not directly cause it to happen.
 //
-    my_assert(a.load() != 0, "zero word in scanning");
+    my_assert(a != 0, "zero word in scanning");
     my_assert(!is_forward(a), "forwarding ptr in scanning");
-    if (is_immediate(a) || a.load() == nil)
+    if (is_immediate(a) || a == nil)
     {
 #ifdef DEBUG
-        if (a.load() != nil)
-            if (gcTrace) cout << "immediate data: easy " << Addr(a.load()) << "\n";
+        if (a != nil)
+            if (gcTrace) cout << "immediate data: easy " << Addr(a) << "\n";
 #endif // DEBUG
         return;
     }
     if (isPinned(a))
     {   if (gcTrace)
-        {   cout << "precise ptr to pinned " << Addr(a.load()) << "\n";
+        {   cout << "precise ptr to pinned " << Addr(a) << "\n";
             cout << "pinned item is ";
             simple_print(a);
         }
         return;
     }
-    LispObject *ap = reinterpret_cast<LispObject *>(a.load() & ~TAG_BITS);
+    LispObject *ap = reinterpret_cast<LispObject *>(a & ~TAG_BITS);
     LispObject aa = *ap;
-    if (gcTrace) cout << "item is " << Addr(a.load()) << " [not immediate] "
+    if (gcTrace) cout << "item is " << Addr(a) << " [not immediate] "
          << " contents of that is " << Addr(aa) << "\n";
     if (is_forward(aa))
-    {   a = aa - TAG_FORWARD + (a.load() & TAG_BITS);
+    {   a = aa - TAG_FORWARD + (a & TAG_BITS);
 #ifdef DEBUG
         if (gcTrace) cout << "Process forwarding address\n";
 #endif // DEBUG
@@ -849,7 +850,7 @@ void evacuate(atomic<LispObject> &a)
 #endif // DEBUG
     std::memcpy(reinterpret_cast<void *>(aa), ap, len);
     *ap = TAG_FORWARD + aa;
-    a = aa + (a.load() & TAG_BITS);
+    a = aa + (a & TAG_BITS);
 }
 
 #else // NO_EXTRA_GC_THREADS
@@ -910,7 +911,7 @@ void evacuate(atomic<LispObject> *p)
 void evacuate(LispObject &p)
 {   atomic<LispObject> ap(p);
     evacuate(ap);
-    p = ap.load();
+    p = ap;
 }
 
 bool withinMajorGarbageCollection = false;
@@ -1020,7 +1021,7 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 // not of interest. Note that at the very start of a run much of the
 // memory will only have pageTag and chain fields filled in, and that is
 // why it is important to do this check using only those.
-{   if (p->chunkCount.load() == 0) return;  // An empty Page.
+{   if (p->chunkCount == 0) return;  // An empty Page.
     if (gcTrace)
         cout << "Ambig " << Addr(a) << " in non-empty page "
              << Addr(p) << endl;
@@ -1048,10 +1049,11 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 // chunkMap is now a table of pointers to chunks sorted into ascending order.
 // I will use binary search to find out which (if any) of those chunks
 // contains the address a.
-    size_t low = 0, high = p->chunkCount.load()-1;
+    size_t low = 0, high = p->chunkCount-1;
     while (low < high)
     {   size_t middle = (low + high + 1)/2;
-        if (a < reinterpret_cast<uintptr_t>(p->chunkMap[middle].load()))
+        if (a < reinterpret_cast<uintptr_t>(
+                    static_cast<Chunk *>(p->chunkMap[middle])))
             high = middle-1;
         else low = middle;
     }
@@ -1087,10 +1089,10 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 
     Chunk *c = p->chunkMap[low];
     if (gcTrace) cout << "pointer is maybe within chunk " << low << " at " << Addr(c) << endl;
-    if (c->pinnedObjects.load() != TAG_FIXNUM)
+    if (c->pinnedObjects != TAG_FIXNUM)
     {   bool valid = false;
         for (LispObject ch=c->pinnedObjects; ch!=TAG_FIXNUM; ch=cdr(ch&~TAG_BITS))
-        {   if ((a&~TAG_BITS) == (car(ch&~TAG_BITS).load() & ~TAG_BITS))
+        {   if ((a&~TAG_BITS) == (car(ch&~TAG_BITS) & ~TAG_BITS))
             // needs to be "a points within" not "=="
             {   valid = true;
                 break;
@@ -1099,24 +1101,26 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
         if (!valid) return;
     }
     else if (!c->pointsWithin(a)) return;
-    if (gcTrace) cout << "Within that chunk: isPinned = " << c->isPinned.load() << endl;
+    if (gcTrace) cout << "Within that chunk: isPinned = "
+                      << static_cast<bool>(c->isPinned) << endl;
     setPinned(p, a);
 // Here (a) lies within the range of the chunk c. Every page that has any
 // pinning must record that both by being on a chain of pages with pins
 // and by having a list of its own pinned chunks.
 // If the chunk is already tagged as pinned there is no need to do so again.
-    if (c->isPinned.load() != 0) return;
+    if (c->isPinned != 0) return;
     c->isPinned++;
     pinnedChunkCount++;
 // Note that a single thread looks at ambiguous pointers so while I want
 // everything atomic<> so that later on if other threads happen to look you
 // you know they will see updates, I do not need to worry about race
 // conditions while I form the chain of pinned chunks and pages.
-    c->chunkPinChain = p->chunkPinChain.load();
+    c->chunkPinChain = static_cast<Chunk *>(p->chunkPinChain);
     p->chunkPinChain = c;
 // When a chunk gets pinned then page must be too unless it already has been.
-    if (gcTrace) cout << "Page hasPinned = " << p->hasPinned.load() << endl;
-    if (p->hasPinned.load()) return;
+    if (gcTrace) cout << "Page hasPinned = "
+                      << static_cast<bool>(p->hasPinned) << endl;
+    if (p->hasPinned) return;
     pinnedPageCount++;
     p->hasPinned = true;
     p->pagePinChain = pagesPinChain;
@@ -1225,9 +1229,9 @@ void findHeadersOfPinnedItems()
         {   uintptr_t p = c->dataStart();
             if (gcTrace) cout << "Hunting through pinned chunk: data "
                 << Addr(c->dataStart())
-                << " to " << Addr(c->chunkFringe.load())
+                << " to " << Addr(c->chunkFringe)
                 << " end " << Addr(c->dataEnd()) << "\n";
-            if (c->pinnedObjects.load() != TAG_FIXNUM)
+            if (c->pinnedObjects != TAG_FIXNUM)
             {
             }
             else while (p < c->chunkFringe)
@@ -1274,7 +1278,7 @@ void findHeadersOfPinnedItems()
 // but which - as immediate data - will not complicate pinning in the
 // next GC.
                         car(ch) = p + TAG_FIXNUM;
-                        cdr(ch) = c->pinnedObjects.load();
+                        cdr(ch) = static_cast<LispObject>(c->pinnedObjects);
                         c->pinnedObjects = ch + TAG_FIXNUM;
                     }
                     my_assert(len != 0, "zero length vector of some sort");
@@ -1339,7 +1343,7 @@ void evacuateFromUnambiguousBases(bool major)
 void evacuatePinnedInChunk(Chunk *c)
 {   uintptr_t p = c->dataStart();
     if (gcTrace) cout << "Pinned chunk has data " << Addr(c->dataStart())
-         << " to " << Addr(c->chunkFringe.load())
+         << " to " << Addr(c->chunkFringe)
          << " end " << Addr(c->dataEnd()) << "\n";
     while (p < c->chunkFringe)
     {
@@ -1374,7 +1378,7 @@ void evacuatePinnedInChunk(Chunk *c)
             }
             else len1 = len;
             if (gcTrace) cout << "vector (" << std::hex << a << std::dec << ") uses " << len << " bytes\n";
-            if (len == 0) if (gcTrace) cout << "At " << Addr(pp) << " up to " << Addr(c->chunkFringe.load()) << "\n";
+            if (len == 0) if (gcTrace) cout << "At " << Addr(pp) << " up to " << Addr(c->chunkFringe) << "\n";
             if (gcTrace)
             {   cout << "Pinned lisp vector: "; 
                 simple_print(p+TAG_VECTOR);
@@ -1851,25 +1855,25 @@ void garbageCollect(bool major)
 #ifdef DEBUG
     LispObject a = standard_input;
     cout << "\nstdin = " << std::flush; simple_print(a);
-    cout << "hdr= " << std::hex << qheader(a).load() << "\n";
+    cout << "hdr= " << std::hex << static_cast<Header>(qheader(a)) << "\n";
     if (is_symbol(a)) a = qvalue(a);
     cout << "\n value = " << std::flush;
     simple_print(a);
-    cout << std::hex << vechdr(a).load() << std::dec << "\n";
+    cout << std::hex << static_cast<Header>(vechdr(a)) << std::dec << "\n";
     a = standard_output;
     cout << "\nstdout = " << std::flush; simple_print(a);
-    cout << "hdr= " << std::hex << qheader(a).load() << "\n";
+    cout << "hdr= " << std::hex << static_cast<Header>(qheader(a)) << "\n";
     if (is_symbol(a)) a = qvalue(a);
     cout << "\n value = " << std::flush;
     simple_print(a);
-    cout << std::hex << vechdr(a).load() << std::dec << "\n";
+    cout << std::hex << static_cast<Header>(vechdr(a)) << std::dec << "\n";
     a = terminal_io;
     cout << "\nterminal-io = " << std::flush; simple_print(a);
-    cout << "hdr= " << std::hex << qheader(a).load() << "\n";
+    cout << "hdr= " << std::hex << static_cast<Header>(qheader(a)) << "\n";
     if (is_symbol(a)) a = qvalue(a);
     cout << "\n value = " << std::flush;
     simple_print(a);
-    cout << std::hex << vechdr(a).load() << std::dec << "\n";
+    cout << std::hex << static_cast<Header>(vechdr(a)) << std::dec << "\n";
 #endif // DEBUG
 #ifdef DEBUG
 // Just to test things!
@@ -1907,7 +1911,7 @@ static LispObject visitedHash[hashSize];
 bool inActivePage(LispObject a)
 {   if (a==0 || a==nil || is_immediate(a)) return true;
     Page *p = reinterpret_cast<Page *>(a & -pageSize);
-    return p->chunkCount.load() != 0;
+    return p->chunkCount != 0;
 }
 
 void clearRepeats()
@@ -1975,7 +1979,7 @@ void validateUnambiguousBases(bool major)
 void validatePinnedInChunk(Chunk *c)
 {   uintptr_t p = c->dataStart();
     if (gcTrace) cout << "Pinned chunk has data " << Addr(c->dataStart())
-         << " to " << Addr(c->chunkFringe.load())
+         << " to " << Addr(c->chunkFringe)
          << " end " << Addr(c->dataEnd()) << "\n";
     while (p < c->chunkFringe)
     {
@@ -2004,7 +2008,7 @@ if (gcTrace) cout << "Item at " << Addr(pp) << " = " << std::hex << a
             if (is_mixed_header(a)) len1 = 4*CELL;
             else len1 = len;
             if (gcTrace) cout << "vector (" << std::hex << a << std::dec << ") uses " << len << " bytes\n";
-            if (len == 0) if (gcTrace) cout << "At " << Addr(pp) << " up to " << Addr(c->chunkFringe.load()) << "\n";
+            if (len == 0) if (gcTrace) cout << "At " << Addr(pp) << " up to " << Addr(c->chunkFringe) << "\n";
             for (size_t i = CELL; i<len1; i += CELL)
                 validateForGC(*reinterpret_cast<LispObject *>(p+i));
             my_assert(len != 0, "lisp vector size zero");
@@ -2073,7 +2077,7 @@ void validatePointers()
 // These functions whose initial letter is "F" are ones that give me
 // access to the value of atomic items in Chunk, Page and globally. I have
 // these because gdb (at least on some platforms) will not let me go (eg)
-// "print gFringe.load()" because it has inlined the load function. So I
+// "print gFringe" because it has inlined the load function. So I
 // use "print FgFringe()" instead. Well if FgFringe() is defined in a header
 // as an inline function and then never referenced in the code it is omitted
 // totally and so is not available for debugging. So this function is here

@@ -58,7 +58,7 @@ LispObject apply(LispObject fn, LispObject args,
             debug_record_symbol(fn);
 // Heer I am calling a function named by the symbol "fn" and all the arguments
 // have been prepared and in the list "args"
-            bool tracing = (qheader(fn).load() & SYM_TRACED) != 0;
+            bool tracing = (qheader(fn) & SYM_TRACED) != 0;
             if (tracing)
             {   RealSave save(fn, args, from);
                 LispObject &fn1   = save.val(1);
@@ -362,14 +362,14 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
             errexit();
             break;
         }
-        if (car(p).load() != declare_symbol)
+        if (car(p) != declare_symbol)
         {   body = cons(p, body);
             errexit();
             break;
         }
         for (p = cdr(p); consp(p); p = cdr(p))
         {   q = car(p);
-            if (!consp(q) || car(q).load() != special_symbol) continue;
+            if (!consp(q) || car(q) != special_symbol) continue;
             // here q says (special ...)
             for (q=cdr(q); consp(q); q = cdr(q))
             {   local_decs = cons(car(q), local_decs);
@@ -529,18 +529,18 @@ static LispObject defun_fn(LispObject args, LispObject)
         args = cdr(args);
         if (is_symbol(fname))
         {   LispObject fv;
-            if (qheader(fname).load() & SYM_SPECIAL_FORM)
+            if (qheader(fname) & SYM_SPECIAL_FORM)
                 return error(1, err_redef_special, fname);
-            if ((qheader(fname).load() & SYM_CODEPTR) != 0) return onevalue(fname);
+            if ((qheader(fname) & SYM_CODEPTR) != 0) return onevalue(fname);
             if (flagged_lose(fname))
             {   debug_printf("\n+++ ");
                 loop_print_debug(fname);
                 debug_printf(" not defined because of LOSE flag\n");
                 return onevalue(nil);
             }
-            setheader(fname, qheader(fname).load() & ~SYM_MACRO);
+            setheader(fname, qheader(fname) & ~SYM_MACRO);
             if (qfn1(fname) != undefined_1)
-            {   if (qvalue(redef_msg).load() != nil)
+            {   if (qvalue(redef_msg) != nil)
                 {   debug_printf("\n+++ ");
                     loop_print_debug(fname);
                     debug_printf(" redefined\n");
@@ -555,7 +555,7 @@ static LispObject defun_fn(LispObject args, LispObject)
             setenv(fname, args);         // Sort of notional lambda present
             set_fns(fname, interpreted_0, interpreted_1, interpreted_2,
                     interpreted_3, interpreted_4up);
-            if (qvalue(comp_symbol).load() != nil &&
+            if (qvalue(comp_symbol) != nil &&
                 qfn1(compiler_symbol) != undefined_1)
             {   Save save(fname);
                 args = ncons(fname);
@@ -581,20 +581,20 @@ static LispObject defmacro_fn(LispObject args, LispObject)
         if (!consp(args)) return aerror("Badly formatted use of defmacro");
         LispObject bvl = car(args);
 // Here if bvl is a list such as (u) I will expand it to be (u &optional g).
-        if (consp(bvl) && cdr(bvl).load() == nil)
+        if (consp(bvl) && cdr(bvl) == nil)
             args = cons(list3(car(bvl), opt_key, Lgensym(nil)),
                         cdr(args));
         if (is_symbol(fname))
-        {   if ((qheader(fname).load() & SYM_CODEPTR) != 0) return onevalue(fname);
-            setheader(fname, qheader(fname).load() | SYM_MACRO);
+        {   if ((qheader(fname) & SYM_CODEPTR) != 0) return onevalue(fname);
+            setheader(fname, qheader(fname) | SYM_MACRO);
 // Note that a name can have a definition as a macro and as a special form,
 // and in that case the qfn() cell gives the special form and the qenv()
 // cell the macro definition.  Otherwise at present I put 'undefined'
 // in the qfn() cell, but in due course I will want something else as better
 // protection against compiled code improperly attempting to call a macro.
-            if ((qheader(fname).load() & SYM_SPECIAL_FORM) == 0)
+            if ((qheader(fname) & SYM_SPECIAL_FORM) == 0)
             {   if (qfn1(fname) != undefined_1 &&
-                    qvalue(redef_msg).load() != nil)
+                    qvalue(redef_msg) != nil)
                 {   debug_printf("\n+++ ");
                     loop_print_debug(fname);
                     debug_printf(" redefined as a macro\n");
@@ -603,13 +603,13 @@ static LispObject defmacro_fn(LispObject args, LispObject)
                         undefined_4up);
             }
             setenv(fname, args);         // Sort of notional lambda present
-            if (qvalue(comp_symbol).load() != nil &&
+            if (qvalue(comp_symbol) != nil &&
                 qfn1(compiler_symbol) != undefined_1)
             {   LispObject t1, t2;
                 {   RealSave save(fname);
                     if (!(consp(args) &&
                           consp(cdr(args)) &&
-                          cdr(cdr(args)).load() == nil &&
+                          cdr(cdr(args)) == nil &&
                           (t1 = car(args),
                            t2 = cdr(car(cdr(args))),
                            equal(t1, t2))))
@@ -635,7 +635,7 @@ static LispObject eval_when_fn(LispObject args, LispObject env)
     situations = car(args);
     args = cdr(args);
     while (consp(situations))
-    {   if (car(situations).load() == eval_symbol) return progn_fn(args, env);
+    {   if (car(situations) == eval_symbol) return progn_fn(args, env);
         situations = cdr(situations);
     }
     return onevalue(nil);
@@ -679,9 +679,9 @@ LispObject function_fn(LispObject args, LispObject env)
 // (function (lambda (x) y)) gets converted to
 // (funarg env (x) y).
     STACK_SANITY;
-    if (consp(args) && cdr(args).load() == nil)
+    if (consp(args) && cdr(args) == nil)
     {   args = car(args);
-        if (consp(args) && car(args).load() == lambda)
+        if (consp(args) && car(args) == lambda)
             args = list2star(funarg, env, cdr(args));
         return onevalue(args);
     }
@@ -697,7 +697,7 @@ LispObject go_fn(LispObject args, LispObject env)
     for(p=env; consp(p); p=cdr(p))
     {   LispObject w = car(p), z;
         if (!consp(w)) continue;
-        if (car(w).load() == fixnum_of_int(1) &&
+        if (car(w) == fixnum_of_int(1) &&
             (z = car(cdr(w)), eql(z, tag)))
         {   exit_tag = w;
             exit_reason = UNWIND_GO;
@@ -806,14 +806,14 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
             errexit();
             break;
         }
-        if (car(p).load() != declare_symbol)
+        if (car(p) != declare_symbol)
         {   body = cons(p, body);
             errexit();
             break;
         }
         for (p = cdr(p); consp(p); p = cdr(p))
         {   q = car(p);
-            if (!consp(q) || car(q).load() != special_symbol) continue;
+            if (!consp(q) || car(q) != special_symbol) continue;
             // here q says (special ...)
             for (q=cdr(q); consp(q); q = cdr(q))
             {   local_decs = cons(car(q), local_decs);

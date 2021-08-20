@@ -817,12 +817,14 @@ then
 # In debugging mode I will use -fsanitise=address if it is available.
   OLDCXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -fsanitize=address -fsanitize=undefined"
+  OLDLDFLAGS="$LDFLAGS"
+  LDFLAGS="static-libasan $LDFLAGS"
   AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <cstdio>]],
-
       [[for (const char *p="String"; *p!=0; p++)
           std::printf("%c\n", *p++);]])],
     [AC_MSG_NOTICE(Will use -fsanitize=address, -fsanitize=undefined)],
     [CXXFLAGS="$OLDCXXFLAGS"
+     LDFLAGS="$OLDLDFLAGS"
      AC_MSG_NOTICE(-fsanitize=xx not available)])
 fi
 

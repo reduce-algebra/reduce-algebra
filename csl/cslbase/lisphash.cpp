@@ -354,7 +354,7 @@ LispObject Lmkhash_3(LispObject env, LispObject size,
                                    shift);  // 64-log2(table size)
     write_barrier(&basic_elt(v, HASH_KEYS), v1);
     write_barrier(&basic_elt(v, HASH_VALUES), v2);
-    setvechdr(v, vechdr(v).load() ^ (TYPE_SIMPLE_VEC ^ TYPE_HASH));
+    setvechdr(v, vechdr(v) ^ (TYPE_SIMPLE_VEC ^ TYPE_HASH));
     return onevalue(v);
 }
 
@@ -397,7 +397,7 @@ LispObject Lmkhashset(LispObject env, LispObject flavour)
     basic_elt(v, HASH_VALUES) = nil;              // value table.
 // nil can never be an up-pointer.
 //  write_barrier(&basic_elt(v, HASH_VALUES), nil);
-    setvechdr(v, vechdr(v).load() ^ (TYPE_SIMPLE_VEC ^ TYPE_HASH));
+    setvechdr(v, vechdr(v) ^ (TYPE_SIMPLE_VEC ^ TYPE_HASH));
     return onevalue(v);
 }
 
@@ -938,7 +938,7 @@ static bool hash_compare_symtab(LispObject key, LispObject hashentry)
     uintptr_t *p1, *p2;
     hashentry = qpname(
                     hashentry); // allow for entry in table being a symbol.
-    if (vechdr(key).load() != vechdr(hashentry)) return false; // lengths differ.
+    if (vechdr(key) != vechdr(hashentry)) return false; // lengths differ.
     n = length_of_byteheader(vechdr(key));
     p1 = (uintptr_t *)&celt(key, 0);
     p2 = (uintptr_t *)&celt(hashentry, 0);
@@ -961,7 +961,7 @@ LispObject Lget_hash(LispObject env, LispObject key, LispObject tab,
     if (!is_vector(tab) || type_of_header(vechdr(tab)) != TYPE_HASH)
     {   if (type_of_header(vechdr(tab)) != TYPE_HASHX)
             return aerror1("gethash", tab);
-        setvechdr(tab, vechdr(tab).load() ^ (TYPE_HASH ^ TYPE_HASHX));
+        setvechdr(tab, vechdr(tab) ^ (TYPE_HASH ^ TYPE_HASHX));
         set_hash_operations(tab);
 // Here I have a table that at some stage had all fitted into the table, and
 // I am not adding new data. I need to rehash it because garbage collection
@@ -1121,7 +1121,7 @@ LispObject Lput_hash(LispObject env,
     if (type_of_header(vechdr(tab)) != TYPE_HASH)
     {   if (type_of_header(vechdr(tab)) == TYPE_HASHX)
         {   needs_rehashing = true;
-            setvechdr(tab, vechdr(tab).load() ^ (TYPE_HASH ^ TYPE_HASHX));
+            setvechdr(tab, vechdr(tab) ^ (TYPE_HASH ^ TYPE_HASHX));
         }
         else return aerror1("puthash", tab);
     }
@@ -1171,7 +1171,7 @@ LispObject Lput_hash(LispObject env,
 // could mark the table as in need of rehashing. Well I am about to
 // rehash everything already, so I can cancel any new request.
             if (type_of_header(vechdr(tab)) == TYPE_HASHX)
-                setvechdr(tab, vechdr(tab).load() ^ (TYPE_HASH ^ TYPE_HASHX));
+                setvechdr(tab, vechdr(tab) ^ (TYPE_HASH ^ TYPE_HASHX));
             LispObject oldkeys = basic_elt(tab, HASH_KEYS);
             LispObject oldvals = basic_elt(tab, HASH_VALUES);
             h_table = newkeys;
@@ -1275,7 +1275,7 @@ LispObject Lclr_hash(LispObject env, LispObject tab)
          type_of_header(vechdr(tab)) != TYPE_HASHX))
         return aerror1("clrhash", tab);
     set_hash_operations(tab);
-    if (basic_elt(tab, HASH_COUNT).load() == fixnum_of_int(0))
+    if (basic_elt(tab, HASH_COUNT) == fixnum_of_int(0))
         return onevalue(nil);
     set_hash_operations(tab);
     int sh = int_of_fixnum(basic_elt(tab, HASH_SHIFT));
@@ -1297,7 +1297,7 @@ LispObject Lclr_hash(LispObject env, LispObject tab)
     }
     basic_elt(tab, HASH_COUNT) = fixnum_of_int(0);
     if (type_of_header(vechdr(tab)) == TYPE_HASHX)
-        setvechdr(tab, vechdr(tab).load() ^ (TYPE_HASH ^ TYPE_HASHX));
+        setvechdr(tab, vechdr(tab) ^ (TYPE_HASH ^ TYPE_HASHX));
     return tab;
 }
 
@@ -1492,8 +1492,8 @@ void simple_prin1(LispObject x)
     }
 }
 
-void simple_prin1(atomic<LispObject> x)
-{   simple_prin1(x.load());
+void simple_prin1(atomic<LispObject> &x)
+{   simple_prin1(x);
 }
 
 void simple_print(LispObject x)
@@ -1502,8 +1502,8 @@ void simple_print(LispObject x)
     simple_column = 0;
 }
 
-void simple_print(atomic<LispObject> x)
-{   simple_print(x.load());
+void simple_print(atomic<LispObject> &x)
+{   simple_print(static_cast<LispObject>(x));
 }
 
 void simple_msg(const char *s, LispObject x)

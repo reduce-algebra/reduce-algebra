@@ -444,7 +444,7 @@ static LispObject utf8_decode(int c1, int c2, int c3, int c4)
 LispObject Lutf8_decode_4up(LispObject env, LispObject a,
                             LispObject b,
                             LispObject c, LispObject d)
-{   if (cdr(d).load() != nil) return aerror("utf8-decode");
+{   if (cdr(d) != nil) return aerror("utf8-decode");
     d = car(d);
     if (!is_fixnum(a)) return aerror1("utf8-decode", a);
     if (!is_fixnum(b)) return aerror1("utf8-decode", b);
@@ -511,14 +511,14 @@ LispObject Lutf8_decode_1(LispObject env, LispObject a)
 
 LispObject Lid2int(LispObject, LispObject a)
 {   if (!is_symbol(a)) return aerror1("id2int", a);
-    uint32_t n = qcountLow(a).load() & 0x3fffffU;
+    uint32_t n = qcountLow(a) & 0x3fffffU;
 // If the symbol did not have a sequence number yet allocate it one. This
 // can happen if it was created as an uninterned value or a gensym. Well
 // there is a special case for the symbol whose name is U+00 because that
 // has a genuine zero sequence number!
     if (n == 0 && a != char_0_symbol)
     {   n = symbol_sequence++ & 0x3fffffU;
-        qcountLow(a) = (qcountLow(a).load() & ~0x3fffffU) | n;
+        qcountLow(a) = (qcountLow(a) & ~0x3fffffU) | n;
     }
     return onevalue(fixnum_of_int(n));
 }
@@ -1243,7 +1243,7 @@ static LispObject get_char_vec(LispObject v, int32_t *high,
     h = vechdr(v);
     if (type_of_header(h) != TYPE_ARRAY) return nil;
     w = elt(v, 1);   // The list of dimensions
-    if (w == nil || cdr(w).load() != nil) return nil;
+    if (w == nil || cdr(w) != nil) return nil;
     *high = int_of_fixnum(car(w));
     *offset = int_of_fixnum(elt(v, 3));
     v = elt(v, 2);

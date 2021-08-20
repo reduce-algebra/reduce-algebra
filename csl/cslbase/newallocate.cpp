@@ -665,7 +665,7 @@ void releaseOtherThreads()
         bool st =
             cv_for_gc_busy.wait_until(lock,
                 std::chrono::steady_clock::now() + cvTimeout,
-                []{   uint32_t n = activeThreads.load();
+                []{   uint32_t n = activeThreads;
                       return (n & 0xff) == ((n>>8) & 0xff) - 1;
                   });
         if (!st) my_abort("condition variable timed out");
@@ -709,7 +709,8 @@ void ableToAllocateNewChunk(unsigned int i, size_t n, size_t gap)
 // filled in.
 //    cout << "At " << __WHERE__ << " ableToAllocateNewChunk\n";
     myChunkBase[i]->chunkFringe = fringeBis[i];
-    Chunk *newChunk = reinterpret_cast<Chunk *>(gFringe.load());
+    Chunk *newChunk = reinterpret_cast<Chunk *>(
+                          static_cast<uintptr_t>(gFringe));
     newChunk->length = n+targetChunkSize;
     newChunk->isPinned = 0;
     newChunk->chunkPinChain = nullptr;
@@ -1169,7 +1170,8 @@ void setUpMostlyEmptyPage(Page *p)
     for (Chunk *c=p->chunkPinChain; c!=nullptr; c=c->chunkPinChain)
         p->chunkMap[p->chunkCount++] = c;
     p->fringe = reinterpret_cast<uintptr_t>(&p->data);
-    p->limit = reinterpret_cast<uintptr_t>(p->chunkPinChain.load());
+    p->limit = reinterpret_cast<uintptr_t>(
+                   static_cast<Chunk *>(p->chunkPinChain));
 #ifdef SAFE
     for (size_t i=0; i<sizeof(p->dirtyMap)/sizeof(p->dirtyMap[0]); i++)
         p->dirtyMap[i] = 0;
@@ -1237,8 +1239,9 @@ void setUpUsedPage(Page *p)
                });
     p->chunkPinChain = nullptr;
     for (size_t i=p->chunkCount; i!=0; i--)
-    {   p->chunkMap[i].load()->chunkPinChain = p->chunkPinChain.load();
-        p->chunkPinChain = p->chunkMap[i].load();
+    {   static_cast<Chunk *>(p->chunkMap[i])->chunkPinChain =
+            static_cast<Chunk *>(p->chunkPinChain);
+        p->chunkPinChain = static_cast<Chunk *>(p->chunkMap[i]);
     }
 // Start as if the page is utterly empty.
     p->fringe = reinterpret_cast<uintptr_t>(&p->data);
@@ -1250,8 +1253,9 @@ void setUpUsedPage(Page *p)
 // that is not going to be a problem because the first time I try to
 // perform allocation I will find that my chunk is empty and scan to grab
 // another.
-    if (p->chunkPinChain.load()!=nullptr)
-        p->limit = reinterpret_cast<uintptr_t>(p->chunkPinChain.load());
+    if (p->chunkPinChain!=nullptr)
+        p->limit = reinterpret_cast<uintptr_t>(
+                       static_cast<Chunk *>(p->chunkPinChain));
     else p->limit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
 }
 
@@ -1264,11 +1268,12 @@ void setVariablesFromPage(Page *p)
 // that the very first time I try to allocate I will arrange to set up
 // a fresh Chunk. That seems nicer to me than creating that chunk here.
     uintptr_t thr = threadId;
-    fringe = limit[thr] = limitBis[thr] = gFringe = p->fringe.load();
+    fringe = limit[thr] =
+        limitBis[thr] = gFringe = static_cast<uintptr_t>(p->fringe);
     myChunkBase[thr] = nullptr;
     gLimit = p->limit;
 //    cout << "setVariablesFromPage\r\n";
-//    cout << "At " << __WHERE__ << " gFringe = " << std::hex << gFringe.load() << "\r" << endl;
+//    cout << "At " << __WHERE__ << " gFringe = " << std::hex << gFringe << "\r" << endl;
 //    cout << "At " << __WHERE__ << " gLimit = " << std::hex << gLimit << "\r" << endl;
 //    cout << std::dec;
 }
@@ -1787,7 +1792,7 @@ LispObject Lgctest_0(LispObject env)
             LispObject b = a;
             for (unsigned int j=i; j!=static_cast<unsigned int>(-1); j--)
             {   if (!is_cons(b)) my_abort("gc test failure");
-                if (car(b).load() != fixnum_of_int(j))
+                if (car(b) != fixnum_of_int(j))
                     my_abort("gc test failure");
                 b = cdr(b);
             }
@@ -1806,10 +1811,11 @@ LispObject Lgctest_1(LispObject env, LispObject a1)
     b = a;
     for (unsigned int j=n-1; j!=static_cast<unsigned int>(-1); j--)
     {   if (!is_cons(b)) goto failing2;
-        if (car(b).load() != fixnum_of_int(j))
+        if (car(b) != fixnum_of_int(j))
         {   cout << "Fail3 case with j = " << std::dec << j << "\r" << endl
                  << " fixnum_of_int(j) = " << std::hex << fixnum_of_int(j) << "\r" << endl
-                 << " car(b) = " << car(b).load() << " which differs" << "\r" << endl
+                 << " car(b) = " << static_cast<LispObject>(car(b))
+                 << " which differs" << "\r" << endl
                  << " " << (n-1-j) << " items down the list" << "\r" << endl;
             goto failing3; //<<<<<<<<<
         }
@@ -1819,30 +1825,30 @@ LispObject Lgctest_1(LispObject env, LispObject a1)
     return nil;
 failing2:
     cout << "Crashed2 " << std::hex << "b = " << b
-         << " car(b) = " << car(b).load() << "\r" << endl;
+         << " car(b) = " << static_cast<LispObject>(car(b)) << "\r" << endl;
     cout << "n = " << n << "\r" << endl;
     for (int z=1; z<10; z++)
-    {   cout << std::dec << (car(b).load()/16) << " ";
+    {   cout << std::dec << (car(b)/16) << " ";
         b = cdr(b);
     }
     cout << "\r" << endl;
     return nil;
 failing3:
     cout << "Crashed3 " << std::hex << "b = " << b
-         << " car(b) = " << car(b).load() << "\r" << endl;
+         << " car(b) = " << static_cast<LispObject>(car(b)) << "\r" << endl;
     cout << "n = " << n << "\r" << endl;
     for (int z=1; z<10; z++)
-    {   cout << std::dec << (car(b).load()/16) << " ";
+    {   cout << std::dec << (car(b)/16) << " ";
         b = cdr(b);
     }
     cout << "\r" << endl;
     return nil;
 failing4:
     cout << "Crashed4 " << std::hex << "b = " << b
-         << " car(b) = " << car(b).load() << "\r" << endl;
+         << " car(b) = " << static_cast<LispObject>(car(b)) << "\r" << endl;
     cout << "n = " << n << "\r" << endl;
     for (int z=1; z<10; z++)
-    {   cout << std::dec << (car(b).load()/16) << " ";
+    {   cout << std::dec << (car(b)/16) << " ";
         b = cdr(b);
     }
     cout << "\r" << endl;

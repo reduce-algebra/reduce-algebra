@@ -1104,7 +1104,7 @@ static LispObject lisp_main()
                     cold_start = (exit_value == nil);
 // Of course a tick may very well have happened rather recently - so
 // I will flush it out now just to clear the air.
-                    if ((stack+event_flag.load()) >= stackLimit) respond_to_stack_event();
+                    if ((stack+event_flag) >= stackLimit) respond_to_stack_event();
                     cold_start = (exit_value == nil);
                     Lrds(nil, nil);
                     Lwrs(nil, nil);
@@ -2797,7 +2797,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // The value I store in event_flag is either 0 if there is no request pending,
 // or it has the bottom 8 bits as a map showing what event or events have been
 // requested and all other bits set. It is used in tests of the form
-//   if ((stackpointer | event_flag.load()) >= stackLimit) ...
+//   if ((stackpointer | event_flag) >= stackLimit) ...
 // and for this to make sense I must have stackLimit a lower address than
 // within 256 bytes of the top of my address space. Being of a neurotic
 // style I ensure this by rounding stackLimit down to a multiple of 256
@@ -3384,7 +3384,7 @@ int PROC_prepare_for_web_top_level()
 int char_from_string()
 {   int c = *proc_data_string;
     if (c == 0) return EOF;
-    if (qvalue(echo_symbol).load() != nil &&
+    if (qvalue(echo_symbol) != nil &&
         procedural_output != nullptr) (*procedural_output)(c);
     proc_data_string++;
     return c;
@@ -3848,12 +3848,14 @@ const char *PROC_string_data(PROC_handle p)
 
 PROC_handle PROC_first(PROC_handle p)
 {   return reinterpret_cast<PROC_handle>(
-                   car(reinterpret_cast<LispObject>(p)).load());
+               static_cast<LispObject>(
+                   car(reinterpret_cast<LispObject>(p))));
 }
 
 PROC_handle PROC_rest(PROC_handle p)
 {   return reinterpret_cast<PROC_handle>(
-                   cdr(reinterpret_cast<LispObject>(p)).load());
+               static_cast<LispObject>(
+                   cdr(reinterpret_cast<LispObject>(p))));
 }
 
 // End of csl.cpp

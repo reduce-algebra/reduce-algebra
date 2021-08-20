@@ -35,6 +35,12 @@ my stance is that a computer that does not support native 128-bit will be
 slow at big arithmetic whatever I do, so hurtying it a bit mnore will not
 upset me too much. A C++ expert may want to address that too!
 
+I have a collection of uses of "typename enable_if<std::is_arithetic<..."
+in here that is sufficient to resolve some ambiguities that arose in use
+with CSL, but I have not put that in everywhere - just in enough places to
+support my current usage. Others who pick this up might want to review
+and extent that!
+
 Copyright (c) 2013 - 2017 Jason Lee @ calccrypto at gmail.com
               2020 - 2021 Arthur Norman
 
@@ -158,7 +164,8 @@ public:
     uint128_t(uint128_t && rhs);
     uint128_t(int128_t rhs);
 
-    template <typename T> uint128_t(const T & rhs)
+    template <typename T>
+    uint128_t(const T & rhs)
         : UPPER(0), LOWER(rhs)
     {   static_assert(std::is_integral <T>::value,
                       "Input argument type must be an integer.");
@@ -199,7 +206,9 @@ public:
     // Bitwise Operators
     uint128_t operator&(const uint128_t & rhs) const;
 
-    template <typename T> uint128_t operator&(const T & rhs) const
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+    operator&(const T & rhs) const
     {   return uint128_t(0, LOWER & static_cast<std::uint64_t>(rhs));
     }
 
@@ -213,7 +222,9 @@ public:
 
     uint128_t operator|(const uint128_t & rhs) const;
 
-    template <typename T> uint128_t operator|(const T & rhs) const
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+    operator|(const T & rhs) const
     {   return uint128_t(UPPER, LOWER | static_cast<std::uint64_t>(rhs));
     }
 
@@ -226,7 +237,9 @@ public:
 
     uint128_t operator^(const uint128_t & rhs) const;
 
-    template <typename T> uint128_t operator^(const T & rhs) const
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+    operator^(const T & rhs) const
     {   return uint128_t(UPPER, LOWER ^ static_cast<std::uint64_t>(rhs));
     }
 
@@ -282,13 +295,17 @@ public:
     // Comparison Operators
     bool operator==(const uint128_t & rhs) const;
 
-    template <typename T> bool operator==(const T & rhs) const
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator==(const T & rhs) const
     {   return (!UPPER && (LOWER == static_cast<std::uint64_t>(rhs)));
     }
 
     bool operator!=(const uint128_t & rhs) const;
 
-    template <typename T> bool operator!=(const T & rhs) const
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator!=(const T & rhs) const
     {   return (UPPER | (LOWER != static_cast<std::uint64_t>(rhs)));
     }
 
@@ -300,7 +317,9 @@ public:
 
     bool operator<(const uint128_t & rhs) const;
 
-    template <typename T> bool operator<(const T & rhs) const
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator<(const T & rhs) const
     {   return (!UPPER)?(LOWER < static_cast<std::uint64_t>(rhs)):false;
     }
 
@@ -312,14 +331,18 @@ public:
 
     bool operator<=(const uint128_t & rhs) const;
 
-    template <typename T> bool operator<=(const T & rhs) const
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator<=(const T & rhs) const
     {   return ((*this < rhs) | (*this == rhs));
     }
 
     // Arithmetic Operators
     uint128_t operator+(const uint128_t & rhs) const;
 
-    template <typename T> uint128_t operator+(const T & rhs) const
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+    operator+(const T & rhs) const
     {   return uint128_t(UPPER + ((LOWER + static_cast<std::uint64_t>(rhs)) <
                                   LOWER), LOWER + static_cast<std::uint64_t>(rhs));
     }
@@ -334,7 +357,9 @@ public:
 
     uint128_t operator-(const uint128_t & rhs) const;
 
-    template <typename T> uint128_t operator-(const T & rhs) const
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+    operator-(const T & rhs) const
     {   return uint128_t(static_cast<std::uint64_t>(
                              UPPER - ((LOWER - rhs) > LOWER)),
                          static_cast<std::uint64_t>(LOWER - rhs));
@@ -367,7 +392,9 @@ private:
 public:
     uint128_t operator/(const uint128_t & rhs) const;
 
-    template <typename T> uint128_t operator/(const T & rhs) const
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+    operator/(const T & rhs) const
     {   return *this / uint128_t(rhs);
     }
 
@@ -380,7 +407,9 @@ public:
 
     uint128_t operator%(const uint128_t & rhs) const;
 
-    template <typename T> uint128_t operator%(const T & rhs) const
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+    operator%(const T & rhs) const
     {   return *this - (rhs * (*this / rhs));
     }
 
@@ -447,21 +476,22 @@ inline uint128_t UNSIGNED_FLIP_TOP_BIT(uint128_t a)
 
 };
 
-// Give uint128_t type traits
-namespace std    // This is probably not a good idea
-{
-template <> struct is_arithmetic <uint128_t> : std::true_type {};
-template <> struct is_integral   <uint128_t> : std::true_type {};
-template <> struct is_unsigned   <uint128_t> : std::true_type {};
-template <> struct is_signed     <uint128_t> : std::false_type {};
-};
+//== // Give uint128_t type traits
+//== namespace std    // This is probably not a good idea
+//== {
+//== template <> struct is_arithmetic <uint128_t> : std::true_type {};
+//== template <> struct is_integral   <uint128_t> : std::true_type {};
+//== template <> struct is_unsigned   <uint128_t> : std::true_type {};
+//== template <> struct is_signed     <uint128_t> : std::false_type {};
+//== };
 
 // lhs type T as first arguemnt
 // If the output is not a bool, casts to type T
 
 // Bitwise Operators
-template <typename T> uint128_t operator&(const T & lhs,
-                                          const uint128_t & rhs)
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+operator&(const T & lhs, const uint128_t & rhs)
 {   return rhs & lhs;
 }
 
@@ -469,8 +499,9 @@ template <typename T> T & operator&=(T & lhs, const uint128_t & rhs)
 {   return lhs = static_cast <T> (rhs & lhs);
 }
 
-template <typename T> uint128_t operator|(const T & lhs,
-                                          const uint128_t & rhs)
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+operator|(const T & lhs, const uint128_t & rhs)
 {   return rhs | lhs;
 }
 
@@ -478,8 +509,9 @@ template <typename T> T & operator|=(T & lhs, const uint128_t & rhs)
 {   return lhs = static_cast <T> (rhs | lhs);
 }
 
-template <typename T> uint128_t operator^(const T & lhs,
-                                          const uint128_t & rhs)
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+operator^(const T & lhs, const uint128_t & rhs)
 {   return rhs ^ lhs;
 }
 
@@ -517,12 +549,16 @@ template <typename T> T & operator>>=(T & lhs, const uint128_t & rhs)
 }
 
 // Comparison Operators
-template <typename T> bool operator==(const T & lhs, const uint128_t & rhs)
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator==(const T & lhs, const uint128_t & rhs)
 {   return (!rhs.upper() &&
             (static_cast<std::uint64_t>(lhs) == rhs.lower()));
 }
 
-template <typename T> bool operator!=(const T & lhs, const uint128_t & rhs)
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator!=(const T & lhs, const uint128_t & rhs)
 {   return (rhs.upper() ||
             (static_cast<std::uint64_t>(lhs) != rhs.lower()));
 }
@@ -532,7 +568,9 @@ template <typename T> bool operator>(const T & lhs, const uint128_t & rhs)
            (static_cast<std::uint64_t>(lhs) > rhs.lower());
 }
 
-template <typename T> bool operator<(const T & lhs, const uint128_t & rhs)
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator<(const T & lhs, const uint128_t & rhs)
 {   if (rhs.upper())
     {   return true;
     }
@@ -546,7 +584,9 @@ template <typename T> bool operator>=(const T & lhs, const uint128_t & rhs)
     return (static_cast<std::uint64_t>(lhs) >= rhs.lower());
 }
 
-template <typename T> bool operator<=(const T & lhs, const uint128_t & rhs)
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator<=(const T & lhs, const uint128_t & rhs)
 {   if (rhs.upper())
     {   return true;
     }
@@ -554,7 +594,9 @@ template <typename T> bool operator<=(const T & lhs, const uint128_t & rhs)
 }
 
 // Arithmetic Operators
-template <typename T> uint128_t operator+(const T & lhs, const uint128_t & rhs)
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+operator+(const T & lhs, const uint128_t & rhs)
 {   return rhs + lhs;
 }
 
@@ -562,7 +604,9 @@ template <typename T> T & operator+=(T & lhs, const uint128_t & rhs)
 {   return lhs = static_cast <T> (rhs + lhs);
 }
 
-template <typename T> uint128_t operator-(const T & lhs, const uint128_t & rhs)
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+operator-(const T & lhs, const uint128_t & rhs)
 {   return -(rhs - lhs);
 }
 
@@ -578,7 +622,9 @@ template <typename T> T & operator*=(T & lhs, const uint128_t & rhs)
 {   return lhs = static_cast <T> (rhs * lhs);
 }
 
-template <typename T> uint128_t operator/(const T & lhs, const uint128_t & rhs)
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+operator/(const T & lhs, const uint128_t & rhs)
 {   return uint128_t(lhs) / rhs;
 }
 
@@ -586,7 +632,9 @@ template <typename T> T & operator/=(T & lhs, const uint128_t & rhs)
 {   return lhs = static_cast <T> (uint128_t(lhs) / rhs);
 }
 
-template <typename T> uint128_t operator%(const T & lhs, const uint128_t & rhs)
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+ operator%(const T & lhs, const uint128_t & rhs)
 {   return uint128_t(lhs) % rhs;
 }
 
@@ -1064,8 +1112,7 @@ inline uint128_t operator>>(const std::int64_t & lhs, const uint128_t & rhs)
 {   return uint128_t(lhs) >> rhs;
 }
 
-inline std::ostream & operator<<(std::ostream & stream,
-                                 const uint128_t & rhs)
+inline std::ostream & operator<<(std::ostream & stream, const uint128_t & rhs)
 {   if (stream.flags() & stream.oct)
     {   stream << rhs.str(8);
     }
@@ -1250,7 +1297,9 @@ public:
     {   return int128_t(UPPER&rhs.UPPER, LOWER&rhs.LOWER);
     }
 
-    template <typename T> int128_t operator&(const T & rhs) const
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    operator&(const T & rhs) const
     {   return int128_t(rhs >= 0 ? 0 : UPPER,
                         LOWER & static_cast<std::uint64_t>(rhs));
     }
@@ -1271,7 +1320,9 @@ public:
     {   return int128_t(UPPER|rhs.UPPER, LOWER|rhs.LOWER);
     }
 
-    template <typename T> int128_t operator|(const T & rhs) const
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    operator|(const T & rhs) const
     {   return int128_t(rhs < 0 ? -1 : UPPER,
                         LOWER | static_cast<std::uint64_t>(rhs));
     }
@@ -1282,7 +1333,9 @@ public:
         return *this;
     }
 
-    template <typename T> int128_t & operator|=(const T & rhs)
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    & operator|=(const T & rhs)
     {   if (rhs < 0) UPPER = -1;
         LOWER |= static_cast<std::uint64_t>(rhs);
         return *this;
@@ -1290,7 +1343,9 @@ public:
 
     int128_t operator^(const int128_t & rhs) const;
 
-    template <typename T> int128_t operator^(const T & rhs) const
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    operator^(const T & rhs) const
     {   return int128_t(rhs<0 ? ~UPPER : UPPER,
                         LOWER ^ static_cast<std::uint64_t>(rhs));
     }
@@ -1362,14 +1417,18 @@ public:
     // Comparison Operators
     bool operator==(const int128_t & rhs) const;
 
-    template <typename T> bool operator==(const T & rhs) const
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator==(const T & rhs) const
     {   return (UPPER == (rhs>=0 ? 0 : -1) &&
                (LOWER == static_cast<std::uint64_t>(rhs)));
     }
 
     bool operator!=(const int128_t & rhs) const;
 
-    template <typename T> bool operator!=(const T & rhs) const
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator!=(const T & rhs) const
     {   return (UPPER != (rhs>0 ? 0 : -1) |
                (LOWER != static_cast<std::uint64_t>(rhs)));
     }
@@ -1386,7 +1445,9 @@ public:
     {   return int128_t::FLIP_TOP_BIT(*this) < int128_t::FLIP_TOP_BIT(rhs);
     }
 
-    template <typename T> bool operator<(const T & rhs) const
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator<(const T & rhs) const
     {   return int128_t::FLIP_TOP_BIT(*this) < int128_t::FLIP_TOP_BIT(static_cast<std::uint64_t>(rhs));
     }
 
@@ -1402,7 +1463,9 @@ public:
     {   return int128_t::FLIP_TOP_BIT(*this) <= int128_t::FLIP_TOP_BIT(rhs);
     }
 
-    template <typename T> bool operator<=(const T & rhs) const
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator<=(const T & rhs) const
     {   return int128_t::FLIP_TOP_BIT(*this) <= int128_t::FLIP_TOP_BIT(static_cast<std::uint64_t>(rhs));
     }
 
@@ -1410,7 +1473,9 @@ public:
     int128_t operator+(const int128_t & rhs) const
     {   return int128_t(INT128::UNSIGNED(*this) + INT128::UNSIGNED(rhs));
     }
-    template <typename T> int128_t operator+(const T & rhs) const
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    operator+(const T & rhs) const
     {   return int128_t(INT128::UNSIGNED(*this) + INT128::UNSIGNED(rhs));
     }
 
@@ -1432,7 +1497,9 @@ public:
     {   return int128_t(INT128::UNSIGNED(*this) - INT128::UNSIGNED(rhs));
     }
 
-    template <typename T> int128_t operator-(const T & rhs) const
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    operator-(const T & rhs) const
     {   return *this = int128_t(rhs);
     }
 
@@ -1493,7 +1560,9 @@ public:
     {   return  divrem(*this, rhs).first;
     }
 
-    template <typename T> int128_t operator/(const T & rhs) const
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    operator/(const T & rhs) const
     {   return *this / int128_t(rhs);
     }
 
@@ -1508,7 +1577,9 @@ public:
     {   return divrem(*this, rhs).second;
     }
 
-    template <typename T> int128_t operator%(const T & rhs) const
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    operator%(const T & rhs) const
     {   return  *this % int128_t(rhs);
     }
 
@@ -1555,20 +1626,22 @@ inline uint128_t INT128::UNSIGNED(int128_t a)
 {   return INT128::PACK128(static_cast<std::uint64_t>(a.getUPPER()), a.getLOWER());
 }
 
-// Give int128_t type traits
-namespace std    // This is probably not a good idea
-{
-template <> struct is_arithmetic <int128_t> : std::true_type {};
-template <> struct is_integral   <int128_t> : std::true_type {};
-template <> struct is_signed     <int128_t> : std::true_type {};
-template <> struct is_unsigned   <int128_t> : std::false_type {};
-};
+//== // Give int128_t type traits
+//== namespace std    // This is probably not a good idea
+//== {
+//== template <> struct is_arithmetic <int128_t> : std::true_type {};
+//== template <> struct is_integral   <int128_t> : std::true_type {};
+//== template <> struct is_signed     <int128_t> : std::true_type {};
+//== template <> struct is_unsigned   <int128_t> : std::false_type {};
+//== };
 
 // lhs type T as first arguemnt
 // If the output is not a bool, casts to type T
 
 // Bitwise Operators
-template <typename T> int128_t operator&(const T & lhs, const int128_t & rhs)
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+operator&(const T & lhs, const int128_t & rhs)
 {   return rhs & lhs;
 }
 
@@ -1576,7 +1649,9 @@ template <typename T> T & operator&=(T & lhs, const int128_t & rhs)
 {   return lhs = static_cast <T> (rhs & lhs);
 }
 
-template <typename T> int128_t operator|(const T & lhs, const int128_t & rhs)
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+operator|(const T & lhs, const int128_t & rhs)
 {   return rhs | lhs;
 }
 
@@ -1584,7 +1659,9 @@ template <typename T> T & operator|=(T & lhs, const int128_t & rhs)
 {   return lhs = static_cast <T> (rhs | lhs);
 }
 
-template <typename T> int128_t operator^(const T & lhs, const int128_t & rhs)
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+operator^(const T & lhs, const int128_t & rhs)
 {   return rhs ^ lhs;
 }
 
@@ -1685,12 +1762,16 @@ template <typename T> T & operator>>=(T & lhs, const int128_t & rhs)
 }
 
 // Comparison Operators
-template <typename T> bool operator==(const T & lhs, const int128_t & rhs)
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator==(const T & lhs, const int128_t & rhs)
 {   return (rhs.upper() == (lhs<0?-1:0) &&
             (static_cast<std::uint64_t>(lhs) == rhs.lower()));
 }
 
-template <typename T> bool operator!=(const T & lhs, const int128_t & rhs)
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator!=(const T & lhs, const int128_t & rhs)
 {   
     return (rhs.upper() != (lhs<0?-1:0) ||
             (static_cast<std::uint64_t>(lhs) != rhs.lower()));
@@ -1700,7 +1781,9 @@ template <typename T> bool operator>(const T & lhs, const int128_t & rhs)
 {   return INT128::UNSIGNED_FLIP_TOP_BIT(int128_t(lhs)) > INT128::UNSIGNED_FLIP_TOP_BIT(rhs);
 }
 
-template <typename T> bool operator<(const T & lhs, const int128_t & rhs)
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator<(const T & lhs, const int128_t & rhs)
 {   return INT128::UNSIGNED_FLIP_TOP_BIT(int128_t(lhs)) < INT128::UNSIGNED_FLIP_TOP_BIT(rhs);
 }
 
@@ -1709,13 +1792,16 @@ template <typename T> bool operator>=(const T & lhs,
 {   return INT128::UNSIGNED_FLIP_TOP_BIT(int128_t(lhs)) >= INT128::UNSIGNED_FLIP_TOP_BIT(rhs);
 }
 
-template <typename T> bool operator<=(const T & lhs,
-                                      const int128_t & rhs)
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator<=(const T & lhs, const int128_t & rhs)
 {   return INT128::UNSIGNED_FLIP_TOP_BIT(int128_t(lhs)) <= INT128::UNSIGNED_FLIP_TOP_BIT(rhs);
 }
 
 // Arithmetic Operators
-template <typename T> int128_t operator+(const T & lhs, const int128_t & rhs)
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+operator+(const T & lhs, const int128_t & rhs)
 {   return rhs + lhs;
 }
 
@@ -1723,7 +1809,9 @@ template <typename T> T & operator+=(T & lhs, const int128_t & rhs)
 {   return lhs = static_cast <T> (rhs + lhs);
 }
 
-template <typename T> int128_t operator-(const T & lhs, const int128_t & rhs)
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+operator-(const T & lhs, const int128_t & rhs)
 {   return -(rhs - lhs);
 }
 
@@ -1739,7 +1827,9 @@ template <typename T> T & operator*=(T & lhs, const int128_t & rhs)
 {   return lhs = static_cast <T> (rhs * lhs);
 }
 
-template <typename T> int128_t operator/(const T & lhs, const int128_t & rhs)
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+operator/(const T & lhs, const int128_t & rhs)
 {   return int128_t(lhs) / rhs;
 }
 
@@ -1747,7 +1837,9 @@ template <typename T> T & operator/=(T & lhs, const int128_t & rhs)
 {   return lhs = static_cast <T> (int128_t(lhs) / rhs);
 }
 
-template <typename T> int128_t operator%(const T & lhs, const int128_t & rhs)
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+operator%(const T & lhs, const int128_t & rhs)
 {   return int128_t(lhs) % rhs;
 }
 
@@ -1857,8 +1949,7 @@ inline int128_t int128_t::operator-() const
     return ~*this + int128_1;
 }
 
-inline std::ostream & operator<<(std::ostream & stream,
-                                 const int128_t & rhs)
+inline std::ostream & operator<<(std::ostream & stream, const int128_t & rhs)
 {   if (stream.flags() & stream.oct)
     {   stream << rhs.str(8);
     }

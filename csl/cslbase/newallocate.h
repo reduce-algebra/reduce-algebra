@@ -43,34 +43,6 @@
 #ifndef header_newallocate_h
 #define header_newallocate_h 1
 
-// There are some places in this file and also in newallocate.cpp and
-// newcslgc.cpp where I write   xxx.load()  to be explicit that I want
-// the underlying object of type T wrapped within a std::atomic<T>. In
-// quite a few of those I would have hoped to be able to write merely xxx,
-// and let C++ type deduction conclude what was intended, and with some
-// versions of clang and gcc that seemed to happen, but with other
-// compilers (well it happens that gcc 8.3.0 on a 32-bit ARM is the one
-// I have noticed most) there were reports of ambiguity or worse. Being
-// explicit only makes the code a bit more verbose so it is not that bad,
-// but what it reveals is that I do not really understand that C++ type
-// system well enough so there may be more marginal cases lurking.
-// On concrete instance was
-//    std::atomic<bool> flag(true);   std::cout << flag;
-// where I at least appeared to need flag.load(), but I am having problems
-// constructing a small example that gives the same trouble that the full
-// version of the code seemed to. Again that alerts me to limits in my
-// C++ skill-set.
-// On looking further I come to suspect that the problems may derive
-// from int128_t.h in the case that the 128-bit integer type is modelled
-// using a class, and then many operations and casts to and from that are
-// introduced often in template definitions that can probably specialise
-// to more things than are good for them, leading to reports of ambiguity
-// in apparently remote parts of the code!
-// So it would be very nice if somebody who undetstands these things
-// a bit better could look at int128_t.h and improve it to avoid it
-// introducing extra type ambiguities...
-
-
 #include "log.h"
 #include <csetjmp>
 
@@ -256,12 +228,12 @@ public:
     }
 // Because gdb is a little awkward to use with atomic fields I provide
 // some access functions here...
-    uintptr_t Flength() { return length.load(); }
-    uintptr_t FchunkFringe() { return chunkFringe.load(); }
-    size_t FisPinned() { return isPinned.load(); }
-    LispObject FpinnedObjects() { return pinnedObjects.load(); }
-    Chunk *FchunkPinChain() { return chunkPinChain.load(); }
-    Chunk *FpendingChunks() { return pendingChunks.load(); }
+    uintptr_t Flength() { return length; }
+    uintptr_t FchunkFringe() { return chunkFringe; }
+    size_t FisPinned() { return isPinned; }
+    LispObject FpinnedObjects() { return pinnedObjects; }
+    Chunk *FchunkPinChain() { return chunkPinChain; }
+    Chunk *FpendingChunks() { return pendingChunks; }
 
 };
 
@@ -323,20 +295,20 @@ public:
 // The data[] field really extends up to make the overall size of
 // the page be pageSize.
 
-    Page     *Fchain()         { return chain.load(); }
-    uintptr_t Ffringe()        { return fringe.load(); }                 
-    uintptr_t Flimit()         { return limit.load(); }
-    bool      FhasPinned()     { return hasPinned.load(); }
-    Page     *FpagePinChain()  { return pagePinChain.load(); }
-    Chunk    *FchunkPinChain() { return chunkPinChain.load(); }
-    size_t    FchunkCount()    { return chunkCount.load(); }
-    Chunk    *FchunkMap(int n) { return chunkMap[n].load(); }
-    uintptr_t FdirtyMap(int n) { return dirtyMap[n].load(); }
-    uintptr_t FdirtyMap1(int n){ return dirtyMap1[n].load(); }
-    uintptr_t FdirtyMap2(int n){ return dirtyMap2[n].load(); }
-    bool      FhasDirty()      { return hasDirty.load(); } 
-    Page     *FdirtyPageChain(){ return dirtyPageChain.load(); }
-    Page     *FdirtyPageChainBack(){ return dirtyPageChainBack.load(); }
+    Page     *Fchain()         { return chain; }
+    uintptr_t Ffringe()        { return fringe; }                 
+    uintptr_t Flimit()         { return limit; }
+    bool      FhasPinned()     { return hasPinned; }
+    Page     *FpagePinChain()  { return pagePinChain; }
+    Chunk    *FchunkPinChain() { return chunkPinChain; }
+    size_t    FchunkCount()    { return chunkCount; }
+    Chunk    *FchunkMap(int n) { return chunkMap[n]; }
+    uintptr_t FdirtyMap(int n) { return dirtyMap[n]; }
+    uintptr_t FdirtyMap1(int n){ return dirtyMap1[n]; }
+    uintptr_t FdirtyMap2(int n){ return dirtyMap2[n]; }
+    bool      FhasDirty()      { return hasDirty; } 
+    Page     *FdirtyPageChain(){ return dirtyPageChain; }
+    Page     *FdirtyPageChainBack(){ return dirtyPageChainBack; }
 };
 
 extern Page *freePages;         // Free and clear of pinning.
@@ -372,7 +344,7 @@ extern Page *stablePage;        // Where minor GC allocated stuff. Has
 extern atomic<Page *> dirtyPages;
 extern Page *pagesPinChain;
 
-inline Page *FdirtyPages() { return dirtyPages.load(); }
+inline Page *FdirtyPages() { return dirtyPages; }
 
 inline void write_barrier(LispObject *p, LispObject q)
 {   *p = q;
@@ -508,7 +480,7 @@ typedef void processDirtyCell(atomic<LispObject> *a);
 extern int nlz(uint64_t a);
 
 inline void scanDirtyCells(processDirtyCell fn)
-{   for (Page *p=dirtyPages; p!=nullptr; p=p->dirtyPageChain.load())
+{   for (Page *p=dirtyPages; p!=nullptr; p=p->dirtyPageChain)
     {   if (!p->hasDirty) continue;
         for (size_t i2=0; i2<sizeof(p->dirtyMap2)/sizeof(p->dirtyMap2[0]);
              i2++)
@@ -543,7 +515,7 @@ inline void scanDirtyCells(processDirtyCell fn)
 // hence needs protecting if there is an up-reference to it.
 
 inline void clearAllDirtyBits()
-{   for (Page *p=dirtyPages; p!=nullptr; p=p->dirtyPageChain.load())
+{   for (Page *p=dirtyPages; p!=nullptr; p=p->dirtyPageChain)
     {   if (!p->hasDirty) continue;
         p->hasDirty = false;
 
@@ -694,11 +666,11 @@ inline const char *Addr(uintptr_t p)
 }
 
 inline const char *Addr(atomic<LispObject> &p)
-{   return Addr(p.load());
+{   return Addr(static_cast<LispObject>(p));
 }
 
 template <typename T>
-inline const char *Addr(T p)
+inline const char *Addr(T &p)
 {   return Addr((uintptr_t)p);
 }
 
@@ -790,8 +762,8 @@ extern size_t                 gIncrement[maxThreads];
 extern atomic<uintptr_t>      gFringe;
 extern uintptr_t              gLimit;
 
-inline uintptr_t Flimit(int n) { return limit[n].load(); }
-inline uintptr_t FgFringe()    { return gFringe.load(); }
+inline uintptr_t Flimit(int n) { return limit[n]; }
+inline uintptr_t FgFringe()    { return gFringe; }
 
 
 // With the scheme I have here when an 8 Mbyte page gets full all of it
@@ -1036,7 +1008,7 @@ inline LispObject get_n_bytes(size_t n)
     uintptr_t r = fringe;
     uintptr_t fr1 = r + n;
     fringe = fr1;
-    uintptr_t w = limit[thr].load();
+    uintptr_t w = limit[thr];
 // The simple case completes here. If each chunk is around 16K then only 1
 // CONS in 1000 or so will take the longer route. I rather hope that the
 // common case will be lifted to be rendered in-line
@@ -1121,7 +1093,7 @@ inline void dump_gets()
 inline void poll()
 {   uintptr_t w;
     uintptr_t thr = threadId;
-    if (fringe > (w = limit[thr].load()))
+    if (fringe > (w = limit[thr]))
     {
 // Here I need to set everything up just as if I had been making an
 // allocation request for zero bytes.
@@ -1242,7 +1214,7 @@ extern std::condition_variable cv_for_gc_complete;
 // would increase the risk of confusion.
 
 extern atomic<uint32_t> activeThreads;
-inline uint32_t FactiveThreads() { return activeThreads.load(); }
+inline uint32_t FactiveThreads() { return activeThreads; }
 
 //  0x00 : total_threads : lisp_threads : still_busy_threads
 //
@@ -1327,10 +1299,8 @@ inline void restoreGfringe()
 // Note that I write this as "gFringe = gFringe - inc;" rather than as
 // "gFringe -= inc;" because there is a risk that the latter might compile
 // into an atomic decrement - and that is not needed here and may be a lot
-// more expensive than the load and store of the alternative. I further put
-// in an explicit ".load()" because without that the subtraction leads to
-// an "ambigious overload" moan at least on 32-bit ARM.
-    gFringe = gFringe.load() - inc;
+// more expensive than the load and store of the alternative.
+    gFringe = gFringe - inc;
 }
 
 inline void fitsWithinExistingGap(unsigned int i, size_t n, size_t gap)
@@ -1363,28 +1333,30 @@ inline void regionInPageIsFull(unsigned int i, size_t n,
 //
 // Take care because gFringe can point at the start of the next consecutive
 // Page.
-    uintptr_t pageEnd = ((gFringe.load()-1) & -pageSize) + pageSize;
+    uintptr_t pageEnd = ((gFringe-1) & -pageSize) + pageSize;
 //    cout << "At " << __WHERE__ << " pageEnd = " << Addr(pageEnd) << endl;
     while (gLimit != pageEnd)
     {   gFringe = gLimit + reinterpret_cast<Chunk *>(gLimit)->length;
         gLimit = reinterpret_cast<uintptr_t>(
-            reinterpret_cast<Chunk *>(gLimit)->chunkPinChain.load());
+            static_cast<Chunk *>(
+                reinterpret_cast<Chunk *>(gLimit)->chunkPinChain));
 //        cout << "At " << __WHERE__ << " gLimit = " << Addr(gLimit) << endl;
         if (gLimit == 0) gLimit = pageEnd;
 //        cout << "At " << __WHERE__ << " gLimit = " << Addr(gLimit) << endl;
         size_t gap1 = gLimit - gFringe;
         myChunkBase[i]->chunkFringe = fringeBis[i];
         if (n+targetChunkSize < gap1)
-        {   Chunk *c = reinterpret_cast<Chunk *>(gFringe.load());
+        {   Chunk *c = reinterpret_cast<Chunk *>(
+                           static_cast<uintptr_t>(gFringe));
             c->length = n + targetChunkSize;
             c->isPinned = 0;
             size_t chunkNo = currentPage->chunkCount.fetch_add(1);
             currentPage->chunkMap[chunkNo].store(c);
             myChunkBase[i] = c;
-            result[i] = gFringe.load() + TAG_VECTOR;
+            result[i] = gFringe + TAG_VECTOR;
             request[i] = 0;
             setHeaderWord(result[i]-TAG_VECTOR, n, TYPE_VEC32);
-            fringeBis[i] = gFringe.load() + n;
+            fringeBis[i] = gFringe + n;
 //            cout << "At " << __WHERE__ << "fringeBis[" << i
 //                 << " = " << Addr(fringeBis[i]) << endl;
             gFringe = limitBis[i] = limit[i] = fringeBis[i] + targetChunkSize;
@@ -1429,7 +1401,7 @@ inline void grabNewCurrentPage(bool preferMostlyFree)
     busyPagesCount++;
 // I require that the fringe and limit values stored with a page refer to
 // the first available block allowing for any pinned chunks within the page.
-    gFringe = currentPage->fringe.load();
+    gFringe = static_cast<uintptr_t>(currentPage->fringe);
     gLimit = currentPage->limit;
 //  cout << "At " << __WHERE__ << " gFringe = " << Addr(gFringe) << endl;
 //  cout << "At " << __WHERE__ << " gLimit = " << Addr(gLimit) << endl;
@@ -1660,7 +1632,7 @@ public:
 // borrowed page it can go back on freePages or mostlyFreePages based on
 // a test to see if it has any Chunks in it.
         while (static_cast<Page *>(borrowPages) != nullptr)
-        {   if (static_cast<Page *>(borrowPages)->chunkCount.load() != 0)
+        {   if (static_cast<Page *>(borrowPages)->chunkCount != 0)
             {   Page *w = static_cast<Page *>(borrowPages)->chain;
                 static_cast<Page *>(borrowPages)->chain = mostlyFreePages;
                 mostlyFreePages = borrowPages;
@@ -1699,9 +1671,9 @@ INLINE_VAR const std::chrono::seconds cvTimeout(1);
 inline void testLayout()
 {
     uintptr_t r = fringe;
-    uintptr_t w = limit[threadId].load();
+    uintptr_t w = limit[threadId];
     my_assert(w==0 || r <= w, [] { cout << "fringe > limit\n"; });
-    my_assert(gFringe.load() <= gLimit, [] {cout << "gFringe > gLimit\n";});
+    my_assert(gFringe <= gLimit, [] {cout << "gFringe > gLimit\n";});
 }
 
 #endif // DEBUG
