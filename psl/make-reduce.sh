@@ -44,11 +44,11 @@ case "guess:$guess" in
 	MACHINE=macintel64
 	;;
 
-  x86_64-unknown-freebsd8.* )
+  x86_64-unknown-freebsd* )
 	MACHINE=freeBSD64
 	;;
 
-  i386-unknown-freebsd8.* )
+  i386-unknown-freebsd* | i586-unknown-freebsd* )
 	MACHINE=freeBSD
 	;;
 

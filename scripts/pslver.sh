@@ -130,7 +130,7 @@ EOF
 x86_64*freebsd*|amd64*freebsd*)
   echo "freeBSD64"
   ;;
-i386*freebsd*)
+i386*freebsd*|i586*freebsd*)
   echo "freeBSD"
   ;;
 *)

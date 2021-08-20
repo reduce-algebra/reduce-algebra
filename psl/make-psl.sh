@@ -31,7 +31,7 @@ case "guess:$guess" in
 	MACHINE=freeBSD64
 	;;
 
-  guess:i386-unknown-freebsd* )
+  guess:i386-unknown-freebsd* | guess:i586-unknown-freebsd*)
 	MACHINE=freeBSD
 	;;
 
