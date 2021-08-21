@@ -9,15 +9,6 @@
 
 # The flags are mostly handled by being passed down to the test1.sh script
 
-if test $# = 1; then
-    cores="$1"
-    csl="yes"
-    psl="yes"
-else
-    echo "scripts/ptestall.sh number_of_cores"
-    exit 1
-fi
-
 # I want this script to be one I can launch from anywhere, so
 # to access files etc I need to know where it lives.
 
@@ -27,32 +18,40 @@ here=`cd "$here"; pwd -P`
 here=`dirname "$here"`
 export here
 
-# if test $# = 0
-# then
-#   csl="yes"
-#   psl="yes"
-# else
-#   if test $# = 1
-#   then
-#     case $1 in
-#     --csl)
-#       csl="yes"
-#       psl="no"
-#       ;;
-#     --psl)
-#       csl="no"
-#       psl="yes"
-#       ;;
-#     *)
-#       echo "scripts/testall.sh [--csl or --psl]"
-#       exit 1
-#       ;;
-#     esac
-#   else
-#     echo "scripts/testall.sh [--csl or --psl]"
-#     exit 1
-#   fi
-# fi
+if test $# = 0; then
+  echo "scripts/testall.sh cores [--csl or --psl]"
+  exit 1
+fi
+
+cores="$1"
+shift
+
+if test $# = 0
+then
+  csl="yes"
+  psl="yes"
+else
+  if test $# = 1
+  then
+    case $1 in
+    --csl)
+      csl="yes"
+      psl="no"
+      ;;
+    --psl)
+      csl="no"
+      psl="yes"
+      ;;
+    *)
+      echo "scripts/testall.sh cores [--csl or --psl]"
+      exit 1
+      ;;
+    esac
+  else
+    echo "scripts/testall.sh cores [--csl or --psl]"
+    exit 1
+  fi
+fi
 
 
 #
@@ -70,12 +69,12 @@ packages="smt ofsf ibalp pasf redlog rltools acfsf qqe_ofsf mri talp cgb"
 
 function runtest() {
 #    echo "Test package $1"
-    $here/test/ptest1.sh $1
+    $here/test/ptest1.sh $*
 }
 
 export -f runtest
 
-parallel -j$cores runtest {} ::: $packages
+parallel -j$cores runtest $* {} ::: $packages
 
 # for p1 in $here/packages/regressions/*.tst
 # do

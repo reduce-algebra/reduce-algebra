@@ -15,47 +15,46 @@ here=`dirname "$here"`
 here=`cd "$here"; cd ../..; pwd -P`
 here=`dirname "$here"`
 
-keep="no"
-
 csl="yes"
 psl="yes"
-case $1 in
---csl)
-  csl="yes"
-  psl="no"
-  shift
-  ;;
---psl)
-  csl="no"
-  psl="yes"
-  shift
-  ;;
---keep)
-  keep="yes"
-  shift
-  ;;
-*)
-  ;;
-esac
-case $1 in
---csl)
-  csl="yes"
-  psl="no"
-  shift
-  ;;
---psl)
-  csl="no"
-  psl="yes"
-  shift
-  ;;
---keep)
-  keep="yes"
-  shift
-  ;;
-*)
-  ;;
-esac
+keep="no"
 
+case $1 in
+--csl)
+  csl="yes"
+  psl="no"
+  shift
+  ;;
+--psl)
+  csl="no"
+  psl="yes"
+  shift
+  ;;
+--keep)
+  keep="yes"
+  shift
+  ;;
+*)
+  ;;
+esac
+case $1 in
+--csl)
+  csl="yes"
+  psl="no"
+  shift
+  ;;
+--psl)
+  csl="no"
+  psl="yes"
+  shift
+  ;;
+--keep)
+  keep="yes"
+  shift
+  ;;
+*)
+  ;;
+esac
 
 loader=""
 
@@ -156,12 +155,12 @@ fi
  
 ulimit -c 60
 
+howlong=$p.howlong.tmp
+
 if test "$csl" = "yes"
 then
 
 mkdir -p csl-times
-
-howlong=$p.howlong.tmp
 
 $timecmd sh -c "$here/bin/redcsl -w > csl-times/$p.rlg.tmp" <<XXX 2>$howlong
 off int;
@@ -250,7 +249,7 @@ sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
      >psl-times/$p.rlg
 diff -B -w psl-times/$p.rlg.orig psl-times/$p.rlg >psl-times/$p.rlg.diff
 if test -s psl-times/$p.rlg.diff
-  then echo "diff is in psl-times/$p.rlg.diff"
+  then printf "diff is in psl-times/$p.rlg.diff"
   else printf "OK " ; rm -f psl-times/$p.rlg.diff psl-times/$p.rlg.orig
 fi
 echo "Tested on $mc PSL" > psl-times/$p.time
