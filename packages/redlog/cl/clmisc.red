@@ -48,14 +48,13 @@ procedure cl_apply2ats1(f,client,clpl);
       op := rl_op f;
       if rl_tvalp op then return f;
       if rl_quap op then
-    	 return rl_mkq(op,rl_var f,cl_apply2ats1(
-      	    rl_mat f,client,clpl));
+         return rl_mkq(op,rl_var f,cl_apply2ats1(rl_mat f,client,clpl));
       if rl_bquap op then
-    	 return rl_mkbq(op,rl_var f,cl_apply2ats1(rl_b f,client,clpl),
-	    cl_apply2ats1(rl_mat f,client,clpl));
+         return rl_mkbq(op,rl_var f,cl_apply2ats1(rl_b f,client,clpl),
+            cl_apply2ats1(rl_mat f,client,clpl));
       if rl_boolp op then
-    	 return rl_mkn(op,for each subf in rl_argn f collect
-	    cl_apply2ats1(subf,client,clpl));
+         return rl_mkn(op,for each subf in rl_argn f collect
+            cl_apply2ats1(subf,client,clpl));
       % [f] is an atomic formula.
       return apply(client,f . clpl)
    end;
@@ -76,11 +75,11 @@ procedure cl_apply2ats2(f,client,clpl,sop);
       op := rl_op f;
       if rl_tvalp op then return f;
       if rl_quap op then
-    	 return rl_mkq(op,rl_var f,cl_apply2ats2(
-      	    rl_mat f,client,clpl,op));
+         return rl_mkq(op,rl_var f,cl_apply2ats2(
+            rl_mat f,client,clpl,op));
       if rl_boolp op then
-    	 return rl_mkn(op,for each subf in rl_argn f collect
-	    cl_apply2ats2(subf,client,clpl,op));
+         return rl_mkn(op,for each subf in rl_argn f collect
+            cl_apply2ats2(subf,client,clpl,op));
       % [f] is an atomic formula.
       return apply(client,f . sop . clpl)
    end;
@@ -91,16 +90,15 @@ procedure cl_atnum(f);
    begin scalar op,w;
       op := rl_op f;
       if rl_boolp op then
- 	 return for each subf in rl_argn f sum
-    	    cl_atnum(subf);
+         return for each subf in rl_argn f sum
+            cl_atnum(subf);
       if rl_quap op then
-    	 return cl_atnum(rl_mat f);
+         return cl_atnum(rl_mat f);
       if rl_bquap op then
-	 return (cl_atnum(rl_mat f) + cl_atnum(rl_b f));
+         return (cl_atnum(rl_mat f) + cl_atnum(rl_b f));
       if rl_tvalp op then return 0;
       % [f] is an atomic formula.
-      return 1
-   end;
+      return 1   end;
 
 procedure cl_qnum(f);
    % Common logic number of quantifiers. [f] is a formula. Returns the
@@ -108,12 +106,12 @@ procedure cl_qnum(f);
    begin scalar op;
       op := rl_op f;
       if rl_boolp op then
- 	 return for each subf in rl_argn f sum
-    	    cl_qnum subf;
+         return for each subf in rl_argn f sum
+            cl_qnum subf;
       if rl_quap op then
-    	 return 1 + cl_qnum rl_mat f;
-       if rl_bquap op then
-	 return cl_qnum rl_mat f;
+         return 1 + cl_qnum rl_mat f;
+      if rl_bquap op then
+         return cl_qnum rl_mat f;
       if rl_tvalp op then return 0;
       % [f] is an atomic formula.
       return 0
@@ -125,15 +123,15 @@ procedure cl_depth(f);
    % subformulas.
    begin scalar w;
       if rl_basbp rl_op f then
-      	 return 1 + lto_max for each sf in rl_argn f collect cl_depth sf;
+         return 1 + lto_max for each sf in rl_argn f collect cl_depth sf;
       if rl_quap rl_op f or rl_bquap rl_op f then
-   	 return 1 + cl_depth rl_mat f;
+         return 1 + cl_depth rl_mat f;
       if rl_op f eq 'not then
-   	 return 1 + cl_depth rl_arg1 f;
+         return 1 + cl_depth rl_arg1 f;
       if rl_extbp rl_op f then
-   	 return 1 + max(cl_depth rl_arg2l f,cl_depth rl_arg2r f);
+         return 1 + max(cl_depth rl_arg2l f,cl_depth rl_arg2r f);
       if rl_tvalp f or cl_atfp f then
-   	 return 0;
+         return 0;
       rederr {"cl_depth: unknown operator ",rl_op f}
    end;
 
@@ -142,8 +140,8 @@ procedure cl_prenexp(f);
    begin scalar op;
       op := rl_op f;
       while op eq 'ex or op eq 'all do <<
-	 f := rl_mat f;
-	 op := rl_op f;
+         f := rl_mat f;
+         op := rl_op f;
       >>;
       return cl_qnum f = 0
    end;
@@ -161,16 +159,16 @@ procedure cl_f2ml(f,client);
    begin scalar op;
       op := rl_op f;
       if rl_tvalp f then
- 	 return nil;
+         return nil;
       if rl_boolp op then
- 	 return lto_almerge(
-	    for each subf in rl_argn f collect cl_f2ml(subf,client),'plus2);
+         return lto_almerge(
+            for each subf in rl_argn f collect cl_f2ml(subf,client),'plus2);
       if rl_quap op then
-    	 return cl_f2ml(rl_mat f,client);
+         return cl_f2ml(rl_mat f,client);
       % /LASARUK
       if rl_bquap op then
-	 return lto_almerge({cl_f2ml(rl_mat f,client),cl_f2ml(rl_b f,client)},
-	    'plus2);
+         return lto_almerge({cl_f2ml(rl_mat f,client),cl_f2ml(rl_b f,client)},
+            'plus2);
       % end /LASARUK
       % [f] is an atomic formula.
       return apply(client,{f})
@@ -252,16 +250,16 @@ procedure cl_ifacdegl(f);
       fvarl . bvarl := cl_varl1 f;
       facl := cl_ifacl1 f;
       for each v in fvarl do <<
-	 d := 0;
-	 for each p in facl do
-	    d := max(d, degreef(p, v));
-	 fal := (v . d) . fal
+         d := 0;
+         for each p in facl do
+            d := max(d, degreef(p, v));
+         fal := (v . d) . fal
       >>;
       for each v in bvarl do <<
-	 d := 0;
-	 for each p in facl do
-	    d := max(d, degreef(p, v));
-	 bal := (v . d) . bal
+         d := 0;
+         for each p in facl do
+            d := max(d, degreef(p, v));
+         bal := (v . d) . bal
       >>;
       fal := sort(fal, function(lambda(x, y); rl_tordp(car x, car y)));
       bal := sort(bal, function(lambda(x, y); rl_tordp(car x, car y)));
@@ -283,11 +281,11 @@ procedure cl_closure(q,f,nl);
       freevarl := reversip car cl_varl f;
       % Remove the variables of the negative list.
       for each v in nl do
- 	 freevarl := lto_delqip(v,freevarl);
+         freevarl := lto_delqip(v,freevarl);
       % [q]-quantify with the remaining variables.
       result := f;
       for each x in freevarl do
- 	 result := rl_mkq(q,x,result);
+         result := rl_mkq(q,x,result);
       return result
    end;
 
@@ -331,18 +329,18 @@ put('vsub, 'psopfn, 'cl_vsubeval);
 procedure cl_vsubeval(u);
    begin scalar al, f;
       if null u then
-	 rederr "no arguments in vsub";
+         rederr "no arguments in vsub";
       u := reverse u;
       f := rl_simp pop u;
       if null u then
-	 return rl_mk!*fof f;
+         return rl_mk!*fof f;
       u := reversip u;
       if null cdr u and eqcar(car u, 'list) then
-	 u := cdr car u;
+         u := cdr car u;
       al := for each eqn in u collect <<
-	 if not eqcar(eqn, 'equal) then
-	    rederr {eqn, "invalid as equation in vsub"};
-	 cadr eqn . caddr eqn
+         if not eqcar(eqn, 'equal) then
+            rederr {eqn, "invalid as equation in vsub"};
+         cadr eqn . caddr eqn
       >>;
       rl_vsubalchk al;
       return rl_mk!*fof cl_vsubfof(al, f)
@@ -351,7 +349,7 @@ procedure cl_vsubeval(u);
 asserted procedure cl_vsubfof(subl: Alist, f: Formula): Formula;
    <<
       for each pr in subl do
-      	 f := cl_vsubfof1(car pr, cdr pr, f);
+         f := cl_vsubfof1(car pr, cdr pr, f);
       f
    >>;
 
@@ -359,16 +357,16 @@ asserted procedure cl_vsubfof1(v: Kernel, u: List, f: Formula): Formula;
    begin scalar op;
       op := rl_op f;
       if rl_tvalp op then
-      	 return f;
+         return f;
       if rl_quap op then
-	 return if rl_var f eq v then
- 	    f
- 	 else
- 	    rl_mkq(op, rl_var f, cl_vsubfof1(v, u, rl_mat f));
+         return if rl_var f eq v then
+            f
+         else
+            rl_mkq(op, rl_var f, cl_vsubfof1(v, u, rl_mat f));
       if rl_bquap op then
-	 rederr "cl_vsubfof1: bounded quantifiers are not supported yet";
+         rederr "cl_vsubfof1: bounded quantifiers are not supported yet";
       if rl_boolp op then
- 	 return rl_mkn(op, for each x in rl_argn f collect cl_vsubfof1(v, u, x));
+         return rl_mkn(op, for each x in rl_argn f collect cl_vsubfof1(v, u, x));
       % [f] is atomic.
       return rl_vsubat(v, u, f)
    end;
@@ -386,9 +384,9 @@ procedure cl_subfof(al,f);
    begin scalar asgal,w,allvl;
       rl_subalchk al;
       for each x in al do <<
-	 w := rl_eqnrhskernels x;
-	 asgal := lto_alunion {{car x . w},asgal};
-	 allvl := car x . append(w,allvl)
+         w := rl_eqnrhskernels x;
+         asgal := lto_alunion {{car x . w},asgal};
+         allvl := car x . append(w,allvl)
       >>;
       w := cl_varl1 f;
       allvl := lto_nconcn {allvl,car w,cdr w};
@@ -406,38 +404,38 @@ procedure cl_subfof1(al,f,asgal,allvl);
    begin scalar op,v,newv,m,b;
       op := rl_op f;
       if rl_tvalp op then
-      	 return f;
+         return f;
       if rl_quap op then <<
-	 v := rl_var f;
-	 m := rl_mat f;
-	 al := for each x in al join if not eqcar(x,v) then {x};
-	 asgal := for each x in asgal join if not eqcar(x,v) then {x};
-	 newv := cl_newv(v,m,asgal,allvl);
-	 if newv neq v then <<
-	    allvl := newv . allvl;
-	    m := cl_subvarsubstat(newv,v,m)
-	 >>;
-	 return rl_mkq(op,newv,cl_subfof1(al,m,asgal,allvl))
+         v := rl_var f;
+         m := rl_mat f;
+         al := for each x in al join if not eqcar(x,v) then {x};
+         asgal := for each x in asgal join if not eqcar(x,v) then {x};
+         newv := cl_newv(v,m,asgal,allvl);
+         if newv neq v then <<
+            allvl := newv . allvl;
+            m := cl_subvarsubstat(newv,v,m)
+         >>;
+         return rl_mkq(op,newv,cl_subfof1(al,m,asgal,allvl))
       >>;
       % LASARUK
       if rl_bquap op then <<
-	 v := rl_var f;
-	 m := rl_mat f;
-	 b := rl_b f;
-	 al := for each x in al join if not eqcar(x,v) then {x};
-	 asgal := for each x in asgal join if not eqcar(x,v) then {x};
-	 newv := cl_newv(v,m,asgal,allvl);
-	 if newv neq v then <<
-	    allvl := newv . allvl;
-	    m := cl_subvarsubstat(newv,v,m)
-	 >>;
-	 return rl_mkbq(op,newv,cl_subfof1(al,b,asgal,allvl),
-	    cl_subfof1(al,m,asgal,allvl))
+         v := rl_var f;
+         m := rl_mat f;
+         b := rl_b f;
+         al := for each x in al join if not eqcar(x,v) then {x};
+         asgal := for each x in asgal join if not eqcar(x,v) then {x};
+         newv := cl_newv(v,m,asgal,allvl);
+         if newv neq v then <<
+            allvl := newv . allvl;
+            m := cl_subvarsubstat(newv,v,m)
+         >>;
+         return rl_mkbq(op,newv,cl_subfof1(al,b,asgal,allvl),
+            cl_subfof1(al,m,asgal,allvl))
       >>;
       % LASARUK_END
       if rl_boolp op then
- 	 return rl_mkn(op,for each x in rl_argn f collect
- 	    cl_subfof1(al,x,asgal,allvl));
+         return rl_mkn(op,for each x in rl_argn f collect
+            cl_subfof1(al,x,asgal,allvl));
       % [f] is atomic.
       return rl_subat(al,f)
    end;
@@ -448,16 +446,16 @@ procedure cl_newv(v,m,asgal,allvl);
       newv := v;
       fvl := cl_subfvarl m;
       while fvl do <<
-	 a := car fvl;
-	 fvl := cdr fvl;
-	 if (w := atsoc(a,asgal)) and v memq w then <<
-	    % There is a substitution of [v] for a free variable.
-	    repeat <<
+         a := car fvl;
+         fvl := cdr fvl;
+         if (w := atsoc(a,asgal)) and v memq w then <<
+            % There is a substitution of [v] for a free variable.
+            repeat <<
                newv := mkid(v,n);
-	       n := n + 1
+               n := n + 1
             >> until not (newv memq allvl or get(v,'avalue));
-	    fvl := nil
-	 >>
+            fvl := nil
+         >>
       >>;
       return newv
    end;
@@ -465,16 +463,16 @@ procedure cl_newv(v,m,asgal,allvl);
 procedure cl_subvarsubstat(newv,oldv,f);
    begin scalar op;
       if rl_tvalp f then
-	 return f;
+         return f;
       op := rl_op f;
       if rl_quap op then
-	 if rl_var f eq oldv then
-	    return rl_mkq(op,newv,cl_subvarsubstat(newv,oldv,rl_mat f))
-	 else
-	    return rl_mkq(op,rl_var f,cl_subvarsubstat(newv,oldv,rl_mat f));
+         if rl_var f eq oldv then
+            return rl_mkq(op,newv,cl_subvarsubstat(newv,oldv,rl_mat f))
+         else
+            return rl_mkq(op,rl_var f,cl_subvarsubstat(newv,oldv,rl_mat f));
       if rl_boolp op then
-	 return rl_mkn(op,for each x in rl_argn f collect
- 	    cl_subvarsubstat(newv,oldv,x));
+         return rl_mkn(op,for each x in rl_argn f collect
+            cl_subvarsubstat(newv,oldv,x));
       return rl_varsubstat(f,newv,oldv)
    end;
 
@@ -485,11 +483,11 @@ procedure cl_subfvarl1(f,cbvl);
    begin scalar op;
       op := rl_op f;
       if rl_quap op then
-	 return cl_subfvarl1(rl_mat f,rl_var f . cbvl);
+         return cl_subfvarl1(rl_mat f,rl_var f . cbvl);
       if rl_boolp op then
-	 return for each x in rl_argn f join cl_subfvarl1(x,cbvl);
+         return for each x in rl_argn f join cl_subfvarl1(x,cbvl);
       if rl_tvalp op then
-	 return nil;
+         return nil;
       return for each x in rl_varlat f join if not (x memq cbvl) then {x}
    end;
 
@@ -534,7 +532,7 @@ asserted procedure cl_struct0(f: Formula, v: Id): DottedPair;
    begin scalar w; integer j;
       w := cl_terml(f);
       w := for each s in w collect
-	 (s . mkid(v,j := j+1));
+         (s . mkid(v,j := j+1));
       return cl_struct1(f,w) . for each pr in w collect cdr pr . car pr
    end;
 
@@ -553,7 +551,7 @@ procedure cl_ifstruct(f,v);
    begin scalar w; integer j;
       w := cl_ifacl(f);
       w := for each s in w collect
-	 (s . mkid(v,j := j+1));
+         (s . mkid(v,j := j+1));
       return cl_ifstruct1(f,w) . for each pr in w collect cdr pr . car pr
    end;
 
@@ -585,18 +583,18 @@ procedure cl_splt(f);
    begin scalar w,q,vl,qblkl,bvl,v;
       q := rl_op f;
       if not(q memq '(ex all)) then
-	 return {nil,f,nil};
+         return {nil,f,nil};
       while (w := rl_op f) memq '(ex all) do <<
-	 v := rl_var f;
-	 bvl := v . bvl;
-	 if w eq q then
-	    vl := v . vl
-	 else <<
-	    qblkl := (q . vl) . qblkl;
-	    q := w;
-	    vl := {v}
-	 >>;
-	 f := rl_mat f
+         v := rl_var f;
+         bvl := v . bvl;
+         if w eq q then
+            vl := v . vl
+         else <<
+            qblkl := (q . vl) . qblkl;
+            q := w;
+            vl := {v}
+         >>;
+         f := rl_mat f
       >>;
       qblkl := (q . vl) . qblkl;
       return {qblkl,f,bvl}
@@ -629,17 +627,17 @@ procedure cl_ex21(vl,f);
    begin scalar w,fvl,bvl,vl,ql,sl,eqs,res;
       fvl . bvl := rl_varl f;
       for each v in vl do <<
-	 w := v;
-	 repeat w := mkid(w,'!#) until not memq(w,fvl) and not memq(w,bvl);
-	 ql := w . ql;
-	 sl := (v . w) . sl;
-	 eqs := rl_mkequation(v,w) . eqs
+         w := v;
+         repeat w := mkid(w,'!#) until not memq(w,fvl) and not memq(w,bvl);
+         ql := w . ql;
+         sl := (v . w) . sl;
+         eqs := rl_mkequation(v,w) . eqs
       >>;
       ql := nconc(ql,reversip vl);
       eqs := rl_mk1('not,rl_smkn('and,reversip eqs));
       res := rl_mkn('and,{f,cl_subfof(sl,f),eqs});
       for each q in ql do
-	 res := rl_mkq('ex,q,res);
+         res := rl_mkq('ex,q,res);
       return res
    end;
 
@@ -653,18 +651,18 @@ procedure cl_replace1(f,sal);
    % occurrences of subformulas in [f] according to [sal].
    begin scalar w,op;
       if (w := assoc(f,sal)) then
-	 return cdr w;
+         return cdr w;
       op := rl_op f;
       if rl_tvalp op then
- 	 return f;
+         return f;
       if rl_quap op then
-    	 return rl_mkq(op,rl_var f,cl_replace(rl_mat f,sal));
+         return rl_mkq(op,rl_var f,cl_replace(rl_mat f,sal));
       if rl_bquap op then
-    	 return rl_mkbq(op,rl_var f,cl_replace(rl_b f,sal),
-	    cl_replace(rl_mat f,sal));
+         return rl_mkbq(op,rl_var f,cl_replace(rl_b f,sal),
+            cl_replace(rl_mat f,sal));
       if rl_boolp op then
-    	 return rl_mkn(op,for each subf in rl_argn f collect
-	    cl_replace(subf,sal));
+         return rl_mkn(op,for each subf in rl_argn f collect
+            cl_replace(subf,sal));
       % [f] is an atomic formula
       return f
    end;
@@ -678,17 +676,17 @@ procedure cl_divide(f);
    begin scalar ql,varll,m,op,q,varl,l,w;
       {ql,varll,m} := cl_split cl_pnf f;
       if not ql or cdr ql then
-	 return 'or . {f};
+         return 'or . {f};
       q := car ql;
       op := rl_op m;
       if not cl_qbopcompat(q,op) then
-	 return 'or . {f};
+         return 'or . {f};
       varl := car varll;
       l := for each subf in rl_argn m collect <<
-	 w := subf;
-	 for each v in varl do
-	    w := rl_mkq(q,v,subf);
-	 w
+         w := subf;
+         for each v in varl do
+            w := rl_mkq(q,v,subf);
+         w
       >>;
       return op . l
    end;
@@ -701,11 +699,11 @@ procedure cl_eval(f, subal, evalat);
    begin scalar op;
       op := rl_op f;
       if rl_tvalp op then
-	 return op;
+         return op;
       if op eq 'and then
-	 return cl_eval!-gand('and, rl_argn f, subal, evalat, 'true);
+         return cl_eval!-gand('and, rl_argn f, subal, evalat, 'true);
       if op eq 'or then
-	 return cl_eval!-gand('or, rl_argn f, subal, evalat, 'false);
+         return cl_eval!-gand('or, rl_argn f, subal, evalat, 'false);
       return apply(evalat, {f, subal})
    end;
 
@@ -713,7 +711,7 @@ procedure cl_eval!-gand(gand, argl, subal, evalat, gtrue);
    begin scalar res;
       res := gtrue;
       while res eq gtrue and argl do
-	 res := cl_eval(pop argl, subal, evalat);
+         res := cl_eval(pop argl, subal, evalat);
       return res
    end;
 
@@ -723,13 +721,13 @@ procedure cl_dfgPrint(f,fname);
    % Prefix print.
    <<
       if fname neq "" then
-      	 out fname;
+         out fname;
       prin2 "formula(";
       cl_dfgPrint1 f;
       prin2 ")";
       terpri();
       if fname neq "" then
-      	 shut fname
+         shut fname
    >>;
 
 procedure cl_dfgPrint1(f);
@@ -739,23 +737,23 @@ procedure cl_dfgPrint1(f);
       ql := reverse ql;
       vll := reverse vll;
       for each q in ql do <<
-	 vl := reverse pop vll;
-	 prin2 if q eq 'ex then "exists" else "forall";
-	 prin2 "(";
-	 cl_dfgPrintVl vl;
-	 prin2 ","
+         vl := reverse pop vll;
+         prin2 if q eq 'ex then "exists" else "forall";
+         prin2 "(";
+         cl_dfgPrintVl vl;
+         prin2 ","
       >>;
       cl_dfgPrintQff f;
       for each q in ql do
-	 prin2 ")"
+         prin2 ")"
    end;
 
 procedure cl_dfgPrintVl(vl);
    <<
       prin2 "[";
       for each rvl on vl do <<
-	 rl_dfgPrintV car rvl;
-	 if cdr rvl then prin2  ","
+         rl_dfgPrintV car rvl;
+         if cdr rvl then prin2  ","
       >>;
       prin2 "]"
    >>;
@@ -764,24 +762,24 @@ procedure cl_dfgPrintQff(f);
    begin scalar op,l,r;
       op := rl_op f;
       if op eq 'impl then
-	 cl_dfgPrintQff rl_mk2('or,rl_mk1('not,rl_arg2l f),rl_arg2r f)
+         cl_dfgPrintQff rl_mk2('or,rl_mk1('not,rl_arg2l f),rl_arg2r f)
       else if op eq 'repl then
-	 cl_dfgPrintQff rl_mk2('or,rl_arg2l f,rl_mk1('not,rl_arg2r f))
+         cl_dfgPrintQff rl_mk2('or,rl_arg2l f,rl_mk1('not,rl_arg2r f))
       else if op eq 'equiv then <<
-	 l := rl_arg2l f;
-	 r := rl_arg2r f;
-	 cl_dfgPrint1 rl_mkn('and,{rl_mk2('impl,l,r),rl_mk2('repl,l,r)})
+         l := rl_arg2l f;
+         r := rl_arg2r f;
+         cl_dfgPrint1 rl_mkn('and,{rl_mk2('impl,l,r),rl_mk2('repl,l,r)})
       >> else if op eq 'not then <<
-	 prin2 "not";
-	 prin2 "(";
-	 cl_dfgPrint1 rl_arg1 f;
-	 prin2 ")"
+         prin2 "not";
+         prin2 "(";
+         cl_dfgPrint1 rl_arg1 f;
+         prin2 ")"
       >> else if rl_tvalp op then
-	 prin2 f
+         prin2 f
       else if rl_junctp op then
-	 cl_dfgPrintJ(op,rl_argn f)
+         cl_dfgPrintJ(op,rl_argn f)
       else  % atomic formula
-	 rl_dfgPrintAt f
+         rl_dfgPrintAt f
    end;
 
 procedure cl_dfgPrintJ(op,argl);
@@ -791,9 +789,9 @@ procedure cl_dfgPrintJ(op,argl);
       prin2 op;
       prin2 "(";
       for each rargl on argl do <<
-      	 cl_dfgPrint1 car rargl;
-	 if cdr rargl then
-      	    prin2 ","
+         cl_dfgPrint1 car rargl;
+         if cdr rargl then
+            prin2 ","
       >>;
       prin2 ")"
    >>;
@@ -817,17 +815,17 @@ procedure cl_smt2Print(f, fname, linel);
    % strings.
    <<
       if fname neq "" then
-      	 out fname;
+         out fname;
       rl_smt2PrintLogic();
       if linel then
-      	 for each line in linel do
-	    prin2t line
+         for each line in linel do
+            prin2t line
       else
-      	 prin2t "(set-info :source | automatically generated by REDLOG |)";
+         prin2t "(set-info :source | automatically generated by REDLOG |)";
       cl_smt2Print1 f;
       prin2t "(check-sat)";
       if fname  neq "" then
-      	 shut fname
+         shut fname
    >>;
 
 procedure cl_smt2Print1(f);
@@ -835,11 +833,11 @@ procedure cl_smt2Print1(f);
    begin scalar vl;
       vl := cl_varl1 f;
       if car vl then
-	 rederr {"cl_smt2Print1: found free variables ", car vl};
+         rederr {"cl_smt2Print1: found free variables ", car vl};
       vl := cdr vl;
       f := cl_matrix cl_pnf f;
       for each v in vl do
-      	 ioto_prin2t {"(declare-const ", v, " Real)"};
+         ioto_prin2t {"(declare-const ", v, " Real)"};
       prin2 "(assert ";
       cl_smt2PrintQff f;
       prin2t ")"
@@ -849,18 +847,18 @@ procedure cl_smt2PrintQff(f);
    begin scalar op;
       op := rl_op f;
       if op eq 'impl then
-	 cl_smt2PrefixPrint("=>", rl_argn f)
+         cl_smt2PrefixPrint("=>", rl_argn f)
       else if op eq 'repl then
-	 cl_smt2PrefixPrint("=>", {rl_arg2r f, rl_arg2l f})
+         cl_smt2PrefixPrint("=>", {rl_arg2r f, rl_arg2l f})
       else if op eq 'equiv then
-	 cl_smt2PrintQff rl_mkn('and,
-	    {rl_mkn('impl, rl_argn f), rl_mkn('repl, rl_argn f)})
+         cl_smt2PrintQff rl_mkn('and,
+            {rl_mkn('impl, rl_argn f), rl_mkn('repl, rl_argn f)})
       else if op memq '(not and or) then
-	 cl_smt2PrefixPrint(op, rl_argn f)
+         cl_smt2PrefixPrint(op, rl_argn f)
       else if rl_tvalp op then
-	 prin2 f
+         prin2 f
       else
-	 rl_smt2PrintAt f
+         rl_smt2PrintAt f
    end;
 
 procedure cl_smt2PrefixPrint(op, argl);
@@ -869,9 +867,9 @@ procedure cl_smt2PrefixPrint(op, argl);
       prin2 op;
       prin2 " ";
       for each rargl on argl do <<
-	 cl_smt2PrintQff car rargl;
-	 if cdr rargl then
-	    prin2 " "
+         cl_smt2PrintQff car rargl;
+         if cdr rargl then
+            prin2 " "
       >>;
       prin2 ")"
    >>;
@@ -891,14 +889,14 @@ procedure cl_smt2Read(file);
       oldch := rds filech;
       form := smt_rread();
       while not cl_smt2ReadLastFormP form do <<
-	 w := errorset({'smt_processForm, mkquote form}, t, t);
-       	 if errorp w then <<
-	    rds oldch;
-	    close filech;
-      	    !*raise := raise;
- 	    rederr nil
- 	 >>;
-      	 form := smt_rread()
+         w := errorset({'smt_processForm, mkquote form}, t, t);
+         if errorp w then <<
+            rds oldch;
+            close filech;
+            !*raise := raise;
+            rederr nil
+         >>;
+         form := smt_rread()
       >>;
       rds oldch;
       close filech;
@@ -912,17 +910,17 @@ asserted procedure cl_smt2ReadLastFormP(form: Any): Boolean;
 %% procedure cl_smt2Read1();
 %%    begin scalar inp, w, phil;
 %%       while (inp := smt_rread()) neq '(check!-sat) do
-%%       	 if eqcar(inp, 'assert) then <<
-%% 	    w := cl_smt2ReadForm cadr inp;
-%% 	    phil := w . phil;
-%%       	 >>;
+%%               if eqcar(inp, 'assert) then <<
+%%          w := cl_smt2ReadForm cadr inp;
+%%          phil := w . phil;
+%%               >>;
 %%       return cl_ex(rl_smkn('and, phil),nil)
 %%    end;
 
 asserted procedure cl_nra2qf(infile: String, outfile: String);
    begin scalar w, fl, linel;
       w := cl_qe(cl_smt2Read infile, nil);
-%%       fl := if rl_op w eq 'and then rl_argn w else {w};
+      %%       fl := if rl_op w eq 'and then rl_argn w else {w};
       linel := {lto_sconcat {"(set-info :source | obtained from ", infile, " by Redlog Qe |)"}};
       cl_smt2Print(rl_ex(w, nil), outfile, linel)
    end;

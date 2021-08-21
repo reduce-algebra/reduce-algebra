@@ -665,13 +665,12 @@ rl_service {
    arg = {pos = 9, name = siexpla, type = Switch, doc = "always split atoms f*g=0 and f*g<>0"},
    arg = {pos = 10, name = siplugtheo, type = Switch, doc = "plug in values obtained from implicit theory"},
    arg = {pos = 11, name = sipd, type = Switch, doc = "degree parity decompositon"},
-   arg = {pos = 12, name = sisocx, type = Switch, doc = "sort non-atomic subformulas"},
-   arg = {pos = 13, name = sid, type = Switch, doc = "smart simplification of derivatives (domain 'padic' only)"},
+   arg = {pos = 12, name = sid, type = Switch, doc = "smart simplification of derivatives (domain 'padic' only)"},
    % xargs are ignored - PSL has a limit of 14 parameters
-   xarg = {pos = 14, name = siatadv, type = Switch},
-   xarg = {pos = 15, name = sitsqspl, type = Switch},
-   xarg = {pos = 16, name = siso, type = Switch},
-   xarg = {pos = 17, name = sism, type = Switch},
+   xarg = {pos = 13, name = siatadv, type = Switch},
+   xarg = {pos = 14, name = sitsqspl, type = Switch},
+   xarg = {pos = 15, name = siso, type = Switch},
+   xarg = {pos = 16, name = sism, type = Switch},
    returns = {type = Formula},
    mode = both};
 
