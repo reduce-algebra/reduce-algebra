@@ -1493,7 +1493,7 @@ void simple_prin1(LispObject x)
 }
 
 void simple_prin1(atomic<LispObject> &x)
-{   simple_prin1(x);
+{   simple_prin1(static_cast<LispObject>(x));
 }
 
 void simple_print(LispObject x)
