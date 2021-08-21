@@ -310,6 +310,9 @@
 /psl/bin/linux/pslcomp.old
 /psl/bin/linux/tmp.sed
 
+# /psl/dist/kernel/AMD64_ext/
+/psl/dist/kernel/AMD64_ext/tmp.sl
+
 # /psl/dist/kernel/win32/
 /psl/dist/kernel/win32/main.s.orig
 
