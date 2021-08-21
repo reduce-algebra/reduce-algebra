@@ -47,7 +47,7 @@ LispObject Lget_bps(LispObject env, LispObject n)
 
 void set_fns(LispObject a, no_args *f0, one_arg *f1, two_args *f2,
              three_args *f3, fourup_args *f4up)
-{   if ((qheader(a).load() & SYM_CODEPTR) != 0)
+{   if ((qheader(a) & SYM_CODEPTR) != 0)
     {   if (symbol_protect_flag)
         {   if (warn_about_protected_symbols)
             {   trace_printf("+++ WARNING: protected function ");
@@ -321,11 +321,11 @@ LispObject Lsymbol_argcount(LispObject env, LispObject a)
 // If any of the Common Lisp "magic words" appear I will give up.
         while (consp(r))
         {   if (!symbolp(car(r)) ||
-                car(r).load() == opt_key ||
-                car(r).load() == rest_key ||
-                car(r).load() == key_key ||
-                car(r).load() == aux_key ||
-                car(r).load() == allow_other_keys) return onevalue(nil);
+                car(r) == opt_key ||
+                car(r) == rest_key ||
+                car(r) == key_key ||
+                car(r) == aux_key ||
+                car(r) == allow_other_keys) return onevalue(nil);
             n++;
             r = cdr(r);
         }
@@ -441,7 +441,7 @@ LispObject Lsymbol_env(LispObject env, LispObject a)
 
 LispObject Lsymbol_set_env(LispObject env, LispObject a, LispObject b)
 {   if (!is_symbol(a)) return aerror1("symbol-set-env", a);
-    if ((qheader(a).load() & SYM_CODEPTR) != 0) return onevalue(nil);
+    if ((qheader(a) & SYM_CODEPTR) != 0) return onevalue(nil);
     setenv(a, b);
     return onevalue(b);
 }
@@ -529,10 +529,10 @@ static LispObject deleqip(LispObject a, LispObject l)
 // occurs at most once. It overwrites the list l in the process.
 {   LispObject w, r;
     if (l == nil) return nil;
-    if (car(l).load() == a) return cdr(l);
+    if (car(l) == a) return cdr(l);
     r = l;
     while (w = l, (l = cdr(l)) != nil)
-    {   if (car(l).load() == a)
+    {   if (car(l) == a)
         {   write_barrier(cdraddr(w), cdr(l));
             return r;
         }
@@ -608,7 +608,7 @@ LispObject Lsymbol_set_definition(LispObject env,
 {   if (!is_symbol(a) ||
 // Something flagged with the CODEPTR bit is a gensym manufactured to
 // stand for a compiled-code object. It should NOT be reset!
-        (qheader(a).load() & (SYM_SPECIAL_FORM | SYM_CODEPTR)) != 0)
+        (qheader(a) & (SYM_SPECIAL_FORM | SYM_CODEPTR)) != 0)
         return aerror1("symbol-set-definition", a);
     set_fns(a, undefined_0, undefined_1,
                undefined_2, undefined_3,
@@ -621,11 +621,11 @@ LispObject Lsymbol_set_definition(LispObject env,
 // had to be a codepointer object. I will be kind (?) and permit the NAME
 // of a function too.  However for the second arg to be a macro or a
 // special form would still be a calamity.
-//      if ((qheader(b).load() & SYM_CODEPTR) == 0)
+//      if ((qheader(b) & SYM_CODEPTR) == 0)
 //          return aerror1("symbol-set-definition", b);
-        if ((qheader(b).load() & (SYM_SPECIAL_FORM | SYM_MACRO)) != 0)
+        if ((qheader(b) & (SYM_SPECIAL_FORM | SYM_MACRO)) != 0)
             return aerror1("symbol-set-definition", b);
-        setheader(a, qheader(a).load() & ~SYM_MACRO);
+        setheader(a, qheader(a) & ~SYM_MACRO);
         {   set_fns(a, qfn0(b), qfn1(b), qfn2(b), qfn3(b), qfn4up(b));
             setenv(a, qenv(b));
         }
@@ -674,7 +674,7 @@ LispObject Lsymbol_set_definition(LispObject env,
         }
         else
         {   if (nargs > 4) nargs = 4;
-            setheader(a, qheader(a).load() & ~SYM_MACRO);
+            setheader(a, qheader(a) & ~SYM_MACRO);
             switch (nargs)
             {   case 0:   set_fns(a, bytecoded_0, G1W0, G2W0, G3W0, G4W0);
                     break;
@@ -691,15 +691,15 @@ LispObject Lsymbol_set_definition(LispObject env,
         }
         setenv(a, cdr(b));
     }
-    else if (car(b).load() == lambda)
+    else if (car(b) == lambda)
     {   LispObject bvl = car(cdr(b));
         int nargs = 0;
         while (consp(bvl)) nargs++, bvl = cdr(bvl);
-        setheader(a, qheader(a).load() & ~SYM_MACRO);
+        setheader(a, qheader(a) & ~SYM_MACRO);
         set_fns(a, interpreted_0, interpreted_1, interpreted_2,
                    interpreted_3, interpreted_4up);
         setenv(a, cdr(b));
-        if (qvalue(comp_symbol).load() != nil &&
+        if (qvalue(comp_symbol) != nil &&
             qfn1(compiler_symbol) != undefined_1)
         {   Save save(a);
             LispObject a1 = ncons(a);
@@ -709,11 +709,11 @@ LispObject Lsymbol_set_definition(LispObject env,
             save.restore(a);
         }
     }
-    else if (car(b).load() == funarg)
+    else if (car(b) == funarg)
     {   LispObject bvl = car(cdr(b));
         int nargs = 0;
         while (consp(bvl)) nargs++, bvl = cdr(bvl);
-        setheader(a, qheader(a).load() & ~SYM_MACRO);
+        setheader(a, qheader(a) & ~SYM_MACRO);
         set_fns(a, funarged_0, funarged_1, funarged_2, funarged_3,
                 funarged_4up);
         setenv(a, cdr(b));
@@ -746,14 +746,14 @@ LispObject Lgetd(LispObject env, LispObject a)
 LispObject Lremd(LispObject env, LispObject a)
 {   LispObject res;
     if (!is_symbol(a) ||
-        (qheader(a).load() & SYM_SPECIAL_FORM) != 0)
+        (qheader(a) & SYM_SPECIAL_FORM) != 0)
         return aerror1("remd", a);
-    if ((qheader(a).load() & SYM_CODEPTR) != 0) return onevalue(nil);
+    if ((qheader(a) & SYM_CODEPTR) != 0) return onevalue(nil);
     res = Lgetd(nil, a);
     if (res == nil) return onevalue(nil); // no definition to remove
 // I treat an explicit use of remd as a redefinition, and ensure that
 // restarting a preserved image will not put the definition back.
-    setheader(a, qheader(a).load() & ~SYM_MACRO);
+    setheader(a, qheader(a) & ~SYM_MACRO);
     set_fns(a, undefined_0, undefined_1, undefined_2,
                undefined_3, undefined_4up);
     setenv(a, a);
@@ -784,7 +784,7 @@ LispObject Lcopyd(LispObject env, LispObject dest, LispObject src)
     LispObject x = Lgetd(nil, src);
     save.restore(dest, src);
     if (x == nil)
-    {   if (qvalue(savedef_symbol).load() != savedef_symbol)
+    {   if (qvalue(savedef_symbol) != savedef_symbol)
             return aerror1("undefined function passed to copyd", src);
     }
     qfn0(dest) = qfn0(src);
@@ -792,7 +792,7 @@ LispObject Lcopyd(LispObject env, LispObject dest, LispObject src)
     qfn2(dest) = qfn2(src);
     qfn3(dest) = qfn3(src);
     qfn4up(dest) = qfn4up(src);
-    qenv(dest) = qenv(src).load();
+    qenv(dest) = static_cast<LispObject>(qenv(src));
     LispObject w = get(src, savedef_symbol, nil);
     if (w != nil) putprop(dest, savedef_symbol, w);
     save.restore(dest, src);
@@ -820,12 +820,12 @@ LispObject Lcopyd(LispObject env, LispObject dest, LispObject src)
 LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
 {   LispObject res;
     if (!is_symbol(a) ||
-        (qheader(a).load() & SYM_SPECIAL_FORM) != 0)
+        (qheader(a) & SYM_SPECIAL_FORM) != 0)
         return aerror1("set-autoload", a);
     if (!(qfn0(a) == undefined_0 && qfn1(a) == undefined_1 &&
           qfn2(a) == undefined_2 && qfn3(a) == undefined_3 &&
           qfn4up(a) == undefined_4up)) return onevalue(nil);
-    if ((qheader(a).load() & SYM_CODEPTR) != 0) return onevalue(nil);
+    if ((qheader(a) & SYM_CODEPTR) != 0) return onevalue(nil);
     {   Save save(a, b);
         if (consp(b)) res = cons(a, b);
         else res = list2(a, b);
@@ -833,7 +833,7 @@ LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
         save.restore(a, b);
     }
 // I will not support autoloadable macros.
-    setheader(a, qheader(a).load() & ~SYM_MACRO);
+    setheader(a, qheader(a) & ~SYM_MACRO);
     set_fns(a, autoload_0, autoload_1, autoload_2,
                autoload_3, autoload_4up);
     setenv(a, res);
@@ -881,7 +881,7 @@ LispObject Ltrace(LispObject env, LispObject a)
                 debug_printf(" not yet defined, was this a mistake?\n");
                 continue;
             }
-            setheader(s, qheader(s).load() | SYM_TRACED);
+            setheader(s, qheader(s) | SYM_TRACED);
             trace_builtin(s, true);
         }
     }
@@ -901,7 +901,7 @@ LispObject Luntrace(LispObject env, LispObject a)
     {   LispObject s = car(w);
         w = cdr(w);
         if (symbolp(s))
-        {   setheader(s, qheader(s).load() & ~SYM_TRACED & ~SYM_TRACESET);
+        {   setheader(s, qheader(s) & ~SYM_TRACED & ~SYM_TRACESET);
             trace_builtin(s, false);
         }
     }
@@ -921,7 +921,7 @@ LispObject Ltraceset(LispObject env, LispObject a)
     {   LispObject s = car(w);
         w = cdr(w);
         if (symbolp(s))
-            setheader(s, qheader(s).load() | SYM_TRACESET | SYM_TRACED);
+            setheader(s, qheader(s) | SYM_TRACESET | SYM_TRACED);
     }
     return onevalue(a);
 }
@@ -936,14 +936,14 @@ LispObject Luntraceset(LispObject env, LispObject a)
     while (consp(w))
     {   LispObject s = car(w);
         w = cdr(w);
-        if (symbolp(s)) setheader(s, qheader(s).load() & ~SYM_TRACESET);
+        if (symbolp(s)) setheader(s, qheader(s) & ~SYM_TRACESET);
     }
     return onevalue(a);
 }
 
 LispObject Lmacro_function(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
-    else if ((qheader(a).load() & SYM_MACRO) == 0) return onevalue(nil);
+    else if ((qheader(a) & SYM_MACRO) == 0) return onevalue(nil);
 // If the MACRO bit is set in the header I know there is a definition
     else return onevalue(cons(lambda, qenv(a)));
 }
@@ -962,7 +962,7 @@ LispObject get_pname(LispObject a)
 // that every time I want to grab the pname of anything I have to check for
 // this case and admit the possibility of garbage collection or even
 // failure.
-    if (qheader(a).load() & SYM_UNPRINTED_GENSYM)
+    if (qheader(a) & SYM_UNPRINTED_GENSYM)
     {   uintptr_t len;
         char *p;
         char genname[80];
@@ -1005,7 +1005,7 @@ LispObject get_pname(LispObject a)
             save.restore(a);
         }
         setpname(a, name);
-        setheader(a, qheader(a).load() & ~SYM_UNPRINTED_GENSYM);
+        setheader(a, qheader(a) & ~SYM_UNPRINTED_GENSYM);
     }
 #endif
     return name;

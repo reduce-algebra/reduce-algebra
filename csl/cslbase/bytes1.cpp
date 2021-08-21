@@ -148,7 +148,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         return onevalue(c);
     }
     w = car(pl);
-    if (car(w).load() == b)    // found at first position on the list
+    if (car(w) == b)    // found at first position on the list
     {
 #ifdef RECORD_GET
         Save save(w);
@@ -168,7 +168,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         return onevalue(c);
     }
     w = car(pl);
-    if (car(w).load() == b)    // found at second position on the list
+    if (car(w) == b)    // found at second position on the list
     {
 #ifdef RECORD_GET
         Save save(w);
@@ -193,7 +193,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
     {   w = car(pl);
 // If I find the item anywhere beyond the first two places in the plist I
 // migrate it up to the front so that next time will be faster
-        if (car(w).load() == b)   // found - do move to top operation.
+        if (car(w) == b)   // found - do move to top operation.
         {   write_barrier(cdraddr(prev), cdr(pl));
             write_barrier(cdraddr(pl), qplist(a));
             setplist(a, pl);
@@ -238,7 +238,7 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
     pl = qplist(a);
     while (pl != nil)
     {   LispObject w = car(pl);
-        if (car(w).load() == b)
+        if (car(w) == b)
         {   write_barrier(cdraddr(w), c);
             return c;
         }
@@ -266,7 +266,7 @@ static LispObject remprop(LispObject a, LispObject b)
     pl = qplist(a);
     while (pl != nil)
     {   LispObject w = car(pl);
-        if (car(w).load() == b)
+        if (car(w) == b)
         {   pl = cdr(pl);
             if (prevp == nil) setplist(a, pl);
             else write_barrier(cdraddr(prevp), pl);
@@ -334,7 +334,7 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
         return onevalue(nil);
     }
     w = car(pl);
-    if (car(w).load() == b)
+    if (car(w) == b)
     {
 #ifdef RECORD_GET
         Save save(w);
@@ -354,7 +354,7 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
         return onevalue(nil);
     }
     w = car(pl);
-    if (car(w).load() == b)
+    if (car(w) == b)
     {
 #ifdef RECORD_GET
         Save save(w);
@@ -379,7 +379,7 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
     {   w = car(pl);
 // If I find the item anywhere beyond the first two places in the plist I
 // migrate it up to the front so that next time will be faster
-        if (car(w).load() == b)
+        if (car(w) == b)
         {   write_barrier(cdraddr(prev), cdr(pl));
             write_barrier(cdraddr(pl), qplist(a));
             setplist(a, pl);
@@ -458,7 +458,7 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
         return onevalue(nil);
     }
     w = car(pl);
-    if (car(w).load() == b)
+    if (car(w) == b)
     {
 #ifdef RECORD_GET
         record_get(b, true);
@@ -476,7 +476,7 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
         return onevalue(nil);
     }
     w = car(pl);
-    if (car(w).load() == b)
+    if (car(w) == b)
     {
 #ifdef RECORD_GET
         record_get(b, true);
@@ -499,7 +499,7 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
     {   w = car(pl);
 // If I find the item anywhere beyond the first two places in the plist I
 // migrate it up to the front so that next time will be faster
-        if (car(w).load() == b)
+        if (car(w) == b)
         {   write_barrier(cdraddr(prev), cdr(pl));
             write_barrier(cdraddr(pl), qplist(a));
             setplist(a, pl);
@@ -580,7 +580,7 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
         return onevalue(nil);
     }
     w = car(pl);
-    if (car(w).load() == b)
+    if (car(w) == b)
     {
 #ifdef RECORD_GET
         record_get(b, true);
@@ -598,7 +598,7 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
         return onevalue(nil);
     }
     w = car(pl);
-    if (car(w).load() == b)
+    if (car(w) == b)
     {
 #ifdef RECORD_GET
         record_get(b, true);
@@ -621,7 +621,7 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
     {   w = car(pl);
 // If I find the item anywhere beyond the first two places in the plist I
 // migrate it up to the front so that next time will be faster
-        if (car(w).load() == b)
+        if (car(w) == b)
         {   write_barrier(cdraddr(prev), cdr(pl));
             write_barrier(cdraddr(pl), qplist(a));
             setplist(a, pl);
@@ -671,7 +671,7 @@ LispObject Lflag(LispObject env, LispObject a, LispObject b)
         pl = qplist(v);
         while (pl != nil)
         {   LispObject w = car(pl);
-            if (car(w).load() == b)
+            if (car(w) == b)
             {   write_barrier(cdraddr(w), lisp_true);
                 goto already_flagged;
             }
@@ -705,7 +705,7 @@ LispObject Lremflag(LispObject env, LispObject a, LispObject b)
         pl = qplist(v);
         while (pl != nil)
         {   LispObject w = car(pl);
-            if (car(w).load() == b)
+            if (car(w) == b)
             {   pl = cdr(pl);
                 if (prevp == nil) setplist(v, pl);
                 else write_barrier(cdraddr(prevp), pl);
@@ -922,7 +922,7 @@ inline void poll_jump_back(LispObject& A_reg)
     poll();
 #else
     if ((uintptr_t)stack >=
-        ((uintptr_t)stackLimit | event_flag.load()))
+        ((uintptr_t)stackLimit | event_flag))
         respond_to_stack_event();
 #endif
 }

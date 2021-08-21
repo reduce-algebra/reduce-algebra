@@ -33,7 +33,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Revisions
-% 28-Apr-92 (herbert Melenk)
+% 28-Apr-92 (Herbert Melenk)
 % no relocation for quoted small ID's
 %
 % 3-Apr-90 (Winfried Neun)
@@ -231,7 +231,7 @@
 		 (MkCODE (wplus2 CodeBase* (cdr X))))))
 
 (de DepositInstruction (X)
-% This actually dispatches to the procedures to assemble the instrucitons
+% This actually dispatches to the procedures to assemble the instructions
 (prog (Y)
     (cond ((setq Y (get (first X) 'InstructionDepositFunction))
 	   (Apply Y (list X)))
@@ -672,6 +672,15 @@
     (depositbyte (unimmediate op1)))
 (de lth-imm8-effa (code op1 op2)
    (plus 2 (lth-reg-5-prefix op2) (lthmodR/M (cadr code) op2)))
+
+(de OP2-imm8-effa (code op1 op2)
+    (reg-5-prefix op2)
+    (depositbyte (car code))
+    (depositbyte (cadr code))
+    (modR/M (caddr code) op2)
+    (depositbyte (unimmediate op1)))
+(de lth2-imm8-effa (code op1 op2)
+   (plus 3 (lth-reg-5-prefix op2) (lthmodR/M (cadr code) op2)))
 
 %------------------------------------------------------------------------
 % code is two bytes, op1 is a register, op2 is an effective address

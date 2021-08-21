@@ -687,13 +687,13 @@ inline void stackcheck()
 // version of the code "stack" is an instance of a class not an item
 // with basic type, and the generality provided by C style casts copes
 // while use of (eg) reinterpret_cast does not.
-    if (((uintptr_t)stack | event_flag.load()) >=
+    if (((uintptr_t)stack | event_flag) >=
         reinterpret_cast<uintptr_t>(stackLimit)) respond_to_stack_event();
 }
 
 inline void stackcheck(LispObject& a1)
 {   if_check_stack();
-    if (((uintptr_t)stack | event_flag.load()) >=
+    if (((uintptr_t)stack | event_flag) >=
         reinterpret_cast<uintptr_t>(stackLimit))
     {   Save saver(a1);
         respond_to_stack_event();
@@ -703,7 +703,7 @@ inline void stackcheck(LispObject& a1)
 
 inline void stackcheck(LispObject& a1, LispObject& a2)
 {   if_check_stack();
-    if (((uintptr_t)stack | event_flag.load()) >=
+    if (((uintptr_t)stack | event_flag) >=
         reinterpret_cast<uintptr_t>(stackLimit))
     {   Save saver(a1, a2);
         respond_to_stack_event();
@@ -713,7 +713,7 @@ inline void stackcheck(LispObject& a1, LispObject& a2)
 
 inline void stackcheck(LispObject& a1, LispObject& a2, LispObject& a3)
 {   if_check_stack();
-    if (((uintptr_t)stack | event_flag.load()) >=
+    if (((uintptr_t)stack | event_flag) >=
         reinterpret_cast<uintptr_t>(stackLimit))
     {   Save saver(a1, a2, a3);
         respond_to_stack_event();
@@ -724,7 +724,7 @@ inline void stackcheck(LispObject& a1, LispObject& a2, LispObject& a3)
 inline void stackcheck(LispObject& a1, LispObject& a2,
                        LispObject& a3, LispObject& a4)
 {   if_check_stack();
-    if (((uintptr_t)stack | event_flag.load()) >=
+    if (((uintptr_t)stack | event_flag) >=
         reinterpret_cast<uintptr_t>(stackLimit))
     {   Save saver(a1, a2, a3, a4);
         respond_to_stack_event();
@@ -762,7 +762,7 @@ inline void respond_to_fringe_event(LispObject &r, const char *msg)
 // If an asynchronous event has arisen then event_flag has an interesting
 // value. I want to read and reset it atomically, and these two lines
 // using compare_exchange_weak() should achieve that.
-    uintptr_t f = event_flag.load();
+    uintptr_t f = event_flag;
     while (!event_flag.compare_exchange_weak(f, 0)) {}
 // Now one possibility is that this is a perfectly normal ordinary case
 // for garbage collection because event_flag had been zero. In that case

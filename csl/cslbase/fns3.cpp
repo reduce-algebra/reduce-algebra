@@ -82,7 +82,7 @@ LispObject Lmkevect(LispObject env, LispObject n)
 // For now I will restrict the size here.
     n = get_basic_vector_init(n1+CELL, nil);
     errexit();
-    setvechdr(n, vechdr(n).load() ^ (TYPE_SIMPLE_VEC ^ TYPE_STRUCTURE));
+    setvechdr(n, vechdr(n) ^ (TYPE_SIMPLE_VEC ^ TYPE_STRUCTURE));
     return onevalue(n);
 }
 
@@ -102,7 +102,7 @@ LispObject Lmkxvect(LispObject env, LispObject n)
 // size-limited.
     n = get_basic_vector_init(n1+CELL, nil);
     errexit();
-    setvechdr(n, vechdr(n).load() ^ (TYPE_SIMPLE_VEC ^ TYPE_MIXED1));
+    setvechdr(n, vechdr(n) ^ (TYPE_SIMPLE_VEC ^ TYPE_MIXED1));
     return onevalue(n);
 }
 
@@ -828,7 +828,8 @@ LispObject Llist_to_vector(LispObject env, LispObject a)
     v = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
     errexit();
     save.restore(a);
-    for(n=0; consp(a); a = cdr(a), n++) elt(v, n) = car(a).load();
+    for(n=0; consp(a); a = cdr(a), n++)
+        elt(v, n) = static_cast<LispObject>(car(a));
     return onevalue(v);
 }
 
@@ -1674,7 +1675,7 @@ UNUSED_NAME static LispObject Lshrink_vector(LispObject env,
 // These days my garbage collector (and other code) never relies on
 // such scans, so I simplify the code here.
     size_t adjustment = n1 - n2;  // number of bytes to shrink by
-    setvechdr(v, vechdr(v).load() - pack_hdrlength(adjustment/4));
+    setvechdr(v, vechdr(v) - pack_hdrlength(adjustment/4));
     return onevalue(v);
 }
 
@@ -1953,7 +1954,7 @@ LispObject vector_subseq(LispObject sequence, size_t start,
     }
     else if (type_of_header(h) == TYPE_ARRAY)
     {   // elt(sequence, 1) is the list of dimensions - only handle 1-d case
-        if (cdr(elt(sequence, 1)).load() != nil)
+        if (cdr(elt(sequence, 1)) != nil)
             return aerror1("vector-subseq*",sequence);
         i = int_of_fixnum(elt(sequence, 3));  // displaced-index-offset
         return vector_subseq(elt(sequence,2),start+i,end+i);

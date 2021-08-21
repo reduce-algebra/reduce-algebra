@@ -7,6 +7,8 @@
 % Date :  4-May-1994
 % Status: Open Source: BSD License
 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
 %
@@ -30,6 +32,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
 % Revisions:
 %
 
@@ -235,6 +238,8 @@
 
 (fi 16#af imul ((G v)(E v)))
 
+(fi 16#a3 bt   ((E v)(G v)))
+(fi 16#ba bt   ((E v)(I b)))
 (fi 16#bc bsf  ((G v)(E v)))
 (fi 16#bd bsr  ((G v)(E v)))
 
@@ -275,7 +280,7 @@
 
 (de decode-operands(bytes* lth* pat)
   (prog (r reg*)
-    (when (eqcar pat nil) (go done))
+    (when (or (null pat) (eqcar pat nil)) (go done))
     (push (cons 'op1 (decode-operand1 (pop pat))) r)
     (when pat
         (push (cons 'op2 (decode-operand1 (pop pat))) r))
@@ -348,7 +353,7 @@
                       (bldmsg " -> %w" 
                        (safe-int2id (wshift (wdifference (int2sys w) symfnc) -2)))))
                     ((and (xgreaterp w symval)
-		  (xgreaterp symvalhigh w))
+                          (xgreaterp symvalhigh w))
                      (setq *comment
                       (bldmsg " -> %w" 
                        (safe-int2id (wshift (wdifference (int2sys w) symval) -2))))))
@@ -529,7 +534,7 @@ loop
                 (ttab 22) (prin2 (cdr (assoc base labels)))
                 (setq lc (add1 lc))
                 (prin2t ":")))
-         (setq p1 (wand 255 (byte(int2sys base) 0)))
+         (setq p1 (wand 255 (byte (int2sys base) 0)))
          (cond((eq p1 0)(return nil)))
      
          (setq pp  

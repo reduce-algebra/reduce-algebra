@@ -67,7 +67,7 @@ static LispObject macrolet_fn(LispObject args, LispObject env)
 //     (~~defmacro name bvl ...)
 // OR  (progn XXX (~~defmacro name bvl ...))
 //     where XXX is exactly one form.
-            if (car(w).load() == progn_symbol)
+            if (car(w) == progn_symbol)
                 w = car(cdr(cdr(w)));
             w = cdr(w);
             w = cons(cdr(w), car(w));
@@ -342,7 +342,7 @@ static LispObject progv_fn(LispObject args_x, LispObject env_x)
 #undef args
 
 LispObject quote_fn(LispObject args, LispObject)
-{   if (consp(args) && cdr(args).load() == nil) return onevalue(car(args));
+{   if (consp(args) && cdr(args) == nil) return onevalue(car(args));
     return aerror("quote");
 }
 
@@ -356,7 +356,7 @@ static LispObject return_fn(LispObject args, LispObject env)
     for(p=env; consp(p); p=cdr(p))
     {   LispObject w = car(p);
         if (!consp(w)) continue;
-        if (car(w).load() == fixnum_of_int(0) && cdr(w).load() == nil)
+        if (car(w) == fixnum_of_int(0) && cdr(w) == nil)
         {   p = w;
             goto tag_found;
         }
@@ -392,7 +392,7 @@ static LispObject return_from_fn(LispObject args, LispObject env)
     for(p=env; consp(p); p=cdr(p))
     {   LispObject w = car(p);
         if (!consp(w)) continue;
-        if (car(w).load() == fixnum_of_int(0) && cdr(w).load() == tag)
+        if (car(w) == fixnum_of_int(0) && cdr(w) == tag)
         {   p = w;
             goto tag_found;
         }
@@ -423,7 +423,7 @@ static LispObject setq_fn(LispObject args, LispObject env)
     while (consp(args))
     {   var = car(args);
         if (!is_symbol(var) || var == nil || var == lisp_true ||
-            (qheader(var).load() & SYM_KEYWORD_VAR) == SYM_KEYWORD_VAR)
+            (qheader(var) & SYM_KEYWORD_VAR) == SYM_KEYWORD_VAR)
         {   return aerror1("setq (bad variable)", var);
         }
         args = cdr(args);
@@ -438,7 +438,7 @@ static LispObject setq_fn(LispObject args, LispObject env)
             args = cdr(args);
         }
         else val = nil;
-        if ((qheader(current_function).load() & SYM_TRACESET) != 0)
+        if ((qheader(current_function) & SYM_TRACESET) != 0)
         {   RealSave save(args, env, var, val);
 //          LispObject &args1 = save.val(1);
 //          LispObject &env1  = save.val(2);
@@ -461,15 +461,15 @@ static LispObject setq_fn(LispObject args, LispObject env)
             errexit();
             save.restore(args, env, var, val);
         }
-        if ((qheader(var).load() & SYM_KEYWORD_VAR) == SYM_SPECIAL_VAR ||
-            (qheader(var).load() & SYM_KEYWORD_VAR) == SYM_GLOBAL_VAR)
+        if ((qheader(var) & SYM_KEYWORD_VAR) == SYM_SPECIAL_VAR ||
+            (qheader(var) & SYM_KEYWORD_VAR) == SYM_GLOBAL_VAR)
             setvalue(var, val);
         else
         {   LispObject p = env, w;   // Here it seems to be a local variable,
             // or it could be locally FLUID.
             for (;;)
             {   if (!consp(p))
-                {   setheader(var, qheader(var).load() | SYM_SPECIAL_VAR);
+                {   setheader(var, qheader(var) | SYM_SPECIAL_VAR);
 #ifdef SOME_TIME_LATER
 // If I display this message - which could be viewed as a proper error report -
 // it leds to multiple failures in the Reduce regressions where scripting
@@ -487,8 +487,8 @@ static LispObject setq_fn(LispObject args, LispObject env)
                     break;
                 }
                 w = car(p);
-                if (car(w).load() == var)
-                {   if (cdr(w).load() == work_symbol) setvalue(var, val);
+                if (car(w) == var)
+                {   if (cdr(w) == work_symbol) setvalue(var, val);
                     else write_barrier(cdraddr(w), val);
                     break;
                 }

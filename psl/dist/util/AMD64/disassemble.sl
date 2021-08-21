@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:  pxu/disassemble.sl -  disassembler for i486 
+% File:  pxu/disassemble.sl -  disassembler for x86_64
 %
 % Author: H. Melenk , ZIB Berlin
 %
@@ -284,6 +284,8 @@
 
 (fi 16#af imul ((G v)(E v)))
 
+(fi 16#a3 bt   ((E v)(G v)))
+(fi 16#ba bt   ((E v)(I b)))
 (fi 16#bc bsf  ((G v)(E v)))
 (fi 16#bd bsr  ((G v)(E v)))
 
@@ -376,7 +378,7 @@
   (prog (r reg* xreg* byte-operand* x)
     (setq x (decode-operands-special-pattern-cases bytes* lth* pat))
     (when (and x (pairp x)) (setq pat x))
-    (when (eqcar pat nil) (go done))
+    (when (or (null pat) (eqcar pat nil)) (go done))
     (push (cons 'op1 (decode-operand1 (pop pat) t)) r)
     (when pat
         (push (cons 'op2 (decode-operand1 (pop pat) nil)) r))

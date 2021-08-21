@@ -74,7 +74,7 @@ void print_newbignum(LispObject u, bool blankp, int nobreak)
 // Printing was potentially a fairly expensive step. So I will check to
 // see if an interrupt was posted during it.
     if ((uintptr_t)stack >=
-        ((uintptr_t)stackLimit | event_flag.load()))
+        ((uintptr_t)stackLimit | event_flag))
         respond_to_stack_event();
 }
 
@@ -102,7 +102,7 @@ void print_newbighexoctbin(LispObject u, int radix, int width,
             while (--i >= 0) putc_stream(my_buff[i], active_stream);
 
             if ((uintptr_t)stack >=
-                ((uintptr_t)stackLimit | event_flag.load()))
+                ((uintptr_t)stackLimit | event_flag))
                 respond_to_stack_event();
         }
 

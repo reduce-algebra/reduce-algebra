@@ -374,9 +374,13 @@
   (prog (i)
         (return (cond ((ileq (setq i (idinf u)) 128) i)
                       ((setq i (get u fasl-idnumber-property*)) i)
-                      (t (put u fasl-idnumber-property* (setq i nextidnumber*))
-                         (setq orderedidlist* (tconc orderedidlist* u))
-                         (setq nextidnumber* (iadd1 nextidnumber*)) i)))))
+                      (t
+		       (if (extraargumentp nextidnumber*)
+			   (stderror "Too many identifiers in fasl file")
+			 (progn
+			   (put u fasl-idnumber-property* (setq i nextidnumber*))
+			   (setq orderedidlist* (tconc orderedidlist* u))
+			   (setq nextidnumber* (iadd1 nextidnumber*)) i)))))))
 
 (de faslid2string (x)
   % Stub to permit redefinition for "limited" package system

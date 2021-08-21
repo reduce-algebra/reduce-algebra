@@ -774,7 +774,7 @@ LispObject Lthreevectorp(LispObject env, LispObject a)
 // but gives a size expressed in bytes. The "/4" then converts that to a
 // count expressed in 32-bit words which is what pach_hdrlength requires.
     return onevalue(Lispify_predicate(
-                        vechdr(a).load() ==
+                        vechdr(a) ==
                         (TAG_HDR_IMMED + TYPE_SIMPLE_VEC +
                             pack_hdrlength(4*CELL/4))));
 }
@@ -802,7 +802,7 @@ static LispObject Lcomplex_arrayp(LispObject env, LispObject a)
 
 static LispObject Lconvert_to_array(LispObject env, LispObject a)
 {   if (!(is_basic_vector(a))) return onevalue(nil);
-    setvechdr(a, TYPE_ARRAY + (vechdr(a).load() & ~header_mask));
+    setvechdr(a, TYPE_ARRAY + (vechdr(a) & ~header_mask));
     return onevalue(a);
 }
 
@@ -815,7 +815,7 @@ static LispObject Lstructp(LispObject env, LispObject a)
 
 static LispObject Lconvert_to_struct(LispObject env, LispObject a)
 {   if (!(is_basic_vector(a))) return onevalue(nil);
-    setvechdr(a, TYPE_STRUCTURE + (vechdr(a).load() & ~header_mask));
+    setvechdr(a, TYPE_STRUCTURE + (vechdr(a) & ~header_mask));
     return onevalue(a);
 }
 
@@ -856,7 +856,7 @@ LispObject Llist_3rev(LispObject env, LispObject a, LispObject b,
 
 LispObject Llist_3star(LispObject, LispObject a, LispObject b,
                        LispObject c, LispObject a4up)
-{   if (cdr(a4up).load() != nil)
+{   if (cdr(a4up) != nil)
         return aerror("too many arrguments for list3*");
     LispObject d = car(a4up);
     return onevalue(list3star(a,b,c,d));
@@ -864,7 +864,7 @@ LispObject Llist_3star(LispObject, LispObject a, LispObject b,
 
 LispObject Llist_4(LispObject env, LispObject a, LispObject b,
                    LispObject c, LispObject a4up)
-{   if (cdr(a4up).load() != nil)
+{   if (cdr(a4up) != nil)
         return aerror("too many arguments for list4");
     LispObject d = car(a4up);
     return onevalue(list4(a,b,c,d));
@@ -992,7 +992,7 @@ public:
         while (consp(w))
         {   LispObject ss = car(w);
             if (is_symbol(ss)) setheader(ss,
-                qheader(ss).load() & ~static_cast<Header>(SYM_TAGGED));
+                qheader(ss) & ~static_cast<Header>(SYM_TAGGED));
             w = cdr(w);
         }
     }
@@ -1005,7 +1005,7 @@ LispObject Lintersect_symlist(LispObject env, LispObject a,
 // symbols just get ignored.
     for (w = b; consp(w); w = cdr(w))
     {   LispObject x = car(w);
-        if (is_symbol(x)) setheader(x, qheader(x).load() | SYM_TAGGED);
+        if (is_symbol(x)) setheader(x, qheader(x) | SYM_TAGGED);
     }
 // Now for each item in (a) push it onto a result list (r) if it a
 // symbol that is tagged, i.e. if it was present in b.
@@ -1014,7 +1014,7 @@ LispObject Lintersect_symlist(LispObject env, LispObject a,
     {   tidy_intersect tidy(&bb);
         while (consp(a))
         {   LispObject x = car(a);
-            if (is_symbol(x) && (qheader(x).load() & SYM_TAGGED))
+            if (is_symbol(x) && (qheader(x) & SYM_TAGGED))
             {   Save save1(a);
                 r = cons(x, r);
                 save1.restore(a);
@@ -1072,7 +1072,7 @@ public:
         {   LispObject ss = car(w);
             if (is_symbol(ss))
                 setheader(ss,
-                    qheader(ss).load() & ~static_cast<Header>(SYM_TAGGED));
+                    qheader(ss) & ~static_cast<Header>(SYM_TAGGED));
             w = cdr(w);
         }
     }
@@ -1084,7 +1084,7 @@ LispObject Lunion_symlist(LispObject env, LispObject a, LispObject b)
 // symbols just ignored.
     for (w = b; consp(w); w = cdr(w))
     {   LispObject x = car(w);
-        if (is_symbol(x)) setheader(x, qheader(x).load() | SYM_TAGGED);
+        if (is_symbol(x)) setheader(x, qheader(x) | SYM_TAGGED);
     }
 // Now for each item in a push it onto a result list (r) if it a
 // symbol that is NOT tagged, i.e. if it was not present in b.
@@ -1101,7 +1101,7 @@ LispObject Lunion_symlist(LispObject env, LispObject a, LispObject b)
     {   tidy_union tidy(&bb);
         while (consp(a))
         {   LispObject x = car(a);
-            if (is_symbol(x) && (qheader(x).load() & SYM_TAGGED) == 0)
+            if (is_symbol(x) && (qheader(x) & SYM_TAGGED) == 0)
             {   Save save1(a);
                 r = cons(x, r);
                 errexit();
@@ -1309,28 +1309,28 @@ LispObject Lerror_0(LispObject env)
 
 LispObject Lmake_special(LispObject, LispObject a)
 {   if (!symbolp(a)) return aerror1("make-special", a);
-    if ((qheader(a).load() & SYM_GLOBAL_VAR) != 0)
+    if ((qheader(a) & SYM_GLOBAL_VAR) != 0)
         return aerror1(
             "Variable is global or keyword so can not become fluid", a);
-    setheader(a, qheader(a).load() | SYM_SPECIAL_VAR);
+    setheader(a, qheader(a) | SYM_SPECIAL_VAR);
     return onevalue(a);
 }
 
 LispObject Lmake_global(LispObject, LispObject a)
 {   if (!symbolp(a)) return aerror("make-global");
-    if ((qheader(a).load() & SYM_SPECIAL_VAR) != 0)
+    if ((qheader(a) & SYM_SPECIAL_VAR) != 0)
         return aerror1(
             "Variable is fluid or keyword so can not become global", a);
-    setheader(a, qheader(a).load() | SYM_GLOBAL_VAR);
+    setheader(a, qheader(a) | SYM_GLOBAL_VAR);
     return onevalue(a);
 }
 
 LispObject Lmake_keyword(LispObject, LispObject a)
 {   if (!symbolp(a)) return aerror("make-keyword");
-    if ((qheader(a).load() & (SYM_GLOBAL_VAR | SYM_SPECIAL_VAR)) != 0)
+    if ((qheader(a) & (SYM_GLOBAL_VAR | SYM_SPECIAL_VAR)) != 0)
         return aerror1(
             "Variable is fluid or global so can not become keyword", a);
-    setheader(a, qheader(a).load() | (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR));
+    setheader(a, qheader(a) | (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR));
     setvalue(a, a);   // value is itself.
     return onevalue(a);
 }
@@ -1340,39 +1340,39 @@ LispObject Lmake_keyword(LispObject, LispObject a)
 
 LispObject Lunmake_special(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
-    setheader(a, qheader(a).load() & ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR));
+    setheader(a, qheader(a) & ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR));
     return onevalue(a);
 }
 
 LispObject Lunmake_global(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
-    setheader(a, qheader(a).load() & ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR));
+    setheader(a, qheader(a) & ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR));
     return onevalue(a);
 }
 
 LispObject Lunmake_keyword(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
-    setheader(a, qheader(a).load() & ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR));
+    setheader(a, qheader(a) & ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR));
     return onevalue(a);
 }
 
 LispObject Lsymbol_specialp(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
-    else if ((qheader(a).load() & (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR)) ==
+    else if ((qheader(a) & (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR)) ==
              SYM_SPECIAL_VAR) return onevalue(lisp_true);
     else return onevalue(nil);
 }
 
 LispObject Lsymbol_globalp(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
-    else if ((qheader(a).load() & (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR)) ==
+    else if ((qheader(a) & (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR)) ==
              SYM_GLOBAL_VAR) return onevalue(lisp_true);
     else return onevalue(nil);
 }
 
 LispObject Lsymbol_keywordp(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
-    else if ((qheader(a).load() & (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR)) ==
+    else if ((qheader(a) & (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR)) ==
              (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR))
         return onevalue(lisp_true);
     else return onevalue(nil);
@@ -1393,10 +1393,10 @@ LispObject Lboundp(LispObject env, LispObject a)
 // also probably used by few enough people that this will not lead to
 // too many bugs even though it is an incompatible change in behavior.
 #if 0
-    else if ((qheader(a).load() & (SYM_SPECIAL_VAR|SYM_GLOBAL_VAR)) == 0)
+    else if ((qheader(a) & (SYM_SPECIAL_VAR|SYM_GLOBAL_VAR)) == 0)
         return onevalue(nil);
 #endif
-    else if (qvalue(a).load() == unset_var)
+    else if (qvalue(a) == unset_var)
         return onevalue(nil); // no value yet
     else return onevalue(lisp_true);
 }
@@ -1431,7 +1431,7 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
     f2 = qfn2(a);
     f3 = qfn3(a);
     f4up = qfn4up(a);
-    if ((qheader(a).load() & (SYM_SPECIAL_FORM | SYM_MACRO)) != 0 ||
+    if ((qheader(a) & (SYM_SPECIAL_FORM | SYM_MACRO)) != 0 ||
         (f0 == undefined_0 && f1 == undefined_1 && f2 == undefined_2 &&
          f3 == undefined_3 && f4up == undefined_4up)) return onevalue(nil);
     else if (f0 == interpreted_0 ||
@@ -1452,7 +1452,7 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
 // can find it on the property list - in that case I will re-use it.
         while (b != nil)
         {   LispObject c = car(b);
-            if ((qheader(c).load() & SYM_CODEPTR) != 0) return onevalue(c);
+            if ((qheader(c) & SYM_CODEPTR) != 0) return onevalue(c);
             b = cdr(b);
         }
         {   Save save(a);
@@ -1487,9 +1487,9 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
         setenv(b, qenv(a));
 #ifdef COMMON
 // in Common Lisp mode gensyms that are "unprinted" are not special
-        setheader(b, qheader(b).load() ^ (SYM_ANY_GENSYM | SYM_CODEPTR));
+        setheader(b, qheader(b) ^ (SYM_ANY_GENSYM | SYM_CODEPTR));
 #else
-        setheader(b, qheader(b).load() ^
+        setheader(b, qheader(b) ^
             (SYM_UNPRINTED_GENSYM | SYM_ANY_GENSYM | SYM_CODEPTR));
 #endif
         return onevalue(b);
@@ -1498,7 +1498,7 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
 
 LispObject Lspecial_form_p(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
-    else if ((qheader(a).load() & SYM_SPECIAL_FORM) != 0)
+    else if ((qheader(a) & SYM_SPECIAL_FORM) != 0)
         return onevalue(lisp_true);
     else return onevalue(nil);
 }
@@ -1508,7 +1508,7 @@ LispObject Lcodep(LispObject env, LispObject a)
 // carry compiled code objects.  It returns NIL on the symbols that
 // are normally used by the user.
 {   if (!symbolp(a)) return onevalue(nil);
-    if ((qheader(a).load() & SYM_CODEPTR) != 0) return onevalue(lisp_true);
+    if ((qheader(a) & SYM_CODEPTR) != 0) return onevalue(lisp_true);
     else return onevalue(nil);
 }
 
@@ -1896,8 +1896,8 @@ static LispObject Ldatelessp(LispObject env, LispObject a,
     bool res;
     int wa, wb;
     if (!is_vector(a) || !is_vector(b) ||
-        vechdr(a).load() != STR24HDR ||
-        vechdr(b).load() != STR24HDR) return aerror2("datelessp", a, b);
+        vechdr(a) != STR24HDR ||
+        vechdr(b) != STR24HDR) return aerror2("datelessp", a, b);
     aa = reinterpret_cast<char *>(a) + (CELL - TAG_VECTOR);
     bb = reinterpret_cast<char *>(b) + (CELL - TAG_VECTOR);
 // Layout is eg. "Wed May 12 15:50:23 1993"

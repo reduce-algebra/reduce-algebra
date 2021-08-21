@@ -220,7 +220,7 @@ inline LispObject set_stream_read_other(LispObject v,
 #define STREAM_FLAG_PIPE       1
 
 inline bool is_stream(LispObject v)
-{   return (is_vector(v) && vechdr(v).load() == STREAM_HEADER);
+{   return (is_vector(v) && vechdr(v) == STREAM_HEADER);
 }
 
 inline int putc_stream(int c, LispObject f)

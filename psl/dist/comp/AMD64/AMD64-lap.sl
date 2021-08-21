@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PXC:386-LAP.SL
-% Description:  Intel i386/i486 PSL Assembler
+% File:         PXC:AMD64-LAP.SL
+% Description:  Intel x86_64 PSL Assembler
 % Author:       H. Melenk
 % Created:      1-August 1989
 % Modified:
@@ -30,6 +30,7 @@
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Revisions
@@ -245,7 +246,7 @@
 
 (de DepositLabel (x) nil)
 	  
-(fluid '(*testlap ))
+(fluid '(*testlap))
 (de DepositInstruction (X) 
 % This actually dispatches to the procedures to assemble the instrucitons
 % version with address calculation test
@@ -390,7 +391,7 @@
 (de adrp (x) (or (atom x)
 		 (memq (car x)'(label entry internalentry foreignentry))
 		 (and (eqcar x 'IMMEDIATE) (adrp (cadr x)))))
-  
+
 (de indirectadrp (x) (and (eqcar x 'INDIRECT) 
 			  (or (adrp (cadr x)) (effap (cadr x))(regp (cadr x)))))
 
@@ -401,7 +402,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 
 %  Instruction deposit functions
- 
+
 
 (de laperr(inst par)
    (StdError (BldMsg "Illegal format: (%p %p)" inst par)))
@@ -692,7 +693,16 @@
     (modR/M (cadr code) op2)
     (depositbyte (unimmediate op1)))
 (de lth-imm8-effa (code op1 op2)
-   (plus 2 (lth-reg-5-prefix op2) (lthmodR/M (cadr code) op2)))
+    (plus 2 (lth-reg-5-prefix op2) (lthmodR/M (cadr code) op2)))
+
+(de OP2-imm8-effa (code op1 op2)
+    (reg-5-prefix op2)
+    (depositbyte (car code))
+    (depositbyte (cadr code))
+    (modR/M (caddr code) op2)
+    (depositbyte (unimmediate op1)))
+(de lth2-imm8-effa (code op1 op2)
+   (plus 3 (lth-reg-5-prefix op2) (lthmodR/M (cadr code) op2)))
 
 %------------------------------------------------------------------------
 % code is two bytes, op1 is a register, op2 is an effective address
@@ -707,7 +717,7 @@
 
 
 %-----------------------------------------------------------------------
-% format: fixed modV/M byte
+% format: fixed modR/M byte
 (de OP-EFFA (code op1) (OP-reg-effa code (cadr code) op1))
 (de lth-EFFA (code op1) (LTH-reg-effa code (cadr code) op1))
 
@@ -795,7 +805,7 @@
  
 % indirect jump to effective address
 (de OP-JUMP-EFFA (code op1)
-	      % a tag "inirect" contained already in the operation if not
+	      % a tag "indirect" contained already in the operation if not
 	      % explicit reg reference
 	   (when (and (eqcar op1 'indirect) (not (regp (cadr op1))))
 		 (setq op1 (cadr op1)))
@@ -1309,7 +1319,7 @@
 				 (cons 'sub (cdr x)))))
          ((reg64bitp x) (wplus2 1 (InstructionLength1 x)))
          (t (InstructionLength1 x))))
-  
+
 (de InstructionLength1 (X) 
    (prog (Y) 
        (when (setq Y (get (car x) 'InstructionLengthFunction))
@@ -1362,7 +1372,7 @@
     (setq CurrentOffset* (plus CurrentOffset* 2))))
 
 (compiletime (put 'put_a_halfword 'opencode '(
-   (mov (reg ebx) (displacement (reg eax) 0)))))) %% (reg 2) (displacement (reg eax) 0)))))
+   (mov (reg ebx) (displacement (reg eax) 0))))) %% (reg 2) (displacement (reg eax) 0)))))
 
 (de deposit32bitword (x) %% cross
   (put_a_halfword (wplus2 codebase* currentoffset*) x)

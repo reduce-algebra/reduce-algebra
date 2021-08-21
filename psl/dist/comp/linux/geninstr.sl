@@ -58,6 +58,7 @@
       (Op-imm-EAX  . lth-imm-EAX)
       (Op-imm-effa . lth-imm-effa)
       (Op-imm8-effa. lth-imm8-effa)
+      (Op2-imm8-effa. lth2-imm8-effa)
       (Op-mem-EAX  . lth-mem-EAX)
       (Op-push-reg . lth-push-reg)
       (Op-byte     . lth-byte)
@@ -566,11 +567,16 @@
 (instr SAHF ()                 OP-byte       16#9E)
 (instr WAIT ()                 OP-byte       16#9B)
 
+%(instr SETeq (reg)             OP-set        2#00001111 10010100 11000000)
+%(instr SETne (reg)             OP-set        2#00001111 10010101 11000000)
+
+%------------------------Bit Operations --------------------------------
+
+(instr BT (reg  effa)          OP-reg-effa-2 16#0F 16#A3)
+(instr BT (!n  effa)           OP2-imm8-effa 16#0F 16#BA /4)
 (instI BSF (effa reg)          OP-reg-effa-2 16#0F 16#BC)
 (instI BSR (effa reg)          OP-reg-effa-2 16#0F 16#BD)
 
-%(instr SETeq (reg)             OP-set        2#00001111 10010100 11000000)
-%(instr SETne (reg)             OP-set        2#00001111 10010101 11000000)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %

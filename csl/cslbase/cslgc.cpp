@@ -262,7 +262,7 @@ static void copy(LispObject *p)
             {   case CONT:
                     if (tr_fr != fr)
                     {   tr_fr = tr_fr - sizeof(Cons_Cell);
-                        if (car(reinterpret_cast<LispObject>(tr_fr)).load() ==
+                        if (car(reinterpret_cast<LispObject>(tr_fr)) ==
                             SPID_GCMARK)
                         {   char *w;
                             p1 = new_heap_pages[trailing_heap_pages_count++];

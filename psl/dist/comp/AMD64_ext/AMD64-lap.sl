@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PXC:386-LAP.SL
-% Description:  Intel i386/i486 PSL Assembler
+% File:         PXC:AMD64-LAP.SL
+% Description:  Intel x86_64 PSL Assembler
 % Author:       H. Melenk
 % Created:      1-August 1989
 % Modified:
@@ -30,6 +30,7 @@
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Revisions
@@ -376,7 +377,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 %
 %    getting the instructions in 
- 
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -758,6 +759,15 @@
     (depositbyte (unimmediate op1)))
 (de lth-imm8-effa (code op1 op2)
     (plus 2 (lth-reg-5-prefix op2) (lthmodR/M (cadr code) op2)))
+
+(de OP2-imm8-effa (code op1 op2)
+    (reg-5-prefix op2)
+    (depositbyte (car code))
+    (depositbyte (cadr code))
+    (modR/M (caddr code) op2)
+    (depositbyte (unimmediate op1)))
+(de lth2-imm8-effa (code op1 op2)
+   (plus 3 (lth-reg-5-prefix op2) (lthmodR/M (cadr code) op2)))
 
 %------------------------------------------------------------------------
 % code is two bytes (prefix+opcode) with an optional rex prefix in between,
@@ -1886,7 +1896,7 @@
    (*jumpwgeq    . *jumpwlessp)      (*jumpwlessp     . *jumpwgeq)
    (*jumpwleq    . *jumpwgreaterp)   (*jumpwgreaterp  . *jumpwleq)
    (*jumptype    . *jumpnottype)     (*jumpnottype    . *jumptype)
-   (*jumpintype  . *jumpnotintype)   (*jumpnotintype . *jumpintype)
+   (*jumpintype  . *jumpnotintype)   (*jumpnotintype  . *jumpintype)
    (*jumpeqtag   . *jumpnoteqtag)    (*jumpnoteqtag   . *jumpeqtag)
    (*jumpwgeqtag . *jumpwlessptag)   (*jumpwlessptag  . *jumpwgeqtag)
   % no inverse jumps for

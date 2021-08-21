@@ -262,7 +262,7 @@ LispObject make_n_tree1(int n)
         t1.join();
         t2.join();
         std::printf("Memory left = %" PRId64 "\n",
-                    static_cast<std::int64_t>(Alimit.load() - Afringe.load()));
+                    static_cast<std::int64_t>(Alimit - Afringe));
         return 0;
     }
 

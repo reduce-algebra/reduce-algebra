@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % File:         GENINSTR
-% Description:  i386 Generate instruction set
+% Description:  x86_64 Generate instruction set
 % Author:       H. Melenk
 % Created:
 % Modified:
@@ -30,6 +30,7 @@
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Revisions:
@@ -57,6 +58,7 @@
       (Op-imm-EAX  . lth-imm-EAX)
       (Op-imm-effa . lth-imm-effa)
       (Op-imm8-effa. lth-imm8-effa)
+      (Op2-imm8-effa. lth2-imm8-effa)
       (Op-mem-EAX  . lth-mem-EAX)
       (Op-push-reg . lth-push-reg)
       (Op-byte     . lth-byte)
@@ -570,6 +572,17 @@
 
 %(instr SETeq (reg)             OP-set        2#00001111 10010100 11000000)
 %(instr SETne (reg)             OP-set        2#00001111 10010101 11000000)
+
+%------------------------Bit Operations --------------------------------
+
+(instr BT (reg  effa)          OP-reg-effa-2 16#0F 16#A3)
+(instr BT (!n  effa)           OP2-imm8-effa 16#0F 16#BA /4)
+(instI BSF (effa reg)          OP-reg-effa-2 16#0F 16#BC)
+(instI BSR (effa reg)          OP-reg-effa-2 16#0F 16#BD)
+
+%(instI LZCNT (effa reg)        OP-reg-effa-2 16#F3 rex 16#0F 16#BD)
+%(instI POPCNT (effa reg)       OP-reg-effa-2 16#F3 rex 16#0F 16#B8)
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %

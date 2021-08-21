@@ -250,6 +250,38 @@ par1                                                              par2)))
  (defopcode as: (par1 par2) (t (op-byte '(103))))
  (defoplength as: (par1 par2) (t (lth-byte '(103))))
 
+ (defopcode bsf (par1 par2) ((and (effap par1) (regp par2)) (op-reg-effa-2 '(15 
+188)                                                                       par2 
+par1)))
+ (defoplength bsf (par1 par2) ((and (effap par1) (regp par2)) (lth-reg-effa-2 '(
+15                                                                                 
+188)                                                                          
+par2                                                                          
+par1)))
+
+ (defopcode bsr (par1 par2) ((and (effap par1) (regp par2)) (op-reg-effa-2 '(15 
+189)                                                                       par2 
+par1)))
+ (defoplength bsr (par1 par2) ((and (effap par1) (regp par2)) (lth-reg-effa-2 '(
+15                                                                                 
+189)                                                                          
+par2                                                                          
+par1)))
+
+ (defopcode bt (par1 par2) ((and (regp par1) (effap par2)) (op-reg-effa-2 '(15 
+163)                                                                      par1 
+par2))      ((and (smallimmediatep par1) (effap par2)) (op2-imm8-effa '(15 186 
+32)                                                                   par1 par2)
+))
+ (defoplength bt (par1 par2) ((and (regp par1) (effap par2)) (lth-reg-effa-2 '(
+15                                                                                
+163)                                                                         
+par1                                                                         
+par2))        ((and (smallimmediatep par1) (effap par2)) (lth2-imm8-effa '(15 
+186                                                                           32
+)                                                                        par1 
+par2)))
+
  (defopcode call (par1 par2) ((indirectadrp par1) (op-jump-effa '(255 16) par1))
             ((regp par1) (op-jump-effa '(255 16) par1)) ((adrp par1) (op-jump '(
 232)                                                                          
