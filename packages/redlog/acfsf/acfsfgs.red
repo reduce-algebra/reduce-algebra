@@ -68,14 +68,14 @@ procedure acfsf_gsc1(f,atl);
    % [rlradmemv!*].
    begin scalar phi,!*rlsiexpla;  % Hack, but otherwise phi is not a bnf!
       if !*rlgsbnf then <<
-      	 if !*rlgsvb then ioto_prin2 "[CNF";
-      	 phi := cl_simpl(cl_cnf cl_nnf f,atl,-1);
-      	 if !*rlgsvb then ioto_prin2 "] "
+         if !*rlgsvb then ioto_prin2 "[CNF";
+         phi := cl_simpl(cl_cnf cl_nnf f,atl,-1);
+         if !*rlgsvb then ioto_prin2 "] "
       >> else
-	 phi := cl_simpl(f,atl,-1);
+         phi := cl_simpl(f,atl,-1);
       if phi eq 'inctheo then return 'inctheo;
       if rl_tvalp phi then
-	 return phi;
+         return phi;
       phi := acfsf_gssimplify0(phi,atl);
       if phi eq 'inctheo then return 'inctheo;
       return cl_simpl(phi,atl,-1)
@@ -109,14 +109,14 @@ procedure acfsf_gsd1(f,atl);
    % [rlradmemv!*].
    begin scalar phi,!*rlsiexpla;  % Hack, but otherwise phi is not a bnf!
       if !*rlgsbnf then <<
-      	 if !*rlgsvb then ioto_prin2 "[DNF";
-      	 phi := cl_simpl(cl_nnfnot cl_dnf f,atl,-1);
-      	 if !*rlgsvb then ioto_prin2 "] ";
+         if !*rlgsvb then ioto_prin2 "[DNF";
+         phi := cl_simpl(cl_nnfnot cl_dnf f,atl,-1);
+         if !*rlgsvb then ioto_prin2 "] ";
       >> else
-      	 phi := cl_simpl(cl_nnfnot f,atl,-1);
+         phi := cl_simpl(cl_nnfnot f,atl,-1);
       if phi eq 'inctheo then return 'inctheo;
       if rl_tvalp phi then
-   	 return cl_nnfnot phi;
+         return cl_nnfnot phi;
       phi := acfsf_gssimplify0(phi,atl);
       if phi eq 'inctheo then return 'inctheo;
       return cl_simpl(cl_nnfnot phi,atl,-1)
@@ -162,17 +162,17 @@ procedure acfsf_gssimplify(f,atl);
    % [rlgsrad], [rlgssub], [rlgsred], [rlgsprod], [rlgserf], and the
    % fluid [rlradmemv!*].
    begin scalar al,gp,ipart,npart,w,gprem,gprodal,gatl;
-      atl := cl_sitheo atl;
+      atl := cl_simplifyTheory atl;
       if atl eq 'inctheo or acfsf_gsinctheop(atl) then
-	 return 'inctheo;
+         return 'inctheo;
       if (cl_atfp f) or (rl_op f eq 'or) then  % degenerated cnf
-	 al := acfsf_gssplit!-cnf {f}
+         al := acfsf_gssplit!-cnf {f}
       else
-      	 al := acfsf_gssplit!-cnf rl_argn f;
+         al := acfsf_gssplit!-cnf rl_argn f;
       if w := lto_catsoc('gprem,al) then <<
-      	 gp := acfsf_gsextract!-gp atl;
-      	 gprem := acfsf_gsgprem(w,gp);
-	 if gprem eq 'false then return 'false;
+         gp := acfsf_gsextract!-gp atl;
+         gprem := acfsf_gsgprem(w,gp);
+         if gprem eq 'false then return 'false;
       >>;
       gatl := append(atl,lto_catsoc('gprem,al));
       gp := acfsf_gsextract!-gp(gatl);
@@ -180,15 +180,15 @@ procedure acfsf_gssimplify(f,atl);
       ipart := lto_catsoc('impl,al);
       npart := lto_catsoc('noneq,al);
       if ipart then
-	 ipart := acfsf_gspart(ipart,gp);
+         ipart := acfsf_gspart(ipart,gp);
       if npart and gatl then
-      	 npart := acfsf_gspart(npart,gp);
+         npart := acfsf_gspart(npart,gp);
       if gprem then <<
- 	 if null !*rlgsprod then <<
-	    gprodal := lto_catsoc('gprodal,al);
-	    gprem := acfsf_gssimulateprod(gprem,gprodal)
-	 >>;
-      	 return rl_smkn('and,gprem . nconc(ipart,npart))
+         if null !*rlgsprod then <<
+            gprodal := lto_catsoc('gprodal,al);
+            gprem := acfsf_gssimulateprod(gprem,gprodal)
+         >>;
+         return rl_smkn('and,gprem . nconc(ipart,npart))
       >>;
       return rl_smkn('and,nconc(ipart,npart))
    end;
@@ -218,10 +218,10 @@ procedure acfsf_gsinctheop(atl);
    % formulas. [T] or [nil] is returned.
    begin scalar w;
       if null atl then
-     	 return nil;
+         return nil;
       if !*rlgsvb then ioto_prin2 "Inctheop... ";
       w := cl_nnfnot acfsf_gsimplication(
-       	 cl_nnfnot rl_smkn('and,atl),'((nil . 1) . nil));
+         cl_nnfnot rl_smkn('and,atl),'((nil . 1) . nil));
       if !*rlgsvb then ioto_prin2t "done.";
       return w eq 'false
    end;
@@ -241,24 +241,24 @@ procedure acfsf_gssplit!-cnf(f);
    % representation, if the equation was extracted from a disjunction.
    begin scalar noneq,imp,prod,gprodal,gprem,w,x;
       for each phi in f do
-	 if rl_op phi memq '(and or) then  % [phi] is not an atomic formula
-	    if (w := acfsf_gsdis!-type rl_argn phi) eq 'impl then
-	       imp := phi . imp
-	    else if w eq 'noneq then
-	       noneq := phi . noneq
-	    else << % [if w eq 'equal then]
-	       prod := 1;
-	       for each atf in rl_argn phi do
-	       	  prod := multf(prod,acfsf_arg2l atf);
-	       x := acfsf_0mk2('equal,prod);
-	       gprem := x . gprem;
-	       gprodal := (x . phi) . gprodal
-	    >>
-	 else
-	    gprem := phi . gprem;
+         if rl_op phi memq '(and or) then  % [phi] is not an atomic formula
+            if (w := acfsf_gsdis!-type rl_argn phi) eq 'impl then
+               imp := phi . imp
+            else if w eq 'noneq then
+               noneq := phi . noneq
+            else << % [if w eq 'equal then]
+               prod := 1;
+               for each atf in rl_argn phi do
+                  prod := multf(prod,acfsf_arg2l atf);
+               x := acfsf_0mk2('equal,prod);
+               gprem := x . gprem;
+               gprodal := (x . phi) . gprodal
+            >>
+         else
+            gprem := phi . gprem;
       if !*rlgsvb then <<
-	 ioto_tprin2t {"global: ",length gprem,"; impl: ",length imp,
- 	    "; no neq: ",length noneq, "; glob-prod-al: ",length gprodal,"."}
+         ioto_tprin2t {"global: ",length gprem,"; impl: ",length imp,
+            "; no neq: ",length noneq, "; glob-prod-al: ",length gprodal,"."}
       >>;
       return { 'impl . imp, 'noneq . noneq, 'gprem . gprem, 'gprodal . gprodal}
    end;
@@ -312,10 +312,10 @@ procedure acfsf_gspart(part,gp);
    begin scalar w,curlen,res;
       if !*rlgsvb then curlen := length part;
       res := for each phi in part collect <<
-	 if !*rlgsvb then ioto_prin2 {"[",curlen};
-      	 w := acfsf_gsimplication(phi,gp);
-	 if !*rlgsvb then << curlen := curlen - 1; ioto_prin2 {"] "} >>;
-	 w
+         if !*rlgsvb then ioto_prin2 {"[",curlen};
+         w := acfsf_gsimplication(phi,gp);
+         if !*rlgsvb then << curlen := curlen - 1; ioto_prin2 {"] "} >>;
+         w
       >>;
       if !*rlgsvb then ioto_cterpri();
       return res
@@ -340,18 +340,18 @@ procedure acfsf_gsimplication(f,gp);
       z := numr simp acfsf_gsmkradvar();
       rprod := acfsf_gseqprod(prod1,prod2,gprod,prem,z);
       if rprod eq 'true then <<
-	 if !*rlgsvb then ioto_prin2 "!";
-	 return 'true
+         if !*rlgsvb then ioto_prin2 "!";
+         return 'true
       >>;
       w := acfsf_gsusepremise(cdr gp,prem,z);
       if w eq 'true then <<
-      	 if !*rlgsvb then ioto_prin2 "!";
-	 return 'true
+         if !*rlgsvb then ioto_prin2 "!";
+         return 'true
       >>;
       natl := acfsf_gsredatl(atl,prem,z,rprod);
       if natl eq 'true then <<
-      	 if !*rlgsvb then ioto_prin2 "!";
-	 return 'true
+         if !*rlgsvb then ioto_prin2 "!";
+         return 'true
       >>;
       if rprod and rprod neq 'false then natl := rprod . natl;
       natl := nconc(natl,acfsf_gspremise(iprem,caar gp));
@@ -365,13 +365,13 @@ procedure acfsf_gsredatl(atl,prem,z,rprod);
    % formulas.
    begin scalar a,w,natl;
       while atl do <<
-	 a := car atl;
-      	 atl := cdr atl;
-	 w := acfsf_gsredat(a,prem,z,rprod);
-	 if w eq 'true then
-	    atl := nil
-	 else if w and w neq 'false then
-	    natl := w . natl
+         a := car atl;
+         atl := cdr atl;
+         w := acfsf_gsredat(a,prem,z,rprod);
+         if w eq 'true then
+            atl := nil
+         else if w and w neq 'false then
+            natl := w . natl
       >>;
       if w eq 'true then return 'true;
       return natl
@@ -383,11 +383,11 @@ procedure acfsf_gsusepremise(atl,prem,z);
    % kernel. returns [nil] or ['true].
    begin scalar w;
       while atl do <<
-	 w := acfsf_gsredat(car atl,prem,z,nil);
-	 if w eq 'true then
-	    atl := nil
-	 else
-	    atl := cdr atl;
+         w := acfsf_gsredat(car atl,prem,z,nil);
+         if w eq 'true then
+            atl := nil
+         else
+            atl := cdr atl;
       >>;
       if w eq 'true then return 'true;
    end;
@@ -401,14 +401,14 @@ procedure acfsf_gseqprod(iprod1,iprod2,gprod,prem,z);
       % Comment the test on [!*rlgsrad] out if the radical membership
       % test should always be performed for the equation product.
       if !*rlgsrad and
-	 (null acfsf_gsgreducef(1,addf(1,negf multf(p,z)) . prem))
+         (null acfsf_gsgreducef(1,addf(1,negf multf(p,z)) . prem))
       then
-	 return 'true;
+         return 'true;
       w := acfsf_gstryeval('equal,acfsf_gspreducef(p,prem));
       if rl_tvalp w then return w;
       if null !*rlgsprod then return nil;
       if !*rlgsred then
-	 return  acfsf_0mk2('equal,acfsf_gspreducef(iprod1,prem));
+         return  acfsf_0mk2('equal,acfsf_gspreducef(iprod1,prem));
       return acfsf_0mk2('equal,iprod1);
    end;
 
@@ -419,9 +419,9 @@ procedure acfsf_gsmkradvar();
    begin scalar w; integer n;
       w := 'rlgsradmemv!*;
       while get(w,'avalue) do
-	 w := mkid(w,n := n+1);
+         w := mkid(w,n := n+1);
       if !*rlgsutord then
-	 acfsf_gsupdtorder w;
+         acfsf_gsupdtorder w;
       return w;
    end;
 
@@ -435,11 +435,11 @@ procedure acfsf_gsupdtorder(v);
    % simplifier.
    if td_vars() and v memq td_vars() then   % vl needs update
       if not(td_sortmode() memq '(lex gradlex revgradlex gradlexgradlex
-	 gradlexrevgradlex lexgradlex lexrevgradlex weighted))
+         gradlexrevgradlex lexgradlex lexrevgradlex weighted))
       then
-	 rederr {"term order",td_sortmode(), "not supported"}
+         rederr {"term order",td_sortmode(), "not supported"}
       else
-	 acfsf_gstv!* := v;
+         acfsf_gstv!* := v;
 
 procedure acfsf_gstryeval(rel,lhs);
    % Algebraically closed field standard form try evaluation. [rel] is
@@ -449,11 +449,11 @@ procedure acfsf_gstryeval(rel,lhs);
    % case the returned value is equivalent to the the atomic formula.
    begin scalar w,!*rlsiexpla;
       if !*rlgserf then <<
-      	 w := cl_simplat(acfsf_0mk2(rel,lhs),nil);
-      	 return if rl_tvalp w then w
+         w := cl_simplat(acfsf_0mk2(rel,lhs),nil);
+         return if rl_tvalp w then w
       >>;
       if domainp lhs then
-	 return cl_simplat(acfsf_0mk2(rel,lhs),nil)
+         return cl_simplat(acfsf_0mk2(rel,lhs),nil)
    end;
 
 procedure acfsf_gsdis2impl(atl);
@@ -464,20 +464,20 @@ procedure acfsf_gsdis2impl(atl);
    begin scalar prem,prod1,prod2,other,w,a;
       prod1 := prod2 := 1;
       for each at in atl do <<
-	 w := acfsf_gsattype at;
-	 if w then <<
-	    a := car w;
-	    if a eq 'equal then
-	       prod1 := multf(cdr w,prod1)
-	    else if a eq 'cequal then
-	       prod2 := multf(cdr w,prod2)
-	    else if a eq 'neq then
-	       prem := cdr w . prem
-	    else
-	       rederr {"BUG IN ACFSF_GSDIS2IMPL",car w}
-	 >>;
-	 if not (w memq '(equal neq)) then
-   	    other := at . other
+         w := acfsf_gsattype at;
+         if w then <<
+            a := car w;
+            if a eq 'equal then
+               prod1 := multf(cdr w,prod1)
+            else if a eq 'cequal then
+               prod2 := multf(cdr w,prod2)
+            else if a eq 'neq then
+               prem := cdr w . prem
+            else
+               rederr {"BUG IN ACFSF_GSDIS2IMPL",car w}
+         >>;
+         if not (w memq '(equal neq)) then
+            other := at . other
       >>;
       return {prem, prod1, prod2, other};
    end;
@@ -511,16 +511,16 @@ procedure acfsf_gsredat(at,gb,z,flag);
       arg := acfsf_arg2l at;
       w := acfsf_gspreducef(arg,gb);
       if !*rlgsred then
-      	 nat := cl_simplat(acfsf_0mk2(op,w),nil)
+         nat := cl_simplat(acfsf_0mk2(op,w),nil)
       else
-	 if x := acfsf_gstryeval(op,w) then
-	    nat := x
-      	 else
-	    nat := at;
+         if x := acfsf_gstryeval(op,w) then
+            nat := x
+         else
+            nat := at;
       if (rl_tvalp nat) or (op eq 'equal) or (null !*rlgsrad) then
-	 return nat;
+         return nat;
       if null acfsf_greducef(1,addf(1,negf multf(w,z)) . gb) then
-	 return cl_simplat(acfsf_0mk2(op,nil),nil);
+         return cl_simplat(acfsf_0mk2(op,nil),nil);
       return nat;
    end;
 
@@ -537,17 +537,17 @@ procedure acfsf_gspremise(tl,gp);
    % reduced Groebner base of the term list.
    begin scalar gb,rtl,w;
       if !*rlgsred then <<
-	 gb := acfsf_gsgbf gp;
-	 for each sf in tl do
-	    if w := acfsf_gspreducef(sf,gb) then
-	       rtl := lto_insert(w,rtl);
+         gb := acfsf_gsgbf gp;
+         for each sf in tl do
+            if w := acfsf_gspreducef(sf,gb) then
+               rtl := lto_insert(w,rtl);
       >> else
-	 rtl := tl;
+         rtl := tl;
       if !*rlgssub then
-	 return for each sf in acfsf_gsgbf rtl collect
-	    acfsf_0mk2('neq,sf);
+         return for each sf in acfsf_gsgbf rtl collect
+            acfsf_0mk2('neq,sf);
       return for each sf in rtl collect
-	    acfsf_0mk2('neq,sf)
+         acfsf_0mk2('neq,sf)
    end;
 
 procedure acfsf_gssimulateprod(prem,prodal);
@@ -557,9 +557,9 @@ procedure acfsf_gssimulateprod(prem,prodal);
    begin scalar w,res;
       if rl_tvalp prem then return prem;
       if cl_atfp prem  and (w := lto_cassoc(prem,prodal)) then
-	 return w;
+         return w;
       res := for each f in rl_argn prem collect
-	 if cl_atfp f and (w := lto_cassoc(f,prodal)) then w else f;
+         if cl_atfp f and (w := lto_cassoc(f,prodal)) then w else f;
       return rl_mkn(rl_op prem,res)
    end;
 

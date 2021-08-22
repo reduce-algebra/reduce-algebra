@@ -1,4 +1,5 @@
-module ofsfgs;  % Ordered field standard form Groebner simplifier
+module ofsfgs;
+% Ordered field standard form Groebner simplifier
 
 revision('ofsfgs, "$Id$");
 
@@ -56,7 +57,7 @@ procedure ofsf_gsc1(f,atl);
    % This is to mind !*rlpos at the end.
    begin scalar ql,varll,w;
       if !*rlqepnf then
-	 f := cl_pnf f;
+         f := cl_pnf f;
       {ql,varll,f} := cl_split f;
       w := ofsf_gsc2(f,atl);
       return cl_unsplit(ql,varll,w)
@@ -70,14 +71,14 @@ procedure ofsf_gsc2(f,atl);
    % returned formula is somehow simpler than [f].
    begin scalar phi,!*rlsiexpla;  % Hack, but otherwise phi is not a bnf!
       if !*rlgsbnf then <<
-      	 if !*rlgsvb then ioto_prin2 "[CNF";
-      	 phi := cl_simpl(cl_cnf cl_nnf f,atl,-1);
-      	 if !*rlgsvb then ioto_prin2 "] "
+         if !*rlgsvb then ioto_prin2 "[CNF";
+         phi := cl_simpl(cl_cnf cl_nnf f,atl,-1);
+         if !*rlgsvb then ioto_prin2 "] "
       >> else
-	 phi := cl_simpl(f,atl,-1);
+         phi := cl_simpl(f,atl,-1);
       if phi eq 'inctheo then return 'inctheo;
       if rl_tvalp phi then
-	 return phi;
+         return phi;
       phi := ofsf_gssimplify0(phi,atl);
       if phi eq 'inctheo then return 'inctheo;
       return cl_simpl(phi,atl,-1)
@@ -101,7 +102,7 @@ procedure ofsf_gsd1(f,atl);
    % This is to mind !*rlpos at the end.
    begin scalar ql,varll,w;
       if !*rlqepnf then
-	 f := cl_pnf f;
+         f := cl_pnf f;
       {ql,varll,f} := cl_split f;
       w := cl_simpl(ofsf_gsd2(f,atl),atl,-1);
       return cl_unsplit(ql,varll,w)
@@ -115,14 +116,14 @@ procedure ofsf_gsd2(f,atl);
    % returned formula is somehow simpler than [f].
    begin scalar phi,!*rlpos,!*rlsiexpla;  % Hack, but otherwise phi is not a bnf!
       if !*rlgsbnf then <<
-      	 if !*rlgsvb then ioto_prin2 "[DNF";
-      	 phi := cl_simpl(cl_nnfnot cl_dnf f,atl,-1);
-      	 if !*rlgsvb then ioto_prin2 "] ";
+         if !*rlgsvb then ioto_prin2 "[DNF";
+         phi := cl_simpl(cl_nnfnot cl_dnf f,atl,-1);
+         if !*rlgsvb then ioto_prin2 "] ";
       >> else
-      	 phi := cl_simpl(cl_nnfnot f,atl,-1);
+         phi := cl_simpl(cl_nnfnot f,atl,-1);
       if phi eq 'inctheo then return 'inctheo;
       if rl_tvalp phi then
-   	 return cl_nnfnot phi;
+         return cl_nnfnot phi;
       phi := ofsf_gssimplify0(phi,atl);
       if phi eq 'inctheo then return 'inctheo;
       return cl_nnfnot phi
@@ -132,7 +133,7 @@ asserted procedure ofsf_gsn(f: Formula, atl: List, bnf: Id): Formula;
    % This is to mind !*rlpos at the end.
    begin scalar ql,varll,w;
       if !*rlqepnf then
-	 f := cl_pnf f;
+         f := cl_pnf f;
       {ql, varll, f} := cl_split f;
       w := ofsf_gsn1(f, atl, bnf);
       return cl_unsplit(ql, varll, w)
@@ -177,17 +178,17 @@ procedure ofsf_gssimplify(f,atl);
    % list of atomic formulas, which are considered to describe a
    % theory. A formula is returned.
    begin scalar al,gp,ipart,npart,w,gprem,gprodal,gatl;
-      atl := cl_sitheo atl;
+      atl := cl_simplifyTheory atl;
       if atl eq 'inctheo or ofsf_gsinctheop(atl) then
-	 return 'inctheo;
+         return 'inctheo;
       if (cl_atfp f) or (rl_op f eq 'or) then  % degenerated cnf
-	 al := ofsf_gssplit!-cnf {f}
+         al := ofsf_gssplit!-cnf {f}
       else
-      	 al := ofsf_gssplit!-cnf rl_argn f;
+         al := ofsf_gssplit!-cnf rl_argn f;
       if w := lto_catsoc('gprem,al) then <<
-      	 gp := ofsf_gsextract!-gp atl;
-      	 gprem := ofsf_gsgprem(w,gp);
-	 if gprem eq 'false then return 'false;
+         gp := ofsf_gsextract!-gp atl;
+         gprem := ofsf_gsgprem(w,gp);
+         if gprem eq 'false then return 'false;
       >>;
       gatl := append(atl,lto_catsoc('gprem,al));
       gp := ofsf_gsextract!-gp(gatl);
@@ -195,15 +196,15 @@ procedure ofsf_gssimplify(f,atl);
       ipart := lto_catsoc('impl,al);
       npart := lto_catsoc('noneq,al);
       if ipart then
-	 ipart := ofsf_gspart(ipart,gp);
+         ipart := ofsf_gspart(ipart,gp);
       if npart and gatl then
-      	 npart := ofsf_gspart(npart,gp);
+         npart := ofsf_gspart(npart,gp);
       if gprem then <<
- 	 if null !*rlgsprod then <<
-	    gprodal := lto_catsoc('gprodal,al);
-	    gprem := ofsf_gssimulateprod(gprem,gprodal)
-	 >>;
-      	 return rl_smkn('and,gprem . nconc(ipart,npart))
+         if null !*rlgsprod then <<
+            gprodal := lto_catsoc('gprodal,al);
+            gprem := ofsf_gssimulateprod(gprem,gprodal)
+         >>;
+         return rl_smkn('and,gprem . nconc(ipart,npart))
       >>;
       return rl_smkn('and,nconc(ipart,npart))
    end;
@@ -241,10 +242,10 @@ procedure ofsf_gsinctheop(atl);
    % [T] or [nil] is returned.
    begin scalar w;
       if null atl then
-     	 return nil;
+         return nil;
       if !*rlgsvb then ioto_prin2 "Inctheop... ";
       w := cl_nnfnot ofsf_gsimplication(
-       	 cl_nnfnot rl_smkn('and,atl),'((nil . 1) . nil));
+         cl_nnfnot rl_smkn('and,atl),'((nil . 1) . nil));
       if !*rlgsvb then ioto_prin2t "done.";
       return w eq 'false
    end;
@@ -264,24 +265,24 @@ procedure ofsf_gssplit!-cnf(f);
    % representation, if the equation was extracted from a disjunction.
    begin scalar noneq,imp,prod,gprodal,gprem,w,x;
       for each phi in f do
-	 if rl_op phi memq '(and or) then  % [phi] is not an atomic formula
-	    if (w := ofsf_gsdis!-type rl_argn phi) eq 'impl then
-	       imp := phi . imp
-	    else if w eq 'noneq then
-	       noneq := phi . noneq
-	    else << % [if w eq 'equal then]
-	       prod := 1;
-	       for each atf in rl_argn phi do
-	       	  prod := multf(prod,ofsf_arg2l atf);
-	       x := ofsf_0mk2('equal,prod);
-	       gprem := x . gprem;
-	       gprodal := (x . phi) . gprodal
-	    >>
-	 else
-	    gprem := phi . gprem;
+         if rl_op phi memq '(and or) then  % [phi] is not an atomic formula
+            if (w := ofsf_gsdis!-type rl_argn phi) eq 'impl then
+               imp := phi . imp
+            else if w eq 'noneq then
+               noneq := phi . noneq
+            else << % [if w eq 'equal then]
+               prod := 1;
+               for each atf in rl_argn phi do
+                  prod := multf(prod,ofsf_arg2l atf);
+               x := ofsf_0mk2('equal,prod);
+               gprem := x . gprem;
+               gprodal := (x . phi) . gprodal
+            >>
+         else
+            gprem := phi . gprem;
       if !*rlgsvb then <<
-	 ioto_tprin2t {"global: ",length gprem,"; impl: ",length imp,
- 	    "; no neq: ",length noneq, "; glob-prod-al: ",length gprodal,"."}
+         ioto_tprin2t {"global: ",length gprem,"; impl: ",length imp,
+            "; no neq: ",length noneq, "; glob-prod-al: ",length gprodal,"."}
       >>;
       return { 'impl . imp, 'noneq . noneq, 'gprem . gprem, 'gprodal . gprodal}
    end;
@@ -335,10 +336,10 @@ procedure ofsf_gspart(part,gp);
    begin scalar w,curlen,res;
       if !*rlgsvb then curlen := length part;
       res := for each phi in part collect <<
-	 if !*rlgsvb then ioto_prin2 {"[",curlen};
-      	 w := ofsf_gsimplication(phi,gp);
-	 if !*rlgsvb then << curlen := curlen - 1; ioto_prin2 {"] "} >>;
-	 w
+         if !*rlgsvb then ioto_prin2 {"[",curlen};
+         w := ofsf_gsimplication(phi,gp);
+         if !*rlgsvb then << curlen := curlen - 1; ioto_prin2 {"] "} >>;
+         w
       >>;
       if !*rlgsvb then ioto_cterpri();
       return res
@@ -364,18 +365,18 @@ procedure ofsf_gsimplication(f,gp);
       z := numr simp ofsf_gsmkradvar();
       rprod := ofsf_gseqprod(prod1,prod2,gprod,prem,z);
       if rprod eq 'true then <<
-	 if !*rlgsvb then ioto_prin2 "!";
-	 return 'true
+         if !*rlgsvb then ioto_prin2 "!";
+         return 'true
       >>;
       w := ofsf_gsusepremise(cdr gp,prem,z);
       if w eq 'true then <<
-      	 if !*rlgsvb then ioto_prin2 "!";
-	 return 'true
+         if !*rlgsvb then ioto_prin2 "!";
+         return 'true
       >>;
       natl := ofsf_gsredatl(atl,prem,z,rprod);
       if natl eq 'true then <<
-      	 if !*rlgsvb then ioto_prin2 "!";
-	 return 'true
+         if !*rlgsvb then ioto_prin2 "!";
+         return 'true
       >>;
       if rprod and rprod neq 'false then natl := rprod . natl;
       natl := nconc(natl,ofsf_gspremise(iprem,caar gp));
@@ -388,13 +389,13 @@ procedure ofsf_gsredatl(atl,prem,z,rprod);
    % [rprod] is a flag. Returns ['true] or a list of atomic formulas.
    begin scalar a,w,natl;
       while atl do <<
-	 a := car atl;
-      	 atl := cdr atl;
-	 w := ofsf_gsredat(a,prem,z,rprod);
-	 if w eq 'true then
-	    atl := nil
-	 else if w and w neq 'false then
-	    natl := w . natl
+         a := car atl;
+         atl := cdr atl;
+         w := ofsf_gsredat(a,prem,z,rprod);
+         if w eq 'true then
+            atl := nil
+         else if w and w neq 'false then
+            natl := w . natl
       >>;
       if w eq 'true then return 'true;
       return natl;
@@ -406,11 +407,11 @@ procedure ofsf_gsusepremise(atl,prem,z);
    % returns [nil] or ['true].
    begin scalar w;
       while atl do <<
-	 w := ofsf_gsredat(car atl,prem,z,nil);
-	 if w eq 'true then
-	    atl := nil
-	 else
-	    atl := cdr atl;
+         w := ofsf_gsredat(car atl,prem,z,nil);
+         if w eq 'true then
+            atl := nil
+         else
+            atl := cdr atl;
       >>;
       if w eq 'true then return 'true;
    end;
@@ -424,14 +425,14 @@ procedure ofsf_gseqprod(iprod1,iprod2,gprod,prem,z);
       % Comment the test on [!*rlgsrad] out if the radical membership
       % test should always be performed for the equation product.
       if !*rlgsrad and
-	 (null ofsf_gsgreducef(1,addf(1,negf multf(p,z)) . prem))
+         (null ofsf_gsgreducef(1,addf(1,negf multf(p,z)) . prem))
       then
-	 return 'true;
+         return 'true;
       w := ofsf_gstryeval('equal,ofsf_gspreducef(p,prem));
       if rl_tvalp w then return w;
       if null !*rlgsprod then return nil;
       if !*rlgsred then
-	 return  ofsf_0mk2('equal,ofsf_gspreducef(iprod1,prem));
+         return  ofsf_0mk2('equal,ofsf_gspreducef(iprod1,prem));
       return ofsf_0mk2('equal,iprod1);
    end;
 
@@ -442,9 +443,9 @@ procedure ofsf_gsmkradvar();
    begin scalar w; integer n;
       w := 'rlgsradmemv!*;
       while get(w,'avalue) do
-	 w := mkid(w,n := n+1);
+         w := mkid(w,n := n+1);
       if !*rlgsutord then
-	 ofsf_gsupdtorder w;
+         ofsf_gsupdtorder w;
       return w;
    end;
 
@@ -458,11 +459,11 @@ procedure ofsf_gsupdtorder(v);
    % simplifier.
    if td_vars() and v memq td_vars() then   % vl needs update
       if not(td_sortmode() memq '(lex gradlex revgradlex gradlexgradlex
-	 gradlexrevgradlex lexgradlex lexrevgradlex weighted))
+         gradlexrevgradlex lexgradlex lexrevgradlex weighted))
       then
-	 rederr {"term order",td_sortmode(), "not supported"}
+         rederr {"term order",td_sortmode(), "not supported"}
       else
-	 ofsf_gstv!* := v;
+         ofsf_gstv!* := v;
 
 procedure ofsf_gstryeval(rel,lhs);
    % Ordered field standard form try evaluation. [rel] is an
@@ -472,11 +473,11 @@ procedure ofsf_gstryeval(rel,lhs);
    % case the returned value is equivalent to the the atomic formula.
    begin scalar w,!*rlsiexpla;
       if !*rlgserf then <<
-      	 w := cl_simplat(ofsf_0mk2(rel,lhs),nil);
-      	 return if rl_tvalp w then w;
+         w := cl_simplat(ofsf_0mk2(rel,lhs),nil);
+         return if rl_tvalp w then w;
       >>;
       if domainp lhs then
-	 return cl_simplat(ofsf_0mk2(rel,lhs),nil);
+         return cl_simplat(ofsf_0mk2(rel,lhs),nil);
    end;
 
 procedure ofsf_gsdis2impl(atl);
@@ -487,20 +488,20 @@ procedure ofsf_gsdis2impl(atl);
    begin scalar prem,prod1,prod2,other,w,a;
       prod1 := prod2 := 1;
       for each at in atl do <<
-	 w := ofsf_gsattype at;
-	 if w then <<
-	    a := car w;
-	    if a eq 'equal then
-	       prod1 := multf(cdr w,prod1)
-	    else if a eq 'cequal then
-	       prod2 := multf(cdr w,prod2)
-	    else if a eq 'neq then
-	       prem := cdr w . prem
-	    else
-	       rederr {"BUG IN OFSF_GSDIS2IMPL",car w}
-	 >>;
-	 if not (w memq '(equal neq)) then
-   	    other := at . other
+         w := ofsf_gsattype at;
+         if w then <<
+            a := car w;
+            if a eq 'equal then
+               prod1 := multf(cdr w,prod1)
+            else if a eq 'cequal then
+               prod2 := multf(cdr w,prod2)
+            else if a eq 'neq then
+               prem := cdr w . prem
+            else
+               rederr {"BUG IN OFSF_GSDIS2IMPL",car w}
+         >>;
+         if not (w memq '(equal neq)) then
+            other := at . other
       >>;
       return {prem, prod1, prod2, other};
    end;
@@ -534,16 +535,16 @@ procedure ofsf_gsredat(at,gb,z,flag);
       arg := ofsf_arg2l at;
       w := ofsf_gspreducef(arg,gb);
       if !*rlgsred then
-      	 nat := cl_simplat(ofsf_0mk2(op,w),nil)
+         nat := cl_simplat(ofsf_0mk2(op,w),nil)
       else
-	 if x := ofsf_gstryeval(op,w) then
-	    nat := x
-      	 else
-	    nat := at;
+         if x := ofsf_gstryeval(op,w) then
+            nat := x
+         else
+            nat := at;
       if (rl_tvalp nat) or (op eq 'equal) or (null !*rlgsrad) then
-	 return nat;
+         return nat;
       if null ofsf_gsgreducef(1,addf(1,negf multf(w,z)) . gb) then
-	 return cl_simplat(ofsf_0mk2(op,nil),nil);
+         return cl_simplat(ofsf_0mk2(op,nil),nil);
       return nat;
    end;
 
@@ -560,17 +561,17 @@ procedure ofsf_gspremise(tl,gp);
    % of the term list.
    begin scalar gb,rtl,w;
       if !*rlgsred then <<
-	 gb := ofsf_gsgbf gp;
-	 for each sf in tl do
-	    if w := ofsf_gspreducef(sf,gb) then
-	       rtl := lto_insert(w,rtl);
+         gb := ofsf_gsgbf gp;
+         for each sf in tl do
+            if w := ofsf_gspreducef(sf,gb) then
+               rtl := lto_insert(w,rtl);
       >> else
-	 rtl := tl;
+         rtl := tl;
       if !*rlgssub then
-	 return for each sf in ofsf_gsgbf rtl collect
-	    ofsf_0mk2('neq,sf);
+         return for each sf in ofsf_gsgbf rtl collect
+            ofsf_0mk2('neq,sf);
       return for each sf in rtl collect
-	    ofsf_0mk2('neq,sf)
+         ofsf_0mk2('neq,sf)
    end;
 
 procedure ofsf_gssimulateprod(prem,prodal);
@@ -580,9 +581,9 @@ procedure ofsf_gssimulateprod(prem,prodal);
    begin scalar w,res;
       if rl_tvalp prem then return prem;
       if cl_atfp prem  and (w := lto_cassoc(prem,prodal)) then
-	 return w;
+         return w;
       res := for each f in rl_argn prem collect
-	 if cl_atfp f and (w := lto_cassoc(f,prodal)) then w else f;
+         if cl_atfp f and (w := lto_cassoc(f,prodal)) then w else f;
       return rl_mkn(rl_op prem,res)
    end;
 

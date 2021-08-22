@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PXNK:ieee-decls.sl for x86_64
-% Description:  IEEE 754 specific declarations for PSL, 64 bit variant
+% File:         PXNK:ieee-decls.sl for x86
+% Description:  IEEE 754 specific declarations for PSL, 32 bit variant
 % Author:       Rainer Schöpf
 % Created:      8 July 2018 
 % Mode:         Lisp 
@@ -51,10 +51,19 @@
 (ds ieeezerop(u)
     % ieee zero may have the sign bit set to indicate -0.0,
     % so shift the leftmost bit off the machine word before comparing with 0
-    (or (weq (wshift (floathiword u) 1) 0)))
+    (and (weq (wshift (floathiword u) 1) 0)
+	 (weq (floatloword u) 0)))
 
-%(ds ieeemant (f) (wand (floathiword f) 16#fffffffffffff))
-(ds ieeemant (f) (wshift (wshift (floathiword f) 12) -12))
+(ds ieeemant (f)
+   ((lambda (lf)
+       (lor
+          (lshift
+             (wor
+                (wshift (wand (floathiword f) 16#fffff) 16#6)
+                (wshift lf (minus 16#1a)))
+             16#1a)
+          (wand (lshift (minus 16#1) (minus 16#6)) lf)))
+      (floatloword f)))
 
 (ds ieeeexpt(u)
     (wdifference (wand ieeemask 

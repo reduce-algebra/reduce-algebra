@@ -34,18 +34,19 @@ create!-package('(cl clsimpl clsimplbasic clsusi clbnf clnf clqe cltab clmisc cl
 
 load!-package 'redlog;
 
-exports cl_atfp,cl_cxfp,cl_atflp,cl_ncflp,cl_dnfp,cl_cnfp,cl_bnfp,cl_simpl,
-   cl_sitheo,cl_ordp,cl_smcpknowl,cl_smrmknowl,cl_smupdknowl,cl_smmkatl,
-   cl_smsimpl!-impl,cl_smsimpl!-equiv1,cl_siaddatl,cl_susimkatl,cl_susicpknowl,
-   cl_susiupdknowl,cl_dnf,cl_cnf,cl_bnf!-cartprod,cl_bnfsimpl,cl_sacatlp,
-   cl_sacat,cl_expand!-extbool,cl_nnf,cl_nnfnot,cl_pnf,cl_rename!-vars,cl_fvarl,
-   cl_fvarl1,cl_bvarl,cl_bvarl1,cl_varl,cl_varl1,cl_apnf,cl_freevp,cl_tnf,
-   cl_gqe,cl_gqea,cl_qe,cl_qea,cl_qeipo,cl_qews,cl_trygauss,cl_specelim,cl_tab,
-   cl_atab,cl_itab,cl_gentheo,cl_apply2ats,cl_apply2ats1,cl_apply2ats2,cl_atnum,
-   cl_f2ml,cl_atml,cl_atml1,cl_atl,cl_atl1,cl_identifyonoff,cl_ifacml,
-   cl_ifacml1,cl_ifacl,cl_ifacl1,cl_ifacdegl,cl_matrix,cl_closure,cl_all,cl_ex,cl_flip,
-   cl_cflip,cl_subfof,cl_termml,cl_termml1,cl_terml,cl_terml1,cl_struct,
-   cl_ifstruct,cl_surep,cl_splt;
+exports cl_atfp, cl_cxfp, cl_atflp, cl_ncflp, cl_dnfp, cl_cnfp, cl_bnfp,
+   cl_simpl, cl_simplbasic, cl_simplifyTheory, cl_ordp, cl_smcpknowl,
+   cl_smrmknowl, cl_smupdknowl, cl_smmkatl, cl_siaddatl, cl_susimkatl,
+   cl_susicpknowl, cl_susiupdknowl, cl_dnf, cl_cnf, cl_bnf!-cartprod,
+   cl_bnfsimpl, cl_sacatlp, cl_sacat, cl_expand!-extbool, cl_nnf, cl_nnfnot,
+   cl_pnf, cl_rename!-vars, cl_fvarl, cl_fvarl1, cl_bvarl, cl_bvarl1, cl_varl,
+   cl_varl1, cl_apnf, cl_freevp, cl_tnf, cl_gqe, cl_gqea, cl_qe, cl_qea,
+   cl_qeipo, cl_qews, cl_trygauss, cl_specelim, cl_tab, cl_atab, cl_itab,
+   cl_gentheo, cl_apply2ats, cl_apply2ats1, cl_apply2ats2, cl_atnum, cl_f2ml,
+   cl_atml, cl_atml1, cl_atl, cl_atl1, cl_identifyonoff, cl_ifacml, cl_ifacml1,
+   cl_ifacl, cl_ifacl1, cl_ifacdegl, cl_matrix, cl_closure, cl_all, cl_ex,
+   cl_flip, cl_cflip, cl_subfof, cl_termml, cl_termml1, cl_terml, cl_terml1,
+   cl_struct, cl_ifstruct, cl_surep, cl_splt;
 
 fluid '(cl_identify!-atl!* cl_pal!* cl_lps!* cl_theo!*
    !*rlidentify !*rlsiexpla !*rlbnfsm !*rlverbose
@@ -63,7 +64,7 @@ struct Theory asserted by listp;
 struct TheoryFormulaPair asserted by pairp;
 struct KernelL asserted by listp;
 struct Quantifier asserted by idp;
-struct Atom asserted by cl_atfp;
+struct AtFormula asserted by cl_atfp;
 
 procedure cl_atfp(x);
    % Common logic atomic formula predicate. [x] is a formula. Returns
@@ -99,7 +100,7 @@ procedure cl_dnfp1(fl);
    % a formula. Returns [T] or [nil].
    (null fl) or ((rl_tvalp car fl) or (cl_atfp car fl) or
       ((rl_op car fl eq 'and) and (cl_ncflp rl_argn car fl))) and
-	 (cl_dnfp1 cdr fl);
+         (cl_dnfp1 cdr fl);
 
 procedure cl_cnfp(f);
    % Common logic conjunctive normal form predicate. [f] is a formula.
@@ -114,7 +115,7 @@ procedure cl_cnfp1(fl);
    % conjunctive normal form.
    (null fl) or ((rl_tvalp car fl) or (cl_atfp car fl) or
       ((rl_op car fl eq 'or) and (cl_ncflp rl_argn car fl))) and
-	 (cl_cnfp1 cdr fl);
+         (cl_cnfp1 cdr fl);
 
 procedure cl_bnfp(f);
    % Common logic boolean normal form predicate. [f] is a formula.
@@ -122,7 +123,7 @@ procedure cl_bnfp(f);
    % or conjunctive normal form.
    (rl_tvalp f) or (cl_atfp f) or (cl_ncflp rl_argn f)
       or ((rl_op f eq 'and) and cl_cnfp1 rl_argn f) or
-	 ((rl_op f eq 'or) and cl_dnfp1 rl_argn f);
+         ((rl_op f eq 'or) and cl_dnfp1 rl_argn f);
 
 endmodule;  % [cl]
 

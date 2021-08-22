@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PXNK:ieee-decls.sl for x86_64
-% Description:  IEEE 754 specific declarations for PSL, 64 bit variant
+% File:         PXNK:ieee-decls.sl for armv6
+% Description:  IEEE 754 specific declarations for PSL, 32 bit variant
 % Author:       Rainer Schöpf
 % Created:      8 July 2018 
 % Mode:         Lisp 

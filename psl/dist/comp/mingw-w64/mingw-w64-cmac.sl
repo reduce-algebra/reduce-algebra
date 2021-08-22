@@ -164,7 +164,7 @@
  
 %---------------------------------------------------------
 % The following set of predicates describes certain classes of
-% register classes. RegP tests if the ophe operand is a valid x86_64 register.%
+% register classes. RegP tests if the operand is a valid x86_64 register.%
 %
 % RegP  any x86_64 register
 % FakeRegP tests for argument register numbers greater than LastActualReg
@@ -1360,7 +1360,7 @@ preload  (setq initload
 		     (wait)))) 
 	 'opencode)
 
-%% *Alloc sets thes variable NAlloc*. Define a new CMacro *SetNAlloc* to
+%% *Alloc sets the variable NAlloc*. Define a new CMacro *SetNAlloc* to
 %%  be used when *Alloc is optimized away.
 (de *SetNAlloc* (framesize)
   (setq NAlloc* framesize))
