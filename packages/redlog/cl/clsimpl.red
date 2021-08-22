@@ -81,7 +81,7 @@ asserted procedure cl_simpl1(f: Formula, knowl: Any, n: Integer, sop: Id): Formu
    % integer; [sop] is a CL operator. Depends on switch [!*rlsiso]. Returns a
    % formula. Simplifies [f] recursively using [knowl].
    begin scalar op;
-      if eqn(n,0) then
+      if eqn(n, 0) then
          return f;
       op := rl_op f;
       if rl_tvalp op then
@@ -123,15 +123,15 @@ asserted procedure cl_simplifyAtom(f: AtFormula, knowl: Any, n: Integer, sop: Id
    end; 
 
 asserted procedure cl_simplifyQuantifier(f: Formula, knowl: Any, n: Integer): Formula;
-   begin scalar q, result;
+   begin scalar q, x, w;
       q := rl_op f;
-      knowl := rl_smrmknowl(knowl, rl_var f);
-      result := cl_simpl1(rl_mat f, knowl, n-1, q);
-      if rl_tvalp result then
-         return result;
-      if not (rl_var f memq cl_fvarl1 result) then
-         return result;
-      return rl_mkq(q, rl_var f, result)
+      x := rl_var f;
+      knowl := rl_smrmknowl(knowl, x);
+      w := cl_simpl1(rl_mat f, knowl, n-1, q);
+      if not (x memq cl_fvarl1 w) then
+         % This test covers truth values.
+         return w;
+      return rl_mkq(q, x, w)
    end;
 
 asserted procedure cl_simplifyBoundedQuantifier(f: Formula, knowl: Any, n: Integer): Formula;
