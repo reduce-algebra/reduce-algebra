@@ -74,7 +74,9 @@ function runtest() {
 
 export -f runtest
 
-parallel -j$cores runtest $* {} ::: $packages
+parallel --linebuffer --bar -j$cores runtest $* {} ::: $packages > /tmp/testredlog.out
+cat /tmp/testredlog.out
+rm /tmp/testredlog.out
 
 # for p1 in $here/packages/regressions/*.tst
 # do
