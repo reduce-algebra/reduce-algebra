@@ -97,6 +97,7 @@ put('ibalp,'rl_services,'(
    (rl_ex!* . cl_ex)
    (rl_all!* . cl_all)
    (rl_simpl!* . cl_simpl)
+   (rl_simplbasic!* . cl_simplbasic)
    (rl_atnum!* . cl_atnum)
    (rl_qnum!* . cl_qnum)
    (rl_matrix!* . cl_matrix)
@@ -150,58 +151,58 @@ procedure ibalp_priequal(f);
    % ['failed] and leave printing to [maprin].
    begin scalar w,rhs;
       if not eqcar(rl_cid!*,'ibalp) or not !*nat or not !*rlpcprint then
-      	 return 'failed;
+         return 'failed;
       f := reval f;
       rhs := caddr f;
       if not eqn(rhs,1) and not eqn(rhs,0) then
-	 return 'failed;
+         return 'failed;
       w := cadr f;
       if not idp w then
-	 return 'failed;
+         return 'failed;
       w := ibalp_upcase w;
       if not ibalp_pcvarp w and not !*rlpcprintall then
-	 return 'failed;
+         return 'failed;
       if eqn(rhs,0) then
-	 if !*utf8 then <<
-	    maprin 'not;
-	    maprin w
-	 >> else
-	    maprin {'not,w}
+         if !*utf8 then <<
+            maprin 'not;
+            maprin w
+         >> else
+            maprin {'not,w}
       else
-	 maprin w
+         maprin w
    end;
 
 procedure ibalp_fancy!-priequal(c);
    begin scalar w;
       if not !*nat then
-      	 return 'failed;
+         return 'failed;
       w := ibalp_fancy!-priequal!-pc c;
       if w eq 'failed then <<
-      	 maprin cadr c;
-      	 fancy!-prin2 "=";
-      	 maprin caddr c
+         maprin cadr c;
+         fancy!-prin2 "=";
+         maprin caddr c
       >>
    end;
 
 procedure ibalp_fancy!-priequal!-pc(c);
    begin scalar w,rhs;
       if not !*rlpcprint then
-	 return 'failed;
+         return 'failed;
       if not member(caddr c,'(0 1))then
-	 return 'failed;
+         return 'failed;
       w := cadr c;
       if not idp w then
-	 return 'failed;
+         return 'failed;
       w := ibalp_upcase w;
       if not ibalp_pcvarp w then
-	 return 'failed;
+         return 'failed;
       if rl_texmacsp() then <<
-      	 if caddr c eq 0 then fancy!-prin2 "\overline{";
-      	 fancy!-prin2 w;
-      	 if caddr c eq 0 then fancy!-prin2 "}"
+         if caddr c eq 0 then fancy!-prin2 "\overline{";
+         fancy!-prin2 w;
+         if caddr c eq 0 then fancy!-prin2 "}"
       >> else <<
-      	 if caddr c eq 0 then fancy!-special!-symbol(96,1);
-      	 fancy!-prin2 w
+         if caddr c eq 0 then fancy!-special!-symbol(96,1);
+         fancy!-prin2 w
       >>
    end;
 
@@ -223,11 +224,11 @@ procedure ibalp_pribnot(u);
       prin2!* get(car u,'prtch);
       prin2!* " ";
       if pairp cadr u and get(caadr u,'infix) then <<
-	 prin2!* "(";
-	 maprin cadr u;
-	 prin2!* ")"
+         prin2!* "(";
+         maprin cadr u;
+         prin2!* ")"
       >> else
-      	 maprin cadr u
+         maprin cadr u
    >>;
 
 procedure ibalp_fancy!-pribnot(u);
@@ -248,11 +249,11 @@ procedure ibalp_fancy!-pribnot!-fm(u);
    <<
       fancy!-prin2 "~";
       if pairp cadr u and get(caadr u,'infix) then <<
-	 fancy!-prin2 "(";
-	 maprin cadr u;
-	 fancy!-prin2 ")"
+         fancy!-prin2 "(";
+         maprin cadr u;
+         fancy!-prin2 ")"
       >> else
-      	 maprin cadr u
+         maprin cadr u
    >>;
 
 algebraic infix bequiv;
@@ -317,9 +318,9 @@ symbolic procedure ibalp_fancy!-pribor(u);
       maprin car w;
       w := cdr w;
       while w do <<
-	 fancy!-prin2 "|";
-	 maprin car w;
-	 w := cdr w;
+         fancy!-prin2 "|";
+         maprin car w;
+         w := cdr w;
       >>;
       fancy!-prin2 ")";
    end;
@@ -358,14 +359,14 @@ put('rlpcvar,'formfn,'ibalp_pcvarform);
 procedure ibalp_pcvarform(vl,an!-empty!-al,mode);
    <<
       ibalp_pcvar for each v in cdr vl join <<
-      	 if pairp v and ibalp_pcvarp car v then <<
-	    lprim {"ignoring",car v,"- already declared pcvar"};
-	    nil
-      	 >> else if not ibalp_uppercasep v then <<
-	    lprim{"ignoring",v,"- not an uppercase identifier"};
-	    nil
-      	 >> else
-	    {v}
+         if pairp v and ibalp_pcvarp car v then <<
+            lprim {"ignoring",car v,"- already declared pcvar"};
+            nil
+         >> else if not ibalp_uppercasep v then <<
+            lprim{"ignoring",v,"- not an uppercase identifier"};
+            nil
+         >> else
+            {v}
       >>;
       mkquote nil
    >>;
@@ -398,9 +399,9 @@ procedure ibalp_subat(al,at);
 procedure ibalp_subt(al,u);
    begin scalar w;
       if idp u and (w := atsoc(u,al)) then
-      	 return cdr w;
+         return cdr w;
       if atom u then
-      	 return u;
+         return u;
       return car u . for each arg in cdr u collect ibalp_subt(al,arg)
    end;
 
@@ -415,32 +416,32 @@ procedure ibalp_simpterm(u);
    % term.
    begin scalar op;
       if atom u then
-      	 return ibalp_simpatom u;
+         return ibalp_simpatom u;
       op := car u;
       if ibalp_boolfp op then
- 	 return op . for each arg in cdr u collect ibalp_simpterm arg;
+         return op . for each arg in cdr u collect ibalp_simpterm arg;
       u := reval u;
       if eqcar(u,op) then
-	 typerr(op,"Boolean function");
+         typerr(op,"Boolean function");
       return ibalp_simpterm u  % terminates because reval is idempotent
    end;
 
 procedure ibalp_simpatom(u);
    begin scalar w;
       if u = 0 or u = 1 then
-	 return u;
+         return u;
       if idp u then <<
-      	 if (w := rl_gettype u) then
-	    return ibalp_simpterm reval u;
-	 flag({u},'used!*);
-	 return u
+         if (w := rl_gettype u) then
+            return ibalp_simpterm reval u;
+         flag({u},'used!*);
+         return u
       >>;
       if null u then
-	 typerr("nil","Boolean term");
+         typerr("nil","Boolean term");
       if numberp u then
- 	 typerr({"number",u},"Boolean term");
+         typerr({"number",u},"Boolean term");
       if stringp u then
- 	 typerr({"string",u},"Boolean term")
+         typerr({"string",u},"Boolean term")
    end;
 
 inline procedure ibalp_prepterm(u);
@@ -542,24 +543,24 @@ procedure ibalp_subsumption(l1,l2,gor);
    % lists of atomic formulas. Returns one of [keep1], [keep2], [nil].
    if gor eq 'or then (
       if ibalp_subsumep!-and(l1,l2) then
- 	 'keep2
+         'keep2
       else if ibalp_subsumep!-and(l2,l1) then
-	 'keep1
+         'keep1
    ) else  % [gor eq 'and]
       if ibalp_subsumep!-or(l1,l2) then
-	 'keep1
+         'keep1
       else if ibalp_subsumep!-or(l2,l1) then
-	 'keep2
+         'keep2
       else
-	 nil;
+         nil;
 
 procedure ibalp_subsumep!-and(l1,l2);
    % Subsume [and] case. [l1] and [l2] are lists of atomic formulas.
    begin scalar a;
       while l2 do <<
-	 a := car l2;
-	 l2 := cdr l2;
-	 if cl_simpl(a,l1,-1) neq 'true then a := l2 := nil
+         a := car l2;
+         l2 := cdr l2;
+         if cl_simpl(a,l1,-1) neq 'true then a := l2 := nil
       >>;
       return a
    end;
@@ -568,9 +569,9 @@ procedure ibalp_subsumep!-or(l1,l2);
    % Subsume [or] case. [l1] and [l2] are lists of atomic formulas.
    begin scalar a;
       while l1 do <<
-	 a := car l1;
-	 l1 := cdr l1;
-	 if cl_simpl(rl_smkn('or,l2),{a},-1) neq 'true then a := l1 := nil
+         a := car l1;
+         l1 := cdr l1;
+         if cl_simpl(rl_smkn('or,l2),{a},-1) neq 'true then a := l1 := nil
       >>;
       return a
    end;
@@ -588,13 +589,13 @@ procedure ibalp_sacat(a1,a2,gor);
    % be performed.
    begin scalar rhs1,rhs2;
       if ibalp_arg2l a1 neq ibalp_arg2l a2 then
-	 return nil;
+         return nil;
       rhs1 := ibalp_arg2r a1;
       rhs2 := ibalp_arg2r a2;
       if rhs1 = rhs2 then
-	 return 'keep;
+         return 'keep;
       if rhs1 = 0 and rhs2 = 1 or rhs1 = 1 and rhs2 = 0 then
-	 return 'drop;
+         return 'drop;
       return nil
    end;
 
@@ -658,16 +659,16 @@ procedure seidl_negateat(atf);
       rel := ibalp_op atf;
       % flip 0 and 1, if possible
       if rhs member {0,1} then
-	 return ibalp_mk2(rel,lhs,ibalp_flip01 rhs);
+         return ibalp_mk2(rel,lhs,ibalp_flip01 rhs);
       if lhs member {0,1} then
-      	 return ibalp_mk2(rel,ibalp_flip01 lhs,rhs);
+         return ibalp_mk2(rel,ibalp_flip01 lhs,rhs);
       % drop a bnot, if possible
       op := ibalp_op rhs;
       if op equal 'bnot then
-	 return ibalp_mk2(rel,lhs,ibalp_arg1 rhs);
+         return ibalp_mk2(rel,lhs,ibalp_arg1 rhs);
       op := ibalp_op lhs;
       if op equal 'bnot then
-	 return ibalp_mk2(rel,ibalp_arg1 lhs,rhs);
+         return ibalp_mk2(rel,ibalp_arg1 lhs,rhs);
       % otherwise: negate left side
       return ibalp_mk2(rel,ibalp_mk1('bnot,rhs),rhs);
    end;
@@ -682,7 +683,7 @@ procedure ibalp_cveq(a);
       a
    else
       ibalp_mk2('equal,ibalp_arg2l w,ibalp_arg2r w)
-	 where w=ibalp_negateat(a);
+         where w=ibalp_negateat(a);
 
 procedure ibalp_termmlat(at);
    % Term multiplicity list of atomic formula. [at] is an atomic
@@ -720,7 +721,7 @@ procedure ibalp_simplat1(f,sop);
       rhs := ibalp_arg2r f;
       % two numbers
       if numberp lhs and numberp rhs then
-	 return if lhs eq rhs then 'true else 'false;
+         return if lhs eq rhs then 'true else 'false;
       % if we have a "propositional variable", we're done:
       if idp lhs and numberp rhs then return f;
       % from now on we have a complex term (longer than a "propositional
@@ -740,17 +741,17 @@ procedure ibalp_term2fo(term);
       rel := ibalp_op(term);
       if rel eq 'bnot then return rl_mk1('not,ibalp_term2fo ibalp_arg1 term);
       if rel eq 'band then return
-	 rl_mkn('and,for each a in ibalp_argn term collect
-	    ibalp_term2fo a);
+         rl_mkn('and,for each a in ibalp_argn term collect
+            ibalp_term2fo a);
       if rel eq 'bor then return
-	 rl_mkn('or,for each a in ibalp_argn term collect
-	    ibalp_term2fo a);
+         rl_mkn('or,for each a in ibalp_argn term collect
+            ibalp_term2fo a);
       if rel eq 'bimpl then return rl_mk2('impl,ibalp_term2fo ibalp_arg2l term,
-	 ibalp_term2fo ibalp_arg2r term);
+         ibalp_term2fo ibalp_arg2r term);
       if rel eq 'brepl then return rl_mk2('repl,ibalp_term2fo ibalp_arg2l term,
-	 ibalp_term2fo ibalp_arg2r term);
+         ibalp_term2fo ibalp_arg2r term);
       if rel eq 'bequiv then return rl_mk2('equiv,
-	 ibalp_term2fo ibalp_arg2l term, ibalp_term2fo ibalp_arg2r term);
+         ibalp_term2fo ibalp_arg2l term, ibalp_term2fo ibalp_arg2r term);
       rederr {"ibalp_term2fo: unknown symbol:",rel}
    end;
 
@@ -770,11 +771,11 @@ procedure ibalp_varlt1(u,vl);
    % ocurring in [u] added to [vl].
    begin
       if u = 0 or u = 1 then
-	 return nil;
+         return nil;
       if idp u then
-      	 return lto_insertq(u,vl);
+         return lto_insertq(u,vl);
       for each arg in ibalp_argn u do
-      	 vl := ibalp_varlt1(arg,vl);
+         vl := ibalp_varlt1(arg,vl);
       return vl
    end;
 
@@ -805,22 +806,22 @@ procedure ibalp_varsel(f,vl,theo);
    % variable.
    begin scalar v; integer n;
       if !*ibalpbadvarsel then
-	 return ibalp_badvarsel(f,vl);
+         return ibalp_badvarsel(f,vl);
       for each pr in cl_termml f do
-	 if car pr memq vl and cdr pr > n then <<
-	    v := car pr;
-	    n := cdr pr
-	 >>;
+         if car pr memq vl and cdr pr > n then <<
+            v := car pr;
+            n := cdr pr
+         >>;
       return if v then {v} else {car sort(vl,'ibalp_ordp)}
    end;
 
 procedure ibalp_badvarsel(f,vl);
    begin scalar v; integer n;
       for each pr in cl_termml f do
-	 if car pr memq vl and cdr pr < n then <<
-	    v := car pr;
-	    n := cdr pr
-	 >>;
+         if car pr memq vl and cdr pr < n then <<
+            v := car pr;
+            n := cdr pr
+         >>;
       return if v then {v} else {car sort(vl,'ibalp_ordp)}
    end;
 
@@ -831,15 +832,15 @@ procedure ibalp_badvarsel(f,vl);
 %    % variable.
 %    begin scalar v,found,gvp;
 %       if not !*rlqevarsel then
-% 	 return car vl;
+%        return car vl;
 %       while reverse vl and not found do <<
-% 	 v := car vl;
-% 	 vl := cdr vl;
-% 	 gvp := not ibalp_goodvarp(f,v,{0,1});  % good var is bad var once more
-% 	 if !*ibalpbadvarsel then
-% 	    gvp := not gvp;
-% 	 if gvp then
-% 	    found := t
+%        v := car vl;
+%        vl := cdr vl;
+%        gvp := not ibalp_goodvarp(f,v,{0,1});  % good var is bad var once more
+%        if !*ibalpbadvarsel then
+%           gvp := not gvp;
+%        if gvp then
+%           found := t
 %       >>;
 %       return v
 %    end;
@@ -847,15 +848,15 @@ procedure ibalp_badvarsel(f,vl);
 % procedure ibalp_goodvarp(f,v,l);
 %    begin scalar argl;
 %       if rl_cxp rl_op f then <<
-% 	 argl := rl_argn f;
-% 	 while argl and l do <<
-% 	    l := ibalp_goodvarp(car argl,v,l);
-% 	    argl := cdr argl
-% 	 >>;
-% 	 return l
+%        argl := rl_argn f;
+%        while argl and l do <<
+%           l := ibalp_goodvarp(car argl,v,l);
+%           argl := cdr argl
+%        >>;
+%        return l
 %       >>;
 %       if ibalp_arg2l f eq v then
-% 	 return deletip(ibalp_arg2r f,l);
+%        return deletip(ibalp_arg2r f,l);
 %       return l
 %    end;
 
@@ -888,7 +889,7 @@ procedure ibalp_elimset(v,alp);
    % Returns an elimination set.
    <<
       if !*rlverbose and not cdr cdaar alp then
-      	 ioto_prin2 "S";
+         ioto_prin2 "S";
       {'ibalp_qesub . for each bconst in cdaar alp collect {bconst}}
    >>;
 
@@ -920,10 +921,10 @@ procedure ibalp_qscsaat(at);
 procedure ibalp_qssubat(pl,at);
    begin scalar w;
       if not(idp ibalp_arg2l at and ibalp_arg2r at memq '(1 0)) then
-      	 rederr {"ibalp_qssubat: cannot process",at};
+         rederr {"ibalp_qssubat: cannot process",at};
       w := assoc(ibalp_arg2l at,pl);
       if w then
-	 return ibalp_mk2(ibalp_op at,cdr w,ibalp_arg2r at);
+         return ibalp_mk2(ibalp_op at,cdr w,ibalp_arg2r at);
       return at
    end;
 

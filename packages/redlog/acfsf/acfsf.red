@@ -53,8 +53,8 @@ exports acfsf_simpterm,acfsf_prepat,acfsf_resimpat,acfsf_lengthat,
 
 fluid '(!*rlsiatadv !*rlsiexpl !*rlsiexpla !*rlgssub !*rlsiso !*rlgsrad
    !*rlgsred !*rlgsprod !*rlgserf !*rlverbose !*rlsifac !*rlbnfsac !*rlgsvb
-   !*rlgsbnf !*rlgsutord !*rlnzden !*rladdcond !*rlqegen !*cgbgen !*cgbreal
-   acfsf_gstv!* !*cgbverbose !*groebopt);
+      !*rlgsbnf !*rlgsutord !*rlnzden !*rladdcond !*rlqegen !*cgbgen !*cgbreal
+         acfsf_gstv!* !*cgbverbose !*groebopt);
 
 flag('(acfsf),'rl_package);
 
@@ -92,6 +92,7 @@ put('acfsf,'rl_services,'(
    (rl_subfof!* . cl_subfof)
    (rl_identifyonoff!* . cl_identifyonoff)
    (rl_simpl!* . cl_simpl)
+   (rl_simplbasic!* . cl_simplbasic)
    (rl_thsimpl!* . acfsf_thsimpl)
    (rl_nnf!* . cl_nnf)
    (rl_nnfnot!* . cl_nnfnot)
@@ -190,13 +191,13 @@ procedure acfsf_chsimpat1(u);
    begin scalar leftl,rightl,lhs,rhs;
       lhs := cadr u;
       if pairp lhs and acfsf_opp car lhs then <<
-	 leftl := acfsf_chsimpat1 lhs;
-	 lhs := caddr lastcar leftl
+         leftl := acfsf_chsimpat1 lhs;
+         lhs := caddr lastcar leftl
       >>;
       rhs := caddr u;
       if pairp rhs and acfsf_opp car rhs then <<
-	 rightl := acfsf_chsimpat1 rhs;
-	 rhs := cadr car rightl
+         rightl := acfsf_chsimpat1 rhs;
+         rhs := cadr car rightl
       >>;
       return nconc(leftl,{car u,lhs,rhs} . rightl)
    end;
@@ -208,17 +209,17 @@ procedure acfsf_simpat(u);
       op := car u;
       lhs := simp cadr u;
       if not (!*rlnzden or (domainp denr lhs)) then
- 	 typerr(u,"atomic formula");
+         typerr(u,"atomic formula");
       rhs := simp caddr u;
       if not (!*rlnzden or (domainp denr rhs)) then
- 	 typerr(u,"atomic formula");
+         typerr(u,"atomic formula");
       lhs := subtrsq(lhs,rhs);
       nlhs := numr lhs;
       if !*rlnzden and not domainp denr lhs then <<
-	 f := acfsf_0mk2(op,nlhs);
-	 if !*rladdcond then
-	    f := rl_mkn('and,{acfsf_0mk2('neq,denr lhs),f});
-	 return f
+         f := acfsf_0mk2(op,nlhs);
+         if !*rladdcond then
+            f := rl_mkn('and,{acfsf_0mk2('neq,denr lhs),f});
+         return f
       >>;
       return acfsf_0mk2(op,nlhs)
    end;

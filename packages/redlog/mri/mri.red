@@ -69,6 +69,7 @@ put('mri,'rl_params,'(
 % Services
 put('mri,'rl_services,'(
    (rl_simpl!* . cl_simpl)
+   (rl_simplbasic!* . cl_simplbasic)
    (rl_nnf!* . cl_nnf)
    (rl_pnf!* . cl_pnf)
    (rl_atnum!* . cl_atnum)
@@ -226,12 +227,12 @@ procedure mri_congp(atf);
 procedure mri_simplat1(at,sop);
    begin scalar type,w;
       if !*rlsimplfloor then
-	 at := mri_0mk2(mri_op at,mri_simplfloor mri_arg2l at,mri_type at);
+         at := mri_0mk2(mri_op at,mri_simplfloor mri_arg2l at,mri_type at);
       type := mri_type at or mri_dettype at;
       if type eq 'int then
-	 return mri_pasf2mri(pasf_simplat1(mri_2pasfat at,sop),'int);
+         return mri_pasf2mri(pasf_simplat1(mri_2pasfat at,sop),'int);
       if not mri_congp at then
-	 return mri_ofsf2mri(ofsf_simplat1(mri_2ofsfat at,sop),'real);
+         return mri_ofsf2mri(ofsf_simplat1(mri_2ofsfat at,sop),'real);
       return mri_0mk2(mri_op at,mri_arg2l at,type)
    end;
 
@@ -244,7 +245,7 @@ procedure mri_simplfloor(lhs);
 procedure mri_simplfloor1(lhs);
    begin scalar l,r,w;
       if domainp lhs then
-	 return lhs;
+         return lhs;
       l := mri_simplfloor lc lhs;
       r := mri_simplfloor red lhs;
       w := mri_irsplit mvar lhs;
@@ -254,7 +255,7 @@ procedure mri_simplfloor1(lhs);
 procedure mri_irsplit(k);
    begin scalar w;
       if not eqcar(k,'floor) then
-      	 return !*k2f k . nil;
+         return !*k2f k . nil;
       w := mri_irsplit1 mri_simplfloor numr simp cadr k;
       return car w . if cdr w then !*k2f !*a2k {'floor,prepf cdr w}
    end;
@@ -262,12 +263,12 @@ procedure mri_irsplit(k);
 procedure mri_irsplit1(k);
    begin scalar l,r,v; integer d;
       if domainp k then
-      	 return k . nil;
+         return k . nil;
       r := mri_irsplit1 red k;
       d := ldeg k;
       v := exptf(!*k2f mvar k,d);
       if mri_realvarp mvar v then
-	 return car r . addf(multf(lc k,v),cdr r);
+         return car r . addf(multf(lc k,v),cdr r);
       l := mri_irsplit1 lc k;
       return addf(multf(car l,v),car r) . addf(multf(cdr l,v),cdr r)
    end;
@@ -282,20 +283,20 @@ procedure mri_dettype(at);
    begin scalar varl,v,c,foundreal,foundint;
       varl := kernels mri_arg2l at;
       if null varl then
-	 return 'int;
+         return 'int;
       c := t; while c and varl do <<
-	 v := car varl;
-	 varl := cdr varl;
-	 if mri_realvarp v then
-	    if foundint then
- 	       c := foundint := foundreal := nil
-	    else
-	       foundreal := 'real
-	 else
-	    if foundreal then
- 	       c := foundint := foundreal := nil
-	    else
-	       foundint := 'int
+         v := car varl;
+         varl := cdr varl;
+         if mri_realvarp v then
+            if foundint then
+               c := foundint := foundreal := nil
+            else
+               foundreal := 'real
+         else
+            if foundreal then
+               c := foundint := foundreal := nil
+            else
+               foundint := 'int
       >>;
       return foundint or foundreal
    end;

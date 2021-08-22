@@ -153,6 +153,7 @@ put('pasf,'rl_services,'(
    (rl_all!* . cl_all)
    (rl_ex!* . cl_ex)
    (rl_simpl!* . cl_simpl)
+   (rl_simplbasic!* . cl_simplbasic)
    (rl_atnum!* . cl_atnum)
    (rl_qnum!* . cl_qnum)
    (rl_matrix!* . cl_matrix)

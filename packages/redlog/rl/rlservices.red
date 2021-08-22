@@ -670,7 +670,15 @@ rl_service {
    xarg = {pos = 13, name = siatadv, type = Switch},
    xarg = {pos = 14, name = sitsqspl, type = Switch},
    xarg = {pos = 15, name = siso, type = Switch},
-   xarg = {pos = 16, name = sism, type = Switch},
+   returns = {type = Formula},
+   mode = both};
+
+rl_service {
+   name = simplbasic,
+   doc = "basic standard simplifier without smart simplification",
+   arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
+   arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions (ignored)"},
+   arg = {pos = 3, name = depth, type = Integer, default = -1, doc = "maximal recursion depth"},
    returns = {type = Formula},
    mode = both};
 

@@ -134,7 +134,7 @@ procedure qqe_qe(u);
          >>;
       >>;
       
-      f := rl_pnf rl_simpl(f,nil,-1);
+      f := rl_pnf rl_simplbasic(f,nil,-1);
       if not atom f then <<
          << if x then f := cadr x >>
             where x=qqe_get!-quantifier!-sequenz f;
@@ -275,7 +275,7 @@ procedure qqe_qe!-clause(u,q);
             f := append({'and,f},qqe_resf!*);
       >>;
   
-      f := rl_simpl(f,nil,-1);
+      f := rl_simplbasic(f,nil,-1);
      
       qqe_length!-graph!-delete(list);
       
@@ -460,13 +460,13 @@ procedure qqe_ndna!-qneq!-ext();
       >>
       else lcm := 1;
       
-      phi1 := rl_simpl(qqe_ndna(nil,nil, lcm, lara),nil,-1);
+      phi1 := rl_simplbasic(qqe_ndna(nil,nil, lcm, lara),nil,-1);
       if qqe_debug!* then pause;
       phi2 := qqe_ndna!-qneq!-ext!-phi2!-true(); 
    
       qqe_atf!-qneq!-ext!* := nil;
       qqe_atf!-qneq!-ext!-qepsilon!* := nil;
-      if null phi2 then phi2 := rl_simpl(qqe_ndna(lara + lcm, 
+      if null phi2 then phi2 := rl_simplbasic(qqe_ndna(lara + lcm, 
          lara + 2 * lcm - 1, lcm, lara + lcm),nil,-1);
       if qqe_debug!* then pause;
       return {'or, phi1, phi2};

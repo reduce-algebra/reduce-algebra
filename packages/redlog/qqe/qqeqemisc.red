@@ -992,7 +992,7 @@ procedure qqe_simpl!-dnf(u);
       >>
       else list := qqe_simpl!-clause u;
       
-      return rl_simpl(list,nil,-1);
+      return rl_simplbasic(list,nil,-1);
    end;
          
 

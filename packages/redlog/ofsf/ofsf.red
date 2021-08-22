@@ -163,6 +163,7 @@ put('ofsf,'rl_services,'(
    (rl_subfof!* . cl_subfof)
    (rl_identifyonoff!* . cl_identifyonoff)
    (rl_simpl!* . cl_simpl)
+   (rl_simplbasic!* . cl_simplbasic)
    (rl_thsimpl!* . ofsf_thsimpl)
    (rl_dump!* . ofsf_dump)
    (rl_nnf!* . cl_nnf)
@@ -542,13 +543,13 @@ procedure ofsf_chsimpat1(u);
    begin scalar leftl,rightl,lhs,rhs;
       lhs := cadr u;
       if pairp lhs and ofsf_opp car lhs then <<
-	 leftl := ofsf_chsimpat1 lhs;
-	 lhs := caddr lastcar leftl
+         leftl := ofsf_chsimpat1 lhs;
+         lhs := caddr lastcar leftl
       >>;
       rhs := caddr u;
       if pairp rhs and ofsf_opp car rhs then <<
-	 rightl := ofsf_chsimpat1 rhs;
-	 rhs := cadr car rightl
+         rightl := ofsf_chsimpat1 rhs;
+         rhs := cadr car rightl
       >>;
       return nconc(leftl,{car u,lhs,rhs} . rightl)
    end;
@@ -560,28 +561,28 @@ procedure ofsf_simpat(u);
       op := car u;
       lhs := simp cadr u;
       if not (!*rlnzden or !*rlposden or (domainp denr lhs)) then
- 	 typerr(u,"atomic formula");
+         typerr(u,"atomic formula");
       rhs := simp caddr u;
       if not (!*rlnzden or !*rlposden or (domainp denr rhs)) then
- 	 typerr(u,"atomic formula");
+         typerr(u,"atomic formula");
       lhs := subtrsq(lhs,rhs);
       nlhs := numr lhs;
       if !*rlposden and not domainp denr lhs then <<
-	 f := ofsf_0mk2(op,nlhs);
-	 if !*rladdcond then
-	    f := if op memq '(lessp leq greaterp geq) then
-	       rl_mkn('and,{ofsf_0mk2('greaterp,denr lhs),f})
-	    else
-	       rl_mkn('and,{ofsf_0mk2('neq,denr lhs),f});
-	 return f
+         f := ofsf_0mk2(op,nlhs);
+         if !*rladdcond then
+            f := if op memq '(lessp leq greaterp geq) then
+               rl_mkn('and,{ofsf_0mk2('greaterp,denr lhs),f})
+            else
+               rl_mkn('and,{ofsf_0mk2('neq,denr lhs),f});
+         return f
       >>;
       if !*rlnzden and not domainp denr lhs then <<
-	 if op memq '(lessp leq greaterp geq) then
-	    nlhs := multf(nlhs,denr lhs);
-	 f := ofsf_0mk2(op,nlhs);
-	 if !*rladdcond then
-	    f := rl_mkn('and,{ofsf_0mk2('neq,denr lhs),f});
-	 return f
+         if op memq '(lessp leq greaterp geq) then
+            nlhs := multf(nlhs,denr lhs);
+         f := ofsf_0mk2(op,nlhs);
+         if !*rladdcond then
+            f := rl_mkn('and,{ofsf_0mk2('neq,denr lhs),f});
+         return f
       >>;
       return ofsf_0mk2(op,nlhs)
    end;
@@ -595,7 +596,7 @@ procedure ofsf_mkequation(lhs,rhs);
    begin scalar w;
       w := subtrsq(simp lhs,simp rhs);
       if !*rlposden or !*rlnzden or domainp denr w then
-   	 return ofsf_0mk2('equal,numr w);
+         return ofsf_0mk2('equal,numr w);
       rederr {"ofsf_mkequation: parametric denominator in",w}
    end;
 
@@ -607,41 +608,41 @@ put('ofsfform, 'procfn, 'ofsf_procform);
 procedure ofsf_procform(name, arglist, body);
    <<
       if !*mode neq 'symbolic then
-	 rederr "ofsfform procedure declared outside symbolic mode";
+         rederr "ofsfform procedure declared outside symbolic mode";
       {'progn,
-      	 {'put, mkquote name, ''number!-of!-args, length arglist},
-      	 {'de, name, arglist, ofsf_procform1 body}}
+         {'put, mkquote name, ''number!-of!-args, length arglist},
+         {'de, name, arglist, ofsf_procform1 body}}
    >>;
 
 procedure ofsf_procform1(u);
    begin scalar op;
       if atom u then
-	 return if u = 0 then nil else u;
+         return if u = 0 then nil else u;
       if not pairp u then
-	 rederr "invalid form in ofsfform procedure";
+         rederr "invalid form in ofsfform procedure";
       op := car u;
       if op eq 'difference then
-	 return {'addf, ofsf_procform1 cadr u, {'negf, ofsf_procform1 caddr u}};
+         return {'addf, ofsf_procform1 cadr u, {'negf, ofsf_procform1 caddr u}};
       if op eq 'minus then
-	 return {'addf, nil, {'negf, ofsf_procform1 cadr u}};
+         return {'addf, nil, {'negf, ofsf_procform1 cadr u}};
       if op eq 'plus then
-	 return ofsf_procform2('addf, for each v in cdr u collect ofsf_procform1 v);
+         return ofsf_procform2('addf, for each v in cdr u collect ofsf_procform1 v);
       if op eq 'plus2 then
-	 return {'addf, ofsf_procform1 cadr u, ofsf_procform1 caddr u};
+         return {'addf, ofsf_procform1 cadr u, ofsf_procform1 caddr u};
       if op eq 'times then
-      	 return ofsf_procform2('multf, for each v in cdr u collect ofsf_procform1 v);
+         return ofsf_procform2('multf, for each v in cdr u collect ofsf_procform1 v);
       if op eq 'times2 then
-      	 return {'multf, ofsf_procform1 cadr u, ofsf_procform1 caddr u};
+         return {'multf, ofsf_procform1 cadr u, ofsf_procform1 caddr u};
       if op eq 'expt then
-      	 return {'exptf, ofsf_procform1 cadr u, caddr u};
+         return {'exptf, ofsf_procform1 cadr u, caddr u};
       if op memq '(neq equal lessp geq leq greaterp) then
-	 % return applsmacro(get('ofsf_0mk2, 'inline),
-      	 %    {mkquote op, ofsf_procform1 cadr u}, 'ofsf_0mk2);
-	 return {'ofsf_0mk2, mkquote op, ofsf_procform1 cadr u};
+         % return applsmacro(get('ofsf_0mk2, 'inline),
+         %    {mkquote op, ofsf_procform1 cadr u}, 'ofsf_0mk2);
+         return {'ofsf_0mk2, mkquote op, ofsf_procform1 cadr u};
       if op memq '(and or) then
-	 % return applsmacro(get('rl_mkn, 'inline),
-	 %    {mkquote op, 'list . for each arg in cdr u collect ofsf_procform1 arg}, 'rl_mkn);
-      	 return {'rl_mkn, mkquote op, 'list . for each arg in cdr u collect ofsf_procform1 arg};
+         % return applsmacro(get('rl_mkn, 'inline),
+         %    {mkquote op, 'list . for each arg in cdr u collect ofsf_procform1 arg}, 'rl_mkn);
+         return {'rl_mkn, mkquote op, 'list . for each arg in cdr u collect ofsf_procform1 arg};
       rederr {"invalid operation", op, "in ofsfform procedure"}
    end;
 
@@ -662,41 +663,41 @@ procedure ofsf_iparsestat();
 procedure ofsf_iparseform(s, varal, mode);
    begin scalar w;
       if mode neq 'symbolic then
-      	 rederr "ofsf_iparse used outside symbolic mode";
+         rederr "ofsf_iparse used outside symbolic mode";
       if car s neq 'ofsf_iparse then
-      	 rederr "invalid form in ofsf_iparse";
+         rederr "invalid form in ofsf_iparse";
       return ofsf_iparseform1 cadr s
    end;
 
 procedure ofsf_iparseform1(u);
    begin scalar op;
       if atom u then
-	 return if u = 0 then nil else u;
+         return if u = 0 then nil else u;
       if not pairp u then
-	 rederr "invalid form in ofsf_iparse";
+         rederr "invalid form in ofsf_iparse";
       op := car u;
       if op eq 'difference then
-	 return {'addf, ofsf_iparseform1 cadr u, {'negf, ofsf_iparseform1 caddr u}};
+         return {'addf, ofsf_iparseform1 cadr u, {'negf, ofsf_iparseform1 caddr u}};
       if op eq 'minus then
-	 return {'addf, nil, {'negf, ofsf_iparseform1 cadr u}};
+         return {'addf, nil, {'negf, ofsf_iparseform1 cadr u}};
       if op eq 'plus then
-	 return ofsf_iparseform2('addf, for each v in cdr u collect ofsf_iparseform1 v);
+         return ofsf_iparseform2('addf, for each v in cdr u collect ofsf_iparseform1 v);
       if op eq 'plus2 then
-	 return {'addf, ofsf_iparseform1 cadr u, ofsf_iparseform1 caddr u};
+         return {'addf, ofsf_iparseform1 cadr u, ofsf_iparseform1 caddr u};
       if op eq 'times then
-      	 return ofsf_iparseform2('multf, for each v in cdr u collect ofsf_iparseform1 v);
+         return ofsf_iparseform2('multf, for each v in cdr u collect ofsf_iparseform1 v);
       if op eq 'times2 then
-      	 return {'multf, ofsf_iparseform1 cadr u, ofsf_iparseform1 caddr u};
+         return {'multf, ofsf_iparseform1 cadr u, ofsf_iparseform1 caddr u};
       if op eq 'expt then
-      	 return {'exptf, ofsf_iparseform1 cadr u, caddr u};
+         return {'exptf, ofsf_iparseform1 cadr u, caddr u};
       if op memq '(neq equal lessp geq leq greaterp) then
-      	 % return applsmacro(get('ofsf_0mk2, 'inline),
-      	 %    {mkquote op, ofsf_iparseform1 cadr u}, 'ofsf_0mk2);
-      	 return {'ofsf_0mk2, mkquote op, ofsf_iparseform1 cadr u};
+         % return applsmacro(get('ofsf_0mk2, 'inline),
+         %    {mkquote op, ofsf_iparseform1 cadr u}, 'ofsf_0mk2);
+         return {'ofsf_0mk2, mkquote op, ofsf_iparseform1 cadr u};
       if op memq '(and or not impl repl equiv) then
-	 % return applsmacro(get('rl_mkn, 'inline),
-	 %    {mkquote op, 'list . for each arg in cdr u collect ofsf_iparseform1 arg}, 'rl_mkn);
-	 return {'rl_mkn, mkquote op, 'list . for each arg in cdr u collect ofsf_iparseform1 arg};
+         % return applsmacro(get('rl_mkn, 'inline),
+         %    {mkquote op, 'list . for each arg in cdr u collect ofsf_iparseform1 arg}, 'rl_mkn);
+         return {'rl_mkn, mkquote op, 'list . for each arg in cdr u collect ofsf_iparseform1 arg};
       rederr {"invalid operation", op, "in ofsf_iparse"}
    end;
 
