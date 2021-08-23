@@ -155,67 +155,6 @@ procedure pasf_bsatp(f,var);
       return r
    end;
 
-procedure pasf_b2atl(b,k);
-   % Presburger arithmetic standard form bound to list of atoms. [b] is a
-   % formula in at most one variable with finite satisfability set in DNF; [k]
-   % is the variable of [b]. Returns a list of atomic formulas
-   % $(\varphi_i)_{i}$, so that the equivalence $$\bigvee_i \varphi_i
-   % \longleftrightarrow b$$ holds and nil if it is too expensive to derive
-   % atomic formulas from the bound.
-   if rl_tvalp b then
-      (if b eq 'false then {} else rederr "pasf_b2atl: infinite bound")
-   else if cl_atfp b then
-      {b}
-   else if rl_op b eq 'and then
-      % Using the fact the application of b2atl is performed after a DNF
-      rl_argn b;
-
-procedure pasf_simplb(f,var);
-   % Presburger arithmetic standard form simplify formulas' bound. [f] is a
-   % bound of some bounded formula; [var] is the bounded variable. Returns an
-   % [f]-equivalent simplified formula (flat simplified DNF of [f]).
-   begin scalar sb,nsb,flg,argn,argna;
-      f := pasf_dnf cl_simpl(f,nil,-1);
-      if rl_tvalp f then return f;
-      % If the bound is parametric or contains univariate formulas only normal
-      % simplification is done
-      if length cl_fvarl f > 1 or pasf_univnlfp(f,var) then
-         return f;
-      % Looking for one argument in the DNF without a congruence
-      argn := if rl_op f eq 'or then rl_argn f else {f};
-      % Note: Congruences in the bound are critical to heap space and time
-      for each arg in argn do <<
-         flg := nil;
-         argna := if rl_op arg eq 'and then rl_argn arg else {arg};
-         for each a in argna do if pasf_congp a then flg := t;
-         if null flg then
-            sb := arg . sb
-         else
-            nsb := arg . nsb
-      >>;
-      sb := pasf_ivl2qff(pasf_qff2ivl rl_smkn('or,sb),var);
-      return cl_simpl(rl_smkn('or,sb . nsb),nil,-1)
-   end;
-
-procedure pasf_b2terml(b,var);
-   % Presburger arithmetic standard form bound to termlist. [b] is a bound of
-   % some bounded formula; [var] is the bounded variable. Returns the
-   % satisfiability set as a list of satisfying terms (for example
-   % $\{1,2,3,10\}$).
-   begin scalar ivl;
-      % Term list for uniform bounds not possible
-      %%       if length cl_fvarl b > 1 then
-      %%         rederr{"pasf_b2terml called with a parametric bound"};
-      % Note: imprudent use of this code is extremely space- and time-critical
-      ivl := pasf_qff2ivl b;
-      return for each iv in ivl join
-         if (numberp car iv) and (numberp cdr iv) then
-            for i := car iv : cdr iv collect
-               i
-         else
-            rederr{"pasf_b2terml : trying to expand infinite bound"}
-   end;
-
 procedure pasf_rmax(rng1,rng2);
    % Presburger arithmetic standard range maximum. [rng1] and [rng2] are pairs
    % of integers representing intervals. Returns an pair of integers
@@ -660,6 +599,25 @@ procedure pasf_exprng!-gand(gand, argl, gtrue, gfalse);
       if not c then
          return gfalse;
       return rl_smkn(gand, nargl)
+   end;
+
+procedure pasf_b2terml(b,var);
+   % Presburger arithmetic standard form bound to termlist. [b] is a bound of
+   % some bounded formula; [var] is the bounded variable. Returns the
+   % satisfiability set as a list of satisfying terms (for example
+   % $\{1,2,3,10\}$).
+   begin scalar ivl;
+      % Term list for uniform bounds not possible
+      %%       if length cl_fvarl b > 1 then
+      %%         rederr{"pasf_b2terml called with a parametric bound"};
+      % Note: imprudent use of this code is extremely space- and time-critical
+      ivl := pasf_qff2ivl b;
+      return for each iv in ivl join
+         if (numberp car iv) and (numberp cdr iv) then
+            for i := car iv : cdr iv collect
+               i
+         else
+            rederr{"pasf_b2terml : trying to expand infinite bound"}
    end;
 
 % Experimental option to expand from the inside to the outside instead of a

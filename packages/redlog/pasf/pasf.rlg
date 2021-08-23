@@ -264,5 +264,94 @@ rlexpand sub(a=10,sol);
 z - 3 > 0
 
 
+% An artificial example with some more interesting bounds.
+f := ex({m, n}, a+2*b = (a+b)*m and a*(m+n) < 0);
+
+
+f := ex m ex n ( - a*m + a - b*m + 2*b = 0 and a*m + a*n < 0)
+
+
+sol := rlwqe f;
+
+
+sol := (2*a + 3*b ~a + b~ 0 and a + b <> 0 and a > 0) or (a + 2*b ~a + b~ 0
+
+ and a + b <> 0 and (
+
+(a < 0 and ((a + 2*b < 0 and a + b < 0) or (a + 2*b > 0 and a + b > 0)))
+
+ or (a > 0 and ((a + 2*b < 0 and a + b > 0) or (a + 2*b > 0 and a + b < 0)))))
+
+ or (a + b <> 0 and a < 0 and b ~a + b~ 0) or bex _k1309 [ - 1 <= _k1309 <= 1] (
+
+((_k1309 + 1 = 0 and a > 0) or (_k1309 - 1 = 0 and a < 0)) and a + 2*b = 0) or 
+
+bex _k1307 [ - abs(a + b) <= _k1307 <= abs(a + b)] ((
+
+(a < 0 and ((_k1307 > 0 and a + b < 0) or (_k1307 > 0 and a + b > 0)))
+
+ or (a > 0 and ((_k1307 < 0 and a + b < 0) or (_k1307 < 0 and a + b > 0))))
+
+ and a + b <> 0 and a + 2*b ~a + b~ 0 and _k1307 - a - 2*b ~a + b~ 0) or bex 
+
+_k1305 [ - 1 <= _k1305 <= 1] (bex _k1304 [
+
+_k1305*a + _k1305*b + a + b <= _k1304 <= _k1305*a + _k1305*b - a - b
+
+ or _k1305*a + _k1305*b - a - b <= _k1304 <= _k1305*a + _k1305*b + a + b] (bex 
+
+_k1301 [ - 1 <= _k1301 <= 1] (((_k1301 + 1 = 0 and _k1304 + a + b = 0 and a > 0)
+
+ or (_k1301 - 1 = 0 and _k1304 - a - b = 0 and a < 0))
+
+ and _k1301*a + _k1301*b - _k1304 = 0) and a + b <> 0
+
+ and _k1304 - a - 2*b ~a + b~ 0)) or bex _k1301 [ - 1 <= _k1301 <= 1] ((
+
+(_k1301 + 1 = 0 and 2*a + 3*b = 0 and a > 0)
+
+ or (_k1301 - 1 = 0 and a < 0 and b = 0)) and _k1301*a + _k1301*b - a - 2*b = 0)
+
+
+% Specifically, one can see bound-variables _kj occurring in the bound of some
+% other _ki:
+part(sol, 6);
+
+
+bex _k1305 [ - 1 <= _k1305 <= 1] (bex _k1304 [
+
+_k1305*a + _k1305*b + a + b <= _k1304 <= _k1305*a + _k1305*b - a - b
+
+ or _k1305*a + _k1305*b - a - b <= _k1304 <= _k1305*a + _k1305*b + a + b] (bex 
+
+_k1301 [ - 1 <= _k1301 <= 1] (((_k1301 + 1 = 0 and _k1304 + a + b = 0 and a > 0)
+
+ or (_k1301 - 1 = 0 and _k1304 - a - b = 0 and a < 0))
+
+ and _k1301*a + _k1301*b - _k1304 = 0) and a + b <> 0
+
+ and _k1304 - a - 2*b ~a + b~ 0))
+
+
+% Absolute values in the bounds are produced only for printing:
+part(sol, 5);
+
+
+bex _k1307 [ - abs(a + b) <= _k1307 <= abs(a + b)] ((
+
+(a < 0 and ((_k1307 > 0 and a + b < 0) or (_k1307 > 0 and a + b > 0)))
+
+ or (a > 0 and ((_k1307 < 0 and a + b < 0) or (_k1307 < 0 and a + b > 0))))
+
+ and a + b <> 0 and a + 2*b ~a + b~ 0 and _k1307 - a - 2*b ~a + b~ 0)
+
+part(sol, 5, 2);
+
+
+(_k1307 + a + b <= 0 and _k1307 - a - b >= 0)
+
+ or (_k1307 + a + b >= 0 and _k1307 - a - b <= 0)
+
+
 end;
 

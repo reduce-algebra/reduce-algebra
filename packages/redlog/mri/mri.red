@@ -51,6 +51,7 @@ flag('(equal neq leq geq lessp greaterp),'spaced);
 % Parameters
 put('mri,'rl_params,'(
    (rl_simplat1!* . mri_simplat1)
+   (rl_simplifyBoundedQuantifier!* . pasf_simplifyBoundedQuantifier)
    (rl_op!* . mri_op)
    (rl_smupdknowl!* . cl_smupdknowl)
    (rl_smrmknowl!* . cl_smrmknowl)
@@ -58,7 +59,6 @@ put('mri,'rl_params,'(
    (rl_smmkatl!* . cl_smmkatl)
    (rl_negateat!* . mri_negateat)
    (rl_tordp!* . ordp)
-   (rl_simplb!* . mri_simplb)
    (rl_bsatp!* . mri_bsatp)
    (rl_ordatp!* . mri_ordatp)
    (rl_subat!* . mri_subat)

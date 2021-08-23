@@ -93,7 +93,7 @@ asserted procedure cl_simpl1(f: Formula, knowl: Any, n: Integer, sop: Id): Formu
       if rl_quap op then
          return cl_simplifyQuantifier(f, knowl, n);
       if rl_bquap op then
-         return cl_simplifyBoundedQuantifier(f, knowl, n);
+         return rl_simplifyBoundedQuantifier(f, knowl, n);
       if op eq 'impl then
          return cl_simplifyImplication(rl_arg2l f, rl_arg2r f,knowl, n);
       if op eq 'repl then
@@ -132,103 +132,6 @@ asserted procedure cl_simplifyQuantifier(f: Formula, knowl: Any, n: Integer): Fo
          % This test covers truth values.
          return w;
       return rl_mkq(q, x, w)
-   end;
-
-asserted procedure cl_simplifyBoundedQuantifier(f: Formula, knowl: Any, n: Integer): Formula;
-   % Common logic simplify bounded quantifier. [f] is a formula with bounded
-   % quantifier as an operator; [knowl] is a theory; [n] is the current
-   % boolean level. Returns a simplified equivalent formula. Assuming used
-   % blackboxes rl_simplb, rl_b2atl and rl_bsatp to be "light". Blackbox
-   % rl_b2terml used.
-   begin scalar b, mtx;
-      knowl := rl_smrmknowl(knowl, rl_var f);
-      % Context-dependent bound simplification
-      b := rl_simplb(rl_b f, rl_var f);
-      % Bound's information to knowledge
-      knowl := rl_smupdknowl('and, rl_b2atl(b, rl_var f), knowl, n);
-      % Matrix simplification detects trivial cases
-      mtx := cl_simpl1(rl_mat f, knowl, n-1, rl_op f);
-      f := cl_simpltb(rl_op f, rl_var f, b, mtx);
-      % Moving formulas to bound
-      if rl_bquap rl_op f then
-         f := cl_simplstrb(rl_op f, rl_var f, rl_b f, rl_mat f);
-      return if not rl_tvalp f and not rl_bquap rl_op f then
-         % Note: Only trivial simplifications are performed for now
-         cl_simpl1(f, nil, -1, nil)
-      else f
-   end;
-
-asserted procedure cl_simpltb(op: Id, var: Id, b: Formula, mtx: Formula): Formula;
-   % Common logic simplify bounded quantifier trivial bound. [mtx] is the
-   % bounded quantifier matrix; [b] is the bound of the bounded quantifier;
-   % [op] is the operator; [var] is the variable. Returns a simplified
-   % equivalent formula.
-   begin scalar bfvl;
-      % Note: Simplification of the bound to false is context dependent
-      if b eq 'false then
-         return if op eq 'bex then 'false else 'true;
-      if mtx eq 'false and op eq 'bex or mtx eq 'true and op eq 'ball then
-         return mtx;
-      % Matrix does not contain the bound variable. Note: nil as a result of
-      % rl_bsatp means, that satisfability test has failed.
-      if not(var memq rl_fvarl mtx) and rl_bsatp(b, var) then
-         return mtx;
-      % Bound is an equation. Note: Should be only relevant if rlsism is off
-      bfvl := cl_fvarl b;
-      if rl_op b eq 'equal and null cdr bfvl and eqcar(bfvl, var) then
-         % Note: using a context speciefic bound simplifier one can do more
-         return cl_subfof({var . car rl_b2terml(b, var)}, mtx);
-      % Nothing was done
-      return rl_mkbq(op, var, b, mtx)
-   end;
-
-asserted procedure cl_simplstrb(op: Id, var: Id, b: Formula, mtx: Formula): Formula;
-   % Common logic simplify bounded quantifier strengthen bound. [mtx] is the
-   % bounded quantifier matrix; [b] is the bound of the bounded quantifier; [op]
-   % is the operator; [var] is the variable. Returns a simplified equivalent
-   % formula.
-   begin scalar neg, st, lv, vfl;
-      if cl_atfp mtx and length cl_fvarl mtx = 1 and
-         car cl_fvarl mtx eq var and not pasf_univnlfp(mtx, var) then <<
-            if op eq 'ball then <<
-               b := rl_simplb(rl_smkn('and, rl_mkn('not, {mtx}) . {b}), var);
-               mtx := 'false
-            >>;
-            if op eq 'bex then <<
-               b := rl_simplb(rl_smkn('and, mtx . {b}), var);
-               mtx := 'true
-            >>;
-            % The formula is trivial, but it can be too expensive to find it out
-            return cl_simpltb(op, var, b, mtx)
-         >>;
-      if op eq 'ball and rl_op mtx eq 'or then      
-         neg := 'negate;
-      if op eq 'bex and rl_op mtx eq 'and then
-         neg := 'leave;
-      if neg then <<
-         for each arg in rl_argn mtx do  <<
-            vfl := cl_fvarl arg;
-            if length vfl = 1 and car vfl eq var and cl_atfp arg and not pasf_univnlfp(arg, var) then
-               st := (if neg eq 'negate then rl_mkn('not, {arg}) else arg) . st
-            else
-               lv := arg . lv;
-         >>;
-         % Post bound simplification. The matrix is trivial or no
-         % simplification can be performed
-         b := rl_simplb(rl_smkn('and, b . st), var);
-         % Note: different semantics if the list of formulas left in matrix is
-         % empty. For bex the matrix is true and for ball false
-         mtx := if lv then
-            rl_smkn(rl_op mtx, lv)
-         else
-            if op eq 'ball then
-               'false
-            else
-               'true;
-         % Now the formula is maybe trivial
-         return cl_simpltb(op, var, b, mtx)
-      >>;
-      return rl_mkbq(op, var, b, mtx)
    end;
 
 asserted procedure cl_simplifyNot(f: Formula, knowl: Any, n: Integer): List;
@@ -526,7 +429,7 @@ asserted procedure cl_smmkatl(op: Id, knowl: Alist, newknowl: Alist, n: Integer)
       return res
    end;
 
-rl_provideService rl_qesil = cl_qesil;
+rl_provideService cl_siaddatl = cl_siaddatl;
 % SM only. Used by CGB
 
 asserted procedure cl_siaddatl(atl: List, c: Formula): Formula;

@@ -80,4 +80,17 @@ sol := rlwqe f$
 rlatnum sol;
 rlexpand sub(a=10,sol);
 
+% An artificial example with some more interesting bounds.
+f := ex({m, n}, a+2*b = (a+b)*m and a*(m+n) < 0);
+
+sol := rlwqe f;
+
+% Specifically, one can see bound-variables _kj occurring in the bound of some
+% other _ki:
+part(sol, 6);
+
+% Absolute values in the bounds are produced only for printing:
+part(sol, 5);
+part(sol, 5, 2);
+
 end;  % of file

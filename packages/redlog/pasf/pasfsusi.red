@@ -1,9 +1,10 @@
-module pasfsism;
-% Presburger arithmetic standard form smart simplification. Submodule of PASF.
+module pasfsusi;
+% Presburger arithmetic standard form susi blackboxes for smart
+% simplification.
 
-revision('pasfsism, "$Id$");
+revision('pasfsusi, "$Id");
 
-copyright('pasfsism, "(c) 2003-2009 A. Dolzmann, A. Seidl, and T. Sturm");
+copyright('pasfsusi, "(c) 2003-2021 A. Dolzmann, A. Seidl, and T. Sturm");
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -568,6 +569,6 @@ procedure pasf_smordtable2(r1,r2);
       return cdr (atsoc(r2,atsoc(r1,al)))
    end;
 
-endmodule; % [pasfsism]
+endmodule; % [pasfsusi]
 
 end; % of file
