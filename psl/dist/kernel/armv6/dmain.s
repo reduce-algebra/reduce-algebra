@@ -289,7 +289,7 @@ symval:
  .long [[29*0x8000000]+254]
  .long [[29*0x8000000]+255]
  .long [[30*0x8000000]+256]
- .long [[30*0x8000000]+256]
+ .long [[29*0x8000000]+257]
  .long stack
  .long argumentblock
  .long tokenbuffer

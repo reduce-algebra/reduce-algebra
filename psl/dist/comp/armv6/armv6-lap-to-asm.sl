@@ -519,8 +519,6 @@
           (dataprintundefinedfunctioncell)
           (dataprintdefinedfunctioncell ep))))
 
-(remflag '(asmoutlap) 'lose)
-
 (de asmoutlap (u)
   (prog (locallabels* oldout)
         (setq u (pass1lap u))
