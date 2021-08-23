@@ -42,31 +42,31 @@ procedure pasf_atf2iv(atf);
       floor := pasf_floor(nom,den);
       ceil := pasf_ceil(nom,den);
       if repr_op dc eq 'equal then
-	 % Check if the equality solution is an integer
-	 if eqn(den,1) then
-	    % Floor and ceil are the same
-	    return iv_new(floor,floor)
-	 else
-	    return {};
+         % Check if the equality solution is an integer
+         if eqn(den,1) then
+            % Floor and ceil are the same
+            return iv_new(floor,floor)
+         else
+            return {};
       if repr_op dc eq 'leq then
-	 return iv_new('minf,floor);
+         return iv_new('minf,floor);
       if repr_op dc eq 'lessp then
-	 return iv_new('minf,addf(ceil,negf 1));
+         return iv_new('minf,addf(ceil,negf 1));
       if repr_op dc eq 'geq then
-	 return iv_new(ceil,'pinf);
+         return iv_new(ceil,'pinf);
       if repr_op dc eq 'greaterp then
-	 return iv_new(addf(floor,1),'pinf);
+         return iv_new(addf(floor,1),'pinf);
       if repr_op dc eq 'neq then
-	 return iv_merge(iv_new('minf,addf(ceil,negf 1)),
-	    iv_new(addf(floor,1),'pinf));
+         return iv_merge(iv_new('minf,addf(ceil,negf 1)),
+            iv_new(addf(floor,1),'pinf));
       if pasf_congp atf then
-	 % Check if the equality solution is an integer
-	 if gcdf(den,pasf_m atf) eq 1 then <<
-	    eucd := sfto_exteucd(den,pasf_m atf);
-	    return iv_newcong(repr_op dc,multf(cadr eucd,nom))
-	 >> else
-	    return {};
-     rederr{"pasf_atf2iv: illegal operator ",pasf_op atf}
+         % Check if the equality solution is an integer
+         if gcdf(den,pasf_m atf) eq 1 then <<
+            eucd := sfto_exteucd(den,pasf_m atf);
+            return iv_newcong(repr_op dc,multf(cadr eucd,nom))
+         >> else
+            return {};
+      rederr{"pasf_atf2iv: illegal operator ",pasf_op atf}
    end;
 
 procedure pasf_qff2ivl(f);
@@ -84,26 +84,26 @@ procedure pasf_qff2ivl1(f);
    % Returns the satisfability set of [f] as a list of ascending intervals IV.
    begin scalar fs,cng;
       if rl_tvalp f then
-	 % 'true or 'false
-	 if f eq 'true then
-	    rederr{"pasf_qff2ivl1 : true as a bound is invalid"}
-	 else
-	    return nil;
+         % 'true or 'false
+         if f eq 'true then
+            rederr{"pasf_qff2ivl1 : true as a bound is invalid"}
+         else
+            return nil;
       if rl_op f eq 'and then <<
-      	 % Using the fact the formula is in DNF. Than an "and" is the end node
-      	 % of the formula's evaluation tree
-      	 for each pf in rl_argn f do
-	    % Only atomic formulas
-	    if pasf_congp pf then
-	       cng := (car pasf_atf2iv pf) . cng
-	    else
-	       fs := (pasf_atf2iv pf) . fs;
+         % Using the fact the formula is in DNF. Than an "and" is the end node
+         % of the formula's evaluation tree
+         for each pf in rl_argn f do
+            % Only atomic formulas
+            if pasf_congp pf then
+               cng := (car pasf_atf2iv pf) . cng
+            else
+               fs := (pasf_atf2iv pf) . fs;
          % print cng;
-	 return iv_cutcongs(iv_cutn fs,cng)
+         return iv_cutcongs(iv_cutn fs,cng)
       >> else
-      	 if rl_op f eq 'or then
-      	    return iv_mergen for each pf in rl_argn f collect
-	       pasf_qff2ivl1 pf;
+         if rl_op f eq 'or then
+            return iv_mergen for each pf in rl_argn f collect
+               pasf_qff2ivl1 pf;
       % This case can only occur if one of the DNF's conjunctions contains
       % only one atomic formula (e.g. x = 0 or x = 10). This leads to a
       % correct expansion only if this atomic formula is an equality (truth
@@ -124,7 +124,7 @@ procedure pasf_ivl2qff(ivl,var);
    % satisfiability interval.
    if not iv_empty ivl then
       rl_smkn('or,for each iv in ivl collect
-      	 pasf_mkrng(numr simp var,numr simp car iv,numr simp cdr iv))
+         pasf_mkrng(numr simp var,numr simp car iv,numr simp cdr iv))
    else
       'false;
 
@@ -140,17 +140,17 @@ procedure pasf_bsatp(f,var);
       % Looking for one argument in the DNF without a congruence
       argn := if rl_op f eq 'or then rl_argn f else {f};
       while argn and null r do <<
-	 argna := if rl_op car argn eq 'and then
-	    rl_argn car argn else {car argn};
-	 flg := nil;
- 	 while argna and not flg do <<
-	    flg := pasf_congp car argna;
-	    argna := cdr argna
-	 >>;
-	 % Found a constituent without congruences
-	 if null flg and not iv_empty pasf_qff2ivl car argn then
-	    r := t;
-	 argn := cdr argn
+         argna := if rl_op car argn eq 'and then
+            rl_argn car argn else {car argn};
+         flg := nil;
+         while argna and not flg do <<
+            flg := pasf_congp car argna;
+            argna := cdr argna
+         >>;
+         % Found a constituent without congruences
+         if null flg and not iv_empty pasf_qff2ivl car argn then
+            r := t;
+         argn := cdr argn
       >>;
       return r
    end;
@@ -180,18 +180,18 @@ procedure pasf_simplb(f,var);
       % If the bound is parametric or contains univariate formulas only normal
       % simplification is done
       if length cl_fvarl f > 1 or pasf_univnlfp(f,var) then
-	 return f;
+         return f;
       % Looking for one argument in the DNF without a congruence
       argn := if rl_op f eq 'or then rl_argn f else {f};
       % Note: Congruences in the bound are critical to heap space and time
       for each arg in argn do <<
-	 flg := nil;
-	 argna := if rl_op arg eq 'and then rl_argn arg else {arg};
-	 for each a in argna do if pasf_congp a then flg := t;
-	 if null flg then
-	    sb := arg . sb
-	 else
-	    nsb := arg . nsb
+         flg := nil;
+         argna := if rl_op arg eq 'and then rl_argn arg else {arg};
+         for each a in argna do if pasf_congp a then flg := t;
+         if null flg then
+            sb := arg . sb
+         else
+            nsb := arg . nsb
       >>;
       sb := pasf_ivl2qff(pasf_qff2ivl rl_smkn('or,sb),var);
       return cl_simpl(rl_smkn('or,sb . nsb),nil,-1)
@@ -204,16 +204,16 @@ procedure pasf_b2terml(b,var);
    % $\{1,2,3,10\}$).
    begin scalar ivl;
       % Term list for uniform bounds not possible
-%%       if length cl_fvarl b > 1 then
-%% 	 rederr{"pasf_b2terml called with a parametric bound"};
+      %%       if length cl_fvarl b > 1 then
+      %%         rederr{"pasf_b2terml called with a parametric bound"};
       % Note: imprudent use of this code is extremely space- and time-critical
       ivl := pasf_qff2ivl b;
       return for each iv in ivl join
-	 if (numberp car iv) and (numberp cdr iv) then
-	    for i := car iv : cdr iv collect
-	       i
-     	 else
-	    rederr{"pasf_b2terml : trying to expand infinite bound"}
+         if (numberp car iv) and (numberp cdr iv) then
+            for i := car iv : cdr iv collect
+               i
+         else
+            rederr{"pasf_b2terml : trying to expand infinite bound"}
    end;
 
 procedure pasf_rmax(rng1,rng2);
@@ -228,21 +228,21 @@ procedure pasf_brng(b,var);
    begin scalar tmp,bmax;
       % Range approximation for uniform bounds is not possible
       if length cl_fvarl b > 1 then
-	 rederr{"pasf_brng called with parametric bound"};
+         rederr{"pasf_brng called with parametric bound"};
       tmp := cl_simpl(pasf_dnf b,nil,-1);
       if tmp eq 'false then
-	 rederr{"Not satisfiable bound in pasf_brng"};
+         rederr{"Not satisfiable bound in pasf_brng"};
       if tmp eq 'true then
-	 rederr{"Tautological bound in pasf_brng"};
+         rederr{"Tautological bound in pasf_brng"};
       bmax := ('pinf . 'minf);
       % Note: The initial value for bmax is always rewritten by the first
       % application of pasf_rmax since each result of pasf_brng1 describes a
       % finite set.
       if rl_op tmp eq 'or then
-	 for each sf in rl_argn tmp do
-	    bmax := pasf_rmax(pasf_brng1(sf,var),bmax)
+         for each sf in rl_argn tmp do
+            bmax := pasf_rmax(pasf_brng1(sf,var),bmax)
       else
-	 bmax := pasf_brng1(tmp,var);
+         bmax := pasf_brng1(tmp,var);
       return bmax;
    end;
 
@@ -254,14 +254,14 @@ procedure pasf_brng1(b,var);
       % We can simply remove all congruences, since they only strengthten the
       % solution set.
       tmp := pasf_qff2ivl rl_smkn('and,
-	 for each atf in cl_atl b join % Quick fix by MK.
-	    if not (pasf_congp atf) then
-	       {atf});
-	 % for each atf in cl_atl b collect
-	 %    if null (pasf_op atf memq '(cong ncong)) then
-	 %       atf);
+         for each atf in cl_atl b join % Quick fix by MK.
+            if not (pasf_congp atf) then
+               {atf});
+      % for each atf in cl_atl b collect
+      %    if null (pasf_op atf memq '(cong ncong)) then
+      %       atf);
       if null tmp then
-	 rederr{"pasf_brng1 : Something is wrong, empty bound solution set"};
+         rederr{"pasf_brng1 : Something is wrong, empty bound solution set"};
       return (caar tmp . cdar reverse tmp);
    end;
 
@@ -289,7 +289,7 @@ procedure pasf_dec(u);
    begin scalar absv;
       absv := u;
       while not domainp absv do
-	 absv := red absv;
+         absv := red absv;
       return (addf(u,negf absv) . absv)
    end;
 
@@ -310,8 +310,8 @@ procedure pasf_varlat(atf);
    begin scalar vl;
       vl := append(kernels pasf_arg2l atf, if pasf_congp atf then kernels pasf_m atf else nil);
       if !*rlbrkcxk then
-	 vl := for each v in vl join
-	    lto_lpvarl v;
+         vl := for each v in vl join
+            lto_lpvarl v;
       return vl
    end;
 
@@ -325,11 +325,11 @@ procedure pasf_varsubstat(atf,new,old);
       atf
    else
       pasf_0mk2(if pasf_congp atf then
-	 % Substituting in modulus also
-      	 (pasf_opn atf . numr subf(pasf_m atf,{old . new}))
+         % Substituting in modulus also
+         (pasf_opn atf . numr subf(pasf_m atf,{old . new}))
       else
-	 pasf_op atf,
-	 numr subf(pasf_arg2l atf,{old . new}));
+         pasf_op atf,
+         numr subf(pasf_arg2l atf,{old . new}));
 
 procedure pasf_negateat(atf);
    % Presburger arithmetic standard form negate atomic formula. [atf] is an
@@ -338,7 +338,7 @@ procedure pasf_negateat(atf);
       (if atf eq 'false then 'true else 'false)
    else if (pasf_opn atf) memq '(cong ncong) then
       pasf_mk2(pasf_mkop(pasf_lnegrel pasf_opn atf,pasf_m atf),
-	 pasf_arg2l atf, pasf_arg2r atf)
+         pasf_arg2l atf, pasf_arg2r atf)
    else
       pasf_mk2(pasf_lnegrel pasf_opn atf,pasf_arg2l atf,pasf_arg2r atf);
 
@@ -362,10 +362,10 @@ procedure pasf_anegateat(atf);
    % equivalent to $-([atf])$.
    if (pasf_opn atf) memq '(cong ncong) then
       pasf_mk2(pasf_mkop(pasf_anegrel pasf_opn atf,pasf_m atf),
-	 negf pasf_arg2l atf,negf pasf_arg2r atf)
+         negf pasf_arg2l atf,negf pasf_arg2r atf)
    else
       pasf_mk2(pasf_anegrel pasf_opn atf,
-	 negf pasf_arg2l atf,negf pasf_arg2r atf);
+         negf pasf_arg2l atf,negf pasf_arg2r atf);
 
 procedure pasf_anegrel(r);
    % Presburger arithmetic standard form algebraically negate relation. [r] is
@@ -373,7 +373,7 @@ procedure pasf_anegrel(r);
    % equivalent to $[r](t,0)$ for a term $t$.
    cdr atsoc(r,'((equal . equal) (neq . neq) (leq . geq) (geq . leq)
       (lessp . greaterp) (greaterp . lessp) (cong . cong) (ncong . ncong)))
-	 or rederr {"pasf_anegrel: unknown operator ",r};
+         or rederr {"pasf_anegrel: unknown operator ",r};
 
 procedure pasf_subat(al,f);
    % Presburger arithmetic standard form substitute into an atomic
@@ -381,18 +381,18 @@ procedure pasf_subat(al,f);
    % atomic formula after substitution.
    begin scalar nlhs,nlhs1;
       for each a in al do
-	 if null eqn(denr simp cdr a,1) then
-	    rederr "pasf_subat: only presburger terms can be substituted";
+         if null eqn(denr simp cdr a,1) then
+            rederr "pasf_subat: only presburger terms can be substituted";
       if pasf_congp f then <<
-      	 nlhs := subf(pasf_arg2l f,al);
-	 nlhs1 := subf(pasf_m f,al);
-      	 if not domainp denr nlhs or not domainp denr nlhs1 then
-	    rederr "pasf_subat: parametric denominator after substitution";
-	 return pasf_0mk2((pasf_opn f . numr nlhs1), numr nlhs)
+         nlhs := subf(pasf_arg2l f,al);
+         nlhs1 := subf(pasf_m f,al);
+         if not domainp denr nlhs or not domainp denr nlhs1 then
+            rederr "pasf_subat: parametric denominator after substitution";
+         return pasf_0mk2((pasf_opn f . numr nlhs1), numr nlhs)
       >>;
       nlhs := subf(pasf_arg2l f,al);
       if not domainp denr nlhs then
-	 rederr "pasf_subat: parametric denominator after substitution";
+         rederr "pasf_subat: parametric denominator after substitution";
       return pasf_0mk2(pasf_op f,numr nlhs)
    end;
 
@@ -406,7 +406,7 @@ procedure pasf_subalchk(al);
    % denominators. [al] is a list. Returns nil or raises an error.
    for each x in al do
       if not domainp denr simp cdr x then
-	 rederr "pasf_subalchk: parametric denominator in substituted term";
+         rederr "pasf_subalchk: parametric denominator in substituted term";
 
 procedure pasf_eqnrhskernels(x);
    % Presburger arithmetic standard form equation right handside kernels. [x]
@@ -419,16 +419,16 @@ procedure pasf_floor(nom,den);
    % $\lfloor \frac{[nom]}{[den]} \rfloor$.
    if domainp  nom and domainp den then
       if null nom then
-	 nil
+         nil
       else
-      	 numr simp
-	    if remainder(nom,den) = 0 then
-      	       nom / den
-	    % The value is not negative
-	    else if nom*den > 0 then
-	       nom / den
-	    else
-	       nom / den - 1
+         numr simp
+            if remainder(nom,den) = 0 then
+               nom / den
+                  % The value is not negative
+            else if nom*den > 0 then
+               nom / den
+            else
+               nom / den - 1
    else
       rederr{"pasf_floor: not a domain valued sf in input",nom,den};
 
@@ -438,16 +438,16 @@ procedure pasf_ceil(nom,den);
    % $\lceil \frac{[nom]}{[den]} \rceil$.
    if domainp nom and domainp den then
       if null nom then
-	 nil
+         nil
       else
-	 numr simp
-	    if remainder(nom,den) = 0 then
-	       nom / den
-	    % The value is not negative
-   	    else if nom*den > 0 then
-	       nom / den + 1
-	    else
-	       nom / den
+         numr simp
+            if remainder(nom,den) = 0 then
+               nom / den
+                  % The value is not negative
+            else if nom*den > 0 then
+               nom / den + 1
+            else
+               nom / den
    else
       rederr{"pasf_ceil: not a domain valued sf in input",nom,den};
 
@@ -497,8 +497,8 @@ procedure pasf_leqp(c1,c2);
       if null c1 then c1 := 0;
       if null c2 then c2 := 0;
       return if (c1 eq 'minf) or (c2 eq 'pinf) or
-      	 (c1 neq 'pinf and c2 neq 'minf and c1 <= c2) then
-	    t
+         (c1 neq 'pinf and c2 neq 'minf and c1 <= c2) then
+            t
    end;
 
 procedure pasf_leq(c1,c2);
@@ -510,8 +510,8 @@ procedure pasf_leq(c1,c2);
       if null c1 then c1 := 0;
       if null c2 then c2 := 0;
       return if (c1 eq 'minf) or (c2 eq 'pinf) or
-      	 (c1 neq 'pinf and c2 neq 'pinf and c2 neq 'minf and c1 < c2) then
-	    t
+         (c1 neq 'pinf and c2 neq 'pinf and c2 neq 'minf and c1 < c2) then
+            t
    end;
 
 procedure pasf_expand(f);
@@ -529,16 +529,16 @@ procedure pasf_expand(f);
       %
       fdec := fdec_new(pasf_pnf f,nil);
       for each b in fdec_bvl fdec do <<
-	 tmp := cl_fvarl car b;
-	 if length tmp > 1 or (length tmp = 1 and cdr b neq car tmp) then
-	    flag := t
+         tmp := cl_fvarl car b;
+         if length tmp > 1 or (length tmp = 1 and cdr b neq car tmp) then
+            flag := t
       >>;
       return if flag then <<
-      	 if !*rlverbose then ioto_prin2t " (regular)";
-      	 cl_simpl(pasf_exprng1 f,nil,-1)
+         if !*rlverbose then ioto_prin2t " (regular)";
+         cl_simpl(pasf_exprng1 f,nil,-1)
       >> else <<
-      	 if !*rlverbose then ioto_prin2t " (smart)";
-      	 cl_simpl(pasf_exprng2 f,nil,-1)
+         if !*rlverbose then ioto_prin2t " (smart)";
+         cl_simpl(pasf_exprng2 f,nil,-1)
       >>
    end;
 
@@ -548,18 +548,18 @@ procedure pasf_exprng1(f);
    % expanded.
    begin scalar op;
       if rl_tvalp f then
- 	 return f;
+         return f;
       op := rl_op f;
       if rl_boolp op then
-	 return rl_smkn(op,for each arg in rl_argn f collect pasf_exprng1 arg);
+         return rl_smkn(op,for each arg in rl_argn f collect pasf_exprng1 arg);
       if rl_quap op then
-      	 return rl_mkq(op,rl_var f,pasf_exprng1 rl_mat f);
+         return rl_mkq(op,rl_var f,pasf_exprng1 rl_mat f);
       if op eq 'ball then
-	 return pasf_exprng1!-gand(
-	    op,rl_var f,rl_b f,rl_mat f,'and,'true,'false);
+         return pasf_exprng1!-gand(
+            op,rl_var f,rl_b f,rl_mat f,'and,'true,'false);
       if op eq 'bex then
-	 return pasf_exprng1!-gand(
-	    op,rl_var f,rl_b f,rl_mat f,'or,'false,'true);
+         return pasf_exprng1!-gand(
+            op,rl_var f,rl_b f,rl_mat f,'or,'false,'true);
       return f
    end;
 
@@ -567,20 +567,20 @@ procedure pasf_exprng1!-gand(op,v,b,m,gand,gtrue,gfalse);
    begin scalar w,matj,terml,j,c,resl;
       w := cl_fvarl b;
       if not eqcar(w,v) or cdr w then
-	 rederr {"Expanding a parametric bounded formula is impossible"};
+         rederr {"Expanding a parametric bounded formula is impossible"};
       terml := pasf_b2terml(b,v);
       if !*rlverbose then ioto_prin2 {"[",op,",",v,",",length terml};
       c := t; while c and terml do <<
-	 j := car terml;
-	 terml := cdr terml;
-	 % if !*rlverbose then ioto_prin2 {"(",j,")"};
-	 matj := cl_simpl(pasf_exprng1 pasf_subfof(v,j,m),nil,-1);
-	 if matj eq gfalse then <<
-	    if !*rlverbose then ioto_prin2 {"!"};
-	    secondvalue!* := (v . j) . secondvalue!*;
-	    c := nil
-	 >> else if matj neq gtrue then
-	    resl :=  matj . resl
+         j := car terml;
+         terml := cdr terml;
+         % if !*rlverbose then ioto_prin2 {"(",j,")"};
+         matj := cl_simpl(pasf_exprng1 pasf_subfof(v,j,m),nil,-1);
+         if matj eq gfalse then <<
+            if !*rlverbose then ioto_prin2 {"!"};
+            secondvalue!* := (v . j) . secondvalue!*;
+            c := nil
+         >> else if matj neq gtrue then
+            resl :=  matj . resl
       >>;
       if !*rlverbose then ioto_prin2 {"]"};
       return if c then cl_simpl(rl_smkn(gand,resl),nil,-1) else gfalse
@@ -593,34 +593,34 @@ procedure pasf_exprng2(f);
    begin scalar terml,evaltype,matr,tmp,res;
       if rl_tvalp f then return f;
       if rl_boolp rl_op f then
-	 return rl_smkn(rl_op f,for each sf in rl_argn f collect
-	    cl_simpl(pasf_exprng2 sf,nil,-1));
+         return rl_smkn(rl_op f,for each sf in rl_argn f collect
+            cl_simpl(pasf_exprng2 sf,nil,-1));
       if rl_bquap rl_op f then <<
-      	 % Long or or long and check
-      	 if rl_op f eq 'bex then
-	    evaltype := 'or
-      	 else if rl_op f eq 'ball then
-	    evaltype := 'and
-      	    else
-	       % Unknown operator
-	       rederr{"pasf_expand : unknown or illegal quantifier",rl_op f};
-	 tmp := cl_fvarl rl_b f;
-	 if cdr tmp or not eqcar(tmp, rl_var f) then
-	    rederr {"Expanding a parametric bounded formula is impossible"};
-	 terml := pasf_b2terml(rl_b f,rl_var f);
-	 matr := pasf_exprng2 rl_mat f;
-	 if !*rlverbose then
-	    ioto_tprin2t {"---- (",rl_op f," ",rl_var f,")"};
-	 res := {};
-	 for each j in terml collect <<
-	    if !*rlverbose then ioto_prin2 {"[",j,"]"};
-	    res := cl_simpl(pasf_subfof(rl_var f,j,matr),nil,-1) . res
-	 >>;
-	 ioto_prin2t {""};
-	 return rl_smkn(evaltype,res)
+         % Long or or long and check
+         if rl_op f eq 'bex then
+            evaltype := 'or
+         else if rl_op f eq 'ball then
+            evaltype := 'and
+         else
+            % Unknown operator
+            rederr{"pasf_expand : unknown or illegal quantifier",rl_op f};
+         tmp := cl_fvarl rl_b f;
+         if cdr tmp or not eqcar(tmp, rl_var f) then
+            rederr {"Expanding a parametric bounded formula is impossible"};
+         terml := pasf_b2terml(rl_b f,rl_var f);
+         matr := pasf_exprng2 rl_mat f;
+         if !*rlverbose then
+            ioto_tprin2t {"---- (",rl_op f," ",rl_var f,")"};
+         res := {};
+         for each j in terml collect <<
+            if !*rlverbose then ioto_prin2 {"[",j,"]"};
+            res := cl_simpl(pasf_subfof(rl_var f,j,matr),nil,-1) . res
+         >>;
+         ioto_prin2t {""};
+         return rl_smkn(evaltype,res)
       >>;
       if rl_quap rl_op f then
-      	 rl_mkq(rl_op f, rl_var f, pasf_exprng2 rl_mat f);
+         rl_mkq(rl_op f, rl_var f, pasf_exprng2 rl_mat f);
       return f
    end;
 
@@ -630,18 +630,18 @@ procedure pasf_exprng(f);
    begin scalar op, w;
       op := rl_op f;
       if op eq 'and then
-	 return pasf_exprng!-gand('and, rl_argn f, 'true, 'false);
+         return pasf_exprng!-gand('and, rl_argn f, 'true, 'false);
       if op eq 'or then
-	 return pasf_exprng!-gand('or, rl_argn f, 'false, 'true);
+         return pasf_exprng!-gand('or, rl_argn f, 'false, 'true);
       if op eq 'ball then
-	 return pasf_exprng!-gball(
-	    rl_var f, rl_b f, rl_mat f, 'and, 'true, 'false);
+         return pasf_exprng!-gball(
+            rl_var f, rl_b f, rl_mat f, 'and, 'true, 'false);
       if op eq 'bex then
-	 return pasf_exprng!-gball(
-	    rl_var f, rl_b f, rl_mat f, 'or, 'false, 'true);
+         return pasf_exprng!-gball(
+            rl_var f, rl_b f, rl_mat f, 'or, 'false, 'true);
       if rl_boolp op then <<
-	 w := for each subf in rl_argn f collect pasf_exprng subf;
-	 return cl_simplbasic(rl_smkn(op, w), nil, -1)
+         w := for each subf in rl_argn f collect pasf_exprng subf;
+         return rl_simplbasic(rl_smkn(op, w), nil, -1)
       >>;
       % [f] is atomic or a truth value.
       return f
@@ -650,15 +650,15 @@ procedure pasf_exprng(f);
 procedure pasf_exprng!-gand(gand, argl, gtrue, gfalse);
    begin scalar c, a, w, nargl;
       c := t; while c and argl do <<
-	 a := pop argl;
-	 w := pasf_exprng a;
-	 if w eq gfalse then
-	    c := nil
-	 else if w neq gtrue then
-	    nargl := w . nargl
+         a := pop argl;
+         w := pasf_exprng a;
+         if w eq gfalse then
+            c := nil
+         else if w neq gtrue then
+            nargl := w . nargl
       >>;
       if not c then
-	 return gfalse;
+         return gfalse;
       return rl_smkn(gand, nargl)
    end;
 
@@ -672,28 +672,28 @@ procedure pasf_exprng!-gball(v, b, m, gand, gtrue, gfalse);
    begin scalar c, u, w, argl, ivl, iv;
       w := cl_fvarl b;
       if not eqcar(w, v) or cdr w then
-	 rederr {"pasf_exprng: bad bound ",b," with free variables ", w};
+         rederr {"pasf_exprng: bad bound ",b," with free variables ", w};
       if !*rlexprngnatural then
-      	 m := pasf_exprng m;
+         m := pasf_exprng m;
       ivl := pasf_qff2ivl b;
       c := t; while c and ivl do <<
-	 iv := pop ivl;
-	 u := car iv;
-	 while c and u leq cdr iv do <<
-	    w := pasf_sisub(m, v, u);
-	    if not !*rlexprngnatural then
- 	       w := pasf_exprng w;
-	    if w eq gfalse then
-	       c := nil
-	    else <<
-	       if w neq gtrue then
-	       	  argl := w . argl;
-	       u := u + 1
-	    >>
-	 >>
+         iv := pop ivl;
+         u := car iv;
+         while c and u leq cdr iv do <<
+            w := pasf_sisub(m, v, u);
+            if not !*rlexprngnatural then
+               w := pasf_exprng w;
+            if w eq gfalse then
+               c := nil
+            else <<
+               if w neq gtrue then
+                  argl := w . argl;
+               u := u + 1
+            >>
+         >>
       >>;
       if not c then
-	 return gfalse;
+         return gfalse;
       return rl_smkn(gand, argl)
    end;
 
@@ -703,36 +703,36 @@ procedure pasf_sisub(f, v, n);
    begin scalar op;
       op := rl_op f;
       if rl_quap op then
-	 return rl_mkq(op, rl_var f, pasf_sisub(rl_mat f, v, n));
+         return rl_mkq(op, rl_var f, pasf_sisub(rl_mat f, v, n));
       if rl_bquap op then
-	 return rl_mkbq(
-	    op, rl_var f, pasf_sisub(rl_b f, v, n), pasf_sisub(rl_mat f, v, n));
+         return rl_mkbq(
+            op, rl_var f, pasf_sisub(rl_b f, v, n), pasf_sisub(rl_mat f, v, n));
       if op eq 'and then
-	 return pasf_sisub!-gand('and, rl_argn f, v, n, 'true, 'false);
+         return pasf_sisub!-gand('and, rl_argn f, v, n, 'true, 'false);
       if op eq 'or then
-	 return pasf_sisub!-gand('or, rl_argn f, v, n, 'false, 'true);
+         return pasf_sisub!-gand('or, rl_argn f, v, n, 'false, 'true);
       if rl_boolp op then
-	 return rl_smkn(op, for each sf in rl_argn f collect
-	    pasf_sisub(sf, v, n));
+         return rl_smkn(op, for each sf in rl_argn f collect
+            pasf_sisub(sf, v, n));
       if rl_tvalp op then
-	 return f;
+         return f;
       % [f] is atomic.
       return pasf_simplat1(
-	 pasf_0mk2(pasf_op f, numr subf(pasf_arg2l f, {v . n})), op)
+         pasf_0mk2(pasf_op f, numr subf(pasf_arg2l f, {v . n})), op)
    end;
 
 procedure pasf_sisub!-gand(gand, argl, v, n, gtrue, gfalse);
    begin scalar c, w, a, nargl;
       c := t; while c and argl do <<
-	 a := pop argl;
-	 w := pasf_sisub(a, v, n);
-	 if w eq gfalse then
-	    c := nil
-	 else if w neq gtrue then
-	    nargl := w . nargl
+         a := pop argl;
+         w := pasf_sisub(a, v, n);
+         if w eq gfalse then
+            c := nil
+         else if w neq gtrue then
+            nargl := w . nargl
       >>;
       if not c then
-	 return gfalse;
+         return gfalse;
       return rl_smkn(gand, nargl)
    end;
 
@@ -746,23 +746,23 @@ procedure pasf_expanda(answ,phi);
    % possibly used for finding suitable values.
    begin scalar guard, w, badl, goodl, gdis, nrangel, answ;
       for each a in answ do <<
-	 secondvalue!* := nil;
-      	 guard := pasf_expand car a;
-	 w := secondvalue!*;
-	 nrangel . answ := pasf_findsample(cadr a,caddr a,w);
- 	 if nrangel then
-	    badl := lto_insert(guard . reversip(('implicit . 'list . nrangel) . reverse answ), badl)
-	 else
-	    goodl := lto_insert(guard . answ, goodl)
+         secondvalue!* := nil;
+         guard := pasf_expand car a;
+         w := secondvalue!*;
+         nrangel . answ := pasf_findsample(cadr a,caddr a,w);
+         if nrangel then
+            badl := lto_insert(guard . reversip(('implicit . 'list . nrangel) . reverse answ), badl)
+         else
+            goodl := lto_insert(guard . answ, goodl)
       >>;
       gdis := cl_simpl(rl_smkn('or, for each gp in goodl collect car gp), nil, -1);
       if !*rlqeasri then
-      	 badl := for each gp in badl join
-	    if pasf_srip(car gp, gdis) then <<
-	       if !*rlverbose then ioto_prin2 "(SRI) ";
-	       nil
-	    >> else
-	       {gp};
+         badl := for each gp in badl join
+            if pasf_srip(car gp, gdis) then <<
+               if !*rlverbose then ioto_prin2 "(SRI) ";
+               nil
+            >> else
+               {gp};
       return nconc(reversip goodl, reversip badl)
    end;
 
@@ -774,11 +774,11 @@ procedure pasf_srip(prem,concl);
 procedure pasf_findsample(rangel,points,hitl);
    begin scalar w,answ,nrangel;
       answ := for each point in points collect
-	 car point . prepsq subsq(simp cdr point,hitl);
+         car point . prepsq subsq(simp cdr point,hitl);
       nrangel := for each range in rangel join <<
-	 w := cl_simpl(cl_subfof(hitl,range),nil,-1);
-	 % FRAGE: Kann false rauskommen? Was dann?
-	 if not rl_tvalp w then {rl_prepfof w}
+         w := cl_simpl(cl_subfof(hitl,range),nil,-1);
+         % FRAGE: Kann false rauskommen? Was dann?
+         if not rl_tvalp w then {rl_prepfof w}
       >>;
       return nrangel . answ
    end;
@@ -800,32 +800,32 @@ asserted procedure pasf_zsimpl(f: Formula): Formula;
       fl := if rl_op f eq 'or then rl_argn f else {f};
       fb := pasf_zsimpl!-firstbound fl;
       if fb eq 'lessp or fb eq 'leq then <<
-	 gleq := 'leq;
-	 glessp := 'lessp;
-	 gone := 1
+         gleq := 'leq;
+         glessp := 'lessp;
+         gone := 1
       >> else if fb eq 'greaterp or fb eq 'geq then <<
-	 gleq := 'geq;
-	 glessp := 'greaterp;
-	 gone := -1
+         gleq := 'geq;
+         glessp := 'greaterp;
+         gone := -1
       >> else
-	 rederr "pasf_zsimpl: cannot determine direction";
+         rederr "pasf_zsimpl: cannot determine direction";
       for each arg in fl do
-	 best := pasf_improve(z,best,arg,gleq,glessp,gone);
+         best := pasf_improve(z,best,arg,gleq,glessp,gone);
       return pasf_0mk2(gleq,z .** 1 .* 1 .+ -best)
    end;
 
 procedure pasf_zsimpl!-firstbound(fl);
    begin scalar f,op,fb,atl;
       while not fb and fl do <<
-	 f := car fl;
-	 fl := cdr fl;
-	 atl := if rl_op f eq 'and then rl_argn f else {f};
-	 while not fb and atl do <<
-	    op := rl_op car atl;
-	    atl := cdr atl;
-	    if op memq '(lessp leq greaterp geq) then
-	       fb := op
-	 >>
+         f := car fl;
+         fl := cdr fl;
+         atl := if rl_op f eq 'and then rl_argn f else {f};
+         while not fb and atl do <<
+            op := rl_op car atl;
+            atl := cdr atl;
+            if op memq '(lessp leq greaterp geq) then
+               fb := op
+         >>
       >>;
       return fb
    end;
@@ -834,38 +834,38 @@ procedure pasf_improve(z,best,arg,gleq,glessp,gone);
    begin scalar op,argl,type,cand,congl,cong;
       argl := if rl_op arg eq 'and then rl_argn arg else {arg};
       for each at in argl do <<
-	 if pasf_congp at then
-	    congl := at . congl
-	 else <<
-	    op := rl_op at;
-	    if op eq gleq then <<
-	       if type then rederr {"pasf_improve: too many bounds in",arg};
-	       cand := pasf_improve!-getval(z,rl_arg2l at)
-	    >> else if op eq glessp then <<
-	       if type then rederr {"pasf_improve: too many bounds in",arg};
-	       cand := pasf_improve!-getval(z,rl_arg2l at) - gone
-	    >> else if op eq 'equal then <<
-	       if type then rederr {"pasf_improve: too many bounds in",arg};
-	       cand := pasf_improve!-getval(z,rl_arg2l at)
-	    >> else rederr {"pasf_improve: unexpected operator",op};
-	    type := op
-	 >>
+         if pasf_congp at then
+            congl := at . congl
+         else <<
+            op := rl_op at;
+            if op eq gleq then <<
+               if type then rederr {"pasf_improve: too many bounds in",arg};
+               cand := pasf_improve!-getval(z,rl_arg2l at)
+            >> else if op eq glessp then <<
+               if type then rederr {"pasf_improve: too many bounds in",arg};
+               cand := pasf_improve!-getval(z,rl_arg2l at) - gone
+            >> else if op eq 'equal then <<
+               if type then rederr {"pasf_improve: too many bounds in",arg};
+               cand := pasf_improve!-getval(z,rl_arg2l at)
+            >> else rederr {"pasf_improve: unexpected operator",op};
+            type := op
+         >>
       >>;
       if best and eval {gleq,cand,best} then return best;
       cong := rl_smkn('and,congl);
       if type eq 'equal then
-	 return if pasf_improve!-congp(z,cand,cong) then cand else best;
+         return if pasf_improve!-congp(z,cand,cong) then cand else best;
       while (null best or eval {glessp,best,cand}) and
-	 not pasf_improve!-congp(z,cand,cong)
-      do
-	 cand := cand - gone;
+         not pasf_improve!-congp(z,cand,cong)
+            do
+               cand := cand - gone;
       return if (null best or eval {glessp,best,cand}) then cand else best
    end;
 
 procedure pasf_improve!-getval(z,u);
    <<
       if mvar u neq z or ldeg u neq 1 or lc u neq 1 then
-      	 rederr {"pasf_improve: unexpected term ",u};
+         rederr {"pasf_improve: unexpected term ",u};
       - red u
    >>;
 
@@ -879,17 +879,17 @@ procedure pasf_pdp(term);
    % failed. Not that the term is indefinite.
    begin scalar c,r;
       if domainp term then
-	 return (if null term then 'indef
-      	 else if term < 0 then 'ndef
-      	 else if term > 0 then 'pdef
-      	 else 'indef);
+         return (if null term then 'indef
+         else if term < 0 then 'ndef
+         else if term > 0 then 'pdef
+         else 'indef);
       if evenp ldeg term then <<
-	 c := pasf_pdp lc term;
-	 r := pasf_pdp red term;
-	 if null r and (c eq 'psdef or c eq 'pdef) then return 'psdef;
-	 if null r and (c eq 'nsdef or c eq 'ndef) then return 'nsdef;
-	 if r eq 'pdef and (c eq 'psdef or c eq 'pdef) then return 'pdef;
-	 if r eq 'ndef and (c eq 'nsdef or c eq 'ndef) then return 'ndef
+         c := pasf_pdp lc term;
+         r := pasf_pdp red term;
+         if null r and (c eq 'psdef or c eq 'pdef) then return 'psdef;
+         if null r and (c eq 'nsdef or c eq 'ndef) then return 'nsdef;
+         if r eq 'pdef and (c eq 'psdef or c eq 'pdef) then return 'pdef;
+         if r eq 'ndef and (c eq 'nsdef or c eq 'ndef) then return 'ndef
       >>;
       return 'indef
    end;
@@ -911,7 +911,7 @@ procedure pasf_subfof1(atf,var,ex);
    else pasf_opn atf,
       numr subf(pasf_arg2l atf,{(var . ex)}),
       numr subf(pasf_arg2r atf,{(var . ex)}));
-   % LASARUK: Evidence for an error!
+% LASARUK: Evidence for an error!
 
 inline procedure pasf_newvar(f);
    % Presburger arithmetic standard form new variable generation. [f] is a
@@ -926,13 +926,13 @@ procedure pasf_newvar1(f);
       varv := 0;
       % Checking only the whole varlist
       for each var in append(car varl,cdr varl) do <<
-	 expld := explode var;
-	 % Looking for k variables
-	 if car expld eq 'k then <<
-	    l := implode cdr expld;
-	    if l >= varv then
-	       varv := l+1
-	 >>
+         expld := explode var;
+         % Looking for k variables
+         if car expld eq 'k then <<
+            l := implode cdr expld;
+            if l >= varv then
+               varv := l+1
+         >>
       >>;
       return implode('k . explode(varv))
    end;
@@ -944,7 +944,7 @@ procedure pasf_cauchybnd(p,x);
    begin scalar cl,res;
       cl := pasf_coeflst(p,x);
       for each p in cdr cl do
-	 res := addf(res,exptf(car p,2));
+         res := addf(res,exptf(car p,2));
       return addf(res,1)
    end;
 
@@ -956,7 +956,7 @@ procedure pasf_cauchybndcl(cl);
    % here to be sorted such that the highest degree is the first entry.
    begin scalar res;
       for each p in cdr cl do
-	 res := addf(res,exptf(car p,2));
+         res := addf(res,exptf(car p,2));
       return addf(res,1);
    end;
 
@@ -971,8 +971,8 @@ procedure pasf_coeflst(p,x);
       oldkord := setkorder({x});
       nexpr := reorder p;
       while not domainp nexpr and mvar nexpr eq x do <<
-	 res := (lc nexpr . ldeg nexpr) . res;
-	 nexpr := red nexpr
+         res := (lc nexpr . ldeg nexpr) . res;
+         nexpr := red nexpr
       >>;
       setkorder oldkord;
       return reversip ((negf nexpr . 0) . res)
@@ -1031,10 +1031,10 @@ procedure repr_n(repr);
       rederr{"repr_n : invalid REPR structure"}
    else if car cddddr repr = 0 then
       nil
-   %else if car cddddr repr >= 2 then
-   %   % First element of the second element of the coefficient list
-   %   car cadr caddr reverse repr
-   %   %rederr{"repr_n : nonlinear formula where a linear was expected"}
+         %else if car cddddr repr >= 2 then
+         %   % First element of the second element of the coefficient list
+         %   car cadr caddr reverse repr
+         %   %rederr{"repr_n : nonlinear formula where a linear was expected"}
    else
       caar caddr repr;
 
@@ -1066,14 +1066,14 @@ procedure repr_atfnew(atf,x,pos);
       op := pasf_op atf;
       cl := pasf_coeflst(pasf_arg2l atf,x);
       if minusf caar cl then <<
-	 % Note : multiplication of the modulus by -1 does not change the
-	 % semantics
-	 op := if pasf_congp atf then
-	    (pasf_anegrel car op . cdr op)
-	 else
-	    pasf_anegrel op;
-	 cl := for each c in cl collect
-	    (multf(car c,-1) . cdr c);
+         % Note : multiplication of the modulus by -1 does not change the
+         % semantics
+         op := if pasf_congp atf then
+            (pasf_anegrel car op . cdr op)
+         else
+            pasf_anegrel op;
+         cl := for each c in cl collect
+            (multf(car c,-1) . cdr c);
       >>;
       % This decomposition assumes no bounded variables
       return repr_new(pos,op,cl,nil)
@@ -1092,16 +1092,16 @@ procedure repr_atfbnew(atf,x,pos,bvl);
       % Building the linear combination of all bound variables and the
       % representant right hand side term
       for each v in bvl do <<
-	 tmp := pasf_coeflst(r,cdr v);
-	 % Adding the next bounded variable to the linear combination Note:
-	 % assuming bounded variables occur linearly in the formula
- 	 if length tmp > 1 then
-	    tm := addf(tm,multf(numr simp cdr v,caar tmp));
-      	 % Substituting 0 for bounded variables to get the representants
-	 r := numr subf(r,{(cdr v . nil)})
+         tmp := pasf_coeflst(r,cdr v);
+         % Adding the next bounded variable to the linear combination Note:
+         % assuming bounded variables occur linearly in the formula
+         if length tmp > 1 then
+            tm := addf(tm,multf(numr simp cdr v,caar tmp));
+         % Substituting 0 for bounded variables to get the representants
+         r := numr subf(r,{(cdr v . nil)})
       >>;
       return repr_new(pos,repr_op rp,
-	 reversip ((r . 0) . cdr reverse repr_cl rp),tm)
+         reversip ((r . 0) . cdr reverse repr_cl rp),tm)
    end;
 
 % FDEC represents a decomposition of a formula in PNF into the bound list,
@@ -1115,14 +1115,14 @@ procedure fdec_new(f,x);
    begin scalar bvl,pos,btl;
       % Note: Using the fact the input formula is in PNF
       while rl_bquap rl_op f do <<
-	 % Test of exception in bounds
-	 if x memq rl_fvarl rl_b f then
-	    rederr{"Quantified variable",x,
-	       "is not allowed inside formula's bound"};
-	 bvl := (rl_b f . rl_var f) . bvl;
-	 pos := append(pos,{0});
-	 btl := rl_op f . btl;
-	 f := rl_mat f
+         % Test of exception in bounds
+         if x memq rl_fvarl rl_b f then
+            rederr{"Quantified variable",x,
+               "is not allowed inside formula's bound"};
+         bvl := (rl_b f . rl_var f) . bvl;
+         pos := append(pos,{0});
+         btl := rl_op f . btl;
+         f := rl_mat f
       >>;
       return {f,pos,bvl,btl}
    end;
@@ -1177,9 +1177,9 @@ procedure elimpt_cpos(elimpt1,elimpt2);
       p1 := car elimpt1;
       p2 := car elimpt2;
       while (p1 and p2 and car p1 eq car p2) do <<
-	 pos := car p1 . pos;
-	 p1 := cdr p1;
-	 p2 := cdr p2
+         pos := car p1 . pos;
+         p1 := cdr p1;
+         p2 := cdr p2
       >>;
       return reverse pos
    end;
@@ -1241,14 +1241,14 @@ procedure answ_backsubst(answ1,answ2);
    % old answer is replaced by the new one.
    begin scalar res,sub,var;
       if null answ2 and answ1 then
-	 return answ1
+         return answ1
       else if null answ1 then rederr{"incorrect ANSW structure"};
       sub := {(prepf pasf_arg2l caaddr answ1 .
-	 prepsq pasf_arg2r caaddr answ1)};
+         prepsq pasf_arg2r caaddr answ1)};
       res := for each eqn in caddr answ2 collect
-	 pasf_mk2('equal,pasf_arg2l eqn,subsq(pasf_arg2r eqn,sub));
+         pasf_mk2('equal,pasf_arg2l eqn,subsq(pasf_arg2r eqn,sub));
       return {car answ1,append(cadr answ1,cadr answ2),
-	 (caaddr answ1) . res}
+         (caaddr answ1) . res}
    end;
 
 % IV structure defines a simple representation of finite interval joints and
@@ -1299,9 +1299,9 @@ procedure iv_congsplit(iv);
    % all intervals without congruences and $iv_2$ are all the congruences.
    if iv then
       if iv_congp({car iv}) then
-	 (car iv_congsplit cdr iv . (car iv . cdr iv_congsplit cdr iv))
+         (car iv_congsplit cdr iv . (car iv . cdr iv_congsplit cdr iv))
       else
-	 ((car iv . car iv_congsplit cdr iv) . cdr iv_congsplit cdr iv)
+         ((car iv . car iv_congsplit cdr iv) . cdr iv_congsplit cdr iv)
    else
       (nil . nil);
 
@@ -1321,33 +1321,33 @@ procedure iv_cut(iv1,iv2);
    begin scalar curr,lower,res;
       % If one of the intervals is empty returning nil
       if iv_empty iv1 or iv_empty iv2 then
-	 return nil;
+         return nil;
       % Until all lists are empty
       while not(iv_empty iv1 and iv_empty iv2) do <<
-	 % Choosing the interval with the smallest lower bound. If one of
-	 % those is empty then we take the lower bound from the lover one
-	 if iv_empty iv2 or
-	    (not iv_empty iv1 and pasf_leqp(caar iv1,caar iv2)) then <<
-	       lower := car iv1;
-	       iv1 := cdr iv1
-	    >> else <<
-	       lower := car iv2;
-	       iv2 := cdr iv2
-	    >>;
-	 % Initialization of a new result interval
-	 if null curr then
-	    curr := lower
-	 else
-	    if pasf_leq(cdr curr,car lower) then
-	       % The limit of the next smallest interval is bigger than the
-	       % end of the current
-	       curr := lower
-	    else
-	       if pasf_leqp(cdr curr,cdr lower) then <<
-		  res := (car lower . cdr curr) . res;
-		  curr := lower
-	       >> else
-		  res := lower . res
+         % Choosing the interval with the smallest lower bound. If one of
+         % those is empty then we take the lower bound from the lover one
+         if iv_empty iv2 or
+            (not iv_empty iv1 and pasf_leqp(caar iv1,caar iv2)) then <<
+               lower := car iv1;
+               iv1 := cdr iv1
+            >> else <<
+               lower := car iv2;
+               iv2 := cdr iv2
+            >>;
+         % Initialization of a new result interval
+         if null curr then
+            curr := lower
+         else
+            if pasf_leq(cdr curr,car lower) then
+               % The limit of the next smallest interval is bigger than the
+               % end of the current
+               curr := lower
+            else
+               if pasf_leqp(cdr curr,cdr lower) then <<
+                  res := (car lower . cdr curr) . res;
+                  curr := lower
+               >> else
+                  res := lower . res
       >>;
       return reverse res
    end;
@@ -1360,23 +1360,23 @@ procedure iv_cutcongs(ivl,congs);
    begin scalar curr,res;
       if not congs then return ivl;
       while not iv_empty ivl do <<
-	 for i := caar ivl : cdar ivl do <<
-	    iv_cutcongs1(i,congs);
-	    if iv_cutcongs1(i,congs) then
-	       if curr then
-		  curr := (car curr . i)
-	       else
-		  curr := (i . i)
-	    else
-	       if curr then <<
-		  res := curr . res;
-		  curr := nil
-	       >>
-	 >>;
-	 % Joining the last interval limit
-	 if null cdr ivl and curr then
-	    res := (car curr . cdar ivl) . res;
-	 ivl := cdr ivl
+         for i := caar ivl : cdar ivl do <<
+            iv_cutcongs1(i,congs);
+            if iv_cutcongs1(i,congs) then
+               if curr then
+                  curr := (car curr . i)
+               else
+                  curr := (i . i)
+            else
+               if curr then <<
+                  res := curr . res;
+                  curr := nil
+               >>
+         >>;
+         % Joining the last interval limit
+         if null cdr ivl and curr then
+            res := (car curr . cdar ivl) . res;
+         ivl := cdr ivl
       >>;
       return reverse res
    end;
@@ -1415,35 +1415,35 @@ procedure iv_merge(iv1,iv2);
    begin scalar curr,lower,res;
       % Test for congruences in the intervals
       if iv_congp iv1 or iv_congp iv2 then
-	 rederr{"iv_merge : merging a congruence not possible }"};
+         rederr{"iv_merge : merging a congruence not possible }"};
       % Test for empty input lists
       if iv_empty iv1 and iv_empty iv2 then
-	 return nil;
+         return nil;
       % Until all lists are empty
       while not(iv_empty iv1 and iv_empty iv2) do <<
-	 % Choosing the interval with the smallest lower bound.  If one of
-	 % those is empty then we take the lower bound from the lover one
-      	 if iv_empty iv2 or
-	    (not iv_empty iv1 and pasf_leqp(caar iv1,caar iv2)) then <<
-	    lower := car iv1;
-	    iv1 := cdr iv1
-	 >> else <<
-	    lower := car iv2;
-	    iv2 := cdr iv2
-	 >>;
-	 % Initialization of a new result interval
-	 if not curr then
-	    curr := lower
-	 else
-	    if pasf_leq(cdr curr,car lower) then <<
-	       % The limit of the next smallest interval is bigger than the
-	       % end of the current
-	       res := curr . res;
-	       curr := lower
-	    >> else
-	       if pasf_leqp(cdr curr,cdr lower) then
-		  % A new limit must be set for the current interval
-		  curr := (car curr . cdr lower)
+         % Choosing the interval with the smallest lower bound.  If one of
+         % those is empty then we take the lower bound from the lover one
+         if iv_empty iv2 or
+            (not iv_empty iv1 and pasf_leqp(caar iv1,caar iv2)) then <<
+               lower := car iv1;
+               iv1 := cdr iv1
+            >> else <<
+               lower := car iv2;
+               iv2 := cdr iv2
+            >>;
+         % Initialization of a new result interval
+         if not curr then
+            curr := lower
+         else
+            if pasf_leq(cdr curr,car lower) then <<
+               % The limit of the next smallest interval is bigger than the
+               % end of the current
+               res := curr . res;
+               curr := lower
+            >> else
+               if pasf_leqp(cdr curr,cdr lower) then
+                  % A new limit must be set for the current interval
+                  curr := (car curr . cdr lower)
       >>;
       return reverse (curr . res)
    end;
@@ -1464,7 +1464,7 @@ procedure pasf_stexat(at,rndalpair);
 procedure pasf_stexf(u,al);
    begin scalar w,c,r;
       if domainp u then
-      	 return u . al;
+         return u . al;
       w := pasf_stexf(lc u,al);
       al := cdr w;
       c := car w;
@@ -1478,13 +1478,13 @@ procedure pasf_stexf(u,al);
 procedure pasf_stexk(k,al);
    begin scalar w;
       if idp k then
-	 return !*k2f k . al;
+         return !*k2f k . al;
       % We now know that k is an rnd() kernel.
       w := atsoc(caddr k,al);
       if w then
-	 return cdr w . al;
+         return cdr w . al;
       if not domainp cadr k then
-	 rederr {"pasf_stexk:",cadr k,"is not a number"};
+         rederr {"pasf_stexk:",cadr k,"is not a number"};
       w := random(cadr k + 1);
       return w . ((caddr k . w) . al)
    end;
@@ -1498,7 +1498,7 @@ procedure pasf_structat(at,al);
    begin scalar lhs;
       lhs := pasf_arg2l at;
       if domainp lhs then
-	 return at;
+         return at;
       return pasf_0mk2(pasf_op at, numr simp cdr assoc(lhs,al))
    end;
 
@@ -1508,25 +1508,25 @@ procedure pasf_smt2PrintQf(f, fname, linel);
    % variables are existentially quantified.
    begin scalar vl;
       if fname then
-	 out fname;
+         out fname;
       prin2t "(set-logic QF_AUFLIA)";
       if linel then
-      	 for each line in linel do
-	    prin2t line
+         for each line in linel do
+            prin2t line
       else
-      	 prin2t "(set-info :source | automatically generated by REDLOG |)";
+         prin2t "(set-info :source | automatically generated by REDLOG |)";
       vl := cl_varl1 f;
       if cdr vl then
-	 rederr "pasf_smt2PrintQf: Formula is NOT quantifier-free!";
+         rederr "pasf_smt2PrintQf: Formula is NOT quantifier-free!";
       vl := car vl;
       while vl do <<
-	 pasf_smt2PrintV car vl;
-	 vl := cdr vl
+         pasf_smt2PrintV car vl;
+         vl := cdr vl
       >>;
       pasf_smt2Print1 f;
       prin2t "(check-sat)";
       if fname then
-	 shut fname;
+         shut fname;
    end;
 
 procedure pasf_smt2PrintV(v);
@@ -1541,17 +1541,17 @@ procedure pasf_smt2Print(f, fname, linel);
    % string, [linel] is a list of strings.
    <<
       if fname then
-      	 out fname;
+         out fname;
       pasf_smt2PrintLogic();
       if linel then
-      	 for each line in linel do
-	    prin2t line
+         for each line in linel do
+            prin2t line
       else
-      	 prin2t "(set-info :source | automatically generated by REDLOG |)";
+         prin2t "(set-info :source | automatically generated by REDLOG |)";
       pasf_smt2Print1 f;
       prin2t "(check-sat)";
       if fname then
-      	 shut fname
+         shut fname
    >>;
 
 procedure pasf_smt2PrintLogic();
@@ -1563,7 +1563,7 @@ procedure pasf_smt2Print1(f);
       % When working with divc and modc the following test does not work.
       % vl := cl_varl1 f;
       % if car vl then
-      % 	 rederr {"pasf_smt2Print1: found free variables ", car vl};
+      %          rederr {"pasf_smt2Print1: found free variables ", car vl};
       prin2 "(assert ";
       pasf_smt2Print2 f;
       prin2t ")"
@@ -1573,22 +1573,22 @@ procedure pasf_smt2Print2(f);
    begin scalar op;
       op := rl_op f;
       if op memq '(ball bex) then
-	 rederr {"pasf_smt2Print2: bounded quantifiers not supported!"}
+         rederr {"pasf_smt2Print2: bounded quantifiers not supported!"}
       else if op memq '(all ex) then
-	 pasf_smt2PrefixPrintQ(op, rl_var f, rl_mat f)
+         pasf_smt2PrefixPrintQ(op, rl_var f, rl_mat f)
       else if op eq 'impl then
-	 pasf_smt2PrefixPrint("=>", rl_argn f)
+         pasf_smt2PrefixPrint("=>", rl_argn f)
       else if op eq 'repl then
-	 pasf_smt2PrefixPrint("=>", {rl_arg2r f, rl_arg2l f})
+         pasf_smt2PrefixPrint("=>", {rl_arg2r f, rl_arg2l f})
       else if op eq 'equiv then
-	 pasf_smt2Print2 rl_mkn('and,
-	    {rl_mkn('impl, rl_argn f), rl_mkn('repl, rl_argn f)})
+         pasf_smt2Print2 rl_mkn('and,
+            {rl_mkn('impl, rl_argn f), rl_mkn('repl, rl_argn f)})
       else if op memq '(not and or) then
-	 pasf_smt2PrefixPrint(op, rl_argn f)
+         pasf_smt2PrefixPrint(op, rl_argn f)
       else if rl_tvalp op then
-	 prin2 f
+         prin2 f
       else
-	 pasf_smt2PrintAt f
+         pasf_smt2PrintAt f
    end;
 
 procedure pasf_smt2PrefixPrint(op, argl);
@@ -1597,9 +1597,9 @@ procedure pasf_smt2PrefixPrint(op, argl);
       prin2 op;
       prin2 " ";
       for each rargl on argl do <<
-	 pasf_smt2Print2 car rargl;
-	 if cdr rargl then
-	    prin2 " "
+         pasf_smt2Print2 car rargl;
+         if cdr rargl then
+            prin2 " "
       >>;
       prin2 ")"
    >>;
@@ -1621,20 +1621,20 @@ procedure pasf_smt2PrintAt(f);
       op := rl_op f;
       lhs := prepf pasf_arg2l f;
       if op eq 'neq then
-      	 pasf_smt2Print2 rl_mk1('not, pasf_0mk2('equal, pasf_arg2l f))
+         pasf_smt2Print2 rl_mk1('not, pasf_0mk2('equal, pasf_arg2l f))
       else if pasf_congp f then <<
-	 prin2 "(= ";
-	 pasf_smt2PrintT {'modc, lhs, pasf_m f};
-	 prin2 " 0)"
+         prin2 "(= ";
+         pasf_smt2PrintT {'modc, lhs, pasf_m f};
+         prin2 " 0)"
       >>
       else <<
-      	 opal := '((lessp . "<") (leq . "<=") (greaterp . ">") (geq . ">=")
-	    (equal . "="));
-      	 prin2 "(";
-      	 prin2(if w := atsoc(op,opal) then cdr w else op);
-      	 prin2 " ";
-      	 pasf_smt2PrintT lhs;
-      	 prin2 " 0)"
+         opal := '((lessp . "<") (leq . "<=") (greaterp . ">") (geq . ">=")
+            (equal . "="));
+         prin2 "(";
+         prin2(if w := atsoc(op,opal) then cdr w else op);
+         prin2 " ";
+         pasf_smt2PrintT lhs;
+         prin2 " 0)"
       >>
    end;
 
@@ -1670,17 +1670,17 @@ procedure pasf_smt2PrintT1(op, argl);
    >> else if op eq 'plus then <<
       prin2 "(+ ";
       for each rargl on argl do <<
-      	 pasf_smt2PrintT car rargl;
-	 if cdr rargl then
-      	    prin2 " "
+         pasf_smt2PrintT car rargl;
+         if cdr rargl then
+            prin2 " "
       >>;
       prin2 ")"
    >> else if op eq 'times then <<
       prin2 "(* ";
       for each rargl on argl do <<
-      	 pasf_smt2PrintT car rargl;
-	 if cdr rargl then
-      	    prin2 " "
+         pasf_smt2PrintT car rargl;
+         if cdr rargl then
+            prin2 " "
       >>;
       prin2 ")"
    >> else if op eq 'expt then
@@ -1690,9 +1690,9 @@ procedure pasf_smt2ReadAt(form);
    begin scalar op, w, lhs, rhs;
       op := car form;
       w := atsoc(op, '((!>!= . geq) (!<!= . leq) (!< . lessp) (!> . greaterp)
-   	 (!= . equal)));
+         (!= . equal)));
       if not w then
-	 cl_smt2ReadError {"error: expecting logical symbol but found ", op};
+         cl_smt2ReadError {"error: expecting logical symbol but found ", op};
       op := cdr w;
       lhs := pasf_smt2ReadTerm cadr form;
       rhs := pasf_smt2ReadTerm caddr form;
@@ -1705,14 +1705,14 @@ procedure pasf_smt2ReadTerm(u);
 procedure pasf_smt2ReadTerm1(u);
    begin scalar op, w;
       if atom u or eqcar(u, '!:dn!:) or eqcar(u, '_) then
- 	 return u;
+         return u;
       op := car u;
       w := atsoc(op, '((!+ . plus) (!- . minus) (!* . times) (!/ . quotient)));
       if not w then
-	 cl_smt2ReadError {"error: expecting arithmetic symbol but found ", op};
+         cl_smt2ReadError {"error: expecting arithmetic symbol but found ", op};
       op := cdr w;
       if op eq 'minus and cddr u then
-	 op := 'difference;
+         op := 'difference;
       return op . for each arg in cdr u collect pasf_smt2ReadTerm1 arg
    end;
 

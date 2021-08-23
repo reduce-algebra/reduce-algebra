@@ -179,45 +179,17 @@ $(USERDIR)/bpsl_om: $(CFILES)  \
 
  
 $(USERDIR)/dmain.o: $(USERDIR)/dmain.s 
-	gcc -c -m32 $(ASARGS) -o $(USERDIR)/dmain.o $(USERDIR)/dmain.s
+	gcc -c $(ASARGS) -o $(USERDIR)/dmain.o $(USERDIR)/dmain.s
 
 $(USERDIR)/main.o: $(USERDIR)/main.s
-	gcc -c -m32 $(ASARGS) -o $(USERDIR)/main.o $(USERDIR)/main.s
+	gcc -c $(ASARGS) -o $(USERDIR)/main.o $(USERDIR)/main.s
  
 $(USERDIR)/main.s: $(BFILES) $(SLFILES) $(PXK)/main.linux.sed $(PXK)/dmain.linux.sed
 	-rm -f $(USERDIR)/$(MACHINE).sym
 	cp $(PC)/bare-psl.sym $(USERDIR)/$(MACHINE).sym
 	(cd $(USERDIR)/; \
 	 echo $(SLFILES) | awk -f $(PXK)/main.awk > tmp.sl; \
-	$(PXK)/$(MACHINE)-cross tmp.sl)
-
-$(USERDIR)/main_om.s: $(BFILES) $(SLFILES) $(PXK)/main.linux.sed \
-	           $(PXK)/dmain.linux.sed  $(PXK)/OM_externals.sl
-	  -rm -f $(USERDIR)/$(MACHINE).sym
-	  cp $(PC)/bare-psl.sym $(USERDIR)/$(MACHINE).sym
-	  (cd $(USERDIR)/; \
-	   echo $(SLFILES) OM_externals.sl | awk -f $(PXK)/main_OM.awk > tmp.sl; \
-	  $(PXK)/$(MACHINE)-cross tmp.sl)
-
-$(USERDIR)/main_tk.s: $(BFILES) $(SLFILES) $(PXK)/main.linux.sed \
-		$(PXK)/dmain.linux.sed  $(PXK)/Tk_externals.sl
-	-rm -f $(USERDIR)/$(MACHINE).sym
-	cp $(PC)/bare-psl.sym $(USERDIR)/$(MACHINE).sym
-	(cd $(USERDIR)/; \
-	echo $(SLFILES) Tk_externals.sl | awk -f $(PXK)/main_tk.awk > tmp.sl; \
-	$(PXK)/$(MACHINE)-cross tmp.sl)
-
-$(USERDIR)/dmain_tk.o: $(USERDIR)/dmain_tk.s
-	mv $(USERDIR)/dmain_tk.s $(USERDIR)/dmain.temp
-	sed -f $(PXK)/dmain.linux.sed $(USERDIR)/dmain.temp > $(USERDIR)/dmain_tk.s
-	as $(ASARGS) -o $(USERDIR)/dmain_tk.o $(USERDIR)/dmain_tk.s
-
-$(USERDIR)/main_tk.o: $(USERDIR)/main_tk.s
-	mv $(USERDIR)/main_tk.s $(USERDIR)/main.temp
-	sed -f $(PXK)/main.linux.sed $(USERDIR)/main.temp > $(USERDIR)/main_tk.s
-	# rm -f $(USERDIR)/main.temp
-	as $(ASARGS) -o $(USERDIR)/main_tk.o $(USERDIR)/main_tk.s
-
+	$(PXK)/$(MACHINE)-native tmp.sl)
 
 $(USERDIR)/main_pvm.s: $(BFILES) $(SLFILES) $(PXK)/main.linux.sed \
 	$(PXK)/dmain.linux.sed $(PXK)/pvmextern.sl
@@ -225,7 +197,7 @@ $(USERDIR)/main_pvm.s: $(BFILES) $(SLFILES) $(PXK)/main.linux.sed \
 	cp $(PC)/bare-psl.sym $(USERDIR)/$(MACHINE).sym
 	(cd $(USERDIR)/; \
 	 echo $(SLFILES) pvmextern.sl | awk -f $(PXK)/main_pvm.awk > tmp.sl; \
-	$(PXK)/$(MACHINE)-cross tmp.sl)
+	$(PXK)/$(MACHINE)-native tmp.sl)
 
 $(USERDIR)/dmain_pvm.o: $(USERDIR)/dmain_pvm.s
 	mv $(USERDIR)/dmain_pvm.s $(USERDIR)/dmain_pvm.temp

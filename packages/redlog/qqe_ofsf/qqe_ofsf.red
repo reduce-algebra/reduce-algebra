@@ -99,6 +99,7 @@ put('qqe_ofsf,'rl_services,'(
    (rl_subfof!* . cl_subfof)
    (rl_identifyonoff!* . cl_identifyonoff)
    (rl_simpl!* . cl_simplbasic)
+   (rl_simplbasic!* . cl_simplbasic)
    (rl_thsimpl!* . ofsf_thsimpl) %% belongs to qe
    (rl_nnf!* . cl_nnf)
    (rl_nnfnot!* . cl_nnfnot)

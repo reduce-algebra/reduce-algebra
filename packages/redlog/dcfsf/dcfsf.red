@@ -86,6 +86,7 @@ put('dcfsf,'rl_services,'(
    (rl_subfof!* . cl_subfof)
    (rl_identifyonoff!* . cl_identifyonoff)
    (rl_simpl!* . cl_simpl)
+   (rl_simplbasic!* . cl_simplbasic)
    (rl_thsimpl!* . acfsf_thsimpl)
    (rl_nnf!* . cl_nnf)
    (rl_nnfnot!* . cl_nnfnot)
@@ -185,16 +186,16 @@ procedure dcfsf_resimpat(f);
 procedure dcfsf_simpd(u);
    begin scalar vf,n,w;
       if length u neq 2 then
-	 rederr "dcfsf_simpd: d is infix with 2 arguments";
+         rederr "dcfsf_simpd: d is infix with 2 arguments";
       vf := simp car u;
       if not domainp denr vf then
-	 rederr "parametric denominator";
+         rederr "parametric denominator";
       vf := numr vf;
       n := cadr u;
       if not (numberp n and n >=0) then
-	 rederr {"dcfsf_simpd:",n,"is not a natural number"};
+         rederr {"dcfsf_simpd:",n,"is not a natural number"};
       if (w:=sfto_idvarf vf) then
-	 return mksq({'d,w,n},1);
+         return mksq({'d,w,n},1);
       vf := dcfsf_derivationnf(vf,n,nil);
       return !*f2q vf
    end;
@@ -218,13 +219,13 @@ procedure dcfsf_chsimpat1(u);
    begin scalar leftl,rightl,lhs,rhs;
       lhs := cadr u;
       if pairp lhs and dcfsf_opp car lhs then <<
-	 leftl := dcfsf_chsimpat1 lhs;
-	 lhs := caddr lastcar leftl
+         leftl := dcfsf_chsimpat1 lhs;
+         lhs := caddr lastcar leftl
       >>;
       rhs := caddr u;
       if pairp rhs and dcfsf_opp car rhs then <<
-	 rightl := dcfsf_chsimpat1 rhs;
-	 rhs := cadr car rightl
+         rightl := dcfsf_chsimpat1 rhs;
+         rhs := cadr car rightl
       >>;
       return nconc(leftl,{car u,lhs,rhs} . rightl)
    end;
@@ -236,17 +237,17 @@ procedure dcfsf_simpat(u);
       op := car u;
       lhs := simp cadr u;
       if not (!*rlnzden or (domainp denr lhs)) then
- 	 typerr(u,"atomic formula");
+         typerr(u,"atomic formula");
       rhs := simp caddr u;
       if not (!*rlnzden or (domainp denr rhs)) then
- 	 typerr(u,"atomic formula");
+         typerr(u,"atomic formula");
       lhs := subtrsq(lhs,rhs);
       nlhs := numr lhs;
       if !*rlnzden and not domainp denr lhs then <<
-	 f := dcfsf_0mk2(op,nlhs);
-	 if !*rladdcond then
-	    f := rl_mkn('and,{dcfsf_0mk2('neq,denr lhs),f});
-	 return f
+         f := dcfsf_0mk2(op,nlhs);
+         if !*rladdcond then
+            f := rl_mkn('and,{dcfsf_0mk2('neq,denr lhs),f});
+         return f
       >>;
       return dcfsf_0mk2(op,nlhs)
    end;

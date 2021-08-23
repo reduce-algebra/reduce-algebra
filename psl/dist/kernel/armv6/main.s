@@ -506,7 +506,7 @@ l0066:
 l0079:
  stmdb sp!, {lr}
  str r12, [sp, #-4]!
- bic r0, r0, #4160749568
+ bic r0, r0, #-134217728
  add r0, r0, #4
  add sp, sp, #4
  ldmia sp!, {lr}
@@ -561,9 +561,9 @@ binaryopenread:
  stmdb sp!, {lr}
  str r12, [sp, #-4]!
  ldr r1, l0084
- bic r1, r1, #4160749568
+ bic r1, r1, #-134217728
  add r1, r1, #4
- bic r0, r0, #4160749568
+ bic r0, r0, #-134217728
  add r0, r0, #4
 @ (idloc unixopen)
  ldr r7, l0085
@@ -788,7 +788,7 @@ l0112:
  bx r6
 l0113:
  ldr r0, [sp]
- bic r0, r0, #4160749568
+ bic r0, r0, #-134217728
  ldr r7, [r0]
  mov r0, r7, lsl #5
  mov r0, r0, asr #5
@@ -800,7 +800,7 @@ l0113:
  ldr r7, [sp, #4]
  add r1, r1, r7
  ldr r0, [sp]
- bic r0, r0, #4160749568
+ bic r0, r0, #-134217728
  add r0, r0, #4
  ldrsb r0, [r0, r1]
  cmp r0, #0
@@ -817,7 +817,7 @@ l0114:
  b l0116
 l0115:
  ldr r2, [sp]
- bic r2, r2, #4160749568
+ bic r2, r2, #-134217728
  ldr r7, [r2]
  mov r2, r7, lsl #5
  mov r2, r2, asr #5
@@ -874,11 +874,11 @@ l0132:
  mov r4, r12
  mov r3, r4
  mov r2, r4
- bic r1, r0, #4160749568
+ bic r1, r0, #-134217728
  ldr r7, [r1]
  mov r1, r7, lsl #5
  mov r1, r1, asr #5
- bic r0, r0, #4160749568
+ bic r0, r0, #-134217728
  str r0, [sp, #4]
  str r1, [sp, #8]
  str r2, [sp, #12]
@@ -1201,7 +1201,7 @@ l0158:
 l0167:
  stmdb sp!, {lr}
  sub sp, sp, #12
- bic r0, r0, #4160749568
+ bic r0, r0, #-134217728
  str r0, [sp, #4]
  ldr r7, [r0]
  mov r0, r7, lsl #5
@@ -1360,7 +1360,7 @@ l0185:
  mov r1, r1, ror #5
  str r1, [sp, #20]
  ldr r2, [sp, #4]
- bic r1, r1, #4160749568
+ bic r1, r1, #-134217728
  add r1, r1, #4
  ldr r0, [sp, #8]
 @ (idloc binaryreadblock)
@@ -1575,7 +1575,7 @@ l0204:
  str r0, [sp, #4]
  str r1, [sp, #20]
  ldr r4, [sp]
- bic r4, r4, #4160749568
+ bic r4, r4, #-134217728
  add r4, r4, #4
  str r4, [sp]
 l0205:
@@ -1694,8 +1694,8 @@ l0214:
  blx r6
  ldr r6, [sp]
  ldr r5, [r6]
- and r5, r5, #4160749568
- bic r0, r0, #4160749568
+ and r5, r5, #-134217728
+ bic r0, r0, #-134217728
  orr r5, r5, r0
  str r5, [r6]
  add sp, sp, #12
@@ -1832,7 +1832,7 @@ l0231:
  add r7, r7, #1792
  sub r0, r0, r7
  mov r0, r0, lsl #2
- bic r2, r1, #4160749568
+ bic r2, r1, #-134217728
  add r0, r0, r2
  ldr r0, [r0]
  add sp, sp, #4
@@ -1915,10 +1915,10 @@ l0238:
  add r0, r0, r7
  mov r0, r0, lsl #2
  ldr r1, [sp, #8]
- bic r1, r1, #4160749568
+ bic r1, r1, #-134217728
  add r0, r0, r1
  ldr r2, [sp, #20]
- bic r2, r2, #4160749568
+ bic r2, r2, #-134217728
  str r2, [r0]
  ldr r6, [sp, #12]
  add r6, r6, #1
@@ -2328,7 +2328,7 @@ l0288:
  sub r0, r0, r7
  str r0, [sp, #12]
  ldr r0, [sp]
- bic r0, r0, #4160749568
+ bic r0, r0, #-134217728
  str r0, [sp, #16]
  ldr r0, [sp, #12]
 @ (idloc gtstr)
@@ -2377,7 +2377,7 @@ l0291:
  stmdb sp!, {lr}
  str r0, [sp, #-4]!
  mov r4, r1
- bic r1, r1, #4160749568
+ bic r1, r1, #-134217728
  ldr r7, [r1]
  mov r1, r7, lsl #5
  mov r1, r1, asr #5
@@ -2391,7 +2391,7 @@ l0292:
  b l0294
 l0293:
  mov r1, r3
- bic r0, r4, #4160749568
+ bic r0, r4, #-134217728
  add r0, r0, #4
  ldrsb r0, [r0, r1]
  ldr r7, [sp]
@@ -2412,9 +2412,9 @@ l0297:
  stmdb sp!, {lr}
  str r12, [sp, #-4]!
  sub sp, sp, #8
- bic r0, r0, #4160749568
+ bic r0, r0, #-134217728
  str r0, [sp]
- bic r1, r1, #4160749568
+ bic r1, r1, #-134217728
  str r1, [sp, #4]
  ldr r7, [r0]
  mov r2, r7, lsl #5
@@ -2469,9 +2469,9 @@ copystringtofrom:
  str r12, [sp, #-4]!
  str r0, [sp, #-4]!
  sub sp, sp, #12
- bic r2, r0, #4160749568
+ bic r2, r0, #-134217728
  str r2, [sp, #4]
- bic r3, r1, #4160749568
+ bic r3, r1, #-134217728
  str r3, [sp, #8]
  ldr r7, [r3]
  mov r4, r7, lsl #5
@@ -2604,7 +2604,7 @@ l0312:
  blx r6
  cmp r0, r12
  beq l0313
- bic r6, r0, #4160749568
+ bic r6, r0, #-134217728
  ldr r5, [sp, #8]
  str r5, [r6, #4]
  b l0314
@@ -2652,23 +2652,23 @@ l0315:
  add sp, sp, #4
  ldmia sp!, {pc}
 l0316:
- bic r5, r1, #4160749568
+ bic r5, r1, #-134217728
  ldr r7, [r5]
  mov r7, r7, lsr #27
  cmp r7, #9
  bne l0317
- bic r6, r1, #4160749568
+ bic r6, r1, #-134217728
  ldr r6, [r6]
- bic r6, r6, #4160749568
+ bic r6, r6, #-134217728
  ldr r7, [r6]
  cmp r0, r7
  bne l0317
- bic r0, r1, #4160749568
+ bic r0, r1, #-134217728
  ldr r0, [r0]
  add sp, sp, #4
  ldmia sp!, {pc}
 l0317:
- bic r1, r1, #4160749568
+ bic r1, r1, #-134217728
  ldr r1, [r1, #4]
  b l0315
  .long 2
@@ -2677,7 +2677,7 @@ l0317:
 l0319:
  stmdb sp!, {lr}
  str r12, [sp, #-4]!
- bic r0, r0, #4160749568
+ bic r0, r0, #-134217728
  mov r0, r0, lsl #2
 @ ($global symprp)
  ldr r7, l0318
@@ -2695,7 +2695,7 @@ l0318:
 l0321:
  stmdb sp!, {lr}
  str r12, [sp, #-4]!
- bic r0, r0, #4160749568
+ bic r0, r0, #-134217728
  mov r0, r0, lsl #2
 @ ($global symprp)
  ldr r7, l0320
@@ -2751,9 +2751,9 @@ l0331:
  blx r6
 l0332:
  ldr r1, [sp, #8]
- bic r1, r1, #4160749568
+ bic r1, r1, #-134217728
  ldr r0, [sp]
- bic r0, r0, #4160749568
+ bic r0, r0, #-134217728
 @ (idloc plantcodepointer)
  ldr r7, l0325
  ldr r6, [r10, r7, lsl #2]
@@ -2803,7 +2803,7 @@ fluid:
  cmp r7, #9
  bne l0335
  ldr r0, [sp, #4]
- bic r0, r0, #4160749568
+ bic r0, r0, #-134217728
  ldr r0, [r0]
  b l0336
 l0335:
@@ -2824,13 +2824,13 @@ l0338:
  ldr r6, [r10, r7, lsl #2]
  blx r6
  ldr r0, [sp, #4]
- bic r0, r0, #4160749568
+ bic r0, r0, #-134217728
  ldr r0, [r0, #4]
  str r0, [sp, #4]
  mov r7, r0, lsr #27
  cmp r7, #9
  bne l0340
- bic r0, r0, #4160749568
+ bic r0, r0, #-134217728
  ldr r0, [r0]
  b l0341
 l0340:
@@ -2883,7 +2883,7 @@ l0346:
 l0350:
  stmdb sp!, {lr}
  str r12, [sp, #-4]!
- bic r2, r0, #4160749568
+ bic r2, r0, #-134217728
  mov r2, r2, lsl #2
  add r2, r2, r11
  str r1, [r2]
@@ -5070,14 +5070,14 @@ l0480:
 codeaddressp:
  stmdb sp!, {lr}
  sub sp, sp, #4
- bic r0, r0, #4160749568
+ bic r0, r0, #-134217728
  str r0, [sp]
  ldr r0, l0481
 @ (idloc getfcodepointer)
  ldr r7, l0482
  ldr r6, [r10, r7, lsl #2]
  blx r6
- bic r0, r0, #4160749568
+ bic r0, r0, #-134217728
  ldr r7, [sp]
  cmp r0, r7
  ble l0487
@@ -5093,7 +5093,7 @@ l0488:
  ldr r7, l0482
  ldr r6, [r10, r7, lsl #2]
  blx r6
- bic r0, r0, #4160749568
+ bic r0, r0, #-134217728
  ldr r7, [sp]
  cmp r7, r0
  blt l0490
@@ -5107,7 +5107,7 @@ l0489:
 @ ($global bpslowerbound)
  ldr r7, l0485
  ldr r0, [r11, r7, lsl #2]
- bic r0, r0, #4160749568
+ bic r0, r0, #-134217728
  ldr r7, [sp]
  cmp r0, r7
  ble l0492
@@ -5121,7 +5121,7 @@ l0493:
 @ ($global nextbps)
  ldr r7, l0486
  ldr r0, [r11, r7, lsl #2]
- bic r0, r0, #4160749568
+ bic r0, r0, #-134217728
  ldr r7, [sp]
  cmp r7, r0
  blt l0494

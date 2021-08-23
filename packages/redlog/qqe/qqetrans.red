@@ -42,7 +42,7 @@ procedure qqe_la2lth(u);
       % non atomic formula
       if qqe_debug!* then prin2t":::entering qqe_la2lth";
       if atom u then return u;
-      f := rl_simpl(u,nil,-1);
+      f := rl_simplbasic(u,nil,-1);
       if atom f then return f;
       if qqe_debug!* then prin2t{"simplificated formula is", f};
       if rl_cxp car f then return qqe_la2lth1 f

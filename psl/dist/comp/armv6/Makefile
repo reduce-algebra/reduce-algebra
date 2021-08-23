@@ -60,14 +60,17 @@ all: \
 	$(PL)/armv6-asm.b \
 	$(PL)/armv6-cmac.b \
 	$(PL)/armv6-comp.b \
+	$(PL)/armv6-inst1.b \
+	$(PL)/armv6-inst2.b \
 	$(PL)/armv6-lap.b \
-	$(PL)/armv6-lap-to-asm.b $(PL)/nbittab.b \
+	$(PL)/armv6-lap-to-asm.b \
+	$(PL)/armv6-spec.b \
+	$(PL)/nbittab.b \
 	$(PL)/carcdrnil.b \
 	$(PL)/compiler.b \
 	$(PL)/comp-decls.b \
 	$(PL)/sys-consts.b \
 	$(PL)/sys-dm.b \
-	$(PL)/armv6-spec.b \
 	$(PL)/muls.b \
 	$(PL)/tags.b
 
@@ -80,11 +83,20 @@ $(PL)/armv6-cmac.b: $(PXC)/armv6-cmac.sl $(PL)/if-system.b
 $(PL)/armv6-comp.b: $(PXC)/armv6-comp.sl
 	$(PDIST)/make-lap $(PXC) armv6-comp
 
-$(PL)/armv6-lap.b: $(PXC)/armv6-lap.sl $(PL)/fasl-decls.b
+$(PL)/armv6-inst1.b: $(PXC)/armv6-inst1.sl
+	$(PDIST)/make-lap $(PXC) armv6-inst1
+
+$(PL)/armv6-inst2.b: $(PXC)/armv6-inst1.sl
+	$(PDIST)/make-lap $(PXC) armv6-inst1
+
+$(PL)/armv6-lap.b: $(PXC)/armv6-lap.sl $(PL)/armv6-inst1.b $(PL)/armv6-inst2.b
 	$(PDIST)/make-lap $(PXC) armv6-lap
 
 $(PL)/armv6-lap-to-asm.b: $(PXC)/armv6-lap-to-asm.sl
 	$(PDIST)/make-lap $(PXC) armv6-lap-to-asm
+
+$(PL)/armv6-spec.b: $(PXC)/armv6-spec.sl
+	$(PDIST)/make-lap $(PXC) armv6-spec
 
 $(PL)/nbittab.b: $(PXC)/nbittab.sl $(PL)/inum.b $(PL)/fasl-decls.b
 	$(PDIST)/make-lap $(PXC) nbittab
@@ -107,9 +119,6 @@ $(PL)/sys-dm.b: $(PXC)/sys-dm.sl $(PL)/tags.b
 $(PL)/tags.b: $(PXC)/tags.sl
 	$(PDIST)/make-lap $(PXC) tags
 
-$(PL)/armv6-spec.b: $(PXC)/armv6-spec.sl
-	$(PDIST)/make-lap $(PXC) armv6-spec
-
 $(PL)/muls.b: $(PXC)/muls.sl 
 	$(PDIST)/make-lap $(PXC) muls
 
@@ -121,5 +130,8 @@ $(PL)/fasl-decls.b: $(PXK)/fasl-decls.sl
 
 $(PL)/if-system.b: $(PU)/if-system.sl
 	(cd $(PU); make $(MFLAGS) MACHINE=$(MACHINE) $(PL)/if-system.b)
+
+$(PL)/inum.b: $(PU)/inum.sl
+	(cd $(PU); make $(MFLAGS) MACHINE=$(MACHINE) $(PL)/inum.b)
 
 # End of file.

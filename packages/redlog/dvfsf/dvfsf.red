@@ -99,6 +99,7 @@ put('dvfsf,'rl_services,'(
    (rl_subfof!* . cl_subfof)
    (rl_identifyonoff!* . cl_identifyonoff)
    (rl_simpl!* . cl_simpl)
+   (rl_simplbasic!* . cl_simplbasic)
    (rl_nnf!* . cl_nnf)
    (rl_nnfnot!* . cl_nnfnot)
    (rl_pnf!* . cl_pnf)
@@ -204,17 +205,17 @@ procedure dvfsf_enter(argl);
    begin scalar n;
       n := if argl then reval car argl else 0;
       if argl and cdr argl then <<
-	 lprim {"extra",ioto_cplu("argument",cddr argl),"ignored"};
-	 argl := {car argl}
+         lprim {"extra",ioto_cplu("argument",cddr argl),"ignored"};
+         argl := {car argl}
       >>;
       if not (n=0 or primep n) then
- 	 return nil . "dvfsf extra argument must be 0 or prime";
+         return nil . "dvfsf extra argument must be 0 or prime";
       if n <= 0 then <<
-	 lprim "p is being cleared";
-      	 clear 'p;
+         lprim "p is being cleared";
+         clear 'p;
       >> else <<
-	 lprim {"p is set to",n};
-      	 algebraic(p := n);
+         lprim {"p is set to",n};
+         algebraic(p := n);
       >>;
       flag('(p),'reserved);
       dvfsf_p!* := n;
@@ -265,13 +266,13 @@ procedure dvfsf_chsimpat1(u);
    begin scalar leftl,rightl,lhs,rhs;
       lhs := cadr u;
       if pairp lhs and dvfsf_opp car lhs then <<
-	 leftl := dvfsf_chsimpat1 lhs;
-	 lhs := caddr lastcar leftl
+         leftl := dvfsf_chsimpat1 lhs;
+         lhs := caddr lastcar leftl
       >>;
       rhs := caddr u;
       if pairp rhs and dvfsf_opp car rhs then <<
-	 rightl := dvfsf_chsimpat1 rhs;
-	 rhs := cadr car rightl
+         rightl := dvfsf_chsimpat1 rhs;
+         rhs := cadr car rightl
       >>;
       return nconc(leftl,{car u,lhs,rhs} . rightl)
    end;
@@ -283,12 +284,12 @@ procedure dvfsf_simpat(u);
       op := car u;
       lhs := simp cadr u;
       if not (numberp denr lhs) then
- 	 typerr(u,"atomic formula");
+         typerr(u,"atomic formula");
       rhs := simp caddr u;
       if not (numberp denr rhs) then
- 	 typerr(u,"atomic formula");
+         typerr(u,"atomic formula");
       if op memq '(equal neq) then
-      	 return dvfsf_0mk2(op,numr subtrsq(lhs,rhs));
+         return dvfsf_0mk2(op,numr subtrsq(lhs,rhs));
       w := lcm(denr lhs,denr rhs);
       return dvfsf_mk2(op,numr multsq(lhs,!*f2q w),numr multsq(rhs,!*f2q w))
    end;

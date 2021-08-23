@@ -72,6 +72,7 @@ put('tplp,'rl_services,'(
    (rl_sacatlp!* . cl_sacatlp)
    (rl_negateat!* . tplp_negateat)
    (rl_simpl!* . cl_simpl)
+   (rl_simplbasic!* . cl_simplbasic)
    (rl_smupdknowl!* . cl_smupdknowl)
    (rl_smrmknowl!* . cl_smrmknowl)
    (rl_smcpknowl!* . cl_smcpknowl)
@@ -117,22 +118,22 @@ procedure tplp_enter(argl);
    % $l$ is the new value of [rl_argl!*].
    begin scalar op;
       if not eqn(length argl,2) then
- 	 return nil . "wrong number of arguments";
+         return nil . "wrong number of arguments";
       tplp_fsyml!* := for each x in cdar argl collect <<
-	 op := cadr x;
-	 if not idp op then
-	    typerr(op,"function symbol");
-	 if eqn(caddr x,0) then <<
-	    lprim {op,"is being reserved"};
-	    flag ({op},'reserved)
-	 >> else
- 	    tplp_mkalop cdr x;
-	 cadr x . caddr x
+         op := cadr x;
+         if not idp op then
+            typerr(op,"function symbol");
+         if eqn(caddr x,0) then <<
+            lprim {op,"is being reserved"};
+            flag ({op},'reserved)
+         >> else
+            tplp_mkalop cdr x;
+         cadr x . caddr x
       >>;
       tplp_rsyml!* := for each x in cdadr argl collect <<
-	 tplp_mkalop cdr x;
-	 tplp_mkpredicate cdr x;
-      	 cadr x . caddr x
+         tplp_mkalop cdr x;
+         tplp_mkpredicate cdr x;
+         cadr x . caddr x
       >>;
       return t . argl
    end;
@@ -141,13 +142,13 @@ procedure tplp_exit();
    % Theorem proving lisp prefix exit context.
    <<
       for each x in tplp_fsyml!* do
-	 if eqn(cdr x,0) then
-	    remflag({car x},'reserved)
-	 else
-	    tplp_unmkalop car x;
+         if eqn(cdr x,0) then
+            remflag({car x},'reserved)
+         else
+            tplp_unmkalop car x;
       for each x in tplp_rsyml!* do <<
-	 tplp_unmkalop car x;
-	 tplp_unmkpredicate car x
+         tplp_unmkalop car x;
+         tplp_unmkpredicate car x
       >>;
       tplp_rsyml!* := nil;
       tplp_fsyml!* := nil;
@@ -202,12 +203,12 @@ procedure tplp_simpterm(term);
          return reval term;
       w := atsoc(car term,tplp_fsyml());
       if null w then
-	 rederr {car term,"not declared as function symbol"};
+         rederr {car term,"not declared as function symbol"};
       arity := cdr w;
       if not eqn(length cdr term,arity) then
-	 rederr {car term, "requires", arity,"arguments"};
+         rederr {car term, "requires", arity,"arguments"};
       return car term . for each arg in cdr term collect
- 	 tplp_simpterm arg
+         tplp_simpterm arg
    end;
 
 procedure tplp_resimpterm(term);
@@ -230,7 +231,7 @@ procedure tplp_simpat(atf);
    begin scalar op;
       op := car atf;
       if not (op and atom op) then
- 	 typerr (op,"predicate symbol");
+         typerr (op,"predicate symbol");
       return op . for each x in cdr atf collect tplp_simpterm x
    end;
 
@@ -331,9 +332,9 @@ procedure tplp_subt(al,u);
    % Substitute in term. [al] is an alist, [u] is a term. Returns a term.
    begin scalar w;
       if idp u and (w := atsoc(u,al)) then
-      	 return tplp_clonestruct cdr w;
+         return tplp_clonestruct cdr w;
       if atom u then
-      	 return u;
+         return u;
       return tplp_fmkn(tplp_fop u,for each arg in tplp_fargl u collect
          tplp_subt(al,arg))
    end;
@@ -359,9 +360,9 @@ procedure tplp_atnum(f);
    begin scalar op;
       op := rl_op f;
       if rl_boolp op then
- 	 return for each subf in rl_argn f sum tplp_atnum subf;
+         return for each subf in rl_argn f sum tplp_atnum subf;
       if rl_quap op then
-    	 return tplp_atnum rl_mat f;
+         return tplp_atnum rl_mat f;
       if rl_tvalp op then return 0;
       % [f] is an atomic formula.
       return 1

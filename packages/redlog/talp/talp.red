@@ -103,7 +103,8 @@ put('talp,'rl_services,'(
    (rl_matrix!* . cl_matrix)
    (rl_qe!* . talp_qe)
    (rl_qea!* . talp_qea)
-   (rl_simpl!* . cl_simpl) ));
+   (rl_simpl!* . cl_simpl)
+   (rl_simplbasic!* . cl_simplbasic)));
 
 % Admin
 put('talp,'rl_enter,'talp_enter);
@@ -137,11 +138,11 @@ procedure talp_enter(argl);
    <<
       talp_lang!* := for each x in argl collect cadr x . caddr x;
       talp_extlang!* := for each x in argl join
-	 if caddr x > 0 then
-	    (cadr x . caddr x) . talp_get!-invs(cdr x)
-	 else {cadr x . caddr x};
+         if caddr x > 0 then
+            (cadr x . caddr x) . talp_get!-invs(cdr x)
+         else {cadr x . caddr x};
       for each x in talp_extlang!* do
-	 if cdr x > 0 then talp_mkalop x;
+         if cdr x > 0 then talp_mkalop x;
       t . argl
    >>;
 
@@ -149,7 +150,7 @@ procedure talp_exit();
    % Term algebra lisp prefix exit context. No arguments.
    <<
       for each x in talp_getextl() do
-	 if cdr x neq 0 then talp_unmkalop car x;
+         if cdr x neq 0 then talp_unmkalop car x;
       talp_lang!* := nil;
       talp_extlang!* := nil;
    >>;
@@ -209,7 +210,7 @@ procedure talp_simpterm(term);
       if null obj then rederr {talp_op term, "not declared as operator"};
       arity := cdr obj;
       if length (talp_fargl term) neq arity then
-	 rederr {talp_op term, "  defined as  ", arity, "- ary"}
+         rederr {talp_op term, "  defined as  ", arity, "- ary"}
       else obj := for each arg in talp_fargl term collect talp_simpterm arg;
       return talp_mkn(talp_op term,obj)
    end;
@@ -229,11 +230,11 @@ procedure talp_simpat(atf);
    % atomic formula. Returns an atomic formula.
    begin scalar lhs,rhs;
       if talp_tordp(talp_arg2l atf,talp_arg2r atf) then <<
-	 rhs := talp_arg2l atf;
-	 lhs := talp_arg2r atf
+         rhs := talp_arg2l atf;
+         lhs := talp_arg2r atf
       >> else <<
-	 rhs := talp_arg2r atf;
-	 lhs := talp_arg2l atf
+         rhs := talp_arg2r atf;
+         lhs := talp_arg2l atf
       >>;
       return talp_mk2(talp_op atf,lhs,rhs)
    end;
