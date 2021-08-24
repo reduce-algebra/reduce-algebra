@@ -2,7 +2,7 @@ module pasfsusi;
 % Presburger arithmetic standard form susi blackboxes for smart
 % simplification.
 
-revision('pasfsusi, "$Id");
+revision('pasfsusi, "$Id$");
 
 copyright('pasfsusi, "(c) 2003-2021 A. Dolzmann, A. Seidl, and T. Sturm");
 

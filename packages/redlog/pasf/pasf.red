@@ -112,6 +112,8 @@ put('pasf,'rl_params,'(
    (rl_BQqnum!* . pasf_BQqnum)
    (rl_BQdepth!* . pasf_BQdepth)
    (rl_BQf2ml!* . pasf_BQf2ml)
+   (rl_BQsubfof1!* . pasf_BQsubfof1)
+   (rl_BQreplace1!* . pasf_BQreplace1)
    (rl_subat!* . pasf_subat)
    (rl_subalchk!* . pasf_subalchk)
    (rl_eqnrhskernels!* . pasf_eqnrhskernels)

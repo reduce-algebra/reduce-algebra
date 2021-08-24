@@ -80,6 +80,16 @@ rl_blackbox {
    argnum = 2};
 
 rl_blackbox {
+   doc = "bounded qantifier in cl_subfof1",
+   name = BQsubfof1,
+   argnum = 4};
+
+rl_blackbox {
+   doc = "bounded qantifier in cl_replace1",
+   name = BQreplace1,
+   argnum = 2};
+
+rl_blackbox {
    doc = "DFG format print atomic formula",
    name = dfgPrintAt,
    argnum = 1};

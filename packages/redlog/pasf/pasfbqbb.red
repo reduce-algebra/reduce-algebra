@@ -50,6 +50,25 @@ asserted procedure pasf_BQf2ml(f: Formula, client: Applicable): List;
    % Consider both bound and matrix.
    lto_almerge({cl_f2ml(rl_mat f, client), cl_f2ml(rl_b f, client)}, 'plus2);
 
+asserted procedure pasf_BQsubfof1(al: Alist, f: Formula, asgal: Alist, allvl: List): Formula;
+   begin scalar op, v, m, b, al, asgal, newv, allvl, m;
+      op := rl_op f;
+      v := rl_var f;
+      m := rl_mat f;
+      b := rl_b f;
+      al := for each x in al join if not eqcar(x, v) then {x};
+      asgal := for each x in asgal join if not eqcar(x, v) then {x};
+      newv := cl_newv(v, m, asgal, allvl);
+      if newv neq v then <<
+         allvl := newv . allvl;
+         m := cl_subvarsubstat(newv, v, m)
+      >>;
+      return rl_mkbq(op, newv, cl_subfof1(al, b, asgal, allvl), cl_subfof1(al, m, asgal, allvl))
+   end;
+
+asserted procedure rl_BQreplace1(f: Formula, sal: Alist): Formula;
+   rl_mkbq(rl_op f, rl_var f, cl_replace(rl_b f, sal), cl_replace(rl_mat f, sal));
+
 endmodule;
 
 end;

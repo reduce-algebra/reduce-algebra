@@ -72,7 +72,7 @@ then
   p="$r"
   d="regressions"
 else
-  printf "Testing $p: "
+  printf "%-40s" "Testing $p: "
   w=`grep " test " $here/packages/package.map | grep "($p "`
   case $w in
   *$p*) ;;
@@ -273,10 +273,10 @@ then
   echo " / pq" >> $p.timer.tmp
 # If "dc" is not available then the following line leaves ratio empty.
   ratio=`dc < $p.timer.tmp 2>/dev/null`
-  if test "x$ratio" != "x" && test "x$ratio" != "x0"
-  then 
-    printf "CSL/PSL:${ratio}%%"
-  fi
+  # if test "x$ratio" != "x" && test "x$ratio" != "x0"
+  # then 
+    # printf "CSL/PSL:${ratio}%%"
+  # fi
   rm $p.timer.tmp
   mkdir -p csl-psl-times-comparison
   diff -B -w csl-times/$p.rlg psl-times/$p.rlg >csl-psl-times-comparison/$p.rlg.diff

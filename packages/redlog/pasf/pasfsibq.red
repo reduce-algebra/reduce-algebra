@@ -1,7 +1,7 @@
 module pasfsibq;
 % Presburger arithmetic standard form simplify bounded quantifier.
 
-revision('pasfsibq, "$Id");
+revision('pasfsibq, "$Id$");
 
 copyright('pasfsibq, "(c) 2021 A. Dolzmann, T. Sturm");
 
