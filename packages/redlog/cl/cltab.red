@@ -46,7 +46,7 @@ asserted procedure cl_tab0(f: Formula, cdl: List): Formula;
    % with corresponding specializations of [f].
    cl_mktf cl_tab1(f,cdl);
 
-asserted procedure cl_tab1(f: Formula, cdl: List): AList;
+asserted procedure cl_tab1(f: Formula, cdl: List): Alist;
    % Common logic tableau subroutine. [f] is a formula; [cdl] is a
    % list of atomic formulas. Returns a list of consed pairs of $(...,
    % (\phi_i . c_i), ...)$, where $c_i$ is in [cdl] and $\phi_i$ is a
@@ -63,7 +63,7 @@ asserted procedure cl_tab1(f: Formula, cdl: List): AList;
       return resl
    end;
 
-asserted procedure cl_mktf(resl: AList): Formula;
+asserted procedure cl_mktf(resl: Alist): Formula;
    % Common logic make tableau formula. [resl] is a list of consed
    % pairs. Returns a formula. Uses a heuristic approach whether to
    % use the simplifier or not. Depends on the facilities of

@@ -53,7 +53,7 @@ asserted procedure vspr_v(pr: VSpr): SF;
    % Parametric root description variable.
    nth(pr, 3);
 
-asserted procedure vspr_rsl(pr: VSpr): AList;
+asserted procedure vspr_rsl(pr: VSpr): Alist;
    % Parametric root description root specification list.
    nth(pr, 4);
 
@@ -136,7 +136,7 @@ asserted procedure vspc_b(pc: VSpc): List;
 
 asserted procedure vscs_mk(ts: Theory, s: Any): VScs;
    % Candidate solutions make. [ts] is theory supplement; [s] is
-   % either ['failed] or an AList. The keys in [s] are from ['(ip ep
+   % either ['failed] or an Alist. The keys in [s] are from ['(ip ep
    % slb wlb sub wub)], values are lists of parametric root
    % descriptions.
    ts . s;
@@ -350,7 +350,7 @@ asserted procedure vsdc_new(): VSdc;
       putv(dc, 3, 'undefined);        % [bvl]: do not make assumptions on variables in [bvl]
       putv(dc, 4, 'undefined);        % [ptheo]: persistent theory
       putv(dc, 5, 'undefined);        % [ttheo]: temporary theory
-      putv(dc, 6, 'undefined);        % [res]: AList of DottedPairs of the form (Position . VScs); resulting candidate solutions
+      putv(dc, 6, 'undefined);        % [res]: Alist of DottedPairs of the form (Position . VScs); resulting candidate solutions
       return dc
    end;
 
@@ -491,10 +491,10 @@ asserted procedure vsde_pc!-decomposition(de: VSde);
       vsde_putpcl(de, pcl)
    end;
 
-asserted procedure vsde_failedalp(al: AList);
+asserted procedure vsde_failedalp(al: Alist);
    al and null caar al and vscs_failedp cdar al;
 
-asserted procedure qff_gaussposl(var: Kernel, f: QfFormula, p: Position, bvl: KernelL, theo: Theory): AList;
+asserted procedure qff_gaussposl(var: Kernel, f: QfFormula, p: Position, bvl: KernelL, theo: Theory): Alist;
    % wrapper; [p] is a position prefix: All computed positions will be
    % prefixed with [p].
    begin scalar gdc;
@@ -504,7 +504,7 @@ asserted procedure qff_gaussposl(var: Kernel, f: QfFormula, p: Position, bvl: Ke
 	 reverse car pr . cdr pr
    end;
 
-asserted procedure qff_cogaussposl(var: Kernel, f: QfFormula, p: Position, bvl: KernelL, theo: Theory): AList;
+asserted procedure qff_cogaussposl(var: Kernel, f: QfFormula, p: Position, bvl: KernelL, theo: Theory): Alist;
    % wrapper; [p] is a position prefix: All computed positions will be
    % prefixed with [p].
    begin scalar cgdc;
@@ -514,7 +514,7 @@ asserted procedure qff_cogaussposl(var: Kernel, f: QfFormula, p: Position, bvl: 
 	 reverse car pr . cdr pr
    end;
 
-asserted procedure qff_atposl(var: Kernel, f: QfFormula, p: Position, bvl: KernelL, theo: Theory): AList;
+asserted procedure qff_atposl(var: Kernel, f: QfFormula, p: Position, bvl: KernelL, theo: Theory): Alist;
    % wrapper; [p] is a position prefix: All computed positions will be
    % prefixed with [p].
    begin scalar atdc;
@@ -1261,9 +1261,9 @@ asserted procedure ofsf_adjustop(op: Id, s: Integer): Id;
 	 return 'geq
    end;
 
-asserted procedure pos_delsubposal(pal1: AList, pal2: AList): AList;
+asserted procedure pos_delsubposal(pal1: Alist, pal2: Alist): Alist;
    % Delete from [pal2] all positions, which are subpositions of a
-   % position from [pal1]. [pal1] and [pal2] are ALists containing
+   % position from [pal1]. [pal1] and [pal2] are Alists containing
    % pairs of the form [(Position . Any)].
    begin scalar pl1, pl2, npl2;
       pl1 := for each pr in pal1 collect

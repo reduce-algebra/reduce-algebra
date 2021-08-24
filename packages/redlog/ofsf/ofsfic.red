@@ -207,7 +207,7 @@ asserted procedure ic_currentfvect(icdata: InfCoreData): Vector;
    getv(icdata, 5);
 
 asserted procedure ic_guardList(icdata: InfCoreData): List;
-   % Infeasible Core Guard List. An AList which associates guards with
+   % Infeasible Core Guard List. An Alist which associates guards with
    % the formulas from which they emerged.
    getv(icdata, 6);
 
@@ -259,7 +259,7 @@ asserted procedure ic_setcurrentfvect(icdata: InfCoreData, v: Vector): Any;
    putv(icdata, 5, v);
 
 asserted procedure ic_clearguardList(icdata: InfCoreData): List;
-   % Infeasible Core Guard List. An AList which associates guards with
+   % Infeasible Core Guard List. An Alist which associates guards with
    % the formulas from which they emerged.
    putv(icdata, 6, nil);
 
@@ -603,8 +603,8 @@ asserted procedure ofsfic!*cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory
 
 asserted procedure ofsfic_fallback!-on!-coe(coe: ContainerElement): ExtraBoolean;
    % TODO: Update this description!!!
-   % Returns [nil] or AList depending on whether [coe] is equivalent
-   % to ['false] or ['true]. In the ['true] case we return an AList of
+   % Returns [nil] or Alist depending on whether [coe] is equivalent
+   % to ['false] or ['true]. In the ['true] case we return an Alist of
    % answers that are pairs [x . anu].
    begin scalar fvect, cadinput, cd, cadres, resal, rfvect, falseFound, celleval, sf, vl, vlsp, tmpres;
       !*rlqeicfallback := t;
@@ -1813,7 +1813,7 @@ asserted procedure ofsfic_shift2anu(v: Kernel, sv: Kernel): Anu;
    % TODO: Write this procedure!
    anu_fromrat(v, rat_0());
 
-asserted procedure ofsfic_q2anu(q: SQ, v: Kernel, ctx: AList): Anu;
+asserted procedure ofsfic_q2anu(q: SQ, v: Kernel, ctx: Alist): Anu;
    % quotient to Anu
    begin scalar n, d, aex, w, cb;
       n := numr q;
@@ -1828,7 +1828,7 @@ asserted procedure ofsfic_q2anu(q: SQ, v: Kernel, ctx: AList): Anu;
       return anu_mk(aex, iv_mk(negsq cb, cb))
    end;
 
-asserted procedure ofsfic_r2anu(r: List4, v: Kernel, ctx: AList): Anu;
+asserted procedure ofsfic_r2anu(r: List4, v: Kernel, ctx: Alist): Anu;
    % root to Anu
    begin scalar a, b, c, d, aexb, aexc, sgnb, sgnc, p, aex, aexd, sgnd, roots;
       {a, b, c, d} := r;
@@ -1864,7 +1864,7 @@ asserted procedure ofsfic_r2anu(r: List4, v: Kernel, ctx: AList): Anu;
       return cadr roots
    end;
 
-asserted procedure ofsfic_fix!-minf(f: QfFormula, v: Kernel, ctx: AList): Rational;
+asserted procedure ofsfic_fix!-minf(f: QfFormula, v: Kernel, ctx: Alist): Rational;
    % fix an interpretation for - infinity
    begin scalar tval; integer vval;
       vval := -1;
@@ -1875,7 +1875,7 @@ asserted procedure ofsfic_fix!-minf(f: QfFormula, v: Kernel, ctx: AList): Ration
       return vval ./ 1
    end;
 
-asserted procedure ofsfic_fix!-pinf(f: QfFormula, v: Kernel, ctx: AList): Rational;
+asserted procedure ofsfic_fix!-pinf(f: QfFormula, v: Kernel, ctx: Alist): Rational;
    % fix an interpretation for + infinity
    begin scalar tval; integer vval;
       vval := 1;
@@ -1886,7 +1886,7 @@ asserted procedure ofsfic_fix!-pinf(f: QfFormula, v: Kernel, ctx: AList): Ration
       return vval ./ 1
    end;
 
-asserted procedure ofsfic_fix!-pme(f: QfFormula, v: Kernel, root: Anu, ctx: AList): Rational;
+asserted procedure ofsfic_fix!-pme(f: QfFormula, v: Kernel, root: Anu, ctx: Alist): Rational;
    % fix an interpretation for point - epsilon
    begin scalar sc, stp, lb, rb, vval, tval;
       sc := aex_stdsturmchain(anu_dp root, v);
@@ -1905,7 +1905,7 @@ asserted procedure ofsfic_fix!-pme(f: QfFormula, v: Kernel, root: Anu, ctx: ALis
       return vval
    end;
 
-asserted procedure ofsfic_fix!-ppe(f: QfFormula, v: Kernel, root: Anu, ctx: AList): Rational;
+asserted procedure ofsfic_fix!-ppe(f: QfFormula, v: Kernel, root: Anu, ctx: Alist): Rational;
    % fix an interpretation for point + epsilon
    begin scalar sc, stp, lb, rb, vval, tval;
       sc := aex_stdsturmchain(anu_dp root, v);

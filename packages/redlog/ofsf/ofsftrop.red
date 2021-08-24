@@ -469,7 +469,7 @@ asserted procedure ofsf_smallp(w: Any): ExtraBoolean;
       return lto_max l < 100
    end;
 
-asserted procedure ofsf_sceval(f: QfFormula, subl: Alist): TruthValue;
+asserted procedure ofsf_sceval(f: QfFormula, subl: Alist): Id;
    % subl assigns SQs representing :rd: or :ra: domain elements to all
    % variables. We assume that the domain mode is nil when calling this
    % function.
@@ -488,7 +488,7 @@ asserted procedure ofsf_sceval(f: QfFormula, subl: Alist): TruthValue;
       return cl_eval(f, subl, function(ofsf_scevalat))
    end;
 
-asserted procedure ofsf_scevalat(at: OfsfAtf, subl: Alist): TruthValue;
+asserted procedure ofsf_scevalat(at: OfsfAtf, subl: Alist): Id;
    % subl assigns SQs representing :rd: or :ra: domain elements to all
    % variables. We assume that the domain mode is nil when calling this
    % function.

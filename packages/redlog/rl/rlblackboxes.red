@@ -55,6 +55,31 @@ rl_blackbox {
    argnum = 2};
 
 rl_blackbox {
+   doc = "bounded qantifier in cl_apply2ats1",
+   name = BQapply2ats1,
+   argnum = 3};
+
+rl_blackbox {
+   doc = "bounded qantifier in cl_atnum",
+   name = BQatnum,
+   argnum = 1};
+
+rl_blackbox {
+   doc = "bounded qantifier in cl_qnum",
+   name = BQqnum,
+   argnum = 1};
+
+rl_blackbox {
+   doc = "bounded qantifier in cl_depth",
+   name = BQdepth,
+   argnum = 1};
+
+rl_blackbox {
+   doc = "bounded qantifier in cl_f2ml",
+   name = BQf2ml,
+   argnum = 2};
+
+rl_blackbox {
    doc = "DFG format print atomic formula",
    name = dfgPrintAt,
    argnum = 1};

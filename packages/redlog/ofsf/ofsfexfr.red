@@ -155,7 +155,7 @@ asserted procedure exfrdata_init(phi: QfFormula): ExfrData;
       return ed
    end;
 
-asserted procedure exfr_splitphi(phi: QfFormula, lvlal: AList, cc: Atom): Any;
+asserted procedure exfr_splitphi(phi: QfFormula, lvlal: Alist, cc: Atom): Any;
    % [phi] is a quantifier-free formula in CNF without negation. [cc] is changed
    % in place.
    begin scalar w;

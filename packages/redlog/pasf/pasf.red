@@ -33,7 +33,8 @@ copyright('pasf, "(c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010-2017 T. St
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-create!-package('(pasf pasfbnf pasfmisc pasfnf pasfsiat pasfsibq pasfqe pasfsusi pasfresolve), nil);
+create!-package('(pasf pasfbnf pasfmisc pasfnf pasfsiat pasfsibq pasfbqbb
+   pasfqe pasfsusi pasfresolve), nil);
 
 fluid '(!*rlnzden !*rlposden !*rladdcond !*rlqeasri !*rlsifac !*rlbrkcxk !*utf8);
 
@@ -106,6 +107,11 @@ off1 'rlsiverbose;
 
 % Parameters
 put('pasf,'rl_params,'(
+   (rl_BQapply2ats1!* . pasf_BQapply2ats1)
+   (rl_BQatnum!* . pasf_BQatnum)
+   (rl_BQqnum!* . pasf_BQqnum)
+   (rl_BQdepth!* . pasf_BQdepth)
+   (rl_BQf2ml!* . pasf_BQf2ml)
    (rl_subat!* . pasf_subat)
    (rl_subalchk!* . pasf_subalchk)
    (rl_eqnrhskernels!* . pasf_eqnrhskernels)

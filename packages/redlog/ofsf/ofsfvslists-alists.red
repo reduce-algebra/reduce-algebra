@@ -1,7 +1,7 @@
-% This file contains the ALists from ofsfvslists.red in a more
-% readable form. Compilation for PSL of these ALists in this form
+% This file contains the Alists from ofsfvslists.red in a more
+% readable form. Compilation for PSL of these Alists in this form
 % causes problems. Therefore, we decided to paste a "static" version
-% of these ALists into the file ofsfvslists.red and keep the originals
+% of these Alists into the file ofsfvslists.red and keep the originals
 % here for reference.
 
 % Author: Thomas Sturm
@@ -58,7 +58,7 @@ deg!-type!-code!-alist!* := {
 
 rsl!-alist!* := {
    % key: {ldeg f, sign of lc f, op}
-   % value: AList [al] containing elements [pr] such that [car pr] is
+   % value: Alist [al] containing elements [pr] such that [car pr] is
    % one of ['(ip ep slb wlb sub wub)] and [cdr pr] is a list of root
    % specification lists
    {1, -1, 'equal} . {
@@ -694,7 +694,7 @@ rsl!-alist!* := {
 
 rsl!-alist!-clustering!* := {
    % key: {ldeg f, sign of lc f, op}
-   % value: AList [al] containing elements [pr] such that [car pr] is
+   % value: Alist [al] containing elements [pr] such that [car pr] is
    % one of ['(ip ep slb wlb sub wub)] and [cdr pr] is a list of root
    % specification lists
    {1, -1, 'equal} . {
