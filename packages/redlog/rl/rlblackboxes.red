@@ -35,18 +35,8 @@ rl_blackbox {
    argnum = 1};
 
 rl_blackbox {
-   doc = "bound to atomic formula list",
-   name = b2atl,
-   argnum = 2};
-
-rl_blackbox {
    doc = "bound satisfiable predicate",
    name = bsatp,
-   argnum = 2};
-
-rl_blackbox {
-   doc = "bound to term list",
-   name = b2terml,
    argnum = 2};
 
 rl_blackbox {
@@ -200,9 +190,9 @@ rl_blackbox {
    argnum = 2};
 
 rl_blackbox {
-   doc = "simplify bound",
-   name = simplb,
-   argnum = 2};
+   doc = "simplify bounded quantifier",
+   name = simplifyBoundedQuantifier,
+   argnum = 3};
 
 rl_blackbox {
    doc = "smart simplification update knowledge",

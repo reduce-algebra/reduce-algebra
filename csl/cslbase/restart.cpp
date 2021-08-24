@@ -1272,7 +1272,7 @@ LispObject set_up_variables(int restart_flag)
 #ifdef DEBUG
         w = cons(make_keyword("DEBUG"), w);
 #endif
-#ifndef NO_BYTECOUNTS
+#ifndef NO_BYTECOUNT
         w = cons(make_keyword("BYTECOUNTS"), w);
 #endif
 #ifdef EXPERIMENT
@@ -1320,7 +1320,7 @@ LispObject set_up_variables(int restart_flag)
 #ifdef DEBUG
         w = cons(make_keyword("debug"), w);
 #endif
-#ifndef NO_BYTECOUNTS
+#ifndef NO_BYTECOUNT
         w = cons(make_keyword("bytecounts"), w);
 #endif
 #ifdef EXPERIMENT

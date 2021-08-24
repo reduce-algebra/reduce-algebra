@@ -76,7 +76,7 @@ asserted procedure cl_basicSimplifyGenericAnd(f: Formula, n: Integer): Formula;
             goto next;
          if a eq gfalse then <<
             result := {gfalse};
-            goto exit
+            goto break
          >>;
          if rl_op a eq gand then <<
             for each subf in rl_argn a do
@@ -85,7 +85,7 @@ asserted procedure cl_basicSimplifyGenericAnd(f: Formula, n: Integer): Formula;
          >>;
          result := lto_insert(a, result)
       >>;
-   exit:
+   break:
       return rl_smkn(gand, reversip result)
    end;
 

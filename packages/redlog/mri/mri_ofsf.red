@@ -36,7 +36,6 @@ rl_copyc('mri_ofsf,'ofsf);
 
 rl_bbiadd('mri_ofsf,'rl_simplat1!*,'mri_simplat1);
 rl_bbiadd('mri_ofsf,'rl_negateat!*,'mri_negateat);
-rl_bbiadd('mri_ofsf,'rl_simplb!*,'mri_simplb);  % for now
 rl_bbiadd('mri_ofsf,'rl_bsatp!*,'mri_bsatp);    % for now
 
 endmodule;

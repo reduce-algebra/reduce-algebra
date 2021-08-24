@@ -33,8 +33,7 @@ copyright('pasf, "(c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010-2017 T. St
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-create!-package('(pasf pasfbnf pasfmisc pasfnf pasfsiat
-   pasfqe pasfsism pasfresolve),nil);
+create!-package('(pasf pasfbnf pasfmisc pasfnf pasfsiat pasfsibq pasfqe pasfsusi pasfresolve), nil);
 
 fluid '(!*rlnzden !*rlposden !*rladdcond !*rlqeasri !*rlsifac !*rlbrkcxk !*utf8);
 
@@ -111,10 +110,10 @@ put('pasf,'rl_params,'(
    (rl_subalchk!* . pasf_subalchk)
    (rl_eqnrhskernels!* . pasf_eqnrhskernels)
    (rl_simplat1!* . pasf_simplat1)
+   (rl_simplifyBoundedQuantifier!* . pasf_simplifyBoundedQuantifier)
    (rl_fctrat!* . pasf_fctrat)
    (rl_ordatp!* . pasf_ordatp)
    (rl_op!* . pasf_op)
-   (rl_simplb!* . pasf_simplb)
    (rl_varsubstat!* . pasf_varsubstat)
    (rl_negateat!* . pasf_negateat)
    (rl_bnfsimpl!* . cl_bnfsimpl)
@@ -130,8 +129,6 @@ put('pasf,'rl_params,'(
    (rl_susibin!* . pasf_susibin)
    (rl_susipost!* . pasf_susipost)
    (rl_susitf!* . pasf_susitf)
-   (rl_b2terml!* . pasf_b2terml)
-   (rl_b2atl!* . pasf_b2atl)
    (rl_bsatp!* . pasf_bsatp)
    (rl_structat!* . pasf_structat)
    (rl_rxffn!* . pasf_rxffn)

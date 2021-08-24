@@ -1152,7 +1152,7 @@ procedure cl_smsimpl!-junct2!-tagged(op,sicol,knowl,newknowl,n,break,tagl);
          sicol := ofsfic_carinsert(x, sicol);
       if !*rlsiso then <<
          atl := sort(atl, 'rl_ordatp);
-         sicol := sort(sicol, function(lambda(x, y); cl_sordp(car x, car y)))
+         sicol := sort(sicol, function(lambda(x, y); cl_ordp(car x, car y)))
       >>;
       w := nconc(atl, for each i in sicol collect car i);
       for each i in sicol do <<
