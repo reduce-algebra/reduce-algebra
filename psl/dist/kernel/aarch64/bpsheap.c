@@ -56,6 +56,9 @@
 %  a sed script will be used to convert the _variables of C to VARIABLES of
 %  PSL.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+ $Id$
+
 */
 
 #include <stdio.h>
@@ -230,11 +233,13 @@ setupbpsandheap(argc,argv)
   max_image_size = 0x1000000000000; /* 1 more than allowable size */
 
   if ((heapsize_in_bytes + current_size_in_bytes) >= max_image_size) {
+    if (Debug > 0) {
+      printf("heapsize/current size/total: %llx/%llx/%llx\n",heapsize_in_bytes,current_size_in_bytes,total);
+      printf("Size requested will result in pointer values larger than\n");
+      printf(" PSL items can handle (%llx). Will allocate maximum size instead.\n\n",max_image_size);
+    }
     heapsize_in_bytes = max_image_size - current_size_in_bytes;
     total = heapsize_in_bytes + bpssize;
-printf("total %llx %llx %llx\n",heapsize_in_bytes , current_size_in_bytes,total);
-    printf("Size requested will result in pointer values larger than\n");
-    printf(" PSL items can handle. Will allocate maximum size instead.\n\n");
   }
 
 #if (NUMBEROFHEAPS == 2)
@@ -321,7 +326,7 @@ printf("total %llx %llx %llx\n",heapsize_in_bytes , current_size_in_bytes,total)
 	if (hugo != headerword[0]) read_error("symbol table",hugo,headerword[0]);
 
 	if (Debug > 0) {
-	  printf("Relocate heap: %llx => %llx: shift by %lld\n", heaplowerbound, hlb, diff);
+	  printf("Relocate heap: %lld (%llx) => %lld (%llx): shift by %lld\n", heaplowerbound, heaplowerbound, hlb, hlb, diff);
 	}
 
 	if (hlb < heaplowerbound) {
@@ -435,6 +440,10 @@ getheap(heapsize)
   
   old_sbrk = (unsigned long long) sbrk(0);
 
+  if (Debug > 0) {
+    printf("getheap: old_sbrk = %lld (%llX)\n",old_sbrk,old_sbrk);
+  }
+
 #if (NUMBEROFHEAPS == 1)
 /*  heaplowerbound        = (long long)sbrk(heapsize);*/  /* allocate first heap */;
   heaplowerbound = mmap((void *) old_sbrk + HEAPGAP, heapsize,
@@ -452,10 +461,6 @@ getheap(heapsize)
     exit(-1);
   }
 
-  /*heapsize = 119000000;
-  heaplowerbound = &bps;
-  heaplowerbound += BPSSIZE;
-  */
   heapupperbound        = heaplowerbound + heapsize;
   heaplast              = heaplowerbound;
   heaptrapbound         = heapupperbound -120;
@@ -468,6 +473,10 @@ getheap(heapsize)
   oldheaptrapbound      = oldheapupperbound -120;
 #endif
   oldbreakvalue = (long long )sbrk(0);
+  if (Debug > 0) {
+    printf("         oldbreakvalue = %lld (%llX)\n",old_sbrk,old_sbrk);
+  }
+
 }
 
 /* Tag( alterheapsize )
