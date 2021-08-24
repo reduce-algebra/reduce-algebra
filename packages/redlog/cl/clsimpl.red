@@ -134,7 +134,7 @@ asserted procedure cl_simplifyQuantifier(f: Formula, knowl: Any, n: Integer): Fo
       return rl_mkq(q, x, w)
    end;
 
-asserted procedure cl_simplifyNot(f: Formula, knowl: Any, n: Integer): List;
+asserted procedure cl_simplifyNot(f: Formula, knowl: Any, n: Integer): Formula;
    begin scalar result;
       result := cl_simpl1(rl_arg1 f, knowl, n-1, 'not);
       if rl_tvalp result then
@@ -150,10 +150,8 @@ asserted procedure cl_involutiveNot(f: Formula): Formula;
    % $\lnot [f]$ else.
    if rl_op f eq 'not then rl_arg1 f else rl_mk1('not, f);
 
-asserted procedure cl_simplifyAndOr(f: Formula, knowl: Any, n: Integer): List;
-   % Common logic smart simplify. [op] is one of [and], [or]; [junct]
-   % is a list of formulas; [knowl] is an IRL; [n] is an integer.
-   % Returns a list of formulas.
+asserted procedure cl_simplifyAndOr(f: Formula, knowl: Any, n: Integer): Formula;
+   % Common logic simplify conjunction or disjunction.
    begin scalar op, junct, break, w, atl, col, newknowl, a, wop, argl, sicol, natl;
       newknowl := rl_smcpknowl knowl;
       op := rl_op f;
@@ -217,56 +215,10 @@ asserted procedure cl_simplifyAndOr(f: Formula, knowl: Any, n: Integer): List;
          sicol := lto_insert(x, sicol);
       if !*rlsiso then <<
          atl := sort(atl, 'rl_ordatp);
-         sicol := sort(sicol, 'cl_sordp)
+         sicol := sort(sicol, 'cl_ordp)
       >>;
       return rl_smkn(op, nconc(atl, sicol))
    end;
-
-asserted procedure cl_sordp(f1: Formula, f2: Formula): ExtraBoolean;
-   % This is a strict ordering.
-   begin scalar op1,op2;
-      op1 := rl_op f1;
-      op2 := rl_op f2;
-      if not rl_cxp op1 and not rl_cxp op2 then
-         return rl_ordatp(f1, f2);
-      if not rl_cxp op1 and rl_cxp op2 then
-         return t;
-      if rl_cxp op1 and not rl_cxp op2 then
-         return nil;
-      % Both [op1] and [op2] are non-atomic now.
-      if op1 neq op2 then
-         return cl_ordopp(op1, op2);
-      if rl_tvalp op1 then
-         return t;
-      if rl_quap op1 then
-         if rl_var f1 neq rl_var f2 then
-            return not(ordp(rl_var f1, rl_var f2) and rl_var f1 neq rl_var f2)
-         else
-            return cl_sordp(rl_mat f1, rl_mat f2);
-      if rl_bquap op1 then
-         if rl_var f1 neq rl_var f2 then
-            return not(ordp(rl_var f1, rl_var f2) and rl_var f1 neq rl_var f2)
-         else if rl_b f1 neq rl_b f2 then
-            return cl_sordp(rl_b f1, rl_b f2)
-         else
-            return cl_sordp(rl_mat f1, rl_mat f2);
-      return cl_sordpl(rl_argn f1, rl_argn f2)
-   end;
-
-asserted procedure cl_sordpl(fl1: List, fl2: List): ExtraBoolean;
-   if not fl2 then
-      nil
-   else if not fl1 then
-      t
-   else if car fl1 neq car fl2 then
-      cl_sordp(car fl1, car fl2)
-   else
-      cl_sordpl(cdr fl1, cdr fl2);
-
-asserted procedure cl_ordopp(op1: Id, op2: Id): ExtraBoolean;
-   % Operator less predicate. [op1] and [op2] are first-order operators. Returns
-   % [t] iff $[op1] < [op2]$.
-   op2 memq cdr (op1 memq '(and or not impl repl equiv bex ball ex all true false));
 
 asserted procedure cl_simplifyImplication(prem: Formula, concl: Formula, knowl: Any, n: Integer): Formula;
    begin scalar w, newknowl;
@@ -331,16 +283,10 @@ asserted procedure cl_simplifyEquivalence(lhs: Formula, rhs: Formula, knowl: Any
          rl_mk2('equiv, rhs, lhs)
    end;
 
-asserted procedure cl_ordp(f1: Formula, f2: Formula): Boolean;
-   % Common logic order predicate. [f1] and [f2] are formulas. Returns
-   % [T] or [nil]. [nil] is returned if [f1] and [f2] are atomic
-   % formulas and [f1] is less than [f2] wrt. [rl_ordatp].
-   cl_cxfp f2 or (cl_atfp f1 and rl_ordatp(f1, f2));
-
-asserted procedure cl_simplat(atf: Atom, sop: Id): QfFormula;
-   % Common logic simplify atomic formula. [atf] is an atomic formula;
-   % [sop] is a CL operator. Returns a quantifier-free formula
-   % equivalent to [atf].
+asserted procedure cl_simplat(atf: AtFormula, sop: Id): QfFormula;
+   % Common logic simplify atomic formula. The result is equivalent to atf.
+   % sop contains the logical operator of the boolean level where atf
+   % occurred. This can help to decide about splitting or not splitting atf.
    if not !*rlidentify then
       rl_simplat1(atf, sop)
    else
@@ -359,6 +305,56 @@ asserted procedure cl_identifyat(atf: Atom): Atom;
       cl_identify!-atl!* := lto_hinsert(atf, cl_identify!-atl!*, 'cl_identifyathfn);
       return atf
    end;
+
+% The following code implements the ordering of formulas used for sorting the
+% boolean levels.
+
+asserted procedure cl_ordp(f1: Formula, f2: Formula): ExtraBoolean;
+   % Common logic order predicate. This is a strict total ordering.
+   begin scalar op1,op2;
+      op1 := rl_op f1;
+      op2 := rl_op f2;
+      if not rl_cxp op1 and not rl_cxp op2 then
+         return rl_ordatp(f1, f2);
+      if not rl_cxp op1 and rl_cxp op2 then
+         return t;
+      if rl_cxp op1 and not rl_cxp op2 then
+         return nil;
+      % Both [op1] and [op2] are non-atomic now.
+      if op1 neq op2 then
+         return cl_ordopp(op1, op2);
+      if rl_tvalp op1 then
+         return t;
+      if rl_quap op1 then
+         if rl_var f1 neq rl_var f2 then
+            return not(ordp(rl_var f1, rl_var f2) and rl_var f1 neq rl_var f2)
+         else
+            return cl_ordp(rl_mat f1, rl_mat f2);
+      if rl_bquap op1 then
+         if rl_var f1 neq rl_var f2 then
+            return not(ordp(rl_var f1, rl_var f2) and rl_var f1 neq rl_var f2)
+         else if rl_b f1 neq rl_b f2 then
+            return cl_ordp(rl_b f1, rl_b f2)
+         else
+            return cl_ordp(rl_mat f1, rl_mat f2);
+      return cl_ordpl(rl_argn f1, rl_argn f2)
+   end;
+
+asserted procedure cl_ordpl(fl1: List, fl2: List): ExtraBoolean;
+   % Common logic order predicate on lists. Generalizes cl_ordp to lists.
+   if not fl2 then
+      nil
+   else if not fl1 then
+      t
+   else if car fl1 neq car fl2 then
+      cl_ordp(car fl1, car fl2)
+   else
+      cl_ordpl(cdr fl1, cdr fl2);
+
+asserted procedure cl_ordopp(op1: Id, op2: Id): ExtraBoolean;
+   % Common logic ordered operator predicate. [op1] and [op2] are first-order
+   % operators. Returns t iff op1 < op2.
+   op2 memq cdr (op1 memq '(and or not impl repl equiv bex ball ex all true false));
 
 % The following code implements a "generic smart simplification". All black
 % boxes for the smart simplification are implemented generically using only a
@@ -426,65 +422,6 @@ asserted procedure cl_smmkatl(op: Id, knowl: Alist, newknowl: Alist, n: Integer)
          if cdr pair = n then {car pair};
       if op eq 'or then
          res := for each at in res collect rl_negateat at;
-      return res
-   end;
-
-rl_provideService cl_siaddatl = cl_siaddatl;
-% SM only. Used by CGB
-
-asserted procedure cl_siaddatl(atl: List, c: Formula): Formula;
-   % Common logic simplifying add atomic formula list. [atl] is a list
-   % of atomic formulas; [c] is [true], [false], a simplified atomic
-   % formula, or a simplified conjunction of atomic formulas. Returns
-   % [true], [false], a simplified atomic formula, or a simplified
-   % conjunction of atomic formulas. The result is equivalent to
-   % $\bigwedge [atl] \land [c]$.
-   begin scalar w, sicd;
-      if c eq 'false then
-         return 'false;
-      atl := cl_simplifyTheory atl;
-      if atl eq 'inctheo then
-         return 'false;
-      sicd := if c eq 'true then
-         nil
-      else if cl_cxfp c then <<
-         ASSERT( rl_op c eq 'and );
-         rl_argn c
-      >> else
-         {c};
-      w := rl_smupdknowl('and, nconc(atl, sicd), nil, 1);
-      if w eq 'false then
-         return 'false;
-      w := rl_smmkatl('and, nil, w, 1);
-      if w eq 'false then
-         return 'false;
-      if !*rlsiso then w := sort(w, 'rl_ordatp);
-      return rl_smkn('and, w)
-   end;
-
-rl_provideService rl_qesil = cl_qesil;
-
-asserted procedure cl_qesil(fl: List, theo: List): List;
-   % QE-based simplification of a list of formulas. Eliminated formulas that are
-   % implied by the conjunction of all others.
-   begin scalar prem, test, sol, res; integer n;
-      if !*rlverbose then <<
-         n := length fl + 1;
-         ioto_cterpri()
-      >>;
-      res := for each f in fl join <<
-         prem := rl_mkn('and, {rl_smkn('and, theo), rl_smkn('and, delete(f, fl))});
-         test := rl_all(rl_mk2('impl, prem, f), nil);
-         if !*rlverbose then
-            ioto_prin2 {"[", n := n - 1};
-         sol := rl_qe(test, nil) where !*rlverbose = nil;
-         if !*rlverbose then
-            ioto_prin2 {if sol eq 'true then "!" else "", "] "};
-            if sol neq 'true then
-               {f}
-      >>;
-      if !*rlverbose then
-         ioto_cterpri();
       return res
    end;
 

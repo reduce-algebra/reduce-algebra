@@ -930,6 +930,65 @@ rl_provideService rl_sign = cl_sign using rl_signat;
 procedure cl_sign(f);
    cl_apply2ats(f, 'rl_signat);
 
+rl_provideService cl_siaddatl = cl_siaddatl;
+% SM only. Used by CGB
+
+asserted procedure cl_siaddatl(atl: List, c: Formula): Formula;
+   % Common logic simplifying add atomic formula list. [atl] is a list
+   % of atomic formulas; [c] is [true], [false], a simplified atomic
+   % formula, or a simplified conjunction of atomic formulas. Returns
+   % [true], [false], a simplified atomic formula, or a simplified
+   % conjunction of atomic formulas. The result is equivalent to
+   % $\bigwedge [atl] \land [c]$.
+   begin scalar w, sicd;
+      if c eq 'false then
+         return 'false;
+      atl := cl_simplifyTheory atl;
+      if atl eq 'inctheo then
+         return 'false;
+      sicd := if c eq 'true then
+         nil
+      else if cl_cxfp c then <<
+         ASSERT( rl_op c eq 'and );
+         rl_argn c
+      >> else
+         {c};
+      w := rl_smupdknowl('and, nconc(atl, sicd), nil, 1);
+      if w eq 'false then
+         return 'false;
+      w := rl_smmkatl('and, nil, w, 1);
+      if w eq 'false then
+         return 'false;
+      if !*rlsiso then w := sort(w, 'rl_ordatp);
+      return rl_smkn('and, w)
+   end;
+
+rl_provideService rl_qesil = cl_qesil;
+
+asserted procedure cl_qesil(fl: List, theo: List): List;
+   % QE-based simplification of a list of formulas. Eliminated formulas that are
+   % implied by the conjunction of all others.
+   begin scalar prem, test, sol, res; integer n;
+      if !*rlverbose then <<
+         n := length fl + 1;
+         ioto_cterpri()
+      >>;
+      res := for each f in fl join <<
+         prem := rl_mkn('and, {rl_smkn('and, theo), rl_smkn('and, delete(f, fl))});
+         test := rl_all(rl_mk2('impl, prem, f), nil);
+         if !*rlverbose then
+            ioto_prin2 {"[", n := n - 1};
+         sol := rl_qe(test, nil) where !*rlverbose = nil;
+         if !*rlverbose then
+            ioto_prin2 {if sol eq 'true then "!" else "", "] "};
+            if sol neq 'true then
+               {f}
+      >>;
+      if !*rlverbose then
+         ioto_cterpri();
+      return res
+   end;
+
 endmodule;  % [clmisc]
 
 end;  % of file
