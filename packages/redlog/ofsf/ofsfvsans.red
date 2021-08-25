@@ -34,7 +34,7 @@ copyright('ofsfvsans, "(c) 2017 M. Kosta, T. Sturm");
 
 fluid '(deg!-type!-code!-alist!*);
 
-asserted procedure vsdb_computeAns(db: VSdb): AList;
+asserted procedure vsdb_computeAns(db: VSdb): Alist;
    % Compute answers to existential sentences: entry point.
    begin scalar nd;
       if not eqn(vsco_length vsdb_sc db, 1) then  % there are at least two success nodes
@@ -47,7 +47,7 @@ asserted procedure vsdb_computeAns(db: VSdb): AList;
       return vsdb_ans!-main(db, nd, nil)
    end;
 
-asserted procedure vsdb_ans!-main(db: VSdb, nd: VSnd, ctx: AList): AList;
+asserted procedure vsdb_ans!-main(db: VSdb, nd: VSnd, ctx: Alist): Alist;
    % Core of the answers computing procedure. [nd] is a node in the
    % tree of nodes contained in [db]; [ctx] is the current context,
    % i.e., list of pairs (Kernel . Anu) containing assignments to
@@ -73,7 +73,7 @@ asserted procedure vsdb_ans!-main(db: VSdb, nd: VSnd, ctx: AList): AList;
       return vsdb_ans!-main(db, vsnd_parent nd, (v . anu) . ctx)
    end;
 
-asserted procedure vsnd_ans!-arb(nd: VSnd, ctx: AList): Anu;
+asserted procedure vsnd_ans!-arb(nd: VSnd, ctx: Alist): Anu;
    % Compute answer for [nd], assuming that [nd] was obtained by
    % "arbitrary" VS from its parent.
    begin scalar v;
@@ -82,7 +82,7 @@ asserted procedure vsnd_ans!-arb(nd: VSnd, ctx: AList): Anu;
       return anu_fromrat(v, rat_0())
    end;
 
-asserted procedure vsnd_ans!-dgs(nd: VSnd, ctx: AList): Anu;
+asserted procedure vsnd_ans!-dgs(nd: VSnd, ctx: Alist): Anu;
    % Compute answer for [nd], assuming that [nd] was obtained by
    % "degree shift" VS from its parent.
    begin scalar v, sv, svanu, aex, bnd;
@@ -106,7 +106,7 @@ asserted procedure vsnd_ans!-dgs(nd: VSnd, ctx: AList): Anu;
       return anu_mk(aex, iv_mk(rat_neg bnd, bnd))
    end;
 
-asserted procedure vsnd_ans!-tp(nd: VSnd, ctx: AList): Anu;
+asserted procedure vsnd_ans!-tp(nd: VSnd, ctx: Alist): Anu;
    % Compute answer for [nd], assuming that [nd] was obtained by "test
    % point" VS from its parent.
    begin scalar vs, v, tp;
@@ -122,7 +122,7 @@ asserted procedure vsnd_ans!-tp(nd: VSnd, ctx: AList): Anu;
       return vsnd_ans!-root(nd, ctx)  % root
    end;
 
-asserted procedure vsnd_ans!-infinity(nd: VSnd, ctx: AList): Anu;
+asserted procedure vsnd_ans!-infinity(nd: VSnd, ctx: Alist): Anu;
    % Compute answer for [nd], assuming that [nd] was obtained by
    % "+-infinity" VS from its parent.
    begin scalar v, f, inf, tval;
@@ -143,7 +143,7 @@ asserted procedure vsnd_ans!-infinity(nd: VSnd, ctx: AList): Anu;
       return anu_fromrat(v, vval ./ 1)
    end;
 
-asserted procedure vsnd_ans!-epsilon(nd: VSnd, ctx: AList): Anu;
+asserted procedure vsnd_ans!-epsilon(nd: VSnd, ctx: Alist): Anu;
    % Compute answer for [nd], assuming that [nd] was obtained by
    % "root+-epsilon" VS from its parent.
    begin scalar v, f, root, sc, eps, stp, lb, rb, vval, tval;
@@ -174,7 +174,7 @@ asserted procedure vsnd_ans!-epsilon(nd: VSnd, ctx: AList): Anu;
       return anu_fromrat(v, vval)
    end;
 
-asserted procedure vsnd_ans!-root(nd: VSnd, ctx: AList): Anu;
+asserted procedure vsnd_ans!-root(nd: VSnd, ctx: Alist): Anu;
    % Compute answer for [nd], assuming that [nd] was obtained by
    % "root" VS from its parent.
    begin scalar v, tp, pr, aex;
@@ -194,7 +194,7 @@ asserted procedure vsnd_ans!-root(nd: VSnd, ctx: AList): Anu;
       return nth(aex_findroots(aex, v), rindex)
    end;
 
-asserted procedure qff_evalatp(f: QfFormula, ctx: AList): Id;
+asserted procedure qff_evalatp(f: QfFormula, ctx: Alist): Id;
    % Quantifier-free formula evaluate at point.
    % a wrapper for [ofsf_evalqff]
    begin scalar sp, varl;

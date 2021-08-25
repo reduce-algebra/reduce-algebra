@@ -422,7 +422,7 @@ asserted procedure rl_helpPrintDocal(docal: Alist);
 	    >> else if stringp cdr pr then <<
 	       ioto_tprin2t lto_Upcase id2string car pr;
 	       rl_printParagraph cdr pr
-	    >> else <<  % cdr pr is an AList
+	    >> else <<  % cdr pr is an Alist
 	       ioto_tprin2t if car pr = 'seealso then
  		  "SEE ALSO"
 	       else 
@@ -446,13 +446,13 @@ asserted procedure lto_stringParagraphWrapper(s: String): List;
    lto_stringParagraph(s, rlhelp_leftMargin!*, linelength nil - rlhelp_rightMargin!*);
 
 
-asserted procedure rl_printDescriptionList(al: AList, xdtl: List);
+asserted procedure rl_printDescriptionList(al: Alist, xdtl: List);
    <<
       for each l in lto_stringDescriptionListWrapper(al, xdtl) do prin2t l;
       nil
    >>;
 
-asserted procedure lto_stringDescriptionListWrapper(al: AList, xdtl: List): List;
+asserted procedure lto_stringDescriptionListWrapper(al: Alist, xdtl: List): List;
    lto_stringDescriptionList(al, rlhelp_leftMargin!*, rlhelp_colSep!*, linelength nil - rlhelp_rightMargin!*, xdtl);
 
 endmodule;

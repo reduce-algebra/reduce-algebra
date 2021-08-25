@@ -667,7 +667,7 @@ procedure smt_getOption(option);
 asserted procedure smt_xpandlet(u: List): List;
    smt_xpandlet1(u, nil);
 
-asserted procedure smt_xpandlet1(u: List, letal: AList): List;
+asserted procedure smt_xpandlet1(u: List, letal: Alist): List;
    begin scalar bl, w, oletal;
       if atom u then
 	 return if (w := atsoc(u, letal)) then cdr w else u;

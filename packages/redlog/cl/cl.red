@@ -30,7 +30,8 @@ copyright('cl, "(c) 1995-2021 A. Dolzmann, T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-create!-package('(cl clsimpl clsimplbasic clsusi clbnf clnf clqe cltab clmisc clresolv), nil);
+create!-package('(cl clsub clsimpl clsimplbasic clsusi clbnf clnf clqe cltab
+   clmisc clresolv cldfgformat clsmt2format), nil);
 
 load!-package 'redlog;
 
@@ -59,7 +60,6 @@ struct Formula;
 struct FormulaL asserted by listp;
 struct QfFormula;
 struct QfFormulaL asserted by listp;
-struct TruthValue asserted by rl_tvalp;
 struct Theory asserted by listp;
 struct TheoryFormulaPair asserted by pairp;
 struct KernelL asserted by listp;

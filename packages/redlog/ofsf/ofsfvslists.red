@@ -2625,7 +2625,7 @@ asserted procedure ofsf_negateop(op: Id): Id;
 asserted procedure vsub_compute!-rsl(op: Id, f: SF, x: Kernel, s: Any): Any;
    % Compute root specification list. [op] is an operator, [x] is
    % [mvar f], [s] is the sign of [lc f]. Returns either ['fail] or an
-   % AList [al] containing elements [pr] such that [car pr] is one of
+   % Alist [al] containing elements [pr] such that [car pr] is one of
    % ['(ip ep slb wlb sub wub)] and [cdr pr] is a list of root
    % specification lists.
    begin scalar w;

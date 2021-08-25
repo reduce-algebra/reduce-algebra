@@ -40,6 +40,9 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+ $Id$
+
 */
 
 #include <stdio.h>
@@ -71,7 +74,10 @@ void creloc (unsigned long long array[], long len, long long diff, unsigned long
 	    if (inf == 0xffffffffffffff) inf = -1;
 	    skip = (inf +9) /8  +1 ;  //strpack
 	  }
-             else if (tag==249) { skip = inf + 2;} /* hwords */
+             else if (tag==249) { /* hwords */
+	       if (inf == 0xffffffffffffff) inf = -1;
+	       skip = inf + 2;
+	     }
              else if (tag==250) { skip = 1;} // hvect, work on the vect contents
 // One has to make sure that bignums are *NOT* vectors in gc, but WORD-VECT.
 #ifdef DEBUG
