@@ -161,7 +161,7 @@ symbolic
       rhs!* := multbyarbpowers f2df dfu;
       if checkdffail(rhs!*,svar)
         then <<if !*trint then printsq checkdffail(rhs!*,svar);
-      interr "Simplification fails on above expression">>;
+               interr "Simplification fails on above expression">>;
       if !*trint then <<
           printc "Distributed Form of Numerator is:";
           printdf rhs!*>>;
