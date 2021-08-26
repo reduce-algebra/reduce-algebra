@@ -510,9 +510,6 @@ algebraic operator tn;
 procedure ofsf_mktan2(phi);
    {'tan,{'quotient,phi,2}};
 
-
-declare ofsf_dfgPrintV: (Id) -> Id;
-
 procedure ofsf_dfgPrintV(v);
    % DFG print variable.
    <<

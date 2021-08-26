@@ -57,6 +57,10 @@ fluid '(fname!*);
 
 switch assert;
 
+switch assert_inline_procedures;
+
+on1 'assert_inline_procedures;
+
 put('assert, 'simpfg, '((t (assert_onoff)) (nil (assert_onoff))));
 
 procedure assert_onoff();

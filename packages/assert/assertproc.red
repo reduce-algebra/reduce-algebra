@@ -37,54 +37,59 @@ lisp <<
 module assertproc;
 
 procedure assert_procstat();
-   begin scalar fname, w, body;
+   begin scalar ftype, fname, w, body;
       scan();
+      if cursym!* eq 'inline then <<
+         ftype := 'inline;
+         scan()
+      >> else
+         ftype := 'expr;
       if cursym!* neq 'procedure then
-	 assert_rederr {"expecting keyword procedure but found", cursym!*};
+         assert_rederr {"expecting keyword procedure but found", cursym!*};
       scan();
       fname := cursym!*;
       if not idp cursym!* then
-	 assert_rederr {"expecting procedure name but found", cursym!*};
+         assert_rederr {"expecting procedure name but found", cursym!*};
       scan();
       if cursym!* neq '!*lpar!* then
-	 assert_rederr {"expecting '(' but found", cursym!*};
+         assert_rederr {"expecting '(' but found", cursym!*};
       scan();
       w := assert_procstat!-argl();
       scan();
       if cursym!* neq '!*semicol!* then
-	 assert_rederr {"expecting ';' but found", cursym!*};
+         assert_rederr {"expecting ';' but found", cursym!*};
       body := xread t;
-      return  {'assert_procedure, fname, w, body}
+      return  {'assert_procedure, fname, ftype, w, body}
    end;
 
 procedure assert_procstat!-argl();
    begin scalar var, type, w, argtypel;
       while cursym!* neq '!*rpar!* do <<
-      	 eolcheck();
-	 if not idp cursym!* then
-	    assert_rederr {"Expecting identifier but found", cursym!*};
-	 var := cursym!*;
-	 scan();
-	 type := if cursym!* eq '!*colon!* then <<
-	    scan();
-	    if not assert_typesyntaxp cursym!* then
-	       assert_rederr {"Expecting type but found", cursym!*};
-	    w := cursym!*;
-	    scan();
-	    w
-	 >>;
-	 argtypel := (var . type) . argtypel;
-	 if not memq(cursym!*, '(!*comma!* !*rpar!*)) then
-	    assert_rederr {"Expecting ',' or ')' but found", cursym!*};
-	 if cursym!* eq '!*comma!* then
-	    scan();
+         eolcheck();
+         if not idp cursym!* then
+            assert_rederr {"Expecting identifier but found", cursym!*};
+         var := cursym!*;
+         scan();
+         type := if cursym!* eq '!*colon!* then <<
+            scan();
+            if not assert_typesyntaxp cursym!* then
+               assert_rederr {"Expecting type but found", cursym!*};
+            w := cursym!*;
+            scan();
+            w
+         >>;
+         argtypel := (var . type) . argtypel;
+         if not memq(cursym!*, '(!*comma!* !*rpar!*)) then
+            assert_rederr {"Expecting ',' or ')' but found", cursym!*};
+         if cursym!* eq '!*comma!* then
+            scan();
       >>;
       type := if nxtsym!* eq '!*colon!* or nxtsym!* eq '!: then <<
- 	 scan();
-	 scan();
-	 if not assert_typesyntaxp cursym!* then
-	    assert_rederr {"Expecting type but found", cursym!*};
- 	 cursym!*
+         scan();
+         scan();
+         if not assert_typesyntaxp cursym!* then
+            assert_rederr {"Expecting type but found", cursym!*};
+         cursym!*
       >>;
       argtypel := ('returnvalue . type) . argtypel;
       argtypel := reversip argtypel;
@@ -95,22 +100,24 @@ procedure assert_typesyntaxp(s);
    if !*assert then assert_dyntypep s else idp s;
 
 procedure assert_formproc(u, vars, mode);
-   begin scalar fname, targl, body, argl, atypel, rtype, fpc, assrt;
+   begin scalar fname, ftype, targl, body, argl, atypel, rtype, fpc, assrt;
       if mode neq 'symbolic then
-	 rederr {"asserted procedures are available in symbolic mode only"};
+         rederr {"asserted procedures are available in symbolic mode only"};
       fname := cadr u;
-      targl := caddr u;
-      body := cadddr u;
+      ftype := caddr u;
+      targl := cadddr u;
+      body := car cddddr u;
       targl := reverse targl;
       rtype := cdr car targl;
       targl := cdr targl;
       for each pr in targl do <<
-	 argl := car pr . argl;
-	 atypel := cdr pr . atypel
+         argl := car pr . argl;
+         atypel := cdr pr . atypel
       >>;
+      if not !*assert or (not !*assert_inline_procedures and ftype eq 'inline) then
+         return formproc({'procedure, fname, nil, ftype, argl, body}, vars, mode);
+      % For asserting inline procedures we convert them into expressions.
       fpc := formproc({'procedure, fname, nil, 'expr, argl, body}, vars, mode);
-      if not !*assert then
-	 return fpc;
       assrt := assert_declarestat1 {fname, atypel, rtype};
       return {'progn, fpc, assrt}
    end;
