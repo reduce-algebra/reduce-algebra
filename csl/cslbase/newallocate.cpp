@@ -715,7 +715,7 @@ void ableToAllocateNewChunk(unsigned int i, size_t n, size_t gap)
     newChunk->isPinned = 0;
     newChunk->chunkPinChain = nullptr;
     size_t chunkNo = currentPage->chunkCount.fetch_add(1);
-    currentPage->chunkMap[chunkNo].store(newChunk);
+    currentPage->chunkMap[chunkNo] = newChunk;
     result[i] = newChunk->dataStart() + TAG_VECTOR;
 //    cout << "result[" << i << "] = " << Addr(result[i]) << endl;
     uintptr_t thr = threadId;
@@ -965,7 +965,7 @@ uintptr_t difficult_n_bytes()
 // set up.
 // First I need to ensure that all other threads will notice that something
 // has to be done!
-    for (unsigned int i=0; i<maxThreads; i++) limit[i].store(0);
+    for (unsigned int i=0; i<maxThreads; i++) limit[i] = 0;
     withRecordedStack([&]
     {    
 // The next line will count down the number of threads that have entered
@@ -1734,7 +1734,7 @@ LispObject Lgc(LispObject env, LispObject a)
 // will be a full one - otherwise it will be incremental and may do hardly
 // anything. This distinction will only apply once I have a generational
 // collector implemented and so "incremental" collections become possible.
-    for (unsigned int i=0; i<maxThreads; i++) limit[i].store(0);
+    for (unsigned int i=0; i<maxThreads; i++) limit[i] = 0;
 // For now I will make (reclaim t) and (reclaim) force a major GC while
 // (reclaim nil) will be a minor GC.
     userGcRequest = a==nil ? GcStyleMinor : GcStyleMajor;

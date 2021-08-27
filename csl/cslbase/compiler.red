@@ -256,6 +256,25 @@ symbolic procedure s!:vecof1 l;
    put('cadr,                     's!:builtin1, 100);
    put('cdar,                     's!:builtin1, 101);
    put('cddr,                     's!:builtin1, 102);
+% My plan is to map (car x) onto (cAr x) [with a capital "A"] in cases when
+% the compiler can prove that there can not be an attempt there to take
+% car of an atom. And similarly for other combinations of car and cdr
+% calls. In such cases the run-time tests for valid access can be omitted.
+% in the bytecoded model this is not going to help much.
+   put('c!Ar,                      's!:builtin1, 103);
+   put('c!Dr,                      's!:builtin1, 104);
+   put('c!Aar,                     's!:builtin1, 99);
+   put('c!Adr,                     's!:builtin1, 100);
+   put('c!Dar,                     's!:builtin1, 101);
+   put('c!Ddr,                     's!:builtin1, 102);
+   put('ca!Ar,                     's!:builtin1, 99);
+   put('ca!Dr,                     's!:builtin1, 100);
+   put('cd!Ar,                     's!:builtin1, 101);
+   put('cd!Dr,                     's!:builtin1, 102);
+   put('c!A!Ar,                     's!:builtin1, 105);
+   put('c!A!Dr,                     's!:builtin1, 106);
+   put('c!D!Ar,                     's!:builtin1, 107);
+   put('c!D!Dr,                     's!:builtin1, 108);
    put('qcar,                     's!:builtin1, 103);
    put('qcdr,                     's!:builtin1, 104);
    put('qcaar,                    's!:builtin1, 105);
@@ -1820,6 +1839,26 @@ symbolic procedure s!:imp_idifference u;
   end;
 
 put('idifference, 's!:tidy_fn, 's!:imp_idifference);
+
+symbolic procedure s!:imp_car u;
+  begin
+     scalar a := s!:improve cadr u;
+     if eqcar(a, 'car) then return list('caar, cadr a)
+     else if eqcar(a, 'cdr) then return list('cadr, cadr a)
+     else return list('car, a)
+  end;
+
+put('car, 's!:tidy_fn, 's!:imp_car);
+
+symbolic procedure s!:imp_cdr u;
+  begin
+     scalar a := s!:improve cadr u;
+     if eqcar(a, 'car) then return list('cdar, cadr a)
+     else if eqcar(a, 'cdr) then return list('cddr, cadr a)
+     else return list('cdr, a)
+  end;
+
+put('cdr, 's!:tidy_fn, 's!:imp_cdr);
 
 % imp_or and imp_and "improve" (or ...) and (and ...) forms. They
 % should only get involved when the value of the expression is needed. Their

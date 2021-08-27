@@ -155,15 +155,20 @@ extern char memory_print_buffer[MAX_PROMPT_LENGTH];
 #define STREAM_SIZE           (14*CELL)
 #define BUFFERED_STREAM_SIZE  (STREAM_SIZE+STREAM_BUFFER_SIZE)
 
-inline atomic<LispObject> &stream_type(LispObject v)
+inline AtomicLispObject &stream_type(LispObject v)
 {   return basic_elt(v, 0);
 }
-inline atomic<LispObject> &stream_write_data(LispObject v)
+inline AtomicLispObject &stream_write_data(LispObject v)
 {   return basic_elt(v, 1);
 }
-inline atomic<LispObject> &stream_read_data(LispObject v)
+inline AtomicLispObject &stream_read_data(LispObject v)
 {   return basic_elt(v, 2);
 }
+
+// There are a number of things I make atomic<> here even in cases where it
+// is not necessary - my hope is that they are cases that are in general not
+// within critical loops.
+
 inline atomic<std::FILE *> &stream_file(LispObject v)
 {   return (atomic<std::FILE *>&)basic_elt(v, 3);
 }
@@ -174,13 +179,13 @@ inline atomic<character_stream_writer *> &stream_write_fn(
 inline atomic<other_stream_op *> &stream_write_other(LispObject v)
 {   return (atomic<other_stream_op *>&)basic_elt(v,5);
 }
-inline atomic<LispObject> &stream_line_length(LispObject v)
+inline AtomicLispObject &stream_line_length(LispObject v)
 {   return basic_elt(v, 6);
 }
-inline atomic<LispObject> &stream_byte_pos(LispObject v)
+inline AtomicLispObject &stream_byte_pos(LispObject v)
 {   return basic_elt(v, 7);
 }
-inline atomic<LispObject> &stream_char_pos(LispObject v)
+inline AtomicLispObject &stream_char_pos(LispObject v)
 {   return basic_elt(v, 8);
 }
 inline atomic<character_stream_reader *> &stream_read_fn(LispObject v)
@@ -189,10 +194,10 @@ inline atomic<character_stream_reader *> &stream_read_fn(LispObject v)
 inline atomic<other_stream_op *> &stream_read_other(LispObject v)
 {   return (atomic<other_stream_op *>&)basic_elt(v,10);
 }
-inline atomic<LispObject> &stream_pushed_char(LispObject v)
+inline AtomicLispObject &stream_pushed_char(LispObject v)
 {   return basic_elt(v, 11);
 }
-inline atomic<LispObject> &stream_spare(LispObject v)
+inline AtomicLispObject &stream_spare(LispObject v)
 {   return basic_elt(v, 12);
 }
 

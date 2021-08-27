@@ -400,10 +400,10 @@ inline void write_barrier(LispObject *p, LispObject q)
         {   bit = uptr_1 << (wordAddr%bpw);
             wordAddr /= bpw;
             if ((x->dirtyMap2[wordAddr].fetch_or(bit) & bit) == 0)
-            {   x->hasDirty.store(true);
+            {   x->hasDirty = true;
                 for (;;)
                 {   Page *old = dirtyPages;
-                    x->dirtyPageChain.store(old);
+                    x->dirtyPageChain = old;
                     if (dirtyPages.compare_exchange_weak(old, x)) break;
                 }
             }
@@ -935,11 +935,11 @@ inline LispObject get_n_bytes(size_t n, uintptr_t thr,
 // GC finds an ambiguous pointer within this chunk it knows when that is the
 // first such.
             myChunkBase[thr] = newChunk;
-            newChunk->length.store(targetChunkSize+n);
-            newChunk->isPinned.store(0);
-            newChunk->chunkPinChain.store(nullptr);
+            newChunk->length = targetChunkSize+n;
+            newChunk->isPinned = 0;
+            newChunk->chunkPinChain = nullptr;
             size_t chunkNo = p->chunkCount.fetch_add(1);
-            p->chunkMap[chunkNo].store(newChunk);
+            p->chunkMap[chunkNo] = newChunk;
 // I wish to write back limit[thr] but it is possible that in
 // the meanwhile somebody set that to zero, so I need to be a bit careful.
 // Specifically I will only write back the new limit if the old one was
@@ -1351,7 +1351,7 @@ inline void regionInPageIsFull(unsigned int i, size_t n,
             c->length = n + targetChunkSize;
             c->isPinned = 0;
             size_t chunkNo = currentPage->chunkCount.fetch_add(1);
-            currentPage->chunkMap[chunkNo].store(c);
+            currentPage->chunkMap[chunkNo] = c;
             myChunkBase[i] = c;
             result[i] = gFringe + TAG_VECTOR;
             request[i] = 0;

@@ -3844,7 +3844,7 @@ const char *PROC_string_data(PROC_handle p)
 }
 
 // First and rest allow list traversal. The two-levels of cast are to
-// dispose of atomic<> stuff.
+// dispose of any atomic<> stuff.
 
 PROC_handle PROC_first(PROC_handle p)
 {   return reinterpret_cast<PROC_handle>(

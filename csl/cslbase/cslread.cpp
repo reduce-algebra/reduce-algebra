@@ -1981,7 +1981,7 @@ static int raw_char_from_terminal()
         exit_count = 0;
 // I am liable to have set up a pending stack event - given that
 // I am about to respond here by doing a "throw" I will cancel it.
-        event_flag.store(0);
+        event_flag = 0;
         THROW(LispSimpleError);
     }
     if (qvalue(echo_symbol) != nil || force_echo)
