@@ -59,6 +59,29 @@
 
 typedef intptr_t LispObject;
 
+// Headers are also LispObjects, but I give them a separate typedef
+// name to help me keep their identity separate.  There is only any
+// chance of headers and other objects getting confused during
+// garbage collection, and the code there has to be rather on the
+// careful side.  By making Headers unsigned I help the length
+// calculation on them.
+
+typedef uintptr_t Header;
+
+#if defined CONSERVATIVE || defined WITH_ATOMIC_DATA
+typedef std::atomic<LispObject>     AtomicLispObject;
+typedef std::atomic<Header>         AtomicHeader;
+typedef std::atomic<std::uint32_t>  AtomicUint32;
+typedef std::atomic<std::intptr_t>  AtomicIntPtr;
+typedef std::atomic<std::uintptr_t> AtomicUintPtr;
+#else
+typedef LispObject     AtomicLispObject;
+typedef Header         AtomicHeader;
+typedef std::uint32_t  AtomicUint32;
+typedef std::intptr_t  AtomicIntPtr;
+typedef std::uintptr_t AtomicUintPtr;
+#endif
+
 // Perhaps the most important value here is nil!
 extern LispObject nil;
 
@@ -338,7 +361,11 @@ inline bool car_legal(LispObject p)
 {   return is_cons(p);
 }
 
-// I have many uses of atomic<T> here. The intent of these is to
+// Either if CONBSERVATIVE or USE_ATOMIC_DATA is set I will make (eg)
+// AtomicLispObject be a name for std::atomic<LispObject>, otherwise it is
+// just a plain LispObject>
+
+// Thus I may have many uses of atomic<T> here. The intent of these is to
 // arrange that the heap is treated as made up of atomic data - certainly as
 // far as all the LispObject and other sharable or mutable values in it are
 // concerned.
@@ -354,18 +381,13 @@ inline bool car_legal(LispObject p)
 // "relaxed" essentially not applying any constraints. For lock-free multi-
 // thread work the issues there really matter, but are "delicate". I am
 // looking ahead to a multi-processing world, but trying to delay working
-// out exactly what I need to do until later!
+// out exactly what I need to do until later! It also through has implications
+// about the way that one thread can or may not see memory changes made by
+// another.
 //
 // What I do is I store LispObject values in the heap in the form
 // atomic<LispObject> and provide pairs of accessor/mutator functions,
-// eg CAR and SETCAR. These both have optional extra arguments that can
-// specify a memory ordering requirement. I make the default setting
-// std::memory_order_relaxed, which I believe does not apply any extra
-// constraints, and so where that is used I will need mutexes or memory fences
-// when multiple threads access the same value.
-
-// Note that going beyond "relaxed" can sometimes have substantial cost
-// implications (more so than I had been expecting!).
+// eg CAR and SETCAR.
 
 // I will protect the CAR and CDR field of every CONS cell this way,
 // the header word of every symbol or vector-like object, and the
@@ -384,8 +406,8 @@ inline bool car_legal(LispObject p)
 // synchronization will not arise.
 
 typedef struct Cons_Cell_
-{   atomic<LispObject> car;
-    atomic<LispObject> cdr;
+{   AtomicLispObject car;
+    AtomicLispObject cdr;
 } Cons_Cell;
 
 
@@ -398,34 +420,32 @@ extern bool valid_address(void *pointer);
 // arguments relating to that. The default relaxed behaviour should be best
 // for performance if not for multi-thread consistency.
 
-inline atomic<LispObject> &car(LispObject p)
+inline AtomicLispObject &car(LispObject p)
 {   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid car");
     return reinterpret_cast<Cons_Cell *>(p)->car;
 }
 
-inline atomic<LispObject> &cdr(LispObject p)
+inline AtomicLispObject &cdr(LispObject p)
 {   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid cdr");
     return reinterpret_cast<Cons_Cell *>(p)->cdr;
 }
 
-inline void setcar(LispObject p, LispObject q,
-                   std::memory_order mo=std::memory_order_relaxed)
+inline void setcar(LispObject p, LispObject q)
 {   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid setcar");
-    (reinterpret_cast<Cons_Cell *>(p))->car.store(q, mo);
+    reinterpret_cast<Cons_Cell *>(p)->car = q;
 }
 
-inline void setcdr(LispObject p, LispObject q,
-                   std::memory_order mo=std::memory_order_relaxed)
+inline void setcdr(LispObject p, LispObject q)
 {   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid setcdr");
-    (reinterpret_cast<Cons_Cell *>(p))->cdr.store(q, mo);
+    reinterpret_cast<Cons_Cell *>(p)->cdr = q;
 }
 
-inline atomic<LispObject> *caraddr(LispObject p)
+inline AtomicLispObject *caraddr(LispObject p)
 {   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid caraddr");
     return &((reinterpret_cast<Cons_Cell *>(p))->car);
 }
 
-inline atomic<LispObject> *cdraddr(LispObject p)
+inline AtomicLispObject *cdraddr(LispObject p)
 {   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid cdraddr");
     return &((reinterpret_cast<Cons_Cell *>(p))->cdr);
 }
@@ -466,15 +486,6 @@ typedef LispObject three_args(LispObject, LispObject, LispObject,
                               LispObject);
 typedef LispObject fourup_args(LispObject, LispObject, LispObject,
                                LispObject, LispObject);
-
-// Headers are also LispObjects, but I give them a separate typedef
-// name to help me keep their identity separate.  There is only any
-// chance of headers and other objects getting confused during
-// garbage collection, and the code there has to be rather on the
-// careful side.  By making Headers unsigned I help the length
-// calculation on them.
-
-typedef uintptr_t Header;
 
 // Objects will have a header word with the following format:
 //   xxxx:xxxx:xxxx:xxxx:xxxx:xx  yy:yyy z:z 010
@@ -659,14 +670,13 @@ static constexpr uintptr_t SPID_NOARG     = TAG_SPID+(0x0a<<(Tw+4)); // Missing 
 static constexpr uintptr_t SPID_NOPROP    = TAG_SPID+(0x0b<<(Tw+4)); // fastget entry is empty
 static constexpr uintptr_t SPID_LIBRARY   = TAG_SPID+(0x0c<<(Tw+4)); // + 0xnnn00000 offset
 
-inline atomic<Header> &vechdr(LispObject v)
-{   return *reinterpret_cast<atomic<Header> *>(v - TAG_VECTOR);
+inline AtomicHeader &vechdr(LispObject v)
+{   return *reinterpret_cast<AtomicHeader *>(v - TAG_VECTOR);
 }
 
-inline void setvechdr(LispObject v, Header h,
-                      std::memory_order mo=std::memory_order_relaxed)
-{   (reinterpret_cast<atomic<Header> *>(reinterpret_cast<char *>
-                                        (v) - TAG_VECTOR))->store(h, mo);
+inline void setvechdr(LispObject v, Header h)
+{   *reinterpret_cast<AtomicHeader *>(
+        reinterpret_cast<char *>(v) - TAG_VECTOR) = h;
 }
 
 inline unsigned int type_of_header(Header h)
@@ -752,18 +762,18 @@ static constexpr uintptr_t  SYM_UNPRINTED_GENSYM= 0x00800000; // not-yet-printed
 #endif // COMMON
 
 typedef struct Symbol_Head_
-{   std::atomic<Header> header;       // Header as for other vector-like types
-    std::atomic<LispObject> value;    // Global or special value cell
+{   AtomicHeader header;       // Header as for other vector-like types
+    AtomicLispObject value;    // Global or special value cell
 //
-    std::atomic<LispObject> env;      // Extra stuff to help function cell
-    std::atomic<LispObject> plist;    // A list
+    AtomicLispObject env;      // Extra stuff to help function cell
+    AtomicLispObject plist;    // A list
 //
-    std::atomic<LispObject> fastgets; // to speed up flagp and get
-    std::atomic<LispObject> package;  // Home package - a package object
+    AtomicLispObject fastgets; // to speed up flagp and get
+    AtomicLispObject package;  // Home package - a package object
 //
-    std::atomic<LispObject> pname;    // A string (always)
-    std::atomic<uint32_t> countLow;   // for statistics
-    std::atomic<uint32_t> countHigh;  // for statistics
+    AtomicLispObject pname;    // A string (always)
+    AtomicUint32 countLow;   // for statistics
+    AtomicUint32 countHigh;  // for statistics
 //
     no_args *function0;      // Executable code always (no arguments)
     one_arg *function1;      // Executable code always (just 1 arg)
@@ -945,8 +955,8 @@ inline bool vector_f128(Header h)
 {   return ((0x80400000u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
 
-inline atomic<LispObject>& basic_elt(LispObject v, size_t n)
-{   return *reinterpret_cast<atomic<LispObject> *>
+inline AtomicLispObject& basic_elt(LispObject v, size_t n)
+{   return *reinterpret_cast<AtomicLispObject *>
            (reinterpret_cast<char *>(v) +
             (CELL-TAG_VECTOR) +
             (n*sizeof(LispObject)));
@@ -1023,24 +1033,22 @@ static constexpr uintptr_t TYPE_DOUBLE_FLOAT   = 0x5f<<Tw;
 static constexpr uintptr_t TYPE_NEW_BIGNUM     = 0x7d<<Tw;  // Temporary provision!
 static constexpr uintptr_t TYPE_LONG_FLOAT     = 0x7f<<Tw;
 
-inline atomic<Header> &numhdr(LispObject v)
-{   return *reinterpret_cast<atomic<Header> *>(v - TAG_NUMBERS);
+inline AtomicHeader &numhdr(LispObject v)
+{   return *reinterpret_cast<AtomicHeader *>(v - TAG_NUMBERS);
 }
 
-inline atomic<Header> &flthdr(LispObject v)
-{   return *reinterpret_cast<atomic<Header> *>(v - TAG_BOXFLOAT);
+inline AtomicHeader &flthdr(LispObject v)
+{   return *reinterpret_cast<AtomicHeader *>(v - TAG_BOXFLOAT);
 }
 
-inline void setnumhdr(LispObject v, Header h,
-                      std::memory_order mo = std::memory_order_relaxed)
-{   (reinterpret_cast<atomic<Header> *>(reinterpret_cast<char *>
-                                        (v) - TAG_NUMBERS))->store(h, mo);
+inline void setnumhdr(LispObject v, Header h)
+{   *reinterpret_cast<AtomicHeader *>(
+         reinterpret_cast<char *>(v) - TAG_NUMBERS) = h;
 }
 
-inline void setflthdr(LispObject v, Header h,
-                      std::memory_order mo = std::memory_order_relaxed)
-{   (reinterpret_cast<atomic<Header> *>(reinterpret_cast<char *>
-                                        (v) - TAG_BOXFLOAT))->store(h, mo);
+inline void setflthdr(LispObject v, Header h)
+{   *reinterpret_cast<AtomicHeader *>(
+         reinterpret_cast<char *>(v) - TAG_BOXFLOAT) = h;
 }
 
 inline bool is_short_float(LispObject v)
@@ -1395,7 +1403,7 @@ inline void discard_vector(LispObject v)
 // I should probably consider using a template to generate the code
 // here.
 
-inline atomic<LispObject>& elt(LispObject v, size_t n)
+inline AtomicLispObject& elt(LispObject v, size_t n)
 {   if (is_basic_vector(v)) return basic_elt(v, n);
     return basic_elt(basic_elt(v, n/(VECTOR_CHUNK_BYTES/CELL)),
                      n%(VECTOR_CHUNK_BYTES/CELL));
@@ -1519,91 +1527,84 @@ static constexpr LispObject CHAR_EOF = pack_char(0, 0x0010ffff);
 static constexpr size_t MAX_FASTGET_SIZE = 63;
 // I have up to 63 "fast" tags for PUT/GET/FLAG/FLAGP
 
-inline atomic<Header> &qheader(LispObject p)
+inline AtomicHeader &qheader(LispObject p)
 {   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->header;
 }
 
-inline atomic<LispObject> &qvalue(LispObject p)
+inline AtomicLispObject &qvalue(LispObject p)
 {   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->value;
 }
 
-inline atomic<LispObject> &qenv(LispObject p)
+inline AtomicLispObject &qenv(LispObject p)
 {   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->env;
 }
 
-inline atomic<LispObject> &qplist(LispObject p)
+inline AtomicLispObject &qplist(LispObject p)
 {   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->plist;
 }
 
-inline atomic<LispObject> &qfastgets(LispObject p)
+inline AtomicLispObject &qfastgets(LispObject p)
 {   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->fastgets;
 }
 
-inline atomic<LispObject> &qpackage(LispObject p)
+inline AtomicLispObject &qpackage(LispObject p)
 {   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->package;
 }
 
-inline atomic<LispObject> &qpname(LispObject p)
+inline AtomicLispObject &qpname(LispObject p)
 {   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->pname;
 }
 
-inline atomic<LispObject> *valueaddr(LispObject p)
+inline AtomicLispObject *valueaddr(LispObject p)
 {   return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->value);
 }
 
-inline atomic<LispObject> *envaddr(LispObject p)
+inline AtomicLispObject *envaddr(LispObject p)
 {   return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->env);
 }
 
-inline atomic<LispObject> *plistaddr(LispObject p)
+inline AtomicLispObject *plistaddr(LispObject p)
 {   return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->plist);
 }
 
-inline atomic<LispObject> *fastgetsaddr(LispObject p)
+inline AtomicLispObject *fastgetsaddr(LispObject p)
 {   return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->fastgets);
 }
 
-inline atomic<LispObject> *packageaddr(LispObject p)
+inline AtomicLispObject *packageaddr(LispObject p)
 {   return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->package);
 }
 
-inline atomic<LispObject> *pnameaddr(LispObject p)
+inline AtomicLispObject *pnameaddr(LispObject p)
 {   return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->pname);
 }
 
-inline void setheader(LispObject p, Header h,
-                      std::memory_order mo=std::memory_order_relaxed)
-{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->header.store(h, mo);
+inline void setheader(LispObject p, Header h)
+{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->header = h;
 }
 
-inline void setvalue(LispObject p, LispObject q,
-                     std::memory_order mo=std::memory_order_relaxed)
-{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->value.store(q, mo);
+inline void setvalue(LispObject p, LispObject q)
+{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->value = q;
 }
 
-inline void setenv(LispObject p, LispObject q,
-                   std::memory_order mo=std::memory_order_relaxed)
-{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->env.store(q, mo);
+inline void setenv(LispObject p, LispObject q)
+{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->env = q;
 }
 
-inline void setplist(LispObject p, LispObject q,
-                     std::memory_order mo=std::memory_order_relaxed)
-{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->plist.store(q, mo);
+inline void setplist(LispObject p, LispObject q)
+{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->plist = q;
 }
 
-inline void setfastgets(LispObject p, LispObject q,
-                        std::memory_order mo=std::memory_order_relaxed)
-{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->fastgets.store(q, mo);
+inline void setfastgets(LispObject p, LispObject q)
+{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->fastgets = q;
 }
 
-inline void setpackage(LispObject p, LispObject q,
-                       std::memory_order mo=std::memory_order_relaxed)
-{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->package.store(q, mo);
+inline void setpackage(LispObject p, LispObject q)
+{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->package = q;
 }
 
-inline void setpname(LispObject p, LispObject q,
-                     std::memory_order mo=std::memory_order_relaxed)
-{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->pname.store(q, mo);
+inline void setpname(LispObject p, LispObject q)
+{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->pname = q;
 }
 
 inline no_args*& qfn0(LispObject p)
@@ -1681,11 +1682,11 @@ inline bool a4a5a6(const char *name, LispObject a4up,
 // field wraps. It leaves 42 bits for the genuine bytecount. That could
 // overflow on a calculation that lasted an hour or so!
 
-inline atomic<uint32_t>& qcountLow(LispObject p)
+inline AtomicUint32& qcountLow(LispObject p)
 {   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->countLow;
 }
 
-inline atomic<uint32_t>& qcountHigh(LispObject p)
+inline AtomicUint32& qcountHigh(LispObject p)
 {   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->countHigh;
 }
 
@@ -1700,8 +1701,8 @@ inline uint64_t qcount(LispObject p)
 inline void incCount(LispObject p, uint32_t m=1)
 {   Symbol_Head *pp = reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL);
     m <<= 22;
-    uint32_t low = pp->countLow.fetch_add(m);
-    if (low+m < low) pp->countHigh.fetch_add(1);
+    uint32_t low = pp->countLow += m;
+    if (low < m) pp->countHigh++;
 }
 
 #ifndef HAVE_SOFTFLOAT
@@ -1788,67 +1789,59 @@ inline uintptr_t pack_hdrlength(size_t n)
 }
 
 typedef struct Rational_Number_
-{   atomic<Header> header;
-    atomic<LispObject> num;
-    atomic<LispObject> den;
+{   AtomicHeader header;
+    AtomicLispObject num;
+    AtomicLispObject den;
 } Rational_Number;
 
-inline LispObject numerator(LispObject r,
-                            std::memory_order mo=std::memory_order_relaxed)
+inline LispObject numerator(LispObject r)
 {   return ((Rational_Number *)(reinterpret_cast<char *>
-                                (r)-TAG_NUMBERS))->num.load(mo);
+                                (r)-TAG_NUMBERS))->num;
 }
 
-inline LispObject denominator(LispObject r,
-                              std::memory_order mo=std::memory_order_relaxed)
+inline LispObject denominator(LispObject r)
 {   return ((Rational_Number *)(reinterpret_cast<char *>
-                                (r)-TAG_NUMBERS))->den.load(mo);
+                                (r)-TAG_NUMBERS))->den;
 }
 
-inline void setnumerator(LispObject r, LispObject v,
-                         std::memory_order mo=std::memory_order_relaxed)
+inline void setnumerator(LispObject r, LispObject v)
 {   ((Rational_Number *)(reinterpret_cast<char *>
-                         (r)-TAG_NUMBERS))->num.store(v, mo);
+                         (r)-TAG_NUMBERS))->num = v;
 }
 
-inline void setdenominator(LispObject r, LispObject v,
-                           std::memory_order mo=std::memory_order_relaxed)
-{   return ((Rational_Number *)(reinterpret_cast<char *>
-                                (r)-TAG_NUMBERS))->den.store(v, mo);
+inline void setdenominator(LispObject r, LispObject v)
+{   ((Rational_Number *)(reinterpret_cast<char *>
+                         (r)-TAG_NUMBERS))->den = v;
 }
 
 typedef struct Complex_Number_
-{   atomic<Header> header;
-    atomic<LispObject> real;
-    atomic<LispObject> imag;
+{   AtomicHeader header;
+    AtomicLispObject real;
+    AtomicLispObject imag;
 } Complex_Number;
 
-inline LispObject real_part(LispObject r,
-                            std::memory_order mo=std::memory_order_relaxed)
+inline LispObject real_part(LispObject r)
 {   return ((Complex_Number *)(reinterpret_cast<char *>
-                               (r)-TAG_NUMBERS))->real.load(mo);
+                               (r)-TAG_NUMBERS))->real;
 }
 
-inline LispObject imag_part(LispObject r,
-                            std::memory_order mo=std::memory_order_relaxed)
+inline LispObject imag_part(LispObject r)
 {   return ((Complex_Number *)(reinterpret_cast<char *>
-                               (r)-TAG_NUMBERS))->imag.load(mo);
+                               (r)-TAG_NUMBERS))->imag;
 }
 
-inline void setreal_part(LispObject r, LispObject v,
-                         std::memory_order mo=std::memory_order_relaxed)
-{   return ((Complex_Number *)(reinterpret_cast<char *>
-                               (r)-TAG_NUMBERS))->real.store(v, mo);
+inline void setreal_part(LispObject r, LispObject v)
+{   ((Complex_Number *)(reinterpret_cast<char *>
+                        (r)-TAG_NUMBERS))->real = v;
 }
 
-inline void setimag_part(LispObject r, LispObject v,
-                         std::memory_order mo=std::memory_order_relaxed)
-{   return ((Complex_Number *)(reinterpret_cast<char *>
-                               (r)-TAG_NUMBERS))->imag.store(v, mo);
+inline void setimag_part(LispObject r, LispObject v)
+{   ((Complex_Number *)(reinterpret_cast<char *>
+                        (r)-TAG_NUMBERS))->imag = v;
 }
 
 typedef struct Single_Float_
-{   atomic<Header> header;
+{   AtomicHeader header;
     union float_or_int
     {   float f;
         float32_t f32;

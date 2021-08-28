@@ -202,7 +202,7 @@ LispObject make_n_tree1(int n)
 // a hideous mess.
         activeThreads.fetch_add(1);
         threadcount++;
-        stack_bases[id].store(reinterpret_cast<void *>(&id));
+        stack_bases[id] = reinterpret_cast<void *>(&id);
         int size = 3;
         LispObject a = fixnum_of_int(0), b = fixnum_of_int(0);
         {   std::lock_guard<std::mutex> lock(print_mutex);

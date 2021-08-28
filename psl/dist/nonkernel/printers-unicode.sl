@@ -407,13 +407,12 @@
 
 (de channelwritecodepointer (channel cp)
   (prog (n)
-	(setq cp (codeinf cp))
 	(channelwritestring channel "#<Code ")
 	(setq n (code-number-of-arguments cp))
 	(when (and (wgeq n 0) (wleq n maxargs))
 	  (channelwritesysinteger channel n 10)
 	  (channelwritechar channel (char blank)))
-	(channelwritesysinteger channel cp compressedbinaryradix)
+	(channelwritesysinteger channel (codeinf cp) compressedbinaryradix)
 	(channelwritechar channel (char '>))))
 
 (de channelwriteunknownitem (channel itm)

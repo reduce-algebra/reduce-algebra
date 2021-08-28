@@ -3815,7 +3815,7 @@ static void internal_check(LispObject original_a, LispObject a,
     {   std::printf("Zero cons pointer at depth %d\n", depth);
         std::printf("Original a = %" PRIx64 " path = %" PRIx64 "\n",
                     static_cast<int64_t>(original_a), path);
-        *reinterpret_cast<char *>(-1) = 0;
+        my_abort();
     }
     internal_check(original_a, car(a), depth+1, path<<1);
     internal_check(original_a, cdr(a), depth+1, (path<<1)+1);

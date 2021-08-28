@@ -254,7 +254,7 @@ otime!-set!* := nil;
 
 symbolic procedure prepare!-for!-top!-loop !~prefixchars!~;
    begin
-      verbos nil;
+%      verbos nil;
       if not otime!-set!* then <<
          otime!* := time();
 % The next line is that way for bootstrapping purposes.

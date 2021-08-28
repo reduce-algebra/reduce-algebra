@@ -2481,7 +2481,7 @@ static LispObject Lsigsegv(LispObject env, LispObject arg)
 {   trace_printf("\nsigsegv about to be raised\n");
     ensure_screen();
     if (arg == nil) std::raise(SIGSEGV);
-    else *reinterpret_cast<char *>(-1) = 0x55;
+    else my_abort();
     return onevalue(nil);
 }
 

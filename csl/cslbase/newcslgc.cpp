@@ -703,11 +703,11 @@ LispObject gc_n_bytes1(size_t n, uintptr_t thr, uintptr_t r)
     myChunkBase[thr] = newChunk;
 if (gcTrace) cout << "New Chunk at " << Addr(newChunk)
      << " fringe = " << Addr(fringe) << "\n";
-    newChunk->length.store(nSize);
-    newChunk->isPinned.store(0);
-    newChunk->chunkPinChain.store(nullptr);
+    newChunk->length = nSize;
+    newChunk->isPinned = 0;
+    newChunk->chunkPinChain = nullptr;
     size_t chunkNo = p->chunkCount.fetch_add(1);
-    p->chunkMap[chunkNo].store(newChunk);
+    p->chunkMap[chunkNo] = newChunk;
     limitBis[thr] = newLimit;
     limit[thr] = newLimit;
 #ifdef DEBUG
@@ -939,7 +939,7 @@ void prepareForGarbageCollection(bool major)
 // it will allocate a fresh Chunk. I set myBusyChunk so that the allocation
 // of the new Chunk does not mark the existing one as needing scanning.
         myBusyChunk = myChunkBase[threadId];
-        if (myBusyChunk != nullptr) myBusyChunk->chunkFringe.store(fringe);
+        if (myBusyChunk != nullptr) myBusyChunk->chunkFringe = fringe;
         myChunkBase[threadId] = myBusyChunk = nullptr;
         fringe = limit[threadId];
         gc_n_bytes1(0, threadId, fringe);
