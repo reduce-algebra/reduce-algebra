@@ -27,6 +27,10 @@ case "guess:$guess" in
 	MACHINE=macintel64
 	;;
 
+  guess:aarch64-apple-darwin* )
+        MACHINE=macaarch64
+        ;;
+
   guess:x86_64-unknown-freebsd* | guess:amd64-unknown-freebsd* )
 	MACHINE=freeBSD64
 	;;
