@@ -74,9 +74,11 @@ function runtest() {
 
 export -f runtest
 
-parallel --linebuffer --bar -j$cores --halt now,fail=1 runtest $* {} ::: $packages > /tmp/testredlog.out
-cat /tmp/testredlog.out
-rm /tmp/testredlog.out
+parallel --linebuffer -j$cores --halt now,fail=1 runtest $* {} ::: $packages
+
+# parallel --linebuffer --bar -j$cores --halt now,fail=1 runtest $* {} ::: $packages > /tmp/testredlog.out
+# cat /tmp/testredlog.out
+# rm /tmp/testredlog.out
 
 # for p1 in $here/packages/regressions/*.tst
 # do
@@ -111,32 +113,32 @@ then
   cslpsldiffs=`cd csl-psl-times-comparison ; echo *.rlg.diff`
 fi
 
-echo
-if test "$csl" = "yes"
-then
-  if test "$psl" = "yes"
-  then
-    echo "Summary of CSL and PSL test runs"
-    echo "================================"
-    echo
-    test "$csldiffs" != "*.rlg.diff" && echo "Differences for CSL:" `echo $csldiffs | sed -e 's/\.rlg\.diff//g'`
-    echo
-    test "$psldiffs" != "*.rlg.diff" && echo "Differences for PSL:" `echo $psldiffs | sed -e 's/\.rlg\.diff//g'`
-    echo
-    test "$cslpsldiffs" != "*.rlg.diff" && echo "Differences between CSL and PSL :" `echo $cslpsldiffs | sed -e 's/\.rlg\.diff//g'`
-  else
-    echo "Summary of CSL test runs"
-    echo "========================"
-    echo
-    test "$csldiffs" != "*.rlg.diff" && echo "Differences for CSL:" `echo $csldiffs | sed -e 's/\.rlg\.diff//g'`
-  fi
-else
-  echo "Summary of PSL test runs"
-  echo "========================"
-    test "$psldiffs" != "*.rlg.diff" && echo "Differences for PSL:" `echo $psldiffs | sed -e 's/\.rlg\.diff//g'`
-    echo
-fi
-echo
+# echo
+# if test "$csl" = "yes"
+# then
+#   if test "$psl" = "yes"
+#   then
+#     echo "Summary of CSL and PSL test runs"
+#     echo "================================"
+#     echo
+#     test "$csldiffs" != "*.rlg.diff" && echo "Differences for CSL:" `echo $csldiffs | sed -e 's/\.rlg\.diff//g'`
+#     echo
+#     test "$psldiffs" != "*.rlg.diff" && echo "Differences for PSL:" `echo $psldiffs | sed -e 's/\.rlg\.diff//g'`
+#     echo
+#     test "$cslpsldiffs" != "*.rlg.diff" && echo "Differences between CSL and PSL :" `echo $cslpsldiffs | sed -e 's/\.rlg\.diff//g'`
+#   else
+#     echo "Summary of CSL test runs"
+#     echo "========================"
+#     echo
+#     test "$csldiffs" != "*.rlg.diff" && echo "Differences for CSL:" `echo $csldiffs | sed -e 's/\.rlg\.diff//g'`
+#   fi
+# else
+#   echo "Summary of PSL test runs"
+#   echo "========================"
+#     test "$psldiffs" != "*.rlg.diff" && echo "Differences for PSL:" `echo $psldiffs | sed -e 's/\.rlg\.diff//g'`
+#     echo
+# fi
+# echo
 
 # end of script
 
