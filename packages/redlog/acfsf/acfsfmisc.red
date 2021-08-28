@@ -107,8 +107,8 @@ procedure acfsf_a2cdl(atml);
    % atomic formulas in [atml].
    begin scalar x;
       return for each pr in atml collect <<
-	 x := acfsf_arg2l car pr;
-	 {acfsf_0mk2('equal,x),acfsf_0mk2('neq,x)}
+         x := acfsf_arg2l car pr;
+         {acfsf_0mk2('equal,x),acfsf_0mk2('neq,x)}
       >>
    end;
 
@@ -128,7 +128,7 @@ procedure acfsf_subat(al,f);
    begin scalar nlhs;
       nlhs := subf(acfsf_arg2l f,al);
       if not domainp denr nlhs then
-	 rederr "parametric denominator after substitution";
+         rederr "parametric denominator after substitution";
       return acfsf_0mk2(acfsf_op f,numr nlhs)
    end;
 
@@ -139,7 +139,7 @@ procedure acfsf_subalchk(al);
    % Raises an error if some $t_i$ contains a parametric denominator.
    for each x in al do
       if not domainp denr simp cdr x then
-	 rederr "parametric denominator in substituted term";
+         rederr "parametric denominator in substituted term";
 
 procedure acfsf_eqnrhskernels(x);
    % Algebraically closed field equation right hand side kernels. [x]
@@ -157,9 +157,9 @@ procedure acfsf_getineq(f,bvl);
       while atml do <<
          atf := caar atml;
          atml := cdr atml;
-	 if acfsf_op atf eq 'neq and
-	    null intersection(bvl, kernels acfsf_arg2l atf) then
-	    cdl := atf . cdl
+         if acfsf_op atf eq 'neq and
+            null intersection(bvl, kernels acfsf_arg2l atf) then
+            cdl := atf . cdl
       >>;
       return cdl
    end;
@@ -174,7 +174,7 @@ procedure acfsf_structat(at,al);
    begin scalar lhs;
       lhs := acfsf_arg2l at;
       if domainp lhs then
-	 return at;
+         return at;
       return acfsf_0mk2(acfsf_op at, numr simp cdr assoc(lhs,al))
    end;
 
@@ -191,7 +191,7 @@ procedure acfsf_ifstructat(at,al);
       w := fctrf acfsf_arg2l at;
       r := car w;
       for each x in cdr w do
-	 r := multf(r,expf(numr simp cdr assoc(car x,al),cdr x));
+         r := multf(r,expf(numr simp cdr assoc(car x,al),cdr x));
       return acfsf_0mk2(acfsf_op at,r)
    end;
 
@@ -212,11 +212,11 @@ procedure acfsf_decdeg0(f);
    begin scalar op,w,gamma,newmat;
       op := rl_op f;
       if rl_boolp op then
-	 return rl_mkn(op,for each subfo in rl_argn f collect
-   	    acfsf_decdeg0 subfo);
+         return rl_mkn(op,for each subfo in rl_argn f collect
+            acfsf_decdeg0 subfo);
       if rl_quap op then
-	 return rl_mkq(op,rl_var f,
-	    car acfsf_decdeg1(acfsf_decdeg0 rl_mat f,{rl_var f}));
+         return rl_mkq(op,rl_var f,
+            car acfsf_decdeg1(acfsf_decdeg0 rl_mat f,{rl_var f}));
       % [f] is not complex.
       return f
    end;
@@ -232,13 +232,13 @@ procedure acfsf_decdeg1(f,vl);
    % all free variables in [f] as [vl].
    begin scalar dvl; integer n;
       if vl eq 'fvarl then
-	 vl := cl_fvarl1 f;
+         vl := cl_fvarl1 f;
       for each v in vl do <<
-	 n := acfsf_decdeg2(f,v);
-	 if n>1 then <<
-	    f := acfsf_decdeg3(f,v,n);
-	    dvl := (v . n) . dvl
-	 >>
+         n := acfsf_decdeg2(f,v);
+         if n>1 then <<
+            f := acfsf_decdeg3(f,v,n);
+            dvl := (v . n) . dvl
+         >>
       >>;
       return f . dvl
    end;
@@ -253,19 +253,19 @@ procedure acfsf_decdeg2(f,v);
       atl := cl_atl1 f;
       dgcd := 0;
       while atl and dgcd neq 1 do <<
-	 a := car atl;
-	 atl := cdr atl;
-	 w := acfsf_ignshift(a,v);
-	 if null w then <<  % [w neq 'ignore]
-	    a := sfto_reorder(acfsf_arg2l a,v);
-	    while (not domainp a) and (mvar a eq v) and dgcd neq 1 do <<
-	       dgcd := gcdf(dgcd,ldeg a);
-	       a := red a
-	    >>
-      	 >>
+         a := car atl;
+         atl := cdr atl;
+         w := acfsf_ignshift(a,v);
+         if null w then <<  % [w neq 'ignore]
+            a := sfto_reorder(acfsf_arg2l a,v);
+            while (not domainp a) and (mvar a eq v) and dgcd neq 1 do <<
+               dgcd := gcdf(dgcd,ldeg a);
+               a := red a
+            >>
+         >>
       >>;
       if dgcd = 0 then
-	 return 1;
+         return 1;
       return dgcd
    end;
 
@@ -275,7 +275,7 @@ procedure acfsf_ignshift(at,v);
    begin scalar w;
       w := sfto_reorder(acfsf_arg2l at,v);
       if not domainp w and null red w and mvar w eq v then
-	 return 'ignore
+         return 'ignore
    end;
 
 procedure acfsf_decdeg3(f,v,n);
@@ -306,12 +306,12 @@ procedure acfsf_multsurep!-equal(at,atl);
    begin scalar c,a;
       c := acfsf_arg2l at;
       while atl do <<
-	 a := car atl;
-	 atl := cdr atl;
-	 if acfsf_op a eq 'equal and quotf(c,acfsf_arg2l a) then <<
-	    a := 'found;
-	    atl := nil
-	 >>
+         a := car atl;
+         atl := cdr atl;
+         if acfsf_op a eq 'equal and quotf(c,acfsf_arg2l a) then <<
+            a := 'found;
+            atl := nil
+         >>
       >>;
       return a eq 'found
    end;
@@ -320,12 +320,12 @@ procedure acfsf_multsurep!-neq(at,atl);
    begin scalar c,a;
       c := acfsf_arg2l at;
       while atl do <<
-	 a := car atl;
-	 atl := cdr atl;
-	 if acfsf_op a eq 'neq and quotf(acfsf_arg2l a,c) then <<
-	    a := 'found;
-	    atl := nil
-	 >>
+         a := car atl;
+         atl := cdr atl;
+         if acfsf_op a eq 'neq and quotf(acfsf_arg2l a,c) then <<
+            a := 'found;
+            atl := nil
+         >>
       >>;
       return a eq 'found
    end;

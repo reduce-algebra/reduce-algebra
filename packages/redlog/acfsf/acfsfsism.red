@@ -67,17 +67,17 @@ procedure acfsf_smupdknowl(op,atl,knowl,n);
    % [atl] information.
    begin scalar w,ir,a;
       while atl do <<
-	 a := if op eq 'and then car atl else acfsf_negateat car atl;
-	 atl := cdr atl;
-	 ir := acfsf_at2ir(a,n);
-	 if w := assoc(car ir,knowl) then <<
-	    cdr w := acfsf_sminsert(cadr ir,cdr w);
-	    if cdr w eq 'false then <<
-	       atl := nil;
-	       knowl := 'false
-	    >>  % else [acfsf_sminsert] has updated [cdr w] destructively.
-	 >> else
-	    knowl := ir . knowl
+         a := if op eq 'and then car atl else acfsf_negateat car atl;
+         atl := cdr atl;
+         ir := acfsf_at2ir(a,n);
+         if w := assoc(car ir,knowl) then <<
+            cdr w := acfsf_sminsert(cadr ir,cdr w);
+            if cdr w eq 'false then <<
+               atl := nil;
+               knowl := 'false
+            >>  % else [acfsf_sminsert] has updated [cdr w] destructively.
+         >> else
+            knowl := ir . knowl
       >>;
       return knowl
    end;
@@ -136,11 +136,11 @@ procedure acfsf_sminsert(le,db);
    % Destructively inserts [le] into [db].
    begin scalar a,w,scdb,oscdb;
       repeat <<
-      	 w := acfsf_sminsert1(cadr car db,cddr car db,cadr le,cddr le,car le);
-      	 if w and not idp w then <<  % identifiers [false] and [true] possible.
-	    db := cdr db;
-	    le := w
-      	 >>
+         w := acfsf_sminsert1(cadr car db,cddr car db,cadr le,cddr le,car le);
+         if w and not idp w then <<  % identifiers [false] and [true] possible.
+            db := cdr db;
+            le := w
+         >>
       >> until null w or idp w or null db;
       if w eq 'false then return 'false;
       if w eq 'true then return db;
@@ -148,20 +148,20 @@ procedure acfsf_sminsert(le,db);
       oscdb := db;
       scdb := cdr db;
       while scdb do <<
-	 a := car scdb;
-	 scdb := cdr scdb;
-	 w := acfsf_sminsert1(cadr a,cddr a,cadr le,cddr le,car le);
-	 if w eq 'true then <<
-	    scdb := nil;
-	    a := 'true
-	 >> else if w eq 'false then <<
-	    scdb := nil;
-	    a := 'false
-	 >> else if w then <<
-	    cdr oscdb := scdb;
-	    le := w
-	 >> else
-	    oscdb := cdr oscdb
+         a := car scdb;
+         scdb := cdr scdb;
+         w := acfsf_sminsert1(cadr a,cddr a,cadr le,cddr le,car le);
+         if w eq 'true then <<
+            scdb := nil;
+            a := 'true
+         >> else if w eq 'false then <<
+            scdb := nil;
+            a := 'false
+         >> else if w then <<
+            cdr oscdb := scdb;
+            le := w
+         >> else
+            oscdb := cdr oscdb
       >>;
       if a eq 'false then return 'false;
       if a eq 'true then return db;
@@ -181,16 +181,16 @@ procedure acfsf_sminsert1(r1,a,r2,b,n);
    begin scalar w,diff,n;
       diff := numr subtrsq(a,b);
       if null diff then <<
-	 w := acfsf_smeqtable(r1,r2);
-      	 if w eq 'false then return 'false;
-	 % [w eq r1]
-	 return 'true
+         w := acfsf_smeqtable(r1,r2);
+         if w eq 'false then return 'false;
+         % [w eq r1]
+         return 'true
       >>;
       if minusf diff then <<
-      	 w := acfsf_smordtable(r1,r2);
-	 if atom w then return w;
-      	 if eqcar(w,r1) and cdr w then return 'true;
-	 return n . (car w . if cdr w then a else b)
+         w := acfsf_smordtable(r1,r2);
+         if atom w then return w;
+         if eqcar(w,r1) and cdr w then return 'true;
+         return n . (car w . if cdr w then a else b)
       >>;
       w := acfsf_smordtable(r2,r1);
       if atom w then return w;

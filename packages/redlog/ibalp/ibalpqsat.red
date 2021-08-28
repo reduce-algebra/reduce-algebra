@@ -96,7 +96,7 @@ procedure ibalp_qsat!-setoptionl(optionl);
    % options.
    begin scalar temp;
       if null optionl then
-	 return ibalp_qsat!-getoptionl();
+         return ibalp_qsat!-getoptionl();
       temp := car optionl;
       ibalp_qsatoptions!* := ('heuristic . temp) . nil;
       temp := cadr optionl;
@@ -784,11 +784,11 @@ procedure ibalp_printclause(clause);
    % Helper function to print a clause.
    begin scalar poslit,neglit,sat;
       for each v in ibalp_clause!-getposlit clause do
-	 poslit := ibalp_var!-getid v . poslit;
+         poslit := ibalp_var!-getid v . poslit;
       for each v in ibalp_clause!-getneglit clause do
-      	 neglit := ibalp_var!-getid v . neglit;
+         neglit := ibalp_var!-getid v . neglit;
       for each v in ibalp_clause!-getsat clause do
-      	 sat := v . sat;
+         sat := v . sat;
       ioto_tprin2t {"Clause ",poslit," ",neglit," ","SAT: ",sat}
    end;
 
@@ -811,9 +811,9 @@ procedure ibalp_qsat!-dimacs(input);
       clausel := cadr pair;
       varal := cddr pair;
       return if car pair then
-	 car ibalp_qsat!-cdcl(clausel,varal,nil,t)
+         car ibalp_qsat!-cdcl(clausel,varal,nil,t)
       else
-      	 ibalp_start!-sat(clausel,varal)
+         ibalp_start!-sat(clausel,varal)
    end;
 
 procedure ibalp_qsat!-readdimacs(input);
@@ -837,24 +837,24 @@ procedure ibalp_qsat(f);
       pqsat := cl_fvarl f;
       readform := if qsat then cl_matrix (cl_pnf f) else f;
       if not (ibalp_iscnf readform) then <<
-	 %readform := ibalp_get3cnf(readform);
-      	 if !*rlverbose then
-      	    ioto_tprin2t "Formula was not in CNF. Using QE";
-	 return cl_qe(f,nil)
+         %readform := ibalp_get3cnf(readform);
+         if !*rlverbose then
+            ioto_tprin2t "Formula was not in CNF. Using QE";
+         return cl_qe(f,nil)
       >>;
       pair := ibalp_readform readform;
       clausel := car pair;
       varal := cdr pair;
       if null clausel then
-	 return 'true;
+         return 'true;
       if ibalp_emptyclausep car clausel then
-	 return 'false;
+         return 'false;
       if qsat and null pqsat then
-       	 return ibalp_start!-qsat(clausel,varal,f)
+         return ibalp_start!-qsat(clausel,varal,f)
       else if qsat and pqsat then
-      	 return ibalp_start!-pqsat(clausel,varal,f,pqsat)
+         return ibalp_start!-pqsat(clausel,varal,f,pqsat)
       else
-      	 return ibalp_start!-sat(clausel,varal)
+         return ibalp_start!-sat(clausel,varal)
    end;
 
 procedure ibalp_start!-sat(clausel,varal);
@@ -863,9 +863,9 @@ procedure ibalp_start!-sat(clausel,varal);
    % assignment, [nil] else.
    begin scalar resstart,firstval,inc,heur;
       if !*rlverbose then
-      	 ioto_tprin2t {"Starting SAT Algorithm"};
+         ioto_tprin2t {"Starting SAT Algorithm"};
       for each v in varal do
-	 ibalp_var!-setmom(cdr v,ibalp_calcmom cdr v);
+         ibalp_var!-setmom(cdr v,ibalp_calcmom cdr v);
       resstart := ibalp_qsat!-getoption('res_start);
       firstval := ibalp_qsat!-getoption('first_val);
       inc := ibalp_qsat!-getoption('res_inc);
@@ -878,14 +878,14 @@ procedure ibalp_start!-qsat(clausel,varal,f);
       % is the A-List of variables; [f] is the original
       % formula. Returns [true] if the formula is true, [nil] else.
       begin scalar varal,pair;
-	 if !*rlverbose then
-	    ioto_tprin2t {"Starting QSAT Algorithm"};
-   	 pair := ibalp_readquantal(cl_pnf f,varal);
-	 varal := cdr pair;
-	 if eqn(car pair,1) and ibalp_var!-isex cdar varal then
-	    return ibalp_start!-sat(clausel,varal)
-	 else
-   	    return car ibalp_qsat!-cdcl(clausel,varal,nil,t)
+         if !*rlverbose then
+            ioto_tprin2t {"Starting QSAT Algorithm"};
+         pair := ibalp_readquantal(cl_pnf f,varal);
+         varal := cdr pair;
+         if eqn(car pair,1) and ibalp_var!-isex cdar varal then
+            return ibalp_start!-sat(clausel,varal)
+         else
+            return car ibalp_qsat!-cdcl(clausel,varal,nil,t)
       end;
 
 procedure ibalp_start!-pqsat(clausel,varal,f,pqsat);
@@ -896,7 +896,7 @@ procedure ibalp_start!-pqsat(clausel,varal,f,pqsat);
       % true or false.
    begin scalar pair,psat;
       if !*rlverbose then
-	 ioto_tprin2t {"Starting PQSAT Algorithm with ", length pqsat, " free variables..."};
+         ioto_tprin2t {"Starting PQSAT Algorithm with ", length pqsat, " free variables..."};
       pair := ibalp_readquantal(cl_pnf f,varal);
       varal := cdr pair;
       pair := ibalp_splitvars(pqsat,varal);
@@ -904,21 +904,21 @@ procedure ibalp_start!-pqsat(clausel,varal,f,pqsat);
       pqsat := cdr pair;
       psat := ibalp_psatp varal;
       if !*rlverbose and psat then
-	 ioto_tprin2t {"**PSAT Problem"};
+         ioto_tprin2t {"**PSAT Problem"};
       donel!* := nil;
       numcdcl!* := 0;
       numlocs!* := 0;
       %if length pqsat / length varal > 2/3 then
       if nil then
-	 return cl_qe(f,nil)
+         return cl_qe(f,nil)
       else <<
-      	 varal := cdr ibalp_readquantal(cl_pnf f,varal);
-      	 pair := ibalp_qsat!-par(pqsat,clausel,varal,nil,psat);
-	 if !*rlverbose then <<
-	    ioto_tprin2t {"Runs of CDCL: ", numcdcl!*};
-	    ioto_tprin2t {"Local Search Successes: ", numlocs!*};
-	 >>;
-      	 return ibalp_exres2(car pair,pqsat)
+         varal := cdr ibalp_readquantal(cl_pnf f,varal);
+         pair := ibalp_qsat!-par(pqsat,clausel,varal,nil,psat);
+         if !*rlverbose then <<
+            ioto_tprin2t {"Runs of CDCL: ", numcdcl!*};
+            ioto_tprin2t {"Local Search Successes: ", numlocs!*};
+         >>;
+         return ibalp_exres2(car pair,pqsat)
       >>
    end;
 
@@ -937,44 +937,44 @@ procedure ibalp_cdcl(clausel,varal,c,setval,rescount,inc,heur);
       if null clausel then return {'true};
       upl := ibalp_initwl clausel;
       while null fin do <<
-	 ec := ibalp_cec clausel;
-	 if null ec then <<
-	    upl := ibalp_getupl clausel;
-	    pair := ibalp_unitprop(upl,clausel,level);
-	    ec := car pair;
-	    lv := cdr pair;
-	 >>;
-	 if ec then <<
-	    if eqn(level,0) then <<
-	       fin := t;
-	       res := {'false}
-	    >> else <<
-	       ibalp_recalcv varal;
-	       count := count + 1;
-	       ibalp_dimcount clausel;
-	       pair := ibalp_analconf(ec,level,lv,clausel,varal);
-	       level := car pair;
-	       clausel := cdr pair;
-	       pair := ibalp_dosimpl(clausel,varal);
-	       clausel := car pair;
-	       varal := cdr pair
-	    >>
-	 >> else <<
-	    if ibalp_istotal varal or ibalp_csat clausel then <<
-	       fin := t;
-	       res := {'true}
-	    >> else <<
-	       pair := ibalp_getvar(varal,clausel,heur);
-	       level := level + 1;
-	       if heur = 'activity then setval := cdr pair;
-	       ibalp_var!-set(car pair,setval,level,nil);
-	       if count > c then <<
-	     	  res := ibalp_restart(clausel,varal,c,
-		     rescount,setval,inc,heur);
-	       	  fin := t
-	       >>
-	    >>
-	 >>
+         ec := ibalp_cec clausel;
+         if null ec then <<
+            upl := ibalp_getupl clausel;
+            pair := ibalp_unitprop(upl,clausel,level);
+            ec := car pair;
+            lv := cdr pair;
+         >>;
+         if ec then <<
+            if eqn(level,0) then <<
+               fin := t;
+               res := {'false}
+            >> else <<
+               ibalp_recalcv varal;
+               count := count + 1;
+               ibalp_dimcount clausel;
+               pair := ibalp_analconf(ec,level,lv,clausel,varal);
+               level := car pair;
+               clausel := cdr pair;
+               pair := ibalp_dosimpl(clausel,varal);
+               clausel := car pair;
+               varal := cdr pair
+            >>
+         >> else <<
+            if ibalp_istotal varal or ibalp_csat clausel then <<
+               fin := t;
+               res := {'true}
+            >> else <<
+               pair := ibalp_getvar(varal,clausel,heur);
+               level := level + 1;
+               if heur = 'activity then setval := cdr pair;
+               ibalp_var!-set(car pair,setval,level,nil);
+               if count > c then <<
+                  res := ibalp_restart(clausel,varal,c,
+                     rescount,setval,inc,heur);
+                  fin := t
+               >>
+            >>
+         >>
       >>;
       return res
    end;
@@ -985,20 +985,20 @@ procedure ibalp_preprocess(clausel,varal);
    % clauses and the new variables.
    begin scalar pair; integer count;
       for each v in varal do <<
-	 if eqn(ibalp_var!-getnumpos cdr v,0) then <<
-	    count := count + 1;
-	    pair := ibalp_simplify(cdr v,0,nil,clausel,varal);
-	    clausel := car pair;
-	    varal := cdr pair
-	 >> else if eqn(ibalp_var!-getnumneg cdr v,0) then <<
-	    count := count + 1;
-	    pair := ibalp_simplify(cdr v,1,nil,clausel,varal);
-	    clausel := car pair;
-	    varal := cdr pair
-      	 >>
+         if eqn(ibalp_var!-getnumpos cdr v,0) then <<
+            count := count + 1;
+            pair := ibalp_simplify(cdr v,0,nil,clausel,varal);
+            clausel := car pair;
+            varal := cdr pair
+         >> else if eqn(ibalp_var!-getnumneg cdr v,0) then <<
+            count := count + 1;
+            pair := ibalp_simplify(cdr v,1,nil,clausel,varal);
+            clausel := car pair;
+            varal := cdr pair
+         >>
       >>;
       if !*rlverbose then
-      	 ioto_tprin2t {"deleted variables in pre-processing ",count};
+         ioto_tprin2t {"deleted variables in pre-processing ",count};
       return (clausel . varal)
    end;
 
@@ -1023,10 +1023,10 @@ procedure ibalp_restart(clausel,varal,c,rescount,setval,inc,heur);
    % the formula, [nil] else.
    <<
       if !*rlverbose then
-	 ioto_tprin2t {"restart ",rescount};
+         ioto_tprin2t {"restart ",rescount};
       ibalp_dav(varal,clausel);
       if c > ibalp_qsat!-getoption('clause_del) then
-	 clausel := ibalp_killcount clausel;
+         clausel := ibalp_killcount clausel;
       ibalp_cdcl(clausel,varal,c*inc,1-setval,rescount+1,inc,heur)
    >>;
 
@@ -1054,9 +1054,9 @@ procedure ibalp_dosimpl(clausel,varal);
    % clauses and the new variables.
    begin scalar h,pair;
       while h := ibalp_hassimple clausel do <<
-	 pair := ibalp_simplify(nil,nil,h,clausel,varal);
-	 clausel := car pair;
-	 varal := cdr pair
+         pair := ibalp_simplify(nil,nil,h,clausel,varal);
+         clausel := car pair;
+         varal := cdr pair
       >>;
       return (clausel . varal)
    end;
@@ -1068,31 +1068,31 @@ procedure ibalp_simplify(dvar,dval,clause,clausel,varal);
    % the new clauses and the new variables.
    begin scalar var,val;
       if null dvar then <<
-      	 if ibalp_lenisone ibalp_clause!-getposlit clause then <<
-	    var := car ibalp_clause!-getposlit clause;
-	    val := 1
-      	 >>
-      	 else <<
-	    var := car ibalp_clause!-getneglit clause;
-	    val := 0
-      	 >>;
-      	 if ibalp_var!-getval var then
-	    ibalp_var!-unset(var,ibalp_var!-getval var);
-	 ibalp_var!-set(var,val,0,nil);
+         if ibalp_lenisone ibalp_clause!-getposlit clause then <<
+            var := car ibalp_clause!-getposlit clause;
+            val := 1
+         >>
+         else <<
+            var := car ibalp_clause!-getneglit clause;
+            val := 0
+         >>;
+         if ibalp_var!-getval var then
+            ibalp_var!-unset(var,ibalp_var!-getval var);
+         ibalp_var!-set(var,val,0,nil);
       >> else <<
-	 var := dvar;
-	 val := dval
+         var := dvar;
+         val := dval
       >>;
       if eqn(val,1) then <<
-	 for each clause in ibalp_var!-getposocc var do
-	    clausel := ibalp_delclause(clause,clausel);
-	 for each clause in ibalp_var!-getnegocc var do
-	    ibalp_dellit(var,clause,nil);
+         for each clause in ibalp_var!-getposocc var do
+            clausel := ibalp_delclause(clause,clausel);
+         for each clause in ibalp_var!-getnegocc var do
+            ibalp_dellit(var,clause,nil);
       >> else <<
-	 for each clause in ibalp_var!-getnegocc var do
-	    clausel := ibalp_delclause(clause,clausel);
-	 for each clause in ibalp_var!-getposocc var do
-	    ibalp_dellit(var,clause,t);
+         for each clause in ibalp_var!-getnegocc var do
+            clausel := ibalp_delclause(clause,clausel);
+         for each clause in ibalp_var!-getposocc var do
+            ibalp_dellit(var,clause,t);
       >>;
       varal := lto_delq(atsoc(ibalp_var!-getid var,varal),varal);
       return (clausel . varal)
@@ -1111,11 +1111,11 @@ procedure ibalp_hassimple(clausel);
    begin scalar ret,tl;
       tl := clausel;
       while tl and null ret do <<
-	 if ibalp_commonlenisone(
-	    ibalp_clause!-getposlit car tl,ibalp_clause!-getneglit car tl)
-	 then
-	    ret := car tl;
-	 tl := cdr tl
+         if ibalp_commonlenisone(
+            ibalp_clause!-getposlit car tl,ibalp_clause!-getneglit car tl)
+         then
+            ret := car tl;
+         tl := cdr tl
       >>;
       return ret
    end;
@@ -1125,9 +1125,9 @@ procedure ibalp_getupl(clausel);
    % clauses. Returns a list of unit clauses.
    begin scalar upl;
       for each c in clausel do
-	 if null ibalp_clause!-getsat c and
-	 eqn(ibalp_clause!-getactpos c + ibalp_clause!-getactneg c,1) then
-	    upl := c . upl;
+         if null ibalp_clause!-getsat c and
+         eqn(ibalp_clause!-getactpos c + ibalp_clause!-getactneg c,1) then
+            upl := c . upl;
       return upl
    end;
 
@@ -1140,30 +1140,30 @@ procedure ibalp_unitprop(clist,clausel,level);
    begin scalar tl,clause,actpos,actneg,var,ec,upl,w;
       w := tl := clist;
       while tl and null ec do <<
-	 clause := car tl;
-	 if null ibalp_clause!-getsat clause then <<
-	    actpos := ibalp_clause!-getactpos clause;
-	    actneg := ibalp_clause!-getactneg clause;
-	    % Since clause is unit, we know that actpos is 1 and
-	    % actneg is 0 or vice versa.
-	    if actpos #= 1 then <<
-	       var := car ibalp_clause!-getwl clause;
-	       if null ibalp_var!-getval var then <<
-	       	  upl := ibalp_var!-set(var,1,level,clause);
-		  nconc(w,upl);
-		  w := upl or w
-	       >>
-	    >> else <<
-	       var := car ibalp_clause!-getwl clause;
-	       if null ibalp_var!-getval var then <<
-	       	  upl := ibalp_var!-set(var,0,level,clause);
-		  nconc(w,upl);
-		  w := upl or w
-	       >>
-	    >>
-	 >>;
-	 tl := cdr tl;
-	 ec := ibalp_cec clausel
+         clause := car tl;
+         if null ibalp_clause!-getsat clause then <<
+            actpos := ibalp_clause!-getactpos clause;
+            actneg := ibalp_clause!-getactneg clause;
+            % Since clause is unit, we know that actpos is 1 and
+            % actneg is 0 or vice versa.
+            if actpos #= 1 then <<
+               var := car ibalp_clause!-getwl clause;
+               if null ibalp_var!-getval var then <<
+                  upl := ibalp_var!-set(var,1,level,clause);
+                  nconc(w,upl);
+                  w := upl or w
+               >>
+            >> else <<
+               var := car ibalp_clause!-getwl clause;
+               if null ibalp_var!-getval var then <<
+                  upl := ibalp_var!-set(var,0,level,clause);
+                  nconc(w,upl);
+                  w := upl or w
+               >>
+            >>
+         >>;
+         tl := cdr tl;
+         ec := ibalp_cec clausel
       >>;
       return (ec . var)
    end;
@@ -1173,22 +1173,22 @@ procedure ibalp_initwl(clausel);
    % clauses. Returns a list of unit clauses.
    begin scalar count,upl,tl;
       for each c in clausel do <<
-	 count := 0;
-	 tl := ibalp_clause!-getposlit c;
-	 while not eqn(count,2) and tl do <<
-	    ibalp_clause!-setwl(c,car tl);
-	    ibalp_var!-setwc(car tl,c);
-	    count := count + 1;
-	    tl := cdr tl
-	 >>;
-	 tl := ibalp_clause!-getneglit c;
-	 while not eqn(count,2) and tl do <<
-	    ibalp_clause!-setwl(c,car tl);
-	    ibalp_var!-setwc(car tl,c);
-	    count := count + 1;
-	    tl := cdr tl
-	 >>;
-	 if count < 2 then upl := c . upl
+         count := 0;
+         tl := ibalp_clause!-getposlit c;
+         while not eqn(count,2) and tl do <<
+            ibalp_clause!-setwl(c,car tl);
+            ibalp_var!-setwc(car tl,c);
+            count := count + 1;
+            tl := cdr tl
+         >>;
+         tl := ibalp_clause!-getneglit c;
+         while not eqn(count,2) and tl do <<
+            ibalp_clause!-setwl(c,car tl);
+            ibalp_var!-setwc(car tl,c);
+            count := count + 1;
+            tl := cdr tl
+         >>;
+         if count < 2 then upl := c . upl
       >>;
       return upl
    end;
@@ -1197,31 +1197,31 @@ procedure ibalp_renewwl(clausel);
    % Renew watched literals. [clausel] is the list of clauses;
    begin scalar wl;
       for each c in clausel do <<
-	 if null ibalp_clause!-getsat c then <<
-      	    if eqn(length ibalp_clause!-getwl c,1) and
-	       length ibalp_clause!-getposlit c +
-	       length ibalp_clause!-getneglit c > 1 then <<
-	    	  wl := ibalp_getnewwl c;
-	    	  if wl then <<
-	       	     ibalp_clause!-setwl(c,wl);
-	       	     ibalp_var!-setwc(wl,c)
-	    	  >>;
-	       >> else
-	 	  if null ibalp_clause!-getwl c  and
-	       length ibalp_clause!-getposlit c +
-	       length ibalp_clause!-getneglit c > 1 then <<
-		  wl := ibalp_getnewwl c;
-	       	  if wl then <<
-	       	     ibalp_clause!-setwl(c,wl);
-	       	     ibalp_var!-setwc(wl,c)
-	       	  >>;
-	       	  wl := ibalp_getnewwl c;
-	       	  if wl then <<
-	       	     ibalp_clause!-setwl(c,wl);
-	       	     ibalp_var!-setwc(wl,c)
-	       	  >>
-	       >>
-	 >>
+         if null ibalp_clause!-getsat c then <<
+            if eqn(length ibalp_clause!-getwl c,1) and
+               length ibalp_clause!-getposlit c +
+               length ibalp_clause!-getneglit c > 1 then <<
+                  wl := ibalp_getnewwl c;
+                  if wl then <<
+                     ibalp_clause!-setwl(c,wl);
+                     ibalp_var!-setwc(wl,c)
+                  >>;
+               >> else
+                  if null ibalp_clause!-getwl c  and
+               length ibalp_clause!-getposlit c +
+               length ibalp_clause!-getneglit c > 1 then <<
+                  wl := ibalp_getnewwl c;
+                  if wl then <<
+                     ibalp_clause!-setwl(c,wl);
+                     ibalp_var!-setwc(wl,c)
+                  >>;
+                  wl := ibalp_getnewwl c;
+                  if wl then <<
+                     ibalp_clause!-setwl(c,wl);
+                     ibalp_var!-setwc(wl,c)
+                  >>
+               >>
+         >>
       >>
    end;
 
@@ -1232,33 +1232,33 @@ procedure ibalp_resolve(newclause,clause1,clause2,cv);
    % clauses.
    <<
       for each v in ibalp_clause!-getposlit clause1 do
-      	 if null (v eq cv) and
-	 null memq(v,ibalp_clause!-getposlit newclause) then <<
-	    ibalp_clause!-setposlit(newclause,v);
-	    ibalp_var!-setposocc(v,newclause);
-	    ibalp_var!-setnumpos(v,ibalp_var!-getnumpos v + 1)
-	 >>;
+         if null (v eq cv) and
+         null memq(v,ibalp_clause!-getposlit newclause) then <<
+            ibalp_clause!-setposlit(newclause,v);
+            ibalp_var!-setposocc(v,newclause);
+            ibalp_var!-setnumpos(v,ibalp_var!-getnumpos v + 1)
+         >>;
       for each v in ibalp_clause!-getposlit clause2 do
-      	 if null (v eq cv) and
-	 null memq(v,ibalp_clause!-getposlit newclause) then <<
-	    ibalp_clause!-setposlit(newclause,v);
-	    ibalp_var!-setposocc(v,newclause);
-	    ibalp_var!-setnumpos(v,ibalp_var!-getnumpos v + 1)
-	 >>;
+         if null (v eq cv) and
+         null memq(v,ibalp_clause!-getposlit newclause) then <<
+            ibalp_clause!-setposlit(newclause,v);
+            ibalp_var!-setposocc(v,newclause);
+            ibalp_var!-setnumpos(v,ibalp_var!-getnumpos v + 1)
+         >>;
       for each v in ibalp_clause!-getneglit clause1 do
-	 if null (v eq cv) and
-	 null memq(v,ibalp_clause!-getneglit newclause) then <<
-	    ibalp_clause!-setneglit(newclause,v);
-	    ibalp_var!-setnegocc(v,newclause);
-	    ibalp_var!-setnumneg(v,ibalp_var!-getnumneg v + 1)
-	 >>;
+         if null (v eq cv) and
+         null memq(v,ibalp_clause!-getneglit newclause) then <<
+            ibalp_clause!-setneglit(newclause,v);
+            ibalp_var!-setnegocc(v,newclause);
+            ibalp_var!-setnumneg(v,ibalp_var!-getnumneg v + 1)
+         >>;
       for each v in ibalp_clause!-getneglit clause2 do
-	 if null (v eq cv) and
-	 null memq(v,ibalp_clause!-getneglit newclause) then <<
-	    ibalp_clause!-setneglit(newclause,v);
-	    ibalp_var!-setnegocc(v,newclause);
-	    ibalp_var!-setnumneg(v,ibalp_var!-getnumneg v + 1)
-	 >>;
+         if null (v eq cv) and
+         null memq(v,ibalp_clause!-getneglit newclause) then <<
+            ibalp_clause!-setneglit(newclause,v);
+            ibalp_var!-setnegocc(v,newclause);
+            ibalp_var!-setnumneg(v,ibalp_var!-getnumneg v + 1)
+         >>;
    >>;
 
 procedure ibalp_dav(varal,clausel);
@@ -1266,16 +1266,16 @@ procedure ibalp_dav(varal,clausel);
    % variables; [clausel] is the list of clauses.
    <<
       for each v in varal do <<
-	 if ibalp_var!-getval cdr v then <<
-	    ibalp_var!-unset(cdr v,ibalp_var!-getval cdr v);
-	    ibalp_var!-setflip(cdr v,nil)
-	 >>
+         if ibalp_var!-getval cdr v then <<
+            ibalp_var!-unset(cdr v,ibalp_var!-getval cdr v);
+            ibalp_var!-setflip(cdr v,nil)
+         >>
       >>;
       for each v in varal do <<
-	 ibalp_var!-delallwc cdr v
+         ibalp_var!-delallwc cdr v
       >>;
       for each c in clausel do
-	 ibalp_clause!-delallwl c
+         ibalp_clause!-delallwl c
    >>;
 
 procedure ibalp_calccc!-fuip(ec,level,lv);
@@ -1287,19 +1287,19 @@ procedure ibalp_calccc!-fuip(ec,level,lv);
       newclause := ibalp_clause!-new();
       ibalp_resolve(newclause,ec,ibalp_var!-getreas lv,lv);
       while tv := ibalp_countgetlev(newclause,level) do <<
-	 if eqn(ibalp_var!-getval tv,0) then
-	    ibalp_dellit(tv,newclause,t)
-	 else
-	    ibalp_dellit(tv,newclause,nil);
-	 reas := ibalp_var!-getreas tv;
-	 if ibalp_clause!-getcount reas then
-	    ibalp_clause!-setcount(reas,ibalp_clause!-getcount reas + 1);
-	 ibalp_resolve(newclause,newclause,reas,tv);
+         if eqn(ibalp_var!-getval tv,0) then
+            ibalp_dellit(tv,newclause,t)
+         else
+            ibalp_dellit(tv,newclause,nil);
+         reas := ibalp_var!-getreas tv;
+         if ibalp_clause!-getcount reas then
+            ibalp_clause!-setcount(reas,ibalp_clause!-getcount reas + 1);
+         ibalp_resolve(newclause,newclause,reas,tv);
       >>;
       for each v in ibalp_clause!-getposlit newclause do
-	 ibalp_var!-setposcc(v,ibalp_var!-getposcc v + 1);
+         ibalp_var!-setposcc(v,ibalp_var!-getposcc v + 1);
       for each v in ibalp_clause!-getneglit newclause do
-	 ibalp_var!-setnegcc(v,ibalp_var!-getnegcc v + 1);
+         ibalp_var!-setnegcc(v,ibalp_var!-getnegcc v + 1);
       ibalp_clause!-setcount(newclause,1);
       return newclause
    end;
@@ -1312,19 +1312,19 @@ procedure ibalp_countgetlev(clause,level);
    begin scalar temp,tv,ret;
       tv := ibalp_clause!-getposlit clause;
       while tv and null ret do <<
-	 temp := car tv;
-	 if ibalp_var!-getlev temp = level and
-	    ibalp_var!-getreas temp then
-	       ret := temp;
-	 tv := cdr tv;
+         temp := car tv;
+         if ibalp_var!-getlev temp = level and
+            ibalp_var!-getreas temp then
+               ret := temp;
+         tv := cdr tv;
       >>;
       tv := ibalp_clause!-getneglit clause;
       while tv and null ret do <<
-	 temp := car tv;
-	 if ibalp_var!-getlev temp = level and
- 	    ibalp_var!-getreas temp then
-	       ret := temp;
-	 tv := cdr tv;
+         temp := car tv;
+         if ibalp_var!-getlev temp = level and
+            ibalp_var!-getreas temp then
+               ret := temp;
+         tv := cdr tv;
       >>;
       return ret
    end;
@@ -1336,11 +1336,11 @@ procedure ibalp_dellit(lit,clause,posneg);
    if posneg then <<
       ibalp_var!-setposoccabs(lit,lto_delq(clause,ibalp_var!-getposocc lit));
       ibalp_clause!-setposlitabs(
-	 clause,lto_delq(lit,ibalp_clause!-getposlit clause))
+         clause,lto_delq(lit,ibalp_clause!-getposlit clause))
    >> else <<
       ibalp_var!-setnegoccabs(lit,lto_delq(clause,ibalp_var!-getnegocc lit));
       ibalp_clause!-setneglitabs(
-	 clause,lto_delq(lit,ibalp_clause!-getneglit clause))
+         clause,lto_delq(lit,ibalp_clause!-getneglit clause))
    >>;
 
 procedure ibalp_dimcount(clausel);
@@ -1350,12 +1350,12 @@ procedure ibalp_dimcount(clausel);
       doit := t;
       tc := clausel;
       while doit do <<
-	 c := car tc;
-	 if null ibalp_clause!-getcount c then
-	    doit := nil
-	 else
-	    ibalp_clause!-setcount(c,ibalp_clause!-getcount c - 0.05);
-	 tc := cdr tc
+         c := car tc;
+         if null ibalp_clause!-getcount c then
+            doit := nil
+         else
+            ibalp_clause!-setcount(c,ibalp_clause!-getcount c - 0.05);
+         tc := cdr tc
       >>
    end;
 
@@ -1366,12 +1366,12 @@ procedure ibalp_killcount(clausel);
       doit := t;
       tc := clausel;
       while doit do <<
-	 c := car tc;
-	 if null ibalp_clause!-getcount c then doit := nil else <<
-	    tc := cdr tc;
-	    if ibalp_clause!-getcount c < 1 then
-	       clausel := ibalp_delclause(c,clausel);
-	 >>
+         c := car tc;
+         if null ibalp_clause!-getcount c then doit := nil else <<
+            tc := cdr tc;
+            if ibalp_clause!-getcount c < 1 then
+               clausel := ibalp_delclause(c,clausel);
+         >>
       >>;
       return clausel
    end;
@@ -1381,23 +1381,23 @@ procedure ibalp_delclause(c,clausel);
    % list of clauses.
    <<
       for each v in ibalp_clause!-getposlit c do <<
-	 ibalp_var!-setposoccabs(v,lto_delq(c,ibalp_var!-getposocc v));
-	 if ibalp_clause!-getcount c then
-	    ibalp_var!-setposcc(v,ibalp_var!-getposcc v - 1);
-	 if null ibalp_clause!-getsat c then
-	    ibalp_var!-setnumpos(v,ibalp_var!-getnumpos v - 1);
-	 ibalp_var!-setmom(v,ibalp_calcmom v)
+         ibalp_var!-setposoccabs(v,lto_delq(c,ibalp_var!-getposocc v));
+         if ibalp_clause!-getcount c then
+            ibalp_var!-setposcc(v,ibalp_var!-getposcc v - 1);
+         if null ibalp_clause!-getsat c then
+            ibalp_var!-setnumpos(v,ibalp_var!-getnumpos v - 1);
+         ibalp_var!-setmom(v,ibalp_calcmom v)
       >>;
       for each v in ibalp_clause!-getneglit c do <<
-	 ibalp_var!-setnegoccabs(v,lto_delq(c,ibalp_var!-getnegocc v));
-	 if ibalp_clause!-getcount c then
-	    ibalp_var!-setnegcc(v,ibalp_var!-getnegcc v - 1);
-	 if null ibalp_clause!-getsat c then
-	    ibalp_var!-setnumneg(v,ibalp_var!-getnumneg v - 1);
-	 ibalp_var!-setmom(v,ibalp_calcmom v)
+         ibalp_var!-setnegoccabs(v,lto_delq(c,ibalp_var!-getnegocc v));
+         if ibalp_clause!-getcount c then
+            ibalp_var!-setnegcc(v,ibalp_var!-getnegcc v - 1);
+         if null ibalp_clause!-getsat c then
+            ibalp_var!-setnumneg(v,ibalp_var!-getnumneg v - 1);
+         ibalp_var!-setmom(v,ibalp_calcmom v)
       >>;
       for each v in ibalp_clause!-getwl c do <<
-	 ibalp_var!-delwc(v,c);
+         ibalp_var!-delwc(v,c);
       >>;
       clausel := lto_delq(c,clausel);
       clausel
@@ -1410,25 +1410,25 @@ procedure ibalp_getmacvext(varal);
    begin scalar tv,tm,val;
       tv := ibalp_cv varal;
       if ibalp_var!-getposcc tv > ibalp_var!-getnegcc tv then <<
-	 tm := ibalp_var!-getposcc tv;
- 	 val := 1
+         tm := ibalp_var!-getposcc tv;
+         val := 1
       >> else <<
-	 tm := ibalp_var!-getnegcc tv;
-	 val := 0
+         tm := ibalp_var!-getnegcc tv;
+         val := 0
       >>;
       for each v in varal do
-	 if null ibalp_var!-getval cdr v then <<
-	    if ibalp_var!-getposcc cdr v > tm then <<
-	       tv := cdr v;
-	       val := 1;
-	       tm := ibalp_var!-getposcc tv
-	    >>;
-	    if ibalp_var!-getnegcc cdr v > tm then <<
-	       tv := cdr v;
-	       val := 0;
-	       tm := ibalp_var!-getnegcc tv
-	    >>
-      	 >>;
+         if null ibalp_var!-getval cdr v then <<
+            if ibalp_var!-getposcc cdr v > tm then <<
+               tv := cdr v;
+               val := 1;
+               tm := ibalp_var!-getposcc tv
+            >>;
+            if ibalp_var!-getnegcc cdr v > tm then <<
+               tv := cdr v;
+               val := 0;
+               tm := ibalp_var!-getnegcc tv
+            >>
+         >>;
       return (tv . val)
    end;
 
@@ -1448,16 +1448,16 @@ procedure ibalp_calccvar(cc,level);
    % highest level of all other variables.
    begin scalar v,rv; integer lev;
       for each v in ibalp_clause!-getposlit cc do <<
-	 if eqn(ibalp_var!-getlev v,level) then
-	    rv := v
-	 else
-	    if ibalp_var!-getlev v > lev then lev := ibalp_var!-getLev v
+         if eqn(ibalp_var!-getlev v,level) then
+            rv := v
+         else
+            if ibalp_var!-getlev v > lev then lev := ibalp_var!-getLev v
       >>;
       for each v in ibalp_clause!-getneglit cc do <<
-	 if eqn(ibalp_var!-getlev v,level) then
-	    rv := v
-	 else
-	    if ibalp_var!-getlev v > lev then lev := ibalp_var!-getLev v
+         if eqn(ibalp_var!-getlev v,level) then
+            rv := v
+         else
+            if ibalp_var!-getlev v > lev then lev := ibalp_var!-getLev v
       >>;
       return (rv . lev)
    end;
@@ -1467,7 +1467,7 @@ procedure ibalp_tvb(varal,level);
    % level. [varal] is the A-List of variables; [level] is the level.
    for each v in varal do
       if ibalp_var!-getlev cdr v >= level then
-	 ibalp_var!-unset(cdr v,ibalp_var!-getval cdr v);
+         ibalp_var!-unset(cdr v,ibalp_var!-getval cdr v);
 
 procedure ibalp_istotal(varal);
    % Checks if an assignment is total. [varal] is a A-List of
@@ -1484,12 +1484,12 @@ procedure ibalp_getvar!-zmom(varal,clausel);
       minc := ibalp_minclnr clausel;
       tmax := -1;
       for each v in varal do <<
-	 if null ibalp_var!-getval cdr v and
-	    (h := ibalp_var!-getmom cdr v) > tmax then
-	       if ibalp_isinminclause(cdr v,minc) then <<
-	       	  tv := cdr v;
-	       	  tmax := h
-	       >>
+         if null ibalp_var!-getval cdr v and
+            (h := ibalp_var!-getmom cdr v) > tmax then
+               if ibalp_isinminclause(cdr v,minc) then <<
+                  tv := cdr v;
+                  tmax := h
+               >>
       >>;
       val := if ibalp_var!-getposcc tv > ibalp_var!-getnegcc tv then 1 else 0;
       return (tv . val)
@@ -1502,19 +1502,19 @@ procedure ibalp_isinminclause(var,minc);
    begin scalar tv,ret;
       tv := ibalp_var!-getposocc var;
       while tv and null ret do <<
-	 if null ibalp_clause!-getsat car tv and
-	    eqn(ibalp_clause!-getactneg car tv +
-	    ibalp_clause!-getactpos car tv,minc) then
-	       ret := t;
-	 tv := cdr tv;
+         if null ibalp_clause!-getsat car tv and
+            eqn(ibalp_clause!-getactneg car tv +
+            ibalp_clause!-getactpos car tv,minc) then
+               ret := t;
+         tv := cdr tv;
       >>;
       tv := ibalp_var!-getnegocc var;
       while tv and null ret do <<
-	 if null ibalp_clause!-getsat car tv and
-	    eqn(ibalp_clause!-getactneg car tv +
-	    ibalp_clause!-getactpos car tv,minc) then
-	       ret := t;
-	 tv := cdr tv;
+         if null ibalp_clause!-getsat car tv and
+            eqn(ibalp_clause!-getactneg car tv +
+            ibalp_clause!-getactpos car tv,minc) then
+               ret := t;
+         tv := cdr tv;
       >>;
       return ret
    end;
@@ -1528,17 +1528,17 @@ procedure ibalp_getvar!-dlcs(varal);
       tv := ibalp_cv varal;
       max := ibalp_var!-getnumneg tv + ibalp_var!-getnumpos tv;
       for each var in varal do
-	 if null ibalp_var!-getval cdr var then
-	    if ibalp_var!-getnumneg cdr var +
-	 ibalp_var!-getnumpos cdr var > max then <<
-	    tv := cdr var;
-	    max := ibalp_var!-getnumneg cdr var +
-	       ibalp_var!-getnumpos cdr var
-	 >>;
+         if null ibalp_var!-getval cdr var then
+            if ibalp_var!-getnumneg cdr var +
+         ibalp_var!-getnumpos cdr var > max then <<
+            tv := cdr var;
+            max := ibalp_var!-getnumneg cdr var +
+               ibalp_var!-getnumpos cdr var
+         >>;
       val := if ibalp_var!-getnumpos tv > ibalp_var!-getnumneg tv then
-	 1
+         1
       else
- 	 0;
+         0;
       return (tv . val)
    end;
 
@@ -1549,11 +1549,11 @@ procedure ibalp_minclnr(clausel);
       %hack
       min := 100000;
       for each c in clausel do
-	 if null ibalp_clause!-getsat c then
-	    if ibalp_clause!-getactpos c +
-	 ibalp_clause!-getactneg c < min then
-	    min := ibalp_clause!-getactpos c +
-	 ibalp_clause!-getactneg c;
+         if null ibalp_clause!-getsat c then
+            if ibalp_clause!-getactpos c +
+         ibalp_clause!-getactneg c < min then
+            min := ibalp_clause!-getactpos c +
+         ibalp_clause!-getactneg c;
       return min
    end;
 
@@ -1605,14 +1605,14 @@ procedure ibalp_var!-set(var,val,level,reas);
       ibalp_var!-setreas(var,reas);
       id := ibalp_var!-getid var;
       sc := if eqn(val,0) then
-	 ibalp_var!-getnegocc var
+         ibalp_var!-getnegocc var
       else
-	 ibalp_var!-getposocc var;
+         ibalp_var!-getposocc var;
       ibalp_var!-satlist(sc,id);
       sc := if eqn(val,1) then
-	 ibalp_var!-getnegocc var
+         ibalp_var!-getnegocc var
       else
-	 ibalp_var!-getposocc var;
+         ibalp_var!-getposocc var;
       ibalp_var!-unsatlist(sc,val);
       upl := ibalp_var!-wclist var;
       ibalp_var!-setmom(var,ibalp_calcmom var);
@@ -1625,18 +1625,18 @@ procedure ibalp_var!-satlist(sc,id);
    % variable.
    for each clause in sc do <<
       if null ibalp_clause!-getsat clause then <<
-	 for each v in ibalp_clause!-getposlit clause do <<
-	    ibalp_var!-setnumpos(v,ibalp_var!-getnumpos v - 1);
-	    ibalp_var!-setmom(v,ibalp_calcmom v)
-	 >>;
-	 for each v in ibalp_clause!-getneglit clause do <<
-	    ibalp_var!-setnumneg(v, ibalp_var!-getnumneg v - 1);
-	    ibalp_var!-setmom(v,ibalp_calcmom v)
-	 >>;
-	 for each v in ibalp_clause!-getwl clause do <<
-	    ibalp_var!-delwc(v,clause)
-	 >>;
-	 ibalp_clause!-delallwl clause;
+         for each v in ibalp_clause!-getposlit clause do <<
+            ibalp_var!-setnumpos(v,ibalp_var!-getnumpos v - 1);
+            ibalp_var!-setmom(v,ibalp_calcmom v)
+         >>;
+         for each v in ibalp_clause!-getneglit clause do <<
+            ibalp_var!-setnumneg(v, ibalp_var!-getnumneg v - 1);
+            ibalp_var!-setmom(v,ibalp_calcmom v)
+         >>;
+         for each v in ibalp_clause!-getwl clause do <<
+            ibalp_var!-delwc(v,clause)
+         >>;
+         ibalp_clause!-delallwl clause;
       >>;
       ibalp_clause!-setsat(clause,id)
    >>;
@@ -1647,28 +1647,28 @@ procedure ibalp_var!-unsatlist(sc,val);
    % variable.
    for each clause in sc do
       if eqn(val,1) then
-	 ibalp_clause!-setactneg(clause,
-	    ibalp_clause!-getactneg clause - 1)
+         ibalp_clause!-setactneg(clause,
+            ibalp_clause!-getactneg clause - 1)
       else
-	 ibalp_clause!-setactpos(clause,
-	    ibalp_clause!-getactpos clause - 1);
+         ibalp_clause!-setactpos(clause,
+            ibalp_clause!-getactpos clause - 1);
 
 procedure ibalp_var!-wclist(var);
    % Perform changes on the list of watched clauses. [var] is the
    % variable. Returns the list of unit clauses.
    begin scalar newwl,upl;
       for each c in ibalp_var!-getwc var do
-      	 if null ibalp_clause!-getsat c then <<
-	    ibalp_clause!-delwl(c,var);
-	    ibalp_var!-delwc(var,c);
-	    newwl := ibalp_getnewwl c;
-	    if null newwl then
-	       upl := c . upl
-	    else <<
-	       ibalp_clause!-setwl(c,newwl);
-	       ibalp_var!-setwc(newwl,c)
-	    >>
-      	 >>;
+         if null ibalp_clause!-getsat c then <<
+            ibalp_clause!-delwl(c,var);
+            ibalp_var!-delwc(var,c);
+            newwl := ibalp_getnewwl c;
+            if null newwl then
+               upl := c . upl
+            else <<
+               ibalp_clause!-setwl(c,newwl);
+               ibalp_var!-setwc(newwl,c)
+            >>
+         >>;
       return upl
    end;
 
@@ -1685,23 +1685,23 @@ procedure ibalp_var!-setq(var,val,level,reas);
       ibalp_var!-setreas(var,reas);
       id := ibalp_var!-getid var;
       sc := if eqn(val,0) then
-	 ibalp_var!-getnegocc var
+         ibalp_var!-getnegocc var
       else
-	 ibalp_var!-getposocc var;
+         ibalp_var!-getposocc var;
       ibalp_var!-satlistq(sc,id);
       sc := if eqn(val,1) then
-	 ibalp_var!-getnegocc var
+         ibalp_var!-getnegocc var
       else
-	 ibalp_var!-getposocc var;
+         ibalp_var!-getposocc var;
       for each clause in sc do <<
-	 if eqn(val,1) then
-	    ibalp_clause!-setactneg(clause,
-	       ibalp_clause!-getactneg clause - 1)
-	 else
-	    ibalp_clause!-setactpos(clause,
-	       ibalp_clause!-getactpos clause - 1);
-	 if h := ibalp_qsat!-isunit clause then upl := (h . clause) . upl;
-	 if ibalp_qsat!-isec clause then ec := clause
+         if eqn(val,1) then
+            ibalp_clause!-setactneg(clause,
+               ibalp_clause!-getactneg clause - 1)
+         else
+            ibalp_clause!-setactpos(clause,
+               ibalp_clause!-getactpos clause - 1);
+         if h := ibalp_qsat!-isunit clause then upl := (h . clause) . upl;
+         if ibalp_qsat!-isec clause then ec := clause
       >>;
       ibalp_var!-setmom(var,ibalp_calcmom var);
       return (upl . ec)
@@ -1713,14 +1713,14 @@ procedure ibalp_var!-satlistq(sc,id);
    % variable.
    for each clause in sc do <<
       if null ibalp_clause!-getsat clause then <<
-	 for each v in ibalp_clause!-getposlit clause do <<
-	    ibalp_var!-setnumpos(v,ibalp_var!-getnumpos v - 1);
-	    ibalp_var!-setmom(v,ibalp_calcmom v)
-	 >>;
-	 for each v in ibalp_clause!-getneglit clause do <<
-	    ibalp_var!-setnumneg(v, ibalp_var!-getnumneg v - 1);
-	    ibalp_var!-setmom(v,ibalp_calcmom v)
-	 >>;
+         for each v in ibalp_clause!-getposlit clause do <<
+            ibalp_var!-setnumpos(v,ibalp_var!-getnumpos v - 1);
+            ibalp_var!-setmom(v,ibalp_calcmom v)
+         >>;
+         for each v in ibalp_clause!-getneglit clause do <<
+            ibalp_var!-setnumneg(v, ibalp_var!-getnumneg v - 1);
+            ibalp_var!-setmom(v,ibalp_calcmom v)
+         >>;
       >>;
       ibalp_clause!-setsat(clause,id)
    >>;
@@ -1735,21 +1735,21 @@ procedure ibalp_var!-unset(var,val);
       ibalp_var!-setreas(var,nil);
       id := ibalp_var!-getid var;
       sc := if eqn(val,1) then
-	 ibalp_var!-getnegocc var
+         ibalp_var!-getnegocc var
       else
-	 ibalp_var!-getposocc var;
+         ibalp_var!-getposocc var;
       for each clause in sc do <<
-	 if eqn(val,1) then
-	    ibalp_clause!-setactneg(clause,
-	       ibalp_clause!-getactneg clause +1)
-	 else
-	    ibalp_clause!-setactpos(clause,
-	       ibalp_clause!-getactpos clause +1)
+         if eqn(val,1) then
+            ibalp_clause!-setactneg(clause,
+               ibalp_clause!-getactneg clause +1)
+         else
+            ibalp_clause!-setactpos(clause,
+               ibalp_clause!-getactpos clause +1)
       >>;
       sc := if eqn(val,0) then
-	 ibalp_var!-getnegocc var
+         ibalp_var!-getnegocc var
       else
-	 ibalp_var!-getposocc var;
+         ibalp_var!-getposocc var;
       ibalp_unvar!-unsatlist(sc,id);
       ibalp_var!-setmom(var,ibalp_calcmom var)
    end;
@@ -1760,29 +1760,29 @@ procedure ibalp_unvar!-unsatlist(sc,id);
    % variable.
    begin scalar newwl;
       for each clause in sc do <<
-	 ibalp_clause!-delsat(clause,id);
-	 if null ibalp_clause!-getsat clause then <<
-      	    for each v in ibalp_clause!-getposlit clause do <<
-	       ibalp_var!-setnumpos(v, ibalp_var!-getnumpos v + 1);
-	       ibalp_var!-setmom(v,ibalp_calcmom v)
-	    >>;
-	    for each v in ibalp_clause!-getneglit clause do <<
-	       ibalp_var!-setnumneg(v, ibalp_var!-getnumneg v + 1);
-	       ibalp_var!-setmom(v,ibalp_calcmom v)
-	    >>;
-	    for each v in ibalp_clause!-getwl clause do <<
-	       ibalp_var!-delwc(v,clause)
-	    >>;
-	    ibalp_clause!-delallwl clause;
-	    newwl := ibalp_getnewwl clause;
-	    ibalp_clause!-setwl(clause,newwl);
-	    ibalp_var!-setwc(newwl,clause);
-	    newwl := ibalp_getnewwl clause;
-	    if newwl then <<
-	       ibalp_clause!-setwl(clause,newwl);
-	       ibalp_var!-setwc(newwl,clause)
-	    >>
-	 >>
+         ibalp_clause!-delsat(clause,id);
+         if null ibalp_clause!-getsat clause then <<
+            for each v in ibalp_clause!-getposlit clause do <<
+               ibalp_var!-setnumpos(v, ibalp_var!-getnumpos v + 1);
+               ibalp_var!-setmom(v,ibalp_calcmom v)
+            >>;
+            for each v in ibalp_clause!-getneglit clause do <<
+               ibalp_var!-setnumneg(v, ibalp_var!-getnumneg v + 1);
+               ibalp_var!-setmom(v,ibalp_calcmom v)
+            >>;
+            for each v in ibalp_clause!-getwl clause do <<
+               ibalp_var!-delwc(v,clause)
+            >>;
+            ibalp_clause!-delallwl clause;
+            newwl := ibalp_getnewwl clause;
+            ibalp_clause!-setwl(clause,newwl);
+            ibalp_var!-setwc(newwl,clause);
+            newwl := ibalp_getnewwl clause;
+            if newwl then <<
+               ibalp_clause!-setwl(clause,newwl);
+               ibalp_var!-setwc(newwl,clause)
+            >>
+         >>
       >>;
    end;
 
@@ -1796,26 +1796,26 @@ procedure ibalp_var!-unsetq(var,val);
       ibalp_var!-setreas(var,nil);
       id := ibalp_var!-getid var;
       sc := if eqn(val,1) then
-	 ibalp_var!-getnegocc var
+         ibalp_var!-getnegocc var
       else
-	 ibalp_var!-getposocc var;
+         ibalp_var!-getposocc var;
       ibalp_unvar!-unsatlistq(sc,val);
       sc := if eqn(val,0) then
-	 ibalp_var!-getnegocc var
+         ibalp_var!-getnegocc var
       else
-	 ibalp_var!-getposocc var;
+         ibalp_var!-getposocc var;
       for each clause in sc do <<
-	 ibalp_clause!-delsat(clause,id);
-	 if null ibalp_clause!-getsat clause then <<
-      	    for each v in ibalp_clause!-getposlit clause do <<
-	       ibalp_var!-setnumpos(v, ibalp_var!-getnumpos v + 1);
-	       ibalp_var!-setmom(v,ibalp_calcmom v)
-	    >>;
-	    for each v in ibalp_clause!-getneglit(clause) do <<
-	       ibalp_var!-setnumneg(v, ibalp_var!-getnumneg v + 1);
-	       ibalp_var!-setmom(v,ibalp_calcmom v)
-	    >>;
-	 >>
+         ibalp_clause!-delsat(clause,id);
+         if null ibalp_clause!-getsat clause then <<
+            for each v in ibalp_clause!-getposlit clause do <<
+               ibalp_var!-setnumpos(v, ibalp_var!-getnumpos v + 1);
+               ibalp_var!-setmom(v,ibalp_calcmom v)
+            >>;
+            for each v in ibalp_clause!-getneglit(clause) do <<
+               ibalp_var!-setnumneg(v, ibalp_var!-getnumneg v + 1);
+               ibalp_var!-setmom(v,ibalp_calcmom v)
+            >>;
+         >>
       >>;
       ibalp_var!-setmom(var,ibalp_calcmom var)
    end;
@@ -1826,11 +1826,11 @@ procedure ibalp_unvar!-unsatlistq(sc,val);
    % variable.
    for each clause in sc do <<
       if eqn(val,1) then
-	 ibalp_clause!-setactneg(clause,
-	    ibalp_clause!-getactneg clause +1)
+         ibalp_clause!-setactneg(clause,
+            ibalp_clause!-getactneg clause +1)
       else
-	 ibalp_clause!-setactpos(clause,
-	    ibalp_clause!-getactpos clause +1)
+         ibalp_clause!-setactpos(clause,
+            ibalp_clause!-getactpos clause +1)
    >>;
 
 procedure ibalp_getnewwl(clause);
@@ -1839,19 +1839,19 @@ procedure ibalp_getnewwl(clause);
    begin scalar tl,wl;
       tl := ibalp_clause!-getposlit clause;
       while tl and null wl do <<
-	 if null ibalp_var!-getval car tl and
-	    null memq(car tl,ibalp_clause!-getwl clause)
-	 then
-	    wl := car tl;
-	 tl := cdr tl
+         if null ibalp_var!-getval car tl and
+            null memq(car tl,ibalp_clause!-getwl clause)
+         then
+            wl := car tl;
+         tl := cdr tl
       >>;
       tl := ibalp_clause!-getneglit clause;
       while tl and null wl do <<
-	 if null ibalp_var!-getval car tl and
-	    null memq(car tl,ibalp_clause!-getwl clause)
-	 then
-	    wl := car tl;
-	 tl := cdr tl
+         if null ibalp_var!-getval car tl and
+            null memq(car tl,ibalp_clause!-getwl clause)
+         then
+            wl := car tl;
+         tl := cdr tl
       >>;
       return wl
    end;
@@ -1883,34 +1883,34 @@ procedure ibalp_readform(f);
       f := cl_mkstrict(f,'and);
       argn := rl_argn f;
       c := t; while c and argn do <<
-	 x := car argn;
-	 argn := cdr argn;
-	 pair := ibalp_readclause(x,varal);
-	 clause := car pair;
-	 varal := cdr pair;
-	 if clause neq 'true then <<
-	    if ibalp_emptyclausep clause then
-	       c := nil
-	    else
-	       (if ibalp_clmember(clause,clausel) or ibalp_redclause clause then <<
-	       	  ibalp_undoclause clause;
-	       	  count := count + 1
-	       >> else
-	       	  clausel := car pair . clausel)
-	 >>
+         x := car argn;
+         argn := cdr argn;
+         pair := ibalp_readclause(x,varal);
+         clause := car pair;
+         varal := cdr pair;
+         if clause neq 'true then <<
+            if ibalp_emptyclausep clause then
+               c := nil
+            else
+               (if ibalp_clmember(clause,clausel) or ibalp_redclause clause then <<
+                  ibalp_undoclause clause;
+                  count := count + 1
+               >> else
+                  clausel := car pair . clausel)
+         >>
       >>;
       if null c then <<
       if !*rlverbose then
-      	 ioto_tprin2t {"Detected empty clause"};
-	 return {clause} . nil
+         ioto_tprin2t {"Detected empty clause"};
+         return {clause} . nil
       >>;
       if null clausel then <<
-      	 if !*rlverbose then
-      	    ioto_tprin2t {"Tautology detected"};
-	 return nil . nil
+         if !*rlverbose then
+            ioto_tprin2t {"Tautology detected"};
+         return nil . nil
       >>;
       if !*rlverbose then
-      	 ioto_tprin2t {"Deleted redundant clauses: ",count};
+         ioto_tprin2t {"Deleted redundant clauses: ",count};
       return (clausel . varal)
    end;
 
@@ -1920,15 +1920,15 @@ procedure ibalp_clmember(x,l);
 %procedure ibalp_cequal(c1,c2);
 %   begin scalar poslitl1,neglitl1,poslitl2,neglitl2;
 %      poslitl1 := for each v in ibalp_clause!-getposlit c1 collect
-%	 ibalp_var!-getid v;
+%        ibalp_var!-getid v;
 %      poslitl2 := for each v in ibalp_clause!-getposlit c2 collect
-%	 ibalp_var!-getid v;
+%        ibalp_var!-getid v;
 %      if not lto_setequalq(poslitl1,poslitl2) then
-%	 return nil;
+%        return nil;
 %      neglitl1 := for each v in ibalp_clause!-getneglit c1 collect
-%	 ibalp_var!-getid v;
+%        ibalp_var!-getid v;
 %      neglitl2 := for each v in ibalp_clause!-getneglit c2 collect
-%	 ibalp_var!-getid v;
+%        ibalp_var!-getid v;
 %      return lto_setequalq(neglitl1,neglitl2)
 %   end;
 
@@ -1941,14 +1941,14 @@ procedure ibalp_clmember(x,l);
 procedure ibalp_cequal(c1,c2);
    begin scalar poslitl1,neglitl1,poslitl2,neglitl2;
       for each v in ibalp_clause!-getposlit c1 do
-	 poslitl1 := ibalp_var!-getid v. poslitl1;
+         poslitl1 := ibalp_var!-getid v. poslitl1;
       for each v in ibalp_clause!-getposlit c2 do
-	 poslitl2 := ibalp_var!-getid v. poslitl2;
+         poslitl2 := ibalp_var!-getid v. poslitl2;
       if not lto_setequalq(poslitl1,poslitl2) then return nil;
       for each v in ibalp_clause!-getneglit c1 do
-	 neglitl1 := ibalp_var!-getid v . neglitl1;
+         neglitl1 := ibalp_var!-getid v . neglitl1;
       for each v in ibalp_clause!-getneglit c2 do
-	 neglitl2 := ibalp_var!-getid v . neglitl2;
+         neglitl2 := ibalp_var!-getid v . neglitl2;
       return lto_setequalq(neglitl1,neglitl2)
    end;
 
@@ -1956,14 +1956,14 @@ procedure ibalp_undoclause(clause);
    % Undo a clause if it redundant. [clause] is a clause.
    <<
       for each v in ibalp_clause!-getposlit clause do <<
-	 ibalp_var!-setposoccabs(v,lto_delq(clause,ibalp_var!-getposocc v));
-	 ibalp_var!-setnumpos(v,ibalp_var!-getnumpos v - 1);
-	 ibalp_var!-setposcc(v,ibalp_var!-getposcc v - 1)
+         ibalp_var!-setposoccabs(v,lto_delq(clause,ibalp_var!-getposocc v));
+         ibalp_var!-setnumpos(v,ibalp_var!-getnumpos v - 1);
+         ibalp_var!-setposcc(v,ibalp_var!-getposcc v - 1)
       >>;
       for each v in ibalp_clause!-getneglit clause do <<
-	 ibalp_var!-setnegoccabs(v,lto_delq(clause,ibalp_var!-getnegocc v));
-	 ibalp_var!-setnumneg(v,ibalp_var!-getnumneg v - 1);
-	 ibalp_var!-setnegcc(v,ibalp_var!-getnegcc v - 1)
+         ibalp_var!-setnegoccabs(v,lto_delq(clause,ibalp_var!-getnegocc v));
+         ibalp_var!-setnumneg(v,ibalp_var!-getnumneg v - 1);
+         ibalp_var!-setnegcc(v,ibalp_var!-getnegcc v - 1)
       >>
    >>;
 
@@ -1973,9 +1973,9 @@ procedure ibalp_redclause(clause);
    begin scalar tv,ret;
       tv := ibalp_clause!-getposlit clause;
      while tv and null ret do <<
-	 if ibalp_vmember(car tv,ibalp_clause!-getneglit clause) then
-	    ret := t;
-	 tv := cdr tv
+         if ibalp_vmember(car tv,ibalp_clause!-getneglit clause) then
+            ret := t;
+         tv := cdr tv
       >>;
       return ret
    end;
@@ -1995,39 +1995,39 @@ procedure ibalp_readclause(c,varal);
       nc := rl_argn c;
       clause := ibalp_clause!-new();
       cnt := t; while cnt and nc do <<
-	 x := car nc;
-	 if x eq 'true then
-	    cnt := nil
-	 else <<
-	    nc := cdr nc;
-	    if x neq 'false then <<
-	       if rl_op x eq 'not then <<
-	       	  id := ibalp_arg2l rl_arg1 x;
-	       	  val := 1 #- ibalp_arg2r rl_arg1 x
-	       >> else <<
-	       	  id := ibalp_arg2l x;
-	       	  val := ibalp_arg2r x
-	       >>;
-	       if val #= 1 then <<
-	       	  if not memq(id,posids) then <<
-	       	     ibalp_clause!-setactpos(clause,
-		     	ibalp_clause!-getactpos clause + 1);
-	       	     posids := id . posids;
-	       	     varal := ibalp_process!-var(clause,varal,id,1)
-	       	  >>
-	       >> else <<
-	       	  if not memq(id,negids) then <<
-	       	     ibalp_clause!-setactneg(clause,
-		     	ibalp_clause!-getactneg clause + 1);
-	       	     negids := id . negids;
-	       	     varal := ibalp_process!-var(clause,varal,id,0)
-	       	  >>
-	       >>
-	    >>
-      	 >>
+         x := car nc;
+         if x eq 'true then
+            cnt := nil
+         else <<
+            nc := cdr nc;
+            if x neq 'false then <<
+               if rl_op x eq 'not then <<
+                  id := ibalp_arg2l rl_arg1 x;
+                  val := 1 #- ibalp_arg2r rl_arg1 x
+               >> else <<
+                  id := ibalp_arg2l x;
+                  val := ibalp_arg2r x
+               >>;
+               if val #= 1 then <<
+                  if not memq(id,posids) then <<
+                     ibalp_clause!-setactpos(clause,
+                        ibalp_clause!-getactpos clause + 1);
+                     posids := id . posids;
+                     varal := ibalp_process!-var(clause,varal,id,1)
+                  >>
+               >> else <<
+                  if not memq(id,negids) then <<
+                     ibalp_clause!-setactneg(clause,
+                        ibalp_clause!-getactneg clause + 1);
+                     negids := id . negids;
+                     varal := ibalp_process!-var(clause,varal,id,0)
+                  >>
+               >>
+            >>
+         >>
       >>;
       if not cnt then
-	 return 'true . varal;
+         return 'true . varal;
       return (clause . varal)
    end;
 
@@ -2039,31 +2039,31 @@ procedure ibalp_qsat!-readdimacs2(file);
       rds ch;
       tok := read();
       if not (tok eq 'p or tok eq 'c) then <<
-	 rederr "Invalid input format";
-	 rds nil;
-      	 close(ch);
-	 return {'false}
+         rederr "Invalid input format";
+         rds nil;
+         close(ch);
+         return {'false}
       >>;
       if tok eq 'c then doit := t;
       while doit do <<
-      	 tok := read();
-	 if tok eq 'p then doit := nil
+         tok := read();
+         if tok eq 'p then doit := nil
       >>;
       tok := read();
       if not (tok eq 'cnf) then rederr "Invalid input format";
       numvars := read();
       numclauses := read();
       if !*rlverbose then
-      	 ioto_tprin2t {"Reading ",numvars," variables and ",
-	    numclauses," clauses"};
+         ioto_tprin2t {"Reading ",numvars," variables and ",
+            numclauses," clauses"};
       tok := read();
       if tok eq 'e or tok eq 'a then <<
-	 qsat := t;
-	 if !*rlverbose then
-      	    ioto_tprin2t "Q-SAT: Reading quantifiers";
-	 pair := ibalp_readquant!-cnf(tok);
-	 tok := car pair;
-	 varal := cdr pair
+         qsat := t;
+         if !*rlverbose then
+            ioto_tprin2t "Q-SAT: Reading quantifiers";
+         pair := ibalp_readquant!-cnf(tok);
+         tok := car pair;
+         varal := cdr pair
       >>;
       pair := ibalp_readclause!-cnf(numclauses,varal,tok);
       clausel := car pair;
@@ -2082,22 +2082,22 @@ procedure ibalp_readquant!-cnf(tok);
       level := 1;
       doit := t;
       while doit or qswitch do <<
-	 tok := read();
-	 if eqn(tok,0) then <<
-	    doit := nil;
-	    tok := read();
-	    if tok eq 'a or tok eq 'e then <<
-	       qswitch := t;
-	       quant := if tok eq 'a then 'all else 'ex;
-	       level := level + 1
-	    >> else
-	       qswitch := nil;
-	 >> else <<
-	    var := ibalp_var!-new(tok);
-	    ibalp_var!-setqlevel(var,level);
-	    ibalp_var!-setquant(var,quant);
-	    varal := (tok . var) . varal;
-	 >>
+         tok := read();
+         if eqn(tok,0) then <<
+            doit := nil;
+            tok := read();
+            if tok eq 'a or tok eq 'e then <<
+               qswitch := t;
+               quant := if tok eq 'a then 'all else 'ex;
+               level := level + 1
+            >> else
+               qswitch := nil;
+         >> else <<
+            var := ibalp_var!-new(tok);
+            ibalp_var!-setqlevel(var,level);
+            ibalp_var!-setquant(var,quant);
+            varal := (tok . var) . varal;
+         >>
       >>;
       varal := reverse varal;
       return (tok . varal)
@@ -2110,38 +2110,38 @@ procedure ibalp_readclause!-cnf(numclauses,varal,lt);
    begin scalar doit,poslit,neglit,clause,tok,clausel,first; integer count;
       first := t;
       for i := 1 : numclauses do <<
-      	 doit := t;
-	 poslit := nil;
-	 neglit := nil;
-	 clause := ibalp_clause!-new();
-      	 while doit do <<
-	    if first then <<
-	       tok := lt;
-	       first := nil
-	    >>
-	    else
-      	       tok := read();
-      	    if tok = 0 then
-	       doit := nil
-	    else
-	       if tok < 0 and null memq(-tok,neglit) then <<
-		  ibalp_clause!-setactneg(clause,
-		     ibalp_clause!-getactneg clause + 1);
-		  varal := ibalp_process!-var(clause,varal,-tok,0)
-	       >> else if tok > 0 and null memq(tok,poslit) then <<
-		  ibalp_clause!-setactpos(clause,
-		     ibalp_clause!-getactpos clause + 1);
-		  varal := ibalp_process!-var(clause,varal,tok,1)
-	       >>
-      	 >>;
-	 if ibalp_clmember(clause,clausel) or ibalp_redclause clause then <<
-	    ibalp_undoclause clause;
-	    count := count + 1
-	 >> else
-	    clausel := clause . clausel;
+         doit := t;
+         poslit := nil;
+         neglit := nil;
+         clause := ibalp_clause!-new();
+         while doit do <<
+            if first then <<
+               tok := lt;
+               first := nil
+            >>
+            else
+               tok := read();
+            if tok = 0 then
+               doit := nil
+            else
+               if tok < 0 and null memq(-tok,neglit) then <<
+                  ibalp_clause!-setactneg(clause,
+                     ibalp_clause!-getactneg clause + 1);
+                  varal := ibalp_process!-var(clause,varal,-tok,0)
+               >> else if tok > 0 and null memq(tok,poslit) then <<
+                  ibalp_clause!-setactpos(clause,
+                     ibalp_clause!-getactpos clause + 1);
+                  varal := ibalp_process!-var(clause,varal,tok,1)
+               >>
+         >>;
+         if ibalp_clmember(clause,clausel) or ibalp_redclause clause then <<
+            ibalp_undoclause clause;
+            count := count + 1
+         >> else
+            clausel := clause . clausel;
       >>;
       if !*rlverbose then
-      	 ioto_tprin2t {"Deleted Redundant Clauses: ",count};
+         ioto_tprin2t {"Deleted Redundant Clauses: ",count};
       return (clausel . varal)
    end;
 
@@ -2152,22 +2152,22 @@ procedure ibalp_process!-var(clause,varal,id,val);
    begin scalar h,var;
       id := intern list2string explode2 id;
       if h := atsoc(id,varal) then
-	 var := cdr h
+         var := cdr h
       else <<
-	 var := ibalp_var!-new(id);
-	 varal := (id . var) . varal
+         var := ibalp_var!-new(id);
+         varal := (id . var) . varal
       >>;
       if eqn(val,1) then <<
-	 ibalp_var!-setposocc(var,clause);
-	 ibalp_var!-setnumpos(var,ibalp_var!-getnumpos var + 1);
-	 ibalp_var!-setposcc(var,ibalp_var!-getposcc var + 1);
-	 ibalp_clause!-setposlit(clause,var)
+         ibalp_var!-setposocc(var,clause);
+         ibalp_var!-setnumpos(var,ibalp_var!-getnumpos var + 1);
+         ibalp_var!-setposcc(var,ibalp_var!-getposcc var + 1);
+         ibalp_clause!-setposlit(clause,var)
       >>
       else <<
-	 ibalp_var!-setnegocc(var,clause);
-	 ibalp_var!-setnumneg(var,ibalp_var!-getnumneg var + 1);
-	 ibalp_var!-setnegcc(var,ibalp_var!-getnegcc var + 1);
-	 ibalp_clause!-setneglit(clause,var)
+         ibalp_var!-setnegocc(var,clause);
+         ibalp_var!-setnumneg(var,ibalp_var!-getnumneg var + 1);
+         ibalp_var!-setnegcc(var,ibalp_var!-getnegcc var + 1);
+         ibalp_clause!-setneglit(clause,var)
       >>;
       return varal
    end;
@@ -2187,10 +2187,10 @@ procedure ibalp_get3cnf(f);
          else
             rl_smkn('and,ibalp_pset3knf3(newf,nil));
       newform := for each c in rl_argn newf join
-	 if rl_op c = 'equal or rl_op c = 'not then
-	    {c}
-	 else
-	    rl_argn ibalp_cnf c;
+         if rl_op c = 'equal or rl_op c = 'not then
+            {c}
+         else
+            rl_argn ibalp_cnf c;
       newform := 'and . newform;
       return newform
    end;
@@ -2202,36 +2202,36 @@ procedure ibalp_convcnf(clausel,varal,qsat);
    % not. Returns the corresponding formula in lisp-prefix.
    begin scalar formula,tempcl,id,newvaral,rvaral;
       for each v in varal do <<
-	 id := ibalp_var!-mkid ibalp_var!-getid cdr v;
-	 newvaral := (ibalp_var!-getid cdr v . id) . newvaral
+         id := ibalp_var!-mkid ibalp_var!-getid cdr v;
+         newvaral := (ibalp_var!-getid cdr v . id) . newvaral
       >>;
       for each clause in clausel do <<
-	 tempcl := nil;
-	 for each v in ibalp_clause!-getposlit clause do <<
-	    id := cdr atsoc(ibalp_var!-getid v,newvaral);
-	    tempcl := {'equal,id,1} . tempcl;
-	 >>;
-	 for each v in ibalp_clause!-getneglit clause do <<
-	    id := cdr atsoc(ibalp_var!-getid v,newvaral);
-	    tempcl := {'equal,id,0} . tempcl
-	 >>;
-	 if length tempcl > 1 then
-	    tempcl := 'or . tempcl
-	 else
-	    tempcl := {'equal, cadar tempcl,caddar tempcl};
-	 formula := tempcl . formula;
+         tempcl := nil;
+         for each v in ibalp_clause!-getposlit clause do <<
+            id := cdr atsoc(ibalp_var!-getid v,newvaral);
+            tempcl := {'equal,id,1} . tempcl;
+         >>;
+         for each v in ibalp_clause!-getneglit clause do <<
+            id := cdr atsoc(ibalp_var!-getid v,newvaral);
+            tempcl := {'equal,id,0} . tempcl
+         >>;
+         if length tempcl > 1 then
+            tempcl := 'or . tempcl
+         else
+            tempcl := {'equal, cadar tempcl,caddar tempcl};
+         formula := tempcl . formula;
       >>;
       if length formula > 1 then
-      	 formula := 'and . formula;
+         formula := 'and . formula;
       if qsat then <<
-	 rvaral := reverse varal;
-	 for each v in rvaral do <<
-	    id := cdr atsoc(ibalp_var!-getid v,newvaral);
-	    if ibalp_var!-isex cdr v then
-	       formula := {'ex, id, formula}
-	    else
-	       formula := {'all, id, formula}
-	 >>
+         rvaral := reverse varal;
+         for each v in rvaral do <<
+            id := cdr atsoc(ibalp_var!-getid v,newvaral);
+            if ibalp_var!-isex cdr v then
+               formula := {'ex, id, formula}
+            else
+               formula := {'all, id, formula}
+         >>
       >>;
       return formula
    end;
@@ -2256,46 +2256,46 @@ procedure ibalp_qsat!-cdcl(clausel,varal,origupl,qsat);
       varal := cddr pair;
       level := 1;
       while null fin do <<
-	 break := nil;
-	 pair := ibalp_qsat!-cv(clausel,varal,level);
-	 if cdr pair and eqn(level,1) then <<
-	    res := {'false};
-	    break := t;
-	    fin := t
-	 >> else
-	    upl := car pair;
-	 while null break do <<
-	    pair := ibalp_qsat!-cdclup(upl,level);
-	    ec := car pair;
-	    lv := cdr pair;
-	    if ec then <<
-	       pair := ibalp_qsat!-analconf(ec,lv,level,clausel,varal);
-	       if cddr pair < 0 then <<
-		  res := {'false};
-		  break := t;
-		  fin := t
-	       >> else <<
-		  clausel := car pair;
-		  level := cddr pair;
-		  upl := car ibalp_qsat!-btcase(level,
-		     cadr pair,varal,car clausel,t);
-		  ec := nil
-	       >>
-	    >> else if ibalp_qsat!-csat clausel then <<
-	       pair := ibalp_qsat!-analsatNAIV varal;
-	       if cdr pair <= 0 then <<
-		  res := {'true};
-		  break := t;
-		  fin := t
-	       >> else <<
-		  level := cdr pair;
-		  upl := car ibalp_qsat!-btcase(level,car pair,varal,nil,nil);
-	       >>
-	    >> else <<
-	       break := t;
-	       level := level + 1
-	    >>
-	 >>
+         break := nil;
+         pair := ibalp_qsat!-cv(clausel,varal,level);
+         if cdr pair and eqn(level,1) then <<
+            res := {'false};
+            break := t;
+            fin := t
+         >> else
+            upl := car pair;
+         while null break do <<
+            pair := ibalp_qsat!-cdclup(upl,level);
+            ec := car pair;
+            lv := cdr pair;
+            if ec then <<
+               pair := ibalp_qsat!-analconf(ec,lv,level,clausel,varal);
+               if cddr pair < 0 then <<
+                  res := {'false};
+                  break := t;
+                  fin := t
+               >> else <<
+                  clausel := car pair;
+                  level := cddr pair;
+                  upl := car ibalp_qsat!-btcase(level,
+                     cadr pair,varal,car clausel,t);
+                  ec := nil
+               >>
+            >> else if ibalp_qsat!-csat clausel then <<
+               pair := ibalp_qsat!-analsatNAIV varal;
+               if cdr pair <= 0 then <<
+                  res := {'true};
+                  break := t;
+                  fin := t
+               >> else <<
+                  level := cdr pair;
+                  upl := car ibalp_qsat!-btcase(level,car pair,varal,nil,nil);
+               >>
+            >> else <<
+               break := t;
+               level := level + 1
+            >>
+         >>
       >>;
       return (res . (clausel . varal))
    end;
@@ -2310,9 +2310,9 @@ procedure ibalp_qsat!-preprocess(clausel,varal,origupl,qsat);
       pair := ibalp_qsat!-cdclup(origupl,-1);
       if car pair then res := ({'false} . (clausel . varal));
       if qsat then <<
-      	 pair := ibalp_qsat!-doSimpl(clausel,varal);
-      	 clausel := car pair;
-      	 varal := cdr pair
+         pair := ibalp_qsat!-doSimpl(clausel,varal);
+         clausel := car pair;
+         varal := cdr pair
       >>;
       if ibalp_qsat!-csat clausel then res := ({'true} . (clausel . varal));
       if null clausel then res := ({'true} . (clausel . varal));
@@ -2326,29 +2326,29 @@ procedure ibalp_qsat!-doSimpl(clausel,varal);
    % clauses and variables.
    begin scalar h,pair; integer count;
       while h := ibalp_hassimple clausel do <<
-      	 pair := ibalp_simplify(nil,nil,h,clausel,varal);
-      	 clausel := car pair;
-      	 varal := cdr pair
+         pair := ibalp_simplify(nil,nil,h,clausel,varal);
+         clausel := car pair;
+         varal := cdr pair
       >>;
       for each v in varal do <<
-	 if ibalp_var!-isex cdr v and
-	    eqn(ibalp_var!-getnumpos cdr v,0) then <<
-	       count := count + 1;
-	       ibalp_var!-setq(cdr v,0,0,nil);
-	       pair := ibalp_simplify(cdr v,0,nil,clausel,varal);
-	       clausel := car pair;
-	       varal := cdr pair;
-	    >> else if ibalp_var!-isex cdr v and
-	    eqn(ibalp_var!-getnumneg cdr v,0) then <<
-	       count := count + 1;
-	       ibalp_var!-setq(cdr v,1,0,nil);
-	       pair := ibalp_simplify(cdr v,1,nil,clausel,varal);
-	       clausel := car pair;
-	       varal := cdr pair;
-      	    >>
+         if ibalp_var!-isex cdr v and
+            eqn(ibalp_var!-getnumpos cdr v,0) then <<
+               count := count + 1;
+               ibalp_var!-setq(cdr v,0,0,nil);
+               pair := ibalp_simplify(cdr v,0,nil,clausel,varal);
+               clausel := car pair;
+               varal := cdr pair;
+            >> else if ibalp_var!-isex cdr v and
+            eqn(ibalp_var!-getnumneg cdr v,0) then <<
+               count := count + 1;
+               ibalp_var!-setq(cdr v,1,0,nil);
+               pair := ibalp_simplify(cdr v,1,nil,clausel,varal);
+               clausel := car pair;
+               varal := cdr pair;
+            >>
       >>;
       if !*rlverbose then
-      	 ioto_tprin2t {"Deleted variables in pre-processing: ",count};
+         ioto_tprin2t {"Deleted variables in pre-processing: ",count};
       return (clausel . varal)
    end;
 
@@ -2360,8 +2360,8 @@ procedure ibalp_qsat!-cv(clausel,varal,level);
       cv := ibalp_qsat!-mom(varal,clausel);
       temp := ibalp_var!-setq(cv,1,level,nil);
       if cdr temp then <<
-	 ibalp_var!-unsetq(cv,1);
-	 temp := ibalp_var!-setq(cv,0,level,nil)
+         ibalp_var!-unsetq(cv,1);
+         temp := ibalp_var!-setq(cv,0,level,nil)
       >>;
       ibalp_var!-setflip(cv,0);
       return temp
@@ -2393,12 +2393,12 @@ procedure ibalp_qsat!-analconf(ec,lv,level,clausel,varal);
       if eqn(level,0) then return (clausel . (nil . -1));
       cc := ibalp_qsat!-calccc(varal,ec,lv);
       if null cc then
-	 return (clausel . (nil . -1))
+         return (clausel . (nil . -1))
       else <<
-	 cv := ibalp_qsat!-calccvar cc;
-	 cl := ibalp_qsat!-getbtlevel(cc,level);
-	 clausel := cc . clausel;
-      	 return (clausel . (cv . cl))
+         cv := ibalp_qsat!-calccvar cc;
+         cl := ibalp_qsat!-getbtlevel(cc,level);
+         clausel := cc . clausel;
+         return (clausel . (cv . cl))
       >>
    end;
 
@@ -2411,13 +2411,13 @@ procedure ibalp_qsat!-mom(varal,clausel);
       qlevel := ibalp_qsat!-qlevel varal;
       tmom := -1;
       for each v in varal do
-	 if eqn(ibalp_var!-getqlevel cdr v,qlevel)
-	    and null ibalp_var!-getval cdr v
-	       and ibalp_var!-getquant cdr v then
-	    	  if (h := ibalp_qsat!-calcmom(cdr v,min)) > tmom then <<
-	       	     tmom := h;
-	       	     tv := cdr v
-	    	  >>;
+         if eqn(ibalp_var!-getqlevel cdr v,qlevel)
+            and null ibalp_var!-getval cdr v
+               and ibalp_var!-getquant cdr v then
+                  if (h := ibalp_qsat!-calcmom(cdr v,min)) > tmom then <<
+                     tmom := h;
+                     tv := cdr v
+                  >>;
       return tv
    end;
 
@@ -2426,13 +2426,13 @@ procedure ibalp_qsat!-calcmom(var,min);
    % is the size of minimal clause. Returns the mom value.
    begin integer minpos,minneg;
       for each clause in ibalp_var!-getposocc var do
-	 if null clause and eqn(ibalp_clause!-getactpos clause +
-	    ibalp_clause!-getactneg clause,min) then
-	       minpos := minpos + 1;
+         if null clause and eqn(ibalp_clause!-getactpos clause +
+            ibalp_clause!-getactneg clause,min) then
+               minpos := minpos + 1;
       for each clause in ibalp_var!-getnegocc var do
-	 if null clause and eqn(ibalp_clause!-getactpos clause +
-	    ibalp_clause!-getactneg clause,min) then
-	       minneg := minneg + 1;
+         if null clause and eqn(ibalp_clause!-getactpos clause +
+            ibalp_clause!-getactneg clause,min) then
+               minneg := minneg + 1;
       return (minpos + minneg)*64 + (minpos * minneg)
    end;
 
@@ -2450,18 +2450,18 @@ procedure ibalp_qsat!-hassimple(clausel);
    begin scalar ret,tl,tv;
       tl := clausel;
       while tl and null ret do <<
-      	 if eqn(length ibalp_clause!-getposlit car tl +
-      	    length ibalp_clause!-getneglit car tl,1) then <<
-	       tv := if null ibalp_clause!-getposlit car tl then
-		  car ibalp_clause!-getneglit car tl
-	       else
-	 	  car ibalp_clause!-getposlit car tl;
-	       if ibalp_var!-isex tv and ibalp_var!-getreas tv then
-		  ret := car tl
-	       if ibalp_var!-isex tv and ibalp_var!-getreas tv then
-		  ret := car tl;
-	    >>;
-	 tl := cdr tl;
+         if eqn(length ibalp_clause!-getposlit car tl +
+            length ibalp_clause!-getneglit car tl,1) then <<
+               tv := if null ibalp_clause!-getposlit car tl then
+                  car ibalp_clause!-getneglit car tl
+               else
+                  car ibalp_clause!-getposlit car tl;
+               if ibalp_var!-isex tv and ibalp_var!-getreas tv then
+                  ret := car tl
+               if ibalp_var!-isex tv and ibalp_var!-getreas tv then
+                  ret := car tl;
+            >>;
+         tl := cdr tl;
       >>;
       return ret
    end;
@@ -2472,9 +2472,9 @@ procedure ibalp_qsat!-abort(clausel);
    % else.
    if null clausel then nil else
       if null ibalp_clause!-getposlit car clausel
-	 and null ibalp_clause!-getneglit car clausel then t
+         and null ibalp_clause!-getneglit car clausel then t
       else
-	 ibalp_qsat!-abort cdr clausel;
+         ibalp_qsat!-abort cdr clausel;
 
 procedure ibalp_qsat!-calccvar(clause);
    % Calculate the conflict variable of a new learnt clause. [clause]
@@ -2483,21 +2483,21 @@ procedure ibalp_qsat!-calccvar(clause);
       level := -1;
       tl := ibalp_clause!-getposlit clause;
       while tl do <<
-	 tv := car tl;
-	 if ibalp_var!-isex tv and ibalp_var!-getlev tv > level then <<
-	    level := ibalp_var!-getlev tv;
-	    cv := tv
-	 >>;
-	 tl := cdr tl
+         tv := car tl;
+         if ibalp_var!-isex tv and ibalp_var!-getlev tv > level then <<
+            level := ibalp_var!-getlev tv;
+            cv := tv
+         >>;
+         tl := cdr tl
       >>;
       tl := ibalp_clause!-getneglit clause;
       while tl do <<
-	 tv := car tl;
-	 if ibalp_var!-isex tv and ibalp_var!-getlev tv > level then <<
-	    level := ibalp_var!-getlev tv;
-	    cv := tv
-	 >>;
-	 tl := cdr tl
+         tv := car tl;
+         if ibalp_var!-isex tv and ibalp_var!-getlev tv > level then <<
+            level := ibalp_var!-getlev tv;
+            cv := tv
+         >>;
+         tl := cdr tl
       >>;
       return cv
    end;
@@ -2511,19 +2511,19 @@ procedure ibalp_qsat!-getbtlevel(clause,oldlev);
       tl := ibalp_clause!-getposlit clause;
       tlevel := ibalp_var!-getlev ibalp_qsat!-calccvar clause;
       while tl do <<
-	 tv := car tl;
-	 if ibalp_var!-isex tv and
-	    ibalp_var!-getlev tv > level and ibalp_var!-getlev tv < tlevel then
-	    level := ibalp_var!-getlev tv;
-	 tl := cdr tl
+         tv := car tl;
+         if ibalp_var!-isex tv and
+            ibalp_var!-getlev tv > level and ibalp_var!-getlev tv < tlevel then
+            level := ibalp_var!-getlev tv;
+         tl := cdr tl
       >>;
       tl := ibalp_clause!-getneglit clause;
       while tl do <<
-	 tv := car tl;
-	 if ibalp_var!-isex tv and
-	    ibalp_var!-getlev tv > level and ibalp_var!-getlev tv < tlevel then
-	    level := ibalp_var!-getlev tv;
-	 tl := cdr tl
+         tv := car tl;
+         if ibalp_var!-isex tv and
+            ibalp_var!-getlev tv > level and ibalp_var!-getlev tv < tlevel then
+            level := ibalp_var!-getlev tv;
+         tl := cdr tl
       >>;
       return if eqn(level,-1) then oldlev - 1 else level
    end;
@@ -2540,18 +2540,18 @@ procedure ibalp_qsat!-calccc(varal,ec,lv);
       doit := ibalp_qsat!-doresolve(newclause,varal);
       if cdr doit then return nil;
       while car doit and res do <<
-	 tv := ibalp_qsat!-getresvar newclause;
-	 if eqn(ibalp_var!-getval tv,0) then
-	    ibalp_dellit(tv,newclause,t)
-	 else
-	    ibalp_dellit(tv,newclause,nil);
-	 reas := ibalp_var!-getreas tv;
-	 if ibalp_clausetest(reas,newclause) then res := nil;
-	 if not (null ibalp_clause!-getcount reas) then
-	    ibalp_clause!-setcount(reas,ibalp_clause!-getcount reas + 1);
-	 ibalp_resolve(newclause,newclause,reas,tv);
-	 doit := ibalp_qsat!-doresolve(newclause,varal);
-	 if cdr doit then res := nil
+         tv := ibalp_qsat!-getresvar newclause;
+         if eqn(ibalp_var!-getval tv,0) then
+            ibalp_dellit(tv,newclause,t)
+         else
+            ibalp_dellit(tv,newclause,nil);
+         reas := ibalp_var!-getreas tv;
+         if ibalp_clausetest(reas,newclause) then res := nil;
+         if not (null ibalp_clause!-getcount reas) then
+            ibalp_clause!-setcount(reas,ibalp_clause!-getcount reas + 1);
+         ibalp_resolve(newclause,newclause,reas,tv);
+         doit := ibalp_qsat!-doresolve(newclause,varal);
+         if cdr doit then res := nil
       >>;
       ibalp_clause!-setcount(newclause,1);
       return if res then newclause else nil;
@@ -2562,7 +2562,7 @@ procedure ibalp_clausetest(clause1,clause2);
    % clause; [clause2] is a clause. Returns [t] or [nil].
    ibalp_clause!-getposlit clause1 equal ibalp_clause!-getposlit clause2
       and ibalp_clause!-getneglit clause1 equal
-	 ibalp_clause!-getneglit clause2;
+         ibalp_clause!-getneglit clause2;
 
 procedure ibalp_qsat!-doresolve(newclause,varal);
    % Test the stopping criterion for resolving. [newclause] is a
@@ -2572,28 +2572,28 @@ procedure ibalp_qsat!-doresolve(newclause,varal);
    begin scalar hl,cl,hv,decv,ac1,ac2;
       hl := -2;
       for each v in ibalp_clause!-getposlit newclause do <<
-	 if ibalp_var!-isex v then <<
-	    ac1 := t;
-	    if ibalp_var!-getlev v > hl then <<
-	       hl := ibalp_var!-getlev v;
-	       hv := v;
-	       cl := 1
-	    >> else if eqn(ibalp_var!-getlev v,hl) then
- 	       cl := cl + 1;
- 	    if ibalp_var!-getlev v > 0 then ac2 := t
-	 >>
+         if ibalp_var!-isex v then <<
+            ac1 := t;
+            if ibalp_var!-getlev v > hl then <<
+               hl := ibalp_var!-getlev v;
+               hv := v;
+               cl := 1
+            >> else if eqn(ibalp_var!-getlev v,hl) then
+               cl := cl + 1;
+            if ibalp_var!-getlev v > 0 then ac2 := t
+         >>
       >>;
       for each v in ibalp_clause!-getneglit newclause do <<
-	 if ibalp_var!-isex v then <<
-	    ac1 := t;
-	    if ibalp_var!-getlev v > hl then <<
-	       hl := ibalp_var!-getlev v;
-	       hv := v;
-	       cl := 1
-	    >> else if eqn(ibalp_var!-getlev v,hl) then
- 	       cl := cl + 1;
- 	    if ibalp_var!-getlev v > 0 then ac2 := t
-	 >>
+         if ibalp_var!-isex v then <<
+            ac1 := t;
+            if ibalp_var!-getlev v > hl then <<
+               hl := ibalp_var!-getlev v;
+               hv := v;
+               cl := 1
+            >> else if eqn(ibalp_var!-getlev v,hl) then
+               cl := cl + 1;
+            if ibalp_var!-getlev v > 0 then ac2 := t
+         >>
       >>;
       if null ac1 or null ac2 then return (nil . t);
       if cl > 1 then return (t . nil);
@@ -2608,9 +2608,9 @@ procedure ibalp_qsat!-searchdec(level,varal);
    if null varal then nil else
       if eqn(ibalp_var!-getlev cdar varal,level) and
       null ibalp_var!-getreas cdar varal then
-	 cdar varal
+         cdar varal
       else
-	 ibalp_qsat!-searchdec(level,cdr varal);
+         ibalp_qsat!-searchdec(level,cdr varal);
 
 procedure ibalp_qsat!-unicheck(clause,var);
    % Checks the third condition of the stopping criterion. [clause] is
@@ -2621,23 +2621,23 @@ procedure ibalp_qsat!-unicheck(clause,var);
       dl := ibalp_var!-getlev var;
       tl := ibalp_clause!-getposlit clause;
       while tl and null res do <<
-	 tv := car tl;
-	 if ibalp_var!-isuni tv and
-	    ibalp_var!-getqlevel tv < ql then
-	       if not (eqn(ibalp_var!-getval tv,0) and
-		  ibalp_var!-getlev tv < dl) then
-		     res := t;
-	 tl := cdr tl;
+         tv := car tl;
+         if ibalp_var!-isuni tv and
+            ibalp_var!-getqlevel tv < ql then
+               if not (eqn(ibalp_var!-getval tv,0) and
+                  ibalp_var!-getlev tv < dl) then
+                     res := t;
+         tl := cdr tl;
       >>;
       tl := ibalp_clause!-getneglit clause;
       while tl and null res do <<
-	 tv := car tl;
-	 if ibalp_var!-isuni tv and
-	    ibalp_var!-getqlevel tv < ql then
-	       if not (eqn(ibalp_var!-getval tv,0) and
-		  ibalp_var!-getlev tv < dl) then
-		     res := t;
-	 tl := cdr tl;
+         tv := car tl;
+         if ibalp_var!-isuni tv and
+            ibalp_var!-getqlevel tv < ql then
+               if not (eqn(ibalp_var!-getval tv,0) and
+                  ibalp_var!-getlev tv < dl) then
+                     res := t;
+         tl := cdr tl;
       >>;
       return (res . nil);
    end;
@@ -2649,21 +2649,21 @@ procedure ibalp_qsat!-getresvar(clause);
       tl := ibalp_clause!-getposlit clause;
       lev := -2;
       while tl do <<
-      	 tv := car tl;
-	 if ibalp_var!-getreas tv and ibalp_var!-getlev tv > lev then <<
-	    res := tv;
-	    lev := ibalp_var!-getlev tv
-	 >>;
-	 tl := cdr tl;
+         tv := car tl;
+         if ibalp_var!-getreas tv and ibalp_var!-getlev tv > lev then <<
+            res := tv;
+            lev := ibalp_var!-getlev tv
+         >>;
+         tl := cdr tl;
       >>;
       tl := ibalp_clause!-getneglit clause;
       while tl do <<
-      	 tv := car tl;
-	 if ibalp_var!-getreas tv and ibalp_var!-getlev tv > lev then <<
-	    res := tv;
-	    lev := ibalp_var!-getlev tv
-	 >>;
-	 tl := cdr tl;
+         tv := car tl;
+         if ibalp_var!-getreas tv and ibalp_var!-getlev tv > lev then <<
+            res := tv;
+            lev := ibalp_var!-getlev tv
+         >>;
+         tl := cdr tl;
       >>;
       return res
    end;
@@ -2675,11 +2675,11 @@ procedure ibalp_qsat!-analsatNAIV(varal);
    begin scalar cv,cl;
       cl := -1;
       for each v in varal do <<
-	 if ibalp_var!-isuni cdr v and eqn(ibalp_var!-getflip cdr v,0) then
-	    if ibalp_var!-getlev cdr v > cl then <<
-	       cl := ibalp_var!-getlev cdr v;
-	       cv := cdr v
-	    >>
+         if ibalp_var!-isuni cdr v and eqn(ibalp_var!-getflip cdr v,0) then
+            if ibalp_var!-getlev cdr v > cl then <<
+               cl := ibalp_var!-getlev cdr v;
+               cv := cdr v
+            >>
       >>;
       return (cv . cl)
    end;
@@ -2690,16 +2690,16 @@ procedure ibalp_qsat!-backtrack(level,varal,val);
    % Conflict-driven or a SAT-driven backtracking.
    if val then <<
       for each v in varal do
-      	 if ibalp_var!-getlev cdr v > level then <<
-	    ibalp_var!-unsetq(cdr v,ibalp_var!-getval cdr v);
-	    ibalp_var!-setflip(cdr v,nil)
-      	 >>
+         if ibalp_var!-getlev cdr v > level then <<
+            ibalp_var!-unsetq(cdr v,ibalp_var!-getval cdr v);
+            ibalp_var!-setflip(cdr v,nil)
+         >>
    >> else <<
       for each v in varal do
-	 if ibalp_var!-getlev cdr v >= level then <<
-	    ibalp_var!-unsetq(cdr v,ibalp_var!-getval cdr v);
-	    ibalp_var!-setflip(cdr v,nil)
-      	 >>
+         if ibalp_var!-getlev cdr v >= level then <<
+            ibalp_var!-unsetq(cdr v,ibalp_var!-getval cdr v);
+            ibalp_var!-setflip(cdr v,nil)
+         >>
    >>;
 
 procedure ibalp_qsat!-cdclup(clist,level);
@@ -2710,15 +2710,15 @@ procedure ibalp_qsat!-cdclup(clist,level);
    begin scalar tl,tv,lv,ec,upl,temp;
       tl := clist;
       while tl and null ec do <<
-	 tv := car tl;
-	 if null ibalp_clause!-getsat cdr tv then <<
-	    temp := ibalp_var!-setq(caar tv,cdar tv,level,cdr tv);
-	    upl := car temp;
-	    nconc(tl,upl)
-	 >>;
-	 tl := cdr tl;
-	 lv := caar tv;
-	 ec := cdr temp;
+         tv := car tl;
+         if null ibalp_clause!-getsat cdr tv then <<
+            temp := ibalp_var!-setq(caar tv,cdar tv,level,cdr tv);
+            upl := car temp;
+            nconc(tl,upl)
+         >>;
+         tl := cdr tl;
+         lv := caar tv;
+         ec := cdr temp;
       >>;
       return (ec. lv)
    end;
@@ -2733,30 +2733,30 @@ procedure ibalp_qsat!-isunit(clause);
       min := 10000;
       tl := ibalp_clause!-getposlit clause;
       while tl and ce < 2 do <<
-	 tv := car tl;
-	 if ibalp_var!-isex tv and null ibalp_var!-getval tv then <<
-	    ce := ce + 1;
-	    te := (tv . 1)
-	 >>;
-	 if ibalp_var!-isuni tv and null ibalp_var!-getval tv and
- 	    ibalp_var!-getqlevel tv < min then min := ibalp_var!-getqlevel tv;
-	 tl := cdr tl
+         tv := car tl;
+         if ibalp_var!-isex tv and null ibalp_var!-getval tv then <<
+            ce := ce + 1;
+            te := (tv . 1)
+         >>;
+         if ibalp_var!-isuni tv and null ibalp_var!-getval tv and
+            ibalp_var!-getqlevel tv < min then min := ibalp_var!-getqlevel tv;
+         tl := cdr tl
       >>;
       tl := ibalp_clause!-getneglit clause;
       while tl and ce < 2 do <<
-	 tv := car tl;
-	 if ibalp_var!-isex tv and null ibalp_var!-getval tv then <<
-	    ce := ce + 1;
-	    te := (tv . 0)
-	 >>;
-	 if ibalp_var!-isuni tv and null ibalp_var!-getval tv and
- 	    ibalp_var!-getqlevel tv < min then min := ibalp_var!-getqlevel tv;
-	 tl := cdr tl
+         tv := car tl;
+         if ibalp_var!-isex tv and null ibalp_var!-getval tv then <<
+            ce := ce + 1;
+            te := (tv . 0)
+         >>;
+         if ibalp_var!-isuni tv and null ibalp_var!-getval tv and
+            ibalp_var!-getqlevel tv < min then min := ibalp_var!-getqlevel tv;
+         tl := cdr tl
       >>;
       return if eqn(ce,1) and ibalp_var!-getqlevel car te < min then
-	 te
+         te
       else
-	 nil
+         nil
    end;
 
 procedure ibalp_qsat!-isec(clause);
@@ -2767,25 +2767,25 @@ procedure ibalp_qsat!-isec(clause);
       ec := t;
       tl := ibalp_clause!-getposlit clause;
       while ec and tl do <<
-	 tv := car tl;
-	 if ibalp_var!-isex tv and
- 	    not eqn(ibalp_var!-getval tv,0) then ec := nil;
-	 if ibalp_var!-isuni tv and
-	    eqn(ibalp_var!-getval tv,1) then ec := nil;
-	 if null ibalp_var!-getquant tv and null ibalp_var!-getval tv then
-	    ec := nil;
-	 tl := cdr tl
+         tv := car tl;
+         if ibalp_var!-isex tv and
+            not eqn(ibalp_var!-getval tv,0) then ec := nil;
+         if ibalp_var!-isuni tv and
+            eqn(ibalp_var!-getval tv,1) then ec := nil;
+         if null ibalp_var!-getquant tv and null ibalp_var!-getval tv then
+            ec := nil;
+         tl := cdr tl
       >>;
       tl := ibalp_clause!-getneglit clause;
       while ec and tl do <<
-	 tv := car tl;
-	 if ibalp_var!-isex tv and
- 	    not eqn(ibalp_var!-getval tv,1) then ec := nil;
-	 if ibalp_var!-isuni tv and
-	    eqn(ibalp_var!-getval tv,0) then ec := nil;
-	 if null ibalp_var!-getquant tv and null ibalp_var!-getval tv then
-	    ec := nil;
-	 tl := cdr tl
+         tv := car tl;
+         if ibalp_var!-isex tv and
+            not eqn(ibalp_var!-getval tv,1) then ec := nil;
+         if ibalp_var!-isuni tv and
+            eqn(ibalp_var!-getval tv,0) then ec := nil;
+         if null ibalp_var!-getquant tv and null ibalp_var!-getval tv then
+            ec := nil;
+         tl := cdr tl
       >>;
       return ec
    end;
@@ -2806,8 +2806,8 @@ procedure ibalp_readquantal(formula,varal);
       tl := ibalp_readquantal2(formula,varal,rl_op formula,1,nil);
       hl := ibalp_var!-getqlevel cdar tl;
       for each v in varal do
-	 if null ibalp_var!-getquant cdr v then
-	    tl := v . tl;
+         if null ibalp_var!-getquant cdr v then
+            tl := v . tl;
       tl := reverse tl;
       return (hl . tl)
    end;
@@ -2821,10 +2821,10 @@ procedure ibalp_readquantal2(formula,varal,quant,level,newvaral);
    if rl_quap rl_op formula then <<
       if not (rl_op formula eq quant) then level := level + 1;
       if atsoc(rl_var formula,varal) then <<
-      	 ibalp_var!-setquant(cdr atsoc(rl_var formula,varal),rl_op formula);
-      	 ibalp_var!-setqlevel(cdr atsoc(rl_var formula,varal),level);
-      	 newvaral := (ibalp_var!-getid cdr atsoc(rl_var formula,varal) .
-	    cdr atsoc(rl_var formula,varal)) . newvaral
+         ibalp_var!-setquant(cdr atsoc(rl_var formula,varal),rl_op formula);
+         ibalp_var!-setqlevel(cdr atsoc(rl_var formula,varal),level);
+         newvaral := (ibalp_var!-getid cdr atsoc(rl_var formula,varal) .
+            cdr atsoc(rl_var formula,varal)) . newvaral
       >>;
       ibalp_readquantal2(rl_mat formula,varal,rl_op formula,level,newvaral)
    >> else
@@ -2841,40 +2841,40 @@ procedure ibalp_qsat!-par(fvl,clausel,varal,result,psat);
    begin scalar tv,res,pair,ec,upl,pair2,ec2;
       tv := ibalp_getfree!-dlcs fvl;
       if null tv then <<
-	 if (not member(ibalp_qsat!-calcbin fvl,donel!*)) then <<
-	    upl := ibalp_qsat!-getupl clausel;
-	    res := ibalp_qsat!-cdcl(clausel,varal,upl,nil);
-	    numcdcl!* := numcdcl!* + 1;
-	    donel!* := ibalp_qsat!-calcbin fvl . donel!*;
-	    if car res = {'true} then <<
-	       result := (ibalp_exres fvl) . result;
-	       if psat then
-	       	  result := ibalp_qsat!-localsearch(clausel,varal,length fvl,
-		     fvl,result);
-	    >>;
-	    return (result . (cadr res . cddr res));
-	 >> else
-	    return (result . (clausel . varal));
+         if (not member(ibalp_qsat!-calcbin fvl,donel!*)) then <<
+            upl := ibalp_qsat!-getupl clausel;
+            res := ibalp_qsat!-cdcl(clausel,varal,upl,nil);
+            numcdcl!* := numcdcl!* + 1;
+            donel!* := ibalp_qsat!-calcbin fvl . donel!*;
+            if car res = {'true} then <<
+               result := (ibalp_exres fvl) . result;
+               if psat then
+                  result := ibalp_qsat!-localsearch(clausel,varal,length fvl,
+                     fvl,result);
+            >>;
+            return (result . (cadr res . cddr res));
+         >> else
+            return (result . (clausel . varal));
       >> else <<
-	 ec := ibalp_var!-setq(tv,1,-42,nil);
-	 if null cdr ec then <<
-	    pair := ibalp_qsat!-par(fvl,clausel,varal,result,psat);
-    	    result := car pair;
-    	    clausel := cadr pair;
-    	    varal := cddr pair;
-    	    ibalp_qsat!-dav varal;
-	 >>;
-	 ibalp_var!-unsetq(tv,1);
-	 ec := ibalp_var!-setq(tv,0,-42,nil);
-	 if null cdr ec then <<
-	    pair := ibalp_qsat!-par(fvl,clausel,varal,result,psat);
-	    result := car pair;
-	    clausel := cadr pair;
-	    varal := cddr pair;
-	    ibalp_qsat!-dav varal;
-	 >>;
-	 ibalp_var!-unsetq(tv,0);
-	 return (result . (clausel . varal))
+         ec := ibalp_var!-setq(tv,1,-42,nil);
+         if null cdr ec then <<
+            pair := ibalp_qsat!-par(fvl,clausel,varal,result,psat);
+            result := car pair;
+            clausel := cadr pair;
+            varal := cddr pair;
+            ibalp_qsat!-dav varal;
+         >>;
+         ibalp_var!-unsetq(tv,1);
+         ec := ibalp_var!-setq(tv,0,-42,nil);
+         if null cdr ec then <<
+            pair := ibalp_qsat!-par(fvl,clausel,varal,result,psat);
+            result := car pair;
+            clausel := cadr pair;
+            varal := cddr pair;
+            ibalp_qsat!-dav varal;
+         >>;
+         ibalp_var!-unsetq(tv,0);
+         return (result . (clausel . varal))
       >>
    end;
 
@@ -2886,16 +2886,16 @@ procedure ibalp_qsat!-localsearch(clausel,varal,radius,fvl,result);
    begin scalar v,oldl,varl;
       varl := ibalp_qsat!-getlocvars!-last(fvl,radius);
       for each v in varl do <<
-	 oldl := ibalp_var!-getval v . oldl;
-	 ibalp_var!-unsetq(v,ibalp_var!-getval v);
+         oldl := ibalp_var!-getval v . oldl;
+         ibalp_var!-unsetq(v,ibalp_var!-getval v);
       >>;
       result := ibalp_qsat!-localsearchrec(clausel,varal,varl,fvl,result);
       for i := 1:length varl do <<
-	 v := nth(varl,i);
-	 if eqn(nth(oldl,(length oldl) - i + 1),0) then
-	    ibalp_var!-setq(v,0,-42,nil)
-	 else
-	    ibalp_var!-setq(v,1,-42,nil)
+         v := nth(varl,i);
+         if eqn(nth(oldl,(length oldl) - i + 1),0) then
+            ibalp_var!-setq(v,0,-42,nil)
+         else
+            ibalp_var!-setq(v,1,-42,nil)
       >>;
       return result
    end;
@@ -2905,7 +2905,7 @@ procedure ibalp_qsat!-getlocvars!-last(fvl,number);
    begin scalar l,varl;
       l := length fvl;
       for i := l-number+1:l do
-	    varl := nth(fvl,i) . varl;
+            varl := nth(fvl,i) . varl;
       return varl
    end;
 
@@ -2913,10 +2913,10 @@ procedure ibalp_qsat!-getlocvars!-rand(fvl,number);
    % Get [number] random free variables for local search.
    begin scalar v,r,varl;
       while not eqn(length varl,number) do <<
-	 r := random length fvl;
-	 v := nth(fvl,r+1);
-	 if (not memq(v,varl)) then
-	    varl := v . varl
+         r := random length fvl;
+         v := nth(fvl,r+1);
+         if (not memq(v,varl)) then
+            varl := v . varl
       >>;
       return varl
    end;
@@ -2926,23 +2926,23 @@ procedure ibalp_qsat!-localsearchrec(clausel,varal,selvars,fvl,result);
    begin scalar tv,res,pair,ec,upl,pair2;
       tv := ibalp_getfree selvars;
       if null tv then <<
-	 if ibalp_csat clausel and
-	    not member(ibalp_qsat!-calcbin fvl,donel!*) then <<
-	    donel!* := ibalp_qsat!-calcbin fvl . donel!*;
-	    numlocs!* := numlocs!* + 1;
-	    result := (ibalp_exres fvl) . result;
-	 >>
+         if ibalp_csat clausel and
+            not member(ibalp_qsat!-calcbin fvl,donel!*) then <<
+            donel!* := ibalp_qsat!-calcbin fvl . donel!*;
+            numlocs!* := numlocs!* + 1;
+            result := (ibalp_exres fvl) . result;
+         >>
       >> else <<
-	 ec := ibalp_var!-setq(tv,1,-42,nil);
-	 if null cdr ec then
-	    result := ibalp_qsat!-localsearchrec(clausel,varal,selvars,
-	       fvl,result);
-	 ibalp_var!-unsetq(tv,1);
-	 ec := ibalp_var!-setq(tv,0,-42,nil);
-	 if null cdr ec then
-	    result := ibalp_qsat!-localsearchrec(clausel,varal,selvars,
-	       fvl,result);
-	 ibalp_var!-unsetq(tv,0)
+         ec := ibalp_var!-setq(tv,1,-42,nil);
+         if null cdr ec then
+            result := ibalp_qsat!-localsearchrec(clausel,varal,selvars,
+               fvl,result);
+         ibalp_var!-unsetq(tv,1);
+         ec := ibalp_var!-setq(tv,0,-42,nil);
+         if null cdr ec then
+            result := ibalp_qsat!-localsearchrec(clausel,varal,selvars,
+               fvl,result);
+         ibalp_var!-unsetq(tv,0)
       >>;
       return result
    end;
@@ -2964,8 +2964,8 @@ procedure ibalp_qsat!-getupl(clausel);
    % clauses. Return a list of unit clauses.
    begin scalar upl,h;
       for each clause in clausel do
-	 if (h := ibalp_qsat!-isunit clause) then
-	    upl := (h . clause) . upl;
+         if (h := ibalp_qsat!-isunit clause) then
+            upl := (h . clause) . upl;
       return upl
    end;
 
@@ -2979,7 +2979,7 @@ procedure ibalp_exres2(resultl,fvl);
       if eqn(length resultl,1) then return car resultl;
       if eqn(length resultl,2^l) then return {'true};
       for each res in resultl do <<
-	 tl := res . tl
+         tl := res . tl
       >>;
       tl := 'or . tl;
       return tl
@@ -2990,15 +2990,15 @@ procedure ibalp_exres(vl);
    % list of variables. Return the expanded result.
    begin scalar tl,var,res;
       for each v in vl do <<
-	 var := {'equal,ibalp_var!-getid v,ibalp_var!-getval v};
-	 tl := var . tl;
+         var := {'equal,ibalp_var!-getid v,ibalp_var!-getval v};
+         tl := var . tl;
       >>;
       if length tl > 1 then <<
-	 for each v in tl do
-	    res := v . res;
-	 res := 'and . res
+         for each v in tl do
+            res := v . res;
+         res := 'and . res
       >> else
-	 res := car tl;
+         res := car tl;
       return res
    end;
 
@@ -3007,9 +3007,9 @@ procedure ibalp_getfree(list);
    % varibles. Returns a varialbe or [nil] if there is no unassigned.
    if null list then nil else
       if null ibalp_var!-getval car list then
-	 car list
+         car list
       else
-	 ibalp_getfree cdr list;
+         ibalp_getfree cdr list;
 
 procedure ibalp_getfree!-dlcs(list);
    % Get an unassigned variable. [list] is the list of free
@@ -3020,12 +3020,12 @@ procedure ibalp_getfree!-dlcs(list);
       if null tv then return nil;
       max := ibalp_var!-getnumneg tv + ibalp_var!-getnumpos tv;
       for each var in list do
-	 if null ibalp_var!-getval var then
-	    if ibalp_var!-getnumneg var +
-	 ibalp_var!-getnumpos var > max then <<
-	    tv := var;
-	    max := ibalp_var!-getnumneg var + ibalp_var!-getnumpos var
-	 >>;
+         if null ibalp_var!-getval var then
+            if ibalp_var!-getnumneg var +
+         ibalp_var!-getnumpos var > max then <<
+            tv := var;
+            max := ibalp_var!-getnumneg var + ibalp_var!-getnumpos var
+         >>;
       return tv;
    end;
 
@@ -3038,8 +3038,8 @@ procedure ibalp_psatp(varal);
    begin scalar ret;
       ret := t;
       for each v in varal do <<
-	 if ibalp_var!-isuni cdr v then
-	     ret := nil;
+         if ibalp_var!-isuni cdr v then
+             ret := nil;
       >>;
       return ret;
    end;
@@ -3051,9 +3051,9 @@ procedure ibalp_splitvars(pqsat,varal);
    % variables.
    begin scalar fvl,tv;
       for each v in pqsat do <<
-	 tv := cdr atsoc(v,varal);
-	 fvl := tv . fvl;
-	 varal := delete((v . tv),varal)
+         tv := cdr atsoc(v,varal);
+         fvl := tv . fvl;
+         varal := delete((v . tv),varal)
       >>;
       return (varal . fvl)
    end;
@@ -3063,7 +3063,7 @@ procedure ibalp_qsat!-dav(varal);
    % variables; [clausel] is the list of clauses.
    for each v in varal do <<
       if ibalp_var!-getval cdr v then
-	 ibalp_var!-unsetq(cdr v,ibalp_var!-getval cdr v);
+         ibalp_var!-unsetq(cdr v,ibalp_var!-getval cdr v);
       ibalp_var!-setflip(cdr v,nil)
    >>;
 

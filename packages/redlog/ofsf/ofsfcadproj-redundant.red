@@ -1,5 +1,6 @@
-
 % Author: Thomas Sturm
+%
+% $Id$
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -24,16 +25,12 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
-
-
-
 asserted procedure ofsf_cadvbl(phi: Formula): List;
    % Variable-block-list. Checks if [phi] is in PNF. Returns a list of lists
    % [[xr..][..xk]..[xk..x1]] of Kernels.
    <<
       if not cl_prenexp phi then
-      	 rederr "Formula is not in prenex normal form, please use rlpnf beforehand.";
+         rederr "Formula is not in prenex normal form, please use rlpnf beforehand.";
       ofsf_cadvbl1 phi
    >>;
 
@@ -71,7 +68,7 @@ symbolic operator rlrorders;
 procedure rlrorders(fl, yl);
    'list . for each o in
       sf_rorders!*(for each f in fl collect numr simp f, cdr yl) collect
-	 'list . o;
+         'list . o;
 
 asserted procedure sf_rorders!*(fl: List, yl: List): SF;
    begin scalar oldorder,w;
@@ -87,20 +84,20 @@ asserted procedure sf_rorders(fl: List, yl: List): List;
    % minimal cost.
    begin scalar ords, flr, nom;
       if null yl then
-	 rederr "empty regularization order invalid";
+         rederr "empty regularization order invalid";
       ords := lto_powerset cdr yl;
       ords := for each o in ords collect car yl . o;
       ords := for each o in ords collect <<
-	 flr := sf_regularize!*(fl, o);
-	 if sf_isregular!*(flr, yl) then
-	    nom := for each f in flr sum sf_nom f
-	 else
-	    nom := -1;
-	 o . nom
+         flr := sf_regularize!*(fl, o);
+         if sf_isregular!*(flr, yl) then
+            nom := for each f in flr sum sf_nom f
+         else
+            nom := -1;
+         o . nom
       >>;
       % remove illegal orders
       ords := for each p in ords join
-	 if cdr p >= 0 then {p};
+         if cdr p >= 0 then {p};
       % sort by cost and length.
       ords := sort(ords, 'ofsf_rordp);
       return for each p in ords collect car p
@@ -126,9 +123,9 @@ procedure mtx_froml(lst,n);
       if m*n neq length(lst) then error(nil,"mtx_froml: wrong list length");
       mtx := mtx_0(m,n);
       for l := 1 : m do
-	 for c := 1 : n do
-	    mtx_put(mtx,l,c,nth(lst,(l-1)*n+c));
-	    %print((l-1)*n+c);
+         for c := 1 : n do
+            mtx_put(mtx,l,c,nth(lst,(l-1)*n+c));
+            %print((l-1)*n+c);
       return mtx;
    end;
 
@@ -161,7 +158,7 @@ procedure rlisregular(fl, xl);
    begin scalar tv;
       tv := sf_isregular!*(for each f in fl collect numr simp f, cdr xl);
       if tv then
-	 return 'true;
+         return 'true;
       return 'false
    end;
 
@@ -188,7 +185,7 @@ procedure rltransreg(fl, yl, cl);
    begin scalar w;
       w := for each f in cdr fl collect numr simp f;
       return 'list . for each fr in sf_transreg!*(w, cdr yl, cdr cl) collect
-	 prepf fr;
+         prepf fr;
    end;
 
 asserted procedure sf_transreg!*(fl: List, yl: List, cl: List): SF;
@@ -212,10 +209,10 @@ asserted procedure sf_transregf(f: SF, yl: List, cl: List): SF;
       y1 := car yl;
       yl := cdr yl;
       while yl do <<
-	 yj := pop yl;
-	 cj := pop cl;
-	 % al := (yj . addf(!*k2f yj,multf(cj,!*k2f y1)) . al;
-	 al := (yj . {'plus, yj, {'times, cj, y1}}) . al
+         yj := pop yl;
+         cj := pop cl;
+         % al := (yj . addf(!*k2f yj,multf(cj,!*k2f y1)) . al;
+         al := (yj . {'plus, yj, {'times, cj, y1}}) . al
       >>;
       return numr subf(f, al)
    end;
@@ -263,12 +260,12 @@ asserted procedure sf_regularize1(fl: List, yl: List): DottedPair;
       cl := for each y in cdr yl collect 1;
       cl1 := cl;
       while not sf_isregular(flr,yl) do <<
-	 flr := sf_transreg(fl,yl,cl);
-	 cl2 := cl;
-	 cl := sf_nextcl cl;
+         flr := sf_transreg(fl,yl,cl);
+         cl2 := cl;
+         cl := sf_nextcl cl;
       >>;
       if null cl2 then
-	 return flr . for each y in cdr yl collect 0;
+         return flr . for each y in cdr yl collect 0;
       return flr . cl2
    end;
 
@@ -300,11 +297,11 @@ asserted procedure sf_regoptordf(f: SF, yl: List): List;
       ords := lto_powerset cdr yl;
       ords := for each o in ords collect car yl . o;
       ords := for each o in ords collect
-	 o . sf_nom sf_regularize!*(f,o);
+         o . sf_nom sf_regularize!*(f,o);
       ords := for each o in ords join
-	 if sf_isregular!*(sf_regularize!*(f, car o), yl) then {o};
+         if sf_isregular!*(sf_regularize!*(f, car o), yl) then {o};
       return reversip
-	 sort(for each o in ords collect car o, function length)
+         sort(for each o in ords collect car o, function length)
    end;
 
 % end regularity stuff
@@ -348,10 +345,10 @@ asserted procedure sf_densecoeffs(f: SF, x: Kernel): List;
    % Dense coefficient list.
    begin scalar clred;
       if sfto_vardeg(f, x) <= 0 then
-	 return {f};
+         return {f};
       clred := sf_densecoeffs(red f, x);
       for i := (max(0, sfto_vardeg(red f, x)) + 1) : (ldeg f - 1) do
-	 clred := nil . clred;
+         clred := nil . clred;
       clred := lc f . clred;
       return clred
    end;
@@ -360,9 +357,9 @@ asserted procedure sf_fromdensecoeffs(fl: List, k: Kernel): SF;
    % Standard form from dense coefficient list. [fl] is a non-empty List of SF.
    begin scalar f;
       if null cdr fl then
-	 return car fl;
+         return car fl;
       if null car fl then
-	 return sf_fromdensecoeffs(cdr fl, k);
+         return sf_fromdensecoeffs(cdr fl, k);
       f := sfto_kexp(k, length fl - 1);
       set_l(f, car fl);
       set_red(f, sf_fromdensecoeffs(cdr fl, k));
@@ -404,7 +401,7 @@ asserted procedure sf_tdeg1(f: SF, xl: KernelList): Integer;
       0
    else
       max(sf_tdeg1(sf_lc(f, car xl), cdr xl) + sfto_vardeg(f, car xl),
-	 sf_tdeg1(sf_red(f, car xl), xl));
+         sf_tdeg1(sf_red(f, car xl), xl));
 
 asserted procedure sf_red(f: SF, x: Kernel): SF;
    % Univariate reductum of a standard form.
@@ -434,7 +431,7 @@ asserted procedure lto_powerset(l: List): List;
    % Powerset.
    begin scalar w;
       if null l then
-	 return {{}};
+         return {{}};
       w := lto_powerset cdr l;
       return append(w, for each a in w collect car l . a)
    end;
@@ -449,7 +446,7 @@ asserted procedure lto_select1(fn: Any, l: List, xarl: List): List;
    % arguments, [l] and [xarl] are LIST.
    for each a in l join
       if apply(fn, a . xarl) then
-	 {a};
+         {a};
 
 asserted procedure lto_init(l: List): List;
    % Initial part of a non-empty list, with the last element removed.
@@ -469,16 +466,16 @@ algebraic procedure rlcadporders(phi);
 algebraic procedure ordersfromvbl(vbl);
    if vbl={} then {{}} else
       for each vl1 in perturbations first vbl join
-	 for each vl2 in ordersfromvbl rest vbl collect
-	    append(vl1, vl2);
+         for each vl2 in ordersfromvbl rest vbl collect
+            append(vl1, vl2);
 
 symbolic operator rlcadpordersnum;
 procedure rlcadpordersnum(phi);
    begin scalar w;
       w := for each b in ofsf_cadvbl1 rl_simp phi collect
-	 length b;
+         length b;
       return for each n in w product
-	 factorial n
+         factorial n
    end;
 
 symbolic operator rlcadvbl2pord;
@@ -506,8 +503,8 @@ algebraic procedure perturbations(l);
       {{}}
    else
       for j := 1 : length l join
-    	 for each p in perturbations(delnth(l, j)) collect
-	    append({mynth(l, j)}, p);
+         for each p in perturbations(delnth(l, j)) collect
+            append({mynth(l, j)}, p);
 
 symbolic operator rlstdeg;
 procedure rlstdeg(f);
@@ -603,7 +600,7 @@ asserted procedure rltgprojamat2(fn: Any, afl: List, l: List): List;
       oldorder := setkorder reverse cdr l;
       w := apply(fn, {for each af in cdr afl collect numr simp af, cdr l});
       w := 'list . for each tf in w collect
-	 ('list . prepf tag_object tf . tag_taglist tf);
+         ('list . prepf tag_object tf . tag_taglist tf);
       setkorder oldorder;
       return w
    end;
@@ -797,7 +794,7 @@ procedure ofsf_tgtransfac(tgpp, x);
    %%% more efficient: successive tgunion
    tglist2set for each tgp in tgpp join
       for each f in sf_factors tag_object tgp collect
-	 tag_(f, tag_taglist tgp);
+         tag_(f, tag_taglist tgp);
 
 procedure ofsf_projopco(aa, varl, j);
    % Combined Collins' projection operator.
@@ -888,17 +885,17 @@ procedure ofsf_tgprojmc(tgaa,x);
    begin scalar aa,tgll,tgdd,tgrr;
       % strip off all the tags
       aa := for each te in tgaa join
-	 if not domainp tag_object te then {tag_object te};
+         if not domainp tag_object te then {tag_object te};
       % tag the leading coefficients
       tgll := for each f in ofsf_projmccoeffs(aa,x) collect
-	 tag_(sf_lc(f,x),{'lc});
+         tag_(sf_lc(f,x),{'lc});
       % tag the discriminants
       tgdd := for each a in aa collect tag_(sf_discriminant(a,x),{'dis});
       % tag the resultants
       tgrr := for each a1 on aa join for each a2 in cdr aa collect
-	 tag_(sfto_resf(car a1,a2,x),{'res});
+         tag_(sfto_resf(car a1,a2,x),{'res});
       return lto_remove('tgdomainp,
-	 tgunion(tgll,tgunion(tgdd,tglist2set tgrr)) )
+         tgunion(tgll,tgunion(tgdd,tglist2set tgrr)) )
    end;
 
 procedure ofsf_projmcbr(aa,x);
@@ -909,7 +906,7 @@ procedure ofsf_projmcbr(aa,x);
       ll := for each f in bb collect sf_lc(f,x);
       dd := for each a in bb collect sf_discriminant(a,x);
       rr := for each a1 on bb join for each a2 in cdr bb collect
-	 sfto_resf(car a1,a2,x);
+         sfto_resf(car a1,a2,x);
       return lto_list2set lto_remove('domainp,union(union(ll,dd),rr))
    end;
 
@@ -921,16 +918,16 @@ procedure ofsf_tgprojmcbr(tgaa,x);
       %      bb := lto_remove('tgdomainp,tgaa);
       % strip off all the tags
       bb := for each te in tgaa join
-	 if not domainp tag_object te then {tag_object te};
+         if not domainp tag_object te then {tag_object te};
       % tag the leading coefficients
       tgll := for each f in bb collect tag_(sf_lc(f,x),{'lc});
       % tag the discriminants
       tgdd := for each a in bb collect tag_(sf_discriminant(a,x),{'dis});
       % tag the resultants
       tgrr := for each a1 on bb join for each a2 in cdr bb collect
-	 tag_(sfto_resf(car a1,a2,x),{'res});
+         tag_(sfto_resf(car a1,a2,x),{'res});
       return lto_remove('tgdomainp,
-	 tgunion(tgll,tgunion(tgdd,tglist2set tgrr)) )
+         tgunion(tgll,tgunion(tgdd,tglist2set tgrr)) )
    end;
 
 procedure ofsf_projcobb(aa,x);
@@ -947,8 +944,8 @@ procedure ofsf_projcobb1v3(f,varl);
       rr2 := ofsf_projcobb1v2(f,nth(varl,length varl));
       if null rr2 then return rr2;
       repeat <<
-	 rr2p := car rr2 . rr2p;
-	 rr2 := cdr rr2;
+         rr2p := car rr2 . rr2p;
+         rr2 := cdr rr2;
       >> until null rr2 or sfto_zerodimp(rr2p,varl);
       return reversip rr2p;
    end;
@@ -973,8 +970,8 @@ procedure ofsf_projcoss2v3(bb,x);
       redll := ofsf_splitredl(bb,x);
       % 2.
       ss2 := for each ll on redll join for each l in cdr ll join
-	 % car ll and l are lists of SF
-	 for each b1 in car ll join for each b2 in l join sf_pscs(b1,b2,x);
+         % car ll and l are lists of SF
+         for each b1 in car ll join for each b2 in l join sf_pscs(b1,b2,x);
       return ss2
    end;
 
@@ -987,7 +984,7 @@ procedure rlzerodimp(afl,l);
    begin scalar oldorder,w;
       oldorder := setkorder reverse cdr l;
       w := apply(function(sfto_zerodimp1),
-	 {for each af in cdr afl collect numr simp af});
+         {for each af in cdr afl collect numr simp af});
       setkorder(oldorder);
       return if null w then '(list) else w
    end;
@@ -1025,12 +1022,12 @@ procedure sfto_zerodimp2(x,htl);
    begin scalar expl;
       expl := nil;
       for each ht in htl do
-	 if domainp ht then
-	    expl := 0 . expl
-	 else if (mvar ht eq x and domainp sf_lc(ht,x)) then
-	    expl := sfto_vardeg(ht,x) .expl;
+         if domainp ht then
+            expl := 0 . expl
+         else if (mvar ht eq x and domainp sf_lc(ht,x)) then
+            expl := sfto_vardeg(ht,x) .expl;
       if null expl then return nil else
-	 return foldr1(function(lambda a,b;if a<b then a else b),expl);
+         return foldr1(function(lambda a,b;if a<b then a else b),expl);
    end;
 
 procedure sfto_hterm(f);
@@ -1053,7 +1050,7 @@ asserted procedure sf_subresultant(f: SF, g: SF, x: Kernel, j: Integer): SF;
    % Subresultant.
    begin scalar summed;
       for i := 0 : j do
-	 summed := addf(multf(mtx_det mtx_mmji(f,g,x,j,i),sfto_kexp(x,i)), summed);
+         summed := addf(multf(mtx_det mtx_mmji(f,g,x,j,i),sfto_kexp(x,i)), summed);
       return summed
    end;
 
@@ -1063,7 +1060,7 @@ asserted procedure sf_fromcdl(cdl: List, x: Kernel): SF;
    begin scalar f;
       assert(not null cdl);
       if null cdr cdl then
-	 return caar cdl;
+         return caar cdl;
       f := sfto_kexp(x, cdar cdl);
       set_lc(f, caar cdl);
       set_red(f, sf_fromcdl(cdr cdl, x));
@@ -1082,9 +1079,9 @@ asserted procedure ofsf_projlcs(bb: SFList, x: Kernel): SFList;
    % Set of leading coefficients of [bb].
    begin scalar resl;
       resl := for each f in bb collect
-	 sf_lc(f, x);
+         sf_lc(f, x);
       if ofsf_cadverbosep() then
-	 ioto_prin2 {"(lcs ", length resl, ")"};
+         ioto_prin2 {"(lcs ", length resl, ")"};
       return resl
    end;
 
@@ -1093,13 +1090,13 @@ asserted procedure ofsf_splitredl(bb: SFList, x: Kernel): List;
    begin scalar redl,redll;
       % break up [bb] into sets containing an input poly and its reducta
       while bb do <<
-      	 redl := {car bb};
-	 bb := cdr bb;
-      	 while bb and sf_red(car redl, x) = car bb do <<  % eq is possible here
-	    redl := car bb . redl;
-	    bb := cdr bb
-      	 >>;
-      	 redll := reversip redl . redll
+         redl := {car bb};
+         bb := cdr bb;
+         while bb and sf_red(car redl, x) = car bb do <<  % eq is possible here
+            redl := car bb . redl;
+            bb := cdr bb
+         >>;
+         redll := reversip redl . redll
       >>;
       % function(lambda(x, y); length x > length y)
       redll := sort(redll, function ofsf_splitredlordp);
@@ -1113,21 +1110,21 @@ asserted procedure ofsf_splitredlordp(l1: SFList, l2: SFList): Boolean;
       le1 := length l1;
       le2 := length l2;
       if le1 > le2 then
-	 return t;
+         return t;
       if le1 < le2 then
-	 return nil;
+         return nil;
       x := mvar car l1;
       while l1 and not hit do <<
-	 d1 := sfto_vardeg(car l1, x);
-	 d2 := sfto_vardeg(car l2, x);
-	 l1 := cdr l1;
-	 l2 := cdr l2;
-      	 if d1 > d2 then
-	    res := hit := t;
-	 if d1 < d2 then <<
-	    res := nil;
-	    hit := t
-	 >>
+         d1 := sfto_vardeg(car l1, x);
+         d2 := sfto_vardeg(car l2, x);
+         l1 := cdr l1;
+         l2 := cdr l2;
+         if d1 > d2 then
+            res := hit := t;
+         if d1 < d2 then <<
+            res := nil;
+            hit := t
+         >>
       >>;
       return res
    end;

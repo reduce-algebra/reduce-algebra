@@ -390,12 +390,13 @@ rl_provideService rl_qea = cl_qea using rl_negateat, rl_translat, rl_elimset,
    rl_qefsolset, rl_bettergaussp, rl_bestgaussp, rl_esetunion, rl_specelim;
 
 asserted procedure cl_qea(f: Formula, theo: Theory): ExtendedQeResult;
-   % Quantifier elimination with answer. Returns a list of pairs $(..., (c_i, % A_i), ...)$. The $c_i$ are quantifier-free formulas, and the $A_i$ are
-   % lists of equations. We have $[theo] \models \bigvee_i c_i
+   % Quantifier elimination with answer. Returns a list of pairs $(...,
+   % (c_i, % A_i), ...)$. The $c_i$ are quantifier-free formulas, and the
+   % $A_i$ are lists of equations. We have $[theo] \models \bigvee_i c_i
    % \longleftrightarrow [f]$. Whenever some $c_i$ holds for an interpretation
-   % of the parameters, [f] holds, and $A_i$ describes a satisfying sample
-   % point. Accesses the switch [rlqepnf]; if [rlqepnf] is on, then [f] has to
-   % be prenex.
+   %  of the parameters, [f] holds, and $A_i$ describes a satisfying sample
+   %  point. Accesses the switch [rlqepnf]; if [rlqepnf] is on, then [f] has
+   %  to be prenex.
    begin scalar er, !*rlsipw, !*rlsipo, !*rlqeans;
       !*rlsipw := !*rlsipo := !*rlqeans := t;
       er := cl_qe1(f, theo, nil);
@@ -704,14 +705,10 @@ asserted procedure cl_qevar(f: QfFormula, vl: KernelL, an: Answer, theo: Theory,
          return w;
       % Elimination set method
       candvl := cl_varsel(f, vl, theo);
-      if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold)
-         and (len := length candvl) > 1
-      then
+      if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) and (len := length candvl) > 1 then
          ioto_prin2 {"{", len, ":"};
       status . w := cl_process!-candvl(f, vl, an, theo, ans, bvl, candvl);
-      if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold)
-         and len>1
-      then
+      if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) and len > 1 then
          ioto_prin2 {"}"};
       if status eq 'nonocc then
          return (t . w) . theo;
@@ -740,7 +737,8 @@ asserted procedure cl_gauss(f: QfFormula, vl: KernelL, an: Answer, theo: Theory,
       if w neq 'failed then <<
          theo := cdr w;
          w := car w;
-         if !*rlverbose and (not !*rlqedfs or !*rlqevbold) then ioto_prin2 "g";
+         if !*rlverbose and (not !*rlqedfs or !*rlqevbold) then
+            ioto_prin2 "g";
          vl := lto_delq(car w, vl);
          ww := cl_esetsubst(f, car w, cdr w, vl, an, theo, ans, bvl);
          if !*rlqelocal then
@@ -1141,6 +1139,6 @@ procedure cl_fbqe(f);
       f
    >>;
 
-endmodule;  % [clqe]
+endmodule;
 
 end;  % of file

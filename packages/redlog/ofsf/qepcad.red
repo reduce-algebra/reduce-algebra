@@ -77,29 +77,29 @@ asserted procedure qepcad_generic(f: Formula, argl: List, stem: String, printer:
       result := qepcad_readResult fn2;
       system lto_sconcat {"rm -f ", fn1, " ", fn2};
       if null result then
-	 lprim "external computation failed";
+         lprim "external computation failed";
       return rl_simp result or f
    end;
 
 asserted procedure qepcad_fn(stem: String): String;
    begin scalar bname;
       bname := lto_sconcat {qepcad_tmpdir!*, "rl", stem,
-      	 "-", getenv "USER" or "unknown", "-", lto_at2str getpid()};
+         "-", getenv "USER" or "unknown", "-", lto_at2str getpid()};
       return lto_sconcat {bname, ".", stem} . lto_sconcat {bname, ".red"}
    end;
 
 asserted procedure qepcad_dump(f: Formula, fn: String, printer: Applicable);
    begin scalar w;
       if fn = "" then <<
-	 apply(printer, {f});
-	 return
+         apply(printer, {f});
+         return
       >>;
       if !*rlverbose then ioto_tprin2 {"+++ creating ", fn, " ... "};
       out fn;
       w := errorset({printer, mkquote f}, t, !*backtrace);
       shut fn;
       if errorp w then
- 	 rederr {"qepcad_dump: problem dumping", f, "using", printer};
+         rederr {"qepcad_dump: problem dumping", f, "using", printer};
       if !*rlverbose then ioto_prin2t "done"
    end;
 
@@ -110,8 +110,8 @@ asserted procedure qepcad_printer(f: Formula);
       % in the prenex block. I am not certain about quanified variables that do
       % not occur in the sense of of logic.
       while rl_quap rl_op ff do <<
-	 push(rl_var ff, bl);
-	 ff := rl_mat ff
+         push(rl_var ff, bl);
+         ff := rl_mat ff
       >>;
       bl := reversip bl;
       fl := cl_fvarl1 f;
@@ -154,11 +154,11 @@ asserted procedure qepcad_cadprint1(f: Formula);
    begin scalar !*nat;
       terpri!* nil;
       while rl_op f memq '(ex all) do <<
-	 prin2!* "(";
-	 prin2!* if rl_op f eq 'ex then "E" else "A";
-	 prin2!* rl_var f;
-	 prin2!* ") ";
-	 f := rl_mat f
+         prin2!* "(";
+         prin2!* if rl_op f eq 'ex then "E" else "A";
+         prin2!* rl_var f;
+         prin2!* ") ";
+         f := rl_mat f
       >>;
       prin2!* "[";
       qepcad_cadprint2 f;
@@ -170,19 +170,19 @@ asserted procedure qepcad_cadprint2(f: Formula);
    begin scalar op, argl, outputhandler!*;
       op := rl_op f;
       if rl_cxp op then <<
-	 if rl_tvalp op then <<
-	    qepcad_cadprinttval f;
-	    return nil
-	 >>;
-	 prin2!* "[";
-	 argl := rl_argn f;
-	 qepcad_cadprint2(car argl);
-	 for each x in cdr argl do <<
-	    qepcad_cadPrintRel op;
-	    qepcad_cadprint2 x
-	 >>;
-	 prin2!* "]";
-	 return nil
+         if rl_tvalp op then <<
+            qepcad_cadprinttval f;
+            return nil
+         >>;
+         prin2!* "[";
+         argl := rl_argn f;
+         qepcad_cadprint2(car argl);
+         for each x in cdr argl do <<
+            qepcad_cadPrintRel op;
+            qepcad_cadprint2 x
+         >>;
+         prin2!* "]";
+         return nil
       >>;
       maprin prepf ofsf_arg2l f;
       qepcad_cadPrintRel op;
@@ -205,25 +205,25 @@ asserted procedure qepcad_cadPrintRel(op: Id);
    <<
       prin2!* " ";
       prin2!* if op eq 'equal then
-	 "="
+         "="
       else if op eq 'neq then
-	 "/="
+         "/="
       else if op eq 'lessp then
-	 "<"
+         "<"
       else if op eq 'greaterp then
-	 ">"
+         ">"
       else if op eq 'leq then
-	 "<="
+         "<="
       else if op eq 'geq then
-	 ">="
+         ">="
       else if op eq 'or then
-	 "\/"
+         "\/"
       else if op eq 'and then
-	 "/\"
+         "/\"
       else if op eq 'impl then
-	 "==>"
+         "==>"
       else if op eq 'equiv then
-	 "<==>";
+         "<==>";
       prin2!* " "
    >>;
 
@@ -243,13 +243,13 @@ asserted procedure qepcad_run(N: Integer, L: Integer, fn1: String, fn2: String);
       vb := lto_at2str !*rlverbose;
       tm := lto_at2str !*time;
       call := lto_sconcat {
-	 qepcad_qepcad!*, " ", narg, larg, "< ", fn1,
-	 " | awk -v rf=", fn2,
-	 " -v verb=", vb,
-	 " -v time=", tm,
-	 " -v slfqvb=nil -v name=QEPCAD -f ", qepcad_awk!*};
+         qepcad_qepcad!*, " ", narg, larg, "< ", fn1,
+         " | awk -v rf=", fn2,
+         " -v verb=", vb,
+         " -v time=", tm,
+         " -v slfqvb=nil -v name=QEPCAD -f ", qepcad_awk!*};
       if !*rlverbose then
-	 ioto_tprin2t lto_sconcat {"+++ calling ",call};
+         ioto_tprin2t lto_sconcat {"+++ calling ",call};
       system call
    end;
 
@@ -262,12 +262,12 @@ asserted procedure qepcad_runSlfq(N: Integer, L: Integer, fn1: String, fn2: Stri
       tm := lto_at2str !*time;
       svb := lto_at2str !*rlslfqvb;
       call := lto_sconcat {
-	 qepcad_slfq!*, " ", narg, larg, "< ", fn1,
-	 " 2> /dev/null | awk -v rf=", fn2,
-	 " -v verb=", vb, " -v time=", tm, " -v slfqvb=", svb,
-	 " -v name=SLFQ -f ", qepcad_awk!*};
+         qepcad_slfq!*, " ", narg, larg, "< ", fn1,
+         " 2> /dev/null | awk -v rf=", fn2,
+         " -v verb=", vb, " -v time=", tm, " -v slfqvb=", svb,
+         " -v name=SLFQ -f ", qepcad_awk!*};
       if !*rlverbose then
-	 ioto_tprin2t lto_sconcat {"+++ calling ",call};
+         ioto_tprin2t lto_sconcat {"+++ calling ",call};
       system call
    end;
 

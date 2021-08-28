@@ -34,9 +34,9 @@ copyright('rljson, "(c) 2019-2020 T. Sturm");
 procedure rl_services2json(file);
    begin scalar l, w, ll;
       l := for each s in sort(rl_services!*, 'ordp) join <<
-	 w := get(s, 'rl_amservice);
-      	 if w then
-	    {get(w, 'json) or ('domain . "generic") . ('name . lto_at2str w) . rl_helpMkDocal(w, nil)}
+         w := get(s, 'rl_amservice);
+         if w then
+            {get(w, 'json) or ('domain . "generic") . ('name . lto_at2str w) . rl_helpMkDocal(w, nil)}
       >>;
       ll := linelength 4096;
       if file then out file;
@@ -48,7 +48,7 @@ procedure rl_services2json(file);
 procedure rl_builtins2json(file);
    begin scalar l, w, ll;
       l := for each s in sort(rl_builtins!*, 'ordp) join
-	 {('domain . "generic") . ('name . lto_at2str s) . rl_helpMkDocalBuiltin(s, nil)};
+         {('domain . "generic") . ('name . lto_at2str s) . rl_helpMkDocalBuiltin(s, nil)};
       ll := linelength 4096;
       if file then out file;
       rl_services2jsonPrintList(l, 0);
@@ -59,11 +59,11 @@ procedure rl_builtins2json(file);
 procedure rl_types2json(file);
    begin scalar types, bl, cl, kwl, l, ll;
       for each s in rl_typeStrings rl_services!* do <<
-	 {bl, cl, kwl} := rl_helpOverviewTypesDecompose s;
-	 types := union(union(types, bl), cl)
+         {bl, cl, kwl} := rl_helpOverviewTypesDecompose s;
+         types := union(union(types, bl), cl)
       >>;
       l := for each s in sort(types, 'ordp) join
-	 {('name . s) . rl_helpMkDocalType(lto_downcase lto_string2id s, nil)};
+         {('name . s) . rl_helpMkDocalType(lto_downcase lto_string2id s, nil)};
       ll := linelength 4096;
       if file then out file;
       rl_services2jsonPrintList(l, 0);
@@ -76,17 +76,17 @@ procedure rl_services2jsonPrintList(l, indent);
    % records.
    begin scalar first;
       first := t; for each s in l do <<
-	 if first then <<
-      	    ioto_prin2t "[";
-      	    indent := indent + 2;
-	    first := nil
-	 >> else
-	    ioto_prin2t ",";
-	 for i := 1:indent do ioto_prin2 " ";
-	 if stringp s then
- 	    prin s
-	 else
-	    rl_services2jsonPrint(s, indent)
+         if first then <<
+            ioto_prin2t "[";
+            indent := indent + 2;
+            first := nil
+         >> else
+            ioto_prin2t ",";
+         for i := 1:indent do ioto_prin2 " ";
+         if stringp s then
+            prin s
+         else
+            rl_services2jsonPrint(s, indent)
       >>;
       ioto_cterpri();
       indent := indent - 2;
@@ -97,28 +97,28 @@ procedure rl_services2jsonPrintList(l, indent);
 procedure rl_services2jsonPrint(x, indent);
    begin scalar l, ll, c;
       if not x then
-      	 return ioto_prin2 "{}";
+         return ioto_prin2 "{}";
       if idp x or numberp x then
-      	 return ioto_prin2 {"""", lto_at2str x, """"};
+         return ioto_prin2 {"""", lto_at2str x, """"};
       if stringp x then <<
-      	 l := cdr reversip cdr explode x;
-	 ll := {'!"};
-      	 while l do <<
-	    c := pop l;
-	    if c eq '!" and l and car l eq '!" then <<
-	       push(c, ll);
-	       push(pop l, ll);
-	       push('!\, ll)
-	    >> else
-	       push(c, ll);
-      	 >>;
-	 ll := '!" . ll;
-	 return ioto_prin2 {"""", compress ll, """"}
+         l := cdr reversip cdr explode x;
+         ll := {'!"};
+         while l do <<
+            c := pop l;
+            if c eq '!" and l and car l eq '!" then <<
+               push(c, ll);
+               push(pop l, ll);
+               push('!\, ll)
+            >> else
+               push(c, ll);
+         >>;
+         ll := '!" . ll;
+         return ioto_prin2 {"""", compress ll, """"}
       >>;
       if alistp x then
-      	 return rl_services2jsonPrintRecord(x, indent);
+         return rl_services2jsonPrintRecord(x, indent);
       if listp x then
-      	 return rl_services2jsonPrintList(x, indent);
+         return rl_services2jsonPrintList(x, indent);
       rederr {"rl_services2jsonPrint: bad argument", x}
    end;
 
@@ -127,16 +127,16 @@ procedure rl_services2jsonPrintRecord(al, indent);
    % entries are Strings, Lists, or Alists.
    begin scalar first;
       first := t; for each pr in al do <<
-	 if first then <<
-      	    ioto_prin2t "{";
-      	    indent := indent + 2;
-	    first := nil
-	 >> else
-	    ioto_prin2t ",";
-	 for i := 1:indent do ioto_prin2 " ";
-	 rl_services2jsonPrint(car pr, indent);
-	 ioto_prin2 ": ";
-	 rl_services2jsonPrint(cdr pr, indent)
+         if first then <<
+            ioto_prin2t "{";
+            indent := indent + 2;
+            first := nil
+         >> else
+            ioto_prin2t ",";
+         for i := 1:indent do ioto_prin2 " ";
+         rl_services2jsonPrint(car pr, indent);
+         ioto_prin2 ": ";
+         rl_services2jsonPrint(cdr pr, indent)
       >>;
       ioto_cterpri();
       indent := indent - 2;
@@ -149,8 +149,8 @@ procedure rl_services2jsonArgs(docal);
       names := cdr atsoc('names, docal);
       defaults := cdr atsoc('defaults, docal);
       return for each name in names join
-	 if not atsoc(name, defaults) then
-	    {name}
+         if not atsoc(name, defaults) then
+            {name}
    end;
 
 endmodule;

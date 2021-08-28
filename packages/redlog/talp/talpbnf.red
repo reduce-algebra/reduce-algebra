@@ -1,8 +1,10 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2004-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module talpbnf;
+% Term algebra Lisp prefix boolean normal forms.
+
+revision('talpbnf, "$Id$");
+
+copyright('talpbnf, "Copyright (c) 2004-2009 by A. Dolzmann, T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -28,17 +30,6 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
 
-lisp <<
-   fluid '(talp_bnf_rcsid!* talp_bnf_copyright!*);
-   talp_bnf_rcsid!* := 
-      "$Id$";
-   talp_bnf_copyright!* :=
-      "Copyright (c) 2004-2009 by A. Dolzmann, T. Sturm"
->>;
-
-module talpbnf;
-% Term algebra Lisp prefix boolean normal forms. Submodule of [talp].
-
 procedure talp_dnf(f);
    % Term algebra Lisp prefix disjunctive normal form. [f] is a
    % formula. Returns a DNF of [f].
@@ -60,23 +51,23 @@ procedure talp_subsumption(l1,l2,gor);
    % atomic formulas. Returns one of [keep1], [keep2], [nil].
    if gor eq 'or then (
       if talp_subsumep!-and(l1,l2) then
- 	 'keep2
+         'keep2
       else if talp_subsumep!-and(l2,l1) then
-	 'keep1
+         'keep1
    ) else  % [gor eq 'and]
       if talp_subsumep!-or(l1,l2) then
-	 'keep1
+         'keep1
       else if talp_subsumep!-or(l2,l1) then
-	 'keep2;
+         'keep2;
 
 procedure talp_subsumep!-and(l1,l2);
    % Term algebra Lisp prefix subsume [and] case. [l1] and [l2] are
    % lists of atomic formulas.
    begin scalar a;
       while l2 do <<
-	 a := car l2;
-	 l2 := cdr l2;
-	 if cl_simpl(a,l1,-1) neq 'true then a := l2 := nil
+         a := car l2;
+         l2 := cdr l2;
+         if cl_simpl(a,l1,-1) neq 'true then a := l2 := nil
       >>;
       return a
    end;
@@ -86,9 +77,9 @@ procedure talp_subsumep!-or(l1,l2);
    % lists of atomic formulas.
    begin scalar a;
       while l1 do <<
-	 a := car l1;
-	 l1 := cdr l1;
-	 if cl_simpl(rl_smkn('or,l2),{a},-1) neq 'true then a := l1 := nil
+         a := car l1;
+         l1 := cdr l1;
+         if cl_simpl(rl_smkn('or,l2),{a},-1) neq 'true then a := l1 := nil
       >>;
       return a
    end;
@@ -149,7 +140,7 @@ procedure talp_sacrel!-or(r1,r2);
    % result ['true] can be performed.
    begin scalar w;
       w:= '( (equal . ( (equal . keep) (neq . drop)))
-	     (neq   . ( (equal . drop) (neq . keep))));
+             (neq   . ( (equal . drop) (neq . keep))));
       return cdr atsoc(r1,cdr atsoc(r2,w));
    end;
 
@@ -166,7 +157,7 @@ procedure talp_sacrel!-and(r1,r2);
    % result ['false] can be performed.
    begin scalar w;
       w:= '( (equal . ( (equal . keep) (neq . drop)))
-	     (neq   . ( (equal . drop) (neq . keep))));
+             (neq   . ( (equal . drop) (neq . keep))));
       return cdr atsoc(r1,cdr atsoc(r2,w))
    end;
 

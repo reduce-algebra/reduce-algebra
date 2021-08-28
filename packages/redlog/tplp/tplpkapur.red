@@ -46,11 +46,11 @@ procedure tplp_setkapuroption(opt,val);
    % any (old setting or nil).
    begin scalar oldopt,oldval;
      if oldopt := atsoc(opt,tplp_kapuroptions!*) then <<
-     	oldval := cdr oldopt;
-     	cdr oldopt := val
+        oldval := cdr oldopt;
+        cdr oldopt := val
      >>
      else
-     	tplp_kapuroptions!* := (opt . val) . tplp_kapuroptions!*;
+        tplp_kapuroptions!* := (opt . val) . tplp_kapuroptions!*;
      return oldval
    end;
 

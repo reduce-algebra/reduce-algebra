@@ -87,17 +87,17 @@ procedure dqe_isatomarp(phi);
 symbolic procedure dqe_isquantfree(phi);
    begin scalar erg;
       if atom phi or (not phi) or dqe_isatomarp phi then
-	 return t;
+         return t;
       if car phi = 'nott  then
-	 return dqe_isquantfree cadr phi;      
+         return dqe_isquantfree cadr phi;      
       if car phi eq 'or or car phi eq 'and then <<
-	 phi := cdr phi;
-	 erg := t;
-	 while erg and phi do <<
-	    erg := dqe_isquantfree car phi;
-	    phi := cdr phi
-	 >>;
-	 return erg;
+         phi := cdr phi;
+         erg := t;
+         while erg and phi do <<
+            erg := dqe_isquantfree car phi;
+            phi := cdr phi
+         >>;
+         return erg;
       >>;
       return nil;
 end;
@@ -121,11 +121,11 @@ end;
 procedure dqe_isprenexp(phi);
    begin scalar erg;
       if  atom phi or (not phi) then
-	 erg := t
+         erg := t
       else <<
-	 while (car phi ='ex) or (car phi ='all) do
-	    phi := caddr phi;
-      	 erg := dqe_isquantfree phi
+         while (car phi ='ex) or (car phi ='all) do
+            phi := caddr phi;
+         erg := dqe_isquantfree phi
       >>; 
       return erg;
    end;
@@ -172,14 +172,14 @@ procedure dqe_modatomar(phi);
 procedure dqe_helpelim(phi);
    begin scalar op;
       if (phi eq t) or (not phi) then
-	 return phi;
+         return phi;
       op := car phi;
       if op eq 'neq then
-	 return {reval cadr dqe_modatomar phi};
+         return {reval cadr dqe_modatomar phi};
       if op eq 'equal then
-	 return {1,reval cadr dqe_modatomar phi};
+         return {1,reval cadr dqe_modatomar phi};
       if op eq 'and then
-	 return dqe_helpelim!-and cdr phi;
+         return dqe_helpelim!-and cdr phi;
       rederr "dqe_helpelim: internal error";
    end;
 
@@ -187,12 +187,12 @@ procedure dqe_helpelim!-and(phi);
    begin scalar a,eqs,g;
       g := 1;
       while phi do <<
-	 a := car phi;
-	 if car a eq 'equal then
-	    eqs := lto_insert(reval cadr dqe_modatomar a,eqs)
-	 else
-	    g := reval {'times,g,reval cadr dqe_modatomar a};
-	 phi := cdr phi
+         a := car phi;
+         if car a eq 'equal then
+            eqs := lto_insert(reval cadr dqe_modatomar a,eqs)
+         else
+            g := reval {'times,g,reval cadr dqe_modatomar a};
+         phi := cdr phi
       >>;
       return g . reversip eqs
    end;
@@ -310,9 +310,9 @@ symbolic procedure dqe_makepositiveat (phi);
    begin scalar psi;
       psi := cadr phi;
       return if car psi eq 'equal then
-	 {'neq,cadr psi,caddr psi}
+         {'neq,cadr psi,caddr psi}
       else
-	 {'equal,cadr psi,caddr psi}
+         {'equal,cadr psi,caddr psi}
    end;
 
 
@@ -1910,11 +1910,11 @@ end;
 procedure dqe_neqnullfkt(phi);
    begin scalar r;
       if not phi then
-	 return nil;
+         return nil;
       r := for each elem in phi collect
-   	 {'neq,reval elem,0};
+         {'neq,reval elem,0};
       if not cdr r then
-	 return car r;
+         return car r;
       return 'or . r
    end;
  
@@ -2676,14 +2676,14 @@ end;
 symbolic procedure dqe_elimopt(phi,diffequaliste,var);
    begin scalar nf;
       if !*dqegradord and !*dqeverbose then
-      	 prin2t "++++";      
+         prin2t "++++";      
       nf := dqe_helpelim phi;
       if (nf = t) or (not nf) then
-	 return nf;
+         return nf;
       if not cdr nf then
-	 return dqe_elimopt!-neq(nf,diffequaliste,var);
+         return dqe_elimopt!-neq(nf,diffequaliste,var);
       if car nf = 1 and  not cddr nf then
-	 return dqe_elimopt!-oneeq(nf,diffequaliste,var);
+         return dqe_elimopt!-oneeq(nf,diffequaliste,var);
       return dqe_elimopt!-regular(nf,diffequaliste,var)
    end;
  
@@ -2691,10 +2691,10 @@ procedure dqe_elimopt!-neq(phi,diffequaliste,var);
    begin scalar res,prod,ordg,gradg;
       prod := car phi;
       if !*dqegradord and !*dqeverbose then <<
-	 ordg := dqe_ord(prod,var);
-	 gradg := dqe_grad(prod,var);
-	 prin2t "()";
-	 prin2t {ordg,gradg};
+         ordg := dqe_ord(prod,var);
+         gradg := dqe_grad(prod,var);
+         prin2t "()";
+         prin2t {ordg,gradg};
       >>; 
       res := dqe_neqnullfkt dqe_termcoefkt(prod,var);
       res := dqe_simplify res;
@@ -2705,15 +2705,15 @@ procedure dqe_elimopt!-oneeq(phi,diffequaliste,var);
    begin scalar equ,ordf,gradf,erg,res;
       equ := cadr phi;
       if !*dqegradord and !*dqeverbose then <<
-	 ordf := dqe_ord(equ,var);
-	 gradf := dqe_grad(equ,var);
-	 prin2t list(ordf,gradf);
-	 prin2t "()";
+         ordf := dqe_ord(equ,var);
+         gradf := dqe_grad(equ,var);
+         prin2t list(ordf,gradf);
+         prin2t "()";
       >>;
       erg := dqe_termcoefkt( equ,var);
       equ := dqe_simplify {'equal,reval car erg,0};   % Warning: Must return eq
       if equ = t then
-	 return t;
+         return t;
       erg := cdr erg;
       erg := dqe_neqnullfkt erg ;
       res := dqe_andorvaleur {'or,equ,erg};
@@ -2726,9 +2726,9 @@ procedure dqe_elimopt!-regular(phi,diffequaliste,var);
       g := car phi;
       eqs := cdr phi;
       if (dqe_isconstant g) and not(g = 0) then
-	 g := 1;
+         g := 1;
       if not cdr eqs then
-	 return dqe_elimopt!-regular!-oneeq(g,eqs,diffequaliste,var);
+         return dqe_elimopt!-regular!-oneeq(g,eqs,diffequaliste,var);
       return dqe_elimopt!-regular1(g,eqs,diffequaliste,var);
    end;
 
@@ -2738,117 +2738,117 @@ procedure dqe_elimopt!-regular1(g,eqs,diffequaliste,var);
       scalar erg,weiter;
       scalar liste, helplist,phi;
       ordg  := dqe_ord(g,var);
-      gradg := dqe_grad(g,var); 	 
+      gradg := dqe_grad(g,var);          
       phi := dqe_elimsimplify(eqs,zwerg,var);
       zwerg := car phi; phi := cadr phi;
       if not zwerg then
-	 weiter := t
+         weiter := t
       else <<
-	 if not cdr zwerg then
-	    zwerg := dqe_simplify car zwerg
-	 else
-	    zwerg := dqe_simplify zwerg;
-	 if zwerg = nil then
-	    weiter := nil
-	 else weiter := t
+         if not cdr zwerg then
+            zwerg := dqe_simplify car zwerg
+         else
+            zwerg := dqe_simplify zwerg;
+         if zwerg = nil then
+            weiter := nil
+         else weiter := t
       >>;
       if weiter = nil then
-	 ausg := nil
+         ausg := nil
       else <<
-	 if not phi then <<
-	    if !*dqegradord and !*dqeverbose then <<
-	       prin2t "()";
-	       prin2t list(ordg,gradg)
-	    >>;
-	    erg := dqe_neqnullfkt(dqe_termcoefkt( g,var));
-	    if zwerg = t then
-	       ausg := erg
-	    else ausg := dqe_andorvaleur(
-	       list('and,erg,zwerg));
-	    ausg := dqe_simplify ausg
-      	 >> else if not cdr phi then <<
-	    phi  := list('and,list('neq,g,0),
-	       list('equal,car phi,0));
-	    erg  := dqe_elimopt(phi,diffequaliste,var);
-	    if zwerg = t then
-	       ausg := erg
-	    else if erg = t then <<
-	       if not zwerg then
-	       	  ausg := t
-	       else
-	       	  ausg := zwerg
-	    >> else
-	       ausg := dqe_andorvaleur(
-	       	  list('and,erg,zwerg));
-	    ausg := dqe_simplify ausg
-	 >> else <<
-	    phi   := dqe_listenord(phi,var); 
-	    if !*dqegradord and !*dqeverbose then <<
-	       liste := phi; helplist := nil;
-	       while liste do <<
-		  hilf := car liste; liste := cdr liste;
-		  helplist := cons( list(dqe_ord(hilf,var),
-		     dqe_grad(hilf,var)),
-		     helplist)
-	       >>;
-	       prin2t helplist;
-	       prin2t list(ordg,gradg);
-	    >>; 	       
-	    hilff := car phi;
-	    initf := dqe_initial(hilff,var);
-	    redf  := dqe_reduktum(hilff,var);
-	    ordf  := dqe_ord(hilff,var);
-	    if redf = 0 then
-	       phi1 := dqe_equalnullfkt(dqe_consm(initf,cdr phi))
-	    else
-	       phi1 := dqe_equalnullfkt(dqe_consm(initf,
-		  dqe_consm(redf,cdr phi)));
-	    phi1 := cons('and,cons(list('neq,g,0),phi1));
-	    if dqe_isconstant initf then
-	       ghilf := g
-	    else
-	       ghilf := reval list('times,initf,g);
-	    hilf    := cadr phi;
-	    ordhilf := dqe_ord(hilf,var);
-	    if ordhilf = 0 then
-	       hilfvar := var
-	    else
-	       hilfvar := list('d,var,ordhilf); 	       
-	    if ordhilf = ordf then
-	       rest := dqe_pseudrest(hilf,hilff,hilfvar)
-	    else <<
-	       const := reval list('difference,ordhilf,ordf);
-	       rest  :=dqe_pseudrest(hilf,dqe_diff(hilff,const,
-		  diffequaliste),hilfvar)
-	    >>; 	       
-	    if rest = 0 then
-	       phi2 := dqe_equalnullfkt(
-		  dqe_consm(hilff,cddr phi))
-	    else
-	       phi2 := dqe_equalnullfkt(dqe_consm(rest,
-		  dqe_consm(hilff,cddr phi)));
-	    phi2 := cons('and,cons(list('neq,ghilf,0),phi2));
-	    erg2 := dqe_elimopt(phi2,diffequaliste,var);
-	    if erg2 = t then
-	       erg := t
-	    else <<
-	       erg1 := dqe_elimopt(phi1,diffequaliste,var);
-	       if erg1 = t then
-		  erg := t
-	       else
-		  erg := dqe_andorvaleur(list('or,erg1,erg2))
-	    >>;
-	    if zwerg = t then
-	       ausg := erg
-	    else if erg = t then <<
-	       if not zwerg then
-		  ausg := t
-	       else
-		  ausg := zwerg
-	    >> else
-	       ausg :=dqe_andorvaleur(list('and,erg,zwerg)) ;
-	    ausg := dqe_simplify ausg
-	 >>
+         if not phi then <<
+            if !*dqegradord and !*dqeverbose then <<
+               prin2t "()";
+               prin2t list(ordg,gradg)
+            >>;
+            erg := dqe_neqnullfkt(dqe_termcoefkt( g,var));
+            if zwerg = t then
+               ausg := erg
+            else ausg := dqe_andorvaleur(
+               list('and,erg,zwerg));
+            ausg := dqe_simplify ausg
+         >> else if not cdr phi then <<
+            phi  := list('and,list('neq,g,0),
+               list('equal,car phi,0));
+            erg  := dqe_elimopt(phi,diffequaliste,var);
+            if zwerg = t then
+               ausg := erg
+            else if erg = t then <<
+               if not zwerg then
+                  ausg := t
+               else
+                  ausg := zwerg
+            >> else
+               ausg := dqe_andorvaleur(
+                  list('and,erg,zwerg));
+            ausg := dqe_simplify ausg
+         >> else <<
+            phi   := dqe_listenord(phi,var); 
+            if !*dqegradord and !*dqeverbose then <<
+               liste := phi; helplist := nil;
+               while liste do <<
+                  hilf := car liste; liste := cdr liste;
+                  helplist := cons( list(dqe_ord(hilf,var),
+                     dqe_grad(hilf,var)),
+                     helplist)
+               >>;
+               prin2t helplist;
+               prin2t list(ordg,gradg);
+            >>;                
+            hilff := car phi;
+            initf := dqe_initial(hilff,var);
+            redf  := dqe_reduktum(hilff,var);
+            ordf  := dqe_ord(hilff,var);
+            if redf = 0 then
+               phi1 := dqe_equalnullfkt(dqe_consm(initf,cdr phi))
+            else
+               phi1 := dqe_equalnullfkt(dqe_consm(initf,
+                  dqe_consm(redf,cdr phi)));
+            phi1 := cons('and,cons(list('neq,g,0),phi1));
+            if dqe_isconstant initf then
+               ghilf := g
+            else
+               ghilf := reval list('times,initf,g);
+            hilf    := cadr phi;
+            ordhilf := dqe_ord(hilf,var);
+            if ordhilf = 0 then
+               hilfvar := var
+            else
+               hilfvar := list('d,var,ordhilf);                
+            if ordhilf = ordf then
+               rest := dqe_pseudrest(hilf,hilff,hilfvar)
+            else <<
+               const := reval list('difference,ordhilf,ordf);
+               rest  :=dqe_pseudrest(hilf,dqe_diff(hilff,const,
+                  diffequaliste),hilfvar)
+            >>;                
+            if rest = 0 then
+               phi2 := dqe_equalnullfkt(
+                  dqe_consm(hilff,cddr phi))
+            else
+               phi2 := dqe_equalnullfkt(dqe_consm(rest,
+                  dqe_consm(hilff,cddr phi)));
+            phi2 := cons('and,cons(list('neq,ghilf,0),phi2));
+            erg2 := dqe_elimopt(phi2,diffequaliste,var);
+            if erg2 = t then
+               erg := t
+            else <<
+               erg1 := dqe_elimopt(phi1,diffequaliste,var);
+               if erg1 = t then
+                  erg := t
+               else
+                  erg := dqe_andorvaleur(list('or,erg1,erg2))
+            >>;
+            if zwerg = t then
+               ausg := erg
+            else if erg = t then <<
+               if not zwerg then
+                  ausg := t
+               else
+                  ausg := zwerg
+            >> else
+               ausg :=dqe_andorvaleur(list('and,erg,zwerg)) ;
+            ausg := dqe_simplify ausg
+         >>
       >>;
       return ausg;
    end;
@@ -2858,90 +2858,90 @@ procedure dqe_elimopt!-regular!-oneeq(g,eqs,diffequaliste,var);
       scalar hilff,g,ghilf,gradf,gradg,ordf,ordg,redf,initf,const;
       scalar erg21,erg22,phi21,phi22,redhilf,sepf,gghilf;
       ordg  := dqe_ord(g,var);
-      gradg := dqe_grad(g,var); 	 
+      gradg := dqe_grad(g,var);          
       hilff := car eqs;
       gradf := dqe_grad(hilff,var);
-      ordf  := dqe_ord(hilff,var); 	    
+      ordf  := dqe_ord(hilff,var);          
       if !*dqegradord and !*dqeverbose then <<
-	 prin2t {ordf,gradf};
-	 prin2t {ordg,gradg};
-      >>; 	    
+         prin2t {ordf,gradf};
+         prin2t {ordg,gradg};
+      >>;           
       if gradf = 0 then <<
-	 erg1 := dqe_simplify list('equal,reval hilff,0);
-	 if erg1 = nil then
-	    ausg := nil
-	 else <<
-	    erg2 := dqe_neqnullfkt(dqe_termcoefkt( g,var));
-	    if erg1 = t then
-	       ausg := erg2
-	    else
-	       ausg := dqe_andorvaleur(list('and,erg1,erg2)) ;
-	    ausg := dqe_simplify ausg
-	 >>
+         erg1 := dqe_simplify list('equal,reval hilff,0);
+         if erg1 = nil then
+            ausg := nil
+         else <<
+            erg2 := dqe_neqnullfkt(dqe_termcoefkt( g,var));
+            if erg1 = t then
+               ausg := erg2
+            else
+               ausg := dqe_andorvaleur(list('and,erg1,erg2)) ;
+            ausg := dqe_simplify ausg
+         >>
       >> else <<
-	 redf  := dqe_reduktum(hilff,var);
-	 initf := dqe_initial(hilff,var);
-	 if redf = 0 then
-	    phi1 := list('and,list('neq,g,0)
-	       , list('equal,initf,0))
-	 else <<
-	    phi1 :=dqe_equalnullfkt(dqe_consm(initf,list(redf)));
-	    phi1 := cons('and,cons(list('neq,g,0),phi1))
-	 >>;
-	 if ordf > ordg then <<
-	    erg21 := dqe_neqnullfkt(
-	       dqe_termcoefkt(g,var));
-	    erg22 := dqe_neqnullfkt(
-	       dqe_termcoefkt(initf,var));
-	    erg2  := dqe_simplify
-	       dqe_andorvaleur(list('and,erg21,erg22))
-	 >> else if ordf = ordg then <<
-	    if ordf = 0 then
-	       hilfvar := var
-	    else
-	       hilfvar := list('d,var,ordf);
-	    ghilf :=dqe_pseudrest(list('expt,g,gradf),hilff,
-	       hilfvar);
-	    erg21 := dqe_neqnullfkt(dqe_termcoefkt(ghilf,var));
-	    erg22 := dqe_neqnullfkt(dqe_termcoefkt(initf,var));
-	    erg2  := dqe_simplify
-	       dqe_andorvaleur(list('and,erg21,erg22))
-	 >> else <<
-	    const   := reval list('difference,ordg,ordf);
-	    hilf    := dqe_diff(hilff,const,diffequaliste);
-	    hilfvar := list('d,var,ordg);
-	    ghilf   := dqe_pseudrest(g,hilf,hilfvar);
-	    if not(dqe_isconstant initf) then
-	       ghilf := reval list('times,initf,ghilf);
-	    phi21  := list('and,list('neq,ghilf,0),
-	       list('equal,hilff,0));
-	    erg21  := dqe_elimopt(phi21,diffequaliste,var) ;
-	    if erg21 = t  then
-	       erg2 := erg21
-	    else << if dqe_isconstant initf then
-	       gghilf := g
-	    else gghilf :=
-	       reval list('times,initf,g);
-	    sepf := dqe_separante(hilff,var);
-	    redhilf := dqe_reduktum(hilf,var);
-	    phi22 := dqe_consm(list('equal,sepf,0),
-	       dqe_consm(list('equal,redhilf,0),
-		  list(list('equal,hilff,0)) ) );
-	    phi22  := cons('and,cons(list('neq,gghilf,0),
-	       phi22));
-	    erg22  := dqe_elimopt(phi22,diffequaliste,var) ;
-	    erg2 := dqe_andorvaleur(list('or,erg21,erg22))
-	    >>
-	 >>;
-	 if erg2 = t then
-	    ausg := t
-	 else <<
-	    erg1 := dqe_elimopt(phi1,diffequaliste,var);
-	    if erg1 = t then
-	       ausg := t
-	    else
-	       ausg := dqe_andorvaleur(list('or,erg1,erg2));
-	    ausg := dqe_simplify ausg >>
+         redf  := dqe_reduktum(hilff,var);
+         initf := dqe_initial(hilff,var);
+         if redf = 0 then
+            phi1 := list('and,list('neq,g,0)
+               , list('equal,initf,0))
+         else <<
+            phi1 :=dqe_equalnullfkt(dqe_consm(initf,list(redf)));
+            phi1 := cons('and,cons(list('neq,g,0),phi1))
+         >>;
+         if ordf > ordg then <<
+            erg21 := dqe_neqnullfkt(
+               dqe_termcoefkt(g,var));
+            erg22 := dqe_neqnullfkt(
+               dqe_termcoefkt(initf,var));
+            erg2  := dqe_simplify
+               dqe_andorvaleur(list('and,erg21,erg22))
+         >> else if ordf = ordg then <<
+            if ordf = 0 then
+               hilfvar := var
+            else
+               hilfvar := list('d,var,ordf);
+            ghilf :=dqe_pseudrest(list('expt,g,gradf),hilff,
+               hilfvar);
+            erg21 := dqe_neqnullfkt(dqe_termcoefkt(ghilf,var));
+            erg22 := dqe_neqnullfkt(dqe_termcoefkt(initf,var));
+            erg2  := dqe_simplify
+               dqe_andorvaleur(list('and,erg21,erg22))
+         >> else <<
+            const   := reval list('difference,ordg,ordf);
+            hilf    := dqe_diff(hilff,const,diffequaliste);
+            hilfvar := list('d,var,ordg);
+            ghilf   := dqe_pseudrest(g,hilf,hilfvar);
+            if not(dqe_isconstant initf) then
+               ghilf := reval list('times,initf,ghilf);
+            phi21  := list('and,list('neq,ghilf,0),
+               list('equal,hilff,0));
+            erg21  := dqe_elimopt(phi21,diffequaliste,var) ;
+            if erg21 = t  then
+               erg2 := erg21
+            else << if dqe_isconstant initf then
+               gghilf := g
+            else gghilf :=
+               reval list('times,initf,g);
+            sepf := dqe_separante(hilff,var);
+            redhilf := dqe_reduktum(hilf,var);
+            phi22 := dqe_consm(list('equal,sepf,0),
+               dqe_consm(list('equal,redhilf,0),
+                  list(list('equal,hilff,0)) ) );
+            phi22  := cons('and,cons(list('neq,gghilf,0),
+               phi22));
+            erg22  := dqe_elimopt(phi22,diffequaliste,var) ;
+            erg2 := dqe_andorvaleur(list('or,erg21,erg22))
+            >>
+         >>;
+         if erg2 = t then
+            ausg := t
+         else <<
+            erg1 := dqe_elimopt(phi1,diffequaliste,var);
+            if erg1 = t then
+               ausg := t
+            else
+               ausg := dqe_andorvaleur(list('or,erg1,erg2));
+            ausg := dqe_simplify ausg >>
       >>;
       return ausg;
    end;

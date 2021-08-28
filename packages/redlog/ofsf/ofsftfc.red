@@ -37,9 +37,9 @@ procedure ofsf_tfcmain(l,y);
    begin scalar elem,d;
       elem := reorder numr car l;
       d := if domainp elem or mvar elem neq y then
-	 0
+         0
       else
-	 ldeg elem;
+         ldeg elem;
       return ofsf_tfcmain1(l,d,y);
    end;
 
@@ -48,12 +48,12 @@ procedure ofsf_tfcmain1(l,d,y);
    % integer, [y] is an identifier. Returns a formula.
    begin scalar cl,res;
       if null cdr l or (length l)*d < 8 or not !*rlhqetfcsplit then <<
-	 cl := reversip ofsf_coefflist(ofsf_multfl l,y);
-	 res := ofsf_tfc cl
+         cl := reversip ofsf_coefflist(ofsf_multfl l,y);
+         res := ofsf_tfc cl
       >> else if !*rlhqetfcfullsplit then
-	 res := ofsf_splittypes(l,d,y,0)
+         res := ofsf_splittypes(l,d,y,0)
       else
-      	 res := ofsf_split(l,d,y);
+         res := ofsf_split(l,d,y);
       return res;
    end;
 
@@ -66,8 +66,8 @@ procedure ofsf_split(l,d,y);
       l2 := cadr l2;
       %oldorder := setkorder {y};
       res := for i:=1:d collect
-	 rl_smkn('and,{ofsf_tfk(reversip ofsf_coefflist(ofsf_multfl l1,y),i),
-	    ofsf_tfk(reversip ofsf_coefflist(ofsf_multfl l2,y),-i)});
+         rl_smkn('and,{ofsf_tfk(reversip ofsf_coefflist(ofsf_multfl l1,y),i),
+            ofsf_tfk(reversip ofsf_coefflist(ofsf_multfl l2,y),-i)});
       %setkorder oldorder;
       res2 := rl_smkn('and,{ofsf_tfcmain1(l1,d,y),ofsf_tfcmain1(l2,d,y)});
       return rl_smkn('or,res2 . res)
@@ -87,9 +87,9 @@ procedure ofsf_splitlist(l);
    begin scalar l1,l2,ll;
       ll := l;
       while not null ll do <<
-	 l1 := (car ll) . l1;
-	 l2 := (cadr ll) . l2;
-	 ll := cddr ll
+         l1 := (car ll) . l1;
+         l2 := (cadr ll) . l2;
+         ll := cddr ll
       >>;
       return {l1,l2}
    end;
@@ -106,7 +106,7 @@ procedure ofsf_tfc1(n,coeffl);
       ofsf_0mk2('equal, numr car coeffl)
    else if n = 2 then
       rl_smkn('or,{ofsf_0mk2('equal, numr cadr coeffl),
-	 ofsf_0mk2('lessp, ofsf_norm car coeffl)})
+         ofsf_0mk2('lessp, ofsf_norm car coeffl)})
    else if evenp n then
       ofsf_tfceven(n,coeffl)
    else
@@ -127,21 +127,21 @@ procedure ofsf_tfcodd(n,coeffl);
       'false
    else
       rl_smkn('and,{ofsf_0mk2('equal, numr car coeffl),
-	 ofsf_tfc1(n-1,cdr coeffl)});
+         ofsf_tfc1(n-1,cdr coeffl)});
 
 procedure ofsf_tfceven(n,coeffl);
    % Type Formula Construction in case of even dimension. [n] is an even
    % integer, [coeffl] is a list of SQ's. Returns a formula.
    if domainp numr car coeffl then
       if null numr car coeffl then
-	 ofsf_tfc1(n-1,cdr coeffl)
+         ofsf_tfc1(n-1,cdr coeffl)
       else
-	 ofsf_stfc(n,reverse coeffl)
+         ofsf_stfc(n,reverse coeffl)
    else
       rl_smkn('or, {rl_smkn('and, {ofsf_0mk2('equal, numr car coeffl),
-      	 ofsf_tfc1(n-1,cdr coeffl)}),
-      	 rl_smkn('and,{ofsf_0mk2('neq, numr car coeffl),
-	    ofsf_stfc(n,reverse coeffl)})});
+         ofsf_tfc1(n-1,cdr coeffl)}),
+         rl_smkn('and,{ofsf_0mk2('neq, numr car coeffl),
+            ofsf_stfc(n,reverse coeffl)})});
 
 
 % -----------------------------------------------------------------------------
@@ -154,26 +154,26 @@ procedure ofsf_stfc(n,coeffl);
    % [coeffl] has form $ (c_{n} c_{n-1} ... c_{0}) $.
    begin scalar vv, res, res1, m;
       if !*rlhqetfcfast then <<
-	 vv := ofsf_signs(coeffl);
-	 m := ofsf_olsfast(vv,n)
+         vv := ofsf_signs(coeffl);
+         m := ofsf_olsfast(vv,n)
       >> else
-	 m := ofsf_ols n;
+         m := ofsf_ols n;
       while not null m do <<
-	 res1 := ofsf_buildconj(coeffl, car m);
-	 if res1 eq 'true then <<
-	    m := nil;
-	    res := 'true
-	 >> else if res1 eq 'false then
-	    m := cdr m
-	 else <<
-	    res := res1 . res;
-	    m := cdr m
-	 >>
+         res1 := ofsf_buildconj(coeffl, car m);
+         if res1 eq 'true then <<
+            m := nil;
+            res := 'true
+         >> else if res1 eq 'false then
+            m := cdr m
+         else <<
+            res := res1 . res;
+            m := cdr m
+         >>
       >>;
       if res eq 'true then
-	 return res
+         return res
       else
-      	 return ofsf_tfcmkor res
+         return ofsf_tfcmkor res
    end;
 
 procedure ofsf_buildconj(coeffl,l);
@@ -183,11 +183,11 @@ procedure ofsf_buildconj(coeffl,l);
       newcoeffl := cdr coeffl;
       newl := cdr l;
       while not null newl do <<
-	 af := ofsf_af(car newcoeffl, car newl);
-	 if not null af then
-	    res := ofsf_af(car newcoeffl, car newl) . res;
-	 newcoeffl := cdr newcoeffl;
-	 newl := cdr newl
+         af := ofsf_af(car newcoeffl, car newl);
+         if not null af then
+            res := ofsf_af(car newcoeffl, car newl) . res;
+         newcoeffl := cdr newcoeffl;
+         newl := cdr newl
       >>;
       return ofsf_tfcmkand res
    end;
@@ -226,9 +226,9 @@ procedure ofsf_signs(cl);
       nil
    else if domainp numr car cl  and not null numr car cl then
       if numr car cl > 0 then
-	 1 . ofsf_signs(cdr cl)
+         1 . ofsf_signs(cdr cl)
       else
-	 (-1) . ofsf_signs(cdr cl)
+         (-1) . ofsf_signs(cdr cl)
    else
       0 . ofsf_signs(cdr cl);
 
@@ -242,26 +242,26 @@ procedure ofsf_tfk(cl,k);
    % a positive integer. Returns a formula.
    if length cl - 1 = abs(k) then
       if k=1 then
-	 ofsf_0mk2('lessp, numr car cl)
+         ofsf_0mk2('lessp, numr car cl)
       else if k=-1 then
-	 ofsf_0mk2('greaterp, numr car cl)
+         ofsf_0mk2('greaterp, numr car cl)
       else
-      	 ofsf_stfk(k,reverse cl,abs(k))
+         ofsf_stfk(k,reverse cl,abs(k))
    else if remainder(length cl -1-abs(k),2)=1 then
       if domainp numr car cl and not null numr car cl then
-	 'false
+         'false
       else
-      	 rl_smkn('and,{ofsf_0mk2('equal, numr car cl),
-	    ofsf_tfk(cdr cl,k)})
+         rl_smkn('and,{ofsf_0mk2('equal, numr car cl),
+            ofsf_tfk(cdr cl,k)})
    else if domainp numr car cl then
       if null numr car cl then
-	 ofsf_tfk(cdr cl,k)
+         ofsf_tfk(cdr cl,k)
       else
-	 ofsf_stfk(k,reverse cl,length cl -1)
+         ofsf_stfk(k,reverse cl,length cl -1)
    else
       rl_smkn('or, {rl_smkn('and, {ofsf_0mk2('equal, numr car cl),
-      	 ofsf_tfk(cdr cl,k)}),rl_smkn('and,{ofsf_0mk2('neq, numr car cl),
-	    ofsf_stfk(k,reverse cl,length cl -1)})});
+         ofsf_tfk(cdr cl,k)}),rl_smkn('and,{ofsf_0mk2('neq, numr car cl),
+            ofsf_stfk(k,reverse cl,length cl -1)})});
 
 procedure ofsf_stfk(k,coeffl,d);
    % Strict Type Formula Construction. [k] and [d] are integers, [coeffl] is a
@@ -269,26 +269,26 @@ procedure ofsf_stfk(k,coeffl,d);
    % [coeffl] has form $ (c_{d} c_{d-1} ... c_{0}) $.
    begin scalar vv,res, res1, m;
       if !*rlhqetfcfast then <<
-	 vv := ofsf_signs(coeffl);
-	 m := ofsf_kolsfast(vv,d,k)
+         vv := ofsf_signs(coeffl);
+         m := ofsf_kolsfast(vv,d,k)
       >> else
-	 m := ofsf_kols(d,k);
+         m := ofsf_kols(d,k);
       while not null m do <<
-	 res1 := ofsf_buildconj(coeffl, car m);
-	 if res1 eq 'true then <<
-	    m := nil;
-	    res := 'true
-	 >> else if res1 eq 'false then
-	    m := cdr m
-	 else <<
-	    res := res1 . res;
-	    m := cdr m
-	 >>
+         res1 := ofsf_buildconj(coeffl, car m);
+         if res1 eq 'true then <<
+            m := nil;
+            res := 'true
+         >> else if res1 eq 'false then
+            m := cdr m
+         else <<
+            res := res1 . res;
+            m := cdr m
+         >>
       >>;
       if res eq 'true then
-	 return res
+         return res
       else
-      	 return ofsf_tfcmkor res
+         return ofsf_tfcmkor res
    end;
 
 procedure ofsf_kols(d,k);
@@ -314,37 +314,37 @@ procedure ofsf_kextend(l,l0,l1,d,c,p,n,k);
       if l0=0 then  % implies l1 neq 0
          return lto_nconcn {
             ofsf_kextend((-1) . l,l1,-1,d,c-1,p+ofsf_knpz(l1,-1),
-	       n+ofsf_knnz(l1,-1),k),
+               n+ofsf_knnz(l1,-1),k),
             ofsf_kextend(0 . l,l1, 0,d,c-1,p,n,k),
             ofsf_kextend(1 . l,l1, 1,d,c-1,p+ofsf_knpz(l1, 1),
-	       n+ofsf_knnz(l1, 1),k)};
+               n+ofsf_knnz(l1, 1),k)};
       return lto_nconcn {
          ofsf_kextend(0  . l,l1, 0,d,c-1,p,n,k),
          ofsf_kextend(l0 . l,l1,l0,d,c-1,
-	    p+ofsf_knpz(l1,l0),n+ofsf_knnz(l1,l0),k)}
+            p+ofsf_knpz(l1,l0),n+ofsf_knnz(l1,l0),k)}
    end;
 
 procedure ofsf_kolsfast(vv,d,k);
    % [d] is a even INTEGER, the degree of the polynomials.
    if car vv = 1 then
       if cadr vv=1 then
-	 lto_nconcn {
-      	    ofsf_kextendfast(cddr vv,{ 1,1},1,1,d,d-2,0,1,k),
-	    ofsf_kextendfast(cddr vv,{ 0,1},1,0,d,d-2,0,0,k)}
+         lto_nconcn {
+            ofsf_kextendfast(cddr vv,{ 1,1},1,1,d,d-2,0,1,k),
+            ofsf_kextendfast(cddr vv,{ 0,1},1,0,d,d-2,0,0,k)}
       else if cadr vv=-1 then
-	 lto_nconcn {
-	    ofsf_kextendfast(cddr vv,{-1,1},1,-1,d,d-2,1,0,k),
-	    ofsf_kextendfast(cddr vv,{ 0,1},1,0,d,d-2,0,0,k)}
+         lto_nconcn {
+            ofsf_kextendfast(cddr vv,{-1,1},1,-1,d,d-2,1,0,k),
+            ofsf_kextendfast(cddr vv,{ 0,1},1,0,d,d-2,0,0,k)}
       else
-	 lto_nconcn {
-      	    ofsf_kextendfast(cddr vv,{-1,1},1,-1,d,d-2,1,0,k),
-      	    ofsf_kextendfast(cddr vv,{ 0,1},1,0,d,d-2,0,0,k),
-      	    ofsf_kextendfast(cddr vv,{ 1,1},1,1,d,d-2,0,1,k)}
+         lto_nconcn {
+            ofsf_kextendfast(cddr vv,{-1,1},1,-1,d,d-2,1,0,k),
+            ofsf_kextendfast(cddr vv,{ 0,1},1,0,d,d-2,0,0,k),
+            ofsf_kextendfast(cddr vv,{ 1,1},1,1,d,d-2,0,1,k)}
    else
       lto_nconcn {
-      	 ofsf_kextendfast(cddr vv,{-1,1},1,-1,d,d-2,1,0,k),
-      	 ofsf_kextendfast(cddr vv,{ 0,1},1,0,d,d-2,0,0,k),
-      	 ofsf_kextendfast(cddr vv,{ 1,1},1,1,d,d-2,0,1,k)};
+         ofsf_kextendfast(cddr vv,{-1,1},1,-1,d,d-2,1,0,k),
+         ofsf_kextendfast(cddr vv,{ 0,1},1,0,d,d-2,0,0,k),
+         ofsf_kextendfast(cddr vv,{ 1,1},1,1,d,d-2,0,1,k)};
 
 
 procedure ofsf_kextendfast(vv,l,l0,l1,d,c,p,n,k);
@@ -358,34 +358,34 @@ procedure ofsf_kextendfast(vv,l,l0,l1,d,c,p,n,k);
       if c=0 then
          return ofsf_kextend0(l,l0,l1,d,p,n,k);
       if l1=0 then
-	 if car vv member {-l0,0} then
+         if car vv member {-l0,0} then
             return ofsf_kextendfast(cdr vv,(-l0) . l,l1,-(l0),d,c-1,p+1,n+1,k)
-	 else
-	    return nil;
+         else
+            return nil;
       if l0=0 then  % implies l1 neq 0
-	 if car vv=1 then
-	    return lto_nconcn {
-	       ofsf_kextendfast(cdr vv, 1 . l,l1, 1,d,c-1,p+ofsf_knpz(l1, 1),
-	       	  n+ofsf_knnz(l1, 1),k),
-	       ofsf_kextendfast(cdr vv, 0 . l,l1, 0,d,c-1,p,n,k)}
-	 else if car vv=-1 then
-	    return lto_nconcn {
-	       ofsf_kextendfast(cdr vv, (-1) . l,l1,-1,d,c-1,
-	       	  p+ofsf_knpz(l1,-1),n+ofsf_knnz(l1,-1),k),
-	       ofsf_kextendfast(cdr vv, 0 . l,l1, 0,d,c-1,p,n,k)}
-	 else
+         if car vv=1 then
+            return lto_nconcn {
+               ofsf_kextendfast(cdr vv, 1 . l,l1, 1,d,c-1,p+ofsf_knpz(l1, 1),
+                  n+ofsf_knnz(l1, 1),k),
+               ofsf_kextendfast(cdr vv, 0 . l,l1, 0,d,c-1,p,n,k)}
+         else if car vv=-1 then
             return lto_nconcn {
                ofsf_kextendfast(cdr vv, (-1) . l,l1,-1,d,c-1,
-		  p+ofsf_knpz(l1,-1),n+ofsf_knnz(l1,-1),k),
+                  p+ofsf_knpz(l1,-1),n+ofsf_knnz(l1,-1),k),
+               ofsf_kextendfast(cdr vv, 0 . l,l1, 0,d,c-1,p,n,k)}
+         else
+            return lto_nconcn {
+               ofsf_kextendfast(cdr vv, (-1) . l,l1,-1,d,c-1,
+                  p+ofsf_knpz(l1,-1),n+ofsf_knnz(l1,-1),k),
                ofsf_kextendfast(cdr vv, 0 . l,l1, 0,d,c-1,p,n,k),
                ofsf_kextendfast(cdr vv, 1 . l,l1, 1,d,c-1,p+ofsf_knpz(l1,1),
-	       	  n+ofsf_knnz(l1, 1),k)};
+                  n+ofsf_knnz(l1, 1),k)};
       if not (car vv member {l0,0}) then
-	 return ofsf_kextendfast(cdr vv,0 . l,l1,0,d,c-1,p,n,k)
+         return ofsf_kextendfast(cdr vv,0 . l,l1,0,d,c-1,p,n,k)
       else return lto_nconcn {
             ofsf_kextendfast(cdr vv, 0  . l,l1, 0,d,c-1,p,n,k),
             ofsf_kextendfast(cdr vv, l0 . l,l1,l0,d,c-1,p+ofsf_knpz(l1,l0),
-	       n+ofsf_knnz(l1,l0),k)}
+               n+ofsf_knnz(l1,l0),k)}
    end;
 
 procedure ofsf_kextend0(l,l0,l1,d,p,n,k);
@@ -424,23 +424,23 @@ procedure ofsf_splittypes(l,d,y,i);
    begin scalar res,f1,f2fn,lenl;
       % ioto_prin2t {length l,d,i};
       if null cdr l or (length l)*d < 8 or d*(length l)<2*abs(i) then
-	 if abs(i)<(length l)*d+1 then
-	    if i=0 then
-	       return ofsf_tfc reversip ofsf_coefflist(ofsf_multfl l,y)
-	    else
-      	       return ofsf_tfk(reversip ofsf_coefflist(ofsf_multfl l,y),i)
-	 else
-	    return 'false;
+         if abs(i)<(length l)*d+1 then
+            if i=0 then
+               return ofsf_tfc reversip ofsf_coefflist(ofsf_multfl l,y)
+            else
+               return ofsf_tfk(reversip ofsf_coefflist(ofsf_multfl l,y),i)
+         else
+            return 'false;
       lenl := length l;
       for j:=-d:d do
-	 if (lenl - 1)*d+1 > abs(i-j) then <<
-	    if j=0 then
-	       f1 := ofsf_tfc reversip ofsf_coefflist(car l,y)
-	    else
-	       f1 := ofsf_tfk(reversip ofsf_coefflist(car l,y),j);
-	    f2fn := ofsf_splittypes(cdr l,d,y,i-j);
-	    res := rl_smkn('and,{f1, f2fn}) . res
-      	 >>;
+         if (lenl - 1)*d+1 > abs(i-j) then <<
+            if j=0 then
+               f1 := ofsf_tfc reversip ofsf_coefflist(car l,y)
+            else
+               f1 := ofsf_tfk(reversip ofsf_coefflist(car l,y),j);
+            f2fn := ofsf_splittypes(cdr l,d,y,i-j);
+            res := rl_smkn('and,{f1, f2fn}) . res
+         >>;
       return rl_smkn('or,res)
    end;
 
@@ -469,10 +469,10 @@ procedure ofsf_extend(l,l0,l1,d,c,p,n);
       if l0=0 then  % implies l1 neq 0
          return lto_nconcn {
             ofsf_extend((-1) . l,l1,-1,d,c-1,
-	       p+ofsf_npz(l1,-1),n+ofsf_nnz(l1,-1)),
+               p+ofsf_npz(l1,-1),n+ofsf_nnz(l1,-1)),
             ofsf_extend( 0 . l,l1, 0,d,c-1,p,n),
             ofsf_extend( 1 . l,l1, 1,d,c-1,
-	       p+ofsf_npz(l1, 1),n+ofsf_nnz(l1, 1))};
+               p+ofsf_npz(l1, 1),n+ofsf_nnz(l1, 1))};
       return lto_nconcn {
          ofsf_extend( 0  . l,l1, 0,d,c-1,p,n),
          ofsf_extend( l0 . l,l1,l0,d,c-1,p+ofsf_npz(l1,l0),n+ofsf_nnz(l1,l0))}
@@ -482,23 +482,23 @@ procedure ofsf_olsfast(vv,d);
    % [d] is a even INTEGER, the degree of the polynomials.
    if car vv = 1 then
       if cadr vv=1 then
-	 lto_nconcn {
-      	    ofsf_extendfast(cddr vv,{ 1,1},1,1,d,d-2,0,1),
-	    ofsf_extendfast(cddr vv,{ 0,1},1,0,d,d-2,0,0)}
+         lto_nconcn {
+            ofsf_extendfast(cddr vv,{ 1,1},1,1,d,d-2,0,1),
+            ofsf_extendfast(cddr vv,{ 0,1},1,0,d,d-2,0,0)}
       else if cadr vv=-1 then
-	 lto_nconcn {
-	    ofsf_extendfast(cddr vv,{-1,1},1,-1,d,d-2,1,0),
-	    ofsf_extendfast(cddr vv,{ 0,1},1,0,d,d-2,0,0)}
+         lto_nconcn {
+            ofsf_extendfast(cddr vv,{-1,1},1,-1,d,d-2,1,0),
+            ofsf_extendfast(cddr vv,{ 0,1},1,0,d,d-2,0,0)}
       else
-	 lto_nconcn {
-      	    ofsf_extendfast(cddr vv,{-1,1},1,-1,d,d-2,1,0),
-      	    ofsf_extendfast(cddr vv,{ 0,1},1,0,d,d-2,0,0),
-      	    ofsf_extendfast(cddr vv,{ 1,1},1,1,d,d-2,0,1)}
+         lto_nconcn {
+            ofsf_extendfast(cddr vv,{-1,1},1,-1,d,d-2,1,0),
+            ofsf_extendfast(cddr vv,{ 0,1},1,0,d,d-2,0,0),
+            ofsf_extendfast(cddr vv,{ 1,1},1,1,d,d-2,0,1)}
    else
       lto_nconcn {
-      	 ofsf_extendfast(cddr vv,{-1,1},1,-1,d,d-2,1,0),
-      	 ofsf_extendfast(cddr vv,{ 0,1},1,0,d,d-2,0,0),
-      	 ofsf_extendfast(cddr vv,{ 1,1},1,1,d,d-2,0,1)};
+         ofsf_extendfast(cddr vv,{-1,1},1,-1,d,d-2,1,0),
+         ofsf_extendfast(cddr vv,{ 0,1},1,0,d,d-2,0,0),
+         ofsf_extendfast(cddr vv,{ 1,1},1,1,d,d-2,0,1)};
 
 procedure ofsf_extendfast(vv,l,l0,l1,d,c,p,n);
    % Type formula extend. [l] is a list; [d], [c], [p], and [n] are
@@ -510,34 +510,34 @@ procedure ofsf_extendfast(vv,l,l0,l1,d,c,p,n);
       if c=0 then
          return ofsf_extend0(l,l0,l1,d,p,n);
       if l1=0 then
-	 if car vv member {-l0,0} then
+         if car vv member {-l0,0} then
             return ofsf_extendfast(cdr vv, (-l0) . l,l1,-(l0),d,c-1,p+1,n+1)
-	 else
-	    return nil;
+         else
+            return nil;
       if l0=0 then % implies l1 neq 0
- 	 if car vv = -1 then
-	    return lto_nconcn {
-	       ofsf_extendfast(cdr vv, (-1) . l,l1,-1,d,c-1,p+ofsf_npz(l1,-1),
-	       	  n+ofsf_nnz(l1,-1)),
-	       ofsf_extendfast(cdr vv, 0 . l,l1, 0,d,c-1,p,n)}
-	 else if car vv=1 then
-	    return lto_nconcn {
-	       ofsf_extendfast(cdr vv, 1 . l,l1, 1,d,c-1,p+ofsf_npz(l1, 1),
-	       	  n+ofsf_nnz(l1, 1)),
-	       ofsf_extendfast(cdr vv, 0 . l,l1, 0,d,c-1,p,n)}
-	 else
+         if car vv = -1 then
             return lto_nconcn {
                ofsf_extendfast(cdr vv, (-1) . l,l1,-1,d,c-1,p+ofsf_npz(l1,-1),
-	       	  n+ofsf_nnz(l1,-1)),
+                  n+ofsf_nnz(l1,-1)),
+               ofsf_extendfast(cdr vv, 0 . l,l1, 0,d,c-1,p,n)}
+         else if car vv=1 then
+            return lto_nconcn {
+               ofsf_extendfast(cdr vv, 1 . l,l1, 1,d,c-1,p+ofsf_npz(l1, 1),
+                  n+ofsf_nnz(l1, 1)),
+               ofsf_extendfast(cdr vv, 0 . l,l1, 0,d,c-1,p,n)}
+         else
+            return lto_nconcn {
+               ofsf_extendfast(cdr vv, (-1) . l,l1,-1,d,c-1,p+ofsf_npz(l1,-1),
+                  n+ofsf_nnz(l1,-1)),
                ofsf_extendfast(cdr vv, 0 . l,l1, 0,d,c-1,p,n),
                ofsf_extendfast(cdr vv, 1 . l,l1, 1,d,c-1,p+ofsf_npz(l1, 1),
-	       	  n+ofsf_nnz(l1, 1))};
+                  n+ofsf_nnz(l1, 1))};
       if not(car vv member {l0,0}) then
-	 return ofsf_extendfast(cdr vv, 0 . l,l1,0,d,c-1,p,n)
+         return ofsf_extendfast(cdr vv, 0 . l,l1,0,d,c-1,p,n)
       else return lto_nconcn {
             ofsf_extendfast(cdr vv, 0  . l,l1, 0,d,c-1,p,n),
             ofsf_extendfast(cdr vv, l0 . l,l1,l0,d,c-1,p+ofsf_npz(l1,l0),
-	       n+ofsf_nnz(l1,l0))}
+               n+ofsf_nnz(l1,l0))}
    end;
 
 procedure ofsf_extend0(l,l0,l1,d,p,n);

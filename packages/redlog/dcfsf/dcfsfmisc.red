@@ -1,8 +1,10 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2004-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module dcfsfmisc;
+% Differentially closed field standard form miscellaneous.
+
+revision('dcfsfmisc, "$Id$");
+
+copyright('dcfsfmisc, "Copyright (c) 2004-2009 A. Dolzmann and T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,17 +29,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(dcfsf_misc_rcsid!* dcfsf_misc_copyright!*);
-   dcfsf_misc_rcsid!* :=
-      "$Id$";
-   dcfsf_misc_copyright!* := "Copyright (c) 2004-2009 A. Dolzmann and T. Sturm"
->>;
-
-module dcfsfmisc;
-% Differentially closed field standard form miscellaneous. Submodule
-% of [dcfsf].
 
 procedure dcfsf_termprint(u);
    % Differentialally closed field term print. [u] is a
@@ -86,9 +77,9 @@ procedure dcfsf_varlat(atform);
 procedure dcfsf_varlat1(kl);
    foreach k in kl join
       if pairp k and car k eq 'd then
-	  {cadr k}
+          {cadr k}
       else
-	 {k};
+         {k};
 
 procedure dcfsf_varsubstat(atf,new,old);
    % Differentialally closed substitute variable for variable in atomic
@@ -123,9 +114,9 @@ procedure dcfsf_subalchk(al);
    % denominator.
    for each x in al do
       if not domainp denr simp cdr x then
-	 rederr "parametric denominator in substituted term"
+         rederr "parametric denominator in substituted term"
       else if not idp car x then
-	 typerr({"expression ",car x},"variable") where !*nat=nil;
+         typerr({"expression ",car x},"variable") where !*nat=nil;
 
 procedure dcfsf_eqnrhskernels(x);
    % Differentialally closed field equation right hand side kernels.
@@ -143,7 +134,7 @@ procedure dcfsf_subat(al,f);
    begin scalar nlhs;
       nlhs := subf(dcfsf_arg2l f,al);
       if not domainp denr nlhs then
-	 rederr "parametric denominator after substitution";
+         rederr "parametric denominator after substitution";
       return dcfsf_0mk2(acfsf_op f,numr nlhs)
    end;
 

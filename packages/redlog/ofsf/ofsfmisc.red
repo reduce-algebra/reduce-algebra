@@ -51,7 +51,7 @@ procedure ofsf_anegrel(r);
    % equivalent to $[r](t,0)$ for a term $t$.
    cdr atsoc(r,'((equal . equal) (neq . neq) (leq . geq) (geq . leq)
       (lessp . greaterp) (greaterp . lessp)))
-	 or rederr {"ofsf_anegrel: unknown operator ",r};
+         or rederr {"ofsf_anegrel: unknown operator ",r};
 
 procedure ofsf_clnegrel(r,flg);
    % Ordered field standard form conditionally logically negate
@@ -94,8 +94,8 @@ procedure ofsf_varlat(atform);
    begin scalar vl;
       vl := kernels ofsf_arg2l atform;
       if !*rlbrkcxk then
-	 vl := for each v in vl join
-	    lto_lpvarl v;
+         vl := for each v in vl join
+            lto_lpvarl v;
       return vl
    end;
 
@@ -130,15 +130,15 @@ procedure ofsf_a2cdl(atml);
    begin scalar atf,terml,flag;
       while atml do <<
          atf := caar atml;
-      	 atml := cdr atml;
-      	 terml := ofsf_arg2l atf . terml;
-	 if not(ofsf_op atf memq '(equal neq)) then flag := t
+         atml := cdr atml;
+         terml := ofsf_arg2l atf . terml;
+         if not(ofsf_op atf memq '(equal neq)) then flag := t
       >>;
       return for each x in terml collect
-	 if flag then
-	    {ofsf_0mk2('lessp,x),ofsf_0mk2('equal,x),ofsf_0mk2('greaterp,x)}
-	 else
-	    {ofsf_0mk2('equal,x),ofsf_0mk2('neq,x)}
+         if flag then
+            {ofsf_0mk2('lessp,x),ofsf_0mk2('equal,x),ofsf_0mk2('greaterp,x)}
+         else
+            {ofsf_0mk2('equal,x),ofsf_0mk2('neq,x)}
    end;
 
 procedure ofsf_t2cdl(term);
@@ -178,8 +178,8 @@ procedure ofsf_subalchk(al);
    % sub", probably due to some errorset in subeval.
    if not !*rlnzden and not !*rlposden then
       for each pr in al do
-      	 if not domainp denr simp cdr pr then
-	    rederr "parametric denominator in substituted expression";
+         if not domainp denr simp cdr pr then
+            rederr "parametric denominator in substituted expression";
 
 procedure ofsf_eqnrhskernels(x);
    nconc(kernels numr w,kernels denr w) where w=simp cdr x;
@@ -187,21 +187,21 @@ procedure ofsf_eqnrhskernels(x);
 procedure ofsf_vsubalchk(al);
    for each pr in al do
       if not ofsf_nstdp pr then
-	 rederr {"illegal term", cdr pr, "in vsub"};
+         rederr {"illegal term", cdr pr, "in vsub"};
 
 procedure ofsf_nstdp(u);
    begin scalar cnt;
       u := cdr u;
       if u member '(epsilon (minus epsilon) infinity (minus infinity)) then
-      	 return t;
+         return t;
       if not eqcar(u, 'list) or length cdr u neq 4 then
-	 return nil;
+         return nil;
       u := cdr u;
       cnt := t; while cnt and u do
-	 if denr simp car u neq 1 then
-	    cnt := nil
-	 else
-	    u := cdr u;
+         if denr simp car u neq 1 then
+            cnt := nil
+         else
+            u := cdr u;
       return cnt
    end;
 
@@ -215,9 +215,9 @@ procedure ofsf_getineq(f,bvl);
       while atml do <<
          atf := caar atml;
          atml := cdr atml;
-	 if ofsf_op atf memq '(neq) and
-	    null intersection(bvl, kernels ofsf_arg2l atf) then
-	    cdl := atf . cdl
+         if ofsf_op atf memq '(neq) and
+            null intersection(bvl, kernels ofsf_arg2l atf) then
+            cdl := atf . cdl
       >>;
       return cdl
    end;
@@ -232,7 +232,7 @@ procedure ofsf_structat(at,al);
    begin scalar lhs;
       lhs := ofsf_arg2l at;
       if domainp lhs then
-	 return at;
+         return at;
       return ofsf_0mk2(ofsf_op at, numr simp cdr assoc(lhs,al))
    end;
 
@@ -241,7 +241,7 @@ procedure ofsf_ifstructat(at,al);
       w := sfto_fctrf ofsf_arg2l at;
       r := car w;
       for each x in cdr w do
-	 r := multf(r,expf(numr simp cdr assoc(car x,al),cdr x));
+         r := multf(r,expf(numr simp cdr assoc(car x,al),cdr x));
       return ofsf_0mk2(ofsf_op at,r)
    end;
 
@@ -263,12 +263,12 @@ procedure ofsf_multsurep!-equal(at,atl);
    begin scalar c,a;
       c := ofsf_arg2l at;
       while atl do <<
-	 a := car atl;
-	 atl := cdr atl;
-	 if ofsf_op a eq 'equal and quotf(c,ofsf_arg2l a) then <<
-	    a := 'found;
-	    atl := nil
-	 >>
+         a := car atl;
+         atl := cdr atl;
+         if ofsf_op a eq 'equal and quotf(c,ofsf_arg2l a) then <<
+            a := 'found;
+            atl := nil
+         >>
       >>;
       return a eq 'found
    end;
@@ -277,12 +277,12 @@ procedure ofsf_multsurep!-neq(at,atl);
    begin scalar c,a;
       c := ofsf_arg2l at;
       while atl do <<
-	 a := car atl;
-	 atl := cdr atl;
-	 if ofsf_op a eq 'neq and quotf(ofsf_arg2l a,c) then <<
-	    a := 'found;
-	    atl := nil
-	 >>
+         a := car atl;
+         atl := cdr atl;
+         if ofsf_op a eq 'neq and quotf(ofsf_arg2l a,c) then <<
+            a := 'found;
+            atl := nil
+         >>
       >>;
       return a eq 'found
    end;
@@ -294,13 +294,13 @@ procedure ofsf_posvarp(f,v);
    begin scalar op, argl, a, res;
       op := rl_op f;
       if op eq 'and then <<
-	 argl := rl_argn f;
-	 while not res and argl do <<
-	    a := pop argl;
-	    if not rl_cxp f then
-	       res := ofsf_posvarpat(a,v);
-	 >>;
-	 return res
+         argl := rl_argn f;
+         while not res and argl do <<
+            a := pop argl;
+            if not rl_cxp f then
+               res := ofsf_posvarpat(a,v);
+         >>;
+         return res
       >>;
       return ofsf_posvarpat(f,v)
    end;
@@ -312,44 +312,44 @@ procedure ofsf_posvarpat(a,v);
    begin scalar op;
       op := rl_op a;
       if not memq(op,'(greaterp geq)) then
-	 return nil;
+         return nil;
       if sfto_varp ofsf_arg2l a eq v then
-	 return op
+         return op
    end;
 
 procedure ofsf_posprep(f,resfnchkp);
    begin scalar op,posconds,qvl;
       f := cl_pnf f;
       while rl_quap(op := rl_op f) do <<
-	 if op eq 'all then
- 	    rederr "pos methods admit only one existential quantifier block";
-	 qvl := rl_var f . qvl;
-	 f := rl_mat f
+         if op eq 'all then
+            rederr "pos methods admit only one existential quantifier block";
+         qvl := rl_var f . qvl;
+         f := rl_mat f
       >>;
       posconds := ofsf_posconds(cl_fvarl f,resfnchkp);
       f := rl_mkn('and,f . posconds);
       for each v in qvl do
-	 f := rl_mkq('ex,v,f);
+         f := rl_mkq('ex,v,f);
       return f
    end;
 
 procedure ofsf_posconds(l,resfnchkp);
    for each v in l join
       if resfnchkp and pairp v and ofsf_rxffn car v then
-	 for each w in lto_list2set ofsf_lpvarl v collect
-	    ofsf_0mk2('greaterp,!*k2f w)
+         for each w in lto_list2set ofsf_lpvarl v collect
+            ofsf_0mk2('greaterp,!*k2f w)
       else
-	 {ofsf_0mk2('greaterp,!*k2f v)};
+         {ofsf_0mk2('greaterp,!*k2f v)};
 
 procedure ofsf_lpvarl(u);
    if idp u then
       {u}
    else if pairp u then
       if not (ofsf_opp car u or ofsf_arithp car u or ofsf_rxffn car u) then
-	 {!*a2k u}
+         {!*a2k u}
       else
-      	 for each arg in cdr u join
-	    ofsf_lpvarl arg;
+         for each arg in cdr u join
+            ofsf_lpvarl arg;
 
 procedure ofsf_arithp(op);
    op memq '(plus minus times expt quotient);
@@ -377,30 +377,30 @@ procedure ofsf_resolve2topminmax(at);
       rel := ofsf_op at;
       lhs := prepf ofsf_arg2l at;
       if not pairp lhs then
-	 return at;
+         return at;
       op := car lhs;
       if op eq 'minus then <<
-	 rel := ofsf_anegrel rel;
-	 lhs := cadr lhs;
-	 if not pairp lhs then
-	    return at;
-	 op := car lhs
+         rel := ofsf_anegrel rel;
+         lhs := cadr lhs;
+         if not pairp lhs then
+            return at;
+         op := car lhs
       >>;
       if not (op memq '(min max) and rel memq '(lessp greaterp leq geq)) then
-      	 return at;
+         return at;
       return ofsf_resolveminmax(rel,op,cdr lhs)
    end;
 
 procedure ofsf_resolveminmax(rel,op,argl);
    begin scalar bop;
       bop := if op eq 'min and rel memq '(lessp leq) or
-	 op eq 'max and rel memq '(greaterp geq)
+         op eq 'max and rel memq '(greaterp geq)
       then
-	 'or
+         'or
       else
-	 'and;
+         'and;
       return rl_mkn(bop,for each arg in argl collect
-	 rl_simp {rel,arg,0})
+         rl_simp {rel,arg,0})
    end;
 
 procedure ofsf_rxffn!-abs(op,argl,condl,qll);
@@ -412,13 +412,13 @@ procedure ofsf_rxffn!-abs(op,argl,condl,qll);
       {rc_mk({'minus,car argl},'and . condl,lto_appendn qll)}
    else
       {rc_mk(
-	 car argl,
-	 'and . {'geq,car argl,0} . condl,
-	 lto_appendn qll),
+         car argl,
+         'and . {'geq,car argl,0} . condl,
+         lto_appendn qll),
        rc_mk(
-	 {'minus,car argl},
-	 'and . {'leq,car argl,0} . condl,
-	 lto_appendn qll)};
+         {'minus,car argl},
+         'and . {'leq,car argl,0} . condl,
+         lto_appendn qll)};
 
 procedure ofsf_rxffn(op);
    if op eq 'max then
@@ -451,7 +451,7 @@ procedure ofsf_tan2f(u);
       !*f2q u
    else
       addsq(multsq(ofsf_tan2f lc u,exptsq(ofsf_tan2k mvar u,ldeg u)),
-	    ofsf_tan2f red u);
+            ofsf_tan2f red u);
 
 procedure ofsf_tan2k(k);
    if eqcar(k,'sin) then
@@ -522,14 +522,14 @@ procedure ofsf_dfgPrintAt(f);
       op := rl_op f;
       lhs := prepf ofsf_arg2l f;
       if op eq 'neq then
-      	 cl_dfgPrintQff rl_mk1('not,ofsf_0mk2('equal, ofsf_arg2l f))
+         cl_dfgPrintQff rl_mk1('not,ofsf_0mk2('equal, ofsf_arg2l f))
       else <<
-      	 opal := '((lessp . ls) (leq . le) (greaterp . gs) (geq . ge));
-      	 prin2(if w := atsoc(op,opal) then cdr w else op);
-      	 prin2 "(";
-      	 ofsf_dfgPrintT lhs;
-      	 prin2 ",";
-      	 prin2 "0)"
+         opal := '((lessp . ls) (leq . le) (greaterp . gs) (geq . ge));
+         prin2(if w := atsoc(op,opal) then cdr w else op);
+         prin2 "(";
+         ofsf_dfgPrintT lhs;
+         prin2 ",";
+         prin2 "0)"
       >>
    end;
 
@@ -560,14 +560,14 @@ procedure ofsf_dfgPrintT1(op,argl);
       prin2 ")"
    >> else <<  % op is plus or times
       if not cdr argl then
-	 ofsf_dfgPrintT car argl
+         ofsf_dfgPrintT car argl
       else <<
-	 prin2 if op eq 'times then "mult" else op;
-	 prin2 "(";
-	 ofsf_dfgPrintT car argl;
-	 prin2 ",";
-	 ofsf_dfgPrintT1(op,cdr argl);
-	 prin2 ")"
+         prin2 if op eq 'times then "mult" else op;
+         prin2 "(";
+         ofsf_dfgPrintT car argl;
+         prin2 ",";
+         ofsf_dfgPrintT1(op,cdr argl);
+         prin2 ")"
       >>
    >>;
 
@@ -579,15 +579,15 @@ procedure ofsf_smt2PrintAt(f);
       op := rl_op f;
       lhs := prepf ofsf_arg2l f;
       if op eq 'neq then
-      	 cl_smt2PrintQff rl_mk1('not,ofsf_0mk2('equal,ofsf_arg2l f))
+         cl_smt2PrintQff rl_mk1('not,ofsf_0mk2('equal,ofsf_arg2l f))
       else <<
-      	 opal := '((lessp . "<") (leq . "<=") (greaterp . ">") (geq . ">=")
-	    (equal . "="));
-      	 prin2 "(";
-      	 prin2(if w := atsoc(op,opal) then cdr w else op);
-      	 prin2 " ";
-      	 ofsf_smt2PrintT lhs;
-      	 prin2 " 0)"
+         opal := '((lessp . "<") (leq . "<=") (greaterp . ">") (geq . ">=")
+            (equal . "="));
+         prin2 "(";
+         prin2(if w := atsoc(op,opal) then cdr w else op);
+         prin2 " ";
+         ofsf_smt2PrintT lhs;
+         prin2 " 0)"
       >>
    end;
 
@@ -611,17 +611,17 @@ procedure ofsf_smt2PrintT1(op,argl);
    >> else if op eq 'plus then <<
       prin2 "(+ ";
       for each rargl on argl do <<
-      	 ofsf_smt2PrintT car rargl;
-	 if cdr rargl then
-      	    prin2 " "
+         ofsf_smt2PrintT car rargl;
+         if cdr rargl then
+            prin2 " "
       >>;
       prin2 ")"
    >> else if op eq 'times then <<
       prin2 "(* ";
       for each rargl on argl do <<
-      	 ofsf_smt2PrintT car rargl;
-	 if cdr rargl then
-      	    prin2 " "
+         ofsf_smt2PrintT car rargl;
+         if cdr rargl then
+            prin2 " "
       >>;
       prin2 ")"
    >> else if op eq 'expt then
@@ -631,10 +631,10 @@ procedure ofsf_smt2ReadAt(form);
    begin scalar op, w, lhs, rhs;
       op := car form;
       w := atsoc(op, '((!>!= . geq) (!<!= . leq) (!< . lessp) (!> . greaterp)
-   	 (!= . equal)));
+         (!= . equal)));
       if not w then
-	 error(99, lto_sconcat2(
-	    "expecting logic symbol but found ", id2string op));
+         error(99, lto_sconcat2(
+            "expecting logic symbol but found ", id2string op));
       op := cdr w;
       lhs := ofsf_smt2ReadTerm cadr form;
       rhs := ofsf_smt2ReadTerm caddr form;
@@ -647,15 +647,15 @@ procedure ofsf_smt2ReadTerm(u);
 procedure ofsf_smt2ReadTerm1(u);
    begin scalar op, w;
       if atom u or eqcar(u, '!:dn!:) or eqcar(u, '_) then
- 	 return u;
+         return u;
       op := car u;
       w := atsoc(op, '((!+ . plus) (!- . minus) (!* . times) (!/ . quotient)));
       if not w then
-	 error(99, lto_sconcat2(
-	    "expecting arithmetic symbol but found ", id2string op));
+         error(99, lto_sconcat2(
+            "expecting arithmetic symbol but found ", id2string op));
       op := cdr w;
       if op eq 'minus and cddr u then
-	 op := 'difference;
+         op := 'difference;
       return op . for each arg in cdr u collect ofsf_smt2ReadTerm1 arg
    end;
 
@@ -673,15 +673,15 @@ procedure ofsf_dima(ql, p);
    % [ql] is a list of SF, [p] is an SF.
    begin scalar w, xl, yl, pt, qtl, ptt, sys, sl0, sl; integer k, n;
       for each q in ql do
-	 xl := union(kernels q, xl);
+         xl := union(kernels q, xl);
       xl := sort(xl, 'ordp);
       n := length xl;
       yl := kernels p;
       k := length yl;
       if k neq length ql then
-	 rederr {"size of Q does not match number of vars in P", k, length yl};
+         rederr {"size of Q does not match number of vars in P", k, length yl};
       if (w := intersection(xl, yl)) then
-	 rederr {w, "occur in both Q and P"};
+         rederr {w, "occur in both Q and P"};
       % Step 1:
       {xl, ql, yl, pt} := ofsf_dima!-p1(xl, ql, yl, p);  % (T1)
       qtl := ofsf_dima!-p2(xl, ql, k);  % (T2)
@@ -699,9 +699,9 @@ procedure ofsf_dima(ql, p);
 procedure ofsf_dima!-subf(f, vl, fl);
    begin scalar al, v, f1;
       while vl and fl do <<
-	 v := pop vl;
-	 f1 := !*f2q pop fl;
-	 al := (v . f1) . al
+         v := pop vl;
+         f1 := !*f2q pop fl;
+         al := (v . f1) . al
       >>;
       assert(null vl and null fl);
       return numr ofsf_siatsubf(f, al)
@@ -724,7 +724,7 @@ procedure ofsf_dima!-sigma(cl,xl);
    begin scalar xsql, s;
       xsql := for each x in xl collect exptf(!*k2f x, 2);
       while cl and xsql do
-	 s := addf(s, multf(pop cl, pop xsql));
+         s := addf(s, multf(pop cl, pop xsql));
       assert(null cl and null xsql);
       return s
    end;
@@ -733,8 +733,8 @@ procedure ofsf_dima!-p2(xl, ql, k);
    begin scalar qtl, cl; integer j, tn;
       tn := length xl;
       qtl := for j := 0:k collect <<
-	 cl := for i:=1 : tn collect i^j;
-	 addf(pop ql, multf(!*k2f 'epsilon2, ofsf_dima!-sigma(cl, xl)))
+         cl := for i:=1 : tn collect i^j;
+         addf(pop ql, multf(!*k2f 'epsilon2, ofsf_dima!-sigma(cl, xl)))
       >>;
       assert null ql;
       return qtl
@@ -746,14 +746,14 @@ procedure ofsf_dima!-mksys(xl, qtl, yl, pt);
    begin scalar nablaqtl, nablapt, sys0, sys, llambda;
       nablapt := ofsf_dima!-gradient(pt, yl);
       nablaqtl := for each x in xl collect
-	 ofsf_dima!-partiall(qtl, x);
+         ofsf_dima!-partiall(qtl, x);
       sys0 := for each pvec in nablaqtl collect
-	 ofsf_dima!-sprod(nablapt, pvec);
+         ofsf_dima!-sprod(nablapt, pvec);
       sys := for each f in cdr sys0 collect
-	 ofsf_0mk2('equal, f);
+         ofsf_0mk2('equal, f);
       if !*rldimaincludefirst then <<
-	 llambda := !*k2f intern gensym();
-      	 sys := ofsf_0mk2('equal, addf(car sys0, negf llambda)) . sys
+         llambda := !*k2f intern gensym();
+         sys := ofsf_0mk2('equal, addf(car sys0, negf llambda)) . sys
       >>;
       return sys
    end;
@@ -767,7 +767,7 @@ procedure ofsf_dima!-partiall(pl, v);
 procedure ofsf_dima!-sprod(l1, l2);
    begin scalar sp;
       for each p in lto_zip(l1, l2, function multf) do
-	 sp := addf(sp,p);
+         sp := addf(sp,p);
       return sp
    end;
 
@@ -782,15 +782,15 @@ procedure ofsf_dima!-pgauss(eql, vl);
 procedure ofsf!-dima!-sol2formulas(ptt, sl0, yl);
    begin scalar phi, xl, vl, sl, w;
 %%       xl := lto_list2set for each s in sl0 join
-%% 	 for each pr in cdr s join
-%%  	    nconc(kernels numr cdr pr, kernels denr cdr pr);
+%%       for each pr in cdr s join
+%%          nconc(kernels numr cdr pr, kernels denr cdr pr);
 %%       vl := reversip append(yl, xl);
       sl := for each s in sl0 collect <<
-	 w :=  numr ofsf_siatsubf(ptt, cdr s);
-	 phi := rl_smkn('and, reverse(ofsf_0mk2('equal,w) . car s));
-%% 	 for each v in vl do
-%% 	    phi := rl_mkq('ex, v, phi);
-	 rl_ex(phi, '(epsilon0 epsilon1 epsilon2))
+         w :=  numr ofsf_siatsubf(ptt, cdr s);
+         phi := rl_smkn('and, reverse(ofsf_0mk2('equal,w) . car s));
+%%       for each v in vl do
+%%          phi := rl_mkq('ex, v, phi);
+         rl_ex(phi, '(epsilon0 epsilon1 epsilon2))
       >>;
       return sl
    end;
@@ -805,17 +805,17 @@ asserted procedure ofsf_symbolify1(f: Formula, c: Integer, subl: Alist): List3;
    begin scalar op, w, nargl; integer c;
       op := rl_op f;
       if rl_tvalp op then
- 	 return {f, c, subl};
+         return {f, c, subl};
       if rl_quap op then <<
-	 {w, c, subl} := ofsf_symbolify1(rl_mat f, c, subl);
-    	 return {rl_mkq(op, rl_var f, w), c, subl}
+         {w, c, subl} := ofsf_symbolify1(rl_mat f, c, subl);
+         return {rl_mkq(op, rl_var f, w), c, subl}
       >>;
       if rl_boolp op then <<
-	 nargl := for each arg in rl_argn f collect <<
-	    {w, c, subl} := ofsf_symbolify1(arg, c, subl);
-	    w
-	 >>;
-	 return {rl_mkn(op, nargl), c, subl}
+         nargl := for each arg in rl_argn f collect <<
+            {w, c, subl} := ofsf_symbolify1(arg, c, subl);
+            w
+         >>;
+         return {rl_mkn(op, nargl), c, subl}
       >>;
       % [f] is an atomic formula.
       {w, c, subl} := sfto_symbolify1(ofsf_arg2l f, 'i, c, subl);

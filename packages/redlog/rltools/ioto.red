@@ -71,8 +71,8 @@ procedure ioto_prin21(l,flg1,flg2,spc);
       if l and atom l then l := {l};
       if flg1 then ioto_cterpri();
       for each x in l do <<
- 	 prin2 x;
- 	 if spc then prin2 " "
+         prin2 x;
+         if spc then prin2 " "
       >>;
       ioto_flush();
       if flg2 then ioto_cterpri()
@@ -142,41 +142,41 @@ procedure ioto_form2str(u);
 procedure ioto_prtb(buf, u);
    <<
       for each x in explode2 u do
-	 push(x, buf);
+         push(x, buf);
       buf
    >>;
 
 procedure ioto_form2str1(b, u, p);
    begin scalar op, infx;
       if atom u then <<
-	 b := ioto_prtb(b, u);
-	 return b
+         b := ioto_prtb(b, u);
+         return b
       >>;
       op := pop u;
       infx := get(op, 'infix);
       if op eq 'minus then <<  % strange one!
-	 b := ioto_prtbpar(b, '!(, p, infx);
-      	 b := ioto_prtbop(b, op);
-	 b := ioto_form2str1(b, pop u, infx);
-	 b := ioto_prtbpar(b, '!), p, infx);
-	 return b
+         b := ioto_prtbpar(b, '!(, p, infx);
+         b := ioto_prtbop(b, op);
+         b := ioto_form2str1(b, pop u, infx);
+         b := ioto_prtbpar(b, '!), p, infx);
+         return b
       >>;
       if infx then <<
-	 b := ioto_prtbpar(b, '!(, p, infx);
-	 b := ioto_form2str1(b, car u, infx);
-	 for each arg in cdr u do <<
-	    if op neq 'plus or not eqcar(arg, 'minus) then  % hack
-	       b := ioto_prtbop(b, op);
-	    b := ioto_form2str1(b, arg, infx)
-	 >>;
-	 b := ioto_prtbpar(b, '!), p, infx);
-	 return b
+         b := ioto_prtbpar(b, '!(, p, infx);
+         b := ioto_form2str1(b, car u, infx);
+         for each arg in cdr u do <<
+            if op neq 'plus or not eqcar(arg, 'minus) then  % hack
+               b := ioto_prtbop(b, op);
+            b := ioto_form2str1(b, arg, infx)
+         >>;
+         b := ioto_prtbpar(b, '!), p, infx);
+         return b
       >>;
       b := ioto_prtbop(b, op);
       b := ioto_prtb(b, '!();
       for each rargl on u do <<
-	 b := ioto_form2str1(b, car rargl, 0);
-      	 b := ioto_prtb(b, if cdr rargl then '!, else '!))
+         b := ioto_form2str1(b, car rargl, 0);
+         b := ioto_prtb(b, if cdr rargl then '!, else '!))
       >>;
       return b
    end;
@@ -187,13 +187,13 @@ procedure ioto_prtbpar(b, u, p, infx);
 procedure ioto_prtbop(b, op);
    <<
       if flagp(op, 'spaced) then
-	 b := ioto_prtb(b, '! );
+         b := ioto_prtb(b, '! );
       b := if op eq 'expt then
-	 ioto_prtb(b, '!^)
+         ioto_prtb(b, '!^)
       else
- 	 ioto_prtb(b, get(op, 'prtch) or op);
+         ioto_prtb(b, get(op, 'prtch) or op);
       if flagp(op, 'spaced) then
-	 b := ioto_prtb(b, '! );
+         b := ioto_prtb(b, '! );
       b
    >>;
 
@@ -232,13 +232,13 @@ asserted procedure ioto_sprin2(s: Any): String;
       % We use nil as an argument to supress newlines around our string.
       ll := linelength(2^(32-5)-1);
       if !*nat then
- 	 terpri!* nil;
+         terpri!* nil;
       prin2!* s;
       if !*nat then
- 	 terpri!* nil;
+         terpri!* nil;
       % Trim one trailing newline (and preceding escape char):
       if !*nat then
-      	 rlsmaprinbuf!* := cddr rlsmaprinbuf!*;
+         rlsmaprinbuf!* := cddr rlsmaprinbuf!*;
       str := id2string compress reversip rlsmaprinbuf!*;
       linelength ll;
       return str
@@ -258,13 +258,13 @@ asserted procedure ioto_smaprin(u: List): String;
       % initialization and finalization; compare mathprint in mathpr/mprint.red.
       % We use nil as an argument to supress newlines around our string.
       if !*nat then
- 	 terpri!* nil;
+         terpri!* nil;
       maprin u;
       if !*nat then
- 	 terpri!* nil;
+         terpri!* nil;
       % Trim one trailing newline (and preceding escape char):
       if !*nat then
-      	 rlsmaprinbuf!* := cddr rlsmaprinbuf!*;
+         rlsmaprinbuf!* := cddr rlsmaprinbuf!*;
       return id2string compress reversip rlsmaprinbuf!*
    end;
 
@@ -277,17 +277,17 @@ asserted procedure ioto_smaprinoh(m: Any, l: Any): Any;
       maprint(l, 0)
    else if m eq 'prin2!* then
       if !*nat then
-	 % With "on nat" nothing is really printed. So we can rely on what is
-	 % there. We must lambda bind outputhandler!* to nil to avoind an
-	 % infinite recursion. A cleaner solution would be splitting prin2!*
-	 % into a wrapper that checks for outputhandler!* and calls a work
-	 % horse (as is the case with maprin/maprint above).
-	 prin2!* l where outputhandler!* = nil
+         % With "on nat" nothing is really printed. So we can rely on what is
+         % there. We must lambda bind outputhandler!* to nil to avoind an
+         % infinite recursion. A cleaner solution would be splitting prin2!*
+         % into a wrapper that checks for outputhandler!* and calls a work
+         % horse (as is the case with maprin/maprint above).
+         prin2!* l where outputhandler!* = nil
       else
-	 % With "off nat" prin2!* would actually prin2 to stdout. We catch it.
-	 % Luckily there is noting sophisticated to do.
-      	 for each c in explodec l do
-	    ioto_smaprinbuf c
+         % With "off nat" prin2!* would actually prin2 to stdout. We catch it.
+         % Luckily there is noting sophisticated to do.
+         for each c in explodec l do
+            ioto_smaprinbuf c
    else if m eq 'terpri then
       % Here is where the actual printing takes place with "on nat." We must
       % catch this.
@@ -303,19 +303,19 @@ asserted procedure ioto_terpri!*(u: Boolean);
    %
    begin integer n;
       if testing!-width!* then
- 	 return overflowed!* := t;
+         return overflowed!* := t;
       if !*fort then
- 	 rederr "ioto_smaprin: Fortran output not supported";
+         rederr "ioto_smaprin: Fortran output not supported";
       if !*nat and pline!* then <<
-	 pline!* := reverse pline!*;
-	 for n := ymax!* step -1 until ymin!* do <<
-	    ioto_scprint(pline!*, n);
-	    ioto_smaprinbuf !$eol!$
- 	 >>;
-	 pline!* := nil
+         pline!* := reverse pline!*;
+         for n := ymax!* step -1 until ymin!* do <<
+            ioto_scprint(pline!*, n);
+            ioto_smaprinbuf !$eol!$
+         >>;
+         pline!* := nil
       >>;
       if u then
-	 ioto_smaprinbuf !$eol!$;
+         ioto_smaprinbuf !$eol!$;
       posn!* := orig!*;
       ycoord!* := ymax!* := ymin!* := 0
    end;
@@ -328,15 +328,15 @@ asserted procedure ioto_scprint(u: List, n: Integer);
    begin scalar m;
       posn!* := 0;
       for each v in u do <<
-	 if cdar v = n then <<
-	    m := caaar v - posn!*;
-	    if m geq 0 then
- 	       for i := 1:m do
-		  ioto_smaprinbuf '! ;
-	    for each c in explodec cdr v do
-	       ioto_smaprinbuf c;
-	    posn!* := cdaar v
- 	 >>
+         if cdar v = n then <<
+            m := caaar v - posn!*;
+            if m geq 0 then
+               for i := 1:m do
+                  ioto_smaprinbuf '! ;
+            for each c in explodec cdr v do
+               ioto_smaprinbuf c;
+            posn!* := cdaar v
+         >>
       >>
    end;
 

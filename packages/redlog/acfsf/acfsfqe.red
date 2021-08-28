@@ -59,19 +59,19 @@ procedure acfsf_qe1(f,theo,xbvl);
       w := cl_splt f;
       qblkl := car w;
       if null qblkl then
-	 return f;
+         return f;
       qff := cadr w;
       bvl := caddr w;
       theo := for each atf in theo join
-	 if null intersection(rl_varlat atf,bvl) then {atf};
+         if null intersection(rl_varlat atf,bvl) then {atf};
       xbvl := nconc(bvl,xbvl);
       if !*rlqegen then
-	 if cdr qblkl then
-	    rederr "acfsf_qe: gqe supported only for one block of quantifiers"
-	 else if xbvl then
-	    rederr "acfsf_qe: does not accept a xbvl";
+         if cdr qblkl then
+            rederr "acfsf_qe: gqe supported only for one block of quantifiers"
+         else if xbvl then
+            rederr "acfsf_qe: does not accept a xbvl";
       for each qblk in qblkl do
-	 qff := acfsf_qeblk(qblk,qff,theo,xbvl);
+         qff := acfsf_qeblk(qblk,qff,theo,xbvl);
       return qff
    end;
 
@@ -94,7 +94,7 @@ procedure acfsf_qeblk1(vl,f,theo,bvl);
       f := rl_dnf f;
       fl := if rl_op f eq 'or then rl_argn f else {f};
       w := for each c in fl collect
-      	 acfsf_qeblk2(vl,c,theo,bvl);
+         acfsf_qeblk2(vl,c,theo,bvl);
       return rl_simpl(rl_smkn('or,reversip w),theo,-1)
    end;
 
@@ -106,7 +106,7 @@ procedure acfsf_qeblk2(vl,f,theo,bvl);
    % equivalent to ex(vl,f) wrt. [theo].
    begin scalar w,atl,eqtl,itheo,cgb,cd;
       if rl_tvalp f then
-	 return f;
+         return f;
       atl := cl_atl1 f;
       w := acfsf_spltcj(atl,vl);
       atl := car w;
@@ -128,10 +128,10 @@ procedure acfsf_spltcj(atl,vl);
    % variables from [vl] occur in the atomic formulas in $\beta$.
    begin scalar natl,itheo;
       for each x in atl do
-	 if intersection(acfsf_varlat x,vl) then
-	    natl := x . natl
-	 else
-	    itheo := x . itheo;
+         if intersection(acfsf_varlat x,vl) then
+            natl := x . natl
+         else
+            itheo := x . itheo;
       return natl . itheo
    end;
 
@@ -143,10 +143,10 @@ procedure acfsf_eqtl(atl);
    % is equivalent to $\exists(\tau,\lambda)$.
    begin scalar eqtl,neqtl,w;
       for each at in atl do
-	 if acfsf_op at eq 'equal then
-	    eqtl := acfsf_arg2l at . eqtl
-	 else
-	    neqtl := acfsf_arg2l at . neqtl;
+         if acfsf_op at eq 'equal then
+            eqtl := acfsf_arg2l at . eqtl
+         else
+            neqtl := acfsf_arg2l at . neqtl;
       w := acfsf_rmneqtl neqtl;
       eqtl := nconc(car w,eqtl);
       return eqtl . cdr w
@@ -160,10 +160,10 @@ procedure acfsf_rmneqtl(neqtl);
    % $\bigwedge([neqtl])$ is equivalent to $\exists(\tau,\lambda)$.
    begin scalar p,v;
       if null neqtl then
-	 return nil . nil;
+         return nil . nil;
       p := 1;
       for each u in neqtl do
-	 p := multf(p,u);
+         p := multf(p,u);
       v := acfsf_tagvar();
       p := addf(multf(p,numr simp v),negf 1);
       return {p} . {v}
@@ -182,7 +182,7 @@ procedure acfsf_qefl(ul,vl);
       if null ul then return 'true;
       oenv := dip_init(vl,'revgradlex,nil);
       fl := for each u in ul collect
-	 acfsf_qefl1 dip_f2dip u;
+         acfsf_qefl1 dip_f2dip u;
       dip_cleanup(oenv);
       return rl_smkn('and,fl)
    end;
@@ -193,17 +193,17 @@ procedure acfsf_qefl1(p);
    % quantifier-free formula.
    begin scalar p,fl,cl,lev,lc;
       while p do <<
- 	 cl := dip_lbc p . cl;
-	 lev := dip_evlmon p;
-      	 p := dip_mred p;
+         cl := dip_lbc p . cl;
+         lev := dip_evlmon p;
+         p := dip_mred p;
       >>;
       if ev_zero!? lev then <<
-	 lc := car cl;
-	 cl := cdr cl
+         lc := car cl;
+         cl := cdr cl
       >> else
-	 lc := simp 0;
+         lc := simp 0;
       fl := for each c in cl collect
-	 acfsf_0mk2('neq,acfsf_bc2f c);
+         acfsf_0mk2('neq,acfsf_bc2f c);
       fl := acfsf_0mk2('equal,acfsf_bc2f lc) . fl;
       return rl_smkn('or,fl)
    end;
@@ -231,13 +231,13 @@ procedure acfsf_thregen(f);
    begin scalar op;
       op := rl_op f;
       if op = 'and then
- 	 return for each x in rl_argn f collect acfsf_thregen!-or x;
+         return for each x in rl_argn f collect acfsf_thregen!-or x;
       if op = 'or then
-	 return {acfsf_thregen!-or f};
+         return {acfsf_thregen!-or f};
       if op = 'true then
-	 return nil;
+         return nil;
       if op = 'false then
-	 {'false};
+         {'false};
       % [f] is atomic.
       return {f}
    end;
@@ -248,12 +248,12 @@ procedure acfsf_thregen!-or(f);
    % equation equivalent to [f].
    begin scalar w;
       if cl_atfp f then
-	 return f;
+         return f;
       w := numr simp 1;
       for each equ in rl_argn f do <<
-      	 if rl_op equ neq 'equal then
-	    rederr "Bug in acfsf_thregen!-or";
-	 w := multf(w,rl_arg2l equ)
+         if rl_op equ neq 'equal then
+            rederr "Bug in acfsf_thregen!-or";
+         w := multf(w,rl_arg2l equ)
       >>;
       return acfsf_0mk2('equal,w)
    end;

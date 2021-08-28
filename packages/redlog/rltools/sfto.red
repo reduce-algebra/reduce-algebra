@@ -176,7 +176,7 @@ asserted procedure sfto_sqfdec!$(argl: List): AmList;
    % represented as a Lisp prefix form and the $m_i$ are integers.
    begin scalar w;
       return 'list . for each x in sfto_sqfdecf numr simp car argl join
-      	 if (w := prepf car x) neq 1 then {{'list,w,cdr x}}
+         if (w := prepf car x) neq 1 then {{'list,w,cdr x}}
    end;
 
 asserted procedure sfto_usqfdecf(u: SF): Alist;
@@ -203,10 +203,10 @@ asserted procedure sfto_yun!-usqfdecf(p: SF): Alist;
       c := quotf(p,g);
       d := addf(quotf(w,g),negf(diff(c,x)));
       repeat <<
-	 p := sfto_gcdf(c,d);
-	 l := (p . (n := n+1)) . l;
-	 c := quotf(c,p);
-	 d := addf(quotf(d,p),negf(diff(c,x)))
+         p := sfto_gcdf(c,d);
+         l := (p . (n := n+1)) . l;
+         c := quotf(c,p);
+         d := addf(quotf(d,p),negf(diff(c,x)))
       >> until domainp c;
       return reversip l
    end;
@@ -224,10 +224,10 @@ asserted procedure sfto_musser!-usqfdecf(u: SF): Alist;
       u1 := sfto_gcdf(u,diff(u,v));
       sqfp := quotf(u,u1);
       while degr(u1,v)>0 do <<
-	 sqfp1 := sfto_gcdf(sqfp,u1);
-	 l := (quotf(sqfp,sqfp1) . (n := n+1)) . l;
-	 u1 := quotf(u1,sqfp1);
-	 sqfp := sqfp1
+         sqfp1 := sfto_gcdf(sqfp,u1);
+         l := (quotf(sqfp,sqfp1) . (n := n+1)) . l;
+         u1 := quotf(u1,sqfp1);
+         sqfp := sqfp1
       >>;
       l := (sqfp . (n := n+1)) . l;
       return reversip l
@@ -246,11 +246,11 @@ asserted procedure sfto_tobey!-usqfdecf(u: SF): Alist;
       h := sfto_gcdf(u,diff(u,v));
       q2 := quotf(u,h);
       while degr(u,v)>0 do <<
-	 u := h;
-	 q1 := q2;
-	 h := sfto_gcdf(u,diff(u,v));
-	 q2 := quotf(u,h);
-	 l := (quotf(q1,q2) . (n := n+1)) . l
+         u := h;
+         q1 := q2;
+         h := sfto_gcdf(u,diff(u,v));
+         q2 := quotf(u,h);
+         l := (quotf(q1,q2) . (n := n+1)) . l
       >>;
       return reversip l
    end;
@@ -260,9 +260,9 @@ asserted procedure sfto_sqdmerge(l1: Alist,l2: Alist): Alist;
    begin scalar l;
       l := l1;
       while l1 and l2 do <<
-	 caar l1 := multf(caar l1,caar l2);
-      	 l1 := cdr l1;
-	 l2 := cdr l2
+         caar l1 := multf(caar l1,caar l2);
+         l1 := cdr l1;
+         l2 := cdr l2
       >>;
       if l2 then l := nconc(l,l2);
       return l
@@ -302,11 +302,11 @@ asserted procedure sfto_yun!-updecf(p: SF): DottedPair;
       c := quotf(p,g);
       d := addf(quotf(w,g),negf(diff(c,x)));
       repeat <<
-	 od := not od;
-	 p := sfto_gcdf(c,d);
-	 if od then car l := multf(car l,p) else cdr l := multf(cdr l,p);
-	 c := quotf(c,p);
-	 d := addf(quotf(d,p),negf(diff(c,x)))
+         od := not od;
+         p := sfto_gcdf(c,d);
+         if od then car l := multf(car l,p) else cdr l := multf(cdr l,p);
+         c := quotf(c,p);
+         d := addf(quotf(d,p),negf(diff(c,x)))
       >> until domainp c;
       return l
    end;
@@ -321,19 +321,19 @@ asserted procedure sfto_musser!-updecf(u: SF): DottedPair;
       u1 := sfto_gcdf(u,diff(u,v));
       sqfp := quotf(u,u1);
       while degr(u1,v)>0 do <<
-	 sqfp1 := sfto_gcdf(sqfp,u1);
-	 if od then
- 	    car l := multf(car l,quotf(sqfp,sqfp1))
-	 else
-	    cdr l := multf(cdr l,quotf(sqfp,sqfp1));
-	 u1 := quotf(u1,sqfp1);
-	 sqfp := sqfp1;
-	 od := not od
+         sqfp1 := sfto_gcdf(sqfp,u1);
+         if od then
+            car l := multf(car l,quotf(sqfp,sqfp1))
+         else
+            cdr l := multf(cdr l,quotf(sqfp,sqfp1));
+         u1 := quotf(u1,sqfp1);
+         sqfp := sqfp1;
+         od := not od
       >>;
       if od then
-	 car l := multf(car l,sqfp)
+         car l := multf(car l,sqfp)
       else
-	 cdr l := multf(cdr l,sqfp);
+         cdr l := multf(cdr l,sqfp);
       return l
    end;
 
@@ -347,12 +347,12 @@ asserted procedure sfto_dgcdf(f: SF, x: Kernel): Integer;
    % [x] does not occur in [f], then [0] is returned.
    begin scalar oo; integer g;
       if domainp f then
-	 return 0;
+         return 0;
       oo := setkorder {x};
       f := reorder f;
       while sfto_mvartest(f, x) and not eqn(g, 1) do <<
-	 g := gcdn(g, ldeg f);
-	 f := red f
+         g := gcdn(g, ldeg f);
+         f := red f
       >>;
       setkorder oo;
       return g
@@ -363,13 +363,13 @@ asserted procedure sfto_decdegf(u: SF, k: Kernel, n: Integer): SF;
    % in [u] by $k^(d/n)$.
    begin scalar sal,hit,newkk;
       if !*rlbrkcxk then <<
-	 for each kk in kernels u do
-	    if pairp kk then <<
-	       hit . newkk := sfto_decdegcxk(kk,k,n,nil);
-	       if hit then
-	       	  sal := (kk . newkk) . sal
-	    >>;
-	 u := numr subf(u,sal)
+         for each kk in kernels u do
+            if pairp kk then <<
+               hit . newkk := sfto_decdegcxk(kk,k,n,nil);
+               if hit then
+                  sal := (kk . newkk) . sal
+            >>;
+         u := numr subf(u,sal)
       >>;
       u := reorder sfto_decdegf1(sfto_reorder(u,k),k,n);
       return u
@@ -381,12 +381,12 @@ asserted procedure sfto_decdegcxk(kk: Kernel, k: Kernel, n: Integer, hit: Boolea
    % $[k]^d$ by $k^(d/n)$; $h$ is [t] iff $h$ is not equal to [kk].
    begin scalar w,argl;
       if not pairp kk then
-	 return hit . kk;
+         return hit . kk;
       if car kk eq 'expt and cadr kk eq k then
-	 return t . {'expt,k,caddr kk / n};
+         return t . {'expt,k,caddr kk / n};
       for each arg in cdr kk do <<
-	 hit . w := sfto_decdegcxk(arg,k,n,hit);
-	 argl := w . argl
+         hit . w := sfto_decdegcxk(arg,k,n,hit);
+         argl := w . argl
       >>;
       return hit . (car kk . reversip argl)
    end;
@@ -428,7 +428,7 @@ asserted procedure sfto_groebnerf(l: List): List;
       if null l then return nil;
       w := groebnereval {'list . for each sf in l collect prepf sf};
       return for each x in cdr w collect
-	 numr simp x
+         numr simp x
    end;
 
 asserted procedure sfto_preducef(f: SF, gl: List): SF;
@@ -478,9 +478,9 @@ asserted procedure sfto_davp(f: SF, badv: ExtraBoolean): Boolean;
       t
    else if ldeg f > 2 then
       if badv and mvar f neq badv then
-	 nil
+         nil
       else
-	 sfto_davp(lc f,mvar f) and sfto_davp(red f,mvar f)
+         sfto_davp(lc f,mvar f) and sfto_davp(red f,mvar f)
    else
       sfto_davp(lc f,badv) and sfto_davp(red f,badv);
 
@@ -490,20 +490,20 @@ asserted procedure sfto_sqrtf(f: SF): ExtraBoolean;
       c := sfto_dcontentf(f);
       result := isqrt c;
       if result**2 neq c then
-	 return nil;
+         return nil;
       sd := sfto_sqfdecf(f);
       w := sd;
       while sd do <<
-	 a := car sd;
-      	 sd := cdr sd;
-	 if not(evenp cdr a) and car a neq 1 then <<
- 	    sd := nil;
-	    a := 'break
-	 >> else
-	    result := multf(result,exptf(car a,cdr a / 2 ))
+         a := car sd;
+         sd := cdr sd;
+         if not(evenp cdr a) and car a neq 1 then <<
+            sd := nil;
+            a := 'break
+         >> else
+            result := multf(result,exptf(car a,cdr a / 2 ))
       >>;
       if a neq 'break and exptf(result,2) = f then
-	 return result
+         return result
    end;
 
 asserted procedure sfto_monfp(sf: SF): Boolean;
@@ -549,20 +549,20 @@ asserted procedure sfto_exteucf(a: SF, b: SF): List3;
       u := numr simp 0;
       v := numr simp 1;
       while not null b do <<
-	 w := qremf(a,b);
-	 a := b;
-	 b := cdr w;
-	 s1 := s;
-	 t1 := tt;
-	 s := u;
-	 tt := v;
-	 u := addf(s1,negf multf(car w,u));
-	 v := addf(t1,negf multf(car w,v))
+         w := qremf(a,b);
+         a := b;
+         b := cdr w;
+         s1 := s;
+         t1 := tt;
+         s := u;
+         tt := v;
+         u := addf(s1,negf multf(car w,u));
+         v := addf(t1,negf multf(car w,v))
       >>;
       if domainp a then <<
-	 s := quotf(s,a);
-	 tt := quotf(tt,a);
-	 a := 1
+         s := quotf(s,a);
+         tt := quotf(tt,a);
+         a := 1
       >>;
       off1 'rational;
       return {resimp !*f2q a,resimp !*f2q s,resimp !*f2q tt}
@@ -573,10 +573,10 @@ asserted procedure exteuc(a: AmPoly, b: AmPoly): AmList;
       af := numr simp a;
       bf := numr simp b;
       if domainp af and domainp bf then
-	 return 'list . sfto_exteucd(a,b);
+         return 'list . sfto_exteucd(a,b);
       ka := kernels af;
       if (ka and cdr ka) or (kb and cdr kb) then
-	 rederr "non-univariate input polynomial";
+         rederr "non-univariate input polynomial";
       return 'list . for each x in sfto_exteucf(af,bf) collect prepsq x
    end;
 
@@ -587,21 +587,21 @@ asserted procedure sfto_exteucd(a: Integer, b: Integer): List3;
       s := 1;
       v :=  1;
       while not eqn(b,0) do <<
-	 q := a / b;
-	 r := remainder(a,b);
-	 a := b;
-	 b := r;
-	 s1 := s;
-	 t1 := tt;
-	 s := u;
-	 tt := v;
-	 u := s1 - q * u;
-	 v := t1 - q * v
+         q := a / b;
+         r := remainder(a,b);
+         a := b;
+         b := r;
+         s1 := s;
+         t1 := tt;
+         s := u;
+         tt := v;
+         u := s1 - q * u;
+         v := t1 - q * v
       >>;
       if a < 0 then <<
-	 s := -s;
-	 tt := -tt;
-	 a := -a
+         s := -s;
+         tt := -tt;
+         a := -a
       >>;
       return {a,s,tt}
    end;
@@ -614,18 +614,18 @@ asserted procedure sfto_linp(f: SF, vl: List): ExtraBoolean;
 asserted procedure sfto_linp1(f: SF, vl: List, oc: List): ExtraBoolean;
    domainp f or
       (not(mvar f memq vl) and not(mvar f memq oc) and
-	 sfto_linp1(lc f,vl,oc) and sfto_linp1(red f,vl,oc)) or
+         sfto_linp1(lc f,vl,oc) and sfto_linp1(red f,vl,oc)) or
       (mvar f memq vl and not(mvar f memq oc) and ldeg f = 1 and
-	 sfto_linp1(lc f,vl,mvar f . oc) and sfto_linp1(red f,vl,oc));
+         sfto_linp1(lc f,vl,mvar f . oc) and sfto_linp1(red f,vl,oc));
 
 asserted procedure sfto_linwpp(f: SF, vl: List): Boolean;
    % Linear and weakly parametric predicate. [vl] is a list of variables.
    % Returns [t] iff [f] is linear and weakly parametric in [vl].
    domainp f or
       (not(mvar f memq vl) and null intersection(kernels lc f,vl) and
-	 sfto_linwpp(red f,vl)) or
+         sfto_linwpp(red f,vl)) or
       (mvar f memq vl and ldeg f = 1 and domainp lc f and
-	 sfto_linwpp(red f,vl));
+         sfto_linwpp(red f,vl));
 
 asserted procedure sfto_varf(f: SF): ExtraBoolean;
    % Variable form. If [f] is a variable then return the corresponding kernel
@@ -655,17 +655,17 @@ asserted procedure sfto_tdegf(f: SF): Integer;
    % degree of [f].
    begin scalar w,x; integer td;
       if domainp f then
-      	 return 0;
+         return 0;
       x := mvar f;
       while not domainp f and mvar f eq x do <<
-	 w := sfto_tdegf lc f + ldeg f;
-	 if w > td then
-	    td := w;
-	 f := red f
+         w := sfto_tdegf lc f + ldeg f;
+         if w > td then
+            td := w;
+         f := red f
       >>;
       w := sfto_tdegf f;
       if  w > td then
-	 return w;
+         return w;
       return td
    end;
 
@@ -683,11 +683,11 @@ asserted procedure sfto_coeff(p: SF, x: Kernel, n: Integer): SF;
    begin scalar rp;
       rp := sfto_reorder(p, {x});
       while not domainp rp and mvar rp eq x and ldeg rp > n do
-	 rp := red rp;
+         rp := red rp;
       if not domainp rp and mvar rp eq x then
- 	 return if eqn(ldeg rp, n) then lc rp else 0;
+         return if eqn(ldeg rp, n) then lc rp else 0;
       if eqn(n, 0) then
- 	 return rp or 0;
+         return rp or 0;
       return 0
    end;
 
@@ -705,7 +705,7 @@ asserted procedure sfto_coeffs1(l: List, vl: List): List;
       l
    else
       sfto_coeffs1(for each f in l join
-	 sfto_coeffs2(sfto_reorder(f, car vl), car vl), cdr vl);
+         sfto_coeffs2(sfto_reorder(f, car vl), car vl), cdr vl);
 
 asserted procedure sfto_coeffs2(f: SF, v: Kernel): List;
    if not domainp f and mvar f eq v then
@@ -719,11 +719,11 @@ asserted procedure sfto_abssummand(f: SF): Integer;
 asserted procedure sfto_kernelp(u: Any): ExtraBoolean;
    begin scalar w;
       if idp u then
- 	 return t;
+         return t;
       if not pairp u then
- 	 return nil;
+         return nil;
       if get(car u,'fkernfn) then
-	 return t;
+         return t;
       w := if atom car u then get(car u,'klist) else exlist!*;
       return atsoc(u,w)
    end;
@@ -744,10 +744,10 @@ operator rlfaclimit;
 asserted procedure rlfaclimit(n: Integer): Integer;
    begin scalar old;
       if not fixp n or n leq 0 then
-      	 rederr {"rlfaclimit", n, "is not a non-negative integer"};
+         rederr {"rlfaclimit", n, "is not a non-negative integer"};
       old := sfto_fctrflimit!*;
       if not eqn(n, 0) then
-      	 sfto_fctrflimit!* := n;
+         sfto_fctrflimit!* := n;
       return old
    end;
 
@@ -757,18 +757,18 @@ asserted procedure sfto_fctrf(f: SF): DottedPair;
       scalar w, e;
       integer n;
       repeat <<
-	 random_new_seed(n + 1);
-      	 w := errorset({'fctrf, mkquote f}, t, !*backtrace);
-	 if errorp w then
-	    e := t;
-	 n := n + 1
+         random_new_seed(n + 1);
+         w := errorset({'fctrf, mkquote f}, t, !*backtrace);
+         if errorp w then
+            e := t;
+         n := n + 1
       >> until not errorp w or eqn(n, sfto_fctrflimit!*);
       if errorp w then <<
-	 lprim {"sfto_fctrf: factorization failed after", sfto_fctrflimit!*, "attempts"};
-      	 return 1 . {f . 1}
+         lprim {"sfto_fctrf: factorization failed after", sfto_fctrflimit!*, "attempts"};
+         return 1 . {f . 1}
       >>;
       if !*rlverbose and e then
-	 ioto_tprin2t {"+++ sfto_fctrf: factorization successful after", n, "attempts"};
+         ioto_tprin2t {"+++ sfto_fctrf: factorization successful after", n, "attempts"};
       return car w
    end;
 
@@ -791,14 +791,14 @@ asserted procedure sfto_sf2monl(f: SF): DottedPair;
 asserted procedure sfto_sf2monl1(f: SF, vl: List): List;
    begin scalar rl, ll;
       if null f then
-	 return nil;
+         return nil;
       if domainp f then
-	 return {(for each v in vl collect 0) . f};
+         return {(for each v in vl collect 0) . f};
       if not eqcar(vl, mvar f) then
-	 return for each pr in sfto_sf2monl1(f, cdr vl) collect
-	    (0 . car pr) . cdr pr;
+         return for each pr in sfto_sf2monl1(f, cdr vl) collect
+            (0 . car pr) . cdr pr;
       ll := for each pr in sfto_sf2monl1(lc f, cdr vl) collect
- 	 (ldeg f . car pr) . cdr pr;
+         (ldeg f . car pr) . cdr pr;
       rl := sfto_sf2monl1(red f, vl);
       return append(ll, rl)
    end;
@@ -812,18 +812,18 @@ asserted procedure sfto_sf2monlip(f: SF): DottedPair;
 asserted procedure sfto_sf2monlip1(f: SF, vl: List): List;
    begin scalar monl, rmonl;
       if null f then
-	 return nil;
+         return nil;
       if domainp f then
-	 return {(for each v in vl collect 0) . f};
+         return {(for each v in vl collect 0) . f};
       if not eqcar(vl, mvar f) then <<
-	 monl := sfto_sf2monlip1(f, cdr vl);
-	 for each pr in monl do
-	    car pr := 0 . car pr;
-	 return monl
+         monl := sfto_sf2monlip1(f, cdr vl);
+         for each pr in monl do
+            car pr := 0 . car pr;
+         return monl
       >>;
       monl := sfto_sf2monlip1(lc f, cdr vl);
       for each pr in monl do
- 	 car pr := ldeg f . car pr;
+         car pr := ldeg f . car pr;
       rmonl := sfto_sf2monlip1(red f, vl);
       return nconc(monl, rmonl)
    end;
@@ -876,31 +876,31 @@ asserted procedure sfto_kmemberf(x: Kernel, f: SF): ExtraBoolean;
 asserted procedure sfto_renamef(f: SF, vold: Kernel, vnew: Kernel): SF;
    begin scalar mv, recurse;
       if domainp f then
-	 return f;
+         return f;
       mv := mvar f;
       if mv eq vold then <<
-	 mv := vnew;
-	 recurse := nil
+         mv := vnew;
+         recurse := nil
       >> else
-      	 recurse := t;
+         recurse := t;
       return addf(multf(exptf(!*k2f mv, ldeg f),
-	 if recurse then sfto_renamef(lc f, vold, vnew) else lc f),
-	 sfto_renamef(red f, vold, vnew))
+         if recurse then sfto_renamef(lc f, vold, vnew) else lc f),
+         sfto_renamef(red f, vold, vnew))
    end;
 
 asserted procedure sfto_renamealf(f: SF, al: Alist): SF;
    % TODO: More efficient with sorted [al].
    begin scalar mv, w, al1;
       if domainp f then
-	 return f;
+         return f;
       mv := mvar f;
       if (w := atsoc(mv, al)) then <<
-	 mv := cdr w;
-	 al1 := lto_delq(w, al)
+         mv := cdr w;
+         al1 := lto_delq(w, al)
       >> else
-	 al1 := al;
+         al1 := al;
       return addf(multf(exptf(!*k2f mv, ldeg f), sfto_renamealf(lc f, al1)),
-	 sfto_renamealf(red f, al))
+         sfto_renamealf(red f, al))
    end;
 
 asserted procedure sfto_cauchyf(f: SF, v: Kernel): SQ;
@@ -911,13 +911,13 @@ asserted procedure sfto_cauchyf(f: SF, v: Kernel): SQ;
       sumq := nil ./ 1;
       an := !*f2q absf lc f;
       while not domainp f do <<
-	 f := red f;
-	 d := !*f2q absf if domainp f then f else lc f;
-	 sumq := addsq(sumq, quotsq(d, an))
+         f := red f;
+         d := !*f2q absf if domainp f then f else lc f;
+         sumq := addsq(sumq, quotsq(d, an))
       >>;
       one := 1 ./ 1;
       if sfto_greaterq(one, sumq) then
-	 return one;
+         return one;
       return sumq
    end;
 
@@ -927,30 +927,30 @@ asserted procedure sfto_lmq(f: SF): SQ;
       integer d, m, dd, mm;
       assert(not null f);
       if domainp f then
-	 return 0;
+         return 0;
       f := absf f;
       cl := sfto_lmqcoeffs f;
       cmax := nil ./ 1;
       sccl1 := cdr cl;
       while sccl1 do <<
-	 {c, d, m} := trp := pop sccl1;
-	 if numr c < 0 then <<
-   	    cmin := 'pinf;
-	    sccl2 := cl;
-	    repeat <<
-	       {cc, dd, mm} := ttrp := pop sccl2;
-	       if numr cc > 0 then <<
-		  bnd := sfto_lmqrootq(multsq(!*f2q(2^mm), quotsq(negsq c, cc)), dd - d);
-		  if cmin eq 'pinf or sfto_lessq(bnd, cmin) then <<
-		     cmin := bnd;
-		     ctrp := ttrp
-		  >>
-	       >>
-	    >> until car sccl2 eq trp;
-	    caddr ctrp := caddr ctrp + 1;  % We could actually choose.
-	    if sfto_greaterq(cmin, cmax) then
-	       cmax := cmin
-	 >>
+         {c, d, m} := trp := pop sccl1;
+         if numr c < 0 then <<
+            cmin := 'pinf;
+            sccl2 := cl;
+            repeat <<
+               {cc, dd, mm} := ttrp := pop sccl2;
+               if numr cc > 0 then <<
+                  bnd := sfto_lmqrootq(multsq(!*f2q(2^mm), quotsq(negsq c, cc)), dd - d);
+                  if cmin eq 'pinf or sfto_lessq(bnd, cmin) then <<
+                     cmin := bnd;
+                     ctrp := ttrp
+                  >>
+               >>
+            >> until car sccl2 eq trp;
+            caddr ctrp := caddr ctrp + 1;  % We could actually choose.
+            if sfto_greaterq(cmin, cmax) then
+               cmax := cmin
+         >>
       >>;
       return cmax
    end;
@@ -969,10 +969,10 @@ asserted procedure sfto_lmqrootq(q: SQ, n: Integer): SQ;
       assert(numberp cdr q);
       assert(n > 0);
       if eqn(n, 1) or null numr q then
- 	 return q;
+         return q;
       rnum := if eqn(numr q, 1) then numr q else irootn(numr q or 0, n) + 1;
       if eqn(denr q, 1) then
-	 return rnum ./ 1;
+         return rnum ./ 1;
       rden := irootn(denr q, n) - 1;
       if rden > 1 then rden := rden - 1;
       return quotsq(rnum ./ 1, rden ./ 1)
@@ -997,17 +997,17 @@ asserted procedure sfto_qsub(f: SF, al: Alist): SQ;
 asserted procedure sfto_qsub1(f: SF, al: Alist): SQ;
    begin scalar mv, nredq, nlcq, nhtq;
       if domainp f then
-	 return !*f2q f;
+         return !*f2q f;
       mv := mvar f;
       while al and caar al neq mv and ordop(caar al, mv) do
-	 al := cdr al;
+         al := cdr al;
       if null al then
-	 return !*f2q f;
+         return !*f2q f;
       nredq := sfto_qsub1(red f, al);
       if caar al eq mv then <<
-	 nlcq := sfto_qsub1(lc f, cdr al);
-	 nhtq := exptsq(cdar al, ldeg f);
-	 return addsq(multsq(nlcq, nhtq), nredq)
+         nlcq := sfto_qsub1(lc f, cdr al);
+         nhtq := exptsq(cdar al, ldeg f);
+         return addsq(multsq(nlcq, nhtq), nredq)
       >>;
       nlcq := sfto_qsub1(lc f, al);
       nhtq := !*f2q(mvar f .** ldeg f .* 1 .+ nil);
@@ -1020,17 +1020,17 @@ asserted procedure sfto_fsub(f: SF, al: Alist): SF;
 asserted procedure sfto_fsub1(f: SF, al: Alist): SF;
    begin scalar mv, nred, nlc, nht;
       if domainp f then
-	 return f;
+         return f;
       mv := mvar f;
       while al and caar al neq mv and ordop(caar al, mv) do
-	 al := cdr al;
+         al := cdr al;
       if null al then
-	 return f;
+         return f;
       nred := sfto_fsub1(red f, al);
       if caar al eq mv then <<
-	 nlc := sfto_fsub1(lc f, cdr al);
-	 nht := exptf(cdar al, ldeg f);
-	 return addf(multf(nlc, nht), nred)
+         nlc := sfto_fsub1(lc f, cdr al);
+         nht := exptf(cdar al, ldeg f);
+         return addf(multf(nlc, nht), nred)
       >>;
       nlc := sfto_fsub1(lc f, al);
       nht := mvar f .** ldeg f .* 1 .+ nil;
@@ -1044,11 +1044,11 @@ asserted procedure sfto_qsubhor(f: SF, x: Kernel, q: SQ): SQ;
    % have: [x] occurs in [f] iff [x eq mvar f].
    begin scalar coeffl, res;
       if not sfto_mvartest(f, x) then
-	 return !*f2q f;
+         return !*f2q f;
       coeffl := coeffs f;
       res := !*f2q car coeffl;
       for each coeff in cdr coeffl do
-	 res := addsq(!*f2q coeff, multsq(res, q));
+         res := addsq(!*f2q coeff, multsq(res, q));
       return res
    end;
 
@@ -1060,15 +1060,15 @@ asserted procedure sfto_qsubhor1(f: SF, x: Kernel, q: SQ): SQ;
    % More precisely we have: [x] occurs in [f] iff [x eq mvar f].
    begin scalar coeffl, res; integer n, d, dd;
       if not sfto_mvartest(f, x) then
-   	 return !*f2q f;
+         return !*f2q f;
       n := numr q;
       d := denr q;
       dd := 1;
       coeffl := coeffs f;
       res := car coeffl;
       for each coeff in cdr coeffl do <<
-	 dd := dd * d;
-	 res := addf(multf(coeff, dd), multf(res, n))
+         dd := dd * d;
+         res := addf(multf(coeff, dd), multf(res, n))
       >>;
       return !*f2q sfto_dprpartksf res
    end;
@@ -1098,13 +1098,13 @@ asserted procedure sfto_sturmchain(f: SF, g: SF): List;
       on1 'rational;
       rresl := {g, f};
       while not null g do <<
-	 w := remf(f, g);
-	 f := g;
-	 g := negf w;
-	 if g then rresl := g . rresl
+         w := remf(f, g);
+         f := g;
+         g := negf w;
+         if g then rresl := g . rresl
       >>;
       for each p in rresl do
-	 resl := quotf(p, g) . resl;
+         resl := quotf(p, g) . resl;
       off1 'rational;
       resl := for each p in resl collect numr resimp !*f2q p . resl;
       return resl
@@ -1119,13 +1119,13 @@ asserted procedure sfto_varsign(sc: List, bound: SQ): Integer;
    % SFs. [bound] is a number or one of +/- infinity.
    begin integer h, sign, cursign, signchanges;
       while sc do <<
-	 repeat <<
-	    h := numr sfto_iqsub(pop sc, mvar h, bound);
-	    sign := if null h then 0 else if minusf h then -1 else 1;
-	 >> until null sc or not eqn(sign, 0);
-	 if sign * cursign < 0 then
-	    signchanges := signchanges + 1;
-	 cursign := sign
+         repeat <<
+            h := numr sfto_iqsub(pop sc, mvar h, bound);
+            sign := if null h then 0 else if minusf h then -1 else 1;
+         >> until null sc or not eqn(sign, 0);
+         if sign * cursign < 0 then
+            signchanges := signchanges + 1;
+         cursign := sign
       >>;
       return signchanges
    end;
@@ -1134,14 +1134,14 @@ asserted procedure sfto_iqsub(f: SF, x: Kernel, q: SQ): SQ;
    begin scalar g, hc;
       g := numr q;
       if domainp g then
-	 return sfto_qsub1(f, {x . q});
+         return sfto_qsub1(f, {x . q});
       if domainp f then
-	 return !*f2q f;
+         return !*f2q f;
       assert(mvar g eq 'infinity);
       if evenp ldeg f and minusf lc g then
-	 q := negsq q;
+         q := negsq q;
       if minusf lc f then
-	 q := negsq q;
+         q := negsq q;
       return q
    end;
 
@@ -1175,8 +1175,8 @@ asserted procedure sfto_maxql(l: List): SQ;
       assert(l);
       m := car l;
       for each q in cdr l do
-	 if sfto_greaterq(q, m) then
-	    m := q;
+         if sfto_greaterq(q, m) then
+            m := q;
       return m
    end;
 
@@ -1186,8 +1186,8 @@ asserted procedure sfto_minql(l: List): SQ;
       assert(l);
       m := car l;
       for each q in cdr l do
-	 if sfto_lessq(q, m) then
-	    m := q;
+         if sfto_lessq(q, m) then
+            m := q;
       return m
    end;
 
@@ -1260,21 +1260,21 @@ asserted procedure sfto_symbolify(x: SF): DottedPair;
 asserted procedure sfto_symbolify1(x: SF, b: Id, c: Integer, subl: Alist): List3;
    begin scalar l, r, res, sym, w;
       if null x or x = 1 then
-	 return {x, c, subl};
+         return {x, c, subl};
       if domainp x then <<
-	 res := 1;
-	 for each f in zfactor x do <<
-	    w := lto_cdrassoc(car f, subl);
-	    if w then <<
-	       sym := car w
-	    >> else <<
-	       c := c + 1;
-	       sym := intern mkid(b, c);
-	       push(sym . car f, subl)
-	    >>;
-	    res := multf(res, exptf(!*k2f !*a2k sym, cdr f))
-	 >>;
-	 return {res, c, subl}
+         res := 1;
+         for each f in zfactor x do <<
+            w := lto_cdrassoc(car f, subl);
+            if w then <<
+               sym := car w
+            >> else <<
+               c := c + 1;
+               sym := intern mkid(b, c);
+               push(sym . car f, subl)
+            >>;
+            res := multf(res, exptf(!*k2f !*a2k sym, cdr f))
+         >>;
+         return {res, c, subl}
       >>;
       {l, c, subl} := sfto_symbolify1(lc x, b, c, subl);
       {r, c, subl} := sfto_symbolify1(red x, b, c, subl);

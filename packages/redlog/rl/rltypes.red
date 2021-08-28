@@ -104,7 +104,7 @@ asserted procedure rl_a2sAtom(x);
    begin scalar w;
       w := rl_simp x;
       if rl_cxp rl_op w then
-      	 typerr(x, "atomic formula");
+         typerr(x, "atomic formula");
       return w
    end;
 
@@ -158,13 +158,13 @@ asserted procedure rl_a2sFlag(u: Any): Boolean;
    % think about at some point.
    <<
       if fluidp u then
-	 u := eval u;
+         u := eval u;
       if u memq '(on yes true t) then
-      	 t
+         t
       else if u memq '(off no false nil) then
-      	 nil
+         nil
       else
-      	 rederr {"bad value", u, "for Switch; use one of on/yes/true or off/no/false"}
+         rederr {"bad value", u, "for Switch; use one of on/yes/true or off/no/false"}
    >>;
 
 % Integers
@@ -197,7 +197,7 @@ asserted procedure rl_a2sString(s: Any): String;
    begin
       s := reval s;
       if not stringp s then
-      	 typerr(s, "string");
+         typerr(s, "string");
       return s
    end;
 
@@ -229,7 +229,7 @@ asserted procedure rl_a2sLPolyQ(x: Any): SQ;
    begin scalar w;
       w := simp x;
       if not domainp denr w then
-      	 rederr {"variable in denominator of", ioto_smaprin x where !*nat=nil};
+         rederr {"variable in denominator of", ioto_smaprin x where !*nat=nil};
       return w
    end;
 
@@ -250,7 +250,7 @@ asserted procedure rl_a2sList(l: Any, a2sElement: Any): List;
    begin scalar w, !*rlsimpl;
       l := reval l;
       if not eqcar(l, 'list) then
- 	 typerr(l, "List");
+         typerr(l, "List");
       return for each x in cdr l collect apply(a2sElement, {x})
    end;
 
@@ -271,10 +271,10 @@ asserted procedure rl_a2sPair(x: Any, a2sElem1: Any, a2sElem2: Any): List;
    begin scalar w, !*rlsimpl;
       x := reval x;
       if not eqcar(x, 'list) then
- 	 typerr(x, "Pair");
+         typerr(x, "Pair");
       x := cdr x;
       if not eqn(length x, 2) then
- 	 typerr(x, "Pair");
+         typerr(x, "Pair");
       return {apply(a2sElem1, {car x}), apply(a2sElem2, {cadr x})}
    end;
 
@@ -295,10 +295,10 @@ asserted procedure rl_a2sTriplet(x: Any, a2sElem1: Appplicable, a2sElem2: Apppli
    begin scalar w, !*rlsimpl;
       x := reval x;
       if not eqcar(x, 'list) then
- 	 typerr(x, "Triplet");
+         typerr(x, "Triplet");
       x := cdr x;
       if not eqn(length x, 3) then
- 	 typerr(x, "Triplet");
+         typerr(x, "Triplet");
       return {apply(a2sElem1, {car x}), apply(a2sElem2, {cadr x}), apply(a2sElem3, {caddr x})}
    end;
 
@@ -319,16 +319,16 @@ asserted procedure rl_a2sList5(x: Any, a2sElem1: Appplicable, a2sElem2: Appplica
    begin scalar w, !*rlsimpl;
       x := reval x;
       if not eqcar(x, 'list) then
- 	 typerr(x, "List5");
+         typerr(x, "List5");
       x := cdr x;
       if not eqn(length x, 5) then
- 	 typerr(x, "List5");
+         typerr(x, "List5");
       return {
-	 apply(a2sElem1, {car x}),
- 	 apply(a2sElem2, {cadr x}),
- 	 apply(a2sElem3, {caddr x}),
- 	 apply(a2sElem4, {cadddr x}),
- 	 apply(a2sElem5, {caddddr x})}
+         apply(a2sElem1, {car x}),
+         apply(a2sElem2, {cadr x}),
+         apply(a2sElem3, {caddr x}),
+         apply(a2sElem4, {cadddr x}),
+         apply(a2sElem5, {caddddr x})}
    end;
 
 asserted procedure rl_s2aList5(x: Any, a2sElem1: Appplicable, a2sElem2: Appplicable, a2sElem3: Appplicable, a2sElem4: Appplicable, a2sElem5: Appplicable): List;
@@ -365,7 +365,7 @@ asserted procedure rl_a2sAssignment(x: Any, a2sLhs: Any): DottedPair;
    begin scalar w;
       w := reval x;
       if not (listp w and eqn(length w, 3) and eqcar(w, 'equal)) and kernelp cadr w then
-	 typerr(x, "Assignment");
+         typerr(x, "Assignment");
       return cadr w .  apply(a2sLhs, {caddr w})
    end;
 

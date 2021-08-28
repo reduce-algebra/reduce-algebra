@@ -53,23 +53,23 @@ procedure acfsf_subsumption(l1,l2,gor);
    % [keep1], [keep2], [nil].
    if gor eq 'or then (
       if acfsf_subsumep!-and(l1,l2) then
- 	 'keep2
+         'keep2
       else if acfsf_subsumep!-and(l2,l1) then
-	 'keep1
+         'keep1
    ) else  % [gor eq 'and]
       if acfsf_subsumep!-or(l1,l2) then
-	 'keep1
+         'keep1
       else if acfsf_subsumep!-or(l2,l1) then
-	 'keep2;
+         'keep2;
 
 procedure acfsf_subsumep!-and(l1,l2);
    % Algebraically closed field standard form subsume [and] case. [l1]
    % and [l2] are lists of atomic formulas.
    begin scalar a;
       while l2 do <<
-	 a := car l2;
-	 l2 := cdr l2;
-	 if cl_simpl(a,l1,-1) neq 'true then a := l2 := nil
+         a := car l2;
+         l2 := cdr l2;
+         if cl_simpl(a,l1,-1) neq 'true then a := l2 := nil
       >>;
       return a
    end;
@@ -79,9 +79,9 @@ procedure acfsf_subsumep!-or(l1,l2);
    % and [l2] are lists of atomic formulas.
    begin scalar a;
       while l1 do <<
-	 a := car l1;
-	 l1 := cdr l1;
-	 if cl_simpl(rl_smkn('or,l2),{a},-1) neq 'true then a := l1 := nil
+         a := car l1;
+         l1 := cdr l1;
+         if cl_simpl(rl_smkn('or,l2),{a},-1) neq 'true then a := l1 := nil
       >>;
       return a
    end;

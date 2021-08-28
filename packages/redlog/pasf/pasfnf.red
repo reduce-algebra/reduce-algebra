@@ -43,9 +43,9 @@ procedure pasf_pnf1(phi);
    % operator. Returns a prenex formula equivalent to [phi].
    <<
       if null cdr erg or pasf_qb car erg < pasf_qb cadr erg then
- 	 car erg
+         car erg
       else
- 	 cadr erg
+         cadr erg
    >> where erg=pasf_pnf2(cl_rename!-vars phi);
 
 procedure pasf_pnf2(phi);
@@ -55,13 +55,13 @@ procedure pasf_pnf2(phi);
    begin scalar op;
       op := rl_op phi;
       if rl_quap op or rl_bquap op then
- 	 return pasf_pnf2!-quantifier(phi);
+         return pasf_pnf2!-quantifier(phi);
       if rl_junctp op then
- 	 return pasf_pnf2!-junctor(phi);
+         return pasf_pnf2!-junctor(phi);
       if rl_tvalp op then
- 	 return {phi};
+         return {phi};
       if rl_cxp op then
- 	 rederr{"pasf_pnf2():",op,"invalid as operator"};
+         rederr{"pasf_pnf2():",op,"invalid as operator"};
       return {phi}
    end;
 
@@ -73,18 +73,18 @@ procedure pasf_pnf2!-quantifier(phi);
       pnfmat := pasf_pnf2 rl_mat phi;
       % Bounded quantifiers are treated as normal quantifiers
       return if (null cdr pnfmat) or 
-	 ((rl_op phi memq '(all ball) and rl_op car pnfmat memq '(all ball)) or
-	    (rl_op phi memq '(ex bex) and rl_op car pnfmat memq '(ex bex))) 
+         ((rl_op phi memq '(all ball) and rl_op car pnfmat memq '(all ball)) or
+            (rl_op phi memq '(ex bex) and rl_op car pnfmat memq '(ex bex))) 
       then
-	 (if rl_bquap rl_op phi then
-	    {rl_mkbq(rl_op phi,rl_var phi,rl_pnf rl_b phi,car pnfmat)}
-	 else
-       	    {rl_mkq(rl_op phi,rl_var phi,car pnfmat)}) 
+         (if rl_bquap rl_op phi then
+            {rl_mkbq(rl_op phi,rl_var phi,rl_pnf rl_b phi,car pnfmat)}
+         else
+            {rl_mkq(rl_op phi,rl_var phi,car pnfmat)}) 
       else
-	 (if rl_bquap rl_op phi then
-       	    {rl_mkbq(rl_op phi,rl_var phi,rl_pnf rl_b phi,cadr pnfmat)}
-	 else
-	    {rl_mkq(rl_op phi,rl_var phi,cadr pnfmat)});
+         (if rl_bquap rl_op phi then
+            {rl_mkbq(rl_op phi,rl_var phi,rl_pnf rl_b phi,cadr pnfmat)}
+         else
+            {rl_mkq(rl_op phi,rl_var phi,cadr pnfmat)});
    end;
 
 procedure pasf_pnf2!-junctor(phi);
@@ -99,39 +99,39 @@ procedure pasf_pnf2!-junctor(phi);
       e := for each f in args collect pasf_pnf2(f);
       onlyex := t; onlyall := t;
       for each ej in e do <<
-    	 qb := pasf_qb car ej;
-    	 if qb > m then <<
- 	    m := qb; onlyex := t; onlyall := t
- 	 >>;
-    	 if cdr ej then <<
- 	    l1 := (car ej) . l1;
- 	    l2 := (cadr ej) . l2
- 	 >> else <<
- 	    l1 := (car ej) . l1;
- 	    l2 := (car ej) . l2
- 	 >>;
-	 % Bounded quantifiers are treated as normal quantifiers
-    	 if eqn(m,qb) then <<
-      	    if rl_op car l1 eq 'all  or rl_op car l1 eq 'ball then
-	       onlyex := nil;
-      	    if rl_op car l2 eq 'ex or rl_op car l1 eq 'bex then 
-	       onlyall := nil
-    	 >>
+         qb := pasf_qb car ej;
+         if qb > m then <<
+            m := qb; onlyex := t; onlyall := t
+         >>;
+         if cdr ej then <<
+            l1 := (car ej) . l1;
+            l2 := (cadr ej) . l2
+         >> else <<
+            l1 := (car ej) . l1;
+            l2 := (car ej) . l2
+         >>;
+         % Bounded quantifiers are treated as normal quantifiers
+         if eqn(m,qb) then <<
+            if rl_op car l1 eq 'all  or rl_op car l1 eq 'ball then
+               onlyex := nil;
+            if rl_op car l2 eq 'ex or rl_op car l1 eq 'bex then 
+               onlyall := nil
+         >>
       >>;
       l1 := reversip l1;
       l2 := reversip l2;
       if eqn(m,0) then return {phi};
       if onlyex neq onlyall then
-    	 if onlyex then
- 	    return {pasf_interchange(l1,junctor,'ex)}
-    	 else  % [onlyall]
- 	    return {pasf_interchange(l2,junctor,'all)};
+         if onlyex then
+            return {pasf_interchange(l1,junctor,'ex)}
+         else  % [onlyall]
+            return {pasf_interchange(l2,junctor,'all)};
       phi1 := pasf_interchange(l1,junctor,'ex);
       phi2 := pasf_interchange(l2,junctor,'all);
       if car phi1 eq car phi2 then
- 	 return {phi1}
+         return {phi1}
       else
- 	 return {phi1,phi2}
+         return {phi1,phi2}
    end;
 
 procedure pasf_qb(phi);
@@ -142,12 +142,12 @@ procedure pasf_qb(phi);
    % performing a distinction between normal and bounded quantifiers.
    begin scalar q,tp; integer qb;
       while (rl_quap rl_op phi or rl_bquap rl_op phi) do <<
-	 tp := if rl_op phi memq '(ball all) then 'all else 'ex;	       
-    	 if tp neq q then <<
-      	    qb := qb + 1;
-      	    q := if rl_op phi memq '(ball all) then 'all else 'ex
-    	 >>;
-    	 phi := rl_mat phi
+         tp := if rl_op phi memq '(ball all) then 'all else 'ex;               
+         if tp neq q then <<
+            qb := qb + 1;
+            q := if rl_op phi memq '(ball all) then 'all else 'ex
+         >>;
+         phi := rl_mat phi
       >>;
       return qb
    end;
@@ -158,28 +158,28 @@ procedure pasf_interchange(l,junctor,a);
    % a formula, where the quantifiers are interchanged with the junctor.
    begin scalar ql,b,result;
       while pasf_contains!-quantifier(l) do <<
-    	 l := for each f in l collect <<
-      	    while (a eq 'all and rl_op f memq '(ball all) or
- 	       a eq 'ex and rl_op f memq '(bex ex)) do <<
-	       % The list contains operator, variable and bound if there is
-	       % one and nil in other case
+         l := for each f in l collect <<
+            while (a eq 'all and rl_op f memq '(ball all) or
+               a eq 'ex and rl_op f memq '(bex ex)) do <<
+               % The list contains operator, variable and bound if there is
+               % one and nil in other case
                b := {rl_op f,rl_var f,if rl_bquap rl_op f then 
-		  rl_b f else nil} . b;
+                  rl_b f else nil} . b;
                f := rl_mat f
-      	    >>;
-      	    f
-    	 >>;
-    	 ql := b . ql;
-    	 b := nil;
-    	 a := cl_flip a
+            >>;
+            f
+         >>;
+         ql := b . ql;
+         b := nil;
+         a := cl_flip a
       >>;
       result := rl_mkn(junctor,l);
       for each b in ql do <<
-    	 for each v in b do 
-	    if null caddr v then 
-	       result := rl_mkq(car v,cadr v,result)
-	    else
-	       result := rl_mkbq(car v,cadr v,caddr v,result)
+         for each v in b do 
+            if null caddr v then 
+               result := rl_mkq(car v,cadr v,result)
+            else
+               result := rl_mkbq(car v,cadr v,caddr v,result)
       >>;
       return result
    end;

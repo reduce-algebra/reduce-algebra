@@ -61,7 +61,7 @@ procedure ofsf_dpep(ophi,k);
         then
            return ofsf_cad(ophi,nil,nil);
 
-	% Preparation of the original phi
+        % Preparation of the original phi
         if ofsf_dpepverbosep() or ofsf_dpepiverbosep()
         then
            ioto_tprin2t "++++ DPEP Preparation Phase";
@@ -78,31 +78,31 @@ procedure ofsf_dpep(ophi,k);
 
         phi := rl_mat ophiexp; % phi = Q_2 x_2 ... Q_n x_n psi
 
-	% QE of phi (by CAD) if phi is not quantifier-free.
+        % QE of phi (by CAD) if phi is not quantifier-free.
         if cl_qvarl1 phi
         then <<
            if ofsf_dpepverbosep() or ofsf_dpepiverbosep()
            then <<
               ioto_tprin2t "++++ DPEP QE by CAD";
               % QE of phi (by CAD)
-	      psiprime := ofsf_cad(phi,nil,nil)
+              psiprime := ofsf_cad(phi,nil,nil)
            >> else <<
               if !*rlverbose and !*rlcadverbose
               then <<
                  off1 'rlverbose;
                  off1 'rlcadverbose;
                  % QE of phi (by CAD)
-	         psiprime := ofsf_cad(phi,nil,nil);
+                 psiprime := ofsf_cad(phi,nil,nil);
                  on1 'rlverbose;
-	         on1 'rlcadverbose
+                 on1 'rlcadverbose
               >> else
-	         % QE of phi (by CAD)
-	         psiprime := ofsf_cad(phi,nil,nil);
+                 % QE of phi (by CAD)
+                 psiprime := ofsf_cad(phi,nil,nil);
            >>
         >> else psiprime := phi;
 
-	% Combine Q_1x_1 with q.-free formula psiprime
-	phiprime := rl_mkq(cdr qexp,car qexp,psiprime);
+        % Combine Q_1x_1 with q.-free formula psiprime
+        phiprime := rl_mkq(cdr qexp,car qexp,psiprime);
 
         % If QE by CAD fails, i.e. if phiprime is not
         % an univariate poly.-expon. decision problem.
@@ -112,14 +112,14 @@ procedure ofsf_dpep(ophi,k);
         then
            rederr "QE by CAD and decision procedure failed.";
 
-	% Decide univariate polynomial-exponential problem
-	return
+        % Decide univariate polynomial-exponential problem
+        return
            (if rl_mat phiprime eq 'false or
                rl_mat phiprime eq 'true
             then
-	       cl_simpl(rl_mat phiprime,nil,-1)
-	    else
-	       ofsf_dupep(phiprime,k))
+               cl_simpl(rl_mat phiprime,nil,-1)
+            else
+               ofsf_dupep(phiprime,k))
    end;
 
 procedure ofsf_dupep(phiprime,k);
@@ -580,7 +580,7 @@ procedure ofsf_pepsgn0rat(f,x,v);
       then
          null f
       else
-	 null numr ofsf_subf(f,x,v)
+         null numr ofsf_subf(f,x,v)
    else
       null numr ofsf_subf(lc f,x,v) and
       ofsf_pepsgn0rat(red f,x,v);
@@ -598,7 +598,7 @@ procedure ofsf_pepuboundepoly(f,id,r,lbexpf,ubexpf);
       then
          !*f2q f
       else
-	 ofsf_subf(f,id,r)
+         ofsf_subf(f,id,r)
    else
       begin scalar tmp;
          tmp := ofsf_subf(lc f,id,r);
@@ -624,7 +624,7 @@ procedure ofsf_peplboundepoly(f,id,r,lbexpf,ubexpf);
       then
          !*f2q f
       else
-	 ofsf_subf(f,id,r)
+         ofsf_subf(f,id,r)
    else
       begin scalar tmp;
          tmp := ofsf_subf(lc f,id,r);
@@ -1139,13 +1139,13 @@ procedure ofsf_diff(f,x,y);
          else
             d := numr simp prepsq diffsq(!*f2q lc f,mvar lc f);
          l := addf(d,multf(ldeg f,lc f));
-	 if mvar f eq y
+         if mvar f eq y
          then <<
-	    k := !*k2f mvar f;
+            k := !*k2f mvar f;
             m := multf(exptf(k, ldeg f), l)
          >> else
             m := l;
-	 return addf(m,ofsf_diff(red f,x,y))
+         return addf(m,ofsf_diff(red f,x,y))
       end;
 
 procedure ofsf_psdegree(f,x,y);
@@ -1157,13 +1157,13 @@ procedure ofsf_psdegree(f,x,y);
       0 . 0
    else
       begin scalar m,n;
-	 if mvar f eq y
+         if mvar f eq y
          then
             m := ldeg f
-	 else
+         else
             m := 0;
-   	 n := ofsf_degx(f,x);
-	 return m . n
+         n := ofsf_degx(f,x);
+         return m . n
       end;
 
 procedure ofsf_degx(f,x);

@@ -52,51 +52,51 @@ asserted procedure smtqe_pc!-decomposition(de: VSde);
       assert(rl_op f eq 'and);
       % find Gauss prime constituents (in each subformula)
       gl := for each subf in rl_argn f join <<
-	 n := n + 1;
-	 qff_gaussposl(vsde_v de, subf, {n}, vsde_bvl de, vsde_curtheo de)
+         n := n + 1;
+         qff_gaussposl(vsde_v de, subf, {n}, vsde_bvl de, vsde_curtheo de)
       >>;
       if vsde_failedalp gl then
-	 % We continue in the failed case, because the subformula
-	 % causing the failure can become part of a co-Gauss prime
-	 % constituent.
-	 gl := nil
+         % We continue in the failed case, because the subformula
+         % causing the failure can become part of a co-Gauss prime
+         % constituent.
+         gl := nil
       else
-      	 % TODO: Choose an efficient ordering of [gl].
-      	 % TODO: Here is the place for gentle simplification.
-      	 f := qff_replacel(f, for each pr in gl collect car pr, 'false);
+         % TODO: Choose an efficient ordering of [gl].
+         % TODO: Here is the place for gentle simplification.
+         f := qff_replacel(f, for each pr in gl collect car pr, 'false);
       % find co-Gauss prime constituents (in each subformula)
       n := 0;
       cgl := for each subf in rl_argn f join <<
-	 n := n + 1;
-	 qff_cogaussposl(vsde_v de, subf, {n}, vsde_bvl de, vsde_curtheo de)
+         n := n + 1;
+         qff_cogaussposl(vsde_v de, subf, {n}, vsde_bvl de, vsde_curtheo de)
       >>;
       if vsde_failedalp cgl then <<
-	 % We terminate in the failed case, because the subformula
-	 % causing the failure will lead to failure during atomic
-	 % prime constituents computation as well.
-	 vsde_putpcl(de, nil);
-	 return
+         % We terminate in the failed case, because the subformula
+         % causing the failure will lead to failure during atomic
+         % prime constituents computation as well.
+         vsde_putpcl(de, nil);
+         return
       >>;
       gl := pos_delsubposal(cgl, gl);
       % find atomic prime constituents
       f := qff_replacel(f, for each pr in cgl collect car pr, 'false);
       atl := qff_atposl(vsde_v de, f, nil, vsde_bvl de, vsde_curtheo de);
       if vsde_failedalp atl then <<
-	 vsde_putpcl(de, nil);
-	 return
+         vsde_putpcl(de, nil);
+         return
       >>;
       for each pr in atl do <<
-	 pc := vspc_mk(car pr, 'at, cdr pr, gposl, nil);
-	 push(pc, pcl)
+         pc := vspc_mk(car pr, 'at, cdr pr, gposl, nil);
+         push(pc, pcl)
       >>;
       for each pr in cgl do <<
-	 pc := vspc_mk(car pr, 'cogauss, cdr pr, gposl, nil);
-	 push(pc, pcl)
+         pc := vspc_mk(car pr, 'cogauss, cdr pr, gposl, nil);
+         push(pc, pcl)
       >>;
       for each pr in gl do <<
-	 pc := vspc_mk(car pr, 'gauss, cdr pr, gposl, nil);
-	 push(pc, pcl);
-	 push(car pr, gposl)
+         pc := vspc_mk(car pr, 'gauss, cdr pr, gposl, nil);
+         push(pc, pcl);
+         push(car pr, gposl)
       >>;
       vsde_putpcl(de, pcl)
    end;
@@ -119,18 +119,18 @@ asserted procedure smtqe_applyvsts(ds: VSds);
       % test point [tp] with ['true]. WARNING: This replacement is NOT
       % correct when using clustering!
       if !*rlverbose then <<
-	 ioto_tprin2 {"+++++ VSUB ", vsvs_v vs, " "};
-	 ioto_prin2 "[condense"
+         ioto_tprin2 {"+++++ VSUB ", vsvs_v vs, " "};
+         ioto_prin2 "[condense"
       >>;
       f := qff_condense(f, vstp_p tp);
       if !*rlverbose then <<
-	 ioto_prin2 "]";
-	 ioto_prin2 "[substitute"
+         ioto_prin2 "]";
+         ioto_prin2 "[substitute"
       >>;
       f := cl_apply2ats1(f, 'vsds_applyvsts!-at, {ds});
       if !*rlverbose then <<
-	 ioto_prin2 "]";
-	 ioto_prin2 "[simplify"
+         ioto_prin2 "]";
+         ioto_prin2 "[simplify"
       >>;
       assert(rl_op f eq 'and);
       % Write guard [g] into each conjunction member separately.
@@ -138,7 +138,7 @@ asserted procedure smtqe_applyvsts(ds: VSds);
       % Simplify each conjunction member separately.
       f := smtqe_simpl(f, theo);
       if !*rlverbose then
-	 ioto_prin2t "]";
+         ioto_prin2t "]";
       vsds_putres(ds, f)
    end;
 
@@ -154,7 +154,7 @@ asserted procedure smtqe_smtqe(l: List): List3;
       db := vsdb_mk(cl_fvarl formula, formula, nil, nil, t);
       vs_blockmainloop db;
       if !*ofsfvsqetree2gml then
-      	 vsdb_2gml(db, rlqetreegmlfile!*);
+         vsdb_2gml(db, rlqetreegmlfile!*);
       % TODO: Extract result from [db].
       return smtqe_collectResult db
    end;
@@ -169,21 +169,21 @@ asserted procedure smtqe_collectResult(db: VSdb): DottedPair;
       integer n;
       assert(not vsdb_todop db);
       for each nd in vsdb_sc db do <<
-	 assert(not vsnd_flg nd);
-	 push(vsnd_f nd, fl)
+         assert(not vsnd_flg nd);
+         push(vsnd_f nd, fl)
       >>;
 %%       n := length rl_argn vsdb_f db;
 %%       w := for i := 0 : n - 1 collect
-%% 	 mkid('x, i) . for each f in fl collect
-%% 	    if nth(f, i + 2) eq 'false then 1 else 0;
+%%       mkid('x, i) . for each f in fl collect
+%%          if nth(f, i + 2) eq 'false then 1 else 0;
 %%       uc := lto_setCover w;
       uc := smtqe_fl2uc fl;
       return {rl_mkn('or, fl), nil, uc}
       % TODO: Take care of failure nodes.
       % for each nd in vsdb_fc db do <<
-      % 	 assert(not vsnd_flg nd);
-      % 	 push(vsnd_f nd, fl);
-      % 	 vl := union(vl, vsnd_vl nd)
+      %          assert(not vsnd_flg nd);
+      %          push(vsnd_f nd, fl);
+      %          vl := union(vl, vsnd_vl nd)
       % >>;
    end;
 
@@ -196,24 +196,24 @@ asserted procedure smtqe_fl2uc(fl: List): List;
      if !*rlverbose then ioto_tprin2 "+++++ unsat core: ";
      if null fl then return nil;
      mtx1 := for each f in fl collect
-	 for each tv in rl_argn f collect
-	    if tv eq 'false then 1 else 0;
+         for each tv in rl_argn f collect
+            if tv eq 'false then 1 else 0;
      n := length car mtx1;
      if !*rlverbose then ioto_prin2 {n, ", order preprocessing: "};
      mtx1 := (for i := 0 : n-1 collect lto_int2id i) . mtx1;
      mtx1 := lto_transposip mtx1;
      for each row in mtx1 do <<
-	 scmtx := mtx;
-	 c := t; while c and scmtx do <<
-	    if lto_ordprod(cdr row, cdr car scmtx, 'geq) then <<
-	       car scmtx := row;
-	       c := nil
-	    >> else if lto_ordprod(cdr row, cdr car scmtx, 'leq) then
-	       c := nil
-	    else
-	       pop scmtx
-	 >>;
-	 if c then push(row, mtx)
+         scmtx := mtx;
+         c := t; while c and scmtx do <<
+            if lto_ordprod(cdr row, cdr car scmtx, 'geq) then <<
+               car scmtx := row;
+               c := nil
+            >> else if lto_ordprod(cdr row, cdr car scmtx, 'leq) then
+               c := nil
+            else
+               pop scmtx
+         >>;
+         if c then push(row, mtx)
      >>;
      if !*rlverbose then ioto_prin2 {length mtx, ", set cover: "};
      uc := lto_setCover mtx where !*rlverbose = nil;

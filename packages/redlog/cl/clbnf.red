@@ -58,15 +58,15 @@ procedure cl_gdnf0(f,gor);
    % formulas.
    begin scalar ql,vl;
       while rl_op f eq 'ex or rl_op f eq 'all do <<
-	 ql := rl_op f . ql;
-	 vl := rl_var f . vl;
-	 f := rl_mat f
+         ql := rl_op f . ql;
+         vl := rl_var f . vl;
+         f := rl_mat f
       >>;
       f := cl_gdnf(f,gor);
       while ql do <<
-	 f := rl_mkq(car ql,car vl,f);
-	 ql := cdr ql;
-	 vl := cdr vl
+         f := rl_mkq(car ql,car vl,f);
+         ql := cdr ql;
+         vl := cdr vl
       >>;
       return f
    end;
@@ -80,7 +80,7 @@ procedure cl_gdnf(f,gor);
       !*rlsiexpla := nil;
       (strictgdnf := cl_strict!-gdnf(f,gor)) where !*rlbnfsm=nil;
       if !*rlbnfsm then
-	 strictgdnf := gor . cl_subsume(rl_argn strictgdnf,gor);
+         strictgdnf := gor . cl_subsume(rl_argn strictgdnf,gor);
       !*rlsiexpla := svrlsiexpla;
       gdnf := cl_unstrict(strictgdnf,gor);
       return gdnf
@@ -103,8 +103,8 @@ procedure cl_subsume(gcl,gor);
       if null gcl or null cdr gcl then return gcl;
       w := cl_subsume1(gcl,gor);
       if car w then <<
-	 cddr w := cl_subsume(cddr w,gor);
-	 return cdr w
+         cddr w := cl_subsume(cddr w,gor);
+         return cdr w
       >>;
       return cl_subsume(cdr w,gor)
    end;
@@ -124,17 +124,17 @@ procedure cl_subsume1(gcl,gor);
       oscgcl := gcl;
       scgcl := cdr gcl;
       while scgcl do <<
-	 a := car scgcl; scgcl := cdr scgcl;
-	 w := if !*rlbnfsm then
- 	    rl_subsumption(x,cdr a,gor)
- 	 else
- 	    cl_setrel(x,cdr a,gor);
-	 if w eq 'keep1 then
-	    cdr oscgcl := scgcl
-	 else if w eq 'keep2 then
-	    x := scgcl := nil
-	 else
-	    oscgcl := cdr oscgcl
+         a := car scgcl; scgcl := cdr scgcl;
+         w := if !*rlbnfsm then
+            rl_subsumption(x,cdr a,gor)
+         else
+            cl_setrel(x,cdr a,gor);
+         if w eq 'keep1 then
+            cdr oscgcl := scgcl
+         else if w eq 'keep2 then
+            x := scgcl := nil
+         else
+            oscgcl := cdr oscgcl
       >>;
       if null x then gcl := cdr gcl;
       return x . gcl
@@ -148,22 +148,22 @@ procedure cl_setrel(l1,l2,gor);
    % returned.
    begin scalar kstate,a1,hlp;
       while l1 and l2 and car l1 eq car l2 do <<
-	 l1 := cdr l1;
-	 l2 := cdr l2
+         l1 := cdr l1;
+         l2 := cdr l2
       >>;
       if null (l1 and l2) then <<
-      	 if null (l1 or l2) then return 'keep1;  % both equal.
-       	 return l2 and 'keep1 or 'keep2
+         if null (l1 or l2) then return 'keep1;  % both equal.
+         return l2 and 'keep1 or 'keep2
       >>;
       kstate := 'keep1;
       if rl_ordatp(car l1,car l2) then <<
-	 hlp := l1; l1 := l2; l2 := hlp;
-	 kstate := 'keep2
+         hlp := l1; l1 := l2; l2 := hlp;
+         kstate := 'keep2
       >>;
       repeat <<
-	 a1 := car l1; l1 := cdr l1;
-	 l2 := memq(a1,l2);
-	 if null l2 then a1 := l1 := nil
+         a1 := car l1; l1 := cdr l1;
+         l2 := memq(a1,l2);
+         if null l2 then a1 := l1 := nil
       >> until null l1;
       return a1 and kstate
    end;
@@ -178,24 +178,24 @@ procedure cl_strict!-gdnf1(f,gor);
       gand := if gor eq 'or then 'and else 'or;
       op := rl_op f;
       if op eq gor then
-	 return rl_mkn(gor,for each subf in rl_argn(f) join
-	    rl_argn(cl_strict!-gdnf(subf,gor)));
+         return rl_mkn(gor,for each subf in rl_argn(f) join
+            rl_argn(cl_strict!-gdnf(subf,gor)));
       if op eq gand then <<
-	 subgdnfl := for each subf in rl_argn(f) collect
-	    cl_strict!-gdnf(subf,gor);
-	 % Switch to noop form.
-	 noop := for each subf in subgdnfl collect
-	    for each gconj in rl_argn subf collect rl_argn gconj;
-	 % Computing the cartesian product of the conjunctive lists is
-	 % now equivalent to an application of the law of
-	 % distributivity, though the result is not flat yet.
-	 noopgdnf := lto_cartprod noop;
-	 % Switch back to our normal representation.
-	 return rl_mkn(gor,for each gconj in noopgdnf collect
-	    rl_mkn(gand,for each x in gconj join append(x,nil)))
+         subgdnfl := for each subf in rl_argn(f) collect
+            cl_strict!-gdnf(subf,gor);
+         % Switch to noop form.
+         noop := for each subf in subgdnfl collect
+            for each gconj in rl_argn subf collect rl_argn gconj;
+         % Computing the cartesian product of the conjunctive lists is
+         % now equivalent to an application of the law of
+         % distributivity, though the result is not flat yet.
+         noopgdnf := lto_cartprod noop;
+         % Switch back to our normal representation.
+         return rl_mkn(gor,for each gconj in noopgdnf collect
+            rl_mkn(gand,for each x in gconj join append(x,nil)))
       >>;
       if rl_cxp op and not rl_tvalp op then
-      	 rederr {"cl_strict!-gdnf: illegal operator",op,"in BNF computation"};
+         rederr {"cl_strict!-gdnf: illegal operator",op,"in BNF computation"};
       return rl_mkn(gor,{rl_mkn(gand,{f})})
    end;
 
@@ -206,13 +206,13 @@ procedure cl_mkstrict(f,gor);
       gand := cl_flip gor;
       op := rl_op f;
       if not rl_cxp op or rl_tvalp op then
- 	 return rl_mkn(gor,{rl_mkn(gand,{f})});
+         return rl_mkn(gor,{rl_mkn(gand,{f})});
       if op eq gand then
- 	 return rl_mkn(gor,{f});
+         return rl_mkn(gor,{f});
       if op neq gor then
- 	 rederr {"BUG IN cl_mkstrict"};
+         rederr {"BUG IN cl_mkstrict"};
       return rl_mkn(gor,for each subf in rl_argn f collect
-	 if rl_op subf eq gand then subf else rl_mkn(gand,{subf}))
+         if rl_op subf eq gand then subf else rl_mkn(gand,{subf}))
    end;
 
 procedure cl_unstrict(sgdnf,gor);
@@ -241,17 +241,17 @@ procedure cl_sac(sgdnf,gor);
       gand := cl_flip(gor);
       % switch to noop form
       w := for each x in rl_argn sgdnf collect
-	 rl_argn x;
+         rl_argn x;
       w := cl_applysac(w,gor);
       if w eq 'break then
-	 return rl_mkn(gor,{rl_mkn(gand,{cl_cflip('true,gor eq 'or)})});
+         return rl_mkn(gor,{rl_mkn(gand,{cl_cflip('true,gor eq 'or)})});
       w := for each x in w join
-	 if x then
-	    {rl_mkn(gand,x)}
-	 else
-	    nil;
+         if x then
+            {rl_mkn(gand,x)}
+         else
+            nil;
       if null w then
-	 return rl_mkn(gor,{rl_mkn(gand,{cl_cflip('true,gor eq 'or)})});
+         return rl_mkn(gor,{rl_mkn(gand,{cl_cflip('true,gor eq 'or)})});
       return gor . w
    end;
 
@@ -267,17 +267,17 @@ procedure cl_applysac(l,gor);
    begin scalar w,ll,res;
       ll := l;
       while ll do <<
-	 w := cl_applysac1(car ll,res,gor);
-	 if w eq 'break then <<
-	    ll := nil;
-	    res := 'break
-	 >> else <<
-	    ll := cdr ll;
-	    if car w then
-	       res := cdar w . cdr w
-	    else
-	       res := cdr w
-	 >>
+         w := cl_applysac1(car ll,res,gor);
+         if w eq 'break then <<
+            ll := nil;
+            res := 'break
+         >> else <<
+            ll := cdr ll;
+            if car w then
+               res := cdar w . cdr w
+            else
+               res := cdr w
+         >>
       >>;
       return res
    end;
@@ -300,21 +300,21 @@ procedure cl_applysac1(c,l,gor);
    begin scalar w,flg;
       flg:=t;
       repeat <<
-	 w := cl_applysac2(c,l,gor);
-	 if w eq 'break then <<
-	    w := '(nil);  % leave the loop
-	    flg := 'break
-	 >>;
-	 if car w and null caar w then <<
-	    flg:=nil;
-	    c := cdar w;
-	    l := cdr w
-	 >>;
+         w := cl_applysac2(c,l,gor);
+         if w eq 'break then <<
+            w := '(nil);  % leave the loop
+            flg := 'break
+         >>;
+         if car w and null caar w then <<
+            flg:=nil;
+            c := cdar w;
+            l := cdr w
+         >>;
       >> until null car w or caar w;
       if flg eq 'break then
-	 return 'break;
+         return 'break;
       if null car w then
-	 return w;
+         return w;
       return (flg . cdar w) . cdr w
    end;
 
@@ -338,17 +338,17 @@ procedure cl_applysac2(c,l,gor);
       if null l then return ( (t . c) . nil);
       ll := l;
       while ll and ((w := cl_subandcut(c, car ll,gor)) eq 'keep1) do
-	 ll := cdr ll;
+         ll := cdr ll;
       if null w then return 'break;
       if null ll then return ((t . c) . nil);
       if w eq 'keep2 then return (nil . ll);
       if w neq 'failed then  % [w] is the result of the cut
-	                     % between [c] and [car ll].
-	 return (nil . w) . cdr ll;
+                             % between [c] and [car ll].
+         return (nil . w) . cdr ll;
       % We know, that there is no interaction between [c] and [car ll]
       w := cl_applysac2(c,cdr ll,gor);
       if w eq 'break then
-	 return 'break;
+         return 'break;
       cdr ll := cdr w;
       return car w . ll;
    end;
@@ -367,36 +367,36 @@ procedure cl_subandcut(l1,l2,gor);
       x := l1;  % Save one of [l1] and [l2] for computing a cut.
       % Determing the maximal common prefix of [l1] and [l2] and its length.
       while l1 and l2 and (car l1 equal car l2) do <<
-	 c := c+1;
-	 l1 := cdr l1; l2 := cdr l2
+         c := c+1;
+         l1 := cdr l1; l2 := cdr l2
       >>;
       if null (l1 and l2) then <<  % on of [l1] and [l2] are empty
-      	 if null (l1 or l2) then return 'keep1;  % both equal.
-	 % [l1] is a ``subset'' of [l2] or vice versa.
-       	 return (l2 and 'keep1) or 'keep2
+         if null (l1 or l2) then return 'keep1;  % both equal.
+         % [l1] is a ``subset'' of [l2] or vice versa.
+         return (l2 and 'keep1) or 'keep2
       >>;
       % We have [l1 and l2] and [car l1 neq car l2].
       kstate := 'keep1;
       w := rl_sacat(car l1,car l2,gor);  % [w neq 'keep]
       if w eq 'keep2 then <<
-	 kstate := 'keep2;
-	 % swap [l1] and [l2] upto the first element.
-	 w := cdr l1; l1 := cdr l2; l2 := w
+         kstate := 'keep2;
+         % swap [l1] and [l2] upto the first element.
+         w := cdr l1; l1 := cdr l2; l2 := w
       >> else if w eq 'keep1 then <<
-	 l1 := cdr l1; l2 := cdr l2
+         l1 := cdr l1; l2 := cdr l2
       >> else if w then
-	 return cl_trycut(x,c,w,cdr l1,cdr l2)
+         return cl_trycut(x,c,w,cdr l1,cdr l2)
       else if rl_ordatp(car l1,car l2) then <<  % [car l1 neq car l2]
-	 kstate := 'keep2;
-	 w := l1; l1 := l2; l2 := w
+         kstate := 'keep2;
+         w := l1; l1 := l2; l2 := w
       >>;
       % Now [l1] is ``shorter'' than [l2]; no cuts are possible.
       while l1 do <<
-	 w := cl_sacatl(car l1, l2,gor);
-      	 l2 := cdr w; w := car w;
-	 l1 := cdr l1;
-	 if w neq 'keep1 then
-	    l1 := nil  % Leave the loop.
+         w := cl_sacatl(car l1, l2,gor);
+         l2 := cdr w; w := car w;
+         l1 := cdr l1;
+         if w neq 'keep1 then
+            l1 := nil  % Leave the loop.
       >>;
       if w eq 'keep1 then return kstate;
       return 'failed
@@ -414,18 +414,18 @@ procedure cl_trycut(l,c,at,l1,l2);
    % ommitted.
    begin scalar a;
       if null l1 and null l2 then <<
-	 l := for i := 1 : c collect <<
-	    a := car l; l := cdr l; a
-	 >>;
-	 if at eq 'drop then
-	    return sort(l,'rl_ordatp);
-	 return sort(at . l,'rl_ordatp)
+         l := for i := 1 : c collect <<
+            a := car l; l := cdr l; a
+         >>;
+         if at eq 'drop then
+            return sort(l,'rl_ordatp);
+         return sort(at . l,'rl_ordatp)
       >>;
       if l1 neq l2 then return 'failed;
       % [l1] and [l2] are equal.
       for i:=1:c do << l1 := car l . l1; l := cdr l >>;
       if at neq 'drop then
-	 l1 := at . l1;
+         l1 := at . l1;
       return sort(l1,'rl_ordatp)
    end;
 
@@ -444,16 +444,16 @@ procedure cl_sacatl(a,l,gor);
    % [l] not involved in the computation of $\alpha$.
    begin scalar w;
       if null l then
-      	 return '(nil . nil);
+         return '(nil . nil);
       if not rl_sacatlp(a,l) then
-      	 return (nil . l);
+         return (nil . l);
       w := rl_sacat(a,car l,gor);
       if not w then
-      	 return cl_sacatl(a,cdr l,gor);
+         return cl_sacatl(a,cdr l,gor);
       if w memq '(keep1 keep) then
-      	 return ('keep1 . cdr l);
+         return ('keep1 . cdr l);
       if w eq 'keep2 then
-      	 return (nil . cdr l);
+         return (nil . cdr l);
       return (w . cdr l)  % [w] is a relation or [drop]
    end;
 
@@ -541,14 +541,14 @@ procedure cl_quine(f);
       w := cl_bnf2set f;
       op := car w;
       if not op then
-	 return f;
+         return f;
       if op eq 'and then
-	 s := cl_qsnot cdr w
+         s := cl_qsnot cdr w
       else
-      	 s := cdr w;
+         s := cdr w;
       s := cl_qs(s,'or);  % Non generic
       if op eq 'and then
-	 s := cl_qsnot s;
+         s := cl_qsnot s;
       return cl_set2bnf(s,op)
    end;
 
@@ -571,20 +571,20 @@ procedure cl_bnf2set1(f,xop);
    % to [f].
    begin scalar op,w;
       if rl_tvalp f then
-	 return nil  . f;
+         return nil  . f;
       if not cl_cxfp f then
-	 return nil . {{f}};
+         return nil . {{f}};
       op := rl_op f;
       if not(op memq '(and or)) then
-	 rederr {"cl_bnf2set: not in bnf: ",f};
+         rederr {"cl_bnf2set: not in bnf: ",f};
       w := cl_bnf2set2(rl_argn f,op);
       if not car w then  % List of atomic formulas, translated to singletons
-	 if op eq xop then
-	    return op  . w
-	 else if cl_flip op eq xop then
-	    return op . {rl_argn f}
-	 else
-	    return nil  . f;
+         if op eq xop then
+            return op  . w
+         else if cl_flip op eq xop then
+            return op . {rl_argn f}
+         else
+            return nil  . f;
       return op . cdr w
    end;
 
@@ -597,13 +597,13 @@ procedure cl_bnf2set2(fl,op);
    begin scalar xop,flg,w;
       xop := cl_flip op;
       w := for each f in fl collect <<
-	 if not cl_cxfp f then
-	    {f}
-	 else if rl_op f eq xop then <<
-	    flg := t;
-	    sort(lto_list2set rl_argn f,'rl_ordatp)
-	 >> else
-	    rederr {"cl_bnf2set1: not in bnf: ",f}
+         if not cl_cxfp f then
+            {f}
+         else if rl_op f eq xop then <<
+            flg := t;
+            sort(lto_list2set rl_argn f,'rl_ordatp)
+         >> else
+            rederr {"cl_bnf2set1: not in bnf: ",f}
       >>;
       return flg . lto_list2set w
    end;
@@ -612,7 +612,7 @@ procedure cl_set2bnf(ll,op);
    begin scalar flop;
       flop := cl_flip(op);
       return rl_smkn(op,for each l in ll collect
-	 rl_smkn(flop,l))
+         rl_smkn(flop,l))
    end;
 
 procedure cl_qs(s,op);
@@ -620,14 +620,14 @@ procedure cl_qs(s,op);
    % a BNF. [op] is one of [and], [or]. Returns a set representation.
    begin scalar w;
       if !*rlverbose then
-	 ioto_tprin2 {"[Quine: ",cl_qssize s,"/",length s};
+         ioto_tprin2 {"[Quine: ",cl_qssize s,"/",length s};
       w := cl_qscpi(s,op);
       if w eq 'break then <<
-	 ioto_prin2t {" -> 0/0]"};
-	 return {{}} % True for DNF; False for CNF
+         ioto_prin2t {" -> 0/0]"};
+         return {{}} % True for DNF; False for CNF
       >>;
       if !*rlverbose then
-	 ioto_prin2 {" -> ",cl_qssize w,"/",length w};
+         ioto_prin2 {" -> ",cl_qssize w,"/",length w};
       return  cl_qsselect(w,op);
    end;
 
@@ -638,34 +638,34 @@ procedure cl_qscpi(cl,op);
    begin scalar firstl,scfirstl,first,secondl,scsecondl,second,newl,w;
       newl := cl;
       while newl do <<
-	 newl := cl_qssisu(newl,op);
-	 firstl := cl_qssisutwo(firstl,newl,op);
-	 secondl := newl;
-	 newl := nil;
-	 scfirstl := firstl;
-	 while scfirstl do <<
-	    first := car scfirstl;
-	    scfirstl := cdr scfirstl;
-	    scsecondl := secondl;
-	    while scsecondl do <<
-	       second := car scsecondl;
-	       scsecondl := cdr scsecondl;
-	       if not(second eq first) then <<
-	       	  w := rl_qsconsens(first,second,op);
-	       	  if w eq 'break then
-	       	     newl := scsecondl := scfirstl := nil
-	       	  else
-	       	     foreach cs in w do
-	       	     	if cs and not(cl_qssubsumelp(cs,firstl,op)) and
-		     	   not(cs member newl)
-		     	then
-	       	     	   newl := cs . newl
-	       >>
-	    >>  % while scsecondl
-	 >>  % while scfirstl
+         newl := cl_qssisu(newl,op);
+         firstl := cl_qssisutwo(firstl,newl,op);
+         secondl := newl;
+         newl := nil;
+         scfirstl := firstl;
+         while scfirstl do <<
+            first := car scfirstl;
+            scfirstl := cdr scfirstl;
+            scsecondl := secondl;
+            while scsecondl do <<
+               second := car scsecondl;
+               scsecondl := cdr scsecondl;
+               if not(second eq first) then <<
+                  w := rl_qsconsens(first,second,op);
+                  if w eq 'break then
+                     newl := scsecondl := scfirstl := nil
+                  else
+                     foreach cs in w do
+                        if cs and not(cl_qssubsumelp(cs,firstl,op)) and
+                           not(cs member newl)
+                        then
+                           newl := cs . newl
+               >>
+            >>  % while scsecondl
+         >>  % while scfirstl
       >>;  % newl
       if (w eq 'break) then
-	 return 'break;
+         return 'break;
       return firstl
    end;
 
@@ -674,15 +674,15 @@ procedure cl_qssisu(l,op);
    % of clauses.
    for each x in l join
       if not(cl_qssubsumelp(x,lto_delq(x,l),op)) then
-	 {x};
+         {x};
 
 procedure cl_qssisutwo(l1,l2,op);
    % Neither to l1 nor to l2 subsumption can be applied. No clause of
    % l2 subsumes a clause of l1.
    begin scalar w;
       w := for each x in l1 join
-      	 if not(cl_qssubsumelp(x,l2,op)) then
-	    {x};
+         if not(cl_qssubsumelp(x,l2,op)) then
+            {x};
       return nconc(w,l2)
    end;
 
@@ -690,8 +690,8 @@ procedure cl_qssubsumelp(c,cl,op);
    % Returns [T] if [c] subsumes one of the clauses in cl.
    begin scalar r;
       while (cl and not(r)) do <<
-	 r := cl_qssubsumep(c,car cl,op);
-	 cl := cdr cl;
+         r := cl_qssubsumep(c,car cl,op);
+         cl := cdr cl;
       >>;
       return r
    end;
@@ -711,22 +711,22 @@ procedure cl_qsselect(s,op);
       core := car w;
       dcs := cdr w;
       if !*rlverbose then <<
-	 csize := cl_qssize core;
-	 clen := length core;
-	 ioto_prin2 {" -> ",csize,"/",clen,"+",cl_qssize dcs,"/",length dcs}
+         csize := cl_qssize core;
+         clen := length core;
+         ioto_prin2 {" -> ",csize,"/",clen,"+",cl_qssize dcs,"/",length dcs}
       >>;
       dcs := cl_qsrmabsdisp(core,dcs,op);
       if !*rlverbose then
-	 ioto_prin2 {" -> ",csize,"/",clen,"+",cl_qssize dcs,"/",length dcs};
+         ioto_prin2 {" -> ",csize,"/",clen,"+",cl_qssize dcs,"/",length dcs};
       if !*psen then
-	 w := cl_qsselect2(core,dcs,op)
+         w := cl_qsselect2(core,dcs,op)
       else
-      	 w := cl_qsselect1(core,dcs,cl_subsets dcs,op);
+         w := cl_qsselect1(core,dcs,cl_subsets dcs,op);
       if !*rlverbose then <<
-	 wsize := cl_qssize w;
-	 wlen := length w;
-	 ioto_prin2t {" -> ",csize,"/",clen,"+",wsize,"/",wlen,
-	    " = ",csize+wsize,"/",clen+wlen,"]"}
+         wsize := cl_qssize w;
+         wlen := length w;
+         ioto_prin2t {" -> ",csize,"/",clen,"+",wsize,"/",wlen,
+            " = ",csize+wsize,"/",clen+wlen,"]"}
       >>;
       w := nconc(w,core);
       return w;
@@ -736,10 +736,10 @@ procedure cl_qsselect1(core,dcs,potdcs,op);
    begin scalar r,w;
       potdcs := cdr reversip potdcs;
       while potdcs and not(r) do <<
-	 w := setdiff(dcs,car potdcs);
-	 if cl_qsimpltestclcl(car potdcs,append(core,w),op) then
-	    r := w;
-	 potdcs := cdr potdcs;
+         w := setdiff(dcs,car potdcs);
+         if cl_qsimpltestclcl(car potdcs,append(core,w),op) then
+            r := w;
+         potdcs := cdr potdcs;
       >>;
       return r
    end;
@@ -749,9 +749,9 @@ procedure cl_qsselect2(core,dcs,op);
       kstate := dcs . nil;
       cl_ps kstate;  % Remove leading nil;
       while (potdcs:=cl_ps kstate) neq 'final and not(r) do <<
-	 w := setdiff(dcs,potdcs);
-	 if cl_qsimpltestclcl(w,append(core,potdcs),op) then
-	    r := potdcs;
+         w := setdiff(dcs,potdcs);
+         if cl_qsimpltestclcl(w,append(core,potdcs),op) then
+            r := potdcs;
       >>;
       return r
    end;
@@ -759,17 +759,17 @@ procedure cl_qsselect2(core,dcs,op);
 procedure cl_qsspltcore(s,op);
    begin scalar core,dcs;
       for each x in s do
-	 if rl_qsimpltestccl(x,lto_delq(x,s),op) then
-      	    dcs := x . dcs
-	 else
-	    core := x . core;
+         if rl_qsimpltestccl(x,lto_delq(x,s),op) then
+            dcs := x . dcs
+         else
+            core := x . core;
       return core . dcs;
    end;
 
 procedure cl_qsrmabsdisp(core,dcs,op);
    for each c in dcs join
       if not(rl_qsimpltestccl(c,core,op)) then
-	 {c};
+         {c};
 
 procedure cl_qsimpltestclcl(pl,cl,op);
    % quine simplification implication test clauses list clauses list.
@@ -779,8 +779,8 @@ procedure cl_qsimpltestclcl(pl,cl,op);
    begin scalar r;
       r := t;
       while pl and r do <<
-	 r := rl_qsimpltestccl(car pl,cl,op);
-	 pl := cdr pl;
+         r := rl_qsimpltestccl(car pl,cl,op);
+         pl := cdr pl;
       >>;
       return r
    end;
@@ -794,11 +794,11 @@ procedure cl_lengthp(l1,l2);
 procedure cl_subsets1(l);
    begin scalar w,r,x;
       if null l then
-      	 return {nil};
+         return {nil};
       w := cl_subsets1 cdr l;
       x := car l;
       for each y in w do
-	 r := (x . y) . r;
+         r := (x . y) . r;
       return nconc(r,w)
    end;
 
@@ -825,7 +825,7 @@ procedure cl_qssusubymem(c1,c2,op);
       l1 := length c1;
       l2 := length c2;
       if not(l1>=l2) then
-	    return nil;
+            return nil;
       return cl_qssusubymem1(c1,c2)
    end;
 
@@ -833,9 +833,9 @@ procedure cl_qssusubymem1(c1,c2);
    begin scalar r;
       r := t;
       while c2 and r do <<
-	 if not(car c2 member c1) then
-	    r := nil;
-	 c2 := cdr c2;
+         if not(car c2 member c1) then
+            r := nil;
+         c2 := cdr c2;
       >>;
       return r
    end;
@@ -847,7 +847,7 @@ procedure cl_qssusubytab(c1,c2,op);
       l1 := length c1;
       l2 := length c2;
       if not(l1>=l2) then
-	 return nil;
+         return nil;
       return cl_qssusubytab1(c1,c2,op)
    end;
 
@@ -857,8 +857,8 @@ procedure cl_qssusubytab1(c1,c2,op);
    begin scalar r;
       r := t;
       while c2 and r do <<
-	 r := cl_qssusubytab2(c1,car c2,op);
-	 c2 := cdr c2
+         r := cl_qssusubytab2(c1,car c2,op);
+         c2 := cdr c2
       >>;
       return r
    end;
@@ -866,8 +866,8 @@ procedure cl_qssusubytab1(c1,c2,op);
 procedure cl_qssusubytab2(c1,a,op);
    begin scalar r;
       while c1 and not(r) do <<
-	 r := rl_qssusuat(car c1,a,op);
-	 c1 := cdr c1
+         r := rl_qssusuat(car c1,a,op);
+         c1 := cdr c1
       >>;
       return r
   end;
@@ -880,19 +880,19 @@ procedure cl_qssusubytab2(c1,a,op);
 procedure cl_qssimpl(s,theo,op);
    begin scalar r,a,w,ats;
       while s and not(rl_tvalp r) do <<
-	 a := car s;
-	 w := cl_qssimplc(a,theo,op);
-	 if w eq 'true then
-	    r := 'true
-	 else if w neq 'false then
-	    r := w . r;
-	 s := cdr s;
+         a := car s;
+         w := cl_qssimplc(a,theo,op);
+         if w eq 'true then
+            r := 'true
+         else if w neq 'false then
+            r := w . r;
+         s := cdr s;
       >>;
       if r eq 'true then
-	 'true;
+         'true;
       w := nconc(ats,r);
       return if null w then
-	 'false
+         'false
       else w
    end;
 
@@ -900,17 +900,17 @@ procedure cl_qssimplc(c,theo,op);
    % simplification of one clause.
    begin scalar r,a;
       while c and r neq 'false do <<
-	 a := car c;
-	 if a eq 'false then
-	    r := 'false
-	 else if a neq 'true then
-	    r := rl_qssiadd(a,r,theo,op);
-	 c := cdr c;
+         a := car c;
+         if a eq 'false then
+            r := 'false
+         else if a neq 'true then
+            r := rl_qssiadd(a,r,theo,op);
+         c := cdr c;
       >>;
       return if null r then
-	 'true
+         'true
       else
-	 r
+         r
    end;
 
 % Variant 1: Using rl_simpl
@@ -919,7 +919,7 @@ procedure cl_qssibysimpl(s,theo,op);
    begin scalar !*rlsiexpla,!*rlsiexpl,f,w;
       f := rl_simpl(cl_set2bnf(s,op),nil,-1);
       if rl_tvalp f then
-	 return f;
+         return f;
       w := cl_bnf2set1(f,'or);
       return cdr w
    end;
@@ -933,16 +933,16 @@ procedure cl_qsimpltestccl(cp,clc,op);
    begin scalar w,r,sl;
       sl := cl_qscsa cp;
       while clc and r neq 'true do <<
-	 w := cl_qsimpltestcc1(sl,cp,car clc,op);
-	 if w eq 'true then
-	    r := 'true
-	 else if w neq 'false then
-	    r := w . r;
-	 clc := cdr clc;
+         w := cl_qsimpltestcc1(sl,cp,car clc,op);
+         if w eq 'true then
+            r := 'true
+         else if w neq 'false then
+            r := w . r;
+         clc := cdr clc;
       >>;
       %      w := cl_qssimplf(rl_smkn(op,r),nil);
       %      if not rl_tvalp w and cl_qe(rl_all(w,nil)) eq 'true then
-      %	 rederr {"cl_asimpltestcc: computed non-atomic formula:",w};
+      %  rederr {"cl_asimpltestcc: computed non-atomic formula:",w};
       return rl_qstautp r
    end;
 
@@ -953,11 +953,11 @@ procedure cl_qsimpltestcc1(sl,cp,cc,op);  % TODO
    begin scalar w;
       w := rl_qssimpl({cl_qssubc(sl,cc)},nil,op);  % Warnung: Clause -> Clause
       return if rl_tvalp w then
-	 w
+         w
       else if cdr w then
-	 rederr {"cl_qssimpltestcc1: Unexpected complex formula",w}
+         rederr {"cl_qssimpltestcc1: Unexpected complex formula",w}
       else
-	 car w
+         car w
    end;
 
 procedure cl_qstautp(f);
@@ -1014,9 +1014,9 @@ procedure cl_qs1consens(c1,c2,op);
       l1 := length c1;
       l2 := length c2;
       w := if l1<l2 then
-	 cl_qs1consens1(c1,c2,op)
+         cl_qs1consens1(c1,c2,op)
       else
-      	 cl_qs1consens1(c2,c1,op);
+         cl_qs1consens1(c2,c1,op);
       return if w eq 'break then 'break else {w};
    end;
 
@@ -1024,8 +1024,8 @@ procedure cl_qs1consens1(c1,c2,op);
    begin scalar w,sc1;
       sc1 := c1;
       while sc1 and not(w) do <<
-	 w := rl_qstrycons(car sc1,c1,c2,op);
-	 sc1 := cdr sc1
+         w := rl_qstrycons(car sc1,c1,c2,op);
+         sc1 := cdr sc1
       >>;
       return w
    end;
@@ -1040,19 +1040,19 @@ procedure cl_qsnconsens(c1,c2,op);
       l1 := length c1;
       l2 := length c2;
       return if l1<l2 then
-	 cl_qsnconsens1(c1,c2,op)
+         cl_qsnconsens1(c1,c2,op)
       else
-      	 cl_qsnconsens1(c2,c1,op)
+         cl_qsnconsens1(c2,c1,op)
    end;
 
 procedure cl_qsnconsens1(c1,c2,op);
    begin scalar w,r,sc1;
       sc1 := c1;
       while sc1 and w neq 'break do <<
-	 w := rl_qstrycons(car sc1,c1,c2,op);
-	 if w then
-	    r := w . r;
-	 sc1 := cdr sc1;
+         w := rl_qstrycons(car sc1,c1,c2,op);
+         if w then
+            r := w . r;
+         sc1 := cdr sc1;
       >>;
       return if w eq 'break then 'break else r
    end;
@@ -1069,19 +1069,19 @@ procedure cl_qstrycons(a,c1,c2,op);
       cc1 := delete(a,c1);  % Copy... % TODO: lto_delq or delete?
       na := rl_negateat a;
       if not(na member c2) then
-	 return nil;
+         return nil;
       sc1 := cc1;
       r := t;
       while sc1 and r do <<
-	 if rl_negateat car sc1 member c2 then
-	    r := nil;
-	 sc1 := cdr sc1;
+         if rl_negateat car sc1 member c2 then
+            r := nil;
+         sc1 := cdr sc1;
       >>;
       if not r then
-	 return nil;
+         return nil;
       r := sort(lto_list2set append(cc1,delete(na,c2)),'rl_ordatp); %TODO: nconc
       if null r then
-	 return 'break;
+         return 'break;
       return r
    end;
 
@@ -1099,13 +1099,13 @@ procedure cl_ps(s);
    begin scalar v,w,r; integer i,n;
       v := cdr s;
       if cdr s eq 'final then
-	 return 'final;
+         return 'final;
       if null cdr s then
-	 v := cdr s := mkvect (length car s-1);
+         v := cdr s := mkvect (length car s-1);
       n := upbv v;
       while i<=n and (w:=getv(v,i)) do <<
-	 r := car w . r;
-	 i:=i+1;
+         r := car w . r;
+         i:=i+1;
       >>;
       cl_psnext s;
       return  r
@@ -1118,21 +1118,21 @@ procedure cl_psnext1(s,n);
    begin scalar w,v;
       v := cdr s;
       if n > upbv v then
-	 return cdr s := 'final;  % Mark and return;
+         return cdr s := 'final;  % Mark and return;
       w := getv(v,n);
       if null w then  % Introduce pointer
-	 return putv(v,n,car s);
+         return putv(v,n,car s);
       w := cdr w;  % Try to move
       if w then  % Success
-	 return putv(v,n,w);
+         return putv(v,n,w);
       % Overflow occurs.
       repeat <<
-	 w := cl_psnext1(s,n+1);
-	 if w neq 'final then
-	    w := cdr getv(v,n+1);
+         w := cl_psnext1(s,n+1);
+         if w neq 'final then
+            w := cdr getv(v,n+1);
       >> until w;
       if w eq 'final then
-	 return 'final;
+         return 'final;
       putv(v,n,w)
    end;
 

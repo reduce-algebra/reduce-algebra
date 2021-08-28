@@ -74,14 +74,14 @@ inline procedure rl_skipequal(proc);
    <<
       scan();
       if cursym!* neq 'equal then
-	 rederr {"expecting '=' in", proc, "but found", cursym!*}
+         rederr {"expecting '=' in", proc, "but found", cursym!*}
    >>;
 
 inline procedure rl_skiplcbkt(proc);
    <<
       scan();
       if cursym!* neq '!*lcbkt!* then
-	 rederr {"expecting '{' in, ", proc, "but found", cursym!*}
+         rederr {"expecting '{' in, ", proc, "but found", cursym!*}
    >>;
 
 endmodule;

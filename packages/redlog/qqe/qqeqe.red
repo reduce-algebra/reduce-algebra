@@ -264,8 +264,8 @@ procedure qqe_qe!-clause(u,q);
       % decision how to proceed according to structure of input formula
       if qqe_atf!-qequal!-ext!-c!* or qqe_atf!-qequal!-ext!-p!* 
       then <<
-	 f := qqe_qe!-dna();
-	 if qqe_resf!* then
+         f := qqe_qe!-dna();
+         if qqe_resf!* then
             f := append({'and,f},qqe_resf!*);
       >>
       else <<
@@ -304,7 +304,7 @@ procedure qqe_qe!-dna!-nfd();
       if null minlength then minlength := 0;
       maxlength := get(qqe_var!*,'maxlength);
       if qqe_debug!* then 
-	 prin2t{"minlength=",minlength," maxlength=", maxlength};
+         prin2t{"minlength=",minlength," maxlength=", maxlength};
       j := qqe_atf!-qequal!-ext!-min!-prefix();
       l := qqe_atf!-qequal!-ext!-p!-min!-lefts(minlength, cadr j);
       r := qqe_atf!-qequal!-ext!-p!-min!-rights(minlength,cadr j);

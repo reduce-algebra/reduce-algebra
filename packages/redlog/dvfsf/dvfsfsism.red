@@ -57,18 +57,18 @@ procedure dvfsf_susibin(old,new);
       nlhs := dvfsf_arg2l new;
       nrhs := dvfsf_arg2r new;
       if olhs = nlhs and orhs = nrhs then
-      	 return dvfsf_susibin1(oop,nop,nlhs,nrhs,nlev);
+         return dvfsf_susibin1(oop,nop,nlhs,nrhs,nlev);
       if (olhs = nrhs and orhs = nlhs) then
-	 % [oop], [noop] cannot be [equal], [neq]
-	 return dvfsf_susibin2(oop,nop,nlhs,nrhs,nlev);
+         % [oop], [noop] cannot be [equal], [neq]
+         return dvfsf_susibin2(oop,nop,nlhs,nrhs,nlev);
       if (oop eq 'equal or oop eq 'neq) and nop neq 'equal and nop neq 'neq and
-	 dvfsf_susibin!-eqlhsmatch(nlhs,nrhs,olhs)
+         dvfsf_susibin!-eqlhsmatch(nlhs,nrhs,olhs)
       then
-	 return dvfsf_susibin1(oop,nop,nlhs,nrhs,nlev);
+         return dvfsf_susibin1(oop,nop,nlhs,nrhs,nlev);
       if (nop eq 'equal or nop eq 'neq) and oop neq 'equal and oop neq 'neq and
-	 dvfsf_susibin!-eqlhsmatch(olhs,orhs,nlhs)
+         dvfsf_susibin!-eqlhsmatch(olhs,orhs,nlhs)
       then
-	 return dvfsf_susibin1(oop,nop,olhs,orhs,nlev);
+         return dvfsf_susibin1(oop,nop,olhs,orhs,nlev);
       return nil
    end;
 
@@ -79,7 +79,7 @@ procedure dvfsf_susibin!-eqlhsmatch(lhs,rhs,eqlhs);
    begin scalar w;
       w := dvfsf_simplat1(dvfsf_0mk2('equal,addf(lhs,negf rhs)),nil);
       if not rl_tvalp w then
-	 return dvfsf_arg2l w = eqlhs;
+         return dvfsf_arg2l w = eqlhs;
       return nil
    end;
 
@@ -88,48 +88,48 @@ procedure dvfsf_susibin1(rold,rnew,lhs,rhs,nlev);
       '((delete . t))
    else if rold eq 'neq then
       if rnew eq 'equal then
-	 'false
+         'false
       else if rnew eq 'sdiv or rnew eq 'nassoc then
-	 '((delete . nil))
+         '((delete . nil))
       else
-	 nil
+         nil
    else if rold eq 'sdiv then
       if rnew eq 'neq or rnew eq 'div or rnew eq 'nassoc then
-	 '((delete . t))
+         '((delete . t))
       else  % [rnew memq '(assoc equal)]
-	 'false
+         'false
    else if rold eq 'div then
       if rnew eq 'sdiv or rnew eq 'assoc or rnew eq 'equal then
-	 '((delete . nil))
+         '((delete . nil))
       else if rnew eq 'nassoc then
-	 {'(delete . nil),'(delete . t),
-	    'add . (dvfsf_mk2('sdiv,lhs,rhs) . nlev)}
+         {'(delete . nil),'(delete . t),
+            'add . (dvfsf_mk2('sdiv,lhs,rhs) . nlev)}
       else
-	 nil
+         nil
    else if rold eq 'assoc then
       if rnew eq 'sdiv or rnew eq 'nassoc then
-	 'false
+         'false
       else if rnew eq 'div then
-	 '((delete . t))
+         '((delete . t))
       else if rnew eq 'equal then
-	 '((delete . nil))
+         '((delete . nil))
       else  % [rnew eq 'neq]
-	 nil
+         nil
    else if rold eq 'equal then
       if rnew eq 'neq or rnew eq 'sdiv or rnew eq 'nassoc then
-	 'false
+         'false
       else  % [rnew memq '(div, assoc)]
-	 '((delete . t))
+         '((delete . t))
    else if rold eq 'nassoc then
       if rnew eq 'sdiv then
-	 '((delete . nil))
+         '((delete . nil))
       else if rnew eq 'assoc or rnew eq 'equal then
-	 'false
+         'false
       else if rnew eq 'div then
-	 {'(delete . nil),'(delete . t),
-	    'add . (dvfsf_mk2('sdiv,lhs,rhs) . nlev)}
+         {'(delete . nil),'(delete . t),
+            'add . (dvfsf_mk2('sdiv,lhs,rhs) . nlev)}
       else  % [rnew eq 'neq]
-	 '((delete . t))
+         '((delete . t))
    else
       rederr {"BUG IN dvfsf_susibin1(",rold,",",rnew,")"};
 
@@ -139,39 +139,39 @@ procedure dvfsf_susibin2(rold,rnew,nlhs,nrhs,nlev);
    % symmetric relations [assoc], [nassoc].
    if rold eq 'div then
       if rnew eq 'sdiv then
-	 'false
+         'false
       else if rnew eq 'div then
-	 {'(delete . nil),'(delete . t),
-	    'add . (dvfsf_simplat1(dvfsf_mk2('assoc,nlhs,nrhs),nil) . nlev)}
+         {'(delete . nil),'(delete . t),
+            'add . (dvfsf_simplat1(dvfsf_mk2('assoc,nlhs,nrhs),nil) . nlev)}
       else if rnew eq 'assoc then
-	 '((delete . nil))
+         '((delete . nil))
       else if rnew eq 'nassoc then
-	 {'(delete . nil),'(delete . t),
-	    'add . (dvfsf_mk2('sdiv,nrhs,nlhs) . nlev)}
+         {'(delete . nil),'(delete . t),
+            'add . (dvfsf_mk2('sdiv,nrhs,nlhs) . nlev)}
       else
-	 nil
+         nil
    else if rold eq 'sdiv then
       if rnew eq 'div or rnew eq 'sdiv or rnew eq 'assoc then
-	 'false
+         'false
       else if rnew eq 'nassoc then
-	 '((delete . t))
+         '((delete . t))
       else
-	 nil
+         nil
    else if rold eq 'nassoc then
       if rnew eq 'sdiv then
-	 '((delete . nil))
+         '((delete . nil))
       else if rnew eq 'div then
-	 {'(delete . nil),'(delete . t),
-	    'add . (dvfsf_mk2('sdiv,nlhs,nrhs) . nlev)}
+         {'(delete . nil),'(delete . t),
+            'add . (dvfsf_mk2('sdiv,nlhs,nrhs) . nlev)}
       else
-	 nil
+         nil
    else if rold eq 'assoc then
       if rnew eq 'sdiv then
-	 'false
+         'false
       else if rnew eq 'div then
-	 '((delete . t))
+         '((delete . t))
       else
-	 nil
+         nil
    else
       nil;
 

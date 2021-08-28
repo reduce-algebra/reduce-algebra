@@ -71,12 +71,12 @@ put('rlset,'psopfn,'rl_set!$);
 procedure rl_set!$(argl);
    begin scalar w;
       if argl then <<
-      	 w := reval car argl;
-      	 if eqcar(w,'list) then <<
-	    if cdr argl then rederr "too many arguments";
-	    argl := cdr w
-      	 >> else
-	    argl := w . for each x in cdr argl collect reval x
+         w := reval car argl;
+         if eqcar(w,'list) then <<
+            if cdr argl then rederr "too many arguments";
+            argl := cdr w
+         >> else
+            argl := w . for each x in cdr argl collect reval x
       >>;
       % load at least the packages for the chosen context before approximating
       % the current revision in rl_about
@@ -92,8 +92,8 @@ procedure rl_set(argl);
       if rl_cid!* then rl_exit();
       w := rl_enter(argl);
       if w then <<
-	 if cntxt then rl_enter(cntxt);
-	 rederr w
+         if cntxt then rl_enter(cntxt);
+         rederr w
       >>;
       return cntxt;
    end;
@@ -101,12 +101,12 @@ procedure rl_set(argl);
 procedure rl_exit();
    begin scalar w;
       w := for each pair in get(car rl_cid!*,'rl_cswitches) collect
-	 car pair . rl_onp car pair;
+         car pair . rl_onp car pair;
       put(car rl_cid!*,'rl_cswitches,w);
       for each pair in rl_ocswitches!* do
-	 rl_vonoff(car pair,cdr pair);
+         rl_vonoff(car pair,cdr pair);
       if (w := get(car rl_cid!*,'rl_exit)) then
-	 apply(w,nil);
+         apply(w,nil);
    end;
 
 procedure rl_enter(argl);
@@ -115,30 +115,30 @@ procedure rl_enter(argl);
       cid := rl_cname usedcname;
       argl := cdr argl;
       w := errorset({'load!-package,mkquote(cid)},nil,!*backtrace)
-	 where !*msg=nil;
+         where !*msg=nil;
       if errorp w then
-	 return {"switching to context",cid,"failed"};
+         return {"switching to context",cid,"failed"};
       if not flagp(cid,'rl_package) then
-	 return {cid,"is not an rl package"};
+         return {cid,"is not an rl package"};
       enter := get(cid,'rl_enter);
       if null enter and argl then <<
-	 lprim {"extra",ioto_cplu("argument",cdr argl),"ignored"};
-	 argl := nil;
+         lprim {"extra",ioto_cplu("argument",cdr argl),"ignored"};
+         argl := nil;
       >>;
       if enter then <<
-      	 w := apply(enter,{argl});
-      	 if not car w then
-	    return cdr w
-      	 else
-	    argl := cdr w
+         w := apply(enter,{argl});
+         if not car w then
+            return cdr w
+         else
+            argl := cdr w
       >>;
       rl_cid!* := {cid};
       rl_argl!* := argl;
       rl_usedcname!* := {usedcname};
       rl_ocswitches!* := nil;
       for each pair in get(car rl_cid!*,'rl_cswitches) do <<
-	 rl_ocswitches!* := (car pair . rl_onp car pair) . rl_ocswitches!*;
-	 rl_vonoff(car pair,cdr pair)
+         rl_ocswitches!* := (car pair . rl_onp car pair) . rl_ocswitches!*;
+         rl_vonoff(car pair,cdr pair)
       >>;
       rl_ocswitches!* := reversip rl_ocswitches!*;
       rl_updcache();
@@ -169,13 +169,13 @@ procedure rl_updcache();
    % Update cache.
    <<
       for each bbv in rl_bbl!* do
-	 set(bbv,nil);
+         set(bbv,nil);
       for each x in get(car rl_cid!*,'rl_params) do
-      	 set(car x,cdr x);
+         set(car x,cdr x);
       for each sv in rl_servl!* do
-	 set(sv,nil);
+         set(sv,nil);
       for each x in get(car rl_cid!*,'rl_services) do
-      	 set(car x,cdr x)
+         set(car x,cdr x)
    >>;
 
 procedure rl_serviadd(tag,name,value);
@@ -190,13 +190,13 @@ procedure rl_cswadd(tag,name,value);
 procedure rl_sbiadd(tag,prp,name,value);
    begin scalar w,al,old;
       if not flagp(tag,'rl_package) then
-	 rederr {tag,"is not a context identifier"};
+         rederr {tag,"is not a context identifier"};
       al := get(tag,prp);
       w := atsoc(name,al);
       if null w then <<
-	 al := (name . value) . al;
-      	 put(tag,prp,al);
-	 return nil
+         al := (name . value) . al;
+         put(tag,prp,al);
+         return nil
       >>;
       old := cdr w;
       cdr w := value;
@@ -212,10 +212,10 @@ procedure rl_copyc(new,old);
    % was set, else [nil].
    <<
       if flagp(old,'rl_package) then
-	 flag({new},'rl_package);
+         flag({new},'rl_package);
       for each tag in '(simpfnname rl_cswitches rl_params rl_services rl_prepat
-      	 rl_resimpat rl_lengthat rl_prepterm rl_simpterm rl_enter rl_exit) do
-	    rl_cput(new,tag,old)
+         rl_resimpat rl_lengthat rl_prepterm rl_simpterm rl_enter rl_exit) do
+            rl_cput(new,tag,old)
    >>;
 
 procedure rl_cput(new,tag,old);

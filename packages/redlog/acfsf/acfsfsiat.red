@@ -41,13 +41,13 @@ procedure acfsf_simplat1(f,sop);
    begin scalar rel,lhs;
       rel := acfsf_op f;
       if not (rel memq '(equal neq)) then
- 	 return nil;
+         return nil;
       lhs := acfsf_arg2l f;
       if domainp lhs then
- 	 return if acfsf_evalatp(rel,lhs) then 'true else 'false;
+         return if acfsf_evalatp(rel,lhs) then 'true else 'false;
       lhs := quotf(lhs,sfto_dcontentf lhs);
       if minusf lhs then
-    	 lhs := negf lhs;
+         lhs := negf lhs;
       if null !*rlsiatadv then return acfsf_0mk2(rel,lhs);
       if rel eq 'equal then return acfsf_simplequal(lhs,sop);
       if rel eq 'neq then return acfsf_simplneq(lhs,sop)
@@ -59,7 +59,7 @@ procedure acfsf_simplequal(lhs,sop);
    begin scalar w,ff,ww;
       ff := sfto_sqfpartf lhs;
       if !*rlsifac and (!*rlsiexpla or !*rlsiexpl and sop = 'or) then
-	 return acfsf_facequal ff;
+         return acfsf_facequal ff;
       return acfsf_0mk2('equal,ff)
    end;
 
@@ -73,7 +73,7 @@ procedure acfsf_simplneq(lhs,sop);
    begin scalar w,ff,ww;
       ff := sfto_sqfpartf lhs;
       if !*rlsifac and (!*rlsiexpla or !*rlsiexpl and sop = 'and) then
-	 return acfsf_facneq ff;
+         return acfsf_facneq ff;
       return acfsf_0mk2('neq,ff)
    end;
 

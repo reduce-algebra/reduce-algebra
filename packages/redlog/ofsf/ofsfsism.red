@@ -90,17 +90,17 @@ procedure ofsf_smupdknowl(op,atl,knowl,n);
    % an IRL. Destructively updates [knowl] wrt. the [atl] information.
    begin scalar w,ir,a;
       while atl do <<
-	 a := if op eq 'and then car atl else ofsf_negateat car atl;
-	 atl := cdr atl;
-	 ir := ofsf_at2ir(a,n);
-	 if w := assoc(car ir,knowl) then <<
-	    cdr w := ofsf_sminsert(cadr ir,cdr w);
-	    if cdr w eq 'false then <<
-	       atl := nil;
-	       knowl := 'false
-	    >>  % else [ofsf_sminsert] has updated [cdr w] destructively.
-	 >> else
-	    knowl := ir . knowl
+         a := if op eq 'and then car atl else ofsf_negateat car atl;
+         atl := cdr atl;
+         ir := ofsf_at2ir(a,n);
+         if w := assoc(car ir,knowl) then <<
+            cdr w := ofsf_sminsert(cadr ir,cdr w);
+            if cdr w eq 'false then <<
+               atl := nil;
+               knowl := 'false
+            >>  % else [ofsf_sminsert] has updated [cdr w] destructively.
+         >> else
+            knowl := ir . knowl
       >>;
       return knowl
    end;
@@ -129,10 +129,10 @@ procedure ofsf_smmkatl1(op,oldknowl,newknowl,n);
 procedure ofsf_smmkatl!-and(oldknowl,newknowl,n);
    begin scalar w;
       if not !*rlsipw and !*rlsipo then
-	 return ofsf_irl2atl('and,newknowl,n);
+         return ofsf_irl2atl('and,newknowl,n);
       return for each ir in newknowl join <<
-	 w := atsoc(car ir,oldknowl);
-	 if null w then ofsf_ir2atl('and,ir,n) else ofsf_smmkatl!-and1(w,ir,n)
+         w := atsoc(car ir,oldknowl);
+         if null w then ofsf_ir2atl('and,ir,n) else ofsf_smmkatl!-and1(w,ir,n)
       >>;
    end;
 
@@ -141,12 +141,12 @@ procedure ofsf_smmkatl!-and1(oir,nir,n);
       parasq := !*f2q car nir;
       return for each le in cdr nir join
       if car le = n then <<
-	 if cadr le memq '(lessp greaterp) and
- 	    (w := ofsf_smmkat!-and2(cdr oir,cdr le,parasq))
- 	 then
-	    {w}
-	 else
-	    {ofsf_entry2at('and,cdr le,parasq)}
+         if cadr le memq '(lessp greaterp) and
+            (w := ofsf_smmkat!-and2(cdr oir,cdr le,parasq))
+         then
+            {w}
+         else
+            {ofsf_entry2at('and,cdr le,parasq)}
       >>
    end;
 
@@ -158,22 +158,22 @@ procedure ofsf_smmkat!-and2(odb,ne,parasq);
    begin scalar w;
       w := ofsf_smdbgetrel(cdr ne,odb);
       if w eq 'neq then
-	 (if !*rlsipw then <<
-      	    if car ne eq 'lessp then
- 	       return ofsf_entry2at('and,'leq . cdr ne,parasq);
-	    % We know [car ne eq 'greaterp].
-	    return ofsf_entry2at('and,'geq . cdr ne,parasq)
-      	 >>)
+         (if !*rlsipw then <<
+            if car ne eq 'lessp then
+               return ofsf_entry2at('and,'leq . cdr ne,parasq);
+            % We know [car ne eq 'greaterp].
+            return ofsf_entry2at('and,'geq . cdr ne,parasq)
+         >>)
       else if w memq '(leq geq) then
-	 if not !*rlsipo then
- 	    return ofsf_entry2at('and,'neq . cdr ne,parasq)
+         if not !*rlsipo then
+            return ofsf_entry2at('and,'neq . cdr ne,parasq)
    end;
 
 procedure ofsf_smmkatl!-or(oldknowl,newknowl,n);
    begin scalar w;
       return for each ir in newknowl join <<
-	 w := atsoc(car ir,oldknowl);
-	 if null w then ofsf_ir2atl('or,ir,n) else ofsf_smmkatl!-or1(w,ir,n)
+         w := atsoc(car ir,oldknowl);
+         if null w then ofsf_ir2atl('or,ir,n) else ofsf_smmkatl!-or1(w,ir,n)
       >>;
    end;
 
@@ -182,12 +182,12 @@ procedure ofsf_smmkatl!-or1(oir,nir,n);
       parasq := !*f2q car nir;
       return for each le in cdr nir join
       if car le = n then <<
-	 if cadr le memq '(lessp greaterp equal) and
- 	    (w := ofsf_smmkat!-or2(cdr oir,cdr le,parasq))
- 	 then
-	    {w}
-	 else
-	    {ofsf_entry2at('or,cdr le,parasq)}
+         if cadr le memq '(lessp greaterp equal) and
+            (w := ofsf_smmkat!-or2(cdr oir,cdr le,parasq))
+         then
+            {w}
+         else
+            {ofsf_entry2at('or,cdr le,parasq)}
       >>
    end;
 
@@ -195,43 +195,43 @@ procedure ofsf_smmkat!-or2(odb,ne,parasq);
    begin scalar w;
       w := ofsf_smdbgetrel(cdr ne,odb);
       if w eq 'neq then
-	 (if not !*rlsipw then <<
-      	    if car ne eq 'lessp then
- 	       return ofsf_entry2at('or,'leq . cdr ne,parasq);
-	    % We know [car ne eq 'greaterp]!
-	    return ofsf_entry2at('or,'geq . cdr ne,parasq)
-      	 >>)
+         (if not !*rlsipw then <<
+            if car ne eq 'lessp then
+               return ofsf_entry2at('or,'leq . cdr ne,parasq);
+            % We know [car ne eq 'greaterp]!
+            return ofsf_entry2at('or,'geq . cdr ne,parasq)
+         >>)
       else if w memq '(leq geq) then <<
-	 if car ne memq '(lessp greaterp) then
-	    return ofsf_entry2at('or,'neq . cdr ne,parasq);
-      	 % We know [car ne eq 'equal].
-	 if !*rlsipo then
-	    return ofsf_entry2at('or,ofsf_anegrel w . cdr ne,parasq)
+         if car ne memq '(lessp greaterp) then
+            return ofsf_entry2at('or,'neq . cdr ne,parasq);
+         % We know [car ne eq 'equal].
+         if !*rlsipo then
+            return ofsf_entry2at('or,ofsf_anegrel w . cdr ne,parasq)
       >>
    end;
 
 procedure ofsf_sippatl(op,atl,newknowl);
    begin scalar gtrue, gfalse, gequal, subal, zvl, posvl, negvl, geqvl, leqvl,
-   	 neqvl, at, natl;
+         neqvl, at, natl;
       gtrue := cl_cflip('true, op eq 'and);
       gfalse := cl_cflip('false, op eq 'and);
       gequal := ofsf_clnegrel('equal, op eq 'and);
       {subal, zvl, posvl, negvl, geqvl, leqvl, neqvl} :=
- 	 ofsf_exploitKnowl newknowl;
+         ofsf_exploitKnowl newknowl;
       while atl do <<
-	 at := pop atl;
-	 if !*rlsippsubst and not ofsf_vareqnp(gequal, at) then <<
-	    at := ofsf_sippsubst(at, subal);
-	    at := ofsf_simplat1(at,op) where !*rlsiatadv=nil
-	 >>;
-	 if not rl_tvalp at then
-	    if !*rlsippsignchk and not sfto_varIsNumP ofsf_arg2l at then
-	       at := ofsf_sippsignchk(at, zvl, posvl, negvl, geqvl, leqvl, neqvl);
-	 if at eq gfalse then <<
-	    natl := gfalse;
-	    atl := nil
-	 >> else if at neq gtrue then
-	    natl := lto_insert(at, natl)
+         at := pop atl;
+         if !*rlsippsubst and not ofsf_vareqnp(gequal, at) then <<
+            at := ofsf_sippsubst(at, subal);
+            at := ofsf_simplat1(at,op) where !*rlsiatadv=nil
+         >>;
+         if not rl_tvalp at then
+            if !*rlsippsignchk and not sfto_varIsNumP ofsf_arg2l at then
+               at := ofsf_sippsignchk(at, zvl, posvl, negvl, geqvl, leqvl, neqvl);
+         if at eq gfalse then <<
+            natl := gfalse;
+            atl := nil
+         >> else if at neq gtrue then
+            natl := lto_insert(at, natl)
       >>;
       return natl
    end;
@@ -246,56 +246,56 @@ procedure ofsf_sippsignchk(at, zvl, posvl, negvl, geqvl, leqvl, neqvl);
    begin scalar op, sign;
       op := ofsf_op at;
       sign := ofsf_sippsignchkf(
-	 ofsf_arg2l at, zvl, posvl, negvl, geqvl, leqvl, neqvl);
+         ofsf_arg2l at, zvl, posvl, negvl, geqvl, leqvl, neqvl);
       if op eq sign then
-	 return 'true;
+         return 'true;
       if op eq 'equal then
-	 return if sign memq '(neq lessp greaterp) then 'false else at;
+         return if sign memq '(neq lessp greaterp) then 'false else at;
       if op eq 'greaterp then
-	 return if sign memq '(equal lessp leq) then 'false else at;
+         return if sign memq '(equal lessp leq) then 'false else at;
       if op eq 'lessp then
-	 return if sign memq '(equal greaterp geq) then 'false else at;
+         return if sign memq '(equal greaterp geq) then 'false else at;
       if op eq 'geq then
-	 return if sign memq '(equal greaterp) then
-	    'true
-	 else if sign eq 'lessp then
-	    'false
-	 else
-	    at;
+         return if sign memq '(equal greaterp) then
+            'true
+         else if sign eq 'lessp then
+            'false
+         else
+            at;
       if op eq 'leq then
-	 return if sign memq '(equal lessp) then
-	    'true
-	 else if sign eq 'greaterp then
-	    'false
-	 else
-	    at;
+         return if sign memq '(equal lessp) then
+            'true
+         else if sign eq 'greaterp then
+            'false
+         else
+            at;
       if op eq 'neq then
-	 return if sign memq '(lessp greaterp) then
-	    'true
-	 else if sign eq 'equal then
-	    'false
-	 else
-	    at;
+         return if sign memq '(lessp greaterp) then
+            'true
+         else if sign eq 'equal then
+            'false
+         else
+            at;
       return at
    end;
 
 procedure ofsf_sippsignchkf(f, zvl, posvl, negvl, geqvl, leqvl, neqvl);
    begin scalar slc, sred, slt, slm;
       if domainp f then
-	 return ofsf_updSignDom f;
+         return ofsf_updSignDom f;
       slt := ofsf_updSignVar(mvar f, zvl, posvl, negvl, geqvl, leqvl, neqvl);
       if slt eq 'unknown then
-	 return 'unknown;
+         return 'unknown;
       slc := ofsf_sippsignchkf(lc f, zvl, posvl, negvl, geqvl, leqvl, neqvl);
       if slc eq 'unknown then
-	 return 'unknown;
+         return 'unknown;
       sred := ofsf_sippsignchkf(red f, zvl, posvl, negvl, geqvl, leqvl, neqvl);
       if sred eq 'unknown then
-	 return 'unknown;
+         return 'unknown;
       slt := ofsf_updSignPow(slt, ldeg f);
       slm := ofsf_updSignMult(slc, slt);
       if slm eq 'unknown then
-	 return 'unknown;
+         return 'unknown;
       return ofsf_updSignAdd(slm, sred)
    end;
 
@@ -381,41 +381,41 @@ procedure ofsf_exploitKnowl(knowl);
       scalar subal, zvl, posvl, negvl, geqvl, leqvl, neqvl, v, rel, a;
       integer n;
       for each ir in knowl do
-	 if (v := sfto_varp car ir) then
-	    for each le in cdr ir do <<
-	       rel . a := cdr le;
-	       a := negsq a;
-	       n := numr a or 0;
-	       if rel eq 'equal then
-		  if !*rlsippsubst then
-		     subal := (v . a) . subal
-		  else
-	       	     (if n > 0 then
- 		     	posvl := lto_insertq(v, posvl)
-		     else if n < 0 then
-			negvl := lto_insertq(v, negvl)
-		     else if eqn(n,0) then
- 		     	zvl := lto_insertq(v, zvl))
-	       else if rel eq 'greaterp then
-		  (if n >= 0 then
-		     posvl := lto_insertq(v, posvl))
-	       else if rel eq 'geq then
- 		  (if n > 0 then
-		     posvl := lto_insertq(v, posvl)
-		  else if eqn(n,0) then
-		     geqvl := lto_insertq(v, geqvl))
-	       else if rel eq 'lessp then
-		  (if n <= 0 then
-		     negvl := lto_insertq(v, negvl))
-	       else if rel eq 'leq then
- 		  (if n < 0 then
-		     negvl := lto_insertq(v, negvl)
-		  else if eqn(n,0) then
-		     leqvl := lto_insertq(v, leqvl))
-	       else if rel eq 'neq then
- 		  (if eqn(n,0) then
-		     neqvl := lto_insertq(v, neqvl))
-      	    >>;
+         if (v := sfto_varp car ir) then
+            for each le in cdr ir do <<
+               rel . a := cdr le;
+               a := negsq a;
+               n := numr a or 0;
+               if rel eq 'equal then
+                  if !*rlsippsubst then
+                     subal := (v . a) . subal
+                  else
+                     (if n > 0 then
+                        posvl := lto_insertq(v, posvl)
+                     else if n < 0 then
+                        negvl := lto_insertq(v, negvl)
+                     else if eqn(n,0) then
+                        zvl := lto_insertq(v, zvl))
+               else if rel eq 'greaterp then
+                  (if n >= 0 then
+                     posvl := lto_insertq(v, posvl))
+               else if rel eq 'geq then
+                  (if n > 0 then
+                     posvl := lto_insertq(v, posvl)
+                  else if eqn(n,0) then
+                     geqvl := lto_insertq(v, geqvl))
+               else if rel eq 'lessp then
+                  (if n <= 0 then
+                     negvl := lto_insertq(v, negvl))
+               else if rel eq 'leq then
+                  (if n < 0 then
+                     negvl := lto_insertq(v, negvl)
+                  else if eqn(n,0) then
+                     leqvl := lto_insertq(v, leqvl))
+               else if rel eq 'neq then
+                  (if eqn(n,0) then
+                     neqvl := lto_insertq(v, neqvl))
+            >>;
       return {subal, zvl, posvl, negvl, geqvl, leqvl, neqvl}
    end;
 
@@ -428,11 +428,11 @@ procedure ofsf_sippsubst1(f,al);
 procedure ofsf_siatsubf(f,al);
    begin scalar nred, nlc, w;
       if domainp f then
-      	 return !*f2q f;
+         return !*f2q f;
       nred := ofsf_siatsubf(red f,al);
       nlc := ofsf_siatsubf(lc f,al);
       if (w := atsoc(mvar f, al)) then
-      	 return addsq(multsq(nlc,exptsq(cdr w,ldeg f)),nred);
+         return addsq(multsq(nlc,exptsq(cdr w,ldeg f)),nred);
       return addsq(multsq(nlc,ofsf_pow2q(mvar f,ldeg f)),nred)
    end;
 
@@ -482,11 +482,11 @@ procedure ofsf_sminsert(le,db);
    % Destructively inserts [le] into [db].
    begin scalar a,w,scdb,oscdb;
       repeat <<
-      	 w := ofsf_sminsert1(cadr car db,cddr car db,cadr le,cddr le,car le);
-      	 if w and not idp w then <<  % identifiers [false] and [true] possible.
-	    db := cdr db;
-	    le := w
-      	 >>
+         w := ofsf_sminsert1(cadr car db,cddr car db,cadr le,cddr le,car le);
+         if w and not idp w then <<  % identifiers [false] and [true] possible.
+            db := cdr db;
+            le := w
+         >>
       >> until null w or idp w or null db;
       if w eq 'false then return 'false;
       if w eq 'true then return db;
@@ -494,20 +494,20 @@ procedure ofsf_sminsert(le,db);
       oscdb := db;
       scdb := cdr db;
       while scdb do <<
-	 a := car scdb;
-	 scdb := cdr scdb;
-	 w := ofsf_sminsert1(cadr a,cddr a,cadr le,cddr le,car le);
-	 if w eq 'true then <<
-	    scdb := nil;
-	    a := 'true
-	 >> else if w eq 'false then <<
-	    scdb := nil;
-	    a := 'false
-	 >> else if w then <<
-	    cdr oscdb := scdb;
-	    le := w
-	 >> else
-	    oscdb := cdr oscdb
+         a := car scdb;
+         scdb := cdr scdb;
+         w := ofsf_sminsert1(cadr a,cddr a,cadr le,cddr le,car le);
+         if w eq 'true then <<
+            scdb := nil;
+            a := 'true
+         >> else if w eq 'false then <<
+            scdb := nil;
+            a := 'false
+         >> else if w then <<
+            cdr oscdb := scdb;
+            le := w
+         >> else
+            oscdb := cdr oscdb
       >>;
       if a eq 'false then return 'false;
       if a eq 'true then return db;
@@ -527,16 +527,16 @@ procedure ofsf_sminsert1(r1,a,r2,b,n);
    begin scalar w,diff,n;
       diff := numr subtrsq(a,b);
       if null diff then <<
-	 w := ofsf_smeqtable(r1,r2);
-      	 if w eq 'false then return 'false;
-	 if r1 eq w then return 'true;
-	 return n . (w . a)
+         w := ofsf_smeqtable(r1,r2);
+         if w eq 'false then return 'false;
+         if r1 eq w then return 'true;
+         return n . (w . a)
       >>;
       if minusf diff then <<
-      	 w := ofsf_smordtable(r1,r2);
-	 if atom w then return w;
-      	 if eqcar(w,r1) and cdr w then return 'true;
-	 return n . (car w . if cdr w then a else b)
+         w := ofsf_smordtable(r1,r2);
+         if atom w then return w;
+         if eqcar(w,r1) and cdr w then return 'true;
+         return n . (car w . if cdr w then a else b)
       >>;
       w := ofsf_smordtable(r2,r1);
       if atom w then return w;

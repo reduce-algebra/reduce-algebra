@@ -47,15 +47,15 @@ asserted procedure cl_susimkatl(op: Id, knowl: List, newknowl: List, n: Integer)
    % tagged with [n] is extraced from [newknowl] into $L$.
    begin scalar res;
       res := for each pair in newknowl join
-	 if cdr pair = n then {car pair};
+         if cdr pair = n then {car pair};
       if null res then return nil;
       res := rl_susipost(res, knowl);  % TRUE | FALSE | INCTHEO | atl
       if rl_tvalp res then
-	 return {cl_cflip(res, op eq 'and)};
-      if res eq 'inctheo then 	              % Das hatte man auch frueher
-	 return cl_cflip('false, op eq 'and);  % wissen koennen.
+         return {cl_cflip(res, op eq 'and)};
+      if res eq 'inctheo then                 % Das hatte man auch frueher
+         return cl_cflip('false, op eq 'and);  % wissen koennen.
       if op eq 'or then
-      	 res := for each at in res collect rl_negateat at;
+         res := for each at in res collect rl_negateat at;
       res := for each at in res collect rl_susitf(at, knowl);
       return res
    end;
@@ -72,17 +72,17 @@ asserted procedure cl_susiupdknowl(op: Id, atl: List, knowl: List, n: Integer): 
    % Destructively updates [knowl] wrt. the [atl] information.
    begin scalar at;
       while atl do <<
-	 at := pop atl;
-      	 knowl := cl_susiupdknowl1(op, at, knowl, n);
-	 if knowl eq 'false then <<
-	    atl := nil;
-	    at := 'break
-	 >>
+         at := pop atl;
+         knowl := cl_susiupdknowl1(op, at, knowl, n);
+         if knowl eq 'false then <<
+            atl := nil;
+            at := 'break
+         >>
       >>;
       if at eq 'break then
-	 return 'false
+         return 'false
       else
-      	 return knowl
+         return knowl
    end;
 
 asserted procedure cl_susiupdknowl1(op: Id, at: Atom, knowl: List, n: Integer): List;
@@ -104,34 +104,34 @@ asserted procedure cl_susiupdknowl2(lat: DottedPair, knowl: List, n: Integer): L
    begin scalar a, w, sck, ignflg, delflg, addl, term;
       sck := knowl;
       while sck do <<
-	 a := pop sck;
-	 w := rl_susibin(a, lat);  % 'true | 'false | nil | {commands, ...}
-	 if w eq 'false then  % What happens with atoms neq false?
-	    sck := nil
-	 else <<
-	    ASSERT( w neq 'true );
-	    w := cl_susiinter(w, knowl, a);
-	    addl := nconc(addl, cadr w);
-	    knowl := car w;
-	    if caddr w then
-	       ignflg := t;
-	    if cadddr w then <<
-	       delflg := t;
-	       sck := nil
-	    >>
-	 >>
+         a := pop sck;
+         w := rl_susibin(a, lat);  % 'true | 'false | nil | {commands, ...}
+         if w eq 'false then  % What happens with atoms neq false?
+            sck := nil
+         else <<
+            ASSERT( w neq 'true );
+            w := cl_susiinter(w, knowl, a);
+            addl := nconc(addl, cadr w);
+            knowl := car w;
+            if caddr w then
+               ignflg := t;
+            if cadddr w then <<
+               delflg := t;
+               sck := nil
+            >>
+         >>
       >>;
       if w eq 'false then return 'false;
       if null delflg then <<
-	 % if ignflg then cdr lat := 'ignore;
-	 knowl := lat . knowl
+         % if ignflg then cdr lat := 'ignore;
+         knowl := lat . knowl
       >>;
       while addl do <<
-	 knowl := cl_susiupdknowl2(car addl, knowl, n);
-	 if knowl eq 'false then
-	    addl := nil
-	 else
-	    addl := cdr addl
+         knowl := cl_susiupdknowl2(car addl, knowl, n);
+         if knowl eq 'false then
+            addl := nil
+         else
+            addl := cdr addl
       >>;
       return knowl;
    end;
@@ -142,20 +142,20 @@ asserted procedure cl_susiinter(prg: List, knowl: List, a: DottedPair): List4;
    % $\alpha$ are KNOWL's; $\iota$ and $\delta$ are flags.
    begin scalar addl, ignflg, delflg;
       for each p in prg do
-	 if car p eq 'delete or car p eq 'ignore then
-%%       	 if car p eq 'ignore then
-%% 	    if cdr p then <<
-%% 	       ignflg := T;
-%% 	       addl := cdr p . addl;
-%% 	    >> else
-%% 	       cdr a := 'ignore
-%%       	 else if car p eq 'delete then
-	    if cdr p then
-	       delflg := t
-	    else
-	       knowl := lto_delqip(a, knowl)
-      	 else if car p eq 'add then
-	    addl := cdr p . addl;
+         if car p eq 'delete or car p eq 'ignore then
+%%               if car p eq 'ignore then
+%%          if cdr p then <<
+%%             ignflg := T;
+%%             addl := cdr p . addl;
+%%          >> else
+%%             cdr a := 'ignore
+%%               else if car p eq 'delete then
+            if cdr p then
+               delflg := t
+            else
+               knowl := lto_delqip(a, knowl)
+         else if car p eq 'add then
+            addl := cdr p . addl;
      return {knowl, addl, ignflg, delflg}
    end;
 

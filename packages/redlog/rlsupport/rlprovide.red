@@ -35,26 +35,26 @@ asserted procedure rl_provideServiceStat(): List4;
    begin scalar rls, ps, bbl;
       scan();
       if not idp cursym!* then
-	 rederr {"expecting identifier in rl_provideService but found", cursym!*};
+         rederr {"expecting identifier in rl_provideService but found", cursym!*};
       rls := cursym!*;
       rl_skipequal("rl_provideService");
       scan();
       if not idp cursym!* then
-	 rederr {"expecting identifier in rl_provideService", rls, "but found", cursym!*};
+         rederr {"expecting identifier in rl_provideService", rls, "but found", cursym!*};
       ps := cursym!*;
       scan();
       if cursym!* eq '!*semicol!* then
-	 return {'rl_provideService, mkquote rls, mkquote ps, nil};
+         return {'rl_provideService, mkquote rls, mkquote ps, nil};
       if cursym!* neq 'using then
-	 rederr {"expecting 'using' or delimiter in rl_provideService", rls, "=", ps, "but found", cursym!*};
+         rederr {"expecting 'using' or delimiter in rl_provideService", rls, "=", ps, "but found", cursym!*};
       repeat <<
-	 scan();
-      	 if not idp cursym!* then
-	    rederr {"expecting identifier in rl_provideService", rls, "=", ps, "but found", cursym!*};
-	 bbl := lto_insertq(cursym!*, bbl);
-	 scan();
-      	 if not (cursym!* memq '(!*comma!* !*semicol!*)) then
-	    rederr {"expecting ',' in rl_provideService", rls, "=", ps, "but found", cursym!*}
+         scan();
+         if not idp cursym!* then
+            rederr {"expecting identifier in rl_provideService", rls, "=", ps, "but found", cursym!*};
+         bbl := lto_insertq(cursym!*, bbl);
+         scan();
+         if not (cursym!* memq '(!*comma!* !*semicol!*)) then
+            rederr {"expecting ',' in rl_provideService", rls, "=", ps, "but found", cursym!*}
       >> until cursym!* eq '!*semicol!*;
       return {'rl_provideService, mkquote rls, mkquote ps, mkquote bbl}
    end;
@@ -64,10 +64,10 @@ flag('(rl_provideService), 'noform);
 asserted procedure rl_provideService(rlservice: Id, pservice: Id, blackboxes: List);
    <<
       put(rlservice, 'rl_knownImplementations,
-      	 lto_insertq(pservice, get(rlservice, 'rl_knownImplementations)));
+         lto_insertq(pservice, get(rlservice, 'rl_knownImplementations)));
       put(pservice, 'rl_providedService, rlservice);
       put(pservice, 'rl_registeredBlackboxes,
-      	 union(get(pservice, 'rl_registeredBlackboxes), blackboxes))
+         union(get(pservice, 'rl_registeredBlackboxes), blackboxes))
    >>;
 
 asserted procedure rl_providedServiceP(x: Any): ExtraBoolean;

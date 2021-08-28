@@ -111,7 +111,7 @@ switch rlsiatadv,rlsipd,rlsiexpl,rlsiexpla,rlsiso,
    rlqeaprecise,rlqefilterbounds,rlsifaco,rlqelog,rlqeprecise,rlqevarseltry,
    rlsid,rlsiplugtheo,rlenffac,rlenffacne,rlplsimpl,rlbrkcxk,rlqeidentify,
    rlqedyn,rlqesubf,rlqevb,rlqevbold,rlgetrtypecar,rlvsllog,rlvsllearn,
-   rlqestdans,rlqestdansvb,rlqefullans,rlqebacksub,rlqestdansq,rlqestdansint,
+   rlqestdans,rlqestdansvb,rlqefullans,rlqebacksub,rlqestdansq,rlqestdansint;
 
 switch rlabout;  % for banner with rlset; initialized in in support/entry.red
 
@@ -527,17 +527,17 @@ asserted procedure rl_about();
 asserted procedure rl_getversion(): List3;
    begin scalar w, res; integer rev, cur;
       for each pack in get('redlog, 'known!-packages) do
-	 for each mod in get(pack, 'package) do <<
-	    w := lto_stringSplit(get(mod, 'revision), {'! , !$eol!$, cr!*, ff!*, tab!*});
-	    if length w = 7 then <<
-	       rev := lto_id2int lto_string2id nth(w, 3);
-	       if rev > cur then <<
-	       	  cur := rev;
- 		  res := {nth(w, 3), nth(w, 4), nth(w, 5)}
-	       >>
-	    >> else
-	       lprim lto_sconcat {"revision missing on ", lto_at2str pack, "/", lto_at2str mod}
-	 >>;
+         for each mod in get(pack, 'package) do <<
+            w := lto_stringSplit(get(mod, 'revision), {'! , !$eol!$, cr!*, ff!*, tab!*});
+            if length w = 7 then <<
+               rev := lto_id2int lto_string2id nth(w, 3);
+               if rev > cur then <<
+                  cur := rev;
+                  res := {nth(w, 3), nth(w, 4), nth(w, 5)}
+               >>
+            >> else
+               lprim lto_sconcat {"revision missing on ", lto_at2str pack, "/", lto_at2str mod}
+         >>;
       return res
    end;
 

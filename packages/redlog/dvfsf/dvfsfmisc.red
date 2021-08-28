@@ -71,17 +71,17 @@ procedure dvfsf_negateat(atf);
    begin scalar op;
       op := dvfsf_op atf;
       if op eq 'equal then
-	 return dvfsf_mkn('neq,dvfsf_argn atf);
+         return dvfsf_mkn('neq,dvfsf_argn atf);
       if op eq 'neq then
- 	 return dvfsf_mkn('equal,dvfsf_argn atf);
+         return dvfsf_mkn('equal,dvfsf_argn atf);
       if op eq 'div then
- 	 return dvfsf_mk2('sdiv,dvfsf_arg2r atf,dvfsf_arg2l atf);
+         return dvfsf_mk2('sdiv,dvfsf_arg2r atf,dvfsf_arg2l atf);
       if op eq 'sdiv then
- 	 return dvfsf_mk2('div,dvfsf_arg2r atf,dvfsf_arg2l atf);
+         return dvfsf_mk2('div,dvfsf_arg2r atf,dvfsf_arg2l atf);
       if op eq 'assoc then
- 	 return dvfsf_mk2('nassoc,dvfsf_arg2l atf,dvfsf_arg2r atf);
+         return dvfsf_mk2('nassoc,dvfsf_arg2l atf,dvfsf_arg2r atf);
       if op eq 'nassoc then
- 	 return dvfsf_mk2('assoc,dvfsf_arg2l atf,dvfsf_arg2r atf);
+         return dvfsf_mk2('assoc,dvfsf_arg2l atf,dvfsf_arg2r atf);
    end;
 
 procedure dvfsf_fctrat(at);
@@ -124,25 +124,25 @@ procedure dvfsf_subsumption(l1,l2,gor);
    % lists of atomic formulas. Returns one of [keep1], [keep2], [nil].
    if gor eq 'or then (
       if dvfsf_subsumep!-and(l1,l2) then
- 	 'keep2
+         'keep2
       else if dvfsf_subsumep!-and(l2,l1) then
-	 'keep1
+         'keep1
    ) else  % [gor eq 'and]
       if dvfsf_subsumep!-or(l1,l2) then
-	 'keep1
+         'keep1
       else if dvfsf_subsumep!-or(l2,l1) then
-	 'keep2
+         'keep2
       else
-	 nil;
+         nil;
 
 procedure dvfsf_subsumep!-and(l1,l2);
    % Discretely valued field standard form subsume [and] case. [l1]
    % and [l2] are lists of atomic formulas.
    begin scalar a;
       while l2 do <<
-	 a := car l2;
-	 l2 := cdr l2;
-	 if cl_simpl(a,l1,-1) neq 'true then a := l2 := nil
+         a := car l2;
+         l2 := cdr l2;
+         if cl_simpl(a,l1,-1) neq 'true then a := l2 := nil
       >>;
       return a
    end;
@@ -152,9 +152,9 @@ procedure dvfsf_subsumep!-or(l1,l2);
    % [l2] are lists of atomic formulas.
    begin scalar a;
       while l1 do <<
-	 a := car l1;
-	 l1 := cdr l1;
-	 if cl_simpl(rl_smkn('or,l2),{a},-1) neq 'true then a := l1 := nil
+         a := car l1;
+         l1 := cdr l1;
+         if cl_simpl(rl_smkn('or,l2),{a},-1) neq 'true then a := l1 := nil
       >>;
       return a
    end;
@@ -167,18 +167,18 @@ procedure dvfsf_a2cdl(atml);
    begin scalar atf,termll,flag;
       while atml do <<
          atf := caar atml;
-      	 atml := cdr atml;
-      	 termll := dvfsf_argn atf . termll;
-	 if not(dvfsf_op atf memq '(equal neq)) then flag := t
+         atml := cdr atml;
+         termll := dvfsf_argn atf . termll;
+         if not(dvfsf_op atf memq '(equal neq)) then flag := t
       >>;
       return if flag then
-	 for each x in termll collect
-	    {dvfsf_mk2('sdiv,car x,cadr x),
-	       dvfsf_mk2('assoc,car x,cadr x),
-	       dvfsf_mk2('sdiv,cadr x,car x)}
+         for each x in termll collect
+            {dvfsf_mk2('sdiv,car x,cadr x),
+               dvfsf_mk2('assoc,car x,cadr x),
+               dvfsf_mk2('sdiv,cadr x,car x)}
       else
-	 for each x in termll collect
-	    {dvfsf_0mk2('equal,x),dvfsf_0mk2('neq,x)}
+         for each x in termll collect
+            {dvfsf_0mk2('equal,x),dvfsf_0mk2('neq,x)}
    end;
 
 procedure dvfsf_subat(al,f);
@@ -189,10 +189,10 @@ procedure dvfsf_subat(al,f);
       nlhs := subf(dvfsf_arg2l f,al);
       nrhs := subf(dvfsf_arg2r f,al);
       if (not domainp denr nlhs) or  (not domainp denr nrhs) then
-	 rederr "parametric denominator after substitution";
+         rederr "parametric denominator after substitution";
       w := lcm(denr nlhs,denr nrhs);
       return dvfsf_mk2(dvfsf_op f,
-	 numr multsq(nlhs,!*f2q w),numr multsq(nrhs,!*f2q w))
+         numr multsq(nlhs,!*f2q w),numr multsq(nrhs,!*f2q w))
    end;
 
 procedure dvfsf_subalchk(al);
@@ -201,7 +201,7 @@ procedure dvfsf_subalchk(al);
    % error if an illegal substituion is contained in [al].
    for each x in al do
       if not domainp denr simp cdr x then
-	 rederr "parametric denominator in substituted term";
+         rederr "parametric denominator in substituted term";
 
 procedure dvfsf_eqnrhskernels(x);
    % Discretely valued field standard form equation right hand side
@@ -221,9 +221,9 @@ procedure dvfsf_structat(at,al);
       lhs := dvfsf_arg2l at;
       rhs := dvfsf_arg2r at;
       if not(domainp lhs) then
-	 lhs := numr simp cdr assoc(lhs,al);
+         lhs := numr simp cdr assoc(lhs,al);
       if not(domainp rhs) then
-	 rhs := numr simp cdr assoc(rhs,al);
+         rhs := numr simp cdr assoc(rhs,al);
       return dvfsf_mk2(dvfsf_op at,lhs,rhs)
    end;
 
@@ -241,10 +241,10 @@ procedure dvfsf_ifstructat(at,al);
       rhs := fctrf dvfsf_arg2r at;
       rl := car lhs;
       for each x in cdr lhs do
-	 rl := multf(rl,expf(numr simp cdr assoc(car x,al),cdr x));
+         rl := multf(rl,expf(numr simp cdr assoc(car x,al),cdr x));
       rr := car rhs;
       for each x in cdr rhs do
-	 rr := multf(rr,expf(numr simp cdr assoc(car x,al),cdr x));
+         rr := multf(rr,expf(numr simp cdr assoc(car x,al),cdr x));
       return dvfsf_mk2(dvfsf_op at,rl,rr)
    end;
 
@@ -255,10 +255,10 @@ procedure dvfsf_termmlat(at);
    begin scalar r,w;
       w := dvfsf_arg2l at;
       if w then
-	 r := (w . 1) . r;
+         r := (w . 1) . r;
       w := dvfsf_arg2r at;
       if w then
-	 r := (w . 1) . r;
+         r := (w . 1) . r;
       return r
    end;
 
@@ -284,17 +284,17 @@ procedure dvfsf_explodezat(at,sop);
       lhs := dvfsf_arg2l at;
       rhs := dvfsf_arg2r at;
       if not(domainp lhs and rhs = 1) then
-	 return at;
+         return at;
       op := dvfsf_op at;
       if not (op eq 'assoc or op eq 'nassoc) then
-	 return at;
+         return at;
       if !*rlsiexpla then
-      	 return dvfsf_explodezat1(op,lhs);
+         return dvfsf_explodezat1(op,lhs);
       if !*rlsiexpl then <<
-	 if op eq 'assoc and (sop eq 'and or null sop) then
-	    return dvfsf_explodezat1(op,lhs);
-      	 if op eq 'nassoc and (sop eq 'or or null sop) then
-	    return dvfsf_explodezat1(op,lhs);
+         if op eq 'assoc and (sop eq 'and or null sop) then
+            return dvfsf_explodezat1(op,lhs);
+         if op eq 'nassoc and (sop eq 'or or null sop) then
+            return dvfsf_explodezat1(op,lhs);
       >>;
       return at
    end;
@@ -312,23 +312,23 @@ procedure dvfsf_mkcanonic(f);
    % [f].
    begin scalar facl,u,fu,xl,op,pr;
       if rl_tvalp f then
-	 return f;
+         return f;
       facl := dvfsf_coeffacl(f);
       if null facl then
-	 return cl_simpl(f,nil,-1);
+         return cl_simpl(f,nil,-1);
       pr := nextprime lto_max facl;
       u := cl_simpl(dvfsf_subp(f,pr),nil,-1)
-	 where dvfsf_p!*=pr;
+         where dvfsf_p!*=pr;
       fu := cl_flip u;
       xl := for each fac in facl join
-	 if ((cl_simpl(dvfsf_subp(f,fac),nil,-1))
-	    where dvfsf_p!*=fac) eq fu
-	 then
-	    {fac};
+         if ((cl_simpl(dvfsf_subp(f,fac),nil,-1))
+            where dvfsf_p!*=fac) eq fu
+         then
+            {fac};
       op := if u eq 'false then 'nassoc else 'assoc;
       xl := sort(xl,'lessp);
       return rl_smkn(if u eq 'false then 'or else 'and,
-	 for each x in xl collect dvfsf_mk2(op,x,numr simp 1))
+         for each x in xl collect dvfsf_mk2(op,x,numr simp 1))
    end;
 
 procedure dvfsf_coeffacl(f);

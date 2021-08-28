@@ -323,10 +323,10 @@ procedure pasf_mkop(op,m);
    % 'ncong and $([op] . [m])$ otherwise.
    if op memq '(cong ncong) then
       (op . if null m then
-	 % User should use equations instead of congruences modulo 0
-      	 rederr{"Modulo 0 congruence created"}
+         % User should use equations instead of congruences modulo 0
+         rederr{"Modulo 0 congruence created"}
       else
-	 m)
+         m)
    else
       op;
 
@@ -344,9 +344,9 @@ procedure pasf_simprnd(u);
    % [u] is Lisp Prefix. Returns an SQ.
    <<
       if null u or null cdr u or cddr u then
-      	 rederr {"rnd called with",length u,"arguments instead of 2"};
+         rederr {"rnd called with",length u,"arguments instead of 2"};
       if not idp cadr u then
-	 rederr {"second argument of rnd must be an identifier"};
+         rederr {"second argument of rnd must be an identifier"};
       mksq({'rnd,reval car u,cadr u},1)
    >>;
 
@@ -417,9 +417,9 @@ procedure pasf_fancy!-pricong!-texmacs(l);
    else <<
       maprin cadr l; % lhs
       if car l eq 'cong then
-	 fancy!-prin2 "\,\equiv"
+         fancy!-prin2 "\,\equiv"
       else
-	 fancy!-prin2 "\,\not\equiv";
+         fancy!-prin2 "\,\not\equiv";
       fancy!-prin2!-underscore();
       fancy!-prin2 "{";
       maprin cadddr l; % modulus
@@ -435,9 +435,9 @@ procedure pasf_fancy!-pricong!-fm(l);
    else <<
       maprin cadr l;
       if car l eq 'cong then
-      	 fancy!-special!-symbol(186,2)
+         fancy!-special!-symbol(186,2)
       else
-	 fancy!-special!-symbol(187,2);
+         fancy!-special!-symbol(187,2);
       maprin caddr l;
       fancy!-prin2 " (";
       maprin cadddr l;
@@ -459,7 +459,7 @@ procedure pasf_prepat(atf);
    % atomic formula. Returns [atf] in Lisp prefix form.
    if pasf_congp atf then
        {pasf_opn atf,prepf pasf_arg2l atf,prepf pasf_arg2r atf,
-	  prepf pasf_m atf}
+          prepf pasf_m atf}
    else
       pasf_opn atf . for each arg in rl_argn atf collect prepf arg;
 
@@ -491,13 +491,13 @@ procedure pasf_chsimpat1(l);
    begin scalar leftl,rightl,lhs,rhs;
       lhs := cadr l;
       if pairp lhs and pasf_opp car lhs then <<
-	 leftl := pasf_chsimpat1 lhs;
-	 lhs := caddr lastcar leftl
+         leftl := pasf_chsimpat1 lhs;
+         lhs := caddr lastcar leftl
       >>;
       rhs := caddr l;
       if pairp rhs and pasf_opp car rhs then <<
-	 rightl := pasf_chsimpat1 rhs;
-	 rhs := cadr car rightl
+         rightl := pasf_chsimpat1 rhs;
+         rhs := cadr car rightl
       >>;
       return nconc(leftl,{car l,lhs,rhs} . rightl)
    end;
@@ -508,38 +508,38 @@ procedure pasf_simpat(u);
    begin scalar op,lhs,rhs,nlhs,f,m;
       op := car u;
       if op memq '(cong ncong) then <<
-	 if length u neq 4 then
- 	    rederr("invalid length in congruence");
-	 lhs := subtrsq(simp cadr u,simp caddr u);
-	 m := simp cadddr u;
-	 if denr lhs neq 1 or denr m neq 1 then
- 	    rederr("denominators in congruence");
-	 return pasf_0mk2(op . numr m,numr lhs)
+         if length u neq 4 then
+            rederr("invalid length in congruence");
+         lhs := subtrsq(simp cadr u,simp caddr u);
+         m := simp cadddr u;
+         if denr lhs neq 1 or denr m neq 1 then
+            rederr("denominators in congruence");
+         return pasf_0mk2(op . numr m,numr lhs)
       >>;
       lhs := simp cadr u;
       if not (!*rlnzden or !*rlposden or (domainp denr lhs)) then
- 	 typerr(u,"atomic formula");
+         typerr(u,"atomic formula");
       rhs := simp caddr u;
       if not (!*rlnzden or !*rlposden or (domainp denr rhs)) then
- 	 typerr(u,"atomic formula");
+         typerr(u,"atomic formula");
       lhs := subtrsq(lhs,rhs);
       nlhs := numr lhs;
       if !*rlposden and not domainp denr lhs then <<
-	 f := pasf_0mk2(op,nlhs);
-	 if !*rladdcond then
-	    f := if op memq '(lessp leq greaterp geq) then
-	       rl_mkn('and,{pasf_0mk2('greaterp,denr lhs),f})
-	    else
-	       rl_mkn('and,{pasf_0mk2('neq,denr lhs),f});
-	 return f
+         f := pasf_0mk2(op,nlhs);
+         if !*rladdcond then
+            f := if op memq '(lessp leq greaterp geq) then
+               rl_mkn('and,{pasf_0mk2('greaterp,denr lhs),f})
+            else
+               rl_mkn('and,{pasf_0mk2('neq,denr lhs),f});
+         return f
       >>;
       if !*rlnzden and not domainp denr lhs then <<
-	 if op memq '(lessp leq greaterp geq) then
-	    nlhs := multf(nlhs,denr lhs);
-	 f := pasf_0mk2(op,nlhs);
-	 if !*rladdcond then
-	    f := rl_mkn('and,{pasf_0mk2('neq,denr lhs),f});
-	 return f
+         if op memq '(lessp leq greaterp geq) then
+            nlhs := multf(nlhs,denr lhs);
+         f := pasf_0mk2(op,nlhs);
+         if !*rladdcond then
+            f := rl_mkn('and,{pasf_0mk2('neq,denr lhs),f});
+         return f
       >>;
       return pasf_0mk2(op,nlhs)
    end;
@@ -552,22 +552,22 @@ procedure pasf_termp(exps,exclst);
    begin scalar p,errc,oldord;
       oldord:= setkorder({});
       for each var in kernels exps do <<
-	 setkorder({var});
-	 p := reorder(exps);
-	 if var memq exclst then <<
-	    % Testing for degree of the variable
-	    %if ldeg p > 1 then
-	    %   rederr{"Illegal UPrA formula :",
-	    %   	  "Quantified variable",var,"with degreee",ldeg p};
-	    % Testing for other quantified variables in exception list
-	    for each v in exclst do
-	       if v neq var and v memq kernels lc p then
- 	       	  rederr{"Illegal UPrA formula :",
-		  "Quantified variables",var,"and",v,"multiplied"}
-	 >>;
-	 % Testing for parametric coefficients
-	 if not domainp lc p then
-	    errc := t
+         setkorder({var});
+         p := reorder(exps);
+         if var memq exclst then <<
+            % Testing for degree of the variable
+            %if ldeg p > 1 then
+            %   rederr{"Illegal UPrA formula :",
+            %             "Quantified variable",var,"with degreee",ldeg p};
+            % Testing for other quantified variables in exception list
+            for each v in exclst do
+               if v neq var and v memq kernels lc p then
+                  rederr{"Illegal UPrA formula :",
+                  "Quantified variables",var,"and",v,"multiplied"}
+         >>;
+         % Testing for parametric coefficients
+         if not domainp lc p then
+            errc := t
       >>;
       % Term is correct
       setkorder(oldord);
@@ -588,23 +588,23 @@ procedure pasf_uprap1(f,bvarl);
    % PrA and raises an error if the formula is neither in PrA nor in UPrA.
    begin scalar s;
       if rl_tvalp f then
-      	 return nil;
+         return nil;
       if rl_boolp rl_op f then <<
-	 % If one of the arguments is in UPrA then the whole formula too
-	 for each arg in rl_argn f do
-	    s := s or pasf_uprap1(arg,bvarl);
-	 return s
+         % If one of the arguments is in UPrA then the whole formula too
+         for each arg in rl_argn f do
+            s := s or pasf_uprap1(arg,bvarl);
+         return s
       >>;
       if rl_quap rl_op f then
-	 return pasf_uprap1(rl_mat f,rl_var f . bvarl);
+         return pasf_uprap1(rl_mat f,rl_var f . bvarl);
       if rl_bquap rl_op f then
-	 return (pasf_uprap1(rl_mat f,rl_var f . bvarl) or
-	    pasf_uprap1(rl_b f,bvarl));
+         return (pasf_uprap1(rl_mat f,rl_var f . bvarl) or
+            pasf_uprap1(rl_b f,bvarl));
       % Atomic formulas
       return if pasf_congp f then
-	 pasf_termp(pasf_arg2l f,bvarl) or not domainp pasf_m f
+         pasf_termp(pasf_arg2l f,bvarl) or not domainp pasf_m f
       else
-	 pasf_termp(pasf_arg2l f,bvarl)
+         pasf_termp(pasf_arg2l f,bvarl)
    end;
 
 procedure pasf_univnlfp(f,x);
@@ -613,7 +613,7 @@ procedure pasf_univnlfp(f,x);
    % univariate formula and contains a term, that is not linear in [x].
    begin scalar res;
       for each atf in rl_atl f do
-      	 res := res or pasf_univnlp(atf,x);
+         res := res or pasf_univnlp(atf,x);
       return res;
    end;
 
@@ -626,7 +626,7 @@ procedure pasf_univnlp(atf,x);
       oldord := setkorder({x});
       % quick fix to avoid car on nil (TS)
       if not domainp pasf_arg2l atf and ldeg reorder pasf_arg2l atf > 1 then
-	 res := t;
+         res := t;
       setkorder oldord;
       return res;
    end;

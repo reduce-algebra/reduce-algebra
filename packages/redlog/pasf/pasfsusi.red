@@ -55,27 +55,27 @@ procedure pasf_susibinad(old,new);
       new := car new;
       % Check for truth value of the level formula
       if new eq 'false then
-	 return 'false;
+         return 'false;
       if new eq 'true then
-	 return {'(delete . t)};
+         return {'(delete . t)};
       % Equal left handsides simplification
       if pasf_arg2l old = pasf_arg2l new then
-	 return pasf_susibineq(pasf_arg2l old,pasf_op old,pasf_op new,level);
+         return pasf_susibineq(pasf_arg2l old,pasf_op old,pasf_op new,level);
       % Decomposing both atomic formulas for additive simplification
       od := pasf_dec pasf_arg2l old;
       nd := pasf_dec pasf_arg2l new;
       if car od = car nd then
-	 % Equal parametric parts
-	 return pasf_susibinord(
-	    pasf_op old,car od,if cdr od then cdr od else 0,
-	    pasf_op new,car nd,if cdr nd then cdr nd else 0,level);
+         % Equal parametric parts
+         return pasf_susibinord(
+            pasf_op old,car od,if cdr od then cdr od else 0,
+            pasf_op new,car nd,if cdr nd then cdr nd else 0,level);
       ko := kernels car od;
       kn := kernels car nd;
       % Integer substitution
       if pasf_op old eq 'equal and null cdr ko and car ko memq kn then
-	 return pasf_susibinad1(pasf_subfof1(new,car ko,negf cdr od),level,t);
+         return pasf_susibinad1(pasf_subfof1(new,car ko,negf cdr od),level,t);
       if pasf_op new eq 'equal and null cdr kn and car kn memq ko then
-	 return pasf_susibinad1(pasf_subfof1(old,car kn,negf cdr nd),level,nil);
+         return pasf_susibinad1(pasf_subfof1(old,car kn,negf cdr nd),level,nil);
       return nil
    end;
 
@@ -83,10 +83,10 @@ procedure pasf_susibinad1(sb,level,flag);
    begin scalar ssb;
       ssb := pasf_simplat1(sb,nil);
       if rl_op ssb eq 'and then
-	 return {'delete . flag,
-	    for each at in rl_argn ssb collect ('add . (at . level))};
+         return {'delete . flag,
+            for each at in rl_argn ssb collect ('add . (at . level))};
       if rl_cxp rl_op ssb then
-	 ssb := pasf_simplat1(sb,nil) where !*rlsifac=nil;
+         ssb := pasf_simplat1(sb,nil) where !*rlsifac=nil;
       return {'delete . flag,'add . (ssb . level)}
    end;
 
@@ -99,40 +99,40 @@ procedure pasf_susibineq(u,oop,nop,level);
    begin scalar w;
       % Congruences with different moduli
       if pairp oop and pairp nop and cdr oop neq cdr nop then
-	 return pasf_susibineqcong(u,oop,nop,level);
+         return pasf_susibineqcong(u,oop,nop,level);
       % ASSUMPTION: A congruence is never in the output of pasf_smeqtable
       w := pasf_smeqtable(
-	 if pairp oop then car oop else oop,
-	 if pairp nop then car nop else nop);
+         if pairp oop then car oop else oop,
+         if pairp nop then car nop else nop);
       if car w eq nil then
-     	 % Nothing can be done
-	 return nil
+         % Nothing can be done
+         return nil
       else if car w eq 'false then
-      	 % Contradiction found
-	 return 'false
+         % Contradiction found
+         return 'false
       else if eqn(car w,1) then
-	 % Remove new atomic formula from the level
- 	 return {'(delete . t)}
+         % Remove new atomic formula from the level
+         return {'(delete . t)}
       else if eqn(car w,2) then
- 	 % Remove old atomic formula from the theory, add new atomic
- 	 % formula to the knowledge
-	 return {'(delete . nil)}
+         % Remove old atomic formula from the theory, add new atomic
+         % formula to the knowledge
+         return {'(delete . nil)}
       else if eqn(car w,3) then
-	 % Remove old atomic formula from the theory, remove new
-	 % atomic formula from the level, add modified atomic formula to
-	 % the level
-	 return {'(delete . nil), '(delete . t),
-	    ('add . (pasf_0mk2(cdr w, u) . level))}
+         % Remove old atomic formula from the theory, remove new
+         % atomic formula from the level, add modified atomic formula to
+         % the level
+         return {'(delete . nil), '(delete . t),
+            ('add . (pasf_0mk2(cdr w, u) . level))}
       else if eqn(car w,4) then
-	 % Remove new atomic formula from the level, add modified
-	 % atomic formula to the level
-	 return {'(delete . t),
-	    ('add . (pasf_0mk2(cdr w, u) . level))}
+         % Remove new atomic formula from the level, add modified
+         % atomic formula to the level
+         return {'(delete . t),
+            ('add . (pasf_0mk2(cdr w, u) . level))}
       else
-	 % Remove old atomic formula from the theory, add modified
-	 % atomic formula to the level
-	 return {'(delete . nil),
-	    ('add . (pasf_0mk2(cdr w, u) . level))}
+         % Remove old atomic formula from the theory, add modified
+         % atomic formula to the level
+         return {'(delete . nil),
+            ('add . (pasf_0mk2(cdr w, u) . level))}
    end;
 
 procedure pasf_susibineqcong(u,oop,nop,level);
@@ -149,57 +149,57 @@ procedure pasf_susibineqcong(u,oop,nop,level);
       if null domainp n or null domainp m then return nil;
       % Both formulas are congruences
       if car oop eq 'cong and car nop eq 'cong then
-	 return{'(delete . nil),'(delete . t),
-	    ('add . (pasf_0mk2(pasf_mkop('cong,lcm(m,n)),u) . level))};
+         return{'(delete . nil),'(delete . t),
+            ('add . (pasf_0mk2(pasf_mkop('cong,lcm(m,n)),u) . level))};
       % Old formula is a congruence and new is a incongruence
       if car oop eq 'cong and car nop eq 'ncong then <<
-	 if (nil and m = 2*n) then
-	    return{'(delete . t),('delete . nil),('add .
-	       (pasf_0mk2(pasf_mkop('ncong,m),addf(u,negf n)) . level))}
-	 else <<
-	    % Making sure changes are really applied
-	    mo := pasf_susibineqcong1(m,n);
-	    if mo neq m then <<
-	       atf := pasf_simplat1(pasf_0mk2(pasf_mkop('ncong,mo),u),nil)
-		  where !*rlsifac=nil;
-	       if atf eq 'false then
-		  return atf
-	       else if atf eq 'true then
-		  return nil
-	       else
-	       	  return{'(delete . t),('add . (atf . level))}
-	    >> else
-	       return nil
-	 >>
+         if (nil and m = 2*n) then
+            return{'(delete . t),('delete . nil),('add .
+               (pasf_0mk2(pasf_mkop('ncong,m),addf(u,negf n)) . level))}
+         else <<
+            % Making sure changes are really applied
+            mo := pasf_susibineqcong1(m,n);
+            if mo neq m then <<
+               atf := pasf_simplat1(pasf_0mk2(pasf_mkop('ncong,mo),u),nil)
+                  where !*rlsifac=nil;
+               if atf eq 'false then
+                  return atf
+               else if atf eq 'true then
+                  return nil
+               else
+                  return{'(delete . t),('add . (atf . level))}
+            >> else
+               return nil
+         >>
       >>;
       % Old formula is an incongruence and new is a congurence
       if car oop eq 'ncong and car nop eq 'cong then <<
-	 if (nil and n = 2*m) then
-	    return{'(delete . nil),'(delete . t),('add .
-	       (pasf_0mk2(pasf_mkop('ncong,n),addf(u,negf m)) . level))}
-	 else <<
-	    % Making sure changes are really applied
-	    mo := pasf_susibineqcong1(n,m);
-	    if mo neq m then <<
-	       atf := pasf_simplat1(pasf_0mk2(pasf_mkop('ncong,mo),u),nil)
-	       	  where !*rlsifac=nil;
-	       if atf eq 'false then
-		  return atf
-	       else if atf eq 'true then
-		  return nil
-	       else
-	       	  return{'(delete . nil), ('add . (atf . level))}
-	    >> else
-	       return nil
-	 >>
+         if (nil and n = 2*m) then
+            return{'(delete . nil),'(delete . t),('add .
+               (pasf_0mk2(pasf_mkop('ncong,n),addf(u,negf m)) . level))}
+         else <<
+            % Making sure changes are really applied
+            mo := pasf_susibineqcong1(n,m);
+            if mo neq m then <<
+               atf := pasf_simplat1(pasf_0mk2(pasf_mkop('ncong,mo),u),nil)
+                  where !*rlsifac=nil;
+               if atf eq 'false then
+                  return atf
+               else if atf eq 'true then
+                  return nil
+               else
+                  return{'(delete . nil), ('add . (atf . level))}
+            >> else
+               return nil
+         >>
       >>;
       % Both formulas are incongruences
       if remainder(m,n) = 0 then
-	 return {'(delete . t)}
+         return {'(delete . t)}
       else if remainder(n,m) = 0 then
-	 return {'(delete . nil)}
+         return {'(delete . nil)}
       else
-	 return nil
+         return nil
    end;
 
 procedure pasf_susibineqcong1(m,n);
@@ -213,14 +213,14 @@ procedure pasf_susibineqcong1(m,n);
       if null domainp n or null domainp m then return nil;
       % ASSERTION: m,n are greater than 1 (due to atomic formula normal form)
       if (m <= 1 or n <= 1) then
-	 rederr{"pasf_susibineqcong1: wrong modulus in input"};
+         rederr{"pasf_susibineqcong1: wrong modulus in input"};
       p := zfactor(n);
       for each f in p do
-	 % Factor is present in m with minor power
-	 if remainder(m,car f) = 0 and
-	 remainder(m,(car f)^(cdr f)) neq 0 then
-	    while (remainder(m,car f) = 0) do
-	       m := m / car f;
+         % Factor is present in m with minor power
+         if remainder(m,car f) = 0 and
+         remainder(m,(car f)^(cdr f)) neq 0 then
+            while (remainder(m,car f) = 0) do
+               m := m / car f;
       return m
    end;
 
@@ -234,47 +234,47 @@ procedure pasf_susibinord(oop,ot,oabs,nop,nt,nabs,level);
    begin scalar w,oabsv,nabsv;
       % Congruences are treated differently
       if pairp oop and pairp nop then
-	 if cdr oop = cdr nop then
-	    return pasf_susibinordcongeq(oop,nop)
-	 else
-	    return pasf_susibinordcong(oop,ot,oabs,nop,nt,nabs,level);
+         if cdr oop = cdr nop then
+            return pasf_susibinordcongeq(oop,nop)
+         else
+            return pasf_susibinordcong(oop,ot,oabs,nop,nt,nabs,level);
       % Nothing to do for congruences times order relations
       if pairp oop or pairp nop then
-	 return nil;
+         return nil;
       % Special cases
       oabsv := if null oabs then 0 else oabs;
       nabsv := if null nabs then 0 else nabs;
       % Special case: strict inequalities with an emptyset gap
       if (oop eq 'lessp and nop eq 'greaterp and oabsv + 1 = nabsv) or
-       	 (nop eq 'lessp and oop eq 'greaterp and nabsv + 1 = oabsv) then
-	    return 'false;
+         (nop eq 'lessp and oop eq 'greaterp and nabsv + 1 = oabsv) then
+            return 'false;
       % Special case: inequalities with single point satisfaction set
       if oop eq 'geq and nop eq 'lessp and nabsv + 1 = oabsv then
-	 return {'(delete . t), '(delete . nil),
-	    ('add . (pasf_0mk2('equal, addf(ot,numr simp oabs)) . level))};
+         return {'(delete . t), '(delete . nil),
+            ('add . (pasf_0mk2('equal, addf(ot,numr simp oabs)) . level))};
       if nop eq 'geq and oop eq 'lessp and oabsv + 1 = nabsv then
-	 return {'(delete . t), '(delete . nil),
-	    ('add . (pasf_0mk2('equal, addf(ot,numr simp nabs)) . level))};
+         return {'(delete . t), '(delete . nil),
+            ('add . (pasf_0mk2('equal, addf(ot,numr simp nabs)) . level))};
       if oop eq 'leq and nop eq 'greaterp and oabsv + 1 = nabsv then
-	 return {'(delete . t), '(delete . nil),
-	    ('add . (pasf_0mk2('equal, addf(ot,numr simp oabs)) . level))};
+         return {'(delete . t), '(delete . nil),
+            ('add . (pasf_0mk2('equal, addf(ot,numr simp oabs)) . level))};
       if nop eq 'leq and oop eq 'greaterp and nabsv + 1 = oabsv then
-	 return {'(delete . t), '(delete . nil),
-	    ('add . (pasf_0mk2('equal, addf(ot,numr simp nabs)) . level))};
+         return {'(delete . t), '(delete . nil),
+            ('add . (pasf_0mk2('equal, addf(ot,numr simp nabs)) . level))};
       w := pasf_smordtable(oop,nop,oabs,nabs);
       if car w eq nil then
-     	 % Nothing can be done
-	 return nil
+         % Nothing can be done
+         return nil
       else if car w eq 'false then
-      	 % Contradiction found
-	 return 'false
+         % Contradiction found
+         return 'false
       else if eqn(car w,1) then
-	 % Remove new atomic formula from the level
- 	 return {'(delete . t)}
+         % Remove new atomic formula from the level
+         return {'(delete . t)}
       else if eqn(car w,2) then
- 	 % Remove old atomic formula from the theory, add new atomic formula
- 	 % to the knowledge
-       	 return {'(delete . nil)};
+         % Remove old atomic formula from the theory, add new atomic formula
+         % to the knowledge
+         return {'(delete . nil)};
       reutrn nil
    end;
 
@@ -290,13 +290,13 @@ procedure pasf_susibinordcongeq(oop,nop);
       if null domainp n or null domainp m then return nil;
       % Both formulas are congruences
       if car oop eq 'cong and car nop eq 'cong then
-	 return 'false;
+         return 'false;
       % Old formula is a congruence and new is an incongruence
       if car oop eq 'cong and car nop eq 'ncong then
-	 return {'(delete . t)};
+         return {'(delete . t)};
       % Old formula is an incongruence and new is a congurence
       if car oop eq 'ncong and car nop eq 'cong then
-	 return {'(delete . nil)};
+         return {'(delete . nil)};
       % Both formulas are incongruences
       return nil
    end;
@@ -314,12 +314,12 @@ procedure pasf_susibinordcong(oop,ot,oabs,nop,nt,nabs,level);
       % For parametric moduli nothing yet
       if null domainp n or null domainp m then return nil;
       if car oop eq 'cong and car nop eq 'cong and gcdf(n,m) = 1 then <<
-	 op := pasf_mkop('cong,numr simp (n*m));
-	 eucd := sfto_exteucd(n,m);
-	 lhs := addf(ot,numr simp(n*cadr eucd*nabs + m*caddr
-	    eucd*oabs));
-	 at := pasf_simplat1(pasf_0mk2(op,lhs),nil) where !*rlsifac=nil;
-	 return {'(delete . t),'(delete . nil), 'add . (at . level)}
+         op := pasf_mkop('cong,numr simp (n*m));
+         eucd := sfto_exteucd(n,m);
+         lhs := addf(ot,numr simp(n*cadr eucd*nabs + m*caddr
+            eucd*oabs));
+         at := pasf_simplat1(pasf_0mk2(op,lhs),nil) where !*rlsifac=nil;
+         return {'(delete . t),'(delete . nil), 'add . (at . level)}
       >>;
       return nil
    end;
@@ -346,78 +346,78 @@ procedure pasf_smeqtable(r_1,r_2);
    % [r_2](t,0)$.
    begin scalar al;
       al := '(
-	 (equal .
-	    ((equal . (1 . nil))
-	     (neq . (false . nil))
-	     (geq . (1 . nil))
+         (equal .
+            ((equal . (1 . nil))
+             (neq . (false . nil))
+             (geq . (1 . nil))
              (leq . (1 . nil))
-	     (greaterp . (false . nil))
-	     (lessp . (false . nil))
-	     (cong . (1 . nil))
-	     (ncong . (false . nil))))
+             (greaterp . (false . nil))
+             (lessp . (false . nil))
+             (cong . (1 . nil))
+             (ncong . (false . nil))))
          (neq .
-	    ((equal . (false . nil))
-	     (neq . (1 . nil))
-	     (geq . (3 . greaterp))
+            ((equal . (false . nil))
+             (neq . (1 . nil))
+             (geq . (3 . greaterp))
              (leq . (3 . lessp))
-	     (greaterp . (2 . nil))
-	     (lessp . (2 . nil))
-	     (cong . (nil . nil))
-	     (ncong . (2 . nil))))
+             (greaterp . (2 . nil))
+             (lessp . (2 . nil))
+             (cong . (nil . nil))
+             (ncong . (2 . nil))))
          (geq .
-	    ((equal . (2 . nil))
-	     (neq . (3 . greaterp))
-	     (geq . (1 . nil))
+            ((equal . (2 . nil))
+             (neq . (3 . greaterp))
+             (geq . (1 . nil))
              (leq . (3 . equal))
-	     (greaterp . (2 . nil))
-	     (lessp . (false . nil))
-	     (cong . (nil . nil))
-	     (ncong . (5 . greaterp))))
+             (greaterp . (2 . nil))
+             (lessp . (false . nil))
+             (cong . (nil . nil))
+             (ncong . (5 . greaterp))))
          (leq .
-	    ((equal . (2 . nil))
-	     (neq . (3 . lessp))
-	     (geq . (3 . equal))
+            ((equal . (2 . nil))
+             (neq . (3 . lessp))
+             (geq . (3 . equal))
              (leq . (1 . nil))
-	     (greaterp . (false . nil))
-	     (lessp . (2 . nil))
-	     (cong . (nil . nil))
-	     (ncong . (5 . lessp))))
+             (greaterp . (false . nil))
+             (lessp . (2 . nil))
+             (cong . (nil . nil))
+             (ncong . (5 . lessp))))
          (greaterp .
- 	    ((equal . (false . nil))
-	     (neq . (1 . nil))
-	     (geq . (1 . nil))
+            ((equal . (false . nil))
+             (neq . (1 . nil))
+             (geq . (1 . nil))
              (leq . (false . nil))
-	     (greaterp . (1 . nil))
-	     (lessp . (false . nil))
-	     (cong . (nil . nil))
-	     (ncong . (nil . nil))))
+             (greaterp . (1 . nil))
+             (lessp . (false . nil))
+             (cong . (nil . nil))
+             (ncong . (nil . nil))))
          (lessp .
-	     ((equal . (false . nil))
-	     (neq . (1 . nil))
-	     (geq . (false . nil))
+             ((equal . (false . nil))
+             (neq . (1 . nil))
+             (geq . (false . nil))
              (leq . (1 . nil))
-	     (greaterp . (false . nil))
-	     (lessp . (1 . nil))
-	     (cong . (nil . nil))
-	     (ncong . (nil . nil))))
-	 (cong .
-	    ((equal . (2 . nil))
-	     (neq . (nil . nil))
-	     (geq . (nil . nil))
+             (greaterp . (false . nil))
+             (lessp . (1 . nil))
+             (cong . (nil . nil))
+             (ncong . (nil . nil))))
+         (cong .
+            ((equal . (2 . nil))
+             (neq . (nil . nil))
+             (geq . (nil . nil))
              (leq . (nil . nil))
-	     (greaterp . (nil . nil))
-	     (lessp . (nil . nil))
-	     (cong . (1 . nil))
-	     (ncong . (false . nil))))
-	 (ncong .
-	    ((equal . (false . nil))
-	     (neq . (1 . nil))
-	     (geq . (4 . greaterp))
+             (greaterp . (nil . nil))
+             (lessp . (nil . nil))
+             (cong . (1 . nil))
+             (ncong . (false . nil))))
+         (ncong .
+            ((equal . (false . nil))
+             (neq . (1 . nil))
+             (geq . (4 . greaterp))
              (leq . (4 . lessp))
-	     (greaterp . (nil . nil))
-	     (lessp . (nil . nil))
-	     (cong . (false . nil))
-	     (ncong . (1 . nil)))));
+             (greaterp . (nil . nil))
+             (lessp . (nil . nil))
+             (cong . (false . nil))
+             (ncong . (1 . nil)))));
       return cdr (atsoc(r_2,atsoc(r_1,al)))
    end;
 
@@ -445,60 +445,60 @@ procedure pasf_smordtable1(r1,r2);
    % be removed and the new one added.
    begin scalar al;
       al := '(
-	 (lessp .
-	    ((lessp . (1 . nil))
+         (lessp .
+            ((lessp . (1 . nil))
              (leq . (1 . nil))
-	     (equal . (false . nil))
-   	     (neq . (1 . nil))
-	     (geq . (false . nil))
-	     (greaterp . (false . nil))
-	     (cong . (nil . nil))
-	     (ncong . (nil . nil))))
-	 (leq .
-	    ((lessp . (1 . nil))
-             (leq . (1 . nil))
-	     (equal . (false . nil))
-   	     (neq . (1 . nil))
-	     (geq . (false . nil))
-	     (greaterp . (false . nil))
+             (equal . (false . nil))
+             (neq . (1 . nil))
+             (geq . (false . nil))
+             (greaterp . (false . nil))
              (cong . (nil . nil))
-	     (ncong . (nil . nil))))
-	 (equal .
-	    ((lessp . (1 . nil))
+             (ncong . (nil . nil))))
+         (leq .
+            ((lessp . (1 . nil))
              (leq . (1 . nil))
-	     (equal . (false . nil))
-   	     (neq . (1 . nil))
-	     (geq . (false . nil))
-	     (greaterp . (false . nil))
-	     (cong . (nil . nil))
-	     (ncong . (nil . nil))))
-	 (neq .
-	    ((lessp . (nil . nil))
+             (equal . (false . nil))
+             (neq . (1 . nil))
+             (geq . (false . nil))
+             (greaterp . (false . nil))
+             (cong . (nil . nil))
+             (ncong . (nil . nil))))
+         (equal .
+            ((lessp . (1 . nil))
+             (leq . (1 . nil))
+             (equal . (false . nil))
+             (neq . (1 . nil))
+             (geq . (false . nil))
+             (greaterp . (false . nil))
+             (cong . (nil . nil))
+             (ncong . (nil . nil))))
+         (neq .
+            ((lessp . (nil . nil))
              (leq . (nil . nil))
-	     (equal . (2 . nil))
-   	     (neq . (nil . nil))
-	     (geq . (2 . nil))
-	     (greaterp . (2 . nil))
-	     (cong . (nil . nil))
-	     (ncong . (nil . nil))))
-	 (geq .
-	    ((lessp . (nil . nil))
+             (equal . (2 . nil))
+             (neq . (nil . nil))
+             (geq . (2 . nil))
+             (greaterp . (2 . nil))
+             (cong . (nil . nil))
+             (ncong . (nil . nil))))
+         (geq .
+            ((lessp . (nil . nil))
              (leq . (nil . nil))
-	     (equal . (2 . nil))
-   	     (neq . (nil . nil))
-	     (geq . (2 . nil))
-	     (greaterp . (2 . nil))
-	     (cong . (nil . nil))
-	     (ncong . (nil . nil))))
-	 (greaterp .
-	    ((lessp . (nil . nil))
+             (equal . (2 . nil))
+             (neq . (nil . nil))
+             (geq . (2 . nil))
+             (greaterp . (2 . nil))
+             (cong . (nil . nil))
+             (ncong . (nil . nil))))
+         (greaterp .
+            ((lessp . (nil . nil))
              (leq . (nil . nil))
-	     (equal . (2 . nil))
-   	     (neq . (nil . nil))
-	     (geq . (2 . nil))
-	     (greaterp . (2 . nil))
-	     (cong . (nil . nil))
-    	     (ncong . (nil . nil)))));
+             (equal . (2 . nil))
+             (neq . (nil . nil))
+             (geq . (2 . nil))
+             (greaterp . (2 . nil))
+             (cong . (nil . nil))
+             (ncong . (nil . nil)))));
       return cdr (atsoc(r2,atsoc(r1,al)))
    end;
 
@@ -512,60 +512,60 @@ procedure pasf_smordtable2(r1,r2);
    % removed and the new added.
    begin scalar al;
       al := '(
-	 (lessp .
-	    ((lessp . (2 . nil))
+         (lessp .
+            ((lessp . (2 . nil))
              (leq . (2 . nil))
-	     (equal . (2 . nil))
-   	     (neq . (nil . nil))
-	     (geq . (nil . nil))
-	     (greaterp . (nil . nil))
-	     (cong . (nil . nil))
-	     (ncong . (nil . nil))))
-	 (leq .
-	    ((lessp . (2 . nil))
-             (leq . (2 . nil))
-	     (equal . (2 . nil))
-   	     (neq . (nil . nil))
-	     (geq . (nil . nil))
-	     (greaterp . (nil . nil))
+             (equal . (2 . nil))
+             (neq . (nil . nil))
+             (geq . (nil . nil))
+             (greaterp . (nil . nil))
              (cong . (nil . nil))
-	     (ncong . (nil . nil))))
-	 (equal .
-	    ((lessp . (false . nil))
-             (leq . (false . nil))
-	     (equal . (false . nil))
-   	     (neq . (1 . nil))
-	     (geq . (1 . nil))
-	     (greaterp . (1 . nil))
-	     (cong . (nil . nil))
-	     (ncong . (nil . nil))))
-	 (neq .
-	    ((lessp . (2 . nil))
+             (ncong . (nil . nil))))
+         (leq .
+            ((lessp . (2 . nil))
              (leq . (2 . nil))
-	     (equal . (2 . nil))
-   	     (neq . (nil . nil))
-	     (geq . (nil . nil))
-	     (greaterp . (nil . nil))
-	     (cong . (nil . nil))
-	     (ncong . (nil . nil))))
-	 (geq .
-	    ((lessp . (false . nil))
+             (equal . (2 . nil))
+             (neq . (nil . nil))
+             (geq . (nil . nil))
+             (greaterp . (nil . nil))
+             (cong . (nil . nil))
+             (ncong . (nil . nil))))
+         (equal .
+            ((lessp . (false . nil))
              (leq . (false . nil))
-	     (equal . (false . nil))
-   	     (neq . (1 . nil))
-	     (geq . (1 . nil))
-	     (greaterp . (1 . nil))
-	     (cong . (nil . nil))
-	     (ncong . (nil . nil))))
-	 (greaterp .
-	    ((lessp . (false . nil))
+             (equal . (false . nil))
+             (neq . (1 . nil))
+             (geq . (1 . nil))
+             (greaterp . (1 . nil))
+             (cong . (nil . nil))
+             (ncong . (nil . nil))))
+         (neq .
+            ((lessp . (2 . nil))
+             (leq . (2 . nil))
+             (equal . (2 . nil))
+             (neq . (nil . nil))
+             (geq . (nil . nil))
+             (greaterp . (nil . nil))
+             (cong . (nil . nil))
+             (ncong . (nil . nil))))
+         (geq .
+            ((lessp . (false . nil))
              (leq . (false . nil))
-	     (equal . (false . nil))
-   	     (neq . (1 . nil))
-	     (geq . (1 . nil))
-	     (greaterp . (1 . nil))
-	     (cong . (nil . nil))
-    	     (ncong . (nil . nil)))));
+             (equal . (false . nil))
+             (neq . (1 . nil))
+             (geq . (1 . nil))
+             (greaterp . (1 . nil))
+             (cong . (nil . nil))
+             (ncong . (nil . nil))))
+         (greaterp .
+            ((lessp . (false . nil))
+             (leq . (false . nil))
+             (equal . (false . nil))
+             (neq . (1 . nil))
+             (geq . (1 . nil))
+             (greaterp . (1 . nil))
+             (cong . (nil . nil))
+             (ncong . (nil . nil)))));
       return cdr (atsoc(r2,atsoc(r1,al)))
    end;
 

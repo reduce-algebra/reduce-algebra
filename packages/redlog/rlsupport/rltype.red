@@ -38,36 +38,36 @@ asserted procedure rl_typeStat();
       rl_skiplcbkt "rl_type";
       scan();
       while cursym!* neq '!*rcbkt!* do <<
-      	 if not idp cursym!* then
-	    rederr {"expecting identifier in rl_type but found", cursym!*};
-      	 key := cursym!*;
-	 scan();
-      	 if cursym!* neq 'equal then
-	    % There is a flag, e.g., 'equational'
-	    push(key, l)
-	 else <<
-	    % There is a key-entry pair
-	    if key eq 'doc then
-	       entry := rl_typeStatDoc()
-	    else if key memq '(name inherits) then <<
-	       scan();
-	       if not idp cursym!* then
-	       	  rederr {"expecting identifier in rl_type but found", cursym!*};
-	       entry := cursym!*;
-	       scan()
-	    >>
- 	    else if key memq '(a2s s2a) then
-	       entry := xread t
-	    else
-	       rederr {"unknown keyword", key, "in rl_type"};
-	    push(key . entry, l);
-	 >>;
-	 % Expecting ',' or '}' now:
-	 if cursym!* neq '!*rcbkt!* then <<
-	    if cursym!* neq '!*comma!* then
-	       rederr {"expecting ',' or '}' in rl_type but found", cursym!*};
-	    scan()
-	 >>
+         if not idp cursym!* then
+            rederr {"expecting identifier in rl_type but found", cursym!*};
+         key := cursym!*;
+         scan();
+         if cursym!* neq 'equal then
+            % There is a flag, e.g., 'equational'
+            push(key, l)
+         else <<
+            % There is a key-entry pair
+            if key eq 'doc then
+               entry := rl_typeStatDoc()
+            else if key memq '(name inherits) then <<
+               scan();
+               if not idp cursym!* then
+                  rederr {"expecting identifier in rl_type but found", cursym!*};
+               entry := cursym!*;
+               scan()
+            >>
+            else if key memq '(a2s s2a) then
+               entry := xread t
+            else
+               rederr {"unknown keyword", key, "in rl_type"};
+            push(key . entry, l);
+         >>;
+         % Expecting ',' or '}' now:
+         if cursym!* neq '!*rcbkt!* then <<
+            if cursym!* neq '!*comma!* then
+               rederr {"expecting ',' or '}' in rl_type but found", cursym!*};
+            scan()
+         >>
       >>;
       scan();  % !*semicol!*
       return {'rl_type, reversip l}
@@ -78,25 +78,25 @@ asserted procedure rl_typeStatDoc();
       rl_skiplcbkt "rl_type doc";
       scan();
       while cursym!* neq '!*rcbkt!* do <<
-      	 if not idp cursym!* then
-	    rederr {"expecting identifier in rl_type doc but found", cursym!*};
-      	 key := cursym!*;
-	 if key memq '(description syntax semantics url example) then <<
-	    rl_skipequal("rl_type");
-	    scan();
-	    if not stringp cursym!* then
-	       rederr {"expecting a string in rl_type doc but found", cursym!*};
-	    entry := cursym!*;
-	    scan()
-	 >> else
-	    rederr {"unknown keyword", key, "in rl_type doc"};
-	 push(key . entry, l);
-	 % Expecting ',' or '}' now:
-	 if cursym!* neq '!*rcbkt!* then <<
-	    if cursym!* neq '!*comma!* then
-	       rederr {"expecting ',' or '}' in rl_type doc but found", cursym!*};
-	    scan()
-	 >>
+         if not idp cursym!* then
+            rederr {"expecting identifier in rl_type doc but found", cursym!*};
+         key := cursym!*;
+         if key memq '(description syntax semantics url example) then <<
+            rl_skipequal("rl_type");
+            scan();
+            if not stringp cursym!* then
+               rederr {"expecting a string in rl_type doc but found", cursym!*};
+            entry := cursym!*;
+            scan()
+         >> else
+            rederr {"unknown keyword", key, "in rl_type doc"};
+         push(key . entry, l);
+         % Expecting ',' or '}' now:
+         if cursym!* neq '!*rcbkt!* then <<
+            if cursym!* neq '!*comma!* then
+               rederr {"expecting ',' or '}' in rl_type doc but found", cursym!*};
+            scan()
+         >>
       >>;
       scan();
       return reversip l
@@ -109,12 +109,12 @@ asserted procedure rl_formType(argl: List, vars: List, mode: Id): List;
       spec := cadr argl;
       name := lto_eatsoc('name, spec, {"missing type name in", argl});
       for each x in spec do
-	 if idp x and x memq '(equational) then  % flags
-	    push(x . t, rltype)
-	 else if pairp x and car x memq '(a2s s2a doc inherits) then
-	    push(x, rltype)
-	 else if not eqcar(x, 'name) then
-	    rederr {"unknown keyword", car x , "in", argl};
+         if idp x and x memq '(equational) then  % flags
+            push(x . t, rltype)
+         else if pairp x and car x memq '(a2s s2a doc inherits) then
+            push(x, rltype)
+         else if not eqcar(x, 'name) then
+            rederr {"unknown keyword", car x , "in", argl};
       push({'put, mkquote name, ''rl_support, ''rl_type}, p);
       push({'put, mkquote name, ''rl_type, mkquote rltype}, p);
       return 'progn . reversip p
@@ -150,9 +150,9 @@ asserted procedure rl_typeEntry(type: Id, entry: Id): Any;
 asserted procedure rl_typeArity(type: Id): Atom;
    begin scalar ar;
       ar :=  if type eq 'enum then
-	 'n
+         'n
       else
-	 get(rl_typeA2s type or rl_typeS2a type, 'number!-of!-args) or '!?;
+         get(rl_typeA2s type or rl_typeS2a type, 'number!-of!-args) or '!?;
       if fixp ar then ar := ar - 1;
       return  ar
    end;

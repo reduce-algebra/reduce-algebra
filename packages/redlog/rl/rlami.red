@@ -70,13 +70,13 @@ procedure rl_prepfof1(f);
    begin scalar op,w;
       op := rl_op f;
       if rl_tvalp op then
- 	 return op;
+         return op;
       if rl_quap op then
-	 return {op,rl_var f,rl_prepfof1 rl_mat f};
+         return {op,rl_var f,rl_prepfof1 rl_mat f};
       if rl_bquap op then
-	 return {op,rl_var f,rl_prepfof1 rl_b f,rl_prepfof1 rl_mat f};
+         return {op,rl_var f,rl_prepfof1 rl_b f,rl_prepfof1 rl_mat f};
       if rl_boolp op then
-	 return op . for each x in rl_argn f collect rl_prepfof1 x;
+         return op . for each x in rl_argn f collect rl_prepfof1 x;
       % [f] is atomic.
       return apply(get(car rl_cid!*,'rl_prepat),{f})
    end;
@@ -95,8 +95,8 @@ procedure rl_simpa(u);
    % simp an answer structure
    for each a in cdr reval u collect
       {rl_simp cadr a,
-	 for each b in cdaddr a collect
-	    rl_simp b, cdr cadddr a};
+         for each b in cdaddr a collect
+            rl_simp b, cdr cadddr a};
 
 procedure rl_simp(u);
    % [simp] first-order formula.
@@ -108,25 +108,25 @@ procedure rl_simp1(u);
    begin scalar w, h;
       if null rl_cid!* then rederr {"select a context"};
       if atom u then
- 	 return rl_simpatom u;
+         return rl_simpatom u;
       argnochk u where !*strict_argcount = t;
       if (w := get(car u, 'rl_simpfn)) then
- 	 return if flagp(w, 'full) then apply(w, {u}) else apply(w, {cdr u});
+         return if flagp(w, 'full) then apply(w, {u}) else apply(w, {cdr u});
       if (w := get(car u, get(car rl_cid!*, 'simpfnname))) then
-	 return if flagp(w, 'full) then apply(w, {u}) else apply(w, {cdr u});
+         return if flagp(w, 'full) then apply(w, {u}) else apply(w, {cdr u});
       if (w := get(car u, 'psopfn)) then <<
-	 % u = (replaceby x 1) will return itself via a psopfn equalreplaceby.
-	 h := apply1(w, cdr u);
-	 if h neq u then
- 	    return rl_simp1 h
+         % u = (replaceby x 1) will return itself via a psopfn equalreplaceby.
+         h := apply1(w, cdr u);
+         if h neq u then
+            return rl_simp1 h
       >>;
       if flagp(car u, 'opfn) then
-	 return rl_simp1 apply(car u, for each x in cdr u collect reval x);
+         return rl_simp1 apply(car u, for each x in cdr u collect reval x);
       if (w := get(car u, 'prepfn2)) then
- 	 return rl_simp1 apply(w, {u});
+         return rl_simp1 apply(w, {u});
       h := ioto_form2str car u;
       if (w := get(car u, 'prtch)) then
-	 h := lto_sconcat {ioto_form2str w, " (", h, ")"};
+         h := lto_sconcat {ioto_form2str w, " (", h, ")"};
       redmsg(h, "predicate");
       put(car u, get(car rl_cid!*, 'simpfnname), get(car rl_cid!*, 'simpdefault));
       return rl_simp1(u)
@@ -140,9 +140,9 @@ procedure rl_simpatom(u);
       if stringp u then typerr({"string",u},"logical");
       if rl_tvalp u then return u;
       if (w := rl_gettype(u)) then <<
-	 if w memq '(logical equation scalar slprog) then
-	    return rl_simp1 cadr get(u,'avalue);
-	 typerr({w,u},"logical")
+         if w memq '(logical equation scalar slprog) then
+            return rl_simp1 cadr get(u,'avalue);
+         typerr({w,u},"logical")
       >>;
       % [u] algebraically unbound.
       if boundp u then return rl_simp1 eval u;
@@ -158,13 +158,13 @@ procedure rl_simpq(f);
    begin scalar vl,w;
       vl := reval cadr f;
       if eqcar(vl,'list) then
-	 vl := cdr vl
+         vl := cdr vl
       else
-	 vl := {vl};
+         vl := {vl};
       w := rl_simp1 caddr f;
       for each x in reverse vl do <<
-      	 rl_qvarchk x;
-	 w := rl_mkq(car f,x,w)
+         rl_qvarchk x;
+         w := rl_mkq(car f,x,w)
       >>;
       flag(vl,'used!*);
       return w
@@ -176,7 +176,7 @@ procedure rl_simpbq(f);
    % lisp-prefix. Returns a bounded quantifier headed formula.
    begin scalar x,wb,wf;
       if car rl_cid!* neq 'pasf then
-	 rederr "boundend quantifiers only allowed within PASF context";
+         rederr "boundend quantifiers only allowed within PASF context";
       x := reval cadr f;
       if not idp x then typerr("not identifer","bounded quantified variable");
       wb := rl_simp1 caddr f;
@@ -203,10 +203,10 @@ procedure rl_simp!*fof(u);
       tag := car u;
       f := cadr u;
       if tag neq rl_cid!* then <<
-	 w := rl_set tag where !*msg=nil;
-	 f := rl_prepfof f;
-	 rl_set w where !*msg=nil;
-	 return rl_simp f
+         w := rl_set tag where !*msg=nil;
+         f := rl_prepfof f;
+         rl_set w where !*msg=nil;
+         return rl_simp f
       >>;
       return rl_resimp f
    end;
@@ -216,20 +216,20 @@ procedure rl_resimp(u);
    begin scalar op,w;
       op := rl_op u;
       if rl_tvalp op then
-	 return u;
+         return u;
       if rl_quap op then <<
-      	 if (w := rl_gettype(rl_var u)) then
- 	    typerr({w,rl_var u},"quantified variable");
-	 rl_qvarchk rl_var u;
-      	 return rl_mkq(op,rl_var u,rl_resimp rl_mat u)
+         if (w := rl_gettype(rl_var u)) then
+            typerr({w,rl_var u},"quantified variable");
+         rl_qvarchk rl_var u;
+         return rl_mkq(op,rl_var u,rl_resimp rl_mat u)
       >>;
       if rl_bquap op then <<
-      	 if (w := rl_gettype(rl_var u)) then
- 	    typerr({w,rl_var u},"quantified variable");
-      	 return rl_mkbq(op,rl_var u,rl_resimp rl_b u,rl_resimp rl_mat u)
+         if (w := rl_gettype(rl_var u)) then
+            typerr({w,rl_var u},"quantified variable");
+         return rl_mkbq(op,rl_var u,rl_resimp rl_b u,rl_resimp rl_mat u)
       >>;
       if rl_boolp op then
-	 return rl_mkn(op,for each x in rl_argn u collect rl_resimp x);
+         return rl_mkn(op,for each x in rl_argn u collect rl_resimp x);
       return apply(get(car rl_cid!*,'rl_resimpat),{u})
    end;
 
@@ -247,13 +247,13 @@ procedure rl_lengthfof(f);
    begin scalar op;
       op := rl_op f;
       if rl_tvalp op then
-	 return 1;
+         return 1;
       if rl_quap op then
-	 return 2;
+         return 2;
       if rl_bquap op then
-	 return 3;
+         return 3;
       if rl_cxp op then
-	 return length rl_argn f;
+         return length rl_argn f;
       % [f] is atomic.
       return apply(get(car rl_cid!*,'rl_lengthat),{f})
    end;
