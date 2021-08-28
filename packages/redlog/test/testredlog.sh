@@ -74,7 +74,7 @@ function runtest() {
 
 export -f runtest
 
-parallel --linebuffer --bar -j$cores runtest $* {} ::: $packages > /tmp/testredlog.out
+parallel --linebuffer --bar -j$cores --halt now,fail=1 runtest $* {} ::: $packages > /tmp/testredlog.out
 cat /tmp/testredlog.out
 rm /tmp/testredlog.out
 

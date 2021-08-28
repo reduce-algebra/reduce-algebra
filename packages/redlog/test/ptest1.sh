@@ -292,4 +292,14 @@ echo " "
 
 rm -f $howlong
 
+if test -s csl-times/$p.rlg.diff; then
+  exit 1
+fi
+
+if test -s psl-times/$p.rlg.diff; then
+  exit 1
+fi
+
+exit 0
+
 # end of test
