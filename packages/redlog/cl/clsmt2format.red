@@ -29,6 +29,10 @@ copyright('clsmt2format, "(c) 2021 T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
+fluid '(!*smtplain);
+fluid '(smt_assertionl!*);
+
+% The service rl_smt2Print does not exist anymore. It has been replaced by rl_dump.
 rl_provideService rl_smt2Print = cl_smt2Print using rl_smt2PrintLogic, rl_smt2PrintAt;
 
 procedure cl_smt2Print(f, fname, linel);
@@ -97,13 +101,10 @@ procedure cl_smt2PrefixPrint(op, argl);
 
 rl_provideService rl_smt2Read = cl_smt2Read using rl_smt2ReadAt;
 
-fluid '(!*smtplain);
-fluid '(smt_assertionl!*);
-
 procedure cl_smt2Read(file);
    % [file] is a string.
    begin scalar filech, oldch, w, form, smt_assertionl!*, !*smtplain, raise;
-      !*smtsplain := t;
+      !*smtplain := t;
       raise := !*raise;
       !*raise := !*lower := nil;
       filech := open(file, 'input);
