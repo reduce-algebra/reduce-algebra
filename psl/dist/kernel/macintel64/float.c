@@ -42,6 +42,9 @@
 %  Added C defintions for external float routines used in fast-math.sl.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*
+* $Id$
+*
 */
 
 #include <string.h>
