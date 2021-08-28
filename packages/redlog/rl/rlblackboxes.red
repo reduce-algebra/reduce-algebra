@@ -90,6 +90,31 @@ rl_blackbox {
    argnum = 2};
 
 rl_blackbox {
+   doc = "bounded qantifier in cl_nnf1",
+   name = BQnnf1,
+   argnum = 2};
+
+rl_blackbox {
+   doc = "bounded qantifier in cl_rename!-vars1",
+   name = BQrename!-vars1,
+   argnum = 2};
+
+rl_blackbox {
+   doc = "bounded qantifier in cl_varl2",
+   name = BQvarl2,
+   argnum = 4};
+
+rl_blackbox {
+   doc = "bounded qantifier in cl_qvarl1",
+   name = BQqvarl1,
+   argnum = 1};
+
+rl_blackbox {
+   doc = "bounded qantifier in cl_ordp",
+   name = BQordp,
+   argnum = 2};
+
+rl_blackbox {
    doc = "DFG format print atomic formula",
    name = dfgPrintAt,
    argnum = 1};
