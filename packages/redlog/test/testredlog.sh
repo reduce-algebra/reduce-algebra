@@ -59,7 +59,7 @@ fi
 #
 rm -f csl-times/*.rlg* psl-times/*.rlg* csl-psl-times-comparison/*.rlg.diff
 
-packages="smt ofsf ibalp pasf redlog rltools acfsf qqe_ofsf mri talp cgb"
+packages="redlog smt ofsf ibalp pasf rltools acfsf qqe_ofsf mri talp cgb"
 
 # for p in $packages
 # do
