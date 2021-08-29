@@ -88,12 +88,12 @@ asserted procedure ofsf_cadporder!-rate(pset: SFList): Integer;
 asserted procedure ofsf_caddecdeg(phi: Formula): Formula;
    begin scalar w;
       if !*rlverbose then
-	 ioto_prin2 "- decrease degrees: ";
+         ioto_prin2 "- decrease degrees: ";
       w := ofsf_decdeg0 phi;
       phi := car w;
       if !*rlverbose then
-	 for each x in cdr w do
-	    ioto_prin2 {"(", car x, "^", cdr x, ")"};
+         for each x in cdr w do
+            ioto_prin2 {"(", car x, "^", cdr x, ")"};
       return phi
    end;
 
@@ -106,18 +106,18 @@ asserted procedure ofsf_cadvbl(phi: Formula): List;
    begin scalar varl, qal, cq, cl, cll, v, q;
       varl . qal := ofsf_mkvarl phi;  % ((xr, ..., x_1) . ((x_r.Q_r), ..., (x_k+1.Q_k+1)))
       if qal then <<
-      	 cq := cdar qal;  % current quantifier
-      	 while qal do <<
-	    v . q := pop qal;
-	    pop varl;
-	    if q neq cq then <<
-	       push(cl, cll);
-	       cq := q;
-	       cl := nil
-	    >>;
-	    push(v, cl)
-	 >>;
-	 push(reversip cl, cll)
+         cq := cdar qal;  % current quantifier
+         while qal do <<
+            v . q := pop qal;
+            pop varl;
+            if q neq cq then <<
+               push(cl, cll);
+               cq := q;
+               cl := nil
+            >>;
+            push(v, cl)
+         >>;
+         push(reversip cl, cll)
       >>;
       push(varl, cll);
       return reversip cll
@@ -138,21 +138,21 @@ asserted procedure ofsf_cadporder(phi: Formula): KernelList;
    % [ofsf_cad] uses [cl_pnf] for PNF computation.
    begin scalar cll, !*rlcadverbose;
       if !*rlverbose then
-	 ioto_prin2t "+++ Optimizing projection order.";
+         ioto_prin2t "+++ Optimizing projection order.";
       if !*rlcaddecdeg then
-	 phi := ofsf_caddecdeg phi;
+         phi := ofsf_caddecdeg phi;
       phi := cl_pnf phi;
       cll := ofsf_cadvbl phi;
       if !*rlverbose then <<
-      	 ioto_tprin2 {"+ input order by blocks:"};
-	 for each cl in cll do
-	    ioto_prin2 {" -> ", cl}
+         ioto_tprin2 {"+ input order by blocks:"};
+         for each cl in cll do
+            ioto_prin2 {" -> ", cl}
       >>;
       cll := ofsf_cadporder1(ofsf_transfac cl_terml phi, cll);
       if !*rlverbose then <<
-      	 ioto_tprin2 {"+ optimized order:"};
-	 for each cl in cll do
-	    ioto_prin2 {" -> ", cl}
+         ioto_tprin2 {"+ optimized order:"};
+         for each cl in cll do
+            ioto_prin2 {" -> ", cl}
       >>;
       return for each cl in cll join cl
    end;
@@ -164,16 +164,16 @@ asserted procedure ofsf_cadporder1(fl: SFList, cll: List): List;
    begin scalar cl, lastp, ncl, ncll, theo;
       integer j;
       j := for each cl in cll sum
-	 length cl;
+         length cl;
       while cll do <<
-	 cl := pop cll;
-	 if cl then <<
-	    lastp := null cll or null car cll;
-	    {fl, ncl, theo} := ofsf_cadporder2(fl, cl, j, lastp, theo);
-	    push(ncl, ncll);
-	    j := j - length cl
-	 >> else
-	    push(nil, ncll)
+         cl := pop cll;
+         if cl then <<
+            lastp := null cll or null car cll;
+            {fl, ncl, theo} := ofsf_cadporder2(fl, cl, j, lastp, theo);
+            push(ncl, ncll);
+            j := j - length cl
+         >> else
+            push(nil, ncll)
       >>;
       return reversip ncll
    end;
@@ -187,18 +187,18 @@ asserted procedure ofsf_cadporder2(fl: SFList, cl: KernelList, j: Integer, lastp
    % projecting in this order [ncl].
    begin scalar x, ncl;
       if !*rlverbose then
-	 ioto_tprin2t {"+ current input block: ", cl};
+         ioto_tprin2t {"+ current input block: ", cl};
       while cl and (not lastp or cdr cl) do <<
-      	 {fl, x, theo} := ofsf_cadporder3(fl, cl, j, theo);
-	 push(x, ncl);
-	 cl := delete(x, cl);
-	 j := j - 1
+         {fl, x, theo} := ofsf_cadporder3(fl, cl, j, theo);
+         push(x, ncl);
+         cl := delete(x, cl);
+         j := j - 1
       >>;
       if lastp then
-	 push(car cl, ncl);
+         push(car cl, ncl);
       ncl := reversip ncl;
       if !*rlverbose then
-	 ioto_tprin2t {"+ reordered block: ", ncl};
+         ioto_tprin2t {"+ reordered block: ", ncl};
       return {fl, ncl, theo}
    end;
 
@@ -210,29 +210,29 @@ asserted procedure ofsf_cadporder3(fl: SFList, cl: KernelList, j: Integer, theo:
    % step.
    begin scalar pp1, pp2, r, pset, xopt, psetopt, ropt, theoopt;
       for each x in cl do <<
-	 if !*rlverbose then
-	    ioto_prin2 {"[", x, ":"};
-	 pp1 . pp2 := ofsf_cadporder!-project(fl, x, j, theo);
-	 r := ofsf_cadporder!-rate pp1;
-	 pset := union(pp1, pp2);
-	 if !*rlverbose then <<
-	    ioto_prin2 r;
-	    if !*rlqegen then
-	       ioto_prin2 {"/", length theo};
-	    ioto_prin2 "] "
-	 >>;
-	 if ofsf_cadporder!-betterp(r, ropt, theo, theoopt) then <<
-	    xopt := x;
-	    psetopt := pset;
-	    ropt := r;
-	    if !*rlqegen then
-	       theoopt := theo
-	 >>
+         if !*rlverbose then
+            ioto_prin2 {"[", x, ":"};
+         pp1 . pp2 := ofsf_cadporder!-project(fl, x, j, theo);
+         r := ofsf_cadporder!-rate pp1;
+         pset := union(pp1, pp2);
+         if !*rlverbose then <<
+            ioto_prin2 r;
+            if !*rlqegen then
+               ioto_prin2 {"/", length theo};
+            ioto_prin2 "] "
+         >>;
+         if ofsf_cadporder!-betterp(r, ropt, theo, theoopt) then <<
+            xopt := x;
+            psetopt := pset;
+            ropt := r;
+            if !*rlqegen then
+               theoopt := theo
+         >>
       >>;
       if !*rlverbose then
-	 ioto_prin2t {"choose ", xopt};
+         ioto_prin2t {"choose ", xopt};
       if !*rlqegen then
-	 theo := theoopt;
+         theo := theoopt;
       return {psetopt, xopt, theo}
    end;
 
@@ -240,19 +240,19 @@ asserted procedure ofsf_cadporder!-project(fl: SFList, x: Kernel, j: Integer, th
    begin scalar oldorder, ffj, ffi, pset, w;
       oldorder := setkorder {x};
       fl := for each f in fl collect
-	 reorder f;
+         reorder f;
       for each f in fl do
-	 if mvar f eq x then
-	    push(f, ffj)
-	 else
-	    push(f, ffi);
+         if mvar f eq x then
+            push(f, ffj)
+         else
+            push(f, ffi);
       if !*rlqegen then <<
-	 theo := for each at in theo collect
-	    ofsf_0mk2(ofsf_op at, reorder ofsf_arg2l at);
-	 w := ofsf_projopcohogen(ffj, x, j, theo);
-	 pset := ofsf_transfac car w
+         theo := for each at in theo collect
+            ofsf_0mk2(ofsf_op at, reorder ofsf_arg2l at);
+         w := ofsf_projopcohogen(ffj, x, j, theo);
+         pset := ofsf_transfac car w
       >> else
-	 pset := ofsf_transfac ofsf_projopcoho(ffj, x, j);
+         pset := ofsf_transfac ofsf_projopcoho(ffj, x, j);
       setkorder oldorder;
       return pset . ffi
    end;
@@ -274,32 +274,32 @@ asserted procedure ofsf_cadprojection1(cd: CadData): Any;
       hh := mkvect r;  % here go the tagged projection factors
       hhtags := mkvect r;  % here go the tags of the projection polynomials
       if !*rlqegen then <<  % hack: generic CAD: new projection
-	 ofsf_cadbvl!* := lto_drop(varl, k);  % better: caddata_bvl
-	 pp . theo := ofsf_projsetcohogen(aa, varl, nil);
-	 caddata_puttheo(cd, theo)
+         ofsf_cadbvl!* := lto_drop(varl, k);  % better: caddata_bvl
+         pp . theo := ofsf_projsetcohogen(aa, varl, nil);
+         caddata_puttheo(cd, theo)
       >> else
-      	 pp := ofsf_projsetcoho(aa, varl);
+         pp := ofsf_projsetcoho(aa, varl);
       ofsf_distribute(pp, ff, varl);
       caddata_putff(cd, ff);
       for j := 1 : r do <<
-	 l := 0;
-	 tagl := nil;
-	 w := nil;
-	 for each f in getv(ff, j) do <<
-	    l := l + 1;
-	    tag := ofsf_mkhhtag(j, l);
-	    push(tag . f, w);
-	    push(tag, tagl)
-	 >>;
+         l := 0;
+         tagl := nil;
+         w := nil;
+         for each f in getv(ff, j) do <<
+            l := l + 1;
+            tag := ofsf_mkhhtag(j, l);
+            push(tag . f, w);
+            push(tag, tagl)
+         >>;
          putv(hh, j, reversip w);  % the same order as in [ff]
-	 putv(hhtags, j, reversip tagl)
+         putv(hhtags, j, reversip tagl)
       >>;
       caddata_puthh(cd, hh);
       caddata_puthhtags(cd, hhtags);
       if !*rlverbose then <<
-	 ioto_tprin2t {"+ number of all projection factors: ", length pp};
-	 if !*rlqegen then
-	    ioto_prin2t {"+ number of theory elements: ", length theo}
+         ioto_tprin2t {"+ number of all projection factors: ", length pp};
+         if !*rlqegen then
+            ioto_prin2t {"+ number of theory elements: ", length theo}
       >>
    end;
 
@@ -307,9 +307,9 @@ asserted procedure ofsf_distribute(fl: SFList, ff: Atom, varl: KernelList): Any;
    % [ff] is changed in place.
    begin integer l;
       for each f in fl do <<
-      	 l := sf_level(f, varl);
-	 if l > 0 and not (f member getv(ff, l)) then
-	    putv(ff, l, f . getv(ff, l))
+         l := sf_level(f, varl);
+         if l > 0 and not (f member getv(ff, l)) then
+            putv(ff, l, f . getv(ff, l))
       >>
    end;
 
@@ -366,7 +366,7 @@ asserted procedure sf_factors(f: SF): SFList;
    begin scalar w;
       w := sfto_fctrf f;
       if sfto_fctrfProperP w then
-	 return for each pr in cdr w collect car pr;
+         return for each pr in cdr w collect car pr;
       return {sfto_sqfpartf f}
    end;
 
@@ -380,32 +380,32 @@ asserted procedure sf_pscsgen(a: SF, b: SF, x: Kernel, theo: List): DottedPair;
    % Returns a dotted Pair (SFList . theory).
    begin scalar k, pscl, finished;
       if not !*rlpscsgen then
-	 return sf_pscs(a, b, x) . theo;
+         return sf_pscs(a, b, x) . theo;
       k := 0;
       if k > min(sfto_vardeg(a, x), sfto_vardeg(b, x))-1 then
-	 return nil . theo;
+         return nil . theo;
       repeat <<
-	 pscl := sf_psc(a,b,x,k) . pscl;
-	 k := k+1;
-	 if k > min(sfto_vardeg(a, x), sfto_vardeg(b, x))-1 then <<
-	    if ofsf_cadverbosep() then
-	       ioto_prin2 "(end)"
-	 >> else if ofsf_surep(ofsf_0mk2('neq, car pscl), theo) then <<
-	    if ofsf_cadverbosep() then
-	       if domainp car pscl then
-	       	  ioto_prin2 "(dom)"
-	       else
-		  ioto_prin2 "(=>)";
-	    finished := t
-	 >> else if ofsf_cadvalassp(ofsf_cadbvl!*,car pscl) then <<
-	    if ofsf_cadverbosep() then
-	       ioto_prin2 "(>th)";
-	    theo := ofsf_0mk2('neq,car pscl) . theo;
-	    finished := t
-	 >>;
+         pscl := sf_psc(a,b,x,k) . pscl;
+         k := k+1;
+         if k > min(sfto_vardeg(a, x), sfto_vardeg(b, x))-1 then <<
+            if ofsf_cadverbosep() then
+               ioto_prin2 "(end)"
+         >> else if ofsf_surep(ofsf_0mk2('neq, car pscl), theo) then <<
+            if ofsf_cadverbosep() then
+               if domainp car pscl then
+                  ioto_prin2 "(dom)"
+               else
+                  ioto_prin2 "(=>)";
+            finished := t
+         >> else if ofsf_cadvalassp(ofsf_cadbvl!*,car pscl) then <<
+            if ofsf_cadverbosep() then
+               ioto_prin2 "(>th)";
+            theo := ofsf_0mk2('neq,car pscl) . theo;
+            finished := t
+         >>;
       >> until finished or k > min(sfto_vardeg(a, x), sfto_vardeg(b, x))-1;
       % if ofsf_cadverbosep() then
-      % 	 ioto_prin2 {" (- ", min(sfto_vardeg(a, x), sfto_vardeg(b, x))-k, ") "};
+      %          ioto_prin2 {" (- ", min(sfto_vardeg(a, x), sfto_vardeg(b, x))-k, ") "};
       return pscl . theo;
    end;
 
@@ -442,16 +442,16 @@ asserted procedure mtx_sylvester(f: SF, g: SF, x: Kernel): MtxSF;
       n := sfto_vardeg(g, x);
       mpn := m + n;
       if eqn(mpn, 0) then
-	 return mtx_0(0, 0);
+         return mtx_0(0, 0);
       res := mtx_0(mpn, mpn);
       cfl := sf_coeffs(f, x);
       cgl := sf_coeffs(g, x);
       for j := 1 : n do
-	 for k := j : j + m do
-  	    mtx_put(res, j, k, nth(cfl, 1+(k-j)));
+         for k := j : j + m do
+            mtx_put(res, j, k, nth(cfl, 1+(k-j)));
       for j := n+1 : mpn do
-	 for k := j-n : j do
-  	    mtx_put(res, j, k, nth(cgl, 1+(k-(j-n))));
+         for k := j-n : j do
+            mtx_put(res, j, k, nth(cgl, 1+(k-(j-n))));
       return res
    end;
 
@@ -493,14 +493,14 @@ procedure ofsf_projset1(transfn, projopfn, aa, varl, polyoflevelfn, unionfn);
       r := length varl;
       pp := apply(transfn, {aa});
       for j := r step -1 until 2 do <<
-	 cvar := nth(varl, j);
-	 if ofsf_cadverbosep() then <<
-	    ioto_tprin2 {"+ projection F", j, " -> F", j-1};
-	    ioto_tprin2t {"+ variable: ", cvar}
-	 >>;
-	 ppj := apply(polyoflevelfn, {pp, cvar});
-	 w := apply(transfn, {apply(projopfn, {ppj, cvar, j})});
-	 pp := apply(unionfn, {pp, w})
+         cvar := nth(varl, j);
+         if ofsf_cadverbosep() then <<
+            ioto_tprin2 {"+ projection F", j, " -> F", j-1};
+            ioto_tprin2t {"+ variable: ", cvar}
+         >>;
+         ppj := apply(polyoflevelfn, {pp, cvar});
+         w := apply(transfn, {apply(projopfn, {ppj, cvar, j})});
+         pp := apply(unionfn, {pp, w})
       >>;
       return pp
    end;
@@ -510,15 +510,15 @@ procedure ofsf_projsetgen(transfn, projopfn, aa, varl, theo);
       r := length varl;
       pp := apply(transfn, {aa});
       for j := r step -1 until 2 do <<
-	 cvar := nth(varl, j);
-	 if ofsf_cadverbosep() then <<
-	    ioto_tprin2 {"+ genprojection F", j, " -> F", j-1};
-	    ioto_prin2t {", variable: ", nth(varl, j)}
-	 >>;
-	 ppj := ofsf_polyoflevel(pp, cvar);
-	 pp_theo := apply(projopfn, {ppj, cvar, j, theo});
-	 pp := union(apply(transfn, {car pp_theo}), pp);
-	 theo := union(cdr pp_theo, theo)
+         cvar := nth(varl, j);
+         if ofsf_cadverbosep() then <<
+            ioto_tprin2 {"+ genprojection F", j, " -> F", j-1};
+            ioto_prin2t {", variable: ", nth(varl, j)}
+         >>;
+         ppj := ofsf_polyoflevel(pp, cvar);
+         pp_theo := apply(projopfn, {ppj, cvar, j, theo});
+         pp := union(apply(transfn, {car pp_theo}), pp);
+         theo := union(cdr pp_theo, theo)
       >>;
       return pp . theo
    end;
@@ -526,7 +526,7 @@ procedure ofsf_projsetgen(transfn, projopfn, aa, varl, theo);
 asserted procedure ofsf_polyoflevel(aa: SFList, x: Kernel): SFList;
    for each f in aa join
       if sfto_mvartest(f, x) then
-	 {f};
+         {f};
 
 asserted procedure ofsf_transfac(pp: SFList): SFList;
    % Factorization transformation.
@@ -558,14 +558,14 @@ asserted procedure ofsf_projco2v(aa: SFList, x: Kernel): SFList;
    begin scalar ll, dd, rr, resl;
       ll := ofsf_projlcsll({aa}, x);
       dd := for each a in aa join
-	 if sfto_vardeg(a, x) >= 2 then
-	    {sf_discriminant(a, x)};
+         if sfto_vardeg(a, x) >= 2 then
+            {sf_discriminant(a, x)};
       rr := for each a1 on aa join
-	 for each a2 in cdr aa collect
-	    sfto_resf(car a1, a2, x);
+         for each a2 in cdr aa collect
+            sfto_resf(car a1, a2, x);
       resl := lto_list2set lto_remove('domainp, union(union(ll, dd), rr));
       if ofsf_cadverbosep() then
-	 ioto_prin2 {"(projco2v ", length resl, ")"};
+         ioto_prin2 {"(projco2v ", length resl, ")"};
       return resl
    end;
 
@@ -574,13 +574,13 @@ asserted procedure ofsf_projmc(aa: SFList, x: Kernel): SFList;
    begin scalar ll, dd, rr, resl;
       ll := ofsf_projmccoeffs(aa, x);
       dd := for each a in aa collect
-	 sf_discriminant(a, x);
+         sf_discriminant(a, x);
       rr := for each a1 on aa join
-	 for each a2 in cdr aa collect
-	    sfto_resf(car a1, a2, x);
+         for each a2 in cdr aa collect
+            sfto_resf(car a1, a2, x);
       resl := lto_list2set lto_remove('domainp, union(union(ll, dd), rr));
       if ofsf_cadverbosep() then
-	 ioto_prin2 {"(projmc ", length resl, ")"};
+         ioto_prin2 {"(projmc ", length resl, ")"};
       return resl
    end;
 
@@ -589,13 +589,13 @@ asserted procedure ofsf_projmcgen(aa: SFList, x: Kernel, theo: List): List;
    begin scalar ll, dd, rr, resl;
       ll . theo := ofsf_projmccoeffsgen(aa, x, theo);
       dd := for each a in aa collect
-	 sf_discriminant(a, x);
+         sf_discriminant(a, x);
       rr := for each a1 on aa join
-	 for each a2 in cdr aa collect
-	    sfto_resf(car a1, a2, x);
+         for each a2 in cdr aa collect
+            sfto_resf(car a1, a2, x);
       resl := lto_list2set lto_remove('domainp, union(union(ll, dd), rr));
       if ofsf_cadverbosep() then
-	 ioto_prin2 {"(projmcgen ", length resl, ")"};
+         ioto_prin2 {"(projmcgen ", length resl, ")"};
       return resl . theo
    end;
 
@@ -603,7 +603,7 @@ asserted procedure ofsf_projcoho(aa: SFList, x: Kernel): SFList;
    % Collin's projection operator with Hong's improvement to S2.
    begin scalar bll, ll, ss1, ss2, resl;
       if ofsf_cadverbosep() then
-	 ioto_prin2 "(projcoho ";
+         ioto_prin2 "(projcoho ";
       bll := ofsf_projcored(aa, x);
       % TODO: Understand when is a call to lto_list2set really needed. Originally it
       % was used only for [ss2] here and in ofsf_projcohogen, as well.
@@ -612,7 +612,7 @@ asserted procedure ofsf_projcoho(aa: SFList, x: Kernel): SFList;
       ss2 := lto_list2set ofsf_projhoss2(bll, x);
       resl := union(union(ll, ss1), ss2);
       if ofsf_cadverbosep() then
-	 ioto_prin2 {" ", length resl, ")"};
+         ioto_prin2 {" ", length resl, ")"};
       return resl
    end;
 
@@ -621,7 +621,7 @@ asserted procedure ofsf_projcohogen(aa: SFList, x: Kernel, theo: List): DottedPa
    % version.
    begin scalar bll, ll, ss1, ss2, resl;
       if ofsf_cadverbosep() then
-	 ioto_prin2 "(projcohogen ";
+         ioto_prin2 "(projcohogen ";
       bll . theo := ofsf_projcoredgen(aa, x, theo);
       ll := lto_list2set ofsf_projlcsll(bll, x);
       ss1 . theo := ofsf_projcoss1gen(bll, x, theo);
@@ -630,7 +630,7 @@ asserted procedure ofsf_projcohogen(aa: SFList, x: Kernel, theo: List): DottedPa
       ss2 := lto_list2set ss2;
       resl := union(union(ll, ss1), ss2);
       if ofsf_cadverbosep() then
-	 ioto_prin2 {" ", length resl, ")"};
+         ioto_prin2 {" ", length resl, ")"};
       return resl . theo
    end;
 
@@ -639,16 +639,16 @@ asserted procedure ofsf_projcored(aa: SFList, x: Kernel): List;
    % list of lists of SF.
    begin scalar w, resll; integer c;
       for each f in aa do <<
-   	 w := ofsf_projcored1(f, x);
-	 w := ofsf_defpdel(w, nil);
-	 if w then
-	    push(w, resll)
+         w := ofsf_projcored1(f, x);
+         w := ofsf_defpdel(w, nil);
+         if w then
+            push(w, resll)
       >>;
       resll := reversip resll;
       if ofsf_cadverbosep() then <<
-	 c := for each l in resll sum
-	    length l;
-   	 ioto_prin2 {"(red ", c, ")"}
+         c := for each l in resll sum
+            length l;
+         ioto_prin2 {"(red ", c, ")"}
       >>;
       return resll
    end;
@@ -663,21 +663,21 @@ asserted procedure ofsf_projcored1(f: SF, x: Kernel): SFList;
    begin scalar lcf, finished, resl, ltheo;
       assert(sfto_mvartest(f, x));
       repeat <<
-	 if sfto_mvartest(f, x) then <<
-	    lcf := lc f;
-	    if ofsf_surep(ofsf_0mk2('neq, lcf), ltheo) then <<
-	       finished := t;
-	       push(f, resl)
-	    >> else if not ofsf_surep(ofsf_0mk2('equal, lcf), ltheo) then <<
-	       push(f, resl);
-	       push(ofsf_0mk2('equal, lcf), ltheo)
-	    >>;
-	    f := red f
-      	 >> else <<
-	    finished := t;
-	    if not ofsf_surep(ofsf_0mk2('equal, f), ltheo) then
-	       push(f, resl)
-	 >>
+         if sfto_mvartest(f, x) then <<
+            lcf := lc f;
+            if ofsf_surep(ofsf_0mk2('neq, lcf), ltheo) then <<
+               finished := t;
+               push(f, resl)
+            >> else if not ofsf_surep(ofsf_0mk2('equal, lcf), ltheo) then <<
+               push(f, resl);
+               push(ofsf_0mk2('equal, lcf), ltheo)
+            >>;
+            f := red f
+         >> else <<
+            finished := t;
+            if not ofsf_surep(ofsf_0mk2('equal, f), ltheo) then
+               push(f, resl)
+         >>
       >> until finished;
       return reversip resl  % natural order of redukta
    end;
@@ -687,16 +687,16 @@ asserted procedure ofsf_projcoredgen(aa: SFList, x: Kernel, theo: List): DottedP
    % version. Returns a DottedPair of the form List of List of SF . theory.
    begin scalar w, resll; integer c;
       for each f in aa do <<
-	 w . theo := ofsf_projcoredgen1(f, x, theo);
-	 w := ofsf_defpdel(w, theo);
-	 if w then
-	    push(w, resll)
+         w . theo := ofsf_projcoredgen1(f, x, theo);
+         w := ofsf_defpdel(w, theo);
+         if w then
+            push(w, resll)
       >>;
       resll := reversip resll;
       if ofsf_cadverbosep() then <<
-	 c := for each l in resll sum
-	    length l;
-	 ioto_prin2 {"(redgen ", c, ")"}
+         c := for each l in resll sum
+            length l;
+         ioto_prin2 {"(redgen ", c, ")"}
       >>;
       return resll . theo
    end;
@@ -707,26 +707,26 @@ asserted procedure ofsf_projcoredgen1(f: SF, x: Kernel, theo: List): DottedPair;
    begin scalar ctheo, ltheo, lcf, finished, resl;
       assert(sfto_mvartest(f, x));
       repeat <<
-	 ctheo := append(theo, ltheo);
-	 if sfto_mvartest(f, x) then <<
-	    lcf := lc f;
-	    if ofsf_surep(ofsf_0mk2('neq, lcf), ctheo) then <<
-	       finished := t;
-	       push(f, resl)
-	    >> else if not ofsf_surep(ofsf_0mk2('equal, lcf), ctheo) then <<
-	       if ofsf_cadvalassp(ofsf_cadbvl!*, lcf) then <<
-	       	  finished := t;
-	       	  push(ofsf_0mk2('neq, lcf), theo)
-	       >> else
-		  push(ofsf_0mk2('equal, lcf), ltheo);
-	       push(f, resl)
-	    >>;
-	    f := red f
-	 >> else <<
-	    finished := t;
-	    if not ofsf_surep(ofsf_0mk2('equal, f), ctheo) then
-	       push(f, resl)
-	 >>
+         ctheo := append(theo, ltheo);
+         if sfto_mvartest(f, x) then <<
+            lcf := lc f;
+            if ofsf_surep(ofsf_0mk2('neq, lcf), ctheo) then <<
+               finished := t;
+               push(f, resl)
+            >> else if not ofsf_surep(ofsf_0mk2('equal, lcf), ctheo) then <<
+               if ofsf_cadvalassp(ofsf_cadbvl!*, lcf) then <<
+                  finished := t;
+                  push(ofsf_0mk2('neq, lcf), theo)
+               >> else
+                  push(ofsf_0mk2('equal, lcf), ltheo);
+               push(f, resl)
+            >>;
+            f := red f
+         >> else <<
+            finished := t;
+            if not ofsf_surep(ofsf_0mk2('equal, f), ctheo) then
+               push(f, resl)
+         >>
       >> until finished;
       return reversip resl . theo  % natural order of redukta
    end;
@@ -735,13 +735,13 @@ asserted procedure ofsf_projcoss1(bll: List, x: Kernel): SFList;
    % Collins' projection set S1(bll). [bll] is a List of List of SF.
    begin scalar w, resl;
       for each bl in bll do <<
-	 w := for each f in bl join
-	    sf_pscs(f, sf_diff(f, x), x);
-	 w := ofsf_defpdel(w, nil);
-	 resl := append(resl, w)
+         w := for each f in bl join
+            sf_pscs(f, sf_diff(f, x), x);
+         w := ofsf_defpdel(w, nil);
+         resl := append(resl, w)
       >>;
       if ofsf_cadverbosep() then
-	 ioto_prin2 {"(S1 ", length resl, ")"};
+         ioto_prin2 {"(S1 ", length resl, ")"};
       return resl
    end;
 
@@ -749,17 +749,17 @@ asserted procedure ofsf_projcoss1gen(bll: List, x: Kernel, theo: List): DottedPa
    % Collins' projection set S1(bll); generic version. [bll] is a List of List of SF.
    begin scalar w, pscs, resl;
       if ofsf_cadverbosep() then
-	 ioto_prin2 "(S1gen ";
+         ioto_prin2 "(S1gen ";
       for each bl in bll do <<
-	 w := for each f in bl join <<
-	    pscs . theo := sf_pscsgen(f, sf_diff(f, x), x, theo);
-	    pscs
-	 >>;
-	 w := ofsf_defpdel(w, theo);
-	 resl := append(resl, w)
+         w := for each f in bl join <<
+            pscs . theo := sf_pscsgen(f, sf_diff(f, x), x, theo);
+            pscs
+         >>;
+         w := ofsf_defpdel(w, theo);
+         resl := append(resl, w)
       >>;
       if ofsf_cadverbosep() then
-	 ioto_prin2 {length resl, ")"};
+         ioto_prin2 {length resl, ")"};
       return resl . theo
    end;
 
@@ -767,15 +767,15 @@ asserted procedure ofsf_projhoss2(bll: List, x: Kernel): SFList;
    % Hong's projection set S2(bll). [bll] is a List of List of SF.
    begin scalar bl, w, resl, redll;
       while bll do <<
-	 bl := pop bll;
-	 w := for each f in bl join
-	    for each tmp in bll join
-	       sf_pscs(f, car tmp, x);
-	 w := ofsf_defpdel(w, nil);
-	 resl := append(resl, w)
+         bl := pop bll;
+         w := for each f in bl join
+            for each tmp in bll join
+               sf_pscs(f, car tmp, x);
+         w := ofsf_defpdel(w, nil);
+         resl := append(resl, w)
       >>;
       if ofsf_cadverbosep() then
-	 ioto_prin2 {"(S2 ", length resl, ")"};
+         ioto_prin2 {"(S2 ", length resl, ")"};
       return resl
    end;
 
@@ -784,19 +784,19 @@ asserted procedure ofsf_projhoss2gen(bll: List, x: Kernel, theo: List): DottedPa
    % SF.
    begin scalar bl, w, pscs, resl;
       if ofsf_cadverbosep() then
-	 ioto_prin2 "(S2gen ";
+         ioto_prin2 "(S2gen ";
       while bll do <<
-	 bl := pop bll;
-	 w := for each f in bl join
-	    for each tmp in bll join <<
-	       pscs . theo := sf_pscsgen(f, car tmp, x, theo);
-	       pscs
-	    >>;
-	 w := ofsf_defpdel(w, theo);
-	 resl := append(resl, w)
+         bl := pop bll;
+         w := for each f in bl join
+            for each tmp in bll join <<
+               pscs . theo := sf_pscsgen(f, car tmp, x, theo);
+               pscs
+            >>;
+         w := ofsf_defpdel(w, theo);
+         resl := append(resl, w)
       >>;
       if ofsf_cadverbosep() then
-	 ioto_prin2 {length resl, ")"};
+         ioto_prin2 {length resl, ")"};
       return resl . theo
    end;
 
@@ -804,13 +804,13 @@ asserted procedure ofsf_projlcsll(bll: List, x: Kernel): SFList;
    % Leading coefficients of [bll]. [bll] is a list of lists of SF.
    begin scalar w, resl;
       for each bl in bll do <<
-	 w := for each f in bl collect
-	    sf_lc(f, x);
-	 w := ofsf_defpdel(w, nil);
-	 resl := append(resl, w)
+         w := for each f in bl collect
+            sf_lc(f, x);
+         w := ofsf_defpdel(w, nil);
+         resl := append(resl, w)
       >>;
       if ofsf_cadverbosep() then
-	 ioto_prin2 {"(lcs ", length resl, ")"};
+         ioto_prin2 {"(lcs ", length resl, ")"};
       return resl
    end;
 
@@ -818,10 +818,10 @@ asserted procedure ofsf_projmccoeffs(aa: SFList, x: Kernel): SFList;
    % McCallum's projection set of coefficients for a list of polynomials.
    begin scalar resl;
       resl := for each f in aa join
-	 ofsf_projmccoeffs1(f, x);
+         ofsf_projmccoeffs1(f, x);
       resl := ofsf_defpdel(resl, nil);
       if ofsf_cadverbosep() then
-	 ioto_prin2 {"(coeffs ", length resl, ")"};
+         ioto_prin2 {"(coeffs ", length resl, ")"};
       return resl
    end;
 
@@ -830,20 +830,20 @@ asserted procedure ofsf_projmccoeffs1(f: SF, x: Kernel): SFList;
    begin scalar lcf, finished, resl, ltheo;
       assert(sfto_mvartest(f, x));
       repeat <<
-	 if sfto_mvartest(f, x) then <<
-	    lcf := lc f;
-	    if ofsf_surep(ofsf_0mk2('neq, lcf), ltheo) then
-	       finished := t
-	    else if not ofsf_surep(ofsf_0mk2('equal, lcf), ltheo) then <<
-	       push(lcf, resl);
-	       push(ofsf_0mk2('equal, lcf), ltheo)
-	    >>;
-	    f := red f;
-	 >> else <<
-	    finished := t;
-	    if not ofsf_surep(ofsf_0mk2('equal, f), ltheo) then
-	       push(f, resl)
-	 >>
+         if sfto_mvartest(f, x) then <<
+            lcf := lc f;
+            if ofsf_surep(ofsf_0mk2('neq, lcf), ltheo) then
+               finished := t
+            else if not ofsf_surep(ofsf_0mk2('equal, lcf), ltheo) then <<
+               push(lcf, resl);
+               push(ofsf_0mk2('equal, lcf), ltheo)
+            >>;
+            f := red f;
+         >> else <<
+            finished := t;
+            if not ofsf_surep(ofsf_0mk2('equal, f), ltheo) then
+               push(f, resl)
+         >>
       >> until finished;
       return reversip resl  % natural order of coefficients
    end;
@@ -853,12 +853,12 @@ asserted procedure ofsf_projmccoeffsgen(aa: SFList, x: Kernel, theo: List): Dott
    % generic version.
    begin scalar resl, w;
       resl := for each f in aa join <<
-	 w . theo := ofsf_projmccoeffsgen1(f, x, theo);
-      	 w
+         w . theo := ofsf_projmccoeffsgen1(f, x, theo);
+         w
       >>;
       resl := ofsf_defpdel(resl, theo);
       if ofsf_cadverbosep() then
-	 ioto_prin2 {"(coeffsgen ", length resl, ")"};
+         ioto_prin2 {"(coeffsgen ", length resl, ")"};
       return resl . theo
    end;
 
@@ -868,25 +868,25 @@ asserted procedure ofsf_projmccoeffsgen1(f: SF, x: Kernel, theo: List): SFList;
    begin scalar ctheo, ltheo, lcf, finished, resl;
       assert(sfto_mvartest(f, x));
       repeat <<
-	 ctheo := append(theo, ltheo);
-	 if sfto_mvartest(f, x) then <<
-	    lcf := lc f;
-	    if ofsf_surep(ofsf_0mk2('neq, lcf), ctheo) then
-	       finished := t
-	    else if not ofsf_surep(ofsf_0mk2('equal, lcf), ctheo) then
-	       if ofsf_cadvalassp(ofsf_cadbvl!*, lcf) then <<
-		  finished := t;
-	       	  push(ofsf_0mk2('neq, lcf), theo)
-	       >> else <<
-		  push(lcf, resl);
-	       	  push(ofsf_0mk2('equal, lcf), ltheo)
-	       >>;
-	    f := red f
-	 >> else <<
-	    finished := t;
-	    if not ofsf_surep(ofsf_0mk2('equal, f), ltheo) then
-	       push(f, resl)
-	 >>
+         ctheo := append(theo, ltheo);
+         if sfto_mvartest(f, x) then <<
+            lcf := lc f;
+            if ofsf_surep(ofsf_0mk2('neq, lcf), ctheo) then
+               finished := t
+            else if not ofsf_surep(ofsf_0mk2('equal, lcf), ctheo) then
+               if ofsf_cadvalassp(ofsf_cadbvl!*, lcf) then <<
+                  finished := t;
+                  push(ofsf_0mk2('neq, lcf), theo)
+               >> else <<
+                  push(lcf, resl);
+                  push(ofsf_0mk2('equal, lcf), ltheo)
+               >>;
+            f := red f
+         >> else <<
+            finished := t;
+            if not ofsf_surep(ofsf_0mk2('equal, f), ltheo) then
+               push(f, resl)
+         >>
       >> until finished;
       return reversip resl . theo  % natural order of coefficients
    end;
@@ -896,11 +896,11 @@ asserted procedure ofsf_defpdel(l: SFList, theo: List): SFList;
    % proved to be non-zero w.r.t. [theo] by ofsf_surep.
    for each f in l join
       if not ofsf_surep(ofsf_0mk2('neq, f), theo) then
-	 {f}
+         {f}
       else <<
-	 if ofsf_cadverbosep() then
-	    ioto_prin2 "*";
-	 nil
+         if ofsf_cadverbosep() then
+            ioto_prin2 "*";
+         nil
       >>;
 
 asserted procedure ofsf_cadvalassp(bvl: KernelList, f: SF): Boolean;

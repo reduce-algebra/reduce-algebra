@@ -38,18 +38,18 @@ procedure talp_smupdknowl(op,atl,knowl,n);
    % negation of all knowledge in [atl] is added to [knowl].
    begin scalar at;
       while atl do <<
-	 at := car atl;
-	 atl := cdr atl;
-      	 knowl := talp_smupdknowl1(op,at,knowl,n);
-	 if knowl eq 'false then <<
-	    atl := nil;
-	    at := 'break
-	 >>
+         at := car atl;
+         atl := cdr atl;
+         knowl := talp_smupdknowl1(op,at,knowl,n);
+         if knowl eq 'false then <<
+            atl := nil;
+            at := 'break
+         >>
       >>;
       if at eq 'break then
-	 return 'false
+         return 'false
       else
-      	 return knowl
+         return knowl
    end;
 
 procedure talp_smupdknowl1(op,at,knowl,n);
@@ -62,18 +62,18 @@ procedure talp_smupdknowl1(op,at,knowl,n);
    % added to [knowl].
    begin scalar ent,contra;
       if op eq 'or then <<
-      	 ent := rl_negateat at;
-      	 contra := at;
+         ent := rl_negateat at;
+         contra := at;
       >> else <<
-      	 ent := at;
-      	 contra := rl_negateat at;
+         ent := at;
+         contra := rl_negateat at;
       >>;
       if assoc(contra,knowl) then
-	 return 'false;
+         return 'false;
       if talp_chkknowl(ent,knowl) then
-	 return 'false;
+         return 'false;
       if assoc(ent,knowl) then
-	 return knowl;
+         return knowl;
       return knowl := (ent . n) . knowl
    end;
 
@@ -83,31 +83,31 @@ procedure talp_chkknowl(atf,knowl);
    % Returns true if [knowl] and [atf] are contradictory.
    begin scalar invt,fs,tvar,stop,at,atop,tmp,result;
       if talp_candp atf then <<
-      	 invt := if atom talp_arg2l atf then <<
-	    tvar := talp_arg2l atf;
-	    talp_arg2r atf
-      	 >> else <<
-	    tvar := talp_arg2r atf;
-	    talp_arg2l atf
-      	 >>;
-      	 fs := talp_invf invt;
-	 atop := talp_op atf;
-	 tmp := knowl;
-	 while tmp and not stop do <<
-	    at := caar tmp;
-	    if talp_candp at then <<
-	       invt := if talp_invp talp_arg2l at then
-	       	  talp_arg2l at
-	       else talp_arg2r at;
-       	       if talp_invarg invt eq tvar then
-	       	  if rl_op at eq atop and atop eq 'neq then
-		     if talp_invf invt neq fs then <<
-		    	result := 'true;
-		    	stop := t
-	 	     >>
-	    >>;
-	    tmp := cdr tmp
-	 >>;
+         invt := if atom talp_arg2l atf then <<
+            tvar := talp_arg2l atf;
+            talp_arg2r atf
+         >> else <<
+            tvar := talp_arg2r atf;
+            talp_arg2l atf
+         >>;
+         fs := talp_invf invt;
+         atop := talp_op atf;
+         tmp := knowl;
+         while tmp and not stop do <<
+            at := caar tmp;
+            if talp_candp at then <<
+               invt := if talp_invp talp_arg2l at then
+                  talp_arg2l at
+               else talp_arg2r at;
+               if talp_invarg invt eq tvar then
+                  if rl_op at eq atop and atop eq 'neq then
+                     if talp_invf invt neq fs then <<
+                        result := 'true;
+                        stop := t
+                     >>
+            >>;
+            tmp := cdr tmp
+         >>;
       >> else return nil;
       return result
    end;
@@ -136,12 +136,12 @@ procedure talp_try1(f);
       if rl_tvalp tmp or talp_atfp tmp then return tmp;
       op := talp_op tmp;
       return if op eq 'or then
-      	 cl_simpl(cl_nnfnot talp_try2( 'and .
-	    for each sf in talp_argl tmp collect
-	       talp_try1 cl_nnfnot sf),nil,-1)
+         cl_simpl(cl_nnfnot talp_try2( 'and .
+            for each sf in talp_argl tmp collect
+               talp_try1 cl_nnfnot sf),nil,-1)
       else if op eq 'and then
-	 cl_simpl(talp_try2( op .
-	    for each sf in talp_argl tmp collect talp_try1 sf),nil,-1)
+         cl_simpl(talp_try2( op .
+            for each sf in talp_argl tmp collect talp_try1 sf),nil,-1)
       else cl_simpl(op . rl_var tmp . {talp_try1(rl_mat tmp)},nil,-1)
    end;
 
@@ -160,35 +160,35 @@ procedure talp_try3(f,vars);
       if rl_tvalp f or talp_atfp f then return f;
       res := f;
       if rl_op res eq 'and then
-	 for each subf in talp_argl res do
-	    if null atom subf and talp_op subf eq 'equal then <<
-	       lhs := talp_arg2l subf;
-	       rhs := talp_arg2r subf;
-	       for each x in vars do <<
-		  if atom lhs and talp_contains(rhs,x) or
-		     talp_td lhs < talp_td rhs then contrvar := t;
-		  if atom rhs and talp_contains(lhs,x) or
-		     talp_td rhs < talp_td lhs then contlvar := t
-	       >>;
-	       if contlvar then <<
-		  equs := subf . equs;
-		  subpairs := (talp_arg2l subf . talp_arg2r subf) . subpairs
-	       >>;
-	       if contrvar then <<
-		  equs := subf . equs;
-		  subpairs := (talp_arg2r subf . talp_arg2l subf) . subpairs
-	       >>;
-	       contlvar := nil;
-	       contrvar := nil;
-	    >>;
+         for each subf in talp_argl res do
+            if null atom subf and talp_op subf eq 'equal then <<
+               lhs := talp_arg2l subf;
+               rhs := talp_arg2r subf;
+               for each x in vars do <<
+                  if atom lhs and talp_contains(rhs,x) or
+                     talp_td lhs < talp_td rhs then contrvar := t;
+                  if atom rhs and talp_contains(lhs,x) or
+                     talp_td rhs < talp_td lhs then contlvar := t
+               >>;
+               if contlvar then <<
+                  equs := subf . equs;
+                  subpairs := (talp_arg2l subf . talp_arg2r subf) . subpairs
+               >>;
+               if contrvar then <<
+                  equs := subf . equs;
+                  subpairs := (talp_arg2r subf . talp_arg2l subf) . subpairs
+               >>;
+               contlvar := nil;
+               contrvar := nil;
+            >>;
       if subpairs then <<
-	 extobj := talp_extlftrs(subpairs,equs,vars);
-	 subpairs := car extobj;
-	 equs := cdr extobj;
+         extobj := talp_extlftrs(subpairs,equs,vars);
+         subpairs := car extobj;
+         equs := cdr extobj;
       >>;
       return if subpairs then
-	 (if cdr x then talp_try1 car x else car x)
-	    where x=talp_chsbstres(res,subpairs,equs)
+         (if cdr x then talp_try1 car x else car x)
+            where x=talp_chsbstres(res,subpairs,equs)
       else talp_rnf res
    end;
 
@@ -202,7 +202,7 @@ procedure talp_specsub(p,f);
       if talp_atfp f then return talp_specsubat(car p,cdr p,f);
       op := talp_op f;
       res := op . for each subf in talp_argl f collect
-	 talp_specsub(p,subf);
+         talp_specsub(p,subf);
       return res
    end;
 
@@ -223,7 +223,7 @@ procedure talp_specsubt(old,new,term);
       if atom term then return if term eq old then new else term;
       if talp_eqtp(old,term) then return new;
       tmp := car term . for each elem in cdr term collect
-	 talp_specsubt(old,new,elem);
+         talp_specsubt(old,new,elem);
       return tmp
    end;
 
@@ -248,32 +248,32 @@ procedure talp_chsbstres(f,lst,equs);
       maxd := talp_maxd f;
       sumd := talp_sumd f;
       while lst and not stop do <<
-	 curr := talp_mkn('and, car equs . {talp_specsub(car lst,f)});
-	 curr := talp_rnf curr;
-	 equs := cdr equs;
-	 lst := cdr lst;
-	 if rl_tvalp curr then <<
-	    stop := t;
-	    chosen := curr
-	 >> else <<
-	    currsum := talp_sumd curr;
-	    if currsum < sumd then <<
-	       chosen := curr;
-	       sumd := currsum
-	    >> else if currsum = sumd then <<
-	       currdepth := talp_maxd curr;
-	       if currdepth < maxd then <<
-		  chosen := curr;
-		  maxd := currdepth
-	       >> else if currdepth = maxd then <<
-	       	  curratnum := talp_atnum curr;
-	       	  if curratnum < atnum then <<
-		     chosen := curr;
-		     atnum := curratnum
-	       	  >>
-	       >>
-	    >>
-	 >>
+         curr := talp_mkn('and, car equs . {talp_specsub(car lst,f)});
+         curr := talp_rnf curr;
+         equs := cdr equs;
+         lst := cdr lst;
+         if rl_tvalp curr then <<
+            stop := t;
+            chosen := curr
+         >> else <<
+            currsum := talp_sumd curr;
+            if currsum < sumd then <<
+               chosen := curr;
+               sumd := currsum
+            >> else if currsum = sumd then <<
+               currdepth := talp_maxd curr;
+               if currdepth < maxd then <<
+                  chosen := curr;
+                  maxd := currdepth
+               >> else if currdepth = maxd then <<
+                  curratnum := talp_atnum curr;
+                  if curratnum < atnum then <<
+                     chosen := curr;
+                     atnum := curratnum
+                  >>
+               >>
+            >>
+         >>
       >>;
       return if chosen then chosen . t else f . nil
    end;
@@ -288,18 +288,18 @@ procedure talp_extlftrs(subl,eql,fvars);
    % the given pairs via transitivity.
    begin scalar pw2v,rst,newsubl,neweql,transl;
       for each pair in subl do
-	 if car pair memq fvars and cdr pair memq fvars then
-	    pw2v := pair . pw2v
-	 else rst := pair . rst;
+         if car pair memq fvars and cdr pair memq fvars then
+            pw2v := pair . pw2v
+         else rst := pair . rst;
       if not (pw2v and rst) then return subl . eql;
       newsubl := subl;
       neweql := eql;
       for each pair in rst do <<
-	 transl := talp_gettransl(car pair,pw2v,nil);
-	 for each elem in transl do <<
-	    newsubl := (elem . cdr pair) . newsubl;
-	    neweql := talp_simpat(talp_mk2('equal,elem,cdr pair)) . neweql
-	 >>
+         transl := talp_gettransl(car pair,pw2v,nil);
+         for each elem in transl do <<
+            newsubl := (elem . cdr pair) . newsubl;
+            neweql := talp_simpat(talp_mk2('equal,elem,cdr pair)) . neweql
+         >>
       >>;
       return newsubl . neweql
    end;
@@ -311,15 +311,15 @@ procedure talp_gettransl(var,pl,result);
    % substitution list has to be extended.
    begin scalar varl,newpl;
       for each x in pl do
-	 if car x eq var then varl := x . varl;
+         if car x eq var then varl := x . varl;
       for each x in varl do
-	 if cdr x neq var and not (cdr x memq result) then
-	    result := cdr x . result;
+         if cdr x neq var and not (cdr x memq result) then
+            result := cdr x . result;
       if varl then for each x in pl do
-	 if not talp_ctns(x,varl) then
-	    newpl := x . newpl;
+         if not talp_ctns(x,varl) then
+            newpl := x . newpl;
       return if newpl then
-	 talp_gettransl(caar newpl,newpl,result)
+         talp_gettransl(caar newpl,newpl,result)
       else result
    end;
 
@@ -330,8 +330,8 @@ procedure talp_sumd(f);
       if atom f then return 0;
       tmp := rl_atl f;
       while tmp do <<
-	 sd := sd + talp_td talp_arg2l car tmp + talp_td talp_arg2r car tmp;
-	 tmp := cdr tmp;
+         sd := sd + talp_td talp_arg2l car tmp + talp_td talp_arg2r car tmp;
+         tmp := cdr tmp;
       >>;
       return sd
    end;
@@ -342,9 +342,9 @@ procedure talp_ctns(pair,pairl);
    % contains [pair].
    begin scalar found;
       while pairl and not found do
-	 if caar pairl eq car pair and cdar pairl eq cdr pair then
-	    found := t
-	 else pairl := cdr pairl;
+         if caar pairl eq car pair and cdar pairl eq cdr pair then
+            found := t
+         else pairl := cdr pairl;
       return found
    end;
 
@@ -359,10 +359,10 @@ procedure talp_lssimpl(f);
       if atom f or talp_atfp f then return f;
       op := talp_op f;
       if op eq 'or or op eq 'and then
-      	 return talp_rnf talp_lssimpl1( op .
-	    for each sf in talp_argl f collect talp_lssimpl sf)
+         return talp_rnf talp_lssimpl1( op .
+            for each sf in talp_argl f collect talp_lssimpl sf)
       else if op memq '(ex all) then
-	 return talp_rnf (op . rl_var f . {talp_lssimpl(rl_mat f)})
+         return talp_rnf (op . rl_var f . {talp_lssimpl(rl_mat f)})
    end;
 
 procedure talp_lssimpl1(f);
@@ -371,24 +371,24 @@ procedure talp_lssimpl1(f);
    begin scalar tmp,tmp2,knowl,op;
       op := rl_op f;
       for each subf in f do
-	 if talp_atfp subf then
-	    if talp_candp subf then knowl := subf . knowl;
+         if talp_atfp subf then
+            if talp_candp subf then knowl := subf . knowl;
       tmp := talp_op f . for each subf in talp_argl f collect <<
-	 if rl_tvalp subf then
-	    subf
-	 else if talp_atfp subf then
-	    if talp_candp subf then
-	       talp_tcandt(subf,knowl,op)
-	    else subf
-	 else <<
-	    tmp2 := talp_lssimpl1 subf;
-	    if talp_atfp tmp2 then
-	       if talp_candp tmp2 then <<
-		  knowl := tmp2 . knowl;
-	       	  talp_tcandt(tmp2,knowl,op)
-	       >> else tmp2
-	    else tmp2
-	 >>
+         if rl_tvalp subf then
+            subf
+         else if talp_atfp subf then
+            if talp_candp subf then
+               talp_tcandt(subf,knowl,op)
+            else subf
+         else <<
+            tmp2 := talp_lssimpl1 subf;
+            if talp_atfp tmp2 then
+               if talp_candp tmp2 then <<
+                  knowl := tmp2 . knowl;
+                  talp_tcandt(tmp2,knowl,op)
+               >> else tmp2
+            else tmp2
+         >>
       >>;
       return talp_rnf tmp
    end;
@@ -403,13 +403,13 @@ procedure talp_candp(atf);
       rhs := talp_arg2r atf;
       if atom lhs and atom rhs then return nil;
       if atom lhs then
-      	 if null talp_invp rhs then
-	    return nil
-	 else (if lhs neq talp_invarg rhs then return nil)
+         if null talp_invp rhs then
+            return nil
+         else (if lhs neq talp_invarg rhs then return nil)
       else if atom rhs then
-      	 if null talp_invp lhs then
-	    return nil
-	 else (if rhs neq talp_invarg lhs then return nil)
+         if null talp_invp lhs then
+            return nil
+         else (if rhs neq talp_invarg lhs then return nil)
       else return nil;
       return 'true
    end;
@@ -427,24 +427,24 @@ procedure talp_tcandt1(cand,cop,knowl,op);
    % subroutine.
    begin scalar invt,tvar,cfs,result,scop;
       invt := if atom talp_arg2l cand then <<
-	 tvar := talp_arg2l cand;
-	 talp_arg2r cand
+         tvar := talp_arg2l cand;
+         talp_arg2r cand
       >> else <<
-	 tvar := talp_arg2r cand;
-	 talp_arg2l cand
+         tvar := talp_arg2r cand;
+         talp_arg2l cand
       >>;
       scop := if cop eq 'equal then 'neq else 'equal;
       cfs := talp_invf invt;
       if op eq 'and then
-	 if cop eq 'equal then
-   	    if talp_testknowl(invt,tvar,cop,knowl) then
-	       result := rl_smkn('or,for each c in talp_getcts() collect
-		  talp_simpat rl_mk2('equal,tvar,c))
-	    else result := cand
-	 else result := cand
+         if cop eq 'equal then
+            if talp_testknowl(invt,tvar,cop,knowl) then
+               result := rl_smkn('or,for each c in talp_getcts() collect
+                  talp_simpat rl_mk2('equal,tvar,c))
+            else result := cand
+         else result := cand
       else if talp_testknowl(invt,tvar,cop,knowl) then
-	 result := rl_smkn('and,for each c in talp_getcts() collect
-	    talp_simpat rl_mk2('neq,tvar,c))
+         result := rl_smkn('and,for each c in talp_getcts() collect
+            talp_simpat rl_mk2('neq,tvar,c))
       else result := cand;
       return if result then result else cand
    end;
@@ -459,15 +459,15 @@ procedure talp_testknowl(term,var,atop,knowl);
       invfs := talp_getinvfts();
       invfs := delete(talp_op term,invfs);
       while tmp and invfs do <<
-	 atf := car tmp;
-	 if talp_candp atf then <<
-	    invt := if talp_invp talp_arg2l atf then
-	       talp_arg2l atf
-	    else talp_arg2r atf;
-	    if atop eq talp_op atf and talp_invarg invt eq var then
-	       invfs := delete(talp_op invt,invfs)
-	 >>;
-	 tmp := cdr tmp
+         atf := car tmp;
+         if talp_candp atf then <<
+            invt := if talp_invp talp_arg2l atf then
+               talp_arg2l atf
+            else talp_arg2r atf;
+            if atop eq talp_op atf and talp_invarg invt eq var then
+               invfs := delete(talp_op invt,invfs)
+         >>;
+         tmp := cdr tmp
       >>;
       if null invfs then return 'true;
       return nil
@@ -479,7 +479,7 @@ procedure talp_getinvfts();
    begin scalar tmp,invfset;
       tmp := setdiff(talp_getextl(),talp_getl());
       invfset := for each x in tmp join
-      	 if (talp_getinvn car x) eq 1 then {car x};
+         if (talp_getinvn car x) eq 1 then {car x};
       return invfset
    end;
 
@@ -500,15 +500,15 @@ procedure talp_invtscsimpl(f);
       f := talp_rnf f;
       if atom f then return f;
       if talp_atfp f then
-	 if talp_invtscc f then
-	    return talp_rnf talp_invtscsimplat talp_simpat f
-	 else return talp_simpat f;
+         if talp_invtscc f then
+            return talp_rnf talp_invtscsimplat talp_simpat f
+         else return talp_simpat f;
       op := talp_op f;
       if op eq 'or or op eq 'and then
-      	 return talp_rnf (
-	    op . for each sf in talp_argl f collect talp_invtscsimpl sf)
+         return talp_rnf (
+            op . for each sf in talp_argl f collect talp_invtscsimpl sf)
       else if op memq '(ex all) then
-	 return talp_rnf(op . rl_var f . {talp_invtscsimpl(rl_mat f)})
+         return talp_rnf(op . rl_var f . {talp_invtscsimpl(rl_mat f)})
    end;
 
 procedure talp_invtscsimplat(atf);
@@ -525,28 +525,28 @@ procedure talp_invtscsimplat(atf);
       fctsym := talp_invf invt;
       fctsyml := fctsym . fctsyml;
       while not (atom talp_invarg invt) do <<
-	 invt := talp_invarg invt;
-	 nextfctsym := talp_invf invt;
-	 if not memq(nextfctsym,fctsyml) then <<
-	    fctsyml := nextfctsym . fctsyml;
-	    pure := nil
-	 >>
+         invt := talp_invarg invt;
+         nextfctsym := talp_invf invt;
+         if not memq(nextfctsym,fctsyml) then <<
+            fctsyml := nextfctsym . fctsyml;
+            pure := nil
+         >>
       >>;
       len := length fctsyml;
       if pure and len > 1 then
-      	 return talp_simpat
-	    talp_mk2(op,talp_mkinv(talp_getinvfsym(fctsym,1),var),var);
+         return talp_simpat
+            talp_mk2(op,talp_mkinv(talp_getinvfsym(fctsym,1),var),var);
       res := for i:= 1 : len collect <<
-	 fctsym := car fctsyml;
-	 fctsyml := cdr fctsyml;
-	 talp_simpat talp_mk2(op,talp_mkinv(talp_getinvfsym(fctsym,1),var),var)
+         fctsym := car fctsyml;
+         fctsyml := cdr fctsyml;
+         talp_simpat talp_mk2(op,talp_mkinv(talp_getinvfsym(fctsym,1),var),var)
       >>;
       return if talp_noffcts() eq length res then
-	 talp_mkn(if op eq 'equal then 'or else 'and,
-	    for each elem in talp_getcts() collect
-	       talp_simpat talp_mk2(op,var,elem))
+         talp_mkn(if op eq 'equal then 'or else 'and,
+            for each elem in talp_getcts() collect
+               talp_simpat talp_mk2(op,var,elem))
       else if op eq 'equal then
-	 talp_mkn('and,res)
+         talp_mkn('and,res)
       else talp_mkn('or,res)
    end;
 
@@ -558,15 +558,15 @@ procedure talp_invtscc(atf);
    % nil otherwise.
    begin scalar var, invt, tmp, nof;
       if atom talp_arg2l atf then
-	 var := talp_arg2l atf
+         var := talp_arg2l atf
       else if atom talp_arg2r atf then
- 	 var := talp_arg2r atf
+         var := talp_arg2r atf
       else
- 	 return nil;
+         return nil;
       invt := if atom talp_arg2l atf then talp_arg2r atf else talp_arg2l atf;
       nof := talp_noffcts();
       if not (talp_invp invt) or
-	 not (talp_td invt > 1 or nof = 1) then return nil;
+         not (talp_td invt > 1 or nof = 1) then return nil;
       tmp := invt;
       while not (atom talp_invarg tmp) do tmp := talp_invarg tmp;
       if var neq talp_invarg tmp then return nil;
@@ -578,7 +578,7 @@ procedure talp_noffcts();
    % of function symbols in the given language.
    begin integer nof;
       for each x in talp_getl() do
-	 if cdr x > 0 then nof := nof + 1;
+         if cdr x > 0 then nof := nof + 1;
       return nof
    end;
 

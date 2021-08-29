@@ -84,8 +84,8 @@ procedure qqe_eta!-in!-term(term);
             if not atom car x then <<
                if qqe_op car x memq '(lhead rhead) then
                   eta_in := qqe_eta!-in!-term1(car x)
-               	     %else if qqe_op car x eq 'plus then
-               	     %   car x := qqe_simplterm!-plus car x;
+                     %else if qqe_op car x eq 'plus then
+                     %   car x := qqe_simplterm!-plus car x;
                else eta_in := qqe_eta!-in!-term car x;
             >>;
 
@@ -108,7 +108,7 @@ procedure qqe_simplqequal(f, sop);
    % QQE simplify atomic formula with qequal. [f] is a atomic formula
    % with qequal. Returns simplified formula.
    begin scalar lhs,rhs, varlhs, varrhs, noal, noar, notl, notr, rhsnew,
-      	 lhsnew;
+         lhsnew;
       rhs := qqe_arg2r f;
       lhs := qqe_arg2l f;
 
@@ -180,10 +180,10 @@ procedure qqe_simplterm!-add(term);
    begin scalar arg, argnew;
       arg := qqe_arg2r term;
       if atom arg then
- 	 return term;
+         return term;
       argnew := qqe_simplterm arg;
       if arg = argnew then
- 	 return term;
+         return term;
       return qqe_simplterm qqe_mk2(qqe_op term, qqe_arg2l term, argnew)
    end;
 
@@ -194,21 +194,21 @@ procedure qqe_simplterm!-tail(term);
    begin scalar arg, op, oparg, arg2rarg, argnew;
       arg := qqe_arg2l term;
       if arg eq 'qepsilon then
- 	 return 'qepsilon;
+         return 'qepsilon;
       if atom arg then
- 	 return term;
+         return term;
       op := qqe_op term;
       oparg := qqe_op arg;
       if oparg memq '(ladd radd) then <<
-	 arg2rarg := qqe_arg2r arg;
+         arg2rarg := qqe_arg2r arg;
          if arg2rarg eq 'qepsilon then
- 	    return 'qepsilon;
+            return 'qepsilon;
          if (op eq 'ltail and oparg eq 'radd) or  (op eq 'rtail and oparg eq 'ladd) then
             return arg2rarg
       >>;
       argnew := qqe_simplterm arg;
       if argnew = arg then
- 	 return term;  % !!!{op,argnew}
+         return term;  % !!!{op,argnew}
       return qqe_simplterm {op,argnew}
    end;
 
@@ -218,12 +218,12 @@ procedure qqe_simplterm!-head(term);
    begin scalar arg, argnew;
       arg := qqe_arg2l term;
       if atom arg then
- 	 return term;
+         return term;
       if qqe_op arg memq '(ladd radd) and qqe_arg2r arg eq 'qepsilon then
- 	 return qqe_arg2l arg;
+         return qqe_arg2l arg;
       argnew := qqe_simplterm arg;
       if argnew = arg then
- 	 return term;
+         return term;
       return qqe_simplterm {qqe_op term, argnew}
    end;
 

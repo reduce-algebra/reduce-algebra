@@ -42,21 +42,21 @@ procedure dcfsf_orddegf1(f,v,od);
    % order and the [cdr] is the degree wrt. [v].
    begin scalar mv,r; integer lord;
       if domainp f then
- 	 return od;
+         return od;
       mv := mvar f;
       lord := if mv eq v then
-	 0
+         0
       else if pairp mv and cadr mv eq v then
-	 caddr mv
+         caddr mv
       else
-	 -2;
+         -2;
       if lord > car od then
-	 od := lord . ldeg f
+         od := lord . ldeg f
       else if lord = car od then
-	 od := lord . max(cdr od,ldeg f);
+         od := lord . max(cdr od,ldeg f);
       r := f;
       while not domainp r and mvar r eq mv do
-	 r := red r;
+         r := red r;
       return dcfsf_orddegf1(lc f,v,dcfsf_orddegf1(r,v,od))
    end;
 
@@ -115,7 +115,7 @@ procedure dcfsf_derivationf(f,n,theo);
    begin scalar r;
       r := f;
       for i := 1 : n do
-	 r := dcfsf_derivation1f(r,theo);
+         r := dcfsf_derivation1f(r,theo);
       return r
    end;
 
@@ -125,7 +125,7 @@ procedure dcfsf_derivation1f(f,theo);
    % Computes the derivative of [f].
    begin scalar res;
       for each v in kernels f do
-	 res := addf(res,multf(dcfsf_df(f,v),dcfsf_derivationk(v,theo)));
+         res := addf(res,multf(dcfsf_df(f,v),dcfsf_derivationk(v,theo)));
       return res
    end;
 
@@ -139,14 +139,14 @@ procedure dcfsf_derivationk(k,theo);
       oldorder := setkorder {kp};
       cnt := t;
       while cnt and theo do <<
-	 a := pop theo;
-	 if dcfsf_op a eq 'equal then <<
-	    a := reorder dcfsf_arg2l a;
-	    if mvar a eq kp and lc a = 1 then <<
-	       cnt := nil;
-	       kpf := negf red a
-	    >>
-	 >>
+         a := pop theo;
+         if dcfsf_op a eq 'equal then <<
+            a := reorder dcfsf_arg2l a;
+            if mvar a eq kp and lc a = 1 then <<
+               cnt := nil;
+               kpf := negf red a
+            >>
+         >>
       >>;
       setkorder oldorder;
       return reorder kpf
@@ -180,9 +180,9 @@ procedure dcfsf_qe!-kacem(f,theo);
       f := cl_pnf f;
       w := dqe_start1 f;
       if w eq t then
-	 w := 'true
+         w := 'true
       else if null w then
-	 w := 'false;
+         w := 'false;
       w := rl_simp w;
       return w
    end;
@@ -197,7 +197,7 @@ procedure dcfsf_qe0(f,theo);
       bl := car w;
       f := cadr w;
       for each blk in bl do
-	 f := cl_simpl(dcfsf_qeblk(f,blk,theo),theo,-1);
+         f := cl_simpl(dcfsf_qeblk(f,blk,theo),theo,-1);
       return f
    end;
 
@@ -217,12 +217,12 @@ procedure dcfsf_qeblk1(f,blk,theo);
    % wrt. [theo].
    <<
       if !*rlverbose then
-	 ioto_tprin2t {"Eliminating ",blk};
+         ioto_tprin2t {"Eliminating ",blk};
       for each v in cdr blk do
-	 f := if !*dcfsfold then
-      	    dcfsf_qevarold(f,v,theo)
-	 else
-	    dcfsf_qevar(f,v,theo);
+         f := if !*dcfsfold then
+            dcfsf_qevarold(f,v,theo)
+         else
+            dcfsf_qevar(f,v,theo);
       f
    >>;
 
@@ -233,22 +233,22 @@ procedure dcfsf_qevar(phi,v,theo);
    % is equivalent to $\exists [v] [f]$ wrt. [theo].
    begin scalar kl,oo,pll,!*rlsifacne;
       if !*rlverbose then
-	 ioto_tprin2t {"Eliminating ",v};
+         ioto_tprin2t {"Eliminating ",v};
       phi := cl_dnf cl_simpl(phi,theo,-1);
       if rl_tvalp phi then
-	 return phi;
+         return phi;
       kl := dcfsf_mkkl(v,dcfsf_maxorder(cl_terml phi,v));
       oo := setkorder kl;
       phi := cl_apply2ats(phi,function(dcfsf_reorderat));
       pll := dcfsf_dnf2pll(phi,v,theo);
       if !*rlverbose then
-	 ioto_tprin2t "Computing ENF";
+         ioto_tprin2t "Computing ENF";
       pll := dcfsf_enf1(pll,v,theo);
       if !*rlverbose then
-	 ioto_tprin2t "Eliminating base cases";
+         ioto_tprin2t "Eliminating base cases";
       phi := dcfsf_elim(pll,v,theo);
       if !*rlverbose then
-	 ioto_tprin2t "Final simplification";
+         ioto_tprin2t "Final simplification";
       setkorder oo;
       phi := cl_apply2ats(phi,function(dcfsf_reorderat));
       phi := rl_simpl(phi,theo,-1);
@@ -258,10 +258,10 @@ procedure dcfsf_qevar(phi,v,theo);
 procedure dcfsf_elim(pll,v,theo);
    begin integer enf1len;
       if !*rlverbose then
-	 enf1len := pll_length pll + 1;
+         enf1len := pll_length pll + 1;
       return rl_smkn('or,for each pl in pll_2l pll collect <<
-	 enf1len := enf1len - 1;
-   	 dcfsf_elim1(pl,v,theo,enf1len)>>)
+         enf1len := enf1len - 1;
+         dcfsf_elim1(pl,v,theo,enf1len)>>)
    end;
 
 procedure dcfsf_elim1(pl,v,theo,left);
@@ -270,27 +270,27 @@ procedure dcfsf_elim1(pl,v,theo,left);
       % The following three conditions cannot occur provided that the
       % code is correct:
       if veql and cdr veql then
-	 rederr {"dcfsf_elim1: more than one equation in ",v};
+         rederr {"dcfsf_elim1: more than one equation in ",v};
       if vnel and cdr vnel then
-	 rederr {"dcfsf_elim1: more than one inequality in ",v};
+         rederr {"dcfsf_elim1: more than one inequality in ",v};
       if null vnel then
-	 rederr {"dcfsf_elim1: no inequality in ",v};
+         rederr {"dcfsf_elim1: no inequality in ",v};
       argl := dcfsf_oatl(oeql,onel);
       if not veql then <<
-	 % no equation, only (one) inequality
-	 if !*rlverbose then ioto_prin2 {"[",left,":C1] "};
-	 return rl_smkn('and,dcfsf_bc1(car vnel,v,theo) . argl)
+         % no equation, only (one) inequality
+         if !*rlverbose then ioto_prin2 {"[",left,":C1] "};
+         return rl_smkn('and,dcfsf_bc1(car vnel,v,theo) . argl)
       >>;
       if domainp car vnel and not null car vnel then <<
-	 % no inequality, only (one) equation
-	 if !*rlverbose then ioto_prin2 {"[",left,":C2] "};
-	 %%	 return rl_smkn('and,dcfsf_bc2(car veql,v,theo) . argl)
-      	 % The following condition cannot occur provided that the code is
-      	 % correct:
-	 i := lc car veql;
-	 if not (domainp i and not null i or member(sfto_sqfpartf i,onel)) then
-	    rederr {"dcfsf_elim1: no initial inequality for equation"};
-	 return rl_smkn('and,argl)
+         % no inequality, only (one) equation
+         if !*rlverbose then ioto_prin2 {"[",left,":C2] "};
+         %%      return rl_smkn('and,dcfsf_bc2(car veql,v,theo) . argl)
+         % The following condition cannot occur provided that the code is
+         % correct:
+         i := lc car veql;
+         if not (domainp i and not null i or member(sfto_sqfpartf i,onel)) then
+            rederr {"dcfsf_elim1: no initial inequality for equation"};
+         return rl_smkn('and,argl)
       >>;
       % We now know that there is one equation and one inequality.
       f := car veql;
@@ -299,17 +299,17 @@ procedure dcfsf_elim1(pl,v,theo,left);
       % The following condition cannot occur provided that the code is
       % correct:
       if rmd then
-	 rederr {"dcfsf_elim1: lhs of inequality is not divisible by I_f"};
+         rederr {"dcfsf_elim1: lhs of inequality is not divisible by I_f"};
       of . df := dcfsf_orddegf(f,v);
       og . dg := dcfsf_orddegf(g,v);
       if og < of then <<
-	 if !*rlverbose then ioto_prin2 {"[",left,":C3] "};
-	 return rl_smkn('and,dcfsf_bc3(i,g,v,theo) . argl)
+         if !*rlverbose then ioto_prin2 {"[",left,":C3] "};
+         return rl_smkn('and,dcfsf_bc3(i,g,v,theo) . argl)
       >>;
       if og = of and dg < df then <<
-	 if !*rlverbose then ioto_prin2 {"[",left,":C4] "};
-	 r := car dcfsf_reduce({exptf(g,df)},f,v);
-	 return rl_smkn('and,dcfsf_bc3(i,r,v,theo) . argl)
+         if !*rlverbose then ioto_prin2 {"[",left,":C4] "};
+         r := car dcfsf_reduce({exptf(g,df)},f,v);
+         return rl_smkn('and,dcfsf_bc3(i,r,v,theo) . argl)
       >>;
       rederr {"dcfsf_elim1: ord(g) = ord(f) and deg(g) >= deg(f)"}
    end;
@@ -317,9 +317,9 @@ procedure dcfsf_elim1(pl,v,theo,left);
 procedure dcfsf_oatl(oeql,onel);
    begin scalar atl;
       for each one in onel do
- 	 atl := dcfsf_0mk2('neq,one) . atl;
+         atl := dcfsf_0mk2('neq,one) . atl;
       for each oeq in oeql do
- 	 atl := dcfsf_0mk2('equal,oeq) . atl;
+         atl := dcfsf_0mk2('equal,oeq) . atl;
       return atl
    end;
 
@@ -332,16 +332,16 @@ procedure dcfsf_bc2(f,v,theo);
    begin scalar ftl,f1;
       ftl . f1 := dcfsf_cl1(f,v);
       return rl_smkn('or,dcfsf_0mk2('equal,f1) .
-	 for each gt in ftl collect dcfsf_0mk2('neq,gt))
+         for each gt in ftl collect dcfsf_0mk2('neq,gt))
    end;
 
 procedure dcfsf_bc3(i,g,v,theo);
    % Base Case 3
    begin scalar iff,w1,w2;
       w1 := for each gt in dcfsf_cl(g,v) collect
-	 dcfsf_0mk2('neq,gt);
+         dcfsf_0mk2('neq,gt);
       w2 := for each ct in dcfsf_cl(i,v) collect
-	 dcfsf_0mk2('neq,ct);
+         dcfsf_0mk2('neq,ct);
       return rl_mkn('and,{rl_smkn('or,w1),rl_smkn('or,w2)})
    end;
 
@@ -352,13 +352,13 @@ procedure dcfsf_qevarold(f,v,theo);
    % is equivalent to $\exists [v] [f]$ wrt. [theo].
    begin scalar rl;
       if !*rlverbose then
-	 ioto_tprin2t {"Eliminating ",v};
+         ioto_tprin2t {"Eliminating ",v};
       f := cl_dnf f;
       rl := if rl_op f eq 'or then
-      	 for each ff in rl_argn f collect
-	    dcfsf_qevar1(ff,v,theo)
+         for each ff in rl_argn f collect
+            dcfsf_qevar1(ff,v,theo)
       else
-	 {dcfsf_qevar1(f,v,theo)};
+         {dcfsf_qevar1(f,v,theo)};
       return rl_smkn('or,rl)
    end;
 
@@ -370,7 +370,7 @@ procedure dcfsf_qevar1(f,v,theo);
    % is equivalent to $\exists [v] [f]$ wrt. [theo].
    begin scalar r,w;
       if rl_tvalp f then
-	 return f;
+         return f;
       w := dcfsf_nf(f,v);
       r := dcfsf_qevar2(car w,cadr w,v,theo);
       r := rl_mkn('and,{rl_smkn('and,caddr w),r});
@@ -386,9 +386,9 @@ procedure dcfsf_nf(f,v);
    % left hand side of inequalities containing [v] in [f], and [s] is
    % the list of all atomic formulas not containing [v] in [f].
       if rl_op f eq 'and then
-	 dcfsf_nf1(rl_argn f,v)
+         dcfsf_nf1(rl_argn f,v)
       else
-	 dcfsf_nf1({f},v);
+         dcfsf_nf1({f},v);
 
 procedure dcfsf_nf1(f,v);
    % Normal form subroutine. [f] is a list of atomic formulas; [v] is a
@@ -401,12 +401,12 @@ procedure dcfsf_nf1(f,v);
    begin scalar e,n,s;
       n := numr simp 1;
       for each at in f do
-	 if not(v memq dcfsf_varlat at) then
-	    s := at . s
-	 else if dcfsf_op at eq 'equal then
-	    e := dcfsf_arg2l(at) . e
-	 else
-	    n := multf(dcfsf_arg2l at,n);
+         if not(v memq dcfsf_varlat at) then
+            s := at . s
+         else if dcfsf_op at eq 'equal then
+            e := dcfsf_arg2l(at) . e
+         else
+            n := multf(dcfsf_arg2l at,n);
       return {e,n,s}
    end;
 
@@ -442,9 +442,9 @@ procedure dcfsf_maxorder(fl,v);
    % of the differential polynomials in [fl].
    begin scalar w; integer m;
       for each f in fl do <<
-	 w := dcfsf_orddegf(f,v);
-	 if car w > m then
-	    m := car w
+         w := dcfsf_orddegf(f,v);
+         if car w > m then
+            m := car w
       >>;
       return m
    end;
@@ -466,16 +466,16 @@ procedure dcfsf_qesc5!-elim(fl,g,v,theo);
    <<
       fl := sort(fl,'dcfsf_qeordp!-desc);
       if !*rlverbose then
-	 ioto_prin2 {"[",length fl,dcfsf_orddegf(lastcar fl,v),"] "};
+         ioto_prin2 {"[",length fl,dcfsf_orddegf(lastcar fl,v),"] "};
       if null fl then
-	 % CASC Base Case 2
-	 dcfsf_qesc1(g,v,theo)
+         % CASC Base Case 2
+         dcfsf_qesc1(g,v,theo)
       else if null cdr fl then
-	 % m=1: CASC Recursion Subcases 2.1 and 2.2
-	 dcfsf_qebasis(car fl,g,v,theo)
+         % m=1: CASC Recursion Subcases 2.1 and 2.2
+         dcfsf_qebasis(car fl,g,v,theo)
       else
-	 % m>1: CASC Recursion Subcase 2.3
-      	 dcfsf_qesc5r(fl,g,v,theo,t)
+         % m>1: CASC Recursion Subcase 2.3
+         dcfsf_qesc5r(fl,g,v,theo,t)
    >>;
 
 procedure dcfsf_qesc5!-noelim(fl,g,v,theo);
@@ -483,36 +483,36 @@ procedure dcfsf_qesc5!-noelim(fl,g,v,theo);
    <<
       fl := sort(fl,'dcfsf_qeordp!-desc);
       if !*rlverbose then
-	 ioto_prin2 {"[",length fl,dcfsf_orddegf(lastcar fl,v),"] "};
+         ioto_prin2 {"[",length fl,dcfsf_orddegf(lastcar fl,v),"] "};
       if null fl then
-	 dcfsf_0mk2('neq,g)
+         dcfsf_0mk2('neq,g)
       else if null cdr fl then
-	 rl_mkn('and,{dcfsf_0mk2('equal,car fl),dcfsf_0mk2('neq,g)})
+         rl_mkn('and,{dcfsf_0mk2('equal,car fl),dcfsf_0mk2('neq,g)})
       else
-      	 dcfsf_qesc5r(fl,g,v,theo,nil)
+         dcfsf_qesc5r(fl,g,v,theo,nil)
    >>;
 
 procedure dcfsf_qesc50(fl,g,v,theo,elim);
    % Essentially CASC Recursion Case 1
    begin scalar nfl,r,f,pl;
       if null g then
-	 return 'false;
+         return 'false;
       if domainp g then
-	 g := 1;
+         g := 1;
       while fl do <<
-	 f := pop fl;
-	 if domainp f then <<
-	    if f then <<
-	       r := 'false;
-	       fl := nil
-	    >>
-	 >> else if not(v memq dcfsf_varlat1 kernels f) then
-	    pl := dcfsf_0mk2('equal,f) . pl
-	 else
-	    nfl := f . nfl;
+         f := pop fl;
+         if domainp f then <<
+            if f then <<
+               r := 'false;
+               fl := nil
+            >>
+         >> else if not(v memq dcfsf_varlat1 kernels f) then
+            pl := dcfsf_0mk2('equal,f) . pl
+         else
+            nfl := f . nfl;
       >>;
       if r eq 'false then
-	 return 'false;
+         return 'false;
       r := dcfsf_qesc5(nfl,g,v,theo,elim);
       r := rl_mkn('and,{rl_smkn('and,pl),r});
       return r
@@ -549,14 +549,14 @@ procedure dcfsf_qebasis1(f1,g,v,theo);
    % CASC Recursion Subcase 2.1
    begin scalar phi1p,phi2p;
       if !*dzopt and null cdr qremf(g,lc f1) then <<
-	 phi1p := 'false;
-	 phi2p := dcfsf_qesc(f1,lc f1,g,v,theo);
+         phi1p := 'false;
+         phi2p := dcfsf_qesc(f1,lc f1,g,v,theo);
       >> else <<
-      	 phi1p := dcfsf_qesc50({red f1,lc f1},g,v,theo,t);
-	 phi1p := cl_simpl(phi1p,theo,-1);
-      	 if phi1p eq 'true then
-	    return 'true;
-      	 phi2p := dcfsf_qesc(f1,lc f1,g,v,theo);
+         phi1p := dcfsf_qesc50({red f1,lc f1},g,v,theo,t);
+         phi1p := cl_simpl(phi1p,theo,-1);
+         if phi1p eq 'true then
+            return 'true;
+         phi2p := dcfsf_qesc(f1,lc f1,g,v,theo);
       >>;
       return cl_simpl(rl_mkn('or,{phi1p,phi2p}),theo,-1);
    end;
@@ -572,20 +572,20 @@ procedure dcfsf_qebasis2(f1,g,v,theo);
       qr := qremf(multf(exptf(sf1,dp),g),dcfsf_dn(f1,sp-s1,v,theo));
       r := cdr qr;
       if !*dzopt and null cdr qremf(g,lc f1) then <<
-	 if1 := 1;
-	 phi1p := 'false;
+         if1 := 1;
+         phi1p := 'false;
       >> else
-      	 phi1p := dcfsf_qesc50({red f1,lc f1},g,v,theo,t);
+         phi1p := dcfsf_qesc50({red f1,lc f1},g,v,theo,t);
       phi1p := cl_simpl(phi1p,theo,-1);
       if phi1p eq 'true then
-	 return 'true;
+         return 'true;
       if dcfsf_degf(f1,v) > 1 then <<
-      	 psi := dcfsf_qebasis(f1,multf(multf(sf1,if1),r),v,theo);
-      	 phi3p := dcfsf_qesc50({f1,sf1},g,v,theo,t);
-	 r := rl_mkn('or,{phi1p,psi,phi3p});
+         psi := dcfsf_qebasis(f1,multf(multf(sf1,if1),r),v,theo);
+         phi3p := dcfsf_qesc50({f1,sf1},g,v,theo,t);
+         r := rl_mkn('or,{phi1p,psi,phi3p});
       >> else <<
-      	 psi := dcfsf_qebasis(f1,multf(if1,r),v,theo);
-	 r := rl_mkn('or,{phi1p,psi})
+         psi := dcfsf_qebasis(f1,multf(if1,r),v,theo);
+         r := rl_mkn('or,{phi1p,psi})
       >>;
       return r
    end;
@@ -612,9 +612,9 @@ procedure dcfsf_qesc5r(fl,g,v,theo,elim);
       ffl := reverse fl;
       fm := car ffl;
       if !*dzopt and null cdr qremf(g,lc fm) then
-	 phi1p := 'false
+         phi1p := 'false
       else
-      	 phi1p := dcfsf_qesc50(red fm . lc fm . cdr ffl,g,v,theo,elim);
+         phi1p := dcfsf_qesc50(red fm . lc fm . cdr ffl,g,v,theo,elim);
       phi2p := dcfsf_qesc5r2(fl,g,v,theo,elim);
       ioto_tprin2t "fl:";
       mathprint('list . for each f in fl collect prepf f);
@@ -633,7 +633,7 @@ procedure dcfsf_qesc5r2(fl,g,v,theo,elim);
       fm := pop ffl;
       fm1 := pop ffl;
       if dcfsf_ordf(fm,v) = dcfsf_ordf(fm1,v) then
-	 return dcfsf_qesc5r2u1(fm,fm1,ffl,g,v,theo,elim);
+         return dcfsf_qesc5r2u1(fm,fm1,ffl,g,v,theo,elim);
       return dcfsf_qesc5r2u2(fm,fm1,ffl,g,v,theo,elim)
    end;
 
@@ -644,9 +644,9 @@ procedure dcfsf_qesc5r2u1(fm,fm1,ffl,g,v,theo,elim);
       qr := qremf(multf(exptf(ifm,dm1),fm1),fm);
       r := cdr qr;
       if !*dzopt and null cdr qremf(g,lc fm) then
-	 psip := dcfsf_qesc50(fm . r . ffl,g,v,theo,elim)
+         psip := dcfsf_qesc50(fm . r . ffl,g,v,theo,elim)
       else
-      	 psip := dcfsf_qesc50(fm . r . ffl,multf(ifm,g),v,theo,elim);
+         psip := dcfsf_qesc50(fm . r . ffl,multf(ifm,g),v,theo,elim);
       return psip
    end;
 
@@ -658,13 +658,13 @@ procedure dcfsf_qesc5r2u2(fm,fm1,ffl,g,v,theo,elim);
       sm1 := dcfsf_ordf(fm1,v);
       ifm := lc fm;
       qr := qremf(multf(exptf(sfm,dm1),fm1),
-	 dcfsf_dn(fm,sm1-sm,v,theo));
+         dcfsf_dn(fm,sm1-sm,v,theo));
       r := cdr qr;
       if !*dzopt and null cdr qremf(g,lc fm) then
-      	 psip := dcfsf_qesc50(fm . r . ffl,g,v,theo,elim)
+         psip := dcfsf_qesc50(fm . r . ffl,g,v,theo,elim)
       else
-%      	 psip := dcfsf_qesc50(fm . r . ffl,multf(ifm,g),v,theo,elim);
-      	 psip := dcfsf_qesc50(fm . r . ffl,multf(sfm,g),v,theo,elim);
+%        psip := dcfsf_qesc50(fm . r . ffl,multf(ifm,g),v,theo,elim);
+         psip := dcfsf_qesc50(fm . r . ffl,multf(sfm,g),v,theo,elim);
       return psip
    end;
 
@@ -675,7 +675,7 @@ procedure dcfsf_dn(f,n,v,theo);
    % valid.
    begin scalar r,s,m;
       m := if kord!* and pairp car kord!* and car car kord!* eq 'd then
-	 caddr car kord!* else 0;
+         caddr car kord!* else 0;
       s := car dcfsf_orddegf(f,v);
       m := max(m,s+n);
       setkorder dcfsf_mkkl(v,m);
@@ -708,26 +708,26 @@ procedure dcfsf_cl1(f,v);
 procedure dcfsf_cl2(f,v,flg);
    begin scalar w;
       if domainp f or not(v memq dcfsf_varlat1 kernels f) then
-      	 return if flg then
-	    nil . f
-      	 else
-      	    {f} . nil
+         return if flg then
+            nil . f
+         else
+            {f} . nil
       else <<
-	 w := dcfsf_cl2(red f,v,t);
-      	 return nconc(car dcfsf_cl2(lc f,v,nil),car w) . cdr w
+         w := dcfsf_cl2(red f,v,t);
+         return nconc(car dcfsf_cl2(lc f,v,nil),car w) . cdr w
       >>
    end;
 
 procedure dcfsf_qesc(f1,if1,g,v,theo);
    begin
       if null g or null if1 then
-      	 return 'false;
+         return 'false;
       if domainp if1 then
-      	 if1 := 1;
+         if1 := 1;
       if g = 1 and not(v memq dcfsf_varlat1 kernels if1) then
-      	 return rl_mkn('and,{dcfsf_0mk2('neq,if1),dcfsf_qesc2(f1,v,theo)});
+         return rl_mkn('and,{dcfsf_0mk2('neq,if1),dcfsf_qesc2(f1,v,theo)});
       if dcfsf_ordf(g,v) < dcfsf_ordf(f1,v) then
-      	 return dcfsf_qesc3(f1,g,if1,v,theo);
+         return dcfsf_qesc3(f1,g,if1,v,theo);
       return dcfsf_qesc4(f1,g,if1,v,theo)
    end;
 
@@ -736,15 +736,15 @@ procedure dcfsf_qesc2(f,v,theo);
    begin scalar ftl,f1;
       ftl . f1 := dcfsf_cl1(f,v);
       return rl_smkn('or,dcfsf_0mk2('equal,f1) .
-	 for each gt in ftl collect dcfsf_0mk2('neq,gt))
+         for each gt in ftl collect dcfsf_0mk2('neq,gt))
    end;
 
 procedure dcfsf_qesc3(f,g,iff,v,theo);
    begin scalar iff,w1,w2;
       w1 := for each gt in dcfsf_cl(g,v) collect
-	 dcfsf_0mk2('neq,gt);
+         dcfsf_0mk2('neq,gt);
       w2 := for each ct in dcfsf_cl(lc f,v) collect
-	 dcfsf_0mk2('neq,ct);
+         dcfsf_0mk2('neq,ct);
       return rl_mkn('and,{rl_smkn('or,w1),rl_smkn('or,w2)})
    end;
 
@@ -756,9 +756,9 @@ procedure dcfsf_qesc4(f,g,iff,v,theo);
       qr := qremf(multf(exptf(lc f,dd*dp),exptf(g,dd)),f);
       r := cdr qr;
       w1 := for each ct in dcfsf_cl(lc f,v) collect
-	 dcfsf_0mk2('neq,ct);
+         dcfsf_0mk2('neq,ct);
       w2 := for each rt in dcfsf_cl(r,v) collect
-	 dcfsf_0mk2('neq,rt);
+         dcfsf_0mk2('neq,rt);
       return rl_mkn('and,{rl_smkn('or,w1),rl_smkn('or,w2)})
    end;
 
@@ -766,15 +766,15 @@ procedure dcfsf_1equation(f,v,theo);
    begin scalar fl,gl,g,oo,kl,r,!*rlsiexpla;
       f := cl_simpl(f,theo,-1);
       if rl_op f neq 'and then
-	 rederr {"dcfsf_1equation:",f,"is not a conjunction"};
+         rederr {"dcfsf_1equation:",f,"is not a conjunction"};
       g := 1;
       for each at in rl_argn f do
-	 if rl_op at eq 'equal then
-	    fl := dcfsf_arg2l at . fl
-	 else if rl_op at eq 'neq then
-	    g := multf(g,dcfsf_arg2l at)
-	 else
-	    rederr {"dcfsf_1equation:",at,"is not an atomic formula"};
+         if rl_op at eq 'equal then
+            fl := dcfsf_arg2l at . fl
+         else if rl_op at eq 'neq then
+            g := multf(g,dcfsf_arg2l at)
+         else
+            rederr {"dcfsf_1equation:",at,"is not an atomic formula"};
       kl := dcfsf_mkkl(v,dcfsf_maxorder(g . fl,v));
       oo := setkorder kl;
       fl := for each f in fl collect reorder f;
@@ -830,7 +830,7 @@ procedure pll_fl(l);
    begin scalar pll;
       pll := pll_new();
       for each pl in l do
-	 pll := pll_cons(pl,pll);
+         pll := pll_cons(pl,pll);
       return pll
    end;
 
@@ -838,7 +838,7 @@ procedure pll_prifn(pll);
    <<
       ioto_prin2 "<pll>";
       for each pl in pl_2l pll do
-	 pl_prifn pl;
+         pl_prifn pl;
       ioto_prin2 "<pll>";
    >>;
 
@@ -851,37 +851,37 @@ procedure pl_factorize(pl);
       pl := pl_sqfpart pl;
       pl := pl_simpl pl;
       if pl_falsep pl then
-	 return pll_new();
+         return pll_new();
       if not !*rlenffac then
-      	 return pll_fl {pl};
+         return pll_fl {pl};
       {veql,vnel,oeql,onel} := pl_2l pl;
       fveql := for each veq in veql collect
-	 for each pr in cdr fctrf veq collect
-	    car pr;
+         for each pr in cdr fctrf veq collect
+            car pr;
       apll := pll_new();
       for each pveql in lto_cartprod fveql do
-	 apll := pll_cons(pl_new(lto_list2set pveql,vnel,oeql,onel),apll);
+         apll := pll_cons(pl_new(lto_list2set pveql,vnel,oeql,onel),apll);
       return apll
    end;
 
 procedure pll_ins(apll,pll);
    <<
       for each pl in pll_2l apll do
-	 pll := pll_cons(pl,pll);
+         pll := pll_cons(pl,pll);
       pll
    >>;
 
 procedure pl_sqfpart(pl);
    begin scalar l,w;
       l := for each ll in pl_2l pl collect
-	 for each f in ll collect
-	    if domainp f then
-	       f
-	    else <<
-	       w := sfto_sqfpartf f;
-	       if minusf w then w := negf w;
-	       w
-	    >>;
+         for each f in ll collect
+            if domainp f then
+               f
+            else <<
+               w := sfto_sqfpartf f;
+               if minusf w then w := negf w;
+               w
+            >>;
       return pl_fl l
    end;
 
@@ -900,8 +900,8 @@ procedure pl_prifn(pl);
       ioto_prin2 "<pl>";
       pl_mapril pop pl;
       for i := 1:3 do <<
-      	 ioto_prin2 ",";
-      	 pl_mapril pop pl
+         ioto_prin2 ",";
+         pl_mapril pop pl
       >>;
       ioto_prin2 "</pl>"
    >>;
@@ -910,11 +910,11 @@ procedure pl_mapril(l);
    <<
       ioto_prin2 "{";
       if l then <<
-	 maprin prepf pop l;
-      	 for each f in l do <<
-	    ioto_prin2 ",";
-	    maprin prepf f
-      	 >>
+         maprin prepf pop l;
+         for each f in l do <<
+            ioto_prin2 ",";
+            maprin prepf f
+         >>
       >>;
       ioto_prin2 "}"
    >>;
@@ -928,34 +928,34 @@ procedure dcfsf_enf(phi,v,theo);
    % equivalent to [phi].
    begin scalar kl,oo,pll,!*rlsiexpla,!*rlsifac,pll2,!*nat;
       if !*rlverbose then
-	 ioto_tprin2t "Computing ENF";
+         ioto_tprin2t "Computing ENF";
       phi := cl_dnf cl_simpl(phi,theo,-1);
       if rl_tvalp phi or cl_atfp phi then
-	 return phi;
+         return phi;
       kl := dcfsf_mkkl(v,dcfsf_maxorder(cl_terml phi,v));
       oo := setkorder kl;
       phi := cl_apply2ats(phi,function(dcfsf_reorderat));
       pll := dcfsf_dnf2pll(phi,v,theo);
       if !*rlenf1twice then <<
-      	 pll := dcfsf_enf1(pll,v,theo);
-      	 pll2 := 'rl_pll!* . reverse cdr pll;
-      	 pll2 := dcfsf_enf1(pll2,v,theo);
-	 if pll2 neq pll then <<
-	    lprim {"enf1 not idempotent here"};
-	    terpri!* t;
-	    mathprint pll;
-	    mathprint pll2;
-	    pll := pll2
-	 >>
+         pll := dcfsf_enf1(pll,v,theo);
+         pll2 := 'rl_pll!* . reverse cdr pll;
+         pll2 := dcfsf_enf1(pll2,v,theo);
+         if pll2 neq pll then <<
+            lprim {"enf1 not idempotent here"};
+            terpri!* t;
+            mathprint pll;
+            mathprint pll2;
+            pll := pll2
+         >>
       >> else
-      	 pll := dcfsf_enf1(pll,v,theo);
+         pll := dcfsf_enf1(pll,v,theo);
       phi := pll_2dnf pll;
       setkorder oo;
       phi := cl_apply2ats(phi,function(dcfsf_reorderat));
       if !*rlenfsimpl then
-      	 phi := rl_simpl(phi,theo,-1);
+         phi := rl_simpl(phi,theo,-1);
       if !*rlverbose then
-	 ioto_tprin2t "";
+         ioto_tprin2t "";
       return phi
    end;
 
@@ -966,8 +966,8 @@ procedure dcfsf_dnf2pll(phi,v,theo);
       phi := cl_mkstrict(phi,'or);
       pll := pll_new();
       for each conj in rl_argn phi do <<
-	 apll := pl_factorize dcfsf_atl2pl(rl_argn conj,v);
-	    pll := pll_ins(apll,pll)
+         apll := pl_factorize dcfsf_atl2pl(rl_argn conj,v);
+            pll := pll_ins(apll,pll)
       >>;
       return pll
    end;
@@ -978,20 +978,20 @@ procedure dcfsf_atl2pl(atl,v);
    begin scalar op,lhs,veql,vne,oeql,onel;
       vne := 1;
       for each at in atl do <<
-	 op := rl_op at;
-	 lhs := rl_arg2l at;
-	 if op eq 'equal then
-	    if dcfsf_mvar lhs eq v then
-	       veql := lhs . veql
-	    else
-	       oeql := lhs . oeql
-	 else if rl_op at eq 'neq then
-	    if dcfsf_mvar lhs eq v then
-	       vne := sfto_sqfpartf multf(lhs,vne)
-	    else
-	       onel := lhs . onel
-	 else
-	    rederr {"dcfsf_atl2pll: unexpected operator ",op}
+         op := rl_op at;
+         lhs := rl_arg2l at;
+         if op eq 'equal then
+            if dcfsf_mvar lhs eq v then
+               veql := lhs . veql
+            else
+               oeql := lhs . oeql
+         else if rl_op at eq 'neq then
+            if dcfsf_mvar lhs eq v then
+               vne := sfto_sqfpartf multf(lhs,vne)
+            else
+               onel := lhs . onel
+         else
+            rederr {"dcfsf_atl2pll: unexpected operator ",op}
       >>;
       return pl_new(veql,{vne},oeql,onel)
    end;
@@ -1010,9 +1010,9 @@ procedure pl_2atl(pl);
       veql := for each f in veql collect dcfsf_0mk2('equal,f);
       vnel := pop pl;
       vnel := if !*rlenffacne then
-	 for each f in cdr fctrf car vnel collect dcfsf_0mk2('neq,car f)
+         for each f in cdr fctrf car vnel collect dcfsf_0mk2('neq,car f)
       else
-	 {dcfsf_0mk2('neq,car vnel)};
+         {dcfsf_0mk2('neq,car vnel)};
       oeql := pop pl;
       oeql := for each f in oeql collect dcfsf_0mk2('equal,f);
       onel := pop pl;
@@ -1023,33 +1023,33 @@ procedure pl_2atl(pl);
 procedure pl_simpl(pl);
    begin scalar veql,vnel,oeql,onel,a,brk,nveql,nvnel,noeql,nonel,w;
       if not !*rlplsimpl then
-	 return pl;
+         return pl;
       {veql,vnel,oeql,onel} := pl_2l pl;
       nveql := veql;
       nvnel := vnel;
       brk := nil; while oeql and not brk do <<
-	 a := pop oeql;
-	 if domainp a then
-	    (if not null a then brk := t)
-	 else
-	    noeql := lto_insert(a,noeql)
+         a := pop oeql;
+         if domainp a then
+            (if not null a then brk := t)
+         else
+            noeql := lto_insert(a,noeql)
       >>;
       if brk then
- 	 return pl_false();
+         return pl_false();
       noeql := reversip noeql;
       brk := nil; while onel and not brk do <<
-	 a := pop onel;
-	 if domainp a then
-	    (if null a then brk := t)
-	 else
-	    nonel := lto_insert(a,nonel)
+         a := pop onel;
+         if domainp a then
+            (if null a then brk := t)
+         else
+            nonel := lto_insert(a,nonel)
       >>;
       if brk then
- 	 return pl_false();
+         return pl_false();
       nonel := reversip nonel;
       pl := pl_new(nveql,nvnel,noeql,nonel);
       if cl_simpl(rl_smkn('and,pl_2atl pl),nil,-1) eq 'false then
-	 return pl_false();
+         return pl_false();
       return pl
    end;
 
@@ -1066,46 +1066,46 @@ procedure dcfsf_enf1(pll,v,theo);
    begin scalar pl,veql,vnel,oeql,onel,npll,veq1,veql1_,i,r,s,o,d,apll,w;
       npll := pll_new();
       while not pll_emptyp pll do <<
-	 if !*rlverbose then ioto_prin2 {"[",pll_length pll};
-	 pl := pll_pop pll;
-	 {veql,vnel,oeql,onel} := pl_2l pl;
-	 veql := sort(veql,function dcfsf_qeordp);
-	 if not veql then <<  % base case
-	    if !*rlverbose then ioto_prin2 "] ";
-	    npll := pll_ins({pl},npll)
-	 >> else <<  % at least on equation in [v]
-	    veq1 := car veql;
-	    veql1_ := cdr veql;
-	    if !*rlverbose then <<
-	       o . d := dcfsf_orddegf(veq1,v);
-	       ioto_prin2 {":(",o,",",d,")] "}
-	    >>;
-	    i := lc veq1;
-	    r := red veq1;
-	    s := dcfsf_separant veq1;
-	    % Case 1: initial = 0
-	    apll := pl_factorize dcfsf_enf1c1(i,r,veql1_,vnel,oeql,onel,v);
-	    pll := pll_ins(apll,pll);
-	    % Case 2: inital <> 0 and separant = 0
-	    if ldeg veq1 neq 1 then <<
-	       % otherwise there is nothing to do because initial = separant
-	       apll := pl_factorize dcfsf_enf1c2(i,r,s,veql,vnel,oeql,onel,v);
-	       pll := pll_ins(apll,pll)
-	    >>;
-    	    % Case 3: initial <> 0 and separant <> 0 and further equations
-	    if veql1_ then <<
-	       apll := pl_factorize
- 		  dcfsf_enf1c3(i,s,veq1,veql1_,vnel,oeql,onel,v);
-	       pll := pll_ins(apll,pll)
-	    >> else << % "base case"
-	       apll := pl_factorize
-		     dcfsf_enf1c3b(i,s,veq1,veql,vnel,oeql,onel,v);
-	       if (w := pll_2l apll) and cdr w then
-		  pll := pll_ins(apll,pll)
-	       else
-	       	  npll := pll_ins(apll,npll)
-	    >>
-	 >>
+         if !*rlverbose then ioto_prin2 {"[",pll_length pll};
+         pl := pll_pop pll;
+         {veql,vnel,oeql,onel} := pl_2l pl;
+         veql := sort(veql,function dcfsf_qeordp);
+         if not veql then <<  % base case
+            if !*rlverbose then ioto_prin2 "] ";
+            npll := pll_ins({pl},npll)
+         >> else <<  % at least on equation in [v]
+            veq1 := car veql;
+            veql1_ := cdr veql;
+            if !*rlverbose then <<
+               o . d := dcfsf_orddegf(veq1,v);
+               ioto_prin2 {":(",o,",",d,")] "}
+            >>;
+            i := lc veq1;
+            r := red veq1;
+            s := dcfsf_separant veq1;
+            % Case 1: initial = 0
+            apll := pl_factorize dcfsf_enf1c1(i,r,veql1_,vnel,oeql,onel,v);
+            pll := pll_ins(apll,pll);
+            % Case 2: inital <> 0 and separant = 0
+            if ldeg veq1 neq 1 then <<
+               % otherwise there is nothing to do because initial = separant
+               apll := pl_factorize dcfsf_enf1c2(i,r,s,veql,vnel,oeql,onel,v);
+               pll := pll_ins(apll,pll)
+            >>;
+            % Case 3: initial <> 0 and separant <> 0 and further equations
+            if veql1_ then <<
+               apll := pl_factorize
+                  dcfsf_enf1c3(i,s,veq1,veql1_,vnel,oeql,onel,v);
+               pll := pll_ins(apll,pll)
+            >> else << % "base case"
+               apll := pl_factorize
+                     dcfsf_enf1c3b(i,s,veq1,veql,vnel,oeql,onel,v);
+               if (w := pll_2l apll) and cdr w then
+                  pll := pll_ins(apll,pll)
+               else
+                  npll := pll_ins(apll,npll)
+            >>
+         >>
       >>;
       return npll
    end;
@@ -1172,7 +1172,7 @@ procedure dcfsf_reduceeq(fl,ofl,g,v);
    begin scalar w,vfl;
       w := dcfsf_reduce(fl,g,v);
       for each f in w do
-	 vfl . ofl := dcfsf_inserteq(vfl,ofl,f,v);
+         vfl . ofl := dcfsf_inserteq(vfl,ofl,f,v);
       return vfl . ofl
    end;
 
@@ -1181,7 +1181,7 @@ procedure dcfsf_reducene(fl,ofl,g,v);
       w := dcfsf_reduce(fl,g,v);
       vfl := {1};
       for each f in w do
-	 vfl . ofl := dcfsf_insertne(vfl,ofl,f,v);
+         vfl . ofl := dcfsf_insertne(vfl,ofl,f,v);
       return vfl . ofl
    end;
 
@@ -1189,16 +1189,16 @@ procedure dcfsf_reduce_old(fl,g,v);
    begin scalar of,df,og,dg,g1,w,vfl,ofl;
       og . dg := dcfsf_orddegf(g,v);
       w := for each f in fl collect <<
-      	 of . df := dcfsf_orddegf(f,v);
-      	 if of < og or (of = og and df < dg) then
-	    f
-	 else if eqn(of,og) then  % we know df >= dg
-	    cdr qremf(multf(f,exptf(lc g,df-dg+1)),g)
-	 else <<  % we know of > og
-	    g1 := dcfsf_derivationf(g,of-og,nil);
-	    % After differntiating at least once, the degree of g1 is 1.
-	    cdr qremf(multf(f,exptf(lc g1,df)),g1)
-	 >>
+         of . df := dcfsf_orddegf(f,v);
+         if of < og or (of = og and df < dg) then
+            f
+         else if eqn(of,og) then  % we know df >= dg
+            cdr qremf(multf(f,exptf(lc g,df-dg+1)),g)
+         else <<  % we know of > og
+            g1 := dcfsf_derivationf(g,of-og,nil);
+            % After differntiating at least once, the degree of g1 is 1.
+            cdr qremf(multf(f,exptf(lc g1,df)),g1)
+         >>
       >>;
       return w
    end;
@@ -1207,18 +1207,18 @@ procedure dcfsf_reduce(fl,g,v);
    begin scalar of,df,og,dg,g1,w,vfl,ofl;
       og . dg := dcfsf_orddegf(g,v);
       w := for each f in fl collect <<
-      	 of . df := dcfsf_orddegf(f,v);
-	 while of > og or (of = og and df >= dg) do <<
- 	    if eqn(of,og) then  % we know df >= dg
-	       f := cdr qremf(multf(f,exptf(lc g,df-dg+1)),g)
-	    else <<  % we know of > og
-	       g1 := dcfsf_derivationf(g,of-og,nil);
-	       % After differentiating at least once, the degree of g1 is 1.
-	       f := cdr qremf(multf(f,exptf(lc g1,df)),g1)
-	    >>;
-      	    of . df := dcfsf_orddegf(f,v)
-	 >>;
-	 f
+         of . df := dcfsf_orddegf(f,v);
+         while of > og or (of = og and df >= dg) do <<
+            if eqn(of,og) then  % we know df >= dg
+               f := cdr qremf(multf(f,exptf(lc g,df-dg+1)),g)
+            else <<  % we know of > og
+               g1 := dcfsf_derivationf(g,of-og,nil);
+               % After differentiating at least once, the degree of g1 is 1.
+               f := cdr qremf(multf(f,exptf(lc g1,df)),g1)
+            >>;
+            of . df := dcfsf_orddegf(f,v)
+         >>;
+         f
       >>;
       return w
    end;

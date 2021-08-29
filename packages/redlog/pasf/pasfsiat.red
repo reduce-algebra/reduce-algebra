@@ -43,27 +43,27 @@ procedure pasf_simplat1(atf,sop);
       if rl_tvalp atf then return atf;
       % Congruences are treated differently as non-congruences
       if pasf_congp atf then
-	 % Total modulo reduction possible; content elimination for
-	 % congruences (CEcong)
-	 atf := pasf_cecong pasf_vf pasf_mr atf
+         % Total modulo reduction possible; content elimination for
+         % congruences (CEcong)
+         atf := pasf_cecong pasf_vf pasf_mr atf
       else (if pasf_opn atf memq '(equal neq) then
-	 atf := pasf_ceeq atf
+         atf := pasf_ceeq atf
       else
-	 atf := pasf_cein atf);
+         atf := pasf_cein atf);
       % Checking if done yet
       if rl_tvalp atf then return atf;
       % Advanced simplification
       atf := if pasf_opn atf memq '(cong ncong) then
-	 % Solvability of congruences (SECong)
-	 pasf_sc atf
+         % Solvability of congruences (SECong)
+         pasf_sc atf
       else if pasf_opn atf memq '(equal neq) then
-	 % Solvability of diophantine (in-)equations (SE-Rule)
-	 pasf_se atf
+         % Solvability of diophantine (in-)equations (SE-Rule)
+         pasf_se atf
       else
-	 % Order relation reduction
-	 pasf_or atf;
+         % Order relation reduction
+         pasf_or atf;
       if not !*rlsifac then
-	 return atf;
+         return atf;
       % Factorization check
       return pasf_fact atf;
    end;
@@ -73,8 +73,8 @@ procedure pasf_zcong(atf);
    % formula. Returns an equality if modulus of the congruence is zero.
    if pasf_congp atf then (
       if null pasf_m atf then
-      	 pasf_0mk2(if pasf_opn atf eq 'cong then 'equal else 'neq,
-	    pasf_arg2l atf)
+         pasf_0mk2(if pasf_opn atf eq 'cong then 'equal else 'neq,
+            pasf_arg2l atf)
       else if null pasf_arg2l atf and pasf_opn atf eq 'cong then 'true
       else if null pasf_arg2l atf and pasf_opn atf eq 'ncong then 'false
       else atf)
@@ -88,12 +88,12 @@ procedure pasf_mkpos(atf);
    begin scalar res;
       % Left handside
       res := if not(rl_tvalp atf) and minusf pasf_arg2l atf then
-      	 pasf_anegateat atf
+         pasf_anegateat atf
       else
-	 atf;
+         atf;
       % Congruences with negative modulus
       if pasf_congp res and minusf pasf_m res then
-	 res := pasf_0mk2(((pasf_opn res) . (negf pasf_m res)),pasf_arg2l res);
+         res := pasf_0mk2(((pasf_opn res) . (negf pasf_m res)),pasf_arg2l res);
       return res
    end;
 
@@ -103,16 +103,16 @@ procedure pasf_vf(atf);
    % variable-free or a truth value.
    begin
       if (not(rl_tvalp atf) and domainp pasf_arg2l atf) then <<
-	 % Parametric modulus
-	 if pasf_congp atf and null domainp pasf_m atf then
-	    if null pasf_arg2l atf then
-	       return 'false
-	    else
-	       return atf;
-      	 return if pasf_evalatp(pasf_op atf,pasf_arg2l atf) then
-   	    'true
-      	 else
-   	    'false
+         % Parametric modulus
+         if pasf_congp atf and null domainp pasf_m atf then
+            if null pasf_arg2l atf then
+               return 'false
+            else
+               return atf;
+         return if pasf_evalatp(pasf_op atf,pasf_arg2l atf) then
+            'true
+         else
+            'false
       >>;
       return atf
    end;
@@ -136,9 +136,9 @@ procedure pasf_dt(atf);
       if pdp eq 'psdef and opn eq 'geq then return 'true;
       if pdp eq 'nsdef and opn eq 'leq then return 'true;
       if pdp eq 'psdef and opn eq 'neq then return
-	 pasf_0mk2('greaterp,pasf_arg2l atf);
+         pasf_0mk2('greaterp,pasf_arg2l atf);
       if pdp eq 'nsdef and opn eq 'neq then return
-	 pasf_0mk2('lessp,pasf_arg2l atf);
+         pasf_0mk2('lessp,pasf_arg2l atf);
       return atf
    end;
 
@@ -159,7 +159,7 @@ procedure pasf_premf(f,m);
 procedure pasf_premf1(r,m);
    begin scalar c,v,d,rr;
       if domainp r then
-	 return if minusf r then addf(r,m) else r;
+         return if minusf r then addf(r,m) else r;
       c := pasf_premf1(lc r,m);
       v := !*k2f mvar r;
       d := ldeg r;
@@ -174,7 +174,7 @@ procedure pasf_ceeq(atf);
    begin scalar g;
       % Nothing to do for non-equalities
       if rl_tvalp atf or not(pasf_opn atf memq '(equal neq)) then
-	 return atf;
+         return atf;
       % Computing the domain valued content of the coefficients
       g := sfto_dcontentf pasf_arg2l atf;
       return pasf_0mk2(pasf_op atf,quotfx(pasf_arg2l atf, numr simp g))
@@ -186,16 +186,16 @@ procedure pasf_cein(atf);
    % formula.
    begin scalar g,decp;
       if rl_tvalp atf or not(pasf_opn atf memq '(leq greaterp geq lessp)) then
-	 return atf;
+         return atf;
       % Computing the content of the parametric part
       decp := pasf_deci pasf_arg2l atf;
       g := sfto_dcontentf car decp;
       return pasf_0mk2(pasf_op atf,
-	 addf(quotfx(car decp,numr simp g),
-	    if pasf_opn atf memq '(leq greaterp) then
-	       negf pasf_floor(-(cdr decp),g)
-	    else if pasf_opn atf memq '(geq lessp) then
-	       negf pasf_ceil(-(cdr decp),g)))
+         addf(quotfx(car decp,numr simp g),
+            if pasf_opn atf memq '(leq greaterp) then
+               negf pasf_floor(-(cdr decp),g)
+            else if pasf_opn atf memq '(geq lessp) then
+               negf pasf_ceil(-(cdr decp),g)))
    end;
 
 procedure pasf_cecong(atf);
@@ -205,20 +205,20 @@ procedure pasf_cecong(atf);
    begin scalar inv,m,g;
       % For non-congruences nothing to do
       if rl_tvalp atf or not pasf_congp atf then
-	    return atf;
+            return atf;
       m := pasf_m atf;
       g := gcdf(m,sfto_dcontentf pasf_arg2l atf);
       atf := pasf_0mk2(pasf_mkop(pasf_opn atf,quotfx(m,numr simp g)),
-	 quotfx(pasf_arg2l atf,numr simp g));
+         quotfx(pasf_arg2l atf,numr simp g));
       m := pasf_m atf;
       g := sfto_dcontentf pasf_arg2l atf;
       inv := domainp m and gcdf(m,g) = 1;
       % Check if the content has an inverse
       return if inv then
-	 % Division is always possible
-      	 pasf_0mk2(pasf_op atf,quotfx(pasf_arg2l atf,numr simp g))
+         % Division is always possible
+         pasf_0mk2(pasf_op atf,quotfx(pasf_arg2l atf,numr simp g))
       else
-	 atf
+         atf
    end;
 
 procedure pasf_se(atf);
@@ -228,14 +228,14 @@ procedure pasf_se(atf);
    begin scalar decp,g;
       % For non-equalities nothing to do
       if rl_tvalp atf or not(pasf_opn atf memq '(neq equal)) then
-	 return atf;
+         return atf;
       % Computing the content
       decp := pasf_deci pasf_arg2l atf;
       g := sfto_dcontentf car decp;
       if remainder(cdr decp,g) neq 0 and pasf_opn atf eq 'neq then
-	 return 'true;
+         return 'true;
       if remainder(cdr decp,g) neq 0 and pasf_opn atf eq 'equal then
-	 return 'false;
+         return 'false;
       return atf
    end;
 
@@ -245,17 +245,17 @@ procedure pasf_or(atf);
    begin scalar decp;
       % For non orderings nothing to do
       if rl_tvalp atf or not(pasf_opn atf memq '(lessp greaterp leq geq)) then
-	 return atf;
+         return atf;
       % Decomposing the atomic formula
       decp := pasf_deci pasf_arg2l atf;
       if pasf_opn atf eq 'lessp and cdr decp < 0 then
-	 return pasf_0mk2('leq, addf(pasf_arg2l atf, numr simp 1));
+         return pasf_0mk2('leq, addf(pasf_arg2l atf, numr simp 1));
       if pasf_opn atf eq 'leq and cdr decp > 0 then
-	 return pasf_0mk2('lessp, addf(pasf_arg2l atf, negf numr simp 1));
+         return pasf_0mk2('lessp, addf(pasf_arg2l atf, negf numr simp 1));
       if pasf_opn atf eq 'greaterp and cdr decp > 0 then
-	 return pasf_0mk2('geq, addf(pasf_arg2l atf, negf numr simp 1));
+         return pasf_0mk2('geq, addf(pasf_arg2l atf, negf numr simp 1));
       if pasf_opn atf eq 'geq and cdr decp < 0 then
-	 return pasf_0mk2('greaterp, addf(pasf_arg2l atf, numr simp 1));
+         return pasf_0mk2('greaterp, addf(pasf_arg2l atf, numr simp 1));
       return atf
    end;
 
@@ -266,9 +266,9 @@ procedure pasf_sc(atf);
    begin scalar g,res,m,decp;
       % For noncongruences nothing to do
       if rl_tvalp atf or not(pasf_opn atf memq '(cong ncong)) or
-      	 % For congruences with non-domainvalued modulus nothing is done yet
-	 null domainp pasf_m atf then
-	    return atf;
+         % For congruences with non-domainvalued modulus nothing is done yet
+         null domainp pasf_m atf then
+            return atf;
       % Decomposing the formula
       decp := pasf_deci pasf_arg2l atf;
       % Computing the content
@@ -277,11 +277,11 @@ procedure pasf_sc(atf);
       % Verbose check for simplification
       res := t;
       for j := 0 : m do
-	 res := res and (remainder(cdr decp + j*g,m) neq 0);
+         res := res and (remainder(cdr decp + j*g,m) neq 0);
       if res and pasf_opn atf eq 'cong then
-	 return 'false;
+         return 'false;
       if res and pasf_opn atf eq 'ncong then
-	 return 'true;
+         return 'true;
       return atf
    end;
 
@@ -319,18 +319,18 @@ procedure pasf_fact(atf);
    % and an equivalent quantifier-free formula else.
    begin scalar fac,op,m;
       if rl_tvalp atf then
-	 return atf;
+         return atf;
       op := pasf_op atf;
       fac := fctrf pasf_arg2l atf;
       if length fac < 3 then
-	 return atf;
+         return atf;
       if op memq '(equal neq) then
-	 return rl_mkn(if op eq 'equal then 'or else 'and,
-	    for each fct in cdr fac collect
-	       pasf_0mk2(op,car fct));
+         return rl_mkn(if op eq 'equal then 'or else 'and,
+            for each fct in cdr fac collect
+               pasf_0mk2(op,car fct));
       if op memq '(leq lessp geq greaterp) then
-	 return pasf_fact1(cdr fac,
-	    if minusf car fac then pasf_anegrel op else op);
+         return pasf_fact1(cdr fac,
+            if minusf car fac then pasf_anegrel op else op);
       return atf;
    end;
 
@@ -342,16 +342,16 @@ procedure pasf_fact1(fac,op);
       pasf_0mk2(op,caar fac)
    else if remainder(cdar fac,2) neq 0 then
       rl_mkn('or,{
-	 rl_mkn('and,{pasf_0mk2(op,caar fac),
-	    if op memq '(geq greaterp) then
-	       pasf_fact1(cdr fac,op)
-	    else
-	       pasf_fact1(cdr fac,pasf_anegrel op)}),
-	 rl_mkn('and,{pasf_0mk2(pasf_anegrel op,caar fac),
-	    if op memq '(geq greaterp) then
-	       pasf_fact1(cdr fac,pasf_anegrel op)
-	    else
-	       pasf_fact1(cdr fac,op)})})
+         rl_mkn('and,{pasf_0mk2(op,caar fac),
+            if op memq '(geq greaterp) then
+               pasf_fact1(cdr fac,op)
+            else
+               pasf_fact1(cdr fac,pasf_anegrel op)}),
+         rl_mkn('and,{pasf_0mk2(pasf_anegrel op,caar fac),
+            if op memq '(geq greaterp) then
+               pasf_fact1(cdr fac,pasf_anegrel op)
+            else
+               pasf_fact1(cdr fac,op)})})
    else
       pasf_fact1(cdr fac,op);
 

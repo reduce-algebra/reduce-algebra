@@ -102,20 +102,20 @@ asserted procedure mma_cadprint1(f: Formula);
    begin scalar op,!*nat;
       op := rl_op f;
       if op eq 'ex then <<
-	 prin2!* "Exists[";
-	 prin2!* rl_var f;
-	 prin2!* ",";
-	 mma_cadprint1 rl_mat f;
-	 prin2!* "]";
-	 return nil
+         prin2!* "Exists[";
+         prin2!* rl_var f;
+         prin2!* ",";
+         mma_cadprint1 rl_mat f;
+         prin2!* "]";
+         return nil
       >>;
       if op eq 'all then <<
-	 prin2!* "ForAll[";
-	 prin2!* rl_var f;
-	 prin2!* ",";
-	 mma_cadprint1 rl_mat f;
-	 prin2!* "]";
-	 return nil
+         prin2!* "ForAll[";
+         prin2!* rl_var f;
+         prin2!* ",";
+         mma_cadprint1 rl_mat f;
+         prin2!* "]";
+         return nil
       >>;
       mma_cadprint2 f
    end;
@@ -124,19 +124,19 @@ asserted procedure mma_cadprint2(f: Formula);
    begin scalar op, argl, outputhandler!*;
       op := rl_op f;
       if rl_cxp op then <<
-	 if rl_tvalp op then <<
-	    mma_cadprinttval f;
-	    return nil
-	 >>;
-	 prin2!* "(";
-	 argl := rl_argn f;
-	 mma_cadprint2(car argl);
-	 for each x in cdr argl do <<
-	    mma_cadprintop op;
-	    mma_cadprint2 x
-	 >>;
-	 prin2!* ")";
-	 return nil
+         if rl_tvalp op then <<
+            mma_cadprinttval f;
+            return nil
+         >>;
+         prin2!* "(";
+         argl := rl_argn f;
+         mma_cadprint2(car argl);
+         for each x in cdr argl do <<
+            mma_cadprintop op;
+            mma_cadprint2 x
+         >>;
+         prin2!* ")";
+         return nil
       >>;
       maprin prepf ofsf_arg2l f;
       mma_cadprintop op;
@@ -155,9 +155,9 @@ asserted procedure mma_cadprintop(op: Id);
    <<
       prin2!* " ";
       prin2!*(cdr atsoc(op,'((equal . "==") (neq . "!=") (lessp . "<")
-      	 (greaterp . ">") (geq . ">=") (leq . "<=") (or . "||") (and . "&&")
-      	    (impl . nil) (equiv . nil))) or
- 	 rederr {"cannot translate",op,"to mma"});
+         (greaterp . ">") (geq . ">=") (leq . "<=") (or . "||") (and . "&&")
+            (impl . nil) (equiv . nil))) or
+         rederr {"cannot translate",op,"to mma"});
       prin2!* " "
    >>;
 
@@ -178,19 +178,19 @@ asserted procedure mma_run(fn1: String, fn2: String);
    begin scalar vb, tm, call, mma;
       mma := getenv("MATHEMATICA");
       if not mma then
-	 if system "test -x /Applications/Mathematica.app/Contents/MacOS/MathKernel" = 0 then
-	    mma := "/Applications/Mathematica.app/Contents/MacOS/MathKernel"  % Mac OSX
-	 else if system "test -x /usr/local/bin/math" = 0 then
-	    mma := "/usr/local/bin/math"  % Linux
-	 else
-	    rederr "no executable Mathematica found";
+         if system "test -x /Applications/Mathematica.app/Contents/MacOS/MathKernel" = 0 then
+            mma := "/Applications/Mathematica.app/Contents/MacOS/MathKernel"  % Mac OSX
+         else if system "test -x /usr/local/bin/math" = 0 then
+            mma := "/usr/local/bin/math"  % Linux
+         else
+            rederr "no executable Mathematica found";
       vb := lto_at2str !*rlverbose;
       tm := lto_at2str !*time;
       call := lto_sconcat {mma, " < ",fn1,
-	 " | awk -v rf=", fn2, " -v verb=", vb, " -v time=", tm,
-	 " -f ",mma_awk!*};
+         " | awk -v rf=", fn2, " -v verb=", vb, " -v time=", tm,
+         " -f ",mma_awk!*};
       if !*rlverbose then
-	 ioto_tprin2t lto_sconcat {"+++ calling ",call};
+         ioto_tprin2t lto_sconcat {"+++ calling ",call};
       system call
    end;
 

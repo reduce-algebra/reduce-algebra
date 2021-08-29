@@ -45,25 +45,25 @@ procedure ofsf_decdeg0(f);
    begin scalar op,w,gamma,newmat,dvl,nargl;
       op := rl_op f;
       if rl_boolp op then <<
-	 nargl := for each subfo in rl_argn f collect <<
-   	    w := ofsf_decdeg0 subfo;
-	    dvl := nconc(dvl,cdr w);
-	    car w
-	 >>;
-	 return rl_mkn(op,nargl) . dvl
+         nargl := for each subfo in rl_argn f collect <<
+            w := ofsf_decdeg0 subfo;
+            dvl := nconc(dvl,cdr w);
+            car w
+         >>;
+         return rl_mkn(op,nargl) . dvl
       >>;
       if rl_quap op then <<
-	 w := ofsf_decdeg0 rl_mat f;
-	 dvl := cdr w;
-	 w := ofsf_decdeg1(car w,{rl_var f});
-	 dvl := nconc(dvl,cdr w);
-	 newmat := if null cdr w or not evenp cdr car cdr w then
-	    car w
-	 else <<
-	    gamma := ofsf_0mk2('geq,numr simp car car cdr w);
-	    rl_mkn(if op eq 'ex then 'and else 'impl,{gamma,car w})
-	 >>;
-	 return rl_mkq(op,rl_var f,newmat) . dvl
+         w := ofsf_decdeg0 rl_mat f;
+         dvl := cdr w;
+         w := ofsf_decdeg1(car w,{rl_var f});
+         dvl := nconc(dvl,cdr w);
+         newmat := if null cdr w or not evenp cdr car cdr w then
+            car w
+         else <<
+            gamma := ofsf_0mk2('geq,numr simp car car cdr w);
+            rl_mkn(if op eq 'ex then 'and else 'impl,{gamma,car w})
+         >>;
+         return rl_mkq(op,rl_var f,newmat) . dvl
       >>;
       % [f] is not complex.
       return f . nil
@@ -82,14 +82,14 @@ procedure ofsf_decdeg1(f,vl);
    % [vl] with even $d$.
    begin scalar posp, dvl; integer n;
       if vl eq 'fvarl then
-	 vl := cl_fvarl1 f;
+         vl := cl_fvarl1 f;
       for each v in vl do <<
-	 posp := ofsf_posvarp(f,v);
-	 n := ofsf_decdeg2(f,v,posp);
-	 if n > 1 then <<
-	    f := ofsf_decdeg3(f,v,n,posp);
-	    dvl := (v . n) . dvl
-	 >>
+         posp := ofsf_posvarp(f,v);
+         n := ofsf_decdeg2(f,v,posp);
+         if n > 1 then <<
+            f := ofsf_decdeg3(f,v,n,posp);
+            dvl := (v . n) . dvl
+         >>
       >>;
       return f . dvl
    end;
@@ -103,33 +103,33 @@ procedure ofsf_decdeg2(f,v,posp);
    begin scalar a,w,atl,!*gcd,oddp; integer dgcd;
       !*gcd := t;
       if !*rlbrkcxk then
-	 dgcd := ofsf_cxkdgcd(f,v);
+         dgcd := ofsf_cxkdgcd(f,v);
       atl := cl_atl1 f;
       while atl and not eqn(dgcd,1) do <<
-	 a := pop atl;
-	 w := ofsf_ignshift(a,v,posp);
-	 if w eq 'odd and null oddp then
-	    % We have found $R(c*v^k,0)$ with odd $k$ and $R$ an
-	    % ordering relation for the first time.
-	    oddp := 'odd
-	 else if null w then <<
-	    % We have not found $R(c*v^k,0)$.
-	    a := sfto_reorder(ofsf_arg2l a,v);
-	    while (not domainp a) and (mvar a eq v) and dgcd neq 1 do <<
-	       dgcd := gcdf(dgcd,ldeg a);
-	       a := red a
-	    >>
-      	 >>;
-	 if dgcd > 0 and oddp eq 'odd then <<
-	    % We have found $R(c*v^k,0)$ with odd $k$ and $R$ an
-	    % ordering relation for the first time.
-	    oddp := t;
-	    while w := quotf(dgcd,2) do
-	       dgcd := w
-	 >>
+         a := pop atl;
+         w := ofsf_ignshift(a,v,posp);
+         if w eq 'odd and null oddp then
+            % We have found $R(c*v^k,0)$ with odd $k$ and $R$ an
+            % ordering relation for the first time.
+            oddp := 'odd
+         else if null w then <<
+            % We have not found $R(c*v^k,0)$.
+            a := sfto_reorder(ofsf_arg2l a,v);
+            while (not domainp a) and (mvar a eq v) and dgcd neq 1 do <<
+               dgcd := gcdf(dgcd,ldeg a);
+               a := red a
+            >>
+         >>;
+         if dgcd > 0 and oddp eq 'odd then <<
+            % We have found $R(c*v^k,0)$ with odd $k$ and $R$ an
+            % ordering relation for the first time.
+            oddp := t;
+            while w := quotf(dgcd,2) do
+               dgcd := w
+         >>
       >>;
       if dgcd = 0 then
-	 return 1;
+         return 1;
       return dgcd
    end;
 
@@ -146,17 +146,17 @@ procedure ofsf_cxkdgcd1(kl,v,dgcd);
    % occurrences of [v] within the scope of the complex kernels in [kl].
    begin scalar u;
       for each k in kl do
-	 if pairp k then
-      	    for each arg in cdr k do <<
-	       % I am assuming that there are no quotients in complex kernels.
-	       u := numr simp arg;
-	       dgcd := ofsf_cxkdgcd1(kernels u,v,dgcd);
-	       u := sfto_reorder(u,v);
-	       while not domainp u and mvar u eq v do <<
-	       	  dgcd := gcdf(ldeg u,dgcd);
-	       	  u := red u
-	       >>
-	    >>;
+         if pairp k then
+            for each arg in cdr k do <<
+               % I am assuming that there are no quotients in complex kernels.
+               u := numr simp arg;
+               dgcd := ofsf_cxkdgcd1(kernels u,v,dgcd);
+               u := sfto_reorder(u,v);
+               while not domainp u and mvar u eq v do <<
+                  dgcd := gcdf(ldeg u,dgcd);
+                  u := red u
+               >>
+            >>;
       return dgcd
    end;
 
@@ -171,19 +171,19 @@ procedure ofsf_transform(v, f, vl, an, theo, ans, bvl);
       posp := ofsf_posvarp(f,v);
       dgcd := ofsf_decdeg2(f,v,posp);
       if dgcd = 1 then
-	 return nil;
+         return nil;
       if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
- 	 ioto_prin2 {"(",v,"^",dgcd,")"};
+         ioto_prin2 {"(",v,"^",dgcd,")"};
       nf := ofsf_decdeg3(f,v,dgcd,posp);
       if evenp dgcd then
-	 nf := rl_mkn('and, {ofsf_0mk2('geq, numr simp v), nf});
+         nf := rl_mkn('and, {ofsf_0mk2('geq, numr simp v), nf});
       if ans then <<
-      	 repeat v_shift := intern gensym() until not flagp(v_shift, 'used!*);
-	 flag({v_shift}, 'rl_qeansvar);
-      	 nf := cl_subfof({v . v_shift}, nf);
-	 vl := for each vv in vl collect if vv eq v then v_shift else vv;
-      	 w := simp {'expt, v_shift, {'quotient,1,dgcd}};
-	 an := cl_updans(v,'ofsf_shift!-indicator,{'dummy,w,dgcd},f,an,ans)
+         repeat v_shift := intern gensym() until not flagp(v_shift, 'used!*);
+         flag({v_shift}, 'rl_qeansvar);
+         nf := cl_subfof({v . v_shift}, nf);
+         vl := for each vv in vl collect if vv eq v then v_shift else vv;
+         w := simp {'expt, v_shift, {'quotient,1,dgcd}};
+         an := cl_updans(v,'ofsf_shift!-indicator,{'dummy,w,dgcd},f,an,ans)
       >>;
       return {nf, vl, an, theo, ans, bvl}
    end;
@@ -194,10 +194,10 @@ procedure ofsf_ignshift(at,v,posp);
    begin scalar w;
       w := sfto_reorder(ofsf_arg2l at,v);
       if not domainp w and null red w and mvar w eq v then
-	 if !*rlpos or posp or ofsf_op at memq '(equal neq) or evenp ldeg w then
-	    return 'ignore
-	 else
-	    return 'odd
+         if !*rlpos or posp or ofsf_op at memq '(equal neq) or evenp ldeg w then
+            return 'ignore
+         else
+            return 'odd
    end;
 
 procedure ofsf_decdeg3(f,v,n,posp);
@@ -219,7 +219,7 @@ procedure ofsf_retransform(f, v, dgcd);
       posp := ofsf_posvarp(f,v);
       f := ofsf_decdeg3(f,v,dgcd,posp);
       if evenp dgcd then
-	 f := rl_mkn('and, {ofsf_0mk2('geq, numr simp v), f});
+         f := rl_mkn('and, {ofsf_0mk2('geq, numr simp v), f});
       return f
    end;
 

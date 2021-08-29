@@ -39,11 +39,11 @@ procedure talp_ordatp(a1,a2);
       w1 := talp_arg2l a1;
       w2 := talp_arg2l a2;
       if w1 neq w2 then
-      	 return talp_tordp(talp_arg2l a1,talp_arg2l a2);
+         return talp_tordp(talp_arg2l a1,talp_arg2l a2);
       w1 := talp_arg2r a1;
       w2 := talp_arg2r a2;
       if w1 neq w2 then
-      	 return talp_tordp(talp_arg2r a1,talp_arg2r a2);
+         return talp_tordp(talp_arg2r a1,talp_arg2r a2);
       return 'true
    end;
 
@@ -60,10 +60,10 @@ procedure talp_termmlat(at);
    begin scalar r,w;
       w := talp_arg2l at;
       if w then
-	 r := (w . 1) . r;
+         r := (w . 1) . r;
       w := talp_arg2r at;
       if w then
-	 r := (w . 1) . r;
+         r := (w . 1) . r;
       return r
    end;
 
@@ -73,10 +73,10 @@ procedure talp_atnum(f);
    begin scalar op;
       op := rl_op f;
       if rl_boolp op then
- 	 return for each subf in rl_argn f sum
-    	    talp_atnum(subf);
+         return for each subf in rl_argn f sum
+            talp_atnum(subf);
       if rl_quap op then
-    	 return talp_atnum(rl_mat f);
+         return talp_atnum(rl_mat f);
       if rl_tvalp op then return 0;
       % [f] is an atomic formula.
       return 1
@@ -101,11 +101,11 @@ procedure talp_varlt1(term,vl);
    % [vl].
    begin
       if atom term then
-	 if not atsoc(term,talp_getl()) then
-	    return lto_insert(term,vl)
-	 else return nil;
+         if not atsoc(term,talp_getl()) then
+            return lto_insert(term,vl)
+         else return nil;
       for each arg in talp_argl term do
-	 vl := union(talp_varlt1(arg,vl),vl);
+         vl := union(talp_varlt1(arg,vl),vl);
       return vl
    end;
 
@@ -119,9 +119,9 @@ procedure talp_subt(al,u);
    % Term algebra Lisp prefix substitute.
    begin scalar w;
       if idp u and (w := atsoc(u,al)) then
-      	 return cdr w;
+         return cdr w;
       if atom u then
-      	 return u;
+         return u;
       return car u . for each arg in cdr u collect talp_subt(al,arg)
    end;
 
@@ -186,9 +186,9 @@ procedure talp_atab(f);
    begin scalar w;
       w := talp_atab1 f;
       return if w then
-	 cl_mktf w
+         cl_mktf w
       else
-	 f
+         f
    end;
 
 procedure talp_atab1(f);
@@ -199,28 +199,28 @@ procedure talp_atab1(f);
       atnumold := atnum;
       cdll:= talp_a2cdl cl_atml f;
       if !*rlverbose then <<
-	 ioto_tprin2t {atnum," = 100%"};
-	 dpth := length cdll
+         ioto_tprin2t {atnum," = 100%"};
+         dpth := length cdll
       >>;
       while cdll do <<
- 	 cdl := car cdll;
- 	 cdll := cdr cdll;
-	 nresl := cl_tab1(f,cdl);
- 	 atnumnf := talp_atnum cl_mktf nresl;
-      	 if !*rlverbose then <<
-	    ioto_prin2 {"[",dpth,": ",atnumnf,"] "};
-	    dpth := dpth - 1
-	 >>;
-	 if atnumnf < atnum then <<
-    	    resl := nresl;
-    	    atnum := atnumnf
-	 >>
+         cdl := car cdll;
+         cdll := cdr cdll;
+         nresl := cl_tab1(f,cdl);
+         atnumnf := talp_atnum cl_mktf nresl;
+         if !*rlverbose then <<
+            ioto_prin2 {"[",dpth,": ",atnumnf,"] "};
+            dpth := dpth - 1
+         >>;
+         if atnumnf < atnum then <<
+            resl := nresl;
+            atnum := atnumnf
+         >>
       >>;
       if !*rlverbose then
-	 if atnum < atnumold then
-	    ioto_tprin2t {"Success: ",atnumold," -> ",atnum}
-      	 else
-	    ioto_tprin2t {"No success, returning the original formula"};
+         if atnum < atnumold then
+            ioto_tprin2t {"Success: ",atnumold," -> ",atnum}
+         else
+            ioto_tprin2t {"No success, returning the original formula"};
       return resl
    end;
 
@@ -238,10 +238,10 @@ procedure talp_itab1(f);
    begin scalar w,res;
       w := talp_atab1 f;
       while w do <<
-	 res := cl_mktf w;
-      	 if !*rlverbose then
-	    ioto_tprin2t {"Recomputing tableau."};
-	 w:= talp_atab1 res
+         res := cl_mktf w;
+         if !*rlverbose then
+            ioto_tprin2t {"Recomputing tableau."};
+         w:= talp_atab1 res
       >>;
       return res or f
    end;
@@ -252,9 +252,9 @@ procedure talp_itab2(f);
    begin scalar w;
       w := talp_atab1 f;
       return if w then
-	 cl_mktf for each res in w collect (talp_itab2 car res) . cdr res
+         cl_mktf for each res in w collect (talp_itab2 car res) . cdr res
       else
-	 f
+         f
    end;
 
 procedure talp_a2cdl(atml);
@@ -264,11 +264,11 @@ procedure talp_a2cdl(atml);
    begin scalar atfs;
       while atml do <<
          atfs := caar atml . atfs;
-      	 atml := cdr atml;
+         atml := cdr atml;
       >>;
       return for each x in atfs collect
-      	 {talp_mk2('equal,talp_arg2l x,talp_arg2r x),
-	    talp_mk2('neq,talp_arg2l x, talp_arg2r x)}
+         {talp_mk2('equal,talp_arg2l x,talp_arg2r x),
+            talp_mk2('neq,talp_arg2l x, talp_arg2r x)}
    end;
 
 procedure talp_rnf(f);
@@ -290,11 +290,11 @@ procedure talp_rnf1(f);
       tmp := cl_simpl(f,nil,-1);
       if rl_tvalp tmp then return tmp;
       if talp_atfp tmp then
-	 return if talp_acfrp tmp then
-	    cl_simpl(talp_raf tmp,nil,-1)
-	 else tmp;
+         return if talp_acfrp tmp then
+            cl_simpl(talp_raf tmp,nil,-1)
+         else tmp;
       return cl_simpl(talp_op tmp .
-	 for each sf in talp_argl tmp collect talp_rnf1 sf,nil,-1)
+         for each sf in talp_argl tmp collect talp_rnf1 sf,nil,-1)
    end;
 
 procedure talp_acfrp(atf);
@@ -318,16 +318,16 @@ procedure talp_raf(atf);
       rel := talp_op atf;
       % lhs is a term in nf, rhs is an inverse term
       lhs := if talp_tcfrp talp_arg2l atf then <<
-	 rhs := talp_arg2r atf;
-	 talp_arg2l atf >>
+         rhs := talp_arg2r atf;
+         talp_arg2l atf >>
       else << rhs := talp_arg2l atf; talp_arg2r atf >>;
       f := talp_mkinv(talp_getinvfsym(talp_op lhs,1),rhs);
       fst := talp_simpat if rel eq 'equal then
-	 talp_mk2('neq,f,rhs)
+         talp_mk2('neq,f,rhs)
       else talp_mk2('equal,f,rhs);
       snd := for i:=1 : cdr atsoc(talp_op lhs,talp_getl()) collect <<
-	 tmp := talp_getinvfsym(talp_op lhs,i);
-	 talp_simpat talp_mk2(rel,talp_mkinv(tmp,rhs),nth(talp_fargl lhs,i))
+         tmp := talp_getinvfsym(talp_op lhs,i);
+         talp_simpat talp_mk2(rel,talp_mkinv(tmp,rhs),nth(talp_fargl lhs,i))
       >>;
       snd := for each x in snd collect talp_rnf1 x;
       tmp2 := talp_mkn(if rel eq 'equal then 'and else 'or, fst . snd);

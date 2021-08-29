@@ -38,14 +38,14 @@ procedure ofsf_simplat1(f,sop);
    begin scalar rel,lhs;
       rel := ofsf_op f;
       if not (rel memq '(equal neq leq geq lessp greaterp)) then
- 	 return nil;
+         return nil;
       lhs := ofsf_arg2l f;
       if domainp lhs then
- 	 return if ofsf_evalatp(rel,lhs) then 'true else 'false;
+         return if ofsf_evalatp(rel,lhs) then 'true else 'false;
       lhs := quotf(lhs,sfto_dcontentf lhs);
       if minusf lhs then <<
-    	 lhs := negf lhs;
-    	 rel := ofsf_anegrel rel
+         lhs := negf lhs;
+         rel := ofsf_anegrel rel
       >>;
       if null !*rlsiatadv then return ofsf_0mk2(rel,lhs);
       if rel eq 'equal then return ofsf_simplequal(lhs,sop);
@@ -66,8 +66,8 @@ procedure ofsf_simplequal(lhs,sop);
       ww := ofsf_posdefp ff;
       if ww eq 'stsq then return 'false;
       if !*rlsitsqspl and (!*rlsiexpla or !*rlsiexpl and sop = 'and) then <<
-	 if ww eq 'tsq then return ofsf_tsqsplequal ff;
-	 if w eq 'tsq then return ofsf_tsqsplequal lhs
+         if ww eq 'tsq then return ofsf_tsqsplequal ff;
+         if w eq 'tsq then return ofsf_tsqsplequal lhs
       >>;
       return ofsf_facequal!*(ff,sop)
    end;
@@ -77,10 +77,10 @@ procedure ofsf_tsqsplequal(f);
    begin scalar w;
       w := ofsf_getsqsummons(f);
       if !*rlsifac and (!*rlsiexpla or !*rlsiexpl and null cdr w) then
-	 return rl_smkn('and,for each m in w collect
-	    rl_smkn('or,for each v in m collect ofsf_0mk2('equal,v)));
+         return rl_smkn('and,for each m in w collect
+            rl_smkn('or,for each v in m collect ofsf_0mk2('equal,v)));
       return rl_smkn('and,for each m in w collect
- 	 ofsf_0mk2('equal,sfto_lmultf m))
+         ofsf_0mk2('equal,sfto_lmultf m))
    end;
 
 procedure ofsf_facequal!*(f,sop);
@@ -103,8 +103,8 @@ procedure ofsf_simplneq(lhs,sop);
       ww := ofsf_posdefp ff;
       if ww eq 'stsq then return 'true;
       if !*rlsitsqspl and (!*rlsiexpla or !*rlsiexpl and sop = 'or) then <<
-	 if ww eq 'tsq then return ofsf_tsqsplneq ff;
-	 if w eq 'tsq then return ofsf_tsqsplneq lhs
+         if ww eq 'tsq then return ofsf_tsqsplneq ff;
+         if w eq 'tsq then return ofsf_tsqsplneq lhs
       >>;
       return ofsf_facneq!*(ff,sop)
    end;
@@ -114,10 +114,10 @@ procedure ofsf_tsqsplneq(f);
    begin scalar w;
       w := ofsf_getsqsummons(f);
       if !*rlsifac and (!*rlsiexpla or !*rlsiexpl and null cdr w) then
-	 return rl_smkn('or,for each m in w collect
-	    rl_smkn('and,for each v in m collect ofsf_0mk2('neq,v)));
+         return rl_smkn('or,for each m in w collect
+            rl_smkn('and,for each v in m collect ofsf_0mk2('neq,v)));
       return rl_smkn('or,for each m in w collect
- 	 ofsf_0mk2('neq,sfto_lmultf m))
+         ofsf_0mk2('neq,sfto_lmultf m))
    end;
 
 procedure ofsf_facneq!*(f,sop);
@@ -139,7 +139,7 @@ procedure ofsf_getsqsummons(f);
       w := ofsf_getsqsummons(red f);
       v := !*k2f mvar f;
       for each x in ofsf_getsqsummons lc f do
-	 w := (v . x) . w;
+         w := (v . x) . w;
       return w
    end;
 
@@ -150,50 +150,50 @@ procedure ofsf_simplleq(lhs,sop);
    % quantifier-free formula.
    begin scalar s1,s2,w,x;
       if (s1 := ofsf_posdefp lhs) eq 'stsq then
- 	 return 'false;
+         return 'false;
       w := sfto_sqfpartf lhs;
       if (s2 := ofsf_posdefp w) eq 'stsq then
- 	 return 'false;
+         return 'false;
       if !*rlsitsqspl and (!*rlsiexpla or !*rlsiexpl and sop = 'and) then <<
-	 if s2 then return ofsf_tsqsplequal w;
-	 if s1 then return ofsf_tsqsplequal lhs
+         if s2 then return ofsf_tsqsplequal w;
+         if s1 then return ofsf_tsqsplequal lhs
       >>;
       if s1 or s2 then
- 	 return ofsf_facequal!*(w,sop);
+         return ofsf_facequal!*(w,sop);
       if null !*rlsipd and null !*rlsifaco then
- 	 return ofsf_0mk2('leq,lhs);
+         return ofsf_0mk2('leq,lhs);
       x := sfto_pdecf lhs;
       s1 := ofsf_posdefp car x;
       if s1 eq 'stsq then
-	 return ofsf_facequal!*(cdr x,sop);
+         return ofsf_facequal!*(cdr x,sop);
       if s1 then
-	 return ofsf_facequal!*(w,sop);
+         return ofsf_facequal!*(w,sop);
       if ofsf_posdefp cdr x eq 'stsq then
-	 cdr x := 1;
+         cdr x := 1;
       if !*rlsifaco then <<
-	 car x := sfto_lmultf ofsf_facsimpl car x;
-	 cdr x := ofsf_facsimpl cdr x
+         car x := sfto_lmultf ofsf_facsimpl car x;
+         cdr x := ofsf_facsimpl cdr x
       >> else
-	 cdr x := if not eqn(cdr x,1) then {cdr x};
+         cdr x := if not eqn(cdr x,1) then {cdr x};
       if ofsf_posdefp car x eq 'stsq then
-	 car x := 1;
+         car x := 1;
       w := sfto_lmultf cdr x;
       if ofsf_posdefp w eq 'stsq then <<
-	 cdr x := nil;
-	 w := 1
+         cdr x := nil;
+         w := 1
       >>;
       if eqn(car x,1) and eqn(w,1) then
-	 return 'false;
+         return 'false;
       if !*rlsiexpla or (!*rlsiexpl and (sop eq 'or)) then
-	 return rl_smkn('or,ofsf_0mk2('leq,car x) .
-	    for each fac in cdr x collect ofsf_0mk2('equal,fac));
+         return rl_smkn('or,ofsf_0mk2('leq,car x) .
+            for each fac in cdr x collect ofsf_0mk2('equal,fac));
       return ofsf_0mk2('leq,multf(car x,exptf(w,2)))
    end;
 
 procedure ofsf_facsimpl(u);
    for each x in cdr sfto_fctrf u join
       if not (ofsf_posdefp car x eq 'stsq) then
-      	 {car x};
+         {car x};
 
 procedure ofsf_simplgeq(lhs,sop);
    % Ordered field standard form simplify [geq]-atomic formula. [lhs]
@@ -202,33 +202,33 @@ procedure ofsf_simplgeq(lhs,sop);
    % quantifier-free formula.
    begin scalar x,w,s1,s2;
       if ofsf_posdefp lhs or ofsf_posdefp sfto_sqfpartf lhs then
- 	 return 'true;
+         return 'true;
       if not !*rlsipd and not !*rlsifaco then
-      	 return ofsf_0mk2('geq,lhs);
+         return ofsf_0mk2('geq,lhs);
       x := sfto_pdecf lhs;
       if ofsf_posdefp car x then
-	 return 'true;
+         return 'true;
       if ofsf_posdefp cdr x eq 'stsq then
-	 cdr x := 1;
+         cdr x := 1;
       if !*rlsifaco then <<
-	 car x := sfto_lmultf ofsf_facsimpl car x;
-	 cdr x := ofsf_facsimpl cdr x
+         car x := sfto_lmultf ofsf_facsimpl car x;
+         cdr x := ofsf_facsimpl cdr x
       >> else
-	 cdr x := if not eqn(cdr x,1) then {cdr x};
+         cdr x := if not eqn(cdr x,1) then {cdr x};
       w := sfto_lmultf cdr x;
       s1 := ofsf_posdefp car x;
       s2 := ofsf_posdefp w;
       if s1 and s2 then
-	 return 'true;
+         return 'true;
       if s1 eq 'stsq then
-      	 car x := 1
+         car x := 1
       else if s2 eq 'stsq then <<
-	 cdr x := nil;
-	 w := 1
+         cdr x := nil;
+         w := 1
       >>;
       if !*rlsiexpla or (!*rlsiexpl and (sop eq 'or)) then
-	 return rl_smkn('or,ofsf_0mk2('geq,car x) .
-	    for each fac in cdr x collect ofsf_0mk2('equal,fac));
+         return rl_smkn('or,ofsf_0mk2('geq,car x) .
+            for each fac in cdr x collect ofsf_0mk2('equal,fac));
       return ofsf_0mk2('geq,multf(car x,exptf(w,2)))
    end;
 
@@ -239,33 +239,33 @@ procedure ofsf_simpllessp(lhs,sop);
    % quantifier-free formula.
    begin scalar x,w,s1,s2;
       if ofsf_posdefp lhs or ofsf_posdefp sfto_sqfpartf lhs then
- 	 return 'false;
+         return 'false;
       if not !*rlsipd and not !*rlsifaco then
-      	 return ofsf_0mk2('lessp,lhs);
+         return ofsf_0mk2('lessp,lhs);
       x := sfto_pdecf lhs;
       if ofsf_posdefp car x then
-	 return 'false;
+         return 'false;
       if ofsf_posdefp cdr x eq 'stsq then
-	 cdr x := 1;
+         cdr x := 1;
       if !*rlsifaco then <<
-	 car x := sfto_lmultf ofsf_facsimpl car x;
-	 cdr x := ofsf_facsimpl cdr x
+         car x := sfto_lmultf ofsf_facsimpl car x;
+         cdr x := ofsf_facsimpl cdr x
       >> else
-	 cdr x := if not eqn(cdr x,1) then {cdr x};
+         cdr x := if not eqn(cdr x,1) then {cdr x};
       w := sfto_lmultf cdr x;
       s1 := ofsf_posdefp car x;
       s2 := ofsf_posdefp w;
       if s1 and s2 then
-	 return 'false;
+         return 'false;
       if s1 eq 'stsq then
-      	 car x := 1
+         car x := 1
       else if s2 eq 'stsq then <<
-	 cdr x := nil;
-	 w := 1
+         cdr x := nil;
+         w := 1
       >>;
       if !*rlsiexpla or (!*rlsiexpl and (sop eq 'and)) then
-	 return rl_smkn('and,ofsf_0mk2('lessp,car x) .
-	    for each fac in cdr x collect ofsf_0mk2('neq,fac));
+         return rl_smkn('and,ofsf_0mk2('lessp,car x) .
+            for each fac in cdr x collect ofsf_0mk2('neq,fac));
       return ofsf_0mk2('lessp,multf(car x,exptf(w,2)))
    end;
 
@@ -276,45 +276,45 @@ procedure ofsf_simplgreaterp(lhs,sop);
    % quantifier-free formula.
    begin scalar s1,s2,w,x;
       if !*rlpos and sfto_varf lhs then
- 	 return ofsf_0mk2('greaterp,lhs);
+         return ofsf_0mk2('greaterp,lhs);
       if (s1 := ofsf_posdefp lhs) eq 'stsq then
- 	 return 'true;
+         return 'true;
       w := sfto_sqfpartf lhs;
       if (s2 := ofsf_posdefp w) eq 'stsq then  % Proposition 3.3 (ii)
- 	 return 'true;
+         return 'true;
       if !*rlsitsqspl and (!*rlsiexpla or !*rlsiexpl and sop = 'or) then <<
-	 if s2 then return ofsf_tsqsplneq w;
-	 if s1 then return ofsf_tsqsplneq lhs
+         if s2 then return ofsf_tsqsplneq w;
+         if s1 then return ofsf_tsqsplneq lhs
       >>;
       if s1 or s2 then
- 	 return ofsf_facneq!*(w,sop);
+         return ofsf_facneq!*(w,sop);
       if null !*rlsipd and null !*rlsifaco then
- 	 return ofsf_0mk2('greaterp,lhs);
+         return ofsf_0mk2('greaterp,lhs);
       x := sfto_pdecf lhs;
       s1 := ofsf_posdefp car x;  % could return better fac info for free
       if s1 eq 'stsq then  % in particular, 1 is an stsq.
-	 return ofsf_facneq!*(cdr x,sop);
+         return ofsf_facneq!*(cdr x,sop);
       if s1 then
-	 return ofsf_facneq!*(w,sop);
+         return ofsf_facneq!*(w,sop);
       if ofsf_posdefp cdr x eq 'stsq then
-	 cdr x := 1;
+         cdr x := 1;
       if !*rlsifaco then <<
-	 car x := sfto_lmultf ofsf_facsimpl car x;
-	 cdr x := ofsf_facsimpl cdr x
+         car x := sfto_lmultf ofsf_facsimpl car x;
+         cdr x := ofsf_facsimpl cdr x
       >> else
-	 cdr x := if not eqn(cdr x,1) then {cdr x};
+         cdr x := if not eqn(cdr x,1) then {cdr x};
       if ofsf_posdefp car x eq 'stsq then
-	 car x := 1;
+         car x := 1;
       w := sfto_lmultf cdr x;
       if ofsf_posdefp w eq 'stsq then <<
-	 cdr x := nil;
-	 w := 1
+         cdr x := nil;
+         w := 1
       >>;
       if eqn(car x,1) and eqn(w,1) then
-	 return 'true;
+         return 'true;
       if !*rlsiexpla or (!*rlsiexpl and (sop eq 'and)) then
-	 return rl_smkn('and,ofsf_0mk2('greaterp,car x) .
-	    for each fac in cdr x collect ofsf_0mk2('neq,fac));
+         return rl_smkn('and,ofsf_0mk2('greaterp,car x) .
+            for each fac in cdr x collect ofsf_0mk2('neq,fac));
       return ofsf_0mk2('greaterp,multf(car x,exptf(w,2)))
    end;
 

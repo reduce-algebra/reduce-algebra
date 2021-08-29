@@ -50,23 +50,23 @@ procedure ofsf_subsumption(l1,l2,gor);
    % atomic formulas. Returns one of [imp], [rep], [nil].
    if gor eq 'or then (
       if ofsf_subsumep!-and(l1,l2) then
- 	 'keep2
+         'keep2
       else if ofsf_subsumep!-and(l2,l1) then
-	 'keep1
+         'keep1
    ) else  % [gor eq 'and]
       if ofsf_subsumep!-or(l1,l2) then
-	 'keep1
+         'keep1
       else if ofsf_subsumep!-or(l2,l1) then
-	 'keep2;
+         'keep2;
 
 procedure ofsf_subsumep!-and(l1,l2);
    % Ordered field standard form subsume [and] case. [l1] and [l2] are
    % lists of atomic formulas.
    begin scalar a;
       while l2 do <<
-	 a := car l2;
-	 l2 := cdr l2;
-	 if cl_simpl(a,l1,-1) neq 'true then a := l2 := nil
+         a := car l2;
+         l2 := cdr l2;
+         if cl_simpl(a,l1,-1) neq 'true then a := l2 := nil
       >>;
       return a
    end;
@@ -76,9 +76,9 @@ procedure ofsf_subsumep!-or(l1,l2);
    % lists of atomic formulas.
    begin scalar a;
       while l1 do <<
-	 a := car l1;
-	 l1 := cdr l1;
-	 if cl_simpl(rl_smkn('or,l2),{a},-1) neq 'true then a := l1 := nil
+         a := car l1;
+         l1 := cdr l1;
+         if cl_simpl(rl_smkn('or,l2),{a},-1) neq 'true then a := l1 := nil
       >>;
       return a
    end;
@@ -140,16 +140,16 @@ procedure ofsf_sacrel!-or(r1,r2);
    begin scalar w;
       w:= '( (lessp . ( (lessp . keep) (leq . keep1) (equal . leq)
                         (neq . keep1) (geq . drop) (greaterp . neq)))
-	     (leq   . ( (lessp . keep2) (leq . keep) (equal . keep2)
-		        (neq . drop) (geq . drop) (greaterp . drop)))
-	     (equal . ( (lessp . leq) (leq . keep1) (equal . keep)
-		        (neq . drop) (geq . keep1) (greaterp . geq)))
-	     (neq   . ( (lessp . keep2) (leq . drop) (equal . drop)
-		        (neq . keep) (geq . drop) (greaterp . keep2)))
-	     (geq   . ( (lessp . drop) (leq . drop) (equal . keep2)
-		        (neq . drop) (geq . keep) (greaterp . keep2)))
-	     (greaterp . ( (lessp . neq)  (leq . drop)  (equal . geq)
-	             	(neq . keep1) (geq . keep1) (greaterp . keep))));
+             (leq   . ( (lessp . keep2) (leq . keep) (equal . keep2)
+                        (neq . drop) (geq . drop) (greaterp . drop)))
+             (equal . ( (lessp . leq) (leq . keep1) (equal . keep)
+                        (neq . drop) (geq . keep1) (greaterp . geq)))
+             (neq   . ( (lessp . keep2) (leq . drop) (equal . drop)
+                        (neq . keep) (geq . drop) (greaterp . keep2)))
+             (geq   . ( (lessp . drop) (leq . drop) (equal . keep2)
+                        (neq . drop) (geq . keep) (greaterp . keep2)))
+             (greaterp . ( (lessp . neq)  (leq . drop)  (equal . geq)
+                        (neq . keep1) (geq . keep1) (greaterp . keep))));
       return cdr atsoc(r1,cdr atsoc(r2,w));
    end;
 
@@ -167,16 +167,16 @@ procedure ofsf_sacrel!-and(r1,r2);
    begin scalar w;
       w:= '( (lessp . ( (lessp . keep) (leq . keep2) (equal . drop)
                         (neq . keep2) (geq . drop) (greaterp . drop)))
-	     (leq   . ( (lessp . keep1) (leq . keep) (equal . keep1)
-		        (neq . lessp) (geq . equal) (greaterp . drop)))
-	     (equal . ( (lessp . drop) (leq . keep2) (equal . keep)
-		        (neq . drop) (geq . keep2) (greaterp . drop)))
-	     (neq   . ( (lessp . keep1) (leq . lessp) (equal . drop)
-		        (neq . keep) (geq . greaterp) (greaterp . keep1)))
-	     (geq   . ( (lessp . drop) (leq . equal) (equal . keep1)
-		        (neq . greaterp) (geq . keep) (greaterp . keep1)))
-	     (greaterp . ( (lessp . drop)  (leq . drop)  (equal . drop)
-	             	(neq . keep2) (geq . keep2) (greaterp . keep))));
+             (leq   . ( (lessp . keep1) (leq . keep) (equal . keep1)
+                        (neq . lessp) (geq . equal) (greaterp . drop)))
+             (equal . ( (lessp . drop) (leq . keep2) (equal . keep)
+                        (neq . drop) (geq . keep2) (greaterp . drop)))
+             (neq   . ( (lessp . keep1) (leq . lessp) (equal . drop)
+                        (neq . keep) (geq . greaterp) (greaterp . keep1)))
+             (geq   . ( (lessp . drop) (leq . equal) (equal . keep1)
+                        (neq . greaterp) (geq . keep) (greaterp . keep1)))
+             (greaterp . ( (lessp . drop)  (leq . drop)  (equal . drop)
+                        (neq . keep2) (geq . keep2) (greaterp . keep))));
       return cdr atsoc(r1,cdr atsoc(r2,w))
    end;
 
@@ -188,23 +188,23 @@ procedure ofsf_qssubat(pl,a);
    begin scalar w,r;
       w := ofsf_qssubatfind(pl,a);
       if not w then
-	 return a;
+         return a;
       r := ofsf_qssubatrel(ofsf_op w,ofsf_op a);      
       return if rl_tvalp r then
-	 r
+         r
       else
-	 ofsf_0mk2(r,ofsf_arg2l a)
+         ofsf_0mk2(r,ofsf_arg2l a)
    end;
 
 procedure ofsf_qssubatfind(pl,a);
    begin scalar r,la;
       la := ofsf_arg2l a;
       while pl do <<
-	 if ofsf_arg2l car pl = la then <<
-	    r := car pl;
-	    pl := nil
-	 >> else
-	    pl := cdr pl
+         if ofsf_arg2l car pl = la then <<
+            r := car pl;
+            pl := nil
+         >> else
+            pl := cdr pl
       >>;
       return r
    end;
@@ -216,16 +216,16 @@ procedure ofsf_qssubatrel(r1,r2);
       % prin2 cdr y; prin2 "  " >>; prin2t ""; >>;
       w:= '( (lessp . ( (lessp . true) (leq . true) (equal . false)
                         (neq . true) (geq . false) (greaterp . false)))
-	     (leq   . ( (lessp . neq) (leq . true) (equal . geq)
-		        (neq . neq) (geq . geq) (greaterp . false)))
-	     (equal . ( (lessp . false) (leq . true) (equal . true)
-		        (neq . false) (geq . true) (greaterp . false)))
-	     (neq   . ( (lessp . leq) (leq . leq) (equal . false)
-		        (neq . true) (geq . geq) (greaterp . geq)))
-	     (geq   . ( (lessp . false) (leq . leq) (equal . leq)
-		        (neq . neq) (geq . true) (greaterp . neq)))
-	     (greaterp . ( (lessp . false)  (leq . false)  (equal . false)
-	             	(neq . true) (geq . true) (greaterp . true))));
+             (leq   . ( (lessp . neq) (leq . true) (equal . geq)
+                        (neq . neq) (geq . geq) (greaterp . false)))
+             (equal . ( (lessp . false) (leq . true) (equal . true)
+                        (neq . false) (geq . true) (greaterp . false)))
+             (neq   . ( (lessp . leq) (leq . leq) (equal . false)
+                        (neq . true) (geq . geq) (greaterp . geq)))
+             (geq   . ( (lessp . false) (leq . leq) (equal . leq)
+                        (neq . neq) (geq . true) (greaterp . neq)))
+             (greaterp . ( (lessp . false)  (leq . false)  (equal . false)
+                        (neq . true) (geq . true) (greaterp . true))));
       return cdr atsoc(r2,cdr atsoc(r1,w))
    end;
    
@@ -236,20 +236,20 @@ procedure ofsf_qstrycons(a,c1,c2,op);
    begin scalar r,cc1,cc2,w;
       w := ofsf_qstrycons!-find(a,c2);
       if null w then
-	 return nil;
+         return nil;
       r := ofsf_qstrycons!-or(ofsf_op a,ofsf_op w);
       if null r or r eq 'false then
-	 return nil;
+         return nil;
       cc1 := delete(a,c1);  % Copy... % TODO: lto_delq or delete?
       cc2 := delete(w,c2);  % Copy... % TODO: lto_delq or delete?
       w := append(cc1,cc2);  % TODO: nconc
       if r neq 'true then
-      	 w := ofsf_0mk2(r,ofsf_arg2l a) . w;	    
+         w := ofsf_0mk2(r,ofsf_arg2l a) . w;        
       w := cl_qssimplc(w,nil,op);  % TODO: CNF
       if w eq 'false then
-	 return nil;
+         return nil;
       if w eq 'true then
-	 return 'break;
+         return 'break;
 %%       prin2t "Konsens von";
 %%       mathprint rl_prepfof rl_smkn('and,c1);
 %%       prin2t "Mit";
@@ -265,25 +265,25 @@ procedure ofsf_qstrycons!-or(r1,r2);
    begin scalar w;      
       w := ofsf_qsflip ofsf_smeqtable(ofsf_qsflip r1,ofsf_qsflip r2);
       return if w eq r1 or w eq r2 then nil else w
-   end;	 
+   end;  
 
 procedure ofsf_qsflip(r);
    if rl_tvalp r then
       cl_flip r
    else
       ofsf_lnegrel r;
-	 
+         
 % (TODO) REMARK: Letters occurs only once.
 
 procedure ofsf_qstrycons!-find(a,c2);
    begin scalar r,la;
       la := ofsf_arg2l a;
       while c2 do <<
-	 if ofsf_arg2l car c2 = la then <<
-	    r := car c2;
-	    c2 := nil
-	 >> else
-	    c2 := cdr c2;
+         if ofsf_arg2l car c2 = la then <<
+            r := car c2;
+            c2 := nil
+         >> else
+            c2 := cdr c2;
       >>;
       return r
    end;
@@ -298,16 +298,16 @@ procedure ofsf_qssusutab(r1,r2);
       % prin2 cdr y; prin2 "  " >>; prin2t ""; >>;
       w:= '( (lessp . ( (lessp . t) (leq . t) (equal . nil)
                         (neq . t) (geq . nil) (greaterp . nil)))
-	     (leq   . ( (lessp . nil) (leq . t) (equal . nil)
-		        (neq . nil) (geq . nil) (greaterp . nil)))
-	     (equal . ( (lessp . nil) (leq . t) (equal . t)
-		        (neq . nil) (geq . t) (greaterp . nil)))
-	     (neq   . ( (lessp . nil) (leq . nil) (equal . nil)
-		        (neq . t) (geq . nil) (greaterp . nil)))
-	     (geq   . ( (lessp . nil) (leq . nil) (equal . nil)
-		        (neq . nil) (geq . t) (greaterp . nil)))
-	     (greaterp . ( (lessp . nil)  (leq . nil)  (equal . nil)
-	             	(neq . t) (geq . t) (greaterp . t))));
+             (leq   . ( (lessp . nil) (leq . t) (equal . nil)
+                        (neq . nil) (geq . nil) (greaterp . nil)))
+             (equal . ( (lessp . nil) (leq . t) (equal . t)
+                        (neq . nil) (geq . t) (greaterp . nil)))
+             (neq   . ( (lessp . nil) (leq . nil) (equal . nil)
+                        (neq . t) (geq . nil) (greaterp . nil)))
+             (geq   . ( (lessp . nil) (leq . nil) (equal . nil)
+                        (neq . nil) (geq . t) (greaterp . nil)))
+             (greaterp . ( (lessp . nil)  (leq . nil)  (equal . nil)
+                        (neq . t) (geq . t) (greaterp . t))));
       return cdr atsoc(r2,cdr atsoc(r1,w))
    end;
 
@@ -315,20 +315,20 @@ procedure ofsf_qssiadd(a,c,theo);
    begin scalar w;
       w := ofsf_qssifind(a,c);
       if null w then
-	 return a . c;
+         return a . c;
       c := lto_delq(w,c);
       w := ofsf_qssibin(a,w);
       return if rl_tvalp w then
-	 w
+         w
       else
-	 w . c
+         w . c
    end;
 
 procedure ofsf_qssibin(a1,a2);
    begin scalar w;
       w := ofsf_qssirel(ofsf_op a1,ofsf_op a2);
       if rl_tvalp w then
-	 return w;
+         return w;
       return ofsf_0mk2(w,ofsf_arg2l a1);
    end;
 
@@ -336,11 +336,11 @@ procedure ofsf_qssifind(a,c);
    begin scalar r,la;
       la := ofsf_arg2l a;
       while c do <<
-	 if ofsf_arg2l car c = la then <<
-	    r := car c;
-	    c := nil
-	 >> else
-	    c := cdr c
+         if ofsf_arg2l car c = la then <<
+            r := car c;
+            c := nil
+         >> else
+            c := cdr c
       >>;
       return r
    end;
@@ -351,17 +351,17 @@ procedure ofsf_qssirel(r1,r2);
       % prin2 cdr y; prin2 "  " >>; prin2t ""; >>;
       w:= '( (lessp . ( (lessp . lessp) (leq . lessp) (equal . false)
                         (neq . lessp) (geq . false) (greaterp . false)))
-	     (leq   . ( (lessp . lessp) (leq . leq) (equal . equal)
-		        (neq . lessp) (geq . equal) (greaterp . false)))
-	     (equal . ( (lessp . false) (leq . equal) (equal . equal)
-		        (neq . false) (geq . equal) (greaterp . false)))
-	     (neq   . ( (lessp . lessp) (leq . lessp) (equal . false)
-		        (neq . neq) (geq . greaterp) (greaterp . greaterp)))
-	     (geq   . ( (lessp . false) (leq . equal) (equal . equal)
-		        (neq . greaterp) (geq . geq) (greaterp . greaterp)))
-	     (greaterp . ( (lessp . false)  (leq . false)  (equal . false)
-		        (neq . greaterp) (geq . greaterp) (greaterp . greaterp)
-		   )));
+             (leq   . ( (lessp . lessp) (leq . leq) (equal . equal)
+                        (neq . lessp) (geq . equal) (greaterp . false)))
+             (equal . ( (lessp . false) (leq . equal) (equal . equal)
+                        (neq . false) (geq . equal) (greaterp . false)))
+             (neq   . ( (lessp . lessp) (leq . lessp) (equal . false)
+                        (neq . neq) (geq . greaterp) (greaterp . greaterp)))
+             (geq   . ( (lessp . false) (leq . equal) (equal . equal)
+                        (neq . greaterp) (geq . geq) (greaterp . greaterp)))
+             (greaterp . ( (lessp . false)  (leq . false)  (equal . false)
+                        (neq . greaterp) (geq . greaterp) (greaterp . greaterp)
+                   )));
       return cdr atsoc(r2,cdr atsoc(r1,w))
    end;
 

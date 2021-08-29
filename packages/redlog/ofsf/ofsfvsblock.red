@@ -296,16 +296,16 @@ asserted procedure vs_block(f: QfFormula, vl: KernelL, theo: Theory, ans: Boolea
       vs_setfnal();
       db := vsdb_mk(vl, f, theo, bvl, ans);
       if !*ofsfvsblockbtr then
-	 vs_blockmainloop!-btr db
+         vs_blockmainloop!-btr db
       else
-      	 vs_blockmainloop db;
+         vs_blockmainloop db;
       rf . rvl := vsdb_collectResult db;
       if !*ofsfvsqetree2gml then
-      	 vsdb_2gml(db, rlqetreegmlfile!*);
+         vsdb_2gml(db, rlqetreegmlfile!*);
       if vsdb_ans db then <<
-      	 ansal := vsdb_computeAns db;
-      	 for each pr in ansal do
-      	    ioto_prin2t {car pr, " = ", ioto_smaprin anu_evalfR cdr pr}
+         ansal := vsdb_computeAns db;
+         for each pr in ansal do
+            ioto_prin2t {car pr, " = ", ioto_smaprin anu_evalfR cdr pr}
       >>;
       return {rvl, {rf . nil}, theo}
    end;
@@ -319,20 +319,20 @@ asserted procedure vs_blockmainloop!-btr(db: VSdb);
    % No meaningful return value. [db] is modified in-place.
    begin scalar nd;
       while vsdb_todop db do <<
-	 nd := vsdb_wcget db;
-	 if vsnd_flg nd then  % substitution has not been applied yet
-	    vsdb_applyvs(db, nd)
-	 else <<  % substitution was already applied
-	    if vsnd_f nd eq 'true then
-	       vsdb_dropall db;
-	    if null vsnd_vl nd then
-	       vsdb_scinsert(db, nd)
-	    else <<
-	       if !*rlverbose then
-		  vsnd_printinfo nd;
-	       vsdb_expandNode!-btr(db, nd)
-	    >>
-	 >>
+         nd := vsdb_wcget db;
+         if vsnd_flg nd then  % substitution has not been applied yet
+            vsdb_applyvs(db, nd)
+         else <<  % substitution was already applied
+            if vsnd_f nd eq 'true then
+               vsdb_dropall db;
+            if null vsnd_vl nd then
+               vsdb_scinsert(db, nd)
+            else <<
+               if !*rlverbose then
+                  vsnd_printinfo nd;
+               vsdb_expandNode!-btr(db, nd)
+            >>
+         >>
       >>
    end;
 
@@ -347,43 +347,43 @@ asserted procedure vsdb_expandNode!-btr(db: VSdb, nd: VSnd);
       assert(vsnd_vl nd);
       assert(not vsnd_flg nd);
       if vsdb_tryExpandNO(db, nd) then
-	 return;
+         return;
       if vsdb_tryExpandDG(db, nd) then
-	 return;
+         return;
       % Now each variable occurs, and no degree shift is possible.
       vl := lto_setminus(vsnd_vl nd, vsnd_tvl nd);
       if null vl then <<  % There is no variable to try.
-	 if !*rlverbose then
-	    ioto_tprin2t {"+++++ BACK"};
-	 pn := vsnd_parent nd;
-	 if null pn then <<  % The root is a failed node.
-	    vsdb_dropall db;
-	    vsdb_fcinsert(db, nd);
-	    return
-	 >>;
-	 vsdb_cdelete(db, pn);
-	 vsdb_wcinsert(db,
-	    vsnd_mk(vsnd_flg pn, vsnd_vs pn, vsnd_vl pn, vsnd_f pn, vsnd_parent pn, vsvs_v vsnd_vs nd . vsnd_tvl pn));
-	 return
+         if !*rlverbose then
+            ioto_tprin2t {"+++++ BACK"};
+         pn := vsnd_parent nd;
+         if null pn then <<  % The root is a failed node.
+            vsdb_dropall db;
+            vsdb_fcinsert(db, nd);
+            return
+         >>;
+         vsdb_cdelete(db, pn);
+         vsdb_wcinsert(db,
+            vsnd_mk(vsnd_flg pn, vsnd_vs pn, vsnd_vl pn, vsnd_f pn, vsnd_parent pn, vsvs_v vsnd_vs nd . vsnd_tvl pn));
+         return
       >>;
       % There is a variable to try. We select a variable.
       de := vsdb_selectvar!-btr(db, nd);
       v := vsde_v de;
       if null vsde_tpl de then <<  % We have failed to compute an elimset for [v].
-	 if !*rlverbose then
-	    ioto_tprin2t {"+++++ FAIL ", v};
-	 vsdb_wcinsert(db,
-	    vsnd_mk(vsnd_flg nd, vsnd_vs nd, vsnd_vl nd, vsnd_f nd, vsnd_parent nd, v . vsnd_tvl nd));
-	 return
+         if !*rlverbose then
+            ioto_tprin2t {"+++++ FAIL ", v};
+         vsdb_wcinsert(db,
+            vsnd_mk(vsnd_flg nd, vsnd_vs nd, vsnd_vl nd, vsnd_f nd, vsnd_parent nd, v . vsnd_tvl nd));
+         return
       >>;
       % We have successfully computed an elimset for [v].
       if !*rlverbose then
-	 ioto_tprin2t {"+++++ SUCC ", vsde_v de, " (elimset size = ", length vsde_tpl de, ")"};
+         ioto_tprin2t {"+++++ SUCC ", vsde_v de, " (elimset size = ", length vsde_tpl de, ")"};
       f := vsde_f de;
       nvl := lto_delq(v, vsnd_vl nd);
       for each tp in vsde_tpl de do
-	 vsdb_wcinsert(db,
-	    vsnd_mk(t, vsts_mk(v, tp), nvl, f, nd, nil))
+         vsdb_wcinsert(db,
+            vsnd_mk(t, vsts_mk(v, tp), nvl, f, nd, nil))
    end;
 
 asserted procedure vsdb_selectvar!-btr(db: VSdb, nd: VSnd): VSde;
@@ -396,17 +396,17 @@ asserted procedure vsdb_selectvar!-btr(db: VSdb, nd: VSnd): VSde;
       bvl := vsdb_bvl db;
       % Try to select a variable with a linear elimset w.r.t. [bvl].
       while vl and not sltd do <<
-	 v := pop vl;
-	 oo := updkorder v;
-	 de := vsde_mk(v, ofsf_reorder f, ofsf_reorderl theo, bvl);
-	 vsde_compute de;
-	 if vsde_tpllinp(de, bvl) then  % If there is a variable with a linear elimset, then take it.
-	    sltd := t;
-	 push(de, del);
-	 setkorder oo
+         v := pop vl;
+         oo := updkorder v;
+         de := vsde_mk(v, ofsf_reorder f, ofsf_reorderl theo, bvl);
+         vsde_compute de;
+         if vsde_tpllinp(de, bvl) then  % If there is a variable with a linear elimset, then take it.
+            sltd := t;
+         push(de, del);
+         setkorder oo
       >>;
       if sltd then
-	 return de;
+         return de;
       return vsdb_bestDE reversip del
    end;
 
@@ -419,32 +419,32 @@ asserted procedure vs_blockmainloop(db: VSdb);
    % No meaningful return value. [db] is modified in-place.
    begin scalar nd, vl, f, mbr;
       while vsdb_todop db do <<
-	 nd := vsdb_wcget db;
-	 vl := vsnd_vl nd;
-	 f := vsnd_f nd;
-	 if vsnd_flg nd then  % substitution has not been applied yet
-	    vsdb_applyvs(db, nd)
-	 else <<  % substitution was already applied
-	    mbr := vsdb_htmember(db, f);
-	    if not mbr or vsvs_arp vsnd_vs nd then <<
-	       if not mbr then
-	       	  vsdb_htinsert(db, f);
-	       if f eq 'true then
-	       	  vsdb_dropall db;
-	       if null vl then
-	       	  vsdb_scinsert(db, nd)
-	       else <<
-		  if !*rlverbose then
-		     vsnd_printinfo nd;
-		  vsdb_expandNode(db, nd)
-	       >>
-	    >> % else
- 	       % vsdb_scinsert(db, nd)
-	       %
-	       % One can use this "else" branch to document also those
-	       % nodes that were dropped because they contained a
-	       % formula occurring elsewhere in the QE tree.
-	 >>
+         nd := vsdb_wcget db;
+         vl := vsnd_vl nd;
+         f := vsnd_f nd;
+         if vsnd_flg nd then  % substitution has not been applied yet
+            vsdb_applyvs(db, nd)
+         else <<  % substitution was already applied
+            mbr := vsdb_htmember(db, f);
+            if not mbr or vsvs_arp vsnd_vs nd then <<
+               if not mbr then
+                  vsdb_htinsert(db, f);
+               if f eq 'true then
+                  vsdb_dropall db;
+               if null vl then
+                  vsdb_scinsert(db, nd)
+               else <<
+                  if !*rlverbose then
+                     vsnd_printinfo nd;
+                  vsdb_expandNode(db, nd)
+               >>
+            >> % else
+               % vsdb_scinsert(db, nd)
+               %
+               % One can use this "else" branch to document also those
+               % nodes that were dropped because they contained a
+               % formula occurring elsewhere in the QE tree.
+         >>
       >>
    end;
 
@@ -458,10 +458,10 @@ asserted procedure vsdb_applyvs(db: VSdb, nd: VSnd);
       v := vsvs_v vs;
       oo := updkorder v;
       ffl := qff_applyvs(vsvs_reorder vs,
-	 ofsf_reorder vsnd_f nd, vsdb_bvl db, ofsf_reorderl vsdb_curtheo db);
+         ofsf_reorder vsnd_f nd, vsdb_bvl db, ofsf_reorderl vsdb_curtheo db);
       setkorder oo;
       for each ff in ffl do
-	 vsdb_wcinsert(db, vsnd_mk(nil, vs, vsnd_vl nd, ff, vsnd_parent nd, nil))
+         vsdb_wcinsert(db, vsnd_mk(nil, vs, vsnd_vl nd, ff, vsnd_parent nd, nil))
    end;
 
 asserted procedure vsdb_expandNode(db: VSdb, nd: VSnd);
@@ -473,18 +473,18 @@ asserted procedure vsdb_expandNode(db: VSdb, nd: VSnd);
       assert(vsnd_vl nd);
       assert(not vsnd_flg nd);
       if vsdb_tryExpandNO(db, nd) then
-	 return;
+         return;
       if vsdb_tryExpandDG(db, nd) then
-	 return;
+         return;
       % Now each variable occurs, and no degree shift is possible.
       if eqn(rlvarsellvl!*, 1) then
-	 vsdb_expandNode1(db, nd);
+         vsdb_expandNode1(db, nd);
       if eqn(rlvarsellvl!*, 2) then
-	 vsdb_expandNode2(db, nd);
+         vsdb_expandNode2(db, nd);
       if eqn(rlvarsellvl!*, 3) then
-	 vsdb_expandNode3(db, nd);
+         vsdb_expandNode3(db, nd);
       if eqn(rlvarsellvl!*, 4) then
-	 vsdb_expandNode4(db, nd)
+         vsdb_expandNode4(db, nd)
    end;
 
 asserted procedure vsdb_tryExpandNO(db: VSdb, nd: VSnd): Boolean;
@@ -495,15 +495,15 @@ asserted procedure vsdb_tryExpandNO(db: VSdb, nd: VSnd): Boolean;
       vl := lto_setminus(vsnd_vl nd, vsnd_tvl nd);
       rvl := cl_fvarl1 vsnd_f nd;
       while vl and not res do <<
-	 v := pop vl;
-	 if not (v memq rvl) then <<
-	    res := t;
-	    vsdb_wcinsert(db,
-	       vsnd_mk(nil, vsar_mk v, lto_delq(v, vsnd_vl nd), vsnd_f nd, nd, vsnd_tvl nd))
-	 >>
+         v := pop vl;
+         if not (v memq rvl) then <<
+            res := t;
+            vsdb_wcinsert(db,
+               vsnd_mk(nil, vsar_mk v, lto_delq(v, vsnd_vl nd), vsnd_f nd, nd, vsnd_tvl nd))
+         >>
       >>;
       if !*rlverbose and res then
-	 ioto_tprin2t {"+++++ SUCC ", v, " (does not occur)"};
+         ioto_tprin2t {"+++++ SUCC ", v, " (does not occur)"};
       return res
    end;
 
@@ -515,19 +515,19 @@ asserted procedure vsdb_tryExpandDG(db: VSdb, nd: VSnd): Boolean;
       vl := lto_setminus(vsnd_vl nd, vsnd_tvl nd);
       f := vsnd_f nd;
       if vsvs_dgp vsnd_vs nd then
-	 vl := lto_delq(vsdg_sv vsnd_vs nd, vl);  % We need not to try degree shift w.r.t. the most recent shadow variable.
+         vl := lto_delq(vsdg_sv vsnd_vs nd, vl);  % We need not to try degree shift w.r.t. the most recent shadow variable.
       while vl and not res do <<
-	 v := pop vl;
-	 g := vs_dgcd(f, v);
-	 if g > 1 then <<
-	    res := t;
-	    sv := vs_shadow v;
-	    vsdb_wcinsert(db,
-	       vsnd_mk(t, vsdg_mk(v, g, sv), subst(sv, v, vsnd_vl nd), vsnd_f nd, nd, vsnd_tvl nd))
-	 >>
+         v := pop vl;
+         g := vs_dgcd(f, v);
+         if g > 1 then <<
+            res := t;
+            sv := vs_shadow v;
+            vsdb_wcinsert(db,
+               vsnd_mk(t, vsdg_mk(v, g, sv), subst(sv, v, vsnd_vl nd), vsnd_f nd, nd, vsnd_tvl nd))
+         >>
       >>;
       if !*rlverbose and res then
-	 ioto_tprin2t {"+++++ SUCC ", v, " ^ ", g, " = ", sv, " (degree shift)"};
+         ioto_tprin2t {"+++++ SUCC ", v, " ^ ", g, " = ", sv, " (degree shift)"};
       return res
    end;
 
@@ -554,11 +554,11 @@ asserted procedure vsdb_expandNode2(db: VSdb, nd: VSnd);
       theo := vsdb_curtheo db;
       bvl := vsdb_bvl db;
       repeat <<
-	 v := pop vl;
-	 oo := updkorder v;
-      	 de := vsde_mk(v, ofsf_reorder f, ofsf_reorderl theo, bvl);
-	 vsde_compute de;
-      	 setkorder oo
+         v := pop vl;
+         oo := updkorder v;
+         de := vsde_mk(v, ofsf_reorder f, ofsf_reorderl theo, bvl);
+         vsde_compute de;
+         setkorder oo
       >> until null vl or vsde_tpl de;
       vsdb_insertaec(db, nd, de)
    end;
@@ -573,18 +573,18 @@ asserted procedure vsdb_expandNode3(db: VSdb, nd: VSnd);
       bvl := vsdb_bvl db;
       % Try to select a variable with a linear elimset w.r.t. [bvl].
       while vl and not sltd do <<
-	 v := pop vl;
-	 oo := updkorder v;
-	 de := vsde_mk(v, ofsf_reorder f, ofsf_reorderl theo, bvl);
-	 vsde_compute de;
-	 if vsde_tpllinp(de, bvl) then  % If there is a variable with a linear elimset, then take it.
-	    sltd := t;
-	 push(de, del);
-	 setkorder oo
+         v := pop vl;
+         oo := updkorder v;
+         de := vsde_mk(v, ofsf_reorder f, ofsf_reorderl theo, bvl);
+         vsde_compute de;
+         if vsde_tpllinp(de, bvl) then  % If there is a variable with a linear elimset, then take it.
+            sltd := t;
+         push(de, del);
+         setkorder oo
       >>;
       if sltd then <<
-	 vsdb_insertaec(db, nd, de);
-	 return
+         vsdb_insertaec(db, nd, de);
+         return
       >>;
       de := vsdb_bestDE reversip del;
       vsdb_insertaec(db, nd, de)
@@ -604,36 +604,36 @@ asserted procedure vsdb_bestDE(del: List): VSde;
       % Try to select a variable with an elimset of degree 1.
       tmpdel := del;
       while tmpdel and not sltd do <<
-	 de := pop tmpdel;
-	 oo := updkorder vsde_v de;
-      	 if vsde_tplldp(de, 1) then
-	    sltd := t;
-	 setkorder oo
+         de := pop tmpdel;
+         oo := updkorder vsde_v de;
+         if vsde_tplldp(de, 1) then
+            sltd := t;
+         setkorder oo
       >>;
       if sltd then
-	 return de;
+         return de;
       % Try to select a variable with an elimset of degree 2.
       tmpdel := del;
       while tmpdel and not sltd do <<
-	 de := pop tmpdel;
-	 oo := updkorder vsde_v de;
-      	 if vsde_tplldp(de, 2) then
-	    sltd := t;
-	 setkorder oo
+         de := pop tmpdel;
+         oo := updkorder vsde_v de;
+         if vsde_tplldp(de, 2) then
+            sltd := t;
+         setkorder oo
       >>;
       if sltd then
-	 return de;
+         return de;
       % Try to select a variable with some non-failed elimset.
       tmpdel := del;
       while tmpdel and not sltd do <<
-	 de := pop tmpdel;
-	 oo := updkorder vsde_v de;
-      	 if vsde_tpl de then
-	    sltd := t;
-	 setkorder oo
+         de := pop tmpdel;
+         oo := updkorder vsde_v de;
+         if vsde_tpl de then
+            sltd := t;
+         setkorder oo
       >>;
       if sltd then
-	 return de;
+         return de;
       % Select the first variable.
       return car del
    end;
@@ -645,18 +645,18 @@ asserted procedure vsdb_insertaec(db: VSdb, nd: VSnd, de: VSde);
    begin scalar tpl, f, v, nvl;
       tpl := vsde_tpl de;
       if null vsde_tpl de then <<  % An elimination set has to be non-empty.
-      	 if !*rlverbose then
-	    ioto_tprin2t {"+++++ FAIL ", vsde_v de};
-	 vsdb_fcinsert(db, nd);
-	 return
+         if !*rlverbose then
+            ioto_tprin2t {"+++++ FAIL ", vsde_v de};
+         vsdb_fcinsert(db, nd);
+         return
       >>;
       if !*rlverbose then
-	 ioto_tprin2t {"+++++ SUCC ", vsde_v de, " (elimset size = ", length vsde_tpl de, ")"};
+         ioto_tprin2t {"+++++ SUCC ", vsde_v de, " (elimset size = ", length vsde_tpl de, ")"};
       f := vsde_f de;
       v := vsde_v de;
       nvl := lto_delq(v, vsnd_vl nd);
       for each tp in tpl do
-	 vsdb_wcinsert(db, vsnd_mk(t, vsts_mk(v, tp), nvl, f, nd, nil))
+         vsdb_wcinsert(db, vsnd_mk(t, vsts_mk(v, tp), nvl, f, nd, nil))
    end;
 
 asserted procedure vsdb_collectResult(db: VSdb): DottedPair;
@@ -666,13 +666,13 @@ asserted procedure vsdb_collectResult(db: VSdb): DottedPair;
    begin scalar fl, vl;
       assert(not vsdb_todop db);
       for each nd in vsdb_sc db do <<
-	 assert(not vsnd_flg nd);
-	 push(vsnd_f nd, fl)
+         assert(not vsnd_flg nd);
+         push(vsnd_f nd, fl)
       >>;
       for each nd in vsdb_fc db do <<
-	 assert(not vsnd_flg nd);
-	 push(vsnd_f nd, fl);
-	 vl := union(vl, vsnd_vl nd)
+         assert(not vsnd_flg nd);
+         push(vsnd_f nd, fl);
+         vl := union(vl, vsnd_vl nd)
       >>;
       return cl_simpl(rl_mkn('or, fl), vsdb_theo db, -1) . vl
    end;
@@ -695,8 +695,8 @@ asserted procedure vs_dgcd(f: QfFormula, x: Kernel): Integer;
    begin scalar atl, at; integer g;
       atl := cl_atl1 f;
       while atl and not eqn(g, 1) do <<
-	 at := pop atl;
-	 g := gcdn(g, sfto_dgcdf(ofsf_arg2l at, x))
+         at := pop atl;
+         g := gcdn(g, sfto_dgcdf(ofsf_arg2l at, x))
       >>;
       return g
    end;
@@ -713,11 +713,11 @@ asserted procedure vsdb_2gml(db: VSdb, filename: String): Any;
       ioto_prin2t "directed 1";
       vlm := nil . 0;
       for each nd in vsdb_wc db do
-	 vlm := vsdb_2gmln(nd, cdr vlm + 1, "#C0C0C0", vlm);
+         vlm := vsdb_2gmln(nd, cdr vlm + 1, "#C0C0C0", vlm);
       for each nd in vsdb_sc db do
-	 vlm := vsdb_2gmln(nd, cdr vlm + 1, "#00FF00", vlm);
+         vlm := vsdb_2gmln(nd, cdr vlm + 1, "#00FF00", vlm);
       for each nd in vsdb_fc db do
-	 vlm := vsdb_2gmln(nd, cdr vlm + 1, "#FF0000", vlm);
+         vlm := vsdb_2gmln(nd, cdr vlm + 1, "#FF0000", vlm);
       ioto_prin2t "]";
       if nat then on1 'nat;
       shut filename
@@ -729,14 +729,14 @@ asserted procedure vsdb_2gmln(nd: VSnd, n: Integer, c: String, vlm: DottedPair):
    begin scalar w, p;
       w := atsoc(nd, car vlm);
       if w then
-	 return vlm;
+         return vlm;
       vsdb_2gmln!-printn(nd, n, c);
       p := vsnd_parent nd;
       if p then <<
-	 vlm := vsdb_2gmln(p, n + 1, "#C0C0C0", vlm);
-      	 w := atsoc(p, car vlm);
-      	 assert(w);
-      	 vsdb_2gmln!-printe(nd, cdr w, n)
+         vlm := vsdb_2gmln(p, n + 1, "#C0C0C0", vlm);
+         w := atsoc(p, car vlm);
+         assert(w);
+         vsdb_2gmln!-printe(nd, cdr w, n)
       >>;
       return ((nd . n) . car vlm) . if n > cdr vlm then n else cdr vlm
    end;
@@ -766,38 +766,38 @@ asserted procedure vsdb_2gmln!-printe(nd: VSnd, ss: Integer, tt: Integer);
       ioto_prin2t {"target ", tt};
       ioto_prin2t "label """;
       if vsvs_tsp vs then <<
-	 tp := vsts_tp vs;
-	 if vstp_np tp eq 'minf then <<
-      	    ioto_prin2t {vsvs_v vs, " = - inf"};
-	    ioto_prin2 "guard:";
-	    mathprint rl_prepfof vstp_guard tp
-	 >> else if vstp_np tp eq 'pinf then <<
-      	    ioto_prin2t {vsvs_v vs, " = + inf"};
-	    ioto_prin2 "guard:";
-	    mathprint rl_prepfof vstp_guard tp
-	 >> else if vstp_np tp eq 'meps then <<
-      	    ioto_prin2t {vsvs_v vs, " = tp - eps"};
-	    mathprint prepf vspr_f vstp_pr tp;
-	    ioto_prin2t vspr_rsl vstp_pr tp;
-	    ioto_prin2 "guard:";
-	    mathprint rl_prepfof vstp_guard tp
-      	 >> else if vstp_np tp eq 'peps then <<
-      	    ioto_prin2t {vsvs_v vs, " = tp + eps"};
-	    mathprint prepf vspr_f vstp_pr tp;
-	    ioto_prin2t vspr_rsl vstp_pr tp;
-	    ioto_prin2 "guard:";
-	    mathprint rl_prepfof vstp_guard tp
-	 >> else <<
-      	    ioto_prin2t {vsvs_v vs, " = tp"};
-	    mathprint prepf vspr_f vstp_pr tp;
-	    ioto_prin2t vspr_rsl vstp_pr tp;
-	    ioto_prin2 "guard:";
-	    mathprint rl_prepfof vstp_guard tp
-	 >>
+         tp := vsts_tp vs;
+         if vstp_np tp eq 'minf then <<
+            ioto_prin2t {vsvs_v vs, " = - inf"};
+            ioto_prin2 "guard:";
+            mathprint rl_prepfof vstp_guard tp
+         >> else if vstp_np tp eq 'pinf then <<
+            ioto_prin2t {vsvs_v vs, " = + inf"};
+            ioto_prin2 "guard:";
+            mathprint rl_prepfof vstp_guard tp
+         >> else if vstp_np tp eq 'meps then <<
+            ioto_prin2t {vsvs_v vs, " = tp - eps"};
+            mathprint prepf vspr_f vstp_pr tp;
+            ioto_prin2t vspr_rsl vstp_pr tp;
+            ioto_prin2 "guard:";
+            mathprint rl_prepfof vstp_guard tp
+         >> else if vstp_np tp eq 'peps then <<
+            ioto_prin2t {vsvs_v vs, " = tp + eps"};
+            mathprint prepf vspr_f vstp_pr tp;
+            ioto_prin2t vspr_rsl vstp_pr tp;
+            ioto_prin2 "guard:";
+            mathprint rl_prepfof vstp_guard tp
+         >> else <<
+            ioto_prin2t {vsvs_v vs, " = tp"};
+            mathprint prepf vspr_f vstp_pr tp;
+            ioto_prin2t vspr_rsl vstp_pr tp;
+            ioto_prin2 "guard:";
+            mathprint rl_prepfof vstp_guard tp
+         >>
       >> else if vsvs_dgp vs then
-      	 ioto_prin2t {vsvs_v vs, " = ", vsdg_g vs, "-th root of ", vsdg_sv vs}
+         ioto_prin2t {vsvs_v vs, " = ", vsdg_g vs, "-th root of ", vsdg_sv vs}
       else if vsvs_arp vs then
-      	 ioto_prin2t {vsvs_v vs, " = arbitrary"};
+         ioto_prin2t {vsvs_v vs, " = arbitrary"};
       ioto_prin2t """";
       ioto_prin2t "]"
    end;
@@ -808,10 +808,10 @@ asserted procedure vsdb_prints(db: VSdb);
    % VSdb print summary.
    <<
       ioto_prin2 "VSdb: ";
-      	 ioto_prin2t {"#W: ", vsco_length vsdb_wc db,
-      	    " #S: ", vsco_length vsdb_sc db,
-      	    " #F: ", vsco_length vsdb_fc db,
-      	    " #H: ", length cadr vsdb_ht db}
+         ioto_prin2t {"#W: ", vsco_length vsdb_wc db,
+            " #S: ", vsco_length vsdb_sc db,
+            " #F: ", vsco_length vsdb_fc db,
+            " #H: ", length cadr vsdb_ht db}
    >>;
 
 asserted procedure vsdb_print(db: VSdb);
@@ -823,26 +823,26 @@ asserted procedure vsdb_print(db: VSdb);
       ioto_prin2t nil;
       ioto_prin2 "VSdb WORKING NODES:";
       if null wc then
-      	 ioto_prin2t " NONE"
+         ioto_prin2t " NONE"
       else <<
-      	 ioto_prin2t nil;
-	 vsnd_printl wc
+         ioto_prin2t nil;
+         vsnd_printl wc
       >>;
       ioto_prin2t nil;
       ioto_prin2 "VSdb SUCCESS NODES:";
       if null sc then
-      	 ioto_prin2t " NONE"
+         ioto_prin2t " NONE"
       else <<
-      	 ioto_prin2t nil;
-	 vsnd_printl sc
+         ioto_prin2t nil;
+         vsnd_printl sc
       >>;
       ioto_prin2t nil;
       ioto_prin2 "VSdb FAILURE NODES:";
       if null fc then
-      	 ioto_prin2t " NONE"
+         ioto_prin2t " NONE"
       else <<
-      	 ioto_prin2t nil;
-	 vsnd_printl fc
+         ioto_prin2t nil;
+         vsnd_printl fc
       >>
    end;
 
@@ -875,9 +875,9 @@ asserted procedure vsnd_printinfo(nd: VSnd);
       ioto_prin2t {"#at = ", cl_atnum f};
       % ioto_prin2 "+++++ max degs: ";
       % for each s on car cl_ifacdegl f do <<
-      % 	 ioto_prin2 {caar s, ": ", cdar s};
-      % 	 if cdr s then
-      % 	    ioto_prin2 ", "
+      %          ioto_prin2 {caar s, ": ", cdar s};
+      %          if cdr s then
+      %             ioto_prin2 ", "
       % >>;
       ioto_prin2t nil
    end;

@@ -66,7 +66,7 @@ asserted procedure vspr_d(pr: VSpr): Integer;
    begin scalar f;
       f := vspr_f pr;
       if f then
-	 return ldeg f;
+         return ldeg f;
       return 0
    end;
 
@@ -74,7 +74,7 @@ asserted procedure vspr_rtl(pr: VSpr): List;
    % Parametric root description root type list.
    begin scalar rtl;
       rtl := for each rs in vspr_rsl pr collect
-	 car rs;
+         car rs;
       % TODO: There could be duplicates in [rtl] in the future. Then
       % you will have to delete them here!
       return sort(rtl, function(lambda(a, b); a < b))
@@ -154,7 +154,7 @@ asserted procedure vscs_ip(cs: VScs): VSprL;
    begin scalar w;
       w := atsoc('ip, cdr cs);
       if w then
-	 return cdr w;
+         return cdr w;
       return nil
    end;
 
@@ -163,7 +163,7 @@ asserted procedure vscs_ep(cs: VScs): VSprL;
    begin scalar w;
       w := atsoc('ep, cdr cs);
       if w then
-	 return cdr w;
+         return cdr w;
       return nil
    end;
 
@@ -172,7 +172,7 @@ asserted procedure vscs_slb(cs: VScs): VSprL;
    begin scalar w;
       w := atsoc('slb, cdr cs);
       if w then
-	 return cdr w;
+         return cdr w;
       return nil
    end;
 
@@ -181,7 +181,7 @@ asserted procedure vscs_wlb(cs: VScs): VSprL;
    begin scalar w;
       w := atsoc('wlb, cdr cs);
       if w then
-	 return cdr w;
+         return cdr w;
       return nil
    end;
 
@@ -190,7 +190,7 @@ asserted procedure vscs_sub(cs: VScs): VSprL;
    begin scalar w;
       w := atsoc('sub, cdr cs);
       if w then
-	 return cdr w;
+         return cdr w;
       return nil
    end;
 
@@ -199,7 +199,7 @@ asserted procedure vscs_wub(cs: VScs): VSprL;
    begin scalar w;
       w := atsoc('wub, cdr cs);
       if w then
-	 return cdr w;
+         return cdr w;
       return nil
    end;
 
@@ -231,19 +231,19 @@ asserted procedure vscs_merge(c1: VScs, c2: VScs): VScs;
    % Candidate solutions merge.
    begin scalar theo, al, w1, w2;
       if vscs_failedp c1 then
-	 return c1;
+         return c1;
       if vscs_failedp c2 then
-	 return c2;
+         return c2;
       theo := append(car c1, car c2);
       al := for each k in '(ip ep slb wlb sub wub) join <<
-	 w1 := atsoc(k, cdr c1);
-	 w2 := atsoc(k, cdr c2);
-	 w1 := if w1 then cdr w1;
-	 w2 := if w2 then cdr w2;
-	 if w1 or w2 then
-	    {k . append(w1, w2)}
-	 else
-	    nil
+         w1 := atsoc(k, cdr c1);
+         w2 := atsoc(k, cdr c2);
+         w1 := if w1 then cdr w1;
+         w2 := if w2 then cdr w2;
+         if w1 or w2 then
+            {k . append(w1, w2)}
+         else
+            nil
       >>;
       return theo . al
    end;
@@ -407,7 +407,7 @@ asserted procedure vsdc_add2ttheo(dc: VSdc, fl: QfFormulaL, neg: Boolean);
       if (not rl_boolp rl_op f) and
       not rl_tvalp f and
       not (vsdc_v dc memq cl_fvarl f) then
-	 vsdc_ttheoinsert(dc, if neg then rl_negateat f else f);
+         vsdc_ttheoinsert(dc, if neg then rl_negateat f else f);
 
 %%% procedures doing "real work" %%%
 
@@ -416,8 +416,8 @@ asserted procedure vsde_compute(de: VSde);
    begin
       vs_applyfn('fn_pc!-decomposition, {de});
       if null vsde_pcl de then <<
-	 vsde_puttpl(de, nil);
-	 return
+         vsde_puttpl(de, nil);
+         return
       >>;
       vsde_select!-bounds de;
       vsde_pcl2tpl de;
@@ -431,8 +431,8 @@ asserted procedure vsde_compute(de: VSde);
 %       alp := cl_qeatal(vsde_f de, vsde_v de, nil, nil);
 %       w := ofsf_elimset(vsde_v de, alp);
 %       ww := for each hu in w join
-% 	 for each huhu in cdr hu collect
-% 	    car hu . huhu;
+%        for each huhu in cdr hu collect
+%           car hu . huhu;
 %       vsde_puttpl(de, ww)
 %    end;
 
@@ -450,43 +450,43 @@ asserted procedure vsde_pc!-decomposition(de: VSde);
       % find Gauss prime constituents
       gl := qff_gaussposl(vsde_v de, f, nil, vsde_bvl de, vsde_curtheo de);
       if vsde_failedalp gl then
-	 % We continue in the failed case, because the subformula
-	 % causing the failure can become part of a co-Gauss prime
-	 % constituent.
-	 gl := nil
+         % We continue in the failed case, because the subformula
+         % causing the failure can become part of a co-Gauss prime
+         % constituent.
+         gl := nil
       else
-      	 % TODO: Choose an efficient ordering of [gl].
-      	 % TODO: Here is the place for gentle simplification.
-      	 f := qff_replacel(f, for each pr in gl collect car pr, 'false);
+         % TODO: Choose an efficient ordering of [gl].
+         % TODO: Here is the place for gentle simplification.
+         f := qff_replacel(f, for each pr in gl collect car pr, 'false);
       % find co-Gauss prime constituents
       cgl := qff_cogaussposl(vsde_v de, f, nil, vsde_bvl de, vsde_curtheo de);
       if vsde_failedalp cgl then <<
-	 % We terminate in the failed case, because the subformula
-	 % causing the failure will lead to failure during atomic
-	 % prime constituents computation as well.
-	 vsde_putpcl(de, nil);
-	 return
+         % We terminate in the failed case, because the subformula
+         % causing the failure will lead to failure during atomic
+         % prime constituents computation as well.
+         vsde_putpcl(de, nil);
+         return
       >>;
       gl := pos_delsubposal(cgl, gl);
       % find atomic prime constituents
       f := qff_replacel(f, for each pr in cgl collect car pr, 'false);
       atl := qff_atposl(vsde_v de, f, nil, vsde_bvl de, vsde_curtheo de);
       if vsde_failedalp atl then <<
-	 vsde_putpcl(de, nil);
-	 return
+         vsde_putpcl(de, nil);
+         return
       >>;
       for each pr in atl do <<
-	 pc := vspc_mk(car pr, 'at, cdr pr, gposl, nil);
-	 push(pc, pcl)
+         pc := vspc_mk(car pr, 'at, cdr pr, gposl, nil);
+         push(pc, pcl)
       >>;
       for each pr in cgl do <<
-	 pc := vspc_mk(car pr, 'cogauss, cdr pr, gposl, nil);
-	 push(pc, pcl)
+         pc := vspc_mk(car pr, 'cogauss, cdr pr, gposl, nil);
+         push(pc, pcl)
       >>;
       for each pr in gl do <<
-	 pc := vspc_mk(car pr, 'gauss, cdr pr, gposl, nil);
-	 push(pc, pcl);
-	 push(car pr, gposl)
+         pc := vspc_mk(car pr, 'gauss, cdr pr, gposl, nil);
+         push(pc, pcl);
+         push(car pr, gposl)
       >>;
       vsde_putpcl(de, pcl)
    end;
@@ -501,7 +501,7 @@ asserted procedure qff_gaussposl(var: Kernel, f: QfFormula, p: Position, bvl: Ke
       gdc := vsdc_mk(var, f, bvl, theo, nil);
       vsdc_gaussposl(gdc, p);
       return for each pr in vsdc_res gdc collect
-	 reverse car pr . cdr pr
+         reverse car pr . cdr pr
    end;
 
 asserted procedure qff_cogaussposl(var: Kernel, f: QfFormula, p: Position, bvl: KernelL, theo: Theory): Alist;
@@ -511,7 +511,7 @@ asserted procedure qff_cogaussposl(var: Kernel, f: QfFormula, p: Position, bvl: 
       cgdc := vsdc_mk(var, f, bvl, theo, nil);
       vsdc_cogaussposl(cgdc, p);
       return for each pr in vsdc_res cgdc collect
-	 reverse car pr . cdr pr
+         reverse car pr . cdr pr
    end;
 
 asserted procedure qff_atposl(var: Kernel, f: QfFormula, p: Position, bvl: KernelL, theo: Theory): Alist;
@@ -521,7 +521,7 @@ asserted procedure qff_atposl(var: Kernel, f: QfFormula, p: Position, bvl: Kerne
       atdc := vsdc_mk(var, f, bvl, theo, nil);
       vsdc_atposl(atdc, p);
       return for each pr in vsdc_res atdc collect
-	 reverse car pr . cdr pr
+         reverse car pr . cdr pr
    end;
 
 asserted procedure qff_replacel(f: QfFormula, pl: PositionL, rf: QfFormula): QfFormula;
@@ -532,17 +532,17 @@ asserted procedure qff_replacel(f: QfFormula, pl: PositionL, rf: QfFormula): QfF
    % replaced with [rf].
    begin scalar op, ncl, poscl; integer n;
       if null pl then
-	 return f;
+         return f;
       if pl = {nil} then
-	 return rf;
+         return rf;
       op := rl_op f;
       assert(op eq 'and or op eq 'or);
       ncl := for each c in rl_argn f collect <<
-	 n := n + 1;
-	 poscl := for each p in pl join
-	    if eqn(car p, n) then
-	       {cdr p};
-	 qff_replacel(c, poscl, rf)
+         n := n + 1;
+         poscl := for each p in pl join
+            if eqn(car p, n) then
+               {cdr p};
+         qff_replacel(c, poscl, rf)
       >>;
       return rl_mkn(op, ncl)
    end;
@@ -556,14 +556,14 @@ asserted procedure vsdc_gaussposl(dc: VSdc, p: Position);
    begin scalar op;
       op := rl_op vsdc_f dc;
       if not rl_boolp op then <<
-	 vsdc_gaussposl!-at(dc, p);
-	 return
+         vsdc_gaussposl!-at(dc, p);
+         return
       >>;
       assert(op eq 'and or op eq 'or);
       if op eq 'and then
-	 vsdc_gaussposl!-and(dc, p);
+         vsdc_gaussposl!-and(dc, p);
       if op eq 'or then
-	 vsdc_gaussposl!-or(dc, p)
+         vsdc_gaussposl!-or(dc, p)
    end;
 
 asserted procedure vsdc_gaussposl!-at(dc: VSdc, p: Position);
@@ -572,32 +572,32 @@ asserted procedure vsdc_gaussposl!-at(dc: VSdc, p: Position);
    begin scalar atf, op, lhs, v, cs, theo, w, fml, f; integer m;
       atf := vsdc_f dc;
       if rl_tvalp atf then <<
-	 vsdc_putres(dc, nil);
-      	 return
+         vsdc_putres(dc, nil);
+         return
       >>;
       op := rl_op atf;
       lhs := rl_arg2l atf;
       v := vsdc_v dc;
       if op eq 'equal and sfto_mvartest(lhs, v) then <<
-	 cs := vscs_mk(nil, nil);
-	 theo := append(vsdc_ptheo dc, vsdc_ttheo dc);
-	 w := fctrf lhs;  % TODO: Save the factorization result.
-	 fml := cdr w;
-	 while fml and cs do <<
-	    f . m := pop fml;
-	    if not ofsf_nonvanishp(f, v, theo) then  % position [p] is not Gauss, exit
-	       % TODO THEO: In case we reach this position we could
-	       % add something to the theory to make the formula
-	       % Gauss.
-	       cs := nil
-	    else if sfto_mvartest(f, v) then
-	       cs := vscs_merge(cs, vscs_opf2cs(op, f, v, theo))
-	 >>
+         cs := vscs_mk(nil, nil);
+         theo := append(vsdc_ptheo dc, vsdc_ttheo dc);
+         w := fctrf lhs;  % TODO: Save the factorization result.
+         fml := cdr w;
+         while fml and cs do <<
+            f . m := pop fml;
+            if not ofsf_nonvanishp(f, v, theo) then  % position [p] is not Gauss, exit
+               % TODO THEO: In case we reach this position we could
+               % add something to the theory to make the formula
+               % Gauss.
+               cs := nil
+            else if sfto_mvartest(f, v) then
+               cs := vscs_merge(cs, vscs_opf2cs(op, f, v, theo))
+         >>
       >>;
       if cs then
-      	 vsdc_putres(dc, {p . cs})
+         vsdc_putres(dc, {p . cs})
       else
-	 vsdc_putres(dc, nil)
+         vsdc_putres(dc, nil)
    end;
 
 asserted procedure vsdc_gaussposl!-and(dc: VSdc, p: Position);
@@ -610,26 +610,26 @@ asserted procedure vsdc_gaussposl!-and(dc: VSdc, p: Position);
       assert(rl_op vsdc_f dc eq 'and);
       cl := rl_argn vsdc_f dc;
       while cl do <<
-	 c := pop cl;
-	 i := i + 1;
-	 cdc := vsdc_mkfrom dc;
-	 vsdc_putf(cdc, c);
-	 vsdc_add2ttheo(cdc, append(pcl, cl), nil);
-	 vsdc_gaussposl(cdc, i . p);
-	 cal := vsdc_res cdc;
-      	 if cal then
-	    if caar cal = (i . p) then  % position [i . p] is Gauss or failed
-	       push(cdc, cdcgl)
-	    else  % position [i . p] is neither Gauss nor failed
-	       push(cdc, cdcl);
-	 push(c, pcl)
+         c := pop cl;
+         i := i + 1;
+         cdc := vsdc_mkfrom dc;
+         vsdc_putf(cdc, c);
+         vsdc_add2ttheo(cdc, append(pcl, cl), nil);
+         vsdc_gaussposl(cdc, i . p);
+         cal := vsdc_res cdc;
+         if cal then
+            if caar cal = (i . p) then  % position [i . p] is Gauss or failed
+               push(cdc, cdcgl)
+            else  % position [i . p] is neither Gauss nor failed
+               push(cdc, cdcl);
+         push(c, pcl)
       >>;
       if cdcgl then <<  % position [p] is Gauss or failed
-	 cal := vsdc_res vsdc_gaussposl!-bestcdc(dc, p, reversip cdcgl);
-	 al := {p .  cdar cal}
+         cal := vsdc_res vsdc_gaussposl!-bestcdc(dc, p, reversip cdcgl);
+         al := {p .  cdar cal}
       >> else  % position [p] is neither Gauss nor failed
-	 for each cdc in cdcl do
-	    al := append(al, vsdc_res cdc);
+         for each cdc in cdcl do
+            al := append(al, vsdc_res cdc);
       vsdc_putres(dc, al)
    end;
 
@@ -644,29 +644,29 @@ asserted procedure vsdc_gaussposl!-or(dc: VSdc, p: Position);
       g := t;
       cl := rl_argn vsdc_f dc;
       while cl and not fld do <<
-	 c := pop cl;
-	 i := i + 1;
-	 cdc := vsdc_mkfrom dc;
-	 vsdc_putf(cdc, c);
-	 vsdc_add2ttheo(cdc, append(pcl, cl), t);
-	 vsdc_gaussposl(cdc, i . p);
-	 cal := vsdc_res cdc;
-	 if null cal or not (caar cal = (i . p)) then  % position [i . p] is not Gauss
-	    g := nil
-	 else if vscs_failedp cdar cal then  % position [i . p] is failed
-	    fld := t;
-	 al := append(al, cal);
-	 push(c, pcl);
+         c := pop cl;
+         i := i + 1;
+         cdc := vsdc_mkfrom dc;
+         vsdc_putf(cdc, c);
+         vsdc_add2ttheo(cdc, append(pcl, cl), t);
+         vsdc_gaussposl(cdc, i . p);
+         cal := vsdc_res cdc;
+         if null cal or not (caar cal = (i . p)) then  % position [i . p] is not Gauss
+            g := nil
+         else if vscs_failedp cdar cal then  % position [i . p] is failed
+            fld := t;
+         al := append(al, cal);
+         push(c, pcl);
       >>;
       if fld then <<
-	 vsdc_putres(dc, {p . vscs_mk(nil, 'failed)});
-	 return
+         vsdc_putres(dc, {p . vscs_mk(nil, 'failed)});
+         return
       >>;
       if g then <<  % position [p] is Gauss
-	 cs := vscs_mk(nil, nil);
-	 for each e in al do
-	    cs := vscs_merge(cs, cdr e);
-	 al := {p . cs}
+         cs := vscs_mk(nil, nil);
+         for each e in al do
+            cs := vscs_merge(cs, cdr e);
+         al := {p . cs}
       >>;
       vsdc_putres(dc, al)
    end;
@@ -676,9 +676,9 @@ asserted procedure vsdc_gaussposl!-bestcdc(dc: VSdc, p: Position, cdcgl: VSdcL):
    begin scalar fld, w;
       fld := t;
       while fld and cdcgl do <<
-	 w := pop cdcgl;
-	 if not vscs_failedp cdar vsdc_res w then
-	    fld := nil;
+         w := pop cdcgl;
+         if not vscs_failedp cdar vsdc_res w then
+            fld := nil;
       >>;
       return w
    end;
@@ -691,14 +691,14 @@ asserted procedure vsdc_cogaussposl(dc: VSdc, p: Position);
    begin scalar op;
       op := rl_op vsdc_f dc;
       if not rl_boolp op then <<
-	 vsdc_cogaussposl!-at(dc, p);
-	 return
+         vsdc_cogaussposl!-at(dc, p);
+         return
       >>;
       assert(op eq 'and or op eq 'or);
       if op eq 'and then
-	 vsdc_cogaussposl!-and(dc, p);
+         vsdc_cogaussposl!-and(dc, p);
       if op eq 'or then
-	 vsdc_cogaussposl!-or(dc, p)
+         vsdc_cogaussposl!-or(dc, p)
    end;
 
 asserted procedure vsdc_cogaussposl!-at(dc: VSdc, p: Position);
@@ -708,32 +708,32 @@ asserted procedure vsdc_cogaussposl!-at(dc: VSdc, p: Position);
    begin scalar atf, op, lhs, v, cs, theo, w, fml, f; integer m;
       atf := vsdc_f dc;
       if rl_tvalp atf then <<
-	 vsdc_putres(dc, nil);
-	 return
+         vsdc_putres(dc, nil);
+         return
       >>;
       op := rl_op atf;
       lhs := rl_arg2l atf;
       v := vsdc_v dc;
       if op eq 'neq and sfto_mvartest(lhs, v) then <<
-	 cs := vscs_mk(nil, nil);
-	 theo := append(vsdc_ptheo dc, vsdc_ttheo dc);
-	 w := fctrf lhs;  % TODO: Save the factorization result.
-	 fml := cdr w;
-	 while fml and cs do <<
-	    f . m := pop fml;
-	    if not ofsf_nonvanishp(f, v, theo) then  % position [p] is not co-Gauss, exit
-	       % TODO THEO: In case we reach this position we could
-	       % add something to the theory to make the formula
-	       % co-Gauss.
-	       cs := nil
-	    else if sfto_mvartest(f, v) then
-	       cs := vscs_merge(cs, vscs_opf2cs(op, f, v, theo))
-	 >>
+         cs := vscs_mk(nil, nil);
+         theo := append(vsdc_ptheo dc, vsdc_ttheo dc);
+         w := fctrf lhs;  % TODO: Save the factorization result.
+         fml := cdr w;
+         while fml and cs do <<
+            f . m := pop fml;
+            if not ofsf_nonvanishp(f, v, theo) then  % position [p] is not co-Gauss, exit
+               % TODO THEO: In case we reach this position we could
+               % add something to the theory to make the formula
+               % co-Gauss.
+               cs := nil
+            else if sfto_mvartest(f, v) then
+               cs := vscs_merge(cs, vscs_opf2cs(op, f, v, theo))
+         >>
       >>;
       if cs then
-      	 vsdc_putres(dc, {p . cs})
+         vsdc_putres(dc, {p . cs})
       else
-	 vsdc_putres(dc, nil)
+         vsdc_putres(dc, nil)
    end;
 
 asserted procedure vsdc_cogaussposl!-and(dc: VSdc, p: Position);
@@ -747,29 +747,29 @@ asserted procedure vsdc_cogaussposl!-and(dc: VSdc, p: Position);
       g := t;
       cl := rl_argn vsdc_f dc;
       while cl do <<
-	 c := pop cl;
-	 i := i + 1;
-	 cdc := vsdc_mkfrom dc;
-	 vsdc_putf(cdc, c);
-	 vsdc_add2ttheo(cdc, append(pcl, cl), nil);
-	 vsdc_cogaussposl(cdc, i . p);
-	 cal := vsdc_res cdc;
-	 if null cal or not (caar cal = (i . p)) then  % position [i . p] is not Gauss
-	    g := nil
-	 else if vscs_failedp cdar cal then  % position [i . p] is failed
-	    fld := t;
-	 al := append(al, cal);
-	 push(c, pcl)
+         c := pop cl;
+         i := i + 1;
+         cdc := vsdc_mkfrom dc;
+         vsdc_putf(cdc, c);
+         vsdc_add2ttheo(cdc, append(pcl, cl), nil);
+         vsdc_cogaussposl(cdc, i . p);
+         cal := vsdc_res cdc;
+         if null cal or not (caar cal = (i . p)) then  % position [i . p] is not Gauss
+            g := nil
+         else if vscs_failedp cdar cal then  % position [i . p] is failed
+            fld := t;
+         al := append(al, cal);
+         push(c, pcl)
       >>;
       if fld then <<
-	 vsdc_putres(dc, {p . vscs_mk(nil, 'failed)});
-	 return
+         vsdc_putres(dc, {p . vscs_mk(nil, 'failed)});
+         return
       >>;
       if g then <<  % position [p] is co-Gauss
-	 cs := vscs_mk(nil, nil);
-	 for each e in al do
-	    cs := vscs_merge(cs, cdr e);
-	 al := {p . cs}
+         cs := vscs_mk(nil, nil);
+         for each e in al do
+            cs := vscs_merge(cs, cdr e);
+         al := {p . cs}
       >>;
       vsdc_putres(dc, al)
    end;
@@ -784,26 +784,26 @@ asserted procedure vsdc_cogaussposl!-or(dc: VSdc, p: Position);
       assert(rl_op vsdc_f dc eq 'or);
       cl := rl_argn vsdc_f dc;
       while cl do <<
-	 c := pop cl;
-	 i := i + 1;
-	 cdc := vsdc_mkfrom dc;
-	 vsdc_putf(cdc, c);
-	 vsdc_add2ttheo(cdc, append(pcl, cl), t);
-	 vsdc_cogaussposl(cdc, i . p);
-	 cal := vsdc_res cdc;
-      	 if cal then
-	    if caar cal = (i . p) then  % position [i . p] is co-Gauss or failed
-	       push(cdc, cdcgl)
-	    else  % position [i . p] is neither co-Gauss nor failed
-	       push(cdc, cdcl);
-	 push(c, pcl)
+         c := pop cl;
+         i := i + 1;
+         cdc := vsdc_mkfrom dc;
+         vsdc_putf(cdc, c);
+         vsdc_add2ttheo(cdc, append(pcl, cl), t);
+         vsdc_cogaussposl(cdc, i . p);
+         cal := vsdc_res cdc;
+         if cal then
+            if caar cal = (i . p) then  % position [i . p] is co-Gauss or failed
+               push(cdc, cdcgl)
+            else  % position [i . p] is neither co-Gauss nor failed
+               push(cdc, cdcl);
+         push(c, pcl)
       >>;
       if cdcgl then <<  % position [p] is co-Gauss or failed
-	 cal := vsdc_res vsdc_cogaussposl!-bestcdc(dc, p, reversip cdcgl);
-	 al := {p .  cdar cal}
+         cal := vsdc_res vsdc_cogaussposl!-bestcdc(dc, p, reversip cdcgl);
+         al := {p .  cdar cal}
       >> else  % position [p] is neither co-Gauss nor failed
-	 for each cdc in cdcl do
-	    al := append(al, vsdc_res cdc);
+         for each cdc in cdcl do
+            al := append(al, vsdc_res cdc);
       vsdc_putres(dc, al)
    end;
 
@@ -812,9 +812,9 @@ asserted procedure vsdc_cogaussposl!-bestcdc(dc: VSdc, p: Position, cdcgl: VSdcL
    begin scalar fld, w;
       fld := t;
       while fld and cdcgl do <<
-	 w := pop cdcgl;
-	 if not vscs_failedp cdar vsdc_res w then
-	    fld := nil;
+         w := pop cdcgl;
+         if not vscs_failedp cdar vsdc_res w then
+            fld := nil;
       >>;
       return w
    end;
@@ -827,27 +827,27 @@ asserted procedure vsdc_atposl(dc: VSdc, p: Position);
    begin scalar op, cl, fld, c, cdc, pcl, cal, al; integer i;
       op := rl_op vsdc_f dc;
       if not rl_boolp op then <<
-	 vsdc_atposl!-at(dc, p);
-	 return
+         vsdc_atposl!-at(dc, p);
+         return
       >>;
       assert(op eq 'and or op eq 'or);
       cl := rl_argn vsdc_f dc;
       while cl and not fld do <<
-	 c := pop cl;
-	 i := i + 1;
-	 cdc := vsdc_mkfrom dc;
-	 vsdc_putf(cdc, c);
-	 vsdc_add2ttheo(cdc, append(pcl, cl), op eq 'or);
-	 vsdc_atposl(cdc, i . p);
-	 cal := vsdc_res cdc;
-	 if cal and (caar cal = (i . p)) and vscs_failedp cdar cal then  % position [i . p] is failed
-	    fld := t;
-	 al := append(al, cal);
-	 push(c, pcl)
+         c := pop cl;
+         i := i + 1;
+         cdc := vsdc_mkfrom dc;
+         vsdc_putf(cdc, c);
+         vsdc_add2ttheo(cdc, append(pcl, cl), op eq 'or);
+         vsdc_atposl(cdc, i . p);
+         cal := vsdc_res cdc;
+         if cal and (caar cal = (i . p)) and vscs_failedp cdar cal then  % position [i . p] is failed
+            fld := t;
+         al := append(al, cal);
+         push(c, pcl)
       >>;
       if fld then <<
-	 vsdc_putres(dc, {p . vscs_mk(nil, 'failed)});
-	 return
+         vsdc_putres(dc, {p . vscs_mk(nil, 'failed)});
+         return
       >>;
       vsdc_putres(dc, al)
    end;
@@ -858,15 +858,15 @@ asserted procedure vsdc_atposl!-at(dc: VSdc, p: Position);
    begin scalar atf, op, lhs, v, theo, w, opfl;
       atf := vsdc_f dc;
       if rl_tvalp atf then <<
-	 vsdc_putres(dc, nil);
-	 return
+         vsdc_putres(dc, nil);
+         return
       >>;
       op := rl_op atf;
       lhs := rl_arg2l atf;
       v := vsdc_v dc;
       if not sfto_mvartest(lhs, v) then <<
-	 vsdc_putres(dc, nil);
-	 return
+         vsdc_putres(dc, nil);
+         return
       >>;
       theo := append(vsdc_ptheo dc, vsdc_ttheo dc);
       w := fctrf lhs;  % TODO: Save the factorization result.
@@ -884,33 +884,33 @@ asserted procedure ofsf_opfml2opfl(op: Id, fml: List, x: Kernel, theo: Theory): 
       fmxl . fmnxl := ofsf_sepfac(fml, x);
       assert(fmxl);  % there is at least one irreducible factor containing [x]
       if op memq '(equal neq) then
-	 return for each fmx in fmxl collect
-	    op . car fmx;
+         return for each fmx in fmxl collect
+            op . car fmx;
       assert(op memq '(leq geq lessp greaterp));
       if null cdr fmxl then <<
-	 % - there is exactly one irreducible factor containing [x]
-	 s := ofsf_definite(fmnxl, theo);
-	 if s then <<
-	    % - the sign of the factors not containing [x] is a non-zero constant
-	    % TODO: If the sign of the factors not containing [x] is
-	    % not a non-zero constant, then we could multiply them
-	    % with f and continue. Investigate this.
-	    f . m := car fmxl;
-	    op := ofsf_adjustop(op, s);
-	    if evenp m then
-	       op := if op eq 'greaterp then 'neq else if op eq 'leq then 'equal;
-	    return if op then {op . f} else nil
-	 >>
+         % - there is exactly one irreducible factor containing [x]
+         s := ofsf_definite(fmnxl, theo);
+         if s then <<
+            % - the sign of the factors not containing [x] is a non-zero constant
+            % TODO: If the sign of the factors not containing [x] is
+            % not a non-zero constant, then we could multiply them
+            % with f and continue. Investigate this.
+            f . m := car fmxl;
+            op := ofsf_adjustop(op, s);
+            if evenp m then
+               op := if op eq 'greaterp then 'neq else if op eq 'leq then 'equal;
+            return if op then {op . f} else nil
+         >>
       >>;
       while fmxl do <<
-	 f . m := pop fmxl;
-	 if evenp m then <<
-	    wop := if op memq '(leq geq) then 'equal else 'neq;
-	    push(wop . f, opfl)
-	 >> else <<
-	    push(op . f, opfl);
-	    push(ofsf_adjustop(op, -1) . f, opfl)
-	 >>
+         f . m := pop fmxl;
+         if evenp m then <<
+            wop := if op memq '(leq geq) then 'equal else 'neq;
+            push(wop . f, opfl)
+         >> else <<
+            push(op . f, opfl);
+            push(ofsf_adjustop(op, -1) . f, opfl)
+         >>
       >>;
       return opfl
    end;
@@ -922,8 +922,8 @@ asserted procedure vscs_opfl2cs(opfl: List, x: Kernel, theo: Theory): VScs;
    begin scalar cs, op, f;
       cs := vscs_mk(nil, nil);
       while opfl do <<
-	 op . f := pop opfl;
-	 cs := vscs_merge(cs, vscs_opf2cs(op, f, x, theo))
+         op . f := pop opfl;
+         cs := vscs_merge(cs, vscs_opf2cs(op, f, x, theo))
       >>;
       return cs
    end;
@@ -946,23 +946,23 @@ asserted procedure vscs_opf2cs(op: Id, f: SF, x: Kernel, theo: Theory): VScs;
       assert(sfto_mvartest(f, x));
       cs := vscs_mk(nil, nil);
       repeat <<
-      	 if sfto_mvartest(f, x) then <<
-	    lcf := lc f;
-	    if ofsf_surep(ofsf_0mk2('greaterp, lcf), theo) then <<
-	       finished := t;
-      	       cs := vscs_merge(cs, vscs_opf2csnz(op, f, x, 1, cl))
-	    >> else if ofsf_surep(ofsf_0mk2('lessp, lcf), theo) then <<
-	       finished := t;
-      	       cs := vscs_merge(cs, vscs_opf2csnz(op, f, x, -1, cl))
-	    >> else if not ofsf_surep(ofsf_0mk2('equal, lcf), theo) then <<
-      	       cs := vscs_merge(cs, vscs_opf2csnz(op, f, x, nil, cl));
-	       c := ofsf_0mk2('equal, lcf);
-	       push(c, theo);
-	       push(c, cl)
-	    >>;
-	    f := red f
-	 >> else
-	    finished := t
+         if sfto_mvartest(f, x) then <<
+            lcf := lc f;
+            if ofsf_surep(ofsf_0mk2('greaterp, lcf), theo) then <<
+               finished := t;
+               cs := vscs_merge(cs, vscs_opf2csnz(op, f, x, 1, cl))
+            >> else if ofsf_surep(ofsf_0mk2('lessp, lcf), theo) then <<
+               finished := t;
+               cs := vscs_merge(cs, vscs_opf2csnz(op, f, x, -1, cl))
+            >> else if not ofsf_surep(ofsf_0mk2('equal, lcf), theo) then <<
+               cs := vscs_merge(cs, vscs_opf2csnz(op, f, x, nil, cl));
+               c := ofsf_0mk2('equal, lcf);
+               push(c, theo);
+               push(c, cl)
+            >>;
+            f := red f
+         >> else
+            finished := t
       >> until finished;
       return cs
    end;
@@ -981,10 +981,10 @@ asserted procedure vscs_opf2csnz(op: Id, f: SF, x: Kernel, s: Any, cl: QfFormula
       d := ldeg f;
       w := vsub_compute!-rsl(op, f, x, s);
       if w eq 'failed then
-	 return vscs_mk(nil, 'failed);
+         return vscs_mk(nil, 'failed);
       pral := for each pr in w collect
-	 car pr . for each rs in cdr pr collect
-	    vspr_mk(f, x, rs, vs_mkand cl);
+         car pr . for each rs in cdr pr collect
+            vspr_mk(f, x, rs, vs_mkand cl);
       return vscs_mk(nil, pral)
    end;
 
@@ -997,17 +997,17 @@ asserted procedure ofsf_nonvanishp(f: SF, x: Kernel, theo: Theory): Boolean;
    begin scalar w, finished, res;
       w := 'false;
       repeat <<
-	 if sfto_mvartest(f, x) then <<
-	    w := rl_mkn('or, {w, ofsf_0mk2('neq, lc f)});
-	    w := cl_simpl(w, theo, -1);
-	    f := red f
-	 >> else <<
-	    w := rl_mkn('or, {w, ofsf_0mk2('neq, f)});
-	    w := cl_simpl(w, theo, -1);
-	    finished := t
-	 >>;
-	 if w eq 'true then
-	    res := t
+         if sfto_mvartest(f, x) then <<
+            w := rl_mkn('or, {w, ofsf_0mk2('neq, lc f)});
+            w := cl_simpl(w, theo, -1);
+            f := red f
+         >> else <<
+            w := rl_mkn('or, {w, ofsf_0mk2('neq, f)});
+            w := cl_simpl(w, theo, -1);
+            finished := t
+         >>;
+         if w eq 'true then
+            res := t
       >> until finished or res;
       return res
    end;
@@ -1022,15 +1022,15 @@ asserted procedure ofsf_definite(fml: List, theo: Theory): ExtraBoolean;
    begin scalar s, f; integer m;
       s := 1;
       while fml and s do <<
-	 f . m := pop fml;
-	 if evenp m then <<
-	    if not ofsf_surep(ofsf_0mk2('neq, f), theo) then
-	       s := nil
-	 >> else
-	    if ofsf_surep(ofsf_0mk2('lessp, f), theo) then
-	       s := s * (-1)
-	    else if not ofsf_surep(ofsf_0mk2('greaterp, f), theo) then
-	       s := nil
+         f . m := pop fml;
+         if evenp m then <<
+            if not ofsf_surep(ofsf_0mk2('neq, f), theo) then
+               s := nil
+         >> else
+            if ofsf_surep(ofsf_0mk2('lessp, f), theo) then
+               s := s * (-1)
+            else if not ofsf_surep(ofsf_0mk2('greaterp, f), theo) then
+               s := nil
       >>;
       return s
    end;
@@ -1043,11 +1043,11 @@ asserted procedure ofsf_sepfac(fml: List, x: Kernel): DottedPair;
    % factors not containing [x].
    begin scalar f, fmxl, fmnxl; integer m;
       while fml do <<
-	 f . m := pop fml;
-	 if sfto_mvartest(f, x) then
-	    push(f . m, fmxl)
-	 else
-	    push(f . m, fmnxl)
+         f . m := pop fml;
+         if sfto_mvartest(f, x) then
+            push(f . m, fmxl)
+         else
+            push(f . m, fmnxl)
       >>;
       return fmxl . fmnxl
    end;
@@ -1067,13 +1067,13 @@ asserted procedure vsde_select!-bounds!-noilp(de: VSde);
    begin scalar pcl, cs, bnd, npcl; integer nl, nu;
       pcl := vsde_pcl de;
       for each pc in pcl do <<
-      	 cs := vspc_cs pc;
-	 nl := vscs_nwlb cs + vscs_nslb cs;
-	 nu := vscs_nwub cs + vscs_nsub cs
+         cs := vspc_cs pc;
+         nl := vscs_nwlb cs + vscs_nslb cs;
+         nu := vscs_nwub cs + vscs_nsub cs
       >>;
       bnd := if nl < nu then '(lb) else '(ub);
       npcl := for each pc in pcl collect
-	 vspc_mk(vspc_p pc, vspc_type pc, vspc_cs pc, vspc_gpl pc, bnd);
+         vspc_mk(vspc_p pc, vspc_type pc, vspc_cs pc, vspc_gpl pc, bnd);
       vsde_putpcl(de, npcl)
    end;
 
@@ -1086,36 +1086,36 @@ asserted procedure vsde_pcl2tpl(de: VSde);
    begin scalar pcl, cs, p, gpl, b, tpl, imi, ipi;
       pcl := vsde_pcl de;
       for each pc in pcl do <<
-	 cs := vspc_cs pc;
-	 p := vspc_p pc;
-	 gpl := vspc_gpl pc;
-	 for each pr in vscs_ip cs do
-	    push(vstp_mk(p, gpl, nil, pr), tpl);
-	 b := vspc_b pc;
-	 if 'lb memq b then <<
-	    imi := t;
-	    for each pr in vscs_ep cs do
-	       push(vstp_mk(p, gpl, 'peps, pr), tpl);
-	    for each pr in vscs_slb cs do
-	       push(vstp_mk(p, gpl, 'peps, pr), tpl);
-	    for each pr in vscs_wlb cs do
-	       push(vstp_mk(p, gpl, nil, pr), tpl)
-	 >>;
-	 if 'ub memq b then <<
-	    ipi := t;
-	    for each pr in vscs_ep cs do
-	       push(vstp_mk(p, gpl, 'meps, pr), tpl);
-	    for each pr in vscs_sub cs do
-	       push(vstp_mk(p, gpl, 'meps, pr), tpl);
-	    for each pr in vscs_wub cs do
-	       push(vstp_mk(p, gpl, nil, pr), tpl)
-	 >>;
-	 vsde_putcurtheo(de, append(vsde_curtheo de, vscs_ts cs))
+         cs := vspc_cs pc;
+         p := vspc_p pc;
+         gpl := vspc_gpl pc;
+         for each pr in vscs_ip cs do
+            push(vstp_mk(p, gpl, nil, pr), tpl);
+         b := vspc_b pc;
+         if 'lb memq b then <<
+            imi := t;
+            for each pr in vscs_ep cs do
+               push(vstp_mk(p, gpl, 'peps, pr), tpl);
+            for each pr in vscs_slb cs do
+               push(vstp_mk(p, gpl, 'peps, pr), tpl);
+            for each pr in vscs_wlb cs do
+               push(vstp_mk(p, gpl, nil, pr), tpl)
+         >>;
+         if 'ub memq b then <<
+            ipi := t;
+            for each pr in vscs_ep cs do
+               push(vstp_mk(p, gpl, 'meps, pr), tpl);
+            for each pr in vscs_sub cs do
+               push(vstp_mk(p, gpl, 'meps, pr), tpl);
+            for each pr in vscs_wub cs do
+               push(vstp_mk(p, gpl, nil, pr), tpl)
+         >>;
+         vsde_putcurtheo(de, append(vsde_curtheo de, vscs_ts cs))
       >>;
       if imi then
-	 push(vstp_mk(nil, nil, 'minf, vspr_mk(nil, nil, nil, 'true)), tpl);  % minus infinity
+         push(vstp_mk(nil, nil, 'minf, vspr_mk(nil, nil, nil, 'true)), tpl);  % minus infinity
       if ipi then
-	 push(vstp_mk(nil, nil, 'pinf, vspr_mk(nil, nil, nil, 'true)), tpl);  % plus infinity
+         push(vstp_mk(nil, nil, 'pinf, vspr_mk(nil, nil, nil, 'true)), tpl);  % plus infinity
       vsde_puttpl(de, tpl)
    end;
 
@@ -1126,19 +1126,19 @@ asserted procedure vsde_conflate!-tpl(de: VSde);
    begin scalar tpl, ttpl, tp1, tp2, w, restpl;
       tpl := vsde_tpl de;
       while tpl do <<
-	 tp1 := pop tpl;
-	 ttpl := tpl;
-	 tpl := nil;
-	 while ttpl do <<
-	    tp2 := pop ttpl;
-	    w := vstp_conflate(tp1, tp2);
-	    if w then  % conflation was possible
-	       tp1 := w
-	    else
-	       push(tp2, tpl)
-	 >>;
-	 tpl := reverse tpl;  % This is not necessary. We just don't want to mix [tpl] too much.
-	 push(tp1, restpl)
+         tp1 := pop tpl;
+         ttpl := tpl;
+         tpl := nil;
+         while ttpl do <<
+            tp2 := pop ttpl;
+            w := vstp_conflate(tp1, tp2);
+            if w then  % conflation was possible
+               tp1 := w
+            else
+               push(tp2, tpl)
+         >>;
+         tpl := reverse tpl;  % This is not necessary. We just don't want to mix [tpl] too much.
+         push(tp1, restpl)
       >>;
       vsde_puttpl(de, reversip restpl)
    end;
@@ -1152,23 +1152,23 @@ asserted procedure vstp_conflate(tp1: VStp, tp2: VStp): ExtraBoolean;
       pr1 := vstp_pr tp1;
       pr2 := vstp_pr tp2;
       if not eqn(vspr_d pr1, vspr_d pr2) then  % degree test
-	 return nil;
+         return nil;
       if not (vstp_np tp1 eq vstp_np tp2) then  % nonstandard part test
-	 return nil;
+         return nil;
       if not (vspr_f pr1 equal vspr_f pr2) then  % polynomial test
-	 return nil;
+         return nil;
       if lto_subset(vspr_rsl pr1, vspr_rsl pr2) then  % S1 subset of S2
-	 return vstp_mk(pos_lca(vstp_p tp1, vstp_p tp2),
-	    intersection(vstp_gpl tp1, vstp_gpl tp2),
-	    vstp_np tp2,
-	    vspr_mk(vspr_f pr2, vspr_v pr2, vspr_rsl pr2, rl_mk2('or, vspr_rc pr1, vspr_rc pr2))
-	       );
+         return vstp_mk(pos_lca(vstp_p tp1, vstp_p tp2),
+            intersection(vstp_gpl tp1, vstp_gpl tp2),
+            vstp_np tp2,
+            vspr_mk(vspr_f pr2, vspr_v pr2, vspr_rsl pr2, rl_mk2('or, vspr_rc pr1, vspr_rc pr2))
+               );
       if lto_subset(vspr_rsl pr2, vspr_rsl pr1) then % S2 subset of S1
-	 return vstp_mk(pos_lca(vstp_p tp1, vstp_p tp2),
-	    intersection(vstp_gpl tp1, vstp_gpl tp2),
-	    vstp_np tp1,
-	    vspr_mk(vspr_f pr1, vspr_v pr1, vspr_rsl pr1, rl_mk2('or, vspr_rc pr1, vspr_rc pr2))
-	       );
+         return vstp_mk(pos_lca(vstp_p tp1, vstp_p tp2),
+            intersection(vstp_gpl tp1, vstp_gpl tp2),
+            vstp_np tp1,
+            vspr_mk(vspr_f pr1, vspr_v pr1, vspr_rsl pr1, rl_mk2('or, vspr_rc pr1, vspr_rc pr2))
+               );
       return nil
    end;
 
@@ -1181,11 +1181,11 @@ asserted procedure vsde_tpllinp(de: VSde, vl: KernelL): Boolean;
    begin scalar tpl, ok, tp;
       tpl := vsde_tpl de;
       if null tpl then  % An elimination set has to be non-empty.
-	 return nil;
+         return nil;
       ok := t;
       while tpl and ok do <<
-	 tp := pop tpl;
-	 ok := vstp_linp(tp, vl)
+         tp := pop tpl;
+         ok := vstp_linp(tp, vl)
       >>;
       return ok
    end;
@@ -1200,12 +1200,12 @@ asserted procedure vstp_linp(tp: VStp, vl: KernelL): Boolean;
       f := vspr_f pr;
       x := vspr_v pr;
       if null f then <<
-	 assert(vstp_np tp memq '(minf pinf));
-	 return t
+         assert(vstp_np tp memq '(minf pinf));
+         return t
       >>;
       assert(sfto_mvartest(f, x));
       if eqn(ldeg f, 1) and null intersection(kernels lc f, vl) then
- 	 return t;
+         return t;
       return nil
    end;
 
@@ -1216,11 +1216,11 @@ asserted procedure vsde_tplldp(de: VSde, n: Integer): Boolean;
    begin scalar tpl, ok, tp;
       tpl := vsde_tpl de;
       if null tpl then  % An elimination set is non-empty.
-	 return nil;
+         return nil;
       ok := t;
       while tpl and ok do <<
-	 tp := pop tpl;
-	 ok := vstp_ldp(tp, n)
+         tp := pop tpl;
+         ok := vstp_ldp(tp, n)
       >>;
       return ok
    end;
@@ -1234,12 +1234,12 @@ asserted procedure vstp_ldp(tp: VStp, n: Integer): Boolean;
       f := vspr_f pr;
       x := vspr_v pr;
       if null f then <<
-	 assert(vstp_np tp memq '(minf pinf));
-	 return t
+         assert(vstp_np tp memq '(minf pinf));
+         return t
       >>;
       assert(sfto_mvartest(f, x));
       if ldeg f <= n then
-	 return t;
+         return t;
       return nil
    end;
 
@@ -1250,15 +1250,15 @@ asserted procedure ofsf_adjustop(op: Id, s: Integer): Id;
       assert(eqn(s, 1) or eqn(s, -1));
       assert(op memq '(equal neq lessp leq geq greaterp));
       if op memq '(equal neq) or eqn(s, 1) then
-      	 return op;
+         return op;
       if op eq 'lessp then
-	 return 'greaterp;
+         return 'greaterp;
       if op eq 'greaterp then
-	 return 'lessp;
+         return 'lessp;
       if op eq 'geq then
-	 return 'leq;
+         return 'leq;
       if op eq 'leq then
-	 return 'geq
+         return 'geq
    end;
 
 asserted procedure pos_delsubposal(pal1: Alist, pal2: Alist): Alist;
@@ -1267,12 +1267,12 @@ asserted procedure pos_delsubposal(pal1: Alist, pal2: Alist): Alist;
    % pairs of the form [(Position . Any)].
    begin scalar pl1, pl2, npl2;
       pl1 := for each pr in pal1 collect
-	 car pr;
+         car pr;
       pl2 := for each pr in pal2 collect
-	 car pr;
+         car pr;
       npl2 := pos_delsubposl(pl1, pl2);
       return for each np2 in npl2 collect
-	 assoc(np2, pal2)
+         assoc(np2, pal2)
    end;
 
 asserted procedure pos_delsubposl(pl1: PositionL, pl2: PositionL): PositionL;
@@ -1280,14 +1280,14 @@ asserted procedure pos_delsubposl(pl1: PositionL, pl2: PositionL): PositionL;
    % position from [pl1].
    begin scalar w, c, p1, res;
       for each p2 in pl2 do <<
-	 w := pl1;
-	 c := nil;
-	 while w and not c do <<
-	    p1 := pop w;
-	    c := pos_subposp(p1, p2)
-	 >>;
-	 if not c then
-	    push(p2, res)
+         w := pl1;
+         c := nil;
+         while w and not c do <<
+            p1 := pop w;
+            c := pos_subposp(p1, p2)
+         >>;
+         if not c then
+            push(p2, res)
       >>;
       return reversip res
    end;
@@ -1296,22 +1296,22 @@ asserted procedure pos_subposp(p1: Position, p2: Position): Boolean;
    % Subposition predicate. Returns [t] iff [p2] is a subposition of
    % [p1].
       if null p1 then
-	 t
+         t
       else if null p2 then
-	 nil
+         nil
       else if eqn(car p1, car p2) then
-	 pos_subposp(cdr p1, cdr p2)
+         pos_subposp(cdr p1, cdr p2)
       else
-	 nil;
+         nil;
 
 asserted procedure pos_lca(p1: Position, p2: Position): Position;
    % Lowest common ancestor of [p1] and [p2].
       if null p1 or null p2 then
-	 nil
+         nil
       else if not eqn(car p1, car p2) then
-	 nil
+         nil
       else
-	 car p1 . pos_lca(cdr p1, cdr p2);
+         car p1 . pos_lca(cdr p1, cdr p2);
 
 % TODO: Move the following procedure to cl.
 asserted procedure vs_mkand(fl: QfFormulaL): QfFormula;
@@ -1329,12 +1329,12 @@ asserted procedure vsdc_prints(dc: VSdc);
    <<
       % ioto_prin2 {"VSdc with ttheo:"};
       % for each f in vsdc_ttheo dc do
-      % 	 mathprint rl_prepfof f
+      %          mathprint rl_prepfof f
       ioto_prin2 {"VSdc: "};
       ioto_prin2t {"f: ", vsdc_f dc,
-      	 " #ptheo: ", length vsdc_ptheo dc,
-      	 " #ttheo: ", length vsdc_ttheo dc,
-      	 " data: ", vsdc_data dc}
+         " #ptheo: ", length vsdc_ptheo dc,
+         " #ttheo: ", length vsdc_ttheo dc,
+         " data: ", vsdc_data dc}
    >>;
 
 asserted procedure vscs_prints(cs: VScs);
@@ -1344,11 +1344,11 @@ asserted procedure vscs_prints(cs: VScs);
    else <<
       ioto_prin2 {"VScs: "};
       ioto_prin2t {"#ip: ", length vscs_ip cs,
-	 " #ep: ", length vscs_ep cs,
-	 " #slb: ", length vscs_slb cs,
-	 " #wlb: ", length vscs_wlb cs,
-	 " #sub: ", length vscs_sub cs,
-	 " #wub: ", length vscs_wub cs}
+         " #ep: ", length vscs_ep cs,
+         " #slb: ", length vscs_slb cs,
+         " #wlb: ", length vscs_wlb cs,
+         " #sub: ", length vscs_sub cs,
+         " #wub: ", length vscs_wub cs}
    >>;
 
 asserted procedure vscs_print(cs: VScs);
@@ -1370,10 +1370,10 @@ asserted procedure vspc_prints(pc: VSpc);
    <<
       ioto_prin2 {"VSpc: "};
       ioto_prin2t {"type: ", vspc_type pc,
-      	 " pos: ", vspc_p pc,
-      	 " gpl: ", vspc_gpl pc,
-	 " bndch: ", vspc_b pc,
-      	 " cs: "};
+         " pos: ", vspc_p pc,
+         " gpl: ", vspc_gpl pc,
+         " bndch: ", vspc_b pc,
+         " cs: "};
       vscs_prints vspc_cs pc
    >>;
 
@@ -1391,9 +1391,9 @@ asserted procedure vstp_prints(tp: VStp);
    <<
       ioto_prin2 {"VStp: "};
       ioto_prin2t {"pos: ", vstp_p tp,
-	 " gpl: ", vstp_gpl tp,
-	 " np: ", vstp_np tp,
-	 " pr:"};
+         " gpl: ", vstp_gpl tp,
+         " np: ", vstp_np tp,
+         " pr:"};
       vspr_prints vstp_pr tp;
       ioto_prin2t {"guard:"};
       mathprint rl_prepfof vstp_guard tp

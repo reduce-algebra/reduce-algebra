@@ -45,11 +45,11 @@ procedure ibalp_setkapuroption(opt,val);
    % any (old setting or nil).
    begin scalar oldopt,oldval;
      if oldopt := atsoc(opt,ibalp_kapuroptions!*) then <<
-     	oldval := cdr oldopt;
-     	cdr oldopt := val
+        oldval := cdr oldopt;
+        cdr oldopt := val
      >>
      else
-     	ibalp_kapuroptions!* := (opt . val) . ibalp_kapuroptions!*;
+        ibalp_kapuroptions!* := (opt . val) . ibalp_kapuroptions!*;
      return oldval
    end;
 
@@ -565,8 +565,8 @@ procedure ibalp_pset3knf(f,trthval);
       return
          if rl_op newf eq 'and then
             for each j in rl_argn newf collect ibalp_genpolyform(j,1)
-	 else
-	    {ibalp_genpolyform(newf,1)}
+         else
+            {ibalp_genpolyform(newf,1)}
    end;
 
 procedure ibalp_pset3knfnf(f);
@@ -917,14 +917,14 @@ procedure kpoly_times2monoms(m1,m2);
          else
             setl := lto_insert(m1,setl)
       else
-      	 for each j in cdr m1 do setl := lto_insert(j,setl);
+         for each j in cdr m1 do setl := lto_insert(j,setl);
       if atom m2 then
          if eqn(m2,1) then
             return m1
          else
             setl := lto_insert(m2,setl)
       else
-      	 for each j in cdr m2 do setl := lto_insert(j,setl);
+         for each j in cdr m2 do setl := lto_insert(j,setl);
       return kpoly_norm ('times . sort(setl,'ordop))
    end;
 

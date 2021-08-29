@@ -66,8 +66,51 @@ asserted procedure pasf_BQsubfof1(al: Alist, f: Formula, asgal: Alist, allvl: Li
       return rl_mkbq(op, newv, cl_subfof1(al, b, asgal, allvl), cl_subfof1(al, m, asgal, allvl))
    end;
 
-asserted procedure rl_BQreplace1(f: Formula, sal: Alist): Formula;
+asserted procedure pasf_BQreplace1(f: Formula, sal: Alist): Formula;
    rl_mkbq(rl_op f, rl_var f, cl_replace(rl_b f, sal), cl_replace(rl_mat f, sal));
+
+asserted procedure pasf_BQnnf1(f: Formula, flag: Boolean): Formula;
+   % Do not flip within bound.
+   rl_mkbq(cl_cflip(rl_op f, flag), rl_var f, cl_nnf1(rl_b f, t), cl_nnf1(rl_mat f, flag));
+
+asserted procedure pasf_BQrename!-vars1(f: Formula, vl: DottedPair): DottedPair;
+   begin scalar rnf, w, nvar, rnb;
+      rnf . vl := cl_rename!-vars1(rl_mat f, vl);
+      w := assoc(rl_var f, cdr vl);
+      if w then <<
+         if eqn(cdr w, 0) then <<
+            cdr w := 1;
+            return rl_mkbq(rl_op f, rl_var f, rl_b f, rnf) . vl
+         >>;
+         repeat <<
+            nvar := mkid(car w, cdr w);
+            cdr w := cdr w + 1
+         >> until not (nvar memq car vl or get(nvar, 'avalue));
+         push(nvar, car vl);
+         rnb := cl_apply2ats1(rl_b f, 'rl_varsubstat, {nvar, car w});
+         rnf := cl_apply2ats1(rnf, 'rl_varsubstat, {nvar, car w});
+         return rl_mkbq(rl_op f, nvar, rnb, rnf) . vl
+      >>;
+      return rl_mkbq(rl_op f, rl_var f, rl_b f, rnf) . vl
+   end;
+
+asserted procedure pasf_BQvarl2(f: Formula, fvl: KernelL, cbvl: KernelL, bvl: KernelL): DottedPair;
+   <<
+      cbvl := lto_insertq(rl_var f, cbvl);
+      fvl . bvl := cl_varl2(rl_b f, fvl, cbvl, bvl);
+      cl_varl2(rl_mat f, fvl, lto_insertq(rl_var f, cbvl), bvl)
+   >>;
+
+asserted procedure pasf_BQqvarl1(f: Formula): KernelL;
+   lto_insertq(rl_var f, cl_qvarl1 rl_mat f);
+
+asserted procedure pasf_BQordp(f1: Formula, f2: Formula): ExtraBoolean;
+   if rl_var f1 neq rl_var f2 then
+      not(ordp(rl_var f1, rl_var f2) and rl_var f1 neq rl_var f2)
+   else if rl_b f1 neq rl_b f2 then
+      cl_ordp(rl_b f1, rl_b f2)
+   else
+      cl_ordp(rl_mat f1, rl_mat f2);
 
 endmodule;
 

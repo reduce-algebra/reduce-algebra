@@ -220,13 +220,13 @@ procedure qqe_ofsf_chsimpat1(u);
    begin scalar leftl,rightl,lhs,rhs;
       lhs := cadr u;
       if pairp lhs and ofsf_opp car lhs then <<
-	 leftl := ofsf_chsimpat1 lhs;
-	 lhs := caddr lastcar leftl
+         leftl := ofsf_chsimpat1 lhs;
+         lhs := caddr lastcar leftl
       >>;
       rhs := caddr u;
       if pairp rhs and ofsf_opp car rhs then <<
-	 rightl := ofsf_chsimpat1 rhs;
-	 rhs := cadr car rightl
+         rightl := ofsf_chsimpat1 rhs;
+         rhs := cadr car rightl
       >>;
       return nconc(leftl,{car u,lhs,rhs} . rightl)
    end;
@@ -264,30 +264,30 @@ asserted procedure qqe_ofsf_smupdknowl(op: Id, atl: List, knowl: Alist, n: Integ
    % the negation of all knowledge in [atl] is added to [knowl].
    begin scalar at;
       while atl do <<
-	 at := pop atl;
-      	 knowl := qqe_ofsf_smupdknowl1(op, at, knowl, n);
-	 if knowl eq 'false then <<
-	    atl := nil;
-	    at := 'break
-	 >>
+         at := pop atl;
+         knowl := qqe_ofsf_smupdknowl1(op, at, knowl, n);
+         if knowl eq 'false then <<
+            atl := nil;
+            at := 'break
+         >>
       >>;
       if at eq 'break then
-	 return 'false
+         return 'false
       else
-      	 return knowl
+         return knowl
    end;
 
 asserted procedure qqe_ofsf_smupdknowl1(op: Id, at: Atom, knowl: Alist, n: Integer): Alist;
    begin scalar ent, contra;
       if op eq 'or then <<
-      	 ent := rl_negateat at;
-      	 contra := at
+         ent := rl_negateat at;
+         contra := at
       >> else <<
-      	 ent := at;
-      	 contra := rl_negateat at
+         ent := at;
+         contra := rl_negateat at
       >>;
       if assoc(ent, knowl) then
-	 return knowl;
+         return knowl;
       return knowl := (ent . n) . knowl
    end;
 

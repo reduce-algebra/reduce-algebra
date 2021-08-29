@@ -1,8 +1,10 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2004-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module talpsiat;
+% Term algebra Lisp prefix simplify for atomic formulas.
+
+revision('talpsiat, "$Id$");
+
+copyright('talpsiat, "Copyright (c) 2004-2009 A. Dolzmann and T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -28,17 +30,6 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
 
-lisp <<
-   fluid '(talp_siat_rcsid!* talp_siat_copyright!*);
-   talp_siat_rcsid!* :=
-      "$Id$";
-   talp_siat_copyright!* := "Copyright (c) 2004-2009 A. Dolzmann and T. Sturm"
->>;
-
-module talpsiat;
-% Term algebra Lisp prefix simplify for atomic formulas. Submodule of
-% [talp].
-
 procedure talp_simplat1(at,sop);
    % Term algebra Lisp prefix simplify atomic formulas. [at] is an
    % atomic formula; [sop] is the boolean operator [at] occurs with or
@@ -50,11 +41,11 @@ procedure talp_simplat1(at,sop);
       at := talp_simpat at;
       result := talp_simplat2(talp_op at,talp_arg2l at,talp_arg2r at);
       if result then
-	 if result eq t then
-	    return 'true
-	 else return result
+         if result eq t then
+            return 'true
+         else return result
       else
-	 return 'false
+         return 'false
    end;
 
 procedure talp_simplat2(op,lhs,rhs);
@@ -86,28 +77,28 @@ procedure talp_simplatrinv(op,lhs,rhs);
    <<
       rhs := talp_simplt rhs;
       if talp_invp rhs then
-	 if talp_invp lhs then <<
-	    lhs := talp_simplt lhs;
-	    if talp_invp lhs then
-	       % matching ['inv]s
-%	       if talp_invf lhs eq talp_invf rhs and
-%	       talp_invn lhs eq talp_invn rhs then
-%		  talp_simplat2(op,talp_invarg lhs,talp_invarg rhs)
-	       if talp_eqtp(lhs,rhs) then 
-		  if op eq 'equal then t else nil
-	       % ['inv] mismatch
-	       else
-		  talp_mk2(op,lhs,rhs)
-	    % lhs no inv-term after simplification
-	    else
-	       talp_simplat2(op,lhs,rhs)
-	 >>
-	 % lhs no inv-term
-	 else
-	    talp_mk2(op,talp_simplt lhs,rhs)
+         if talp_invp lhs then <<
+            lhs := talp_simplt lhs;
+            if talp_invp lhs then
+               % matching ['inv]s
+%              if talp_invf lhs eq talp_invf rhs and
+%              talp_invn lhs eq talp_invn rhs then
+%                 talp_simplat2(op,talp_invarg lhs,talp_invarg rhs)
+               if talp_eqtp(lhs,rhs) then 
+                  if op eq 'equal then t else nil
+               % ['inv] mismatch
+               else
+                  talp_mk2(op,lhs,rhs)
+            % lhs no inv-term after simplification
+            else
+               talp_simplat2(op,lhs,rhs)
+         >>
+         % lhs no inv-term
+         else
+            talp_mk2(op,talp_simplt lhs,rhs)
       % rhs no inv-term after simplification
       else
-	 talp_simplat2(op,lhs,rhs)
+         talp_simplat2(op,lhs,rhs)
    >>;
 
 procedure talp_simplatlinv(op,lhs,rhs);
@@ -122,9 +113,9 @@ procedure talp_simplatlinv(op,lhs,rhs);
    <<
       lhs := talp_simplt lhs;
       if talp_invp lhs then
-	 talp_mk2(op,lhs,rhs)
+         talp_mk2(op,lhs,rhs)
       else
-	 talp_simplat2(op,lhs,talp_simplt rhs)
+         talp_simplat2(op,lhs,talp_simplt rhs)
    >>;
 
 procedure talp_simplatfn(op,lhs,rhs);
@@ -136,42 +127,42 @@ procedure talp_simplatfn(op,lhs,rhs);
    % is represented by t, false by nil.
    begin scalar result,list;
       if atom rhs then
-	 if not atsoc(rhs,talp_getl()) then
-	    if talp_telp(rhs,lhs) then
-	       return op neq 'equal
-	    else
-	       return talp_mk2(op,talp_simplt lhs,rhs)
-	 else
-	    return op neq 'equal
+         if not atsoc(rhs,talp_getl()) then
+            if talp_telp(rhs,lhs) then
+               return op neq 'equal
+            else
+               return talp_mk2(op,talp_simplt lhs,rhs)
+         else
+            return op neq 'equal
       else <<
-	 result := talp_fop lhs eq talp_fop rhs;
-	 lhs := talp_fargl lhs;
-	 rhs := talp_fargl rhs;
-	 % check arguments
-	 while lhs and rhs and result do <<
-	    result := talp_simplat2('equal,car lhs,car rhs);
-	    if result and result neq t then
-	       if op eq 'equal then
-		  list := result . list
-	       else list := ('neq . cdr result) . list;
-	    lhs := cdr lhs;
-	    rhs := cdr rhs;
-	 >>;
-	 if result and list then
-	    % joining more than one equality/inequality with and/or
-	    if cdr list then
-	       if op eq 'equal then
-		  return 'and . list
-	       else
-		  return 'or . list
-	    % result single equality/inequality
-	    else
-	       return car list
+         result := talp_fop lhs eq talp_fop rhs;
+         lhs := talp_fargl lhs;
+         rhs := talp_fargl rhs;
+         % check arguments
+         while lhs and rhs and result do <<
+            result := talp_simplat2('equal,car lhs,car rhs);
+            if result and result neq t then
+               if op eq 'equal then
+                  list := result . list
+               else list := ('neq . cdr result) . list;
+            lhs := cdr lhs;
+            rhs := cdr rhs;
+         >>;
+         if result and list then
+            % joining more than one equality/inequality with and/or
+            if cdr list then
+               if op eq 'equal then
+                  return 'and . list
+               else
+                  return 'or . list
+            % result single equality/inequality
+            else
+               return car list
          % result t/nil
-	 else if op eq 'equal then
-	    return result
-	 else
-	    return not result
+         else if op eq 'equal then
+            return result
+         else
+            return not result
       >>
    end;
 
@@ -188,19 +179,19 @@ procedure talp_simplatat(op,lhs,rhs);
    % left term variable
    else if not atsoc(lhs,talp_getl()) then
       if atom rhs then
-	 talp_mk2(op,lhs,rhs)
+         talp_mk2(op,lhs,rhs)
       else if talp_telp(lhs,rhs) then
-	 op neq 'equal
+         op neq 'equal
       else
-	 talp_mk2(op,lhs,rhs)
+         talp_mk2(op,lhs,rhs)
    %left term constant
    else if atom rhs then
       % right term variable
       if not atsoc(rhs,talp_getl()) then
-	 talp_mk2(op,lhs,talp_simplt rhs)
+         talp_mk2(op,lhs,talp_simplt rhs)
       % right term constant
       else
-	 op neq 'equal
+         op neq 'equal
    % right term function
    else
       op neq 'equal;
@@ -218,41 +209,41 @@ procedure talp_simplt1(term,stack);
    % term equivalent to [term].
    begin scalar arg;
       if talp_invp term then <<
-	 arg := talp_invarg term;
-	 % variable as argument - no more simplifications applicable
-	 if atom arg and not atsoc(arg,talp_getl()) then <<
-	    if stack then
-	       while stack do <<
-		  term := talp_mkinv(stack_top stack,term);
-		  stack := stack_pop stack
-	       >>;
-	    return term
-	 >>
-	 % ['inv]-term's argument ['inv]-term - push outer ['inv] on to stack
-	 else if talp_invp arg then
-	    return talp_simplt1(arg,stack_push(talp_op term,stack))
-	 % ['inv]-term's argument function - return nth argument
-	 else if eqcar(arg,talp_invf term) then
-	    return talp_simplt1(nth(talp_fargl arg,talp_invn term),stack)
+         arg := talp_invarg term;
+         % variable as argument - no more simplifications applicable
+         if atom arg and not atsoc(arg,talp_getl()) then <<
+            if stack then
+               while stack do <<
+                  term := talp_mkinv(stack_top stack,term);
+                  stack := stack_pop stack
+               >>;
+            return term
+         >>
+         % ['inv]-term's argument ['inv]-term - push outer ['inv] on to stack
+         else if talp_invp arg then
+            return talp_simplt1(arg,stack_push(talp_op term,stack))
+         % ['inv]-term's argument function - return nth argument
+         else if eqcar(arg,talp_invf term) then
+            return talp_simplt1(nth(talp_fargl arg,talp_invn term),stack)
          % ['inv] function symbol and ['inv] argument's function symbol
-	 % mismatch - return whole argument
-	 else return talp_simplt1(arg,stack)
+         % mismatch - return whole argument
+         else return talp_simplt1(arg,stack)
       >>
       % simplify outer ['inv]s: pop ['inv]s from stack
       else <<
-	 if pairp term then
-	    term := talp_fop term . for each arg in talp_fargl term collect
-	       talp_simplt1(arg,nil);
+         if pairp term then
+            term := talp_fop term . for each arg in talp_fargl term collect
+               talp_simplt1(arg,nil);
          if stack then
-	    return talp_simplt1(talp_mkinv(stack_top stack,term),
-	                         stack_pop stack)
-      	 % stack empty
-      	 else
-	    if talp_invp term then
-	       % Remove superfluous parenthesis from ['inv]-term
-	       return car term
-      	    else
-	       return term
+            return talp_simplt1(talp_mkinv(stack_top stack,term),
+                                 stack_pop stack)
+         % stack empty
+         else
+            if talp_invp term then
+               % Remove superfluous parenthesis from ['inv]-term
+               return car term
+            else
+               return term
       >>
    end;
 
@@ -263,14 +254,14 @@ procedure talp_telp(var,term);
    % ['inv]-term.
    begin scalar flag;
       if atom term then
-	 return var eq term
+         return var eq term
       else if not talp_invp term then <<
-	 term := talp_fargl term;
-	 while not flag and term do <<
-	    flag := talp_telp(var,car term);
-	    term := cdr term
-	 >>;
-	 return flag
+         term := talp_fargl term;
+         while not flag and term do <<
+            flag := talp_telp(var,car term);
+            term := cdr term
+         >>;
+         return flag
       >>
    end;
 

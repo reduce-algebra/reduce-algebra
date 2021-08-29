@@ -203,7 +203,7 @@ procedure ofsf_xopt!-check(f);
    % Check. [f] is a formula. Returns non-[nil] if [f] can be eliminated
    % by using xopt.
    begin scalar !*rlsiatadv,!*rlsitsqspl,!*rlsifac,!*rldavgcd,!*rlsipd,
-	 !*rlsipw;
+         !*rlsipw;
       !*rlsipw := t;
       return ofsf_xopt!-check1(cl_simpl(cl_pnf f,nil,-1),nil,t)
    end;
@@ -214,24 +214,24 @@ procedure ofsf_xopt!-check1(f,vl,p);
    % xopt.
    begin scalar op,argl,r;
       if f eq 'true or f eq 'false then
-	 return nil;
+         return nil;
       op := rl_op f;
 %       if op eq 'ex or op eq 'all then
       if op eq 'ex  then
-	 return p and ofsf_xopt!-check1(rl_mat f,rl_var f . vl,t);
+         return p and ofsf_xopt!-check1(rl_mat f,rl_var f . vl,t);
       if op eq 'all  then
-      	 return nil;
+         return nil;
       if rl_cxp op then <<
-      	 argl := rl_argn f;
-	 r := t;
-      	 while argl and r do <<
-	    r := ofsf_xopt!-check1(car argl,vl,nil);
-	    argl := cdr argl
-	 >>;
-      	 return r
+         argl := rl_argn f;
+         r := t;
+         while argl and r do <<
+            r := ofsf_xopt!-check1(car argl,vl,nil);
+            argl := cdr argl
+         >>;
+         return r
       >>;
       return ofsf_op f memq '(leq,geq,equal) and
-	 sfto_linwpp(ofsf_arg2l f,vl)
+         sfto_linwpp(ofsf_arg2l f,vl)
    end;
 
 procedure ofsf_xopt!-qea(f);
@@ -249,8 +249,8 @@ procedure ofsf_xopt!-trans!-ansl(u);
    % [cl_qea].
    for each ans in ofsf_xopt!-ansl!-ansl u collect
       ofsf_xopt!-ans!-gd ans .
-	 for each ct in ofsf_xopt!-pt!-ctl ofsf_xopt!-ans!-pt ans collect
-	    ofsf_xopt!-ct!-var ct . ofsf_xopt!-ct!-value ct;
+         for each ct in ofsf_xopt!-pt!-ctl ofsf_xopt!-ans!-pt ans collect
+            ofsf_xopt!-ct!-var ct . ofsf_xopt!-ct!-value ct;
 
 procedure ofsf_xopt!-qe(f);
    % Quantifier elimination with answer. [f] is an existentially
@@ -269,39 +269,39 @@ procedure ofsf_xopt!-xopt(f);
    begin scalar exl,mtr,w,co;
       scalar !*rlsiatadv,!*rlsitsqspl,!*rlsifac,!*rldavgcd,!*rlsipd,!*rlsipw;
       integer ofsf_xopt!-delnodes!*,ofsf_xopt!-plnodes!*,ofsf_xopt!-fnodes!*,
-	 ofsf_xopt!-thcof!*,ofsf_xopt!-nodes!*;
+         ofsf_xopt!-thcof!*,ofsf_xopt!-nodes!*;
       !*rlsipw := t;
       f := cl_simpl(cl_pnf f,nil,-1);
       w := cl_splt f;
       exl := car w;
       if null exl then
-	 if !*rlxoptqe then
-	    return f
-	 else
-      	    return ofsf_xopt!-ansl!-mk
-	       {ofsf_xopt!-ans!-mk(f,ofsf_xopt!-pt!-mk nil)};
+         if !*rlxoptqe then
+            return f
+         else
+            return ofsf_xopt!-ansl!-mk
+               {ofsf_xopt!-ans!-mk(f,ofsf_xopt!-pt!-mk nil)};
       if cdr exl then
-	 rederr "ofsf_xopt!-xopt: more than one quantifier block";
+         rederr "ofsf_xopt!-xopt: more than one quantifier block";
       exl := car exl;
       if car exl neq 'ex then
-	 rederr "ofsf_xopt!-xopt: not an existential formula";
+         rederr "ofsf_xopt!-xopt: not an existential formula";
       exl := cdr exl;
       mtr := cadr w;
       co := ofsf_xopt!-co!-mk if rl_op mtr neq 'or then
-	 {ofsf_xopt!-ce!-mk(exl,mtr,nil,nil)}
+         {ofsf_xopt!-ce!-mk(exl,mtr,nil,nil)}
       else
-	 for each x in rl_argn mtr collect
-	    ofsf_xopt!-ce!-mk(exl,x,nil,nil);
+         for each x in rl_argn mtr collect
+            ofsf_xopt!-ce!-mk(exl,x,nil,nil);
       if not !*rlxoptqe then
-      	 return ofsf_xopt!-backsub ofsf_xopt!-elim co;
+         return ofsf_xopt!-backsub ofsf_xopt!-elim co;
       w := ofsf_xopt!-backsub ofsf_xopt!-elim co;
       if !*rlverbose then
-	 ioto_prin2 "Constructing result formula ... ";
+         ioto_prin2 "Constructing result formula ... ";
       w := for each ans in ofsf_xopt!-ansl!-ansl w collect
-	 ofsf_xopt!-ans!-gd ans;
+         ofsf_xopt!-ans!-gd ans;
       w := cl_simpl(rl_smkn('or,w),nil,-1);
       if !*rlverbose then
-	 ioto_prin2t "done.";
+         ioto_prin2t "done.";
       return w
    end;
 
@@ -309,29 +309,29 @@ procedure ofsf_xopt!-elim(co);
    % Quantifier elimination. [co] is a CO. Returns an ANSL.
    begin scalar w,ce,cel,resl,theo; integer n;
       if !*rlverbose then
-      	 ofsf_xopt!-nodes!* := ofsf_xopt!-co!-length co;
+         ofsf_xopt!-nodes!* := ofsf_xopt!-co!-length co;
       while co do <<
-	 if !*rlverbose then
-	    n := n+1;
-	 % -- Get from container --
-	 ce . co := ofsf_xopt!-co!-get co;
-	 if !*rlverbose then
-	    ioto_prin2 {"[",n,"/",ofsf_xopt!-nodes!*};
-	 % -- Eliminate --
-	 cel := ofsf_xopt!-qevar(ce,theo);
-	 % Update container ans resl
-	 {co, resl, theo} := ofsf_xopt!-updco(cel,co,resl,theo);
-	 % -- Finish --
-	 if !*rlverbose then
-	    ioto_prin2 "] ";
+         if !*rlverbose then
+            n := n+1;
+         % -- Get from container --
+         ce . co := ofsf_xopt!-co!-get co;
+         if !*rlverbose then
+            ioto_prin2 {"[",n,"/",ofsf_xopt!-nodes!*};
+         % -- Eliminate --
+         cel := ofsf_xopt!-qevar(ce,theo);
+         % Update container ans resl
+         {co, resl, theo} := ofsf_xopt!-updco(cel,co,resl,theo);
+         % -- Finish --
+         if !*rlverbose then
+            ioto_prin2 "] ";
       >>;
       if !*rlverbose then <<
-	 ioto_cterpri();
-	 ioto_prin2t {"Number of computed nodes: ",ofsf_xopt!-nodes!*};
-	 ioto_prin2t {"Number of PL hits: ",ofsf_xopt!-plnodes!*};
-	 ioto_prin2t {"Number of identical CE's: ",ofsf_xopt!-delnodes!*};
-	 ioto_prin2t {"Number of FALSE results: ",ofsf_xopt!-fnodes!*};
-	 ioto_prin2t {"Number of CE's deleted by theo: ",ofsf_xopt!-thcof!*};
+         ioto_cterpri();
+         ioto_prin2t {"Number of computed nodes: ",ofsf_xopt!-nodes!*};
+         ioto_prin2t {"Number of PL hits: ",ofsf_xopt!-plnodes!*};
+         ioto_prin2t {"Number of identical CE's: ",ofsf_xopt!-delnodes!*};
+         ioto_prin2t {"Number of FALSE results: ",ofsf_xopt!-fnodes!*};
+         ioto_prin2t {"Number of CE's deleted by theo: ",ofsf_xopt!-thcof!*};
       >>;
       return ofsf_xopt!-cel2ansl resl;
    end;
@@ -343,15 +343,15 @@ procedure ofsf_xopt!-qevar(ce,theo);
       v := ofsf_xopt!-varsel ce;
       cs := ofsf_xopt!-cset(ofsf_xopt!-ce!-f ce,v);
       if ofsf_xopt!-cs!-null cs then
-      	 return {ofsf_xopt!-ce!-mk(lto_delq(v,ofsf_xopt!-ce!-vl ce),
-	    ofsf_xopt!-ce!-f ce,
-	    ofsf_xopt!-pt!-mk(ofsf_xopt!-ct!-mk(v,'arbitrary) .
-	       ofsf_xopt!-pt!-ctl ofsf_xopt!-ce!-pt ce),
-	    ofsf_xopt!-ce!-pl ce)};
+         return {ofsf_xopt!-ce!-mk(lto_delq(v,ofsf_xopt!-ce!-vl ce),
+            ofsf_xopt!-ce!-f ce,
+            ofsf_xopt!-pt!-mk(ofsf_xopt!-ct!-mk(v,'arbitrary) .
+               ofsf_xopt!-pt!-ctl ofsf_xopt!-ce!-pt ce),
+            ofsf_xopt!-ce!-pl ce)};
       if !*rlxoptpl then <<
-	 cs := ofsf_xopt!-applypl(cs,ofsf_xopt!-ce!-pl ce);
-      	 if ofsf_xopt!-cs!-null cs then
-	    return {ofsf_xopt!-ce!-mk(nil,'false,nil,nil)}
+         cs := ofsf_xopt!-applypl(cs,ofsf_xopt!-ce!-pl ce);
+         if ofsf_xopt!-cs!-null cs then
+            return {ofsf_xopt!-ce!-mk(nil,'false,nil,nil)}
       >>;
       es := ofsf_xopt!-eset cs;
       cel := ofsf_xopt!-succs(ce,es,v,theo);
@@ -375,7 +375,7 @@ procedure ofsf_xopt!-scset(f,v);
    begin scalar w;
       w := ofsf_xopt!-scset1(f,v);
       if !*rlverbose and (cdr w eq 'finite) then
-	 ioto_prin2 "g";
+         ioto_prin2 "g";
       return car w
    end;
 
@@ -397,26 +397,26 @@ procedure ofsf_xopt!-scsetjunct(f,v);
    begin scalar w,fl,nl,r;
       r := ofsf_xopt!-cs!-mk(nil,nil,nil);
       for each x in rl_argn f do <<
-	 w := ofsf_xopt!-scset1(x,v);
-	 if cdr w then
-	    fl := car w . fl
-	 else
-	    nl := car w . nl
+         w := ofsf_xopt!-scset1(x,v);
+         if cdr w then
+            fl := car w . fl
+         else
+            nl := car w . nl
       >>;
       if fl then
-	 if rl_op f eq 'and then <<
-	    if !*rlverbose and nl then
-	       ioto_prin2 "s";
-	    return ofsf_xopt!-scsetselect fl . 'finite
-      	 >> else if rl_op f eq 'or and null nl then <<
-      	    for each cs in fl do
-	       r := ofsf_xopt!-scsetunion(cs,r);
-      	    return r . 'finite
-	 >>;
+         if rl_op f eq 'and then <<
+            if !*rlverbose and nl then
+               ioto_prin2 "s";
+            return ofsf_xopt!-scsetselect fl . 'finite
+         >> else if rl_op f eq 'or and null nl then <<
+            for each cs in fl do
+               r := ofsf_xopt!-scsetunion(cs,r);
+            return r . 'finite
+         >>;
       for each cs in fl do
-	 r := ofsf_xopt!-scsetunion(cs,r);
+         r := ofsf_xopt!-scsetunion(cs,r);
       for each cs in nl do
-	 r := ofsf_xopt!-scsetunion(cs,r);
+         r := ofsf_xopt!-scsetunion(cs,r);
       return r . nil
    end;
 
@@ -440,13 +440,13 @@ procedure ofsf_xopt!-scsetat(at,v);
       bt := ofsf_xopt!-boundarytype(at,v);
       p := ofsf_arg2l at;
       return if bt eq 'ub then
-	 ofsf_xopt!-cs!-mk({p},nil,nil) . nil
+         ofsf_xopt!-cs!-mk({p},nil,nil) . nil
       else if bt eq 'lb then
-	 ofsf_xopt!-cs!-mk(nil,{p},nil) . nil
+         ofsf_xopt!-cs!-mk(nil,{p},nil) . nil
       else if bt eq 'equ then
-	 ofsf_xopt!-cs!-mk(nil,nil,{p}) . 'finite
+         ofsf_xopt!-cs!-mk(nil,nil,{p}) . 'finite
       else
-	 ofsf_xopt!-cs!-mk(nil,nil,nil) . nil
+         ofsf_xopt!-cs!-mk(nil,nil,nil) . nil
    end;
 
 procedure ofsf_xopt!-boundarytype(at,v);
@@ -456,27 +456,27 @@ procedure ofsf_xopt!-boundarytype(at,v);
       rel := ofsf_op at;
       p := ofsf_arg2l at;
       if domainp p then
-	 return nil;
+         return nil;
       rp := sfto_reorder(p,v);
       if mvar rp neq v then
-	 return nil;
+         return nil;
       if rel eq 'equal then
-	 return 'equ;
+         return 'equ;
       w := lc rp;
       if not domainp w then
-	 rederr "ofsf_xopt!-boundarytype: parametric coefficient";
+         rederr "ofsf_xopt!-boundarytype: parametric coefficient";
       if not(rel memq '(geq leq)) then
-	 rederr {"ofsf_xopt!-boundarytype: unknown relation",rel};
+         rederr {"ofsf_xopt!-boundarytype: unknown relation",rel};
       return if minusf w then
-	 if rel eq 'geq then
-	    'ub
-	 else
-	    'lb
+         if rel eq 'geq then
+            'ub
+         else
+            'lb
       else
-	 if rel eq 'geq then
-	    'lb
-	 else
-	    'ub;
+         if rel eq 'geq then
+            'lb
+         else
+            'ub;
    end;
 
 procedure ofsf_xopt!-csettrad(f,v);
@@ -485,14 +485,14 @@ procedure ofsf_xopt!-csettrad(f,v);
    begin scalar atl,bt,ubl,lbl,eql,p;
       atl := cl_atl1(f);
       for each at in atl do <<
-	 bt := ofsf_xopt!-boundarytype(at,v);
-	 p := ofsf_arg2l at;
-	 if bt eq 'ub then
-	    ubl := p . ubl
-	 else if bt eq 'lb then
-	    lbl := p . lbl
-	 else if bt eq 'equ then
-	    eql := p . eql
+         bt := ofsf_xopt!-boundarytype(at,v);
+         p := ofsf_arg2l at;
+         if bt eq 'ub then
+            ubl := p . ubl
+         else if bt eq 'lb then
+            lbl := p . lbl
+         else if bt eq 'equ then
+            eql := p . eql
       >>;
       return ofsf_xopt!-cs!-mk(ubl,lbl,eql)
    end;
@@ -505,17 +505,17 @@ procedure ofsf_xopt!-applypl(cs,pl);  % TODO: Keine Spezialfaelle von ESET durch
       cs
    else
       ofsf_xopt!-cs!-mk(ofsf_xopt!-applypl1(ofsf_xopt!-cs!-ubl cs,pl),
-      	 ofsf_xopt!-applypl1(ofsf_xopt!-cs!-lbl cs,pl),
-      	 ofsf_xopt!-applypl1(ofsf_xopt!-cs!-eql cs,pl));
+         ofsf_xopt!-applypl1(ofsf_xopt!-cs!-lbl cs,pl),
+         ofsf_xopt!-applypl1(ofsf_xopt!-cs!-eql cs,pl));
 
 procedure ofsf_xopt!-applypl1(cpl,pl);
    % Apply passive list subroutine. [cpl] is a list of CP's; [pl] is a
    % PL. Returns a list of CP's.
    for each cp in cpl join
       if cl_simpl(ofsf_0mk2('equal,ofsf_xopt!-cp!-p cp),pl,-1) eq 'false then <<
-	 ofsf_xopt!-plnodes!* := ofsf_xopt!-plnodes!*+1;
+         ofsf_xopt!-plnodes!* := ofsf_xopt!-plnodes!*+1;
       >> else
-	 {cp};
+         {cp};
 
 procedure ofsf_xopt!-eset(cs);
    % Elimination set. [cs] is a CS. Retuns an ES.
@@ -531,15 +531,15 @@ procedure ofsf_xopt!-esetos(cs);
       lbl := ofsf_xopt!-cs!-lbl cs;
       eql := ofsf_xopt!-cs!-eql cs;
       return ofsf_xopt!-es!-mk if null ubl and null lbl then
-	 ofsf_xopt!-es!-mk eql
+         ofsf_xopt!-es!-mk eql
       else if null ubl then
-	 'pinf . eql
+         'pinf . eql
       else if null lbl then
-	 'minf . eql
+         'minf . eql
       else if length ubl <= length lbl then
-	 'pinf . union(ubl,eql)
+         'pinf . union(ubl,eql)
       else
-      	 'minf . union(lbl,eql)
+         'minf . union(lbl,eql)
    end;
 
 procedure ofsf_xopt!-esetbs(cs);
@@ -553,8 +553,8 @@ procedure ofsf_xopt!-succs(ce,es,v,theo);
    begin scalar cel,npl;
       npl := ofsf_xopt!-ce!-pl ce;
       for each cp in ofsf_xopt!-es!-cpl es do <<   % TODO: Abbruch bei TRUE
-      	 cel := ofsf_xopt!-succs1(ce,cp,v,npl,theo) . cel;
-	 npl := ofsf_xopt!-updpl(cp,npl);   % TODO: Am Ende ueberfluessig.
+         cel := ofsf_xopt!-succs1(ce,cp,v,npl,theo) . cel;
+         npl := ofsf_xopt!-updpl(cp,npl);   % TODO: Am Ende ueberfluessig.
       >>;
       return reversip cel
    end;
@@ -566,14 +566,14 @@ procedure ofsf_xopt!-succs1(ce,cp,v,npl,theo);
       p := ofsf_xopt!-cp!-p cp;
       f := ofsf_xopt!-sub(ofsf_xopt!-ce!-f ce,v,p,theo);
       return if w then  % This never happens. TS
-	 ofsf_xopt!-ce!-mk(nil,'false,nil,nil)
+         ofsf_xopt!-ce!-mk(nil,'false,nil,nil)
       else
-      	 ofsf_xopt!-ce!-mk(lto_delq(v,ofsf_xopt!-ce!-vl ce),
-	    f,
-	    ofsf_xopt!-pt!-mk(ofsf_xopt!-ct!-mk(
-	       v,ofsf_xopt!-solv(p,v)) .
-		  ofsf_xopt!-pt!-ctl ofsf_xopt!-ce!-pt ce),
-	    ofsf_xopt!-plsub(npl,v,p))
+         ofsf_xopt!-ce!-mk(lto_delq(v,ofsf_xopt!-ce!-vl ce),
+            f,
+            ofsf_xopt!-pt!-mk(ofsf_xopt!-ct!-mk(
+               v,ofsf_xopt!-solv(p,v)) .
+                  ofsf_xopt!-pt!-ctl ofsf_xopt!-ce!-pt ce),
+            ofsf_xopt!-plsub(npl,v,p))
    end;
 
 procedure ofsf_xopt!-sub(f,v,sol,theo);  % TODO: Ist das teuer!
@@ -582,12 +582,12 @@ procedure ofsf_xopt!-sub(f,v,sol,theo);  % TODO: Ist das teuer!
    begin scalar w;
       w := ofsf_xopt!-sub1(f,v,sol);
       if not(!*rlxoptrir) or not(!*rlxoptri) then
-	 return cl_simpl(w,theo,-1);
+         return cl_simpl(w,theo,-1);
       w := cl_simpl(w,nil,-1);
       return if cl_simpl(w,theo,-1) eq 'false then
-       	 'false
+         'false
       else
-	 w
+         w
    end;
 
 procedure ofsf_xopt!-sub1(f,v,sol);
@@ -606,28 +606,28 @@ procedure ofsf_xopt!-subiat(atf,v,it);
    begin scalar rel,p,rp,pos;
       rel := ofsf_op atf;
       if rel eq 'equal then
-	 return if v memq ofsf_varlat atf then
-	    'false
-	 else
-	    atf;
+         return if v memq ofsf_varlat atf then
+            'false
+         else
+            atf;
       if rel eq 'neq then
-	 return if v memq ofsf_varlat atf then
-	    'true
-	 else
-	    atf;
+         return if v memq ofsf_varlat atf then
+            'true
+         else
+            atf;
       p := ofsf_arg2l atf;
       if domainp p then
-	 return atf;
+         return atf;
       rp := sfto_reorder(p,v);
       if mvar rp neq v then
-	 return atf;
+         return atf;
       pos := if it eq 'pinf then not minusf lc rp else minusf lc rp;
       return if (pos and rel memq '(geq greaterp)) or
-	 (not pos and rel memq '(leq lessp))
+         (not pos and rel memq '(leq lessp))
       then
-	 'true
+         'true
       else
-	 'false
+         'false
    end;
 
 procedure ofsf_xopt!-subat(atf,v,sol);
@@ -640,15 +640,15 @@ procedure ofsf_xopt!-sublf(p,v,mp);
    % a SF. Returns a SF.
    begin scalar oldorder,rmp,rp,r;
       if not(v memq kernels p) then
-	 return p;
+         return p;
       oldorder := setkorder {v};
       rmp := reorder mp;
 %      rmp := mp;
       rp := reorder p;
       r := if minusf lc rmp then
-	 addf(multf(lc rp,red rmp),negf multf(lc rmp,red rp))
+         addf(multf(lc rp,red rmp),negf multf(lc rmp,red rp))
       else
-	 addf(negf multf(lc rp,red rmp),multf(lc rmp,red rp));
+         addf(negf multf(lc rp,red rmp),multf(lc rmp,red rp));
       setkorder oldorder;
       return reorder r
    end;
@@ -671,22 +671,22 @@ procedure ofsf_xopt!-plsub(pl,v,sol);
       w := rl_smkn('and,pl);
       w := cl_simpl(ofsf_xopt!-sub(w,v,sol,nil),nil,-1);
       if w eq 'true then
-	 return nil;
+         return nil;
       if w eq 'false then
-	 rederr {"ofsf_xopt!-plsub: Result",w};
+         rederr {"ofsf_xopt!-plsub: Result",w};
       if cl_atfp w then
-	 w := {w}
+         w := {w}
       else if rl_op w neq 'and then
-	 rederr {"ofsf_xopt!-plsub: unexpected operator",rl_op w}
+         rederr {"ofsf_xopt!-plsub: unexpected operator",rl_op w}
       else
-	 w := rl_argn w;
+         w := rl_argn w;
       return for each f in w join
-	 if cl_atfp f then
-	    {f}
-	 else <<
-	    if !*rlverbose then ioto_prin2 "C";
-      	    nil
-	 >>
+         if cl_atfp f then
+            {f}
+         else <<
+            if !*rlverbose then ioto_prin2 "C";
+            nil
+         >>
    end;
 
 procedure ofsf_xopt!-updpl(cp,pl);
@@ -695,7 +695,7 @@ procedure ofsf_xopt!-updpl(cp,pl);
       if not !*rlxoptpl then return nil;
       w := ofsf_xopt!-cp!-p cp;
       if w memq '(pinf minf) then
-      	 return pl;
+         return pl;
       return ofsf_0mk2('neq,w) . pl
    end;
 
@@ -707,32 +707,32 @@ procedure ofsf_xopt!-updco(cel,co,resl,theo);
    % the number of conatiner elementes added.
    begin scalar ce,f,w;
       while cel do <<
-	 ce := car cel;
-	 cel := cdr cel;
-	 f := ofsf_xopt!-ce!-f ce;
-	 if f eq 'false then <<
-	    ofsf_xopt!-fnodes!* := ofsf_xopt!-fnodes!*+1;
-	    nil
-	 >> else if f eq 'true then <<
-	    resl := {ce};
-	    co := nil;
-	    cel := nil
-	 >> else if null ofsf_xopt!-ce!-vl ce then <<
-	    {resl, co, theo} := ofsf_xopt!-resinherit(ce,resl,co,theo);
-	    if theo eq 'inctheo then <<
-	       co := nil;
-	       cel := nil
-	    >>
-	 >> else if rl_op f eq 'or then
-	    for each ff in rl_argn f do <<
-	       co := ofsf_xopt!-ccoput(co,
-		  ofsf_xopt!-ce!-mk(ofsf_xopt!-ce!-vl ce,
-		     ff,
-		     ofsf_xopt!-ce!-pt ce,
-		     ofsf_xopt!-ce!-pl ce));
-	    >>
-	 else
-	    co := ofsf_xopt!-ccoput(co,ce);
+         ce := car cel;
+         cel := cdr cel;
+         f := ofsf_xopt!-ce!-f ce;
+         if f eq 'false then <<
+            ofsf_xopt!-fnodes!* := ofsf_xopt!-fnodes!*+1;
+            nil
+         >> else if f eq 'true then <<
+            resl := {ce};
+            co := nil;
+            cel := nil
+         >> else if null ofsf_xopt!-ce!-vl ce then <<
+            {resl, co, theo} := ofsf_xopt!-resinherit(ce,resl,co,theo);
+            if theo eq 'inctheo then <<
+               co := nil;
+               cel := nil
+            >>
+         >> else if rl_op f eq 'or then
+            for each ff in rl_argn f do <<
+               co := ofsf_xopt!-ccoput(co,
+                  ofsf_xopt!-ce!-mk(ofsf_xopt!-ce!-vl ce,
+                     ff,
+                     ofsf_xopt!-ce!-pt ce,
+                     ofsf_xopt!-ce!-pl ce));
+            >>
+         else
+            co := ofsf_xopt!-ccoput(co,ce);
       >>;
       return {co,resl,theo}
    end;
@@ -744,30 +744,30 @@ procedure ofsf_xopt!-resinherit(ce,resl,co,theo);  % TODO: Splitting OR's???
    % $\Theta$ is the updated [theo].
    begin scalar f;
       if ofsf_xopt!-celmember(ce,resl) then
-	 return {resl,co,theo};
+         return {resl,co,theo};
       if not !*rlxoptri then <<
-	 if !*rlverbose then ioto_prin2 ".";
-	 return {ce . resl,co,theo}
+         if !*rlverbose then ioto_prin2 ".";
+         return {ce . resl,co,theo}
       >>;
       f := ofsf_xopt!-ce!-f ce;
       if rl_op f eq 'and then <<
-	 if !*rlverbose then ioto_prin2 ".";
-	 return {ce . resl,co,theo}
+         if !*rlverbose then ioto_prin2 ".";
+         return {ce . resl,co,theo}
       >>;
       theo := cl_simpl(rl_smkn('and,cl_nnfnot f . theo),nil,-1);
       if cl_atfp theo then
-	 theo := {theo}
+         theo := {theo}
       else if theo eq 'false then
-	 return {ce . resl,co,'inctheo}
+         return {ce . resl,co,'inctheo}
       else if rl_op theo neq 'and then
-	 rederr {"ofsf_xopt!-resinherit: Unexpected operator",rl_op theo}
+         rederr {"ofsf_xopt!-resinherit: Unexpected operator",rl_op theo}
       else
-      	 theo := for each atf in rl_argn theo join
-	    if cl_atfp atf then {atf};
+         theo := for each atf in rl_argn theo join
+            if cl_atfp atf then {atf};
       if !*rlxoptrir then
-      	 resl := ofsf_xopt!-thapplycel(resl,theo);
+         resl := ofsf_xopt!-thapplycel(resl,theo);
       if !*rlxoptric then
-      	 co := ofsf_xopt!-thapplyco(co,theo);
+         co := ofsf_xopt!-thapplyco(co,theo);
 % mathprint rl_prepfof rl_smkn('and,theo);
       if !*rlverbose then ioto_prin2 ".";
       return {ce . resl,co,theo}
@@ -780,12 +780,12 @@ procedure ofsf_xopt!-celmember(ce,cel);
       f := ofsf_xopt!-ce!-f ce;
       scel := cel;
       while scel do <<
-	 a := car scel;
-	 scel := cdr scel;
-	 if f = ofsf_xopt!-ce!-f a then <<
-	    scel := nil;
-	    flg := t
-	 >>
+         a := car scel;
+         scel := cdr scel;
+         if f = ofsf_xopt!-ce!-f a then <<
+            scel := nil;
+            flg := t
+         >>
       >>;
       return flg
    end;
@@ -795,24 +795,24 @@ procedure ofsf_xopt!-thapplycel(cel,theo);
    % [theo] is a theory. Returns a list of CE's.
    for each ce in cel join
       if cl_simpl(ofsf_xopt!-ce!-f ce,theo,-1) neq 'false then
-	 {ce};
+         {ce};
 
 procedure ofsf_xopt!-thapplyco(co,theo);
    % Apply theory to container. [co] is an CO. [th] is a theory.
    % Returns a [CO].
    begin scalar co,ce,w,r,f;
       while co do <<
-	 w := ofsf_xopt!-co!-get co;
-	 ce := car w;
-	 co := cdr w;
-	 f := cl_simpl(ofsf_xopt!-ce!-f ce,theo,-1);
-	 if f eq 'false then
-	    ofsf_xopt!-thcof!* := ofsf_xopt!-thcof!* +1
-	 else
-	    r := ofsf_xopt!-co!-put(r,ofsf_xopt!-ce!-mk(ofsf_xopt!-ce!-vl ce,
-	       f,
-	       ofsf_xopt!-ce!-pt ce,
-	       ofsf_xopt!-ce!-pl ce))
+         w := ofsf_xopt!-co!-get co;
+         ce := car w;
+         co := cdr w;
+         f := cl_simpl(ofsf_xopt!-ce!-f ce,theo,-1);
+         if f eq 'false then
+            ofsf_xopt!-thcof!* := ofsf_xopt!-thcof!* +1
+         else
+            r := ofsf_xopt!-co!-put(r,ofsf_xopt!-ce!-mk(ofsf_xopt!-ce!-vl ce,
+               f,
+               ofsf_xopt!-ce!-pt ce,
+               ofsf_xopt!-ce!-pl ce))
       >>;
       return r
    end;
@@ -823,22 +823,22 @@ procedure ofsf_xopt!-ccoput(co,ce);
       f := ofsf_xopt!-ce!-f ce;
       sco := co;
       while sco do <<
-	 w := ofsf_xopt!-co!-get(sco);
-	 sco := cdr w;
-	 w := car w;
-	 if ofsf_xopt!-ce!-f w = f then <<
-	    sco := nil;
-	    flg := t
-	 >>
+         w := ofsf_xopt!-co!-get(sco);
+         sco := cdr w;
+         w := car w;
+         if ofsf_xopt!-ce!-f w = f then <<
+            sco := nil;
+            flg := t
+         >>
       >>;
       if flg then <<
-      	 co := lto_delq(w,co);
-      	 pl := intersection(ofsf_xopt!-ce!-pl ce,ofsf_xopt!-ce!-pl w);
-      	 ce := ofsf_xopt!-ce!-mk(
-	    ofsf_xopt!-ce!-vl ce,f,ofsf_xopt!-ce!-pt ce,pl);
-	 ofsf_xopt!-delnodes!* := ofsf_xopt!-delnodes!*+1
+         co := lto_delq(w,co);
+         pl := intersection(ofsf_xopt!-ce!-pl ce,ofsf_xopt!-ce!-pl w);
+         ce := ofsf_xopt!-ce!-mk(
+            ofsf_xopt!-ce!-vl ce,f,ofsf_xopt!-ce!-pt ce,pl);
+         ofsf_xopt!-delnodes!* := ofsf_xopt!-delnodes!*+1
       >> else
-	 ofsf_xopt!-nodes!* := ofsf_xopt!-nodes!*+1;
+         ofsf_xopt!-nodes!* := ofsf_xopt!-nodes!*+1;
       return ofsf_xopt!-co!-put(co,ce)
    end;
 
@@ -865,9 +865,9 @@ procedure ofsf_xopt!-backsubpt(pt);
    % point is in a more convenient form.
    begin scalar subl,w;
       return ofsf_xopt!-pt!-mk for each ct in ofsf_xopt!-pt!-ctl pt collect <<
-   	 w := prepsq subsq(simp ofsf_xopt!-ct!-value ct,subl);
-      	 subl := (ofsf_xopt!-ct!-var ct . w) . subl;
-	 ofsf_xopt!-ct!-mk(ofsf_xopt!-ct!-var ct,w)
+         w := prepsq subsq(simp ofsf_xopt!-ct!-value ct,subl);
+         subl := (ofsf_xopt!-ct!-var ct . w) . subl;
+         ofsf_xopt!-ct!-mk(ofsf_xopt!-ct!-var ct,w)
       >>
    end;
 

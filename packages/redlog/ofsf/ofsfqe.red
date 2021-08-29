@@ -66,22 +66,22 @@ procedure ofsf_posqe!-prep(f);
 procedure ofsf_qe(f,theo);
    if !*rlxopt and null theo and ofsf_xopt!-check f then <<
       if !*rlverbose then
-	 ioto_tprin2t "++++ Entering xopt-qe";
+         ioto_tprin2t "++++ Entering xopt-qe";
       ofsf_xopt!-qe f
    >> else <<
       if !*rlverbose then
-	 ioto_tprin2t "++++ Entering cl_qe";
+         ioto_tprin2t "++++ Entering cl_qe";
       cl_qe(f,theo)
    >>;
 
 procedure ofsf_qea(f,theo);
    if !*rlxopt and null theo and ofsf_xopt!-check f then <<
       if !*rlverbose then
-	 ioto_tprin2t "++++ Entering xopt-qea";
+         ioto_tprin2t "++++ Entering xopt-qea";
       ofsf_xopt!-qea f
    >> else <<
       if !*rlverbose then
-	 ioto_tprin2t "++++ Entering cl_qea";
+         ioto_tprin2t "++++ Entering cl_qea";
       cl_qea(f,theo)
    >>;
 
@@ -99,32 +99,32 @@ procedure ofsf_varsel!-try(f,vl,theo);
    % [vl] is a list of variables; [f] is a quantifier-free formula;
    % [theo] is the current theory. Returns a list of variables.
    begin scalar atl,candvl,ifacl,
-	 terml;
+         terml;
       atl := cl_atl1 f;
       candvl := for each a in vl join
-	 if ofsf_linp(atl,a,lto_delq(a,vl)) then {a};
+         if ofsf_linp(atl,a,lto_delq(a,vl)) then {a};
       if candvl then return candvl;
       candvl := for each a in vl join
-	 if ofsf_qscp(atl,a) then {a};
+         if ofsf_qscp(atl,a) then {a};
       if candvl then return candvl;
       terml := for each x in atl collect ofsf_arg2l x;
       candvl := for each a in vl join
-	 if ofsf_pseudp(terml,a,1) then {a};
+         if ofsf_pseudp(terml,a,1) then {a};
       if candvl then return candvl;
       candvl := for each a in vl join
-	 if ofsf_pseudp(terml,a,2) then {a};
+         if ofsf_pseudp(terml,a,2) then {a};
       if candvl then return candvl;
       if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
- 	 ioto_prin2 "(SVF";
+         ioto_prin2 "(SVF";
       ifacl := for each x in atl join
-	 for each p in cdr sfto_fctrf ofsf_arg2l x collect car p;
+         for each p in cdr sfto_fctrf ofsf_arg2l x collect car p;
       if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
- 	 ioto_prin2 ")";
+         ioto_prin2 ")";
       candvl := for each a in vl join
-	 if ofsf_pseudp(ifacl,a,1) then {a};
+         if ofsf_pseudp(ifacl,a,1) then {a};
       if candvl then return candvl;
       candvl := for each a in vl join
-	 if ofsf_pseudp(ifacl,a,2) then {a};
+         if ofsf_pseudp(ifacl,a,2) then {a};
       if candvl then return candvl;
       return vl
    end;
@@ -137,51 +137,51 @@ procedure ofsf_varsel!-classic(f,vl,theo);
       atl := cl_atl1 f;
       scvl := vl;
       while scvl and not v do <<
-	 a := car scvl;
-	 scvl := cdr scvl;
-	 if ofsf_linp(atl,a,lto_delq(a,vl)) then v := a
+         a := car scvl;
+         scvl := cdr scvl;
+         if ofsf_linp(atl,a,lto_delq(a,vl)) then v := a
       >>;
       if v then return v;
       scvl := vl;
       while scvl and not v do <<
-	 a := car scvl;
-	 scvl := cdr scvl;
-	 if ofsf_qscp(atl,a) then v := a
+         a := car scvl;
+         scvl := cdr scvl;
+         if ofsf_qscp(atl,a) then v := a
       >>;
       if v then return v;
       terml := for each x in atl collect ofsf_arg2l x;
       scvl := vl;
       while scvl and not v do <<
-	 a := car scvl;
-	 scvl := cdr scvl;
-	 if ofsf_pseudp(terml,a,1) then v := a
+         a := car scvl;
+         scvl := cdr scvl;
+         if ofsf_pseudp(terml,a,1) then v := a
       >>;
       if v then return v;
       scvl := vl;
       while scvl and not v do <<
-	 a := car scvl;
-	 scvl := cdr scvl;
-	 if ofsf_pseudp(terml,a,2) then v := a
+         a := car scvl;
+         scvl := cdr scvl;
+         if ofsf_pseudp(terml,a,2) then v := a
       >>;
       if v then return v;
       if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
- 	 ioto_prin2 "(SVF";
+         ioto_prin2 "(SVF";
       ifacl := for each x in atl join
-	 for each p in cdr sfto_fctrf ofsf_arg2l x collect car p;
+         for each p in cdr sfto_fctrf ofsf_arg2l x collect car p;
       if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
- 	 ioto_prin2 ")";
+         ioto_prin2 ")";
       scvl := vl;
       while scvl and not v do <<
-	 a := car scvl;
-	 scvl := cdr scvl;
-	 if ofsf_pseudp(ifacl,a,1) then v := a
+         a := car scvl;
+         scvl := cdr scvl;
+         if ofsf_pseudp(ifacl,a,1) then v := a
       >>;
       if v then return v;
       scvl := vl;
       while scvl and not v do <<
-	 a := car scvl;
-	 scvl := cdr scvl;
-	 if ofsf_pseudp(ifacl,a,2) then v := a
+         a := car scvl;
+         scvl := cdr scvl;
+         if ofsf_pseudp(ifacl,a,2) then v := a
       >>;
       if v then return v;
       return car vl
@@ -198,11 +198,11 @@ procedure ofsf_linp(atl,v,vl);
       linp := t;
       w := setkorder {v};
       while atl and linp do <<
-	 u := reorder ofsf_arg2l car atl;
-	 atl := cdr atl;
-	 g := degr(u,v);
-	 if g > 1 or (g = 1 and intersection(kernels lc u,vl)) then
-	    linp := nil
+         u := reorder ofsf_arg2l car atl;
+         atl := cdr atl;
+         g := degr(u,v);
+         if g > 1 or (g = 1 and intersection(kernels lc u,vl)) then
+            linp := nil
       >>;
       setkorder w;
       return linp
@@ -215,18 +215,18 @@ procedure ofsf_qscp(atl,v);
    % containing the atomic formulas from [atl].
    begin scalar a,hit,d;
       if not !*rlqeqsc then
-	 return nil;
+         return nil;
       while atl do <<
-	 a := car atl;
-	 atl := cdr atl;
-	 d := degreef(ofsf_arg2l a,v);
-	 if d>2 then
-	    atl := hit := nil
-	 else if d=2 and ofsf_op a memq '(greaterp lessp geq leq neq) then
-	    if hit then
-	       atl := hit := nil
-	    else
-	       hit := t
+         a := car atl;
+         atl := cdr atl;
+         d := degreef(ofsf_arg2l a,v);
+         if d>2 then
+            atl := hit := nil
+         else if d=2 and ofsf_op a memq '(greaterp lessp geq leq neq) then
+            if hit then
+               atl := hit := nil
+            else
+               hit := t
       >>;
       return hit
    end;
@@ -239,10 +239,10 @@ procedure ofsf_pseudp(ifacl,v,n);
    begin scalar ok;
       ok := t;
       while ifacl and ok do
-	 if degreef(car ifacl,v) > n then
-	    ok := nil
-	 else
-	    ifacl := cdr ifacl;
+         if degreef(car ifacl,v) > n then
+            ok := nil
+         else
+            ifacl := cdr ifacl;
       return ok
    end;
 
@@ -265,7 +265,7 @@ procedure ofsf_qesubcr1(bvl,theo,f,v,co,u);
    begin scalar w;
       w := ofsf_subsimpl(bvl,co,theo);
       if cdr w eq 'false then
-      	 return car w . 'false;
+         return car w . 'false;
       return car w . rl_mkn('and,{cdr w,ofsf_qesubr(f,v,u)})
    end;
 
@@ -282,9 +282,9 @@ procedure ofsf_qesubcr2(bvl,theo,f,v,co,u1,u2);
    begin scalar w;
       w := ofsf_subsimpl(bvl,co,theo);
       if cdr w eq 'false then
-      	 return car w . 'false;
+         return car w . 'false;
       return car w . rl_mkn('and,{cdr w,rl_mkn('or,{
-      	 ofsf_qesubr(f,v,u1),ofsf_qesubr(f,v,u2)})})
+         ofsf_qesubr(f,v,u1),ofsf_qesubr(f,v,u2)})})
    end;
 
 procedure ofsf_qesubr(f,v,u);
@@ -294,7 +294,7 @@ procedure ofsf_qesubr(f,v,u);
    % to $[f]([v]/[u])$ provided that [u] is valid..
    if caddr u = 1 then
       cl_apply2ats1(f,'ofsf_qesubqat,{v,
-	 quotsq(!*f2q addf(car u,cadr u),!*f2q cadddr u)})
+         quotsq(!*f2q addf(car u,cadr u),!*f2q cadddr u)})
    else
       cl_apply2ats1(f,'ofsf_qesubrat,{v,u});
 
@@ -318,13 +318,13 @@ procedure ofsf_qesubrat1(r,f,x,rform);
    begin scalar w,dd;
       w := ofsf_getsubrcoeffs(f,x,rform);
       if r eq 'equal or r eq 'neq then
- 	 return ofsf_qesubreq(r,car w,cadr w,caddr w);
+         return ofsf_qesubreq(r,car w,cadr w,caddr w);
       dd := cadddr w;
       if ofsf_surep(ofsf_0mk2('geq,dd),nil) then  % maybe we want to use theory
-	 return ofsf_qesubrord(r,car w,cadr w,caddr w,1);
+         return ofsf_qesubrord(r,car w,cadr w,caddr w,1);
       dd := car sfto_pdecf dd;
       if ofsf_surep(ofsf_0mk2('geq,dd),nil) then % this can happen
-	 return ofsf_qesubrord(r,car w,cadr w,caddr w,1);
+         return ofsf_qesubrord(r,car w,cadr w,caddr w,1);
       return ofsf_qesubrord(r,car w,cadr w,caddr w,dd)
    end;
 
@@ -346,7 +346,7 @@ procedure ofsf_qesubreq1(aa,bb,c);
       ofsf_0mk2('equal,aa)
    else
       rl_mkn('and,{ofsf_0mk2('leq,multf(aa,bb)),
-	 ofsf_0mk2('equal,addf(exptf(aa,2),negf multf(exptf(bb,2),c)))});
+         ofsf_0mk2('equal,addf(exptf(aa,2),negf multf(exptf(bb,2),c)))});
 
 procedure ofsf_qesubrord(r,aa,bb,c,dd);
    % Ordered field standard form quantifier elimination substitute
@@ -370,15 +370,15 @@ procedure ofsf_qesubrord1(r,aa,bb,c,dd);
    begin scalar ad,a2b2c,w;
       ad := multf(aa,dd);
       if null bb then
-      	 return ofsf_0mk2(r,ad);
+         return ofsf_0mk2(r,ad);
       a2b2c := addf(exptf(aa,2),negf multf(exptf(bb,2),c));
       w := if r eq 'leq then
-	 ofsf_0mk2('leq,a2b2c)
+         ofsf_0mk2('leq,a2b2c)
       else
-	 rl_mkn('or,{ofsf_0mk2('lessp,ad),ofsf_0mk2('lessp,a2b2c)});
+         rl_mkn('or,{ofsf_0mk2('lessp,ad),ofsf_0mk2('lessp,a2b2c)});
       return rl_mkn('or,{
-	 rl_mkn('and,{ofsf_0mk2(r,ad),ofsf_0mk2(ofsf_anegrel r,a2b2c)}),
-	 rl_mkn('and,{ofsf_0mk2('leq,multf(bb,dd)),w})})
+         rl_mkn('and,{ofsf_0mk2(r,ad),ofsf_0mk2(ofsf_anegrel r,a2b2c)}),
+         rl_mkn('and,{ofsf_0mk2('leq,multf(bb,dd)),w})})
    end;
 
 procedure ofsf_getsubrcoeffs(f,x,rform);
@@ -397,11 +397,11 @@ procedure ofsf_getsubrcoeffs(f,x,rform);
       dd := denr w;
       w := sfto_reorder(numr w,'ofsf_sqrt);
       while not domainp w and mvar w eq 'ofsf_sqrt do <<
-	 if evenp ldeg w then
-	    aa := addf(aa,multf(reorder lc w,exptf(c,ldeg w / 2)))
-	 else
-	    bb := addf(bb,multf(reorder lc w,exptf(c,ldeg w / 2)));
-	 w := red w
+         if evenp ldeg w then
+            aa := addf(aa,multf(reorder lc w,exptf(c,ldeg w / 2)))
+         else
+            bb := addf(bb,multf(reorder lc w,exptf(c,ldeg w / 2)));
+         w := red w
       >>;
       aa := addf(aa,reorder w);
       return {aa,bb,c,dd}
@@ -419,7 +419,7 @@ procedure ofsf_qesubcq(bvl,theo,f,v,co,u);
    begin scalar w;
       w := ofsf_subsimpl(bvl,co,theo);
       if cdr w eq 'false then
-      	 return car w . 'false;
+         return car w . 'false;
       return car w . rl_mkn('and,{cdr w,ofsf_qesubq(f,v,u)})
    end;
 
@@ -439,19 +439,19 @@ procedure ofsf_qesubqat(atf,v,u);
    begin scalar w,op,dd;
       if not (v memq ofsf_varlat atf) then return atf;
       w := if !*rlqesubf then
-	 subf(ofsf_arg2l atf,{v . prepsq u})
+         subf(ofsf_arg2l atf,{v . prepsq u})
       else
- 	 ofsf_subf(ofsf_arg2l atf,v,u);
+         ofsf_subf(ofsf_arg2l atf,v,u);
       op := ofsf_op atf;
       if !*rlqelocal then
-	 return ofsf_qesubqat!-local(op,w);
+         return ofsf_qesubqat!-local(op,w);
       if op eq 'equal or op eq 'neq or
- 	 ofsf_surep(ofsf_0mk2('geq,denr w),nil)  % maybe we want to use theo?
+         ofsf_surep(ofsf_0mk2('geq,denr w),nil)  % maybe we want to use theo?
       then
-	 return ofsf_0mk2(op,numr w);
+         return ofsf_0mk2(op,numr w);
       dd := car sfto_pdecf denr w;
       if ofsf_surep(ofsf_0mk2('geq,dd),nil) then  % this can happen!
-	 return ofsf_0mk2(op,numr w);
+         return ofsf_0mk2(op,numr w);
       return ofsf_0mk2(op,multf(numr w,dd))
    end;
 
@@ -459,10 +459,10 @@ procedure ofsf_subf(f,v,u);
    % [f] is an SF; [v] is a kernel; [u] is an SQ. Returns an SQ.
    begin scalar nred;
       if domainp f then
-      	 return !*f2q f;
+         return !*f2q f;
       nred := ofsf_subf(red f,v,u);
       if mvar f eq v then
-      	 return addsq(multsq(!*f2q lc f,exptsq(u,ldeg f)),nred);
+         return addsq(multsq(!*f2q lc f,exptsq(u,ldeg f)),nred);
       return addsq(multsq(ofsf_subf(lc f,v,u),ofsf_pow2q(mvar f,ldeg f)),nred);
    end;
 
@@ -476,13 +476,13 @@ procedure ofsf_pow2q(v,d);
 procedure ofsf_qesubqat!-local(op,w);
    <<
       if op eq 'equal or op eq 'neq then
-      	 ofsf_0mk2(op,numr w)
+         ofsf_0mk2(op,numr w)
       else if ofsf_0mk2('greaterp,denr w) member cl_theo!* then
-	 ofsf_0mk2(op,numr w)
+         ofsf_0mk2(op,numr w)
       else if ofsf_0mk2('lessp,denr w) member cl_theo!* then
-	 ofsf_0mk2(ofsf_anegrel op,numr w)
+         ofsf_0mk2(ofsf_anegrel op,numr w)
       else
-      	 ofsf_0mk2(op,multf(numr w,denr w))
+         ofsf_0mk2(op,multf(numr w,denr w))
    >>;
 
 procedure ofsf_qesubi(bvl,theo,f,v,inf);
@@ -507,7 +507,7 @@ procedure ofsf_qesubiat(atf,v,inf);
       op := ofsf_op atf;
       lhs := ofsf_arg2l atf;
       if op eq 'equal or op eq 'neq then
-	 return ofsf_qesubtranseq(op,lhs,v);
+         return ofsf_qesubtranseq(op,lhs,v);
       % [op] is an ordering relation.
       return ofsf_qesubiord(op,lhs,v,inf)
    end;
@@ -538,8 +538,8 @@ procedure ofsf_qesubtransequal1(lhs,v);
    % $\alpha$.
    begin scalar cl;
       while not domainp lhs and mvar lhs eq v do <<
-	 cl := ofsf_0mk2('equal,reorder lc lhs) . cl;
-	 lhs := red lhs
+         cl := ofsf_0mk2('equal,reorder lc lhs) . cl;
+         lhs := red lhs
       >>;
       cl := ofsf_0mk2('equal,reorder lhs) . cl;
       return rl_smkn('and,cl)
@@ -563,14 +563,14 @@ procedure ofsf_qesubiord1(op,f,v,inf);
    % equivalent to $[op]([lhs]([v]/[inf]),0)$.
    begin scalar an;
       if domainp f or mvar f neq v then
-      	 return ofsf_0mk2(op,reorder f);
+         return ofsf_0mk2(op,reorder f);
       an := if inf eq 'minf and not evenp ldeg f then
- 	 negf reorder lc f
+         negf reorder lc f
       else
- 	 reorder lc f;
+         reorder lc f;
       % The use of [an] is correct in the equal case.   % Generic QE!
       return rl_mkn('or,{ofsf_0mk2(ofsf_mkstrict op,an),rl_mkn(
-	 'and,{ofsf_0mk2('equal,an),ofsf_qesubiord1(op,red f,v,inf)})})
+         'and,{ofsf_0mk2('equal,an),ofsf_qesubiord1(op,red f,v,inf)})})
    end;
 
 procedure ofsf_qesubcrpe1(bvl,theo,f,v,co,r);
@@ -585,7 +585,7 @@ procedure ofsf_qesubcrpe1(bvl,theo,f,v,co,r);
    begin scalar w;
       w := ofsf_subsimpl(bvl,co,theo);
       if cdr w eq 'false then
-      	 return car w . 'false;
+         return car w . 'false;
       return car w . rl_mkn('and,{cdr w,ofsf_qesubrpe(f,v,r)})
    end;
 
@@ -601,7 +601,7 @@ procedure ofsf_qesubcrme1(bvl,theo,f,v,co,r);
    begin scalar w;
       w := ofsf_subsimpl(bvl,co,theo);
       if cdr w eq 'false then
-      	 return car w . 'false;
+         return car w . 'false;
       return car w . rl_mkn('and,{cdr w,ofsf_qesubrme(f,v,r)})
    end;
 
@@ -618,9 +618,9 @@ procedure ofsf_qesubcrpe2(bvl,theo,f,v,co,r1,r2);
    begin scalar w;
       w := ofsf_subsimpl(bvl,co,theo);
       if cdr w eq 'false then
-      	 return car w . 'false;
+         return car w . 'false;
       return car w . rl_mkn('and,{cdr w,rl_mkn('or,{
-      	 ofsf_qesubrpe(f,v,r1),ofsf_qesubrpe(f,v,r2)})})
+         ofsf_qesubrpe(f,v,r1),ofsf_qesubrpe(f,v,r2)})})
    end;
 
 procedure ofsf_qesubcrme2(bvl,theo,f,v,co,r1,r2);
@@ -636,9 +636,9 @@ procedure ofsf_qesubcrme2(bvl,theo,f,v,co,r1,r2);
    begin scalar w;
       w := ofsf_subsimpl(bvl,co,theo);
       if cdr w eq 'false then
-      	 return car w . 'false;
+         return car w . 'false;
       return car w . rl_mkn('and,{cdr w,rl_mkn('or,{
-      	 ofsf_qesubrme(f,v,r1),ofsf_qesubrme(f,v,r2)})})
+         ofsf_qesubrme(f,v,r1),ofsf_qesubrme(f,v,r2)})})
    end;
 
 procedure ofsf_qesubrpe(f,v,r);
@@ -667,7 +667,7 @@ procedure ofsf_qesubcqpe(bvl,theo,f,v,co,q);
    begin scalar w;
       w := ofsf_subsimpl(bvl,co,theo);
       if cdr w eq 'false then
-      	 return car w . 'false;
+         return car w . 'false;
       return car w . rl_mkn('and,{cdr w,ofsf_qesubqpe(f,v,q)})
    end;
 
@@ -683,7 +683,7 @@ procedure ofsf_qesubcqme(bvl,theo,f,v,co,q);
    begin scalar w;
       w := ofsf_subsimpl(bvl,co,theo);
       if cdr w eq 'false then
-      	 return car w . 'false;
+         return car w . 'false;
       return car w . rl_mkn('and,{cdr w,ofsf_qesubqme(f,v,q)})
    end;
 
@@ -716,7 +716,7 @@ procedure ofsf_qesubpmeat(atf,v,u,finsub,ple);
       op := ofsf_op atf;
       lhs := ofsf_arg2l atf;
       if op eq 'equal or op eq 'neq then
-	 return ofsf_qesubtranseq(op,lhs,v);
+         return ofsf_qesubtranseq(op,lhs,v);
       % [op] is an ordering relation.
       return apply(finsub,{ofsf_qesubpmeord(op,lhs,v,ple),v,u})
    end;
@@ -733,8 +733,8 @@ procedure ofsf_qesubpmeord(op,f,v,ple);
       ofsf_0mk2(op,f)
    else
       rl_mkn('or,{ofsf_0mk2(ofsf_mkstrict op,f),rl_mkn('and,{
-	 ofsf_0mk2('equal,f),ofsf_qesubpmeord(
-	    op,if ple then diff(f,v) else negf diff(f,v),v,ple)})});
+         ofsf_0mk2('equal,f),ofsf_qesubpmeord(
+            op,if ple then diff(f,v) else negf diff(f,v),v,ple)})});
 
 procedure ofsf_subsimpl(bvl,f,th);
    % Ordered field standard form substitution condition
@@ -746,14 +746,14 @@ procedure ofsf_subsimpl(bvl,f,th);
    begin scalar nth;
       f := cl_simpl(f,th,-1);
       if not !*rlqegen then
-	 return nil . f;
+         return nil . f;
       nth := for each atf in cl_atl1 f join
-	 if ofsf_op atf='equal and ofsf_valassp(bvl,ofsf_arg2l atf) then
-	    {ofsf_0mk2('neq,ofsf_arg2l atf)};
+         if ofsf_op atf='equal and ofsf_valassp(bvl,ofsf_arg2l atf) then
+            {ofsf_0mk2('neq,ofsf_arg2l atf)};
       if nth then <<
-	 if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
- 	    ioto_prin2 "!";
-      	 return nth . cl_simpl(f,append(nth,th),-1)
+         if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
+            ioto_prin2 "!";
+         return nth . cl_simpl(f,append(nth,th),-1)
       >>;
       return nil . f
    end;
@@ -838,13 +838,13 @@ procedure ofsf_translat(atf,v,theo,pos,ans);
 procedure ofsf_translat_marek(atf,v,theo,pos,ans);
    begin scalar res;
       if v memq ofsf_varlat atf then <<
-      	 res := if pos then
- 	    ofsf_translat_marek1(atf,v,theo)
-      	 else
-	    ofsf_translat_marek1(ofsf_negateat atf,v,theo);
-	 if res = '(nil . nil) then
-	    res := {'anypoint . nil} . {'anypoint . 1};
-	 return res
+         res := if pos then
+            ofsf_translat_marek1(atf,v,theo)
+         else
+            ofsf_translat_marek1(ofsf_negateat atf,v,theo);
+         if res = '(nil . nil) then
+            res := {'anypoint . nil} . {'anypoint . 1};
+         return res
       >>;
       return nil . nil
    end;
@@ -874,22 +874,22 @@ procedure ofsf_translat_marek1(atf, v, theo);
       p := reorder p;
       d := ldeg p;
       if d > 2 then
-      	 res := 'failed . {v, "^", d}
+         res := 'failed . {v, "^", d}
       else if d = 2 then <<
-	 a := lc p;
-	 p := red p;
-	 if domainp p or (mvar p neq v) then <<
-	    b := nil;
-	    c := p
-	 >> else <<
-	    b := lc p;
-	    c := red p
-	 >>;
-	 res := ofsf_cmpalpqua_marek(op, a, b, c, v, theo)
+         a := lc p;
+         p := red p;
+         if domainp p or (mvar p neq v) then <<
+            b := nil;
+            c := p
+         >> else <<
+            b := lc p;
+            c := red p
+         >>;
+         res := ofsf_cmpalpqua_marek(op, a, b, c, v, theo)
       >> else <<  % [ldeg p] is 1
-      	 b := lc p;
-      	 c := red p;
-	 res := ofsf_cmpalplin_marek(op, b, c, v, theo)
+         b := lc p;
+         c := red p;
+         res := ofsf_cmpalplin_marek(op, b, c, v, theo)
       >>;
       setkorder w;
       return res
@@ -900,54 +900,54 @@ procedure ofsf_cmpalplin_marek(op, b, c, v, theo);
    begin scalar w, guard, lguard, uguard;
       w := 'quot . quotsq(!*f2q negf c, !*f2q b);
       if op memq '(equal neq) then <<
-	 guard := ofsf_0mk2('neq, b);
-	 return ofsf_mkalp_marek(op, {guard . w})
+         guard := ofsf_0mk2('neq, b);
+         return ofsf_mkalp_marek(op, {guard . w})
       >>;
       if ofsf_surep(ofsf_0mk2('greaterp, b), theo) then <<
-	 guard := 'true;
-	 if op eq 'lessp then
-	    return ofsf_mkalp_marek('ubme, {guard . w});
-	 if op eq 'greaterp then
-	    return ofsf_mkalp_marek('lbpe, {guard . w});
-	 if op eq 'leq then
-	    return ofsf_mkalp_marek('ub, {guard . w});
-	 if op eq 'geq then
-	    return ofsf_mkalp_marek('lb, {guard . w})
+         guard := 'true;
+         if op eq 'lessp then
+            return ofsf_mkalp_marek('ubme, {guard . w});
+         if op eq 'greaterp then
+            return ofsf_mkalp_marek('lbpe, {guard . w});
+         if op eq 'leq then
+            return ofsf_mkalp_marek('ub, {guard . w});
+         if op eq 'geq then
+            return ofsf_mkalp_marek('lb, {guard . w})
       >> else if ofsf_surep(ofsf_0mk2('lessp, b), theo) then <<
-	 guard := 'true;
-	 if op eq 'lessp then
-	    return ofsf_mkalp_marek('lbpe, {guard . w});
-	 if op eq 'greaterp then
-	    return ofsf_mkalp_marek('ubme, {guard . w});
-	 if op eq 'leq then
-	    return ofsf_mkalp_marek('lb, {guard . w});
-	 if op eq 'geq then
-	    return ofsf_mkalp_marek('ub, {guard . w})
+         guard := 'true;
+         if op eq 'lessp then
+            return ofsf_mkalp_marek('lbpe, {guard . w});
+         if op eq 'greaterp then
+            return ofsf_mkalp_marek('ubme, {guard . w});
+         if op eq 'leq then
+            return ofsf_mkalp_marek('lb, {guard . w});
+         if op eq 'geq then
+            return ofsf_mkalp_marek('ub, {guard . w})
       >> else <<
-	 if op eq 'lessp then <<
-	    lguard := ofsf_0mk2('lessp, b);
-	    uguard := ofsf_0mk2('greaterp, b);
-	    return cl_alpunion({ofsf_mkalp_marek('ubme, {uguard . w}),
-	       ofsf_mkalp_marek('lbpe, {lguard . w})})
-	 >>;
-	 if op eq 'greaterp then <<
-	    lguard := ofsf_0mk2('greaterp, b);
-	    uguard := ofsf_0mk2('lessp, b);
-	    return cl_alpunion({ofsf_mkalp_marek('ubme, {uguard . w}),
-	       ofsf_mkalp_marek('lbpe, {lguard . w})})
-	 >>;
-	 if op eq 'leq then <<
-	    lguard := ofsf_0mk2('lessp, b);
-	    uguard := ofsf_0mk2('greaterp, b);
-	    return cl_alpunion({ofsf_mkalp_marek('ub, {uguard . w}),
-	       ofsf_mkalp_marek('lb, {lguard . w})})
-      	 >>;
-	 if op eq 'geq then <<
-	    lguard := ofsf_0mk2('greaterp, b);
-	    uguard := ofsf_0mk2('lessp, b);
-	    return cl_alpunion({ofsf_mkalp_marek('ub, {uguard . w}),
-	       ofsf_mkalp_marek('lb, {lguard . w})})
-	 >>
+         if op eq 'lessp then <<
+            lguard := ofsf_0mk2('lessp, b);
+            uguard := ofsf_0mk2('greaterp, b);
+            return cl_alpunion({ofsf_mkalp_marek('ubme, {uguard . w}),
+               ofsf_mkalp_marek('lbpe, {lguard . w})})
+         >>;
+         if op eq 'greaterp then <<
+            lguard := ofsf_0mk2('greaterp, b);
+            uguard := ofsf_0mk2('lessp, b);
+            return cl_alpunion({ofsf_mkalp_marek('ubme, {uguard . w}),
+               ofsf_mkalp_marek('lbpe, {lguard . w})})
+         >>;
+         if op eq 'leq then <<
+            lguard := ofsf_0mk2('lessp, b);
+            uguard := ofsf_0mk2('greaterp, b);
+            return cl_alpunion({ofsf_mkalp_marek('ub, {uguard . w}),
+               ofsf_mkalp_marek('lb, {lguard . w})})
+         >>;
+         if op eq 'geq then <<
+            lguard := ofsf_0mk2('greaterp, b);
+            uguard := ofsf_0mk2('lessp, b);
+            return cl_alpunion({ofsf_mkalp_marek('ub, {uguard . w}),
+               ofsf_mkalp_marek('lb, {lguard . w})})
+         >>
       >>
    end;
 
@@ -959,53 +959,53 @@ procedure ofsf_cmpalpqua_marek(op, a, b, c, v, theo);
       mroot := 'rexp . {negf b, -1, discr, multf(2, a)};
       proot := 'rexp . {negf b, 1, discr, multf(2, a)};
       if op memq '(equal neq) then <<
-	 if not ofsf_surep(ofsf_0mk2('equal, b), theo) then <<
-      	    quot := 'quot . quotsq(!*f2q negf c, !*f2q b);
-	    guard := rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('neq, b)});
-	    rootl := (guard . quot) . rootl
-	 >>;
-	 guard := rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0});
-	 rootl := (guard . mroot) . rootl;
-	 rootl := (guard . proot) . rootl;
-	 return ofsf_mkalp_marek(op, rootl)
+         if not ofsf_surep(ofsf_0mk2('equal, b), theo) then <<
+            quot := 'quot . quotsq(!*f2q negf c, !*f2q b);
+            guard := rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('neq, b)});
+            rootl := (guard . quot) . rootl
+         >>;
+         guard := rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0});
+         rootl := (guard . mroot) . rootl;
+         rootl := (guard . proot) . rootl;
+         return ofsf_mkalp_marek(op, rootl)
       >>;
       if not null b then
-	 quot := 'quot . quotsq(!*f2q negf c, !*f2q b);
+         quot := 'quot . quotsq(!*f2q negf c, !*f2q b);
       if op eq 'lessp then <<
-	 if not null b and not ofsf_surep(ofsf_0mk2('greaterp, b), theo) then
-	    rootll := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('lessp, b)}) . quot};
-	 rootll := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . mroot) . rootll;
-	 if not null b and not ofsf_surep(ofsf_0mk2('lessp, b), theo) then
-	    rootul := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('greaterp, b)}) . quot};
-	 rootul := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . proot) . rootul;
-	 return cl_alpunion {ofsf_mkalp_marek('lbpe, rootll), ofsf_mkalp_marek('ubme, rootul)}
+         if not null b and not ofsf_surep(ofsf_0mk2('greaterp, b), theo) then
+            rootll := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('lessp, b)}) . quot};
+         rootll := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . mroot) . rootll;
+         if not null b and not ofsf_surep(ofsf_0mk2('lessp, b), theo) then
+            rootul := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('greaterp, b)}) . quot};
+         rootul := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . proot) . rootul;
+         return cl_alpunion {ofsf_mkalp_marek('lbpe, rootll), ofsf_mkalp_marek('ubme, rootul)}
       >>;
       if op eq 'greaterp then <<
-	 if not null b and not ofsf_surep(ofsf_0mk2('lessp, b), theo) then
-	    rootll := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('greaterp, b)}) . quot};
-	 rootll := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . proot) . rootll;
-	 if not null b and not ofsf_surep(ofsf_0mk2('greaterp, b), theo) then
-	    rootul := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('lessp, b)}) . quot};
-	 rootul := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . mroot) . rootul;
-	 return cl_alpunion {ofsf_mkalp_marek('lbpe, rootll), ofsf_mkalp_marek('ubme, rootul)}
+         if not null b and not ofsf_surep(ofsf_0mk2('lessp, b), theo) then
+            rootll := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('greaterp, b)}) . quot};
+         rootll := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . proot) . rootll;
+         if not null b and not ofsf_surep(ofsf_0mk2('greaterp, b), theo) then
+            rootul := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('lessp, b)}) . quot};
+         rootul := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . mroot) . rootul;
+         return cl_alpunion {ofsf_mkalp_marek('lbpe, rootll), ofsf_mkalp_marek('ubme, rootul)}
       >>;
       if op eq 'leq then <<
-	 if not null b and not ofsf_surep(ofsf_0mk2('greaterp, b), theo) then
-	       rootll := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('lessp, b)}) . quot};
-	 rootll := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . mroot) . rootll;
-	 if not null b and not ofsf_surep(ofsf_0mk2('lessp, b), theo) then
-	    rootul := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('greaterp, b)}) . quot};
-	 rootul := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . proot) . rootul;
-	 return cl_alpunion {ofsf_mkalp_marek('lb, rootll), ofsf_mkalp_marek('ub, rootul)}
+         if not null b and not ofsf_surep(ofsf_0mk2('greaterp, b), theo) then
+               rootll := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('lessp, b)}) . quot};
+         rootll := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . mroot) . rootll;
+         if not null b and not ofsf_surep(ofsf_0mk2('lessp, b), theo) then
+            rootul := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('greaterp, b)}) . quot};
+         rootul := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . proot) . rootul;
+         return cl_alpunion {ofsf_mkalp_marek('lb, rootll), ofsf_mkalp_marek('ub, rootul)}
       >>;
       if op eq 'geq then <<
-	 if not null b and not ofsf_surep(ofsf_0mk2('lessp, b), theo) then
-	    rootll := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('greaterp, b)}) . quot};
-	 rootll := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . proot) . rootll;
-	 if not null b and not ofsf_surep(ofsf_0mk2('greaterp, b), theo) then
-	    rootul := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('lessp, b)}) . quot};
-	 rootul := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . mroot) . rootul;
-	 return cl_alpunion {ofsf_mkalp_marek('lb, rootll), ofsf_mkalp_marek('ub, rootul)}
+         if not null b and not ofsf_surep(ofsf_0mk2('lessp, b), theo) then
+            rootll := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('greaterp, b)}) . quot};
+         rootll := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . proot) . rootll;
+         if not null b and not ofsf_surep(ofsf_0mk2('greaterp, b), theo) then
+            rootul := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('lessp, b)}) . quot};
+         rootul := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . mroot) . rootul;
+         return cl_alpunion {ofsf_mkalp_marek('lb, rootll), ofsf_mkalp_marek('ub, rootul)}
       >>
    end;
 
@@ -1024,20 +1024,20 @@ procedure ofsf_translat_orig(atf,v,theo,pos,ans);
    % negation of $\rho$ else.
    begin scalar svrlqesr,res;
       if ans or !*rlqeprecise or !*rlqeaprecise then <<
-      	 svrlqesr := !*rlqesr;
-	 on1 'rlqesr
+         svrlqesr := !*rlqesr;
+         on1 'rlqesr
       >>;
       if v memq ofsf_varlat atf then <<
-      	 res := if pos then
- 	    ofsf_translat1(atf,v,theo)
-      	 else
-	    ofsf_translat1(ofsf_negateat atf,v,theo);
-	 if res = '(nil . nil) then
-	    res := {'anypoint . nil} . {'anypoint . 1}
+         res := if pos then
+            ofsf_translat1(atf,v,theo)
+         else
+            ofsf_translat1(ofsf_negateat atf,v,theo);
+         if res = '(nil . nil) then
+            res := {'anypoint . nil} . {'anypoint . 1}
       >> else
- 	 res := nil . nil;
+         res := nil . nil;
       if ans and null svrlqesr then
-	 off1 'rlqesr;
+         off1 'rlqesr;
       return res
    end;
 
@@ -1048,28 +1048,28 @@ procedure ofsf_translat1(atf,v,theo);
    % an error message.
    begin scalar w,rel,kl,c,k;
       if !*rlbrkcxk then <<
-	 kl := ofsf_varlat atf where !*rlbrkcxk=nil;
-	 c := t; while c and kl do <<
-	    k := pop kl;
-	    if pairp k and v memq lto_lpvarl k then
-	       c := nil
-	 >>;
-	 if not c then <<
-	    lprim {"ignoring quantified variable",v,"in",k};
-	    return nil . nil
-	 >>
+         kl := ofsf_varlat atf where !*rlbrkcxk=nil;
+         c := t; while c and kl do <<
+            k := pop kl;
+            if pairp k and v memq lto_lpvarl k then
+               c := nil
+         >>;
+         if not c then <<
+            lprim {"ignoring quantified variable",v,"in",k};
+            return nil . nil
+         >>
       >>;
       w := ofsf_mktriplel(ofsf_arg2l atf,v);
       if car w eq 'failed then return w;
       rel := ofsf_op atf;
       if null car w then
-	 return ofsf_translat2(rel,cadr w,theo);
+         return ofsf_translat2(rel,cadr w,theo);
       return cl_alpunion for each x in cdr w join
-	 if rel memq '(geq leq lessp greaterp) then
-	    {ofsf_translat2(rel,x,theo),
-	       ofsf_translat2(ofsf_anegrel rel,x,theo)}
-	 else
-	    {ofsf_translat2(rel,x,theo)}
+         if rel memq '(geq leq lessp greaterp) then
+            {ofsf_translat2(rel,x,theo),
+               ofsf_translat2(ofsf_anegrel rel,x,theo)}
+         else
+            {ofsf_translat2(rel,x,theo)}
    end;
 
 procedure ofsf_translat2(rel,trip,theo);
@@ -1095,7 +1095,7 @@ procedure ofsf_translatlin!-local(r,m,b,theo,xc);
    begin scalar w;
       w := ofsf_tlltag!-local1(r,m,theo);
       if null car w then
-	 return nil . nil;
+         return nil . nil;
       return ofsf_mkalp(cdr w,{ofsf_ceterm2a(xc,car w,ofsf_mksol1(m,b))})
    end;
 
@@ -1124,12 +1124,12 @@ procedure ofsf_tlltag!-local1(r,m,theo);
    begin scalar w;
       w := numr subf(m,cl_pal!*);
       if null w then <<
-	 cl_theo!* := ofsf_0mk2('equal,m) . cl_theo!*;
-      	 return nil . ofsf_mktag1 r
+         cl_theo!* := ofsf_0mk2('equal,m) . cl_theo!*;
+         return nil . ofsf_mktag1 r
       >>;
       if minusf w then <<
-	 cl_theo!* := ofsf_0mk2('lessp,m) . cl_theo!*;
-      	 return (-1) . ofsf_mktag1 ofsf_anegrel r
+         cl_theo!* := ofsf_0mk2('lessp,m) . cl_theo!*;
+         return (-1) . ofsf_mktag1 ofsf_anegrel r
       >>;
       cl_theo!* := ofsf_0mk2('greaterp,m) . cl_theo!*;
       return 1 . ofsf_mktag1 r
@@ -1143,38 +1143,38 @@ procedure ofsf_translatqua(r,a,b,c,theo);
    begin scalar w,tagbase,tag,eset;
       w := ofsf_mksol2(a,b,c);
       if w eq 'failed then
-	 return nil . nil;
+         return nil . nil;
       tagbase := if r memq '(lessp greaterp) then
- 	 'so
+         'so
       else if r memq '(leq geq) then
- 	 'wo
+         'wo
       else  % [if r memq '(equal neq) then]
- 	 r;
+         r;
       if car w eq 'onequot then <<
-	 tag := ofsf_mktag2(tagbase,'!1q);
-	 eset := {ofsf_ceterm1a(a,cdr w)}
+         tag := ofsf_mktag2(tagbase,'!1q);
+         eset := {ofsf_ceterm1a(a,cdr w)}
       >> else if car w eq 'tworoot then <<
-	 if !*rlqesr then <<
-	    tag := ofsf_mktag2(tagbase,'!1r);
-	    eset := {ofsf_ceterm2l(a,cadr w,{caddr w}),
-	       ofsf_ceterm2l(a,cadr w,{cadddr w})}
-	 >> else <<
-	    tag := ofsf_mktag2(tagbase,'!2r);
-	    eset := {ofsf_ceterm2l(a,cadr w,{caddr w,cadddr w})}
-	 >>
+         if !*rlqesr then <<
+            tag := ofsf_mktag2(tagbase,'!1r);
+            eset := {ofsf_ceterm2l(a,cadr w,{caddr w}),
+               ofsf_ceterm2l(a,cadr w,{cadddr w})}
+         >> else <<
+            tag := ofsf_mktag2(tagbase,'!2r);
+            eset := {ofsf_ceterm2l(a,cadr w,{caddr w,cadddr w})}
+         >>
       >>;
       if !*rlqelocal and null setdiff(kernels a,cl_lps!*) then <<
-      	 w := numr subf(a,cl_pal!*);
-	 if not null w then <<
-	    cl_theo!* := ofsf_0mk2('neq,a) . cl_theo!*;
-	    return ofsf_mkalp(tag,eset)
-	 >>;
-	 cl_theo!* := ofsf_0mk2('equal,a) . cl_theo!*;
-	 return ofsf_translatlin(r,b,c,theo,a)
+         w := numr subf(a,cl_pal!*);
+         if not null w then <<
+            cl_theo!* := ofsf_0mk2('neq,a) . cl_theo!*;
+            return ofsf_mkalp(tag,eset)
+         >>;
+         cl_theo!* := ofsf_0mk2('equal,a) . cl_theo!*;
+         return ofsf_translatlin(r,b,c,theo,a)
       >>;
       if not null b then <<
-      	 w :=  ofsf_translatlin(r,b,c,theo,a);
-      	 return {tag . eset,caar w} . {tag . 1,cadr w}
+         w :=  ofsf_translatlin(r,b,c,theo,a);
+         return {tag . eset,caar w} . {tag . 1,cadr w}
       >>;
       return ofsf_mkalp(tag,eset)
    end;
@@ -1201,23 +1201,23 @@ procedure ofsf_mktriplel(u,v);
       w := setkorder {v};
       u := reorder u;
       if ldeg u <= 2 then <<
-	 setkorder w;
-	 return nil . {ofsf_reotrip ofsf_mktriple u}
+         setkorder w;
+         return nil . {ofsf_reotrip ofsf_mktriple u}
       >>;
       % Try to factorize.
       if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
- 	 ioto_prin2{"."};
+         ioto_prin2{"."};
       fl := cdr sfto_fctrf u;
       while fl do <<
-	 a := car fl;
-	 fl := cdr fl;
-	 g := degr(car a,v);
-	 if g > 2 then <<
-%	    ul := 'failed . {"degree of",v,"is",g,"in",prepf car a};
-	    ul := 'failed . {v,"^",g};
-	    fl := nil
-	 >> else if g > 0 then
- 	    ul := car a . ul
+         a := car fl;
+         fl := cdr fl;
+         g := degr(car a,v);
+         if g > 2 then <<
+%           ul := 'failed . {"degree of",v,"is",g,"in",prepf car a};
+            ul := 'failed . {v,"^",g};
+            fl := nil
+         >> else if g > 0 then
+            ul := car a . ul
       >>;
       setkorder w;
       if car ul = 'failed then return ul;
@@ -1231,13 +1231,13 @@ procedure ofsf_mktriple(x);
    begin scalar a,v;
       v := mvar x;
       if ldeg x eq 2 then <<
-      	 a := lc x;
-      	 x := red x
+         a := lc x;
+         x := red x
       >>;
       return if not domainp x and mvar x eq v then
-   	 {a,lc x,red x}
+         {a,lc x,red x}
       else
-   	 {a,nil,x}
+         {a,nil,x}
    end;
 
 procedure ofsf_reotrip(trip);
@@ -1261,25 +1261,25 @@ procedure ofsf_mksol2(a,b,c);
    begin scalar disc,w,c,ww;
       disc := addf(exptf(b,2),negf multf(4,multf(a,c)));
       if domainp disc and minusf disc then
-      	 return 'failed;
+         return 'failed;
       a := multf(2,a);
       b := negf b;
       if null disc then
-      	 return 'onequot . quotsq(!*f2q b,!*f2q a);
+         return 'onequot . quotsq(!*f2q b,!*f2q a);
       if !*rlqelocal and null setdiff(kernels disc,cl_lps!*) then <<
-	 ww := numr subf(disc,cl_pal!*);
-	 if minusf ww then <<
-	    cl_theo!* := ofsf_0mk2('lessp,disc) . cl_theo!*;
-      	    return 'failed
-	 >>;
-	 if null ww then <<
-      	    cl_theo!* := ofsf_0mk2('equal,disc) . cl_theo!*;
-      	    return 'onequot . quotsq(!*f2q b,!*f2q a)
-      	 >>
+         ww := numr subf(disc,cl_pal!*);
+         if minusf ww then <<
+            cl_theo!* := ofsf_0mk2('lessp,disc) . cl_theo!*;
+            return 'failed
+         >>;
+         if null ww then <<
+            cl_theo!* := ofsf_0mk2('equal,disc) . cl_theo!*;
+            return 'onequot . quotsq(!*f2q b,!*f2q a)
+         >>
       >>;
       w := sfto_sqrtf disc;
       if w then
-	 return 'tworoot . nil . ofsf_mksol21q(b,w,a);
+         return 'tworoot . nil . ofsf_mksol21q(b,w,a);
       return 'tworoot . disc . ofsf_mksol21r(b,disc,a)
    end;
 
@@ -1330,23 +1330,23 @@ procedure ofsf_elimset_marek(v, alp);
       integer nlb, nub, nlbpe, nubme, numl, numu;
       numal := cdr alp;
       if (w := atsoc('lb, numal)) then
-      	 nlb := cdr w;
+         nlb := cdr w;
       if (w := atsoc('ub, numal)) then
-      	 nub := cdr w;
+         nub := cdr w;
       if (w := atsoc('lbpe, numal)) then
-      	 nlbpe := cdr w;
+         nlbpe := cdr w;
       if (w := atsoc('ubme, numal)) then
-      	 nubme := cdr w;
+         nubme := cdr w;
       numl := nlb + nlbpe;
       numu := nub + nubme;
       if (numu < numl) or ((numu = numl) and (nubme < nlbpe)) then
-      	 takeu := t;
+         takeu := t;
       resl := for each e in car alp join
-	 ofsf_rootl2eterml_marek(car e, cdr e, takeu);
+         ofsf_rootl2eterml_marek(car e, cdr e, takeu);
       if takeu then
-	 resl := {'ofsf_qesubi, {'pinf}} . resl
+         resl := {'ofsf_qesubi, {'pinf}} . resl
       else
-	 resl := {'ofsf_qesubi, {'minf}} . resl;
+         resl := {'ofsf_qesubi, {'minf}} . resl;
       return resl
    end;
 
@@ -1355,38 +1355,38 @@ procedure ofsf_rootl2eterml_marek(btype, rootl, takeu);
    % are taken. Returns a list of elimination terms.
    begin scalar res, guard, rdesc, rtype, root;
       for each e in rootl collect <<
-	 guard . rdesc := e;
-	 rtype . root := rdesc;
-	 if btype eq 'equal then <<
-	    if rtype eq 'rexp then
-	       res := {'ofsf_qesubcr1, {guard, root}} . res;
-	    if rtype eq 'quot then
-	       res := {'ofsf_qesubcq, {guard, root}} . res
-	 >>;
-	 if btype eq 'neq then <<
-	    if rtype eq 'rexp then
-	       res := {if takeu then 'ofsf_qesubcrme1 else 'ofsf_qesubcrpe1, {guard, root}} . res;
-	    if rtype eq 'quot then
-	       res := {if takeu then 'ofsf_qesubcqme else 'ofsf_qesubcqpe, {guard, root}} . res
-	 >>;
-	 if btype eq 'lbpe and not takeu then <<
-	    if rtype eq 'rexp then
-	       res := {'ofsf_qesubcrpe1, {guard, root}} . res;
-	    if rtype eq 'quot then
-	       res := {'ofsf_qesubcqpe, {guard, root}} . res
-	 >>;
-	 if btype eq 'ubme and takeu then <<
-	    if rtype eq 'rexp then
-	       res := {'ofsf_qesubcrme1, {guard, root}} . res;
-	    if rtype eq 'quot then
-	       res := {'ofsf_qesubcqme, {guard, root}} . res
-	 >>;
-	 if (btype eq 'lb and not takeu) or (btype eq 'ub and takeu) then <<
-	    if rtype eq 'rexp then
-	       res := {'ofsf_qesubcr1, {guard, root}} . res;
-	    if rtype eq 'quot then
-	       res := {'ofsf_qesubcq, {guard, root}} . res
-	 >>
+         guard . rdesc := e;
+         rtype . root := rdesc;
+         if btype eq 'equal then <<
+            if rtype eq 'rexp then
+               res := {'ofsf_qesubcr1, {guard, root}} . res;
+            if rtype eq 'quot then
+               res := {'ofsf_qesubcq, {guard, root}} . res
+         >>;
+         if btype eq 'neq then <<
+            if rtype eq 'rexp then
+               res := {if takeu then 'ofsf_qesubcrme1 else 'ofsf_qesubcrpe1, {guard, root}} . res;
+            if rtype eq 'quot then
+               res := {if takeu then 'ofsf_qesubcqme else 'ofsf_qesubcqpe, {guard, root}} . res
+         >>;
+         if btype eq 'lbpe and not takeu then <<
+            if rtype eq 'rexp then
+               res := {'ofsf_qesubcrpe1, {guard, root}} . res;
+            if rtype eq 'quot then
+               res := {'ofsf_qesubcqpe, {guard, root}} . res
+         >>;
+         if btype eq 'ubme and takeu then <<
+            if rtype eq 'rexp then
+               res := {'ofsf_qesubcrme1, {guard, root}} . res;
+            if rtype eq 'quot then
+               res := {'ofsf_qesubcqme, {guard, root}} . res
+         >>;
+         if (btype eq 'lb and not takeu) or (btype eq 'ub and takeu) then <<
+            if rtype eq 'rexp then
+               res := {'ofsf_qesubcr1, {guard, root}} . res;
+            if rtype eq 'quot then
+               res := {'ofsf_qesubcq, {guard, root}} . res
+         >>
       >>;
       return res
    end;
@@ -1398,21 +1398,21 @@ procedure ofsf_elimset_orig(v,alp);
       if !*rlqelog then rlqelog!* := {v,0,0,0,0} . rlqelog!*;
       atfal := car alp;
       if null cdr atfal and caar atfal = 'anypoint then
- 	 return '((ofsf_qesubcq . ((true (nil . 1)))));
+         return '((ofsf_qesubcq . ((true (nil . 1)))));
       if !*rlqeans and !*rlqeaprecise or not !*rlqeans and !*rlqeprecise then
-	 return ofsf_elimset!-precise(v,alp);
+         return ofsf_elimset!-precise(v,alp);
       % Treat some special cases.
       w := ofsf_elimsetscq(atfal);
       if w then <<
-	 if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
- 	    ioto_prin2 "#q";
-	 return w
+         if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
+            ioto_prin2 "#q";
+         return w
       >>;
       w := ofsf_elimsetscl(atfal);
       if w then <<
-	 if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
- 	    ioto_prin2 "#l";
-	 return w
+         if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
+            ioto_prin2 "#l";
+         return w
       >>;
       w := ofsf_elimsetlin1s(atfal);
       lpart := cdr w;
@@ -1430,35 +1430,35 @@ procedure ofsf_elimsetscq(atfal);
    % treated as usual.
    begin scalar w,l,a,nzf,zero,d,dfzero,hl;
       if not !*rlqeqsc then
-	 return nil;
+         return nil;
       l := '(neq21q neq22r wo21q wo22r so21q so22r neq21r wo21r so21r);
       while l do <<
-	 a := car l;
-	 l := cdr l;
-	 if (w := lto_catsoc(a,atfal)) then
-	    if nzf or a memq '(neq21r wo21r so21r) and cddr w or
-	       a memq '(neq21q neq22r wo21q wo22r so21q so22r) and cdr w
- 	    then <<
-	       l := nil;
-	       a := 'failed
-	    >> else <<
-	       zero := car w;  % The only entry in w
-	       nzf := car reversip explode a
-	    >>
+         a := car l;
+         l := cdr l;
+         if (w := lto_catsoc(a,atfal)) then
+            if nzf or a memq '(neq21r wo21r so21r) and cddr w or
+               a memq '(neq21q neq22r wo21q wo22r so21q so22r) and cdr w
+            then <<
+               l := nil;
+               a := 'failed
+            >> else <<
+               zero := car w;  % The only entry in w
+               nzf := car reversip explode a
+            >>
       >>;
       if a eq 'failed or null nzf then return nil;
       % Construct the zero of the derivative from [zero] which is a
       % zero of the polynomial itself.
       if nzf = 'q then   % bad, but not relevant with !*rlsipd on
-      	 dfzero := zero
+         dfzero := zero
       else <<  % [nzf = 'r]
-	 zero := cadr zero;  % first solution
-      	 d := cadddr zero;
-      	 dfzero := {ofsf_0mk2('neq,d),ofsf_mksol1(d,negf car zero)}
+         zero := cadr zero;  % first solution
+         d := cadddr zero;
+         dfzero := {ofsf_0mk2('neq,d),ofsf_mksol1(d,negf car zero)}
       >>;
       hl := {'ofsf_qesubcq . (dfzero . lto_catsoc('equal21q,atfal)),
-	 'ofsf_qesubcr2 . lto_catsoc('equal22r,atfal),
-	    '(ofsf_qesubi (pinf) (minf))};
+         'ofsf_qesubcr2 . lto_catsoc('equal22r,atfal),
+            '(ofsf_qesubi (pinf) (minf))};
       return lto_nconcn {hl,ofsf_elimsetlinbs(atfal),ofsf_elimsetneqbs(atfal)}
    end;
 
@@ -1480,7 +1480,7 @@ procedure ofsf_elimsetlinbs(atfal);
    % sides. [atfal] is an alist. Returns an elimination set.
    begin
       scalar equal1,leq1,geq1,greaterp1,lessp1,wo1,so1,qesubcql,
-	 qesubcqmel,qesubcqpel;
+         qesubcqmel,qesubcqpel;
       ofsf_setvlin();
       qesubcql := 'ofsf_qesubcq . lto_nconcn {equal1,leq1,geq1,wo1};
       qesubcqmel := 'ofsf_qesubcqme . lto_nconcn {so1,lessp1};
@@ -1496,8 +1496,8 @@ procedure ofsf_elimsetneqbs(atfal);
       neq22r := lto_catsoc('neq22r,atfal);
       neq21r := lto_catsoc('neq21r,atfal);
       return {'ofsf_qesubcqme . nconc(neq1,neq21q),'ofsf_qesubcrme2 . neq22r,
-	 'ofsf_qesubcrme1 . neq21r,'ofsf_qesubcrpe1 . neq21r,
-      	 'ofsf_qesubcqpe . nconc(neq1,neq21q),'ofsf_qesubcrpe2 . neq22r}
+         'ofsf_qesubcrme1 . neq21r,'ofsf_qesubcrpe1 . neq21r,
+         'ofsf_qesubcqpe . nconc(neq1,neq21q),'ofsf_qesubcrpe2 . neq22r}
    end;
 
 smacro procedure ofsf_setvscl();
@@ -1515,8 +1515,8 @@ smacro procedure ofsf_setvscl();
       wo1 := lto_catsoc('wo1,atfal);
       so1 := lto_catsoc('so1,atfal);
       o2p := lto_catsoc('wo21q,atfal) or lto_catsoc('wo21r,atfal) or
-	 lto_catsoc('wo22r,atfal) or lto_catsoc('so21q,atfal) or
- 	 lto_catsoc('so21r,atfal) or lto_catsoc('so22r,atfal)
+         lto_catsoc('wo22r,atfal) or lto_catsoc('so21q,atfal) or
+         lto_catsoc('so21r,atfal) or lto_catsoc('so22r,atfal)
    >>;
 
 procedure ofsf_elimsetscl(atfal);
@@ -1531,23 +1531,23 @@ procedure ofsf_elimsetscl(atfal);
    % equations are treated as usual.
    begin
       scalar equal1,equal21q,equal21r,equal22r,leq1,geq1,greaterp1,lessp1,
-	 o2p,nub,nlb,infsubl,wo1,so1;
+         o2p,nub,nlb,infsubl,wo1,so1;
       ofsf_setvscl();
       if o2p then return nil;  % Any quadratic bound
       nub := null (leq1 or lessp1);  % No concrete upper bound
       nlb := null (geq1 or greaterp1);  % No concrete lower bound
       if null (wo1 or so1) then  % No parametric bound
-      	 (if nub then
-	    infsubl := '(ofsf_qesubi . ((pinf)))
-      	 else if nlb then
+         (if nub then
+            infsubl := '(ofsf_qesubi . ((pinf)))
+         else if nlb then
             infsubl := '(ofsf_qesubi . ((minf))))
       else if nub and nlb and
-      	 (null wo1 and null cdr so1 or null so1 and null cdr wo1)
+         (null wo1 and null cdr so1 or null so1 and null cdr wo1)
       then  % Exactly one bound, which is linear and parametric.
-	 infsubl := '(ofsf_qesubi . ((pinf) (minf)));
+         infsubl := '(ofsf_qesubi . ((pinf) (minf)));
       if infsubl then
-	 return {infsubl,'ofsf_qesubcr1 . equal21r,
-	    'ofsf_qesubcq . nconc(equal1,equal21q),'ofsf_qesubcr2 . equal22r}
+         return {infsubl,'ofsf_qesubcr1 . equal21r,
+            'ofsf_qesubcq . nconc(equal1,equal21q),'ofsf_qesubcr2 . equal22r}
    end;
 
 procedure ofsf_elimsetlin1s(atfal);
@@ -1560,29 +1560,29 @@ procedure ofsf_elimsetlin1s(atfal);
       integer l1n,g1n;
       ofsf_setvlin();
       if !*rlqefilterbounds then <<
-      	 leq1 := ofsf_filterbounds leq1;
-      	 geq1 := ofsf_filterbounds geq1;
-      	 lessp1 := ofsf_filterbounds lessp1;
-      	 greaterp1 := ofsf_filterbounds greaterp1
+         leq1 := ofsf_filterbounds leq1;
+         geq1 := ofsf_filterbounds geq1;
+         lessp1 := ofsf_filterbounds lessp1;
+         greaterp1 := ofsf_filterbounds greaterp1
       >>;
       l1n := length leq1 + length lessp1;
       g1n := length geq1 + length greaterp1;
       if !*rlqelog then <<
-	 cadr car rlqelog!* := length greaterp1 + length so1;
-	 caddr car rlqelog!* := length lessp1 + length so1;
+         cadr car rlqelog!* := length greaterp1 + length so1;
+         caddr car rlqelog!* := length lessp1 + length so1;
       >>;
       if l1n <= g1n then <<
-      	 qesubcql := 'ofsf_qesubcq . lto_nconcn {equal1,leq1,wo1};
-	 esubl := 'ofsf_qesubcqme . nconc(so1,lessp1);
-	 if !*rlqelog then
-	    cadddr car rlqelog!* := caddr car rlqelog!*;
-	 qesubil := '(ofsf_qesubi . ((pinf)));
-	 return nil . {qesubcql,esubl,qesubil}
+         qesubcql := 'ofsf_qesubcq . lto_nconcn {equal1,leq1,wo1};
+         esubl := 'ofsf_qesubcqme . nconc(so1,lessp1);
+         if !*rlqelog then
+            cadddr car rlqelog!* := caddr car rlqelog!*;
+         qesubil := '(ofsf_qesubi . ((pinf)));
+         return nil . {qesubcql,esubl,qesubil}
       >>;
       qesubcql := 'ofsf_qesubcq . lto_nconcn {equal1,geq1,wo1};
       esubl := 'ofsf_qesubcqpe . nconc(so1,greaterp1);
       if !*rlqelog then
-	 cadddr car rlqelog!* := cadr car rlqelog!*;
+         cadddr car rlqelog!* := cadr car rlqelog!*;
       qesubil := '(ofsf_qesubi . ((minf)));
       return t . {qesubcql,esubl,qesubil}
    end;
@@ -1590,10 +1590,10 @@ procedure ofsf_elimsetlin1s(atfal);
 procedure ofsf_filterbounds(l);
    for each x in l join <<
       if ofsf_surep(rl_mk1('not,car x),nil) then
-	 (if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
- 	    ioto_prin2 "(FB)")
+         (if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
+            ioto_prin2 "(FB)")
       else
-	 {x}
+         {x}
    >>;
 
 procedure ofsf_elimsetqua(atfal,ple);
@@ -1603,7 +1603,7 @@ procedure ofsf_elimsetqua(atfal,ple);
    % elimination set.
    begin
       scalar equal21q,equal22r,wo21q,wo22r,so21q,so22r,qesubcql,qesubcr1l,
-	 qesubcr2l,esubcql,esubcr1l,esubcr2l,equal21r,wo21r,so21r;
+         qesubcr2l,esubcql,esubcr1l,esubcr2l,equal21r,wo21r,so21r;
       equal21q := lto_catsoc('equal21q,atfal);
       equal21r := lto_catsoc('equal21r,atfal);
       equal22r := lto_catsoc('equal22r,atfal);
@@ -1614,13 +1614,13 @@ procedure ofsf_elimsetqua(atfal,ple);
       so21r := lto_catsoc('so21r,atfal);
       so22r := lto_catsoc('so22r,atfal);
       if ple then <<
-	 esubcql := 'ofsf_qesubcqpe . so21q;
-	 esubcr1l := 'ofsf_qesubcrpe1 . so21r;
-	 esubcr2l := 'ofsf_qesubcrpe2 . so22r
+         esubcql := 'ofsf_qesubcqpe . so21q;
+         esubcr1l := 'ofsf_qesubcrpe1 . so21r;
+         esubcr2l := 'ofsf_qesubcrpe2 . so22r
       >> else <<
-	 esubcql := 'ofsf_qesubcqme . so21q;
-	 esubcr1l := 'ofsf_qesubcrme1 . so21r;
-	 esubcr2l := 'ofsf_qesubcrme2 . so22r
+         esubcql := 'ofsf_qesubcqme . so21q;
+         esubcr1l := 'ofsf_qesubcrme1 . so21r;
+         esubcr2l := 'ofsf_qesubcrme2 . so22r
       >>;
       qesubcql := 'ofsf_qesubcq . nconc(equal21q,wo21q);
       qesubcr1l := 'ofsf_qesubcr1 . nconc(equal21r,wo21r);
@@ -1651,32 +1651,32 @@ procedure ofsf_elimsetneq(atfal,ple);
    % elimination set.
    begin
       scalar neq1,neq21q,neq21r,neq22r,leq1,geq1,wo1,wo21q,wo21r,wo22r,
-	 neqn,wbn,esubcq,esubcr1,esubcr2,wb1;
+         neqn,wbn,esubcq,esubcr1,esubcr2,wb1;
       ofsf_setvneq();
       neqn := length neq1 + length neq21q + length neq21r + 2*(length neq22r);
       if neqn = 0 then return nil;
       wbn := length wo1 + length wo21q + length wo21r +
- 	 2*(length wo22r);  % + ...
+         2*(length wo22r);  % + ...
       if ple then <<
-	 esubcq := 'ofsf_qesubcqpe;
-	 esubcr1 := 'ofsf_qesubcrpe1;
-	 esubcr2 := 'ofsf_qesubcrpe2;
-	 wb1 := geq1;
-	 wbn := wbn + length geq1
+         esubcq := 'ofsf_qesubcqpe;
+         esubcr1 := 'ofsf_qesubcrpe1;
+         esubcr2 := 'ofsf_qesubcrpe2;
+         wb1 := geq1;
+         wbn := wbn + length geq1
       >> else <<
-	 esubcq := 'ofsf_qesubcqme;
-	 esubcr1 := 'ofsf_qesubcrme1;
-	 esubcr2 := 'ofsf_qesubcrme2;
-	 wb1 := leq1;
-	 wbn := wbn + length leq1
+         esubcq := 'ofsf_qesubcqme;
+         esubcr1 := 'ofsf_qesubcrme1;
+         esubcr2 := 'ofsf_qesubcrme2;
+         wb1 := leq1;
+         wbn := wbn + length leq1
       >>;
       if neqn < wbn then
-	 return {esubcq .
- 	    nconc(neq1,neq21q),esubcr1 . neq21r,esubcr2 . neq22r};
+         return {esubcq .
+            nconc(neq1,neq21q),esubcr1 . neq21r,esubcr2 . neq22r};
       if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
- 	 ioto_prin2 {"(ANEQ:",neqn,"|",wbn,")"};
+         ioto_prin2 {"(ANEQ:",neqn,"|",wbn,")"};
       return {esubcq . lto_nconcn {wb1,wo1,wo21q},esubcr1 . wo21r,
-	 esubcr2 . wo22r}
+         esubcr2 . wo22r}
    end;
 
 procedure ofsf_bettergaussp(grv1,grv2);
@@ -1685,21 +1685,21 @@ procedure ofsf_bettergaussp(grv1,grv2);
    % application than [grv2] encodes.
    begin scalar w1,w2;
       if car grv1 eq 'failed then
-      	 return nil;
+         return nil;
       if car grv2 eq 'failed then
-      	 return t;
+         return t;
       w1 := cadar grv1;
       w2 := cadar grv2;
       if w1 neq w2 then
-      	 return (w1 memq cdr (w2 memq '(fac quar qua2q quaq lin)));
+         return (w1 memq cdr (w2 memq '(fac quar qua2q quaq lin)));
       w1 := caddar grv1;
       w2 := caddar grv2;
       if w1 neq w2 then
-      	 return w1 memq cdr (w2 memq '(gen td con));
+         return w1 memq cdr (w2 memq '(gen td con));
       w1 := ofsf_esetlength cadr grv1;
       w2 := ofsf_esetlength cadr grv2;
       if w1 neq w2 then
-      	 return w1 < w2;
+         return w1 < w2;
       w1 := caddar grv1;
       w2 := caddar grv2;
 %      if w1 neq w2 then
@@ -1711,7 +1711,7 @@ procedure ofsf_esetlength(e);
    % elimination set. Returns the number of elimination terms in [e].
    for each p in e sum
       for each x in p sum
-	 length cdr p;
+         length cdr p;
 
 procedure ofsf_esetunion(e1,e2);
    % Ordered field standard form elimination set union. [e1] and [e2]
@@ -1733,22 +1733,22 @@ procedure ofsf_qefsolset(a,v,theo,ans,bvl);
    % variables. Returns an IGRV.
    begin scalar w,k,c;
       if ofsf_op a neq 'equal then
-	 return '(failed . nil);
+         return '(failed . nil);
       if !*rlbrkcxk then <<
-	 w := ofsf_varlat a where !*rlbrkcxk=nil;
-	 c := t; while w and c do <<
-	    k := pop w;
-	    if pairp k and v memq lto_lpvarl k then
-	       c := nil
-	 >>;
-	 if not c then
- 	    return '(failed . nil)
+         w := ofsf_varlat a where !*rlbrkcxk=nil;
+         c := t; while w and c do <<
+            k := pop w;
+            if pairp k and v memq lto_lpvarl k then
+               c := nil
+         >>;
+         if not c then
+            return '(failed . nil)
       >>;
       w := ofsf_varlat a;
       if v memq w then
-      	 return  ofsf_findeqsol(a,v,theo,ans,bvl);
+         return  ofsf_findeqsol(a,v,theo,ans,bvl);
       if !*rlqegen and ofsf_valassp(bvl,ofsf_arg2l a) then
-      	 return ('gignore . (nil . {ofsf_0mk2('neq,ofsf_arg2l a)}));
+         return ('gignore . (nil . {ofsf_0mk2('neq,ofsf_arg2l a)}));
       return '(failed . nil);
    end;
 
@@ -1766,9 +1766,9 @@ procedure ofsf_findeqsol(a,v,theo,ans,bvl);
       w := ofsf_pnontrivial(ofsf_arg2l a,v,theo,bvl);
       tag := car w;
       if not tag then
-      	 return '(failed . nil);
+         return '(failed . nil);
       if cdr w then
-      	 theop := {cdr w};
+         theop := {cdr w};
       d := degreef(ofsf_arg2l a,v);
       w := ofsf_gelimset ofsf_translat(a,v,theo,t,ans);
       if w eq 'failed then return '(failed . nil);
@@ -1792,13 +1792,13 @@ procedure ofsf_mkgtagq(eset,theo);
    begin scalar a;
       a := atsoc('ofsf_qesubcr2,eset) or atsoc('ofsf_qesubcr1,eset);
       if a then <<
-      	 if not null cadr cadr cadr a then  % $b$ of the first root expression.
-      	    return 'quar;
-   	 return 'qua2q
+         if not null cadr cadr cadr a then  % $b$ of the first root expression.
+            return 'quar;
+         return 'qua2q
       >>;
       % No root expressions
       if null cdr eset then
- 	 return 'quaq;
+         return 'quaq;
       return  'qua2q
    end;
 
@@ -1813,10 +1813,10 @@ procedure ofsf_gelimset_marek(alp);
       w := car alp;
       if w = 'failed then return 'failed;
       res := for each e in w join
-      	 if car e eq 'equal then
-	    ofsf_rootl2eterml_marek(car e, cdr e, nil)
-      	 else
-	    rederr "BUG IN ofsf_gelimset_marek";
+         if car e eq 'equal then
+            ofsf_rootl2eterml_marek(car e, cdr e, nil)
+         else
+            rederr "BUG IN ofsf_gelimset_marek";
       return res
    end;
 
@@ -1827,16 +1827,16 @@ procedure ofsf_gelimset_orig(alp);
       eset := car alp;
       if eset = 'failed then return 'failed;
       if null cdr eset and caar eset = 'anypoint then
- 	 return {'ofsf_qesubcq . {'(true (nil . 1))}};
+         return {'ofsf_qesubcq . {'(true (nil . 1))}};
       for each x in eset do
-	 if car x memq '(equal1 equal21q) then
- 	    car x := 'ofsf_qesubcq
-	 else if car x = 'equal21r then
-	    car x := 'ofsf_qesubcr1
-	 else if car x = 'equal22r then
-	    car x := 'ofsf_qesubcr2
-	 else
-	    rederr "BUG IN ofsf_gelimset";
+         if car x memq '(equal1 equal21q) then
+            car x := 'ofsf_qesubcq
+         else if car x = 'equal21r then
+            car x := 'ofsf_qesubcr1
+         else if car x = 'equal22r then
+            car x := 'ofsf_qesubcr2
+         else
+            rederr "BUG IN ofsf_gelimset";
       return eset
    end;
 
@@ -1864,12 +1864,12 @@ procedure ofsf_maybenonzerol(l,theo,bvl);
    begin scalar w,result;
       result := '(nil . nil);
       while l do <<
-	 w := ofsf_maybenonzero(car l,theo,bvl);
-	 l := cdr l;
-	 if car w then <<
-	    result := w;
-	    l := nil
-      	 >>
+         w := ofsf_maybenonzero(car l,theo,bvl);
+         l := cdr l;
+         if car w then <<
+            result := w;
+            l := nil
+         >>
       >>;
       return result
    end;
@@ -1883,9 +1883,9 @@ procedure ofsf_maybenonzero(u,theo,bvl);
    % \{\theta'\}$. If [!*rlqegen] is off, we know $\theta'=[nil]$.
    if domainp u then
       if null u then
-      	 '(nil . nil)
+         '(nil . nil)
       else
-	 '(con . nil)   % con = concrete
+         '(con . nil)   % con = concrete
    else if cl_simpl(ofsf_0mk2('equal,u),theo,-1) eq 'false then
       '(td . nil)   % td = theory derived
    else if !*rlqelocal and null setdiff(kernels u,cl_lps!*) then
@@ -1899,7 +1899,7 @@ procedure ofsf_maybenonzero!-local(u,theo,bvl);
    begin scalar w;
       w := numr subf(u,cl_pal!*);
       if null w then
-	 return '(nil . nil);
+         return '(nil . nil);
       cl_theo!* := ofsf_0mk2('neq,u) . cl_theo!*;
       return 'gen . ofsf_0mk2('neq,u)
    end;
@@ -1907,22 +1907,22 @@ procedure ofsf_maybenonzero!-local(u,theo,bvl);
 procedure ofsf_qemkans(an,svf);
    begin scalar res; integer time, gctime;
       if !*rlverbose then <<
-	 time :=  time();
-	 gctime := gctime()
+         time :=  time();
+         gctime := gctime()
       >>;
       if !*rlqestdans and not !*rlqegen then
-	 an := ofsf_qemkstdans(an,svf);
+         an := ofsf_qemkstdans(an,svf);
       res := ofsf_qemkans1 an;
       res := if !*rlqebacksub then
-	 ofsf_qebacksub res
+         ofsf_qebacksub res
       else
-	 ofsf_qenobacksub res;
+         ofsf_qenobacksub res;
       if !*rlqebacksub then res := sort(res, function ordpcar);
       if !*rlverbose then <<
-	 ioto_tprin2 {"++++ Time for answer processing: ", time() - time, " ms"};
-	 gctime := gctime() - gctime;
-	 if gctime > 0 then
-	    ioto_prin2t {" plus GC time: ", gctime, " ms"}
+         ioto_tprin2 {"++++ Time for answer processing: ", time() - time, " ms"};
+         gctime := gctime() - gctime;
+         if gctime > 0 then
+            ioto_prin2t {" plus GC time: ", gctime, " ms"}
       >>;
       return res
    end;
@@ -1934,88 +1934,88 @@ procedure ofsf_qemkstdans(an, svf);
    % ofsf_qemkansfl.
    begin scalar y, yy, f, v, sub, xargl, nan, anunan;
       if !*rlverbose then
-	 ioto_tprin2t {"++++ Determining standard real numbers for the answers ",
-	    for each y in an collect car y, "..."};
+         ioto_tprin2t {"++++ Determining standard real numbers for the answers ",
+            for each y in an collect car y, "..."};
       while an do <<
-	 y := pop an;
-	 {v, sub, xargl, f} := y;
-	 if sub eq 'arbitrary then <<
-	    if !*rlverbose then
-	       ioto_tprin2 {"++++ ", v, " = arbitrary -> 0"};
-	    push({v, 'ofsf_qesubcq, {'true, nil ./ 1}}, nan);
-	    push(v . ofsf_arbitrary2anu(), anunan)
-	 >> else if sub eq 'ofsf_shift!-indicator then <<
-	    if !*rlverbose then
-	       ioto_tprin2 {"++++ ", v, " = shift"};
-	    push({v, sub, xargl}, nan);
-	    push(v . ofsf_shift2anu(v, ofsf_extractid cadr xargl, caddr xargl, anunan), anunan)
-	 >> else if sub eq 'ofsf_qesubcq then <<
-	    if !*rlverbose then
-	       ioto_tprin2 {"++++ ", v, " = quotient"};
-	    yy := ofsf_qemkstdansqfq(f, nan, v, xargl, anunan);
-	    if yy then <<
-	       {v, sub, xargl} := yy;
-	       if !*rlverbose then
-	       	  ioto_prin2 {" -> ", ioto_form2str prepsq cadr xargl}
-	    >>;
-	    push({v, sub, xargl}, nan);
-	    push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
-	 >> else if sub eq 'ofsf_qesubcr1 then <<
-	    if !*rlverbose then
-	       ioto_tprin2 {"++++ ", v, " = root"};
-	    yy := ofsf_qemkstdansqfr(f, nan, v, xargl, anunan);
-	    if yy then <<
-	       {v, sub, xargl} := yy;
-	       if !*rlverbose then
-	       	  ioto_prin2 {" -> ", ioto_form2str prepsq cadr xargl};
-	       push(yy, nan);
-	       push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
-	    >> else <<
-	       push({v, sub, xargl}, nan);
-	       push(v . ofsf_r2anu(cadr xargl, anunan), anunan)
-	    >>
-	 >> else if sub eq 'ofsf_qesubi then <<
-	    if !*rlverbose then
-	       ioto_tprin2 {"++++ ", v, " = ", car xargl};
-	    {v, sub, xargl} := y := ofsf_qemkstdansinf(f, nan, v, sub, xargl);
-	    if !*rlverbose then
-	       ioto_prin2 {" -> ", ioto_form2str prepsq cadr xargl};
-	    push(y, nan);
-	    push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
-	 >> else if sub eq 'ofsf_qesubcqpe then <<
-	    if !*rlverbose then
-	       ioto_tprin2 {"++++ ", v, " = quotient + epsilon"};
-	    {v, sub, xargl} := y := ofsf_qemkstdansqpe(f, nan, v, xargl, anunan);
-	    if !*rlverbose then
-	       ioto_prin2 {" -> ", ioto_form2str prepsq cadr xargl};
-	    push(y, nan);
-	    push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
-	 >> else if sub eq 'ofsf_qesubcqme then <<
-	    if !*rlverbose then
-	       ioto_tprin2 {"++++ ", v, " = quotient - epsilon"};
-	    {v, sub, xargl} := ofsf_qemkstdansqme(f, nan, v, xargl, anunan);
-	    if !*rlverbose then
-	       ioto_prin2 {" -> ", ioto_form2str prepsq cadr xargl};
-	    push({v, sub, xargl}, nan);
-	    push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
-      	 >> else if sub eq 'ofsf_qesubcrpe1 then <<
-	    if !*rlverbose then
-	       ioto_tprin2 {"++++ ", v, " = root + epsilon"};
-	    {v, sub, xargl} := y := ofsf_qemkstdansrpe(f, nan, v, xargl, anunan);
-	    if !*rlverbose then
-	       ioto_prin2 {" -> ", ioto_form2str prepsq cadr xargl};
-	    push(y, nan);
-	    push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
-	 >> else if sub eq 'ofsf_qesubcrme1 then <<
-	    if !*rlverbose then
-	       ioto_tprin2 {"++++ ", v, " = root - epsilon"};
-	    {v, sub, xargl} := ofsf_qemkstdansrme(f, nan, v, xargl, anunan);
-	    if !*rlverbose then
-	       ioto_prin2 {" -> ", ioto_form2str prepsq cadr xargl};
-	    push({v, sub, xargl}, nan);
-	    push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
-	 >> else
-	    rederr "BUG IN ofsf_qemkstdans"
+         y := pop an;
+         {v, sub, xargl, f} := y;
+         if sub eq 'arbitrary then <<
+            if !*rlverbose then
+               ioto_tprin2 {"++++ ", v, " = arbitrary -> 0"};
+            push({v, 'ofsf_qesubcq, {'true, nil ./ 1}}, nan);
+            push(v . ofsf_arbitrary2anu(), anunan)
+         >> else if sub eq 'ofsf_shift!-indicator then <<
+            if !*rlverbose then
+               ioto_tprin2 {"++++ ", v, " = shift"};
+            push({v, sub, xargl}, nan);
+            push(v . ofsf_shift2anu(v, ofsf_extractid cadr xargl, caddr xargl, anunan), anunan)
+         >> else if sub eq 'ofsf_qesubcq then <<
+            if !*rlverbose then
+               ioto_tprin2 {"++++ ", v, " = quotient"};
+            yy := ofsf_qemkstdansqfq(f, nan, v, xargl, anunan);
+            if yy then <<
+               {v, sub, xargl} := yy;
+               if !*rlverbose then
+                  ioto_prin2 {" -> ", ioto_form2str prepsq cadr xargl}
+            >>;
+            push({v, sub, xargl}, nan);
+            push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
+         >> else if sub eq 'ofsf_qesubcr1 then <<
+            if !*rlverbose then
+               ioto_tprin2 {"++++ ", v, " = root"};
+            yy := ofsf_qemkstdansqfr(f, nan, v, xargl, anunan);
+            if yy then <<
+               {v, sub, xargl} := yy;
+               if !*rlverbose then
+                  ioto_prin2 {" -> ", ioto_form2str prepsq cadr xargl};
+               push(yy, nan);
+               push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
+            >> else <<
+               push({v, sub, xargl}, nan);
+               push(v . ofsf_r2anu(cadr xargl, anunan), anunan)
+            >>
+         >> else if sub eq 'ofsf_qesubi then <<
+            if !*rlverbose then
+               ioto_tprin2 {"++++ ", v, " = ", car xargl};
+            {v, sub, xargl} := y := ofsf_qemkstdansinf(f, nan, v, sub, xargl);
+            if !*rlverbose then
+               ioto_prin2 {" -> ", ioto_form2str prepsq cadr xargl};
+            push(y, nan);
+            push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
+         >> else if sub eq 'ofsf_qesubcqpe then <<
+            if !*rlverbose then
+               ioto_tprin2 {"++++ ", v, " = quotient + epsilon"};
+            {v, sub, xargl} := y := ofsf_qemkstdansqpe(f, nan, v, xargl, anunan);
+            if !*rlverbose then
+               ioto_prin2 {" -> ", ioto_form2str prepsq cadr xargl};
+            push(y, nan);
+            push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
+         >> else if sub eq 'ofsf_qesubcqme then <<
+            if !*rlverbose then
+               ioto_tprin2 {"++++ ", v, " = quotient - epsilon"};
+            {v, sub, xargl} := ofsf_qemkstdansqme(f, nan, v, xargl, anunan);
+            if !*rlverbose then
+               ioto_prin2 {" -> ", ioto_form2str prepsq cadr xargl};
+            push({v, sub, xargl}, nan);
+            push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
+         >> else if sub eq 'ofsf_qesubcrpe1 then <<
+            if !*rlverbose then
+               ioto_tprin2 {"++++ ", v, " = root + epsilon"};
+            {v, sub, xargl} := y := ofsf_qemkstdansrpe(f, nan, v, xargl, anunan);
+            if !*rlverbose then
+               ioto_prin2 {" -> ", ioto_form2str prepsq cadr xargl};
+            push(y, nan);
+            push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
+         >> else if sub eq 'ofsf_qesubcrme1 then <<
+            if !*rlverbose then
+               ioto_tprin2 {"++++ ", v, " = root - epsilon"};
+            {v, sub, xargl} := ofsf_qemkstdansrme(f, nan, v, xargl, anunan);
+            if !*rlverbose then
+               ioto_prin2 {" -> ", ioto_form2str prepsq cadr xargl};
+            push({v, sub, xargl}, nan);
+            push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
+         >> else
+            rederr "BUG IN ofsf_qemkstdans"
       >>;
       return reversip nan
    end;
@@ -2023,53 +2023,53 @@ procedure ofsf_qemkstdans(an, svf);
 procedure ofsf_qemkstdansqfq(f, nan, v, xargl, anunan);
    begin scalar w, q;
       if not !*rlqestdansq then
-	 return nil;
+         return nil;
       if flagp(v, 'rl_qeansvar) then
-	 return nil;
+         return nil;
       q := ofsf_qeapplynanq(cadr xargl, nan);
       if domainp numr q and domainp numr q then
-	 return nil;
+         return nil;
       w := ofsf_qeapplynan(nan, ofsf_qeapplysub('ofsf_qesubcqpe, f, v, xargl));
       assert(rl_tvalp w);
       if w eq 'true then
-	 return ofsf_qemkstdansqpe(f, nan, v, xargl, anunan);
+         return ofsf_qemkstdansqpe(f, nan, v, xargl, anunan);
       w := ofsf_qeapplynan(nan, ofsf_qeapplysub('ofsf_qesubcqme, f, v, xargl));
       assert(rl_tvalp w);
       if w eq 'true then
-	 return ofsf_qemkstdansqme(f, nan, v, xargl, anunan);
+         return ofsf_qemkstdansqme(f, nan, v, xargl, anunan);
       return nil
    end;
 
 procedure ofsf_qemkstdansqfr(f, nan, v, xargl, anunan);
    begin scalar w, q;
       if not !*rlqestdansq then
-	 return nil;
+         return nil;
       if flagp(v, 'rl_qeansvar) then
-	 return nil;
+         return nil;
       q := ofsf_qeapplynanq(ofsf_preprexpr cadr xargl, nan);
       if domainp numr q and domainp numr q then
-	 return nil;
+         return nil;
       w := ofsf_qeapplynan(nan, ofsf_qeapplysub('ofsf_qesubcrpe1, f, v, xargl));
       assert(rl_tvalp w);
       if w eq 'true then
-	 return ofsf_qemkstdansrpe(f, nan, v, xargl, anunan);
+         return ofsf_qemkstdansrpe(f, nan, v, xargl, anunan);
       w := ofsf_qeapplynan(nan, ofsf_qeapplysub('ofsf_qesubcrme1, f, v, xargl));
       assert(rl_tvalp w);
       if w eq 'true then
-	 return ofsf_qemkstdansrme(f, nan, v, xargl, anunan);
+         return ofsf_qemkstdansrme(f, nan, v, xargl, anunan);
       return nil
    end;
 
 procedure ofsf_qeapplynanq(q, nan);
    begin scalar w, nv, nsub, nxargl;
       for each y in nan do <<
-	 {nv, nsub, nxargl} := y;
-	 assert(nsub memq '(ofsf_qesubcr1 ofsf_qesubcq ofsf_shift!-indicator));
-	 w := if nsub eq 'ofsf_qesubcr1 then
-	    prepsq ofsf_preprexpr cadr nxargl
-	 else  % nsub memq '(ofsf_qesubcq ofsf_shift!-indicator)
-	    prepsq cadr nxargl;
-	 q := subsq(q, {nv . w})
+         {nv, nsub, nxargl} := y;
+         assert(nsub memq '(ofsf_qesubcr1 ofsf_qesubcq ofsf_shift!-indicator));
+         w := if nsub eq 'ofsf_qesubcr1 then
+            prepsq ofsf_preprexpr cadr nxargl
+         else  % nsub memq '(ofsf_qesubcq ofsf_shift!-indicator)
+            prepsq cadr nxargl;
+         q := subsq(q, {nv . w})
       >>;
       return q
    end;
@@ -2094,13 +2094,13 @@ procedure ofsf_shift2anu(v, base, dgcd, anunan);
       avar := ofsf_mksmallid();
       sgn := aex_sgn aex_fromsfial(!*k2f basevar, {basevar . base});
       if eqn(sgn, 0) then
-	 return anu_mk(aex_fromsf !*k2f basevar, iv_mk(-1 ./ 1, 1 ./ 1));
+         return anu_mk(aex_fromsf !*k2f basevar, iv_mk(-1 ./ 1, 1 ./ 1));
       aex := aex_fromsfial(addf(exptf(!*k2f avar, dgcd), negf !*k2f basevar), {basevar . base});
       cb := addsq(aex_cauchybound(aex, avar), 1 ./ 1);
       % It can not happen that dgcd is even and the sign is negative:
       assert(not (eqn(sgn, -1) and evenp dgcd));
       if eqn(sgn, 1) then
-	 return anu_mk(aex, iv_mk(nil ./ 1, cb));
+         return anu_mk(aex, iv_mk(nil ./ 1, cb));
       return anu_mk(aex, iv_mk(negsq cb, nil ./ 1))
    end;
 
@@ -2110,11 +2110,11 @@ procedure ofsf_q2anu(q, anunan);
       d := denr q;
       vl := union(kernels n, kernels d);
       for each v in vl do <<
-	 w := atsoc(v, anunan);
-	 assert(w);
-	 anuv := aex_mvar anu_dp cdr w;
-	 push(v . anuv, subal);
-	 push(anuv . cdr w, ial)
+         w := atsoc(v, anunan);
+         assert(w);
+         anuv := aex_mvar anu_dp cdr w;
+         push(v . anuv, subal);
+         push(anuv . cdr w, ial)
       >>;
       n := sfto_renamealf(n, subal);
       d := sfto_renamealf(d, subal);
@@ -2131,35 +2131,35 @@ procedure ofsf_r2anu(r, anunan);
       {a, b, c, d} := r;
       vl := lto_unionn {kernels a, kernels b, kernels c, kernels d};
       for each v in vl do <<
-	 w := atsoc(v, anunan);
-	 assert(w);
-	 anuv := aex_mvar anu_dp cdr w;
-	 push(v . anuv, subal);
-	 push(anuv . cdr w, ial)
+         w := atsoc(v, anunan);
+         assert(w);
+         anuv := aex_mvar anu_dp cdr w;
+         push(v . anuv, subal);
+         push(anuv . cdr w, ial)
       >>;
       c := sfto_renamealf(c, subal);
       sgn := aex_sgn aex_fromsfial(c, ial);
       if eqn(sgn, 0) then
-	 return ofsf_q2anu(quotsq(!*f2q a, !*f2q d), anunan);
+         return ofsf_q2anu(quotsq(!*f2q a, !*f2q d), anunan);
       assert(sgn > 0);
       b := sfto_renamealf(b, subal);
       sgn := aex_sgn aex_fromsfial(b, ial);
       if eqn(sgn, 0) then
-	 return ofsf_q2anu(quotsq(!*f2q a, !*f2q d), anunan);
+         return ofsf_q2anu(quotsq(!*f2q a, !*f2q d), anunan);
       a := sfto_renamealf(a, subal);
       d := sfto_renamealf(d, subal);
       avar := ofsf_mksmallid();
       avarf := !*k2f avar;
       % p = d^2*x^2 - 2*a*d*x + a^2 - b^2*c
       p := addf(multf(exptf(d, 2), exptf(avarf, 2)),
-	 addf(negf multf(2, multf(a, multf(d, avarf))),
-	    addf(exptf(a, 2), negf multf(exptf(b, 2), c))));
+         addf(negf multf(2, multf(a, multf(d, avarf))),
+            addf(exptf(a, 2), negf multf(exptf(b, 2), c))));
       aex := aex_prpart aex_fromsfial(p, ial);
       roots := aex_findroots(aex, avar);
       assert(eqn(length roots, 2));
       sgnd := aex_sgn aex_fromsfial(d, ial);
       if sgn*sgnd < 0 then
-      	 return car roots;
+         return car roots;
       return cadr roots
    end;
 
@@ -2168,7 +2168,7 @@ procedure aex_fromsfial(f, ial);
       rial := reverse sort(ial, function ordopcar);
       aex := aex_fromsf f;
       for each pr in rial do
-	 aex := aex_bind(aex, car pr, cdr pr);
+         aex := aex_bind(aex, car pr, cdr pr);
       return aex
    end;
 
@@ -2192,22 +2192,22 @@ procedure ofsf_qemkansfl(svf, an);
       f := svf;
       fl := {f};
       if !*rlverbose then
-      	 ioto_tprin2t {"length = ", length cdr an};
+         ioto_tprin2t {"length = ", length cdr an};
       for each y in reverse cdr an do <<
-	 {v, sub, xargl} := y;
-	 if !*rlverbose and !*rlqestdansvb then <<
-	    val := if sub memq '(ofsf_qesubcr1 ofsf_qesubcrme1 ofsf_qesubcrpe1) then
-	       ioto_form2str prepsq ofsf_preprexpr cadr xargl
-	    else if sub eq 'ofsf_qesubi then
-	       car xargl
-	    else
-	       ioto_form2str prepsq cadr xargl;
-      	    ioto_prin2t {v, ", ", sub, ", ", val, ", ", rl_atnum f}
-	 >>;
-	 f := ofsf_qeapplysub(sub, f, v, xargl);
-	 if rl_op f eq 'or then
-	    lprim {"ofsf_qemkansfl: top-level or for variable", v};
-	 push(f, fl)
+         {v, sub, xargl} := y;
+         if !*rlverbose and !*rlqestdansvb then <<
+            val := if sub memq '(ofsf_qesubcr1 ofsf_qesubcrme1 ofsf_qesubcrpe1) then
+               ioto_form2str prepsq ofsf_preprexpr cadr xargl
+            else if sub eq 'ofsf_qesubi then
+               car xargl
+            else
+               ioto_form2str prepsq cadr xargl;
+            ioto_prin2t {v, ", ", sub, ", ", val, ", ", rl_atnum f}
+         >>;
+         f := ofsf_qeapplysub(sub, f, v, xargl);
+         if rl_op f eq 'or then
+            lprim {"ofsf_qemkansfl: top-level or for variable", v};
+         push(f, fl)
       >>;
       return fl
    end;
@@ -2215,8 +2215,8 @@ procedure ofsf_qemkansfl(svf, an);
 procedure ofsf_qeapplynan(nan, f);
    begin scalar v, sub, xargl;
       for each y in nan do <<
-      	 {v, sub, xargl} := y;
-	 f := ofsf_qeapplysub(sub, f, v, xargl)
+         {v, sub, xargl} := y;
+         f := ofsf_qeapplysub(sub, f, v, xargl)
       >>;
       return f
    end;
@@ -2224,9 +2224,9 @@ procedure ofsf_qeapplynan(nan, f);
 procedure ofsf_qeapplysub(sub, f, v, xargl);
    begin scalar res;
       res := if sub eq 'ofsf_shift!-indicator then
-      	 ofsf_ansshift(f, v, ofsf_extractid cadr xargl, caddr xargl)
+         ofsf_ansshift(f, v, ofsf_extractid cadr xargl, caddr xargl)
       else
-	 cdr apply(sub, nil . nil . f . v . xargl);
+         cdr apply(sub, nil . nil . f . v . xargl);
       return cl_simpl(res, nil, -1)
    end;
 
@@ -2246,35 +2246,35 @@ procedure ofsf_qemkstdansinf(f, nan, v, sub, xargl);
    begin scalar w;
       f := ofsf_qeapplynan(nan, f);
       if car xargl = 'pinf then
-	 w := ofsf_qemkstdanspinf(f, v)
+         w := ofsf_qemkstdanspinf(f, v)
       else if car xargl = 'minf then
-	 w := negsq ofsf_qemkstdanspinf(ofsf_mirror(f, v), v);
+         w := negsq ofsf_qemkstdanspinf(ofsf_mirror(f, v), v);
       return {v, 'ofsf_qesubcq, {'true, w}}
    end;
 
 procedure ofsf_qemkstdanspinf(csvf, v);
    begin scalar neql, op, needsq, maxsq, oneql, ne;
       for each atf in cl_atl csvf do <<
-	 op := rl_op atf;
-	 if op eq 'neq then
-	    push(atf, neql)
-	 else if op memq '(geq greaterp) then <<
-	    needsq := ofsf_guesspinf(atf, v);
-	    if not maxsq or sfto_greaterq(needsq, maxsq) then
-	       maxsq := needsq
-	 >>
+         op := rl_op atf;
+         if op eq 'neq then
+            push(atf, neql)
+         else if op memq '(geq greaterp) then <<
+            needsq := ofsf_guesspinf(atf, v);
+            if not maxsq or sfto_greaterq(needsq, maxsq) then
+               maxsq := needsq
+         >>
       >>;
       if not maxsq then
-	 maxsq := nil ./ 1;
+         maxsq := nil ./ 1;
       if !*rlqestdansint then
-      	 maxsq := sfto_ceilq maxsq;
+         maxsq := sfto_ceilq maxsq;
       oneql := neql;
       while neql do <<
-	 ne := pop neql;
-	 if null numr ofsf_subf(ofsf_arg2l ne, v, maxsq) then <<
-	    maxsq := addsq(maxsq, 1 ./ 1);
-	    neql := oneql
-	 >>
+         ne := pop neql;
+         if null numr ofsf_subf(ofsf_arg2l ne, v, maxsq) then <<
+            maxsq := addsq(maxsq, 1 ./ 1);
+            neql := oneql
+         >>
       >>;
       return maxsq
    end;
@@ -2285,13 +2285,13 @@ procedure ofsf_guesspinf(atf, v);
       lhs := ofsf_arg2l atf;
       assert(not domainp lhs and mvar lhs eq v);
       w := if eqn(ldeg lhs, 1) then
-	 quotsq(!*f2q negf red lhs, !*f2q lc lhs)
+         quotsq(!*f2q negf red lhs, !*f2q lc lhs)
       else
-	 sfto_lmq lhs;
+         sfto_lmq lhs;
       if op eq 'geq then
-	 return w;
+         return w;
       if op eq 'greaterp then
-	 return addsq(w, 1 ./ 1);
+         return addsq(w, 1 ./ 1);
       rederr {"ofsf_guesspinf:", op}
    end;
 
@@ -2349,28 +2349,28 @@ procedure ofsf_qemkstdansaexpe_old(f, v, anu);
       aex := aex_fromsf(((manuv .** 1) .* denr q) .+ negf numr q);
       manu := anu_mk(aex, iv_mk(subtrsq(q, 1 ./ 1), addsq(q, 1 ./ 1)));
       for each atf in cl_atl f do <<
-	 op := rl_op atf;
-	 lhs := ofsf_arg2l atf;
-	 if not domainp lhs then
-	    if op memq '(lessp leq neq) and eqn(ldeg lhs, 1) then <<
-	       canu := ofsf_linsf2anu(lhs, canuv);
-	       manu := cdr ofsf_qemkstdansupdmin(qmc, qca, manuv, manu, canuv, canu, anuv, anu)
-	    >> else if op memq '(greaterp geq neq) and eqn(ldeg lhs, 2) then <<
-	       canu := ofsf_quasf2anu(lhs, canuv, 1);
-	       manu := cdr ofsf_qemkstdansupdmin(qmc, qca, manuv, manu, canuv, canu, anuv, anu)
-	    >> else if op memq '(lessp leq) and eqn(ldeg lhs, 2) then <<
-	       canu := ofsf_quasf2anu(lhs, canuv, 2);
-	       manu := cdr ofsf_qemkstdansupdmin(qmc, qca, manuv, manu, canuv, canu, anuv, anu)
-	    >> else if ldeg lhs > 2 then <<
-	       % This is the general case. All cases above are optimizations.
-	       rootl := aex_findroots(aex_fromsf sfto_renamef(lhs, v, canuv), canuv);
-	       c := t; while c and rootl do <<
-		  canu := pop rootl;
-	       	  flag . manu := ofsf_qemkstdansupdmin(qmc, qca, manuv, manu, canuv, canu, anuv, anu);
-		  if flag eq 'hit or flag eq 'gmin then
-		     c := nil
-	       >>;
-	    >>
+         op := rl_op atf;
+         lhs := ofsf_arg2l atf;
+         if not domainp lhs then
+            if op memq '(lessp leq neq) and eqn(ldeg lhs, 1) then <<
+               canu := ofsf_linsf2anu(lhs, canuv);
+               manu := cdr ofsf_qemkstdansupdmin(qmc, qca, manuv, manu, canuv, canu, anuv, anu)
+            >> else if op memq '(greaterp geq neq) and eqn(ldeg lhs, 2) then <<
+               canu := ofsf_quasf2anu(lhs, canuv, 1);
+               manu := cdr ofsf_qemkstdansupdmin(qmc, qca, manuv, manu, canuv, canu, anuv, anu)
+            >> else if op memq '(lessp leq) and eqn(ldeg lhs, 2) then <<
+               canu := ofsf_quasf2anu(lhs, canuv, 2);
+               manu := cdr ofsf_qemkstdansupdmin(qmc, qca, manuv, manu, canuv, canu, anuv, anu)
+            >> else if ldeg lhs > 2 then <<
+               % This is the general case. All cases above are optimizations.
+               rootl := aex_findroots(aex_fromsf sfto_renamef(lhs, v, canuv), canuv);
+               c := t; while c and rootl do <<
+                  canu := pop rootl;
+                  flag . manu := ofsf_qemkstdansupdmin(qmc, qca, manuv, manu, canuv, canu, anuv, anu);
+                  if flag eq 'hit or flag eq 'gmin then
+                     c := nil
+               >>;
+            >>
       >>;
       return {v, 'ofsf_qesubcq, {'true, ofsf_findrat(anu, manu)}}
    end;
@@ -2381,19 +2381,19 @@ procedure ofsf_qemkstdansaexpe(f, v, anu);
       aex := anu_dp anu;
       sc := aex_stdsturmchain(aex, aex_mvar aex);
       if !*rlqestdansint then <<
-      	 while sfto_greaterq(subtrsq(iv_rb anu_iv anu, iv_lb anu_iv anu), 1 ./ 2) do
-	    anu_refineip(anu, sc);
-	 z := sfto_ceilq iv_lb anu_iv anu;
-	 if z neq sfto_ceilq iv_rb anu_iv anu then
-	    if not eqn(aex_sgn aex_subrat(aex, aex_mvar aex, z), 0) then
-	       while sfto_ceilq iv_lb anu_iv anu neq sfto_ceilq iv_rb anu_iv anu do
-	    	  anu_refineip(anu, sc);
-      	 q := sfto_ceilq iv_rb anu_iv anu
+         while sfto_greaterq(subtrsq(iv_rb anu_iv anu, iv_lb anu_iv anu), 1 ./ 2) do
+            anu_refineip(anu, sc);
+         z := sfto_ceilq iv_lb anu_iv anu;
+         if z neq sfto_ceilq iv_rb anu_iv anu then
+            if not eqn(aex_sgn aex_subrat(aex, aex_mvar aex, z), 0) then
+               while sfto_ceilq iv_lb anu_iv anu neq sfto_ceilq iv_rb anu_iv anu do
+                  anu_refineip(anu, sc);
+         q := sfto_ceilq iv_rb anu_iv anu
       >> else
-	 q := iv_rb anu_iv anu;
+         q := iv_rb anu_iv anu;
       while ofsf_subconstq(f, v, q) eq 'false do <<
-	 anu_refineip(anu, sc);
-	 q := iv_rb anu_iv anu
+         anu_refineip(anu, sc);
+         q := iv_rb anu_iv anu
       >>;
       return {v, 'ofsf_qesubcq, {'true, q}}
    end;
@@ -2409,14 +2409,14 @@ procedure ofsf_findrat(anu1, anu2);
    % We assume anu1 < anu2. Returns a rational number [q], s.t. anu1 < q < anu2.
    begin scalar aex1, aex2, sc1, sc2;
       if sfto_lessq(iv_rb anu_iv anu1, iv_lb anu_iv anu2) then
-	 return iv_rb anu_iv anu1;
+         return iv_rb anu_iv anu1;
       aex1 := anu_dp anu1;
       aex2 := anu_dp anu2;
       sc1 := aex_stdsturmchain(aex1, aex_mvar aex1);
       sc2 := aex_stdsturmchain(aex2, aex_mvar aex2);
       while sfto_geqq(iv_rb anu_iv anu1, iv_lb anu_iv anu2) do <<
-	 anu_refineip(anu1, sc1);
-	 anu_refineip(anu2, sc2)
+         anu_refineip(anu1, sc1);
+         anu_refineip(anu2, sc2)
       >>;
       return iv_rb anu_iv anu1
    end;
@@ -2427,10 +2427,10 @@ procedure ofsf_qemkstdansupdmin(qmc, qca, manuv, manu, canuv, canu, anuv, anu);
       %ioto_tprin2t {"canu - anu = ", ioto_smaprin anu_evalfR anu_fromAex aex, " sign = ", aex_sgn aex};
       %ioto_tprin2t {"canu - anu = ", aex, " sign = ", aex_sgn aex};
       if aex_sgn aex < 1 then
-	 return 'lanu . manu;
+         return 'lanu . manu;
       aex := aex_mk(qmc, ctx_fromial {manuv . manu, canuv . canu});
       if aex_sgn aex < 1 then
-	 return 'gmin . manu;
+         return 'gmin . manu;
       cdp := aex_ex anu_dp canu;
       iv := anu_iv canu;
       mdp := sfto_renamef(numr cdp, canuv, manuv) ./ denr cdp;
@@ -2449,7 +2449,7 @@ procedure ofsf_quasf2anu(f, v, rootno);
    begin scalar aex, mid, a, b, lb, ub;
       f := sfto_sqfpartf f;
       if eqn(ldeg f, 1) then
-	 return ofsf_linsf2anu(f, v);
+         return ofsf_linsf2anu(f, v);
       a := lc f;
       b := if not domainp red f then lc red f;
       mid := quotsq(!*f2q negf b, !*f2q multf(2, a));
@@ -2457,7 +2457,7 @@ procedure ofsf_quasf2anu(f, v, rootno);
       ub := sfto_lmq f;
       aex := aex_fromsf sfto_renamef(f, mvar f, v);
       if eqn(rootno, 1) then
-	 return anu_mk(aex, iv_mk(lb, mid));
+         return anu_mk(aex, iv_mk(lb, mid));
       return anu_mk(aex, iv_mk(mid, ub))
    end;
 
@@ -2469,31 +2469,31 @@ procedure ofsf_qemkans1(an);
       scalar v,sub,xargl,w;
       integer ic,ec,ac;
       return for each y in an collect <<
-	 v := car y;
-	 sub := cadr y;
-	 xargl := caddr y;
-	 w := if sub eq 'ofsf_qesubi then <<
-      	    (if car xargl = 'pinf then
- 	       simp ofsf_newinfinity(ic := ic+1)
-      	    else if car xargl = 'minf then
-	       negsq simp ofsf_newinfinity(ic := ic+1))
-	 >> else if sub eq 'ofsf_qesubcq or sub eq 'ofsf_shift!-indicator then
-	    cadr xargl
-	 else if sub eq 'ofsf_qesubcr1 then
-	    ofsf_preprexpr cadr xargl
-	 else if sub eq 'ofsf_qesubcqme then
-	    subtrsq(cadr xargl,simp ofsf_newepsilon(ec := ec+1))
-	 else if sub eq 'ofsf_qesubcqpe then
-	    addsq(cadr xargl,simp ofsf_newepsilon(ec := ec+1))
-	 else if sub eq 'ofsf_qesubcrme1 then
-	    subtrsq(ofsf_preprexpr(cadr xargl),simp ofsf_newepsilon(ec := ec+1))
-	 else if sub eq 'ofsf_qesubcrpe1 then
-	    addsq(ofsf_preprexpr(cadr xargl),simp ofsf_newepsilon(ec := ec+1))
-	 else if sub eq 'arbitrary then
-	    simp ofsf_newarbitrary(ac := ac+1)
-	 else
-	    rederr "BUG IN ofsf_qemkans";
-	 v . w
+         v := car y;
+         sub := cadr y;
+         xargl := caddr y;
+         w := if sub eq 'ofsf_qesubi then <<
+            (if car xargl = 'pinf then
+               simp ofsf_newinfinity(ic := ic+1)
+            else if car xargl = 'minf then
+               negsq simp ofsf_newinfinity(ic := ic+1))
+         >> else if sub eq 'ofsf_qesubcq or sub eq 'ofsf_shift!-indicator then
+            cadr xargl
+         else if sub eq 'ofsf_qesubcr1 then
+            ofsf_preprexpr cadr xargl
+         else if sub eq 'ofsf_qesubcqme then
+            subtrsq(cadr xargl,simp ofsf_newepsilon(ec := ec+1))
+         else if sub eq 'ofsf_qesubcqpe then
+            addsq(cadr xargl,simp ofsf_newepsilon(ec := ec+1))
+         else if sub eq 'ofsf_qesubcrme1 then
+            subtrsq(ofsf_preprexpr(cadr xargl),simp ofsf_newepsilon(ec := ec+1))
+         else if sub eq 'ofsf_qesubcrpe1 then
+            addsq(ofsf_preprexpr(cadr xargl),simp ofsf_newepsilon(ec := ec+1))
+         else if sub eq 'arbitrary then
+            simp ofsf_newarbitrary(ac := ac+1)
+         else
+            rederr "BUG IN ofsf_qemkans";
+         v . w
       >>
    end;
 
@@ -2516,9 +2516,9 @@ procedure ofsf_qebacksub(eql);
    % where $v$ is a variable and $w$ is an SQ. Returns a list of equations.
    begin scalar subl,e;
       return for each w in eql join <<
-	 e := car w . prepsq subsq(cdr w, subl);
-	 push(e, subl);
-	 if !*rlqefullans or not flagp(car w, 'rl_qeansvar) then {e}
+         e := car w . prepsq subsq(cdr w, subl);
+         push(e, subl);
+         if !*rlqefullans or not flagp(car w, 'rl_qeansvar) then {e}
       >>
    end;
 
@@ -2529,7 +2529,7 @@ procedure ofsf_qenobacksub(eql);
    % an equation and $a$ is an answer translation.
    for each w in eql join
       if !*rlqefullans or not flagp(car w, 'rl_qeansvar) then
-	 {car w . prepsq cdr w};
+         {car w . prepsq cdr w};
 
 procedure ofsf_croot(u,n);
    if eqn(n,1) then u else reval {'expt,u,{'quotient,1,n}};
@@ -2555,13 +2555,13 @@ procedure ofsf_thregen(f);
    begin scalar op;
       op := rl_op f;
       if op = 'and then
- 	 return for each x in rl_argn f collect ofsf_thregen!-or x;
+         return for each x in rl_argn f collect ofsf_thregen!-or x;
       if op = 'or then
-	 return {ofsf_thregen!-or f};
+         return {ofsf_thregen!-or f};
       if op = 'true then
-	 return nil;
+         return nil;
       if op = 'false then
-	 {'false};
+         {'false};
       % [f] is atomic.
       return {f}
    end;
@@ -2578,14 +2578,14 @@ procedure ofsf_thregen!-or(f);
    % [f].
    begin scalar w;
       if cl_atfp f then
-	 return f;
+         return f;
       w := car rl_argn f;
       if rl_op w = 'and then
-	 w := ofsf_thregen!-and w;
+         w := ofsf_thregen!-and w;
       if rl_op w = 'equal then
-      	 return ofsf_thregen!-equal(w . cdr rl_argn f);
+         return ofsf_thregen!-equal(w . cdr rl_argn f);
       if rl_op w = 'neq then
-      	 return ofsf_thregen!-neq(w . cdr rl_argn f);
+         return ofsf_thregen!-neq(w . cdr rl_argn f);
       rederr "BUG IN ofsf_thregen!-or"
    end;
 
@@ -2599,11 +2599,11 @@ procedure ofsf_thregen!-equal(eql);
    begin scalar w;
       w := 1;
       for each x in eql do <<
-	 if rl_op x = 'and then
-	    x := ofsf_thregen!-and x;
-	 if rl_op x neq 'equal then
+         if rl_op x = 'and then
+            x := ofsf_thregen!-and x;
+         if rl_op x neq 'equal then
             rederr "BUG IN ofsf_thregen!-equal";
-	 w := multf(w,ofsf_arg2l x)
+         w := multf(w,ofsf_arg2l x)
       >>;
       return ofsf_0mk2('equal,w)
    end;
@@ -2617,11 +2617,11 @@ procedure ofsf_thregen!-neq(neql);
    % sides.
    begin scalar w;
       for each x in neql do <<
-	 if rl_op x = 'and then
-	    x := ofsf_thregen!-and x;
-	 if rl_op x neq 'neq then
+         if rl_op x = 'and then
+            x := ofsf_thregen!-and x;
+         if rl_op x neq 'neq then
             rederr "BUG IN ofsf_thregen!-neq";
-	 w := addf(w,exptf(ofsf_arg2l x,2))
+         w := addf(w,exptf(ofsf_arg2l x,2))
       >>;
       return ofsf_0mk2('neq,w)
    end;
@@ -2639,22 +2639,22 @@ procedure ofsf_sqsc(f,vl,theo,ans,bvl);
       atl := cl_atl1 f;
       scvl := if !*rlqevarsel then vl else {car vl};
       while scvl and not lin do <<
-	 a := car scvl;
-	 scvl := cdr scvl;
-	 lin := ofsf_linp(atl,a,lto_delq(a,vl))
+         a := car scvl;
+         scvl := cdr scvl;
+         lin := ofsf_linp(atl,a,lto_delq(a,vl))
       >>;
       if lin then
-	 return 'failed;
+         return 'failed;
       scvl := if !*rlqevarsel then vl else {car vl};
       while scvl and not at do <<
-	 a := car scvl;
-	 scvl := cdr scvl;
-	 at := ofsf_sqsc!-test(atl,a)
+         a := car scvl;
+         scvl := cdr scvl;
+         at := ofsf_sqsc!-test(atl,a)
       >>;
       if not at then
- 	 return 'failed;
+         return 'failed;
       if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
-	 ioto_prin2 "#Q";
+         ioto_prin2 "#Q";
       vl := lto_delq(a,vl);
       f := cl_simpl(ofsf_sqsc1(f,at,a,theo),theo,-1);
       return (t . {cl_mkCE(vl,f,nil,nil)}) . theo
@@ -2676,41 +2676,41 @@ procedure ofsf_sqsc1at(at,v,theo);
       b := reorder cadr w;
       c := reorder caddr w;
       if op eq 'neq then
-	 return rl_mkn('or,
-	    {ofsf_0mk2('neq,a),ofsf_0mk2('neq,b),ofsf_0mk2('neq,c)});
+         return rl_mkn('or,
+            {ofsf_0mk2('neq,a),ofsf_0mk2('neq,b),ofsf_0mk2('neq,c)});
       discr := addf(exptf(b,2),negf multf(4,multf(a,c)));
       if op eq 'equal then <<
-	 if ofsf_surep(ofsf_0mk2('neq,a),theo) then
-	    return ofsf_0mk2('geq,discr);
-	 return rl_mkn('or,
-	    {ofsf_0mk2('greaterp,discr),ofsf_0mk2('equal,c),
-	       rl_mkn('and,{ofsf_0mk2('equal,discr),ofsf_0mk2('neq,b)})})
+         if ofsf_surep(ofsf_0mk2('neq,a),theo) then
+            return ofsf_0mk2('geq,discr);
+         return rl_mkn('or,
+            {ofsf_0mk2('greaterp,discr),ofsf_0mk2('equal,c),
+               rl_mkn('and,{ofsf_0mk2('equal,discr),ofsf_0mk2('neq,b)})})
       >>;
       if op eq 'leq then <<
-	 if ofsf_surep(ofsf_0mk2('greaterp,a),theo) then
-	    return ofsf_0mk2('geq,discr);
-	 return rl_mkn('or,
-	    {ofsf_0mk2('lessp,a),ofsf_0mk2('leq,c),
-	       rl_mkn('and,{ofsf_0mk2('geq,discr),ofsf_0mk2('neq,b)})})
+         if ofsf_surep(ofsf_0mk2('greaterp,a),theo) then
+            return ofsf_0mk2('geq,discr);
+         return rl_mkn('or,
+            {ofsf_0mk2('lessp,a),ofsf_0mk2('leq,c),
+               rl_mkn('and,{ofsf_0mk2('geq,discr),ofsf_0mk2('neq,b)})})
       >>;
       if op eq 'geq then <<
-	 if ofsf_surep(ofsf_0mk2('lessp,a),theo) then
-	    return ofsf_0mk2('geq,discr);
-	 return rl_mkn('or,
-	    {ofsf_0mk2('greaterp,a),ofsf_0mk2('geq,c),
-	       rl_mkn('and,{ofsf_0mk2('geq,discr),ofsf_0mk2('neq,b)})})
+         if ofsf_surep(ofsf_0mk2('lessp,a),theo) then
+            return ofsf_0mk2('geq,discr);
+         return rl_mkn('or,
+            {ofsf_0mk2('greaterp,a),ofsf_0mk2('geq,c),
+               rl_mkn('and,{ofsf_0mk2('geq,discr),ofsf_0mk2('neq,b)})})
       >>;
       if op eq 'lessp then <<
-	 if ofsf_surep(ofsf_0mk2('greaterp,a),theo) then
-	    return ofsf_0mk2('greaterp,discr);
-      	 return rl_mkn('or,{ofsf_0mk2('greaterp,discr),
-	    ofsf_0mk2('lessp,a),ofsf_0mk2('lessp,c)})
+         if ofsf_surep(ofsf_0mk2('greaterp,a),theo) then
+            return ofsf_0mk2('greaterp,discr);
+         return rl_mkn('or,{ofsf_0mk2('greaterp,discr),
+            ofsf_0mk2('lessp,a),ofsf_0mk2('lessp,c)})
       >>;
       if op eq 'greaterp then <<
-	 if ofsf_surep(ofsf_0mk2('lessp,a),theo) then
-	    return ofsf_0mk2('greaterp,discr);
-      	 return rl_mkn('or,{ofsf_0mk2('greaterp,discr),
-	    ofsf_0mk2('greaterp,a),ofsf_0mk2('greaterp,c)})
+         if ofsf_surep(ofsf_0mk2('lessp,a),theo) then
+            return ofsf_0mk2('greaterp,discr);
+         return rl_mkn('or,{ofsf_0mk2('greaterp,discr),
+            ofsf_0mk2('greaterp,a),ofsf_0mk2('greaterp,c)})
       >>;
       rederr {"ofsf_sqsc1at: unknown operator ",op}
    end;
@@ -2718,16 +2718,16 @@ procedure ofsf_sqsc1at(at,v,theo);
 procedure ofsf_sqsc!-test(atl,v);
    begin scalar hit,a,d;
       while atl do <<
-	 a := car atl;
-	 atl := cdr atl;
-	 d := degreef(ofsf_arg2l a,v);
-	 if d=1 then
-	    atl := hit := nil
-	 else if d=2 then
-	    if hit then
-	       atl := hit := nil
-	    else
-	       hit := a
+         a := car atl;
+         atl := cdr atl;
+         d := degreef(ofsf_arg2l a,v);
+         if d=1 then
+            atl := hit := nil
+         else if d=2 then
+            if hit then
+               atl := hit := nil
+            else
+               hit := a
       >>;
       return hit
    end;
@@ -2737,7 +2737,7 @@ procedure ofsf_lthsimpl(l);
    begin scalar w;
       w := rl_smkn('and,l);
       w := rl_simpl(w,nil,-1) where
-	 !*rlsiexpl=nil,!*rlsiexpla=nil,!*rlsiatadv=nil,!*rlsifac=nil;
+         !*rlsiexpl=nil,!*rlsiexpla=nil,!*rlsiatadv=nil,!*rlsifac=nil;
       return ofsf_cj2atl w
    end;
 
@@ -2762,62 +2762,62 @@ procedure ofsf_fbqe(f, theo);
       theo . ofsf_fbexternal(f, function mma_mathematica, nil, "Mathematica")
    else <<
       if !*rlverbose then
-	 ioto_prin2t "ofsf_cad with optimization of projection order";
+         ioto_prin2t "ofsf_cad with optimization of projection order";
       ofsf_cad1(f, ofsf_cadporder f, theo)
    >>;
 
-procedure ofsf_fbexternal(f, call, argl, name);
+procedure ofsf_fbexternalu(f, call, argl, name);
    % Fallback quantifier elimination using Qepcad. [f] is a formula.
    % Returns a quantifier-free formula. If the switches [rlqefb] and
    % [rlqefbqepcad] are on, then this is called when [cl_qe] fails.
    begin scalar ql,varll,mtx,mtx1,j,l,succl,faill,res,vl,w; integer n,m,vn,an;
       if !*rlqefbslfq then <<
-	 {ql,varll,mtx} := cl_split f;
-      	 if !*rlverbose then
-	    ioto_tprin2t {"+++ SLFQ ..."};
-	 mtx1 := qepcad_slfq(mtx, 100, 200);
-      	 if !*rlverbose then <<
-	    ioto_tprin2 {"+++ SLFQ simplification: ",cl_atnum mtx," -> "};
-	    ioto_prin2t if mtx1 then cl_atnum mtx1 else "failed"
-	 >>;
-	 f := mtx1 or mtx;
-	 for each q in ql do
-	    for each v in pop varll do
-	       if v memq cl_fvarl1 f then
-	       	  f := rl_mkq(q,v,f)
+         {ql,varll,mtx} := cl_split f;
+         if !*rlverbose then
+            ioto_tprin2t {"+++ SLFQ ..."};
+         mtx1 := qepcad_slfq(mtx, 100, 200);
+         if !*rlverbose then <<
+            ioto_tprin2 {"+++ SLFQ simplification: ",cl_atnum mtx," -> "};
+            ioto_prin2t if mtx1 then cl_atnum mtx1 else "failed"
+         >>;
+         f := mtx1 or mtx;
+         for each q in ql do
+            for each v in pop varll do
+               if v memq cl_fvarl1 f then
+                  f := rl_mkq(q,v,f)
       >>;
       if not rl_quap rl_op f then
-	 return f;
+         return f;
       j . l := cl_divide f;
       if !*rlverbose then <<
-	 n := length l;
-	 ioto_prin2t {"+++ ",name," on ",n,ioto_cplu(" subproblem",n>1)," ..."}
+         n := length l;
+         ioto_prin2t {"+++ ",name," on ",n,ioto_cplu(" subproblem",n>1)," ..."}
       >>;
       for each s in l do <<
-	 if !*rlverbose then <<
-	    vl := cl_varl s;
-	    vn := length car vl + length cdr vl;
-	    an := cl_atnum s;
-	    ioto_tprin2t {"+++ Subproblem ",m:=m+1," of ",n,": ",
-	       vn,ioto_cplu(" variable",not eqn(vn,1)),", ",
-	       an,ioto_cplu(" atomic formula",not eqn(an,1))}
-	 >>;
-	 w := apply(call, s . argl);
-	 if w then
-	    succl := w . succl
-	 else
-	    faill := s . faill
+         if !*rlverbose then <<
+            vl := cl_varl s;
+            vn := length car vl + length cdr vl;
+            an := cl_atnum s;
+            ioto_tprin2t {"+++ Subproblem ",m:=m+1," of ",n,": ",
+               vn,ioto_cplu(" variable",not eqn(vn,1)),", ",
+               an,ioto_cplu(" atomic formula",not eqn(an,1))}
+         >>;
+         w := apply(call, s . argl);
+         if w then
+            succl := w . succl
+         else
+            faill := s . faill
       >>;
       res := rl_smkn(j,nconc(succl,faill));
       if !*rlverbose then
-	 ioto_tprin2 {"+++ Final simplification ... ",cl_atnum res," -> "};
+         ioto_tprin2 {"+++ Final simplification ... ",cl_atnum res," -> "};
       res := rl_simpl(res,nil,-1);
       if !*rlverbose then
-	 ioto_prin2t cl_atnum res;
+         ioto_prin2t cl_atnum res;
       w := length faill;
       if w > 0 then
-      	 lprim {"quantifier elimination failed for",w,
-	    ioto_cplu("subproblem",w>1),"out of",n};
+         lprim {"quantifier elimination failed for",w,
+            ioto_cplu("subproblem",w>1),"out of",n};
       return res
    end;
 
@@ -2853,20 +2853,20 @@ procedure ofsf_elimsetq!-precise(atfal);
       pslb1 := nconc(greaterp1,so);  % potential strict lower bounds
       psub1 := nconc(lessp1,so);  % potential strict upper bounds
       if !*rlqelog then <<
-	 cadr car rlqelog!* := length pslb1;
-	 caddr car rlqelog!* := length psub1
+         cadr car rlqelog!* := length pslb1;
+         caddr car rlqelog!* := length psub1
       >>;
       for each x in pslb1 do <<
-	 qesubcql := {car x,addsq(cadr x,!*f2q 1)} . qesubcql;
-	 for each y in psub1 do
-	    if x neq y then <<
-	       qesubcql := ofsf_avgq(x,y) . qesubcql;
-	       if !*rlqelog then
-		  car cddddr car rlqelog!* := car cddddr car rlqelog!* + 1
-      	    >>
+         qesubcql := {car x,addsq(cadr x,!*f2q 1)} . qesubcql;
+         for each y in psub1 do
+            if x neq y then <<
+               qesubcql := ofsf_avgq(x,y) . qesubcql;
+               if !*rlqelog then
+                  car cddddr car rlqelog!* := car cddddr car rlqelog!* + 1
+            >>
       >>;
       for each x in psub1 do
-	 qesubcql := {car x,addsq(cadr x,negsq !*f2q 1)} . qesubcql;
+         qesubcql := {car x,addsq(cadr x,negsq !*f2q 1)} . qesubcql;
       qesubcql := {'true,!*f2q nil} . qesubcql;
       return {'ofsf_qesubcq . qesubcql}
    end;
@@ -2892,7 +2892,7 @@ procedure ofsf_elimsetr!-precise(atfal);
       neq21r := lto_catsoc('neq21r,atfal);
       so := nconc(so21r,neq21r);
       return {'ofsf_qesubcrme1 . so,'ofsf_qesubcrpe1 . so,
-	 'ofsf_qesubcr1 . nconc(equal21r,wo21r)}
+         'ofsf_qesubcr1 . nconc(equal21r,wo21r)}
    end;
 
 asserted procedure ofsf_qeg(f: Formula): Formula;
@@ -2900,14 +2900,14 @@ asserted procedure ofsf_qeg(f: Formula): Formula;
    begin scalar !*rlqegenct, ass, gres, res, w;
       gres := cl_gqe(f, nil, nil);
       res := gres . for i := 1:length car gres collect <<
-	 ass := nth(car gres,i);
-	 w := for each fac in cdr sfto_fctrf ofsf_arg2l ass collect car fac;
-	 if cdr w then rederr "ofsf_qeg: uexpected nonvariable assumption";
- 	 (ofsf_0mk2('equal, ofsf_arg2l ass) . lto_delq(ass, car gres)) .
-	    cl_qe(cl_subfof({prepf car w . 0}, f), nil)
+         ass := nth(car gres,i);
+         w := for each fac in cdr sfto_fctrf ofsf_arg2l ass collect car fac;
+         if cdr w then rederr "ofsf_qeg: uexpected nonvariable assumption";
+         (ofsf_0mk2('equal, ofsf_arg2l ass) . lto_delq(ass, car gres)) .
+            cl_qe(cl_subfof({prepf car w . 0}, f), nil)
       >>;
       return cl_simpl(rl_smkn('or, for each case in res collect
-	 rl_mkn('and, cdr case . car case)), nil, -1)
+         rl_mkn('and, cdr case . car case)), nil, -1)
    end;
 
 asserted procedure ofsf_preqe(f: Formula, theo: List, exact: Boolean): DottedPair;
@@ -2917,26 +2917,26 @@ asserted procedure ofsf_preqe(f: Formula, theo: List, exact: Boolean): DottedPai
       scalar ql, varll, bvl, evl, eql, g, theo;
       f := rl_simpl(rl_pnf f, nil, -1);
       if not rl_quap rl_op f then
-	 return nil . f;
+         return nil . f;
       {ql, varll, g, bvl} := cl_split f;
       if ql neq '(ex) then  % improve soon!
- 	 return nil . f;
+         return nil . f;
       if rl_op g neq 'and then
-	 return nil . f;
+         return nil . f;
       evl . eql := ofsf_preqeGoodEql(g, car varll, exact);
       if null evl then
-	 return nil . f;
+         return nil . f;
       evl := sort(evl, 'ordp);
       % When there are too few equations we must drop some good variables:
       for i := 1 : length evl - length eql do
-	 evl := cdr evl;
+         evl := cdr evl;
       for each v in reverse evl do
-	 g := rl_mkq('ex, v, g);
+         g := rl_mkq('ex, v, g);
       if !*rlverbose then
-	 ioto_tprin2t "+++ starting qe, which should do only Gauss steps";
+         ioto_tprin2t "+++ starting qe, which should do only Gauss steps";
       theo . g := cl_gqe(g, theo, nil);
       for each v in reverse sort(lto_setminus(car varll, evl), 'ordp) do
-	 g := rl_mkq('ex, v, g);
+         g := rl_mkq('ex, v, g);
       return theo . g
    end;
 
@@ -2948,16 +2948,16 @@ asserted procedure ofsf_vcreduce(f: Formula, variables: List, theo: List, nogen:
       linl := sort(linl, 'ordp);
       misl := sort(misl, 'ordp);
       if !*rlverbose then
- 	 ioto_tprin2 {"+++ Eliminating ", linl, "; ", misl, ": "};
+         ioto_tprin2 {"+++ Eliminating ", linl, ", ", misl, ": "};
       for each v in append(linl, misl) do <<
-	 if !*rlverbose then ioto_prin2 {"[", v, ":"};
-	 if ofsf_vcreduceStillGood(v, f, variables) then <<
-      	    w := cl_gqea(rl_mkq('ex, v, f), theo, nil) where !*rlverbose=nil;
-	    theo := car w;
-	    f := caar cdr w;
-	    ans := cadar cdr w . ans;
-      	    if !*rlverbose then ioto_prin2 "ok] "
-	 >>
+         if !*rlverbose then ioto_prin2 {"[", v, ":"};
+         if ofsf_vcreduceStillGood(v, f, variables) then <<
+            w := cl_gqea(rl_mkq('ex, v, f), theo, nil) where !*rlverbose=nil;
+            theo := car w;
+            f := caar cdr w;
+            ans := cadar cdr w . ans;
+            if !*rlverbose then ioto_prin2 "ok] "
+         >>
       >>;
       res := {f, ofsf_vcreduceBacksub ans, lto_setminus(theo, theo0)};
       if !*rlverbose then terpri();
@@ -2969,26 +2969,26 @@ asserted procedure ofsf_vcreducePartitionVars(f: Formula, variables: List, exact
    begin scalar argl, terml, all, misl, vl, el, vcl;
       argl := if rl_op f eq 'and then rl_argn f else {f};
       for each s in argl do
-	 if rl_op s eq 'equal then <<
-	    terml := ofsf_preqeGoodPoly(ofsf_arg2l s, variables);
-	    if terml then <<
-	       for each term in terml do <<
-		  all := union(all, term);
-		  if cdr term then <<
-		     vl := union(vl, term);
-		     % construct all edges from term:
-		     for each rvl1 on term do
-		     	for each v in cdr rvl1 do
-		     	   el := lto_insert(car rvl1 . v, el)
-	       	  >>
-	       >>
-	    >>
-	 >>;
+         if rl_op s eq 'equal then <<
+            terml := ofsf_preqeGoodPoly(ofsf_arg2l s, variables);
+            if terml then <<
+               for each term in terml do <<
+                  all := union(all, term);
+                  if cdr term then <<
+                     vl := union(vl, term);
+                     % construct all edges from term:
+                     for each rvl1 on term do
+                        for each v in cdr rvl1 do
+                           el := lto_insert(car rvl1 . v, el)
+                  >>
+               >>
+            >>
+         >>;
       if !*rlverbose then
-	 ioto_tprin2 {"+++ computing minimum vertex cover of ", el, ": "};
+         ioto_tprin2 {"+++ computing minimum vertex cover of ", el, ": "};
       vcl := lto_vertexCover(el, exact) where !*rlverbose=nil;
       if !*rlverbose then
-	 ioto_prin2t {vcl};
+         ioto_prin2t {vcl};
       misl := lto_setminus(vl, vcl);
       return {lto_setminus(all, vl), misl, lto_setminus(variables, all)}
    end;
@@ -2996,32 +2996,32 @@ asserted procedure ofsf_vcreducePartitionVars(f: Formula, variables: List, exact
 asserted procedure ofsf_vcreduceStillGood(v: Id, f: Formula, variables: List): Boolean;
    begin scalar argl, at, p, rp, lckl, foundv, foundpoly;
       if f eq 'true then <<
-	 if !*rlverbose then ioto_prin2 "gone] ";
-	 return nil
+         if !*rlverbose then ioto_prin2 "gone] ";
+         return nil
       >>;
       argl := if rl_op f eq 'and then rl_argn f else {f};
       while not foundpoly and argl do <<
-	 at := pop argl;
-	 p := ofsf_arg2l at;
-	 if v memq kernels p then <<
-	    foundv := t;
-	    if rl_op at eq 'equal then <<
-	       rp := sfto_reorder(p, v);
-	       if ldeg rp = 1 then <<
-		  lckl := intersection(kernels lc rp, variables);
-		  if not (lckl and cdr lckl) then
-	       	     foundpoly := t
-	       >>
-	    >>
-	 >>
+         at := pop argl;
+         p := ofsf_arg2l at;
+         if v memq kernels p then <<
+            foundv := t;
+            if rl_op at eq 'equal then <<
+               rp := sfto_reorder(p, v);
+               if ldeg rp = 1 then <<
+                  lckl := intersection(kernels lc rp, variables);
+                  if not (lckl and cdr lckl) then
+                     foundpoly := t
+               >>
+            >>
+         >>
       >>;
       if foundpoly then
-	 return t;
+         return t;
       if !*rlverbose then
-	 if foundv then
- 	    ioto_prin2 "failed] "
-	 else
- 	    ioto_prin2 "gone] ";
+         if foundv then
+            ioto_prin2 "failed] "
+         else
+            ioto_prin2 "gone] ";
       return nil
    end;
 
@@ -3029,11 +3029,11 @@ asserted procedure ofsf_vcreduceBacksub(ans: Alist): Alist;
    begin scalar subl, w;
       if !*rlverbose then ioto_tprin2 "+++ Back-substitution: ";
       w := for each pr in ans collect <<
-      	 if !*rlverbose then ioto_prin2 {"[", car pr};
-	 pr := car pr . prepsq subsq(simp cdr pr, subl);
-	 push(pr, subl);
-      	 if !*rlverbose then ioto_prin2 "] ";
-	 pr
+         if !*rlverbose then ioto_prin2 {"[", car pr};
+         pr := car pr . prepsq subsq(simp cdr pr, subl);
+         push(pr, subl);
+         if !*rlverbose then ioto_prin2 "] ";
+         pr
       >>;
       return sort(w, function ordpcar)
    end;
@@ -3045,28 +3045,28 @@ asserted procedure ofsf_preqeGoodEql(f: Formula, qvl: List, exact: Boolean): Dot
    % associated with occurring variables.
    begin scalar eql, vll, svl, vl, el, vcl, evl;
       for each s in rl_argn f do
-	 if rl_op s eq 'equal then <<
-	    vll := ofsf_preqeGoodPoly(ofsf_arg2l s, qvl);
-	    if vll then <<
-	       svl := nil;
-	       for each term in vll do <<
- 		  for each v in term do <<
-		     svl := lto_insertq(v, svl);  % all variables in term
-		     vl := lto_insertq(v, vl)  % all variables ever seen here
-		  >>;
-		  % construct all vertices from term:
-		  for each rvl1 on term do
-		     for each v in cdr rvl1 do
-		     	el := lto_insert(car rvl1 . v, el)
-	       >>;
-	       push(s . svl, eql)
-	    >>
-	 >>;
+         if rl_op s eq 'equal then <<
+            vll := ofsf_preqeGoodPoly(ofsf_arg2l s, qvl);
+            if vll then <<
+               svl := nil;
+               for each term in vll do <<
+                  for each v in term do <<
+                     svl := lto_insertq(v, svl);  % all variables in term
+                     vl := lto_insertq(v, vl)  % all variables ever seen here
+                  >>;
+                  % construct all vertices from term:
+                  for each rvl1 on term do
+                     for each v in cdr rvl1 do
+                        el := lto_insert(car rvl1 . v, el)
+               >>;
+               push(s . svl, eql)
+            >>
+         >>;
       if !*rlverbose then
-	 ioto_tprin2 {"+++ computing minimum vertex cover of ", el, ": "};
+         ioto_tprin2 {"+++ computing minimum vertex cover of ", el, ": "};
       vcl := lto_vertexCover(el, exact) where !*rlverbose=nil;
       if !*rlverbose then
-	 ioto_prin2t {vcl};
+         ioto_prin2t {vcl};
       evl := lto_setminus(vl, vcl);
       return evl . eql
    end;
@@ -3081,24 +3081,24 @@ asserted procedure ofsf_preqeGoodPoly(p: SF, qvl: List): ExtraBoolean;
       avl . ml := sfto_sf2monl(sfto_reorder(p, qvl));
       n := length lto_setminus(avl, qvl);
       for i := 1:n do
- 	 avl := cdr avl;
+         avl := cdr avl;
       c := t; while c and ml do <<
-	 ev := car pop ml;
-	 for i := 1:n do
- 	    ev := cdr ev;
-	 scvl := avl;
-	 d := 0;
-	 vl := nil;
-	 while c and scvl do <<
-	    v := pop scvl;
-	    e := pop ev;
-	    d := d + e;
-	    if e > 1 or d > 2 then
-	       c := nil
-	    else if eqn(e,1) then
-	       push(v, vl)
-	 >>;
-	 if vl then push(vl, vll)
+         ev := car pop ml;
+         for i := 1:n do
+            ev := cdr ev;
+         scvl := avl;
+         d := 0;
+         vl := nil;
+         while c and scvl do <<
+            v := pop scvl;
+            e := pop ev;
+            d := d + e;
+            if e > 1 or d > 2 then
+               c := nil
+            else if eqn(e,1) then
+               push(v, vl)
+         >>;
+         if vl then push(vl, vll)
       >>;
       return c and vll
    end;

@@ -64,8 +64,8 @@ procedure ofsf_mksmallid();
       w := explode smallvarcount!*;
       d := length w;
       while d < 5 do <<
-	 w := '!0 . w;
-	 d := d + 1
+         w := '!0 . w;
+         d := d + 1
       >>;
       return compress append(explode smallvarpref!*, w)
    end;
@@ -76,8 +76,8 @@ procedure ofsf_mkbigid();
       w := explode bigvarcount!*;
       d := length w;
       while d < 5 do <<
-	 w := '!0 . w;
-	 d := d + 1
+         w := '!0 . w;
+         d := d + 1
       >>;
       return compress append(explode bigvarpref!*, w)
    end;
@@ -305,9 +305,9 @@ asserted procedure iv_minus(iv1: RatInterval, iv2: RatInterval): RatIntervalList
    % Returns a list of IV, resulting from subtracting [iv2] from [iv1].
    nconc(
       if rat_less(iv_lb iv1, iv_lb iv2) then
-	 {iv_mk(iv_lb iv1, rat_min(iv_lb iv2, iv_rb iv1))},
+         {iv_mk(iv_lb iv1, rat_min(iv_lb iv2, iv_rb iv1))},
       if rat_less(iv_rb iv2,iv_rb iv1) then
-	 {iv_mk(rat_max(iv_rb iv2, iv_lb iv1), iv_rb iv1)});
+         {iv_mk(rat_max(iv_rb iv2, iv_lb iv1), iv_rb iv1)});
 
 asserted procedure iv_minuslist(iv: RatInterval, ivl: RatIntervalList): RatIntervalList;
    % Interval minus list of intervals. [ivl] is a list of distinct
@@ -329,7 +329,7 @@ asserted procedure sfto_dgcd(f: SF, g: SF): Integer;
    begin scalar cf;
       cf := sfto_dcontentf f;
       if eqn(cf, 1) then
-	 return cf;
+         return cf;
       return sfto_gcdf(cf, sfto_dcontentf g)
    end;
 
@@ -351,13 +351,13 @@ asserted procedure sfto_psrem(f: SF, g: SF, x: Kernel, s: Integer): SF;
       degf := ldeg f;
       degg := ldeg g;
       while degf >= degg do <<
-	 lcf := sfto_lcx f;
-	 lcgcd := sfto_dgcd(lcf, lcg);
-	 tmp := multf(quotfx(lcf, lcgcd), sfto_kexp(x, degf - degg));
-	 f := addf(multf(quotfx(lcg, lcgcd), red f), negf multf(tmp, redg));
-	 if eqn(s, -1) then
-	    f := negf f;
-	 degf := sfto_vardeg(f, x)
+         lcf := sfto_lcx f;
+         lcgcd := sfto_dgcd(lcf, lcg);
+         tmp := multf(quotfx(lcf, lcgcd), sfto_kexp(x, degf - degg));
+         f := addf(multf(quotfx(lcg, lcgcd), red f), negf multf(tmp, redg));
+         if eqn(s, -1) then
+            f := negf f;
+         degf := sfto_vardeg(f, x)
       >>;
       return f
    end;
@@ -374,14 +374,14 @@ asserted procedure sfto_psquotrem(f: SF, g: SF, x: Kernel): DottedPair;
       degf := sfto_vardeg(f, x);
       degg := sfto_vardeg(g, x);
       while degf >= degg do <<
-	 lcf := sfto_lcx f;
-	 tmp := multf(lcf, sfto_kexp(x, degf - degg));
-	 % To ensure that we always multiply with something positive:
-	 psquot := addf(multf(psquot, exptf(lcg, 2)), tmp);
-	 f := addf(multf(lcg, red f), negf multf(tmp, redg));
-	 % To ensure that we always multiply with something positive:
-	 f := multf(f, lcg);
-	 degf := sfto_vardeg(f, x)
+         lcf := sfto_lcx f;
+         tmp := multf(lcf, sfto_kexp(x, degf - degg));
+         % To ensure that we always multiply with something positive:
+         psquot := addf(multf(psquot, exptf(lcg, 2)), tmp);
+         f := addf(multf(lcg, red f), negf multf(tmp, redg));
+         % To ensure that we always multiply with something positive:
+         f := multf(f, lcg);
+         degf := sfto_vardeg(f, x)
       >>;
       return psquot . f
    end;
@@ -407,9 +407,9 @@ asserted procedure ctx_print(c: AexCtx): Any;
    <<
       prin2t "[";
       for each ia in ctx_ial c do <<
-	 prin2 car ia;
-	 prin2t "->";
-	 anu_print cdr ia
+         prin2 car ia;
+         prin2t "->";
+         anu_print cdr ia
       >>;
       prin2t "]";
       nil
@@ -421,9 +421,9 @@ asserted procedure ctx_get(c: AexCtx, x: Kernel): ExtraBoolean;
    begin scalar ial, res;
       ial := ctx_ial c;
       while ial and null res do <<
-	 if caar ial eq x then
-	    res := cdar ial;
-	 ial := cdr ial
+         if caar ial eq x then
+            res := cdar ial;
+         ial := cdr ial
       >>;
       return res
    end;
@@ -436,8 +436,8 @@ asserted procedure ctx_add(c: AexCtx, ia: DottedPair): AexCtx;
       ial := ctx_ial c;
       var := car ia;
       while ial and ordop(caar ial, var) do <<
-	 w := pop ial;
-	 prevl := w . prevl
+         w := pop ial;
+         prevl := w . prevl
       >>;
       return {'ctx, append(reverse prevl, ia . ial)}
    end;
@@ -446,13 +446,13 @@ asserted procedure ctx_remove(c: AexCtx, x: Kernel): AexCtx;
    % Delete assignment to [x].
    {'ctx,
       for each e in ctx_ial c join
-      	 if not eqcar(e, x) then {e}};
+         if not eqcar(e, x) then {e}};
 
 asserted procedure ctx_filter(varl: List, c: AexCtx): AexCtx;
    % Delete assignments to variables, which do not occur in [varl].
    {'ctx,
       for each e in ctx_ial c join
-	 if car e memq varl then {e}};
+         if car e memq varl then {e}};
 
 asserted procedure ctx_union(c1: AexCtx, c2: AexCtx): AexCtx;
    % Union of syntactically compatible contexts. Syntactically/semantically
@@ -520,20 +520,20 @@ asserted procedure aex_bind(ae: Aex, x: Kernel, a: Anu): Aex;
    begin scalar ctx, fvarl, r, oo, res, nctx, nx, rp;
       ctx := aex_ctx ae;
       if ctx_get(ctx, x) then
-	 return ae;
+         return ae;
       fvarl := aex_fvarl ae;
       if not (x memq fvarl) then
-	 return ae;
+         return ae;
       r := anu_ratp a;
       if r then <<  % [a] is rational and equals [r]
-      	 oo := updkorder x;
-	 res := aex_subrat(aex_reorderex ae, x, r);
-	 setkorder oo;
-      	 return res
+         oo := updkorder x;
+         res := aex_subrat(aex_reorderex ae, x, r);
+         setkorder oo;
+         return res
       >>;
       if x eq lto_maxkl fvarl then <<  % [x] is the biggest free variable in [ae]
-	 nctx := ctx_add(aex_ctx ae, x . anu_rename(a, x));
-	 return aex_mk(aex_ex ae, nctx)
+         nctx := ctx_add(aex_ctx ae, x . anu_rename(a, x));
+         return aex_mk(aex_ex ae, nctx)
       >>;
       nx := ofsf_mkbigid();
       nctx := ctx_add(aex_ctx ae, nx . anu_rename(a, nx));
@@ -561,7 +561,7 @@ asserted procedure aex_reorder(ae: Aex): Aex;
       rp := reorder numr rp ./ denr rp;
       res := aex_fromrp rp;
       for each pr in ctx_ial aex_ctx ae do
-	 res := aex_bind(res, car pr, anu_reorder cdr pr);
+         res := aex_bind(res, car pr, anu_reorder cdr pr);
       return res
    end;
 
@@ -569,8 +569,8 @@ asserted procedure aex_print(ae: Aex): Any;
    <<
       ioto_prin2t ioto_form2str prepsq aex_ex ae;
       if ctx_ial aex_ctx ae then <<
-	 prin2t ", where";
-	 ctx_print aex_ctx ae
+         prin2t ", where";
+         ctx_print aex_ctx ae
       >>
    >>;
 
@@ -583,9 +583,9 @@ asserted procedure aex_nullp(ae: Aex): Boolean;
       % Make the leading coefficient non-trivial, i.e. non-zero.
       tmp := aex_mklcnt ae;
       if aex_fvarl tmp then  % [ae] is a non-constant polynomial.
-	 return nil;
+         return nil;
       if eqn(aex_sgn tmp, 0) then
-	 return t;
+         return t;
       return nil
    end;
 
@@ -615,9 +615,9 @@ asserted procedure aex_deg(ae: Aex, x: Kernel): Integer;
 asserted procedure aex_lc(ae: Aex, x: Kernel): Aex;
    begin scalar q, newq;
       if aex_mvartest(ae, x) then <<
-      	 q := aex_ex ae;
-      	 newq := quotsq(!*f2q sfto_lcx numr q, !*f2q denr q);
-	 return aex_mk(newq, ctx_filter(kernels numr newq, aex_ctx ae))
+         q := aex_ex ae;
+         newq := quotsq(!*f2q sfto_lcx numr q, !*f2q denr q);
+         return aex_mk(newq, ctx_filter(kernels numr newq, aex_ctx ae))
       >>;
       return ae
    end;
@@ -626,9 +626,9 @@ asserted procedure aex_red(ae: Aex, x: Kernel): Aex;
    % Reductum of [ae] wrt [x]. Needs not to be minimized.
    begin scalar q, newq;
       if aex_mvartest(ae, x) then <<
-      	 q := aex_ex ae;
-	 newq := quotsq(!*f2q sfto_redx numr q, !*f2q denr q);
-      	 return aex_mk(newq, ctx_filter(kernels numr newq, aex_ctx ae))
+         q := aex_ex ae;
+         newq := quotsq(!*f2q sfto_redx numr q, !*f2q denr q);
+         return aex_mk(newq, ctx_filter(kernels numr newq, aex_ctx ae))
       >>;
       return aex_0()
    end;
@@ -677,7 +677,7 @@ asserted procedure aex_power(ae: Aex, n: Integer): Aex;
    begin scalar q;
       assert(n >= 0);  % Only non-negative powers are supported.
       if eqn(n, 0) then
-      	 return aex_1();
+         return aex_1();
       q := aex_ex ae;
       return aex_mk(quotsq(!*f2q exptf(numr q, n), !*f2q exptf(denr q, n)), aex_ctx ae)
    end;
@@ -727,37 +727,37 @@ asserted procedure aex_mklcnt(ae: Aex): Aex;
    begin scalar idl;
       % Quick win: [ae] is a Rational or no variables are bound:
       if aex_simpleratp ae or null ctx_idl aex_ctx ae then
-      	 return ae;
+         return ae;
       idl := aex_fvarl ae;
       if idl then <<  % [ae] is a non-constant algebraic polynomial.
-	 assert(car idl eq aex_mvar ae);
-      	 if aex_nullp aex_lc(ae, car idl) then
-      	    return aex_mklcnt aex_red(ae, car idl);
-	 return ae
+         assert(car idl eq aex_mvar ae);
+         if aex_nullp aex_lc(ae, car idl) then
+            return aex_mklcnt aex_red(ae, car idl);
+         return ae
       >>;
       % Now we know that [ae] is a constant algebraic polynomial.
       if eqn(aex_sgn ae, 0) then
-	 return aex_0();
+         return aex_0();
       return ae
    end;
 
 asserted procedure aex_reduce(ae: Aex): Aex;
    begin scalar x, rlc, rred, alpha, tmp;
       if null aex_bvarl ae then
-	 return ae;
+         return ae;
       % There are bound variables.
       if aex_fvarl ae then <<
-      	 x := aex_mvar ae;
-	 rlc := aex_reduce aex_lc(ae, x);
-	 rred := aex_reduce aex_red(ae, x);
-	 return aex_add(aex_mult(rlc, aex_xtothen(x, aex_deg(ae, x))), rred)
+         x := aex_mvar ae;
+         rlc := aex_reduce aex_lc(ae, x);
+         rred := aex_reduce aex_red(ae, x);
+         return aex_add(aex_mult(rlc, aex_xtothen(x, aex_deg(ae, x))), rred)
       >>;
       % There are no free variables.
       x := aex_mvar ae;
       alpha := ctx_get(aex_ctx ae, x);
       tmp := aex_reduce aex_unbind(ae, x);
       if aex_deg(tmp, x) >= aex_deg(anu_dp alpha, x) then
-	 tmp := aex_rem(tmp, anu_dp alpha, x);
+         tmp := aex_rem(tmp, anu_dp alpha, x);
       tmp := aex_bind(tmp, x, alpha);
       % Computation self-test:
       assert(aex_nullp aex_minus(ae, tmp));
@@ -768,16 +768,16 @@ asserted procedure aex_reduce(ae: Aex): Aex;
 % asserted procedure aex_reduce(ae: Aex): Aex;
 %    begin scalar x, xn, alpha, rl, rred; integer d;
 %       if null aex_boundil ae then
-% 	 return ae;
+%        return ae;
 %       x := aex_mvar ae;
 %       d := aex_deg(ae, x);
 %       alpha := ctx_get(aex_ctx ae, x);
 %       rlc := aex_reduce aex_lc(ae, x);
 %       if aex_simplenullp rlc then
-% 	 return aex_reduce aex_red(ae, x);
+%        return aex_reduce aex_red(ae, x);
 %       if not alpha or d < anu_dpdeg alpha then <<  % [x] is free
-%       	 rred := aex_reduce aex_red(ae, x);
-% 	 return aex_add(aex_mult(rlc, aex_xtothen(x, d)), rred)
+%                rred := aex_reduce aex_red(ae, x);
+%        return aex_add(aex_mult(rlc, aex_xtothen(x, d)), rred)
 %       >>;
 %       % [x] is bound and x^d can be reduced
 %       rxn := aex_rem(aex_mk(!*f2q sfto_kexp(x, d), ctx_fromial {x . alpha}), anu_dp alpha, x);
@@ -792,7 +792,7 @@ asserted procedure aex_psquotrem(f: Aex, g: Aex, x: Kernel): DottedPair;
    begin scalar ff, gf, psq, psr;
       assert(not aex_simplenullp g);
       if null aex_fvarl g then
-   	 return f . aex_0();
+         return f . aex_0();
       assert(not eqn(aex_sgn aex_lc(f, x), 0));
       assert(not eqn(aex_sgn aex_lc(g, x), 0));
       ff := sfto_dprpartksf numr aex_ex f;
@@ -801,8 +801,8 @@ asserted procedure aex_psquotrem(f: Aex, g: Aex, x: Kernel): DottedPair;
       psq := sfto_dprpartksf psq;
       psr := sfto_dprpartksf psr;
       return
-	 aex_mklcnt aex_mk(!*f2q psq, ctx_filter(kernels psq, ctx_union(aex_ctx f, aex_ctx g))) .
-	 aex_mklcnt aex_mk(!*f2q psr, ctx_filter(kernels psr, ctx_union(aex_ctx f, aex_ctx g)))
+         aex_mklcnt aex_mk(!*f2q psq, ctx_filter(kernels psq, ctx_union(aex_ctx f, aex_ctx g))) .
+         aex_mklcnt aex_mk(!*f2q psr, ctx_filter(kernels psr, ctx_union(aex_ctx f, aex_ctx g)))
    end;
 
 asserted procedure aex_psrem(f: Aex, g: Aex, x: Kernel): Aex;
@@ -812,7 +812,7 @@ asserted procedure aex_psrem(f: Aex, g: Aex, x: Kernel): Aex;
    begin scalar ff, gf, lcsgn, psr;
       assert(not aex_simplenullp g);
       if null aex_fvarl g then
-   	 return aex_0();
+         return aex_0();
       ff := numr aex_ex f;
       gf := numr aex_ex g;
       lcsgn := aex_sgn aex_lc(g, x);
@@ -831,13 +831,13 @@ asserted procedure aex_psremseq(f: Aex, g: Aex, x: Kernel): AexList;
       g := aex_divposcnt(aex_mklcnt g, x);
       res := {g, f};
       while aex_deg(g, x) > 0 do <<
-	 rem := aex_psrem(f, g, x);
-	 f := g;
-	 g := aex_neg rem;
-	 if not aex_simplenullp g then <<
-	    g := aex_divposcnt(g, x);
-	    res := g . res
-	 >>
+         rem := aex_psrem(f, g, x);
+         f := g;
+         g := aex_neg rem;
+         if not aex_simplenullp g then <<
+            g := aex_divposcnt(g, x);
+            res := g . res
+         >>
       >>;
       return reversip res
    end;
@@ -854,7 +854,7 @@ asserted procedure aex_divposcnt(ae: Aex, x: Kernel): Aex;
       assert(eqn(sgn, 1) or eqn(sgn, -1));
       res := aex_mk(!*f2q q, ctx_filter(kernels q, aex_ctx ae));
       if eqn(sgn, 1) then
-	 return res;
+         return res;
       return aex_neg res
    end;
 
@@ -888,10 +888,10 @@ asserted procedure aex_sgnatinfty(ae: Aex, x: Kernel): Integer;
    % [x]. 2) [ae] has non-trivial lc or is simply null.
    begin scalar fvarl;
       if aex_simplenullp ae then
-	 return 0;
+         return 0;
       fvarl := aex_fvarl ae;
       if null fvarl then
-	 return aex_sgn ae;
+         return aex_sgn ae;
       assert(car fvarl eq x);
       assert(null cdr fvarl);
       return aex_sgn aex_lc(ae, x)
@@ -902,14 +902,14 @@ asserted procedure aex_sgnatminfty(ae: Aex, x: Kernel): Integer;
    % variable [x]. 2) [ae] has non-trivial lc or is simply null.
    begin scalar fvarl;
       if aex_simplenullp ae then
-	 return 0;
+         return 0;
       fvarl := aex_fvarl ae;
       if null fvarl then
-	 return aex_sgn ae;
+         return aex_sgn ae;
       assert(car fvarl eq x);
       assert(null cdr fvarl);
       if evenp aex_deg(ae, x) then
-	 return aex_sgn aex_lc(ae, x);
+         return aex_sgn aex_lc(ae, x);
       return (-1)*aex_sgn aex_lc(ae, x)
    end;
 
@@ -918,13 +918,13 @@ asserted procedure aex_sgn(ae: Aex): Integer;
    begin scalar con, x, alpha, g, f, sc;
       assert(null aex_fvarl ae);
       if aex_simpleratp ae then  % [ae] is obviously rational.
-	 return rat_sgn aex_ex ae;
+         return rat_sgn aex_ex ae;
       if !*rlanuexsgnopt then <<  % possible optimization
-      	 con := aex_containment ae;
-      	 if rat_less(rat_0(), iv_lb con) then
-	    return 1;
-      	 if rat_less(iv_rb con, rat_0()) then
-	    return (-1)
+         con := aex_containment ae;
+         if rat_less(rat_0(), iv_lb con) then
+            return 1;
+         if rat_less(iv_rb con, rat_0()) then
+            return (-1)
       >>;
       % [ae] is Aex g(alpha), where alpha is an Anu, which is the root of f in
       % the defining interval.
@@ -932,15 +932,15 @@ asserted procedure aex_sgn(ae: Aex): Integer;
       alpha := ctx_get(aex_ctx ae, x);
       g := aex_mklcnt aex_reduce aex_unbind(ae, x);
       if aex_simpleratp g then
-	 return rat_sgn aex_ex g;
+         return rat_sgn aex_ex g;
       if !*rlverbose and !*rlanuexverbose then
-	 if aex_deg(g, x) <= 0 then prin2 "[aex_sgn:num!]";
+         if aex_deg(g, x) <= 0 then prin2 "[aex_sgn:num!]";
       f := anu_dp alpha;
       % [sc] is the Sturm chain for f(x), f'(x)g(x):
       % Possible optimization: call aex_reduce after aex_diff.
       sc := aex_sturmchain(f, aex_mult(aex_diff(f, x), g), x);
       return aex_stchsgnch1(sc, x, iv_lb anu_iv alpha)
-	 - aex_stchsgnch1(sc, x, iv_rb anu_iv alpha)
+         - aex_stchsgnch1(sc, x, iv_rb anu_iv alpha)
    end;
 
 asserted procedure aex_evalop(ae: Aex, op: Id): Boolean;
@@ -950,7 +950,7 @@ asserted procedure aex_evalop(ae: Aex, op: Id): Boolean;
       assert(null aex_fvarl ae);
       sgn := aex_sgn ae;
       if eqn(sgn, 0) then
-	 sgn := nil;
+         sgn := nil;
       return ofsf_evalatp(op, sgn)
    end;
 
@@ -965,20 +965,20 @@ asserted procedure aex_realtype(ae: Aex): List;
       rootl := aex_findroots(ae, x);
       sgnl := {aex_sgnatminfty(ae, x)};
       if null rootl then  % [ae] has no real roots
-	 return sgnl;
+         return sgnl;
       if null cdr rootl then <<  % [ae] has exactly on real root
-	 push(0, sgnl);
-	 push(aex_sgnatinfty(ae, x), sgnl);
-	 return reversip sgnl
+         push(0, sgnl);
+         push(aex_sgnatinfty(ae, x), sgnl);
+         return reversip sgnl
       >>;
       % [ae] has at least two different real roots
       r1 := pop rootl;
       while rootl do <<
-	 r2 := pop rootl;
-	 w := iv_med iv_mk(iv_rb anu_iv r1, iv_lb anu_iv r2);
-	 push(0, sgnl);
-	 push(aex_sgn aex_bind(ae, x, anu_fromrat(x, w)), sgnl);
-	 r1 := r2
+         r2 := pop rootl;
+         w := iv_med iv_mk(iv_rb anu_iv r1, iv_lb anu_iv r2);
+         push(0, sgnl);
+         push(aex_sgn aex_bind(ae, x, anu_fromrat(x, w)), sgnl);
+         r1 := r2
       >>;
       push(0, sgnl);
       push(aex_sgnatinfty(ae, x), sgnl);
@@ -994,7 +994,7 @@ asserted procedure aex_quotrem(f: Aex, g: Aex, x: Kernel): DottedPair;
    begin scalar quot, lcg, lcginv, lcf, tmp, redg; integer degf, degg;
       assert(not aex_simplenullp g);
       if null aex_fvarl g then
-	 return aex_mult(aex_inv g, f) . aex_0();
+         return aex_mult(aex_inv g, f) . aex_0();
       assert(not eqn(aex_sgn aex_lc(f, x), 0));
       assert(not eqn(aex_sgn aex_lc(g, x), 0));
       quot := aex_0();
@@ -1004,13 +1004,13 @@ asserted procedure aex_quotrem(f: Aex, g: Aex, x: Kernel): DottedPair;
       lcginv := aex_inv lcg;
       redg := aex_red(g, x);
       while degf >= degg do <<
-	 lcf := aex_lc(f, x);
-	 % aex_reduce added for optimization:
-	 tmp := aex_reduce aex_mult(aex_mult(lcf, lcginv), aex_xtothen(x, degf - degg));
-	 % Why seg violation when aex_reduce here?
-	 f := aex_mklcnt aex_minus(aex_red(f, x), aex_mult(tmp, redg));
-	 quot := aex_add(quot, tmp);
-	 degf := aex_deg(f, x)
+         lcf := aex_lc(f, x);
+         % aex_reduce added for optimization:
+         tmp := aex_reduce aex_mult(aex_mult(lcf, lcginv), aex_xtothen(x, degf - degg));
+         % Why seg violation when aex_reduce here?
+         f := aex_mklcnt aex_minus(aex_red(f, x), aex_mult(tmp, redg));
+         quot := aex_add(quot, tmp);
+         degf := aex_deg(f, x)
       >>;
       return quot . f
    end;
@@ -1025,7 +1025,7 @@ asserted procedure aex_rem(f: Aex, g: Aex, x: Kernel): Aex;
    begin scalar lcg, lcginv, redg, lcf, tmp; integer degf, degg;
       assert(not aex_simplenullp g);
       if null aex_fvarl g then
-   	 return aex_0();
+         return aex_0();
       assert(not eqn(aex_sgn aex_lc(f, x), 0));
       assert(not eqn(aex_sgn aex_lc(g, x), 0));
       degf := aex_deg(f, x);
@@ -1034,11 +1034,11 @@ asserted procedure aex_rem(f: Aex, g: Aex, x: Kernel): Aex;
       lcginv := aex_inv lcg;
       redg := aex_red(g, x);
       while degf >= degg do <<
-   	 lcf := aex_lc(f, x);
-	 % aex_reduce added for optimization:
-   	 tmp := aex_reduce aex_mult(aex_mult(lcf, lcginv), aex_xtothen(x, degf - degg));
-   	 f := aex_mklcnt aex_minus(aex_red(f, x), aex_mult(tmp, redg));
-   	 degf := aex_deg(f, x)
+         lcf := aex_lc(f, x);
+         % aex_reduce added for optimization:
+         tmp := aex_reduce aex_mult(aex_mult(lcf, lcginv), aex_xtothen(x, degf - degg));
+         f := aex_mklcnt aex_minus(aex_red(f, x), aex_mult(tmp, redg));
+         degf := aex_deg(f, x)
       >>;
       return f
    end;
@@ -1047,15 +1047,15 @@ asserted procedure aex_gcd(f: Aex, g: Aex, x: Kernel): Aex;
    % Euclidean algorithm. [g] is non-zero with non-zero leading coefficient.
    begin scalar tmp;
       while not aex_simplenullp g do <<
-	 tmp := aex_rem(f, g, x);
-	 f := g;
-	 g := tmp
+         tmp := aex_rem(f, g, x);
+         f := g;
+         g := tmp
       >>;
       assert(not aex_nullp aex_lc(f, x));
       if eqn(aex_deg(f, x), 0) then
-	 return aex_1();
+         return aex_1();
       if !*rlanuexgcdnormalize then
-	 return aex_mult(f, aex_inv aex_lc(f, x));
+         return aex_mult(f, aex_inv aex_lc(f, x));
       return f
    end;
 
@@ -1069,22 +1069,22 @@ asserted procedure aex_gcdext(f: Aex, g: Aex, x: Kernel): AexList;
       gf := aex_0();
       gg := aex_1();
       while not aex_simplenullp g do <<
-	 quot . rem := aex_quotrem(f, g, x);
-	 f := g;
-	 g := rem;
-	 tff := ff;
-	 tfg := fg;
-	 ff := gf;
-	 fg := gg;
-	 gf := aex_minus(tff, aex_mult(quot, gf));
-	 gg := aex_minus(tfg, aex_mult(quot, gg))
+         quot . rem := aex_quotrem(f, g, x);
+         f := g;
+         g := rem;
+         tff := ff;
+         tfg := fg;
+         ff := gf;
+         fg := gg;
+         gf := aex_minus(tff, aex_mult(quot, gf));
+         gg := aex_minus(tfg, aex_mult(quot, gg))
       >>;
       assert(not aex_nullp aex_lc(f, x));
       if !*rlanuexgcdnormalize then <<
-	 lcinv := aex_inv aex_lc(f, x);
-	 f := aex_mult(f, lcinv);
-	 ff := aex_mult(ff, lcinv);
-	 fg := aex_mult(fg, lcinv)
+         lcinv := aex_inv aex_lc(f, x);
+         f := aex_mult(f, lcinv);
+         ff := aex_mult(ff, lcinv);
+         fg := aex_mult(fg, lcinv)
       >>;
       return {f, ff, fg}
    end;
@@ -1104,7 +1104,7 @@ asserted procedure aex_sqfree(f: Aex, x: Kernel): Aex;
 %    % Invert a constant, non-zero polynomial.
 %    begin scalar x, alpha, g, f, d, f1, aa, ss, tt;
 %       if aex_simpleratp ae then  % [ae] is obviously a rational number.
-% 	 return aex_fromrp quotsq(1 ./ 1, aex_ex ae);
+%        return aex_fromrp quotsq(1 ./ 1, aex_ex ae);
 %       % Now we know that [ae] is a constant algebraic polynomial.
 %       x . alpha := car ctx_ial aex_ctx ae;  % (x . (anu f iv))
 %       g := aex_unbind(ae, x);
@@ -1116,7 +1116,7 @@ asserted procedure aex_sqfree(f: Aex, x: Kernel): Aex;
 %       {aa, ss, tt} := aex_gcdext(f1, g, x);
 %       % [aa] is non-zero rational, but not necessarily 1.
 %       if !*rlanuexgcdnormalize then
-% 	 return aex_bind(aex_mult(aa, tt), x, alpha);
+%        return aex_bind(aex_mult(aa, tt), x, alpha);
 %       return aex_bind(aex_mult(aex_inv aa, tt), x, alpha)
 %    end;
 
@@ -1124,21 +1124,21 @@ asserted procedure aex_inv(ae: Aex): Aex;
    % Invert a constant, non-zero polynomial.
    begin scalar x, alpha, g, f, d, u, v;
       if aex_simpleratp ae then
-	 return aex_fromrp quotsq(1 ./ 1, aex_ex ae);
+         return aex_fromrp quotsq(1 ./ 1, aex_ex ae);
       x := aex_mvar ae;
       alpha := ctx_get(aex_ctx ae, x);
       g := aex_unbind(ae, x);
       f := anu_dp alpha;
       {d, u, v} := aex_gcdext(f, g, x);
       if aex_simpleratp d then <<
-      	 return aex_bind(aex_mult(aex_inv d, v), x, alpha)
+         return aex_bind(aex_mult(aex_inv d, v), x, alpha)
       >>;
       f := aex_quot(f, d, x);
       {d, u, v} := aex_gcdext(f, g, x);
       % [d] represents a rational number. This does NOT imply that
       % [aex_simpleratp d] holds.
       if !*rlanuexgcdnormalize then
-	 return aex_bind(aex_mult(aex_inv d, v), x, alpha);
+         return aex_bind(aex_mult(aex_inv d, v), x, alpha);
       return aex_bind(aex_mult(d, v), x, alpha)
    end;
 
@@ -1161,7 +1161,7 @@ asserted procedure aex_fromcoefdegl(cfdgl: AexList, x: Kernel): Aex;
    begin scalar ae;
       ae := aex_0();
       for each cd in cfdgl do
-	 ae := aex_add(ae, aex_mult(car cd, aex_xtothen(x, cdr cd)));
+         ae := aex_add(ae, aex_mult(car cd, aex_xtothen(x, cdr cd)));
       return ae
    end;
 
@@ -1173,8 +1173,8 @@ asserted procedure aex_containment(ae: Aex): RatInterval;
       assert(not aex_badp(ae, 0));
       assert(null aex_fvarl ae);
       if null aex_bvarl ae then <<
-	 r := aex_ex ae;
-	 return iv_mk(r, r)
+         r := aex_ex ae;
+         return iv_mk(r, r)
       >>;
       % Now there is a bound variable.
       x := aex_mvar ae;
@@ -1182,7 +1182,7 @@ asserted procedure aex_containment(ae: Aex): RatInterval;
       ivalpha := anu_iv alpha;
       cfdgl := aex_coefdegl(aex_unbind(ae, x), x);
       ivl := for each c in cfdgl collect
-	 iv_mult(aex_containment car c, iv_tothen(ivalpha, cdr c));
+         iv_mult(aex_containment car c, iv_tothen(ivalpha, cdr c));
       return iv_mapadd ivl
    end;
 
@@ -1195,7 +1195,7 @@ asserted procedure aex_distinguishpositivefromzero(ae: Aex, iv: RatInterval): Ra
       half := rat_mk(1, 2);
       rb := rat_mult(iv_rb iv, half);
       while not eqn(aex_sgn aex_addrat(ae, rat_neg rb), 1) do
-	 rb := rat_mult(rb, half);
+         rb := rat_mult(rb, half);
       return rb
    end;
 
@@ -1206,9 +1206,9 @@ asserted procedure aex_distinguishfromzero(ae: Aex, iv: RatInterval): Rational;
    begin scalar sgnae;
       sgnae := aex_sgn ae;
       if eqn(sgnae, 0) then
-	 return rat_0();
+         return rat_0();
       if eqn(sgnae, 1) then
-	 return aex_distinguishpositivefromzero(ae, iv);
+         return aex_distinguishpositivefromzero(ae, iv);
       return rat_neg aex_distinguishpositivefromzero(aex_neg ae, iv_neg iv)
    end;
 
@@ -1220,22 +1220,22 @@ asserted procedure aex_cauchybound(ae: Aex, x: Kernel): Rational;
       assert(not aex_badp(ae, 1));
       assert(not aex_simplenullp aex_lc(ae, x));
       if aex_deg(ae, x) < 1 then
-	 return rat_1();
+         return rat_1();
       cfl := aex_coefl(ae, x);
       lcae := car cfl;
       lcaeiv := aex_containment lcae;
       if iv_containszero lcaeiv then
-   	 lcest := rat_abs aex_distinguishfromzero(lcae, lcaeiv)
+         lcest := rat_abs aex_distinguishfromzero(lcae, lcaeiv)
       else
-	 lcest :=  iv_minabs lcaeiv;
+         lcest :=  iv_minabs lcaeiv;
       cfestl := for each c in cdr cfl collect
-	 iv_maxabs aex_containment c;
+         iv_maxabs aex_containment c;
       cb1 := rat_0();
       cb2 := rat_0();
       for each cfest in cfestl do <<
-	 tmp := rat_quot(cfest, lcest);
-	 cb1 := rat_add(cb1, tmp);
-	 cb2 := rat_max(cb2, tmp)
+         tmp := rat_quot(cfest, lcest);
+         cb1 := rat_add(cb1, tmp);
+         cb2 := rat_max(cb2, tmp)
       >>;
       cb1 := rat_max(rat_1(), cb1);
       cb2 := rat_add(rat_1(), cb2);
@@ -1250,10 +1250,10 @@ asserted procedure aex_findroots(ae: Aex, x: Kernel): AnuList;
    % the empty list will be returned.
    begin scalar cb, rootlist;
       if aex_deg(ae, x) < 1 then
-	 return nil;
+         return nil;
       cb := aex_cauchybound(ae, x);
       rootlist := aex_findrootsiniv1(ae, x, iv_mk(rat_neg cb, cb),
-	 aex_stdsturmchain(ae, x));
+         aex_stdsturmchain(ae, x));
       return rootlist
    end;
 
@@ -1271,22 +1271,22 @@ asserted procedure aex_findrootsiniv1(ae: Aex, x: Kernel, iv: RatInterval, sc: A
       rb := iv_rb iv;
       sclb := aex_stchsgnch1(sc, x, lb);
       if eqn(sclb, 0) then
-	 return nil;
+         return nil;
       scrb := aex_stchsgnch1(sc, x, rb);
       if eqn(sclb - scrb, 0) then
-	 return nil;
+         return nil;
       if eqn(sclb - scrb, 1) then
-	 return {anu_mk(ae, iv)};
+         return {anu_mk(ae, iv)};
       m := rat_mult(rat_add(lb, rb), rat_mk(1, 2));
       ml := mr := m;
       if aex_atratnullp(ae, x, m) then <<
-	 r := aex_isoratroot(ae, m, rat_mult(rat_minus(rb, lb), rat_mk(1, 4)), sc, x);
-	 ml := rat_minus(m, r);
-	 mr := rat_add(m, r)
+         r := aex_isoratroot(ae, m, rat_mult(rat_minus(rb, lb), rat_mk(1, 4)), sc, x);
+         ml := rat_minus(m, r);
+         mr := rat_add(m, r)
       >>;
       retl := aex_findrootsiniv1(ae, x, iv_mk(mr, rb), sc);
       if not rat_eq(ml, mr) then
-	 retl := anu_mk(ae, iv_mk(ml, mr)) . retl;
+         retl := anu_mk(ae, iv_mk(ml, mr)) . retl;
       retl := append(aex_findrootsiniv1(ae, x, iv_mk(lb, ml), sc), retl);
       return retl
    end;
@@ -1300,13 +1300,13 @@ asserted procedure aex_isoratroot(ae: Aex, m: Rational, r: Rational, sc: AexList
       mmr := rat_minus(m, r);
       mpr := rat_add(m, r);
       while
-	 aex_atratnullp(ae, x, mmr) or
-      	 aex_atratnullp(ae, x, mpr) or
-	 not eqn(aex_stchsgnch1(sc, x, mmr) - aex_stchsgnch1(sc, x, mpr), 1) do <<
-	    r := rat_mult(r, rat_mk(1, 2));
-      	    mmr := rat_minus(m, r);
-      	    mpr := rat_add(m, r)
-	 >>;
+         aex_atratnullp(ae, x, mmr) or
+         aex_atratnullp(ae, x, mpr) or
+         not eqn(aex_stchsgnch1(sc, x, mmr) - aex_stchsgnch1(sc, x, mpr), 1) do <<
+            r := rat_mult(r, rat_mk(1, 2));
+            mmr := rat_minus(m, r);
+            mpr := rat_add(m, r)
+         >>;
       return r
    end;
 
@@ -1319,7 +1319,7 @@ asserted procedure aex_deltastchsgnch(sc: AexList, x: Kernel, iv: RatInterval): 
    begin integer sclb, scrb;
       sclb := aex_stchsgnch1(sc, x, iv_lb iv);
       if eqn(sclb, 0) then
-	 return 0;
+         return 0;
       scrb := aex_stchsgnch1(sc, x, iv_rb iv);
       return sclb - scrb
    end;
@@ -1410,26 +1410,26 @@ asserted procedure iri_nextroot(ir: Iri): ExtraBoolean;
    % Returns either nil or TgAnu.
    begin scalar rootfound;
       while not rootfound and iri_preparecur ir do
-      	 rootfound := iri_nextrootiv ir;
+         rootfound := iri_nextrootiv ir;
       if not rootfound then
-	 return nil;
+         return nil;
       return car iri_rootl ir
    end;
 
 asserted procedure iri_preparecur(ir: Iri): Boolean;
    begin scalar c, p, curivl;
       if iri_curivl ir and iri_curirp ir then
-	 return t;
+         return t;
       while null c and iri_irpl ir do <<
-	 p := iri_popirpl ir;
-	 curivl := iv_minuslist(irp_rootsiv p, iri_ivl ir);
-	 if curivl then
-	    c := t
+         p := iri_popirpl ir;
+         curivl := iv_minuslist(irp_rootsiv p, iri_ivl ir);
+         if curivl then
+            c := t
       >>;
       if c then <<
-      	 iri_setcurirp(ir, p);
-      	 iri_setcurivl(ir, curivl);
-      	 return t
+         iri_setcurirp(ir, p);
+         iri_setcurivl(ir, curivl);
+         return t
       >>;
       return nil
    end;
@@ -1441,10 +1441,10 @@ asserted procedure iri_nextrootiv(ir: Iri): Boolean;
       iv := iri_popcurivl ir;
       numroots := irp_numroots(p, iv);
       if eqn(numroots, 0) then
-	 return nil;
+         return nil;
       if eqn(numroots, 1) then <<
-	 iri_addroot(ir, p, iv);
-	 return t
+         iri_addroot(ir, p, iv);
+         return t
       >>;
       % There are at least two roots.
       ae := irp_aex p;
@@ -1452,15 +1452,15 @@ asserted procedure iri_nextrootiv(ir: Iri): Boolean;
       rb := iv_rb iv;
       m := rat_quot(rat_add(lb, rb), rat_mk(2, 1));
       if eqn(aex_sgn aex_subrat1(ae, aex_mvar ae, m), 0) then <<
-	 % ioto_tprin2t "FOUND A RATIONAL ROOT!";
-	 r := irp_isoratroot(p, m, rat_minus(iv_rb iv, m));
-	 mpr := rat_add(m, r);
-	 mmr := rat_minus(m, r);
-	 % TODO: Add simple anu, representing a rational number.
-	 iri_addroot(ir, p, iv_mk(mmr, mpr));
-      	 iri_pushcurivl(iv_mk(mpr, rb), ir);
-      	 iri_pushcurivl(iv_mk(lb, mmr), ir);
-	 return t
+         % ioto_tprin2t "FOUND A RATIONAL ROOT!";
+         r := irp_isoratroot(p, m, rat_minus(iv_rb iv, m));
+         mpr := rat_add(m, r);
+         mmr := rat_minus(m, r);
+         % TODO: Add simple anu, representing a rational number.
+         iri_addroot(ir, p, iv_mk(mmr, mpr));
+         iri_pushcurivl(iv_mk(mpr, rb), ir);
+         iri_pushcurivl(iv_mk(lb, mmr), ir);
+         return t
       >>;
       iri_pushcurivl(iv_mk(m, rb), ir);
       iri_pushcurivl(iv_mk(lb, m), ir);
@@ -1480,13 +1480,13 @@ asserted procedure iri_addroot(ir: Iri, p: Irp, iv: RatInterval): Any;
 asserted procedure iri_init(tael: TgAexList, x: Kernel): Iri;
    begin scalar ae, tag, sc, irpl; integer d;
       while tael do <<
-	 ae . tag := pop tael;
-      	 assert(x eq aex_mvar ae);
-      	 sc := aex_stdsturmchain(ae, x);
-      	 d := aex_stchsgnch(sc, x, 'minfty);
-      	 % Optimization: Delete all polynomials, which do not have a real root:
-      	 if not eqn(d, 0) and  d - aex_stchsgnch(sc, x, 'infty) > 0 then
-      	    push(irp_mk(ae, sc, tag), irpl)
+         ae . tag := pop tael;
+         assert(x eq aex_mvar ae);
+         sc := aex_stdsturmchain(ae, x);
+         d := aex_stchsgnch(sc, x, 'minfty);
+         % Optimization: Delete all polynomials, which do not have a real root:
+         if not eqn(d, 0) and  d - aex_stchsgnch(sc, x, 'infty) > 0 then
+            push(irp_mk(ae, sc, tag), irpl)
       >>;
       return iri_mk reversip irpl
    end;
@@ -1508,7 +1508,7 @@ asserted procedure irp_numroots(p: Irp, iv: RatInterval): Integer;
       x := aex_mvar ae;
       sclb := aex_stchsgnch1(sc, x, iv_lb iv);
       if eqn(sclb, 0) then
-	 return 0;
+         return 0;
       return sclb - aex_stchsgnch1(sc, x, iv_rb iv)
    end;
 
@@ -1522,14 +1522,14 @@ asserted procedure irp_refine(p: Irp, iv: RatInterval, ppl: IrpList): Anu;
       a := anu_mk(ae, iv);
       x := aex_mvar ae;
       while ppl do <<
-	 pp := pop ppl;
-	 aepp := irp_aex pp;
-	 scpp := irp_idata pp;
-      	 while
-	    aex_deltastchsgnch(scpp, x, anu_iv a) > 0 or
-	    aex_atratnullp(aepp, x, iv_lb anu_iv a) or
-	    aex_atratnullp(aepp, x, iv_rb anu_iv a) do
-	       anu_refineip(a, sc)
+         pp := pop ppl;
+         aepp := irp_aex pp;
+         scpp := irp_idata pp;
+         while
+            aex_deltastchsgnch(scpp, x, anu_iv a) > 0 or
+            aex_atratnullp(aepp, x, iv_lb anu_iv a) or
+            aex_atratnullp(aepp, x, iv_rb anu_iv a) do
+               anu_refineip(a, sc)
       >>;
       return a
    end;
@@ -1543,13 +1543,13 @@ asserted procedure irp_isoratroot(p: Irp, m: Rational, r: Rational): Rational;
       mmr := rat_minus(m, r);
       mpr := rat_add(m, r);
       while
-	 aex_atratnullp(ae, x, mmr) or
-      	 aex_atratnullp(ae, x, mpr) or
-	 not eqn(aex_stchsgnch1(sc, x, mmr) - aex_stchsgnch1(sc, x, mpr), 1) do <<
-	    r := rat_mult(r, rat_mk(1, 2));
-      	    mmr := rat_minus(m, r);
-      	    mpr := rat_add(m, r)
-	 >>;
+         aex_atratnullp(ae, x, mmr) or
+         aex_atratnullp(ae, x, mpr) or
+         not eqn(aex_stchsgnch1(sc, x, mmr) - aex_stchsgnch1(sc, x, mpr), 1) do <<
+            r := rat_mult(r, rat_mk(1, 2));
+            mmr := rat_minus(m, r);
+            mpr := rat_add(m, r)
+         >>;
       return r
    end;
 
@@ -1589,15 +1589,15 @@ asserted procedure anu_ratp(a: Anu): ExtraBoolean;
    begin scalar aex, fvarl, x, f;
       aex := anu_dp a;
       if aex_bvarl aex then
-	 return nil;
+         return nil;
       fvarl := aex_fvarl aex;
       assert(fvarl);
       if cdr fvarl then
-	 return nil;
+         return nil;
       x := car fvarl;
       if eqn(aex_deg(aex, x), 1) then <<
-	 f := numr aex_ex aex;
-	 return quotsq(!*f2q negf red f, !*f2q lc f)
+         f := numr aex_ex aex;
+         return quotsq(!*f2q negf red f, !*f2q lc f)
       >>;
       return nil
    end;
@@ -1607,13 +1607,13 @@ asserted procedure anu_compare(a1: Anu, a2: Anu): Integer;
    % 0] if [a1 < a2], [z = 0] if [a1 = a2] and [z = 1] if [a1 > a2].
    begin scalar iv1, iv2;
       if a1 = a2 then
-	 return 0;
+         return 0;
       iv1 := anu_iv a1;
       iv2 := anu_iv a2;
       if rat_leq(iv_rb iv1, iv_lb iv2) then
-	 return -1;
+         return -1;
       if rat_leq(iv_rb iv2, iv_lb iv1) then
-	 return 1;
+         return 1;
       return anu_compare1(a1, a2)
    end;
 
@@ -1622,8 +1622,8 @@ asserted procedure anu_compare1(a1: Anu, a2: Anu): Integer;
       v1 := aex_mvar anu_dp a1;
       v2 := aex_mvar anu_dp a2;
       if v1 eq v2 then <<
-      	 v2 := ofsf_mksmallid();
-      	 a2 := anu_rename(a2, v2);
+         v2 := ofsf_mksmallid();
+         a2 := anu_rename(a2, v2);
       >>;
       ctx := ctx_fromial {v1 . a1, v2. a2};
       return aex_sgn aex_mk(addsq(!*k2q v1, negsq !*k2q v2), ctx)
@@ -1634,7 +1634,7 @@ asserted procedure anu_refine(a: Anu): Anu;
    begin scalar iv, w, aex, sc;
       iv := anu_iv a;
       if iv_lb iv = iv_rb iv then
-	 return a;
+         return a;
       w := copy a;
       aex := anu_dp a;
       sc := aex_stdsturmchain(aex, aex_mvar aex);
@@ -1652,16 +1652,16 @@ asserted procedure anu_refineip(a: Anu, s: AexList): Anu;
       rb := iv_rb iv;
       m := rat_quot(rat_add(lb, rb), rat_mk(2, 1));
       if eqn(aex_sgn aex_subrat1(anu_dp a, x, m), 0) then <<
-	 % TODO: Rational number, construct simpler Anu.
-	 anu_putiv(a, iv_mk(
-	    rat_minus(m, rat_mult(rat_mk(1,4), rat_minus(m, lb))),
-	    rat_add(m, rat_mult(rat_mk(1,4), rat_minus(m, lb)))));
-	 return a
+         % TODO: Rational number, construct simpler Anu.
+         anu_putiv(a, iv_mk(
+            rat_minus(m, rat_mult(rat_mk(1,4), rat_minus(m, lb))),
+            rat_add(m, rat_mult(rat_mk(1,4), rat_minus(m, lb)))));
+         return a
       >>;
       scm := aex_stchsgnch1(s, x, m);
       if eqn(aex_stchsgnch1(s, x, lb) - scm, 1) then <<
-	 anu_putiv(a, iv_mk(lb, m));
-	 return a
+         anu_putiv(a, iv_mk(lb, m));
+         return a
       >>;
       anu_putiv(a, iv_mk(m, rb));
       return a
@@ -1674,10 +1674,10 @@ asserted procedure anu_approx(a: Anu): Rational;
    begin scalar iv, ra, lb, ub;
       ra := a;
       repeat <<
-      	 ra := anu_refine ra;
-	 iv := anu_iv ra;
-	 lb := iv_lb iv;
-	 ub := iv_rb iv
+         ra := anu_refine ra;
+         iv := anu_iv ra;
+         lb := iv_lb iv;
+         ub := iv_rb iv
       >> until anu_approxEnough(lb, ub);
       return lb
    end;
@@ -1692,10 +1692,10 @@ asserted procedure anu_evalf(a: Anu): Floating;
    begin scalar iv, ra, lb, ub;
       ra := a;
       repeat <<
-      	 ra := anu_refine ra;
-	 iv := anu_iv ra;
- 	 lb := float(numr car iv or 0) / float denr car iv;
- 	 ub := float(numr cdr iv or 0) / float denr cdr iv
+         ra := anu_refine ra;
+         iv := anu_iv ra;
+         lb := float(numr car iv or 0) / float denr car iv;
+         ub := float(numr cdr iv or 0) / float denr cdr iv
       >> until fp!-nan lb or fp!-nan ub or (fp!-finite lb and fp!-finite ub and anu_approxEqualEnough(lb, ub));
       return if fp!-nan lb then ub else lb
    end;
@@ -1710,10 +1710,10 @@ asserted procedure anu_evalfR(a: Anu): Any;
    begin scalar iv, ra, lb, ub;
       ra := a;
       repeat <<
-      	 ra := anu_refine ra;
-	 iv := anu_iv ra;
-	 lb := evalf0 {{'quotient, numr iv_lb iv or 0, denr iv_lb iv}};
-	 ub := evalf0 {{'quotient, numr iv_rb iv or 0, denr iv_rb iv}};
+         ra := anu_refine ra;
+         iv := anu_iv ra;
+         lb := evalf0 {{'quotient, numr iv_lb iv or 0, denr iv_lb iv}};
+         ub := evalf0 {{'quotient, numr iv_rb iv or 0, denr iv_rb iv}};
       >> until anu_approxEqualEnoughR(lb, ub);
       return lb
    end;
@@ -1730,20 +1730,20 @@ asserted procedure anu_rename(a: Anu, xnew: Kernel): Anu;
    % Rename the main variable of [a] to [xnew].
    begin scalar aex, rp, varl, x, varal, rpnew, ialnew, w;
       if x eq xnew then
-	 return a;
+         return a;
       aex := anu_dp a;
       rp := aex_ex aex;
       varl := kernels numr rp;
       x := car varl;
       rpnew := quotsq(!*f2q sfto_renamealf(numr rp, {x . xnew}), !*f2q denr rp);
       if ordop(xnew, x) then
-	 return anu_mk(aex_mk(rpnew, aex_ctx aex), anu_iv a);
+         return anu_mk(aex_mk(rpnew, aex_ctx aex), anu_iv a);
       varal := for each var in cdr varl collect
-	 var . ofsf_mkbigid();
+         var . ofsf_mkbigid();
       rpnew := quotsq(!*f2q sfto_renamealf(numr rpnew, varal), !*f2q denr rpnew);
       ialnew := for each pr in ctx_ial aex_ctx aex collect <<
-	 w := cdr atsoc(car pr, varal);
-	 w . anu_rename(cdr pr, w)
+         w := cdr atsoc(car pr, varal);
+         w . anu_rename(cdr pr, w)
       >>;
       return anu_mk(aex_mk(rpnew, ctx_fromial ialnew), anu_iv a)
    end;
@@ -1759,20 +1759,20 @@ asserted procedure anu_check(a: Anu): Boolean;
       dp := anu_dp a;
       x := aex_fvarl dp; % tmp
       if length x neq 1 then
-	 prin2t "***** anu_check: def. poly corrupt";
+         prin2t "***** anu_check: def. poly corrupt";
       x := car x; l := iv_lb anu_iv a; r := iv_rb anu_iv a;
       s := aex_stdsturmchain(dp,aex_mvar dp);
       if aex_nullp aex_subrat1(dp,x,l) then <<
-	 valid := nil;
-      	 prin2t "***** anu_check: def. poly null at left bound";
+         valid := nil;
+         prin2t "***** anu_check: def. poly null at left bound";
       >>;
       if aex_nullp aex_subrat1(dp,x,r) then <<
-	 valid := nil;
-      	 prin2t "***** anu_check: def. poly null at right bound";
+         valid := nil;
+         prin2t "***** anu_check: def. poly null at right bound";
       >>;
       if aex_deltastchsgnch(s,x,anu_iv a) neq 1 then <<
-	 valid := nil;
-      	 prin2t "***** anu_check: no root";
+         valid := nil;
+         prin2t "***** anu_check: no root";
       >>;
       return valid
    end;
@@ -1781,36 +1781,36 @@ asserted procedure aex_badp(aex: Aex, fvn: Integer): ExtraBoolean;
    % [fvn] is the number of expected variables or -1.
    begin scalar varl, ctx, ial, brk, v, anu, bvarl, fvarl, fv, bv, scbvarl;
       if not eqcar(aex, 'aex) then
-	 return 1;
+         return 1;
       varl := kernels numr aex_ex aex;
       ctx := aex_ctx aex;
       if not eqcar(ctx, 'ctx) then
-	 return 2;
+         return 2;
       ial := ctx_ial ctx;
       brk := nil; while not brk and ial do <<
-	 v . anu := pop ial;
-	 % if not (v memq varl) then
-	 %    brk := 3;
-	 if not brk and ial and (not ordop(v, caar ial) or v eq caar ial) then
-	    brk := 4;  % bound variables in the context of [aex] are not sorted w.r.t. ordop
-	 if not brk and v neq aex_mvar anu_dp anu then
-	    brk := 5;  % variable [v] is not defined by Aex with main variable [v]
-	 brk := brk or anu_badp anu
+         v . anu := pop ial;
+         % if not (v memq varl) then
+         %    brk := 3;
+         if not brk and ial and (not ordop(v, caar ial) or v eq caar ial) then
+            brk := 4;  % bound variables in the context of [aex] are not sorted w.r.t. ordop
+         if not brk and v neq aex_mvar anu_dp anu then
+            brk := 5;  % variable [v] is not defined by Aex with main variable [v]
+         brk := brk or anu_badp anu
       >>;
       if brk then
-	 return brk;
+         return brk;
       bvarl := for each pr in ctx_ial aex_ctx aex collect car pr;
       fvarl := lto_setminus(varl, bvarl);
       if not eqn(fvn, -1) and not eqn(length fvarl, fvn) then
-	 return 6;  % the number of variables in [aex] is not as expected
+         return 6;  % the number of variables in [aex] is not as expected
       brk := nil; while not brk and fvarl do <<
-	 fv := pop fvarl;
-	 scbvarl := bvarl;
-	 while not brk and scbvarl do <<
-	    bv := pop scbvarl;
-	    if ordop(bv, fv) and bv neq fv then
-	       brk := 7  % bound variable [bv] is smaller than free variable [fv] w.r.t. ordop
-	 >>
+         fv := pop fvarl;
+         scbvarl := bvarl;
+         while not brk and scbvarl do <<
+            bv := pop scbvarl;
+            if ordop(bv, fv) and bv neq fv then
+               brk := 7  % bound variable [bv] is smaller than free variable [fv] w.r.t. ordop
+         >>
       >>;
       return brk
    end;
@@ -1818,22 +1818,22 @@ asserted procedure aex_badp(aex: Aex, fvn: Integer): ExtraBoolean;
 asserted procedure anu_badp(anu: Anu): ExtraBoolean;
    begin scalar aex, iv, lb, rb, w;
       if not eqcar(anu, 'anu) then
-	 return 11;
+         return 11;
       aex := anu_dp anu;
       iv := anu_iv anu;
       if not pairp iv then
-	 return 12;
+         return 12;
       lb := iv_lb iv;
       if not pairp lb or not rationalp lb then
-	 return 13;
+         return 13;
       rb := iv_rb iv;
       if not pairp rb or not rationalp rb then
-	 return 14;
+         return 14;
       if not sfto_lessq(lb, rb) then
-	 return 15;
+         return 15;
       w := aex_badp(aex, 1);
       if w then
-	 return w + 1000
+         return w + 1000
    end;
 
 endmodule;  % ofsfanuex

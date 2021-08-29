@@ -74,20 +74,20 @@ procedure ofsf_optmaster(cvl,al,z,nproc);
             fp := cdr fp;
             p := car pbase;
             pbase := cdr pbase;
-	    if !*rlverbose then ioto_prin2t {"sending task to ",land(hd,4095)};
+            if !*rlverbose then ioto_prin2t {"sending task to ",land(hd,4095)};
             pending := (ofsf_sendtask(hd,p,z) . hd) . pending
          >>;
          if pending then <<
-	    if !*rlverbose then
- 	       ioto_tprin2 {length pbase," problems left, waiting for ",
-   		  for each x in pending collect land(cdr x,4095)," ... "};
+            if !*rlverbose then
+               ioto_tprin2 {length pbase," problems left, waiting for ",
+                  for each x in pending collect land(cdr x,4095)," ... "};
             finl := remote_wait();
-	    if !*rlverbose then ioto_prin2t "ready";
+            if !*rlverbose then ioto_prin2t "ready";
             for each fin in finl do <<
-	       if (w := remote_receive(fin)) and
- 		  (null sol or minusf numr subtrsq(car w,car sol))
- 	       then
-		  sol := w;
+               if (w := remote_receive(fin)) and
+                  (null sol or minusf numr subtrsq(car w,car sol))
+               then
+                  sol := w;
                fp := cdr assoc(fin,pending) . fp;
                pending := delasc(fin,pending)
             >>
@@ -105,12 +105,12 @@ procedure ofsf_optmaster(cvl,al,z,nproc);
 procedure ofsf_opt(cl,targ,parml,nproc);
    begin scalar svrlqedfs,w;
       if !*rlqeheu then <<
-	 svrlqedfs := !*rlqedfs;
-	 !*rlqedfs := t
+         svrlqedfs := !*rlqedfs;
+         !*rlqedfs := t
       >>;
       w := ofsf_opt0(cl,targ,parml,nproc);
       if !*rlqeheu then
-	 !*rlqedfs := svrlqedfs;
+         !*rlqedfs := svrlqedfs;
       return w
    end;
 
@@ -124,7 +124,7 @@ procedure ofsf_opt0(cl,targ,parml,nproc);
    begin scalar w,nproc,!*rlsiatadv,!*rlsiso;
       w := ofsf_opt1(cl,targ,parml);
       if !*rlparallel then
-	 return ofsf_optmkans ofsf_optmaster(car w,cadr w,caddr w,nproc - 1);
+         return ofsf_optmkans ofsf_optmaster(car w,cadr w,caddr w,nproc - 1);
       return ofsf_optmkans ofsf_opt2(car w,cadr w,nil,nil,caddr w,nil)
    end;
 
@@ -132,7 +132,7 @@ procedure ofsf_opt1(cl,targ,parml);
    begin scalar z,qvl;
       z := intern gensym();
       cl := ofsf_0mk2('geq,
-	 addf(multf(denr targ,numr simp z),negf numr targ)) . cl;
+         addf(multf(denr targ,numr simp z),negf numr targ)) . cl;
       qvl := setdiff(ofsf_varl cl,z . parml);
       return {qvl,cl,z}
    end;
@@ -140,89 +140,89 @@ procedure ofsf_opt1(cl,targ,parml);
 procedure ofsf_varl(l);
    begin scalar w;
       for each x in l do
- 	 w := union(w,ofsf_varlat x);
+         w := union(w,ofsf_varlat x);
       return w
    end;
 
 procedure ofsf_opt2(cvl,al,pl,an,z,sz);
    begin scalar w,co,ansl,junct,best,m,theo; integer c,vlv,nodes,dpth;
       if !*rlverbose and !*rlparallel then
- 	 ioto_tprin2 "entering opt2 ... ";
+         ioto_tprin2 "entering opt2 ... ";
       if !*rlverbose and !*rlqedfs and not !*rlparallel then <<
-	 dpth := length cvl;
-	 vlv :=  dpth / 4;
-	 ioto_tprin2t {"+++ Depth is ",dpth,", watching level ",dpth - vlv}
+         dpth := length cvl;
+         vlv :=  dpth / 4;
+         ioto_tprin2t {"+++ Depth is ",dpth,", watching level ",dpth - vlv}
       >>;
       co := ofsf_save(co,{ofsf_mkentry(cvl,al,pl,an)});
       while co do <<
-	 w := ofsf_get(co); co := cdr w; w := car w;
-	 cvl := ofsf_cvl w; al := ofsf_al w; pl := ofsf_pl w; an := ofsf_an w;
-	 if !*rlverbose and not !*rlparallel then
- 	    nodes := nodes + 1;
-	 if !*rlverbose and !*rlqedfs and eqn(vlv,length cvl) and
- 	    not !*rlparallel
- 	 then
-	    ioto_tprin2t {"+++ Crossing level ",dpth - vlv};
-	 if !*rlverbose and null !*rlqedfs and not !*rlparallel then <<
-	    if eqn(c,0) then <<
-	       c := ofsf_colength(co) + 1;
-	       ioto_tprin2t {"+++ ",length cvl," variables left for this block"}
-	    >>;
-	    ioto_prin2 {"[",c};
-	    c := c - 1
-	 >>;
-	 if !*rlverbose and !*rlqedfs and not !*rlparallel then
-	    ioto_prin2 {"[",dpth - length cvl};
-	 junct := ofsf_qevar(cvl,al,pl,an,z,theo);
-	 if junct eq 'break then
-	    co := nil
-	 else if junct and ofsf_cvl car junct then
-	    co := ofsf_save(co,junct)
-	 else <<
-	    if !*rlverbose and not !*rlparallel and null junct then
- 	       ioto_prin2 "#";
-	    for each x in junct do <<
-	       if m := ofsf_getvalue(ofsf_al x,ofsf_pl x) then <<
-	       	  if ansl and (minusf (w := numr subtrsq(m,best)) or
-		     null w and !*rlopt1s)
-		  then
-		     ansl := nil;
-	       	  if null ansl or null w then <<
-		     best := m;
-	 	     theo := {ofsf_0mk2('leq,addf(
-			multf(denr best,numr simp z),negf numr best))};
-		     ansl := ofsf_an x . ansl;  % insert instead?
-		     if !*rlverbose and not !*rlparallel then
-		     	ioto_tprin2t {"min=",numr m or 0,"/",denr m}
-	       	  >>
-	       >>
-	    >>;
-	    if !*rlverbose and !*rlqedfs and not !*rlparallel then
- 	       ioto_prin2 "."
-	 >>;
-	 if !*rlverbose and not !*rlparallel then ioto_prin2 "] ";
-      	 if sz and ofsf_colength co >= sz then <<
-	    if ansl then
- 	       rederr "ofsf_opt2: found solutions during pbase generation";
-	    junct := 'pbase;
-	    ansl := cdr co;
-	    co := nil
-      	 >>
+         w := ofsf_get(co); co := cdr w; w := car w;
+         cvl := ofsf_cvl w; al := ofsf_al w; pl := ofsf_pl w; an := ofsf_an w;
+         if !*rlverbose and not !*rlparallel then
+            nodes := nodes + 1;
+         if !*rlverbose and !*rlqedfs and eqn(vlv,length cvl) and
+            not !*rlparallel
+         then
+            ioto_tprin2t {"+++ Crossing level ",dpth - vlv};
+         if !*rlverbose and null !*rlqedfs and not !*rlparallel then <<
+            if eqn(c,0) then <<
+               c := ofsf_colength(co) + 1;
+               ioto_tprin2t {"+++ ",length cvl," variables left for this block"}
+            >>;
+            ioto_prin2 {"[",c};
+            c := c - 1
+         >>;
+         if !*rlverbose and !*rlqedfs and not !*rlparallel then
+            ioto_prin2 {"[",dpth - length cvl};
+         junct := ofsf_qevar(cvl,al,pl,an,z,theo);
+         if junct eq 'break then
+            co := nil
+         else if junct and ofsf_cvl car junct then
+            co := ofsf_save(co,junct)
+         else <<
+            if !*rlverbose and not !*rlparallel and null junct then
+               ioto_prin2 "#";
+            for each x in junct do <<
+               if m := ofsf_getvalue(ofsf_al x,ofsf_pl x) then <<
+                  if ansl and (minusf (w := numr subtrsq(m,best)) or
+                     null w and !*rlopt1s)
+                  then
+                     ansl := nil;
+                  if null ansl or null w then <<
+                     best := m;
+                     theo := {ofsf_0mk2('leq,addf(
+                        multf(denr best,numr simp z),negf numr best))};
+                     ansl := ofsf_an x . ansl;  % insert instead?
+                     if !*rlverbose and not !*rlparallel then
+                        ioto_tprin2t {"min=",numr m or 0,"/",denr m}
+                  >>
+               >>
+            >>;
+            if !*rlverbose and !*rlqedfs and not !*rlparallel then
+               ioto_prin2 "."
+         >>;
+         if !*rlverbose and not !*rlparallel then ioto_prin2 "] ";
+         if sz and ofsf_colength co >= sz then <<
+            if ansl then
+               rederr "ofsf_opt2: found solutions during pbase generation";
+            junct := 'pbase;
+            ansl := cdr co;
+            co := nil
+         >>
       >>;
       if junct eq 'pbase then
-	 w := ansl
+         w := ansl
       else if junct eq 'break then
          w := junct
       else <<
-	 w := nil;
+         w := nil;
          for each x in ansl do
-	    w := lto_insert(ofsf_backsub(x,z,best),w);
-	 w := {best,w}
+            w := lto_insert(ofsf_backsub(x,z,best),w);
+         w := {best,w}
       >>;
       if !*rlverbose and not !*rlparallel then
- 	 ioto_tprin2t {"+++ ",nodes," nodes computed"};
+         ioto_tprin2t {"+++ ",nodes," nodes computed"};
       if !*rlverbose and !*rlparallel then
- 	 ioto_prin2t "exiting opt2";
+         ioto_prin2t "exiting opt2";
       return w
    end;
 
@@ -234,19 +234,19 @@ procedure ofsf_qevar(cvl,al,pl,an,z,theo);
       v := car w;
       eset := cdr w;
       if eset then <<  % [v] actually occurs in [f].
-	 if v eq z then <<
-	    if !*rlverbose and not !*rlparallel then ioto_prin2 "z";
-	    return ofsf_zesetsubst(cvl,al,pl,an,eset,theo)
-	 >>;
-	 if !*rlverbose and not !*rlparallel then ioto_prin2 "e";
-	 return ofsf_esetsubst(cvl,al,pl,an,v,eset,theo)
+         if v eq z then <<
+            if !*rlverbose and not !*rlparallel then ioto_prin2 "z";
+            return ofsf_zesetsubst(cvl,al,pl,an,eset,theo)
+         >>;
+         if !*rlverbose and not !*rlparallel then ioto_prin2 "e";
+         return ofsf_esetsubst(cvl,al,pl,an,v,eset,theo)
       >>;
       % [v] does not occur in [f]. Reinsert [f] with updated
       % variable list.
       if !*rlverbose then ioto_prin2 "*";
       if v memq ofsf_varl pl then <<
-	 if !*rlverbose and not !*rlparallel then ioto_prin2 "!";
-	 return nil  % Maybe wrong!
+         if !*rlverbose and not !*rlparallel then ioto_prin2 "!";
+         return nil  % Maybe wrong!
       >>;
       return {ofsf_mkentry(lto_delq(v,cvl),al,pl,an)}
    end;
@@ -255,13 +255,13 @@ procedure ofsf_optgauss(cvl,al,pl,an,theo);
    begin scalar v,w,sc;
       sc := cvl;
       while sc do <<
-	 v := car sc;
-	 sc := cdr sc;
-	 if (w := ofsf_optfindeqsol(al,v)) then sc := nil
+         v := car sc;
+         sc := cdr sc;
+         if (w := ofsf_optfindeqsol(al,v)) then sc := nil
       >>;
       if w then <<
-	 if !*rlverbose and not !*rlparallel then ioto_prin2 "g";
-	 return t . ofsf_esetsubst(cvl,al,pl,an,v,{w},theo)
+         if !*rlverbose and not !*rlparallel then ioto_prin2 "g";
+         return t . ofsf_esetsubst(cvl,al,pl,an,v,{w},theo)
       >>
    end;
 
@@ -269,11 +269,11 @@ procedure ofsf_optfindeqsol(al,v);
    begin scalar a,w;
       a := car al;
       if ofsf_op a eq 'equal and v memq ofsf_varlat a then <<
-	 w := ofsf_optmksol(ofsf_arg2l a,v);
-	 return a . quotsq(!*f2q car w,!*f2q cdr w)
+         w := ofsf_optmksol(ofsf_arg2l a,v);
+         return a . quotsq(!*f2q car w,!*f2q cdr w)
       >>;
       if cdr al then
-      	 return ofsf_optfindeqsol(cdr al,v)
+         return ofsf_optfindeqsol(cdr al,v)
    end;
 
 %DS
@@ -284,36 +284,36 @@ procedure ofsf_esetsubst(cvl,al,pl,an,v,eset,theo);
    begin scalar w,scpl,zonly,nal,npl,junct,x;
       cvl := lto_delq(v,cvl);
       while eset do <<
-	 x := car eset;
-	 eset := cdr eset;
-	 if cdr x memq '(pinf minf) then <<
-	    nal := ofsf_simpl(for each atf in al collect
- 	       ofsf_qesubiat(atf,v,cdr x),theo);
-	    npl := ofsf_simpl(for each atf in pl collect
- 	       ofsf_qesubiat(atf,v,cdr x),theo)
-	 >> else <<
-	    nal := ofsf_simpl(for each y in al collect
- 	       ofsf_optsubstat(y,cdr x,v),theo);
-	    npl := ofsf_simpl(for each y in pl collect
- 	       ofsf_optsubstat(y,cdr x,v),theo);
-	    al := lto_delq(car x,al);
-	    pl := car x . pl
-	 >>;
-	 if null nal and null npl then <<
-	    junct := 'break;
-	    eset := nil
-	 >> else if null nal then <<
-	    zonly := t;
-	    scpl := pl;
-	    while scpl do <<
-	       w := ofsf_varlat car scpl;
-	       scpl := cdr scpl;
-	       if w neq '(z) then scpl := zonly := nil
-	    >>;
-	    if zonly then rederr "BUG IN OFSF_ESETSUBST";
-	    if !*rlverbose and not !*rlparallel then ioto_prin2 "!"
-	 >> else if nal neq 'false and npl neq 'false then
-	    junct := ofsf_mkentry(cvl,nal,npl,(v . cdr x) . an) . junct
+         x := car eset;
+         eset := cdr eset;
+         if cdr x memq '(pinf minf) then <<
+            nal := ofsf_simpl(for each atf in al collect
+               ofsf_qesubiat(atf,v,cdr x),theo);
+            npl := ofsf_simpl(for each atf in pl collect
+               ofsf_qesubiat(atf,v,cdr x),theo)
+         >> else <<
+            nal := ofsf_simpl(for each y in al collect
+               ofsf_optsubstat(y,cdr x,v),theo);
+            npl := ofsf_simpl(for each y in pl collect
+               ofsf_optsubstat(y,cdr x,v),theo);
+            al := lto_delq(car x,al);
+            pl := car x . pl
+         >>;
+         if null nal and null npl then <<
+            junct := 'break;
+            eset := nil
+         >> else if null nal then <<
+            zonly := t;
+            scpl := pl;
+            while scpl do <<
+               w := ofsf_varlat car scpl;
+               scpl := cdr scpl;
+               if w neq '(z) then scpl := zonly := nil
+            >>;
+            if zonly then rederr "BUG IN OFSF_ESETSUBST";
+            if !*rlverbose and not !*rlparallel then ioto_prin2 "!"
+         >> else if nal neq 'false and npl neq 'false then
+            junct := ofsf_mkentry(cvl,nal,npl,(v . cdr x) . an) . junct
       >>;
       return junct
    end;
@@ -326,30 +326,30 @@ procedure ofsf_esetsubst(cvl,al,pl,an,v,eset,theo);
 procedure ofsf_zesetsubst(cvl,al,pl,an,zeset,theo);
    begin scalar w,scpl,zonly,nal,npl,junct,x,v;
       while zeset do <<
-	 x := car zeset;
-	 zeset := cdr zeset;
-	 v := cadr x;
-	 nal := ofsf_simpl(for each y in al collect
-	    ofsf_optsubstat(y,cddr x,v),theo);
-	 npl := ofsf_simpl(for each y in pl collect
-	    ofsf_optsubstat(y,cddr x,v),theo);
-	 al := lto_delq(car x,al);
-	 pl := car x . pl;
-	 if null nal and null npl then <<
-	    junct := 'break;
-	    zeset := nil
-	 >> else if null nal then <<
-	    zonly := t;
-	    scpl := pl;
-	    while scpl do <<
-	       w := ofsf_varlat car scpl;
-	       scpl := cdr scpl;
-	       if w neq '(z) then scpl := zonly := nil
-	    >>;
-	    if zonly then rederr "BUG IN OFSF_ZESETSUBST";
-	    if !*rlverbose and not !*rlparallel then ioto_prin2 "!"
-	 >> else if nal neq 'false and npl neq 'false then
-	    junct := ofsf_mkentry(lto_delq(v,cvl),nal,npl,cdr x . an) . junct
+         x := car zeset;
+         zeset := cdr zeset;
+         v := cadr x;
+         nal := ofsf_simpl(for each y in al collect
+            ofsf_optsubstat(y,cddr x,v),theo);
+         npl := ofsf_simpl(for each y in pl collect
+            ofsf_optsubstat(y,cddr x,v),theo);
+         al := lto_delq(car x,al);
+         pl := car x . pl;
+         if null nal and null npl then <<
+            junct := 'break;
+            zeset := nil
+         >> else if null nal then <<
+            zonly := t;
+            scpl := pl;
+            while scpl do <<
+               w := ofsf_varlat car scpl;
+               scpl := cdr scpl;
+               if w neq '(z) then scpl := zonly := nil
+            >>;
+            if zonly then rederr "BUG IN OFSF_ZESETSUBST";
+            if !*rlverbose and not !*rlparallel then ioto_prin2 "!"
+         >> else if nal neq 'false and npl neq 'false then
+            junct := ofsf_mkentry(lto_delq(v,cvl),nal,npl,cdr x . an) . junct
       >>;
       return junct
    end;
@@ -360,7 +360,7 @@ procedure ofsf_optsubstat(atf,sq,v);
    begin scalar w;
       if null (w := ofsf_optsplitterm(ofsf_arg2l atf,v)) then return atf;
       return ofsf_0mk2(ofsf_op atf,
-	 addf(multf(car w,numr sq),multf(cdr w,denr sq)))
+         addf(multf(car w,numr sq),multf(cdr w,denr sq)))
    end;
 
 procedure ofsf_optsplitterm(u,v);
@@ -370,7 +370,7 @@ procedure ofsf_optsplitterm(u,v);
       u := sfto_reorder(u,v);
       if (w := degr(u,v)) = 0 then return nil;
       if w > 1 then
- 	 rederr {"ofsf_optsplitterm:",v,"has degree",w,"in",u};
+         rederr {"ofsf_optsplitterm:",v,"has degree",w,"in",u};
       return reorder lc u . reorder red u
    end;
 
@@ -381,9 +381,9 @@ procedure ofsf_simpl(l,theo);
       if w eq 'true then return nil;
       op := rl_op w;
       if op eq 'and then
-	 return rl_argn(w);
+         return rl_argn(w);
       if rl_cxp op then
-	 rederr {"BUG IN OFSF_SIMPL",op};
+         rederr {"BUG IN OFSF_SIMPL",op};
       return {w}
    end;
 
@@ -395,46 +395,46 @@ procedure ofsf_opteset(cvl,al,pl,z);
    begin scalar w,v,sel,lbl,ubl,eset; integer ub,lb,best;
       if not (!*usez or !*useold) then rederr "select usez or useold as method";
       if !*usez then <<
-      	 for each x in al do
-	    if (w := ofsf_zboundchk(x,z)) then <<
-	       best := best + 1;
-	       % [w] is a consed pair.
-      	       eset := (x . w) . eset
-	    >>;
-      	 if eset then sel := z
+         for each x in al do
+            if (w := ofsf_zboundchk(x,z)) then <<
+               best := best + 1;
+               % [w] is a consed pair.
+               eset := (x . w) . eset
+            >>;
+         if eset then sel := z
       >>;
       if !*useold or null sel then <<
-      	 while cvl do <<
-	    v := car cvl;
-	    cvl := cdr cvl;
-	    lb := ub := 0;
-	    lbl := ubl := nil;
-	    for each x in al do
-	       if (w := ofsf_boundchk(x,v)) then
-	       	  if car w eq 'lb then <<
-	       	     lb := lb + 1;
-		     lbl := (x . cdr w) . lbl
-	       	  >> else if car w eq 'ub then <<
-	       	     ub := ub + 1;
-		     ubl := (x . cdr w) . ubl
-	       	  >> else
-		     rederr "BUG 2 IN ofsf_opteset";
-	    if null lbl and ubl then
- 	       lbl := '((nil . minf));
-	    if null ubl and lbl then
- 	       ubl := '((nil . pinf));
-	    if ub <= lb then <<
-	       lb := ub;
-	       lbl := ubl
-	    >>;
-      	    if null sel or lb < best or null !*boese and lb = best then <<
-	       best := lb;
-	       eset := lbl;
-	       sel := v
-	    >>;
-	    if null lbl and null ubl then
- 	       cvl := nil
-      	 >>
+         while cvl do <<
+            v := car cvl;
+            cvl := cdr cvl;
+            lb := ub := 0;
+            lbl := ubl := nil;
+            for each x in al do
+               if (w := ofsf_boundchk(x,v)) then
+                  if car w eq 'lb then <<
+                     lb := lb + 1;
+                     lbl := (x . cdr w) . lbl
+                  >> else if car w eq 'ub then <<
+                     ub := ub + 1;
+                     ubl := (x . cdr w) . ubl
+                  >> else
+                     rederr "BUG 2 IN ofsf_opteset";
+            if null lbl and ubl then
+               lbl := '((nil . minf));
+            if null ubl and lbl then
+               ubl := '((nil . pinf));
+            if ub <= lb then <<
+               lb := ub;
+               lbl := ubl
+            >>;
+            if null sel or lb < best or null !*boese and lb = best then <<
+               best := lb;
+               eset := lbl;
+               sel := v
+            >>;
+            if null lbl and null ubl then
+               cvl := nil
+         >>
       >>;
       return sel . eset
    end;
@@ -458,16 +458,16 @@ procedure ofsf_zboundchk(atf,z);
       op := ofsf_op atf;
       u := ofsf_arg2l atf;
       if domainp u then
- 	 return nil;
+         return nil;
       oldorder := setkorder {z};
       u := reorder u;
       setkorder oldorder;
       if ldeg u neq 1 then
- 	 rederr {"ofsf_zboundchk:",z,"not linear"};
+         rederr {"ofsf_zboundchk:",z,"not linear"};
       if mvar u neq z or domainp red u then
- 	 return nil;
+         return nil;
       if not (op eq 'equal or ofsf_xor(op eq 'geq,minusf lc u)) then
-	 return nil;
+         return nil;
       v := mvar red u;
       oldorder := setkorder {v};
       u := reorder u;
@@ -483,18 +483,18 @@ procedure ofsf_getvalue(al,pl);
       atf := ofsf_simpl(append(al,pl),nil);
       if atf eq 'false then return nil;
       if cdr atf then <<
- 	 if cddr atf then rederr {"BUG 1 IN OFSF_GETVALUE",atf};
-	 w := cadr atf;
-      	 if ofsf_optlbp w then <<
-	    w := car atf;
-	    if ofsf_optlbp w then
-	       rederr {"BUG 2 IN OFSF_GETVALUE",atf};
- 	    atf := cdr atf
-	 >>
+         if cddr atf then rederr {"BUG 1 IN OFSF_GETVALUE",atf};
+         w := cadr atf;
+         if ofsf_optlbp w then <<
+            w := car atf;
+            if ofsf_optlbp w then
+               rederr {"BUG 2 IN OFSF_GETVALUE",atf};
+            atf := cdr atf
+         >>
       >>;
       atf := car atf;
       if not ofsf_optlbp atf then
-	 rederr {"BUG 3 IN OFSF_GETVALUE",atf};
+         rederr {"BUG 3 IN OFSF_GETVALUE",atf};
       w := ofsf_arg2l atf;
       return quotsq(!*f2q negf red w,!*f2q lc w)
    end;
@@ -522,11 +522,11 @@ asserted procedure ofsf_optmkans(ans: List2): DottedPair;
       if ans = '(nil nil) then return 'infeasible;
       if ans eq 'break then return {simp '(minus infinity),nil};
       return mk!*sq car ans . for each x in cadr ans collect
-      	 for each y in x collect <<
-	    w := atsoc(cdr y, '((minf . (minus infinity)) (pinf . infinity)));
-	    w := if w then cdr w else mk!*sq cdr y;
-	    car y . w
-	 >>
+         for each y in x collect <<
+            w := atsoc(cdr y, '((minf . (minus infinity)) (pinf . infinity)));
+            w := if w then cdr w else mk!*sq cdr y;
+            car y . w
+         >>
    end;
 
 procedure ofsf_optmksol(u,v);
@@ -567,13 +567,13 @@ procedure ofsf_enqueue(co,dol);
    % container.
    <<
       if null co and dol then <<
-	 co := {nil,car dol};
-	 car co := cdr co;
-	 dol := cdr dol
+         co := {nil,car dol};
+         car co := cdr co;
+         dol := cdr dol
       >>;
       for each x in dol do
-	 if not ofsf_comember(x,cdr co) then
-	    car co := (cdar co := {x});
+         if not ofsf_comember(x,cdr co) then
+            car co := (cdar co := {x});
       co
    >>;
 
@@ -609,12 +609,12 @@ procedure ofsf_comember(ce,l);
    % functions!
    begin scalar a;
       if null l then
-	 return nil;
+         return nil;
       a := car l;
       if ofsf_al ce = ofsf_al a and ofsf_pl ce = ofsf_pl a and
-	 ofsf_cvl ce = ofsf_cvl a
+         ofsf_cvl ce = ofsf_cvl a
       then
-	 return l;
+         return l;
       return ofsf_comember(ce,cdr l)
    end;
 

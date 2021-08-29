@@ -59,7 +59,7 @@ procedure talp_qe1(phi);
    begin scalar split,sphi;
       sphi := talp_try phi;
       if not rl_quap rl_op sphi then
-	 return if !*rlqeans then {sphi . nil} else sphi;
+         return if !*rlqeans then {sphi . nil} else sphi;
       split := cl_splt phi;
       return talp_qe2(car split,cadr split)
    end;
@@ -73,14 +73,14 @@ procedure talp_qe2(qbl,mtrx);
       tmp := mtrx;
       % successively eliminate all quantifier blocks
       while qbl do <<
-	 qb := car qbl;
-	 qtf := car qb;
-	 bvarl := cdr qb;
-	 qbl := cdr qbl;
-	 if !*rlverbose then
-	    ioto_prin2t {"+++ eliminate block ",qtf,reverse bvarl};
-	 tmp := talp_qeblock(qtf,bvarl,tmp,!*rlqeans and null qbl);
-	 result := tmp
+         qb := car qbl;
+         qtf := car qb;
+         bvarl := cdr qb;
+         qbl := cdr qbl;
+         if !*rlverbose then
+            ioto_prin2t {"+++ eliminate block ",qtf,reverse bvarl};
+         tmp := talp_qeblock(qtf,bvarl,tmp,!*rlqeans and null qbl);
+         result := tmp
       >>;
       return if !*rlqeans then talp_getans(result) else result
    end;
@@ -98,27 +98,27 @@ procedure talp_qeblock(qtf,bvarl,mtrx,ansp);
       nosp := length l;
       % handle the disjuncts of [mtrx] separately
       while l and not stop do <<
-	 blk := car l;
-	 l := cdr l;
-	 if !*rlverbose then ioto_prin2t {"    [",nosp,"] subproblems"};
-	 tmp := talp_qeblock1(bvarl,blk,ansp);
-	 if ansp then <<
-	    if cdr tmp eq 'true then <<
-	       stop := t;
-	       result := car tmp
-	    >> else if cdr tmp neq 'false then
-	       result := if result then append(result,car tmp) else car tmp;
-      	 >> else result := cl_simpl(
-	    if result then rl_mk2('or,result,cdr tmp) else cdr tmp,nil,-1);
-	 if result eq 'true then stop := t;
-	 nosp := nosp - 1
+         blk := car l;
+         l := cdr l;
+         if !*rlverbose then ioto_prin2t {"    [",nosp,"] subproblems"};
+         tmp := talp_qeblock1(bvarl,blk,ansp);
+         if ansp then <<
+            if cdr tmp eq 'true then <<
+               stop := t;
+               result := car tmp
+            >> else if cdr tmp neq 'false then
+               result := if result then append(result,car tmp) else car tmp;
+         >> else result := cl_simpl(
+            if result then rl_mk2('or,result,cdr tmp) else cdr tmp,nil,-1);
+         if result eq 'true then stop := t;
+         nosp := nosp - 1
       >>;
       if null result then result := if ansp then {nil . 'false} else 'false;
       if qtf eq 'all then
-	 if ansp then <<
-	    answer := for each x in result collect car x . cl_nnfnot cdr x;
-	    return answer
-	 >> else return cl_nnfnot result
+         if ansp then <<
+            answer := for each x in result collect car x . cl_nnfnot cdr x;
+            return answer
+         >> else return cl_nnfnot result
       else return result
    end;
 
@@ -130,9 +130,9 @@ procedure talp_qeblock1(bvarl,mtrx,ansp);
       % permute variables
       if !*talpqp then bvl := talp_permbvarl(bvl,mtrx);
       if null bvl then
-	 return nil . mtrx;
+         return nil . mtrx;
       if !*rlverbose and cdr bvl and !*talpqp then
-	 ioto_prin2t {"    new order for processing bound variables: ",bvl};
+         ioto_prin2t {"    new order for processing bound variables: ",bvl};
       return talp_qeexblock(bvl,mtrx,nil,ansp)
    end;
 
@@ -149,8 +149,8 @@ procedure talp_qeexblock(bvl,mtrx,ans,ansp);
       % eliminate first variable of [bvl] from [mtrx]
       tmp := talp_qevar(car bvl,mtrx,ansp);
       if ansp then <<
-	 aps := talp_getpairs(car tmp,cdr tmp);
- 	 if ans then aps := talp_inserteq(aps,ans);
+         aps := talp_getpairs(car tmp,cdr tmp);
+         if ans then aps := talp_inserteq(aps,ans);
       >>;
       if null cdr bvl then return aps . cdr tmp;
       if null ansp then return talp_qeexblock(cdr bvl,cdr tmp,ans,ansp);
@@ -158,17 +158,17 @@ procedure talp_qeexblock(bvl,mtrx,ans,ansp);
       nosp := length tmp;
       % handle each answer separately
       while tmp and not stop do <<
-	 if !*rlverbose then ioto_prin2t {"   [",nosp,"] answers"};
-	 nosp := nosp - 1;
-	 new := car tmp;
-	 tmp := cdr tmp;
-	 tmp2 := talp_qeexblock(cdr bvl,cdr new,car new,ansp);
-	 if cdr tmp2 eq 'true then <<
-	    stop := t;
-	    result := 'true;
-	    aset := car tmp2
-	 >> else if cdr tmp2 neq 'false then
-	    aset := if aset then append(aset,car tmp2) else car tmp2;
+         if !*rlverbose then ioto_prin2t {"   [",nosp,"] answers"};
+         nosp := nosp - 1;
+         new := car tmp;
+         tmp := cdr tmp;
+         tmp2 := talp_qeexblock(cdr bvl,cdr new,car new,ansp);
+         if cdr tmp2 eq 'true then <<
+            stop := t;
+            result := 'true;
+            aset := car tmp2
+         >> else if cdr tmp2 neq 'false then
+            aset := if aset then append(aset,car tmp2) else car tmp2;
       >>;
       if null result then result := cdr tmp2;
       if null aset then aset := car tmp2;
@@ -187,38 +187,38 @@ procedure talp_qevar(bvar,mtrx,ansp);
       ltype := talp_gettype();
       % handle each disjunct separately
       while tmp and not stop do <<
-	 if !*rlverbose then ioto_prin2t {"++ [",nosp,"] subproblems"};
-	 nosp := nosp - 1;
-	 new := car tmp;
-	 tmp := cdr tmp;
-	 % try deep Gauss elimination for [new] w.r.t. [bvar]
-      	 if !*talpqegauss then tmp2 := talp_tryqegauss(bvar,mtrx,ansp);
-	 if null !*talpqegauss or tmp2 eq 'failed then <<
-	    fvarl := setdiff(cl_fvarl new,{bvar});
-	    maxd := talp_depthbound(new,ltype);
-	    noft := talp_numberbound(fvarl,maxd,ltype);
-	    if !*rlverbose then <<
-	       if !*talpqegauss then ioto_prin2t "failed";
-	       ioto_prin2 {if !*talpqegauss then "  " else "+",
-	       	  "standard QE for ",bvar,": substitute max ","[",noft,
-	       	  "] terms of depth <= ",maxd," ... "};
-	    >>;
-	    % perform standard elimination for [new] w.r.t. [bvar]
-	    tmp2 := talp_qevar1(bvar,new,ansp,fvarl,maxd)
-	 >>;
-	 if cdr tmp2 eq 'true then <<
-	    stop := t;
-	    aset := car tmp2;
-	    result := 'true
-	 >> else if cdr tmp2 neq 'false then <<
-	    if ansp then
-	       aset := if aset then append(aset,car tmp2) else car tmp2
-	    else <<
-	       result := cl_simpl(if result then
-	       	  rl_mk2('or,cdr tmp2,result) else cdr tmp2,nil,-1);
-	       if result eq 'true then stop := t
-	    >>
-	 >>
+         if !*rlverbose then ioto_prin2t {"++ [",nosp,"] subproblems"};
+         nosp := nosp - 1;
+         new := car tmp;
+         tmp := cdr tmp;
+         % try deep Gauss elimination for [new] w.r.t. [bvar]
+         if !*talpqegauss then tmp2 := talp_tryqegauss(bvar,mtrx,ansp);
+         if null !*talpqegauss or tmp2 eq 'failed then <<
+            fvarl := setdiff(cl_fvarl new,{bvar});
+            maxd := talp_depthbound(new,ltype);
+            noft := talp_numberbound(fvarl,maxd,ltype);
+            if !*rlverbose then <<
+               if !*talpqegauss then ioto_prin2t "failed";
+               ioto_prin2 {if !*talpqegauss then "  " else "+",
+                  "standard QE for ",bvar,": substitute max ","[",noft,
+                  "] terms of depth <= ",maxd," ... "};
+            >>;
+            % perform standard elimination for [new] w.r.t. [bvar]
+            tmp2 := talp_qevar1(bvar,new,ansp,fvarl,maxd)
+         >>;
+         if cdr tmp2 eq 'true then <<
+            stop := t;
+            aset := car tmp2;
+            result := 'true
+         >> else if cdr tmp2 neq 'false then <<
+            if ansp then
+               aset := if aset then append(aset,car tmp2) else car tmp2
+            else <<
+               result := cl_simpl(if result then
+                  rl_mk2('or,cdr tmp2,result) else cdr tmp2,nil,-1);
+               if result eq 'true then stop := t
+            >>
+         >>
       >>;
       if null result then result := cdr tmp2;
       if null aset then aset := car tmp2;
@@ -237,24 +237,24 @@ procedure talp_qevar1(bvar,mtrx,ansp,fvarl,maxd);
       t2sub := talp_nextt(nil,maxd,fvarl);
       % eliminate [bvar] from [mtrx] by substitution of enumerated test terms
       while t2sub and null stop do <<
-	 subpair := bvar . t2sub;
-	 tmp := talp_try cl_subfof({subpair},mtrx);
-	 if tmp eq 'true then <<
-	    if ansp then answer := subpair;
-	    result := tmp;
-	    stop := t
-	 >> else if tmp neq 'false then <<
-	    if ansp then <<
-	       answer := subpair . answer;
-	       result := tmp . result
-	    >> else <<
-	       result := cl_simpl(
-		  if result then rl_mk2('or,result,tmp) else tmp,nil,-1);
-	       if result eq 'true then stop := t
-	    >>
-	 >>;
-	 new := talp_copy t2sub;
-	 t2sub := talp_nextt(new,maxd,fvarl)
+         subpair := bvar . t2sub;
+         tmp := talp_try cl_subfof({subpair},mtrx);
+         if tmp eq 'true then <<
+            if ansp then answer := subpair;
+            result := tmp;
+            stop := t
+         >> else if tmp neq 'false then <<
+            if ansp then <<
+               answer := subpair . answer;
+               result := tmp . result
+            >> else <<
+               result := cl_simpl(
+                  if result then rl_mk2('or,result,tmp) else tmp,nil,-1);
+               if result eq 'true then stop := t
+            >>
+         >>;
+         new := talp_copy t2sub;
+         t2sub := talp_nextt(new,maxd,fvarl)
       >>;
       if !*rlverbose then ioto_prin2t "succeeded";
       if null result then result := 'false;
@@ -271,15 +271,15 @@ procedure talp_permbvarl(bvarl,mtrx);
       if rl_tvalp mtrx or null bvarl then return bvarl;
       n := 2 * length rl_atl mtrx + 1;
       tmp := for each var in bvarl join
-	 if talp_contains(mtrx,var) then
-      	    if !*talpqegauss and not (talp_trygaussvar(var,mtrx,nil)
-	       memq '(failed ignore) or talp_trygaussvar(var, talp_rnf mtrx,
-	       nil) memq '(failed ignore)) then
-		  {var . n}
-	    else {var . talp_cocc(mtrx,var)};
+         if talp_contains(mtrx,var) then
+            if !*talpqegauss and not (talp_trygaussvar(var,mtrx,nil)
+               memq '(failed ignore) or talp_trygaussvar(var, talp_rnf mtrx,
+               nil) memq '(failed ignore)) then
+                  {var . n}
+            else {var . talp_cocc(mtrx,var)};
       if tmp then <<
-	 tmp := talp_mergesort tmp;
-	 newbvarl := for each x in tmp collect car x;
+         tmp := talp_mergesort tmp;
+         newbvarl := for each x in tmp collect car x;
       >> else return nil;
       return newbvarl
    end;
@@ -291,9 +291,9 @@ procedure talp_cocc(f,var);
    begin integer noccs;
       noccs := 0;
       if pairp f then
-      	 for each x in f do
-	    if pairp x then noccs := noccs + talp_cocc(x,var)
-	    else (if x eq var then noccs := noccs + 1)
+         for each x in f do
+            if pairp x then noccs := noccs + talp_cocc(x,var)
+            else (if x eq var then noccs := noccs + 1)
       else if var eq f then return 1;
       return noccs
    end;
@@ -306,12 +306,12 @@ procedure talp_mergesort(l);
       if null l or null cdr l then return l;
       crit := car l;
       for each entry in cdr l do
-	 if cdr entry > cdr crit then
- 	    s1 := entry . s1
- 	 else
- 	    s2 := entry . s2;
+         if cdr entry > cdr crit then
+            s1 := entry . s1
+         else
+            s2 := entry . s2;
       return nconc(talp_mergesort reversip s1,
-	 crit . talp_mergesort reversip s2)
+         crit . talp_mergesort reversip s2)
    end;
 
 procedure talp_getpairs(answerset,resultset);
@@ -321,13 +321,13 @@ procedure talp_getpairs(answerset,resultset);
    % corresponding element of [resultset].
    begin scalar tmp,answer,result;
       if atom resultset then
-	 return {answerset . resultset};
+         return {answerset . resultset};
       while resultset do <<
-	 answer := car answerset;
-	 result := car resultset;
-	 tmp := if tmp then (answer . result) . tmp else {answer . result};
-	 resultset := cdr resultset;
-	 answerset := cdr answerset
+         answer := car answerset;
+         result := car resultset;
+         tmp := if tmp then (answer . result) . tmp else {answer . result};
+         resultset := cdr resultset;
+         answerset := cdr answerset
       >>;
       return tmp
    end;
@@ -336,11 +336,11 @@ procedure talp_copy(l);
    % Term algebra Lisp prefix copy. [l] is any. Returns a copy of [l].
     begin scalar nl;
        if atom l then
-	  nl := l
+          nl := l
        else nl := for each x in l collect
-	  if atom x then
-	     x
-	  else talp_copy x;
+          if atom x then
+             x
+          else talp_copy x;
        return nl
     end;
 
@@ -352,10 +352,10 @@ procedure talp_inserteq(ans,equa);
       if cdar ans eq 'false then return ans;
       tmp := ans;
       for each elem in tmp do <<
-	 equs := talp_updateinfo(elem,if atom car equa then {equa} else equa);
-	 car elem := if atom caar elem then
-	    car elem . equs
-	 else append(car elem,equs)
+         equs := talp_updateinfo(elem,if atom car equa then {equa} else equa);
+         car elem := if atom caar elem then
+            car elem . equs
+         else append(car elem,equs)
       >>;
       return tmp
    end;
@@ -368,7 +368,7 @@ procedure talp_updateinfo(ans,equs);
    begin scalar tmp,result;
       tmp := car ans;
       result := for each elem in equs collect
-	 car elem . talp_simplt talp_specsubt(car tmp, cdr tmp,cdr elem);
+         car elem . talp_simplt talp_specsubt(car tmp, cdr tmp,cdr elem);
       return result
    end;
 
@@ -378,18 +378,18 @@ procedure talp_getans(ansinfo);
    % from [ansinfo].
    begin scalar answer,result,equa,equat,info;
       if null car ansinfo then
-	 return {{cdr ansinfo,nil}};
+         return {{cdr ansinfo,nil}};
       while ansinfo do <<
-	 info := car ansinfo;
-	 equat := car info;
-	 result := cdr info;
-  	 equa := if equat then
-	    if atom car equat then
-	       {equat}
-	    else
-	       equat;
-	 answer := (result . equa) . answer;
-	 ansinfo := cdr ansinfo
+         info := car ansinfo;
+         equat := car info;
+         result := cdr info;
+         equa := if equat then
+            if atom car equat then
+               {equat}
+            else
+               equat;
+         answer := (result . equa) . answer;
+         ansinfo := cdr ansinfo
       >>;
       return answer
    end;
@@ -402,9 +402,9 @@ procedure talp_gettype();
       unacount := 0;
       lang := talp_getl();
       while lang and not done do <<
-	 if cdar lang > 1 then done := t;
-	 if cdar lang eq 1 then unacount := unacount + 1;
-	 lang := cdr lang
+         if cdar lang > 1 then done := t;
+         if cdar lang eq 1 then unacount := unacount + 1;
+         lang := cdr lang
       >>;
       return if done then 'NN else if unacount > 1 then 'UN else 'U1;
    end;
@@ -444,9 +444,9 @@ procedure talp_nbu1(fvarl,depth);
       noft := nocts + novars;
       tmp := noft + novars;
       while depth > 0 do <<
-	 noft := tmp + noft;
-	 tmp := tmp + novars;
-	 depth := depth - 1
+         noft := tmp + noft;
+         tmp := tmp + novars;
+         depth := depth - 1
       >>;
       return noft
    end;
@@ -466,7 +466,7 @@ procedure talp_nbnn(fvarl,depth);
    begin scalar ma;
       ma := talp_getmaxar();
       return (length talp_getextl() + length fvarl)**ma**(
-	 if depth > 0 then depth else 1)
+         if depth > 0 then depth else 1)
    end;
 
 procedure talp_getnofcts();
@@ -482,7 +482,7 @@ procedure talp_getmaxar();
    begin scalar arity;
       arity := 0;
       for each x in talp_getl() do
-	 if cdr x > arity then arity := cdr x;
+         if cdr x > arity then arity := cdr x;
       return arity
    end;
 
@@ -494,9 +494,9 @@ procedure talp_maxd(f);
       if atom f then return 0;
       tmp := rl_atl f;
       while tmp do <<
-	 mdtmp := max2(talp_td talp_arg2l car tmp, talp_td talp_arg2r car tmp);
-	 if mdtmp > md then md := mdtmp;
-	 tmp := cdr tmp;
+         mdtmp := max2(talp_td talp_arg2l car tmp, talp_td talp_arg2r car tmp);
+         if mdtmp > md then md := mdtmp;
+         tmp := cdr tmp;
       >>;
       return md
    end;
@@ -514,9 +514,9 @@ procedure talp_contains(f,var);
    % [var], nil otherwise.
    begin scalar cv;
       if pairp f then
-      	 for each x in f do
-	    if pairp x and not cv then cv := talp_contains(x,var)
-	    else (if x eq var then cv := t)
+         for each x in f do
+            if pairp x and not cv then cv := talp_contains(x,var)
+            else (if x eq var then cv := t)
       else if var eq f then return t;
       return cv
    end;
@@ -531,15 +531,15 @@ procedure talp_nextt(last,md,vl);
    % within depth-bound [md] following [last].
    begin scalar cl,cvv,vv,fv,ifv;
       fv := talp_list2vec for each x in talp_getl() join
-	 if cdr x eq 0 then
-	    << cl := car x . cl; nil >>
-	 else talp_mk!-invs(vl,x);
+         if cdr x eq 0 then
+            << cl := car x . cl; nil >>
+         else talp_mk!-invs(vl,x);
       ifv := talp_list2vec for i:=0 : upbv fv join
-	 (if talp_invp y then {y}) where y=getv(fv,i);
+         (if talp_invp y then {y}) where y=getv(fv,i);
       cvv := talp_list2vec nconc(reversip cl,vl);
       vv := talp_list2vec vl;
       return if last then (if car z then cdr z)
-	 where z=talp_nextt1(last,0,md,cvv,vv,fv,ifv,nil)
+         where z=talp_nextt1(last,0,md,cvv,vv,fv,ifv,nil)
       else if upbv cvv > -1 then getv(cvv,0)
    end;
 
@@ -551,27 +551,27 @@ procedure talp_nextt1(last,cd,md,cvv,vv,fv,ifv,invp);
    % form. Returns next term within depth bound [md] following [last].
    begin scalar done,reset,temp;
       if atom last then
-	 return talp_nextt!-atom(last,cd,md,cvv,vv,fv,ifv,invp);
+         return talp_nextt!-atom(last,cd,md,cvv,vv,fv,ifv,invp);
       if talp_invp last then
-	 (if car x then << cdr last := {cdr x}; return t . last >>)
-	    where x=talp_nextt1(car talp_fargl last,cd+1,md,cvv,vv,fv,ifv,t)
+         (if car x then << cdr last := {cdr x}; return t . last >>)
+            where x=talp_nextt1(car talp_fargl last,cd+1,md,cvv,vv,fv,ifv,t)
       else <<
-      	 temp := talp_fargl last;
-	 reset := getv(cvv,0);
-     	 while temp and not done do <<
-	    (if car x then <<
-	       done := t; car temp := cdr x
-	    >> else car temp := reset)
-	       where x=talp_nextt1(car temp,cd+1,md,cvv,vv,fv,ifv,nil);
-	    temp := cdr temp
-      	 >>
+         temp := talp_fargl last;
+         reset := getv(cvv,0);
+         while temp and not done do <<
+            (if car x then <<
+               done := t; car temp := cdr x
+            >> else car temp := reset)
+               where x=talp_nextt1(car temp,cd+1,md,cvv,vv,fv,ifv,nil);
+            temp := cdr temp
+         >>
       >>;
       if not done then
-	 if invp then
-	    (if i < upbv ifv then return t . talp_get!-minfct(i+1,ifv,vv,cvv))
-	       where i=talp_get!-idx(last,ifv)
-	 else (if i < upbv fv then return t . talp_get!-minfct(i+1,fv,vv,cvv))
-	    where i=talp_get!-idx(last,fv);
+         if invp then
+            (if i < upbv ifv then return t . talp_get!-minfct(i+1,ifv,vv,cvv))
+               where i=talp_get!-idx(last,ifv)
+         else (if i < upbv fv then return t . talp_get!-minfct(i+1,fv,vv,cvv))
+            where i=talp_get!-idx(last,fv);
       return done . last
    end;
 
@@ -580,7 +580,7 @@ procedure talp_nextt!-atom(last,cd,md,cvv,vv,fv,ifv,invp);
    % [last]s.
    if invp then
       if talp_get!-idx(last,vv) < upbv vv then
-	 t . getv(vv,talp_get!-idx(last,vv) + 1)
+         t . getv(vv,talp_get!-idx(last,vv) + 1)
       else if cd < md then t . talp_get!-minfct(0,ifv,vv,cvv) else nil . last
    else if talp_get!-idx(last,cvv) < upbv cvv then
       t . getv(cvv,talp_get!-idx(last,cvv) + 1)
@@ -606,16 +606,16 @@ procedure talp_get!-idx(last,vec);
    % integer. Returns position of [last] within [vec].
    begin scalar found; integer pos;
       while pos <= upbv vec and not found do
-      	 if atom last then
-	    if getv(vec,pos) eq last then found := t else pos:=pos+1
-	 else if pairp talp_fop last then
-	    (if pairp talp_fop x and talp_invf talp_fop x eq
-	       talp_invf talp_fop last and talp_invn talp_fop x eq
-		  talp_invn talp_fop last then found := t else pos:=pos+1)
-		     where x=getv(vec,pos)
-	 else if talp_fop getv(vec,pos) eq talp_fop last then
-	    found := t
-	 else pos:=pos+1;
+         if atom last then
+            if getv(vec,pos) eq last then found := t else pos:=pos+1
+         else if pairp talp_fop last then
+            (if pairp talp_fop x and talp_invf talp_fop x eq
+               talp_invf talp_fop last and talp_invn talp_fop x eq
+                  talp_invn talp_fop last then found := t else pos:=pos+1)
+                     where x=getv(vec,pos)
+         else if talp_fop getv(vec,pos) eq talp_fop last then
+            found := t
+         else pos:=pos+1;
       return if found then pos else -1
    end;
 
@@ -642,20 +642,20 @@ procedure talp_tryqegauss(bvar,mtrx,ansp);
    % returned.
    begin scalar gauss;
       if !*rlverbose then
-	 ioto_prin2 {"+ try gauss elimination for ",bvar," ... "};
+         ioto_prin2 {"+ try gauss elimination for ",bvar," ... "};
       gauss := talp_trygauss(bvar,mtrx,ansp);
       if gauss eq 'failed then <<
-	 if !*rlverbose then <<
-	    ioto_prin2t "failed";
-	    ioto_prin2 {"  try gauss elimination for ",bvar,
-	       " with transformed input formula ... "};
-	 >>;
-	 mtrx := talp_rnf mtrx;
-	 gauss := talp_trygauss(bvar,mtrx,ansp)
+         if !*rlverbose then <<
+            ioto_prin2t "failed";
+            ioto_prin2 {"  try gauss elimination for ",bvar,
+               " with transformed input formula ... "};
+         >>;
+         mtrx := talp_rnf mtrx;
+         gauss := talp_trygauss(bvar,mtrx,ansp)
       >>;
       if gauss neq 'failed then <<
-	 if !*rlverbose then ioto_prin2t "succeeded";
-	 return gauss
+         if !*rlverbose then ioto_prin2t "succeeded";
+         return gauss
       >>;
       return 'failed
    end;
@@ -681,23 +681,23 @@ procedure talp_trygauss1(es,f,ansp);
    % formulas or $nil . f_1$ where f_1 is a quantifier-free formula.
    begin scalar subpair,result,answer,tmp,stop;
       while es and null stop do <<
-	 subpair := car es;
-	 tmp := talp_try cl_subfof({subpair},f);
-	 if tmp eq 'true then <<
-	    if ansp then answer := subpair;
-	    result := tmp;
-	    stop := t
-	 >> else if tmp neq 'false then <<
-	    if ansp then <<
-	       answer := subpair . answer;
-	       result := tmp . result
-	    >> else <<
-	       result := cl_simpl(if result then
-		  rl_mk2('or,result,tmp) else tmp,nil,-1);
-	       if result eq 'true then stop := t
-	    >>
-	 >>;
-	 es := cdr es
+         subpair := car es;
+         tmp := talp_try cl_subfof({subpair},f);
+         if tmp eq 'true then <<
+            if ansp then answer := subpair;
+            result := tmp;
+            stop := t
+         >> else if tmp neq 'false then <<
+            if ansp then <<
+               answer := subpair . answer;
+               result := tmp . result
+            >> else <<
+               result := cl_simpl(if result then
+                  rl_mk2('or,result,tmp) else tmp,nil,-1);
+               if result eq 'true then stop := t
+            >>
+         >>;
+         es := cdr es
       >>;
       if null result then result := 'false;
       return answer . result
@@ -727,13 +727,13 @@ procedure talp_qesolset(v,atf);
       lhs := talp_arg2l atf;
       rhs := talp_arg2r atf;
       if not (talp_contains(lhs,v) or talp_contains(rhs,v)) then
-	 return 'ignore;
+         return 'ignore;
       if rl_op atf neq 'equal then
-	 return 'failed;
+         return 'failed;
       if talp_contains(lhs,v) and talp_contains(rhs,v) then
-	 return 'failed;
+         return 'failed;
       if lhs neq v and rhs neq v then
-	 return 'failed;
+         return 'failed;
       subs := if lhs eq v then rhs else lhs;
       return v . subs
    end;
@@ -744,15 +744,15 @@ procedure talp_gaussand(v,fl,ansp);
    begin scalar w, curr,stop;
       curr := talp_trygaussvar(v,car fl,ansp);
       if curr eq 'failed or curr eq 'ignore then <<
-      	 fl := cdr fl;
-      	 while fl and not stop do <<
-	    w := talp_trygaussvar(v,car fl,ansp);
-	    if w neq 'failed and w neq 'ignore then <<
-	       stop := t;
-	       curr := w
-	    >>;
-	    fl := cdr fl
-      	 >>
+         fl := cdr fl;
+         while fl and not stop do <<
+            w := talp_trygaussvar(v,car fl,ansp);
+            if w neq 'failed and w neq 'ignore then <<
+               stop := t;
+               curr := w
+            >>;
+            fl := cdr fl
+         >>
       >>;
       return if curr then curr else 'failed
    end;
@@ -763,16 +763,16 @@ procedure talp_gaussor(v,fl,ansp);
    begin scalar w,curr,stop;
       curr := talp_trygaussvar(v,car fl,ansp);
       if curr neq 'failed then <<
-      	 fl := cdr fl;
-      	 while fl and not stop do <<
-	    w := talp_trygaussvar(v,car fl,ansp);
-	    if w eq 'failed then <<
-	       curr := nil;
-	       stop := t;
-	    >> else if w neq 'ignore then
-	       curr := if curr neq 'ignore then w . {curr} else w;
-	    fl := cdr fl;
-      	 >>
+         fl := cdr fl;
+         while fl and not stop do <<
+            w := talp_trygaussvar(v,car fl,ansp);
+            if w eq 'failed then <<
+               curr := nil;
+               stop := t;
+            >> else if w neq 'ignore then
+               curr := if curr neq 'ignore then w . {curr} else w;
+            fl := cdr fl;
+         >>
       >>;
       return if curr then curr else 'failed
    end;

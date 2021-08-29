@@ -7,7 +7,7 @@
 # Modified:	06-Oct-87 (Harold Carr)
 # Mode:		 Text
 # Package:
-# Status:
+# Status:        Open Source: BSD License
 #
 # (c) Copyright 1982, University of Utah
 # %
@@ -57,7 +57,9 @@
 #  to feed to the cross-compiler to produce main.s .
 #
 ##############################################################################
- 
+#
+# $Id$
+
 ### PROOT   = /newsilo/silo/cons/verkaufpsl
  
 #### MACHINE = unix386

@@ -137,7 +137,7 @@ asserted procedure exfrdata_init(phi: QfFormula): ExfrData;
       oo := setkorder varl;
       n := length varl;
       lvlal := for each v in reverse varl collect
-	 v . (i := i + 1);
+         v . (i := i + 1);
       cc := mkvect n;
       exfr_splitphi(phi, lvlal, cc);
       exfrdata_putphi(ed, phi);
@@ -162,9 +162,9 @@ asserted procedure exfr_splitphi(phi: QfFormula, lvlal: Alist, cc: Atom): Any;
       integer lvl;
       assert(rl_op phi eq 'and);
       for each c in rl_argn phi do <<
-	 assert(rl_op c eq 'or);
-	 lvl := cdr atsoc(car cl_fvarl c, lvlal);
-	 push(rl_argn c, getv(cc, lvl))
+         assert(rl_op c eq 'or);
+         lvl := cdr atsoc(car cl_fvarl c, lvlal);
+         push(rl_argn c, getv(cc, lvl))
       >>
    end;
 
@@ -246,12 +246,12 @@ asserted procedure trail_extract(trl: Trail): DottedPair;
    begin scalar tre, assl, litl;
       trl := reverse trl;
       while trl do <<
-	 tre := pop trl;
-	 if tre_varassp tre then <<
-	    push(tre, assl);
-	    litl := nil
-	 >> else  % we know [tre_litp tre]
-	    push(tre, litl)
+         tre := pop trl;
+         if tre_varassp tre then <<
+            push(tre, assl);
+            litl := nil
+         >> else  % we know [tre_litp tre]
+            push(tre, litl)
       >>;
       return reversip assl . reversip litl
    end;
@@ -297,20 +297,20 @@ inline procedure varass_value(va);
 asserted procedure ofsf_selectClause(s: State): State;
    begin scalar cl, lv, trl, w, sc;
       if state_mode s then
-	 return nil;
+         return nil;
       % TODO: Is there a strategy for selecting c?
       cl := state_cl s;
       lv := state_level s;
       trl := state_trail s;
       while cl do <<
-	 w := pop cl;
-	 if eqn(lv, clause_level w) and ofsf_undefp(w, trl) then <<
-	    cl := nil;
-	    sc := w
-	 >>
+         w := pop cl;
+         if eqn(lv, clause_level w) and ofsf_undefp(w, trl) then <<
+            cl := nil;
+            sc := w
+         >>
       >>;
       if null sc then
-	 return nil;
+         return nil;
       % Rule is applicable.
       return state_mk('models, sc, trl, state_cl s, state_vl s, lv)
    end;
@@ -318,22 +318,22 @@ asserted procedure ofsf_selectClause(s: State): State;
 asserted procedure ofsf_conflict(s: State): State;
    begin scalar cl, lv, trl, w, cc;
       if state_mode s then
-	 return nil;
+         return nil;
       % TODO: Is there a strategy for selecting c?
       cl := state_cl s;
       lv := state_level s;
       trl := state_trail s;
       while cl do <<
-	 w := pop cl;
-	 % an imporant fact: Should we check lv = clause_level w or lv >=
-	 % clause_level w? This depends on the order of rule applications.
-	 if (lv >= clause_level w) and ofsf_value(w, trl) eq 'false then <<
-	    cl := nil;
-	    cc := w
-	 >>
+         w := pop cl;
+         % an imporant fact: Should we check lv = clause_level w or lv >=
+         % clause_level w? This depends on the order of rule applications.
+         if (lv >= clause_level w) and ofsf_value(w, trl) eq 'false then <<
+            cl := nil;
+            cc := w
+         >>
       >>;
       if not cc then
-	 return nil;
+         return nil;
       % Rule is applicable.
       return state_mk('vdash, cc, trl, state_cl s, state_vl s, lv)
    end;
@@ -341,7 +341,7 @@ asserted procedure ofsf_conflict(s: State): State;
 asserted procedure ofsf_sat(s: State): State;
    begin scalar eql;
       if state_mode s or state_vl s then
-	 return nil;
+         return nil;
       eql := car trail_extract state_trail s;
       return state_mk('sat, nil, eql, nil, state_vl s, state_level s + 1)
    end;
@@ -349,16 +349,16 @@ asserted procedure ofsf_sat(s: State): State;
 asserted procedure ofsf_liftLevel(s: State): State;
    begin scalar vl, xk, ivl, alpha;
       if state_mode s then
-	 return nil;
+         return nil;
       vl := state_vl s;
       xk := pop vl;
       ivl := ofsf_feasible state_trail s;
       if null ivl then
-	 return nil;
+         return nil;
       alpha := ofsf_chooseFromIv(car ivl, xk);
       state_mk(nil, nil,
-	 trail_push(state_trail s, varass_mk(xk, alpha)),
- 	 state_cl s, vl, state_level s + 1)
+         trail_push(state_trail s, varass_mk(xk, alpha)),
+         state_cl s, vl, state_level s + 1)
    end;
 
 asserted procedure ofsf_feasible(trl: Trail): AnuIntervalList;
@@ -367,22 +367,22 @@ asserted procedure ofsf_feasible(trl: Trail): AnuIntervalList;
    begin scalar assl, litl, atf, fl, gl, assal;
       assl . litl := trail_extract trl;
       assal := for each a in assl collect
-	 varass_x a . varass_value a;
+         varass_x a . varass_value a;
       for each lit in litl do <<
-	 atf := tlit_atf lit;
-	 if ofsf_op atf eq 'equal then
-	    push(atf, fl)
-      	 else
-	    push(atf, gl)
+         atf := tlit_atf lit;
+         if ofsf_op atf eq 'equal then
+            push(atf, fl)
+         else
+            push(atf, gl)
       >>;
       fl := for each f in fl collect
-	 ofsf_anusubf(ofsf_arg2l f, assal) . 'equal;
+         ofsf_anusubf(ofsf_arg2l f, assal) . 'equal;
       gl := for each g in gl collect
-	 ofsf_anusubf(ofsf_arg2l g, assal) . ofsf_op g;
+         ofsf_anusubf(ofsf_arg2l g, assal) . ofsf_op g;
       return if fl then
-	 ofsf_feasible1(fl, gl)
+         ofsf_feasible1(fl, gl)
       else
-	 ofsf_feasible2 gl
+         ofsf_feasible2 gl
    end;
 
 asserted procedure ofsf_feasible1(fl: List, gl: List): AnuIntervalList;
@@ -393,21 +393,21 @@ asserted procedure ofsf_feasible1(fl: List, gl: List): AnuIntervalList;
       f := car pop fl;
       xk := aex_mvar f;
       return for each anu in aex_findroots(f, xk) join
-	 if ofsf_feasible11(anu, xk, fl, gl) then
-	    {anupt_mk anu};
+         if ofsf_feasible11(anu, xk, fl, gl) then
+            {anupt_mk anu};
    end;
 
 asserted procedure ofsf_feasible11(anu: Anu, xk: Kernel, fl: List, gl: List): Boolean;
    begin scalar cnt, f, g, op;
       cnt := t; while cnt and fl do <<
-	 f := car pop fl;
-	 if not aex_nullp aex_bind(f, xk, anu) then
-	    cnt := nil
+         f := car pop fl;
+         if not aex_nullp aex_bind(f, xk, anu) then
+            cnt := nil
       >>;
       while cnt and gl do <<
-	 g . op := pop gl;
-	 if not aex_evalop(aex_bind(g, xk, anu), op) then
-	    cnt := nil
+         g . op := pop gl;
+         if not aex_evalop(aex_bind(g, xk, anu), op) then
+            cnt := nil
       >>;
       return cnt
    end;
@@ -418,14 +418,14 @@ asserted procedure ofsf_feasible2(gl: List): AnuIntervalList;
    begin scalar ivl, xk, g, givl, rel;
       ivl := {anusp_mk('anusp_open, 'minf, 'anusp_open, 'pinf)};
       if null gl then
-	 return ivl;
+         return ivl;
       xk := aex_mvar caar gl;
       while gl do <<
-	 g . rel := pop gl;
-      	 givl := ofsf_lit2ivl(rel, g, xk);
-	 ivl := ofsf_updivl(ivl, givl);
-	 if not ivl then
-	    gl := nil
+         g . rel := pop gl;
+         givl := ofsf_lit2ivl(rel, g, xk);
+         ivl := ofsf_updivl(ivl, givl);
+         if not ivl then
+            gl := nil
       >>;
       return ivl
    end;
@@ -441,34 +441,34 @@ asserted procedure ofsf_lit2ivl(rel: Id, g: Aex, xk: Kernel): AnuIntervalList;
 asserted procedure ofsf_lit2ivl1(rel: Id, g: Aex, xk: Kernel, rootl: AnuList): AnuIntervalList;
    begin scalar tag, gp, givl, insp, lb, ub, sign;
       if rel eq 'neq then
-	 return ofsf_lit2ivlNeq(rootl);
+         return ofsf_lit2ivlNeq(rootl);
       tag := if rel memq '(geq leq) then 'anusp_closed else 'anusp_open;
       gp := aex_diff(g, xk);
       if ofsf_feasibleEval(rel, ofsf_feasibleEvalSgn(g, xk, 'minf)) then <<
-	 givl := {anusp_mk('anusp_open, 'minf, 'anusp_open, car rootl)};
-	 insp := t
+         givl := {anusp_mk('anusp_open, 'minf, 'anusp_open, car rootl)};
+         insp := t
       >>;
       rootl := nconc(rootl, {'pinf});
       for each rrootl on rootl do
-      	 if cdr rrootl then <<
-	    lb := car rrootl;
-	    ub := cadr rrootl;
-	    sign := ofsf_feasibleEvalSgn(gp, xk, lb);
-	    if eqn(sign, 0) then
-	       if insp then
-		  givl := anusp_mk(tag, lb, tag, ub) . givl
-	       else
-		  (if tag eq 'anusp_closed then
-		     givl := anupt_mk lb . givl)
-	    else <<
-	       if not insp then
-		  givl := anusp_mk(tag, lb, tag, ub) . givl;
-	       insp := not insp
-	    >>
-      	 >>;
+         if cdr rrootl then <<
+            lb := car rrootl;
+            ub := cadr rrootl;
+            sign := ofsf_feasibleEvalSgn(gp, xk, lb);
+            if eqn(sign, 0) then
+               if insp then
+                  givl := anusp_mk(tag, lb, tag, ub) . givl
+               else
+                  (if tag eq 'anusp_closed then
+                     givl := anupt_mk lb . givl)
+            else <<
+               if not insp then
+                  givl := anusp_mk(tag, lb, tag, ub) . givl;
+               insp := not insp
+            >>
+         >>;
       givl := reversip givl;
       if tag eq 'anusp_closed then
-	 givl := ofsf_lit2ivlJoin givl;
+         givl := ofsf_lit2ivlJoin givl;
       return givl
    end;
 
@@ -476,8 +476,8 @@ asserted procedure ofsf_lit2ivlNeq(rootl: AnuList): AnuIntervalList;
    begin scalar givl, lb;
       lb := 'minf;
       for each r in rootl do <<
-	 givl := anusp_mk('anusp_open, lb, 'anusp_open, r) . givl;
-	 lb := r
+         givl := anusp_mk('anusp_open, lb, 'anusp_open, r) . givl;
+         lb := r
       >>;
       givl := anusp_mk('anusp_open, lb, 'anusp_open, 'pinf) . givl;
       return reversip givl
@@ -486,18 +486,18 @@ asserted procedure ofsf_lit2ivlNeq(rootl: AnuList): AnuIntervalList;
 asserted procedure ofsf_lit2ivlJoin(givl: AnuIntervalList): AnuIntervalList;
    begin scalar iv1, iv2, jgivl;
       if not givl or not cdr givl then
-	 return givl;
+         return givl;
       iv1 := pop givl;
       jgivl := ofsf_lit2ivlJoin givl;
       if anuiv_ptp iv1 then
-	 return iv1 . jgivl;
+         return iv1 . jgivl;
       iv2 := pop jgivl;
       if anuiv_ptp iv2 then
-	 return iv1 . iv2 . jgivl;
+         return iv1 . iv2 . jgivl;
       if anusp_ub iv1 neq anusp_lb iv2 then
-	 return iv1 . iv2 . jgivl;
+         return iv1 . iv2 . jgivl;
       return anusp_mk(
-	 anusp_lt iv1, anusp_lb iv1, anusp_ut iv2, anusp_ub iv2) . jgivl
+         anusp_lt iv1, anusp_lb iv1, anusp_ut iv2, anusp_ub iv2) . jgivl
    end;
 
 asserted procedure ofsf_feasibleEval(op: Id, n: Integer): Boolean;
@@ -508,7 +508,7 @@ asserted procedure ofsf_updivl(ivl: AnuIntervalList, givl: AnuIntervalList): Anu
    % Update interval lists.
    begin scalar iv, res1, res2;
       if not ivl then
-	 return nil;
+         return nil;
       iv := pop ivl;
       res1 := ofsf_ivcutl(iv, givl);
       res2 := ofsf_updivl(ivl, givl);
@@ -521,26 +521,26 @@ asserted procedure ofsf_ivcutl(iv: AnuInterval, ivl: AnuIntervalList): AnuInterv
    % [ivl].
    begin scalar iv2, res, w;
       if not ivl then
-	 return nil;
+         return nil;
       iv2 := pop ivl;
       w := ofsf_ivcutl(iv, ivl);
       res := ofsf_ivcut(iv, iv2);
       if res then
-	 w := res . w;
+         w := res . w;
       return w
    end;
 
 asserted procedure ofsf_ivcut(iv1: AnuInterval, iv2: AnuInterval): AnuInterval;
    begin
       if anuiv_ptp iv1 and anuiv_ptp iv2 then <<
-	 if eqn(ganu_compare(anupt_anu iv1, anupt_anu iv2), 0) then
-	    return iv1;  % TODO: return the nicer anu?
-	 return nil
+         if eqn(ganu_compare(anupt_anu iv1, anupt_anu iv2), 0) then
+            return iv1;  % TODO: return the nicer anu?
+         return nil
       >>;
       if anuiv_ptp iv1 then
-	 return ofsf_ivcut1(iv1, iv2);
+         return ofsf_ivcut1(iv1, iv2);
       if anuiv_ptp iv2 then
-	 return ofsf_ivcut1(iv2, iv1);
+         return ofsf_ivcut1(iv2, iv1);
       return ofsf_ivcut2(iv1, iv2)
    end;
 
@@ -548,26 +548,26 @@ asserted procedure ofsf_ivcut1(p: AnuPoint, iv: AnuInterval): AnuInterval;
    begin scalar w;
       w := ganu_compare(anupt_anu p, anusp_lb iv);
       if w < 0 or (eqn(w, 0) and anusp_lt iv eq 'anusp_open) then
-	 return nil;
+         return nil;
       w := ganu_compare(anupt_anu p, anusp_ub iv);
       if w > 0 or (eqn(w, 0) and anusp_ut iv eq 'anusp_open) then
-	 return nil;
+         return nil;
       return p
    end;
 
 asserted procedure ofsf_ivcut2(iv1: AnuSpan, iv2: AnuSpan): AnuInterval;
    begin scalar lt, lb, ut, ub, w;
       lt . lb := ofsf_ivbmax(
-	 anusp_lt iv1, anusp_lb iv1, anusp_lt iv2, anusp_lb iv2);
+         anusp_lt iv1, anusp_lb iv1, anusp_lt iv2, anusp_lb iv2);
       ut . ub := ofsf_ivbmin(
-	 anusp_ut iv1, anusp_ub iv1, anusp_ut iv2, anusp_ub iv2);
+         anusp_ut iv1, anusp_ub iv1, anusp_ut iv2, anusp_ub iv2);
       w := ganu_compare(lb, ub);
       if w > 0 then
-	 return nil;
+         return nil;
       if w < 0 then
-	 return anusp_mk(lt, lb, ut, ub);
+         return anusp_mk(lt, lb, ut, ub);
       if lt eq 'anusp_closed and ut qe 'anusp_closed then
-	 return anupt_mk lb;  % TODO: find the nicer Anu?
+         return anupt_mk lb;  % TODO: find the nicer Anu?
       return nil
    end;
 
@@ -576,11 +576,11 @@ asserted procedure ofsf_ivbmax(t1: Id, b1: GAnu, t2: Id, b2: GAnu): DottedPair;
    begin scalar w;
       w := ganu_compare(b1, b2);
       if w < 0 then
-	 return t2 . b2;
+         return t2 . b2;
       if w > 0 then
-	 return t1 . b1;
+         return t1 . b1;
       if t1 eq 'anusp_open then
-	 return t1 . b1;
+         return t1 . b1;
       return t2 . b2
    end;
 
@@ -589,11 +589,11 @@ asserted procedure ofsf_ivbmin(t1: Id, b1: GAnu, t2: Id, b2: GAnu): DottedPair;
    begin scalar w;
       w := ganu_compare(b1, b2);
       if w > 0 then
-	 return t2 . b2;
+         return t2 . b2;
       if w < 0 then
-	 return t1 . b1;
+         return t1 . b1;
       if t1 eq 'anusp_open then
-	 return t1 . b1;
+         return t1 . b1;
       return t2 . b2
    end;
 
@@ -623,20 +623,20 @@ asserted procedure ofsf_feasibleEvalSgn(g: Aex, x: Kernel, anu: GAnu): Integer;
 asserted procedure ofsf_forget(s: State): State;
    begin scalar tcl, tc, cnt, ntcl;
       if state_mode s then
-	 return nil;
+         return nil;
       % TODO: Is there a strategy for selecting c?
       tcl := state_cl s;
       cnt := t; while cnt and tcl do <<
-	 tc := pop tcl;
-	 if not car tc then
-	    ntcl := tc . ntcl
-	 else <<
-	    cnt := nil;
-	    ntcl := nconc(reversip ntcl, tcl);
-	 >>
+         tc := pop tcl;
+         if not car tc then
+            ntcl := tc . ntcl
+         else <<
+            cnt := nil;
+            ntcl := nconc(reversip ntcl, tcl);
+         >>
       >>;
       if cnt then % No learned clauses.
-	 return nil;
+         return nil;
       % Rule is applicable.
       return state_mk(nil, nil, state_trail s, ntcl, state_vl s, state_level s)
    end;
@@ -645,12 +645,12 @@ asserted procedure ofsf_undefp(c: Clause, trl: Trail): Boolean;
    % [c] is a Clause; [trl] is a Trail
    begin scalar avl, at, defp;
       avl := for each tre in trl join
-	 if tre_varassp tre then
-	    {varass_x tre};
+         if tre_varassp tre then
+            {varass_x tre};
       defp := t; while defp and c do <<
-	 at := pop c;
-	 if not lto_subsetq(ofsf_varlat at, avl) then
-	    defp := nil
+         at := pop c;
+         if not lto_subsetq(ofsf_varlat at, avl) then
+            defp := nil
       >>;
       return not defp
    end;
@@ -660,14 +660,14 @@ asserted procedure ofsf_value(c: Clause, trl: Trail): Id;
       % TODO: This procedure does not work. Fix it so that Boolean propagation
       % is taken into account.
       if ofsf_undefp(c, trl) then
-      	 return 'undef;
+         return 'undef;
       eqal := for each tre in trl join
-	 if tre_varassp tre then
-	    {varass_x tre . varass_value tre};
+         if tre_varassp tre then
+            {varass_x tre . varass_value tre};
       cnt := t; while cnt and c do <<
-	 at := pop c;
-	 if ofsf_valueat(at, eqal) eq 'true then
-	    cnt := nil
+         at := pop c;
+         if ofsf_valueat(at, eqal) eq 'true then
+            cnt := nil
       >>;
       return if cnt then 'false else 'true
    end;
@@ -683,7 +683,7 @@ asserted procedure ofsf_subalf(f: SF, al: Alist): SQ;
    % SQs.
    begin scalar nred, nlc;
       if domainp f then
-      	 return !*f2q f;
+         return !*f2q f;
       nred := ofsf_subalf(red f, al);
       nlc := ofsf_subalf(lc f, al);
       return addsq(multsq(nlc, exptsq(cdr atsoc(mvar f, al), ldeg f)), nred)
@@ -694,7 +694,7 @@ asserted procedure ofsf_anusubf(f: SF, al: Alist): Aex;
    begin scalar aex;
       aex := aex_fromsf f;
       for each pr in al do
-	 aex := aex_bind(aex, car pr, cdr pr);
+         aex := aex_bind(aex, car pr, cdr pr);
       return aex
    end;
 
@@ -704,24 +704,24 @@ asserted procedure ofsf_chooseFromIv(iv: AnuInterval, x: Kernel): Anu;
    begin scalar lt, lb, ut, ub, rl, ru;
       % TODO: Pick a nice Anu.
       if anuiv_ptp iv then
-	 return anupt_anu iv;
+         return anupt_anu iv;
       % we know [anuiv_spp iv]
       lt := anusp_lt iv;
       lb := anusp_lb iv;
       if lt eq 'anusp_closed then
-	 return lb;
+         return lb;
       ut := anusp_ut iv;
       ub := anusp_ub iv;
       if ut eq 'anusp_closed then
-	 return ub;
+         return ub;
       % we know [lt eq 'anusp_open and ut eq 'anusp_open]
       if lb eq 'minf then <<
-	 if ub eq 'pinf then
-	    return anu_fromrat(x, nil ./ 1);
-	 return anu_fromrat(x, iv_lb anu_iv ub)
+         if ub eq 'pinf then
+            return anu_fromrat(x, nil ./ 1);
+         return anu_fromrat(x, iv_lb anu_iv ub)
       >>;
       if ub eq 'pinf then
-	 return anu_fromrat(x, iv_rb anu_iv lb);
+         return anu_fromrat(x, iv_rb anu_iv lb);
       rl := iv_rb anu_iv lb;
       ru := iv_lb anu_iv ub;
       assert(rat_leq(rl, ru));
@@ -731,7 +731,7 @@ asserted procedure ofsf_chooseFromIv(iv: AnuInterval, x: Kernel): Anu;
 asserted procedure ofsf_decideLiteral(s: State): State;
    begin scalar c, trl, atf;
       if state_mode s neq 'models then
-	 return nil;
+         return nil;
       c := state_target s;
       trl := state_trail s;
       atf := ofsf_pickCompatAtf(c, trl);
@@ -743,13 +743,13 @@ asserted procedure ofsf_pickCompatAtf(c: Clause, trl: Trail): OfsfAtf;
    begin scalar d, atf;
       c . d := ofsf_undefAtf(c, trl);
       if null d then
-	 return nil;
+         return nil;
       atf := car d;
       c . d := ofsf_undefAtf(cdr d, trl);
       if null d then
-	 return nil;
+         return nil;
       if ofsf_compatible(atf, trl) then
-      	 return atf
+         return atf
    end;
 
 asserted procedure ofsf_undefAtf(c: Clause, trl: Trail): DottedPair;
@@ -758,14 +758,14 @@ asserted procedure ofsf_undefAtf(c: Clause, trl: Trail): DottedPair;
    % has value ['undef].
    begin scalar cnt, atf, v, d;
       cnt := t; while cnt and c do <<
-	 atf := pop c;
-	 v := ofsf_value({atf}, trl);
-	 assert(v neq 'true);
-	 if v eq 'undef then <<
-	    cnt := nil;
-	    push(atf, c)
-	 >> else
-	    push(atf, d)
+         atf := pop c;
+         v := ofsf_value({atf}, trl);
+         assert(v neq 'true);
+         if v eq 'undef then <<
+            cnt := nil;
+            push(atf, c)
+         >> else
+            push(atf, d)
       >>;
       return reversip d . c
    end;
@@ -777,7 +777,7 @@ asserted procedure ofsf_compatible(atf: OfsfAtf, trl: Trail): ExtraBoolean;
 asserted procedure ofsf_BPropagate(s: State): State;
    begin scalar c, trl, atf;
       if state_mode s neq 'models then
-	 return nil;
+         return nil;
       c := state_target s;
       trl := state_trail s;
       atf := ofsf_pickBPropagatedAtf(c, trl);
@@ -791,19 +791,19 @@ asserted procedure ofsf_pickBPropagatedAtf(c: Clause, trl: Trail): OfsfAtf;
       atf := car d;
       c . d := ofsf_undefAtf(cdr d, trl);
       if d then
-	 return nil;
+         return nil;
       return atf
    end;
 
 asserted procedure ofsf_RPropagate(s: State): State;
    begin scalar c, trl, atf, e;
       if state_mode s neq 'models then
-	 return nil;
+         return nil;
       c := state_target s;
       trl := state_trail s;
       atf := ofsf_incompatibleAtf(c, trl);
       if not atf then
-	 return nil;
+         return nil;
       e := ofsf_explain(atf, trl);
       trl := trail_push(tlit_mk('rl_proplit, e, atf), trl);
       return state_mk(nil, nil, trl, state_cl s, state_vl s, state_level s)
@@ -815,12 +815,12 @@ asserted procedure ofsf_incompatibleAtf(c: Clause, trl: Trail): DottedPair;
    % has value ['undef] and the negation of it is incompatible with [trl].
    begin scalar cnt, d, atf;
       cnt := t; while cnt and c do <<
-      	 c . d := ofsf_undefAtf(c, trl);
-      	 atf := car d;
-      	 if not ofsf_compatible(ofsf_negateat atf, trl) then
-      	    cnt := nil
-      	 else
-      	    c := cdr d
+         c . d := ofsf_undefAtf(c, trl);
+         atf := car d;
+         if not ofsf_compatible(ofsf_negateat atf, trl) then
+            cnt := nil
+         else
+            c := cdr d
       >>;
       return if cnt then nil else atf
    end;
@@ -843,8 +843,8 @@ procedure ofsf_ivapprox(iv);
       {'anuiv_fpoint, anu_evalf cadr iv}
    else
       {'anuiv_fspan,
-   	 {anusp_lt iv, ganu_evalf anusp_lb iv},
-	 {anusp_ut iv, ganu_evalf anusp_ub iv}};
+         {anusp_lt iv, ganu_evalf anusp_lb iv},
+         {anusp_ut iv, ganu_evalf anusp_ub iv}};
 
 procedure ofsf_ivlprint(ivl);
    if not ivl then
@@ -853,8 +853,8 @@ procedure ofsf_ivlprint(ivl);
       ioto_prin2 "{";
       ofsf_ivprin car ivl;
       for each iv in cdr ivl do <<
-	 ioto_prin2 ", ";
-	 ofsf_ivprin iv
+         ioto_prin2 ", ";
+         ofsf_ivprin iv
       >>;
       ioto_prin2t "}"
    >>;
@@ -872,25 +872,25 @@ procedure ofsf_ivprin(iv);
       w := errorset({'ofsf_ivprin1, mkquote iv}, nil, !*backtrace);
       setprintprecision oldprecision;
       if errorp w then
-	 rederr emsg!*;
+         rederr emsg!*;
       return car w
    end;
 
 procedure ofsf_ivprin1(iv);
    begin scalar lb, ub;
       if not iv then
-	 return;
+         return;
       if eqcar(iv, 'anuiv_fpoint) then
-      	 ioto_prin2 cadr iv
+         ioto_prin2 cadr iv
       else <<
-	 lb := cadr iv;
-	 ub := cadr cdr iv;
-      	 ioto_prin2 {
-      	    if car lb eq 'anusp_open then "]" else "[",
-      	    if cadr lb neq 'minf then cadr lb else "minf",
-      	    ",",
-      	    if cadr ub neq 'pinf then cadr ub else "pinf",
-      	    if car ub eq 'anusp_open then "[" else "]"}
+         lb := cadr iv;
+         ub := cadr cdr iv;
+         ioto_prin2 {
+            if car lb eq 'anusp_open then "]" else "[",
+            if cadr lb neq 'minf then cadr lb else "minf",
+            ",",
+            if cadr ub neq 'pinf then cadr ub else "pinf",
+            if car ub eq 'anusp_open then "[" else "]"}
       >>
    end;
 

@@ -326,17 +326,13 @@ asserted procedure cl_ordp(f1: Formula, f2: Formula): ExtraBoolean;
       if rl_tvalp op1 then
          return t;
       if rl_quap op1 then
-         if rl_var f1 neq rl_var f2 then
-            return not(ordp(rl_var f1, rl_var f2) and rl_var f1 neq rl_var f2)
+         return if rl_var f1 neq rl_var f2 then
+            not(ordp(rl_var f1, rl_var f2) and rl_var f1 neq rl_var f2)
          else
-            return cl_ordp(rl_mat f1, rl_mat f2);
+            cl_ordp(rl_mat f1, rl_mat f2);
       if rl_bquap op1 then
-         if rl_var f1 neq rl_var f2 then
-            return not(ordp(rl_var f1, rl_var f2) and rl_var f1 neq rl_var f2)
-         else if rl_b f1 neq rl_b f2 then
-            return cl_ordp(rl_b f1, rl_b f2)
-         else
-            return cl_ordp(rl_mat f1, rl_mat f2);
+         return rl_BQordp(f1, f2);
+      ASSERT( rl_junctp f1 and op1 = op2 );
       return cl_ordpl(rl_argn f1, rl_argn f2)
    end;
 

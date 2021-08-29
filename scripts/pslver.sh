@@ -62,6 +62,9 @@ case $host in
 *armv6*|*armv7*)
   echo "armv6"
   ;;
+aarch64-apple-darwin*)
+  echo "macaarch64"
+  ;;  
 *aarch64*)
   echo "aarch64"
   ;;

@@ -152,11 +152,11 @@ asserted procedure vsds_applyvs(ds: VSds);
    begin scalar vs;
       vs := vsds_vs ds;
       if vsvs_arp vs then
-	 vsds_applyvsar ds;
+         vsds_applyvsar ds;
       if vsvs_dgp vs then
-	 vsds_applyvsdg ds;
+         vsds_applyvsdg ds;
       if vsvs_tsp vs then
-	 vs_applyfn('fn_applyvsts, {ds})
+         vs_applyfn('fn_applyvsts, {ds})
    end;
 
 asserted procedure vsds_applyvsar(ds: VSds);
@@ -177,7 +177,7 @@ asserted procedure vsds_applyvsdg(ds: VSds);
       f := vsds_f ds;
       f := cl_apply2ats1(f, 'vsdg_decdeg, {vsvs_v vs, vsdg_g vs, vsdg_sv vs});
       if evenp vsdg_g vs then
-	 f := rl_mk2('and, ofsf_0mk2('geq, !*k2f vsdg_sv vs), f);
+         f := rl_mk2('and, ofsf_0mk2('geq, !*k2f vsdg_sv vs), f);
       vsds_putres(ds, f)
    end;
 
@@ -203,8 +203,8 @@ asserted procedure vsds_applyvsts(ds: VSds);
       theo := append(vsds_ptheo ds, ttheo);
       g . ttheo := vsds_g2gtt(vstp_guard tp, theo, ttheo);
       if g eq 'false then <<
-	 vsds_putres(ds, 'false);
-	 return
+         vsds_putres(ds, 'false);
+         return
       >>;
       vsds_putttheo(ds, ttheo);
       f := qff_replacel(f, vstp_gpl tp, 'false);
@@ -212,22 +212,22 @@ asserted procedure vsds_applyvsts(ds: VSds);
       % test point [tp] with ['true]. WARNING: This replacement is NOT
       % correct when using clustering!
       if !*rlverbose then <<
-	 ioto_tprin2 {"+++++ VSUB ", vsvs_v vs, " "};
-	 ioto_prin2 "[condense"
+         ioto_tprin2 {"+++++ VSUB ", vsvs_v vs, " "};
+         ioto_prin2 "[condense"
       >>;
       f := qff_condense(f, vstp_p tp);
       if !*rlverbose then <<
-	 ioto_prin2 "]";
-	 ioto_prin2 "[substitute"
+         ioto_prin2 "]";
+         ioto_prin2 "[substitute"
       >>;
       f := cl_apply2ats1(f, 'vsds_applyvsts!-at, {ds});
       if !*rlverbose then <<
-	 ioto_prin2 "]";
-	 ioto_prin2 "[simplify"
+         ioto_prin2 "]";
+         ioto_prin2 "[simplify"
       >>;
       f := cl_simpl(rl_mk2('and, g, f), theo, -1);
       if !*rlverbose then
-	 ioto_prin2t "]";
+         ioto_prin2t "]";
       vsds_putres(ds, f)
    end;
 
@@ -238,14 +238,14 @@ asserted procedure vsds_g2gtt(g: QfFormula, theo: Theory, ttheo: Theory): Dotted
    begin scalar op;
       g := cl_simpl(g, theo, -1);
       if rl_tvalp g then
-	 return g . ttheo;
+         return g . ttheo;
       op := rl_op g;
       if not rl_boolp op then
-	 return g . append(ttheo, {g});
+         return g . append(ttheo, {g});
       if op eq 'and then <<
-	 return g . append(ttheo,
-	    for each f in rl_argn g join
-	       if not rl_boolp rl_op f then {f})
+         return g . append(ttheo,
+            for each f in rl_argn g join
+               if not rl_boolp rl_op f then {f})
       >>;
       return g . ttheo
    end;
@@ -269,27 +269,27 @@ asserted procedure qff_condense(f: QfFormula, p: Position): QfFormula;
    % ['false].
    begin scalar op, ncl; integer n, i;
       if null p then
-	 return f;
+         return f;
       op := rl_op f;
       assert(op eq 'and or op eq 'or);
       n := car p;
       if op eq 'and then <<
-	 for each c in rl_argn f do <<
-	    i := i + 1;
-	    if eqn(i, n) then
-	       push(qff_condense(c, cdr p), ncl)
-	    else
-	       push(c, ncl)
-	 >>;
-      	 return rl_mkn(op, reversip ncl)
+         for each c in rl_argn f do <<
+            i := i + 1;
+            if eqn(i, n) then
+               push(qff_condense(c, cdr p), ncl)
+            else
+               push(c, ncl)
+         >>;
+         return rl_mkn(op, reversip ncl)
       >>;
       % we know that [op eq 'or]
       for each c in rl_argn f do <<
-	 i := i + 1;
-	 if eqn(i, n) then
-	    push(qff_condense(c, cdr p), ncl)
-	 else
-	    push('false, ncl)
+         i := i + 1;
+         if eqn(i, n) then
+            push(qff_condense(c, cdr p), ncl)
+         else
+            push('false, ncl)
       >>;
       return rl_mkn(op, reversip ncl)
    end;
@@ -302,13 +302,13 @@ asserted procedure vsds_applyvsts!-at(at: QfFormula, ds: VSds): QfFormula;
       x := vsvs_v vsds_vs ds;
       np := vstp_np vsts_tp vsds_vs ds;
       w := if np memq '(minf pinf) then
-	 vsds_expand!-at!-inf(at, x, np)
+         vsds_expand!-at!-inf(at, x, np)
       else if np memq '(meps peps) then
-	 vsds_expand!-at!-eps(at, x, np)
+         vsds_expand!-at!-eps(at, x, np)
       else
-	 at;
+         at;
       if np memq '(minf pinf) then
-	 return w;
+         return w;
       pr := vstp_pr vsts_tp vsds_vs ds;
       theo := append(vsds_ptheo ds, vsds_ttheo ds);
       return cl_apply2ats1(w, 'vsds_applyvsts!-at!-pr, {pr, theo})
@@ -319,15 +319,15 @@ asserted procedure vsds_expand!-at!-inf(at: QfFormula, x: Kernel, np: Id): QfFor
    begin scalar g, op;
       assert(np memq '(minf pinf));
       if rl_tvalp at then
-	 return at;
+         return at;
       g := rl_arg2l at;
       if not sfto_mvartest(g, x) then
-	 return at;
+         return at;
       op := rl_op at;
       if op eq 'equal then
-      	 return rl_mkn('and, for each c in coeffs g collect ofsf_0mk2('equal, c));
+         return rl_mkn('and, for each c in coeffs g collect ofsf_0mk2('equal, c));
       if op eq 'neq then
-      	 return rl_mkn('or, for each c in coeffs g collect ofsf_0mk2('neq, c));
+         return rl_mkn('or, for each c in coeffs g collect ofsf_0mk2('neq, c));
       return vsds_expand!-at!-inf1(op, g, x, np)
    end;
 
@@ -336,13 +336,13 @@ asserted procedure vsds_expand!-at!-inf1(op: Id, g: SF, x: Kernel, np: Id): QfFo
    begin scalar w;
       assert(op memq '(lessp leq geq greaterp));
       if not sfto_mvartest(g, x) then
-	 return ofsf_0mk2(op, g);
+         return ofsf_0mk2(op, g);
       w := if np eq 'minf and not evenp ldeg g then
-	 negf lc g
+         negf lc g
       else
-	 lc g;
+         lc g;
       return rl_mkn('or, {ofsf_0mk2(ofsf_mkstrict op, w),
-	 rl_mkn('and, {ofsf_0mk2('equal, w), vsds_expand!-at!-inf1(op, red g, x, np)})})
+         rl_mkn('and, {ofsf_0mk2('equal, w), vsds_expand!-at!-inf1(op, red g, x, np)})})
    end;
 
 asserted procedure vsds_expand!-at!-eps(at: QfFormula, x: Kernel, np: Id): QfFormula;
@@ -350,15 +350,15 @@ asserted procedure vsds_expand!-at!-eps(at: QfFormula, x: Kernel, np: Id): QfFor
    begin scalar g, op;
       assert(np memq '(meps peps));
       if rl_tvalp at then
-	 return at;
+         return at;
       g := rl_arg2l at;
       if not sfto_mvartest(g, x) then
-	 return at;
+         return at;
       op := rl_op at;
       if op eq 'equal then
-      	 return rl_mkn('and, for each c in coeffs g collect ofsf_0mk2('equal, c));
+         return rl_mkn('and, for each c in coeffs g collect ofsf_0mk2('equal, c));
       if op eq 'neq then
-      	 return rl_mkn('or, for each c in coeffs g collect ofsf_0mk2('neq, c));
+         return rl_mkn('or, for each c in coeffs g collect ofsf_0mk2('neq, c));
       return vsds_expand!-at!-eps1(op, g, x, np)
    end;
 
@@ -367,24 +367,24 @@ asserted procedure vsds_expand!-at!-eps1(op: Id, g: SF, x: Kernel, np: Id): QfFo
    begin scalar dg;
       assert(op memq '(lessp leq geq greaterp));
       if not sfto_mvartest(g, x) then
-	 return ofsf_0mk2(op, g);
+         return ofsf_0mk2(op, g);
       dg := if np eq 'peps then
-	 diff(g, x)
+         diff(g, x)
       else
-	 negf diff(g, x);
+         negf diff(g, x);
       return rl_mkn('or, {ofsf_0mk2(ofsf_mkstrict op, g),
-	 rl_mkn('and, {ofsf_0mk2('equal, g), vsds_expand!-at!-eps1(op, dg, x, np)})})
+         rl_mkn('and, {ofsf_0mk2('equal, g), vsds_expand!-at!-eps1(op, dg, x, np)})})
    end;
 
 asserted procedure vsds_applyvsts!-at!-pr(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    % Apply virtual substitution to an atomic formula.
    begin scalar g, x, f;
       if rl_tvalp at then
-	 return at;
+         return at;
       g := rl_arg2l at;
       x := vspr_v pr;
       if not sfto_mvartest(g, x) then
-	 return at;
+         return at;
       f := vspr_f pr;
       g := sfto_psrem!-sgn(g, f, x, theo);
       return vsub_vsub(ofsf_0mk2(rl_op at, g), pr, theo)
@@ -405,18 +405,18 @@ asserted procedure sfto_psrem!-sgn(g: SF, f: SF, x: Kernel, theo: Theory): SF;
       srm := ofsf_surep(ofsf_0mk2('leq, lcf), theo);
       degg := sfto_vardeg(g, x);
       while degg >= degf do <<
-	 w := multf(sfto_kexp(x, degg - degf), red f);
-      	 lcg := lc g;
-	 qlc := quotf(lcg, lcf);
-	 g := if qlc then
-	    addf(red g, negf multf(qlc, w))
-	 else if srp then
-	    addf(multf(lcf, red g), negf multf(lcg, w))
-	 else if srm then
-	    negf addf(multf(lcf, red g), negf multf(lcg, w))
-	 else
-	    addf(multf(multf(lcf, lcf), red g), negf multf(multf(lcf, lcg), w));
-	 degg := sfto_vardeg(g, x)
+         w := multf(sfto_kexp(x, degg - degf), red f);
+         lcg := lc g;
+         qlc := quotf(lcg, lcf);
+         g := if qlc then
+            addf(red g, negf multf(qlc, w))
+         else if srp then
+            addf(multf(lcf, red g), negf multf(lcg, w))
+         else if srm then
+            negf addf(multf(lcf, red g), negf multf(lcg, w))
+         else
+            addf(multf(multf(lcf, lcf), red g), negf multf(multf(lcf, lcg), w));
+         degg := sfto_vardeg(g, x)
       >>;
       return g
    end;
@@ -435,12 +435,12 @@ asserted procedure vsvs_prints(vs: VSvs);
    <<
       ioto_prin2 {"VSvs: "};
       if vsvs_tsp vs then <<
-      	 ioto_prin2t {vsvs_v vs, " = tp"};
-	 vstp_prints vsts_tp vs
+         ioto_prin2t {vsvs_v vs, " = tp"};
+         vstp_prints vsts_tp vs
       >> else if vsvs_dgp vs then
-      	 ioto_prin2t {vsvs_v vs, " = ", vsdg_g vs, "-th root of ", vsdg_sv vs}
+         ioto_prin2t {vsvs_v vs, " = ", vsdg_g vs, "-th root of ", vsdg_sv vs}
       else if vsvs_arp vs then
-      	 ioto_prin2t {vsvs_v vs, " = arbitrary"}
+         ioto_prin2t {vsvs_v vs, " = arbitrary"}
    >>;
 
 endmodule;  % [ofsfvssub]

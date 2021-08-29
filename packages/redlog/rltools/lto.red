@@ -49,10 +49,10 @@ asserted procedure lto_quicksort(l: List, sortp: Applicable): List;
       % Construct two sets by comparing all others with the first one.
       crit := car l;
       for each entry in cdr l do
-    	 if apply(sortp,{entry,crit}) then
- 	    s1 := entry . s1
- 	 else
- 	    s2 := entry . s2;
+         if apply(sortp,{entry,crit}) then
+            s1 := entry . s1
+         else
+            s2 := entry . s2;
       % sort the two lists recursively and place crit in between
       return nconc(lto_quicksort(s1,sortp),crit . lto_quicksort(s2,sortp))
    end;
@@ -110,12 +110,12 @@ asserted procedure lto_transposip(l: List): List;
    % [l] is a list of list encoding a quadratic matrix. Returns the transpose of [l].
    begin integer row, res, w;
       while l and car l do <<
-	 row := for each rl on l collect <<
- 	    w := caar rl;
-	    car rl := cdar rl;
-	    w
-	 >>;
-	 push(row, res)
+         row := for each rl on l collect <<
+            w := caar rl;
+            car rl := cdar rl;
+            w
+         >>;
+         push(row, res)
       >>;
       return reversip res
    end;
@@ -164,8 +164,8 @@ asserted procedure lto_alpatch(key: Id, val: Any, al: Alist): Alist;
    begin scalar w;
       w := atsoc(key, al);
       if w then <<
-	 cdr w := val;
-	 return al
+         cdr w := val;
+         return al
       >>;
       return (key . val) . al
    end;
@@ -246,15 +246,15 @@ asserted procedure lto_almerge(all: List, merge: Applicable): Alist;
       if null all then return nil;
       if null cdr all then return car all;
       if null cddr all then <<
-	 l2 := cadr all;
-    	 for each pair in car all do <<
-      	    a := assoc(car pair,l2);
-      	    if a then
- 	       cdr a := apply(merge,{cdr pair,cdr a})
-      	    else
- 	       l2 := pair . l2
-    	 >>;
-    	 return l2
+         l2 := cadr all;
+         for each pair in car all do <<
+            a := assoc(car pair,l2);
+            if a then
+               cdr a := apply(merge,{cdr pair,cdr a})
+            else
+               l2 := pair . l2
+         >>;
+         return l2
       >>;
       return lto_almerge({car all,lto_almerge(cdr all,merge)},merge)
    end;
@@ -285,9 +285,9 @@ asserted procedure lto_sconcat(l: List): String;
    % strings in [l].
 %   if l then          % this version explodes and reconstitutes all but the
 %      if cdr l then   % first string multiple times,
-% 	 lto_sconcat2(car l,lto_sconcat cdr l)
+%        lto_sconcat2(car l,lto_sconcat cdr l)
 %      else
-%	 car l
+%        car l
 %   else
 %      "";
    begin
@@ -302,21 +302,21 @@ asserted procedure lto_substr(s: String, n: Integer, m: Integer): ExtraBoolean;
    % Return the n character substring starting at m, or nil.
    begin scalar l, res;
       if eqn(m, 0) then
-	 return nil;
+         return nil;
       l := cdr explode s;
       while not eqn(m, 1) and l do <<
-	 m := m - 1;
-	 pop l
+         m := m - 1;
+         pop l
       >>;
       if not l then
- 	 return nil;
+         return nil;
       res := '!" . nil;
       while not eqn(n, 0) and l do <<
-	 n := n - 1;
-	 res := pop l . res
+         n := n - 1;
+         res := pop l . res
       >>;
       if not l then
- 	 return nil;
+         return nil;
       return compress reversip('!" . res)
    end;
 
@@ -363,10 +363,10 @@ asserted procedure lto_ravg(l: List): Floating;
    % float.
    begin integer s, n;
       if null l then
-	 rederr "lto_ravg: empty list";
+         rederr "lto_ravg: empty list";
       s := for each x in l sum <<
-	 n := n + 1;
-	 x
+         n := n + 1;
+         x
       >>;
       return float s / float n
    end;
@@ -375,12 +375,12 @@ asserted procedure lto_rmedian(l: List): Floating;
    % Rounded median of a list. [l] is a list of integers. Returns a float.
    begin integer n, n2;
       if null l then
-	 rederr "lto_rmedian: empty list";
+         rederr "lto_rmedian: empty list";
       l := sort(l, 'leq);
       n := length l;
       n2 := n/2;
       if evenp n then
-      	 return (float nth(l, n2) + float nth(l, n2+1)) / 2.0;
+         return (float nth(l, n2) + float nth(l, n2+1)) / 2.0;
       return float nth(l, n2+1)
    end;
 
@@ -412,17 +412,17 @@ asserted procedure lto_setequalq(s1: List, s2: List): Boolean;
    % s1 and s2 are lists of identifiers not containing any duplicates.
    begin scalar c,a1,w;
       w := if !*rlsetequalqhash then
- 	 lto_hashequalq(s1,s2)
+         lto_hashequalq(s1,s2)
       else
-	 lto_equallengthp(s1,s2);
+         lto_equallengthp(s1,s2);
       if not w then
-	 return nil;
+         return nil;
       c := t; while c and s1 do <<
-	 a1 := car s1;
-	 if a1 memq s2 then
-	    s1 := cdr s1
-	 else
-	    c := nil
+         a1 := car s1;
+         if a1 memq s2 then
+            s1 := cdr s1
+         else
+            c := nil
       >>;
       return c
    end;
@@ -431,12 +431,12 @@ asserted procedure lto_hashequalq(s1: List, s2: List): Boolean;
    % s1 and s2 are lists of identifiers.
    begin scalar a1,a2; integer n1,n2;
       while s1 and s2 do <<
-	 a1 := car s1;
-	 a2 := car s2;
-	 s1 := cdr s1;
-	 s2 := cdr s2;
-	 n1 := n1 #+ lto_hashid a1;
-	 n2 := n2 #+ lto_hashid a2
+         a1 := car s1;
+         a2 := car s2;
+         s1 := cdr s1;
+         s2 := cdr s2;
+         n1 := n1 #+ lto_hashid a1;
+         n2 := n2 #+ lto_hashid a2
       >>;
       return null s1 and null s2 and (n1 #= n2)
    end;
@@ -444,8 +444,8 @@ asserted procedure lto_hashequalq(s1: List, s2: List): Boolean;
 asserted procedure lto_equallengthp(s1: List, s2: List): Boolean;
    <<
       while s1 and s2 do <<
-	 s1 := cdr s1;
-	 s2 := cdr s2
+         s1 := cdr s1;
+         s2 := cdr s2
       >>;
       null s1 and null s2
    >>;
@@ -467,10 +467,10 @@ asserted procedure lto_cartprod1(s: List): List;
    % $n$-element lists.
    begin scalar w;
       if null cdr s then
-      	 return for each m in car s collect {m};
+         return for each m in car s collect {m};
       w := lto_cartprod1 cdr s;
       return for each m in car s join
-      	 for each y in w collect m . y
+         for each y in w collect m . y
    end;
 
 procedure lto_hmember(item,hl,hfn);
@@ -479,10 +479,10 @@ procedure lto_hmember(item,hl,hfn);
 procedure lto_hmember1(item,hl,keyl);
    begin scalar w;
       if not keyl then
-	 return member(item,hl);
+         return member(item,hl);
       w := assoc(car keyl,hl);
       if not w then
-	 return nil;
+         return nil;
       return lto_hmember1(item,cdr w,cdr keyl)
    end;
 
@@ -492,11 +492,11 @@ procedure lto_hinsert(item,hl,hfn);
 procedure lto_hinsert1(item,hl,keyl);
    begin scalar key,w;
       if not keyl then
-	 return item . hl;
+         return item . hl;
       key := car keyl;
       w := assoc(key,hl);
       if not w then
-	 return lto_hentry(key,cdr keyl,item) . hl;
+         return lto_hentry(key,cdr keyl,item) . hl;
       cdr w := lto_hinsert1(item,cdr w,cdr keyl);
       return hl
    end;
@@ -513,11 +513,11 @@ procedure lto_hdelete(item,hl,hfn);
 procedure lto_hdelete1(item,hl,keyl);
    begin scalar w,key;
       if not keyl then
-      	 return deletip(item,hl);
+         return deletip(item,hl);
       key := car keyl;
       w := assoc(key,hl);
       if w then
-	 cdr w := lto_hdelete1(item,cdr w,cdr keyl);
+         cdr w := lto_hdelete1(item,cdr w,cdr keyl);
       return hl
    end;
 
@@ -534,9 +534,9 @@ asserted procedure lto_zip(l1: List, l2: List, f: Applicable): List;
 asserted procedure lto_partition(l: List, f: Applicable): DottedPair;
    begin scalar goodl, badl;
       for each x in l do if apply(f, {x}) then
-	 goodl := x . goodl
+         goodl := x . goodl
       else
-	 badl := x . badl;
+         badl := x . badl;
       return reversip goodl . reversip badl
    end;
 
@@ -544,21 +544,21 @@ asserted procedure lto_delnthip(l: List, n: Integer): List;
    % Delete the nth member of l in place.
    begin scalar scl;
       if null l then
-	 rederr {"index", n, "out of range for in lto_delnthip"};
+         rederr {"index", n, "out of range for in lto_delnthip"};
       if n < 1 then
- 	 return l;
+         return l;
       if eqn(n, 1) then
-      	 return cdr l;
+         return cdr l;
       scl := l;
       for i := 1 : n-2 do
-	 if cdr scl then
- 	    scl := cdr scl
-	 else
-	    rederr {"index", n, "out of range in lto_delnthip"};
+         if cdr scl then
+            scl := cdr scl
+         else
+            rederr {"index", n, "out of range in lto_delnthip"};
       if cdr scl then
-      	 cdr scl := cddr scl
+         cdr scl := cddr scl
       else
-	 rederr {"index", n, "out of range in lto_delnthip"};
+         rederr {"index", n, "out of range in lto_delnthip"};
       return l
    end;
 
@@ -567,7 +567,7 @@ asserted procedure lto_apply2nthip(l: List, n: Integer, fun: Applicable, xargl: 
       assert(1 leq n and n leq length l);
       scl := l;
       for i := 1 : n-1 do
-      	 scl := cdr scl;
+         scl := cdr scl;
       car scl := apply(fun, car scl . xargl);
       return l
    end;
@@ -637,8 +637,8 @@ asserted procedure lto_list2vector(l: List): Vector;
       v := mkvect sub1 length l;
       i := 0;
       for each vl in l do <<
-	 putv(v,i,vl);
-	 i := i+1
+         putv(v,i,vl);
+         i := i+1
       >>;
       return v
    end;
@@ -671,10 +671,10 @@ asserted procedure lto_gensym1(base: Id): Id;
 % generated name will appear in output returned to the user.
       c := atsoc(base, rlgensymcountal!*);
       if c then
-      	 cdr c := cdr c + 1
+         cdr c := cdr c + 1
       else <<
-	 c := base . 1;
-	 push(c, rlgensymcountal!*)
+         c := base . 1;
+         push(c, rlgensymcountal!*)
       >>;
       l := explode cdr c;
       for i := length l + 1 : rlgensymlen!* do push('!0, l);
@@ -688,12 +688,12 @@ asserted procedure lto_maxkl(kl: List): Kernel;
    % kernel w.r.t. kord!* or nil if [kl] is nil.
    begin scalar m, w;
       if null kl then
-      	 return nil;
+         return nil;
       m := pop kl;
       while kl do <<
-	 w := pop kl;
-	 if ordop(m, w) then
-	    m := w
+         w := pop kl;
+         if ordop(m, w) then
+            m := w
       >>;
       return m
    end;
@@ -707,7 +707,7 @@ asserted procedure lto_alphap(x: Id): ExtraBoolean;
       c := t;
       l := explode x;
       while c and l do
-	 c := liter pop l;
+         c := liter pop l;
       return c
    end;
 
@@ -723,7 +723,7 @@ asserted procedure lto_upcase(s: String): String;
 asserted procedure lto_charUpcase(c: Id): Id;
    begin scalar table;
       table := '((!a . !A) (!b . !B) (!c . !C) (!d . !D) (!e .  !E) (!f . !F)
-       	 (!g . !G) (!h . !H) (!i . !I) (!j . !J) (!k . !K) (!l . !L) (!m . !M)
+         (!g . !G) (!h . !H) (!i . !I) (!j . !J) (!k . !K) (!l . !L) (!m . !M)
             (!n . !N) (!o . !O) (!p . !P) (!q . !Q) (!r . !R) (!s . !S) (!t . !T)
                (!u . !U) (!v . !V) (!w . !W) (!x . !X) (!y . !Y) (!z. !Z));
       return lto_catsoc(c, table) or c
@@ -735,7 +735,7 @@ asserted procedure lto_downcase(s: String): String;
 asserted procedure lto_charDowncase(c: Id): Id;
    begin scalar table;
       table := '((!A . !a) (!B . !b) (!C . !c) (!D . !d) (!E .  !e) (!F . !f)
-       	 (!G . !g) (!H . !h) (!I . !i) (!J . !j) (!K . !k) (!L . !l) (!M . !m)
+         (!G . !g) (!H . !h) (!I . !i) (!J . !j) (!K . !k) (!L . !l) (!M . !m)
             (!N . !n) (!O . !o) (!P . !p) (!Q . !q) (!R . !r) (!S . !s) (!T . !t)
                (!U . !u) (!V . !v) (!W . !w) (!X . !x) (!Y . !y) (!Z. !z));
       return lto_catsoc(c, table) or c
@@ -744,36 +744,36 @@ asserted procedure lto_charDowncase(c: Id): Id;
 asserted procedure lto_stringDescriptionList(al: Alist, indent: Integer, colsep: Integer, len: Integer, xdtl: List): List;
    begin scalar line, lines, indentl, dt, ddl; integer llen, roffset, lendt;
       for i := 1:indent do <<
-	 push('!!, indentl);
-	 push('! , indentl)
+         push('!!, indentl);
+         push('! , indentl)
       >>;
       for each pr in al do
-	 llen := max2(llen, lto_strlen car pr);
+         llen := max2(llen, lto_strlen car pr);
       for each x in xdtl do
-	 llen := max2(llen, lto_strlen x);
+         llen := max2(llen, lto_strlen x);
       roffset := indent + llen + colsep;
       line := indentl;
       for each pr in al do <<
-	 dt := car pr;
-	 lendt := lto_strlen dt;
-	 for each c in explodec dt do <<
-	    push('!!, line);
-	    push(c, line)
-	 >>;
-	 ddl := lto_stringParagraph(cdr pr, 0, len - roffset);
-	 for each l in ddl do <<
-	    for i := indent +  lendt : roffset do <<
-	       push('!!, line);
-	       push('! , line)
-	    >>;
-	    for each c in explodec l do <<
-	       push('!!, line);
-	       push(c, line)
-	    >>;
-      	    push(id2string compress reverse line, lines);
-      	    line := indentl;
-	    lendt := 0
-	 >>
+         dt := car pr;
+         lendt := lto_strlen dt;
+         for each c in explodec dt do <<
+            push('!!, line);
+            push(c, line)
+         >>;
+         ddl := lto_stringParagraph(cdr pr, 0, len - roffset);
+         for each l in ddl do <<
+            for i := indent +  lendt : roffset do <<
+               push('!!, line);
+               push('! , line)
+            >>;
+            for each c in explodec l do <<
+               push('!!, line);
+               push(c, line)
+            >>;
+            push(id2string compress reverse line, lines);
+            line := indentl;
+            lendt := 0
+         >>
       >>;
       return reversip lines
    end;
@@ -786,17 +786,17 @@ asserted procedure lto_stringSplit(s: String, fsl: List): String;
    % field separators.
    begin scalar wl, sl, fsl;
       for each c in explodec s do
-	 if c memq fsl then <<
-	    if wl then <<
-	       push(id2string compress reversip wl, sl);
-	       wl := nil
-	    >>
-      	 >> else <<
-	    push('!!, wl);
-	    push(c, wl)
-	 >>;
+         if c memq fsl then <<
+            if wl then <<
+               push(id2string compress reversip wl, sl);
+               wl := nil
+            >>
+         >> else <<
+            push('!!, wl);
+            push(c, wl)
+         >>;
       if wl then
-	 push(id2string compress reversip wl, sl);
+         push(id2string compress reversip wl, sl);
       return reversip sl
    end;
 
@@ -806,28 +806,28 @@ asserted procedure lto_stringFormat(sl: List, indent: Integer, len: Integer): Li
    begin scalar line, lines, indentl, s; integer l, slen;
       l := len - indent;
       for i := 1:indent do <<
-	 push('!!, indentl);
-	 push('! , indentl)
+         push('!!, indentl);
+         push('! , indentl)
       >>;
       line := indentl;
       for each rest on sl do <<
-	 s := car rest;
-	 slen := lto_strlen s;
-	 if slen > l and line neq indentl then <<
-	    push(id2string compress reverse cddr line, lines);
-	    line := indentl;
-	    l := len - indent
-	 >>;
-	 for each c in explodec s do <<
-	    push('!!, line);
-	    push(c, line)
-	 >>;
-	 l := l - slen;
-	 if cdr rest then <<
-	    push('!!, line);
-	    push('! , line);
-	    l := l - 1
-	 >>
+         s := car rest;
+         slen := lto_strlen s;
+         if slen > l and line neq indentl then <<
+            push(id2string compress reverse cddr line, lines);
+            line := indentl;
+            l := len - indent
+         >>;
+         for each c in explodec s do <<
+            push('!!, line);
+            push(c, line)
+         >>;
+         l := l - slen;
+         if cdr rest then <<
+            push('!!, line);
+            push('! , line);
+            l := l - 1
+         >>
       >>;
       push(if line then id2string compress reversip line else "", lines);
       return reversip lines
@@ -844,29 +844,29 @@ asserted procedure lto_vertexCover(el: List, exact: Boolean): List;
    begin scalar oc, seenl, fl, obj, z, zz, w, best, s;
       oc := rl_set '(r);
       for each e in el do <<
-	 for each v in {car e, cdr e} do
-	    if not (v memq seenl) then <<
-	       push(v, seenl);
-	       if exact then
-	       	  push(lto_vcZeroOrOne !*k2f v, fl)
-	       else
-	       	  push(lto_vcVertexGeqOne !*k2f v, fl);
-	       obj := addf(obj, !*k2f v)
-	    >>;
-	 push(lto_vcEdgeGeqOne(!*k2f car e, !*k2f cdr e), fl)
+         for each v in {car e, cdr e} do
+            if not (v memq seenl) then <<
+               push(v, seenl);
+               if exact then
+                  push(lto_vcZeroOrOne !*k2f v, fl)
+               else
+                  push(lto_vcVertexGeqOne !*k2f v, fl);
+               obj := addf(obj, !*k2f v)
+            >>;
+         push(lto_vcEdgeGeqOne(!*k2f car e, !*k2f cdr e), fl)
       >>;
       zz := intern gensym();
       z := !*k2f zz;
       w := ofsf_xopt!-ansl!-ansl ofsf_xopt!-xopt
- 	 cl_ex(rl_smkn('and, ofsf_0mk2('geq, addf(z, negf obj)) . fl), {zz});
+         cl_ex(rl_smkn('and, ofsf_0mk2('geq, addf(z, negf obj)) . fl), {zz});
       best := pop w;
       for each ans in w do
-	 if lto_vcBetterp(ans, best, z) then
- 	    best := ans;
+         if lto_vcBetterp(ans, best, z) then
+            best := ans;
       w := for each pr in ofsf_xopt!-ans!-pt best join <<
-	 s := simp cdr pr;
-	 if 2 * (numr s or 0) >= denr s then
- 	    {car pr}
+         s := simp cdr pr;
+         if 2 * (numr s or 0) >= denr s then
+            {car pr}
       >>;
       rl_set oc;
       return w
@@ -899,30 +899,30 @@ asserted procedure lto_setCover1(l: List): List;
    begin scalar oc, f1, xf, lhs, l2, f2, obj, f3, zz, z, w;
       oc := rl_set '(r);
       f1 := rl_smkn('and, for each pr in l collect <<
-	 xf := !*k2f car pr;
- 	 rl_mkn('or, {ofsf_0mk2('equal, xf), ofsf_0mk2('equal, addf(xf, negf 1))})
+         xf := !*k2f car pr;
+         rl_mkn('or, {ofsf_0mk2('equal, xf), ofsf_0mk2('equal, addf(xf, negf 1))})
       >>);
       while cdr car l do <<
-	 lhs := nil;
-	 for each pr in l do <<
-	    if eqn(car cdr pr, 1) then
-	       lhs := addf(lhs, !*k2f car pr);
-	    cdr pr := cdr cdr pr
-	 >>;
-	 if lhs then
-	    push(ofsf_0mk2('geq, addf(lhs, negf 1)), l2)
+         lhs := nil;
+         for each pr in l do <<
+            if eqn(car cdr pr, 1) then
+               lhs := addf(lhs, !*k2f car pr);
+            cdr pr := cdr cdr pr
+         >>;
+         if lhs then
+            push(ofsf_0mk2('geq, addf(lhs, negf 1)), l2)
       >>;
       f2 := rl_smkn('and, l2);
       for each pr in l do
-	 obj := addf(obj, !*k2f car pr);
+         obj := addf(obj, !*k2f car pr);
       zz := intern gensym();
       z := !*k2f zz;
       f3 := ofsf_0mk2('geq, addf(z, negf obj));
       w := ofsf_xopt!-ansl!-ansl ofsf_xopt!-xopt
- 	 rl_ex(rl_mkn('and, {f1, f2, f3}), {zz});
+         rl_ex(rl_mkn('and, {f1, f2, f3}), {zz});
       w := for each pr in lto_setCoverBestRes w join
-	 if eqn(cdr pr, 1) then
- 	    {car pr};
+         if eqn(cdr pr, 1) then
+            {car pr};
       rl_set oc;
       return w
    end;
@@ -930,12 +930,12 @@ asserted procedure lto_setCover1(l: List): List;
 asserted procedure lto_setCoverBestRes(l: List): DottedPair;
    begin scalar cur, best, res;
       for each ans in l do <<
-	 cur := negf red ofsf_arg2l ofsf_xopt!-ans!-gd ans;;
-	 assert(fixp cur);
-	 if not best or cur < best then <<
-	    best := cur;
-	    res := ofsf_xopt!-ans!-pt ans
-	 >>
+         cur := negf red ofsf_arg2l ofsf_xopt!-ans!-gd ans;;
+         assert(fixp cur);
+         if not best or cur < best then <<
+            best := cur;
+            res := ofsf_xopt!-ans!-pt ans
+         >>
       >>;
       return res
    end;
@@ -946,7 +946,7 @@ asserted procedure lto_lpvarl(u: Any): List;
       {u}
    else if pairp u then
       for each v in cdr u join
- 	 lto_lpvarl v;
+         lto_lpvarl v;
 
 asserted procedure lto_loremIpsumAl(): Alist;
    '(("Lorem" .  "Lorem ipsum dolor sit amet, consectetur adipisici elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")
@@ -981,15 +981,15 @@ asserted procedure lto_remove1(fn: Any, l: List, xarl: List): List;
    % arguments , [l] and [xarl] are LIST.
    for each a in l join
       if not apply(fn, a . xarl) then
-	 {a};
+         {a};
 
 asserted procedure lto_rmpos(lst: List, posl: List): List;
    % Remove positions. [lst] is a List. [posl] is a List of Integers.
    begin scalar pos;
       pos := 0;
       return for each a in lst join <<
-	 pos := pos + 1;
-	 if not memq(pos, posl) then {a}
+         pos := pos + 1;
+         if not memq(pos, posl) then {a}
       >>
    end;
 

@@ -39,7 +39,7 @@ procedure meminfo();
 procedure systo_meminfo();
    begin scalar bit, hs, hsb, cpgcp, w, bs, bsb, bps, bpsb;
       if not memq('psl,lispsystem!*) then
-	 return nil;
+         return nil;
       bit := if eqn(lshift(-1, -56), 255) then 64 else 32;
       prin2 "                address range: ";
       prin2 bit;
@@ -98,17 +98,17 @@ procedure systo_meminfo();
       cpgcp := getd 'copyfromstaticheap;
       prin2t if cpgcp then "stop-and-copy" else "mark-and-sweep";
       if cpgcp then <<
-	 hsb := 2 * hsb;
-	 prin2 " memory allocation by 2 heaps: ";
-	 w := systo_meminfoscale hsb;
-	 prin2 car w;
-	 prin2 " ";
-	 prin2t cdr w;
-	 w := systo_meminfoiscale hsb;
-	 prin2 "                               ";
-	 prin2 car w;
-	 prin2 " ";
-	 prin2t cdr w;
+         hsb := 2 * hsb;
+         prin2 " memory allocation by 2 heaps: ";
+         w := systo_meminfoscale hsb;
+         prin2 car w;
+         prin2 " ";
+         prin2t cdr w;
+         w := systo_meminfoiscale hsb;
+         prin2 "                               ";
+         prin2 car w;
+         prin2 " ";
+         prin2t cdr w;
       >>
    end;
 
@@ -117,7 +117,7 @@ procedure systo_meminfo();
 procedure systo_meminfo();
    begin scalar bit;
       if not memq('csl,lispsystem!*) then
-	 return nil;
+         return nil;
       bit := if memq('sixty!-four,lispsystem!*) then 64 else 32;
       prin2 "address range: ";
       prin2 bit;
@@ -146,7 +146,7 @@ procedure systo_meminfoscale(n);
    
 procedure systo_meminfoiscale(n);
    if n geq 2^30 then
-      	 (float(n)/2^30) . "GiB"
+         (float(n)/2^30) . "GiB"
    else if n >= 2^20 then
       (float(n)/2^20) . "MiB"
    else if n >= 2^10 then
@@ -158,12 +158,12 @@ procedure systo_meminfocomma(n,comma);
    begin scalar l; integer c;
       l := '(!");
       for each d on reversip explode n do <<
-	 l := car d . l;
-	 c := c+1;
-	 if cdr d and eqn(c,3) then <<
-	    c := 0;
-	    l := comma . l
-	 >>
+         l := car d . l;
+         c := c+1;
+         if cdr d and eqn(c,3) then <<
+            c := 0;
+            l := comma . l
+         >>
       >>;
       return compress('!" . l)
    end;
@@ -190,12 +190,12 @@ procedure systo_get!-resource!-directory();
    begin scalar l, os, a;
       l := lispsystem!*;
       while not os and l do <<
-	 a := pop l;
-	 if eqcar(a, 'opsys) then
-	    os := cdr a
+         a := pop l;
+         if eqcar(a, 'opsys) then
+            os := cdr a
       >>;
       if lto_substr(id2string os, 6, 1) = "darwin" then
-	 return concat(get!-lisp!-directory(), "/../Resources/reduce.resources");
+         return concat(get!-lisp!-directory(), "/../Resources/reduce.resources");
       return concat(get!-lisp!-directory(), "/reduce.resources")
    end;
 
@@ -239,7 +239,7 @@ procedure systo_rndseed(s);
    % Call with a unique odd number.
    <<
       if 'csl memq lispsystem!* then
- 	 s := 2 * s;
+         s := 2 * s;
       random_new_seed s
    >>;
 

@@ -65,36 +65,36 @@ procedure dcfsf_smupdknowl(op,atl,knowl,n);
    % [atl] information.
    begin scalar w,ir,a,h;
       if op eq 'or then
-	 atl := for each at in atl collect dcfsf_negateat at;
+         atl := for each at in atl collect dcfsf_negateat at;
       if !*rlsiplugtheo then
-	 atl := dcfsf_plugtheo(atl,knowl);
+         atl := dcfsf_plugtheo(atl,knowl);
       if atl eq 'false then
-	 return 'false;
+         return 'false;
       while atl do <<
-	 a := pop atl;
-	 ir := dcfsf_at2ir(a,n);
-	 if w := assoc(car ir,knowl) then <<
-	    cdr w := dcfsf_sminsert(cadr ir,cdr w);
-	    if cdr w eq 'false then <<
-	       atl := nil;
-	       knowl := 'false
-	    >>  % else [dcfsf_sminsert] has updated [cdr w] destructively.
-	 >> else if !*rlsid and (w := dcfsf_dassoc(ir,knowl)) then <<
-	    % [ir] says that a derivative of some variable is either
-	    % constant or not constant, and all corresponding
-	    % information from [knowl] is now in [w].
-	    %% ioto_tprin2t {"ir=",ir,", w=",w};
-	    h := dcfsf_sminsertd(ir,w);
-	    if h eq 'false then <<
-	       atl := nil;
-	       knowl := 'false
-	    >> else if h neq 'true and knowl neq 'false then <<
-	       knowl := ir . knowl;
-	       for each ir in h do
- 		  knowl := lto_delqip(ir,knowl)
-	    >>
-	 >> else
-	    knowl := ir . knowl
+         a := pop atl;
+         ir := dcfsf_at2ir(a,n);
+         if w := assoc(car ir,knowl) then <<
+            cdr w := dcfsf_sminsert(cadr ir,cdr w);
+            if cdr w eq 'false then <<
+               atl := nil;
+               knowl := 'false
+            >>  % else [dcfsf_sminsert] has updated [cdr w] destructively.
+         >> else if !*rlsid and (w := dcfsf_dassoc(ir,knowl)) then <<
+            % [ir] says that a derivative of some variable is either
+            % constant or not constant, and all corresponding
+            % information from [knowl] is now in [w].
+            %% ioto_tprin2t {"ir=",ir,", w=",w};
+            h := dcfsf_sminsertd(ir,w);
+            if h eq 'false then <<
+               atl := nil;
+               knowl := 'false
+            >> else if h neq 'true and knowl neq 'false then <<
+               knowl := ir . knowl;
+               for each ir in h do
+                  knowl := lto_delqip(ir,knowl)
+            >>
+         >> else
+            knowl := ir . knowl
       >>;
       return knowl
    end;
@@ -102,28 +102,28 @@ procedure dcfsf_smupdknowl(op,atl,knowl,n);
 procedure dcfsf_plugtheo(atl,knowl);
    begin scalar !*rlsiexpla,subinfo,entry,a,natl,w;
       subinfo := for each ir in knowl join <<
-	 w := dcfsf_sderlev car ir;
-	 if w then <<
-	    entry := cdadr ir;
-	    if car entry eq 'equal then
- 	       {car w . (cdr w . cdr entry)}
-	 >>
+         w := dcfsf_sderlev car ir;
+         if w then <<
+            entry := cdadr ir;
+            if car entry eq 'equal then
+               {car w . (cdr w . cdr entry)}
+         >>
       >>;
       while atl do <<
-	 a := pop atl;
-	 a := dcfsf_plugtheo1(a,subinfo);
-	 a := rl_simplat1(a,'and);
-	 if a eq 'false then <<
-	    natl := 'false;
-	    atl := nil
-	 >> else if a neq 'true then
-	    if rl_op a eq 'and then
-	       natl := nconc(reverse rl_argn a,natl)
-	    else
-	       natl := a . natl
+         a := pop atl;
+         a := dcfsf_plugtheo1(a,subinfo);
+         a := rl_simplat1(a,'and);
+         if a eq 'false then <<
+            natl := 'false;
+            atl := nil
+         >> else if a neq 'true then
+            if rl_op a eq 'and then
+               natl := nconc(reverse rl_argn a,natl)
+            else
+               natl := a . natl
       >>;
       if natl eq 'false then
- 	 return natl;
+         return natl;
       return reversip natl
    end;
 
@@ -136,7 +136,7 @@ procedure dcfsf_plugtheo1(at,subinfo);
 procedure dcfsf_plugtheof(lhs,subinfo);
    begin scalar c,kq,l,r;
       if domainp lhs then
-	 return !*f2q lhs;
+         return !*f2q lhs;
       c := dcfsf_plugtheof(lc lhs,subinfo);
       kq := dcfsf_plugtheok(mvar lhs,subinfo);
       l := ldeg lhs;
@@ -147,21 +147,21 @@ procedure dcfsf_plugtheof(lhs,subinfo);
 procedure dcfsf_plugtheok(k,subinfo);
    begin scalar v,derlev,w;
       if idp k then <<
- 	 v := k;
-	 derlev := 0
+         v := k;
+         derlev := 0
       >> else if eqcar(k,'d) then <<
-	 v := cadr k;
-	 derlev := caddr k
+         v := cadr k;
+         derlev := caddr k
       >> else
-	 rederr {"dcfsf_plugtheok: bad kernel",k};
+         rederr {"dcfsf_plugtheok: bad kernel",k};
       w := atsoc(v,subinfo);
       if not w then
-	 return !*k2q k;
+         return !*k2q k;
       w := cdr w;
       if car w = derlev then
-	 return cdr w;
+         return cdr w;
       if car w < derlev then
-	 return !*f2q nil;
+         return !*f2q nil;
       return !*k2q k
    end;
 
@@ -170,11 +170,11 @@ procedure dcfsf_dassoc(ir,knowl);
    % [knowl] is an IRL. Returns an IRL or [nil].
    begin scalar v,w;
       if not (w := dcfsf_sderivp ir) then
-	 return nil;
+         return nil;
       v := caar w;
       return for each kir in knowl join
-	 if (w := dcfsf_sderivp kir) and caar w eq v then
- 	    {kir}
+         if (w := dcfsf_sderivp kir) and caar w eq v then
+            {kir}
    end;
 
 procedure dcfsf_sderivp(ir);
@@ -187,19 +187,19 @@ procedure dcfsf_sderivp(ir);
 procedure dcfsf_sderlev(f);
    if not domainp f and not red f and lc f = 1 then
       if idp mvar f then
-	 mvar f . 0
+         mvar f . 0
       else if eqcar(mvar f,'d) then
-	 cadr mvar f . caddr mvar f;
+         cadr mvar f . caddr mvar f;
 
 procedure dcfsf_sderinfo(db);
    begin scalar c,le,entry;
       c := t; while c and db do <<
-	 le := car db;
-      	 entry := cdr le;
-      	 if car entry eq 'equal or null numr cdr entry then
-	    c := nil
-	 else
-	    db := cdr db
+         le := car db;
+         entry := cdr le;
+         if car entry eq 'equal or null numr cdr entry then
+            c := nil
+         else
+            db := cdr db
       >>;
       return db
    end;
@@ -258,11 +258,11 @@ procedure dcfsf_sminsert(le,db);
    % Destructively inserts [le] into [db].
    begin scalar a,w,scdb,oscdb;
       repeat <<
-      	 w := dcfsf_sminsert1(cadr car db,cddr car db,cadr le,cddr le,car le);
-      	 if w and not idp w then <<  % identifiers [false] and [true] possible.
-	    db := cdr db;
-	    le := w
-      	 >>
+         w := dcfsf_sminsert1(cadr car db,cddr car db,cadr le,cddr le,car le);
+         if w and not idp w then <<  % identifiers [false] and [true] possible.
+            db := cdr db;
+            le := w
+         >>
       >> until null w or idp w or null db;
       if w eq 'false then return 'false;
       if w eq 'true then return db;
@@ -270,20 +270,20 @@ procedure dcfsf_sminsert(le,db);
       oscdb := db;
       scdb := cdr db;
       while scdb do <<
-	 a := car scdb;
-	 scdb := cdr scdb;
-	 w := dcfsf_sminsert1(cadr a,cddr a,cadr le,cddr le,car le);
-	 if w eq 'true then <<
-	    scdb := nil;
-	    a := 'true
-	 >> else if w eq 'false then <<
-	    scdb := nil;
-	    a := 'false
-	 >> else if w then <<
-	    cdr oscdb := scdb;
-	    le := w
-	 >> else
-	    oscdb := cdr oscdb
+         a := car scdb;
+         scdb := cdr scdb;
+         w := dcfsf_sminsert1(cadr a,cddr a,cadr le,cddr le,car le);
+         if w eq 'true then <<
+            scdb := nil;
+            a := 'true
+         >> else if w eq 'false then <<
+            scdb := nil;
+            a := 'false
+         >> else if w then <<
+            cdr oscdb := scdb;
+            le := w
+         >> else
+            oscdb := cdr oscdb
       >>;
       if a eq 'false then return 'false;
       if a eq 'true then return db;
@@ -303,16 +303,16 @@ procedure dcfsf_sminsert1(r1,a,r2,b,n);
    begin scalar w,diff,n;
       diff := numr subtrsq(a,b);
       if null diff then <<
-	 w := dcfsf_smeqtable(r1,r2);
-      	 if w eq 'false then return 'false;
-	 % [w eq r1]
-	 return 'true
+         w := dcfsf_smeqtable(r1,r2);
+         if w eq 'false then return 'false;
+         % [w eq r1]
+         return 'true
       >>;
       if minusf diff then <<
-      	 w := dcfsf_smordtable(r1,r2);
-	 if atom w then return w;
-      	 if eqcar(w,r1) and cdr w then return 'true;
-	 return n . (car w . if cdr w then a else b)
+         w := dcfsf_smordtable(r1,r2);
+         if atom w then return w;
+         if eqcar(w,r1) and cdr w then return 'true;
+         return n . (car w . if cdr w then a else b)
       >>;
       w := dcfsf_smordtable(r2,r1);
       if atom w then return w;
@@ -328,10 +328,10 @@ procedure dcfsf_sminsertd(newir,oldirl);
       derlev := cdr dcfsf_sderlev car newir;
       db := cdr newir;
       if cdr db then
-	 rederr {"dcfsf_sminsertd: new IR with multiple DB entries ",newir};
+         rederr {"dcfsf_sminsertd: new IR with multiple DB entries ",newir};
       entry := cdar db;
       if eqcar(entry,'equal) then
-	 return dcfsf_sminsertd!-equal(derlev,oldirl,numr cdr entry);
+         return dcfsf_sminsertd!-equal(derlev,oldirl,numr cdr entry);
       % we know eqcar(entry,'neq)
       return dcfsf_sminsertd!-neq(derlev,oldirl)
    end;
@@ -339,41 +339,41 @@ procedure dcfsf_sminsertd(newir,oldirl);
 procedure dcfsf_sminsertd!-equal(derlev,oldirl,strongp);
    begin scalar c,oldir,res,db,firstentry,ostrongp; integer oderlev;
       if strongp then
-	 derlev := derlev + 1;
+         derlev := derlev + 1;
       c := t; while not res and oldirl do <<
-	 oldir := pop oldirl;
-	 oderlev := cdr dcfsf_sderlev car oldir;
-	 db := cdr oldir;
-	 firstentry := cdr car db;
-	 ostrongp := nil;
-	 if eqcar(firstentry,'equal) then <<
-	    if numr cdr firstentry then <<
-	       ostrongp := t;
-	       oderlev := oderlev + 1
-	    >>;
-	    if (ostrongp and oderlev > derlev)
-	       or (strongp and derlev > oderlev)
-	    then <<
-	       res := 'false;
-	       c := nil
-	    >> else if (strongp and derlev = oderlev)
-	       or derlev < oderlev
- 	    then
-	       % we know [not ostrongp] due to the regular smart
-	       % simplification before
-	       res := oldir . res
-	    else if derlev >= oderlev then <<
-	       res := 'true;
-	       c := nil
-	    >>
-	 >> else <<
-	    % all [db] entries are of type [neq], and one of them is
-	    % [neq 0]
-	    if oderlev >= derlev then <<
-	       res := 'false;
-	       c := nil
-	    >>
-      	 >>
+         oldir := pop oldirl;
+         oderlev := cdr dcfsf_sderlev car oldir;
+         db := cdr oldir;
+         firstentry := cdr car db;
+         ostrongp := nil;
+         if eqcar(firstentry,'equal) then <<
+            if numr cdr firstentry then <<
+               ostrongp := t;
+               oderlev := oderlev + 1
+            >>;
+            if (ostrongp and oderlev > derlev)
+               or (strongp and derlev > oderlev)
+            then <<
+               res := 'false;
+               c := nil
+            >> else if (strongp and derlev = oderlev)
+               or derlev < oderlev
+            then
+               % we know [not ostrongp] due to the regular smart
+               % simplification before
+               res := oldir . res
+            else if derlev >= oderlev then <<
+               res := 'true;
+               c := nil
+            >>
+         >> else <<
+            % all [db] entries are of type [neq], and one of them is
+            % [neq 0]
+            if oderlev >= derlev then <<
+               res := 'false;
+               c := nil
+            >>
+         >>
       >>;
       return res
    end;
@@ -381,25 +381,25 @@ procedure dcfsf_sminsertd!-equal(derlev,oldirl,strongp);
 procedure dcfsf_sminsertd!-neq(derlev,oldirl);
    begin scalar c,oldir,res,db,firstentry; integer oderlev;
       c := t; while not res and oldirl do <<
-	 oldir := pop oldirl;
-	 oderlev := cdr dcfsf_sderlev car oldir;
-	 db := cdr oldir;
-	 firstentry := cdr car db;
-	 if eqcar(firstentry,'equal) then <<
-	    if numr cdr firstentry then
-	       oderlev := oderlev + 1;
-	    if derlev >= oderlev then <<
-	       res := 'false;
-	       c := nil
-	    >>
-	 >> else <<
-	    % all [db] entries are of type [neq], and one of them is
-	    % [neq 0]
-	    if derlev = oderlev then <<
-	       res := 'true;
-	       c := nil
-	    >>
-	 >>
+         oldir := pop oldirl;
+         oderlev := cdr dcfsf_sderlev car oldir;
+         db := cdr oldir;
+         firstentry := cdr car db;
+         if eqcar(firstentry,'equal) then <<
+            if numr cdr firstentry then
+               oderlev := oderlev + 1;
+            if derlev >= oderlev then <<
+               res := 'false;
+               c := nil
+            >>
+         >> else <<
+            % all [db] entries are of type [neq], and one of them is
+            % [neq 0]
+            if derlev = oderlev then <<
+               res := 'true;
+               c := nil
+            >>
+         >>
       >>;
       return res
    end;

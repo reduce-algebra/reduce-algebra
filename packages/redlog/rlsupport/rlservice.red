@@ -102,26 +102,26 @@ asserted procedure rl_serviceStatList(): Alist;
    begin scalar spec, key, entry;
       scan();
       while cursym!* neq '!*rcbkt!* do <<
-	 % We are not on the right hand side of an equation. We need an
-	 % alphabetic identifier. We strictly admit only alphabetic characters,
-	 % no digits.
-      	 if not lto_alphap cursym!* then
-	    rederr {"expecting alphabetic key in rl_service but found", cursym!*};
-      	 key := cursym!*;
-	 % Now the four cases (a)-(d) discussed above:
-	 entry := if key eq '!d!e!f!a!u!l!t then  % case (c)
-	    rl_amReadDefaultToForm()
-	 else if key eq 'type then  % case (d)
-	    rl_csReadTypeToString()
-	 else  % case (a) or (b)
-	    rl_readListOrAtom();
-	 push(key . entry, spec);
-	 % Expecting ',' or '}' now:
-	 if cursym!* neq '!*rcbkt!* then <<
-	    if cursym!* neq '!*comma!* then
-	       rederr {"expecting ',' or '}' in rl_service but found", cursym!*};
-	    scan()
-	 >>
+         % We are not on the right hand side of an equation. We need an
+         % alphabetic identifier. We strictly admit only alphabetic characters,
+         % no digits.
+         if not lto_alphap cursym!* then
+            rederr {"expecting alphabetic key in rl_service but found", cursym!*};
+         key := cursym!*;
+         % Now the four cases (a)-(d) discussed above:
+         entry := if key eq '!d!e!f!a!u!l!t then  % case (c)
+            rl_amReadDefaultToForm()
+         else if key eq 'type then  % case (d)
+            rl_csReadTypeToString()
+         else  % case (a) or (b)
+            rl_readListOrAtom();
+         push(key . entry, spec);
+         % Expecting ',' or '}' now:
+         if cursym!* neq '!*rcbkt!* then <<
+            if cursym!* neq '!*comma!* then
+               rederr {"expecting ',' or '}' in rl_service but found", cursym!*};
+            scan()
+         >>
       >>;
       return reversip spec
    end;
@@ -147,11 +147,11 @@ asserted procedure rl_readListOrAtom(): String;
       rl_skipequal "rl_service";
       scan();
       if cursym!* eq '!*lcbkt!* then <<  % case (b)
-	 entry := rl_serviceStatList()
+         entry := rl_serviceStatList()
       >> else <<  % case (a)
-	 if not atom cursym!* then
-	    rederr {"expecting atomic entry or list in rl_service but found", cursym!*};
-	 entry := cursym!*
+         if not atom cursym!* then
+            rederr {"expecting atomic entry or list in rl_service but found", cursym!*};
+         entry := cursym!*
       >>;
       scan();
       return entry
@@ -167,9 +167,9 @@ asserted procedure rl_formService(argl: List, vars: List, m: Id): List;
       % interface, because it is called by the AM interface:
       mode := lto_eatsoc('mode, cadr argl, {"missing mode in", argl});
       if mode eq 'both then
-	 return rl_formServiceBoth cadr argl;
+         return rl_formServiceBoth cadr argl;
       if mode eq 'sm then
-	 return rl_formServiceSm cadr argl;
+         return rl_formServiceSm cadr argl;
       rederr {"invalid mode", mode, "in", argl}
    end;
 
@@ -179,9 +179,9 @@ asserted procedure rl_formServiceBoth(spec: Alist): List;
       scalar rl_b!*, rl_b, rl_!*b, rl_b!$, rlb;
       scalar p, docal, fluids;
       {b, doc, seealso, names, types, defaults, docs, rtype, rl_args, rl_!*args} :=
- 	 rl_formServiceAnalyzeSpec spec;
+         rl_formServiceAnalyzeSpec spec;
       {rl_b!*, rl_b, rl_!*b, rl_b!$, rlb} :=
- 	 rl_formServiceFunctionNames('rl_, b);
+         rl_formServiceFunctionNames('rl_, b);
       % We are going construct a progn in [p], which is going to be the
       % result of rl_formService.
       %
@@ -216,19 +216,19 @@ asserted procedure rl_formServiceBoth(spec: Alist): List;
       % [seealso] is a list of AM services; those related to the function from a
       % documentation point of view.
       if seealso then
-      	 push({'put, mkquote rlb, ''seealso,
- 	    mkquote for each s in seealso collect compress('r . 'l . explode s)}, p);
+         push({'put, mkquote rlb, ''seealso,
+            mkquote for each s in seealso collect compress('r . 'l . explode s)}, p);
       % "put(rlb, 'docs, docs)"
       % [docs] is a list of strings; documentation of the formal arguments given
       % in [names]; length(docs) = length(names):
       push({'put, mkquote rlb, ''docs, mkquote docs}, p);
 %%       % An Alist for documentation with the rlhelp submodule:
 %%       docal := {
-%% 	 'synopsis . rl_docSynopsis(rlb, names, types, defaults),
-%% 	 'returns . rtype,
-%% 	 'description . doc,
-%% 	 'arguments . rl_docArguments(names, types, docs),
-%% 	 'switches . rl_docSwitches(names, types, docs)};
+%%       'synopsis . rl_docSynopsis(rlb, names, types, defaults),
+%%       'returns . rtype,
+%%       'description . doc,
+%%       'arguments . rl_docArguments(names, types, docs),
+%%       'switches . rl_docSwitches(names, types, docs)};
 %%       push({'put, mkquote rlb, ''docal, mkquote docal}, p);
       %
       % Here starts the generation of the SM service:
@@ -247,17 +247,17 @@ asserted procedure rl_formServiceBoth(spec: Alist): List;
       %       where X = for each x in types collect rl_typeString2TypeForm x,
       %             Y = rl_typeString2TypeForm rtype;
       push(
-	 {'de, rl_b!$, '(u),
- 	    {'rl_servicewrapper,
-	       mkquote rl_!*b,
- 	       'u,
-	       mkquote names,
- 	       mkquote for each x in types collect rl_typeString2TypeForm x,
- 	       mkquote defaults,
- 	       mkquote rl_typeString2TypeForm rtype,
-	       mkquote rl_b!*,
-	       mkquote rlb}},
- 	 p);
+         {'de, rl_b!$, '(u),
+            {'rl_servicewrapper,
+               mkquote rl_!*b,
+               'u,
+               mkquote names,
+               mkquote for each x in types collect rl_typeString2TypeForm x,
+               mkquote defaults,
+               mkquote rl_typeString2TypeForm rtype,
+               mkquote rl_b!*,
+               mkquote rlb}},
+         p);
       % "fluid fluids"
       % All switches corresponding to switch arguments are made fluid:
       if fluids then push({'fluid, mkquote fluids}, p);
@@ -268,7 +268,7 @@ asserted procedure rl_formServiceBoth(spec: Alist): List;
       % procedure rl_!*b(..., rl_!*args[i], ...);
       %    apply(rl_b, rl_args);
       push({'de, rl_!*b, rl_!*args,
- 	 {'apply, mkquote rl_b, 'list . rl_args}}, p);
+         {'apply, mkquote rl_b, 'list . rl_args}}, p);
       p := rl_formServiceSm1(rl_b, rl_b!*, rl_args, p);
       return 'progn . reversip p
    end;
@@ -276,7 +276,7 @@ asserted procedure rl_formServiceBoth(spec: Alist): List;
 asserted procedure rl_formServiceAnalyzeSpec(spec: Alist): List;
    begin
       scalar b, doc, seealso, names, types, defaults, docs, rtype, rl_args, rl_!*args,
- 	 default, pos, name, type;
+         default, pos, name, type;
       integer minswitch, maxother, maxall;
       % Determine the base name of the service:
       b := lto_eatsoc('name, spec, {"missing service name in", spec});
@@ -284,61 +284,61 @@ asserted procedure rl_formServiceAnalyzeSpec(spec: Alist): List;
       % formal parameters:
       minswitch := length spec;  % initialize with upper bound on number of args
       for each pr in spec do
- 	 if car pr eq 'arg then <<
-	    name := lto_eatsoc('name, cdr pr,
- 	       {"arg without name in service", b});
-	    pos := lto_eatsoc('pos, cdr pr,
- 	       {"arg", name, "without pos in service", b});
-	    if assoc(pos, names) then
-	       rederr {"pos", pos, "specified twice in service", b};
-	    doc := lto_catsoc('doc, cdr pr) or "";
-	    % In [spec] there are both [type] and [typestring] present, where
-	    % the latter has been generated by the stat. We need the strings to
-	    % preserve case for the help system. Within the present function we
-	    % are using both [type] and [typestring]. For the sake of
-	    % modularization we return only the string, at the price of
-	    % converting them once more into identifiers later on. All this
-	    % happens during compilation and is not time-critical. Also, there
-	    % is some hope for a case-sensitive Reduce in the future where that
-	    % reduncance would entirly disappear.
-	    type := lto_eatsoc('type, cdr pr,
- 	       {"arg", name, "without type in service", b});
-	    if type = "Switch" then <<
-	       % Switches are Redlog switches to be lambda-bound during the
-	       % call. The argument name is without the leading "rl." Default is
-	       % the corresponding (global) switch setting.
-	       minswitch := min2(pos, minswitch);  % smallest Switch position
-	       maxall := max2(pos, maxall);  % largest overall position
-	       default := intern compress append(explode '!*rl, explode name);
-	       push(pos . (name . default), defaults);
-	       push(pos . default, rl_!*args)
-	    >> else <<
-	       maxother := max2(pos, maxother);  % largest non-Switch position
-	       maxall := max2(pos, maxall);
-	       default := atsoc('default, cdr pr);
-	       if default then
-	       	  push(pos . (name . cdr default), defaults);
-	       push(pos . name, rl_args);
-	       push(pos . name, rl_!*args)
-	    >>;
-	    push(pos . name, names);
-	    push(pos . doc, docs);
-	    push(pos . type, types)
-	 >> else if car pr eq 'returns then <<
-	    % [returns] may be not present at all, which means that the service
-	    % does not return anything meaningful. On the other hand, if it is
-	    % present, then we insist on the specification of a return type.
-	    rtype := lto_eatsoc('type, cdr pr,
- 	       {"service", b, "without return type"})
-	 >> else if car pr eq 'seealso then <<
-	    push(cdr pr, seealso)
-	 >>;
+         if car pr eq 'arg then <<
+            name := lto_eatsoc('name, cdr pr,
+               {"arg without name in service", b});
+            pos := lto_eatsoc('pos, cdr pr,
+               {"arg", name, "without pos in service", b});
+            if assoc(pos, names) then
+               rederr {"pos", pos, "specified twice in service", b};
+            doc := lto_catsoc('doc, cdr pr) or "";
+            % In [spec] there are both [type] and [typestring] present, where
+            % the latter has been generated by the stat. We need the strings to
+            % preserve case for the help system. Within the present function we
+            % are using both [type] and [typestring]. For the sake of
+            % modularization we return only the string, at the price of
+            % converting them once more into identifiers later on. All this
+            % happens during compilation and is not time-critical. Also, there
+            % is some hope for a case-sensitive Reduce in the future where that
+            % reduncance would entirly disappear.
+            type := lto_eatsoc('type, cdr pr,
+               {"arg", name, "without type in service", b});
+            if type = "Switch" then <<
+               % Switches are Redlog switches to be lambda-bound during the
+               % call. The argument name is without the leading "rl." Default is
+               % the corresponding (global) switch setting.
+               minswitch := min2(pos, minswitch);  % smallest Switch position
+               maxall := max2(pos, maxall);  % largest overall position
+               default := intern compress append(explode '!*rl, explode name);
+               push(pos . (name . default), defaults);
+               push(pos . default, rl_!*args)
+            >> else <<
+               maxother := max2(pos, maxother);  % largest non-Switch position
+               maxall := max2(pos, maxall);
+               default := atsoc('default, cdr pr);
+               if default then
+                  push(pos . (name . cdr default), defaults);
+               push(pos . name, rl_args);
+               push(pos . name, rl_!*args)
+            >>;
+            push(pos . name, names);
+            push(pos . doc, docs);
+            push(pos . type, types)
+         >> else if car pr eq 'returns then <<
+            % [returns] may be not present at all, which means that the service
+            % does not return anything meaningful. On the other hand, if it is
+            % present, then we insist on the specification of a return type.
+            rtype := lto_eatsoc('type, cdr pr,
+               {"service", b, "without return type"})
+         >> else if car pr eq 'seealso then <<
+            push(cdr pr, seealso)
+         >>;
       % We insist that positions are numbered 1, ..., n without gaps:
       if not eqn(maxall, length names) then
-	 rederr {"bad arg position numbering in service", b};
+         rederr {"bad arg position numbering in service", b};
       % Switches must come after all other arguments:
       if minswitch neq length spec and minswitch neq maxother + 1 then
-	 rederr {"bad switch positions in service", b};
+         rederr {"bad switch positions in service", b};
       % Argument names including Switches in the right order:
       names := rl_sortAndProject names;
       % Argument doc strings, possible empty, in the right order:
@@ -357,7 +357,7 @@ asserted procedure rl_formServiceAnalyzeSpec(spec: Alist): List;
       % switches). At present, e.g., cl_simpl still depends on more. We must to
       % work on this.
       if length rl_!*args > 14 then
-	 rederr {"too many arguments for service", b};
+         rederr {"too many arguments for service", b};
       % An Alist mapping names (including Switchs) to default values:
       defaults := rl_sortAndProject defaults;
       doc := lto_catsoc('doc, spec) or "";
@@ -400,7 +400,7 @@ asserted procedure rl_typeString2TypeForm(s: String): Any;
    begin scalar x;
       x := ioto_sxread s where !*lower=nil, !*raise=nil;
       if idp x then
-      	 return intern lto_downcase x;
+         return intern lto_downcase x;
       return for each y in x collect lto_downcase y
    end;
 
@@ -414,8 +414,8 @@ asserted procedure rl_formServiceSm(spec: Alist): List;
       push("/", sl);
       push(lto_at2str lto_int2id n, sl);
       docal := {
-	 'synopsis . lto_sconcat reversip sl,
-	 'description . lto_catsoc('doc, spec) or ""};
+         'synopsis . lto_sconcat reversip sl,
+         'description . lto_catsoc('doc, spec) or ""};
       push({'put, mkquote rl_b, ''docal, mkquote docal}, p);
       argl := for i := 1:n collect mkid('a, i);
       p := rl_formServiceSm1(rl_b, rl_b!*, argl, p);
@@ -452,25 +452,25 @@ asserted procedure rl_docSynopsis(f: Id, names: List, types: List, defaults: Ali
       push(id2string f, sl);
       push("(", sl);
       while types and car types neq "Switch" do <<
-	 name := pop names;
-	 push(id2string name, sl);
-	 default := atsoc(name, defaults);
-	 if default then <<
-	    push(" = ", sl);
-	    if stringp cdr default then <<
-	       push("""", sl);
-	       push(cdr default, sl);
-	       push("""", sl)
-	    >> else
-	       push(ioto_smaprin cdr default, sl)
-	 >>;
-	 push(": ", sl);
-	 push(pop types, sl);
-	 if types then
-	    push(", ", sl)
+         name := pop names;
+         push(id2string name, sl);
+         default := atsoc(name, defaults);
+         if default then <<
+            push(" = ", sl);
+            if stringp cdr default then <<
+               push("""", sl);
+               push(cdr default, sl);
+               push("""", sl)
+            >> else
+               push(ioto_smaprin cdr default, sl)
+         >>;
+         push(": ", sl);
+         push(pop types, sl);
+         if types then
+            push(", ", sl)
       >>;
       if types then
-	 push("...", sl);
+         push("...", sl);
       push(")", sl);
       return lto_sconcat reversip sl
    end;
@@ -478,8 +478,8 @@ asserted procedure rl_docSynopsis(f: Id, names: List, types: List, defaults: Ali
 asserted procedure rl_docArguments(names: List, types: List, docs: List): Alist;
    begin scalar sl;
       while types and car types neq "Switch" do <<
-	 pop types;
-	 push(id2string pop names . pop docs, sl)
+         pop types;
+         push(id2string pop names . pop docs, sl)
       >>;
       return reversip sl
    end;
@@ -487,12 +487,12 @@ asserted procedure rl_docArguments(names: List, types: List, docs: List): Alist;
 asserted procedure rl_docSwitches(names: List, types: List, docs: List): Alist;
    begin scalar sl;
       while types and car types neq "Switch" do <<
-	 pop types;
-	 pop names;
-	 pop docs
+         pop types;
+         pop names;
+         pop docs
       >>;
       while names do
-	 push(id2string pop names . pop docs, sl);
+         push(id2string pop names . pop docs, sl);
       return sl
    end;
 
@@ -503,7 +503,7 @@ asserted procedure rl_servicewrapper(rl_!*b: Applicable, u: List, names: List, t
    % of the return value of [rl_bname].
    begin scalar g, rargs, nargs, w, name; integer argc, pos;
       if null eval rl_b!* then
-	 rederr {"service", rlb, "not available in current context", rl_cid!*};
+         rederr {"service", rlb, "not available in current context", rl_cid!*};
       % Construct a list [rlist] to be filled in-place with the parameters
       % determined throughout this procedure. Switches are inintialized with
       % themselves, because the default is to use the global switch setting. All
@@ -515,21 +515,21 @@ asserted procedure rl_servicewrapper(rl_!*b: Applicable, u: List, names: List, t
       % over named parameters. In a first pass we fill positional parameters
       % into [rargs] and save named parameters in an Alist [nargs].
       for each arg in u do <<
-	 pos := pos + 1;
-	 % For named parameters we admit both '=>' (replaceby) and '=' equal.
-	 % However, '=' can lead to ambiguities, when the "equations" occurs at
-	 % a position where it would make sense as a positional parameter (e.g.
-	 % a formula). In such cases we decide in favor of the positional
-	 % argument. We expect such situations to be rare. Users would use
-	 % variables names in single equations that do not clash with parameter
-	 % names, or just use '=>' in such cases. Relevant types are explicitly
-	 % flagged [equational].
-	 if eqcar(arg, 'replaceby) or
- 	    eqcar(arg, 'equal) and not flagp(nth(types, pos), 'equational)
-	 then
-	    push(cadr arg . caddr arg, nargs)
-	 else
-	    nth(rargs, pos) := arg
+         pos := pos + 1;
+         % For named parameters we admit both '=>' (replaceby) and '=' equal.
+         % However, '=' can lead to ambiguities, when the "equations" occurs at
+         % a position where it would make sense as a positional parameter (e.g.
+         % a formula). In such cases we decide in favor of the positional
+         % argument. We expect such situations to be rare. Users would use
+         % variables names in single equations that do not clash with parameter
+         % names, or just use '=>' in such cases. Relevant types are explicitly
+         % flagged [equational].
+         if eqcar(arg, 'replaceby) or
+            eqcar(arg, 'equal) and not flagp(nth(types, pos), 'equational)
+         then
+            push(cadr arg . caddr arg, nargs)
+         else
+            nth(rargs, pos) := arg
       >>;
       % Second pass: Fill the gaps in [rargs] with named parameters while
       % makeing sure the following:
@@ -537,39 +537,39 @@ asserted procedure rl_servicewrapper(rl_!*b: Applicable, u: List, names: List, t
       %    with previously determined positional parameters.
       % 2. Accept no named parameter with an unknown name.
       for each arg in nargs do <<
-	 w := memq(car arg, names);
-	 if not w then
-	    rederr {"unknown named parameter", car arg};
-	 % Determine the position from the name, and check whether that spot is
-	 % stil free.
-	 pos := argc - length w + 1;
-	 if nth(rargs, pos) neq g then
-	    rederr {"ambiguous specification for parameter", car arg};
-	 % If so, fill it in-place.
-	 nth(rargs, pos) := cdr arg
+         w := memq(car arg, names);
+         if not w then
+            rederr {"unknown named parameter", car arg};
+         % Determine the position from the name, and check whether that spot is
+         % stil free.
+         pos := argc - length w + 1;
+         if nth(rargs, pos) neq g then
+            rederr {"ambiguous specification for parameter", car arg};
+         % If so, fill it in-place.
+         nth(rargs, pos) := cdr arg
       >>;
       % Third pass: In the end every formal parameter must be filled with
       % default values and those default values must exist. We do this also
       % in-place.
       pos := 0;
       for each arg on rargs do <<
-	 pos := pos + 1;
-	 if car arg eq g then <<
-	    name := nth(names, pos);
-	    w := atsoc(name, defaults);
-	    if not w then
-	       rederr {"missing parameter", name, "at position", pos};
-	    car arg := cdr w
-      	 >>
+         pos := pos + 1;
+         if car arg eq g then <<
+            name := nth(names, pos);
+            w := atsoc(name, defaults);
+            if not w then
+               rederr {"missing parameter", name, "at position", pos};
+            car arg := cdr w
+         >>
       >>;
       % Now [rargs] is a complete list of arguments in the correct order, which
       % still have to be evaluated/converted.
       rargs := for each arg in rargs collect
-	 rl_convertArg(arg, pop types, 'a2s);
+         rl_convertArg(arg, pop types, 'a2s);
       % Finally apply the service, evaluate the result for AM, and return.
       w := apply(rl_!*b, rargs);
       if rl_excP w then  % handle exceptions
-	 rl_excErr w;
+         rl_excErr w;
       w := rl_convertArg(w, rtype, 's2a);
       return w
    end;
@@ -580,25 +580,25 @@ asserted procedure rl_convertArg(x: Any, type: Any, x2y: Id): Any;
 asserted procedure rl_conversionFunction(type: Any, x2y: Id): Any;
    begin scalar type, super, f, fl, kwl;
       if idp type then <<
-	 f := rl_typeEntry(type, x2y);
-	 if f then
-	    return f;
-	 super := rl_typeInherits type;
-	 if super then
-	    return rl_conversionFunction(super, x2y);
-	 rederr {"missing", x2y, "conversion for type", type}
+         f := rl_typeEntry(type, x2y);
+         if f then
+            return f;
+         super := rl_typeInherits type;
+         if super then
+            return rl_conversionFunction(super, x2y);
+         rederr {"missing", x2y, "conversion for type", type}
       >>;
       if intern car type eq 'enum and x2y eq 'a2s then <<
-	 kwl := for each h in cdr type collect intern h;
-      	 return {'lambda, '(x), {'apply, {'function, 'rl_a2sKeyword}, {'list, 'x, mkquote kwl}}};
+         kwl := for each h in cdr type collect intern h;
+         return {'lambda, '(x), {'apply, {'function, 'rl_a2sKeyword}, {'list, 'x, mkquote kwl}}};
       >>;
       if intern car type eq 'enum and x2y eq 's2a then
-	 return {'lambda, '(x), 'x};
+         return {'lambda, '(x), 'x};
       % Now type is something like Pair(List(Atom), Formula), where Pair, List,
       % Atom, Formula have conversion functions of arity 1+2, 1+1, 1+0, 1+0,
       % resp., counting "data + parameter functions."
       f . fl := for each ty in type collect
- 	 {'function, rl_conversionFunction(ty, x2y)};
+         {'function, rl_conversionFunction(ty, x2y)};
       return {'lambda, '(x), {'apply, f, {'cons, 'x, 'list . fl}}}
    end;
 

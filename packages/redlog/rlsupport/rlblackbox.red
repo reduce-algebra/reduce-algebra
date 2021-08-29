@@ -16,7 +16,7 @@ asserted procedure rl_blackboxStat(): List;
    begin scalar spec;
       scan();
       if cursym!* neq '!*lcbkt!* then
-	 rederr {"expecting '{' in rl_blackbox but found", cursym!*};
+         rederr {"expecting '{' in rl_blackbox but found", cursym!*};
       spec := rl_blackboxStatList();
       scan();  % !*semicol!*
       return {'rl_blackbox, spec}
@@ -30,27 +30,27 @@ asserted procedure rl_blackboxStatList(): Alist;
    begin scalar spec, key, entry;
       scan();
       while cursym!* neq '!*rcbkt!* do <<
-	 % We are not on the right hand side of an equation. We need an
-	 % alphabetic identifier. We strictly admit only alphabetic characters,
-	 % no digits.
-      	 if not lto_alphap cursym!* then
-	    rederr {"expecting alphabetic key in rl_service but found", cursym!*};
-      	 key := cursym!*;
-	 % Skip the equal sign.
-      	 rl_skipequal("rl_blackbox");
-      	 scan();
-	 % We are on the right hand side now. Only atoms are admissible here.
-	 if not atom cursym!* then
-	    rederr {"expecting atomic entry in rl_blackbox but found", cursym!*};
-	 entry := cursym!*;
-	 push(key . entry, spec);
-	 scan();
-	 % Expecting ',' or '}' now:
-	 if cursym!* neq '!*rcbkt!* then <<
-	    if cursym!* neq '!*comma!* then
-	       rederr {"expecting ',' or '}' in rl_blackbox but found", cursym!*};
-	    scan()
-	 >>
+         % We are not on the right hand side of an equation. We need an
+         % alphabetic identifier. We strictly admit only alphabetic characters,
+         % no digits.
+         if not lto_alphap cursym!* then
+            rederr {"expecting alphabetic key in rl_service but found", cursym!*};
+         key := cursym!*;
+         % Skip the equal sign.
+         rl_skipequal("rl_blackbox");
+         scan();
+         % We are on the right hand side now. Only atoms are admissible here.
+         if not atom cursym!* then
+            rederr {"expecting atomic entry in rl_blackbox but found", cursym!*};
+         entry := cursym!*;
+         push(key . entry, spec);
+         scan();
+         % Expecting ',' or '}' now:
+         if cursym!* neq '!*rcbkt!* then <<
+            if cursym!* neq '!*comma!* then
+               rederr {"expecting ',' or '}' in rl_blackbox but found", cursym!*};
+            scan()
+         >>
       >>;
       return reversip spec
    end;

@@ -74,14 +74,14 @@ procedure smt_mkstrng(u);
 procedure smt_readch1();
    begin scalar x;
       if null terminalp() then <<
-	 x := readch();
-	 x eq !$eol!$ and (curline!* := curline!*+1);
-	 return x
+         x := readch();
+         x eq !$eol!$ and (curline!* := curline!*+1);
+         return x
       >> else if crbuf1!* then <<
- 	 x := car crbuf1!*;
- 	 crbuf1!* := cdr crbuf1!*
+         x := car crbuf1!*;
+         crbuf1!* := cdr crbuf1!*
       >> else
- 	 x := readch();
+         x := readch();
       crbuf!* := x . crbuf!*;
       return x
    end;
@@ -91,34 +91,34 @@ procedure smt_token1();
       x := crchar!*;
    a:
       if seprp x then <<  % space, tab, newline, or carriage return
-	 x := smt_readch1();
- 	 go to a
+         x := smt_readch1();
+         go to a
       >> else if digit x then
-      	 return smt_token!-number x
+         return smt_token!-number x
       else if smt_liter x then
-      	 go to letter
+         go to letter
       else if x eq '!; then
-      	 go to coment
+         go to coment
       else if x eq '!! then
-      	 go to escape
+         go to escape
       else if x eq '!' then <<
-      	 crchar!* := smt_readch1();
-      	 nxtsym!* := mkquote smt_rread();
-      	 ttype!* := 4;
-      	 return nxtsym!*
+         crchar!* := smt_readch1();
+         nxtsym!* := mkquote smt_rread();
+         ttype!* := 4;
+         return nxtsym!*
       >> else if x eq '!" then
-      	 go to string;
+         go to string;
       ttype!* := 3;
       if x eq !$eof!$ then <<
- 	 crchar!* := '! ;
-	 smt_filenderr()
+         crchar!* := '! ;
+         smt_filenderr()
       >>;
       nxtsym!* := x;
    a1:
       if delcp x then
- 	 crchar!*:= '!
+         crchar!*:= '!
       else
-	 crchar!*:= smt_readch1();
+         crchar!*:= smt_readch1();
       go to c;
    escape:
       raise := !*raise;
@@ -131,9 +131,9 @@ procedure smt_token1();
    let1:
       y := x . y;
       if digit (x := smt_readch1()) or smt_liter x then
- 	 go to let1
+         go to let1
       else if x eq '!! then
- 	 go to escape;
+         go to escape;
       for each l in y do w := '!! . l . w;
       nxtsym!* := intern compress w;
    b:
@@ -147,16 +147,16 @@ procedure smt_token1();
       z := x;
       x := smt_readch1();
       if digit x or x eq '!. or x eq 'e or z eq 'e then
- 	 go to num1;
+         go to num1;
       y := reversip!* y;
       w := memq('!., y);
       nxtsym!* := if w then <<
-	 d := 10 ^ length cdr w;
-	 n := compress lto_delqip('!., y);
-	 g := gcdn(n, d);
-	 {'!/, n/g, d/g}
+         d := 10 ^ length cdr w;
+         n := compress lto_delqip('!., y);
+         g := gcdn(n, d);
+         {'!/, n/g, d/g}
       >> else
-      	 compress  y;
+         compress  y;
       go to b;
    string:
       raise := !*raise;
@@ -165,7 +165,7 @@ procedure smt_token1();
       y := x . y;
       x := smt_readch1();
       if x neq '!" then
- 	 go to strinx;
+         go to strinx;
       y := x . y;
       nxtsym!* := smt_mkstrng compress reversip!* y;
       !*raise := raise;
@@ -173,7 +173,7 @@ procedure smt_token1();
       go to a1;
    coment:
       if smt_readch1() neq !$eol!$ then
- 	 go to coment;
+         go to coment;
       x := smt_readch1();
       go to a
    end;
@@ -186,60 +186,60 @@ procedure smt_token!-number(x);
       ttype!* := 2;
    num1:
       if y or null(x eq '!)) then
- 	 y := x . y;
+         y := x . y;
       if dotp then
- 	 power := power - 1;
+         power := power - 1;
     num2:
        if (x := readch1()) eq '!. then
- 	  if dotp then
- 	     rerror('smtread, 3, "Syntax error: improper number")
-	  else <<
-	     dotp := t;
- 	     go to num2
-       	  >> else if digit x then
- 	     go to num1
-       	  else if y = '(!#) and (x eq '!x or x eq '!X) then
- 	     go to hexnum
-       	  else if x eq '!\ then <<
- 	     readch();
- 	     go to num2
-       	  >> else if null(x eq '!e or x eq '!E) then
- 	     go to ret;
+          if dotp then
+             rerror('smtread, 3, "Syntax error: improper number")
+          else <<
+             dotp := t;
+             go to num2
+          >> else if digit x then
+             go to num1
+          else if y = '(!#) and (x eq '!x or x eq '!X) then
+             go to hexnum
+          else if x eq '!\ then <<
+             readch();
+             go to num2
+          >> else if null(x eq '!e or x eq '!E) then
+             go to ret;
        % Case of number with embedded or trailing E.
        dotp := t;
        if (x := readch1()) eq '!- then
- 	  sign := t
+          sign := t
        else if x eq '!+ then
- 	  nil
+          nil
        else if null digit x then
- 	  go to ret
+          go to ret
        else
- 	  z := list x;
+          z := list x;
    nume1:
       if null digit(x := readch1()) then
- 	 go to nume2;
+         go to nume2;
       z := x . z;
       go to nume1;
    hexnum:
       y := 0;
    hexnum1:
       if not (z := get(x := readch1(), 'hexdigit)) then
- 	 go to ret1;
+         go to ret1;
       y := 16*y + z;
       go to hexnum1;
    nume2:
       if null z then
- 	 rerror('smtread, 4, "Syntax error: improper number");
+         rerror('smtread, 4, "Syntax error: improper number");
       z := compress reversip!* z;
       if sign then
- 	 power := power - z
+         power := power - z
       else
- 	 power := power + z;
+         power := power + z;
    ret:
       y := compress reversip!* y;
    ret1:
       nxtsym!* := if dotp then
- 	 '!:dn!: . (y . power)
+         '!:dn!: . (y . power)
       else y;
       crchar!* := x;
       return nxtsym!*
@@ -256,13 +256,13 @@ procedure smt_filenderr();
    begin scalar m;
       eof!* := eof!* + 1;
       if terminalp() then
- 	 error1()
+         error1()
       else <<
-	 m := if ifl!* then
- 	    {"End-of-file read in file", car ifl!*}
-	 else
-	    "End-of-file read";
- 	 error(99, m)
+         m := if ifl!* then
+            {"End-of-file read in file", car ifl!*}
+         else
+            "End-of-file read";
+         error(99, m)
       >>
    end;
 
@@ -271,10 +271,10 @@ procedure smt_ptoken();
    begin scalar x;
       x := smt_token();
       if x eq '!) and eqcar(outl!*,'! ) then
- 	 outl!* := cdr outl!*;
+         outl!* := cdr outl!*;
       smt_prin2x x;
       if not (x eq '!( or x eq '!)) then
- 	 smt_prin2x '! ;
+         smt_prin2x '! ;
       return x
    end;
 
@@ -282,22 +282,22 @@ procedure smt_rread1();
    begin scalar x,y;
       x := smt_ptoken();
       if not eqn(ttype!*, 3) then
- 	 return if null idp x or null !*quotenewnam
- 	    or null(y := get(x,'quotenewnam))
-	 then
- 	    x
-	 else
- 	    y
+         return if null idp x or null !*quotenewnam
+            or null(y := get(x,'quotenewnam))
+         then
+            x
+         else
+            y
       else if x eq '!( then
- 	 return smt_rrdls()
+         return smt_rrdls()
       else if null (x eq '!+ or x eq '!-) then
- 	 return x;
+         return x;
       y := smt_ptoken();
       if null numberp y then <<
- 	 nxtsym!* := " ";
-	 symerr("Syntax error: improper number", nil)
+         nxtsym!* := " ";
+         symerr("Syntax error: improper number", nil)
       >> else if x eq '!- then
- 	 y := apply('minus, {y});
+         y := apply('minus, {y});
       % We need this construct for bootstrapping purposes.
       return y
    end;
@@ -307,18 +307,18 @@ procedure smt_rrdls();
    a:
       x := smt_rread1();
       if not eqn(ttype!*, 3) then
- 	 go to b
+         go to b
       else if x eq '!) then
- 	 return z
+         return z
       else if null (x eq '!.) then
- 	 go to b;
+         go to b;
       x := smt_rread1();
       y := smt_ptoken();
       if not eqn(ttype!*, 3) or y neq '!) then <<
-	 nxtsym!* := " ";
-	 symerr("Invalid S-expression", nil)
+         nxtsym!* := " ";
+         symerr("Invalid S-expression", nil)
       >> else
- 	 return nconc(z, x);
+         return nconc(z, x);
    b:
       z := nconc(z,list x);
       go to a
@@ -333,22 +333,22 @@ procedure smt_rread();
 procedure smt_scan();
    begin scalar x,y;
       if null (cursym!* eq '!*semicol!*) then
- 	 go to b;
+         go to b;
    a:
       nxtsym!* := smt_token();
    b:
       if null atom nxtsym!* then
- 	 go to q1
+         go to q1
       else if nxtsym!* eq 'else or cursym!* eq '!*semicol!* then
- 	 outl!* := nil;
+         outl!* := nil;
       smt_prin2x nxtsym!*;
    c:
       if null idp nxtsym!* then
- 	 go to l
+         go to l
       else if (x := get(nxtsym!*,'newnam)) and x neq nxtsym!* then
- 	 go to new
+         go to new
       else if nxtsym!* eq '!; and eqn(ttype!*, 3) then
- 	 go to comm
+         go to comm
       else if null(ttype!* = 3) then
          go to l
       else if nxtsym!* eq !$eof!$ then
@@ -362,27 +362,27 @@ procedure smt_scan();
    sw1:
       nxtsym!* := smt_token();
       if not eqn(ttype!*, 3) then
- 	 go to sw2
+         go to sw2
       else if nxtsym!* eq !$eof!$ then
- 	 return smt_filenderr()
+         return smt_filenderr()
       else if car x then
- 	 go to sw3;
+         go to sw3;
    sw2:
       cursym!*:=cadr x;
       if cursym!* eq '!*rpar!* then
- 	 go to l2
+         go to l2
       else
- 	 return cursym!*;
+         return cursym!*;
    sw3:
       y := atsoc(nxtsym!*,car x);
       if not y then
- 	 go to sw2;
+         go to sw2;
       smt_prin2x nxtsym!*;
       x := cdr y;
       go to sw1;
    comm:
       if delcp crchar!* then
- 	 go to com1;
+         go to com1;
       crchar!* := readch();
       go to comm;
    com1:
@@ -395,17 +395,17 @@ procedure smt_scan();
    new:
       nxtsym!* := x;
       if stringp x then
- 	 go to l
+         go to l
       else if atom x then
- 	 go to c
+         go to c
       else
- 	 go to l;
+         go to l;
   quote:
      nxtsym!* := mkquote smt_rread1();
      go to l;
    q1:
       if null (car nxtsym!* eq 'string) then
- 	 go to l;
+         go to l;
       smt_prin2x " ";
       smt_prin2x cadr(nxtsym!* := mkquote cadr nxtsym!*);
    l:
@@ -413,10 +413,10 @@ procedure smt_scan();
    l1:
       nxtsym!* := smt_token();
       if nxtsym!* eq !$eof!$ and ttype!* = 3 then
- 	 return smt_filenderr();
+         return smt_filenderr();
    l2:
       if numberp nxtsym!* or (atom nxtsym!* and null get(nxtsym!*,'switch!*)) then
- 	 smt_prin2x " ";
+         smt_prin2x " ";
       return cursym!*
    end;
 

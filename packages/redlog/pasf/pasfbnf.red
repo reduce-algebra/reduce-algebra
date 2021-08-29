@@ -54,12 +54,12 @@ procedure pasf_puregconp(f, gand);
       if rl_tvalp f then return t;
       if pasf_atfp f then return t;
       if pairp f and rl_op f eq gand then <<
-      	 fl := rl_argn f;
-      	 c := t; while c and fl do <<
-	    a := pop fl;
-	    if not pasf_atfp a then c := nil
-      	 >>;
-      	 return c
+         fl := rl_argn f;
+         c := t; while c and fl do <<
+            a := pop fl;
+            if not pasf_atfp a then c := nil
+         >>;
+         return c
       >>;
       return nil
    end;
@@ -70,11 +70,11 @@ procedure pasf_pbnf(phi,flag);
    % 'cnf. Returns a pseudo boolean normal form of [phi] according to flag.
    begin
       if rl_bquap rl_op phi then
-	 return rl_mkbq(rl_op phi,rl_var phi,rl_b phi,
-	    pasf_pbnf(rl_mat phi,flag));
+         return rl_mkbq(rl_op phi,rl_var phi,rl_b phi,
+            pasf_pbnf(rl_mat phi,flag));
       if rl_quap rl_op phi then
-	 return  rl_mkq(rl_op phi,rl_var phi,
-	    pasf_pbnf(rl_mat phi,flag));
+         return  rl_mkq(rl_op phi,rl_var phi,
+            pasf_pbnf(rl_mat phi,flag));
       % Now assuming that the formula is in PNF the formula is strong
       % quantifier free
       return if flag eq 'dnf then cl_dnf phi else cl_cnf phi

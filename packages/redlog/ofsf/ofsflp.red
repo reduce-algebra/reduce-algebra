@@ -62,8 +62,8 @@ procedure lp_newmodel(n, m);
 procedure lp_addconstraint(rel, l, r);
    begin scalar lhs, vl;
       if !*rlgurobi and !*rlffi and !*lp_cslp then <<
-      	 gurobi_addconstraintfast(rel, l, r);
-      	 return
+         gurobi_addconstraintfast(rel, l, r);
+         return
       >>;
       vl := lp_varl!*;
       lhs := 'plus . for each c in l collect {'times, c, pop vl};
@@ -142,8 +142,8 @@ asserted procedure lp_rungurobi1(cl: List, vl: List, d: Integer, rd: Integer): L
       system call;
       res := lp_readSol(sol, vl, d);
       if not !*lpkeepfiles then
-	 for each fn in {lp, sol, log} do
-	    system lto_sconcat {"rm -f ", fn};
+         for each fn in {lp, sol, log} do
+            system lto_sconcat {"rm -f ", fn};
       return res
    end;
 
@@ -159,17 +159,17 @@ asserted procedure lp_writeLp(fn: String, obj: List, cl: List, vl: List, rd: Int
       !*utf8 := nil;
       !*fancy := nil;
       if fn then
-      	 out fn;
+         out fn;
       w := errorset({'lp_writeLp1, mkquote obj, mkquote cl, mkquote vl, mkquote rd}, nil, !*backtrace);
       if fn then
-      	 shut fn;
+         shut fn;
       !*fancy := oldfancy;
       !*utf8 := oldutf8;
       !*echo := oldecho;
       semic!* := oldsemic;
       put('times, 'prtch, oldprtch);
       if errorp w then
-	 rederr emsg!*
+         rederr emsg!*
    end;
 
 asserted procedure lp_writeLp1(obj: List, cl: List, vl: List, rd: Integer);
@@ -181,24 +181,24 @@ asserted procedure lp_writeLp1(obj: List, cl: List, vl: List, rd: Integer);
       prin2!* "Subject To";
       terpri!* nil;
       for each c in cl do <<
-	 maprin {car c, reval cadr c, caddr c};
-	 terpri!* nil
+         maprin {car c, reval cadr c, caddr c};
+         terpri!* nil
       >>;
       prin2!* "Bounds";
       terpri!* nil;
       for each v in vl do <<
-	 maprin {'geq, v, '!-Inf};
-      	 terpri!* nil
+         maprin {'geq, v, '!-Inf};
+         terpri!* nil
       >>;
       for i := 1:rd do pop vl;
       if vl then <<
-	 prin2!* "Integers";
-      	 terpri!* nil;
-	 for each rvl on vl do <<
-	    prin2!* car rvl;
-	    if cdr rvl then prin2!* " "
-	 >>;
-	 terpri!* nil
+         prin2!* "Integers";
+         terpri!* nil;
+         for each rvl on vl do <<
+            prin2!* car rvl;
+            if cdr rvl then prin2!* " "
+         >>;
+         terpri!* nil
       >>;
       prin2!* "End";
       terpri!* nil
@@ -210,17 +210,17 @@ asserted procedure lp_readSol(fn: String, vl: List, d: Integer);
       rds ch;
       tok := read();
       if tok neq '!# then <<
-	 rds nil;
-	 close ch;
-	 return 'infeasible
+         rds nil;
+         close ch;
+         return 'infeasible
       >>;
       repeat tok := read() until tok = 0;
       res := for i := 1:d collect
-	 read() . read();
+         read() . read();
       rds nil;
       close ch;
       res := for each v in vl collect
-	 cdr atsoc(v, res);
+         cdr atsoc(v, res);
       return res
    end;
 
@@ -232,7 +232,7 @@ asserted procedure lp_runlinalg1(cl: List, vl: List, d: Integer): List;
       bounds := for each v in vl collect v . '((minus infinity) infinity);
       w := fs_simplex2('min, sc_simp 0, cl, bounds);
       if w eq 'infeasible then
-	 return 'infeasible;
+         return 'infeasible;
       return for each e in cdr w collect caddr e
    end;
 
@@ -240,9 +240,9 @@ procedure lp_dumpmodel();
    <<
       lp_updatemodel();
       if !*rlgurobi and !*rlffi and !*lp_cslp then
-      	 gurobi_dumpmodel()
+         gurobi_dumpmodel()
       else
-	 lp_writeLp(nil, nil, lp_model!*, lp_varl!*, lp_rdim!*)
+         lp_writeLp(nil, nil, lp_model!*, lp_varl!*, lp_rdim!*)
    >>;
 
 endmodule;

@@ -101,7 +101,7 @@ flag('(qqe_chsimpat),'full);
 procedure qqe_enter(argl);
    begin scalar w,qqecid2;
       if null argl then
-	 return nil . "base type context missing";
+         return nil . "base type context missing";
 
       qqe_elimb!* := nil;
 
@@ -131,20 +131,20 @@ procedure qqe_load!-basetype(qqecid2,argl);
    % resembles rl_enter() in submodule rlcont.
    begin scalar w,enter;
       w := errorset({'load!-package,mkquote(qqecid2)},nil,!*backtrace)
-	 where !*msg=nil;
+         where !*msg=nil;
       if errorp w then
-	 return {"switching to base type wrapper",qqecid2,"failed"};
+         return {"switching to base type wrapper",qqecid2,"failed"};
       if not flagp(qqecid2,'rl_package) then
-	 return {qqecid2,"is not an rl package"};
+         return {qqecid2,"is not an rl package"};
       enter := get(qqecid2,'rl_enter);
       if null enter and argl then
-	 lprim {"extra",ioto_cplu("argument",cdr argl),"ignored"};
+         lprim {"extra",ioto_cplu("argument",cdr argl),"ignored"};
       if enter then <<
-      	 w := apply(enter,{argl});
-      	 if not car w then
-	    return cdr w
-      	 else
-	    argl := cdr w
+         w := apply(enter,{argl});
+         if not car w then
+            return cdr w
+         else
+            argl := cdr w
       >>;
       return nil  % means no error
    end;
@@ -153,8 +153,8 @@ procedure qqe_patch!-ctag(qqecid2,qqeal,rlal);
    begin scalar w;
       w := get('qqe,qqeal);
       for each x in get(qqecid2,rlal) do
-	 if not atsoc(car x,w) then
-	    w := x . w;
+         if not atsoc(car x,w) then
+            w := x . w;
       put('qqe,rlal,w)
    end;
 

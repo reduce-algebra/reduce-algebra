@@ -101,21 +101,21 @@
         ((halfwords-tag)
          (let ((n (halfwordlen o))
                (s (halfworditm o 0)))
-           (ifor (from i 1 n 1)                                                                                                                                                                           (do (setq s (wxor (wshift s 4) (halfworditm o i)))))
-           (inf s)))
+           (ifor (from i 1 n 1)                                                                                                                                                                           (do (setq s (inf (wxor (wshift s 4) (halfworditm o i))))))
+           s))
         ((words-tag)
          (let ((n (wrdlen o))
                (s (inf (wrditm o 0))))
-           (ifor (from i 1 n 1)                                                                                                                                                                           (do (setq s (wxor (wshift s 6) (inf (wrditm o i))))))
-           (inf s)))
+           (ifor (from i 1 n 1)                                                                                                                                                                           (do (setq s (inf (wxor (wshift s 6) (inf (wrditm o i)))))))
+           s))
         ((vector-tag)
          (let ((n (upbv o))
                (s 0))
            (ifor (from i 0 n 1)
 		%% do a left shift of 5 bits before using the intermediate value
 		%% otherwise all vectors with the same elements but different order would hash to the same value
-                (do (setq s (wxor (wshift s 5) (sxhash-internal (igetv o i) depth)))))
-           (inf s)))
+                (do (setq s (inf (wxor (wshift s 5) (sxhash-internal (igetv o i) depth))))))
+           s))
         ((pair-tag)
 	 (progn
 	   (if (not (wgreaterp depth 0))
@@ -127,20 +127,20 @@
 		 %% otherwise all lists with the same elements but different order would hash to the same value
 		 %% use a different shift than for vectors in order to hash a list to another value than a vector with the same elements
 		 (setq depth (isub1 depth))
-		 (setq s (wxor (wshift s 3) (sxhash-internal (car o1) depth)))
+		 (setq s (inf (wxor (wshift s 3) (sxhash-internal (car o1) depth))))
 		 (setq o1 (cdr o1)))
 	       %% At this point we are either at the end of the list (o1 is not a pair) or depth is 1
 	       %% In both cases we recurse on o1
 	       (setq depth (isub1 depth))
-	       (setq s (wxor (wshift s 3) (sxhash-internal o1 depth)))
-	       (inf s)))))
+	       (setq s (inf (wxor (wshift s 3) (sxhash-internal o1 depth))))
+	       s))))
         ((evector-tag)
          (let ((n (eupbv o))
                (s 0))
            (ifor (from i 0 n 1)
 		%% see comments on vectors and pairs above
-                (do (setq s (wxor (wshift s 7) (sxhash-internal (egetv o i) depth)))))
-           (inf s)))
+                (do (setq s (inf (wxor (wshift s 7) (sxhash-internal (egetv o i) depth))))))
+           s))
         ((id-tag) (id2int o))
         % More or less random value for other lisp objects
         ((hvect-tag hwords-tag hhalfwords-tag hbytes-tag) 4711)
@@ -156,17 +156,17 @@
         (setq n (wdifference bitsperword 8)))  
       (ifor (from i 0 n 1)
            (do
-            (setq result (wxor result (wshift (strbyt inf i)
-                                              (wdifference (wdifference bitsperword 16) i))))
+            (setq result (inf (wxor result (wshift (strbyt inf i)
+                                                   (wdifference (wdifference bitsperword 16) i)))))
             ))
-      (inf result)))
+      result))
 
 (de big-sxhash (b)
     (let ((l (veclen (vecinf b)))
 	  (result 0))
-      (vfor (from i 1 l 1) (do (setq result (wxor (igetv b i) result))))
-      (if (eq (igetv b 0) 'bigneg) (setq result (wnot result)))
-      (inf result)))
+      (vfor (from i 1 l 1) (do (setq result (inf (wxor (igetv b i) result)))))
+      (if (eq (igetv b 0) 'bigneg) (setq result (inf (wnot result))))
+      result))
 
 (de ht-check-twopower (n)
   (let ((len 0))

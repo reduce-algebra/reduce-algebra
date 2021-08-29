@@ -89,23 +89,23 @@ asserted procedure ofsf_cad1(phi: Formula, prjordl: List, aaplus: List): DottedP
    begin scalar cd;
       cd := ofsf_cadpreparation(phi, prjordl, aaplus);
       if ofsf_cadverbosep() then
-      	 caddata_print cd;
+         caddata_print cd;
       if !*rlcadpreponly then <<
-	 if !*rlverbose then
-	    ioto_tprin2t "+ rlcadpreponly is on: Jump into finish.";
-	 return ofsf_cadfinish cd
+         if !*rlverbose then
+            ioto_tprin2t "+ rlcadpreponly is on: Jump into finish.";
+         return ofsf_cadfinish cd
       >>;
       ofsf_cadprojection cd;
       if !*rlcadprojonly then <<
-	 if !*rlverbose then
-	    ioto_tprin2t "+ rlcadprojonly is on: Jump into finish.";
-	 return ofsf_cadfinish cd
+         if !*rlverbose then
+            ioto_tprin2t "+ rlcadprojonly is on: Jump into finish.";
+         return ofsf_cadfinish cd
       >>;
       ofsf_cadextension cd;
       if !*rlcadextonly then <<
-	 if !*rlverbose then
-	    ioto_tprin2t "+ rlcadextonly is on: Jump into finish.";
-	 return ofsf_cadfinish cd
+         if !*rlverbose then
+            ioto_tprin2t "+ rlcadextonly is on: Jump into finish.";
+         return ofsf_cadfinish cd
       >>;
       ofsf_solutionformula cd;
       return ofsf_cadfinish cd
@@ -119,17 +119,17 @@ asserted procedure ofsf_cadproj1(phi: Formula, prjordl: List): DottedPair;
    begin scalar cd, theo, ffl;
       cd := ofsf_cadpreparation(phi, prjordl, nil);
       if ofsf_cadverbosep() then
-      	 caddata_print cd;
+         caddata_print cd;
       ofsf_cadprojection cd;
       % if !*rlverbose then
       for each f in caddata_theo cd do
-	 mathprint rl_prepfof f;
+         mathprint rl_prepfof f;
       ofsf_restorekord cd;
       theo := for each f in caddata_theo cd collect
-	 ofsf_reorder f;
+         ofsf_reorder f;
       ffl := reversip for j := 1 : caddata_r cd collect
-	 for each p in caddata_ffj(cd, j) collect
-	    reorder p;
+         for each p in caddata_ffj(cd, j) collect
+            reorder p;
       return theo . ffl
    end;
 
@@ -139,13 +139,13 @@ asserted procedure ofsf_cadpnum(phi: Formula, prjordl: List): List;
       scalar !*rlcadtrimtree;
       cd := ofsf_cadpreparation(phi, prjordl, nil);
       if ofsf_cadverbosep() then
-      	 caddata_print cd;
+         caddata_print cd;
       ofsf_cadprojection cd;
       ofsf_cadextension cd;
       ofsf_restorekord cd;
       dd := caddata_dd cd;
       resl := for i := 0 : length caddata_varl cd collect
-	 length atree_childrenatlevel(dd, i);
+         length atree_childrenatlevel(dd, i);
       return resl
    end;
 
@@ -158,8 +158,8 @@ asserted procedure ofsf_cadfnum(pl: List, prjordl: List): List;
    begin scalar oldorder, w, ff, varl, resl;
       oldorder := setkorder prjordl;
       w := for each ffj in pl collect
- 	 for each f in ffj collect
-	    reorder numr simp f;
+         for each f in ffj collect
+            reorder numr simp f;
       ff := reverse w;
       varl := reverse prjordl;
       resl := ofsf_cadfnum1(ff, varl);
@@ -177,7 +177,7 @@ procedure rlcadfnum(pl, prjordl);
    % Number of nodes in the full CAD tree.
    begin
       pl := for each ffj in cdr pl collect
-	 cdr ffj;
+         cdr ffj;
       return 'list . ofsf_cadfnum(pl, cdr prjordl)
    end;
 
@@ -194,14 +194,14 @@ asserted procedure ofsf_cadpreparation(phi: Formula, prjordl: List, aaplus: List
    begin scalar w, ophi, varl, qal, oldorder, psi, aa, rvbl, cd;
       integer r, k, l;
       if !*rlverbose then
-	 ioto_tprin2t "+++ Preparation Phase";
+         ioto_tprin2t "+++ Preparation Phase";
       if !*rlcaddecdeg then <<
-      	 w := ofsf_decdeg0 phi;
-      	 phi := car w;
-      	 if !*rlverbose then <<
-	    ioto_prin2 "+ decrease degrees: ";
-	    ioto_prin2t for each x in cdr w join {"(", car x, "^", cdr x, ")"}
-	 >>
+         w := ofsf_decdeg0 phi;
+         phi := car w;
+         if !*rlverbose then <<
+            ioto_prin2 "+ decrease degrees: ";
+            ioto_prin2t for each x in cdr w join {"(", car x, "^", cdr x, ")"}
+         >>
       >>;
       ophi := phi := cl_pnf phi;
       % [ophi] with old kernel order
@@ -209,18 +209,18 @@ asserted procedure ofsf_cadpreparation(phi: Formula, prjordl: List, aaplus: List
       % [varl] is (x_r, ..., x_1).
       % [qal] is ((x_r . Q_r), ..., (x_k+1 . Q_k+1)).
       if prjordl then <<
-	 varl := prjordl;
-	 qal := for each x in qal collect <<
-	    w := pop prjordl;
-	    w . cdr x
-	 >>
+         varl := prjordl;
+         qal := for each x in qal collect <<
+            w := pop prjordl;
+            w . cdr x
+         >>
       >>;
       r := length varl;
       k := r - length qal;
       % reordering w.r.t. varl
       oldorder := setkorder varl;
       if !*rlverbose then
-	 ioto_prin2t {"+ Kernel order set to ", varl};
+         ioto_prin2t {"+ Kernel order set to ", varl};
       varl := reverse varl;  % reversip would affect kernel order
       % [varl] is now (x_1, ..., x_r).
       qal := reversip qal;
@@ -230,9 +230,9 @@ asserted procedure ofsf_cadpreparation(phi: Formula, prjordl: List, aaplus: List
       % phi = Q_k+1 x_k+1 ... Q_r x_r psi.
       aa := for each f in cl_terml phi collect f;
       if aaplus then <<
-	 if !*rlverbose then
-	    ioto_prin2t {"+++ Adding ", length aaplus, " projection polynomials."};
-      	 aaplus := for each f in aaplus collect reorder f
+         if !*rlverbose then
+            ioto_prin2t {"+++ Adding ", length aaplus, " projection polynomials."};
+         aaplus := for each f in aaplus collect reorder f
       >>;
       rvbl := reversip ofsf_cadvbl phi;
       l := (if cdr rvbl then k + length car cdr rvbl else 0);
@@ -256,52 +256,52 @@ asserted procedure ofsf_cadprojection(cd: CadData): Any;
    begin scalar r, ff;
       r := caddata_r cd;
       if !*rlverbose then <<
-	 ioto_tprin2t {"+++ Projection Phase"};
-	 ioto_prin2t {"+ projection order: ", reverse caddata_varl cd}
+         ioto_tprin2t {"+++ Projection Phase"};
+         ioto_prin2t {"+ projection order: ", reverse caddata_varl cd}
       >>;
       ofsf_cadprojection1 cd;  % [caddata_ff] and [caddata_hh] are computed here.
       ff := caddata_ff cd;
       if !*rlverbose then
-	 if !*rlcadprojonly then
-	    for i := 1 : r do <<
-	       ioto_tprin2t {"+ projection factors of level ", r-i+1, ":"};
-	       mathprint('list . for each f in getv(ff, r-i+1) collect prepf f)
-      	    >>
-	 else <<
-	    % ioto_tprin2t {"+ (#F1,...,#Fr)=",
-	    %    for each ffi in ffl collect length ffi};
-	    ioto_tprin2 "+ number of projection factors of level r,...,1: ";
-      	    for i := 0 : r - 2 do
-	       ioto_prin2 {length getv(ff, r-i), ","};
-	    ioto_prin2t length getv(ff, 1)
-      	 >>;
+         if !*rlcadprojonly then
+            for i := 1 : r do <<
+               ioto_tprin2t {"+ projection factors of level ", r-i+1, ":"};
+               mathprint('list . for each f in getv(ff, r-i+1) collect prepf f)
+            >>
+         else <<
+            % ioto_tprin2t {"+ (#F1,...,#Fr)=",
+            %    for each ffi in ffl collect length ffi};
+            ioto_tprin2 "+ number of projection factors of level r,...,1: ";
+            for i := 0 : r - 2 do
+               ioto_prin2 {length getv(ff, r-i), ","};
+            ioto_prin2t length getv(ff, 1)
+         >>;
       return nil
    end;
 
 asserted procedure ofsf_cadextension(cd: CadData): Any;
    begin scalar dd; integer r;
       if !*rlverbose then <<
-	 ioto_tprin2t "+++ Extension Phase";
-	 ioto_tprin2t "+ Building partial CAD tree..."
+         ioto_tprin2t "+++ Extension Phase";
+         ioto_tprin2t "+ Building partial CAD tree..."
       >>;
       dd := ofsf_partialtree cd;
       if !*rlverbose then <<
-	 r := caddata_r cd;
-	 ioto_tprin2 "+ number of partial CAD tree nodes of level 0,...,r: ";
-	 for i := 0 : r - 1 do
-	    ioto_prin2 {length atree_childrenatlevel(dd, i), ","};
-	 ioto_prin2t length atree_childrenatlevel(dd, r)
+         r := caddata_r cd;
+         ioto_tprin2 "+ number of partial CAD tree nodes of level 0,...,r: ";
+         for i := 0 : r - 1 do
+            ioto_prin2 {length atree_childrenatlevel(dd, i), ","};
+         ioto_prin2t length atree_childrenatlevel(dd, r)
       >>;
       if !*rlcadtree2dot then
-	 atree_2dot(dd, lto_sconcat {ofsf_wd!*, "cadtree.dot"});
+         atree_2dot(dd, lto_sconcat {ofsf_wd!*, "cadtree.dot"});
       if !*rlcadtree2tgf then
-	 atree_2dot(dd, lto_sconcat {ofsf_wd!*, "cadtree.tgf"});
+         atree_2dot(dd, lto_sconcat {ofsf_wd!*, "cadtree.tgf"});
       if !*rlcadtree2gml then
-	 atree_2gml(dd, lto_sconcat {ofsf_wd!*, "cadtree.gml"});
+         atree_2gml(dd, lto_sconcat {ofsf_wd!*, "cadtree.gml"});
       caddata_putdd(cd, dd);
       % if !*rlverbose then <<
-      % 	 ioto_tprin2t {"+ CAD tree:"};
-      % 	 atree_print dd
+      %          ioto_tprin2t {"+ CAD tree:"};
+      %          atree_print dd
       % >>;
       return nil
    end;
@@ -312,20 +312,20 @@ asserted procedure ofsf_cadfinish(cd: CadData): DottedPair;
    % was not computed, the input formula [phi] is returned.
    begin scalar w, theo, phiprime;
       if !*rlverbose then
-	 ioto_tprin2t {"+++ Finish Phase"};
+         ioto_tprin2t {"+++ Finish Phase"};
       if !*rlqegen1 then <<
-	 w := for j := 1 : min2(1, caddata_k cd) join
+         w := for j := 1 : min2(1, caddata_k cd) join
             for each f in caddata_ffj(cd, j) collect
-	       ofsf_0mk2('neq, f);
-	 caddata_puttheo(cd, append(w, caddata_theo cd))
+               ofsf_0mk2('neq, f);
+         caddata_puttheo(cd, append(w, caddata_theo cd))
       >>;
       ofsf_restorekord cd;
       theo := for each f in caddata_theo cd collect ofsf_reorder f;
       if !*rlqegen then
-	 theo := ofsf_thsimpl theo;
+         theo := ofsf_thsimpl theo;
       phiprime := caddata_phiprime cd;
       if phiprime neq 'undefined then
-	 return theo . cl_simpl(ofsf_reorder phiprime, theo, -1);
+         return theo . cl_simpl(ofsf_reorder phiprime, theo, -1);
       return theo . caddata_ophi cd
    end;
 
@@ -338,9 +338,9 @@ asserted procedure ofsf_mkvarl(f: Formula): DottedPair;
    begin scalar vl, qal;
       vl := cl_fvarl1 f;  % list of free variables
       while rl_quap rl_op f do <<
-	 qal := (rl_var f . rl_op f) . qal;
-	 vl := rl_var f . vl;
-	 f := rl_mat f
+         qal := (rl_var f . rl_op f) . qal;
+         vl := rl_var f . vl;
+         f := rl_mat f
       >>;
       return vl . qal
    end;
@@ -350,9 +350,9 @@ asserted procedure ofsf_restorekord(cd: CadData): Any;
    begin scalar oldorder;
       oldorder := caddata_oldorder cd;
       if oldorder neq 'undefined then
-	 setkorder oldorder;
+         setkorder oldorder;
       if !*rlverbose then
-	 ioto_tprin2t "+ Kernel order was restored.";
+         ioto_tprin2t "+ Kernel order was restored.";
       return nil
    end;
 
@@ -441,9 +441,9 @@ asserted procedure acell_tvasstring(c: Acell): String;
    begin scalar tv;
       tv := acell_gettv c;
       if tv eq 'true then
-      	 return "T";
+         return "T";
       if tv eq 'false then
-	 return "F";
+         return "F";
       return "?"
    end;
 
@@ -461,11 +461,11 @@ asserted procedure ofsf_cadfnum1(ff: List, varl: List): List;
    % polynomials. Returns a list of positive integers of length r+1.
    begin scalar hh, w;
       hh := for each ffj in ff collect
-	 for each f in ffj collect
-	    'dummytag . f;
+         for each f in ffj collect
+            'dummytag . f;
       w := ofsf_fulltree(lto_list2vector(nil . hh), varl);
       return for i := 0 : length varl collect
-	 length atree_childrenatlevel(w, i)
+         length atree_childrenatlevel(w, i)
    end;
 
 asserted procedure ofsf_fulltree(hh: Atom, varl: List): Atree;
@@ -487,14 +487,14 @@ asserted procedure ofsf_ftoc(basecell: Acell, hh: Atom, varl: List): Atree;
       sp := acell_getsp basecell;
       j := length sp + 1;
       if ofsf_cadverbosep() then
-	 ioto_prin2 {"(", j - 1};
+         ioto_prin2 {"(", j - 1};
       r := length varl;
       k := r;  % This is not needed. ofsf_nextcell would need it only for fulldimonly and gen1.
       % (1) Non-recursion Case: j = r + 1. [basecell] is a leaf.
       if eqn(j - 1, r) then <<
-	 if ofsf_cadverbosep() then
-	    ioto_prin2 ")";
-      	 return atree_mk basecell
+         if ofsf_cadverbosep() then
+            ioto_prin2 ")";
+         return atree_mk basecell
       >>;
       xj := nth(varl, j);
       iri := ofsf_iriprepare(getv(hh, j), xj, sp, varl);
@@ -502,9 +502,9 @@ asserted procedure ofsf_ftoc(basecell: Acell, hh: Atom, varl: List): Atree;
       % (2) Recursion Case: 1 <= j <= r
       assert(1 <= j and j <= r);
       while cell := ofsf_nextcell(ncbuffer, sp, iri, xj, j, k) do
-	 push(ofsf_ftoc(cell, hh, varl), treel);
+         push(ofsf_ftoc(cell, hh, varl), treel);
       if ofsf_cadverbosep() then
-	 ioto_prin2 ")";
+         ioto_prin2 ")";
       res := atree_mk basecell;
       atree_setchildl(res, treel);
       return res
@@ -528,78 +528,78 @@ asserted procedure ofsf_ptoc(basecell: Acell, psi: QfFormula, cd: CadData): Atre
       sp := acell_getsp basecell;
       j := length sp + 1;
       if ofsf_cadverbosep() then
-	 ioto_prin2 {"(", j - 1};
+         ioto_prin2 {"(", j - 1};
       r := caddata_r cd;
       varl := caddata_varl cd;
       % (1) Non-recursion Case: j = r + 1. [basecell] is a leaf.
       if eqn(j - 1, r) then <<
-	 acell_puttv(basecell, ofsf_evalqff(psi, sp, varl));
-	 if ofsf_cadverbosep() then
-	    ioto_prin2 ")";
-      	 return atree_mk basecell
+         acell_puttv(basecell, ofsf_evalqff(psi, sp, varl));
+         if ofsf_cadverbosep() then
+            ioto_prin2 ")";
+         return atree_mk basecell
       >>;
       % (2) Recursion Case: 1 <= j <= r
       assert(1 <= j and j <= r);
       if !*rlcadte then <<  % trial evaluation
-	 psi := ofsf_trialeval(psi, sp);
-      	 if psi memq '(true false) then <<
-	    acell_puttv(basecell, psi);
-	    if ofsf_cadverbosep() then
-	       ioto_prin2 ":T)";
-	    return atree_mk basecell
-      	 >>
+         psi := ofsf_trialeval(psi, sp);
+         if psi memq '(true false) then <<
+            acell_puttv(basecell, psi);
+            if ofsf_cadverbosep() then
+               ioto_prin2 ":T)";
+            return atree_mk basecell
+         >>
       >>;
       k := caddata_k cd;
       xj := nth(varl, j);
       iri := ofsf_iriprepare(caddata_hhj(cd, j), xj, sp, varl);
       ncbuffer := ncb_init();
       if (1 <= j and j <= k) then <<  % (2a) Subcase: 1 <= j <= k
-	 while cell := ofsf_nextcell(ncbuffer, sp, iri, xj, j, k) do
-	    if ofsf_iswhitecell(cell, cd) then <<
-	       if ofsf_cadverbosep() then
-	    	  ioto_prin2 {"(", j, ":W)"}
-	    >> else
-	       push(ofsf_ptoc(cell, psi, cd), treel);
-      	 if null treel then  % TODO: Understand why this is an error!
-	    rederr "GCAD: stack full of white cells occured.";
-	 % This sort should not be needed from correctness point of view.
-   	 % TODO: Verify this to be 100% sure!
-	 treel := sort(treel, function atree_sortfn);
-      	 res := atree_mk basecell;
-	 atree_setchildl(res, treel);
-	 if ofsf_cadverbosep() then
-	    ioto_prin2 ")";
-      	 return ofsf_pbfvs(res, treel)
+         while cell := ofsf_nextcell(ncbuffer, sp, iri, xj, j, k) do
+            if ofsf_iswhitecell(cell, cd) then <<
+               if ofsf_cadverbosep() then
+                  ioto_prin2 {"(", j, ":W)"}
+            >> else
+               push(ofsf_ptoc(cell, psi, cd), treel);
+         if null treel then  % TODO: Understand why this is an error!
+            rederr "GCAD: stack full of white cells occured.";
+         % This sort should not be needed from correctness point of view.
+         % TODO: Verify this to be 100% sure!
+         treel := sort(treel, function atree_sortfn);
+         res := atree_mk basecell;
+         atree_setchildl(res, treel);
+         if ofsf_cadverbosep() then
+            ioto_prin2 ")";
+         return ofsf_pbfvs(res, treel)
       >>;
       % (2b) Subcase: k < j <= r
       qj := cdr nth(caddata_qal cd, j - k);
       neutral := if qj eq 'all then 'true else 'false;
       tv := neutral;
       while (tv eq neutral) and
-	 (cell := ofsf_nextcell(ncbuffer, sp, iri, xj, j, k)) do <<
-	    tree := ofsf_ptoc(cell, psi, cd);
-	    push(tree, treel);
-	    tv := acell_gettv atree_rootcell tree
-	 >>;
+         (cell := ofsf_nextcell(ncbuffer, sp, iri, xj, j, k)) do <<
+            tree := ofsf_ptoc(cell, psi, cd);
+            push(tree, treel);
+            tv := acell_gettv atree_rootcell tree
+         >>;
       acell_puttv(basecell, tv);
       res := atree_mk basecell;
       if !*rlcadans then <<
-	 % To add answers we need to isolate all remaining roots:
-	 while (cell := ofsf_nextcell(ncbuffer, sp, iri, xj, j, k)) do
-	    push(atree_mk cell, treel);
-      	 treel := sort(treel, function atree_sortfn);
-	 ofsf_addanswers(basecell, treel, j, cd);
-      	 if ofsf_cadverbosep() then
-	    ioto_prin2 ")";
-	 atree_setchildl(res, treel);
-	 return res
+         % To add answers we need to isolate all remaining roots:
+         while (cell := ofsf_nextcell(ncbuffer, sp, iri, xj, j, k)) do
+            push(atree_mk cell, treel);
+         treel := sort(treel, function atree_sortfn);
+         ofsf_addanswers(basecell, treel, j, cd);
+         if ofsf_cadverbosep() then
+            ioto_prin2 ")";
+         atree_setchildl(res, treel);
+         return res
       >>;
       if not !*rlcadtrimtree then <<
-      	 treel := sort(treel, function atree_sortfn);
-	 atree_setchildl(res, treel)
+         treel := sort(treel, function atree_sortfn);
+         atree_setchildl(res, treel)
       >>;
       if ofsf_cadverbosep() then
-	 ioto_prin2 ")";
+         ioto_prin2 ")";
       return res
    end;
 
@@ -607,40 +607,40 @@ asserted procedure ofsf_iswhitecell(cell: Acell, cd: CadData): Boolean;
    % Is white cell.
    begin scalar theta, sp;
       if (caddata_theo cd eq 'undefined) or (not !*rlcadrmwc) then
-	 return nil;
+         return nil;
       theta := rl_smkn('and, caddata_theo cd);
       sp := acell_getsp cell;
       theta := ofsf_trialeval(theta, sp);
       if theta eq 'false then
-	 return t;
+         return t;
       return nil
    end;
 
 asserted procedure ofsf_trialeval(psi: QfFormula, sp: AnuList): QfFormula;
    cl_simpl(cl_apply2ats1(psi,
       function(lambda(atf, sp); ofsf_0mk2(ofsf_op atf,
-	 ofsf_trialevalsgnf(ofsf_arg2l atf, sp))), {sp}),
+         ofsf_trialevalsgnf(ofsf_arg2l atf, sp))), {sp}),
       nil, -1);
 
 asserted procedure ofsf_pbfvs(btr: Atree, treel: List): Atree;
    % Propagate truth value below free variable space.
    begin scalar tv, c, w;
       if not !*rlcadpbfvs then
-      	 return btr;
+         return btr;
       assert(not null treel);
       w := pop treel;
       tv := acell_gettv atree_rootcell w;
       if tv neq 'true and tv neq 'false then
-	 return btr;
+         return btr;
       c := t; while c and treel do <<
-      	 w := pop treel;
-	 if tv neq acell_gettv atree_rootcell w then
-	    c := nil
+         w := pop treel;
+         if tv neq acell_gettv atree_rootcell w then
+            c := nil
       >>;
       if c then <<
-	 acell_puttv(atree_rootcell btr, tv);
-      	 if !*rlcadtrimtree then
-	    atree_setchildl(btr, nil)
+         acell_puttv(atree_rootcell btr, tv);
+         if !*rlcadtrimtree then
+            atree_setchildl(btr, nil)
       >>;
       return btr
    end;
@@ -651,18 +651,18 @@ asserted procedure ofsf_addanswers(basecell: Acell, treel: List, j: Integer, cd:
       k := caddata_k cd;
       l := caddata_l cd;
       if k+1 <= j and j <= l then <<
-      	 ofsf_addrootinfo(treel, getv(caddata_hhtags cd, j));
-	 % The following is a propagation of an answer to lower levels.
-	 % TODO: Rewrite this in a proper way.
-      	 % 	 if j = l then
-      	 % 	    for each tt in treel do
-      	 % 	       if acell_gettv atree_rootcell tt eq 'true then
-      	 % 	       	  acell_addtagip(atree_rootcell tt, 'answers . {nil});
-      	 % 	 acell_addtagip(basecell,
-      	 % 	    'answers . for each tt in treel join
-      	 % 	       if acell_gettv atree_rootcell tt eq 'true then
-      	 % 	       	  for each a in cdr atsoc('answers, acell_gettl atree_rootcell tt) collect
-      	 % 	 	     acell_sri atree_rootcell tt . a)
+         ofsf_addrootinfo(treel, getv(caddata_hhtags cd, j));
+         % The following is a propagation of an answer to lower levels.
+         % TODO: Rewrite this in a proper way.
+         %       if j = l then
+         %          for each tt in treel do
+         %             if acell_gettv atree_rootcell tt eq 'true then
+         %                acell_addtagip(atree_rootcell tt, 'answers . {nil});
+         %       acell_addtagip(basecell,
+         %          'answers . for each tt in treel join
+         %             if acell_gettv atree_rootcell tt eq 'true then
+         %                for each a in cdr atsoc('answers, acell_gettl atree_rootcell tt) collect
+         %                   acell_sri atree_rootcell tt . a)
       >>
    end;
 
@@ -677,11 +677,11 @@ asserted procedure ofsf_addrootinfo(treel: List, hhtags: List): Any;
       assert(not evenp length treel);
       % If there is only one cell, then it is already tagged with 'arbitrary.
       if null cdr treel then
-	 return nil;
+         return nil;
       % There are at least 3 cells.
       % [rnl] (root number list) is an Alist of dotted pairs [tag . num].
       rnl := for each tag in hhtags collect
-	 tag . 0;
+         tag . 0;
       % Add info to the second cell from the left.
       rtg := ofsf_addrootinfo0dim(atree_rootcell cadr treel, rnl, hhtags);
       % Add info to the leftmost cell.
@@ -690,8 +690,8 @@ asserted procedure ofsf_addrootinfo(treel: List, hhtags: List): Any;
       ltg := rtg;
       while cdr treel do <<  % There are at least 3 cells.
          rtg := ofsf_addrootinfo0dim(atree_rootcell cadr treel, rnl, hhtags);
-	 acell_puttl(atree_rootcell car treel, {'between, ltg, rtg});
-	 treel := cddr treel;
+         acell_puttl(atree_rootcell car treel, {'between, ltg, rtg});
+         treel := cddr treel;
          ltg := rtg
       >>;
       acell_puttl(atree_rootcell car treel, {'above, ltg})
@@ -704,7 +704,7 @@ asserted procedure ofsf_addrootinfo0dim(cell: Acell, rnl: Alist, hhtags: List): 
       tl := acell_gettl cell;
       ofsf_rnlinc(rnl, tl);
       ri := 'root . for each tag in intersection(hhtags, tl) collect
-	 tag . cdr atsoc(tag, rnl);
+         tag . cdr atsoc(tag, rnl);
       % acell_addtagip(cell, ri);
       acell_puttl(cell, ri);
       return ri
@@ -715,7 +715,7 @@ asserted procedure ofsf_rnlinc(rnl: Alist, tl: List): Any;
    % in-place.
    for each rn in rnl do
       if memq(car rn, tl) then
-	 cdr rn := cdr rn + 1;
+         cdr rn := cdr rn + 1;
 
 asserted procedure ofsf_iriprepare(hhj: Alist, xj: Kernel, sp: AnuList, varl: List): Iri;
    % Prepare polynomials for incremental root isolation. [hhj] is an Alist of
@@ -723,14 +723,14 @@ asserted procedure ofsf_iriprepare(hhj: Alist, xj: Kernel, sp: AnuList, varl: Li
    % structure, which can be used to incrementally isolate the roots of [hhj].
    begin scalar w;
       w := for each pr in hhj collect
-	 aex_fromsf cdr pr . {car pr};
+         aex_fromsf cdr pr . {car pr};
       w := for each tae in w collect
-	 ofsf_subsp(car tae, sp, varl) . cdr tae;
+         ofsf_subsp(car tae, sp, varl) . cdr tae;
       w := for each tae in w collect
-	 aex_mklcnt aex_reduce car tae . cdr tae;
+         aex_mklcnt aex_reduce car tae . cdr tae;
       w := for each tae in w join
-	 if not aex_simplenumberp car tae then
-	    {aex_reduce aex_sqfree(car tae, xj) . cdr tae};
+         if not aex_simplenumberp car tae then
+            {aex_reduce aex_sqfree(car tae, xj) . cdr tae};
       % w := tglist2set w;
       % Make the elements of [w] pairwise prime.
       w := aex_tgpairwiseprime(w, xj);
@@ -745,7 +745,7 @@ asserted procedure aex_tgpairwiseprime(tael: TgAexList, x: Kernel): TgAexList;
    % the polynomials it divides.
    begin scalar pprestlist;
       if null tael or null cdr tael then
-	 return tael;
+         return tael;
       pprestlist := aex_tgpairwiseprime(cdr tael, x);
       return aex_tgpairwiseprime1(car tael . pprestlist, x)
    end;
@@ -756,22 +756,22 @@ asserted procedure aex_tgpairwiseprime1(tael: TgAexList, x: Kernel): TgAexList;
       tae1 := pop tael;
       d1 := aex_deg(car tae1, x);
       while tael and not eqn(d1, 0) do <<
-	 tae2 := pop tael;
-	 g := aex_gcd(tag_o tae1, tag_o tae2, x);
-	 deg := aex_deg(g, x);
-	 if deg > 0 then <<
-      	    tae1 := tag_mktag(aex_quot(tag_o tae1, g, x), tag_t tae1);
-	    tae2 := tag_mktag(aex_quot(tag_o tae2, g, x), tag_t tae2);
-	    tg := tag_mktag(g, union(tag_t tae1, tag_t tae2));
-	    d1 := d1 - deg;
-	    push(tg, taelnew)
-	 >>;
-	 if aex_deg(tag_o tae2, x) > 0 then
- 	    push(tae2, taelnew)
+         tae2 := pop tael;
+         g := aex_gcd(tag_o tae1, tag_o tae2, x);
+         deg := aex_deg(g, x);
+         if deg > 0 then <<
+            tae1 := tag_mktag(aex_quot(tag_o tae1, g, x), tag_t tae1);
+            tae2 := tag_mktag(aex_quot(tag_o tae2, g, x), tag_t tae2);
+            tg := tag_mktag(g, union(tag_t tae1, tag_t tae2));
+            d1 := d1 - deg;
+            push(tg, taelnew)
+         >>;
+         if aex_deg(tag_o tae2, x) > 0 then
+            push(tae2, taelnew)
       >>;
       taelnew := reversip taelnew;
       if not eqn(d1, 0) then
-      	 push(tae1, taelnew);
+         push(tae1, taelnew);
       return append(taelnew, tael)
    end;
 
@@ -887,62 +887,62 @@ asserted procedure caddata_print(cd: CadData): Any;
    begin
       ioto_prin2t "+ BEGIN caddata_print";
       if !*rlcadverbose then
-	 caddata_printall cd
+         caddata_printall cd
       else
-	 caddata_printsome cd;
+         caddata_printsome cd;
       ioto_prin2t "+ END caddata_print"
    end;
 
 asserted procedure caddata_printall(cd: CadData): Any;
    begin
       % if caddata_phi cd neq 'undefined then
-	 ioto_prin2t{"phi := ", caddata_phi cd};
+         ioto_prin2t{"phi := ", caddata_phi cd};
       % if caddata_k cd neq 'undefined then
-	 ioto_prin2t{"k := ", caddata_k cd};
+         ioto_prin2t{"k := ", caddata_k cd};
       % if caddata_r cd neq 'undefined then
-	 ioto_prin2t{"r := ", caddata_r cd};
+         ioto_prin2t{"r := ", caddata_r cd};
       % if caddata_varl cd neq 'undefined then
-	 ioto_prin2t{"varl := ", caddata_varl cd};
+         ioto_prin2t{"varl := ", caddata_varl cd};
       % if caddata_qal cd neq 'undefined then
-	 ioto_prin2t{"qal := ", caddata_qal cd};
+         ioto_prin2t{"qal := ", caddata_qal cd};
       % if caddata_psi cd neq 'undefined then
-	 ioto_prin2t{"psi := ", caddata_psi cd};
+         ioto_prin2t{"psi := ", caddata_psi cd};
       % if caddata_ff cd neq 'undefined then
-	 ioto_prin2t{"ff := ", caddata_ff cd};
+         ioto_prin2t{"ff := ", caddata_ff cd};
       % if caddata_dd cd neq 'undefined then
-	 ioto_prin2t{"dd := ", caddata_dd cd};
+         ioto_prin2t{"dd := ", caddata_dd cd};
       % if caddata_phiprime cd neq 'undefined then
-	 ioto_prin2t{"phiprime := ", caddata_phiprime cd};
+         ioto_prin2t{"phiprime := ", caddata_phiprime cd};
       % if caddata_oldorder cd neq 'undefined then
-	 ioto_prin2t{"oldorder := ", caddata_oldorder cd};
+         ioto_prin2t{"oldorder := ", caddata_oldorder cd};
       % if caddata_ophi cd neq 'undefined then
-	 ioto_prin2t{"ophi := ", caddata_ophi cd};
+         ioto_prin2t{"ophi := ", caddata_ophi cd};
       % if caddata_theo cd neq 'undefined then
-	 ioto_prin2t{"theo := ", caddata_theo cd};
+         ioto_prin2t{"theo := ", caddata_theo cd};
       % if caddata_hh cd neq 'undefined then
-	 ioto_prin2t{"hh := ", caddata_hh cd};
+         ioto_prin2t{"hh := ", caddata_hh cd};
       % if caddata_l cd neq 'undefined then
-	 ioto_prin2t{"l := ", caddata_l cd};
+         ioto_prin2t{"l := ", caddata_l cd};
       % if caddata_hhtags cd neq 'undefined then
-	 ioto_prin2t{"hhtags := ", caddata_hhtags cd};
+         ioto_prin2t{"hhtags := ", caddata_hhtags cd};
       % if caddata_aa cd neq 'undefined then
-	 ioto_prin2t{"aa := ", caddata_aa cd};
+         ioto_prin2t{"aa := ", caddata_aa cd};
       % if caddata_aaplu cd neq 'undefined then
-	 ioto_prin2t{"aaplus := ", caddata_aaplus cd}
+         ioto_prin2t{"aaplus := ", caddata_aaplus cd}
    end;
 
 asserted procedure caddata_printsome(cd: CadData): Any;
    begin
       if caddata_k cd neq 'undefined then
-	 ioto_prin2t{"k := ", caddata_k cd};
+         ioto_prin2t{"k := ", caddata_k cd};
       if caddata_r cd neq 'undefined then
-	 ioto_prin2t{"r := ", caddata_r cd};
+         ioto_prin2t{"r := ", caddata_r cd};
       if caddata_varl cd neq 'undefined then
-	 ioto_prin2t{"varl := ", caddata_varl cd};
+         ioto_prin2t{"varl := ", caddata_varl cd};
       if caddata_qal cd neq 'undefined then
-	 ioto_prin2t{"qal := ", caddata_qal cd};
+         ioto_prin2t{"qal := ", caddata_qal cd};
       if caddata_oldorder cd neq 'undefined then
-	 ioto_prin2t{"oldorder := ", caddata_oldorder cd}
+         ioto_prin2t{"oldorder := ", caddata_oldorder cd}
    end;
 
 asserted procedure ofsf_printcadswitches(): Any;
@@ -1011,37 +1011,37 @@ asserted procedure ofsf_nextcell(ncbuffer: List, sp: AnuList, iri: Iri, xj: Kern
       integer cind;
       cell := ncb_get ncbuffer;
       if cell eq 'finished then <<
-	 ncb_put('finished, ncbuffer);
-	 return nil
+         ncb_put('finished, ncbuffer);
+         return nil
       >>;
       if cell then
-	 % parameter space has indices j = 1, ..., k
-	 if !*rlcadfulldimonly and j > k then <<
-	    % we are in quantified space
-      	    if ofsf_cadverbosep() then
-	       ioto_prin2 {"(", j, ":F)"}
-	 >> else if !*rlqegen1 and k neq 0 and eqn(j, 1) then <<
-	    % there are parameters and we are in the base phase, i.e., the first variable
-	    % originally this condition was [j <= min2(1, k)]
-      	    if ofsf_cadverbosep() then
-	       ioto_prin2 {"(", j, ":G)"}
-	 >> else
-	    return cell;
+         % parameter space has indices j = 1, ..., k
+         if !*rlcadfulldimonly and j > k then <<
+            % we are in quantified space
+            if ofsf_cadverbosep() then
+               ioto_prin2 {"(", j, ":F)"}
+         >> else if !*rlqegen1 and k neq 0 and eqn(j, 1) then <<
+            % there are parameters and we are in the base phase, i.e., the first variable
+            % originally this condition was [j <= min2(1, k)]
+            if ofsf_cadverbosep() then
+               ioto_prin2 {"(", j, ":G)"}
+         >> else
+            return cell;
       % There is no cell left, we need to get a root to get the next two cells.
       tgroot := iri_nextroot iri;
       cind := 2*(length iri_rootl iri);
       if tgroot then <<
-	 root := tag_o tgroot;
-	 % Store the 0-dim cell into the [ncbuffer]:
-	 ncb_put(acell_mk(cind - 1, root . sp, nil, nil, tag_t tgroot), ncbuffer);
-	 w := iv_lb anu_iv root;
-	 % Return the full-dim cell with a rational sample point:
-	 return acell_mk(cind - 2, anu_fromrat(xj, w) . sp, nil, nil, nil)
+         root := tag_o tgroot;
+         % Store the 0-dim cell into the [ncbuffer]:
+         ncb_put(acell_mk(cind - 1, root . sp, nil, nil, tag_t tgroot), ncbuffer);
+         w := iv_lb anu_iv root;
+         % Return the full-dim cell with a rational sample point:
+         return acell_mk(cind - 2, anu_fromrat(xj, w) . sp, nil, nil, nil)
       >>;
       % There is no cell and no root left.
       ncb_put('finished, ncbuffer);
       if null iri_rootl iri then  % If there was no root, make a cell with 0 as the sample point.
-	 return acell_mk(0, anu_fromrat(xj, rat_0()) . sp, nil, nil, 'arbitrary);
+         return acell_mk(0, anu_fromrat(xj, rat_0()) . sp, nil, nil, 'arbitrary);
       % Search rootlist for the maximum of all right bounds and make a cell.
       w := rat_mapmax for each tanu in iri_rootl iri collect iv_rb anu_iv tag_o tanu;
       return acell_mk(cind, anu_fromrat(xj, w) . sp, nil, nil, nil)
@@ -1053,9 +1053,9 @@ asserted procedure ofsf_subsp(ae: Aex, sp: AnuList, varl: List): Aex;
    begin scalar x, anu;
       sp := reverse sp;
       while sp do <<
-	 x := pop varl;
-	 anu := pop sp;
-      	 ae := aex_bind(ae, x, anu)
+         x := pop varl;
+         anu := pop sp;
+         ae := aex_bind(ae, x, anu)
       >>;
       return ae
    end;
@@ -1066,8 +1066,8 @@ asserted procedure ofsf_subsp!*(ae: Aex, sp: AnuList): Aex;
    begin scalar anu;
       sp := reverse sp;
       while sp do <<
-	 anu := pop sp;
-      	 ae := aex_bind(ae, aex_mvar anu_dp anu, anu)
+         anu := pop sp;
+         ae := aex_bind(ae, aex_mvar anu_dp anu, anu)
       >>;
       return ae
    end;
@@ -1106,8 +1106,8 @@ asserted procedure tag_t(ti: DottedPair): List;
 %    % Returns a set of tagged elements.
 %    <<
 %       if st1 then
-% 	 for each t1 in st1 do
-% 	    st2 := tgunion1(t1, st2);
+%        for each t1 in st1 do
+%           st2 := tgunion1(t1, st2);
 %       st2
 %    >>;
 
@@ -1144,7 +1144,7 @@ asserted procedure atree_childrenatlevel(tt: Atree, n: Integer): List;
       {atree_rootcell tt}
    else
       for each child in atree_childl tt join
-      	 atree_childrenatlevel(child, n-1);
+         atree_childrenatlevel(child, n-1);
 
 asserted procedure atree_getleaves(tt: Atree): List;
    % Returns the list of all Acells that are leaves of [tt].
@@ -1152,7 +1152,7 @@ asserted procedure atree_getleaves(tt: Atree): List;
       {atree_rootcell tt}
    else
       for each c in atree_childl tt join
- 	 atree_getleaves c;
+         atree_getleaves c;
 
 asserted procedure atree_setchildl(tt: Atree, cl: List): Any;
    nth(tt, 3) := cl;
@@ -1170,7 +1170,7 @@ asserted procedure atree_celll(tt: Atree): List;
       {atree_rootcell tt}
    else
       for each child in atree_childl tt join
-	 atree_celll child;
+         atree_celll child;
 
 asserted procedure atree_celltvl(tt: Atree): List;
    % Truth value cells. Returns a list of Acells, which have assigned a truth
@@ -1179,7 +1179,7 @@ asserted procedure atree_celltvl(tt: Atree): List;
       {atree_rootcell tt}
    else
       for each child in atree_childl tt join
-	 atree_celltvl child;
+         atree_celltvl child;
 
 % Atree print procedures
 
@@ -1192,10 +1192,10 @@ asserted procedure atree_print1(tt: Atree, d: Integer): List;
       childl := atree_childl tt;
       rootlabel := atree_rootcell tt;
       if null childl then
-	 return {{acell_tvasstring rootlabel}};
+         return {{acell_tvasstring rootlabel}};
       w := for each s in childl join
-	 for each l in atree_print1(s, d+1) collect
-	    (" " . "   " . l);
+         for each l in atree_print1(s, d+1) collect
+            (" " . "   " . l);
       caar w := acell_tvasstring rootlabel;
       cadar w := "---";
       return w
@@ -1206,10 +1206,10 @@ asserted procedure atree_print1raw(tt: Atree, d: Integer): List;
    begin scalar childl, w;
       childl := atree_childl tt;
       if null childl then
-	 return {{d}};
+         return {{d}};
       w := for each s in childl join
-	 for each l in atree_print1raw(s, d+1)
-	    collect (" " . l);
+         for each l in atree_print1raw(s, d+1)
+            collect (" " . l);
       caar w := d;
       return w
    end;
@@ -1221,7 +1221,7 @@ asserted procedure atree_printlin(tt: Atree, d: Integer): Any;
    else <<
       ioto_prin2 {"(", d};
       for each c in atree_childl tt do
-	 atree_printlin(c, d+1);
+         atree_printlin(c, d+1);
       ioto_prin2 ")"
    >>;
 
@@ -1246,14 +1246,14 @@ asserted procedure atree_2dot1(tt: Atree, idx: Any): Any;
       childlist := atree_childl tt;
       n := length childlist;
       while i <= n do <<
-	 idxl := append(idx, {i});
-	 atree_2dotprinnode idx;
-	 ioto_prin2 "->";
-	 atree_2dotprinnode idxl;
-	 ioto_prin2t "";
-	 w := pop childlist;
-      	 atree_2dot1(w, idxl);
-	 i := i+1
+         idxl := append(idx, {i});
+         atree_2dotprinnode idx;
+         ioto_prin2 "->";
+         atree_2dotprinnode idxl;
+         ioto_prin2t "";
+         w := pop childlist;
+         atree_2dot1(w, idxl);
+         i := i+1
       >>
    end;
 
@@ -1262,7 +1262,7 @@ asserted procedure atree_2dotprinnode(idxl: List): Any;
    <<
       ioto_prin2 "C";
       for each e in idxl do
-	 ioto_prin2 e
+         ioto_prin2 e
    >>;
 
 asserted procedure atree_2dotnodetail(c: Acell): Any;
@@ -1270,11 +1270,11 @@ asserted procedure atree_2dotnodetail(c: Acell): Any;
    begin scalar tv;
       tv := acell_gettv c;
       if tv eq 'true then
-      	 ioto_prin2t(" [label=T shape=circle style=filled color=green]")
+         ioto_prin2t(" [label=T shape=circle style=filled color=green]")
       else if tv eq 'false then
-      	 ioto_prin2t(" [label=F shape=circle style=filled color=red]")
+         ioto_prin2t(" [label=F shape=circle style=filled color=red]")
       else
-      	 ioto_prin2t(" [label=""-"" shape=circle style=filled color=grey]")
+         ioto_prin2t(" [label=""-"" shape=circle style=filled color=grey]")
    end;
 
 % Atree to TGF (Trivial Graph Format)
@@ -1296,7 +1296,7 @@ asserted procedure atree_2tgf_nodes(tt: Atree, number: Integer): Integer;
       acell_prin atree_rootcell tt;
       childlist := atree_childl tt;
       for each child in childlist do
-	 number := atree_2tgf_nodes(child, number + 1);
+         number := atree_2tgf_nodes(child, number + 1);
       return number
    end;
 
@@ -1305,8 +1305,8 @@ asserted procedure atree_2tgf_edges(tt: Atree, number: Integer): Integer;
       mynumber := number;
       childlist := atree_childl tt;
       for each child in childlist do <<
-	 ioto_prin2t {mynumber, " ", number + 1};
-	 number := atree_2tgf_edges(child, number + 1)
+         ioto_prin2t {mynumber, " ", number + 1};
+         number := atree_2tgf_edges(child, number + 1)
       >>;
       return number
    end;
@@ -1342,12 +1342,12 @@ asserted procedure atree_2gml(tt: Atree, filename: String): Any;
 asserted procedure atree_2gml_nodes(tt: Atree, number: Integer): Integer;
    begin scalar childlist;
       if !*rlcadtree2gmlxml then
-	 atree_2gml_node_xml(tt, number)
+         atree_2gml_node_xml(tt, number)
       else
-      	 atree_2gml_node(tt, number);
+         atree_2gml_node(tt, number);
       childlist := atree_childl tt;
       for each child in childlist do
-	 number := atree_2gml_nodes(child, number + 1);
+         number := atree_2gml_nodes(child, number + 1);
       return number
    end;
 
@@ -1358,11 +1358,11 @@ asserted procedure atree_2gml_node_xml(tt: Atree, number: Integer): Any;
       c := atree_rootcell tt;
       tv := acell_gettv c;
       color := if tv eq 'true then
-	 "#00FF00"
+         "#00FF00"
       else if tv eq 'false then
-	 "#FF0000"
+         "#FF0000"
       else
-	 "#C0C0C0";
+         "#C0C0C0";
       ioto_prin2t "node [";
       ioto_prin2t {"id ", number};
       ioto_prin2t "label """;
@@ -1371,21 +1371,21 @@ asserted procedure atree_2gml_node_xml(tt: Atree, number: Integer): Any;
       ioto_prin2t {"<idx>", acell_getidx c, "</idx>"};
       ioto_prin2t "<tp>";
       for each anu in reverse acell_getsp c do <<
-	 ioto_prin2t "<assignment>";
-	 ioto_prin2t {"<var>", aex_mvar anu_dp anu, "</var>"};
-	 ioto_prin2t "<poly>";
-	 mathprint prepsq aex_ex anu_dp anu;
- 	 ioto_prin2t "</poly>";
-	 ioto_prin2t "<lb>";
-	 mathprint prepsq iv_lb anu_iv anu;
-	 ioto_prin2t "</lb>";
-	 ioto_prin2t "<rb>";
-	 mathprint prepsq iv_rb anu_iv anu;
-	 ioto_prin2t "</rb>";
-	 ioto_prin2t "<floatapp>";
-	 mathprint anu_evalfR anu;
-	 ioto_prin2t "</floatapp>";
-	 ioto_prin2t "</assignment>"
+         ioto_prin2t "<assignment>";
+         ioto_prin2t {"<var>", aex_mvar anu_dp anu, "</var>"};
+         ioto_prin2t "<poly>";
+         mathprint prepsq aex_ex anu_dp anu;
+         ioto_prin2t "</poly>";
+         ioto_prin2t "<lb>";
+         mathprint prepsq iv_lb anu_iv anu;
+         ioto_prin2t "</lb>";
+         ioto_prin2t "<rb>";
+         mathprint prepsq iv_rb anu_iv anu;
+         ioto_prin2t "</rb>";
+         ioto_prin2t "<floatapp>";
+         mathprint anu_evalfR anu;
+         ioto_prin2t "</floatapp>";
+         ioto_prin2t "</assignment>"
       >>;
       ioto_prin2t "</tp>";
       ioto_prin2t {"<desc>", acell_getdesc c, "</desc>"};
@@ -1396,9 +1396,9 @@ asserted procedure atree_2gml_node_xml(tt: Atree, number: Integer): Any;
       ioto_prin2t "graphics [";
       ioto_prin2t {"fill """, color, """"};
       if evenp acell_getidx c then  % even index denotes a full-dimensional cell
-      	 ioto_prin2t "type ""ellipse"""
+         ioto_prin2t "type ""ellipse"""
       else
-      	 ioto_prin2t "type ""rectangle""";
+         ioto_prin2t "type ""rectangle""";
       ioto_prin2t "]";
       ioto_prin2t "]";
       if nat then on1 'nat
@@ -1412,9 +1412,9 @@ asserted procedure atree_2gml_node(tt: Atree, number: Integer): Any;
       ioto_prin2t "label """;
       ioto_prin2t {"idx = ", acell_getidx c};
       anul := for each anu in reverse acell_getsp c collect
-	 anu_evalfR anu;
+         anu_evalfR anu;
       varl := for each anu in reverse acell_getsp c collect
-	 aex_mvar anu_dp anu;
+         aex_mvar anu_dp anu;
       mathprint {'equal, 'list . varl, 'list . anul};
       % ioto_prin2t {"desc = ", acell_getdesc c};
       mathprint {'equal, 'tl, 'list . acell_gettl c};
@@ -1422,17 +1422,17 @@ asserted procedure atree_2gml_node(tt: Atree, number: Integer): Any;
       % color and shape
       tv := acell_gettv c;
       color := if tv eq 'true then
-	 "#00FF00"
+         "#00FF00"
       else if tv eq 'false then
-	 "#FF0000"
+         "#FF0000"
       else
-	 "#C0C0C0";
+         "#C0C0C0";
       ioto_prin2t "graphics [";
       ioto_prin2t {"fill """, color, """"};
       if evenp acell_getidx c then  % even index denotes a full-dimensional cell
-      	 ioto_prin2t "type ""ellipse"""
+         ioto_prin2t "type ""ellipse"""
       else
-      	 ioto_prin2t "type ""rectangle""";
+         ioto_prin2t "type ""rectangle""";
       ioto_prin2t "]";
       ioto_prin2t "]"
    end;
@@ -1442,8 +1442,8 @@ asserted procedure atree_2gml_edges(tt: Atree, number: Integer): Integer;
       mynumber := number;
       childlist := atree_childl tt;
       for each child in childlist do <<
-	 atree_2gml_edge(mynumber, number + 1);
-	 number := atree_2gml_edges(child, number + 1)
+         atree_2gml_edge(mynumber, number + 1);
+         number := atree_2gml_edges(child, number + 1)
       >>;
       return number
    end;
@@ -1460,10 +1460,10 @@ asserted procedure atree_deleteFalseLeaves(tt: Atree): Atree;
    % Prune [tt] by removing all leaves of maximal depth that are [false].
    begin scalar w;
       if !*rlverbose then
-	 ioto_tprin2 "+ deleting false leaves ...";
+         ioto_tprin2 "+ deleting false leaves ...";
       w := atree_deleteFalseLeaves1(tt, 0, atree_depth tt);
       if !*rlverbose then
-	 ioto_prin2t " done";
+         ioto_prin2t " done";
       return w
    end;
 
@@ -1472,10 +1472,10 @@ asserted procedure atree_deleteFalseLeaves1(tt: Atree, n: Integer, dpth: Integer
    begin scalar r, cl, ntt, w;
       r := atree_rootcell tt;
       if eqn(n, dpth) and acell_gettv r eq 'false then
- 	 return nil;
+         return nil;
       cl := for each c in atree_childl tt join <<
-	 w := atree_deleteFalseLeaves1(c, n+1, dpth);
-	 if w then {w}
+         w := atree_deleteFalseLeaves1(c, n+1, dpth);
+         if w then {w}
       >>;
       ntt := atree_mk r;
       atree_setchildl(ntt, cl);
@@ -1489,9 +1489,9 @@ asserted procedure atree_depth1(tt: Atree, n: Integer): Integer;
    begin integer d; scalar cl;
       cl := atree_childl tt;
       if null cl then
-      	 return n;
+         return n;
       for each c in cl do
-	 d := max2(d, atree_depth1(c, n+1));
+         d := max2(d, atree_depth1(c, n+1));
       return d
    end;
 
@@ -1504,44 +1504,44 @@ asserted procedure ofsf_solutionformula_old(cd: CadData): Any;
    % old version which looks only at cells of level ddk
    begin scalar ffl, dd, k, ddk, ffk, phiprime, cellstogo;
       if !*rlverbose then
-	 ioto_tprin2t "+++ Solution Formula Construction Phase";
+         ioto_tprin2t "+++ Solution Formula Construction Phase";
       ffl := caddata_ffl cd;
       dd := caddata_dd cd;
       k := caddata_k cd;
       if k eq 0 then <<
-	 caddata_putphiprime(cd, acell_gettv atree_rootcell dd);
-	 return nil
+         caddata_putphiprime(cd, acell_gettv atree_rootcell dd);
+         return nil
       >>;
       ddk := atree_childrenatlevel(dd, k);
       % ffk := nth(ffl, k);
       ffk := for i := 1 : k join
-	 nth(ffl, i);
+         nth(ffl, i);
       % acdecl = (D_k,...,D_0). ffl = (F_1,...,Fr)
       if !*rlverbose then
-	 ioto_tprin2t {"+ generating signatures for ", length ffk,
-	    " polynomials in ", length ddk, " cells"};
+         ioto_tprin2t {"+ generating signatures for ", length ffk,
+            " polynomials in ", length ddk, " cells"};
       cellstogo := length ddk; % for verbose output
       for each cell in ddk do <<
-	 acell_putdesc(cell, ofsf_signature(ffk, acell_getsp cell));
-	 if ofsf_cadverbosep() then
-	    ioto_prin2 {"[", cellstogo,  % "idx",acell_getidx cell," ",
-	       (if acell_gettv cell eq 'true then
-	       	  " tt" else " ff"),  % acell_getdesc cell,
-	       "] "};
-	 cellstogo := cellstogo-1
+         acell_putdesc(cell, ofsf_signature(ffk, acell_getsp cell));
+         if ofsf_cadverbosep() then
+            ioto_prin2 {"[", cellstogo,  % "idx",acell_getidx cell," ",
+               (if acell_gettv cell eq 'true then
+                  " tt" else " ff"),  % acell_getdesc cell,
+               "] "};
+         cellstogo := cellstogo-1
       >>;
       phiprime := ofsf_sfchong(ffk, ddk);
       if phiprime eq 'ssfcfailed then <<
-	 if !*rlverbose then
-	    ioto_tprin2t "+ Solution formula construction ssfc failed.";
-	 return nil
+         if !*rlverbose then
+            ioto_tprin2t "+ Solution formula construction ssfc failed.";
+         return nil
       >> else <<
-	 if !*rlverbose then
-	    ioto_tprin2t "+ Solution formula construction ssfc successful.";
-	 if !*rlcadrawformula then
-	    caddata_putphiprime(cd,phiprime)
-	 else
-	    caddata_putphiprime(cd,rl_dnf phiprime)
+         if !*rlverbose then
+            ioto_tprin2t "+ Solution formula construction ssfc successful.";
+         if !*rlcadrawformula then
+            caddata_putphiprime(cd,phiprime)
+         else
+            caddata_putphiprime(cd,rl_dnf phiprime)
       >>;
       return nil
    end;
@@ -1553,9 +1553,9 @@ asserted procedure ofsf_sfchong(ffk, ddk): Any;
       wwf := ofsf_signaturesbytv(ddk, 'false);
       wwc := intersection(wwt, wwf);
       if null wwc then
-	 return rl_smkn('or,
-	    for each sig in wwt collect
-	       ofsf_sigbasedfo(ffk, sig));
+         return rl_smkn('or,
+            for each sig in wwt collect
+               ofsf_sigbasedfo(ffk, sig));
       return 'ssfcfailed
    end;
 
@@ -1563,76 +1563,76 @@ asserted procedure ofsf_solutionformula(cd: CadData): Any;
    % Solution formula construction. [cd] is changed in place.
    begin scalar dd, yy, w, yyi, ffl, k, fflk, phiprime;
       if !*rlverbose then
-	 ioto_tprin2t "+++ Simple Solution Formula Construction Phase";
+         ioto_tprin2t "+++ Simple Solution Formula Construction Phase";
       dd := caddata_dd cd;
       if memq(acell_gettv atree_rootcell dd, '(true false)) then <<
-	 if !*rlverbose and !*rlcadans then
-	    ioto_prin2t {"+ ANSWERS (for decision problem): ",
-	       cdr atsoc('answers, acell_gettl atree_rootcell dd)};
-	 caddata_putphiprime(cd, acell_gettv atree_rootcell dd);
-	 return nil
+         if !*rlverbose and !*rlcadans then
+            ioto_prin2t {"+ ANSWERS (for decision problem): ",
+               cdr atsoc('answers, acell_gettl atree_rootcell dd)};
+         caddata_putphiprime(cd, acell_gettv atree_rootcell dd);
+         return nil
       >>;
       yy := atree_celltvl dd;
       if !*rlverbose and !*rlcadans then <<  % verbose output for QE with answers
          % ioto_prin2t "+ Cells with defined truth value:";
-	 % for each cell in yy do
-	 %    ioto_prin2t {cell};
-	 w := for each cell in yy join
-	    if acell_gettv cell eq 'true then
-	       {atsoc('answers, acell_gettl cell)};
-	 for each c in lto_list2set w do
-	    ioto_prin2t {"+ ANSWERS: ", c}
+         % for each cell in yy do
+         %    ioto_prin2t {cell};
+         w := for each cell in yy join
+            if acell_gettv cell eq 'true then
+               {atsoc('answers, acell_gettl cell)};
+         for each c in lto_list2set w do
+            ioto_prin2t {"+ ANSWERS: ", c}
       >>;
       yyi := lto_list2set for each cell in yy collect
-      	 length acell_getsp cell;
+         length acell_getsp cell;
       if !*rlverbose then
-	 ioto_prin2t {"+ levels to be considered: ", yyi};
+         ioto_prin2t {"+ levels to be considered: ", yyi};
       ffl := caddata_ffl cd;
       fflk := for each i in yyi join
-	 append(nth(ffl, i), nil);
+         append(nth(ffl, i), nil);
       k := caddata_k cd;
       phiprime := ofsf_solutionformula1(dd, fflk, yy, k);
       if phiprime eq 'ssfcfailed then <<
-	 if !*rlverbose then
-	    ioto_tprin2t "+ SSFC failed, trying all possible projection factors.";
-	 yyi := for i := 1 : k collect i;
-	 if !*rlverbose then
-	    ioto_prin2t {"+ Levels to be considered: ", yyi};
-	 fflk := for each i in yyi join
-	    append(nth(ffl, i), nil);
-	 phiprime := ofsf_solutionformula1(dd, fflk, yy, k)
+         if !*rlverbose then
+            ioto_tprin2t "+ SSFC failed, trying all possible projection factors.";
+         yyi := for i := 1 : k collect i;
+         if !*rlverbose then
+            ioto_prin2t {"+ Levels to be considered: ", yyi};
+         fflk := for each i in yyi join
+            append(nth(ffl, i), nil);
+         phiprime := ofsf_solutionformula1(dd, fflk, yy, k)
       >>;
       if phiprime eq 'ssfcfailed then <<
-	 if !*rlverbose then
-	    ioto_tprin2t "+ SSFC failed.";
-	 return nil
+         if !*rlverbose then
+            ioto_tprin2t "+ SSFC failed.";
+         return nil
       >>;
       if !*rlverbose then
-	 ioto_tprin2t "+ SSFC succeded.";
+         ioto_tprin2t "+ SSFC succeded.";
       if !*rlcadrawformula then
-	 caddata_putphiprime(cd, phiprime)
+         caddata_putphiprime(cd, phiprime)
       else
-	 caddata_putphiprime(cd, rl_dnf phiprime);
+         caddata_putphiprime(cd, rl_dnf phiprime);
       return nil
    end;
 
 asserted procedure ofsf_solutionformula1(dd: Atree, ffk: List, yy: List, k: Integer): Any;
    begin integer cellstogo;
       if !*rlverbose then <<
-	 ioto_tprin2t {"+ Generating signatures for ", length ffk,
-	    " polynomials and ", length yy, " cells."};
-	 ioto_tprin2t {"+ Number of cells on level ", k, " is ",
-	    length atree_childrenatlevel(dd, k), "."};
-	 cellstogo := length yy;  % for verbose output
+         ioto_tprin2t {"+ Generating signatures for ", length ffk,
+            " polynomials and ", length yy, " cells."};
+         ioto_tprin2t {"+ Number of cells on level ", k, " is ",
+            length atree_childrenatlevel(dd, k), "."};
+         cellstogo := length yy;  % for verbose output
       >>;
       for each cell in yy do <<
-	 acell_putdesc(cell, ofsf_signature4(ffk, acell_getsp cell));
-	 if ofsf_cadverbosep() then <<
-	    ioto_prin2 {"[", cellstogo, " ",
-	       "sig", acell_getdesc cell, " ",
-	       (if acell_gettv cell eq 'true then "true" else "false"), "] "};
-	    cellstogo := cellstogo - 1
-	 >>
+         acell_putdesc(cell, ofsf_signature4(ffk, acell_getsp cell));
+         if ofsf_cadverbosep() then <<
+            ioto_prin2 {"[", cellstogo, " ",
+               "sig", acell_getdesc cell, " ",
+               (if acell_gettv cell eq 'true then "true" else "false"), "] "};
+            cellstogo := cellstogo - 1
+         >>
       >>;
       return ofsf_ssfc2(ffk, yy)
    end;
@@ -1644,11 +1644,11 @@ asserted procedure ofsf_ssfc2(ffk: List, yy: List): Any;
       wwf := ofsf_signaturesbytv(yy, 'false);
       wwc := ofsf_compsig(wwt, wwf);
       if null wwc then
-	 return rl_smkn('or,
-	    for each sig in wwt collect
-	       ofsf_sigbasedfo(ffk,sig));
+         return rl_smkn('or,
+            for each sig in wwt collect
+               ofsf_sigbasedfo(ffk,sig));
       if ofsf_cadverbosep() then
-	 ioto_prin2t {"+ SSFC failed because of these compatible signatures: ", wwc};
+         ioto_prin2t {"+ SSFC failed because of these compatible signatures: ", wwc};
       return 'ssfcfailed
    end;
 
@@ -1658,15 +1658,15 @@ asserted procedure ofsf_compsig(ww1: List, ww2: List): ExtraBoolean;
    % signatures and (w1, w2), if [w1] from [ww1] is compatible with [w2] from [ww2].
    begin scalar ww2copy, retvalue, w1, w2;
       if null ww1 then
-	 return nil;
+         return nil;
       while ww1 and not retvalue do <<
-	 w1 := pop ww1;
-	 ww2copy := ww2;
-	 while ww2copy and not retvalue do <<
-	    w2 := pop ww2copy;
-	    if ofsf_compsig1(w1, w2) then
- 	       retvalue := {w1, w2}
-	 >>
+         w1 := pop ww1;
+         ww2copy := ww2;
+         while ww2copy and not retvalue do <<
+            w2 := pop ww2copy;
+            if ofsf_compsig1(w1, w2) then
+               retvalue := {w1, w2}
+         >>
       >>;
       return retvalue
    end;
@@ -1676,12 +1676,12 @@ asserted procedure ofsf_compsig1(w1: List, w2: List): Boolean;
    % same length.
    begin scalar c, s1, s2;
       if null w1 then
-   	 return t;
+         return t;
       c := t; while w1 and c do <<
-   	 s1 := pop w1;
-   	 s2 := pop w2;
-   	 if s1 neq s2 and not (s1 equal "?") and not (s2 equal "?") then
-   	    c := nil
+         s1 := pop w1;
+         s2 := pop w2;
+         if s1 neq s2 and not (s1 equal "?") and not (s2 equal "?") then
+            c := nil
       >>;
       return c
    end;
@@ -1691,9 +1691,9 @@ asserted procedure ofsf_sigbasedfo(ffk: List, sigl: List): QfFormula;
    % (can include "?").
    begin scalar sig, fo;
       for each f in ffk do <<
-	 sig := pop sigl;
-	 if not (sig equal "?") then
-	    push(ofsf_signofpolyfo(f, sig), fo)
+         sig := pop sigl;
+         if not (sig equal "?") then
+            push(ofsf_signofpolyfo(f, sig), fo)
       >>;
       return rl_smkn('and, fo)
    end;
@@ -1729,18 +1729,18 @@ asserted procedure ofsf_trialevalsgnf(f: SF, sp: AnuList): SF;
    <<
       f := ofsf_subsp!*(aex_fromsf f, sp);
       if aex_simplenumberp f then
-	 numr simp aex_sgn f
+         numr simp aex_sgn f
       else
-	 numr aex_ex f
+         numr aex_ex f
    >>;
 
 asserted procedure ofsf_sgnf4(f: SF, sp: AnuList): Any;
    <<
       f := ofsf_subsp!*(aex_fromsf f, sp);
       if aex_simplenumberp f then
-	 aex_sgn f
+         aex_sgn f
       else
-	 "?"
+         "?"
    >>;
 
 asserted procedure ofsf_subsignat(at: QfFormula, sp: AnuList, varl: List): QfFormula;
@@ -1776,24 +1776,24 @@ asserted procedure ofsf_evalqff!-gand(gand, argl, sp: AnuList, varl: List): Id;
    begin scalar gfalse,arg,cargl,c;
       gfalse := cl_cflip('false,gand eq 'and);
       c := t; while argl and c do <<
-	 arg := car argl;
-	 argl := cdr argl;
-	 if cl_atfp arg then
-	    (if ofsf_simplat1(ofsf_subsignat(arg,sp,varl),nil) eq gfalse then
-	       c := nil)
-	 else
-	    cargl := arg . cargl
+         arg := car argl;
+         argl := cdr argl;
+         if cl_atfp arg then
+            (if ofsf_simplat1(ofsf_subsignat(arg,sp,varl),nil) eq gfalse then
+               c := nil)
+         else
+            cargl := arg . cargl
       >>;
       if not c then
-	 return gfalse;
+         return gfalse;
       c := t; while cargl and c do <<
-	 arg := car cargl;
-	 cargl := cdr cargl;
-	 if ofsf_evalqff!-fast1(arg,sp,varl) eq gfalse then
-	    c := nil
+         arg := car cargl;
+         cargl := cdr cargl;
+         if ofsf_evalqff!-fast1(arg,sp,varl) eq gfalse then
+            c := nil
       >>;
       if not c then
-	 return gfalse;
+         return gfalse;
       return cl_flip gfalse
    end;
 
