@@ -346,6 +346,12 @@ extern Page *pagesPinChain;
 
 inline Page *FdirtyPages() { return dirtyPages; }
 
+
+#ifdef GENERATIONAL
+// By controlling this with an #ifdef I will be able to measure how much
+// overhead this imposes - and if that seems like too much I may need to
+// re-think plans!
+
 inline void write_barrier(LispObject *p, LispObject q)
 {   *p = q;
 // Only up-pointers can cause trouble, so if I write in something that
@@ -410,6 +416,7 @@ inline void write_barrier(LispObject *p, LispObject q)
         }
     }
 }
+#endif // GENERATIONAL
 
 // There will be times when I can clear an individual cell's status as
 // dirty, and this function is here to do just that.
@@ -905,7 +912,8 @@ inline LispObject get_n_bytes(size_t n, uintptr_t thr,
 // not yet have its length field filled in. And that has to be the case
 // because the region I have set aside for this Chunk may be beyond the end
 // of the current Page (or the next pinned place within the Page).
-        uint64_t newLimit = reinterpret_cast<uintptr_t>(newChunk) + targetChunkSize+n;
+        uint64_t newLimit =
+            reinterpret_cast<uintptr_t>(newChunk) + targetChunkSize+n;
 // Possibly the allocation of the new chunk ran beyond the current page
 // and that will be cause to consider triggering garbage collection. If the
 // chunk size is 16K and the page size 8M it will take 512 chunk allocations
@@ -982,7 +990,9 @@ inline LispObject get_n_bytes(size_t n, uintptr_t thr,
 // so the situation when I call difficult_n_bytes() is just as if it had
 // been called directly from the main program save that gFringe may have
 // been incremented - possibly beyond gLimit.
-    return static_cast<LispObject>(difficult_n_bytes());
+    r = difficult_n_bytes();
+    my_assert(is_cons(r), "difficult_n_bytes should return a CONS");
+    return static_cast<LispObject>(r);
 }
 
 inline LispObject get_n_bytes(size_t n)
@@ -1325,6 +1335,9 @@ inline void fitsWithinExistingGap(unsigned int i, size_t n, size_t gap)
 inline void regionInPageIsFull(unsigned int i, size_t n,
                                size_t gap, unsigned int &pendingCount)
 {
+#ifdef DEBUG
+    previousCons = 0;
+#endif // DEBUG
 // Here the current region in the Page is full. I may either have reached the
 // very end of the page or I may have merely run up against a pinned Chunk
 // within it.

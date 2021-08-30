@@ -154,12 +154,12 @@ size_t xppc;
     {   err_printf("\n+++ stack overflow\n");
         return aerror("stack overflow");
     }
-#else
+#else // DEBUG
     if (check_stack("bytecode_interpreter",__LINE__))
     {   err_printf("\n+++ stack overflow\n");
         return aerror("stack overflow");
     }
-#endif
+#endif // DEBUG
 #else // CHECK_STACK
     {   char *p = reinterpret_cast<char *>(&p);
         if ((uintptr_t)p < C_stacklimit)

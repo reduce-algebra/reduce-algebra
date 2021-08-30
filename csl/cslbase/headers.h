@@ -220,7 +220,7 @@ inline double CSLpow(double x, double y)
 #include "externs.h"
 #ifdef CONSERVATIVE
 #include "newallocate.h"
-#else
+#else // CONSERVATIVE
 #include "allocate.h"
 #endif // CONSERVATIVE
 #include "syscsl.h"

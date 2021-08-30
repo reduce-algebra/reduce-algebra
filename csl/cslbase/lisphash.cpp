@@ -132,11 +132,11 @@ inline bool COMPARE(LispObject k1, LispObject k2)
 
 // I will give myself accessors to the keys and values.
 
-inline AtomicLispObject& ht(size_t n)
+inline LispObject& ht(size_t n)
 {   return elt(h_table, n);
 }
 
-inline AtomicLispObject& htv(size_t n)
+inline LispObject& htv(size_t n)
 {   return elt(v_table, n);
 }
 

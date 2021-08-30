@@ -51,7 +51,7 @@
 #define thread_local
 #endif //AVOID_THREADLOCAL
 
-#ifdef CONSERVATIVE
+#if defined CONSERVATIVE && defined SUPPORT_MULTIPLE_THREADS
 
 // The CONSERVATIVE build of CSL will be working towards support for
 // multiple threads. So this code is activated there. Prior versions do

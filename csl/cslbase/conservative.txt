@@ -336,3 +336,78 @@ will end up reasonably close together in memory, so scanning all of them
 be cheap enough. So that is my current plan. So that introduces more work in
 the evacuate procedure - it must mark fields in a copied symbol head as
 dirty!
+
+===========================
+
+While developing the consrvative GC I am also looking forward to an
+experiment in support for Lisp threads. This adds a lot more fun. To achieve
+this I will need to build on some thoughts that have a status that lies
+somewhere between hypotheses and assumptions and requirements. I will
+document them here.
+
+If several threads synchronise using semaphores, mutexes or condition
+variables I will suppose that a thread that is released will see all data
+placed in memory by the thread that led to that release. And that this does
+not depend on either thread using datatypes such as std::atomic<T>. The
+simple cases here will be if thread A writes some data and then either
+unlocks a muxed or signals a condition variable such that thread B is
+able to proceed. I will suppse that thread B can observe everything that
+thread A had written before it called the synchronization primitive, but that
+the visibility of anything done after that is uncertain. Note that this is
+a supposition applying to the C++ library synchronisation schemes and not
+to any home-brew use of test-and-set associated with busy waiting etc.
+Aha cppreference under its discussion of memory order sats that a lock
+operation on a muxex is an "acquire" and an unlock is a "release".
+
+For the discussion here I will suppose that all atomic operations I mention
+are done using sequentially consistent memory ordering.
+In addition to the above where I have data that is of the form std::atomic<T>
+then changes made in one thread become visible to other threads, although
+with no guarantee of whether there will be a delay. If the atomics enforce
+a release-aquire behabiour then all memory operations on both atoic and
+non-atomic values that happen before the changes made by the first thread
+will be visible once the second thread has observed that change. Threads that
+do not read from (and hence synchromize on) the atomic may or may not see
+other changes. As well as hardware behaviour there is what compilers are
+entitled to do. Compilers must not rearrange code so as to move other
+memory accesses before or after a (suitably carefully constrained) atomic
+operation. So without use of atomic<T> a "sufficiently advanced compiler"
+might shuffle memory accesses to an almost arbitrary extent including
+removing them totally. I think that the inter-processor consistency only
+applies if the same atomic item is written by the first thread as is read by
+the second.
+
+The C++ documentation for thread_fence still indicates that one thread must
+update something atomic and another must then read from it for any
+synmchronization to occur. Right now I think my understanding is that they
+can force ordering as between memory accesses but of themselves they do not
+perform cross-thread synchronisation - explicit use of atomic variables is
+needed for that. Fences may also prevent compiler re-orderings as well as
+hardware re-orderings which could sometimes be visible in the absence of
+full enforcement of sequential behaviour.
+
+I believe there is a bit of a disconnect. At the architecture level the
+discussions are about memory references to locations and such references may
+be made with our without accompanying memory ordering constaints and
+semantics. In C++ those options are only provided for explicitly atomic
+items and the default access mode to those is sequentially_constistent which
+is potentially one of the more expensive options. So what I will do is leave
+almost all data "simple" (ie not atomic). Then if any pair of Lisp threads
+need to collaborate they must take explicit steps to synchronise because
+without that it is not just that there may be race conditions - some data
+written by the one might just not be observed by the other. When memory is
+being allocated there will be use of (some) atomic variables such that
+each thread can allocate privately most of the time but when memory becomes
+full all come together with careful synchronisation. If the garbage collector
+is single thread it can then access the memory as used by every thread since
+they are all paused and have had write-buffers etc flushed.
+But I will now experiment with an operation I will call AT() which is intended
+to impose explicitly atomic access to data. So if (say) v is a simple variable
+then AT(v) can be used (either as an lvalue or an rvalue) to denote atomic
+reference to v. And AT(v) will support the various C++ methods for read-
+modify-write operations that std::atomic provides. This is not going to
+adhere to C++ standards very well but may still prove useful!
+
+
+
+

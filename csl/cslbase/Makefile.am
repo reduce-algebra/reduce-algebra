@@ -70,10 +70,6 @@ csl_CPPFLAGS    = $(TRACE)
 # This is just for flatcsl where the program is all compiled as a single
 # compilation unit, so "spurious" warnings are especially bulky.
 flatcsl_CPPFLAGS = $(TRACE) -Wno-unused-function
-if conservative
-contest_CPPFLAGS = $(TRACE)
-alloctest_CPPFLAGS = $(TRACE)
-endif conservative
 
 bootstrapreduce_CPPFLAGS = $(TRACE) -DBOOTSTRAP=1 -DREDUCE_PROMPTS=1
 
@@ -108,8 +104,6 @@ plain_wxshowmathdemo = wxshowmathdemo
 plain_dyndemo = dyndemo
 plain_zlibdemo = zlibdemo
 plain_gctest = gctest
-plain_contest = contest
-plain_alloctest = alloctest
 else !exeext
 plain_csl = csl.unnecessary.except.on.windows
 plain_flatcsl = csl.unnecessary.except.on.windows
@@ -130,8 +124,6 @@ plain_wxshowmathdemo = wxshowmathdemo.unnecessary.except.on.windows
 plain_dyndemo = dyndemo.unnecessary.except.on.windows
 plain_zlibdemo = zlibdemo.unnecessary.except.on.windows
 plain_gctest = gctest.unnecessary.except.on.windows
-plain_contest = gctest.unnecessary.except.on.windows
-plain_alloctest = gctest.unnecessary.except.on.windows
 endif !exeext
 
 .PHONY: $(plain_csl)
@@ -153,8 +145,6 @@ endif !exeext
 .PHONY: $(plain_dyndemo)
 .PHONY: $(plain_zlibdemo)
 .PHONY: $(plain_gctest)
-.PHONY: $(plain_contest)
-.PHONY: $(plain_alloctest)
 
 .PHONY:	bootstraprecompile
 .PHONY:	recompile
@@ -205,10 +195,6 @@ AM_CPPFLAGS     += $(MY_CPPFLAGS)
 reduce_CPPFLAGS += $(MY_CPPFLAGS)
 bootstrapreduce_CPPFLAGS += $(MY_CPPFLAGS)
 csl_CPPFLAGS    += $(MY_CPPFLAGS)
-if conservative
-contest_CPPFLAGS += $(MY_CPPFLAGS)
-alloctest_CPPFLAGS += $(MY_CPPFLAGS)
-endif conservative
 # For at least a while I will NOT warn about unused (static) functions, because
 # I have rather a lot of that that are to do with support for short floats.
 flatcsl_CPPFLAGS    += $(MY_CPPFLAGS)
@@ -283,10 +269,6 @@ noinst_PROGRAMS += bootstrapreduce$(EXEEXT)
 check_PROGRAMS = flatcsl$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(foxdemotarget) \
 	dyndemo$(EXEEXT) zlibdemo$(EXEEXT) $(wxdemotarget)
-if conservative
-noinst_PROGRAMS += contest$(EXEEXT)
-check_PROGRAMS += alloctest$(EXEEXT)
-endif
 endif !mac_framework
 
 if mac_framework
@@ -318,8 +300,6 @@ endif !arithlib
 
 if conservative
 gc_sources = newcslgc.cpp newallocate.cpp 
-contest_SOURCES = contest.cpp winsupport.cpp $(gc_sources)
-alloctest_SOURCES = alloctest.cpp sysfwin.cpp $(gc_sources)
 else !conservative
 gc_sources = cslgc.cpp allocate.cpp 
 endif !conservative
@@ -636,13 +616,6 @@ zlibdemo_LDADD = -lz
 remake-zlibdemo-source:	$(cslbase)/preserve.cpp
 	unifdef -x2 -DZLIB_DEMO < $(cslbase)/preserve.cpp > $(cslbase)/zlibdemo.cpp
 
-if conservative
-contest_LDADD =
-contest_DEPENDENCIES =
-alloctest_LDADD =
-alloctest_DEPENDENCIES =
-endif conservative
-
 if windows
 
 # Even on Windows I will try to use commands "cp" and "rm", and in general
@@ -821,9 +794,6 @@ reduce_CPPFLAGS += $(CRINC)
 bootstrapreduce_CPPFLAGS += $(CRINC)
 csl_CPPFLAGS    += $(CRINC)
 flatcsl_CPPFLAGS    += $(CRINC)
-if conservative
-alloctest_CPPFLAGS += $(CRINC)
-endif conservative
 
 # The following ugly dependencies are here so that one can go, for
 # instance, "make csl.o" in a clean tree and crlibm building will get
@@ -834,17 +804,11 @@ csl_LDADD += ../lib/libcrlibm.a
 flatcsl_LDADD += ../lib/libcrlibm.a
 bootstrapreduce_LDADD += ../lib/libcrlibm.a
 reduce_LDADD += ../lib/libcrlibm.a
-if conservative
-alloctest_LDADD += ../lib/libcrlibm.a
-endif conservative
 
 csl_DEPENDENCIES += $(CRLIBMDEPS)
 flatcsl_DEPENDENCIES += $(CRLIBMDEPS)
 bootstrapreduce_DEPENDENCIES += $(CRLIBMDEPS)
 reduce_DEPENDENCIES += $(CRLIBMDEPS)
-if conservative
-alloctest_DEPENDENCIES += $(CRLIBMDEPS)
-endif conservative
 
 $(CRLIBMDEPS):
 	@printf "About to build crlibm for %s ($@)\n" `pwd`
@@ -865,9 +829,6 @@ reduce_CPPFLAGS += $(FFINC)
 bootstrapreduce_CPPFLAGS += $(FFINC)
 csl_CPPFLAGS    += $(FFINC)
 flatcsl_CPPFLAGS    += $(FFINC)
-if conservative
-alloctest_CPPFLAGS    += $(FFINC)
-endif
 
 # The following ugly dependencies are here so that one can go, for
 # instance, "make csl.o" in a clean tree and libffi building will get
@@ -878,17 +839,11 @@ csl_LDADD += ../lib/libffi.a
 flatcsl_LDADD += ../lib/libffi.a
 bootstrapreduce_LDADD += ../lib/libffi.a
 reduce_LDADD += ../lib/libffi.a
-if conservative
-alloctest_LDADD += ../lib/libffi.a
-endif conservative
 
 csl_DEPENDENCIES += $(LIBFFIDEPS)
 flatcsl_DEPENDENCIES += $(LIBFFIDEPS)
 bootstrapreduce_DEPENDENCIES += $(LIBFFIDEPS)
 reduce_DEPENDENCIES += $(LIBFFIDEPS)
-if conservative
-alloctest_DEPENDENCIES += $(LIBFFIDEPS)
-endif conservative
 
 $(LIBFFIDEPS):
 	@printf "About to build libffi for %s ($@)\n" `pwd`
@@ -903,9 +858,6 @@ reduce_CPPFLAGS += $(SOFTFLOATINC)
 bootstrapreduce_CPPFLAGS += $(SOFTFLOATINC)
 csl_CPPFLAGS    += $(SOFTFLOATINC)
 flatcsl_CPPFLAGS    += $(SOFTFLOATINC)
-if conservative
-alloctest_CPPFLAGS    += $(SOFTFLOATINC)
-endif conservative
 
 # The following ugly dependencies are here so that one can go, for
 # instance, "make csl.o" in a clean tree and softfloat building will get
@@ -916,16 +868,10 @@ csl_LDADD += ../lib/libsoftfloat.a
 flatcsl_LDADD += ../lib/libsoftfloat.a
 bootstrapreduce_LDADD += ../lib/libsoftfloat.a
 reduce_LDADD += ../lib/libsoftfloat.a
-if conservative
-alloctest_LDADD    += ../lib/libsoftfloat.a
-endif conservative
 
 csl_DEPENDENCIES += $(SOFTFLOATDEPS)
 bootstrapreduce_DEPENDENCIES += $(SOFTFLOATDEPS)
 reduce_DEPENDENCIES += $(SOFTFLOATDEPS)
-if conservative
-alloctest_DEPENDENCIES    += $(SOFTFLOATDEPS)
-endif conservative
 
 $(SOFTFLOATDEPS):
 	@printf "About to build softfloat for %s ($@)\n" `pwd`
@@ -1362,14 +1308,6 @@ flatcsl$(COM):	$(flatcsl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDR
 endif gui
 endif windows
 
-contest$(EXEEXT): $(contest_OBJECTS) $(contest_DEPENDENCIES)
-	@printf "Relinking $@ because of $?\n"
-	$(CXXLINKTO) $(DEST)contest$(EXEEXT) $(contest_OBJECTS) $(contest_LDADD) $(AM_LIBS) $(LIBS)
-
-alloctest$(EXEEXT): $(alloctest_OBJECTS) $(alloctest_DEPENDENCIES)
-	@printf "Relinking $@ because of $?\n"
-	$(CXXLINKTO) $(DEST)alloctest$(EXEEXT) $(alloctest_OBJECTS) $(alloctest_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
-
 reduce$(EXEEXT):	$(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
 			$(WXDEPS) $(generated_lisp) $(HDRS) $(REDUCECOM) $(CYG_REDUCE)
 	@printf "Relinking $@ because of $?\n"
@@ -1722,12 +1660,6 @@ $(plain_zlibdemo):	zlibdemo.exe
 
 $(plain_gctest):	gctest.exe
 	printf "$(MAKE) gctest.exe is preferred\n"
-
-$(plain_contest):	contest.exe
-	printf "$(MAKE) contest.exe is preferred\n"
-
-$(plain_alloctest):	alloctest.exe
-	printf "$(MAKE) alloctest.exe is preferred\n"
 
 endif exeext
 

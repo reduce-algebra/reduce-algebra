@@ -919,12 +919,13 @@ inline void do_freerstr()
 inline void poll_jump_back(LispObject& A_reg)
 {
 #ifdef CONSERVATIVE
-    poll();
-#else
+    static uintptr_t n = 0;
+    if ((++n & 0x3f) == 0) poll();
+#else // CONSERVATIVE
     if ((uintptr_t)stack >=
         ((uintptr_t)stackLimit | event_flag))
         respond_to_stack_event();
-#endif
+#endif // CONSERVATIVE
 }
 
 static inline LispObject do_pvbind(LispObject vals, LispObject vars)

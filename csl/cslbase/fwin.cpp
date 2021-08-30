@@ -474,9 +474,12 @@ void mac_deal_with_application_bundle(int argc, const char *argv[])
 // attempt to display a report including the error code.
             std::fprintf(stderr,
                          "Returned from execv with error code %d\n", errno);
-// These daya I can not even be certain that calling std::exit() will cause
+// These days I can not even be certain that calling std::exit() will cause
 // and application to terminate (I think) but the use here should NEVER get
 // called and so just what happens here is not that important!
+            std::fflush(stdout);
+            std::fflush(stderr);
+            if (spool_file != nullptr) std::fflush(spool_file);
             std::exit(1);
         }
     }
