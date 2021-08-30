@@ -59,7 +59,7 @@ fi
 #
 rm -f csl-times/*.rlg* psl-times/*.rlg* csl-psl-times-comparison/*.rlg.diff
 
-packages="smt ofsf ibalp pasf redlog rltools acfsf qqe_ofsf mri talp cgb"
+packages="redlog smt ofsf ibalp pasf rltools acfsf qqe_ofsf mri talp cgb"
 
 # for p in $packages
 # do
@@ -75,6 +75,11 @@ function runtest() {
 export -f runtest
 
 parallel --linebuffer -j$cores --halt now,fail=1 runtest $* {} ::: $packages
+
+st=$?
+if [ $st -ne 0 ]; then
+  exit $st
+fi
 
 # parallel --linebuffer --bar -j$cores --halt now,fail=1 runtest $* {} ::: $packages > /tmp/testredlog.out
 # cat /tmp/testredlog.out
@@ -142,6 +147,4 @@ fi
 
 # end of script
 
-
-
-
+exit 0

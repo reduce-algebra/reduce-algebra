@@ -33,7 +33,7 @@ copyright('cl, "(c) 1995-2021 A. Dolzmann, T. Sturm");
 create!-package('(cl clsub clsimpl clsimplbasic clsusi clbnf clnf clqe cltab
    clmisc clresolv cldfgformat clsmt2format), nil);
 
-load!-package 'redlog;
+compiletime load!-package 'redlog;
 
 exports cl_atfp, cl_cxfp, cl_atflp, cl_ncflp, cl_dnfp, cl_cnfp, cl_bnfp,
    cl_simpl, cl_simplbasic, cl_simplifyTheory, cl_ordp, cl_smcpknowl,
@@ -56,8 +56,6 @@ fluid '(cl_identify!-atl!* cl_pal!* cl_lps!* cl_theo!*
    !*rlspgs !*rlqefb !*rlqelocal !*rlresi !*rlqeprecise
    !*rlqeaprecise !*rlqestdans !*slat);
 
-struct Formula;
-struct FormulaL asserted by listp;
 struct QfFormula;
 struct QfFormulaL asserted by listp;
 struct Theory asserted by listp;
