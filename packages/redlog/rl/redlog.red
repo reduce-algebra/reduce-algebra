@@ -281,28 +281,7 @@ on1  'rlplsimpl;
 switch rltnft;
 on1 'rltnft;             % Return a "tree" instead of a "flat" tree normal form
 
-switch rlgetrtypecar;
-off1 'rlgetrtypecar;
-
 procedure quotelog(x); 'logical;
-
-procedure rl_getrtypecar(x);
-   if !*rlgetrtypecar then rl_getrtypecar1 x else 'logical;
-
-procedure rl_getrtypecar1(x);
-   if eqcar(x, 'true) or eqcar(x, 'false) then
-      'logical
-   else
-      (if w eq 'equation then 'logical else w) where w=getrtypecar x;
-
-procedure rl_getrtypecadr(x);
-   if !*rlgetrtypecar then rl_getrtypecadr1 x else 'logical;
-
-procedure rl_getrtypecadr1(x);
-   if cadr x eq 'true or cadr x eq 'false then
-      'logical
-   else
-      (if w eq 'equation then 'logical else w) where w=getrtype cadr x;
 
 put('logical, 'tag, '!*fof);
 put('logical, 'evfn, 'rl_reval);
@@ -348,7 +327,7 @@ rl_builtin {
    }
 };
 
-put('and, 'rtypefn, 'rl_getrtypecar);
+put('and, 'rtypefn, 'quotelog);
 put('and, 'rl_simpfn, 'rl_simpbop);
 put('and, 'rl_prepfn, 'rl_prepbop);
 
@@ -365,7 +344,7 @@ rl_builtin {
    }
 };
 
-put('or, 'rtypefn, 'rl_getrtypecar);
+put('or, 'rtypefn, 'quotelog);
 put('or, 'rl_simpfn, 'rl_simpbop);
 put('or, 'rl_prepfn, 'rl_prepbop);
 
@@ -380,7 +359,7 @@ rl_builtin {
    }
 };
 
-put('not, 'rtypefn, 'rl_getrtypecar);
+put('not, 'rtypefn, 'quotelog);
 put('not, 'rl_simpfn, 'rl_simpbop);
 put('not, 'rl_prepfn, 'rl_prepbop);
 
@@ -400,7 +379,7 @@ rl_builtin {
 };
 
 algebraic infix impl;
-put('impl, 'rtypefn, 'rl_getrtypecar);
+put('impl, 'rtypefn, 'quotelog);
 put('impl, 'rl_simpfn, 'rl_simpbop);
 put('impl, 'rl_prepfn, 'rl_prepbop);
 put('impl, 'number!-of!-args, 2);
@@ -419,7 +398,7 @@ rl_builtin {
 };
 
 algebraic infix repl;
-put('repl, 'rtypefn, 'rl_getrtypecar);
+put('repl, 'rtypefn, 'quotelog);
 put('repl, 'rl_simpfn, 'rl_simpbop);
 put('repl, 'rl_prepfn, 'rl_prepbop);
 put('repl, 'number!-of!-args, 2);
@@ -438,7 +417,7 @@ rl_builtin {
 };
 
 algebraic infix equiv;
-put('equiv, 'rtypefn, 'rl_getrtypecar);
+put('equiv, 'rtypefn, 'quotelog);
 put('equiv, 'rl_simpfn, 'rl_simpbop);
 put('equiv, 'rl_prepfn, 'rl_prepbop);
 put('equiv, 'number!-of!-args, 2);
@@ -465,7 +444,7 @@ rl_builtin {
    }
 };
 
-put('ex, 'rtypefn, 'rl_getrtypecadr);
+put('ex, 'rtypefn, 'quotelog);
 put('ex, 'rl_simpfn, 'rl_simpq);
 put('ex, 'number!-of!-args, 2);
 put('ex, 'rl_prepfn, 'rl_prepq);
@@ -485,7 +464,7 @@ rl_builtin {
    }
 };
 
-put('all, 'rtypefn, 'rl_getrtypecadr);
+put('all, 'rtypefn, 'quotelog);
 put('all, 'rl_simpfn, 'rl_simpq);
 put('all, 'number!-of!-args, 2);
 put('all, 'rl_prepfn, 'rl_prepq);
