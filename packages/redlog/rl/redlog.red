@@ -1,10 +1,13 @@
 module redlog;
-
-% Reduce logic component.
+% Reduce logic. This is the main package of Redlog. It is autoloaded when
+% using rlset() for choosing a context. Further parts of Redlog that are
+% technically packages, too, are listed in the 'known!-packages property of
+% the identifier 'redlog in the first put() below. None of them requires
+% explicit loading by the user.
 
 revision('redlog, "$Id$");
 
-copyright('redlog, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
+copyright('redlog, "(c) 1995-2021 A. Dolzmann, T. Sturm");
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -45,6 +48,12 @@ exports quotelog, rl_mkbb, rl_mkserv, rl_op, rl_arg1, rl_arg2l, rl_arg2r, rl_arg
    rl_s2a!-fbvarl, rl_s2a!-struct, rlmkor, rlmkand, rl_set!$, rl_set, rl_exit, 
    rl_enter, rl_onp, rl_vonoff, rl_updcache, rl_serviadd, rl_bbiadd;
 
+put('redlog, 'known!-packages,
+    '(acfsf cl dcfsf dvfsf ibalp mri ofsf pasf qqe qqe_ofsf redlog rlsupport rltools smt talp tplp));
+
+struct Formula;
+struct FormulaL asserted by listp;
+
 % The specification of ? (rl_help) implmented in the rlsupport module goes here, 
 % because it requires a completely built rlsupport itself.
 
@@ -62,9 +71,6 @@ rl_builtin {
       arg = {pos = 1, name = "X", text = "a specific service, type, or switch"}
    }
 };
-
-put('redlog, 'known!-packages, 
-   '(acfsf cl dcfsf dvfsf ibalp mri ofsf pasf qqe qqe_ofsf redlog rlsupport rltools smt talp tplp));
 
 % context identifier:
 fluid '(rl_cid!*);
@@ -93,7 +99,7 @@ fluid '(fancy!-line!* fancy!-pos!*);
 
 fluid '(!*strict_argcount);
 
- % Display banner with rlset; initialized in support/entry.red:
+% Display banner with rlset; initialized in support/entry.red:
 switch rlabout;
 
 % Interactive use in algebraic mode:
@@ -560,82 +566,63 @@ asserted procedure rl_getversion(): List3;
       return res
    end;
 
-inline procedure rl_op(f);
-   % Reduce logic operator. [f] is a formula. Returns the top-level
-   % operator of [f]. In this sense truth values are operators.
+asserted inline procedure rl_op(f: Formula): Id;
+   % Reduce logic operator. Returns the top-level operator of [f]. In this
+   % sense, truth values are operators.
    if atom f then f else car f;
 
-inline procedure rl_arg1(f);
-   % Reduce logic argument of unary operator. [f] is a formula $\tau
-   % (\phi)$ with a unary boolean top-level operator $\tau$. Returns
-   % the single argument $\phi$ of $\tau$.
+asserted inline procedure rl_arg1(f: Formula): Formula;
+   % Reduce logic argument of formula with unary operator. Returns the single
+   % argument formula of f.
    cadr f;
 
-inline procedure rl_arg2l(f);
-   % Reduce logic left hand side argument of binary operator. [f] is a
-   % formula $\tau(\phi_1, \phi_2)$ with a binary boolean top-level
-   % operator $\tau$. Returns the left hand side argument $\phi_1$ of
-   % $\tau$.
+asserted inline procedure rl_arg2l(f: Formula): Formula;
+   % Reduce logic left hand side argument of formula with binary operator.
+   % Returns the left hand side argument of f.
    cadr f;
 
-inline procedure rl_arg2r(f);
-   % Reduce logic right hand side argument of binary operator. [f] is
-   % a formula $\tau(\phi_1, \phi_2)$ with a binary boolean top-level
-   % operator $\tau$. Returns the right hand side argument $\phi_2$ of
-   % $\tau$.
+asserted inline procedure rl_arg2r(f: Formula): Formula;
+   % Reduce logic right hand side argument of formula with binary operator.
+   % Returns the right hand side argument of f.
    caddr f;
 
-inline procedure rl_argn(f);
-   % Reduce logic argument list of n-ary operator. [f] is a formula
-   % $\tau(\phi_1, ...)$ with unary, binary, or $n$-ary top-level
-   % operator $\tau$. Returns the arguments of $\tau$ as a list
-   % $(\phi_1, ...)$.
+asserted inline procedure rl_argn(f: Formula): FormulaL;
+   % Reduce logic argument list of formula with n-ary operator. Returns the
+   % arguments of f as a list.
    cdr f;
 
-inline procedure rl_var(f);
-   % Reduce logic variable. [f] is a formula $Q x (\phi)$ where $Q$ is
-   % a quantifier. Returns the quantified variable $x$.
+asserted inline procedure rl_var(f: Formula): Kernel;
+   % Reduce logic variable. f starts with a quantifier. Returns the quantified
+   % variable.
    cadr f;
 
-inline procedure rl_mat(f);
-   % Reduce logic matrix. [f] is a formula $Q x (\phi)$ where $Q$ is a
-   % quantifier. Returns the matrix $\phi$.
+asserted inline procedure rl_mat(f: Formula): Formula;
+   % Reduce logic matrix. f starts with a quantifier. Returns the matrix
+   % formula.
    caddr f;
 
-inline procedure rl_b(f);
-   % Reduce logic bound. [f] is a formula starting with a bounded
-   % quantifier. Returns the bound.
+asserted inline procedure rl_b(f: Formula): Any;
+   % Reduce logic bound. f starts with a bounded quantifier. Returns the
+   % bound.
    cadddr f;
 
-inline procedure rl_mk1(uop, arg);
-   % Reduce logic make formula for unary operator. [uop] is a unary
-   % operator, [arg] is a formula. Returns the formula $[uop]([arg])$
-   % with top-level operator [uop] and argument [arg].
+asserted inline procedure rl_mk1(uop: Id, arg: Formula): Formula;
+   % Reduce logic make formula for unary operator. Returns uop(arg).
    {uop, arg};
 
-inline procedure rl_mk2(bop, larg, rarg);
-   % Reduce logic make formula for binary operator. [bop] is a binary
-   % operator, [larg] and [rarg] are formulas. Returns the formula
-   % $[bop]([larg], [rarg])$ with top-level operator [bop], left hand
-   % side [larg], and right hand side [rarg].
+asserted inline procedure rl_mk2(bop: Id, larg: Formula, rarg: Formula): Formula;
+   % Reduce logic make formula for binary operator. Returns bop(larg, rarg).
    {bop, larg, rarg};
 
-inline procedure rl_mkn(nop, argl);
-   % Reduce logic make formula for n-ary operator. [nop] is a unary, 
-   % binary, or $n$-ary operator; [argl] is a list $(\phi_1, ...)$ of
-   % formulas; for binary or $n$-ary [nop] the length of [argl] is a
-   % least 2. Returns the formula $[nop](\phi_1, ..)$ with top-level
-   % operator [nop], and the elements of [argl] as its arguments.
+asserted inline procedure rl_mkn(nop: Id, argl: FormulaL): Formula;
+   % Reduce logic make formula for n-ary operator. Returns
+   % nop(argl[1], ..., argl[n]).
    nop . argl;
 
-inline procedure rl_smkn(nop, argl);
-   % Reduce logic safe make formula for n-ary operator. [nop] is one
-   % of ['and], ['or]; [argl] is a list $(\phi_1, ...)$ of formulas.
-   % Returns a formula. If [argl] is empty, ['true] is returned for
-   % $[nop]=['and]$, and $['false]$ is returned for $[nop]=['or]$. If
-   % [argl] is of length 1, its single element $\phi_1$ is returned.
-   % Else the formula $[nop](\phi_1, ..)$ with top-level operator
-   % [nop], and the elements of [argl] as its arguments is returned.
+asserted inline procedure rl_smkn(nop: Id, argl: FormulaL): Formula;
+   % Reduce logic safe make formula for n-ary operator. nop is one
+   % of 'and, 'or. If argl = (), return a suitable truth value. If
+   % argl = (a1), return a1. Else return nop(argl[1], ..., argl[n]).
    if argl and cdr argl then
       nop . argl
    else if null argl then
@@ -643,65 +630,48 @@ inline procedure rl_smkn(nop, argl);
    else
       car argl;
 
-inline procedure rl_mkq(q, v, m);
-   % Reduce logic make quantified formula. [q] is a quantifier, [v] is
-   % a variable, [m] is a formula. Returns the formula $[q] [x] ([m])$
-   % which is quantified with quantifier [q], quantified variable [v], 
-   % and matrix [m].
+asserted inline procedure rl_mkq(q: Id, v: Kernel, m: Formula): Formula;
+   % Reduce logic make quantified formula. q is one of 'ex, 'all. Returns
+   % q(v, m).
    {q, v, m};
 
-inline procedure rl_mkbq(q, v, b, m);
-   % Reduce logic make quantified formula. [q] is a quantifier, [v] is
-   % a variable, [b] is a fof with x as only free variable, [m] is a
-   % formula. Returns a formula which is quantified with quantifier
-   % [q], quantified variable [v], which is restricted by [b] and
-   % matrix [m].
+asserted inline procedure rl_mkbq(q: Id, v: Kernel, b: Any, m: Formula): Formula;
+   % Reduce logic make bounded-quantified formula. [q] is one of 'bex, 'ball.
+   % Returns q(v : b, m).
    {q, v, m, b};
 
-inline procedure rl_quap(x);
-   % Reduce logic quantifier predicate. [x] is any S-expression.
-   % Returns non-[nil] iff [x] is a quantifier.
+asserted inline procedure rl_quap(x: Any): Boolean;
+   % Reduce logic quantifier predicate.
    x eq 'ex or x eq 'all;
 
-inline procedure rl_bquap(x);
-   % Reduce logic bounded quantifier predicate. [x] is any
-   % S-expression. Returns non-[nil] iff [x] is a bounded quantifier.
+asserted inline procedure rl_bquap(x: Any): Boolean;
+   % Reduce logic bounded quantifier predicate.
    x eq 'bex or x eq 'ball;
 
-inline procedure rl_junctp(x);
-   % Reduce logic junctor predicate. [x] is any S-expression. Returns
-   % non-[nil] iff [x] is one of ['and], ['or] which we refer to as
-   % junctors.
+asserted inline procedure rl_junctp(x: Any): Boolean;
+   % Reduce logic junctor predicate.
    x eq 'or or x eq 'and;
 
-inline procedure rl_basbp(x);
-   % Reduce logic basic boolean operator predicate. [x] is any
-   % S-expression. Returns non-[nil] iff [x] is a junctor or ['not].
-   % We refer to these as basic boolean operators.
+asserted inline procedure rl_basbp(x: Any): Boolean;
+   % Reduce logic basic boolean operator predicate.
    rl_junctp x or x eq 'not;
 
-inline procedure rl_extbp(x);
-   % Reduce logic extended boolean operator predicate. [x] is any
-   % S-expression. Returns non-[nil] iff [x] is one of ['impl], 
-   % ['repl], or ['equiv]. We refer to these as basic boolean
-   % operators.
+asserted inline procedure rl_extbp(x: Any): Boolean;
+   % Reduce logic extended boolean operator predicate.
    x eq 'impl or x eq 'repl or x eq 'equiv;
 
-inline procedure rl_boolp(x);
-   % Reduce logic boolean operator predicate. [x] is any S-expression.
-   % Returns non-[nil] iff [x] is a boolean operator, i.e. one of
-   % ['and], ['or], ['not], ['impl], ['repl], or ['equiv].
+asserted inline procedure rl_boolp(x: Any): Boolean;
+   % Reduce logic boolean operator predicate.
    rl_basbp x or rl_extbp x;
 
-inline procedure rl_tvalp(x);
-   % Reduce logic truth value predicate. [x] is any S-expression.
-   % Returns non-[nil] iff [x] is one of ['true], ['false].
+asserted inline procedure rl_tvalp(x: Any): Boolean;
+   % Reduce logic truth value predicate.
    x eq 'true or x eq 'false;
 
-inline procedure rl_cxp(x);
-   % Reduce logic complex, i.e., non-atomic, operator predicate.
+asserted inline procedure rl_cxp(x: Any): Boolean;
+   % Reduce logic "complex", in the sense of non-atomic, operator predicate.
    rl_tvalp x or rl_boolp x or rl_quap x or rl_bquap x;
 
-endmodule;  % [redlog]
+endmodule;
 
-end;  % of file
+end;
