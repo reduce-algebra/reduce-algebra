@@ -800,8 +800,8 @@ void garbageCollectOnBehalfOfAll()
         if (pendingCount == 0 &&
             userGcRequest == GcStyleNone) break;
         newRegionNeeded();
-        releaseOtherThreads();
-        return;
+/////        releaseOtherThreads();
+/////        return;
     }
 // Here all the GC helper threads may be waiting for a Chunk to copy. There
 // is not going to be one, so I can release them.

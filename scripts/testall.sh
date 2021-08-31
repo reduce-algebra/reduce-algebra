@@ -82,7 +82,8 @@ do
     then
       plist="$a"
       platforms="$sys"
-      base="$sys"
+      base=${sys#csl=}
+      base="${base#*-*-}"
     else
       plist="$plist $a"
       platforms="$platforms $sys"
@@ -118,6 +119,7 @@ then
   for sys in $platforms
   do
     sys=${sys#csl=}
+    sys=${sys#*-*-}
     if test "$sys" = "cslboot1"
     then
       sys="cslboot"
@@ -150,6 +152,7 @@ then
   for sys in $platforms
   do
     sys=${sys#csl=}
+    sys=${sys#*-*-}
     if test "$sys" = "cslboot1"
     then
       sys="cslboot"
@@ -165,6 +168,7 @@ then
   for sys in $platforms
   do
     sys=${sys#csl=}
+    sys=${sys#*-*-}
     d=`cd $sys-times; echo *.rlg.diff`
     if test "$d" != "*.rlg.diff"
     then
@@ -175,6 +179,7 @@ then
   for sys in $platforms
   do
     sys=${sys#csl=}
+    sys=${sys#*-*-}
     if test "$sys" != "$base"
     then
       d=`cd $base-$sys-times-comparison; echo *.rlg.diff`
@@ -240,7 +245,9 @@ do
     reporttime "installedCSL" "installed-csl-times"
     ;;
   csl=*)
-    reporttime "${sys#csl=}" "${sys#csl=}-times"
+    sys=${sys#csl=}
+    sys=${sys#*-*-}
+    reporttime "${sys}" "${sys}-times"
     ;;
   jlisp)
     reporttime "Jlisp" "jlisp-times"

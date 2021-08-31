@@ -228,7 +228,7 @@ LispObject big_divisor, big_dividend, big_quotient, big_fake1,
            big_fake2;
 LispObject active_stream, current_module;
 LispObject autoload_symbol, features_symbol, lisp_package;
-LispObject sys_hash_table; //@, sxhash_hash_table;
+LispObject sys_hash_table, sxhash_hash_table;
 LispObject help_index, cfunarg, lex_words, get_counts, fastget_names;
 LispObject input_libraries, output_library, current_file,
            break_function;

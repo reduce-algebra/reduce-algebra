@@ -52,17 +52,35 @@
 #include <ctime>
 #include <csignal>
 
+#ifdef CSL
+
+extern std::FILE *spool_file;
+extern void term_close();
+
+#endif // CSL
+
 // An "my_assert" scheme that lets me write in my own code to print the
 // diagnostics. I also "exit()" rather than "abort()" since that is slightly
 // cleaner!
 
 [[noreturn]] inline void my_abort()
-{   std::exit(EXIT_FAILURE);
+{   std::fflush(stdout);
+    std::fflush(stderr);
+#ifdef CSL
+    if (spool_file != nullptr) std::fflush(spool_file);
+    term_close();
+#endif
+    std::exit(EXIT_FAILURE);
 }
 
 [[noreturn]] inline void my_abort(const char *msg)
 {   std::fprintf(stderr, "\n\n!!! Aborting: %s\n\n", msg);
+    std::fflush(stdout);
     std::fflush(stderr);
+#ifdef CSL
+    if (spool_file != nullptr) std::fflush(spool_file);
+    term_close();
+#endif
     std::exit(EXIT_FAILURE);
 }
 

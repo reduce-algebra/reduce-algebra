@@ -193,15 +193,15 @@ p=${1:-alg}
 if test "x$p" = "xregressions"
 then
   r=${2:-aug-29-2011}
-  printf "Regression test %s\n                     " "$r:"
+  printf "Regression test %s\n                 " "$r:"
   p="$r"
   d="regressions"
 else
   if test "x$2" = "x"
   then
-    printf "Testing %-12s " "$p:"
+    printf "Test %-11s " "$p:"
   else
-    printf "Testing %-12s " "$p/$2:"
+    printf "Test %-11s " "$p/$2:"
   fi
   w=`grep " test " $here/packages/package.map | grep "($p "`
   case $w in
@@ -374,7 +374,10 @@ csltest() {
     case $name in
     installed* | csl=*)
       fullcommand="$command $CSLFLAGS"
+# When I put "--csl=HOST-TRIPLE" 
       name="${name#csl=}"
+      name="${name#*-*-}"
+      showname="${showname#*-*-}"
       ;;
     *)
       if test "$name" = "cslboot1"
@@ -449,7 +452,7 @@ XXX
     cat $name-times/$p.showtime >> $name-times/showtimes
   fi
   cat $p.howlong.tmp >> $name-times/$p.rlg.tmp
-  printf $showname...
+  printf $showname..
   sed -e "/^Tested on /,//d" <$rlgfile |
     sed -e "$SED1" >$name-times/$p.rlg.orig
   sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
@@ -523,7 +526,7 @@ XXX
     cat $name-times/$p.showtime >> $name-times/showtimes
   fi
   cat $p.howlong.tmp >> $name-times/$p.rlg.tmp
-  printf $showname...
+  printf $showname..
   sed -e "/^Tested on /,//d" <$rlgfile |
     sed -e "$SED1" >$name-times/$p.rlg.orig
   sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
@@ -599,7 +602,7 @@ XXX
     cat $name-times/$p.showtime >> $name-times/showtimes
   fi
   cat $p.howlong.tmp >> $outdir/$p.rlg.tmp
-  printf "$showname..."
+  printf "$showname.."
   sed -e "/^Tested on /,//d" <$rlgfile | \
     sed -e "$SED1" >$outdir/$p.rlg.orig
   sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
@@ -700,6 +703,7 @@ then
   for sys in $platforms
   do
     sys="${sys#csl=}"
+    sys="${sys#*-*-}"
     if test "$sys" = "cslboot1"
     then
       sys="cslboot"
@@ -748,6 +752,7 @@ then
   for sys in $platforms
   do
     sys="${sys#csl=}"
+    sys="${sys#*-*-}"
     if test "$sys" = "cslboot1"
     then
       sys="cslboot"

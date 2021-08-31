@@ -939,7 +939,8 @@ void prepareForGarbageCollection(bool major)
 // it will allocate a fresh Chunk. I set myBusyChunk so that the allocation
 // of the new Chunk does not mark the existing one as needing scanning.
         myBusyChunk = myChunkBase[threadId];
-        if (myBusyChunk != nullptr) myBusyChunk->chunkFringe = fringe;
+        if (myBusyChunk != nullptr)
+            myBusyChunk->chunkFringe = static_cast<uintptr_t>(fringe);
         myChunkBase[threadId] = myBusyChunk = nullptr;
         fringe = limit[threadId];
         gc_n_bytes1(0, threadId, fringe);

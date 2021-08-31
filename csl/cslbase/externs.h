@@ -231,19 +231,13 @@ extern uintptr_t *C_stackbase, C_stacklimit;
 
 extern LispObject multiplication_buffer;
 
-#ifdef CONSERVATIVE
-extern void write_barrier(atomic<LispObject> *p, LispObject q);
+#if defined CONSERVATIVE && defined GENERATIONAL
 extern void write_barrier(LispObject *p, LispObject q);
 #else // !CONSERVATIVE
-inline void write_barrier(atomic<LispObject> *p, LispObject q)
-{  *p = q;
-}
 inline void write_barrier(LispObject *p, LispObject q)
 {  *p = q;
 }
 #endif // !CONSERVATIVE
-
-// This tiny function exists just so that I can set a breakpoint on it.
 
 extern std::mutex debug_lock;
 extern const char *debug_file;
@@ -614,10 +608,10 @@ extern uint64_t reclaim_trigger_count, reclaim_trigger_target;
 
 #ifdef CONSERVATIVE
 extern void reclaim(const char *why);
-#else
+#else // CONSERVATIVE
 extern LispObject reclaim(LispObject value_to_return, const char *why,
                           int stg_class, size_t size);
-#endif
+#endif // CONSERVATIVE
 extern void use_gchook(LispObject arg);
 
 extern uint64_t force_cons, force_vec;
