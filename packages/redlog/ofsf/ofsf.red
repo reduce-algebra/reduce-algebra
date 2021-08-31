@@ -218,7 +218,7 @@ put('ofsf,'rl_services,'(
    (rl_cad!* . ofsf_cad)
    (rl_gcad!* . ofsf_gcad)
    (rl_cadswitches!* . ofsf_cadswitches)
-   (rl_lqe!* . cl_lqe)
+   (rl_lqe!* . ofsf_lqe)
    (rl_xqe!* . ofsf_xopt!-qe)
    (rl_xqea!* . ofsf_xopt!-qea)
    (rl_lthsimpl!* . ofsf_lthsimpl)
