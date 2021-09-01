@@ -59,9 +59,9 @@
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <setjmp.h>
-#include <stdlib.h>
 
 
 jmp_buf mainenv;
@@ -69,11 +69,13 @@ char *abs_execfilepath;
 
 void clear_iob(), clear_dtabsize();
 
-void psl_main(int argc, char *argv[]);
+void psl_main(int argc, char *argv[], long long *symvalptr);
 
 char ** copy_argv();
- 
+
 int Debug = 0;
+
+extern long long symval;
 
 int
 main(argc,argv)
@@ -85,25 +87,24 @@ char *argv[];
   clear_iob();             /* clear garbage pointer in _iob[]    */
   clear_dtabsize();
   /* fpsetround(FP_RZ);  */
-//  init_malloc_param();        /* reset malloc parameters.        */
   setvbuf(stdout,NULL,_IOLBF,BUFSIZ);
   /* Record path to exec file */
   if (argc > 0)
     abs_execfilepath = realpath(argv[0],NULL);
 
-  if (getenv("BPSL_DEBUG") != NULL) 
-     Debug = 1;
- 
+  if (getenv("BPSL_DEBUG") != NULL)
+    Debug = 1;
+
   val=setjmp(mainenv);        /* set non-local return point for exit    */
- 
+
   if (val == 0)
-     psl_main(argc,copy_argv(argc,argv));
+    psl_main(argc,copy_argv(argc,argv),&symval);
  
 exit(0);
  
 }
- 
- 
+
+
 int setupbpsandheap(int argc, char *argv[]);
 
 void
@@ -113,7 +114,7 @@ os_startup_hook(argc, argv)
 {
   setupbpsandheap(argc, argv);   /* Allocate bps and heap areas. */
 }
- 
+
 void
 os_cleanup_hook()
 {
@@ -152,8 +153,7 @@ extern char *end;
 void
 clear_dtabsize()
 {
- int i;
- }
+}
  
 #ifndef LINUX
 
