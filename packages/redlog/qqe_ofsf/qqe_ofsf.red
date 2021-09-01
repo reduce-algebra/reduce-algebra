@@ -146,11 +146,9 @@ put('qqe_ofsf,'rl_services,'(
 %%   (rl_cad!* . ofsf_cad) % later
 %%   (rl_gcad!* . ofsf_gcad) % later
 %%   (rl_cadswitches!* . ofsf_cadswitches)
-   (rl_lqe!* . cl_lqe)
    (rl_xqe!* . ofsf_xopt!-qe)
    (rl_xqea!* . ofsf_xopt!-qea)
    (rl_lthsimpl!* . ofsf_lthsimpl) %% belongs to qe
-   (rl_lthsimpl!* . ofsf_lthsimpl)
    (rl_quine!* . cl_quine)
 %%   (rl_cadporder!* . ofsf_cadporder)
 %%   (rl_gcadporder!* . ofsf_gcadporder)

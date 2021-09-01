@@ -17,6 +17,27 @@ rlgcad phi;
 rlhqe phi;
 rlghqe phi;
 
+% Local QE Examples from https://doi.org/10.1145/345542.345589
+generic_quadratic_equation := ex(x, v2*x^2 + v1*x + v0 = 0)$
+rllqe(generic_quadratic_equation, {}, {v2=1, v1=1, v0=1});
+
+generic_polygon3 := ex({x, y},
+   for i:=1:3 mkand mkid(a, i)*x + mkid(b, i)*y <= mkid(c, i))$
+rllqe(generic_polygon3, {}, {a1=1, a2=-3, a3=5, b1=-7, b2=11, b3=-13});
+
+generic_polygon10 := ex({x, y},
+   for i:=1:10 mkand mkid(a, i)*x + mkid(b, i)*y <= mkid(c, i))$
+generic_polygon10_p := {
+   a1=2,a2=-3,a3=5,a4=-7,a5=11,a6=-13,a7=17,a8=-19,a9=23,a10=-29,
+   b1=31,b2=-37,b3=41,b4=-43,b5=47,b6=-53,b7=59,b8=-61,b9=67,b10=-71}$
+generic_polygon10_sol := rllqe(generic_polygon10, {}, generic_polygon10_p)$
+length first generic_polygon10_sol;
+rlatnum second generic_polygon10_sol;
+
+kahans_problem := all({x,y},
+   b**2*(x-c)**2+a**2*(y-d)**2-a**2*b**2=0 impl x**2+y**2-1 <=0)$
+rllqe(sub(d=0, kahans_problem), {}, {a=1/2, b=1/2, c=1/2});
+
 % Examples from a talk on Isabel by T. Nipkow
 wnip := rlall(a>=3/4 and a^2<=b*(c+1) and b<=4c impl (a-1)^2<b*c)$
 rlqe wnip;
