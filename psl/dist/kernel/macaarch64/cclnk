@@ -1,0 +1,9 @@
+##sed -f main.sed main.s > main.sed.s
+##sed -f dmain.sed dmain.s > dmain.sed.s
+
+
+gcc  -Wl,-no_pie -no-pie -o bpsl -arch arm64 -DBPSSIZE=20000000 -g -O0  bps.c bpsheap.c echo.c file-status.c float.c \
+  creloc.c \
+  os-hooks.c pslextras.c pslsocket.c pwd-fn.c sigs.c unix-io.c \
+   -DLINUX main.o dmain.o -lc -lm 
+

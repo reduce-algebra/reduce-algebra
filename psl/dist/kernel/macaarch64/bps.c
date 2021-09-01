@@ -1,6 +1,15 @@
-
-% Authors: Arthur Norman
-
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% File:         PXK:bps.c
+% Description:  Declare bps space as a static array.
+% Author:       Leigh Stoller
+% Created:      18-Dec-86
+% Package:      
+% Status:       Open Source: BSD License
+%
+% (c) Copyright 1982, University of Utah
+%
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
 %
@@ -22,15 +31,25 @@
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
+% Revisions:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*
+* $Id$
+*
+*/
 
-% $Id$
+/* The ukernel model had the problem that bps came after the data segment
+   of the ukernel. This meant that unexec could not move the text/data
+   boundary over code in bps, since it would write-protect the data segment,
+   making it very difficult to change ukernel variables. This file is
+   now inserted between main.s and dmain.s, making it possible to extend
+   text boundry. See setupbps() in bpsheap.c for more info.
+ */
 
-% This file will be automatically updated by the code in scripts/commit.sh
-% to show the latest subversion revision number.
+#ifndef BPSSIZE
+#define BPSSIZE 8000000  /* Minimum size in bytes */
+#endif
 
-fluid '(revision!*);
-
-revision!* := 6000;
-
-end;
+char bps[BPSSIZE];
