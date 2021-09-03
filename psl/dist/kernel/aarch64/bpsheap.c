@@ -1,65 +1,64 @@
 /*
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% File:         PXK:bpsheap.c
-% Description:  Code to dynamically set up bps and heap structures
-% Author:       RAM, HP/FSD
-% Created:      9-Mar-84
-% Modified:
-% Status:       Open Source: BSD License
-% Mode:         Text
-% Package:
-%
-% (c) Copyright 1982, University of Utah
-%
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
-%
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% Revisions:
-%
-% 11-Aug-88 (Julian Padget)
-%  Added initialization of bpslowerbound in setupbps().
-% 07-Apr-87 (Harold Carr & Leigh Stoller)
-%  Put in error checking to ensure that the memory pointers will fit in
-%   info field of the lisp item.
-% 21-Dec-86 (Leigh Stoller)
-%  Added allocatemorebps function, called from try-other-bps-spaces in
-%   allocators.sl.
-% 18-Dec-86 (Leigh Stoller)
-%  Changed to newer model. Bps is now defined in bps.c so that unexec can
-%  alter the text/data boundry. Took out code that allowed command line
-%  modification of bpssize. (Now set in the Makefile). Added setupbps()
-%  that initialzes nextbps and lastbps.
-% 20-Sep-86 (Leigh Stoller)
-%  Removed assembler alias statements because they are not portable. Instead,
-%  a sed script will be used to convert the _variables of C to VARIABLES of
-%  PSL.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
- $Id$
-
-*/
+ * File:         PXK:bpsheap.c
+ * Description:  Code to dynamically set up bps and heap structures
+ * Author:       RAM, HP/FSD
+ * Created:      9-Mar-84
+ * Modified:
+ * Status:       Open Source: BSD License
+ * Mode:         Text
+ * Package:
+ *
+ * (c) Copyright 1982, University of Utah
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *    * Redistributions of source code must retain the relevant copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    * Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in the
+ *      documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+ * CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ ******************************************************************************
+ *
+ * Revisions:
+ *
+ * 11-Aug-88 (Julian Padget)
+ *  Added initialization of bpslowerbound in setupbps().
+ * 07-Apr-87 (Harold Carr & Leigh Stoller)
+ *  Put in error checking to ensure that the memory pointers will fit in
+ *   info field of the lisp item.
+ * 21-Dec-86 (Leigh Stoller)
+ *  Added allocatemorebps function, called from try-other-bps-spaces in
+ *   allocators.sl.
+ * 18-Dec-86 (Leigh Stoller)
+ *  Changed to newer model. Bps is now defined in bps.c so that unexec can
+ *  alter the text/data boundry. Took out code that allowed command line
+ *  modification of bpssize. (Now set in the Makefile). Added setupbps()
+ *  that initialzes nextbps and lastbps.
+ * 20-Sep-86 (Leigh Stoller)
+ *  Removed assembler alias statements because they are not portable. Instead,
+ *  a sed script will be used to convert the _variables of C to VARIABLES of
+ *  PSL.
+ *
+ *****************************************************************************
+ *
+ * $Id$
+ *
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
