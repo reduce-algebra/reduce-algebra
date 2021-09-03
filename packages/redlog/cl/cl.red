@@ -31,7 +31,7 @@ copyright('cl, "(c) 1995-2021 A. Dolzmann, T. Sturm");
 %
 
 create!-package('(cl clsub clsimpl clsimplbasic clsusi clbnf clnf clqe cltab
-   clmisc clresolv cldfgformat clsmt2format), nil);
+   clmisc clresolv cldfgformat clsmt2format clqenew), nil);
 
 compiletime load!-package 'redlog;
 
@@ -55,6 +55,8 @@ fluid '(cl_identify!-atl!* cl_pal!* cl_lps!* cl_theo!*
    !*rlqegen !*rlbnfsac !*rltnft !*rlsipw !*rlsipo !*rlqevarsel
    !*rlspgs !*rlqefb !*rlqelocal !*rlresi !*rlqeprecise
    !*rlqeaprecise !*rlqestdans !*slat);
+
+switch clqenew;
 
 struct QfFormula;
 struct QfFormulaL asserted by listp;

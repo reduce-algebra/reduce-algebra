@@ -343,6 +343,8 @@ asserted procedure cl_qe(f: Formula, theo: Theory): Formula;
    % as many quantifiers as possible. Accesses the switch [rlqepnf]; if
    % [rlqepnf] is on, then [f] has to be prenex.
    begin scalar er, !*rlsipw, !*rlsipo;
+      if !*clqenew then return cl_qe_new(f, theo);
+
       !*rlsipw := !*rlsipo := t;
       er := cl_qe1(f, theo, nil);
       if rl_exceptionp er then
