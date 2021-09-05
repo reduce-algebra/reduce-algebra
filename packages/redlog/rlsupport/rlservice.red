@@ -517,16 +517,14 @@ asserted procedure rl_servicewrapper(rl_!*b: Applicable, u: List, names: List, t
       for each arg in u do <<
          pos := pos + 1;
          % For named parameters we admit both '=>' (replaceby) and '=' equal.
-         % However, '=' can lead to ambiguities, when the "equations" occurs at
-         % a position where it would make sense as a positional parameter (e.g.
-         % a formula). In such cases we decide in favor of the positional
-         % argument. We expect such situations to be rare. Users would use
-         % variables names in single equations that do not clash with parameter
-         % names, or just use '=>' in such cases. Relevant types are explicitly
-         % flagged [equational].
-         if eqcar(arg, 'replaceby) or
-            eqcar(arg, 'equal) and not flagp(nth(types, pos), 'equational)
-         then
+         % However, '=' can lead to ambiguities, when the "equation" occurs
+         % at a position where it would make sense as a positional parameter
+         % (e.g. a formula). In such cases we decide in favor of the
+         % positional argument. We expect such situations to be rare. Users
+         % would use variables names in single equations that do not clash
+         % with parameter names, or just use '=>' in such cases. Relevant
+         % types are explicitly flagged [equational].
+         if eqcar(arg, 'replaceby) or eqcar(arg, 'equal) and not rl_typeEquationalP(nth(types, pos)) then
             push(cadr arg . caddr arg, nargs)
          else
             nth(rargs, pos) := arg
@@ -640,22 +638,24 @@ asserted procedure rl_knownImplementations(x: Id): List;
 asserted procedure rl_exc(x: Any): DottedPair;
    % Create an "exception" as a return value in case of unexpected situations,
    % e.g. inconsistent theories. Exceptions are recognized by
-   % [rl_servicewrapper] in the AM/SM interface, where rl_excErr is called with
-   % ['!*rl_exc!* . x]. SM Redlog code might explicitly checked for exceptions
-   % using [rl_excP] and not necessarily throw an error, since some exceptions
-   % can be managed.
+   % rl_servicewrapper() in the AM/SM interface, where rl_excErr() is called
+   % with('!*rl_exc!* . x). SM Redlog code can explicitly check for
+   % exceptions using rl_excP(). It need  not necessarily throw an error,
+   % since some exceptions can be managed.
    '!*rl_exc!* . x;
 
-% Return values constructed with [rl_exc] should be ignored by the assert
-% module. For Redlog it is recommended to specifiy, e.g., "Formula" as a return
-% type of a function, which might use [rl_exc].
+% Return values constructed with rl_exc() should be ignored by the assert
+% module:
 flag('(!*rl_exc!*), 'assert_ignore);
 
-asserted procedure rl_excP(x: Any): Boolean;
-   % Check is return value is an exception.
+asserted procedure rl_excp(x: Any): Boolean;
+   % Check is return value is an exception. Since eqcar() checks pairp, this
+   % function can be safely applied to any Lisp data type. eqcar() is not
+   % mentioned in the Standard Lisp Report. It is documented in the PSL
+   % manual and implemented and used throughout CSL and Reduce.
    eqcar(x, '!*rl_exc!*);
 
-asserted procedure rl_excErr(exc: DottedPair);
+asserted procedure rl_excerr(exc: DottedPair);
    % Throw an error in case of exception.
    rederr cdr exc;
 
