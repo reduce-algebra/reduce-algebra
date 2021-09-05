@@ -298,6 +298,8 @@ asserted procedure cl_gqe(f: Formula, theo: Theory, xbvl: KernelL): TheoryFormul
    % \longleftrightarrow \phi$. $\phi$ is obtained from [f] by eliminating as
    % many quantifiers as possible. Accesses the switch [rlqepnf]; if [rlqepnf]
    % is on, then [f] must be prenex.
+   if !*clqenew then cl_gqe_new(f, theo, xbvl) else
+
    begin scalar er, theo, !*rlqegen, !*rlsipw, !*rlsipo;
       !*rlsipw := !*rlqegen := t;
       er := cl_qe1(f, theo, xbvl);
@@ -342,9 +344,9 @@ asserted procedure cl_qe(f: Formula, theo: Theory): Formula;
    % [f] \longleftrightarrow \phi$. $\phi$ is obtained from [f] by eliminating
    % as many quantifiers as possible. Accesses the switch [rlqepnf]; if
    % [rlqepnf] is on, then [f] has to be prenex.
-   begin scalar er, !*rlsipw, !*rlsipo;
-      if !*clqenew then return cl_qe_new(f, theo);
+   if !*clqenew then cl_qe_new(f, theo) else
 
+   begin scalar er, !*rlsipw, !*rlsipo;
       !*rlsipw := !*rlsipo := t;
       er := cl_qe1(f, theo, nil);
       if rl_exceptionp er then
@@ -364,6 +366,8 @@ asserted procedure cl_qea(f: Formula, theo: Theory): ExtendedQeResult;
    %  of the parameters, [f] holds, and $A_i$ describes a satisfying sample
    %  point. Accesses the switch [rlqepnf]; if [rlqepnf] is on, then [f] has
    %  to be prenex.
+   if !*clqenew then cl_qea_new(f, theo) else
+
    begin scalar er, !*rlsipw, !*rlsipo, !*rlqeans;
       !*rlsipw := !*rlsipo := !*rlqeans := t;
       er := cl_qe1(f, theo, nil);

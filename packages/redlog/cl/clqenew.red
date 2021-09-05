@@ -98,6 +98,29 @@ procedure qedb_print(db: Vector): Vector;
       return db
    end;
 
+procedure qedb_verbosePrint(db: Vector): Vector;
+   begin scalar !*nat;
+      ioto_tprin2t {"{"};
+      ioto_tprin2t {"    TypeTag:                ", getv(db, QEDB_TAG)};
+      ioto_tprin2t {"    #InputFormula:          ", rl_atnum getv(db, QEDB_INPUTFORMULA)};
+      ioto_tprin2t {"    #InputTheory:           ", length getv(db, QEDB_INPUTTHEORY)};
+      ioto_tprin2t {"    NoAssumeVars:           ", getv(db, QEDB_NOASSUMEVARS)};
+      ioto_tprin2t {"    AnswerMode:             ", getv(db, QEDB_ANSWERMODE)};
+      ioto_tprin2t {"    AssumeMode:             ", getv(db, QEDB_ASSUMEMODE)};
+      ioto_tprin2t {"    BlockSymbols:           ", getv(db, QEDB_BLOCKSYMBOLS)};
+      ioto_tprin2t {"    BlockVarLists:          ", getv(db, QEDB_BLOCKVARLISTS)};
+      ioto_tprin2t {"    #LastBlockInputFormula: ", rl_atnum getv(db, QEDB_LASTBLOCKINPUTFORMULA)};
+      ioto_tprin2t {"    Vars:                   ", getv(db, QEDB_VARS)};
+      ioto_tprin2t {"    #Formula:               ", rl_atnum getv(db, QEDB_FORMULA)};
+      ioto_tprin2t {"    Answer:                 ", getv(db, QEDB_ANSWER)};
+      ioto_tprin2t {"    #SuccessNodes:          ", length getv(db, QEDB_SUCCESSNODES)};
+      ioto_tprin2t {"    #FailureNodes:          ", length getv(db, QEDB_FAILURENODES)};
+      ioto_tprin2t {"    #CurentTheory:          ", length getv(db, QEDB_CURRENTTHEORY)};
+      ioto_tprin2t {"    ProduceAnswer:          ", getv(db, QEDB_PRODUCEANSWER)};
+      ioto_tprin2t {"}"};
+      return db
+   end;
+
 procedure qedb_getInputFormula(db);              getv(db, QEDB_INPUTFORMULA);
 procedure qedb_getInputTheory(db);               getv(db, QEDB_INPUTTHEORY);
 procedure qedb_getNoAssumeVars(db);              getv(db, QEDB_NOASSUMEVARS);
@@ -137,25 +160,71 @@ procedure qedb_setProduceAnswer(db, ans);        putv(db, QEDB_PRODUCEANSWER, an
 asserted procedure cl_qe_new(f: Formula, theo: Theory): Formula;
    % Quantifier elimination. Eliminate as many quantifiers as possible from f,
    % yielding a formula g such that theo |= f <=> g.
-   begin scalar db, !*rlsipw, !*rlsipo;
-      !*rlsipw := !*rlsipo := t;
+   begin scalar db, !*rlsipo, !*rlsipw;
+      !*rlsipo := t;
+      !*rlsipw := t;
       db := qedb_new();
       qedb_setInputFormula(db, f);
       qedb_setInputTheory(db, theo);
       qedb_setNoAssumeVars(db, nil);
       qedb_setAnswerMode(db, nil);
       qedb_setAssumeMode(db, nil);
-      cl_qe1_new(db);
+      db := cl_qe1_new(db);
+      if rl_excp(db) then
+         return db;
       return qedb_getF(db)
    end;
 
+asserted procedure cl_qea_new(f: Formula, theo: Theory): List;
+   % Extended quantifier elimination.
+   begin scalar db, !*rlqeans, !*rlsipo, !*rlsipw;
+      !*rlqeans := t;
+      !*rlsipo := t;
+      !*rlsipw := t;
+      db := qedb_new();
+      qedb_setInputFormula(db, f);
+      qedb_setInputTheory(db, theo);
+      qedb_setNoAssumeVars(db, nil);
+      % Standard answers work only for decision problems. The old procedure
+      % did not check this and rederr() could happen in the ANU module. We
+      % now check this here, but we should think about checking later.
+      qedb_setAnswerMode(db, if !*rlqestdans and null rl_fvarl f then'standard else 'raw);
+      qedb_setAssumeMode(db, nil);
+      db := cl_qe1_new(db);
+      if rl_excp(db) then
+         return db;
+      return qedb_getAnswer(db)
+   end;
+
+asserted procedure cl_gqe_new(f: Formula, theo: Theory, xNoAssumeVars: KernelL): DottedPair;
+   % Generic quantifier elimination. Eliminate as many quantifiers as possible
+   % from f, yielding a formula g such that theo |= f <=> g. The procedure is
+   % allowed to assume inequations on parameters that are not in
+   % xNoAssumeVars. Those assumptions are added to theo.
+   begin scalar db, !*rlqegen, !*rlsipo, !*rlsipw;
+      !*rlqegen := t;
+      !*rlsipo := t;
+      !*rlsipw := t;
+      db := qedb_new();
+      qedb_setInputFormula(db, f);
+      qedb_setInputTheory(db, theo);
+      qedb_setNoAssumeVars(db, xNoAssumeVars);
+      qedb_setAnswerMode(db, nil);
+      qedb_setAssumeMode(db, if !*rlqegenct then 'full else 'monomial);
+      db := cl_qe1_new(db);
+      if rl_excp(db) then
+         return db;
+      % The old procedure applies rl_thsimpl(). This must be checked.
+      return qedb_getCurrentTheory(db) . qedb_getF(db)
+   end;
+
 asserted procedure cl_qe1_new(db: Vector): Vector;
-   begin scalar f, theo, answer, ql, varll, bvl;
+   begin scalar f, theo, answer, ql, varll, bvl, point;
       f := qedb_getInputFormula(db);
       theo := qedb_getInputTheory(db);
       f := rl_simpl(rl_pnf f, theo, -1);
-      if f eq 'inctheo then
-         return rl_exception 'inctheo;
+      if rl_excp(f) then
+         return f;
       if not rl_quap rl_op f then
          return qedb_setF(db, f);
       {ql, varll, f, bvl} := cl_split f;
@@ -175,8 +244,11 @@ asserted procedure cl_qe1_new(db: Vector): Vector;
          % At present, we always requantify; no fallback QE with answers.
          if null ql or null cdr ql then <<
             % We have finished or at least reached the outmost block.
-            answer := for each node in append(qedb_getSuccessNodes(db), qedb_getFailureNodes(db)) collect
-               cl_unsplit(ql, varll, ce_f(node) . rl_qemkans(ce_ans(node), qedb_getLastBlockInputFormula(db)))
+            answer := for each node in append(qedb_getSuccessNodes(db), qedb_getFailureNodes(db)) collect <<
+               point := rl_qemkans(ce_ans(node), qedb_getLastBlockInputFormula(db))
+                        where !*rlqestdans=(qedb_getAnswerMode(db) eq 'standard);
+               cl_unsplit(ql, varll, ce_f(node) . point)
+            >>
          >> else
             answer := {f . nil};
          qedb_setF(db, f);
@@ -206,7 +278,7 @@ asserted procedure cl_qe1!-iterate_new(db: Vector): Vector;
          qedb_setVars(db, varl);
          produceAnswer := not null qedb_getAnswerMode(db) and null ql;
          qedb_setProduceAnswer(db, produceAnswer);
-         if produceAnswer then
+         if produceAnswer then  % rubbish!
             qedb_setLastBlockInputFormula(db, f);
          svrlqeprecise := !*rlqeprecise;
          svrlqeaprecise := !*rlqeaprecise;
@@ -220,7 +292,9 @@ asserted procedure cl_qe1!-iterate_new(db: Vector): Vector;
          qedb_setSuccessNodes(db, nil);
          qedb_setFailureNodes(db, nil);
          qedb_setCurrentTheory(db, theo);
+         if !*rlverbose then << qedb_verbosePrint(db) >>;
          cl_qeblock4_new(db);
+         if !*rlverbose then << qedb_verbosePrint(db) >>;
          if q eq 'all then <<
             w := qedb_getSuccessNodes(db);
             w := for each x in w collect

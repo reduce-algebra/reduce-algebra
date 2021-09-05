@@ -46,15 +46,15 @@ asserted procedure cl_simpl(f: Formula, atl: List, n: Integer): Formula;
    % at level [n].
    begin scalar w;
       atl := cl_simplifyTheory atl;
-      if atl eq 'inctheo then
-         return rl_exc 'inctheo;
+      if rl_excp atl then
+         return atl;
       w := rl_smupdknowl('and, atl, nil, n+1);
       if w eq 'false then
-         return 'inctheo;
+         return rl_exc("inconsistent theory");
       return cl_simpl1(f, w, n, nil)
    end;
 
-asserted procedure cl_simplifyTheory(atl: List);
+asserted procedure cl_simplifyTheory(atl: List): List;
    % Common logic simplify theory. [atl] is a THEORY. Returns either a
    % list $l$ of atomic formulas, or the identifier [inctheo]. In the
    % first case the conjunction over $l$ is equivalent to the
@@ -72,7 +72,7 @@ asserted procedure cl_simplifyTheory(atl: List);
             natl := w . natl
       >>;
       if atf eq 'inctheo then
-         return 'inctheo;
+         return rl_exc("inconsistent theory");
       return natl
    end;
 
