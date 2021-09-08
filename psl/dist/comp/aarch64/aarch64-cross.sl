@@ -76,51 +76,47 @@
          ForwardInternalReferences*
          ))
 
-(de codefiletrailer ()
-  (prog (s)
-        (systemfaslfixup)
-        (binarywrite codeout* (idifference (isub1 nextidnumber*) 
-                                           first-local-id-number))
-        % Number of local IDs
-        (foreach x in (car orderedidlist*) do
-                 (progn (remprop x fasl-idnumber-property*)
-                        (setq x (strinf (faslid2string x)))
-                        (setq s (strlen x))
-                        (binarywrite codeout* s)
-                        (binarywriteblock codeout* (strbase x)
-                                          (strpack s))))
-        (binarywrite codeout* % S is size in words
-                     (setq s
-                      (iquotient
-                       (iplus2 CurrentOffset*
-                        (isub1 addressingunitsperitem))
-                       addressingunitsperitem)))
-        (printf "code size is %d/%x%n" s s)
-        (printf "initoffset is %d/%x%n" initoffset* initoffset*)
-        (binarywrite codeout* initoffset*)
-        (binarywriteblock codeout* CodeBase* s)
-	(if *compact-bittable
-         (let((b (compact-bittable bittablebase* bittableoffset*))
-              (bpw (quotient bitsperword 8)))
-           (binarywrite codeout*
-            (setq s (iquotient
-                       (iplus2 (car b)
-                        (isub1 bpw))
-                       bpw)))
-           (binarywriteblock codeout* (strbase (strinf (cdr b))) s)
-         )
-         (progn
-          (binarywrite codeout*
-                     (setq s
-                      (iquotient
-                       (iplus2 bittableoffset*
-                        (isub1 bittable-entries-per-word))
-                       bittable-entries-per-word)))
-          (binarywriteblock codeout* bittablebase* s)
-        ))
-        (printf "bittable size is %d/%x%n" s s)
-        (binarywriteblock codeout* bittablebase* s)
-        (deallocatefaslspaces)))
+%% (de codefiletrailer ()
+%%   (prog (s)
+%%         (systemfaslfixup)
+%%         (binarywrite codeout* (idifference (isub1 nextidnumber*) 
+%%                                            first-local-id-number))
+%%         % Number of local IDs
+%%         (foreach x in (car orderedidlist*) do
+%%                  (progn (remprop x fasl-idnumber-property*)
+%%                         (setq x (strinf (faslid2string x)))
+%%                         (setq s (strlen x))
+%%                         (binarywrite codeout* s)
+%%                         (binarywriteblock codeout* (strbase x)
+%%                                           (strpack s))))
+%%         (binarywrite codeout* % S is size in words
+%%                      (setq s
+%%                       (iquotient
+%%                        (iplus2 CurrentOffset*
+%%                         (isub1 addressingunitsperitem))
+%%                        addressingunitsperitem)))
+%%         (binarywrite codeout* initoffset*)
+%%         (binarywriteblock codeout* CodeBase* s)
+%% 	(if *compact-bittable
+%%          (let((b (compact-bittable bittablebase* bittableoffset*))
+%%               (bpw (quotient bitsperword 8)))
+%%            (binarywrite codeout*
+%%             (setq s (iquotient
+%%                        (iplus2 (car b)
+%%                         (isub1 bpw))
+%%                        bpw)))
+%%            (binarywriteblock codeout* (strbase (strinf (cdr b))) s)
+%%          )
+%%          (progn
+%%           (binarywrite codeout*
+%%                      (setq s
+%%                       (iquotient
+%%                        (iplus2 bittableoffset*
+%%                         (isub1 bittable-entries-per-word))
+%%                        bittable-entries-per-word)))
+%%           (binarywriteblock codeout* bittablebase* s)
+%%         ))
+%%         (deallocatefaslspaces)))
 
 (compiletime
  (if_system x86_64
@@ -132,35 +128,32 @@
      (put 'getword32 'opencode '((LDR (reg w0) (indexed (reg 1) (reg 2)) ))))
    ))
 
-(de deposit32bitword (x) %% cross
-  (put_a_halfword (wplus2 codebase* currentoffset*) x)
-  (updatebittable 4 0)
-  (setq currentoffset* (plus currentoffset* 4)))
+%% (de deposit32bitword (x) %% cross
+%%   (put_a_halfword (wplus2 codebase* currentoffset*) x)
+%%   (updatebittable 4 0)
+%%   (setq currentoffset* (plus currentoffset* 4)))
 
-(de deposit-relocated-word (offset)
-  % Given an OFFSET from CODEBASE*, deposit a word containing the
-  % absolute address of that offset.
-  (put_a_halfword (wplus2 CodeBase* CurrentOffset*)
-	   (iplus2 offset (if *writingfaslfile 0 CodeBase*)))
-  (updatebittable 4 (const reloc_word))
-  (setq CurrentOffset* (plus CurrentOffset* 4)))
+%% (de deposit-relocated-word (offset)
+%%   % Given an OFFSET from CODEBASE*, deposit a word containing the
+%%   % absolute address of that offset.
+%%   (put_a_halfword (wplus2 CodeBase* CurrentOffset*)
+%% 	   (iplus2 offset (if *writingfaslfile 0 CodeBase*)))
+%%   (updatebittable 4 (const reloc_word))
+%%   (setq CurrentOffset* (plus CurrentOffset* 4)))
 
-(de depositwordidnumber (x) 
-  (cond
-    ((or (not *writingfaslfile) (leq (idinf x) 256)) 
-     (deposit32bitword (idinf X)))
-    (t
-      (put_a_halfword (wplus2 CodeBase* CurrentOffset*)
-	       (makerelocword (const reloc_id_number) (findidnumber x))) 
-      (setq CurrentOffset* (plus CurrentOffset* 4)) 
-      (updatebittable 4 (const reloc_word)))))
-
-
+%% (de depositwordidnumber (x) 
+%%   (cond
+%%     ((or (not *writingfaslfile) (leq (idinf x) 256)) 
+%%      (deposit32bitword (idinf X)))
+%%     (t
+%%       (put_a_halfword (wplus2 CodeBase* CurrentOffset*)
+%% 	       (makerelocword (const reloc_id_number) (findidnumber x))) 
+%%       (setq CurrentOffset* (plus CurrentOffset* 4)) 
+%%       (updatebittable 4 (const reloc_word)))))
 
 (de DepositQuadWordExpression (x)
   % Only limited expressions now handled
   (let (y)
-%    (printf "Deposit %w at %x -> %x%n" x CurrentOffset* (wplus2 CodeBase* CurrentOffset*))
     (cond
       ((fixp x) (depositword (int2sys x)))
       ((labelp x) (deposit-relocated-word (LabelOffset x)))
@@ -184,40 +177,30 @@
       ((memq (first x) '(fluid global $fluid $global)) (DepositValueCellLocation (second x)))
       ((setq y (wconstevaluable x)) (DepositWord (int2sys y)))
       (t (stderror (bldmsg "Expression too complicated %r" x))))
-%    (printf "Deposited at %x: %x >%x< %x%n"
-%	    (wplus2 (wplus2 CodeBase* CurrentOffset*) -4)
-%	    (getword32 (wplus2 (wplus2 CodeBase* CurrentOffset*) -8) 0)
-%	    (getword32 (wplus2 (wplus2 CodeBase* CurrentOffset*) -4) 0)
-%	    (getword32 (wplus2 CodeBase* CurrentOffset*) 0)
-%	    )
     ))
 
-(de depositwordidnumber (x) 
-  (cond
-    ((or (not *writingfaslfile) (leq (idinf x) 256)) 
-     (deposit32bitword (idinf X)))
-    (t
-      (put_a_halfword (wplus2 CodeBase* CurrentOffset*)
-	       (makerelocword (const reloc_id_number) (findidnumber x))) 
-      (setq CurrentOffset* (plus CurrentOffset* 4)) 
-      (updatebittable 4 (const reloc_word)))))
-
+%% (de depositwordidnumber (x) 
+%%   (cond
+%%     ((or (not *writingfaslfile) (leq (idinf x) 256)) 
+%%      (deposit32bitword (idinf X)))
+%%     (t
+%%       (put_a_halfword (wplus2 CodeBase* CurrentOffset*)
+%% 	       (makerelocword (const reloc_id_number) (findidnumber x))) 
+%%       (setq CurrentOffset* (plus CurrentOffset* 4)) 
+%%       (updatebittable 4 (const reloc_word)))))
 
 (compiletime (load addr2id))
 
-
-(de findidnumber (u)
-  (prog (i)
-        (return (cond ((null u) 256)
-		      ((ileq (setq i (idinf u)) 256) i)
-                      ((setq i (get u fasl-idnumber-property*)) i)
-                      (t
-		       (if (extraargumentp nextidnumber*)
-			   (stderror "Too many identifiers is fasl file")
-			 (progn
-			   (put u fasl-idnumber-property* (setq i nextidnumber*))
-			   (setq orderedidlist* (tconc orderedidlist* u))
-			   (setq nextidnumber* (iadd1 nextidnumber*)) i)))))))
+%% (de findidnumber (u)
+%%   (prog (i)
+%%         (return (cond ((null u) 256)
+%% 		      ((ileq (setq i (idinf u)) 256) i)
+%%                       ((setq i (get u fasl-idnumber-property*)) i)
+%% 		      ((extraargumentp nextidnumber*)
+%% 		       (stderror "Too many identifiers in fasl file"))
+%%                       (t (put u 'idnumber (setq i nextidnumber*))
+%% 			 (setq orderedidlist* (tconc orderedidlist* u))
+%% 			 (setq nextidnumber* (iadd1 nextidnumber*)) i)))))
 
 
 (de initsymval1 (x)
@@ -258,10 +241,3 @@
                          (findidnumber x))))))))
 (setq nil-t-diff* 140)
 
-%(remprop '*get-stack 'opencode)
-%(remprop '*put-stack 'opencode)
-
-%(remprop 'wconst 'anyregresolutionfunction)
-%(remprop 'wconst 'anyregpatterntable)
-
-%(remprop 'cons 'opencode)

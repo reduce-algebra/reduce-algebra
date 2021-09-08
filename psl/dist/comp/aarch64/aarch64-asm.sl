@@ -97,7 +97,7 @@
 (setq MainEntryPointName* '!m!a!i!n)     % chose a simple default
                                          % main procedure name
 
-(setq NumericRegisterNames* '[nil "X0" "X1" "X2" "X3" "X4" "X5", "X6", "X7"])
+(setq NumericRegisterNames* '[nil "X0" "X1" "X2" "X3" "X4" "X5" "X6" "X7"])
 
 (setq LabelFormat* "%w:%n")             % Labels are in the first column
 (setq CommentFormat* "// %p%n")          % Comments begin with //
