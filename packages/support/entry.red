@@ -737,7 +737,8 @@ defautoload(revision, rlsupport, expr, 2);
 
 defautoload(copyright, rlsupport, expr, 2);
 
-defautoload(rl_provideService, rlsupport, expr, 2);
+put('rl_provideService, 'stat, 'rl_provideServiceStat);
+defautoload(rl_provideServiceStat, rlsupport, expr, 0);
 
 put('rl_type, 'stat, 'rl_typeStat);
 defautoload(rl_typeStat, rlsupport, expr, 0);
@@ -748,18 +749,18 @@ defautoload(rl_builtinStat, rlsupport, expr, 0);
 put('rl_service, 'stat, 'rl_serviceStat);
 defautoload(rl_serviceStat, rlsupport, expr, 0);
 
-put('rl_blackBox, 'formfn, 'rl_formBlackBox);
-defautoload(rl_formBlackBox, rlsupport, expr, 3);
+put('rl_blackbox, 'stat, 'rl_blackboxStat);
+defautoload(rl_blackboxStat, rlsupport, expr, 0);
 
 defautoload(rl_servicewrapper, rlsupport, expr, 8);
-
-defautoload(rl_exception, rlsupport, expr, 1);
-
-defautoload(rl_exceptionp, rlsupport, expr, 1);
 
 defautoload(rl_exc, rlsupport, expr, 1);
 
 defautoload(rl_excp, rlsupport, expr, 1);
+
+defautoload(rl_exception, rlsupport, expr, 1);
+
+defautoload(rl_exceptionp, rlsupport, expr, 1);
 
 % Redlog entry points
 

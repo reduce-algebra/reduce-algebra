@@ -84,6 +84,18 @@ inline procedure rl_skiplcbkt(proc);
          rederr {"expecting '{' in, ", proc, "but found", cursym!*}
    >>;
 
+asserted procedure rl_include(filename: String);
+   begin scalar path;
+      if ifl!* then
+         path := reversip explode2 car ifl!*
+      else
+         lprim {"empty ifl!* in include", filename};
+      while not eqcar(path, '!/) do
+         path := cdr path;
+      path := nconc(reversip explode2 filename, path);
+      infile(list2string reversip path)
+   end;
+
 endmodule;
 
 end;

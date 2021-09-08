@@ -323,6 +323,8 @@ asserted procedure cl_gqea(f: Formula, theo: Theory, xbvl: KernelL): Elimination
    % for an interpretation of the parameters, then [f] holds, and $A_i$
    % describes a satisfying sample point. Accesses the switch [rlqepnf]; if
    % [rlqepnf] is on, then [f] must be prenex.
+   if !*clqenew then cl_gqea_new(f, theo, xbvl) else
+
    begin scalar er, theo, eqr, !*rlqegen, !*rlsipw, !*rlsipo, !*rlqeans;
       !*rlsipw := !*rlqegen := !*rlqeans := t;
       er := cl_qe1(f, theo, xbvl);
