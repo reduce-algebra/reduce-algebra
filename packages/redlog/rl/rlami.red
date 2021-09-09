@@ -234,17 +234,16 @@ asserted procedure rl_resimp(u: Formula): Formula;
       return apply(get(car rl_cid!*, 'rl_resimpat), {u})
    end;
 
-procedure rl_gettype(v);
-   % Get type. Return type information if present. Handle scalars
-   % properly.
+asserted procedure rl_gettype(v: Id): Id;
+   % Get type. Return type information if present. Handle scalars properly.
    (if w then car w else get(v, 'rtype)) where w = get(v, 'avalue);
 
-procedure rl_lengthlogical(u);
+asserted procedure rl_lengthlogical(u: MixedPrefixForm): Integer;
    rl_lengthfof rl_simp u;
 
-procedure rl_lengthfof(f);
-   % First order formula length. [u] is a formula. Returns the number
-   % of top-level constituents of [u].
+procedure rl_lengthfof(f: Formula): Integer;
+   % First order formula length. Returns the number of top-level constituents
+   % of f.
    begin scalar op;
       op := rl_op f;
       if rl_tvalp op then
@@ -255,11 +254,11 @@ procedure rl_lengthfof(f);
          return 3;
       if rl_cxp op then
          return length rl_argn f;
-      % [f] is atomic.
+      % f is atomic
       return apply(get(car rl_cid!*, 'rl_lengthat), {f})
    end;
 
-procedure rl_sub!*fof(al, f);
+asserted procedure rl_sub!*fof(al: Alist, f: MixedPrefixForm): MixedPrefixForm;
    rl_mk!*fof rl_subfof(al, rl_simp f);
 
 
@@ -274,24 +273,15 @@ rl_builtin {
    }
 };
 
-rl_builtin {
-   name = mkand, 
-   doc = {
-      synopsis = {pos = 1, text = "for R mkand E"}, 
-      description = "for-loop action for constructing conjunctions", 
-      returns = "Any", 
-      arg = {pos = 1, name = "R", text = "range specification as documented in Sect.5.4 of the REDUCE manual "}, 
-      arg = {pos = 2, name = "E", text = "RLISP expression"}
-   }
-};
+foractions!* := lto_insertq('mkor, foractions!*);
 
-foractions!* := 'mkand . 'mkor . foractions!*;
-deflist('((mkand rlmkand) (mkor rlmkor)), 'bin);
-deflist('((mkand (quote true)) (mkor (quote false))), 'initval);
+put('mkor, 'initval, '(quote false));
 
-symbolic operator rlmkor, rlmkand;
+put('mkor, 'bin, 'rl_mkor);
 
-asserted procedure rlmkor(a: LispPrefixForm, b: LispPrefixForm): LispPrefixForm;
+flag('(rl_mkor), 'opfn);
+
+asserted procedure rl_mkor(a: LispPrefixForm, b: LispPrefixForm): LispPrefixForm;
    if !*mode eq 'symbolic then
       rederr "`for ... mkor' invalid in symbolic mode"
    else if null a then
@@ -304,7 +294,26 @@ asserted procedure rlmkor(a: LispPrefixForm, b: LispPrefixForm): LispPrefixForm;
       'or . nconc(b, a)
    >>;
 
-asserted procedure rlmkand(a: LispPrefixForm, b: LispPrefixForm): LispPrefixForm;
+rl_builtin {
+   name = mkand, 
+   doc = {
+      synopsis = {pos = 1, text = "for R mkand E"}, 
+      description = "for-loop action for constructing conjunctions", 
+      returns = "Any", 
+      arg = {pos = 1, name = "R", text = "range specification as documented in Sect.5.4 of the REDUCE manual "}, 
+      arg = {pos = 2, name = "E", text = "RLISP expression"}
+   }
+};
+
+foractions!* := lto_insertq('mkand, foractions!*);
+
+put('mkand, 'initval, '(quote true));
+
+put('mkand, 'bin, 'rl_mkand);
+
+flag('(rl_mkand), 'opfn);
+
+asserted procedure rl_mkand(a: LispPrefixForm, b: LispPrefixForm): LispPrefixForm;
    if !*mode eq 'symbolic then
       rederr "`for ... mkand' invalid in symbolic mode"
    else if null a then
