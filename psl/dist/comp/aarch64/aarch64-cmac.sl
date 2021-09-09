@@ -30,7 +30,11 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 
+%
+% $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 (on fast-integers)
 
 (compiletime (load if-system))
@@ -525,7 +529,7 @@
 %%%  (idloc id)   and    (quote (idloc id)),
 %%% since the quote in the latter form is stripped before passing it on.
 %%% Therefore, a special form (saveidloc id) is used.  This will be handled in
-%%% ExpandItem (see the redefintion in armv6-spec.sl).
+%%% ExpandItem (see the redefinition in aarch64-spec.sl).
 
 (de *LoadIDLoc (dest src)
   (let ((idnumber (WConstEvaluable src))
@@ -1152,22 +1156,22 @@
 (DefCMacro *JumpWlessp)
 
 (de *JumpWlessp (Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(b!.lt . b!.ge)))
+        (*JumpIF ArgOne ArgTwo Lbl '(b!.lt . b!.gt)))
 
 (DefCMacro *JumpWgreaterp)
 
 (de *JumpwGreaterp (Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(b!.gt . b!.le)))
+        (*JumpIF ArgOne ArgTwo Lbl '(b!.gt . b!.lt)))
 
 (DefCMacro *JumpWleq)
 
 (de  *JumpWleq(Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(b!.le . b!.gt)))
+        (*JumpIF ArgOne ArgTwo Lbl '(b!.le . b!.ge)))
 
 (DefCMacro *JumpWgeq)
 
 (de *JumpWgeq (Lbl ArgOne ArgTwo)
-        (*JumpIF ArgOne ArgTwo Lbl '(b!.ge . b!.lt)))
+        (*JumpIF ArgOne ArgTwo Lbl '(b!.ge . b!.le)))
 
 % --------------------
 
@@ -1674,27 +1678,3 @@ preload  (setq initload
       ))
 
 (DefCMacro !*foreignlink)
-
-(put 'bstruct-tag 'compiler-constant? t)
-(put 'hbytes-tag 'compiler-constant? t)
-(put 'hhalfwords-tag 'compiler-constant? t)
-(put 'hwords-tag 'compiler-constant? t)
-(put 'hvect-tag 'compiler-constant? t)
-(put 'forward-tag 'compiler-constant? t)
-(put 'btr-tag 'compiler-constant? t)
-(put 'unbound-tag 'compiler-constant? t)
-(put 'id-tag 'compiler-constant? t)
-(put 'negint-tag 'compiler-constant? t)
-
-(put 'bstruct-tag 'compiler-constant-value 246)
-(put 'hbytes-tag 'compiler-constant-value 247)
-(put 'hhalfwords-tag 'compiler-constant-value 248)
-(put 'hwords-tag 'compiler-constant-value 249)
-(put 'hvect-tag 'compiler-constant-value 250)
-(put 'forward-tag 'compiler-constant-value 251)
-(put 'btr-tag 'compiler-constant-value 252)
-(put 'unbound-tag 'compiler-constant-value 253)
-(put 'id-tag 'compiler-constant-value 254)
-(put 'negint-tag 'compiler-constant-value 255)
-
-(put 'infbitlength 'compiler-constant 56)

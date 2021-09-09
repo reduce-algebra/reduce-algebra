@@ -32,15 +32,22 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Revisions
+%
+% Revisions:
+%
 % 28-Apr-92 (herbert Melenk)
 % no relocation for quoted small ID's
 %
 % 3-Apr-90 (Winfried Neun)
 % added support for new car and cdr scheme in modr/m
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (compiletime (load if-system))
-
 
 % ------------------------------------------------------------
 % Fluid declarations:
@@ -679,6 +686,9 @@
 	(and (pairp x) (fixp (car x)) (eq (car x) (land (car x) 16#fff))
 	     (eqcar (cdr x) 'LSL)
 	     (pairp (cddr x)) (memq (caddr x) '(0 12)))))
+
+(de imm12-neg-shiftedp (x)
+    (and (Inump x) (imm12-shiftedp (wminus x))))
 
 (de imm16-shiftedp (x)
     (or (and (fixp x) (eq x (land x 16#ffff)))
@@ -2459,7 +2469,6 @@
 (de DepositQuadWordExpression (x)
   % Only limited expressions now handled
   (let (y)
-%    (printf "Deposit %w at %x -> %x%n" x CurrentOffset* (wplus2 CodeBase* CurrentOffset*))
     (cond
       ((fixp x) (depositword (int2sys x)))
       ((labelp x) (deposit-relocated-word (LabelOffset x)))
@@ -2483,12 +2492,6 @@
       ((memq (first x) '(fluid global $fluid $global)) (DepositValueCellLocation (second x)))
       ((setq y (wconstevaluable x)) (DepositWord (int2sys y)))
       (t (stderror (bldmsg "Expression too complicated %r" x))))
-%    (printf "Deposited at %x: %x >%x< %x%n"
-%	    (wplus2 (wplus2 CodeBase* CurrentOffset*) -4)
-%	    (getword32 (wplus2 (wplus2 CodeBase* CurrentOffset*) -8) 0)
-%	    (getword32 (wplus2 (wplus2 CodeBase* CurrentOffset*) -4) 0)
-%	    (getword32 (wplus2 CodeBase* CurrentOffset*) 0)
-%	    )
     ))
 
 (de depositwordidnumber (x) 
