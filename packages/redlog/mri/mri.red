@@ -59,7 +59,6 @@ put('mri,'rl_params,'(
    (rl_smmkatl!* . cl_smmkatl)
    (rl_negateat!* . mri_negateat)
    (rl_tordp!* . ordp)
-   (rl_bsatp!* . mri_bsatp)
    (rl_ordatp!* . mri_ordatp)
    (rl_subat!* . mri_subat)
    (rl_subalchk!* . null)
@@ -79,6 +78,10 @@ put('mri,'rl_services,'(
    (rl_expand!* . mri_expand)
    (rl_fvarl!* . cl_fvarl)
    (rl_qe!* . mri_qe)));
+
+put('mri,'rl_simpb,'pasf_simpb);
+put('mri,'rl_resimpb,'pasf_resimpb);
+put('mri,'rl_prepb,'pasf_prepb);
 
 put('mri,'simpfnname,'mri_simpfn);
 put('mri,'rl_prepat,'mri_prepat);

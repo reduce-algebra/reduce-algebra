@@ -32,10 +32,8 @@ copyright('clsimpl, "(c) 1995-2021 A. Dolzmann, T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-rl_provideService rl_simpl = cl_simpl
-   using rl_negateat, rl_simplat1, rl_smupdknowl, rl_smrmknowl, rl_smcpknowl,
-   rl_smmkatl, rl_ordatp, rl_susipost, rl_susitf, rl_susibin, rl_b2terml,
-   rl_simplb, rl_b2atl, rl_bsatp;
+rl_provideService rl_simpl = cl_simpl using rl_negateat, rl_simplat1,
+   rl_smupdknowl, rl_smrmknowl, rl_smcpknowl, rl_smmkatl, rl_ordatp;
 
 asserted procedure cl_simpl(f: Formula, atl: List, n: Integer): Formula;
    % Common logic simplify. [f] is a formula; [atl] is a list of atomic
