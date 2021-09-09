@@ -99,6 +99,12 @@
 %   Changed SEMIC* declaration from global to fluid.                      
 % <PSL.COMP>LAP-TO-ASM.RED.5, 30-Apr-82 14:47:52, Edit by BENSON           
 %   Removed EVAL and IGNORE processing                                     
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (fluid '(semic* *comp *plap dfprint* charactersperword 
                  addressingunitsperitem addressingunitsperfunctioncell 
@@ -387,6 +393,8 @@
         (return (cond ((null u) 256)
                       ((leq (setq i (id2int u)) 255) i)
                       ((setq i (get u 'idnumber)) i)
+		      ((extraargumentp nextidnumber*)
+		       (stderror "Too many identifiers in fasl file"))
                       (t (put u 'idnumber (setq i nextidnumber*)) 
                          (setq orderedidlist* (tconc orderedidlist* u)) 
                          (setq nextidnumber* (plus nextidnumber* 1)) i)))))
@@ -521,8 +529,11 @@
 (de asmoutlap (u)
   (prog (locallabels* oldout)
         (setq u (pass1lap u))
-	(setq U (LapoptFrame u))
-	(setq U (LapoptPeep u)) 
+%        (setq u (pass1lap (&fillframeholes u)))
+	(setq u (LapoptFrame u))
+	(setq u (LapoptPeep u))
+%	(setq u (ReformBranches u))
+	(setq u (AlignData u))  
         % Expand cmacros, quoted expressions                               
         (codeblockheader)
         (setq oldout (wrs codeout*))
