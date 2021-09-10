@@ -1,4 +1,8 @@
 module ofsfsmtqe;
+% This is the start of a clean alternative implementation of the infeasible
+% core computation in ofsfic. It has been written by T. Sturm and M. Kosta in
+% Nancy in May 2017 (rev. 4020). It is not used, probably because it turned
+% out that fallback CAD was more relevant than expected.
 
 revision('ofsfsmtqe, "$Id$");
 

@@ -2172,7 +2172,7 @@ false
 sub(first second sol,for each atf in dong mkand atf);
 
 
-true and 0 = 0 and 0 = 0 and 0 = 0 and 0 = 0 and 0 = 0 and 0 = 0 and 0 = 0
+0 = 0 and 0 = 0 and 0 = 0 and 0 = 0 and 0 = 0 and 0 = 0 and 0 = 0
 
 rlsimpl ws;
 

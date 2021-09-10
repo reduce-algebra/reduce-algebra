@@ -36,7 +36,6 @@ rl_copyc('mri_pasf,'pasf);
 
 rl_bbiadd('mri_pasf,'rl_simplat1!*,'mri_simplat1);
 rl_bbiadd('mri_pasf,'rl_negateat!*,'mri_negateat);
-%rl_bbiadd('mri_pasf,'rl_bsatp!*,'mri_bsatp);    % for now
 
 endmodule;
 

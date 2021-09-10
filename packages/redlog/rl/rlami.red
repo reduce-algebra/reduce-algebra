@@ -75,14 +75,17 @@ asserted procedure rl_prepfof(f: Formula): LispPrefixForm;
 
 asserted procedure rl_prepfof1(f: Formula): LispPrefixForm;
    % prep f (in the sense of prepf, prepsq).
-   begin scalar op;
+   begin scalar op, w;
       op := rl_op f;
       if rl_tvalp op then
          return op;
       if rl_quap op then
          return {op, rl_var f, rl_prepfof1 rl_mat f};
-      if rl_bquap op then
-         return {op, rl_var f, rl_prepfof1 rl_b f, rl_prepfof1 rl_mat f};
+      if rl_bquap op then <<
+         if null (w := get(car rl_cid!*, 'rl_prepb)) then
+            rederr {"current context", rl_usedcname!*, "does not support bounded quantifiers"};
+         return {op, rl_var f, apply(w, {rl_b f}), rl_prepfof1 rl_mat f}
+      >>;
       if rl_boolp op then
          return op . for each x in rl_argn f collect rl_prepfof1 x;
       % f is an atomic formula
@@ -173,19 +176,15 @@ asserted procedure rl_simpq(f: MixedPrefixForm): Formula;
 
 asserted procedure rl_simpbq(f: MixedPrefixForm): Formula;
    % simp form that starts with a bounded quantifier.
-   begin scalar x, wb, wf;
-      if car rl_cid!* neq 'pasf then
-         rederr "boundend quantifiers only allowed within PASF context";
+   begin scalar simpb, x, m;
+      if null (simpb := get(car rl_cid!*, 'rl_simpb)) then
+         rederr {"current context", rl_usedcname!*, "does not support bounded quantifiers"};
       x := reval cadr f;
-      if not idp x then typerr("not identifer", "bounded quantified variable");
-      wb := rl_simp1 caddr f;
-      %%% test, wether x is the only free variable in [wb].
-      wf := rl_simp1 cadddr f;
-      % Test, wether the bounded quantifier has a finite solution set.
-      % rl_bsatp fails per definition if that is not the case.
-      rl_bsatp(wb, x);
+      if not idp x then
+         typerr(x, "bounded quantified variable");
       flag({x}, 'used!*);
-      return rl_mkbq(car f, x, wb, wf)
+      m := rl_simp1 cadddr f;
+      return rl_mkbq(car f, x, apply(simpb, {caddr f, x, m}), m)
    end;
 
 asserted procedure rl_qvarchk(v: Any): Void;
@@ -210,8 +209,8 @@ asserted procedure rl_simp!*fof(u: List): Formula;
       return rl_resimp f
    end;
 
-procedure rl_resimp(u);
-   % Reduce logic resimp. [u] is a formula.
+asserted procedure rl_resimp(u: Formula): Formula;
+   % Reduce logic resimp.
    begin scalar op, w;
       op := rl_op u;
       if rl_tvalp op then
@@ -225,24 +224,26 @@ procedure rl_resimp(u);
       if rl_bquap op then <<
          if (w := rl_gettype(rl_var u)) then
             typerr({w, rl_var u}, "quantified variable");
-         return rl_mkbq(op, rl_var u, rl_resimp rl_b u, rl_resimp rl_mat u)
+         rl_qvarchk rl_var u;
+         if null (w := get(car rl_cid!*, 'rl_resimpb)) then
+            rederr {"current context", rl_usedcname!*, "does not support bounded quantifiers"};
+         return rl_mkbq(rl_op u, rl_var u, apply(w, {rl_b u}), rl_resimp rl_mat u)
       >>;
       if rl_boolp op then
          return rl_mkn(op, for each x in rl_argn u collect rl_resimp x);
       return apply(get(car rl_cid!*, 'rl_resimpat), {u})
    end;
 
-procedure rl_gettype(v);
-   % Get type. Return type information if present. Handle scalars
-   % properly.
+asserted procedure rl_gettype(v: Id): Id;
+   % Get type. Return type information if present. Handle scalars properly.
    (if w then car w else get(v, 'rtype)) where w = get(v, 'avalue);
 
-procedure rl_lengthlogical(u);
+asserted procedure rl_lengthlogical(u: MixedPrefixForm): Integer;
    rl_lengthfof rl_simp u;
 
-procedure rl_lengthfof(f);
-   % First order formula length. [u] is a formula. Returns the number
-   % of top-level constituents of [u].
+procedure rl_lengthfof(f: Formula): Integer;
+   % First order formula length. Returns the number of top-level constituents
+   % of f.
    begin scalar op;
       op := rl_op f;
       if rl_tvalp op then
@@ -253,11 +254,11 @@ procedure rl_lengthfof(f);
          return 3;
       if rl_cxp op then
          return length rl_argn f;
-      % [f] is atomic.
+      % f is atomic
       return apply(get(car rl_cid!*, 'rl_lengthat), {f})
    end;
 
-procedure rl_sub!*fof(al, f);
+asserted procedure rl_sub!*fof(al: Alist, f: MixedPrefixForm): MixedPrefixForm;
    rl_mk!*fof rl_subfof(al, rl_simp f);
 
 
@@ -272,6 +273,27 @@ rl_builtin {
    }
 };
 
+foractions!* := lto_insertq('mkor, foractions!*);
+
+put('mkor, 'initval, '(quote false));
+
+put('mkor, 'bin, 'rl_mkor);
+
+flag('(rl_mkor), 'opfn);
+
+asserted procedure rl_mkor(a: LispPrefixForm, b: LispPrefixForm): LispPrefixForm;
+   if !*mode eq 'symbolic then
+      rederr "`for ... mkor' invalid in symbolic mode"
+   else if null a then
+      rederr "empty body in `for ... mkor'"
+   else if b eq 'false then
+      a
+   else <<
+      a := if eqcar(a, 'or) then cdr a else {a};
+      b := if eqcar(b, 'or) then cdr b else {b};
+      'or . nconc(b, a)
+   >>;
+
 rl_builtin {
    name = mkand, 
    doc = {
@@ -283,34 +305,27 @@ rl_builtin {
    }
 };
 
-foractions!* := 'mkand . 'mkor . foractions!*;
-deflist('((mkand rlmkand) (mkor rlmkor)), 'bin);
-deflist('((mkand (quote true)) (mkor (quote false))), 'initval);
+foractions!* := lto_insertq('mkand, foractions!*);
 
-symbolic operator rlmkor, rlmkand;
+put('mkand, 'initval, '(quote true));
 
-procedure rlmkor(a, b);
+put('mkand, 'bin, 'rl_mkand);
+
+flag('(rl_mkand), 'opfn);
+
+asserted procedure rl_mkand(a: LispPrefixForm, b: LispPrefixForm): LispPrefixForm;
    if !*mode eq 'symbolic then
-      rederr "`mkor' invalid in symbolic mode"
+      rederr "`for ... mkand' invalid in symbolic mode"
+   else if null a then
+      rederr "empty body in `for ... mkand'"
+   else if b eq 'true then
+      a
    else <<
-      if null a then a := 'false;
-      if null b then b := 'false;
-      a := if eqcar(a, 'or) then cdr a else {a};
-      b := if eqcar(b, 'or) then cdr b else {b};
-      'or . nconc(b, a)
-   >>;
-
-procedure rlmkand(a, b);
-   if !*mode eq 'symbolic then
-      rederr "`mkand' invalid in symbolic mode"
-   else <<
-      if null a then a := 'true;
-      if null b then b := 'true;
       a := if eqcar(a, 'and) then cdr a else {a};
       b := if eqcar(b, 'and) then cdr b else {b};
       'and . nconc(b, a)
    >>;
 
-endmodule;  % [rlami]
+endmodule;
 
-end;  % of file
+end;

@@ -64,8 +64,8 @@ asserted procedure pasf_simpltb(op: Id, var: Id, b: Formula, mtx: Formula): Form
       if mtx eq 'false and op eq 'bex or mtx eq 'true and op eq 'ball then
          return mtx;
       % Matrix does not contain the bound variable. Note: nil as a result of
-      % rl_bsatp means, that satisfability test has failed.
-      if not(var memq rl_fvarl mtx) and rl_bsatp(b, var) then
+      % pasf_bsatp means, that satisfability test has failed.
+      if not(var memq rl_fvarl mtx) and pasf_bsatp(b, var) then
          return mtx;
       % Bound is an equation. Note: Should be only relevant if rlsism is off
       bfvl := cl_fvarl b;

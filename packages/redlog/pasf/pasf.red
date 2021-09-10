@@ -142,7 +142,6 @@ put('pasf,'rl_params,'(
    (rl_susibin!* . pasf_susibin)
    (rl_susipost!* . pasf_susipost)
    (rl_susitf!* . pasf_susitf)
-   (rl_bsatp!* . pasf_bsatp)
    (rl_structat!* . pasf_structat)
    (rl_rxffn!* . pasf_rxffn)
    (rl_smt2ReadAt!* . pasf_smt2ReadAt)));
@@ -187,11 +186,43 @@ put('pasf,'rl_services,'(
    (rl_smt2Print!* . pasf_smt2Print)
    (rl_struct!* . cl_struct)));
 
-% Administration definitions
+put('pasf,'rl_simpb,'pasf_simpb);
+
+asserted procedure pasf_simpb(u, x: Id, m: Formula): Formula;
+   % Simp bound. Do not confuse with "simp bounded quantifer". redlog/rlami
+   % knows about bounded quantifiers but the bounds are context-specific,
+   % like atomic formulas. u is the unsimped bound. We also receive the
+   % already simped variable x and matrix formula m. x is required for a
+   % syntax check. f has beed added for symmetry, although pasf is currently
+   % the only context supporting bounded quantifiers. Note that the return
+   % value is only the simped u.
+   begin scalar w;
+      w := rl_simp1 u;
+      pasf_bsatp(w, x);  % Test for finite solution set
+      return w
+   end;
+
+put('pasf,'rl_resimpb,'pasf_resimpb);
+
+asserted procedure pasf_resimpb(u: Formula): Formula;
+   % Resimp bound. Do not confuse with "resimp bounded quantifer".
+   % redlog/rlami knows about bounded quantifiers but the bounds are
+   % context-specific, like atomic formulas.
+   rl_resimp u;
+
+put('pasf,'rl_prepb,'pasf_prepb);
+
+asserted procedure pasf_prepb(u: Formula): LispPrefixForm;
+   % Prep bound. Do not confuse with "prep bounded quantifer". redlog/rlami
+   % knows about bounded quantifiers but the bounds are context-specific,
+   % like atomic formulas.
+   rl_prepfof u;
+
 put('pasf,'simpfnname,'pasf_simpfn);
 put('pasf,'rl_prepat,'pasf_prepat);
 put('pasf,'rl_resimpat,'pasf_resimpat);
 put('pasf,'rl_lengthat,'pasf_lengthat);
+
 put('pasf,'rl_prepterm,'prepf);
 put('pasf,'rl_simpterm,'pasf_simpterm);
 
