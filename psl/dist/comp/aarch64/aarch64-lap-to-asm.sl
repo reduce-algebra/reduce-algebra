@@ -106,6 +106,8 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+(compiletime (load fasl-decls))		% for extraargumentp
+
 (fluid '(semic* *comp *plap dfprint* charactersperword 
                  addressingunitsperitem addressingunitsperfunctioncell 
                  InputSymFile* OutputSymFile* codeout* dataout* rodataout*
@@ -528,12 +530,11 @@
 
 (de asmoutlap (u)
   (prog (locallabels* oldout)
-        (setq u (pass1lap u))
-%        (setq u (pass1lap (&fillframeholes u)))
+        (setq u (pass1lap (&fillframeholes u)))
 	(setq u (LapoptFrame u))
 	(setq u (LapoptPeep u))
 %	(setq u (ReformBranches u))
-	(setq u (AlignData u))  
+	(setq u (alignData u))  
         % Expand cmacros, quoted expressions                               
         (codeblockheader)
         (setq oldout (wrs codeout*))

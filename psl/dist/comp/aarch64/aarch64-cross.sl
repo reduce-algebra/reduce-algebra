@@ -231,7 +231,6 @@
 
 (de initsymval1 (x)
   (prog (val)
-        (print (list 'initsymval1 x **nil-seen** (prop x)))
 % now decide what to plant in value cell at compiletime.
         (return (dataprintfullword 
                  (cond 
@@ -254,26 +253,25 @@
                           val)
 % print the initial value.
                        ((setq val (get x 'initialvalue))
-			(print (list 'x x 'val val))
                         (compileconstant val))
 % print the value of nil. Make sure that this case applies to nil only, not to
 % the symbol firstkernel (which happens to have id number 256 in the cross compiler
 % because nil has still id number 128)
 		       ((and (eq (id2int x) 256) (not **nil-seen**))
-			(print (list '**nil-seen** **nil-seen**))
 			(setq **nil-seen** t)
 			(list 'mkitem (compiler-constant 'id-tag) 256))
 % print the value of cross compiler nil
                        ((eq (id2int x) 128)
 			(list 'mkitem (compiler-constant 'unbound-tag) 128))
                        ((and (flagp x 'nilinitialvalue) (not (eq x 'firstkernel)))
-			(print (list 'case 'nilnumber x))
 			nilnumber*)
 % print the unbound variable value.
                        (t 
-			(print (list 'last x))
                         (list 'mkitem (compiler-constant 'unbound-tag) 
                          (findidnumber x))))))))
 
+(remprop 'nil-t-diff* 'constant?)
 (setq nil-t-diff* 140)
+(put 'nil-t-diff* 'constant? t)
+
 
