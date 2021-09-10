@@ -2566,13 +2566,12 @@ l0314:
  ldr X0, [sp, #24]
  str X0, [X21]
  mov X0, #9
- lsl X0, X0, #56
- add X0, X0, X21
+ orr X0, X21, X0, lsl #56
  str X1, [X21, #8]
  add X21, X21, #16
  cmp X21, X22
  b.lt l0316
- stp X0, X1, [sp, #16]!
+ stp X0, X1, [sp, #-16]!
 // (idloc !%reclaim)
  ldr X11, l0311
  ldr X10, [X23, X11, lsl #3]
@@ -2582,13 +2581,12 @@ l0316:
  ldr X1, [sp, #40]
  str X0, [X21]
  mov X0, #9
- lsl X0, X0, #56
- add X0, X0, X21
+ orr X0, X21, X0, lsl #56
  str X1, [X21, #8]
  add X21, X21, #16
  cmp X21, X22
  b.lt l0317
- stp X0, X1, [sp, #16]!
+ stp X0, X1, [sp, #-16]!
 // (idloc !%reclaim)
  ldr X11, l0311
  ldr X10, [X23, X11, lsl #3]

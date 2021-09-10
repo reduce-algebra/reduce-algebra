@@ -207,8 +207,31 @@
 %% 			 (setq nextidnumber* (iadd1 nextidnumber*)) i)))))
 
 
+%%
+%% We have a little problem here with the id nubmers of nil and findidnumber:
+%%
+%%                             cross compiler            target system
+%% id number of nil                 128                      256
+%% id number of firstkernel  
+%% (int2id 256)                  firstkernel                 nil
+%% (id2int nil)                     128                      256
+%% (id2int 'firstkernel)            256                      257
+%%
+%%  When the initial values in the symbol table are written to the assembler file,
+%% initsymval1 is called for every symbol. For these two cases we have
+%%    (initsymval1 (int2id 256))
+%% followed by
+%%    (initsymval1 'firstkernel)
+%% i.e., twice with the same value
+%% To get around this I introduce a global variable **nil-seen** that is nil at
+%% the beginning, and set to t as seen as (initsymval1 (int2id 256)) is called.
+%%
+
+(global '(**nil-seen**))
+
 (de initsymval1 (x)
   (prog (val)
+        (print (list 'initsymval1 x **nil-seen** (prop x)))
 % now decide what to plant in value cell at compiletime.
         (return (dataprintfullword 
                  (cond 
@@ -230,18 +253,27 @@
                           (setq val (get x 'symbol))
                           val)
 % print the initial value.
-                       ((setq val (get x 'initialvalue)) 
+                       ((setq val (get x 'initialvalue))
+			(print (list 'x x 'val val))
                         (compileconstant val))
-% print the value of nil.
-		       ((eq (id2int x) 256)
+% print the value of nil. Make sure that this case applies to nil only, not to
+% the symbol firstkernel (which happens to have id number 256 in the cross compiler
+% because nil has still id number 128)
+		       ((and (eq (id2int x) 256) (not **nil-seen**))
+			(print (list '**nil-seen** **nil-seen**))
+			(setq **nil-seen** t)
 			(list 'mkitem (compiler-constant 'id-tag) 256))
 % print the value of cross compiler nil
                        ((eq (id2int x) 128)
 			(list 'mkitem (compiler-constant 'unbound-tag) 128))
-                       ((flagp x 'nilinitialvalue) nilnumber*)
+                       ((and (flagp x 'nilinitialvalue) (not (eq x 'firstkernel)))
+			(print (list 'case 'nilnumber x))
+			nilnumber*)
 % print the unbound variable value.
                        (t 
+			(print (list 'last x))
                         (list 'mkitem (compiler-constant 'unbound-tag) 
                          (findidnumber x))))))))
+
 (setq nil-t-diff* 140)
 
