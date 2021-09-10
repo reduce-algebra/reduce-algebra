@@ -1057,9 +1057,8 @@ l0155:
  ldr X0, [X24, X11, lsl #3]
  ldr W0, [X0, X1, lsl #2]
  cbnz X0, l0156
- ldr X9, [sp, #40]
- movn X10, #0
- cmp X9, X10
+ ldr X11, [sp, #40]
+ cmn X11, #1
  b.eq l0157
  ldr X0, [sp, #40]
  b l0158
@@ -1076,9 +1075,8 @@ l0156:
  ldr X11, l0147
  cmp X0, X11
  b.ne l0160
- ldr X9, [sp, #40]
- movn X10, #0
- cmp X9, X10
+ ldr X11, [sp, #40]
+ cmn X11, #1
  b.ne l0161
  ldr X9, [sp, #32]
  str X9, [sp, #40]
@@ -1283,8 +1281,7 @@ faslin:
  str X0, [sp, #40]
  mov X1, #65535
  and X1, X1, X0
- mov X11, #399
- cmp X1, X11
+ cmp X1, #399
  b.eq l0190
  ldr X0, [sp, #32]
 // (idloc binaryclose)
@@ -1428,7 +1425,6 @@ l0191:
  mov X0, X28
  ldp X29, X30, [sp], #112
  ret
- nop
 l0189:
  .quad 369
 l0188:
@@ -1809,14 +1805,14 @@ l0222:
 l0234:
  stp X29, X30, [sp, #-16]!
  mov X29, sp
- mov X11, #2047
- sub X0, X0, X11
+ sub X0, X0, #2047
  lsl X0, X0, #3
  ubfx X2, X1, #0, #56
  add X0, X0, X2
  ldr X0, [X0]
  ldp X29, X30, [sp], #16
  ret
+ nop
  .quad 1
 // (*entry read-id-table expr 1)
  .globl l0240
@@ -2173,22 +2169,18 @@ l0283:
 gtid:
  stp X29, X30, [sp, #-16]!
  mov X29, sp
- mov X9, #0
 // ($global nextsymbol)
  ldr X11, l0278
- ldr X10, [X24, X11, lsl #3]
- cmp X9, X10
- b.ne l0284
+ ldr X11, [X24, X11, lsl #3]
+ cbnz X11, l0284
 // (idloc reclaim)
  ldr X11, l0279
  ldr X10, [X23, X11, lsl #3]
  blr X10
- mov X9, #0
 // ($global nextsymbol)
  ldr X11, l0278
- ldr X10, [X24, X11, lsl #3]
- cmp X9, X10
- b.ne l0284
+ ldr X11, [X24, X11, lsl #3]
+ cbnz X11, l0284
  ldr X0, l0280
 // (idloc kernel-fatal-error)
  ldr X11, l0281
