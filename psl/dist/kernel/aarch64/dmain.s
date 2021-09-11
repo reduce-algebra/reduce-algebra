@@ -289,7 +289,7 @@ symval:
  .quad [[253<<56]+254]
  .quad [[253<<56]+255]
  .quad [[254<<56]+256]
- .quad [[254<<56]+256]
+ .quad [[253<<56]+257]
  .quad stack
  .quad argumentblock
  .quad tokenbuffer
