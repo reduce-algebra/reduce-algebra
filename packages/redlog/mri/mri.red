@@ -82,6 +82,8 @@ put('mri,'rl_services,'(
 put('mri,'rl_simpb,'pasf_simpb);
 put('mri,'rl_resimpb,'pasf_resimpb);
 put('mri,'rl_prepb,'pasf_prepb);
+put('mri,'rl_pribq,'pasf_pribq);
+put('mri,'rl_fancy!-pribq,'pasf_fancy!-pribq);
 
 put('mri,'simpfnname,'mri_simpfn);
 put('mri,'rl_prepat,'mri_prepat);

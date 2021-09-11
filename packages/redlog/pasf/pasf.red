@@ -33,8 +33,8 @@ copyright('pasf, "(c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010-2017 T. St
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-create!-package('(pasf pasfbnf pasfmisc pasfnf pasfsiat pasfsibq pasfbqbb
-   pasfqe pasfsusi pasfresolve), nil);
+create!-package('(pasf pasfprint pasfbnf pasfmisc pasfnf pasfsiat pasfsibq
+   pasfbqbb pasfqe pasfsusi pasfresolve), nil);
 
 fluid '(!*rlnzden !*rlposden !*rladdcond !*rlqeasri !*rlsifac !*rlbrkcxk !*utf8);
 
@@ -188,7 +188,7 @@ put('pasf,'rl_services,'(
 
 put('pasf,'rl_simpb,'pasf_simpb);
 
-asserted procedure pasf_simpb(u, x: Id, m: Formula): Formula;
+asserted procedure pasf_simpb(u, x: Kernel): Formula;
    % Simp bound. Do not confuse with "simp bounded quantifer". redlog/rlami
    % knows about bounded quantifiers but the bounds are context-specific,
    % like atomic formulas. u is the unsimped bound. We also receive the
@@ -204,19 +204,19 @@ asserted procedure pasf_simpb(u, x: Id, m: Formula): Formula;
 
 put('pasf,'rl_resimpb,'pasf_resimpb);
 
-asserted procedure pasf_resimpb(u: Formula): Formula;
+asserted procedure pasf_resimpb(b: Formula): Formula;
    % Resimp bound. Do not confuse with "resimp bounded quantifer".
    % redlog/rlami knows about bounded quantifiers but the bounds are
    % context-specific, like atomic formulas.
-   rl_resimp u;
+   rl_resimp b;
 
 put('pasf,'rl_prepb,'pasf_prepb);
 
-asserted procedure pasf_prepb(u: Formula): LispPrefixForm;
+asserted procedure pasf_prepb(b: Formula): LispPrefixForm;
    % Prep bound. Do not confuse with "prep bounded quantifer". redlog/rlami
    % knows about bounded quantifiers but the bounds are context-specific,
    % like atomic formulas.
-   rl_prepfof u;
+   rl_prepfof b;
 
 put('pasf,'simpfnname,'pasf_simpfn);
 put('pasf,'rl_prepat,'pasf_prepat);

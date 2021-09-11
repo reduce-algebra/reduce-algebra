@@ -176,15 +176,14 @@ asserted procedure rl_simpq(f: MixedPrefixForm): Formula;
 
 asserted procedure rl_simpbq(f: MixedPrefixForm): Formula;
    % simp form that starts with a bounded quantifier.
-   begin scalar simpb, x, m;
+   begin scalar simpb, x;
       if null (simpb := get(car rl_cid!*, 'rl_simpb)) then
          rederr {"current context", rl_usedcname!*, "does not support bounded quantifiers"};
       x := reval cadr f;
       if not idp x then
          typerr(x, "bounded quantified variable");
       flag({x}, 'used!*);
-      m := rl_simp1 cadddr f;
-      return rl_mkbq(car f, x, apply(simpb, {caddr f, x, m}), m)
+      return rl_mkbq(car f, x, apply(simpb, {caddr f, x}), rl_simp1 cadddr f)
    end;
 
 asserted procedure rl_qvarchk(v: Any): Void;
