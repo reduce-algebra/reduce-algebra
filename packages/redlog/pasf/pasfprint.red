@@ -126,15 +126,64 @@ asserted procedure pasf_boundsmTryAbs(f: LispPrefixForm): LispPrefixForm;
       return f
    end;
 
+put('cong,'prifn,'pasf_pricong);
+
+asserted procedure pasf_pricong(l: LispPrefixForm);
+   % Presburger arithmetic standard form print a congruence.
+   if null !*nat then
+      'failed
+   else if !*utf8 then
+      pasf_pricongUtf8 l
+   else <<
+      maprin cadr l;
+      prin2!* " ~";
+      maprin cadddr l;
+      prin2!* "~ ";
+      maprin caddr l
+   >>;
+
+asserted procedure pasf_pricongUtf8(l: LispPrefixForm);
+   if numberp cadddr l then <<
+      maprin cadr l;
+      prin2!* " ";
+      prin2!* intern compress nconc(explode car l,explode cadddr l);
+      prin2!* " ";
+      maprin caddr l
+   >> else <<
+      maprin cadr l;
+      prin2!* " ";
+      prin2!* car l;
+      prin2!* " ";
+      maprin caddr l;
+      prin2!* " mod ";
+      maprin cadddr l
+   >>;
+
+put('ncong,'prifn,'pasf_princong);
+
+asserted procedure pasf_princong(l: LispPrefixForm);
+   % Presburger arithmetic standard form print an incongruence.
+   if null !*nat then
+      'failed
+   else if !*utf8 then
+      pasf_pricongUtf8 l
+   else <<
+      maprin cadr l;
+      prin2!* " #";
+      maprin cadddr l;
+      prin2!* "# ";
+      maprin caddr l
+   >>;
+
 % Here starts support for Texmacs, the CSL GUI, and for an old PSL GUI once
 % used on Windows.
-
-put('pasf, 'rl_fancy!-pribq, 'pasf_fancy!-pribq);
 
 if rl_texmacsp() or 'csl memq lispsystem!* then <<
    put('bex, 'fancy!-functionsymbol, "\bigsqcup ");
    put('ball, 'fancy!-functionsymbol, "\bigsqcap ")
 >>;
+
+put('pasf, 'rl_fancy!-pribq, 'pasf_fancy!-pribq);
 
 switch rlpribqlimits;
 off1 'rlpribqlimits;
@@ -235,6 +284,57 @@ asserted procedure pasf_fancy!-prib(f: LispPrefixForm, v: Kernel);
          fancy!-maprint(pasf_boundsm(f, v), 0)
       else
          fancy!-maprint(caddr f, 0);
+   >>;
+
+if rl_texmacsp() or 'csl memq lispsystem!* then <<
+   put('neq,'fancy!-infix!-symbol,"\,\neq\, ");
+   put('leq,'fancy!-infix!-symbol,"\,\leq\, ");
+   put('geq,'fancy!-infix!-symbol,"\,\geq\, ");
+   put('lessp,'fancy!-infix!-symbol,"\,<\, ");
+   put('greaterp,'fancy!-infix!-symbol,"\,>\, ")
+>>;
+
+put('cong,'fancy!-prifn,'pasf_fancy!-pricong);
+put('ncong,'fancy!-prifn,'pasf_fancy!-pricong);
+
+asserted procedure pasf_fancy!-pricong(l: LispPrefixForm);
+   % Presburger arithmetic standard form texmacs print a congruence.
+   if rl_texmacsp() or 'csl memq lispsystem!* then
+      pasf_fancy!-pricong!-texmacs l
+   else
+      pasf_fancy!-pricong!-fm l;
+
+asserted procedure pasf_fancy!-pricong!-texmacs(l: LispPrefixForm);
+   % Presburger arithmetic standard form texmacs print a congruence.
+   if null !*nat then
+      'failed
+   else <<
+      maprin cadr l; % lhs
+      if car l eq 'cong then
+         fancy!-prin2 "\,\equiv"
+      else
+         fancy!-prin2 "\,\not\equiv";
+      fancy!-prin2!-underscore();
+      fancy!-prin2 "{";
+      maprin cadddr l; % modulus
+      fancy!-prin2 "}\,";
+      maprin caddr l; % rhs
+   >>;
+
+asserted procedure pasf_fancy!-pricong!-fm(l: LispPrefixForm);
+   % Presburger arithmetic standard form texmacs print a congruence.
+   if null !*nat then
+      'failed
+   else <<
+      maprin cadr l;
+      if car l eq 'cong then
+         fancy!-special!-symbol(186, 2)
+      else
+         fancy!-special!-symbol(187, 2);
+      maprin caddr l;
+      fancy!-prin2 " (";
+      maprin cadddr l;
+      fancy!-prin2 ")"
    >>;
 
 endmodule;

@@ -235,50 +235,36 @@ put('neq,'pasf_simpfn,'pasf_chsimpat);
 put('neq,'number!-of!-args,2);
 put('neq,'rtypefn,'quotelog);
 newtok '((!< !>) neq);
-if rl_texmacsp() or 'csl memq lispsystem!* then
-   put('neq,'fancy!-infix!-symbol,"\,\neq\, ");
 
 algebraic infix leq;
 put('leq,'pasf_simpfn,'pasf_chsimpat);
 put('leq,'number!-of!-args,2);
 put('leq,'rtypefn,'quotelog);
-if rl_texmacsp() or 'csl memq lispsystem!* then
-   put('leq,'fancy!-infix!-symbol,"\,\leq\, ");
 
 algebraic infix geq;
 put('geq,'pasf_simpfn,'pasf_chsimpat);
 put('geq,'number!-of!-args,2);
 put('geq,'rtypefn,'quotelog);
-if rl_texmacsp() or 'csl memq lispsystem!* then
-   put('geq,'fancy!-infix!-symbol,"\,\geq\, ");
 
 algebraic infix lessp;
 put('lessp,'pasf_simpfn,'pasf_chsimpat);
 put('lessp,'number!-of!-args,2);
 put('lessp,'rtypefn,'quotelog);
-if rl_texmacsp() or 'csl memq lispsystem!* then
-   put('lessp,'fancy!-infix!-symbol,"\,<\, ");
 
 algebraic infix greaterp;
 put('greaterp,'pasf_simpfn,'pasf_chsimpat);
 put('greaterp,'number!-of!-args,2);
 put('greaterp,'rtypefn,'quotelog);
-if rl_texmacsp() or 'csl memq lispsystem!* then
-   put('greaterp,'fancy!-infix!-symbol,"\,>\, ");
 
 algebraic operator cong;
-put('cong,'prifn,'pasf_pricong);
 put('cong,'pasf_simpfn,'pasf_simpat);
 put('cong,'number!-of!-args,3);
 put('cong,'rtypefn,'quotelog);
-put('cong,'fancy!-prifn,'pasf_fancy!-pricong);
 
 algebraic operator ncong;
-put('ncong,'prifn,'pasf_princong);
 put('ncong,'pasf_simpfn,'pasf_simpat);
 put('ncong,'number!-of!-args,3);
 put('ncong,'rtypefn,'quotelog);
-put('ncong,'fancy!-prifn,'pasf_fancy!-pricong);
 
 algebraic operator rnd;
 put('rnd,'simpfn,'pasf_simprnd);
@@ -389,96 +375,6 @@ procedure pasf_simprnd(u);
 procedure pasf_mkrndf(u,key);
    % [u] is an SF; [key] is an interned identifier. Returns an SF.
    numr simp {'rnd,prepf u,key};
-
-procedure pasf_pricong(l);
-   % Presburger arithmetic standard form print a congruence. [l] is a lisp
-   % prefix. Returns 'failed iff printing failed.
-   if null !*nat then
-      'failed
-   else if !*utf8 then
-      pasf_gpricong l
-   else <<
-      maprin cadr l;
-      prin2!* " ~";
-      maprin cadddr l;
-      prin2!* "~ ";
-      maprin caddr l
-   >>;
-
-procedure pasf_gpricong(l);
-   if numberp cadddr l then <<
-      maprin cadr l;
-      prin2!* " ";
-      prin2!* intern compress nconc(explode car l,explode cadddr l);
-      prin2!* " ";
-      maprin caddr l
-   >> else <<
-      maprin cadr l;
-      prin2!* " ";
-      prin2!* car l;
-      prin2!* " ";
-      maprin caddr l;
-      prin2!* " mod ";
-      maprin cadddr l
-   >>;
-
-procedure pasf_princong(l);
-   % Presburger arithmetic standard form print an incongruence. [l] is a lisp
-   % prefix. Returns 'failed iff printing failed.
-   if null !*nat then
-      'failed
-   else if !*utf8 then
-      pasf_gpricong l
-   else <<
-      maprin cadr l;
-      prin2!* " #";
-      maprin cadddr l;
-      prin2!* "# ";
-      maprin caddr l
-   >>;
-
-procedure pasf_fancy!-pricong(l);
-   % Presburger arithmetic standard form texmacs print a congruence. [l] is a
-   % lisp prefix. Returns 'failed iff printing failed.
-   if rl_texmacsp() or 'csl memq lispsystem!* then
-      pasf_fancy!-pricong!-texmacs l
-   else
-      pasf_fancy!-pricong!-fm l;
-
-procedure pasf_fancy!-pricong!-texmacs(l);
-   % Presburger arithmetic standard form texmacs print a congruence. [l] is a
-   % lisp prefix. Returns 'failed iff printing failed.
-   if null !*nat then
-      'failed
-   else <<
-      maprin cadr l; % lhs
-      if car l eq 'cong then
-         fancy!-prin2 "\,\equiv"
-      else
-         fancy!-prin2 "\,\not\equiv";
-      fancy!-prin2!-underscore();
-      fancy!-prin2 "{";
-      maprin cadddr l; % modulus
-      fancy!-prin2 "}\,";
-      maprin caddr l; % rhs
-   >>;
-
-procedure pasf_fancy!-pricong!-fm(l);
-   % Presburger arithmetic standard form texmacs print a congruence. [l] is a
-   % lisp prefix. Returns 'failed iff printing failed.
-   if null !*nat then
-      'failed
-   else <<
-      maprin cadr l;
-      if car l eq 'cong then
-         fancy!-special!-symbol(186,2)
-      else
-         fancy!-special!-symbol(187,2);
-      maprin caddr l;
-      fancy!-prin2 " (";
-      maprin cadddr l;
-      fancy!-prin2 ")"
-   >>;
 
 procedure pasf_verbosep();
    % Presburger arithmetic standard form verbose switch. Returns t iff the
