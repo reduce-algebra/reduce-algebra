@@ -70,7 +70,7 @@ asserted procedure qedb_new(): Vector;
       return db
    end;
 
-procedure qedb_print(db: Vector): Vector;
+asserted procedure qedb_print(db: Vector): Vector;
    begin scalar !*nat;
       ioto_tprin2t {"{"};
       ioto_tprin2t {"    TypeTag:               ", getv(db, QEDB_TAG)};
@@ -92,7 +92,7 @@ procedure qedb_print(db: Vector): Vector;
       return db
    end;
 
-procedure qedb_verbosePrint(db: Vector): Vector;
+asserted procedure qedb_verbosePrint(db: Vector): Vector;
    begin scalar !*nat;
       ioto_tprin2t {"{"};
       ioto_tprin2t {"    TypeTag:                ", getv(db, QEDB_TAG)};
@@ -221,7 +221,7 @@ asserted procedure qeco_add(co: Container, new: NodeL): Container;
          return co;
       nodes := getv(co, 1);
       if getv(co, 3) eq 'bfs then <<
-         lastNode := getv(co ,2);
+         lastNode := getv(co, 2);
          if null lastNode then
             lastNode := nodes := {pop new};
          for each node in new do
@@ -355,7 +355,7 @@ asserted procedure cl_qe1_new(db: Vector): Vector;
       qedb_setFormula(db, f);
       if null blocks then <<
          % TS has moved this down a bit. There are no quantifiers left after
-         % initial simplification.  Note the remark before that
+         % initial simplification. Note the remark before that
          % simplification! We are here at a point where the formula and the
          % theory have been set properly in the db. However, the answer is
          % still undefined. Recall that the semantics of the answer depends
@@ -377,7 +377,7 @@ asserted procedure cl_qe1_new(db: Vector): Vector;
             % We have finished or at least reached the outmost block.
             answer := for each node in append(qedb_getSuccessNodes(db), qedb_getFailureNodes(db)) collect <<
                point := rl_qemkans(ce_ans(node), qedb_getLastBlockInputFormula(db))
-                        where !*rlqestdans=(qedb_getAnswerMode(db) eq 'standard);
+                        where !*rlqestdans = (qedb_getAnswerMode(db) eq 'standard);
                cl_unsplit_new(blocks, ce_f(node)) . point
             >>
          >> else

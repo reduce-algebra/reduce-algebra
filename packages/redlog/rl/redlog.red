@@ -485,6 +485,7 @@ rl_builtin {
 put('bex, 'rtypefn, 'quotelog);
 put('bex, 'rl_simpfn, 'rl_simpbq);
 put('bex, 'number!-of!-args, 3);
+put('bex, 'rl_prepfn, 'rl_prepbq);
 
 rl_builtin {
    name = ball, 
