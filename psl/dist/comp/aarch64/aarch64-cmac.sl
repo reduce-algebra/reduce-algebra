@@ -483,16 +483,16 @@
 
 (de quotep (x) (eqcar x 'quote))
 
+(de quotedstringp (x) (and (quotep x) (stringp (cadr x))))
+
 %% optimize (*Move nil (fluid something))
 (DefCMacro *Move
        (Equal)
        ((regp regp)              (MOV ArgTwo ArgOne))
-%       ((imm8-rotatedp regp)     (MOV Argtwo ArgOne))
+       ((quotedstringp regp)     (*LoadString ArgTwo ArgOne))
        ((quotep regp)            (LDR ArgTwo ArgOne))
        ((InumP regp)             (*LoadConstant ArgTwo ArgOne))
        ((fixp regp)              (*LoadConstant ArgTwo ArgOne))
-%       ((true-p regp)            (*LoadIDLoc t ArgTwo)
-%                                (*MkItem ArgTwo (compiler-constant 'id-tag)))
        ((idlocp regp)            (*LoadIDLoc ArgTwo ArgOne))
        ((fluid-arg-p regp)       (*LoadIdNumber LDR ArgTwo ArgOne))
        ((indirectp regp)         (LDR ArgTwo ArgOne))
@@ -505,6 +505,47 @@
        ((anyp regp)              (LDR ArgTwo ArgOne))
        (                         (*Move ArgOne (reg t1))
                                  (*Move (reg t1) ArgTwo)))
+
+%%% *LoadString loads a string object into a register. Normally, this would be handled
+%%% like any quoted expression, by expanding into a set of memory words. However,
+%%% this doesn't produce position independent code, which some systems do not like
+%%% (the Mac M1 linker being among them). Fortunately, only string constants appear
+%%% in the PSL kernel, hence we can get away by handling strings differently.
+%%% Instead of producing
+%%%
+%%%  label1
+%%%  (fullword nnn)          % the length of the string
+%%%  (string "xyz")          % the actual string, 0-terminated
+%%%   ...
+%%%  (LDR (reg n) "label2")
+%%%   ...
+%%%  label2
+%%%  (fullword (mkitem 4 "label1"))  % absolute address reference, non-pie
+%%%
+%%% we load the address of label1 into the destination register, add the string
+%%% tag, dropping the fullword at label2:
+%%%
+%%%  label1
+%%%  (fullword nnn)          % the length of the string
+%%%  (string "xyz")          % the actual string, 0-terminated
+%%%   ...
+%%%  (ADR (reg n) "label1")
+%%%  (MOV (reg t3) 4)
+%%%  (BFI (reg n) (reg t3) 56 8)
+%%%
+%%% and have position independent code.
+%%%
+%%% For constants compiled or loaded at runtime, the address must be determined
+%%% dynamically anyway, but it seems easier to apply this change to all strings.
+%%% As for performance, the two extra instructions (MOV and BFI) per string constant,
+%%% both without a memory access seems a price worth paying.
+
+(de *LoadString (dest string)
+    `( (ADR ,dest ,(SaveContents (cadr string)))
+       (*MkItem ,dest (quote 4)))
+)
+
+(DefCMacro *LoadString)
 
 %% ToDo!
 (de *LoadConstant (dest cst)
