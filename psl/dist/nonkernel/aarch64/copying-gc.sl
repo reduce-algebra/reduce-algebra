@@ -209,7 +209,7 @@
     (setq staticsize (difference StaticHeapUpperBound StaticHeapBase))
     (setq HeapUpperBound (plus HeapLowerBound
         (quotient (difference OldHeapUpperBound HeapLowerBound) 2)))
-    (setq OldHeapLowerBound (plus HeapUpperBound 4))
+    (setq OldHeapLowerBound (plus HeapUpperBound 8))
     (setq newsize (difference HeapUpperBound HeapLowerBound))
     (setq HeapTrapBound HeapUpperBound)
     (setq OldHeapTrapBound OldHeapUpperBound)
@@ -306,7 +306,7 @@
        ))
 )
  
-(DE markandcopyfromid (x)
+(de markandcopyfromid (x)
   % SymNam has to be copied before marking, since the mark destroys the tag
   % No problem since it's only a string, can't reference itself.
   (progn (copyitem (loc (symnam x)))
@@ -608,16 +608,16 @@
 )
 (de gcstats ()
   (if (wgeq (known-free-space) 100)
-       (if (wgeq (sys2int(timc)) 3600000) % 1 hour -> float
-              (Errorprintf "*** GC %w: %w (~ %w h cpu time, gc : %w %%)"
-                       gcknt* (date-and-time)
-                            (quotient (timc) 3600000.0)
-                              (wquotient (wtimes2 100 gctime*)
-                                  (wplus2 1 (timc))))
-              (Errorprintf "*** GC %w: %w (~ %w ms cpu time, gc : %w %%)"
-                       gcknt* (date-and-time) (sys2int(timc))
-                              (wquotient (wtimes2 100 gctime*)
-                                (wplus2 1 (timc)))))
+      (if (wgeq (sys2int(timc)) 3600000) % 1 hour -> float
+             (Errorprintf "*** GC %w: %w (~ %w h cpu time, gc : %w %%)"
+                      gcknt* (date-and-time)
+                             (quotient (timc) 3600000.0)
+                             (wquotient (wtimes2 100 gctime*)
+                                 (wplus2 1 (timc))))
+             (Errorprintf "*** GC %w: %w (~ %w ms cpu time, gc : %w %%)"
+                      gcknt* (date-and-time) (sys2int(timc))
+                             (wquotient (wtimes2 100 gctime*)
+                                 (wplus2 1 (timc)))))
       (Errorprintf "*** GC %w: Heap space exhausted" gcknt*))
   (Errorprintf "*** time %d ms, %d occupied, %d recovered, %d free"
      oldtime
@@ -632,7 +632,7 @@
 (de set!-heap!-size (items) 
    (prog (actual heap-warn-level heapenlarge*) 
        (setq actual (wdifference heapupperbound heaplowerbound)) 
-       (setq actual (wquotient actual 4)) 
+       (setq actual (wquotient actual 8))
        (when (null items) (return actual))
        (when (wgreaterp actual items) 
           (print "Cannot shrink heap") (return nil)) 
