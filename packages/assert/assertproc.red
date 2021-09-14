@@ -1,8 +1,7 @@
-% ----------------------------------------------------------------------
+module assertproc;
 % $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2012 Thomas Sturm
-% ----------------------------------------------------------------------
+% (c) 2012-2021 T. Sturm, Germany
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,14 +26,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(assertproc_rcsid!* assertproc_copyright!*);
-   assertproc_rcsid!* := "$Id$";
-   assertproc_copyright!* := "(c) 2012 T. Sturm"
->>;
-
-module assertproc;
 
 procedure assert_procstat();
    begin scalar ftype, fname, w, body;

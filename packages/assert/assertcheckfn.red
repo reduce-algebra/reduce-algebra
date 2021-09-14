@@ -1,8 +1,7 @@
-% ----------------------------------------------------------------------
+module assertcheckfn;
 % $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2010 Thomas Sturm
-% ----------------------------------------------------------------------
+% (c) 2010 Thomas Sturm
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,8 +26,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-module assertcheckfn;
 
 compiletime on1 'assert;
 
@@ -141,30 +138,30 @@ procedure sfpx1(u,vl,v,d,chkord);
    % korder!* and orderp.
    begin scalar c,l,p,r,vv; integer dd;
       if domainp u then
-	 return t;
+         return t;
       if not pairp u then
- 	 return nil;
+         return nil;
       % Decompose u as follows: u = l + r, l = c * p, p = vv ^ dd
       l := lt u;
       r := red u;
       if not pairp l then
- 	 return nil;
+         return nil;
       c := tc l;
       p := tpow l;
       if not pairp p then
- 	 return nil;
+         return nil;
       vv := car p;
       if not assert_kernelp vv then
-	 return nil;
+         return nil;
       dd := pdeg p;
       if vv eq v then
-	 % We are considering a reductum and the variable has not changed.
-	 return dd < d and
- 	    sfpx1(c,v . vl,nil,0,chkord) and sfpx1(r,vl,v,dd,chkord);
+         % We are considering a reductum and the variable has not changed.
+         return dd < d and
+            sfpx1(c,v . vl,nil,0,chkord) and sfpx1(r,vl,v,dd,chkord);
       % We are considering the original form or an lc, or a reductum
       % where the variable has changed from v to vv.
       if v then
-	 vl := v . vl;
+         vl := v . vl;
       % vv must be smaller than all variables in vl wrt. the current
       % kernel order. By recursion, vl is sorted so that it is
       % sufficient to compare with car vl. I construct linear powers in
@@ -172,19 +169,19 @@ procedure sfpx1(u,vl,v,d,chkord);
       % directly comparing (possibly composite) kernels. The relevant
       % code is mostly in alg/order.red and hardly documented.
       if chkord and vl and ordpp(vv .** 1,car vl .** 1) then
-	 % We have seen a smaller variable before.
-	 return nil;
+         % We have seen a smaller variable before.
+         return nil;
       return sfpx1(c,vv . vl,nil,0,chkord) and sfpx1(r,vl,vv,dd,chkord)
    end;
 
 procedure assert_kernelp(u);
    begin scalar w;
       if idp u then
- 	 return t;
+         return t;
       if not pairp u then
- 	 return nil;
+         return nil;
       if get(car u,'fkernfn) then
-	 return t;
+         return t;
       w := if atom car u then get(car u,'klist) else exlist!*;
       return atsoc(u,w)
    end;
