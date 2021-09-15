@@ -823,6 +823,9 @@ defautoload(assert_install_all, assert, expr, 0);
 operator assert_uninstall_all;
 defautoload(assert_uninstall_all, assert, expr, 0);
 
+defautoload(assert_install1, assert, expr, 1);
+defautoload(sqp, assert, expr, 1);
+
 % LALR
 
 defautoload(lex_cleanup, lalr, expr, 0);
