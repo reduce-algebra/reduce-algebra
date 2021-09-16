@@ -53,6 +53,7 @@ put('redlog, 'known!-packages,
 
 struct Formula;
 struct FormulaL asserted by listp;
+struct Void;
 
 % The specification of ? (rl_help) implmented in the rlsupport module goes here, 
 % because it requires a completely built rlsupport itself.

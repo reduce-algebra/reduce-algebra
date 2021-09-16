@@ -30,8 +30,8 @@ copyright('rlprint, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2017-2021 T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-struct MixedPrefixForm asserted by mixedPrefixFormP;
-struct PseudoPrefixForm asserted by pairp;
+struct MixedPrefixForm asserted by atomOrPairP;
+struct PseudoPrefixForm asserted by atomOrPairP;
 
 put('!*fof, 'prifn, 'rl_print!*fof);
 

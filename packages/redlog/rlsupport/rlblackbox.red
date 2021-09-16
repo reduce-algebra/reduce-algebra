@@ -57,7 +57,7 @@ asserted procedure rl_blackboxStatList(): Alist;
 
 put('rl_blackbox, 'formfn, 'rl_formBlackbox);
 
-asserted procedure rl_formBlackbox(argl: Alist, vars: List, m: Id): List;
+asserted procedure rl_formBlackbox(argl: List, vars: List, m: Id): List;
    begin scalar spec, rl_b!*, rl_b, p, name, vn, args, doc, docal; integer n;
       % We are going construct a progn in [p], which is going to be the
       % result of this formfn.

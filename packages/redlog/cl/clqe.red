@@ -77,6 +77,7 @@ procedure containerP(x);
 
 struct EliminationResult asserted by pairp;
 struct ExtendedQeResult asserted by alistp;
+struct EquationL asserted by listp;
 
 asserted inline procedure ce_mk(vl: VarList, f: QfFormula, v: Kernel, eterm: List, an: Answer): ContainerElement;
    % Container element make.
@@ -403,7 +404,7 @@ asserted procedure cl_qe1(f: Formula, theo: Theory, xbvl: KernelL): EliminationR
          >>;
          result := for each j in jl join <<
             if !*rlverbose then ioto_prin2 {" [", n:=n-1};
-            w := cl_mk1EQR(cl_jF j, rl_qemkans(cl_jA j, svf));
+            w := cl_mk1EQR(cl_jF j, rl_qemkans(cl_jA j));
             if !*rlverbose then ioto_prin2 {"]"};
             w
          >>;

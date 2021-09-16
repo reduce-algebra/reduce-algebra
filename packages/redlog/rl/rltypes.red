@@ -291,7 +291,7 @@ rl_type {
       description = "not necessarily homogeneous List with three elements",
       example = "{1, ""two"", three^2}"}};
 
-asserted procedure rl_a2sTriplet(x: Any, a2sElem1: Appplicable, a2sElem2: Appplicable, a2sElem3: Appplicable): List;
+asserted procedure rl_a2sTriplet(x: Any, a2sElem1: Applicable, a2sElem2: Applicable, a2sElem3: Applicable): List;
    begin scalar w, !*rlsimpl;
       x := reval x;
       if not eqcar(x, 'list) then
@@ -302,7 +302,7 @@ asserted procedure rl_a2sTriplet(x: Any, a2sElem1: Appplicable, a2sElem2: Apppli
       return {apply(a2sElem1, {car x}), apply(a2sElem2, {cadr x}), apply(a2sElem3, {caddr x})}
    end;
 
-asserted procedure rl_s2aTriplet(x: Any, a2sElem1: Appplicable, a2sElem2: Appplicable, a2sElem3: Appplicable): List;
+asserted procedure rl_s2aTriplet(x: Any, a2sElem1: Applicable, a2sElem2: Applicable, a2sElem3: Applicable): List;
    'list . {apply(a2sElem1, {car x}), apply(a2sElem2, {cadr x}), apply(a2sElem3, {caddr x})};
 
 % Longer fixed length lists
@@ -315,7 +315,7 @@ rl_type {
       description = "not necessarily homogeneous List with five elements",
       example = "{1, ""two"", three^2, 44, 5}"}};
 
-asserted procedure rl_a2sList5(x: Any, a2sElem1: Appplicable, a2sElem2: Appplicable, a2sElem3: Appplicable, a2sElem4: Appplicable, a2sElem5: Appplicable): List;
+asserted procedure rl_a2sList5(x: Any, a2sElem1: Applicable, a2sElem2: Applicable, a2sElem3: Applicable, a2sElem4: Applicable, a2sElem5: Applicable): List;
    begin scalar w, !*rlsimpl;
       x := reval x;
       if not eqcar(x, 'list) then
@@ -331,7 +331,7 @@ asserted procedure rl_a2sList5(x: Any, a2sElem1: Appplicable, a2sElem2: Appplica
          apply(a2sElem5, {caddddr x})}
    end;
 
-asserted procedure rl_s2aList5(x: Any, a2sElem1: Appplicable, a2sElem2: Appplicable, a2sElem3: Appplicable, a2sElem4: Appplicable, a2sElem5: Appplicable): List;
+asserted procedure rl_s2aList5(x: Any, a2sElem1: Applicable, a2sElem2: Applicable, a2sElem3: Applicable, a2sElem4: Applicable, a2sElem5: Applicable): List;
    'list . {
       apply(a2sElem1, {car x}),
       apply(a2sElem2, {cadr x}),

@@ -126,7 +126,7 @@ asserted procedure rl_serviceStatList(): Alist;
       return reversip spec
    end;
 
-asserted procedure rl_amReadDefaultToForm(): List;
+asserted procedure rl_amReadDefaultToForm(): Any;
    begin scalar !*mode;
       !*mode := 'algebraic;
       rl_skipequal "rl_service";
@@ -142,7 +142,7 @@ asserted procedure rl_csReadTypeToString(): String;
       return ioto_smaprin xread t
    end;
 
-asserted procedure rl_readListOrAtom(): String;
+asserted procedure rl_readListOrAtom();
    begin scalar entry;
       rl_skipequal "rl_service";
       scan();

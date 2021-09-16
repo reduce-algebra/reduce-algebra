@@ -364,19 +364,15 @@ asserted procedure ic_maxfalse(icdata: InfCoreData): List;
       return {chosen, k}
    end;
 
-
-declare ofsfic!*ce_mk: (VarList, QfFormula, Kernel, List, Answer, List) -> ContainerElement;
-inline procedure ofsfic!*ce_mk(vl, f, v, eterm, an, fvect);
+asserted inline procedure ofsfic!*ce_mk(vl: VarList, f: QfFormula, v: Kernel, eterm: List, an: Answer, fvect: List): ContainerElement;
    % Container element make.
    {'ce, vl, f, v, eterm, an, fvect};
 
-declare ce_fvect: (ContainerElement) -> Vector;
-inline procedure ce_fvect(x);
+asserted inline procedure ce_fvect(x: ContainerElement): Vector;
    % Container element formula vector. Only used for infeasible core computation.
    nth(cdr x, 6);
 
-declare ofsfic!*co_push2: (Container, ContainerElement) -> Container;
-inline procedure ofsfic!*co_push2(co, ce);
+asserted inline procedure ofsfic!*co_push2(co: Container, ce: ContainerElement): Container;
    %TODO: REENABLE %%%%%%%MAX
    % Insert 1 element into container.
    % if co_member(ce,co) then <<
@@ -386,8 +382,7 @@ inline procedure ofsfic!*co_push2(co, ce);
    % >> else
    ce . co;
 
-declare ofsfic!*cl_mk1EQR: (Formula,EquationL) -> ExtendedQeResult;
-inline procedure ofsfic!*cl_mk1EQR(f, eql);
+asserted inline procedure ofsfic!*cl_mk1EQR(f: Formula, eql: EquationL): ExtendedQeResult;
    % Make singleton extended QE result.
    {{f, eql}};
 
@@ -521,7 +516,7 @@ asserted procedure ofsfic!*cl_qe1(f: Formula, theo: Theory, xbvl: KernelL): Elim
          result := for each j in jl join <<
             if !*rlverbose then
                ioto_prin2 {" [", n := n-1};
-            w := {cl_jF j . rl_qemkans(cl_jA j, svf)};
+            w := {cl_jF j . rl_qemkans(cl_jA j)};
             if !*rlverbose then
                ioto_prin2 {"]"};
             w
@@ -1690,7 +1685,7 @@ procedure ofsfic!*ofsf_exploitKnowl(knowl);
       return {subal, zvl, posvl, negvl, geqvl, leqvl, neqvl}
    end;
 
-procedure ofsfic!*ofsf_qemkans(an, svf);
+procedure ofsfic!*ofsf_qemkans(an);
    begin scalar anual, w;
       integer time, gctime;
       if !*rlverbose then <<

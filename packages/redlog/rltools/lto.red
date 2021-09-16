@@ -729,7 +729,9 @@ asserted procedure lto_charUpcase(c: Id): Id;
       return lto_catsoc(c, table) or c
    end;
 
-asserted procedure lto_downcase(s: String): String;
+asserted procedure lto_downcase(s: Any): Any;
+   % This is suppsed to accept both strings and identifiers. At present it is even called with forms
+   % in rlservice/rl_typeString2TypeForm().
    compress for each c in explode s collect lto_charDowncase c;
 
 asserted procedure lto_charDowncase(c: Id): Id;

@@ -244,7 +244,7 @@ asserted procedure ioto_sprin2(s: Any): String;
       return str
    end;
 
-asserted procedure ioto_smaprin(u: List): String;
+asserted procedure ioto_smaprin(u): String;
    % This function is a variant of mathprint that prints into strings instead of
    % stdout. It is expected to work with both "off nat" and "on nat." utf8 is
    % ignored, Fortran printing is not supported, and TeX printing via
@@ -348,7 +348,8 @@ asserted procedure ioto_smaprinbuf(c: Id): List;
    %
    <<
       push('!!, rlsmaprinbuf!*);
-      push(c, rlsmaprinbuf!*)
+      push(c, rlsmaprinbuf!*);
+      rlsmaprinbuf!*
    >>;
 
 asserted procedure ioto_in(file: String, msg: Boolean, output: Boolean): Any;

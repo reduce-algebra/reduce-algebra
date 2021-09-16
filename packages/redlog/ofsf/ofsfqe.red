@@ -135,8 +135,7 @@ procedure ofsf_varsel!-try(f,vl,theo);
    % Ordered field standard form variable selection trial variant.
    % [vl] is a list of variables; [f] is a quantifier-free formula;
    % [theo] is the current theory. Returns a list of variables.
-   begin scalar atl,candvl,ifacl,
-         terml;
+   begin scalar atl,candvl,ifacl,terml;
       atl := cl_atl1 f;
       candvl := for each a in vl join
          if ofsf_linp(atl,a,lto_delq(a,vl)) then {a};
@@ -1941,7 +1940,7 @@ procedure ofsf_maybenonzero!-local(u,theo,bvl);
       return 'gen . ofsf_0mk2('neq,u)
    end;
 
-procedure ofsf_qemkans(an,svf);
+procedure ofsf_qemkans(an);
    begin scalar res; integer time, gctime;
       if !*rlverbose then <<
          time :=  time();
@@ -2221,32 +2220,6 @@ procedure anu_fromAex(aex);
       cb := aex_cauchybound(aex, aex_mvar aex);
       cb := addsq(cb, 1 ./ 1);
       return anu_mk(aex, iv_mk(negsq cb, cb))
-   end;
-
-procedure ofsf_qemkansfl(svf, an);
-   % See the comment in ofsf_qemkstdans.
-   begin scalar f, fl, v, sub, xargl, val;
-      f := svf;
-      fl := {f};
-      if !*rlverbose then
-         ioto_tprin2t {"length = ", length cdr an};
-      for each y in reverse cdr an do <<
-         {v, sub, xargl} := y;
-         if !*rlverbose and !*rlqestdansvb then <<
-            val := if sub memq '(ofsf_qesubcr1 ofsf_qesubcrme1 ofsf_qesubcrpe1) then
-               ioto_form2str prepsq ofsf_preprexpr cadr xargl
-            else if sub eq 'ofsf_qesubi then
-               car xargl
-            else
-               ioto_form2str prepsq cadr xargl;
-            ioto_prin2t {v, ", ", sub, ", ", val, ", ", rl_atnum f}
-         >>;
-         f := ofsf_qeapplysub(sub, f, v, xargl);
-         if rl_op f eq 'or then
-            lprim {"ofsf_qemkansfl: top-level or for variable", v};
-         push(f, fl)
-      >>;
-      return fl
    end;
 
 procedure ofsf_qeapplynan(nan, f);
