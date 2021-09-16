@@ -45,12 +45,12 @@ copyright('clqedata, "(c) 2021 A. Dolzmann, T. Sturm");
 #define QEDB_FAILURENODES 12
 #define QEDB_CURRENTTHEORY 13
 #define QEDB_PRODUCEANSWER 14
-#define QEDB_LAST 15
+#define QEDB_UPLIM 15
 
 asserted procedure qedb_new(): Vector;
    % QE data for a block, construct new instance.
    begin scalar db;
-      db := mkvect(QEDB_LAST);
+      db := mkvect(QEDB_UPLIM);
       putv(db, QEDB_TAG, 'qedb);
       % The following fields are constant, i.e., assigned exactly once after the creation of qedb:
       putv(db, QEDB_INPUTFORMULA, 'undefined);       % InputTheory
@@ -226,19 +226,27 @@ asserted procedure qedb_addWorkingNodes(db: Vector, nodes: List): Vector;
 asserted procedure qedb_isEmptyWorkingNodes(db: Vector): Boolean;
    qeco_isEmpty(getv(db, QEDB_WORKINGNODES));
 
+#define QECO_TAG 0
+#define QECO_NODES 1
+#define QECO_LASTNODE 2
+#define QECO_TRAVERSALMODE 3
+#define QECO_HASHTABLE 4
+#define QECO_UPLIM 4
+
 asserted procedure qeco_new(traversalMode: Id): Vector;
    % QE data for a block new.
    begin scalar db;
-      db := mkvect(4);
-      putv(db, 0, 'qeco);
-      putv(db, 1, nil);                                             % Nodes: list (stack or queue) of QE tree working nodes
-      putv(db, 2, if traversalMode eq 'bfs then nil else 'unused);  % LastNode: the last node in Nodes
-      putv(db, 3, traversalMode);                                   % 'bfs (breadth-first search) or 'dfs (depth-first search)
-      if traversalMode eq 'dfs then
-      putv(db, 4, nil)
-      else <<
+      db := mkvect(QECO_UPLIM);
+      putv(db, QECO_TAG, 'qeco);
+      putv(db, QECO_NODES, nil);                    % list (stack or queue) of QE tree working nodes
+      putv(db, QECO_TRAVERSALMODE, traversalMode);  % 'bfs (breadth-first search) or 'dfs (depth-first search)
+      if traversalMode eq 'dfs then <<
+         putv(db, QECO_LASTNODE, 'unused);
+         putv(db, QECO_HASHTABLE, nil)              % hashed dynamic programming data
+      >> else <<
          ASSERT( traversalMode eq 'bfs );
-      putv(db, 4, 'unused)        % hashed dynamic programming data
+         putv(db, QECO_LASTNODE, nil);              % the last node in nodes
+         putv(db, QECO_HASHTABLE, 'unused)
       >>;
       return db
    end;
@@ -247,9 +255,9 @@ asserted procedure qeco_add(co: Container, new: List): Container;
    begin scalar nodes, lastNode;
       if null new then
          return co;
-      nodes := getv(co, 1);
-      if getv(co, 3) eq 'bfs then <<
-         lastNode := getv(co, 2);
+      nodes := getv(co, QECO_NODES);
+      if getv(co, QECO_TRAVERSALMODE) eq 'bfs then <<
+         lastNode := getv(co, QECO_LASTNODE);
          if null lastNode then
             lastNode := nodes := {pop new};
          for each node in new do
@@ -257,36 +265,53 @@ asserted procedure qeco_add(co: Container, new: List): Container;
                cdr lastNode := node . nil;
                lastNode := cdr lastNode
             >>;
-         putv(co, 1, nodes);
-         putv(co, 2, lastNode)
+         putv(co, QECO_NODES, nodes);
+         putv(co, QECO_LASTNODE, lastNode)
       >> else <<
-         ASSERT( getv(co, 3) eq 'dfs );
+         ASSERT( getv(co, QECO_TRAVERSALMODE) eq 'dfs );
          for each node in new do
-            if not lto_hmember(node, getv(co, 4), 'co_hfn) then <<
-               putv(co, 4, lto_hinsert(node, getv(co, 4), 'co_hfn));
+            if not lto_hmember(node, getv(co, QECO_HASHTABLE), 'co_hfn) then <<
+               putv(co, QECO_HASHTABLE, lto_hinsert(node, getv(co, QECO_HASHTABLE), 'co_hfn));
                nodes := node . nodes
             >>;
-         putv(co, 1, nodes)
+         putv(co, QECO_NODES, nodes)
       >>;
       return co
    end;
 
 asserted procedure qeco_firstNode(co: Container): List;
-   car getv(co, 1);
+   car getv(co, QECO_NODES);
 
 asserted procedure qeco_fetch(co: Container): List;
    begin scalar nodes, node;
-      nodes := getv(co, 1);
+      nodes := getv(co, QECO_NODES);
       ASSERT( not null nodes );
       node := pop nodes;
-      if null nodes and getv(co, 3) eq 'bfs then
-         putv(co, 2, nil);
-      putv(co, 1, nodes);
+      if null nodes and getv(co, QECO_TRAVERSALMODE) eq 'bfs then
+         putv(co, QECO_LASTNODE, nil);
+      putv(co, QECO_NODES, nodes);
       return node
    end;
 
 asserted procedure qeco_isEmpty(co: Container): Boolean;
-   null getv(co, 1);
+   null getv(co, QECO_NODES);
+
+#define QENOD_TAG 1
+#define QENOD_VARIABLES 2
+#define QENOD_FORMULA 3
+#define QENOD_ANSWER 6
+
+asserted procedure qenod_new(variables: KernelL, f: Formula, answer: List): List4;
+   {'qenod, variables, f, nil, nil, answer};
+
+asserted procedure qenod_getVariables(node: List4): KernelL;
+   nth(node, QENOD_VARIABLES);
+
+asserted procedure qenod_getFormula(node: List4): Formula;
+   nth(node, QENOD_FORMULA);
+
+asserted procedure qenod_getAnswer(node: List4): List;
+   nth(node, QENOD_ANSWER);
 
 endmodule;
 

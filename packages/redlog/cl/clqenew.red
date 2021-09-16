@@ -140,8 +140,8 @@ asserted procedure cl_qe1_new(db: Vector): Vector;
          if null blocks or null cdr blocks then <<
             % We have finished or at least reached the outmost block.
             answer := for each node in append(qedb_getSuccessNodes(db), qedb_getFailureNodes(db)) collect <<
-               point := rl_qemkans(ce_ans(node)) where !*rlqestdans = (qedb_getAnswerMode(db) eq 'standard);
-               cl_unsplit_new(blocks, ce_f(node)) . point
+               point := rl_qemkans(qenod_getAnswer(node)) where !*rlqestdans = (qedb_getAnswerMode(db) eq 'standard);
+               cl_unsplit_new(blocks, qenod_getFormula(node)) . point
             >>
          >> else
             answer := {f . nil};
@@ -190,7 +190,7 @@ asserted procedure cl_unsplit_new(blocks: List, f: Formula): Formula;
 asserted procedure cl_qe1!-iterate_new(db: Vector): Vector;
    % Iteratively apply cl_qeblock to quantifier blocks.
    begin scalar blocks, f, produceAnswer, theo, db, svrlidentify, svrlqeprecise, svrlqeaprecise, q,
-                variables,remainingVariables, w;
+                variables,remainingVariables, w, op, arguments;
       svrlidentify := !*rlidentify;
       blocks := qedb_getBlocks(db);
       f := qedb_getFormula(db);
@@ -218,18 +218,21 @@ asserted procedure cl_qe1!-iterate_new(db: Vector): Vector;
          cl_qeblock4_new(db);
          if !*rlverbose then << qedb_verbosePrint(db) >>;
          if q eq 'all then <<
+            % In the following we could benefit from mutable qenod
             w := for each node in qedb_getSuccessNodes(db) collect
-               ce_mk(ce_vl node, rl_nnfnot ce_f node, nil, nil, ce_ans node);
+               qenod_new(qenod_getVariables(node), rl_nnfnot(qenod_getFormula(node)), qenod_getAnswer(node));
             qedb_setSuccessNodes(db, w);
             w := for each node in qedb_getFailureNodes(db) collect
-               ce_mk(ce_vl node, rl_nnfnot ce_f node, nil, nil, ce_ans node);
+               qenod_new(qenod_getVariables(node), rl_nnfnot(qenod_getFormula(node)), qenod_getAnswer(node));
             qedb_setFailureNodes(db, w)
          >>;
-         f := rl_smkn(if q eq 'all then 'and else 'or,
-                      for each node in append(qedb_getSuccessNodes(db), qedb_getFailureNodes(db)) collect ce_f node);
+         op := if q eq 'all then 'and else 'or;
+         arguments := for each node in append(qedb_getSuccessNodes(db), qedb_getFailureNodes(db)) collect
+            qenod_getFormula(node);
+         f := rl_smkn(op, arguments);
          if not null qedb_getFailureNodes(db) then
             for each node in qedb_getFailureNodes(db) do
-               remainingVariables := union(remainingVariables, ce_vl node);
+               remainingVariables := union(remainingVariables, qenod_getVariables(node));
          theo := qedb_getCurrentTheory(db);
          if blocks then <<
             onoff('rlqeprecise, svrlqeprecise);
@@ -254,9 +257,9 @@ asserted procedure cl_qeblock4_new(db: Vector): Vector;
       qedb_initializeWorkingNodes(db, if !*rlqedfs then 'dfs else 'bfs);
       if rl_op f eq 'or then
          for each subFormula in rl_argn f do
-            qedb_addWorkingNodes(db, {ce_mk(variables, subFormula, nil, nil, nil)})
+            qedb_addWorkingNodes(db, {qenod_new(variables, subFormula, nil)})
       else
-         qedb_addWorkingNodes(db, {ce_mk(variables, f, nil, nil, nil)});
+         qedb_addWorkingNodes(db, {qenod_new(variables, f, nil)});
       while not qedb_isEmptyWorkingNodes(db) do <<
          if !*rlqeidentify then on1 'rlidentify;
          cl_qevar_new(db)
@@ -293,9 +296,9 @@ asserted procedure cl_transform_new(db: Vector): Boolean;
       theo := qedb_getCurrentTheory(db);
       noAssumeVars := qedb_getNoAssumeVars(db);
       produceAnswer := qedb_getProduceAnwer(db);
-      f := ce_f(node);
-      variables := ce_vl(node);
-      answer := ce_ans(node);
+      f := qenod_getFormula(node);
+      variables := qenod_getVariables(node);
+      answer := qenod_getAnswer(node);
       hasTransformed := nil;
       for each variable in variables do <<
          w := rl_transform(variable, f, variables, answer, theo, produceAnswer, noAssumeVars);
@@ -305,7 +308,8 @@ asserted procedure cl_transform_new(db: Vector): Boolean;
          >>;
       >>;
       if hasTransformed then <<
-         node := ce_mk(variables, f, nil, nil, answer);
+         % In the following we could benefit from mutable qenod
+         node := qenod_new(variables, f, answer);
          qedb_setCurrentNode(db, node);
          qedb_setCurrentTheory(db, theo);
          qedb_setNoAssumeVars(db, noAssumeVars);
@@ -321,14 +325,14 @@ asserted procedure cl_gauss_new(db): Boolean;
       theo := qedb_getCurrentTheory(db);
       noAssumeVars := qedb_getNoAssumeVars(db);
       produceAnswer := qedb_getProduceAnwer(db);
-      f := ce_f(node);
-      variables := ce_vl(node);
+      f := qenod_getFormula(node);
+      variables := qenod_getVariables(node);
       w := rl_trygauss(f, variables, theo, produceAnswer, noAssumeVars);
       if w eq 'failed then
          return nil;
       if !*rlverbose and (not !*rlqedfs or !*rlqevbold) then
          ioto_prin2 "[gauss]";
-      answer := ce_ans(node);
+      answer := qenod_getAnswer(node);
       variable . eliminationSet := car w;
       theo := cdr w;
       variables := lto_delq(variable, variables);
@@ -345,8 +349,8 @@ asserted procedure cl_specelimWrapper_new(db): Boolean;
       theo := qedb_getCurrentTheory(db);
       noAssumeVars := qedb_getNoAssumeVars(db);
       produceAnswer := qedb_getProduceAnwer(db);
-      f := ce_f(node);
-      variables := ce_vl(node);
+      f := qenod_getFormula(node);
+      variables := qenod_getVariables(node);
       w := rl_specelim(f, variables, theo, produceAnswer, noAssumeVars);
       if w eq 'failed then
          return nil;
@@ -369,9 +373,9 @@ asserted procedure cl_regularEliminationSet(db: Vector): Boolean;
       noAssumeVars := qedb_getNoAssumeVars(db);
       theo := qedb_getCurrentTheory(db);
       node := qedb_getCurrentNode(db);
-      f := ce_f(node);
-      nodeVariables := ce_vl(node);
-      nodeAnswer := ce_ans(node);
+      f := qenod_getFormula(node);
+      nodeVariables := qenod_getVariables(node);
+      nodeAnswer := qenod_getAnswer(node);
       candidateVariables := if null cdr nodeVariables then
          nodeVariables
       else if not !*rlqevarsel then
@@ -390,7 +394,7 @@ asserted procedure cl_regularEliminationSet(db: Vector): Boolean;
             successorNodeVariables := lto_delq(candidateVariable, nodeVariables);
             if produceAnswer then
                nodeAnswer := cl_updans(candidateVariable, 'arbitrary, nil, nil, nodeAnswer, produceAnswer);
-            bestSuccessorNodes := {ce_mk(successorNodeVariables, f, nil, nil, nodeAnswer)};
+            bestSuccessorNodes := {qenod_new(successorNodeVariables, f, nodeAnswer)};
             found := t;
             goto brk
          >> else if car alp neq 'failed then <<
@@ -417,10 +421,12 @@ asserted procedure cl_regularEliminationSet(db: Vector): Boolean;
 asserted procedure cl_storeRegularNodes(nodes: List, variablesLeft: Boolean, db: Vector): Vector;
    begin scalar successNodes;
       if not null nodes then <<
-         if ce_vl car nodes eq 'break then <<  % we have found true
+         if qenod_getVariables(car nodes) eq 'break then <<
+            % We have found true
             qedb_initializeWorkingNodes(db, if !*rlqedfs then 'dfs else 'bfs);
             successNodes := qedb_getSuccessNodes(db);
-            successNodes := {ce_mk(nil, 'true, nil, nil, ce_ans car nodes)};
+            % With mutable qenod we could reuse the break node here
+            successNodes := {qenod_new(nil, 'true, qenod_getAnswer(car nodes))};
             qedb_setSuccessNodes(db, successNodes);
             qedb_setFailureNodes(db, nil)
          >> else if variablesLeft then <<
@@ -441,9 +447,9 @@ asserted procedure cl_esetsubst_new(node: List, variable: Kernel, eliminationSet
       produceAnswer := qedb_getProduceAnwer(db);
       noAssumeVars := qedb_getNoAssumeVars(db);
       currentTheory := qedb_getCurrentTheory(db);
-      f := ce_f(node);
-      nodeVariables := ce_vl(node);
-      nodeAnswer := ce_ans(node);
+      f := qenod_getFormula(node);
+      nodeVariables := qenod_getVariables(node);
+      nodeAnswer := qenod_getAnswer(node);
       successorNodeVariables := lto_delq(variable, nodeVariables);
       successorNodes . newTheory := cl_esetsubst(f, variable, eliminationSet, successorNodeVariables,
                                                  nodeAnswer, currentTheory, produceAnswer, noAssumeVars);
