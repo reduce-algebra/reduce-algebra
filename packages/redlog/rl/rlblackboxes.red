@@ -377,7 +377,7 @@ rl_blackbox {
 rl_blackbox {
    doc = "make answer from result container",
    name = qemkans,
-   argnum = 2};
+   argnum = 1};
 
 rl_blackbox {
    doc = "total order on atomic formulas",

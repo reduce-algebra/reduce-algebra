@@ -44,7 +44,7 @@ asserted procedure rl_typeStat();
          scan();
          if cursym!* neq 'equal then
             % There is a flag, e.g., 'equational'
-            push(key, l)
+            push(key . t, l)
          else <<
             % There is a key-entry pair
             if key eq 'doc then
@@ -109,9 +109,7 @@ asserted procedure rl_formType(argl: List, vars: List, mode: Id): List;
       spec := cadr argl;
       name := lto_eatsoc('name, spec, {"missing type name in", argl});
       for each x in spec do
-         if idp x and x memq '(equational) then  % flags
-            push(x . t, rltype)
-         else if pairp x and car x memq '(a2s s2a doc inherits) then
+         if pairp x and car x memq '(a2s s2a doc inherits equational) then
             push(x, rltype)
          else if not eqcar(x, 'name) then
             rederr {"unknown keyword", car x , "in", argl};

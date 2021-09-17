@@ -36,10 +36,10 @@ copyright('rlami, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2017 T. Sturm");
 % here !*fof for first-orderformulas. A MixedPrefixForm is a LispPrefixForm
 % possibly containing PseudoPrefixForms as subexpressions.
 
-struct MixedPrefixForm asserted by mixedPrefixFormP;
-struct PseudoPrefixForm asserted by pairp;
+struct MixedPrefixForm asserted by atomOrPairP;
+struct PseudoPrefixForm asserted by atomOrPairP;
 
-procedure mixedPrefixFormP(x);
+procedure atomOrPairP(x);
    atom x or pairp x;
 
 asserted procedure rl_mk!*fof(u: Formula): PseudoPrefixForm;

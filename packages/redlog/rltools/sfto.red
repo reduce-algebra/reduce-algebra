@@ -60,10 +60,6 @@ procedure am_listp(x);
 procedure am_polyp(x);
    t;
 
-declare addf: (SF,SF) -> SF;
-declare multf: (SF,SF) -> SF;
-declare negf: (NoOrdSF) -> NoOrdSF;
-
 #if (memq 'csl lispsystem!*)
 
 copyd('sfto_lcmn, 'lcmn);

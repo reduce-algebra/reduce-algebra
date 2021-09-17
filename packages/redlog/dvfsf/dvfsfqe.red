@@ -255,7 +255,7 @@ procedure dvfsf_gelimset(a,v);
       return 'failed
    end;
 
-procedure dvfsf_qemkans(an,svf);
+procedure dvfsf_qemkans(an);
    sort(dvfsf_qebacksub dvfsf_qemkans1 an, function ordpcadr);
 
 procedure dvfsf_qemkans1(an);

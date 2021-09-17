@@ -35,6 +35,7 @@ copyright('talp, "(c) 2004-2009 A. Dolzmann, T. Sturm, 2017 T. Sturm");
 
 create!-package('(talp talpsiat talpmisc talpbnf talpsism talpqe),nil);
 
+load!-package 'redlog;
 loadtime load!-package 'cl;
 
 exports talp_enter,talp_exit,talp_mkalop,talp_unmkalop,talp_get!-invs,

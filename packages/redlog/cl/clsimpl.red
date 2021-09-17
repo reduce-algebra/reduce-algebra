@@ -330,7 +330,7 @@ asserted procedure cl_ordp(f1: Formula, f2: Formula): ExtraBoolean;
             cl_ordp(rl_mat f1, rl_mat f2);
       if rl_bquap op1 then
          return rl_BQordp(f1, f2);
-      ASSERT( rl_junctp f1 and op1 = op2 );
+      ASSERT( rl_junctp op1 and op1 = op2 );
       return cl_ordpl(rl_argn f1, rl_argn f2)
    end;
 
