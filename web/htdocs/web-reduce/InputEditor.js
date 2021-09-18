@@ -1,13 +1,18 @@
 // Input editor code
 
+'use strict';
+
 const inputList = [];
 let inputListIndex = 0;
 let maxInputListIndex = -1;
+const quitPattern = /\b(?:bye|quit)\s*[;$]/i; /* case insensitive */
+
+// *** Merge the next two functions? ***
 
 function sendInput(event) {
     if (noOutput) return; // REDUCE not yet loaded!
     // Strip trailing white space from the input:
-    let text = inputTextArea.value.replace(/\s+^/, "");
+    let text = inputTextArea.value.replace(/\s+$/, "");
     if (text.length > 0) {
         if (!event.shiftKey) {
             // Ensure the input ends with a terminator:
@@ -20,11 +25,50 @@ function sendInput(event) {
         inputTextArea.value = "";
         earlierButton.disabled = false;
         laterButton.disabled = true;
+        if (quitPattern.test(text)) stopREDUCE();
     }
     inputTextArea.focus()
 }
 
-sendButton.addEventListener('click', sendInput);
+sendInputButton.addEventListener('click', sendInput);
+
+/**
+ * A list (array) of statements waiting to be input into REDUCE.
+ */
+let inputStatements = [];
+
+/**
+ * Send a statement in the input to REDUCE, wait for a response,
+ * then send the next statement.
+ */
+function sendStatements(event) {
+    if (noOutput) return; // REDUCE not yet loaded!
+    // Strip trailing white space from the input:
+    let text = inputTextArea.value.replace(/\s+^/, "");
+    if (text.length > 0) {
+        if (!event.shiftKey) {
+            // Ensure the input ends with a terminator:
+            let c = text[text.length - 1];
+            if (!(c == ';' || c == '$')) text += ";";
+        }
+        // Store each statement followed by its terminator as separate elements of the array,
+        // which always ends with an empty string:
+        let stmts = text.split(/([;$])/);
+        let noPendingInput = (inputStatements.length == 0);
+        for (let i = 0; i < stmts.length - 1; i++)
+            inputStatements.push(stmts[i] + stmts[++i]);
+        if (noPendingInput) // send the first statement:
+            sendToReduceAndEcho(inputStatements.shift());
+        inputListIndex = inputList.push(text);
+        maxInputListIndex = inputListIndex - 1;
+        inputTextArea.value = "";
+        earlierButton.disabled = false;
+        laterButton.disabled = true;
+    }
+    inputTextArea.focus()
+}
+
+sendStatementsButton.addEventListener('click', sendStatements);
 
 function earlierInput(event) {
     event.preventDefault();

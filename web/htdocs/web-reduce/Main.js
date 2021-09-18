@@ -2,96 +2,143 @@
 
 'use strict';
 
-const debug = (location.search == '?debug');
+const debug = (location.search === '?debug');
 
 // Set up access to document elements and reset their defaults for when the page is reloaded:
+const startREDUCEMenuItem = document.getElementById("StartREDUCEMenuItem");
+const stopREDUCEMenuItem = document.getElementById("StopREDUCEMenuItem");
+const clearDisplayMenuItem = document.getElementById("ClearDisplayMenuItem");
 const ioColouringCheckbox = document.getElementById('IOColouringCheckbox');
 const typesetMathsCheckbox = document.getElementById('TypesetMathsCheckbox');
-typesetMathsCheckbox.disabled = true;
 const centreTypesetMathsCheckbox = document.getElementById('CentreTypesetMathsCheckbox');
-const ioDisplayDiv = document.getElementById('IODisplayDiv');
 const inputTextArea = document.getElementById('InputTextArea');
 inputTextArea.value = "";
 inputTextArea.focus();
 const earlierButton = document.getElementById('EarlierButton');
 earlierButton.disabled = true;
-const sendButton = document.getElementById('SendButton');
-sendButton.disabled = true;
+const sendInputButton = document.getElementById('SendInputButton');
+const sendStatementsButton = document.getElementById('SendStatementsButton');
 const laterButton = document.getElementById('LaterButton');
 laterButton.disabled = true;
+const fileMenuLink = document.getElementById("FileMenuLink");
+if (typeof showOpenFilePicker === "undefined") fileMenuLink.hidden = true;
+const templatesMenuLink = document.getElementById("TemplatesMenuLink");
+const functionsMenuLink = document.getElementById("FunctionsMenuLink");
+let ioDisplayWindow, ioDisplayHead, ioDisplayBody;
 let noOutput = true, hideOutput = false;
+let worker;
 
-// Only for use during development:
-//throw new Error("Don't run REDUCE!");
+function setRunningState(running) {
+    startREDUCEMenuItem.disabled = running;
+    stopREDUCEMenuItem.disabled = !running;
+    sendInputButton.disabled = !running;
+    sendStatementsButton.disabled = !running;
+    typesetMathsCheckbox.disabled = !running;
+    fileMenuLink.classList.toggle("disabled", !running);
+    templatesMenuLink.classList.toggle("disabled", !running);
+    functionsMenuLink.classList.toggle("disabled", !running);
+}
+
+setRunningState(false);
+
+if (typeof Worker === "undefined") {
+    // This is not a sufficient condition!
+    alert("This browser does not support Web Workers and so cannot run Web-REDUCE!");
+    throw new Error("Can't run REDUCE!");
+}
 
 /**
  * Scroll the REDUCE IO display to the bottom.
  */
-function scrollIODisplayDivToBottom() {
-    ioDisplayDiv.scrollTo(0, ioDisplayDiv.scrollHeight);
+function scrollIODisplayToBottom() {
+    ioDisplayWindow.scroll(0, ioDisplayBody.scrollHeight);
 }
 
-function sendToIODisplayDiv(text, inputOrOutput) {
+function clearIODisplay() {
+    ioDisplayBody.innerHTML = "";
+}
+
+function sendPlainTextToIODisplay(text, displayClass) {
     if (noOutput) {
         // This code executes immediately after REDUCE loads:
-        ioDisplayDiv.textContent = "";
-        sendButton.disabled = false;
-        typesetMathsCheckbox.disabled = false;
-        inputOrOutput = false;
+        window.scrollTo(0, document.getElementById("Menubar").offsetTop);
+        clearIODisplay();
+        setRunningState(true);
+        displayClass = false;
         noOutput = false;
     }
     // For now, append text within a <pre> element:
     const pre = document.createElement("pre");
-    if (inputOrOutput) pre.classList.add(inputOrOutput);
+    if (displayClass) pre.classList.add(displayClass);
     pre.innerText = text;
-    ioDisplayDiv.appendChild(pre);
-    scrollIODisplayDivToBottom();
+    ioDisplayBody.appendChild(pre);
+    scrollIODisplayToBottom();
 }
 
-const worker = new Worker('./reduce.web.js');
-worker.onmessage = function (event) {
+/**
+ * Respond to a message from the REDUCE web worker,
+ * normally by displaying a processed version in ioDisplay.
+ * @param {*} event
+ * @returns null
+ */
+function reduceWebMessageHandler(event) {
     if (hideOutput) { // hide changes of switches etc.
         hideOutput = false;
         return;
     }
     if (event.data.channel === 'stdout') {
         let output = event.data.line;
+        if (writable) { // Defined in "FileMenu.js".
+            // Some line termination is necessary, but this produces more vertical space than it should!
+            writable.write(output);
+            writable.write("\n");
+            return;
+        }
         // If an empty string is passed (ie asking for a blank line of output)
         // it gets lost in the display, so output a single space character.
         if (output == '') {
             debug && console.log("OUTPUT: Empty line"); // for debugging
-            sendToIODisplayDiv(' ');
-            return;
-        }
-        debug && console.log(`OUTPUT: ${output}`); // for debugging
+            sendPlainTextToIODisplay(' ');
+        } else {
+            debug && console.log(`OUTPUT: ${output}`); // for debugging
 
-        // The mathematical part of the output delived by REDUCE will have the form:
-        // latex:\black$\displaystyle\frac{-2\*\arctan\left(x\right)+\log\left(x-1\right)-\log\left(x+1\right)}{4}$
-        // delimited by a pair of control characters, \u0002 before and \u0005 after.
-        // The TeX in the middle is extracted and MathJax formats it.
+            // The mathematical part of the output delived by REDUCE will have the form:
+            // latex:\black$\displaystyle\frac{-2\*\arctan\left(x\right)+\log\left(x-1\right)-\log\left(x+1\right)}{4}$
+            // delimited by a pair of control characters, \u0002 before and \u0005 after.
+            // The TeX in the middle is extracted and MathJax formats it.
 
-        // Detect the case where the output line contains some TeX:
-        let n = output.indexOf('\u0002');
-        if (n != -1) {
-            // Here I not only strip out the material before the "U+0002" but also the
-            // "junk" that reads "latex:\black$\displaystyle" and a final "U+0005".
-            // Those are fragments that the REDUCE interface for TeXmacs inserts.
-            output = output.substring(n + 1 + 26, output.length - 2);
-            output = MathJax.tex2chtml(output);
-            output.classList.add("output");
-            ioDisplayDiv.appendChild(output);
-            // The MathJax documentation doesn't tell the whole story!
-            // See https://github.com/mathjax/MathJax/issues/2365:
-            MathJax.startup.document.clear();
-            MathJax.startup.document.updateDocument();
-            scrollIODisplayDivToBottom();
+            // Detect the case where the output line contains some TeX:
+            let n = output.indexOf('\u0002');
+            if (n != -1) {
+                // Here I not only strip out the material before the "U+0002" but also the
+                // "junk" that reads "latex:\black$\displaystyle" and a final "U+0005".
+                // Those are fragments that the REDUCE interface for TeXmacs inserts.
+                output = output.substring(n + 1 + 26, output.length - 2);
+                output = ioDisplayWindow.MathJax.tex2chtml(output);
+                output.classList.add("output");
+                ioDisplayBody.appendChild(output);
+                // The MathJax documentation doesn't tell the whole story!
+                // See https://github.com/mathjax/MathJax/issues/2365:
+                ioDisplayWindow.MathJax.startup.document.clear();
+                ioDisplayWindow.MathJax.startup.document.updateDocument();
+                scrollIODisplayToBottom();
+            }
+            else {
+                // Textual rather than mathematical output from REDUCE gets inserted as is.
+                sendPlainTextToIODisplay(output, "output");
+            }
         }
-        else {
-            // Textual rather than mathematical output from REDUCE gets inserted as is.
-            sendToIODisplayDiv(output, "output");
-        }
+        sendNextStatementAndEcho();
     }
 }
+
+/**
+ * Respond to an error from the REDUCE web worker
+ * by displaying an alert.
+ * @param {*} event
+ * @returns null
+ */
+function reduceWebErrorHandler(event) { console.log(event.message, event) }
 
 function sendToReduce(str) {
     debug && console.log(` INPUT: ${str}`); // for debugging
@@ -110,16 +157,36 @@ function sendToReduce(str) {
     });
 }
 
-sendToReduce('<< lisp (!*redefmsg := nil); load_package tmprint;' +
-             ' on nat; on fancy; off int >>$');
+function startREDUCE() {
+    worker = new Worker("reduce.web.js");
+    worker.onmessage = reduceWebMessageHandler;
+    worker.onerror = reduceWebErrorHandler;
+    sendToReduce('<< lisp (!*redefmsg := nil); load_package tmprint;' +
+        ' on nat; on fancy; off int >>$');
+}
+
+function stopREDUCE() {
+    worker.terminate();
+    sendPlainTextToIODisplay("REDUCE stopped");
+    setRunningState(false);
+    noOutput = true; hideOutput = false;
+}
 
 // *****************
 // Utility Functions
 // *****************
 
-function sendToReduceAndEcho(text) {
-    sendToIODisplayDiv(text, "input");
+function sendToReduceAndEcho(text, fromFile) {
+    if (fromFile && writable) // Defined in "FileMenu.js".
+        writable.write(text);
+    else
+        sendPlainTextToIODisplay(text, "input");
     sendToReduce(text);
+}
+
+function sendNextStatementAndEcho() {
+    if (inputStatements.length > 0)
+        sendToReduceAndEcho(inputStatements.shift());
 }
 
 const loadedPackages = new Set(); // should probably be in a closure!
@@ -141,28 +208,49 @@ function loadPackage(pkg) {
 // Menu Support
 // ************
 
-// Block used for namespace control:
-{
-    const id = "IOColouringStyle";
-    const style = document.createElement("style");
-    style.innerText = "#IODisplayDiv pre.input {color: red;} #IODisplayDiv *.output {color: blue;}";
-    style.setAttribute("id", id);
-    document.head.appendChild(style); // initially checked
+// REDUCE menu support:
+startREDUCEMenuItem.addEventListener("click", startREDUCE);
+stopREDUCEMenuItem.addEventListener("click", stopREDUCE);
+clearDisplayMenuItem.addEventListener("click", clearIODisplay);
+document.getElementById("PrintDisplayMenuItem").addEventListener("click", () => ioDisplayWindow.print());
 
-    ioColouringCheckbox.addEventListener("change", event => {
-        if (ioColouringCheckbox.checked)
-            document.head.appendChild(style);
-        else
-            document.getElementById(id).remove();
-    });
+// View menu support:
+let ioColouringStyleElement = document.createElement("style");
+ioColouringStyleElement.innerText = "pre.input {color: red;} *.output {color: blue;}";
+
+ioColouringCheckbox.addEventListener("change", event => {
+    if (ioColouringCheckbox.checked)
+        ioDisplayHead.appendChild(ioColouringStyleElement);
+    else
+        ioColouringStyleElement.remove();
+});
+
+function enableTypesetMaths(enable) {
+    hideOutput = true;
+    sendToReduce(enable ? 'on fancy;' : 'off fancy;');
 }
 
-typesetMathsCheckbox.addEventListener("change", event => {
-    hideOutput = true;
-    sendToReduce(typesetMathsCheckbox.checked ? 'on fancy;' : 'off fancy;');
+typesetMathsCheckbox.addEventListener("change", () => {
+    enableTypesetMaths(typesetMathsCheckbox.checked);
 });
 
 centreTypesetMathsCheckbox.addEventListener("change", event => {
-    MathJax.config.chtml.displayAlign = centreTypesetMathsCheckbox.checked ? 'center' : 'left';
-    MathJax.startup.getComponents(); // See http://docs.mathjax.org/en/latest/web/configuration.html
+    ioDisplayWindow.MathJax.config.chtml.displayAlign = centreTypesetMathsCheckbox.checked ? 'center' : 'left';
+    ioDisplayWindow.MathJax.startup.getComponents(); // See http://docs.mathjax.org/en/latest/web/configuration.html
 });
+
+// ********************************************
+// Code that requires the iframe to have loaded
+// ********************************************
+
+{
+    const iframe = document.getElementById("IODisplayIframe");
+    iframe.addEventListener("load", () => {
+        // Don't try to access the iframe DOM until the iframe has loaded!
+        ioDisplayWindow = iframe.contentWindow;
+        ioDisplayHead = iframe.contentDocument.head;
+        ioDisplayBody = iframe.contentDocument.body;
+        ioDisplayHead.appendChild(ioColouringStyleElement); // IOColouringCheckbox initially checked
+        if (location.search !== "?noautorun") startREDUCE();
+    });
+}
