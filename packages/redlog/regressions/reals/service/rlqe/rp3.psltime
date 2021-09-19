@@ -1,6 +1,6 @@
 Tested on  psl
-Time (counter 1): 26070 ms  plus GC time: 320 ms
+Time (counter 1): 26620 ms  plus GC time: 140 ms
 Quitting
-real 27.85
-user 26.50
-sys 1.32
+real 30.31
+user 26.85
+sys 3.31

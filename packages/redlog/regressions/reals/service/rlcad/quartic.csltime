@@ -1,5 +1,5 @@
 Tested on  csl
-Time (counter 1): 270 ms  plus GC time: 60 ms
-1: real 0.56
-user 0.49
-sys 0.08
+Time (counter 1): 300 ms  plus GC time: 20 ms
+1: real 1.22
+user 0.42
+sys 0.70
