@@ -21,7 +21,7 @@ cd $regressions
 
 tests=( **/*.tst )
 
-parallel -j$cores -u $redlogtest/rltest1.sh $root $date {} ::: ${tests[@]}
+parallel --linebuffer -j$cores $redlogtest/rltest1.sh $root $date {} ::: ${tests[@]}
 
 printf "\ntotal number of tests:\n ${#tests[@]}\n"
 
