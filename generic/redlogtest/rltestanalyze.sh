@@ -1,5 +1,7 @@
 #!/bin/bash
 
+shopt -s globstar
+
 alarmone=250
 alarmtwo=1000
 alarmthree=4000
@@ -27,9 +29,9 @@ if [ ! -f $timefile ]; then
     echo "date;lisp;test;refcpu;cpu;deltacpu;refgc;gc;deltagc" > $timefile
 fi
 
-dline=$(printf "%127s" | tr " " =)
-line=$(printf "%127s" | tr " " -)
-fmt="%-31s %12s %12s %12s %8s %12s %12s %12s %8s  %-4s\n"
+dline=$(printf "%173s" | tr " " =)
+line=$(printf "%173s" | tr " " -)
+fmt="%-70s %-6s %12s %12s %12s %8s %12s %12s %12s %8s  %-4s\n"
 
 echo $dline
 echo "Detailed Timings (All Times in ms).  Delta Markers: * $alarmone ms, ** $alarmtwo ms, *** $alarmthree ms, **** $alarmfour ms"
@@ -42,64 +44,77 @@ for lisp in csl psl; do
 	Lisp=PSL
     fi
     echo $line
-    printf "$fmt" "$Lisp Test" RefCPU CPU "" DeltaCPU RefGC GC "" DeltaGC ""
+    printf "$fmt" "$Lisp Test" Status RefCPU CPU "" DeltaCPU RefGC GC "" DeltaGC ""
     echo $line
 
     cd $regressions
-    for a in */*/*.tst; do
+    for a in **/*.tst; do
 	p=$(dirname $a)/$(basename $a .tst)
+
+	if [ -f $timings/$lisp-times/$p.rlg.diff ]; then
+	    status=failed
+	else
+	    status=ok
+	fi
 	
-	cpu=$(fgrep Time $timings/$lisp-times/$p.time | awk '{print $4}')
+	cpu=$(fgrep Time $timings/$lisp-times/$p.time | awk '{if (NF >= 4) print $4; else print ""}')
 	gc=$(fgrep Time $timings/$lisp-times/$p.time | awk '{if (NF >= 9) print $9; else print 0}')
 
-	refcpu=$(fgrep Time $p.${lisp}time | awk '{print $4}')
+	refcpu=$(fgrep Time $p.${lisp}time | awk '{if (NF >= 4) print $4; else print ""}')
 	refgc=$(fgrep Time $p.${lisp}time | awk '{if (NF >= 9) print $9; else print 0}')
-	
-	let deltacpu=$cpu+-$refcpu
-	let deltagc=$gc+-$refgc
 
-	if [ $refcpu -eq 0 ] && [ $cpu -eq 0 ]; then
-	    pcpu="100%"
-	elif [ $refcpu -eq 0 ]; then
-	    pcpu="oo"
+	if [ -n "$cpu" ] && [ -n "$gc" ]; then
+	    let deltacpu=$cpu+-$refcpu
+	    let deltagc=$gc+-$refgc
+
+	    if [ $refcpu -eq 0 ] && [ $cpu -eq 0 ]; then
+		pcpu="100%"
+	    elif [ $refcpu -eq 0 ]; then
+		pcpu="oo"
+	    else
+		let pcpu=100*$cpu/$refcpu
+		pcpu=${pcpu}%
+	    fi
+
+	    if [ $refgc -eq 0 ] && [ $gc -eq 0 ]; then
+		pgc="100%"
+	    elif [ $refgc -eq 0 ]; then
+		pgc="oo"
+	    else
+		let pgc=100*$gc/$refgc
+		pgc=${pgc}%
+	    fi
+
+	    delta=$deltacpu
+	    if [ $deltacpu -gt 0 ]; then
+		deltacpu=+$deltacpu
+	    fi
+	    
+	    if [ $deltagc -gt 0 ]; then
+		deltagc=+$deltagc
+	    fi
+
+	    if [ $delta -gt $alarmfour ]; then
+		significant="****"
+	    elif [ $delta -gt $alarmthree ]; then
+		significant="***"
+	    elif [ $delta -gt $alarmtwo ]; then
+		significant="**"
+	    elif [ $delta -gt $alarmone ]; then
+		significant="*"
+	    else
+		significant=""
+	    fi
 	else
-	    let pcpu=100*$cpu/$refcpu
-	    pcpu=${pcpu}%
-	fi
-
-	if [ $refgc -eq 0 ] && [ $gc -eq 0 ]; then
-	    pgc="100%"
-	elif [ $refgc -eq 0 ]; then
-	    pgc="oo"
-	else
-	    let pgc=100*$gc/$refgc
-	    pgc=${pgc}%
-	fi
-
-	delta=$deltacpu
-	if [ $deltacpu -gt 0 ]; then
-	    deltacpu=+$deltacpu
-	fi
-	
-	if [ $deltagc -gt 0 ]; then
-	    deltagc=+$deltagc
-	fi
-
-	if [ $delta -gt $alarmfour ]; then
-	    significant="****"
-	elif [ $delta -gt $alarmthree ]; then
-	    significant="***"
-	elif [ $delta -gt $alarmtwo ]; then
-	    significant="**"
-	elif [ $delta -gt $alarmone ]; then
-	    significant="*"
-	else
+	    deltacpu=""
+	    pcpu=""
+	    deltagc=""
+	    pgc=""
 	    significant=""
 	fi
+	printf "$fmt" "$p" "$status" "$refcpu" "$cpu" "$deltacpu" "$pcpu" "$refgc" "$gc" "$deltagc" "$pgc" "$significant"
 
-	printf "$fmt" $p $refcpu $cpu $deltacpu $pcpu $refgc $gc $deltagc $pgc "$significant"
-
-	echo "$date;$lisp;$p;$refcpu;$cpu;$deltacpu;$refgc;$gc;$deltagc" >> $log/regression-times.csv
+	echo "$date;$lisp;$p;$status;$refcpu;$cpu;$deltacpu;$refgc;$gc;$deltagc" >> $log/regression-times.csv
     done
     echo $line
     echo

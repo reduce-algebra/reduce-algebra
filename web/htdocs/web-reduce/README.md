@@ -1,8 +1,8 @@
 Web REDUCE
 ==========
 
-Francis Wright, July 2021
--------------------------
+Francis Wright, September 2021
+------------------------------
 
 **This project is highly experimental!**
 
@@ -10,7 +10,7 @@ It aims to provide an alternative user interface for the [WebAssembly](https://w
 
 The Web REDUCE GUI is modelled on the [Run-REDUCE](https://fjwright.github.io/Run-REDUCE/) GUI for conventional REDUCE.
 
-Web REDUCE is available experimentally online as [https://reduce-algebra.sourceforge.io/web-reduce/](https://reduce-algebra.sourceforge.io/web-reduce/).  At present, it can only be accessed using this explicit URL and not via the normal navigation links.  See [About Web REDUCE](https://reduce-algebra.sourceforge.io/web-reduce/about.html) for further details, including limitations of the WebAssembly version of REDUCE that I am aware of so far.  (Once downloaded, it's surprisingly fast!)
+Web REDUCE is available experimentally online as [https://reduce-algebra.sourceforge.io/web-reduce/](https://reduce-algebra.sourceforge.io/web-reduce/).  See [About Web REDUCE](https://reduce-algebra.sourceforge.io/web-reduce/about.html) for further details, including limitations of the WebAssembly version of REDUCE that I am aware of so far.  (But, once downloaded, it's surprisingly fast!)
 
 TO DO
 =====
@@ -20,3 +20,7 @@ TO DO
 * Arrange to wait for an asynchronous load_package to have happened before sending further input to REDUCE.  (Similar problem to above.)
 
 * Load package and switch menu items?
+
+* Improve file input to emulate the REDUCE IN command better.
+
+* Learn about web workers at https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers.

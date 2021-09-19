@@ -49,9 +49,12 @@ if ($_SERVER['QUERY_STRING']): ?>
         <a href="/manual-lookup.php?File%20Handling%20Commands"><code>in</code>, <code>out</code>
             or <code>shut</code></a>.  However, you can copy input
         from any source and paste it into the Web REDUCE input editor.
-        This works well, at least up to several hundred lines of
-        input, <strong>subject to the <code>load_package</code>
-            provisos below</strong>.
+        This works, at least up to several hundred lines of input,
+        <strong>subject to the <code>load_package</code> provisos
+        below</strong>.  The <a href="UserGuide.php#FileMenu">File Menu</a>
+            (on Chromium-based browsers only), is an incomplete first
+            attempt at file support.
+
     </li>
     <li>
         Web REDUCE does not support compiling or loading user modules
@@ -69,9 +72,9 @@ if ($_SERVER['QUERY_STRING']): ?>
         otherwise you may get an <code>end-of-file</code> error (see below).
    </li>
     <li>
-        Web REDUCE does not provide any input prompts, unlike conventional
-        REDUCE.  This limits the usefulness of the standard REDUCE
-        commands
+        Web REDUCE does not provide any input prompts, unlike
+        conventional REDUCE.  This limits the usefulness of the
+        standard REDUCE commands
         <a href="/manual-lookup.php?Referencing%20Previous%20Results"><code>ws</code>
             and <code>input</code></a>, which work but you have to count
         inputs yourself!  In principle, the standard REDUCE command
@@ -101,7 +104,7 @@ if ($_SERVER['QUERY_STRING']): ?>
     </li>
     <li>
         You need a recent web browser, preferably the latest version,
-        to run Web REDUCE.  It may not run on mobile devices.
+        to run Web REDUCE.  It probably will not run on mobile devices.
     </li>
 </ul>
 <p>
@@ -132,7 +135,7 @@ if ($_SERVER['QUERY_STRING']): ?>
     library, which is also used elsewhere on the REDUCE web site.
 </p>
 
-<address><a href="https://sites.google.com/site/fjwcentaur/feedback">Francis Wright</a>, July 2021</address>
+<address><a href="https://sites.google.com/site/fjwcentaur/feedback">Francis Wright</a>, September 2021</address>
 
 </div><!-- opened in begin-body.php -->
 <?php include '../include/footer.php'; ?>

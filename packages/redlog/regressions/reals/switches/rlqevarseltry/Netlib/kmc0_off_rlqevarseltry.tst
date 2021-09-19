@@ -1,0 +1,44 @@
+off rlabout;
+rlset r;
+off rlxopt;
+off rlqevarseltry;
+
+kmc0 :=
+ex(x1,ex(x2,ex(x3,ex(x4,ex(x5,ex(x6,ex(x7,ex(x8,ex(x9,ex(x10,ex(x11,ex(x12,ex(
+x13,ex(x14,ex(x15,ex(x16,ex(x17,ex(x18,ex(x19,ex(x20,ex(x21,ex(x22,ex(x23,ex(x24
+,ex(x25,ex(x26,ex(x27,ex(x28,ex(x29,ex(x30,ex(x31,ex(x32,ex(x33,ex(x34,ex(x35,ex
+(x36,ex(x37,ex(x38,ex(x39,ex(x40,ex(x41,ex(x42,ex(x43,ex(x44,ex(x45,ex(x46,ex(
+x47,ex(x48,ex(x49,ex(x50,x8 - 4*x9 <= 0 and x8 + 4*x9 - 4 <= 0 and x7 - 4*x8 <=
+0 and x7 + 4*x8 - 4 <= 0 and x6 - 4*x7 <= 0 and x6 + 4*x7 - 4 <= 0 and x50 - 1
+>= 0 and x5 - 4*x6 <= 0 and x5 + 4*x6 - 4 <= 0 and x49 - 4*x50 <= 0 and x49 + 4*
+x50 - 4 <= 0 and x48 - 4*x49 <= 0 and x48 + 4*x49 - 4 <= 0 and x47 - 4*x48 <= 0
+and x47 + 4*x48 - 4 <= 0 and x46 - 4*x47 <= 0 and x46 + 4*x47 - 4 <= 0 and x45 -
+ 4*x46 <= 0 and x45 + 4*x46 - 4 <= 0 and x44 - 4*x45 <= 0 and x44 + 4*x45 - 4 <=
+ 0 and x43 - 4*x44 <= 0 and x43 + 4*x44 - 4 <= 0 and x42 - 4*x43 <= 0 and x42 +
+4*x43 - 4 <= 0 and x41 - 4*x42 <= 0 and x41 + 4*x42 - 4 <= 0 and x40 - 4*x41 <=
+0 and x40 + 4*x41 - 4 <= 0 and x4 - 4*x5 <= 0 and x4 + 4*x5 - 4 <= 0 and x39 - 4
+*x40 <= 0 and x39 + 4*x40 - 4 <= 0 and x38 - 4*x39 <= 0 and x38 + 4*x39 - 4 <= 0
+ and x37 - 4*x38 <= 0 and x37 + 4*x38 - 4 <= 0 and x36 - 4*x37 <= 0 and x36 + 4*
+x37 - 4 <= 0 and x35 - 4*x36 <= 0 and x35 + 4*x36 - 4 <= 0 and x34 - 4*x35 <= 0
+and x34 + 4*x35 - 4 <= 0 and x33 - 4*x34 <= 0 and x33 + 4*x34 - 4 <= 0 and x32 -
+ 4*x33 <= 0 and x32 + 4*x33 - 4 <= 0 and x31 - 4*x32 <= 0 and x31 + 4*x32 - 4 <=
+ 0 and x30 - 4*x31 <= 0 and x30 + 4*x31 - 4 <= 0 and x3 - 4*x4 <= 0 and x3 + 4*
+x4 - 4 <= 0 and x29 - 4*x30 <= 0 and x29 + 4*x30 - 4 <= 0 and x28 - 4*x29 <= 0
+and x28 + 4*x29 - 4 <= 0 and x27 - 4*x28 <= 0 and x27 + 4*x28 - 4 <= 0 and x26 -
+ 4*x27 <= 0 and x26 + 4*x27 - 4 <= 0 and x25 - 4*x26 <= 0 and x25 + 4*x26 - 4 <=
+ 0 and x24 - 4*x25 <= 0 and x24 + 4*x25 - 4 <= 0 and x23 - 4*x24 <= 0 and x23 +
+4*x24 - 4 <= 0 and x22 - 4*x23 <= 0 and x22 + 4*x23 - 4 <= 0 and x21 - 4*x22 <=
+0 and x21 + 4*x22 - 4 <= 0 and x20 - 4*x21 <= 0 and x20 + 4*x21 - 4 <= 0 and x2
+- 4*x3 <= 0 and x2 + 4*x3 - 4 <= 0 and x19 - 4*x20 <= 0 and x19 + 4*x20 - 4 <= 0
+ and x18 - 4*x19 <= 0 and x18 + 4*x19 - 4 <= 0 and x17 - 4*x18 <= 0 and x17 + 4*
+x18 - 4 <= 0 and x16 - 4*x17 <= 0 and x16 + 4*x17 - 4 <= 0 and x15 - 4*x16 <= 0
+and x15 + 4*x16 - 4 <= 0 and x14 - 4*x15 <= 0 and x14 + 4*x15 - 4 <= 0 and x13 -
+ 4*x14 <= 0 and x13 + 4*x14 - 4 <= 0 and x12 - 4*x13 <= 0 and x12 + 4*x13 - 4 <=
+ 0 and x11 - 4*x12 <= 0 and x11 + 4*x12 - 4 <= 0 and x10 - 4*x11 <= 0 and x10 +
+4*x11 - 4 <= 0 and 4*x10 - x9 >= 0 and 4*x10 + x9 - 4 <= 0 and x1 >= 0 and x1 -
+1 <= 0 and x1 - 4*x2 <= 0 and x1 + 4*x2 - 4 <= 0))))))))))))))))))))))))))))))))
+))))))))))))))))))$
+
+rlqe kmc0;
+
+end;

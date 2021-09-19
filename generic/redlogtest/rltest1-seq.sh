@@ -139,11 +139,6 @@ rm -f $timings/psl-times/$d/$p.rlg.tmp
 rm -f $howlong
 # end of PSL test
 
-csltime=$(grep ^Time $timings/csl-times/$d/$p.time | awk '{print $4}')
-psltime=$(grep ^Time $timings/psl-times/$d/$p.time | awk '{print $4}')
-let ratio=100*$csltime/$psltime
-ratioresult="${ratio}%"
-
 mkdir -p $timings/csl-psl-times-comparison/$d
 diff -B -w $timings/csl-times/$d/$p.rlg $timings/psl-times/$d/$p.rlg \
      > $timings/csl-psl-times-comparison/$d/$p.rlg.diff
@@ -155,8 +150,12 @@ else
 fi
 
 if [ "$cslresult" = failed ] || [ "$pslresult" = failed ]; then
-    printf "test %-35s CSL %s, PSL %s\n" "$d/$p:" "$cslresult" "$pslresult"
+    printf "test %-70s CSL %s, PSL %s\n" "$d/$p:" "$cslresult" "$pslresult"
 else
-    printf "test %-35s CSL %s, PSL %s, CSL/PSL = %4s %s\n" "$d/$p:" \
+    csltime=$(grep ^Time $timings/csl-times/$d/$p.time | awk '{print $4}')
+    psltime=$(grep ^Time $timings/psl-times/$d/$p.time | awk '{print $4}')
+    let ratio=100*$csltime/$psltime
+    ratioresult="${ratio}%"
+    printf "test %-70s CSL %s, PSL %s, CSL/PSL = %4s %s\n" "$d/$p:" \
 	   "$cslresult" "$pslresult" "$ratioresult" "$resultlispdiff"
 fi
