@@ -158,63 +158,72 @@ s!:builtin1) 94) (put (quote wrs) (quote s!:builtin1) 95) (put (quote zerop)
 (quote s!:builtin1) 96) (put (quote car) (quote s!:builtin1) 97) (put (quote
 cdr) (quote s!:builtin1) 98) (put (quote caar) (quote s!:builtin1) 99) (put 
 (quote cadr) (quote s!:builtin1) 100) (put (quote cdar) (quote s!:builtin1) 
-101) (put (quote cddr) (quote s!:builtin1) 102) (put (quote qcar) (quote 
-s!:builtin1) 103) (put (quote qcdr) (quote s!:builtin1) 104) (put (quote 
-qcaar) (quote s!:builtin1) 105) (put (quote qcadr) (quote s!:builtin1) 106) (
-put (quote qcdar) (quote s!:builtin1) 107) (put (quote qcddr) (quote 
-s!:builtin1) 108) (put (quote ncons) (quote s!:builtin1) 109) (put (quote 
-numberp) (quote s!:builtin1) 110) (put (quote is!-spid) (quote s!:builtin1) 
-111) (put (quote spid!-to!-nil) (quote s!:builtin1) 112) (put (quote 
-mv!-list!*) (quote s!:builtin1) 113) (put (quote append) (quote s!:builtin2) 
-0) (put (quote ash) (quote s!:builtin2) 1) (put (quote assoc) (quote 
-s!:builtin2) 2) (put (quote assoc!*!*) (quote s!:builtin2) 2) (put (quote 
-atsoc) (quote s!:builtin2) 3) (put (quote deleq) (quote s!:builtin2) 4) (put 
-(quote delete) (quote s!:builtin2) 5) (put (quote divide) (quote s!:builtin2)
-6) (put (quote eqcar) (quote s!:builtin2) 7) (put (quote eql) (quote 
-s!:builtin2) 8) (put (quote eqn) (quote s!:builtin2) 9) (put (quote expt) (
-quote s!:builtin2) 10) (put (quote flag) (quote s!:builtin2) 11) (put (quote 
-flagpcar) (quote s!:builtin2) 12) (put (quote gcdn) (quote s!:builtin2) 13) (
-put (quote geq) (quote s!:builtin2) 14) (put (quote getv) (quote s!:builtin2)
-15) (put (quote greaterp) (quote s!:builtin2) 16) (put (quote idifference) (
-quote s!:builtin2) 17) (put (quote igreaterp) (quote s!:builtin2) 18) (put (
-quote ilessp) (quote s!:builtin2) 19) (put (quote imax) (quote s!:builtin2) 
-20) (put (quote imin) (quote s!:builtin2) 21) (put (quote iplus2) (quote 
-s!:builtin2) 22) (put (quote iquotient) (quote s!:builtin2) 23) (put (quote 
-iremainder) (quote s!:builtin2) 24) (put (quote irightshift) (quote 
-s!:builtin2) 25) (put (quote itimes2) (quote s!:builtin2) 26) (put (quote leq
-) (quote s!:builtin2) 28) (put (quote lessp) (quote s!:builtin2) 29) (put (
-quote max2) (quote s!:builtin2) 31) (put (quote member) (quote s!:builtin2) 
-32) (put (quote member!*!*) (quote s!:builtin2) 32) (put (quote memq) (quote 
-s!:builtin2) 33) (put (quote min2) (quote s!:builtin2) 34) (put (quote mod) (
-quote s!:builtin2) 35) (put (quote modular!-difference) (quote s!:builtin2) 
-36) (put (quote modular!-expt) (quote s!:builtin2) 37) (put (quote 
-modular!-plus) (quote s!:builtin2) 38) (put (quote modular!-quotient) (quote 
-s!:builtin2) 39) (put (quote modular!-times) (quote s!:builtin2) 40) (put (
-quote nconc) (quote s!:builtin2) 41) (put (quote neq) (quote s!:builtin2) 42)
-(put (quote orderp) (quote s!:builtin2) 43) (put (quote quotient) (quote 
-s!:builtin2) 44) (put (quote remainder) (quote s!:builtin2) 45) (put (quote 
-remflag) (quote s!:builtin2) 46) (put (quote remprop) (quote s!:builtin2) 47)
-(put (quote rplaca) (quote s!:builtin2) 48) (put (quote rplacd) (quote 
-s!:builtin2) 49) (put (quote schar) (quote s!:builtin2) 50) (put (quote set) 
-(quote s!:builtin2) 51) (put (quote smemq) (quote s!:builtin2) 52) (put (
-quote subla) (quote s!:builtin2) 53) (put (quote sublis) (quote s!:builtin2) 
-54) (put (quote symbol!-set!-definition) (quote s!:builtin2) 55) (put (quote 
-symbol!-set!-env) (quote s!:builtin2) 56) (put (quote times2) (quote 
-s!:builtin2) 57) (put (quote xcons) (quote s!:builtin2) 58) (put (quote equal
-) (quote s!:builtin2) 59) (put (quote eq) (quote s!:builtin2) 60) (put (quote
-cons) (quote s!:builtin2) 61) (put (quote list2) (quote s!:builtin2) 62) (
-put (quote get) (quote s!:builtin2) 63) (put (quote qgetv) (quote s!:builtin2
-) 64) (put (quote flagp) (quote s!:builtin2) 65) (put (quote apply1) (quote 
-s!:builtin2) 66) (put (quote difference) (quote s!:builtin2) 67) (put (quote 
-plus2) (quote s!:builtin2) 68) (put (quote times2) (quote s!:builtin2) 69) (
-put (quote equalcar) (quote s!:builtin2) 70) (put (quote iequal) (quote 
-s!:builtin2) 71) (put (quote nreverse) (quote s!:builtin2) 72) (put (quote 
-bps!-putv) (quote s!:builtin3) 0) (put (quote errorset) (quote s!:builtin3) 1
-) (put (quote list2!*) (quote s!:builtin3) 2) (put (quote list3) (quote 
-s!:builtin3) 3) (put (quote putprop) (quote s!:builtin3) 4) (put (quote putv)
-(quote s!:builtin3) 5) (put (quote putv!-char) (quote s!:builtin3) 6) (put (
-quote subst) (quote s!:builtin3) 7) (put (quote apply2) (quote s!:builtin3) 8
-) (put (quote acons) (quote s!:builtin3) 9) nil)
+101) (put (quote cddr) (quote s!:builtin1) 102) (put (quote c!Ar) (quote 
+s!:builtin1) 103) (put (quote c!Dr) (quote s!:builtin1) 104) (put (quote 
+c!Aar) (quote s!:builtin1) 99) (put (quote c!Adr) (quote s!:builtin1) 100) (
+put (quote c!Dar) (quote s!:builtin1) 101) (put (quote c!Ddr) (quote 
+s!:builtin1) 102) (put (quote ca!Ar) (quote s!:builtin1) 99) (put (quote 
+ca!Dr) (quote s!:builtin1) 100) (put (quote cd!Ar) (quote s!:builtin1) 101) (
+put (quote cd!Dr) (quote s!:builtin1) 102) (put (quote c!A!Ar) (quote 
+s!:builtin1) 105) (put (quote c!A!Dr) (quote s!:builtin1) 106) (put (quote 
+c!D!Ar) (quote s!:builtin1) 107) (put (quote c!D!Dr) (quote s!:builtin1) 108)
+(put (quote qcar) (quote s!:builtin1) 103) (put (quote qcdr) (quote 
+s!:builtin1) 104) (put (quote qcaar) (quote s!:builtin1) 105) (put (quote 
+qcadr) (quote s!:builtin1) 106) (put (quote qcdar) (quote s!:builtin1) 107) (
+put (quote qcddr) (quote s!:builtin1) 108) (put (quote ncons) (quote 
+s!:builtin1) 109) (put (quote numberp) (quote s!:builtin1) 110) (put (quote 
+is!-spid) (quote s!:builtin1) 111) (put (quote spid!-to!-nil) (quote 
+s!:builtin1) 112) (put (quote mv!-list!*) (quote s!:builtin1) 113) (put (
+quote append) (quote s!:builtin2) 0) (put (quote ash) (quote s!:builtin2) 1) 
+(put (quote assoc) (quote s!:builtin2) 2) (put (quote assoc!*!*) (quote 
+s!:builtin2) 2) (put (quote atsoc) (quote s!:builtin2) 3) (put (quote deleq) 
+(quote s!:builtin2) 4) (put (quote delete) (quote s!:builtin2) 5) (put (quote
+divide) (quote s!:builtin2) 6) (put (quote eqcar) (quote s!:builtin2) 7) (
+put (quote eql) (quote s!:builtin2) 8) (put (quote eqn) (quote s!:builtin2) 9
+) (put (quote expt) (quote s!:builtin2) 10) (put (quote flag) (quote 
+s!:builtin2) 11) (put (quote flagpcar) (quote s!:builtin2) 12) (put (quote 
+gcdn) (quote s!:builtin2) 13) (put (quote geq) (quote s!:builtin2) 14) (put (
+quote getv) (quote s!:builtin2) 15) (put (quote greaterp) (quote s!:builtin2)
+16) (put (quote idifference) (quote s!:builtin2) 17) (put (quote igreaterp) 
+(quote s!:builtin2) 18) (put (quote ilessp) (quote s!:builtin2) 19) (put (
+quote imax) (quote s!:builtin2) 20) (put (quote imin) (quote s!:builtin2) 21)
+(put (quote iplus2) (quote s!:builtin2) 22) (put (quote iquotient) (quote 
+s!:builtin2) 23) (put (quote iremainder) (quote s!:builtin2) 24) (put (quote 
+irightshift) (quote s!:builtin2) 25) (put (quote itimes2) (quote s!:builtin2)
+26) (put (quote leq) (quote s!:builtin2) 28) (put (quote lessp) (quote 
+s!:builtin2) 29) (put (quote max2) (quote s!:builtin2) 31) (put (quote member
+) (quote s!:builtin2) 32) (put (quote member!*!*) (quote s!:builtin2) 32) (
+put (quote memq) (quote s!:builtin2) 33) (put (quote min2) (quote s!:builtin2
+) 34) (put (quote mod) (quote s!:builtin2) 35) (put (quote 
+modular!-difference) (quote s!:builtin2) 36) (put (quote modular!-expt) (
+quote s!:builtin2) 37) (put (quote modular!-plus) (quote s!:builtin2) 38) (
+put (quote modular!-quotient) (quote s!:builtin2) 39) (put (quote 
+modular!-times) (quote s!:builtin2) 40) (put (quote nconc) (quote s!:builtin2
+) 41) (put (quote neq) (quote s!:builtin2) 42) (put (quote orderp) (quote 
+s!:builtin2) 43) (put (quote quotient) (quote s!:builtin2) 44) (put (quote 
+remainder) (quote s!:builtin2) 45) (put (quote remflag) (quote s!:builtin2) 
+46) (put (quote remprop) (quote s!:builtin2) 47) (put (quote rplaca) (quote 
+s!:builtin2) 48) (put (quote rplacd) (quote s!:builtin2) 49) (put (quote 
+schar) (quote s!:builtin2) 50) (put (quote set) (quote s!:builtin2) 51) (put 
+(quote smemq) (quote s!:builtin2) 52) (put (quote subla) (quote s!:builtin2) 
+53) (put (quote sublis) (quote s!:builtin2) 54) (put (quote 
+symbol!-set!-definition) (quote s!:builtin2) 55) (put (quote symbol!-set!-env
+) (quote s!:builtin2) 56) (put (quote times2) (quote s!:builtin2) 57) (put (
+quote xcons) (quote s!:builtin2) 58) (put (quote equal) (quote s!:builtin2) 
+59) (put (quote eq) (quote s!:builtin2) 60) (put (quote cons) (quote 
+s!:builtin2) 61) (put (quote list2) (quote s!:builtin2) 62) (put (quote get) 
+(quote s!:builtin2) 63) (put (quote qgetv) (quote s!:builtin2) 64) (put (
+quote flagp) (quote s!:builtin2) 65) (put (quote apply1) (quote s!:builtin2) 
+66) (put (quote difference) (quote s!:builtin2) 67) (put (quote plus2) (quote
+s!:builtin2) 68) (put (quote times2) (quote s!:builtin2) 69) (put (quote 
+equalcar) (quote s!:builtin2) 70) (put (quote iequal) (quote s!:builtin2) 71)
+(put (quote nreverse) (quote s!:builtin2) 72) (put (quote bps!-putv) (quote 
+s!:builtin3) 0) (put (quote errorset) (quote s!:builtin3) 1) (put (quote 
+list2!*) (quote s!:builtin3) 2) (put (quote list3) (quote s!:builtin3) 3) (
+put (quote putprop) (quote s!:builtin3) 4) (put (quote putv) (quote 
+s!:builtin3) 5) (put (quote putv!-char) (quote s!:builtin3) 6) (put (quote 
+subst) (quote s!:builtin3) 7) (put (quote apply2) (quote s!:builtin3) 8) (put
+(quote acons) (quote s!:builtin3) 9) nil)
 
 (de s!:prinhex1 (n) (princ (schar "0123456789abcdef" (logand n 15))))
 
@@ -931,6 +940,20 @@ minus) b))) (t (cond ((equal b 0) a) (t (list (car u) a b))))))))
 quote iminus) b))) (t (cond ((equal b 0) a) (t (list (car u) a b))))))))
 
 (put (quote idifference) (quote s!:tidy_fn) (quote s!:imp_idifference))
+
+(de s!:imp_car (u) (prog (a) (setq a (s!:improve (cadr u))) (cond ((eqcar a (
+quote car)) (return (list (quote caar) (cadr a)))) (t (cond ((eqcar a (quote 
+cdr)) (return (list (quote cadr) (cadr a)))) (t (return (list (quote car) a))
+))))))
+
+(put (quote car) (quote s!:tidy_fn) (quote s!:imp_car))
+
+(de s!:imp_cdr (u) (prog (a) (setq a (s!:improve (cadr u))) (cond ((eqcar a (
+quote car)) (return (list (quote cdar) (cadr a)))) (t (cond ((eqcar a (quote 
+cdr)) (return (list (quote cddr) (cadr a)))) (t (return (list (quote cdr) a))
+))))))
+
+(put (quote cdr) (quote s!:tidy_fn) (quote s!:imp_cdr))
 
 (de s!:boolean_jumpable (u) (or (null u) (equal u t) (and (not (atom u)) (
 atom (car u)) (or (flagp (car u) (quote s!:bool_opcode)) (and (or (equal (car
@@ -3659,16 +3682,16 @@ r1 r1)))
 (flag (quote (fastflag)) (quote c!:uses_nil))
 
 (de c!:pcar (op r1 r2 r3) (prog nil (cond ((not !*unsafecar) (progn (
-c!:printf "    if (!car_legal(%v)) UNLIKELY return carerror(%v);\n" r3 r3) (
-c!:printf "    %v = car(%v);\n" r1 r3))) (t (c!:printf "    %v = car(%v);\n" 
-r1 r3)))))
+c!:printf "#ifndef UNSAFE_CAR\n") (c!:printf 
+"    if (!car_legal(%v)) UNLIKELY return carerror(%v);\n" r3 r3) (c!:printf 
+"#endif\n")))) (c!:printf "    %v = car(%v);\n" r1 r3)))
 
 (put (quote car) (quote c!:opcode_printer) (function c!:pcar))
 
 (de c!:pcdr (op r1 r2 r3) (prog nil (cond ((not !*unsafecar) (progn (
-c!:printf "    if (!car_legal(%v)) UNLIKELY return cdrerror(%v);\n" r3 r3) (
-c!:printf "    %v = cdr(%v);\n" r1 r3))) (t (c!:printf "    %v = cdr(%v);\n" 
-r1 r3)))))
+c!:printf "#ifndef UNSAFE_CAR\n") (c!:printf 
+"    if (!car_legal(%v)) UNLIKELY return cdrerror(%v);\n" r3 r3) (c!:printf 
+"#endif\n")))) (c!:printf "    %v = cdr(%v);\n" r1 r3)))
 
 (put (quote cdr) (quote c!:opcode_printer) (function c!:pcdr))
 
@@ -3829,15 +3852,17 @@ r1 r2) (c!:printf
 
 (put (quote qputv) (quote c!:opcode_printer) (function c!:pqputv))
 
-(de c!:prplaca (op r1 r2 r3) (progn (c!:printf 
-"    if (!car_legal(%v)) UNLIKELY return rplaca_fails(%v);\n" r2 r2) (
-c!:printf "    setcar(%v, %v);\n" r2 r3)))
+(de c!:prplaca (op r1 r2 r3) (progn (c!:printf "#ifndef UNSAFE_CAR\n") (
+c!:printf "    if (!car_legal(%v)) UNLIKELY return rplaca_fails(%v);\n" r2 r2
+) (c!:printf "#endif\n") (c!:printf "    write_barrier(caraddr(%v), %v);\n" 
+r2 r3)))
 
 (put (quote rplaca) (quote c!:opcode_printer) (function c!:prplaca))
 
-(de c!:prplacd (op r1 r2 r3) (progn (c!:printf 
-"    if (!car_legal(%v)) UNLIKELY return rplacd_fails(%v);\n" r2 r2) (
-c!:printf "    setcdr(%v, %v);\n" r2 r3)))
+(de c!:prplacd (op r1 r2 r3) (progn (c!:printf "#ifndef UNSAFE_CAR\n") (
+c!:printf "    if (!car_legal(%v)) UNLIKELY return rplacd_fails(%v);\n" r2 r2
+) (c!:printf "#endif\n") (c!:printf "    write_barrier(cdraddr(%v), %v);\n" 
+r2 r3)))
 
 (put (quote rplacd) (quote c!:opcode_printer) (function c!:prplacd))
 
