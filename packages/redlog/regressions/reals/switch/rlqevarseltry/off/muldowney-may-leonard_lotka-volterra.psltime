@@ -1,0 +1,10 @@
+Tested on  psl
+
+Time: 0 ms
+Time (counter 1): 181080 ms  plus GC time: 470 ms
+
+Time: 0 ms
+Quitting
+real 185.41
+user 181.68
+sys 3.29
