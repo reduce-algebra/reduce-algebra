@@ -476,10 +476,12 @@ void mac_deal_with_application_bundle(int argc, const char *argv[])
                          "Returned from execv with error code %d\n", errno);
 // These days I can not even be certain that calling std::exit() will cause
 // and application to terminate (I think) but the use here should NEVER get
-// called and so just what happens here is not that important!
-            // std::fflush(stdout);
-            // std::fflush(stderr);
-            // if (spool_file != nullptr) std::fflush(spool_file);
+// called and so just what happens here is not that important! However if
+// execv does return I really want to see any output that may shed light on
+// the cause, so flushing the output streams feels like good policy. Even
+// if I expect std::exit to flush things too.
+            std::fflush(stdout);
+            std::fflush(stderr);
             std::exit(1);
         }
     }
