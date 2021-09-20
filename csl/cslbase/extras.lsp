@@ -92,8 +92,8 @@ l2) (setq l2 (cdr l2)))) (t (progn (rplacd w l1) (setq w l1) (setq l1 (cdr l1
 (setq !*prinl!-visited!-nodes!* (mkhash 10 0 1.5))
 
 (de s!:prinl0 (x !*prinl!-fn!*) (prog (!*prinl!-index!*) (setq 
-!*prinl!-index!* 0) (unwind!-protect (progn (s!:prinl1 x 0) (s!:prinl2 x 0)) 
-(clrhash !*prinl!-visited!-nodes!*)) (return x)))
+!*prinl!-index!* 0) (clrhash !*prinl!-visited!-nodes!*) (s!:prinl1 x 0) (
+s!:prinl2 x 0) (clrhash !*prinl!-visited!-nodes!*) (return x)))
 
 (de s!:prinl1 (x depth) (prog (w length) (cond ((and (fixp !*print!-level!*) 
 (greaterp depth !*print!-level!*)) (return nil))) (setq length 0) top (cond (

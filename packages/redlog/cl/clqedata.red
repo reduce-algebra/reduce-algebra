@@ -226,32 +226,63 @@ asserted procedure qedb_addWorkingNodes(db: Vector, nodes: List): Vector;
 asserted procedure qedb_isEmptyWorkingNodes(db: Vector): Boolean;
    qeco_isEmpty(getv(db, QEDB_WORKINGNODES));
 
+% The following qedb methods are used for verbose output.
+
+asserted procedure qedb_numberOfWorkingNodes(db: Vector): Integer;
+   % This is used for verbose output with DFS.
+   qeco_length(getv(db, QEDB_WORKINGNODES));
+
+asserted procedure qedb_fetchWorkingNodeDeletions(db: Vector): DottedPair;
+   begin scalar container;
+         integer requested, deleted;
+      container := getv(db, QEDB_WORKINGNODES);
+      requested := qeco_getRequestedAdditions(container);
+      deleted := requested - qeco_getEffectiveAdditions(container);
+      qeco_setRequestedAdditions(container, 0);
+      qeco_setEffectiveAdditions(container, 0);
+      return deleted . requested
+   end;
+
+asserted procedure qedb_workingNodesStatistics(db: Vector): DottedPair;
+   % Returns the maximum length of the "Variables" fields in the working nodes, along with the
+   % number of occurrences of corresponding nodes. This is used for verbose output with DFS.
+   qeco_statistics(getv(db, QEDB_WORKINGNODES));
+
+asserted procedure qedb_firstWorkingNodeVariables(db: Vector): List;
+   % Returns the "Variables" field of the firstworking node. This is used for verbose output with
+   % DFS.
+   qenod_getVariables(qeco_firstNode(getv(db, QEDB_WORKINGNODES)));
+
 #define QECO_TAG 0
 #define QECO_NODES 1
 #define QECO_LASTNODE 2
 #define QECO_TRAVERSALMODE 3
 #define QECO_HASHTABLE 4
-#define QECO_UPLIM 4
+#define QECO_REQUESTEDADDITIONS 5
+#define QECO_EFFECTIVEADDITIONS 6
+#define QECO_UPLIM 6
 
 asserted procedure qeco_new(traversalMode: Id): Vector;
    % QE data for a block new.
-   begin scalar db;
-      db := mkvect(QECO_UPLIM);
-      putv(db, QECO_TAG, 'qeco);
-      putv(db, QECO_NODES, nil);                    % list (stack or queue) of QE tree working nodes
-      putv(db, QECO_TRAVERSALMODE, traversalMode);  % 'bfs (breadth-first search) or 'dfs (depth-first search)
+   begin scalar co;
+      co := mkvect(QECO_UPLIM);
+      putv(co, QECO_TAG, 'qeco);
+      putv(co, QECO_NODES, nil);                    % list (stack or queue) of QE tree working nodes
+      putv(co, QECO_TRAVERSALMODE, traversalMode);  % 'bfs (breadth-first search) or 'dfs (depth-first search)
       if traversalMode eq 'dfs then <<
-         putv(db, QECO_LASTNODE, 'unused);
-         putv(db, QECO_HASHTABLE, nil)              % hashed dynamic programming data
+         putv(co, QECO_LASTNODE, 'unused);
+         putv(co, QECO_HASHTABLE, nil)              % hashed dynamic programming data
       >> else <<
          ASSERT( traversalMode eq 'bfs );
-         putv(db, QECO_LASTNODE, nil);              % the last node in nodes
-         putv(db, QECO_HASHTABLE, 'unused)
+         putv(co, QECO_LASTNODE, nil);              % the last node in nodes
+         putv(co, QECO_HASHTABLE, 'unused)
       >>;
-      return db
+      putv(co, QECO_REQUESTEDADDITIONS, 0);
+      putv(co, QECO_EFFECTIVEADDITIONS, 0);
+      return co
    end;
 
-asserted procedure qeco_add(co: Container, new: List): Container;
+asserted procedure qeco_add(co: Vector, new: List): Vector;
    begin scalar nodes, lastNode;
       if null new then
          return co;
@@ -260,29 +291,35 @@ asserted procedure qeco_add(co: Container, new: List): Container;
          lastNode := getv(co, QECO_LASTNODE);
          if null lastNode then
             lastNode := nodes := {pop new};
-         for each node in new do
+         for each node in new do <<
+            putv(co, QECO_REQUESTEDADDITIONS, getv(co, QECO_REQUESTEDADDITIONS) + 1);
             if not member(node, nodes) then <<
                cdr lastNode := node . nil;
-               lastNode := cdr lastNode
-            >>;
+               lastNode := cdr lastNode;
+               putv(co, QECO_EFFECTIVEADDITIONS, getv(co, QECO_EFFECTIVEADDITIONS) + 1)
+            >>
+         >>;
          putv(co, QECO_NODES, nodes);
          putv(co, QECO_LASTNODE, lastNode)
       >> else <<
          ASSERT( getv(co, QECO_TRAVERSALMODE) eq 'dfs );
-         for each node in new do
+         for each node in new do <<
+            putv(co, QECO_REQUESTEDADDITIONS, getv(co, QECO_REQUESTEDADDITIONS) + 1);
             if not lto_hmember(node, getv(co, QECO_HASHTABLE), 'co_hfn) then <<
                putv(co, QECO_HASHTABLE, lto_hinsert(node, getv(co, QECO_HASHTABLE), 'co_hfn));
-               nodes := node . nodes
-            >>;
+               nodes := node . nodes;
+               putv(co, QECO_EFFECTIVEADDITIONS, getv(co, QECO_EFFECTIVEADDITIONS) + 1)
+            >>
+         >>;
          putv(co, QECO_NODES, nodes)
       >>;
       return co
    end;
 
-asserted procedure qeco_firstNode(co: Container): List;
+asserted procedure qeco_firstNode(co: Vector): List;
    car getv(co, QECO_NODES);
 
-asserted procedure qeco_fetch(co: Container): List;
+asserted procedure qeco_fetch(co: Vector): List;
    begin scalar nodes, node;
       nodes := getv(co, QECO_NODES);
       ASSERT( not null nodes );
@@ -293,8 +330,39 @@ asserted procedure qeco_fetch(co: Container): List;
       return node
    end;
 
-asserted procedure qeco_isEmpty(co: Container): Boolean;
+asserted procedure qeco_isEmpty(co: Vector): Boolean;
    null getv(co, QECO_NODES);
+
+asserted procedure qeco_length(co: Vector): Integer;
+   length getv(co, QECO_NODES);
+
+asserted procedure qeco_statistics(co: Vector): DottedPair;
+   % Returns the maximum length of the "Variables" fields in the contained nodes, along with the
+   % number of occurrences of corresponding nodes. This is used for verbose output with DFS.
+   begin integer thisLength, maxLength, maxCount;
+      for each node in getv(co, QECO_NODES) do <<
+         thisLength := length(qenod_getVariables(node));
+         if thisLength > maxLength then <<
+            maxLength := thisLength;
+            maxCount := 1
+         >> else if thisLength = maxLength then <<
+            maxCount := maxCount + 1
+         >>
+      >>;
+      return maxLength . maxCount
+   end;
+
+asserted procedure qeco_getEffectiveAdditions(co: Vector): Integer;
+   getv(co, QECO_EFFECTIVEADDITIONS);
+
+asserted procedure qeco_setEffectiveAdditions(co: Vector, n: Integer): Vector;
+   << putv(co, QECO_EFFECTIVEADDITIONS, n); co >>;
+
+asserted procedure qeco_getRequestedAdditions(co: Vector): Integer;
+   getv(co, QECO_REQUESTEDADDITIONS);
+
+asserted procedure qeco_setRequestedAdditions(co: Vector, n: Integer): Vector;
+   << putv(co, QECO_REQUESTEDADDITIONS, n); co >>;
 
 #define QENOD_TAG 1
 #define QENOD_VARIABLES 2

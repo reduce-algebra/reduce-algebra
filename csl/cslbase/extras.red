@@ -244,7 +244,7 @@ symbolic procedure s!:prinl0(x,!*prinl!-fn!*);
     !*prinl!-index!*:=0;
     clrhash !*prinl!-visited!-nodes!*;
     s!:prinl1(x, 0);
-    s!:prinl2(x, 0)l
+    s!:prinl2(x, 0);
     clrhash !*prinl!-visited!-nodes!*;
     return x
   end;

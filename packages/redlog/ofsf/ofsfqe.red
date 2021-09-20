@@ -1947,7 +1947,7 @@ procedure ofsf_qemkans(an);
          gctime := gctime()
       >>;
       if !*rlqestdans and not !*rlqegen then
-         an := ofsf_qemkstdans(an,svf);
+         an := ofsf_qemkstdans(an);
       res := ofsf_qemkans1 an;
       res := if !*rlqebacksub then
          ofsf_qebacksub res
@@ -1955,15 +1955,12 @@ procedure ofsf_qemkans(an);
          ofsf_qenobacksub res;
       if !*rlqebacksub then res := sort(res, function ordpcar);
       if !*rlverbose then <<
-         ioto_tprin2 {"++++ Time for answer processing: ", time() - time, " ms"};
-         gctime := gctime() - gctime;
-         if gctime > 0 then
-            ioto_prin2t {" plus GC time: ", gctime, " ms"}
+         ioto_prin2 {" (", time() - time + gctime() - gctime, " ms)"};
       >>;
       return res
    end;
 
-procedure ofsf_qemkstdans(an, svf);
+procedure ofsf_qemkstdans(an);
    % [svf] is a relic from a former approach to reconstruct the
    % intermediate results from the quantifier-free starting formula
    % for the outermost quantifier block. These were computed using
