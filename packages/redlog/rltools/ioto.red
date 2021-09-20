@@ -78,12 +78,17 @@ procedure ioto_prin21(l,flg1,flg2,spc);
       if flg2 then ioto_cterpri()
    >>;
 
+asserted procedure ioto_printListToString(l: List): String;
+   % Takes a ioto_*prin2* argument, and converts it to a string identical to the ioto_*prin2* print
+   % output. However, when subsequently printed using ioto_*prin2*, this this string will print
+   % without linebreaks, possibly starting the next line earlier.
+   lto_sconcat for each x in l collect if stringp x then x else ioto_sprin2 x;
+
 procedure ioto_cterpri();
    % Input/Output tools conditional terpri. No parameter. Returns ANY.
    % Does a [terpri()] if the cursor is not on the beginning of a
    % line.
-   if posn()>0 then
-      terpri();
+   if posn() > 0 then terpri();
 
 procedure ioto_nterpri(n);
    if posn() + n > linelength nil then

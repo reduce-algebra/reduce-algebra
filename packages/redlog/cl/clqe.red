@@ -569,12 +569,12 @@ asserted procedure cl_qeblock2(f: QfFormula, varl: KernelL, theo: Theory, ans: B
 asserted procedure cl_qeblock3(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
    begin scalar w; integer vlv, dpth;
       if !*rlverbose then <<
+         dpth := length varl;
          if !*rlqedfs then <<
             ioto_prin2 {" [DFS"};
             if !*rlqedyn then
                ioto_prin2 {" DYN"};
             if !*rlqevbold then  <<
-               dpth := length varl;
                vlv :=  dpth / 4;
                ioto_prin2t {": depth ", dpth, ", watching ", dpth - vlv, "]"}
             >> else
@@ -656,7 +656,8 @@ asserted procedure cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory, ans: B
             if !*rlqedfs and null cvl then ioto_prin2 ". "
          >>
       >>;
-      if !*rlverbose then ioto_prin2{"[DEL:", delc, "/", count, "]"};
+      if !*rlverbose then
+         ioto_prin2 ioto_printListToString {"[DEL ", delc, "/", (count + delc), " = ", (100.0 * delc)/(count + delc), "%]"};
       if ans then return {remvl, newj, theo};
       % I am building the formula here rather than later because one might want
       % to do some incremental simplification at some point.
@@ -853,10 +854,13 @@ procedure cl_alpunion(pl);
    end;
 
 procedure cl_betterp(new, old);
+   if !*clqenew then cl_betterp_new(new, old) else
+
    begin integer atn;
       atn := cl_betterp!-count car new;
       if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
          ioto_prin2 {"(", atn, ")"};
+      % Discuss: The "null old" seems like a bug
       return null old or atn < cl_betterp!-count car old
    end;
 
