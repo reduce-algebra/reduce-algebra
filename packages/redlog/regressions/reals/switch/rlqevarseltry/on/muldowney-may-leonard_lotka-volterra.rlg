@@ -37,10 +37,6 @@ on rlqegsd;
 on rlqevarseltry;
 
 
-on time;
-
-
-
 
 informula:= rlposresolve(informula);
 
@@ -140,23 +136,11 @@ a1*vv1 + a2*vv3 + a3*vv1 + b1*vv1 - b2*vv1 - b3*vv2 - 2*vv1 - 3*vv2 - 3*vv3 + 2
  >= 0)))
 
 
-
 rlposqe rlex(informula);
 
 
 true
 
 
-
 end;
 
-
-Tested on  csl
-
-Time: 0 ms
-Time (counter 1): 3090 ms  plus GC time: 70 ms
-
-Time: 0 ms
-1: real 3.52
-user 3.30
-sys 0.22
