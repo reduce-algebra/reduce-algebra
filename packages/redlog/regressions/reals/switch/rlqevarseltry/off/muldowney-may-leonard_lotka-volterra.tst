@@ -27,7 +27,6 @@ a1*vv2 - a2*vv3 + b1*vv3 + b2*vv1 + 3*vv1 + 3*vv2 + 2*vv3 - 2,abs(a3*vv3 - vv3) 
 
 on rlqegsd;
 off rlqevarseltry;
-on time;
 
 informula:= rlposresolve(informula);
 
