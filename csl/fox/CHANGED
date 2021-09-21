@@ -265,5 +265,8 @@ May  2021.    FXShowMath.cpp & FXShowMath.h: Added support for a new Box type
 
 June 2021.    A few more lines in FXShowMath.cpp so that debugging of the
               width of glyphs can be more easily debugged.
+
+Sept 2021.    Flush stdout & stderr when - on the Mac - a call to execv
+              fails. This should never happen!
 	      
 <end of CHANGED>

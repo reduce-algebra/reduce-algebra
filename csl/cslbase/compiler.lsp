@@ -941,17 +941,15 @@ quote iminus) b))) (t (cond ((equal b 0) a) (t (list (car u) a b))))))))
 
 (put (quote idifference) (quote s!:tidy_fn) (quote s!:imp_idifference))
 
-(de s!:imp_car (u) (prog (a) (setq a (s!:improve (cadr u))) (cond ((eqcar a (
-quote car)) (return (list (quote caar) (cadr a)))) (t (cond ((eqcar a (quote 
-cdr)) (return (list (quote cadr) (cadr a)))) (t (return (list (quote car) a))
-))))))
+(de s!:imp_car (u) (prog ((a (s!:improve (cadr u)))) (cond ((eqcar a (quote 
+car)) (return (list (quote caar) (cadr a)))) (t (cond ((eqcar a (quote cdr)) 
+(return (list (quote cadr) (cadr a)))) (t (return (list (quote car) a))))))))
 
 (put (quote car) (quote s!:tidy_fn) (quote s!:imp_car))
 
-(de s!:imp_cdr (u) (prog (a) (setq a (s!:improve (cadr u))) (cond ((eqcar a (
-quote car)) (return (list (quote cdar) (cadr a)))) (t (cond ((eqcar a (quote 
-cdr)) (return (list (quote cddr) (cadr a)))) (t (return (list (quote cdr) a))
-))))))
+(de s!:imp_cdr (u) (prog ((a (s!:improve (cadr u)))) (cond ((eqcar a (quote 
+car)) (return (list (quote cdar) (cadr a)))) (t (cond ((eqcar a (quote cdr)) 
+(return (list (quote cddr) (cadr a)))) (t (return (list (quote cdr) a))))))))
 
 (put (quote cdr) (quote s!:tidy_fn) (quote s!:imp_cdr))
 
@@ -3309,11 +3307,7 @@ d2))))) (t (cond ((and (not (atom x)) (setq helper (get (car x) (quote
 c!:ctest)))) (return (funcall helper x env d1 d2))) (t (progn (setq r (
 c!:cval x env)) (c!:endblock (list (quote ifnull) r) (list d2 d1)))))))))
 
-(fluid (quote (c!:current)))
-
-(de c!:ccall (fn args env) (c!:ccall1 fn args env))
-
-(fluid (quote (c!:visited)))
+(fluid (quote (c!:current c!:visited)))
 
 (de c!:has_calls (a b) (prog (c!:visited) (return (c!:has_calls_1 a b))))
 
@@ -3340,14 +3334,20 @@ lab1233 (cond ((null var1234) (return nil))) (prog (a) (setq a (car var1234))
 (setq r (cons (c!:cval a env) r))) (setq var1234 (cdr var1234)) (go lab1233)
 ) (return (reversip r))))
 
-(de c!:ccall1 (fn args env) (prog (tasks merge r val) (setq fn (list fn (cdr 
-env))) (setq val (c!:newreg)) (cond ((null args) (c!:outop (quote call) val 
-nil fn)) (t (cond ((null (cdr args)) (c!:outop (quote call) val (list (
-c!:cval (car args) env)) fn)) (t (progn (cond ((and (not (get (car fn) (quote
-c!:direct_entrypoint))) (cddr args) (cdddr args)) (setq args (list (car args
-) (cadr args) (caddr args) (cons (quote list) (cdddr args)))))) (setq r (
-c!:evalargs args env)) (c!:outop (quote call) val r fn)))))) (c!:outop (quote
-reloadenv) (quote env) nil nil) (setq reloadenv t) (return val)))
+(de c!:ccall (fn args env) (cond ((equal fn (quote caar)) (c!:ccall (quote 
+car) (list (list (quote car) (car args))) env)) (t (cond ((equal fn (quote 
+cadr)) (c!:ccall (quote car) (list (list (quote cdr) (car args))) env)) (t (
+cond ((equal fn (quote cdar)) (c!:ccall (quote cdr) (list (list (quote car) (
+car args))) env)) (t (cond ((equal fn (quote cddr)) (c!:ccall (quote cdr) (
+list (list (quote cdr) (car args))) env)) (t (prog (tasks merge r val) (setq 
+fn (list fn (cdr env))) (setq val (c!:newreg)) (cond ((null args) (c!:outop (
+quote call) val nil fn)) (t (cond ((null (cdr args)) (c!:outop (quote call) 
+val (list (c!:cval (car args) env)) fn)) (t (progn (cond ((and (not (get (car
+fn) (quote c!:direct_entrypoint))) (cddr args) (cdddr args)) (setq args (
+list (car args) (cadr args) (caddr args) (cons (quote list) (cdddr args))))))
+(setq r (c!:evalargs args env)) (c!:outop (quote call) val r fn)))))) (
+c!:outop (quote reloadenv) (quote env) nil nil) (setq reloadenv t) (return 
+val)))))))))))
 
 (fluid (quote (restart_label reloadenv does_call c!:current_c_name)))
 
@@ -4684,34 +4684,30 @@ cond ((null var1378) (return nil))) (prog (v) (setq v (car var1378)) (setq x
 (list (cond ((equal v (quote a)) (quote car)) (t (quote cdr))) x))) (setq 
 var1378 (cdr var1378)) (go lab1377)) (return x)))
 
-(progn (put (quote caar) (quote c!:compile_macro) (function c!:expand_carcdr)
-) (put (quote cadr) (quote c!:compile_macro) (function c!:expand_carcdr)) (
-put (quote cdar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (
-quote cddr) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote
-caaar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-caadr) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-cadar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-caddr) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-cdaar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-cdadr) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-cddar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-cdddr) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-caaaar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-caaadr) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-caadar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-caaddr) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-cadaar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-cadadr) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-caddar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-cadddr) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-cdaaar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-cdaadr) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-cdadar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-cdaddr) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-cddaar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-cddadr) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-cdddar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (quote 
-cddddr) (quote c!:compile_macro) (function c!:expand_carcdr)))
+(progn (put (quote caaar) (quote c!:compile_macro) (function c!:expand_carcdr
+)) (put (quote caadr) (quote c!:compile_macro) (function c!:expand_carcdr)) (
+put (quote cadar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put 
+(quote caddr) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (
+quote cdaar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (
+quote cdadr) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (
+quote cddar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (
+quote cdddr) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (
+quote caaaar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (
+quote caaadr) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (
+quote caadar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (
+quote caaddr) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (
+quote cadaar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (
+quote cadadr) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (
+quote caddar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (
+quote cadddr) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (
+quote cdaaar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (
+quote cdaadr) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (
+quote cdadar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (
+quote cdaddr) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (
+quote cddaar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (
+quote cddadr) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (
+quote cdddar) (quote c!:compile_macro) (function c!:expand_carcdr)) (put (
+quote cddddr) (quote c!:compile_macro) (function c!:expand_carcdr)))
 
 (de c!:builtin_one (x env) (prog (r1 r2) (setq r1 (c!:cval (cadr x) env)) (
 c!:outop (car x) (setq r2 (c!:newreg)) (cdr env) r1) (return r2)))

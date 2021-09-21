@@ -550,12 +550,7 @@ symbolic procedure c!:cjumpif(x, env, d1, d2);
        c!:endblock(list('ifnull, r), list(d2, d1)) >>
   end;
 
-fluid '(c!:current);
-
-symbolic procedure c!:ccall(fn, args, env);
-  c!:ccall1(fn, args, env);
-
-fluid '(c!:visited);
+fluid '(c!:current c!:visited);
 
 symbolic procedure c!:has_calls(a, b);
   begin
@@ -600,8 +595,16 @@ symbolic procedure c!:evalargs(args, env);
     return reversip r
   end;
 
-symbolic procedure c!:ccall1(fn, args, env);
-  begin
+% There is slighly weird treatment of caar etc here because the bytecode
+% compiler wants to make "car car x" to "caar x" where in this code that
+% generates C++ I want to map in the opposite direction!
+
+symbolic procedure c!:ccall(fn, args, env);
+  if fn = 'caar then      c!:ccall('car, list list('car, car args), env)
+  else if fn = 'cadr then c!:ccall('car, list list('cdr, car args), env)
+  else if fn = 'cdar then c!:ccall('cdr, list list('car, car args), env)
+  else if fn = 'cddr then c!:ccall('cdr, list list('cdr, car args), env)
+  else begin
     scalar tasks, merge, r, val;
     fn := list(fn, cdr env);
     val := c!:newreg();
@@ -2981,7 +2984,7 @@ put('mapcan,  'c!:compile_macro, function c!:expand_map);
 !#endif
 
 % caaar to cddddr get expanded into compositions of
-% car, cdr which are compiled in-line
+% car, cdr which are compiled in-line.
 
 symbolic procedure c!:expand_carcdr(x);
   begin
@@ -2993,11 +2996,14 @@ symbolic procedure c!:expand_carcdr(x);
     return x
   end;
 
-<< put('caar, 'c!:compile_macro, function c!:expand_carcdr);
-   put('cadr, 'c!:compile_macro, function c!:expand_carcdr);
-   put('cdar, 'c!:compile_macro, function c!:expand_carcdr);
-   put('cddr, 'c!:compile_macro, function c!:expand_carcdr);
-   put('caaar, 'c!:compile_macro, function c!:expand_carcdr);
+% Note that the main parts of the compiler map (car (car x)) onto (caar x)
+% because in the bytecode model caar [and cadr, cdar, cddr] has special
+% support. So if I expect (caar x) to (car (car x)) here I can get an
+% unending sequence of "optimising" transformations. So the expansions
+% done here must only start with case with at lesst 3 letters between the
+% "c" and the "r".
+
+<< put('caaar, 'c!:compile_macro, function c!:expand_carcdr);
    put('caadr, 'c!:compile_macro, function c!:expand_carcdr);
    put('cadar, 'c!:compile_macro, function c!:expand_carcdr);
    put('caddr, 'c!:compile_macro, function c!:expand_carcdr);

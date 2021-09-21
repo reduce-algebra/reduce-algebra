@@ -1842,8 +1842,7 @@ put('idifference, 's!:tidy_fn, 's!:imp_idifference);
 
 symbolic procedure s!:imp_car u;
   begin
-     scalar a;
-     a := s!:improve cadr u;
+     scalar a := s!:improve cadr u;
      if eqcar(a, 'car) then return list('caar, cadr a)
      else if eqcar(a, 'cdr) then return list('cadr, cadr a)
      else return list('car, a)
@@ -1853,8 +1852,7 @@ put('car, 's!:tidy_fn, 's!:imp_car);
 
 symbolic procedure s!:imp_cdr u;
   begin
-     scalar a;
-     a := s!:improve cadr u;
+     scalar a := s!:improve cadr u;
      if eqcar(a, 'car) then return list('cdar, cadr a)
      else if eqcar(a, 'cdr) then return list('cddr, cadr a)
      else return list('cdr, a)

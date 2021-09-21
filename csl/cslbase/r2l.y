@@ -1082,13 +1082,13 @@ scalar_def	:  SCALAR SYMBOL scalar_tail
 		|  INTEGER SYMBOL ':' type scalar_tail
 					{ $<LO>$ = cons($<LO>2, $<LO>5); }
 		|  SCALAR SYMBOL SETQ expr scalar_tail
-					{ $<LO>$ = cons($<LO>2, $<LO>5); }
+					{ $<LO>$ = cons(list2($<LO>2, $<LO>4), $<LO>5); }
 		|  INTEGER SYMBOL SETQ expr scalar_tail
-					{ $<LO>$ = cons($<LO>2, $<LO>5); }
+					{ $<LO>$ = cons(list2($<LO>2, $<LO>4),$<LO>5); }
 		|  SCALAR SYMBOL ':' type SETQ expr scalar_tail
-					{ $<LO>$ = cons($<LO>2, $<LO>7); }
+					{ $<LO>$ = cons(list2($<LO>2, $<LO>6), $<LO>7); }
 		|  INTEGER SYMBOL ':' type SETQ expr scalar_tail
-					{ $<LO>$ = cons($<LO>2, $<LO>7); }
+					{ $<LO>$ = cons(list2($<LO>2, $<LO>6), $<LO>7); }
 		;
 
 scalar_defs	:  scalar_def
