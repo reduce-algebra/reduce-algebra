@@ -97,7 +97,7 @@ rlqe h;
 
 ++++ Entering cl_qe
 ---- (all a1 a2 a3 a4 a5 a6) [DFS DYN]
-[6:1] [5:6] [5:5] [5:4] [5:3] [5:2] [5:1] [DEL:71/34]
+[6:1] [5:6] [5:5] [5:4] [5:3] [5:2] [5:1] [DEL 71/105 = 67.619%]
 +++ Final simplification ... 0 -> 0
 
 true
@@ -129,7 +129,7 @@ rlqe h;
 
 ++++ Entering cl_qe
 ---- (all a1 a3 a4 a5 a6) [DFS DYN]
-[5:1] [4:6] [4:5] [4:4] [4:3] [4:2] [4:1] [DEL:71/34]
+[5:1] [4:6] [4:5] [4:4] [4:3] [4:2] [4:1] [DEL 71/105 = 67.619%]
 +++ Final simplification ... 0 -> 0
 
 true
@@ -141,9 +141,9 @@ off rlqeheu,rlqedfs;
 rlqe ex(x,a*x**2+b*x+c>0);
 
 ++++ Entering cl_qe
----- (ex x) [BFS: depth 0]
+---- (ex x) [BFS: depth 1]
 -- left: 1 (x)
-[1e(12)] [DEL:0/1]
+[1e(12)] [DEL 0/1 = 0.0%]
 +++ Final simplification ... 12 -> 9
 
 a > 0 or (b < 0 and a = 0) or (a = 0 and (b > 0 or (c > 0 and b = 0)))
@@ -158,7 +158,7 @@ rlqe ex(x,a*x**2+b*x+c>0);
 
 ++++ Entering cl_qe
 ---- (ex x) [DFS DYN]
-[1:1] [DEL:0/1]
+[1:1] [DEL 0/1 = 0.0%]
 +++ Final simplification ... 12 -> 9
 
 a > 0 or (b < 0 and a = 0) or (a = 0 and (b > 0 or (c > 0 and b = 0)))
@@ -173,9 +173,9 @@ on rlqeheu;
 rlqe(ex(x,a*x**2+b*x+c>0),{a<0});
 
 ++++ Entering cl_qe
----- (ex x) [BFS: depth 0]
+---- (ex x) [BFS: depth 1]
 -- left: 1 (x)
-[1e(1)] [DEL:0/1]
+[1e(1)] [DEL 0/1 = 0.0%]
 +++ Final simplification ... 1 -> 1
 
          2
@@ -184,9 +184,9 @@ rlqe(ex(x,a*x**2+b*x+c>0),{a<0});
 
 rlgqe ex(x,a*x**2+b*x+c>0);
 
----- (ex x) [BFS: depth 0]
+---- (ex x) [BFS: depth 1]
 -- left: 1 (x)
-[1e!(4)] [DEL:0/1]
+[1e!(4)] [DEL 0/1 = 0.0%]
 +++ Final simplification ... 4 -> 2
 
 {{a <> 0},
@@ -204,11 +204,11 @@ rlthsimpl ({a*b*c=0,b<>0});
 rlqe ex({x,y},(for i:=1:5 product mkid(a,i)*x**10-mkid(b,i)*y**2)<=0);
 
 ++++ Entering cl_qe
----- (ex x y) [BFS: depth 0]
+---- (ex x y) [BFS: depth 2]
 -- left: 2 (y x)
 [1(y^2)(x^10)(SVF).e(37)] 
 -- left: 1 (x)
-[6e(37)] [5e(5)] [4e(5)] [3e(5)] [2e(5)] [1e(5)] [DEL:0/7]
+[6e(37)] [5e(5)] [4e(5)] [3e(5)] [2e(5)] [1e(5)] [DEL 0/7 = 0.0%]
 +++ Final simplification ... 61 -> 0
 
 true
@@ -217,9 +217,9 @@ true
 sol := rlqe ex(x,a1*a2*x**2+b*x+c>0);
 
 ++++ Entering cl_qe
----- (ex x) [BFS: depth 0]
+---- (ex x) [BFS: depth 1]
 -- left: 1 (x)
-[1e(22)] [DEL:0/1]
+[1e(22)] [DEL 0/1 = 0.0%]
 +++ Final simplification ... 22 -> 16
 
                                                3
