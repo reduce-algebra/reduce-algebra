@@ -50,7 +50,7 @@ copyright('clqestate, "(c) 2021 A. Dolzmann, T. Sturm");
 asserted procedure QeState_new(): Vector;
    begin scalar state;
       state := mkvect(QESTATE_UPLIM);
-      putv(state, QESTATE_TAG, 'qestate);
+      putv(state, QESTATE_TAG, 'QeState);
       % The following fields are constant, i.e., assigned exactly once after the creation of qestate:
       putv(state, QESTATE_INPUTFORMULA, 'undefined);       % InputTheory
       putv(state, QESTATE_INPUTTHEORY, 'undefined);        % InputTheory

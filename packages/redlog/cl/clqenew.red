@@ -112,7 +112,7 @@ asserted procedure cl_gqea_new(f: Formula, theo: Theory, xNoAssumeVars: KernelL)
 
 asserted procedure cl_qe1_new(state: Vector): Vector;
    % Quantifier elimination. Compute a prenex normal form of the input formula, split it into
-   % quantifier blocks and the quantifier-free matrix, and prepare qestate accordingly.
+   % quantifier blocks and the quantifier-free matrix, and prepare state accordingly.
 
    % If virtual subtituation fails at some point due to degree violations, the elimination result
    % obtained so far is requantified with the remaining quantifiers. Optionally, a fallback
@@ -436,6 +436,7 @@ asserted procedure cl_regularEliminationSet(state: Vector): Boolean;
    begin scalar produceAnswer, noAssumeVars, theo, node, f, nodeVariables, nodeAnswer, found,
                 candidateVariables, candidateVariable, alp, successorNodes, newTheory,
                 bestSuccessorNodes, bestTheory, successorNodeVariables;
+         integer len;
       produceAnswer := QeState_getProduceAnwer(state);
       noAssumeVars := QeState_getNoAssumeVars(state);
       theo := QeState_getCurrentTheory(state);
@@ -450,6 +451,7 @@ asserted procedure cl_regularEliminationSet(state: Vector): Boolean;
       else
          rl_varsel(f, nodeVariables, theo);
       found := nil;
+      if !*rlverbose and not !*rlqedfs and (len := length candidateVariables) > 1 then ioto_prin2 {"{", len, ":"};
       while candidateVariables do <<
          candidateVariable := pop candidateVariables;
          alp := cl_qeatal(f, candidateVariable, theo, produceAnswer);
@@ -478,6 +480,7 @@ asserted procedure cl_regularEliminationSet(state: Vector): Boolean;
          >>
       >>;
    brk:
+      if !*rlverbose and not !*rlqedfs and len > 1 then ioto_prin2 {"}"};
       if not found then
          return nil;
       QeState_setCurrentTheory(state, bestTheory);

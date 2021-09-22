@@ -43,7 +43,7 @@ asserted procedure QeCont_new(traversalMode: Id): Vector;
    % QE data for a block new.
    begin scalar co;
       co := mkvect(QECONT_UPLIM);
-      putv(co, QECONT_TAG, 'qeco);
+      putv(co, QECONT_TAG, 'QeCont);
       putv(co, QECONT_NODES, nil);                    % list (stack or queue) of QE tree working nodes
       putv(co, QECONT_TRAVERSALMODE, traversalMode);  % 'bfs (breadth-first search) or 'dfs (depth-first search)
       if traversalMode eq 'dfs then <<
@@ -60,17 +60,20 @@ asserted procedure QeCont_new(traversalMode: Id): Vector;
    end;
 
 asserted procedure QeCont_add(co: Vector, new: List): Vector;
-   begin scalar nodes, lastNode;
+   begin scalar nodes, lastNode, hashData;
       if null new then
          return co;
       nodes := getv(co, QECONT_NODES);
       if getv(co, QECONT_TRAVERSALMODE) eq 'bfs then <<
          lastNode := getv(co, QECONT_LASTNODE);
-         if null lastNode then
+         if null lastNode then <<
             lastNode := nodes := {pop new};
+            putv(co, QECONT_REQUESTEDADDITIONS, getv(co, QECONT_REQUESTEDADDITIONS) + 1);
+            putv(co, QECONT_EFFECTIVEADDITIONS, getv(co, QECONT_EFFECTIVEADDITIONS) + 1)
+         >>;
          for each node in new do <<
             putv(co, QECONT_REQUESTEDADDITIONS, getv(co, QECONT_REQUESTEDADDITIONS) + 1);
-            if not member(node, nodes) then <<
+            if not QeCont_member(node, nodes) then <<
                cdr lastNode := node . nil;
                lastNode := cdr lastNode;
                putv(co, QECONT_EFFECTIVEADDITIONS, getv(co, QECONT_EFFECTIVEADDITIONS) + 1)
@@ -82,8 +85,9 @@ asserted procedure QeCont_add(co: Vector, new: List): Vector;
          ASSERT( getv(co, QECONT_TRAVERSALMODE) eq 'dfs );
          for each node in new do <<
             putv(co, QECONT_REQUESTEDADDITIONS, getv(co, QECONT_REQUESTEDADDITIONS) + 1);
-            if not lto_hmember(node, getv(co, QECONT_HASHTABLE), 'co_hfn) then <<
-               putv(co, QECONT_HASHTABLE, lto_hinsert(node, getv(co, QECONT_HASHTABLE), 'co_hfn));
+            hashData := QeNode_getVariables(node) . QeNode_getFormula(node);
+            if not lto_hmember(hashData, getv(co, QECONT_HASHTABLE), 'QeCont_hashFunction) then <<
+               putv(co, QECONT_HASHTABLE, lto_hinsert(hashData, getv(co, QECONT_HASHTABLE), 'QeCont_hashFunction));
                nodes := node . nodes;
                putv(co, QECONT_EFFECTIVEADDITIONS, getv(co, QECONT_EFFECTIVEADDITIONS) + 1)
             >>
@@ -92,6 +96,21 @@ asserted procedure QeCont_add(co: Vector, new: List): Vector;
       >>;
       return co
    end;
+
+asserted procedure QeCont_member(node: List, nodes: List): Boolean;
+   begin scalar found, currentNode;
+      found := nil;
+      variables := QeNode_getVariables(node);
+      formula := QeNode_getFormula(node);
+      while not null nodes and not found do <<
+         currentNode := pop nodes;
+         found := QeNode_getVariables(currentNode) = variables and QeNode_getFormula(currentNode) = formula
+      >>;
+      return found
+   end;
+
+asserted procedure QeCont_hashFunction(hashData: DottedPair): List2;
+  {cl_fvarl1(cdr hashData), rl_atnum(cdr hashData)};
 
 asserted procedure QeCont_firstNode(co: Vector): List;
    car getv(co, QECONT_NODES);

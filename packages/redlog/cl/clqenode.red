@@ -35,7 +35,7 @@ copyright('clqenode, "(c) 2021 A. Dolzmann, T. Sturm");
 #define QENODE_ANSWER 6
 
 asserted procedure QeNode_new(variables: KernelL, f: Formula, answer: List): List4;
-   {'qenode, variables, f, nil, nil, answer};
+   {'QeNode, variables, f, nil, nil, answer};
 
 % Getters, there are no setters
 
