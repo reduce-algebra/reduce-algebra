@@ -120,6 +120,69 @@ asserted procedure QeState_verbosePrint(state: Vector): Vector;
       return state
    end;
 
+asserted procedure QeState_fetchBlock(state: Vector): DottedPair;
+   begin scalar blocks;
+      blocks := getv(state, QESTATE_BLOCKS);
+      putv(state, QESTATE_BLOCKS, cdr blocks);
+      return car blocks
+   end;
+
+asserted procedure QeState_addBlock(state: Vector, block: DottedPair): Vector;
+   putv(state, QESTATE_BLOCKS, block . getv(state, QESTATE_BLOCKS));
+
+asserted procedure QeState_isEmptyBlocks(state: Vector): Boolean;
+   null getv(state, QESTATE_BLOCKS);
+
+asserted procedure QeState_initializeWorkingNodes(state: Vector, traversalMode: Id): Vector;
+   <<
+      putv(state, QESTATE_WORKINGNODES, QeCont_new(traversalMode));
+      state
+   >>;
+
+asserted procedure QeState_fetchWorkingNode(state: Vector): List;
+   QeCont_fetch(getv(state, QESTATE_WORKINGNODES));
+
+asserted procedure QeState_firstWorkingNode(state: Vector): List;
+   QeCont_firstNode(getv(state, QESTATE_WORKINGNODES));
+
+asserted procedure QeState_addWorkingNodes(state: Vector, nodes: List): Vector;
+   <<
+      QeCont_add(getv(state, QESTATE_WORKINGNODES), nodes);
+      state
+   >>;
+
+asserted procedure QeState_isEmptyWorkingNodes(state: Vector): Boolean;
+   QeCont_isEmpty(getv(state, QESTATE_WORKINGNODES));
+
+% The following qestate methods are used for verbose output.
+
+asserted procedure QeState_numberOfWorkingNodes(state: Vector): Integer;
+   % This is used for verbose output with DFS.
+   QeCont_length(getv(state, QESTATE_WORKINGNODES));
+
+asserted procedure QeState_fetchWorkingNodeDeletions(state: Vector): DottedPair;
+   begin scalar container;
+         integer requested, deleted;
+      container := getv(state, QESTATE_WORKINGNODES);
+      requested := QeCont_getRequestedAdditions(container);
+      deleted := requested - QeCont_getEffectiveAdditions(container);
+      QeCont_setRequestedAdditions(container, 0);
+      QeCont_setEffectiveAdditions(container, 0);
+      return deleted . requested
+   end;
+
+asserted procedure QeState_workingNodesStatistics(state: Vector): DottedPair;
+   % Returns the maximum length of the "Variables" fields in the working nodes, along with the
+   % number of occurrences of corresponding nodes. This is used for verbose output with DFS.
+   QeCont_statistics(getv(state, QESTATE_WORKINGNODES));
+
+asserted procedure QeState_firstWorkingNodeVariables(state: Vector): List;
+   % Returns the "Variables" field of the firstworking node. This is used for verbose output with
+   % DFS.
+   QeNode_getVariables(QeCont_firstNode(getv(state, QESTATE_WORKINGNODES)));
+
+% Getters and setters
+
 asserted procedure QeState_getInputFormula(state: Vector): Formula;
    getv(state, QESTATE_INPUTFORMULA);
 
@@ -203,54 +266,6 @@ asserted procedure QeState_getProduceAnwer(state: Vector): Boolean;
 
 asserted procedure QeState_setProduceAnswer(state: Vector, ans: Boolean): Vector;
    << putv(state, QESTATE_PRODUCEANSWER, ans); state >>;
-
-asserted procedure QeState_initializeWorkingNodes(state: Vector, traversalMode: Id): Vector;
-   <<
-      putv(state, QESTATE_WORKINGNODES, QeCont_new(traversalMode));
-      state
-   >>;
-
-asserted procedure QeState_fetchWorkingNode(state: Vector): List;
-   QeCont_fetch(getv(state, QESTATE_WORKINGNODES));
-
-asserted procedure QeState_firstWorkingNode(state: Vector): List;
-   QeCont_firstNode(getv(state, QESTATE_WORKINGNODES));
-
-asserted procedure QeState_addWorkingNodes(state: Vector, nodes: List): Vector;
-   <<
-      QeCont_add(getv(state, QESTATE_WORKINGNODES), nodes);
-      state
-   >>;
-
-asserted procedure QeState_isEmptyWorkingNodes(state: Vector): Boolean;
-   QeCont_isEmpty(getv(state, QESTATE_WORKINGNODES));
-
-% The following qestate methods are used for verbose output.
-
-asserted procedure QeState_numberOfWorkingNodes(state: Vector): Integer;
-   % This is used for verbose output with DFS.
-   QeCont_length(getv(state, QESTATE_WORKINGNODES));
-
-asserted procedure QeState_fetchWorkingNodeDeletions(state: Vector): DottedPair;
-   begin scalar container;
-         integer requested, deleted;
-      container := getv(state, QESTATE_WORKINGNODES);
-      requested := QeCont_getRequestedAdditions(container);
-      deleted := requested - QeCont_getEffectiveAdditions(container);
-      QeCont_setRequestedAdditions(container, 0);
-      QeCont_setEffectiveAdditions(container, 0);
-      return deleted . requested
-   end;
-
-asserted procedure QeState_workingNodesStatistics(state: Vector): DottedPair;
-   % Returns the maximum length of the "Variables" fields in the working nodes, along with the
-   % number of occurrences of corresponding nodes. This is used for verbose output with DFS.
-   QeCont_statistics(getv(state, QESTATE_WORKINGNODES));
-
-asserted procedure QeState_firstWorkingNodeVariables(state: Vector): List;
-   % Returns the "Variables" field of the firstworking node. This is used for verbose output with
-   % DFS.
-   QeNode_getVariables(QeCont_firstNode(getv(state, QESTATE_WORKINGNODES)));
 
 endmodule;
 

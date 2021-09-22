@@ -98,7 +98,7 @@ asserted procedure QeCont_add(co: Vector, new: List): Vector;
    end;
 
 asserted procedure QeCont_member(node: List, nodes: List): Boolean;
-   begin scalar found, currentNode;
+   begin scalar found, variables, formula, currentNode;
       found := nil;
       variables := QeNode_getVariables(node);
       formula := QeNode_getFormula(node);
