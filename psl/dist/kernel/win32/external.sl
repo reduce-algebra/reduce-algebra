@@ -171,11 +171,15 @@
 %  (external-function external_strlen     (strptr))
 (external-function external_setenv     (varstring valstring))
 (external-function external_getenv     (envstring))
+
+% Defined in float.c
+%
 (external-function uxfloat             (buffer integer))
 (external-function uxfix               (buffer))
 (external-function uxassign            (arg1-buffer arg2-buffere))
 (external-function uxplus2             (result-buffer arg1-buffer arg2-buffer))
 (external-function uxdifference        (result-buffer arg1-buffer arg2-buffer))
+(external-function uxminus             (resul-buffer arg1-buffer))
 (external-function uxtimes2            (result-buffer arg1-buffer arg2-buffer))
 (external-function uxquotient          (result-buffer arg1-buffer arg2-buffer))
 (external-function uxgreaterp          (arg1-buffer arg2-buffer tee nill))
