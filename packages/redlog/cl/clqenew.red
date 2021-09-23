@@ -29,15 +29,15 @@ copyright('clqenew, "(c) 2021 A. Dolzmann, T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-asserted procedure cl_qe_new(f: Formula, theo: Theory): Formula;
+asserted procedure cl_qe_new(f: Formula, theory: FormulaL): Formula;
    % Quantifier elimination. Eliminate as many quantifiers as possible from f,
-   % yielding a formula g such that theo |= f <=> g.
+   % yielding a formula g such that theory |= f <=> g.
    begin scalar state, !*rlsipo, !*rlsipw;
       !*rlsipo := t;
       !*rlsipw := t;
       state := QeState_new();
       QeState_setInputFormula(state, f);
-      QeState_setInputTheory(state, theo);
+      QeState_setInputTheory(state, theory);
       QeState_setNoAssumeVars(state, nil);
       QeState_setAnswerMode(state, nil);
       QeState_setAssumeMode(state, nil);
@@ -47,7 +47,7 @@ asserted procedure cl_qe_new(f: Formula, theo: Theory): Formula;
       return QeState_getFormula(state)
    end;
 
-asserted procedure cl_qea_new(f: Formula, theo: Theory): List;
+asserted procedure cl_qea_new(f: Formula, theory: FormulaL): List;
    % Extended quantifier elimination (aka "with answer").
    begin scalar state, !*rlqeans, !*rlsipo, !*rlsipw;
       !*rlqeans := t;
@@ -55,31 +55,31 @@ asserted procedure cl_qea_new(f: Formula, theo: Theory): List;
       !*rlsipw := t;
       state := QeState_new();
       QeState_setInputFormula(state, f);
-      QeState_setInputTheory(state, theo);
+      QeState_setInputTheory(state, theory);
       QeState_setNoAssumeVars(state, nil);
       % Standard answers work only for decision problems. The old procedure
       % did not check this and rederr() could happen in the ANU module. We
       % now check this here, but we should think about checking later.
       QeState_setAssumeMode(state, nil);
-      QeState_setAnswerMode(state, if !*rlqestdans and null rl_fvarl f then'standard else 'raw);
+      QeState_setAnswerMode(state, if !*rlqestdans and null rl_fvarl f then 'standard else 'raw);
       state := cl_qe1_new(state);
       if rl_excp(state) then
          return state;
       return QeState_getAnswer(state)
    end;
 
-asserted procedure cl_gqe_new(f: Formula, theo: Theory, xNoAssumeVars: KernelL): DottedPair;
+asserted procedure cl_gqe_new(f: Formula, theory: FormulaL, xNoAssumeVars: KernelL): DottedPair;
    % Generic quantifier elimination. Eliminate as many quantifiers as possible
-   % from f, yielding a formula g such that theo |= f <=> g. The procedure is
+   % from f, yielding a formula g such that theory |= f <=> g. The procedure is
    % allowed to assume inequations on parameters that are not in
-   % xNoAssumeVars. Those assumptions are added to theo.
+   % xNoAssumeVars. Those assumptions are added to theory.
    begin scalar state, !*rlqegen, !*rlsipo, !*rlsipw;
       !*rlqegen := t;
       !*rlsipo := t;
       !*rlsipw := t;
       state := QeState_new();
       QeState_setInputFormula(state, f);
-      QeState_setInputTheory(state, theo);
+      QeState_setInputTheory(state, theory);
       QeState_setNoAssumeVars(state, xNoAssumeVars);
       QeState_setAssumeMode(state, if !*rlqegenct then 'full else 'monomial);
       QeState_setAnswerMode(state, nil);
@@ -90,7 +90,7 @@ asserted procedure cl_gqe_new(f: Formula, theo: Theory, xNoAssumeVars: KernelL):
       return QeState_getCurrentTheory(state) . QeState_getFormula(state)
    end;
 
-asserted procedure cl_gqea_new(f: Formula, theo: Theory, xNoAssumeVars: KernelL): DottedPair;
+asserted procedure cl_gqea_new(f: Formula, theory: FormulaL, xNoAssumeVars: KernelL): DottedPair;
    % Generic extended quantifier elimination (aka "with answer").
    begin scalar state, !*rlqeans, !*rlqegen, !*rlsipo, !*rlsipw;
       !*rlqegen := t;
@@ -99,7 +99,7 @@ asserted procedure cl_gqea_new(f: Formula, theo: Theory, xNoAssumeVars: KernelL)
       !*rlsipw := t;
       state := QeState_new();
       QeState_setInputFormula(state, f);
-      QeState_setInputTheory(state, theo);
+      QeState_setInputTheory(state, theory);
       QeState_setNoAssumeVars(state, xNoAssumeVars);
       QeState_setAssumeMode(state, if !*rlqegenct then 'full else 'monomial);
       QeState_setAnswerMode(state, if !*rlqestdans and null rl_fvarl f then'standard else 'raw);
@@ -112,15 +112,15 @@ asserted procedure cl_gqea_new(f: Formula, theo: Theory, xNoAssumeVars: KernelL)
 
 asserted procedure cl_qe1_new(state: Vector): Vector;
    % Quantifier elimination. Compute a prenex normal form of the input formula, split it into
-   % quantifier blocks and the quantifier-free matrix, and prepare state accordingly.
-
-   % If virtual subtituation fails at some point due to degree violations, the elimination result
-   % obtained so far is requantified with the remaining quantifiers. Optionally, a fallback
-   % quantifier elimination method is applied.
-   begin scalar f, theo, answer, blocks, allQuantifiedVariables, point;
+   % quantifier blocks and the quantifier-free matrix, and prepare the state accordingly. Pass the
+   % state to another function, which iterates elimination over the quantifier blocks. If virtual
+   % subtituation has failed at some point due to degree violations, requantify the elimination
+   % result with the remaining quantifiers. Optionally apply a fallback quantifier elimination
+   % method.
+   begin scalar f, theory, answer, blocks, allQuantifiedVariables, point;
          integer n;
       f := QeState_getInputFormula(state);
-      theo := QeState_getInputTheory(state);
+      theory := QeState_getInputTheory(state);
       f := rl_pnf f;
       {blocks, f, allQuantifiedVariables} := cl_split_new f;
       if null blocks then <<
@@ -128,18 +128,18 @@ asserted procedure cl_qe1_new(state: Vector): Vector;
             QeState_setAnswer(state, {f . nil});
          return state
       >>;
-      f := rl_simpl(f, theo, -1);
+      f := rl_simpl(f, theory, -1);
       if rl_excp(f) then
          return f;
       % Remove from the theory atomic formulas containing quantified variables
-      QeState_setCurrentTheory(state, for each atf in theo join if null intersection(rl_varlat atf, allQuantifiedVariables) then {atf});
+      QeState_setCurrentTheory(state, for each atf in theory join if null intersection(rl_varlat atf, allQuantifiedVariables) then {atf});
       % Prohibit assumptions on quantified variables:
       QeState_setNoAssumeVars(state, union(allQuantifiedVariables, QeState_getNoAssumeVars(state)));
       QeState_setBlocks(state, blocks);
       QeState_setFormula(state, f);
       cl_qe1!-iterate_new(state);
       blocks := QeState_getBlocks(state);
-      theo := QeState_getCurrentTheory(state);
+      theory := QeState_getCurrentTheory(state);
       % Discuss: I had to bind f here for the verbose message. With a QeState_simplifyFormula method
       % the verbose could be moved there. I think this would go beyond the fetch methods suggested
       % elsewhere, and I have some doubts.
@@ -148,7 +148,7 @@ asserted procedure cl_qe1_new(state: Vector): Vector;
       % "rlqea ex(x, m*x+b=0);"
       if !*rlverbose then ioto_tprin2 {"+++ Final simplification ... ", cl_atnum f, " -> "};
       % We deliberately lose quantifers over non-occurring variables.
-      f := cl_simpl(cl_unsplit_new(blocks, f), theo, -1);
+      f := cl_simpl(cl_unsplit_new(blocks, f), theory, -1);
       if !*rlverbose then ioto_prin2t cl_atnum f;
       if QeState_getAnswerMode(state) then <<
          % At present, we always requantify; no fallback QE with answers.
@@ -172,9 +172,9 @@ asserted procedure cl_qe1_new(state: Vector): Vector;
       >>;
       if !*rlqefb and rl_quap rl_op f then <<
          if !*rlverbose then ioto_tprin2 {"++++ Entering fallback QE: "};
-         theo . f := rl_fbqe(f, theo)
+         theory . f := rl_fbqe(f, theory)
       >>;
-      QeState_setCurrentTheory(state, theo);
+      QeState_setCurrentTheory(state, theory);
       QeState_setFormula(state, f);
       return state
    end;
@@ -213,74 +213,71 @@ asserted procedure cl_unsplit_new(blocks: List, f: Formula): Formula;
 asserted procedure cl_qe1!-iterate_new(state: Vector): Vector;
    % Iterate over quantifier blocks. The blocks are successively eliminated from the inside to the
    % outside. Universal quantifier blocks are reduced to existential ones via logical negation.
-   begin scalar blocks, f, produceAnswer, theo, state, svrlidentify, svrlqeprecise, svrlqeaprecise, q,
-                variables,remainingVariables, w, op, arguments;
+   begin scalar blocks, f, produceAnswer, theory, state, svrlidentify, svrlqeprecise, svrlqeaprecise,
+                quantifier, variables, remainingVariables, tmpNodes, op, arguments;
       svrlidentify := !*rlidentify;
-      blocks := QeState_getBlocks(state);
       f := QeState_getFormula(state);
-      theo := QeState_getInputTheory(state);
+      theory := QeState_getInputTheory(state);
       ASSERT( not null blocks );
-      while not null blocks and null remainingVariables do <<
-         q . variables := pop blocks;
-         QeState_setBlocks(state, blocks);
-         % Discuss: implement QeState_fetchBlocks and move this !*rlverbose to qestate
+      while not QeState_isEmptyBlocks(state) and null remainingVariables do <<
+         quantifier . variables := QeState_fetchBlock(state);
+         % Discuss: implement QeState_fetchBlocks and move this !*rlverbose to QeState
          if !*rlverbose then
-            ioto_tprin2 {"---- ", (q . reverse variables)};
+            ioto_tprin2 {"---- ", (quantifier . reverse variables)};
          QeState_setVariables(state, variables);
-         produceAnswer := QeState_getAnswerMode(state) and null blocks;
+         produceAnswer := QeState_getAnswerMode(state) and QeState_isEmptyBlocks(state);
          QeState_setProduceAnswer(state, produceAnswer);
          svrlqeprecise := !*rlqeprecise;
          svrlqeaprecise := !*rlqeaprecise;
-         if blocks then <<  % Should better be an argument of qeblock ...
+         if not QeState_isEmptyBlocks(state) then <<  % Should better be an argument of qeblock ...
             off1 'rlqeprecise;
             off1 'rlqeaprecise
          >>;
-         if q eq 'all then
-            f := rl_simpl(rl_nnfnot f, theo, -1);
+         if quantifier eq 'all then
+            f := rl_simpl(rl_nnfnot f, theory, -1);
          QeState_setFormula(state, f);
          QeState_setSuccessNodes(state, nil);
          QeState_setFailureNodes(state, nil);
-         QeState_setCurrentTheory(state, theo);
+         QeState_setCurrentTheory(state, theory);
          cl_qeblock4_new(state);
-         if q eq 'all then <<
+         if quantifier eq 'all then <<
             % In the following we could benefit from mutable QeNode
-            w := for each node in QeState_getSuccessNodes(state) collect
+            tmpNodes := for each node in QeState_getSuccessNodes(state) collect
                QeNode_new(QeNode_getVariables(node), rl_nnfnot(QeNode_getFormula(node)), QeNode_getAnswer(node));
-            QeState_setSuccessNodes(state, w);
-            w := for each node in QeState_getFailureNodes(state) collect
+            QeState_setSuccessNodes(state, tmpNodes);
+            tmpNodes := for each node in QeState_getFailureNodes(state) collect
                QeNode_new(QeNode_getVariables(node), rl_nnfnot(QeNode_getFormula(node)), QeNode_getAnswer(node));
-            QeState_setFailureNodes(state, w)
+            QeState_setFailureNodes(state, tmpNodes)
          >>;
-         op := if q eq 'all then 'and else 'or;
+         op := if quantifier eq 'all then 'and else 'or;
          arguments := for each node in append(QeState_getSuccessNodes(state), QeState_getFailureNodes(state)) collect
             QeNode_getFormula(node);
          f := rl_smkn(op, arguments);
          if not null QeState_getFailureNodes(state) then
             for each node in QeState_getFailureNodes(state) do
                remainingVariables := union(remainingVariables, QeNode_getVariables(node));
-         theo := QeState_getCurrentTheory(state);
-         if blocks then <<
+         theory := QeState_getCurrentTheory(state);
+         if not QeState_isEmptyBlocks(state) then <<
             onoff('rlqeprecise, svrlqeprecise);
             onoff('rlqeaprecise, svrlqeaprecise)
          >>
       >>;
       onoff('rlidentify, svrlidentify);
       if not null remainingVariables then
-         push(q . remainingVariables, blocks);
-      QeState_setBlocks(state, blocks);
+         QeState_addBlock(state, quantifier . remainingVariables);
       QeState_setFormula(state, f);
       return state
    end;
 
 asserted procedure cl_qeblock4_new(state: Vector): Vector;
    % Eliminate a block of prenex existential quantifiers. The quantified variables and the matrix
-   % formula haven already been identified and stored in qestate. The existential block could be the
+   % formula haven already been identified and stored in QeState. The existential block could be the
    % logical negation of a universal block from the original input. The corresponding negation and
    % back-negation takes place outside this procedure.
-   begin scalar f, variables, theo;
+   begin scalar f, variables, theory;
          integer maxLength, maxCount, knownLength, knownCount, bfsLevelCount, requested, deleted;
-      % Discuss: implement QeState_fetchVariables and move this !*rlverbose to qestate
-      theo := QeState_getCurrentTheory(state);
+      % Discuss: implement QeState_fetchVariables and move this !*rlverbose to QeState
+      theory := QeState_getCurrentTheory(state);
       variables := QeState_getVariables(state);
       if !*rlverbose and !*rlqedfs then
          ioto_prin2t {" [DFS", if !*rlqedyn then " DYN]" else "]"};
@@ -288,7 +285,7 @@ asserted procedure cl_qeblock4_new(state: Vector): Vector;
          ioto_prin2t {" [BFS: depth ", length(variables), "]"};
       f := QeState_getFormula(state);
       if !*rlqegsd then
-         f := rl_gsn(f, theo, 'dnf);
+         f := rl_gsn(f, theory, 'dnf);
       QeState_initializeWorkingNodes(state, if !*rlqedfs then 'dfs else 'bfs);
       if rl_op f eq 'or then
          for each subFormula in rl_argn f do
@@ -350,9 +347,9 @@ asserted procedure cl_qevar_new(state: Vector): Vector;
 asserted procedure cl_transform_new(state: Vector): Boolean;
    % Transformation. Tries to transform the current node into an equivalent simpler problem. No
    % elimintaion takes place. This is used, e.g., for the degree shift with ofsf.
-   begin scalar node, theo, noAssumeVars, produceAnswer, variables, answer, f, w, hasTransformed;
+   begin scalar node, theory, noAssumeVars, produceAnswer, variables, answer, f, w, hasTransformed;
       node := QeState_getCurrentNode(state);
-      theo := QeState_getCurrentTheory(state);
+      theory := QeState_getCurrentTheory(state);
       noAssumeVars := QeState_getNoAssumeVars(state);
       produceAnswer := QeState_getProduceAnwer(state);
       f := QeNode_getFormula(node);
@@ -360,17 +357,17 @@ asserted procedure cl_transform_new(state: Vector): Boolean;
       answer := QeNode_getAnswer(node);
       hasTransformed := nil;
       for each variable in variables do <<
-         w := rl_transform(variable, f, variables, answer, theo, produceAnswer, noAssumeVars);
+         w := rl_transform(variable, f, variables, answer, theory, produceAnswer, noAssumeVars);
          if w then <<
             hasTransformed := t;
-            {f, variables, answer, theo, produceAnswer, noAssumeVars} := w
+            {f, variables, answer, theory, produceAnswer, noAssumeVars} := w
          >>;
       >>;
       if hasTransformed then <<
          % In the following we could benefit from mutable qenod
          node := QeNode_new(variables, f, answer);
          QeState_setCurrentNode(state, node);
-         QeState_setCurrentTheory(state, theo);
+         QeState_setCurrentTheory(state, theory);
          QeState_setNoAssumeVars(state, noAssumeVars);
          QeState_setProduceAnswer(state, produceAnswer)  % should not be relevant
       >>;
@@ -380,49 +377,49 @@ asserted procedure cl_transform_new(state: Vector): Boolean;
 asserted procedure cl_gauss_new(state): Boolean;
    % Gaussian elimination. Tries to eliminate the current node using a generalization of Gaussian
    % elimination. The return value signals success.
-   begin scalar w, node, theo, noAssumeVars, produceAnswer, f, variables, answer, variable,
+   begin scalar w, node, theory, noAssumeVars, produceAnswer, f, variables, answer, variable,
                 eliminationSet, nodes;
       node := QeState_getCurrentNode(state);
-      theo := QeState_getCurrentTheory(state);
+      theory := QeState_getCurrentTheory(state);
       noAssumeVars := QeState_getNoAssumeVars(state);
       produceAnswer := QeState_getProduceAnwer(state);
       f := QeNode_getFormula(node);
       variables := QeNode_getVariables(node);
-      w := rl_trygauss(f, variables, theo, produceAnswer, noAssumeVars);
+      w := rl_trygauss(f, variables, theory, produceAnswer, noAssumeVars);
       if w eq 'failed then
          return nil;
       if !*rlverbose and not !*rlqedfs then ioto_prin2 "g";
       answer := QeNode_getAnswer(node);
       variable . eliminationSet := car w;
-      theo := cdr w;
+      theory := cdr w;
       variables := lto_delq(variable, variables);
-      nodes . theo := cl_esetsubst(f, variable, eliminationSet, variables, answer, theo, produceAnswer, noAssumeVars);
-      QeState_setCurrentTheory(state, theo);
+      nodes . theory := cl_esetsubst(f, variable, eliminationSet, variables, answer, theory, produceAnswer, noAssumeVars);
+      QeState_setCurrentTheory(state, theory);
       QeState_setCurrentNode(state, 'false);
       cl_storeRegularNodes(nodes, not null variables, state);  % no cdr here!
       return t
    end;
 
 asserted procedure cl_specelimWrapper_new(state): Boolean;
-   % Special elimination Wrapper. A wrapper for using  the blackbox rl_specelim with the qestate model.
+   % Special elimination Wrapper. A wrapper for using  the blackbox rl_specelim with the QeState model.
    % Special elimination tries to eliminate the current node using optimized elimination sets or,
    % more generally specialized methods that are expected to be more efficient than virtual
    % substitution on the current node. This is used, e.g., for the quadratic special case in ofsf.
    % The return value signals success.
-   begin scalar w, node, theo, noAssumeVars, produceAnswer, f, variables, nodes;
+   begin scalar w, node, theory, noAssumeVars, produceAnswer, f, variables, nodes;
       node := QeState_getCurrentNode(state);
-      theo := QeState_getCurrentTheory(state);
+      theory := QeState_getCurrentTheory(state);
       noAssumeVars := QeState_getNoAssumeVars(state);
       produceAnswer := QeState_getProduceAnwer(state);
       f := QeNode_getFormula(node);
       variables := QeNode_getVariables(node);
-      w := rl_specelim(f, variables, theo, produceAnswer, noAssumeVars);
+      w := rl_specelim(f, variables, theory, produceAnswer, noAssumeVars);
       if w eq 'failed then
          return nil;
-      w . theo := w;
+      w . theory := w;
       ASSERT( car w eq t );
       nodes := cdr w;
-      QeState_setCurrentTheory(state, theo);
+      QeState_setCurrentTheory(state, theory);
       QeState_setCurrentNode(state, 'false);
       cl_storeRegularNodes(nodes, not null cdr variables, state);
       return t
@@ -433,13 +430,13 @@ asserted procedure cl_regularEliminationSet(state: Vector): Boolean;
    % selection via the blackbox rl_varsel and optional look-ahead for a list of candidates
    % delivered by varsel. The return value signals success in the sense that there was no degree
    % violation.
-   begin scalar produceAnswer, noAssumeVars, theo, node, f, nodeVariables, nodeAnswer, found,
+   begin scalar produceAnswer, noAssumeVars, theory, node, f, nodeVariables, nodeAnswer, found,
                 candidateVariables, candidateVariable, alp, successorNodes, newTheory,
                 bestSuccessorNodes, bestTheory, successorNodeVariables;
          integer len;
       produceAnswer := QeState_getProduceAnwer(state);
       noAssumeVars := QeState_getNoAssumeVars(state);
-      theo := QeState_getCurrentTheory(state);
+      theory := QeState_getCurrentTheory(state);
       node := QeState_getCurrentNode(state);
       f := QeNode_getFormula(node);
       nodeVariables := QeNode_getVariables(node);
@@ -449,16 +446,16 @@ asserted procedure cl_regularEliminationSet(state: Vector): Boolean;
       else if not !*rlqevarsel then
          {car nodeVariables}
       else
-         rl_varsel(f, nodeVariables, theo);
+         rl_varsel(f, nodeVariables, theory);
       found := nil;
       if !*rlverbose and not !*rlqedfs and (len := length candidateVariables) > 1 then ioto_prin2 {"{", len, ":"};
       while candidateVariables do <<
          candidateVariable := pop candidateVariables;
-         alp := cl_qeatal(f, candidateVariable, theo, produceAnswer);
+         alp := cl_qeatal(f, candidateVariable, theory, produceAnswer);
          if alp = '(nil . nil) then <<
             % Candidate variable does not occur in f
             if !*rlverbose and not !*rlqedfs then ioto_prin2 "*";
-            bestTheory := theo;
+            bestTheory := theory;
             successorNodeVariables := lto_delq(candidateVariable, nodeVariables);
             if produceAnswer then
                nodeAnswer := cl_updans(candidateVariable, 'arbitrary, nil, nil, nodeAnswer, produceAnswer);
@@ -490,7 +487,7 @@ asserted procedure cl_regularEliminationSet(state: Vector): Boolean;
    end;
 
 asserted procedure cl_storeRegularNodes(nodes: List, variablesLeft: Boolean, state: Vector): Vector;
-   % Store a list of nodes in qestate. The nodes must uniformly fall into one of the
+   % Store a list of nodes in QeState. The nodes must uniformly fall into one of the
    % categories "working", "success", or "finished". The second argument helps to distinguish
    % between "working" and "finished". Discuss: Why "store *regular* nodes"? Could we drop the 2nd
    % arg and look at the vl of the first node?
