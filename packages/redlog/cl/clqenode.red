@@ -37,6 +37,34 @@ copyright('clqenode, "(c) 2021 A. Dolzmann, T. Sturm");
 asserted procedure QeNode_new(variables: KernelL, f: Formula, answer: List): List4;
    {'QeNode, variables, f, nil, nil, answer};
 
+asserted procedure QeNode_print(node: List4, externalIndent: String): List4;
+   begin scalar !*nat, indent;
+      indent := "  ";
+      ioto_tprin2 {
+         externalIndent, indent, "{",
+         nth(node, QENODE_TAG), ", ",
+         nth(node, QENODE_VARIABLES), ", ",
+         ioto_smaprin rl_prepfof nth(node, QENODE_FORMULA), ", ",
+         nth(node, QENODE_ANSWER), "}"
+      };
+      return node
+   end;
+
+asserted procedure QeNode_printList(nodes: List, externalIndent: String): List;
+   begin scalar indent, nextIndent;
+      if null nodes then <<
+         ioto_prin2 {nil};
+         return nodes
+      >>;
+      indent := "  ";
+      nextIndent := lto_sconcat2(externalIndent, indent);
+      ioto_tprin2t {externalIndent, "{"};
+      for each node in nodes do
+         QeNode_print(node, nextIndent);
+      ioto_tprin2t {externalIndent, "}"};
+      return nodes
+   end;
+
 % Getters, there are no setters
 
 asserted procedure QeNode_getVariables(node: List4): KernelL;

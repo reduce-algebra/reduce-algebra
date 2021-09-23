@@ -59,6 +59,25 @@ asserted procedure QeCont_new(traversalMode: Id): Vector;
       return co
    end;
 
+asserted procedure QeCont_print(co: Vector, externalIndent: String): Vector;
+   begin scalar !*nat, indent, nextIndent;
+      indent := "  ";
+      nextIndent := lto_sconcat2(externalIndent, indent);
+      ioto_tprin2t {externalIndent, "{"};
+      ioto_tprin2t {externalIndent, indent, "Class:              ", getv(co, QECONT_TAG)};
+      ioto_tprin2  {externalIndent, indent, "Nodes:              "};
+      QeNode_printList(getv(co, QECONT_NODES), nextIndent);
+      ioto_tprin2t {externalIndent, indent, "LastNode:           ",
+         if getv(co, QECONT_LASTNODE) eq 'unused then 'unused else "(hidden)"};
+      ioto_tprin2t {externalIndent, indent, "TraversalMode:      ", getv(co, QECONT_TRAVERSALMODE)};
+      ioto_tprin2t {externalIndent, indent, "HashTable:          ",
+         if getv(co, QECONT_HASHTABLE) eq 'unused then 'unused else "(hidden)"};
+      ioto_tprin2t {externalIndent, indent, "RequestedAdditions: ", getv(co, QECONT_REQUESTEDADDITIONS)};
+      ioto_tprin2t {externalIndent, indent, "EffectiveAdditions: ", getv(co, QECONT_EFFECTIVEADDITIONS)};
+      ioto_tprin2t {externalIndent, "}"};
+      return co
+   end;
+
 asserted procedure QeCont_add(co: Vector, new: List): Vector;
    begin scalar nodes, lastNode, hashData;
       if null new then

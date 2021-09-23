@@ -30,21 +30,21 @@ copyright('clqestate, "(c) 2021 A. Dolzmann, T. Sturm");
 %
 
 #define QESTATE_TAG 0
-#define QESTATE_INPUTFORMULA 1
-#define QESTATE_INPUTTHEORY 2
-#define QESTATE_NOASSUMEVARS 3
+#define QESTATE_INPUTTHEORY 1
+#define QESTATE_INPUTFORMULA 2
+#define QESTATE_ANSWERMODE 3
 #define QESTATE_ASSUMEMODE 4
-#define QESTATE_ANSWERMODE 5
-#define QESTATE_BLOCKS 6
-#define QESTATE_VARIABLES 7
-#define QESTATE_FORMULA 8
-#define QESTATE_ANSWER 9
+#define QESTATE_NOASSUMEVARS 5
+#define QESTATE_THEORY 6
+#define QESTATE_FORMULA 7
+#define QESTATE_ANSWER 8
+#define QESTATE_BLOCKS 9
+#define QESTATE_VARIABLES 10
+#define QESTATE_PRODUCEANSWER 11
+#define QESTATE_WORKINGNODES 12
+#define QESTATE_SUCCESSNODES 13
+#define QESTATE_FAILURENODES 14
 #define QESTATE_CURRENTNODE 15
-#define QESTATE_WORKINGNODES 10
-#define QESTATE_SUCCESSNODES 11
-#define QESTATE_FAILURENODES 12
-#define QESTATE_CURRENTTHEORY 13
-#define QESTATE_PRODUCEANSWER 14
 #define QESTATE_UPLIM 15
 
 asserted procedure QeState_new(): Vector;
@@ -52,70 +52,60 @@ asserted procedure QeState_new(): Vector;
       state := mkvect(QESTATE_UPLIM);
       putv(state, QESTATE_TAG, 'QeState);
       % The following fields are constant, i.e., assigned exactly once after the creation of qestate:
-      putv(state, QESTATE_INPUTFORMULA, 'undefined);       % InputTheory
       putv(state, QESTATE_INPUTTHEORY, 'undefined);        % InputTheory
-      putv(state, QESTATE_NOASSUMEVARS, 'undefined);       % NoAssumeVars; do not make assumptions on these variables, includes quantified variables
-      putv(state, QESTATE_ASSUMEMODE, 'undefined);         % AssumeMode; 'full, 'monomial, or nil
+      putv(state, QESTATE_INPUTFORMULA, 'undefined);       % InputTheory
       putv(state, QESTATE_ANSWERMODE, 'undefined);         % AnswerMode; 'raw, 'standard, or nil
+      putv(state, QESTATE_ASSUMEMODE, 'undefined);         % AssumeMode; 'full, 'monomial, or nil
+      putv(state, QESTATE_NOASSUMEVARS, 'undefined);       % NoAssumeVars; do not make assumptions on these variables, includes quantified variables
       % The following fields change during execution:
-      putv(state, QESTATE_BLOCKS, 'undefined);
-      putv(state, QESTATE_VARIABLES, 'undefined);          % list of existentially quantified variables to be eliminated
+      putv(state, QESTATE_THEORY, 'undefined);             % Theory
       putv(state, QESTATE_FORMULA, 'undefined);            % matrix formula of the current block
       putv(state, QESTATE_ANSWER, 'undefined);
-      putv(state, QESTATE_CURRENTNODE, 'undefined);        % WorkingNodes; container
+      putv(state, QESTATE_BLOCKS, 'undefined);
+      putv(state, QESTATE_VARIABLES, 'undefined);          % list of existentially quantified variables to be eliminated
+      putv(state, QESTATE_PRODUCEANSWER, 'undefined);      % ProduceAnswer: Boolean
       putv(state, QESTATE_WORKINGNODES, 'undefined);       % WorkingNodes; container
       putv(state, QESTATE_SUCCESSNODES, 'undefined);       % SuccessNodes; list
       putv(state, QESTATE_FAILURENODES, 'undefined);       % FailureNodes; list
-      putv(state, QESTATE_CURRENTTHEORY, 'undefined);      % CurrentTheory
-      putv(state, QESTATE_PRODUCEANSWER, 'undefined);      % ProduceAnswer: Boolean
+      putv(state, QESTATE_CURRENTNODE, 'undefined);        % WorkingNodes; container
       return state
    end;
 
 asserted procedure QeState_print(state: Vector): Vector;
-   begin scalar !*nat;
+   begin scalar !*nat, indent, inputTheory, inputFormula, theory, formula;
+      indent := "  ";
       ioto_tprin2t {"{"};
-      ioto_tprin2t {"    TypeTag:               ", getv(state, QESTATE_TAG)};
-      ioto_tprin2t {"    InputFormula:          ", getv(state, QESTATE_INPUTFORMULA)};
-      ioto_tprin2t {"    InputTheory:           ", getv(state, QESTATE_INPUTTHEORY)};
-      ioto_tprin2t {"    NoAssumeVars:          ", getv(state, QESTATE_NOASSUMEVARS)};
-      ioto_tprin2t {"    AssumeMode:            ", getv(state, QESTATE_ASSUMEMODE)};
-      ioto_tprin2t {"    AnswerMode:            ", getv(state, QESTATE_ANSWERMODE)};
-      ioto_tprin2t {"    Blocks:                ", getv(state, QESTATE_BLOCKS)};
-      ioto_tprin2t {"    Vars:                  ", getv(state, QESTATE_VARIABLES)};
-      ioto_tprin2t {"    Formula:               ", ioto_smaprin rl_prepfof getv(state, QESTATE_FORMULA)};
-      ioto_tprin2t {"    Answer:                ", getv(state, QESTATE_ANSWER)};
-      ioto_tprin2t {"    CurrentNode:           ", getv(state, QESTATE_CURRENTNODE)};
-      ioto_tprin2t {"    WorkingNodes:          ", getv(state, QESTATE_WORKINGNODES)};
-      ioto_tprin2t {"    SuccessNodes:          ", getv(state, QESTATE_SUCCESSNODES)};
-      ioto_tprin2t {"    FailureNodes:          ", getv(state, QESTATE_FAILURENODES)};
-      ioto_tprin2t {"    CurentTheory:          ", getv(state, QESTATE_CURRENTTHEORY)};
-      ioto_tprin2t {"    ProduceAnswer:         ", getv(state, QESTATE_PRODUCEANSWER)};
-      ioto_tprin2t {"}"};
-      return state
-   end;
-
-asserted procedure QeState_verbosePrint(state: Vector): Vector;
-   begin scalar !*nat;
-      ioto_tprin2t {"{"};
-      ioto_tprin2t {"    TypeTag:                ", getv(state, QESTATE_TAG)};
-      ioto_tprin2t {"    #InputFormula:          ", rl_atnum getv(state, QESTATE_INPUTFORMULA)};
-      ioto_tprin2t {"    #InputTheory:           ", length getv(state, QESTATE_INPUTTHEORY)};
-      ioto_tprin2t {"    NoAssumeVars:           ", getv(state, QESTATE_NOASSUMEVARS)};
-      ioto_tprin2t {"    AssumeMode:             ", getv(state, QESTATE_ASSUMEMODE)};
-      ioto_tprin2t {"    AnswerMode:             ", getv(state, QESTATE_ANSWERMODE)};
-      ioto_tprin2t {"    Blocks:                 ", getv(state, QESTATE_BLOCKS)};
-      ioto_tprin2t {"    Vars:                   ", getv(state, QESTATE_VARIABLES)};
-      ioto_tprin2t {"    #Formula:               ", rl_atnum getv(state, QESTATE_FORMULA)};
-      ioto_tprin2t {"    Answer:                 ", getv(state, QESTATE_ANSWER)};
-      ioto_tprin2t {"    CurrentNode:            ", getv(state, QESTATE_CURRENTNODE)};
-      if getv(state, QESTATE_WORKINGNODES) eq 'undefined then
-         ioto_tprin2t {"    WorkingNodes:           ", 'undefined}
-      else
-         ioto_tprin2t {"    #WorkingNodes:          ", length getv(getv(state, QESTATE_WORKINGNODES), 1)};
-      ioto_tprin2t {"    #SuccessNodes:          ", length getv(state, QESTATE_SUCCESSNODES)};
-      ioto_tprin2t {"    #FailureNodes:          ", length getv(state, QESTATE_FAILURENODES)};
-      ioto_tprin2t {"    #CurentTheory:          ", length getv(state, QESTATE_CURRENTTHEORY)};
-      ioto_tprin2t {"    ProduceAnswer:          ", getv(state, QESTATE_PRODUCEANSWER)};
+      ioto_tprin2t {indent, "Class:         ", getv(state, QESTATE_TAG)};
+      inputTheory := getv(state, QESTATE_INPUTTHEORY);
+      if inputTheory neq 'undefined then
+         inputTheory := ioto_smaprin('list . for each f in inputTheory collect rl_prepfof f);
+      ioto_tprin2t {indent, "InputTheory:   ", inputTheory};
+      inputFormula := getv(state, QESTATE_INPUTFORMULA);
+      if inputFormula neq 'undefined then
+         inputFormula := ioto_smaprin rl_prepfof inputFormula;
+      ioto_tprin2t {indent, "InputFormula:  ", inputFormula};
+      ioto_tprin2t {indent, "AnswerMode:    ", getv(state, QESTATE_ANSWERMODE)};
+      ioto_tprin2t {indent, "AssumeMode:    ", getv(state, QESTATE_ASSUMEMODE)};
+      ioto_tprin2t {indent, "NoAssumeVars:  ", getv(state, QESTATE_NOASSUMEVARS)};
+      theory := getv(state, QESTATE_THEORY);
+      if theory neq 'undefined then
+         theory := ioto_smaprin('list . for each f in theory collect rl_prepfof f);
+      ioto_tprin2t {indent, "Theory:        ", theory};
+      formula := getv(state, QESTATE_FORMULA);
+      if formula neq 'undefined then
+         formula := ioto_smaprin rl_prepfof formula;
+      ioto_tprin2  {indent, "Formula:       ", formula};
+      ioto_tprin2t {indent, "Answer:        ", getv(state, QESTATE_ANSWER)};
+      ioto_tprin2t {indent, "Blocks:        ", getv(state, QESTATE_BLOCKS)};
+      ioto_tprin2t {indent, "Vars:          ", getv(state, QESTATE_VARIABLES)};
+      ioto_tprin2t {indent, "ProduceAnswer: ", getv(state, QESTATE_PRODUCEANSWER)};
+      ioto_tprin2  {indent, "WorkingNodes:  "};
+      QeCont_print(getv(state, QESTATE_WORKINGNODES), "  ");
+      ioto_tprin2  {indent, "SuccessNodes:  "};
+      QeNode_printList(getv(state, QESTATE_SUCCESSNODES), indent);
+      ioto_tprin2 {indent, "FailureNodes:  "};
+      QeNode_printList(getv(state, QESTATE_FAILURENODES), indent);
+      ioto_tprin2t {indent, "CurrentNode:   ", getv(state, QESTATE_CURRENTNODE)};
       ioto_tprin2t {"}"};
       return state
    end;
@@ -153,6 +143,20 @@ asserted procedure QeState_addWorkingNodes(state: Vector, nodes: List): Vector;
 
 asserted procedure QeState_isEmptyWorkingNodes(state: Vector): Boolean;
    QeCont_isEmpty(getv(state, QESTATE_WORKINGNODES));
+
+asserted procedure QeState_fetchSuccessNodes(state: Vector): List;
+   begin scalar successNodes;
+      successNodes := getv(state, QESTATE_SUCCESSNODES);
+      putv(state, QESTATE_SUCCESSNODES, nil);
+      return successNodes
+   end;
+
+asserted procedure QeState_fetchFailureNodes(state: Vector): List;
+   begin scalar failureNodes;
+      failureNodes := getv(state, QESTATE_FAILURENODES);
+      putv(state, QESTATE_FAILURENODES, nil);
+      return failureNodes
+   end;
 
 % The following qestate methods are used for verbose output.
 
@@ -255,11 +259,11 @@ asserted procedure QeState_getFailureNodes(state: Vector): List;
 asserted procedure QeState_setFailureNodes(state: Vector, nodes: List): Vector;
    << putv(state, QESTATE_FAILURENODES, nodes); state >>;
 
-asserted procedure QeState_getCurrentTheory(state: Vector): Theory;
-   getv(state, QESTATE_CURRENTTHEORY);
+asserted procedure QeState_getTheory(state: Vector): Theory;
+   getv(state, QESTATE_THEORY);
 
-asserted procedure QeState_setCurrentTheory(state: Vector, theory: Theory): Vector;
-   << putv(state, QESTATE_CURRENTTHEORY, theory); state >>;
+asserted procedure QeState_setTheory(state: Vector, theory: Theory): Vector;
+   << putv(state, QESTATE_THEORY, theory); state >>;
 
 asserted procedure QeState_getProduceAnwer(state: Vector): Boolean;
    getv(state, QESTATE_PRODUCEANSWER);
