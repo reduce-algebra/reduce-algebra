@@ -237,18 +237,23 @@ asserted procedure cl_qe1!-iterate_new(state: Vector): Vector;
       QeState_setFailureNodes(state, nil);
       ASSERT( not QeState_isEmptyBlocks(state) );
       while not QeState_isEmptyBlocks(state) and null remainingVariables do <<
-         if not QeState_isEmptyBlocks(state) then <<
-            off1 'rlqeprecise;
-            off1 'rlqeaprecise
-         >>;
          quantifier . variables := QeState_fetchBlock(state);
          % Discuss: move this !*rlverbose to QeState_fetchBlocks
          if !*rlverbose then
             ioto_tprin2 {"---- ", (quantifier . reverse variables)};
+         if not QeState_isEmptyBlocks(state) then <<
+            off1 'rlqeprecise;
+            off1 'rlqeaprecise
+         >>;
          if quantifier eq 'all then <<
             theory := QeState_getTheory(state);
             formula := QeState_getFormula(state);
-            formula := rl_simpl(rl_nnfnot formula, theory, -1);
+            formula := rl_nnfnot formula;
+            % Discuss: The only motivation for the following simplification is !*rlsipw
+            % and !*rlsipo. Maybe the simplifier should be called with these switch bindings
+            % exactly here. Could !*rlsipw and !*rlsipo be realized more efficiently without going
+            % through full simplification once more? Im am thinking of a trivial simplat.
+            formula := cl_simpl(formula, theory, -1);
             QeState_setFormula(state, formula)
          >>;
          QeState_setVariables(state, variables);
@@ -271,6 +276,11 @@ asserted procedure cl_qe1!-iterate_new(state: Vector): Vector;
          formulaArguments := for each node in append(successNodes, failureNodes) collect
             QeNode_getFormula(node);
          formula := rl_smkn(formulaOperator, formulaArguments);
+         % Disscuss: My motivation here was not entering an unsimplified formula in to the state.
+         % When doing this, one needs the "final simplification" in cl_qe1. This is not really
+         % clean. With the current code, formula is possibly simplified once more above, if the
+         % next block is universal.
+         formula := cl_simpl(formula, theory, -1);
          QeState_setFormula(state, formula);
          if not null failureNodes then
             for each node in failureNodes do
