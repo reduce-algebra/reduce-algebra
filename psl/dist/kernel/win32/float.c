@@ -95,6 +95,14 @@ uxassign(f1,f2)
   *f1 = *f2;
 }
 
+/* Tag( uxminus )
+ */
+uxminus(f1,f2)
+     double *f1, *f2;
+{
+  *f1 = -*f2;
+}
+
 /* Tag( uxplus2 )
  */
 uxplus2(f1,f2,f3)

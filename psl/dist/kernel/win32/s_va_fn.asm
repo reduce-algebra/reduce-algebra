@@ -364,7 +364,7 @@ _unixtty  DD 29*08000000h+OFFSET 299
  PUBLIC _bruch_bruch
   ALIGN 4
 _bruch_bruch  DD 29*08000000h+OFFSET 305
- DD 508
+ DD 509
  DD 30*08000000h+OFFSET 128
  DD symval
  PUBLIC _old_symval
@@ -576,6 +576,7 @@ _stacklowerbound  DD 29*08000000h+OFFSET 326
  DD 29*08000000h+OFFSET 505
  DD 29*08000000h+OFFSET 506
  DD 29*08000000h+OFFSET 507
+ DD 29*08000000h+OFFSET 508
  PUBLIC symfnc
   ALIGN 4
 symfnc  dd undefinedfunction
@@ -902,16 +903,16 @@ symfnc  dd undefinedfunction
  DD l0014
  DD l0026
  DD l0012
- DD l0245
+ DD l0246
  DD _psl_main
  dd undefinedfunction
  dd undefinedfunction
  dd undefinedfunction
  DD l0013
  DD _psl_call
- DD l0226
+ DD l0227
  DD l0031
- DD l0225
+ DD l0226
  DD l0033
  DD l0037
  DD initcode
@@ -920,17 +921,17 @@ symfnc  dd undefinedfunction
  dd undefinedfunction
  DD external_strlen
  DD l0030
- DD l0224
+ DD l0225
  DD l0032
- DD l0223
- DD l0228
- DD l0277
+ DD l0224
+ DD l0229
+ DD l0278
  DD binaryopenread
- DD l0250
+ DD l0251
  DD binaryread
  DD fread
  DD binaryreadblock
- DD l0247
+ DD l0248
  DD binaryclose
  DD l0059
  dd undefinedfunction
@@ -952,7 +953,7 @@ symfnc  dd undefinedfunction
  DD gtwrds
  DD l0088
  DD l0080
- DD l0271
+ DD l0272
  DD delbps
  dd undefinedfunction
  DD l0095
@@ -1042,21 +1043,21 @@ symfnc  dd undefinedfunction
  DD l0220
  DD l0221
  DD l0222
- DD l0227
- DD l0229
+ DD l0223
+ DD l0228
  DD l0230
- DD l0232
- DD l0234
- DD l0236
- DD l0238
- DD l0240
- DD l0242
+ DD l0231
+ DD l0233
+ DD l0235
+ DD l0237
+ DD l0239
+ DD l0241
  DD l0243
  DD l0244
- DD l0246
- DD l0248
+ DD l0245
+ DD l0247
  DD l0249
- DD l0251
+ DD l0250
  DD l0252
  DD l0253
  DD l0254
@@ -1068,18 +1069,19 @@ symfnc  dd undefinedfunction
  DD l0260
  DD l0261
  DD l0262
+ DD l0263
  DD fputc
  DD fgetc
  DD fgets
  DD fwrite
  DD fflush
- DD l0264
- DD l0267
- DD l0269
+ DD l0265
+ DD l0268
+ DD l0270
  DD plantlambdalink
  DD bittable
  DD undefinedfunction
- DD l0275
+ DD l0276
  dd undefinedfunction
  DD compiledcallinginterpreted
  dd undefinedfunction
