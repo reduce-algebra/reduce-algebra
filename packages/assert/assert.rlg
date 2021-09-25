@@ -62,10 +62,19 @@ hugo(1, 1, 'y);
 hugo(1, -1, 'y);
 
 
-*** declaration hugo: (number, posnumber, tag) -> dottedpair violated by arg2 -1
- 
+Backtrace from top of stack:
+backtrace assert_error assert_check1 hugo errorset!* begin11 
+process!-one!-reduce!-statement begin1a in_list1a in errorset!* begin11 
+process!-one!-reduce!-statement begin1 errorset!* begin 
 
-(y . 0)
+hugo being entered:
+   a1:   1
+   a2:   -1
+   a3:   y
+
+***** assertion `hugo(number, posnumber, tag): dottedpair' is violated by a2 
+(at assert.tst
+:20)
 
 
 assert_uninstall hugo;
@@ -94,13 +103,17 @@ nil
 addsq(simp 'x, numr simp 'x);
 
 
-*** declaration addsq: (sq, sq) -> sq violated by arg2 (((x . 1) . 1)) 
+Backtrace from top of stack:
+backtrace assert_error assert_check1 addsq errorset!* begin11 
+process!-one!-reduce!-statement begin1a in_list1a in errorset!* begin11 
+process!-one!-reduce!-statement begin1 errorset!* begin 
 
-*** declaration addf: (sf, sf) -> sf violated by arg2 ((x . 1) . 1) 
+addsq being entered:
+   a1:   ((((x . 1) . 1)) . 1)
+   a2:   (((x . 1) . 1))
 
-*** declaration addf: (sf, sf) -> sf violated by result ((x . 1) . 1) 
-
-(1)
+***** assertion `addsq(sq, sq): sq' is violated by a2 (at 
+assert.tst:29)
 
 
 algebraic;
@@ -112,11 +125,8 @@ assert_analyze();
 ------------------------------------------------------------------------
 function          #calls              #bad calls   #assertion violations
 ------------------------------------------------------------------------
-addf                   1                       1                       2
-addsq                  1                       1                       1
-hugo                   2                       1                       1
 ------------------------------------------------------------------------
-sum                    4                       3                       4
+sum                    0                       0                       0
 ------------------------------------------------------------------------
 
 
