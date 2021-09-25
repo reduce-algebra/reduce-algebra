@@ -3538,7 +3538,7 @@ LispObject read_eval_print(int noisy)
         ANOTHER_CATCH(LispRestart)
             RETHROW;
         ANOTHER_CATCH(LispException)
-            err_printf("\n... continuing after error\n");
+            if (!stop_on_error) err_printf("\n... continuing after error\n");
             if (spool_file != nullptr) std::fflush(spool_file);
             if (stop_on_error) RETHROW;
             keepGoing = true;

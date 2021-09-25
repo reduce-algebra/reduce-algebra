@@ -456,6 +456,22 @@ LispObject interrupted()
     THROW(LispSimpleError);
 }
 
+// This function displays a backtrace all the way down the stack and then
+// exists CSL in an abrupt manner. Its sole purpose is for use via the
+// backtrace() function [in eval1.cpp] where it is invoked in a fork() of
+// the running system so that the way that it unwinds the stack and exits
+// will not upset the main computation.
+
+LispObject display_backtrace()
+{   errorNest safe;
+    err_printf("+++ backtrace requested\n");
+    exit_reason = UNWIND_ERROR;
+    exit_value = exit_tag = nil;
+    exit_count = 0;
+    stop_on_error = true;
+    THROW(LispSimpleError);
+}
+
 LispObject aerror(const char *s)
 {   errorNest safe;
     LispObject w;
@@ -1021,6 +1037,7 @@ static LispObject lisp_main()
 // a supervisor function.
             else read_eval_print(lisp_true);
         CATCH(LispException)
+            if (stop_on_error) std::_Exit(0);
             if (exit_reason == UNWIND_RESTART)
             {   if (exit_tag == fixnum_of_int(0))      // "stop"
                     return_code = static_cast<int>(int_of_fixnum(exit_value));

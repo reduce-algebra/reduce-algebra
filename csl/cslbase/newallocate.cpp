@@ -478,36 +478,36 @@ public:
     MakeAssertions()
     {   if (sizeof(atomic<std::uint8_t>) != 1)
         {   cout << "atomic<int8_t> is not the expected size" << "\r" << endl;
-            my_abort();
+            my_abort(LOCATION);
         }
         if (!atomic<std::uint8_t>().is_lock_free())
         {   cout << "atomic<uint8_t> not lock-free" << "\r" << endl;
-            my_abort();
+            my_abort(LOCATION);
         }
         if (sizeof(atomic<std::uintptr_t>) != sizeof(intptr_t))
         {   cout << "atomic<uintptr_t> is not the expected size" << "\r" << endl;
-            my_abort();
+            my_abort(LOCATION);
         }
         if (!atomic<uintptr_t>().is_lock_free())
         {   cout << "Atomic<uintptr_t> not lock-free" << "\r" << endl;
-            my_abort();
+            my_abort(LOCATION);
         }
         if (sizeof(atomic<std::uint32_t>) != 4)
         {   cout << "atomic<uint32_t> is not the expected size" << "\r" << endl;
-            my_abort();
+            my_abort(LOCATION);
         }
         if (!atomic<std::uint32_t>().is_lock_free())
         {   cout << "atomic<uint32_t> not lock-free" << "\r" << endl;
-            my_abort();
+            my_abort(LOCATION);
         }
         if (SIXTY_FOUR_BIT)
         {   if (sizeof(atomic<std::uint64_t>) != 8)
             {   cout << "atomic<uint64_t> is not the expected size" << "\r" << endl;
-                my_abort();
+                my_abort(LOCATION);
             }
             if (!atomic<std::uint64_t>().is_lock_free())
             {   cout << "atomic<uint64_t> not lock-free" << "\r" << endl;
-                my_abort();
+                my_abort(LOCATION);
             }
         }
         cout << "is_standard_layout(Chunk) = "
@@ -668,7 +668,7 @@ void releaseOtherThreads()
                 []{   uint32_t n = activeThreads;
                       return (n & 0xff) == ((n>>8) & 0xff) - 1;
                   });
-        if (!st) my_abort("condition variable timed out");
+        if (!st) my_abort(LOCATION ": condition variable timed out");
     }
 // OK, so now I know that all the other threads are ready to wait on
 // gc_finished, so I ensure that useful variables are set ready for next
@@ -800,8 +800,6 @@ void garbageCollectOnBehalfOfAll()
         if (pendingCount == 0 &&
             userGcRequest == GcStyleNone) break;
         newRegionNeeded();
-/////        releaseOtherThreads();
-/////        return;
     }
 // Here all the GC helper threads may be waiting for a Chunk to copy. There
 // is not going to be one, so I can release them.
@@ -853,7 +851,7 @@ void waitWhileAnotherThreadGarbageCollects()
             cv_for_gc_idling.wait_until(lock,
                 std::chrono::steady_clock::now() + cvTimeout,
                 [] { return gc_started; });
-        if (!st) my_abort("condition variable timed out");
+        if (!st) my_abort(LOCATION ": condition variable timed out");
     }
 // To record that threads have paused they can then increment activeThreads
 // again. When one of them increments it to the value threadcount-1 I will
@@ -923,7 +921,7 @@ void waitWhileAnotherThreadGarbageCollects()
             cv_for_gc_complete.wait_until(lock,
                 std::chrono::steady_clock::now() + cvTimeout,
                 [] { return gc_complete; });
-        if (!st) my_abort("condition variable timed out");
+        if (!st) my_abort(LOCATION ": condition variable timed out");
     }
     fringe = fringeBis[threadId];
 //    cout << "At " << __WHERE__ << " fringe set to fringeBis = " << fringe << "\r" << endl;
@@ -1791,12 +1789,12 @@ LispObject Lgctest_0(LispObject env)
         {   cout << i;
             LispObject b = a;
             for (unsigned int j=i; j!=static_cast<unsigned int>(-1); j--)
-            {   if (!is_cons(b)) my_abort("gc test failure");
+            {   if (!is_cons(b)) my_abort(LOCATION ": gc test failure");
                 if (car(b) != fixnum_of_int(j))
-                    my_abort("gc test failure");
+                    my_abort(LOCATION ": gc test failure");
                 b = cdr(b);
             }
-            if (b != nil) my_abort("gc test failure");
+            if (b != nil) my_abort(LOCATION ": gc test failure");
         }
     }
     return nil;

@@ -221,6 +221,13 @@ inline void printlog(const char *s, ...)
 
 #endif // !__OPTIMIZE__
 
+// The following sets up "LOCATION" as a string giving file-name and
+// line-number
+
+#define CSL_STRINGIFY(x) #x
+#define CSL_TOSTRING(x) CSL_STRINGIFY(x)
+#define LOCATION __FILE__ ":" CSL_TOSTRING(__LINE__)
+
 #endif // header_log_h
 
 // end of "log.h"

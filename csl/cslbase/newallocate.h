@@ -945,6 +945,7 @@ inline LispObject get_n_bytes(size_t n, uintptr_t thr,
             myChunkBase[thr] = newChunk;
             newChunk->length = targetChunkSize+n;
             newChunk->isPinned = 0;
+            newChunk->pinnedObjects = TAG_FIXNUM;
             newChunk->chunkPinChain = nullptr;
             size_t chunkNo = p->chunkCount.fetch_add(1);
             p->chunkMap[chunkNo] = newChunk;
@@ -1363,6 +1364,7 @@ inline void regionInPageIsFull(unsigned int i, size_t n,
                            static_cast<uintptr_t>(gFringe));
             c->length = n + targetChunkSize;
             c->isPinned = 0;
+            c->pinnedObjects = TAG_FIXNUM;
             size_t chunkNo = currentPage->chunkCount.fetch_add(1);
             currentPage->chunkMap[chunkNo] = c;
             myChunkBase[i] = c;
@@ -1674,7 +1676,14 @@ extern void gcTestCode(); // temporary and for debugging.
 // be withdrawn! It seems certain that I should arrange that the time limit
 // here is as long as the slowest garbage collection.
 
+#ifdef DEBUG
+// While debugging I may be single stepping code or printing copious
+// trace ouput, so I will set a limit at 5 minutes (and adjust that further
+// if it causes me trouble).
+INLINE_VAR const std::chrono::seconds cvTimeout(300);
+#else // DEBUG
 INLINE_VAR const std::chrono::seconds cvTimeout(1);
+#endif // DEBUG
 
 #ifdef DEBUG
 

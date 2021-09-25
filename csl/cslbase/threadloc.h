@@ -35,23 +35,11 @@
 // $Id: threadloc.h March 2021 arthurcnorman $
 
 
-#if defined DEBUG && !defined MULTI_THREADED && \
-    (defined __WIN32__ || defined __CYGWIN__)
-// A HORRID thing is that on at least some platforms gdb is unable to
-// display the values of thread-local variables. That makes debugging of
-// code-sections that try to use them painful even in the case when in fact
-// only one thread is activated. So to make some initial debugging easier
-// I disable thread support as a temporary expedient. I will obviously
-// need to reinstate it later - and for that I may need to invent some
-// schemes that let be inspect thread-local values...
-#define AVOID_THREADLOCAL 1
-#endif // DEBUG
-
 #ifdef AVOID_THREADLOCAL
 #define thread_local
 #endif //AVOID_THREADLOCAL
 
-#if defined CONSERVATIVE && defined SUPPORT_MULTIPLE_THREADS
+#if defined CONSERVATIVE
 
 // The CONSERVATIVE build of CSL will be working towards support for
 // multiple threads. So this code is activated there. Prior versions do
@@ -59,8 +47,7 @@
 // to avoid introducing any overhead, even small.
 
 #if (defined __CYGWIN__ || defined __MINGW32__) && \
-    !defined USE_CXX_TLS && !defined AVOID_THREADLOCAL && \
-    !defined DEBUG
+    !defined USE_CXX_TLS && !defined AVOID_THREADLOCAL
 #define MICROSOFT_TLS 1
 #endif
 

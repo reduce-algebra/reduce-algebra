@@ -971,7 +971,7 @@ symbolic procedure s!:endprocedure(name, env, checksum);
         if posn() neq 0 then terpri();
         princ "+++ "; prin name; princ " compiled, ";
         princ pc; princ " + "; princ (cdar env);
-        princ " bytes"; terpri() >>;
+        printc " bytes" >>;
 
 % finally I manufacture a literal vector for use with this code segment
     env := caar env;
@@ -2106,7 +2106,7 @@ symbolic procedure s!:comlambda(bvl, body, args, env, context);
     s!:cancel_local_decs w;
     if fluids then s!:outopcode0('FREERSTR, '(FREERSTR));
     s!:outlose length bvl;
-    rplacd(env, s)
+    rplacd(env, s);
   end;
 
 symbolic procedure s!:loadliteral(x, env);
@@ -4999,7 +4999,6 @@ symbolic procedure s!:any_fluid l;
   else s!:any_fluid cdr l;
 
 % s!:compile1 directs the compilation of a single function, and bind all the
-% major fluids used by the compilation process
 % major fluids used by the compilation process. It pushes the generated
 % code into s!:other_defs in the form
 %    (name . nargs . bytecodes . env-vec)

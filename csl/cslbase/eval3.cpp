@@ -885,6 +885,7 @@ static LispObject errorset3(LispObject env,
     CATCH(LispResource)
         RETHROW;
     ANOTHER_CATCH(LispSimpleError)
+        if (stop_on_error) RETHROW;
 // I am not going to catch exceptions such as the ones that restart the
 // system - only ones that couunt as "errors".
         miscflags = (flags & BACKTRACE_MSG_BITS) |
@@ -909,7 +910,6 @@ static LispObject errorset3(LispObject env,
             case 2: miscflags &= ~ARGS_FLAG;
             default:break;
         }
-        if (stop_on_error) RETHROW;
         if (consp(exit_value)) exit_value = nil;
         return onevalue(exit_value);
     END_CATCH;

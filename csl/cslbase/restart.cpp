@@ -659,6 +659,10 @@ static void cold_setup()
         LispObject v = iintern(boffo, len, CP, 0);
         if (i == 0) char_0_symbol = v;
     }
+// It is at least imaginable that I should remove ~indefinite-value~ from the
+// object list, but I view it as really improbable that anybody will have
+// an accidental conflict with the name and for debugging it MAY be handy
+// to be able to access it?
 //@@@@@@@@@@@@@@@@@@@    Lunintern(nil, unset_var);
     symbol_sequence = 259;
 // Now in some minor sense the world is in a self-consistent state
