@@ -189,6 +189,8 @@
 
 (fi 16#91 xchg (ecx eax)(edx eax)(ebx eax)(esp eax)(ebp eax)(esi eax)(edi eax))
 
+(fi 16#98 convert (nil))
+
 (fi 16#9a call (A p))
 
 (fi 16#a0 mov (AL (O b)) (eax (O v)) ((O b) AL) ((O v) EAX))
@@ -259,15 +261,21 @@
 
 (setq eregs  '("eax" "ecx" "edx" "ebx" "esp" "ebp" "esi" "edi"))
 
-(fluid '( the-instruction* addr*))
+(fluid '(the-instruction* addr* size-override* sse-prefix*))
 
 (de decode(p1 pl addr*)
   (prog(i lth name)
+      (setq size-override* nil)
       (setq lth 1)
+      (when (or (weq p1 16#66) (weq p1 16#67))
+	 (when (weq p1 16#66) (setq sse-prefix* p1))
+         (setq size-override* p1)
+	 (setq p1 (pop pl))
+         (setq lth 2))
       (setq i (assoc p1 instrs1))
       (when (eq p1 16#0f)
             (setq p1 (pop pl))
-            (setq lth 2)
+            (setq lth (add1 lth))
             (setq i (assoc p1 instrs2)))
       (when (not i)(return (cons lth nil)))
       (setq the-instruction* i)
@@ -377,10 +385,10 @@
 (de decode-sib(p mod)
    (prog(ss index base offset seg b w)
      (setq b (pop bytes*))
-     (setq  lth* (add1 lth*))
-     (setq ss (wshift b -6))
+     (setq lth* (add1 lth*))
+     (setq scale (lsh 1 (wshift b -6)))     
      (setq index (wand 7 (wshift b -3)))
-     (setq index "")  % erstmal
+     (when (eq index 4) (setq index ""))  % erstmal
      (setq base (wand 7 b))
      (setq offset "")
      (when (eq mod 1)
@@ -395,10 +403,12 @@
            (return (bldmsg "[%w%w]" (bytes2word) index)))
      (setq seg
        (cond (segment* segment*)
-             ((or (eq base 2#100)(eq base 2#101)) "")
-             (t "ss")))
+             (t "")))
      (setq segment* nil)
-     (return (bldmsg "%w[%w%w%w]" seg (reg-m base) index offset))))
+     (return (bldmsg "[%w%w%w]" (reg-m base)
+		     (if (equal index "") ""
+		       (bldmsg "+%w*%w" (reg-m index) scale))
+		     offset))))
 
 
 (de reg-m(n)
@@ -465,6 +475,9 @@
        ((eq regnr* 7) 'sar)
        ((eq regnr* 5) 'shr)))
 
+(de nameconvert()
+ (cond ((eq size-override* 16#66) 'cbw)
+       (t 'cwde)))
 
 
 (de disassemble (fkt)
@@ -558,6 +571,7 @@ loop
          (when (eq name 'grp5) (setq name (namegrp5)))
          (when (eq name 'grp3) (setq name (namegrp3)))
          (when (eq name 'shift)(setq name ( nameshift)))
+         (when (eq name 'convert)(setq name (nameconvert)))
 
          (cond ((atsoc 'op2 instr)
                 (setq pat (list (cdr (atsoc 'op1 instr)) ","
@@ -584,7 +598,7 @@ loop
          (ttab 30)
          (when name (prin2 name))
          (ttab 38)
-         (prinblx (subla instr pat))
+         (if pat (prinblx (subla instr pat)))
          (prin2 "    ")
 
          (when *comment (ttab 60) (prin2 *comment))
