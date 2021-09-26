@@ -81,6 +81,13 @@ module taylor;
 %
 %*****************************************************************
 %
+%
+% 25-Sep-2021    2.4b
+%
+%   Do no longer remove shift rules for psi function during expansion.
+%    This is no longer necessary as gamma, psi, and polygamma are handled
+%    via their taylorsimpfn introduced in version 2.4.
+%
 % 01-Aug-2021    2.4a
 %
 %   Correct a case that may lead to non-unique kernels in the expansion
@@ -994,8 +1001,8 @@ taylorprintterms := 5;         % Only this nubmer of non-zero terms
                                % in progress to indicate that the error
                                % might disappear if the order is
                                % increased.
-taylor!:version := "2.4a";      % version number of the package
-taylor!:date!* := "01-Aug-2021"; % release date
+taylor!:version := "2.4b";      % version number of the package
+taylor!:date!* := "25-Sep-2021"; % release date
 
 if !*verboseload then
   << terpri ();

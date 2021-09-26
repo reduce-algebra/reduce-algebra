@@ -519,11 +519,11 @@ b (cadr b)) (cond ((and b (neq (car b) (quote ICASE)) (cdr b) (cddr b)) (
 setq b (list (car b) (cadr b))))) (setq pc (s!:plant_exit_code vec pc b 
 labelvals)))) (setq var1027 (cdr var1027)) (go lab1026)) (cond (!*pwrds (
 progn (cond ((neq (posn) 0) (terpri))) (princ "+++ ") (prin name) (princ 
-" compiled, ") (princ pc) (princ " + ") (princ (cdar env)) (princ " bytes") (
-terpri)))) (setq env (caar env)) (cond ((null env) (setq w nil)) (t (progn (
-setq w (mkvect (cdar env))) (prog nil lab1028 (cond ((null env) (return nil))
-) (progn (putv w (cdar env) (caar env)) (setq env (cdr env))) (go lab1028))))
-) (return (cons vec w))))
+" compiled, ") (princ pc) (princ " + ") (princ (cdar env)) (printc " bytes"))
+)) (setq env (caar env)) (cond ((null env) (setq w nil)) (t (progn (setq w (
+mkvect (cdar env))) (prog nil lab1028 (cond ((null env) (return nil))) (progn
+(putv w (cdar env) (caar env)) (setq env (cdr env))) (go lab1028))))) (
+return (cons vec w))))
 
 (de s!:add_pending (lab pend blocks) (prog (w) (cond ((not (atom lab)) (
 return (cons (list (gensym) lab 0) pend)))) (setq w (atsoc lab pend)) (cond (

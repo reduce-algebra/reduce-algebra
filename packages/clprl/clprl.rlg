@@ -291,9 +291,9 @@ pr := {
       ex(t,t>0 and for i := 1:2 mkand mkid(u,i)=t*(mkid(x,i)-mkid(c,i)))};
 
 
-pr := {proj(c1,c2,x1,x2,u1,u2) :- ex t (t > 0
+pr := {proj(c1,c2,x1,x2,u1,u2)
 
-        and (true and c1*t - t*x1 + u1 = 0 and c2*t - t*x2 + u2 = 0))}
+        :- ex t (t > 0 and (c1*t - t*x1 + u1 = 0 and c2*t - t*x2 + u2 = 0))}
 
 
 clp(pr,false :- proj(42,4711,100,1000,u1,-1));

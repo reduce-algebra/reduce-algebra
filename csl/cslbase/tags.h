@@ -84,10 +84,22 @@ typedef uintptr_t Header;
 // just that particular transaction but all others that have happened
 // previously.
 // The reinterpret_cast here is in violation of C++ strict aliasing rules
-// and there is no guarantee that the representation in memory of T and
-// std::atomic<T> match but it seems to me that it would be a very brave
-// compiler that omitted a load or store involving the raw data (ie x or y)
-// or relied on a cached value past an atomic access.
+// (at least!) and there is no guarantee that the representation in memory
+// of T and std::atomic<T> match but it seems to me that it would be a
+// very brave compiler that omitted a load or store involving the raw data
+// (ie x or y) or relied on a cached value past an atomic access. So I am
+// counting on a visible reference to an atomic<T> item both acting as a
+// barrier to all compiler compiler optimisations that try to rely on
+// assumptions about memory before and after. I am also counting on the
+// compiler generating code for every atomic store even if it is unable to
+// observe code that will use that stored value, because I hope it will
+// think that with an atomic value some other thread that it has no sight
+// of may depend on the value so stored. Bit it probably feels safest if
+// I only do this of the items updates (eg x and y above) are other than
+// static, since perhaps a compiler could believe that it could understand
+// everything within one compilation unit. And hypothetically there could be
+// problems if full-program link-time optimisation was applied - which at
+// present is not the case.
 
 template <typename T>
 std::atomic<T>& AT(T& x)

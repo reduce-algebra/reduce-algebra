@@ -547,7 +547,7 @@ Chunk *popChunk()
             []{   return pendingChunks != nullptr ||
                          activeHelpers == 0;
               });
-    if (!st) my_abort("condition variable timed out");
+    if (!st) my_abort(LOCATION ": condition variable timed out");
     Chunk *r = pendingChunks;
     if (r != nullptr)
     {   pendingChunks = r->pendingChunks;
@@ -705,6 +705,7 @@ if (gcTrace) cout << "New Chunk at " << Addr(newChunk)
      << " fringe = " << Addr(fringe) << "\n";
     newChunk->length = nSize;
     newChunk->isPinned = 0;
+    newChunk->pinnedObjects = TAG_FIXNUM;
     newChunk->chunkPinChain = nullptr;
     size_t chunkNo = p->chunkCount.fetch_add(1);
     p->chunkMap[chunkNo] = newChunk;
@@ -1090,11 +1091,18 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 
     Chunk *c = p->chunkMap[low];
     if (gcTrace) cout << "pointer is maybe within chunk " << low << " at " << Addr(c) << endl;
+// This may be a chunk where a previous GC had left some items pinned within
+// it, and in that case the pointer here is only interesting if if points
+// within one of those, since the remainder of the Chunk is not in use.
     if (c->pinnedObjects != TAG_FIXNUM)
     {   bool valid = false;
-        for (LispObject ch=c->pinnedObjects; ch!=TAG_FIXNUM; ch=cdr(ch&~TAG_BITS))
+        for (LispObject ch=c->pinnedObjects;
+                        ch!=TAG_FIXNUM;
+                        ch=cdr(ch&~TAG_BITS))
         {   if ((a&~TAG_BITS) == (car(ch&~TAG_BITS) & ~TAG_BITS))
-            // needs to be "a points within" not "=="
+            // needs to be "a points within" not "==" if I want ambiguous
+            // pointers to addresses within objects (rather than just to
+            // their start) to keep them alive.
             {   valid = true;
                 break;
             }
@@ -1233,7 +1241,7 @@ void findHeadersOfPinnedItems()
                 << " to " << Addr(c->chunkFringe)
                 << " end " << Addr(c->dataEnd()) << "\n";
             if (c->pinnedObjects != TAG_FIXNUM)
-            {
+            {   // here I believe that the headers have already been found.
             }
             else while (p < c->chunkFringe)
             {   LispObject *pp = reinterpret_cast<LispObject *>(p);

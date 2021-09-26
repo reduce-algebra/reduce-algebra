@@ -171,11 +171,23 @@
                               \else
                                 \index{#1 \blubbera@\texttt{#1} \blubbera!\blubberb}%
                               \fi}}
+
+%% In the HTML version, small capitals appear as capitals except that
+%% ligatures remain in lower case, so force capitals for now.
+\ifdefined\HCode
+\newcommand*{\indexpackage}[1]{%
+  \capitalize{#1}%
+  \index{#1 package@\MakeUppercase{#1} package}%
+  \index{Packages!#1@\MakeUppercase{#1}}%
+}
+\else
 \newcommand*{\indexpackage}[1]{%
   \capitalize{#1}%
   \index{#1 package@\textsc{\blubba} package}%
   \index{Packages!#1@\textsc{\blubba}}%
 }
+\fi
+
 \newcommand*{\ttindexswitch}[2][]{{%
        \renewcommand{\_}{\protect\underscore}%
        \renewcommand{\|}{\protect\textbar}%

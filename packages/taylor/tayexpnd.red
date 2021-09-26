@@ -500,7 +500,7 @@ COMMENT The cache maintained in !*!*taylorexpand!-diff!-cache!*!* is
 fluid '(!*!*taylorexpand!-diff!-cache!*!*);
 
 symbolic procedure taylorexpand!-diff(krnl,ll,flg);
-  begin scalar result,gammaflg;
+  begin scalar result;%,gammaflg;
     %
     % We use a very simple strategy: if we know a partial derivative
     %  of the kernel, we pass the problem to taylorexpand!-diff1 which
@@ -516,14 +516,15 @@ symbolic procedure taylorexpand!-diff(krnl,ll,flg);
          % Remove shift rules for psi as they
          % interfere with the expansion process
          %
-         gammaflg := smemqlp('(gamma psi polygamma),krnl);
-         if gammaflg then rule!-list('(psi_rules),nil);
+%         gammaflg := smemqlp('(gamma psi polygamma),krnl);
+%         if gammaflg then rule!-list('(psi_rules),nil);
          result := errorset!*({'taylorexpand!-diff1,
                               mkquote krnl,mkquote ll,mkquote flg},
                               !*backtrace)
                where !*!*taylorexpand!-diff!-cache!*!* :=
                    !*!*taylorexpand!-diff!-cache!*!*;
-         if gammaflg then rule!-list('(psi_rules),t) >>;
+%         if gammaflg then rule!-list('(psi_rules),t)
+         >>;
     %
     % If this fails we fall back to simple differentiation and
     %  substitution at the expansion point.

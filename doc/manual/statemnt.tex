@@ -130,13 +130,13 @@ The group statement\index{Group statement}
 \index{Statement!Group} is a construct used where
 {\REDUCE} expects a single statement, but a series of actions needs to be
 performed.  It is formed by enclosing one or more statements (of any kind)
-between the symbols \texttt{<}\texttt{<} and \texttt{>}\texttt{>}, 
+between the symbols \texttt{<}\texttt{<} and \texttt{>}\texttt{>},
 separated by semicolons or
 dollar signs -- it doesn't matter which.  The statements are executed one
 after another.
 
 Examples will be given in the sections on \texttt{IF}\ttindex{IF} and other
-types of statements in which the \texttt{<}\texttt{<} \ldots \texttt{>}\texttt{>} 
+types of statements in which the \texttt{<}\texttt{<} \ldots \texttt{>}\texttt{>}
 construct is useful.
 
 If the last statement in the enclosed group has a value, then that is also
@@ -285,7 +285,7 @@ case, \meta{exprn} is not evaluated at all.
 stores $5^{2}$ through $10^{2}$ in \texttt{A(5)} through \texttt{A(10)}, and at
 the same time stores the cubes in the \var{B} array:
 \begin{verbatim}
-    for i := 5 step 1 until 10 do 
+    for i := 5 step 1 until 10 do
         <<a(i):=i^2; b(i):=i^3>>
 \end{verbatim}
 \item As a convenience, the common construction
@@ -321,8 +321,8 @@ individual lists into one list:\ttindex{FOR EACH}
 \end{verbatim}
 \end{enumerate}
 The control variable used in the \texttt{FOR} statement is actually a new
-variable, not related to the variable of the same name outside the 
-\texttt{FOR} statement.  In other words, executing a statement 
+variable, not related to the variable of the same name outside the
+\texttt{FOR} statement.  In other words, executing a statement
 \texttt{for i:=} \ldots
 doesn't change the system's assumption that $i^{2} = -1$.
 Furthermore, in algebraic mode, the value of the control variable is
@@ -348,7 +348,7 @@ is known in advance.  If the criterion for repetition is more complicated,
 The \texttt{WHILE} \ldots{} \texttt{DO} controls the single statement
 following \texttt{DO}.
 If several statements are to be repeated, as is almost always the case,
-they must be grouped using the \texttt{<}\texttt{<} \ldots{} \texttt{>}\texttt{>} 
+they must be grouped using the \texttt{<}\texttt{<} \ldots{} \texttt{>}\texttt{>}
 or \texttt{BEGIN} \ldots{} \texttt{END}
 as in the example below.
 
@@ -427,7 +427,7 @@ enclosed between the words \texttt{BEGIN} and \texttt{END}\ttindex{BEGIN \ldots{
 END} forming what is technically called a \emph{block}\index{Block} or
 \emph{compound} statement.  Such a compound statement can in fact be used
 wherever a group statement appears.  The converse is not true: {\tt BEGIN
-\ldots END} can be used in ways 
+\ldots END} can be used in ways
 that \texttt{<}\texttt{<} \ldots{} \texttt{>}\texttt{>} cannot.
 
 \hypertarget{command:SCALAR}{}
@@ -452,7 +452,7 @@ another:
 In place of \texttt{SCALAR} one can also use the declarations
 \texttt{INTEGER}\ttindex{INTEGER} or \texttt{REAL}\ttindex{REAL}.
 In the present version of {\REDUCE} variables declared \texttt{INTEGER}
-are expected to have only integer values, and are initialized to 0.
+are expected to have only integer values, and are initialized by default to 0.
 \texttt{REAL} variables on the other hand are currently treated as algebraic
 mode \texttt{SCALAR}s.
 
@@ -460,9 +460,14 @@ mode \texttt{SCALAR}s.
 only be given immediately after a \texttt{BEGIN}.  An error will result if
 they are used after other statements in a block (including \texttt{ARRAY} and
 \texttt{OPERATOR} declarations, which are global in scope), or outside the
-top-most block (e.g., at the top level).  All variables declared 
-\texttt{SCALAR} are automatically initialized to zero in algebraic mode
+top-most block (e.g., at the top level).  All variables declared
+\texttt{SCALAR} are automatically initialized by default to zero in algebraic mode
 (\texttt{NIL} in symbolic mode).
+
+Optionally, each variable appearing in a \texttt{SCALAR},
+\texttt{INTEGER} or \texttt{REAL} declaration can be followed by an
+assignment operator and an initial value, which overrides the default
+initial value.
 
 Any symbols not declared as local variables in a block refer to the
 variables of the same name in the current calling environment. In
@@ -485,19 +490,28 @@ the \texttt{RETURN} is omitted (or nothing is written after the word
 on how it is used (and \texttt{NIL} in symbolic mode).  Remember to put a
 terminator after the \texttt{END}.
 
-\textit{Example:}
+\textit{Examples:}
 
 Given a previously assigned integer value for \var{N}, the following block
 will compute the Legendre polynomial of degree \var{N} in the variable
 \texttt{X}:
 \begin{verbatim}
-        begin scalar seed,deriv,top,fact;
-           seed:=1/(y^2 - 2*x*y +1)^(1/2);
-           deriv:=df(seed,y,n);
-           top:=sub(y=0,deriv);
-           fact:=for i:=1:n product i;
-           return top/fact
-        end;
+    begin scalar seed,deriv,top,fact;
+       seed:=1/(y^2 - 2*x*y +1)^(1/2);
+       deriv:=df(seed,y,n);
+       top:=sub(y=0,deriv);
+       fact:=for i:=1:n product i;
+       return top/fact
+    end;
+\end{verbatim}
+
+This block uses explicit initialization and computes the 10th Fibonacci number:
+\begin{verbatim}
+    begin integer f1 := 1, f2 := 1, f3;
+       for i := 3 : 10 do
+          << f3 := f1 + f2; f1 := f2; f2 := f3 >>;
+       return f3
+    end;
 \end{verbatim}
 
 \subsection{Compound Statements with GO TO}
@@ -582,7 +596,7 @@ the compound statement are executed.
         return;
 \end{verbatim}
 Note that parentheses are not required around the \texttt{x+y}, although they
-are permitted.  The last example is equivalent to \texttt{return 0} or 
+are permitted.  The last example is equivalent to \texttt{return 0} or
 \texttt{return nil}, depending on whether the block is used as part of an
 expression or not.
 
@@ -591,7 +605,7 @@ block\index{Block} level, in a sense the casual user is not expected to
 understand, we tabulate some cautions concerning its use.
 \begin{enumerate}
 \item \texttt{RETURN} can be used on the top level inside the compound
-statement, i.e. as one of the statements bracketed together by the 
+statement, i.e. as one of the statements bracketed together by the
 \texttt{BEGIN} \ldots{} \texttt{END}\ttindex{BEGIN \ldots{} END}
 
 \item \texttt{RETURN} can be used within a top level \texttt{<}\texttt{<}
@@ -613,4 +627,3 @@ or \texttt{REPEAT}\ttindex{REPEAT} statement.  In particular, the use of
        ...
 \end{verbatim}
 will lead to an error.
-

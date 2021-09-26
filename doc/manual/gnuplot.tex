@@ -15,14 +15,13 @@
   Gnuplot
 \newpage
 \title{{\Gnuplot} Interface for REDUCE\\Version 4}
-\author{Herbert Melenk \\ 
+\author{Herbert Melenk \\
 Konrad--Zuse--Zentrum f\"ur Informationstechnik Berlin \\
 E--mail: Melenk@zib.de}
 \maketitle
 
 \fi
 
-\index{GNUPLOT package}
 %\markboth{APPENDIX}{GNUPLOT Interface for REDUCE}
 
 %\section{APPENDIX: GNUPLOT Interface for REDUCE}
@@ -79,7 +78,7 @@ parameters:
         1/(x\^{}2+y\^{}2)}.
     \item an equation with an expression on the left-hand side and a zero on
       right-hand side describing implicitly a one dimensional variety in the
-      plane (implicitly given curve), e.g. 
+      plane (implicitly given curve), e.g.
       \texttt{x\^{}3 + x*y\^{}2-9x = 0}, or a
       two-dimensional surface in 3-dimensional Euclidean space,
     \item an equation with an expression in two variables on the left-hand side
@@ -112,7 +111,7 @@ parameters:
 \end{itemize}
 Please note that a blank has to be inserted between a number and a dot,
 otherwise the \REDUCE{} translator will be misled.
- 
+
 If a function is given as an equation the left-hand side is mainly used as a
 label for the axis of the dependent variable.
 
@@ -153,7 +152,7 @@ plot w;
 % implicit: superposition of polynomials
 plot((x^2+y^2-9)*x*y = 0);
 \end{verbatim}
- 
+
 
 \subsubsection{Piecewise-defined functions}
 A composed graph can be defined by a rule-based operator.  In that case each
@@ -161,7 +160,7 @@ rule must contain a clause which restricts the rule application to numeric
 arguments, e.g.
 \begin{verbatim}
    operator my_step1;
-   let {my_step1(~x) => -1 when numberp x and x<-pi/2, 
+   let {my_step1(~x) => -1 when numberp x and x<-pi/2,
         my_step1(~x) =>  1 when numberp x and x>pi/2,
         my_step1(~x) => sin x
             when numberp x and -pi/2<=x and x<=pi/2};
@@ -172,10 +171,10 @@ Of course, such a rule may call a procedure:
    procedure my_step3(x);
       if x<-1 then -1 else if x>1 then 1 else x;
    operator my_step2;
-   let my_step2(~x) => my_step3(x) when numberp x; 
+   let my_step2(~x) => my_step3(x) when numberp x;
    plot(my_step2(x));
 \end{verbatim}
-The direct use of a produre with a numeric \texttt{if} clause is impossible. 
+The direct use of a produre with a numeric \texttt{if} clause is impossible.
 
 \subsubsection{Plot options}
 The following plot options are supported in the \texttt{plot} command:
@@ -195,7 +194,7 @@ The following plot options are supported in the \texttt{plot} command:
 
 The following additional {\Gnuplot} options are supported in the \texttt{plot} command:
 \begin{itemize}
-  \item \texttt{title=name}: the title (string) is put at the top of the picture. 
+  \item \texttt{title=name}: the title (string) is put at the top of the picture.
   \item axes labels: \texttt{xlabel="text1", ylabel="text2"}, and for surfaces
     \texttt{zlabel="text3"}. If omitted the axes are labeled by the independent
     and dependent variable names from the expression. Note that \texttt{xlabel},
@@ -431,7 +430,7 @@ plot w;
 
 An example taken from: Cox, Little, O'Shea, \emph{Ideals, Varieties and Algorithms}:
 \begin{verbatim}
-plot(point(3u+3u*v^2-u^3, 3v+3u^2*v-v^3, 3u^2-3v^2), hidden3d, 
+plot(point(3u+3u*v^2-u^3, 3v+3u^2*v-v^3, 3u^2-3v^2), hidden3d,
      title="Enneper Surface");
 \end{verbatim}
 

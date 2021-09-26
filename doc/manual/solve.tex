@@ -7,7 +7,7 @@ equations. It is used with the syntax:
     of kernels}])\,:\,\textit{list}.
 \end{syntax}
 \texttt{EXPRN} is of the form \meta{expression} or
-\texttt{\{} \meta{expression1},\meta{expression2}, \dots \texttt{\}}.  
+\texttt{\{} \meta{expression1},\meta{expression2}, \dots \texttt{\}}.
 Each expression is an
 algebraic equation, or is the difference of the two sides of the equation.
 The second argument is either a kernel or a list of kernels representing
@@ -17,7 +17,7 @@ in which case these kernels are presumed to be the unknowns.
 
 For one equation, \texttt{SOLVE}\ttindextype{SOLVE}{operator} recursively uses
 factorization and decomposition, together with the known inverses of
-\texttt{LOG}, \texttt{SIN}, \texttt{COS}, \texttt{\textasciicircum}, 
+\texttt{LOG}, \texttt{SIN}, \texttt{COS}, \texttt{\textasciicircum},
 \texttt{ACOS}, \texttt{ASIN}, and
 linear, quadratic, cubic, quartic, or binomial factors. Solutions
 of equations built with exponentials or logarithms are often
@@ -30,9 +30,9 @@ Bareiss, unless the switch \sw{CRAMER}\ttindexswitch{CRAMER} is on, in which
 case Cramer's method is used.  The Bareiss method is usually more
 efficient unless the system is large and dense.
 
-Non-linear equations are solved using the Groebner basis 
-package\indexpackage{Groebner}\extendedmanual{ (chapter~\ref{GROEBNER})}. 
-Users should note that this 
+Non-linear equations are solved using the Groebner basis
+package\indexpackage{GROEBNER}\extendedmanual{ (chapter~\ref{GROEBNER})}.
+Users should note that this
 can be quite a time consuming process.
 
 \textit{Examples:}
@@ -64,7 +64,7 @@ unknowns.  For example,
 \ttindextype{ROOT\_MULTIPLICITIES}{global variable}
 \ttindextype{SOLVE}{operator!ROOT\_MULTIPLICITIES global variable@\texttt{ROOT\_MULTIPLICITIES} global variable}
 The TAG argument is used to uniquely identify those particular solutions.
-Solution multiplicities are stored in the global variable 
+Solution multiplicities are stored in the global variable
 \var{ROOT\_MULTIPLICITIES} rather than the solution list.  The value of this
 variable is a list of the multiplicities of the solutions for the last
 call of \texttt{SOLVE}. \ttindextype{SOLVE}{operator} For example,
@@ -286,7 +286,7 @@ displays a set of restrictions for the parameters of the system:
 
     {x - 4*y}
 \end{verbatim}
-The non-existence of a formal solution is caused by a 
+The non-existence of a formal solution is caused by a
 contradiction which disappears only if the parameters
 of the initial system are set such that all members
 of the requirements list take the value zero.
@@ -296,7 +296,7 @@ system solvable. E.g.\  in the above case a substitution
 $x=4y$ makes the equation set consistent. For a non-linear
 system only one inconsistency is detected. If such a system
 has more than one inconsistency, you must reduce them
-one after the other. 
+one after the other.
 \footnote{
 The difference between linear and non--linear
 inconsistent systems is based on the algorithms which
@@ -307,7 +307,7 @@ while $solve(\{x^2=a,x^2=b,y^2=c,y^2=d\},\{x,y\}$ leads to $\{a-b\}$.
 }
 The  set shows you also the dependency among the parameters: here
 one of $x$ and $y$ is free and a formal solution of the system can be
-computed by adding it to the variable list of \texttt{solve}. 
+computed by adding it to the variable list of \texttt{solve}.
 The requirement set is not unique -- there may be other such sets.
 
 
@@ -333,10 +333,10 @@ formal solution. In the above case the value is
 
     {b}
 \end{verbatim}
-which excludes formally the case $b=0$; obviously this special 
+which excludes formally the case $b=0$; obviously this special
 parameter value makes the system singular. The set of assumptions
 is complete for both, linear and non--linear systems.
-    
+
 \hypertarget{switch:VAROPT}{}
 \texttt{SOLVE} rearranges the variable sequence
 to reduce the (expected) computing time. This behavior is controlled
@@ -356,7 +356,7 @@ list is omitted. The effect is demonstrated by an example:
          - y
      x=-------}}
           3
- 
+
    off varopt; solve(s,{y,x});
 
                   6       4        2
@@ -369,7 +369,7 @@ list is omitted. The effect is demonstrated by an example:
 
 \end{verbatim}
 In the first case, \texttt{solve} forms the solution as a set of
-pairs $(y_i,x(y_i))$ because the degree of $x$ is higher -- 
+pairs $(y_i,x(y_i))$ because the degree of $x$ is higher --
 such a rearrangement makes the internal computation of the Gr\"obner basis
 generally faster. For the second case the explicitly given variable sequence
 is used such that the solution has now the form $(x_i,y(x_i))$.
@@ -399,4 +399,3 @@ variable ahead of those on which it depends.
 \end{verbatim}
 Here \texttt{solve} is forced to put $c$ after $a$ and after $b$, but
 there is no obstacle to interchanging $a$ and $b$.
-

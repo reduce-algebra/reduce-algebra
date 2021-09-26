@@ -1779,10 +1779,29 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
     }
 }
 
+LispObject Lbacktrace(LispObject env)
+{   pid_t pid1;
+// Split off a clone of the current process that can be used to generate the
+// backtrace leaving the main thread undamaged.
+    pid1 = fork();
+    if (pid1 < 0) return aerror("Fork 1 failed in backtrace function");
+    else if (pid1 == 0) // TASK 1 created OK
+        return display_backtrace();
+    else
+    {   // Wait for the sub-task to finishes.
+        wait(nullptr);
+        return onevalue(nil);
+    }
+}
+
 #else
 
 LispObject Lparallel(LispObject env, LispObject a, LispObject b)
 {   return aerror("parallel not supported on this platform");
+}
+
+LispObject Lbacktrace(LispObject env)
+{   return aerror("Standard Lisp does not mandate a BACKTRACE function");
 }
 
 #endif
@@ -1852,6 +1871,7 @@ setup_type const eval1_setup[] =
     {"values",          Lvalues_0, Lvalues_1, Lvalues_2, Lvalues_3, Lvalues_4up},
     {"macroexpand",     G0Wother, Lmacroexpand, Lmacroexpand_2, G3W1, G4W1},
     {"macroexpand-1",   G0Wother, Lmacroexpand_1, Lmacroexpand_2, G3Wother, G4Wother},
+    DEF_0("backtrace",  Lbacktrace),
     {"show-stack",      Lshow_stack_0, Lshow_stack_1, Lshow_stack_2, G3Wother, G4Wother},
     {nullptr,           nullptr, nullptr, nullptr, nullptr, nullptr}
 };
