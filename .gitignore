@@ -313,6 +313,9 @@
 # /psl/dist/kernel/AMD64_ext/
 /psl/dist/kernel/AMD64_ext/tmp.sl
 
+# /psl/dist/kernel/linux/
+/psl/dist/kernel/linux/tmp.sl
+
 # /psl/dist/kernel/win32/
 /psl/dist/kernel/win32/main.s.orig
 
