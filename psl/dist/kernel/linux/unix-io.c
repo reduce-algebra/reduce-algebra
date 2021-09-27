@@ -62,6 +62,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
  
+/* $Id$ */
+
 #include <stdio.h>
  
 /* There is an assumption here that coercing addresses into ints is OK */

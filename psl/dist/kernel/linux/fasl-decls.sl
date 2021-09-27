@@ -47,6 +47,8 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% $Id$
+
 %
 % These constants are the tags of the relocation fields. They tell
 % What the number in the inf field represents.
@@ -91,6 +93,8 @@
   )
 
 (define-constant bittable-entries-per-word 16)
+
+(ds bittable-get-address (bit-table) (wplus2 4 (mkfixn bit-table)))
 
 (ds reloc-right-half-tag (x) (field x 0 2))
 (ds reloc-right-half-inf (x) (field x 2 14))

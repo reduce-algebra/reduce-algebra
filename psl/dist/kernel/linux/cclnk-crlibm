@@ -1,0 +1,5 @@
+gcc  -o bpsl -m32 -w -DBPSSIZE=8000000 -DLINUX -DUSE_CRLIBM=1 -L. \
+   bps.c bpsheap.c echo.c file-status.c float.c \
+   os-hooks.c pslextras.c pslsocket.c pwd-fn.c sigs.c unix-io.c \
+   main.o dmain.o -lm -ldl -lcrlibm
+
