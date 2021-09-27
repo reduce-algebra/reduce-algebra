@@ -42,6 +42,8 @@
 %  Version for SUN386
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% $Id$
+
 (on fast-integers)
 (compiletime (put 'UndefinedFunction 'symbol 'UndefinedFunction))
 (compiletime (put 'UndefinedFunction 'entrypoint 'UndefinedFunction))

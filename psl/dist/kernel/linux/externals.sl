@@ -82,7 +82,9 @@
 %  Added external_stat, link, and unlink.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 
+
+% $Id$
+
 (compiletime
  (setf *foreign-functions* nil)
  )
@@ -112,6 +114,7 @@
 (external-function alterheapsize        (integer))
 (external-function allocatemorebps      (amount))
 (external-function get_imagefilepath    ())
+(external-function unexec               (newname aname dstart bstart))
 
 % Defined in file-status.c
 %
@@ -179,7 +182,6 @@
  
 % Defined In unexec.c
 %
-(external-function unexec               (newname aname dstart bstart))
  
  
 % Defined in unix-io.c
@@ -254,6 +256,14 @@
 (external-function semctl (semid semnum cmd arg))
 (external-function semget (key nsems semflg))
 (external-function semop  (semid sembuf nsops))
+
+% dynamic linking
+
+
+(external-function dlopen (filenam flag))
+(external-function dlerror (void))
+(external-function dlsym (handle sym))
+(external-function dlclose (handle))
 
  
 (on r2i)

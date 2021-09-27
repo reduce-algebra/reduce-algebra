@@ -37,6 +37,8 @@
  *  Modified to use getwd(3). This might be more 4.2BSD specific.
  */
 
+/* $Id$ */
+
 /* getwd(3) should be defined on all 4.2bsd or compatible Unices.  If
  * it is not present and you comment out USE_GETWD, do check that popen
  * uses vfork instead of fork!  It is not going to work at all on small
