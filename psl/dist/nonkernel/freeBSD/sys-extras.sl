@@ -166,12 +166,7 @@
 (de returnaddressp (x)
   (prog (s y)
         (unless (and (fixnp x) (>= x 2000)) (return nil))
-        % Actually, top bits must                                          
-        % be 0 or -1 due to                                                
-        % 9836 assembler, linker                                           
-        (when (weq (wand x 1) 1)
-          (return nil))
-        % if OddP X                                                        
+        (when (not (codeaddressp x)) (return nil))
         (setq x (inf x))
         (when (wlessp x 8198)
           (return nil))
