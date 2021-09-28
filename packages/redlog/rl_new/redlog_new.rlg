@@ -1,0 +1,970 @@
+off rlabout;
+
+
+on rlverbose;
+
+
+
+% Ordered fields standard form:
+rlset ofsf;
+
+
+{}
+
+rlset();
+
+
+{ofsf}
+
+
+% Chains
+-3/5<x>y>z<=a<>b>c<5/3;
+
+
+ - 5*x - 3 < 0 and x - y > 0 and y - z > 0 and  - a + z <= 0 and a - b <> 0
+
+ and b - c > 0 and 3*c - 5 < 0
+
+
+% For-loop actions.
+g := for i:=1:6 mkor
+   for j := 1:6 mkand
+      mkid(a,i) <= mkid(a,j);
+
+
+g := (0 <= 0 and a1 - a2 <= 0 and a1 - a3 <= 0 and a1 - a4 <= 0 and a1 - a5 <= 0
+
+ and a1 - a6 <= 0) or ( - a1 + a2 <= 0 and 0 <= 0 and a2 - a3 <= 0
+
+ and a2 - a4 <= 0 and a2 - a5 <= 0 and a2 - a6 <= 0) or ( - a1 + a3 <= 0
+
+ and  - a2 + a3 <= 0 and 0 <= 0 and a3 - a4 <= 0 and a3 - a5 <= 0
+
+ and a3 - a6 <= 0) or ( - a1 + a4 <= 0 and  - a2 + a4 <= 0 and  - a3 + a4 <= 0
+
+ and 0 <= 0 and a4 - a5 <= 0 and a4 - a6 <= 0) or ( - a1 + a5 <= 0
+
+ and  - a2 + a5 <= 0 and  - a3 + a5 <= 0 and  - a4 + a5 <= 0 and 0 <= 0
+
+ and a5 - a6 <= 0) or ( - a1 + a6 <= 0 and  - a2 + a6 <= 0 and  - a3 + a6 <= 0
+
+ and  - a4 + a6 <= 0 and  - a5 + a6 <= 0 and 0 <= 0)
+
+
+% Quantifier elimination and variants
+h := rlsimpl rlall g;
+
+
+h := all a1 all a2 all a3 all a4 all a5 all a6 ((a5 - a6 <= 0 and a4 - a5 >= 0
+
+ and a3 - a5 >= 0 and a2 - a5 >= 0 and a1 - a5 >= 0) or (a5 - a6 >= 0
+
+ and a4 - a6 >= 0 and a3 - a6 >= 0 and a2 - a6 >= 0 and a1 - a6 >= 0) or (
+
+a4 - a6 <= 0 and a4 - a5 <= 0 and a3 - a4 >= 0 and a2 - a4 >= 0 and a1 - a4 >= 0
+
+) or (a3 - a6 <= 0 and a3 - a5 <= 0 and a3 - a4 <= 0 and a2 - a3 >= 0
+
+ and a1 - a3 >= 0) or (a2 - a6 <= 0 and a2 - a5 <= 0 and a2 - a4 <= 0
+
+ and a2 - a3 <= 0 and a1 - a2 >= 0) or (a1 - a6 <= 0 and a1 - a5 <= 0
+
+ and a1 - a4 <= 0 and a1 - a3 <= 0 and a1 - a2 <= 0))
+
+rlmatrix h;
+
+
+(a5 - a6 <= 0 and a4 - a5 >= 0 and a3 - a5 >= 0 and a2 - a5 >= 0
+
+ and a1 - a5 >= 0) or (a5 - a6 >= 0 and a4 - a6 >= 0 and a3 - a6 >= 0
+
+ and a2 - a6 >= 0 and a1 - a6 >= 0) or (a4 - a6 <= 0 and a4 - a5 <= 0
+
+ and a3 - a4 >= 0 and a2 - a4 >= 0 and a1 - a4 >= 0) or (a3 - a6 <= 0
+
+ and a3 - a5 <= 0 and a3 - a4 <= 0 and a2 - a3 >= 0 and a1 - a3 >= 0) or (
+
+a2 - a6 <= 0 and a2 - a5 <= 0 and a2 - a4 <= 0 and a2 - a3 <= 0 and a1 - a2 >= 0
+
+) or (a1 - a6 <= 0 and a1 - a5 <= 0 and a1 - a4 <= 0 and a1 - a3 <= 0
+
+ and a1 - a2 <= 0)
+
+on rlrealtime;
+
+
+rlqe h;
+
+++++ Entering cl_qe
+---- (all a1 a2 a3 a4 a5 a6) [DFS DYN] [(1 0 0 0 0 0)] [(6 0 0 0 0)] [
+(5 4 0 0 0)] [(5 3 3 0 0)] [(5 3 2 0 0)] [(5 3 1 0 0)] [(5 3 0 0 0)] [
+(5 2 3 0 0)] [(5 2 2 0 0)] [(5 2 1 0 0)] [(5 2 0 0 0)] [(5 1 1 0 0)] [
+(5 1 0 0 0)] [(5 0 0 0 0)] [(4 4 0 0 0)] [(4 3 0 0 0)] [(4 2 0 0 0)] [
+(4 1 1 0 0)] [(4 1 0 0 0)] [(4 0 0 0 0)] [(3 4 0 0 0)] [(3 3 0 0 0)] [
+(3 2 0 0 0)] [(3 1 1 0 0)] [(3 1 0 0 0)] [(3 0 0 0 0)] [(2 4 0 0 0)] [
+(2 3 0 0 0)] [(2 2 0 0 0)] [(2 1 0 0 0)] [(2 0 1 0 0)] [(2 0 0 0 0)] [
+(1 1 0 0 0)] [(1 0 0 0 0)] [DEL 71/105 = 67.619%]
+true
+
+off rlrealtime;
+
+
+
+h := rlsimpl rlall(g,{a2});
+
+
+h := all a1 all a3 all a4 all a5 all a6 ((a5 - a6 <= 0 and a4 - a5 >= 0
+
+ and a3 - a5 >= 0 and a2 - a5 >= 0 and a1 - a5 >= 0) or (a5 - a6 >= 0
+
+ and a4 - a6 >= 0 and a3 - a6 >= 0 and a2 - a6 >= 0 and a1 - a6 >= 0) or (
+
+a4 - a6 <= 0 and a4 - a5 <= 0 and a3 - a4 >= 0 and a2 - a4 >= 0 and a1 - a4 >= 0
+
+) or (a3 - a6 <= 0 and a3 - a5 <= 0 and a3 - a4 <= 0 and a2 - a3 >= 0
+
+ and a1 - a3 >= 0) or (a2 - a6 <= 0 and a2 - a5 <= 0 and a2 - a4 <= 0
+
+ and a2 - a3 <= 0 and a1 - a2 >= 0) or (a1 - a6 <= 0 and a1 - a5 <= 0
+
+ and a1 - a4 <= 0 and a1 - a3 <= 0 and a1 - a2 <= 0))
+
+rlqe h;
+
+++++ Entering cl_qe
+---- (all a1 a3 a4 a5 a6) [DFS DYN] [(1 0 0 0 0)] [(6 0 0 0)] [(5 4 0 0)] [
+(5 3 3 0)] [(5 3 2 0)] [(5 3 1 0)] [(5 3 0 0)] [(5 2 3 0)] [(5 2 2 0)] [
+(5 2 1 0)] [(5 2 0 0)] [(5 1 1 0)] [(5 1 0 0)] [(5 0 0 0)] [(4 4 0 0)] [
+(4 3 0 0)] [(4 2 0 0)] [(4 1 1 0)] [(4 1 0 0)] [(4 0 0 0)] [(3 4 0 0)] [
+(3 3 0 0)] [(3 2 0 0)] [(3 1 1 0)] [(3 1 0 0)] [(3 0 0 0)] [(2 4 0 0)] [
+(2 3 0 0)] [(2 2 0 0)] [(2 1 0 0)] [(2 0 1 0)] [(2 0 0 0)] [(1 1 0 0)] [
+(1 0 0 0)] [DEL 71/105 = 67.619%]
+true
+
+
+off rlqeheu,rlqedfs;
+
+
+rlqe ex(x,a*x**2+b*x+c>0);
+
+++++ Entering cl_qe
+---- (ex x) [BFS: depth 1] [
+-- left: 1 (x)
+1e(12)] [DEL 0/1 = 0.0%]
+a > 0 or (b < 0 and a = 0) or (a = 0 and (b > 0 or (c > 0 and b = 0)))
+
+                        2
+ or (a < 0 and 4*a*c - b  < 0)
+
+on rlqedfs;
+
+
+rlqe ex(x,a*x**2+b*x+c>0);
+
+++++ Entering cl_qe
+---- (ex x) [DFS DYN] [(1)] [DEL 0/1 = 0.0%]
+a > 0 or (b < 0 and a = 0) or (a = 0 and (b > 0 or (c > 0 and b = 0)))
+
+                        2
+ or (a < 0 and 4*a*c - b  < 0)
+
+on rlqeheu;
+
+
+
+rlqe(ex(x,a*x**2+b*x+c>0),{a<0});
+
+++++ Entering cl_qe
+---- (ex x) [DFS DYN] [(1)] [DEL 0/1 = 0.0%]
+         2
+4*a*c - b  < 0
+
+
+rlgqe ex(x,a*x**2+b*x+c>0);
+
+---- (ex x) [DFS DYN] [(1)] [DEL 0/1 = 0.0%]
+{{a <> 0},
+
+                    2
+ a >= 0 or 4*a*c - b  < 0}
+
+rlthsimpl ({a*b*c=0,b<>0});
+
+
+{b <> 0,a*c = 0}
+
+
+
+rlqe ex({x,y},(for i:=1:5 product mkid(a,i)*x**10-mkid(b,i)*y**2)<=0);
+
+++++ Entering cl_qe
+---- (ex x y) [DFS DYN] [(1 0)] [(6)] [(5)] [(4)] [(3)] [(2)] [(1)] 
+[DEL 0/7 = 0.0%]
+true
+
+
+sol := rlqe ex(x,a1*a2*x**2+b*x+c>0);
+
+++++ Entering cl_qe
+---- (ex x) [DFS DYN] [(1)] [DEL 0/1 = 0.0%]
+                                               3
+sol := a1*a2 > 0 or (b <> 0 and 2*a1*a2*b*c - b  > 0
+
+ and (c = 0 or a2 = 0 or a1 = 0) and (a2 = 0 or a1 = 0))
+
+                                          2
+ or (a2 <> 0 and a1 <> 0 and 4*a1*a2*c - b  < 0)
+
+ or ((b > 0 or (c > 0 and b = 0)) and (a2 = 0 or a1 = 0))
+
+rlatnum sol;
+
+
+16
+
+rldepth sol;
+
+
+4
+
+
+rlatl sol;
+
+
+{c = 0,
+
+ c > 0,
+
+ b = 0,
+
+ b <> 0,
+
+ b > 0,
+
+ a2 = 0,
+
+ a2 <> 0,
+
+ a1 = 0,
+
+ a1 <> 0,
+
+ a1*a2 > 0,
+
+              2
+ 4*a1*a2*c - b  < 0,
+
+                3
+ 2*a1*a2*b*c - b  > 0}
+
+rlatml sol;
+
+
+{{c = 0,1},
+
+ {c > 0,1},
+
+ {b = 0,1},
+
+ {b <> 0,1},
+
+ {b > 0,1},
+
+ {a2 = 0,3},
+
+ {a2 <> 0,1},
+
+ {a1 = 0,3},
+
+ {a1 <> 0,1},
+
+ {a1*a2 > 0,1},
+
+               2
+ {4*a1*a2*c - b  < 0,1},
+
+                 3
+ {2*a1*a2*b*c - b  > 0,1}}
+
+rlterml sol;
+
+
+                 2
+{b*(2*a1*a2*c - b ),
+
+              2
+ 4*a1*a2*c - b ,
+
+ a1*a2,
+
+ a1,
+
+ a2,
+
+ b,
+
+ c}
+
+rltermml sol;
+
+
+                  2
+{{b*(2*a1*a2*c - b ),1},
+
+               2
+ {4*a1*a2*c - b ,1},
+
+ {a1*a2,1},
+
+ {a1,4},
+
+ {a2,4},
+
+ {b,3},
+
+ {c,2}}
+
+rlifacl sol;
+
+
+              2
+{4*a1*a2*c - b ,
+
+              2
+ 2*a1*a2*c - b ,
+
+ a1,
+
+ a2,
+
+ b,
+
+ c}
+
+rlifacml sol;
+
+
+               2
+{{4*a1*a2*c - b ,1},
+
+               2
+ {2*a1*a2*c - b ,1},
+
+ {a1,5},
+
+ {a2,5},
+
+ {b,4},
+
+ {c,2}}
+
+
+rlstruct(sol, fac=no, w);
+
+
+{w3 > 0 or (w6 <> 0 and w1 > 0 and (w7 = 0 or w5 = 0 or w4 = 0)
+
+  and (w5 = 0 or w4 = 0)) or (w5 <> 0 and w4 <> 0 and w2 < 0)
+
+  or ((w6 > 0 or (w7 > 0 and w6 = 0)) and (w5 = 0 or w4 = 0)),
+
+                      3
+ {w1 = 2*a1*a2*b*c - b ,
+
+                    2
+  w2 = 4*a1*a2*c - b ,
+
+  w3 = a1*a2,
+
+  w4 = a1,
+
+  w5 = a2,
+
+  w6 = b,
+
+  w7 = c}}
+
+rlstruct(sol);
+
+
+{v3*v4 > 0 or (v5 <> 0 and v2*v5 > 0 and (v6 = 0 or v4 = 0 or v3 = 0)
+
+  and (v4 = 0 or v3 = 0)) or (v4 <> 0 and v3 <> 0 and v1 < 0)
+
+  or ((v5 > 0 or (v6 > 0 and v5 = 0)) and (v4 = 0 or v3 = 0)),
+
+                    2
+ {v1 = 4*a1*a2*c - b ,
+
+                    2
+  v2 = 2*a1*a2*c - b ,
+
+  v3 = a1,
+
+  v4 = a2,
+
+  v5 = b,
+
+  v6 = c}}
+
+
+rltab sol;
+
+16 = 100%
+[12: 28] [11: 30] [10: 19] [9: 14] [8: 14] [7: 14] [6: 14] [5: 24] [4: 24] [3: 
+24] [2: 36] [1: 36] 
+Success: 16 -> 14
+2 = 100%
+[2: 2] [1: 2] 
+No success, returning the original formula
+10 = 100%
+[9: 12] [8: 12] [7: 6] [6: 6] [5: 10] [4: 10] [3: 10] [2: 10] [1: 24] 
+Success: 10 -> 6
+2 = 100%
+[2: 2] [1: 2] 
+No success, returning the original formula
+2 = 100%
+[2: 2] [1: 5] 
+No success, returning the original formula
+
+(a1 = 0 and (c > 0 or b <> 0)) or (a1 <> 0 and ((a2 = 0 and (c > 0 or b <> 0))
+
+                                            2
+ or (a2 <> 0 and (a1*a2 > 0 or 4*a1*a2*c - b  < 0))))
+
+rlatnum ws;
+
+
+10
+
+rlgsn sol;
+
+[DNF] 
+global: 1; impl: 6; no neq: 1; glob-prod-al: 0.
+[GP] [6] [5] [4] [3] [2] [1] 
+[1] 
+
+a1*a2 > 0 or (c = 0 and b < 0 and a2 = 0) or (c = 0 and b < 0 and a1 = 0)
+
+ or (c > 0 and b = 0 and a2 = 0) or (c > 0 and b = 0 and a1 = 0)
+
+ or (b <> 0 and a2 = 0) or (b <> 0 and a1 = 0)
+
+                                          2
+ or (a2 <> 0 and a1 <> 0 and 4*a1*a2*c - b  < 0)
+
+rlatnum ws;
+
+
+20
+
+
+off rlverbose;
+
+
+
+rlqea ex(x,m*x+b=0);
+
+
+{{m = 0 and b = 0,{x = infinity1}},
+
+                - b
+ {m <> 0,{x = ------}}}
+                m
+
+
+% Substitution
+sub(x=a,x=0 and a=0 and ex(x,x=y) and ex(a,x>a));
+
+
+a = 0 and a = 0 and ex x (x - y = 0) and ex a0 (a - a0 > 0)
+
+
+% Boolean normal forms.
+f1 := x=0 and b>=0;
+
+
+f1 := x = 0 and b >= 0
+
+f2 := a=0;
+
+
+f2 := a = 0
+
+f := f1 or f2;
+
+
+f := (x = 0 and b >= 0) or a = 0
+
+
+rlcnf f;
+
+
+(x = 0 or a = 0) and (b >= 0 or a = 0)
+
+
+rldnf ws;
+
+
+a = 0 or (x = 0 and b >= 0)
+
+
+rlcnf f;
+
+
+(x = 0 or a = 0) and (b >= 0 or a = 0)
+
+
+% Negation normal form and prenex normal form
+hugo := a=0 and b=0 and y<0 equiv ex(y,y>=a) or a>0;
+
+
+hugo := (a = 0 and b = 0 and y < 0) equiv (ex y ( - a + y >= 0) or a > 0)
+
+rlnnf hugo;
+
+
+((a = 0 and b = 0 and y < 0) and (ex y ( - a + y >= 0) or a > 0))
+
+ or ((a <> 0 or b <> 0 or y >= 0) and (all y ( - a + y < 0) and a <= 0))
+
+rlpnf hugo;
+
+
+all y2 ex y1 (((a = 0 and b = 0 and y < 0) and ( - a + y1 >= 0 or a > 0))
+
+ or ((a <> 0 or b <> 0 or y >= 0) and ( - a + y2 < 0 and a <= 0)))
+
+
+% Length and Part
+part(hugo,0);
+
+
+equiv
+
+part(hugo,2,1,2);
+
+
+ - a + y >= 0
+
+length ws;
+
+
+2
+
+length hugo;
+
+
+2
+
+length part(hugo,1);
+
+
+3
+
+
+% Tableau
+mats := all(t,ex({l,u},(
+(t>=0 and t<=1) impl
+(l>0 and u<=1 and
+  -t*x1+t*x2+2*t*x1*u+u=l*x1 and
+  -2*t*x2+t*x2*u=l*x2))));
+
+
+mats := all t ex l ex u ((t >= 0 and t - 1 <= 0) impl (l > 0 and u - 1 <= 0
+
+ and  - l*x1 + 2*t*u*x1 - t*x1 + t*x2 + u = 0 and  - l*x2 + t*u*x2 - 2*t*x2 = 0)
+
+)
+
+sol := rlgsn rlqe mats;
+
+
+sol := x2 = 0 and x1 + 1 <> 0 and 2*x1 + 1 <> 0 and 3*x1 + 2 <> 0
+
+                  2                 2                 2
+ and (x1 = 0 or x1  + x1 > 0 or 2*x1  + x1 < 0 or 2*x1  + 3*x1 + 1 >= 0)
+
+                  2                 2                 2
+ and (x1 = 0 or x1  + x1 > 0 or 2*x1  + x1 < 0 or 3*x1  + 5*x1 + 2 < 0)
+
+                   2                               2
+ and (x1 >= 0 or x1  + x1 < 0) and (x1 >= 0 or 2*x1  + x1 < 0)
+
+                     2
+ and (x1 >= 0 or 3*x1  + 2*x1 < 0)
+
+rltab(sol,{x1>0,x1<0,x1=0});
+
+
+(x2 = 0 and x1 < 0 and x1 + 1 <> 0 and 2*x1 + 1 <> 0 and 3*x1 + 2 <> 0
+
+       2                  2                  2
+ and x1  + x1 < 0 and 2*x1  + x1 < 0 and 3*x1  + 2*x1 < 0)
+
+ or (x2 = 0 and x1 >= 0)
+
+
+% Part on psopfn / cleanupfn
+part(rlqe ex(x,m*x+b=0),1);
+
+
+m <> 0
+
+walter := (x>0 and y>0);
+
+
+walter := x > 0 and y > 0
+
+rlsimpl(true,rlatl walter);
+
+
+true
+
+part(rlatl walter,1,1);
+
+
+y
+
+
+% QE by partial CAD:
+cox6 := ex({u,v},x=u*v and y=u**2 and z=v**2)$
+
+
+rlcad cox6;
+
+
+(z = 0 and y >= 0 and x = 0) or (z > 0 and y = 0 and x = 0)
+
+                          2
+ or (z > 0 and y > 0 and x  - y*z = 0)
+
+
+% Generate Theory
+rlgentheo({a=0}, a*x+b<>0);
+
+
+{{b <> 0,a = 0},true}
+
+
+% Algebraically closed fields standard form:
+sub(x=a,x=0 and a=0 and ex(x,x=y) and ex(a,x<>a));
+
+
+a = 0 and a = 0 and ex x (x - y = 0) and ex a0 (a - a0 <> 0)
+
+
+rlset acfsf;
+
+
+{ofsf}
+
+
+rlsimpl(x^2+y^2+1<>0);
+
+
+ 2    2
+x  + y  + 1 <> 0
+
+
+rlqe ex(x,x^2=y);
+
+
+true
+
+
+clear f;
+
+
+h := rlqe ex(x,x^3+a*x^2+b*x+c=0 and x^3+d*x^2+e*x+f=0);
+
+
+       3  2    2            2          2    2    2    2      2
+h := (a *f  - a *b*e*f - 2*a *c*d*f + a *c*e  - a *d*f  + a*b *d*f - a*b*c*d*e
+
+                                  2      2  2        2            2            2
+ + 3*a*b*c*f + a*b*d*e*f - 3*a*b*f  + a*c *d  - 2*a*c *e + 2*a*c*d *f - a*c*d*e
+
+                  2    3      2        2  2        2          2          2
+ + a*c*e*f + a*e*f  - b *f + b *c*e - b *d *f + 2*b *e*f - b*c *d + b*c*d *e
+
+                    2          2      2      3    2  3      2          2
+ - b*c*d*f - 2*b*c*e  + 2*b*d*f  - b*e *f + c  - c *d  + 3*c *d*e - 3*c *f
+
+                  3        2    3
+ - 3*c*d*e*f + c*e  + 3*c*f  - f  = 0 or a - d = 0) and (
+
+ 2                                  2      2                        2
+a *e - a*b*d - a*c - a*d*e + a*f + b  + b*d  - 2*b*e + c*d - d*f + e  <> 0
+
+     2                                    2                            2
+ or a *f - a*c*d - a*d*f + b*c - b*f + c*d  - c*e + e*f = 0) and (a*b*c
+
+                    2      2                      2    3      2          2
+ - 2*a*b*c*f + a*b*f  - a*c *e + 2*a*c*e*f - a*e*f  + b *f - b *c*e - 2*b *e*f
+
+          2      2      3      2        3        2    3
+ + 2*b*c*e  + b*e *f - c  + 3*c *f - c*e  - 3*c*f  + f  = 0 or (
+
+                                 3      2        2    2            2
+a*b*c - a*b*f - a*c*e + a*e*f - b  + 2*b *e - b*e  - c  + 2*c*f - f  <> 0
+
+ and a - d <> 0) or (a*b - a*e - c + f <> 0 and a - d <> 0 and b - e <> 0)
+
+ or (a - d <> 0 and b - e <> 0)) and (a - d <> 0 or b - e <> 0 or c - f = 0)
+
+rlstruct h;
+
+
+{(v1 = 0 or v7 = 0) and (v2 <> 0 or v3 = 0) and (v4 = 0 or (v5 <> 0 and v7 <> 0)
+
+  or (v6 <> 0 and v7 <> 0 and v8 <> 0) or (v7 <> 0 and v8 <> 0))
+
+  and (v7 <> 0 or v8 <> 0 or v9 = 0),
+
+        3  2    2            2          2    2    2    2      2
+ {v1 = a *f  - a *b*e*f - 2*a *c*d*f + a *c*e  - a *d*f  + a*b *d*f - a*b*c*d*e
+
+                                    2      2  2        2            2
+   + 3*a*b*c*f + a*b*d*e*f - 3*a*b*f  + a*c *d  - 2*a*c *e + 2*a*c*d *f
+
+            2                  2    3      2        2  2        2          2
+   - a*c*d*e  + a*c*e*f + a*e*f  - b *f + b *c*e - b *d *f + 2*b *e*f - b*c *d
+
+          2                      2          2      2      3    2  3      2
+   + b*c*d *e - b*c*d*f - 2*b*c*e  + 2*b*d*f  - b*e *f + c  - c *d  + 3*c *d*e
+
+        2                    3        2    3
+   - 3*c *f - 3*c*d*e*f + c*e  + 3*c*f  - f ,
+
+        2                                  2      2                        2
+  v2 = a *e - a*b*d - a*c - a*d*e + a*f + b  + b*d  - 2*b*e + c*d - d*f + e ,
+
+        2                                    2
+  v3 = a *f - a*c*d - a*d*f + b*c - b*f + c*d  - c*e + e*f,
+
+            2                    2      2                      2    3      2
+  v4 = a*b*c  - 2*a*b*c*f + a*b*f  - a*c *e + 2*a*c*e*f - a*e*f  + b *f - b *c*e
+
+        2              2      2      3      2        3        2    3
+   - 2*b *e*f + 2*b*c*e  + b*e *f - c  + 3*c *f - c*e  - 3*c*f  + f ,
+
+                                        3      2        2    2            2
+  v5 = a*b*c - a*b*f - a*c*e + a*e*f - b  + 2*b *e - b*e  - c  + 2*c*f - f ,
+
+  v6 = a*b - a*e - c + f,
+
+  v7 = a - d,
+
+  v8 = b - e,
+
+  v9 = c - f}}
+
+rlqe rlall (h equiv resultant(x^3+a*x^2+b*x+c,x^3+d*x^2+e*x+f,x)=0);
+
+
+true
+
+clear h;
+
+
+
+% Discretely valued fields standard form:
+rlset dvfsf;
+
+
+*** p is being cleared 
+
+
+
+{acfsf}
+
+sub(x=a,x=0 and a=0 and ex(x,x=y) and ex(a,x~a));
+
+
+a = 0 and a = 0 and ex x (x - y = 0) and ex a0 (a ~ a0)
+
+
+% P-adic Balls, taken from Andreas Dolzmann, Thomas Sturm. P-adic
+% Constraint Solving, Proceedings of the ISSAC '99.
+rlset dvfsf;
+
+
+*** turned on switch rlqeheu 
+
+*** turned on switch rlqedfs 
+
+*** p is being cleared 
+
+
+
+{dvfsf}
+
+rlqe all(r_1,all(r_2,all(a,all(b,
+ex(x,r_1||x-a and r_2||x-b and r_1|r_2) impl
+all(y,r_2||y-b impl r_1||y-a)))));
+
+
+  2                             2
+(p  + p - 2 | 3 or 3 ~ 1) and (p  - 4*p + 3 | 2 or 2 ~ 1)
+
+ and (p + 2 | 2*p or p - 2 || p + 2)
+
+rlmkcanonic ws;
+
+
+true
+
+rlset(dvfsf,100003);
+
+
+*** turned on switch rlqeheu 
+
+*** turned on switch rlqedfs 
+
+*** p is set to 100003 
+
+
+
+{dvfsf}
+
+rlqe all(r_1,all(r_2,all(a,all(b,
+ex(x,r_1||x-a and r_2||x-b and r_1|r_2) impl
+all(y,r_2||y-b impl r_1||y-a)))));
+
+
+true
+
+
+% Size of the Residue Field, taken from Andreas Dolzmann, Thomas
+% Sturm. P-adic Constraint Solving. Proceedings of the ISSAC '99.
+rlset(dvfsf);
+
+
+*** turned on switch rlqeheu 
+
+*** turned on switch rlqedfs 
+
+*** p is being cleared 
+
+
+
+{dvfsf,100003}
+
+rlqe ex(x,x~1 and x-1~1 and x-2~1 and x-3~1 and 2~1 and 3~1);
+
+
+(11 ~ 1 and 10 ~ 1 and 6 ~ 1 and 3 ~ 1 and 2 ~ 1)
+
+ or (7 ~ 1 and 6 ~ 1 and 5 ~ 1 and 3 ~ 1 and 2 ~ 1)
+
+ or (7 ~ 1 and 6 ~ 1 and 3 ~ 1 and 2 ~ 1)
+
+ or (6 ~ 1 and 5 ~ 1 and 3 ~ 1 and 2 ~ 1) or (5 ~ 1 and 3 ~ 1 and 2 ~ 1)
+
+ or (3 ~ 1 and 2 ~ 1)
+
+rlexplats ws;
+
+
+(11 ~ 1 and 5 ~ 1 and 3 ~ 1 and 2 ~ 1) or (7 ~ 1 and 5 ~ 1 and 3 ~ 1 and 2 ~ 1)
+
+ or (7 ~ 1 and 3 ~ 1 and 2 ~ 1) or (5 ~ 1 and 3 ~ 1 and 2 ~ 1)
+
+ or (3 ~ 1 and 2 ~ 1)
+
+rldnf ws;
+
+
+3 ~ 1 and 2 ~ 1
+
+
+% Differentially closed fields standard form:
+rlset dcfsf;
+
+
+*** turned on switch rlqeheu 
+
+*** turned on switch rlqedfs 
+
+{dvfsf}
+
+sub(x=a,x=0 and a=0 and ex(x,x=y) and ex(a,d(x, 4) <> a));
+
+
+a = 0 and a = 0 and ex x (x - y = 0) and ex a0 (a'''' - a0 <> 0)
+
+
+% An Example on Differential Algebras by E. Pankratiev taken from A. Dolzmann,
+% T. Sturm. Generalized Constraint Solving over Differential Algebras.
+% Proceedings of the CASC 2004.
+pankratiev := all(x,d(x, 1)**2 + x = 0 impl (d(x, 1) = a or d(x, 2) = b));
+
+
+                       2
+pankratiev := all x (x'  + x = 0 impl (x' - a = 0 or x'' - b = 0))
+
+rlqe pankratiev;
+
+
+a = 0 and 2*b + 1 = 0
+
+
+% Selecting contexts:
+
+rlset acfsf;
+
+
+{dcfsf}
+
+f:= ex(x,m*x+b=0);
+
+
+f := ex x (b + m*x = 0)
+
+rlqe f;
+
+
+b = 0 or m <> 0
+
+rlset dcfsf;
+
+
+{acfsf}
+
+rlqe f;
+
+
+m <> 0
+
+rlset dvfsf;
+
+
+*** p is being cleared 
+
+
+
+{dcfsf}
+
+rlqe f;
+
+
+b + m = 0 or m <> 0
+
+rlset ofsf;
+
+
+*** turned on switch rlqeheu 
+
+*** turned on switch rlqedfs 
+
+{dvfsf}
+
+rlqe f;
+
+
+m <> 0 or b = 0
+
+
+end;
+
