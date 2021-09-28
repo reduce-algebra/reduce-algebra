@@ -201,39 +201,7 @@ off1 'rlhqeconnect;      % Connect branches which differ only in the theory
 on1  'rlhqestrconst;     % Use combined structure constants
 on1  'rlhqegbdimmin;     % Choose maximal independent variable set with minimal cardinality in the case 0<dim<n
 
-% Virtual substitution (rl_qe):
-switch rlqeaprecise, rlqeasri, rlqebacksub, rlqedfs, rlqedyn, rlqefb,
-       rlqefilterbounds, rlqefullans, rlqegenct, rlqegsd, rlqeheu, rlqeidentify,
-       rlqelog, rlqepnf, rlqeprecise, rlqeqsc, rlqesqsc, rlqesr, rlqestdans,
-       rlqestdansint, rlqestdansq, rlqestdansvb, rlqesubf, rlqevarsel,
-       rlqevarseltry, rlqevb, rlqevbold;
-off1 'rlqeaprecise;      % Try to avoid epsilon and infinity with rlqea
-on1  'rlqeasri;          % Simplifier-recognized implication for pasf answers
-on1  'rlqepnf;
-on1  'rlqedfs;
-off1 'rlqesr;
-off1 'rlqeheu;
-off1 'rlqegsd;
-off1 'rlqeqsc;
-off1 'rlqesqsc;
-on1  'rlqedyn;
-off1 'rlqesubf;
-on1  'rlqevb;
-off1 'rlqevbold;
-on1  'rlqevarsel;
-on1  'rlqefb;
-off1 'rlqelog;           % Log elimination set generation
-off1 'rlqeprecise;       % Possibly avoid epsilon and infinity with rlqe
-off1 'rlqevarseltry;     % Allow rl_varsel to return several variables
-off1 'rlqestdans;        % Remove pinf, minf, epsilon
-off1 'rlqestdansvb;
-off1 'rlqefullans;       % Do not eliminate shift variables from answer
-on1  'rlqebacksub;       % Back substitution in answer
-on1  'rlqestdansq;       % Try to replace answers by quotients
-on1  'rlqestdansint;     % Try to find integer solutions
-on1  'rlqefilterbounds;  % Remove bounds with false guards before counting
-off1 'rlqeidentify;
-on1  'rlqegenct;
+% Virtual substitution (rl_qe): See module cl/clqeenv
 
 switch rlxopt, rlxoptpl, rlxoptri, rlxoptric, rlxoptrir, rlxoptsb, rlxoptses;
 on1  'rlxopt;

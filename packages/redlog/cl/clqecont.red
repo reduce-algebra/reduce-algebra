@@ -34,24 +34,33 @@ copyright('clqecont, "(c) 2021 A. Dolzmann, T. Sturm");
 #define QECONT_NODES 1
 #define QECONT_LASTNODE 2
 #define QECONT_TRAVERSALMODE 3
-#define QECONT_HASHTABLE 4
-#define QECONT_REQUESTEDADDITIONS 5
-#define QECONT_EFFECTIVEADDITIONS 6
-#define QECONT_UPLIM 6
+#define QECONT_DYNAMICPROGRAMMING 4
+#define QECONT_HASHTABLE 5
+#define QECONT_REQUESTEDADDITIONS 6
+#define QECONT_EFFECTIVEADDITIONS 7
+#define QECONT_UPLIM 7
 
-asserted procedure QeCont_new(traversalMode: Id): Vector;
+#define QECONT_HASHTABLE_SIZE 65536
+#define QECONT_HASHTABLE_GROWTH 1.5
+
+asserted procedure QeCont_new(traversalMode: Id, dynamicProgramming: Boolean): Vector;
    % QE data for a block new.
-   begin scalar co;
+   begin scalar co, h;
       co := mkvect(QECONT_UPLIM);
       putv(co, QECONT_TAG, 'QeCont);
-      putv(co, QECONT_NODES, nil);                    % list (stack or queue) of QE tree working nodes
-      putv(co, QECONT_TRAVERSALMODE, traversalMode);  % 'bfs (breadth-first search) or 'dfs (depth-first search)
-      if traversalMode eq 'dfs then <<
-         putv(co, QECONT_LASTNODE, 'unused);
-         putv(co, QECONT_HASHTABLE, nil)              % hashed dynamic programming data
+      putv(co, QECONT_NODES, nil);                         % list (stack or queue) of QE tree working nodes
+      putv(co, QECONT_TRAVERSALMODE, traversalMode);       % 'bfs (breadth-first search) or 'dfs (depth-first search)
+      putv(co, QECONT_DYNAMICPROGRAMMING, dynamicProgramming);
+      if traversalMode eq 'bfs then <<
+         putv(co, QECONT_LASTNODE, nil);                   % the last node in nodes
+         putv(co, QECONT_HASHTABLE, 'unused)
+      >> else if traversalMode eq 'dfs and dynamicProgramming then <<
+         h := mkhash(QECONT_HASHTABLE_SIZE, 'equal, QECONT_HASHTABLE_GROWTH);
+         putv(co, QECONT_HASHTABLE, h);                    % hashed dynamic programming data
+         putv(co, QECONT_LASTNODE, 'unused)
       >> else <<
-         ASSERT( traversalMode eq 'bfs );
-         putv(co, QECONT_LASTNODE, nil);              % the last node in nodes
+         ASSERT( traversalMode eq 'dfs and not dynamicProgramming );
+         putv(co, QECONT_LASTNODE, 'unused);
          putv(co, QECONT_HASHTABLE, 'unused)
       >>;
       putv(co, QECONT_REQUESTEDADDITIONS, 0);
@@ -78,19 +87,19 @@ asserted procedure QeCont_print(co: Vector, externalIndent: String): Vector;
       return co
    end;
 
-asserted procedure QeCont_add(co: Vector, new: List): Vector;
-   begin scalar nodes, lastNode, hashData;
-      if null new then
+asserted procedure QeCont_add(co: Vector, newNodes: List): Vector;
+   begin scalar nodes, lastNode, hashTable;
+      if null newNodes then
          return co;
-      nodes := getv(co, QECONT_NODES);
       if getv(co, QECONT_TRAVERSALMODE) eq 'bfs then <<
+         nodes := getv(co, QECONT_NODES);
          lastNode := getv(co, QECONT_LASTNODE);
          if null lastNode then <<
-            lastNode := nodes := {pop new};
+            lastNode := nodes := {pop newNodes};
             putv(co, QECONT_REQUESTEDADDITIONS, getv(co, QECONT_REQUESTEDADDITIONS) + 1);
             putv(co, QECONT_EFFECTIVEADDITIONS, getv(co, QECONT_EFFECTIVEADDITIONS) + 1)
          >>;
-         for each node in new do <<
+         for each node in newNodes do <<
             putv(co, QECONT_REQUESTEDADDITIONS, getv(co, QECONT_REQUESTEDADDITIONS) + 1);
             if not QeCont_member(node, nodes) then <<
                cdr lastNode := node . nil;
@@ -99,20 +108,33 @@ asserted procedure QeCont_add(co: Vector, new: List): Vector;
             >>
          >>;
          putv(co, QECONT_NODES, nodes);
-         putv(co, QECONT_LASTNODE, lastNode)
-      >> else <<
-         ASSERT( getv(co, QECONT_TRAVERSALMODE) eq 'dfs );
-         for each node in new do <<
+         putv(co, QECONT_LASTNODE, lastNode);
+         return co
+      >>;
+      ASSERT( getv(co, QECONT_TRAVERSALMODE) eq 'dfs );
+      if getv(co, QECONT_DYNAMICPROGRAMMING) then <<
+         nodes := getv(co, QECONT_NODES);
+         for each node in newNodes do <<
             putv(co, QECONT_REQUESTEDADDITIONS, getv(co, QECONT_REQUESTEDADDITIONS) + 1);
-            hashData := QeNode_getVariables(node) . QeNode_getFormula(node);
-            if not lto_hmember(hashData, getv(co, QECONT_HASHTABLE), 'QeCont_hashFunction) then <<
-               putv(co, QECONT_HASHTABLE, lto_hinsert(hashData, getv(co, QECONT_HASHTABLE), 'QeCont_hashFunction));
+            hashTable := getv(co, QECONT_HASHTABLE);
+            if null gethash(QeNode_getVariables(node) . QeNode_getFormula(node), hashTable) then <<
+               puthash(QeNode_getVariables(node) . QeNode_getFormula(node), hashTable, t);
+               putv(co, QECONT_HASHTABLE, hashTable);
                nodes := node . nodes;
                putv(co, QECONT_EFFECTIVEADDITIONS, getv(co, QECONT_EFFECTIVEADDITIONS) + 1)
             >>
          >>;
-         putv(co, QECONT_NODES, nodes)
+         putv(co, QECONT_NODES, nodes);
+         return co
       >>;
+      ASSERT( getv(co, QECONT_TRAVERSALMODE) eq 'dfs and not getv(co, QECONT_DYNAMICPROGRAMMING) );
+      nodes := getv(co, QECONT_NODES);
+      for each node in newNodes do <<
+         putv(co, QECONT_REQUESTEDADDITIONS, getv(co, QECONT_REQUESTEDADDITIONS) + 1);
+         nodes := node . nodes;
+         putv(co, QECONT_EFFECTIVEADDITIONS, getv(co, QECONT_EFFECTIVEADDITIONS) + 1)
+      >>;
+      putv(co, QECONT_NODES, nodes);
       return co
    end;
 
@@ -127,9 +149,6 @@ asserted procedure QeCont_member(node: List, nodes: List): Boolean;
       >>;
       return found
    end;
-
-asserted procedure QeCont_hashFunction(hashData: DottedPair): List2;
-  {cl_fvarl1(cdr hashData), rl_atnum(cdr hashData)};
 
 asserted procedure QeCont_firstNode(co: Vector): List;
    car getv(co, QECONT_NODES);
@@ -151,20 +170,24 @@ asserted procedure QeCont_isEmpty(co: Vector): Boolean;
 asserted procedure QeCont_length(co: Vector): Integer;
    length getv(co, QECONT_NODES);
 
-asserted procedure QeCont_statistics(co: Vector): DottedPair;
-   % Returns the maximum length of the "Variables" fields in the contained nodes, along with the
-   % number of occurrences of corresponding nodes. This is used for verbose output with DFS.
-   begin integer thisLength, maxLength, maxCount;
+asserted procedure QeCont_statistics(co: Vector): List;
+   begin scalar statistics, statisticsEntry;
+         integer thisLength, maxLength;
       for each node in getv(co, QECONT_NODES) do <<
          thisLength := length(QeNode_getVariables(node));
-         if thisLength > maxLength then <<
+         if thisLength > maxLength then
             maxLength := thisLength;
-            maxCount := 1
-         >> else if thisLength = maxLength then <<
-            maxCount := maxCount + 1
-         >>
+         statisticsEntry := assoc(thisLength, statistics);
+         if statisticsEntry then
+            cdr statisticsEntry := cdr statisticsEntry + 1
+         else
+            push(thisLength . 1, statistics)
       >>;
-      return maxLength . maxCount
+      for key := 1 : maxLength do
+         if not assoc(key, statistics) then
+            push(key . 0, statistics);
+      statistics := sort(statistics, function(lambda p1, p2; car p1 > car p2));
+      return mapcar(statistics, 'cdr)
    end;
 
 asserted procedure QeCont_getEffectiveAdditions(co: Vector): Integer;
