@@ -67,9 +67,9 @@ procedure assert_onoff();
    ;
 
 switch assert_procedures, assert_inline_procedures;
-% When off, The stat functions for "asserted procedure" and "asserted inline procedure" return nil,
-% so that no assertion-related code is generated at all. When assert_inline_procedures is on (and
-% the switch "assert" above, too), inline procedures are translated as expr procedures.
+% When off, no assertion-related code is generated for "asserted procedure" and "asserted inline
+% procedure" at all. When assert_inline_procedures is on (and the switch "assert" above, too),
+% inline procedures are translated as expr procedures.
 
 % Default settings for the switches depend on some environment variables. This allows automatic
 % testing without modification of test files.
@@ -318,7 +318,7 @@ procedure assert_declarestat();
    % The parser for assert.
    begin scalar l;
       l := assert_stat!-parse();
-      if not !*assert then
+      if not (!*assert and !*assert_procedures) then
          return nil;
       return assert_declarestat1 l
    end;

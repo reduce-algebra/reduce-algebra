@@ -105,7 +105,7 @@ procedure assert_formproc(u, vars, mode);
          argl := car pr . argl;
          atypel := cdr pr . atypel
       >>;
-      if not !*assert or (not !*assert_inline_procedures and ftype eq 'inline) then
+      if not (!*assert and !*assert_procedures and (!*assert_inline_procedures or ftype neq 'inline)) then
          return formproc({'procedure, fname, nil, ftype, argl, body}, vars, mode);
       % For asserting inline procedures we convert them into expressions.
       fpc := formproc({'procedure, fname, nil, 'expr, argl, body}, vars, mode);
