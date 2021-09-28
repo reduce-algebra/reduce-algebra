@@ -76,10 +76,7 @@ procedure smt_switch!-produce!-models(truefalse);
          on1 'rlqeinfcore;
          return
       >>;
-      if truefalse eq 'false and
-         smt_getOption('!:produce!-unsat!-cores) eq 'false and
-         !*rlqeinfcore
-      then
+      if truefalse eq 'false and smt_getOption('!:produce!-unsat!-cores) eq 'false and !*rlqeinfcore then
          off1 'rlqeinfcore
    end;
 
@@ -176,8 +173,8 @@ procedure smt_processForm(form);
       smt_processEliminateQuantifiers()
    else if eqcar(form, 'reduce!-eval) then
       smt_processReduceEval cadr form
-   else if eqcar(form, 'reduce!-dump!-assertions) then
-      smt_processReduceDumpAssertions cadr form
+   else if eqcar(form, 'reduce!-get!-assertions) then
+      smt_processReduceGetAssertions form
    else if eqcar(form, 'set!-option) then
       smt_processSetOption(cadr form, caddr form)
    else if eqcar(form, 'get!-option) then
@@ -569,12 +566,21 @@ procedure smt_processResetAssertions();
 procedure smt_processReduceEval(form);
    prin2t eval form;
 
-procedure smt_processReduceDumpAssertions(phi);
-   <<
-      assgnpri(setk(phi, rl_mk!*fof rl_smkn('and, smt_assertionl!*)), {phi}, 'only);
-      terpri();
+procedure smt_processReduceGetAssertions(form);
+   begin scalar lhs, rhs, !*nat;
+      rhs := ioto_smaprin rl_mk!*fof rl_smkn('and, smt_assertionl!*);
+      form := cdr form;
+      if null form then <<
+         smt_prin2t ioto_printListToString {rhs, "$"};
+         smt_success 'success;
+         return
+      >>;
+      lhs := car form;
+      if eqcar(lhs, 'quote) then
+         lhs := cadr lhs;
+      smt_prin2t ioto_printListToString {lhs, " := ", rhs, "$"};
       smt_success 'success
-   >>;
+   end;
 
 procedure smt_processSetOption(option, value);
    begin scalar pr, w;
