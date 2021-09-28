@@ -3,9 +3,9 @@
 # File:		 PXK:Makefile
 # Description:  Makefile for bpsl (microkernel).
 # Author:	   Harold Carr and Leigh Stoller.
-# Created:      29-Sep-86
-# Modified:   06-Oct-87 (Harold Carr)
-# Mode:                Text
+# Created:	  29-Sep-86
+# Modified:	06-Oct-87 (Harold Carr)
+# Mode:		 Text
 # Package:
 # Status:        Open Source: BSD License
 #
@@ -58,14 +58,14 @@
 #
 ##############################################################################
 #
-# $Id$
+# $Id: Makefile 5984 2021-08-28 12:31:27Z schoepf $
 #
 ##############################################################################
+
+### PROOT   = /silo/cons/verkaufpsl
+PROOT = $(proot)
  
-###PROOT   = /silo/cons/verkaufpsl
-PROOT	= $(proot)
- 
-#### MACHINE = armv6
+#### MACHINE = macaarch64
 PSL	= $(PROOT)/dist
 PSYS	= $(PROOT)/bin
 PK	= $(PSL)/kernel
@@ -181,7 +181,7 @@ CRT1  =
 $(USERDIR)/bpsl: $(CFILES)  \
 		$(USERDIR)/main.o $(USERDIR)/dmain.o \
 	$(USERDIR)/cclnk
- 
+
 $(USERDIR)/dmain.o: $(USERDIR)/dmain.s 
 	gcc -c $(ASARGS) -o $(USERDIR)/dmain.o $(USERDIR)/dmain.s
 
@@ -193,7 +193,24 @@ $(USERDIR)/main.s: $(BFILES) $(SLFILES)
 	cp $(PC)/bare-psl.sym $(USERDIR)/$(MACHINE).sym
 	(cd $(USERDIR)/; \
 	 echo $(SLFILES) | awk -f $(PXK)/main.awk > tmp.sl; \
-	$(PXK)/$(MACHINE)-native tmp.sl)
+	$(PXK)/macintel64-cross tmp.sl)
+
+$(USERDIR)/main_pvm.s: $(BFILES) $(SLFILES) $(PXK)/pvmextern.sl
+	-rm -f $(USERDIR)/$(MACHINE).sym
+	cp $(PC)/bare-psl.sym $(USERDIR)/$(MACHINE).sym
+	(cd $(USERDIR)/; \
+	 echo $(SLFILES) pvmextern.sl | awk -f $(PXK)/main_pvm.awk > tmp.sl; \
+	$(PXK)/$(MACHINE)-cross tmp.sl)
+
+$(USERDIR)/dmain_pvm.o: $(USERDIR)/dmain_pvm.s
+	as $(ASARGS) -o $(USERDIR)/dmain_pvm.o $(USERDIR)/dmain_pvm.s
+
+$(USERDIR)/main_pvm.o: $(USERDIR)/main_pvm.s
+	as $(ASARGS) -o $(USERDIR)/main_pvm.o $(USERDIR)/main_pvm.s
+
+$(USERDIR)/bpsl_pvm: $(CCFILES)  \
+	$(USERDIR)/main_pvm.o $(USERDIR)/dmain_pvm.o \
+	$(USERDIR)/cclnk_pvm
 
 $(PL)/fasl-decls.b: $(PXK)/fasl-decls.sl
 	$(PDIST)/make-lap $(PXK) fasl-decls
