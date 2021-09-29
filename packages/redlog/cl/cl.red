@@ -30,8 +30,8 @@ copyright('cl, "(c) 1995-2021 A. Dolzmann, T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-create!-package('(cl clsub clsimpl clsimplbasic clsusi clbnf clnf clqe cltab
-   clmisc clresolv cldfgformat clsmt2format clqenode clqecont clqestate clqenew), nil);
+create!-package('(cl clsub clsimpl clsimplbasic clsusi clbnf clnf clqe cltab clmisc clresolv
+                  cldfgformat clsmt2format clqenode clqecont clqeenv clqestate clqenew), nil);
 
 compiletime load!-package 'redlog;
 
@@ -49,12 +49,12 @@ exports cl_atfp, cl_cxfp, cl_atflp, cl_ncflp, cl_dnfp, cl_cnfp, cl_bnfp,
    cl_flip, cl_cflip, cl_subfof, cl_termml, cl_termml1, cl_terml, cl_terml1,
    cl_struct, cl_ifstruct, cl_surep, cl_splt;
 
-fluid '(cl_identify!-atl!* cl_pal!* cl_lps!* cl_theo!*
-   !*rlidentify !*rlsiexpla !*rlbnfsm !*rlverbose
-   !*rlsiso !*rlqepnf !*rlqedfs !*rlqeans !*rlqegsd !*rlqeheu
-   !*rlqegen !*rlbnfsac !*rltnft !*rlsipw !*rlsipo !*rlqevarsel
-   !*rlspgs !*rlqefb !*rlqelocal !*rlresi !*rlqeprecise
-   !*rlqeaprecise !*rlqestdans !*slat);
+fluid '(cl_identify!-atl!* cl_pal!* cl_lps!* cl_theo!* !*rlidentify !*rlsiexpla !*rlbnfsm
+        !*rlverbose !*rlsiso !*rlbnfsac !*rltnft !*rlsipw !*rlsipo !*rlspgs !*rlqefb !*rlresi
+        !*slat);
+
+fluid '(!*rlqepnf !*rlqedfs !*rlqeans !*rlqegsd !*rlqeheu !*rlqegen !*rlqevarsel !*rlqelocal
+        !*rlqeprecise !*rlqeaprecise !*rlqestdans !*rlqedyn !*rlqevb !*rlqevbold !*rlqeidentify);
 
 switch clqenew;
 

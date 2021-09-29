@@ -65,7 +65,7 @@
 ###PROOT   = /silo/cons/verkaufpsl
 PROOT	= $(proot)
  
-#### MACHINE = armv6
+#### MACHINE = aarch64
 PSL	= $(PROOT)/dist
 PSYS	= $(PROOT)/bin
 PK	= $(PSL)/kernel
@@ -194,6 +194,23 @@ $(USERDIR)/main.s: $(BFILES) $(SLFILES)
 	(cd $(USERDIR)/; \
 	 echo $(SLFILES) | awk -f $(PXK)/main.awk > tmp.sl; \
 	$(PXK)/$(MACHINE)-native tmp.sl)
+
+$(USERDIR)/main_pvm.s: $(BFILES) $(SLFILES) $(PXK)/pvmextern.sl
+	-rm -f $(USERDIR)/$(MACHINE).sym
+	cp $(PC)/bare-psl.sym $(USERDIR)/$(MACHINE).sym
+	(cd $(USERDIR)/; \
+	 echo $(SLFILES) pvmextern.sl | awk -f $(PXK)/main_pvm.awk > tmp.sl; \
+	$(PXK)/$(MACHINE)-native tmp.sl)
+
+$(USERDIR)/dmain_pvm.o: $(USERDIR)/dmain_pvm.s
+	as $(ASARGS) -o $(USERDIR)/dmain_pvm.o $(USERDIR)/dmain_pvm.s
+
+$(USERDIR)/main_pvm.o: $(USERDIR)/main_pvm.s
+	as $(ASARGS) -o $(USERDIR)/main_pvm.o $(USERDIR)/main_pvm.s
+
+$(USERDIR)/bpsl_pvm: $(CCFILES)  \
+	$(USERDIR)/main_pvm.o $(USERDIR)/dmain_pvm.o \
+	$(USERDIR)/cclnk_pvm
 
 $(PL)/fasl-decls.b: $(PXK)/fasl-decls.sl
 	$(PDIST)/make-lap $(PXK) fasl-decls

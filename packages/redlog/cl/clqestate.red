@@ -30,26 +30,28 @@ copyright('clqestate, "(c) 2021 A. Dolzmann, T. Sturm");
 %
 
 #define QESTATE_TAG 0
-#define QESTATE_INPUTTHEORY 1
-#define QESTATE_INPUTFORMULA 2
-#define QESTATE_ANSWERMODE 3
-#define QESTATE_ASSUMEMODE 4
-#define QESTATE_NOASSUMEVARS 5
-#define QESTATE_THEORY 6
-#define QESTATE_FORMULA 7
-#define QESTATE_ANSWER 8
-#define QESTATE_BLOCKS 9
-#define QESTATE_VARIABLES 10
-#define QESTATE_PRODUCEANSWER 11
-#define QESTATE_WORKINGNODES 12
-#define QESTATE_SUCCESSNODES 13
-#define QESTATE_FAILURENODES 14
-#define QESTATE_CURRENTNODE 15
-#define QESTATE_UPLIM 15
+#define QESTATE_INPUTTHEORY 31
+#define QESTATE_INPUTFORMULA 32
+#define QESTATE_ANSWERMODE 33
+#define QESTATE_ASSUMEMODE 34
+#define QESTATE_NOASSUMEVARS 35
+#define QESTATE_THEORY 36
+#define QESTATE_FORMULA 37
+#define QESTATE_ANSWER 38
+#define QESTATE_BLOCKS 39
+#define QESTATE_VARIABLES 40
+#define QESTATE_PRODUCEANSWER 41
+#define QESTATE_WORKINGNODES 42
+#define QESTATE_SUCCESSNODES 43
+#define QESTATE_FAILURENODES 44
+#define QESTATE_CURRENTNODE 45
+#define QESTATE_BFSLEVELCOUNT 46
+#define QESTATE_UPLIM 46
 
 asserted procedure QeState_new(): Vector;
    begin scalar state;
-      state := mkvect(QESTATE_UPLIM);
+      state := QeEnv_new();
+      ASSERT( upbv(state) = QESTATE_UPLIM );
       putv(state, QESTATE_TAG, 'QeState);
       % The following fields are constant, i.e., assigned exactly once after the creation of qestate:
       putv(state, QESTATE_INPUTTHEORY, 'undefined);        % InputTheory
@@ -68,11 +70,12 @@ asserted procedure QeState_new(): Vector;
       putv(state, QESTATE_SUCCESSNODES, 'undefined);       % SuccessNodes; list
       putv(state, QESTATE_FAILURENODES, 'undefined);       % FailureNodes; list
       putv(state, QESTATE_CURRENTNODE, 'undefined);        % WorkingNodes; container
+      putv(state, QESTATE_BFSLEVELCOUNT, 'undefined);      % number of working nodes with current number of variables
       return state
    end;
 
 asserted procedure QeState_print(state: Vector): Vector;
-   begin scalar !*nat, indent, inputTheory, inputFormula, theory, formula;
+   begin scalar !*nat, indent, inputTheory, inputFormula, theory, formula, container;
       indent := "  ";
       ioto_tprin2t {"{"};
       ioto_tprin2t {indent, "Class:         ", getv(state, QESTATE_TAG)};
@@ -97,10 +100,14 @@ asserted procedure QeState_print(state: Vector): Vector;
       ioto_tprin2  {indent, "Formula:       ", formula};
       ioto_tprin2t {indent, "Answer:        ", getv(state, QESTATE_ANSWER)};
       ioto_tprin2t {indent, "Blocks:        ", getv(state, QESTATE_BLOCKS)};
-      ioto_tprin2t {indent, "Vars:          ", getv(state, QESTATE_VARIABLES)};
+      ioto_tprin2t {indent, "Variables:     ", getv(state, QESTATE_VARIABLES)};
       ioto_tprin2t {indent, "ProduceAnswer: ", getv(state, QESTATE_PRODUCEANSWER)};
       ioto_tprin2  {indent, "WorkingNodes:  "};
-      QeCont_print(getv(state, QESTATE_WORKINGNODES), "  ");
+      container := getv(state, QESTATE_WORKINGNODES);
+      if container neq 'undefined then
+         QeCont_print(container, "  ")
+      else
+         ioto_prin2 {'undefined};
       ioto_tprin2  {indent, "SuccessNodes:  "};
       QeNode_printList(getv(state, QESTATE_SUCCESSNODES), indent);
       ioto_tprin2 {indent, "FailureNodes:  "};
@@ -111,10 +118,15 @@ asserted procedure QeState_print(state: Vector): Vector;
    end;
 
 asserted procedure QeState_fetchBlock(state: Vector): DottedPair;
-   begin scalar blocks;
+   begin scalar blocks, nextBlock, quantifier, variables;
       blocks := getv(state, QESTATE_BLOCKS);
-      putv(state, QESTATE_BLOCKS, cdr blocks);
-      return car blocks
+      nextBlock := pop blocks;
+      putv(state, QESTATE_BLOCKS, blocks);
+      if !*rlverbose and QeEnv_getVb(state) then <<
+         quantifier . variables := nextBlock;
+         ioto_tprin2 {"---- ", (quantifier . reverse variables)}
+      >>;
+      return nextBlock
    end;
 
 asserted procedure QeState_addBlock(state: Vector, block: DottedPair): Vector;
@@ -123,14 +135,51 @@ asserted procedure QeState_addBlock(state: Vector, block: DottedPair): Vector;
 asserted procedure QeState_isEmptyBlocks(state: Vector): Boolean;
    null getv(state, QESTATE_BLOCKS);
 
-asserted procedure QeState_initializeWorkingNodes(state: Vector, traversalMode: Id): Vector;
-   <<
-      putv(state, QESTATE_WORKINGNODES, QeCont_new(traversalMode));
-      state
-   >>;
+asserted procedure QeState_fetchVariables(state: Vector): List;
+   begin scalar variables;
+      variables := getv(state, QESTATE_VARIABLES);
+      putv(state, QESTATE_VARIABLES, nil);
+      if !*rlverbose and QeEnv_getVb(state) and QeEnv_getDfs(state) then <<
+         ioto_prin2 {" [DFS"};
+         if QeEnv_getDyn(state) then ioto_prin2 {" DYN"};
+         ioto_prin2 {"] "}
+      >>;
+      if !*rlverbose and QeEnv_getVb(state) and not QeEnv_getDfs(state) then <<
+         ioto_prin2 {" [BFS: depth ", length(variables), "] "}
+      >>;
+      return variables
+   end;
+
+asserted procedure QeState_initializeWorkingNodes(state: Vector): Vector;
+   begin scalar traversalMode, dynamicProgramming;
+      traversalMode := if QeEnv_getDfs(state) then 'dfs else 'bfs;
+      dynamicProgramming := QeEnv_getDyn(state);
+      putv(state, QESTATE_WORKINGNODES, QeCont_new(traversalMode, dynamicProgramming));
+      if !*rlverbose and QeEnv_getVb(state) then
+         putv(state, QESTATE_BFSLEVELCOUNT, 0);
+      return state
+   end;
 
 asserted procedure QeState_fetchWorkingNode(state: Vector): List;
-   QeCont_fetch(getv(state, QESTATE_WORKINGNODES));
+   begin scalar node;
+         integer bfsLevelCount;
+      if !*rlverbose and QeEnv_getVb(state) and QeEnv_getDfs(state) then <<
+            ioto_prin2 ioto_printListToString {QeState_workingNodesStatistics(state)};
+      >>;
+      if !*rlverbose and QeEnv_getVb(state) and not QeEnv_getDfs(state) then <<
+         bfsLevelCount := getv(state, QESTATE_BFSLEVELCOUNT);
+         if bfsLevelCount = 0 then <<
+            ioto_tprin2 {"-- left: ", length QeState_firstWorkingNodeVariables(state)};
+            ioto_prin2t {" ", QeState_firstWorkingNodeVariables(state)};
+            bfsLevelCount := QeState_numberOfWorkingNodes(state)
+         >>;
+         ioto_prin2 {bfsLevelCount};
+         bfsLevelCount := bfsLevelCount - 1;
+         putv(state, QESTATE_BFSLEVELCOUNT, bfsLevelCount)
+      >>;
+      node := QeCont_fetch(getv(state, QESTATE_WORKINGNODES));
+      return node
+   end;
 
 asserted procedure QeState_firstWorkingNode(state: Vector): List;
    QeCont_firstNode(getv(state, QESTATE_WORKINGNODES));
@@ -166,10 +215,14 @@ asserted procedure QeState_numberOfWorkingNodes(state: Vector): Integer;
 
 asserted procedure QeState_fetchWorkingNodeDeletions(state: Vector): DottedPair;
    begin scalar container;
-         integer requested, deleted;
+         integer requested, deleted, p;
       container := getv(state, QESTATE_WORKINGNODES);
       requested := QeCont_getRequestedAdditions(container);
       deleted := requested - QeCont_getEffectiveAdditions(container);
+      if !*rlverbose and QeEnv_getVb(state) then <<
+         p := (100.0 * deleted) / requested;
+         ioto_prin2 ioto_printListToString {"[DEL ", deleted, "/", requested, " = ", p, "%]"}
+      >>;
       QeCont_setRequestedAdditions(container, 0);
       QeCont_setEffectiveAdditions(container, 0);
       return deleted . requested
@@ -187,29 +240,17 @@ asserted procedure QeState_firstWorkingNodeVariables(state: Vector): List;
 
 % Getters and setters
 
-asserted procedure QeState_getInputFormula(state: Vector): Formula;
-   getv(state, QESTATE_INPUTFORMULA);
-
-asserted procedure QeState_setInputFormula(state: Vector, theory: Theory): Vector;
-   << putv(state, QESTATE_INPUTFORMULA, theory); state >>;
-
 asserted procedure QeState_getInputTheory(state: Vector): Theory;
    getv(state, QESTATE_INPUTTHEORY);
 
 asserted procedure QeState_setInputTheory(state: Vector, theory: Theory): Vector;
    << putv(state, QESTATE_INPUTTHEORY, theory); state >>;
 
-asserted procedure QeState_getNoAssumeVars(state: Vector): List;
-   getv(state, QESTATE_NOASSUMEVARS);
+asserted procedure QeState_getInputFormula(state: Vector): Formula;
+   getv(state, QESTATE_INPUTFORMULA);
 
-asserted procedure QeState_setNoAssumeVars(state: Vector, vars: List): Vector;
-   << putv(state, QESTATE_NOASSUMEVARS, vars); state >>;
-
-asserted procedure QeState_getAssumeMode(state: Vector): Id;
-   getv(state, QESTATE_ASSUMEMODE);
-
-asserted procedure QeState_setAssumeMode(state: Vector, mode: Id): Vector;
-   << putv(state, QESTATE_ASSUMEMODE, mode); state >>;
+asserted procedure QeState_setInputFormula(state: Vector, theory: Theory): Vector;
+   << putv(state, QESTATE_INPUTFORMULA, theory); state >>;
 
 asserted procedure QeState_getAnswerMode(state: Vector): Id;
    getv(state, QESTATE_ANSWERMODE);
@@ -217,17 +258,23 @@ asserted procedure QeState_getAnswerMode(state: Vector): Id;
 asserted procedure QeState_setAnswerMode(state: Vector, mode: Id): Vector;
    << putv(state, QESTATE_ANSWERMODE, mode); state >>;
 
-asserted procedure QeState_getBlocks(state: Vector): List;
-   getv(state, QESTATE_BLOCKS);
+asserted procedure QeState_getAssumeMode(state: Vector): Id;
+   getv(state, QESTATE_ASSUMEMODE);
 
-asserted procedure QeState_setBlocks(state: Vector, blocks: List): Vector;
-   << putv(state, QESTATE_BLOCKS, blocks); state >>;
+asserted procedure QeState_setAssumeMode(state: Vector, mode: Id): Vector;
+   << putv(state, QESTATE_ASSUMEMODE, mode); state >>;
 
-asserted procedure QeState_getVariables(state: Vector): List;
-   getv(state, QESTATE_VARIABLES);
+asserted procedure QeState_getNoAssumeVars(state: Vector): List;
+   getv(state, QESTATE_NOASSUMEVARS);
 
-asserted procedure QeState_setVariables(state: Vector, vars: List): Vector;
-   << putv(state, QESTATE_VARIABLES, vars); state >>;
+asserted procedure QeState_setNoAssumeVars(state: Vector, vars: List): Vector;
+   << putv(state, QESTATE_NOASSUMEVARS, vars); state >>;
+
+asserted procedure QeState_getTheory(state: Vector): Theory;
+   getv(state, QESTATE_THEORY);
+
+asserted procedure QeState_setTheory(state: Vector, theory: Theory): Vector;
+   << putv(state, QESTATE_THEORY, theory); state >>;
 
 asserted procedure QeState_getFormula(state: Vector): Formula;
    getv(state, QESTATE_FORMULA);
@@ -241,11 +288,23 @@ asserted procedure QeState_getAnswer(state: Vector): List;
 asserted procedure QeState_setAnswer(state: Vector, answer: List): Vector;
    << putv(state, QESTATE_ANSWER, answer); state >>;
 
-asserted procedure QeState_getCurrentNode(state: Vector): List;
-   getv(state, QESTATE_CURRENTNODE);
+asserted procedure QeState_getBlocks(state: Vector): List;
+   getv(state, QESTATE_BLOCKS);
 
-asserted procedure QeState_setCurrentNode(state: Vector, node: List): Vector;
-   << putv(state, QESTATE_CURRENTNODE, node); state >>;
+asserted procedure QeState_setBlocks(state: Vector, blocks: List): Vector;
+   << putv(state, QESTATE_BLOCKS, blocks); state >>;
+
+asserted procedure QeState_getVariables(state: Vector): List;
+   getv(state, QESTATE_VARIABLES);
+
+asserted procedure QeState_setVariables(state: Vector, vars: List): Vector;
+   << putv(state, QESTATE_VARIABLES, vars); state >>;
+
+asserted procedure QeState_getProduceAnwer(state: Vector): Boolean;
+   getv(state, QESTATE_PRODUCEANSWER);
+
+asserted procedure QeState_setProduceAnswer(state: Vector, ans: Boolean): Vector;
+   << putv(state, QESTATE_PRODUCEANSWER, ans); state >>;
 
 asserted procedure QeState_getSuccessNodes(state: Vector): List;
    getv(state, QESTATE_SUCCESSNODES);
@@ -259,17 +318,11 @@ asserted procedure QeState_getFailureNodes(state: Vector): List;
 asserted procedure QeState_setFailureNodes(state: Vector, nodes: List): Vector;
    << putv(state, QESTATE_FAILURENODES, nodes); state >>;
 
-asserted procedure QeState_getTheory(state: Vector): Theory;
-   getv(state, QESTATE_THEORY);
+asserted procedure QeState_getCurrentNode(state: Vector): List;
+   getv(state, QESTATE_CURRENTNODE);
 
-asserted procedure QeState_setTheory(state: Vector, theory: Theory): Vector;
-   << putv(state, QESTATE_THEORY, theory); state >>;
-
-asserted procedure QeState_getProduceAnwer(state: Vector): Boolean;
-   getv(state, QESTATE_PRODUCEANSWER);
-
-asserted procedure QeState_setProduceAnswer(state: Vector, ans: Boolean): Vector;
-   << putv(state, QESTATE_PRODUCEANSWER, ans); state >>;
+asserted procedure QeState_setCurrentNode(state: Vector, node: List): Vector;
+   << putv(state, QESTATE_CURRENTNODE, node); state >>;
 
 endmodule;
 

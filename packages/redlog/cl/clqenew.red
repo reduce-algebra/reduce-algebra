@@ -117,12 +117,16 @@ asserted procedure cl_qe1_new(state: Vector): Vector;
    % subtituation has failed at some point due to degree violations, requantify the elimination
    % result with the remaining quantifiers. Optionally apply a fallback quantifier elimination
    % method.
-   begin scalar inputTheory, inputFormula, blocks, currentFormula, allQuantifiedVariables,
-                currentTheory, answer, point;
-         integer n;
+   begin scalar svrlidentify, inputTheory, inputFormula, blocks, currentFormula,
+                allQuantifiedVariables, currentTheory, resultNodes, answer, point;
+         integer countAnswerCases;
+      svrlidentify := !*rlidentify;
       inputTheory := QeState_getInputTheory(state);
+      if cl_isInconsistentTheory(inputTheory) then
+         return rl_exc("inconsistent theory");
       inputFormula := QeState_getInputFormula(state);
-      {blocks, currentFormula, allQuantifiedVariables} := cl_split_new(rl_pnf(inputFormula));
+      currentFormula := rl_pnf(inputFormula);
+      {blocks, currentFormula, allQuantifiedVariables} := cl_split_new(currentFormula);
       if null blocks then <<
          % The input formula was quantifier-free. We return both the input theory and the formula
          % unmodified. The answer comprises one case, which is the input formula as a condition and
@@ -141,41 +145,30 @@ asserted procedure cl_qe1_new(state: Vector): Vector;
          if null intersection(rl_varlat atomicFormula, allQuantifiedVariables) then
             {atomicFormula};
       QeState_setTheory(state, currentTheory);
-      currentFormula := rl_simpl(currentFormula, currentTheory, -1);
-      if rl_excp(currentFormula) then
-         % The relevant exception here is an inconsistent theory, detected by the simplifier.
-         return currentFormula;
-      % Discuss: I think this is not quite right. The formula must be simplified modulo the purified
-      % current theory. However, the current theory might become consistent when the input theory
-      % is inconsistent.
       QeState_setFormula(state, currentFormula);
       QeState_setBlocks(state, blocks);
       cl_qe1!-iterate_new(state);
-      currentTheory := QeState_getTheory(state);
-      % Discuss: I had to bind currentFormula here for the verbose message. With a QeState_simplifyFormula method
-      % the verbose could be moved there. I think this would go beyond the fetch methods suggested
-      % elsewhere, and I have some doubts.
-      currentFormula := QeState_getFormula(state);
-      % Discuss: In the old version the following verbose output does not show up with
-      % "rlqea ex(x, m*x+b=0);"
-      if !*rlverbose then ioto_tprin2 {"+++ Final simplification ... ", cl_atnum currentFormula, " -> "};
-      % We deliberately lose quantifers over non-occurring variables.
-      currentFormula := cl_simpl(cl_unsplit_new(blocks, currentFormula), currentTheory, -1);
-      if !*rlverbose then ioto_prin2t cl_atnum currentFormula;
       blocks := QeState_getBlocks(state);
+      currentFormula := QeState_getFormula(state);
+      currentFormula := cl_unsplit_new(blocks, currentFormula);
       if QeState_getAnswerMode(state) then <<
          % At present, we always requantify; no fallback QE with answers.
          if null blocks or null cdr blocks then <<
+            resultNodes := nconc(QeState_fetchSuccessNodes(state), QeState_fetchFailureNodes(state));
             % We have finished or at least reached the outmost block.
-            if !*rlverbose then <<
-               ioto_tprin2 "+++ Postprocessing answer:";
-               n := length(QeState_getSuccessNodes(state)) + length(QeState_getFailureNodes(state))
+            if !*rlverbose and QeEnv_getVb(state) then <<
+               ioto_tprin2 {"+++ Postprocessing answer:"};
+               countAnswerCases := length(resultNodes)
             >>;
-            answer := for each node in append(QeState_getSuccessNodes(state), QeState_getFailureNodes(state)) collect <<
-               if !*rlverbose then ioto_prin2 {" [", n := n - 1};
+            answer := for each node in resultNodes collect <<
+               if !*rlverbose and QeEnv_getVb(state) then <<
+                  ioto_prin2 {" [", countAnswerCases};
+                  countAnswerCases := countAnswerCases - 1
+               >>;
                point := rl_qemkans(QeNode_getAnswer(node))
                         where !*rlqestdans = (QeState_getAnswerMode(state) eq 'standard);
-               if !*rlverbose then ioto_prin2 {"]"};
+               if !*rlverbose and QeEnv_getVb(state) then
+                  ioto_prin2 {"]"};
                cl_unsplit_new(blocks, QeNode_getFormula(node)) . point
             >>
          >> else
@@ -184,13 +177,39 @@ asserted procedure cl_qe1_new(state: Vector): Vector;
          QeState_setAnswer(state, answer);
          return state
       >>;
+      currentTheory := QeState_getTheory(state);
       if !*rlqefb and rl_quap rl_op currentFormula then <<
-         if !*rlverbose then ioto_tprin2 {"++++ Entering fallback QE: "};
+         if !*rlverbose and QeEnv_getVb(state) then
+            ioto_tprin2 {"++++ Entering fallback QE: "};
          currentTheory . currentFormula := rl_fbqe(currentFormula, currentTheory)
       >>;
       QeState_setTheory(state, currentTheory);
       QeState_setFormula(state, currentFormula);
+      onoff('rlidentify, svrlidentify);
       return state
+   end;
+
+asserted procedure cl_isInconsistentTheory(theory: FormulaL): Boolean;
+   % This is only a heuristic test in the sense that a return value nil mean "don't know". At the
+   % moment, the test and exiting in cl_qe1 upon t is necessary for the code to work. Otherwise
+   % cl_simpl would throw exceptions later on.
+   % Discuss: This is a problem, e.g., with cl_simplbasic (qqe_ofsf).
+   begin scalar hasInconsistentAtom, scanTheory, simplfiedTheory, atom;
+      hasInconsistentAtom := nil;
+      scanTheory := theory;
+      simplfiedTheory := nil;
+      while not hasInconsistentAtom and not null scanTheory do <<
+         atom := cl_simplat(pop scanTheory, nil);
+         if atom eq 'false then
+            hasInconsistentAtom := t
+         else if atom neq 'true then
+            push(atom, simplfiedTheory)
+      >>;
+      if hasInconsistentAtom then
+         return t;
+      if rl_smupdknowl('and, simplfiedTheory, nil, 0) eq 'false then
+         return t;
+      return nil
    end;
 
 asserted procedure cl_split_new(f: Formula): List3;
@@ -216,21 +235,22 @@ asserted procedure cl_split_new(f: Formula): List3;
    end;
 
 asserted procedure cl_unsplit_new(blocks: List, f: Formula): Formula;
-   begin scalar result;
+   begin scalar occurringVariables, result;
+      occurringVariables := cl_fvarl1(f);
       result := f;
       for each block in blocks do
          for each variable in cdr block do
-            result := rl_mkq(car block, variable, result);
+            if variable memq occurringVariables then
+               result := rl_mkq(car block, variable, result);
       return result
    end;
 
 asserted procedure cl_qe1!-iterate_new(state: Vector): Vector;
    % Iterate over quantifier blocks. The blocks are successively eliminated from the inside to the
    % outside. Universal quantifier blocks are reduced to existential ones via logical negation.
-   begin scalar svrlidentify, svrlqeprecise, svrlqeaprecise, quantifier, variables, theory, formula,
+   begin scalar svrlqeprecise, svrlqeaprecise, quantifier, variables, theory, formula,
                 produceAnswer, successNodes, failureNodes, remainingVariables, formulaOperator,
                 formulaArguments;
-      svrlidentify := !*rlidentify;
       svrlqeprecise := !*rlqeprecise;
       svrlqeaprecise := !*rlqeaprecise;
       QeState_setSuccessNodes(state, nil);
@@ -238,24 +258,16 @@ asserted procedure cl_qe1!-iterate_new(state: Vector): Vector;
       ASSERT( not QeState_isEmptyBlocks(state) );
       while not QeState_isEmptyBlocks(state) and null remainingVariables do <<
          quantifier . variables := QeState_fetchBlock(state);
-         % Discuss: move this !*rlverbose to QeState_fetchBlocks
-         if !*rlverbose then
-            ioto_tprin2 {"---- ", (quantifier . reverse variables)};
          if not QeState_isEmptyBlocks(state) then <<
             off1 'rlqeprecise;
             off1 'rlqeaprecise
          >>;
-         if quantifier eq 'all then <<
-            theory := QeState_getTheory(state);
-            formula := QeState_getFormula(state);
+         theory := QeState_getTheory(state);
+         formula := QeState_getFormula(state);
+         if quantifier eq 'all then
             formula := rl_nnfnot formula;
-            % Discuss: The only motivation for the following simplification is !*rlsipw
-            % and !*rlsipo. Maybe the simplifier should be called with these switch bindings
-            % exactly here. Could !*rlsipw and !*rlsipo be realized more efficiently without going
-            % through full simplification once more? Im am thinking of a trivial simplat.
-            formula := cl_simpl(formula, theory, -1);
-            QeState_setFormula(state, formula)
-         >>;
+         formula := rl_simpl(formula, theory, -1);
+         QeState_setFormula(state, formula);
          QeState_setVariables(state, variables);
          % Discuss: produceAnswer might better be a method
          produceAnswer := QeState_getAnswerMode(state) and QeState_isEmptyBlocks(state);
@@ -273,14 +285,15 @@ asserted procedure cl_qe1!-iterate_new(state: Vector): Vector;
          >> else <<
             formulaOperator := 'or
          >>;
-         formulaArguments := for each node in append(successNodes, failureNodes) collect
-            QeNode_getFormula(node);
-         formula := rl_smkn(formulaOperator, formulaArguments);
-         % Disscuss: My motivation here was not entering an unsimplified formula in to the state.
-         % When doing this, one needs the "final simplification" in cl_qe1. This is not really
-         % clean. With the current code, formula is possibly simplified once more above, if the
-         % next block is universal.
-         formula := cl_simpl(formula, theory, -1);
+         formulaArguments := nil;
+         for each node in successNodes do
+            push(QeNode_getFormula(node), formulaArguments);
+         for each node in failureNodes do
+            push(QeNode_getFormula(node), formulaArguments);
+         formula := rl_smkn(formulaOperator, reversip formulaArguments);
+         % We are entering an unsimplified formula into state. It will be simplified either at the
+         % next iteration of the loop or after the loop. The reason is that in the former case it
+         % must be logically negated before simplification.
          QeState_setFormula(state, formula);
          if not null failureNodes then
             for each node in failureNodes do
@@ -290,7 +303,10 @@ asserted procedure cl_qe1!-iterate_new(state: Vector): Vector;
             onoff('rlqeaprecise, svrlqeaprecise)
          >>
       >>;
-      onoff('rlidentify, svrlidentify);
+      theory := QeState_getTheory(state);
+      formula := QeState_getFormula(state);
+      formula := rl_simpl(formula, theory, -1);
+      QeState_setFormula(state, formula);
       if not null remainingVariables then
          QeState_addBlock(state, quantifier . remainingVariables);
       QeState_setSuccessNodes(state, successNodes);
@@ -304,50 +320,24 @@ asserted procedure cl_qeblock4_new(state: Vector): Vector;
    % logical negation of a universal block from the original input. The corresponding negation and
    % back-negation takes place outside this procedure.
    begin scalar formula, variables, theory;
-         integer maxLength, maxCount, knownLength, knownCount, bfsLevelCount, requested, deleted;
-      % Discuss: implement QeState_fetchVariables and move this !*rlverbose to QeState
       theory := QeState_getTheory(state);
       formula := QeState_getFormula(state);
       if !*rlqegsd then
          formula := rl_gsn(formula, theory, 'dnf);
-      variables := QeState_getVariables(state);
-      if !*rlverbose and !*rlqedfs then
-         ioto_prin2t {" [DFS", if !*rlqedyn then " DYN]" else "]"};
-      if !*rlverbose and not !*rlqedfs then
-         ioto_prin2t {" [BFS: depth ", length(variables), "]"};
-      QeState_initializeWorkingNodes(state, if !*rlqedfs then 'dfs else 'bfs);
+      variables := QeState_fetchVariables(state);
+      QeState_initializeWorkingNodes(state);
       if rl_op formula eq 'or then
          for each subFormula in rl_argn formula do
             QeState_addWorkingNodes(state, {QeNode_new(variables, subFormula, nil)})
       else
          QeState_addWorkingNodes(state, {QeNode_new(variables, formula, nil)});
       while not QeState_isEmptyWorkingNodes(state) do <<
-         if !*rlverbose and !*rlqedfs then <<
-            maxLength . maxCount := QeState_workingNodesStatistics(state);
-            if knownLength = 0 or maxLength < knownLength or (maxLength = knownLength and maxCount < knownCount) then <<
-               knownLength := maxLength;
-               knownCount := maxCount;
-               ioto_prin2 {"[", knownLength, ":", knownCount, "] "}
-            >>;
-            if null QeState_firstWorkingNodeVariables(state) then ioto_prin2 ". "
-         >>;
-         if !*rlverbose and not !*rlqedfs then <<
-            if bfsLevelCount = 0 then <<
-               ioto_tprin2t {"-- left: ", length QeState_firstWorkingNodeVariables(state), " ", QeState_firstWorkingNodeVariables(state)};
-               bfsLevelCount := QeState_numberOfWorkingNodes(state)
-            >>;
-            ioto_nterpri(length explode bfsLevelCount + 4);
-            ioto_prin2 {"[", bfsLevelCount};
-            bfsLevelCount := bfsLevelCount - 1
-         >>;
          if !*rlqeidentify then on1 'rlidentify;
+         if !*rlverbose and QeEnv_getVb(state) then ioto_prin2 "[";
          cl_qevar_new(state);
-         if !*rlverbose and not !*rlqedfs then ioto_prin2 "] ";
+         if !*rlverbose and QeEnv_getVb(state) then ioto_prin2 "] ";
       >>;
-      if !*rlverbose then  <<
-         requested . deleted := QeState_fetchWorkingNodeDeletions(state);
-         ioto_prin2 ioto_printListtoString {"[DEL ", requested, "/", deleted, " = ", (100.0 * requested) / deleted, "%]"}
-      >>;
+      QeState_fetchWorkingNodeDeletions(state);
       return state
    end;
 
@@ -417,7 +407,7 @@ asserted procedure cl_gauss_new(state): Boolean;
       w := rl_trygauss(f, variables, theory, produceAnswer, noAssumeVars);
       if w eq 'failed then
          return nil;
-      if !*rlverbose and not !*rlqedfs then ioto_prin2 "g";
+      if !*rlverbose and QeEnv_getVb(state) and not !*rlqedfs then ioto_prin2 "g";
       answer := QeNode_getAnswer(node);
       variable . eliminationSet := car w;
       theory := cdr w;
@@ -477,13 +467,13 @@ asserted procedure cl_regularEliminationSet(state: Vector): Boolean;
       else
          rl_varsel(f, nodeVariables, theory);
       found := nil;
-      if !*rlverbose and not !*rlqedfs and (len := length candidateVariables) > 1 then ioto_prin2 {"{", len, ":"};
+      if !*rlverbose and QeEnv_getVb(state) and not !*rlqedfs and (len := length candidateVariables) > 1 then ioto_prin2 {"{", len, ":"};
       while candidateVariables do <<
          candidateVariable := pop candidateVariables;
          alp := cl_qeatal(f, candidateVariable, theory, produceAnswer);
          if alp = '(nil . nil) then <<
             % Candidate variable does not occur in f
-            if !*rlverbose and not !*rlqedfs then ioto_prin2 "*";
+            if !*rlverbose and QeEnv_getVb(state) and not !*rlqedfs then ioto_prin2 "*";
             bestTheory := theory;
             successorNodeVariables := lto_delq(candidateVariable, nodeVariables);
             if produceAnswer then
@@ -493,7 +483,7 @@ asserted procedure cl_regularEliminationSet(state: Vector): Boolean;
             goto brk
          >> else if car alp neq 'failed then <<
             % Candidate variable is eliminable
-            if !*rlverbose and not !*rlqedfs then ioto_prin2 "e";
+            if !*rlverbose and QeEnv_getVb(state) and not !*rlqedfs then ioto_prin2 "e";
             successorNodes . newTheory := cl_esetsubst_new(node, candidateVariable, rl_elimset(candidateVariable, alp), state);
             % Discuss: The pair arguments look strange. The theories are actually not used. The
             % rl_betterp blackbox is set to cl_betterp in all contexts. I have removed an
@@ -506,7 +496,7 @@ asserted procedure cl_regularEliminationSet(state: Vector): Boolean;
          >>
       >>;
    brk:
-      if !*rlverbose and not !*rlqedfs and len > 1 then ioto_prin2 {"}"};
+      if !*rlverbose and QeEnv_getVb(state) and not !*rlqedfs and len > 1 then ioto_prin2 {"}"};
       if not found then
          return nil;
       QeState_setTheory(state, bestTheory);
@@ -524,7 +514,7 @@ asserted procedure cl_storeRegularNodes(nodes: List, variablesLeft: Boolean, sta
       if not null nodes then <<
          if QeNode_getVariables(car nodes) eq 'break then <<
             % We have found true
-            QeState_initializeWorkingNodes(state, if !*rlqedfs then 'dfs else 'bfs);
+            QeState_initializeWorkingNodes(state);
             successNodes := QeState_getSuccessNodes(state);
             % With mutable QeNode we could reuse the break node here
             successNodes := {QeNode_new(nil, 'true, QeNode_getAnswer(car nodes))};
@@ -562,7 +552,9 @@ asserted procedure cl_betterp_new(current: DottedPair, best: DottedPair): Boolea
    % Both arguments are a pair of a lists of nodes and a theory. The theories are not used.
    begin integer currentNumberOfNodes, bestNumberOfNodes;
       currentNumberOfNodes := for each node in car current sum rl_atnum(QeNode_getFormula(node));
-      if !*rlverbose and not !*rlqedfs then ioto_prin2 {"(", currentNumberOfNodes, ")"};
+      % Temporary state for the environment. Discuss situation!
+      if !*rlverbose and QeEnv_getVb(QeState_new()) and not !*rlqedfs then
+         ioto_prin2 {"(", currentNumberOfNodes, ")"};
       if best = '(nil . nil) then
          return t;
       bestNumberOfNodes := for each node in car best sum rl_atnum(QeNode_getFormula(node));

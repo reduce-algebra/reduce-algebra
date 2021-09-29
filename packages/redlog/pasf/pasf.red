@@ -6,7 +6,7 @@ module pasf;
 
 revision('pasf, "$Id$");
 
-copyright('pasf, "(c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010-2017 T. Sturm");
+copyright('pasf, "(c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010-2021 T. Sturm");
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -33,10 +33,10 @@ copyright('pasf, "(c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010-2017 T. St
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-create!-package('(pasf pasfprint pasfbnf pasfmisc pasfnf pasfsiat pasfsibq
-   pasfbqbb pasfqe pasfsusi pasfresolve), nil);
+create!-package('(pasf pasfprint pasfbnf pasfmisc pasfnf pasfsiat pasfsibq pasfbqbb pasfqe pasfsusi
+                  pasfresolve), nil);
 
-fluid '(!*rlnzden !*rlposden !*rladdcond !*rlqeasri !*rlsifac !*rlbrkcxk !*utf8);
+fluid '(!*rlnzden !*rlposden !*rladdcond !*rlsifac !*rlbrkcxk !*utf8);
 
 load!-package 'redlog;
 loadtime load!-package 'cl;
@@ -48,6 +48,10 @@ flag('(pasf_simpat),'full);
 flag('(equal neq leq geq lessp greaterp),'spaced);
 
 % QE-Switches
+
+% Simplifier-recognized implication for pasf answers
+switch rlqeasri;
+on1 'rlqeasri;
 
 % QE call to dnf from the procedure pasf_qeexblock
 switch rlpasfdnfqeexblock;
