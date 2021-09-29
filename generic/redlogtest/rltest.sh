@@ -45,6 +45,18 @@ mkdir -p $base
 mkdir -p $log 
 mkdir -p $timings
 
+cd ~
+
+if [ -f .reducerc -a -r .reducerc ]; then
+    log "dumping .reducerc"
+    echo
+    cat .reducerc
+    echo
+    rnd=$RANDOM
+    log "temporarily renaming .reducerc to .reducerc_$rnd"
+    mv .reducerc .reducerc_$rnd
+fi
+
 cd $base
 
 log "starting svn co"
@@ -134,6 +146,11 @@ hide=$RANDOM
 mv -f ./scripts/pslmem64.sh ./scripts/pslmem64.sh-$hide
 cp ./generic/redlogtest/pslmem64.sh ./scripts
 #log "patch pslmem64.sh finished"
+
+cd ~
+
+log "renaming .reducerc_$rnd back to .reducerc"
+mv .reducerc_$rnd .reducerc
 
 cd $timings
 
