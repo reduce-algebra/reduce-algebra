@@ -366,8 +366,8 @@ symbolic procedure begin;
 %         then progn(prin2 ", patched to ",prin2 patch!-date!*);
         prin2t " ...";
         !*mode := if getd 'addsq then 'algebraic else 'symbolic;
-        if !*mode eq 'algebraic then !*break := nil;
-           %since most REDUCE users won't use LISP
+        if !*mode eq 'algebraic then !*break := nil; % since most REDUCE users won't use LISP
+	if null getd 'mathprint then no!_init!_file := t; % since bootstrap Reduce should not read the init file
         date!* := nil;
 a:      % crchar!* := '! ;
 	%% read init file
