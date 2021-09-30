@@ -120,8 +120,12 @@ if [ "$cslresult" = failed ] || [ "$pslresult" = failed ]; then
 else
     csltime=$(grep ^Time $timings/csl-times/$d/$p.time | awk '{print $4}')
     psltime=$(grep ^Time $timings/psl-times/$d/$p.time | awk '{print $4}')
-    let ratio=100*$csltime/$psltime
-    ratioresult="${ratio}%"
+    if [ $psltime -ne 0 ]; then
+        let ratio=100*$csltime/$psltime
+        ratioresult="${ratio}%"
+    else
+        ratioresult="NaN"
+    fi
     printf "test %-70s CSL %s, PSL %s, CSL/PSL = %4s %s\n" "$d/$p:" \
 	   "$cslresult" "$pslresult" "$ratioresult" "$resultlispdiff"
 fi
