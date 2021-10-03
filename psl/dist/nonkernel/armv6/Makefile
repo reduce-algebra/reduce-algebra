@@ -65,7 +65,7 @@ PXNKFILES= \
 	$(PNKL)/allocators.b $(PNKL)/binding.b \
 	$(PNKL)/scan-table.b $(PNKL)/sys-date.b $(PNKL)/sys-extras.b \
 	$(PNKL)/sys-faslin.b $(PNKL)/sys-gc.b $(PNKL)/sys-io.b \
-	$(PNKL)/static-gc.b $(PNKL)/catch-throw.b \
+	$(PNKL)/static-gc.b $(PNKL)/catch-throw.b $(PNKL)/oblist.b \
 	$(PNKL)/timc.b $(PNKL)/trap.b $(PNKL)/write-float.b $(PNKL)/wfloat.b
 
 all: $(PXNKFILES)
@@ -128,8 +128,8 @@ $(PNKL)/trap.b: $(PXNK)/trap.sl
 $(PNKL)/write-float.b: $(PXNK)/write-float.sl
 	$(PDIST)/make-pnk-lap $(PXNK) write-float
 
-$(PNKL)/sun4-nk-spec.b: $(PXNK)/sun4-nk-spec.sl
-	$(PDIST)/make-pnk-lap $(PXNK) sun4-nk-spec
+$(PNKL)/oblist.b: $(PXNK)/oblist.sl
+	$(PDIST)/make-pnk-lap $(PXNK) oblist
 
 $(PNKL)/allocators.b: $(PXNK)/allocators.sl $(PL)/if-system.b
 	$(PDIST)/make-pnk-lap $(PXNK) allocators
