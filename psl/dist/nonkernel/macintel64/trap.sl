@@ -44,9 +44,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 (fluid '(errornumber* sigaddr* arith-exception-type* stack-pointer*
-                      on-altstack*      % variable to indicate that we are on an alternate signal stack
-                      mcontext*         % address of machine context for restoring lisp registers
-                      ))
+         on-altstack*      % variable to indicate that we are on an alternate signal stack
+         mcontext*         % address of machine context for restoring lisp registers
+         *exit-on-term*    % Call exit when receiving a TERM signal
+))
+
+(setq *exit-on-term* t)
 
 (compiletime
  (progn
@@ -168,12 +171,25 @@
      (*move (memory (reg rax) 112) (reg r12)) % bndstkptr
      (*move (memory (reg rax) 104) (reg r11)) % heaptrapbound
      (*move (memory (reg rax) 96) (reg r10)) % heaplast
+     % if this is a TERM signal and *exit-on-term* is non-nil, call exit-with-status.
+     (*jumpnoteq (label notermsig) (fluid errornumber*) 15)
+     (*jumpnoteq (label dotermsig) (fluid *exit-on-term*) (quote nil))
+     (*move (quote "Termination signal") (reg 1))
+     (*jump (label checkinlisp))
+    dotermsig
+     (*move (quote "Termination signal... exiting PSL") (reg 1))
+     (*call console-print-string)
+     (*call console-newline)
+     (*move 3 (reg 1))
+     (*linke 1 exit-with-status expr 1)
+    notermsig
      % if this is a terminal interrupt (errornumber* = 2) or
      % SIGPIPE (errornumber* = 13), we check
      % whether it occured within lisp code. If not, just return.
      (*jumpeq (label check-not-in-lisp) (fluid errornumber*) 13)
      (*jumpnoteq (label in-lisp) (fluid errornumber*) 2)
      (*move (quote "Terminal Interrupt") (reg 1))
+    checkinlisp
      (*call console-print-string)
      (*call console-newline)
     check-not-in-lisp
