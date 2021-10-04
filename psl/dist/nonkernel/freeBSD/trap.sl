@@ -65,8 +65,13 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
-(fluid '(errornumber* errorcall* sigaddr* arith-exception-type*))
+(fluid '(errornumber* errorcall* sigaddr* arith-exception-type* stack-pointer*
+	 on-altstack*      % variable to indicate that we are on an alternate signal stack
+         *exit-on-term*    % Call exit when receiving a TERM signal
+))
 
+
+(setq *exit-on-term* t)
 
 (compiletime
  (progn
@@ -171,7 +176,26 @@
      % with the address of error-call.
                                            % 1, so the new message is
      (push (reg 1))
+     % if this is a TERM signal and *exit-on-term* is non-nil, call exit-with-status.
+     (*jumpnoteq (label notermsig) (fluid errornumber*) 15)
+     (*jumpnoteq (label dotermsig) (fluid *exit-on-term*) (quote nil))
+     (*move (quote "Termination signal") (reg 1))
+     (*jump (label checkinlisp))
+    dotermsig
+     (*move (quote "Termination signal... exiting PSL") (reg 1))
+     (*call console-print-string)
+     (*call console-newline)
+     (*move 3 (reg 1))
+     (*linke 1 exit-with-status expr 1)
+%    notermsig
+     % if this is a terminal interrupt (errornumber* = 2) we check
+     % whether it occured within lisp code. If not, just return.
 %     (*jumpnoteq (label in-lisp) (fluid errornumber*) 2)
+%     (*move (quote "Terminal Interrupt") (reg 1))
+    checkinlisp
+     (*call console-print-string)
+     (*call console-newline)
+    notermsig
      (*move (fluid sigaddr*) (reg 1))
      (*link codeaddressp expr 1)
      (!*jumpnoteq (label in-lisp) (reg 1) (quote nil))

@@ -740,7 +740,8 @@ asserted procedure ofsfic!*cl_process!-candvl(f: QfFormula, vl: KernelL, an: Ans
             >> else
                ww := {nil};
             % </max>
-            if rl_betterp(ww,w or '(nil . nil)) then <<
+            if null w and !*clqenew then w := '(nil . nil);  % For a temporary peaceful co-existence of clqe and clqenew
+            if rl_betterp(ww,w) then <<
                w := ww;
                status := 'elim
             >>

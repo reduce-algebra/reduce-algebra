@@ -43,7 +43,12 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
-(fluid '(errornumber* errorcall* sigaddr))
+(fluid '(errornumber* errorcall* sigaddr* faultaddr* arith-exception-type* stack-pointer*
+	 on-altstack*      % variable to indicate that we are on an alternate signal stack
+         *exit-on-term*    % Call exit when receiving a TERM signal
+))
+
+(setq *exit-on-term* t)
 
 
 (compiletime
@@ -68,7 +73,7 @@
      ,handler
      (*move (displacement (reg st) 12 ) (reg 1))
      (*move (displacement (reg 1) 76) (reg 2))
-     (*move (reg 2) (fluid sigaddr))
+     (*move (reg 2) (fluid sigaddr*))
      (*move (wconst ,signumber) (reg 2))
      (*move (reg 2)(fluid errornumber*))
      (*move ,handler (reg 2))
@@ -97,17 +102,30 @@
        (*sigsetup 3  QuitHandler QuitHandlerInstruction "Quit")
        (*sigsetup 4  IllHandler  IllHandlerInstruction  "Illegal Instruction")
        (*sigsetup 5  Traphandler TrapHandlerInstruction "Trace Trap")
-       (*sigsetup 6  IotHandler  IotHandlerInstruction  "IOT Instruction")
-       (*sigsetup 7  Emthandler  EmtHandlerInstruction  "EMT Instruction")
-       (*sigsetup 8  FpeHandler  FpeHandlerInstruction "Floating Pt Exception")
-       (*sigsetup 10 Bushandler  BusHandlerInstruction  "Bus Error")
-       (*sigsetup 11 SegHandler  SegHandlerInstruction
-                                    "Segmentation Violation")
-       (*sigsetup 12 SysHandler  SysHandlerInstruction
-                                    "Bad Args to System Call")
-       (*sigsetup 13 PipeHandler PipeHandlerinstruction
-                                    "Write on Pipe With Noone to Read")
+       (*sigsetup 6  AbortHandler  AbortHandlerInstruction  "Program aborted")
+       (*sigsetup 7  Bushandler  BusHandlerInstruction  "Bus error")
+       (*sigsetup 8  FpeHandler  FpeHandlerInstruction "Arithmetic Exception")
+       (*sigsetup 10 Usr1handler  Usr1HandlerInstruction  "User defined signal 1")
+       (*sigsetup 11 SegHandler  SegHandlerInstruction "Segmentation Violation")
+       (*sigsetup 12 Usr2handler  Usr2HandlerInstruction  "User defined signal 2")
+       (*sigsetup 13 PipeHandler PipeHandlerinstruction "Write on Pipe With Noone to Read")
        (*sigsetup 14 AlrmHandler AlrmHandlerInstruction "Alarm Clock")
+       (*sigsetup 15 TermHandler  TermHandlerInstruction  "Termination signal")
+%       (*sigsetup 16 STKXhandler STKXHandlerInstruction   "Stack fault")
+%       (*sigsetup 17 Childhandler ChildHandlerInstruction "Child waiting")
+%       (*sigsetup 18 Conthandler  ContHandlerInstruction  "SIGCONT received")
+%       (*sigsetup 20 Stophandler  StopHandlerInstruction  "SIGTSTP received")
+%       (*sigsetup 21 Ttinhandler  TtinHandlerInstruction  "Bg process waiting for input")
+%       (*sigsetup 22 Ttouhandler  TtouHandlerInstruction  "Bg process waiting for output")
+%       (*sigsetup 23 Urghandler   UrgHandlerInstruction   "Urgent out-of-band data")
+       (*sigsetup 24 CPUXhandler  CPUXHandlerInstruction  "CPU time limit exceeded")
+       (*sigsetup 25 FileXhandler FileXHandlerInstruction "File size limit exceeded")
+%       (*sigsetup 26 VAlrmHandler VAlrmHandlerInstruction "CPU Timer")
+%       (*sigsetup 27 ProfHandler ProfHandlerInstruction  "Profiling timer")
+%       (*sigsetup 28 WinchHandler WinchHandlerInstruction "Window size change")
+%       (*sigsetup 29 IOHandler    IOHandlerInstruction    "IO ready")
+       (*sigsetup 30 Pwrhandler   PwrHandlerInstruction   "Power failure")
+       (*sigsetup 31 Syshandler   SysHandlerInstruction   "Bad system call")
        (*entry initializeinterrupts-1 expr 0)
        (*sigcall)
        (*exit 0)))
@@ -138,20 +156,40 @@
      % (*link build-trap-message expr 2)     % This leaves its result in reg
                                            % 1, so the new message is
      (push (reg 1))
+     % if this is a TERM signal and *exit-on-term* is non-nil, call exit-with-status.
+     (*jumpnoteq (label notermsig) (fluid errornumber*) 15)
+     (*jumpnoteq (label dotermsig) (fluid *exit-on-term*) (quote nil))
+     (*move (quote "Termination signal") (reg 1))
+     (*jump (label checkinlisp))
+    dotermsig
+     (*move (quote "Termination signal... exiting PSL") (reg 1))
+     (*call console-print-string)
+     (*call console-newline)
+     (*move 3 (reg 1))
+     (*linke 1 exit-with-status expr 1)
+%    notermsig
+     % if this is a terminal interrupt (errornumber* = 2) we check
+     % whether it occured within lisp code. If not, just return.
+%     (*jumpnoteq (label in-lisp) (fluid errornumber*) 2)
+%     (*move (quote "Terminal Interrupt") (reg 1))
+    checkinlisp
+     (*call console-print-string)
+     (*call console-newline)
+    notermsig
      (*link *freset expr 0)
      (*move 17 (reg 1))
      (*link initializeinterrupts expr 1) % MK
      (pop (reg 1))
-     (*move (fluid sigaddr ) (reg 2))
+     (*move (fluid sigaddr*) (reg 2))
      (*call build-trap-message)
      (*move (reg 1) (reg 2))
-     (*move (reg 1) (fluid sigaddr ))
+     (*move (reg 1) (fluid sigaddr*))
      (*move (fluid errornumber*) (reg 1))
      (*wplus2 (reg 1)(wconst 10000))
      (ret) %%%(*jcall error) 
      ))
 
-(de errortrap () (sun3_sigset 501) (error (wplus2 errornumber* 10000) sigaddr))
+(de errortrap () (sun3_sigset 501) (error (wplus2 errornumber* 10000) sigaddr*))
 
 % (sun3_sigset 501)  restauriert das FP Environment
 

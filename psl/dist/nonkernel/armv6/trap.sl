@@ -169,7 +169,10 @@
      (*mkitem (reg NIL) id-tag)	    % make sure (reg nil) contains nil
      % if this is a TERM signal and *exit-on-term* is non-nil, call exit-with-status.
      (*jumpnoteq (label notermsig) (fluid errornumber*) 15)
-     (*jumpeq (label notermsig) (fluid *exit-on-term*) (quote nil))
+     (*jumpnoteq (label dotermsig) (fluid *exit-on-term*) (quote nil))
+     (*move (quote "Termination signal") (reg 1))
+     (*jump (label checkinlisp))
+    dotermsig
      (*move (quote "Termination signal... exiting PSL") (reg 1))
      (*call console-print-string)
      (*call console-newline)
@@ -180,6 +183,7 @@
      % whether it occured within lisp code. If not, just return.
      (*jumpnoteq (label in-lisp) (fluid errornumber*) 2)
      (*move (quote "Terminal Interrupt") (reg 1))
+    checkinlisp
      (*call console-print-string)
      (*call console-newline)
      (*move (fluid sigaddr*) (reg 1))
