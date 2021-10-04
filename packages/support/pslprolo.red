@@ -83,7 +83,7 @@ set('!*quotenewnam,nil);
 define!-alias!-list
       '(arrayp do for on off let clear flatten imports
         indx mkid mkvec vector editf spaces2 prettyprint
-        size);
+        size hashtable);
 
 set('!*quotenewnam,t);
 
