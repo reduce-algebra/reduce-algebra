@@ -131,20 +131,13 @@ put('rlidentify, 'simpfg, '((t (rl_identifyonoff t)) (nil (rl_identifyonoff nil)
 %% off1 'rlidentify;
 
 % Standard simplifier (rl_simpl):
-switch rlsiatadv, rlsipd, rlsiexpl, rlsiexpla, rlsiso, rlsipw, rlsipo,
-       rlsifac, rlsitsqspl, rlsifaco, rlsid, rlsiplugtheo;
-on1  'rlsiso;
-off1 'rlsipw;
-on1  'rlsipo;
-on1  'rlsiatadv;
-on1  'rlsipd;
-on1  'rlsiexpl;
-on1  'rlsiexpla;
-on1  'rlsifac;
-on1  'rlsitsqspl;
-on1  'rlsid;             % Smart simplification of derivatives in dcfsf
-on1  'rlsiplugtheo;      % Plug in constant values of variables in the recursive theory (dcfsf only)
-off1 'rlsifaco;          % Factorize lhs of ordering inequalities in simplat
+switch rlsiso, rlsipw, rlsipo, rlsifaco, rlsiplugtheo, rlsid;
+
+on1  'rlsid;         % Smart simplification of derivatives (dcfsf only)
+on1  'rlsipo;        % Prefer <, <=, >, >= over =, <>
+on1  'rlsiplugtheo;  % Plug in unique values for variables when discovered (dcfsf only)
+off1 'rlsipw;        % Prefer <=, >= over <, >
+on1  'rlsiso;        % Sort subformulas on each boolean level
 
 switch rlsusi, rlsusiadd, rlsusigs, rlsusimult;
 off1 'rlsusi;

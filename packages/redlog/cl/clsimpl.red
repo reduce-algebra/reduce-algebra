@@ -35,13 +35,9 @@ copyright('clsimpl, "(c) 1995-2021 A. Dolzmann, T. Sturm");
 rl_provideService rl_simpl = cl_simpl using rl_negateat, rl_simplat1,
    rl_smupdknowl, rl_smrmknowl, rl_smcpknowl, rl_smmkatl, rl_ordatp;
 
-asserted procedure cl_simpl(f: Formula, atl: List, n: Integer): Formula;
-   % Common logic simplify. [f] is a formula; [atl] is a list of atomic
-   % formulas, which are considered to describe a theory; [n] is an integer.
-   % Depends on switch [!*rlsiso]. Returns the identifier [inctheo] or a
-   % formula. [inctheo] means that [atl] is inconsistent. Else the result is
-   % [f], simplified (wrt. [atl]). For non-negative [n], simplification stops
-   % at level [n].
+asserted procedure cl_simpl(f: Formula, atl: FormulaL, n: Integer): Formula;
+   % Common logic simplify. Simplify f subject to the theory atl. For non-negative n, simplification
+   % stops at the n-th recursion into f. For full simplification use n = -1.
    begin scalar w;
       atl := cl_simplifyTheory atl;
       if rl_excp atl then
@@ -279,29 +275,6 @@ asserted procedure cl_simplifyEquivalence(lhs: Formula, rhs: Formula, knowl: Any
          rl_mk2('equiv, lhs, rhs)
       else
          rl_mk2('equiv, rhs, lhs)
-   end;
-
-asserted procedure cl_simplat(atf: AtFormula, sop: Id): QfFormula;
-   % Common logic simplify atomic formula. The result is equivalent to atf.
-   % sop contains the logical operator of the boolean level where atf
-   % occurred. This can help to decide about splitting or not splitting atf.
-   if not !*rlidentify then
-      rl_simplat1(atf, sop)
-   else
-      cl_apply2ats(rl_simplat1(atf, sop), 'cl_identifyat);
-
-asserted procedure cl_identifyathfn(atf: Atom): List2;
-   {rl_op atf, cl_varl1 atf};
-
-asserted procedure cl_identifyat(atf: Atom): Atom;
-   % Common logic identify atomic formula. [atf] is an atomic formula.
-   % Returns an atomic formula equal to [atf].
-   begin scalar w;
-      if rl_tvalp atf then return atf;
-      if (w := lto_hmember(atf, cl_identify!-atl!*, 'cl_identifyathfn)) then
-         return car w;
-      cl_identify!-atl!* := lto_hinsert(atf, cl_identify!-atl!*, 'cl_identifyathfn);
-      return atf
    end;
 
 % The following code implements the ordering of formulas used for sorting the

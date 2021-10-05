@@ -407,7 +407,7 @@ asserted procedure cl_gauss_new(state): Boolean;
       w := rl_trygauss(f, variables, theory, produceAnswer, noAssumeVars);
       if w eq 'failed then
          return nil;
-      if !*rlverbose and QeEnv_getVb(state) and not !*rlqedfs then ioto_prin2 "g";
+      if !*rlverbose and QeEnv_getVb(state) then ioto_prin2 "g";
       answer := QeNode_getAnswer(node);
       variable . eliminationSet := car w;
       theory := cdr w;
@@ -452,7 +452,7 @@ asserted procedure cl_regularEliminationSet(state: Vector): Boolean;
    begin scalar produceAnswer, noAssumeVars, theory, node, f, nodeVariables, nodeAnswer, found,
                 candidateVariables, candidateVariable, alp, successorNodes, newTheory,
                 bestSuccessorNodes, bestTheory, successorNodeVariables;
-         integer len;
+         integer numberOfCandidates;
       produceAnswer := QeState_getProduceAnwer(state);
       noAssumeVars := QeState_getNoAssumeVars(state);
       theory := QeState_getTheory(state);
@@ -467,13 +467,17 @@ asserted procedure cl_regularEliminationSet(state: Vector): Boolean;
       else
          rl_varsel(f, nodeVariables, theory);
       found := nil;
-      if !*rlverbose and QeEnv_getVb(state) and not !*rlqedfs and (len := length candidateVariables) > 1 then ioto_prin2 {"{", len, ":"};
+      if !*rlverbose and QeEnv_getVb(state) then <<
+         numberOfCandidates := length candidateVariables;
+         if numberOfCandidates > 1 then
+            ioto_prin2 {"{", numberOfCandidates, ":"}
+      >>;
       while candidateVariables do <<
          candidateVariable := pop candidateVariables;
          alp := cl_qeatal(f, candidateVariable, theory, produceAnswer);
          if alp = '(nil . nil) then <<
             % Candidate variable does not occur in f
-            if !*rlverbose and QeEnv_getVb(state) and not !*rlqedfs then ioto_prin2 "*";
+            if !*rlverbose and QeEnv_getVb(state) then ioto_prin2 "*";
             bestTheory := theory;
             successorNodeVariables := lto_delq(candidateVariable, nodeVariables);
             if produceAnswer then
@@ -483,7 +487,7 @@ asserted procedure cl_regularEliminationSet(state: Vector): Boolean;
             goto brk
          >> else if car alp neq 'failed then <<
             % Candidate variable is eliminable
-            if !*rlverbose and QeEnv_getVb(state) and not !*rlqedfs then ioto_prin2 "e";
+            if !*rlverbose and QeEnv_getVb(state) then ioto_prin2 "e";
             successorNodes . newTheory := cl_esetsubst_new(node, candidateVariable, rl_elimset(candidateVariable, alp), state);
             % Discuss: The pair arguments look strange. The theories are actually not used. The
             % rl_betterp blackbox is set to cl_betterp in all contexts. I have removed an
@@ -496,7 +500,7 @@ asserted procedure cl_regularEliminationSet(state: Vector): Boolean;
          >>
       >>;
    brk:
-      if !*rlverbose and QeEnv_getVb(state) and not !*rlqedfs and len > 1 then ioto_prin2 {"}"};
+      if !*rlverbose and QeEnv_getVb(state) and numberOfCandidates > 1 then ioto_prin2 {"}"};
       if not found then
          return nil;
       QeState_setTheory(state, bestTheory);
@@ -553,7 +557,7 @@ asserted procedure cl_betterp_new(current: DottedPair, best: DottedPair): Boolea
    begin integer currentNumberOfNodes, bestNumberOfNodes;
       currentNumberOfNodes := for each node in car current sum rl_atnum(QeNode_getFormula(node));
       % Temporary state for the environment. Discuss situation!
-      if !*rlverbose and QeEnv_getVb(QeState_new()) and not !*rlqedfs then
+      if !*rlverbose and QeEnv_getVb(QeEnv_new()) then
          ioto_prin2 {"(", currentNumberOfNodes, ")"};
       if best = '(nil . nil) then
          return t;

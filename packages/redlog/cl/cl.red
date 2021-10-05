@@ -30,8 +30,9 @@ copyright('cl, "(c) 1995-2021 A. Dolzmann, T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-create!-package('(cl clsub clsimpl clsimplbasic clsusi clbnf clnf clqe cltab clmisc clresolv
-                  cldfgformat clsmt2format clqenode clqecont clqeenv clqestate clqenew), nil);
+create!-package('(cl clsub clsimpl clsimplbasic clsimplat clsimplatenv clsusi clbnf clnf clqe cltab
+                  clmisc clresolv cldfgformat clsmt2format clqenode clqecont clqeenv clqestate
+                  clqenew), nil);
 
 compiletime load!-package 'redlog;
 
