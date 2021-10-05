@@ -1,6 +1,6 @@
 module clsimplatenv;
 
-revision('clsimplatenv, "$Id");
+revision('clsimplatenv, "$Id$");
 
 copyright('clsimplatenv, "(c) 2021 A. Dolzmann, T. Sturm");
 

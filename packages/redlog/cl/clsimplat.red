@@ -1,6 +1,6 @@
 module clsimplat;
 
-revision('clsimplat, "$Id");
+revision('clsimplat, "$Id$");
 
 copyright('clsimplat, "(c) 2021 A. Dolzmann, T. Sturm");
 
@@ -29,12 +29,12 @@ copyright('clsimplat, "(c) 2021 A. Dolzmann, T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-#define IDENTIFY_HASHTABLE_SIZE 256
+#define IDENTIFY_HASHTABLE_SIZE 65536
 #define IDENTIFY_HASHTABLE_GROWTH 1
 
-#define REMEMBER_HASHTABLE_SIZE 256
+#define REMEMBER_HASHTABLE_SIZE 65536
 #define REMEMBER_HASHTABLE_GROWTH 1
-#define REMEMBER_LIMIT 256
+#define REMEMBER_LIMIT 65536
 
 asserted procedure cl_initializeRemember(functionName: Id): Void;
    begin scalar hashTable;
