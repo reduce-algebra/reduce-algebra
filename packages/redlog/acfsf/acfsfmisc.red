@@ -60,7 +60,7 @@ procedure acfsf_fctrat(atf);
    % a list $(...,(f_i . n_i),...)$, where the $f_i$ are the factors
    % as SF's and the $n_i$ are the corresponding multiplicities. The
    % integer content is dropped.
-   cdr fctrf acfsf_arg2l atf;
+   cdr sfto_fctrf acfsf_arg2l atf;
 
 procedure acfsf_negateat(f);
    % Algebraically closed field negate atomic formula. [f] is an
@@ -188,7 +188,7 @@ procedure acfsf_ifstructat(at,al);
    % [at] matches one of the $t_i$ in [al]. Returns the atomic formula
    % $R(c ... v_i ..., 0)$.
    begin scalar w,r;
-      w := fctrf acfsf_arg2l at;
+      w := sfto_fctrf acfsf_arg2l at;
       r := car w;
       for each x in cdr w do
          r := multf(r,expf(numr simp cdr assoc(car x,al),cdr x));
