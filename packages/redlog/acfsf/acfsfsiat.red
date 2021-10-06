@@ -56,7 +56,7 @@ procedure acfsf_simplat1(f,sop);
 procedure acfsf_simplequal(lhs,sop);
    % Algebraically closed field standard form simplify [equal]-atomic
    % formula. [lhs] is a term. Returns a quantifier-free formula.
-   begin scalar w,ff,ww;
+   begin scalar ff;
       ff := sfto_sqfpartf lhs;
       if !*rlsifac and (!*rlsiexpla or !*rlsiexpl and sop = 'or) then
          return acfsf_facequal ff;
@@ -65,12 +65,12 @@ procedure acfsf_simplequal(lhs,sop);
 
 procedure acfsf_facequal(f);
    % Left hand side factorization [equal] case.
-   rl_smkn('or,for each x in cdr fctrf f collect acfsf_0mk2('equal,car x));
+   rl_smkn('or,for each x in cdr sfto_fctrf f collect acfsf_0mk2('equal,car x));
 
 procedure acfsf_simplneq(lhs,sop);
    % Algebraically closed field standard form simplify [neq]-atomic
    % formula. [lhs] is a term. Returns a quantifier-free formula.
-   begin scalar w,ff,ww;
+   begin scalar ff;
       ff := sfto_sqfpartf lhs;
       if !*rlsifac and (!*rlsiexpla or !*rlsiexpl and sop = 'and) then
          return acfsf_facneq ff;
@@ -79,7 +79,7 @@ procedure acfsf_simplneq(lhs,sop);
 
 procedure acfsf_facneq(f);
    % Left hand side factorization [neq] case.
-   rl_smkn('and,for each x in cdr fctrf f collect acfsf_0mk2('neq,car x));
+   rl_smkn('and,for each x in cdr sfto_fctrf f collect acfsf_0mk2('neq,car x));
 
 procedure acfsf_evalatp(rel,lhs);
    % Algebraically closed field standard form evaluate atomic formula.
