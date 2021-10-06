@@ -124,12 +124,6 @@ switch rlbrkcxk;
 put('rlbrkcxk, 'simpfg, '((t (rmsubs)) (nil (rmsubs))));
 off1 'rlbrkcxk;
 
-% Identify (make eq) equal atomic formulas:
-switch rlidentify;
-put('rlidentify, 'simpfg, '((t (rl_identifyonoff t)) (nil (rl_identifyonoff nil))));
-% Default setting requires discussion. There might be issues when reloading.
-%% off1 'rlidentify;
-
 % Standard simplifier (rl_simpl):
 switch rlsiso, rlsipw, rlsipo, rlsifaco, rlsiplugtheo, rlsid;
 

@@ -50,12 +50,21 @@ exports cl_atfp, cl_cxfp, cl_atflp, cl_ncflp, cl_dnfp, cl_cnfp, cl_bnfp,
    cl_flip, cl_cflip, cl_subfof, cl_termml, cl_termml1, cl_terml, cl_terml1,
    cl_struct, cl_ifstruct, cl_surep, cl_splt;
 
-fluid '(cl_identify!-atl!* cl_pal!* cl_lps!* cl_theo!* !*rlidentify !*rlsiexpla !*rlbnfsm
-        !*rlverbose !*rlsiso !*rlbnfsac !*rltnft !*rlsipw !*rlsipo !*rlspgs !*rlqefb !*rlresi
-        !*slat);
+fluid '(cl_pal!* cl_lps!* cl_theo!*);
 
-fluid '(!*rlqepnf !*rlqedfs !*rlqeans !*rlqegsd !*rlqeheu !*rlqegen !*rlqevarsel !*rlqelocal
-        !*rlqeprecise !*rlqeaprecise !*rlqestdans !*rlqedyn !*rlqevb !*rlqevbold !*rlqeidentify);
+% Discuss:
+fluid '(!*rlspgs);
+
+% QeEnv
+fluid '(!*rlqeaprecise !*rlqebacksub !*rlqedfs !*rlqedyn !*rlqefb !*rlqefilterbounds !*rlqefullans
+        !*rlqegenct !*rlqegsd !*rlqeheu !*rlqeidentify !*rlqelog !*rlqepnf !*rlqeprecise !*rlqeqsc
+        !*rlqesqsc !*rlqesr !*rlqestdans !*rlqestdansint !*rlqestdansq !*rlqestdansvb !*rlqesubf
+        !*rlqevarsel !*rlqevarseltry !*rlqevb !*rlqevbold);
+
+fluid '(!*rlqeans !*rlqegen !*rlqelocal);
+
+% SiAtEnv
+fluid '(!*rlidentify !*rlsiatadv !*rlsiexpl !*rlsiexpla !*rlsifac !*rlsifaco !*rlsipd !*rlsitsqspl);
 
 switch clqenew;
 

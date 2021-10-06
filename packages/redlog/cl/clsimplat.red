@@ -53,13 +53,13 @@ asserted procedure cl_simplat(atf: AtFormula, sop: Id): QfFormula;
    % context. Here we implement the equivalent of a remember option.
    begin scalar hashTable, queue, lastNode, size, limit, key, entry, simplificationResult,
                 oldestEntry;
-      if REMEMBER_LIMIT = 0 then
-         return rl_simplat1(atf, sop);
+      if REMEMBER_LIMIT <= 0 or not !*rlsiatadv then
+         return cl_simplat1(atf, sop);
       {hashTable, queue, lastNode, size, limit} := get('cl_simplat, 'remember);
       key := {atf, sop, rl_cid!*, SiAtEnv_new()};
       if (entry := gethash(key, hashTable)) then
          return entry;
-      simplificationResult := rl_simplat1(atf, sop);
+      simplificationResult := cl_simplat1(atf, sop);
       if size = limit then <<
          ASSERT( length(queue) = size );
          oldestEntry := pop queue;
@@ -80,13 +80,19 @@ asserted procedure cl_simplat(atf: AtFormula, sop: Id): QfFormula;
       return simplificationResult
    end;
 
+asserted procedure cl_simplat1(atf: AtFormula, sop: Id): QfFormula;
+   begin scalar simplificationResult;
+      simplificationResult := rl_simplat1(atf, sop);
+      if !*rlidentify then
+         simplificationResult := cl_identifyat(simplificationResult);
+      return simplificationResult
+   end;
+
 asserted procedure cl_initializeIdentifyAt(): Void;
    begin scalar hashTable;
       hashTable := mkhash(IDENTIFY_HASHTABLE_SIZE, 'equal, IDENTIFY_HASHTABLE_GROWTH);
       put('cl_identifyat, 'hashTable, hashTable)
    end;
-
-cl_initializeIdentifyAt();
 
 asserted procedure cl_identifyat(atf: AtFormula): AtFormula;
    begin scalar hashTable, entry;

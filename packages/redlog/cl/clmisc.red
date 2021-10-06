@@ -546,11 +546,6 @@ asserted procedure cl_qesil(fl: List, theo: List): List;
       return res
    end;
 
-asserted procedure cl_identifyonoff(b: Boolean): Void;
-   % Toggle identification of atomic formulas on off. This is the 'simpfg of
-   % the switch rlidentify.
-   cl_identify!-atl!* := nil;
-
 endmodule;  % [clmisc]
 
 end;  % of file
