@@ -44,6 +44,7 @@ log "break       = $break"
 mkdir -p $base
 mkdir -p $log 
 mkdir -p $timings
+mkdir -p $save
 
 cd ~
 
@@ -55,6 +56,8 @@ if [ -f .reducerc -a -r .reducerc ]; then
     rnd=$RANDOM
     log "temporarily renaming .reducerc to .reducerc_$rnd"
     mv .reducerc .reducerc_$rnd
+else
+    rnd=""
 fi
 
 cd $base
@@ -141,16 +144,10 @@ if [ $? -ne 0 ]; then
 fi
 #log "make finished"
 
-log "patching pslmem64.sh"
-hide=$RANDOM
-mv -f ./scripts/pslmem64.sh ./scripts/pslmem64.sh-$hide
-cp ./generic/redlogtest/pslmem64.sh ./scripts
-#log "patch pslmem64.sh finished"
-
-cd ~
-
-log "renaming .reducerc_$rnd back to .reducerc"
-mv .reducerc_$rnd .reducerc
+if [ -n $rnd ]; then
+    log "renaming .reducerc_$rnd back to .reducerc"
+    mv .reducerc_$rnd .reducerc
+fi
 
 cd $timings
 

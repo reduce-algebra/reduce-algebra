@@ -22,6 +22,8 @@ export timecmd="/usr/bin/time -p"
 
 f="$regressions/$d/$p.tst"
 
+pslargs="-td $($trunk/generic/redlogtest/pslmem64.sh)"
+
 # The idea behind applying a ulimit here is to avoid trouble when and if a test
 # script loops.
 ulimit -c 1800
@@ -43,7 +45,7 @@ EOF
   cat $howlong >> $timings/csl-times/$d/$p.rlg.tmp
   rm -f $howlong ) &
 ( howlong=$timings/psl-times/$d/$p.howlong.tmp
-  $timecmd sh -c "$trunk/bin/redpsl > $timings/psl-times/$d/$p.rlg.tmp" <<EOF 2>$howlong
+  $timecmd sh -c "$trunk/bin/redpsl $pslargs > $timings/psl-times/$d/$p.rlg.tmp" <<EOF 2>$howlong
 off int;
 symbolic linelength 80;
 symbolic(!*redefmsg := nil);
