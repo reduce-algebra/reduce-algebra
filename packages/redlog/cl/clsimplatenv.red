@@ -64,6 +64,27 @@ asserted procedure SiAtEnv_new(): Vector;
       return env
    end;
 
+asserted procedure SiAtEnv_asList(): List;
+   {!*rlsiatadv, !*rlsiexpl, !*rlsiexpla, !*rlsifac, !*rlsifaco, !*rlsitsqspl};
+
+macro procedure SiAtEnv_binaryEncoding(argl);
+   begin scalar bit, encoding;
+      argl := cdr argl;
+      if null argl then
+         rederr "SiAtEnv_binaryEncoding requires at least one argument";
+      encoding := {'cond, {car argl, 1}, {t, 0}};
+      argl := cdr argl;
+      while argl do <<
+         bit := {'cond, {car argl, 1}, {t, 0}};
+         encoding := {'iplus2, bit, {'itimes2, 2, encoding}};
+         argl := cdr argl
+      >>;
+      return encoding
+   end;
+
+asserted procedure SiAtEnv_asInteger(): Integer;
+   SiAtEnv_binaryEncoding(!*rlsiatadv, !*rlsiexpl, !*rlsiexpla, !*rlsifac, !*rlsifaco, !*rlsitsqspl);
+
 endmodule;
 
 end;

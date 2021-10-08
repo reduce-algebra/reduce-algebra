@@ -29,79 +29,60 @@ copyright('clsimplat, "(c) 2021 A. Dolzmann, T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-#define IDENTIFY_HASHTABLE_SIZE 65536
-#define IDENTIFY_HASHTABLE_GROWTH 1
+#define IDENTIFY_SIZE 65536
+#define IDENTIFY_GROWTH 1
 
-#define REMEMBER_HASHTABLE_SIZE 65536
-#define REMEMBER_HASHTABLE_GROWTH 1
-#define REMEMBER_LIMIT 65536
+#define REMEMBER_SIZE 65536
+#define REMEMBER_GROWTH 1
+#define REMEMBER_BOUND 65536
 
-asserted procedure cl_initializeRemember(functionName: Id): Void;
+asserted procedure cl_initializeIdentifyAt(): Void;
    begin scalar hashTable;
-      if REMEMBER_LIMIT <= 0 then
-         return;
-      hashTable := mkhash(REMEMBER_HASHTABLE_SIZE, 'equal, REMEMBER_HASHTABLE_GROWTH);
-      put(functionName, 'remember, {hashTable, nil, nil, 0, REMEMBER_LIMIT})
+      hashTable := mkhash(IDENTIFY_SIZE, 'equal, IDENTIFY_GROWTH);
+      put('cl_identifyat, 'hashTable, hashTable)
    end;
 
-cl_initializeRemember('cl_simplat);
+asserted inline procedure cl_identifyatHashKey(atf: AtFormula): DottedPair;
+   cadr atf . car atf . cddr atf;
+
+asserted inline procedure cl_identifyats(f: QfFormula): QfFormula;
+   if !*rlidentify then cl_apply2ats(f, 'cl_identifyat) else f;
+
+asserted procedure cl_identifyat(atf: AtFormula): AtFormula;
+   begin scalar hashTable, entry;
+      hashTable := get('cl_identifyat, 'hashTable);
+      if (entry := gethash(cl_identifyatHashKey(atf), hashTable)) then
+         return entry;
+      puthash(cl_identifyatHashKey(atf), hashTable, atf);
+      % The mutability of hash tables allows us to save a put('cl_identifyat, 'hashtable, ...)
+      return atf
+   end;
+
+put('cl_simplat, 'remember, BHashTable_new(REMEMBER_SIZE, REMEMBER_GROWTH, REMEMBER_BOUND));
+
+asserted inline procedure cl_simplatHashKey(atf: AtFormula, sop: Id): DottedPair;
+   cadr atf . car atf . cddr atf . sop . rl_cid!* . rl_argl!* . SiAtEnv_asInteger();
 
 asserted procedure cl_simplat(atf: AtFormula, sop: Id): QfFormula;
    % Common logic simplify atomic formula. The result is equivalent to atf. sop contains the logical
    % operator of the boolean level where atf occurred. This can help to decide about splitting or
    % not splitting atf. The actual simplification takes place in rl_simplat1 in the current
    % context. Here we implement the equivalent of a remember option.
-   begin scalar hashTable, queue, lastNode, size, limit, key, entry, simplificationResult,
-                oldestEntry;
-      if REMEMBER_LIMIT <= 0 or not !*rlsiatadv then
-         return cl_simplat1(atf, sop);
-      {hashTable, queue, lastNode, size, limit} := get('cl_simplat, 'remember);
-      key := {atf, sop, rl_cid!*, SiAtEnv_new()};
-      if (entry := gethash(key, hashTable)) then
+   begin scalar bHashTable, key, entry, simplificationResult;
+      if REMEMBER_BOUND <= 0 then
+         return cl_identifyats rl_simplat1(atf, sop);
+      bHashTable := get('cl_simplat, 'remember);
+      key := cl_simplatHashKey(atf, sop);
+      if (entry := BHashTable_gethash(key, bHashTable)) then
          return entry;
-      simplificationResult := cl_simplat1(atf, sop);
-      if size = limit then <<
-         ASSERT( length(queue) = size );
-         oldestEntry := pop queue;
-         if null queue then
-            lastNode := nil;
-         remhash(oldestEntry, hashTable)
-      >> else
-         size := size + 1;
-      if null queue then <<
-         queue := {key};
-         lastNode := queue
-      >> else <<
-         cdr lastNode := key . nil;
-         lastNode := cdr lastNode
+      simplificationResult := cl_identifyats rl_simplat1(atf, sop);
+      BHashTable_puthash(key, bHashTable, simplificationResult);
+      if cl_atfp(simplificationResult) then <<
+         key := cl_simplatHashKey(simplificationResult, sop);
+         BHashTable_puthash(key, bHashTable, simplificationResult)
       >>;
-      puthash(key, hashTable, simplificationResult);
-      put('cl_simplat, 'remember, {hashTable, queue, lastNode, size, limit});
+      % The mutability of BHashTable allows us to save a put('cl_simplat, 'rememeber, ...)
       return simplificationResult
-   end;
-
-asserted procedure cl_simplat1(atf: AtFormula, sop: Id): QfFormula;
-   begin scalar simplificationResult;
-      simplificationResult := rl_simplat1(atf, sop);
-      if !*rlidentify then
-         simplificationResult := cl_identifyat(simplificationResult);
-      return simplificationResult
-   end;
-
-asserted procedure cl_initializeIdentifyAt(): Void;
-   begin scalar hashTable;
-      hashTable := mkhash(IDENTIFY_HASHTABLE_SIZE, 'equal, IDENTIFY_HASHTABLE_GROWTH);
-      put('cl_identifyat, 'hashTable, hashTable)
-   end;
-
-asserted procedure cl_identifyat(atf: AtFormula): AtFormula;
-   begin scalar hashTable, entry;
-      hashTable := get('cl_identifyat, 'hashTable);
-      if (entry := gethash(atf, hashTable)) then
-         return entry;
-      puthash(atf, hashTable, atf);
-      put('cl_identifyat, 'hashTable, hashTable);
-      return atf
    end;
 
 endmodule;
