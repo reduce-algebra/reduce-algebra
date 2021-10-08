@@ -29,7 +29,7 @@ copyright('rltools, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-create!-package('(rltools systo ioto lto sfto sftoresultant),nil);
+create!-package('(rltools systo ioto lto sfto sftoresultant bhashtable),nil);
 
 fluid '(!*rlbrkcxk);
 fluid '(!*rlverbose);

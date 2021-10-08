@@ -95,7 +95,7 @@ procedure rl_set(argl);
          if cntxt then rl_enter(cntxt);
          rederr w
       >>;
-      return cntxt;
+      return cntxt
    end;
 
 procedure rl_exit();
