@@ -54,7 +54,7 @@ procedure dvfsf_saval(op,lhs,rhs,sop);
       if minusf rhs then rhs := negf rhs;
       if lhs = rhs then
          return if op eq 'sdiv or op eq 'nassoc then 'false else 'true;
-      % At most one of [lhs], [rhs] is zero. The following third reatment
+      % At most one of [lhs], [rhs] is zero. The following third treatment
       % of zero sides is probably redundant.
       if null lhs then <<
          if op eq 'sdiv then return 'false;
@@ -80,8 +80,10 @@ procedure dvfsf_saval1(op,lhs,rhs);
    % formula equivalent to $[op]([lhs],[rhs])$.
    begin scalar gcd,natf1,sff,junct;
       junct := if op eq 'sdiv or op eq 'nassoc then 'and else 'or;
-      lhs := dvfsf_vsimpf lhs;
-      rhs := dvfsf_vsimpf rhs;
+      lhs := absf dvfsf_vsimpf lhs;
+      rhs := absf dvfsf_vsimpf rhs;
+      if lhs = rhs then
+         return if op eq 'sdiv or op eq 'nassoc then 'false else 'true;
       gcd := sfto_gcdf!*(lhs,rhs);
       lhs := quotf(lhs,gcd);
       rhs := quotf(rhs,gcd);
@@ -120,24 +122,29 @@ procedure dvfsf_saval2(op,lhs,rhs);
    % [assoc], [nassoc]; [lhs] and [rhs] are nonzero SF's such that
    % [lhs] and [rhs] are relatively prime. Returns a formula
    % equivalent to $[op]([lhs],[rhs])$.
-   begin scalar natf1,w;
-      if dvfsf_p!* > 0 then  % Concrete valuation given.
-         natf1 := dvfsf_sacval(op,lhs,rhs)
-      else <<
+   begin scalar w;
+      if dvfsf_p!* > 0 then <<
+         w := dvfsf_sacval(op,lhs,rhs);
+         if rl_tvalp w then
+            return w;
+         op := dvfsf_op w;
+         lhs := absf dvfsf_arg2l w;
+         rhs := absf dvfsf_arg2r w
+      >> else <<
          w := dvfsf_saaval(op,lhs,rhs);
          if rl_tvalp w then
-            natf1 := w
-         else if w neq 'failed then <<
-            natf1 := w;   % TODO: Repeat the trivial simplifications for [w].
-            op := dvfsf_op natf1;
-            lhs := dvfsf_arg2l natf1;
-            rhs := dvfsf_arg2r natf1
-         >> else
-            natf1 := dvfsf_mk2(op,lhs,rhs)
+            return w;
+         if w neq 'failed then <<
+            op := dvfsf_op w;
+            lhs := absf dvfsf_arg2l w;
+            rhs := absf dvfsf_arg2r w
+         >>
       >>;
-      if (op eq 'assor or op eq 'nassoc) and ordp(rhs,lhs) then
-         natf1 := dvfsf_mk2(op,rhs,lhs);
-      return natf1
+      if lhs = rhs then
+         return if op eq 'sdiv or op eq 'nassoc then 'false else 'true;
+      if (op eq 'assoc or op eq 'nassoc) and ordp(rhs,lhs) then
+         return dvfsf_mk2(op,rhs,lhs);
+      return dvfsf_mk2(op,lhs,rhs)
    end;
 
 procedure dvfsf_sacval(op,lhs,rhs);
@@ -200,7 +207,7 @@ procedure dvfsf_sapfacf(op,lhs,sop);
    % $[op](lhs,0)$; [sop] is a boolean operator. This procedure
    % possibly factorize [lhs] to explode the respective atomic
    % formula.
-   begin scalar w,junct;
+   begin scalar junct;
       junct := if op eq 'equal then 'or else 'and;
       if !*rlsifac and (!*rlsiexpla or !*rlsiexpl and sop = junct) then
          return rl_smkn(junct,
