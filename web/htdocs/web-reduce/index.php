@@ -106,10 +106,19 @@ include '../include/begin-body.php';
                     <a class="nav-link dropdown-toggle" href="#" id="FileMenuLink" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false">File</a>
                     <ul class="dropdown-menu" aria-labelledby="FileMenuLink">
-                        <li><button id="InputFilesMenuItem" class="dropdown-item" type="button">Input from
-                                Files&hellip;</button></li>
+                        <li class="dropdown-item">
+                            <input id="EchoFileInputCheckbox" type="checkbox" checked="checked" />
+                            <label for="EchoFileInputCheckbox">Echo File Input</label>
+                        </li>
+                        <li><button id="InputFileMenuItem" class="dropdown-item" type="button">Input from
+                                File&hellip;</button></li>
+                        <li><hr class="dropdown-divider"></li>
                         <li><button id="OutputFileMenuItem" class="dropdown-item" type="button">Output to
                                 File&hellip;</button></li>
+                        <li><button id="OutputHereMenuItem" class="dropdown-item" type="button">Output Here</button>
+                        </li>
+                        <li><button id="OutputOpenMenuItem" class="dropdown-item" type="button">Output to Open
+                                File</button></li>
                         <li><button id="ShutFileMenuItem" class="dropdown-item" type="button">Shut Output File</button>
                         </li>
                     </ul>
@@ -185,11 +194,12 @@ include '../include/begin-body.php';
         body, pre {font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;}
         pre {white-space: pre-wrap; margin: 0; font-size: 14px;}
         pre.info {background-color: yellow;}
+        pre.warning {background-color: #ffa50040;} /* orange, 1/4 opaque */
+        pre.error {background-color: #ff000040;} /* red, 1/4 opaque */
     </style>
     <script>MathJax = { tex: { macros: { "*": "\\," } } };</script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 </head>
-<body>REDUCE is loading. Please wait&hellip;</body>
 </html>'>
 </iframe>
 
@@ -200,12 +210,9 @@ include '../include/begin-body.php';
 <div id="buttons">
     <button id="EarlierButton" type="button" disabled="disabled"
         title="Select earlier keyboard input. Keyboard Shortcut: Control+UpArrow.">▲ Earlier Input</button>
-    <button id="SendInputButton" type="button"
-        title="Send the input above to REDUCE all at once, terminating with a semicolon if necessary. Keyboard Shortcut: Control+Enter. (Also hold Shift to prevent auto-termination.)">Send
+    <button id="SendInputButton" type="button" title="Send the input above to REDUCE, terminating with a semicolon if necessary.
+Keyboard Shortcut: Control+Enter. (Also hold Shift to prevent auto-termination.)">Send
         Input</button>
-    <button id="SendStatementsButton" type="button" style="display: none;"
-        title="Send the input above to REDUCE statement-by-statement, terminating with a semicolon if necessary. (Hold Shift to prevent auto-termination.)">Send
-        Statements</button>
     <button id="LaterButton" type="button" disabled="disabled"
         title="Select later keyboard input. Keyboard Shortcut: Control+DownArrow.">▼ Later Input</button>
 </div>
@@ -220,7 +227,7 @@ include '../include/begin-body.php';
 
 <script src="Main.js"></script>
 <script src="InputEditor.js"></script>
-<script src="FileMenu.js"></script>
+<script src="FileMenu.js" type="module"></script>
 
 <!-- Modal Dialogues -->
 <?php

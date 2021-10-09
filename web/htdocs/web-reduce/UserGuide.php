@@ -6,17 +6,17 @@ include '../include/begin-body.php';
 ?>
 <h2>Contents</h2>
 <ul>
-    <li><a href="#MainPage">The Main Page</a></li>
-    <li><a href="#REDUCEMenu">The REDUCE Menu</a></li>
-    <li><a href="#FileMenu">The File Menu</a></li>
-    <li><a href="#ViewMenu">The View Menu</a></li>
-    <li><a href="#TemplatesMenu">The Templates Menu</a></li>
-    <li><a href="#FunctionsMenu">The Functions Menu</a></li>
-    <li><a href="#HelpMenu">The Help Menu</a></li>
+    <li><a href="#MainPage">Main Page</a></li>
+    <li><a href="#REDUCEMenu">REDUCE Menu</a></li>
+    <li><a href="#FileMenu">File Menu</a></li>
+    <li><a href="#ViewMenu">View Menu</a></li>
+    <li><a href="#TemplatesMenu">Templates Menu</a></li>
+    <li><a href="#FunctionsMenu">Functions Menu</a></li>
+    <li><a href="#HelpMenu">Help Menu</a></li>
     <li><a href="#QueryString">Controlling Web REDUCE via the URL Query String</a></li>
 </ul>
 
-<h2 id="MainPage">The Main Page</h2>
+<h2 id="MainPage">Main Page</h2>
 
 <p>
     Web REDUCE normally starts loading as soon as its main page is
@@ -25,10 +25,10 @@ include '../include/begin-body.php';
     particular browser or after an update to the Web REDUCE engine, in
     which case there may be a noticeable pause. Web REDUCE will stop
     when you close its main page; it is not necessary to explicitly
-    terminate REDUCE.  However, you can stop and start Web REDUCE by
+    terminate REDUCE. However, you can stop and start Web REDUCE by
     using the <a href="#REDUCEMenu">REDUCE Menu</a>, and stop Web
     REDUCE by executing the command <code>BYE</code> or <code>QUIT</code>,
-    as usual.  To fully reset and restart Web REDUCE just reload its
+    as usual. To fully reset and restart Web REDUCE just reload its
     main page.
 </p>
 <p>
@@ -108,115 +108,169 @@ include '../include/begin-body.php';
     and the <em>Earlier Input</em> and <em>Later Input</em> actions
     are disabled unless there is earlier or later input, respectively.
 </p>
+<p>
+    Holding down the <em>Alt</em> key during any of the above input gestures
+    causes Web REDUCE to treat the keyboard input like file input with
+    echo enabled, meaning that the input is echoed by REDUCE so that
+    input statements and their output are interleaved. This only affects
+    multi-statement input.
+</p>
 
-<h2 id="REDUCEMenu">The REDUCE Menu</h2>
+<h2 id="REDUCEMenu">REDUCE Menu</h2>
 <p>
     The <em>REDUCE</em> menu provides the following items:
 </p>
-<h3>Start REDUCE</h3>
-<p>
-    Selecting this item clears the Input/Output Display and then
-    starts Web REDUCE, which displays the usual CSL REDUCE start-up
-    message.  It is disabled if Web REDUCE is already running.
-</p>
-<h3>Stop REDUCE</h3>
-<p>
-    Selecting this item stops Web REDUCE and displays the message
-    "REDUCE stopped".  It is disabled if Web REDUCE is not running.
-    Executing either of the usual commands <code>BYE</code> or
-    <code>QUIT</code> should have exactly the same effect.
-</p>
-<h3>Clear I/O Display</h3>
-<p>
-    Selecting this item clears the Input/Output Display, but has no
-    other effect.
-</p>
-<h3>Print I/O Display</h3>
-<p>
-    Selecting this item prints the Input/Output Display, but has no
-    other effect.  It uses the normal printing facilities provided by
-    the web browser, and prints the whole of the current contents of
-    the Input/Output Display, not just the visible part.  The printed
-    version should look more-or-less identical to what is shown on the
-    screen, including colour and typeset mathematics if enabled. This
-    is, of course, subject to a suitable printer setup, but it seems
-    to work well on Windows 10 outputting to a PDF file.
-</p>
+<dl>
+    <dt>Start REDUCE</dt>
+    <dd>
+        Selecting this item clears the Input/Output Display and then
+        starts Web REDUCE, which displays the usual CSL REDUCE start-up
+        message. It is disabled if Web REDUCE is already running.
+    </dd>
+    <dt>Stop REDUCE</dt>
+    <dd>
+        Selecting this item stops Web REDUCE and displays the message
+        "REDUCE stopped". It is disabled if Web REDUCE is not running.
+        Executing either of the usual commands <code>BYE</code> or
+        <code>QUIT</code> should have exactly the same effect.
+    </dd>
+    <dt>Clear I/O Display</dt>
+    <dd>
+        Selecting this item clears the Input/Output Display, but has no
+        other effect.
+    </dd>
+    <dt>Print I/O Display</dt>
+    <dd>
+        Selecting this item prints the Input/Output Display, but has no
+        other effect. It uses the normal printing facilities provided by
+        the web browser, and prints the whole of the current contents of
+        the Input/Output Display, not just the visible part. The printed
+        version should look more-or-less identical to what is shown on the
+        screen, including colour and typeset mathematics if enabled. This
+        is, of course, subject to a suitable printer setup, but it seems
+        to work well on Windows 10 outputting to a PDF file.
+    </dd>
+</dl>
 
-<h2 id="FileMenu">The File Menu</h2>
+<h2 id="FileMenu">File Menu</h2>
 <p>
     The <em>File</em> menu uses the experimental
-    <a href="https://web.dev/file-system-access/">File System Access API</a>,
-    which is only supported by
+    <a href="https://web.dev/file-system-access/">File System Access API</a> provided by
     <a href=https://en.wikipedia.org/wiki/Chromium_(web_browser)>Chromium-based browsers</a>
-    on desktop platforms.  Hence, this menu is currently available in
-    desktop browsers such as Chrome, Edge, and Opera, but not in
-    Firefox.  It is enabled only when Web REDUCE is running, and
-    provides the following items:
+    such as Chrome, Edge, and Opera on desktop platforms, which works well. On other browsers,
+    such as Firefox, Safari and on mobile platforms, much cruder facilities have to be used, which work much less well.
+    <strong>If you intend to use file input or output then I recommend that you use a Chromium-based browsers on a
+        desktop platform!</strong>
+    The <em>File</em> menu is enabled only when Web REDUCE is running, and provides the following items:
 </p>
-<h3>Input from Files&hellip;</h3>
-<p>
-    Selecting this item displays a file picker that allows one or more
-    files to be selected and input into Web REDUCE.
-    <strong>Beware that the effect of this is as if the file contents
-        were typed or pasted into the input editor and then sent to
-        Web REDUCE all together.  Hence, Web REDUCE echoes all the
-        file input first and then displays all the resulting output.
-        By contrast, the REDUCE IN command interleaves input and
-        output.  Providing a better emulation of the REDUCE IN command
-        is a high priority!</strong>
-</p>
-<h3>Output to File&hellip;</h3>
-<p>
-    Selecting this item displays a file picker that allows a file to
-    be selected and output from Web REDUCE to be sent to it. It also
-    disables typeset mathematics output temporarily so that the
-    contents of the output file should be plain ASCII text.  This is
-    essentially how the REDUCE OUT command works. However, Web REDUCE
-    currently supports only one open output file at a time and there
-    is no facility to switch output between an open output file and
-    the screen.
-</p>
-<h3>Shut Output File</h3>
-<p>
-    Selecting this item closes the current output file and directs
-    output back to the screen.  It is enabled only when an output file
-    is in effect.  This is essentially how the REDUCE SHUT command
-    works, except that the latter requires that you specify the file
-    to shut.
-</p>
+<dl>
+    <dt>Echo File Input</dt>
+    <dd>
+        When this check box is checked, input files are echoed to the
+        screen or to the output file if one is active. It is checked
+        by default.
+    </dd>
+    <dt>Input from File&hellip;</dt>
+    <dd>
+        Selecting this item displays a file picker that allows a file
+        to be selected and input into Web REDUCE. This emulates the
+        REDUCE <code>IN</code> command, except that Web REDUCE
+        currently supports only one input file at a time and files
+        need not be terminated with <code>;end;</code> (although this
+        should do no harm).
+        <strong>Note that currently when input is from a file it is
+            never coloured and only typeset mathematical output is
+            coloured if I/O Colouring is enabled.</strong>
+        Web REDUCE displays an information message that it is now
+        inputting from the specified file.
+    </dd>
+    <dt>Output to File&hellip;</dt>
+    <dd>
+        Selecting this item displays a dialogue that allows a file
+        to be selected and output from Web REDUCE to be sent to it.
+        It is disabled when an output file is open. File output disables
+        typeset mathematics output temporarily so that the contents of
+        the output file should be plain ASCII text. This emulates the
+        REDUCE <code>OUT</code> command, except that Web REDUCE
+        currently supports only one open output file at a time. Web
+        REDUCE displays an information message that it is now
+        outputting to the specified file.
+    </dd>
+    <dd>
+        On Chromium-based desktop browsers, the normal file picker is used to select an output file, and if it already
+        exists you can choose to overwrite it. On other browsers, a dialogue allows the default output file name to be
+        edited, but the file will be output to a location determined by your browser, which you may be able to configure
+        as one of your browser's settings. Also, your browser's normal download dialogue will appear when you shut the
+        output file, which you must acknowledge appropriately, because saving the output file is unavoidably emulated as
+        a download. If the output file already exists then the new file will be automatically renamed and the existing
+        file will not be overwritten.
+    </dd>
+    <dt>Output Here</dt>
+    <dd>
+        Selecting this item redirects output to the terminal, without
+        closing the output file. It is enabled only when output is
+        directed to a file. This emulates the REDUCE <code>OUT T</code> command.
+        Web REDUCE displays an information message that it is now
+        outputting to the terminal.
+    </dd>
+    <dt>Output to Open File</dt>
+    <dd>
+        Selecting this item redirects output to the previously
+        selected output file. It is enabled only when output is
+        redirected from a file back to the terminal. This emulates the
+        REDUCE <code>OUT</code> command specifying the previously
+        selected output file, except that Web REDUCE currently does
+        not require (or allow) you to specify the file, since only one
+        output file can be open. Web REDUCE displays an information
+        message that it is now outputting to the specified file.
+    </dd>
+    <dt>Shut Output File</dt>
+    <dd>
+        Selecting this item closes the current output file and directs
+        output back to the terminal. It is enabled only when an output
+        file is open. This emulates the REDUCE <code>SHUT</code> command,
+        except that Web REDUCE currently does not require (or allow)
+        you to specify the file to shut, since only one output file
+        can be open. Web REDUCE displays an information message that
+        it is now outputting to the terminal.
+    </dd>
+</dl>
 
-<h2 id="ViewMenu">The View Menu</h2>
+<h2 id="ViewMenu">View Menu</h2>
 <p>
     The <em>View</em> menu provides the following items:
 </p>
-<h3>I/O Colouring</h3>
-<p>
-    Selecting this item causes Web REDUCE to display input coloured
-    red and output coloured blue in the Input/Output Display;
-    otherwise the default colour (normally black) is used for both
-    input and output.
-</p>
-<h3>Typeset Maths</h3>
-<p>
-    Selecting this item causes Web REDUCE to display algebraic-mode
-    mathematical output more-or-less as it would be typeset. Output
-    display will be significantly faster when Typeset Maths is turned
-    off. Typeset output should appear very similar to that displayed
-    by the CSL REDUCE GUI and <a href="https://www.texmacs.org/">TeXmacs</a>
-    since it is generated by the same REDUCE code, although in Web
-    REDUCE it is displayed using the
-    <a href="https://www.mathjax.org">MathJax</a> JavaScript library.
-    Right-clicking on typeset math output pops up the MathJax context
-    menu.
-</p>
-<h3>Centre Typeset Maths</h3>
-<p>
-    Selecting this item causes Web REDUCE to display typeset maths
-    centred horizontally; otherwise it is left justified.
-</p>
+<dl>
+    <dt>I/O Colouring</dt>
+    <dd>
+        When this check box is checked, Web REDUCE displays input coloured
+        red and output coloured blue in the Input/Output Display;
+        otherwise the default colour (normally black) is used for both
+        input and output. It is checked by default.
+    </dd>
+    <dt>Typeset Maths</dt>
+    <dd>
+        When this check box is checked, Web REDUCE displays algebraic-mode
+        mathematical output more-or-less as it would be typeset.
+        It is checked by default. Output
+        display will be significantly faster when Typeset Maths is turned
+        off. Typeset output should appear very similar to that displayed
+        by the CSL REDUCE GUI and <a href="https://www.texmacs.org/">TeXmacs</a>
+        since it is generated by the same REDUCE code, although in Web
+        REDUCE it is displayed using the
+        <a href="https://www.mathjax.org">MathJax</a> JavaScript library.
+        Right-clicking on typeset math output pops up the MathJax context
+        menu.
+    </dd>
+    <dt>Centre Typeset Maths</dt>
+    <dd>
+        When this check box is checked, Web REDUCE displays typeset maths
+        centred horizontally; otherwise it is left justified.
+        It is checked by default.
+    </dd>
+</dl>
 
-<h2 id="TemplatesMenu">The Templates Menu</h2>
+<h2 id="TemplatesMenu">Templates Menu</h2>
 
 <p>
     The <em>Templates</em> menu facilitates construction of structured
@@ -259,37 +313,39 @@ include '../include/begin-body.php';
 <p>
     The <em>Templates</em> menu provides the following items:
 </p>
-<h3>Derivative&hellip;</h3>
-<p>
-    This template supports (partial) differentiation involving up to
-    three independent variables, each to arbitrary order. The orders
-    must be explicit positive integers and the total order
-    automatically updates to reflect the number of independent
-    variables and their orders. If an order is omitted then it
-    defaults to 1. At least one independent variable is required but
-    others are optional. The dependent variable defaults to
-    <em>ws</em> and the first independent variable defaults to
-    <em>x</em>, but both can be changed.
-</p>
-<h3>Integral&hellip;</h3>
-<p>
-    This template supports both indefinite and definite integration: if
-    both limits are omitted then the integral is indefinite; if both
-    limits are specified then the integral is definite. The integrand
-    defaults to <em>ws</em> and the integration variable defaults
-    to <em>x</em>, but both can be changed.
-</p>
-<p>
-    By default, the template provides a single integral, but if you
-    enter another integration variable in a box to the right of the
-    primary integration variable then an additional integral appears
-    wrapping the previous integral, thus supporting double and triple
-    integrals. Matching &int; and <em>d</em> symbol pairs have the
-    same colour (blue, green or red) to facilitate adding limits to
-    the right &int; symbol.
-</p>
+<dl>
+    <dt>Derivative&hellip;</dt>
+    <dd>
+        This template supports (partial) differentiation involving up to
+        three independent variables, each to arbitrary order. The orders
+        must be explicit positive integers and the total order
+        automatically updates to reflect the number of independent
+        variables and their orders. If an order is omitted then it
+        defaults to 1. At least one independent variable is required but
+        others are optional. The dependent variable defaults to
+        <em>ws</em> and the first independent variable defaults to
+        <em>x</em>, but both can be changed.
+    </dd>
+    <dt>Integral&hellip;</dt>
+    <dd>
+        This template supports both indefinite and definite integration: if
+        both limits are omitted then the integral is indefinite; if both
+        limits are specified then the integral is definite. The integrand
+        defaults to <em>ws</em> and the integration variable defaults
+        to <em>x</em>, but both can be changed.
+    </dd>
+    <dd>
+        By default, the template provides a single integral, but if you
+        enter another integration variable in a box to the right of the
+        primary integration variable then an additional integral appears
+        wrapping the previous integral, thus supporting double and triple
+        integrals. Matching &int; and <em>d</em> symbol pairs have the
+        same colour (blue, green or red) to facilitate adding limits to
+        the right &int; symbol.
+    </dd>
+</dl>
 
-<h2 id="FunctionsMenu">The Functions Menu</h2>
+<h2 id="FunctionsMenu">Functions Menu</h2>
 
 <p>
     The <em>Functions</em> menu facilitates access to some of the
@@ -314,57 +370,61 @@ include '../include/begin-body.php';
 <p>
     The <em>Functions</em> menu provides the following items:
 </p>
-<h3>Exp, Log, Power, etc&hellip;</h3>
-<p>
-    This provides the exponential function, various logarithms, power
-    and roots (surds or radicals), factorial and binomial
-    coefficients, and the hypot and atan<sub>2</sub> functions.
-</p>
-<h3>Gamma &amp; Beta Functions, etc&hellip;</h3>
-<p>
-    This provides the Gamma, Beta, digamma, polygamma, normalized
-    incomplete Gamma and Beta, and dilogarithm functions, Pochhammer's
-    symbols, binomial coefficients and the Riemann zeta function.
-</p>
+<dl>
+    <dt>Exp, Log, Power, etc&hellip;</dt>
+    <dd>
+        This provides the exponential function, various logarithms, power
+        and roots (surds or radicals), factorial and binomial
+        coefficients, and the hypot and atan<sub>2</sub> functions.
+    </dd>
+    <dt>Gamma &amp; Beta Functions, etc&hellip;</dt>
+    <dd>
+        This provides the Gamma, Beta, digamma, polygamma, normalized
+        incomplete Gamma and Beta, and dilogarithm functions, Pochhammer's
+        symbols, binomial coefficients and the Riemann zeta function.
+    </dd>
+</dl>
 
-<h2 id="HelpMenu">The Help Menu</h2>
+<h2 id="HelpMenu">Help Menu</h2>
 
 <p>
     The <em>Help</em> menu provides the following items, which all
     open in a new browser tab:
 </p>
-<h3>Web REDUCE User Guide</h3>
-<p>
-    This document.
-</p>
-<h3>REDUCE Manual</h3>
-<p>
-    The HTML version of the REDUCE Manual.
-</p>
-<h3>About Run-REDUCE</h3>
-<p>
-    Information about Web REDUCE, including its limitations.
-</p>
+<dl>
+    <dt>Web REDUCE User Guide</dt>
+    <dd>
+        This document.
+    </dd>
+    <dt>REDUCE Manual</dt>
+    <dd>
+        The HTML version of the REDUCE Manual.
+    </dd>
+    <dt>About Run-REDUCE</dt>
+    <dd>
+        Information about Web REDUCE, including its limitations.
+    </dd>
+</dl>
 
-<h2 id="QueryString">Controlling Web REDUCE via the URL Query String</h2>
+<h2 id="QueryString">Controlling Web REDUCE via the URL</h2>
 
 <ul>
     <li>
         If the main Web REDUCE page is opened with the query string
-        <code>?noautorun</code>, i.e. <code>/web-reduce?noautorun</code>,
+        <code>?noautorun</code> appended to the URL, i.e. <code>/web-reduce/?noautorun</code>,
         then Web REDUCE is not automatically run, but the web page is
         otherwise set up normally.
     </li>
     <li>
         If the main Web REDUCE page is opened with the query string
-        <code>?debug</code>, i.e. <code>/web-reduce?debug</code>, then
-        input to and output from REDUCE is logged to your web browser's
+        <code>?debug</code> appended to the URL, i.e. <code>/web-reduce/?debug</code>, then
+        input to and output from REDUCE is logged to the web browser's
         JavaScript console (by calling <code>console.log()</code>).
         This facility is intended for developers.
     </li>
 </ul>
 
-<address>Francis Wright, September 2021</address>
+<address>Francis Wright, October 2021</address>
 </div><!-- opened in begin-body.php -->
 <?php include '../include/footer.php'; ?>
 </body>
