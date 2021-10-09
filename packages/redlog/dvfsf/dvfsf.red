@@ -47,7 +47,7 @@ exports dvfsf_enter,dvfsf_exit,dvfsf_simpterm,dvfsf_prepat,dvfsf_resimpat,
    dvfsf_eqnrhskernels,dvfsf_structat,dvfsf_ifstructat,dvfsf_termmlat,
    dvfsf_explats,dvfsf_mkcanonic;
 
-fluid '(!*rlverbose dvfsf_p!* !*rlsiexpl !*rlsiexpla !*rlsifac);
+fluid '(!*rlverbose dvfsf_p!* !*rlsiexpl !*rlsiexpla !*rlsifac !*rlbnfsac);
 
 flag('(dvfsf),'rl_package);
 
