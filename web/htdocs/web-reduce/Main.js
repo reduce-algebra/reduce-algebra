@@ -17,22 +17,21 @@ inputTextArea.focus();
 const earlierButton = document.getElementById('EarlierButton');
 earlierButton.disabled = true;
 const sendInputButton = document.getElementById('SendInputButton');
-const sendStatementsButton = document.getElementById('SendStatementsButton');
 const laterButton = document.getElementById('LaterButton');
 laterButton.disabled = true;
 const fileMenuLink = document.getElementById("FileMenuLink");
-if (typeof showOpenFilePicker === "undefined") fileMenuLink.hidden = true;
 const templatesMenuLink = document.getElementById("TemplatesMenuLink");
 const functionsMenuLink = document.getElementById("FunctionsMenuLink");
 let ioDisplayWindow, ioDisplayHead, ioDisplayBody;
 let noOutput = true, hideOutput = false;
 let worker;
 
+var inputFromKbd, outputToFile, outputToArray; // assigned in "FileMenu.js" & "InputEditor.js"
+
 function setRunningState(running) {
     startREDUCEMenuItem.disabled = running;
     stopREDUCEMenuItem.disabled = !running;
     sendInputButton.disabled = !running;
-    sendStatementsButton.disabled = !running;
     typesetMathsCheckbox.disabled = !running;
     fileMenuLink.classList.toggle("disabled", !running);
     templatesMenuLink.classList.toggle("disabled", !running);
@@ -88,12 +87,18 @@ function reduceWebMessageHandler(event) {
     }
     if (event.data.channel === 'stdout') {
         let output = event.data.line;
-        if (writable) { // Defined in "FileMenu.js".
-            // Some line termination is necessary, but this produces more vertical space than it should!
-            writable.write(output);
-            writable.write("\n");
-            return;
-        }
+        try {
+            if (outputToFile) { // assigned in "FileMenu.js"
+                // Some line termination is necessary, but this produces more vertical space than it should!
+                outputToFile.write(output);
+                outputToFile.write("\n");
+                return;
+            } else if (outputToArray) { // assigned in "FileMenu.js"
+                outputToArray.push(output);
+                outputToArray.push("\n");
+                return;
+            }
+        } catch (ignore) { }
         // If an empty string is passed (ie asking for a blank line of output)
         // it gets lost in the display, so output a single space character.
         if (output == '') {
@@ -125,10 +130,16 @@ function reduceWebMessageHandler(event) {
             }
             else {
                 // Textual rather than mathematical output from REDUCE gets inserted as is.
-                sendPlainTextToIODisplay(output, "output");
+                // Highlight errors and warnings in output:
+                const match = output.match(/^\*{3}(\*{2})?/);
+                if (match) {
+                    sendPlainTextToIODisplay(output, match[1] ? "error" : "warning");
+                } else {
+                    // Do not colour if input from file because this may be echoed input:
+                    sendPlainTextToIODisplay(output, inputFromKbd && "output");
+                }
             }
         }
-        sendNextStatementAndEcho();
     }
 }
 
@@ -138,7 +149,7 @@ function reduceWebMessageHandler(event) {
  * @param {*} event
  * @returns null
  */
-function reduceWebErrorHandler(event) { console.log(event.message, event) }
+function reduceWebErrorHandler(event) { console.error(event.message, event) }
 
 function sendToReduce(str) {
     debug && console.log(` INPUT: ${str}`); // for debugging
@@ -158,6 +169,7 @@ function sendToReduce(str) {
 }
 
 function startREDUCE() {
+    ioDisplayBody.innerHTML = "REDUCE is loading. Please wait&hellip;";
     worker = new Worker("reduce.web.js");
     worker.onmessage = reduceWebMessageHandler;
     worker.onerror = reduceWebErrorHandler;
@@ -176,17 +188,9 @@ function stopREDUCE() {
 // Utility Functions
 // *****************
 
-function sendToReduceAndEcho(text, fromFile) {
-    if (fromFile && writable) // Defined in "FileMenu.js".
-        writable.write(text);
-    else
-        sendPlainTextToIODisplay(text, "input");
+function sendToReduceAndEcho(text) {
+    sendPlainTextToIODisplay(text, "input");
     sendToReduce(text);
-}
-
-function sendNextStatementAndEcho() {
-    if (inputStatements.length > 0)
-        sendToReduceAndEcho(inputStatements.shift());
 }
 
 const loadedPackages = new Set(); // should probably be in a closure!
