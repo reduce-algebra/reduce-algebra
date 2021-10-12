@@ -264,7 +264,7 @@ jacobisnrules :=
 %-------------------------------------------------
         jacobisn(~u,~m) => num_elliptic(num_jacobisn, u, m)
                 when lisp !*rounded and numberp repart u and numberp repart m
-                     and numberp part m and numberp impart m
+                     and numberp impart u and numberp impart m
 %                           when lisp !*rounded and numberp u
 %                           and numberp m and impart(u) = 0
 
