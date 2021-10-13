@@ -266,7 +266,7 @@ if __name__ == "__main__":
     data = Benchmarks().from_file_system(args.regressions, args.timings)
     summary = data.summarize()
     # Sorting before selecting allows to sort w.r.t. unselected columns
-    if args.sort == "cpu":
+    if args.sort == "cpu_now":
         data.sort(column="cpu_now_mean")
     elif args.sort == "cpu_ratio":
         data.sort(column="cpu_ratio_mean")
