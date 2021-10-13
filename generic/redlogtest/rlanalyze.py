@@ -4,6 +4,7 @@ import argparse
 import datetime
 import json
 import os
+import pandas
 import pprint
 import statistics
 import sys
@@ -77,28 +78,36 @@ class Benchmark(dict):
                      "gc_ratio_csl": gc_ratio_csl, "gc_ratio_psl": gc_ratio_psl, "gc_ratio_mean": gc_ratio_mean})
         return self
 
-    def html(self, columns: list) -> str:
+    def select(self, columns: list):
+        return Benchmark({key: self[key] for key in columns})
+
+    def html(self) -> str:
         def _to_percent(x: float) -> str:
             try:
                 return str(round(100 * x)) + "%"
             except (OverflowError, ValueError):
                 return str(x)
         row = '<tr>'
-        for column in columns:
-            if column == "name":
+        for key, value in self.items():
+            if key == "name":
                 alignment = "left"
             else:
                 alignment = "right"
-            if "_ratio_" in column:
-                value = _to_percent(self[column])
+            if "_ratio_" in key:
+                data = _to_percent(value)
             else:
-                value = str(self[column])
-            row += '<td align="' + alignment + '">' + value + '</td>'
+                data = str(value)
+            row += '<td align="' + alignment + '">' + data + '</td>'
         row += '</tr>'
         return row
 
 class Benchmarks(list):
-    def __init__(self, regressions: str, timings: str):    
+    def __init__(self, init: list = None):
+        super().__init__(self)
+        if init:
+            self.extend(init)
+
+    def from_file_system(self, regressions: str, timings: str):
         for path, directories, files in os.walk(regressions):
             for file in files:
                 benchmark = Benchmark()
@@ -114,6 +123,7 @@ class Benchmarks(list):
                 benchmark.update_delta_data()
                 benchmark.update_ratio_data()
                 self.append(benchmark)
+        return self
 
     def summarize(self) -> Benchmark:
         summary = Benchmark({"name": "Summary"})
@@ -124,39 +134,24 @@ class Benchmarks(list):
         summary.update_ratio_data()
         return summary
 
+    def select(self, columns: list):
+        return Benchmarks(list(map(lambda benchmark: benchmark.select(columns), self)))
+
     def sort(self, *, column: str, reverse: bool = False):
         super().sort(key=lambda x: x[column], reverse=reverse)
         return self
 
-    def html_view(self, select: str, *, full: bool = False) -> str:
-        if full:
-            html_doc = '<html>' + os.linesep + '<head>' + os.linesep + '<link '
-            html_doc += 'href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" '
-            html_doc += 'rel="stylesheet" '
-            html_doc += 'integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" '
-            html_doc += 'crossorigin="anonymous">' + os.linesep
-            html_doc += '</head>' + os.linesep + '<body>'
-        html_doc += '<table class="table table-bordered table-striped">' + os.linesep
-        html_doc += '<caption>All times in ms</caption>' + os.linesep
-        if select in ["cpu", None]:
-            html_doc += self.html_view_1(["name", "cpu_ref_csl", "cpu_now_csl", "cpu_delta_csl",\
-                "cpu_ratio_csl", "cpu_ref_psl", "cpu_now_psl", "cpu_delta_psl", "cpu_ratio_psl",\
-                "cpu_ref_mean", "cpu_now_mean", "cpu_delta_mean", "cpu_ratio_mean"])
-        if select in ["gc", None]:
-            html_doc += self.html_view_1(["name", "gc_ref_csl", "gc_now_csl", "gc_delta_csl",\
-                "gc_ratio_csl", "gc_ref_psl", "gc_now_psl", "gc_delta_psl", "gc_ratio_psl",\
-                "gc_ref_mean", "gc_now_mean", "gc_delta_mean", "gc_ratio_mean"])
-        html_doc += '</table>' + os.linesep
-        if full:
-            html_doc += '<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" '
-            html_doc += 'integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" '
-            html_doc += 'crossorigin="anonymous"></script>' + os.linesep
-            html_doc += '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" '
-            html_doc += 'integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" '
-            html_doc += 'crossorigin="anonymous"></script>' + os.linesep + '</body>' + os.linesep + '</html>'
-        return html_doc
+    def txt_view(self, summary: Benchmark) -> str:
+        pandas.set_option('display.max_rows', None)
+        pandas.set_option('display.expand_frame_repr', False)
+        print(summary)
+        self.extend([summary])
+        names = list(map(lambda benchmark: benchmark["name"], self))
+        for benchmark in self:
+            del benchmark["name"]
+        return pandas.DataFrame(self, names)
 
-    def html_view_1(self, columns: list) -> str:
+    def html_view(self, summary: Benchmark, *, full: bool = False) -> str:
         def _translate(column: str) -> str:
             if "ref" in column:
                 if "cpu" in column:
@@ -176,57 +171,119 @@ class Benchmarks(list):
                 return '&Delta;<sub>rel</sub>'
             else:
                 return column
-        table = ''
-        table += '<thead>' + os.linesep
-        table += '<tr>'
-        table += '<th style="text-align:left;">Benchmark</th>'
-        for section in "CSL", "PSL", "Mean":
-            table += '<th style="text-align:center;" colspan="4">' + section + '</th>'
-        table += '</tr>' + os.linesep
-        table += '<tr>'
-        for column in columns:
-            table += '<th style="text-align: right;">'
-            table += _translate(column)
-            table += '</th>'
-        table += '</tr>' + os.linesep
-        table += '</thead>' + os.linesep
-        table += '<tbody>' + os.linesep
+        if full:
+            html_doc = html_begin()
+        else:
+            html_doc = ''
+        html_doc += '<table class="table table-bordered table-striped table-sm">' + os.linesep
+        html_doc += '<caption>Created by rlanalyze.py on ' 
+        html_doc += datetime.date.today().strftime("%Y-%m-%d")
+        html_doc += '. All times in ms</caption>' + os.linesep
+        html_doc += '<thead>' + os.linesep
+        html_doc += '<tr>'
+        if len(self[0]) == 13:
+            html_doc += '<th style="text-align:left;">Benchmark</th>'
+            for section in "CSL", "PSL", "Mean":
+                html_doc += '<th style="text-align:center;" colspan="4">' + section + '</th>'
+        elif len(self[0]) == 25:
+            html_doc += '<th style="text-align:left;">Benchmark</th>'
+            for section in "CSL", "PSL", "Mean", "CSL", "PSL", "Mean":
+                html_doc += '<th style="text-align:center;" colspan="4">' + section + '</th>'
+        html_doc += '</tr>' + os.linesep
+        html_doc += '<tr>'
+        for column in self[0].keys():
+            html_doc += '<th style="text-align: right;">'
+            if len(self[0]) in {13, 25}:
+                html_doc += _translate(column)
+            else:
+                html_doc += column
+            html_doc += '</th>'
+        html_doc += '</tr>' + os.linesep
+        html_doc += '</thead>' + os.linesep
+        html_doc += '<tbody>' + os.linesep
         for benchmark in self:
-            table += benchmark.html(columns)
-            table += os.linesep
-        table += '</tbody>' + os.linesep
-        table += '<thead>' + os.linesep
-        table += self.summarize().html(columns) + os.linesep
-        table += '</thead>' + os.linesep
-        return table
+            html_doc += benchmark.html()
+            html_doc += os.linesep
+        html_doc += '</tbody>' + os.linesep
+        html_doc += '<foot>' + os.linesep
+        html_doc += summary.html() + os.linesep
+        html_doc += '</foot>' + os.linesep
+        html_doc += '</table>' + os.linesep
+        if full:
+            html_doc += html_end()
+        return html_doc
+
+def html_begin() -> str:
+    return """<!DOCTYPE html>
+<html>
+<head>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+      crossorigin="anonymous">
+</head>
+<body>
+"""
+
+def html_end() -> str:
+    return """<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" 
+        integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" 
+        crossorigin="anonymous">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/boottrap@5.1.3/dist/js/bootstrap.min.js" 
+        integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9TZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" 
+        crossorigin="anonymous">
+</script>
+</body>
+</html>"""
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Generate a digest of Redlog benchmarking")
+    parser = argparse.ArgumentParser(description="generate a digest of Redlog benchmarking")
     parser.add_argument("regressions", help="the regressions directory (typically inside packages/redlog)")
     parser.add_argument("timings", help="the timing directory (which contains csl-times, psl-times)")
-    parser.add_argument("--format", choices=["txt", "html", "html_table", "csv", "json", "py"],
-        default="txt", help=("output text (default), a full html document, an html table, "
-        "comma-separated values, json, or a python list of dictionaries"))
-    parser.add_argument("--select", choices=["cpu", "gc"], help="include only cpu times or only gc times")
-    parser.add_argument("--sort", choices=["alpha", "speed"], default="names",
-        help="sort alphabetically (default) or by relative mean speedup")
+    parser.add_argument("--columns", choices=["all", "gc"], help="select GC data or full (CPU + GC) data; default is CPU data")
+    parser.add_argument("--format", choices=["html", "html_table", "csv", "json", "py"],
+        help=("output an html table, a full html document, comma-separated values, json, "
+        "or a python list of dictionaries; default is text"))
+    parser.add_argument("--sort", choices=["cpu_now", "cpu_ratio"],
+        help='sort by mean "CPU" time or ratio "Reference CPU" : "CPU"; default is alphabetic sorting by names')
     return parser.parse_args()
+
+def column_list(select_arg: str) -> list:
+    if select_arg == None or select_arg == "cpu":
+        return ["name", "cpu_ref_csl", "cpu_now_csl", "cpu_delta_csl",\
+                "cpu_ratio_csl", "cpu_ref_psl", "cpu_now_psl", "cpu_delta_psl", "cpu_ratio_psl",\
+                "cpu_ref_mean", "cpu_now_mean", "cpu_delta_mean", "cpu_ratio_mean"]
+    elif select_arg == "gc":
+        return ["name", "gc_ref_csl", "gc_now_csl", "gc_delta_csl",\
+                "gc_ratio_csl", "gc_ref_psl", "gc_now_psl", "gc_delta_psl", "gc_ratio_psl",\
+                "gc_ref_mean", "gc_now_mean", "gc_delta_mean", "gc_ratio_mean"]
+    elif select_arg == "all":
+        return [*column_list("cpu"), *column_list("gc")]
 
 if __name__ == "__main__":
     args = parse_args()
-    date = datetime.date.today().strftime("%Y-%m-%d")
-    data = Benchmarks(args.regressions, args.timings)
-    if args.sort == "speed":
+    data = Benchmarks().from_file_system(args.regressions, args.timings)
+    summary = data.summarize()
+    # Sorting before selecting allows to sort w.r.t. unselected columns
+    if args.sort == "cpu":
+        data.sort(column="cpu_now_mean")
+    elif args.sort == "cpu_ratio":
         data.sort(column="cpu_ratio_mean")
+    else:
+        data.sort(column="name")
+    columns = column_list(args.columns)
+    data = data.select(columns)
+    summary = summary.select(columns)
     format = args.format
     if format == "html":
-        print(data.html_view(args.select, full=True))
+        print(data.html_view(summary, full=True))
     elif format == "html_table":
-        print(data.html_view(args.select, full=False))
+        print(data.html_view(summary, full=False))
     elif format == "csv":
         print("not implemented")
-    elif format == "txt":
-        print("not implemented")
+    elif format == None or format == "txt":
+        print(data.txt_view(summary))
     elif format == "json":
         print(json.dumps(data, indent=2))
     elif format == "py":
