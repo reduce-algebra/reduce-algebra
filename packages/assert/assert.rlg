@@ -9,6 +9,11 @@ on1 'assert;
 
 nil
 
+on1 'assert_procedures;
+
+
+nil
+
 
 struct Tag;
 *** struct tag is not checked 
@@ -62,6 +67,10 @@ hugo(1, 1, 'y);
 hugo(1, -1, 'y);
 
 
+Backtrace from top of stack:
+backtrace assert_error assert_check1 hugo errorset!* begin11 
+process!-one!-reduce!-statement begin1a in_list1a in errorset!* begin11 
+process!-one!-reduce!-statement begin1 errorset!* begin 
 
 hugo being entered:
    a1:   1
@@ -69,8 +78,7 @@ hugo being entered:
    a3:   y
 
 ***** assertion `hugo(number, posnumber, tag): dottedpair' is violated by a2 
-(at assert.tst
-:20)
+(at assert.tst:21)
 
 
 assert_uninstall hugo;
@@ -99,13 +107,17 @@ nil
 addsq(simp 'x, numr simp 'x);
 
 
+Backtrace from top of stack:
+backtrace assert_error assert_check1 addsq errorset!* begin11 
+process!-one!-reduce!-statement begin1a in_list1a in errorset!* begin11 
+process!-one!-reduce!-statement begin1 errorset!* begin 
 
 addsq being entered:
    a1:   ((((x . 1) . 1)) . 1)
    a2:   (((x . 1) . 1))
 
 ***** assertion `addsq(sq, sq): sq' is violated by a2 (at 
-assert.tst:29)
+assert.tst:30)
 
 
 algebraic;

@@ -117,7 +117,7 @@
  (compact       "misc"        core      test                 csl psl)
  (dfpart        "misc"        core      test                 csl psl)
  (lie           "misc"        core      test                 csl psl)
- (assert        "assert"                test                 csl psl)
+ (assert        "assert"                                     csl psl)
  (odesolve      "odesolve"    noncore   test                 csl psl)
  (pf            "misc"                  test                 csl psl)
  (trigd         "misc/trigd"            test                 csl psl)
