@@ -51,7 +51,7 @@
 (ds ieeezerop(u)
     % ieee zero may have the sign bit set to indicate -0.0,
     % so shift the leftmost bit off the machine word before comparing with 0
-    (or (weq (wshift (floathiword u) 1) 0)))
+    (weq (wshift (floathiword u) 1) 0))
 
 %(ds ieeemant (f) (wand (floathiword f) 16#fffffffffffff))
 (ds ieeemant (f) (wshift (wshift (floathiword f) 12) -12))

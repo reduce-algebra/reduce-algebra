@@ -1,6 +1,7 @@
 symbolic;
 
 on1 'assert;
+on1 'assert_procedures;
 
 struct Tag;
 struct Posnumber asserted by posnumberp;
