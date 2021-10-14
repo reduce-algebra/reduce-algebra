@@ -62,7 +62,8 @@
 
 (setq bndstksize  20000)
 
-(global '(bndstk bndstkptr bndstkupperbound bndstklowerbound))
+(global '(bndstk bndstkptr bndstkupperbound bndstklowerbound
+	  *dump-bndstk-on-overflow*))
 
 % Binding stack is initialized in the kernel.
 %
@@ -75,7 +76,20 @@
 % Only the macros BndStkID, BndStkVal and AdjustBndStkPtr will be used
 % to access or modify the binding stack and pointer.
 
+(de dump-bndstk ()
+  (prog (x id val)
+    (setq x bndstkptr)
+    (while (wgreaterp x bndstklowerbound)
+      (setq id (bndstkid x) val (bndstkval x))
+      (print id)
+      (setq x (adjustbndstkptr x -1)))
+    (prin2 "Bndstkdepth: ")
+    (print (wquotient (wdifference bndstkptr bndstklowerbound)
+		      (wtimes 2 addressingunitsperitem)))
+    ))
+
 (de bstackoverflow ()
+  (cond (*dump-bndstk-on-overflow* (dump-bndstk)))
   (channelprin2 errout* "***** Binding stack overflow, restarting...")
   (channelwritechar errout* (char eol))
   (reset))
