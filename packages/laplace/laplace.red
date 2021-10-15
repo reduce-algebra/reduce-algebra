@@ -77,12 +77,10 @@ switch lhyp,lmon,ltrig;
 % put('intl,'simpfn,'simpiden);
 % put('one, 'simpfn,'simpiden);
 % put('delta,'simpfn,'simpiden);
-% put('gamma,'simpfn,'simpiden);
 
 if not (gettype 'intl = 'operator) then algebraic operator intl;
 if not (gettype 'one = 'operator) then algebraic operator one;
 if not (gettype 'delta = 'operator) then algebraic operator delta;
-if not (gettype 'gamma = 'operator) then algebraic operator gamma;
 
 %*******************************************************************
 %*                                                                 *
@@ -98,7 +96,6 @@ symbolic procedure lap!-save!-environment();
         get('cos,'opmtch),
         get('sinh,'opmtch),
         get('cosh,'opmtch),
-        get('gamma,'simpfn),
         get('one,'simpfn),
         get('delta,'simpfn),
         get('intl,'simpfn),
@@ -122,7 +119,6 @@ symbolic procedure lap!-restore!-environment(u);
     put('cos,'opmtch, car u); u:=cdr u;
     put('sinh,'opmtch, car u); u:=cdr u;
     put('cosh,'opmtch, car u); u:=cdr u;
-    put('gamma,'simpfn, car u); u:=cdr u;
     put('one,'simpfn, car u); u:=cdr u;
     put('delta,'simpfn, car u); u:=cdr u;
     put('intl,'simpfn, car u); u:=cdr u;
@@ -222,7 +218,6 @@ symbolic procedure simplaplace!*  u;
    !*mcd := !*exp := t;
    kord!*:= 'lp!& . 'il!& . kord!* ;
    put('one,'simpfn,'lpsimp1);
-   put('gamma,'simpfn,'lpsimpg);
    if !*ldone then put('expt,'opmtch,lpexpt!*.get('expt,'opmtch));
    if !*lmon then
     << put('sin,'opmtch, lpse!* . get('sin,'opmtch));
@@ -247,7 +242,6 @@ symbolic procedure simplaplace!*  u;
    for each x in depl!* do
       if 'lp!& memq cdr x then rplacd(x,delete('lp!&,cdr x));
    put('one,'simpfn,'simpiden);
-   put('gamma,'simpfn,'simpiden);
    kord!*:= cddr kord!*;
    put('sin,'opmtch, cdr get('sin,'opmtch) );
    put('cos,'opmtch, cdr get('cos,'opmtch) );
@@ -415,28 +409,6 @@ symbolic procedure  lpsimp1  u ;
  err: if !*lmsg then msgpri("Laplace induces", 'one.u,
           " which is not allowed", nil, 'hold);
    return nil ./ 1;
- end ;
-
-symbolic procedure  lpsimpg  u ;
- % Simplifies gamma(k), if k is rational and semiinteger.
- % U is in prefix form. Returns standard quotient.
- begin  scalar  n,v ;
-   u:= simpcar if flagp('gamma,'full) then cdr u else u;
-      	 % in case Gamma is flagged "full".
-   if denr u neq 1
-     % Maybe we can do better than this.
-     then return mksq(list('gamma,prepsq u),1);
-   u := car u;
-   if domainp u and eqcar(u,'!:rn!:) and (cddr u = 2) % Semiint.
-      then return if (n:=cadr u) = 1
-                     then mksq(list('sqrt,'pi),1)
-                     else if n > 0 then
-    << v:='!:rn!: . difference(n,2) . 2 ;
-     resimp !*t2q ( (list('gamma,rnprep!: v) to 1) .* v ) >>
-                                   else % N negative.
-  resimp !*t2q ( (list('gamma,rnprep!:('!:rn!:.plus(n,2) . 2)) to 1)
-                 .* ('!:rn!:.(-2).(-n)) )
-      else return mksq(list('gamma,prepsq(u./1)),1);
  end ;
 
 symbolic procedure  lpmult1 (u,v,w) ;
@@ -640,7 +612,6 @@ symbolic procedure simpinvlap!*  u ;
  % Make environment for invlap transform.
    !*exp := !*mcd := nil;
    kord!*:= 'il!& . 'lp!& . kord!* ;
-   put('gamma,'simpfn,'lpsimpg);
    put('one,'simpfn,'ilsimp1);
    ilvar!*:=v; if v neq 'il!& then kord!*:=v.kord!*;
    for each x in depl!* do if v memq cdr x then rplacd(x,'il!& . cdr x);
@@ -660,7 +631,6 @@ symbolic procedure simpinvlap!*  u ;
  % Restore old env.
    for each x in depl!* do
       if 'il!& memq cdr x then rplacd(x,delete('il!&,cdr x));
-   put('gamma,'simpfn,'simpiden);
    put('one,'simpfn,'simpiden);
    kord!*:= cddr kord!*;
    return u;
