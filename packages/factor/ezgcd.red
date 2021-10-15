@@ -60,7 +60,9 @@ symbolic procedure errorf u;
 <<
 #if (memq 'csl lispsystem!*)
 % Ensure the error is reported and hence can get fixed.
-   enable!-errorset(3, 3);
+   if !*backtrace then <<
+      enable!-backtrace(3);
+      enable!-errorset(3, 3) >>;
 #endif
    rerror(ezgcd,1,list("Factorizer error:",u)) >>;
 
