@@ -4,7 +4,7 @@
 # This version uses emscripten em++ to create JavaScript/WebAssembly versions
 # for use with node (reduce.{js,wasm}) and web browsers (reduce.web.{js,wasm}).
 
-# $Id$
+# $Id: $
 
 # For a FULL bootstrapped build for node you need to go
 #
@@ -125,25 +125,6 @@ bootstrapreduce: bootstrapreduce.js
 # for a copy of Reduce to be run using node but with its "image file" stored
 # as static data within the executable.
 
-.SUFFIXES:	.oo .xo .yo
-
-# I do not set NO_BYTECOUNTS on the .cpp.o target because that is used to
-# make bootstrapreduce.js which can be used for profiling - an action which
-# relies on bytecounts.
-.cpp.o:
-	$(CXX) $(CPPFLAGS) $(NODEOPTS) -c -o $@ $<
-
-.cpp.oo:
-	$(CXX) $(CPPFLAGS) $(NODEOPTS) -DNO_BYTECOUNTS=1 -c -o $@ $<
-
-.cpp.xo:
-	$(CXX) $(CPPFLAGS) -DBUILTIN_IMAGE=1 $(NODEOPTS) -DNO_BYTECOUNTS=1 -c -o $@ $<
-
-# don't use NODEOPTS here, because we want a virtual FS
-.cpp.yo:
-	$(CXX) $(CPPFLAGS) -DBUILTIN_IMAGE=1 -DPROCEDURAL_WASM_XX=1 \
-		$(ASYNCIFY_OPTS) -DNO_BYTECOUNTS=1 -c -o $@ $<
-
 
 # Create the bootstrapreduce.img file
 
@@ -230,113 +211,39 @@ image.cpp: make-image.js reduce.img
 	cp image.cpp ../reduce-image.cpp
 	cp reduce.img ..
 
-allocate.o  allocate.oo  allocate.xo  allocate.yo:  $(S)/allocate.cpp $(HEADERS)
-arith01.o   arith01.oo   arith01.xo   arith01.yo:   $(S)/arith01.cpp $(HEADERS)
-arith02.o   arith02.oo   arith02.xo   arith02.yo:   $(S)/arith02.cpp $(HEADERS)
-arith03.o   arith03.oo   arith03.xo   arith03.yo:   $(S)/arith03.cpp $(HEADERS)
-arith04.o   arith04.oo   arith04.xo   arith04.yo:   $(S)/arith04.cpp $(HEADERS)
-arith05.o   arith05.oo   arith05.xo   arith05.yo:   $(S)/arith05.cpp $(HEADERS)
-arith06.o   arith06.oo   arith06.xo   arith06.yo:   $(S)/arith06.cpp $(HEADERS)
-arith07.o   arith07.oo   arith07.xo   arith07.yo:   $(S)/arith07.cpp $(HEADERS)
-arith08.o   arith08.oo   arith08.xo   arith08.yo:   $(S)/arith08.cpp $(HEADERS)
-arith09.o   arith09.oo   arith09.xo   arith09.yo:   $(S)/arith09.cpp $(HEADERS)
-arith10.o   arith10.oo   arith10.xo   arith10.yo:   $(S)/arith10.cpp $(HEADERS)
-arith11.o   arith11.oo   arith11.xo   arith11.yo:   $(S)/arith11.cpp $(HEADERS)
-arith12.o   arith12.oo   arith12.xo   arith12.yo:   $(S)/arith12.cpp $(HEADERS)
-arith13.o   arith13.oo   arith13.xo   arith13.yo:   $(S)/arith13.cpp $(HEADERS)
-arith14.o   arith14.oo   arith14.xo   arith14.yo:   $(S)/arith14.cpp $(HEADERS)
-bytes1.o    bytes1.oo    bytes1.xo    bytes1.yo:    $(S)/bytes1.cpp $(S)/opnames.cpp $(HEADERS)
-char.o      char.oo      char.xo      char.yo:      $(S)/char.cpp $(HEADERS)
-csl.o       csl.oo       csl.xo       csl.yo:       $(S)/csl.cpp $(HEADERS)
-cslmpi.o    cslmpi.oo    cslmpi.xo    cslmpi.yo:    $(S)/cslmpi.cpp $(S)/mpipack.cpp $(HEADERS)
-cslread.o   cslread.oo   cslread.xo   cslread.yo:   $(S)/cslread.cpp $(HEADERS)
-driver.o    driver.oo    driver.xo    driver.yo:    $(S)/driver.cpp $(HEADERS)
-embedcsl.o  embedcsl.oo  embedcsl.xo  embedcsl.yo:  $(S)/embedcsl.cpp $(S)/csl.cpp $(HEADERS)
-eval1.o     eval1.oo     eval1.xo     eval1.yo:     $(S)/eval1.cpp $(HEADERS)
-eval2.o     eval2.oo     eval2.xo     eval2.yo:     $(S)/eval2.cpp $(HEADERS)
-eval3.o     eval3.oo     eval3.xo     eval3.yo:     $(S)/eval3.cpp $(HEADERS)
-eval4.o     eval4.oo     eval4.xo     eval4.yo:     $(S)/eval4.cpp $(HEADERS)
-fasl.o      fasl.oo      fasl.xo      fasl.yo:      $(S)/fasl.cpp $(HEADERS)
-fns1.o      fns1.oo      fns1.xo      fns1.yo:      $(S)/fns1.cpp $(HEADERS)
-fns2.o      fns2.oo      fns2.xo      fns2.yo:      $(S)/fns2.cpp $(HEADERS)
-fns3.o      fns3.oo      fns3.xo      fns3.yo:      $(S)/fns3.cpp $(HEADERS)
-fwin.o      fwin.oo      fwin.xo      fwin.yo:      $(S)/fwin.cpp $(HEADERS)
-cslgc.o     cslgc.oo     cslgc.xo     cslgc.yo:     $(S)/cslgc.cpp $(HEADERS)
-lisphash.o  lisphash.oo  lisphash.xo  lisphash.yo:  $(S)/lisphash.cpp $(HEADERS)
-isprime.o   isprime.oo   isprime.xo   isprime.yo:   $(S)/isprime.cpp $(HEADERS)
-print.o     print.oo     print.xo     print.yo:     $(S)/print.cpp $(HEADERS)
-restart.o   restart.oo   restart.xo   restart.yo:   $(S)/restart.cpp $(HEADERS)
-sysfwin.o   sysfwin.oo   sysfwin.xo   sysfwin.yo:   $(S)/sysfwin.cpp $(HEADERS)
-termed.o    termed.oo    termed.xo    termed.yo:    $(S)/termed.cpp $(HEADERS)
-inthash.o   inthash.oo   inthash.xo   inthash.yo:   $(S)/inthash.cpp $(HEADERS)
-serialize.o serialize.oo serialize.xo serialize.yo: $(S)/serialize.cpp $(HEADERS)
 
-makeheaders.o: $(S)/makeheaders.cpp
-objtype.o: $(S)/objtype.cpp
+# These implicit pattern rules cover most of the object files:
 
-preserve.o  preserve.oo: $(S)/preserve.cpp $(HEADERS)
-preserve.xo preserve.yo: $(S)/preserve.cpp image.cpp $(HEADERS)
+%.o : $(S)/%.cpp $(HEADERS)
+	$(CXX) $(CPPFLAGS) $(NODEOPTS) -c -o $@ $<
+# I do not set NO_BYTECOUNTS on the %.o target because that is used to
+# make bootstrapreduce.js which can be used for profiling - an action which
+# relies on bytecounts.
 
-u01.oo u01.xo u01.yo: $(S)/u01.cpp $(HEADERS)
-u02.oo u02.xo u02.yo: $(S)/u02.cpp $(HEADERS)
-u03.oo u03.xo u03.yo: $(S)/u03.cpp $(HEADERS)
-u04.oo u04.xo u04.yo: $(S)/u04.cpp $(HEADERS)
-u05.oo u05.xo u05.yo: $(S)/u05.cpp $(HEADERS)
-u06.oo u06.xo u06.yo: $(S)/u06.cpp $(HEADERS)
-u07.oo u07.xo u07.yo: $(S)/u07.cpp $(HEADERS)
-u08.oo u08.xo u08.yo: $(S)/u08.cpp $(HEADERS)
-u09.oo u09.xo u09.yo: $(S)/u09.cpp $(HEADERS)
-u10.oo u10.xo u10.yo: $(S)/u10.cpp $(HEADERS)
-u11.oo u11.xo u11.yo: $(S)/u11.cpp $(HEADERS)
-u12.oo u12.xo u12.yo: $(S)/u12.cpp $(HEADERS)
-u13.oo u13.xo u13.yo: $(S)/u13.cpp $(HEADERS)
-u14.oo u14.xo u14.yo: $(S)/u14.cpp $(HEADERS)
-u15.oo u15.xo u15.yo: $(S)/u15.cpp $(HEADERS)
-u16.oo u16.xo u16.yo: $(S)/u16.cpp $(HEADERS)
-u17.oo u17.xo u17.yo: $(S)/u17.cpp $(HEADERS)
-u18.oo u18.xo u18.yo: $(S)/u18.cpp $(HEADERS)
-u19.oo u19.xo u19.yo: $(S)/u19.cpp $(HEADERS)
-u20.oo u20.xo u20.yo: $(S)/u20.cpp $(HEADERS)
-u21.oo u21.xo u21.yo: $(S)/u21.cpp $(HEADERS)
-u22.oo u22.xo u22.yo: $(S)/u22.cpp $(HEADERS)
-u23.oo u23.xo u23.yo: $(S)/u23.cpp $(HEADERS)
-u24.oo u24.xo u24.yo: $(S)/u24.cpp $(HEADERS)
-u25.oo u25.xo u25.yo: $(S)/u25.cpp $(HEADERS)
-u26.oo u26.xo u26.yo: $(S)/u26.cpp $(HEADERS)
-u27.oo u27.xo u27.yo: $(S)/u27.cpp $(HEADERS)
-u28.oo u28.xo u28.yo: $(S)/u28.cpp $(HEADERS)
-u29.oo u29.xo u29.yo: $(S)/u29.cpp $(HEADERS)
-u30.oo u30.xo u30.yo: $(S)/u30.cpp $(HEADERS)
-u31.oo u31.xo u31.yo: $(S)/u31.cpp $(HEADERS)
-u32.oo u32.xo u32.yo: $(S)/u32.cpp $(HEADERS)
-u33.oo u33.xo u33.yo: $(S)/u33.cpp $(HEADERS)
-u34.oo u34.xo u34.yo: $(S)/u34.cpp $(HEADERS)
-u35.oo u35.xo u35.yo: $(S)/u35.cpp $(HEADERS)
-u36.oo u36.xo u36.yo: $(S)/u36.cpp $(HEADERS)
-u37.oo u37.xo u37.yo: $(S)/u37.cpp $(HEADERS)
-u38.oo u38.xo u38.yo: $(S)/u38.cpp $(HEADERS)
-u39.oo u39.xo u39.yo: $(S)/u39.cpp $(HEADERS)
-u40.oo u40.xo u40.yo: $(S)/u40.cpp $(HEADERS)
-u41.oo u41.xo u41.yo: $(S)/u41.cpp $(HEADERS)
-u42.oo u42.xo u42.yo: $(S)/u42.cpp $(HEADERS)
-u43.oo u43.xo u43.yo: $(S)/u43.cpp $(HEADERS)
-u44.oo u44.xo u44.yo: $(S)/u44.cpp $(HEADERS)
-u45.oo u45.xo u45.yo: $(S)/u45.cpp $(HEADERS)
-u46.oo u46.xo u46.yo: $(S)/u46.cpp $(HEADERS)
-u47.oo u47.xo u47.yo: $(S)/u47.cpp $(HEADERS)
-u48.oo u48.xo u48.yo: $(S)/u48.cpp $(HEADERS)
-u49.oo u49.xo u49.yo: $(S)/u49.cpp $(HEADERS)
-u50.oo u50.xo u50.yo: $(S)/u50.cpp $(HEADERS)
-u51.oo u51.xo u51.yo: $(S)/u51.cpp $(HEADERS)
-u52.oo u52.xo u52.yo: $(S)/u52.cpp $(HEADERS)
-u53.oo u53.xo u53.yo: $(S)/u53.cpp $(HEADERS)
-u54.oo u54.xo u54.yo: $(S)/u54.cpp $(HEADERS)
-u55.oo u55.xo u55.yo: $(S)/u55.cpp $(HEADERS)
-u56.oo u56.xo u56.yo: $(S)/u56.cpp $(HEADERS)
-u57.oo u57.xo u57.yo: $(S)/u57.cpp $(HEADERS)
-u58.oo u58.xo u58.yo: $(S)/u58.cpp $(HEADERS)
-u59.oo u59.xo u59.yo: $(S)/u59.cpp $(HEADERS)
-u60.oo u60.xo u60.yo: $(S)/u60.cpp $(HEADERS)
+%.oo : $(S)/%.cpp $(HEADERS)
+	$(CXX) $(CPPFLAGS) $(NODEOPTS) -DNO_BYTECOUNTS=1 -c -o $@ $<
+
+%.xo : $(S)/%.cpp $(HEADERS)
+	$(CXX) $(CPPFLAGS) -DBUILTIN_IMAGE=1 $(NODEOPTS) -DNO_BYTECOUNTS=1 -c -o $@ $<
+
+# don't use NODEOPTS here, because we want a virtual FS
+%.yo : $(S)/%.cpp $(HEADERS)
+	$(CXX) $(CPPFLAGS) -DBUILTIN_IMAGE=1 -DPROCEDURAL_WASM_XX=1 \
+		$(ASYNCIFY_OPTS) -DNO_BYTECOUNTS=1 -c -o $@ $<
+
+# These rules cover the few special case object files. The
+# prerequisites are specified explicitly but the recipes use the
+# implicit rules above:
+
+bytes1.o    bytes1.oo    bytes1.xo    bytes1.yo   : $(S)/bytes1.cpp $(S)/opnames.cpp $(HEADERS)
+cslmpi.o    cslmpi.oo    cslmpi.xo    cslmpi.yo   : $(S)/cslmpi.cpp $(S)/mpipack.cpp $(HEADERS)
+embedcsl.o  embedcsl.oo  embedcsl.xo  embedcsl.yo : $(S)/embedcsl.cpp $(S)/csl.cpp $(HEADERS)
+
+makeheaders.o : $(S)/makeheaders.cpp
+objtype.o : $(S)/objtype.cpp
+
+preserve.xo preserve.yo : $(S)/preserve.cpp image.cpp $(HEADERS)
+
 
 .PHONY: clean
 clean:
