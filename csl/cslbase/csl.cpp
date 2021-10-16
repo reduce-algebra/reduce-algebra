@@ -425,6 +425,7 @@ LispObject interrupted()
                 case 'a': case 'A':         // raise an exception
                     break;
                 case 'x': case 'X':
+                    term_close();
                     my_exit();              // Rather abrupt
                     return nil;
                 case '\n':
@@ -778,6 +779,7 @@ void fatal_error(int code, ...)
         std::fclose(spool_file);
         spool_file = nullptr;
     }
+    term_close();
     my_exit();
 }
 
@@ -925,6 +927,7 @@ void my_exit()
 // a flag and exiting so as to have a software simulated exception scheme.
 // In a thread that can terminate the thread. In the main program it has to
 // led to the code as a whole stopping.
+    term_close();
     throw std::runtime_error("CSL internal issue");
 }
 
@@ -1609,6 +1612,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     if (f == nullptr)
                     {   std::fprintf(stderr, "Unable to write to \"%s\"\n",
                                      filename);
+                        term_close();
                         my_exit();
                     }
 #endif // !WITH_GUI
@@ -1655,6 +1659,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     {   for (char &c : s) char_to_terminal(c, 0);
                         char_to_terminal('\n', 0);
                     }
+                    term_close();
                     std::exit(EXIT_SUCCESS);
                 }
             },
@@ -2018,6 +2023,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                         "Codemist Common Lisp revision %u for %s: %s\n",
 #endif
                         REVISION, IMPNAME, __DATE__);
+                    term_close();
                     std::exit(EXIT_SUCCESS);
                 }
             },
@@ -2713,6 +2719,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     datestamp, (uintptr_t)size, fullname);
         init_flags &= ~INIT_VERBOSE;
         fwin_pause_at_end = true;
+        term_close();
         std::exit(EXIT_SUCCESS);
     }
     base_time = read_clock();
