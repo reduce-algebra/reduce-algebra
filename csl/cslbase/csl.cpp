@@ -1989,14 +1989,14 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
              * observe behaviour otherwise hidden by (errorset X nil nil) but when it
              * undesirable to change the input script at all.
              */
-            {   "-force-backtrace", false, false,
+            {   "--force-backtrace", false, false,
                 "--force-backtrace Always generate a backtrace after any error.",
                 [&](string key, bool hasVal, string val)
                 {   force_backtrace = true;
                 }
             },
 
-            {   "-force-bt", false, false,
+            {   "--force-bt", false, false,
                 "--force-bt More concise version of --force-backtrace.",
                 [&](string key, bool hasVal, string val)
                 {   force_backtrace = true;
@@ -2126,7 +2126,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
              */
 
             {   "-a", false, false,
-                "- a       Causes the sense of the Lisp (batchp) function to be inverted.",
+                "-a       Causes the sense of the Lisp (batchp) function to be inverted.",
                 [&](string key, bool hasVal, string val)
                 {   batch_flag = true;
                 }
