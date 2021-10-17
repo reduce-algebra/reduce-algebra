@@ -881,11 +881,12 @@ symbolic procedure ilroot (u,v,numf,denf,rootl);
  % U is standard power - the polynomial, v is the remaining st.f.
  % Numf, denf, rootl are the same. Returns standard quot or nil.
  begin  scalar  dg,ex,a,b,c,z,x1,x2 ;
-   dg:=-pdeg u; ex:=car u; % dg>0;
+   dg:=-pdeg u;				% dg>0
+   ex:=car u;
    if atom ex then return ilform(v,numf,
            multf(!*p2f('il!& to dg),denf), addrootl(nil,dg,rootl) );
    if atom car ex then return ilunknown(u.v,numf,denf);
-   !*exp:=t; ex:=subf(ex,nil); !*exp:=nil;
+   ex:=subf(ex,nil) where !*exp = t;
    if not depends(prepsq ex, 'il!&) then return
       if (z:=ilform(v,numf,denf,rootl)) then multpq(u,z) else nil;
    ex:=numr ex;
@@ -893,43 +894,51 @@ symbolic procedure ilroot (u,v,numf,denf,rootl);
    a:=lc ex;
    if depends(prepsq(a./1),'il!&)
       then return ilunknown(u.v,numf,denf);
-   if not(domainp a and !:onep a) then
-      << !*exp:=t; a:=recipf!* a; ex:=multf(ex,a);
-         if dg>1 then a:=exptf(a,dg); !*exp:=nil >>;
-   if ldeg ex = 2 then go to lbin;
- lmon: if (b:=red ex)
-          then << rootl:=addrootl(negf b, dg, rootl);
-                  denf:= if !:onep dg then multf(ex, denf)
-                            else multpf(ex to dg, denf) >>
-          else << rootl:=addrootl(nil, dg, rootl);
-                  denf:= multpf('il!& to dg, denf) >>;
-   go to ret;
- lbin: if (b:=red ex)
+   if not(domainp a and !:onep a) then <<
+      a:=recipf!* a;
+      ex:=multf(ex,a);
+      if dg>1 then a:=exptf(a,dg) >> where !*exp = t;
+   if ldeg ex = 2 then <<
+      if (b:=red ex)
           then if domainp b then << c:=b; b:=nil >>
-             else if mvar b = 'il!& then << c:=red b; b:=lc b >>
-                                    else << c:=b; b:=nil >>
-          else c:=nil ;
-   if depends(prepsq(b./1),'il!&) or depends(prepsq(c./1),'il!&)
-      then return ilunknown(u.v,numf,denf);
-   if null b and null c
-     then << rootl:=addrootl(nil, 2*dg, rootl);
-             denf:=multpf('il!& to (2*dg), denf) >>
-     else << !*exp:=t; b:=multd('!:rn!: . ((-1) . 2), b);
-       c := simp list('sqrt,prepsq(addf(multf(b,b),negf c)./1));
-       if fixp denr c
-         then c := multd(('!:rn!: . 1 . denr c),numr c)
-        else rederr {"invalid laplace denominator",denr c};
-             x1:=addf(b,c); x2:=addf(b,negf c); !*exp:=nil;
-             if x1 = x2 then << rootl:=addrootl(x1,2*dg,rootl);
-                                x1:=(('il!& to 1).*1) .+ negf x1;
-                                denf:=multpf(x1 to (2*dg),denf) >>
-                else << rootl:=addrootl(x2,dg,addrootl(x1,dg,rootl));
-                        x1:=(('il!& to 1).*1) .+ negf x1;
-                        x2:=(('il!& to 1).*1) .+ negf x2;
-                        if not !:onep dg then
-                     << x1:=!*p2f(x1 to dg); x2:=!*p2f(x2 to dg) >>;
-                        denf:=multf(x2,multf(x1,denf)) >>  >>;
- ret: z:=ilform(v,numf,denf,rootl);
+                else if mvar b = 'il!& then << c:=red b; b:=lc b >>
+                else << c:=b; b:=nil >>
+         else c:=nil ;
+      if depends(prepsq(b./1),'il!&) or depends(prepsq(c./1),'il!&)
+        then return ilunknown(u.v,numf,denf);
+      if null b and null c then <<
+         rootl:=addrootl(nil, 2*dg, rootl);
+         denf:=multpf('il!& to (2*dg), denf) >>
+      else <<
+         << % To set scope for "where !*exp = t".
+            b:=multd('!:rn!: . ((-1) . 2), b);
+            c := simp list('sqrt,prepsq(addf(multf(b,b),negf c)./1));
+            if fixp denr c
+              then c := multd(('!:rn!: . 1 . denr c),numr c)
+             else rederr {"invalid laplace denominator",denr c};
+            x1:=addf(b,c);
+            x2:=addf(b,negf c) >> where !*exp = t;
+         if x1 = x2 then <<
+            rootl:=addrootl(x1,2*dg,rootl);
+            x1:=(('il!& to 1).*1) .+ negf x1;
+            denf:=multpf(x1 to (2*dg),denf) >>
+         else <<
+            rootl:=addrootl(x2,dg,addrootl(x1,dg,rootl));
+            x1:=(('il!& to 1).*1) .+ negf x1;
+            x2:=(('il!& to 1).*1) .+ negf x2;
+            if not !:onep dg then <<
+               x1:=!*p2f(x1 to dg);
+               x2:=!*p2f(x2 to dg) >>;
+            denf:=multf(x2,multf(x1,denf)) >> >> >>
+   else <<
+      if (b:=red ex) then <<
+         rootl:=addrootl(negf b, dg, rootl);
+         denf:= if !:onep dg then multf(ex, denf)
+                 else multpf(ex to dg, denf) >>
+      else <<
+         rootl:=addrootl(nil, dg, rootl);
+         denf:= multpf('il!& to dg, denf) >> >>;
+   z:=ilform(v,numf,denf,rootl);
    return if (domainp a and !:onep a) then z
              else if null z then nil else multsq(a./1, z);
    end;
@@ -947,6 +956,7 @@ symbolic procedure  il3pol (u, v, numf, denf, rootl) ;
    % since the regular factorization turns EZGCD on.
    !*limitedfactors := t;
    y:=p; p:=nil./1;
+   remflag('(!:rn!:), 'field);
    while y do if domainp y then << p:=addsq(p,!*d2q1 y); y:=nil >>
        else << a:=1; z:=!*t2f lt y; % S.F. with 1 term only.
                while not domainp z do
@@ -958,6 +968,7 @@ symbolic procedure  il3pol (u, v, numf, denf, rootl) ;
                     z:=lc z
                  >>;
                p:=addsq(p,multsq(a./1,!*d2q1 z)); y:=red y >>;
+   flag('(!:rn!:), 'field);
    if ((a:=denr p) neq 1) and (d neq 1) then a:=exptf(a,d);
    z := fctrf numr p;
    !*exp:=nil; !*mcd:=nil;
