@@ -208,7 +208,7 @@ symbolic procedure simplaplace!*  u;
    if null subfg!* then return mksq('laplace . u, 1);
    if cddr u and null idp(w:=caddr u) or null idp(v:=cadr u)
       then go to err;
-   v:= caaaar simp v;
+   v:= mvar numr simp v;
    transvar!* := w;     % Needed for returning a Laplace form.
    % Should the following be an error?
    if null transvar!* then transvar!* := 'il!&;
@@ -300,11 +300,11 @@ symbolic procedure lptermx  u ;
  % Returns standard quot or nil, if Laplace transform is impossible.
  begin  scalar  w ; integer  n ;
    if tvar u neq 'lp!& then return lpterm u
-    else if fixp cdar u
-     then if (n:=cdar u)>0 then nil else return lpunknown u
+    else if fixp tdeg u
+     then if (n:=tdeg u)>0 then nil else return lpunknown u
     else return lpterm
-       ( (list('expt,'lp!&,prepsq(cdar u ./ 1)) to 1) .* cdr u );
-   if (w:=lpform cdr u) then nil else return nil ;
+       ( (list('expt,'lp!&,prepsq(tdeg u ./ 1)) to 1) .* tc u );
+   if (w:=lpform tc u) then nil else return nil ;
   a: % We use here the rule:
      %  laplace(x*fun(x),x)=-df(laplace(fun(x),x),il!&) ,or
      %  laplace(x**n*fun(x),x)=(-1)**n*df(laplace(fun(x),x),il!&,n);
@@ -335,8 +335,8 @@ symbolic procedure  lpterm  u ;
  % U is standard term, not containing integer powers of lp!&.
  % Returns standard quot or nil, if Laplace transform is impossible.
  begin  scalar  v,w,w1,y,z ;
-   v:=car u; % l.pow. - the first factor.
-   w:=cdr u; % l.coeff. - i.e. st.f.
+   v:=tpow u; % l.pow. - the first factor.
+   w:=tc u; % l.coeff. - i.e. st.f.
    if atom (y:=car v) or atom car y % I.e. atom or Lisp func.
       then if not depends(y,'lp!&)
               then return if (z:=lpform w)
@@ -351,12 +351,12 @@ symbolic procedure  lpterm  u ;
  % We can't handle v now, because nothing is known for w for now.
    if domainp w then return lpfunc(v,w);
  % If we have sum, and off exp.
-   if cdr w then return if (y:=lpterm list(v,car w)) and
-       (z:=lpterm(v . cdr w))then addsq(y,z) else nil;
-   w1:=cdar w; % l.coeff - i.e. st.f.
-   w :=caar w; % l.pow. - the second factor.
-  if not depends(if domainp(y:=car w) then y else prepsq(y./1),'lp!&)
-      then return if (z:=lpterm(v.w1)) then multpq(w,z) else nil
+   if red w then return if (y:=lpterm list(v,car w)) and % v .* !*t2f lt w
+       (z:=lpterm(v .* red w))then addsq(y,z) else nil;
+   w1:=lc w; % l.coeff - i.e. st.f.
+   w :=lpow w; % l.pow. - the second factor.
+  if not depends(if not sfp(y:=car w) then y else prepsq(y./1),'lp!&)
+      then return if (z:=lpterm(v .* w1)) then multpq(w,z) else nil
       else if car y = 'expt then return lpexpt(w,v,w1);
  % Now we have multiply of two functions.
    if caar v = 'one and caar w = 'one
@@ -369,8 +369,8 @@ symbolic procedure  lpunknown  u ;
  % U is standard term.
  % Returns standard quotient or nil if matching not successful.
  begin  scalar  d,z,w;
-   if domainp (d:=cdr u)  and  not !:onep d
-      then (u:= !*p2q car u) else (u:= !*t2q u);
+   if domainp (d:=tc u)  and  not !:onep d
+      then (u:= !*p2q tpow u) else (u:= !*t2q u);
    u:= list('laplace, prepsq u, 'lp!&,transvar!*);
    w:= list('laplace, cadr u,'lp!&); % HM: short rule form
    if get('laplace,'opmtch) and
@@ -417,15 +417,15 @@ symbolic procedure  lpmult1 (u,v,w) ;
  % U and v are standard powers for one-func., w is leading coeff.
  % Returns standard quotient if all coeff. are domains, otherwise nil.
  begin  scalar  u1,v1,l1,r1,l2,r2 ;
-   u1:= car simp cadar u;
-   v1:= car simp cadar v;
+   u1:= numr simp cadar u;
+   v1:= numr simp cadar v;
    l1:=lc u1; l2:=lc v1;
    r1:=red u1; r2:=red v1;
    if domainp l1 and domainp l2 and domainp r1 and domainp r2
       then if !:minusp adddm(multdm(r1,l2), !:minus multdm(r2,l1))
-              then return lpterm(u . w)
-              else return lpterm(v . w)
-      else return lpunknown list(u, v.w);
+              then return lpterm(u .* w)
+              else return lpterm(v .* w)
+      else return lpunknown list(u, v .* w);
  end ;
 
 symbolic procedure  lpexpt (u,v,w) ;
@@ -435,11 +435,11 @@ symbolic procedure  lpexpt (u,v,w) ;
  % U is lpow for expt-func, v is other lpow or nil.  W is lcoeff.
  % Returns standard quotient or nil.
  begin  scalar  p,q,r,z,l,la ;
-   r:=cdr u;  % Degree for expt-func.
+   r:=pdeg u;  % Degree for expt-func.
    p:=cadar u;  % First arg for expt.
    q:=caddar u;  % Second arg for expt.
    if depends(p,'lp!&) then go to gamma;
-   !*exp:=t; q:=car simp q;
+   !*exp:=t; q:=numr simp q;
    if mvar q neq 'lp!& then << !*mcd:=t; q:=subf(q,nil); !*mcd:=nil;
                                q:=multf(car q, recipf!* cdr q) >>;
    if not !:onep r then q:=multf(q,r); !*exp:=nil;
@@ -448,10 +448,10 @@ symbolic procedure  lpexpt (u,v,w) ;
                             else lpunknown list(u, v . w);
    if (r:=red q) then
      << if !*ldone then << !*exp:=t;
-          w:=multf(w, car lpsimp1 list prepsq(q./1)); !*exp:=nil >>;
+          w:=multf(w, numr lpsimp1 list prepsq(q./1)); !*exp:=nil >>;
         q:=list(lt q); r:=!*p2q(list('expt,p,prepsq(r./1)) to 1) >>;
    if p neq 'e then q:=multf(q, !*kk2f list('log,p) );
-   z:= if null v then lpform w else lpterm(v.w);
+   z:= if null v then lpform w else lpterm(v .* w);
    if null z then return nil;
    l:= prepsq !*f2q lc q;
    la:=list('il!& . list('difference,'il!&,l) );
@@ -483,7 +483,7 @@ symbolic procedure  lpfunc (u,v) ;
  % U is standard power, v a domain element.
  % Returns standard quotient or nil.
  begin  scalar  ld,fn,w,var,ex,k,tau,c ;
-   ld:=cdr u;  % Degree of func.
+   ld:=pdeg u;  % Degree of func.
    w:=car u;   % Func in prefix form.
    fn:=car w;  % Name of func.
  lintl: if fn neq 'intl then go to lexpt;
@@ -498,14 +498,14 @@ symbolic procedure  lpfunc (u,v) ;
  return if w then multsq(multd(v,!*p2f('il!& to -1))./1, w) else nil;
  lexpt: if fn neq 'expt then go to lfunc;
  % Perform Laplace(expt,(k*lp!&-tau),d), for d - not int. const.
-   ld:= multf(ld, car simp caddr w);
+   ld:= multf(ld, numr simp caddr w);
    if minusf(addd(1,ld))  or  depends(prepsq(ld./1), 'lp!&)
       then return lpunknown(u.v);
    ld:= prepsq !*f2q ld;
  lfunc: % Perform Laplace transform for simple and one-function.
    if fn = 'expt  or (fn = 'one) or  !:onep ld
       then nil else return lpunknown(u.v);
-   !*exp:=t; ex:= car simp cadr w; !*exp:=nil;
+   !*exp:=t; ex:= numr simp cadr w; !*exp:=nil;
    if not( mvar ex = 'lp!&  and  !:onep ldeg ex )
       then return lpunknown(u.v);
    k:=lc ex; tau:=red ex;
@@ -516,7 +516,7 @@ symbolic procedure  lpfunc (u,v) ;
    c:= prepsq !*f2q k;
  % Ind. lpfn gives Laplace transform for func(k*lp!&).
    if (w:= get(fn,'lpfn))
-      then w:=car simp subla(list('k.c, 'd.ld), w);
+      then w:=numr simp subla(list('k.c, 'd.ld), w);
    return if null w
              then lpunknown(u.v)
              else if null tau
@@ -605,7 +605,7 @@ symbolic procedure simpinvlap!*  u ;
    % We need to make this run with precise on.
    if null subfg!* then return mksq('invlap . u, 1);
    if cddr u and null idp(w:=caddr u) then go to err;
-   v:= caaaar simp cadr u;
+   v:= mvar numr simp cadr u;
    transvar!* := w;
    if null idp v then go to err;
    u:= car u ;
@@ -653,7 +653,7 @@ symbolic procedure invlap1 u;
    w:= nil ./ 1;
    while u do
      if domainp u
-       then << w:=addsq(w, !*t2q((list('delta,'lp!&) to 1) .* u) );
+       then << w:=addsq(w, !*t2q(mksp(list('delta,'lp!&),1) .* u) );
                u:= nil >>
        else << w:=addsq(w, if (z:=ilterm (lt u,1,1,nil)) then z
                      else !*kk2q list('invlap, subla
@@ -671,8 +671,8 @@ symbolic procedure ilterm (u, numf, denf, rootl) ;
  % Returns standard quotient, or nil if inverse Laplace transform is
  % impossible.
  begin  scalar  v,v1,v2,w,y,z,p,p1 ;
-   v:=car u; w:=cdr u; v1:=car v; v2:=cdr v;
-   if not depends(if domainp v1 then v1 else prepsq(v1./1), 'il!&)
+   v:=tpow u; w:=tc u; v1:=car v; v2:=pdeg v;
+   if not depends(if not sfp v1 then v1 else prepsq(v1./1), 'il!&)
       then return if (z:=ilform(w,numf,denf,rootl))
                      then multpq (v,z) else nil;
    % V depends on il!&.
@@ -704,7 +704,7 @@ symbolic procedure ilterm (u, numf, denf, rootl) ;
       else return ilroot(v, w, numf, denf, rootl)
     else return
           ilexpt(list('expt,
-                      if domainp v1 then v1 else prepsq(v1./1),
+                      if not sfp v1 then v1 else prepsq(v1./1),
                       prepsq(v2./1)) to 1, nil, w, numf,
                       denf, rootl);
 
@@ -714,7 +714,7 @@ symbolic procedure ilterm (u, numf, denf, rootl) ;
       << !*exp:=t; y:=numr subf(v,nil); z:=y;
          while z do if domainp z then z:=nil
             else if ldeg z < 0 then if depends
-          (if domainp(p1:=mvar z) then p1 else prepsq(p1 ./1), 'il!&)
+          (if not sfp(p1:=mvar z) then p1 else prepsq(p1 ./1), 'il!&)
                 then << p:=t; z:=nil >> else z:=addf(lc z, red z)
               else z:=addf(lc z,red z);
          if p then w:=multf(y, w) else numf:=multf(v,numf);
@@ -741,7 +741,7 @@ symbolic procedure  ilunknown (u, numf, denf) ;
  % operator.  U is standard term, numf, denf are the same.
  % Returns standard quotient or nil if matching not successful.
  begin  scalar  d,z,w;
-   if domainp (d:=cdr u) then if !:onep d
+   if domainp (d:=pdeg u) then if !:onep d
           then u:=!*t2q u else u:=!*p2q car u
       else u:=!*t2q u;
    if numf neq 1 then u:=multsq(u, numf./1);
@@ -776,11 +776,11 @@ symbolic procedure  ilexpt (u, v, w, numf, denf, rootl) ;
  % W is lcoeff (standard form), numf, denf, rootl are the same.
  % Returns standard quotient or nil.
  begin  scalar  p,q,r,z,l ;
-   r:=cdr u;  % Degree for expt-func.
+   r:=pdeg u;  % Degree for expt-func.
    p:=cadar u;  % First arg for expt.
    q:=caddar u;  % Second arg for expt.
    if depends(p,'il!&)then go to gamma;
-   !*exp:=t; q:=car simp q;
+   !*exp:=t; q:=numr simp q;
    if mvar q neq 'il!& then << !*mcd:=t; q:=subf(q,nil); !*mcd:=nil;
                                q:=multf(car q, recipf!* cdr q) >>;
    if not !:onep r then q:=multf(q,r); !*exp:=nil;
@@ -803,8 +803,8 @@ symbolic procedure  ilexpt (u, v, w, numf, denf, rootl) ;
      then if domainp w
        then ilexptfn(u,w,numf,denf)
        else if red w
-         then if (z:=ilexpt(u,nil,list(car w),numf,denf,rootl)) and
-                 (l:=ilexpt(u,nil,cdr w,numf,denf,rootl))
+         then if (z:=ilexpt(u,nil,!*t2f(lt w),numf,denf,rootl)) and
+                 (l:=ilexpt(u,nil,red w,numf,denf,rootl))
                  then addsq(z,l) else nil
          else if not depends(if domainp(l:=mvar w) then l
                                 else prepsq(l./1), 'il!&)
@@ -813,9 +813,9 @@ symbolic procedure  ilexpt (u, v, w, numf, denf, rootl) ;
            else if not atom l and (car l = 'expt)
              then ilexpt(lpow w,u,lc w,numf,denf,rootl)
              else if atom l or not atom car l
-               then ilterm(list(lpow w,u.(lc w)),numf,denf,rootl)
-               else ilunknown(u.w,numf,denf)
-     else ilunknown(list(u,v.w),numf,denf) ;
+               then ilterm(list(lpow w,u .* (lc w)),numf,denf,rootl)
+               else ilunknown(u .* w,numf,denf)
+     else ilunknown(list(u,v .* w),numf,denf) ;
  end ;
 
 symbolic procedure  ilexptfn (u, v, numf, denf) ;
@@ -823,11 +823,11 @@ symbolic procedure  ilexptfn (u, v, numf, denf) ;
  % U is standard power for expt, v is domain, numf, denf the same.
  % Returns standard quotient or nil.
  begin  scalar  ex,dg,fn,k,a,b,y,d ;
-   ex:=car u; dg:=cdr u; fn:=car ex;
+   ex:=car u; dg:=pdeg u; fn:=car ex;
    if fn neq 'expt then go to unk;
    d:=caddr ex; if atom(ex:=cadr ex) then k:=t;
-   !*exp:=t; ex:=car simp ex;
-   dg:=multd(dg,car simp d); a:=lc ex;
+   !*exp:=t; ex:=numr simp ex;
+   dg:=multd(dg,numr simp d); a:=lc ex;
    if not(domainp a and !:onep a) then
      << ex:=multf(ex, recipf!* a);
         a:=!*kk2f list('expt,prepsq(a./1),prepsq(dg./1)) >>;
@@ -838,13 +838,13 @@ symbolic procedure  ilexptfn (u, v, numf, denf) ;
  % We must have identical monomials in numf, denf and in expt-func.
    y:= multf(multf(numf, !*kk2f list('expt,
        prepsq(ex./1),prepsq(dg./1)) ), recipf!* denf);
-   if cdr y or (lc lc y neq 1) or (car mvar lc y neq 'expt)
+   if red y or (lc lc y neq 1) or (car mvar lc y neq 'expt)
       or (not k and (mvar y neq ex))
       or (k and (mvar y neq mvar ex)) then go to unk;
    dg:=addd(ldeg y,dg);
  ret: if minusf dg then d:=prepsq(negf dg ./ 1) else go to unk;
    if (y:=get(fn,'ilfn))
-      then y:=car simp subla(list('d.d), y) else go to unk;
+      then y:=numr simp subla(list('d.d), y) else go to unk;
    if b then y:=multd(v, multf(y, !*kk2f list
           ('expt,'e,prepsq(multf(!*k2f 'lp!&,negf b) ./1)) ))
         else y:=multd(v, y);
@@ -871,7 +871,7 @@ symbolic procedure  recipf!*  u ;
           else if fieldp u then nil
             else if (d:=get(dmode!*,'i2d))
               then u:=apply1(d,u) else u:=mkratnum u
-      else return if cdr u then !*p2f(u to (-1))
+      else return if red u then !*p2f(u to (-1))
         else multf(!*p2f(mvar u to (-ldeg u)), recipf!* lc u);
    return dcombine(1,u,'quotient);
  end   ;
@@ -881,14 +881,14 @@ symbolic procedure ilroot (u,v,numf,denf,rootl);
  % U is standard power - the polynomial, v is the remaining st.f.
  % Numf, denf, rootl are the same. Returns standard quot or nil.
  begin  scalar  dg,ex,a,b,c,z,x1,x2 ;
-   dg:=-cdr u; ex:=car u; % dg>0;
+   dg:=-pdeg u; ex:=car u; % dg>0;
    if atom ex then return ilform(v,numf,
            multf(!*p2f('il!& to dg),denf), addrootl(nil,dg,rootl) );
    if atom car ex then return ilunknown(u.v,numf,denf);
    !*exp:=t; ex:=subf(ex,nil); !*exp:=nil;
    if not depends(prepsq ex, 'il!&) then return
       if (z:=ilform(v,numf,denf,rootl)) then multpq(u,z) else nil;
-   ex:=car ex;
+   ex:=numr ex;
    if ldeg ex > 2 then return il3pol(u,v,numf,denf,rootl);
    a:=lc ex;
    if depends(prepsq(a./1),'il!&)
@@ -940,26 +940,26 @@ symbolic procedure  il3pol (u, v, numf, denf, rootl) ;
  % Numf, denf, rootl are the same. Returns standard quot or nil.
  (begin  scalar  a,d,p,y,z,w;
    if !*rounded then go to unk;
-   d:=-cdr u; p:=car u;
+   d:=-pdeg u; p:=car u;
    !*exp:=t; !*mcd:=t;
    % We must now convert rationals, if any, to standard quotients.
    % Since MCD was previously off, we must use limitedfactors here,
    % since the regular factorization turns EZGCD on.
    !*limitedfactors := t;
    y:=p; p:=nil./1;
-   while y do if domainp y then << p:=addsq(p,!*d2q y); y:=nil >>
-       else << a:=1; z:=list car y; % S.F. with 1 term only.
+   while y do if domainp y then << p:=addsq(p,!*d2q1 y); y:=nil >>
+       else << a:=1; z:=!*t2f lt y; % S.F. with 1 term only.
                while not domainp z do
                  << w:=lpow z;
                      % distinguish between mvar=kernel/form
                     w:=if kernlp car w then !*p2f w else
-                          exptf(car w,cdr w);
+                          exptf(car w,pdeg w);
                     a:=multf(a,w);
                     z:=lc z
                  >>;
-               p:=addsq(p,multsq(a./1,!*d2q z)); y:=red y >>;
-   if ((a:=cdr p) neq 1) and (d neq 1) then a:=exptf(a,d);
-   z := fctrf car p;
+               p:=addsq(p,multsq(a./1,!*d2q1 z)); y:=red y >>;
+   if ((a:=denr p) neq 1) and (d neq 1) then a:=exptf(a,d);
+   z := fctrf numr p;
    !*exp:=nil; !*mcd:=nil;
    % if length z = 2 then go to unk;   % No factors.
    % corrected (HM):
@@ -967,7 +967,7 @@ symbolic procedure  il3pol (u, v, numf, denf, rootl) ;
    if car z neq 1 then errach list(car z,"found in IL3POL");
    z:=cdr z; y:=v;
    while z do << p:= caar z;
-                 if cdar z neq 1 then p := exptf(p,cdar z);
+                 if pdeg car z neq 1 then p := exptf(p,pdeg car z);
                  if d neq 1 then p:=exptf(p,d);
                  y:=multf(y,recipf!* p); z:=cdr z >>;
    y:=ilform(y,numf,denf,rootl);
@@ -983,9 +983,9 @@ symbolic procedure  ilresid (numf, denf, rootl) ;
    !*exp:=t; n:=numr subf(numf,nil); !*exp:=nil;
    z:=nil ./ 1; w:=nil ./ 1; x:=n; % Result accumulated in w.
    while x and not domainp x do
-     << y:=car x; x:=cdr x;
-        if depends(prepsq(cdr y./1),'il!&) or (caar y neq 'il!&
-               and depends(caar y,'il!&) )
+     << y:=lt x; x:=red x;
+        if depends(prepsq(tc y./1),'il!&) or (tvar y neq 'il!&
+               and depends(tvar y,'il!&) )
            then if (z:=ilterm(y,1,denf,rootl))
                    then << w:=addsq(w,z); n:=delete(y,n) >>
                    else x:=nil >> ;
@@ -998,7 +998,7 @@ symbolic procedure  ilresid (numf, denf, rootl) ;
    !*exp:=t; y:=qremf(n,d); !*exp:=nil;
    n:=cdr y; x:=car y; % N is remainder polynomial.
    while x do if domainp x
-     then << w:=addsq(w, !*t2q(('(delta lp!&) to 1).* x)); x:=nil >>
+     then << w:=addsq(w, !*t2q(mksp('(delta lp!&),1).* x)); x:=nil >>
      else if mvar x neq 'il!&
        then << w:=addsq(w, multsq(!*kk2q '(delta lp!&), !*t2q lt x) );
                x:=red x >>
@@ -1020,10 +1020,22 @@ symbolic procedure  ilresid (numf, denf, rootl) ;
    if not depends(prepsq z, 'lp!&)
       then z:=multsq(z, !*kk2q '(one lp!&));
    if (m:=cdar rootl) > 2 then while (m:=m-1) > 1 do
-       z:=multf(car z,'!:rn!: . 1 . m)./1;
+       z:=multf(numr z,'!:rn!: . 1 . m)./1;
    w:=addsq(w,z); !*exp:=nil;
    rootl:=cdr rootl; go to resid;
  end;
+
+symbolic procedure !*d2q1 u;
+   % Converts domain element U into a standard quotient.
+   if numberp u
+     then if zerop u then nil ./ 1
+   %       else if floatp u then mkfloat u ./ 1
+           else u ./ 1
+   % The following converts a domain rational to a SQ, which may not
+   % be desirable.
+    else if eqcar(u,'!:rn!:) and !*mcd then cdr u
+    else if !:zerop u then nil ./ 1 else u ./ 1;
+
 
 endmodule;
 
