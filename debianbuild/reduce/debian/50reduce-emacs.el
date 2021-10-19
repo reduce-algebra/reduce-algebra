@@ -9,7 +9,7 @@
 ;; We have to add this to the load-path:
 (debian-pkg-add-load-path-item (concat "/usr/share/"
                               (symbol-name debian-emacs-flavor)
-                              "/site-lisp/reduce") load-path))
+                              "/site-lisp/reduce"))
 
 (autoload 'reduce-mode "reduce-mode" "Major mode for editing REDUCE source files" t)
 
