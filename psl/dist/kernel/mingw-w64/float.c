@@ -189,7 +189,7 @@ uxwritefloat(buf, flt, convstr)
 
   temps = buf + 8;       /* Skip over lisp string length to write data */
 
-  sprintf(temps,convstr, *flt);
+  snprintf(temps,90,convstr, *flt);
 
   if (finite(*flt)) 
     {
@@ -212,6 +212,25 @@ uxwritefloat(buf, flt, convstr)
       {
         strcat(temps, ".0");
       }
+    }
+  else
+    {
+      /* convert "old style" strings used before Visual Studio 2015 */
+      if (isinf(*flt))
+	{
+	  if (isless(*flt, 0.0))
+	    {
+	      strcpy(temps,"-inf");
+	    }
+	  else
+	    {
+	      strcpy(temps,"inf");
+	    }
+	}
+      else if (isnan(*flt))
+	{
+	  strcpy(temps,"nan");
+	}
     }
   /* Install the length of the string into the Lisp header word
    */

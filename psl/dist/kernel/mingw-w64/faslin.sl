@@ -168,7 +168,7 @@
 (compiletime (put 'put_a_halfword 'opencode '(
    (mov  "%ebx" "0(%rax)")))) %% (reg 2) (displacement (reg eax) 0))))
 (compiletime (put 'get_a_halfword 'opencode '(
-   (!*move (displacement (reg eax) 0) (reg eax)))))
+   (!*move (displacement (reg rax) 0) (reg eax)))))
 
 (de relocate-word (code-location code-base id-table)
   (let ((reloc-tag (reloc-word-tag (get_a_halfword code-location)))
