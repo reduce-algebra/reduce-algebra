@@ -43,31 +43,33 @@ include './include/begin-body.php';
         is a CLI version of REDUCE packaged for Android, which is
         available for free from Google Play.  It was developed from
         Android REDUCE (see below) and was last updated in 2013.
-    </li>
-    <li>
-        <a href="https://www.torrapk.com/en/apps/24-office-and-productivity/2791-Android-REDUCE">Android
-            REDUCE</a> is a GUI version of REDUCE packaged for Android
-        that provides only non-programmable calculator-style input
-        with limited functionality, which is available for free (but
-        <strong>not</strong> from Google Play).  It is essentially the
-        original Android version of REDUCE.
+        Beware that users have reported this app can be a little
+        fragile and that the <code>read</code> and <code>save</code>
+        facilities do not work, in which case a work-around is to copy
+        and paste from a separate file editor.
     </li>
 </ul>
 <p>
-    Beware that users have reported that the above Android apps can be
-    a little fragile and that the <code>read</code>
-    and <code>save</code> facilities in Symbolic do not work, in which
-    case a work-around is to copy and paste from a separate file
-    editor.
+    The following Android apps are available only as source code, not
+    as installable apps.
 </p>
-<p>
-    <a href="https://github.com/n0n3m4/ReduceNative">ReduceNative</a>
-    is code that provides a GUI written in Kotlin for running REDUCE
-    on Android that was kindly released by the authors on 25 November
-    2019.  It includes a prebuilt binary version of REDUCE itself but
-    not the code to build REDUCE for Android.  This project needs some
-    further development and does not include a prebuild app.
-</p>
+<ul>
+    <li>
+        <a href="https://github.com/n0n3m4/ReduceNative">ReduceNative</a>
+        is code that provides a GUI written in Kotlin for running
+        REDUCE on Android that was kindly released by the authors on
+        25 November 2019.  It includes a prebuilt binary version of
+        REDUCE itself but not the code to build REDUCE for Android.
+    </li>
+    <li>
+        <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/jlisp/android">Android REDUCE</a>
+        is a GUI version of REDUCE packaged for Android that provides
+        only non-programmable calculator-style input with limited
+        functionality developed in 2011&ndash;12.  It was the first
+        Android version of REDUCE.
+    </li>
+</ul>
+
 <h2>External projects using REDUCE</h2>
 <p>
     There are a number of independent projects that use REDUCE in

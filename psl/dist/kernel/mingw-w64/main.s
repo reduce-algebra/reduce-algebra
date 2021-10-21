@@ -935,10 +935,10 @@ l0095:
  mov %rax,(%rsp)
  mov %rbx,8(%rsp)
  mov %rcx,16(%rsp)
- mov 0(%eax),%eax
+ mov 0(%rax),%eax
  mov %rax,24(%rsp)
  mov (%rsp),%rax
- mov 0(%eax),%eax
+ mov 0(%rax),%eax
  mov %rax,%rbx
  shl $34,%rbx
  shr $34,%rbx
