@@ -1,0 +1,91 @@
+% An arithmetic component in an expert system
+% Cut without undercutting
+
+off rlabout;
+
+
+
+rlset reals;
+
+
+{}
+
+
+aci := ex({x,y},0<x and y<0 and x*r-x*tt+tt=x*q-x*s+s and x*b-x*d+d=y*a-y*c+c)$
+
+
+
+aciqf := rlqepcad aci;
+
+WARNING! Projection factor c q - d q - c r + d r + b s - c s - b tt + c tt
+is everywhere zero in the cylinder over the cell (1,2,1,1,1,2,1) of postive dimension.  The McCallum projection may not be valid.
+WARNING! Projection factor c q - d q - c r + d r + b s - c s - b tt + c tt
+is everywhere zero in the cylinder over the cell (1,2,1,2,1,2,1) of postive dimension.  The McCallum projection may not be valid.
+WARNING! Projection factor c q - d q - c r + d r + b s - c s - b tt + c tt
+is everywhere zero in the cylinder over the cell (1,2,1,3,1,2,1) of postive dimension.  The McCallum projection may not be valid.
+WARNING! Projection factor c q - d q - c r + d r + b s - c s - b tt + c tt
+is everywhere zero in the cylinder over the cell (1,2,2,1,1,1,1) of postive dimension.  The McCallum projection may not be valid.
+WARNING! Projection factor c q - d q - c r + d r + b s - c s - b tt + c tt
+is everywhere zero in the cylinder over the cell (1,2,2,1,1,2,1) of postive dimension.  The McCallum projection may not be valid.
+WARNING! Projection factor c q - d q - c r + d r + b s - c s - b tt + c tt
+is everywhere zero in the cylinder over the cell (1,2,2,1,1,3,1) of postive dimension.  The McCallum projection may not be valid.
+WARNING! Projection factor c q - d q - c r + d r + b s - c s - b tt + c tt
+is everywhere zero in the cylinder over the cell (1,2,2,2,1,1,1) of postive dimension.  The McCallum projection may not be valid.
+WARNING! Projection factor c q - d q - c r + d r + b s - c s - b tt + c tt
+is everywhere zero in the cylinder over the cell (1,2,2,2,1,2,1) of postive dimension.  The McCallum projection may not be valid.
+WARNING! Projection factor c q - d q - c r + d r + b s - c s - b tt + c tt
+is everywhere zero in the cylinder over the cell (1,2,2,2,1,3,1) of postive dimension.  The McCallum projection may not be valid.
+WARNING! Projection factor c q - d q - c r + d r + b s - c s - b tt + c tt
+is everywhere zero in the cylinder over the cell (1,2,2,3,1,1,1) of postive dimension.  The McCallum projection may not be valid.
+WARNING! Projection factor c q - d q - c r + d r + b s - c s - b tt + c tt
+is everywhere zero in the cylinder over the cell (1,2,2,3,1,2,1) of postive dimension.  The McCallum projection may not be valid.
+WARNING! Projection factor c q - d q - c r + d r + b s - c s - b tt + c tt
+is everywhere zero in the cylinder over the cell (1,2,2,3,1,3,1) of postive dimension.  The McCallum projection may not be valid.
+WARNING! Projection factor c q - d q - c r + d r + b s - c s - b tt + c tt
+is everywhere zero in the cylinder over the cell (1,2,3,1,1,2,1) of postive dimension.  The McCallum projection may not be valid.
+WARNING! Projection factor c q - d q - c r + d r + b s - c s - b tt + c tt
+is everywhere zero in the cylinder over the cell (1,2,3,2,1,2,1) of postive dimension.  The McCallum projection may not be valid.
+WARNING! Projection factor c q - d q - c r + d r + b s - c s - b tt + c tt
+is everywhere zero in the cylinder over the cell (1,2,3,3,1,2,1) of postive dimension.  The McCallum projection may not be valid.
+
+aciqf := (b - c = 0 and a - c = 0 and s - tt = 0 and q - r - s + tt = 0)
+
+ or (b - c < 0 and a - c > 0 and s - tt = 0 and q - r - s + tt = 0)
+
+ or (b - c > 0 and a - c < 0 and s - tt = 0 and q - r - s + tt = 0) or (
+
+c - d > 0 and b - d > 0 and q - r - s + tt = 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r = 0) or (a - c = 0
+
+ and s - tt > 0 and q - r - s + tt < 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r = 0) or (a - c = 0
+
+ and s - tt < 0 and q - r - s + tt > 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r = 0) or (c - d < 0
+
+ and b - d < 0 and q - r - s + tt = 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r = 0) or (a - c > 0
+
+ and s - tt > 0 and q - r - s + tt < 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r < 0) or (a - c > 0
+
+ and s - tt < 0 and q - r - s + tt > 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r > 0) or (a - c < 0
+
+ and s - tt > 0 and q - r - s + tt < 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r > 0) or (a - c < 0
+
+ and s - tt < 0 and q - r - s + tt > 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r < 0)
+
+
+end;
+

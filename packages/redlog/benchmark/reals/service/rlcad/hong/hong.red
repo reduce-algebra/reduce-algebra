@@ -1,0 +1,11 @@
+% Hoon Hong, talk at the University of Passau, 20 Dec 2005.
+
+off rlabout;
+
+rlset reals;
+
+hong := all(x,ex(y,x**2+x*y+b>0 and x+a*y**2+b<=0))$
+
+rlcad hong;
+
+end;

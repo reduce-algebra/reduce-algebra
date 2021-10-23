@@ -1,0 +1,46 @@
+off rlabout;
+
+
+
+rlset mri;
+
+
+{}
+
+
+mrireal x,y;
+
+
+
+wex := ex(x,0<y-x and 4(y-x)<1 and cong(2x,1,2));
+
+
+wex := ex x (x - y < 0 and  - 4*x + 4*y - 1 < 0 and 2*x - 1 ~2~ 0)
+
+
+rlqe wex$
+
+x (real)x_int (integer)
+
+rlexpand ws;
+
+
+([4*y] - 2*[2*y] + 4 < 0 and [4*y] + 2 ~4~ 0)
+
+ or ([4*y] - 2*[2*y] + 3 < 0 and [4*y] + 1 ~4~ 0)
+
+ or ([4*y] - 2*[2*y] + 3 < 0 and [2*y] + 1 ~2~ 0)
+
+ or ([4*y] - 2*[2*y] + 2 < 0 and [4*y] ~4~ 0)
+
+ or ([4*y] - 2*[2*y] + 1 < 0 and [4*y] + 3 ~4~ 0)
+
+ or ([4*y] - 2*[2*y] + 1 < 0 and [2*y] ~2~ 0)
+
+ or ([4*y] - 2*[2*y] <= 0 and [2*y] - 2*y < 0 and [2*y] + 1 ~2~ 0)
+
+ or ([4*y] - 2*[2*y] < 0 and [4*y] + 2 ~4~ 0)
+
+
+end;
+

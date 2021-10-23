@@ -1,0 +1,25 @@
+% Description of the problem on p.325: This formula is a special case
+% of more general formula used by Davenport and Heintz in order to
+% show the time complexity of the quantifier elimination in elementary
+% algebra and geometry.
+
+off rlabout$
+
+
+
+rlset r$
+
+
+
+davhei := ex(c,all({a,b},(a=d and b=c) or (a=c and b=1) impl a**2 = b))$
+
+
+
+rlqe davhei;
+
+
+d <> 0 and (d - 1 = 0 or d + 1 = 0)
+
+
+end$
+

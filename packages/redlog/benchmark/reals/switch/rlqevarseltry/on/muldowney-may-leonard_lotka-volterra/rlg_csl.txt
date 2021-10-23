@@ -1,0 +1,146 @@
+% Muldowney_May_Leonard_LOTKA_VOLTERRA_1_1
+% Received from H. Errami/A. Weber, 2010
+
+off rlabout$
+
+
+
+rlset r$
+
+
+
+informula := ex(vv3,ex(vv2,ex(vv1,vv3 > 0 and vv2 > 0 and vv1 > 0 and b3 > 0 and b2 > 0 and b1 > 0
+and a3 > 0 and a2 > 0 and a1 > 0 and max(abs(a2*vv2 - vv2) + abs(b2*vv2 + vv2) + a1*vv2 + a3*vv1 -
+b1*vv3 - b3*vv2 - 3*vv1 - 2*vv2 - 3*vv3 + 2,abs(a3*vv3 - vv3) + abs(b3*vv3 + vv3) + a1*vv2 +
+a2*vv3 - b1*vv3 - b2*vv1 - 3*vv1 - 3*vv2 - 2*vv3 + 2,abs(a1*vv1 - vv1) + abs(b1*vv1 + vv1) +
+a2*vv3 + a3*vv1 - b2*vv1 - b3*vv2 - 2*vv1 - 3*vv2 - 3*vv3 + 2) >= 0))) and ex(vv3,ex(vv2,ex
+(vv1,vv3 > 0 and vv2 > 0 and vv1 > 0 and b3 > 0 and b2 > 0 and b1 > 0 and a3 > 0 and a2 > 0 and
+a1 > 0 and max(abs(a2*vv2 - vv2) + abs(b2*vv2 + vv2) - a1*vv2 - a3*vv1 + b1*vv3 + b3*vv2 + 3*vv1 +
+2*vv2 + 3*vv3 - 2,abs(a3*vv3 - vv3) + abs(b3*vv3 + vv3) - a1*vv2 - a2*vv3 + b1*vv3 + b2*vv1 +
+3*vv1 + 3*vv2 + 2*vv3 - 2,abs(a1*vv1 - vv1) + abs(b1*vv1 + vv1) - a2*vv3 - a3*vv1 + b2*vv1 +
+b3*vv2 + 2*vv1 + 3*vv2 + 3*vv3 - 2) >= 0))) and ex(vv3,ex(vv2,ex(vv1,vv3 > 0 and vv2 > 0 and vv1 >
+0 and b3 > 0 and b2 > 0 and b1 > 0 and a3 > 0 and a2 > 0 and a1 > 0 and max(abs(a1*vv1 - vv1) + abs
+(b3*vv3 + vv3) + a1*vv2 + a3*vv1 - b1*vv3 - b3*vv2 - 3*vv1 - 2*vv2 - 3*vv3 + 2,abs(a2*vv2 - vv2) +
+abs(b1*vv1 + vv1) + a1*vv2 + a2*vv3 - b1*vv3 - b2*vv1 - 3*vv1 - 3*vv2 - 2*vv3 + 2,abs
+(a3*vv3 - vv3) + abs(b2*vv2 + vv2) + a2*vv3 + a3*vv1 - b2*vv1 - b3*vv2 - 2*vv1 - 3*vv2 - 3*vv3 +
+2) >= 0))) and ex(vv3,ex(vv2,ex(vv1,vv3 > 0 and vv2 > 0 and vv1 > 0 and b3 > 0 and b2 > 0 and b1 >
+0 and a3 > 0 and a2 > 0 and a1 > 0 and max(abs(a1*vv1 - vv1) + abs(b3*vv3 + vv3) - a1*vv2 -
+a3*vv1 + b1*vv3 + b3*vv2 + 3*vv1 + 2*vv2 + 3*vv3 - 2,abs(a2*vv2 - vv2) + abs(b1*vv1 + vv1) -
+a1*vv2 - a2*vv3 + b1*vv3 + b2*vv1 + 3*vv1 + 3*vv2 + 2*vv3 - 2,abs(a3*vv3 - vv3) + abs
+(b2*vv2 + vv2) - a2*vv3 - a3*vv1 + b2*vv1 + b3*vv2 + 2*vv1 + 3*vv2 + 3*vv3 - 2) >= 0)))$
+
+
+
+on rlqegsd;
+
+
+on rlqevarseltry;
+
+
+
+informula:= rlposresolve(informula);
+
+
+informula := ex vv3 ex vv2 ex vv1 ex vv31 ex vv21 ex vv11 ex vv32 ex vv22 ex 
+
+vv12 ex vv33 ex vv23 ex vv13 (vv33 > 0 and vv32 > 0 and vv31 > 0 and vv3 > 0
+
+ and vv23 > 0 and vv22 > 0 and vv21 > 0 and vv2 > 0 and vv13 > 0 and vv12 > 0
+
+ and vv11 > 0 and vv1 > 0 and b3 > 0 and b2 > 0 and b1 > 0 and a3 > 0 and a2 > 0
+
+ and a1 > 0 and ((a3*vv33 - vv33 <= 0 and a2*vv33 + a3*vv13 + a3*vv33 - b2*vv13
+
+ - b2*vv23 - b3*vv23 - 2*vv13 - 4*vv23 - 4*vv33 + 2 <= 0) or (
+
+a3*vv33 - vv33 >= 0 and a2*vv33 + a3*vv13 - a3*vv33 - b2*vv13 - b2*vv23
+
+ - b3*vv23 - 2*vv13 - 4*vv23 - 2*vv33 + 2 <= 0) or (a2*vv23 - vv23 <= 0 and 
+
+a1*vv23 + a2*vv23 + a2*vv33 - b1*vv13 - b1*vv33 - b2*vv13 - 4*vv13 - 4*vv23
+
+ - 2*vv33 + 2 <= 0) or (a2*vv23 - vv23 >= 0 and a1*vv23 - a2*vv23 + a2*vv33
+
+ - b1*vv13 - b1*vv33 - b2*vv13 - 4*vv13 - 2*vv23 - 2*vv33 + 2 <= 0) or (
+
+a1*vv13 - vv13 <= 0 and a1*vv13 + a1*vv23 + a3*vv13 - b1*vv33 - b3*vv23
+
+ - b3*vv33 - 4*vv13 - 2*vv23 - 4*vv33 + 2 <= 0) or (a1*vv13 - vv13 >= 0 and 
+
+a1*vv13 - a1*vv23 - a3*vv13 + b1*vv33 + b3*vv23 + b3*vv33 + 2*vv13 + 2*vv23
+
+ + 4*vv33 - 2 >= 0)) and ((a3*vv32 - vv32 <= 0 and a2*vv32 + a3*vv12 - a3*vv32
+
+ - b2*vv12 + b2*vv22 - b3*vv22 - 2*vv12 - 2*vv22 - 2*vv32 + 2 >= 0) or (
+
+a3*vv32 - vv32 >= 0 and a2*vv32 + a3*vv12 + a3*vv32 - b2*vv12 + b2*vv22
+
+ - b3*vv22 - 2*vv12 - 2*vv22 - 4*vv32 + 2 >= 0) or (a2*vv22 - vv22 <= 0 and 
+
+a1*vv22 - a2*vv22 + a2*vv32 + b1*vv12 - b1*vv32 - b2*vv12 - 2*vv12 - 2*vv22
+
+ - 2*vv32 + 2 >= 0) or (a2*vv22 - vv22 >= 0 and a1*vv22 + a2*vv22 + a2*vv32
+
+ + b1*vv12 - b1*vv32 - b2*vv12 - 2*vv12 - 4*vv22 - 2*vv32 + 2 >= 0) or (
+
+a1*vv12 - vv12 <= 0 and a1*vv12 - a1*vv22 - a3*vv12 + b1*vv32 + b3*vv22
+
+ - b3*vv32 + 2*vv12 + 2*vv22 + 2*vv32 - 2 <= 0) or (a1*vv12 - vv12 >= 0 and 
+
+a1*vv12 + a1*vv22 + a3*vv12 - b1*vv32 - b3*vv22 + b3*vv32 - 4*vv12 - 2*vv22
+
+ - 2*vv32 + 2 >= 0)) and ((a3*vv31 - vv31 <= 0 and a1*vv21 + a2*vv31 + a3*vv31
+
+ - b1*vv31 - b2*vv11 - b3*vv31 - 3*vv11 - 3*vv21 - 4*vv31 + 2 <= 0) or (
+
+a3*vv31 - vv31 >= 0 and a1*vv21 + a2*vv31 - a3*vv31 - b1*vv31 - b2*vv11
+
+ - b3*vv31 - 3*vv11 - 3*vv21 - 2*vv31 + 2 <= 0) or (a2*vv21 - vv21 <= 0 and 
+
+a1*vv21 + a2*vv21 + a3*vv11 - b1*vv31 - b2*vv21 - b3*vv21 - 3*vv11 - 4*vv21
+
+ - 3*vv31 + 2 <= 0) or (a2*vv21 - vv21 >= 0 and a1*vv21 - a2*vv21 + a3*vv11
+
+ - b1*vv31 - b2*vv21 - b3*vv21 - 3*vv11 - 2*vv21 - 3*vv31 + 2 <= 0) or (
+
+a1*vv11 - vv11 <= 0 and a1*vv11 + a2*vv31 + a3*vv11 - b1*vv11 - b2*vv11
+
+ - b3*vv21 - 4*vv11 - 3*vv21 - 3*vv31 + 2 <= 0) or (a1*vv11 - vv11 >= 0 and 
+
+a1*vv11 - a2*vv31 - a3*vv11 + b1*vv11 + b2*vv11 + b3*vv21 + 2*vv11 + 3*vv21
+
+ + 3*vv31 - 2 >= 0)) and ((a3*vv3 - vv3 <= 0 and 
+
+a1*vv2 + a2*vv3 - a3*vv3 - b1*vv3 - b2*vv1 + b3*vv3 - 3*vv1 - 3*vv2 + 2 >= 0) or
+
+ (a3*vv3 - vv3 >= 0 and 
+
+a1*vv2 + a2*vv3 + a3*vv3 - b1*vv3 - b2*vv1 + b3*vv3 - 3*vv1 - 3*vv2 - 2*vv3 + 2
+
+ >= 0) or (a2*vv2 - vv2 <= 0 and 
+
+a1*vv2 - a2*vv2 + a3*vv1 - b1*vv3 + b2*vv2 - b3*vv2 - 3*vv1 - 3*vv3 + 2 >= 0) or
+
+ (a2*vv2 - vv2 >= 0 and 
+
+a1*vv2 + a2*vv2 + a3*vv1 - b1*vv3 + b2*vv2 - b3*vv2 - 3*vv1 - 2*vv2 - 3*vv3 + 2
+
+ >= 0) or (a1*vv1 - vv1 <= 0 and 
+
+a1*vv1 - a2*vv3 - a3*vv1 - b1*vv1 + b2*vv1 + b3*vv2 + 3*vv2 + 3*vv3 - 2 <= 0) or
+
+ (a1*vv1 - vv1 >= 0 and 
+
+a1*vv1 + a2*vv3 + a3*vv1 + b1*vv1 - b2*vv1 - b3*vv2 - 2*vv1 - 3*vv2 - 3*vv3 + 2
+
+ >= 0)))
+
+
+rlposqe rlex(informula);
+
+
+true
+
+
+end;
+

@@ -1,0 +1,325 @@
+% https://doi.org/10.1007/978-3-030-85165-1_18
+% 4.1 Triangle Network
+
+off rlabout;
+
+
+
+rlset r;
+
+
+{}
+
+
+algebraic procedure varietyStarIsNotEmpty(xl, sfl, theo);
+   rlsimpl(ex(xl, notzero xl and zero sfl), theo);
+
+
+varietystarisnotempty
+
+
+algebraic procedure varietyStarIsCosetInv(xl, sfl, theo);
+   % all({g, x}, g<>0 and x<>0 and y<>0 and F(g)=0 and F(g*x)=0 impl F(g/x)=0);
+   begin
+      scalar il, gl, gxl, u1in;
+      scalar x_in_variety, g_in_variety, gx_in_variety, g_over_x_in_variety;
+      x_in_variety := zero sfl;
+      il := for each x in xl collect getIndex(x, 'x);
+      gl := for each i in il collect mkid(g, i);
+      gxl := append(gl, xl);
+      g_in_variety := sub(
+         for each i in il collect mkid(x, i) = mkid(g, i),
+         x_in_variety);
+      gx_in_variety := sub(
+         for each i in il collect mkid(x, i) = mkid(g, i) * mkid(x, i),
+         x_in_variety);
+      g_over_x_in_variety := sub(
+         for each i in il collect mkid(x, i) = mkid(g, i) / mkid(x, i),
+         x_in_variety);
+      % Inverse:
+      u1in := all(gxl, notzero gxl and g_in_variety and gx_in_variety
+         impl g_over_x_in_variety);
+      return u1in
+   end;
+
+
+varietystariscosetinv
+
+
+algebraic procedure varietyStarIsCosetMult(xl, sfl, theo);
+   % all({g, x, y}, g<>0 and x<>0 and y<>0 and F(g)=0 and F(g*x)=0 and F(g*y)=0 impl F(g*x*y)=0);
+   begin
+      scalar il, yl, gl, gxl, gxyl, u1, u2, g_in_variety, u1in, u2in;
+      scalar x_in_variety, gx_in_variety, gy_in_variety, gxy_in_variety, g_over_x_in_variety;
+      x_in_variety := zero sfl;
+      il := for each x in xl collect getIndex(x, 'x);
+      gl := for each i in il collect mkid(g, i);
+      yl := for each i in il collect mkid(y, i);
+      gxl := append(gl, xl);
+      gxyl := append(gxl, yl);
+      g_in_variety := sub(
+         for each i in il collect mkid(x, i) = mkid(g, i),
+         x_in_variety);
+      gx_in_variety := sub(
+         for each i in il collect mkid(x, i) = mkid(g, i) * mkid(x, i),
+         x_in_variety);
+      gy_in_variety := sub(
+         for each i in il collect mkid(x, i) = mkid(g, i) * mkid(y, i),
+         x_in_variety);
+      gxy_in_variety := sub(
+         for each i in il collect
+            mkid(x, i) = mkid(g, i) * mkid(x, i) * mkid(y, i),
+         x_in_variety);
+      u2in := all(gxyl, notzero gxyl and g_in_variety and gx_in_variety and
+         gy_in_variety impl gxy_in_variety);
+      return u2in
+   end;
+
+
+varietystariscosetmult
+
+
+symbolic operator getIndex;
+
+
+
+symbolic procedure getIndex(v, base);
+   begin scalar w;
+      w := explode v;
+      for i := 1:length explode base do
+         w := cdr w;
+      return compress w
+   end;
+
+
+getindex
+
+
+algebraic procedure notzero(vl);
+   rlsimpl for each v in vl  mkand v <> 0;
+
+
+notzero
+
+
+algebraic procedure zero(vl);
+   rlsimpl for each v in vl  mkand v = 0;
+
+
+zero
+
+
+symbolic operator qesimpl;
+
+
+
+symbolic procedure qesimpl(phi, theo);
+   begin scalar res, !*rlverbose;
+      phi := rl_simp phi;
+      theo := for each a in cdr theo collect rl_simp a;
+      res := rl_simpl(cl_apply2ats1(phi, function qesimpl1, {theo}), theo, -1);
+      return rl_mk!*fof res
+   end;
+
+
+qesimpl
+
+
+symbolic procedure qesimpl1(at, theo);
+   begin scalar w;
+      w := rl_qe(rl_all(rl_mk2('impl, rl_smkn('and, theo), at), nil), nil);
+      if w eq 'true then
+         return 'true;
+      w := rl_qe(rl_ex(rl_mkn('and, at . theo), nil), nil);
+      if w eq 'false then
+         return 'false;
+      return at
+   end;
+
+
+qesimpl1
+
+
+off allfac;
+
+
+on rlnzden;
+
+
+on rlqeaprecise;
+
+
+off rlqedfs;
+
+
+off rlqefbmma;
+
+
+off rlqefbqepcad;
+
+
+off rlqefbslfq;
+
+
+on rlsiexpl;
+
+
+on rlsiexpla;
+
+
+on rlqegsd;
+
+
+
+kl := {k12, k13, k21, k23, K31, K32}$
+
+
+xl := {x1, x2}$
+
+
+fl := {(-2*k12-k13)*x1^2+(2*k21+k23)*x2^2+(k31-k32)*x1*x2}$
+
+
+
+pos := for each k in kl collect k > 0$
+
+
+
+% Non-emptyness of V_k^*:
+phi1 := varietyStarIsNotEmpty(xl, fl, pos);
+
+
+phi1 := ex x1 ex x2 (x2 <> 0 and x1 <> 0
+
+             2         2           2         2
+ and 2*k12*x1  + k13*x1  - 2*k21*x2  - k23*x2  - k31*x1*x2 + k32*x1*x2 = 0)
+
+w := rlqea(phi1, pos);
+
+
+                                                           2                  2
+w := {{16*k12*k21 + 8*k12*k23 + 8*k13*k21 + 4*k13*k23 + k31  - 2*k31*k32 + k32
+
+        >= 0,
+
+       {x1 = -1,
+
+                                                                          2
+        x2 = ( - sqrt(16*k12*k21 + 8*k12*k23 + 8*k13*k21 + 4*k13*k23 + k31
+
+                                   2
+                  - 2*k31*k32 + k32 ) + k31 - k32)/(4*k21 + 2*k23)}},
+
+                                                           2                  2
+      {16*k12*k21 + 8*k12*k23 + 8*k13*k21 + 4*k13*k23 + k31  - 2*k31*k32 + k32
+
+        >= 0,
+
+       {x1 = 1,
+
+                                                                          2
+        x2 = ( - sqrt(16*k12*k21 + 8*k12*k23 + 8*k13*k21 + 4*k13*k23 + k31
+
+                                   2
+                  - 2*k31*k32 + k32 ) - k31 + k32)/(4*k21 + 2*k23)}}}
+
+phi1_ := qesimpl(for each case in w mkor first case, pos);
+
+
+phi1_ := true
+
+
+% Shifted completeness under inverses:
+phi2 := varietyStarIsCosetInv(xl, fl, pos);
+
+
+phi2 := all g1 all g2 all x1 all x2 ((
+
+(x2 <> 0 and x1 <> 0 and g2 <> 0 and g1 <> 0)
+
+         2         2                                   2         2
+ and 2*g1 *k12 + g1 *k13 - g1*g2*k31 + g1*g2*k32 - 2*g2 *k21 - g2 *k23 = 0 and 
+
+    2       2     2       2                                           2       2
+2*g1 *k12*x1  + g1 *k13*x1  - g1*g2*k31*x1*x2 + g1*g2*k32*x1*x2 - 2*g2 *k21*x2
+
+     2       2               2       2     2       2
+ - g2 *k23*x2  = 0) impl 2*g1 *k12*x2  + g1 *k13*x2  - g1*g2*k31*x1*x2
+
+                         2       2     2       2
+ + g1*g2*k32*x1*x2 - 2*g2 *k21*x1  - g2 *k23*x1  = 0)
+
+w := rlqe(phi2, pos);
+
+
+w := k31 - k32 = 0 or 
+
+                                                    2                  2
+16*k12*k21 + 8*k12*k23 + 8*k13*k21 + 4*k13*k23 + k31  - 2*k31*k32 + k32  <= 0
+
+phi2_ := qesimpl(w, pos);
+
+
+phi2_ := k31 - k32 = 0
+
+
+% Shifted completeness under multiplication:
+phi3 := varietyStarIsCosetMult(xl, fl, pos);
+
+
+phi3 := all g1 all g2 all x1 all x2 all y1 all y2 ((
+
+(y2 <> 0 and y1 <> 0 and x2 <> 0 and x1 <> 0 and g2 <> 0 and g1 <> 0)
+
+         2         2                                   2         2
+ and 2*g1 *k12 + g1 *k13 - g1*g2*k31 + g1*g2*k32 - 2*g2 *k21 - g2 *k23 = 0 and 
+
+    2       2     2       2                                           2       2
+2*g1 *k12*x1  + g1 *k13*x1  - g1*g2*k31*x1*x2 + g1*g2*k32*x1*x2 - 2*g2 *k21*x2
+
+     2       2             2       2     2       2
+ - g2 *k23*x2  = 0 and 2*g1 *k12*y1  + g1 *k13*y1  - g1*g2*k31*y1*y2
+
+                         2       2     2       2               2       2   2
+ + g1*g2*k32*y1*y2 - 2*g2 *k21*y2  - g2 *k23*y2  = 0) impl 2*g1 *k12*x1 *y1
+
+     2       2   2
+ + g1 *k13*x1 *y1  - g1*g2*k31*x1*x2*y1*y2 + g1*g2*k32*x1*x2*y1*y2
+
+       2       2   2     2       2   2
+ - 2*g2 *k21*x2 *y2  - g2 *k23*x2 *y2  = 0)
+
+w := rlqe(phi3, pos);
+
+
+w := k31 - k32 = 0 or 
+
+                                                    2                  2
+16*k12*k21 + 8*k12*k23 + 8*k13*k21 + 4*k13*k23 + k31  - 2*k31*k32 + k32  <= 0
+
+phi3_ := qesimpl(w, pos);
+
+
+phi3_ := k31 - k32 = 0
+
+
+coset := rlgsn(phi1_ and phi2_ and phi3_, form=dnf);
+
+
+coset := k31 - k32 = 0
+
+
+phi4 := rlsimpl(sub(for each x in xl collect x=1, zero fl), pos);
+
+
+phi4 := 2*k12 + k13 - 2*k21 - k23 - k31 + k32 = 0
+
+
+group := rlgsn(coset and phi4, form=dnf);
+
+
+group := k31 - k32 = 0 and 2*k12 + k13 - 2*k21 - k23 = 0
+
+
+end;
+

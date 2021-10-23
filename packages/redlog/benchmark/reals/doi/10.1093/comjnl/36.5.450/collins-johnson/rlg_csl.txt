@@ -1,0 +1,74 @@
+% The Collins--Johnson problem:
+
+off rlabout$
+
+
+
+rlset r$
+
+
+
+a1 := -(1-3*r)*(a**2+b**2)+2*a*r$
+
+
+a2 := -(2-3*r)*(a**2+b**2)+4*a*r-2*a-r$
+
+
+coj := ex(r,0<r<1 and a>=1/2 and b>0 and a1<0 and a2>0)$
+
+
+
+% Variant by Loos & Weispfenning:
+
+lwcoj := ex(r,0<r<1 and a1<0 and a2>0)$
+
+
+
+rlqe lwcoj;
+
+
+    2            2            4      3      2  2        2      4
+(3*a  + 2*a + 3*b  > 0 and 3*a  + 2*a  + 6*a *b  + 2*a*b  + 3*b  > 0
+
+       2        2           4      3      2  2      2        2      4
+ and (a  + a + b  = 0 or 3*a  + 5*a  + 6*a *b  + 2*a  + 5*a*b  + 3*b  > 0) and (
+
+   6       5       4  2       4       3  2       3       2  4       2  2
+9*a  + 24*a  + 27*a *b  + 27*a  + 48*a *b  + 10*a  + 27*a *b  + 30*a *b
+
+         4        2      6      4            2            2
+ + 24*a*b  + 2*a*b  + 9*b  + 3*b  < 0 or (3*a  + 4*a + 3*b  - 1 < 0
+
+        4      3      2  2      2        2      4    2
+ and 3*a  + 6*a  + 6*a *b  + 5*a  + 6*a*b  + 3*b  + b  = 0))) or (
+
+   2            2
+3*a  + 4*a + 3*b  - 1 < 0
+
+        4      3      2  2      2        2          4    2
+ and 3*a  + 7*a  + 6*a *b  + 3*a  + 7*a*b  - a + 3*b  - b  > 0 and (
+
+ 2          2
+a  + 2*a + b  - 1 = 0
+
+       4       3      2  2      2         2            4      2
+ or 3*a  + 10*a  + 6*a *b  + 4*a  + 10*a*b  - 6*a + 3*b  - 4*b  + 1 > 0) and (
+
+   6       5       4  2       4       3  2       3       2  4       2  2      2
+9*a  + 30*a  + 27*a *b  + 36*a  + 60*a *b  + 14*a  + 27*a *b  + 36*a *b  - 5*a
+
+         4        2      6    2            2            2
+ + 30*a*b  - 2*a*b  + 9*b  - b  < 0 or (3*a  + 2*a + 3*b  > 0
+
+        4      3      2  2      2        2      4    2
+ and 3*a  + 6*a  + 6*a *b  + 5*a  + 6*a*b  + 3*b  + b  = 0))) or (
+
+  2        2          2        2            2            2
+(a  + a + b  < 0 or (a  + a + b  = 0 and 3*a  + 2*a + 3*b  > 0)) and (
+
+ 2          2              2          2                2            2
+a  + 2*a + b  - 1 > 0 or (a  + 2*a + b  - 1 = 0 and 3*a  + 4*a + 3*b  - 1 < 0)))
+
+
+end;
+

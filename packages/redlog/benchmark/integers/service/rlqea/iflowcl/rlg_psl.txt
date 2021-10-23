@@ -1,0 +1,53 @@
+% Information Flow Control
+
+off rlabout;
+
+
+
+rlset z;
+
+
+{}
+
+
+sec := (a < b and cong(a+b,0,2) and 2*n = a+b and
+      (a < b and b-a = n or a >= b and a-b = n)) or
+   (a < b and ncong(a+b,0,2) and 2*n = a+b+1 and
+      (a < b and b-a = n or a >= b and a-b = n))$
+
+
+
+rlqea rlex sec;
+
+
+{{true,
+
+  {n = _k8,
+
+        3*_k8 - 1
+   b = -----------,
+            2
+
+        _k8 - 1
+   a = ---------,
+           2
+
+   implicit = {_k8 + 2 >= 0 and _k8 - 2 <= 0}}},
+
+ {true,
+
+  {n = _k4,
+
+        3*_k4
+   b = -------,
+          2
+
+        _k4
+   a = -----,
+         2
+
+   implicit = {_k4 + 2 >= 0 and _k4 - 2 <= 0}}}}
+
+
+end;
+
