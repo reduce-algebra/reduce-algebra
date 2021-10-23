@@ -1,0 +1,61 @@
+% An artificial example with some non-trivial bounds. Specifically, one can
+% see bound-variables _kj occurring in the bound of some other _ki.
+% Furthermore, some bounds are printed with abs.
+off rlabout;
+
+
+
+rlset z;
+
+
+{}
+
+
+f := ex({m, n}, a+2*b = (a+b)*m and a*(m+n) < 0);
+
+
+f := ex m ex n ( - a*m + a - b*m + 2*b = 0 and a*m + a*n < 0)
+
+
+rlwqe f;
+
+
+(2*a + 3*b ~a + b~ 0 and a + b <> 0 and a > 0) or (a + 2*b ~a + b~ 0
+
+ and a + b <> 0 and (
+
+(a < 0 and ((a + 2*b < 0 and a + b < 0) or (a + 2*b > 0 and a + b > 0)))
+
+ or (a > 0 and ((a + 2*b < 0 and a + b > 0) or (a + 2*b > 0 and a + b < 0)))))
+
+ or (a + b <> 0 and a < 0 and b ~a + b~ 0) or bex _k8 [ - abs(a + b) <= _k8
+
+ <= abs(a + b)] ((
+
+(a < 0 and ((_k8 > 0 and a + b < 0) or (_k8 > 0 and a + b > 0)))
+
+ or (a > 0 and ((_k8 < 0 and a + b < 0) or (_k8 < 0 and a + b > 0))))
+
+ and a + b <> 0 and a + 2*b ~a + b~ 0 and _k8 - a - 2*b ~a + b~ 0) or bex _k6 [
+
+ - 1 <= _k6 <= 1] (bex _k5 [
+
+_k6*a + _k6*b + a + b <= _k5 <= _k6*a + _k6*b - a - b
+
+ or _k6*a + _k6*b - a - b <= _k5 <= _k6*a + _k6*b + a + b] (bex _k2 [ - 1 <= _k2
+
+ <= 1] (((_k2 + 1 = 0 and _k5 + a + b = 0 and a > 0)
+
+ or (_k2 - 1 = 0 and _k5 - a - b = 0 and a < 0)) and _k2*a + _k2*b - _k5 = 0)
+
+ and a + b <> 0 and _k5 - a - 2*b ~a + b~ 0)) or bex _k2 [ - 1 <= _k2 <= 1] (
+
+((_k2 + 1 = 0 and 2*a + 3*b = 0 and a > 0) or (_k2 - 1 = 0 and a < 0 and b = 0))
+
+ and _k2*a + _k2*b - a - 2*b = 0) or bex _k10 [ - 1 <= _k10 <= 1] (
+
+((_k10 + 1 = 0 and a > 0) or (_k10 - 1 = 0 and a < 0)) and a + 2*b = 0)
+
+
+end;
+

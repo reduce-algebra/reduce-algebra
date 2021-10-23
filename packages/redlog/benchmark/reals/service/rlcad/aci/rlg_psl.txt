@@ -1,0 +1,201 @@
+% An arithmetic component in an expert system
+% Cut without undercutting
+
+off rlabout;
+
+
+
+rlset reals;
+
+
+{}
+
+
+aci := ex({x,y},0<x and y<0 and x*r-x*tt+tt=x*q-x*s+s and x*b-x*d+d=y*a-y*c+c)$
+
+
+
+aciqf := rlcad aci;
+
+
+aciqf := (s - tt = 0 and q - r - s + tt = 0 and c - d < 0 and b - d < 0
+
+ and b - c = 0 and b*s - b*tt + c*q - c*r - c*s + c*tt = 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r = 0 and a - c <> 0) or (
+
+s - tt = 0 and q - r - s + tt = 0 and c - d < 0 and b - d < 0 and b - c < 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt = 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r = 0 and a - c <= 0) or (
+
+s - tt = 0 and q - r - s + tt = 0 and c - d < 0 and b - d < 0 and b - c > 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt = 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r = 0 and a - c >= 0) or (
+
+s - tt = 0 and q - r - s + tt = 0 and c - d > 0 and b - d > 0 and b - c = 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt = 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r = 0 and a - c <> 0) or (
+
+s - tt = 0 and q - r - s + tt = 0 and c - d > 0 and b - d > 0 and b - c < 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt = 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r = 0 and a - c <= 0) or (
+
+s - tt = 0 and q - r - s + tt = 0 and c - d > 0 and b - d > 0 and b - c > 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt = 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r = 0 and a - c >= 0) or (
+
+s - tt = 0 and q - r - s + tt = 0 and b - c = 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt = 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r = 0 and a - c = 0) or (
+
+s - tt = 0 and q - r - s + tt = 0 and b - c < 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt = 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r = 0 and a - c > 0) or (
+
+s - tt = 0 and q - r - s + tt = 0 and b - c > 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt = 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r = 0 and a - c < 0) or (
+
+s - tt < 0 and q - r - s + tt > 0 and c - d = 0 and b - d = 0 and b - c = 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r = 0 and a - c = 0) or (
+
+s - tt < 0 and q - r - s + tt > 0 and c - d = 0 and b - d < 0 and b - c < 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r > 0 and a - c > 0) or (
+
+s - tt < 0 and q - r - s + tt > 0 and c - d = 0 and b - d > 0 and b - c > 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r < 0 and a - c < 0) or (
+
+s - tt < 0 and q - r - s + tt > 0 and c - d < 0 and b - d < 0 and b - c <> 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r = 0 and a - c = 0) or (
+
+s - tt < 0 and q - r - s + tt > 0 and c - d < 0 and b - d < 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r < 0 and a - c < 0) or (
+
+s - tt < 0 and q - r - s + tt > 0 and c - d < 0 and b - d < 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r > 0 and a - c > 0) or (
+
+s - tt < 0 and q - r - s + tt > 0 and c - d < 0 and b - d >= 0 and b - c > 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r < 0 and a - c < 0) or (
+
+s - tt < 0 and q - r - s + tt > 0 and c - d > 0 and b - d <= 0 and b - c < 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r > 0 and a - c > 0) or (
+
+s - tt < 0 and q - r - s + tt > 0 and c - d > 0 and b - d > 0 and b - c <> 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r = 0 and a - c = 0) or (
+
+s - tt < 0 and q - r - s + tt > 0 and c - d > 0 and b - d > 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r < 0 and a - c < 0) or (
+
+s - tt < 0 and q - r - s + tt > 0 and c - d > 0 and b - d > 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r > 0 and a - c > 0) or (
+
+s - tt < 0 and q - r - s + tt > 0 and b - c = 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt = 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r = 0 and a - c = 0) or (
+
+s - tt < 0 and q - r - s + tt > 0 and b - c < 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt > 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r > 0 and a - c > 0) or (
+
+s - tt < 0 and q - r - s + tt > 0 and b - c > 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt < 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r < 0 and a - c < 0) or (
+
+s - tt > 0 and q - r - s + tt < 0 and c - d = 0 and b - d = 0 and b - c = 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r = 0 and a - c = 0) or (
+
+s - tt > 0 and q - r - s + tt < 0 and c - d = 0 and b - d < 0 and b - c < 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r < 0 and a - c > 0) or (
+
+s - tt > 0 and q - r - s + tt < 0 and c - d = 0 and b - d > 0 and b - c > 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r > 0 and a - c < 0) or (
+
+s - tt > 0 and q - r - s + tt < 0 and c - d < 0 and b - d < 0 and b - c <> 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r = 0 and a - c = 0) or (
+
+s - tt > 0 and q - r - s + tt < 0 and c - d < 0 and b - d < 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r < 0 and a - c > 0) or (
+
+s - tt > 0 and q - r - s + tt < 0 and c - d < 0 and b - d < 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r > 0 and a - c < 0) or (
+
+s - tt > 0 and q - r - s + tt < 0 and c - d < 0 and b - d >= 0 and b - c > 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r > 0 and a - c < 0) or (
+
+s - tt > 0 and q - r - s + tt < 0 and c - d > 0 and b - d <= 0 and b - c < 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r < 0 and a - c > 0) or (
+
+s - tt > 0 and q - r - s + tt < 0 and c - d > 0 and b - d > 0 and b - c <> 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r = 0 and a - c = 0) or (
+
+s - tt > 0 and q - r - s + tt < 0 and c - d > 0 and b - d > 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r < 0 and a - c > 0) or (
+
+s - tt > 0 and q - r - s + tt < 0 and c - d > 0 and b - d > 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r > 0 and a - c < 0) or (
+
+s - tt > 0 and q - r - s + tt < 0 and b - c = 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt = 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r = 0 and a - c = 0) or (
+
+s - tt > 0 and q - r - s + tt < 0 and b - c < 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt < 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r < 0 and a - c > 0) or (
+
+s - tt > 0 and q - r - s + tt < 0 and b - c > 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt > 0
+
+ and b*s - b*tt + c*q - c*r - c*s + c*tt - d*q + d*r > 0 and a - c < 0)
+
+
+end;
+

@@ -1,0 +1,29 @@
+% Testing rlcad
+% Condition on quartic polynomial being positive semidefinite.
+
+off rlabout;
+
+
+
+rlset reals;
+
+
+{}
+
+
+quartic := all(x,x**4+p*x**2+q*x+r>=0)$
+
+
+
+rlqepcad quartic;
+
+
+               4        3  2        2  2          2         4        3
+r >= 0 and 16*p *r - 4*p *q  - 128*p *r  + 144*p*q *r - 27*q  + 256*r  >= 0
+
+                2            3        2  2         2       2
+ and (16*p*r - q  > 0 or 16*p *r - 3*p *q  - 64*p*r  + 36*q *r >= 0)
+
+
+end;
+

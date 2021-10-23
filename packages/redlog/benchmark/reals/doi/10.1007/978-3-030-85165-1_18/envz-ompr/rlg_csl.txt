@@ -1,0 +1,461 @@
+% https://doi.org/10.1007/978-3-030-85165-1_18
+% 4.2 Escherichia Coli Osmoregulation System
+
+off rlabout;
+
+
+
+rlset r;
+
+
+{}
+
+
+algebraic procedure varietyStarIsNotEmpty(xl, sfl, theo);
+   rlsimpl(ex(xl, notzero xl and zero sfl), theo);
+
+
+varietystarisnotempty
+
+
+algebraic procedure varietyStarIsCosetInv(xl, sfl, theo);
+   % all({g, x}, g<>0 and x<>0 and y<>0 and F(g)=0 and F(g*x)=0 impl F(g/x)=0);
+   begin
+      scalar il, gl, gxl, u1in;
+      scalar x_in_variety, g_in_variety, gx_in_variety, g_over_x_in_variety;
+      x_in_variety := zero sfl;
+      il := for each x in xl collect getIndex(x, 'x);
+      gl := for each i in il collect mkid(g, i);
+      gxl := append(gl, xl);
+      g_in_variety := sub(
+         for each i in il collect mkid(x, i) = mkid(g, i),
+         x_in_variety);
+      gx_in_variety := sub(
+         for each i in il collect mkid(x, i) = mkid(g, i) * mkid(x, i),
+         x_in_variety);
+      g_over_x_in_variety := sub(
+         for each i in il collect mkid(x, i) = mkid(g, i) / mkid(x, i),
+         x_in_variety);
+      % Inverse:
+      u1in := all(gxl, notzero gxl and g_in_variety and gx_in_variety
+         impl g_over_x_in_variety);
+      return u1in
+   end;
+
+
+varietystariscosetinv
+
+
+algebraic procedure varietyStarIsCosetMult(xl, sfl, theo);
+   % all({g, x, y}, g<>0 and x<>0 and y<>0 and F(g)=0 and F(g*x)=0 and F(g*y)=0 impl F(g*x*y)=0);
+   begin
+      scalar il, yl, gl, gxl, gxyl, u1, u2, g_in_variety, u1in, u2in;
+      scalar x_in_variety, gx_in_variety, gy_in_variety, gxy_in_variety, g_over_x_in_variety;
+      x_in_variety := zero sfl;
+      il := for each x in xl collect getIndex(x, 'x);
+      gl := for each i in il collect mkid(g, i);
+      yl := for each i in il collect mkid(y, i);
+      gxl := append(gl, xl);
+      gxyl := append(gxl, yl);
+      g_in_variety := sub(
+         for each i in il collect mkid(x, i) = mkid(g, i),
+         x_in_variety);
+      gx_in_variety := sub(
+         for each i in il collect mkid(x, i) = mkid(g, i) * mkid(x, i),
+         x_in_variety);
+      gy_in_variety := sub(
+         for each i in il collect mkid(x, i) = mkid(g, i) * mkid(y, i),
+         x_in_variety);
+      gxy_in_variety := sub(
+         for each i in il collect
+            mkid(x, i) = mkid(g, i) * mkid(x, i) * mkid(y, i),
+         x_in_variety);
+      u2in := all(gxyl, notzero gxyl and g_in_variety and gx_in_variety and
+         gy_in_variety impl gxy_in_variety);
+      return u2in
+   end;
+
+
+varietystariscosetmult
+
+
+symbolic operator getIndex;
+
+
+
+symbolic procedure getIndex(v, base);
+   begin scalar w;
+      w := explode v;
+      for i := 1:length explode base do
+         w := cdr w;
+      return compress w
+   end;
+
+
+getindex
+
+
+algebraic procedure notzero(vl);
+   rlsimpl for each v in vl  mkand v <> 0;
+
+
+notzero
+
+
+algebraic procedure zero(vl);
+   rlsimpl for each v in vl  mkand v = 0;
+
+
+zero
+
+
+off allfac;
+
+
+on rlnzden;
+
+
+on rlqeaprecise;
+
+
+off rlqedfs;
+
+
+off rlqefbmma;
+
+
+off rlqefbqepcad;
+
+
+off rlqefbslfq;
+
+
+on rlsiexpl;
+
+
+on rlsiexpla;
+
+
+
+kl := {k12, k21, k23, k32, k34, k56, k65, k67, k89, k98, k910, k1112, k1211, k1213}$
+
+
+xl := {x1, x2, x3, x4, x5, x6, x7, x8, x9}$
+
+
+fl := {
+   -k12*x1 + k21*x2 - k1112*x1*x7 + (k1211+k1213)*x9,
+   k12*x1 + (-k21-k23)*x2 + k32*x3 + k67*x6,
+   k23*x2 + (-k32-k34)*x3 - k89*x3*x7 + (k98+k910)*x8,
+   k34*x3 - k56*x4*x5 + k65*x6,
+   -k56*x4*x5 + k65*x6 + k910*x8 + k1213*x9,
+   k56*x4*x5 + (-k65-k67)*x6,
+   k67*x6 - k89*x3*x7 + k98*x8 - k1112*x1*x7 + k1211*x9,
+   k89*x3*x7 + (-k98-k910)*x8,
+   k1112*x1*x7 + (-k1211-k1213)*x9}$
+
+
+ 
+pos := for each k in kl collect k > 0$
+
+
+
+% Non-emptyness of V_k^*:
+phi1 := varietyStarIsNotEmpty(xl, fl, pos);
+
+
+phi1 := ex x1 ex x2 ex x3 ex x4 ex x5 ex x6 ex x7 ex x8 ex x9 (x9 <> 0
+
+ and x8 <> 0 and x7 <> 0 and x6 <> 0 and x5 <> 0 and x4 <> 0 and x3 <> 0
+
+ and x2 <> 0 and x1 <> 0 and k89*x3*x7 - k910*x8 - k98*x8 = 0
+
+ and k56*x4*x5 - k65*x6 - k67*x6 = 0 and k34*x3 - k56*x4*x5 + k65*x6 = 0
+
+ and k23*x2 - k32*x3 - k34*x3 - k89*x3*x7 + k910*x8 + k98*x8 = 0
+
+ and k1213*x9 - k56*x4*x5 + k65*x6 + k910*x8 = 0
+
+ and k12*x1 - k21*x2 - k23*x2 + k32*x3 + k67*x6 = 0
+
+ and k1112*x1*x7 - k1211*x9 - k67*x6 + k89*x3*x7 - k98*x8 = 0
+
+ and k1112*x1*x7 - k1211*x9 - k1213*x9 = 0
+
+ and k1112*x1*x7 + k12*x1 - k1211*x9 - k1213*x9 - k21*x2 = 0)
+
+w := rlqea(phi1, pos);
+
+
+w := {{true,
+
+       {x1 = -1,
+
+               - k12
+        x2 = --------,
+               k21
+
+                  - k12*k23
+        x3 = -------------------,
+              k21*k32 + k21*k34
+
+        x4 = 1,
+
+               - k12*k23*k34*k65 - k12*k23*k34*k67
+        x5 = --------------------------------------,
+               k21*k32*k56*k67 + k21*k34*k56*k67
+
+                    - k12*k23*k34
+        x6 = ---------------------------,
+              k21*k32*k67 + k21*k34*k67
+
+        x7 = (k12*k1211*k23*k34*k910 + k12*k1211*k23*k34*k98
+
+               + k12*k1213*k23*k34*k910 + k12*k1213*k23*k34*k98)/(
+
+           k1112*k1213*k21*k32*k910 + k1112*k1213*k21*k32*k98
+
+            + k1112*k1213*k21*k34*k910 + k1112*k1213*k21*k34*k98
+
+            + k12*k1211*k23*k89*k910 + k12*k1213*k23*k89*k910),
+
+                    2          2              2          2
+        x8 = ( - k12 *k1211*k23 *k34*k89 - k12 *k1213*k23 *k34*k89)/(
+
+                          2    2                       2    2
+           k1112*k1213*k21 *k32 *k910 + k1112*k1213*k21 *k32 *k98
+
+                               2                                 2
+            + 2*k1112*k1213*k21 *k32*k34*k910 + 2*k1112*k1213*k21 *k32*k34*k98
+
+                             2    2                       2    2
+            + k1112*k1213*k21 *k34 *k910 + k1112*k1213*k21 *k34 *k98
+
+            + k12*k1211*k21*k23*k32*k89*k910 + k12*k1211*k21*k23*k34*k89*k910
+
+            + k12*k1213*k21*k23*k32*k89*k910 + k12*k1213*k21*k23*k34*k89*k910),
+
+        x9 = ( - k1112*k12*k23*k34*k910 - k1112*k12*k23*k34*k98)/(
+
+           k1112*k1213*k21*k32*k910 + k1112*k1213*k21*k32*k98
+
+            + k1112*k1213*k21*k34*k910 + k1112*k1213*k21*k34*k98
+
+            + k12*k1211*k23*k89*k910 + k12*k1213*k23*k89*k910)}}}
+
+phi1_ := rlsimpl(for each case in w mkor first case, pos);
+
+
+phi1_ := true
+
+  
+% Shifted completeness under inverses:
+phi2 := varietyStarIsCosetInv(xl, fl, pos);
+
+
+phi2 := all g1 all g2 all g3 all g4 all g5 all g6 all g7 all g8 all g9 all x1 
+
+all x2 all x3 all x4 all x5 all x6 all x7 all x8 all x9 (((x9 <> 0 and x8 <> 0
+
+ and x7 <> 0 and x6 <> 0 and x5 <> 0 and x4 <> 0 and x3 <> 0 and x2 <> 0
+
+ and x1 <> 0 and g9 <> 0 and g8 <> 0 and g7 <> 0 and g6 <> 0 and g5 <> 0
+
+ and g4 <> 0 and g3 <> 0 and g2 <> 0 and g1 <> 0) and (
+
+g3*g7*k89 - g8*k910 - g8*k98 = 0 and g4*g5*k56 - g6*k65 - g6*k67 = 0
+
+ and g3*k34 - g4*g5*k56 + g6*k65 = 0
+
+ and g2*k23 - g3*g7*k89 - g3*k32 - g3*k34 + g8*k910 + g8*k98 = 0
+
+ and  - g4*g5*k56 + g6*k65 + g8*k910 + g9*k1213 = 0
+
+ and g1*k12 - g2*k21 - g2*k23 + g3*k32 + g6*k67 = 0
+
+ and g1*g7*k1112 + g3*g7*k89 - g6*k67 - g8*k98 - g9*k1211 = 0
+
+ and g1*g7*k1112 - g9*k1211 - g9*k1213 = 0
+
+ and g1*g7*k1112 + g1*k12 - g2*k21 - g9*k1211 - g9*k1213 = 0) and (
+
+g3*g7*k89*x3*x7 - g8*k910*x8 - g8*k98*x8 = 0
+
+ and g4*g5*k56*x4*x5 - g6*k65*x6 - g6*k67*x6 = 0
+
+ and g3*k34*x3 - g4*g5*k56*x4*x5 + g6*k65*x6 = 0 and 
+
+g2*k23*x2 - g3*g7*k89*x3*x7 - g3*k32*x3 - g3*k34*x3 + g8*k910*x8 + g8*k98*x8 = 0
+
+ and  - g4*g5*k56*x4*x5 + g6*k65*x6 + g8*k910*x8 + g9*k1213*x9 = 0
+
+ and g1*k12*x1 - g2*k21*x2 - g2*k23*x2 + g3*k32*x3 + g6*k67*x6 = 0 and 
+
+g1*g7*k1112*x1*x7 + g3*g7*k89*x3*x7 - g6*k67*x6 - g8*k98*x8 - g9*k1211*x9 = 0
+
+ and g1*g7*k1112*x1*x7 - g9*k1211*x9 - g9*k1213*x9 = 0
+
+ and g1*g7*k1112*x1*x7 + g1*k12*x1 - g2*k21*x2 - g9*k1211*x9 - g9*k1213*x9 = 0))
+
+ impl (g3*g7*k89*x8 - g8*k910*x3*x7 - g8*k98*x3*x7 = 0
+
+ and g4*g5*k56*x6 - g6*k65*x4*x5 - g6*k67*x4*x5 = 0
+
+ and g3*k34*x4*x5*x6 - g4*g5*k56*x3*x6 + g6*k65*x3*x4*x5 = 0 and g2*k23*x3*x7*x8
+
+ - g3*g7*k89*x2*x8 - g3*k32*x2*x7*x8 - g3*k34*x2*x7*x8 + g8*k910*x2*x3*x7
+
+ + g8*k98*x2*x3*x7 = 0 and  - g4*g5*k56*x6*x8*x9 + g6*k65*x4*x5*x8*x9
+
+ + g8*k910*x4*x5*x6*x9 + g9*k1213*x4*x5*x6*x8 = 0 and g1*k12*x2*x3*x6
+
+ - g2*k21*x1*x3*x6 - g2*k23*x1*x3*x6 + g3*k32*x1*x2*x6 + g6*k67*x1*x2*x3 = 0 and
+
+ g1*g7*k1112*x3*x6*x8*x9 + g3*g7*k89*x1*x6*x8*x9 - g6*k67*x1*x3*x7*x8*x9
+
+ - g8*k98*x1*x3*x6*x7*x9 - g9*k1211*x1*x3*x6*x7*x8 = 0
+
+ and g1*g7*k1112*x9 - g9*k1211*x1*x7 - g9*k1213*x1*x7 = 0 and g1*g7*k1112*x2*x9
+
+ + g1*k12*x2*x7*x9 - g2*k21*x1*x7*x9 - g9*k1211*x1*x2*x7 - g9*k1213*x1*x2*x7 = 0
+
+))
+
+phi2_ := rlqe(phi2, pos);
+
+
+phi2_ := true
+
+
+% Shifted completeness under multiplication:
+phi3 := varietyStarIsCosetMult(xl, fl, pos);
+
+
+phi3 := all g1 all g2 all g3 all g4 all g5 all g6 all g7 all g8 all g9 all x1 
+
+all x2 all x3 all x4 all x5 all x6 all x7 all x8 all x9 all y1 all y2 all y3 all
+
+ y4 all y5 all y6 all y7 all y8 all y9 (((y9 <> 0 and y8 <> 0 and y7 <> 0
+
+ and y6 <> 0 and y5 <> 0 and y4 <> 0 and y3 <> 0 and y2 <> 0 and y1 <> 0
+
+ and x9 <> 0 and x8 <> 0 and x7 <> 0 and x6 <> 0 and x5 <> 0 and x4 <> 0
+
+ and x3 <> 0 and x2 <> 0 and x1 <> 0 and g9 <> 0 and g8 <> 0 and g7 <> 0
+
+ and g6 <> 0 and g5 <> 0 and g4 <> 0 and g3 <> 0 and g2 <> 0 and g1 <> 0) and (
+
+g3*g7*k89 - g8*k910 - g8*k98 = 0 and g4*g5*k56 - g6*k65 - g6*k67 = 0
+
+ and g3*k34 - g4*g5*k56 + g6*k65 = 0
+
+ and g2*k23 - g3*g7*k89 - g3*k32 - g3*k34 + g8*k910 + g8*k98 = 0
+
+ and  - g4*g5*k56 + g6*k65 + g8*k910 + g9*k1213 = 0
+
+ and g1*k12 - g2*k21 - g2*k23 + g3*k32 + g6*k67 = 0
+
+ and g1*g7*k1112 + g3*g7*k89 - g6*k67 - g8*k98 - g9*k1211 = 0
+
+ and g1*g7*k1112 - g9*k1211 - g9*k1213 = 0
+
+ and g1*g7*k1112 + g1*k12 - g2*k21 - g9*k1211 - g9*k1213 = 0) and (
+
+g3*g7*k89*x3*x7 - g8*k910*x8 - g8*k98*x8 = 0
+
+ and g4*g5*k56*x4*x5 - g6*k65*x6 - g6*k67*x6 = 0
+
+ and g3*k34*x3 - g4*g5*k56*x4*x5 + g6*k65*x6 = 0 and 
+
+g2*k23*x2 - g3*g7*k89*x3*x7 - g3*k32*x3 - g3*k34*x3 + g8*k910*x8 + g8*k98*x8 = 0
+
+ and  - g4*g5*k56*x4*x5 + g6*k65*x6 + g8*k910*x8 + g9*k1213*x9 = 0
+
+ and g1*k12*x1 - g2*k21*x2 - g2*k23*x2 + g3*k32*x3 + g6*k67*x6 = 0 and 
+
+g1*g7*k1112*x1*x7 + g3*g7*k89*x3*x7 - g6*k67*x6 - g8*k98*x8 - g9*k1211*x9 = 0
+
+ and g1*g7*k1112*x1*x7 - g9*k1211*x9 - g9*k1213*x9 = 0
+
+ and g1*g7*k1112*x1*x7 + g1*k12*x1 - g2*k21*x2 - g9*k1211*x9 - g9*k1213*x9 = 0) 
+
+and (g3*g7*k89*y3*y7 - g8*k910*y8 - g8*k98*y8 = 0
+
+ and g4*g5*k56*y4*y5 - g6*k65*y6 - g6*k67*y6 = 0
+
+ and g3*k34*y3 - g4*g5*k56*y4*y5 + g6*k65*y6 = 0 and 
+
+g2*k23*y2 - g3*g7*k89*y3*y7 - g3*k32*y3 - g3*k34*y3 + g8*k910*y8 + g8*k98*y8 = 0
+
+ and  - g4*g5*k56*y4*y5 + g6*k65*y6 + g8*k910*y8 + g9*k1213*y9 = 0
+
+ and g1*k12*y1 - g2*k21*y2 - g2*k23*y2 + g3*k32*y3 + g6*k67*y6 = 0 and 
+
+g1*g7*k1112*y1*y7 + g3*g7*k89*y3*y7 - g6*k67*y6 - g8*k98*y8 - g9*k1211*y9 = 0
+
+ and g1*g7*k1112*y1*y7 - g9*k1211*y9 - g9*k1213*y9 = 0
+
+ and g1*g7*k1112*y1*y7 + g1*k12*y1 - g2*k21*y2 - g9*k1211*y9 - g9*k1213*y9 = 0))
+
+ impl (g3*g7*k89*x3*x7*y3*y7 - g8*k910*x8*y8 - g8*k98*x8*y8 = 0
+
+ and g4*g5*k56*x4*x5*y4*y5 - g6*k65*x6*y6 - g6*k67*x6*y6 = 0
+
+ and g3*k34*x3*y3 - g4*g5*k56*x4*x5*y4*y5 + g6*k65*x6*y6 = 0 and g2*k23*x2*y2
+
+ - g3*g7*k89*x3*x7*y3*y7 - g3*k32*x3*y3 - g3*k34*x3*y3 + g8*k910*x8*y8
+
+ + g8*k98*x8*y8 = 0 and 
+
+ - g4*g5*k56*x4*x5*y4*y5 + g6*k65*x6*y6 + g8*k910*x8*y8 + g9*k1213*x9*y9 = 0 and
+
+ g1*k12*x1*y1 - g2*k21*x2*y2 - g2*k23*x2*y2 + g3*k32*x3*y3 + g6*k67*x6*y6 = 0 
+
+and g1*g7*k1112*x1*x7*y1*y7 + g3*g7*k89*x3*x7*y3*y7 - g6*k67*x6*y6
+
+ - g8*k98*x8*y8 - g9*k1211*x9*y9 = 0
+
+ and g1*g7*k1112*x1*x7*y1*y7 - g9*k1211*x9*y9 - g9*k1213*x9*y9 = 0 and 
+
+g1*g7*k1112*x1*x7*y1*y7 + g1*k12*x1*y1 - g2*k21*x2*y2 - g9*k1211*x9*y9
+
+ - g9*k1213*x9*y9 = 0))
+
+phi3_ := rlqe(phi3, pos);
+
+
+phi3_ := true
+
+
+coset := rlgsn(phi1_ and phi2_ and phi3_, form=dnf);
+
+
+coset := true
+
+
+phi4 := rlsimpl(sub(for each x in xl collect x=1, zero fl), pos);
+
+
+phi4 := k89 - k910 - k98 = 0 and k56 - k65 - k67 = 0 and k34 - k56 + k65 = 0
+
+ and k23 - k32 - k34 - k89 + k910 + k98 = 0 and k1213 - k56 + k65 + k910 = 0
+
+ and k12 - k21 - k23 + k32 + k67 = 0 and k1112 - k1211 - k67 + k89 - k98 = 0
+
+ and k1112 - k1211 - k1213 = 0 and k1112 + k12 - k1211 - k1213 - k21 = 0
+
+
+group := rlgsn(coset and phi4, form=dnf);
+
+
+group := k89 - k910 - k98 = 0 and k1213 - k67 + k89 - k98 = 0
+
+ and k1213 - k56 + k65 + k89 - k98 = 0 and k1213 - k34 + k89 - k98 = 0
+
+ and k1213 - k23 + k32 + k89 - k98 = 0 and k12 - k21 = 0
+
+ and k1112 - k1211 - k1213 = 0
+
+
+end;
+

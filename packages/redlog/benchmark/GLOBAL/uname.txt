@@ -1,0 +1,1 @@
+Linux alfred 5.4.134.1.amd64-smp x86_64
