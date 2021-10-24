@@ -94,8 +94,10 @@ if [ $? ]; then
     rm -f rlg_$lisp.raw
 fi
 
-if [ -r $ref/rlg_$lisp.txt ]; then
-    if [ -z "$(diff -Bqw $ref/rlg_$lisp.txt rlg_$lisp.txt)" ]; then
+refrlg=$(dirname $ref/$rel_benchmark)/rlg_$lisp.txt
+
+if [ -r $refrlg ]; then
+    if [ -z "$(diff -Bqw $refrlg rlg_$lisp.txt)" ]; then
         valid="True"
     else
         valid="False"
