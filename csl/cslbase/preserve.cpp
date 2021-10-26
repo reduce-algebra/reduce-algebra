@@ -1328,7 +1328,8 @@ static void collect_modules(string Cname, string Cleafname,
     LispObject v;
     char *p = reinterpret_cast<char *>(&celt(boffo, 0));
     if (why != SCAN_FILE) return;
-    Save save(mods);
+    THREADID;
+    Save save(THREADARG mods);
     const char *name = Cleafname.c_str();
     while (*name != '.' && *name != 0)
     {   *p++ = *name++;
@@ -1385,7 +1386,8 @@ LispObject Llibrary_members(LispObject env, LispObject oo)
         }
         while (k>0 && p[-1] == ' ') k--, p--;
         *p = 0;
-        Save save(r);
+        THREADID;
+        Save save(THREADARG r);
         v = iintern(boffo, k, lisp_package, 0);
         errexit();
         save.restore(r);
@@ -1891,7 +1893,8 @@ bool finished_with(int j)
         for (i=0; i<get_dirused(*d); i++)
         {   long int pos = bits32(&d->d[i].D_position);
             if (pos != hwm)
-            {   char *b = 16 + (char *)stack;
+            {   THREADID;
+                char *b = 16 + (char *)stack;
                 char small_buffer[64];
                 long int len = bits24(&d->d[i].D_size);
                 long int newpos = hwm;
@@ -1981,6 +1984,7 @@ int Igetc()
         else
         {   LispObject stream = qvalue(standard_input);
             if (!is_stream(stream)) return EOF;
+            THREADID;
             if_error(c = getc_stream(stream),
                      return EOF);
         }

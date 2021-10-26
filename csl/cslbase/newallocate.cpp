@@ -337,26 +337,6 @@ uintptr_t *C_stackbase;   // base of the main thread
 atomic<uint32_t> activeThreads;
 //  0x00 : total_threads : lisp_threads : still_busy_threads
 
-// The variables defined as thread_local here MAY be just rendered as
-// (eg)    "thread_local uintptr_t threadId;"   but on Windows they end
-// up as instances of a slightly strange class that supports assignment
-// from the the specified type and static casts to the specified type, but
-// where more complicated casts (explicit or implicit) may not be tolerated.
-// So there are places where I am obliged to write odd-looking code like
-// ... static_cast<uintptr_t>(threadId) ... or "threadId = static_cast<..."
-// to make the type conversion process especially explicit and simple.
-// I could avoid that if I made the wrapper class rather a lot more
-// compilicated, but I think that transparancy there and a modest amount of
-// redundancy here is the path that leaves me happiest (at present).
-
-DEFINE_THREAD_LOCAL(uintptr_t,    threadId);
-DEFINE_THREAD_LOCAL(uintptr_t,    fringe);
-DEFINE_THREAD_LOCAL(Page *,       borrowPages);
-DEFINE_THREAD_LOCAL(uintptr_t,    borrowFringe);
-DEFINE_THREAD_LOCAL(uintptr_t,    borrowLimit);
-DEFINE_THREAD_LOCAL(uintptr_t,    borrowNext);
-
-
 
 // All the heap memory I use here will be allocated within (up to) 32
 // segments that are grabbed using "new" etc...
@@ -455,6 +435,18 @@ char *heapSegmentBase[16];
 size_t heapSegmentSize[16];
 size_t heapSegmentCount;
 
+#ifdef NO_THREADS
+Page     *borrowPages;
+uintptr_t borrowFringe;
+uintptr_t borrowLimit;
+uintptr_t borrowNext;
+#else // NO_THREADS
+Page     *borrowPagess[maxThreads];
+uintptr_t borrowFringes[maxThreads];
+uintptr_t borrowLimits[maxThreads];
+uintptr_t borrowNexts[maxThreads];
+#endif // NO_THREADS
+
 // I make some assumptions about the variations on atomic<> that I
 // use, but then would like to use static_assert to confirm them or to
 // cause CSL to fail to compile. However the test has to be dynamic, so I can
@@ -476,14 +468,10 @@ class MakeAssertions
 {
 public:
     MakeAssertions()
-    {   if (sizeof(atomic<std::uint8_t>) != 1)
-        {   cout << "atomic<int8_t> is not the expected size" << "\r" << endl;
-            my_abort(LOCATION);
-        }
-        if (!atomic<std::uint8_t>().is_lock_free())
-        {   cout << "atomic<uint8_t> not lock-free" << "\r" << endl;
-            my_abort(LOCATION);
-        }
+    {   my_assert(sizeof(atomic<std::uint8_t>) == 1,
+                  "atomic<int8_t> is not the expected size");
+        my_assert(atomic<std::uint8_t>().is_lock_free(),
+                  "atomic<uint8_t> not lock-free");
         if (sizeof(atomic<std::uintptr_t>) != sizeof(intptr_t))
         {   cout << "atomic<uintptr_t> is not the expected size" << "\r" << endl;
             my_abort(LOCATION);
@@ -510,8 +498,8 @@ public:
                 my_abort(LOCATION);
             }
         }
-        cout << "is_standard_layout(Chunk) = "
-             << std::is_standard_layout<Chunk>::value << "\r" << endl;
+        my_assert(std::is_standard_layout<Chunk>::value,
+                  "Chunk not standard layout");
     }
 };
 
@@ -583,9 +571,9 @@ void newRegionNeeded()
 // up to the next pinned region was full up! Or if the user asked for a GC.
 // I will set padders everywhere even if I might think I have done so
 // already, just so I am certain.
-    for (unsigned int i=0; i<maxThreads; i++)
-    {   if (myChunkBase[i] != nullptr)
-            myChunkBase[i]->chunkFringe = fringeBis[i];
+    for (unsigned int threadId=0; threadId<maxThreads; threadId++)
+    {   if (myChunkBase != nullptr)
+            myChunkBase->chunkFringe = fringeBis;
     }
 // Here I will put in a padder that may lie between Chunks. I think this
 // should not be necessary!
@@ -702,13 +690,13 @@ void ensureOtherThreadsAreIdle()
     cv_for_gc_idling.notify_all();
 }
 
-void ableToAllocateNewChunk(unsigned int i, size_t n, size_t gap)
+void ableToAllocateNewChunk(uintptr_t threadId, size_t n, size_t gap)
 {
 // OK I can allocate a new Chunk for one of the threads here. First I should
 // insert padding so that the tail end of the previous chunk is tidily
 // filled in.
 //    cout << "At " << __WHERE__ << " ableToAllocateNewChunk\n";
-    myChunkBase[i]->chunkFringe = fringeBis[i];
+    myChunkBase->chunkFringe = fringeBis;
     Chunk *newChunk = reinterpret_cast<Chunk *>(
                           static_cast<uintptr_t>(gFringe));
     newChunk->length = n+targetChunkSize;
@@ -716,53 +704,53 @@ void ableToAllocateNewChunk(unsigned int i, size_t n, size_t gap)
     newChunk->chunkPinChain = nullptr;
     size_t chunkNo = currentPage->chunkCount.fetch_add(1);
     currentPage->chunkMap[chunkNo] = newChunk;
-    result[i] = newChunk->dataStart() + TAG_VECTOR;
-//    cout << "result[" << i << "] = " << Addr(result[i]) << endl;
-    uintptr_t thr = threadId;
-    myChunkBase[thr] = newChunk;
-    request[i] = 0;
+    result = newChunk->dataStart() + TAG_VECTOR;
+//    cout << "result[" << threadId << "] = " << Addr(result) << endl;
+    myChunkBase = newChunk;
+    request = 0;
 // If I allocate a block here it will need to be alive through an impending
 // garbage collection, so I will make it seem like a respectable Lisp
 // vector with binary content.
-//    LispObject rr = result[i];
-    my_assert(findPage(result[i]) != nullptr);
-//    cout << Addr(result[i]) << " " << Addr(rr) << endl;
-    setHeaderWord(result[i]-TAG_VECTOR, n, TYPE_VEC32);
-    fringeBis[i] = newChunk->dataStart() + n;
-//    cout << "At " << __WHERE__ << " fringeBis[" << i
-//         << "] = " << Addr(fringeBis[i]) << endl;
-    gFringe = limitBis[i] = limit[i] =
-              fringeBis[i] + targetChunkSize;
+//    LispObject rr = result;
+    my_assert(findPage(result) != nullptr);
+//    cout << Addr(result) << " " << Addr(rr) << endl;
+    setHeaderWord(result-TAG_VECTOR, n, TYPE_VEC32);
+    fringeBis = newChunk->dataStart() + n;
+//    cout << "At " << __WHERE__ << " fringeBis[" << threadId
+//         << "] = " << Addr(fringeBis) << endl;
+    gFringe = limitBis = limit =
+              fringeBis + targetChunkSize;
 }
 
 void tryToSatisfyAtLeastOneThread(unsigned int &pendingCount)
-{   for (unsigned int i=0; i<maxThreads; i++)
-    {   size_t n = request[i];
-// Check if request (i) can be satisfied trivially. First I try within
+{   for (uintptr_t threadId=0; threadId<maxThreads; threadId++)
+    {   size_t n = request;
+// Check if request (threadId) can be satisfied trivially. First I try within
 // its current chunk, because the garbage collection may have been triggered
-// by some other thread and the chunk for (i) may have plenty of space left.
+// by some other thread and the chunk for (threadId) may have plenty of space
+// left.
         if (n != 0)
         {
 // Thread i may not be making a request, either because it participated in
 // this GC because of poll() not allocation or because somehow I have already
 // managed to satisfy the request it make, and result[i] contains a reference
 // to the memory block it needs.
-            uintptr_t f = fringeBis[i];
-            uintptr_t l = limitBis[i];
-//            cout << "At " << __WHERE__ << " fringeBis[" << i
+            uintptr_t f = fringeBis;
+            uintptr_t l = limitBis;
+//            cout << "At " << __WHERE__ << " fringeBis[" << threadId
 //                 << "] = " << Addr(f) << "and l = " << Addr(l_ << endl;
             size_t gap = l - f;
-            if (n <= gap) fitsWithinExistingGap(i, n, gap);
+            if (n <= gap) fitsWithinExistingGap(threadId, n, gap);
             else
             {   size_t gap1 = gLimit - gFringe;
-// If the current chunk for (i) is full I will see if I can allocate another
-// one. This can be possible if GC was triggered by another thread that was
-// trying to allocate a huge object - so huge that it would have pushed
-// gFringe beyong gLimit but this thread is making a simple request such
-// that a more or less standard sized chunk will suffice.
+// If the current chunk for (threadId) is full I will see if I can allocate
+// another one. This can be possible if GC was triggered by another thread
+// that was trying to allocate a huge object - so huge that it would have
+// pushed gFringe beyong gLimit but this thread is making a simple request
+// such that a more or less standard sized chunk will suffice.
                 if (n+targetChunkSize < gap1)
-                    ableToAllocateNewChunk(i, n, gap);
-                else regionInPageIsFull(i, n, gap, pendingCount);
+                    ableToAllocateNewChunk(threadId, n, gap);
+                else regionInPageIsFull(threadId, n, gap, pendingCount);
             }
         }
     }
@@ -916,6 +904,7 @@ void waitWhileAnotherThreadGarbageCollects()
 // it has filled in results for everybody, incremented activeThreads to
 // reflect that it is busy again and made certain that gc_started is false
 // again so that everything is tidily ready for next time.
+    THREADID;
     {   std::unique_lock<std::mutex> lock(mutexForGc);
         bool st =
             cv_for_gc_complete.wait_until(lock,
@@ -923,7 +912,7 @@ void waitWhileAnotherThreadGarbageCollects()
                 [] { return gc_complete; });
         if (!st) my_abort(LOCATION ": condition variable timed out");
     }
-    fringe = fringeBis[threadId];
+    fringe = fringeBis;
 //    cout << "At " << __WHERE__ << " fringe set to fringeBis = " << fringe << "\r" << endl;
 }
 
@@ -963,7 +952,7 @@ uintptr_t difficult_n_bytes()
 // set up.
 // First I need to ensure that all other threads will notice that something
 // has to be done!
-    for (unsigned int i=0; i<maxThreads; i++) limit[i] = 0;
+    for (uintptr_t threadId=0; threadId<maxThreads; threadId++) limit = 0;
     withRecordedStack([&]
     {    
 // The next line will count down the number of threads that have entered
@@ -988,12 +977,13 @@ uintptr_t difficult_n_bytes()
     });
 // At the end the GC can have updated the fringe for each thread,
 // so I need to put its updated value in the correct place.
-    fringe = fringeBis[threadId];
+    THREADID;
+    fringe = fringeBis;
 //    cout << "At " << __WHERE__ << " fringe set to fringeBis = " << hex << fringe << dec << "\r" << endl;
 #ifdef DEBUG
     testLayout();
 #endif
-    return result[threadId] - TAG_VECTOR;
+    return result - TAG_VECTOR;
 }
 
 // As well as shrinking vectors the hash table code can want to "borrow"
@@ -1045,7 +1035,8 @@ uintptr_t difficult_n_bytes()
 // free pages.
 
 LispObject borrow_n_bytes(size_t n)
-{   for (;;)
+{   THREADID;
+    for (;;)
     {   size_t gap=borrowLimit - borrowFringe;
         if (n <= gap)
         {   uintptr_t r = borrowFringe;
@@ -1074,8 +1065,8 @@ LispObject borrow_n_bytes(size_t n)
         }
         w->chain = static_cast<Page *>(borrowPages);
         borrowPages = w;
-        borrowFringe = w->fringe;
-        borrowLimit = w->limit;
+        borrowFringe = w->pageFringe;
+        borrowLimit = w->pageLimit;
         borrowNext = 0;    // BAD....
     }
 }
@@ -1095,8 +1086,7 @@ LispObject borrow_basic_vector(int tag, int type, size_t size)
 
 LispObject borrow_vector(int tag, int type, size_t n)
 {   if (n-CELL > VECTOR_CHUNK_BYTES)
-    {   size_t chunks = (n - CELL + VECTOR_CHUNK_BYTES -
-                         1)/VECTOR_CHUNK_BYTES;
+    {   size_t chunks = (n-CELL+VECTOR_CHUNK_BYTES-1)/VECTOR_CHUNK_BYTES;
         size_t lastSize = (n - CELL) % VECTOR_CHUNK_BYTES;
         if (lastSize == 0) lastSize = VECTOR_CHUNK_BYTES;
         LispObject v =
@@ -1153,8 +1143,8 @@ void setUpEmptyPage(Page *p)
 #endif
     p->hasDirty = false;
     p->dirtyPageChain = nullptr;
-    p->fringe = reinterpret_cast<uintptr_t>(&p->data);
-    p->limit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
+    p->pageFringe = reinterpret_cast<uintptr_t>(&p->data);
+    p->pageLimit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
 }
 
 // This code sets up an "mostly empty page" - it is used from the GC at a
@@ -1167,8 +1157,8 @@ void setUpMostlyEmptyPage(Page *p)
     p->chunkMapSorted = false;
     for (Chunk *c=p->chunkPinChain; c!=nullptr; c=c->chunkPinChain)
         p->chunkMap[p->chunkCount++] = c;
-    p->fringe = reinterpret_cast<uintptr_t>(&p->data);
-    p->limit = reinterpret_cast<uintptr_t>(
+    p->pageFringe = reinterpret_cast<uintptr_t>(&p->data);
+    p->pageLimit = reinterpret_cast<uintptr_t>(
                    static_cast<Chunk *>(p->chunkPinChain));
 #ifdef SAFE
     for (size_t i=0; i<sizeof(p->dirtyMap)/sizeof(p->dirtyMap[0]); i++)
@@ -1242,7 +1232,7 @@ void setUpUsedPage(Page *p)
         p->chunkPinChain = static_cast<Chunk *>(p->chunkMap[i]);
     }
 // Start as if the page is utterly empty.
-    p->fringe = reinterpret_cast<uintptr_t>(&p->data);
+    p->pageFringe = reinterpret_cast<uintptr_t>(&p->data);
 // Now if MAY be that the first part of memory is consumed by one (or a
 // succession) of pinned chunks, or that the start of the page has a small
 // vacant region terminated by a pinned chunk. I cope with this by setting
@@ -1252,9 +1242,9 @@ void setUpUsedPage(Page *p)
 // perform allocation I will find that my chunk is empty and scan to grab
 // another.
     if (p->chunkPinChain!=nullptr)
-        p->limit = reinterpret_cast<uintptr_t>(
+        p->pageLimit = reinterpret_cast<uintptr_t>(
                        static_cast<Chunk *>(p->chunkPinChain));
-    else p->limit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
+    else p->pageLimit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
 }
 
 void setVariablesFromPage(Page *p)
@@ -1265,11 +1255,11 @@ void setVariablesFromPage(Page *p)
 // limit for the current page equal to the fringe, and that will mean
 // that the very first time I try to allocate I will arrange to set up
 // a fresh Chunk. That seems nicer to me than creating that chunk here.
-    uintptr_t thr = threadId;
-    fringe = limit[thr] =
-        limitBis[thr] = gFringe = static_cast<uintptr_t>(p->fringe);
-    myChunkBase[thr] = nullptr;
-    gLimit = p->limit;
+    THREADID;
+    fringe = limit =
+        limitBis = gFringe = static_cast<uintptr_t>(p->pageFringe);
+    myChunkBase = nullptr;
+    gLimit = p->pageLimit;
 //    cout << "setVariablesFromPage\r\n";
 //    cout << "At " << __WHERE__ << " gFringe = " << std::hex << gFringe << "\r" << endl;
 //    cout << "At " << __WHERE__ << " gLimit = " << std::hex << gLimit << "\r" << endl;
@@ -1444,8 +1434,10 @@ void releaseThreadNumber(unsigned int n)
 ThreadStartup::ThreadStartup()
 {   // cout << "ThreadStartup" << "\r" << endl;
     initThreadLocals();
+#ifndef NO_THREADS
     std::lock_guard<std::mutex> lock(mutexForGc);
-    threadId = allocateThreadNumber();
+    genuineThreadId = allocateThreadNumber();
+#endif // NO_THREADS
 // The update here is just fine while I am in fact single threaded, but I
 // will need to review it when multiple threads can be in play.
     activeThreads.fetch_add(0x00010101);
@@ -1453,15 +1445,41 @@ ThreadStartup::ThreadStartup()
 
 ThreadStartup::~ThreadStartup()
 {   // cout << "~ThreadStartup" << "\r" << endl;
+#ifndef NO_THREADS
     std::lock_guard<std::mutex> lock(mutexForGc);
-    releaseThreadNumber(static_cast<uintptr_t>(threadId));
+    releaseThreadNumber(static_cast<uintptr_t>(genuineThreadId));
+#endif // NO_THREADS
     activeThreads.fetch_sub(0x00010101);
 }
 
 LispObject *nilSegment, *stackSegment;
 
-uintptr_t               stackBases[maxThreads];
-uintptr_t               stackFringes[maxThreads];
+#ifdef NO_THREADS
+uintptr_t              stackFringe;
+uintptr_t              fringe;
+uintptr_t              limit;
+Chunk*                 myChunkBase;
+uintptr_t              limitBis;
+uintptr_t              fringeBis;
+size_t                 request;
+LispObject             result;
+size_t                 gIncrement;
+
+#else // NO_THREADS
+
+uintptr_t              stackFringes[maxThreads];
+uintptr_t              fringes[maxThreads];
+atomic<uintptr_t>      limits[maxThreads];
+Chunk*                 myChunkBases[maxThreads];
+uintptr_t              limitBiss[maxThreads];
+uintptr_t              fringeBiss[maxThreads];
+size_t                 requests[maxThreads];
+LispObject             results[maxThreads];
+size_t                 gIncrements[maxThreads];
+#endif // NO_THREADS
+
+
+
 extern atomic<uint32_t> threadCount;
 std::mutex              mutexForGc;
 std::mutex              mutexForFreePages;
@@ -1470,13 +1488,6 @@ std::condition_variable cv_for_gc_idling;
 std::condition_variable cv_for_gc_busy;
 bool                    gc_complete;
 std::condition_variable cv_for_gc_complete;
-atomic<uintptr_t>       limit[maxThreads];
-Chunk*                  myChunkBase[maxThreads];
-uintptr_t               limitBis[maxThreads];
-uintptr_t               fringeBis[maxThreads];
-size_t                  request[maxThreads];
-LispObject              result[maxThreads];
-size_t                  gIncrement[maxThreads];
 atomic<uintptr_t>       gFringe;
 uintptr_t               gLimit = 0xaaaaaaaaU*0x80000001U;
 
@@ -1489,14 +1500,14 @@ void initHeapSegments(double storeSize)
 {
 // Most of the arrays initialized here are just set up for the sake of
 // being tidy, but myChunkBase[] must be nullptr for safety.
-    for (unsigned int i=0; i<maxThreads; i++)
-    {   limit[i] = 0U;
-        myChunkBase[i] = nullptr;
-        limitBis[i] = 0U;
-        fringeBis[i] = 0U;
-        request[i] = 0U;
-        result[i] = 0;
-        gIncrement[i] = 0U;
+    for (unsigned int threadId=0; threadId<maxThreads; threadId++)
+    {   limit = 0U;
+        myChunkBase = nullptr;
+        limitBis = 0U;
+        fringeBis = 0U;
+        request = 0U;
+        result = 0;
+        gIncrement = 0U;
     }
     pagesPinChain = nullptr;
 // I will make the default initial store size around 64M on a 64-bit
@@ -1524,7 +1535,7 @@ void initHeapSegments(double storeSize)
     stackSegment = reinterpret_cast<LispObject *>(
         new (std::nothrow) Align8[CSL_PAGE_SIZE/8]);
     if (stackSegment == nullptr) fatal_error(err_no_store);
-    stackBase = reinterpret_cast<LispObject *>(stackSegment);
+    stackBase = reinterpret_cast<uintptr_t>(stackSegment);
 // Ensure that I have a currentPage.
     previousPage = nullptr;
     currentPage = freePages;
@@ -1732,7 +1743,7 @@ LispObject Lgc(LispObject env, LispObject a)
 // will be a full one - otherwise it will be incremental and may do hardly
 // anything. This distinction will only apply once I have a generational
 // collector implemented and so "incremental" collections become possible.
-    for (unsigned int i=0; i<maxThreads; i++) limit[i] = 0;
+    for (unsigned int threadId=0; threadId<maxThreads; threadId++) limit = 0;
 // For now I will make (reclaim t) and (reclaim) force a major GC while
 // (reclaim nil) will be a minor GC.
     userGcRequest = a==nil ? GcStyleMinor : GcStyleMajor;

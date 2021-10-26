@@ -142,7 +142,8 @@ static LispObject timesib(LispObject a, LispObject b)
     else if (aa == 1) return b;
     else if (aa == -1) return negateb(b);
     lenb = bignum_length(b);
-    {   Save save(b);
+    {   THREADID;
+        Save save(THREADARG b);
         c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, lenb);
         errexit();
         save.restore(b);
@@ -219,7 +220,8 @@ extend_by_one_word:
         return c;
     }
 // Need to allocate more space to grow into. I need to grow by just 4 bytes.
-    {   Save save(c);
+    {   THREADID;
+        Save save(THREADARG c);
         a = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*lenb);
         errexit();
         save.restore(c);
@@ -235,7 +237,8 @@ static LispObject timesir(LispObject aa, LispObject bb)
 // multiply integer (fixnum or bignum) by ratio.
 {   if (aa == fixnum_of_int(0)) return aa;
     else if (aa == fixnum_of_int(1)) return bb;
-    RealSave save(aa, bb, nil);
+    THREADID;
+    RealSave save(THREADARG aa, bb, nil);
     LispObject &a = save.val(1);
     LispObject &b = save.val(2);
     LispObject &g = save.val(3);
@@ -253,7 +256,8 @@ static LispObject timesir(LispObject aa, LispObject bb)
 
 static LispObject timesic(LispObject aa, LispObject b)
 // multiply an arbitrary non-complex number by a complex one
-{   RealSave save(aa, real_part(b), imag_part(b));
+{   THREADID;
+    RealSave save(THREADARG aa, real_part(b), imag_part(b));
     LispObject &a = save.val(1);
     LispObject &r = save.val(2);
     LispObject &i = save.val(3);
@@ -909,9 +913,10 @@ static LispObject timesbb(LispObject a, LispObject b)
 // This is a bit of a waste and a cop-out in that with more care I
 // could do the whole long multiplication on the twos complement values,
 // however this makes life simpler there for me!
+    THREADID;
     if (((int32_t)bignum_digits(a)[lena-1]) < 0)
     {   sign = -sign;
-        Save save(b);
+        Save save(THREADARG b);
 // Negating a negative bignum can sometimes mean that it will
 // have to get longer (because of the twos complement assymmetry),
 // but can never cause it to shrink,  In particular it can never lead
@@ -925,7 +930,7 @@ static LispObject timesbb(LispObject a, LispObject b)
     }
     if (((int32_t)bignum_digits(b)[lenb-1]) < 0)
     {   sign = -sign;
-        Save save(a);
+        Save save(THREADARG a);
         // see above comments about negateb
         b = negateb(b);
         errexit();
@@ -940,7 +945,7 @@ static LispObject timesbb(LispObject a, LispObject b)
         lena = lenb;
         lenb = lenc;
     }
-    {   Save save(a, b);
+    {   Save save(THREADARG a, b);
 // For very big numbers I have two special actions called for here.  First
 // I must round up the size of the result vector to have a big enough power
 // of two as a factor so that (recursive) splitting in two does not cause
@@ -973,7 +978,7 @@ static LispObject timesbb(LispObject a, LispObject b)
 // but it should not cause clutter when not used.
             if (multiplication_buffer == nil ||
                 (4*lend+CELL) > length_of_header(numhdr(multiplication_buffer)))
-            {   Save save(c);
+            {   Save save(THREADARG c);
                 multiplication_buffer =
                     get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lend);
                 errexit();
@@ -989,7 +994,7 @@ static LispObject timesbb(LispObject a, LispObject b)
             c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lenc);
             errexit();
             if (multiplication_buffer == nil)
-            {   Save save(c);
+            {   Save save(THREADARG c);
                 multiplication_buffer =
                     get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8*lenc);
                 errexit();
@@ -1000,9 +1005,9 @@ static LispObject timesbb(LispObject a, LispObject b)
     }
     d = multiplication_buffer;
     {   uint32_t *da = (uint32_t *)&bignum_digits(a)[0],
-                      *db = (uint32_t *)&bignum_digits(b)[0],
-                       *dc = (uint32_t *)&bignum_digits(c)[0],
-                        *dd = (uint32_t *)&bignum_digits(d)[0];
+                 *db = (uint32_t *)&bignum_digits(b)[0],
+                 *dc = (uint32_t *)&bignum_digits(c)[0],
+                 *dd = (uint32_t *)&bignum_digits(d)[0];
         long_times(dc, da, db, dd, lena, lenb, lenc);
     }
 // Here the absolute value of the product has been computed properly.
@@ -1116,7 +1121,8 @@ chop2:
 
 static LispObject timesrr(LispObject a, LispObject b)
 // multiply a pair of rational numbers
-{   RealSave save(numerator(a), denominator(a),
+{   THREADID;
+    RealSave save(THREADARG numerator(a), denominator(a),
                   numerator(b), denominator(b), nil);
     LispObject &na = save.val(1);
     LispObject &da = save.val(2);
@@ -1156,7 +1162,8 @@ static LispObject timesrr(LispObject a, LispObject b)
 
 static LispObject timescc(LispObject a, LispObject b)
 // multiply a pair of complex values
-{   RealSave save(real_part(a), imag_part(a),
+{   THREADID;
+    RealSave save(THREADARG real_part(a), imag_part(a),
                   real_part(b), imag_part(b), nil, nil);
     LispObject &ra = save.val(1);
     LispObject &ia = save.val(2);

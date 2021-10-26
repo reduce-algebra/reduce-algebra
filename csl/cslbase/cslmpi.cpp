@@ -143,7 +143,8 @@ static LispObject Lmpi_recv(LispObject, LispObject source,
     // stick them in a list and return them as the 2nd value
     //
     LispObject r = unpack_object();
-    Save save(r);
+    THREADID;
+    Save save(threadId, r);
     std::free(mpi_pack_buffer);
     Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                     fixnum_of_int(status.MPI_TAG),
@@ -194,7 +195,8 @@ static LispObject Lmpi_sendrecv(LispObject, LispObject s_mess,
     std::free(mpi_pack_buffer);
     mpi_pack_buffer = r_buffer;
     LispObject r = unpack_object();
-    Save save(r);
+    THREADID;
+    Save save(threadId, r);
     Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                     fixnum_of_int(status.MPI_TAG),
                     fixnum_of_int(status.MPI_ERROR));
@@ -296,7 +298,8 @@ static LispObject Lmpi_wait(LispObject env, LispObject request)
         }
         else     // old-style receive
         {   LispObject r = unpack_object();
-            Save save(r);
+            THREADID;
+            Save save(threadId, r);
             std::free(mpi_pack_buffer);
             Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                             fixnum_of_int(status.MPI_TAG),
@@ -322,7 +325,8 @@ static LispObject Lmpi_wait(LispObject env, LispObject request)
         // stick them in a list and return them as the 2nd value
         //
         LispObject r = unpack_object());
-        Save save(r);
+        THREADID;
+        Save save(threadId, r);
         std::free(mpi_pack_buffer);
         Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                         fixnum_of_int(status.MPI_TAG),
@@ -358,7 +362,8 @@ static LispObject Lmpi_test(LispObject env, LispObject request)
         }
         else    // old-style receive
         {   LispObject r = unpack_object();
-            Save save(r);
+            THREADID;
+            Save save(threadId, r);
             std::free(mpi_pack_buffer);
             Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                             fixnum_of_int(status.MPI_TAG),
@@ -387,7 +392,8 @@ static LispObject Lmpi_test(LispObject env, LispObject request)
         // stick them in a list and return them as the 2nd value
         //
         LispObject r = unpack_object();
-        Save save(r);
+        THREADID;
+        Save save(threadId, r);
         std::free(mpi_pack_buffer);
         Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                         fixnum_of_int(status.MPI_TAG),

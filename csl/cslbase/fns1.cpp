@@ -898,8 +898,9 @@ LispObject Lliststar_4up(LispObject env, LispObject a, LispObject b,
 
 LispObject Lpair(LispObject env, LispObject a, LispObject b)
 {   LispObject r = nil;
+    THREADID;
     while (consp(a) && consp(b))
-    {   Save save(a, b);
+    {   Save save(THREADARG a, b);
         r = acons(car(a), car(b), r);
         save.restore(a, b);
         a = cdr(a);
@@ -943,7 +944,8 @@ static size_t membercount(LispObject a, LispObject b)
 
 LispObject Lintersect(LispObject env, LispObject a, LispObject b)
 {   LispObject w;
-    RealSave save(a, b, nil);
+    THREADID;
+    RealSave save(THREADARG a, b, nil);
     LispObject &aa = save.val(1);
     LispObject &bb = save.val(2);
     LispObject &rr = save.val(3);
@@ -1009,13 +1011,14 @@ LispObject Lintersect_symlist(LispObject env, LispObject a,
     }
 // Now for each item in (a) push it onto a result list (r) if it a
 // symbol that is tagged, i.e. if it was present in b.
-    RealSave save(b);
+    THREADID;
+    RealSave save(THREADARG b);
     LispObject &bb = save.val(1);
     {   tidy_intersect tidy(&bb);
         while (consp(a))
         {   LispObject x = car(a);
             if (is_symbol(x) && (qheader(x) & SYM_TAGGED))
-            {   Save save1(a);
+            {   Save save1(THREADARG a);
                 r = cons(x, r);
                 save1.restore(a);
             }
@@ -1039,15 +1042,16 @@ LispObject Lintersect_symlist(LispObject env, LispObject a,
 // added in reversed order.  Duplicates in B remain there, and but
 // duplicates in A are dropped.
 LispObject Lunion(LispObject env, LispObject a, LispObject b)
-{   while (consp(a))
+{   THREADID;
+    while (consp(a))
     {   LispObject c;
-        {   Save save(a, b);
+        {   Save save(THREADARG a, b);
             c = Lmember(nil, car(a), b);
             errexit();
             save.restore(a, b);
         }
         if (c == nil)
-        {   Save save(a);
+        {   Save save(THREADARG a);
             b = cons(car(a), b);
             errexit();
             save.restore(a);
@@ -1088,7 +1092,8 @@ LispObject Lunion_symlist(LispObject env, LispObject a, LispObject b)
     }
 // Now for each item in a push it onto a result list (r) if it a
 // symbol that is NOT tagged, i.e. if it was not present in b.
-    RealSave save(b);
+    THREADID;
+    RealSave save(THREADARG b);
     LispObject &bb = save.val(1);
 // I want to be able to traverse the list (b) at the end of this
 // clearing tag bits. And this must be GC safe, so I save b on the
@@ -1102,7 +1107,7 @@ LispObject Lunion_symlist(LispObject env, LispObject a, LispObject b)
         while (consp(a))
         {   LispObject x = car(a);
             if (is_symbol(x) && (qheader(x) & SYM_TAGGED) == 0)
-            {   Save save1(a);
+            {   Save save1(THREADARG a);
                 r = cons(x, r);
                 errexit();
                 save1.restore(a);
@@ -1208,8 +1213,9 @@ LispObject error_N(LispObject args)
     errors_now++;
     if (errors_limit >= 0 && errors_now > errors_limit)
         return resource_exceeded();
+    THREADID;
 #ifdef COMMON
-    {   Save save(args);
+    {   Save save(THREADARG args);
         LispObject a1 = car(args);
         args = cdr(args);
 // I will use FORMAT to handle error messages provided the first arg
@@ -1225,7 +1231,7 @@ LispObject error_N(LispObject args)
     }
 #else
     if (miscflags & HEADLINE_FLAG)
-    {   RealSave save(args, cdr(args));
+    {   RealSave save(THREADARG args, cdr(args));
         err_printf("\n+++ error: ");
         errexit();
         loop_print_error(save.val(1));
@@ -1455,7 +1461,8 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
             if ((qheader(c) & SYM_CODEPTR) != 0) return onevalue(c);
             b = cdr(b);
         }
-        {   Save save(a);
+        {   THREADID;
+            Save save(THREADARG a);
 // To carry a code-pointer I manufacture a sort of gensym, flagging
 // it in its header as a "code pointer object" and sticking the required
 // definition in with it.  I need to link this to the originating
@@ -1514,7 +1521,8 @@ LispObject Lcodep(LispObject env, LispObject a)
 
 LispObject get_basic_vector_init(size_t n, LispObject k)
 {   LispObject p;
-    {   Save save(k);
+    {   THREADID;
+        Save save(THREADARG k);
         p = get_basic_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
         errexit();
         save.restore(k);
@@ -1613,10 +1621,11 @@ LispObject get_vector(int tag, int type, size_t n)
 // vectors are allocated, so I need to make it GC safe...
         for (i=0; i<chunks; i++)
             basic_elt(v, i) = nil;
+        THREADID;
         for (i=0; i<chunks; i++)
         {   LispObject v1;
             int k = i==chunks-1 ? last_size : VECTOR_CHUNK_BYTES;
-            {   Save save(v);
+            {   Save save(THREADARG v);
                 v1 = gvector(tag, type, k+CELL);
                 errexit();
                 save.restore(v);
@@ -1658,7 +1667,8 @@ LispObject reduce_vector_size(LispObject v, size_t len)
 
 LispObject get_vector_init(size_t n, LispObject val)
 {   LispObject p;
-    Save save(val);
+    THREADID;
+    Save save(THREADARG val);
     p = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
     errexit();
     save.restore(val);

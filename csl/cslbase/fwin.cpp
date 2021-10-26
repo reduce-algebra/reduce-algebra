@@ -1012,8 +1012,7 @@ int plain_worker(int argc, const char *argv[],
 #endif // !EMBEDDED
     TermSetup ts(argv[0], colour_spec);
     std::strcpy(fwin_prompt_string, "> ");
-    int r = (*fwin_main)(argc, argv);
-    return r;
+    return (*fwin_main)(argc, argv);
 }
 
 

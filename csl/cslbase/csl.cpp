@@ -313,6 +313,7 @@ LispObject error(int nargs, int code, ...)
     int i;
     LispObject w1;
     LispObject *w = reinterpret_cast<LispObject *>(&work_1);
+    THREADID;
     if (nargs > ARG_CUT_OFF) nargs = ARG_CUT_OFF;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("\n+++ Error %s: ", errcode(code));
@@ -324,7 +325,12 @@ LispObject error(int nargs, int code, ...)
         va_end(a);
         for (i=0; i<nargs; i++) *++stack = *--w;
         if (code != err_stack_overflow)  // Be cautious here!
-        {   stackcheck();
+        {
+#ifdef NO_THREADS
+            stackcheck();
+#else // NO_THREADS
+            stackcheck(threadId);
+#endif // NO_THREADS
         }
         for (i=0; i<nargs; i++)
         {   LispObject p = *stack--;
@@ -355,6 +361,7 @@ LispObject cerror(int nargs, int code1, int code2, ...)
     std::va_list a;
     int i;
     LispObject *w = reinterpret_cast<LispObject *>(&work_1);
+    THREADID;
     if (nargs > ARG_CUT_OFF) nargs = ARG_CUT_OFF;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("\n+++ Error %s, %s: ", errcode(code1), errcode(code2));
@@ -362,7 +369,11 @@ LispObject cerror(int nargs, int code1, int code2, ...)
         for (i=0; i<nargs; i++) *w++ = va_arg(a, LispObject);
         va_end(a);
         for (i=0; i<nargs; i++) *++stack = *--w;
+#ifdef NO_THREADS
         stackcheck();
+#else // NO_THREADS
+        stackcheck(threadId);
+#endif // NO_THREADS
         for (i=0; i<nargs; i++)
         {   LispObject p = *stack--;
             loop_print_error(p);
@@ -396,6 +407,7 @@ LispObject interrupted()
 {   errorNest safe;
     LispObject w;
     char save_prompt[80];
+    THREADID;
 // If I have a windowed system I expect that the mechanism for
 // raising an exception will have had a menu that gave me a chance
 // to decide whether to proceed or abort.  Thus the following code
@@ -404,7 +416,7 @@ LispObject interrupted()
     if ((fwin_windowmode() & FWIN_IN_WINDOW) == 0)
     {   term_printf("\n");
         ensure_screen();
-        RealSave save(prompt_thing);
+        RealSave save(THREADARG prompt_thing);
         prompt_thing = nil;  // switch off the regular prompts
         std::strncpy(save_prompt, fwin_prompt_string, sizeof(save_prompt));
         save_prompt[sizeof(save_prompt)-1] = 0;
@@ -476,6 +488,7 @@ LispObject display_backtrace()
 LispObject aerror(const char *s)
 {   errorNest safe;
     LispObject w;
+    THREADID;
     if (miscflags & HEADLINE_FLAG)
         err_printf("+++ Error bad args for %s\n", s);
     if ((w = qvalue(break_function)) != nil &&
@@ -495,6 +508,7 @@ LispObject aerror(const char *s)
 LispObject aerror0(const char *s)
 {   errorNest safe;
     LispObject w;
+    THREADID;
     if (miscflags & HEADLINE_FLAG)
         err_printf("+++ Error: %s\n", s);
     if ((w = qvalue(break_function)) != nil &&
@@ -514,6 +528,7 @@ LispObject aerror0(const char *s)
 LispObject aerror1(const char *s, LispObject a)
 {   errorNest safe;
     LispObject w;
+    THREADID;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
         loop_print_error(a);
@@ -536,6 +551,7 @@ LispObject aerror1(const char *s, LispObject a)
 LispObject aerror2(const char *s, LispObject a, LispObject b)
 {   errorNest safe;
     LispObject w;
+    THREADID;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
         loop_print_error(a);
@@ -560,6 +576,7 @@ LispObject aerror2(const char *s, LispObject a, LispObject b)
 LispObject aerror2(const char *s, const char *a, LispObject b)
 {   errorNest safe;
     LispObject w;
+    THREADID;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s %s ", s, a);
         loop_print_error(b);
@@ -583,6 +600,7 @@ LispObject aerror3(const char *s, LispObject a, LispObject b,
                    LispObject c)
 {   errorNest safe;
     LispObject w;
+    THREADID;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
         loop_print_error(a);
@@ -1012,6 +1030,7 @@ static LispObject lisp_main()
 // a NaN for 0.0/0.0 rather than raising an exception.
     trap_floating_overflow = false;
     tty_count = 0;
+    THREADID;
     while (true)
 // The sole purpose of the while loop here is to allow me to proceed
 // for a second try if I get a (cold-start) call.
@@ -1057,7 +1076,7 @@ static LispObject lisp_main()
                         len = static_cast<int>(length_of_byteheader(vechdr(
                                                    exit_value)) - CELL);
                     }
-                    RAIIsave_codevec save;
+                    RAIIsave_codevec save OPTTHREAD;
                     preserve(msg, len);
                 }
                 else if (exit_tag == fixnum_of_int(3)) // "preserve & restart"
@@ -1073,7 +1092,7 @@ static LispObject lisp_main()
                         len = static_cast<int>(length_of_byteheader(vechdr(
                                                    exit_value)) - CELL);
                     }
-                    {   RAIIsave_codevec save;
+                    {   RAIIsave_codevec save OPTTHREAD;
                         preserve(msg, len);
                     }
 #ifdef CONSERVATIVE
@@ -1124,7 +1143,8 @@ static LispObject lisp_main()
                     cold_start = (exit_value == nil);
 // Of course a tick may very well have happened rather recently - so
 // I will flush it out now just to clear the air.
-                    if ((stack+event_flag) >= stackLimit) respond_to_stack_event();
+                    if ((reinterpret_cast<uintptr_t>(stack)+event_flag) >=
+                        stackLimit) respond_to_stack_event();
                     cold_start = (exit_value == nil);
                     Lrds(nil, nil);
                     Lwrs(nil, nil);
@@ -1400,7 +1420,7 @@ bool gcTest = false;
 bool gcTrace = false;
 bool ignoreLoadTime = false;
 
-#ifndef AVOID_THREADS
+#ifndef AVOID_KARATSUBA_THREADS
 
 // I have some background threads to help me, so here is the code to start
 // them up. It seems to be important to terminate detached threads (or join
@@ -1437,7 +1457,7 @@ public:
     }
 };
 
-#endif //AVOID_THREADS
+#endif //AVOID_KARATSUBA_THREADS
 
 char *mystrdup(const char *s)
 {   char *r = new char[std::strlen(s)+1];
@@ -1449,7 +1469,8 @@ char *mystrdup(const char *s)
 // to cslstart(). 
 
 void cslstart(int argc, const char *argv[], character_writer *wout)
-{   double store_size = 0.0;
+{
+    double store_size = 0.0;
 // I make "sp" volatile - it is a variable I declare here but then only use by
 // taking its address to get a pointer into the current stack-frame. When it
 // is volatile my compiler will not be entitled to moan about the lack of
@@ -2073,7 +2094,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 }
             },
 
-#ifndef AVOID_THREADS
+#ifndef AVOID_KARATSUBA_THREADS
             /*! options [--kara] \item [{\ttfamily --kara}] \index{{\ttfamily --kara}}
              * This it is intended for use by those maintaining CSL not for the general
              * public. By default long multiplication can use a threaded implementation
@@ -2093,7 +2114,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     if (kparallel < KARATSUBA_CUTOFF) kparallel = KARATSUBA_CUTOFF;
                 }
             },
-#endif // AVOID_THREADS
+#endif // AVOID_KARATSUBA_THREADS
 
             /*! options [--trace/--tr] \item [{\ttfamily --trace, --tr}] \index{{\ttfamily --trace, --tr}}
              * When followed by the name of a function this command-line option has and
@@ -2747,12 +2768,12 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // If the user hits the close button here I may be in trouble
 #endif // WITH_GUI
 
-#ifndef AVOID_THREADS
+#ifndef AVOID_KARATSUBA_THREADS
 // I will now ALWAYS use threads for Karatsuba even on a CPU that only has
 // a single core!
     karatsuba_parallel = KARATSUBA_PARALLEL_CUTOFF;
     if (kparallel > 0) karatsuba_parallel = kparallel;
-#endif // AVOID_THREADS
+#endif // AVOID_KARATSUBA_THREADS
 
 // Up until the time I call setup() I may only use term_printf for
 // output, because the other relevant streams will not have been set up.
@@ -3011,6 +3032,7 @@ static LispObject cslaction()
 {   volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     errorset_msg = nullptr;
+    THREADID;
     TRY
         set_up_signal_handlers();
         non_terminal_input = nullptr;
@@ -3115,6 +3137,7 @@ int execute_lisp_function(const char *fname,
 {   LispObject ff;
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
+    THREADID;
     if_error(ff = make_undefined_symbol(fname),
              return 1);  // Failed to make the symbol
     procedural_input = r;
@@ -3270,14 +3293,19 @@ static int submain(int argc, const char *argv[])
     threadMap = -1;
     activeThreads = 0;
     ThreadStartup userThreads;
-    stackBases[threadId] = reinterpret_cast<uintptr_t>(C_stackbase);
+    THREADID;
+    stackBase = reinterpret_cast<uintptr_t>(C_stackbase);
+#else
+#ifndef NO_THREADS
+    genuineThreadId = 0; // the thread_local master variable.
+#endif
 #endif // CONSERVATIVE
 #ifdef HAVE_CRLIBM
     CrlibmSetup crlibmVar;
 #endif // HAVE_CRLIBM
-#ifndef AVOID_THREADS
+#ifndef AVOID_KARATSUBA_THREADS
     KaratsubaThreads kthreads;
-#endif // AVOID_THREADS
+#endif // AVOID_KARATSUBA_THREADS
 
     cslstart(argc, argv, nullptr);
 #ifdef SAMPLE_OF_PROCEDURAL_INTERFACE
@@ -3387,6 +3415,7 @@ int PROC_prepare_for_top_level_loop()
 {   LispObject w1 = nil;
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
+    THREADID;
     if_error(w1 = make_undefined_symbol("prepare-for-top-loop");
              Lapply1(nil, w1, nil),
              // Error handler
@@ -3398,6 +3427,7 @@ int PROC_prepare_for_web_top_level()
 {   LispObject w1 = nil;
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
+    THREADID;
     if_error(w1 = make_undefined_symbol("prepare-for-web-top-level");
              Lapply1(nil, w1, nil),
              // Error handler
@@ -3418,6 +3448,7 @@ int PROC_process_one_reduce_statement(const char *s)
 {   LispObject w = nil, w1 = nil;
     volatile uintptr_t sp;
     character_reader *save_read = procedural_input;
+    THREADID;
     proc_data_string = s;
     procedural_input = char_from_string;
     C_stackbase = (uintptr_t *)&sp;
@@ -3439,8 +3470,9 @@ int PROC_load_package(const char *name)
 {   LispObject w = nil, w1 = nil;
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
+    THREADID;
     if_error(w1 = make_undefined_symbol("load-package");
-             Save save(w1);
+             Save save(THREADARG w1);
              w = make_undefined_symbol(name);
              save.restore(w1);
              Lapply1(nil, w1, w),
@@ -3453,9 +3485,10 @@ int PROC_set_switch(const char *name, int val)
 {   LispObject w = nil, w1 = nil;
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
+    THREADID;
     if_error(w1 = make_undefined_symbol("onoff");
              errexit();
-             Save save(w1);
+             Save save(THREADARG w1);
              w = make_undefined_symbol(name);
              save.restore(w1);
              Lapply2(nil, w1, w, val == 0 ? nil : lisp_true),
@@ -3485,6 +3518,7 @@ int PROC_push_symbol(const char *name)
 {   LispObject w = nil;
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
+    THREADID;
     if_error(w = make_undefined_symbol(name);
              errexit();
              w = cons(w, procstack),
@@ -3500,6 +3534,7 @@ int PROC_push_string(const char *data)
 {   LispObject w = nil;
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
+    THREADID;
     if_error(w = make_string(data);
              errexit();
              w = cons(w, procstack),
@@ -3518,6 +3553,7 @@ int PROC_push_string(const char *data)
 int PROC_push_small_integer(int32_t n)
 {   LispObject w = nil;
     volatile uintptr_t sp;
+    THREADID;
     C_stackbase = (uintptr_t *)&sp;
     if_error(w = make_lisp_integer32(n);
              errexit();
@@ -3531,6 +3567,7 @@ int PROC_push_big_integer(const char *n)
 {   LispObject w = nil;
     int len = 0;
     volatile uintptr_t sp;
+    THREADID;
     C_stackbase = (uintptr_t *)&sp;
 // Here I need to parse a C string to obtain a Lisp number.
     boffop = 0;
@@ -3550,6 +3587,7 @@ int PROC_push_big_integer(const char *n)
 int PROC_push_floating(double n)
 {   LispObject w = nil;
     volatile uintptr_t sp;
+    THREADID;
     C_stackbase = (uintptr_t *)&sp;
 // Here I have to construct a Lisp (boxed) float
     if_error(w = make_boxfloat(n, TYPE_DOUBLE_FLOAT);
@@ -3572,6 +3610,7 @@ int PROC_make_function_call(const char *name, int n)
 {   LispObject w = nil, w1 = nil;
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
+    THREADID;
     if_error(
         while (n > 0)
         {   if (procstack == nil) return 1; // Not enough args available
@@ -3580,7 +3619,7 @@ int PROC_make_function_call(const char *name, int n)
             procstack = cdr(procstack);
             n--;
         }
-        Save save(w);
+        Save save(THREADARG w);
         w1 = make_undefined_symbol(name);
         save.restore(w);
         errexit();
@@ -3608,6 +3647,7 @@ int PROC_save(int n)
 int PROC_load(int n)
 {   LispObject w = nil;
     volatile uintptr_t sp;
+    THREADID;
     C_stackbase = (uintptr_t *)&sp;
     if (n < 0 || n > 99) return 1; // index out of range
     w = elt(procmem, n);
@@ -3622,6 +3662,7 @@ int PROC_load(int n)
 int PROC_dup()
 {   LispObject w = nil;
     volatile uintptr_t sp;
+    THREADID;
     C_stackbase = (uintptr_t *)&sp;
     if (procstack == nil) return 1; // no item to duplicate
     w = car(procstack);
@@ -3647,12 +3688,13 @@ int PROC_simplify()
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     if (procstack == nil) return 1; // stack is empty
+    THREADID;
     if_error(
         w = make_undefined_symbol("simp");
         errexit();
         w = Lapply1(nil, w, car(procstack));
         errexit();
-        Save save(w);
+        Save save(THREADARG w);
         w1 = make_undefined_symbol("mk*sq");
         save.restore(w);
         errexit();
@@ -3670,8 +3712,9 @@ int PROC_simplify()
 // me to put in a cleaner abstraction to support it.
 
 static void PROC_standardise_gensyms(LispObject w)
-{   if (consp(w))
-    {   Save save(w);
+{   THREADID;
+    if (consp(w))
+    {   Save save(THREADARG w);
         PROC_standardise_gensyms(car(w));
         save.restore(w);
 #ifdef NO_THROW
@@ -3685,7 +3728,8 @@ static void PROC_standardise_gensyms(LispObject w)
 }
 
 int PROC_lisp_eval()
-{   save_current_function saver(eval_symbol);
+{   THREADID;
+    save_current_function save_fn(THREADARG eval_symbol);
     LispObject w = nil;
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
@@ -3693,7 +3737,7 @@ int PROC_lisp_eval()
     if_error(
         w = eval(car(procstack), nil);
         errexit();
-        Save save(w);
+        Save save(THREADARG w);
         PROC_standardise_gensyms(w);
         save.restore(w),
         return 1);
@@ -3702,14 +3746,15 @@ int PROC_lisp_eval()
 }
 
 static LispObject PROC_standardise_printed_form(LispObject w)
-{   if (consp(w))
+{   THREADID;
+    if (consp(w))
     {   LispObject w1;
-        {   Save save(w);
+        {   Save save(THREADARG w);
             w1 = PROC_standardise_printed_form(car(w));
             save.restore(w);
         }
         errexit();
-        {   Save save(w1);
+        {   Save save(THREADARG w1);
             w =  PROC_standardise_printed_form(cdr(w));
             save.restore(w1);
         }
@@ -3721,7 +3766,7 @@ static LispObject PROC_standardise_printed_form(LispObject w)
 // Now w is atomic. There are two interesting cases - an unprinted gensym
 // and a bignum.
     if (symbolp(w))
-    {   Save save(w);
+    {   Save save(THREADARG w);
         get_pname(w); // allocates gensym name if needed. Otherwise cheap!
         save.restore(w);
         return w;
@@ -3745,12 +3790,13 @@ int PROC_make_printable()
     C_stackbase = (uintptr_t *)&sp;
     if (procstack == nil) return 1; // stack is empty
 // I want to use "simp" again so that I can then use prepsq!
+    THREADID;
     if_error(
         w = make_undefined_symbol("simp");
         errexit();
         w = Lapply1(nil, w, car(procstack));
         errexit();
-        Save save(w);
+        Save save(THREADARG w);
         w1 = make_undefined_symbol("prepsq");
         errexit();
         save.restore(w);

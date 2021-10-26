@@ -26,6 +26,12 @@ exit 1
 fi
 fi
 
+# These dats bison tends to tell me to specify -Wcounterexamples so that it
+# can explain conflicts to me. Well I know about the traditional
+# "if A then if B then C else D" ambiguity (the "dangling else") so I do
+# not need verbose illustrations of if. The option might be really useful
+# while developing a grammar, but I have been using this one for some
+# years now...
 $Y -o r2l.c r2l.y
 
 gcc r2l.c -o r2l

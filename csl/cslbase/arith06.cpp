@@ -391,7 +391,8 @@ static LispObject Lplus_4up(LispObject env, LispObject a1,
 //    (+ a1 a2 a3 {a4 a5})                     is computed as
 //    (+ (+ (+ (+ a1 a2) a3) a4) a5)
 {   intptr_t c;
-    Save save(a3, a4up);
+    THREADID;
+    Save save(THREADARG a3, a4up);
 // While the arithmetic involved fixnums I do it inline in the twin hopes that
 // this will be an expecially common case and that the inline code will
 // help with performance.
@@ -421,7 +422,7 @@ static LispObject Lplus_4up(LispObject env, LispObject a1,
             intptr_valid_as_fixnum(c = int_of_fixnum(a1) + int_of_fixnum(an)))
             a1 = fixnum_of_int(c);
         else
-        {   Save save1(a4up);
+        {   Save save1(THREADARG a4up);
             a1 = plus2(a1, an);
             errexit();
             save1.restore(a4up);
@@ -433,7 +434,8 @@ static LispObject Lplus_4up(LispObject env, LispObject a1,
 static LispObject Ldifference_4up(LispObject env, LispObject a1,
                                   LispObject a2,
                                   LispObject a3, LispObject a4up)
-{   Save save(a3, a4up);
+{   THREADID;
+    Save save(THREADARG a3, a4up);
     a1 = difference2(a1, a2);
     errexit();
     save.restore(a3, a4up);
@@ -443,7 +445,7 @@ static LispObject Ldifference_4up(LispObject env, LispObject a1,
     while (a4up != nil)
     {   a2 = car(a4up);
         a4up = cdr(a4up);
-        Save save1(a4up);
+        Save save1(THREADARG a4up);
         a1 = difference2(a1, a2);
         errexit();
         save1.restore(a4up);
@@ -454,7 +456,8 @@ static LispObject Ldifference_4up(LispObject env, LispObject a1,
 static LispObject Ltimes_4up(LispObject env, LispObject a1,
                              LispObject a2,
                              LispObject a3, LispObject a4up)
-{   Save save(a3, a4up);
+{   THREADID;
+    Save save(THREADARG a3, a4up);
     a1 = times2(a1, a2);
     errexit();
     save.restore(a3, a4up);
@@ -464,7 +467,7 @@ static LispObject Ltimes_4up(LispObject env, LispObject a1,
     while (a4up != nil)
     {   a2 = car(a4up);
         a4up = cdr(a4up);
-        Save save1(a4up);
+        Save save1(THREADARG a4up);
         a1 = times2(a1, a2);
         errexit();
         save1.restore(a4up);
@@ -486,7 +489,8 @@ LispObject LCLquotient_2(LispObject env, LispObject a, LispObject b)
 
 LispObject LCLquotient_3(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
-{   Save save(a3);
+{   THREADID;
+    Save save(THREADARG a3);
     a1 = CLquot2(a1, a2);
     errexit();
     save.restore(a3);
@@ -495,7 +499,8 @@ LispObject LCLquotient_3(LispObject env, LispObject a1, LispObject a2,
 
 LispObject LCLquotient_4up(LispObject env,
                            LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   Save save(a3, a4up);
+{   THREADID;
+    Save save(THREADARG a3, a4up);
     a1 = CLquot2(a1, a2);
     errexit();
     save.restore(a3, a4up);
@@ -505,7 +510,7 @@ LispObject LCLquotient_4up(LispObject env,
     while (a4up != nil)
     {   a2 = car(a4up);
         a4up = cdr(a4up);
-        Save save1(a4up);
+        Save save1(THREADARG a4up);
         a1 = CLquot2(a1, a2);
         errexit();
         save1.restore(a4up);
@@ -527,7 +532,8 @@ LispObject Lquotient_2(LispObject env, LispObject a, LispObject b)
 
 LispObject Lquotient_3(LispObject env, LispObject a1, LispObject a2,
                        LispObject a3)
-{   Save save(a3);
+{   THREADID;
+    Save save(THREADARG a3);
     a1 = quot2(a1, a2);
     errexit();
     save.restore(a3);
@@ -536,7 +542,8 @@ LispObject Lquotient_3(LispObject env, LispObject a1, LispObject a2,
 
 LispObject Lquotient_4up(LispObject env,
                          LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   Save save(a3, a4up);
+{   THREADID;
+    Save save(THREADARG a3, a4up);
     a1 = quot2(a1, a2);
     errexit();
     save.restore(a3, a4up);
@@ -546,7 +553,7 @@ LispObject Lquotient_4up(LispObject env,
     while (a4up != nil)
     {   a2 = car(a4up);
         a4up = cdr(a4up);
-        Save save1(a4up);
+        Save save1(THREADARG a4up);
         a1 = quot2(a1, a2);
         errexit();
         save1.restore(a4up);
@@ -556,7 +563,8 @@ LispObject Lquotient_4up(LispObject env,
 
 LispObject Ldivide_2(LispObject env, LispObject a, LispObject b)
 {   LispObject q;
-    stackcheck(a, b);
+    THREADID;
+    stackcheck(THREADARG a, b);
     mv_2 = SPID_NIL;
     q = quotrem2(a, b);
     errexit();
@@ -596,7 +604,8 @@ LispObject Lplus_2(LispObject env, LispObject a1, LispObject a2)
 LispObject Lplus_3(LispObject env, LispObject a1, LispObject a2,
                    LispObject a3)
 {   intptr_t c;
-    Save save(a3);
+    THREADID;
+    Save save(THREADARG a3);
     if (is_fixnum(a1) &&
         is_fixnum(a2) &&
         intptr_valid_as_fixnum(c = int_of_fixnum(a1) + int_of_fixnum(a2)))
@@ -624,7 +633,8 @@ LispObject Ltimes_2(LispObject env, LispObject a1, LispObject a2)
 
 LispObject Ltimes_3(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3)
-{   Save save(a3);
+{   THREADID;
+    Save save(THREADARG a3);
     a1 = times2(a1, a2);
     save.restore(a3);
     return onevalue(times2(a1, a3));
@@ -640,7 +650,8 @@ LispObject Ldifference_2(LispObject env, LispObject a1, LispObject a2)
 
 LispObject Ldifference_3(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
-{   Save save(a3);
+{   THREADID;
+    Save save(THREADARG a3);
     a1 = difference2(a1, a2);
     errexit();
     save.restore(a3);
@@ -665,7 +676,8 @@ static LispObject Lbool_4up(LispObject env, LispObject a1,
                             LispObject a2,
                             LispObject a3, LispObject a4up)
 {   int what = int_of_fixnum(qenv(env));
-    Save save(a3, a4up);
+    THREADID;
+    Save save(THREADARG a3, a4up);
     a1 = (*boolop_array[what])(a1, a2);
     errexit();
     save.restore(a3, a4up);
@@ -675,7 +687,7 @@ static LispObject Lbool_4up(LispObject env, LispObject a1,
     while (a4up != nil)
     {   a2 = car(a4up);
         a4up = cdr(a4up);
-        Save save1(a4up);
+        Save save1(THREADARG a4up);
         a1 = (*boolop_array[what])(a1, a2);
         errexit();
         save1.restore(a4up);
@@ -729,7 +741,8 @@ LispObject Lplusp(LispObject env, LispObject a)
 
 LispObject Leqn_4up(LispObject env,
                     LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   {   Save save(a2, a3, a4up);
+{   {   THREADID;
+        Save save(THREADARG a2, a3, a4up);
         if (!SL_numeq2(a1, a2)) return onevalue(nil);
         errexit();
         save.restore(a2, a3, a4up);
@@ -739,7 +752,8 @@ LispObject Leqn_4up(LispObject env,
     }
     while (a4up != nil)
     {   LispObject w = car(a4up);
-        {   Save save(a3, a4up);
+        {   THREADID;
+            Save save(THREADARG a3, a4up);
             if (!SL_numeq2(a3, w)) return false;
             errexit();
             save.restore(a3, a4up);
@@ -760,7 +774,8 @@ LispObject Leqn_1(LispObject, LispObject)
 
 LispObject Leqn_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
-{   Save save(a2, a3);
+{   THREADID;
+    Save save(THREADARG a2, a3);
     if (!SL_numeq2(a1, a2)) return onevalue(nil);
     errexit();
     save.restore(a2, a3);
@@ -773,7 +788,8 @@ LispObject Leqn_2(LispObject env, LispObject a, LispObject b)
 
 LispObject Lcl_equals_sign_4up(LispObject env,
                                LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   {   Save save(a2, a3, a4up);
+{   {   THREADID;
+        Save save(THREADARG a2, a3, a4up);
         if (!numeq2(a1, a2)) return onevalue(nil);
         errexit();
         save.restore(a2, a3, a4up);
@@ -784,7 +800,8 @@ LispObject Lcl_equals_sign_4up(LispObject env,
     LispObject p = a3;
     while (a4up != nil)
     {   LispObject q = car(a4up);
-        Save save(q, a4up);
+        THREADID;
+        Save save(THREADARG q, a4up);
         if (!numeq2(p, q)) return onevalue(nil);
         errexit();
         save.restore(q, a4up);
@@ -805,7 +822,8 @@ LispObject Lcl_equals_sign_1(LispObject, LispObject)
 
 LispObject Lcl_equals_sign_3(LispObject env, LispObject a1,
                              LispObject a2, LispObject a3)
-{   Save save(a2, a3);
+{   THREADID;
+    Save save(THREADARG a2, a3);
     if (!numeq2(a1, a2)) return onevalue(nil);
     errexit();
     save.restore(a2, a3);
@@ -819,7 +837,8 @@ LispObject Lcl_equals_sign_2(LispObject env, LispObject a,
 
 LispObject Llessp_4up(LispObject env,
                       LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   {   Save save(a2, a3, a4up);
+{   {   THREADID;
+        Save save(THREADARG a2, a3, a4up);
         if (!lessp2(a1, a2)) return onevalue(nil);
         errexit();
         if (!lessp2(a2, a3)) return onevalue(nil);
@@ -829,7 +848,8 @@ LispObject Llessp_4up(LispObject env,
     LispObject p = a3;
     while (a4up != nil)
     {   LispObject q = car(a4up);
-        Save save(p, a4up);
+        THREADID;
+        Save save(THREADARG p, a4up);
         if (!lessp2(p, q)) return onevalue(nil);
         errexit();
         save.restore(p, a4up);
@@ -841,7 +861,8 @@ LispObject Llessp_4up(LispObject env,
 
 LispObject Llessp_3(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3)
-{   Save save(a2, a3);
+{   THREADID;
+    Save save(THREADARG a2, a3);
     if (!lessp2(a1, a2)) return onevalue(nil);
     errexit();
     save.restore(a2, a3);
@@ -862,7 +883,8 @@ LispObject Llessp_0(LispObject env)
 
 LispObject Lgreaterp_4up(LispObject env,
                          LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   {   Save save(a2, a3, a4up);
+{   {   THREADID;
+        Save save(THREADARG a2, a3, a4up);
         if (!lessp2(a2, a1)) return onevalue(nil);
         errexit();
         save.restore(a2, a3, a4up);
@@ -873,7 +895,8 @@ LispObject Lgreaterp_4up(LispObject env,
     LispObject p = a3;
     while (a4up != nil)
     {   LispObject q = car(a4up);
-        {   Save save(q, a4up);
+        {   THREADID;
+            Save save(THREADARG q, a4up);
             if (!lessp2(q, p)) return onevalue(nil);
             errexit();
             save.restore(q, a4up);
@@ -886,7 +909,8 @@ LispObject Lgreaterp_4up(LispObject env,
 
 LispObject Lgreaterp_3(LispObject env, LispObject a1, LispObject a2,
                        LispObject a3)
-{   Save save(a2, a3);
+{   THREADID;
+    Save save(THREADARG a2, a3);
     if (!lessp2(a2, a1)) return onevalue(nil);
     errexit();
     save.restore(a2, a3);
@@ -909,8 +933,9 @@ static LispObject Lnum_neq_4up(LispObject env, LispObject a1,
                                LispObject a2,
                                LispObject a3, LispObject a4up)
 // "/=" is supposed to check that no pair of args match.
-{   Save save(a1, a2, a3);
-    {   Save save1(a4up);
+{   THREADID;
+    Save save(THREADARG a1, a2, a3);
+    {   Save save1(THREADARG a4up);
         if (numeq2(a1, a2)) return onevalue(nil);
         errexit();
         save.restore(a1, a2, a3);
@@ -923,7 +948,7 @@ static LispObject Lnum_neq_4up(LispObject env, LispObject a1,
         save1.restore(a4up);
     }
     while (a4up != nil)
-    {   Save save1(a4up);
+    {   Save save1(THREADARG a4up);
         if (numeq2(a1, car(a4up))) return onevalue(nil);
         errexit();
         save.restore(a1, a2, a3);
@@ -943,7 +968,8 @@ static LispObject Lnum_neq_4up(LispObject env, LispObject a1,
 
 LispObject Lnum_neq_3(LispObject env, LispObject a1, LispObject a2,
                       LispObject a3)
-{   Save save(a1, a2, a3);
+{   THREADID;
+    Save save(THREADARG a1, a2, a3);
     if (!numeq2(a1, a2)) return onevalue(nil);
     errexit();
     save.restore(a1, a2, a3);
@@ -969,7 +995,8 @@ LispObject Lnum_neq_0(LispObject env)
 
 LispObject Lgeq_4up(LispObject env,
                     LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   {   Save save(a2, a3, a4up);
+{   {   THREADID;
+        Save save(THREADARG a2, a3, a4up);
         if (!lesseq2(a2, a1)) return onevalue(nil);
         errexit();
         save.restore(a2, a3, a4up);
@@ -980,7 +1007,8 @@ LispObject Lgeq_4up(LispObject env,
     LispObject p = a3;
     while (a4up != nil)
     {   LispObject q = car(a4up);
-        {   Save save(q, a4up);
+        {   THREADID;
+            Save save(THREADARG q, a4up);
             if (!lesseq2(q, p)) return onevalue(nil);
             errexit();
             save.restore(q, a4up);
@@ -993,9 +1021,9 @@ LispObject Lgeq_4up(LispObject env,
 
 LispObject Lgeq_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
-{   Save save(a2, a3);
+{   THREADID;
+    Save save(THREADARG a2, a3);
     if (!lesseq2(a2, a1)) return onevalue(nil);
-
     errexit();
     save.restore(a2, a3);
     return onevalue(lesseq2(a3, a2) ? lisp_true : nil);
@@ -1016,7 +1044,8 @@ LispObject Lgeq_0(LispObject env)
 
 LispObject Lleq_4up(LispObject env,
                     LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   {   Save save(a2, a3, a4up);
+{   {   THREADID;
+        Save save(THREADARG a2, a3, a4up);
         if (!lesseq2(a1, a2)) return onevalue(nil);
         errexit();
         if (!lesseq2(a2, a3)) return onevalue(nil);
@@ -1026,7 +1055,8 @@ LispObject Lleq_4up(LispObject env,
     LispObject p = a3;
     while (a4up != nil)
     {   LispObject q = car(a4up);
-        Save save(p, a4up);
+        THREADID;
+        Save save(THREADARG p, a4up);
         if (!lesseq2(p, q)) return onevalue(nil);
         errexit();
         save.restore(p, a4up);
@@ -1038,7 +1068,8 @@ LispObject Lleq_4up(LispObject env,
 
 LispObject Lleq_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
-{   Save save(a2, a3);
+{   THREADID;
+    Save save(THREADARG a2, a3);
     if (!lesseq2(a1, a2)) return onevalue(nil);
     errexit();
     save.restore(a2, a3);
@@ -1060,7 +1091,8 @@ LispObject Lleq_0(LispObject env)
 
 LispObject Lmax_2(LispObject env, LispObject a, LispObject b)
 {   bool w;
-    Save save(a, b);
+    THREADID;
+    Save save(THREADARG a, b);
     w = lessp2(a, b);
     errexit();
     save.restore(a, b);
@@ -1070,7 +1102,8 @@ LispObject Lmax_2(LispObject env, LispObject a, LispObject b)
 
 LispObject Lmin_2(LispObject env, LispObject a, LispObject b)
 {   bool w;
-    Save save(a, b);
+    THREADID;
+    Save save(THREADARG a, b);
     w = lessp2(b, a);
     errexit();
     save.restore(a, b);
@@ -1080,7 +1113,8 @@ LispObject Lmin_2(LispObject env, LispObject a, LispObject b)
 
 LispObject Lmax_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
-{   Save save(a1, a2, a3);
+{   THREADID;
+    Save save(THREADARG a1, a2, a3);
     if (lessp2(a1, a2))
     {   save.restore(a1, a2, a3);
         errexit();
@@ -1109,7 +1143,8 @@ LispObject Lmax_3(LispObject env, LispObject a1, LispObject a2,
 
 LispObject Lmin_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
-{   Save save(a1, a2, a3);
+{   THREADID;
+    Save save(THREADARG a1, a2, a3);
     if (greaterp2(a1, a2))
     {   save.restore(a1, a2, a3);
         errexit();
@@ -1139,14 +1174,16 @@ LispObject Lmin_3(LispObject env, LispObject a1, LispObject a2,
 LispObject Lmax_4up(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3, LispObject a4up)
 {   LispObject r;
-    {   Save save(a4up);
+    {   THREADID;
+        Save save(THREADARG a4up);
         r = Lmax_3(nil, a1, a2, a3);
         errexit();
         save.restore(a4up);
     }
     while (a4up != nil)
     {   bool better = false;
-        {   Save save(r, a4up);
+        {   THREADID;
+            Save save(THREADARG r, a4up);
             better = lessp2(r, car(a4up));    
             errexit();
             save.restore(r, a4up);
@@ -1160,14 +1197,16 @@ LispObject Lmax_4up(LispObject env, LispObject a1, LispObject a2,
 LispObject Lmin_4up(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3, LispObject a4up)
 {   LispObject r;
-    {   Save save(a4up);
+    {   THREADID;
+        Save save(THREADARG a4up);
         r = Lmin_3(nil, a1, a2, a3);
         errexit();
         save.restore(a4up);
     }
     while (a4up != nil)
     {   bool better = false;
-        {   Save save(r, a4up);
+        {   THREADID;
+            Save save(THREADARG r, a4up);
             better = greaterp2(r, car(a4up));    
             errexit();
             save.restore(r, a4up);
@@ -1291,7 +1330,8 @@ LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
         LispObject r;
         if (!is_bignum(a)) return aerror1("random-number", a);
         len = bignum_length(a);
-        {   Save save(a);
+        {   THREADID;
+            Save save(THREADARG a);
             r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
             errexit();
             save.restore(a);
@@ -1398,7 +1438,8 @@ LispObject Lrandom_1(LispObject env, LispObject a)
         LispObject r;
         if (!is_bignum(a)) return aerror1("random-number", a);
         len = bignum_length(a);
-        {   Save save(a);
+        {   THREADID;
+            Save save(THREADARG a);
             r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
             errexit();
             save.restore(a);

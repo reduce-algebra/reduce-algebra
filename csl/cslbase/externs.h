@@ -64,7 +64,6 @@ extern size_t new_heap_pages_count, new_vheap_pages_count;
 
 extern LispObject *list_bases[];
 extern LispObject *nilsegment, *stacksegment;
-extern LispObject *stackBase;
 extern int32_t stack_segsize;  // measured in units of one CSL page
 extern double max_store_size;
 
@@ -385,13 +384,13 @@ extern uintptr_t vheapstart;
 extern uintptr_t vlen;
 extern uintptr_t vxor_chain;
 
-extern LispObject *stackLimit;
+extern uintptr_t stackLimit;
 
 extern bool gcTest;
 extern bool gcTrace;
 
 #else // !CONSERVATIVE
-extern LispObject *stackLimit;
+extern uintptr_t stackLimit;
 #endif // !CONSERVATIVE
 
 extern atomic<uintptr_t> event_flag;

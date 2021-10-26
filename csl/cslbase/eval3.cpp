@@ -49,7 +49,8 @@ static LispObject macrolet_fn(LispObject args, LispObject env)
 {   LispObject d;
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
-    stackcheck(args, env);
+    THREADID;
+    stackcheck(THREADARG args, env);
     d = car(args);     // The bunch of definitions
     while (consp(d))
     {   LispObject w = car(d);     // w = (name bvl ...)
@@ -58,7 +59,7 @@ static LispObject macrolet_fn(LispObject args, LispObject env)
 // Here I need to call (expand-definer <form> nil) to map
 // macro specifications with all the possible magic options into ones
 // which just take 2 args, a form and an environment.
-            Save save(args, env);
+            Save save(THREADARG args, env);
             w = cons(expand_def_symbol, w);
             errexit();
             w = Lfuncall_3(nil, expand_def_symbol, w, nil);
@@ -86,24 +87,25 @@ static LispObject mv_prog1_fn(LispObject args, LispObject env)
     STACK_SANITY;
     int nargs, i;
     if (!consp(args)) return onevalue(nil);
-    stackcheck(args, env);
-    {   Save save(args, env);
+    THREADID;
+    stackcheck(THREADARG args, env);
+    {   Save save(THREADARG args, env);
         r = eval(car(args), env);
         errexit();
         save.restore(args, env);
     }
     rl = nil;
     nargs = exit_count;
-    {   Save save(r);
+    {   Save save(THREADARG r);
 // I could use the Lisp stack to save things here, but I hope that this
 // function is not used much and performance will not matter.
         for (i=nargs; i>=2; i--)
             rl = cons_no_gc((&mv_2)[i-2], rl);
         rl = cons_gc_test(rl);
         errexit();
-        {   Save save1(rl);
+        {   Save save1(THREADARG rl);
             while (is_cons(args = cdr(args)) && args!=nil)
-            {   Save save2(args, env);
+            {   Save save2(THREADARG args, env);
                 eval(car(args), env);
                 errexit();
                 save2.restore(args, env);
@@ -122,13 +124,14 @@ static LispObject mv_prog1_fn(LispObject args, LispObject env)
 static LispObject or_fn(LispObject args, LispObject env)
 // also needs to be a macro for Common Lisp
 {   if (!consp(args)) return onevalue(nil);
-    stackcheck(args, env);
+    THREADID;
+    stackcheck(THREADARG args, env);
     STACK_SANITY;
     for (;;)
     {   LispObject v = car(args);
         args = cdr(args);
         if (!consp(args)) return eval(v, env);
-        Save save(args, env);
+        Save save(THREADARG args, env);
         v = eval(v, env);
         errexit();
         save.restore(args, env);
@@ -142,8 +145,9 @@ static LispObject or_fn(LispObject args, LispObject env)
 
 static LispObject prog_fn(LispObject iargs, LispObject ienv)
 {   if (!consp(iargs) || !consp(cdr(iargs))) return onevalue(nil);
-    stackcheck(iargs, ienv);
-    RealSave save(nil, iargs, ienv);
+    THREADID;
+    stackcheck(THREADARG iargs, ienv);
+    RealSave save(THREADARG nil, iargs, ienv);
     LispObject &my_tag = save.val(1);
     LispObject &args   = save.val(2);
     LispObject &env    = save.val(3);
@@ -182,15 +186,16 @@ static LispObject prog_fn(LispObject iargs, LispObject ienv)
 
 LispObject progn_fn(LispObject args, LispObject env)
 {   LispObject f;
+    THREADID;
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
-    stackcheck(args, env);
+    stackcheck(THREADARG args, env);
     f = nil;
     for (;;)
     {   f = car(args);
         args = cdr(args);
         if (!consp(args)) break;
-        Save save(args, env, f);
+        Save save(THREADARG args, env, f);
         on_backtrace(
             static_cast<void>(eval(f, env)),
             errexit();
@@ -211,21 +216,22 @@ static LispObject prog1_fn(LispObject args, LispObject env)
 // and are here implemented as special forms too in the expectation
 // that that will be good for performance.
 {   LispObject f;
+    THREADID;
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil); // (prog1) -> nil
-    stackcheck(args, env);
+    stackcheck(THREADARG args, env);
     errexit();
-    {   Save save(args, env);
+    {   Save save(THREADARG args, env);
         f = car(args);
         f = eval(f, env);              // first arg
         errexit();
         save.restore(args, env);
     }
-    Save save(f);
+    Save save(THREADARG f);
     for (;;)
     {   args = cdr(args);
         if (!consp(args)) break;
-        Save save1(args, env);
+        Save save1(THREADARG args, env);
         static_cast<void>(eval(car(args), env));
         errexit();
         save1.restore(args, env);
@@ -236,11 +242,12 @@ static LispObject prog1_fn(LispObject args, LispObject env)
 
 static LispObject prog2_fn(LispObject args, LispObject env)
 {   LispObject f;
+    THREADID;
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil); // (prog2) -> nil
-    stackcheck(args, env);
+    stackcheck(THREADARG args, env);
     errexit();
-    {   Save save(args, env);
+    {   Save save(THREADARG args, env);
         static_cast<void>(eval(car(args), env));  // eval & discard first arg
         errexit();
         save.restore(args, env);
@@ -248,16 +255,16 @@ static LispObject prog2_fn(LispObject args, LispObject env)
     errexit();
     args = cdr(args);
     if (!consp(args)) return onevalue(nil); // (prog2 x) -> nil
-    {   Save save(args, env);
+    {   Save save(THREADARG args, env);
         f = eval(car(args), env);                       // second arg
         errexit();
         save.restore(args, env);
     }
-    Save save(f);
+    Save save(THREADARG f);
     for (;;)
     {   args = cdr(args);
         if (!consp(args)) break;
-        {   Save save1(args, env);
+        {   Save save1(THREADARG args, env);
             static_cast<void>(eval(car(args), env));
             errexit();
             save1.restore(args, env);
@@ -276,8 +283,9 @@ static LispObject prog2_fn(LispObject args, LispObject env)
 class Unbind_progv_specials
 {   LispObject *saveStack;
     LispObject *specenv_p;
+    DECLARETHREADID
 public:
-    Unbind_progv_specials(LispObject *ss)
+    Unbind_progv_specials(DECLAREID LispObject *ss) SETTHREADID
     {   saveStack = stack;
         specenv_p = ss;
     }
@@ -293,14 +301,15 @@ public:
 
 static LispObject progv_fn(LispObject args_x, LispObject env_x)
 {   LispObject syms_x, vals_x, specenv_x, w;
+    THREADID;
     STACK_SANITY;
     if (!consp(args_x)) return onevalue(nil);
-    stackcheck(args_x, env_x);
+    stackcheck(THREADARG args_x, env_x);
     errexit();
     syms_x = vals_x = specenv_x = nil;
     syms_x = car(args_x);
     args_x = cdr(args_x);
-    RealSave save(args_x, env_x, syms_x, vals_x, specenv_x);
+    RealSave save(THREADARG args_x, env_x, syms_x, vals_x, specenv_x);
     syms = eval(syms, env);
     errexit();
     if (!consp(args)) return nil;
@@ -329,7 +338,7 @@ static LispObject progv_fn(LispObject args_x, LispObject env_x)
         setvalue(v, w);
         specenv = cons(w1, specenv);
     }
-    {   Unbind_progv_specials unbind_progv_variables(&specenv);
+    {   Unbind_progv_specials unbind_progv_variables(THREADARG &specenv);
         args = progn_fn(args, env);
     }
     return specenv;
@@ -349,9 +358,10 @@ LispObject quote_fn(LispObject args, LispObject)
 static LispObject return_fn(LispObject args, LispObject env)
 {
 // First check that the block name (nil in this case) is lexically available
+    THREADID;
     STACK_SANITY;
     LispObject p;
-    stackcheck(args, env);
+    stackcheck(THREADARG args, env);
     errexit();
     for(p=env; consp(p); p=cdr(p))
     {   LispObject w = car(p);
@@ -364,7 +374,7 @@ static LispObject return_fn(LispObject args, LispObject env)
     return error(1, err_block_tag, nil);
 tag_found:
     if (consp(args))
-    {   Save save(p);
+    {   Save save(THREADARG p);
         env = eval(car(args), env);
         save.restore(p);
         errexit();
@@ -381,7 +391,8 @@ tag_found:
 
 static LispObject return_from_fn(LispObject args, LispObject env)
 {   LispObject p, tag;
-    stackcheck(args, env);
+    THREADID;
+    stackcheck(THREADARG args, env);
     errexit();
     STACK_SANITY;
     if (!consp(args)) tag = nil;
@@ -400,7 +411,7 @@ static LispObject return_from_fn(LispObject args, LispObject env)
     return error(1, err_block_tag, tag);
 tag_found:
     if (consp(args))
-    {   Save save(p);
+    {   Save save(THREADARG p);
         env = eval(car(args), env);
         save.restore(p);
         errexit();
@@ -417,8 +428,9 @@ tag_found:
 
 static LispObject setq_fn(LispObject args, LispObject env)
 {   LispObject var, val = nil;
+    THREADID;
     STACK_SANITY;
-    stackcheck(args, env);
+    stackcheck(THREADARG args, env);
     errexit();
     while (consp(args))
     {   var = car(args);
@@ -428,7 +440,7 @@ static LispObject setq_fn(LispObject args, LispObject env)
         }
         args = cdr(args);
         if (consp(args))
-        {   {   Save save(args, env, var);
+        {   {   Save save(THREADARG args, env, var);
                 val = car(args);
                 val = eval(val, env);
                 errexit();
@@ -439,7 +451,7 @@ static LispObject setq_fn(LispObject args, LispObject env)
         }
         else val = nil;
         if ((qheader(current_function) & SYM_TRACESET) != 0)
-        {   RealSave save(args, env, var, val);
+        {   RealSave save(THREADARG args, env, var, val);
 //          LispObject &args1 = save.val(1);
 //          LispObject &env1  = save.val(2);
             LispObject &var1  = save.val(3);
@@ -474,7 +486,7 @@ static LispObject setq_fn(LispObject args, LispObject env)
 // If I display this message - which could be viewed as a proper error report -
 // it leds to multiple failures in the Reduce regressions where scripting
 // assumes that assignment to a variable is valid without any declaration.
-                    Save save(args, env, var);
+                    Save save(THREADARG args, env, var);
                     debug_printf("\n+++++ ");
                     errexit();
                     loop_print_debug(var);
@@ -506,10 +518,11 @@ LispObject tagbody_fn(LispObject args1, LispObject env1)
 // Bind the labels that occur in this block.  Note that I invalidate
 // these bindings if I ever exit from this block, so that nobody
 // even thinks that they can use (go xx) to get back in.
-    stackcheck(args1, env1);
+    THREADID;
+    stackcheck(THREADARG args1, env1);
     errexit();
     STACK_SANITY;
-    RealSave save(args1, env1, nil, env1);
+    RealSave save(THREADARG args1, env1, nil, env1);
     LispObject &args = save.val(1);
     LispObject &env  = save.val(2);
     LispObject &p    = save.val(3);
@@ -614,13 +627,14 @@ static LispObject the_fn(LispObject args, LispObject env)
 
 static LispObject throw_fn(LispObject args, LispObject env)
 {   LispObject tag, p;
+    THREADID;
     STACK_SANITY;
     if (!consp(args)) return aerror("throw");
-    stackcheck(args, env);
+    stackcheck(THREADARG args, env);
     errexit();
     tag = car(args);
     args = cdr(args);
-    {   Save save(args, env);
+    {   Save save(THREADARG args, env);
         tag = eval(tag, env);
         errexit();
         save.restore(args, env);
@@ -630,7 +644,7 @@ static LispObject throw_fn(LispObject args, LispObject env)
     return aerror("throw: tag not found");
 tag_found:
     if (consp(args))
-    {   Save save(p);
+    {   Save save(THREADARG p);
         tag = car(args);
         tag = eval(tag, env);
         errexit();
@@ -666,11 +680,12 @@ LispObject Lthrow_nil(LispObject env, LispObject tag)
 
 static LispObject unless_fn(LispObject args, LispObject env)
 {   LispObject w;
+    THREADID;
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
-    stackcheck(args, env);
+    stackcheck(THREADARG args, env);
     errexit();
-    {   Save save(args, env);
+    {   Save save(THREADARG args, env);
         w = eval(car(args), env);
         errexit();
         save.restore(args, env);
@@ -680,10 +695,11 @@ static LispObject unless_fn(LispObject args, LispObject env)
 }
 
 static LispObject unwind_protect_fn(LispObject args1, LispObject env1)
-{   STACK_SANITY;
+{   THREADID;
+    STACK_SANITY;
     if (!consp(args1)) return onevalue(nil);
-    stackcheck(args1, env1);
-    RealSave save(args1, env1);
+    stackcheck(THREADARG args1, env1);
+    RealSave save(THREADARG args1, env1);
     LispObject &args = save.val(1);
     LispObject &env = save.val(2);
     LispObject r;
@@ -707,7 +723,7 @@ static LispObject unwind_protect_fn(LispObject args1, LispObject env1)
         xt = exit_tag;
         xc = exit_count;
         xr = exit_reason;
-        Save save1(savetraptime, xv, xt);
+        Save save1(THREADARG savetraptime, xv, xt);
         LispObject rl = nil;
         for (int i=xc; i>=2; i--)
         {   rl = cons((&mv_2)[i-2], rl);
@@ -716,7 +732,7 @@ static LispObject unwind_protect_fn(LispObject args1, LispObject env1)
 // I am going to take the view that if there is a failure during execution
 // of the cleanup forms then full cleanup will not be complete, and this
 // can include the case of "cons" failing right before anything else.
-        Save save2(rl);
+        Save save2(THREADARG rl);
 // Now I will obey the cleanup 
         while (is_cons(args = cdr(args)) && args!=nil)
         {   eval(car(args), env);
@@ -743,7 +759,7 @@ static LispObject unwind_protect_fn(LispObject args1, LispObject env1)
     {   rl = cons((&mv_2)[i-2], rl);
         errexit();
     }
-    Save save3(rl);
+    Save save3(THREADARG rl);
     while (is_cons(args = cdr(args)) && args!=nil)
     {   eval(car(args), env);
         errexit();
@@ -762,7 +778,8 @@ static LispObject unwind_protect_fn(LispObject args1, LispObject env1)
 const volatile char *errorset_msg;
 
 void unwind_stack(LispObject *entry_stack, bool findcatch)
-{   LispObject *sp = stack;
+{   THREADID;
+    LispObject *sp = stack;
     while (sp != entry_stack)
     {   LispObject bv, w;
         size_t n;
@@ -803,6 +820,7 @@ static LispObject errorset3(LispObject env,
                             LispObject fg1,
                             LispObject fg2)
 {   LispObject r;
+    THREADID;
     STACK_SANITY;
     uint32_t flags = miscflags;
 // See also (ENABLE-BACKTRACE level) and (ENABLE-ERROSET min max)
@@ -873,11 +891,6 @@ static LispObject errorset3(LispObject env,
                 miscflags |= BACKTRACE_MSG_BITS;
                 break;
         }
-    }
-    {   Save save(form, env);
-        stackcheck();
-        errexit();
-        save.restore(form, env);
     }
     errorset_msg = nullptr;
     TRY
@@ -1006,8 +1019,13 @@ class RAIIresource_variables
     save_io_limit,
     save_errors_limit;
     LispObject *save_stack;
+    DECLARETHREADID
 public:
+#ifdef NO_THREADS
     RAIIresource_variables()
+#else // NO_THREADS
+    RAIIresource_variables(uintptr_t id) : threadId(id)
+#endif // NO_THREADS
     {   save_time_base    = time_base;
         save_space_base   = space_base;
         save_io_base      = io_base;
@@ -1042,10 +1060,11 @@ static LispObject resource_limit7(LispObject env,
 {
 // This is being extended to make it possible to limit the C and Lisp stack
 // usage. At present the controls for that are not in place!
+    THREADID;
     STACK_SANITY;
     LispObject r;
     int64_t lltime, llspace, llio, llerrors;
-    RAIIresource_variables RAIIresource_variables_object;
+    RAIIresource_variables RAIIresource_variables_object OPTTHREAD;
     int64_t r0=0, r1=0, r2=0, r3=0;
     errorset_msg = nullptr;
 // Here I need to do something that actually sets up the limits!
@@ -1126,7 +1145,7 @@ static LispObject resource_limit7(LispObject env,
 // I just use ncons to wrap the resuult up.
     r = ncons(r);
     errexit(); 
-    {   Save save(r);
+    {   Save save(THREADARG r);
         form = list4(fixnum_of_int(r0),
                      fixnum_of_int(r1),
                      fixnum_of_int(r2),
@@ -1188,10 +1207,11 @@ LispObject Lresource_limit_3(LispObject env, LispObject form,
 
 static LispObject when_fn(LispObject args, LispObject env)
 {   LispObject w;
+    THREADID;
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
-    stackcheck(args, env);
-    {   Save save(args, env);
+    stackcheck(THREADARG args, env);
+    {   Save save(THREADARG args, env);
         w = eval(car(args), env);
         errexit();
         save.restore(args, env);

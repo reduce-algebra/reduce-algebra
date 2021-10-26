@@ -39,7 +39,7 @@
 #define thread_local
 #endif //AVOID_THREADLOCAL
 
-#if defined CONSERVATIVE
+#if defined CONSERVATIVE && defined SUPPORT_MULTIPLE_THREADS
 
 // The CONSERVATIVE build of CSL will be working towards support for
 // multiple threads. So this code is activated there. Prior versions do
@@ -294,6 +294,35 @@ inline void initThreadLocals()
    
 #endif // CONSERVATIVE
 
+// I am only going to have a single genuine C++-style thread-local
+// variable (ie threadId) and all other values I want to be treated as
+// thread local will be kept in arrays indexed by that. Well it will be
+// messier than that! There is "thread_local uintptr_t genuineThreadId" and
+// any fragment of code that uses thread local items must go
+//   const uintptr_t threadId = genuineThreadId;
+// to set up the name threadId as a local variable initialised based on
+// the current thread. The object of this mess is to overcome overheads in
+// accessing thread-local values that arise on some systems.
+
+#ifdef NO_THREADS
+#define maxThreads   1U
+#define THREADID     /* Nothing */
+#define THREADARG    /* NOTHING */
+#define THREADFORMAL /* NOTHING */
+#define OPTTHREAD    /* NOTHING */
+#else // NO_THREADS
+#ifdef DEBUG
+#define maxThreads   2U
+#else // DEBUG
+#define maxThreads  64U
+#endif // DEBUG
+#define TL_threadId 50
+DECLARE_THREAD_LOCAL(uintptr_t, genuineThreadId);
+#define THREADID UNUSED_NAME const uintptr_t threadId = genuineThreadId
+#define THREADARG threadId,
+#define THREADFORMAL uintptr_t threadId,
+#define OPTTHREAD (threadId)
+#endif // NO_THREADS
 
 #endif // header_threadloc_h
 

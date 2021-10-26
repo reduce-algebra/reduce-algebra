@@ -69,7 +69,8 @@ LispObject nreverse(LispObject a)
 //                                    and can never be an atom.
 
 LispObject eval(LispObject u, LispObject env)
-{   STACK_SANITY;
+{   THREADID;
+    STACK_SANITY;
     assert (env == nil || consp(env));
 #ifdef DEBUG
     if (is_exception(u) || is_exception(env)) my_abort("exception value not trapped");
@@ -141,7 +142,7 @@ restart:
 // The final case is that of a list (fn ...), and one case that has to
 // be checked is if fn is lexically bound.
         LispObject fn, args;
-        stackcheck(u, env);
+        stackcheck(THREADARG u, env);
         errexit();
         fn = car(u);
         args = cdr(u);
@@ -170,7 +171,8 @@ restart:
 // time may seem to be mutually recursive but there is a sense in which they
 // are not (as well as a sense in which they are) - self and cross references
 // only happen AFTER an expansion and can not happen during one.
-                        Save save(u, env);
+                        THREADID;
+                        Save save(THREADARG u, env);
                         on_backtrace(
                             w = cons(lambda, w);
                             errexit();
@@ -204,8 +206,9 @@ restart:
                 return (*qfn1(fn))(args, env);
             }
             else if (h & SYM_MACRO)
-            {   STACK_SANITY;
-                Save save(u, env);
+            {   THREADID;
+                STACK_SANITY;
+                Save save(THREADARG u, env);
 // the environment passed to macroexpand should only be needed to cope
 // with macrolet, I think.  Since I use just one datastructure for the
 // whole environment I also pass along lexical bindings etc, but I hope that
@@ -238,7 +241,8 @@ restart:
         if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
         {   if (args == nil) return (*qfn0(fn))(fn);
             LispObject a1 = car(args);
-            {   Save save(fn, args, env);
+            {   THREADID;
+                Save save(THREADARG fn, args, env);
                 on_backtrace(a1 = eval(a1, env),
                     save.restore(fn, args, env);
                     if (SHOW_ARGS)
@@ -250,7 +254,8 @@ restart:
             args = cdr(args);
             if (args == nil) return (*qfn1(fn))(fn, a1);
             LispObject a2 = car(args);
-            {   Save save(fn, args, env, a1);
+            {   THREADID;
+                Save save(THREADARG fn, args, env, a1);
                 on_backtrace(
                     a2 = eval(a2, env),
                     save.restore(fn, args, env, a1);
@@ -263,7 +268,8 @@ restart:
             args = cdr(args);
             if (args == nil) return (*qfn2(fn))(fn, a1, a2);
             LispObject a3 = car(args);
-            {   Save save(fn, args, env, a1, a2);
+            {   THREADID;
+                Save save(THREADARG fn, args, env, a1, a2);
                 on_backtrace(
                     a3 = eval(a3, env),
                     save.restore(fn, args, env, a1, a2);
@@ -275,17 +281,19 @@ restart:
             }
             args = cdr(args);
             if (args == nil) return (*qfn3(fn))(fn, a1, a2, a3);
-            Save save(fn, env, args);
+            THREADID;
+            Save save(THREADARG fn, env, args);
             eargs = list3(a3, a2, a1);
             errexit();
             save.restore(fn, env, args);
         }
 // I have evaluated the first 3 args if the function was a symbol, so
 // now I process the rest.
-        {   STACK_SANITY1(u);
+        {   THREADID;
+            STACK_SANITY1(u);
             while (consp(args))
             {   LispObject w;
-                Save save(fn, args, env, eargs);
+                Save save(THREADARG fn, args, env, eargs);
                 w = car(args);
                 on_backtrace(
                     w = eval(w, env),
@@ -296,7 +304,7 @@ restart:
                         loop_print_error(car(args));
                     });
                 save.restore(fn, args, env, eargs);
-                Save save1(fn, args, env);
+                Save save1(THREADARG fn, args, env);
                 eargs = cons(w, eargs);
                 errexit();
                 save1.restore(fn, args, env);
@@ -462,12 +470,14 @@ LispObject apply_lambda(LispObject def, LispObject args,
     for (LispObject u=args; u!=nil; u=cdr(u)) args_left++;
     LispObject w1;
     if (!consp(def)) return onevalue(nil);    // Should never happen
-    stackcheck(def, args, env1, name1);
+    THREADID;
+    stackcheck(THREADARG def, args, env1, name1);
     w1 = car(def);
 // The next fragment is horrible but is here because at present I have a
 // precise garbage collector and all the values set up here need to act
 // as list-bases.
-    RealSave save(args,                        // arglist
+    RealSave save(THREADARG
+                  args,                        // arglist
                   w1,                          // bvl
                   cdr(def),                    // body
                   env1,
@@ -804,21 +814,23 @@ LispObject apply_lambda(LispObject def, LispObject args,
 }
 
 LispObject Leval(LispObject env, LispObject a)
-{   save_current_function saver(eval_symbol);
+{   THREADID;
+    save_current_function saver(THREADARG eval_symbol);
     return eval(a, nil);     // Multiple values may be returned
 }
 
 LispObject Levlis(LispObject env, LispObject a)
-{   STACK_SANITY;
-    save_current_function saver(eval_symbol);
+{   THREADID;
+    STACK_SANITY;
+    save_current_function saver(THREADARG eval_symbol);
     LispObject r;
-    stackcheck(a);
+    stackcheck(THREADARG a);
     errexit();
     r = nil;
     while (consp(a))
-    {   {   Save save(a);
+    {   {   Save save(THREADARG a);
             LispObject a1;
-            {   Save save1(r);
+            {   Save save1(THREADARG r);
                 a1 = car(a);
                 a1 = eval(a1, nil);
                 errexit();
@@ -844,8 +856,9 @@ LispObject Levlis(LispObject env, LispObject a)
 
 LispObject Lapply_4up(LispObject env, LispObject fn, LispObject a1,
                       LispObject a2, LispObject a3up)
-{   STACK_SANITY;
-    save_current_function saver(apply_symbol);
+{   THREADID;
+    STACK_SANITY;
+    save_current_function saver(THREADARG apply_symbol);
 // Here I have something like
 //   (APPLY fn a1 a2 (a3 a4 a5up))
 // where a5up will be a list (a5 a6 ...).
@@ -853,7 +866,7 @@ LispObject Lapply_4up(LispObject env, LispObject fn, LispObject a1,
     errexit();
     a3up = nreverse2(cdr(a3up), car(a3up));
 // I have just flattened out the final argument.
-    {   Save save(fn);
+    {   Save save(THREADARG fn);
         a1 = list2star(a1, a2, a3up);
         save.restore(fn);
     }
@@ -869,19 +882,22 @@ LispObject Lapply_4up(LispObject env, LispObject fn, LispObject a1,
 // and the last one passed is a list of extras.
 
 LispObject Lapply_1(LispObject env, LispObject fn)
-{   save_current_function saver(apply_symbol);
+{   THREADID;
+    save_current_function saver(THREADARG apply_symbol);
     return apply(fn, nil, nil, apply_symbol);
 }
 
 LispObject Lapply_2(LispObject env, LispObject fn, LispObject a1)
-{   save_current_function saver(apply_symbol);
+{   THREADID;
+    save_current_function saver(THREADARG apply_symbol);
     return apply(fn, a1, nil, apply_symbol);
 }
 
 LispObject Lapply_3(LispObject env, LispObject fn, LispObject a1,
                     LispObject a2)
-{   save_current_function saver(apply_symbol);
-    {   Save save(fn);
+{   THREADID;
+    save_current_function saver(THREADARG apply_symbol);
+    {   Save save(THREADARG fn);
         a1 = cons(a1, a2);
         save.restore(fn);
     }
@@ -901,7 +917,8 @@ LispObject Lapply0(LispObject env, LispObject fn)
 LispObject Lapply1(LispObject env, LispObject fn, LispObject a1)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
         return (*qfn1(fn))(fn, a1);
-    Save save(fn, env);
+    THREADID;
+    Save save(THREADARG fn, env);
     a1 = ncons(a1);
     errexit();
     save.restore(fn, env);
@@ -912,7 +929,8 @@ LispObject Lapply2(LispObject env, LispObject fn,
                    LispObject a1, LispObject a2)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
         return (*qfn2(fn))(fn, a1, a2);
-    {   Save save(env, fn);
+    THREADID;
+    {   Save save(THREADARG env, fn);
         a1 = list2(a1, a2);
         save.restore(env, fn);
     }
@@ -927,7 +945,8 @@ LispObject Lapply3(LispObject env, LispObject fn,
         return (*qfn3(fn))(fn, a1, a2, a3);
     }
     LispObject a3 = arg4("apply3", a3up);
-    {   Save save(env, fn);
+    THREADID;
+    {   Save save(THREADARG env, fn);
         a1 = list3(a1, a2, a3);
         save.restore(env, fn);
     }
@@ -944,7 +963,8 @@ LispObject Lapply4(LispObject env, LispObject fn,
     }
     LispObject a3, a4;
     if (a4a5("apply3", a3up, a3, a4)) return nil;
-    {   Save save(env, fn);
+    THREADID;
+    {   Save save(THREADARG env, fn);
         a1 = list4(a1, a2, a3, a4);
         save.restore(env, fn);
     }
@@ -965,7 +985,8 @@ LispObject Lfuncall_1(LispObject env, LispObject fn)
 LispObject Lfuncall_2(LispObject env, LispObject fn, LispObject a1)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
         return (*qfn1(fn))(fn, a1);
-    {   Save save(env, fn);
+    THREADID;
+    {   Save save(THREADARG env, fn);
         a1 = ncons(a1);
         save.restore(env, fn);
     }
@@ -977,7 +998,8 @@ LispObject Lfuncall_3(LispObject env, LispObject fn,
                       LispObject a1, LispObject a2)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
         return (*qfn2(fn))(fn, a1, a2);
-    {   Save save(env, fn);
+    THREADID;
+    {   Save save(THREADARG env, fn);
         a1 = list2(a1, a2);
         save.restore(env, fn);
     }
@@ -992,7 +1014,8 @@ LispObject Lfuncall_4up(LispObject env, LispObject fn,
             return (*qfn3(fn))(fn, a1, a2, car(a3up));
         else return (*qfn4up(fn))(fn, a1, a2, car(a3up), cdr(a3up));
     }
-    {   Save save(env, fn);
+    THREADID;
+    {   Save save(THREADARG env, fn);
         a1 = list2star(a1, a2, a3up);
         save.restore(env, fn);
     }
@@ -1059,23 +1082,24 @@ LispObject mv_call_fn(LispObject args, LispObject env)
 //                            (values a3 a4 a5) a6 (values a7 a8))
 // (for example) is rather like
 //   (FUNCALL 'fn a1 a2 a3 a4 a5 a6 a7 a8)
-{   STACK_SANITY;
-    save_current_function saver(mv_call_symbol);
+{   THREADID;
+    STACK_SANITY;
+    save_current_function saver(THREADARG mv_call_symbol);
     if (!consp(args)) return nil;       // (multiple-value-call) => nil
-    stackcheck(args, env);
+    stackcheck(THREADARG args, env);
     LispObject fn;
-    {   Save save(args, env);
+    {   Save save(THREADARG args, env);
         fn = car(args);
         fn = eval(fn, env);
         save.restore(args, env);
     }
     errexit();
     args = cdr(args);
-    Save save1(fn);
+    Save save1(THREADARG fn);
     LispObject xargs = nil;             // for list of eventual args
     while (consp(args))
     {   LispObject r1;
-        {   RealSave save(args, env, xargs);
+        {   RealSave save(THREADARG args, env, xargs);
 //          LispObject &arg1 = save.val(1);
 //          LispObject &env1 = save.val(2);
             LispObject &xargs1 = save.val(3);
@@ -1097,19 +1121,21 @@ LispObject mv_call_fn(LispObject args, LispObject env)
 }
 
 LispObject interpreted_0(LispObject def)
-{   STACK_SANITY;
-    save_current_function saver(def);
-    stackcheck(def);
+{   THREADID;
+    STACK_SANITY;
+    save_current_function saver(THREADARG def);
+    stackcheck(THREADARG def);
     errexit();
     return apply_lambda(qenv(def), nil, nil, def);
 }
 
 LispObject interpreted_1(LispObject def, LispObject a1)
-{   STACK_SANITY;
-    save_current_function saver(def);
-    stackcheck(def, a1);
+{   THREADID;
+    STACK_SANITY;
+    save_current_function saver(THREADARG def);
+    stackcheck(THREADARG def, a1);
     errexit();
-    {   Save save(def);
+    {   Save save(THREADARG def);
         a1 = ncons(a1);
         save.restore(def);
     }
@@ -1118,11 +1144,12 @@ LispObject interpreted_1(LispObject def, LispObject a1)
 }
 
 LispObject interpreted_2(LispObject def, LispObject a1, LispObject a2)
-{   STACK_SANITY;
-    save_current_function saver(def);
-    stackcheck(def, a1, a2);
+{   THREADID;
+    STACK_SANITY;
+    save_current_function saver(THREADARG def);
+    stackcheck(THREADARG def, a1, a2);
     errexit();
-    {   Save save(def);
+    {   Save save(THREADARG def);
         a1 = list2(a1, a2);
         save.restore(def);
     }
@@ -1132,11 +1159,12 @@ LispObject interpreted_2(LispObject def, LispObject a1, LispObject a2)
 
 LispObject interpreted_3(LispObject def, LispObject a1, LispObject a2,
                          LispObject a3)
-{   STACK_SANITY;
-    save_current_function saver(def);
-    stackcheck(def, a1, a2, a3);
+{   THREADID;
+    STACK_SANITY;
+    save_current_function saver(THREADARG def);
+    stackcheck(THREADARG def, a1, a2, a3);
     errexit();
-    {   Save save(def);
+    {   Save save(THREADARG def);
         a1 = list3(a1, a2, a3);
         save.restore(def);
     }
@@ -1147,11 +1175,12 @@ LispObject interpreted_3(LispObject def, LispObject a1, LispObject a2,
 LispObject interpreted_4up(LispObject def, LispObject a1,
                            LispObject a2,
                            LispObject a3, LispObject a4up)
-{   STACK_SANITY;
-    save_current_function saver(def);
-    stackcheck(a1, a2, a3, a4up);
+{   THREADID;
+    STACK_SANITY;
+    save_current_function saver(THREADARG def);
+    stackcheck(THREADARG a1, a2, a3, a4up);
     errexit();
-    {   Save save(def);
+    {   Save save(THREADARG def);
         a1 = list3star(a1, a2, a3, a4up);
         save.restore(def);
     }
@@ -1160,21 +1189,23 @@ LispObject interpreted_4up(LispObject def, LispObject a1,
 }
 
 LispObject funarged_0(LispObject def)
-{   STACK_SANITY;
-    save_current_function saver(def);
-    stackcheck(def);
+{   THREADID;
+    STACK_SANITY;
+    save_current_function saver(THREADARG def);
+    stackcheck(THREADARG def);
     errexit();
     def = qenv(def);
     return apply_lambda(cdr(def), nil, car(def), cdr(def));
 }
 
 LispObject funarged_1(LispObject def, LispObject a1)
-{   STACK_SANITY;
-    save_current_function saver(def);
-    stackcheck(def, a1);
+{   THREADID;
+    STACK_SANITY;
+    save_current_function saver(THREADARG def);
+    stackcheck(THREADARG def, a1);
     errexit();
     def = qenv(def);
-    {   Save save(def);
+    {   Save save(THREADARG def);
         a1 = ncons(a1);
         save.restore(def);
     }
@@ -1183,12 +1214,13 @@ LispObject funarged_1(LispObject def, LispObject a1)
 }
 
 LispObject funarged_2(LispObject def, LispObject a1, LispObject a2)
-{   STACK_SANITY;
-    save_current_function saver(def);
-    stackcheck(def, a1, a2);
+{   THREADID;
+    STACK_SANITY;
+    save_current_function saver(THREADARG def);
+    stackcheck(THREADARG def, a1, a2);
     errexit();
     def = qenv(def);
-    {   Save save(def);
+    {   Save save(THREADARG def);
         a1 = list2(a1, a2);
         save.restore(def);
     }
@@ -1198,12 +1230,13 @@ LispObject funarged_2(LispObject def, LispObject a1, LispObject a2)
 
 LispObject funarged_3(LispObject def, LispObject a1, LispObject a2,
                       LispObject a3)
-{   STACK_SANITY;
-    save_current_function saver(def);
-    stackcheck(def, a1, a2, a3);
+{   THREADID;
+    STACK_SANITY;
+    save_current_function saver(THREADARG def);
+    stackcheck(THREADARG def, a1, a2, a3);
     errexit();
     def = qenv(def);
-    {   Save save(def);
+    {   Save save(THREADARG def);
         a1 = list3(a1, a2, a3);
         save.restore(def);
     }
@@ -1213,12 +1246,13 @@ LispObject funarged_3(LispObject def, LispObject a1, LispObject a2,
 
 LispObject funarged_4up(LispObject def, LispObject a1, LispObject a2,
                         LispObject a3, LispObject a4up)
-{   STACK_SANITY;
-    save_current_function saver(def);
+{   THREADID;
+    STACK_SANITY;
+    save_current_function saver(THREADARG def);
     def = qenv(def);
-    stackcheck(a1, a2, a3, a4up);
+    stackcheck(THREADARG a1, a2, a3, a4up);
     errexit();
-    {   Save save(def);
+    {   Save save(THREADARG def);
         a1 = list3star(a1, a2, a3, a4up);
         save.restore(def);
     }
@@ -1228,10 +1262,11 @@ LispObject funarged_4up(LispObject def, LispObject a1, LispObject a2,
 
 static LispObject macroexpand_1(LispObject form, LispObject env)
 {   // The environment here seems only necessary for macrolet
+    THREADID;
     STACK_SANITY;
     LispObject done;
     LispObject f;
-    stackcheck(form, env);
+    stackcheck(THREADARG form, env);
     errexit();
     done = nil;
     if (consp(form))
@@ -1246,8 +1281,8 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
                     {   mv_2 = nil;
                         return nvalues(form, 2);
                     }
-                    {   RealSave save(form, done);
-                        {   RealSave save1(env);
+                    {   RealSave save(THREADARG form, done);
+                        {   RealSave save1(THREADARG env);
                             w = cons(lambda, w);
                             errexit();
                             w = list3(w, save.val(1), nil);
@@ -1276,12 +1311,12 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
         {   done = qvalue(macroexpand_hook);
             if (done == unset_var)
                 return error(1, err_macroex_hook, macroexpand_hook);
-            {   Save save(form, env, done);
+            {   Save save(THREADARG form, env, done);
                 f = cons(lambda, qenv(f));
                 save.restore(form, env, done);
             }
             errexit();
-            {   Save save(done, env);
+            {   Save save(THREADARG done, env);
                 f = list3(f, form, env);
                 save.restore(done, env);
             }
@@ -1300,13 +1335,14 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
 
 LispObject macroexpand(LispObject form, LispObject env)
 {   // The environment here seems only necessary for macrolet
+    THREADID;
     STACK_SANITY;
     LispObject done;
-    stackcheck(form, env);
+    stackcheck(THREADARG form, env);
     errexit();
     done = nil;
     for (;;)
-    {   {   Save save(env, done);
+    {   {   Save save(THREADARG env, done);
             form = macroexpand_1(form, env);
             save.restore(env, done);
         }
@@ -1342,15 +1378,16 @@ LispObject Lmacroexpand_1_2(LispObject, LispObject a, LispObject b)
 // function involved.
 
 LispObject autoload_0(LispObject fname)
-{   STACK_SANITY;
+{   THREADID;
+    STACK_SANITY;
     fname = qenv(fname);
-    {   Save save(fname);
+    {   Save save(THREADARG fname);
         set_fns(car(fname), undefined_0, undefined_1, undefined_2,
                 undefined_3, undefined_4up);
         setenv(car(fname), car(fname));
         LispObject fname1 = cdr(fname);
         while (consp(fname1))
-        {   {   Save save1(fname1);
+        {   {   Save save1(THREADARG fname1);
                 Lload_module(nil, car(fname1));
                 save1.restore(fname1);
             }
@@ -1363,16 +1400,17 @@ LispObject autoload_0(LispObject fname)
 }
 
 LispObject autoload_1(LispObject fname, LispObject a1)
-{   STACK_SANITY;
+{   THREADID;
+    STACK_SANITY;
     fname = qenv(fname);
-    {   Save save(fname);
-        {   Save save1(a1);
+    {   Save save(THREADARG fname);
+        {   Save save1(THREADARG a1);
             set_fns(car(fname), undefined_0, undefined_1, undefined_2,
                     undefined_3, undefined_4up);
             setenv(car(fname), car(fname));
             LispObject fname1 = cdr(fname);
             while (consp(fname1))
-            {   {   Save save2(fname1);
+            {   {   Save save2(THREADARG fname1);
                     Lload_module(nil, car(fname1));
                     errexit();
                     save2.restore(fname1);
@@ -1389,16 +1427,17 @@ LispObject autoload_1(LispObject fname, LispObject a1)
 }
 
 LispObject autoload_2(LispObject fname, LispObject a1, LispObject a2)
-{   STACK_SANITY;
+{   THREADID;
+    STACK_SANITY;
     fname = qenv(fname);
-    {   Save save(fname);
-        {   Save save1(a1, a2);
+    {   Save save(THREADARG fname);
+        {   Save save1(THREADARG a1, a2);
             set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
                     undefined_3, undefined_4up);
             setenv(car(fname), car(fname));
             LispObject fname1 = cdr(fname);
             while (consp(fname1))
-            {   {   Save save2(fname1);
+            {   {   Save save2(THREADARG fname1);
                     Lload_module(nil, car(fname1));
                     save2.restore(fname1);
                 }
@@ -1417,16 +1456,17 @@ LispObject autoload_2(LispObject fname, LispObject a1, LispObject a2)
 
 LispObject autoload_3(LispObject fname, LispObject a1, LispObject a2,
                       LispObject a3)
-{   STACK_SANITY;
+{   THREADID;
+    STACK_SANITY;
     fname = qenv(fname);
-    {   Save save(fname);
-        {   Save save1(a1, a2, a3);
+    {   Save save(THREADARG fname);
+        {   Save save1(THREADARG a1, a2, a3);
             set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
                     undefined_3, undefined_4up);
             setenv(car(fname), car(fname));
             LispObject fname1 = cdr(fname);
             while (consp(fname1))
-            {   {   Save save2(fname1);
+            {   {   Save save2(THREADARG fname1);
                     Lload_module(nil, car(fname1));
                     errexit();
                     save2.restore(fname1);
@@ -1445,16 +1485,17 @@ LispObject autoload_3(LispObject fname, LispObject a1, LispObject a2,
 LispObject autoload_4up(LispObject fname, LispObject a1,
                         LispObject a2,
                         LispObject a3, LispObject a4up)
-{   STACK_SANITY;
+{   THREADID;
+    STACK_SANITY;
     fname = qenv(fname);
-    {   Save save(fname);
-        {   Save save1(a1, a2, a3, a4up);
+    {   Save save(THREADARG fname);
+        {   Save save1(THREADARG a1, a2, a3, a4up);
             set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
                     undefined_3, undefined_4up);
             setenv(car(fname), car(fname));
             LispObject fname1 = cdr(fname);
             while (consp(fname1))
-            {   {   Save save2(fname1);
+            {   {   Save save2(THREADARG fname1);
                     Lload_module(nil, car(fname1));
                     save2.restore(fname);
                 }
@@ -1640,6 +1681,7 @@ static LispObject write_result(LispObject env, LispObject r, char *shared)
 // Cyclic and re-entrant structures could lead to failure here, and
 // uninterned symbols (eg gensyms) will not be coped with very well. But
 // SIMPLE data types should all be safe.
+    THREADID;
     if_error(r = Lexplode(nil, r),
              // Error handler
              std::strcpy(shared, "Failed");
@@ -1664,7 +1706,8 @@ static LispObject write_result(LispObject env, LispObject r, char *shared)
 }
 
 LispObject Lparallel(LispObject env, LispObject a, LispObject b)
-{   STACK_SANITY;
+{   THREADID;
+    STACK_SANITY;
     pid_t pid1, pid2, pidx, pidy;
 // Create an identifier for a private shared segment of memory of size
 // 2*PARSIZE. This will be used for passing a result from the sub-task
@@ -1833,7 +1876,9 @@ LispObject Lshow_stack_2(LispObject env, LispObject a1, LispObject a2)
     {   n = int_of_fixnum(a2);
         if (n > 100) n = m+10;
     }
-    term_printf("Stack depth %d\n", static_cast<int>(stack-stackBase));
+    THREADID;
+    term_printf("Stack depth %" PRIuPTR "\n",
+                reinterpret_cast<uintptr_t>(stack) - stackBase);
     for (int i=m; i<=n; i++)
     {   term_printf("%d: ", i);
         prin_to_terminal(stack[-i]);

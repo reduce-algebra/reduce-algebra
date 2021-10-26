@@ -603,6 +603,12 @@ AC_ARG_WITH(throw,
   [],
   [with_throw="yes"])
 
+AC_ARG_WITH(threads,
+  AS_HELP_STRING([--without-theads],
+                 [Experimental Lisp thread support. (CSL only)]),
+  [],
+  [with_throw="no"])
+
 CSLBASE=cslbase
 GENERATED_C=generated-c
 

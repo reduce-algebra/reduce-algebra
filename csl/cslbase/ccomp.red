@@ -1527,7 +1527,7 @@ symbolic procedure c!:pfluidbind(op, r1, r2, r3);
 % save location
     c!:printf("// FLUIDBIND: reloadenv=%a litvec-offset=%a saveloc=%a\n",
        reloadenv, r3, get(r1, 'c!:location));
-    c!:printf("{   bind_fluid_stack bind_fluid_var(%a, %a, %a);\n",
+    c!:printf("{   bind_fluid_stack bind_fluid_var(THREADARG %a, %a, %a);\n",
       -reloadenv, r3, -get(r1, 'c!:location))
   end;
 
@@ -2121,10 +2121,11 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
       c!:printf("    UNUSED_NAME LispObject %s", car locs);
       for each v in cdr locs do c!:printf(", %s", v);
       c!:printf ";\n" >>;
+    c!:printf("    THREADID;\n");
 % If I wanted the stack fully popped even in throw and error cases I could
 % activate this:
     if stacks or reloadenv then
-       c!:printf "    stack_restorer stack_restorer_var;\n";
+       c!:printf "    stack_restorer stack_restorer_var OPTTHREAD;\n";
 % Functions with 4 or more arguments do not declare their argument variables
 % in the procedure head - they pass a list, so I unpick that here.
     if varargs and args then <<
@@ -2152,8 +2153,8 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
        c!:printf("    poll();\n");
        c!:printf("#else // CONSERVATIVE\n");
        c!:printf("    if (++reclaim_trigger_count == reclaim_trigger_target ||\n");
-       c!:printf("        stack >= stackLimit)\n");
-       c!:printf "    {   Save saveArgs(env";
+       c!:printf("        reinterpret_cast<uintptr_t>(stack) >= stackLimit)\n");
+       c!:printf "    {   Save saveArgs(THREADARG env";
        if not null args then <<
           c!:printf(", %s", car args);
           w := cdr args;
@@ -2192,9 +2193,9 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
 %reloadenv := t; % @@@@@
     if reloadenv then <<
        reloadenv := n;
-       if n=0 then c!:printf("    RealSave saveEnv(env);\n")
-       else c!:printf("    RealSave saveEnv(env, PushCount(%a));\n", n) >>
-    else if n neq 0 then c!:printf("    RealSave Workspace(PushCount(%a));\n", n);
+       if n=0 then c!:printf("    RealSave saveEnv(THREADARG env);\n")
+       else c!:printf("    RealSave saveEnv(THREADARG env, PushCount(%a));\n", n) >>
+    else if n neq 0 then c!:printf("    RealSave Workspace(THREADARG PushCount(%a));\n", n);
     if env then c!:printf "%<// copy arguments values to proper place\n";
     for each v in env do
       if flagp(cdr v, 'c!:live_across_call) then

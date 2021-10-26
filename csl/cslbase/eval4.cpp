@@ -93,8 +93,9 @@ LispObject bytecoded_0(LispObject def)
 // Note that when I have a conservative garbage collector the mess
 // of SAVE_CODEVEC can be removed, and that should at least slightly
 // speed things up.
+    THREADID;
     SAVE_CODEVEC;
-    RealSave save(def);
+    RealSave save(THREADARG def);
     LispObject r;
     TRY
         r = bytestream_interpret(CELL-TAG_VECTOR, def, stack);
@@ -106,7 +107,8 @@ LispObject bytecoded_0(LispObject def)
 }
 
 LispObject bytecoded_1(LispObject def, LispObject a)
-{   SAVE_CODEVEC;
+{   THREADID;
+    SAVE_CODEVEC;
 #ifdef DEBUG
 // In the NO_THROW case I arrange that (most) functions that exit via
 // a simulated throw return a value that denotes an exception value. This
@@ -116,7 +118,7 @@ LispObject bytecoded_1(LispObject def, LispObject a)
 // checked using a debugger and they will show where the exception originated.
     if (is_exception(a)) my_abort("exception value not trapped");
 #endif
-    RealSave save(def, a);
+    RealSave save(THREADARG def, a);
     LispObject &a1 = save.val(2);
     LispObject r;
     TRY
@@ -139,12 +141,13 @@ LispObject bytecoded_1(LispObject def, LispObject a)
 }
 
 LispObject bytecoded_2(LispObject def, LispObject a, LispObject b)
-{   SAVE_CODEVEC;
+{   THREADID;
+    SAVE_CODEVEC;
 #ifdef DEBUG
     if (is_exception(a)) my_abort("exception value not trapped");
     if (is_exception(b)) my_abort("exception value not trapped");
 #endif
-    RealSave save(def, a, b);
+    RealSave save(THREADARG def, a, b);
     LispObject &a1 = save.val(2);
     LispObject &a2 = save.val(3);
     LispObject r;
@@ -168,13 +171,14 @@ LispObject bytecoded_2(LispObject def, LispObject a, LispObject b)
 
 LispObject bytecoded_3(LispObject def, LispObject a, LispObject b,
                        LispObject c)
-{   SAVE_CODEVEC;
+{   THREADID;
+    SAVE_CODEVEC;
 #ifdef DEBUG
     if (is_exception(a)) my_abort("exception value not trapped");
     if (is_exception(b)) my_abort("exception value not trapped");
     if (is_exception(c)) my_abort("exception value not trapped");
 #endif
-    RealSave save(def, a, b, c);
+    RealSave save(THREADARG def, a, b, c);
     LispObject &a1 = save.val(2);
     LispObject &a2 = save.val(3);
     LispObject &a3 = save.val(4);
@@ -210,7 +214,8 @@ inline int countargs(LispObject a4up)
 
 LispObject bytecoded_4up(LispObject def, LispObject a1, LispObject a2,
                          LispObject a3, LispObject a4up)
-{   SAVE_CODEVEC;
+{   THREADID;
+    SAVE_CODEVEC;
 #ifdef DEBUG
     if (is_exception(a1)) my_abort("exception value not trapped");
     if (is_exception(a2)) my_abort("exception value not trapped");
@@ -222,7 +227,7 @@ LispObject bytecoded_4up(LispObject def, LispObject a1, LispObject a2,
     if (nargs != (reinterpret_cast<unsigned char *>(data_of_bps(r)))[0])
         return error(2, err_wrong_no_args, def, fixnum_of_int(nargs));
 // I now know that there will be the right number of arguments.
-    RealSave save(def, a1, a2, a3);
+    RealSave save(THREADARG def, a1, a2, a3);
     for (int i=4; i<=nargs; i++)
     {   *++stack = car(a4up);
         a4up = cdr(a4up);
@@ -270,6 +275,7 @@ static LispObject byteopt(LispObject def, LispObject a1,
     if (is_exception(defaultval)) my_abort("exception value not trapped");
 #endif
     int i, wantargs, wantopts;
+    THREADID;
     SAVE_CODEVEC;
 // From calls that passed a small number of arguments I will invoke this as
 // 0:  byteopt(SPID_NOARG, SPID_NOARG, SPID_NOARG, nil, ...)
@@ -317,7 +323,7 @@ static LispObject byteopt(LispObject def, LispObject a1,
     if (nargs < wantargs+wantopts)
     {   a4up = nreverse(a4up);
         while (nargs < wantargs+wantopts)
-        {   Save save(def);
+        {   Save save(THREADARG def);
 // Note that defaultval will be either nil or SPID_NOARG and neither
 // of those change address during garbage collection, so I do not need to
 // take special action to save the value.
@@ -327,7 +333,7 @@ static LispObject byteopt(LispObject def, LispObject a1,
             nargs++;
         }
         if (restp)
-        {   Save save(def, a4up);
+        {   Save save(THREADARG def, a4up);
 // On this path the number of actual arguments could not even supply all
 // &OPTIONAL args, and so the &RESR value will definitely be nil. So stick
 // a NIL on the end.
@@ -348,14 +354,14 @@ static LispObject byteopt(LispObject def, LispObject a1,
 // length. So I can pick off nargs-(wantargs+optargs) items to make
 // a &REST argument...
         while (nargs > wantargs+wantopts)
-        {   Save save(def, a4up);
+        {   Save save(THREADARG def, a4up);
             ra = cons(car(a4up), ra);
             save.restore(def, a4up);
             a4up = cdr(a4up);
             errexit();
         }
 // Here I have (eg) a4up = (a3 a2 a1) and ra = (a4 a5 ...).
-        {   Save save(def, a4up);
+        {   Save save(THREADARG def, a4up);
             a4up = ncons(ra);
             save.restore(def, ra);
             errexit();
@@ -522,7 +528,12 @@ LispObject Lmv_list(LispObject env, LispObject a)
 #ifdef DEBUG
     if (is_exception(a)) my_abort("exception value not trapped");
 #endif
+    THREADID;
+#ifdef NO_THREADS
     SaveStack saver;
+#else // NO_THREADS
+    SaveStack saver(threadId);
+#endif // NO_THREADS
     int i, x = exit_count;
     if (x > 0) *++stack = a;
     for (i=2; i<=x; i++)
