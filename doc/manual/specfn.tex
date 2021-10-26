@@ -24,6 +24,7 @@
 \index{Theta function derivatives}
 \index{Weierstrass Elliptic functions}
 \index{Sigma functions}
+\index{Inverse Elliptic functions}
 \index{Period Lattice and Related functions}
 \index{Stirling numbers}
 \hypertarget{SPECFNS}{}
@@ -64,6 +65,7 @@ many common special functions, namely:
 \hyperlink{SIGMA}{Sigma Function};
 \item \hyperlink{SIGMA1}{Other Sigma Functions};
 \item \hyperlink{ETA}{Period Lattice and Related Functions};
+\item \hyperlink{INVELL}{Inverse Elliptic Functions};  
 \item \hyperlink{STIRL}{Stirling Numbers};
 \item and some \hyperlink{CONSTS}{well-known constants}.
 \end{itemize}
@@ -752,8 +754,9 @@ been substantially revised by Alan Barnes in 2019. This is to bring the
 notation more into line with standard (British) texts such as Whittaker
 \& Watson \cite{WhittakerWatson:69} and Lawden \cite{Lawden:89} and also to correct
 a number of errors and omissions. These changes and additions will be itemised in the relevant
-sections below.  A new subsection has been added in 2021 to support  Weierstrassian Elliptic
-functions and Sigma functions. While the code for these is being updated, the autoloading
+sections below.  New subsections has been added in 2021 to support  Weierstrassian Elliptic
+functions, Sigma functions and inverse Jacobi elliptic functions.
+While the code for these is being updated, the autoloading
 properties of all elliptic functions has been temporarily removed.
 
 
@@ -1310,6 +1313,123 @@ For details of the algorithm used to calculate the lattice generators from the
 invariants see the DLMF:NIST chapter on
 \href{https://dlmf.nist.gov/23.22#ii}{Lattice Calculations}.
 
+\subsubsection{Inverse Elliptic Functions}
+\index{Inverse Elliptic functions}
+The following inverses of the 12 Jacobi elliptic functions are available:-
+\hypertarget{INVELL}{}
+\ttindex{arcsn}\ttindex{arccn}
+\ttindex{arcdn}\ttindex{arccd}
+\ttindex{arcsd}\ttindex{arcnd}
+\ttindex{arcdc}\ttindex{arcnc}
+\ttindex{arcsc}\ttindex{arcns}
+\ttindex{arcds}\ttindex{arccs}
+\begin{itemize}
+\item arcsn(u,k)
+\item arcdn(u,k)
+\item arccn(u,k)
+\item arccd(u,k)
+\item arcsd(u,k)
+\item arcnd(u,k)
+\item arcdc(u,k)
+\item arcnc(u,k)
+\item arcsc(u,k)
+\item arcns(u,k)
+\item arcds(u,k)
+\item arccs(u,k)
+\end{itemize}
+
+Thus, for example,
+\begin{verbatim}
+   jacobisn(arcsn(x, k), k)   --> x
+   jacobisc(arcsc(x, k), k)   --> x
+\end{verbatim}
+
+A rule list is provided to simplify these functions for special values of their
+arguments such $x=0$, $k=0$ and $k=1$, to implement the inverse function
+simplification formulae illustrated immediately above and for differentiation
+of these functions with respect to their first argument.
+
+Note that although $\mathrm{sc}, \mathrm{sd}, \mathrm{cs}$ and $\mathrm{ds}$
+are all odd functions of their first argument, the situation is somewhat
+different for the principal values of their inverses;  $\mathrm{arcsc}$ and
+$\mathrm{arcsd}$ are also odd functions of their first argument, whereas
+the functions $\mathrm{arccs}$ and $\mathrm{arcds}$ satisfy:
+\[ \mathrm{arccs}(-x, k) = 2\mathrm{K}(k)-\mathrm{arccs}(x, k),\qquad
+\mathrm{arcds}(-x, k) = 2\mathrm{K}(k)-\mathrm{arcds}(x, k).\]
+
+This choice means that the range interval of (real) principal values is
+connected. c.f.
+\[ \mathrm{arctan}(-x) = -\mathrm{arctan}(x),\qquad
+  \mathrm{arccot}(-x) = \pi -\mathrm{arccot}(x). \]
+
+When their arguments are purely numerical, these functions  will be evaluated
+numerically if the \sw{rounded} switch is ON.  Currently numerical evaluation
+is only available when both arguments are real and $|k|<=1$ and when the
+result is also real. This neccessitates restictions on the range of acceptable
+values of the first parameter $x$ (see the table below). Note that for
+$\mathrm{arcdn}$ and $\mathrm{arcnd}$ a zero value of the modulus $k$ is
+excluded (since $\mathrm{dn}(x,0) = \mathrm{nd}(x,0) = 1 \quad \forall x$).
+
+As the Jacobi elliptic functions are doubly periodic, the inverse functions
+are multi-valued. The numerical value returned is the principal value which
+lies in the range  given in the third column of the table below. 
+(c.f. the inverse trigonometric functions). Other \emph{real} values of the
+inverse functions are indicated in the fourth column of the table below where
+$n$ is an arbitrary integer.
+
+\begin{tabular}{llll}
+  Fn & Domain & Principal Value $v$ & Other real values\\
+$\mathop{\mathrm{arcsn}}$: & $ |x| <=1 $ &
+  $-\mathrm{K}(k) <= v <= \mathrm{K}(k)$ &
+  $2 n\mathrm{K}(k)+(-1)^nv$ \\
+$\mathop{\mathrm{arccn}}$: &  $ |x| <=1 $ &
+  $0 <= v <= 2\mathrm{K}(k)$ & 
+  $4 n\mathrm{K}(k) \pm v$ \\
+$\mathop{\mathrm{arccd}}$: & $ |x| <=1 $ &
+  $0 <= v <= 2\mathrm{K}(k)$ &
+  $4 n\mathrm{K}(k) \pm v$ \\
+$\mathop{\mathrm{arcns}}$: & $ |x| >=1 $ &
+  $-\mathrm{K}(k) <= v <= \mathrm{K}(k)$ \& $v \neq 0$ &
+  $2 n\mathrm{K}(k)+(-1)^nv$ \\
+$\mathop{\mathrm{arcnc}}$: & $ |x| >=1 $ &
+  $0 <= v <= 2\mathrm{K}(k)$ \& $v \neq \mathrm{K}(k)$  &
+  $4 n\mathrm{K}(k) \pm v$ \\
+$\mathop{\mathrm{arcdc}}$: & $ |x| >=1 $ &
+  $0 <= v <= 2\mathrm{K}(k)$ \& $v \neq \mathrm{K}(k)$ &
+  $4 n\mathrm{K}(k) \pm v$ \\
+$\mathop{\mathrm{arcdn}}$: & $ k' <= |x| <= 1$ &
+  $0 <= v <= \mathrm{K}(k)$ &
+  $2 n\mathrm{K}(k) \pm v$ \\  
+$\mathop{\mathrm{arcnd}}$: & $ 1 <= |x| <= 1/k'$ &
+  $0 <= v <= \mathrm{K}(k)$ &
+  $2 n\mathrm{K}(k) \pm v$ \\   
+$\mathop{\mathrm{arcds}}$: & $ |x| >= k'$ &
+  $0 < v < 2 \mathrm{K}(k)$ &
+  $2 n\mathrm{K}(k)+(-1)^nv $ \\  
+$\mathop{\mathrm{arcsd}}$: & $  |x| <= 1/k'$ &
+  $-\mathrm{K}(k) <= v <= \mathrm{K}(k)$ &
+  $2 n\mathrm{K}(k)+(-1)^nv $ \\
+$\mathop{\mathrm{arcsc}}$: & $ x \in \mathbb{R}$ &
+  $-\mathrm{K}(k) < v < \mathrm{K}(k)$ &
+  $2 n\mathrm{K}(k) + v$ \\  
+$\mathop{\mathrm{arccs}}$: & $ x \in \mathbb{R}$ &
+  $ 0 < v < 2 \mathrm{K}(k)$ &
+  $2 n\mathrm{K}(k) + v$ \\
+\end{tabular}
+
+The numerical values of the inverse functions are calculated by
+expressing them in terms of the symmetric elliptic integral:
+\[ R_F(x,y,z)=\int_0^\infty 1/\sqrt{(t-x)(t-y)(t-z)}\,\mathrm{d}t. \]
+This is then evaluated using a sequence of quadratic transformations 
+which converge rapidly to the elementary hyperbolic integral:
+\[R_c(X^2+Y^2,X^2) = R_F(X^2,X^2,X^2+Y^2) = \mathrm{arctanh}
+(Y/(X^2+Y^2))/Y.\]
+More information on this method due to Carlson in the 1990's
+may be found on the DLMF website:
+\href{https://dlmf.nist.gov/19.36#ii}{Quadratic Transformations}
+and \href{https://dlmf.nist.gov/19.25#v}{Inverse Jacobian
+Elliptic Functions}.
+
 \subsection{Stirling Numbers}
 \hypertarget{STIRL}{}
 \index{Stirling numbers}\ttindex{Stirling1}\ttindex{Stirling2}
@@ -1693,6 +1813,7 @@ $\displaystyle\SixJSymbol$ & \f{SixJSymbol(\{j1,j2,j3\},\{l1,l2,l3\})}\\[5pt]
 \fbox{
 \begin{tabular}{r l}
 \rule{0pt}{16pt}Function & Operator\\[5pt]
+$\mathrm{am}(u,k)$ & \f{jacobiam(u,k)}\\
 $\mathrm{sn}(u,k)$ & \f{jacobisn(u,k)}\\
 $\mathrm{dn}(u,k)$ & \f{jacobidn(u,k)}\\
 $\mathrm{cn}(u,k)$ & \f{jacobicn(u,k)}\\
@@ -1705,7 +1826,12 @@ $\mathrm{sc}(u,k)$ & \f{jacobisc(u,k)}\\
 $\mathrm{ns}(u,k)$ & \f{jacobins(u,k)}\\
 $\mathrm{ds}(u,k)$ & \f{jacobids(u,k)}\\
 $\mathrm{cs}(u,k)$ & \f{jacobics(u,k)}\\
-$\mathrm{am}(u,k)$ & \f{jacobiam(u,k)}\\
+Inverse Functions of the above:\\
+$\mathrm{arcsn}(u,k)$ & \f{arcsn(u,k)}\\
+$\mathrm{arccn}(u,k)$ & \f{arccn(u,k)}\\
+   ... \\
+$\mathrm{arccs}(u,k)$ & \f{arccs(u,k)}\\
+
 Complete Integral (1st kind) $\mathrm{K}(k)$ & \f{ellipticK(k)}\\
 $\mathrm{K}^\prime(k)$ & \f{ellipticK!'(k)}\\
 Incomplete Integral (1st kind) $\mathrm{F}(\phi,k)$ & \f{ellipticF(phi,k)}\\

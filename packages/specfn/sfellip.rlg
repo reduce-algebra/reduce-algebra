@@ -41,7 +41,7 @@ Z(u,k)
 jacobie(u+14*elliptick(k),k);
 
 
-14*E(k) + Epsilon(u,k)
+14*E(k) + E_j(u,k)
 
 
 % derivatives and consistency checks
@@ -60,12 +60,11 @@ df(jacobisn(u,k)^2+jacobicn(u,k)^2,u);
 df(jacobidn(u,k),k);
 
 
-(sn(u,k)*k
-
-                                      2                                     2
- *( - cn(u,k)*Epsilon(u,k) - cn(u,k)*k *u + cn(u,k)*u + dn(u,k)*sn(u,k)))/(k
-
-    - 1)
+                                           2
+ sn(u,k)*k*( - cn(u,k)*E_j(u,k) - cn(u,k)*k *u + cn(u,k)*u + dn(u,k)*sn(u,k))
+------------------------------------------------------------------------------
+                                     2
+                                    k  - 1
 
 df(k^2*jacobisn(u,k)^2+jacobidn(u,k)^2,k);
 
@@ -87,13 +86,11 @@ dn(u,k)
 df(jacobie(u,k),k);
 
 
-(k
-
-          2                                                 2  2            2
- *(cn(u,k) *Epsilon(u,k) - cn(u,k)*dn(u,k)*sn(u,k) - sn(u,k) *k *u + sn(u,k) *u)
-
-     2
- )/(k  - 1)
+           2                                             2  2            2
+ k*(cn(u,k) *E_j(u,k) - cn(u,k)*dn(u,k)*sn(u,k) - sn(u,k) *k *u + sn(u,k) *u)
+------------------------------------------------------------------------------
+                                     2
+                                    k  - 1
 
 
 df(elliptick(k),k);
@@ -159,6 +156,67 @@ elliptice(u+11*pi/3,k);
    pi + 6*u
 E(----------,k) + 7*E(k)
       6
+
+
+% inverse Jacobian elliptic functions: special cases and derivatives
+
+arcsn(x,0);
+
+
+asin(x)
+
+arcdn(x,1);
+
+
+asech(x)
+
+arcsn(-x,k);
+
+
+ - arcsn(x,k)
+
+arccn(-x,k);
+
+
+ - arccn(x,k) + 2*K(k)
+
+arccs(-x,k);
+
+
+ - arccs(x,k) + 2*K(k)
+
+arcds(-x,k);
+
+
+ - arcds(x,k) + 2*K(k)
+
+arcsd(-x,k);
+
+
+ - arcsd(x,k)
+
+df(arccn(x,k),x);
+
+
+                  - 1
+--------------------------------------
+       2  2    2               2
+ sqrt(k *x  - k  + 1)*sqrt( - x  + 1)
+
+df(arcdc(x,k),x);
+
+
+               1
+-------------------------------
+          2    2        2
+ sqrt( - k  + x )*sqrt(x  - 1)
+
+
+jacobidn(arcdn(x^2,k),k);
+
+
+ 2
+x
 
 
 % numerical evaluation and consistency checks
@@ -291,7 +349,67 @@ d^2+m^2*s^2;
 1
 
 
+% inverse Jacobi functions
+v := arcsn(0.5,0.7);
+
+
+v := 0.53536740276
+
+jacobisn(v,0.7);
+
+
+0.5
+
+w := arcns(2.0,0.7);
+
+
+w := 0.53536740276
+
+w-v;
+
+
+0
+
+
+arcds(100.0, 0.4);
+
+
+0.0100001133381
+
+arccs(100.0, 0.4);
+
+
+0.00999969335032
+
+
+w:=arccn(-0.3,0.8);
+
+
+w := 2.49031911944
+
+jacobicn(w,0.8);
+
+
+ - 0.3
+
+
+w:=arccs(-0.4,0.8);
+
+
+w := 2.60562233889
+
+w:=arcsc(-2.5,0.8);
+
+
+w :=  - 1.38498321644
+
+
 % Nome and related utilities
+on complex;
+
+
+*** Domain mode rounded changed to complex-rounded 
+
 a:=nome(0.4);
 
 
@@ -300,11 +418,7 @@ a := 0.0108953620102
 nome2mod(a);
 
 
-                          2
- theta2(0,1.43857545592*i)
-----------------------------
-                          2
- theta3(0,1.43857545592*i)
+0.4
 
 nome(0.99);
 
@@ -320,8 +434,7 @@ elliptick(0.4);
 nome2!K(a);
 
 
-                                       2
-1.57079632679*theta3(0,1.43857545592*i)
+1.63999986586
 
 elliptick!'(0.4);
 
@@ -331,8 +444,7 @@ elliptick!'(0.4);
 nome2!K!'(a);
 
 
-                                       2
-2.25970904198*theta3(0,1.43857545592*i)
+2.35926355475
 
 
 shut "sfellip.rlg";

@@ -43,6 +43,20 @@ elliptice(u+pi/2,k);
 ellipticf(u-5*pi/2,k);
 elliptice(u+11*pi/3,k);
 
+% inverse Jacobian elliptic functions: special cases and derivatives
+
+arcsn(x,0);
+arcdn(x,1);
+arcsn(-x,k);
+arccn(-x,k);
+arccs(-x,k);
+arcds(-x,k);
+arcsd(-x,k);
+df(arccn(x,k),x);
+df(arcdc(x,k),x);
+
+jacobidn(arcdn(x^2,k),k);
+
 % numerical evaluation and consistency checks
 on rounded;
 
@@ -83,7 +97,23 @@ d :=  jacobidn(u,m);
 s^2+c^2;
 d^2+m^2*s^2;
 
+% inverse Jacobi functions
+v := arcsn(0.5,0.7);
+jacobisn(v,0.7);
+w := arcns(2.0,0.7);
+w-v;
+
+arcds(100.0, 0.4);
+arccs(100.0, 0.4);
+
+w:=arccn(-0.3,0.8);
+jacobicn(w,0.8);
+
+w:=arccs(-0.4,0.8);
+w:=arcsc(-2.5,0.8);
+
 % Nome and related utilities
+on complex;
 a:=nome(0.4);
 nome2mod(a);
 nome(0.99);
