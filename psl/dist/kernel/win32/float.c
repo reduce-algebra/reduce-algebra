@@ -1,8 +1,8 @@
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PB:FLOAT.C
-% Description:  Miscellaneous floating point support routines.
+% File:         PXK:FLOAT.C
+% Description:  Miscellaneous floating point support routines for win32.
 % Author:       Leigh Stoller
 % Created:      29-Oct-86 
 % Modified:     
@@ -193,6 +193,22 @@ uxwritefloat(buf, flt, convstr)
       else
 	{
 	  strcat(temps, ".0");
+	}
+    }
+  else
+    {
+      /* convert "old style" strings used before Visual Studio 2015 */
+      if (_fpclass(*flt) == _FPCLASS_NINF)
+	{
+	  strcpy(temps,"-inf");
+	}
+      else if (_fpclass(*flt) == _FPCLASS_PINF)
+	{
+	  strcpy(temps,"inf");
+	}
+      else if (_isnan(*flt))
+	{
+	  strcpy(temps,"nan");
 	}
     }
   /* Install the length of the string into the Lisp header word

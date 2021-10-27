@@ -1406,7 +1406,8 @@ void write_function4up(fourup_args *p)
 
 #define GC_PROTECT(stmt)                                \
     do                                                  \
-    {   Save save(r, s, pbase, b);                      \
+    {   THREADID;                                       \
+        Save save(THREADARG r, s, pbase, b);            \
         ip = reinterpret_cast<LispObject>(p) - pbase;   \
         stmt;                                           \
         save.restore(r, s, pbase, b);                   \
@@ -3306,18 +3307,20 @@ bool setup_codepointers = false;
 LispObject Lwrite_module(LispObject env, LispObject a, LispObject b)
 {
 #ifdef DEBUG_FASL
-    Save save (a, b);
+    THREADID;
+    Save save(THREADARG a, b);
     trace_printf("FASLOUT: ");
     errexit();
     loop_print_trace(a);
     errexit();
     trace_printf("\n");
     errexit();
+    save.restore(a, b);
     loop_print_trace(b);
     errexit();
     trace_printf("\n");
     errexit();
-    Save restore(a, b);
+    save.restore(a, b);
 #endif // DEBUG_FASL
     if (!setup_codepointers)
     {   set_up_function_tables();
@@ -3406,7 +3409,8 @@ void check_no_gensyms(LispObject u)
 static LispObject load_module(LispObject env, LispObject file, int option)
 // load_module() rebinds *package* in COMMON mode, but also note that
 // it also rebinds *echo to nil in case we are reading from a stream.
-{   save_current_function saver(env);
+{   THREADID;
+    save_current_function saver(THREADARG env);
     char filename[LONGEST_LEGAL_FILENAME];
     Header h;
     size_t len;
@@ -3468,7 +3472,7 @@ static LispObject load_module(LispObject env, LispObject file, int option)
         uint64_t t0b;
     public:
         serializer_tidy(bool fg, uint64_t t0a, LispObject file)
-        {
+        {   THREADID;
             if (fg)
             {   *++stack = qvalue(standard_input);
                 setvalue(standard_input, file);
@@ -3481,7 +3485,8 @@ static LispObject load_module(LispObject env, LispObject file, int option)
             t0b = t0a;
         }
         ~serializer_tidy()
-        {   stack = saveStack;
+        {   THREADID;
+            stack = saveStack;
 // This is some tidy-up activity that I must always do at the end of
 // reading (or trying to read) something.
             if (repeat_heap != nullptr) delete [] repeat_heap;
@@ -3544,7 +3549,7 @@ static LispObject load_module(LispObject env, LispObject file, int option)
                 w = get(name, load_selected_source_symbol, nil);
                 if (w == nil) getsavedef = false;
                 else if (integerp(w) != nil && consp(def))
-                {   Save save1(name, file, r, def);
+                {   Save save1(THREADARG name, file, r, def);
 // The md60 function is called on something like (fname (args...) body...)
                     LispObject def1 = cons(name, cdr(def));
                     errexit();
@@ -3555,7 +3560,7 @@ static LispObject load_module(LispObject env, LispObject file, int option)
                 }
             }
             if (getsavedef)
-            {   {   Save save1(name, file, r);
+            {   {   Save save1(THREADARG name, file, r);
                     if (name == nil)
                     {   LispObject p1 = cdr(p);
                         LispObject n1 = car(p1);
@@ -3564,7 +3569,7 @@ static LispObject load_module(LispObject env, LispObject file, int option)
                         putprop(n1, t1, v1);
                     }
                     else
-                    {   Save save2(def);
+                    {   Save save2(THREADARG def);
                         putprop(name, savedef_symbol, def);
                         errexit();
                         save1.restore(name, file, r);
@@ -3590,7 +3595,7 @@ static LispObject load_module(LispObject env, LispObject file, int option)
                 }
 // Build up a list of the names of all functions whose !*savedef information
 // has been established.
-                Save save2(name, r);
+                Save save2(THREADARG name, r);
                 file = cons(name, file);
                 errexit();
                 save2.restore(name, r);
@@ -3599,12 +3604,12 @@ static LispObject load_module(LispObject env, LispObject file, int option)
 // module it was found in.
             LispObject w;
             w = get(name, load_source_symbol, nil);
-            {   Save save(name, file, r);
+            {   Save save(THREADARG name, file, r);
                 w = cons(current_module, w);
                 errexit();
                 save.restore(name, file, r);
             }
-            Save save(name, file, r);
+            Save save(THREADARG name, file, r);
             putprop(name, load_source_symbol, w);
             errexit();
             save.restore(name, file, r);
@@ -3628,9 +3633,10 @@ LispObject load_source0(int option)
 // names of modules present in them. I will discard any duplicates
 // names.
     LispObject mods = nil;
+    THREADID;
     for (LispObject l = qvalue(input_libraries); is_cons(l); l = cdr(l))
     {   LispObject m;
-        {   Save save(mods, l);
+        {   Save save(THREADARG mods, l);
             m = Llibrary_members(nil, car(l));
             errexit();
             save.restore(mods, l);
@@ -3639,7 +3645,7 @@ LispObject load_source0(int option)
         {   LispObject m1 = car(m);
             m = cdr(m);
             if (Lmemq(nil, m1, mods) != nil) continue;
-            Save save(l, m);
+            Save save(THREADARG l, m);
             mods = cons(m1, mods);
             errexit();
             save.restore(l, m);
@@ -3652,12 +3658,12 @@ LispObject load_source0(int option)
     while (is_cons(mods))
     {   LispObject m = car(mods), w;
         mods = cdr(mods);
-        {   Save save(r, mods);
+        {   Save save(THREADARG r, mods);
             w = load_module(nil, m, option);
             errexit();
             save.restore(r, mods);
         }
-        Save save(mods);
+        Save save(THREADARG mods);
 // The special version of UNION here always works in linear time, and that
 // is MUCH better than the more general version. Well with bootstrapreduce
 // the final result list from load!-source() ends up of length about
@@ -3863,6 +3869,7 @@ void warm_setup()
     set_up_function_tables();
     setheader(nil, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR);
     for (LispObject **p = list_bases; *p!=nullptr; p++) **p = nil;
+    THREADID;
     *stack = nil;
     qcountLow(nil) = 256;
     qcountHigh(nil) = 0;
@@ -4001,6 +4008,7 @@ bool push_symbols(symbol_processor_predicate *pp, LispObject p)
     Header h;
     bool fail = false;
     debug_record("push_symbols start");
+    THREADID;
 down:
     debug_record("push_symbols down");
     if (p == 0)
@@ -4162,11 +4170,15 @@ up:
 // The following returns true if it fails.
 
 static bool push_all_symbols(symbol_processor_predicate *pp)
-{   map_releaser RAII;
-    LispObject *oldStack = stack;
-    for (LispObject *s=stackBase+1; s<=oldStack; s++)
-    {   std::sprintf(trigger, "Stack@%p", s);
-        if (push_symbols(pp, *s)) return true;
+{   THREADID;
+    map_releaser RAII;
+    for (uintptr_t threadId=0; threadId<maxThreads; threadId++)
+    {   LispObject *oldStack = stack;
+        for (LispObject *s=reinterpret_cast<LispObject *>(stackBase)+1;
+             s<=oldStack; s++)
+        {   std::sprintf(trigger, "Stack@%p", s);
+            if (push_symbols(pp, *s)) return true;
+        }
     }
     std::strcpy(trigger, "value nil push");
     if (push_symbols(pp, qvalue(nil))) return true;
@@ -4221,7 +4233,8 @@ static bool not_gensym(LispObject x)
 
 
 LispObject Lall_symbols(LispObject env, LispObject include_gensyms)
-{   LispObject *stacksave = stack;
+{   THREADID;
+    LispObject *stacksave = stack;
     if (push_all_symbols(include_gensyms==nil ? not_gensym : always))
     {   stack = stacksave;
         return aerror("all_symbols");
@@ -4235,7 +4248,8 @@ LispObject Lall_symbols(LispObject env, LispObject include_gensyms)
 }
 
 LispObject Lall_symbols0(LispObject env)
-{   LispObject *stacksave = stack;
+{   THREADID;
+    LispObject *stacksave = stack;
     if (push_all_symbols(interesting))
     {   stack = stacksave;
         return aerror("all_symbols");
@@ -4325,6 +4339,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
 //     2  return a list (and reset counts)
 //     4  reset counts to zero
 {   int what;
+    THREADID;
     mapstore_item *buff=nullptr;
     size_t buffp=0, buffn=0;
     if (a == nil) a = fixnum_of_int(0);
@@ -4334,7 +4349,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
     if (what & 8) profile_count_mode = true;
     what &= 7;
     if (what == 4)
-    {   stack_restorer RAII;
+    {   stack_restorer RAII OPTTHREAD;
         if (push_all_symbols(clear_counts)) return aerror("mapstore");
         return onevalue(nil);
     }
@@ -4344,12 +4359,12 @@ LispObject Lmapstore(LispObject env, LispObject a)
         buffp = 0;
         buffn = 2000;
     }
-    {   stack_restorer RAII;
+    {   stack_restorer RAII OPTTHREAD;
         itotal_count = total_count = 0.0;
         if (push_all_symbols(count_totals)) return aerror("mapstore");
     }
     LispObject r;
-    {   stack_restorer RAII;
+    {   stack_restorer RAII OPTTHREAD;
         LispObject *savestack = stack;
 // The code here is a bit odd. push_all_symbols() does what its name
 // says and places references to every symbol that passes its predicate
@@ -4408,7 +4423,8 @@ LispObject Lmapstore(LispObject env, LispObject a)
                     if (what == 2 || what == 3)
                     {   LispObject w1;
 // Result is a list of items ((name size bytes-executed) ...).
-                        Save save(r, x);
+                        THREADID;
+                        Save save(THREADARG r, x);
                         w1 = make_lisp_unsigned64(n);
                         errexit();
                         save.restore(r, x);

@@ -540,6 +540,7 @@ void pushChunk(Chunk *c)
 Chunk *popChunk()
 {   std::unique_lock<std::mutex> lock(mutexForGc);
 // If I have to wait then while I am waiting I am not active...
+    my_assert(activeHelpers != 0);
     activeHelpers--;
     bool st =
         cvForChunkStack.wait_until(lock,
@@ -675,7 +676,7 @@ thread_local Chunk *myBusyChunk = nullptr;
 
 extern void testLayout();
 
-LispObject gc_n_bytes1(size_t n, uintptr_t thr, uintptr_t r)
+LispObject gc_n_bytes1(size_t n, THREADFORMAL uintptr_t r)
 {   Chunk *newChunk;
     size_t nSize;
     if (n <= (2*targetChunkSize)/3) LIKELY
@@ -695,13 +696,13 @@ LispObject gc_n_bytes1(size_t n, uintptr_t thr, uintptr_t r)
 //  uintptr_t oldLimit = gLimit;
     uint64_t newLimit = reinterpret_cast<uintptr_t>(newChunk) + nSize;
     r = newChunk->dataStart();
-    fringeBis[threadId] = fringe = r + n;
+    fringeBis = fringe = r + n;
     Page *p = reinterpret_cast<Page *>((oldFringe-1) & -pageSize);
-    Chunk *justFilled = myChunkBase[thr];
+    Chunk *justFilled = myChunkBase;
     if (justFilled != nullptr &&
         justFilled != myBusyChunk) pushChunk(justFilled);
-    myChunkBase[thr] = newChunk;
-if (gcTrace) cout << "New Chunk at " << Addr(newChunk)
+    myChunkBase = newChunk;
+    if (gcTrace) cout << "New Chunk at " << Addr(newChunk)
      << " fringe = " << Addr(fringe) << "\n";
     newChunk->length = nSize;
     newChunk->isPinned = 0;
@@ -709,13 +710,13 @@ if (gcTrace) cout << "New Chunk at " << Addr(newChunk)
     newChunk->chunkPinChain = nullptr;
     size_t chunkNo = p->chunkCount.fetch_add(1);
     p->chunkMap[chunkNo] = newChunk;
-    limitBis[thr] = newLimit;
-    limit[thr] = newLimit;
+    limitBis = newLimit;
+    limit = newLimit;
 #ifdef DEBUG
     testLayout();
 #endif
-if (gcTrace) cout << "gc_n_bytes1 = " << Addr(r) << " fringe = " << Addr(fringe) << "\n";
-if (gcTrace) cout << "limit = " << Addr(limit[threadId]) << "\n";
+    if (gcTrace) cout << "gc_n_bytes1 = " << Addr(r) << " fringe = " << Addr(fringe) << "\n";
+    if (gcTrace) cout << "limit = " << Addr(limit) << "\n";
     return static_cast<LispObject>(r);
 }
 
@@ -723,19 +724,19 @@ inline LispObject gc_n_bytes(size_t n)
 {
 // First the path that applies if the allocation will be possible within the
 // current Chunk.
-if (gcTrace) cout << "gc_n_bytes " << n << " with fringe = " << Addr(fringe) << "\n";
-    uintptr_t thr = threadId;
+    THREADID;
+    if (gcTrace) cout << "gc_n_bytes " << n << " with fringe = " << Addr(fringe) << "\n";
     uintptr_t r = fringe;
     uintptr_t fr1 = r + n;
-    uintptr_t w = limit[thr];
+    uintptr_t w = limit;
     if (fr1 <= w) LIKELY
     {   fringe = fr1;
-if (gcTrace) cout << "simple success at " << Addr(r) << " leaves fringe = " << Addr(fringe) << "\n";
+        if (gcTrace) cout << "simple success at " << Addr(r) << " leaves fringe = " << Addr(fringe) << "\n";
         return static_cast<LispObject>(r);
     }
 // Now the case where a fresh Chunk has to be allocated.
     UNLIKELY
-    Chunk *c = myChunkBase[thr];
+    Chunk *c = myChunkBase;
 // If I am going to have to allocate a new Chunk and if there is actually
 // one in use at present then I need to record where the existing Chunk ends
 // and insert a padder to fill up to its end.
@@ -744,8 +745,8 @@ if (gcTrace) cout << "simple success at " << Addr(r) << " leaves fringe = " << A
         size_t gap = w - r;
         if (gap != 0) setHeaderWord(r, gap);
     }
-    LispObject r1 = gc_n_bytes1(n, threadId, r);
-if (gcTrace) cout << "complex success at " << Addr(r1) << "\n";
+    LispObject r1 = gc_n_bytes1(n, THREADARG r);
+    if (gcTrace) cout << "complex success at " << Addr(r1) << "\n";
     return r1;
 }
 
@@ -939,12 +940,13 @@ void prepareForGarbageCollection(bool major)
 // but diving into the allocation code beyond the initial test for easy cases
 // it will allocate a fresh Chunk. I set myBusyChunk so that the allocation
 // of the new Chunk does not mark the existing one as needing scanning.
-        myBusyChunk = myChunkBase[threadId];
+        THREADID;
+        myBusyChunk = myChunkBase;
         if (myBusyChunk != nullptr)
             myBusyChunk->chunkFringe = static_cast<uintptr_t>(fringe);
-        myChunkBase[threadId] = myBusyChunk = nullptr;
-        fringe = limit[threadId];
-        gc_n_bytes1(0, threadId, fringe);
+        myChunkBase = myBusyChunk = nullptr;
+        fringe = limit;
+        gc_n_bytes1(0, THREADARG fringe);
     }
     else
     {   withinMajorGarbageCollection = false;
@@ -1185,10 +1187,10 @@ void identifyPinnedItems(bool major)
 // address of that reference is marked as "pinned". During a minor GC
 // the only items that need special marking will be one in the "previous"
 // page since nothing else will ever be moved.
-    for (unsigned int thr=0; thr<maxThreads; thr++)
-    {   if ((threadMap & threadBit(thr)) == 0)
-        {   uintptr_t sbase = stackBases[thr];
-            uintptr_t sfringe = stackFringes[thr];
+    for (uintptr_t threadId=0; threadId<maxThreads; threadId++)
+    {   if ((threadMap & threadBit(threadId)) == 0)
+        {   uintptr_t sbase = stackBase;
+            uintptr_t sfringe = stackFringe;
 // Here I am supposing that for each thread the (C++) stack is a single
 // block of memory, that it is aligned as a sizeof(LispObject) boundary
 // and that EVERY interesting value is present on the stack with no change
@@ -1336,6 +1338,7 @@ void evacuateFromUnambiguousBases(bool major)
     evacuate(qfastgets(nil));
     evacuate(qpackage(nil));
     for (auto p = list_bases; *p!=nullptr; p++) evacuate(**p);
+    THREADID;
     for (LispObject *sp=stack;
          sp>reinterpret_cast<LispObject *>(stackBase); sp--) evacuate(*sp);
 // When running the deserialization code I keep references to multiply-
@@ -1614,13 +1617,14 @@ void evacuatePartOfMyOwnChunk()
 // and this is treated as if it had been found at step (4). Or it can
 // report that no more will ever become available, in which case we are
 // finished. 
+    THREADID;
     for (;;)
     {
 // myBusyChunk is set here so because the Chunk being worked on is
 // simultaneously on that has some copied but not cleaned up material in
 // it AND the one in which this thread will be placing any further
 // copied material.
-        myBusyChunk = myChunkBase[threadId];
+        myBusyChunk = myChunkBase;
         uintptr_t p = myBusyChunk->dataStart();
 if (gcTrace) cout << "Start of data in my Chunk is at " << Addr(p) << "\n";
 if (gcTrace) cout << "fringe = " << Addr(fringe) << "\n";
@@ -1644,8 +1648,8 @@ if (gcTrace) cout << "fringe = " << Addr(fringe) << "\n";
                     }
                     else break;
                 }
-                if (myBusyChunk != myChunkBase[threadId])
-                {   myBusyChunk = myChunkBase[threadId];
+                if (myBusyChunk != myChunkBase)
+                {   myBusyChunk = myChunkBase;
                     p = myBusyChunk->dataStart();
                 }
                 continue;
@@ -1664,8 +1668,8 @@ if (gcTrace) cout << "fringe = " << Addr(fringe) << "\n";
 // I do not hit fringe but do reach dataEnd() must be because a new Chunk
 // had been set up for allocation and fringe points within it, and in that
 // situation myChunkBase[] will have been updated.
-                my_assert(myBusyChunk != myChunkBase[threadId]);
-                myBusyChunk = myChunkBase[threadId];
+                my_assert(myBusyChunk != myChunkBase);
+                myBusyChunk = myChunkBase;
                 p = myBusyChunk->dataStart();
                 continue;
             }
@@ -2095,7 +2099,11 @@ void validatePointers()
 // of making external references to all the functions. It would not be a very
 // good idea to call this!
 
+#if defined __clang__
+#pragma clang optimize off
+#elif defined __GNUC__ // __clang__
 #pragma GCC optimize("0")
+#endif //__clang__ or __GNUC__
 
 void getInlineFunctionsDefined()
 {   Chunk c;
@@ -2112,7 +2120,7 @@ void getInlineFunctionsDefined()
     (void)p.FchunkPinChain();
     (void)p.FchunkCount();
     (void)p.FchunkMap(0);
-    (void)Flimit(0);
+    (void)Flimit();
     (void)FgFringe();
     (void)FactiveThreads();
 }

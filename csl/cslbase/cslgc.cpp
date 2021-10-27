@@ -504,6 +504,7 @@ static void real_garbage_collector()
 {
 // I lift the real garbage collector to a separate function mainly
 // so that I can set breakpoints on it!
+    THREADID;
     for (size_t i=0; i<=LOG2_VECTOR_CHUNK_BYTES; i++)
         free_vectors[i] = 0;
 
@@ -548,7 +549,8 @@ static void real_garbage_collector()
 // structure...
     for (LispObject **p = list_bases; *p!=nullptr; p++) copy(*p);
     for (LispObject *sp=stack;
-         sp>reinterpret_cast<LispObject *>(stackBase); sp--) copy(sp);
+         sp > reinterpret_cast<LispObject *>(stackBase);
+         sp--) copy(sp);
 // When running the deserialization code I keep references to multiply-
 // used items in repeat_heap, and if garbage collection occurs they must be
 // updated.
@@ -710,7 +712,8 @@ void reclaim(const char *why, int stg_class)
     base_time += t1 - t0;
 // (verbos 5) causes a display breaking down how space is used
     if ((verbos_flag & 5) == 5)
-    {   trace_printf(
+    {   THREADID;
+        trace_printf(
             "cons_cells=%" PRIdPTR ", symbol_heads=%" PRIdPTR ", strings=%"
             PRIdPTR ", user_vectors=%" PRIdPTR "\n",
             cons_cells, symbol_heads, strings, user_vectors-litvecs-getvecs);
@@ -719,11 +722,11 @@ void reclaim(const char *why, int stg_class)
             ", other=%" PRIdPTR ", litvecs=%d\n",
             big_numbers, box_floats, bytestreams, other_mem, litvecs);
         trace_printf("getvecs=%" PRIdPTR " C-stacks=%" PRIdPTR
-                     "K Lisp-stack=%" PRIdPTR "K\n",
-                     getvecs,
-                     ((reinterpret_cast<char *>(C_stackbase)-
-                       reinterpret_cast<char *>(&why))+1023)/1024,
-                     static_cast<intptr_t>((stack-stackBase)+1023)/1024);
+            "K Lisp-stack=%" PRIdPTR "K\n",
+            getvecs,
+            ((reinterpret_cast<char *>(C_stackbase)-
+                 reinterpret_cast<char *>(&why))+1023)/1024,
+            ((reinterpret_cast<intptr_t>(stack)-stackBase)+1023)/1024);
     }
 
     grab_more_memory(heap_pages_count + vheap_pages_count);
@@ -740,13 +743,19 @@ void reclaim(const char *why, int stg_class)
         (time_limit >= 0 && time_now > time_limit) ||
         (io_limit >= 0 && io_now > io_limit))
         resource_exceeded();
+    THREADID;
+#ifdef NO_THREADS
     stackcheck();
+#else // NO_THREADS
+    stackcheck(threadId);
+#endif // NO_THREADS
     use_gchook(lisp_true);
 }
 
 LispObject reclaim(LispObject p, const char *why, int stg_class,
                    size_t size)
-{   Save save(p);
+{   THREADID;
+    Save save(THREADARG p);
     reclaim(why, stg_class);
     save.restore(p);
     return p;

@@ -139,7 +139,8 @@ AC_ARG_WITH(gui,
   [])
 
 AC_ARG_WITH(ffi,
-  AS_HELP_STRING([--with-ffi], [--without-ffi can be used to avoid use of libffi]),
+  AS_HELP_STRING([--with-ffi],
+                 [--without-ffi can be used to avoid use of libffi]),
   [],
   [with_ffi="yes"])
 
@@ -206,24 +207,20 @@ then
   AC_DEFINE(HAVE_SOFTFLOAT, [1], [support for 128-bit long double/float128_t])
 fi
 
-AC_ARG_WITH(threads,
-   AS_HELP_STRING([--with-threads], [Can be used to avoid any non-vital thread stuff if that helps with debugging]),
+# The next option is intended just for debugging. By configureing with
+# "--without-karatsuba-threads" the big-multiplication code is left single
+# threaded. Slso some code to do with local editing of keyboard input
+# (which normally uses a worker thread) is disabled.
+
+AC_ARG_WITH(karatsuba-threads,
+   AS_HELP_STRING([--without-karatsuba-threads], [Can be used to avoid multi-threaded multiplication]),
    [],
-   [with_threads="yes"])
+   [with_karatsuba_threads="yes"])
 
-if test "$with_threads" = "no"
+if test "$with_karatsuba_threads" = "no"
 then
-  AC_DEFINE(AVOID_THREADS, [1], [disable Karatsuba and input local editing so they do not create threads])
-fi
-
-AC_ARG_WITH(threadlocal,
-   AS_HELP_STRING([--without-threadlocal], [Use as experiment to observe overheads]),
-   [],
-   [with_threadlocal="yes"])
-
-if test "$with_threadlocal" = "no"
-then
-  AC_DEFINE(AVOID_THREADLOCAL, [1], [disable thread local usage])
+  AC_DEFINE(AVOID_KARATSUBA_THREADS, [1], [disable parallel Karatsuba])
+  AC_DEFINE(AVOID_TERMINAL_THREADS, [1], [disable input local editing])
 fi
 
 if test "$BUILTFOR" = "unknown"
@@ -649,7 +646,6 @@ AC_SUBST(ARCHITECTURE)
 ARCHITECTURE="$foxdir"
 
 # Want to build "conservative" variant?
-AC_MSG_CHECKING(for conservative)
 AC_ARG_ENABLE(conservative,
   AS_HELP_STRING([--enable-conservative],
                  [garbage collect option that is under development]),
@@ -660,6 +656,19 @@ AC_MSG_RESULT([$enable_conservative])
 if test "$enable_conservative" = "yes"
 then
   AC_DEFINE(CONSERVATIVE, [1], [True if GC experiment enabled])
+fi
+
+# Want to build "generational" variant?
+AC_ARG_ENABLE(conservative,
+  AS_HELP_STRING([--enable-generational],
+                 [garbage collect option that is under development]),
+  [],
+  [enable_generational="no"])
+AC_MSG_RESULT([$enable_generational])
+
+if test "$enable_conservative" = "yes" && test "$enable_generational" = "yes"
+then
+  AC_DEFINE(GENERATIONAL, [1], [True if GC experiment enabled])
 fi
 
 AC_ARG_ENABLE(test,
@@ -729,6 +738,35 @@ AC_ARG_WITH(throw,
 if test "$with_throw" = "no"
 then
   AC_DEFINE(NO_THROW, [1], [Avoid use of catch and throw])
+fi
+
+AC_ARG_WITH(threads,
+  AS_HELP_STRING([--with-threads],
+                 [Experimental Lisp thread support. (CSL only)]),
+  [],
+  [with_threads="no"])
+
+# I will only allow "--with-threads" if "--enable-conservative" is set
+
+if test "$with_threads" = "no" || test "$enable_conservative" = "no"
+then
+  AC_DEFINE(NO_THREADS, [1], [Disable thread support])
+fi
+
+# Two things intersect here. The first is that use of thread-local variable
+# and code structure that will support a threaded Lisp imposes some overhead
+# for everybody even when not actually used. So by default I will build a
+# traditional single-threaded system and so avoid that burden. Secondly I am
+# developing thread support alongside a new garbage collector, and debugging
+# both at the same time is hideous, and so I will want to get a single thread
+# version of the new GC stable before I move on to the more challenging
+# variant! In addition to thread-local, multi-threaded code may need to use
+# some std::atomic<T> variables and those too can have extraordinary costs,
+# So --without-threads will avoid some (but not all) of them.
+
+if test "$with_threads" = "no"
+then
+  AC_DEFINE(NO_THREADS, [1], [Avoid use of thread_local and other thread support])
 fi
 
 # Want to build "embedded" variant?

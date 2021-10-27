@@ -389,7 +389,8 @@ LispObject om_openFileDev(LispObject env, LispObject lname, LispObject lmode, Li
     OMdev dev;
     int32_t len = 0;
     LispObject lispDev;
-    Save save(lname, lmode, lenc);
+    THREADID;
+    Save save(threadId, lname, lmode, lenc);
 
     // Convert the parameters into their C equivalents.
     if (!is_vector(lname) ||
@@ -443,7 +444,8 @@ LispObject om_openStringDev(LispObject env, LispObject lstr,
     OMencodingType enc;
     OMdev dev;
 
-    Save save(lenc);
+    THREADID;
+    Save save(threadId, lenc);
     pstr = om_toCString(lstr);
     errexit();
     save.restore(lenc);
@@ -472,7 +474,8 @@ LispObject om_setDevEncoding(LispObject env, LispObject ldev,
 {   OMdev dev;
     OMencodingType enc;
 
-    Save save(lenc);
+    THREADIS;
+    Save save(threadId, lenc);
 
     dev = om_toDev(ldev);
     errexit();
@@ -567,8 +570,9 @@ LispObject om_connectTCP(LispObject env, LispObject lconn,
 
     if (!is_fixnum(lport))
         return aerror("om_connectTCP: port number must be a fixnum");
-
-    {   Save save(lhost);
+ 
+    THREADID;
+    {   Save save(threadId, lhost);
 
     // Convert the parameters into their C equivalents.
         conn = om_toConn(lconn);
@@ -1030,11 +1034,12 @@ LispObject om_putSymbol2(LispObject env,
     char *cd, *name;
     int32_t cdLen = 0, nameLen = 0;
     OMstatus status;
+    THREADID;
 
     // err_printf("[om_putSymbol2] about to convert params to C equivalents...\n");
 
     // Convert the parameters into their C equivalents.
-    {   Save save(lcd, lname);
+    {   Save save(threadId, lcd, lname);
         dev = om_toDev(ldev);
         errexit();
         if (!dev)
@@ -1044,7 +1049,7 @@ LispObject om_putSymbol2(LispObject env,
 
     if (!is_vector(lcd) || !(type_of_header(vechdr(lcd)) == TYPE_STRING))
         return aerror("om_putSymbol2");
-    Save save(lname);
+    Save save(threadId, lname);
     cd = get_string_data(lcd, "om_putSymbol2", cdLen);
     errexit();
     if (cd == nullptr)
@@ -1482,7 +1487,8 @@ LispObject om_getSymbol(LispObject env, LispObject ldev)
     else
     {   cdstr = make_string(cd);
         errexit();
-        Save save(cdstr);
+        THREADID;
+        Save save(threadId, cdstr);
         namestr = make_string(name);
         errexit();
         errexit();

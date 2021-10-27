@@ -247,7 +247,8 @@ LispObject Ltyo(LispObject env, LispObject a)
     else if (is_char(a)) c = static_cast<int>(code_of_char(a));
     else if (is_fixnum(a)) c = static_cast<int>(int_of_fixnum(a));
     else return aerror1("tyo", a);
-    Save save(a);
+    THREADID;
+    Save save(THREADARG a);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     putc_stream(c, stream);
@@ -511,7 +512,8 @@ LispObject make_stream_handle()
 
 LispObject Lmake_broadcast_stream_4up(LispObject env,
     LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   Save save(a1, a2);
+{   THREADID;
+    Save save(THREADARG a1, a2);
     if (a3 != SPID_NOARG) a4up = cons(a3, a4up);
     errexit();
     save.restore(a1, a2);
@@ -520,7 +522,7 @@ LispObject Lmake_broadcast_stream_4up(LispObject env,
     save.restore(a1, a2);
     if (a1 != SPID_NOARG) a4up = cons(a1, a4up);
     errexit();
-    Save save1(a4up);
+    Save save1(THREADARG a4up);
     LispObject w = make_stream_handle();
     errexit();
     save1.restore(a4up);
@@ -550,7 +552,8 @@ LispObject Lmake_broadcast_stream_3(LispObject env, LispObject a,
 
 LispObject Lmake_concatenated_stream_4up(LispObject env,
     LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   Save save(a1, a2);
+{   THREADID;
+    Save save(THREADARG a1, a2);
     if (a3 != SPID_NOARG) a4up = cons(a3, a4up);
     errexit();
     save.restore(a1, a2);
@@ -559,7 +562,7 @@ LispObject Lmake_concatenated_stream_4up(LispObject env,
     save.restore(a1, a2);
     if (a1 != SPID_NOARG) a4up = cons(a1, a4up);
     errexit();
-    Save save1(a4up);
+    Save save1(THREADARG a4up);
     LispObject w = make_stream_handle();
     errexit();
     save1.restore(a4up);
@@ -590,7 +593,8 @@ LispObject Lmake_concatenated_stream_3(LispObject env, LispObject a,
 LispObject Lmake_synonym_stream(LispObject env, LispObject a)
 {   LispObject w;
     if (!is_symbol(a)) return aerror1("make-synonym-stream", a);
-    Save save(a);
+    THREADID;
+    Save save(THREADARG a);
     w = make_stream_handle();
     errexit();
     save.restore(a);
@@ -608,7 +612,8 @@ LispObject Lmake_two_way_stream(LispObject env, LispObject a,
 {   LispObject w;
     if (!is_symbol(a)) return aerror1("make-two-way-stream", a);
     if (!is_symbol(b)) return aerror1("make-two-way-stream", b);
-    Save save(a, b);
+    THREADID;
+    Save save(THREADARG a, b);
     w = make_stream_handle();
     errexit();
     save.restore(a, b);
@@ -626,7 +631,8 @@ LispObject Lmake_echo_stream(LispObject env, LispObject a,
 {   LispObject w;
     if (!is_symbol(a)) return aerror1("make-echo-stream", a);
     if (!is_symbol(b)) return aerror1("make-echo-stream", b);
-    Save save(a, b);
+    THREADID;
+    Save save(THREADARG a, b);
     w = make_stream_handle();
     errexit();
     save.restore(a, b);
@@ -685,7 +691,8 @@ LispObject Lget_output_stream_string(LispObject env, LispObject a)
     n = stream_byte_pos(a);
     stream_write_data(a) = nil;
     stream_char_pos(a) = stream_byte_pos(a) = 0;
-    Save save(w);
+    THREADID;
+    Save save(THREADARG w);
     a = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
     errexit();
     save.restore(w);
@@ -709,7 +716,8 @@ LispObject Lget_output_stream_string(LispObject env, LispObject a)
 LispObject Lmake_function_stream(LispObject env, LispObject a)
 {   LispObject w;
     if (!is_symbol(a)) return aerror1("make-function-stream", a);
-    Save save(a);
+    THREADID;
+    Save save(THREADARG a);
     w = make_stream_handle();
     errexit();
     save.restore(a);
@@ -832,13 +840,14 @@ int char_to_function(int c, LispObject f)
 int char_to_broadcast(int c, LispObject f)
 {   LispObject l = stream_write_data(f);
     int r = 0;
+    THREADID;
     while (consp(l))
     {   f = car(l);
         l = cdr(l);
         if (!is_symbol(f)) continue;
         f = qvalue(f);
         if (!is_stream(f)) continue;
-        Save save(l);
+        Save save(THREADARG l);
         r = r | putc_stream(c, f);
         save.restore(l);
     }
@@ -863,13 +872,14 @@ int32_t write_action_synonym(int32_t c, LispObject f)
 int32_t write_action_broadcast(int32_t c, LispObject f)
 {   int r = 0, r1;
     LispObject l = stream_write_data(f), f1;
+    THREADID;
     while (consp(l))
     {   f1 = car(l);
         l = cdr(l);
         if (!is_symbol(f1)) continue;
         f1 = qvalue(f1);
         if (!is_stream(f1)) continue;
-        Save save(l, f);
+        Save save(THREADARG l, f);
         r1 = other_write_action(c, f1);
         save.restore(l, f);
         if (r == 0) r = r1;
@@ -1277,7 +1287,8 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
             return aerror("reading and writing from pipes is not supported in CSL\n");
     }
 
-    {   Save save(name);
+    {   THREADID;
+        Save save(THREADARG name);
         r = make_stream_handle();
         errexit();
         save.restore(name);
@@ -1611,14 +1622,15 @@ LispObject Lrename_file(LispObject env, LispObject from,
     std::memset(to_name, 0, sizeof(to_name));
     if (from == unset_var) return onevalue(nil);
     if (to == unset_var) return onevalue(nil);
-    {   Save save(to);
+    THREADID;
+    {   Save save(THREADARG to);
         from_w = get_string_data(from, "rename-file", from_len);
         save.restore(to);
     }
     if (from_len >= sizeof(from_name)) from_len = sizeof(from_name);
     from = reinterpret_cast<LispObject>(from_w + TAG_VECTOR - CELL);
 
-    {   Save save(from);
+    {   Save save(THREADARG from);
         to_w = get_string_data(to, "rename-file", to_len);
         save.restore(from);
     }
@@ -1634,6 +1646,7 @@ LispObject Lrename_file(LispObject env, LispObject from,
 
 static void make_dir_list(string name, string leafname, int why, long int size)
 {   LispObject w = make_string(leafname.c_str());
+    THREADID;
     w = cons(w, *stack);
     *stack = w;
 }
@@ -1645,6 +1658,7 @@ LispObject Llist_directory(LispObject env, LispObject name)
     const char *w = get_string_data(name, "list-directory", len);
     std::memset(filename, 0, sizeof(filename));
     if (len >= sizeof(filename)) len = sizeof(filename);
+    THREADID;
     *++stack = nil;
     list_directory_members(&filename[0], w, len, make_dir_list);
     result = *stack--;
@@ -1930,7 +1944,8 @@ LispObject internal_prin(LispObject uu, int blankp)
     size_t len, lenchars, k;
     char my_buff[128];
     int bl = blankp & 2;
-    RealSave save(uu);
+    THREADID;
+    RealSave save(THREADARG uu);
     LispObject &u = save.val(1);
 #ifdef COMMON
 // There is a fairly shameless FUDGE here. When I come to need to print
@@ -1948,7 +1963,8 @@ LispObject internal_prin(LispObject uu, int blankp)
     }
 restart:
 #endif
-    if (stack >= stackLimit) respond_to_stack_event();
+    if (reinterpret_cast<uintptr_t>(stack) >= stackLimit)
+        respond_to_stack_event();
     switch (static_cast<int>(u) & TAG_BITS)
     {   case TAG_CONS:
 #ifdef COMMON
@@ -2782,7 +2798,7 @@ restart:
                         }
                         else k = 0;
                         if (pkgid != 0)
-                        {   RealSave save1(w);
+                        {   RealSave save1(THREADARG w);
                             w = Lfind_symbol_1(env, w);
                             errexit();
                             if (mv_2 != nil && w == u)
@@ -3296,7 +3312,8 @@ print_my_buff:
 
 LispObject prin(LispObject u)
 {   escaped_printing = escape_yes;
-    Save save(u);
+    THREADID;
+    Save save(THREADARG u);
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
@@ -3309,6 +3326,7 @@ LispObject prin_to_terminal(LispObject u)
 {   escaped_printing = escape_yes;
     active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
+    THREADID;
     ignore_error(internal_prin(u, 0));
     ensure_screen();
     return nil;
@@ -3318,6 +3336,7 @@ LispObject prin_to_stdout(LispObject u)
 {   escaped_printing = escape_yes;
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = lisp_standard_output;
+    THREADID;
     ignore_error(internal_prin(u, 0));
     ensure_screen();
     return nil;
@@ -3327,6 +3346,7 @@ LispObject prin_to_error(LispObject u)
 {   escaped_printing = escape_yes;
     active_stream = qvalue(error_output);
     if (!is_stream(active_stream)) active_stream = lisp_error_output;
+    THREADID;
     ignore_error(internal_prin(u, 0));
     ensure_screen();
     return nil;
@@ -3336,12 +3356,13 @@ LispObject prin_to_trace(LispObject u)
 {   escaped_printing = escape_yes;
     active_stream = qvalue(trace_output);
     if (!is_stream(active_stream)) active_stream = lisp_trace_output;
+    THREADID;
     ignore_error(internal_prin(u, 0));
     ensure_screen();
     return nil;
 }
 
-// This is JUST for debugging. Itr prints a message then something (using
+// This is JUST for debugging. It prints a message then something (using
 // radix 16), then a newline.
 LispObject prinhex_to_trace(const char *msg, LispObject u)
 {   int32_t c = other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
@@ -3351,6 +3372,7 @@ LispObject prinhex_to_trace(const char *msg, LispObject u)
     if (!is_stream(active_stream)) active_stream = lisp_trace_output;
     if (c != 0) putc_stream('\n', active_stream);
     trace_printf("## %s: ", msg);
+    THREADID;
     ignore_error(internal_prin(u, escape_yes+escape_hex));
     putc_stream('\n', active_stream);
     ensure_screen();
@@ -3361,6 +3383,7 @@ LispObject prin_to_debug(LispObject u)
 {   escaped_printing = escape_yes;
     active_stream = qvalue(debug_io);
     if (!is_stream(active_stream)) active_stream = lisp_debug_io;
+    THREADID;
     ignore_error(internal_prin(u, 0));
     ensure_screen();
     return nil;
@@ -3370,6 +3393,7 @@ LispObject prin_to_query(LispObject u)
 {   escaped_printing = escape_yes;
     active_stream = qvalue(query_io);
     if (!is_stream(active_stream)) active_stream = lisp_query_io;
+    THREADID;
     ignore_error(internal_prin(u, 0));
     ensure_screen();
     return nil;
@@ -3397,7 +3421,8 @@ LispObject loop_print_stdout(LispObject o)
 
 LispObject loop_print_error(LispObject o)
 {   LispObject w = qvalue(standard_output);
-    Save save(w);
+    THREADID;
+    Save save(THREADARG w);
     if (is_stream(qvalue(error_output)))
         setvalue(standard_output, qvalue(error_output));
     loop_print_stdout(o);
@@ -3411,9 +3436,10 @@ LispObject loop_print_error(LispObject o)
 }
 
 LispObject loop_print_trace(LispObject o)
-{   STACK_SANITY;
+{   THREADID;
+    STACK_SANITY;
     LispObject w = qvalue(standard_output);
-    Save save(w);
+    Save save(THREADARG w);
     if (is_stream(qvalue(trace_output)))
         setvalue(standard_output, qvalue(trace_output));
     loop_print_stdout(o);
@@ -3428,7 +3454,8 @@ LispObject loop_print_trace(LispObject o)
 
 LispObject loop_print_debug(LispObject o)
 {   LispObject w = qvalue(standard_output);
-    Save save(w);
+    THREADID;
+    Save save(THREADARG w);
     if (is_stream(qvalue(debug_io)))
         setvalue(standard_output, qvalue(debug_io));
     loop_print_stdout(o);
@@ -3439,7 +3466,8 @@ LispObject loop_print_debug(LispObject o)
 
 LispObject loop_print_query(LispObject o)
 {   LispObject w = qvalue(standard_output);
-    Save save(w);
+    THREADID;
+    Save save(THREADARG w);
     if (is_stream(qvalue(query_io)))
         setvalue(standard_output, qvalue(query_io));
     loop_print_stdout(o);
@@ -3450,7 +3478,8 @@ LispObject loop_print_query(LispObject o)
 
 LispObject loop_print_terminal(LispObject o)
 {   LispObject w = qvalue(standard_output);
-    Save save(w);
+    THREADID;
+    Save save(THREADARG w);
     if (is_stream(qvalue(terminal_io)))
         setvalue(standard_output, qvalue(terminal_io));
     loop_print_stdout(o);
@@ -3463,7 +3492,8 @@ LispObject prinraw(LispObject u)
 {   Header h;
     size_t len;
     char b[40], *p;
-    Save save(u);
+    THREADID;
+    Save save(THREADARG u);
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
@@ -3507,7 +3537,8 @@ LispObject prinraw(LispObject u)
 
 static LispObject prinhex(LispObject u, int n)
 {   escaped_printing = escape_yes+escape_hex+((n & 0x3f)<<8);
-    Save save(u);
+    THREADID;
+    Save save(THREADARG u);
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
@@ -3518,7 +3549,8 @@ static LispObject prinhex(LispObject u, int n)
 
 static LispObject prinoctal(LispObject u, int n)
 {   escaped_printing = escape_yes+escape_octal+((n & 0x3f)<<8);
-    Save save(u);
+    THREADID;
+    Save save(THREADARG u);
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
@@ -3529,7 +3561,8 @@ static LispObject prinoctal(LispObject u, int n)
 
 static LispObject prinbinary(LispObject u, int n)
 {   escaped_printing = escape_yes+escape_binary+((n & 0x3f)<<8);
-    Save save(u);
+    THREADID;
+    Save save(THREADARG u);
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
@@ -3540,7 +3573,8 @@ static LispObject prinbinary(LispObject u, int n)
 
 LispObject princ(LispObject u)
 {   escaped_printing = 0;
-    Save save(u);
+    THREADID;
+    Save save(THREADARG u);
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
@@ -3551,7 +3585,8 @@ LispObject princ(LispObject u)
 
 LispObject print(LispObject u)
 {   LispObject stream = qvalue(standard_output);
-    Save save(u);
+    THREADID;
+    Save save(THREADARG u);
     escaped_printing = escape_yes;
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
@@ -3564,7 +3599,8 @@ LispObject print(LispObject u)
 
 LispObject printc(LispObject u)
 {   LispObject stream = qvalue(standard_output);
-    Save save(u);
+    THREADID;
+    Save save(THREADARG u);
     escaped_printing = 0;
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
@@ -3604,6 +3640,7 @@ static int char_to_list_state = 0;
 
 int char_to_list(int c, LispObject f)
 {   LispObject k;
+    THREADID;
 // Codes that are large have to be converted back into utf-8 form.
 // Characters in the range 0 to u+00ff are kept cached in a vector
 // so that lookup is especially fast. Beyond that involves checking the
@@ -3647,7 +3684,7 @@ int char_to_list(int c, LispObject f)
             celt(boffo, 3) = 0x80 + (c & 0x3f);
             len = 4;
         }
-        {   Save save(f);
+        {   Save save(THREADARG f);
             k = iintern(boffo, len, lisp_package, 0);
             save.restore(f);
         }
@@ -3665,7 +3702,7 @@ int char_to_list(int c, LispObject f)
                 celt(boffo, 1) = 0x80 + (c & 0x3f);
                 len = 2;
             }
-            {   Save save(f);
+            {   Save save(THREADARG f);
 // It could very well be that in Common Lisp I ought to generate a list of
 // character objects here. As it is I hand back symbols, but I do take care
 // that they are in the LISP package.
@@ -3675,7 +3712,7 @@ int char_to_list(int c, LispObject f)
             elt(charvec, c & 0xff) = k;
         }
     }
-    {   Save save(f);
+    {   Save save(THREADARG f);
         k = cons(k, stream_write_data(f));
         save.restore(f);
     }
@@ -3747,7 +3784,8 @@ int code_to_list(int c, LispObject f)
     {   code_to_list_state = (0x80000000u >> 18) + (c & 0x07);
         return 0;
     }
-    {   Save save(f);
+    THREADID;
+    {   Save save(THREADARG f);
         k = cons(fixnum_of_int(k), stream_write_data(f));
         save.restore(f);
     }
@@ -3822,14 +3860,16 @@ static void internal_check(LispObject original_a, LispObject a,
 }
 
 LispObject Lcheck_list(LispObject env, LispObject a)
-{   Save save(a);
+{   THREADID;
+    Save save(THREADARG a);
     internal_check(a, a, 0, 0);
     save.restore(a);
     return onevalue(a);
 }
 
 LispObject Lprin(LispObject env, LispObject a)
-{   Save save(a);
+{   THREADID;
+    Save save(THREADARG a);
     escaped_printing = escape_yes;
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
@@ -3841,7 +3881,8 @@ LispObject Lprin(LispObject env, LispObject a)
 }
 
 static LispObject Lprinraw(LispObject env, LispObject a)
-{   Save save(a);
+{   THREADID;
+    Save save(THREADARG a);
     prinraw(a);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
@@ -3849,7 +3890,8 @@ static LispObject Lprinraw(LispObject env, LispObject a)
 }
 
 static LispObject Lprinhex(LispObject env, LispObject a)
-{   Save save(a);
+{   THREADID;
+    Save save(THREADARG a);
     prinhex(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
@@ -3857,7 +3899,8 @@ static LispObject Lprinhex(LispObject env, LispObject a)
 }
 
 static LispObject Lprinoctal(LispObject env, LispObject a)
-{   Save save(a);
+{   THREADID;
+    Save save(THREADARG a);
     prinoctal(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
@@ -3865,7 +3908,8 @@ static LispObject Lprinoctal(LispObject env, LispObject a)
 }
 
 static LispObject Lprinbinary(LispObject env, LispObject a)
-{   Save save(a);
+{   THREADID;
+    Save save(THREADARG a);
     prinbinary(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
@@ -3875,7 +3919,8 @@ static LispObject Lprinbinary(LispObject env, LispObject a)
 static LispObject Lprinhex2(LispObject env, LispObject a,
                             LispObject b)
 {   if (!is_fixnum(b)) return aerror1("prinhex", b);
-    Save save(a);
+    THREADID;
+    Save save(THREADARG a);
     prinhex(a, int_of_fixnum(b));
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
@@ -3885,7 +3930,8 @@ static LispObject Lprinhex2(LispObject env, LispObject a,
 static LispObject Lprinoctal2(LispObject env, LispObject a,
                               LispObject b)
 {   if (!is_fixnum(b)) return aerror1("prinoctal", b);
-    Save save(a);
+    THREADID;
+    Save save(THREADARG a);
     prinoctal(a, int_of_fixnum(b));
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
@@ -3895,7 +3941,8 @@ static LispObject Lprinoctal2(LispObject env, LispObject a,
 static LispObject Lprinbinary2(LispObject env, LispObject a,
                                LispObject b)
 {   if (!is_fixnum(b)) return aerror1("prinbinary", b);
-    Save save(a);
+    THREADID;
+    Save save(THREADARG a);
     prinbinary(a, int_of_fixnum(b));
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
@@ -3927,7 +3974,8 @@ LispObject Lpagelength(LispObject, LispObject a)
 }
 
 LispObject Lprinc_upcase(LispObject env, LispObject a)
-{   Save save(a);
+{   THREADID;
+    Save save(THREADARG a);
     escaped_printing = escape_fold_up;
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
@@ -3939,7 +3987,8 @@ LispObject Lprinc_upcase(LispObject env, LispObject a)
 }
 
 LispObject Lprinc_downcase(LispObject env, LispObject a)
-{   Save save(a);
+{   THREADID;
+    Save save(THREADARG a);
     escaped_printing = escape_fold_down;
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
@@ -3951,7 +4000,8 @@ LispObject Lprinc_downcase(LispObject env, LispObject a)
 }
 
 LispObject Lprinc(LispObject env, LispObject a)
-{   Save save(a);
+{   THREADID;
+    Save save(THREADARG a);
     escaped_printing = 0;
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
@@ -3963,7 +4013,8 @@ LispObject Lprinc(LispObject env, LispObject a)
 }
 
 LispObject Lprin2a(LispObject env, LispObject a)
-{   Save save(a);
+{   THREADID;
+    Save save(THREADARG a);
     escaped_printing = escape_nolinebreak;
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
@@ -4035,20 +4086,21 @@ LispObject Ldebug_print(LispObject env, LispObject a)
     len = length_of_byteheader(h) - CELL;
     my_assert(len < CSL_PAGE_SIZE);
     p = reinterpret_cast<const char *>(&celt(a, 0));
+    THREADID;
     for (i=0; i<len; i++)
-    {   Save save(a);
+    {   Save save(THREADARG a);
         putc_stream(p[i], stream);
         save.restore(a);
         p = (const char  *)&celt(a, 0);
     }
-    {   Save save(a);
+    {   Save save(THREADARG a);
         putc_stream(':', stream);
         save.restore(a);
     }
     p = reinterpret_cast<const char *>(&celt(a, 0));
     for (; i<doubleword_align_up(len+CELL)-CELL; i++)
     {   int c = p[i] & 0xff;
-        Save save(a);
+        Save save(THREADARG a);
         if (c >= 0x80)
         {   putc_stream('+', stream);
             c &= 0x7f;
@@ -4069,7 +4121,8 @@ LispObject Lprint(LispObject env, LispObject a)
 {   LispObject stream = qvalue(standard_output);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
-    Save save(a);
+    THREADID;
+    Save save(THREADARG a);
 #ifdef COMMON
     escaped_printing = escape_yes;
     active_stream = stream;
@@ -4090,7 +4143,8 @@ LispObject Lprintc(LispObject env, LispObject a)
 {   LispObject stream = qvalue(standard_output);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
-    Save save(a);
+    THREADID;
+    Save save(THREADARG a);
 #ifdef COMMON
     escaped_printing = 0;
     active_stream = stream;
@@ -4313,7 +4367,8 @@ int binary_outchar(int c, LispObject)
 }
 
 static LispObject Lbinary_prin1(LispObject env, LispObject a)
-{   Save save(a);
+{   THREADID;
+    Save save(THREADARG a);
     escaped_printing = escape_yes;
     set_stream_write_fn(lisp_work_stream, binary_outchar);
     set_stream_write_other(lisp_work_stream, write_action_file);
@@ -4327,7 +4382,8 @@ static LispObject Lbinary_prin1(LispObject env, LispObject a)
 
 static LispObject Lbinary_princ(LispObject, LispObject a)
 {   escaped_printing = 0;
-    Save save(a);
+    THREADID;
+    Save save(THREADARG a);
     set_stream_write_fn(lisp_work_stream, binary_outchar);
     set_stream_write_other(lisp_work_stream, write_action_file);
     set_stream_file(lisp_work_stream, binary_outfile);
@@ -4890,7 +4946,8 @@ start_again:
     {   std::FILE *file = open_file(filename1, path, static_cast<size_t>(npath), "r",
                                     nullptr);
         if (file == nullptr) return onevalue(nil);
-        {   Save save(url);
+        {   THREADID;
+            Save save(THREADARG url);
             r = make_stream_handle();
             errexit();
             save.restore(url);
@@ -4971,13 +5028,15 @@ start_again:
         return onevalue(nil);
     }
 
-    {   Save save(url);
+    {   THREADID;
+        Save save(THREADARG url);
         r = make_stream_handle();
         errexit();
         save.restore(url);
     }
     stream_type(r) = url;
-    {   Save save(r);
+    {   THREADID;
+        Save save(THREADARG r);
         url = get_basic_vector(TAG_VECTOR, TYPE_STRING_4,
                                CELL+4+SOCKET_BUFFER_SIZE);
         errexit();

@@ -30,6 +30,7 @@ do
   *--with*-redfront* | \
   *--with*-sequential* | \
   *--with*-throw* | \
+  *--with*-threads* | \
   *--with*-win32bit* | \
   *--with*-wx* | \
   *--with*-xft* | \

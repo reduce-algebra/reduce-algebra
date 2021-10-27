@@ -190,19 +190,20 @@ LispObject Lmaple_integer(LispObject env, LispObject a)
     int i;
     LispObject t = fixnum_of_int(1);
     int len = static_cast<int>(*p & 0x03ffffff);
+    THREADID;
     for (i=1; i<len; i++)
     {   int d = fixnum_of_int(static_cast<int>(p[i]));
-        {   Save save(r, t);
+        {   Save save(THREADARG r, t);
             d = Ltimes2(nil, d, t);
             errexit();
             save.restore(r, t);
         }
-        {   Save save(t);
+        {   Save save(THREADARG t);
             r = Lplus2(nil, r, d);
             errexit();
             save.restore(t);
         }
-        Save save(r);
+        Save save(THREADARG r);
         t = Ltimes2(nil, t, fixnum_of_int(10000));
         save.restore(r);
     }
@@ -423,8 +424,9 @@ LispObject simplify_string(LispObject s)
     n = int_of_fixnum(car(h1));            // Look at size involved
     h1 = basic_elt(s, 5);                         // Fill pointer
     if (is_fixnum(h1)) n = int_of_fixnum(h1);
-    stackcheck(s);
-    Save save(s);
+    THREADID;
+    stackcheck(THREADARG s);
+    Save save(THREADARG s);
 // Size limited
     w = get_vector(TAG_VECTOR, TYPE_STRING_4, n+CELL);
     errexit();
@@ -824,7 +826,8 @@ LispObject Llist_to_vector(LispObject env, LispObject a)
 // version.
 //
     for (v=a; consp(v); v = cdr(v)) n += CELL;
-    Save save(a);
+    THREADID;
+    Save save(THREADARG a);
     v = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
     errexit();
     save.restore(a);
@@ -1612,7 +1615,8 @@ LispObject Lvector_4up(LispObject env, LispObject a1, LispObject a2,
 {   LispObject r = nil;
     size_t n = 3;
     for (LispObject x=a4up; x!=nil; x=cdr(x)) n++;
-    Save save(a1, a2, a3, a4up);
+    THREADID;
+    Save save(THREADARG a1, a2, a3, a4up);
     r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*(n+1));
     errexit();
     save.restore(a1, a2, a3, a4up);
@@ -1631,7 +1635,8 @@ LispObject Lvector_0(LispObject env)
 }
 
 LispObject Lvector_1(LispObject env, LispObject a)
-{   Save save(a);
+{   THREADID;
+    Save save(THREADARG a);
     LispObject r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, 2*CELL);
     errexit();
     save.restore(a);
@@ -1640,7 +1645,8 @@ LispObject Lvector_1(LispObject env, LispObject a)
 }
 
 LispObject Lvector_2(LispObject env, LispObject a, LispObject b)
-{   Save save(a, b);
+{   THREADID;
+    Save save(THREADARG a, b);
     LispObject r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, 3*CELL);
     errexit();
     save.restore(a, b);
@@ -1651,7 +1657,8 @@ LispObject Lvector_2(LispObject env, LispObject a, LispObject b)
 
 LispObject Lvector_3(LispObject env, LispObject a, LispObject b,
                      LispObject c)
-{   Save save(a, b, c);
+{   THREADID;
+    Save save(THREADARG a, b, c);
     LispObject r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, 4*CELL);
     errexit();
     save.restore(a, b, c);
@@ -1852,9 +1859,10 @@ LispObject list_subseq(LispObject sequence, size_t start, size_t end)
     copy = nil;
 
 // Store the values
-    Save save(sequence);
+    THREADID;
+    Save save(THREADARG sequence);
     while (consp(seq) && pntr < seq_length)
-    {   Save save1(seq,copy,last);
+    {   Save save1(THREADARG seq,copy,last);
         newv = Lcons(nil,car(seq),nil);
         errexit();
         save1.restore(seq, copy, last);
@@ -1875,6 +1883,7 @@ LispObject vector_subseq(LispObject sequence, size_t start,
 {   LispObject copy;
     Header h;
     size_t hl, seq_length, i;
+    THREADID;
 
     if (is_cons(sequence))
         return list_subseq(sequence,start,end);
@@ -1908,7 +1917,7 @@ LispObject vector_subseq(LispObject sequence, size_t start,
         if (hl < end) return aerror0("vector-subseq* out of range");
 
         // Get a new string of the right size
-        Save save(sequence);
+        Save save(THREADARG sequence);
 // Size limited
         copy = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+seq_length+3);
         errexit();
@@ -1932,7 +1941,7 @@ LispObject vector_subseq(LispObject sequence, size_t start,
         if (hl < end/8) return aerror0("vector-subseq* out of range");
 
         // Grab a bit-vector of the right size
-        Save save(sequence);
+        Save save(THREADARG sequence);
         copy = Lmake_simple_bitvector(nil,fixnum_of_int(seq_length));
         errexit();
         save.restore(sequence);
@@ -1943,7 +1952,7 @@ LispObject vector_subseq(LispObject sequence, size_t start,
         // original Lisp-coded version.
         //
         for (i=start; i<end; ++i)
-        {   Save save1(sequence, copy);
+        {   Save save1(THREADARG sequence, copy);
             LispObject v = Lbgetv(nil,sequence,fixnum_of_int(i));
             errexit();
             Lbputv(nil,copy,fixnum_of_int(i-start), v);
@@ -1967,9 +1976,10 @@ LispObject Llist_subseq1(LispObject env, LispObject seq,
                          LispObject start)
 {   LispObject len;
     size_t first, last;
+    THREADID;
 
     first = int_of_fixnum(start);
-    Save save(seq);
+    Save save(THREADARG seq);
     len = Llength(nil,seq);
     errexit();
     save.restore(seq);
@@ -1992,9 +2002,10 @@ LispObject Lvector_subseq1(LispObject env, LispObject seq,
                            LispObject start)
 {   LispObject len;
     size_t first, last;
+    THREADID;
 
     first = int_of_fixnum(start);
-    Save save(seq);
+    Save save(THREADARG seq);
     len = Llength(nil,seq);
     errexit();
     save.restore(seq);

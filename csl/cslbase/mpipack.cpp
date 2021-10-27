@@ -275,7 +275,8 @@ static LispObject unpack_atom()
         case TYPE_SIMPLE_VEC: case TYPE_ARRAY: case TYPE_STRUCTURE:
             size = length_of_header(a);
             LispObject v = get_basic_vector(TAG_VECTOR,type_of_header(a),size);
-            Save save(v);
+            ThreadID;
+            Save save(threadId, v);
             {   int i;
                 for (i=0; i<(size>>2)-1; ++i)
                 {   save.restore(v);
@@ -311,7 +312,8 @@ static LispObject unpack_cell()
 static LispObject unpack_list()
 {   LispObject r = unpack_cell();
     errexit();
-    Save save(r);
+    THREADID;
+    Save save(threadId, r);
     switch (unpack_char())
     {   case ')': return cons(r, nil);
         case '.':

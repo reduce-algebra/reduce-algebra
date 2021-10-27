@@ -160,6 +160,17 @@
 // 
 // Note that I have not yet updated the code here to implement the above!
 
+// If NO_THREADS is defined this will provide a consevative GC (and possibly
+// a generational one) but without support for multiple threads. The main
+// impact of this on the code is that a fair amount of messing around to
+// synchronise all threads when GC is needed gets avoided. In the single
+// thread world it would not be necessary to use atomic variable and the
+// associated operations on them, but for an initial version of the code I
+// will leave that (and its associated overhead) in place.
+// Part of the motivation for having a version of the code that only runs one
+// thread is that at least on some platforms use of thread-local variables
+// imposes a cost which, while not calamitous, is visible as an overall
+// slowdown that is not welcome.
 
 using std::hex;
 using std::dec;
@@ -261,8 +272,8 @@ public:
 // new page is set up. This is a very minor optimisation!
     atomic <Page *>chain;
     atomic<size_t> chunkCount;
-    atomic<uintptr_t>fringe;
-    atomic<uintptr_t>limit;
+    atomic<uintptr_t>pageFringe;
+    atomic<uintptr_t>pageLimit;
     atomic<bool> hasPinned;
     atomic<Page *> pagePinChain;
     atomic<Chunk *> chunkPinChain;
@@ -296,8 +307,8 @@ public:
 // the page be pageSize.
 
     Page     *Fchain()         { return chain; }
-    uintptr_t Ffringe()        { return fringe; }                 
-    uintptr_t Flimit()         { return limit; }
+    uintptr_t Ffringe()        { return pageFringe; }                 
+    uintptr_t Flimit()         { return pageLimit; }
     bool      FhasPinned()     { return hasPinned; }
     Page     *FpagePinChain()  { return pagePinChain; }
     Chunk    *FchunkPinChain() { return chunkPinChain; }
@@ -751,26 +762,41 @@ inline int nlz(uint64_t x)
 #endif // __GNUC__
 #define NLZ_DEFINED 1
 
-//static const unsigned int maxThreads = 64;
-static const unsigned int maxThreads = 2; // Nicer for debugging!
+#ifdef NO_THREADS
+extern uintptr_t              fringe;
+extern uintptr_t              limit;
+extern Chunk*                 myChunkBase;
+extern uintptr_t              limitBis;
+extern uintptr_t              fringeBis;
+extern size_t                 request;
+extern LispObject             result;
+extern size_t                 gIncrement;
 
-#define TL_threadId 50
-DECLARE_THREAD_LOCAL(uintptr_t, threadId);
-#define TL_fringe 51
-DECLARE_THREAD_LOCAL(uintptr_t, fringe);
+#else // NO_THREADS
 
-extern atomic<uintptr_t> limit[maxThreads];
-extern Chunk*                 myChunkBase[maxThreads];
-extern uintptr_t              limitBis[maxThreads];
-extern uintptr_t              fringeBis[maxThreads];
-extern size_t                 request[maxThreads];
-extern LispObject             result[maxThreads];
-extern size_t                 gIncrement[maxThreads];
+extern uintptr_t              fringes[maxThreads];
+#define fringe                fringes[threadId]
+extern atomic<uintptr_t>      limits[maxThreads];
+#define limit                 limits[threadId]
+extern Chunk*                 myChunkBases[maxThreads];
+#define myChunkBase           myChunkBases[threadId]
+extern uintptr_t              limitBiss[maxThreads];
+#define limitBis              limitBiss[threadId]
+extern uintptr_t              fringeBiss[maxThreads];
+#define fringeBis             fringeBiss[threadId]
+extern size_t                 requests[maxThreads];
+#define request               requests[threadId]
+extern LispObject             results[maxThreads];
+#define result                results[threadId]
+extern size_t                 gIncrements[maxThreads];
+#define gIncrement            gIncrements[threadId]
+#endif // NO_THREADS
+
 extern atomic<uintptr_t>      gFringe;
 extern uintptr_t              gLimit;
 
-inline uintptr_t Flimit(int n) { return limit[n]; }
-inline uintptr_t FgFringe()    { return gFringe; }
+inline uintptr_t Flimit()     { return limit; }
+inline uintptr_t FgFringe()   { return gFringe; }
 
 
 // With the scheme I have here when an 8 Mbyte page gets full all of it
@@ -872,12 +898,12 @@ namespace REAL
 {
 #endif // DEBUG
 
-inline LispObject get_n_bytes(size_t n, uintptr_t thr,
+inline LispObject get_n_bytes(size_t n, THREADFORMAL
                               uintptr_t r, uintptr_t w)
 {
 // There are two possibilities here. One is that the new block I need to
 // allocate really will not fit in the current chunk, and the other is that
-// some other thread had set limit[] to zero to force this one to join in
+// some other thread had set limits[] to zero to force this one to join in
 // with garbage collection. In the former case I may in fact be able to make
 // this allocation simply by grabbing a fresh chunk. In either case I need to
 // record the end-point within this Chunk...
@@ -942,31 +968,36 @@ inline LispObject get_n_bytes(size_t n, uintptr_t thr,
 // gets pinned, but the isPinned flag must start off zero so that when the
 // GC finds an ambiguous pointer within this chunk it knows when that is the
 // first such.
-            myChunkBase[thr] = newChunk;
+            myChunkBase = newChunk;
             newChunk->length = targetChunkSize+n;
             newChunk->isPinned = 0;
             newChunk->pinnedObjects = TAG_FIXNUM;
             newChunk->chunkPinChain = nullptr;
             size_t chunkNo = p->chunkCount.fetch_add(1);
             p->chunkMap[chunkNo] = newChunk;
-// I wish to write back limit[thr] but it is possible that in
+            limitBis = newLimit;
+#ifdef NO_THREADS
+            limit = newLimit;
+            bool ok = true;
+#else // NO_THREADS
+// I wish to write back limit but it is possible that in
 // the meanwhile somebody set that to zero, so I need to be a bit careful.
 // Specifically I will only write back the new limit if the old one was
 // still in force.
 //
 // Here I have (successfully) allocated a new chunk, and I have set my
-// fringe to point within it. Because limit[thr] can
-// be arbitrarily clobbered by others I will only update it if it has
-// not changed since I loaded it earlier. If it has changed it will have
-// been set to zero and I must participate in a GC.
-            limitBis[thr] = newLimit;
-            bool ok = limit[thr].compare_exchange_strong(w, newLimit);
+// fringe to point within it. Because limit can be arbitrarily clobbered
+// by others I will only update it if it has not changed since I loaded
+// it earlier. If it has changed it will have been set to zero and I
+// must participate in a GC.
+            bool ok = limit.compare_exchange_strong(w, newLimit);
+#endif // NO_THREADS
 #ifdef DEBUG
             if (ok) testLayout();
 #endif // DEBUG
             if (ok) return static_cast<LispObject>(r);
         }
-        gIncrement[thr] = targetChunkSize+n;
+        gIncrement = targetChunkSize+n;
         fringe = oldFringe;
 //        cout << "At " << __WHERE__ << " fringe set to oldFringe = " Addr(oldFringe) << endl;
     }
@@ -975,15 +1006,16 @@ inline LispObject get_n_bytes(size_t n, uintptr_t thr,
 // Here I am about to be forced to participate in garbage collection,
 // typically for the benefit of some other thread.
         if (gcTrace) cout << "GC triggered\n";
-        if (myChunkBase[thr] != nullptr) myChunkBase[thr]->chunkFringe = r;
-        gIncrement[thr] = 0;
+        if (myChunkBase != nullptr)
+            myChunkBase->chunkFringe = r;
+        gIncrement = 0;
         fringe = r;
 //        cout << "At " << __WHERE__ << " fringe set to r = " << Addr(r) << endl;
     }
-    fringeBis[thr] = fringe;
-//    cout << "At " << __WHERE__ << " fringeBis[" << thr
-//         << "] = " << Addr(fringeBis[thr]) << endl;
-    request[thr] = n;
+    fringeBis = fringe;
+//    cout << "At " << __WHERE__ << " fringeBis[" << threadId
+//         << "] = " << Addr(fringeBis) << endl;
+    request = n;
 // Here I can not complete the work with this inline function because
 // either I have run out of space for a new chunk or because some
 // other thread had done that and had set my limit register to zero
@@ -998,31 +1030,25 @@ inline LispObject get_n_bytes(size_t n, uintptr_t thr,
 
 inline LispObject get_n_bytes(size_t n)
 {
-#ifdef DEBUG
-    if (gcTrace) cout << "get_n_bytes(" << n << ")  ";
-    my_assert(n < 8000000, [&] { cout << "\nsize in get_n_bytes = "
-                                      << std::hex << n << std::endl; });
-    testLayout();
-#endif // DEBUG
 // The size passed here MUST be a multiple of 8.
-// I have a thread-local variable fringe, and limit[threadId]
-// is in effect thread-local. These delimit a region of size about
-// targetChunkSize within which allocation can be especially cheap.
-// limit[threadId] is atomic and that indicates that
-// other threads may access it. In particular another thread can set it to
-// zero to cause this thread to synchronize with others to participate in
-// garbage collection. Because on some platforms access to thread-locals is
-// more expensive than use of simple variables or is even achieved via
-// strange C++ trickery, I isolate loading and storing such values into
-// simple statements that transfer values to local variables.
-    uintptr_t thr = threadId;
+// I have a thread-local variable fringe, and limit is in effect
+// thread-local. These delimit a region of size about targetChunkSize
+// within which allocation can be especially cheap. limit is atomic and
+// that indicates that other threads may access it. In particular another
+// thread can set it to zero to cause this thread to synchronize with
+// others to participate in garbage collection. Because on some platforms
+// access to thread-locals is more expensive than use of simple variables
+// or is even achieved via strange C++ trickery, I isolate loading and
+// storing such values into simple statements that transfer values to
+// local variables.
+    THREADID;
     uintptr_t r = fringe;
     uintptr_t fr1 = r + n;
     fringe = fr1;
-    uintptr_t w = limit[thr];
+    uintptr_t w = limit;
 // The simple case completes here. If each chunk is around 16K then only 1
 // CONS in 1000 or so will take the longer route. I rather hope that the
-// common case will be lifted to be rendered in-line
+// common case will be lifted to be rendered in-line.
     if (fr1 <= w) LIKELY
     {
 #ifdef DEBUG
@@ -1031,15 +1057,7 @@ inline LispObject get_n_bytes(size_t n)
 #endif // DEBUG
         return static_cast<LispObject>(r);
     }
-    UNLIKELY
-#ifdef DEBUG
-    r = get_n_bytes(n, threadId, r, w);
-    if (gcTrace) cout << "= " << Addr(r) << "\n";
-    testLayout();
-    return r;
-#else // DEBUG
-    return get_n_bytes(n, threadId, r, w);
-#endif // DEBUG
+    UNLIKELY return get_n_bytes(n, THREADARG r, w);
 }
 
 #ifdef DEBUG
@@ -1103,16 +1121,16 @@ inline void dump_gets()
 
 inline void poll()
 {   uintptr_t w;
-    uintptr_t thr = threadId;
-    if (fringe > (w = limit[thr]))
+    THREADID;
+    if (fringe > (w = limit))
     {
 // Here I need to set everything up just as if I had been making an
 // allocation request for zero bytes.
-        fringeBis[thr] = fringe;
-//        cout << "Polling at " << __WHERE__ << "fringeBis[" << thr
-//             << " = " << Addr(fringeBis[thr]) << endl;
-        request[thr] = 0;
-        gIncrement[thr] = 0;
+        fringeBis = fringe;
+//        cout << "Polling at " << __WHERE__ << "fringeBis[" << threadId
+//             << " = " << Addr(fringeBis) << endl;
+        request = 0;
+        gIncrement = 0;
         static_cast<void>(difficult_n_bytes());
     }
 }
@@ -1158,15 +1176,12 @@ extern std::jmp_buf *buffer_pointer;
 // This is to be used if the contents "..." etc do not do any Lisp memory
 // allocation but might block. Ie there could be use of a synchronization
 // primitive involving a muxex or a comdition variable, or there may be
-// a read-request from some source that might not be instently ready (such
+// a read-request from some source that might not be instantly ready (such
 // as the keyboard or a network connection or pipe). The reason this is needed
 // is that other threads may need to garbage collect, and that involves
 // getting every thread into synchronization - one that is blocked will not
 // be able to participate actively in that! Yes another plausible user-case
 // is the code performing a "sleep" operation.
-
-extern uintptr_t stackBases[maxThreads];
-extern uintptr_t stackFringes[maxThreads];
 
 // The use of "NOINLINE inline" may look odd. "NOINLINE" probably expands
 // to an annotation [[gnu::noinline]] that should prevent the compiler
@@ -1182,9 +1197,10 @@ template <typename F>
 NOINLINE inline void may_block(F &&action)
 {   std::jmp_buf buffer;
     buffer_pointer = &buffer;
+    THREADID;
 // ASSUME that setjmp dumps all the machine registers into the jmp_buf.
     if (setjmp(buffer) == 0)
-    {   stackFringes[threadId] = reinterpret_cast<uintptr_t>(buffer);
+    {   stackFringe = reinterpret_cast<uintptr_t>(&buffer);
 // I will need to do more here to decrement the count of threads that
 // the system knows to be potentially involved in memory allocation.
         action();
@@ -1199,8 +1215,9 @@ template <typename F>
 NOINLINE inline void withRecordedStack(F &&action)
 {   std::jmp_buf buffer;
     buffer_pointer = &buffer;
+    THREADID;
     if (setjmp(buffer) == 0)
-    {   stackFringes[threadId] = reinterpret_cast<uintptr_t>(buffer);
+    {   stackFringe = reinterpret_cast<uintptr_t>(&buffer);
         action();
         std::longjmp(buffer, 1);
     }
@@ -1301,12 +1318,18 @@ extern void saveVariablesToPage(Page *p);
 
 inline void restoreGfringe()
 {   size_t inc = 0;
-    for (unsigned int i=0; i<maxThreads; i++)
+#ifdef NO_THREADS
+    result = nil;
+    inc = gIncrement;
+    gIncrement = 0;
+#else // NO_THREADS
+    for (uintptr_t threadId=0; threadId<maxThreads; threadId++)
     {   result[i] = nil;
-//        cout << "result[" << i << "] = nil = " << Addr(nil) << endl;
-        inc += gIncrement[i];
-        gIncrement[i] = 0;
+//        cout << "result[" << threadId << "] = nil = " << Addr(nil) << endl;
+        inc += gIncrement;
+        gIncrement = 0;
     }
+#endif // NO_THREADS
 // Note that I write this as "gFringe = gFringe - inc;" rather than as
 // "gFringe -= inc;" because there is a risk that the latter might compile
 // into an atomic decrement - and that is not needed here and may be a lot
@@ -1314,26 +1337,26 @@ inline void restoreGfringe()
     gFringe = gFringe - inc;
 }
 
-inline void fitsWithinExistingGap(unsigned int i, size_t n, size_t gap)
+inline void fitsWithinExistingGap(unsigned int threadId, size_t n, size_t gap)
 {
 // The request made will fit within the existing Chunk for thraed i.
-    result[i] = fringeBis[i] + TAG_VECTOR;
-//    cout << "result[" << i << "] = " << Addr(result[i]) << endl;
+    result = fringeBis + TAG_VECTOR;
+//    cout << "result[" << threadId << "] = " << Addr(result) << endl;
 // If I fill in a result for this I set it to show it does not need any more.
-    request[i] = 0;
-    setHeaderWord(result[i]-TAG_VECTOR, n, TYPE_VEC32);
-    fringeBis[i] += n;
-//    cout << "At " << __WHERE__ << "fringeBis[" << i
-//         << " = " Addr(fringeBis[i]) << endl;
+    request = 0;
+    setHeaderWord(result-TAG_VECTOR, n, TYPE_VEC32);
+    fringeBis += n;
+//    cout << "At " << __WHERE__ << "fringeBis[" << threadId
+//         << " = " Addr(fringeBis) << endl;
     gap -= n;
 // Make the end of the Chunk safe. This Chunk is not full, but a GC that is
 // (probably) about to happen can need to scan it so its chunkFringe info
 // must be filled in.
 // If I get here during a GC 
-    myChunkBase[i]->chunkFringe = fringeBis[i];
+    myChunkBase->chunkFringe = fringeBis;
 }
 
-inline void regionInPageIsFull(unsigned int i, size_t n,
+inline void regionInPageIsFull(unsigned int threadId, size_t n,
                                size_t gap, unsigned int &pendingCount)
 {
 #ifdef DEBUG
@@ -1358,7 +1381,7 @@ inline void regionInPageIsFull(unsigned int i, size_t n,
         if (gLimit == 0) gLimit = pageEnd;
 //        cout << "At " << __WHERE__ << " gLimit = " << Addr(gLimit) << endl;
         size_t gap1 = gLimit - gFringe;
-        myChunkBase[i]->chunkFringe = fringeBis[i];
+        myChunkBase->chunkFringe = fringeBis;
         if (n+targetChunkSize < gap1)
         {   Chunk *c = reinterpret_cast<Chunk *>(
                            static_cast<uintptr_t>(gFringe));
@@ -1367,20 +1390,20 @@ inline void regionInPageIsFull(unsigned int i, size_t n,
             c->pinnedObjects = TAG_FIXNUM;
             size_t chunkNo = currentPage->chunkCount.fetch_add(1);
             currentPage->chunkMap[chunkNo] = c;
-            myChunkBase[i] = c;
-            result[i] = gFringe + TAG_VECTOR;
-            request[i] = 0;
-            setHeaderWord(result[i]-TAG_VECTOR, n, TYPE_VEC32);
-            fringeBis[i] = gFringe + n;
-//            cout << "At " << __WHERE__ << "fringeBis[" << i
-//                 << " = " << Addr(fringeBis[i]) << endl;
-            gFringe = limitBis[i] = limit[i] = fringeBis[i] + targetChunkSize;
+            myChunkBase = c;
+            result = gFringe + TAG_VECTOR;
+            request = 0;
+            setHeaderWord(result-TAG_VECTOR, n, TYPE_VEC32);
+            fringeBis = gFringe + n;
+//            cout << "At " << __WHERE__ << "fringeBis[" << threadId
+//                 << " = " << Addr(fringeBis) << endl;
+            gFringe = limitBis = limit = fringeBis + targetChunkSize;
             break;
         }
     }
 // pendingCount will be a count of the requests NOT satisfied. So I increment
 // it if I do not manage to make an allocation.
-    if (request[i] != 0) pendingCount++;
+    if (request != 0) pendingCount++;
 }
 
 // As coded here this will never retrieve from partlyFreePages. I will need
@@ -1416,15 +1439,15 @@ inline void grabNewCurrentPage(bool preferMostlyFree)
     busyPagesCount++;
 // I require that the fringe and limit values stored with a page refer to
 // the first available block allowing for any pinned chunks within the page.
-    gFringe = static_cast<uintptr_t>(currentPage->fringe);
-    gLimit = currentPage->limit;
+    gFringe = static_cast<uintptr_t>(currentPage->pageFringe);
+    gLimit = currentPage->pageLimit;
 //  cout << "At " << __WHERE__ << " gFringe = " << Addr(gFringe) << endl;
 //  cout << "At " << __WHERE__ << " gLimit = " << Addr(gLimit) << endl;
 // Every thread will now need to grab its own fresh chunk!
-    for (unsigned int k=0; k<maxThreads; k++)
-        limit[k] = fringeBis[k] = limitBis[k] = gFringe;
+    for (unsigned int threadId=0; threadId<maxThreads; threadId++)
+        limit = fringeBis = limitBis = gFringe;
 //  cout << "At " << __WHERE__
-//  << " fringeBis[k] = limitBis[k] = gFringe = "
+//  << " fringeBis = limitBis = gFringe = "
 //  << Addr(gFringe) << endl;
 //  cout << "@@ just allocated a fresh page\n";
 }
@@ -1623,26 +1646,44 @@ extern void setPinnedMinor(uintptr_t p); // used during minor GC
 // need to be plenty of free space to make available because there has to be
 // enough for all live data to be copied into by a full GC.
 
-#define TL_borrowPages 52
-DECLARE_THREAD_LOCAL(Page *, borrowPages);
-#define TL_borrowFringe 53
-DECLARE_THREAD_LOCAL(uintptr_t, borrowFringe);
-#define TL_borrowLimit 54
-DECLARE_THREAD_LOCAL(uintptr_t, borrowLimit);
-#define TL_borrowNext 55
-DECLARE_THREAD_LOCAL(uintptr_t, borrowNext);
+//#define TL_borrowPages 52
+//DECLARE_THREAD_LOCAL(Page *, borrowPages);
+//#define TL_borrowFringe 53
+//DECLARE_THREAD_LOCAL(uintptr_t, borrowFringe);
+//#define TL_borrowLimit 54
+//DECLARE_THREAD_LOCAL(uintptr_t, borrowLimit);
+//#define TL_borrowNext 55
+//DECLARE_THREAD_LOCAL(uintptr_t, borrowNext);
+
+#ifdef NO_THREADS
+extern Page *borrowPages;
+extern uintptr_t borrowFringe;
+extern uintptr_t borrowLimit;
+extern uintptr_t borrowNext;
+#else // NO_THREADS
+extern Page *borrowPagess[maxThreads];
+#define borrowPages borrowPagess[threadId]
+extern uintptr_t borrowFringes[maxThreads];
+#define borrowFringe borrowFringes[threadId]
+extern uintptr_t borrowLimits[maxThreads];
+#define borrowLimit borrowLimits[threadId]
+extern uintptr_t borrowNexts[maxThreads];
+#define borrowNext borrowNexts[threadId]
+#endif // NO_THREADS
 
 class Borrowing
 {
 public:
     Borrowing()
-    {   borrowPages = nullptr;
+    {   THREADID;
+        borrowPages = nullptr;
         borrowFringe = 0;
         borrowLimit = 0;
         borrowNext = 0;
     }
     ~Borrowing()
     {   std::lock_guard<std::mutex> lock(mutexForFreePages);
+        THREADID;
 // At present I will never borrow a partlyFreePage and when I release a
 // borrowed page it can go back on freePages or mostlyFreePages based on
 // a test to see if it has any Chunks in it.
@@ -1691,9 +1732,9 @@ INLINE_VAR const std::chrono::seconds cvTimeout(1);
 // smoothly. It can be removed once debugging is complete (ha ha).
 
 inline void testLayout()
-{
+{   THREADID;
     uintptr_t r = fringe;
-    uintptr_t w = limit[threadId];
+    uintptr_t w = limit;
     my_assert(w==0 || r <= w, [] { cout << "fringe > limit\n"; });
     my_assert(gFringe <= gLimit, [] {cout << "gFringe > gLimit\n";});
 }

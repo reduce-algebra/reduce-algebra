@@ -432,8 +432,17 @@ char *tocommon(char *s)
    return common_name;
 }
 
+int is_prog(intptr_t a)
+{
+    if (!atom(a)) return 0;
+    char *s = ((char *)a) - 1;
+    if (strcmp(s, "prog") == 0) return 1;
+    else return 0;
+}
+
 void print(intptr_t a)
 {
+    intptr_t w;
     if (a == C_nil)
     {   checkspace(3);
         fprintf(outputfile, "nil");
@@ -448,8 +457,42 @@ void print(intptr_t a)
     }
     checkspace(1);
     fprintf(outputfile, "(");
-    print(qcar(a));
+    print(w = qcar(a));
     a = qcdr(a);
+// If the input is of the form (PROG (v1 v2 ...) ...) or
+// (PROG (  (v1 V1) (v2 V2) ... ) ...) then I will print it specially so
+// that the latter appears as
+// (PROG (v1 v2 ...) (setq v1 V1) (setq v2 V2) ...) which will be a form
+// acceptable by all relevant Lisp dialects.
+    if (is_prog(w) && !atom(a) && !atom(qcar(a)))
+    {   w = qcar(a);
+        a = qcdr(a);
+        checkspace(1);
+        fprintf(outputfile, " ");
+        const char *sep = "(";
+        for (intptr_t w1=w; !atom(w1); w1=qcdr(w1))
+        {   intptr_t v = qcar(w1);
+            if (!atom(v)) v = qcar(v);
+            checkspace(1);
+            fprintf(outputfile, sep);
+            sep = " ";
+            print(v);
+        }
+        checkspace(1);
+        fprintf(outputfile, ")");
+        for (intptr_t w1=w; !atom(w1); w1=qcdr(w1))
+        {   intptr_t v = qcar(w1);
+            if (atom(v)) continue;
+            checkspace(7);
+            fprintf(outputfile, " (setq ");
+            print(qcar(v));
+            checkspace(1);
+            fprintf(outputfile, " ");
+            print(qcar(qcdr(v)));
+            checkspace(1);
+            fprintf(outputfile, ")");
+        }
+    }
     while (!atom(a))
     {   if (checkspace(1)) fprintf(outputfile, " ");
         print(qcar(a));

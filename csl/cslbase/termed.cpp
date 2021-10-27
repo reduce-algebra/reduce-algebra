@@ -167,7 +167,7 @@ extern char **loadable_packages, **switches;
 // to implement bits of user interace, and it is possible that all sorts of
 // interface-related facilities will not be available at all.
 
-#if !defined EMBEDDED && !defined AVOID_THREADS
+#if !defined EMBEDDED && !defined AVOID_TERMINAL_THREADS
 
 // If the symbol EMBEDDED is defined then this whole edifice will simplify
 // to give not much more then direct use of getchar and putchar. Even if that
@@ -273,7 +273,7 @@ bool termEnabled = false;
 #define ALT_BIT    0x20000000
 #define ARROW_BIT  0x40000000
 
-#ifndef AVOID_THREADS
+#ifndef AVOID_TERMINAL_THREADS
 static std::thread keyboardThread;
 static bool keyboardThreadActive;
 
@@ -445,7 +445,7 @@ static bool eofSeen = false;
 static std::mutex keyboardMutex;
 static std::condition_variable keyboardCondvar;
 
-#endif // AVOID_THREADS
+#endif // AVOID_TERMINAL_THREADS
 
 typedef int(keyboard_interrupt_callback)(int);
 
@@ -465,7 +465,7 @@ void set_keyboard_callbacks(keyboard_interrupt_callback *f1)
 #define CTRL_D CTRL('D')
 #define CTRL_G CTRL('G')
 
-#ifndef AVOID_THREADS
+#ifndef AVOID_TERMINAL_THREADS
 
 // I have had pain dealing with ^C processing, and so I will write a screed
 // here about how I try to make it work.
@@ -571,13 +571,13 @@ static void keyboardThreadFunction()
     }
 }
 
-#endif // AVOID_THREADS
+#endif // AVOID_TERMINAL_THREADS
 
 int getcFromThread()
 {
-#ifdef AVOID_THREADS
+#ifdef AVOID_TERMINAL_THREADS
     return std::getchar();
-#else // AVOID_THREADS
+#else // AVOID_TERMINAL_THREADS
     int ch;
     if (!termEnabled) ch = std::getchar(); // degenerate case!
     else
@@ -594,7 +594,7 @@ int getcFromThread()
 //      else log("getcFromThread = %.2x\n", ch);
     }
     return ch;
-#endif // AVOID_THREADS
+#endif // AVOID_TERMINAL_THREADS
 }
 
 // Decode UTF8. There are several special hacks here:
@@ -646,7 +646,7 @@ int getwcFromThread()
     return WEOF;                           // malformed UTF8
 }
 
-#ifndef AVOID_THREADS
+#ifndef AVOID_TERMINAL_THREADS
 
 #ifdef WIN32
 
@@ -667,9 +667,9 @@ static void startKeyboardThread()
 
 #endif // !WIN32
 
-#endif // AVOID_THREADS
+#endif // AVOID_TERMINAL_THREADS
 
-#if defined EMBEDDED || defined AVOID_THREADS
+#if defined EMBEDDED || defined AVOID_TERMINAL_THREADS
 
 wchar_t *input_history[100]; // Not used in the case that
 // cursor control is not  available
@@ -1033,7 +1033,7 @@ const wchar_t *input_history_get(int n)
 static wchar_t termed_prompt_string[MAX_PROMPT_LENGTH+1] = L">";
 
 wchar_t *input_line;
-#if !defined EMBEDDED && !defined AVOID_THREADS
+#if !defined EMBEDDED && !defined AVOID_TERMINAL_THREADS
 static wchar_t *display_line;
 #endif // !EMBEDDED
 int prompt_length = 1, prompt_width = 1;
@@ -1120,25 +1120,25 @@ void term_setprompt(const char *s)
 // particular code page... or if the prompt is expressed in UTF8. However
 // this version is explicity for narrow character prompt strings - see the
 // following function for the more general case.
-#if !defined EMBEDDED && !defined AVOID_THREADS
+#if !defined EMBEDDED && !defined AVOID_TERMINAL_THREADS
     bool changed = false;
 #endif // !EMBEDDED
     for (i=0; i<prompt_length; i++)
     {   wchar_t c = *s++ & 0xff;
         if (c != termed_prompt_string[i])
         {   termed_prompt_string[i] = c;
-#if !defined EMBEDDED && !defined AVOID_THREADS
+#if !defined EMBEDDED && !defined AVOID_TERMINAL_THREADS
             changed = true;
 #endif // !EMBEDDED
         }
     }
     if (termed_prompt_string[i] != 0)
     {   termed_prompt_string[i] = 0;
-#if !defined EMBEDDED && !defined AVOID_THREADS
+#if !defined EMBEDDED && !defined AVOID_TERMINAL_THREADS
         changed = true;
 #endif // !EMBEDDED
     }
-#if !defined EMBEDDED && !defined AVOID_THREADS
+#if !defined EMBEDDED && !defined AVOID_TERMINAL_THREADS
     if (is_reduce)
     {
 // Now when I set a prompt that is different from the previous one I need
@@ -1180,12 +1180,12 @@ void term_wide_setprompt(const wchar_t *s)
     wchar_t temp[MAX_PROMPT_LENGTH+1];
     std::wcsncpy(temp, s, prompt_length);
     temp[prompt_length] = 0;
-#if !defined EMBEDDED && !defined AVOID_THREADS
+#if !defined EMBEDDED && !defined AVOID_TERMINAL_THREADS
     bool changed = false;
 #endif // !EMBEDDED
     if (std::wcscmp(temp, termed_prompt_string) != 0)
     {   std::wcscpy(termed_prompt_string, temp);
-#if !defined EMBEDDED && !defined AVOID_THREADS
+#if !defined EMBEDDED && !defined AVOID_TERMINAL_THREADS
         changed = true;
 #endif // !EMBEDDED
     }
@@ -1195,7 +1195,7 @@ void term_wide_setprompt(const wchar_t *s)
     prompt_width = 0;
     for (s=termed_prompt_string; *s!=0; s++)
         if (!is_high_surrogate(*s)) prompt_width++;
-#if !defined EMBEDDED && !defined AVOID_THREADS
+#if !defined EMBEDDED && !defined AVOID_TERMINAL_THREADS
     if (termEnabled && pending_history_line != nullptr && changed)
     {   input_history_add(pending_history_line);
 // Adding an entry could cause an old one to be discarded. So I now ensure
@@ -1212,7 +1212,7 @@ void term_wide_setprompt(const wchar_t *s)
 
 extern int utf_encode(unsigned char *b, int c);
 
-#if defined EMBEDDED || defined AVOID_THREADS
+#if defined EMBEDDED || defined AVOID_TERMINAL_THREADS
 
 static void term_putchar(int c)
 {
@@ -1497,7 +1497,7 @@ static void resetCP()
 
 #endif // !EMBEDDED
 
-#ifndef AVOID_THREADS
+#ifndef AVOID_TERMINAL_THREADS
 
 static int direct_to_terminal()
 {
@@ -1521,11 +1521,11 @@ static int direct_to_terminal()
     return isatty(fileno(stdin)) && isatty(fileno(stdout));
 #endif // WIN32
 }
-#endif // AVOID_THREADS
+#endif // AVOID_TERMINAL_THREADS
 
 int term_setup(const char *argv0, const char *colour)
 {
-#if defined EMBEDDED || defined AVOID_THREADS
+#if defined EMBEDDED || defined AVOID_TERMINAL_THREADS
     input_line = new (std::nothrow) wchar_t[200];
     if (input_line == nullptr)
     {   input_line_size = 0;
@@ -1724,10 +1724,10 @@ void term_close()
 // doing anything that may change styles or options for stream handling.
     std::fflush(stdout);
     std::fflush(stderr);
-#ifdef AVOID_THREADS
+#ifdef AVOID_TERMINAL_THREADS
     termEnabled = false;
     return;
-#else // AVOID_THREADS
+#else // AVOID_TERMINAL_THREADS
 #ifdef WIN32
     resetCP();
 #endif
@@ -1765,10 +1765,10 @@ void term_close()
     }
     input_history_end();
     termEnabled = false;
-#endif // AVOID_THREADS
+#endif // AVOID_TERMINAL_THREADS
 }
 
-#if !defined EMBEDDED && !defined AVOID_THREADS
+#if !defined EMBEDDED && !defined AVOID_TERMINAL_THREADS
 
 // term_getchar() will block until the user has typed something. I will use
 // this place as where I unravel various funny escape sequences that
@@ -5638,7 +5638,7 @@ void term_unicode_convert()
 
 #endif // !EMBEDDED
 
-#if !defined EMBEDDED && !defined AVOID_THREADS
+#if !defined EMBEDDED && !defined AVOID_TERMINAL_THREADS
 
 static void term_pause_execution()
 {
@@ -6148,7 +6148,7 @@ static wchar_t *term_wide_fancy_getline()
     return input_line + prompt_length;
 }
 
-#endif // EMBEDDED, AVOID_THREADS
+#endif // EMBEDDED, AVOID_TERMINAL_THREADS
 
 // Encode into buffer b as up to 4 characters (plus a nul). Because I
 // am only concerned with Unicode I only need encode values in the
@@ -6231,12 +6231,12 @@ int utf_decode(const unsigned char *b)
 
 wchar_t *term_wide_getline()
 {
-#if defined EMBEDDED || defined AVOID_THREADS
+#if defined EMBEDDED || defined AVOID_TERMINAL_THREADS
     return term_wide_plain_getline();
-#else // !EMBEDDED, !AVOID_THREADS
+#else // !EMBEDDED, !AVOID_TERMINAL_THREADS
     if (!termEnabled) return term_wide_plain_getline();
     else return term_wide_fancy_getline();
-#endif // !EMBEDDED, !AVOID_THREADS
+#endif // !EMBEDDED, !AVOID_TERMINAL_THREADS
 }
 
 char *term_getline()

@@ -52,7 +52,8 @@ uint32_t Idiv10_9(uint32_t *qp, uint32_t high, uint32_t low)
 }
 
 void print_bignum(LispObject u, bool blankp, int nobreak)
-{   size_t len = length_of_header(numhdr(u))-CELL;
+{   THREADID;
+    size_t len = length_of_header(numhdr(u))-CELL;
     size_t i, len1;
     LispObject w;
     char my_buff[24];    // Big enough for 2-word bignum value
@@ -202,7 +203,7 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
         default:
             break;  // general big case
     }
-    {   Save save(u);
+    {   Save save(THREADARG u);
         len1 = CELL+4+(11*len)/10;
 //
 // To print a general big number I will convert it from radix 2^31 to
@@ -247,7 +248,7 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
         if (bignum_digits(w)[len-1] == 0) len--;
         bignum_digits(w)[--len2] = carry; // 9 digits in decimal format
     }
-    {   Save save(w);
+    {   Save save(THREADARG w);
         uint32_t dig;
         int i;
         size_t len;
@@ -276,7 +277,7 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
     while (len2 < len1)
     {   uint32_t dig = bignum_digits(w)[len2++];
         int i;
-        Save save(w);
+        Save save(THREADARG w);
         for (i=8; i>=0; i--)
         {   int32_t nxt = dig % 10;
             dig = dig / 10;
@@ -338,7 +339,8 @@ void print_bighexoctbin(LispObject u, int radix, int width,
 // bits in all when I am printing base 8 or 16.  The variable (len) now tells
 // me how many digits remain to be printed.
 //
-    Save save(u);
+    THREADID;
+    Save save(THREADARG u);
     if ((int32_t)bignum_digits(u)[n] < 0)
     {   sign = true;
         len+=2;    // Allow extra length for sign marker and initial f/7/1

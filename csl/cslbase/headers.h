@@ -88,7 +88,7 @@
 #include "machine.h"
 #include "log.h"
 
-// The next two are for platform-specific optimisations and cheats.
+// The next two are for platform-specific optimisations.
 #include "threadloc.h"
 #include "mymutex.h"
 
@@ -218,6 +218,7 @@ inline double CSLpow(double x, double y)
 
 #include "cslerror.h"
 #include "externs.h"
+#include "lispthrow.h"
 #ifdef CONSERVATIVE
 #include "newallocate.h"
 #else // CONSERVATIVE
@@ -230,7 +231,6 @@ inline double CSLpow(double x, double y)
 #include "stream.h"
 #include "cslread.h"
 #include "inthash.h"
-#include "lispthrow.h"
 #include "version.h"
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>

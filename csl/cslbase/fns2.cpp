@@ -566,7 +566,8 @@ static LispObject Lrestore_c_code(LispObject env, LispObject a)
     size_t i;
     LispObject pn;
     if (!symbolp(a)) return aerror1("restore-c-code", a);
-    {   Save save(a);
+    {   THREADID;
+        Save save(THREADARG a);
         pn = get_pname(a);
         save.restore(a);
     }
@@ -577,7 +578,8 @@ static LispObject Lrestore_c_code(LispObject env, LispObject a)
     for (i=0; setup_tables[i]!=nullptr; i++)
     {   if (restore_fn_cell(a, name, len, setup_tables[i]))
         {   LispObject env;
-            Save save(a);
+            THREADID;
+            Save save(THREADARG a);
             env = get(a, funarg, nil);
             save.restore(a);
             setenv(a, env);
@@ -701,7 +703,8 @@ LispObject Lsymbol_set_definition(LispObject env,
         setenv(a, cdr(b));
         if (qvalue(comp_symbol) != nil &&
             qfn1(compiler_symbol) != undefined_1)
-        {   Save save(a);
+        {   THREADID;
+            Save save(THREADARG a);
             LispObject a1 = ncons(a);
             errexit();
             (*qfn1(compiler_symbol))(compiler_symbol, a1);
@@ -779,7 +782,8 @@ LispObject Lremd(LispObject env, LispObject a)
 //    end;
 
 LispObject Lcopyd(LispObject env, LispObject dest, LispObject src)
-{   Save save(dest, src);
+{   THREADID;
+    Save save(THREADARG dest, src);
     if (!is_symbol(dest)) return aerror1("copyd", dest);
     LispObject x = Lgetd(nil, src);
     save.restore(dest, src);
@@ -826,7 +830,8 @@ LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
           qfn2(a) == undefined_2 && qfn3(a) == undefined_3 &&
           qfn4up(a) == undefined_4up)) return onevalue(nil);
     if ((qheader(a) & SYM_CODEPTR) != 0) return onevalue(nil);
-    {   Save save(a, b);
+    {   THREADID;
+        Save save(THREADARG a, b);
         if (consp(b)) res = cons(a, b);
         else res = list2(a, b);
         errexit();
@@ -999,7 +1004,8 @@ LispObject get_pname(LispObject a)
                          static_cast<int>((gensym_ser/1000)%1000),
                          static_cast<int>(gensym_ser%1000));
         gensym_ser++;
-        {   Save save(a);
+        {   THREADID;
+            Save save(THREADARG a);
             name = make_string(genname);
             errexit();
             save.restore(a);
@@ -1062,7 +1068,8 @@ static LispObject Lrestart_lisp2(LispObject env,
 // no second argument provided.
     if (b != SPID_NOARG)
     {   LispObject b1;
-        {   Save save(a);
+        {   THREADID;
+            Save save(THREADARG a);
 // I will need to pack the data into a character vector using utf-8
 // encoding... exploden can hand back character codes up to 0x0010ffff.
             b1 = b = Lexploden(nil, b);
@@ -1191,7 +1198,7 @@ static LispObject Lcheckpoint(LispObject env,
 // relative addresses nor unadjusted (and hence restored) by in the
 // image-writing. But the image writing will not actually move any data
 // around so all is still OK, I hope!
-    RealSave save(catch_tags, faslvec, faslgensyms);
+    RealSave save(THREADARG catch_tags, faslvec, faslgensyms);
     preserve(msg, len);
     errexit();
     save.restore(catch_tags, faslvec, faslgensyms);
@@ -2183,7 +2190,8 @@ LispObject Lnreverse2(LispObject env, LispObject a, LispObject b)
 }
 
 LispObject Lnrevlist_2(LispObject env, LispObject b, LispObject a)
-{   {   Save save(a);
+{   {   THREADID;
+        Save save(THREADARG a);
         b = ncons(b);
         errexit();
         save.restore(a);
@@ -2199,7 +2207,8 @@ LispObject Lnrevlist_2(LispObject env, LispObject b, LispObject a)
 
 LispObject Lnrevlist_3(LispObject env, LispObject a, LispObject b,
                        LispObject c)
-{   {   Save save(a);
+{   {   THREADID;
+        Save save(THREADARG a);
         b = list2(b, c);
         errexit();
         save.restore(a);
@@ -2233,10 +2242,11 @@ LispObject Lnreverse0(LispObject env, LispObject a)
 
 LispObject Lreverse(LispObject env, LispObject a)
 {   LispObject r;
-    stackcheck(a);
+    THREADID;
+    stackcheck(THREADARG a);
     r = nil;
     while (consp(a))
-    {   Save save (a);
+    {   Save save(THREADARG a);
         r = cons(car(a), r);
         errexit();
         save.restore(a);
@@ -2547,12 +2557,13 @@ LispObject Lappend_1(LispObject, LispObject a)
 
 // LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
 // {   LispObject r = nil;
-//     {   Save save(b);
-//         stackcheck(a, r);
+//     {   THREADID;
+//         Save save(THREADARG b);
+//         stackcheck(THREADARG a, r);
 //         while (consp(a))
 //         {   LispObject cara = car(a);
 //             a = cdr(a);
-//             Save save1(a);
+//             Save save1(THREADARG a);
 //             r = cons(cara, r);
 //             errexit();
 //             save1.restore(a);
@@ -2584,7 +2595,8 @@ LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
     a = cdr (a);
     if (!consp(a)) return onevalue(list3star(a1, a2, a3, b));
     LispObject front, p;
-    {   Save save(a, b);
+    THREADID;
+    {   Save save(THREADARG a, b);
         front = list3(a1, a2, a3);
         save.restore(a, b);
         p = cdr(cdr(front));
@@ -2593,7 +2605,7 @@ LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
     {   a1 = car(a);
         a = cdr(a);
         if (!consp(a))
-        {   Save save(front);
+        {   Save save(THREADARG front);
             b = cons(a1, b);
             write_barrier(cdraddr(p), b);
             save.restore(front);
@@ -2602,7 +2614,7 @@ LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
         a2 = car(a);
         a = cdr(a);
         if (!consp(a))
-        {   Save save(front);
+        {   Save save(THREADARG front);
             b = list2star(a1, a2, b);
             write_barrier(cdraddr(p), b);
             save.restore(front);
@@ -2611,13 +2623,13 @@ LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
         a3 = car(a);
         a = cdr(a);
         if (!consp(a))
-        {   Save save(front);
+        {   Save save(THREADARG front);
             b = list3star(a1, a2, a3, b);
             write_barrier(cdraddr(p), b);
             save.restore(front);
             return onevalue(front);
         }
-        Save save(front, p, a, b);
+        Save save(THREADARG front, p, a, b);
         LispObject w = list3(a1, a2, a3);
         save.restore(front, p, a, b);
         write_barrier(cdraddr(p), w);
@@ -2627,7 +2639,8 @@ LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
 
 LispObject Lappend_3(LispObject env, LispObject a, LispObject b,
                      LispObject c)
-{   Save save(a);
+{   THREADID;
+    Save save(THREADARG a);
     b = Lappend_2(nil, b, c);
     save.restore(a);
     return Lappend_2(nil, a, b);
@@ -2635,7 +2648,8 @@ LispObject Lappend_3(LispObject env, LispObject a, LispObject b,
 
 LispObject Lappend_4up(LispObject env, LispObject a1, LispObject a2,
                        LispObject a3, LispObject a4up)
-{   Save save(a1, a2, a3);
+{   THREADID;
+    Save save(THREADARG a1, a2, a3);
 // Note that the list of arguments from a4 upwards will be freshly consed
 // and so I am entitled to overwrite it as I go.
     a4up = nreverse(a4up);
@@ -2644,7 +2658,7 @@ LispObject Lappend_4up(LispObject env, LispObject a1, LispObject a2,
     while (a4up != nil)
     {   LispObject w = car(a4up);
         a4up = cdr(a4up);
-        Save save1(a4up);
+        Save save1(THREADARG a4up);
         r = Lappend_2(nil, w, r);
         errexit();
         save1.restore(a4up);
@@ -2661,7 +2675,8 @@ LispObject Lappend_4up(LispObject env, LispObject a1, LispObject a2,
 
 LispObject Ldelete(LispObject env, LispObject aa, LispObject bb)
 {   LispObject r;
-    RealSave save(aa, bb);
+    THREADID;
+    RealSave save(THREADARG aa, bb);
     LispObject &a = save.val(1);
     LispObject &b = save.val(2);
     r = nil;
@@ -2706,7 +2721,8 @@ LispObject Ldelete(LispObject env, LispObject aa, LispObject bb)
 
 LispObject Ldeleq(LispObject env, LispObject aa, LispObject bb)
 {   LispObject r;
-    RealSave save(aa, bb);
+    THREADID;
+    RealSave save(THREADARG aa, bb);
     LispObject &a = save.val(1);
     LispObject &b = save.val(2);
     r = nil;
@@ -2868,8 +2884,9 @@ LispObject Lnconc(LispObject env, LispObject a, LispObject b)
 static LispObject substq(LispObject a1, LispObject b1, LispObject c1)
 {   LispObject w;
     LispObject r1, rx1;
-    stackcheck(a1, b1, c1);
-    {   RealSave save(a1, b1, c1, TAG_FIXNUM, TAG_FIXNUM);
+    THREADID;
+    stackcheck(THREADARG a1, b1, c1);
+    {   RealSave save(THREADARG a1, b1, c1, TAG_FIXNUM, TAG_FIXNUM);
         LispObject &a = save.val(1);
         LispObject &b = save.val(2);
         LispObject &c = save.val(3);
@@ -2932,7 +2949,7 @@ static LispObject substq(LispObject a1, LispObject b1, LispObject c1)
                 r = cc;
                 while (r != c)
                 {   LispObject u = car(r), v = rx;
-                    Save save1(w);
+                    Save save1(THREADARG w);
                     ww = cons(u, v);
                     errexit();
                     save1.restore(w);
@@ -2967,9 +2984,10 @@ static LispObject substq(LispObject a1, LispObject b1, LispObject c1)
 
 LispObject subst(LispObject a1, LispObject b1, LispObject c1)
 {   LispObject w;
-    stackcheck(a1, b1, c1);
+    THREADID;
+    stackcheck(THREADARG a1, b1, c1);
     LispObject r1=TAG_FIXNUM, rx1=TAG_FIXNUM;
-    {   RealSave save(a1, b1, c1, r1, rx1);
+    {   RealSave save(THREADARG a1, b1, c1, r1, rx1);
         LispObject &a  = save.val(1);
         LispObject &b  = save.val(2);
         LispObject &c  = save.val(3);
@@ -3042,7 +3060,7 @@ LispObject subst(LispObject a1, LispObject b1, LispObject c1)
                 r = cc;
                 while (r != c)
                 {   LispObject u = car(r), v = rx;
-                    Save save1(w);
+                    Save save1(THREADARG w);
                     ww = cons(u, v);
                     errexit();
                     save1.restore(w);
@@ -3077,9 +3095,10 @@ LispObject subst(LispObject a1, LispObject b1, LispObject c1)
 
 LispObject subla(LispObject a1, LispObject c1)
 {   LispObject w;
-    stackcheck(a1, c1);
+    THREADID;
+    stackcheck(THREADARG a1, c1);
     LispObject r1 = TAG_FIXNUM, rx1 = TAG_FIXNUM;
-    {   RealSave save(a1, c1, r1, rx1);
+    {   RealSave save(THREADARG a1, c1, r1, rx1);
         LispObject &a  = save.val(1);
         LispObject &c  = save.val(2);
         LispObject &r  = save.val(3);
@@ -3153,7 +3172,7 @@ LispObject subla(LispObject a1, LispObject c1)
                 r = cc;
                 while (r != c)
                 {   LispObject u = car(r), v = rx;
-                    Save save1(w);
+                    Save save1(THREADARG w);
                     ww = cons(u, v);
                     errexit();
                     save1.restore(w);
@@ -3188,9 +3207,10 @@ LispObject subla(LispObject a1, LispObject c1)
 
 LispObject sublis(LispObject a1, LispObject c1)
 {   LispObject w;
-    stackcheck(a1, c1);
+    THREADID;
+    stackcheck(THREADARG a1, c1);
     LispObject r1=TAG_FIXNUM, rx1=TAG_FIXNUM;
-    {   RealSave save(a1, c1, r1, rx1);
+    {   RealSave save(THREADARG a1, c1, r1, rx1);
         LispObject &a = save.val(1);
         LispObject &c = save.val(2);
         LispObject &r = save.val(3);
@@ -3273,7 +3293,7 @@ LispObject sublis(LispObject a1, LispObject c1)
                 r = cc;
                 while (r != c)
                 {   LispObject u = car(r), v = rx;
-                    Save save1(w);
+                    Save save1(THREADARG w);
                     ww = cons(u, v);
                     errexit();
                     save1.restore(w);
@@ -3333,7 +3353,8 @@ LispObject Lsubst(LispObject env, LispObject a, LispObject b,
 }
 
 LispObject Lsublis(LispObject env, LispObject al, LispObject x)
-{   stackcheck(al, x);
+{   THREADID;
+    stackcheck(THREADARG al, x);
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
@@ -3347,7 +3368,8 @@ LispObject Lsublis(LispObject env, LispObject al, LispObject x)
 
 LispObject Lsubla(LispObject env, LispObject al, LispObject x)
 // as sublis, but uses eq test rather than equal
-{   stackcheck(al, x);
+{   THREADID;
+    stackcheck(THREADARG al, x);
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();

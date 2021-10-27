@@ -62,15 +62,16 @@ module specfn;  % Special functions package for REDUCE.
 %              -- Jacobi Theta Functions                         %
 %              -- Weierstrassian Elliptic Functions              %
 %              -- Sigma Functions                                %
+%              -- Inverse Jacobi Elliptic Functions              %
 %
 %     accessible through the new operators Bernoulli, Gamma,     %
 %     Pochhammer, Psi, Polygamma, Zeta, BesselJ, BesselY,        %
 %     BesselI, BesselK, Hankel1, Hankel2, KummerM, KummerU,      %
 %     AiryAi, AiryBi, AiryAiPrime, AiryBiPrime,                  %
-%     Jacobi{sn,cn,dn...}, Elliptic{E,F,K...}, JacobiE           %
+%     Jacobi{sn,cn,dn,sc...}, Elliptic{E,F,K...}, JacobiE        %
 %     EllipticTheta{1,2,3,4}                                     %
 %     Weierstrass, WeierstrassZeta, sigma                        %
-%     sigma1, sigma2, sigma3                                     %
+%     sigma1, sigma2, sigma3, arc{sn,cn,dn,sc...}                %
 %     Beta, StruveL, StruveH, Lommel1, Lommel2, WhittakerM       %
 %     and WhittakerW, with the new switch SaveSFs.               %
 %                                                                %
@@ -79,7 +80,7 @@ module specfn;  % Special functions package for REDUCE.
 
 create!-package ('(specfn sfconsts sfgen sfbern dilog sfbinom sfpolys
                    sfsums simpfact harmonic jsymbols recsimpl sfint
-		   sfellip sfellipi sftheta sfweier
+		   sfellip sfellipi sftheta sfweier sfellipinv
 		  ),
                  '(contrib specfn));
 

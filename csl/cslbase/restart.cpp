@@ -77,9 +77,18 @@ extern int showmathInitialised;
 #endif
 #endif
 
+DEFINE_THREAD_LOCAL(uintptr_t, genuineThreadId);
+
 LispObject nil;
-LispObject *stackBase;
-LispObject *stackLimit;
+#ifdef NO_THREADS
+LispObject *stack;
+uintptr_t   stackBase;
+uintptr_t   stackLimit;
+#else // NO_THREADS
+LispObject *stacks[maxThreads];
+uintptr_t   stackBases[maxThreads];
+uintptr_t   stackLimits[maxThreads];
+#endif // NO_THREADS
 
 LispObject *nilsegment;
 LispObject *stacksegment;
@@ -1678,7 +1687,8 @@ LispObject set_up_variables(int restart_flag)
         }
         else
         {   LispObject n = make_undefined_symbol(s);
-            Save save(n);
+            THREADID;
+            Save save(THREADARG n);
             s = ss.data.c_str();
 // If you go "--D xxx" then treat it as "--D xxx=t".
             LispObject v;
@@ -1707,7 +1717,8 @@ LispObject set_up_variables(int restart_flag)
         }
         else
         {   LispObject n = make_undefined_symbol(s);
-            Save save(n);
+            THREADID;
+            Save save(THREADARG n);
             s = ss.data.c_str();
             LispObject v;
             if (std::strlen(s) == 0) v = lisp_true;
@@ -1719,6 +1730,7 @@ LispObject set_up_variables(int restart_flag)
     }
     for (auto ss : stringsToEvaluate)
     {   const char *s = ss.c_str();
+        THREADID;
         TRY
             LispObject v = make_string(s);
             errexit();
@@ -1726,13 +1738,14 @@ LispObject set_up_variables(int restart_flag)
             errexit();
             v = Lcompress(nil, v);
             errexit();
-            Save save(v);
+            THREADID;
+            Save save(THREADARG v);
             Lprin(nil, v);
             save.restore(v);
             errexit();
             v = Leval(nil, v);
             errexit();
-            Save save1(v);
+            Save save1(THREADARG v);
             term_printf(" => ");
             errexit();
             save1.restore(v);
@@ -1940,7 +1953,8 @@ void setup(int restart_flag, double store_size)
     int32_t i;
     if ((restart_flag & 2) != 0) init_heap_segments(store_size);
     garbage_collection_permitted = false;
-    stack = stackBase;
+    THREADID;
+    stack = reinterpret_cast<LispObject *>(stackBase);
     *stack = nil;
     exit_tag = exit_value = nil;
     exit_reason = UNWIND_NULL;
@@ -2008,10 +2022,9 @@ void setup(int restart_flag, double store_size)
     }
     else for (LispObject **p = list_bases; *p!=nullptr; p++) **p = nil;
 
-    stackLimit = reinterpret_cast<LispObject *>(
-                     ~static_cast<uintptr_t>(0xff) &
-                     reinterpret_cast<uintptr_t>(
-                         &stack[stack_segsize*CSL_PAGE_SIZE/CELL-200]));
+    stackLimit = ~static_cast<uintptr_t>(0xff) &
+                 reinterpret_cast<uintptr_t>(
+                     &stack[stack_segsize*CSL_PAGE_SIZE/CELL-200]);
     // allow some slop at end
 
 #ifndef CONSERVATIVE

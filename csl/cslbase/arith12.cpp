@@ -139,6 +139,7 @@ LispObject large_modular_reciprocal(LispObject n, bool safe)
     }
     b = modulus(b, large_modulus);
     a = large_modulus;
+    THREADID;
     while (b != fixnum_of_int(1))
     {   LispObject w, t;
         if (b == fixnum_of_int(0))
@@ -146,26 +147,26 @@ LispObject large_modular_reciprocal(LispObject n, bool safe)
             else return aerror2("non-prime modulus in modular-reciprocal",
                              large_modulus, n);
         }
-        {   Save save(x, y);
+        {   Save save(THREADARG x, y);
             w = quot2(a, b);
             save.restore(x, y);
         }
         t = b;
-        {   Save save(a, x, y, w, t);
+        {   Save save(THREADARG a, x, y, w, t);
             b = times2(b, w);
             save.restore(a, x, y, w, t);
         }
-        {   Save save(x, y, w, t);
+        {   Save save(THREADARG x, y, w, t);
             b = difference2(a, b);
             save.restore(x, y, w, t);
         }
         a = t;
         t = y;
-        {   Save save(a, b, x, t);
+        {   Save save(THREADARG a, b, x, t);
             y = times2(y, w);
             save.restore(a, b, x, t);
         }
-        {   Save save(a, b, t);
+        {   Save save(THREADARG a, b, t);
             y = difference2(x, y);
             save.restore(a, b, t);
         }
@@ -271,7 +272,8 @@ LispObject Lmodular_times(LispObject env, LispObject a, LispObject b)
 
 LispObject Lmodular_quotient(LispObject env, LispObject a,
                              LispObject b)
-{   {   Save save(a);
+{   {   THREADID;
+        Save save(THREADARG a);
         b = Lmodular_reciprocal(nil, b);
         errexit();
         save.restore(a);
@@ -291,8 +293,9 @@ LispObject large_modular_expt(LispObject a, int x)
         x = x/2;
     }
     r = p;
+    THREADID;
     while (x != 1)
-    {   Save save(r);
+    {   Save save(THREADARG r);
         w = times2(p, p);
         errexit();
         p = modulus(w, large_modulus);
@@ -300,7 +303,7 @@ LispObject large_modular_expt(LispObject a, int x)
         save.restore(r);
         x = x/2;
         if ((x & 1) != 0)
-        {   Save save1(p);
+        {   Save save1(THREADARG p);
             w = times2(r, p);
             errexit();
             r = modulus(w, large_modulus);

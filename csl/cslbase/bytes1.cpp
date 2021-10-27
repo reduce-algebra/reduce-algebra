@@ -58,15 +58,16 @@
 void record_get(LispObject tag, bool found)
 {
 #ifdef RECORD_GET
+    THREADID;
     LispObject w;
-    {   Save save(tag);
+    {   Save save(THREADARG tag);
         w = Lget_hash_2(nil, tag, get_counts);
         save.restore(tag);
     }
     errexit();
     if (w == nil)
     {   w = cons_no_gc(fixnum_of_int(0), fixnum_of_int(0));
-        Save save(w);
+        Save save(THREADARG w);
         Lput_hash(nil, 3, tag, get_counts, w);
         save.restore(w);
     }
@@ -131,7 +132,8 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         w = basic_elt(w, n-1); // use the fastget scheme
         if (w == SPID_NOPROP) w = c;
 #ifdef RECORD_GET
-        Save save(w);
+        THREADID;
+        Save save(THREADARG w);
         record_get(b, w != nil);
         save.restore(w);
         errexit();
@@ -151,7 +153,8 @@ LispObject get(LispObject a, LispObject b, LispObject c)
     if (car(w) == b)    // found at first position on the list
     {
 #ifdef RECORD_GET
-        Save save(w);
+        THREADID;
+        Save save(THREADARG w);
         record_get(b, true);
         save.restore(w);
         errexit();
@@ -171,7 +174,8 @@ LispObject get(LispObject a, LispObject b, LispObject c)
     if (car(w) == b)    // found at second position on the list
     {
 #ifdef RECORD_GET
-        Save save(w);
+        THREADID;
+        Save save(THREADARG w);
         record_get(b, true);
         save.restore(w);
         errexit();
@@ -198,7 +202,8 @@ LispObject get(LispObject a, LispObject b, LispObject c)
             write_barrier(cdraddr(pl), qplist(a));
             setplist(a, pl);
 #ifdef RECORD_GET
-            Save save(w);
+            THREADID;
+            Save save(THREADARG w);
             record_get(b, true);
             save.restore(w);
             errexit();
@@ -226,7 +231,8 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
     if (symbolp(b) && (n = header_fastget(qheader(b))) != 0)
     {   pl = qfastgets(a);
         if (pl == nil)
-        {   Save save(a, b, c);
+        {   THREADID;
+            Save save(THREADARG a, b, c);
             pl = get_basic_vector_init(CELL+CELL*fastget_size, SPID_NOPROP);
             save.restore(a, b, c);
             errexit();
@@ -244,8 +250,9 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
         }
         else pl = cdr(pl);
     }
-    stackcheck(a, b, c);
-    Save save(a, c);
+    THREADID;
+    stackcheck(THREADARG a, b, c);
+    Save save(THREADARG a, c);
     b = acons(b, c, qplist(a));
     save.restore(a, c);
     errexit();
@@ -317,7 +324,8 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
         w = basic_elt(w, n-1);
         if (w == SPID_NOPROP) w = nil;
 #ifdef RECORD_GET
-        Save save(w);
+        THREADID;
+        Save save(THREADARG w);
         record_get(b, w != nil);
         save.restore(w);
         errexit();
@@ -337,7 +345,8 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
     if (car(w) == b)
     {
 #ifdef RECORD_GET
-        Save save(w);
+        THREADID;
+        Save save(THREADARG w);
         record_get(b, true);
         save.restore(w);
         errexit();
@@ -357,7 +366,8 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
     if (car(w) == b)
     {
 #ifdef RECORD_GET
-        Save save(w);
+        THREADID;
+        Save save(THREADARG w);
         record_get(b, true);
         save.restore(w);
         errexit();
@@ -384,7 +394,8 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
             write_barrier(cdraddr(pl), qplist(a));
             setplist(a, pl);
 #ifdef RECORD_GET
-            Save save(w);
+            THREADID;
+            Save save(THREADARG w);
             record_get(b, true);
             save.restore(w);
             errexit();
@@ -655,10 +666,11 @@ LispObject Lflag(LispObject env, LispObject a, LispObject b)
 // I store FLAGS just as if they were PROPERTIES that have the value
 // T, so after (flag '(a b c) 'd) if anybody goes (get 'a 'd) they get back
 // the value T.
+        THREADID;
         if (n)
         {   pl = qfastgets(v);
             if (pl == nil)
-            {   Save save(v, b);
+            {   Save save(THREADARG v, b);
                 pl = get_basic_vector_init(CELL+CELL*fastget_size, SPID_NOPROP);
                 save.restore(v, b);
                 errexit();
@@ -667,7 +679,7 @@ LispObject Lflag(LispObject env, LispObject a, LispObject b)
             basic_elt(pl, n-1) = lisp_true;
             continue;
         }
-        Save save(a, b);
+        Save save(THREADARG a, b);
         pl = qplist(v);
         while (pl != nil)
         {   LispObject w = car(pl);
@@ -677,7 +689,8 @@ LispObject Lflag(LispObject env, LispObject a, LispObject b)
             }
             else pl = cdr(pl);
         }
-        {   Save save1(v);
+        {   THREADID;
+            Save save1(THREADARG v);
             LispObject b1 = acons(b, lisp_true, qplist(v));
             save1.restore(v);
             errexit();
@@ -743,7 +756,8 @@ LispObject Lplist(LispObject env, LispObject a)
     for (i=0; i<fastget_size; i++)
     {   LispObject w = basic_elt(a, i);
         if (w != SPID_NOPROP)
-        {   Save save(a);
+        {   THREADID;
+            Save save(THREADARG a);
 // Observe here that in Common Lisp mode I am creating an alternating
 // list of indicators and values.
 #ifdef COMMON
@@ -883,10 +897,9 @@ LispObject Lbytecounts_1(LispObject env, LispObject a)
     return onevalue(nil);
 }
 
-DEFINE_THREAD_LOCAL(LispObject *, stack);
-
 inline void do_freebind(LispObject bvec)
 {   int32_t n, k;
+    THREADID;
     n = length_of_header(vechdr(bvec));
     for (k=CELL; k<n; k+=CELL)
     {   LispObject v = *reinterpret_cast<LispObject *>(
@@ -903,7 +916,8 @@ inline void do_freebind(LispObject bvec)
 inline void do_freerstr()
 {   LispObject bv;
     size_t n;
-    stack--;;
+    THREADID;
+    stack--;
     bv = *stack--;
     n = length_of_header(vechdr(bv));
     while (n>CELL)
@@ -913,7 +927,6 @@ inline void do_freerstr()
         LispObject v1 = *stack--;;
         setvalue(v, v1);
     }
-// possibly need a FENCE here?
 }
 
 inline void poll_jump_back(LispObject& A_reg)
@@ -922,6 +935,7 @@ inline void poll_jump_back(LispObject& A_reg)
     static uintptr_t n = 0;
     if ((++n & 0x3f) == 0) poll();
 #else // CONSERVATIVE
+    THREADID;
     if ((uintptr_t)stack >=
         ((uintptr_t)stackLimit | event_flag))
         respond_to_stack_event();
@@ -929,15 +943,16 @@ inline void poll_jump_back(LispObject& A_reg)
 }
 
 static inline LispObject do_pvbind(LispObject vals, LispObject vars)
-{   RealSave save(nil,          // This will be a list ((var . old-value) ...)
+{   THREADID;
+    RealSave save(THREADARG nil,// This will be a list ((var . old-value) ...)
                   SPID_PVBIND); // Flags up status of the above.
     LispObject &binding_list = save.val(1);
-    {   RealSave save1(vars, vals);
+    {   RealSave save1(THREADARG vars, vals);
         while (consp(vars))
         {   LispObject var = car(vars);
             vars = cdr(vars);
             if (!symbolp(var) || var == nil) continue;
-            {   RealSave save2(vars);
+            {   RealSave save2(THREADARG vars);
                 var = acons(var, qvalue(var), binding_list);
                 errexit();
                 save2.restore(vars);
@@ -962,6 +977,7 @@ static inline LispObject do_pvbind(LispObject vals, LispObject vars)
 
 inline void do_pvrestore()
 {   LispObject w;
+    THREADID;
     stack--;                     // the SPID_PVBIND
     w = *stack--;                // this list ((var . old-value) ...)
     while (w != nil)
@@ -1001,7 +1017,8 @@ inline LispObject encapsulate_sp(LispObject *sp)
 
 
 static LispObject show_result(LispObject name, LispObject r)
-{   Save save(r);
+{   THREADID;
+    Save save(THREADARG r);
     freshline_trace();
     loop_print_trace(name);
     errexit();
@@ -1014,8 +1031,9 @@ static LispObject show_result(LispObject name, LispObject r)
     return r;
 }
 LispObject traced_call0(LispObject from, no_args *f0, LispObject name)
-{   Save save(name);
-    {   Save save1(from);
+{   THREADID;
+    Save save(THREADARG name);
+    {   Save save1(THREADARG from);
         freshline_trace();
         trace_printf("Calling ");
         save.restore(name);
@@ -1036,8 +1054,9 @@ LispObject traced_call0(LispObject from, no_args *f0, LispObject name)
 
 LispObject traced_call1(LispObject from, one_arg *f1,
                         LispObject name, LispObject a1)
-{   Save save(name, a1);
-    {   Save save1(from);
+{   THREADID;
+    Save save(THREADARG name, a1);
+    {   Save save1(THREADARG from);
         freshline_trace();
         trace_printf("Calling ");
         loop_print_trace(name);
@@ -1061,8 +1080,9 @@ LispObject traced_call1(LispObject from, one_arg *f1,
 
 LispObject traced_call2(LispObject from, two_args *f2,
                         LispObject name, LispObject a1, LispObject a2)
-{   Save save(name, a1, a2);
-    {   Save save1(from);
+{   THREADID;
+    Save save(THREADARG name, a1, a2);
+    {   Save save1(THREADARG from);
         freshline_trace();
         trace_printf("Calling ");
         loop_print_trace(name);
@@ -1093,8 +1113,9 @@ LispObject traced_call2(LispObject from, two_args *f2,
 LispObject traced_call3(LispObject from, three_args *f3,
                         LispObject name,
                         LispObject a1, LispObject a2, LispObject a3)
-{   Save save(name, a1, a2, a3);
-    {   Save save1(from);
+{   THREADID;
+    Save save(THREADARG name, a1, a2, a3);
+    {   Save save1(THREADARG from);
         freshline_trace();
         trace_printf("Calling ");
         loop_print_trace(name);
@@ -1131,8 +1152,9 @@ LispObject traced_call4up(LispObject from, fourup_args *f4up,
                           LispObject name,
                           LispObject a1, LispObject a2, LispObject a3,
                           LispObject a4up)
-{   Save save(name, a1, a2, a3, a4up);
-    {   Save save1(from);
+{   THREADID;
+    Save save(THREADARG name, a1, a2, a3, a4up);
+    {   Save save1(THREADARG from);
         freshline_trace();
         trace_printf("Calling ");
         loop_print_trace(name);
@@ -1161,7 +1183,7 @@ LispObject traced_call4up(LispObject from, fourup_args *f4up,
     save.restore(name, a1, a2, a3, a4up);
     LispObject p = a4up;
     for (int i=4; p!=nil; i++)
-    {   Save save1(p);
+    {   Save save1(THREADARG p);
         trace_printf("Arg%d: ", i);
         loop_print_trace(car(p));
         errexit();
@@ -1176,7 +1198,8 @@ LispObject traced_call4up(LispObject from, fourup_args *f4up,
 }
 
 LispObject print_traceset(int varname, LispObject val)
-{   Save save(val);
+{   THREADID;
+    Save save(THREADARG val);
     freshline_trace();
     loop_print_trace(elt(litvec, 0)); // Function this is within
     errexit();
@@ -1341,6 +1364,7 @@ LispObject bytestream_interpret(size_t ppc, LispObject lit,
     {   maxnest = len;
         trace_printf("\n+++++ bytecode nesting depth %d observed\n", maxnest);
         w = call_stack;
+        THREADID;
         while (w != nil)
         {   *++stack = w;
             prin_to_trace(car(w)); // should be a symbol
