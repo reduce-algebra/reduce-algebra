@@ -9,8 +9,8 @@ from pprint import pprint
 import statistics
 
 class Row(dict):
-    def __init__(self, dictionary: dict = {}):
-        super().__init__(dictionary)
+    def __init__(self, *arguments, **keywords):
+        super().__init__(*arguments, **keywords)
 
     def read(self, root: str):
         for stem in 'cpu', 'end', 'gc', 'heapsize', 'start', 'valid':
@@ -36,24 +36,6 @@ class Row(dict):
                 else:
                     entry = None
                 self.update({key: entry})
-        return self
-
-    def compute_means(self):
-        if self['valid_csl'] is True and self['valid_csl'] is True:
-            self.update({'valid_mean': True})
-        elif self['valid_csl'] is False or self['valid_csl'] is False:
-            self.update({'valid_mean': False})
-        else:
-            self.update({'valid_mean': None})
-        for stem in 'cpu', 'gc':
-            csl_key = '_'.join([stem, 'csl'])
-            psl_key = '_'.join([stem, 'psl'])
-            key = '_'.join([stem, 'mean'])
-            if self[csl_key] is not None and self[psl_key] is not None:
-                entry = statistics.mean([self[csl_key], self[psl_key]])
-            else:
-                entry = None
-            self.update({key: entry})
         return self
 
     def compute_deltas_and_ratios(self, ref: str = 'ref', now: str = 'now'):
@@ -84,210 +66,70 @@ class Row(dict):
                 self.update({delta_key: delta_entry, ratio_key: ratio_entry})
         return self
 
-    def select(self, columns: list):
-        return Row({key: self[key] for key in columns})
-
-    def html(self) -> str:
-        def _to_percent(x: float) -> str:
-            try:
-                return str(round(100 * x)) + "%"
-            except (OverflowError, ValueError):
-                return str(x)
-        row = '<tr>'
-        for key, value in self.items():
-            if key == "name":
-                alignment = "left"
-            else:
-                alignment = "right"
-            if "_ratio_" in key:
-                data = _to_percent(value)
-            else:
-                data = str(value)
-            row += '<td align="' + alignment + '">' + data + '</td>'
-        row += '</tr>'
-        return row
-
 class Benchmark(pd.DataFrame):
+    def __getitem__(self, *arguments, **keywords):
+        item = super().__getitem__(*arguments, **keywords)
+        if type(item) == pd.DataFrame:
+            item = Benchmark(item)
+        return item
 
-    def summarize(self) -> Row:
-        summary = Row({'name': 'Summary'})
-        for lisp in 'csl', 'psl', 'mean':
-            key = '_'.join(['valid', lisp])
-            entry = True
-            for benchmark in self:
-                if benchmark[key] is True:
-                    continue
-                elif benchmark[key] is False:
-                    entry = False
+    def add_mean(self):
+        def _valid_mean(self):
+            a = self['valid_csl']
+            b = self['valid_psl']
+            if a is True and b is True:
+                return pd.Series([True], index=['valid_mean'])
+            elif a is False or b is False:
+                return pd.Series([False], index=['valid_mean'])
+            else:
+                return pd.Series([None], index=['valid_mean'])
+        self['cpu_mean'] = self[['cpu_csl', 'cpu_psl']].mean(axis=1)
+        self['gc_mean'] = self[['gc_csl', 'gc_psl']].mean(axis=1)
+        self['valid_mean'] = self.apply(_valid_mean, axis=1)
+        return self
+
+    def select(self, selectors):
+        def matches(selector, column):
+            if type(column) == tuple:
+                return selector in column[1]
+            else:
+                return selector in column
+        if type(selectors) == str:
+            selectors = [selectors]
+        selection = []
+        for column in self.columns:
+            for selector in selectors:
+                if matches(selector, column):
+                    selection.append(column)
                     break
-                elif benchmark[key] is None:
-                    entry = None
-                    continue
-            summary.update({key: entry})
-            for stem in 'cpu', 'gc':
-                key = '_'.join([stem, lisp])
-                entry = 0
-                for benchmark in self:
-                    if benchmark[key] is not None:
-                        entry += benchmark[key]
-                    else:
-                        entry = None
-                        break
-                summary.update({key: entry})
-        summary.compute_means()
-        return summary
+        return self[selection]
 
-    def plot_scatter(benchmark, *line_args, **line_kwargs):
-        p = benchmark.plot.scatter(*line_args, **line_kwargs, zorder=1)
+    def plot_scatter(self, *arguments, **keywords):
+        if 'alpha' not in keywords:
+            keywords['alpha'] = 0.25
+        if 'figsize' not in keywords:
+            keywords['figsize'] = (6,6)
+        if 'grid' not in keywords:
+            keywords['grid'] = True
+        if 'loglog' not in keywords:
+            keywords['loglog'] = True
+        p = self.plot.scatter(*arguments, **keywords, zorder=1)
         low_x, high_x = p.get_xlim()
         low_y, high_y = p.get_ylim()
         low = max(low_x, low_y)
         high = min(high_x, high_y)
         return p.plot([low, high], [low, high], c='k', zorder=0, linewidth=0.1)
 
-    def select(self, columns: list):
-        selection = Benchmark()
-        for benchmark in self:
-            selection.append(benchmark.select(columns))
-        return selection
+    def plot_scatter_csl_psl(self, **keywords):
+        csl_rows = self.xs('cpu_csl', level=1, axis=1)
+        csl_rows = csl_rows.assign(csl=True)
+        psl_rows = self.xs('cpu_psl', level=1, axis=1)
+        psl_rows = psl_rows.assign(csl=False)
+        all_rows = pd.concat([csl_rows, psl_rows], ignore_index=True)
+        p = Benchmark(all_rows).plot_scatter(c='csl', colormap='bwr', sharex=False, include_bool=True, **keywords)
+        return p
 
-    def sort(self, *, column: str, reverse: bool = False):
-        def _column(benchmark: Row):
-            return benchmark[column]
-        super().sort(key=_column, reverse=reverse)
-        return self
-
-    def txt_view(self, summary: Row) -> str:
-        pd.set_option('display.max_rows', None)
-        pd.set_option('display.expand_frame_repr', False)
-        self.extend([summary])
-        names = list(map(lambda benchmark: benchmark["name"], self))
-        for benchmark in self:
-            del benchmark["name"]
-        return pd.DataFrame(self, names)
-
-    def html_view(self, summary: Row, *, full: bool = False) -> str:
-        def _translate(column: str) -> str:
-            if "ref" in column:
-                if "cpu" in column:
-                    return 'CPU<sub>ref</sub>'
-                elif "gc" in column:
-                    return 'GC<sub>ref</sub>'
-            elif "now" in column:
-                if "cpu" in column:
-                    return 'CPU'
-                elif "gc" in column:
-                    return "GC"
-            elif column == "name":
-                return ''
-            elif "delta" in column:
-                return '&Delta;<sub>abs</sub>'
-            elif "ratio" in column:
-                return '&Delta;<sub>rel</sub>'
-            else:
-                return column
-        if full:
-            html_doc = html_begin()
-        else:
-            html_doc = ''
-        html_doc += '<table class="table table-bordered table-striped table-sm">' + os.linesep
-        html_doc += '<caption>Created by benchmark-dump.py on '
-        html_doc += datetime.date.today().strftime("%Y-%m-%d")
-        html_doc += '. All times in ms</caption>' + os.linesep
-        html_doc += '<thead>' + os.linesep
-        html_doc += '<tr>'
-        if len(self[0]) == 13:
-            html_doc += '<th style="text-align:left;">Row</th>'
-            for section in "CSL", "PSL", "Mean":
-                html_doc += '<th style="text-align:center;" colspan="4">' + section + '</th>'
-        elif len(self[0]) == 25:
-            html_doc += '<th style="text-align:left;">Row</th>'
-            for section in "CSL", "PSL", "Mean", "CSL", "PSL", "Mean":
-                html_doc += '<th style="text-align:center;" colspan="4">' + section + '</th>'
-        html_doc += '</tr>' + os.linesep
-        html_doc += '<tr>'
-        for column in self[0].keys():
-            html_doc += '<th style="text-align: right;">'
-            if len(self[0]) in {13, 25}:
-                html_doc += _translate(column)
-            else:
-                html_doc += column
-            html_doc += '</th>'
-        html_doc += '</tr>' + os.linesep
-        html_doc += '</thead>' + os.linesep
-        html_doc += '<tbody>' + os.linesep
-        for benchmark in self:
-            html_doc += benchmark.html()
-            html_doc += os.linesep
-        html_doc += '</tbody>' + os.linesep
-        html_doc += '<foot>' + os.linesep
-        html_doc += summary.html() + os.linesep
-        html_doc += '</foot>' + os.linesep
-        html_doc += '</table>' + os.linesep
-        if full:
-            html_doc += html_end()
-        return html_doc
-
-def html_begin() -> str:
-    return """<!DOCTYPE html>
-<html>
-<head>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
-      crossorigin="anonymous">
-</head>
-<body>
-"""
-
-def html_end() -> str:
-    return """<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" 
-        integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" 
-        crossorigin="anonymous">
-</script>
-<script src="https://cdn.jsdelivr.net/npm/boottrap@5.1.3/dist/js/bootstrap.min.js" 
-        integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9TZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" 
-        crossorigin="anonymous">
-</script>
-</body>
-</html>"""
-
-def parse_args():
-    parser = argparse.ArgumentParser(
-        description="Dump Reduce benchmarks",
-        epilog = ("A call without optional arguments defaults to: "
-                  "benchmark-dump.py --columns=cpu --format=txt --sort=name"))
-    parser.add_argument('now', metavar='NOW', type=str,
-        help='the root of the result tree (typically generated by benchmark-run)')
-    parser.add_argument("--columns", choices=["all", "cpu", "gc", "global"], type=str,
-        help="select all data (cpu and gc), only cpu, or only gc")
-    parser.add_argument("--format", choices=["csv", "html", "html_table", "json", "py", "txt"],
-        type=str, help=("generate comma-separated values, an html table, a full html document, "
-                        "json, a python list of dictionaries, or plain text"))
-    parser.add_argument("--sort", choices=["name", "cpu_now", "cpu_ratio"], type=str,
-        help="sort by benchmark basename, mean CPU time, or the ratio between Reference CPU time and CPU time")
-    parser.add_argument('--ref', metavar='REF', type=str, help='another root of a result tree for comparison')
-    return parser.parse_args()
-
-def column_list(select_arg: str, suffixes: list = None) -> list:
-    if select_arg == 'all':
-        stems = ['cpu', 'gc']
-    else:
-        stems = [select_arg]
-    if suffixes is not None:
-        suffixes = map(lambda s: '_' + s, suffixes)
-    else:
-        suffixes = ['']
-    columns = ['name']
-    for suffix in suffixes:
-        for lisp in 'csl', 'psl', 'mean':
-            columns.append('_'.join(['valid', lisp]) + suffix)
-            for stem in stems:
-                columns.append('_'.join([stem, lisp]) + suffix)
-    return columns
-
-
-def read_filetree(root: str):
+def read_filetree(root: str, key0: str = None):
     rows = []
     for path, directories, files in os.walk(root):
         for file in files:
@@ -299,42 +141,29 @@ def read_filetree(root: str):
             benchmark.read(root)
             rows.append(benchmark)
     names = []
-    for benchmark in rows:
-        names.append(benchmark["name"])
-        del benchmark["name"]
+    for row in rows:
+        names.append(row["name"])
+        del row["name"]
     df = pd.DataFrame(rows, names)
     columns = []
     for postfix in '_csl', '_psl':
         for stem in 'start', 'cpu', 'gc', 'heapsize', 'valid', 'end':
             columns.append(stem + postfix)
-    return Benchmark(df[columns].sort_index())
+    benchmark = Benchmark(df[columns].sort_index())
+    for path, directories, files in os.walk(os.path.join(root, 'GLOBAL')):
+        for file_name in files:
+            basename, extension = file_name.split('.')
+            if extension != 'txt':
+                continue
+            with open(os.path.join(path, file_name)) as file:
+                benchmark.attrs[basename] = file.read().rstrip()
+    return benchmark
 
-if __name__ == "__main__":
-    args = parse_args()
-    data = Benchmark().read(args.now)
+def combine2(a: Benchmark, b: Benchmark, *, keys: list = None):
+    if keys is None:
+        keys = ['r' + a.attrs['revision_csl'], 'r' + b.attrs['revision_csl']]
+    return Benchmark(pd.concat([a, b], axis=1, keys=keys))
 
-    summary = data.summarize()
-    # Sorting before selecting allows to sort w.r.t. unselected columns
-    # sort = args.sort or "name"
-    # if sort == "cpu_now":
-    #     data.sort(column="cpu_now_mean")
-    # elif sort == "cpu_ratio":
-    #     data.sort(column="cpu_ratio_mean")
-    # elif sort == "name":
-    #     data.sort(column="name")
-    columns = column_list(args.columns or 'cpu')
-    data = data.select(columns)
-    summary = summary.select(columns)
-    format = args.format or "txt"
-    if format == "html":
-        print(data.html_view(summary, full=True))
-    elif format == "html_table":
-        print(data.html_view(summary, full=False))
-    elif format == "csv":
-        print("not implemented")
-    elif format == "json":
-        print(json.dumps(data, indent=2))
-    elif format == "py":
-        pprint.pprint(data)
-    elif format == "txt":
-        print(data.txt_view(summary))
+def dump_filetree(now: Benchmark, format: str, selectors, ref: Benchmark = None):
+    benchmark = read_filetree(now).add_mean()
+
