@@ -14,8 +14,7 @@ class Continue(Exception):
 def _log(msg: str, *, cwd: str = os.getcwd()):
     sys.stderr.write(datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' [' + cwd + '] ' + msg + os.linesep)
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='Run Reduce benchmarks')
+def setup_parser(parser):
     parser.add_argument(
         'source', metavar='SOURCE',
         help=('An existing benchmark directory. *.red files are used as input. If present, '
@@ -78,7 +77,6 @@ def parse_args():
         type=str,
         default='HEAD',
         help='Check out SVN revision REV instead of HEAD')
-    return parser.parse_args()
 
 def setup_reduce(reduce: str, svn_reduce: str, revision: str, force: bool) -> str:
     def dump_and_exit(file_name: str, completed_process):
@@ -237,6 +235,3 @@ def benchmark_run(args):
     with open(os.path.join(result, 'GLOBAL', 'end.txt'), 'w') as file:
         subprocess.run(['date', '-R'], stdout=file)
     _log('computation finished')
-
-if __name__ == '__main__':
-    benchmark_run(parse_args())
