@@ -87,7 +87,7 @@ def setup_reduce(reduce: str, svn_reduce: str, revision: str, force: bool) -> st
         sys.stderr.write('error: dumping command output to ' + file_name + ' and exiting' + os.linesep)
         with open(file_name, 'r') as file:
             file.write(completed_process.stdout.decode())
-        exit(completed_process.returncode)
+        sys.exit(completed_process.returncode)
 
     def checkout(rev: str, reduce: str, force: bool):
         url = 'svn://svn.code.sf.net/p/reduce-algebra/code/trunk'
@@ -97,7 +97,7 @@ def setup_reduce(reduce: str, svn_reduce: str, revision: str, force: bool) -> st
                 shutil.rmtree(reduce)
             else:
                 sys.stderr.write('error: delete existing ' + reduce + ' or use -f, --force' + os.linesep)
-                exit(255)
+                sys.exit(17)
         cmd = ['svn', 'co', '-q', '-r', rev, url, reduce]
         _log('START ' + ' '.join(cmd))
         completed_process = subprocess.run(cmd, capture_output=True)
@@ -135,11 +135,10 @@ def init_result_dir(source: str, result: str, force: bool, include: str, exclude
             shutil.rmtree(result)
         else:
             sys.stderr.write('error: delete existing ' + result + ' or use -f, --force' + os.linesep)
-            exit(255)
+            sys.exit(17)
     os.makedirs(os.path.join(result, 'GLOBAL'))
-    for lisp in 'csl', 'psl':
-        with open(os.path.join(result, 'GLOBAL', 'revision_' + lisp + '.txt'), 'w') as file:
-            subprocess.run(['svn', 'info', '--show-item', 'revision', os.path.join(reduce, 'bin', 'red' + lisp)], stdout=file)
+    with open(os.path.join(result, 'GLOBAL', 'revision.txt'), 'w') as file:
+        subprocess.run(['svn', 'info', '--show-item', 'revision', reduce], stdout=file)
     with open(os.path.join(result, 'GLOBAL', 'uname.txt'), 'w') as file:
         subprocess.run(['uname', '-mnrs'], stdout=file)
     rel_red_files = []
@@ -198,7 +197,7 @@ def init_result_dir(source: str, result: str, force: bool, include: str, exclude
             rel_red_files.append(rel_red_file)
     if not rel_red_files:
         sys.stderr.write('warning: no benchmarks found, exiting' + os.linesep)
-        exit(0)
+        sys.exit(0)
     return rel_red_files
 
 def build_parallel_command(dry_run: bool, bar: bool, jobs: int, reduce: str, psl_heapsize: int, source: str, result: str, rel_red_files: list) -> str:
@@ -221,8 +220,7 @@ def build_parallel_command(dry_run: bool, bar: bool, jobs: int, reduce: str, psl
     cmd = 'parallel' + parallel_args + parallel_cmd + parallel_cmd_args
     return cmd
 
-if __name__ == '__main__':
-    args = parse_args()
+def benchmark_run(args):
     reduce = setup_reduce(args.reduce, args.svn_reduce, args.revision, args.force)
     source = os.path.abspath(args.source)
     result = os.path.abspath(args.result)
@@ -239,3 +237,6 @@ if __name__ == '__main__':
     with open(os.path.join(result, 'GLOBAL', 'end.txt'), 'w') as file:
         subprocess.run(['date', '-R'], stdout=file)
     _log('computation finished')
+
+if __name__ == '__main__':
+    benchmark_run(parse_args())
