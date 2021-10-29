@@ -106,7 +106,7 @@ def setup_reduce(reduce: str, svn_reduce: str, revision: str, force: bool) -> st
             dump_and_exit('svn.log', completed_process)
 
     def configure(reduce: str, lisp: str = 'both'):
-        cmd = ['./configure', '--with-' + lisp, '--without-gui']
+        cmd = ['./configure', '--with-' + lisp]
         _log('START ' + ' '.join(cmd), cwd=reduce)
         completed_process = subprocess.run(cmd, cwd=reduce, capture_output=True)
         if completed_process.returncode != 0:
