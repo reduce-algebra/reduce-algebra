@@ -190,6 +190,8 @@
 
 (fi 16#9a call (A p))
 
+(fi 16#9b fwait (nil))
+
 (fi 16#a0 mov (AL (O b)) (eax (O v)) ((O b) AL) ((O v) EAX))
 
 (fi 16#b0 mov (AL (I b))(CL (I b))(DL (I b))(BL (I b))
@@ -209,8 +211,6 @@
 (fi 16#d8 x87fpu ((ST fl)) ((ST fl)) ((ST fl)) ((ST fl)) ((ST fl)) ((ST fl)) ((ST fl)) ((ST fl)))
 
 (fi 16#e8 call ((A v)))
-
-(fi 16#9b fwait (nil))
 
 (fi 16#e9 jmp ((J v)) ((A p)) ((J b)))
 
@@ -324,7 +324,7 @@
          (plus addr* w 2))
         ((equal p '(J v))
          (setq  lth* (plus 4 lth*))
-         (plus addr* (bytes2word) 5))
+         (plus addr* (bytes2word) lth*))
            % mod R/M
         ((eqcar p 'E) (decode-modrm p))
         ((eqcar p 'R) (decode-modrm p))
@@ -336,7 +336,18 @@
 
         ((equal p '(o v))
          (setq lth!* (plus lth!* 4))
-         (bytes2word))
+         (setq w (bytes2word))
+	 (cond ((and (xgreaterp w symfnc)
+		     (xgreaterp symfnchigh w))
+		(setq *comment
+                 (bldmsg " -> %w" 
+                  (safe-int2id (wshift (wdifference (int2sys w) symfnc) -2)))))
+	       ((and (xgreaterp w symval)
+		     (xgreaterp symvalhigh w))
+		(setq *comment
+                 (bldmsg " -> %w" 
+                  (safe-int2id (wshift (wdifference (int2sys w) symval) -2))))))
+	 w)
          
 	((eqcar p 'ST) % x87fpu instruction
 	 (if (eq (wand (car bytes*) 2#11000000) 2#11000000)

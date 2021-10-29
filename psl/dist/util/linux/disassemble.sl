@@ -323,7 +323,7 @@
          (plus addr* w 2))
         ((equal p '(J v))
          (setq  lth* (plus 4 lth*))
-         (plus addr* (bytes2word) 5))
+         (plus addr* (bytes2word) lth*))
            % mod R/M
         ((eqcar p 'E) (decode-modrm p))
         ((eqcar p 'R) (decode-modrm p))
@@ -333,9 +333,20 @@
          (setq lth!* (plus lth!* 1))
          (pop bytes!*))
 
-        ((equal p '(o v))
+        ((equal p '(O v))
          (setq lth!* (plus lth!* 4))
-         (bytes2word))
+         (setq w (bytes2word))
+	 (cond ((and (xgreaterp w (sys2int symfnc))
+		     (xgreaterp symfnchigh w))
+		(setq *comment
+                 (bldmsg " -> %w" 
+                  (safe-int2id (wshift (wdifference (int2sys w) symfnc) -2)))))
+	       ((and (xgreaterp w (sys2int symval))
+		     (xgreaterp symvalhigh w))
+		(setq *comment
+                 (bldmsg " -> %w" 
+                  (safe-int2id (wshift (wdifference (int2sys w) symval) -2))))))
+	 w)
          
         (t (terpri)
            (prin2t (list "dont know operand declaration:" p))
@@ -355,12 +366,12 @@
                   % probably a sym*** reference
               (setq  lth* (plus 4 lth*))
               (setq w (bytes2word))
-              (cond ((and (xgreaterp w symfnc)
+              (cond ((and (xgreaterp w (sys2int symfnc))
                           (xgreaterp symfnchigh w))
                      (setq *comment
                       (bldmsg " -> %w" 
                        (safe-int2id (wshift (wdifference (int2sys w) symfnc) -2)))))
-                    ((and (xgreaterp w symval)
+                    ((and (xgreaterp w (sys2int symval))
                           (xgreaterp symvalhigh w))
                      (setq *comment
                       (bldmsg " -> %w" 
