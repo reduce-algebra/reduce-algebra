@@ -98,17 +98,18 @@ class Benchmark(pd.DataFrame):
         return p
 
 def read_filetree(root: str, key0: str = None):
+    global_attributes = ['uname', 'revision', 'start', 'end', 'parse_args']
     attrs = {}
-    for path, directories, files in os.walk(os.path.join(root, 'GLOBAL')):
-        for file_name in files:
-            basename, extension = file_name.split('.')
-            if extension != 'txt':
-                continue
-            with open(os.path.join(path, file_name)) as file:
+    for attribute in global_attributes:
+        filename = os.path.join(root, 'GLOBAL', attribute + '.txt')
+        try:
+            with open(filename) as file:
                 entry = file.read().rstrip()
                 if basename in ['start', 'end']:
                     entry = pd.to_datetime(entry)
-                attrs[basename] = entry
+        except FileNotFoundError:
+            entry = None
+        attrs[basename] = entry
     rows = []
     for path, directories, files in os.walk(root):
         for file in files:
@@ -143,7 +144,7 @@ def dump_cron(ref: Benchmark, now: Benchmark):
         img = io.BytesIO()
         fig.savefig(img, format='png', bbox_inches='tight')
         img.seek(0)
-        fig_b64 = base64.b64encode(img.getvalue())
+        fig_b64 = base64.encodebytes(img.getvalue())
         return '<img src="data:image/png;base64, {}">'.format(fig_b64.decode('utf-8'))
     def html_p(html: str):
         return '<p>' + html + '</p>'
