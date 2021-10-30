@@ -106,11 +106,27 @@ def setup_reduce(reduce: str, svn_reduce: str, revision: str, force: bool) -> st
             dump_and_exit('svn.log', completed_process)
 
     def configure(reduce: str, lisp: str = 'both'):
-        cmd = ['./configure', '--with-' + lisp]
+        cmd = ['./configure', '--with-csl', '--without-gui']
         _log(' '.join(cmd), cwd=reduce)
         completed_process = subprocess.run(cmd, cwd=reduce, capture_output=True)
         if completed_process.returncode != 0:
             dump_and_exit('configure.log', completed_process)
+        cmd = ['./configure', '--with-psl']
+        _log(' '.join(cmd), cwd=reduce)
+        completed_process = subprocess.run(cmd, cwd=reduce, capture_output=True)
+        if completed_process.returncode != 0:
+            dump_and_exit('configure.log', completed_process)
+        completed_process = subprocess.run('./scripts/findhost.sh $(./config.guess)',
+            shell=True, cwd=reduce, capture_output=True)
+        if completed_process.returncode != 0:
+            dump_and_exit('symlink.log', completed_process)
+        host = completed_process.stdout.decode().rstrip()
+        cslbuild = os.path.join(reduce, 'cslbuild')
+        cmd = ['ln', '-s', host + '-nogui', host]
+        _log(' '.join(cmd), cwd=cslbuild)
+        completed_process = subprocess.run(cmd, cwd=cslbuild)
+        if completed_process.returncode != 0:
+            dump_and_exit('symlink.log', completed_process)
 
     def compile(reduce: str):
         _log('make', cwd=reduce)
