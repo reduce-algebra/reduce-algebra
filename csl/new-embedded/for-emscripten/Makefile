@@ -37,7 +37,7 @@ LINK_OPT=$(OPT)
 CXX=em++
 
 # EMFLAGS:=$(shell . ./emflags.sh && echo $$EMFLAGS)
-# Non-default Emscripten flags keeping compile and link flags distinct
+# Non-default Emscripten flags, keeping compile and link flags distinct
 # to avoid warnings.
 
 # Emscripten compile and link flags:
@@ -47,19 +47,19 @@ EM_CC_LD_FLAGS = -flto
 EM_CCFLAGS = $(EM_CC_LD_FLAGS)
 
 # Emscripten link flags:
-EM_LDFLAGS = $(EM_CC_LD_FLAGS) \
-	-s EXIT_RUNTIME \
-	-s INITIAL_MEMORY=1024mb \
-	-s NO_ERROR_ON_UNDEFINED_SYMBOLS \
-	-s USE_ZLIB
+EM_LDFLAGS = $(EM_CC_LD_FLAGS)\
+ -s EXIT_RUNTIME\
+ -s INITIAL_MEMORY=1024mb\
+ -s NO_ERROR_ON_UNDEFINED_SYMBOLS\
+ -s USE_ZLIB
 
 #ASYNC_FUNCTIONS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$cfuns)
 #ASYNC_IMPORTS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$jsimports)
 
-CPPFLAGS=$(EM_CCFLAGS) \
-	-std=gnu++17 $(OPT) -I. -I../include -Iinclude -I$(S) \
-	-DHAVE_CONFIG_H=1 -DNO_THROW=1 -DHAVE_CRLIBM=1 \
-	-DEMBEDDED=1 $(XCFLAGS) $(USERFLAGS)
+CPPFLAGS=$(EM_CCFLAGS)\
+ -std=gnu++17 $(OPT) -I. -I../include -Iinclude -I$(S)\
+ -DHAVE_CONFIG_H=1 -DNO_THROW=1 -DHAVE_CRLIBM=1\
+ -DEMBEDDED=1 $(XCFLAGS) $(USERFLAGS)
 
 LDFLAGS=$(EM_LDFLAGS) -Llib
 LIBS=-lcrlibm
@@ -81,10 +81,10 @@ NODE= $(shell which node)
 NODE_EM_LDFLAGS= -s NODERAWFS -s FORCE_FILESYSTEM
 
 PRE_JS=$(JS_SRC)/init.js
-WEBOPTS= --pre-js $(PRE_JS) \
-	-s ENVIRONMENT=worker \
-	-s BUILD_AS_WORKER=1 \
-	--js-library $(JS_SRC)/io.js
+WEBOPTS= --pre-js $(PRE_JS)\
+ -s ENVIRONMENT=worker\
+ -s BUILD_AS_WORKER\
+ --js-library $(JS_SRC)/io.js
 
 
 #ASYNCIFY_OPTS = -s ASYNCIFY \
@@ -109,7 +109,7 @@ WEBOPTS= --pre-js $(PRE_JS) \
 S=../../cslbase
 R=../../..
 
-VPATH=$(S)
+# VPATH=$(S)
 
 .PHONY: all
 all: reduce.js reduce.img image.cpp reduce.web.js
@@ -120,36 +120,36 @@ include/crlibm.h lib/libcrlibm.a:
 	rm -rf crlibm include lib; \
 	mkdir -p crlibm; \
 	cd crlibm; \
-	../../../../libraries/crlibm/configure \
-		CC=emcc \
-		CFLAGS="$(EM_CCFLAGS) -D__INTEL_COMPILER=1 -O3" \
-		LDFLAGS="$(EM_LDFLAGS)" \
-		AR=emar \
-		RANLIB=emranlib \
-		--prefix=`pwd`/..; \
+	../../../../libraries/crlibm/configure\
+	 CC=emcc CFLAGS="$(EM_CCFLAGS) -D__INTEL_COMPILER=1 -O3"\
+	 LDFLAGS="$(EM_LDFLAGS)" AR=emar RANLIB=emranlib\
+	 --prefix=`pwd`/..; \
 	make clean; \
 	make; \
 	make install; \
 	cd ..
 
 
-mainObjects = allocate.o arith01.o arith02.o arith03.o arith04.o \
-		arith05.o arith06.o arith07.o arith08.o arith09.o \
-		arith10.o arith11.o arith12.o arith13.o arith14.o \
-		bytes1.o char.o csl.o cslmpi.o cslread.o eval1.o \
-		eval2.o eval3.o eval4.o fasl.o fns1.o fns2.o fns3.o \
-		fwin.o cslgc.o lisphash.o isprime.o preserve.o print.o \
-		restart.o sysfwin.o termed.o inthash.o serialize.o
+main_o_files =\
+ allocate.o arith01.o arith02.o arith03.o arith04.o\
+ arith05.o arith06.o arith07.o arith08.o arith09.o\
+ arith10.o arith11.o arith12.o arith13.o arith14.o\
+ bytes1.o char.o cslmpi.o cslread.o eval1.o\
+ eval2.o eval3.o eval4.o fasl.o fns1.o fns2.o fns3.o\
+ fwin.o cslgc.o lisphash.o isprime.o print.o\
+ restart.o sysfwin.o termed.o inthash.o serialize.o
 
-bootstrapObjects = $(mainObjects) stubs.o
+special_o_files = csl.o preserve.o
+
+bootstrapObjects = $(main_o_files) $(special_o_files) stubs.o
 
 bootstrapreduce.js:	$(bootstrapObjects) lib/libcrlibm.a
-	$(CXX) $(bootstrapObjects) \
-		$(LDFLAGS) $(NODE_EM_LDFLAGS) $(LIBS) $(JSOPTS) -o bootstrapreduce.js
+	$(CXX) $(bootstrapObjects)\
+	 $(LDFLAGS) $(NODE_EM_LDFLAGS) $(LIBS) $(JSOPTS) -o bootstrapreduce.js
 
 .PHONY:	bootstrapreduce
 bootstrapreduce: bootstrapreduce.js
-	echo Building bootstrapreduce.js
+	@echo Building bootstrapreduce.js
 
 
 # I am going to build both reduce and bootstrapreduce in the same directory
@@ -161,41 +161,51 @@ bootstrapreduce: bootstrapreduce.js
 # for a copy of Reduce to be run using Node.js but with its "image file" stored
 # as static data within the executable.
 
+# However, this creates a lot of identical object files, so re-use
+# them unless they actually differ.  (This can be established by
+# assuming they differ and then comparing them!)
 
 # Create the bootstrapreduce.img file
 
 bootstrapreduce.img: bootstrapreduce.js
 	-rm -f bootstrapreduce.img
-	$(NODE) bootstrapreduce.js -z -Dno_init_file $(S)/buildreduce.lsp \
-		-Dbootstrap -D@srcdir=$(S) -D@reduce=$(R) \
-		-o bootstrapreduce.img -L bootstrap_image.log
+	$(NODE) bootstrapreduce.js -z -Dno_init_file $(S)/buildreduce.lsp\
+	 -Dbootstrap -D@srcdir=$(S) -D@reduce=$(R)\
+	 -o bootstrapreduce.img -L bootstrap_image.log
 
 c-code:	bootstrapreduce.img
-	$(NODE) bootstrapreduce.js -w $(CSLFLAGS) \
-		-Dno_init_file \
-		$(S)/make-c-code.red \
-		-D@destdir=$(R)/cslbuild/generated-c \
-		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
-		-L c-code.log
+	$(NODE) bootstrapreduce.js -w $(CSLFLAGS)\
+	 -Dno_init_file\
+	 $(S)/make-c-code.red\
+	 -D@destdir=$(R)/cslbuild/generated-c\
+	 -Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file)\
+	 -L c-code.log
 
 
 # Now the full version.
 
-reduceObjects = $(mainObjects:.o=.oo) \
-		u01.oo u02.oo u03.oo u04.oo u05.oo u06.oo u07.oo u08.oo u09.oo u10.oo \
-		u11.oo u12.oo u13.oo u14.oo u15.oo u16.oo u17.oo u18.oo u19.oo u20.oo \
-		u21.oo u22.oo u23.oo u24.oo u25.oo u26.oo u27.oo u28.oo u29.oo u30.oo \
-		u31.oo u32.oo u33.oo u34.oo u35.oo u36.oo u37.oo u38.oo u39.oo u40.oo \
-		u41.oo u42.oo u43.oo u44.oo u45.oo u46.oo u47.oo u48.oo u49.oo u50.oo \
-		u51.oo u52.oo u53.oo u54.oo u55.oo u56.oo u57.oo u58.oo u59.oo u60.oo
+unn_oo_files =\
+ u01.oo u02.oo u03.oo u04.oo u05.oo u06.oo u07.oo u08.oo u09.oo u10.oo\
+ u11.oo u12.oo u13.oo u14.oo u15.oo u16.oo u17.oo u18.oo u19.oo u20.oo\
+ u21.oo u22.oo u23.oo u24.oo u25.oo u26.oo u27.oo u28.oo u29.oo u30.oo\
+ u31.oo u32.oo u33.oo u34.oo u35.oo u36.oo u37.oo u38.oo u39.oo u40.oo\
+ u41.oo u42.oo u43.oo u44.oo u45.oo u46.oo u47.oo u48.oo u49.oo u50.oo\
+ u51.oo u52.oo u53.oo u54.oo u55.oo u56.oo u57.oo u58.oo u59.oo u60.oo
+
+# Re-use $(main_o_files) and $(special_o_files), since the .oo files
+# are identical, as would be shown by running
+# for f in *.o; do echo $f; cmp $f ${f%.o}.oo; done
+
+reduceObjects = $(main_o_files) $(special_o_files) $(unn_oo_files)
 
 reduce.js: $(reduceObjects)
-	$(CXX) $(reduceObjects) \
-		$(LDFLAGS) $(NODE_EM_LDFLAGS) $(LIBS) $(JSOPTS) -o reduce.js
+	$(CXX) $(reduceObjects)\
+	 $(LDFLAGS) $(NODE_EM_LDFLAGS) $(LIBS) $(JSOPTS) -o reduce.js
 
 # Now the full version but with a built-in image.
+# (Object file list for this rule not optimized!)
 
-reducexObjects = $(reduceObjects:.oo=.xo)
+reducexObjects = $(main_o_files:.o=.xo) $(special_o_files:.o=.xo) $(unn_oo_files:.oo=.xo)
 
 reducex.js: $(reducexObjects)
 	$(CXX) $(reducexObjects) \
@@ -205,13 +215,17 @@ reducex.js: $(reducexObjects)
 
 INSERT_BUFFER = '_insert_buffer'
 
-reduceWebObjects = $(reduceObjects:.oo=.yo)
+# Re-use $(main_o_files) and $(unn_oo_files), since the .yo files are
+# identical, as would be shown by running
+# for f in *.oo; do echo $f; cmp $f ${f%.oo}.yo; done
+
+reduceWebObjects = $(main_o_files) $(special_o_files:.o=.yo) $(unn_oo_files)
 
 reduce.web.js: $(reduceWebObjects)
-	$(CXX) $(reduceWebObjects) \
-		$(LDFLAGS) $(LIBS) $(JSOPTS) $(ASYNCIFY_OPTS) $(WEBOPTS) $(LINK_OPT) \
-		-s EXPORTED_FUNCTIONS="['_main',$(INSERT_BUFFER)]" \
-		-o reduce.web.js
+	$(CXX) $(reduceWebObjects)\
+	 $(LDFLAGS) $(LIBS) $(JSOPTS) $(ASYNCIFY_OPTS) $(WEBOPTS) $(LINK_OPT)\
+	 -s EXPORTED_FUNCTIONS="['_main',$(INSERT_BUFFER)]"\
+	 -o reduce.web.js
 
 .PHONY:	reduce
 reduce:	reduce.js
@@ -223,11 +237,11 @@ reduce-web: reduce.web.js
 
 reduce.img:	reduce.js
 	-rm -f reduce.img
-	export reduce=$(R) && \
-		$(NODE) reduce.js -z -Dforce_c_code \
-		-Dno_init_file $(S)/buildreduce.lsp \
-		-D@srcdir=$(S) -D@reduce=$(R) -o reduce.img \
-		-L reduce_image.log
+	export reduce=$(R) &&\
+	 $(NODE) reduce.js -z -Dforce_c_code\
+	 -Dno_init_file $(S)/buildreduce.lsp\
+	 -D@srcdir=$(S) -D@reduce=$(R) -o reduce.img\
+	 -L reduce_image.log
 
 HEADERS = ../include/config.h include/crlibm.h \
 	$(S)/md5.h		 $(S)/termed.h	  $(S)/arith.h		 $(S)/openmath.h \
@@ -239,8 +253,8 @@ HEADERS = ../include/config.h include/crlibm.h \
 	$(S)/tags.h
 
 make-image.js: $(S)/make-image.cpp $(HEADERS)
-	$(CXX) $(CPPFLAGS) $(NODE_EM_LDFLAGS) $(S)/make-image.cpp \
-		$(LDFLAGS) $(LIBS) $(JSOPTS) -o make-image.js
+	$(CXX) $(CPPFLAGS) $(NODE_EM_LDFLAGS) $(S)/make-image.cpp\
+	 $(LDFLAGS) $(LIBS) $(JSOPTS) -o make-image.js
 
 image.cpp: make-image.js reduce.img
 	$(NODE) make-image.js
@@ -263,16 +277,16 @@ image.cpp: make-image.js reduce.img
 	$(CXX) $(CPPFLAGS) -DBUILTIN_IMAGE=1 -DNO_BYTECOUNTS=1 -c -o $@ $<
 
 %.yo : $(S)/%.cpp $(HEADERS)
-	$(CXX) $(CPPFLAGS) -DBUILTIN_IMAGE=1 -DPROCEDURAL_WASM_XX=1 \
-		$(ASYNCIFY_OPTS) -DNO_BYTECOUNTS=1 -c -o $@ $<
+	$(CXX) $(CPPFLAGS) -DBUILTIN_IMAGE=1 -DPROCEDURAL_WASM_XX=1\
+	 $(ASYNCIFY_OPTS) -DNO_BYTECOUNTS=1 -c -o $@ $<
 
 # These rules cover the few special case object files. The
 # prerequisites are specified explicitly but the recipes use the
 # implicit rules above:
 
-bytes1.o    bytes1.oo    bytes1.xo    bytes1.yo   : $(S)/bytes1.cpp $(S)/opnames.cpp $(HEADERS)
-cslmpi.o    cslmpi.oo    cslmpi.xo    cslmpi.yo   : $(S)/cslmpi.cpp $(S)/mpipack.cpp $(HEADERS)
-embedcsl.o  embedcsl.oo  embedcsl.xo  embedcsl.yo : $(S)/embedcsl.cpp $(S)/csl.cpp $(HEADERS)
+bytes1.o   bytes1.xo   : $(S)/bytes1.cpp $(S)/opnames.cpp $(HEADERS)
+cslmpi.o   cslmpi.xo   : $(S)/cslmpi.cpp $(S)/mpipack.cpp $(HEADERS)
+embedcsl.o embedcsl.xo : $(S)/embedcsl.cpp $(S)/csl.cpp $(HEADERS)
 
 makeheaders.o : $(S)/makeheaders.cpp
 objtype.o : $(S)/objtype.cpp
@@ -280,10 +294,17 @@ objtype.o : $(S)/objtype.cpp
 preserve.xo preserve.yo : $(S)/preserve.cpp image.cpp $(HEADERS)
 
 
-.PHONY: clean
-clean:
+.PHONY: mainlyclean
+# Delete files generated by make except crlibm.
+mainlyclean:
 	-rm -f *.o *.oo *.xo *.yo reduce* *.log make-image* image.cpp
 	-rm -f bootstrapreduce* *.bak *.map http.pid
-	-rm -rf crlibm include lib bin jscsl-times
+	-rm -rf bin jscsl-times
+
+.PHONY: clean
+# Delete all files generated by make.
+clean:
+	make mainlyclean
+	-rm -rf crlibm include lib
 
 # end of Makefile
