@@ -142,7 +142,7 @@ def cron(args):
     args.dry_run = False
     args.bar = False
     benchmark_run.benchmark_run(args)
-    summary_body(args.ref, args.source)
+    summary_body(args.source, args.result)
     print('</code>')
     print('</pre>')
     print(html_end())
