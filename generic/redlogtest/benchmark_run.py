@@ -208,7 +208,7 @@ def build_parallel_command(dry_run: bool, bar: bool, jobs: int, reduce: str, psl
         parallel_args += ' --bar'
     parallel_cmd = ' benchmark-job.sh'
     parallel_cmd_args  = ' '
-    if bar:
+    if bar or not verbose:
         parallel_cmd_args += ' -q'
     one = 'csl psl'
     two = str(psl_heapsize)

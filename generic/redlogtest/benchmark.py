@@ -105,11 +105,11 @@ def read_filetree(root: str, key0: str = None):
         try:
             with open(filename) as file:
                 entry = file.read().rstrip()
-                if basename in ['start', 'end']:
+                if attribute in ['start', 'end']:
                     entry = pd.to_datetime(entry)
         except FileNotFoundError:
             entry = None
-        attrs[basename] = entry
+        attrs[attribute] = entry
     rows = []
     for path, directories, files in os.walk(root):
         for file in files:
@@ -161,17 +161,18 @@ def dump_cron(ref: Benchmark, now: Benchmark):
     print('<h3>Global Information</h3>')
     print(html_p(combo_attrs.to_html()))
     print('<h3>Scatter Plots</h3>')
-    print(html_p('Left is fast (CSL-PSL mean CPU time &le; 0.5 s), right is slow. '
-                 'The scale is logarithmic; red is CSL, blue is PSL. All times are in seconds.'))
+    print(html_p('Plots are split into "fast" (average of the CSL and PSL CPU times &le; 0.5 s) and "slow". '
+                 'Red and blue dots correspond to CSL and PSL, respectively. '
+                 'All times are in seconds.'))
     print('<div style="text-align:center">')
     print(fig_to_img(combo_fast) + fig_to_img(combo_slow))
     print('</div>')
     print('<h3>Detailed CPU Times</h3>')
     print('<h3>Fast</h3>')
-    print(html_p('Benchmark problems with a CSL-PSL mean CPU time &le; 0.5 s. All times are in seconds.'))
+    print(html_p('Benchmark problems with an average of CSL and PSL CPU times &le; 0.5 s. All times are in seconds.'))
     print(html_p(combo_fast.to_html(show_dimensions=True)))
     print('<h3>Slow</h3>')
-    print(html_p('Benchmarks problems with a CSL-PSL mean CPU time &gt; 0.5 s. All times are in seconds.'))
+    print(html_p('Benchmark problems with an average of CSL and PSL CPU times &gt; 0.5 s. All times are in seconds.'))
     print(html_p(combo_slow.to_html(show_dimensions=True)))
     print(html_end())
 
