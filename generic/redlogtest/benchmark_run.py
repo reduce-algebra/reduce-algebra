@@ -198,7 +198,7 @@ def init_result_dir(source: str, result: str, force: bool, include: str, exclude
         sys.exit(0)
     return rel_red_files
 
-def build_parallel_command(dry_run: bool, bar: bool, jobs: int, reduce: str, psl_heapsize: int, source: str, result: str, rel_red_files: list) -> str:
+def build_parallel_command(dry_run: bool, bar: bool, verbose: bool, jobs: int, reduce: str, psl_heapsize: int, source: str, result: str, rel_red_files: list) -> str:
     _log('building GNU parallel command')
     parallel_args = ''
     if dry_run:
@@ -225,7 +225,7 @@ def benchmark_run(args):
     rel_red_files = init_result_dir(source, result, args.force, args.include, args.exclude, args.exclude_by_time, reduce, args.verbose)
     with open(os.path.join(result, 'GLOBAL', 'parse_args.txt'), 'w') as file:
         file.write(str(args))
-    parallel_cmd = build_parallel_command(args.dry_run, args.bar, args.jobs, reduce, args.psl_heapsize, source, result, rel_red_files)
+    parallel_cmd = build_parallel_command(args.dry_run, args.bar, args.verbose, args.jobs, reduce, args.psl_heapsize, source, result, rel_red_files)
     if args.verbose:
         sys.stderr.write(parallel_cmd)
     _log('starting computation')
