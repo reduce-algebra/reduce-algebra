@@ -136,15 +136,15 @@ def combine2(a: Benchmark, b: Benchmark, *, keys: list = None):
     return Benchmark(pd.concat([a, b], axis=1))
 
 def cron(args):
+    args.dry_run = False
+    args.bar = False
     print(html_begin())
     print('<pre>')
     print('<code>')
-    args.dry_run = False
-    args.bar = False
     benchmark_run.benchmark_run(args)
-    summary_body(args.source, args.result)
     print('</code>')
     print('</pre>')
+    summary_body(args.source, args.result)
     print(html_end())
 
 def summary(ref: Benchmark, now: Benchmark):

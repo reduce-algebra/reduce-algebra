@@ -12,7 +12,7 @@ class Continue(Exception):
     pass
 
 def _log(msg: str, *, cwd: str = os.getcwd()):
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' [' + cwd + '] ' + msg + os.linesep)
+    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' [' + cwd + '] ' + msg)
 
 def setup_parser(parser):
     parser.add_argument(
