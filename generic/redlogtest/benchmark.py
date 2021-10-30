@@ -150,20 +150,25 @@ def dump_cron(ref: Benchmark, now: Benchmark):
         return '<p>' + html + '</p>'
     global_attributes = ['uname', 'revision', 'start', 'end']
     ref = read_filetree(ref, 'ref').add_means()
+    ref_attrs = pd.DataFrame(ref.attrs.values(), index=now.attrs.keys(), columns=['ref'])
     now = read_filetree(now, 'now').add_means()
+    now_attrs = pd.DataFrame(now.attrs.values(), index=now.attrs.keys(), columns=['now'])
     combo = combine2(ref, now).select(['cpu', 'valid_mean'])
+    combo_attrs = combine2(ref_attrs, now_attrs).reindex(global_attributes)
+    combo_bad = combo[(combo[('now', 'valid_mean')] == False)]
     combo_fast = combo[(combo[('ref', 'cpu_mean')] <= 0.5) & (combo[('now', 'cpu_mean')] <= 0.5)]
     combo_slow = combo[(combo[('ref', 'cpu_mean')] > 0.5) | (combo[('now', 'cpu_mean')] > 0.5)]
-    ref_attrs = pd.DataFrame(ref.attrs.values(), index=now.attrs.keys(), columns=['ref'])
-    now_attrs = pd.DataFrame(now.attrs.values(), index=now.attrs.keys(), columns=['now'])
-    combo_attrs = combine2(ref_attrs, now_attrs).reindex(global_attributes)
     print(html_begin())
     print('<h3>Global Information</h3>')
     print(html_p(combo_attrs.to_html()))
+    if not combo_bad.empty:
+        print('<h3>Possible Problems</h3>')
+        print(html_p('Benchamrk problems with existing logs explicitly tested different from existing reference logs:'))
+        print(html_p(combo_bad.to_html(show_dimensions=True)))
     print('<h3>Scatter Plots</h3>')
     print(html_p('Plots are split into "fast" (average of the CSL and PSL CPU times &le; 0.5 s) and "slow". '
                  'Red and blue dots correspond to CSL and PSL, respectively. '
-                 'All times are in seconds.'))
+                 'The scale is logarithmic. All times are in seconds.'))
     print('<div style="text-align:center">')
     print(fig_to_img(combo_fast) + fig_to_img(combo_slow))
     print('</div>')
