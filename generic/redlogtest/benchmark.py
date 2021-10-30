@@ -135,7 +135,24 @@ def read_filetree(root: str, key0: str = None):
 def combine2(a: Benchmark, b: Benchmark, *, keys: list = None):
     return Benchmark(pd.concat([a, b], axis=1))
 
-def dump_cron(ref: Benchmark, now: Benchmark):
+def cron(args):
+    print(html_begin())
+    print('<pre>')
+    print('<code>')
+    args.dry_run = False
+    args.bar = False
+    benchmark_run.benchmark_run(args)
+    summary_body(args.ref, args.source)
+    print('</code>')
+    print('</pre>')
+    print(html_end())
+
+def summary(ref: Benchmark, now: Benchmark):
+    print(html_begin())
+    summary_body(ref, now)
+    print(html_end())
+
+def summary_body(ref: Benchmark, now: Benchmark):
     def fig_to_img(df):
         import base64
         import io
@@ -158,12 +175,11 @@ def dump_cron(ref: Benchmark, now: Benchmark):
     combo_bad = combo[(combo[('now', 'valid_mean')] == False)]
     combo_fast = combo[(combo[('ref', 'cpu_mean')] <= 0.5) & (combo[('now', 'cpu_mean')] <= 0.5)]
     combo_slow = combo[(combo[('ref', 'cpu_mean')] > 0.5) | (combo[('now', 'cpu_mean')] > 0.5)]
-    print(html_begin())
     print('<h3>Global Information</h3>')
     print(html_p(combo_attrs.to_html()))
     if not combo_bad.empty:
         print('<h3>Possible Problems</h3>')
-        print(html_p('Benchamrk problems with existing logs explicitly tested different from existing reference logs:'))
+        print(html_p('Benchmark problems with existing "now" logs that were tested different from existing "ref" logs:'))
         print(html_p(combo_bad.to_html(show_dimensions=True)))
     print('<h3>Scatter Plots</h3>')
     print(html_p('Plots are split into "fast" (average of the CSL and PSL CPU times &le; 0.5 s) and "slow". '
@@ -179,7 +195,6 @@ def dump_cron(ref: Benchmark, now: Benchmark):
     print('<h3>Slow</h3>')
     print(html_p('Benchmark problems with an average of CSL and PSL CPU times &gt; 0.5 s. All times are in seconds.'))
     print(html_p(combo_slow.to_html(show_dimensions=True)))
-    print(html_end())
 
 def html_begin() -> str:
     return """<!DOCTYPE html>
@@ -270,6 +285,64 @@ def html_end_bootstrap() -> str:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='benchmark')
     subparsers = parser.add_subparsers(dest='subcommand', help='sub-commands')
+    parser_cron = subparsers.add_parser(
+        'cron',
+        help='Combine run and summary for use in cron jobs',
+        description='Combine run and summary for use in cron jobs')
+    parser_cron.add_argument(
+        'source', metavar='SOURCE',
+        help=('An existing benchmark directory. *.red files are used as input. If present, '
+              '*.pslheap is used to override --psl-heapsize SIZE, '
+              'and rlg_csl.txt and rlg_psl.txt are used for comparison'))
+    parser_cron.add_argument(
+        'result', metavar='RESULT',
+        help='The benchmark directory to be created. *.red and *.pslheap are copied from SOURCE')
+    parser_cron.add_argument(
+        '-f', '--force',
+        action='store_true',
+        help=('Overwrite existing directories specified via \'--svn-reduce DIR\' and \'RESULT\' '
+              'without prompting for confirmation'))
+    parser_cron.add_argument(
+        '-j', '--jobs', metavar='N',
+        type=int, default=1,
+        help='Run up to N jobs in parallel')
+    parser_cron.add_argument('-td', '--psl-heapsize', metavar="SIZE",
+        default=4000,
+        help='Allocate SIZE MiB for PSL heap(s)')
+    parser_cron.add_argument('-v', '--verbose',
+        action='store_true',
+        help=('Report benchmarks found: +, - indicate inclusion, exclusion, '
+              'i, e, t stand for --include, --exclude, --exclude-by-time, respectively. '
+              'The generated GNU parallel command is printed before execution'))
+    incl_excl_group = parser_cron.add_mutually_exclusive_group()
+    incl_excl_group.add_argument(
+        '--exclude', metavar="SUBSTRING",
+        type=str,
+        help='Exclude benchmarks containing SUBSTRING')
+    incl_excl_group.add_argument(
+        '--include', metavar="SUBSTRING",
+        type=str,
+        help='Include only benchmarks containing SUBSTRING')
+    parser_cron.add_argument(
+        '--exclude-by-time', metavar='SECONDS',
+        type=int,
+        help=('Exclude benchmarks with a cpu time record (cpu_csl.txt, cpu_psl.txt) larger than '
+              'SECONDS in SOURCE'))
+    reduce_group = parser_cron.add_mutually_exclusive_group(
+        required=True)
+    reduce_group.add_argument(
+        '--reduce', metavar='DIR',
+        type=str,
+        help='Use existing Reduce directory DIR')
+    reduce_group.add_argument(
+        '--svn-reduce', metavar='DIR',
+        type=str,
+        help='svn check out into DIR, compile, and use as Reduce directory')
+    parser_cron.add_argument(
+        '-r', '--revision', metavar='REV',
+        type=str,
+        default='HEAD',
+        help='Check out SVN revision REV instead of HEAD')
     parser_run = subparsers.add_parser(
         'run',
         help='Run a Reduce benchmark set',
@@ -288,8 +361,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.subcommand is None:
         sys.stderr.write("Type 'benchmark -h' for usage." + os.linesep)
+    elif args.subcommand == 'cron':
+        cron(args)
     elif args.subcommand == 'run':
         benchmark_run.benchmark_run(args)
     elif args.subcommand == 'summary':
-       dump_cron(args.ref, args.now)
+       summary(args.ref, args.now)
     sys.exit(0)
