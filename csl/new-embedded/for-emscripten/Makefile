@@ -2,19 +2,24 @@
 #	 Arthur Norman & Avery Laird, 2020--2021.
 
 # This version uses emscripten em++ to create JavaScript/WebAssembly versions
-# for use with node (reduce.{js,wasm}) and web browsers (reduce.web.{js,wasm}).
+# for use with Node.js (reduce.{js,wasm}) and web browsers (reduce.web.{js,wasm}).
 
-# $Id: $
+# $Id$
 
-# For a FULL bootstrapped build for node you need to go
+# For a FULL bootstrapped build for Node.js you need to run
 #
 #	 make bootstrapreduce.img
 #	 rm bootstrapreduce.img; make bootstrapreduce.img
 #	 make c-code
 #	 make reduce.img
 #
-# To add a build for web browsers, do the above, then
+# To add a build for web browsers, run the above, then run
+#
 #	make reduce-web
+#
+# or to disable optimization and have a readable JavaScript file, run
+#
+#	make reduce-web OPT=-O0
 #
 # The repeated build of bootstrapreduce.img is so that forward references
 # to inline functions end up coped with properly.
@@ -31,18 +36,32 @@ LINK_OPT=$(OPT)
 
 CXX=em++
 
-EMFLAGS:=$(shell . ./emflags.sh && echo $$EMFLAGS)
+# EMFLAGS:=$(shell . ./emflags.sh && echo $$EMFLAGS)
+# Non-default Emscripten flags keeping compile and link flags distinct
+# to avoid warnings.
+
+# Emscripten compile and link flags:
+EM_CC_LD_FLAGS = -flto
+
+# Emscripten compile flags:
+EM_CCFLAGS = $(EM_CC_LD_FLAGS)
+
+# Emscripten link flags:
+EM_LDFLAGS = $(EM_CC_LD_FLAGS) \
+	-s EXIT_RUNTIME \
+	-s INITIAL_MEMORY=1024mb \
+	-s NO_ERROR_ON_UNDEFINED_SYMBOLS \
+	-s USE_ZLIB
 
 #ASYNC_FUNCTIONS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$cfuns)
 #ASYNC_IMPORTS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$jsimports)
 
-CPPFLAGS=$(EMFLAGS) \
-	 -std=gnu++17 $(OPT) -I. -I../include -Iinclude -I$(S) \
+CPPFLAGS=$(EM_CCFLAGS) \
+	-std=gnu++17 $(OPT) -I. -I../include -Iinclude -I$(S) \
 	-DHAVE_CONFIG_H=1 -DNO_THROW=1 -DHAVE_CRLIBM=1 \
 	-DEMBEDDED=1 $(XCFLAGS) $(USERFLAGS)
-# CFLAGS=$(EMFLAGS)
-# CXXFLAGS=$(EMFLAGS)
-LDFLAGS=$(EMFLAGS) -Llib -lcrlibm
+
+LDFLAGS=$(EM_LDFLAGS) -Llib
 LIBS=-lcrlibm
 
 JSOPTS= $(USERFLAGS)
@@ -58,7 +77,8 @@ JS_SRC=js
 # understand! But this setting for NODE arranges the careful scheme for me.
 NODE= $(shell which node)
 
-NODEOPTS= -s NODERAWFS=1 -s FORCE_FILESYSTEM=1 \
+# Emscripten link flags when building for Node.Js:
+NODE_EM_LDFLAGS= -s NODERAWFS -s FORCE_FILESYSTEM
 
 PRE_JS=$(JS_SRC)/init.js
 WEBOPTS= --pre-js $(PRE_JS) \
@@ -76,10 +96,10 @@ WEBOPTS= --pre-js $(PRE_JS) \
 #	-s ASYNCIFY_STACK_SIZE=1048576
 
 #ifndef WEB
-# JSOPTS += $(NODEOPTS)
+# JSOPTS += $(NODE_EM_LDFLAGS)
 #else
 # ifeq (WEB,0)
-#	JSOPTS += $(NODEOPTS)
+#	JSOPTS += $(NODE_EM_LDFLAGS)
 # else
 #	JSOPTS += $(WEBOPTS)
 #	REDUCE_TARGET=reduce.html
@@ -92,10 +112,26 @@ R=../../..
 VPATH=$(S)
 
 .PHONY: all
-all: reduce.js reduce.img image.cpp reduce.web.wasm
+all: reduce.js reduce.img image.cpp reduce.web.js
 
-include/crlibm.h lib/libcrlibm.a: emflags.sh make-crlibm.sh
-	./make-crlibm.sh
+# The recipe below must be a single (logical) line so that it is all
+# run in the same shell instance, hence all the backslashes:
+include/crlibm.h lib/libcrlibm.a:
+	rm -rf crlibm include lib; \
+	mkdir -p crlibm; \
+	cd crlibm; \
+	../../../../libraries/crlibm/configure \
+		CC=emcc \
+		CFLAGS="$(EM_CCFLAGS) -D__INTEL_COMPILER=1 -O3" \
+		LDFLAGS="$(EM_LDFLAGS)" \
+		AR=emar \
+		RANLIB=emranlib \
+		--prefix=`pwd`/..; \
+	make clean; \
+	make; \
+	make install; \
+	cd ..
+
 
 mainObjects = allocate.o arith01.o arith02.o arith03.o arith04.o \
 		arith05.o arith06.o arith07.o arith08.o arith09.o \
@@ -109,7 +145,7 @@ bootstrapObjects = $(mainObjects) stubs.o
 
 bootstrapreduce.js:	$(bootstrapObjects) lib/libcrlibm.a
 	$(CXX) $(bootstrapObjects) \
-		$(LDFLAGS) $(NODEOPTS) $(LIBS) $(JSOPTS) -o bootstrapreduce.js
+		$(LDFLAGS) $(NODE_EM_LDFLAGS) $(LIBS) $(JSOPTS) -o bootstrapreduce.js
 
 .PHONY:	bootstrapreduce
 bootstrapreduce: bootstrapreduce.js
@@ -121,8 +157,8 @@ bootstrapreduce: bootstrapreduce.js
 # files for one version with suffix .o and the other .oo.
 # I'm also going to add .yo for object files which have been compiled
 # with the asynchronous javascript IO library (just so we don't have
-# to rebuild each time we want to switch between node/browser), and .xo for
-# for a copy of Reduce to be run using node but with its "image file" stored
+# to rebuild each time we want to switch between Node.js/browser), and .xo for
+# for a copy of Reduce to be run using Node.js but with its "image file" stored
 # as static data within the executable.
 
 
@@ -155,7 +191,7 @@ reduceObjects = $(mainObjects:.o=.oo) \
 
 reduce.js: $(reduceObjects)
 	$(CXX) $(reduceObjects) \
-		$(LDFLAGS) $(NODEOPTS) $(LIBS) $(JSOPTS) -o reduce.js
+		$(LDFLAGS) $(NODE_EM_LDFLAGS) $(LIBS) $(JSOPTS) -o reduce.js
 
 # Now the full version but with a built-in image.
 
@@ -163,15 +199,15 @@ reducexObjects = $(reduceObjects:.oo=.xo)
 
 reducex.js: $(reducexObjects)
 	$(CXX) $(reducexObjects) \
-		$(LDFLAGS) $(NODEOPTS) $(LIBS) $(JSOPTS) -o reducex.js
+		$(LDFLAGS) $(NODE_EM_LDFLAGS) $(LIBS) $(JSOPTS) -o reducex.js
 
-# The web-based (non-node) version
+# The web-based (non-Node.js) version
 
 INSERT_BUFFER = '_insert_buffer'
 
 reduceWebObjects = $(reduceObjects:.oo=.yo)
 
-reduce.web.wasm: $(reduceWebObjects)
+reduce.web.js: $(reduceWebObjects)
 	$(CXX) $(reduceWebObjects) \
 		$(LDFLAGS) $(LIBS) $(JSOPTS) $(ASYNCIFY_OPTS) $(WEBOPTS) $(LINK_OPT) \
 		-s EXPORTED_FUNCTIONS="['_main',$(INSERT_BUFFER)]" \
@@ -179,11 +215,11 @@ reduce.web.wasm: $(reduceWebObjects)
 
 .PHONY:	reduce
 reduce:	reduce.js
-	echo Building reduce.js
+	@echo '=== Built "reduce.js" and "reduce.wasm".'
 
 .PHONY: reduce-web
-reduce-web: reduce.web.wasm
-	echo Building reduce workers
+reduce-web: reduce.web.js
+	@echo '=== Built "reduce.web.js" and "reduce.web.wasm".'
 
 reduce.img:	reduce.js
 	-rm -f reduce.img
@@ -203,7 +239,7 @@ HEADERS = ../include/config.h include/crlibm.h \
 	$(S)/tags.h
 
 make-image.js: $(S)/make-image.cpp $(HEADERS)
-	$(CXX) $(CPPFLAGS) $(NODEOPTS) $(S)/make-image.cpp \
+	$(CXX) $(CPPFLAGS) $(NODE_EM_LDFLAGS) $(S)/make-image.cpp \
 		$(LDFLAGS) $(LIBS) $(JSOPTS) -o make-image.js
 
 image.cpp: make-image.js reduce.img
@@ -215,18 +251,17 @@ image.cpp: make-image.js reduce.img
 # These implicit pattern rules cover most of the object files:
 
 %.o : $(S)/%.cpp $(HEADERS)
-	$(CXX) $(CPPFLAGS) $(NODEOPTS) -c -o $@ $<
+	$(CXX) $(CPPFLAGS) -c -o $@ $<
 # I do not set NO_BYTECOUNTS on the %.o target because that is used to
 # make bootstrapreduce.js which can be used for profiling - an action which
 # relies on bytecounts.
 
 %.oo : $(S)/%.cpp $(HEADERS)
-	$(CXX) $(CPPFLAGS) $(NODEOPTS) -DNO_BYTECOUNTS=1 -c -o $@ $<
+	$(CXX) $(CPPFLAGS) -DNO_BYTECOUNTS=1 -c -o $@ $<
 
 %.xo : $(S)/%.cpp $(HEADERS)
-	$(CXX) $(CPPFLAGS) -DBUILTIN_IMAGE=1 $(NODEOPTS) -DNO_BYTECOUNTS=1 -c -o $@ $<
+	$(CXX) $(CPPFLAGS) -DBUILTIN_IMAGE=1 -DNO_BYTECOUNTS=1 -c -o $@ $<
 
-# don't use NODEOPTS here, because we want a virtual FS
 %.yo : $(S)/%.cpp $(HEADERS)
 	$(CXX) $(CPPFLAGS) -DBUILTIN_IMAGE=1 -DPROCEDURAL_WASM_XX=1 \
 		$(ASYNCIFY_OPTS) -DNO_BYTECOUNTS=1 -c -o $@ $<

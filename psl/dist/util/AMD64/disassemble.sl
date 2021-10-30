@@ -436,11 +436,11 @@
 	((eqcar p 'UMW) (decode-modrm p))
 	((eqcar p 'UM) (decode-modrm p))
              % offset
-        ((equal p '(o b))
+        ((equal p '(O b))
          (setq lth!* (plus lth!* 1))
          (pop bytes!*))
 
-        ((equal p '(o v))
+        ((equal p '(O v))
          (setq lth!* (plus lth!* 4))
          (bytes2word))
          
@@ -448,6 +448,7 @@
 	 (if (eq (wand (car bytes*) 2#11000000) 2#11000000)
 	     (decode-x87fpu p bytes* addr* 0)
 	   (decode-modrm p)))
+
         (t (terpri)
            (prin2t (list "dont know operand declaration:" p))
            (stderror "disassemble")))))
@@ -469,21 +470,21 @@
          (decode-sib p mod))
         ((and (eq mod 0)(eq rm 5))
                   % probably a sym*** reference
-	 (setq  lth* (plus 4 lth*))
-	 (setq w (bytes2word))
-	 (setq wabs (plus addr* w lth*))
-	 (cond ((and (xgreaterp wabs symfnc)
-		     (xgreaterp symfnchigh wabs))
-		(setq *comment
+         (setq  lth* (plus 4 lth*))
+         (setq w (bytes2word))
+         (setq wabs (plus addr* w lth*))
+         (cond ((and (xgreaterp wabs symfnc)
+                     (xgreaterp symfnchigh wabs))
+                (setq *comment
                       (bldmsg " -> %w" (safe-int2id (wshift (wdifference wabs symfnc) -3)))))
-	       ((and (xgreaterp wabs symval)
-		     (xgreaterp symvalhigh wabs))
-		(setq *comment
+               ((and (xgreaterp wabs symval)
+                     (xgreaterp symvalhigh wabs))
+                (setq *comment
                       (bldmsg " -> %w" 
                        (safe-int2id (wshift (wdifference wabs symval) -3))))))
-	 (if *gassyntax 
-	     (bldmsg "%w(%%rip)" w)
-	   (bldmsg "[rip%w0x%x]" (if (wlessp w 0) "-" "+") (if (wlessp w 0) (wminus w) w))))
+         (if *gassyntax 
+             (bldmsg "%w(%%rip)" w)
+           (bldmsg "[rip%w0x%x]" (if (wlessp w 0) "-" "+") (if (wlessp w 0) (wminus w) w))))
         ((eq mod 0) (if *gassyntax
 			(bldmsg "(%%%w)" (reg-m rm))
 		      (bldmsg "[%w]" (reg-m rm) )))
@@ -645,6 +646,15 @@
     ) 
   )
 
+(de name-x87fpu (p1)
+    (cond ((or (eq p1 16#d8) (eq p1 16#dc)) (name-x87-d8-dc))
+          ((eq p1 16#d9) (name-x87-d9))
+          ((or (eq p1 16#da) (eq p1 16#de)) (name-x87-da-de))
+          ((eq p1 16#db) (name-x87-db))
+          ((eq p1 16#dc) (name-x87-dc))
+          ((eq p1 16#dd) (name-x87-dd))
+    ))
+
 (de name-x87-d8-dc ()
  (cond ((eq regnr* 000) 'fadd)
        ((eq regnr* 2#001) 'fmul)
@@ -686,7 +696,7 @@
        ((eq regnr* 2#111) 'fstp)
        ))
 
-(de name-x87-dd ()
+(de name-x87-de ()
  (cond ((eq regnr* 000) 'fld)
        ((eq regnr* 2#001) 'fisttp)
        ((eq regnr* 2#010) 'fst)
@@ -856,10 +866,12 @@
 
 (de namegrp1()
  (cond ((eq regnr* 000) 'add)
+       ((eq regnr* 2#001) 'or)
        ((eq regnr* 2#010) 'adc)
+       ((eq regnr* 2#011) 'sbb)
        ((eq regnr* 2#100) 'and)
        ((eq regnr* 2#101) 'sub)
-       ((eq regnr* 2#011) 'sbb)
+       ((eq regnr* 2#110) 'xor)
        ((eq regnr* 2#111) 'cmp)))
 
 (de namegrp5()
@@ -1127,7 +1139,7 @@ loop
          (when (eq name 'grp3) (setq name (namegrp3)))
          (when (eq name 'shift)(setq name (nameshift)))
          (when (eq name 'convert)(setq name (nameconvert)))
-	 (when (eq name 'x87fpu) (setq name (name-x87fpu)))
+	 (when (eq name 'x87fpu) (setq name (name-x87fpu p1)))
 	 (when (eqcar name 'sse) (setq name (name-sse (cdr name))))
          (when (eq name 'grp15) (setq name (namegrp15)))
 

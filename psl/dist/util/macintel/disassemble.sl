@@ -190,6 +190,8 @@
 
 (fi 16#9a call (A p))
 
+(fi 16#9b fwait (nil))
+
 (fi 16#a0 mov (AL (O b)) (eax (O v)) ((O b) AL) ((O v) EAX))
 
 (fi 16#b0 mov (AL (I b))(CL (I b))(DL (I b))(BL (I b))
@@ -205,6 +207,8 @@
 (fi 16#c6 mov ((E b)(I b)) ((E v)(I v)))
 
 (fi 16#d0 shift ((E b) 1) ((E v) 1) ((E b) CL) ((E v) CL))
+
+(fi 16#d8 x87fpu ((ST fl)) ((ST fl)) ((ST fl)) ((ST fl)) ((ST fl)) ((ST fl)) ((ST fl)) ((ST fl)))
 
 (fi 16#e8 call ((A v)))
 
@@ -258,11 +262,11 @@
 
 (setq eregs  '("eax" "ecx" "edx" "ebx" "esp" "ebp" "esi" "edi"))
 
-(fluid '(the-instruction* addr* size-override* sse-prefix*))
+(fluid '(the-instruction* addr* size-override* sse-prefix* mod-is-3*))
 
 (de decode(p1 pl addr*)
   (prog(i lth name)
-      (setq size-override* nil)
+      (setq size-override* nil mod-is-3* nil)
       (setq lth 1)
       (when (or (weq p1 16#66) (weq p1 16#67))
 	 (when (weq p1 16#66) (setq sse-prefix* p1))
@@ -320,20 +324,36 @@
          (plus addr* w 2))
         ((equal p '(J v))
          (setq  lth* (plus 4 lth*))
-         (plus addr* (bytes2word) 5))
+         (plus addr* (bytes2word) lth*))
            % mod R/M
         ((eqcar p 'E) (decode-modrm p))
         ((eqcar p 'R) (decode-modrm p))
         ((eqcar p 'M) (decode-modrm p))
              % offset
-        ((equal p '(o b))
+        ((equal p '(O b))
          (setq lth!* (plus lth!* 1))
          (pop bytes!*))
 
-        ((equal p '(o v))
+        ((equal p '(O v))
          (setq lth!* (plus lth!* 4))
-         (bytes2word))
+         (setq w (bytes2word))
+	 (cond ((and (xgreaterp w symfnc)
+		     (xgreaterp symfnchigh w))
+		(setq *comment
+                 (bldmsg " -> %w" 
+                  (safe-int2id (wshift (wdifference w symfnc) -2)))))
+	       ((and (xgreaterp w symval)
+		     (xgreaterp symvalhigh w))
+		(setq *comment
+                 (bldmsg " -> %w" 
+                  (safe-int2id (wshift (wdifference w symval) -2))))))
+	 w)
          
+	((eqcar p 'ST) % x87fpu instruction
+	 (if (eq (wand (car bytes*) 2#11000000) 2#11000000)
+	     (decode-x87fpu p bytes* addr* 0)
+	   (decode-modrm p)))
+
         (t (terpri)
            (prin2t (list "dont know operand declaration:" p))
            (stderror "disassemble")))))
@@ -365,16 +385,18 @@
               (bldmsg "*%w" w))
         ((eq mod 0) (bldmsg "[%w]" (reg-m rm)))
         ((eq mod 1) 
-              (setq  lth* (add1 lth*))
-	      (let ((b (pop bytes*)))
-		% b is unsigned, convert to signed byte
-		(if (greaterp b 127)
-		    (setq b (wdifference b 256)))
-		(bldmsg "[%w%w%w]" (reg-m rm) (if (wlessp b 0) "" "+") b)))
+	 (setq  lth* (add1 lth*))
+	 (let ((b (pop bytes*)))
+           % b is unsigned, convert to signed byte
+	   (if (greaterp b 127)
+	       (setq b (wdifference b 256)))
+	   (bldmsg "[%w%w%w]" (reg-m rm) (if (wlessp b 0) "" "+") b)))
         ((eq mod 2) 
-              (setq  lth* (plus 4 lth*))
-              (bldmsg "[%w+%w]" (reg-m rm) (bytes2word)))
-        ((eq mod 3)  (bldmsg "%w" (reg-m rm)))) )))
+         (setq  lth* (plus 4 lth*))
+         (bldmsg "[%w+%w]" (reg-m rm) (bytes2word)))
+        ((eq mod 3)
+	 (setq mod-is-3* t)
+	 (bldmsg "%w" (reg-m rm)))) )))
               
 (de decode-sib(p mod)
    (prog(ss index base offset seg b w)

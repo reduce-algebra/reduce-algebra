@@ -12,10 +12,9 @@ class Continue(Exception):
     pass
 
 def _log(msg: str, *, cwd: str = os.getcwd()):
-    sys.stderr.write(datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' [' + cwd + '] ' + msg + os.linesep)
+    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' [' + cwd + '] ' + msg)
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='Run Reduce benchmarks')
+def setup_parser(parser):
     parser.add_argument(
         'source', metavar='SOURCE',
         help=('An existing benchmark directory. *.red files are used as input. If present, '
@@ -78,7 +77,6 @@ def parse_args():
         type=str,
         default='HEAD',
         help='Check out SVN revision REV instead of HEAD')
-    return parser.parse_args()
 
 def setup_reduce(reduce: str, svn_reduce: str, revision: str, force: bool) -> str:
     def dump_and_exit(file_name: str, completed_process):
@@ -87,7 +85,7 @@ def setup_reduce(reduce: str, svn_reduce: str, revision: str, force: bool) -> st
         sys.stderr.write('error: dumping command output to ' + file_name + ' and exiting' + os.linesep)
         with open(file_name, 'r') as file:
             file.write(completed_process.stdout.decode())
-        exit(completed_process.returncode)
+        sys.exit(completed_process.returncode)
 
     def checkout(rev: str, reduce: str, force: bool):
         url = 'svn://svn.code.sf.net/p/reduce-algebra/code/trunk'
@@ -97,9 +95,9 @@ def setup_reduce(reduce: str, svn_reduce: str, revision: str, force: bool) -> st
                 shutil.rmtree(reduce)
             else:
                 sys.stderr.write('error: delete existing ' + reduce + ' or use -f, --force' + os.linesep)
-                exit(255)
+                sys.exit(17)
         cmd = ['svn', 'co', '-q', '-r', rev, url, reduce]
-        _log('START ' + ' '.join(cmd))
+        _log(' '.join(cmd))
         completed_process = subprocess.run(cmd, capture_output=True)
         if completed_process.returncode != 0:
             dump_and_exit('svn.log', completed_process)
@@ -108,14 +106,30 @@ def setup_reduce(reduce: str, svn_reduce: str, revision: str, force: bool) -> st
             dump_and_exit('svn.log', completed_process)
 
     def configure(reduce: str, lisp: str = 'both'):
-        cmd = ['./configure', '--with-' + lisp, '--without-gui']
-        _log('START ' + ' '.join(cmd), cwd=reduce)
+        cmd = ['./configure', '--with-csl', '--without-gui']
+        _log(' '.join(cmd), cwd=reduce)
         completed_process = subprocess.run(cmd, cwd=reduce, capture_output=True)
         if completed_process.returncode != 0:
             dump_and_exit('configure.log', completed_process)
+        cmd = ['./configure', '--with-psl']
+        _log(' '.join(cmd), cwd=reduce)
+        completed_process = subprocess.run(cmd, cwd=reduce, capture_output=True)
+        if completed_process.returncode != 0:
+            dump_and_exit('configure.log', completed_process)
+        completed_process = subprocess.run('./scripts/findhost.sh $(./config.guess)',
+            shell=True, cwd=reduce, capture_output=True)
+        if completed_process.returncode != 0:
+            dump_and_exit('symlink.log', completed_process)
+        host = completed_process.stdout.decode().rstrip()
+        cslbuild = os.path.join(reduce, 'cslbuild')
+        cmd = ['ln', '-s', host + '-nogui', host]
+        _log(' '.join(cmd), cwd=cslbuild)
+        completed_process = subprocess.run(cmd, cwd=cslbuild)
+        if completed_process.returncode != 0:
+            dump_and_exit('symlink.log', completed_process)
 
     def compile(reduce: str):
-        _log('START make', cwd=reduce)
+        _log('make', cwd=reduce)
         completed_process = subprocess.run(['make'], cwd=reduce, capture_output=True)
         if completed_process.returncode != 0:
             dump_and_exit('make.log', completed_process)
@@ -135,11 +149,10 @@ def init_result_dir(source: str, result: str, force: bool, include: str, exclude
             shutil.rmtree(result)
         else:
             sys.stderr.write('error: delete existing ' + result + ' or use -f, --force' + os.linesep)
-            exit(255)
+            sys.exit(17)
     os.makedirs(os.path.join(result, 'GLOBAL'))
-    for lisp in 'csl', 'psl':
-        with open(os.path.join(result, 'GLOBAL', 'revision_' + lisp + '.txt'), 'w') as file:
-            subprocess.run(['svn', 'info', '--show-item', 'revision', os.path.join(reduce, 'bin', 'red' + lisp)], stdout=file)
+    with open(os.path.join(result, 'GLOBAL', 'revision.txt'), 'w') as file:
+        subprocess.run(['svn', 'info', '--show-item', 'revision', reduce], stdout=file)
     with open(os.path.join(result, 'GLOBAL', 'uname.txt'), 'w') as file:
         subprocess.run(['uname', '-mnrs'], stdout=file)
     rel_red_files = []
@@ -198,10 +211,10 @@ def init_result_dir(source: str, result: str, force: bool, include: str, exclude
             rel_red_files.append(rel_red_file)
     if not rel_red_files:
         sys.stderr.write('warning: no benchmarks found, exiting' + os.linesep)
-        exit(0)
+        sys.exit(0)
     return rel_red_files
 
-def build_parallel_command(dry_run: bool, bar: bool, jobs: int, reduce: str, psl_heapsize: int, source: str, result: str, rel_red_files: list) -> str:
+def build_parallel_command(dry_run: bool, bar: bool, verbose: bool, jobs: int, reduce: str, psl_heapsize: int, source: str, result: str, rel_red_files: list) -> str:
     _log('building GNU parallel command')
     parallel_args = ''
     if dry_run:
@@ -211,7 +224,7 @@ def build_parallel_command(dry_run: bool, bar: bool, jobs: int, reduce: str, psl
         parallel_args += ' --bar'
     parallel_cmd = ' benchmark-job.sh'
     parallel_cmd_args  = ' '
-    if bar:
+    if bar or not verbose:
         parallel_cmd_args += ' -q'
     one = 'csl psl'
     two = str(psl_heapsize)
@@ -221,15 +234,14 @@ def build_parallel_command(dry_run: bool, bar: bool, jobs: int, reduce: str, psl
     cmd = 'parallel' + parallel_args + parallel_cmd + parallel_cmd_args
     return cmd
 
-if __name__ == '__main__':
-    args = parse_args()
+def benchmark_run(args):
     reduce = setup_reduce(args.reduce, args.svn_reduce, args.revision, args.force)
     source = os.path.abspath(args.source)
     result = os.path.abspath(args.result)
     rel_red_files = init_result_dir(source, result, args.force, args.include, args.exclude, args.exclude_by_time, reduce, args.verbose)
     with open(os.path.join(result, 'GLOBAL', 'parse_args.txt'), 'w') as file:
         file.write(str(args))
-    parallel_cmd = build_parallel_command(args.dry_run, args.bar, args.jobs, reduce, args.psl_heapsize, source, result, rel_red_files)
+    parallel_cmd = build_parallel_command(args.dry_run, args.bar, args.verbose, args.jobs, reduce, args.psl_heapsize, source, result, rel_red_files)
     if args.verbose:
         sys.stderr.write(parallel_cmd)
     _log('starting computation')
