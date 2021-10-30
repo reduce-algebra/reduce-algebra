@@ -216,6 +216,20 @@ def html_begin() -> str:
     h4:first-child {margin-top: 1em;}
     h5:first-child {margin-top: 1em;}
     h6:first-child {margin-top: 1em;}
+    pre {
+        padding: 5px;
+        background-color: #eeffcc;
+        color: #333333;
+        border: 1px solid #ac9;
+        border-left: none;
+        border-right: none;
+        border-radius: 3px;
+        border: 1px solid #ac9;
+    }
+    code {
+        font-size: 13px;
+        font-family: "Courier New";
+    }
     table {
         margin-left: auto;
         margin-right: auto;
