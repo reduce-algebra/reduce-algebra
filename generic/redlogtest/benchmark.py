@@ -150,7 +150,7 @@ def dump_cron(ref: Benchmark, now: Benchmark):
         return '<p>' + html + '</p>'
     global_attributes = ['uname', 'revision', 'start', 'end']
     ref = read_filetree(ref, 'ref').add_means()
-    ref_attrs = pd.DataFrame(ref.attrs.values(), index=now.attrs.keys(), columns=['ref'])
+    ref_attrs = pd.DataFrame(ref.attrs.values(), index=ref.attrs.keys(), columns=['ref'])
     now = read_filetree(now, 'now').add_means()
     now_attrs = pd.DataFrame(now.attrs.values(), index=now.attrs.keys(), columns=['now'])
     combo = combine2(ref, now).select(['cpu', 'valid_mean'])
@@ -168,7 +168,7 @@ def dump_cron(ref: Benchmark, now: Benchmark):
     print('<h3>Scatter Plots</h3>')
     print(html_p('Plots are split into "fast" (average of the CSL and PSL CPU times &le; 0.5 s) and "slow". '
                  'Red and blue dots correspond to CSL and PSL, respectively. '
-                 'The scale is logarithmic. All times are in seconds.'))
+                 'The scales are logarithmic. All times are in seconds.'))
     print('<div style="text-align:center">')
     print(fig_to_img(combo_fast) + fig_to_img(combo_slow))
     print('</div>')
