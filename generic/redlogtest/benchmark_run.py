@@ -97,7 +97,7 @@ def setup_reduce(reduce: str, svn_reduce: str, revision: str, force: bool) -> st
                 sys.stderr.write('error: delete existing ' + reduce + ' or use -f, --force' + os.linesep)
                 sys.exit(17)
         cmd = ['svn', 'co', '-q', '-r', rev, url, reduce]
-        _log('START ' + ' '.join(cmd))
+        _log(' '.join(cmd))
         completed_process = subprocess.run(cmd, capture_output=True)
         if completed_process.returncode != 0:
             dump_and_exit('svn.log', completed_process)
@@ -107,13 +107,13 @@ def setup_reduce(reduce: str, svn_reduce: str, revision: str, force: bool) -> st
 
     def configure(reduce: str, lisp: str = 'both'):
         cmd = ['./configure', '--with-' + lisp]
-        _log('START ' + ' '.join(cmd), cwd=reduce)
+        _log(' '.join(cmd), cwd=reduce)
         completed_process = subprocess.run(cmd, cwd=reduce, capture_output=True)
         if completed_process.returncode != 0:
             dump_and_exit('configure.log', completed_process)
 
     def compile(reduce: str):
-        _log('START make', cwd=reduce)
+        _log('make', cwd=reduce)
         completed_process = subprocess.run(['make'], cwd=reduce, capture_output=True)
         if completed_process.returncode != 0:
             dump_and_exit('make.log', completed_process)
