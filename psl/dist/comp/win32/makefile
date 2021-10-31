@@ -64,6 +64,7 @@ all: \
 	$(PL)/386-lapo.b \
 	$(PL)/386-fixup.b \
 	$(PL)/lap-to-asm.b \
+	$(PL)/faslout.b \
 	$(PL)/nbittab.b \
 	$(PL)/carcdrnil.b \
 	$(PL)/compiler.b \
@@ -105,6 +106,9 @@ $(PL)/doshooks.b: $(PXC)/doshooks.sl
 
 $(PL)/lap-to-asm.b: $(PXC)/lap-to-asm.sl
 	$(PDIST)/make-lap $(PXC) lap-to-asm
+
+$(PL)/faslout.b: $(PXC)/faslout.sl
+	$(PDIST)/make-lap $(PXC) faslout
 
 $(PL)/nbittab.b: $(PXC)/nbittab.sl
 	$(PDIST)/make-lap $(PXC) nbittab
