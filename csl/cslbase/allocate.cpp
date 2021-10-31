@@ -51,9 +51,6 @@ uintptr_t lheaplimit;
 uintptr_t vfringe;
 uintptr_t vheaplimit;
 
-uintptr_t *C_stackbase;
-
-
 void garbage_collect()
 {   term_printf("\nGarbage collect here. Not yet implemented\n");
     my_abort();

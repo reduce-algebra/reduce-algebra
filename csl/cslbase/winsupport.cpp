@@ -63,7 +63,7 @@ void win32_stacklimit(uintptr_t &C_stacklimit)
 // I also assume that any figure over 20 Mbytes is a mess so ignore it
         if (maxStackSize <= 20*1024*1024)
         {   // I try to give myself 64K spare...
-            C_stacklimit = (uintptr_t)C_stackbase - maxStackSize + 0x10000;
+            C_stackLimit = (uintptr_t)C_stackBase - maxStackSize + 0x10000;
         }
     }
 }

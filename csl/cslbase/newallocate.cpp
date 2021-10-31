@@ -333,7 +333,6 @@ size_t activePagesCount;
 //
 
 
-uintptr_t *C_stackbase;   // base of the main thread
 atomic<uint32_t> activeThreads;
 //  0x00 : total_threads : lisp_threads : still_busy_threads
 
@@ -368,8 +367,8 @@ atomic<uint32_t> activeThreads;
 //     be chained along with other pages etc. Details will emerge as I code
 //     all this and discover what I need!
 // (2) A region that acts as a "dirty map". This region will be present in
-//     every page and is an array of atomic<uint8_t>, where each byte maps
-//     a 64-byte block within the page and will get set non-zero if a RPLAC
+//     every page and is an array of atomic<uintptr_t>, where each bit maps
+//     a pointer within the page and will get set non-zero if a RPLAC
 //     or PUTV (style) operation updates anything within that small block.
 //     for 8 Mbyte pages this map will be 128 Kbytes large. It only gets
 //     written to when Lisp performs a valid RPLAC/PUTV and so addresses
@@ -468,35 +467,23 @@ class MakeAssertions
 {
 public:
     MakeAssertions()
-    {   my_assert(sizeof(atomic<std::uint8_t>) == 1,
-                  "atomic<int8_t> is not the expected size");
-        my_assert(atomic<std::uint8_t>().is_lock_free(),
-                  "atomic<uint8_t> not lock-free");
-        if (sizeof(atomic<std::uintptr_t>) != sizeof(intptr_t))
-        {   cout << "atomic<uintptr_t> is not the expected size" << "\r" << endl;
-            my_abort(LOCATION);
-        }
-        if (!atomic<uintptr_t>().is_lock_free())
-        {   cout << "Atomic<uintptr_t> not lock-free" << "\r" << endl;
-            my_abort(LOCATION);
-        }
-        if (sizeof(atomic<std::uint32_t>) != 4)
-        {   cout << "atomic<uint32_t> is not the expected size" << "\r" << endl;
-            my_abort(LOCATION);
-        }
-        if (!atomic<std::uint32_t>().is_lock_free())
-        {   cout << "atomic<uint32_t> not lock-free" << "\r" << endl;
-            my_abort(LOCATION);
-        }
+    {
+// Note that on aarch64 there is a real probability that sizeof(atomic<int8>)
+// is bigger than 1. So any attempt to use an array of same might lead to
+// nasty surprizes! The same is plausible for int16. 
+        my_assert(sizeof(atomic<std::uintptr_t>) == sizeof(intptr_t),
+                  "atomic<uintptr_t> is not the expected size");
+        my_assert(atomic<uintptr_t>().is_lock_free(),
+                  "Atomic<uintptr_t> not lock-free");
+        my_assert(sizeof(atomic<std::uint32_t>) == 4,
+                  "atomic<uint32_t> is not the expected size");
+        my_assert(atomic<std::uint32_t>().is_lock_free(),
+                  "atomic<uint32_t> not lock-free");
         if (SIXTY_FOUR_BIT)
-        {   if (sizeof(atomic<std::uint64_t>) != 8)
-            {   cout << "atomic<uint64_t> is not the expected size" << "\r" << endl;
-                my_abort(LOCATION);
-            }
-            if (!atomic<std::uint64_t>().is_lock_free())
-            {   cout << "atomic<uint64_t> not lock-free" << "\r" << endl;
-                my_abort(LOCATION);
-            }
+        {   my_assert(sizeof(atomic<std::uint64_t>) == 8,
+                      "atomic<uint64_t> is not the expected size");
+            my_assert(atomic<std::uint64_t>().is_lock_free(),
+                      "atomic<uint64_t> not lock-free");
         }
         my_assert(std::is_standard_layout<Chunk>::value,
                   "Chunk not standard layout");
@@ -599,7 +586,7 @@ void newRegionNeeded()
 // Here I can just allocate a next page to use... because memory is less
 // than half full. At some stage I will want to worry quite hard about
 // fragmentation and the "half full" issue!
-            if (previousPage == nullptr) busyPages++;
+            if (previousPage == nullptr) busyPagesCount++;
             previousPage = currentPage;
 // I must talk through an interaction between pinned data and my write
 // barrier. Suppose some data is is pinned and in addition to the ambiguous
@@ -703,6 +690,7 @@ void ableToAllocateNewChunk(uintptr_t threadId, size_t n, size_t gap)
     newChunk->isPinned = 0;
     newChunk->chunkPinChain = nullptr;
     size_t chunkNo = currentPage->chunkCount.fetch_add(1);
+    std::cout << "Page " << currentPage << " gets " << currentPage->chunkCount << "\n";
     currentPage->chunkMap[chunkNo] = newChunk;
     result = newChunk->dataStart() + TAG_VECTOR;
 //    cout << "result[" << threadId << "] = " << Addr(result) << endl;
@@ -1061,6 +1049,7 @@ LispObject borrow_n_bytes(size_t n)
         else
         {   w = freePages;
             freePages = freePages->chain;
+            std::cout << "freePages := " << freePages << "\n";
             setUpEmptyPage(w);
         }
         w->chain = static_cast<Page *>(borrowPages);
@@ -1118,6 +1107,8 @@ LispObject borrow_vector(int tag, int type, size_t n)
 void setUpEmptyPage(Page *p)
 {
     p->chunkCount = 0;
+    std::cout << "setupemptypage\n";
+    std::cout << "empty page " << p << " sets chunkCount 0\n";
     p->chunkMapSorted = false;
 #ifdef SAFE
     for (size_t i=0; i<sizeof(p->dirtyMap)/sizeof(p->dirtyMap[0]); i++)
@@ -1154,9 +1145,12 @@ void setUpEmptyPage(Page *p)
 void setUpMostlyEmptyPage(Page *p)
 {
     p->chunkCount = 0;
+    std::cout << "MOSTLY empty page " << p << " sets chunkCount 0\n";
     p->chunkMapSorted = false;
     for (Chunk *c=p->chunkPinChain; c!=nullptr; c=c->chunkPinChain)
         p->chunkMap[p->chunkCount++] = c;
+    std::cout << "MOSTLY empty page " << p << " increments chunkCount "
+              << p->chunkCount<< "\n";
     p->pageFringe = reinterpret_cast<uintptr_t>(&p->data);
     p->pageLimit = reinterpret_cast<uintptr_t>(
                    static_cast<Chunk *>(p->chunkPinChain));
@@ -1196,6 +1190,7 @@ void setUpMostlyEmptyPage(Page *p)
 
 void setUpUsedPage(Page *p)
 {   p->chunkCount = 0;
+    std::cout << "used page " << p << " sets chunkCount 0\n";
     p->chunkMapSorted = false;
     for (size_t i=0; i<sizeof(p->dirtyMap)/sizeof(p->dirtyMap[0]); i++)
         p->dirtyMap[i] = 0;
@@ -1210,6 +1205,7 @@ void setUpUsedPage(Page *p)
 // are there right from the start.
     for (Chunk *c = p->chunkPinChain; c!=nullptr; c=c->chunkPinChain)
         p->chunkMap[p->chunkCount++] = c;
+    std::cout << "Page " << p << " inc to " << p->chunkCount << "\n";
 // I want the pinned chunks sorted so that the lowest address one comes
 // first. That will ensure that when one comes to skip past a pinned
 // chunk that the next chunk on the cgain will be the next one up in
@@ -1328,7 +1324,9 @@ bool allocateSegment(size_t n)
 // Keep a chain of all the pages.
         p->chain = freePages;
         p->chunkCount = 0; // Should be enough to mark it as empty.
+        std::cout << "free page " << p << " gets count 0\n";
         freePages = p;
+        std::cout << "freePages := " << freePages << "\n";
         freePagesCount++;
     }
     cout << freePagesCount << " pages available\r\n";
@@ -1455,7 +1453,6 @@ ThreadStartup::~ThreadStartup()
 LispObject *nilSegment, *stackSegment;
 
 #ifdef NO_THREADS
-uintptr_t              stackFringe;
 uintptr_t              fringe;
 uintptr_t              limit;
 Chunk*                 myChunkBase;
@@ -1467,7 +1464,6 @@ size_t                 gIncrement;
 
 #else // NO_THREADS
 
-uintptr_t              stackFringes[maxThreads];
 uintptr_t              fringes[maxThreads];
 atomic<uintptr_t>      limits[maxThreads];
 Chunk*                 myChunkBases[maxThreads];
@@ -1525,6 +1521,7 @@ void initHeapSegments(double storeSize)
     for (int i=0; i<16; i++)
         heapSegment[i] = reinterpret_cast<void *>(-1);
     freePages = mostlyFreePages = nullptr;
+    std::cout << "freePages := " << freePages << "\n";
     cout << "Allocate " << (freeSpace/1024U) << " Kbytes" << "\r" << endl;
     allocateSegment(freeSpace);
 
@@ -1538,12 +1535,16 @@ void initHeapSegments(double storeSize)
     stackBase = reinterpret_cast<uintptr_t>(stackSegment);
 // Ensure that I have a currentPage.
     previousPage = nullptr;
+    std::cout << "current from " << currentPage << " to " << freePages << "\n";
     currentPage = freePages;
+    previousCons = 0;
     freePages = freePages->chain;
+    std::cout << "freePages := " << freePages << "\n";
     freePagesCount--;
     setUpEmptyPage(currentPage);
     currentPage->chain = nullptr;
     busyPages = currentPage;
+    std::cout << "busyPages := " << busyPages << "\n";
     busyPagesCount = 1;
     setVariablesFromPage(currentPage);
     mostlyFreePages = nullptr;

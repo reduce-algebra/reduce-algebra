@@ -146,9 +146,9 @@ THREADID;
 #endif // DEBUG
 #else // CHECK_STACK
     {   char *p = reinterpret_cast<char *>(&p);
-        if ((uintptr_t)p < C_stacklimit)
+        if (reinterpret_cast<uintptr_t>(p) < C_stackLimit)
         {   err_printf("\n+++ stack overflow\n");
-            if (C_stacklimit > 1024*1024) C_stacklimit -= 1024*1024;
+            if (C_stackLimit > 1024*1024) C_stackLimit -= 1024*1024;
             return aerror("stack_overflow");
         }
     }

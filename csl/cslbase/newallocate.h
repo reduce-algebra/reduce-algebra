@@ -265,7 +265,6 @@ static const size_t extraChunks = 5;
 static const size_t chunksPerPage = 2*pageSize/targetChunkSize + extraChunks;
 
 class alignas(pageSize) Page
-
 {
 public:
 // I put chain and chunkCount consecutive to help cache access when a
@@ -974,6 +973,8 @@ inline LispObject get_n_bytes(size_t n, THREADFORMAL
             newChunk->pinnedObjects = TAG_FIXNUM;
             newChunk->chunkPinChain = nullptr;
             size_t chunkNo = p->chunkCount.fetch_add(1);
+            std::cout << "allocation in page " << p << " increments cc to "
+                      << p->chunkCount << "\n";
             p->chunkMap[chunkNo] = newChunk;
             limitBis = newLimit;
 #ifdef NO_THREADS
@@ -1200,7 +1201,7 @@ NOINLINE inline void may_block(F &&action)
     THREADID;
 // ASSUME that setjmp dumps all the machine registers into the jmp_buf.
     if (setjmp(buffer) == 0)
-    {   stackFringe = reinterpret_cast<uintptr_t>(&buffer);
+    {   C_stackFringe = reinterpret_cast<uintptr_t>(&buffer);
 // I will need to do more here to decrement the count of threads that
 // the system knows to be potentially involved in memory allocation.
         action();
@@ -1217,7 +1218,7 @@ NOINLINE inline void withRecordedStack(F &&action)
     buffer_pointer = &buffer;
     THREADID;
     if (setjmp(buffer) == 0)
-    {   stackFringe = reinterpret_cast<uintptr_t>(&buffer);
+    {   C_stackFringe = reinterpret_cast<uintptr_t>(&buffer);
         action();
         std::longjmp(buffer, 1);
     }
@@ -1389,6 +1390,7 @@ inline void regionInPageIsFull(unsigned int threadId, size_t n,
             c->isPinned = 0;
             c->pinnedObjects = TAG_FIXNUM;
             size_t chunkNo = currentPage->chunkCount.fetch_add(1);
+            std::cout << "regioninpagefull " << currentPage << " " << currentPage->chunkCount << "\n";
             currentPage->chunkMap[chunkNo] = c;
             myChunkBase = c;
             result = gFringe + TAG_VECTOR;
@@ -1411,14 +1413,20 @@ inline void regionInPageIsFull(unsigned int threadId, size_t n,
 // that will only become relevant when I am perfroming a minor GC.
 
 inline void grabNewCurrentPage(bool preferMostlyFree)
-{   if (preferMostlyFree && mostlyFreePages != nullptr)
+{   std::cout << "[1] Old current = " << currentPage << "\n";
+    if (preferMostlyFree && mostlyFreePages != nullptr)
     {   currentPage = mostlyFreePages;
+        previousCons = 0;
+        std::cout << "new current from mostlyFree " << currentPage << "\n";
         mostlyFreePages = mostlyFreePages->chain;
         mostlyFreePagesCount--;
     }
     else if (freePages != nullptr)
     {   currentPage = freePages;
+        previousCons = 0;
+        std::cout << "new current from Free " << currentPage << "\n";
         freePages = freePages->chain;
+        std::cout << "freePages := " << freePages << "\n";
         freePagesCount--;
 // When I take something from freePages it may not have been initialised
 // at all or it may contain more or less arbitrary mess left over from when
@@ -1428,6 +1436,8 @@ inline void grabNewCurrentPage(bool preferMostlyFree)
     }
     else
     {   currentPage = mostlyFreePages;
+        previousCons = 0;
+        std::cout << "new current from mostlyFree " << currentPage << "\n";
         my_assert(currentPage != nullptr,
             [&]{ cout << "Utterly out of memory" << endl;
                  std::exit(99); });
@@ -1436,6 +1446,7 @@ inline void grabNewCurrentPage(bool preferMostlyFree)
     }
     currentPage->chain = busyPages;
     busyPages = currentPage;
+    std::cout << "busyPages := " << busyPages << "\n";
     busyPagesCount++;
 // I require that the fringe and limit values stored with a page refer to
 // the first available block allowing for any pinned chunks within the page.
@@ -1698,6 +1709,7 @@ public:
             {   Page *w = static_cast<Page *>(borrowPages)->chain;
                 static_cast<Page *>(borrowPages)->chain = freePages;
                 freePages = borrowPages;
+                std::cout << "freePages := " << freePages << "\n";
                 borrowPages = w;
             }
         }

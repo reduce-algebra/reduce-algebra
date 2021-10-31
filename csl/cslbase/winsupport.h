@@ -36,7 +36,7 @@
 #define __header_winsupport_h 1
 
 
-extern uintptr_t *C_stackbase;
+extern uintptr_t C_stackBase;
 extern const char *fullProgramName;
 extern const char *programName;
 extern bool programNameDotCom;

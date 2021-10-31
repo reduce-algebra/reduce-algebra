@@ -542,6 +542,7 @@ Chunk *popChunk()
 // If I have to wait then while I am waiting I am not active...
     my_assert(activeHelpers != 0);
     activeHelpers--;
+#ifndef NO_THREADS
     bool st =
         cvForChunkStack.wait_until(lock,
             std::chrono::steady_clock::now() + cvTimeout,
@@ -549,6 +550,7 @@ Chunk *popChunk()
                          activeHelpers == 0;
               });
     if (!st) my_abort(LOCATION ": condition variable timed out");
+#endif // NO_THREADS
     Chunk *r = pendingChunks;
     if (r != nullptr)
     {   pendingChunks = r->pendingChunks;
@@ -612,7 +614,7 @@ atomic<Chunk *>   gcQ[gcQSize];
 
 static void gcEnqueue(Chunk *c)
 {   uintptr_t in = gcInQ;
-if (gcTrace) cout << "Grab another Chunk at " << Addr(c) << "\n";
+    if (gcTrace) cout << "Grab another Chunk at " << Addr(c) << "\n";
     gcQ[in & (gcQSize-1)] = c;
     in = in+1;
     if (in == 0) Lstop(nil); // wrap in queue pointer
@@ -709,6 +711,7 @@ LispObject gc_n_bytes1(size_t n, THREADFORMAL uintptr_t r)
     newChunk->pinnedObjects = TAG_FIXNUM;
     newChunk->chunkPinChain = nullptr;
     size_t chunkNo = p->chunkCount.fetch_add(1);
+    std::cout << "Page " << p << " gets chunkCount " << p->chunkCount << "\n";
     p->chunkMap[chunkNo] = newChunk;
     limitBis = newLimit;
     limit = newLimit;
@@ -822,6 +825,8 @@ void evacuate(atomic<LispObject> &a)
         {   cout << "precise ptr to pinned " << Addr(a) << "\n";
             cout << "pinned item is ";
             simple_print(a);
+            cout << "@" << std::hex << a << " in page "
+                 << (a & -pageSize) << "\n"; 
         }
         return;
     }
@@ -844,6 +849,7 @@ void evacuate(atomic<LispObject> &a)
     else if (is_symbol(a)) len = symhdr_length;
     else len = doubleword_align_up(length_of_header(aa));
 #ifdef DEBUG
+    if (gcTrace && a == compiler_symbol) cout << "evacuate COMPILE\n";
     if (gcTrace) cout << "about to allocate " << len << " bytes\n";
 #endif // DEBUG
     aa = gc_n_bytes(len);
@@ -852,6 +858,10 @@ void evacuate(atomic<LispObject> &a)
 #endif // DEBUG
     std::memcpy(reinterpret_cast<void *>(aa), ap, len);
     *ap = TAG_FORWARD + aa;
+    if (a == compiler_symbol)
+    {   cout << "compiler_symbol was " << std::hex << a
+             << " becomes " << (aa + (a & TAG_BITS)) << "\n";
+    }
     a = aa + (a & TAG_BITS);
 }
 
@@ -927,7 +937,7 @@ void prepareForGarbageCollection(bool major)
         oldPagesCount = busyPagesCount;
         busyPages = nullptr;
         busyPagesCount = 0;
-// Having moved all the bust pages to oldPages I can set up a fresh
+// Having moved all the busy pages to oldPages I can set up a fresh
 // current page to be the start of the "new half-space" that I will
 // copy things into.
         grabNewCurrentPage(true);
@@ -946,6 +956,7 @@ void prepareForGarbageCollection(bool major)
             myBusyChunk->chunkFringe = static_cast<uintptr_t>(fringe);
         myChunkBase = myBusyChunk = nullptr;
         fringe = limit;
+        gcInQ = gcOutQ = 0;
         gc_n_bytes1(0, THREADARG fringe);
     }
     else
@@ -980,12 +991,14 @@ void setPinned(uintptr_t a)
     uintptr_t o = (a & (pageSize-1))/8;
     uintptr_t mask = static_cast<uintptr_t>(1)<<(o&(8*sizeof(uintptr_t)-1));
     p->pinnedMap[o/(8*sizeof(uintptr_t))] |= mask;
+    cout << "setPinned " << std::hex << a << "\n";
 }
 
 void setPinned(Page *p, uintptr_t a)
 {   uintptr_t o = (a & (pageSize-1))/8;
     uintptr_t mask = static_cast<uintptr_t>(1)<<(o&(8*sizeof(uintptr_t)-1));
     p->pinnedMap[o/(8*sizeof(uintptr_t))] |= mask;
+    cout << "setPinned " << std::hex << a << "\n";
 }
 
 void clearPinned(uintptr_t a)
@@ -1023,10 +1036,10 @@ void clearPinned(Page *p, uintptr_t a)
 void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 // If the page is pending or empty that any apparent pointer into it is
 // not of interest. Note that at the very start of a run much of the
-// memory will only have pageTag and chain fields filled in, and that is
+// memory will only have chunkCount and chain fields filled in, and that is
 // why it is important to do this check using only those.
 {   if (p->chunkCount == 0) return;  // An empty Page.
-    if (gcTrace)
+    if (gcTrace || true)
         cout << "Ambig " << Addr(a) << " in non-empty page "
              << Addr(p) << endl;
 // The list of chunks will be arranged such that the highest address one
@@ -1176,7 +1189,9 @@ void processAmbiguousValue(bool major, uintptr_t a)
 
 // The following function scans the stack for each thread. The address
 // sanitizer gets upset at this when it looks at return addresses and
-// the like, so I need to disable it here...
+// the like, so I need to disable it here... After all looking at locations
+// on the stack but between the proper stack frames is indeed a bit
+// "dodgy"!
 
 NO_SANITIZE_ADDRESS
 void identifyPinnedItems(bool major)
@@ -1188,12 +1203,16 @@ void identifyPinnedItems(bool major)
 // the only items that need special marking will be one in the "previous"
 // page since nothing else will ever be moved.
     for (uintptr_t threadId=0; threadId<maxThreads; threadId++)
-    {   if ((threadMap & threadBit(threadId)) == 0)
-        {   uintptr_t sbase = stackBase;
-            uintptr_t sfringe = stackFringe;
+    {
+#ifndef NO_THREADS
+// If I am not using threads I should always scan the stack!
+        if ((threadMap & threadBit(threadId)) == 0)
+#endif // NO_THREADS
+        {   uintptr_t sbase = C_stackBase;
+            uintptr_t sfringe = C_stackFringe;
 // Here I am supposing that for each thread the (C++) stack is a single
 // block of memory, that it is aligned as a sizeof(LispObject) boundary
-// and that EVERY interesting value is present on the stack with no change
+// and that EVERY interesting value is present on the stack with no chance
 // that the only live pointer to some data is in a machine register. On the
 // way in to the Garbage Collector I have tried quite hard to ensure that
 // last point, but none of this can be guaranteed by reference to the rules
@@ -1331,22 +1350,32 @@ void evacuateFromUnambiguousBases(bool major)
 // "list_bases" that holds the address of every static location involved.
 // That vector is about 200 items long. In addition the dedicated Lisp
 // stack has to be processed.
+    my_assert(qvalue(nil) == nil);
     evacuate(qvalue(nil));
+    my_assert(qvalue(nil) == nil);
     evacuate(qenv(nil));
+    my_assert(qvalue(nil) == nil);
     evacuate(qplist(nil));
+    my_assert(qvalue(nil) == nil);
     evacuate(qpname(nil));
+    my_assert(qvalue(nil) == nil);
     evacuate(qfastgets(nil));
+    my_assert(qvalue(nil) == nil);
     evacuate(qpackage(nil));
+    my_assert(qvalue(nil) == nil);
     for (auto p = list_bases; *p!=nullptr; p++) evacuate(**p);
+    my_assert(qvalue(nil) == nil);
     THREADID;
     for (LispObject *sp=stack;
          sp>reinterpret_cast<LispObject *>(stackBase); sp--) evacuate(*sp);
+    my_assert(qvalue(nil) == nil);
 // When running the deserialization code I keep references to multiply-
 // used items in repeat_heap, and if garbage collection occurs they must be
 // updated.
     if (repeat_heap != nullptr)
     {   for (size_t i=1; i<=repeat_count; i++)
             evacuate(repeat_heap[i]);
+        my_assert(qvalue(nil) == nil);
     }
 }
 
@@ -1802,7 +1831,11 @@ void tellTime(const char *s,
 void validatePointers();
 
 void garbageCollect(bool major)
-{   if (gcTrace) cout << "\n+++++ Start of a "
+{
+#ifdef DEBUG
+    gcTrace = true;
+#endif // DEBUG
+    if (gcTrace) cout << "\n+++++ Start of a "
          << (major ? "major" : "minor")
          << " GC\n";
     auto gcTime1 = std::chrono::high_resolution_clock::now();
@@ -1866,34 +1899,9 @@ void garbageCollect(bool major)
     tellTime("evac from copied      ", gcTime8, gcTime9);
     tellTime("tidy up               ", gcTime9, gcTime10);
 #ifdef DEBUG
-    LispObject a = standard_input;
-    cout << "\nstdin = " << std::flush; simple_print(a);
-    cout << "hdr= " << std::hex << static_cast<Header>(qheader(a)) << "\n";
-    if (is_symbol(a)) a = qvalue(a);
-    cout << "\n value = " << std::flush;
-    simple_print(a);
-    cout << std::hex << static_cast<Header>(vechdr(a)) << std::dec << "\n";
-    a = standard_output;
-    cout << "\nstdout = " << std::flush; simple_print(a);
-    cout << "hdr= " << std::hex << static_cast<Header>(qheader(a)) << "\n";
-    if (is_symbol(a)) a = qvalue(a);
-    cout << "\n value = " << std::flush;
-    simple_print(a);
-    cout << std::hex << static_cast<Header>(vechdr(a)) << std::dec << "\n";
-    a = terminal_io;
-    cout << "\nterminal-io = " << std::flush; simple_print(a);
-    cout << "hdr= " << std::hex << static_cast<Header>(qheader(a)) << "\n";
-    if (is_symbol(a)) a = qvalue(a);
-    cout << "\n value = " << std::flush;
-    simple_print(a);
-    cout << std::hex << static_cast<Header>(vechdr(a)) << std::dec << "\n";
-#endif // DEBUG
-#ifdef DEBUG
 // Just to test things!
     testLayout();
     validatePointers();
-    cout << "try printing!" << endl;
-    Lprint(nil, a); // To see if printing works here
 #endif // DEBUG
 }
 
@@ -1932,7 +1940,18 @@ void clearRepeats()
 }
 
 void validateForGC(LispObject a)
-{   size_t h = ((a*3141592653589793237u) >> 40) & (hashSize-1);
+{   if (a == nil || is_immediate(a)) return;
+    if (!inActivePage(a))
+    {   Page *p = reinterpret_cast<Page *>(a & -pageSize);
+        std::cout << "Item " << std::hex << a << " is in page "
+            << p << " with count " << p->chunkCount << "\n";
+        simple_print(a);
+        std::cout << "Quitting\n";
+        my_abort();
+    }
+//  my_assert(inActivePage(a), "item is not in active page");
+    my_assert(!is_forward(a), "forwarding pointer in validateForGC");
+    size_t h = ((a*3141592653589793237u) >> 40) & (hashSize-1);
     for (;;)
     {   if (visitedHash[h] == a) return;
         else if (visitedHash[h] == 0)
@@ -1941,9 +1960,6 @@ void validateForGC(LispObject a)
         }
         h = (h + 1) & (hashSize-1);
     }
-    if (is_immediate(a)) return;
-    my_assert(inActivePage(a), "item is not in active page");
-    my_assert(!is_forward(a), "forwarding pointer in validateForGC");
     if (is_cons(a))
     {   validateForGC(car(a));
         validateForGC(cdr(a));
@@ -1975,7 +1991,12 @@ void validateUnambiguousBases(bool major)
     validateForGC(qfastgets(nil));
     validateForGC(qpackage(nil));
     if (gcTrace) cout << "validate regular list bases\n";
-    for (auto p = list_bases; *p!=nullptr; p++) validateForGC(**p);
+    for (auto p = list_bases; *p!=nullptr; p++)
+    {   cout << (p - list_bases) << " ";
+        if (**p == compiler_symbol) cout << "\nBing\n";
+        validateForGC(**p);
+    }
+    cout << "\n";
     if (gcTrace) cout << "validate lisp stack\n";
     for (LispObject *sp=stack;
          sp>reinterpret_cast<LispObject *>(stackBase); sp--) validateForGC(*sp);
