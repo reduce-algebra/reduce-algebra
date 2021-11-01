@@ -82,8 +82,10 @@ void gcTestCode()
     lisp_package             = qpackage(nil);
     setvalue(current_package,  lisp_package);
     setvalue(nil,              nil);          // Whew!
+    my_assert(qvalue(nil) == nil);
     setpackage(nil,            lisp_package);
     setpackage(current_package,lisp_package);
+    my_assert(qvalue(nil) == nil);
 
 
     unset_var                =
@@ -96,6 +98,9 @@ void gcTestCode()
     raise_symbol        = make_undefined_fluid("*raise");
     lower_symbol        = make_undefined_fluid("*lower");
     echo_symbol         = make_undefined_fluid("*echo");
+    macroexpand_hook    = make_undefined_fluid("*macroexpand");
+    input_libraries     = make_undefined_fluid("input-libraries");
+    output_library      = make_undefined_fluid("output-library");
     current_function    = // system-startup
         startup_symbol      = make_undefined_symbol("system-startup");
 
@@ -112,6 +117,7 @@ void gcTestCode()
     lisp_trace_output = make_stream_handle();
     lisp_debug_io = make_stream_handle();
     lisp_query_io = make_stream_handle();
+    my_assert(qvalue(nil) == nil);
     set_up_functions(0);
     set_up_variables(0);
 

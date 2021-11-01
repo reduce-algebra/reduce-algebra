@@ -694,7 +694,7 @@ void reclaim(const char *why, int stg_class)
         return;
     }
     if (reclaim_stack_limit != 0 &&
-        (uintptr_t)&t0 + reclaim_stack_limit < (uintptr_t)C_stackbase)
+        (uintptr_t)&t0 + reclaim_stack_limit < C_stackBase)
     {   reclaim_stack_limit = 0;
         trace_printf("\nReclaim stack limit reached...\n");
         aerror("reclaim-stack-limit");
@@ -724,7 +724,7 @@ void reclaim(const char *why, int stg_class)
         trace_printf("getvecs=%" PRIdPTR " C-stacks=%" PRIdPTR
             "K Lisp-stack=%" PRIdPTR "K\n",
             getvecs,
-            ((reinterpret_cast<char *>(C_stackbase)-
+            ((reinterpret_cast<char *>(C_stackBase)-
                  reinterpret_cast<char *>(&why))+1023)/1024,
             ((reinterpret_cast<intptr_t>(stack)-stackBase)+1023)/1024);
     }

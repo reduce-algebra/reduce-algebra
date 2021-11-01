@@ -226,8 +226,6 @@ extern std::vector<faslFileRecord> fasl_files;
 
 extern char *big_chunk_start, *big_chunk_end;
 
-extern uintptr_t *C_stackbase, C_stacklimit;
-
 extern LispObject multiplication_buffer;
 
 #if defined CONSERVATIVE && defined GENERATIONAL
@@ -266,6 +264,7 @@ extern void DebugTrace(const char *fmt, int i);
 #define GC_BPS       5
 
 extern volatile char stack_contents_temp;
+extern uintptr_t C_stackLimit;
 
 #ifdef CHECK_STACK
 extern int check_stack(const char *file, int line);
@@ -280,8 +279,8 @@ inline void if_check_stack()
 #else
 inline void if_check_stack()
 {   const char *_p_ = reinterpret_cast<const char *>(&_p_);
-    if (reinterpret_cast<uintptr_t>(_p_) < C_stacklimit)
-    {   if (C_stacklimit > 1024*1024) C_stacklimit -= 1024*1024;
+    if (reinterpret_cast<uintptr_t>(_p_) < C_stackLimit)
+    {   if (C_stackLimit > 1024*1024) C_stackLimit -= 1024*1024;
         aerror("stack overflow");
     }
 }
@@ -383,8 +382,6 @@ extern uintptr_t xor_chain;
 extern uintptr_t vheapstart;
 extern uintptr_t vlen;
 extern uintptr_t vxor_chain;
-
-extern uintptr_t stackLimit;
 
 extern bool gcTest;
 extern bool gcTrace;

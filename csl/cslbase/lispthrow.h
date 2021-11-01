@@ -42,6 +42,10 @@
 extern LispObject *stack;
 extern uintptr_t stackBase;
 extern uintptr_t stackFringe;
+extern uintptr_t stackLimit;
+extern uintptr_t C_stackBase;
+extern uintptr_t C_stackFringe;
+extern uintptr_t C_stackLimit;
 #else // NO_THREADS
 extern LispObject *stacks[maxThreads];
 #define stack stacks[threadId]
@@ -49,6 +53,14 @@ extern uintptr_t stackBases[maxThreads];
 #define stackBase   stackBases[threadId]
 extern uintptr_t stackFringes[maxThreads];
 #define stackFringe stackFringes[threadId]
+extern uintptr_t stackLimits[maxThreads];
+#define stackLimit stackLimits[threadId]
+extern uintptr_t C_stackBases[maxThreads];
+#define C_stackBase   C_stackBases[threadId]
+extern uintptr_t C_stackFringes[maxThreads];
+#define C_stackFringe C_stackFringes[threadId]
+extern uintptr_t C_stackLimits[maxThreads];
+#define C_stackLimit C_stackLimits[threadId]
 #endif // NO_THREADS
 
 // There is a "Lisp Stack" which is separate from the C++ stack. It has
