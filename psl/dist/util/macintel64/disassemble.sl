@@ -637,10 +637,10 @@
     (setq name
       (cond ((or (eq p1 16#d8) (eq p1 16#dc)) (name-x87-d8-dc))
 	    ((eq p1 16#d9) (name-x87-d9))
-	    ((or (eq p1 16#da) (eq p1 16#dd)) (name-x87-da-de))
+	    ((or (eq p1 16#da) (eq p1 16#de)) (name-x87-da-de))
 	    ((eq p1 16#db) (name-x87-db))
 	    ((eq p1 16#dc) (name-x87-dc))
-	    ((eq p1 16#de) (name-x87-de))
+	    ((eq p1 16#de) (name-x87-dd))
 	    ))
     (return (list lth* name (cons 'op1 modrm)))
     ) 
