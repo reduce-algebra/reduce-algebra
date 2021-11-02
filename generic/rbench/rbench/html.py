@@ -2,13 +2,14 @@
 Pandas-based data analytics for Reduce benchmarks
 """
 
-___author___   = 'Thomas Sturm, http://science.thomas-sturm.de/'
-___copyright__ = 'Copyright 2021, Thomas Sturm, Germany'
-___license__   = 'CC BY-NC-ND'
-___version___  = '$Rev$'
+___author___ = "Thomas Sturm, http://science.thomas-sturm.de/"
+___copyright__ = "Copyright 2021, Thomas Sturm, Germany"
+___license__ = "CC BY-NC-ND"
+___version___ = "$Rev$"
 
 import base64
 import io
+
 import matplotlib.pyplot as plt
 
 begin = """<!DOCTYPE html>
@@ -107,17 +108,25 @@ end_bootstrap = """<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10
 </body>
 </html>"""
 
+
 def h3(html: str):
-    return '<h3>' + html + '</h3>'
+    return "<h3>" + html + "</h3>"
+
 
 def p(html: str):
-    return '<p>' + html + '</p>'
+    return "<p>" + html + "</p>"
+
 
 def plot_scatter(df):
     fig, ax = plt.subplots()
-    df.plot_scatter_csl_psl(x='ref', y='now', figsize=(5, 5), ax=ax, colorbar=False)
+    df.plot_scatter_csl_psl(x="ref",
+                            y="now",
+                            figsize=(5, 5),
+                            ax=ax,
+                            colorbar=False)
     img = io.BytesIO()
-    fig.savefig(img, format='png', bbox_inches='tight')
+    fig.savefig(img, format="png", bbox_inches="tight")
     img.seek(0)
     fig_b64 = base64.encodebytes(img.getvalue())
-    return '<img src="data:image/png;base64, {}">'.format(fig_b64.decode('utf-8'))
+    return '<img src="data:image/png;base64, {}">'.format(
+        fig_b64.decode("utf-8"))
