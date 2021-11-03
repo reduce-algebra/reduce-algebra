@@ -2,32 +2,44 @@
 Pandas-based data analytics for Reduce benchmarks
 """
 
-___author___   = 'Thomas Sturm, http://science.thomas-sturm.de/'
+___author___ = 'Thomas Sturm'
+___contact___ = 'https://science.thomas-sturm.de/'
 ___copyright__ = 'Copyright 2021, Thomas Sturm, Germany'
-___license__   = 'CC BY-NC-ND'
-___version___  = '$Rev$'
+___license__ = 'CC BY-NC-ND'
+___version___ = '$Rev$'
 
+import contextlib
 import datetime
 import inspect
+import io
+import logging
 import os
 import shutil
 import subprocess
 import sys
+import tempfile
 
-class Continue(Exception):
-    pass
+import analytics
+import html
+
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+stderr_handler = logging.StreamHandler(stream=sys.stderr)
+stderr_handler.setLevel(0)
+stderr_handler.setFormatter(formatter)
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARNING)
+logger.addHandler(stderr_handler)
 
 def _now():
     return datetime.datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S%z')
 
-def _log(msg: str, *, cwd: str = os.getcwd()):
-    print(_now() + ' [' + cwd + '] ' + msg)
-
 def _install_reduce(svn_reduce: str, revision: str, force: bool) -> str:
     def dump_and_exit(file_name: str, completed_process):
         if completed_process.stderr != b'':
-            sys.stderr.write(completed_process.stderr.decode())
-        sys.stderr.write('error: dumping command output to ' + file_name + ' and exiting' + os.linesep)
+            logger.critical(completed_process.stderr.decode())
+        logger.critical('dumping command output to ' + file_name + ' and exiting')
         with open(file_name, 'r') as file:
             file.write(completed_process.stdout.decode())
         sys.exit(completed_process.returncode)
@@ -39,25 +51,25 @@ def _install_reduce(svn_reduce: str, revision: str, force: bool) -> str:
             if force:
                 shutil.rmtree(svn_reduce)
             else:
-                sys.stderr.write('error: delete existing ' + svn_reduce + ' or use -f, --force' + os.linesep)
+                logger.critical('found existing ' + svn_reduce + ' - delete or use -f, --force')
                 sys.exit(17)
         cmd = ['svn', 'co', '-q', '-r', str(rev), url, svn_reduce]
-        _log(' '.join(cmd))
+        logger.info(' '.join(cmd))
         completed_process = subprocess.run(cmd, capture_output=True)
         if completed_process.returncode != 0:
             dump_and_exit('svn.log', completed_process)
         if not os.path.exists(sample_file):
-            sys.stderr.write('error: missing sample file ' + sample_file)
+            logger.critical('missing sample file ' + sample_file)
             dump_and_exit('svn.log', completed_process)
 
     def configure(svn_reduce: str, lisp: str = 'both'):
         cmd = ['./configure', '--with-csl', '--without-gui']
-        _log(' '.join(cmd), cwd=svn_reduce)
+        logger.info(' '.join(cmd) + ' in ' + svn_reduce)
         completed_process = subprocess.run(cmd, cwd=svn_reduce, capture_output=True)
         if completed_process.returncode != 0:
             dump_and_exit('configure.log', completed_process)
         cmd = ['./configure', '--with-psl']
-        _log(' '.join(cmd), cwd=svn_reduce)
+        logger.info(' '.join(cmd) + ' in ' + svn_reduce)
         completed_process = subprocess.run(cmd, cwd=svn_reduce, capture_output=True)
         if completed_process.returncode != 0:
             dump_and_exit('configure.log', completed_process)
@@ -68,14 +80,14 @@ def _install_reduce(svn_reduce: str, revision: str, force: bool) -> str:
         host = completed_process.stdout.decode().rstrip()
         cslbuild = os.path.join(svn_reduce, 'cslbuild')
         cmd = ['ln', '-s', host + '-nogui', host]
-        _log(' '.join(cmd), cwd=cslbuild)
+        logger.info(' '.join(cmd) + ' in ' + cslbuild)
         completed_process = subprocess.run(cmd, cwd=cslbuild)
         if completed_process.returncode != 0:
             dump_and_exit('symlink.log', completed_process)
 
     def compile(svn_reduce: str):
         cmd = ['make']
-        _log(' '.join(cmd), cwd=svn_reduce)
+        logger.info(' '.join(cmd) + ' in ' + svn_reduce)
         completed_process = subprocess.run(cmd, cwd=svn_reduce, capture_output=True)
         if completed_process.returncode != 0:
             dump_and_exit('make.log', completed_process)
@@ -84,14 +96,16 @@ def _install_reduce(svn_reduce: str, revision: str, force: bool) -> str:
     configure(svn_reduce)
     compile(svn_reduce)
 
-def _init_result(source: str, result: str, force: bool, verbose: bool, include: str, exclude: str,
-        exclude_by_time: int, reduce: str) -> list:
-    _log('initializing RESULT directory ' + result)
+def _init_result(source: str, result: str, force: bool, include: str, exclude: str,
+                 exclude_by_time: int, reduce: str) -> list:
+    class Continue(Exception):
+        pass
+    logger.info('initializing RESULT directory ' + result)
     if os.path.exists(result):
         if force:
             shutil.rmtree(result)
         else:
-            sys.stderr.write('error: delete existing ' + result + ' or use -f, --force' + os.linesep)
+            logger.critical('found existing ' + result + ' - delete or use -f, --force')
             sys.exit(17)
     os.makedirs(os.path.join(result, 'GLOBAL'))
     with open(os.path.join(result, 'GLOBAL', 'revision.txt'), 'w') as file:
@@ -109,19 +123,16 @@ def _init_result(source: str, result: str, force: bool, verbose: bool, include: 
             if extension != "red":
                 continue
             source_red_file = os.path.join(path, file)
-            rel_red_file = os.path.join(relpath, file)
+            red_file = os.path.join(relpath, file)
             result_red_file = os.path.join(result, relpath, file)
             if basename != os.path.basename(relpath):
-                sys.stderr.write('warning: skipping ' + rel_red_file +
-                                 ' - basename does not match directory name' + os.linesep)
+                logger.warning('skipping ' + red_file + ' - basename does not match directory name')
                 continue
-            if include is not None and include not in rel_red_file:
-                if verbose:
-                    sys.stderr.write('-   ' + rel_red_file + os.linesep)
+            if include is not None and include not in red_file:
+                logger.debug('  -' + red_file)
                 continue
-            if exclude is not None and exclude in rel_red_file:
-                if verbose:
-                    sys.stderr.write('- x ' + rel_red_file + os.linesep)
+            if exclude is not None and exclude in red_file:
+                logger.debug('x -' + red_file)
                 continue
             if exclude_by_time:
                 try:
@@ -131,36 +142,34 @@ def _init_result(source: str, result: str, force: bool, verbose: bool, include: 
                         if os.path.exists(source_cpu_file):
                             with open(source_cpu_file, 'r') as file:
                                 if int(file.read().rstrip()) > 1000 * exclude_by_time:
-                                    if verbose:
-                                        sys.stderr.write('- t ' + rel_red_file + os.linesep)
+                                    logger.debug('t -' + red_file)
                                     raise Continue
                         else:
-                            sys.stderr.write('warning: ignoring exclude_by_time for ' + rel_red_file +
-                                             ' - ' + cpu_file + ' does not exist' + os.linesep)
+                            logger.warning('ignoring exclude_by_time for ' + red_file + ' - ' +
+                                           cpu_file + ' does not exist')
                             break
                 except Continue:
                     continue
-            if verbose:
-                if include:
-                    sys.stderr.write('+ i ' + rel_red_file + os.linesep)
-                else: 
-                    sys.stderr.write('+   ' + rel_red_file + os.linesep)
+            if include:
+                logger.debug('i +' + red_file)
+            else:
+                logger.debug('  +' + red_file)
             os.makedirs(os.path.join(result, relpath), exist_ok=True)
             shutil.copy(source_red_file, result_red_file)
             source_pslheap_file = os.path.join(path, basename + '.pslheap')
             result_pslheap_file = os.path.join(result, relpath, basename + '.pslheap')
             if os.path.exists(source_pslheap_file):
                 shutil.copy(source_pslheap_file, result_pslheap_file)
-            red_files.append(rel_red_file)
+            red_files.append(red_file)
     if not red_files:
-        sys.stderr.write('warning: no benchmarks found, exiting' + os.linesep)
+        logger.warning('no benchmarks found, exiting')
         sys.exit(0)
     return red_files
 
-def _run_using_gnu_parallel(dry_run: bool, bar: bool, verbose: bool, jobs: int, reduce: str,
-        psl_heapsize: int, source: str, result: str, red_files: list) -> str:
+def _run_using_gnu_parallel(dry_run: bool, bar: bool, jobs: int, reduce: str, psl_heapsize: int,
+                            source: str, result: str, red_files: list) -> str:
     def _parallel_command() -> str:
-        _log('building GNU parallel command')
+        logger.info('building GNU parallel command')
         parallel_args = ''
         if dry_run:
             parallel_args += ' --dry-run'
@@ -169,30 +178,67 @@ def _run_using_gnu_parallel(dry_run: bool, bar: bool, verbose: bool, jobs: int, 
             parallel_args += ' --bar'
         parallel_cmd = ' ' + os.path.join(os.path.dirname(__file__), 'bash_scripts', 'job.sh')
         parallel_cmd_args  = ' '
-        if bar or not verbose:
+        if bar or logger.getEffectiveLevel() > logging.DEBUG:
             parallel_cmd_args += ' -q'
         one = 'csl psl'
         two = str(psl_heapsize)
         three = ' '.join(red_files)
-        parallel_cmd_args += ' ' + os.path.join(reduce, 'bin', 'red{1}') + ' {2} ' + result + ' {3} ' + source
+        parallel_cmd_args += ' ' + os.path.join(reduce, 'bin', 'red{1}') \
+                             + ' {2} ' + result + ' {3} ' + source
         parallel_cmd_args += ' ::: ' + one + ' ::: ' + two + ' ::: ' + three
         cmd = 'parallel' + parallel_args + parallel_cmd + parallel_cmd_args
         return cmd
 
     cmd = _parallel_command()
-    if verbose:
-        sys.stderr.write(cmd)
-    _log('starting GNU parallel computation')
+    logger.debug(cmd)
+    logger.info('starting GNU parallel computation')
     subprocess.run(cmd, shell=True)
-    _log('computation finished')
+    logger.info('computation finished')
 
-def run(source: str, result: str, force: bool = False, jobs: int = 1 , dry_run: bool = False,
-        psl_heapsize: int = 4000, verbose: bool = False, bar: bool = False, exclude: str = None,
+def cron(source: str, result: str, force: bool = False, jobs: int = 1, psl_heapsize: int = 4000,
+         log: str = 'info', exclude: str = None, include: str = None, exclude_by_time: int = None,
+         reduce: str = None, svn_reduce: str = None, revision: str = None):
+    stderr_log = io.StringIO()
+    handler = logging.StreamHandler(stream=stderr_log)
+    handler.setLevel(0)
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.removeHandler(stderr_handler)
+    run(source=source,
+        result=result,
+        force=force,
+        jobs=jobs,
+        dry_run=False,
+        psl_heapsize=psl_heapsize,
+        log=log,
+        bar=False,
+        exclude=exclude,
+        include=include,
+        exclude_by_time=exclude_by_time,
+        reduce=reduce,
+        svn_reduce=svn_reduce,
+        revision=revision)
+    print(html.begin)
+    analytics.summary(ref=source,
+                      now=result,
+                      dump=True,
+                      full_html=False)
+    print(html.h3('Computation Log'))
+    level = logger.getEffectiveLevel()
+    level_name = logging.getLevelName(level)
+    print(html.p('Logging level was {} ({:d}).'.format(level_name, level)))
+    print(html.pre(stderr_log.getvalue().rstrip()))
+    print(html.end)
+    logger.addHandler(stderr_handler)
+
+def run(source: str, result: str, force: bool = False, jobs: int = 1, dry_run: bool = False,
+        psl_heapsize: int = 4000, log: str = 'warning', bar: bool = False, exclude: str = None,
         include: str = None, exclude_by_time: int = None, reduce: str = None,
         svn_reduce: str = None, revision: str = None):
     """
     Run a Reduce benchmark set.
     """
+    logger.setLevel(getattr(logging, log.upper()))
     if exclude is not None and include is not None:
         raise ValueError('exclude and include are mutally exclusive')
     if reduce is not None and svn_reduce is not None:
@@ -207,15 +253,15 @@ def run(source: str, result: str, force: bool = False, jobs: int = 1 , dry_run: 
         svn_reduce = os.path.abspath(svn_reduce)
         _install_reduce(svn_reduce, revision, force)
         reduce = svn_reduce
-    red_files = _init_result(source=source, result=result, force=force, verbose=verbose,
-        include=include, exclude=exclude, exclude_by_time=exclude_by_time, reduce=reduce)
+    red_files = _init_result(source=source, result=result, force=force, include=include,
+        exclude=exclude, exclude_by_time=exclude_by_time, reduce=reduce)
     with open(os.path.join(result, 'GLOBAL', 'call.txt'), 'w') as file:
         myframe = inspect.currentframe()
         funcname = myframe.f_code.co_name
         file.write(funcname + inspect.formatargvalues(*inspect.getargvalues(myframe)))
     with open(os.path.join(result, 'GLOBAL', 'start.txt'), 'w') as file:
         file.write(_now())
-    _run_using_gnu_parallel(dry_run=dry_run, bar=bar, verbose=verbose, jobs=jobs, reduce=reduce,
+    _run_using_gnu_parallel(dry_run=dry_run, bar=bar, jobs=jobs, reduce=reduce,
         psl_heapsize=psl_heapsize, source=source, result=result, red_files=red_files)
     with open(os.path.join(result, 'GLOBAL', 'end.txt'), 'w') as file:
         file.write(_now())

@@ -2,10 +2,11 @@
 Pandas-based data analytics for Reduce benchmarks
 """
 
-___author___   = 'Thomas Sturm, http://science.thomas-sturm.de/'
+___author___ = 'Thomas Sturm'
+___contact___ = 'https://science.thomas-sturm.de/'
 ___copyright__ = 'Copyright 2021, Thomas Sturm, Germany'
-___license__   = 'CC BY-NC-ND'
-___version___  = '$Rev$'
+___license__ = 'CC BY-NC-ND'
+___version___ = '$Rev$'
 
 import os
 import sys
@@ -18,7 +19,8 @@ import html
 class Benchmark(pd.DataFrame):
     def __getitem__(self, *arguments, **keywords):
         """
-        Overload in order to cast to Benchmark in case a new DataFrame is created.
+        Overload in order to cast to Benchmark in case a new DataFrame
+        is created.
         """
         item = super().__getitem__(*arguments, **keywords)
         if type(item) == pd.DataFrame:
@@ -57,8 +59,8 @@ class Benchmark(pd.DataFrame):
 
     def fast(self, seconds: float = 0.5):
         """
-        Select rows where all CPU mean times are <= seconds. Note that fast() and slow() complement
-        each other.
+        Select rows where all CPU mean times are <= seconds. Note that
+        fast() and slow() complement each other.
         """
         level0 = list(self.columns.levels[0])
         if len(level0) == 1:
@@ -71,8 +73,8 @@ class Benchmark(pd.DataFrame):
 
     def slow(self, seconds: float = 0.5):
         """
-        Select rows where at least one CPU mean time is greater than seconds. Note that fast()
-        and slow() complement each other.
+        Select rows where at least one CPU mean time is greater than
+        seconds. Note that fast() and slow() complement each other.
         """
         level0 = list(self.columns.levels[0])
         if len(level0) == 1:

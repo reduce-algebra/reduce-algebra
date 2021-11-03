@@ -33,7 +33,7 @@ dir=$(dirname "$now/$rel_benchmark")
 cd $dir
 
 if [ ! $? ]; then
-    echo "$0: cd $dir failed, exiting"
+    echo "$0: cd $dir failed, exiting" > /dev/stderr
     exit 1
 fi
 
@@ -107,7 +107,7 @@ else
 fi
 
 if [ ! $quiet ]; then
-    printf "%3s %-11s %s\n" $lisp valid=$valid $dir
+    printf "%3s %-11s %s\n" $lisp valid=$valid $dir > /dev/stderr
 fi
 
 echo $valid > valid_$lisp.txt

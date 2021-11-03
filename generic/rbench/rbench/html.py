@@ -2,10 +2,11 @@
 Pandas-based data analytics for Reduce benchmarks
 """
 
-___author___   = 'Thomas Sturm, http://science.thomas-sturm.de/'
+___author___ = 'Thomas Sturm'
+___contact___ = 'https://science.thomas-sturm.de/'
 ___copyright__ = 'Copyright 2021, Thomas Sturm, Germany'
-___license__   = 'CC BY-NC-ND'
-___version___  = '$Rev$'
+___license__ = 'CC BY-NC-ND'
+___version___ = '$Rev$'
 
 import base64
 import io
@@ -31,18 +32,13 @@ begin = """<!DOCTYPE html>
     h5:first-child {margin-top: 1em;}
     h6:first-child {margin-top: 1em;}
     pre {
-        padding: 5px;
-        background-color: #eeffcc;
-        color: #333333;
-        border: 1px solid #ac9;
-        border-left: none;
-        border-right: none;
-        border-radius: 3px;
-        border: 1px solid #ac9;
-    }
-    code {
+        font-family: monospace;
         font-size: 13px;
-        font-family: "Courier New";
+        line-height: 26px;
+        background-image: linear-gradient(180deg, #f5f5f5 50%, #fff 50%);
+        background-size: 100% 50.5px;
+        background-origin: content-box;
+        white-space: pre-wrap;
     }
     table {
         margin-left: auto;
@@ -112,6 +108,9 @@ def h3(html: str):
 
 def p(html: str):
     return '<p>' + html + '</p>'
+
+def pre(html: str):
+    return '<p><pre>' + html + '</pre></p>'
 
 def plot_scatter(df):
     fig, ax = plt.subplots()
