@@ -658,20 +658,20 @@ LispObject intern(size_t len, bool escaped)
             boffo_char(boffop) = 0;
             switch (fplength)
             {   case 0:
-                    return pack_short_float(std::atof(reinterpret_cast<char *>
-                                                      (&boffo_char(0))));
+                    return pack_short_float(
+                        std::atof(reinterpret_cast<char *>(&boffo_char(0))));
                 case 1:
-                    return pack_single_float(std::atof(reinterpret_cast<char *>
-                                                       (&boffo_char(0))));
+                    return pack_single_float(
+                        std::atof(reinterpret_cast<char *>(&boffo_char(0))));
                 default:
                 case 2:
-                    return make_boxfloat(std::atof(reinterpret_cast<char *>(&boffo_char(
-                                                       0))),
-                                         TYPE_DOUBLE_FLOAT);
+                    return make_boxfloat(
+                        std::atof(reinterpret_cast<char *>(&boffo_char(0))),
+                        TYPE_DOUBLE_FLOAT);
 #ifdef HAVE_SOFTFLOAT
                 case 3:
-                    return make_boxfloat128(atof128(reinterpret_cast<char *>(&boffo_char(
-                                                        0))));
+                    return make_boxfloat128(atof128(
+                        reinterpret_cast<char *>(&boffo_char(0))));
 #endif // HAVE_SOFTFLOAT
             }
         }
@@ -737,6 +737,17 @@ LispObject make_symbol(char const *s, int restartp,
 // that I am about to copy into it.  All is guaranteed well for
 // symbols predefined in Lisp in the normal way, but ones established
 // using command-line options like -Dname could cause trouble?
+#ifdef DEBUG
+    if (!valid_address((void *)s))
+    {   my_abort("s is not a valid address");
+    }
+    if (!valid_address((void *)&boffo_char(0)))
+    {   my_abort("boffo is not a valid address");
+    }
+    if (std::strlen(s) > 200)
+    {   my_abort("over-long string");
+    }
+#endif // DEBUG
 #ifdef COMMON
 // For COMMON Lisp I will make all the built-in symbols upper case, unless
 // the "2" bit of restartp is set...
