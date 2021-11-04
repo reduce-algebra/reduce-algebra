@@ -39,7 +39,7 @@ begin = """<!DOCTYPE html>
         background-size: 100% 50.5px;
         background-origin: content-box;
         white-space: pre-wrap;
-    }
+        }
     table {
         margin-left: auto;
         margin-right: auto;

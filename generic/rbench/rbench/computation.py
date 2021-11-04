@@ -204,23 +204,30 @@ def cron(source: str, result: str, force: bool = False, jobs: int = 1, psl_heaps
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     logger.removeHandler(stderr_handler)
-    run(source=source,
-        result=result,
-        force=force,
-        jobs=jobs,
-        dry_run=False,
-        psl_heapsize=psl_heapsize,
-        log=log,
-        bar=False,
-        exclude=exclude,
-        include=include,
-        exclude_by_time=exclude_by_time,
-        reduce=reduce,
-        svn_reduce=svn_reduce,
-        revision=revision)
+    try:
+        run(source=source,
+            result=result,
+            force=force,
+            jobs=jobs,
+            dry_run=False,
+            psl_heapsize=psl_heapsize,
+            log=log,
+            bar=False,
+            exclude=exclude,
+            include=include,
+            exclude_by_time=exclude_by_time,
+            reduce=reduce,
+            svn_reduce=svn_reduce,
+            revision=revision)
+    except:
+        logger.addHandler(stderr_handler)
+        logger.removeHandler(handler)
+        raise
+    else:
+        logger.addHandler(stderr_handler)
+        logger.removeHandler(handler)
     print(html.begin)
-    analytics.summary(ref=source,
-                      now=result,
+    analytics.summary(now=result,
                       dump=True,
                       full_html=False)
     print(html.h3('Computation Log'))
@@ -229,7 +236,7 @@ def cron(source: str, result: str, force: bool = False, jobs: int = 1, psl_heaps
     print(html.p('Logging level was {} ({:d}).'.format(level_name, level)))
     print(html.pre(stderr_log.getvalue().rstrip()))
     print(html.end)
-    logger.addHandler(stderr_handler)
+
 
 def run(source: str, result: str, force: bool = False, jobs: int = 1, dry_run: bool = False,
         psl_heapsize: int = 4000, log: str = 'warning', bar: bool = False, exclude: str = None,
@@ -259,6 +266,8 @@ def run(source: str, result: str, force: bool = False, jobs: int = 1, dry_run: b
         myframe = inspect.currentframe()
         funcname = myframe.f_code.co_name
         file.write(funcname + inspect.formatargvalues(*inspect.getargvalues(myframe)))
+    with open(os.path.join(result,'GLOBAL', 'source.txt'), 'w') as file:
+        file.write(source)
     with open(os.path.join(result, 'GLOBAL', 'start.txt'), 'w') as file:
         file.write(_now())
     _run_using_gnu_parallel(dry_run=dry_run, bar=bar, jobs=jobs, reduce=reduce,

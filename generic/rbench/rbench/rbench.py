@@ -35,8 +35,9 @@ def setup_parser(parser):
     setup_parser_run(parser_run)
     parser_summary = subparsers.add_parser(
         'summary',
-        help='Dump HTML summary to stdout',
-        description='Dump HTML summary to stdout')
+        help='Create an HTML summary comapring two benchmark runs.',
+        description='Create an HTML summary comapring two benchmark runs. The summary is written '
+                    'to NOW/summary.html')
     setup_parser_summary(parser_summary)
 
 def setup_parser_cron(parser):
@@ -75,9 +76,10 @@ def setup_parser_summary(parser):
     """
     Subparser for bench.py summary ...
     """
-    _add_ref(parser)
     _add_now(parser)
     _add_dump(parser)
+    _add_display(parser)
+    _add_ref(parser)
 
 def _add_source(parser):
     parser.add_argument(
@@ -182,19 +184,27 @@ def _add_revision(parser):
 
 def _add_ref(parser):
     parser.add_argument(
-        'ref', metavar='REF',
-        help="Reference directory, typically used as SOURCE with 'benchmark run'")
+        '-r', '--ref', metavar='REF',
+        help="Reference directory for comparison. If REF is not specified and "
+             "NOW is the RESULT of some 'rbench.py run SOURCE RESULT' and the "
+             "corresponding SOURCE still exsists, then RED defaults to that SOURCE.")
 
 def _add_now(parser):
     parser.add_argument(
         'now', metavar='NOW',
-        help="Directory with current data, typically obtained as RESULT with 'benchmark run'")
+        help="Directory with benchmark results, typically obtained as RESULT from 'rbench.py run'")
 
 def _add_dump(parser):
     parser.add_argument(
-        '--dump',
+        '-d', '--dump',
         action='store_true',
-        help="dump HTML output to stdout")
+        help='Dump the generated NOW/summary.html to stdout')
+
+def _add_display(parser):
+    parser.add_argument(
+        '-y', '--display',
+        action='store_true',
+        help='Open the generated NOW/summary.html in the default web browser')
 
 def cron(args):
     computation.cron(source=args.source,
@@ -229,6 +239,7 @@ def run(args):
 def summary(args):
     analytics.summary(ref=args.ref,
                       now=args.now,
+                      display=args.display,
                       dump=args.dump,
                       full_html=True)
 
