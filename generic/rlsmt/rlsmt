@@ -1,6 +1,15 @@
-#!/bin/bash
-ARCH="$($trunk/scripts/findhost.sh $($trunk/config.guess))"
-RLSMT="$trunk/pslbuild/$ARCH/psl/bpsl -td 4000 -f $trunk/generic/rlsmt/rlsmt.img"
-if [ "$1" != "" ]; then
-    $RLSMT < $1 | 
+#/usr/bin/env bash
+
+# (c) 2021 Thomas Sturm, https://science.thomas-sturm.de/
+# CC BY
+
+if [ $# -ne 1 ]; then
+    echo "usage: rlsmt file"
+    exit -1
 fi
+
+redcsl -w -b <<EOF \
+    | grep -v -e "^Loading" -e "^Reduce" -e "\*\*\* End-of-file" -e "^Quitting" \
+    | sed -e "s/[0-9]*: *//g"  -e "/^ *$/d"
+   smt("$1");
+EOF
