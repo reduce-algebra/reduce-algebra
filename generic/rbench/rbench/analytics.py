@@ -57,33 +57,36 @@ class Benchmark(pd.DataFrame):
                     break
         return self[selection]
 
+    def speed(self, *, min: float = None, max: float = None):
+        """
+        Select rows where for all CPU mean times t: min <= t < max.
+        """
+        if min is None and max is None:
+            return self
+        level0 = self.columns.levels[0]
+        query = True
+        for index0 in level0:
+            t = self[(index0, 'cpu_mean')]
+            if min is not None:
+                query = query & (min <= t)
+            if max is not None:
+                query = query & (t < max)
+        return self[query]
+
     def fast(self, seconds: float = 0.5):
         """
-        Select rows where all CPU mean times are <= seconds. Note that
-        fast() and slow() complement each other.
+        Select rows where all CPU mean times are less than seconds. Note
+        that fast() and slow() complement each other.
         """
-        level0 = list(self.columns.levels[0])
-        if len(level0) == 1:
-            return self[(self[(level0[0], 'cpu_mean')] <= seconds)]
-        elif len(level0) == 2:
-            return self[(self[(level0[0], 'cpu_mean')] <= seconds) &
-                        (self[(level0[1], 'cpu_mean')] <= seconds)]
-        else:
-            return self
+        return self.speed(max=seconds)
 
     def slow(self, seconds: float = 0.5):
         """
-        Select rows where at least one CPU mean time is greater than
-        seconds. Note that fast() and slow() complement each other.
+        Select rows where at least one CPU mean time is greater than or
+        equal to seconds. Note that fast() and slow() complement each
+        other.
         """
-        level0 = list(self.columns.levels[0])
-        if len(level0) == 1:
-            return self[(self[(level0[0], 'cpu_mean')] > seconds)]
-        elif len(level0) == 2:
-            return self[(self[(level0[0], 'cpu_mean')] > seconds) |
-                        (self[(level0[1], 'cpu_mean')] > seconds)]
-        else:
-            return self
+        return self.speed(min=seconds)
 
     def plot_scatter(self, *arguments, **keywords):
         if 'alpha' not in keywords:
@@ -107,7 +110,10 @@ class Benchmark(pd.DataFrame):
         psl_rows = self.xs('cpu_psl', level=1, axis=1)
         psl_rows = psl_rows.assign(csl=False)
         all_rows = pd.concat([csl_rows, psl_rows], ignore_index=True)
-        p = Benchmark(all_rows).plot_scatter(c='csl', colormap='bwr', sharex=False, include_bool=True, **keywords)
+        b = Benchmark(all_rows)
+        if 'colorbar' not in keywords:
+            keywords['colorbar'] = False
+        p = b.plot_scatter(c='csl', colormap='bwr', sharex=False, include_bool=True, **keywords)
         return p
 
 def read_filetree(root: str, key0: str = None):
@@ -192,6 +198,9 @@ def summary(now: str, ref: str = None, display: bool = False, dump: bool = False
         combo = combine2(ref, now).select(['cpu', 'valid_mean'])
         combo_attrs = combine2(ref_attrs, now_attrs).reindex(global_attributes)
         combo_bad = combo[(combo[('now', 'valid_mean')] == False)]
+        combo0 = combo.speed(max=1)
+        combo1 = combo.speed(min=1, max=60)
+        combo60 = combo.speed(min=60)
         summary.write(html.h3('Global Information'))
         summary.write(html.p(combo_attrs.to_html()))
         if not combo_bad.empty:
@@ -200,22 +209,37 @@ def summary(now: str, ref: str = None, display: bool = False, dump: bool = False
                                   'different from existing "ref" logs:'))
             summary.write(html.p(combo_bad.to_html(show_dimensions=True)))
         summary.write(html.h3('Scatter Plots'))
-        summary.write(html.p('Plots are split into "fast" (average of the CSL and PSL CPU times &le; 0.5 s) '
-                     'and "slow". Red and blue dots correspond to CSL and PSL, respectively. '
-                     'The scales are logarithmic. All times are in seconds.'))
+        summary.write(html.p('"Average CPU time" refers to the arithmetic mean between the CSL '
+                             'and PSL CPU time of a single benchmark problem. Red and blue dots '
+                             'correspond to CSL and PSL, respectively. The scales are '
+                             'logarithmic. All times are in seconds.'))
         summary.write('<div style="text-align:center">')
-        summary.write(html.plot_scatter(combo.fast()))
-        summary.write(html.plot_scatter(combo.slow()))
+        summary.write(html.plot_scatter(combo, title='All benchmark problems'))
+        if not combo0.empty:
+            summary.write(html.plot_scatter(combo0, xlim=(0.01, 1), ylim=(0.01, 1),
+                title='Average CPU times between 0.01 s and 1 s'))
+        if not combo1.empty:
+            summary.write(html.plot_scatter(combo1, xlim=(1, 60), ylim=(1, 60),
+                                            title='Average CPU time between 1 s and 1 min'))
+        if not combo60.empty:
+            summary.write(html.plot_scatter(combo60, title='Average CPU times more than 1 min'))
         summary.write('</div>')
         summary.write(html.h3('Detailed CPU Times'))
-        summary.write(html.h3('Fast'))
-        summary.write(html.p('Benchmark problems with an average of CSL and PSL CPU times &le; 0.5 s. '
-                     'All times are in seconds.'))
-        summary.write(html.p(combo.fast().to_html(show_dimensions=True)))
-        summary.write(html.h3('Slow'))
-        summary.write(html.p('Benchmark problems with an average of CSL and PSL CPU times &gt; 0.5 s. '
-                     'All times are in seconds.'))
-        summary.write(html.p(combo.slow().to_html(show_dimensions=True)))
+        if not combo0.empty:
+            summary.write(html.h4('Less than one second'))
+            summary.write(html.p('Benchmark problems with an average of CSL and PSL CPU times between '
+                                 '10 milliseconds and 1 second. All times are in seconds.'))
+            summary.write(html.p(combo0.to_html(show_dimensions=True)))
+        if not combo1.empty:
+            summary.write(html.h4('One second to one minute'))
+            summary.write(html.p('Benchmark problems with an average of CSL and PSL CPU time between '
+                                 '1 second and 1 minute. All times are in seconds.'))
+            summary.write(html.p(combo1.to_html(show_dimensions=True)))
+        if not combo60.empty:
+            summary.write(html.h3('More than one minute'))
+            summary.write(html.p('Benchmark problems with an average of CSL and PSL CPU time of more '
+                                 'than 1 minute. All times are in seconds.'))
+            summary.write(html.p(combo60.to_html(show_dimensions=True)))
         if full_html:
             summary.write(html.end)
     if dump:
