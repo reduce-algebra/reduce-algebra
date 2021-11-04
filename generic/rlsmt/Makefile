@@ -1,7 +1,7 @@
 all: rlsmt.img
 
-rlsmt.img: mkrlsmt2.red
-	redpsl < mkrlsmt2.red
+rlsmt.img: mkrlsmt.red
+	redpsl < mkrlsmt.red
 
 clean:
 	rm rlsmt.img
