@@ -1440,7 +1440,7 @@ inline void grabNewCurrentPage(bool preferMostlyFree)
         std::cout << "new current from mostlyFree " << currentPage << "\n";
         my_assert(currentPage != nullptr,
             [&]{ cout << "Utterly out of memory" << endl;
-                 std::exit(99); });
+                 std::quick_exit(99); });
         mostlyFreePages = mostlyFreePages->chain;
         mostlyFreePagesCount--;
     }

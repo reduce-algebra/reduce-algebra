@@ -39,7 +39,7 @@
 // (scripts/commit.sh) that is used to update the subversion repository to
 // update the revision number here.
 
-#define REVISION 6141
+#define REVISION 6145
 
 #endif // header_version_h
 

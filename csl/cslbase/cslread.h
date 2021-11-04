@@ -63,24 +63,55 @@ typedef struct Package
 #endif
 } Package;
 
-//
-// The following macros are coded the way they are so as to encourage the
-// C compiler into using the address modes I want...
-// Rationalize at your peril!
-//
-#define packhdr_(p)   (*(Header *)    ((char *)(p) + (0 - TAG_VECTOR)))
-#define packid_(p)    (*(LispObject *)((char *)(p) + (CELL - TAG_VECTOR)))
-#define packint_(p)   (*(LispObject *)((char *)(p) + (2*CELL - TAG_VECTOR)))
-#define packnint_(p)  (*(LispObject *)((char *)(p) + (3*CELL - TAG_VECTOR)))
-#define packflags_(p) (*(LispObject *)((char *)(p) + (4*CELL - TAG_VECTOR)))
+inline Header& packhdr_(LispObject p)
+{    return     *reinterpret_cast<Header *>(p + (0*CELL - TAG_VECTOR));
+}
+
+inline LispObject& packid_(LispObject p)
+{    return *reinterpret_cast<LispObject *>(p + (1*CELL - TAG_VECTOR));
+}
+
+inline LispObject& packint_(LispObject p)
+{    return *reinterpret_cast<LispObject *>(p + (2*CELL - TAG_VECTOR));
+}
+
+inline LispObject& packnint_(LispObject p)
+{    return *reinterpret_cast<LispObject *>(p + (3*CELL - TAG_VECTOR));
+}
+
+inline LispObject& packflags_(LispObject p)
+{    return *reinterpret_cast<LispObject *>(p + (4*CELL - TAG_VECTOR));
+}
+
 #ifdef COMMON
-#define packext_(p)   (*(LispObject *)((char *)(p) + (5*CELL - TAG_VECTOR)))
-#define packnext_(p)  (*(LispObject *)((char *)(p) + (6*CELL - TAG_VECTOR)))
-#define packname_(p)  (*(LispObject *)((char *)(p) + (7*CELL - TAG_VECTOR)))
-#define packnick_(p)  (*(LispObject *)((char *)(p) + (8*CELL - TAG_VECTOR)))
-#define packuses_(p)  (*(LispObject *)((char *)(p) + (9*CELL - TAG_VECTOR)))
-#define packused_(p)  (*(LispObject *)((char *)(p) + (10*CELL - TAG_VECTOR)))
-#define packshade_(p) (*(LispObject *)((char *)(p) + (11*CELL - TAG_VECTOR)))
+inline LispObject& packext_(LispObject p)
+{    return *reinterpret_cast<LispObject *>(p + (5*CELL - TAG_VECTOR));
+}
+
+inline LispObject& packnext_(LispObject p)
+{    return *reinterpret_cast<LispObject *>(p + (6*CELL - TAG_VECTOR));
+}
+
+inline LispObject& packname_(LispObject p)
+{    return *reinterpret_cast<LispObject *>(p + (7*CELL - TAG_VECTOR));
+}
+
+inline LispObject& packnick_(LispObject p)
+{    return *reinterpret_cast<LispObject *>(p + (8*CELL - TAG_VECTOR));
+}
+
+inline LispObject& packuses_(LispObject p)
+{    return *reinterpret_cast<LispObject *>(p + (9*CELL - TAG_VECTOR));
+}
+
+inline LispObject& packused_(LispObject p)
+{    return *reinterpret_cast<LispObject *>(p + (10*CELL - TAG_VECTOR));
+}
+
+inline LispObject& packshade_(LispObject p)
+{    return *reinterpret_cast<LispObject *>(p + (11*CELL - TAG_VECTOR));
+}
+
 #endif
 
 #define CP  qvalue(current_package)

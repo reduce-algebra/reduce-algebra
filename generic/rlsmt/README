@@ -1,0 +1,18 @@
+rlsmt is a simple shell script for applying Redlog-based SMT solving to SMT-LIB 2 input files:
+
+> rlsmt example1.smt2
+sat
+(
+  (define-fun v5 () Real
+    (@approximately 1.55685264521))
+  (define-fun v26 () Real
+    0)
+  (define-fun v137 () Real
+    (/ 1054143577565779 335544320000000))
+)
+
+> rlsmt example2.smt2
+unsat
+(0 1 10 8 3)
+
+T. Sturm, November 2021

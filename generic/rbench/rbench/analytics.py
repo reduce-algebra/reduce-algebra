@@ -2,10 +2,11 @@
 Pandas-based data analytics for Reduce benchmarks
 """
 
-___author___   = 'Thomas Sturm, http://science.thomas-sturm.de/'
+___author___ = 'Thomas Sturm'
+___contact___ = 'https://science.thomas-sturm.de/'
 ___copyright__ = 'Copyright 2021, Thomas Sturm, Germany'
-___license__   = 'CC BY-NC-ND'
-___version___  = '$Rev$'
+___license__ = 'CC BY-NC-ND'
+___version___ = '$Rev$'
 
 import os
 import sys
@@ -18,7 +19,8 @@ import html
 class Benchmark(pd.DataFrame):
     def __getitem__(self, *arguments, **keywords):
         """
-        Overload in order to cast to Benchmark in case a new DataFrame is created.
+        Overload in order to cast to Benchmark in case a new DataFrame
+        is created.
         """
         item = super().__getitem__(*arguments, **keywords)
         if type(item) == pd.DataFrame:
@@ -57,8 +59,8 @@ class Benchmark(pd.DataFrame):
 
     def fast(self, seconds: float = 0.5):
         """
-        Select rows where all CPU mean times are <= seconds. Note that fast() and slow() complement
-        each other.
+        Select rows where all CPU mean times are <= seconds. Note that
+        fast() and slow() complement each other.
         """
         level0 = list(self.columns.levels[0])
         if len(level0) == 1:
@@ -71,8 +73,8 @@ class Benchmark(pd.DataFrame):
 
     def slow(self, seconds: float = 0.5):
         """
-        Select rows where at least one CPU mean time is greater than seconds. Note that fast()
-        and slow() complement each other.
+        Select rows where at least one CPU mean time is greater than
+        seconds. Note that fast() and slow() complement each other.
         """
         level0 = list(self.columns.levels[0])
         if len(level0) == 1:
@@ -173,46 +175,51 @@ def read_filetree(root: str, key0: str = None):
 def combine2(a: Benchmark, b: Benchmark, *, keys: list = None):
     return Benchmark(pd.concat([a, b], axis=1))
 
-def summary(ref: Benchmark, now: Benchmark, dump: bool, full_html: bool = False):
-    if not dump:
-        summary_html = os.path.join(now, 'summary.html')
-        sys.stdout = open(summary_html, mode='w')
-    if full_html:
-        print(html.begin)
-    global_attributes = ['uname', 'revision', 'start', 'end']
-    ref = read_filetree(ref, 'ref').add_means()
-    ref_attrs = pd.DataFrame(ref.attrs.values(), index=ref.attrs.keys(), columns=['ref'])
-    now = read_filetree(now, 'now').add_means()
-    now_attrs = pd.DataFrame(now.attrs.values(), index=now.attrs.keys(), columns=['now'])
-    combo = combine2(ref, now).select(['cpu', 'valid_mean'])
-    combo_attrs = combine2(ref_attrs, now_attrs).reindex(global_attributes)
-    combo_bad = combo[(combo[('now', 'valid_mean')] == False)]
-    print(html.h3('Global Information'))
-    print(html.p(combo_attrs.to_html()))
-    if not combo_bad.empty:
-        print(html.h3('Possible Problems'))
-        print(html.p('Benchmark problems with existing "now" logs that were tested different from '
-                     'existing "ref" logs:'))
-        print(html.p(combo_bad.to_html(show_dimensions=True)))
-    print(html.h3('Scatter Plots'))
-    print(html.p('Plots are split into "fast" (average of the CSL and PSL CPU times &le; 0.5 s) '
-                 'and "slow". Red and blue dots correspond to CSL and PSL, respectively. '
-                 'The scales are logarithmic. All times are in seconds.'))
-    print('<div style="text-align:center">')
-    print(html.plot_scatter(combo.fast()))
-    print(html.plot_scatter(combo.slow()))
-    print('</div>')
-    print(html.h3('Detailed CPU Times'))
-    print(html.h3('Fast'))
-    print(html.p('Benchmark problems with an average of CSL and PSL CPU times &le; 0.5 s. '
-                 'All times are in seconds.'))
-    print(html.p(combo.fast().to_html(show_dimensions=True)))
-    print(html.h3('Slow'))
-    print(html.p('Benchmark problems with an average of CSL and PSL CPU times &gt; 0.5 s. '
-                 'All times are in seconds.'))
-    print(html.p(combo.slow().to_html(show_dimensions=True)))
-    if full_html:
-        print(html.end)
-    if not dump:
-        webbrowser.open(pathlib.Path(os.path.abspath(summary_html)).as_uri(), new=1)
-        sys.stdout.close()
+def summary(now: str, ref: str = None, display: bool = False, dump: bool = False,
+            full_html: bool = False):
+    if ref is None:
+        with open(os.path.join(now, 'GLOBAL', 'source.txt')) as file:
+            ref = file.read()
+    summary_html = os.path.abspath(os.path.join(now, 'summary.html'))
+    with open(summary_html, mode='w') as summary:
+        if full_html:
+            summary.write(html.begin)
+        global_attributes = ['uname', 'revision', 'start', 'end']
+        ref = read_filetree(ref, 'ref').add_means()
+        ref_attrs = pd.DataFrame(ref.attrs.values(), index=ref.attrs.keys(), columns=['ref'])
+        now = read_filetree(now, 'now').add_means()
+        now_attrs = pd.DataFrame(now.attrs.values(), index=now.attrs.keys(), columns=['now'])
+        combo = combine2(ref, now).select(['cpu', 'valid_mean'])
+        combo_attrs = combine2(ref_attrs, now_attrs).reindex(global_attributes)
+        combo_bad = combo[(combo[('now', 'valid_mean')] == False)]
+        summary.write(html.h3('Global Information'))
+        summary.write(html.p(combo_attrs.to_html()))
+        if not combo_bad.empty:
+            summary.write(html.h3('Possible Problems'))
+            summary.write(html.p('Benchmark problems with existing "now" logs that were tested '
+                                  'different from existing "ref" logs:'))
+            summary.write(html.p(combo_bad.to_html(show_dimensions=True)))
+        summary.write(html.h3('Scatter Plots'))
+        summary.write(html.p('Plots are split into "fast" (average of the CSL and PSL CPU times &le; 0.5 s) '
+                     'and "slow". Red and blue dots correspond to CSL and PSL, respectively. '
+                     'The scales are logarithmic. All times are in seconds.'))
+        summary.write('<div style="text-align:center">')
+        summary.write(html.plot_scatter(combo.fast()))
+        summary.write(html.plot_scatter(combo.slow()))
+        summary.write('</div>')
+        summary.write(html.h3('Detailed CPU Times'))
+        summary.write(html.h3('Fast'))
+        summary.write(html.p('Benchmark problems with an average of CSL and PSL CPU times &le; 0.5 s. '
+                     'All times are in seconds.'))
+        summary.write(html.p(combo.fast().to_html(show_dimensions=True)))
+        summary.write(html.h3('Slow'))
+        summary.write(html.p('Benchmark problems with an average of CSL and PSL CPU times &gt; 0.5 s. '
+                     'All times are in seconds.'))
+        summary.write(html.p(combo.slow().to_html(show_dimensions=True)))
+        if full_html:
+            summary.write(html.end)
+    if dump:
+        with open(summary_html, mode = 'r') as summary:
+            print(summary.read())
+    if display:
+        webbrowser.open(pathlib.Path(summary_html).as_uri(), new=1)

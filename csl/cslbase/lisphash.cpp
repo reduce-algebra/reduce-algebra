@@ -1405,13 +1405,18 @@ void simple_prin1(LispObject x)
         return;
     }
     if (is_cons(x))
-    {   const char *sep = "(";
+    {   int len = 0;
+        const char *sep = "(";
         while (consp(x))
         {   simple_lineend(1);
             std::printf("%s", sep);
             sep = " ";
             simple_prin1(car(x));
             x = cdr(x);
+            if (len++ > 20)
+            {   std::printf(" ...!...");
+                x = nil;
+            }
         }
         if (x != nil)
         {   simple_lineend(3);
@@ -1433,6 +1438,7 @@ void simple_prin1(LispObject x)
     {   size_t len;
         x = qpname(x);
         len = length_of_byteheader(vechdr(x)) - CELL;
+        if (len > 80) len = 80;
         simple_lineend(len);
         std::printf("%.*s", static_cast<int>(len),
                      reinterpret_cast<const char *>(&celt(x, 0)));
@@ -1441,6 +1447,7 @@ void simple_prin1(LispObject x)
     {   size_t i, len;
         if (is_string(x))
         {   len = length_of_byteheader(vechdr(x)) - CELL;
+            if (len > 80) len = 80;
             simple_lineend(len+2);
             std::printf("\"%.*s\"", static_cast<int>(len),
                          reinterpret_cast<const char *>(&celt(x, 0)));
@@ -1451,6 +1458,7 @@ void simple_prin1(LispObject x)
         {   len = length_of_byteheader(vechdr(x)) - CELL;
             std::printf("<Header is %" PRIx64 ">",
                          static_cast<uint64_t>(vechdr(x)));
+            if (len > 80) len = 80;
             simple_lineend(2*len+3);
             std::printf("#8[");
             for (size_t i=0; i<len; i++)
@@ -1462,6 +1470,7 @@ void simple_prin1(LispObject x)
         }
         len = (int64_t)(length_of_header(vechdr(x))/CELL - 1);
         int nn = std::sprintf(buffer, "[%" PRId64 ":", (int64_t)len);
+        if (len > 20) len = 20;
         simple_lineend(nn);
         std::printf("%s", buffer);
         for (i=0; i<len; i++)

@@ -681,6 +681,7 @@ extern void testLayout();
 LispObject gc_n_bytes1(size_t n, THREADFORMAL uintptr_t r)
 {   Chunk *newChunk;
     size_t nSize;
+    my_assert(n < pageSize/2, "ridiculous size in gc_n_bytes");
     if (n <= (2*targetChunkSize)/3) LIKELY
     {   newChunk = gcDequeue();
         nSize = targetChunkSize;   // All Chunks on queue are standard size.
@@ -849,7 +850,6 @@ void evacuate(atomic<LispObject> &a)
     else if (is_symbol(a)) len = symhdr_length;
     else len = doubleword_align_up(length_of_header(aa));
 #ifdef DEBUG
-    if (gcTrace && a == compiler_symbol) cout << "evacuate COMPILE\n";
     if (gcTrace) cout << "about to allocate " << len << " bytes\n";
 #endif // DEBUG
     aa = gc_n_bytes(len);
@@ -858,10 +858,6 @@ void evacuate(atomic<LispObject> &a)
 #endif // DEBUG
     std::memcpy(reinterpret_cast<void *>(aa), ap, len);
     *ap = TAG_FORWARD + aa;
-    if (a == compiler_symbol)
-    {   cout << "compiler_symbol was " << std::hex << a
-             << " becomes " << (aa + (a & TAG_BITS)) << "\n";
-    }
     a = aa + (a & TAG_BITS);
 }
 
@@ -1992,8 +1988,7 @@ void validateUnambiguousBases(bool major)
     validateForGC(qpackage(nil));
     if (gcTrace) cout << "validate regular list bases\n";
     for (auto p = list_bases; *p!=nullptr; p++)
-    {   cout << (p - list_bases) << " ";
-        if (**p == compiler_symbol) cout << "\nBing\n";
+    {   cout << (p - list_bases) << "\n";
         validateForGC(**p);
     }
     cout << "\n";

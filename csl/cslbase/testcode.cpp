@@ -35,6 +35,13 @@
 
 #include "headers.h"
 
+LispObject runtest(int n)
+{   if (n == 0)
+    {   Lgc(nil, lisp_true);
+        return fixnum_of_int(9999);
+    }
+    return cons(ncons(fixnum_of_int(n)), runtest(n-1));
+}
 
 void gcTestCode()
 {   std::printf("\n: Conservative code - run a simple test of the GC\n\n");
@@ -122,12 +129,10 @@ void gcTestCode()
     set_up_variables(0);
 
 
-    Lgc(nil);
-    cout << "\nFirst GC over\n";
-    Lgc(nil);
-    cout << "\nSecond GC over\n";
-    Lgc(nil);
-    cout << "\nThird GC over\n";
+    simple_print(runtest(5));
+    cout << "\nFirst GC test over\n";
+    simple_print(runtest(6));
+    cout << "\nSecond GC test over\n";
 // Probably broken now!
 }
 

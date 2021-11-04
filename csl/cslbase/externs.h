@@ -296,14 +296,12 @@ extern char debug_trail[32][32];
 extern char debug_trail_file[32][32];
 extern int debug_trail_line[32];
 extern int debug_trailp;
-extern void debug_record_raw(const char *data, const char *file,
-                             int line);
+extern void debug_record_raw(const char *data, const char *file, int line);
 extern void debug_record_int_raw(const char *s, int n,
                                  const char *file, int line);
-extern void debug_show_trail_raw(const char *msg, const char *file,
-                                 int line);
+extern void debug_show_trail_raw(const char *msg, const char *file, int line);
 
-#define debug_record(data) debug_record_raw(data, __FILE__, __LINE__)
+#define debug_record(data)     debug_record_raw(data, __FILE__, __LINE__)
 #define debug_record_int(s, n) debug_record_int_raw(s, n, __FILE__, __LINE__)
 #define debug_record_string(s) debug_record((const char *)&celt(s, 0))
 #define debug_record_symbol(x) debug_record_string(qpname(x))
@@ -343,10 +341,9 @@ extern void debug_show_trail_raw(const char *msg, const char *file,
 // where nil points. I also want this to be an even multiple of the
 // size of LispObject.
 //
-#define NIL_SEGMENT_SIZE    (((1 + last_nil_offset) & ~1) * \
-                             sizeof(LispObject) + 32)
+#define NIL_SEGMENT_SIZE \
+    (((1 + last_nil_offset) & ~1) * sizeof(LispObject) + 32)
 
-//
 // I give myself a margin of SPARE bytes at the end of a page so that I can
 // always CONS that amount (even without a garbage collection check) and not
 // corrupt anything.  The main use for this is that sometimes I need to
@@ -359,20 +356,15 @@ extern void debug_show_trail_raw(const char *msg, const char *file,
 // I should then call cons_gc_test() afterwards to regularise the situation.
 // 512 bytes here leaves room for 64 conses, and I support at most 50
 // (multiple-) values so I hope this is safe.
-//
 
 #define SPARE                   512
 
-//
 // I want my table of addresses here to be 8-byte aligned on 64-bit
 // machines...
-//
 
-//
 //            !COMMON  COMMON
 //   32-bit    nil       nil
 //   64-bit    nil+4     nil
-//
 
 
 #ifdef CONSERVATIVE
@@ -573,7 +565,9 @@ extern uint32_t symbol_sequence;
 extern size_t boffop;
 extern void packcharacter(int c);
 extern void packbyte(int c);
-#define boffo_char(i) ucelt(boffo, i)
+inline unsigned char& boffo_char(int i)
+{   return basic_ucelt(boffo, i);
+}
 
 extern char **loadable_packages;
 extern char **switches;
