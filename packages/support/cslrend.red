@@ -520,7 +520,7 @@ flag('(acos acosd acosh acot acotd acoth acsc acscd acsch asec asecd
 !#endif
 
 
-fluid '(no!_init!_file);
+fluid '(no!_init!_file reduce!-startup!-hooks!*);
 global '(loaded!-packages!* personal!-dir!*);
 
 personal!-dir!* := "$HOME";
@@ -589,7 +589,12 @@ symbolic procedure begin;
 %       prin2t " ...";
         if memq('experiment, lispsystem!*) then
             printc "*** EXPERIMENTAL version...";
-        if getd 'addsq then <<
+% process startup hooks
+        while pairp reduce!-startup!-hooks!* do <<
+	   lispeval car reduce!-startup!-hooks!*;
+	   reduce!-startup!-hooks!* := cdr reduce!-startup!-hooks!*;
+	>>;
+	if getd 'addsq then <<
 % I assume here that this is an algebra system if ADDSQ is defined, and
 % in that case process an initialisation file. Starting up without ADDSQ
 % defined means I either have just RLISP built or I am in the middle of

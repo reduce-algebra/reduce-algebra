@@ -58,6 +58,7 @@ fluid '(!*break
         lispsystem!*
         no!_init!_file
         promptstring!*
+        reduce!-startup!-hooks!*
         rlispscantable!*);
 
 global '(!$eol!$
@@ -370,6 +371,11 @@ symbolic procedure begin;
 	if null getd 'mathprint then no!_init!_file := t; % since bootstrap Reduce should not read the init file
         date!* := nil;
 a:      % crchar!* := '! ;
+        %% process startup hooks
+	while pairp reduce!-startup!-hooks!* do <<
+	   lispeval car reduce!-startup!-hooks!*;
+	   reduce!-startup!-hooks!* := cdr reduce!-startup!-hooks!*;
+	>>;
 	%% read init file
 	if null no!_init!_file then begin
 	   scalar name;

@@ -31,15 +31,6 @@ begin = """<!DOCTYPE html>
     h4:first-child {margin-top: 1em;}
     h5:first-child {margin-top: 1em;}
     h6:first-child {margin-top: 1em;}
-    pre {
-        font-family: monospace;
-        font-size: 13px;
-        line-height: 26px;
-        background-image: linear-gradient(180deg, #f5f5f5 50%, #fff 50%);
-        background-size: 100% 50.5px;
-        background-origin: content-box;
-        white-space: pre-wrap;
-        }
     table {
         margin-left: auto;
         margin-right: auto;
@@ -71,6 +62,20 @@ begin = """<!DOCTYPE html>
     }
     tbody tr:hover {
         background: rgba(66, 165, 245, 0.2);
+    }
+    table.logger {
+        font-family: monospace;
+        font-size: 13px;
+    }
+    .logger td {
+        vertical-align: top;
+        text-align: left;
+    }
+    td.timestamp {
+        width: 24ch;
+    }
+    td.level {
+        width: 12ch;
     }
 </style>
 </head>
@@ -106,15 +111,18 @@ end_bootstrap = """<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10
 def h3(html: str):
     return '<h3>' + html + '</h3>'
 
+def h4(html: str):
+    return '<h4>' + html + '</h4>'
+
 def p(html: str):
     return '<p>' + html + '</p>'
 
-def pre(html: str):
-    return '<p><pre>' + html + '</pre></p>'
+def logger_table(html: str):
+    return '<table border="1" class="dataframe logger">' + html + '</table>'
 
-def plot_scatter(df):
+def plot_scatter(df, **keywords):
     fig, ax = plt.subplots()
-    df.plot_scatter_csl_psl(x='ref', y='now', figsize=(5, 5), ax=ax, colorbar=False)
+    df.plot_scatter_csl_psl(x='ref', y='now', figsize=(5, 5), ax=ax, **keywords)
     img = io.BytesIO()
     fig.savefig(img, format='png', bbox_inches='tight')
     img.seek(0)

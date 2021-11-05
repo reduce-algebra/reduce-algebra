@@ -199,6 +199,9 @@ def cron(source: str, result: str, force: bool = False, jobs: int = 1, psl_heaps
          log: str = 'info', exclude: str = None, include: str = None, exclude_by_time: int = None,
          reduce: str = None, svn_reduce: str = None, revision: str = None):
     stderr_log = io.StringIO()
+    formatter = logging.Formatter('<tr><td class="timestamp">%(asctime)s</td>'
+                                  '<td class="level">%(levelname)s</td>'
+                                  '<td>%(message)s</td></tr>')
     handler = logging.StreamHandler(stream=stderr_log)
     handler.setLevel(0)
     handler.setFormatter(formatter)
@@ -233,8 +236,8 @@ def cron(source: str, result: str, force: bool = False, jobs: int = 1, psl_heaps
     print(html.h3('Computation Log'))
     level = logger.getEffectiveLevel()
     level_name = logging.getLevelName(level)
+    print(html.p(html.logger_table(stderr_log.getvalue().rstrip())))
     print(html.p('Logging level was {} ({:d}).'.format(level_name, level)))
-    print(html.pre(stderr_log.getvalue().rstrip()))
     print(html.end)
 
 
