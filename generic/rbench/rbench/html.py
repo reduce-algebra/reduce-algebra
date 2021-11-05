@@ -108,13 +108,13 @@ end_bootstrap = """<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10
 </body>
 </html>"""
 
-def h3(html: str):
+def h3(html: str = ''):
     return '<h3>' + html + '</h3>'
 
-def h4(html: str):
+def h4(html: str = ''):
     return '<h4>' + html + '</h4>'
 
-def p(html: str):
+def p(html: str = ''):
     return '<p>' + html + '</p>'
 
 def logger_table(html: str):
@@ -128,3 +128,13 @@ def plot_scatter(df, **keywords):
     img.seek(0)
     fig_b64 = base64.encodebytes(img.getvalue())
     return '<img src="data:image/png;base64, {}">'.format(fig_b64.decode('utf-8'))
+
+def plot_scatter_x(df, **keywords):
+    fig, ax = plt.subplots()
+    df.plot_scatter_x('ref', 'now', x='cpu_csl', y='cpu_psl', figsize=(5, 5), ax=ax, **keywords)
+    img = io.BytesIO()
+    fig.savefig(img, format='png', bbox_inches='tight')
+    img.seek(0)
+    fig_b64 = base64.encodebytes(img.getvalue())
+    return '<img src="data:image/png;base64, {}">'.format(fig_b64.decode('utf-8'))
+
