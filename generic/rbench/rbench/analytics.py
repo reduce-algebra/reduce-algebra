@@ -98,26 +98,28 @@ class Benchmark(pd.DataFrame):
             keywords['grid'] = True
         if 'loglog' not in keywords:
             keywords['loglog'] = True
-        p = self.plot.scatter(*arguments, **keywords, zorder=1)
-        low_x, high_x = p.get_xlim()
-        low_y, high_y = p.get_ylim()
+        if keywords['loglog']:
+            self = self.replace(to_replace=0.0, value=0.005)
+        ax = self.plot.scatter(*arguments, **keywords)
+        low_x, high_x = ax.get_xlim()
+        low_y, high_y = ax.get_ylim()
         low = max(low_x, low_y)
         high = min(high_x, high_y)
-        return p.plot([low, high], [low, high], c='k', zorder=0, linewidth=0.1)
+        return ax.axline([low, low],[high, high], c='gray', linewidth=0.3)
 
     def plot_scatter_csl_psl(self, **keywords):
+        if 'colorbar' not in keywords:
+            keywords['colorbar'] = False
         csl_rows = self.xs('cpu_csl', level=1, axis=1)
         csl_rows = csl_rows.assign(csl=True)
         psl_rows = self.xs('cpu_psl', level=1, axis=1)
         psl_rows = psl_rows.assign(csl=False)
         all_rows = pd.concat([csl_rows, psl_rows], ignore_index=True)
         b = Benchmark(all_rows)
-        if 'colorbar' not in keywords:
-            keywords['colorbar'] = False
-        p = b.plot_scatter(c='csl', colormap='bwr', sharex=False, include_bool=True, **keywords)
+        p = b.plot_scatter(c='csl', colormap='bwr', include_bool=True, **keywords)
         return p
 
-    def plot_scatter_x(self, ref, now, **keywords):
+    def plot_scatter_ref_now(self, ref: str = 'ref', now: str = 'now', **keywords):
         ref_rows = self.xs(ref, level=0, axis=1)
         ref_rows = ref_rows.assign(ref=True)
         now_rows = self.xs(now, level=0, axis=1)
@@ -214,57 +216,73 @@ def summary(now: str, ref: str = None, display: bool = False, dump: bool = False
         summary.write(html.p(combo_attrs.to_html()))
         summary.write(html.h3('Scatter Plots'))
         summary.write(html.p("""
+All times are in seconds.
 For each benchmark problem we have 4 CPU times: "ref/cpu_csl",
 "ref/cpu_psl", "now/cpu_csl", "now/cpu_psl". We plot "now" against
 "ref" using red and blue dots for "cpu_csl" and "cpu_psl", respectively.
-The scales are logarithmic, with the consequece that problems with a
-formal CPU time of 0 ms do not show up here. All times are in seconds.
+Thus each problem produces one red and one blue dot. The scales are
+logarithmic. Formal CPU times of 0 s are plotted here as as 0.005 s, but
+the 0 entries in the tables below are left unchanged.
 """))
         summary.write('<div style="text-align:center">')
-        combo_fast = combo.fast(0.5)
-        ndots_fast = 2 * len(combo_fast.index)
-        combo_slow = combo.slow(0.5)
-        ndots_slow = 2 * len(combo_slow.index)
-        title='All computed problems ({:d})'.format(ndots_fast + ndots_slow)
+        combo_1 = combo.fast(1)
+        n_1 = len(combo_1.index)
+        title_1 = '{:d} problems with all CPU times < 1 s'.format(n_1)
+        combo_60 = combo.slow(1).fast(60)
+        n_60 = len(combo_60.index)
+        title_60 = ('{:d} problems with at least one CPU time $\\geq$ 1 s\n'
+                    'and all CPU times < 60 s').format(n_60)
+        combo_rest = combo.slow(60)
+        n_rest = len(combo_rest.index)
+        title_rest = '{:d} problems with at least 1 CPU time $\\geq$ 60 s'.format(n_rest)
+        title='All computed problems ({:d})'.format(n_1 + n_60 + n_rest)
         summary.write(html.plot_scatter(combo, title=title))
-        if not combo_fast.empty:
-            title_fast = 'Problems with all 4 CPU times < 0.5 s ({:d})'.format(ndots_fast)
-            summary.write(html.plot_scatter(combo_fast, title=title_fast))
-        if not combo_slow.empty:
-            title_slow = 'Problems with at least 1 out of 4 CPU times >= 0.5 s ({:d})'
-            title_slow = title_slow.format(ndots_slow)
-            summary.write(html.plot_scatter(combo_slow, title=title_slow))
+        if not combo_1.empty:
+            summary.write(html.plot_scatter(combo_1, title=title_1))
+        if not combo_60.empty:
+            summary.write(html.plot_scatter(combo_60, title=title_60))
+        if not combo_rest.empty:
+            summary.write(html.plot_scatter(combo_rest, title=title_rest))
         summary.write('</div>')
         summary.write(html.p("""
 Next we plot "cpu_psl" against "cpu_csl" using gray and green for "ref"
-and "now", respectively.
+and "now", respectively. Every problem produces one gray and one green
+dot.
 """))
         summary.write('<div style="text-align:center">')
-        summary.write(html.plot_scatter_x(combo, title=title))
-        if not combo_fast.empty:
-            summary.write(html.plot_scatter_x(combo_fast, title=title_fast))
-        if not combo_slow.empty:
-            summary.write(html.plot_scatter_x(combo_slow, title=title_slow))
+        summary.write(html.plot_scatter_ref_now(combo, title=title))
+        if not combo_1.empty:
+            summary.write(html.plot_scatter_ref_now(combo_1, title=title_1))
+        if not combo_60.empty:
+            summary.write(html.plot_scatter_ref_now(combo_60, title=title_60))
+        if not combo_rest.empty:
+            summary.write(html.plot_scatter_ref_now(combo_rest, title=title_rest))
         summary.write('</div>')
         summary.write(html.h3('Detailed CPU Times and Validity'))
         summary.write(html.p("""
-Validity follows a three-valued logic. For each problem, "ref" may but
-need not contain reference logs. In the positive case, "valid_csl" and
-"valid_psl" indicate successful or unsuccessful comparison as True or
-False, respectively. In the negative case they are None. Together they
-yield "valid_mean", which becomes True if both are True, False if at
-least one is False, and None otherwise.
+Validity follows a three-valued logic. Each problem in "ref" may but
+need not provide reference logs "rlg_csl.txt", "rlg_psl.txt". In the
+positive case, "valid_csl" and "valid_psl" indicate equality modulo
+"diff -Bqw" as True or False. In the negative case they are None.
+Together they yield "valid_mean", which is True if both are True, False
+if at least one is False, and None otherwise. Thus valid_mean = True
+indicates evidence that nothing has changed with either Lisp,
+valid_mean = False indicates evidence for changes with at least one of
+the two.
 """))
         combo_bad = combo[(combo[('now', 'valid_mean')] == False)]
         if not combo_bad.empty:
             summary.write(html.h4('Problems with Validity Issues'))
             summary.write(html.p(combo_bad.to_html(show_dimensions=True)))
-        if not combo_fast.empty:
-            summary.write(html.h4('Problems with all four CPU times < 0.5 s'))
-            summary.write(html.p(combo_fast.to_html(show_dimensions=True)))
-        if not combo_slow.empty:
-            summary.write(html.h4('Problems with at least one out of four CPU times &ge; 0.5 s'))
-            summary.write(html.p(combo_slow.to_html(show_dimensions=True)))
+        if not combo_1.empty:
+            summary.write(html.h4(title_1.replace('$\\geq$', '&ge;')))
+            summary.write(html.p(combo_1.to_html(show_dimensions=True)))
+        if not combo_60.empty:
+            summary.write(html.h4(title_60.replace('$\\geq$', '&ge;')))
+            summary.write(html.p(combo_60.to_html(show_dimensions=True)))
+        if not combo_rest.empty:
+            summary.write(html.h4(title_rest.replace('$\\geq$', '&ge;')))
+            summary.write(html.p(combo_rest.to_html(show_dimensions=True)))
         if full_html:
             summary.write(html.end)
     if dump:

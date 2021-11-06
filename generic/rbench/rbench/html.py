@@ -18,13 +18,35 @@ begin = """<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-    body {font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;}
-    h1 {text-align:center;font-size: 185.7%; margin: 1.08em 0 0 0; font-weight: bold; line-height: 1.0;}
-    h2 {text-align:center;font-size: 157.1%; margin: 1.27em 0 0 0; font-weight: bold; line-height: 1.0;}
-    h3 {text-align:center;font-size: 128.6%; margin: 1.55em 0 0 0; font-weight: bold; line-height: 1.0;}
-    h4 {text-align:center;font-size: 100%; margin: 2em 0 0 0; font-weight: bold; line-height: 1.0;}
-    h5 {text-align:center;font-size: 100%; margin: 2em 0 0 0; font-weight: bold; line-height: 1.0; font-style: italic;}
-    h6 {text-align:center;font-size: 100%; margin: 2em 0 0 0; font-weight: bold; line-height: 1.0; font-style: italic;}
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+        background: white;
+        color: black;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        text-align: center;
+        font-weight: bold;
+        line-height: 1.0;
+    }
+    h1 {
+        font-size: 185.7%;
+        margin: 1.08em 0 0 0;
+    }
+    h2 {
+        font-size: 157.1%;
+        margin: 1.27em 0 0 0;
+    }
+    h3 {
+        font-size: 128.6%;
+        margin: 1.55em 0 0 0;
+    }
+    h4, h5, h6 {
+        font-size: 100%;
+        margin: 2em 0 0 0;
+    }
+    h5, h6 {
+        font-style: italic;
+    }
     h1:first-child {margin-top: 0.538em;}
     h2:first-child {margin-top: 0.636em;}
     h3:first-child {margin-top: 0.777em;}
@@ -83,7 +105,8 @@ begin = """<!DOCTYPE html>
 """
 
 end = """</body>
-</html>"""
+</html>
+"""
 
 begin_bootstrap = """<!DOCTYPE html>
 <html>
@@ -127,14 +150,15 @@ def plot_scatter(df, **keywords):
     fig.savefig(img, format='png', bbox_inches='tight')
     img.seek(0)
     fig_b64 = base64.encodebytes(img.getvalue())
-    return '<img src="data:image/png;base64, {}">'.format(fig_b64.decode('utf-8'))
+    img = '<img src="data:image/png;base64, {}">'.format(fig_b64.decode('utf-8'))
+    return img
 
-def plot_scatter_x(df, **keywords):
+def plot_scatter_ref_now(df, **keywords):
     fig, ax = plt.subplots()
-    df.plot_scatter_x('ref', 'now', x='cpu_csl', y='cpu_psl', figsize=(5, 5), ax=ax, **keywords)
+    df.plot_scatter_ref_now(x='cpu_csl', y='cpu_psl', figsize=(5, 5), ax=ax, **keywords)
     img = io.BytesIO()
     fig.savefig(img, format='png', bbox_inches='tight')
     img.seek(0)
     fig_b64 = base64.encodebytes(img.getvalue())
-    return '<img src="data:image/png;base64, {}">'.format(fig_b64.decode('utf-8'))
-
+    img = '<img src="data:image/png;base64, {}">'.format(fig_b64.decode('utf-8'))
+    return img
