@@ -108,8 +108,12 @@ def _init_result(source: str, result: str, force: bool, include: str, exclude: s
             logger.critical('found existing ' + result + ' - delete or use -f, --force')
             sys.exit(17)
     os.makedirs(os.path.join(result, 'GLOBAL'))
+    completed_process = subprocess.run(['svnversion'], cwd=reduce, capture_output=True)
+    revision = completed_process.stdout.decode()
+    if ':' in revision:
+        _, revision = revision.split(':')
     with open(os.path.join(result, 'GLOBAL', 'revision.txt'), 'w') as file:
-        subprocess.run(['svn', 'info', '--show-item', 'revision', reduce], stdout=file)
+        file.write(revision)
     with open(os.path.join(result, 'GLOBAL', 'uname.txt'), 'w') as file:
         subprocess.run(['uname', '-mnrs'], stdout=file)
     red_files = []
