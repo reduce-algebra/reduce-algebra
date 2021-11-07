@@ -19,8 +19,8 @@ import subprocess
 import sys
 import tempfile
 
-import analytics
-import html
+from . import analytics
+from . import html
 
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
