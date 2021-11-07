@@ -15,11 +15,12 @@ ___license__ = 'CC BY-NC-ND'
 ___version___ = '$Rev$'
 
 import argparse
+import matplotlib.pyplot as plt
 import os
 import sys
 
-import analytics
-import computation
+import rbench.analytics as analytics
+import rbench.computation as computation
 
 def setup_parser(parser):
     subparsers = parser.add_subparsers(dest='subcommand', help='sub-commands')

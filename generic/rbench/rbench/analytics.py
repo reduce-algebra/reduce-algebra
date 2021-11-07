@@ -8,13 +8,14 @@ ___copyright__ = 'Copyright 2021, Thomas Sturm, Germany'
 ___license__ = 'CC BY-NC-ND'
 ___version___ = '$Rev$'
 
+import IPython.core.display
 import os
 import sys
 import pandas as pd
 import pathlib
 import webbrowser
 
-import html
+from . import html
 
 class Benchmark(pd.DataFrame):
     def __getitem__(self, *arguments, **keywords):
@@ -287,6 +288,11 @@ the two.
             summary.write(html.end)
     if dump:
         with open(summary_html, mode = 'r') as summary:
-            print(summary.read())
-    if display:
+            try:
+                __IPYTHON__
+                IPython.core.display.display(IPython.core.display.HTML(summary.read()))
+            except NameError:
+                print(summary.read())
+
+    elif display:
         webbrowser.open(pathlib.Path(summary_html).as_uri(), new=1)

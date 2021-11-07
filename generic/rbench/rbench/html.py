@@ -144,20 +144,22 @@ def logger_table(html: str):
     return '<table border="1" class="dataframe logger">' + html + '</table>'
 
 def plot_scatter(df, **keywords):
+    img = io.BytesIO()
     fig, ax = plt.subplots()
     df.plot_scatter_csl_psl(x='ref', y='now', figsize=(5, 5), ax=ax, **keywords)
-    img = io.BytesIO()
     fig.savefig(img, format='png', bbox_inches='tight')
+    plt.close(fig)
     img.seek(0)
     fig_b64 = base64.encodebytes(img.getvalue())
     img = '<img src="data:image/png;base64, {}">'.format(fig_b64.decode('utf-8'))
     return img
 
 def plot_scatter_ref_now(df, **keywords):
+    img = io.BytesIO()
     fig, ax = plt.subplots()
     df.plot_scatter_ref_now(x='cpu_csl', y='cpu_psl', figsize=(5, 5), ax=ax, **keywords)
-    img = io.BytesIO()
     fig.savefig(img, format='png', bbox_inches='tight')
+    plt.close(fig)
     img.seek(0)
     fig_b64 = base64.encodebytes(img.getvalue())
     img = '<img src="data:image/png;base64, {}">'.format(fig_b64.decode('utf-8'))
