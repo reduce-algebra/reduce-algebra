@@ -196,8 +196,8 @@ unchanged.
         summary.write('</div>')
         summary.write(html.p("""
 Next we plot "cpu_psl" against "cpu_csl" using green and magenta for
-"ref" and "now", respectively. Every problem produces one gray and one
-green dot.
+"ref" and "now", respectively. Every problem produces one green and one
+magenta dot.
 """))
         summary.write('<div style="text-align:left;">')
         for (c, t) in combos:
