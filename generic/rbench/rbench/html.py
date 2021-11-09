@@ -12,6 +12,8 @@ import base64
 import io
 import matplotlib.pyplot as plt
 
+from . import plotting
+
 begin = """<!DOCTYPE html>
 <html>
 <head>
@@ -24,7 +26,7 @@ begin = """<!DOCTYPE html>
         color: black;
     }
     h1, h2, h3, h4, h5, h6 {
-        text-align: center;
+        text-align: left;
         font-weight: bold;
         line-height: 1.0;
     }
@@ -54,7 +56,6 @@ begin = """<!DOCTYPE html>
     h5:first-child {margin-top: 1em;}
     h6:first-child {margin-top: 1em;}
     table {
-        margin-left: auto;
         margin-right: auto;
         border: none;
         border-collapse: collapse;
@@ -132,35 +133,16 @@ end_bootstrap = """<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10
 </html>"""
 
 def h3(html: str = ''):
-    return '<h3>' + html + '</h3>'
+    return '<h3>' + html.replace('$\\geq$', '&ge;') + '</h3>'
 
 def h4(html: str = ''):
-    return '<h4>' + html + '</h4>'
+    return '<h4>' + html.replace('$\\geq$', '&ge;') + '</h4>'
 
 def p(html: str = ''):
-    return '<p>' + html + '</p>'
+    return '<p>' + html.replace('$\\geq$', '&ge;') + '</p>'
 
 def logger_table(html: str):
     return '<table border="1" class="dataframe logger">' + html + '</table>'
 
-def plot_scatter(df, **keywords):
-    img = io.BytesIO()
-    fig, ax = plt.subplots()
-    df.plot_scatter_csl_psl(x='ref', y='now', figsize=(5, 5), ax=ax, **keywords)
-    fig.savefig(img, format='png', bbox_inches='tight')
-    plt.close(fig)
-    img.seek(0)
-    fig_b64 = base64.encodebytes(img.getvalue())
-    img = '<img src="data:image/png;base64, {}">'.format(fig_b64.decode('utf-8'))
-    return img
-
-def plot_scatter_ref_now(df, **keywords):
-    img = io.BytesIO()
-    fig, ax = plt.subplots()
-    df.plot_scatter_ref_now(x='cpu_csl', y='cpu_psl', figsize=(5, 5), ax=ax, **keywords)
-    fig.savefig(img, format='png', bbox_inches='tight')
-    plt.close(fig)
-    img.seek(0)
-    fig_b64 = base64.encodebytes(img.getvalue())
-    img = '<img src="data:image/png;base64, {}">'.format(fig_b64.decode('utf-8'))
-    return img
+def img(ax):
+    return f'<img src="data:image/png;base64, {plotting.axes_to_b64(ax)}"/>'
