@@ -14,18 +14,21 @@ ___version___ = '$Rev: 6156 $'
 import base64
 import io
 import matplotlib.pyplot as plt
+from matplotlib.dates import DateFormatter
+import matplotlib.markers
 from matplotlib.transforms import Bbox
 import pandas as pd
 from pandas.plotting import PlotAccessor
 
 # Values less than 5 lead to trouble with the Bbox in axes_to_b64()
-figsize = (5, 5)
+default_figsize = (5, 5)
+default_double_figsize = (2 * default_figsize[0], 2 * default_figsize[1])
 
 def plot_scatter(benchmark, **keywords):
     if 'alpha' not in keywords:
         keywords['alpha'] = 0.25
     if 'figsize' not in keywords:
-        keywords['figsize'] = figsize
+        keywords['figsize'] = default_figsize
     if 'grid' not in keywords:
         keywords['grid'] = True
     if 'loglog' not in keywords:
@@ -37,7 +40,7 @@ def plot_scatter(benchmark, **keywords):
     low_y, high_y = ax.get_ylim()
     low = max(low_x, low_y)
     high = min(high_x, high_y)
-    ax.axline([low, low],[high, high], c='gray', linewidth=0.3)
+    ax.axline([low, low],[high, high], c='k', linewidth=0.1)
     return ax
 
 def plot_scatter2(benchmark, *, x: str, y: str, c1: str, c2: str, color1: str = None,
@@ -57,7 +60,70 @@ def plot_scatter2(benchmark, *, x: str, y: str, c1: str, c2: str, color1: str = 
     ax.set_ylabel(y)
     return ax
 
-def axes_to_b64(ax) -> str:
+def plot_schedule_bak(benchmark, *, key0: str = None, figsize: tuple = None, linewidth: float = 1,
+        **keywords):
+    if key0 is None:
+        l0 = benchmark.columns.levels[0]
+        if len(l0) > 1:
+            raise ValueError(f'specify one of {str(list(l0))[1:-1]} as keyword argument key0')
+        key0 = l0[0]
+    benchmark = benchmark.xs(key0, level=0, axis=1)
+    csl_rows = benchmark[['start_csl', 'end_csl']]
+    csl_rows = csl_rows.rename({'start_csl': 'start', 'end_csl': 'end'}, axis=1)
+    csl_rows = csl_rows.assign(color='r')
+    psl_rows = benchmark[['start_psl', 'end_psl']]
+    psl_rows = psl_rows.rename({'start_psl': 'start', 'end_psl': 'end'}, axis=1)
+    psl_rows = psl_rows.assign(color='b')
+    all_rows = csl_rows.append(psl_rows, ignore_index=True).sort_values(['start', 'end'])
+    n = list(range(len(all_rows)))
+    start = list(all_rows['start'])
+    end = list(all_rows['end'])
+    color = list(all_rows['color'])
+    if figsize is None:
+        figsize = default_double_figsize
+    fig, ax = plt.subplots(figsize=figsize)
+    ax.xaxis.set_major_formatter(DateFormatter('%H:%M:%S'))
+    ax.hlines(n, start, end, color, linewidth=linewidth, **keywords)
+    ax.scatter(y=n, x=start, marker=matplotlib.markers.TICKRIGHT, linewidth=linewidth, color=color,
+        alpha=0.25)
+    return ax
+
+def plot_schedule(benchmark, *, key0: str = None, figsize: tuple = None, linewidth: float = 1,
+        **keywords):
+    if key0 is None:
+        l0 = benchmark.columns.levels[0]
+        if len(l0) > 1:
+            raise ValueError(f'specify one of {str(list(l0))[1:-1]} as keyword argument key0')
+        key0 = l0[0]
+    benchmark = benchmark.xs(key0, level=0, axis=1)
+    csl_rows = benchmark[['start_csl', 'end_csl']]
+    csl_rows = csl_rows.rename({'start_csl': 'start', 'end_csl': 'end'}, axis=1)
+    csl_rows = csl_rows.assign(color='r')
+    psl_rows = benchmark[['start_psl', 'end_psl']]
+    psl_rows = psl_rows.rename({'start_psl': 'start', 'end_psl': 'end'}, axis=1)
+    psl_rows = psl_rows.assign(color='b')
+    all_rows = csl_rows.append(psl_rows, ignore_index=True).sort_values(['start', 'end'])
+    t0 = all_rows['start'].min()
+    all_rows['start_sec'] = all_rows.apply(lambda df: (df['start'] - t0).total_seconds() + 1, axis=1)
+    all_rows['end_sec'] = all_rows.apply(lambda df: (df['end'] - t0).total_seconds() + 1, axis=1)
+    n = list(range(len(all_rows)))
+    start = list(all_rows['start_sec'])
+    end = list(all_rows['end_sec'])
+    color = list(all_rows['color'])
+    if figsize is None:
+        figsize = default_double_figsize
+    fig, ax = plt.subplots(figsize=figsize)
+    ax.set_xscale('log')
+    ax.grid(which='major', axis='x')
+    ax.grid(which='minor', axis='x', linewidth=0.1)
+    if 'zorder' not in keywords:
+        keywords['zorder'] = 100
+    ax.hlines(n, start, end, color, linewidth=linewidth, **keywords)
+    ax.scatter(y=n, x=start, marker=matplotlib.markers.TICKRIGHT, linewidth=linewidth, color=color,
+        alpha=0.25, zorder=0)
+    return ax
+
+def axes_to_b64(ax, figsize) -> str:
     img = io.BytesIO()
     fig = ax.get_figure()
     fig.savefig(img, format='png', bbox_inches=Bbox([[0, 0], list(figsize)]))
@@ -76,6 +142,8 @@ class RbPlotAccessor(PlotAccessor):
             return plot_scatter(data, *arguments, **keywords)
         elif kind == 'scatter2':
             return plot_scatter2(data, *arguments, **keywords)
+        elif kind == 'schedule':
+            return plot_schedule(data, *arguments, **keywords)
         elif kind in self._pandas_kinds:
             return PlotAccessor(data)(kind=kind, **keywords)
         else:
@@ -83,3 +151,6 @@ class RbPlotAccessor(PlotAccessor):
 
     def scatter2(self, *arguments, **keywords):
         return self(kind='scatter2', *arguments, **keywords)
+
+    def schedule(self, *arguments, **keywords):
+        return self(kind='schedule', *arguments, **keywords)

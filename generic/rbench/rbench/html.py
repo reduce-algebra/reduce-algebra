@@ -144,5 +144,6 @@ def p(html: str = ''):
 def logger_table(html: str):
     return '<table border="1" class="dataframe logger">' + html + '</table>'
 
-def img(ax):
-    return f'<img src="data:image/png;base64, {plotting.axes_to_b64(ax)}"/>'
+def img(ax, figsize = plotting.default_figsize):
+    b64 = plotting.axes_to_b64(ax, figsize)
+    return f'<img src="data:image/png;base64, {b64}"/>'
