@@ -14,14 +14,18 @@ ___version___ = '$Rev: 6156 $'
 import base64
 import io
 import matplotlib.pyplot as plt
+from matplotlib.transforms import Bbox
 import pandas as pd
 from pandas.plotting import PlotAccessor
+
+# Values less than 5 lead to trouble with the Bbox in axes_to_b64()
+figsize = (5, 5)
 
 def plot_scatter(benchmark, **keywords):
     if 'alpha' not in keywords:
         keywords['alpha'] = 0.25
     if 'figsize' not in keywords:
-        keywords['figsize'] = (5,5)
+        keywords['figsize'] = figsize
     if 'grid' not in keywords:
         keywords['grid'] = True
     if 'loglog' not in keywords:
@@ -56,7 +60,7 @@ def plot_scatter2(benchmark, *, x: str, y: str, c1: str, c2: str, color1: str = 
 def axes_to_b64(ax) -> str:
     img = io.BytesIO()
     fig = ax.get_figure()
-    fig.savefig(img, format='png', bbox_inches='tight')
+    fig.savefig(img, format='png', bbox_inches=Bbox([[0, 0], list(figsize)]))
     plt.close(fig)
     img.seek(0)
     fig_b64 = base64.encodebytes(img.getvalue()).decode('utf-8')
