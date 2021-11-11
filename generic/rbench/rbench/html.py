@@ -11,6 +11,7 @@ ___version___ = '$Rev$'
 import base64
 import io
 import matplotlib.pyplot as plt
+from matplotlib.transforms import Bbox
 
 from . import plotting
 
@@ -144,6 +145,8 @@ def p(html: str = ''):
 def logger_table(html: str):
     return '<table border="1" class="dataframe logger">' + html + '</table>'
 
-def img(ax, figsize = plotting.default_figsize):
-    b64 = plotting.axes_to_b64(ax, figsize)
+def img(ax, bbox_inches = None):
+    if bbox_inches is None:
+        bbox_inches = Bbox([[0, 0], list(ax.get_figure().get_size_inches())])
+    b64 = plotting.axes_to_b64(ax, bbox_inches=bbox_inches)
     return f'<img src="data:image/png;base64, {b64}"/>'

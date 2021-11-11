@@ -60,36 +60,8 @@ def plot_scatter2(benchmark, *, x: str, y: str, c1: str, c2: str, color1: str = 
     ax.set_ylabel(y)
     return ax
 
-def plot_schedule_bak(benchmark, *, key0: str = None, figsize: tuple = None, linewidth: float = 1,
-        **keywords):
-    if key0 is None:
-        l0 = benchmark.columns.levels[0]
-        if len(l0) > 1:
-            raise ValueError(f'specify one of {str(list(l0))[1:-1]} as keyword argument key0')
-        key0 = l0[0]
-    benchmark = benchmark.xs(key0, level=0, axis=1)
-    csl_rows = benchmark[['start_csl', 'end_csl']]
-    csl_rows = csl_rows.rename({'start_csl': 'start', 'end_csl': 'end'}, axis=1)
-    csl_rows = csl_rows.assign(color='r')
-    psl_rows = benchmark[['start_psl', 'end_psl']]
-    psl_rows = psl_rows.rename({'start_psl': 'start', 'end_psl': 'end'}, axis=1)
-    psl_rows = psl_rows.assign(color='b')
-    all_rows = csl_rows.append(psl_rows, ignore_index=True).sort_values(['start', 'end'])
-    n = list(range(len(all_rows)))
-    start = list(all_rows['start'])
-    end = list(all_rows['end'])
-    color = list(all_rows['color'])
-    if figsize is None:
-        figsize = default_double_figsize
-    fig, ax = plt.subplots(figsize=figsize)
-    ax.xaxis.set_major_formatter(DateFormatter('%H:%M:%S'))
-    ax.hlines(n, start, end, color, linewidth=linewidth, **keywords)
-    ax.scatter(y=n, x=start, marker=matplotlib.markers.TICKRIGHT, linewidth=linewidth, color=color,
-        alpha=0.25)
-    return ax
-
-def plot_schedule(benchmark, *, key0: str = None, figsize: tuple = None, linewidth: float = 1,
-        **keywords):
+def plot_schedule(benchmark, *, key0: str = None, figsize: tuple = default_figsize,
+        linewidth: float = 1, title: str = None, zorder: int = 100, **keywords):
     if key0 is None:
         l0 = benchmark.columns.levels[0]
         if len(l0) > 1:
@@ -110,23 +82,22 @@ def plot_schedule(benchmark, *, key0: str = None, figsize: tuple = None, linewid
     start = list(all_rows['start_sec'])
     end = list(all_rows['end_sec'])
     color = list(all_rows['color'])
-    if figsize is None:
-        figsize = default_double_figsize
     fig, ax = plt.subplots(figsize=figsize)
+    ax.set_title(title)
+    ax.set_xlabel('wall clock time')
+    ax.set_ylabel('jobs')
     ax.set_xscale('log')
     ax.grid(which='major', axis='x')
     ax.grid(which='minor', axis='x', linewidth=0.1)
-    if 'zorder' not in keywords:
-        keywords['zorder'] = 100
     ax.hlines(n, start, end, color, linewidth=linewidth, **keywords)
     ax.scatter(y=n, x=start, marker=matplotlib.markers.TICKRIGHT, linewidth=linewidth, color=color,
         alpha=0.25, zorder=0)
     return ax
 
-def axes_to_b64(ax, figsize) -> str:
+def axes_to_b64(ax, bbox_inches='tight') -> str:
     img = io.BytesIO()
     fig = ax.get_figure()
-    fig.savefig(img, format='png', bbox_inches=Bbox([[0, 0], list(figsize)]))
+    fig.savefig(img, format='png', bbox_inches=bbox_inches)
     plt.close(fig)
     img.seek(0)
     fig_b64 = base64.encodebytes(img.getvalue()).decode('utf-8')
