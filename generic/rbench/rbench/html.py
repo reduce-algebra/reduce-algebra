@@ -2,14 +2,15 @@
 Pandas-based data analytics for Reduce benchmarks
 """
 
-___author___ = 'Thomas Sturm'
-___contact___ = 'https://science.thomas-sturm.de/'
-___copyright__ = 'Copyright 2021, Thomas Sturm, Germany'
-___license__ = 'CC BY-NC-ND'
-___version___ = '$Rev$'
+___author___ = "Thomas Sturm"
+___contact___ = "https://science.thomas-sturm.de/"
+___copyright__ = "Copyright 2021, Thomas Sturm, Germany"
+___license__ = "CC BY-NC-ND"
+___version___ = "$Rev$"
 
 import base64
 import io
+
 import matplotlib.pyplot as plt
 
 from . import plotting
@@ -132,18 +133,23 @@ end_bootstrap = """<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10
 </body>
 </html>"""
 
-def h3(html: str = ''):
-    return '<h3>' + html.replace('$\\geq$', '&ge;') + '</h3>'
 
-def h4(html: str = ''):
-    return '<h4>' + html.replace('$\\geq$', '&ge;') + '</h4>'
+def h3(html: str = ""):
+    return "<h3>" + html.replace("$\\geq$", "&ge;") + "</h3>"
 
-def p(html: str = ''):
-    return '<p>' + html.replace('$\\geq$', '&ge;') + '</p>'
+
+def h4(html: str = ""):
+    return "<h4>" + html.replace("$\\geq$", "&ge;") + "</h4>"
+
+
+def p(html: str = ""):
+    return "<p>" + html.replace("$\\geq$", "&ge;") + "</p>"
+
 
 def logger_table(html: str):
-    return '<table border="1" class="dataframe logger">' + html + '</table>'
+    return '<table border="1" class="dataframe logger">' + html + "</table>"
 
-def img(ax, figsize = plotting.default_figsize):
+
+def img(ax, figsize=plotting.default_figsize):
     b64 = plotting.axes_to_b64(ax, figsize)
     return f'<img src="data:image/png;base64, {b64}"/>'
