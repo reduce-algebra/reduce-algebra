@@ -205,6 +205,18 @@ magenta dot.
                 ax = c.plot.scatter2(c1='ref', c2='now', x='cpu_csl', y='cpu_psl', title=t)
                 summary.write(html.img(ax))
         summary.write('</div>')
+# Schedule
+        summary.write(html.h3('Parallel Job Execution over Time'))
+        summary.write(html.p(f"""
+Time slots allocated by {len(combo.slow(0).index):d} CSL (red) and
+{len(combo.slow(0).index):d} PSL (blue) "now" jobs. Let t<sub>0</sub> be
+the wall clock start time of the first job. The x-axis shows the wall
+clock time in seconds relative to  t<sub>0</sub> &minus; 1 second, on a
+logarithmic scale. The labels of the y-axis are an ordinal numbering of
+jobs, which are lexicographically sorted by (start time, end time).
+"""))
+        ax = now.plot.schedule(figsize=plotting.default_figsize)
+        summary.write(html.img(ax, plotting.default_figsize))
 # Tables
         summary.write(html.h3('Detailed CPU Times and Validity'))
         summary.write(html.p("""
