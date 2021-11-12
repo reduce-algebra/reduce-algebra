@@ -26,7 +26,6 @@ module tps; % Extendible Power Series.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id$
 
 
 % A power series object is a tagged tuple of the following form:
@@ -99,6 +98,9 @@ symbolic inline procedure rand1 e;
 
 symbolic inline procedure rand2 e;
    caddr e;
+
+symbolic inline procedure rand3 e;
+   cadddr e;
 
 symbolic inline procedure rator e;
   car e;
