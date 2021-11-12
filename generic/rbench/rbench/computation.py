@@ -119,6 +119,12 @@ def _init_result(source: str, result: str, force: bool, include: str, exclude: s
     red_files = []
     for path, directories, files in os.walk(source):
         relpath = os.path.relpath(path, source)
+        for directory in directories:
+            if directory == 'SUPPORT':
+                shutil.copytree(os.path.join(path, directory), os.path.join(result, relpath, directory),
+                    dirs_exist_ok=True)
+                directories.remove(directory)
+                break
         for file in files:
             try:
                 basename, extension = file.split('.')

@@ -24,7 +24,7 @@ from pandas.plotting import PlotAccessor
 default_figsize = (5, 5)
 default_double_figsize = (2 * default_figsize[0], 2 * default_figsize[1])
 
-def plot_scatter(benchmark, **keywords):
+def plot_scatter(rbdf, **keywords):
     if 'alpha' not in keywords:
         keywords['alpha'] = 0.25
     if 'figsize' not in keywords:
@@ -34,8 +34,8 @@ def plot_scatter(benchmark, **keywords):
     if 'loglog' not in keywords:
         keywords['loglog'] = True
     if keywords['loglog']:
-        benchmark = benchmark.replace(to_replace=0.0, value=0.005)
-    ax = PlotAccessor(benchmark)(kind='scatter', **keywords)
+        rbdf = rbdf.replace(to_replace=0.0, value=0.005)
+    ax = PlotAccessor(rbdf)(kind='scatter', **keywords)
     low_x, high_x = ax.get_xlim()
     low_y, high_y = ax.get_ylim()
     low = max(low_x, low_y)
@@ -43,35 +43,35 @@ def plot_scatter(benchmark, **keywords):
     ax.axline([low, low],[high, high], c='k', linewidth=0.1)
     return ax
 
-def plot_scatter2(benchmark, *, x: str, y: str, c1: str, c2: str, color1: str = None,
+def plot_scatter2(rbdf, *, x: str, y: str, c1: str, c2: str, color1: str = None,
         color2: str = None, **keywords):
-    l0 = benchmark.columns.levels[0]
-    l1 = benchmark.columns.levels[1]
+    l0 = rbdf.columns.levels[0]
+    l1 = rbdf.columns.levels[1]
     fig, ax = plt.subplots()
     if x in l0 and y in l0 and c1 in l1 and c2 in l1:
-        plot_scatter(benchmark, x=(x, c1), y=(y, c1), ax=ax, color=color1 or 'r', **keywords)
-        plot_scatter(benchmark, x=(x, c2), y=(y, c2), ax=ax, color=color2 or 'b', **keywords)
+        plot_scatter(rbdf, x=(x, c1), y=(y, c1), ax=ax, color=color1 or 'r', **keywords)
+        plot_scatter(rbdf, x=(x, c2), y=(y, c2), ax=ax, color=color2 or 'b', **keywords)
     elif x in l1 and y in l1 and c1 in l0 and c2 in l0:
-        plot_scatter(benchmark, x=(c1, x), y=(c1, y), ax=ax, color=color1 or 'g', **keywords)
-        plot_scatter(benchmark, x=(c2, x), y=(c2, y), ax=ax, color=color2 or 'm', **keywords)
+        plot_scatter(rbdf, x=(c1, x), y=(c1, y), ax=ax, color=color1 or 'g', **keywords)
+        plot_scatter(rbdf, x=(c2, x), y=(c2, y), ax=ax, color=color2 or 'm', **keywords)
     else:
         raise ValueError('bad choice of x, y, c1, c2')
     ax.set_xlabel(x)
     ax.set_ylabel(y)
     return ax
 
-def plot_schedule(benchmark, *, key0: str = None, figsize: tuple = default_figsize,
+def plot_schedule(rbdf, *, key0: str = None, figsize: tuple = default_figsize,
         linewidth: float = 1, title: str = None, zorder: int = 100, **keywords):
     if key0 is None:
-        l0 = benchmark.columns.levels[0]
+        l0 = rbdf.columns.levels[0]
         if len(l0) > 1:
             raise ValueError(f'specify one of {str(list(l0))[1:-1]} as keyword argument key0')
         key0 = l0[0]
-    benchmark = benchmark.xs(key0, level=0, axis=1)
-    csl_rows = benchmark[['start_csl', 'end_csl']]
+    rbdf = rbdf.xs(key0, level=0, axis=1)
+    csl_rows = rbdf[['start_csl', 'end_csl']]
     csl_rows = csl_rows.rename({'start_csl': 'start', 'end_csl': 'end'}, axis=1)
     csl_rows = csl_rows.assign(color='r')
-    psl_rows = benchmark[['start_psl', 'end_psl']]
+    psl_rows = rbdf[['start_psl', 'end_psl']]
     psl_rows = psl_rows.rename({'start_psl': 'start', 'end_psl': 'end'}, axis=1)
     psl_rows = psl_rows.assign(color='b')
     all_rows = csl_rows.append(psl_rows, ignore_index=True).sort_values(['start', 'end'])
