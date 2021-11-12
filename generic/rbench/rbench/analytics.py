@@ -206,17 +206,24 @@ magenta dot.
                 summary.write(html.img(ax))
         summary.write('</div>')
 # Schedule
+        n = len(combo.slow(0).index)
+        t0 = min(now.xs(('now', 'start_csl'), axis=1).min(),
+                 now.xs(('now', 'start_psl'), axis=1).min())
+        end = max(now.xs(('now', 'end_csl'), axis=1).max(),
+                  now.xs(('now', 'end_psl'), axis=1).max())
         summary.write(html.h3('Parallel Job Execution over Time'))
         summary.write(html.p(f"""
-Time slots allocated by {len(combo.slow(0).index):d} CSL (red) and
-{len(combo.slow(0).index):d} PSL (blue) "now" jobs. Let t<sub>0</sub> be
-the wall clock start time of the first job. The x-axis shows the wall
-clock time in seconds relative to  t<sub>0</sub> &minus; 1 second, on a
-logarithmic scale. The labels of the y-axis are an ordinal numbering of
-jobs, which are lexicographically sorted by (start time, end time).
+Time slots allocated by {n:d} CSL (red) and {n:d} PSL (blue) "now" jobs.
+Let t<sub>0</sub> be the wall clock start time of the first job. The
+x-axis shows the wall clock time in seconds relative to  t<sub>0</sub>
+&minus; 1 second, on a logarithmic scale. The labels of the y-axis are
+an ordinal numbering of jobs, which are lexicographically sorted by
+(start time, end time). Jobs appearing in pale color have zero duration
+on the time scale used and are located at the left of their plot.
 """))
-        ax = now.plot.schedule(figsize=plotting.default_figsize)
-        summary.write(html.img(ax, plotting.default_figsize))
+        t = f'$t_0$ = {str(t0)}\nend at {str(end)}'
+        ax = now.plot.schedule(title=t)
+        summary.write(html.img(ax))
 # Tables
         summary.write(html.h3('Detailed CPU Times and Validity'))
         summary.write(html.p("""
