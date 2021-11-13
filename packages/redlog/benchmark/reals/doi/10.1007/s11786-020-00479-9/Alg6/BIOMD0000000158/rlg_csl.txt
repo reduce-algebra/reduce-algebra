@@ -1,0 +1,44 @@
+off rlabout;
+
+
+
+symbolic (infile "../../SUPPORT/real.red" where !*output=nil);
+
+
+symbolic (infile "../../SUPPORT/strings.red" where !*output=nil);
+
+
+
+P := {{17*x1-1100*x3, 3*x2-275*x3, 84700000*x3^2-907500*x3+1343}};
+
+
+                                                2
+p := {{17*x1 - 1100*x3,3*x2 - 275*x3,84700000*x3  - 907500*x3 + 1343}}
+
+
+classifyComponents P;
+
+
+{{{x1,x2,x3}},
+
+ {{x1,x2,x3}},
+
+          - sqrt(304585) + 825
+ {{x1 = -----------------------,
+                 2380
+
+          - sqrt(304585) + 825
+   x2 = -----------------------,
+                 1680
+
+          - sqrt(304585) + 825
+   x3 = -----------------------}},
+                154000
+
+ {X},
+
+ X}
+
+
+end;
+
