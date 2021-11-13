@@ -90,19 +90,15 @@ compiletime
   ds(floathiword,x(),floathighorder inf x);
   ds(floatloword,x(),floatloworder inf x);
 
+  ds(ieeeexpt,u(),
+      wdifference(wand(ieeemask,
+                       wshift(floathiword u,ieeeshift)),
+                 ieeebias));
+  ds(ieeesign,u(),wshift(floathiword u,signshift));
+     % ieeemant is the mantissa part of the upper 32 bit group.
+
   if bitsperword=32 then
   <<
-% ACN worries about "-0.0" here ...
-    ds(ieeezerop,u(), weq(0,floathiword u) and weq(0,floatloword u));
-% Again is "+0.0" equal to "-0.0" and is "NaN" equal to "NaN"? Doing
-% a bit-pattern comparison could be held to be dangerous, but provided
-% the user is aware of these issues I do not mind.
-    ds(ieeeequal,u2(v),
-           weq(floathiword u2,floathiword v)
-       and weq(floatloword u2,floatloword v));
-% In the newer code in this file and the implemention of safe!-fp!-XX
-% the mantissa is never needed. But perhaps somewhere else it will be
-% useful.
     ds(ieeemant,f(),
        (lor(lshift(
                wor(wshift(wand (floathiword f, 1048575), % 16#FFFFF
@@ -111,23 +107,28 @@ compiletime
                26),
                wand(lshift(-1,-6), lf))
          where lf := floatloword f));
+% IEEE zero may have the sign bit set to indicate -0.0,
+%  so shift the leftmost bit off the machine word before comparing with 0
+    ds(ieeezerop,u(), weq(0,wshift(floathiword u,1)) and weq(0,floatloword u));
+
+    ds(ieeeequal,u2(v),
+           weq(floathiword u2,floathiword v)
+       and weq(floatloword u2,floatloword v)
+       and not(weq(ieeeexpt u2,ieeemaxexp,1024) and wneq(ieeemant u2,0))
+       and not(weq(ieeeexpt v, ieeemaxexp,1024) and wneq(ieeemant v, 0)));
    >>
    else if bitsperword=64 then
    <<
-% Again the issues of "-0.0" and "NaN" arise...
-    ds(ieeezerop,u(), weq(0,floathiword u));
-    ds(ieeeequal,u2(v), weq(floathiword u2,floathiword v));
     ds(ieeemant,f(), wand (floathiword f,
                            4503599627370495)); % 16#FFFFFFFFFFFFF
+    ds(ieeezerop,u(), weq(0,wshift(floathiword u,1)));
+
+    ds(ieeeequal,u2(v),
+           weq(floathiword u2,floathiword v)
+       and not(weq(ieeeexpt u2,ieeemaxexp,1024) and wneq(ieeemant u2,0))
+       and not(weq(ieeeexpt v, ieeemaxexp,1024) and wneq(ieeemant v, 0)));
    >>
    else error(99,"#### unknown bit size");
-
-  ds(ieeeexpt,u(),
-      wdifference(wand(ieeemask,
-                       wshift(floathiword u,ieeeshift)),
-                 ieeebias));
-  ds(ieeesign,u(),wshift(floathiword u,signshift));
-     % ieeemant is the mantissa part of the upper 32 bit group.
 
 %  define!-constant(!!plumaxexp,1018);
 %  define!-constant(!!pluminexp,-979);
