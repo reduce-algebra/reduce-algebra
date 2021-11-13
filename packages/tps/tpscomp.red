@@ -26,7 +26,6 @@ module tpscomp; % Compile prefix expression into network of
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id$
 
 % The compiler is rule driven by looking for a compilation rule (crule)
 % property on the property list of the operator.  If a rule does not
@@ -55,7 +54,7 @@ symbolic procedure ps!:compile(form,depvar,about);
       else ps!:compile(ps!:value form,depvar,about)
    else if memq(rator form, ps!:specials) then
       apply(get(car form,'ps!:crule), list(form,depvar,about))
-   else begin scalar polefn, tmp, ispoly;
+   else begin scalar spec_exp_fn, tmp, ispoly;
       % modified May 2021 to use a begin block to faciliate extensions
       tmp := prepsqxx simp!* list('df,ps!:arg!-values form, depvar);
       if tmp = 0 then <<
@@ -92,12 +91,14 @@ symbolic procedure ps!:compile(form,depvar,about);
       if get(car form,'ps!:crule) then
          return apply(get(car form,'ps!:crule),list(form,depvar,about));
 
-      % generalisation of the mechanism to expand a special function
-      % about one of its poles.
-      polefn := get(car form, '!*polefn);
-      if polefn then <<
-         % deal with functions with known poles
-         tmp := apply(polefn, list(form, depvar, about)); 
+      % To expand a special function when the default method fails
+      % for example about a pole or when simplifcation of terms results
+      % in (say) 0/0
+      spec_exp_fn := get(car form, '!*specexp);
+      if spec_exp_fn then <<
+         % deal with possible special expansion and return it
+	 % else return nil and continue with default method
+         tmp := apply(spec_exp_fn, list(form, depvar, about)); 
          if tmp then return tmp;
       >>;
       tmp := assoc(form,knownps);
@@ -109,159 +110,6 @@ symbolic procedure ps!:compile(form,depvar,about);
                               ps!:compile(arg,depvar,about), depvar,about);
    end;
 
-foreach fn in '(csc cot sec tan csch coth sech tanh) do
-   put(fn, '!*polefn, 'trig!-hyp!-polefn);
-
-symbolic procedure trig!-hyp!-polefn(form, depvar, exppt);
-  % returns nil if there is no pole at the expansion point
-  % otherwise returns the power series of 1/reciprocal function.
-begin scalar arg1, tmp, f, fp, p, r;
-   arg1 := subst(exppt, depvar, cadr form);
-   f := car form;
-   if (f = 'csc) or (f = 'cot) or (f = 'csch) or (f = 'coth) then
-      if (f = 'csc) or (f = 'cot) then <<
-         fp := 0;
-         p := 'pi;
-         if f = 'cot then
-	    r := 'tan
-	 else
-	    r := 'sin;
-      >>
-      else <<
-         fp := 0;
-         p := '(times i pi);
-	 if f = 'csch then
-	    r := 'sinh
-	 else
-	    r := 'tanh;
-      >>
-   else if (f = 'sec) or (f = 'tan) then <<
-           fp := '(quotient pi 2);
-           p := 'pi;
-	   if f = 'sec then
-	       r := 'cos
-	   else
-	       r := 'cot;	   
-        >>
-   else if (f = 'sech) or (f = 'tanh) then <<
-           fp := '(times i (quotient pi 2));
-           p := '(times i pi);
-  	   if f = 'sech then
-	      r := 'cosh
-	   else
-	      r := 'coth;	   
-        >>;
-	
-   tmp := reval list('quotient,list('difference, arg1, fp), p);
-   if fixp tmp then <<
-      tmp:= ps!:compile(list('quotient, 1, r . cdr form), depvar, exppt);
-      ps!:set!-value(tmp, car(form) . cdr ps!:value(cadr ps!:operands tmp));
-      return tmp;
-   >>
-   else
-      return nil;
-end;
-
-deflist('((jacobisn jacobins) (jacobicn jacobinc) (jacobidn jacobind)
-          (jacobins jacobisn) (jacobinc jacobicn) (jacobind jacobidn)
-          (jacobisc jacobics) (jacobisd jacobids) (jacobics jacobisc)
-	  (jacobicd jacobidc) (jacobids jacobisd) (jacobidc jacobicd)
-	  ), 'recipfn);
-
-foreach fn in '(jacobisn jacobicn jacobidn jacobins jacobinc jacobind
-                jacobisc jacobisd jacobics jacobicd jacobids jacobidc) do
-   put(fn, '!*polefn, 'jacobi!-polefn);
-
-
-symbolic procedure jacobi!-polefn(form, depvar, exppt);
-  % returns nil if there is no pole at the expansion point
-  % otherwise returns the power series of 1/reciprocal function.
-begin scalar arg1, arg2, tmp, f, m, n, r;
-   arg1 := subst(exppt, depvar, cadr form);
-   arg2 := caddr form;
-   f := car form;
-   if depends(arg2, depvar) then
-   % can't handle this case yet, so give up and let ps!:unknown!-crule try.
-      return nil;
-
-   begin scalar !*ratarg := t;
-      tmp := reval arg1;
-      tmp := cdr coeffeval list(tmp, list('ellipticK, arg2));
-   end;
-
-   if length tmp > 1 then m := cadr tmp else m := 0;
-   n := reval list('quotient, list('times, 'i, car tmp),
-                              list('ellipticK!', arg2));
-   if not(length tmp <= 2 and fixp m and fixp n) then return nil;  
-
-   if (f = 'jacobisn) or (f = 'jacobicn) or (f = 'jacobidn) then
-      <<if not evenp m or evenp n then return nil>>
-   else if (f = 'jacobidc) or (f = 'jacobinc) or (f = 'jacobisc) then
-      <<if  evenp m or not evenp n then return nil>>
-   else if (f = 'jacobicd) or (f = 'jacobisd) or (f = 'jacobind) then
-      <<if  evenp m or evenp n then return nil>>
-   else if  not evenp m or not evenp n then return nil;
-
-   r := get(f, 'recipfn);
-   tmp := ps!:compile(list('quotient, 1, r . cdr form), depvar, exppt);
-   ps!:set!-value(tmp, car(form) . cdr ps!:value(cadr ps!:operands tmp));
-   return tmp;
-end;
-
-put('weierstrass, '!*polefn, 'weier!-polefn);
-put('weierstrass1, '!*polefn, 'weier!-polefn);
-put('weierstrassZeta, '!*polefn, 'weier!-polefn);
-put('weierstrassZeta1, '!*polefn, 'weier!-polefn);
-
-symbolic procedure weier!-polefn(form, depvar, exppt);
-begin scalar arg1, arg2, arg3, tmp, tmp1, f, m, n, r;
-   arg1 := subst(exppt, depvar, cadr form);
-   arg2 := caddr form;
-   arg3 := cadddr form;
-   f := car form;
-   if depends(arg2, depvar) or depends(arg3, depvar) then
-   % can't handle this case yet, so give up and let ps!:unknown!-crule try.
-       return nil;
-
-   if f = 'weierstrass1 or f = 'weierstrassZeta1 then <<
-      tmp := list('lattice_omega1, arg2, arg3);
-      arg3 := list('lattice_omega3, arg2, arg3);
-      arg2 := tmp;
-   >>;
-   
-   begin scalar !*ratarg := t;
-      tmp := reval arg1;
-      tmp := cdr coeffeval list(tmp, arg2);
-   end;
-
-   if length tmp > 1 then m := cadr tmp else m := 0;
-   n := reval list('quotient, reval car tmp, arg3);
-   if not(length tmp <= 2 and fixp m and fixp n and evenp m and evenp n) then
-     % at a regular point
-     return simppstay2(form, depvar, exppt, nil);
-     
-   if f = 'weierstrass or f = 'weierstrassZeta then r := 'RW!*   
-   else r := 'RW1!*;
-
-   % Using the standard tps expansion here gives the wrong result,
-   % we must use taylor expansion ??!! The standard method seems OK
-   % for regular points but taylor expansion used as a precaution above
-   
-   tmp := simppstay2(r . cdr form, depvar, exppt, nil);
-   tmp := ps!:quotient!-crule(list('quotient, 1, tmp), depvar, exppt);
-   tmp1 := cdr ps!:value(cadr ps!:operands tmp);
-   if f = 'weierstrassZeta or f = 'weierstrassZeta1 then <<
-       tmp := ps!:int!-crule(list('int, tmp, depvar), depvar, exppt);
-       tmp := reval (list
-	          ('difference,
-	              list('plus, list('times, m, list('eta1, arg2, arg3)),
- 	                          list('times, n, list('eta3, arg2, arg3))),
-		      tmp));
-        tmp := ps!:compile(tmp, depvar, exppt);
-   >>;
-   ps!:set!-value(tmp, car(form) . tmp1);
-   return tmp;
-end;
 
 symbolic procedure make!-ps!-id(id,depvar,about);
 begin scalar ps;
@@ -670,6 +518,307 @@ begin scalar eflg,exp1,exp2,b,psvalue;
 end;
 
 put('expt,'ps!:crule,'ps!:expt!-crule);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Added by Alan Barnes, 2021 to cater for expansion about a pole of
+% trigonmetric and hyperbolic functions
+
+foreach fn in '(csc cot sec tan csch coth sech tanh) do
+   put(fn, '!*specexp, 'trig!-hyp!-polefn);
+
+symbolic procedure trig!-hyp!-polefn(form, depvar, exppt);
+  % returns nil if there is no pole at the expansion point
+  % otherwise returns the power series of 1/reciprocal function.
+begin scalar arg1, tmp, f, fp, p, r;
+   arg1 := subst(exppt, depvar, cadr form);
+   f := car form;
+   if (f = 'csc) or (f = 'cot) or (f = 'csch) or (f = 'coth) then
+      if (f = 'csc) or (f = 'cot) then <<
+         fp := 0;
+         p := 'pi;
+         if f = 'cot then
+	    r := 'tan
+	 else
+	    r := 'sin;
+      >>
+      else <<
+         fp := 0;
+         p := '(times i pi);
+	 if f = 'csch then
+	    r := 'sinh
+	 else
+	    r := 'tanh;
+      >>
+   else if (f = 'sec) or (f = 'tan) then <<
+           fp := '(quotient pi 2);
+           p := 'pi;
+	   if f = 'sec then
+	       r := 'cos
+	   else
+	       r := 'cot;	   
+        >>
+   else if (f = 'sech) or (f = 'tanh) then <<
+           fp := '(times i (quotient pi 2));
+           p := '(times i pi);
+  	   if f = 'sech then
+	      r := 'cosh
+	   else
+	      r := 'coth;	   
+        >>;
+	
+   tmp := reval list('quotient,list('difference, arg1, fp), p);
+   if fixp tmp then <<
+      tmp:= ps!:compile(list('quotient, 1, r . cdr form), depvar, exppt);
+      ps!:set!-value(tmp, car(form) . cdr ps!:value(cadr ps!:operands tmp));
+      return tmp;
+   >>
+   else
+      return nil;
+end;
+
+% This caters for expansion of the Jacobi elliptic functions about a pole.
+% It fails if the expansion is about modulus k=0 or k=1. 
+% Added by Alan Barnes 2021.
+
+symbolic procedure jacobi!-expansionfn(form, depvar, exppt);
+  % returns nil if there is no pole at the expansion point
+  % otherwise returns the power series of 1/reciprocal function.
+begin scalar arg1, arg2, tmp, f, m, n, r;
+   arg1 := subst(exppt, depvar, rand1 form);
+   arg2 := rand2 form;
+   f := rator form;
+   if depends(arg2, depvar) then <<
+      arg2 :=  reval subst(exppt, depvar, arg2);
+      if arg2 = 0 or arg2 = 1 or arg2 = -1 then
+	 rederr("Expansion of Jacobi elliptic functions not supported about unit or zero modulus")
+      else % try default method  -- may work or collapse in a heap
+         return nil;
+   >>;
+   begin scalar !*ratarg := t;
+      tmp := reval arg1;
+      tmp := cdr coeffeval list(tmp, list('ellipticK, arg2));
+   end;
+
+   if length tmp > 1 then m := cadr tmp else m := 0;
+   n := reval list('quotient, list('times, 'i, car tmp),
+                              list('ellipticK!', arg2));
+   if not(length tmp <= 2 and fixp m and fixp n) then return nil;  
+
+   if (f = 'jacobisn) or (f = 'jacobicn) or (f = 'jacobidn) then
+      <<if not evenp m or evenp n then return nil>>
+   else if (f = 'jacobidc) or (f = 'jacobinc) or (f = 'jacobisc) then
+      <<if  evenp m or not evenp n then return nil>>
+   else if (f = 'jacobicd) or (f = 'jacobisd) or (f = 'jacobind) then
+      <<if  evenp m or evenp n then return nil>>
+   else if  not evenp m or not evenp n then return nil;
+
+   r := get(f, 'recipfn);
+   tmp := ps!:compile(list('quotient, 1, r . cdr form), depvar, exppt);
+   ps!:set!-value(tmp, car(form) . cdr ps!:value(cadr ps!:operands tmp));
+   return tmp;
+end;
+
+deflist('((jacobisn jacobins) (jacobicn jacobinc) (jacobidn jacobind)
+          (jacobins jacobisn) (jacobinc jacobicn) (jacobind jacobidn)
+          (jacobisc jacobics) (jacobisd jacobids) (jacobics jacobisc)
+	  (jacobicd jacobidc) (jacobids jacobisd) (jacobidc jacobicd)
+	  ), 'recipfn);
+
+foreach fn in '(jacobisn jacobicn jacobidn jacobins jacobinc jacobind
+                jacobisc jacobisd jacobics jacobicd jacobids jacobidc) do
+   put(fn, '!*specexp, 'jacobi!-expansionfn);
+
+% Added by Alan Barnes Summer 2021 to allow expansion of Weierstrassian
+% elliptic functions including about their poles
+
+symbolic procedure weier!-specexpfn(form, depvar, exppt);
+begin scalar arg1, arg2, arg3, tmp, tmp1, f, m, n, r;
+   arg1 := subst(exppt, depvar, rand1 form);
+   arg2 := rand2 form;
+   arg3 := cadddr form;
+   f := rator form;
+   if depends(arg2, depvar) or depends(arg3, depvar) then
+   % can't handle this case yet, so give up and let ps!:unknown!-crule try.
+       return nil;
+
+   if f = 'weierstrass1 or f = 'weierstrassZeta1 then <<
+      tmp := list('lattice_omega1, arg2, arg3);
+      arg3 := list('lattice_omega3, arg2, arg3);
+      arg2 := tmp;
+   >>;
+   
+   begin scalar !*ratarg := t;
+      tmp := reval arg1;
+      tmp := cdr coeffeval list(tmp, arg2);
+   end;
+
+   if length tmp > 1 then m := cadr tmp else m := 0;
+   n := reval list('quotient, reval car tmp, arg3);
+   if not(length tmp <= 2 and fixp m and fixp n and evenp m and evenp n) then
+     % at a regular point
+     return simppstay2(form, depvar, exppt, nil);
+     
+   if f = 'weierstrass or f = 'weierstrassZeta then r := 'RW!*   
+   else r := 'RW1!*;
+
+   % Using the standard tps expansion here gives the wrong result,
+   % we must use taylor expansion ??!! The standard method seems OK
+   % for regular points, but taylor expansion used as a precaution above
+   
+   tmp := simppstay2(r . cdr form, depvar, exppt, nil);
+   tmp := ps!:quotient!-crule(list('quotient, 1, tmp), depvar, exppt);
+   tmp1 := cdr ps!:value(cadr ps!:operands tmp);
+   if f = 'weierstrassZeta or f = 'weierstrassZeta1 then <<
+       tmp := ps!:int!-crule(list('int, tmp, depvar), depvar, exppt);
+       tmp := reval (list
+	          ('difference,
+	              list('plus, list('times, m, list('eta1, arg2, arg3)),
+ 	                          list('times, n, list('eta3, arg2, arg3))),
+		      tmp));
+        tmp := ps!:compile(tmp, depvar, exppt);
+   >>;
+   ps!:set!-value(tmp, car(form) . tmp1);
+   return tmp;
+end;
+
+put('weierstrass, '!*specexp, 'weier!-specexpfn);
+put('weierstrass1, '!*specexp, 'weier!-specexpfn);
+put('weierstrassZeta, '!*specexp, 'weier!-specexpfn);
+put('weierstrassZeta1, '!*specexp, 'weier!-specexpfn);
+
+% Added by Alan Barnes, October 2021, to allow the Legendre elliptic integrals
+% to be expanded as a series in the modulus about k=0.
+% The default method works for other values of k (except k=1) and for
+% expansion of the incomplete integrals as series in their first argument.
+
+% This function and jacobiinv!-modulus-exp involve use of a new operator
+% def!-int which denotes a definite integral whose 1st arg is an indefinite
+% integral (a power series). The 2nd and 3rd args are the lower and upper
+% integration limits.
+% The corresponding erule in tpseval.red evaluates the terms of the series
+% for the indefinite integral at the two limits and subtracts them.
+
+symbolic procedure ellipi!-modulus!-exp(form, depvar, about);
+begin scalar arg, tmp;
+   
+   if length form = 2 then
+      tmp := rand1 form
+   else 
+      tmp := rand2 form;
+   if not depends(tmp, depvar) then return nil;
+   
+   arg :=  reval subst(about, depvar, tmp);
+   if arg neq 0 and arg neq 1 then
+      if length form = 2 then
+         % let ps!:unknown!-crule try
+         return nil
+      else
+ 	 rederr("Expansion of incomplete elliptic integrals only supported about zero modulus");
+
+   if arg = 1 then
+      rederr("Expansion of elliptic integrals about modulus k=1 not supported");
+
+   if rator form = 'ellipticE then 
+      tmp := {'expt, {'plus, 1,
+	                     {'minus, {'times, {'expt, {'sin, '!*!*x}, 2},
+	                                       {'expt, tmp, 2}}}},
+ 	             {'quotient, 1, 2}}
+   else if (rator form = 'ellipticF) or (rator form = 'ellipticK) then
+      tmp := {'expt, {'plus, 1,
+	                     {'minus, {'times, {'expt, {'sin, '!*!*x}, 2},
+	                                       {'expt, tmp, 2}}}},
+	             {'quotient, -1, 2}};
+
+   tmp := ps!:compile({'int, tmp, '!*!*x}, depvar, about);
+   ps!:set!-value(tmp, form);
+
+   if length form = 2 then
+      arg := {'quotient, 'pi, 2} % ellipticK or unary ellipticE
+   else
+      arg := rand1 form;   % binary ellipticE or ellipticF
+
+   return make!-ps({'def!-int, tmp, 0, arg}, form, depvar, about);
+end;
+
+put('ellipticK, '!*specexp, 'ellipi!-modulus!-exp);
+put('ellipticF, '!*specexp, 'ellipi!-modulus!-exp);
+put('ellipticE, '!*specexp, 'ellipi!-modulus!-exp);
+
+% Added by Alan Barnes, October 2021, to allow the inverse Jacobi elliptic
+% functions to be expanded as a series in the modulus k about k=0.
+% Other values of k are not yet supported.
+% All are in fact elliptic integrals of the first kind.
+% The default method works for expansion as series in their first argument.
+
+foreach fn in '(arcsn arccn arcdn arcns arcnc arcnd
+                arcsc arcsd arccs arccd arcds arcdc) do
+   put(fn, '!*specexp, 'jacobiinv!-modulus!-exp);
+
+symbolic procedure jacobiinv!-modulus!-exp(form, depvar, about);
+begin scalar arg, tmp;
+   
+   if length form = 2 then
+      tmp := rand1 form
+   else 
+      tmp := rand2 form;
+   if not depends(tmp, depvar) then return nil;
+   
+   arg :=  reval subst(about, depvar, tmp);
+   if arg neq 0 then
+       rederr("Expansion of inverse Jacobi functions only supported about modulus k=0");
+
+
+
+   if (rator form = 'arcsn) or (rator form = 'arcns) then
+      tmp := {'expt, {'plus, 1,
+	                     {'minus, {'times, {'expt, {'sin, '!*!*x}, 2},
+	                                       {'expt, tmp, 2}}}},
+	             {'quotient, -1, 2}}
+   else if (rator form = 'arccn) or (rator form = 'arcnc) then
+      tmp :=  {'expt, {'plus, {'plus, 1, {'minus, {'expt, tmp, 2}},
+	                      {'times, {'expt, {'cos, '!*!*x}, 2},
+	                                       {'expt, tmp, 2}}}},
+	             {'quotient, -1, 2}}
+   else if (rator form = 'arcdn) or (rator form = 'arcnd) then
+%      tmp := {'expt, {'plus, {'plus, {'expt, {'cos, '!*!*x}, 2},
+%                                     {'expt, tmp, 2}}, {'minus, 1}},
+%	             {'quotient, -1, 2}}
+      rederr("arcdn and arcnd not defined for zero modulus")			
+   else if (rator form = 'arccd) or (rator form = 'arcdc) then
+      tmp := {'expt, {'plus, 1,
+	                     {'minus, {'times, {'expt, {'cos, '!*!*x}, 2},
+	                                       {'expt, tmp, 2}}}},
+	             {'quotient, -1, 2}}
+   else if (rator form = 'arcsc) or (rator form = 'arccs) then
+      tmp := {'expt, {'times, {'plus, 1, {'expt, '!*!*x, 2}},
+ 	                      {'plus, {'plus, 1, {'expt, '!*!*x, 2}},
+	                              {'minus, {'times, {'expt, '!*!*x, 2},
+	                                                {'expt, tmp, 2}}}}},
+	             {'quotient, -1, 2}}
+   else if (rator form = 'arcsd) or (rator form = 'arcds) then
+     tmp := {'expt, {'times, {'plus, 1, {'times, {'expt, '!*!*x, 2}, 
+	                                         {'expt, tmp, 2}}},
+	                     {'plus, {'plus, 1, {'times, {'expt, '!*!*x, 2}, 
+	                                                 {'expt, tmp, 2}}},
+			             {'minus, {'expt, '!*!*x, 2}}}}, 
+	             {'quotient, -1, 2}};
+
+   tmp := ps!:compile({'int, tmp, '!*!*x}, depvar, about);
+   ps!:set!-value(tmp, form);
+
+   arg :=
+     if rator form = 'arcsn then {'asin, rand1 form}
+     else if rator form = 'arcns then {'asin, {'quotient, 1, rand1 form}}
+     else if (rator form = 'arccn) or (rator form = 'arccd)
+                                 then {'acos, rand1 form}
+     else if (rator form = 'arcnc) or (rator form = 'arcdc)
+                                 then {'acos, {'quotient, 1, rand1 form}}
+     else if (rator form = 'arcds) or (rator form = 'arccs)
+                                 then {'quotient, 1, rand1 form}
+     else rand1 form;   %  arcsd or arcsc
+
+   return make!-ps({'def!-int, tmp, 0, arg}, form, depvar, about);
+end;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Added by Alan Barnes.  November 2015

@@ -1,0 +1,35 @@
+off rlabout;
+
+
+
+symbolic (infile "../../SUPPORT/real.red" where !*output=nil);
+
+
+symbolic (infile "../../SUPPORT/strings.red" where !*output=nil);
+
+
+
+basis := { - 3*x1 + 25*x2, 3*x1 - 25*x2};
+
+
+basis := { - 3*x1 + 25*x2,3*x1 - 25*x2}
+
+
+classifyComponents {basis};
+
+
+{{{x1,x2}},
+
+ {{x1,x2}},
+
+                  - 3
+ {{x1 = -1,x2 = ------}},
+                  25
+
+ {C},
+
+ C}
+
+
+end;
+

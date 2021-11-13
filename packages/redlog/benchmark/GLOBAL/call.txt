@@ -1,0 +1,1 @@
+run(source='/tmp/redlogtest/source/benchmark', result='/tmp/redlogtest/now/benchmark', force=True, jobs=256, dry_run=False, psl_heapsize=4000, log='warning', bar=True, exclude=None, include=None, exclude_by_time=None, reduce='/CW/local/QE/reduce-algebra/trunk', svn_reduce=None, revision='HEAD')

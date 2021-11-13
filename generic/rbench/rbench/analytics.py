@@ -124,6 +124,10 @@ def read_filetree(root: str, key0: str = None):
         attrs[attribute] = entry
     rows = []
     for path, directories, files in os.walk(root):
+        for directory in directories:
+            if directory == 'SUPPORT':
+                directories.remove(directory)
+                break
         for file in files:
             if '.red' not in file:
                 continue
@@ -136,13 +140,13 @@ def read_filetree(root: str, key0: str = None):
     for postfix in '_csl', '_psl':
         for stem in 'start', 'cpu', 'gc', 'heapsize', 'valid', 'end':
             columns.append(stem + postfix)
-    df = RbDataFrame(rows, columns=['name'] + columns)
-    df.set_index('name', inplace=True)
-    df.rename_axis(None, inplace=True)
-    df.sort_index(inplace=True)
-    df.columns = pd.MultiIndex.from_tuples([(key0 or attrs['revision'], c) for c in df.columns])
-    df.attrs = attrs
-    return df
+    rbdf = RbDataFrame(rows, columns=['name'] + columns)
+    rbdf.set_index('name', inplace=True)
+    rbdf.rename_axis(None, inplace=True)
+    rbdf.sort_index(inplace=True)
+    rbdf.columns = pd.MultiIndex.from_tuples([(key0 or attrs['revision'], c) for c in rbdf.columns])
+    rbdf.attrs = attrs
+    return rbdf
 
 def combine2(a: RbDataFrame, b: RbDataFrame, *, keys: list = None):
     return RbDataFrame(pd.concat([a, b], axis=1))

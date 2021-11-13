@@ -25,7 +25,6 @@ module tpseval; % Evaluator for truncated power series.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id$
 
 % The evaluator interprets the results of the compilation phase and
 % is also rule driven until I get round to getting the compilation
@@ -295,6 +294,18 @@ begin scalar aa,x,y,z;
                                ps!:evaluate(ps,n-k))));
             return quotsq(z,multsq(3*(n-x) ./ 1,ps!:evaluate(aa,y)))
 end;
+
+put('def!-int,'ps!:order!-fn, 'ps!:defint!-orderfn);
+put('def!-int, 'ps!:erule, 'ps!:defint!-erule);
+
+symbolic procedure ps!:defint!-orderfn ps;
+   ps!:find!-order(rand1 ps!:expression ps);
+
+symbolic procedure ps!:defint!-erule(a,n);
+   addsq(subst(rand3 a, '!*!*x, term),
+      negsq subst(rand2 a, '!*!*x, term))
+	 where term =  ps!:evaluate(rand1 a, n);
+
 
 symbolic procedure ps!:evaluate(ps,i);
 begin scalar term;

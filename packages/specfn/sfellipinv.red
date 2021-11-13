@@ -34,7 +34,7 @@ algebraic;
 
 algebraic procedure sym_int_RF(x,y,z);
    begin scalar t0,tn,a0,an,c0,cn,tol,theta,n;
-      tol := 10.0^-(symbolic (!:prec!:+3));
+      tol := 10.0^-(symbolic !:prec!:);
       % sort arguments into ascending order
       if x>y then <<theta := y; y:=x; x:=theta>>;      
       if y>z then <<theta := z; z:=y; y:=theta>>;      
@@ -45,7 +45,7 @@ algebraic procedure sym_int_RF(x,y,z);
       a0 := sqrt(z-x);
       c0 := sqrt(y-x);
       n:=0;
-      while (cn^2 > tol) do <<
+      while (abs cn > tol) do <<
 	 tn := (t0 + sqrt(t0^2+*c0^2))/2;
       	 an := (a0+sqrt(a0^2-c0^2))/2;
          cn :=c0^2/(4*an);

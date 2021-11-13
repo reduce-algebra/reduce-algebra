@@ -1,0 +1,45 @@
+off rlabout;
+
+
+
+symbolic (infile "../../SUPPORT/real.red" where !*output=nil);
+
+
+symbolic (infile "../../SUPPORT/strings.red" where !*output=nil);
+
+
+
+basis := { - 1200*x1*x3 + 31*x1, 3*x1*x3 - 750000*x2, 500*x2 - 21*x3,  - 31*x1, 3*x2, 21*x3,  - 100*x2};
+
+
+basis := { - 1200*x1*x3 + 31*x1,
+
+          3*x1*x3 - 750000*x2,
+
+          500*x2 - 21*x3,
+
+           - 31*x1,
+
+          3*x2,
+
+          21*x3,
+
+           - 100*x2}
+
+
+classifyComponents {basis};
+
+
+{{{x1,x2,x3}},
+
+ {{}},
+
+ {{1 = 0}},
+
+ {o},
+
+ o}
+
+
+end;
+
