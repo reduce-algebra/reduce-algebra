@@ -1725,12 +1725,15 @@
 (de lth-ldp-stp (code regt1 regt2 reg-or-sp-imm) 4)
 
 (de OP-fcvt (code regd regn)
-    (prog (opcode1 opcode2)
+    (prog (opcode1 opcode2 opcode3)
 	  (setq opcode1 (car code) opcode2 (cadr code))
+	  (if (null (cddr code))
+	      (setq opcode3 0)
+	    (setq opcode3 (caddr code)))
 	  (DepositInstructionBytes
 	   (lsh opcode1 -3)
 	   (lor (lsh (land opcode1 2#111) 5) opcode2)
-	   (lsh (reg2int regn) -3)
+	   (lor (lsh opcode3 6) (lsh (reg2int regn) -3))
            (lor (reg2int regd) (lsh (land (reg2int regn) 2#111) 5)))
     ))
 
@@ -1747,6 +1750,16 @@
     ))
 
 (de lth-fp-arith (code regd regn regm) 4)
+
+(de OP-freg-freg (code regd regn)
+    (DepositInstructionBytes
+     (lsh (car code) -14)
+     (land 16#ff (lsh (car code) -6))
+     (lor (lsh (land code 2#111111) 2) (lsh (reg2int regn) -3))
+     (lor (reg2int regd) (lsh (land (reg2int regn) 2#111) 5)))
+    ))
+
+(de lth-freg-freg (code regd regn) 4)
 
 (de OP-fcmp (code regn regm)
     (OP-fp-arith code '(reg d0) regn regm))

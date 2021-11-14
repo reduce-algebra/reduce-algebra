@@ -1156,24 +1156,35 @@ par2))        ((and (regfp32p par1) (regfp32p par2)) (lth-fcmp '(241 8) par1
 par2))        ((and (regfp64p par1) (regfp64p par2)) (lth-fcmp '(243 8) par1 
 par2)))
 
- (defopcode fcvtas (par1 par2) ((and (reg32p par1) (regfp16p par2)) (op-fcvt '(
+ (defopcode fcvt (par1 par2) ((and (regfp32p par1) (regfp16p par2)) (op-fcvt '(
 247                                                                                
+2                                                                                  
+1)                                                                           
+par1                                                                         
+par2))      ((and (regfp64p par1) (regfp16p par2)) (op-fcvt '(247 2 3) par1 par2
+))          ((and (regfp16p par1) (regfp32p par2)) (op-fcvt '(241 3 3) par1 par2
+))          ((and (regfp64p par1) (regfp32p par2)) (op-fcvt '(241 2 3) par1 par2
+))          ((and (regfp16p par1) (regfp64p par2)) (op-fcvt '(243 3 3) par1 par2
+))          ((and (regfp32p par1) (regfp64p par2)) (op-fcvt '(243 2 1) par1 par2
+)))
+ (defoplength fcvt (par1 par2) ((and (regfp32p par1) (regfp16p par2)) (lth-fcvt 
+'                                                                                
+(                                                                                 
+247                                                                                   
+2                                                                                     
+1)                                                                              
+par1                                                                            
+par2))        ((and (regfp64p par1) (regfp16p par2)) (lth-fcvt '(247 2 3) par1 
+par2))        ((and (regfp16p par1) (regfp32p par2)) (lth-fcvt '(241 3 3) par1 
+par2))        ((and (regfp64p par1) (regfp32p par2)) (lth-fcvt '(241 2 3) par1 
+par2))        ((and (regfp16p par1) (regfp64p par2)) (lth-fcvt '(243 3 3) par1 
+par2))        ((and (regfp32p par1) (regfp64p par2)) (lth-fcvt '(243 2 1) par1 
+par2)))
+
+ (defopcode fcvtas (par1 par2) ((and (reg32p par1) (regfp32p par2)) (op-fcvt '(
+241                                                                                
 4)                                                                           
 par1                                                                         
-par2))      ((and (regp par1) (regfp16p par2)) (op-fcvt '(1271 4) par1 par2)) ((
-and                                                                                 
-(                                                                                    
-reg32p                                                                                      
-par1)                                                                               
-(                                                                                    
-regfp32p                                                                                      
-par2))                                                                         (
-op-fcvt                                                                                 
-'                                                                                        
-(                                                                                         
-241                                                                                           
-4)                                                                                      
-par1                                                                                    
 par2))      ((and (regp par1) (regfp32p par2)) (op-fcvt '(1265 4) par1 par2)) ((
 and                                                                                 
 (                                                                                    
@@ -1189,37 +1200,21 @@ op-fcvt
 4)                                                                                      
 par1                                                                                    
 par2))      ((and (regp par1) (regfp64p par2)) (op-fcvt '(1267 4) par1 par2)))
- (defoplength fcvtas (par1 par2) ((and (reg32p par1) (regfp16p par2)) (lth-fcvt 
+ (defoplength fcvtas (par1 par2) ((and (reg32p par1) (regfp32p par2)) (lth-fcvt 
 '                                                                                
 (                                                                                 
-247                                                                                   
+241                                                                                   
 4)                                                                              
 par1                                                                            
-par2))        ((and (regp par1) (regfp16p par2)) (lth-fcvt '(1271 4) par1 par2))
-              ((and (reg32p par1) (regfp32p par2)) (lth-fcvt '(241 4) par1 par2)
-)             ((and (regp par1) (regfp32p par2)) (lth-fcvt '(1265 4) par1 par2))
+par2))        ((and (regp par1) (regfp32p par2)) (lth-fcvt '(1265 4) par1 par2))
               ((and (reg32p par1) (regfp64p par2)) (lth-fcvt '(243 4) par1 par2)
 )             ((and (regp par1) (regfp64p par2)) (lth-fcvt '(1267 4) par1 par2))
 )
 
- (defopcode fcvtns (par1 par2) ((and (reg32p par1) (regfp16p par2)) (op-fcvt '(
-247                                                                                
+ (defopcode fcvtns (par1 par2) ((and (reg32p par1) (regfp32p par2)) (op-fcvt '(
+241                                                                                
 0)                                                                           
 par1                                                                         
-par2))      ((and (regp par1) (regfp16p par2)) (op-fcvt '(1271 0) par1 par2)) ((
-and                                                                                 
-(                                                                                    
-reg32p                                                                                      
-par1)                                                                               
-(                                                                                    
-regfp32p                                                                                      
-par2))                                                                         (
-op-fcvt                                                                                 
-'                                                                                        
-(                                                                                         
-241                                                                                           
-0)                                                                                      
-par1                                                                                    
 par2))      ((and (regp par1) (regfp32p par2)) (op-fcvt '(1265 0) par1 par2)) ((
 and                                                                                 
 (                                                                                    
@@ -1235,39 +1230,21 @@ op-fcvt
 0)                                                                                      
 par1                                                                                    
 par2))      ((and (regp par1) (regfp64p par2)) (op-fcvt '(1267 0) par1 par2)))
- (defoplength fcvtns (par1 par2) ((and (reg32p par1) (regfp16p par2)) (lth-fcvt 
+ (defoplength fcvtns (par1 par2) ((and (reg32p par1) (regfp32p par2)) (lth-fcvt 
 '                                                                                
 (                                                                                 
-247                                                                                   
+241                                                                                   
 0)                                                                              
 par1                                                                            
-par2))        ((and (regp par1) (regfp16p par2)) (lth-fcvt '(1271 0) par1 par2))
-              ((and (reg32p par1) (regfp32p par2)) (lth-fcvt '(241 0) par1 par2)
-)             ((and (regp par1) (regfp32p par2)) (lth-fcvt '(1265 0) par1 par2))
+par2))        ((and (regp par1) (regfp32p par2)) (lth-fcvt '(1265 0) par1 par2))
               ((and (reg32p par1) (regfp64p par2)) (lth-fcvt '(243 0) par1 par2)
 )             ((and (regp par1) (regfp64p par2)) (lth-fcvt '(1267 0) par1 par2))
 )
 
- (defopcode fcvtzs (par1 par2) ((and (reg32p par1) (regfp16p par2)) (op-fcvt '(
-247                                                                                
+ (defopcode fcvtzs (par1 par2) ((and (reg32p par1) (regfp32p par2)) (op-fcvt '(
+241                                                                                
 24)                                                                          
 par1                                                                         
-par2))      ((and (regp par1) (regfp16p par2)) (op-fcvt '(1271 24) par1 par2)) (
-(                                                                                
-and                                                                                  
-(                                                                                     
-reg32p                                                                                       
-par1)                                                                                
-(                                                                                     
-regfp32p                                                                                       
-par2))                                                                          
-(                                                                                
-op-fcvt                                                                                  
-'                                                                                         
-(                                                                                          
-241                                                                                            
-24)                                                                                      
-par1                                                                                     
 par2))      ((and (regp par1) (regfp32p par2)) (op-fcvt '(1265 24) par1 par2)) (
 (                                                                                
 and                                                                                  
@@ -1285,15 +1262,13 @@ op-fcvt
 24)                                                                                      
 par1                                                                                     
 par2))      ((and (regp par1) (regfp64p par2)) (op-fcvt '(1267 24) par1 par2)))
- (defoplength fcvtzs (par1 par2) ((and (reg32p par1) (regfp16p par2)) (lth-fcvt 
+ (defoplength fcvtzs (par1 par2) ((and (reg32p par1) (regfp32p par2)) (lth-fcvt 
 '                                                                                
 (                                                                                 
-247                                                                                   
+241                                                                                   
 24)                                                                             
 par1                                                                            
-par2))        ((and (regp par1) (regfp16p par2)) (lth-fcvt '(1271 24) par1 par2)
-)             ((and (reg32p par1) (regfp32p par2)) (lth-fcvt '(241 24) par1 par2
-))            ((and (regp par1) (regfp32p par2)) (lth-fcvt '(1265 24) par1 par2)
+par2))        ((and (regp par1) (regfp32p par2)) (lth-fcvt '(1265 24) par1 par2)
 )             ((and (reg32p par1) (regfp64p par2)) (lth-fcvt '(243 24) par1 par2
 ))            ((and (regp par1) (regfp64p par2)) (lth-fcvt '(1267 24) par1 par2)
 ))
@@ -1354,6 +1329,52 @@ lth-fp-arith
 par1                                                                               
 par2                                                                               
 par3)))
+
+ (defopcode fmov (par1 par2) ((and (regfp32p par1) (regfp32p par2)) (
+op-freg-freg                                                                      
+'                                                                                  
+(                                                                                   
+493584)                                                                           
+par1                                                                              
+par2))      ((and (regfp64p par1) (regfp64p par2)) (op-freg-freg '(497680) par1 
+par2))      ((and (regfp32p par1) (reg32p par2)) (op-freg-freg '(494016) par1 
+par2))      ((and (reg32p par1) (regfp32p par2)) (op-freg-freg '(493952) par1 
+par2))      ((and (regfp64p par1) (regp par2)) (op-freg-freg '(2595264) par1 
+par2))      ((and (regp par1) (regfp64p par2)) (op-freg-freg '(2595200) par1 
+par2)))
+ (defoplength fmov (par1 par2) ((and (regfp32p par1) (regfp32p par2)) (
+lth-freg-freg                                                                        
+'                                                                                     
+(                                                                                      
+493584)                                                                              
+par1                                                                                 
+par2))        ((and (regfp64p par1) (regfp64p par2)) (lth-freg-freg '(497680) 
+par1                                                                par2)) ((and
+                                                                                 
+(                                                                                 
+regfp32p                                                                                   
+par1)                                                                            
+(                                                                                 
+reg32p                                                                                   
+par2))                                                                      (
+lth-freg-freg                                                                              
+'                                                                                           
+(                                                                                            
+494016)                                                                                    
+par1                                                                                       
+par2))        ((and (reg32p par1) (regfp32p par2)) (lth-freg-freg '(493952) par1
+                                                                  par2)) ((and (
+regfp64p                                                                                 
+par1)                                                                          (
+regp                                                                                 
+par2))                                                                    (
+lth-freg-freg                                                                            
+'                                                                                         
+(                                                                                          
+2595264)                                                                                 
+par1                                                                                     
+par2))        ((and (regp par1) (regfp64p par2)) (lth-freg-freg '(2595200) par1 
+par2)))
 
  (defopcode fmul (par1 par2 par3) ((and (regfp16p par1) (regfp16p par2) (
 regfp16p                                                                          
