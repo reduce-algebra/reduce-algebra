@@ -60,6 +60,8 @@
 
 (global '(bndstksize))
 
+(setq bndstksize  2000)
+
 (global '(bndstk bndstkptr bndstkupperbound bndstklowerbound
 	  *dump-bndstk-on-overflow*))
 

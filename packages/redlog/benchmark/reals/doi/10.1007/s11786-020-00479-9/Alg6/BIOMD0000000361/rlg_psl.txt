@@ -1,0 +1,101 @@
+off rlabout;
+
+
+
+symbolic (infile "../../SUPPORT/real.red" where !*output=nil);
+
+
+symbolic (infile "../../SUPPORT/strings.red" where !*output=nil);
+
+
+
+P := {{x1, x3, x4, x8, 27*x5*x6-10*x7}, {x2, x3, x1*x5-154*x4, 20*x1*x7-3*x8, 2772*x4*x6-x8, 27*x5*x6-10*x7, 3080*x4*x7-3*x5*x8}};
+
+
+p := {{x1,
+
+       x3,
+
+       x4,
+
+       x8,
+
+       27*x5*x6 - 10*x7},
+
+      {x2,
+
+       x3,
+
+       x1*x5 - 154*x4,
+
+       20*x1*x7 - 3*x8,
+
+       2772*x4*x6 - x8,
+
+       27*x5*x6 - 10*x7,
+
+       3080*x4*x7 - 3*x5*x8}}
+
+
+classifyComponents P;
+
+
+{{{x1,
+
+   x3,
+
+   x4,
+
+   x5,
+
+   x6,
+
+   x7,
+
+   x8},
+
+  {x1,
+
+   x2,
+
+   x3,
+
+   x4,
+
+   x5,
+
+   x6,
+
+   x7,
+
+   x8}},
+
+ {{x5,x6,x7},
+
+  {x1,
+
+   x4,
+
+   x5,
+
+   x6,
+
+   x7,
+
+   x8}},
+
+                         - 27
+ {{x5 = -1,x6 = 1,x7 = -------},
+                         10
+
+                  - 1                      27
+  {x1 = -1,x4 = ------,x5 = 1,x6 = 1,x7 = ----,x8 = -18}},
+                 154                       10
+
+ {c,c},
+
+ 2c}
+
+
+end;
+

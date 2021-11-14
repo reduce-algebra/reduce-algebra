@@ -1,0 +1,25 @@
+off rlabout;
+
+
+
+symbolic (infile "../../SUPPORT/real.red" where !*output=nil);
+
+
+symbolic (infile "../../SUPPORT/strings.red" where !*output=nil);
+
+
+
+P := {{x1-40}};
+
+
+p := {{x1 - 40}}
+
+
+classifyComponents P;
+
+
+{{{x1}},{{x1}},{{x1 = 40}},{C},C}
+
+
+end;
+

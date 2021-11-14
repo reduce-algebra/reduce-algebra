@@ -1,0 +1,35 @@
+off rlabout;
+
+
+
+symbolic (infile "../../SUPPORT/real.red" where !*output=nil);
+
+
+symbolic (infile "../../SUPPORT/strings.red" where !*output=nil);
+
+
+
+P := {{x1, x2}, {4*x1+3, x2+1}};
+
+
+p := {{x1,x2},{4*x1 + 3,x2 + 1}}
+
+
+classifyComponents P;
+
+
+{{{x1,x2},{x1,x2}},
+
+ {{},{x1,x2}},
+
+                  - 3
+ {{1 = 0},{x1 = ------,x2 = -1}},
+                  4
+
+ {o,C},
+
+ C + o}
+
+
+end;
+
