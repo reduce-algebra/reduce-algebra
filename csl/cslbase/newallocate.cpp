@@ -690,7 +690,8 @@ void ableToAllocateNewChunk(uintptr_t threadId, size_t n, size_t gap)
     newChunk->isPinned = 0;
     newChunk->chunkPinChain = nullptr;
     size_t chunkNo = currentPage->chunkCount.fetch_add(1);
-    std::cout << "Page " << currentPage << " gets " << currentPage->chunkCount << "\n";
+    std::cout << "Page " << currentPage << " gets "
+              << static_cast<unsigned int>(currentPage->chunkCount) << "\n";
     currentPage->chunkMap[chunkNo] = newChunk;
     result = newChunk->dataStart() + TAG_VECTOR;
 //    cout << "result[" << threadId << "] = " << Addr(result) << endl;
@@ -901,7 +902,7 @@ void waitWhileAnotherThreadGarbageCollects()
         if (!st) my_abort(LOCATION ": condition variable timed out");
     }
     fringe = fringeBis;
-//    cout << "At " << __WHERE__ << " fringe set to fringeBis = " << fringe << "\r" << endl;
+    cout << "At " << __WHERE__ << " fringe set to fringeBis = " << fringe << "\r" << endl;
 }
 
 // Here I have just attempted to allocate n bytes but the attempt failed
@@ -963,11 +964,16 @@ uintptr_t difficult_n_bytes()
 // thread has completed its work.
 //
     });
+#if 0
+// @@@ This was a MESS and will need review when I move to multiple
+// threads, because the thread that ran GC has nou updated its fringeBis
+// properly.
 // At the end the GC can have updated the fringe for each thread,
 // so I need to put its updated value in the correct place.
     THREADID;
     fringe = fringeBis;
-//    cout << "At " << __WHERE__ << " fringe set to fringeBis = " << hex << fringe << dec << "\r" << endl;
+    cout << "At " << __WHERE__ << " fringe set to fringeBis = " << Addr(fringe) << dec << "\r" << endl;
+#endif
 #ifdef DEBUG
     testLayout();
 #endif
@@ -1150,7 +1156,7 @@ void setUpMostlyEmptyPage(Page *p)
     for (Chunk *c=p->chunkPinChain; c!=nullptr; c=c->chunkPinChain)
         p->chunkMap[p->chunkCount++] = c;
     std::cout << "MOSTLY empty page " << p << " increments chunkCount "
-              << p->chunkCount<< "\n";
+              << static_cast<unsigned int>(p->chunkCount) << "\n";
     p->pageFringe = reinterpret_cast<uintptr_t>(&p->data);
     p->pageLimit = reinterpret_cast<uintptr_t>(
                    static_cast<Chunk *>(p->chunkPinChain));
@@ -1205,7 +1211,8 @@ void setUpUsedPage(Page *p)
 // are there right from the start.
     for (Chunk *c = p->chunkPinChain; c!=nullptr; c=c->chunkPinChain)
         p->chunkMap[p->chunkCount++] = c;
-    std::cout << "Page " << p << " inc to " << p->chunkCount << "\n";
+    std::cout << "Page " << p << " inc to "
+              << static_cast<unsigned int>(p->chunkCount) << "\n";
 // I want the pinned chunks sorted so that the lowest address one comes
 // first. That will ensure that when one comes to skip past a pinned
 // chunk that the next chunk on the cgain will be the next one up in
@@ -1324,9 +1331,7 @@ bool allocateSegment(size_t n)
 // Keep a chain of all the pages.
         p->chain = freePages;
         p->chunkCount = 0; // Should be enough to mark it as empty.
-        std::cout << "free page " << p << " gets count 0\n";
         freePages = p;
-        std::cout << "freePages := " << freePages << "\n";
         freePagesCount++;
     }
     cout << freePagesCount << " pages available\r\n";

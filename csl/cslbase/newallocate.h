@@ -672,9 +672,9 @@ inline const char *Addr(uintptr_t p)
         if (pOff >= offsetof(Page, data))
         {   pOff -= offsetof(Page, data);
             if (hs == 0) std::snprintf(r, sizeof(r),
-                "#%" PRIxPTR ":%" PRIxPTR, pOff, pNum);
+                "#%" PRIxPTR ":%" PRIxPTR, pNum, pOff);
             else std::snprintf(r, sizeof(r),
-                "#%" PRIxPTR ":%" PRIxPTR ":%d", pOff, pNum, hs);
+                "#[%d]: %" PRIxPTR ":%" PRIxPTR, hs, pNum, pOff);
             return r;
         }
     }
@@ -974,7 +974,7 @@ inline LispObject get_n_bytes(size_t n, THREADFORMAL
             newChunk->chunkPinChain = nullptr;
             size_t chunkNo = p->chunkCount.fetch_add(1);
             std::cout << "allocation in page " << p << " increments cc to "
-                      << p->chunkCount << "\n";
+                      << static_cast<unsigned int>(p->chunkCount) << "\n";
             p->chunkMap[chunkNo] = newChunk;
             limitBis = newLimit;
 #ifdef NO_THREADS
@@ -1013,9 +1013,10 @@ inline LispObject get_n_bytes(size_t n, THREADFORMAL
         fringe = r;
 //        cout << "At " << __WHERE__ << " fringe set to r = " << Addr(r) << endl;
     }
+    THREADID;
     fringeBis = fringe;
-//    cout << "At " << __WHERE__ << " fringeBis[" << threadId
-//         << "] = " << Addr(fringeBis) << endl;
+    cout << "At " << __WHERE__ << " fringeBis[" << threadId
+         << "] = " << Addr(fringeBis) << endl;
     request = n;
 // Here I can not complete the work with this inline function because
 // either I have run out of space for a new chunk or because some
@@ -1054,7 +1055,7 @@ inline LispObject get_n_bytes(size_t n)
     {
 #ifdef DEBUG
         testLayout();
-        if (gcTrace) cout << "= " << Addr(r) << "\n";
+//      if (gcTrace) cout << "get_n_bytes(" << n << ") = " << Addr(r) << "\n";
 #endif // DEBUG
         return static_cast<LispObject>(r);
     }
@@ -1065,48 +1066,17 @@ inline LispObject get_n_bytes(size_t n)
 } // end of namespace
 
 inline size_t get_size[8];
-inline LispObject get_value[8];
 inline unsigned int get_count = 0;
 inline unsigned int get_trace = 0x7fffffff; // 514572-10;
 
 inline LispObject previousCons = 0;
 
 inline LispObject get_n_bytes(size_t n)
-{   if (++get_count >= get_trace) cout << "get_n_bytes " << n << "\n";
-    LispObject r = REAL::get_n_bytes(n);
-    if (get_count >= get_trace) cout << Addr(r) << "\n";
-    for (int i=0; i<8; i++)
-        my_assert(r != get_value[i], []{ cout << "repeat result\n";});
-    get_size[get_count & 7] = n;
-    get_value[get_count & 7] = r;
+{   LispObject r = REAL::get_n_bytes(n);
+    cout << "get_n_bytes " << n << " => " << Addr(r) << "\n";
     my_assert(r > previousCons, []{ cout << "non-increasing allocation\n"; });
     previousCons = r;
     return r;
-}
-
-extern void crudeprin(LispObject a);
-extern void crudeprint(LispObject a);
-
-inline void dump_gets()
-{   cout << "get_count = " << get_count << "\n";
-    for (int i=1; i<=8; i++)
-    {   LispObject v = get_value[(get_count+i)&7];
-        cout << (8-i) << "... "
-             << "size=" << get_size[(get_count+i)&7] << ": "
-             << hex << v << dec << " ";
-        if (is_cons(v))
-        {   crudeprin(car(v));
-            cout << " . ";
-            crudeprin(cdr(v));
-        }
-        cout << "\n";
-    }
-}
-
-#else // DEBUG
-
-inline void dump_gets()
-{
 }
 
 #endif // DEBUG
@@ -1128,8 +1098,8 @@ inline void poll()
 // Here I need to set everything up just as if I had been making an
 // allocation request for zero bytes.
         fringeBis = fringe;
-//        cout << "Polling at " << __WHERE__ << "fringeBis[" << threadId
-//             << " = " << Addr(fringeBis) << endl;
+        cout << "Polling at " << __WHERE__ << "fringeBis[" << threadId
+             << " = " << Addr(fringeBis) << endl;
         request = 0;
         gIncrement = 0;
         static_cast<void>(difficult_n_bytes());
@@ -1390,7 +1360,9 @@ inline void regionInPageIsFull(unsigned int threadId, size_t n,
             c->isPinned = 0;
             c->pinnedObjects = TAG_FIXNUM;
             size_t chunkNo = currentPage->chunkCount.fetch_add(1);
-            std::cout << "regioninpagefull " << currentPage << " " << currentPage->chunkCount << "\n";
+            std::cout << "regioninpagefull " << currentPage << " "
+                      << static_cast<unsigned int>(currentPage->chunkCount)
+                      << "\n";
             currentPage->chunkMap[chunkNo] = c;
             myChunkBase = c;
             result = gFringe + TAG_VECTOR;
@@ -1475,6 +1447,7 @@ inline LispObject cons(LispObject a, LispObject b)
 {   LispObject r = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
     setcar(r, a);
     setcdr(r, b);
+    cout << "CONS " << std::hex << a << ", " << b << " @ " << r << "\n";
     return r;
 }
 

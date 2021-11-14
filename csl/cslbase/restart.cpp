@@ -551,6 +551,9 @@ static void cold_setup()
     eq_hash_tables = nil;
     for (LispObject **p=list_bases; *p!=nullptr; p++) **p = nil;
     eq_hash_tables = nil;
+#ifdef DEBUG
+    cout << "Create pname of NIL\n";
+#endif
 #ifdef COMMON
     setpname(nil, make_string("NIL"));
 #else

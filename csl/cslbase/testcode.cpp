@@ -35,47 +35,44 @@
 
 #include "headers.h"
 
-LispObject runtest(int n)
+LispObject runtest(int n, int payload)
 {   if (n == 0)
     {   Lgc(nil, lisp_true);
-        return fixnum_of_int(9999);
+        cout << "Fringe = " << Addr(fringe) << " at end of GC\n";
+        cout << "Limit = " << Addr(limit) << " at end of GC\n";
+        return fixnum_of_int(payload);
     }
-    return cons(ncons(fixnum_of_int(n)), runtest(n-1));
+    return cons(ncons(fixnum_of_int(n)), runtest(n-1, payload));
 }
+
+#undef INIT_OBVECI_SIZE
+#define INIT_OBVECI_SIZE 16
 
 void gcTestCode()
 {   std::printf("\n: Conservative code - run a simple test of the GC\n\n");
+    cout << "create package object\n";
     setvalue(nil, get_basic_vector_init(sizeof(Package), nil));
     setpackage(nil, static_cast<LispObject>(qvalue(nil)));
 
-    packhdr_(static_cast<LispObject>(CP)) = TYPE_STRUCTURE + (packhdr_
-                                            (static_cast<LispObject>(CP)) & ~header_mask);
-    packint_(static_cast<LispObject>(CP)) = get_basic_vector_init(CELL*
-                                            (1+2048), fixnum_of_int(0));
-    packflags_(static_cast<LispObject>(CP)) = fixnum_of_int(++package_bits);
+    packhdr_(static_cast<LispObject>(CP)) =
+        TYPE_STRUCTURE+(packhdr_(static_cast<LispObject>(CP)) & ~header_mask);
+    cout << "create package vector\n";
+    packint_(static_cast<LispObject>(CP)) =
+        get_basic_vector_init(CELL*(1+16), fixnum_of_int(0));
+    packflags_(static_cast<LispObject>(CP)) =
+        fixnum_of_int(++package_bits);
 
-    packnint_(static_cast<LispObject>(CP)) = fixnum_of_int(
-                1); // Allow for nil
+    packnint_(static_cast<LispObject>(CP)) =
+        fixnum_of_int(1); // Allow for nil
 // Place NIL into the table.
-    {   size_t i = (size_t)(hash_lisp_string(qpname(nil)) &
-                            (INIT_OBVECI_SIZE - 1));
+    {   size_t i = hash_lisp_string(qpname(nil)) & (INIT_OBVECI_SIZE - 1);
+        cout << "Place NIL at offset " << i << "\n";
         elt(packint_(static_cast<LispObject>(CP)), i) = nil;
     }
-    gensym_ser = 1;
-    print_precision = 6; // I maybe prefer 15 but use 6 to agree with PSL
-    current_modulus = 1;
-// a fastget entry of 0 means no fastget stuff present, and so in the 6-bit
-// field I have the values 1-63 are available.
-//
     fastget_size = 63;
-    package_bits = 0;
-    unset_var = nil;
-//
-// there had better not be a need for garbage collection here...
-// ... or elsewhere in setup, since the world is not yet put together.
-// Ditto interrupts.
-//
-#define boffo_size 256
+#undef boffo_size
+#define boffo_size 32
+    cout << "create boffo\n";
     boffo = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+boffo_size);
     std::memset(reinterpret_cast<void *>(reinterpret_cast<char *>
                                          (boffo) + (CELL - TAG_VECTOR)), '@', boffo_size);
@@ -85,53 +82,22 @@ void gcTestCode()
 // looks in the value cell of nil to find the package to intern wrt. Once
 // this has been done I can put nil back how it ought to have been!
 //
+    cout << "create *package* symbol\n";
     current_package          = make_undefined_fluid("*package*");
     lisp_package             = qpackage(nil);
     setvalue(current_package,  lisp_package);
     setvalue(nil,              nil);          // Whew!
-    my_assert(qvalue(nil) == nil);
     setpackage(nil,            lisp_package);
     setpackage(current_package,lisp_package);
-    my_assert(qvalue(nil) == nil);
 
-
-    unset_var                =
-        make_undefined_global("~indefinite-value~");
-    setvalue(unset_var,        unset_var);
+    cout << "create T symbol\n";
     lisp_true           = make_undefined_global("t");
     setvalue(lisp_true,   lisp_true);
-#define make_keyword(name) make_undefined_symbol(name)
-    gensym_base         = make_string("G");
-    raise_symbol        = make_undefined_fluid("*raise");
-    lower_symbol        = make_undefined_fluid("*lower");
-    echo_symbol         = make_undefined_fluid("*echo");
-    macroexpand_hook    = make_undefined_fluid("*macroexpand");
-    input_libraries     = make_undefined_fluid("input-libraries");
-    output_library      = make_undefined_fluid("output-library");
-    current_function    = // system-startup
-        startup_symbol      = make_undefined_symbol("system-startup");
 
-    sys_hash_table = Lmkhash_1(nil, fixnum_of_int(2));    // EQUAL
-//@ sxhash_hash_table = Lmkhash_1(nil, fixnum_of_int(0)); // EQ
-    get_counts = Lmkhash_1(nil, fixnum_of_int(0));        // EQ
-    fastget_names = get_basic_vector_init((MAX_FASTGET_SIZE+2)*CELL,
-                                          SPID_NOPROP);
-    lisp_work_stream = make_stream_handle();
-    lisp_terminal_io = make_stream_handle();
-    lisp_standard_output = make_stream_handle();
-    lisp_standard_input = make_stream_handle();
-    lisp_error_output = make_stream_handle();
-    lisp_trace_output = make_stream_handle();
-    lisp_debug_io = make_stream_handle();
-    lisp_query_io = make_stream_handle();
-    my_assert(qvalue(nil) == nil);
-    set_up_functions(0);
-    set_up_variables(0);
-
-
-    simple_print(runtest(5));
+    cout << "Now run the test\n";
+    simple_print(runtest(1, 9999));
     cout << "\nFirst GC test over\n";
-    simple_print(runtest(6));
+    simple_print(runtest(1, 6666));
     cout << "\nSecond GC test over\n";
 // Probably broken now!
 }

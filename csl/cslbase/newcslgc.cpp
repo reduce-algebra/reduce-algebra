@@ -614,7 +614,7 @@ atomic<Chunk *>   gcQ[gcQSize];
 
 static void gcEnqueue(Chunk *c)
 {   uintptr_t in = gcInQ;
-    if (gcTrace) cout << "Grab another Chunk at " << Addr(c) << "\n";
+//  if (gcTrace) cout << "Grab another Chunk at " << Addr(c) << "\n";
     gcQ[in & (gcQSize-1)] = c;
     in = in+1;
     if (in == 0) Lstop(nil); // wrap in queue pointer
@@ -661,6 +661,7 @@ static Chunk *gcReserveMoreChunks(uintptr_t out)
 // When I get here there can still be other threads running and incrementing
 // gcOutQ. My task is to insert chunks into the queue until it holds (about)
 // gcQSize.
+    cout << "Reserve several chunks for GC use\n";
     while (gcInQ < static_cast<uintptr_t>(gcOutQ) + gcQSize - 1)
     {   gcEnqueue(grabAnotherChunk(targetChunkSize));
     }
@@ -706,13 +707,14 @@ LispObject gc_n_bytes1(size_t n, THREADFORMAL uintptr_t r)
         justFilled != myBusyChunk) pushChunk(justFilled);
     myChunkBase = newChunk;
     if (gcTrace) cout << "New Chunk at " << Addr(newChunk)
-     << " fringe = " << Addr(fringe) << "\n";
+                      << " fringe = " << Addr(fringe) << "\n";
     newChunk->length = nSize;
     newChunk->isPinned = 0;
     newChunk->pinnedObjects = TAG_FIXNUM;
     newChunk->chunkPinChain = nullptr;
     size_t chunkNo = p->chunkCount.fetch_add(1);
-    std::cout << "Page " << p << " gets chunkCount " << p->chunkCount << "\n";
+    std::cout << "Page " << p << " gets chunkCount "
+              << static_cast<unsigned int>(p->chunkCount) << "\n";
     p->chunkMap[chunkNo] = newChunk;
     limitBis = newLimit;
     limit = newLimit;
@@ -729,13 +731,15 @@ inline LispObject gc_n_bytes(size_t n)
 // First the path that applies if the allocation will be possible within the
 // current Chunk.
     THREADID;
-    if (gcTrace) cout << "gc_n_bytes " << n << " with fringe = " << Addr(fringe) << "\n";
+    if (gcTrace) cout << "gc_n_bytes " << n
+                      << " with fringe = " << Addr(fringe) << "\n";
     uintptr_t r = fringe;
     uintptr_t fr1 = r + n;
     uintptr_t w = limit;
     if (fr1 <= w) LIKELY
     {   fringe = fr1;
-        if (gcTrace) cout << "simple success at " << Addr(r) << " leaves fringe = " << Addr(fringe) << "\n";
+        if (gcTrace) cout << "simple success at " << Addr(r)
+                          << " leaves fringe = " << Addr(fringe) << "\n";
         return static_cast<LispObject>(r);
     }
 // Now the case where a fresh Chunk has to be allocated.
@@ -787,7 +791,7 @@ void evacuate(atomic<LispObject> &a)
 {
 #ifdef DEBUG
 // I am silent on NIL because otherwise I am overall too noisy.
-    if (a!=nil)
+    if (a!=nil && !is_immediate(a))
         if (gcTrace) cout << "evacuating " << Addr(a) << "\n";
 #endif
 // Here p is a pointer to a location that is a list-base, ie it contains
@@ -815,10 +819,10 @@ void evacuate(atomic<LispObject> &a)
     my_assert(!is_forward(a), "forwarding ptr in scanning");
     if (is_immediate(a) || a == nil)
     {
-#ifdef DEBUG
-        if (a != nil)
-            if (gcTrace) cout << "immediate data: easy " << Addr(a) << "\n";
-#endif // DEBUG
+//#ifdef DEBUG
+//        if (a != nil)
+//            if (gcTrace) cout << "immediate data: easy " << Addr(a) << "\n";
+//#endif // DEBUG
         return;
     }
     if (isPinned(a))
@@ -826,7 +830,8 @@ void evacuate(atomic<LispObject> &a)
         {   cout << "precise ptr to pinned " << Addr(a) << "\n";
             cout << "pinned item is ";
             simple_print(a);
-            cout << "@" << std::hex << a << " in page "
+            cout << "@" << std::hex
+                 << static_cast<LispObject>(a) << " in page "
                  << (a & -pageSize) << "\n"; 
         }
         return;
@@ -1651,8 +1656,9 @@ void evacuatePartOfMyOwnChunk()
 // copied material.
         myBusyChunk = myChunkBase;
         uintptr_t p = myBusyChunk->dataStart();
-if (gcTrace) cout << "Start of data in my Chunk is at " << Addr(p) << "\n";
-if (gcTrace) cout << "fringe = " << Addr(fringe) << "\n";
+        if (gcTrace) cout << "Start of data in my Chunk is at "
+                          << Addr(p) << "\n";
+        if (gcTrace) cout << "fringe = " << Addr(fringe) << "\n";
         for (;;)
         {
 // The start of this loop is what I describe as "step (3)" in the
@@ -1940,7 +1946,8 @@ void validateForGC(LispObject a)
     if (!inActivePage(a))
     {   Page *p = reinterpret_cast<Page *>(a & -pageSize);
         std::cout << "Item " << std::hex << a << " is in page "
-            << p << " with count " << p->chunkCount << "\n";
+            << p << " with count "
+            << static_cast<unsigned int>(p->chunkCount) << "\n";
         simple_print(a);
         std::cout << "Quitting\n";
         my_abort();
@@ -1988,7 +1995,7 @@ void validateUnambiguousBases(bool major)
     validateForGC(qpackage(nil));
     if (gcTrace) cout << "validate regular list bases\n";
     for (auto p = list_bases; *p!=nullptr; p++)
-    {   cout << (p - list_bases) << "\n";
+    {   // cout << (p - list_bases) << "\n";
         validateForGC(**p);
     }
     cout << "\n";
@@ -2022,8 +2029,8 @@ void validatePinnedInChunk(Chunk *c)
         LispObject *pp = reinterpret_cast<LispObject *>(p);
         if (gcTrace) cout << "Scanning pinned item at " << Addr(p) << "\n";
         LispObject a = *pp;
-if (gcTrace) cout << "Item at " << Addr(pp) << " = " << std::hex << a
-     << std::dec << " = " << Addr(a) << "\n";
+        if (gcTrace) cout << "Item at " << Addr(pp) << " = " << std::hex << a
+                          << std::dec << " = " << Addr(a) << "\n";
         my_assert(a != 0, "zero item in heap");
         my_assert(!is_forward(a), "forwarding pointer found");
         size_t len, len1;

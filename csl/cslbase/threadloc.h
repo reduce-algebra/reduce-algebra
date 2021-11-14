@@ -306,7 +306,7 @@ inline void initThreadLocals()
 
 #ifdef NO_THREADS
 #define maxThreads   1U
-#define THREADID     /* Nothing */
+#define THREADID     UNUSED_NAME const uintptr_t threadId = 0
 #define THREADARG    /* NOTHING */
 #define THREADFORMAL /* NOTHING */
 #define OPTTHREAD    /* NOTHING */
@@ -316,7 +316,7 @@ inline void initThreadLocals()
 #else // DEBUG
 #define maxThreads  64U
 #endif // DEBUG
-#define TL_threadId 50
+#define TL_threadId  50
 DECLARE_THREAD_LOCAL(uintptr_t, genuineThreadId);
 #define THREADID UNUSED_NAME const uintptr_t threadId = genuineThreadId
 #define THREADARG threadId,
