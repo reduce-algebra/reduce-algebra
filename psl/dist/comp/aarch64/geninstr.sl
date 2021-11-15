@@ -101,6 +101,7 @@
 	(OP-bfxil . lth-bfxil)
 	(OP-fcvt . lth-fcvt)
 	(OP-fp-arith . lth-fp-arith)
+        (OP-freg-freg . lth-freg-freg)
 	(OP-fcmp . lth-fcmp)
 	(OP-csinc . lth-csinc)
 	(OP-cset . lth-csinc)
@@ -579,6 +580,12 @@
 (instr STR (reg reg-or-sp-shifter)   OP-ld-st 2#11111000001 2#10)
 
 % LDUR
+%(instr LDUR (reg32 reg-or-sp-simm9)            OP-ld-st 2#10111000010 2#00)
+%(instr LDUR (reg reg-or-sp-simm9)            OP-ld-st 2#11111000010 2#00)
+%(instr STUR (reg32 reg-or-sp-simm9)            OP-ld-st 2#10111000000 2#00)
+%(instr STUR (reg reg-or-sp-simm9)            OP-ld-st 2#11111000000 2#00)
+
+
 % LDURB
 % LDURH
 % LDURSB
@@ -775,6 +782,16 @@
 
 %% Floating point instructions
 
+% FMOV between fpregs
+(instr FMOV (regfp32 regfp32)             OP-freg-freg 2#0001111000100000010000)
+(instr FMOV (regfp64 regfp64)             OP-freg-freg 2#0001111001100000010000)
+
+% FMOV between fpreg and general reg
+(instr FMOV (regfp32 reg32)               OP-freg-freg 2#0001111000100111000000)
+(instr FMOV (reg32 regfp32)               OP-freg-freg 2#0001111000100110000000)
+(instr FMOV (regfp64 reg)                 OP-freg-freg 2#1001111001100111000000)
+(instr FMOV (reg regfp64)                 OP-freg-freg 2#1001111001100110000000)
+
 % LDR Dt, [Xn], #simm9 - post-index
 % (LDR (reg Dt) (postindex (reg n) +/-number))
 (instr LDR (regfp8 reg-or-sp-simm9-post)       OP-ld-st 2#00111100010 2#01)
@@ -844,22 +861,29 @@
 (instr STR (regfp128 reg-or-sp-shifter)       OP-ld-st 2#00111100100 2#10)
 
 %% Conversion of floating point to signed integer
-(instr FCVTAS (reg32 regfp16)                 OP-fcvt 2#00011110111 2#00100)
-(instr FCVTAS (reg regfp16)                   OP-fcvt 2#10011110111 2#00100)
+(instr FCVT (regfp32 regfp16)                 OP-fcvt 2#00011110111 2#00010 2#01)
+(instr FCVT (regfp64 regfp16)                 OP-fcvt 2#00011110111 2#00010 2#11)
+(instr FCVT (regfp16 regfp32)                 OP-fcvt 2#00011110001 2#00011 2#11)
+(instr FCVT (regfp64 regfp32)                 OP-fcvt 2#00011110001 2#00010 2#11)
+(instr FCVT (regfp16 regfp64)                 OP-fcvt 2#00011110011 2#00011 2#11)
+(instr FCVT (regfp32 regfp64)                 OP-fcvt 2#00011110011 2#00010 2#01)
+
+%(instr FCVTAS (reg32 regfp16)                 OP-fcvt 2#00011110111 2#00100)
+%(instr FCVTAS (reg regfp16)                   OP-fcvt 2#10011110111 2#00100)
 (instr FCVTAS (reg32 regfp32)                 OP-fcvt 2#00011110001 2#00100)
 (instr FCVTAS (reg regfp32)                   OP-fcvt 2#10011110001 2#00100)
 (instr FCVTAS (reg32 regfp64)                 OP-fcvt 2#00011110011 2#00100)
 (instr FCVTAS (reg regfp64)                   OP-fcvt 2#10011110011 2#00100)
 
-(instr FCVTNS (reg32 regfp16)                 OP-fcvt 2#00011110111 2#00000)
-(instr FCVTNS (reg regfp16)                   OP-fcvt 2#10011110111 2#00000)
+%(instr FCVTNS (reg32 regfp16)                 OP-fcvt 2#00011110111 2#00000)
+%(instr FCVTNS (reg regfp16)                   OP-fcvt 2#10011110111 2#00000)
 (instr FCVTNS (reg32 regfp32)                 OP-fcvt 2#00011110001 2#00000)
 (instr FCVTNS (reg regfp32)                   OP-fcvt 2#10011110001 2#00000)
 (instr FCVTNS (reg32 regfp64)                 OP-fcvt 2#00011110011 2#00000)
 (instr FCVTNS (reg regfp64)                   OP-fcvt 2#10011110011 2#00000)
 
-(instr FCVTZS (reg32 regfp16)                 OP-fcvt 2#00011110111 2#11000)
-(instr FCVTZS (reg regfp16)                   OP-fcvt 2#10011110111 2#11000)
+%(instr FCVTZS (reg32 regfp16)                 OP-fcvt 2#00011110111 2#11000)
+%(instr FCVTZS (reg regfp16)                   OP-fcvt 2#10011110111 2#11000)
 (instr FCVTZS (reg32 regfp32)                 OP-fcvt 2#00011110001 2#11000)
 (instr FCVTZS (reg regfp32)                   OP-fcvt 2#10011110001 2#11000)
 (instr FCVTZS (reg32 regfp64)                 OP-fcvt 2#00011110011 2#11000)

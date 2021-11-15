@@ -5208,6 +5208,174 @@ LispObject Lwindow_heading1(LispObject env, LispObject a)
 {   return Lwindow_heading2(env, a, nil);
 }
 
+/////////////////////////////////////////////////////////////////////
+
+// This is simplified printing and sends its output to stdout. It is ONLY
+// intended for use while debugging. I will use if when printing trace
+// and backtrace output..
+// I want it to be able to cope with looped up structures so I will use
+// and EQ-keyed hash table to detect places where the structure is
+// reentrant.
+// I will also implement a scheme that lets me limit the output from each
+// printed expression to a certain number of lines of output...
+
+static int simple_column = 0;
+
+void simple_lineend(int n)
+{   if (simple_column + n > 70)
+    {   std::printf("\n");
+        simple_column = n;
+    }
+    else simple_column += n;
+}
+
+void simple_prin1(LispObject x)
+{   char buffer[40];
+    if (x == nil)
+    {   simple_lineend(3);
+        std::printf("nil");
+        return;
+    }
+    if (x == 0)
+    {   simple_lineend(3);
+        std::printf("@0@");
+        return;
+    }
+    if (is_forward(x))
+    {   std::printf("Forward_%" PRIx64, static_cast<uint64_t>(x));
+        return;
+    }
+    if (is_cons(x))
+    {   int len = 0;
+        const char *sep = "(";
+        while (consp(x))
+        {   simple_lineend(1);
+            std::printf("%s", sep);
+            sep = " ";
+            simple_prin1(car(x));
+            x = cdr(x);
+            if (len++ > 20)
+            {   std::printf(" ...!...");
+                x = nil;
+            }
+        }
+        if (x != nil)
+        {   simple_lineend(3);
+            std::printf(" . ");
+            simple_prin1(x);
+        }
+        simple_lineend(3);
+        std::printf(")");
+        return;
+    }
+    else if (is_fixnum(x))
+    {   int k = std::sprintf(buffer, "%" PRId64,
+                             (int64_t)int_of_fixnum(x));
+        simple_lineend(k);
+        std::printf("%s", buffer);
+        return;
+    }
+    else if (is_symbol(x))
+    {   size_t len;
+        x = qpname(x);
+        len = length_of_byteheader(vechdr(x)) - CELL;
+        if (len > 80) len = 80;
+        simple_lineend(len);
+        std::printf("%.*s", static_cast<int>(len),
+                     reinterpret_cast<const char *>(&celt(x, 0)));
+    }
+    else if (is_vector(x))
+    {   size_t i, len;
+        if (is_string(x))
+        {   len = length_of_byteheader(vechdr(x)) - CELL;
+            if (len > 80) len = 80;
+            simple_lineend(len+2);
+            std::printf("\"%.*s\"", static_cast<int>(len),
+                         reinterpret_cast<const char *>(&celt(x, 0)));
+            return;
+        }
+        else if (vector_holds_binary(vechdr(x)) &&
+                 vector_i8(vechdr(x)))
+        {   len = length_of_byteheader(vechdr(x)) - CELL;
+            std::printf("<Header is %" PRIx64 ">",
+                         static_cast<uint64_t>(vechdr(x)));
+            if (len > 80) len = 80;
+            simple_lineend(2*len+3);
+            std::printf("#8[");
+            for (size_t i=0; i<len; i++)
+            {   simple_lineend(2);
+                std::printf("%.2x", celt(x, i) & 0xff);
+            }
+            std::printf("]");
+            return;
+        }
+        len = (int64_t)(length_of_header(vechdr(x))/CELL - 1);
+        int nn = std::sprintf(buffer, "[%" PRId64 ":", (int64_t)len);
+        if (len > 20) len = 20;
+        simple_lineend(nn);
+        std::printf("%s", buffer);
+        for (i=0; i<len; i++)
+        {   simple_lineend(1);
+            std::printf(" ");
+            if (i > 2 && is_mixed_header(vechdr(x)))
+            {   nn = std::sprintf(buffer, "%" PRIx64, (uint64_t)elt(x, i));
+                simple_lineend(nn);
+                std::printf("%s", buffer);
+            }
+            else simple_prin1(elt(x, i));
+        }
+        simple_lineend(1);
+        std::printf("]");
+        return;
+    }
+    else if (is_numbers(x) && is_bignum(x))
+    {   size_t len = (length_of_header(numhdr(x))-CELL)/4;
+        size_t i;
+        int clen;
+        for (i=len; i>0; i--)
+        {   int32_t d = bignum_digits(x)[i-1];
+// I will print bignums in a manner that shows the 31-bit digits that they
+// are made up from.
+            if (i == len) clen = std::sprintf(buffer, "@#%d", d);
+            else clen = std::sprintf(buffer, ":%u", d);
+            simple_lineend(clen);
+            std::printf("%s", buffer);
+        }
+        return;
+    }
+    else
+    {   char buffer[32];
+// This default case includes bignums, and I am not keen on needing
+// to render them here! But it certainly looks ugly when they get
+// displayed as @xxxxx@ with the xxxxx being a bunch of hex digits giving
+// the memory address the data lies at!
+        int clen = std::sprintf(buffer, "@%" PRIx64 "@", (int64_t)x);
+        simple_lineend(clen);
+        std::printf("%s", buffer);
+        return;
+    }
+}
+
+void simple_prin1(atomic<LispObject> &x)
+{   simple_prin1(static_cast<LispObject>(x));
+}
+
+void simple_print(LispObject x)
+{   simple_prin1(x);
+    std::printf("\n");
+    simple_column = 0;
+}
+
+void simple_print(atomic<LispObject> &x)
+{   simple_print(static_cast<LispObject>(x));
+}
+
+void simple_msg(const char *s, LispObject x)
+{   std::printf("%s", s);
+    simple_print(x);
+    std::printf("\n");
+}
+
 setup_type const print_setup[] =
 {
 #ifdef SOCKETS
