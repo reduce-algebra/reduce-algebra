@@ -1287,11 +1287,14 @@ void findHeadersOfPinnedItems()
 // I demand that length_of_header() gives a proper length for byte- and
 // bit-vectors at least as far as the number of words that are used.
                     len = doubleword_align_up(length_of_header(a));
-// On a 64-bit nachine this is one probe per LispObject. On a 32-bit one
+                    cout << "Vector of length " << len << " to scan\n";
+// On a 64-bit machine this is one probe per LispObject. On a 32-bit one
 // because my pinning bitmap has a resolution of 8 bytes I will handle
 // two LispObjects at a time.
 // Here is where I could probably improve things by consulting multiple
-// bits in the bitmap at once...
+// bits in the bitmap at once... The loop here will ensure that if any
+// (double-)word in the vector is pinned that the pin marker is put on the
+// header word and not on any one within the vector.
                     for (size_t i=8; i<len; i+=8)
                     {   if (isPinned(p+i))
                         {   setPinned(p);
@@ -1300,7 +1303,8 @@ void findHeadersOfPinnedItems()
                         }
                     }
                     if (isPinned(p))
-                    {   LispObject ch = gc_n_bytes(2*CELL);
+                    {   cout << "Pinned vector at " << Addr(p) << "\n";
+                        LispObject ch = gc_n_bytes(2*CELL);
 // I am going to make a chain of all pinned items. But I do not want
 // ambiguous pointers to the chain to cause it ot its contents to
 // get pinned in any significant way and the list is only needed until
@@ -1325,6 +1329,13 @@ void findHeadersOfPinnedItems()
                                 break;
                             }
                         }
+                        if (isPinned(p))
+                        {   cout << "Pinned symbol at " << Addr(p) << "\n";
+                            LispObject ch = gc_n_bytes(2*CELL);
+                            car(ch) = p + TAG_FIXNUM;
+                            cdr(ch) = static_cast<LispObject>(c->pinnedObjects);
+                            c->pinnedObjects = ch + TAG_FIXNUM;
+                        }
                         p += symhdr_length;
                         continue;
                     }
@@ -1335,6 +1346,13 @@ void findHeadersOfPinnedItems()
                     if (SIXTY_FOUR_BIT && isPinned(p+CELL))
                     {   setPinned(p);
                         clearPinned(p+CELL);
+                    }
+                    if (isPinned(p))
+                    {   cout << "Pinned cons cell at " << Addr(p) << "\n";
+                        LispObject ch = gc_n_bytes(2*CELL);
+                        car(ch) = p + TAG_FIXNUM;
+                        cdr(ch) = static_cast<LispObject>(c->pinnedObjects);
+                        c->pinnedObjects = ch + TAG_FIXNUM;
                     }
                     p += 2*CELL;
                     continue;

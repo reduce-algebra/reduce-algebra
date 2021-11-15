@@ -38,8 +38,10 @@
 LispObject runtest(int n, int payload)
 {   if (n == 0)
     {   Lgc(nil, lisp_true);
+#if defined CONSERVATIVE && defined DEBUG
         cout << "Fringe = " << Addr(fringe) << " at end of GC\n";
         cout << "Limit = " << Addr(limit) << " at end of GC\n";
+#endif
         return fixnum_of_int(payload);
     }
     return cons(ncons(fixnum_of_int(n)), runtest(n-1, payload));
