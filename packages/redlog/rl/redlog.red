@@ -100,6 +100,39 @@ fluid '(fancy!-line!* fancy!-pos!*);
 
 fluid '(!*strict_argcount);
 
+% Redlog uses external processes for the computation of (sub)results. One example is rlqepcad() for
+% real quantifier elimination. We generally accumulate the CPU time of such processes in xtime!*.
+% The value of the time() function generally holds the accumulated CPU time consumed by the current
+% Reduce process. Therefore, time() + xtime!* generally holds the accumulated CPU time used for
+% all computations including external ones.
+%
+% With "off xtime", the Reduce timers showtime() (including "on time"), ..., showtime3(),  are not
+% affected in any way, i.e., external CPU time is ignored there. With the default setting
+% "on xtime", in contrast, we also subtract our measurements of external CPU time from otime!*,
+% ..., otime3!* so that it appears to the corresponding timers like regular Reduce CPU time. Note
+% that resettime(), ..., resettime3() still behave as one would intuitively expect.
+%
+% It could cause problems when foreign code operated directly on the fluids otime!*, ..., otime3!*.
+% Our motivation was to hook into the timers without modifying rlisp/superv.red. A cleaner strategy
+% for keeping track of and reporting external CPU times could be implemented there.
+%
+fluid '(xtime!*);
+if null xtime!* then xtime!* := 0;
+switch xtime;
+on1 'xtime;
+
+asserted procedure rl_registerExternalTime(ms: Integer): Void;
+   <<
+      xtime!* := xtime!* + ms;
+      if !*xtime then <<
+         otime!* := otime!* - ms;
+         otime1!* := otime1!* - ms;
+         otime2!* := otime2!* - ms;
+         otime3!* := otime3!* - ms
+      >>;
+      nil
+   >>;
+
 % Display banner with rlset; initialized in support/entry.red:
 switch rlabout;
 

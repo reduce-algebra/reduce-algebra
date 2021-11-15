@@ -29,7 +29,6 @@
 #
 
 BEGIN {
-    time=tolower(time)
     verb=tolower(verb)
     slfqvb=tolower(slfqvb)
 }
@@ -71,8 +70,12 @@ BEGIN {
     printf("\n") > rf
 }
 
-/^System time/ && (time=="t") && (slfqvb=="nil") {
+/^System time/ && (verb=="t") && (slfqvb=="nil") {
     print "+++", name, $0
+}
+
+/^System time after the initialization/ {
+    print $6 > tf
 }
 
 /^An equivalent/ {
