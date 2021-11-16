@@ -47,7 +47,7 @@
 
 #include "winsupport.h"
 
-void win32_stacklimit(uintptr_t &C_stacklimit)
+void win32_stacklimit(uintptr_t &stacklimit)
 {   HMODULE h = GetModuleHandle(nullptr); // For current executable
     if (h != nullptr)
     {   IMAGE_DOS_HEADER *dh = (IMAGE_DOS_HEADER*)h;
@@ -63,7 +63,7 @@ void win32_stacklimit(uintptr_t &C_stacklimit)
 // I also assume that any figure over 20 Mbytes is a mess so ignore it
         if (maxStackSize <= 20*1024*1024)
         {   // I try to give myself 64K spare...
-            C_stackLimit = (uintptr_t)C_stackBase - maxStackSize + 0x10000;
+            stacklimit = C_stackBase - maxStackSize + 0x10000;
         }
     }
 }

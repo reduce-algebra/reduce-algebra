@@ -70,12 +70,13 @@ asserted procedure qepcad_slfq(f: Formula, N: Integer, L: Integer): Formula;
    qepcad_generic(f, {N, L}, "slfq", function(lambda x; mathprint rl_prepfof x), 'qepcad_runSlfq);
 
 asserted procedure qepcad_generic(f: Formula, argl: List, stem: String, printer: Applicable, runner: Applicable);
-   begin scalar fn1, fn2, result;
-      fn1 . fn2 := qepcad_fn stem;
+   begin scalar fn1, fn2, fn3, result;
+      {fn1, fn2, fn3} := qepcad_fn stem;
       qepcad_dump(f, fn1, printer);
-      apply(runner, append(argl, {fn1, fn2}));
+      apply(runner, append(argl, {fn1, fn2, fn3}));
       result := qepcad_readResult fn2;
-      system lto_sconcat {"rm -f ", fn1, " ", fn2};
+      qepcad_registerExternalTime(fn3);
+      system lto_sconcat {"rm -f ", fn1, " ", fn2, " ", fn3};
       if null result then
          lprim "external computation failed";
       return rl_simp result or f
@@ -84,8 +85,8 @@ asserted procedure qepcad_generic(f: Formula, argl: List, stem: String, printer:
 asserted procedure qepcad_fn(stem: String): String;
    begin scalar bname;
       bname := lto_sconcat {qepcad_tmpdir!*, "rl", stem,
-         "-", getenv "USER" or "unknown", "-", lto_at2str getpid()};
-      return lto_sconcat {bname, ".", stem} . lto_sconcat {bname, ".red"}
+         "-", getenv "USER" or "unknown", "-", lto_at2str getpid(), "-", lto_at2str random(10**8)};
+      return {lto_sconcat {bname, ".", stem}, lto_sconcat {bname, ".red"}, lto_sconcat {bname, ".time"}};
    end;
 
 asserted procedure qepcad_dump(f: Formula, fn: String, printer: Applicable);
@@ -104,11 +105,11 @@ asserted procedure qepcad_dump(f: Formula, fn: String, printer: Applicable);
    end;
 
 asserted procedure qepcad_printer(f: Formula);
-   begin scalar ff, fl, bl, l;
+   begin scalar ff, fl, bl, l, save_linelength;
       ff := f := cl_pnf f;
       % Apparently, Qepcad wants the bound variables in the order as they appear
       % in the prenex block. I am not certain about quanified variables that do
-      % not occur in the sense of of logic.
+      % not occur in the sense of logic.
       while rl_quap rl_op ff do <<
          push(rl_var ff, bl);
          ff := rl_mat ff
@@ -116,6 +117,7 @@ asserted procedure qepcad_printer(f: Formula);
       bl := reversip bl;
       fl := cl_fvarl1 f;
       l := append(fl, bl);
+      save_linelength := linelength(2^26);
       prin2t "[Qepcad B input, automatically generated in Reduce/Redlog";
       prin2t lto_sconcat {" by ", getenv("USER") or "unknown", " on ", date()};
       prin2t " http://reduce-algebra.sourceforge.net/";
@@ -127,7 +129,8 @@ asserted procedure qepcad_printer(f: Formula);
       prin2t length fl;
       qepcad_print f;
       prin2t ".";
-      prin2t "finish"
+      prin2t "finish";
+      linelength(save_linelength)
    end;
 
 asserted procedure qepcad_print(f: Formula);
@@ -236,35 +239,35 @@ asserted procedure qepcad_ppricadtimes(f: Id, n: Integer);
       if w then prin2!* ")"
    end;
 
-asserted procedure qepcad_run(N: Integer, L: Integer, fn1: String, fn2: String);
+asserted procedure qepcad_run(N: Integer, L: Integer, fn1: String, fn2: String, fn3: String);
    begin scalar narg, larg, call, vb, tm;
       narg := lto_sconcat {"+N",lto_at2str(N * 10^6)," "};
       larg := lto_sconcat {"+L",lto_at2str(L * 10^3)," "};
       vb := lto_at2str !*rlverbose;
-      tm := lto_at2str !*time;
       call := lto_sconcat {
          qepcad_qepcad!*, " ", narg, larg, "< ", fn1,
          " | awk -v rf=", fn2,
+         " -v tf=", fn3,
          " -v verb=", vb,
-         " -v time=", tm,
          " -v slfqvb=nil -v name=QEPCAD -f ", qepcad_awk!*};
       if !*rlverbose then
          ioto_tprin2t lto_sconcat {"+++ calling ",call};
       system call
    end;
 
-asserted procedure qepcad_runSlfq(N: Integer, L: Integer, fn1: String, fn2: String);
+asserted procedure qepcad_runSlfq(N: Integer, L: Integer, fn1: String, fn2: String, fn3: String);
    begin scalar narg, larg, call, vb, tm, svb;
       % In contrast to Qepcad, slfq multiplies N by 10^6 itself.
       narg := lto_sconcat {"-N ",lto_at2str(N), " "};
       larg := lto_sconcat {"-P ",lto_at2str(L * 10^3), " "};
       vb := lto_at2str !*rlverbose;
-      tm := lto_at2str !*time;
       svb := lto_at2str !*rlslfqvb;
       call := lto_sconcat {
          qepcad_slfq!*, " ", narg, larg, "< ", fn1,
          " 2> /dev/null | awk -v rf=", fn2,
-         " -v verb=", vb, " -v time=", tm, " -v slfqvb=", svb,
+         " -v tf=", fn3,
+         " -v verb=", vb,
+         " -v slfqvb=", svb,
          " -v name=SLFQ -f ", qepcad_awk!*};
       if !*rlverbose then
          ioto_tprin2t lto_sconcat {"+++ calling ",call};
@@ -283,6 +286,16 @@ asserted procedure qepcad_readResult(fn: String): Formula;
       !*echo := svecho;
       if errorp w then rederr {"qepcad_readResult: bad formula in file", fn};
       return car w
+   end;
+
+asserted procedure qepcad_registerExternalTime(fn);
+   begin scalar fh, svecho;
+      svecho := !*echo;
+      !*echo := nil;
+      fh := rds open(fn, 'input);
+      rl_registerExternalTime(read());
+      close rds fh;
+      !*echo := svecho
    end;
 
 endmodule;
