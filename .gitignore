@@ -313,6 +313,15 @@
 # /psl/dist/kernel/AMD64_ext/
 /psl/dist/kernel/AMD64_ext/tmp.sl
 
+# /psl/dist/kernel/aarch64/
+/psl/dist/kernel/aarch64/tmp.sl
+
+# /psl/dist/kernel/freeBSD/
+/psl/dist/kernel/freeBSD/tmp.sl
+
+# /psl/dist/kernel/freeBSD64/
+/psl/dist/kernel/freeBSD64/tmp.sl
+
 # /psl/dist/kernel/linux/
 /psl/dist/kernel/linux/tmp.sl
 
