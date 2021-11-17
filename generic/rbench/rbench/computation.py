@@ -40,7 +40,7 @@ def _install_reduce(svn_reduce: str, revision: str, force: bool) -> str:
         if completed_process.stderr != b'':
             logger.critical(completed_process.stderr.decode())
         logger.critical('dumping command output to ' + file_name + ' and exiting')
-        with open(file_name, 'r') as file:
+        with open(file_name, 'w') as file:
             file.write(completed_process.stdout.decode())
         sys.exit(completed_process.returncode)
 
