@@ -1,5 +1,6 @@
-﻿<!--*- mhtml -*-->
-<div class="modal fade" id="IntegralTemplate" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="IntegralTemplateLabel" aria-hidden="true">
+<!--*- mhtml -*-->
+<div class="modal fade" id="IntegralTemplate" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+	aria-labelledby="IntegralTemplateLabel" aria-hidden="true">
 	<div class="modal-dialog modal-dialog-centered modal-lg">
 		<div class="modal-content">
 			<div class="modal-header">
@@ -7,10 +8,15 @@
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 			</div>
 			<div class="modal-body">
-				<p class="text-center"><small>The integrand and first integration variable are required. Enter additional integration variables to create a double or triple integral and display additional ∫ and d symbol pairs, which nest and their colours show how they match. Each pair of limits must be both empty, giving an indefinite integral, or both specified, giving a definite integral.</small></p>
+				<p class="text-center"><small>The integrand and first integration variable are required. Enter
+						additional integration variables to create a double or triple integral and display additional ∫
+						and d symbol pairs, which nest and their colours show how they match. Each pair of limits must
+						be both empty, giving an indefinite integral, or both specified, giving a definite
+						integral.</small></p>
 				<p class="text-center">
 					<small>REDUCE Manual:&ensp;
-            <a href="/manual-lookup.php?INT%20Operator" target="_blank" title="Opens in a new tab.">INT Operator</a></small>
+						<a href="/manual-lookup.php?INT%20Operator" target="_blank" title="Opens in a new tab.">INT
+							Operator</a></small>
 				</p>
 				<div class="container-fluid" style="text-align: center">
 					<div style="display: inline-block; vertical-align: middle">
@@ -37,7 +43,8 @@
 					<input type="text" size="1" />
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary me-auto" title="Reset to default inputs">Reset</button>
+					<button type="button" class="btn btn-secondary me-auto"
+						title="Reset to default inputs">Reset</button>
 					<button type="button" class="btn btn-primary" title="Insert into input editor">Edit</button>
 					<button type="button" class="btn btn-primary" title="Send to REDUCE">Evaluate</button>
 					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -128,7 +135,7 @@
 
 		buttons[1].addEventListener("click", () => {
 			try {
-				inputTextArea.setRangeText(result());
+				inputDivInsert(result());
 				buttons[3].click();
 			} catch (ignored) { }
 		});
@@ -139,5 +146,8 @@
 				buttons[3].click();
 			} catch (ignored) { }
 		});
+
+		document.getElementById("IntegralTemplate")
+			.addEventListener("hidden.bs.modal", () => inputDiv.focus());
 	}
 </script>

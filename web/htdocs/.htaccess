@@ -18,6 +18,7 @@ RedirectMatch "/(.*)\.htm$" "/$1.php"
 DirectoryIndex index.php index.html
 Options +Indexes
 
+AddType text/javascript .mjs
 AddType application/wasm .wasm
 
 ErrorDocument 404 /include/ErrorDocument404.php

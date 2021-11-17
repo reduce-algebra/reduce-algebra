@@ -1,25 +1,35 @@
-﻿<?php
+<?php
 $page_title = 'Web REDUCE';
 $header_title = 'Web REDUCE';
 include '../include/begin-head.php';
 ?>
 <style type="text/css">
     #IODisplayIframe,
-    textarea {
+    #InputDiv {
         width: 100%
     }
 
     #IODisplayIframe {
-        border: medium black solid;
+        border: medium solid black;
         height: 25em;
         resize: vertical;
         /* Works in Chrome but not Firefox; see
         https://stackoverflow.com/questions/8117761/how-can-i-make-an-iframe-resizable */
     }
 
-    textarea {
+    #InputDiv {
         font-family: var(--bs-font-monospace);
         /* Bootstrap pre default */
+        border: thin solid black;
+        height: 7em;
+        resize: vertical;
+        padding: 2px;
+        overflow-y: auto;
+    }
+
+    #InputDiv:focus {
+        background-color: white;
+        outline: medium outset blue;
     }
 
     div.labelling {
@@ -73,9 +83,7 @@ include '../include/begin-head.php';
     }
 </style>
 
-<?php
-include '../include/begin-body.php';
-?>
+<?php include '../include/begin-body.php'; ?>
 
 <!-- Menu bar -->
 <nav id="Menubar" class="navbar navbar-expand-lg navbar-light bg-light">
@@ -112,7 +120,9 @@ include '../include/begin-body.php';
                         </li>
                         <li><button id="InputFileMenuItem" class="dropdown-item" type="button">Input from
                                 File&hellip;</button></li>
-                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
                         <li><button id="OutputFileMenuItem" class="dropdown-item" type="button">Output to
                                 File&hellip;</button></li>
                         <li><button id="OutputHereMenuItem" class="dropdown-item" type="button">Output Here</button>
@@ -139,6 +149,13 @@ include '../include/begin-body.php';
                         <li class="dropdown-item">
                             <input id="CentreTypesetMathsCheckbox" type="checkbox" checked="checked" />
                             <label for="CentreTypesetMathsCheckbox">Centre Typeset Maths</label>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li class="dropdown-item">
+                            <input id="MatchDelimsCheckbox" type="checkbox" checked="checked" />
+                            <label for="MatchDelimsCheckbox">Highlight Matching Delimiters</label>
                         </li>
                     </ul>
                 </li>
@@ -204,9 +221,9 @@ include '../include/begin-body.php';
 </iframe>
 
 <div class="labelling">
-    <label for="InputTextArea">Input Editor</label>
+    <label for="InputDiv">Input Editor</label>
 </div>
-<textarea id="InputTextArea" rows="3"></textarea>
+<div id="InputDiv" contenteditable="true" spellcheck="false"></div>
 <div id="buttons">
     <button id="EarlierButton" type="button" disabled="disabled"
         title="Select earlier keyboard input. Keyboard Shortcut: Control+UpArrow.">▲ Earlier Input</button>
@@ -226,8 +243,8 @@ Keyboard Shortcut: Control+Enter. (Also hold Shift to prevent auto-termination.)
 <?php include '../include/footer.php'; ?>
 
 <script src="Main.js"></script>
-<script src="InputEditor.js"></script>
-<script src="FileMenu.js" type="module"></script>
+<script type="module" src="InputEditor.mjs"></script>
+<script type="module" src="FileMenu.mjs"></script>
 
 <!-- Modal Dialogues -->
 <?php
