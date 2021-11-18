@@ -82,7 +82,7 @@ document.getElementById("InputFileMenuItem").addEventListener('click', async () 
     } catch (err) {
         if (err.name !== 'AbortError') console.error(err.name, err.message);
     }
-    inputTextArea.focus();
+    inputDiv.focus();
 });
 
 const defaultOutputFileName = "output.log";
@@ -159,7 +159,7 @@ outputFileMenuItem.addEventListener('click', async () => {
     } catch (err) {
         if (err.name !== 'AbortError') console.error(err.name, err.message);
     }
-    inputTextArea.focus();
+    inputDiv.focus();
 });
 
 outputHereMenuItem.addEventListener('click', () => {
@@ -174,7 +174,7 @@ outputHereMenuItem.addEventListener('click', () => {
     if (typesetMathsEnabled && typesetMathsCheckbox.checked) enableTypesetMaths(true);
     outputOpenMenuItem.disabled = false;
     outputHereMenuItem.disabled = true;
-    inputTextArea.focus();
+    inputDiv.focus();
 });
 
 outputOpenMenuItem.addEventListener('click', () => {
@@ -189,7 +189,7 @@ outputOpenMenuItem.addEventListener('click', () => {
     if (typesetMathsEnabled && typesetMathsCheckbox.checked) enableTypesetMaths(false);
     outputHereMenuItem.disabled = false;
     outputOpenMenuItem.disabled = true;
-    inputTextArea.focus();
+    inputDiv.focus();
 });
 
 shutFileMenuItem.addEventListener('click', async () => {
@@ -219,5 +219,5 @@ shutFileMenuItem.addEventListener('click', async () => {
     outputHereMenuItem.disabled = true;
     outputOpenMenuItem.disabled = true;
     shutFileMenuItem.disabled = true;
-    inputTextArea.focus();
+    inputDiv.focus();
 });

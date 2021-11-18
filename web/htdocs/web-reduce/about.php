@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $page_title = 'About Web REDUCE';
 $header_title = 'About Web REDUCE';
 include '../include/begin-head.php';
@@ -133,7 +133,7 @@ if ($_SERVER['QUERY_STRING']): ?>
     library, which is also used elsewhere on the REDUCE web site.
 </p>
 
-<address><a href="https://sites.google.com/site/fjwcentaur/feedback">Francis Wright</a>, October 2021</address>
+<address><a href="https://sites.google.com/site/fjwcentaur/feedback">Francis Wright</a>, November 2021</address>
 
 </div><!-- opened in begin-body.php -->
 <?php include '../include/footer.php'; ?>

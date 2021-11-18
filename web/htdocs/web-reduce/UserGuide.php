@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $page_title = 'Web REDUCE User Guide';
 $header_title = 'Web REDUCE User Guide';
 include '../include/begin-head.php';
@@ -114,6 +114,16 @@ include '../include/begin-body.php';
     echo enabled, meaning that the input is echoed by REDUCE so that
     input statements and their output are interleaved. This only affects
     multi-statement input.
+</p>
+<p>
+    By default, matching delimiter pairs in the input editor are highlighted by underlining the delimiters and their
+    content when the text cursor is immediately after a closing delimiter or immediately before an opening delimiter.
+    The delimiter pairs that are highlighted are: brackets, <code>(&hellip;)</code> and <code>{&hellip;}</code>;
+    group statements, <code>&lt;&lt;&hellip;>></code>; block statements, <code>begin&hellip;end</code>.
+    Delimiter highlighting can be turned on and off using an entry in the <a href="#ViewMenu">View menu</a>. Delimiter
+    matching is currently very crude and no attempt is made to detect errors: an opening/closing delimiter is simply
+    matched with the first corresponding closing/opening delimiter to its right/left, even when delimiters are in
+    strings.
 </p>
 
 <h2 id="REDUCEMenu">REDUCE Menu</h2>
@@ -243,14 +253,14 @@ include '../include/begin-body.php';
 <dl>
     <dt>I/O Colouring</dt>
     <dd>
-        When this check box is checked, Web REDUCE displays input coloured
+        When this box is checked, Web REDUCE displays input coloured
         red and output coloured blue in the Input/Output Display;
         otherwise the default colour (normally black) is used for both
         input and output. It is checked by default.
     </dd>
     <dt>Typeset Maths</dt>
     <dd>
-        When this check box is checked, Web REDUCE displays algebraic-mode
+        When this box is checked, Web REDUCE displays algebraic-mode
         mathematical output more-or-less as it would be typeset.
         It is checked by default. Output
         display will be significantly faster when Typeset Maths is turned
@@ -264,8 +274,13 @@ include '../include/begin-body.php';
     </dd>
     <dt>Centre Typeset Maths</dt>
     <dd>
-        When this check box is checked, Web REDUCE displays typeset maths
+        When this box is checked, Web REDUCE displays typeset maths
         centred horizontally; otherwise it is left justified.
+        It is checked by default.
+    </dd>
+    <dt>Highlight Matching Delimiters</dt>
+    <dd>
+        When this box is checked, the input editor underlines matching delimiters and their content.
         It is checked by default.
     </dd>
 </dl>
@@ -280,7 +295,7 @@ include '../include/begin-body.php';
     REDUCE Manual, which open in a new tab in your web browser. The
     dialogues all provide two buttons that apply the filled-in
     template: the <em>Edit</em> button inserts the template output
-    into the input editor at the current cursor position, replacing
+    into the input editor at the caret (current cursor position) or replacing
     any selected text; the <em>Evaluate</em> button sends the template
     output directly to REDUCE for evaluation, adding a terminator just
     as the <em>Send Input</em> button does. These buttons also close
@@ -289,7 +304,7 @@ include '../include/begin-body.php';
 </p>
 <p>
     If the template represents an operator with a primary operand then
-    this defaults to <em>ws</em>, which is convenient for simple
+    this defaults to <code>ws</code>, which is convenient for simple
     interactive calculations, but it can be changed to anything. The
     templates provide some minimal input validation: for example, if
     an element must be an explicit number (rather than a variable that
@@ -297,6 +312,12 @@ include '../include/begin-body.php';
     report an error immediately an inappropriate character is entered.
     The template checks that all input has been provided that is
     required for valid REDUCE syntax.
+</p>
+<p>
+    If output from a template dialogue (or function dialogue, see below) contains <code>ws</code> and is inserted into
+    the input editor then <code>ws</code> is automatically selected, ready to be replaced (if appropriate). This makes
+    it easy to build up complicated expressions from the outside in. Otherwise, the caret is left at the end of the
+    inserted text.
 </p>
 <p>
     Templates remember their previous input, but clicking on the
@@ -323,7 +344,7 @@ include '../include/begin-body.php';
         variables and their orders. If an order is omitted then it
         defaults to 1. At least one independent variable is required but
         others are optional. The dependent variable defaults to
-        <em>ws</em> and the first independent variable defaults to
+        <code>ws</code> and the first independent variable defaults to
         <em>x</em>, but both can be changed.
     </dd>
     <dt>Integral&hellip;</dt>
@@ -331,7 +352,7 @@ include '../include/begin-body.php';
         This template supports both indefinite and definite integration: if
         both limits are omitted then the integral is indefinite; if both
         limits are specified then the integral is definite. The integrand
-        defaults to <em>ws</em> and the integration variable defaults
+        defaults to <code>ws</code> and the integration variable defaults
         to <em>x</em>, but both can be changed.
     </dd>
     <dd>
@@ -364,7 +385,7 @@ include '../include/begin-body.php';
     function you want to use. The templates display the conventional
     notation used for the functions but with editable text fields
     holding the function arguments. The default arguments are
-    either <em>ws</em>, where this seems appropriate, or the
+    either <code>ws</code>, where this seems appropriate, or the
     conventional variable names.
 </p>
 <p>
@@ -424,7 +445,7 @@ include '../include/begin-body.php';
     </li>
 </ul>
 
-<address>Francis Wright, October 2021</address>
+<address>Francis Wright, November 2021</address>
 </div><!-- opened in begin-body.php -->
 <?php include '../include/footer.php'; ?>
 </body>

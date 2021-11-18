@@ -11,9 +11,9 @@ const clearDisplayMenuItem = document.getElementById("ClearDisplayMenuItem");
 const ioColouringCheckbox = document.getElementById('IOColouringCheckbox');
 const typesetMathsCheckbox = document.getElementById('TypesetMathsCheckbox');
 const centreTypesetMathsCheckbox = document.getElementById('CentreTypesetMathsCheckbox');
-const inputTextArea = document.getElementById('InputTextArea');
-inputTextArea.value = "";
-inputTextArea.focus();
+const inputDiv = document.getElementById('InputDiv');
+inputDiv.innerHTML = "";
+inputDiv.focus();
 const earlierButton = document.getElementById('EarlierButton');
 earlierButton.disabled = true;
 const sendInputButton = document.getElementById('SendInputButton');
@@ -26,7 +26,9 @@ let ioDisplayWindow, ioDisplayHead, ioDisplayBody;
 let noOutput = true, hideOutput = false;
 let worker;
 
-var inputFromKbd, outputToFile, outputToArray; // assigned in "FileMenu.js" & "InputEditor.js"
+// Global variables accessed in more than one module:
+var echo = false;  // setting of REDUCE echo switch, accessed in FileMenu.mjs and InputEditor.mjs
+var inputFromKbd, outputToFile, outputToArray; // assigned in FileMenu.mjs and InputEditor.mjs
 
 function setRunningState(running) {
     startREDUCEMenuItem.disabled = running;
@@ -158,9 +160,10 @@ function sendToReduce(str) {
     // sequence of commands to REDUCE to adjust its input and output processing
     // to suit the needs I have here.
     const buf = new Uint8Array(str.length + 1);
+    // Array of 8-bit unsigned integers, null-terminated, to match a C/C++ string
+    // (hence the length + 1). The contents are initialized to 0.
     for (let i = 0; i < str.length; i++)
-        buf[i] = str.charCodeAt(i);
-    buf[str.length] = 0; // null-terminate for benefit of C/C++.
+        buf[i] = str.charCodeAt(i); // Returns a number that is the UTF-16 code unit value at the given index.
     worker.postMessage({
         funcName: 'insert_buffer',
         callbackId: '',
@@ -174,7 +177,7 @@ function startREDUCE() {
     worker.onmessage = reduceWebMessageHandler;
     worker.onerror = reduceWebErrorHandler;
     sendToReduce('<< lisp (!*redefmsg := nil); load_package tmprint;' +
-        ' on nat; on fancy; off int >>$');
+        ' on nat, fancy; off int >>$');
 }
 
 function stopREDUCE() {
@@ -242,6 +245,60 @@ centreTypesetMathsCheckbox.addEventListener("change", event => {
     ioDisplayWindow.MathJax.config.chtml.displayAlign = centreTypesetMathsCheckbox.checked ? 'center' : 'left';
     ioDisplayWindow.MathJax.startup.getComponents(); // See http://docs.mathjax.org/en/latest/web/configuration.html
 });
+
+// Template and Function menu support:
+let preMenuSelectionProps; // set when drop-down menus are shown
+
+/**
+* Save relevant properties of the current Selection object.
+*/
+function saveSelectionProps() {
+    // A Selection object represents the range of text selected by the user or the current position of the caret.
+    const selection = getSelection();
+    preMenuSelectionProps = {
+        anchorNode: selection.anchorNode,
+        anchorOffset: selection.anchorOffset,
+        focusNode: selection.focusNode,
+        focusOffset: selection.focusOffset
+    }
+}
+
+document.getElementById("TemplatesMenuLink")
+    .addEventListener('show.bs.dropdown', saveSelectionProps);
+document.getElementById("FunctionsMenuLink")
+    .addEventListener('show.bs.dropdown', saveSelectionProps);
+
+/**
+ * Insert text in inputDiv at caret or replace a selection if there is one.
+ */
+function inputDivInsert(text) {
+    let selBeg = 0;
+    const selProps = preMenuSelectionProps;
+    const insertionNode = selProps.anchorNode;
+    if (insertionNode === inputDiv) {
+        // Whole node rather than content selected:
+        inputDiv.textContent = text;
+    } else {
+        // Content selected:
+        if (!(inputDiv.contains(insertionNode) && inputDiv.contains(selProps.focusNode))) {
+            alert("Invalid selection");
+            return;
+        }
+        selBeg = selProps.anchorOffset;
+        let selEnd = selProps.focusOffset;
+        if (selBeg > selEnd) { let tmp = selBeg; selBeg = selEnd; selEnd = tmp; }
+        const cont = insertionNode.textContent;
+        inputDiv.textContent = cont.substr(0, selBeg) + text + cont.substr(selEnd);
+    }
+    const index = text.search(/\bws\b/), selection = getSelection();
+    if (index >= 0) {
+        // Select ws if available within inserted text:
+        selection.setBaseAndExtent(inputDiv.firstChild, selBeg + index, inputDiv.firstChild, selBeg + index + 2);
+    } else {
+        // Otherwise, set caret to end of insertion:
+        selection.collapse(inputDiv.firstChild, selBeg + text.length);
+    }
+}
 
 // ********************************************
 // Code that requires the iframe to have loaded
