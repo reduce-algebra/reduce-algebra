@@ -158,6 +158,9 @@ function matchDelimsKeyHandler(event) {
     }
 }
 
+const closeDelimToRegexp = { ")": /[()]/g, "}": /[{}]/g, ">>": /<<|>>/g, "end": /\b(?:begin|end)\b/ig };
+const openDelimToRegexp = { "(": /[()]/g, "{": /[{}]/g, "<<": /<<|>>/g, "begin": /\b(?:begin|end)\b/ig };
+
 const span = document.createElement("span"); // used to highlight matching delimiters.
 span.style.textDecoration = "underline";
 
@@ -173,7 +176,7 @@ function highlightMatchingDelims() {
     // Get text before and after caret:
     const caretNode = selection.anchorNode, caret = selection.anchorOffset;
     // Using a range would be better here, but Range.toString() ignores newlines, at least in Firefox.
-    selection.setBaseAndExtent(inputDiv.firstChild, 0, caretNode, caret);
+    selection.setBaseAndExtent(inputDiv, 0, caretNode, caret);
     const textBefore = selection.toString();
     selection.setBaseAndExtent(caretNode, caret, inputDiv, inputDiv.childNodes.length);
     const textAfter = selection.toString();
@@ -184,14 +187,29 @@ function highlightMatchingDelims() {
         caret === caretNode.length && caretNode.parentNode.nextSibling !== null;
     if (textBefore) {
         // Check for matching delimiters closing immediately before caret.
-        // The regexp flag s allows . to match newline characters.
         // The regexp flag i makes searching case-insensitive.
-        let openIndex = textBefore.search(/(?:(?:\(.*?\))|(?:{.*?})|(?:<<.*?>>))$/s);
-        if (openIndex === -1) {
-            openIndex = textBefore.search(/\bbegin\b.*?\bend$/is);
-            if (openIndex !== -1 && !atEOL && /^(?:\d|\w)/.test(textAfter)) openIndex = -1;
+        let openIndex;
+        const initialMatch = textBefore.match(/(?:[)}]|>>|\bend)$/i);
+        if (initialMatch) {
+            const closeDelim = initialMatch[0].toLowerCase();
+            if (!(closeDelim === "end" && /^(?:\w|\d)/.test(textAfter))) {
+                const regexp = closeDelimToRegexp[closeDelim];
+                let closeCount = 0;
+                const matches = [...textBefore.matchAll(regexp)];
+                for (let index = matches.length - 1; index >= 0; index--) {
+                    const match = matches[index];
+                    if (match[0].toLowerCase() === closeDelim) closeCount++;
+                    else {
+                        closeCount--;
+                        if (closeCount === 0) {
+                            openIndex = match.index;
+                            break;
+                        }
+                    }
+                }
+            }
         }
-        if (openIndex !== -1) {
+        if (openIndex !== undefined) {
             // Replace inputDiv contents with textBeforeOpen<span>textBeforeClose</span>textAfter:
             inputDiv.innerText = textBefore.substr(0, openIndex);
             span.innerText = textBefore.substr(openIndex);
@@ -206,13 +224,26 @@ function highlightMatchingDelims() {
     }
     if (textAfter) {
         // Check for matching delimiters opening immediately after caret.
-        let matchArray = /^(?:(?:\(.*?\))|(?:{.*?})|(?:<<.*?>>))/s.exec(textAfter);
-        if (!matchArray) {
-            matchArray = /^\bbegin\b.*?\bend/is.exec(textAfter);
-            if (matchArray && /(?:\d|\w)$/.exec(textBefore)) matchArray = null;
+        let closeIndex;
+        const initialMatch = textAfter.match(/^(?:[({]|<<|begin\b)/i);
+        if (initialMatch) {
+            const openDelim = initialMatch[0].toLowerCase();
+            if (!(openDelim === "begin" && /(?:\w|\d)$/.test(textBefore))) {
+                const regexp = openDelimToRegexp[openDelim];
+                let openCount = 0;
+                for (const match of textAfter.matchAll(regexp)) {
+                    if (match[0].toLowerCase() === openDelim) openCount++;
+                    else {
+                        openCount--;
+                        if (openCount === 0) {
+                            closeIndex = match.index + match[0].length;
+                            break;
+                        }
+                    }
+                }
+            }
         }
-        if (matchArray) {
-            let closeIndex = matchArray[0].length;
+        if (closeIndex) {
             // Replace inputDiv contents with textBefore<span>textAfterOpen</span>textAfterClose:
             inputDiv.innerText = textBefore;
             if (atEOL) inputDiv.appendChild(document.createElement("br"));
@@ -225,19 +256,13 @@ function highlightMatchingDelims() {
             return;
         }
     }
+    // If matching delimiters are highlighted then clear the highlighting.
     if (delimsHighlighted) {
-        // If matching delimiters are highlighted then clear the highlighting.
-        if (caretNode === inputDiv) {
-            // Reset inputDiv content to plain text with caret as before:
-            inputDiv.innerText = inputDiv.innerText;
-            selection.collapse(inputDiv, caret);
-        } else {
-            // Reset inputDiv content to plain text containing caret:
-            inputDiv.innerText = textBefore;
-            selection.collapse(inputDiv, inputDiv.childNodes.length);
-            appendText(textAfter);
-            inputDiv.normalize();
-        }
+        // Reset inputDiv content to plain text containing caret:
+        inputDiv.innerText = textBefore;
+        selection.collapse(inputDiv, inputDiv.childNodes.length);
+        appendText(textAfter);
+        inputDiv.normalize();
         delimsHighlighted = false;
     }
 }
