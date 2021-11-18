@@ -52,7 +52,7 @@ fi
 
 date -R > start_$lisp.txt
 
-/usr/bin/time -p sh -c "$reduce $reduce_args > rlg_$lisp.raw" <<EOF 2> /dev/null
+$reduce $reduce_args > rlg_$lisp.raw 2> stderr_$lisp.txt <<EOF
 off int;
 symbolic linelength 80;
 symbolic(!*redefmsg!* := nil);
