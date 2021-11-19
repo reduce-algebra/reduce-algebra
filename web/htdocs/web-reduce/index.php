@@ -25,6 +25,7 @@ include '../include/begin-head.php';
         resize: vertical;
         padding: 2px;
         overflow-y: auto;
+        white-space: pre-wrap;
     }
 
     #InputDiv:focus {
