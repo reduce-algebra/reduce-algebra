@@ -121,8 +121,9 @@ include '../include/begin-body.php';
     The delimiter pairs that are highlighted are: brackets, <code>(&hellip;)</code> and <code>{&hellip;}</code>;
     group statements, <code>&lt;&lt;&hellip;>></code>; block statements, <code>begin&hellip;end</code>.
     Delimiter highlighting can be turned on and off using an entry in the <a href="#ViewMenu">View menu</a>. Delimiter
-    matching handles nested delimiters correctly but currently no attempt is made to highlight mismatches or ignore
-    delimiters in strings or comments.
+    matching handles nested delimiters correctly and partially ignores delimiters in strings, but not in comments since
+    comments are not expected in interactive input. An unmatched closing or opening delimiter immediately before or
+    after the text cursor is highlighted in the same error style as used in the I/O display.
 </p>
 
 <h2 id="REDUCEMenu">REDUCE Menu</h2>
