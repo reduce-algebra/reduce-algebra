@@ -164,10 +164,18 @@ symbolic put('latex,'simpfg,
                       (nil (latexoff)(setq outputhandler!* nil)) ));
 symbolic put('verbatim,'simpfg,'((t (verbatimon)) (nil (verbatimoff))));
 
+symbolic procedure rlfi_output_setq(var,rest);
+  'setq . var . if eqcar(rest,'setq) then cdr rlfi_output_setq(cadr rest, caddr rest)
+                 else list if numberp rest then {'TeX,rest}
+                            else if !*verbatim then cadr texaeval1 rest
+                            else texaeval1 rest;
+
 symbolic procedure rlfi_output(m, u);
    begin scalar outputhandler!*;
      if m eq 'maprin 
-        then maprin(if !*verbatim then cadr texaeval1 u 
+        then maprin(if eqcar(u,'setq) then rlfi_output_setq(cadr u, caddr u)
+                    else if numberp u then {'TeX,u}
+                    else if !*verbatim then cadr texaeval1 u 
                      else texaeval1 u)
       else if m eq 'prin2!*
         then prin2!*(if !*verbatim then cadr texaeval1 u
@@ -178,8 +186,8 @@ symbolic procedure rlfi_output(m, u);
    end; 
 
 symbolic procedure texaeval1 l;
-   if !*latex and null eqcar(l, 'tex) 
-      then texaeval l else l;
+   if !*latex and null eqcar(l, 'TeX) 
+      then TeXaeval l else l;
 
 symbolic procedure latexon;
 % Procedure called after ON LATEX
