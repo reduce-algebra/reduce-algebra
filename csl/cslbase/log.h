@@ -64,24 +64,39 @@ extern void term_close();
 // cleaner!
 
 [[noreturn]] inline void my_abort()
-{   std::fflush(stdout);
-    std::fflush(stderr);
-#ifdef CSL
-    if (spool_file != nullptr) std::fflush(spool_file);
-    term_close();
-#endif
-    std::exit(EXIT_FAILURE);
-}
-
-[[noreturn]] inline void my_abort(const char *msg)
-{   std::fprintf(stderr, "\n\n!!! Aborting: %s\n\n", msg);
+{   std::fprintf(stdout, "\n\n!!! Aborting\n\n");
     std::fflush(stdout);
     std::fflush(stderr);
 #ifdef CSL
-    if (spool_file != nullptr) std::fflush(spool_file);
+    if (spool_file != nullptr)
+    {   std::fprintf(spool_file, "\n\n!!! Aborting\n\n");
+        std::fflush(spool_file);
+    }
     term_close();
 #endif
+#ifdef HAVE_QUICK_EXIT
+    std::quick_exit(EXIT_FAILURE);
+#else // HAVE_QUICK_EXIT
     std::exit(EXIT_FAILURE);
+#endif // HAVE_QUICK_EXIT
+}
+
+[[noreturn]] inline void my_abort(const char *msg)
+{   std::fprintf(stdout, "\n\n!!! Aborting: %s\n\n", msg);
+    std::fflush(stdout);
+    std::fflush(stderr);
+#ifdef CSL
+    if (spool_file != nullptr)
+    {   std::fprintf(spool_file, "\n\n!!! Aborting\n\n");
+        std::fflush(spool_file);
+    }
+    term_close();
+#endif
+#ifdef HAVE_QUICK_EXIT
+    std::quick_exit(EXIT_FAILURE);
+#else // HAVE_QUICK_EXIT
+    std::exit(EXIT_FAILURE);
+#endif // HAVE_QUICK_EXIT
 }
 
 inline void my_assert(bool ok, const char *msg)

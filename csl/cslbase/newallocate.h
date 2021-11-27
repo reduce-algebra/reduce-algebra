@@ -1098,7 +1098,7 @@ inline void poll()
 // Here I need to set everything up just as if I had been making an
 // allocation request for zero bytes.
         fringeBis = fringe;
-        cout << "Polling at " << __WHERE__ << "fringeBis[" << threadId
+        cout << "Polling at " << __WHERE__ << " fringeBis[" << threadId
              << " = " << Addr(fringeBis) << endl;
         request = 0;
         gIncrement = 0;
@@ -1317,7 +1317,7 @@ inline void fitsWithinExistingGap(unsigned int threadId, size_t n, size_t gap)
     request = 0;
     setHeaderWord(result-TAG_VECTOR, n, TYPE_VEC32);
     fringeBis += n;
-//    cout << "At " << __WHERE__ << "fringeBis[" << threadId
+//    cout << "At " << __WHERE__ << " fringeBis[" << threadId
 //         << " = " Addr(fringeBis) << endl;
     gap -= n;
 // Make the end of the Chunk safe. This Chunk is not full, but a GC that is
@@ -1369,7 +1369,7 @@ inline void regionInPageIsFull(unsigned int threadId, size_t n,
             request = 0;
             setHeaderWord(result-TAG_VECTOR, n, TYPE_VEC32);
             fringeBis = gFringe + n;
-//            cout << "At " << __WHERE__ << "fringeBis[" << threadId
+//            cout << "At " << __WHERE__ << " fringeBis[" << threadId
 //                 << " = " << Addr(fringeBis) << endl;
             gFringe = limitBis = limit = fringeBis + targetChunkSize;
             break;
@@ -1412,7 +1412,11 @@ inline void grabNewCurrentPage(bool preferMostlyFree)
         std::cout << "new current from mostlyFree " << currentPage << "\n";
         my_assert(currentPage != nullptr,
             [&]{ cout << "Utterly out of memory" << endl;
+#ifdef HAVE_QUICK_EXIT
                  std::quick_exit(99); });
+#else // HAVE_QUICK_EXIT
+                 std::exit(99); });
+#endif // HAVE_QUICK_EXIT
         mostlyFreePages = mostlyFreePages->chain;
         mostlyFreePagesCount--;
     }

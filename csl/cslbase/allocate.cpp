@@ -79,9 +79,9 @@ void *allocate_page(const char *why)
 
 void init_heap_segments(double store_size)
 // This function just makes nil and the pool of page-frames available.
-// The store-size is passed in units bytes, and as a double not
+// The store-size is passed in megabytes, and as a double not
 // an integer so that overflow is not an issue.
-{
+{   store_size *= 1024.0*1024.0;    // now in bytes
     pages = new (std::nothrow) void *[MAX_PAGES];
     heap_pages = new (std::nothrow) void *[MAX_PAGES];
     vheap_pages = new (std::nothrow) void *[MAX_PAGES];
@@ -95,12 +95,10 @@ void init_heap_segments(double store_size)
     {   fatal_error(err_no_store);
     }
 
-    {   size_t free_space = INITIAL_HEAPSIZE;
-        size_t request = (size_t)store_size;
-// By doing this in size_t I should avoid overflow
-        if (request != 0) free_space = request;
+    {   size_t free_space = (size_t)store_size;
         free_space = free_space/(CSL_PAGE_SIZE+4);
         if (free_space > MAX_PAGES) free_space = MAX_PAGES;
+        else if (free_space < 2) free_space = 2;
         pages_count = heap_pages_count = vheap_pages_count = 0;
         nilsegment = nullptr;
         {   size_t n = (size_t)(NIL_SEGMENT_SIZE+free_space*CSL_PAGE_SIZE);
@@ -130,7 +128,7 @@ void init_heap_segments(double store_size)
 // there was an integer overflow in the subscript calculation leading to
 // reasonably obscure disaster.
                         reinterpret_cast<void *>(&pool[pages_count*
-                                                       (size_t)CSL_PAGE_SIZE]);
+                                                 (size_t)CSL_PAGE_SIZE]);
                     pages[pages_count++] = page;
                 }
             }
@@ -153,6 +151,7 @@ void init_heap_segments(double store_size)
                     static_cast<int>(pages_count));
         fatal_error(err_no_store);
     }
+    THREADID;
     stackBase = reinterpret_cast<uintptr_t>(stacksegment);
 }
 

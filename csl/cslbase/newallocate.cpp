@@ -414,7 +414,7 @@ atomic<uint32_t> activeThreads;
 // The initializeation here is intended to make the code more fragile
 // so that unless I initialize elsewhere I stand a good chance of seeing
 // a prompt sigsegv.
-static Page *px = reinterpret_cast<Page *>(0xeffeceabaddecade);
+static Page *px = reinterpret_cast<Page *>(0xeffaceabaddecade);
 
 Page *currentPage = px;     // Where allocation is happening. The "nursery".
 Page *previousPage = px;    // A page that was recently the current one.
@@ -514,8 +514,8 @@ LispObject get_basic_vector(int tag, int type, size_t size)
         return aerror1("request for basic vector too big",
                        fixnum_of_int(allocSize/CELL-1));
     LispObject r = get_n_bytes(allocSize);
-    *(reinterpret_cast<Header *>(r)) = type + (size <<
-                                       (Tw+5)) + TAG_HDR_IMMED;
+    *(reinterpret_cast<Header *>(r)) =
+        type + (size<<(Tw+5)) + TAG_HDR_IMMED;
 //
 // DANGER: the vector allocated here is left uninitialised at this stage.
 // This is OK if the vector will contain binary information, but if it
@@ -529,8 +529,12 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // the whole vector (including the padder), but it should never try to trace
 // through it. By tidying this up here can feel that I do not have any
 // need to worry about it elsewhere.
+#ifdef DEBUG
+   for (size_t i=CELL; i<allocSize; i+=4)
+       *reinterpret_cast<uint32_t *>(r+i) = 0xfeedface;
+#endif // DEBUG
     if (!SIXTY_FOUR_BIT && allocSize != size)
-        *reinterpret_cast<LispObject *>(r+allocSize-CELL) = 0;
+        *reinterpret_cast<LispObject *>(r+allocSize-CELL) = 0xdeadbeef;
     return static_cast<LispObject>(r + tag);
 }
 

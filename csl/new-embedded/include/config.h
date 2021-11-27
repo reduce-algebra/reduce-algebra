@@ -100,4 +100,5 @@
 
 #define WITHOUT_FFI 1
 #define AVOID_THREADS 1
+#define NO_THREADS 1
 #define NO_SIGNALS 1

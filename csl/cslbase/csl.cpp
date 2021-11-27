@@ -1321,7 +1321,7 @@ struct argSpec
 {   const char *name;      // e.g. "-x" or "--word".
     bool takesVal;         // Either "-xNN" or maybe "-x NN" will be valid.
     bool takesSeparateVal; // "-x NN" is valid as well as "-xNN".
-    string help;      // e.g. "-k NN  Set memory allocation to NN."
+    string help;           // e.g. "-k NN  Set memory allocation to NN."
     std::function<void(string,bool,string)>action;
     // procedure to call when this case arises.
 };
@@ -1700,14 +1700,19 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
              * gigabytes, with megabytes being the default. So {\ttfamily -K200M} might
              * represent typical usage for common-sized computations. In general CSL
              * will automatically expand its heap, and so it should normally never be
-             * necessary to use this option.
+             * necessary to use this option. It is legal to specify floating point
+             * values such as -K1.2G.
              */
             {   "-k", true, true,
                 "-k nnnK or -knnnM or -knnnG Suggest heap-size to use.\n"
+                "         -knnn without a suffix measure in megabytes. Floating point\n"
+                "         values such as -k1.5G or -k0.25 or even -k1.0e-3G are OK.\n"
                 "         -knnn/ss sets the Lisp stack to use ss chunks each of which\n"
                 "         is large enough that this option is basically never needed!\n"
-                "         Since the system auto-expands memory as it needs to it is very\n"
-                "         rare to need to use this option. See also --maxmem",
+                "         Since internal allocation is granular this is an approximate\n"
+                "         setting. Also since the system auto-expands memory as it needs\n"
+                "         to it should be very rare to need to use this option.\n"
+                "         See also --maxmem",
                 [&](string key, bool hasVal, string val)
                 {   if (!hasVal || val.length() == 0)
                     {   badArgs.push_back(key);
@@ -1717,14 +1722,13 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 //              nnnK   nnnM or nnnG
 //              nnnK/mm
 // where nnn indicates (approximately) the desired amount of memory in
-// kilobytes, magabytes or gigabytes (default megabytes) and mm is a feature
+// kilobytes, megabytes or gigabytes (default megabytes) and mm is a feature
 // that is deprecated and will be removed soon but that might set the
-// size of the Lisp stack segment in the range 1-10. It to be legal to
-// express nnn as a floating point value, as in 2.5G. That may lead to be
-// allowing 1.0e5K as well, which would perhaps seem an eccentric way of
-// providing input unless I allow plain numbers without a K, M or G suffix
-// to specify amounts in bytes, so that -K1.0e9 and -K1G are treated
-// as meaning the same thing. Ignore case in the specifier.
+// size of the Lisp stack segment in the range 1-10. It is legal to
+// express nnn as a floating point value, as in 2.5G. Since full floating
+// point notation is allowed one can use "-k1.2e3" (1200 Mbytes), or
+// "-k1.2e6K" (1200000 Kbytes, ie the same!) or "-k1.2e-1G" for 120 Mbytes. 
+// Ignore case in the specifier.
                     string valLow(val);
                     std::transform(valLow.begin(), valLow.end(), valLow.begin(),
                                    [](int c)
@@ -1742,13 +1746,13 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     {
                     }
                     else if (std::sscanf(valS, "%lgk%n", &valD, &pos)==1 && pos==len)
-                    {   valD *= 1024.0;
+                    {   valD /= 1024.0;
                     }
                     else if (std::sscanf(valS, "%lgm%n", &valD, &pos)==1 && pos==len)
-                    {   valD *= 1024.0*1024.0;
+                    {
                     }
                     else if (std::sscanf(valS, "%lgg%n", &valD, &pos)==1 && pos==len)
-                    {   valD *= 1024.0*1024.0*1024.0;
+                    {   valD *= 1024.0;
                     }
                     else if (std::sscanf(valS, "%lg/%u%n", &valD, &valI, &pos)==2 &&
                              pos==len)
@@ -1756,33 +1760,30 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     }
                     else if (std::sscanf(valS, "%lgk/%u%n", &valD, &valI, &pos)==2 &&
                              pos==len)
-                    {   valD *= 1024.0;
+                    {   valD /= 1024.0;
                     }
                     else if (std::sscanf(valS, "%lgm/%u%n", &valD, &valI, &pos)==2 &&
                              pos==len)
-                    {   valD *= 1024.0*1024.0;
+                    {
                     }
                     else if (std::sscanf(valS, "%lgg/%u%n", &valD, &valI, &pos)==2 &&
                              pos==len)
-                    {   valD *= 1024.0*1024.0*1024.0;
+                    {   valD *= 1024.0;
                     }
                     else
                     {   badArgs.push_back(key.append(val));
                         return;
                     }
+// valD is now in megabytes, so eg if tiy had specified -k2G it will be 2048.0
+// and if you had specified -k256K it will be 0.25.
 // Negative requests or requests for more than 256Gbytes (or requests for
-// zero or more than 10 stack chunks) will be rejected.
-                    if (valD <= 0 || valD >= 256.0e9 ||
+// zero or more than 10 stack chunks) will be rejected. I will also demand that
+// at least 8 Mbytes be allocated.
+                    if (valD <= 8.0 || valD > 256.0e3 ||
                         valI < 1 || valI > 10)
                     {   badArgs.push_back(key.append(val));
                         return;
                     }
-// If a user specifies an amount without a K, M or G suffix and it is
-// no greater then 32 million than I will treat it as if it has a suffix M.
-// So for instance -K128 will ask for 128 Mbytes. And a value up to 32
-// and without a suffix will be treated as Gigabytes
-                    if (valD <= 32.0) valD *= 1024.0*1024.0*1024.0;
-                    else if (valD <= 32.0e6) valD *= 1024.0*1024.0;
                     store_size = valD;
                     stack_segsize = valI;
                 }
@@ -2069,26 +2070,23 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     {
                     }
                     else if (std::sscanf(valS, "%lgk%n", &valD, &pos)==1 && pos==len)
-                    {   valD *= 1024.0;
+                    {   valD /= 1024.0;
                     }
                     else if (std::sscanf(valS, "%lgm%n", &valD, &pos)==1 && pos==len)
-                    {   valD *= 1024.0*1024.0;
+                    {
                     }
                     else if (std::sscanf(valS, "%lgg%n", &valD, &pos)==1 && pos==len)
-                    {   valD *= 1024.0*1024.0*1024.0;
+                    {   valD *= 1024.0;
                     }
                     else
                     {   badArgs.push_back(key.append(val));
                         return;
                     }
-// Negative requests or requests for more than 256Gbytes (or requests for
-// zero or more than 10 stack chunks) will be rejected.
-                    if (valD <= 0 || valD >= 256.0e9)
+// Negative requests or requests for more than 256Gbytes
+                    if (valD <= 0.0 || valD > 256.0e3)
                     {   badArgs.push_back(key.append(val));
                         return;
                     }
-                    if (valD <= 32.0) valD *= 1024.0*1024.0*1024.0;
-                    else if (valD <= 32.0e6) valD *= 1024.0*1024.0;
                     max_store_size = valD;
                 }
             },
@@ -2773,6 +2771,39 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     karatsuba_parallel = KARATSUBA_PARALLEL_CUTOFF;
     if (kparallel > 0) karatsuba_parallel = kparallel;
 #endif // AVOID_KARATSUBA_THREADS
+
+// Now I will decide how much memory to try to use. Start by finding out
+// how much memory my computer has. Well there are many circumstances where
+// that is not going to give a sane suggestion for how much to try to grab -
+// eg especially on a shared machine with large total memory but running tasks
+// for many users. But still using a default of half the machine memory
+// size may be as good a guess as I can make, and the user can override
+// it using the "-K" option.
+    size_t mem;
+#ifdef WIN32
+    mem = getMemorySize();
+#else // WIN32
+// BEWARE: _SC_PHYS_PAGES is a glibc extension and is not mandated by POSIX.
+// However it (maybe obviously) should work on all variants of Linux and
+// experimentally it works on a Macintosh, and on Windows there is a clear
+// and proper alternative... Also a FreeBSD manual page suggests that
+// _SC_PHYS_PAGES will (often?) be available there. That covers some of the
+// more important platforms so anybody with some alternative that is more
+// specialised can patch in their own code here!
+    long sysPageCount = sysconf(_SC_PHYS_PAGES);
+    long sysPageSize = sysconf(_SC_PAGE_SIZE);
+    mem = sysPageCount*static_cast<size_t>(sysPageSize);
+#endif // WIN32
+    double dmem = mem/(1024.0*1024.0);    // Physical memory now in megabytes
+    if (store_size == 0.0) store_size = dmem/2.0;
+    if (max_store_size != 0.0 &&
+        store_size > max_store_size) store_size = max_store_size;
+// On 32-bit systems I will restrict myself to 1.6Gbytes max because over
+// 2Gbytes I start to risk trouble with sign bits and address arithmetic
+// overflow. There OUGHT not to be too much trouble and the main reasons
+// for my caution here are now historical, but I will take a view that
+// people who want more memory than 1.6G should move to a 64-bit platform.
+    if (!SIXTY_FOUR_BIT && store_size > 1600.0) store_size = 1600.0;
 
 // Up until the time I call setup() I may only use term_printf for
 // output, because the other relevant streams will not have been set up.

@@ -1608,8 +1608,7 @@ LispObject get_vector(int tag, int type, size_t n)
     {
 // If the number size is exactly a multiple of the chunk size I will not
 // need a special shorter final vector.
-        size_t chunks = (n - CELL + VECTOR_CHUNK_BYTES -
-                         1)/VECTOR_CHUNK_BYTES;
+        size_t chunks = (n-CELL+VECTOR_CHUNK_BYTES-1)/VECTOR_CHUNK_BYTES;
         size_t i;
 // The final chunk will be full size if I have a neat multiple of
 // VECTOR_CHUNK_BYTES, otherwise smaller.

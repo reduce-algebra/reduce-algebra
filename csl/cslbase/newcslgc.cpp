@@ -740,6 +740,10 @@ inline LispObject gc_n_bytes(size_t n)
     {   fringe = fr1;
         if (gcTrace) cout << "simple success at " << Addr(r)
                           << " leaves fringe = " << Addr(fringe) << "\n";
+#ifdef DEBUG
+        for (size_t i=0; i<n; i+=4)
+            *reinterpret_cast<uint32_t *>(r+i) = 0xacebead5;
+#endif // DEBUG
         return static_cast<LispObject>(r);
     }
 // Now the case where a fresh Chunk has to be allocated.
@@ -755,6 +759,10 @@ inline LispObject gc_n_bytes(size_t n)
     }
     LispObject r1 = gc_n_bytes1(n, THREADARG r);
     if (gcTrace) cout << "complex success at " << Addr(r1) << "\n";
+#ifdef DEBUG
+    for (size_t i=0; i<n; i+=4)
+        *reinterpret_cast<uint32_t *>(r1+i) = 0x9decade9;
+#endif // DEBUG
     return r1;
 }
 
@@ -853,7 +861,7 @@ void evacuate(atomic<LispObject> &a)
 // pointer to it.
     if (is_cons(a)) len = 2*CELL;
     else if (is_symbol(a)) len = symhdr_length;
-    else len = doubleword_align_up(length_of_header(aa));
+    else len = length_of_header(aa);
 #ifdef DEBUG
     if (gcTrace) cout << "about to allocate " << len << " bytes\n";
 #endif // DEBUG
@@ -861,7 +869,11 @@ void evacuate(atomic<LispObject> &a)
 #ifdef DEBUG
     if (gcTrace) cout << "@ " << Addr(aa) << "\n";
 #endif // DEBUG
-    std::memcpy(reinterpret_cast<void *>(aa), ap, len);
+// I will copy the full final doubleword of a vector, and in the case of
+// a 32-bit machine or for vectors that contain components that are smaller
+// than CELL this will include material beyond that which is meaningful.
+// This at least keeps any zero-padding of the last word intact.
+    std::memcpy(reinterpret_cast<void *>(aa), ap, doubleword_align_up(len));
     *ap = TAG_FORWARD + aa;
     a = aa + (a & TAG_BITS);
 }
@@ -1761,12 +1773,14 @@ if (gcTrace)
 // write what the binary literal would be...
             case 0x0a: // 0b01010:   // Header for vector of Lisp pointers
                                      // Note TYPE_STREAM etc is in with this.
-                len = doubleword_align_up(length_of_header(a));
+                len = length_of_header(a);
                 if (is_mixed_header(a)) len1 = 4*CELL;
                 else len1 = len;
+// Remember that on a 32-bit machine the final doubleword of a vector
+// could be padded with junk.
                 for (size_t i = CELL; i<len1; i += CELL)
                     evacuate(*reinterpret_cast<LispObject *>(p+i));
-                p += len;
+                p += doubleword_align_up(len);
                 continue;
 
             case 0x12: // 0b10010:   // Header for bit-vector
