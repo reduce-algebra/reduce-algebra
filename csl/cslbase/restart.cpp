@@ -2079,15 +2079,18 @@ void setup(int restart_flag, double store_size)
 #endif
     {   int32_t w = 0;
 // The total store allocated is that used plus that free, including the
-// page set aside for the Lisp stack. I had better report this in Kbytes
-// which should then be sort of OK up to a total of 4000 Gbytes before the
-// unsigned long overflows on me.
+// page set aside for the Lisp stack.
         if (init_flags & INIT_VERBOSE)
-        {   unsigned long m =
-                (static_cast<unsigned long>(CSL_PAGE_SIZE/1000))*(pages_count+w+1);
-            if (m > 4000)
-                term_printf("Memory allocation: %lu Mbytes\n", m/1000);
-            else term_printf("Memory allocation: %lu Kbytes\n", m);
+        {   size_t m =
+                (static_cast<size_t>(CSL_PAGE_SIZE/1024))*(pages_count+w+1);
+            if (m >= 10240*1024)
+                term_printf("Memory allocation: %lu Gbytes\n",
+                    static_cast<unsigned long>(m/1024/1024));
+            else if (m >= 10240)
+                term_printf("Memory allocation: %lu Mbytes\n",
+                    static_cast<unsigned long>(m/1024));
+            else term_printf("Memory allocation: %lu Kbytes\n",
+                static_cast<unsigned long>(m));
         }
     }
     if (init_flags & INIT_VERBOSE)

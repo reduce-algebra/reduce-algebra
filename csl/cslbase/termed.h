@@ -88,6 +88,10 @@ public:
         term_setup(argv0, colours);
 #ifdef HAVE_AT_QUICK_EXIT
         std::at_quick_exit(term_close);
+#else // HAVE_QUICK_EXIT
+#ifndef EMSCRIPTEN
+        std::atexit(term_close);
+#endif // EMSCRIPTEN
 #endif // HAVE_AT_QUICK_EXIT
     }
     ~TermSetup()
