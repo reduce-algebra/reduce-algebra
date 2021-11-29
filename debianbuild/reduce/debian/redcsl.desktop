@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Name=Reduce Algebra System (CSL Version)
+GenericName=Computer Algebra System
+Comment=CSL Version of the Reduce Computer Algebra System
+Exec=/usr/bin/redcsl -w+
+Icon=reduce
+Type=Application
+Terminal=false
+Categories=Education;Math;
