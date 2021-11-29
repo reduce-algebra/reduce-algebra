@@ -53,13 +53,15 @@ EM_LDFLAGS = $(EM_CC_LD_FLAGS)\
  -s NO_ERROR_ON_UNDEFINED_SYMBOLS\
  -s USE_ZLIB
 
+
+
 #ASYNC_FUNCTIONS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$cfuns)
 #ASYNC_IMPORTS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$jsimports)
 
 CPPFLAGS=$(EM_CCFLAGS)\
  -std=gnu++17 $(OPT) -I. -I../include -Iinclude -I$(S)\
  -DHAVE_CONFIG_H=1 -DNO_THROW=1 -DHAVE_CRLIBM=1\
- -DEMBEDDED=1 $(XCFLAGS) $(USERFLAGS)
+ -DAVOID_KARATSUBA_THREADS=1 -DEMBEDDED=1 $(XCFLAGS) $(USERFLAGS)
 
 LDFLAGS=$(EM_LDFLAGS) -Llib
 LIBS=-lcrlibm
