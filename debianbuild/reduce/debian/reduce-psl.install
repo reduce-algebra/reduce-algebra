@@ -2,3 +2,4 @@ usr/bin/redpsl
 usr/lib/reduce/pslbuild
 usr/share/man/man1/redpsl.1
 usr/share/reduce/pslbuild
+/usr/share/applications/redpsl.desktop

@@ -54,7 +54,8 @@ BINDIR=$(INSTALLDIR)/usr/bin
 MANDIR=$(INSTALLDIR)/usr/share/man
 EMACSSITELISPDIR=$(INSTALLDIR)/usr/share/emacs/site-lisp/reduce
 EMACSSITESTARTDIR=$(INSTALLDIR)/etc/emacs/site-start.d
-
+ICONDIR=$(INSTALLDIR)/usr/share/icons/hicolor/32x32/apps
+DESKTOPDIR=$(INSTALLDIR)/usr/share/applications
 RSYNC_CMD=rsync -a --cvs-exclude --delete --delete-excluded
 
 
@@ -185,6 +186,13 @@ endif
 	cp $(GENERICTOPDIR)/emacs/reduce-mode.el $(EMACSSITELISPDIR)
 	cp debian/50reduce-emacs.el $(EMACSSITESTARTDIR)
 	chmod a-x $(EMACSSITELISPDIR)/reduce-mode.el $(EMACSSITESTARTDIR)/50reduce-emacs.el
+	mkdir -p $(ICONDIR)
+	cp debian/reduce.png $(ICONDIR)/reduce.png
+	chmod a-x $(ICONDIR)/reduce.png
+	mkdir -p $(DESKTOPDIR)
+	cp debian/redcsl.desktop $(DESKTOPDIR)/redcsl.desktop
+	cp debian/redpsl.desktop $(DESKTOPDIR)/redpsl.desktop
+	chmod a-x $(DESKTOPDIR)/*.desktop
 
 # run dh_install to copy the files into the package build dirs
 	dh_install

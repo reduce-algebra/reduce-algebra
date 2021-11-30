@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Name=Reduce Algebra System (PSL Version)
+GenericName=Computer Algebra System
+Comment=PSL Version of the Reduce Computer Algebra System
+Exec=/usr/bin/redpsl
+Icon=reduce
+Type=Application
+Terminal=true
+Categories=Education;Math;

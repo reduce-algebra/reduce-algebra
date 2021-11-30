@@ -1,5 +1,9 @@
 packages/gcref/gcref
 packages/redlog/regressions/make.sh
+packages/redlog/test/ptest1.sh
+packages/redlog/test/ptest1_new.sh
+packages/redlog/test/testredlog.sh
+packages/redlog/test/testredlog_new.sh
 packages/cde/examples/cde_test.sh
 packages/cde/examples/rrr.sh
 packages/cde/examples_book/cde_test.sh
