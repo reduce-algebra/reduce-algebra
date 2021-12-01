@@ -818,8 +818,21 @@ respect to either argument, to implement the standard addition formulae,
 argument shifts by multiples of the two quarter-periods $K$ and $iK'$ and
 finally Jacobi's transformation for a purely imaginary first argument.
 
-When their arguments are purely numerical, these functions  will be evaluated
-numerically if the \sw{rounded} switch is used. For
+Four utility rule lists \texttt{to\_sn}, \texttt{to\_cn}, \texttt{to\_dn} and
+\texttt{no\_glaisher} are provided for user convenience. The first
+\texttt{to\_sn} replaces occurences of the squares of $\mathrm{cn}$ and
+$\mathrm{dn}$ in favour of the square of $\mathrm{sn}$ using the
+`Pythagorean' identities. \texttt{to\_cn} and \texttt{to\_dn} apply these
+identities to replace squares in favour of $\mathrm{cn}$ and $\mathrm{dn}$
+respectively. At most one of these rule sets should be active at any one time
+to avoid a potential infinite recursion in the simplification.
+The final rule list \texttt{no\_glaisher} replaces all occurences of the
+nine subsidiary Jacobi elliptic functions ($\mathrm{ns}$, $\mathrm{sc}$,
+$\mathrm{sd}$, \ldots by reciprocals and quotients of the `basic' Jacobi
+elliptic functions $\mathrm{sn}$, $\mathrm{cn}$ and $\mathrm{dn}$.
+
+When their arguments are purely numerical, these twelve functions  will be
+evaluated numerically if the \sw{rounded} switch is used. For
 complex arguments it is also better if the \sw{complex} switch is on.
 
 \subsubsection{Jacobi Amplitude Function}
@@ -1357,8 +1370,8 @@ the functions $\mathrm{arccs}$ and $\mathrm{arcds}$ satisfy:
 \[ \mathrm{arccs}(-x, k) = 2\mathrm{K}(k)-\mathrm{arccs}(x, k),\qquad
 \mathrm{arcds}(-x, k) = 2\mathrm{K}(k)-\mathrm{arcds}(x, k).\]
 
-This choice means that the range interval of (real) principal values is
-connected. c.f.
+This choice means that the range of (real) principal values is
+connected, in fact the open interval $(0, 2\mathrm{K}(k))$. c.f.
 \[ \mathrm{arctan}(-x) = -\mathrm{arctan}(x),\qquad
   \mathrm{arccot}(-x) = \pi -\mathrm{arccot}(x). \]
 
@@ -1397,10 +1410,10 @@ $\mathop{\mathrm{arcnc}}$: & $ |x| >=1 $ &
 $\mathop{\mathrm{arcdc}}$: & $ |x| >=1 $ &
   $0 <= v <= 2\mathrm{K}(k)$ \& $v \neq \mathrm{K}(k)$ &
   $4 n\mathrm{K}(k) \pm v$ \\
-$\mathop{\mathrm{arcdn}}$: & $ k' <= |x| <= 1$ &
+$\mathop{\mathrm{arcdn}}$: & $ k' <= x <= 1$ &
   $0 <= v <= \mathrm{K}(k)$ &
   $2 n\mathrm{K}(k) \pm v$ \\  
-$\mathop{\mathrm{arcnd}}$: & $ 1 <= |x| <= 1/k'$ &
+$\mathop{\mathrm{arcnd}}$: & $ 1 <= x <= 1/k'$ &
   $0 <= v <= \mathrm{K}(k)$ &
   $2 n\mathrm{K}(k) \pm v$ \\   
 $\mathop{\mathrm{arcds}}$: & $ |x| >= k'$ &
