@@ -1414,7 +1414,6 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
     }
 }
 
-bool timeTestCons = false;
 bool gcTest = false;
 bool gcTrace = false;
 bool ignoreLoadTime = false;
@@ -1959,18 +1958,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 }
             },
 #endif // CONSERVATIVE
-
-            /*! options [--cons-test] \item [{\ttfamily --cons-test}] \index{{\ttfamily --cons-test}}
-             * --cons-test causes running some test code rather than the full system.
-             */
-            {   "--cons-test", true, true,
-                "--cons-test runs some test code.",
-                [&](string key, bool hasVal, string val)
-                {   timeTestCons = true;
-                }
-            },
-
-            /*! options [--stop-on-error] \item [{\ttfamily --stop-on-error}] \index{{\ttfamily --stop-on-error}}
+             /*
              * This utterly defeats errorset and arranges that if there is any error that
              * after whatever backtrace might have been generated any inner errorset
              * just propagates the error out, and at the top level the system exits.
@@ -2830,19 +2818,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // disasters will have reached the user, so I can allow FWIN to terminate
 // rather more promptly.
     fwin_pause_at_end = false;
-
-    if (timeTestCons)
-    {   clock_t c0 = std::clock();
-        LispObject a = nil;
-// This is 100M conses so on a 64-bit system that should fill up 1.6G of
-// memory. CSL will need that to be less than half, so this is looking at
-// a total heap size of 4G for success I think.
-        for (size_t i=0; i<100000000; i++)
-            a = cons(fixnum_of_int(i), a);
-        clock_t c1 = std::clock();
-        std::printf("Timing %.3f\n",
-                    (static_cast<double>(c1) - static_cast<double>(c0))/CLOCKS_PER_SEC);
-    }
 
 // Now if --trace/--tr has been specified set up some traced functions.
     for (auto name : tracedFunctions)
