@@ -529,7 +529,7 @@ unsigned int activeHelpers = 0;
 void pushChunk(Chunk *c)
 {   std::lock_guard<std::mutex> lock(mutexForGc);
     Chunk *old = pendingChunks;
-    if (gcTrace) cout << "Push " << Addr(c) << " onto queue [" << Addr(old) << "]\n";
+    if (gcTrace) zprintf("Push %s onto queue [%s]\n", Addr(c), Addr(old));
     c->pendingChunks = old;
     pendingChunks = c;
 // If I put a new Chunk onto an otherwise empty queue then I will need to
@@ -614,7 +614,7 @@ atomic<Chunk *>   gcQ[gcQSize];
 
 static void gcEnqueue(Chunk *c)
 {   uintptr_t in = gcInQ;
-//  if (gcTrace) cout << "Grab another Chunk at " << Addr(c) << "\n";
+//  if (gcTrace) zprintf("Grab another Chunk at %s\n", Addr(c));
     gcQ[in & (gcQSize-1)] = c;
     in = in+1;
     if (in == 0) Lstop(nil); // wrap in queue pointer
@@ -661,7 +661,7 @@ static Chunk *gcReserveMoreChunks(uintptr_t out)
 // When I get here there can still be other threads running and incrementing
 // gcOutQ. My task is to insert chunks into the queue until it holds (about)
 // gcQSize.
-    cout << "Reserve several chunks for GC use\n";
+    zprintf("Reserve several chunks for GC use\n");
     while (gcInQ < static_cast<uintptr_t>(gcOutQ) + gcQSize - 1)
     {   gcEnqueue(grabAnotherChunk(targetChunkSize));
     }
@@ -706,23 +706,22 @@ LispObject gc_n_bytes1(size_t n, THREADFORMAL uintptr_t r)
     if (justFilled != nullptr &&
         justFilled != myBusyChunk) pushChunk(justFilled);
     myChunkBase = newChunk;
-    if (gcTrace) cout << "New Chunk at " << Addr(newChunk)
-                      << " fringe = " << Addr(fringe) << "\n";
+    if (gcTrace)
+       zprintf("New Chunk at %s fringe = %s\n", Addr(newChunk), Addr(fringe));
     newChunk->length = nSize;
     newChunk->isPinned = 0;
     newChunk->pinnedObjects = TAG_FIXNUM;
     newChunk->chunkPinChain = nullptr;
     size_t chunkNo = p->chunkCount.fetch_add(1);
-    std::cout << "Page " << p << " gets chunkCount "
-              << static_cast<unsigned int>(p->chunkCount) << "\n";
+    zprintf("Page %s gets chunkCount %d\n",  p, p->chunkCount);
     p->chunkMap[chunkNo] = newChunk;
     limitBis = newLimit;
     limit = newLimit;
 #ifdef DEBUG
     testLayout();
 #endif
-    if (gcTrace) cout << "gc_n_bytes1 = " << Addr(r) << " fringe = " << Addr(fringe) << "\n";
-    if (gcTrace) cout << "limit = " << Addr(limit) << "\n";
+    if (gcTrace) zprintf("gc_n_bytes1 = %s fringe = %s\n", Addr(r), Addr(fringe));
+    if (gcTrace) zprintf("limit = %s\n", Addr(limit));
     return static_cast<LispObject>(r);
 }
 
@@ -731,15 +730,14 @@ inline LispObject gc_n_bytes(size_t n)
 // First the path that applies if the allocation will be possible within the
 // current Chunk.
     THREADID;
-    if (gcTrace) cout << "gc_n_bytes " << n
-                      << " with fringe = " << Addr(fringe) << "\n";
+    if (gcTrace) zprintf("gc_n_bytes %d with fringe = %s\n", n, Addr(fringe));
     uintptr_t r = fringe;
     uintptr_t fr1 = r + n;
     uintptr_t w = limit;
     if (fr1 <= w) LIKELY
     {   fringe = fr1;
-        if (gcTrace) cout << "simple success at " << Addr(r)
-                          << " leaves fringe = " << Addr(fringe) << "\n";
+        if (gcTrace) zprintf("simple success at %s leaves froinge = %s\n",
+                             Addr(r), Addr(fringe));
 #ifdef DEBUG
         for (size_t i=0; i<n; i+=4)
             *reinterpret_cast<uint32_t *>(r+i) = 0xacebead5;
@@ -758,7 +756,7 @@ inline LispObject gc_n_bytes(size_t n)
         if (gap != 0) setHeaderWord(r, gap);
     }
     LispObject r1 = gc_n_bytes1(n, THREADARG r);
-    if (gcTrace) cout << "complex success at " << Addr(r1) << "\n";
+    if (gcTrace) zprintf("complex success at %s\n", Addr(r1));
 #ifdef DEBUG
     for (size_t i=0; i<n; i+=4)
         *reinterpret_cast<uint32_t *>(r1+i) = 0x9decade9;
@@ -800,7 +798,7 @@ void evacuate(atomic<LispObject> &a)
 #ifdef DEBUG
 // I am silent on NIL because otherwise I am overall too noisy.
     if (a!=nil && !is_immediate(a))
-        if (gcTrace) cout << "evacuating " << Addr(a) << "\n";
+        if (gcTrace) zprintf("evacuating %s\n", Addr(a));
 #endif
 // Here p is a pointer to a location that is a list-base, ie it contains
 // a valid Lisp object. I want to arrange that the object and all its
@@ -829,18 +827,16 @@ void evacuate(atomic<LispObject> &a)
     {
 //#ifdef DEBUG
 //        if (a != nil)
-//            if (gcTrace) cout << "immediate data: easy " << Addr(a) << "\n";
+//            if (gcTrace) zprintf("immediate data: easy %s\n", Addr(a));
 //#endif // DEBUG
         return;
     }
     if (isPinned(a))
     {   if (gcTrace)
-        {   cout << "precise ptr to pinned " << Addr(a) << "\n";
-            cout << "pinned item is ";
+        {   zprintf("precise ptr to pinned %s\n", Addr(a));
+            zprintf("pinned item is ");
             simple_print(a);
-            cout << "@" << std::hex
-                 << static_cast<LispObject>(a) << " in page "
-                 << (a & -pageSize) << "\n"; 
+            zprintf("@ %x in page %x\n", a, a & -pageSize);
         }
         return;
     }
@@ -943,7 +939,7 @@ bool withinMajorGarbageCollection = false;
 size_t pinnedChunkCount = 0, pinnedPageCount = 0;
 
 void prepareForGarbageCollection(bool major)
-{   if (gcTrace) cout << "prepareForGarbageCollection" << endl;
+{   if (gcTrace) zprintf("prepareForGarbageCollection\n");
     if (major)
     {   withinMajorGarbageCollection = true;
         oldPages = busyPages;
@@ -2127,7 +2123,7 @@ void validatePinnedItems(bool major)
 {   if (gcTrace) cout << "validate Pinned Items\n";
     for (Page *p=pagesPinChain; p!=nullptr; p=p->pagePinChain)
     {   for (Chunk *c=p->chunkPinChain; c!=nullptr; c=c->chunkPinChain)
-        {   if (gcTrace) cout << "Pinned items in " << Addr(c) << " to check\n";
+        {   if (gcTrace) zprintf("Pinned items in %s to check\n", Addr(c));
             validatePinnedInChunk(c);
         }
     }
@@ -2137,7 +2133,7 @@ void validatePointers()
 {   clearRepeats();
     validateUnambiguousBases(true);
     validatePinnedItems(true);
-    if (gcTrace) cout << "Validation complete\n";
+    if (gcTrace) zprintf("Validation complete\n");
 }
 
 #endif // DEBUG
