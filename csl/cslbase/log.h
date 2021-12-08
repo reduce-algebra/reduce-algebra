@@ -1,10 +1,10 @@
-// "log.h"                                                 2020, A C Norman
+// "log.h"                                              2020-21, A C Norman
 //
 // logging...
 //
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2021, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -252,6 +252,8 @@ inline void printlog(const char *s, ...)
 #define CSL_TOSTRING(x) CSL_STRINGIFY(x)
 #define LOCATION __FILE__ ":" CSL_TOSTRING(__LINE__)
 
+//=========================================================================
+
 //                       "zprintf"
 //
 // This is a facility that is used very much like std::printf. It is
@@ -293,6 +295,8 @@ inline void printlog(const char *s, ...)
 //    %f and %g                                similarly to %e
 //    %s                                       ANY C++ argument
 //    %%                                       displays a single %
+//    %a  (in a CSL context only, and then only if CONSERVATIVE
+//         is defined)                         funny way to display an address.
 //
 // This code allows printing of arguments that are of type std::atomic<T>
 // and displays things as the value stored atomically. For me that feels
@@ -349,6 +353,14 @@ public:
     SpoolStream() : std::ostream(new SpoolBuffer()) {}
     ~SpoolStream() { delete rdbuf(); }
 };
+
+#ifdef CSL
+inline const char *Addr(uintptr_t p);
+template <typename T>
+inline const char *Addr(std::atomic<T>& p);
+template <typename T>
+inline const char *Addr(T p);
+#endif // CSL
 
 // Avoid reliance on inline variables until I am confident that all the
 // compilers I ever use support them.
@@ -415,7 +427,7 @@ inline constexpr size_t findEscOrEnd(F format)
 // uther use of "%" is an error.
 
 template <typename F>
-inline constexpr void Zprintf(F format)
+inline constexpr int Zprintf(F format)
 {   constexpr size_t n = findEscOrEnd(format);
     constexpr const char* data = format();
     if constexpr (data[n] == 0) zstream() << std::flush << data;
@@ -443,6 +455,7 @@ inline constexpr void Zprintf(F format)
             }
         }
     }
+    return 0;
 }
 
 template <typename T>
@@ -459,7 +472,7 @@ T plainValue(T arg)
 // should provide a marker.
 
 template <typename F, typename T, typename... Rest>
-inline constexpr void Zprintf(F format, T&& arg1, Rest&&... rest)
+inline constexpr int Zprintf(F format, T&& arg1, Rest&&... rest)
 {   constexpr size_t n = findEscOrEnd(format);
     constexpr const char* data = format();
     if constexpr (data[n] == 0) throw std::invalid_argument(
@@ -544,6 +557,8 @@ inline constexpr void Zprintf(F format, T&& arg1, Rest&&... rest)
         auto actualArg = plainValue(arg1);
         switch (c4)
         {
+            case 'a':
+                break;
             case 'd':
                 if constexpr (!std::is_integral_v<decltype(actualArg)>)
                     throw std::invalid_argument(
@@ -608,7 +623,7 @@ inline constexpr void Zprintf(F format, T&& arg1, Rest&&... rest)
             case '%':
                 zstream() << std::flush << '%';
                 Zprintf([]{return back+1;}, arg1, rest...);
-                return;
+                return 0;
             default:
                 throw std::invalid_argument(
                     "Format contains unrecognised directive");
@@ -618,6 +633,10 @@ inline constexpr void Zprintf(F format, T&& arg1, Rest&&... rest)
         if constexpr (((spec3>>16) & 0x7f) > 0)
             zstream() << std::flush << std::setprecision(((spec3>>16) & 0x7f) - 1);
 // Now I can actually display the argument!
+#if defined CSL && defined CONSERVATIVE
+        if constexpr (c4 == 'a') zstream() << std::flush << Addr(actualArg);
+        else
+#endif // CSL && CONSERVATIVE
         zstream() << std::flush << actualArg;
 // Some of the IO manipulators have sticky effect and so will explicitly
 // cancel them. "setw()" only impacts the next displayed item and so I
@@ -643,6 +662,7 @@ inline constexpr void Zprintf(F format, T&& arg1, Rest&&... rest)
         if constexpr (back[spec3 & 0xff] != 0)
             Zprintf([]{return back+1+(spec3&0xff);}, rest...);
     }
+    return 0;
 }
 
 #endif // header_log_h

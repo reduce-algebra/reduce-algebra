@@ -652,18 +652,23 @@ inline int findHeapSegment(uintptr_t p)
 // leading digits - especially on a 64-bit system. This little function
 // maps addresses to offsets within their heap segment. It is not really going
 // to help a huge amount of you have multiple segments each full with
-// gigabytes of data, but may east early debugging on small cases quite
+// gigabytes of data, but may ease early debugging on small cases quite
 // a lot!
 // If a value p is an address within the data region of a Page then
-// the display will be of the form "#offset:pagenumber" if in the first
-// heapsegment and "#offset:pagenumber:segmentnumber" otherwise. An offset
+// the display will be of the form "#pagenumber:offset" if in the first
+// heapsegment and "#segment:pagenumber:offset" otherwise. An offset
 // of zero should correspond to the start of the first Chunk within the Page,
 // and so the first bit of allocated user data lies (on a 64-bit machine)
-// at address #28:0 because there happen to be 5 words of header in the
-// Chunk.
+// at address #0:30 because of the size of the Chunk header.
 
 inline const char *Addr(uintptr_t p)
-{   static char r[40];
+{
+// This function may be called several times in a single expression. I
+// do not want it to have to allocate fresh memory, so I set it up with
+// four (4) buffers and use those in turn. 
+    static char rr[4*40];
+    static int seq=0;
+    char *r = &rr[40*(seq++ & 0x3)];
     int hs = findHeapSegment(p);
     if (hs != -1)
     {   uintptr_t o = p - reinterpret_cast<uintptr_t>(heapSegment[hs]);
@@ -671,23 +676,25 @@ inline const char *Addr(uintptr_t p)
         uintptr_t pOff = o%pageSize;
         if (pOff >= offsetof(Page, data))
         {   pOff -= offsetof(Page, data);
-            if (hs == 0) std::snprintf(r, sizeof(r),
+            if (hs == 0) std::snprintf(r, 40,
                 "#%" PRIxPTR ":%" PRIxPTR, pNum, pOff);
-            else std::snprintf(r, sizeof(r),
+            else std::snprintf(r, 40,
                 "#[%d]: %" PRIxPTR ":%" PRIxPTR, hs, pNum, pOff);
             return r;
         }
     }
-    std::snprintf(r, sizeof(r), "%" PRIxPTR, p);
+    std::snprintf(r, 40, "%" PRIxPTR, p);
     return r;
 }
 
-inline const char *Addr(atomic<LispObject> &p)
-{   return Addr(static_cast<LispObject>(p));
+
+template <typename T>
+inline const char *Addr(atomic<T>& p)
+{   return Addr(static_cast<T>(p));
 }
 
 template <typename T>
-inline const char *Addr(T &p)
+inline const char *Addr(T p)
 {   return Addr((uintptr_t)p);
 }
 

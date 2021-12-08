@@ -580,7 +580,7 @@ static void cold_setup()
 #ifdef CONSERVATIVE
     if (gcTest)
     {   gcTestCode();   // if "--gc-test" was on command line.
-        return;
+        std::exit(0);
     }
 #endif // CONSERVATIVE
     setvalue(nil, get_basic_vector_init(sizeof(Package), nil));

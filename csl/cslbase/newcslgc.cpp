@@ -529,7 +529,7 @@ unsigned int activeHelpers = 0;
 void pushChunk(Chunk *c)
 {   std::lock_guard<std::mutex> lock(mutexForGc);
     Chunk *old = pendingChunks;
-    if (gcTrace) zprintf("Push %s onto queue [%s]\n", Addr(c), Addr(old));
+    if (gcTrace) zprintf("Push %a onto queue [%a]\n", c, old);
     c->pendingChunks = old;
     pendingChunks = c;
 // If I put a new Chunk onto an otherwise empty queue then I will need to
@@ -614,7 +614,7 @@ atomic<Chunk *>   gcQ[gcQSize];
 
 static void gcEnqueue(Chunk *c)
 {   uintptr_t in = gcInQ;
-//  if (gcTrace) zprintf("Grab another Chunk at %s\n", Addr(c));
+//  if (gcTrace) zprintf("Grab another Chunk at %a\n", c);
     gcQ[in & (gcQSize-1)] = c;
     in = in+1;
     if (in == 0) Lstop(nil); // wrap in queue pointer
@@ -707,7 +707,7 @@ LispObject gc_n_bytes1(size_t n, THREADFORMAL uintptr_t r)
         justFilled != myBusyChunk) pushChunk(justFilled);
     myChunkBase = newChunk;
     if (gcTrace)
-       zprintf("New Chunk at %s fringe = %s\n", Addr(newChunk), Addr(fringe));
+       zprintf("New Chunk at %a fringe = %a\n", newChunk, fringe);
     newChunk->length = nSize;
     newChunk->isPinned = 0;
     newChunk->pinnedObjects = TAG_FIXNUM;
@@ -720,8 +720,8 @@ LispObject gc_n_bytes1(size_t n, THREADFORMAL uintptr_t r)
 #ifdef DEBUG
     testLayout();
 #endif
-    if (gcTrace) zprintf("gc_n_bytes1 = %s fringe = %s\n", Addr(r), Addr(fringe));
-    if (gcTrace) zprintf("limit = %s\n", Addr(limit));
+    if (gcTrace) zprintf("gc_n_bytes1 = %a fringe = %a\n", r, fringe);
+    if (gcTrace) zprintf("limit = %a\n", limit);
     return static_cast<LispObject>(r);
 }
 
@@ -730,14 +730,14 @@ inline LispObject gc_n_bytes(size_t n)
 // First the path that applies if the allocation will be possible within the
 // current Chunk.
     THREADID;
-    if (gcTrace) zprintf("gc_n_bytes %d with fringe = %s\n", n, Addr(fringe));
+    if (gcTrace) zprintf("gc_n_bytes %d with fringe = %a\n", n, fringe);
     uintptr_t r = fringe;
     uintptr_t fr1 = r + n;
     uintptr_t w = limit;
     if (fr1 <= w) LIKELY
     {   fringe = fr1;
-        if (gcTrace) zprintf("simple success at %s leaves froinge = %s\n",
-                             Addr(r), Addr(fringe));
+        if (gcTrace) zprintf("simple success at %a leaves fringe = %a\n",
+                             r, fringe);
 #ifdef DEBUG
         for (size_t i=0; i<n; i+=4)
             *reinterpret_cast<uint32_t *>(r+i) = 0xacebead5;
@@ -756,7 +756,7 @@ inline LispObject gc_n_bytes(size_t n)
         if (gap != 0) setHeaderWord(r, gap);
     }
     LispObject r1 = gc_n_bytes1(n, THREADARG r);
-    if (gcTrace) zprintf("complex success at %s\n", Addr(r1));
+    if (gcTrace) zprintf("complex success at %a\n", r1);
 #ifdef DEBUG
     for (size_t i=0; i<n; i+=4)
         *reinterpret_cast<uint32_t *>(r1+i) = 0x9decade9;
@@ -798,7 +798,7 @@ void evacuate(atomic<LispObject> &a)
 #ifdef DEBUG
 // I am silent on NIL because otherwise I am overall too noisy.
     if (a!=nil && !is_immediate(a))
-        if (gcTrace) zprintf("evacuating %s\n", Addr(a));
+        if (gcTrace) zprintf("evacuating %a\n", a);
 #endif
 // Here p is a pointer to a location that is a list-base, ie it contains
 // a valid Lisp object. I want to arrange that the object and all its
@@ -827,13 +827,13 @@ void evacuate(atomic<LispObject> &a)
     {
 //#ifdef DEBUG
 //        if (a != nil)
-//            if (gcTrace) zprintf("immediate data: easy %s\n", Addr(a));
+//            if (gcTrace) zprintf("immediate data: easy %a\n", a);
 //#endif // DEBUG
         return;
     }
     if (isPinned(a))
     {   if (gcTrace)
-        {   zprintf("precise ptr to pinned %s\n", Addr(a));
+        {   zprintf("precise ptr to pinned %a\n", a);
             zprintf("pinned item is ");
             simple_print(a);
             zprintf("@ %x in page %x\n", a, a & -pageSize);
@@ -842,12 +842,12 @@ void evacuate(atomic<LispObject> &a)
     }
     LispObject *ap = reinterpret_cast<LispObject *>(a & ~TAG_BITS);
     LispObject aa = *ap;
-    if (gcTrace) cout << "item is " << Addr(a) << " [not immediate] "
-         << " contents of that is " << Addr(aa) << "\n";
+    if (gcTrace) zprintf("item is %a [not immediate] contents of that is %a\n",
+                         a, aa);
     if (is_forward(aa))
     {   a = aa - TAG_FORWARD + (a & TAG_BITS);
 #ifdef DEBUG
-        if (gcTrace) cout << "Process forwarding address\n";
+        if (gcTrace) zprintf("Process forwarding address\n");
 #endif // DEBUG
         return;
     }
@@ -859,11 +859,11 @@ void evacuate(atomic<LispObject> &a)
     else if (is_symbol(a)) len = symhdr_length;
     else len = length_of_header(aa);
 #ifdef DEBUG
-    if (gcTrace) cout << "about to allocate " << len << " bytes\n";
+    if (gcTrace) zprintf("about to allocate %d bytes\n", len);
 #endif // DEBUG
-    aa = gc_n_bytes(len);
+    aa = gc_n_bytes(doubleword_align_up(len));
 #ifdef DEBUG
-    if (gcTrace) cout << "@ " << Addr(aa) << "\n";
+    if (gcTrace) zprintf( "@ %a\n", aa);
 #endif // DEBUG
 // I will copy the full final doubleword of a vector, and in the case of
 // a 32-bit machine or for vectors that contain components that are smaller
@@ -970,13 +970,13 @@ void prepareForGarbageCollection(bool major)
     }
     else
     {   withinMajorGarbageCollection = false;
-        if (gcTrace) cout << "prepare for minor GC not coded yet\n";
+        if (gcTrace) zprintf("prepare for minor GC not coded yet\n");
         Lstop(nil);
     }
 }
 
 void clearPinnedInformation(bool major)
-{   if (gcTrace) cout << "clearPinnedInformation" << endl;
+{   if (gcTrace) zprintf("clearPinnedInformation\n");
 // Any pages pinned by the previous garbage collection will be recorded
 // via pagesPinChain.
    clearAllPins();
@@ -1000,14 +1000,14 @@ void setPinned(uintptr_t a)
     uintptr_t o = (a & (pageSize-1))/8;
     uintptr_t mask = static_cast<uintptr_t>(1)<<(o&(8*sizeof(uintptr_t)-1));
     p->pinnedMap[o/(8*sizeof(uintptr_t))] |= mask;
-    cout << "setPinned " << std::hex << a << "\n";
+    zprintf("setPinned %x %a\n", a, a);
 }
 
 void setPinned(Page *p, uintptr_t a)
 {   uintptr_t o = (a & (pageSize-1))/8;
     uintptr_t mask = static_cast<uintptr_t>(1)<<(o&(8*sizeof(uintptr_t)-1));
     p->pinnedMap[o/(8*sizeof(uintptr_t))] |= mask;
-    cout << "setPinned " << std::hex << a << "\n";
+    zprintf("setPinned %x %a\n", a, a);
 }
 
 void clearPinned(uintptr_t a)
@@ -1049,8 +1049,7 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 // why it is important to do this check using only those.
 {   if (p->chunkCount == 0) return;  // An empty Page.
     if (gcTrace || true)
-        cout << "Ambig " << Addr(a) << " in non-empty page "
-             << Addr(p) << endl;
+        zprintf("Ambig %a in non-empty page %a\n", a, p); 
 // The list of chunks will be arranged such that the highest address one
 // is first in the list. I will now scan it until I find one such that
 // the chunk has (a) pointing within it, and I should not need many tries
@@ -1744,13 +1743,13 @@ if (gcTrace) cout << "scanning (1) at " << Addr(p) << "\n";
             if (gcTrace) cout << "First word of " << Addr(pp)
                  << " = " << Addr(a) << "  " << std::hex << (a & 0x1f) << "\n";
 if (gcTrace)
-{   if (is_cons(a)) cout << "a cons pointer\n";
-    else if (is_vector(a)) cout << "pointer to a vector of some sort\n";
-    else if (is_forward(a)) cout << "forwarding pointer ILLEGAL HERE\n";
-    else if (is_symbol(a)) cout << "pointer to a symbol\n";
-    else if (is_numbers(a)) cout << "pointer to a symbol\n";
-    else if (is_bfloat(a)) cout << "pointer to a boxfloat\n";
-    else if (is_fixnum(a)) cout << "pointer to a number\n";
+{   if (is_cons(a))         zprintf("a cons pointer\n");
+    else if (is_vector(a))  zprintf("pointer to a vector of some sort\n");
+    else if (is_forward(a)) zprintf("forwarding pointer ILLEGAL HERE\n");
+    else if (is_symbol(a))  zprintf("pointer to a symbol\n");
+    else if (is_numbers(a)) zprintf("pointer to a symbol\n");
+    else if (is_bfloat(a))  zprintf("pointer to a boxfloat\n");
+    else if (is_fixnum(a))  zprintf("pointer to a number\n");
     else if (is_odds(a))
     {   if (is_header(a))
         {   cout << "header found " << Addr(a) << "   ";
@@ -1759,7 +1758,7 @@ if (gcTrace)
         }
         else cout << "immed " << Addr(a) << "\n";
     }
-    else cout << "??? " << Addr(a) << "\n";
+    else zprintf("??? %s\n", Addr(a));
 }
 #endif
             my_assert(!is_forward(a), "Forwarding pointer not expected");
@@ -1821,7 +1820,7 @@ void gcHelper()
 }
 
 void endOfGarbageCollection(bool major)
-{   if (gcTrace) cout << "endOfGarbageCollection\n";
+{   if (gcTrace) zprintf("endOfGarbageCollection\n");
 // Here all non-pinned live data has been copied to fresh space, so all
 // the pages chained up in oldPages can be grabbed and recycled. If such
 // a page has no pinned material in it goes in freePages and freePagesCount
@@ -1865,9 +1864,8 @@ void garbageCollect(bool major)
 #ifdef DEBUG
     gcTrace = true;
 #endif // DEBUG
-    if (gcTrace) cout << "\n+++++ Start of a "
-         << (major ? "major" : "minor")
-         << " GC\n";
+    if (gcTrace) zprintf("\n+++++ Start of a %s GC\n",
+                         major ? "major" : "minor");
     auto gcTime1 = std::chrono::high_resolution_clock::now();
     prepareForGarbageCollection(major);
     auto gcTime2 = std::chrono::high_resolution_clock::now();

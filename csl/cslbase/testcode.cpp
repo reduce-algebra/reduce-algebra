@@ -52,6 +52,7 @@ LispObject runtest(int n, int payload)
 
 void gcTestCode()
 {   std::printf("\n: Conservative code - run a simple test of the GC\n\n");
+    set_up_signal_handlers();
     cout << "create package object\n";
     setvalue(nil, get_basic_vector_init(sizeof(Package), nil));
     setpackage(nil, static_cast<LispObject>(qvalue(nil)));
