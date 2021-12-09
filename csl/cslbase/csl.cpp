@@ -3003,6 +3003,40 @@ static void low_level_signal_handler(int signo, siginfo_t *si,
 static void low_level_signal_handler(int signo)
 #endif // !HAVE_SIGACTION
 {
+#ifdef DEBUG
+// If debugging then even though trying to print here is in violation of
+// C++ standards I will try to do it so I get SOME information about a
+// disaster!
+    fflush(stdout);
+    fflush(stderr);
+    switch (signo)
+    {
+    default:
+        zprintf("\n~~~ SIGNAL ~~~: %d\n", signo);
+        break;
+    case SIGABRT:
+        zprintf("\n~~~ SIGNAL ~~~: SIGABRT\n");
+        break;
+    case SIGFPE:
+        zprintf("\n~~~ SIGNAL ~~~: SIGFPE\n");
+        break;
+    case SIGILL:
+        zprintf("\n~~~ SIGNAL ~~~: SIGILL\n");
+        break;
+    case SIGINT:
+        zprintf("\n~~~ SIGNAL ~~~: SIGINT\n");
+        break;
+    case SIGSEGV:
+        zprintf("\n~~~ SIGNAL ~~~: SIGSEGV\n");
+        break;
+    case SIGTERM:
+        zprintf("\n~~~ SIGNAL ~~~: SIGTERM\n");
+        break;
+    }
+    fflush(stdout);
+    fflush(stderr);
+    term_close();
+#endif
 #ifndef NO_SIGNALS
 // There are really very restrictive rules about what I can do in a
 // signal handler and remain safe. And the exceptions that are trapped

@@ -1496,12 +1496,11 @@ std::condition_variable cv_for_gc_complete;
 atomic<uintptr_t>       gFringe;
 uintptr_t               gLimit = 0xaaaaaaaaU*0x80000001U;
 
-
 void initHeapSegments(double storeSize)
-//
 // This function just makes nil and the pool of page-frames available.
 // The store-size is passed in units of Kilobyte, and as a double rather
-// than as an integer so that overflow is not an issue.
+// than as an integer so that overflow is not an issue. The value will
+// already have had defaults and limits applied.
 {
 // Most of the arrays initialized here are just set up for the sake of
 // being tidy, but myChunkBase[] must be nullptr for safety.
@@ -1515,14 +1514,7 @@ void initHeapSegments(double storeSize)
         gIncrement = 0U;
     }
     pagesPinChain = nullptr;
-// I will make the default initial store size around 64M on a 64-bit
-// machine and 2048M on a 64-bit system. If the user specified a "-K" option
-// they can override this, and also the system will tend to allocate more
-// space (if it can) when its memory starts to get full.
-    size_t freeSpace = static_cast<size_t>(SIXTY_FOUR_BIT ? 2048 : 64) *
-                       1024*1024;
-    size_t req = (size_t)storeSize;
-    if (req != 0) freeSpace = 1024*req;
+    size_t freeSpace = 1024*static_cast<size_t>(storeSize); // now in bytes
 // Now freeSpace is the amount I want to allocate. I will explicitly
 // set the variables that are associated with tracking memory allocation
 // to keep everything as clear as I can.
@@ -1531,7 +1523,7 @@ void initHeapSegments(double storeSize)
         heapSegment[i] = reinterpret_cast<void *>(-1);
     freePages = mostlyFreePages = nullptr;
     std::cout << "freePages := " << freePages << "\n";
-    cout << "Allocate " << (freeSpace/1024U) << " Kbytes" << "\r" << endl;
+    zprintf("Allocate %d Kbytes\n", freeSpace/1024U);
     allocateSegment(freeSpace);
 
     nilSegment = reinterpret_cast<LispObject *>(
@@ -1558,68 +1550,8 @@ void initHeapSegments(double storeSize)
     setVariablesFromPage(currentPage);
     mostlyFreePages = nullptr;
     mostlyFreePagesCount = 0;
-
-#if 0
-//- Now as a temporary issue I will try to test my write barrier and
-//- pinning scheme. For the write barrier I do not need any data in the
-//- pages concerned, but for pinning I need much of the memory to be full -
-//- what I do here is make it roughly (2/3) full.
-    cout << "Total mem = " << freeSpace << "\r" << endl;
-    size_t conses = freeSpace/(2*sizeof(LispObject));
-    cout << "conses = " << conses << "\r" << endl;
-    size_t which[5];
-    for (int j=0; j<5; j++)
-        which[j] = arithlib::mersenne_twister() % (conses/3);
-    LispObject barriered[5];
-    for (int j=0; j<5; j++) barriered[j] = fixnum_of_int(j);
-    for (size_t i=0; i<conses/3; i++)
-    {   LispObject a = cons(nil, nil);
-        for (int j=0; j<5; j++)
-            if (i == which[j]) barriered[j] = a;
-    }
-    for (int j=0; j<5; j++)
-    {   uintptr_t n1 = static_cast<uintptr_t>(barriered[j]);
-        cout << "Barrier on " << std::hex << n1 << std::dec << "\r" << endl;
-        write_barrier(reinterpret_cast<LispObject *>(n1),
-                      *reinterpret_cast<LispObject *>(n1));
-    }
-    cout << "About to scan all the dirty cells\r\n";
-    scanDirtyCells(
-        [](atomic<LispObject> *a) -> void
-        {   cout << std::hex << reinterpret_cast<intptr_t>(a) << std::dec
-                 << "\r" << endl;
-        });
-    cout << "Dirty cells scanned\r\n";   
-    for (int i=0; i<5; i++)
-    {   uint64_t n1;
-// I want to conjure up an address that is within the region that is so far
-// in use. This may point at page or chunk headers, in which case it ought
-// not to mark anything.
-        n1 = arithlib::mersenne_twister();
-        cout << "Use " << std::hex << n1 << " as ambiguous" << std::dec << "\r" << endl;
-        processAmbiguousValue(true, n1);
-        n1 = reinterpret_cast<int64_t>(heapSegment[0]) +
-             (n1 % heapSegmentSize[0]);
-        n1 = n1 & ~UINT64_C(7);
-        cout << "Use " << std::hex << n1 << " as ambiguous" << std::dec << "\r" << endl;
-        processAmbiguousValue(true, n1);
-        n1 = barriered[i];
-        cout << "Use " << std::hex << n1 << " as ambiguous" << std::dec << "\r" << endl;
-        processAmbiguousValue(true, n1);
-    }
-    cout << "About to scan all the pinned chunks\r\n";
-    scanPinnedChunks(
-        [](Chunk *c) -> void
-        {   cout << "Chunk at "
-                 << std::hex << reinterpret_cast<intptr_t>(c)
-                 << " to " << (reinterpret_cast<intptr_t>(c)+c->length)
-                 << std::dec << "\r" << endl;
-        });
-    cout << "Pinned chunks scanned\r\n";   
-
-// End of temp testing code
-#endif // 0
-
+// The next line just so that restart.cpp reports properly.
+    pages_count = freePagesCount + busyPagesCount;
 }
 
 void dropHeapSegments()
@@ -1696,40 +1628,16 @@ void grab_more_memory(size_t npages)
     }
 }
 
+// This function receives a target heap size in megabytes. If the user
+// has specified (using -K) a size then that is given, otherwise the
+// default will be half the amount of memory the machine has. Save that
+// on a 32-bit system a limit at 1600Mb is set and in all cases the flag
+// --maxmem can be used to force a smaller limit.
+
 void init_heap_segments(double d)
-{   cout << "init_heap_segments " << d << "\r" << endl;
-    size_t mem;
-#ifdef WIN32
-    mem = getMemorySize();
-#else // WIN32
-// BEWARE: _SC_PHYS_PAGES is a glibc extension and is not mandated by POSIX.
-// However it (maybe obviously) should work on all variants of Linux and
-// experimentally it works on a Macintosh, and on Windows there is a clear
-// and proper alternative... Also a FreeBSD manual page suggests that
-// _SC_PHYS_PAGES will (often?) be available there. That covers some of the
-// more important platforms so anybody with some alternative that is more
-// specialised can patch in their own code here!
-    long sysPageCount = sysconf(_SC_PHYS_PAGES);
-    long sysPageSize = sysconf(_SC_PAGE_SIZE);
-    mem = sysPageCount*static_cast<size_t>(sysPageSize);
-#endif // WIN32
-    mem /= (1024*1024);    // Physical memory now in megabytes
-    size_t g3 = 3u*1024u;  // 3Gbytes
-    if (mem <= 2*g3) mem = g3;
-    else mem -= g3;
-// I think if my machine has at most 6GB I will default to using 3GB. If
-// has more than that I will use (physmem-3G) up to the stage that I
-// use a total of 16GB. All subject to any --maxmem that the user had
-// specified.
-    static const size_t K = 16384;
-    if (K < mem) mem = K;
-    if (d == 0.0) d = 1024.0*1024.0*mem; // back to bytes
-    if (maxStoreSize != 0.0 && maxStoreSize < d) d = maxStoreSize;
-// I have to pass the amount to initHeapSegments in kilobytes. On a 32-bit
-// machine I will limit myself to 1.6G here, because trying to use 2G or
-// more starts to risk muddle with sign bits and address arithmetic overflow.
-    if (!SIXTY_FOUR_BIT) d = 1600.0*1024.0*1024.0;
-    initHeapSegments(d/1024.0);
+{   zprintf("init_heap_segments %.2g Mbytes\n", d);
+// For historical reasons initHeapSegments takes its size in Kbytes not Mbytes
+    initHeapSegments(d*1024.0);
 }
 
 int64_t gc_number = 0;
