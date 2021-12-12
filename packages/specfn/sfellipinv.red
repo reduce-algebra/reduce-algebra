@@ -102,7 +102,7 @@ invjacobirules :=
  arccn(~x,1) => asech(x),
  arccn(0,~k) => elliptick(k),
  arccn(1,~k) => 0,
-  arccn(-~x,~k) => 2*elliptick(k)-arccn(x,k),
+ arccn(-~x,~k) => 2*elliptick(k)-arccn(x,k),
  arccn(~x,-~k) => arccn(x,k),
 
  arcnc(~x,0) => asec(x),
@@ -168,31 +168,66 @@ invjacobirules :=
  df(arcds(~x,~k),~x) => -1/(sqrt(x^2+k^2)*sqrt(x^2-1+k^2)),
  df(arccs(~x,~k),~x) => -1/(sqrt(1+x^2)*sqrt(x^2+1-k^2)),
 
-  arcsn(~x,~k) =>  x*sym_int_RF(1, 1-x^2, 1-k^2*x^2)
-     when lisp !*rounded and impart x =0 and impart k =0 
+ df(arcsn(~x,~k),~k) => -arcsn(x,k)/k  + ellipticE(asin(x),k)/(k*(1-k^2))
+                        - k*x*sqrt((1-x^2)/(1-k^2*x^2))/(1-k^2),
+ df(arccn(~x,~k),~k) => -arccn(x,k)/k + ellipticE(acos(x),k)/(k*(1-k^2))
+                        - k*x*sqrt((1-x^2)/(1-k^2+k^2*x^2))/(1-k^2),
+ df(arcsc(~x,~k),~k) => -arcsc(x,k)/k + ellipticE(atan(x),k)/(k*(1-k^2))
+                        -k*x/sqrt((1+x^2)*(1+x^2-k^2*x^2))/(1-k^2),
+ df(arccs(~x,~k),~k) => -arccs(x,k)/k + ellipticE(acot(x),k)/(k*(1-k^2))
+                        - k*x/sqrt((x^2+1)*(x^2+1-k^2))/(1-k^2),
+ df(arcns(~x,~k),~k) => -arcns(x,k)/k + ellipticE(csc(x),k)/(k*(1-k^2)) 
+                        - k*sqrt(x^2-1)/(x*sqrt(x^2-k^2)*(1-k^2)),
+ df(arcnc(~x,~k),~k) => -arcnc(x,k)/k + ellipticE(asec(x),k)/(k*(1-k^2)) 
+                        - k*sqrt(x^2-1)/(x*sqrt(k^2+(1-k^2)*x^2)*(1-k^2)),
+ 
+ df(arcdn(~x,~k),~k) => -arcdn(x,k)/k
+                        + ellipticE(asin(sqrt(1-x^2)/k),k)/(k*(1-k^2))
+                        - x*sqrt((1-x^2)/(x^2-1+k^2))/(k*(1-k^2)),
+ df(arcnd(~x,~k),~k) => -arcnd(x,k)/k
+                        + ellipticE(asin(sqrt(x^2-1)/(k*x)),k)/(k*(1-k^2)) 
+                        - sqrt((x^2-1)/(1+(k^2-1)*x^2))/(k*x(1-k^2)),
+ df(arccd(~x,~k),~k) => -arccd(x,k)/k
+                + ellipticE(asin(sqrt((1-x^2)/(1-k^2*x^2))),k)/(k*(1-k^2)),
+ df(arcdc(~x,~k),~k) => -arcdc(x,k)/k
+                + ellipticE(asin(sqrt((x^2-1)/(x^2-k^2))),k)/(k*(1-k^2)),
+ df(arcsd(~x,~k),~k) => -arcsd(x,k)/k
+                        + ellipticE(asin(x/sqrt(1+k^2*x^2)),k)/(k*(1-k^2))
+                        - k*x/sqrt((1+k^2+x^2)*(1-(1-k^2)*x^2))/(1-k^2),
+ df(arcds(~x,~k),~k) => -arcds(x,k)/k
+                        + ellipticE(asin(1/sqrt(x^2+k^2)),k)/(k*(1-k^2))
+                        - k*x/sqrt((x^2+k^2)*(x^2-1+k^2))/(1-k^2),
+       
+% rules for numerical evaluation  --currently only for real arguments and
+% results
+ arcsn(~x,~k) =>  x*sym_int_RF(1, 1-x^2, 1-k^2*x^2)
+     when lisp !*rounded and impart x = 0 and impart k = 0 
      and numberp x and numberp k and abs x<=1 and abs k<=1,
 
   arcsc(~x,~k) => x*sym_int_RF(1, 1+x^2, 1+(1-k^2)*x^2)
-     when lisp !*rounded and impart x =0 and impart k =0 
+     when lisp !*rounded and impart x = 0 and impart k = 0 
      and numberp x and numberp k and abs k<=1,
 
   arcsd(~x,~k) => x*sym_int_RF(1, 1+k^2*x^2, 1-(1-k^2)*x^2)
-     when lisp !*rounded and impart x =0 and impart k =0 
+     when lisp !*rounded and impart x = 0 and impart k = 0 
      and numberp x and numberp k
      and (abs k<1 and x^2 <= 1/(1-k^2) or abs k =1),
  
   arcns(~x,~k) => sign(x)*sym_int_RF(x^2, x^2-1, x^2-k^2)
-     when lisp !*rounded and impart x =0 and impart k =0 
+     when lisp !*rounded and impart x = 0 and impart k = 0 
      and numberp x and numberp k and abs x>=1 and abs k<=1,
 
   arccs(~x,~k) =>
-         ((if x>= 0 then  y else 2*elliptick(k)-y)
-          where y => sym_int_RF(x^2, x^2+1, x^2+1-k^2))
-     when lisp !*rounded and impart x =0 and impart k =0 
+         (begin scalar y;
+            y := sym_int_RF(x^2, x^2+1, x^2+1-k^2);
+            if x>= 0 then  return y
+            else return 2*elliptick(k)-y;
+          end)
+     when lisp !*rounded and impart x = 0 and impart k = 0 
      and numberp x and numberp k and abs k<=1,
 
   arcds(~x,~k) => sign(x)*sym_int_RF(x^2, x^2+k^2, x^2+k^2-1)
-     when lisp !*rounded and impart x =0 and impart k =0 
+     when lisp !*rounded and impart x = 0 and impart k = 0 
      and numberp x and numberp k  and abs k<=1 and x^2 >= 1-k^2,
 
   arccn(~x,~k) =>
@@ -201,7 +236,7 @@ invjacobirules :=
 	    y := sqrt w * sym_int_RF(x^2,1,1-k^2*w);
             return if x>=0 then y else 2*elliptick(k)-y;
 	  end)
-     when lisp !*rounded and impart x =0 and impart k =0 
+     when lisp !*rounded and impart x = 0 and impart k = 0 
      and numberp x and numberp k and abs x<=1 and abs k<=1,
  
   arcnc(~x,~k) =>
@@ -210,20 +245,26 @@ invjacobirules :=
 	    y := sqrt w * sym_int_RF(x^2,1,1+(1-k^2)*w);
             return if x>=0 then y else 2*elliptick(k)-y;
 	  end)
-     when lisp !*rounded and impart x =0 and impart k =0 
+     when lisp !*rounded and impart x = 0 and impart k = 0 
      and numberp x and numberp k and abs x >=1 and abs k<=1,
  
-  arcdn(~x,~k) =>  ((sqrt w * sym_int_RF(x^2,1,1-w))
-                      where w => (1-x^2)/k^2)
-     when lisp !*rounded and impart x =0 and impart k =0 
+  arcdn(~x,~k) =>
+         (begin scalar w;
+            w := (1-x^2)/k^2;
+	    return sqrt w * sym_int_RF(x^2,1,1-w);
+	 end)
+     when lisp !*rounded and impart x = 0 and impart k = 0 
      and numberp x and numberp k and abs k<=1 and k neq 0
-     and x <=1 and x >= sqrt(1-k^2),
+     and x <= 1 and x >= sqrt(1-k^2),
  
-  arcnd(~x,~k) =>  ((sqrt w * sym_int_RF(x^2,1,1+(k^2-1)*w))
-                      where w => (x^2-1)/k^2)
-     when lisp !*rounded and impart x =0 and impart k =0 
+  arcnd(~x,~k) =>
+         (begin scalar w;
+            w := (x^2-1)/k^2;
+	    return sqrt w * sym_int_RF(x^2,1,1+(k^2-1)*w);
+ 	 end)
+     when lisp !*rounded and impart x = 0 and impart k = 0 
      and numberp x and numberp k and x >=1 
-     and (abs k<1 and k neq 0 and x^2 <=1/(1-k^2) or abs k =1),
+     and (abs k<1 and k neq 0 and x^2 <= 1/(1-k^2) or abs k=1),
 
  arccd(~x,~k) =>
         (begin scalar w, y;
@@ -231,7 +272,7 @@ invjacobirules :=
 	   y :=  sqrt w * sym_int_RF(x^2,1,1+k^2*w);
            return if x>=0 then y else 2*elliptick(k)-y;
 	 end)
-     when lisp !*rounded and impart x =0 and impart k =0 
+     when lisp !*rounded and impart x = 0 and impart k = 0 
      and numberp x and numberp k and abs x<=1 and abs k<=1,
 
  arcdc(~x,~k) =>
@@ -240,7 +281,7 @@ invjacobirules :=
 	   y := sqrt w * sym_int_RF(x^2,1,1+w);
            return if x>=0 then y else 2*elliptick(k)-y;
 	 end)
-     when lisp !*rounded and impart x =0 and impart k =0 
+     when lisp !*rounded and impart x = 0 and impart k = 0 
      and numberp x and numberp k and abs x >=1 and abs k<=1
  }$
 
