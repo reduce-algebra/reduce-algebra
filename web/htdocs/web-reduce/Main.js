@@ -191,7 +191,50 @@ function stopREDUCE() {
 // Utility Functions
 // *****************
 
+const toASCII = {
+    Α: "!Alpha", Β: "!Beta", Γ: "!Gamma", Δ: "!Delta", Ε: "!Epsilon", Ζ: "!Zeta", Η: "!Eta", Θ: "!Theta",
+    Ι: "!Iota", Κ: "!Kappa", Λ: "!Lambda", Μ: "!Mu", Ν: "!Nu", Ξ: "!Xi", Ο: "!Omicron", Π: "!Pi",
+    Ρ: "!Rho", Σ: "!Sigma", Τ: "!Tau", Υ: "!Upsilon", Φ: "!Phi", Χ: "!Chi", Ψ: "!Psi", Ω: "!Omega",
+    α: "alpha", β: "beta", γ: "gamma", δ: "delta", ε: "epsilon", ζ: "zeta", η: "eta", θ: "theta",
+    ι: "iota", κ: "kappa", λ: "lambda", μ: "mu", ν: "nu", ξ: "xi", ο: "omicron", π: "pi",
+    ρ: "rho", σ: "sigma", τ: "tau", υ: "upsilon", φ: "phi", χ: "chi", ψ: "psi", ω: "omega",
+    "²": "2"
+};
+
+/**
+ * Map non-ASCII characters in a text string to ASCII.
+ * @param {string} text - Input text to be sent to REDUCE.
+ * @returns string
+ */
+function asciify(text) {
+    let result = "";
+    for (const char of text)
+        if (char > "\x7F") {
+            const newChar = toASCII[char];
+            result += newChar ? newChar : char;
+        } else
+            result += char;
+    return result;
+}
+
+/**
+ * Echo text to the I/O display as REDUCE input and send it to REDUCE,
+ * mapping any non-ASCII characters to ASCII.
+ * Called in this file, InputEditor.mjs and TempFuncs.mjs.
+ * @param {string} text - Input text to be sent to REDUCE.
+ */
 function sendToReduceAndEcho(text) {
+    text = asciify(text);
+    sendToReduceAndEchoNoAsciify(text);
+}
+
+/**
+ * Echo text to the I/O display as REDUCE input and send it to REDUCE,
+ * WITHOUT mapping any non-ASCII characters to ASCII.
+ * Called in this file, InputEditor.mjs and TempFuncs.mjs.
+ * @param {string} text - Input text to be sent to REDUCE.
+ */
+ function sendToReduceAndEchoNoAsciify(text) {
     sendPlainTextToIODisplay(text, "input");
     sendToReduce(text);
 }
@@ -200,14 +243,14 @@ const loadedPackages = new Set(); // should probably be in a closure!
 
 /**
  * Load the specified package once only.
- * @param {any} pkg
+ * @param {string} pkg - Name of package to be loaded.
  */
 function loadPackage(pkg) {
     if (loadedPackages.has(pkg)) return;
-    sendToReduceAndEcho(`load_package ${pkg};`);
+    sendToReduceAndEchoNoAsciify(`load_package ${pkg};`);
     // Need to wait for REDUCE to digest this.
-    // Should wait for the next prompt, but can't at present, so...
-    // ...
+    // Should wait for the next prompt, but can't at present,
+    // so only use when there is a natural pause!
     loadedPackages.add(pkg);
 }
 
@@ -245,60 +288,6 @@ centreTypesetMathsCheckbox.addEventListener("change", event => {
     ioDisplayWindow.MathJax.config.chtml.displayAlign = centreTypesetMathsCheckbox.checked ? 'center' : 'left';
     ioDisplayWindow.MathJax.startup.getComponents(); // See http://docs.mathjax.org/en/latest/web/configuration.html
 });
-
-// Template and Function menu support:
-let preMenuSelectionProps; // set when drop-down menus are shown
-
-/**
-* Save relevant properties of the current Selection object.
-*/
-function saveSelectionProps() {
-    // A Selection object represents the range of text selected by the user or the current position of the caret.
-    const selection = getSelection();
-    preMenuSelectionProps = {
-        anchorNode: selection.anchorNode,
-        anchorOffset: selection.anchorOffset,
-        focusNode: selection.focusNode,
-        focusOffset: selection.focusOffset
-    }
-}
-
-document.getElementById("TemplatesMenuLink")
-    .addEventListener('show.bs.dropdown', saveSelectionProps);
-document.getElementById("FunctionsMenuLink")
-    .addEventListener('show.bs.dropdown', saveSelectionProps);
-
-/**
- * Insert text in inputDiv at caret or replace a selection if there is one.
- */
-function inputDivInsert(text) {
-    let selBeg = 0;
-    const selProps = preMenuSelectionProps;
-    const insertionNode = selProps.anchorNode;
-    if (insertionNode === inputDiv) {
-        // Whole node rather than content selected:
-        inputDiv.textContent = text;
-    } else {
-        // Content selected:
-        if (!(inputDiv.contains(insertionNode) && inputDiv.contains(selProps.focusNode))) {
-            alert("Invalid selection");
-            return;
-        }
-        selBeg = selProps.anchorOffset;
-        let selEnd = selProps.focusOffset;
-        if (selBeg > selEnd) { let tmp = selBeg; selBeg = selEnd; selEnd = tmp; }
-        const cont = insertionNode.textContent;
-        inputDiv.textContent = cont.substr(0, selBeg) + text + cont.substr(selEnd);
-    }
-    const index = text.search(/\bws\b/), selection = getSelection();
-    if (index >= 0) {
-        // Select ws if available within inserted text:
-        selection.setBaseAndExtent(inputDiv.firstChild, selBeg + index, inputDiv.firstChild, selBeg + index + 2);
-    } else {
-        // Otherwise, set caret to end of insertion:
-        selection.collapse(inputDiv.firstChild, selBeg + text.length);
-    }
-}
 
 // ********************************************
 // Code that requires the iframe to have loaded

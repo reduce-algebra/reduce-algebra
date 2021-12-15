@@ -1,7 +1,7 @@
 Web REDUCE
 ==========
 
-Francis Wright, November 2021
+Francis Wright, December 2021
 -----------------------------
 
 **This project is highly experimental!**
@@ -15,6 +15,6 @@ Web REDUCE is available online as [https://reduce-algebra.sourceforge.io/web-red
 TO DO
 =====
 
-* Arrange to wait for an asynchronous load_package to have happened before sending further input to REDUCE. This would be easy except that the next input needs to wait for REDUCE to respond to the previous input.
+* Arrange to wait for an asynchronous load_package to have happened before sending further input to REDUCE. (Fixed for input via the menus.)
 
 * Load package and switch menu items?  Could use loadable!-packages!* and switches!* defined in "packages/support/cslrend.red".
