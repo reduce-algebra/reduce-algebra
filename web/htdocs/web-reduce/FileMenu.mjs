@@ -1,12 +1,19 @@
-// Support for the File menu
-// This is a module, which automatically uses strict mode and makes identifiers local unless exported!
+/**
+ * Support for the File menu.
+ * @module FileMenu
+ * See The File System Access API: https://web.dev/file-system-access/
+ * and https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API.
+ * The File System Access API is currently supported on most Chromium browsers,
+ * namely Chrome, Edge and Opera, on Windows, macOS, Chrome OS, and Linux.
+ * Other browsers, such as Firefox, need a fallback implementation, which is horrible!
+ * See https://web.dev/browser-fs-access/.
+ */
 
-// See The File System Access API: https://web.dev/file-system-access/
-// and https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API.
-// The File System Access API is currently supported on most Chromium browsers,
-// namely Chrome, Edge and Opera, on Windows, macOS, Chrome OS, and Linux.
-// Other browsers, such as Firefox, need a fallback implementation, which is horrible!
-// See https://web.dev/browser-fs-access/.
+// Imported variables:
+import { debug, typesetMathsCheckbox, inputDiv } from "./Main.mjs";
+
+// Imported functions:
+import { sendPlainTextToIODisplay, sendToReduce, enableTypesetMaths } from "./Main.mjs";
 
 const supported = "showOpenFilePicker" in window;
 const echoFileInputCheckbox = document.getElementById('EchoFileInputCheckbox');

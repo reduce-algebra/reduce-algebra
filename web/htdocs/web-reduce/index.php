@@ -174,6 +174,8 @@ include '../include/begin-head.php';
                                 type="button">Derivative&hellip;</button></li>
                         <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#IntegralTemplate"
                                 type="button">Integral&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#MatrixTemplate"
+                                type="button">Matrix&hellip;</button></li>
                     </ul>
                 </li>
                 <!-- Functions Menu -->
@@ -259,7 +261,7 @@ Keyboard Shortcut: Control+Enter. (Also hold Shift to prevent auto-termination.)
 
 <?php include '../include/footer.php'; ?>
 
-<script src="Main.js"></script>
+<script type="module" src="Main.mjs"></script>
 <script type="module" src="InputEditor.mjs"></script>
 <script type="module" src="FileMenu.mjs"></script>
 
@@ -267,8 +269,11 @@ Keyboard Shortcut: Control+Enter. (Also hold Shift to prevent auto-termination.)
 <script type="module" src="TempFuncs.mjs"></script>
 <?php
     include './TempFuncs.inc';
+
     include './Templates/DerivativeTemplate.inc';
     include './Templates/IntegralTemplate.inc';
+    include './Templates/MatrixTemplate.inc';
+
     include './Functions/ExpLogFunctions.inc';
     include './Functions/GammaEtcFunctions.inc';
     include './Functions/IntegralFunctions.inc';

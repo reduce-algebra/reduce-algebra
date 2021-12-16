@@ -1,4 +1,13 @@
-// Support for the Template and Functions menus.
+/**
+ * Support for the Template and Functions menus.
+ * @module TempFuncs
+ */
+
+// Imported variables:
+import { inputDiv } from "./Main.mjs";
+
+// Imported functions:
+import { sendToReduce, sendToReduceAndEcho } from "./Main.mjs";
 
 /**
  * Implement the modal-dialogue custom element.
@@ -40,13 +49,27 @@ window.addEventListener("load", () =>
  */
 class TempFuncs {
 	constructor(dialogueId) {
-		this.dialogue = document.getElementById(dialogueId)
+		this.dialogue = document.getElementById(dialogueId);
+		this.inputs = this.dialogue.querySelectorAll("input");
 		this.buttons = this.dialogue.querySelectorAll("div.modal-footer > button");
 
 		this.buttons[0].addEventListener("click", () => this.resetButtonAction());
 		// Just using the function this.resetButtonAction fails because this in resetButtonAction refers to the wrong object!
 
 		this.dialogue.addEventListener("hidden.bs.modal", () => inputDiv.focus());
+
+		// Save initial input values:
+		this.initialInputValues = [];
+		for (let i = 0; i < this.inputs.length; i++)
+			this.initialInputValues.push(this.inputs[i].value);
+	}
+
+	/**
+	 * Reset the values of all input fields.
+	 */
+	resetButtonAction() {
+		for (let i = 0; i < this.inputs.length; i++)
+			this.inputs[i].value = this.initialInputValues[i];
 	}
 
 	/**
@@ -105,6 +128,11 @@ export class Template extends TempFuncs {
 			} catch (ignored) { }
 		});
 	}
+
+	resetButtonAction() {
+		// This seems to be necessary!
+		super.resetButtonAction();
+	}
 }
 
 /**
@@ -113,7 +141,6 @@ export class Template extends TempFuncs {
 export class Functions extends TempFuncs {
 	constructor(functionsId) {
 		super(functionsId);
-		this.inputs = this.dialogue.querySelectorAll("input");
 		this.selectedFunction = undefined;
 
 		const functions = this.dialogue.querySelectorAll("td");
@@ -133,16 +160,10 @@ export class Functions extends TempFuncs {
 			if (this.selectedFunction) sendToReduceAndEcho(this.result() + ";");
 			this.buttons[3].click();
 		});
-
-		// Save initial input values:
-		this.initialInputValues = [];
-		for (let i = 0; i < this.inputs.length; i++)
-			this.initialInputValues.push(this.inputs[i].value);
 	}
 
 	resetButtonAction() {
-		for (let i = 0; i < this.inputs.length; i++)
-			this.inputs[i].value = this.initialInputValues[i];
+		super.resetButtonAction();
 		if (this.selectedFunction) {
 			this.selectedFunction.classList.remove("selected");
 			this.selectedFunction = undefined;

@@ -29,25 +29,21 @@
 	class DerivativeTemplate extends Template {
 		constructor() {
 			super("Derivative Template");
-			const inputs = this.content.querySelectorAll("input");
 			this.totalOrdSup = this.content.querySelector("sup");
-			this.depVarTextField = inputs[0];
-			this.indVarTextFields = [inputs[1], inputs[3], inputs[5]];
-			this.ordTextFields = [inputs[2], inputs[4], inputs[6]];
+			this.depVarTextField = this.inputs[0];
+			this.indVarTextFields = [this.inputs[1], this.inputs[3], this.inputs[5]];
+			this.ordTextFields = [this.inputs[2], this.inputs[4], this.inputs[6]];
 			this.orders = [1, 0, 0];
 
 			for (let n = 0; n < 3; n++) {
-				this.indVarTextFields[n].addEventListener("input", this.indVarAction);
-				this.ordTextFields[n].addEventListener("input", this.indVarAction);
+				this.indVarTextFields[n].addEventListener("input", (event) => this.indVarAction(event));
+				this.ordTextFields[n].addEventListener("input", (event) => this.indVarAction(event));
 			}
 		}
 
 		resetButtonAction() {
+			super.resetButtonAction();
 			this.totalOrdSup.innerText = "";
-			this.depVarTextField.value = "ws";
-			this.indVarTextFields[0].value = "x";
-			this.indVarTextFields[1].value = this.indVarTextFields[2].value = "";
-			this.ordTextFields[0].value = this.ordTextFields[1].value = this.ordTextFields[2].value = "";
 			this.orders[0] = 1; this.orders[1] = this.orders[2] = 0;
 		}
 

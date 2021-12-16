@@ -1,34 +1,53 @@
-// Main source code
+/**
+ * Main source code
+ * @module Main
+ */
 
-'use strict';
+// Global variables assigned in more than one module, created as properties of window (=== self === globalThis).
 
-const debug = (location.search === '?debug');
+// Setting of REDUCE echo switch; assigned and read in FileMenu.mjs and InputEditor.mjs:
+self.echo = false;
+// Hide REDUCE output if true; assigned in FileMenu.mjs and InputEditor.mjs, assigned and read in Main.mjs:
+self.hideOutput = false;
+// Control REDUCE input and output; assigned in FileMenu.mjs and InputEditor.mjs, read in Main.mjs:
+self.inputFromKbd = self.outputToFile = self.outputToArray = undefined;
+
+/** True if console logging is enabled. */
+export const debug = (location.search === '?debug');
 
 // Set up access to document elements and reset their defaults for when the page is reloaded:
 const startREDUCEMenuItem = document.getElementById("StartREDUCEMenuItem");
 const stopREDUCEMenuItem = document.getElementById("StopREDUCEMenuItem");
 const clearDisplayMenuItem = document.getElementById("ClearDisplayMenuItem");
 const ioColouringCheckbox = document.getElementById('IOColouringCheckbox');
-const typesetMathsCheckbox = document.getElementById('TypesetMathsCheckbox');
+
+/** Typeset Maths View Menu HTML Element. */
+export const typesetMathsCheckbox = document.getElementById('TypesetMathsCheckbox');
 const centreTypesetMathsCheckbox = document.getElementById('CentreTypesetMathsCheckbox');
-const inputDiv = document.getElementById('InputDiv');
+
+/** Input Editor HTML Element. */
+export const inputDiv = document.getElementById('InputDiv');
 inputDiv.innerHTML = "";
 inputDiv.focus();
-const earlierButton = document.getElementById('EarlierButton');
+
+/** Earlier Button HTML Element. */
+export const earlierButton = document.getElementById('EarlierButton');
 earlierButton.disabled = true;
-const sendInputButton = document.getElementById('SendInputButton');
-const laterButton = document.getElementById('LaterButton');
+
+/** Send Input Button HTML Element. */
+export const sendInputButton = document.getElementById('SendInputButton');
+
+/** Later Button HTML Element. */
+export const laterButton = document.getElementById('LaterButton');
 laterButton.disabled = true;
 const fileMenuLink = document.getElementById("FileMenuLink");
 const templatesMenuLink = document.getElementById("TemplatesMenuLink");
 const functionsMenuLink = document.getElementById("FunctionsMenuLink");
 let ioDisplayWindow, ioDisplayHead, ioDisplayBody;
-let noOutput = true, hideOutput = false;
-let worker;
 
-// Global variables accessed in more than one module:
-var echo = false;  // setting of REDUCE echo switch, accessed in FileMenu.mjs and InputEditor.mjs
-var inputFromKbd, outputToFile, outputToArray; // assigned in FileMenu.mjs and InputEditor.mjs
+/** True if REDUCE has not yet produced any output. */
+export let noOutput = true;
+let worker;
 
 function setRunningState(running) {
     startREDUCEMenuItem.disabled = running;
@@ -49,7 +68,7 @@ if (typeof Worker === "undefined") {
 }
 
 /**
- * Scroll the REDUCE IO display to the bottom.
+ * Scroll the REDUCE I/O display to the bottom.
  */
 function scrollIODisplayToBottom() {
     ioDisplayWindow.scroll(0, ioDisplayBody.scrollHeight);
@@ -59,7 +78,13 @@ function clearIODisplay() {
     ioDisplayBody.innerHTML = "";
 }
 
-function sendPlainTextToIODisplay(text, displayClass) {
+/**
+ * Send plain (i.e. non maths) text to the I/O display by appending
+ * a <pre> element. Then scroll the display to the bottom.
+ * @param {string} text - The plain text to display.
+ * @param {string} [displayClass] - The HTML class attribute to attach to the <pre> element.
+ */
+export function sendPlainTextToIODisplay(text, displayClass) {
     if (noOutput) {
         // This code executes immediately after REDUCE loads:
         window.scrollTo(0, document.getElementById("Menubar").offsetTop);
@@ -153,7 +178,11 @@ function reduceWebMessageHandler(event) {
  */
 function reduceWebErrorHandler(event) { console.error(event.message, event) }
 
-function sendToReduce(str) {
+/**
+ * Send a text string to REDUCE as input.
+ * @param {string} str - The REDUCE input.
+ */
+export function sendToReduce(str) {
     debug && console.log(` INPUT: ${str}`); // for debugging
     // This function posts a string to REDUCE, which treats it rather as if
     // it had been keyboard input. At the start of a run I use this to send a
@@ -223,7 +252,7 @@ function asciify(text) {
  * Called in this file, InputEditor.mjs and TempFuncs.mjs.
  * @param {string} text - Input text to be sent to REDUCE.
  */
-function sendToReduceAndEcho(text) {
+export function sendToReduceAndEcho(text) {
     text = asciify(text);
     sendToReduceAndEchoNoAsciify(text);
 }
@@ -234,7 +263,7 @@ function sendToReduceAndEcho(text) {
  * Called in this file, InputEditor.mjs and TempFuncs.mjs.
  * @param {string} text - Input text to be sent to REDUCE.
  */
- function sendToReduceAndEchoNoAsciify(text) {
+function sendToReduceAndEchoNoAsciify(text) {
     sendPlainTextToIODisplay(text, "input");
     sendToReduce(text);
 }
@@ -245,7 +274,7 @@ const loadedPackages = new Set(); // should probably be in a closure!
  * Load the specified package once only.
  * @param {string} pkg - Name of package to be loaded.
  */
-function loadPackage(pkg) {
+export function loadPackage(pkg) {
     if (loadedPackages.has(pkg)) return;
     sendToReduceAndEchoNoAsciify(`load_package ${pkg};`);
     // Need to wait for REDUCE to digest this.
@@ -275,7 +304,11 @@ ioColouringCheckbox.addEventListener("change", event => {
         ioColouringStyleElement.remove();
 });
 
-function enableTypesetMaths(enable) {
+/**
+ * Enable/disable typeset maths display by turning the fancy switch on/off privately.
+ * @param {boolean} enable - True/false to enable/disable.
+ */
+export function enableTypesetMaths(enable) {
     hideOutput = true;
     sendToReduce(enable ? 'on fancy;' : 'off fancy;');
 }

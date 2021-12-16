@@ -95,7 +95,11 @@
 </modal-dialogue>
 
 <script type="module">
+	// Imported classes:
 	import { Functions } from "./TempFuncs.mjs";
+
+	// Imported functions:
+	import { loadPackage } from "./Main.mjs";
 
 	class StruveEtcFunctions extends Functions {
 		constructor() {
