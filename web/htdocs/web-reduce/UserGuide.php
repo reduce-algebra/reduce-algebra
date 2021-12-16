@@ -7,6 +7,7 @@ include '../include/begin-body.php';
 <h2>Contents</h2>
 <ul>
     <li><a href="#MainPage">Main Page</a></li>
+    <li><a href="#InputEditor">Input Editor</a></li>
     <li><a href="#REDUCEMenu">REDUCE Menu</a></li>
     <li><a href="#FileMenu">File Menu</a></li>
     <li><a href="#ViewMenu">View Menu</a></li>
@@ -48,6 +49,8 @@ include '../include/begin-body.php';
     cannot currently be copied in such a way that it can be re-input
     into REDUCE.
 </p>
+
+<h2 id="InputEditor">Input Editor</h2>
 <p>
     You type (or paste) REDUCE input into the input editor pane, edit
     it as necessary, and then click on the <em>Send Input</em>
@@ -124,6 +127,14 @@ include '../include/begin-body.php';
     matching handles nested delimiters correctly and partially ignores delimiters in strings, but not in comments since
     comments are not expected in interactive input. An unmatched closing or opening delimiter immediately before or
     after the text cursor is highlighted in the same error style as used in the I/O display.
+</p>
+<p>
+    Most Greek letters (both cases) input as Unicode characters via the input editor or the menus (see below) are
+    converted to their TeX names when they are sent to REDUCE, and should then be handled appropriately and displayed as
+    Greek letters in REDUCE output if typeset maths is enabled (which it is by default; see below). This facility is
+    primarily intended for use by the <a href="#FunctionsMenu">Functions</a> dialogues to allow conventional parameter
+    names to be used, some of which are Greek. Superscript 2 is also converted to its ASCII equivalent. (Other non-ASCII
+    characters may be similarly converted in later releases.)
 </p>
 
 <h2 id="REDUCEMenu">REDUCE Menu</h2>
@@ -394,15 +405,50 @@ include '../include/begin-body.php';
 <dl>
     <dt>Exp, Log, Power, etc&hellip;</dt>
     <dd>
-        This provides the exponential function, various logarithms, power
-        and roots (surds or radicals), factorial and binomial
-        coefficients, and the hypot and atan<sub>2</sub> functions.
+        This provides the exponential function, various logarithms,
+        power and roots (surds or radicals), factorial and binomial
+        coefficients, and the <em>hypot</em>, atan<sub>2</sub>
+        and atan<sub>2</sub>d functions. The latter automatically loads the TRIGD package.
     </dd>
     <dt>Gamma &amp; Beta Functions, etc&hellip;</dt>
     <dd>
         This provides the Gamma, Beta, digamma, polygamma, normalized
         incomplete Gamma and Beta, and dilogarithm functions, Pochhammer's
         symbols, binomial coefficients and the Riemann zeta function.
+    </dd>
+    <dt>Integral Functions&hellip;</dt>
+    <dd>
+        This provides exponential, logarithmic, sine, cosine,
+        hyperbolic sine and hyperbolic cosine integral functions, the
+        error function and complementary error function, and the Fresnel
+        sine and cosine integral functions.
+    </dd>
+    <dt>Airy & Bessel Functions, etc&hellip;</dt>
+    <dd>
+        This provides Airy functions of the first (Ai) and second (Bi)
+        kind and their derivatives (Ai' and Bi'), the families of
+        Bessel functions of the first (<em>J</em>) and second (<em>Y</em>)
+        kind, modified Bessel functions of the first (<em>I</em>) and
+        second (<em>K</em>) kind, and Hankel functions of the first and
+        second kind.
+    </dd>
+    <dt>Struve & Kummer Functions, etc&hellip;</dt>
+    <dd>
+        This provides the families of Struve (<b>H</b>) and modified
+        Struve (<b>L</b>) functions, Lommel functions of the first
+        (<em>s</em>) and second (<em>S</em>) kind, Kummer <em>M</em>
+        and <em>U</em> functions, Whittaker <em>M</em> and <em>W</em>
+        functions, and spherical and solid harmonic (<em>Y</em>)
+        functions. The latter two automatically load the SPECFN package.
+    </dd>
+    <dt>Classical Orthogonal Polynomials&hellip;</dt>
+    <dd>
+        This provides the families of Jacobi (<em>P</em>) and
+        Ultraspherical or Gegenbauer (<em>C</em>) polynomials, Chebyshev
+        polynomials of the first (<em>T</em>) and second (<em>U</em>)
+        kind, Legendre (<em>P</em>) and associated Legendre polynomials,
+        Laguerre (<em>L</em>) and generalized Legendre polynomials, and
+        Hermite (<em>H</em>) polynomials. This dialogue automatically load the SPECFN package.
     </dd>
 </dl>
 
@@ -445,7 +491,7 @@ include '../include/begin-body.php';
     </li>
 </ul>
 
-<address>Francis Wright, November 2021</address>
+<address>Francis Wright, December 2021</address>
 </div><!-- opened in begin-body.php -->
 <?php include '../include/footer.php'; ?>
 </body>

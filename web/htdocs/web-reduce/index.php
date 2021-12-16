@@ -185,6 +185,14 @@ include '../include/begin-head.php';
                                 type="button">Exp, Log, Power, Root, etc&hellip;</button></li>
                         <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#GammaEtcFunctions"
                                 type="button">Gamma &amp; Beta Functions, etc&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#IntegralFunctions"
+                                type="button">Integral Functions&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#AiryBesselFunctions"
+                                type="button">Airy &amp; Bessel Functions, etc&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#StruveEtcFunctions"
+                                type="button">Struve &amp; Kummer Functions, etc&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#OrthoPolyFunctions"
+                                type="button">Classical Orthogonal Polynomials&hellip;</button></li>
                     </ul>
                 </li>
                 <!-- Help Menu -->
@@ -223,6 +231,9 @@ include '../include/begin-head.php';
     <script>MathJax = { tex: { macros: { "*": "\\," } } };</script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 </head>
+<body>
+    By default, REDUCE should load automatically, but if it does not then please right-click here and reload this <b>frame</b>.
+</body>
 </html>'>
 </iframe>
 
@@ -253,11 +264,17 @@ Keyboard Shortcut: Control+Enter. (Also hold Shift to prevent auto-termination.)
 <script type="module" src="FileMenu.mjs"></script>
 
 <!-- Modal Dialogues -->
+<script type="module" src="TempFuncs.mjs"></script>
 <?php
-    include './DerivativeTemplate.inc';
-    include './IntegralTemplate.inc';
-    include './ExpLogFunctions.inc';
-    include './GammaEtcFunctions.inc';
+    include './TempFuncs.inc';
+    include './Templates/DerivativeTemplate.inc';
+    include './Templates/IntegralTemplate.inc';
+    include './Functions/ExpLogFunctions.inc';
+    include './Functions/GammaEtcFunctions.inc';
+    include './Functions/IntegralFunctions.inc';
+    include './Functions/AiryBesselFunctions.inc';
+    include './Functions/StruveEtcFunctions.inc';
+    include './Functions/OrthoPolyFunctions.inc';
 ?>
 </body>
 
