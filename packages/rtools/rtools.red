@@ -1,4 +1,4 @@
-module rtoools;  % Header module for rtools package.
+module rtools;  % Header module for rtools package.
 
 % Author: Anthony C. Hearn and others.
 
@@ -28,7 +28,7 @@ module rtoools;  % Header module for rtools package.
 % $Id$
 
 create!-package('(rtools general rprintf random genmod smallmod
-                  sort charname rtrace),
+                  sort charname simplertrace),
                 nil);
 
 flag('(rtools),'core_package);

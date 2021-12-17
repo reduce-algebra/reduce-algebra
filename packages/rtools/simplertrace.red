@@ -1,4 +1,4 @@
-module rtrace; % Crude tracing but with output compatible across Lisps
+module simplertrace; % Crude tracing but with output compatible across Lisps
 
 % Author: Arthur Norman.
 
