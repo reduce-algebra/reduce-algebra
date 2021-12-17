@@ -375,6 +375,23 @@ include '../include/begin-body.php';
         same colour (blue, green or red) to facilitate adding limits to
         the right &int; symbol.
     </dd>
+    <dt>Matrix&hellip;</dt>
+    <dd>
+        This template supports the creation of matrices up to 4 by 4.
+        The elements can be any expressions. The (1,1) element is always
+        in the top left-hand corner of the template. The width of the
+        matrix, i.e. the maximum column index, is determined by the
+        right-most non-empty element and the depth of the matrix, i.e. the
+        maximum row index, is determined by the lowest non-empty element.
+        Within the matrix so determined, empty elements default to zero,
+        which is very convenient for entering diagonal, triangular or
+        other sparse matrices. For example, entering a zero matrix only requires entering 0 as the bottom right-hand
+        element.
+    </dd>
+    <dd>
+        To enter a matrix with more than 4 rows or columns, you can enter as much as possible using the template, then
+        click on the <em>Edit</em> button and extend the matrix in the input editor.
+    </dd>
 </dl>
 
 <h2 id="FunctionsMenu">Functions Menu</h2>

@@ -70,18 +70,20 @@
 				this.zIntDiv.hidden = hidden;
 				this.zDSpan.hidden = hidden;
 			});
+
+			this.init();
 		}
 
-		resetButtonAction() {
-			for (let i = 0; i < 3; i++)
-				this.limTextFields[i][0].value = this.limTextFields[i][1].value = "";
+		init() {
 			this.zIntDiv.hidden = this.yIntDiv.hidden = true;
-			this.integrandTextField.value = "ws";
-			this.intVarTextFields[0].value = "x";
-			this.intVarTextFields[1].value = this.intVarTextFields[2].value = "";
 			this.yDSpan.hidden = this.zDSpan.hidden = true;
 			this.intVarTextFields[1].hidden = false;
 			this.intVarTextFields[2].hidden = true;
+		}
+
+		resetButtonAction() {
+			super.resetButtonAction();
+			this.init();
 		}
 
 		result() {

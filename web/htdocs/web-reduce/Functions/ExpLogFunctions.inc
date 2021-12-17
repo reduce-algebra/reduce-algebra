@@ -85,7 +85,11 @@
 </modal-dialogue>
 
 <script type="module">
+	// Imported classes:
 	import { Functions } from "./TempFuncs.mjs";
+
+	// Imported functions:
+	import { loadPackage } from "./Main.mjs";
 
 	class ExpLogFunctions extends Functions {
 		constructor() {
@@ -104,7 +108,7 @@
 				case "power":
 					return `(${values[0]})^(${values[1]})`;
 				case "root":
-					return `(${values[1]})^(1/${values[0]})`;
+					return `(${values[1]})^(1/(${values[0]}))`;
 				default:
 					return `${fn}(${values.join()})`;
 			}

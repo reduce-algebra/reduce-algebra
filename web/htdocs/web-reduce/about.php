@@ -67,6 +67,8 @@ if ($_SERVER['QUERY_STRING']): ?>
         Therefore, before using the <code>mat</code> matrix input
         operator, you need to execute <code>load_package matrix;</code>
         otherwise you may get an <code>end-of-file</code> error (see below).
+        Note that the <em>Matrix&hellip;</em> item in the <a href="#TemplatesMenu">Templates Menu</a> automatically
+        loads the matrix package the first time it is used.
     </li>
     <li>
         Web REDUCE does not provide any input prompts, unlike

@@ -1,10 +1,17 @@
-// Input editor code
-// This is a module, which automatically uses strict mode and makes identifiers local unless exported!
+/**
+ * Input editor code.
+ * @module InputEditor
+ * Successive calls to sendToReduce() do not work because REDUCE appears
+ * to ignore input when it is not ready. Need to either concatenate
+ * input into a single call of sendToReduce() or delay successive calls
+ * by about 100ms (which is obviously unreliable).
+ */
 
-// Successive calls to sendToReduce() do not work because REDUCE appears
-// to ignore input when it is not ready. Need to either concatenate
-// input into a single call of sendToReduce() or delay successive calls
-// by about 100ms (which is obviously unreliable).
+// Imported variables:
+import { inputDiv, earlierButton, sendInputButton, laterButton, noOutput } from "./Main.mjs";
+
+// Imported functions:
+import { sendToReduce, sendToReduceAndEcho } from "./Main.mjs";
 
 const inputList = [];
 let inputListIndex = 0;
