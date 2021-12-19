@@ -45,6 +45,19 @@ Similarly, \texttt{!\_\_FILE\_\_}\ttindextype{"!\_\_FILE\_\_}{(special identifie
 is replaced by the name of the file currently
 being read.
 
+\section{IN\_TEX Command}\ttindextype{IN\_TEX}{command}
+\hypertarget{command:IN_TEX}{}
+
+This is a variant of the \texttt{IN} command. Its purpose is to document a Reduce session
+by interspersing a \LaTeX{} document with Reduce commands to be executed.
+
+When a file is input into Reduce with this command, every line is simply echoed to the output
+except those enclosed in by \verb+\begin{reduce}+\ldots\verb+\end{reduce}+,
+which are processed as usual.
+
+The effect is to produce a \LaTeX{} document with Reduce output.
+
+
 \section{OUT Command}\ttindextype{OUT}{command}
 \hypertarget{command:OUT}{}
 This command takes a single file name as argument, and directs output to
