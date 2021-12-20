@@ -441,9 +441,9 @@ procedure ov!-taylor(ex,x,pt,n);
       mfac:=1;
       dx:=x-pt;
       term:=ex;
-      series:= plus(limit(ex,x,pt),
+      series:= plus(ov_limit(ex,x,pt),
         for k:=1:n sum
-          times(limit(term:=df(term,x),x,pt),
+          times(ov_limit(term:=df(term,x),x,pt),
                 mfac:=quotient(times(mfac,dx),k))) >>
     else rerror(orthovec,13,
                "Truncation orders of Taylor series must be integers");
@@ -452,7 +452,7 @@ procedure ov!-taylor(ex,x,pt,n);
 %
 %limiting value of exression ex as x tends to pt
 %===============================================
-procedure limit(ex,x,pt);
+procedure ov_limit(ex,x,pt);
   begin
     scalar denex,numex;
 %polynomial
@@ -461,7 +461,7 @@ procedure limit(ex,x,pt);
     else if sub(x=pt,denex)=0 then <<
 %l'hopital's rule
       if sub(x=pt,(numex:=num(ex)))=0 then
-        return limit(quotient(df(numex,x), df(denex,x)),x,pt)
+        return ov_limit(quotient(df(numex,x), df(denex,x)),x,pt)
 %singular
       else rerror(orthovec,14,"Singular coefficient found by LIMIT")>>
 %nonzero denom rational
