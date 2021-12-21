@@ -1,3 +1,5 @@
+\section{Computing limits}
+
 LIMITS is a fast limit package for REDUCE for functions which are
 continuous except for computable poles and singularities, based on some
 earlier work by Ian Cohen and John P. Fitch.  The Truncated Power Series
@@ -9,19 +11,15 @@ $\infty - \infty$ forms and reformatting of product forms in order
 to apply l'H\^opital's rule.  A limited amount of bounded arithmetic
 is also employed where applicable.
 
-\subsection{Normal entry points}
-\ttindex{LIMIT}\hypertarget{operator:LIMIT}{}
+The standard way of calling limit, applying all of the methods, is
+\ttindextype{LIMIT}{operator}\hypertarget{operator:LIMIT}{}
 \begin{syntax}
   \f{LIMIT(}\meta{EXPRN:algebraic},\,\meta{VAR:kernel},\,%
     \meta{LIMPOINT:algebraic})\,:\,\textit{algebraic}
 \end{syntax}
+The result is the limit of EXPRN as VAR approaches LIMPOINT.
 
-This is the standard way of calling limit, applying all of the methods. The
-result is the limit of EXPRN as VAR approaches LIMPOINT.
-
-
-\subsection{Direction-dependent limits}
-
+If the limit depends upon the direction of approach to the \texttt{LIMPOINT},                                                                                                         the functions \texttt{LIMIT!+} and \texttt{LIMIT!-} may be used:
 \ttindex{LIMIT+} \ttindex{LIMIT-}
 \hypertarget{operator:LIMIT+}{}
 \hypertarget{operator:LIMIT-}{}
@@ -31,10 +29,7 @@ result is the limit of EXPRN as VAR approaches LIMPOINT.
   \texttt{LIMIT!-(}\meta{EXPRN:algebraic},\,\meta{VAR:kernel},\,%
     \meta{LIMPOINT:algebraic}\texttt{)}\,:\,\textit{algebraic}
 \end{syntaxtable}
-
-If the limit depends upon the direction of approach to the \texttt{LIMPOINT},
-the functions \texttt{LIMIT!+} and \texttt{LIMIT!-} may be used.  They are
-defined by:
+They are defined by:
 \begin{quote}
 \begin{tabular}{l}
  \texttt{LIMIT!+ (LIMIT!-)} (EXP,VAR,LIMPOINT) $\rightarrow$\texttt{LIMIT}(EXP*,$\epsilon$,0), \\
