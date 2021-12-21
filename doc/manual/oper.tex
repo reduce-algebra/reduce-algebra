@@ -1384,10 +1384,15 @@ settings, derivatives are displayed as follows (assuming
 
 \section{INT Operator}
 \hypertarget{operator:INT}{}
-\texttt{INT}\ttindex{INT} is an operator in {\REDUCE} for indefinite
-integration\index{Integration}\index{Indefinite integration} using a
-combination of the Risch-Norman algorithm and pattern matching.  It is
-used with the syntax:
+\index{Integration}
+\texttt{INT}\ttindex{INT} is an operator in {\REDUCE} for indefinite or definite integration.
+
+\subsection{Indefinite integration}
+\index{Indefinite integration}\index{Integration, indefinite}
+Indefinite
+integration is performed using a
+combination of the Risch-Norman algorithm and pattern matching \cite{Norman:77,Harrington:79,Norman:79}.
+It is used with the syntax:
 \begin{syntax}
   \texttt{INT(}\meta{EXPRN:algebraic}\texttt{,}\,\meta{VAR:kernel}\texttt{)}\,:\,\textit{algebraic}.
 \end{syntax}
@@ -1416,16 +1421,29 @@ solution, even if one exists.
 The program checks that the second argument is a variable and gives an
 error if it is not.
 
-\textit{Note:} If the \texttt{INT} operator is called with 4 arguments,
-{\REDUCE} will implicitly call the definite integration package (DEFINT)
-and this package will interpret the third and fourth arguments as the lower
-and upper limit of integration, respectively.  For details, consult
+\subsection{Definite Integration} \index{Definite integration}
+\index{Integration, definite}
+
+If \texttt{INT} is used with the syntax
+
+\begin{verbatim}
+   INT(EXPRN:algebraic,VAR:kernel,LOWER:algebraic,UPPER:algebraic):algebraic.
+\end{verbatim}
+
+The definite integral of \texttt{EXPRN} with respect to \texttt{VAR} is
+calculated between the limits \texttt{LOWER} and \texttt{UPPER}.
+This is calculated by several methods that are tried one after the other:
+pattern matching, by first finding
+the indefinite integral and then substituting the limits into this, by contour integration, or
+by transforming the integrand into one or two Meijer G-functions.
+For details, consult
 the documentation on the DEFINT\indexpackage{DEFINT} package.
 
 
 \subsection{Options}
 \hypertarget{switch:TRINT}{}
 \hypertarget{switch:TRINTSUBST}{}
+\hypertarget{switch:TRDEFINT}{}
 \hypertarget{switch:FAILHARD}{}
 \hypertarget{switch:NOLNR}{}
 \hypertarget{switch:NOINTSUBST}{}
@@ -1436,6 +1454,8 @@ of much interest to the general user. It is normally off.
 
 The switch \sw{TRINTSUBST}\ttindexswitch{TRINTSUBST} when on will trace the heuristic attempts to
 solve the integral by substitution. It is normally off.
+
+The switch \sw{TRDEFINT}\ttindexswitch{TRDEFINT} when on will trace the operation of the definite integration algorithm.
 
 If the switch \sw{FAILHARD}\ttindexswitch{FAILHARD} is on the algorithm will terminate with an
 error if the integral cannot be done in closed terms, rather than return a
@@ -1473,20 +1493,6 @@ functions involving square roots is available, however
 (ALGINT\indexpackage{ALGINT}\extendedmanual{, chapter~\ref{package:ALGINT}}).
 In addition there is a definite integration
 package, DEFINT\indexpackage{DEFINT}\extendedmanual{( chapter~\ref{DEFINT})}.
-
-\subsection{References}
-
-        A. C. Norman \& P. M. A. Moore, ``Implementing the New Risch
-                Algorithm'', Proc. 4th International Symposium on Advanced
-                Comp. Methods in Theor. Phys., CNRS, Marseilles, 1977.
-
-        S. J. Harrington, ``A New Symbolic Integration System in Reduce'',
-                Comp. Journ. 22 (1979) 2.
-
-        A. C. Norman \& J. H. Davenport, ``Symbolic Integration --- The Dust
-                Settles?'', Proc. EUROSAM 79, Lecture Notes in Computer
-                Science 72, Springer-Verlag, Berlin Heidelberg New York
-                (1979) 398-407.
 
 %\subsection{Definite Integration} \index{Definite integration}
 %
