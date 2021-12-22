@@ -31,6 +31,6 @@
 
 fluid '(revision!*);
 
-revision!* := 6196;
+revision!* := 6198;
 
 end;

@@ -1,14 +1,15 @@
-
+\section{Support for solving inequalities}
+\index{Solving inequalities}
+\index{Inequalities, solving}
 \ttindextype{INEQ\_SOLVE}{operator}
-%This package supports the operator \f{ineq\_solve} that 
-%tries to solves single inequalities and sets of coupled inequalities.
+The operator \f{ineq\_solve}
+tries to solves single inequalities and sets of coupled inequalities.
 The following types of systems are supported :
 \begin{itemize}
 \item only numeric coefficients (no parametric system),
 \item a linear system of mixed equations and $<=$ -- $>=$ 
      inequalities, applying the method of Fourier and Motzkin
-     \footnote{described by G.B. Dantzig in {\em Linear Programming 
-      and Extensions.}},
+     \footnote{described by G.B.~Dantzig in \cite{Dantzig1963}},
 \item a univariate inequality with $<=$, $>=$, $>$ or $<$ operator
      and polynomial or rational left--hand and right--hand sides,
      or a system of such inequalities with only one variable.
