@@ -97,6 +97,11 @@
 /doc/misc/primer.pdf
 /doc/misc/sl.pdf
 
+# /doc/primers/
+/doc/primers/*.idx
+/doc/primers/*.log
+/doc/primers/*.out
+
 # /generic/newfront/
 /generic/newfront/Makefile.in
 /generic/newfront/aclocal.m4
