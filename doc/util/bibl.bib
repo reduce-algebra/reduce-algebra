@@ -13402,4 +13402,16 @@ This work demonstrates that classical perturbation techniques combined with comp
   url         = {https://www.rand.org/pubs/reports/R366.html},
 }
 
+@Inproceedings{Kahan1987BranchCF,
+  author    = {W. Kahan},
+  booktitle = {The State of the Art in Numerical Analysis : Proceedings of the Joint IMA/SIAM Conference on the State of the Art in Numerical Analysis held at the University of Birmingham, 14-18 April 1986},
+  title     = {Branch cuts for complex elementary functions or Much Ado About Nothing's Sign Bit},
+  year      = {1987},
+  editor    = {A.~Iserles and M.J.D.~Powell},
+  address   = {Oxford},
+  publisher = {Clarendon Press},
+  abstract  = {Zero has a usable sign bit on some computers, but not on others. This accident of computer arithmetic influences the definition and use of familiar complex elementary functions like √ , arctan and arccosh whose domains are the whole complex plane with a slit or two drawn in it. The Principal Values of those functions are defined in terms of the logarithm function from which they inherit discontinuities across the slit(s). These discontinuities are crucial for applications to conformal maps with corners. The behavior of those functions on their slits can be read off immediately from defining Principal Expressions introduced in this paper for use by analysts. Also introduced herein are programs that implement the functions fairly accurately despite roundoff and other numerical exigencies. Except at logarithmic branch points, those functions can all be continuous up to and onto their boundary slits when zero has a sign that behaves as specified by IEEE standards for floating-point arithmetic; but those functions must be discontinuous on one side of each slit when zero is unsigned. Thus does the sign of zero lay down a trail from computer hardware through programming language compilers, run-time support libraries and applications programmers to, finally, mathematical analysts. Prepared for the joint IMA/SIAM Conference on "The State of the Art in Numerical Analysis" held at the University of Birmingham, England, April 14 18, 1986, for which the proceedings have been published in 1987 by the Oxford University Press, edited by M. J. D. Powell and A. Iserles. This is an augmented and corrected version that supersedes the paper in the proceedings.},
+  eprint    = {https://people.freebsd.org/~das/kahan86branch.pdf},
+}
+
 @Comment{jabref-meta: databaseType:bibtex;}

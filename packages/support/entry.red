@@ -390,6 +390,11 @@ put('allbranch,'simpfg,'((nil (load!-package 'solve))));
 
 put('solvesingular,'simpfg,'((nil (load!-package 'solve))));
 
+% Ineq package entry point
+
+defautoload(ineqseval!*,ineq);
+
+put('ineq_solve,'psopfn,'ineqseval!*);
 
 % Root finding package entry points.
 
@@ -593,6 +598,13 @@ defautoload_operator(MeijerG,(specfn specfn2));
 % Specfn entry points.
 
 defautoload_operator(lambert_w,(specfn specbess));
+
+% residue entry points
+
+defautoload(residue,residue,expr,3);
+defautoload(poleorder,residue,expr,3);
+
+flag('(residue,poleorder),'opfn);
 
 % Pgauss entry points
 

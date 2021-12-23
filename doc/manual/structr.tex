@@ -518,7 +518,7 @@ suppressed by turning on the switch \sw{NERO}.\ttindextype{NERO}{switch}
 It is naturally possible to evaluate expressions numerically in {\REDUCE} by
 giving all variables and sub-expressions numerical values. However, as we
 pointed out elsewhere the user must declare real arithmetical operation by
-turning on the switch \sw{ROUNDED}\ttindex{ROUNDED}.  However, it should be
+turning on the switch \sw{ROUNDED}\ttindexswitch{ROUNDED}.  However, it should be
 remembered that arithmetic in {\REDUCE} is not particularly fast, since
 results are interpreted rather than evaluated in a compiled form. The user
 with a large amount of numerical computation after all necessary algebraic
@@ -933,3 +933,26 @@ Note that \texttt{xx} in the above is not changed by this substitution.  In
 addition, unlike expressions such as array and matrix elements that have
 an \emph{instant evaluation\/}\index{Instant evaluation} property, the values
 of \texttt{part(xx,2)} and \texttt{part(c+d,0)} are also not changed.
+
+
+\section{COMPACT operator}
+\indexpackage{Compact}
+
+\ttindextype{COMPACT}{operator}
+COMPACT is an operator for the reduction of a polynomial in the
+presence of side relations.  It applies the side relations to the
+polynomial so that an equivalent expression results with as few terms as
+possible.  For example, the evaluation of
+\begin{verbatim}
+     compact(s*(1-sin x^2)+c*(1-cos x^2)+sin x^2+cos x^2,
+             {cos x^2+sin x^2=1});
+\end{verbatim}
+yields the result
+\begin{verbatim}
+         2           2
+   cos(x) *s + sin(x) *c + 1
+\end{verbatim}
+\ttindexswitch[COMPACT]{TRCOMPACT}
+\hypertarget{switch:TRCOMPACT}{}
+The switch \sw{TRCOMPACT} can be used to trace the operation.
+
