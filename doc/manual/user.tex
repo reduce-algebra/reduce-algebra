@@ -51,42 +51,6 @@ The packages available in the current release of {\REDUCE} are as follows:
 
 \newpage
 
-\section{ALGINT: Integration of square roots}
-\indexpackage{ALGINT}
-\label{package:ALGINT}
-
-This package, which is an extension of the basic integration package
-distributed with {\REDUCE}, will analytically integrate a wide range of
-expressions involving square roots where the answer exists in that class
-of functions. It is an implementation of the work described in J.H.
-Davenport, ``On the Integration of Algebraic Functions", LNCS 102,
-Springer Verlag, 1981.  Both this and the source code should be consulted
-for a more detailed description of this work.
-
-\hypertarget{switch:ALGINT}{}
-The \texttt{ALGINT} package is loaded automatically when the switch \sw{ALGINT}
-is turned on.
-One enters an expression for integration, as with the regular integrator,
-for example:
-\begin{verbatim}
-        int(sqrt(x+sqrt(x**2+1))/x,x);
-\end{verbatim}
-If one later wishes to integrate expressions without using the facilities of
-this package, the switch \sw{ALGINT} \ttindexswitch[ALGINT]{ALGINT} should be turned
-off.
-
-\hypertarget{switch:TRA}{}
-The switches supported by the standard integrator (e.g., \sw{TRINT})
-\ttindexswitch[ALGINT]{TRINT} are also supported by this package.  In addition, the
-switch \sw{TRA}, \ttindexswitch[ALGINT]{TRA} if on, will give further tracing
-information about the specific functioning of the algebraic integrator.
-
-There is no additional documentation for this package.
-
-Author: James H. Davenport.
-
-\newpage
-
 \section{APPLYSYM: Infinitesimal symmetries of differential equations}
 \indexpackage{APPLYSYM}
 \label{package:APPLYSYM}
@@ -671,39 +635,6 @@ Author: Thomas Sturm
 
 \newpage
 
-\section{MODSR: Modular solve and roots}
-\indexpackage{MODSR}
-\ttindextype{M\_SOLVE}{operator}\ttindextype{M\_ROOTS}{operator}
-
-This package supports solve (M\_SOLVE) and roots (M\_ROOTS) operators for
-modular polynomials and modular polynomial systems.  The moduli need not
-be primes. M\_SOLVE requires a modulus to be set.  M\_ROOTS takes the
-modulus as a second argument. For example:
-
-\begin{verbatim}
-on modular; setmod 8;
-m_solve(2x=4);            ->  {{X=2},{X=6}}
-m_solve({x^2-y^3=3});
-    ->  {{X=0,Y=5}, {X=2,Y=1}, {X=4,Y=5}, {X=6,Y=1}}
-m_solve({x=2,x^2-y^3=3}); ->  {{X=2,Y=1}}
-off modular;
-m_roots(x^2-1,8);         ->  {1,3,5,7}
-m_roots(x^3-x,7);         ->  {0,1,6}
-\end{verbatim}
-
-\ttindex{LEGENDRE\_SYMBOL}
-The operator \f{legendre\_symbol}(a,p) denotes the Legendre symbol
-\[
-  \left(\frac{a}{p}\right) \equiv a^{\frac{p-1}{2}} \pmod{p}
-\]
-which, by its very definition can only have one of the values $\{-1,0,1\}$.
-
-There is no further documentation for this package.
-
-Author: Herbert Melenk.
-
-\newpage
-
 \section{MRVLIMIT: A new exp-log limits package}
 \indexpackage{mrvlimit}
 
@@ -1060,6 +991,7 @@ Author: Stanley L. Kameny.
 \newpage
 \fi
 
+\iffalse
 \section[RSOLVE: Rational/integer polynomial solvers]%
         {RSOLVE: \protect\\ Rational/integer polynomial solvers}
 
@@ -1076,7 +1008,7 @@ Author: Francis J. Wright.
 \input{rsolve}
 
 \newpage
-
+\fi
 \section{RTRACE: Tracing in \REDUCE}
 \indexpackage{RTRACE}
 

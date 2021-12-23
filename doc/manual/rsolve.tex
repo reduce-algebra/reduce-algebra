@@ -1,31 +1,34 @@
+\section{Finding rational or integer zeros of an univariate polynominal}
 
-%\begin{abstract}
-  This package provides the operators \verb|r/i_solve| that compute
+\iffalse
+% \begin{abstract}
+  The operators \f{r\_solve} and \f{i_\solve}  compute
   respectively the exact rational or integer zeros of a single
   univariate polynomial using fast modular methods.
 %\end{abstract}
 
 
-\subsection{Introduction}
+  \subsection{Introduction}
+  \fi
 \ttindex{I\_SOLVE}\ttindex{R\_SOLVE}
-
-This package provides operators that compute the exact rational zeros
+\hypertarget{operator:I_SOLVE}{}
+\hypertarget{operator:R_SOLVE}{}
+The operators \f{r\_solve} and \f{i\_solve}  compute the exact rational zeros
 of a single univariate polynomial using fast modular methods.  The
-algorithm used is that described by R. Loos (1983): Computing rational
-zeros of integral polynomials by $p$-adic expansion, {\it SIAM J.
-Computing}, {\bf 12}, 286--293.  The operator \verb|r_solve| computes
-all rational zeros whereas the operator \verb|i_solve| computes only
+algorithm used is that described by R. Loos (\cite{Loos:1983a}).
+The operator \f{r\_solve} computes
+all rational zeros whereas the operator \f{i\_solve} computes only
 integer zeros in a way that is slightly more efficient than extracting
-them from the rational zeros.  The \verb|r_solve| and \verb|i_solve|
+them from the rational zeros.  The \f{r\_solve} and \f{i\_solve}
 interfaces are almost identical, and are intended to be completely
-compatible with that of the general \verb|solve| operator, although
-\verb|r_solve| and \verb|i_solve| give more convenient output when
+compatible with that of the general \f{r\_solve} operator, although
+\f{r\_solve} and \f{i\_solve} give more convenient output when
 only rational or integer zeros respectively are required.  The current
 implementation appears to be faster than \verb|solve| by a factor that
 depends on the example, but is typically up to about 2.
-  
-I plan to extend this package to compute Gaussian integer and rational
-zeros and zeros of polynomial systems.
+
+Extension to compute Gaussian integer and rational
+zeros and zeros of polynomial systems is planned.
 
 
 \subsection{The user interface}
@@ -36,7 +39,8 @@ rounded coefficients.  Symbolic coefficients are not allowed (and
 currently complex coefficients are not allowed either.)  The argument
 is simplified to a quotient of integer polynomials and the denominator
 is silently ignored.
-  
+
+\hypertarget{operator:ARBRAT}{\texttt{ARBRAT}}
 Subsequent arguments are optional.  If the polynomial variable is to
 be specified then it must be the first optional argument, and if the
 first optional argument is not a valid option (see below) then it is
@@ -44,19 +48,19 @@ first optional argument is not a valid option (see below) then it is
 variable in a non-constant univariate polynomial can be deduced from
 the polynomial it is unnecessary to specify it separately, except in
 the degenerate case that the first argument simplifies to either 0 or
-$0 = 0$.  In this case the result is returned by \verb|i_solve| in
-terms of the operator \verb|arbint| and by \verb|r_solve| in terms of
-the (new) analogous operator \verb|arbrat|.  The operator
-\verb|i_solve| will generally run slightly faster than \verb|r_solve|.
+$0 = 0$.  In this case the result is returned by \f{i\_solve} in
+terms of the operator \f{arbint} and by \f{r\_solve} in terms of
+the (new) analogous operator \f{arbrat}.  The operator
+\f{i\_solve} will generally run slightly faster than \f{r\_solve}.
   
 The (rational or integer) zeros of the first argument are returned as
 a list and the default output format is the same as that used by
-\verb|solve|.  Each distinct zero is returned in the form of an
+\f{solve}.  Each distinct zero is returned in the form of an
 equation with the variable on the left and the multiplicities of the
-zeros are assigned to the variable \verb|root_multiplicities| as a
-list.  However, if the switch \verb|multiplicities| is turned on then
+zeros are assigned to the variable \var{root\_multiplicities} as a
+list.  However, if the switch \sw{multiplicities} is turned on then
 each zero is explicitly included in the solution list the appropriate
-number of times (and \verb|root_multiplicities| has no value).
+number of times (and \var{root\_multiplicities} has no value).
   
 \begin{sloppypar}
 Optional keyword arguments acting as local switches allow other output
@@ -96,6 +100,7 @@ See the test/demonstration file \verb|rsolve.tst| for more examples.
 
 \subsection{Tracing}
 
+\hypertarget{switch:TRSOLVE}{}
 The switch \sw{trsolve}\ttindexswitch[RSOLVE]{TRSOLVE} turns on tracing of the algorithm.  It is off
 by default.
 
