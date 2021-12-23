@@ -1,0 +1,21 @@
+\section{Series expansion}
+
+Expanding an algebraic expression into a series can be done by standard \REDUCE operators, namely \f{df}, \f{sub}, and possibly \f{limit}.
+Nevertheless, there are many cases where this straightforward method fails.
+\REDUCE offers two different operators for this purpose:
+\begin{description}
+\item[\f{taylor}] computes a truncated power series.
+\item[\f{ps}] computes extendible power series.
+\end{description}
+
+\subsection{Taylor expansion}
+This package carries out the Taylor expansion of an expression in one
+or more variables and efficient manipulation of the resulting Taylor
+series. Capabilities include basic operations (addition, subtraction,
+multiplication and division) and also application of certain algebraic
+and transcendental functions.
+
+\input{taylor}
+
+\subsection{tps}
+\input{tps}
