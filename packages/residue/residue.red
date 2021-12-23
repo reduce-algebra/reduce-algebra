@@ -88,10 +88,10 @@ symbolic procedure type_ratpoly(f,z);
 algebraic procedure residue(f,x,a);
 begin
 scalar tmp,numerator,denominator,numcof,dencof;
-  if not freeof(f,factorial) then rederr("not yet implemented");
-  if not freeof(f,gamma) then rederr("not yet implemented");
-  if not freeof(f,binomial) then rederr("not yet implemented");
-  if not freeof(f,Pochhammer) then rederr("not yet implemented");
+  if not freeof(f,factorial) then rederr("residue of factorial not yet implemented");
+%  if not freeof(f,gamma) then rederr("not yet implemented");
+  if not freeof(f,binomial) then rederr("residue of binomial not yet implemented");
+  if not freeof(f,Pochhammer) then rederr("residue of Pochhammer not yet implemented");
   tmp:=taylortostandard(taylor(f,x,a,0));
   if a=infinity then tmp:=-sub(x=1/x,tmp);
   if polynomqq(tmp,x) then return(0);
@@ -114,10 +114,10 @@ end$
 algebraic procedure poleorder(f,x,a);
 begin
   scalar tmp,denominator;
-  if not freeof(f,factorial) then rederr("not yet implemented");
-  if not freeof(f,gamma) then rederr("not yet implemented");
-  if not freeof(f,binomial) then rederr("not yet implemented");
-  if not freeof(f,Pochhammer) then rederr("not yet implemented");
+  if not freeof(f,factorial) then rederr("poleorder of factorial not yet implemented");
+%  if not freeof(f,gamma) then rederr("not yet implemented");
+  if not freeof(f,binomial) then rederr("poleorder of binomial not yet implemented");
+  if not freeof(f,Pochhammer) then rederr("poleorder of Pochhammer not yet implemented");
   tmp:=taylortostandard(taylor(f,x,a,0));
   if a=infinity then tmp:=-sub(x=1/x,tmp);
   if polynomqq(tmp,x) then return(0);

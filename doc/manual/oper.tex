@@ -34,9 +34,9 @@ A non-numerical argument is returned as an absolute value, with an overall
 numerical coefficient taken outside the absolute value operator. For example:
 \begin{verbatim}
         abs(-3/4)     ->  3/4
-        abs(2a)       ->  2*ABS(A)
+        abs(2a)       ->  2*abs(A)
         abs(i)        ->  1
-        abs(-x)       ->  ABS(X)
+        abs(-x)       ->  abs(X)
 \end{verbatim}
 
 \subsection{CEILING}\ttindex{CEILING}
@@ -48,7 +48,7 @@ operator.  For example:
 
 \begin{verbatim}
         ceiling(-5/4) ->  -1
-        ceiling(-a)   ->  CEILING(-A)
+        ceiling(-a)   ->  ceiling( - a)
 \end{verbatim}
 
 \subsection{CONJ}\ttindex{CONJ}
@@ -60,9 +60,9 @@ in the operators
 \texttt{REPART}\ttindex{REPART} and \texttt{IMPART}\ttindex{IMPART}.
 For example:
 \begin{verbatim}
-        conj(1+i)     -> 1-I
-        conj(a+i*b)   -> REPART(A) - REPART(B)*I
-                         - IMPART(A)*I - IMPART(B)
+        conj(1+i)     -> - i + 1
+        conj(a+i*b)   -> - impart(a)*i - impart(b)
+                         + repart(a) - repart(b)*i
 \end{verbatim}
 
 If rules have been previously defined for the complex conjugate(s)
@@ -74,12 +74,11 @@ suppressed.
 For example:
 \begin{verbatim}
         realvalued a,b;
-        conj(a+i*b)   ->   a-b*i
+        conj(a+i*b)   ->   a - b*i
         let conj z => z!*, conj c => c!*;
-        conj(a+b*z*z!*+z*c!*)   ->   a+b*z*z* + c*z*
+        conj(a+b*z*z!*+z*c!*)   ->   a + b*z*z* + c*z*
         conj atan z    ->   atan(z*)
 \end{verbatim}
-
 Note that in defining the rule \texttt{conj z => z!*},\ the rule
 \texttt{conj z!*  => z} is (in effect) automatically defined and
 \emph{should not} be entered by the user.  A more convenient method of
@@ -129,7 +128,7 @@ integer, its factorial is returned.  Otherwise an expression involving
 \texttt{FACTORIAL} is returned. For example:
 \begin{verbatim}
         factorial(5)  ->  120
-        factorial(a)  ->  FACTORIAL(A)
+        factorial(a)  ->  factorial(a)
 \end{verbatim}
 
 \subsection{FIX}\ttindex{FIX}
@@ -141,7 +140,7 @@ operator.  For example:
 
 \begin{verbatim}
         fix(-5/4)   ->  -1
-        fix(a)      ->  FIX(A)
+        fix(a)      ->  fix(a)
 \end{verbatim}
 
 \subsection{FLOOR}\ttindex{FLOOR}
@@ -153,7 +152,7 @@ operator.  For example:
 
 \begin{verbatim}
         floor(-5/4)   ->  -2
-        floor(a)      ->  FLOOR(A)
+        floor(a)      ->  floor(a)
 \end{verbatim}
 
 \subsection{IMPART}\ttindex{IMPART}
@@ -183,7 +182,7 @@ returned.  For example:
 \begin{verbatim}
         max(2,-3,4,5) ->  5
         min(2,-2)     ->  -2.
-        max(a,2,3)    ->  MAX(A,3)
+        max(a,2,3)    ->  max(A,3)
         min(x)        ->  X
 \end{verbatim}
 \texttt{MAX} or \texttt{MIN} of an empty list returns 0.
@@ -247,7 +246,6 @@ For example:
         reimpart(a+i*b)      ->
                    { - impart(b) + repart(a),impart(a) + repart(b)}
 \end{verbatim}
-
 For the inverse trigometric and hyperbolic functions with non-numeric arguments the output is usually more compact when the \sw{FACTOR} is on.
 
 \subsection{REPART}\ttindex{REPART}
@@ -274,7 +272,7 @@ argument is returned as an expression in the original operator.  For
 example:
 \begin{verbatim}
         round(-5/4)   ->  -1
-        round(a)      ->  ROUND(A)
+        round(a)      ->  round(a)
 \end{verbatim}
 
 \subsection{SIGN}\ttindex{SIGN}
@@ -284,7 +282,7 @@ is possible \texttt{SIGN} returns one of 1, 0 or -1.  Otherwise, the result
 is the original form or a simplified variant. For example:
 \begin{verbatim}
         sign(-5)      ->  -1
-        sign(-a^2*b)  ->  -SIGN(B)
+        sign(-a^2*b)  ->  - sign(b)
 \end{verbatim}
 Note that even powers of formal expressions are assumed to be
 positive only as long as the switch \texttt{COMPLEX} is off.
@@ -424,11 +422,6 @@ package SPECFN.
 The user can add further rules for the reduction of expressions involving
 these operators by using the \texttt{LET}\ttindex{LET} command.
 
-% The square root function can be input using the name \texttt{SQRT}, or the
-% power operation \texttt{\verb|^|(1/2)}.  On output, unsimplified square roots
-% are normally represented by the operator \texttt{SQRT} rather than a
-% fractional power.
-
 \hypertarget{switch:COMBINELOGS}{}
 \hypertarget{switch:EXPANDLOGS}{}
 In many cases it is desirable to expand product arguments of logarithms,
@@ -473,13 +466,13 @@ example, the expression
 \end{verbatim}
 will print as
 \begin{verbatim}
-        SQRT(X)
+        sqrt(x)
 \end{verbatim}
 but will have an internal form containing the two exponentiated terms.
 If you now subtract \texttt{sqrt(x)} from this expression, you will
 \emph{not} get zero.  Instead, the confusing form
 \begin{verbatim}
-        SQRT(X) - SQRT(X)
+        sqrt(x) - sqrt(x)
 \end{verbatim}
 will result.  To combine such exponentiated terms, the switch
 \sw{COMBINEEXPT}\ttindexswitch{COMBINEEXPT} should be turned on.
@@ -556,17 +549,14 @@ these functions will also calculate a real or complex result, again to
 the current degree of floating point precision,
 if given complex arguments.  For example, with \texttt{on rounded,complex;}
 \begin{verbatim}
-    2.3^(5.6i)  ->  -0.0480793490914 - 0.998843519372*I
-    cos(2+3i)   ->  -4.18962569097 - 9.10922789376*I
+    2.3^(5.6i)  ->  - 0.0480793490914 - 0.998843519372*i
+    cos(2+3i)   ->  - 4.18962569097 - 9.10922789376*i
 \end{verbatim}
 
 For \texttt{log} and the inverse trigonometric and hyperbolic functions which are
 multi-valued, the principal value is returned. The branch cuts chosen
 (except for \texttt{acot}) are now
-those recommended by W.~Kahan (Branch Cuts for Complex Elementary Functions,
-or Much Ado About Nothing's Sign Bit,
-\textbf{in} The State of the Art in Numerical Analysis,
-A.~Iserles, M.J.D.~Powell Eds., Clarendon Press, Oxford, 1987).
+those recommended by W.~Kahan (\cite{Kahan1987BranchCF})
 
 The exception for \texttt{acot} is necessary as elsewhere in {\REDUCE}
 $\mathop{\mathrm{acot}}(-z)$ is taken to be $\pi - \mathop{\mathrm{acot}}(z)$
@@ -1675,6 +1665,20 @@ So with the above list in the workspace,
 
 Alternatively, one can use the operations on lists to extract any desired
 term.
+
+
+\section{RESIDUE and POLEORDER operators}
+\ttindex{RESIDUE}
+\ttindex{POLEORDER}
+\hypertarget{operator:RESIDUE}{}
+\hypertarget{operator:POLEORDER}{}
+
+\f{RESIDUE}\texttt{(f,z,a)} determines the residue of $f$ at the point $z=a$
+if $f$ is meromorphic at $z=a$. The calculation of residues at essential
+singularities of $f$ is not supported.
+
+\f{POLEORDER}\texttt{(f,z,a)} determines the pole order of $f$ at the point $z=a$
+if $f$ is meromorphic at $z=a$.
 
 
 \section{SELECT Operator}\ttindex{SELECT}
