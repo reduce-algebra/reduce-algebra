@@ -396,6 +396,30 @@ defautoload(ineqseval!*,ineq);
 
 put('ineq_solve,'psopfn,'ineqseval!*);
 
+% Msolve package entry points.
+
+defautoload(msolve,modsr);
+
+defautoload(modroots0,modsr,expr,2);
+
+defautoload(msolvesys,modsr,expr,3);
+
+put('m_solve,'psopfn,'msolve);
+
+put('m_roots,'psopfn,
+      function(lambda(u);
+               'list . modroots0(numr simp car u,reval cadr u)));
+
+% Rsolve package entry points.
+
+defautoload(i_solve!-eval,rsolve);
+
+defautoload(r_solve!-eval,rsolve);
+
+put('i_solve, 'psopfn, 'i_solve!-eval);
+
+put('r_solve, 'psopfn, 'r_solve!-eval);
+
 % Root finding package entry points.
 
 defautoload roots;

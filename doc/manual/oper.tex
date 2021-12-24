@@ -170,6 +170,15 @@ in the operators \texttt{REPART}\ttindex{REPART} and \texttt{IMPART}.  For examp
 
 For the inverse trigometric and hyperbolic functions with non-numeric arguments the output is usually more compact when the \sw{FACTOR} is on.
 
+\subsection{LEGENDRE\_SYMBOL}
+\ttindex{LEGENDRE\_SYMBOL}
+\hypertarget{operator:LEGENDRE_SYMBOL}{}
+The operator \f{legendre\_symbol}(a,p) denotes the Legendre symbol
+\[
+  \left(\frac{a}{p}\right) \equiv a^{\frac{p-1}{2}} \pmod{p}
+\]
+which, by its very definition can only have one of the values $\{-1,0,1\}$.
+
 \subsection{MAX/MIN}
 \hypertarget{operator:MAX}{}
 \hypertarget{operator:MIN}{}
@@ -1417,7 +1426,8 @@ error if it is not.
 If \texttt{INT} is used with the syntax
 
 \begin{verbatim}
-   INT(EXPRN:algebraic,VAR:kernel,LOWER:algebraic,UPPER:algebraic):algebraic.
+   INT(EXPRN:algebraic,VAR:kernel,
+        LOWER:algebraic,UPPER:algebraic):algebraic.
 \end{verbatim}
 
 The definite integral of \texttt{EXPRN} with respect to \texttt{VAR} is
@@ -1476,26 +1486,34 @@ in which case this function will be added to the permitted field
 descriptors for a genuine decision procedure. If this is done the user is
 responsible for the mathematical correctness of his actions.
 
+
 The standard version does not deal with algebraic extensions. Thus
 integration of expressions involving square roots and other like things
-can lead to trouble.  A contributed package that supports integration of
-functions involving square roots is available, however
-(ALGINT\indexpackage{ALGINT}\extendedmanual{, chapter~\ref{package:ALGINT}}).
-In addition there is a definite integration
-package, DEFINT\indexpackage{DEFINT}\extendedmanual{( chapter~\ref{DEFINT})}.
+can lead to trouble.  The extension package \texttt{ALGINT} 
+will analytically integrate a wide range of
+expressions involving square roots where the answer exists in that class
+of functions. It is an implementation of the work described by J.H.
+Davenport \cite{Davenport:81}.
 
-%\subsection{Definite Integration} \index{Definite integration}
-%
-%If \texttt{INT} is used with the syntax
-%
-%\begin{verbatim}
-%   INT(EXPRN:algebraic,VAR:kernel,LOWER:algebraic,UPPER:algebraic):algebraic.
-%\end{verbatim}
-%
-%The definite integral of \texttt{EXPRN} with respect to \texttt{VAR} is
-%calculated between the limits \texttt{LOWER} and \texttt{UPPER}.  In the present
-%system, this is calculated either by pattern matching, or by first finding
-%the indefinite integral, and then substituting the limits into this.
+\hypertarget{switch:ALGINT}{}
+The extension package is loaded automatically when the switch \sw{ALGINT}
+is turned on.
+One enters an expression for integration, as with the regular integrator,
+for example:
+\begin{verbatim}
+        int(sqrt(x+sqrt(x**2+1))/x,x);
+\end{verbatim}
+If one later wishes to integrate expressions without using the facilities of
+this package, the switch \sw{ALGINT} \ttindexswitch[ALGINT]{ALGINT} should be turned
+off.
+
+\hypertarget{switch:TRA}{}
+The switches supported by the standard integrator (e.g., \sw{TRINT})
+\ttindexswitch[ALGINT]{TRINT} are also supported by this package.  In addition, the
+switch \sw{TRA}, \ttindexswitch[ALGINT]{TRA} if on, will give further tracing
+information about the specific functioning of the algebraic integrator.
+
+
 
 \section{LENGTH Operator}
 \hypertarget{operator:LENGTH}{}
