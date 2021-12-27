@@ -1117,7 +1117,6 @@ LispObject borrow_vector(int tag, int type, size_t n)
 void setUpEmptyPage(Page *p)
 {
     p->chunkCount = 0;
-    std::cout << "setupemptypage\n";
     std::cout << "empty page " << p << " sets chunkCount 0\n";
     p->chunkMapSorted = false;
 #ifdef SAFE

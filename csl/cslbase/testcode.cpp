@@ -36,15 +36,26 @@
 #include "headers.h"
 
 LispObject runtest(int n, int payload)
-{   if (n == 0)
-    {   Lgc(nil, lisp_true);
+{
+#if 0
+    if (n%5 == 0)
+    {   Lgc(nil, fixnum_of_int(1));
 #if defined CONSERVATIVE && defined DEBUG
-        cout << "Fringe = " << Addr(fringe) << " at end of GC\n";
-        cout << "Limit = " << Addr(limit) << " at end of GC\n";
+        zprintf("Fringe = %a at end of GC\n", fringe);
+        zprintf("Limit = %a at end of GC\n", limit);
 #endif
         return fixnum_of_int(payload);
     }
     return cons(ncons(fixnum_of_int(n)), runtest(n-1, payload));
+#else
+    Lgc(nil, fixnum_of_int(1));
+#ifdef DEBUG
+    zprintf("Fringe = %a at end of GC\n", fringe);
+    zprintf("Limit = %a at end of GC\n", limit);
+#endif
+//    return fixnum_of_int(payload);
+    return cons(fixnum_of_int(payload), fixnum_of_int(-payload));
+#endif
 }
 
 #undef INIT_OBVECI_SIZE
@@ -53,56 +64,15 @@ LispObject runtest(int n, int payload)
 void gcTestCode()
 {   std::printf("\n: Conservative code - run a simple test of the GC\n\n");
     set_up_signal_handlers();
-    cout << "create package object\n";
-    setvalue(nil, get_basic_vector_init(sizeof(Package), nil));
-    setpackage(nil, static_cast<LispObject>(qvalue(nil)));
-
-    packhdr_(static_cast<LispObject>(CP)) =
-        TYPE_STRUCTURE+(packhdr_(static_cast<LispObject>(CP)) & ~header_mask);
-    cout << "create package vector\n";
-    packint_(static_cast<LispObject>(CP)) =
-        get_basic_vector_init(CELL*(1+16), fixnum_of_int(0));
-    packflags_(static_cast<LispObject>(CP)) =
-        fixnum_of_int(++package_bits);
-
-    packnint_(static_cast<LispObject>(CP)) =
-        fixnum_of_int(1); // Allow for nil
-// Place NIL into the table.
-    {   size_t i = hash_lisp_string(qpname(nil)) & (INIT_OBVECI_SIZE - 1);
-        cout << "Place NIL at offset " << i << "\n";
-        elt(packint_(static_cast<LispObject>(CP)), i) = nil;
-    }
-    fastget_size = 63;
-#undef boffo_size
-#define boffo_size 32
-    cout << "create boffo\n";
-    boffo = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+boffo_size);
-    std::memset(reinterpret_cast<void *>(reinterpret_cast<char *>
-                                         (boffo) + (CELL - TAG_VECTOR)), '@', boffo_size);
-//
-// The next line has hidden depths.  When it is obeyed during cold start
-// the C variable *package* has the value nil, hence make_symbol
-// looks in the value cell of nil to find the package to intern wrt. Once
-// this has been done I can put nil back how it ought to have been!
-//
-    cout << "create *package* symbol\n";
-    current_package          = make_undefined_fluid("*package*");
-    lisp_package             = qpackage(nil);
-    setvalue(current_package,  lisp_package);
+    LispObject w;
+    setpname(nil, w = make_string("nil"));
     setvalue(nil,              nil);          // Whew!
-    setpackage(nil,            lisp_package);
-    setpackage(current_package,lisp_package);
 
-    cout << "create T symbol\n";
-    lisp_true           = make_undefined_global("t");
-    setvalue(lisp_true,   lisp_true);
-
-    cout << "Now run the test\n";
-    simple_print(runtest(1, 9999));
-    cout << "\nFirst GC test over\n";
-    simple_print(runtest(1, 6666));
-    cout << "\nSecond GC test over\n";
-// Probably broken now!
+    zprintf("Now run the test\n");
+    for (int i=1; i<500; i++)
+    {   simple_print(runtest(1, 1001001*i));
+        zprintf("\nGC test %d over\n", i);
+    }
 }
 
 // end of testcode.cpp

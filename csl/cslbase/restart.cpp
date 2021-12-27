@@ -551,15 +551,6 @@ static void cold_setup()
     eq_hash_tables = nil;
     for (LispObject **p=list_bases; *p!=nullptr; p++) **p = nil;
     eq_hash_tables = nil;
-#ifdef DEBUG
-    cout << "Create pname of NIL\n";
-#endif
-#ifdef COMMON
-    setpname(nil, make_string("NIL"));
-#else
-    setpname(nil, make_string("nil"));
-#endif
-
 // The package I am using at present will always be a package object
 // stored in the value cell of "current-package". But that symbol does not
 // quite exist yet - so as a temporary provision I use the value cell of NIL.
@@ -583,6 +574,14 @@ static void cold_setup()
         std::exit(0);
     }
 #endif // CONSERVATIVE
+#ifdef DEBUG
+    cout << "Create pname of NIL\n";
+#endif
+#ifdef COMMON
+    setpname(nil, make_string("NIL"));
+#else
+    setpname(nil, make_string("nil"));
+#endif
     setvalue(nil, get_basic_vector_init(sizeof(Package), nil));
 #ifdef COMMON
     setpackage(nil, qvalue(nil));    // For sake of restart code
