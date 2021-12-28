@@ -689,7 +689,7 @@ inline const char *Addr(uintptr_t p)
 
 
 template <typename T>
-inline const char *Addr(atomic<T>& p)
+inline const char *Addr(const atomic<T>& p)
 {   return Addr(static_cast<T>(p));
 }
 
@@ -1106,7 +1106,7 @@ inline void poll()
 // allocation request for zero bytes.
         fringeBis = fringe;
         cout << "Polling at " << __WHERE__ << " fringeBis[" << threadId
-             << " = " << Addr(fringeBis) << endl;
+             << "] = " << Addr(fringeBis) << endl;
         request = 0;
         gIncrement = 0;
         static_cast<void>(difficult_n_bytes());

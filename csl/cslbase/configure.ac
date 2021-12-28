@@ -610,7 +610,7 @@ case $host in
   ;;
 *)
   AC_PATH_PROGS(LOCALCXX, [g++ clang++ c++ CC], g++, [])
-  LOCALCXX="$LOCALCXX -std=gnu++11"
+  LOCALCXX="$LOCALCXX -std=gnu++20"
   LOCALSTRIP="$STRIP"
   ;;
 esac
@@ -850,6 +850,18 @@ then
   AC_PATH_X
 fi
 
+# If "-std=gnu++20" is available I will add it to CXXFLAGS, at least
+# provided "consteval" is recognised.
+
+OLDCXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CXXFLAGS -std=gnu++20"
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[]],
+    [[  consteval int f(int x) { return x*x; }
+        int main() {return 0;}]])],
+  [AC_MSG_NOTICE(Will use -std=gnu++20)],
+  [CXXFLAGS="$OLDCXXFLAGS"
+   AC_MSG_NOTICE(C++20 not available)])
+
 if test "$enable_debug" = "yes"
 then
 # In debugging mode I will use -fsanitise=address if it is available.
@@ -910,6 +922,10 @@ if test "$arithmetic_shifts" = "yes"
 then
   AC_DEFINE(SIGNED_SHIFTS_ARE_ARITHMETIC, [1], [Not guaranteed by ANSI spec])
 fi
+
+# Note that before all this I will have tried putting "-std=gnu++20" on
+# the command line. I note that at the time of writing I can not find
+# and official autoconf macro to check for C++20.
 
 # The following seems to be an "official" way to ensure that I have at least
 # -std=gnu++17. 
