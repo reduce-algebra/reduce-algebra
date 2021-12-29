@@ -581,7 +581,7 @@ void newRegionNeeded()
         userGcRequest != GcStyleMinor)
     {   if ((busyPagesCount >= freePagesCount+mostlyFreePagesCount ||
              userGcRequest == GcStyleMajor))
-        {   cout << "@@ full GC needed\r\n";
+        {   zprintf("full GC needed\n");
             userGcRequest = GcStyleNone;
             fullGarbageCollect();
         }
@@ -625,7 +625,7 @@ void newRegionNeeded()
         }
     }
     else
-    {   cout << "@@ minor GC needed\r\n";
+    {   zprintf("@@ minor GC needed\n");
         userGcRequest = GcStyleNone;
         generationalGarbageCollect();
     }
@@ -633,7 +633,7 @@ void newRegionNeeded()
 
 void releaseOtherThreads()
 {
-//  cout << "@@ unlock any other threads at end of page allocation\r\n";
+//  zprintf("@@ unlock any other threads at end of page allocation\n");
 // Now I need to be confident that the other threads have all accessed
 // gc_started. When they have they will increment activeThreads and when the
 // last one does that it will notify me.
@@ -686,7 +686,7 @@ void ableToAllocateNewChunk(uintptr_t threadId, size_t n, size_t gap)
 // OK I can allocate a new Chunk for one of the threads here. First I should
 // insert padding so that the tail end of the previous chunk is tidily
 // filled in.
-//    cout << "At " << __WHERE__ << " ableToAllocateNewChunk\n";
+//    zprintf("At %s ableToAllocateNewChunk\n", __WHERE__);
     myChunkBase->chunkFringe = fringeBis;
     Chunk *newChunk = reinterpret_cast<Chunk *>(
                           static_cast<uintptr_t>(gFringe));
@@ -694,11 +694,10 @@ void ableToAllocateNewChunk(uintptr_t threadId, size_t n, size_t gap)
     newChunk->isPinned = 0;
     newChunk->chunkPinChain = nullptr;
     size_t chunkNo = currentPage->chunkCount.fetch_add(1);
-    std::cout << "Page " << currentPage << " gets "
-              << static_cast<unsigned int>(currentPage->chunkCount) << "\n";
+    zprintf("Page %a gets %d\n", currentPage, currentPage->chunkCount);
     currentPage->chunkMap[chunkNo] = newChunk;
     result = newChunk->dataStart() + TAG_VECTOR;
-//    cout << "result[" << threadId << "] = " << Addr(result) << endl;
+//    zprintf("result[%d] = %a\n", threadId, result);
     myChunkBase = newChunk;
     request = 0;
 // If I allocate a block here it will need to be alive through an impending
@@ -706,11 +705,11 @@ void ableToAllocateNewChunk(uintptr_t threadId, size_t n, size_t gap)
 // vector with binary content.
 //    LispObject rr = result;
     my_assert(findPage(result) != nullptr);
-//    cout << Addr(result) << " " << Addr(rr) << endl;
+//    zprintf("%a %a\n", result, rr);
     setHeaderWord(result-TAG_VECTOR, n, TYPE_VEC32);
     fringeBis = newChunk->dataStart() + n;
 //    cout << "At " << __WHERE__ << " fringeBis[" << threadId
-//         << "] = " << Addr(fringeBis) << endl;
+//         << "] = " << Addr(fringeBis) << "\n";
     gFringe = limitBis = limit =
               fringeBis + targetChunkSize;
 }
@@ -731,7 +730,7 @@ void tryToSatisfyAtLeastOneThread(unsigned int &pendingCount)
             uintptr_t f = fringeBis;
             uintptr_t l = limitBis;
 //            cout << "At " << __WHERE__ << " fringeBis[" << threadId
-//                 << "] = " << Addr(f) << "and l = " << Addr(l_ << endl;
+//                 << "] = " << Addr(f) << "and l = " << Addr(l_ << "\n";
             size_t gap = l - f;
             if (n <= gap) fitsWithinExistingGap(threadId, n, gap);
             else
@@ -751,7 +750,7 @@ void tryToSatisfyAtLeastOneThread(unsigned int &pendingCount)
 
 void garbageCollectOnBehalfOfAll()
 {   ensureOtherThreadsAreIdle();
-//    cout << "@@ garbageCollectOnBehalfOfAll called\r\n";
+//    zprintf("@@ garbageCollectOnBehalfOfAll called\n");
 // Now while the other threads are idle I can perform some garbage
 // collection and fill in results via result[] based on request[].
 // I will also put gFringe back to the value it had before any thread
@@ -906,7 +905,7 @@ void waitWhileAnotherThreadGarbageCollects()
         if (!st) my_abort(LOCATION ": condition variable timed out");
     }
     fringe = fringeBis;
-    cout << "At " << __WHERE__ << " fringe set to fringeBis = " << fringe << "\r" << endl;
+    cout << "At " << __WHERE__ << " fringe set to fringeBis = " << fringe << "\n";
 }
 
 // Here I have just attempted to allocate n bytes but the attempt failed
@@ -976,7 +975,7 @@ uintptr_t difficult_n_bytes()
 // so I need to put its updated value in the correct place.
     THREADID;
     fringe = fringeBis;
-    cout << "At " << __WHERE__ << " fringe set to fringeBis = " << Addr(fringe) << dec << "\r" << endl;
+    cout << "At " << __WHERE__ << " fringe set to fringeBis = " << Addr(fringe) << dec << "\n";
 #endif
 #ifdef DEBUG
     testLayout();
@@ -1000,7 +999,7 @@ uintptr_t difficult_n_bytes()
 // into it. It then re-hashes everything back into the existing vector.
 // Doing things that way really simplifies the hash table code, and avoids
 // having the temporary space anything other than rather temporary and
-// transient. However the scheme is not very thread-friendly! My current
+// transient. However the scheme is not very thread-fri"\n"y! My current
 // plan is that only one thread may be re-hashing (and hence borrowing) at
 // once, and while that is happening any other thread that needs to trigger
 // garbage collection will have to wait. I am putting in stubs of code here
@@ -1132,14 +1131,14 @@ void setUpEmptyPage(Page *p)
 // I use memset to clear the block of memory, HOPING that the representation
 // in memory of simple and atomic integers will be identical. This is not
 // standards-conforming.
-    std::atomic_thread_fence(std::memory_order::memory_order_seq_cst);
+    std::atomic_thread_fence(std::memory_order::seq_cst);
     std::memset(reinterpret_cast<void *>(&p->dirtyMap),
                 0, sizeof(p->dirtyMap));
     std::memset(reinterpret_cast<void *>(&p->dirtyMap1),
                 0, sizeof(p->dirtyMap1));
     std::memset(reinterpret_cast<void *>(&p->dirtyMap2),
                 0, sizeof(p->dirtyMap2));
-    std::atomic_thread_fence(std::memory_order::memory_order_seq_cst);
+    std::atomic_thread_fence(std::memory_order::seq_cst);
 #endif
     p->hasDirty = false;
     p->dirtyPageChain = nullptr;
@@ -1176,14 +1175,14 @@ void setUpMostlyEmptyPage(Page *p)
 // I use memset to clear the block of memory, HOPING that the representation
 // in memory of simple and atomic integers will be identical. This is not
 // standards-conforming.
-    std::atomic_thread_fence(std::memory_order::memory_order_seq_cst);
+    std::atomic_thread_fence(std::memory_order::seq_cst);
     std::memset(reinterpret_cast<void *>(&p->dirtyMap),
                 0, sizeof(p->dirtyMap));
     std::memset(reinterpret_cast<void *>(&p->dirtyMap1),
                 0, sizeof(p->dirtyMap1));
     std::memset(reinterpret_cast<void *>(&p->dirtyMap2),
                 0, sizeof(p->dirtyMap2));
-    std::atomic_thread_fence(std::memory_order::memory_order_seq_cst);
+    std::atomic_thread_fence(std::memory_order::seq_cst);
 #endif
     p->hasDirty = false;
     p->dirtyPageChain = nullptr;
@@ -1266,9 +1265,9 @@ void setVariablesFromPage(Page *p)
         limitBis = gFringe = static_cast<uintptr_t>(p->pageFringe);
     myChunkBase = nullptr;
     gLimit = p->pageLimit;
-//    cout << "setVariablesFromPage\r\n";
-//    cout << "At " << __WHERE__ << " gFringe = " << std::hex << gFringe << "\r" << endl;
-//    cout << "At " << __WHERE__ << " gLimit = " << std::hex << gLimit << "\r" << endl;
+//    cout << "setVariablesFromPage\n";
+//    cout << "At " << __WHERE__ << " gFringe = " << std::hex << gFringe << "\n";
+//    cout << "At " << __WHERE__ << " gLimit = " << std::hex << gLimit << "\n";
 //    cout << std::dec;
 }
 
@@ -1337,7 +1336,7 @@ bool allocateSegment(size_t n)
         freePages = p;
         freePagesCount++;
     }
-    cout << freePagesCount << " pages available\r\n";
+    cout << freePagesCount << " pages available\n";
     return true; // Success!
 }
 
@@ -1361,7 +1360,7 @@ uint64_t force_cons=0, force_vec = 0;
 
 LispObject Lgc_forcer(LispObject env, LispObject a, LispObject b)
 {   if (force_cons != 0 || force_vec != 0)
-        trace_printf("Remaining CONS : %" PRIu64 " VEC : %" PRIu64 "\r\n",
+        trace_printf("Remaining CONS : %" PRIu64 " VEC : %" PRIu64 "\n",
                      force_cons, force_vec);
 // If you pass a non-fixnum then that leaves the trigger-point unchanged.
     if (is_fixnum(a)) force_cons = (uint64_t)sixty_four_bits(a);
@@ -1438,7 +1437,7 @@ void releaseThreadNumber(unsigned int n)
 }
 
 ThreadStartup::ThreadStartup()
-{   // cout << "ThreadStartup" << "\r" << endl;
+{   // cout << "ThreadStartup" << "\n";
     initThreadLocals();
 #ifndef NO_THREADS
     std::lock_guard<std::mutex> lock(mutexForGc);
@@ -1450,7 +1449,7 @@ ThreadStartup::ThreadStartup()
 }
 
 ThreadStartup::~ThreadStartup()
-{   // cout << "~ThreadStartup" << "\r" << endl;
+{   // cout << "~ThreadStartup" << "\n";
 #ifndef NO_THREADS
     std::lock_guard<std::mutex> lock(mutexForGc);
     releaseThreadNumber(static_cast<uintptr_t>(genuineThreadId));
@@ -1733,16 +1732,16 @@ LispObject Lgctest_1(LispObject env, LispObject a1)
     size_t n = int_of_fixnum(a1);
     for (unsigned int i=0; i<n; i++)
         a = cons(fixnum_of_int(i), a);
-    cout << "list created" << "\r" << endl;
+    cout << "list created" << "\n";
     b = a;
     for (unsigned int j=n-1; j!=static_cast<unsigned int>(-1); j--)
     {   if (!is_cons(b)) goto failing2;
         if (car(b) != fixnum_of_int(j))
-        {   cout << "Fail3 case with j = " << std::dec << j << "\r" << endl
-                 << " fixnum_of_int(j) = " << std::hex << fixnum_of_int(j) << "\r" << endl
+        {   cout << "Fail3 case with j = " << std::dec << j << "\n"
+                 << " fixnum_of_int(j) = " << std::hex << fixnum_of_int(j) << "\n"
                  << " car(b) = " << static_cast<LispObject>(car(b))
-                 << " which differs" << "\r" << endl
-                 << " " << (n-1-j) << " items down the list" << "\r" << endl;
+                 << " which differs" << "\n"
+                 << " " << (n-1-j) << " items down the list" << "\n";
             goto failing3; //<<<<<<<<<
         }
         b = cdr(b);
@@ -1751,33 +1750,33 @@ LispObject Lgctest_1(LispObject env, LispObject a1)
     return nil;
 failing2:
     cout << "Crashed2 " << std::hex << "b = " << b
-         << " car(b) = " << static_cast<LispObject>(car(b)) << "\r" << endl;
-    cout << "n = " << n << "\r" << endl;
+         << " car(b) = " << static_cast<LispObject>(car(b)) << "\n";
+    cout << "n = " << n << "\n";
     for (int z=1; z<10; z++)
     {   cout << std::dec << (car(b)/16) << " ";
         b = cdr(b);
     }
-    cout << "\r" << endl;
+    cout << "\n";
     return nil;
 failing3:
     cout << "Crashed3 " << std::hex << "b = " << b
-         << " car(b) = " << static_cast<LispObject>(car(b)) << "\r" << endl;
-    cout << "n = " << n << "\r" << endl;
+         << " car(b) = " << static_cast<LispObject>(car(b)) << "\n";
+    cout << "n = " << n << "\n";
     for (int z=1; z<10; z++)
     {   cout << std::dec << (car(b)/16) << " ";
         b = cdr(b);
     }
-    cout << "\r" << endl;
+    cout << "\n";
     return nil;
 failing4:
     cout << "Crashed4 " << std::hex << "b = " << b
-         << " car(b) = " << static_cast<LispObject>(car(b)) << "\r" << endl;
-    cout << "n = " << n << "\r" << endl;
+         << " car(b) = " << static_cast<LispObject>(car(b)) << "\n";
+    cout << "n = " << n << "\n";
     for (int z=1; z<10; z++)
     {   cout << std::dec << (car(b)/16) << " ";
         b = cdr(b);
     }
-    cout << "\r" << endl;
+    cout << "\n";
     return nil;
 }
 

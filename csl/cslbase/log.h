@@ -445,6 +445,9 @@ struct is_atomic : std::false_type {};
 template<typename T>
 struct is_atomic<std::atomic<T>> : std::true_type {};
 
+template<typename T>
+struct is_atomic<const std::atomic<T>> : std::true_type {};
+
 // This now checks if the type T is either integral or an intgral
 // type wrapped by std::atomic.
 
@@ -1026,13 +1029,18 @@ public:
                     "Invalid sequence started by '%'");
             }
             end = pos+1;
-            return (start     & maskStart)    <<shiftStart |
-                   (type      & maskType)     <<shiftType |
-                   (subtype   & maskSubType)  <<shiftSubType |
-                   (flags     & maskFlags)    <<shiftFlags |
-                   (width     & maskWidth)    <<shiftWidth |
-                   (precision & maskPrecision)<<shiftPrecision |
-                   (end       & maskEnd)      <<shiftEnd;
+// All the casts are because all my values (and masks) here are set up
+// using enumeration types and combining them directly causes g++ (in C++20
+// mode) to give a "deprecated" warning. I use the C style casts because
+// they are more compact than using "static_cast<uint64_t>" everywhere.
+            return
+              ((int64_t)start     & (uint64_t)maskStart)    <<shiftStart |
+              ((int64_t)type      & (uint64_t)maskType)     <<shiftType |
+              ((int64_t)subtype   & (uint64_t)maskSubType)  <<shiftSubType |
+              ((int64_t)flags     & (uint64_t)maskFlags)    <<shiftFlags |
+              ((int64_t)width     & (uint64_t)maskWidth)    <<shiftWidth |
+              ((int64_t)precision & (uint64_t)maskPrecision)<<shiftPrecision |
+              ((int64_t)end       & (uint64_t)maskEnd)      <<shiftEnd;
         }
     }
 
