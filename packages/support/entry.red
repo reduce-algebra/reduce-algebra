@@ -265,6 +265,38 @@ defautoload(new_indefint,defint);
 
 defautoload(defint0,defint);
 
+defautoload(new_laplace,defint);
+
+put('laplace_transform,'psopfn,'new_laplace);
+
+defautoload(new_hankel,defint);
+
+put('hankel_transform,'psopfn,'new_hankel);
+
+defautoload(new_y_transform,defint);
+
+put('y_transform,'psopfn,'new_y_transform);
+
+defautoload(new_k_transform,defint);
+
+put('k_transform,'psopfn,'new_k_transform);
+
+defautoload(new_struveh,defint);
+
+put('struveh_transform,'psopfn,'new_struveh);
+
+defautoload(new_fourier_sin,defint);
+
+put('fourier_sin,'psopfn,'new_fourier_sin);
+
+defautoload(new_fourier_cos,defint);
+
+put('fourier_cos,'psopfn,'new_fourier_cos);
+
+defautoload(print_conditions,defint,expr,0);
+
+flag('(print_conditions),'opfn);
+
 
 % Matrix module entry points.
 
@@ -466,6 +498,21 @@ for each c in '(limit limit!+ limit!-) do
 switch usetaylor,trlimit;
 
 defautoload(simplimit,limits);
+
+% Laplace module entry points.
+
+global '(!*lhyp !*lmon !*ltrig);
+
+switch lhyp,lmon,ltrig;
+
+defautoload(simplaplace,laplace);
+
+put('laplace, 'simpfn, 'simplaplace);
+
+defautoload(simpinvlap,laplace);
+
+put('invlap, 'simpfn, 'simpinvlap);
+
 
 % Partial fractions entry point.
 
