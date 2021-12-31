@@ -553,6 +553,65 @@ put('taylor,'simpfn,'simptaylor);
 
 defautoload(simptaylor,taylor);
 
+% TPS entry points
+
+put('ps,'simpfn,'simpps);
+
+defautoload(simpps,tps);
+
+put('psterm,'simpfn,'simppsterm);
+
+defautoload(simppsterm,tps);
+
+put('psorder,'simpfn,'simppsorder);
+
+defautoload(simppsorder,tps);
+
+put('pssetorder,'simpfn,'simppssetorder);
+
+defautoload(simppssetorder,tps);
+
+put('psexpansionpt,'simpfn,'simppsexpansionpt);
+
+defautoload(simppsexpansionpt,tps);
+
+put('psdepvar,'simpfn,'simppsdepvar);
+
+defautoload(simppsdepvar,tps);
+
+put('psfunction,'simpfn,'simppsfunction);
+
+defautoload(simppsfunction,tps);
+
+put('pschangevar,'simpfn,'simppschangevar);
+
+defautoload(simppschangevar,tps);
+
+put('pstaylor,'simpfn,'simppstaylor);
+
+defautoload(simppstaylor,tps);
+
+put('psordlim,'simpfn,'simppsordlim);
+
+defautoload(simppsordlim,tps);
+
+put('pscopy,'simpfn,'simppscopy);
+
+defautoload(simppscopy,tps);
+
+put('psreverse,'simpfn,'simppsreverse);
+
+defautoload(simppsreverse,tps);
+
+put('pscompose,'simpfn,'simppscompose);
+
+defautoload(simppscompose,tps);
+
+put('pssum,'simpfn,'simppssum);
+
+defautoload(simppssum,tps);
+
+
 % Trigsimp  entry points
 
 put('trigsimp,'psopfn,'trigsimp!*);
@@ -676,6 +735,65 @@ defautoload(residue,residue,expr,3);
 defautoload(poleorder,residue,expr,3);
 
 flag('(residue,poleorder),'opfn);
+
+% Arnum entry points
+
+fluid '(!*arnum);
+
+switch arnum;
+
+defautoload(defpoly,arnum);
+
+rlistat '(defpoly);
+
+defautoload(split!-field!-eval,arnum);
+
+put('split!_field,'psopfn,'split!-field!-eval);
+
+
+% Rtrace entry points
+
+switch rtrace;
+
+defautoload(rtr!*,rtrace,expr,2);
+
+symbolic macro procedure rtr fns;
+   %% Trace the procedures underlying the named operators.
+   rtr!*('rtrace, fns)$
+
+symbolic macro procedure unrtr fns;
+   %% Untrace the procedures underlying the named operators.
+   rtr!*('unrtrace, fns)$
+
+symbolic macro procedure rtrst fns;
+   %% Traceset the procedures underlying the named operators.
+   rtr!*('rtraceset, fns)$
+
+symbolic macro procedure unrtrst fns;
+   %% Untrace the procedures underlying the named operators.
+   rtr!*('unrtrace, fns)$
+
+flag('(rtr rtrst unrtr unrtrst), 'noform)$
+deflist('((rtr rlis) (rtrst rlis) (unrtr rlis) (unrtrst rlis)), 'stat)$
+
+global '(rtrout!*);
+
+defautoload(rtrout,rtrace);
+
+rlistat '(rtrout);
+
+defautoload(trrl,rtrace);
+defautoload(trrlid,rtrace);
+
+put('trrl,'stat,'rlis);
+put('trrlid,'stat,'rlis);
+
+defautoload(untrrl,rtrace);
+defautoload(untrrlid,rtrace);
+
+put('untrrl,'stat,'rlis);
+put('untrrlid,'stat,'rlis);
+
 
 % Pgauss entry points
 
