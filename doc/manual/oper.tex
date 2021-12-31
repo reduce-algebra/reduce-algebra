@@ -394,7 +394,7 @@ simplifications for elementary functions defined in {\REDUCE} as
 rulelists.  In order to view these, the SHOWRULES operator can be
 used, e.g.
 \begin{verbatim}
-      SHOWRULES tan;
+      showrules tan;
 
 {tan(~n*arbint(~i)*pi + ~~x) => tan(x) when fixp(n),
 
@@ -443,20 +443,20 @@ As an alternative, REDUCE provides two switches
 out these operations.  Both are off by default, and are subject
 to the value of the switch \sw{PRECISE}\ttindexswitch{PRECISE}. This switch is on
 by default and prevents modifications that may be false in a complex domain.
-Thus to expand \texttt{LOG(3*Y)} into a sum of logs, one can say
+Thus to expand \texttt{log(3*y)} into a sum of logs, one can say
 \begin{verbatim}
-        ON EXPANDLOGS; LOG(3*Y);
+        on expandlogs; log(3*y);
 \end{verbatim}
-whereas to expand \texttt{LOG(X*Y)} into a sum of logs, one needs to say
+whereas to expand \texttt{log(x*y)} into a sum of logs, one needs to say
 \begin{verbatim}
-        OFF PRECISE; ON EXPANDLOGS; LOG(X*Y);
+        off precise; on expandlogs; log(x*y);
 \end{verbatim}
 To combine this sum into a single log:
 \begin{verbatim}
-        OFF PRECISE; ON COMBINELOGS; LOG(X) + LOG(Y);
+        off precise; on combinelogs; log(x) + log(y);
 \end{verbatim}
 
-These switches affect the logarithmic functions LOG10 (base 10) and LOGB
+These switches affect the logarithmic functions \f{LOG10} (base 10) and \f{LOGB}
 (arbitrary base) as well.
 
 At the present time, it is possible to have both switches on at once,
@@ -673,6 +673,7 @@ These are both unary functions.
 \ttindex{dilog}\ttindex{Polylog}\ttindex{Lerch\_Phi}
 \index{PolyLogarithm and related functions} \index{Dilog function}
 \textbf{PolyLogarithms and Related Functions}
+\nopagebreak
 \begin{verbatim}
     dilog Polylog Lerch_Phi
 \end{verbatim}
@@ -1270,10 +1271,10 @@ It is off by default.
 If \sw{COMMUTEDF} is off and the switch \sw{SIMPNONCOMDF}\ttindexswitch{SIMPNONCOMDF}
 is on then simplify as follows:
 \begin{verbatim}
-        DF(U,X,U)        ->  DF(U,X,2) / DF(U,X)
-        DF(U,X,N,U)      ->  DF(U,X,N+1) / DF(U,X)
+        df(u,x,u)        ->  df(u,x,2) / df(u,x)
+        df(u,x,n,u)      ->  df(u,x,n+1) / df(u,x)
 \end{verbatim}
-\emph{provided} \texttt{U} depends only on the one variable \var{X}.
+\emph{provided} \texttt{u} depends only on the one variable \var{x}.
 This simplification removes the non-commutative aspect of the derivative.
 
 \hypertarget{switch:EXPANDDF}{}
@@ -1282,15 +1283,15 @@ the chain rule to expand symbolic derivatives of indirectly dependent variables
 provided the result is unambiguous, i.e. provided there is no direct dependence.
 It is off by default.  Thus, for example, given
 \begin{verbatim}
-        DEPEND F,U,V; DEPEND {U,V},X;
-        ON EXPANDDF;
-        DF(F,X)    -> DF(F,U)*DF(U,X) + DF(F,V)*DF(V,X)
+        depend f,u,v; depend {u,v},x;
+        on expanddf;
+        df(f,x)    -> df(f,u)*df(u,x) + df(f,v)*df(v,x)
 \end{verbatim}
 whereas after
 \begin{verbatim}
-        DEPEND F,X;
+        depend f,x;
 \end{verbatim}
-\texttt{DF(F,X)} does not expand at all (since the result would be ambiguous
+\texttt{df(f,x)} does not expand at all (since the result would be ambiguous
 and the algorithm would loop).
 
 \hypertarget{switch:ALLOWDFINT}{}
@@ -1298,7 +1299,7 @@ and the algorithm would loop).
 Turning on the switch \sw{ALLOWDFINT}\ttindexswitch{ALLOWDFINT} allows
 ``differentiation under the integral sign'', i.e.
 \begin{verbatim}
-        DF(INT(Y, X), V) -> INT(DF(Y, V), X)
+        df(int(y, x), v) -> int(df(y, v), x)
 \end{verbatim}
 if this results in a simplification.  If the switch \sw{DFINT}\ttindexswitch{DFINT}
 is also turned on then this happens regardless of whether the result
@@ -1635,7 +1636,7 @@ numerically if $a$ is numerical and $k$ is integral, and otherwise may be
 simplified where appropriate.  The simplification rules are based upon
 algorithms supplied by Wolfram Koepf \cite{Koepf:92}.
 
-The Pochammer symbol is used quite extensively in the simplification and
+The Pochhammer symbol is used quite extensively in the simplification and
 numerical evaluation of \hyperlink{SPECFNS}{special functions}.
 
 \section{PF Operator}\ttindextype{PF}{operator}
@@ -1691,12 +1692,171 @@ term.
 \hypertarget{operator:RESIDUE}{}
 \hypertarget{operator:POLEORDER}{}
 
-\f{RESIDUE}\texttt{(f,z,a)} determines the residue of $f$ at the point $z=a$
+The residue
+$\mathop{\mathrm{Res}}\limits_{z=a} f(z)$ of a function $f(z)$ at the point $a\in\mathbb{C}$ is defined
+as
+\[
+\mathop{\mathrm{Res}}\limits_{z=a} f(z)=
+\frac{1}{2 \pi i}\oint f(z)\,dz
+\;,
+\]
+with integration along a closed curve around $z=a$ with winding number 1.
+
+If $f(z)$ is given by a Laurent series expansion at $z=a$
+\[
+f(z)=\sum_{k=-\infty}^\infty a_k\,(z-a)^k
+\;,
+\]
+then
+\begin{equation}
+\mathop{\mathrm{Res}}\limits_{z=a} f(z)=a_{-1}
+\;.
+\label{eq:Laurent}
+\end{equation}
+If $a=\infty$, one defines on the other hand
+\begin{equation}
+\mathop{\mathrm{Res}}\limits_{z=\infty} f(z)=-a_{-1}
+\label{eq:Laurent2}
+\end{equation}
+for given Laurent representation
+\[
+f(z)=\sum_{k=-\infty}^\infty a_k\,\frac{1}{z^k}
+\;.
+\]
+The operator \f{RESIDUE}\texttt{(f,z,a)} determines the residue of $f$ at the point $z=a$
 if $f$ is meromorphic at $z=a$. The calculation of residues at essential
-singularities of $f$ is not supported.
+singularities of $f$ is not supported, as are the residues of factorial terms.
 
 \f{POLEORDER}\texttt{(f,z,a)} determines the pole order of $f$ at the point $z=a$
 if $f$ is meromorphic at $z=a$.
+
+Note that both functions use the operator \f{taylor} in
+connection with representations (\eqnref{eq:Laurent})--(\eqnref{eq:Laurent2}).
+
+Here are some examples:
+
+\begin{verbatim}
+2: residue(x/(x^2-2),x,sqrt(2));
+
+ 1
+---
+ 2
+
+3: poleorder(x/(x^2-2),x,sqrt(2));
+
+1
+
+4: residue(sin(x)/(x^2-2),x,sqrt(2));
+
+ sqrt(2)*sin(sqrt(2))
+----------------------
+          4
+
+5: poleorder(sin(x)/(x^2-2),x,sqrt(2));
+
+1
+
+6: residue(1/(x-1)^m/(x-2)^2,x,2);
+
+ - m
+
+7: poleorder(1/(x-1)/(x-2)^2,x,2);
+
+2
+
+8: residue(sin(x)/x^2,x,0);
+
+1
+
+9: poleorder(sin(x)/x^2,x,0);
+
+1
+
+10: residue((1+x^2)/(1-x^2),x,1);
+
+-1
+
+11: poleorder((1+x^2)/(1-x^2),x,1);
+
+1
+
+12: residue((1+x^2)/(1-x^2),x,-1);
+
+1
+
+13: poleorder((1+x^2)/(1-x^2),x,-1);
+
+1
+
+14: residue(tan(x),x,pi/2);
+
+-1
+
+15: poleorder(tan(x),x,pi/2);
+
+1
+
+16: residue((x^n-y^n)/(x-y),x,y);
+
+0
+
+17: poleorder((x^n-y^n)/(x-y),x,y);
+
+0
+
+18: residue((x^n-y^n)/(x-y)^2,x,y);
+
+  n
+ y *n
+------
+  y
+
+19: poleorder((x^n-y^n)/(x-y)^2,x,y);
+
+1
+
+20: residue(tan(x)/sec(x-pi/2)+1/cos(x),x,pi/2);
+
+-2
+
+21: poleorder(tan(x)/sec(x-pi/2)+1/cos(x),x,pi/2);
+
+1
+
+22: for k:=1:2 sum residue((a+b*x+c*x^2)/(d+e*x+f*x^2),x,
+    part(part(solve(d+e*x+f*x^2,x),k),2));
+
+ b*f - c*e
+-----------
+     2
+    f
+
+23: residue(x^3/sin(1/x)^2,x,infinity);
+
+  - 1
+------
+  15
+
+24: residue(x^3*sin(1/x)^2,x,infinity);
+
+-1
+
+25: residue(gamma(x),x,-1);
+
+-1
+
+26: residue(psi(x),x,-1);
+
+-1
+
+27: on fullroots;
+
+28: for k:=1:3 sum
+28: residue((a+b*x+c*x^2+d*x^3)/(e+f*x+g*x^2+h*x^3),x,
+28: part(part(solve(e+f*x+g*x^2+h*x^3,x),k),2));
+
+0
+\end{verbatim}
 
 
 \section{SELECT Operator}\ttindex{SELECT}

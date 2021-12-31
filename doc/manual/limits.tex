@@ -18,7 +18,12 @@ The standard way of calling limit, applying all of the methods, is
     \meta{LIMPOINT:algebraic})\,:\,\textit{algebraic}
 \end{syntax}
 The result is the limit of EXPRN as VAR approaches LIMPOINT.
+To compute the of \(\sin(x)/x\) at the point $0$, enter
+\begin{verbatim}
+limit(sin(x)/x,x,0);
 
+1
+\end{verbatim}
 If the limit depends upon the direction of approach to the \texttt{LIMPOINT},                                                                                                         the functions \texttt{LIMIT!+} and \texttt{LIMIT!-} may be used:
 \ttindex{LIMIT+} \ttindex{LIMIT-}
 \hypertarget{operator:LIMIT+}{}
@@ -36,6 +41,13 @@ They are defined by:
   \qquad EXP*=sub(VAR=VAR+(-)$\epsilon^2$,EXP)
 \end{tabular}
 \end{quote}
+For example,
+\begin{verbatim}
+limit!+(sqrt x/sin x,x,0);
+
+infinity;
+\end{verbatim}
+
 
 \iffalse
 \subsection{Diagnostic Functions}

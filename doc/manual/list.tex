@@ -110,14 +110,14 @@ If an operator other than those specifically defined for lists is given a
 single argument that is a list, then the result of this operation will be
 a list in which that operator is applied to each element of the list.  For
 example, the result of evaluating \texttt{log\{a,b,c\}} is the expression
-\texttt{\{LOG(A),LOG(B),LOG(C)\}}.
+\texttt{\{log(a),log(b),log(c)\}}.
 
 There are two ways to inhibit this operator distribution.  Firstly, the
 switch \sw{LISTARGS},\ttindexswitch{LISTARGS} if on, will globally inhibit
 such distribution.  Secondly, one can inhibit this distribution for a
 specific operator by the declaration \texttt{LISTARGP}.\ttindextype{LISTARGP}{declaration} For
 example, with the declaration \texttt{listargp log}, \texttt{log\{a,b,c\}}
- would evaluate to \texttt{LOG(\{A,B,C\})}.
+ would evaluate to \texttt{log(\{a,b,c\})}.
 
 If an operator has more than one argument, no such distribution occurs.
 
