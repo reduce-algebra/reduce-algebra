@@ -1,9 +1,9 @@
-
+\chapter{Tracing in \REDUCE}
 \newcommand{\rdebug}{\texttt{rdebug}}
 \newcommand{\rtrace}{\texttt{rtrace}}
 
 
-\subsection{Introduction}
+\section{Introduction}
 
 The package \rtrace{} provides portable tracing facilities for
 \REDUCE{} programming.  These include
@@ -34,7 +34,7 @@ appropriate code in your \REDUCE{} initialisation file.  An example is
 provided in the file \texttt{reduce.rc} in the \rtrace{} source
 directory.
 
-\subsection{RTrace versus RDebug}
+\section{RTrace versus RDebug}
 
 The \rtrace{} package is a modification (by FJW) of the \rdebug{}
 package (written by HM, and included in the \rtrace{} source
@@ -63,8 +63,10 @@ provides \emph{only tracing} (hence the name) and does not support
 break points.  (The current version also does not support conditional
 tracing.)
 
-\subsection{Procedure tracing: RTR, UNRTR}
+\section{Procedure tracing: RTR, UNRTR}
 
+\hypertarget{command:RTR}{}
+\hypertarget{command:UNRTR}{}
 \ttindextype{RTR}{command}
 \ttindextype{UNRTR}{command}
 Tracing of one or more procedures is initiated by the command
@@ -160,8 +162,10 @@ displayed using the names given to them in the source code, because
 these names are no longer available.  Instead, they are displayed
 using the names \texttt{Arg1}, \texttt{Arg2}, etc.
 
-\subsection{Assignment tracing: RTRST, UNRTRST}
+\section{Assignment tracing: RTRST, UNRTRST}
 
+\hypertarget{command:RTRST}{}
+\hypertarget{command:UNRTRST}{}
 \ttindextype{RTRST}{command}
 \ttindextype{UNRTRST}{command}
 One often needs information about the internal behaviour of a
@@ -233,8 +237,10 @@ various stages of the loop.  The variable \texttt{G0} is an internally
 generated place-holder for the sum, and may have a slightly different
 name depending on the underlying Lisp systems.
 
-\subsection{Tracing active rules: TRRL, UNTRRL}
+\section{Tracing active rules: TRRL, UNTRRL}
 
+\hypertarget{command:TRRL}{}
+\hypertarget{command:UNTRRL}{}
 \ttindextype{TRRL}{command}
 \ttindextype{UNTRRL}{command}
 The command \texttt{trrl} initiates tracing when they fire of
@@ -314,8 +320,10 @@ untrrl sin;
 clearrules trigrules;
 \end{verbatim}
 
-\subsection{Tracing inactive rules: TRRLID, UNTRRLID}
+\section{Tracing inactive rules: TRRLID, UNTRRLID}
 
+\hypertarget{command:TRRLID}{}
+\hypertarget{command:UNTRRLID}{}
 \ttindextype{TRRLID}{command}
 \ttindextype{UNTRRLID}{command}
 The command \texttt{trrlid} initiates tracing of individual rule lists
@@ -346,8 +354,9 @@ cos(x)
 untrrlid trigrules;
 \end{verbatim}
 
-\subsection{Output control: RTROUT}
+\section{Output control: RTROUT}
 
+\hypertarget{command:RTROUT}{}
 \ttindextype{RTROUT}{command}
 The trace output (only) can be redirected to a separate file by using
 the command \texttt{rtrout}, followed by a file name in string quotes.
@@ -363,6 +372,8 @@ tracing then turn off the switch \rtrace{}:
 \begin{verbatim}
 off rtrace;
 \end{verbatim}
+
+\endinput
 after loading the \rtrace{} package.  Note that the \rtrace{} switch
 controls the display format of both procedure and rule tracing.
 

@@ -56,7 +56,7 @@ unknowns.  For example,
 
      solve(x^7-x^6+x^2=1,x)
                             6
-            -> {X=ROOT_OF(X_  + X_ + 1,X_,TAG_1),X=1}
+            -> {x=root_of(x_  + x_ + 1,x_,tag_1),x=1}
 
      solve({x+3y=7,y-x=1},{x,y}) -> {{X=1,Y=2}}.
 \end{verbatim}
@@ -73,7 +73,7 @@ call of \texttt{SOLVE}. \ttindextype{SOLVE}{operator} For example,
 \end{verbatim}
 gives the results
 \begin{verbatim}
-        {X=1}
+        {x=1}
 
         {2}
 \end{verbatim}
@@ -86,7 +86,7 @@ If you want the multiplicities explicitly displayed, the switch
 \end{verbatim}
 yields the result
 \begin{verbatim}
-        {X=1,X=1}
+        {x=1,x=1}
 \end{verbatim}
 
 \subsection{Handling of Undetermined Solutions}
@@ -98,7 +98,7 @@ operator \texttt{ROOT\_OF}.\ttindextype{ROOT\_OF}{operator}  For example, the ex
 \end{verbatim}
 returns the result
 \begin{verbatim}
-       {X=ROOT_OF(COS(X_) + LOG(X_),X_,TAG_1)} .
+       {x=root_of(cos(x_) + log(x_),x_,tag_1)} .
 \end{verbatim}
 
 \hypertarget{operator:ONE_OF}{}
@@ -117,15 +117,15 @@ The following example shows the use of these facilities:
 \begin{verbatim}
 solve(-a*x^3+a*x^2+x^4-x^3-4*x^2+4,x);
               2     3
-{X=ROOT_OF(A*X_  - X_  + 4*X_ + 4,X_,TAG_2),X=1}
+{x=root_of(a*x_  - x_  + 4*x_ + 4,x_,tag_2),x=1}
 
 sub(a=-1,ws);
 
-{X=ONE_OF({2,-1,-2},TAG_2),X=1}
+{x=one_of({2,-1,-2},tag_2),x=1}
 
 expand_cases ws;
 
-{X=2,X=-1,X=-2,X=1}
+{x=2,x=-1,x=-2,x=1}
 \end{verbatim}
 
 \subsection{Solutions of Equations Involving Cubics and Quartics}
@@ -147,80 +147,80 @@ let xx = solve(x^3+x+1,x);
 
 xx;
              3
-{X=ROOT_OF(X_  + X_ + 1,X_)}
+{x=root_of(x_  + x_ + 1,x_)}
 
 on fullroots;
 
 xx;
 
-                           - SQRT(31)*I
-                    ATAN(---------------)
-                            3*SQRT(3)
-{X=(I*(SQRT(3)*SIN(-----------------------)
+                           - sqrt(31)*i
+                    atan(---------------)
+                            3*sqrt(3)
+{x=(i*(sqrt(3)*sin(-----------------------)
                               3
 \end{verbatim}
 \newpage
 \begin{verbatim}
-                      - SQRT(31)*I
-               ATAN(---------------)
-                       3*SQRT(3)
-        - COS(-----------------------)))/SQRT(3),
+                      - sqrt(31)*i
+               atan(---------------)
+                       3*sqrt(3)
+        - cos(-----------------------)))/sqrt(3),
                          3
 
-                              - SQRT(31)*I
-                       ATAN(---------------)
-                               3*SQRT(3)
- X=( - I*(SQRT(3)*SIN(-----------------------)
+                              - sqrt(31)*i
+                       atan(---------------)
+                               3*sqrt(3)
+ x=( - i*(sqrt(3)*sin(-----------------------)
                                  3
 
-                         - SQRT(31)*I
-                  ATAN(---------------)
-                          3*SQRT(3)
-           + COS(-----------------------)))/SQRT(
+                         - sqrt(31)*i
+                  atan(---------------)
+                          3*sqrt(3)
+           + cos(-----------------------)))/sqrt(
                             3
 
       3),
 
-                  - SQRT(31)*I
-           ATAN(---------------)
-                   3*SQRT(3)
-    2*COS(-----------------------)*I
+                  - sqrt(31)*i
+           atan(---------------)
+                   3*sqrt(3)
+    2*cos(-----------------------)*i
                      3
- X=----------------------------------}
-                SQRT(3)
+ x=----------------------------------}
+                sqrt(3)
 
 off trigform;
 
 xx;
                              2/3
-{X=( - (SQRT(31) - 3*SQRT(3))   *SQRT(3)*I
+{x=( - (sqrt(31) - 3*sqrt(3))   *sqrt(3)*i
 
                              2/3    2/3
-     - (SQRT(31) - 3*SQRT(3))    - 2   *SQRT(3)*I
+     - (sqrt(31) - 3*sqrt(3))    - 2   *sqrt(3)*i
 
         2/3                           1/3  1/3
-     + 2   )/(2*(SQRT(31) - 3*SQRT(3))   *6
+     + 2   )/(2*(sqrt(31) - 3*sqrt(3))   *6
 
                 1/6
               *3   ),
 
                           2/3
- X=((SQRT(31) - 3*SQRT(3))   *SQRT(3)*I
+ x=((sqrt(31) - 3*sqrt(3))   *sqrt(3)*i
 
                              2/3    2/3
-     - (SQRT(31) - 3*SQRT(3))    + 2   *SQRT(3)*I
+     - (sqrt(31) - 3*sqrt(3))    + 2   *sqrt(3)*i
 
         2/3                           1/3  1/3
-     + 2   )/(2*(SQRT(31) - 3*SQRT(3))   *6
+     + 2   )/(2*(sqrt(31) - 3*sqrt(3))   *6
 
                 1/6
               *3   ),
 
                            2/3    2/3
-     (SQRT(31) - 3*SQRT(3))    - 2
- X=-------------------------------------}
+     (sqrt(31) - 3*sqrt(3))    - 2
+ x=-------------------------------------}
                           1/3  1/3  1/6
-    (SQRT(31) - 3*SQRT(3))   *6   *3
+    (sqrt(31) - 3*sqrt(3))   *6   *3
 \end{verbatim}
 
 \subsection{Other Options}
@@ -302,7 +302,7 @@ The difference between linear and non--linear
 inconsistent systems is based on the algorithms which
 produce this information as a side effect when attempting
 to find a formal solution; example:
-$solve(\{x=a,x=b,y=c,y=d\},\{x,y\}$ gives a set $\{a-b,c-d\}$
+$\mathrm{solve}(\{x=a,x=b,y=c,y=d\},\{x,y\})$ gives a set $\{a-b,c-d\}$
 while $solve(\{x^2=a,x^2=b,y^2=c,y^2=d\},\{x,y\}$ leads to $\{a-b\}$.
 }
 The  set shows you also the dependency among the parameters: here

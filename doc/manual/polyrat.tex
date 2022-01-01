@@ -77,9 +77,7 @@ returns the value 1.
 that have integer coefficients, finding all factors that also have integer
 coefficients. The package for doing this was written by Dr. Arthur C.
 Norman and Ms. P. Mary Ann Moore at The University of Cambridge. It is
-described in P. M. A. Moore and A. C. Norman, ``Implementing a Polynomial
-Factorization and GCD Package'', Proc. SYMSAC '81, ACM (New York) (1981),
-109-116.
+described in \cite{NormanMoore:1981A}.
 
 The easiest way to use this facility is to turn on the switch
 \sw{FACTOR},\ttindexswitch{FACTOR} which causes all expressions to be output in
@@ -114,7 +112,7 @@ can be found, using a probabilistic algorithm, by turning on the switch
 \end{verbatim}
 would result in the output
 \begin{verbatim}
-        {{2,2},{3,1},{X + 1,1},{X - 1,1}}.
+        {{2,2},{3,1},{x + 1,1},{x - 1,1}}.
 \end{verbatim}
 
 If the first argument of \texttt{FACTORIZE} is an integer, it will be
@@ -201,14 +199,11 @@ appropriate cancellations made.
 When \sw{GCD} is on, and \sw{EXP} is off, a check is made for square
 free factors in an expression.  This includes separating out and
 independently checking the content of a given polynomial where
-appropriate. (For an explanation of these terms, see Anthony C. Hearn,
-``Non-Modular Computation of Polynomial GCDs Using Trial Division'', Proc.
-EUROSAM 79, published as Lecture Notes on Comp.  Science, Springer-Verlag,
-Berlin, No 72 (1979) 227-239.)
+appropriate. (For an explanation of these terms, see \cite{Hearn:79}.)
 
 \textit{Example:} With \sw{EXP}\ttindex{EXP} off and \sw{GCD}\ttindex{GCD}
 on,
-the polynomial \texttt{a*c+a*d+b*c+b*d} would be returned as \texttt{(A+B)*(C+D)}.
+the polynomial \texttt{a*c+a*d+b*c+b*d} would be returned as \texttt{(a+b)*(c+d)}.
 
 \hypertarget{switch:EZGCD}{}
 Under normal circumstances, GCDs are computed using an algorithm described
@@ -222,8 +217,7 @@ than the basic algorithm, often by orders of magnitude.  We therefore
 \emph{strongly} advise users to use the \sw{EZGCD} switch where they have the
 resources available for supporting the package.
 
-For a description of the EZGCD algorithm, see J. Moses and D.Y.Y. Yun,
-``The EZ GCD Algorithm'', Proc. ACM 1973, ACM, New York (1973) 159-166.
+For a description of the EZGCD algorithm, \cite{Moses1973TheEG}.
 
 \textit{NOTE:}
 This package shares code with the factorizer, so a certain amount of trace
@@ -231,10 +225,7 @@ information can be produced using the factorizer trace switches.
 
 \hypertarget{switch:HEUGCD}{}
 An implementation of the heuristic GCD algorithm, first introduced by B.W.
-Char, K.O.  Geddes and G.H.  Gonnet, as described in J.H.  Davenport and
-J.  Padget, ``HEUGCD:  How Elementary Upperbounds Generate Cheaper Data'',
-Proc. of EUROCAL '85, Vol 2, 18-28, published as Lecture Notes on Comp.
-Science, No. 204, Springer-Verlag, Berlin, 1985, is also available on an
+Char, K.O.  Geddes and G.H.  Gonnet, as described in \cite{Davenport:85}, is also available on an
 experimental basis.  To use this algorithm, the switch \sw{HEUGCD}\ttindexswitch{HEUGCD}
 should be on in addition to \sw{GCD}.  Note that
 if both \sw{EZGCD} and \sw{HEUGCD} are on, the former takes precedence.
@@ -724,9 +715,9 @@ occur as a variable in \texttt{EXPRN}, \texttt{EXPRN} is returned.
 %\extendedmanual{\newpage}
 \textit{Examples:}
 \begin{verbatim}
-        lcof((a+b)*(c+2*d)^2,a) ->  C**2+4*C*D+4*D**2
-        lcof((a+b)*(c+2*d)^2,d) ->  4*(A+B)
-        lcof((a+b)*(c+2*d),e)   ->  A*C+2*A*D+B*C+2*B*D
+        lcof((a+b)*(c+2*d)^2,a) ->  c**2+4*c*d+4*d**2
+        lcof((a+b)*(c+2*d)^2,d) ->  4*(a+b)
+        lcof((a+b)*(c+2*d),e)   ->  a*c+2*a*d+b*c+2*b*d
 \end{verbatim}
 
 \subsection{LPOWER Operator}\ttindex{LPOWER}
@@ -743,8 +734,8 @@ If \texttt{EXPRN} does not depend on \texttt{VAR}, 1 is returned.
 
 \textit{Examples:}
 \begin{verbatim}
-        lpower((a+b)*(c+2*d)^2,a) ->  A
-        lpower((a+b)*(c+2*d)^2,d) ->  D**2
+        lpower((a+b)*(c+2*d)^2,a) ->  a
+        lpower((a+b)*(c+2*d)^2,d) ->  d**2
         lpower((a+b)*(c+2*d),e)   ->  1
 \end{verbatim}
 
@@ -762,9 +753,9 @@ If \texttt{EXPRN} does not depend on \texttt{VAR}, \texttt{EXPRN} is returned.
 
 \textit{Examples:}
 \begin{verbatim}
-        lterm((a+b)*(c+2*d)^2,a) ->  A*(C**2+4*C*D+4*D**2)
-        lterm((a+b)*(c+2*d)^2,d) ->  4*D**2*(A+B)
-        lterm((a+b)*(c+2*d),e)   ->  A*C+2*A*D+B*C+2*B*D
+        lterm((a+b)*(c+2*d)^2,a) ->  a*(c**2+4*c*d+4*d**2)
+        lterm((a+b)*(c+2*d)^2,d) ->  4*d**2*(a+b)
+        lterm((a+b)*(c+2*d),e)   ->  a*c+2*a*d+b*c+2*b*d
 \end{verbatim}
 
 {\COMPATNOTE} In some earlier versions of REDUCE, \texttt{LTERM} returned
@@ -786,7 +777,7 @@ of \texttt{EXPRN}. If \texttt{EXPRN} is a domain element, 0 is returned.
 
 Assuming \texttt{A} has higher kernel order than \texttt{B}, \texttt{C}, or \texttt{D}:
 \begin{verbatim}
-        mainvar((a+b)*(c+2*d)^2) ->  A
+        mainvar((a+b)*(c+2*d)^2) ->  a
         mainvar(2)               ->  0
 \end{verbatim}
 
@@ -802,10 +793,10 @@ is a polynomial, that polynomial is returned.
 
 \textit{Examples:}
 \begin{verbatim}
-        num(x/y^2)  ->  X
+        num(x/y^2)  ->  x
         num(100/6)   ->  50
-        num(a/4+b/6) ->  3*A+2*B
-        num(a+b)     ->  A+B
+        num(a/4+b/6) ->  3*a+2*b
+        num(a+b)     ->  a+b
 \end{verbatim}
 
 \subsection{REDUCT Operator}\ttindex{REDUCT}
@@ -821,8 +812,8 @@ EXPRN} does not depend on the variable \texttt{VAR}, 0 is returned.
 
 \textit{Examples:}
 \begin{verbatim}
-     reduct((a+b)*(c+2*d),a) ->  B*(C + 2*D)
-     reduct((a+b)*(c+2*d),d) ->  C*(A + B)
+     reduct((a+b)*(c+2*d),a) ->  b*(c + 2*d)
+     reduct((a+b)*(c+2*d),d) ->  c*(a + b)
      reduct((a+b)*(c+2*d),e) ->  0
 \end{verbatim}
 
@@ -861,9 +852,7 @@ However, {\REDUCE} includes several other coefficient options in its basic
 version which we shall describe in this section.  All such coefficient
 modes are supported in a table-driven manner so that it is
 straightforward to extend the range of possibilities.  A description of
-how to do this is given in R.J. Bradford, A.C. Hearn, J.A. Padget and
-E. Schr\"ufer, ``Enlarging the {\REDUCE} Domain of Computation,'' Proc. of
-SYMSAC '86, ACM, New York (1986), 100--106.
+how to do this is given in \cite{Bradford:86}.
 
 \subsection{Rational Coefficients in Polynomials}\index{Coefficient}
 \hypertarget{switch:RATIONAL}{}
@@ -1008,7 +997,7 @@ numbers.  For example, in the default case,
 \end{verbatim}
 gives the result
 \begin{verbatim}
-        {{A**2+1,1}}
+        {{a**2+1,1}}
 \end{verbatim}
 and
 \begin{verbatim}
@@ -1018,9 +1007,9 @@ is not reduced further.  However, if the switch
 \sw{COMPLEX}\ttindexswitch{COMPLEX} is turned on, full complex arithmetic is then
 carried out.  In other words, the above factorization will give the result
 \begin{verbatim}
-        {{A + I,1},{A - I,1}}
+        {{a + i,1},{a - i,1}}
 \end{verbatim}
-and the quotient will be reduced to \texttt{A-I*B}.
+and the quotient will be reduced to \texttt{a-i*b}.
 
 The switch \sw{COMPLEX} may be combined with \sw{ROUNDED} to give complex
 real numbers; the appropriate arithmetic is performed in this case.
@@ -1045,7 +1034,7 @@ For example, the sequence
 \end{verbatim}
 gives the result
 \begin{verbatim}
-        {0.562279512062*I - 0.662358978622, - 0.562279512062*I
+        {0.562279512062*i - 0.662358978622, - 0.562279512062*i
 
           - 0.662358978622,1.32471795724}
 \end{verbatim}

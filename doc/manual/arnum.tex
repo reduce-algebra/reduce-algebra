@@ -81,6 +81,7 @@ integer \\[0.05in]
 \s{reductum} ::= \s{univariate polynomial} : \s{rational} : nil
 \end{flushleft}
 
+\hypertarget{operator:DEFPOLY}{}
 This representation allows us to use the REDUCE functions for adding and
 multiplying polynomials on the tail of the tagged algebraic number.  Also,
 the routines for solving linear equations can easily be used for the
@@ -189,6 +190,7 @@ calculations.
    (x + (1/2*a + 1/2))*(x - (1/2*a - 1/2))
 \end{verbatim}
 \ttindextype{SPLIT\_FIELD}{function}
+\hypertarget{operator:SPLIT_FIELD}{}
 We have also incorporated a function {\bf split\_field} for the calculation
 of a primitive element of minimal degree for which a given polynomial splits
 into linear factors.  The algorithm as described in Trager's article is

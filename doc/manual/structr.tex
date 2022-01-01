@@ -11,10 +11,7 @@ understanding of the structure of the system.
 evaluation (or simplification)\index{Simplification} function associated
 with it that transforms the expression into an internal canonical form.
 \index{Canonical form}  This form, which bears little resemblance to the
-original expression, is described in detail in Hearn, A. C., ``{\REDUCE} 2:
-A System and Language for Algebraic Manipulation,'' Proc. of the Second
-Symposium on Symbolic and Algebraic Manipulation, ACM, New York (1971)
-128-133.
+original expression, is described in detail in \cite{Hearn:71a}.
 
 The evaluation function may transform its arguments in one of two
 alternative ways.  First, it may convert the expression into other
@@ -489,15 +486,15 @@ command, is as follows:
                 ... <prior output> ...
 
                            2
- F(4) := MU*(3*EPS - 15*SIG  + MU)
+ f(4) := mu*(3*eps - 15*sig  + mu)
 
- G(4) := 6*SIG*MU
+ g(4) := 6*sig*mu
 
                                     2
- F(5) := 15*SIG*MU*( - 3*EPS + 7*SIG  - MU)
+ f(5) := 15*sig*mu*( - 3*eps + 7*sig  - mu)
 
                            2
- G(5) := MU*(9*EPS - 45*SIG  + MU)
+ g(5) := mu*(9*eps - 45*sig  + mu)
 
                 ... <more output> ...
 
@@ -710,17 +707,17 @@ Let us suppose that the workspace contains
 Then the input \texttt{STRUCTR WS;} will (with \sw{EXP} off) result in the
 output:
 \begin{verbatim}
-        ANS3
+        ans3
 
            where
 
                           3
-              ANS3 := ANS2  + D
+              ans3 := ans2  + d
 
                           2
-              ANS2 := ANS1  + C
+              ans2 := ans1  + c
 
-              ANS1 := A + B
+              ans1 := a + b
 \end{verbatim}
 \hypertarget{switch:SAVESTRUCTR}{}
 The workspace remains unchanged after this operation, since \texttt{STRUCTR}
@@ -735,7 +732,7 @@ sub-expression relations.  Thus, with \sw{SAVESTRUCTR} on, \texttt{STRUCTR WS}
 in the above example would return
 \begin{verbatim}
                        3              2
-        {ANS3,ANS3=ANS2  + D,ANS2=ANS1  + C,ANS1=A + B}
+        {ans3,ans3=ans2  + d,ans2=ans1  + c,ans1=a + b}
 \end{verbatim}
 The \texttt{PART}\ttindextype{PART}{operator} operator can
 be used to retrieve the required parts of the expression.  For example, to
@@ -757,12 +754,12 @@ and that \texttt{V} has been declared to be an array.  With \texttt{EXP} off and
 \texttt{FORT} on, the statement \texttt{structr(2*m,v,k);} will result in the output
 
 \begin{verbatim}
-      V(1)=A+B
-      V(2)=V(1)**2+C
-      V(3)=V(2)**3+D
-      V(4)=C+D
-      K(1,1)=2.*V(3)
-      K(2,1)=2.*V(1)*V(4)
+      v(1)=a+b
+      v(2)=v(1)**2+c
+      v(3)=v(2)**3+d
+      v(4)=c+d
+      k(1,1)=2.*v(3)
+      k(2,1)=2.*v(1)*v(4)
 \end{verbatim}
 
 \section{Changing the Internal Order of Variables}
@@ -823,7 +820,7 @@ dependence on \texttt{VAR}, and are taken to be part of the coefficients.
 returns the result
 \begin{verbatim}
           2
-        {Z ,0,3*Z,0,3,0,1/Z}.
+        {z ,0,3*z,0,3,0,1/z}.
 \end{verbatim}
 whereas
 \begin{verbatim}
@@ -832,7 +829,7 @@ whereas
 gives an error if \texttt{RATARG} is off, and the result
 \begin{verbatim}
           3        2
-        {Z /Y,0,3*Z /Y,0,3*Z/Y,0,1/Y}
+        {z /y,0,3*z /y,0,3*z/y,0,1/y}
 \end{verbatim}
 if \sw{RATARG} is on.
 
@@ -896,13 +893,13 @@ integer is 0, the operator is returned.  Finally, if the integer is
 negative, the counting is from the tail of the expression rather than the
 head.
 
-For example, if the expression \texttt{a+b} is printed as \texttt{A+B} (i.e.,
+For example, if the expression \texttt{a+b} is printed as \texttt{a+b} (i.e.,
 the ordering of the variables is alphabetical), then
 \begin{verbatim}
-        part(a+b,2)  ->   B
-        part(a+b,-1) ->   B
+        part(a+b,2)  ->   b
+        part(a+b,-1) ->   b
 and
-        part(a+b,0)  ->  PLUS
+        part(a+b,0)  ->  plus
 \end{verbatim}
 \hypertarget{operator:ARGLENGTH}{}
 An operator \texttt{ARGLENGTH}\ttindextype{ARGLENGTH}{operator} is available to determine
@@ -925,8 +922,8 @@ the given part on the right-hand side.
 For example, with the normal settings of the {\REDUCE} switches:
 \begin{verbatim}
         xx := a+b;
-        part(xx,2) := c;   ->  A+C
-        part(c+d,0) := -;   -> C-D
+        part(xx,2) := c;   ->  a+c
+        part(c+d,0) := -;   -> c-d
 \end{verbatim}
 
 Note that \texttt{xx} in the above is not changed by this substitution.  In

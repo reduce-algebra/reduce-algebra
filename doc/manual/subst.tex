@@ -36,12 +36,12 @@ The trivial case \texttt{SUB(EXPRN1)} returns the algebraic value of
 \textit{Examples:}
 \begin{verbatim}
                                     2              2
-     sub({x=a+y,y=y+1},x^2+y^2) -> A  + 2*A*Y + 2*Y  + 2*Y + 1
+     sub({x=a+y,y=y+1},x^2+y^2) -> a  + 2*a*y + 2*y  + 2*y + 1
 \end{verbatim}
 and with \texttt{s := \{x=a+y,y=y+1\}},
 \begin{verbatim}
                                     2              2
-     sub(s,x^2+y^2)             -> A  + 2*A*Y + 2*Y  + 2*Y + 1
+     sub(s,x^2+y^2)             -> a  + 2*a*y + 2*y  + 2*y + 1
 \end{verbatim}
 Note that the global assignments \texttt{x:=a+y}, etc., do not take place.
 
@@ -53,7 +53,7 @@ for substitution occurs either in \texttt{EXPRN} or \texttt{EXPRN1}.
 The braces around the substitution list may also be omitted, as in:
 \begin{verbatim}
                                     2              2
-     sub(x=a+y,y=y+1,x^2+y^2)   -> A  + 2*A*Y + 2*Y  + 2*Y + 1
+     sub(x=a+y,y=y+1,x^2+y^2)   -> a  + 2*a*y + 2*y  + 2*y + 1
 \end{verbatim}
 
 \section{LET Rules}\ttindex{LET}
@@ -124,7 +124,7 @@ Section~\ref{sec-asymp} for more details.)
 Any new operators occurring in such \texttt{LET} rules will be automatically
 declared \texttt{OPERATOR} by the system, if the rules are being read from a
 file.  If they are being entered interactively, the system will ask
-\texttt{DECLARE} \ldots{} \texttt{OPERATOR?} .  Answer \texttt{Y} or \texttt{N} and hit
+\texttt{Declare} \ldots{} \texttt{operator?} .  Answer \texttt{Y} or \texttt{N} and hit
 \key{Return}.
 
 In each of these examples, substitutions are only made for the explicit
@@ -154,10 +154,10 @@ Similarly, coupled substitutions such as
 \begin{verbatim}
         let l = m + n, n = l + r;
 \end{verbatim}
-would lead to the same error. As a result, if you try to evaluate an \texttt{X},
-\texttt{L} or \texttt{N} defined as above, you will get an error such as
+would lead to the same error. As a result, if you try to evaluate an \texttt{x},
+\texttt{l} or \texttt{n} defined as above, you will get an error such as
 \begin{verbatim}
-        X improperly defined in terms of itself
+        x improperly defined in terms of itself
 \end{verbatim}
 
 Array and matrix elements can appear on the left-hand side of a \texttt{LET}
