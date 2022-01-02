@@ -153,6 +153,7 @@
  (scope         "scope"                 test                 csl psl)
  (sparse        "sparse"                test                 csl psl)
  (spde          "spde"                  test                 csl psl)
+ (ellipfn       "ellipfn"               test                 csl psl)
  (specfn        "specfn"                test                 csl psl)
  (specfn2       "specfn"                test                 csl psl)
  (specfaux      "specfn"                                     csl psl)

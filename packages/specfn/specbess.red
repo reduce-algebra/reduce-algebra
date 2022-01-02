@@ -49,34 +49,6 @@ remprop('Airy_Bi,'simpfn);
 remprop('Airy_Aiprime,'simpfn);
 remprop('Airy_Biprime,'simpfn);
 
-% autoloading of elliptic functions disabled  temporarily.
-%remprop('jacobiam,'simpfn);
-%remprop('jacobisn,'simpfn);
-%remprop('jacobicn,'simpfn);
-%remprop('jacobidn,'simpfn);
-%remprop('jacobins,'simpfn);
-%remprop('jacobinc,'simpfn);
-%remprop('jacobind,'simpfn);
-%remprop('jacobisc,'simpfn);
-%remprop('jacobics,'simpfn);
-%remprop('jacobisd,'simpfn);
-%remprop('jacobids,'simpfn);
-%remprop('jacobicd,'simpfn);
-%remprop('jacobidc,'simpfn);
-%remprop('jacobie,'simpfn);
-%% 
-%remprop('elliptick,'simpfn);
-%remprop('elliptick!','simpfn);
-%remprop('elliptice,'simpfn);
-%remprop('elliptice!','simpfn);
-%remprop('ellipticf,'simpfn);
-% remove autoloading of theta functions temporarily.
-% remprop('elliptictheta1,'simpfn);
-% remprop('elliptictheta2,'simpfn);
-% remprop('elliptictheta3,'simpfn);
-% remprop('elliptictheta4,'simpfn);
-
-
 create!-package ('(specbess sfbes sfkummer sfother sfairy),
                  '(contrib specfn));
 

@@ -1,9 +1,12 @@
-out "sftheta.rlg";
+out "eftheta.rlg";
 
-load_package specfn;
+load_package ellipfn;
 
-% test of sftheta.red
+% test of eftheta.red
 % Author: Alan Barnes   (Alan.Barnes45678@gmail.com) February 2021
+
+% Renamed (was sftheta.tst) and moved to a new package ellipfn, December 2021
+% by Alan Barnes
 
 % theta functions
 % periodicity, quasi-periodicity and zeroes

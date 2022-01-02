@@ -1,4 +1,4 @@
-module sftheta;  % Procedures and Rules for Jacobi Theta Functions.
+module eftheta;  % Procedures and Rules for Jacobi Theta Functions.
 
 % Author: Lisa Temme, ZIB, October 1994
 
@@ -25,9 +25,11 @@ module sftheta;  % Procedures and Rules for Jacobi Theta Functions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id$
+% $Id: sftheta.red 5874 2021-07-30 21:08:56Z arthurcnorman $
 % Substantial additions and corrections by Alan Barnes, 2019
 % Numerical procedures for the derivatives of theta functions, Feb. 2021.
+% Renamed (was sftheta) and moved to a new package ellipfn, December 2021
+% by Alan Barnes
 
 %#######################################################################
 % CALCULATING THE FOUR THETA FUNCTIONS

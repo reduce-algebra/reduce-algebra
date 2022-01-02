@@ -1,4 +1,4 @@
-module sfellipinv;  % Procedures and Rules for Inverse Elliptic functions.
+module efjacinv;  % Procedures and Rules for Inverse Jacobi Elliptic functions.
 
 % Author: Alan Barnes, October 2021
 
@@ -25,6 +25,8 @@ module sfellipinv;  % Procedures and Rules for Inverse Elliptic functions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% Renamed (was sfellipinv) and moved to a new package ellipfn, December 2021
+% by Alan Barnes
 
 algebraic;
 
@@ -155,48 +157,57 @@ invjacobirules :=
  arcdc(-~x,~k) => 2*elliptick(k)-arcdc(x,k),
  arcdc(~x,-~k) => arcdc(x,k),
 
- df(arcsn(~x,~k),~x) => 1/(sqrt(1-x^2)*sqrt(1-k^2*x^2)),
- df(arccn(~x,~k),~x) => -1/(sqrt(1-x^2)*sqrt(1-k^2+k^2*x^2)),
- df(arcdn(~x,~k),~x) => -1/(sqrt(1-x^2)*sqrt(x^2-1+k^2)),
- df(arccd(~x,~k),~x) => -1/(sqrt(1-x^2)*sqrt(1-k^2*x^2)),
- df(arcsd(~x,~k),~x) => -1/(sqrt(1-(1-k^2)*x^2)*sqrt(1+k^2*x^2)),
- df(arcnd(~x,~k),~x) => 1/(sqrt(1-x^2)*sqrt(1-(1-k^2)*x^2)),
- df(arcdc(~x,~k),~x) => 1/(sqrt(x^2-1)*sqrt(x^2-k^2)),
- df(arcnc(~x,~k),~x) => 1/(sqrt(x^2-1)*sqrt(k^2+(1-k^2)*x^2)),
- df(arcsc(~x,~k),~x) => 1/(sqrt(1+x^2)*sqrt(1+(1-k^2)*x^2)),
- df(arcns(~x,~k),~x) => -1/(sqrt(x^2-1)*sqrt(x^2-1+k^2)),
- df(arcds(~x,~k),~x) => -1/(sqrt(x^2+k^2)*sqrt(x^2-1+k^2)),
- df(arccs(~x,~k),~x) => -1/(sqrt(1+x^2)*sqrt(x^2+1-k^2)),
-
- df(arcsn(~x,~k),~k) => -arcsn(x,k)/k  + ellipticE(asin(x),k)/(k*(1-k^2))
-                        - k*x*sqrt((1-x^2)/(1-k^2*x^2))/(1-k^2),
- df(arccn(~x,~k),~k) => -arccn(x,k)/k + ellipticE(acos(x),k)/(k*(1-k^2))
-                        - k*x*sqrt((1-x^2)/(1-k^2+k^2*x^2))/(1-k^2),
- df(arcsc(~x,~k),~k) => -arcsc(x,k)/k + ellipticE(atan(x),k)/(k*(1-k^2))
-                        -k*x/sqrt((1+x^2)*(1+x^2-k^2*x^2))/(1-k^2),
- df(arccs(~x,~k),~k) => -arccs(x,k)/k + ellipticE(acot(x),k)/(k*(1-k^2))
-                        - k*x/sqrt((x^2+1)*(x^2+1-k^2))/(1-k^2),
- df(arcns(~x,~k),~k) => -arcns(x,k)/k + ellipticE(csc(x),k)/(k*(1-k^2)) 
-                        - k*sqrt(x^2-1)/(x*sqrt(x^2-k^2)*(1-k^2)),
- df(arcnc(~x,~k),~k) => -arcnc(x,k)/k + ellipticE(asec(x),k)/(k*(1-k^2)) 
-                        - k*sqrt(x^2-1)/(x*sqrt(k^2+(1-k^2)*x^2)*(1-k^2)),
+ df(arcsn(~x,~k),~y) => df(x,y)/(sqrt(1-x^2)*sqrt(1-k^2*x^2)) +
+               df(k,y)*(-arcsn(x,k)/k  + ellipticE(asin(x),k)/(k*(1-k^2))
+                        -k*x*sqrt((1-x^2)/(1-k^2*x^2))/(1-k^2)),
  
- df(arcdn(~x,~k),~k) => -arcdn(x,k)/k
+ df(arccn(~x,~k),~y) => -df(x,y)/(sqrt(1-x^2)*sqrt(1-k^2+k^2*x^2)) +
+               df(k,y)*(-arccn(x,k)/k + ellipticE(acos(x),k)/(k*(1-k^2))
+                        - k*x*sqrt((1-x^2)/(1-k^2+k^2*x^2))/(1-k^2)),
+
+ df(arcdn(~x,~k),~x) => -df(x,y)/(sqrt(1-x^2)*sqrt(x^2-1+k^2)) +
+               df(k,y)*(-arcdn(x,k)/k
                         + ellipticE(asin(sqrt(1-x^2)/k),k)/(k*(1-k^2))
-                        - x*sqrt((1-x^2)/(x^2-1+k^2))/(k*(1-k^2)),
- df(arcnd(~x,~k),~k) => -arcnd(x,k)/k
-                        + ellipticE(asin(sqrt(x^2-1)/(k*x)),k)/(k*(1-k^2)) 
-                        - sqrt((x^2-1)/(1+(k^2-1)*x^2))/(k*x(1-k^2)),
- df(arccd(~x,~k),~k) => -arccd(x,k)/k
-                + ellipticE(asin(sqrt((1-x^2)/(1-k^2*x^2))),k)/(k*(1-k^2)),
- df(arcdc(~x,~k),~k) => -arcdc(x,k)/k
-                + ellipticE(asin(sqrt((x^2-1)/(x^2-k^2))),k)/(k*(1-k^2)),
- df(arcsd(~x,~k),~k) => -arcsd(x,k)/k
-                        + ellipticE(asin(x/sqrt(1+k^2*x^2)),k)/(k*(1-k^2))
-                        - k*x/sqrt((1+k^2+x^2)*(1-(1-k^2)*x^2))/(1-k^2),
- df(arcds(~x,~k),~k) => -arcds(x,k)/k
-                        + ellipticE(asin(1/sqrt(x^2+k^2)),k)/(k*(1-k^2))
-                        - k*x/sqrt((x^2+k^2)*(x^2-1+k^2))/(1-k^2),
+                        - x*sqrt((1-x^2)/(x^2-1+k^2))/(k*(1-k^2))),
+ 
+ df(arccd(~x,~k),~y) => -df(x,y)/(sqrt(1-x^2)*sqrt(1-k^2*x^2)) +
+           df(k,y)*(-arccd(x,k)/k
+                    + ellipticE(asin(sqrt((1-x^2)/(1-k^2*x^2))),k)/(k*(1-k^2))),
+
+ df(arcsd(~x,~k),~y) => -df(x,y)/(sqrt(1-(1-k^2)*x^2)*sqrt(1+k^2*x^2)) +
+           df(k,y)*(-arcsd(x,k)/k
+                    + ellipticE(asin(x/sqrt(1+k^2*x^2)),k)/(k*(1-k^2))
+                    - k*x/sqrt((1+k^2+x^2)*(1-(1-k^2)*x^2))/(1-k^2)),
+ 
+ df(arcnd(~x,~k),~y) => df(x,y)/(sqrt(1-x^2)*sqrt(1-(1-k^2)*x^2)) +
+           df(k,y)*(-arcnd(x,k)/k
+                    + ellipticE(asin(sqrt(x^2-1)/(k*x)),k)/(k*(1-k^2)) 
+                    - sqrt((x^2-1)/(1+(k^2-1)*x^2))/(k*x(1-k^2))),
+ 
+ df(arcdc(~x,~k),~y) => df(x,y)/(sqrt(x^2-1)*sqrt(x^2-k^2)) +
+           df(k,y)*(-arcdc(x,k)/k
+                    + ellipticE(asin(sqrt((x^2-1)/(x^2-k^2))),k)/(k*(1-k^2))),
+
+ df(arcnc(~x,~k),~y) => df(x,y)/(sqrt(x^2-1)*sqrt(k^2+(1-k^2)*x^2)) +
+           df(k,y)*(-arcnc(x,k)/k + ellipticE(asec(x),k)/(k*(1-k^2)) 
+	      - k*sqrt(x^2-1)/(x*sqrt(k^2+(1-k^2)*x^2)*(1-k^2))),
+ 
+ df(arcsc(~x,~k),~y) => df(x,y)/(sqrt(1+x^2)*sqrt(1+(1-k^2)*x^2)) +
+           df(k,y)*(-arcsc(x,k)/k + ellipticE(atan(x),k)/(k*(1-k^2))
+                    -k*x/sqrt((1+x^2)*(1+x^2-k^2*x^2))/(1-k^2)),
+ 
+ df(arcns(~x,~k),~y) => -df(x,y)/(sqrt(x^2-1)*sqrt(x^2-1+k^2)) +
+           df(k,y)*(-arcns(x,k)/k + ellipticE(csc(x),k)/(k*(1-k^2)) 
+  	            - k*sqrt(x^2-1)/(x*sqrt(x^2-k^2)*(1-k^2))),
+ 
+ df(arcds(~x,~k),~y) => -df(x,y)/(sqrt(x^2+k^2)*sqrt(x^2-1+k^2)) +
+           df(k,y)*(-arcds(x,k)/k
+                    + ellipticE(asin(1/sqrt(x^2+k^2)),k)/(k*(1-k^2))
+                    - k*x/sqrt((x^2+k^2)*(x^2-1+k^2))/(1-k^2)),
+ 
+ df(arccs(~x,~k),~y) => -df(x,y)/(sqrt(1+x^2)*sqrt(x^2+1-k^2)) +
+           df(k,y)*(-arccs(x,k)/k + ellipticE(acot(x),k)/(k*(1-k^2))
+                    - k*x/sqrt((x^2+1)*(x^2+1-k^2))/(1-k^2)),
        
 % rules for numerical evaluation  --currently only for real arguments and
 % results

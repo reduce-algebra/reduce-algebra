@@ -1,9 +1,11 @@
-load specfn;
+load ellipfn;
 
-out "sfweier.rlg";
+out "efweier.rlg";
 
 % test of sfweier.red
 % Author: Alan Barnes   (Alan.Barnes45678@gmail.com) February 2021
+% Renamed (was sfweier.tst) and moved to a new package ellipfn, December 2021
+% by Alan Barnes
 
 weierstrass(u+2v+4w,v,w);
 a1:=weierstrass(u-2v-6w,v,w);

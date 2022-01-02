@@ -1,10 +1,12 @@
-out "sfellip.rlg";
+out "efellip.rlg";
 
-load_package specfn;
+load_package ellipfn;
 
-% test of facilities sfellip.red and sfellipi.red
+% test of facilities efjacobi.red and efellint.red
 % Author: Alan Barnes   (Alan.Barnes45678@gmail.com) July 2019
 % Modified August 2019. Tests of theta functions moved to sftheta.tst -- 2021
+% Renamed (was sfellip.tst) and moved to a new package ellipfn, December 2021
+% by Alan Barnes
 
 % periodic properties and quarter period shifts
 
