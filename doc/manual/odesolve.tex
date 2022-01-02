@@ -1,111 +1,56 @@
 
-\newcommand{\ODESolve}[1]{\texttt{ODESolve\,#1}}
 \newcommand{\odesolve}{\texttt{odesolve}}
 
 
 \subsection{Introduction}
 
-\ODESolve{1+} is an experimental project to update and enhance the
-ordinary differential equation (ODE) solver (\odesolve{}) that has
-been distributed as a standard component of \REDUCE{}
-\cite{Hearn:91,MacCallum:ODESOLVE,MacCallum:88} for about 10 years.
-\ODESolve{1+} is intended to provide a strict superset of the
-facilities provided by \odesolve{}.  This document describes a
-substantial re-implementation of previous versions of \ODESolve{1+}
-that now includes almost none of the original \odesolve{} code.  This
-version is targeted at \REDUCE~3.7 or later, and will not run in
-earlier versions.  This project is being conducted partly under the
-auspices of the European CATHODE project \cite{CATHODE}.  Various test
-files, including three versions based on a published review of ODE
-solvers \cite{PostelZimmermann:96}, are included in the \ODESolve{1+}
-distribution.  For further background see \cite{Wright:97}, which describes
-version 1.03.  See also \cite{Wright:99}.
+ODESOLVE \cite{MacCallum:88,MacCallum:ODESOLVE,Wright:97,Wright:99}
+was developed partly under the auspices of the European CATHODE
+project \cite{CATHODE}.  Various test files that illustrate the
+capabilities of ODESOLVE, including three versions (with names
+beginning with \texttt{zim}) based on a published review of ODE
+(ordinary differential equation) solvers \cite{PostelZimmermann:96},
+are included in the source code distribution in the directory
+\texttt{packages/odesolve}, which you can access online at\\
+\url{https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/packages/odesolve/}.
 
-\ODESolve{1+} is intended to implement some solution techniques itself
-(i.e.\ most of the simple and well known techniques \cite{Zwillinger:92})
-and to provide an automatic interface to other more sophisticated
-solvers, such as PSODE \cite{Man:94a,Man:97,PrelleSinger:83} and
-CRACK \cite{Brand:92}, to handle cases where simple techniques fail.
-It is also intended to provide a unified interface to other special
-solvers, such as Laplace transforms, series solutions and numerical
-methods, under user request.  Although none of these extensions is
-explicitly implemented yet, a general extension interface is
-implemented (see \S\ref{OEI}).
+ODESOLVE implements most of the simple and well known solution
+techniques \cite{Zwillinger:92}.  It also provides an extension
+interface (see \S\ref{OEI}), which could be used to support more
+sophisticated solvers, such as PSODE
+\cite{Man:94a,Man:97,PrelleSinger:83} and CRACK \cite{Brand:92}, to
+handle cases where simple techniques fail, although none of these
+extensions is implemented yet.
 
-The main motivation behind \ODESolve{1+} is pragmatic.  It is intended
-to meet user expectations, to have an easy user interface that
-normally does the right thing automatically, and to return solutions
-in the form that the user wants and expects.  Quite a lot of
-development effort has been directed toward this aim.  Hence,
-\ODESolve{1+} solves common text-book special cases in preference to
-esoteric pathological special cases, and it endeavours to simplify
-solutions into convenient forms.
+The main motivation behind ODESOLVE is pragmatic.  It is intended to
+meet user expectations, to have an easy user-interface that normally
+does the right thing automatically, and to return solutions in the
+form that the user wants and expects.
 
-
-\subsection{Installation}
-
-The file \texttt{odesolve.in} inputs the full set of source files that
-are required to implement \ODESolve{1+} \emph{assuming that the
-current directory is the \ODESolve{1+} source directory}.  Hence,
-\ODESolve{1+} can be run without compiling it in any implementation of
-\REDUCE~3.7 by starting \REDUCE{} in the \ODESolve{1+} source
-directory and entering the statement
-\begin{verbatim}
-1: in "odesolve.in"$
-\end{verbatim}
-
-However, the recommended procedure is to compile it by starting
-\REDUCE{} in the \ODESolve{1+} source directory and entering the
-statements
-\begin{verbatim}
-1: faslout odesolve;
-2: in "odesolve.in"$
-3: faslend;
-\end{verbatim}
-In CSL-\REDUCE{}, this will work only if you have write access to the
-\REDUCE{} image file (\texttt{reduce.img}), so you may need to set up
-a private copy first.  In PSL-\REDUCE{}, you may need to move the
-compiled image file \texttt{odesolve.b} to a directory in your PSL
-load path, such as the main fasl directory.  Please refer to the
-documentation for your implementation of \REDUCE{} for details.  Once
-a compiled version of \ODESolve{1+} has been correctly installed, it
-can be loaded by entering the \REDUCE{} statement
-\begin{verbatim}
-1: load_package odesolve;
-\end{verbatim}
-
-A string describing the current version of \ODESolve{1+} is assigned
-to the algebraic-mode variable \verb|odesolve_version|, which can be
-evaluated to check what version is actually in use.
-
-In versions of \REDUCE{} derived from the development source after 22
-September 2000, use of the normal algebraic-mode \odesolve{} operator
-causes the package to autoload.  However, the \ODESolve{1+} global
-switches are not declared, and the symbolic mode interface provided
-for backward compatibility with the previous version is not defined,
-until after the package has loaded.  The former is not a huge problem
-because all \ODESolve{} switches can be accessed as optional
-arguments, and the backward compatibility interface should probably
-not be used in new code anyway.
+The ODESOLVE package autoloads the first time the normal
+algebraic-mode \odesolve{} operator is used.
 
 
 \subsection{User interface}
 
-The principal interface is via the operator \odesolve{}.  (It also has
-a synonym called \texttt{dsolve} to make porting of examples from
-Maple easier, but it does not accept general Maple syntax!)  For
-purposes of description I will refer to the dependent variable as
+The principal interface is via the operator \odesolve.  (It also has a
+synonym called \texttt{dsolve} to make porting of examples from Maple
+easier, but it does not accept general Maple syntax!  And if
+\texttt{solve} is applied to a manifest ODE then it will call
+\odesolve.)
+
+For purposes of description let us refer to the dependent variable as
 ``$y$'' and the independent variable as ``$x$'', but of course the
 names are arbitrary.  The general input syntax is
 \begin{verbatim}
 odesolve(ode, y, x, conditions, options);
 \end{verbatim}
 All arguments except the first are optional.  This is possible
-because, if necessary, \ODESolve{1+} attempts to deduce the dependent
-and independent variables used and to make any necessary
-\texttt{DEPEND} declarations.  Messages are output to indicate any
-assumptions or dependence declarations that are made.  Here is an
-example of what is probably the shortest possible valid input:
+because, if necessary, ODESOLVE attempts to deduce the dependent and
+independent variables used and to make any necessary \texttt{DEPEND}
+declarations.  Messages are output to indicate any assumptions or
+dependence declarations that are made.  Here is an example of what is
+probably the shortest possible valid input:
 \begin{verbatim}
 odesolve(df(y,x));
 
@@ -117,8 +62,8 @@ odesolve(df(y,x));
 
 {y=arbconst(1)}
 \end{verbatim}
-Output of \ODESolve{1+} messages is controlled by the standard
-\REDUCE{} switch \texttt{msg}.
+Output of ODESOLVE messages is controlled by the standard \REDUCE{}
+switch \texttt{msg}.
 
 
 \subsubsection{Specifying the ODE and its variables}
@@ -129,17 +74,17 @@ ODE\@.  Automatic dependence declaration works \emph{only} when the
 ODE is input \emph{directly} as an argument to the \odesolve{}
 operator.  Here, ``ODE'' means an equation or expression containing
 one or more derivatives of $y$ with respect to $x$.  Derivatives of
-$y$ with respect to other variables are not allowed because
-\ODESolve{1+} does not solve \emph{partial} differential equations,
-and symbolic derivatives of variables other than $y$ are treated as
-symbolic constants.  An expression is implicitly equated to zero, as
-is usual in equation solvers.
+$y$ with respect to other variables are not allowed because ODESOLVE
+does not solve \emph{partial} differential equations, and symbolic
+derivatives of variables other than $y$ are treated as symbolic
+constants.  An expression is implicitly equated to zero, as is usual
+in equation solvers.
 
 The independent variable may be either an operator that explicitly
 depends on the independent variable, e.g.\ $y(x)$ (as required in
 Maple), or a simple variable that is declared (by the user or
-automatically by \ODESolve{1+}) to depend on the independent variable.
-If the independent variable is an operator then it may depend on
+automatically by ODESOLVE) to depend on the independent variable.  If
+the independent variable is an operator then it may depend on
 parameters as well as the independent variable.  Variables may be
 simple identifiers or, more generally, \REDUCE{} ``kernels'', e.g.
 \begin{verbatim}
@@ -164,10 +109,9 @@ assumed to be an option.
 Generally in \REDUCE{} it is not recommended to use the identifier
 \verb|t| as a variable, since it is reserved in Lisp.  However, it is
 very common practice in applied mathematics to use it as a variable to
-represent time, and for that reason \ODESolve{1+} provides special
-support to allow it as either the independent or a dependent variable.
-But, of course, its use may still cause trouble in other parts of
-\REDUCE!
+represent time, and for that reason ODESOLVE provides special support
+to allow it as either the independent or a dependent variable.  But,
+of course, its use may still cause trouble in other parts of \REDUCE!
 
 
 \subsubsection{Specifying conditions}
@@ -263,7 +207,7 @@ The following switches set default options -- they are all off by
 default.  Options set locally using option arguments override the
 defaults set by switches.
 \begin{center}
-\begin{tabular}{lll}
+\begin{tabular}{lcl}
 \bf Switch         & \bf Option  & \bf Effect on solution \\
 \hline
 odesolve\_explicit & explicit    & fully explicit \\
@@ -274,9 +218,8 @@ odesolve\_implicit & implicit    & implicit instead of parametric \\
 odesolve\_noint    & noint       & turn off selected integrations \\
 odesolve\_verbose  & verbose     & display ODE and conditions \\
 odesolve\_basis    & basis       & output basis solution for linear ODE \\
-                   & trode \\
-trode              & trace       & turn on algorithm tracing \\
-                   & tracing \\
+trode              & $\left\{\begin{tabular}{c}trode\\trace\\tracing\end{tabular}\right\}$
+                                 & turn on algorithm tracing \\
 odesolve\_fast     & fast        & turn off heuristics \\
 odesolve\_check    & check       & turn on solution checking
 \end{tabular}
@@ -288,87 +231,85 @@ one or more of its solutions.  A ``parametric'' solution expresses
 both $x$ and $y$ in terms of some additional parameter.  Some solution
 techniques naturally produce an explicit solution, but some produce
 either an implicit or a parametric solution.  The ``explicit'' option
-causes \ODESolve{1+} to attempt to convert solutions to explicit form,
-whereas the ``implicit'' option causes \ODESolve{1+} to attempt to
-convert parametric solutions (only) to implicit form (by eliminating
-the parameter).  These solution conversions may be slow or may fail in
+causes ODESOLVE to attempt to convert solutions to explicit form,
+whereas the ``implicit'' option causes ODESOLVE to attempt to convert
+parametric solutions (only) to implicit form (by eliminating the
+parameter).  These solution conversions may be slow or may fail in
 complicated cases.
 
-\ODESolve{1+} introduces two operators used in solutions:
+ODESOLVE introduces two operators used in solutions:
 \texttt{root\_of\_unity} and \texttt{plus\_or\_minus}, the latter
 being a special case of the former, i.e.\ a second root of unity.
 These operators carry a tag that associates the same root of unity
 when it appears in more than one place in a solution (cf.\ the
 standard \texttt{root\_of} operator).  The ``expand'' option expands a
 single solution expressed in terms of these operators into a set of
-solutions that do not involve them.  \ODESolve{1+} also introduces two
-operators \texttt{expand\_roots\_of\_unity} [which should perhaps be
-named \texttt{expand\_root\_of\_unity}] and
+solutions that do not involve them.  ODESOLVE also introduces two
+operators \texttt{expand\_roots\_of\_unity} and
 \texttt{expand\_plus\_or\_minus}, that are used internally to perform
 the expansion described above, and can be used explicitly.
 
 The ``algint'' option turns on ``algebraic integration'' locally only
-within \ODESolve{1+}.  It also loads the \texttt{algint} package if
-necessary.  Algint allows \ODESolve{1+} to solve some ODEs for which
-the standard \REDUCE{} integrator hangs (i.e.\ takes an extremely long
+within ODESOLVE.  It also loads the \texttt{algint} package if
+necessary.  Algint allows ODESOLVE to solve some ODEs for which the
+standard \REDUCE{} integrator hangs (i.e.\ takes an extremely long
 time to return).  If the resulting solution contains unevaluated
-integrals then the algint switch should be turned on outside
-\ODESolve{1+} before the solution is re-evaluated, otherwise the
-standard integrator may well hang again!  For some ODEs, the algint
-option leads to better solutions than the standard \REDUCE{}
-integrator.
+integrals then the algint switch should be turned on outside ODESOLVE
+before the solution is re-evaluated, otherwise the standard integrator
+may well hang again!  For some ODEs, the algint option leads to better
+solutions than the standard \REDUCE{} integrator.
 
 Alternatively, the ``noint'' option prevents \REDUCE{} from attempting
 to evaluate the integrals that arise in some solution techniques.  If
-\ODESolve{1+} takes too long to return a result then you might try
-adding this option to see if it helps solve this particular ODE, as
+ODESOLVE takes too long to return a result then you might try adding
+this option to see if it helps solve this particular ODE, as
 illustrated in the test files.  This option is provided to speed up
 the computation of solutions that contain integrals that cannot be
 evaluated, because in some cases \REDUCE{} can spend a long time
 trying to evaluate such integrals before returning them unevaluated.
-This only affects integrals evaluated \emph{within} the \ODESolve{1+}
+This only affects integrals evaluated \emph{within} the \odesolve{}
 operator.  If a solution containing an unevaluated integral that was
 returned using the ``noint'' option is re-evaluated, it may again take
 \REDUCE{} a very long time to fail to evaluate the integral, so
 considerable caution is recommended!  (A global switch called
-``noint'' is also installed when \ODESolve{1+} is loaded, and can be
+``noint'' is also installed when ODESOLVE is loaded, and can be
 turned on to prevent \REDUCE{} from attempting to evaluate \emph{any}
 integrals.  But this effect may be very confusing, so this switch
 should be used only with extreme care.  If you turn it on and then
 forget, you may wonder why \REDUCE{} seems unable to evaluate even
 trivial integrals!)
 
-The ``verbose'' option causes \ODESolve{1+} to display the ODE,
-variables and conditions as it sees them internally, after
-pre-processing.  This is intended for use in demonstrations and
-possibly for debugging, and not really for general users.
+The ``verbose'' option causes ODESOLVE to display the ODE, variables
+and conditions as it sees them internally, after pre-processing.  This
+is intended for use in demonstrations and possibly for debugging, and
+not really for general users.
 
-The ``basis'' option causes \ODESolve{1+} to output the general
-solutions of linear ODEs in basis format (explained below).  Special
-solutions (of ODEs with conditions) and solutions of nonlinear ODEs
-are not affected.
+The ``basis'' option causes ODESOLVE to output the general solutions
+of linear ODEs in basis format (explained below).  Special solutions
+(of ODEs with conditions) and solutions of nonlinear ODEs are not
+affected.
 
 The ``trode'' (or ``trace'' or ``tracing'') option turns on tracing of
-the algorithms used by \ODESolve{1+}.  It reports its classification
-of the ODE and any intermediate results that it computes, such as a
-chain of progressively simpler (in some sense) ODEs that finally leads
-to a solution.  Tracing can produce a lot of output, e.g.\ see the
-test log file ``\texttt{zimmer.rlg}''.  The option ``\texttt{trode =
-1}'' or the global assignment ``\texttt{!*trode := 1}'' causes
-\ODESolve{1+} to report every test that it tries in its classification
-process, producing even more tracing output.  This is probably most
-useful for debugging, but it may give the curious user further insight
-into the operation of \ODESolve{1+}.
+the algorithms used by ODESOLVE.  It reports its classification of
+the ODE and any intermediate results that it computes, such as a chain
+of progressively simpler (in some sense) ODEs that finally leads to a
+solution.  Tracing can produce a lot of output, e.g.\ see the test log
+file ``\texttt{zimmer.rlg}''.  The option ``\texttt{trode = 1}'' or
+the global assignment ``\texttt{!*trode := 1}'' causes ODESOLVE to
+report every test that it tries in its classification process,
+producing even more tracing output.  This is probably most useful for
+debugging, but it may give the curious user further insight into the
+operation of ODESOLVE.
 
 The ``fast'' option disables all non-deterministic solution techniques
 (including most of those for nonlinear ODEs of order $> 1$).  It may
-be most useful if \ODESolve{1+} is used as a subroutine, including
-calling it recursively in a hook.  It makes \ODESolve{1+} behave like
-the \odesolve{} distributed with \REDUCE{} versions up to and
-including 3.7, and so does not affect the \texttt{odesolve.tst} file.
-The ``fast'' option causes \ODESolve{1+} to return no solution fast in
-cases where, by default, if would return either a solution or no
-solution (perhaps much) more slowly.  Solution of sufficiently simple
+be most useful if ODESOLVE is used as a subroutine, including calling
+it recursively in a hook.  It makes ODESOLVE behave like the version
+distributed with \REDUCE{} 3.7, and so does not affect the
+\texttt{odesolve.tst} file.  The ``fast'' option causes ODESOLVE to
+return no solution fast in cases where, by default, if would return
+either a solution or no solution more slowly (perhaps much more
+slowly).  Solution of sufficiently simple
 ``deterministically-solvable'' ODEs is unaffected.
 
 The ``check'' option turns on checking of the solution.  This checking
@@ -379,29 +320,19 @@ of the order of 30\%.  A check is made that each component solution
 satisfies the ODE and that a general solution contains at least enough
 arbitrary constants, or equivalently that a basis solution contains
 enough basis functions.  Otherwise, warning messages are output.  It
-is possible that \ODESolve{1+} may fail to verify a solution because
-the automatic simplification fails, which indicates a failure in the
-checker rather than in the solver.  This option is not yet well
-tested; please report any checking failures to me (FJW).
+is possible that ODESOLVE may fail to verify a solution because the
+automatic simplification fails, which indicates a failure in the
+checker rather than in the solver.
 
-In some cases, in particular when an implicit solution contains an
-unevaluated integral, the checker may need to differentiate an
-integral with respect to a variable other than the integration
-variable.  In order to do this, it turns on the differentiator switch
-``allowdfint'' globally.  [I hope that this setting will eventually
-become the default.]  In some cases, in particular in symbolic
-solutions of Clairaut ODEs, the checker may need to differentiate a
-composition of operators using the chain rule.  In order to do this,
-it turns on the differentiator switch ``expanddf'' locally only.
-Although the code to support both these differentiator facilities has
-been in \REDUCE{} for a while, they both require patches that are
-currently only applied when \ODESolve{1+} is loaded.  [I hope that
-these patches will eventually become part of \REDUCE{} itself.]
+In some cases, in particular in symbolic solutions of Clairaut ODEs,
+the checker may need to differentiate a composition of operators using
+the chain rule.  In order to do this, it turns on the differentiator
+switch \texttt{expanddf} locally only.
 
 
 \subsection{Output syntax}
 
-If \ODESolve{1+} is successful it outputs a list of sub-solutions that
+If ODESOLVE is successful it outputs a list of sub-solutions that
 together represent the solution of the input ODE\@.  Each sub-solution
 is either an equation that defines a branch of the solution,
 explicitly or implicitly, or it is a list of equations that define a
@@ -426,17 +357,17 @@ solution is normally omitted if it is zero.  The dependent variable
 $y$ does not appear in a basis solution.  The linear solver uses basis
 solutions internally.
 
-Currently, there are cases where \ODESolve{1+} cannot solve a linear ODE
+Currently, there are cases where ODESOLVE cannot solve a linear ODE
 using its linear solution techniques, in which case it will try
 nonlinear techniques.  These may generate a solution that is not
 (obviously) a linear combination of basis solutions.  In this case, if
-a basis solution has been requested, \ODESolve{1+} will report that it
+a basis solution has been requested, ODESOLVE will report that it
 cannot separate the nonlinear combination, which it will return as the
 default linear combination solution.
 
-If \ODESolve{1+} fails to solve the ODE then it will return a list
+If ODESOLVE fails to solve the ODE then it will return a list
 containing the input ODE (always in the form of a differential
-expression equated to 0).  At present, \ODESolve{1+} does not return
+expression equated to 0).  At present, ODESOLVE does not return
 partial solutions.  If it fails to solve any part of the problem then
 it regards this as complete failure.  (You can probably see if this
 has happened by turning on algorithm tracing.)
@@ -444,11 +375,11 @@ has happened by turning on algorithm tracing.)
 
 \subsection{Solution techniques}
 
-The \ODESolve{1+} interface module pre-processes the problem and applies
+The ODESOLVE interface module pre-processes the problem and applies
 any conditions to the solution.  The other modules deal with the
 actual solution.
 
-\ODESolve{1+} first classifies the input ODE according to whether it
+ODESOLVE first classifies the input ODE according to whether it
 is linear or nonlinear and calls the appropriate solver.  An ODE that
 consists of a product of linear factors is regarded as nonlinear.  The
 second main classification is based on whether the input ODE is of
@@ -458,16 +389,16 @@ Solution proceeds essentially by trying to reduce nonlinear ODEs to
 linear ones, and to reduce higher order ODEs to first order ODEs.
 Only simple linear ODEs and simple first-order nonlinear ODEs can be
 solved directly.  This approach involves considerable recursion within
-\ODESolve{1+}.
+ODESOLVE.
 
-If all solution techniques fail then \ODESolve{1+} attempts to
+If all solution techniques fail then ODESOLVE attempts to
 factorize the derivative of the whole ODE, which sometimes leads to a
 solution.
 
 
 \subsubsection{Linear solution techniques}
 
-\ODESolve{1+} splits every linear ODE into a ``reduced ODE'' and a
+ODESOLVE splits every linear ODE into a ``reduced ODE'' and a
 ``driver'' term.  The driver is the component of the ODE that is
 independent of $y$, the reduced ODE is the component of the ODE that
 depends on $y$, and the sign convention is such that the ODE can be
@@ -476,7 +407,7 @@ split into a list of ``ODE coefficients''.
 
 The linear solver now determines the order of the ODE\@.  If it is 1
 then the ODE is immediately solved using an integrating factor (if
-necessary).  For a higher order linear ODE, \ODESolve{1+} considers a
+necessary).  For a higher order linear ODE, ODESOLVE considers a
 sequence of progressively more complicated solution techniques.  For
 most purposes, the ODE is made ``monic'' by dividing through by the
 coefficient of the highest order derivative.  This puts the ODE into a
@@ -491,7 +422,7 @@ If the ODE has constant coefficients then it can (in principle) be
 solved using elementary ``D-operator'' techniques in terms of
 exponentials via an auxiliary equation.  However, this works only if
 the polynomial auxiliary equation can be solved.  Assuming that it can
-and there is a driver term, \ODESolve{1+} tries to use a method based
+and there is a driver term, ODESOLVE tries to use a method based
 on inverse ``D-operator'' techniques that involves repeated
 integration of products of the solutions of the reduced ODE with the
 driver.  Experience (by Malcolm MacCallum) suggests that this normally
@@ -516,10 +447,9 @@ functions, such as Bessel functions.  Currently, this is implemented
 only for second-order ODEs satisfied by Bessel and Airy-integral
 functions.  It could easily be extended to other orders and other
 special functions.  Shifts in $x$ could also be accommodated in the
-pattern matching.  [Work to enhance this component of \ODESolve{1+} is
-currently in progress.]
+pattern matching.
 
-If all linear techniques fail then \ODESolve{1+} currently calls the
+If all linear techniques fail then ODESOLVE currently calls the
 variable interchange routine (described below), which takes it into
 the nonlinear solver.  Occasionally, this is successful in producing
 some, although not necessarily the best, solution of a linear ODE.
@@ -527,21 +457,21 @@ some, although not necessarily the best, solution of a linear ODE.
 
 \subsubsection{Nonlinear solution techniques}
 
-In order to handle trivial nonlinearity, \ODESolve{1+} first
+In order to handle trivial nonlinearity, ODESOLVE first
 factorizes the ODE algebraically, solves each factor that depends on
 $y$ and then merges the resulting solutions.  Other factors are
 ignored, but a warning is output unless they are purely numerical.
 
-If all attempts at solution fail then \ODESolve{1+} checks whether the
+If all attempts at solution fail then ODESOLVE checks whether the
 original (unfactored) ODE was exact, because factorization could
-destroy exactness.  Currently, \ODESolve{1+} handles only first and
+destroy exactness.  Currently, ODESOLVE handles only first and
 second order nonlinear exact ODEs.
 
 A version of the main solver applied to each algebraic factor branches
 depending on whether the ODE factor is linear or nonlinear, and the
 nonlinear solver branches depending on whether the order is 1 or
 higher and calls one of the solvers described in the next two
-sections.  If that solver fails, \ODESolve{1+} checks for exactness
+sections.  If that solver fails, ODESOLVE checks for exactness
 (of the factor).  If that fails, it checks whether only a single order
 derivative is involved and tries to solve algebraically for that.  If
 successful, this decomposes the ODE into components that are, in some
@@ -550,7 +480,7 @@ components are algebraically very complicated examples of simple types
 of ODE that the integrator cannot in practice handle, and it can take
 a very long time before returning an unevaluated integral.)
 
-If all else fails, \ODESolve{1+} interchanges the dependent and
+If all else fails, ODESOLVE interchanges the dependent and
 independent variables and calls the top-level solver recursively.  It
 keeps a list of all ODEs that have entered the top-level solver in
 order to break infinite loops that could arise if the solution of the
@@ -560,7 +490,7 @@ variable-interchanged ODE fails.
 \subsubsubsection{First-order nonlinear solution techniques}
 
 If the ODE is a first-degree polynomial in the derivative then
-\ODESolve{1+} represents it in terms of the ``gradient'', which is a
+ODESOLVE represents it in terms of the ``gradient'', which is a
 function of $x$ and $y$ such that the ODE can be written as ``$dy/dx =
 \textit{gradient}$''.  It then checks \emph{in sequence} for the
 following special types of ODE, each of which it can (in principle)
@@ -583,9 +513,9 @@ algebraically homogeneous.  A substitution of the form ``$y = vx$''
 leads to a first-order linear ODE that is (in principle) immediately
 solvable.
 
-\item[Quasi-homogeneous] The gradient has the form $f(\frac{a_1x +
-b_1y + c_1}{a_2x + b_2y + c_2})$, which is homogeneous after a linear
-transformation.
+\item[Quasi-homogeneous] The gradient has the form $f\left(\frac{a_1x
+  + b_1y + c_1}{a_2x + b_2y + c_2}\right)$, which is homogeneous after
+  a linear transformation.
 
 \item[Bernoulli] The gradient has the form $P(x) y + Q(x) y^n$, in
 which case the ODE is a first-order linear ODE for $y^{1-n}$.
@@ -617,7 +547,7 @@ An ODE is ``solvable for $x$'' if it can be put into the form $x =
 f(y,y')$.  Differentiating with respect to $y$ leads to a first-order
 ODE for $y'(y)$, which may be easier to solve than the original ODE.
 
-Currently, \ODESolve{1+} recognises the above forms only if the ODE
+Currently, ODESOLVE recognises the above forms only if the ODE
 manifestly has the specified form and does not try very hard to
 actually solve for $x$ or $y$, which perhaps it should!
 
@@ -635,7 +565,7 @@ derivatives, which allows trivial order reduction.  The second filter
 tests whether the ODE manifestly depends on $x+k$ for some constant
 $k$, in which case it shifts $x$ to remove $k$.
 
-After that, \ODESolve{1+} tests for each of the following special
+After that, ODESOLVE tests for each of the following special
 forms in sequence.  The sequence used here is important, because the
 classification is not unique, so it is important to try the most
 useful classification first.
@@ -660,7 +590,7 @@ guarantee of this.  All (reduced) linear ODEs are trivially
 equidimensional in $y$.
 \end{description}
 
-The recursive nature of \ODESolve{1+}, especially the thread described
+The recursive nature of ODESOLVE, especially the thread described
 in this section, can lead to complicated ``arbitrary constant
 expressions''.  Arbitrary constants must be included at the point
 where an ODE is solved by quadrature.  Further processing of such a
@@ -676,28 +606,27 @@ and not entirely successful.
 The idea is that the ODESolve extension interface allows any user to
 add solution techniques without needing to edit and recompile the main
 source code, and (in principle) without needing to be intimately
-familiar with the internal operation of \ODESolve{1+}.
+familiar with the internal operation of ODESOLVE.
 
 The extension interface consists of a number of ``hooks'' at various
-critical places within \ODESolve{1+}.  These hooks are modelled in
-part on the hook mechanism used to extend and customize the Emacs
-editor, which is a large Lisp-based system with a structure similar to
-that of \REDUCE\@.  Each \ODESolve{1+} hook is an identifier which can
-be defined to be a function (i.e.\ a procedure), or have assigned to
-it (in symbolic mode) a function name or a (symbolic mode) list of
-function names.  The function should be written to accept the
-arguments specified for the particular hook, and it should return
-either a solution to the specified class of ODE in the specified form
-or nil.
+critical places within ODESOLVE.  These hooks are modelled in part on
+the hook mechanism used to extend and customize the Emacs editor,
+which is a large Lisp-based system with a structure similar to that of
+\REDUCE.  Each ODESOLVE hook is an identifier which can be defined to
+be a function (i.e.\ a procedure), or have assigned to it (in symbolic
+mode) a function name or a (symbolic mode) list of function names.
+The function should be written to accept the arguments specified for
+the particular hook, and it should return either a solution to the
+specified class of ODE in the specified form or nil.
 
 If a hook returns a non-nil value then that value is used by
-\ODESolve{1+} as the solution of the ODE at that stage of the solution
-process.  [If the ODE being solved was generated internally by
-\ODESolve{1+} or conditions are imposed then the solution will be
-re-processed before being finally returned by \ODESolve{1+}.]  If a
-hook returns nil then it is ignored and \ODESolve{1+} proceeds as if
+ODESOLVE as the solution of the ODE at that stage of the solution
+process.  (If the ODE being solved was generated internally by
+ODESOLVE or conditions are imposed then the solution will be
+re-processed before being finally returned by ODESOLVE.)  If a
+hook returns nil then it is ignored and ODESOLVE proceeds as if
 the hook function had not been called at all.  This is the same
-mechanism that it used internally by \ODESolve{1+} to run sub-solvers.
+mechanism that it used internally by ODESOLVE to run sub-solvers.
 If a hook evaluates to a list of function names then they are applied
 in turn to the hook arguments until a non-nil value is returned and
 this is the value of the hook; otherwise the hook returns nil.  The
@@ -705,15 +634,15 @@ same code is used to run all hooks and it checks that an identifier is
 the name of a function before it tries to apply it; otherwise the
 identifier is ignored.  However, the hook code does not perform any
 other checks, so errors within functions run by hooks will probably
-terminate \ODESolve{1+} and errors in the return value will probably
-cause fatal errors later in \ODESolve{1+}.  Such errors are user
-errors rather than \ODESolve{1+} errors!
+terminate ODESOLVE and errors in the return value will probably
+cause fatal errors later in ODESOLVE.  Such errors are user
+errors rather than ODESOLVE errors!
 
 Hooks are defined in pairs which are inserted before and after
 critical stages of the solver, which currently means the general ODE
 solver, the nonlinear ODE solver, and the solver for linear ODEs of
 order greater than one (on the grounds that solving first order linear
-ODEs is trivial and the standard \ODESolve{1+} code should always
+ODEs is trivial and the standard ODESOLVE code should always
 suffice).  The precise interface definition is as follows.
 
 A reference to an ``algebraic expression'' implies that the \REDUCE{}
@@ -724,10 +653,10 @@ return value of a hook function must always be either nil or an
 algebraic-mode list (which must be represented as a prefix form).
 Since the input and output of hook functions uses prefix forms (and
 never standard quotient forms), hook functions can equally well be
-written in either algebraic or symbolic mode, and in fact \ODESolve{1+}
+written in either algebraic or symbolic mode, and in fact ODESOLVE
 uses a mixture internally.  (An algebraic-mode procedure can return
 nil by returning nothing.  The integer zero is \emph{not} equivalent
-to nil in the context of \ODESolve{1+} hooks.)
+to nil in the context of ODESOLVE hooks.)
 
 \noindent\hrulefill
 
@@ -743,7 +672,7 @@ denominator that must be made identically zero by the solution.
 \item The independent variable.
 \end{enumerate}
 \item[Return value:] A list of equations exactly as returned by
-\ODESolve{1+} itself.
+ODESOLVE itself.
 \end{description}
 
 \noindent\hrulefill
@@ -761,7 +690,7 @@ denominator that must be made identically zero by the solution.
 \item The order of the ODE.
 \end{enumerate}
 \item[Return value:] A list of equations exactly as returned by
-\ODESolve{1+} itself.
+ODESOLVE itself.
 \end{description}
 
 \noindent\hrulefill
@@ -776,10 +705,10 @@ denominator that must be made identically zero by the solution.
 \item A list of the coefficient functions of the ``reduced ODE'',
 i.e.\ the coefficients of the different orders (including zero) of
 derivatives of the dependent variable, each in the form of an
-algebraic expression, in low to high derivative order.  [In general
+algebraic expression, in low to high derivative order.  (In general
 the ODE will not be ``monic'' so the leading (i.e.\ last) coefficient
 function will not be 1.  Hence, the ODE may contain an essentially
-irrelevant overall algebraic factor.]
+irrelevant overall algebraic factor.)
 \item The ``driver'' term, i.e.\ the term involving only the
 independent variable, in the form of an algebraic expression.  The
 sign convention is such that ``reduced ODE = driver''.
@@ -814,7 +743,7 @@ equates the derivative.
 \item The independent variable.
 \end{enumerate}
 \item[Return value:] A list of equations exactly as returned by
-\ODESolve{1+} itself.  (In this case the list should normally contain
+ODESOLVE itself.  (In this case the list should normally contain
 precisely one equation.)
 \end{description}
 
@@ -823,71 +752,5 @@ precisely one equation.)
 
 The file \texttt{extend.tst} contains a very simple test and
 demonstration of the operation of the first three classes of hook.
-
-This extension interface is experimental and subject to change.
-Please check the version of this document (or the source code) for the
-version of \ODESolve{1+} you are actually running.
-
-
-\subsection{Change log}
-
-\begin{description}
-\item[27 February 1999] Version 1.06 frozen.
-\item[13 July 2000] Version 1.061 added an extension interface.
-\item[8 August 2000] Version 1.062 added the ``fast'' option.
-\item[21 September 2000] Version 1.063 added the ``trace'', ``check''
-  and ``algint'' options, the ``Non1Grad'' hooks, handling of implicit
-  dependence in separable ODEs, and handling of the general class of
-  quasi-homogeneous ODEs.
-\item[28 September 2000] Version 1.064 added support for using `t' as
-  a variable and replaced the version identification output by the
-  \verb|odesolve_version| variable.
-\item[14 August 2001] Version 1.065 fixed obscure bugs in the
-  first-order nonlinear ODE handler and the arbitrary constant
-  simplifier, and revised some tracing messages slightly.
-
-\end{description}
-
-
-\subsection{Planned developments}
-
-\begin{itemize}
-
-\item
-Extend special-function solutions and allow shifts in $x$.
-
-\item
-Improve solution of linear ODEs, by (a) using linearity more generally
-to solve as ``CF + PI'', (b) finding at least polynomial solutions of
-ODEs with polynomial coefficients, (c) implementing non-trivial
-reduction of order.
-
-\item
-Improve recognition of exact ODEs, and add some support for more
-general use of integrating factors.
-
-\item
-Add a ``classify'' option, that turns on trode but avoids any actual
-solution, to report all possible (\@?) top-level classifications.
-
-\item
-Improve arbconst and arbparam simplification.
-
-\item
-Add more standard elementary techniques and more general techniques
-such as Lie symmetry, Prelle-Singer, etc.
-
-\item
-Improve integration support, preferably to remove the need for the
-``noint'' option.
-
-\item
-Solve systems of ODEs, including under- and over-determined ODEs and
-systems.  Link to CRACK (Wolf) and/or DiffGrob2 (Mansfield)?
-
-\item
-Move more of the implementation to symbolic-mode code.
-
-\end{itemize}
-
-
+Beware that this extension interface is experimental and subject to
+change.

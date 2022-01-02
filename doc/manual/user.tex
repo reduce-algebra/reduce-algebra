@@ -722,33 +722,32 @@ Author: Herbert Melenk.
 
 \newpage
 
-\section[ODESOLVE: Ordinary differential equations solver]%
-        {ODESOLVE: \protect\\ Ordinary differential equations solver}
+\section[ODESOLVE: Ordinary differential equation solver]%
+        {ODESOLVE: \protect\\ Ordinary differential equation solver}
 
 \indexpackage{ODESOLVE}
 
-The ODESOLVE package is a solver for ordinary differential equations.  At
-the present time it has very limited capabilities.  It can handle only a
-single scalar equation presented as an algebraic expression or equation,
-and it can solve only first-order equations of simple types, linear
-equations with constant coefficients and Euler equations.  These solvable
-types are exactly those for which Lie symmetry techniques give no useful
-information.  For example, the evaluation of
+ODESOLVE is a solver for ordinary differential equations.  It uses
+only elementary solution techniques.  At present, it can handle only a
+single scalar equation presented as an algebraic expression or
+equation, and it can solve first-order equations of simple types,
+linear equations with constant coefficients, Euler equations, and some
+more complicated types.  For example, the evaluation of
 \begin{verbatim}
-        depend(y,x);
-        odesolve(df(y,x)=x**2+e**x,y,x);
+        depend(y, x);
+        odesolve(df(y,x) = x^2 + e^x, y, x);
 \end{verbatim}
 yields the result
 \begin{verbatim}
-               X                    3
-            3*E  + 3*ARBCONST(1) + X
-        {Y=---------------------------}
+                               x    3
+            3*arbconst(1) + 3*e  + x
+        {y=---------------------------}
                         3
 \end{verbatim}
 
-Main Author: Malcolm A.H. MacCallum.
+Main authors: Malcolm MacCallum and Francis Wright.
 
-Other contributors: Francis Wright, Alan Barnes.
+Other contributor: Alan Barnes.
 
 \input{odesolve}
 

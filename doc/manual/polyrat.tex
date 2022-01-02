@@ -82,8 +82,8 @@ described in \cite{NormanMoore:1981A}.
 The easiest way to use this facility is to turn on the switch
 \sw{FACTOR},\ttindexswitch{FACTOR} which causes all expressions to be output in
 a factored form.  For example, with \sw{FACTOR} on, the expression
-\texttt{A\textasciicircum2-B\textasciicircum2} is returned as 
-\texttt{(A+B)*(A-B)}.
+\texttt{a\textasciicircum2-b\textasciicircum2} is returned as 
+\texttt{(a+b)*(a-b)}.
 
 \hypertarget{operator:FACTORIZE}{}
 It is also possible to factorize a given expression explicitly.  The
@@ -242,8 +242,8 @@ returns the greatest common divisor of the two polynomials \texttt{EXPRN1} and
 
 \textit{Examples:}
 \begin{verbatim}
-        gcd(x^2+2*x+1,x^2+3*x+2) ->  X+1
-        gcd(2*x^2-2*y^2,4*x+4*y) ->  2*X+2*Y
+        gcd(x^2+2*x+1,x^2+3*x+2) ->  x+1
+        gcd(2*x^2-2*y^2,4*x+4*y) ->  2*x+2*y
         gcd(x^2+y^2,x-y)         ->  1.
 \end{verbatim}
 
