@@ -1,4 +1,4 @@
-module sfellip;  % Procedures and Rules for Elliptic functions.
+module efjacobi;  % Procedures and Rules for Jacobi Elliptic functions.
 
 % Author: Lisa Temme, ZIB, October 1994
 
@@ -25,8 +25,9 @@ module sfellip;  % Procedures and Rules for Elliptic functions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id$
+% $Id: sfellip.red 6190 2021-12-12 17:45:30Z barnesa1 $
 % Substantial revisions by Alan Barnes, 2019
+% Renamed (was sfellip) and moved to a new package ellipfn, December 2021 
 
 % In the original version the parameter m in the Jacobi functions
 % is the square of the modulus; in the revised version m is everywhere
@@ -161,22 +162,21 @@ jacobiamrules :=
 
 {
 
-       jacobiam(~u,0)   => u,
-       jacobiam(~u,1)   => asin tanh u,
-       jacobiam(-~u,~m) => -jacobiam(u,m),
-       jacobiam(~u,-~m) => jacobiam(u,m),
-       jacobiam(0,~m) => 0,
+   jacobiam(~u,0)   => u,
+   jacobiam(~u,1)   => asin tanh u,
+   jacobiam(-~u,~m) => -jacobiam(u,m),
+   jacobiam(~u,-~m) => jacobiam(u,m),
+   jacobiam(0,~m) => 0,
        
-       df(jacobiam(~u,~m),~u)  => jacobidn(u,m),
-       df(jacobiam(~u,~m),~m)  => u*jacobidn(u,m)/m +
-                     (m*jacobisn(u,m)*jacobicn(u,k) -jacobie(u,m)*jacobidn(u,m)/m)/(1-m^2),      
+   df(jacobiam(~u,~m),~x)  => jacobidn(u,m)*df(u,x) +
+        df(m,x)*(u*jacobidn(u,m)/m +
+	   (m*jacobisn(u,m)*jacobicn(u,k) -jacobie(u,m)*jacobidn(u,m)/m) /
+	   (1-m^2)),      
 
-        jacobiam(~u,~m) =>
-	     num_elliptic(num_jacobiam, u, m)
-                when lisp !*rounded and numberp repart u and numberp impart u
-                     and numberp repart m and numberp impart m
-%                           when lisp !*rounded and numberp u
-%                           and numberp m and impart(u) = 0		     
+   jacobiam(~u,~m) =>
+     num_elliptic(num_jacobiam, u, m)
+       when lisp !*rounded and numberp repart u and numberp impart u
+             and numberp repart m and numberp impart m
 }$
 
 let jacobiamrules;
@@ -252,13 +252,12 @@ jacobisnrules :=
 
 %Derivatives, Integral
 %---------------------
-        df(jacobisn(~u,~m),~u)  => jacobicn(u,m)*jacobidn(u,m),
-        int(jacobisn(~u,~m),~u) => log(jacobidn(u,m)-m*jacobicn(u,m))/m,
+        df(jacobisn(~u,~m),~x)  => jacobicn(u,m)*jacobidn(u,m)*df(u,x)+
+	          df(m,x)*((m*jacobisn(u,m)*jacobicn(u,m)^2
+                            -jacobie(u,m)*jacobicn(u,m)*jacobidn(u,m)/m)/(1-m^2)
+                           + u*jacobicn(u,m)*jacobidn(u,m)/m),
 
-        df(jacobisn(~u,~m),~m)  =>
-	          (m*jacobisn(u,m)*jacobicn(u,m)^2
-                    - jacobie(u,m)*jacobicn(u,m)*jacobidn(u,m)/m)/(1-m^2)
-                   + u*jacobicn(u,m)*jacobidn(u,m)/m,
+        int(jacobisn(~u,~m),~u) => log(jacobidn(u,m)-m*jacobicn(u,m))/m,
 
 %Calls Num_Jacobisn when the rounded switch is on.
 %-------------------------------------------------
@@ -344,16 +343,15 @@ jacobicnrules :=
 
 %Derivatives, Integral
 %---------------------
-        df(jacobicn(~u,~m),~u)  => -jacobisn(u,m)*jacobidn(u,m),
+        df(jacobicn(~u,~m),~x)  => -jacobisn(u,m)*jacobidn(u,m)*df(u,x) +
+ 	          df(m,x)*((jacobie(u,m)*jacobisn(u,m)*jacobidn(u,m)/m
+	                    - m*jacobisn(u,m)^2*jacobicn(u,m))/(1-m^2)
+                           - u*jacobisn(u,m)*jacobidn(u,m)/m),
+
         int(jacobicn(~u,~m),~u) => asin(m*jacobisn(u,m))/m,
 	
 % The following commented out rule is also correct
 %       int(jacobicn(~u,~m),~u) => acos(jacobidn(u,m))/m,
-
-        df(jacobicn(~u,~m),~m)  =>
- 	          (jacobie(u,m)*jacobisn(u,m)*jacobidn(u,m)/m
-	                        -m*jacobisn(u,m)^2*jacobicn(u,m))/(1-m^2)
-                  - u*jacobisn(u,m)*jacobidn(u,m)/m,
 
 %Calls Num_Jacobicn when rounded switch is on.
 %---------------------------------------------
@@ -454,13 +452,13 @@ jacobidnrules :=
        
 %Derivatives, Intergal
 %---------------------
-        df(jacobidn(~u,~m),~u)  => -m**2 *jacobisn(u,m)*jacobicn(u,m),
+        df(jacobidn(~u,~m),~x)  => -m**2 *jacobisn(u,m)*jacobicn(u,m)*df(u,x) +
+	          df(m,x)*(m*(jacobie(u,m)*jacobisn(u,m)*jacobicn(u,m)
+                              - jacobisn(u,m)^2*jacobidn(u,m))/(1-m^2)
+                           - m*u*jacobisn(u,m)*jacobicn(u,m)),
+
         int(jacobidn(~u,~m),~u) => asin(jacobisn(u,m)),
 	
-        df(jacobidn(~u,~m),~m)  =>
-	          m*(jacobie(u,m)*jacobisn(u,m)*jacobicn(u,m)
-                     - jacobisn(u,m)^2*jacobidn(u,m))/(1-m^2)
-                  - m*u*jacobisn(u,m)*jacobicn(u,m),
 
 %Calls Num_Jacobidn when rounded switch is on.
 %---------------------------------------------
@@ -556,9 +554,9 @@ jacobicdrules :=
       
 %Derivatives,Integral
 %--------------------
-   df(jacobicd(~u,~m),~u) => -(1 - m^2)*jacobisn(u,m)/jacobidn(u,m)^2,
-   df(jacobicd(~u,~k),~k) =>
-        jacobisn(u,k)*(jacobie(u,k)-u*(1-k^2))/(k*jacobidn(u,k)^2),
+   df(jacobicd(~u,~m),~x) => -(1 - m^2)*jacobisn(u,m)/jacobidn(u,m)^2*df(u,x) +
+        df(m,x)*(jacobisn(u,m)*(jacobie(u,m)-u*(1-m^2))/(m*jacobidn(u,m)^2)),
+
    int(jacobicd(~u,~m),~u) => log(jacobind(u,m) + m*jacobisd(u,m))/m,
 
 %Calls Num_Jacobicd when rounded switch is on.
@@ -658,11 +656,11 @@ jacobisdrules :=
 
 %Derivatives, Integral
 %---------------------
-    df(jacobisd(~u,~m),~u) => jacobicn(u,m)/jacobidn(u,m)^2,
-    df(jacobisd(~u,~k),~k) =>
-      (-jacobicn(u,k)*jacobie(u,k)+jacobicn(u,k)*u*(1-k^2) +
-        jacobidn(u,k)*jacobisn(u,k)*k^2)/(jacobidn(u,k)^2*k*(1-k^2)),
-    int(jacobisd(~u,~m),~u) => -asin(m*jacobicd(u,m))/(m*sqrt(1-m^2)),
+   df(jacobisd(~u,~k),~x) => jacobicn(u,k)/jacobidn(u,k)^2*df(u,x) +
+      df(k,x)*((-jacobicn(u,k)*jacobie(u,k)+jacobicn(u,k)*u*(1-k^2) +
+         jacobidn(u,k)*jacobisn(u,k)*k^2)/(jacobidn(u,k)^2*k*(1-k^2))),
+	
+   int(jacobisd(~u,~m),~u) => -asin(m*jacobicd(u,m))/(m*sqrt(1-m^2)),
 
 %Calls Num_Jacobisd when rounded switch is on.
 %---------------------------------------------
@@ -750,11 +748,11 @@ jacobindrules :=
 
 %Derivatives, Integral
 %---------------------
-    df(jacobind(~u,~m),~u) => m^2*jacobisn(u,m)*jacobicn(u,m)/jacobidn(u,m)^2,
-    df(jacobind(~u,~m),~m) => 
-	          -(m*(jacobie(u,m)*jacobisn(u,m)*jacobicn(u,m)
+    df(jacobind(~u,~m),~x) =>
+	   df(u,x)*m^2*jacobisn(u,m)*jacobicn(u,m)/jacobidn(u,m)^2 +
+	   df(m,x)*(-(m*(jacobie(u,m)*jacobisn(u,m)*jacobicn(u,m)
                        -jacobisn(u,m)^2*jacobidn(u,m))/(1-m^2)
-                    - m*u*jacobisn(u,m)*jacobicn(u,m))/jacobidn(u,m)^2,
+                    - m*u*jacobisn(u,m)*jacobicn(u,m))/jacobidn(u,m)^2),
 
     int(jacobind(~u,~m),~u) =>acos(jacobicd(u,m))/sqrt(1-m^2),
 
@@ -840,10 +838,10 @@ jacobidcrules :=
 
 %Derivatives, Integral
 %---------------------
-    df(jacobidc(~u,~m),~u) => (1-m^2)*jacobisn(u,m)/jacobicn(u,m)^2,
-    df(jacobidc(~u,~k),~k) =>
-       -jacobisn(u,k)*(jacobie(u,k)-u*(1-k^2))/(jacobicn(u,k)^2*k),
-    int(jacobidc(~u,~m),~u) => log(jacobinc(u,m) + jacobisc(u,m)),
+   df(jacobidc(~u,~k),~x) => (1-k^2)*jacobisn(u,k)/jacobicn(u,k)^2*df(u,x) +
+         df(k,x)*(-jacobisn(u,k)*(jacobie(u,k)-u*(1-k^2))/(jacobicn(u,k)^2*k)),
+
+   int(jacobidc(~u,~m),~u) => log(jacobinc(u,m) + jacobisc(u,m)),
 
 %Calls Num_Jacobidc when rounded switch is on.
 %---------------------------------------------
@@ -934,11 +932,11 @@ jacobincrules :=
    
 %Derivatives, Integral
 %---------------------
-    df(jacobinc(~u,~m),~u) => jacobisn(u,m)*jacobidn(u,m)/jacobicn(u,m)^2,
-    df(jacobinc(~u,~m),~m) =>
-	          -((jacobie(u,m)*jacobisn(u,m)*jacobidn(u,m)/m
-	             - m*jacobisn(u,m)^2*jacobicn(u,m))/(1-m^2)
-                    - u*jacobisn(u,m)*jacobidn(u,m)/m)/jacobicn(u,m)^2,
+    df(jacobinc(~u,~m),~x) =>
+	   jacobisn(u,m)*jacobidn(u,m)/jacobicn(u,m)^2*df(u,x) +
+	     df(m,x)*(-((jacobie(u,m)*jacobisn(u,m)*jacobidn(u,m)/m
+	                 - m*jacobisn(u,m)^2*jacobicn(u,m))/(1-m^2)
+                       -u*jacobisn(u,m)*jacobidn(u,m)/m)/jacobicn(u,m)^2),
 
     int(jacobinc(~u,~m),~u) =>
             log(jacobidc(u,m)+sqrt(1-m^2)*jacobisc(u,m))/sqrt(1-m^2),
@@ -1029,10 +1027,10 @@ jacobiscrules :=
 
 %Derivatives, Integral
 %---------------------
-    df(jacobisc(~u,~m),~u) => jacobidn(u,m)/jacobicn(u,m)^2,
-    df(jacobisc(~u,~k),~k) =>
-	   (jacobidn(u,k)*u*(1-k^2) - jacobidn(u,k)*jacobie(u,k)
-	    + jacobisn(u,k)*jacobicn(u,k)*k^2)/(jacobicn(u,k)^2*k*(1-k^2)),
+    df(jacobisc(~u,~k),~x) => jacobidn(u,k)/jacobicn(u,k)^2*df(u,x) +
+	df(k,x)*((jacobidn(u,k)*u*(1-k^2) - jacobidn(u,k)*jacobie(u,k)
+	         +jacobisn(u,k)*jacobicn(u,k)*k^2)/(jacobicn(u,k)^2*k*(1-k^2))),
+	
     int(jacobisc(~u,~m),u) =>
             log(jacobidc(u,m)+sqrt(1-m^2)*jacobinc(u,m))/sqrt(1-m^2),
 
@@ -1120,11 +1118,12 @@ jacobinsrules :=
     
 %Derivatives, Integral
 %---------------------
-    df(jacobins(~u,~m),~u) => -jacobidn(u,m)*jacobicn(u,m)/jacobisn(u,m)^2,
-    df(jacobins(~u,~m),~m) =>
-	        -((m*jacobisn(u,m)*jacobicn(u,m)^2
-                   - jacobie(u,m)*jacobicn(u,m)*jacobidn(u,m)/m)/(1-m^2)
-                   + u*jacobicn(u,m)*jacobidn(u,m)/m)/jacobisn(u,m)^2,
+    df(jacobins(~u,~m),~x) =>
+	   -jacobidn(u,m)*jacobicn(u,m)/jacobisn(u,m)^2*df(u,x) -
+	    df(m,x)*((m*jacobisn(u,m)*jacobicn(u,m)^2
+                      -jacobie(u,m)*jacobicn(u,m)*jacobidn(u,m)/m)/(1-m^2)
+                     + u*jacobicn(u,m)*jacobidn(u,m)/m)/jacobisn(u,m)^2,
+	
     int(jacobins(~u,~m),~u) => log(jacobids(u,m) - jacobics(u,m)),
 
 %Calls Num_Jacobins when rounded switch is on.
@@ -1212,11 +1211,11 @@ jacobidsrules :=
 
 %Derivatives, Integral
 %---------------------
-    df(jacobids(~u,~m),~u) => -jacobicn(u,m)/jacobisn(u,m)^2,
-    df(jacobids(~u,~k),~k) =>
-       (jacobicn(u,k)*jacobie(u,k)-u*jacobicn(u,k)*(1-k^2) -
-	jacobidn(u,k)*jacobisn(u,k)*k^2)/(jacobisn(u,k)^2*k*(1-k^2)),  
-    int(jacobids(~u,~m),~u) => log(jacobins(u,m) - jacobics(u,m)),
+   df(jacobids(~u,~k),~x) => -jacobicn(u,k)/jacobisn(u,k)^2*df(u,x) +
+       df(k,x)*((jacobicn(u,k)*jacobie(u,k)-u*jacobicn(u,k)*(1-k^2) -
+	         jacobidn(u,k)*jacobisn(u,k)*k^2)/(jacobisn(u,k)^2*k*(1-k^2))),
+
+   int(jacobids(~u,~m),~u) => log(jacobins(u,m) - jacobics(u,m)),
 
 %Calls Num_Jacobids when on rounded switch is on.
 %------------------------------------------------
@@ -1301,11 +1300,11 @@ jacobicsrules :=
 
 %Derivatives, Integral
 %---------------------
-    df(jacobics(~u,~m),~u) => -jacobidn(u,m)/jacobisn(u,m)^2,
-    df(jacobics(~u,~k),~k) =>
-	   (-jacobidn(u,k)*u*(1-k^2) + jacobidn(u,k)*jacobie(u,k)
-	    - jacobisn(u,k)*jacobicn(u,k)*k^2)/(jacobisn(u,k)^2*k*(1-k^2)),
-    int(jacobics(~u,~m),~u) => log(jacobins(u,m) - jacobids(u,m)),
+   df(jacobics(~u,~k),~x) => -jacobidn(u,k)/jacobisn(u,k)^2*df(u,x) -
+       df(k,x)*((jacobidn(u,k)*u*(1-k^2) - jacobidn(u,k)*jacobie(u,k)
+                 +jacobisn(u,k)*jacobicn(u,k)*k^2)/(jacobisn(u,k)^2*k*(1-k^2))),
+	      
+   int(jacobics(~u,~m),~u) => log(jacobins(u,m) - jacobids(u,m)),
 
 %Calls Num_Jacobics when rounded switch is on.
 %---------------------------------------------
@@ -1411,7 +1410,7 @@ put('ellipticf, 'prifn, 'plain!-symbol);
 put('jacobizeta, 'prifn, 'plain!-symbol);
 put('jacobie, 'prifn, 'plain!-symbol);
 
-% Moved to mprint.red so it may beused by other modules.
+% Moved to mprint.red so it may be used by other modules.
 % symbolic procedure plain!-symbol(u);
 %     maprin(get(car u,'plain!-functionsymbol) . cdr u);
 

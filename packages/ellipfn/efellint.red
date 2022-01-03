@@ -1,4 +1,4 @@
-module sfellipi;  % Procedures and Rules for Elliptic Integrals.
+module efellint;  % Procedures and Rules for Elliptic Integrals.
 
 % Author: Lisa Temme, ZIB, October 1994
 
@@ -25,8 +25,9 @@ module sfellipi;  % Procedures and Rules for Elliptic Integrals.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id$
-
+% $Id: sfellipi.red 5874 2021-07-30 21:08:56Z arthurcnorman $
+% Renamed (was sfellipi) and moved to a new package ellipfn, December 2021
+% by Alan Barnes
 algebraic;
 
 %######################################################################
@@ -95,11 +96,10 @@ ellipticfrules :=
       end)
       when ((ratnump(rp) and abs(rp) >= 1) where rp => repart(2*k/d)),
 
-% derivative rules
-   df(ellipticf(~u,~k),~u) => 1/sqrt((1-k^2*sin(u)^2)),
-
-   df(ellipticf(~u,~k),~k) => (elliptice(u,k)/(k^2-1)+ellipticf(u,k))/k
-                          + k*sin(u)*cos(u)/((k^2-1)*sqrt(1-k^2*sin(u)^2)),
+% derivative rule
+   df(ellipticf(~u,~k),~x) => df(u,x)/sqrt((1-k^2*sin(u)^2)) +
+                 df(k,x)*((elliptice(u,k)/(k^2-1)+ellipticf(u,k))/k
+                           + k*sin(u)*cos(u)/((k^2-1)*sqrt(1-k^2*sin(u)^2))),
 
    ellipticf(~phi,~m)  => num_elliptic(f_function,phi,m)
             when lisp !*rounded and numberp repart phi and numberp impart phi
@@ -207,10 +207,9 @@ jacobidrules :=
       when ((ratnump(rp) and abs(rp) >= 1) where rp => repart(2*k/d)),
 
 % ************************************************
-% derivative rules 
-    df(elliptice(~phi,~m),~phi) => sqrt(1-m^2*sin(phi)^2),
-
-    df(elliptice(~phi,~m),~m)   => (elliptice(phi,m)-ellipticf(phi,m))/m,
+% derivative rule 
+    df(elliptice(~phi,~m),~x) => df(phi,x)*sqrt(1-m^2*sin(phi)^2) +
+                                 df(m,x)*(elliptice(phi,m)-ellipticf(phi,m))/m,
 
     elliptice(~phi,~m) => num_elliptic(e_function,phi,m)
             when lisp !*rounded and numberp repart phi and numberp impart phi
@@ -284,29 +283,25 @@ jacobierules :=
 
 % quasi-addition
 
-       jacobie((~u+~v)/~~d,~m) => jacobie(u/d,m) + jacobie(v/d,m)
+    jacobie((~u+~v)/~~d,~m) => jacobie(u/d,m) + jacobie(v/d,m)
          - m^2*jacobisn(u/d,m)*jacobisn(v/d,m)*jacobisn((u+v)/d,m),
 
-       jacobie(2*~u,~m) =>
+    jacobie(2*~u,~m) =>
           2*jacobie(u,m) - m^2*jacobisn(u,m)^2*jacobisn(2*u,m),
 	  
 % derivative rules 
-        df(jacobie(~phi,~m),~phi) => jacobidn(phi,m)^2,
-	
-        df(jacobie(~phi,~m),~m)   =>
-            m*(jacobisn(phi,m)*jacobicn(phi,m)*jacobidn(phi,m)
-               - jacobie(phi,m)*jacobicn(phi,m)^2) / (1-m^2)
-            - m*phi*jacobisn(phi,m)^2,
+    df(jacobie(~phi,~m),~x) => df(phi,x)*jacobidn(phi,m)^2 +
+            df(m,x)*(m*(jacobisn(phi,m)*jacobicn(phi,m)*jacobidn(phi,m)
+                     - jacobie(phi,m)*jacobicn(phi,m)^2) / (1-m^2)
+                     - m*phi*jacobisn(phi,m)^2),	
 
-        df(elliptice(~m),~m) => (elliptice(m)-elliptick(m))/m,
+    df(elliptice(~m),~m) => (elliptice(m)-elliptick(m))/m,
 
-        df(elliptick(~m),~m) =>
-	         (elliptice(m)/(1-m^2)-elliptick(m))/m,
+    df(elliptick(~m),~m) => (elliptice(m)/(1-m^2)-elliptick(m))/m,
 
-        df(elliptice!'(~m),~m) => m*(elliptick!'(m) - elliptice!'(m))/(1-m^2),
+    df(elliptice!'(~m),~m) => m*(elliptick!'(m) - elliptice!'(m))/(1-m^2),
 
-        df(elliptick!'(~m),~m) =>
-	         (m*elliptick!'(m)-elliptice!'(m)/m)/(1-m^2),
+    df(elliptick!'(~m),~m) => (m*elliptick!'(m)-elliptice!'(m)/m)/(1-m^2),
 
 % numerical evaluation
 
@@ -393,9 +388,8 @@ jacobizetarules :=
                  and numberp repart m  and numberp impart m,             
 
 %derivative rules
-       df(jacobizeta(~u, ~k),~u) => jacobidn(u,k)^2 - elliptice(k)/elliptick(k),
-       
-       df(jacobizeta(~u, ~k),~k) => df(elliptice(u,k),k) - u*df(elliptice(k)/elliptick(k), k)
+    df(jacobizeta(~u, ~k),~x) =>
+	  df(jacobie(u,k)-u*ellipticE(k)/ellipticK(k),x)
  
 }$
 let jacobizetarules;

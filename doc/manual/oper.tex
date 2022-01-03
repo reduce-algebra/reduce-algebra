@@ -590,8 +590,8 @@ The branch cuts are:\\
 The functions in this section are either built-in or are autoloading
 functions from the package \texttt{SPECFN}. On the CSL GUI and other graphical
 interfaces many of the functions will be output in standard form; for example
-\texttt{BesselJ(nu,x)} will be output as $J_\nu(x)$ and \texttt{Jacobisn(u,k)}
-as $\mathrm{sn}(u,k)$. For most of the non-unary special functions in this
+\texttt{BesselJ(nu,x)} will be output as $J_\nu(x)$ and \texttt{Fresnel\_S(u)}
+as $\mathrm{S}(u)$. For most of the non-unary special functions in this
 section (\f{Lerch\_Phi} is an exception), the last parameter is the `main'
 variable and the earlier parameters are the order (or orders)
 usually rendered in the literature as subscipts and/or superscripts.
@@ -687,6 +687,92 @@ These take one, two and three arguments respectively.
 \end{verbatim}
 These functions take four and six arguments respectively.
 
+\subsection{Polynomial Functions}
+\index{Polynomial functions}
+The polynomial functions below are from the non-core package SPECFN
+and for the most part are not autoloading. This package needs to be loaded
+before they may be used with the command:
+\begin{verbatim}
+    load_package specfn;
+\end{verbatim}
+The names of the {\REDUCE} operators for the polynomial functions below
+are mostly built by adding a P to the name of the polynomial,
+e.g.\ \f{EulerP} implements the Euler polynomials.
+
+The information in this subsection is fairly rudimentary; more complete
+information may be found in the \hyperlink{POLYFN}{SPECFN package}.\\
+A \hyperlink{SPECFNTAB3}{Quick Reference Table} is available for all the
+polynomial functions below.
+
+\textbf{Orthogonal Polynomials}
+\index{Orthogonal polynomials}
+\index{Hermite polynomials}\index{Jacobi polynomials}
+\index{Legendre polynomials}\index{Laguerre polynomials}
+\index{Chebyshev polynomials}\index{Gegenbauer polynomials}
+\ttindex{HermiteP}\ttindex{JacobiP}
+\ttindex{LegendreP}\ttindex{LaguerreP}
+\ttindex{ChebyshevT} \ttindex{ChebyshevU}
+\ttindex{GegenbauerP}
+
+Some well-known orthogonal polynomials are available:
+\begin{itemize}
+\item Hermite polynomials: (\f{HermiteP});
+\item Chebyshev polynomials: (\f{ChebyshevT}, \f{ChebyshevU});
+\item Legendre polynomials: (\f{LegendreP});
+\item Laguerre polynomials: (\f{LaguerreP});
+\item Associated Legendre functions: (\f{LegendreP});
+\item Generalised Laguerre (or Sonin) polynomials: (\f{LaguerreP});
+\item Gegenbauer polynomials: (\f{GegenbauerP});
+\item Jacobi polynomials: (\f{JacobiP}).
+\end{itemize}
+The first three of these functions are binary and the first
+argument should be an integer specifying the order of the
+required polynomial. The functions \f{LegendreP} and \f{LaguerreP} may be used
+either as binary operators or ternary ones and represent the corresponding
+`basic' and associated functions respectively.
+Finally the Gegenbauer polynomials are ternary whilst the Jacobi polynomials
+are quaternary.
+
+Most definitions are equivalent to those in \cite{AbramowitzStegun:72},
+except for the ternary associated Legendre functions:
+\[P_n^{(m)}(x) = (-1)^m(1-x^2)^{m/2}\frac{\mathrm{d}^m P_n(x)}{\mathrm{d}x^m}\,.\]
+
+% \begin{verbatim}
+% P(n,m,x) = (-1)^m *(1-x^2)^(m/2)*df(legendreP(n,x), x, m)
+% \end{verbatim}
+These are sometimes mistakenly referred to as associated Legendre polynomials,
+but they are only polynomial when $m$ is even.
+
+\textbf{Other Polynomial Functions}
+\index{Fibonacci polynomials}\index{Other polynomials}
+\ttindex{FibonacciP}
+\hypertarget{operator:FIBONACCIP}{}
+
+\textbf{Fibonacci Polynomials} are computed by the binary operator
+\f{FibonacciP}, where
+\texttt{FibonacciP(n,x)} returns the $n$th Fibonacci polynomial
+in the variable $x$. If $n$ is an integer, it will be
+
+evaluated using the recursive definition:
+\[F_0(x) = 0;\qquad F_1(x) = 1; \qquad F_n(x) = x F_{n-1}(x) + F_{n-2}(x)\,.\]
+
+\index{Euler polynomials}\ttindex{EulerP}
+\textbf{Euler Polynomials} are computed by the binary operator
+\f{EulerP}, where\linebreak
+\texttt{EulerP(n,x)} returns the $n$th Euler polynomial in the variable $x$.
+
+\index{Bernoulli polynomials}\ttindex{BernoulliP}
+\textbf{Bernoulli Polynomials} are computed by the binary operator
+\f{BernoulliP}, where \texttt{BernoulliP(n,x)} returns the
+$n$th Bernoulli polynomial in the variable $x$.
+
+\subsection{Elliptic Functions and Integrals}
+All the functions documented in this subsection are autoloading
+functions from the package \texttt{ELLIPFN}.  On the CSL GUI and other graphical
+interfaces these functions will be output in standard mathematical form;
+for example \texttt{jacobisn(x,k)} will be output as $\mathrm{sn}(x,k)$ and
+\texttt{weierstrass(x,omega1,omega3)} as $\wp(x,\omega_1,\omega_3)$.
+
 \index{Jacobi Elliptic functions}\index{Elliptic functions}
 \ttindex{Jacobiam}
 \ttindex{Jacobisn}\ttindex{Jacobicn}
@@ -770,85 +856,7 @@ They are the inverses of the corresponding Jacobi elliptic functions
 \texttt{jacobisn}, \texttt{jacobicn} etc.\/(wrt their first argument).
 
 For the elliptic functions above
-a \hyperlink{SPECFNTAB3}{Quick Reference Table} is available.
-
-\subsection{Polynomial Functions}
-\index{Polynomial functions}
-The polynomial functions below are from the non-core package SPECFN
-and for the most part are not autoloading. This package needs to be loaded
-before they may be used with the command:
-\begin{verbatim}
-    load_package specfn;
-\end{verbatim}
-The names of the {\REDUCE} operators for the polynomial functions below
-are mostly built by adding a P to the name of the polynomial,
-e.g.\ \f{EulerP} implements the Euler polynomials.
-
-The information in this subsection is fairly rudimentary; more complete
-information may be found in the \hyperlink{POLYFN}{SPECFN package}.\\
-A \hyperlink{SPECFNTAB4}{Quick Reference Table} is available for all the
-polynomial functions below.
-
-\textbf{Orthogonal Polynomials}
-\index{Orthogonal polynomials}
-\index{Hermite polynomials}\index{Jacobi polynomials}
-\index{Legendre polynomials}\index{Laguerre polynomials}
-\index{Chebyshev polynomials}\index{Gegenbauer polynomials}
-\ttindex{HermiteP}\ttindex{JacobiP}
-\ttindex{LegendreP}\ttindex{LaguerreP}
-\ttindex{ChebyshevT} \ttindex{ChebyshevU}
-\ttindex{GegenbauerP}
-
-Some well-known orthogonal polynomials are available:
-\begin{itemize}
-\item Hermite polynomials: (\f{HermiteP});
-\item Chebyshev polynomials: (\f{ChebyshevT}, \f{ChebyshevU});
-\item Legendre polynomials: (\f{LegendreP});
-\item Laguerre polynomials: (\f{LaguerreP});
-\item Associated Legendre functions: (\f{LegendreP});
-\item Generalised Laguerre (or Sonin) polynomials: (\f{LaguerreP});
-\item Gegenbauer polynomials: (\f{GegenbauerP});
-\item Jacobi polynomials: (\f{JacobiP}).
-\end{itemize}
-The first three of these functions are binary and the first
-argument should be an integer specifying the order of the
-required polynomial. The functions \f{LegendreP} and \f{LaguerreP} may be used
-either as binary operators or ternary ones and represent the corresponding
-`basic' and associated functions respectively.
-Finally the Gegenbauer polynomials are ternary whilst the Jacobi polynomials
-are quaternary.
-
-Most definitions are equivalent to those in \cite{AbramowitzStegun:72},
-except for the ternary associated Legendre functions:
-\[P_n^{(m)}(x) = (-1)^m(1-x^2)^{m/2}\frac{\mathrm{d}^m P_n(x)}{\mathrm{d}x^m}\,.\]
-
-% \begin{verbatim}
-% P(n,m,x) = (-1)^m *(1-x^2)^(m/2)*df(legendreP(n,x), x, m)
-% \end{verbatim}
-These are sometimes mistakenly referred to as associated Legendre polynomials,
-but they are only polynomial when $m$ is even.
-
-\textbf{Other Polynomial Functions}
-\index{Fibonacci polynomials}\index{Other polynomials}
-\ttindex{FibonacciP}
-\hypertarget{operator:FIBONACCIP}{}
-
-\textbf{Fibonacci Polynomials} are computed by the binary operator
-\f{FibonacciP}, where
-\texttt{FibonacciP(n,x)} returns the $n$th Fibonacci polynomial
-in the variable $x$. If $n$ is an integer, it will be
-evaluated using the recursive definition:
-\[F_0(x) = 0;\qquad F_1(x) = 1; \qquad F_n(x) = x F_{n-1}(x) + F_{n-2}(x)\,.\]
-
-\index{Euler polynomials}\ttindex{EulerP}
-\textbf{Euler Polynomials} are computed by the binary operator
-\f{EulerP}, where\linebreak
-\texttt{EulerP(n,x)} returns the $n$th Euler polynomial in the variable $x$.
-
-\index{Bernoulli polynomials}\ttindex{BernoulliP}
-\textbf{Bernoulli Polynomials} are computed by the binary operator
-\f{BernoulliP}, where \texttt{BernoulliP(n,x)} returns the
-$n$th Bernoulli polynomial in the variable $x$.
+a \hyperlink{ELLIPFNTAB}{Quick Reference Table} is available.
 
 \section{Combinatorial Numbers}
 \index{Combinatorial numbers}
@@ -909,7 +917,7 @@ The recursion is, of course, optimised as a simple loop to avoid repeated
 computation of lower-order numbers.
 
 For the functions in this and the section below
-a \hyperlink{SPECFNTAB5}{Quick Reference Table} is available.
+a \hyperlink{SPECFNTAB4}{Quick Reference Table} is available.
 It also includes a list of reserved constants known to {\REDUCE}.
 
 \section{Bernoulli, Euler and Fibonacci Numbers}
@@ -943,6 +951,7 @@ computation of lower-order numbers.
 Otherwise the result returned involves the original operator
 \texttt{fibonacci}; on graphical interfaces this is rendered
 as $\mathrm{F}_n$.
+
 
 \section{CHANGEVAR operator}
 \hypertarget{operator:CHANGEVAR}{}

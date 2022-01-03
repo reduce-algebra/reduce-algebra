@@ -1,4 +1,4 @@
-module sfweier;  % Procedures and Rules for Weierstrass Elliptic functions.
+module efweier;  % Procedures and Rules for Weierstrass Elliptic functions.
 
 % Author: Alan Barnes, February - March 2021
 
@@ -25,7 +25,11 @@ module sfweier;  % Procedures and Rules for Weierstrass Elliptic functions.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id$
+% $Id: sfweier.red 5874 2021-07-30 21:08:56Z arthurcnorman $
+% Renamed (was sfweier) and moved to a new package ellipfn, December 2021
+% by Alan Barnes
+
+
 % See e.g.: DF Lawden, Elliptic Functions & Applications, Springer-Verlag
 % (App Math Sci series #80) 1989
 

@@ -687,34 +687,55 @@ defautoload(fibonaccip,specfn,expr,2);
 flag('(motzkin),'opfn);
 defautoload(motzkin,specfn);
 
-% elliptic functions and integrals
-% remove the autoloading of elliptic functions temporarily.
-%      defautoload_operator(jacobiam, (specfn specbess));
-%      defautoload_operator(jacobisn, (specfn specbess));
-%      defautoload_operator(jacobicn, (specfn specbess));
-%      defautoload_operator(jacobidn, (specfn specbess));
-%      defautoload_operator(jacobins, (specfn specbess));
-%      defautoload_operator(jacobinc, (specfn specbess));
-%      defautoload_operator(jacobind, (specfn specbess));
-%      defautoload_operator(jacobisc, (specfn specbess));
-%      defautoload_operator(jacobisd, (specfn specbess));
-%      defautoload_operator(jacobics, (specfn specbess));
-%      defautoload_operator(jacobids, (specfn specbess));
-%      defautoload_operator(jacobicd, (specfn specbess));
-%      defautoload_operator(jacobidc, (specfn specbess));
-%      defautoload_operator(jacobie,  (specfn specbess));
-      
-%      defautoload_operator(elliptice,       (specfn specbess));
-%      defautoload_operator(elliptice!',     (specfn specbess));
-%      defautoload_operator(ellipticf,       (specfn specbess));
-%      defautoload_operator(elliptick,       (specfn specbess));
-%      defautoload_operator(elliptick!',     (specfn specbess));
-
-%      defautoload_operator(elliptictheta1,  (specfn specbess));
-%      defautoload_operator(elliptictheta2,  (specfn specbess));
-%      defautoload_operator(elliptictheta3,  (specfn specbess));
-%      defautoload_operator(elliptictheta4,  (specfn specbess));
-
+% Jacobi elliptic functions
+     defautoload_operator(jacobiam, ellipfn);
+     defautoload_operator(jacobisn, ellipfn);
+     defautoload_operator(jacobicn, ellipfn);
+     defautoload_operator(jacobidn, ellipfn);
+     defautoload_operator(jacobins, ellipfn);
+     defautoload_operator(jacobinc, ellipfn);
+     defautoload_operator(jacobind, ellipfn);
+     defautoload_operator(jacobisc, ellipfn);
+     defautoload_operator(jacobisd, ellipfn);
+     defautoload_operator(jacobics, ellipfn);
+     defautoload_operator(jacobids, ellipfn);
+     defautoload_operator(jacobicd, ellipfn);
+     defautoload_operator(jacobidc, ellipfn);
+     defautoload_operator(jacobie,  ellipfn);
+% Elliptic integrals     
+     defautoload_operator(elliptice,       ellipfn);
+     defautoload_operator(elliptice!',     ellipfn);
+     defautoload_operator(ellipticf,       ellipfn);
+     defautoload_operator(elliptick,       ellipfn);
+     defautoload_operator(elliptick!',     ellipfn);
+% Jacobi theta functions
+     defautoload_operator(elliptictheta1,  ellipfn);
+     defautoload_operator(elliptictheta2,  ellipfn);
+     defautoload_operator(elliptictheta3,  ellipfn);
+     defautoload_operator(elliptictheta4,  ellipfn);
+% Inverse Jacobi elliptic functions
+     defautoload_operator(arcsn, ellipfn);
+     defautoload_operator(arccn, ellipfn);
+     defautoload_operator(arcdn, ellipfn);
+     defautoload_operator(arcns, ellipfn);
+     defautoload_operator(arcnc, ellipfn);
+     defautoload_operator(arcnd, ellipfn);
+     defautoload_operator(arcsc, ellipfn);
+     defautoload_operator(arcsd, ellipfn);
+     defautoload_operator(arccs, ellipfn);
+     defautoload_operator(arcds, ellipfn);
+     defautoload_operator(arccd, ellipfn);
+     defautoload_operator(arcdc, ellipfn);
+% Weierstrassian elliptic and sigma functions 
+     defautoload_operator(weierstrass, ellipfn);
+     defautoload_operator(weierstrass1, ellipfn);
+     defautoload_operator(weierstrasszeta, ellipfn);
+     defautoload_operator(weierstrasszeta1, ellipfn);
+     defautoload_operator(sigma, ellipfn);
+     defautoload_operator(sigma1, ellipfn);
+     defautoload_operator(sigma2, ellipfn);
+     defautoload_operator(sigma3, ellipfn);
+    
 % specfn2 module entry points
 
 defautoload_operator(hypergeometric,(specfn specfn2));
