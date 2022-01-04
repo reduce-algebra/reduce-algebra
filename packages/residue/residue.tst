@@ -29,11 +29,16 @@ residue(exp(1/x),x,0);
 residue((a*x+b*x^2+c)/(d*x+e),x,-e/d);
 residue(tan(x),x,pi/2);
 residue(sec(x),x,pi/2);
+residue(gamma(x),x,-1);
+residue(psi(x),x,-1);
 residue(factorial(x),x,0);
 % ***** not yet implemented 
 residue(x^3/sin(1/x)^2,x,infinity);
 poleorder(x^3/sin(1/x)^2,x,infinity);
 residue(x^3*sin(1/x)^2,x,infinity);
 poleorder(x^3*sin(1/x)^2,x,infinity);
-
+on fullroots;
+for k:=1:3 sum 
+ residue((a+b*x+c*x^2+d*x^3)/(e+f*x+g*x^2+h*x^3),x, 
+ part(part(solve(e+f*x+g*x^2+h*x^3,x),k),2)); 
 end;

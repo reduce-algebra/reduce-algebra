@@ -49,11 +49,11 @@ global '(
 % But it is reported that even now there are some users who are not content
 % with either the choices we make here or the ones that gnuplot makes for
 % itself so thet feel that they need to override things by putting directives
-% in comfiguration files or ebvironment variables that will control exactly
+% in configuration files or environment variables that will control exactly
 % how gnuplot behaves. Such people are then invonvenienced if this Reduce
 % code forces an issue. So to preserve backwards compatibility and keep
-% everybody safe while supporting the latestm this switch is provided.
-% The default in "on force_gnuplot_term;" and that behaves just as Reduce has
+% everybody safe while supporting the latest this switch is provided.
+% The default is "on force_gnuplot_term;" and that behaves just as Reduce has
 % for some while. If you specify "off force_gnuplot_term;" then it is probably
 % that in many circumstances gnuplot itself will pick sensible options, but
 % more importantly you gain the ability to guess better than gnuplot itself and
