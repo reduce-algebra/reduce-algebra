@@ -1,13 +1,17 @@
 <modal-dialogue dialogueId="MatrixTemplate" dialogueTitle="Create a Matrix">
-	<p class="text-center"><small>Form a matrix in the top left-hand corner of the grid, leaving any cells outside this
-			matrix empty. The right-most and lowest non-empty cells define the matrix size. Any empty cells within this
-			matrix default to zero.</small></p>
-	<p class="text-center">
+	<p>
+		<small>
+			Form a matrix in the top left-hand corner of the grid, leaving any cells outside this matrix empty. The
+			right-most and lowest non-empty cells define the matrix size. Any empty cells within this matrix default to
+			zero.
+		</small>
+	</p>
+	<p>
 		<small>REDUCE Manual:&ensp;
 			<a href="/manual-lookup.php?MAT%20Operator" target="_blank" title="Opens in a new tab.">MAT
 				Operator</a></small>
 	</p>
-	<div class="container-fluid text-center">
+	<div class="pattern">
 		<span style="font-size: 10em; line-height: 60%; vertical-align: -0.48em;">(</span>
 		<table style="display: inline-table;">
 			<tbody>
@@ -51,7 +55,6 @@
 	class MatrixTemplate extends Template {
 		constructor() {
 			super("Matrix Template");
-			this.inputs = this.content.querySelectorAll("input");
 			this.dialogue.addEventListener("show.bs.modal", () => loadPackage("matrix"));
 		}
 

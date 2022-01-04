@@ -1,20 +1,23 @@
 <modal-dialogue dialogueId="DerivativeTemplate" dialogueTitle="Evaluate a Multiple (Partial) Derivative">
-	<p class="text-center"><small>The dependent variable or expression and an independent variable are
-			required. Other fields may be left empty. Superscripts represent orders, which unless empty must
-			be positive integers.</small></p>
-	<p class="text-center">
+	<p>
+		<small>
+			The dependent variable or expression and an independent variable are required. Other fields may be left
+			empty. Superscripts represent orders, which unless empty must be positive integers.
+		</small>
+	</p>
+	<p>
 		<small>REDUCE Manual:&ensp;
 			<a href="/manual-lookup.php?DF%20Operator" target="_blank" title="Opens in a new tab.">DF
 				Operator</a></small>
 	</p>
-	<div class="container-fluid text-center">
+	<div class="pattern">
 		<div>
 			∂ <sup></sup>
-			<input type="text" style="width: 11em" value="ws" />
+			<input type="text" placeholder="algebraic" style="width: 11em" value="ws" />
 		</div>
 		<div style="display: inline-block; margin-top: 5px; border-top: thin solid black; padding-top: 5px;">
-			∂<input type="text" data-index="0" style="width: 2em" value="x" /><sup><input type="text" data-index="0"
-					style="width: 2em; font-style: normal" /></sup>
+			∂<input type="text" data-index="0" placeholder="var" style="width: 2em" value="x" /><sup><input type="text"
+					data-index="0" style="width: 2em; font-style: normal" /></sup>
 			∂<input type="text" data-index="1" style="width: 2em" /><sup><input type="text" data-index="1"
 					style="width: 2em; font-style: normal" /></sup>
 			∂<input type="text" data-index="2" style="width: 2em" /><sup><input type="text" data-index="2"
@@ -29,7 +32,7 @@
 	class DerivativeTemplate extends Template {
 		constructor() {
 			super("Derivative Template");
-			this.totalOrdSup = this.content.querySelector("sup");
+			this.totalOrdSup = this.pattern.querySelector("sup");
 			this.depVarTextField = this.inputs[0];
 			this.indVarTextFields = [this.inputs[1], this.inputs[3], this.inputs[5]];
 			this.ordTextFields = [this.inputs[2], this.inputs[4], this.inputs[6]];
@@ -81,7 +84,7 @@
 		result() {
 			const depVar = this.depVarTextField.value.trim();
 			let indVarFound = false;
-			if (depVar.length == 0) {
+			if (this.checkNonEmpty && !depVar) {
 				alert(this.alertHeader +
 					"A dependent variable or expression is required.");
 				throw new Error("empty field");
@@ -95,7 +98,7 @@
 					if (this.orders[n] > 1) text += ", " + this.orders[n];
 				}
 			}
-			if (indVarFound) return text + ")";
+			if (!this.checkNonEmpty || indVarFound) return text + ")";
 			else {
 				alert(this.alertHeader +
 					"At least one independent variable is required.");
