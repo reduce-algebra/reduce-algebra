@@ -1,8 +1,8 @@
 Web REDUCE
 ==========
 
-Francis Wright, December 2021
------------------------------
+Francis Wright, January 2022
+----------------------------
 
 **This project is highly experimental!**
 

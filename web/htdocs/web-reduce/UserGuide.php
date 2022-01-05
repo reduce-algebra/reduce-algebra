@@ -375,6 +375,28 @@ include '../include/begin-body.php';
         same colour (blue, green or red) to facilitate adding limits to
         the right &int; symbol.
     </dd>
+    <dt>Limit&hellip;</dt>
+    <dd>This template supports limits of (mostly) continuous functions
+        (as opposed to sequences). By default, it computes a two-sided
+        limit, which is appropriate if the function is continuous at the
+        limit point. By clicking successively on the superscript box to
+        the right of the limit point field you cycle through the limit
+        from the right/above (indicated by a superscript +), the limit from
+        the left/below (indicated by a superscript -), and the default
+        two-sided limit. All fields are required.
+    </dd>
+    <dt>Sum or Product&hellip;</dt>
+    <dd>This template supports repeated sums and products of sequences, i.e. functions of a discrete control variable that
+        runs over a range of successive integers. You select whether to construct a sum or product by clicking on the
+        appropriate toggle button, which defaults to a sum.
+    </dd>
+    <dd>
+        You can select whether the range is considered to be symbolic or numeric, which selects different algorithms. Selecting
+        the symbolic range option (the default) implies that you want a closed-form result, which is analogous to evaluating an
+        integral, and the upper or both limit values can be omitted, giving an indefinite sum or product. Selecting the numeric
+        range option implies explicitly adding or multiplying a finite sets of values using a <code>for</code> loop, and all
+        field values are required.
+    </dd>
     <dt>Matrix&hellip;</dt>
     <dd>
         This template supports the creation of matrices up to 4 by 4.
@@ -391,6 +413,19 @@ include '../include/begin-body.php';
     <dd>
         To enter a matrix with more than 4 rows or columns, you can enter as much as possible using the template, then
         click on the <em>Edit</em> button and extend the matrix in the input editor.
+    </dd>
+    <dt>For Statement&hellip;</dt>
+    <dd>This template supports the creation of <code>for</code> statements
+        and is modelled on the diagram at the start of the section of the
+        REDUCE manual headed "FOR Statements". You choose between
+        iterating over a numerical range or a list by clicking on the
+        appropriate toggle button, which then displays the appropriate template.
+        You choose the <em>action</em> and the <code>for each &hellip; in/on</code>
+        option via drop-down menus, which default to the most common
+        choices. (Note that the <code>for each &hellip; on</code> option is only
+        allowed in symbolic mode, but the template does not check this.)
+        The field for the expression to be evaluated by the <code>for</code>
+        statement is on a separate line to allow it more space.
     </dd>
 </dl>
 

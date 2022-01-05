@@ -50,7 +50,7 @@ window.addEventListener("load", () =>
 class TempFuncs {
 	constructor(dialogueId) {
 		this.dialogue = document.getElementById(dialogueId);
-		this.inputs = this.dialogue.querySelectorAll("input");
+		this.inputs = this.dialogue.querySelectorAll("input[type=text]");
 		this.buttons = this.dialogue.querySelectorAll("div.modal-footer > button");
 
 		this.buttons[0].addEventListener("click", () => this.resetButtonAction());
@@ -111,11 +111,13 @@ class TempFuncs {
 export class Template extends TempFuncs {
 	constructor(templateName) {
 		super(templateName.replace(/\s+/g, ""));
-		this.content = this.dialogue.querySelector("div[class^=container]");
+		this.pattern = this.dialogue.querySelector("div.pattern");
 		this.alertHeader = `${templateName} Error\n`;
 
 		this.buttons[1].addEventListener("click", () => {
 			// try {
+			// No fields are required:
+			this.checkNonEmpty = false;
 			this.inputDivInsert(this.result());
 			this.buttons[3].click();
 			// } catch (ignored) { }
@@ -123,6 +125,8 @@ export class Template extends TempFuncs {
 
 		this.buttons[2].addEventListener("click", () => {
 			try {
+				// Check required fields provided:
+				this.checkNonEmpty = true;
 				sendToReduceAndEcho(this.result() + ";");
 				this.buttons[3].click();
 			} catch (ignored) { }
@@ -132,6 +136,16 @@ export class Template extends TempFuncs {
 	resetButtonAction() {
 		// This seems to be necessary!
 		super.resetButtonAction();
+	}
+
+	getValueCheckNonEmpty(input) {
+		const value = input.value.trim();
+		if (this.checkNonEmpty && !value) {
+			alert(this.alertHeader +
+				"A required field is empty.");
+			throw new Error("empty field");
+		}
+		return value;
 	}
 }
 

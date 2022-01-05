@@ -174,8 +174,16 @@ include '../include/begin-head.php';
                                 type="button">Derivative&hellip;</button></li>
                         <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#IntegralTemplate"
                                 type="button">Integral&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#LimitTemplate"
+                                type="button">Limit&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#SumProdTemplate"
+                                type="button">Sum or Product&hellip;</button></li>
                         <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#MatrixTemplate"
                                 type="button">Matrix&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#SolveTemplate"
+                                type="button">Solve Equation(s)&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#ForTemplate"
+                                type="button">For Statement&hellip;</button></li>
                     </ul>
                 </li>
                 <!-- Functions Menu -->
@@ -272,7 +280,11 @@ Keyboard Shortcut: Control+Enter. (Also hold Shift to prevent auto-termination.)
 
     include './Templates/DerivativeTemplate.inc';
     include './Templates/IntegralTemplate.inc';
+    include './Templates/LimitTemplate.inc';
+    include './Templates/SumProdTemplate.inc';
     include './Templates/MatrixTemplate.inc';
+    include './Templates/SolveTemplate.inc';
+    include './Templates/ForTemplate.inc';
 
     include './Functions/ExpLogFunctions.inc';
     include './Functions/GammaEtcFunctions.inc';

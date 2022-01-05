@@ -330,6 +330,7 @@ centreTypesetMathsCheckbox.addEventListener("change", event => {
     const iframe = document.getElementById("IODisplayIframe");
     iframe.addEventListener("load", () => {
         // Don't try to access the iframe DOM until the iframe has loaded!
+        debug && console.log("IODisplayIframe loaded.");
         ioDisplayWindow = iframe.contentWindow;
         ioDisplayHead = iframe.contentDocument.head;
         ioDisplayBody = iframe.contentDocument.body;

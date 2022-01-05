@@ -133,7 +133,7 @@ if ($_SERVER['QUERY_STRING']): ?>
     library, which is also used elsewhere on the REDUCE web site.
 </p>
 
-<address><a href="https://sites.google.com/site/fjwcentaur/feedback">Francis Wright</a>, December 2021</address>
+<address><a href="https://sites.google.com/site/fjwcentaur/feedback">Francis Wright</a>, January 2022</address>
 
 </div><!-- opened in begin-body.php -->
 <?php include '../include/footer.php'; ?>

@@ -236,6 +236,13 @@ put('vecdim,'stat,'rlis);
 
 put('vector,'stat,'rlis);
 
+% CVIT package entry points
+
+global '(!*cvit);
+
+switch cvit;
+
+put('cvit,'simpfg,'((t (load!-package 'cvit))));
 
 % Integrator module entry points.
 
@@ -358,6 +365,8 @@ defautoload(odesolve!-eval,odesolve);
 
 put('plot,'psopfn,'(lambda(u) (prog (!*msg) (load!-package 'gnuplot) (ploteval u))));
 
+put('gnuplot,'psopfn,'(lambda(u) (prog (!*msg) (load!-package 'gnuplot) (gnuploteval u))));
+
 %% define .. operator so that you don't get an error when used before autoloaded
 put('!*interval!*,'simpfn,'simpiden);
 
@@ -369,7 +378,10 @@ precedence .., or;
 
 fluid '(!*trplot !*plotkeep);
 
-switch force_gnuplot_term=on, trplot, plotkeep;
+switch force_gnuplot_term=on, trplot, plotkeep, show_grid;
+
+put('plotshow,'stat,'endstat);
+put('plotreset,'stat,'endstat);
 
 
 % Prettyprint module entry point (built into CSL).
@@ -547,6 +559,53 @@ put('prod,'simpfn,'simp!-prod);
 
 switch zeilberg;
 
+% Zeilberg entry points
+
+switch zb_factor=on, zb_timer,zb_proof, zb_trace,zb_inhomogeneous;
+
+defautoload(gosper!-eval,zeilberg);
+
+put ('gosper,'psopfn,'gosper!-eval); 
+
+defautoload(extended_gosper!-eval,zeilberg);
+
+put ('extended_gosper, 'psopfn,'extended_gosper!-eval);
+
+defautoload(sumrecursion!-eval,zeilberg);
+
+put ('sumrecursion, 'psopfn,'sumrecursion!-eval);
+
+defautoload(extended_sumrecursion!-eval,zeilberg);
+
+put ('extended_sumrecursion, 'psopfn,'sumrecursion!-eval);
+
+defautoload(extended_hyperrecursion!-eval,zeilberg);
+
+put ('extended_hyperrecursion, 'psopfn,'extended_hyperrecursion!-eval);
+
+defautoload(hyperrecursion!-eval,zeilberg);
+
+put ('hyperrecursion, 'psopfn,'hyperrecursion!-eval);
+
+defautoload(hyperterm,zeilberg,expr,4);
+
+defautoload(hypersum!-eval,zeilberg);
+
+put ('hypersum, 'psopfn,'hypersum!-eval);
+
+defautoload(sumtohyper,zeilberg,expr,2);
+
+defautoload(simplify_gamma,zeilberg);
+
+defautoload(simplify_gamma2,zeilberg);
+
+defautoload(simplify_gamman,zeilberg,expr,2);
+
+defautoload(simplify_combinatorial,zeilberg);
+
+flag('(hyperterm sumtohyper simplify_gamma simplify_combinatorial
+       simplify_gamma2 simplify_gamman),'opfn);
+
 % Taylor entry points
 
 put('taylor,'simpfn,'simptaylor);
@@ -618,6 +677,12 @@ put('trigsimp,'psopfn,'trigsimp!*);
 
 defautoload(trigsimp!*,trigsimp);
 
+defautoload(trigfactorize,trigsimp,expr,2);
+
+defautoload(triggcd,trigsimp,expr,3);
+
+flag('(trigfactorize triggcd),'opfn);
+
 % Specfn entry points
 
 flag('(compute!:dilog compute!:lerch_phi),'opfn);
@@ -687,55 +752,34 @@ defautoload(fibonaccip,specfn,expr,2);
 flag('(motzkin),'opfn);
 defautoload(motzkin,specfn);
 
-% Jacobi elliptic functions
-     defautoload_operator(jacobiam, ellipfn);
-     defautoload_operator(jacobisn, ellipfn);
-     defautoload_operator(jacobicn, ellipfn);
-     defautoload_operator(jacobidn, ellipfn);
-     defautoload_operator(jacobins, ellipfn);
-     defautoload_operator(jacobinc, ellipfn);
-     defautoload_operator(jacobind, ellipfn);
-     defautoload_operator(jacobisc, ellipfn);
-     defautoload_operator(jacobisd, ellipfn);
-     defautoload_operator(jacobics, ellipfn);
-     defautoload_operator(jacobids, ellipfn);
-     defautoload_operator(jacobicd, ellipfn);
-     defautoload_operator(jacobidc, ellipfn);
-     defautoload_operator(jacobie,  ellipfn);
-% Elliptic integrals     
-     defautoload_operator(elliptice,       ellipfn);
-     defautoload_operator(elliptice!',     ellipfn);
-     defautoload_operator(ellipticf,       ellipfn);
-     defautoload_operator(elliptick,       ellipfn);
-     defautoload_operator(elliptick!',     ellipfn);
-% Jacobi theta functions
-     defautoload_operator(elliptictheta1,  ellipfn);
-     defautoload_operator(elliptictheta2,  ellipfn);
-     defautoload_operator(elliptictheta3,  ellipfn);
-     defautoload_operator(elliptictheta4,  ellipfn);
-% Inverse Jacobi elliptic functions
-     defautoload_operator(arcsn, ellipfn);
-     defautoload_operator(arccn, ellipfn);
-     defautoload_operator(arcdn, ellipfn);
-     defautoload_operator(arcns, ellipfn);
-     defautoload_operator(arcnc, ellipfn);
-     defautoload_operator(arcnd, ellipfn);
-     defautoload_operator(arcsc, ellipfn);
-     defautoload_operator(arcsd, ellipfn);
-     defautoload_operator(arccs, ellipfn);
-     defautoload_operator(arcds, ellipfn);
-     defautoload_operator(arccd, ellipfn);
-     defautoload_operator(arcdc, ellipfn);
-% Weierstrassian elliptic and sigma functions 
-     defautoload_operator(weierstrass, ellipfn);
-     defautoload_operator(weierstrass1, ellipfn);
-     defautoload_operator(weierstrasszeta, ellipfn);
-     defautoload_operator(weierstrasszeta1, ellipfn);
-     defautoload_operator(sigma, ellipfn);
-     defautoload_operator(sigma1, ellipfn);
-     defautoload_operator(sigma2, ellipfn);
-     defautoload_operator(sigma3, ellipfn);
-    
+% elliptic functions and integrals
+% remove the autoloading of elliptic functions temporarily.
+%      defautoload_operator(jacobiam, (specfn specbess));
+%      defautoload_operator(jacobisn, (specfn specbess));
+%      defautoload_operator(jacobicn, (specfn specbess));
+%      defautoload_operator(jacobidn, (specfn specbess));
+%      defautoload_operator(jacobins, (specfn specbess));
+%      defautoload_operator(jacobinc, (specfn specbess));
+%      defautoload_operator(jacobind, (specfn specbess));
+%      defautoload_operator(jacobisc, (specfn specbess));
+%      defautoload_operator(jacobisd, (specfn specbess));
+%      defautoload_operator(jacobics, (specfn specbess));
+%      defautoload_operator(jacobids, (specfn specbess));
+%      defautoload_operator(jacobicd, (specfn specbess));
+%      defautoload_operator(jacobidc, (specfn specbess));
+%      defautoload_operator(jacobie,  (specfn specbess));
+      
+%      defautoload_operator(elliptice,       (specfn specbess));
+%      defautoload_operator(elliptice!',     (specfn specbess));
+%      defautoload_operator(ellipticf,       (specfn specbess));
+%      defautoload_operator(elliptick,       (specfn specbess));
+%      defautoload_operator(elliptick!',     (specfn specbess));
+
+%      defautoload_operator(elliptictheta1,  (specfn specbess));
+%      defautoload_operator(elliptictheta2,  (specfn specbess));
+%      defautoload_operator(elliptictheta3,  (specfn specbess));
+%      defautoload_operator(elliptictheta4,  (specfn specbess));
+
 % specfn2 module entry points
 
 defautoload_operator(hypergeometric,(specfn specfn2));
