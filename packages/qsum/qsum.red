@@ -40,33 +40,23 @@ off output;
 
 % ------------------------------ SWITCHES ------------------------------
 
-switch qsum_nullspace;
-switch qsum_trace;
-switch qgosper_down;
-switch qgosper_specialsol;
+switch qsum_nullspace=off;
+switch qsum_trace=off;
+switch qgosper_down=on;
+switch qgosper_specialsol=on;
 
-switch qsumrecursion_down;
-switch qsumrecursion_exp;
-switch qsumrecursion_certificate;
+switch qsumrecursion_down=on;
+switch qsumrecursion_exp=off;
+switch qsumrecursion_certificate=off;
 
-switch qsumrecursion_profile;
-lisp setq(!*qsumrecursion_profile, nil);
-
-lisp setq(!*qsum_nullspace, nil);
-lisp setq(!*qsum_trace, nil);
-lisp setq(!*qgosper_down, t);
-lisp setq(!*qgosper_specialsol, t);
-
-lisp setq(!*qsumrecursion_down, t);
-lisp setq(!*qsumrecursion_exp, nil);
-lisp setq(!*qsumrecursion_certificate, nil);
+switch qsumrecursion_profile=off;
 
 % ------------------------ GLOBAL VARIABLES ----------------------------
 
 clear summ;
 operator summ;
-clear arbcomplex;
-operator arbcomplex;
+%clear arbcomplex;
+%operator arbcomplex;
 
 share qsumrecursion_recrange!*;
 qsumrecursion_recrange!*:= {1,5};
@@ -1041,7 +1031,7 @@ begin
         on factor, mcd, gcd;  off rational, precise;  % switch-setting
 
         if (length(f) neq 1) then
-                rederr "Wrong number of arguments in qsimp";
+                rederr {"qsimpcomb called with", length f, "arguments instead of 1"};
 
         orig_bino:= get('binomial,    'simpfn);
         put('binomial,    'simpfn, 'qsimpcomb_binomial);

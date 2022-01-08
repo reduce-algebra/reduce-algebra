@@ -35,7 +35,7 @@
 % $Id$
 create!-package('(ratint convert),nil);
 
-global '(traceratint!*); % for the tracing facility
+global '(!*traceratint); % for the tracing facility
 
 switch traceratint;
 
@@ -87,9 +87,10 @@ for k:=1:arglength(li) do
   <<
     current:=part(li,k);
     current:=monic(current,var);
-    li2:=append(li2,{current});
+    %% Make sure that the monic occurs only once in the result
+    if not (current member li2) then li2 := current . li2;
    >>;
-return(li2);
+return(reverse li2);
 end;
 
 expr procedure monic(exp,var);
@@ -202,93 +203,94 @@ end;
 operator c, rtof,v, alpha;
 load_package arnum;
 
-load_package assist;
+%load_package assist;
 
 expr procedure not_numberp(x);
 if (not numberp(x)) then t else nil;
 
-expr procedure rt(a,b,x);
-begin scalar vv, j,k,i,current,sol,res,cc,b_prime,extra_term,
-      current1,vvv,integral, eqn,d,v_list, sol1,sol2, temp, temp2;
-b_prime:=df(b,x);
-v_list:={};
-on rational;
-res:=resultant(a-z*b_prime,b,x);
-on rational; on ifactor;
-res:= old_factorize(res);
-res:=extractlist(res, not_numberp);
-res:=make_mon(res,z);
-res:=mkset(res); % removes duplicates by turning list into a set
-%write "res is ", res;
-
-integral:=0;
-
-for k:=1:arglength(res) do
-<<
-  current:=part(res,k);% write "current is ", current;
-  d:=deg(current,z); %write "d is ", d;
-  if(d=1) then
-    <<
-      sol:=solve(current=0,z);
-      sol:=part(sol,1);
-      cc:=part(sol,2);% write "cc is ", cc;
-      vv:=gcd(a-cc*b_prime,b);% write "vv is " , vv;
-      vv:=vv/(lcof(vv,x));
-      extra_term:=append({cc},{log(vv)});% write extra_term;
-      extra_term:=part(extra_term,1)*part(extra_term,2); %write extra_term;
-      integral:=extra_term+integral; %write "integral is ", integral;
-    >>
-   else
-    <<
-      current:=sub(z=alpha,current);% write "current is ", current;
-      current1:=sub(alpha=alp,current);% write "current1 is ", current1;
-      defpoly(current);
-      %write "alpha is ", alpha;
-      a:=sub(x=z,a); b:=sub(x=z,b); b_prime:=sub(x=z,b_prime);
-      vv:=gcd(a-alpha*b_prime,b);% write "vv is ", vv; % OK up to here
-
-      off arnum;
-      on fullroots;
-      vv:=sub(a1=alpha*8,vv);
-      vv:=sub(z=x,vv);
-      vvv:=solve(vv=0,x);
-      vvv:=sub(a1=1/alp,vvv);% write "vvv is ", vvv;
-      eqn:=part(part(vvv,1),1)-part(part(vvv,1),2);
-      %write "eqn is ", eqn;
-      if(d=2) then
-         <<
-             sol:=solve(current1=0,alp);
-             sol1:=part(sol,1); sol2:=part(sol,2);
-             %write "sol1, 2 are ", sol1, sol2;
-             c(1):=part(sol1,2); c(2):=part(sol2,2);
-             %write "c(1), c(2) are ", c(1), c(2);
-             for j:=1:2 do
-             <<
-               v(j):=sub(alp=c(j),eqn);
-               integral:=integral+c(j)*log(v(j));
-               %write "integral is ", integral;
-             >>;
-           >>
-       else
-        <<
-           k:=1;
-           %write "d is ", d;
-           while (k<=d) do
-           %for k:=1:3 do
-           <<
-              c(k):=rtof(current1);% write "c(k) is ", c(k);
-              v(k):=sub({alp=c(k)},eqn);% write "v(k) is ", v(k);
-              integral:=integral+c(k)*log(v(k));
-              %write "integral is ", integral;
-              k:=k+1;
-           >>;
-        >>;
-    >>;
-lisp null remprop ('alpha,'currep);
-lisp null remprop ('alpha,'idvalfn);
->>;
-return(integral);
-end;
+%%% expr procedure rt(a,b,x);
+%%% begin scalar vv, j,k,i,current,sol,res,cc,b_prime,extra_term,
+%%%       current1,vvv,integral, eqn,d,v_list, sol1,sol2, temp, temp2;
+%%% b_prime:=df(b,x);
+%%% v_list:={};
+%%% on rational;
+%%% res:=resultant(a-z*b_prime,b,x);
+%%% %on rational;
+%%% on ifactor;
+%%% res:= old_factorize(res);
+%%% res:=extractlist(res, not_numberp);
+%%% res:=make_mon(res,z);
+%%% res:=mkset(res); % removes duplicates by turning list into a set
+%%% %write "res is ", res;
+%%% 
+%%% integral:=0;
+%%% 
+%%% for k:=1:arglength(res) do
+%%% <<
+%%%   current:=part(res,k);% write "current is ", current;
+%%%   d:=deg(current,z); %write "d is ", d;
+%%%   if(d=1) then
+%%%     <<
+%%%       sol:=solve(current=0,z);
+%%%       sol:=part(sol,1);
+%%%       cc:=part(sol,2);% write "cc is ", cc;
+%%%       vv:=gcd(a-cc*b_prime,b);% write "vv is " , vv;
+%%%       vv:=vv/(lcof(vv,x));
+%%%       extra_term:=append({cc},{log(vv)});% write extra_term;
+%%%       extra_term:=part(extra_term,1)*part(extra_term,2); %write extra_term;
+%%%       integral:=extra_term+integral; %write "integral is ", integral;
+%%%     >>
+%%%    else
+%%%     <<
+%%%       current:=sub(z=alpha,current);% write "current is ", current;
+%%%       current1:=sub(alpha=alp,current);% write "current1 is ", current1;
+%%%       defpoly(current);
+%%%       %write "alpha is ", alpha;
+%%%       a:=sub(x=z,a); b:=sub(x=z,b); b_prime:=sub(x=z,b_prime);
+%%%       vv:=gcd(a-alpha*b_prime,b);% write "vv is ", vv; % OK up to here
+%%% 
+%%%       off arnum;
+%%%       on fullroots;
+%%%       vv:=sub(a1=alpha*8,vv);
+%%%       vv:=sub(z=x,vv);
+%%%       vvv:=solve(vv=0,x);
+%%%       vvv:=sub(a1=1/alp,vvv);% write "vvv is ", vvv;
+%%%       eqn:=part(part(vvv,1),1)-part(part(vvv,1),2);
+%%%       %write "eqn is ", eqn;
+%%%       if(d=2) then
+%%%          <<
+%%%              sol:=solve(current1=0,alp);
+%%%              sol1:=part(sol,1); sol2:=part(sol,2);
+%%%              %write "sol1, 2 are ", sol1, sol2;
+%%%              c(1):=part(sol1,2); c(2):=part(sol2,2);
+%%%              %write "c(1), c(2) are ", c(1), c(2);
+%%%              for j:=1:2 do
+%%%              <<
+%%%                v(j):=sub(alp=c(j),eqn);
+%%%                integral:=integral+c(j)*log(v(j));
+%%%                %write "integral is ", integral;
+%%%              >>;
+%%%            >>
+%%%        else
+%%%         <<
+%%%            k:=1;
+%%%            %write "d is ", d;
+%%%            while (k<=d) do
+%%%            %for k:=1:3 do
+%%%            <<
+%%%               c(k):=rtof(current1);% write "c(k) is ", c(k);
+%%%               v(k):=sub({alp=c(k)},eqn);% write "v(k) is ", v(k);
+%%%               integral:=integral+c(k)*log(v(k));
+%%%               %write "integral is ", integral;
+%%%               k:=k+1;
+%%%            >>;
+%%%         >>;
+%%%     >>;
+%%% lisp null remprop ('alpha,'currep);
+%%% lisp null remprop ('alpha,'idvalfn);
+%%% >>;
+%%% return(integral);
+%%% end;
 
 % -------------------------------------------------------------------------
 % This piece of code was written by Matt Rebeck. Input are the functions
@@ -357,12 +359,17 @@ procedure pseudorem(x,y,var); lisp ('list . prem(x,y,var));
 % this routine is the implementation of Horowitz' method of reducing the
 % rational function into a polynomial and logarithmic part.
 
-operator a,c, neil ;
+operator a, neil ;
 expr procedure howy(p,q,x);
 
 begin
 scalar pseudo, quo,rem,pp, poly_part,d,mm,b,nn,j,k,aa,cc,
-pseudo3,i,quo3,r,pseudo2,eqn,l,neil1,sol, var1, temp,var2,var3,p,test,output;
+   pseudo3,i,quo3,r,pseudo2,eqn,l,neil1,sol, var1, temp,var2,var3,p,test,output;
+
+lisp <<
+remprop('a,'klist);remprop('a,'kvalue);
+remprop('c,'klist);remprop('c,'kvalue);
+>>;
 pseudo:=pseudorem(p,q,x);
 quo:=part(pseudo,3)/part(pseudo,2);
 rem:=part(pseudo,1)/part(pseudo,2);
@@ -555,12 +562,9 @@ off modular;
 %operator c, rtof,v, alpha;
 load_package arnum;
 
-%load_package assist
+%operator log_sum;
+put('log_sum,'simpfn,'simpiden);
 
-expr procedure not_numberp(x);
-if (not numberp(x)) then t else nil;
-
-operator log_sum;
 expr procedure rt(a,b,x);
 begin scalar vv, j,k,i,current,sol,res,cc,b_prime,extra_term,
       current1,vvv,integral, eqn,d,v_list, sol1,sol2, temp, temp2;
@@ -568,11 +572,14 @@ b_prime:=df(b,x);
 v_list:={};
 on rational;
 res:=resultant(a-z*b_prime,b,x);
-on rational; on ifactor;
+%on rational;
+on ifactor;
 res:= old_factorize(res);
-res:=extractlist(res, not_numberp);
+%res:=extractlist(res, not_numberp);
+while length res > 0 and numberp first res do res := rest res;
 res:=make_mon(res,z);
-res:=mkset(res); % removes duplicates by turning list into a set
+%% The following is no longer necessary, as make_mon takes care of duplicates
+%res:=mkset(res); % removes duplicates by turning list into a set
 %write "res is ", res;
 
 integral:=0;

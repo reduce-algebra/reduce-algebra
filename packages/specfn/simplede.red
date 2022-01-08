@@ -35,8 +35,10 @@ fps_search_depth := 5; %the default
 
 switch tracefps;
 
-algebraic <<  operator ba; operator infsum ;
-                array dff(50) >>;
+deflist('((ba simpiden) (infsum simpiden)),'simpfn);
+%algebraic operator ba; 
+%algebraic operator infsum;
+algebraic array dff(50);
 
 put('simplede,'psopfn,'simpledeeval);
 
@@ -380,7 +382,7 @@ algebraic procedure hypergeomre(m,cap_r,leadcoeff,dffpointer,k,x);
 %   a(k+m) = cap_R(k) * a(k)
 %
 %  where leadcoeff is the leading coefficient of the RE
-%  and DF is a table where DF(dffpointer+i) = df(f,x,i)
+%  and DFF is a table where DFF(dffpointer+i) = df(f,x,i)
 
   begin scalar denr,fract,ii,m0,m1,c0,ck,s,c,df2,q,r2,lterm,nn,
         s0, leadcoeff2;
