@@ -123,7 +123,7 @@ if(freeof(exp,'log_sum)) then return exp else
                                     % radicals, and substitute
             << %temp:=reval temp
                solution:= algebraic solve(temp=0,alpha);
-               write reval cadr solution;
+%               write reval cadr solution;
                %now have a solution list, with two elements
 
     answer:=subeval(list (reval cadr solution, algebraic reval part(exp,4)));
@@ -143,7 +143,8 @@ if(freeof(exp,'log_sum)) then return exp else
 return answer;
 end;
 
-procedure conv(exp); lisp convert(exp);
+flag('(convert),'opfn);
+%procedure conv(exp); lisp convert(exp);
 %conv(log(x+1)+log_sum(alpha,alpha^2+alpha-1,0,alpha*log(alpha*x^2+alpha*x-1),x%));
 
 % procedure to separate real and imaginary parts in a log sum expression
@@ -172,7 +173,8 @@ algebraic repart(var):=var; algebraic impart(var):=0;
    >> else nil;
 end;
 
-procedure convertlog(exp,var); lisp convert_log(exp,var);
+flag('(convert_log),'opfn);
+%procedure convertlog(exp,var); lisp convert_log(exp,var);
 
 % now need an assume real facility, so extract terms dependent on i only
 %

@@ -208,6 +208,13 @@ flag('(faslout),'opfn);
 flag('(faslout),'noval);
 
 
+% Reset module entry point
+
+defautoload(resetreduce,reset,expr,0);
+
+put('resetreduce,'stat,'endstat);
+
+
 % High energy physics module entry points.
 
 remprop('index,'stat); remprop('mass,'stat);
@@ -361,11 +368,7 @@ put('odesolve,'psopfn,'odesolve!-eval);
 
 defautoload(odesolve!-eval,odesolve);
 
-% Plot entry point.
-
-put('plot,'psopfn,'(lambda(u) (prog (!*msg) (load!-package 'gnuplot) (ploteval u))));
-
-put('gnuplot,'psopfn,'(lambda(u) (prog (!*msg) (load!-package 'gnuplot) (gnuploteval u))));
+% Numeric module entry points.
 
 %% define .. operator so that you don't get an error when used before autoloaded
 put('!*interval!*,'simpfn,'simpiden);
@@ -375,6 +378,55 @@ newtok '((!. !.) !*interval!*);
 put('!*interval!*,'prtch,'! !.!.! );
 
 precedence .., or;
+
+global '(!*trnumeric);
+
+switch trnumeric;
+
+defautoload(rdsolveeval,numeric);
+
+put('num_solve,'psopfn,'rdsolveeval);
+
+defautoload(rungekuttaeval,numeric);
+
+put ('num_odesolve,'psopfn,'rungekuttaeval);
+
+defautoload(boundseval,numeric);
+defautoload(boundsevalrd,numeric);
+
+put('bounds,'psopfn,'boundseval);
+put('bounds!-rd,'psopfn,'boundsevalrd);
+put('bounds,'numericfn,'bounds!-rd);
+
+defautoload(rdmineval,numeric);
+
+put('num_min,'psopfn,'rdmineval);
+
+defautoload(chebysheveval,numeric,expr,2);
+
+put('chebyshev_fit,'psopfn,'(lambda(u)(chebysheveval u 'fit)));
+put('chebyshev_eval,'psopfn,'(lambda(u)(chebysheveval u 'eval)));
+put('chebyshev_int,'psopfn,'(lambda(u)(chebysheveval u 'int)));
+put('chebyshev_df,'psopfn,'(lambda(u)(chebysheveval u 'df)));
+
+defautoload(intrdeval,numeric);
+
+put('num_int,'psopfn,'intrdeval);
+      
+defautoload(fiteval,numeric);
+
+put('num_fit,'psopfn,'fiteval);
+
+defautoload(rdsolveeval,numeric);
+
+put('num_solve,'psopfn,'rdsolveeval);
+
+
+% Plot module entry points.
+
+put('plot,'psopfn,'(lambda(u) (prog (!*msg) (load!-package 'gnuplot) (ploteval u))));
+
+put('gnuplot,'psopfn,'(lambda(u) (prog (!*msg) (load!-package 'gnuplot) (gnuploteval u))));
 
 fluid '(!*trplot !*plotkeep);
 
@@ -433,6 +485,11 @@ put('nonlnr,'simpfg,'((nil (load!-package 'solve))));
 put('allbranch,'simpfg,'((nil (load!-package 'solve))));
 
 put('solvesingular,'simpfg,'((nil (load!-package 'solve))));
+
+defautoload(simp!-arbcomplex,solve);
+
+deflist('((arbcomplex simp!-arbcomplex)),'simpfn);
+
 
 % Ineq package entry point
 
@@ -548,6 +605,8 @@ put('changevar,'simpfn,'simpchangevar);
 
 % Sum entry points.
 
+switch trsum;
+
 defautoload(simp!-sum,sum);
 defautoload(simp!-sum0,sum,expr,2);
 
@@ -606,7 +665,10 @@ defautoload(simplify_combinatorial,zeilberg);
 flag('(hyperterm sumtohyper simplify_gamma simplify_combinatorial
        simplify_gamma2 simplify_gamman),'opfn);
 
-% Taylor entry points
+deflist('((summ simpiden) (zb_f simpiden) (zb_sigma simpiden)),'simpfn);
+
+
+% Taylor module entry points
 
 put('taylor,'simpfn,'simptaylor);
 
@@ -752,6 +814,82 @@ defautoload(fibonaccip,specfn,expr,2);
 flag('(motzkin),'opfn);
 defautoload(motzkin,specfn);
 
+defautoload(monomial_base,specfn,expr,2);
+defautoload(trigonometric_base,specfn,expr,2);
+defautoload(bernstein_base,specfn,expr,2);
+defautoload(legendre_base,specfn,expr,4);
+defautoload(laguerre_base,specfn,expr,3);
+defautoload(hermite_base,specfn,expr,2);
+defautoload(chebyshev_base_t,specfn,expr,2);
+defautoload(chebyshev_base_u,specfn,expr,2);
+defautoload(gegenbauer_base,specfn,expr,3);
+
+flag('(monomial_base trigonometric_base bernstein_base legendre_base laguerre_base
+       hermite_base chebyshev_base_t chebyshev_base_u gegenbauer_base),'opfn);
+
+% fps entry points
+
+fluid '(!*tracefps fps_search_depth);
+
+switch tracefps;
+
+share fps_search_depth;
+
+defautoload(simpledeeval,fps);
+
+put('simplede,'psopfn,'simpledeeval);
+
+defautoload(simp!-fps,fps);
+
+put('fps,'simpfn,'simp!-fps);
+
+put('infsum,'simpfn,'simpiden);
+
+% qsum module entry points
+
+switch qsum_nullspace=off;
+switch qsum_trace=off;
+switch qgosper_down=on;
+switch qgosper_specialsol=on;
+
+switch qsumrecursion_down=on;
+switch qsumrecursion_exp=off;
+switch qsumrecursion_certificate=off;
+
+switch qsumrecursion_profile=off;
+
+share qsumrecursion_recrange!*;
+
+deflist('((qpochhammer simpiden) (qbrackets simpiden) (qfac simpiden)
+          (qfactorial simpiden) (qbinomial simpiden)),'simpfn);
+
+defautoload(qpsihyperterm,qsum,expr,5);
+
+defautoload(qphihyperterm,qsum,expr,5);
+	     
+flag('(qphihyperterm qpsihyperterm),'opfn);
+
+defautoload(qgosper,qsum);
+
+put('qgosper, 'psopfn, 'qgosper);
+
+defautoload(qsumrecursion,qsum);
+
+put('qsumrecursion, 'psopfn, 'qsumrecursion);
+
+defautoload(qsimplify,qsum);
+
+put('qsimpcomb, 'psopfn, 'qsimplify);
+
+defautoload(down_qratio,qsum,expr,2);
+
+defautoload(up_qratio,qsum,expr,2);
+
+flag('(down_qratio up_qratio), 'opfn);
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % elliptic functions and integrals
 % remove the autoloading of elliptic functions temporarily.
 %      defautoload_operator(jacobiam, (specfn specbess));
@@ -807,6 +945,8 @@ fluid '(!*arnum);
 
 switch arnum;
 
+put('arnum,'simpfg,'((t (load!-package 'arnum) (setdmode (quote arnum t)))));
+
 defautoload(defpoly,arnum);
 
 rlistat '(defpoly);
@@ -814,6 +954,26 @@ rlistat '(defpoly);
 defautoload(split!-field!-eval,arnum);
 
 put('split!_field,'psopfn,'split!-field!-eval);
+
+% Ratint entry points
+
+global '(!*traceratint);
+
+switch traceratint;
+
+defautoload(ratint,ratint,expr,3);
+
+defautoload(convert,ratint);
+
+defautoload(convert_log,ratint);
+
+defautoload(logtoatan,ratint,expr,3);
+
+flag('(ratint convert convert_log logtoatan),'opfn);
+
+put('log_sum,'simpfn,'simpiden);
+
+
 
 
 % Rtrace entry points
