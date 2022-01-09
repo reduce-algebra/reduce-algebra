@@ -713,58 +713,17 @@ put('ps,'simpfn,'simpps);
 
 defautoload(simpps,tps);
 
-put('psterm,'simpfn,'simppsterm);
-
-defautoload(simppsterm,tps);
-
-put('psorder,'simpfn,'simppsorder);
-
-defautoload(simppsorder,tps);
-
-put('pssetorder,'simpfn,'simppssetorder);
-
-defautoload(simppssetorder,tps);
-
-put('psexpansionpt,'simpfn,'simppsexpansionpt);
-
-defautoload(simppsexpansionpt,tps);
-
-put('psdepvar,'simpfn,'simppsdepvar);
-
-defautoload(simppsdepvar,tps);
-
-put('psfunction,'simpfn,'simppsfunction);
-
-defautoload(simppsfunction,tps);
-
-put('pschangevar,'simpfn,'simppschangevar);
-
-defautoload(simppschangevar,tps);
-
 put('pstaylor,'simpfn,'simppstaylor);
 
 defautoload(simppstaylor,tps);
 
-put('psordlim,'simpfn,'simppsordlim);
+put('psexplim,'simpfn,'simppsexplim);
 
-defautoload(simppsordlim,tps);
-
-put('pscopy,'simpfn,'simppscopy);
-
-defautoload(simppscopy,tps);
-
-put('psreverse,'simpfn,'simppsreverse);
-
-defautoload(simppsreverse,tps);
-
-put('pscompose,'simpfn,'simppscompose);
-
-defautoload(simppscompose,tps);
+defautoload(simppsexplim,tps);
 
 put('pssum,'simpfn,'simppssum);
 
 defautoload(simppssum,tps);
-
 
 % Trigsimp  entry points
 
