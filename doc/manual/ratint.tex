@@ -7,18 +7,18 @@ This package implements the Horowitz/ Rothstein/ Trager algorithms ~\cite{Geddes
 \subsubsection{Syntax of \emph{ratint}}
 This function has the following syntax:
 \begin{center} \textbf{ratint(p,q,var)} \end{center}
-where $p/q$ is a rational function in $var$. The output of \emph{ratint} is a list of two elements: the first is the polynomial part of the integral, the second is the logarithmic part. The integral is the sum of these parts.
+where $p$ and $q$ are polynomials in var, so that $p/q$ is a rational function in $var$.
+The output of \emph{ratint} is a list of two elements: the first is the polynomial part of the integral, the second is the logarithmic part. The integral is the sum of these parts.
 \subsubsection{Examples}
-consider the following examples in \REDUCE:
+Consider the following examples in \REDUCE (the meaning of the \f{log\_sum} operator will be explained in the next section).
 \begin{verbatim}
 ratint(1,x^2-2,x);
 
-                sqrt(2)*x-2          sqrt(2)*x+2
-           log(-------------) - log(-------------)
-                  sqrt(2)              sqrt(2)
-{ 0,        ---------------------------------------    }
-                          2*sqrt(2)
+{0,
 
+                  2    1
+ log_sum(beta,beta  - ---,0,log(2*beta*x - 1)*beta)}
+                       8
 
 p:=441*x^7+780*x^6-2861*x^5+4085*x^4+7695*x^3+3713*x^2-43253*x
                                                        +24500;
@@ -64,8 +64,6 @@ ratint(1,x^2+1,x);
 {0,log_sum(beta,beta  + ---,0,log(2*beta*x - 1)*beta)}
                          4
 \end{verbatim}
-
-The meaning of the log\_sum function will be explained later.
 
 \subsection{The Algorithm}
 The following main algorithm is used:

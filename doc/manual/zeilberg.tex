@@ -141,6 +141,7 @@ and \cite{Wilf:93} many of which are contained in the test file
 
 \subsection{\REDUCE{} operator {\tt GOSPER}}
 
+\iffalse
 The ZEILBERG package must be loaded by:
 
 {\small
@@ -148,7 +149,10 @@ The ZEILBERG package must be loaded by:
 1: load zeilberg;
 \end{verbatim}
 }\noindent
-The \texttt{gosper} operator\ttindex{GOSPER} is an implementation of the Gosper algorithm.
+\fi
+
+\hypertarget{operator:GOSPER}{}
+The \texttt{gosper} operator\ttindextype{GOSPER}{operator} is an implementation of the Gosper algorithm.
 \begin{itemize}
 \item
 {\tt gosper(a,k)} determines a closed
@@ -294,7 +298,8 @@ g_k=\prod_{j=1}^k (e+b\,j+c\,j^2+d\,j^3)
 and for analogous expressions of higher degree polynomials.
 
 \subsection{\REDUCE{} operator {\tt EXTENDED\_GOSPER}}
-\ttindex{EXTENDED\_GOSPER}
+\ttindextype{EXTENDED\_GOSPER}{operator}
+\hypertarget{operator:EXTENDED_GOSPER}{}
 The {\tt extended\_gosper} operator is an implementation of an extended
 version of Gosper's algorithm given by Koepf \cite{Koepf:94b}.
 \begin{itemize}
@@ -332,7 +337,8 @@ Examples:
 }\noindent
 
 \subsection{\REDUCE{} operator {\tt SUMRECURSION}}
-\ttindex{SUMRECURSION}
+\ttindextype{SUMRECURSION}{operator}
+\hypertarget{operator:SUMRECURSION}{}
 
 The {\tt sumrecursion} operator is an implementation of the (fast)
 Zeilberger algorithm.
@@ -356,7 +362,7 @@ may not be unique, and only one particular solution is returned.
 \end{itemize}
 A simple example deals with Equation (\eqnref{eq:nchoosek})%
 \footnote{Note that with \REDUCE{} Version 3.5 we use the global operator
-{\tt summ} instead of {\tt sum} to denote the sum.}
+\hypertarget{operator:SUMM}{\f{summ}} instead of \f{sum} to denote the sum.}
 
 {\small
 \begin{verbatim}
@@ -476,7 +482,8 @@ and finally check the initial conditions:
 
 \subsection{\REDUCE{} operator {\tt EXTENDED\_SUMRECURSION}}
 \label{sec:EXTENDED_SUMRECURSION}
-\ttindex{EXTENDED\_SUMRECURSION}
+\ttindextype{EXTENDED\_SUMRECURSION}{operator}
+\hypertarget{operator:EXTENDED_SUMRECURSION}{}
 
 The {\tt extended\_sumrecursion} operator is an implementation
 of an extension of the (fast) Zeilberger algorithm given by Koepf
@@ -541,7 +548,9 @@ resulting recurrence equation (see \cite{Koepf:94b}, Table 3, (1.3)).
 
 
 \subsection{\REDUCE{} operator {\tt HYPERRECURSION}}
-\ttindex{HYPERRECURSION}\ttindex{HYPERTERM}
+\ttindextype{HYPERRECURSION}{operator}\ttindextype{HYPERTERM}{operator}
+\hypertarget{operator:HYPERRECURSION}{}
+\hypertarget{operator:HYPERTERM}{}
 
 Sums to which the Zeilberger algorithm applies, in general are
 special cases of the \textsl{generalized hypergeometric function}
@@ -685,7 +694,8 @@ and get the three three-term recurrence equations
 with respect to the parameters $n$, $x$, and $N$ respectively.
 
 \subsection{\REDUCE{} operator {\tt HYPERSUM}}
-\ttindex{HYPERSUM}
+\ttindextype{HYPERSUM}{operator}
+\hypertarget{operator:HYPERSUM}{}
 
 With the operator {\tt hypersum}, hypergeometric sums are directly
 evaluated in closed form whenever the extended
@@ -803,7 +813,8 @@ _3 F_2\left.
 \]
 
 \subsection{\REDUCE{} operator {\tt SUMTOHYPER}}
-\ttindex{SUMTOHYPER}
+\ttindextype{SUMTOHYPER}{operator}
+\hypertarget{operator:SUMTOHYPER}{}
 
 With the operator {\tt sumtohyper}, sums given in
 factorial-$\Gamma$-binomial-Poch\-hammer notation
@@ -847,11 +858,15 @@ hypergeometric({ - n, - n, - n},{1,1},-1)
 
 
 \subsection{Simplification Operators}
-\ttindex{SIMPLIFY\_GAMMA}
-\ttindex{simplify\_combinatorial}
-\ttindex{GAMMATOFACTORIAL}
-\ttindex{simplify\_gamma2}
-\ttindex{simplify\_gamman}
+\ttindextype{SIMPLIFY\_GAMMA}{operator}
+\ttindextype{simplify\_combinatorial}{operator}
+\ttindextype{GAMMATOFACTORIAL}{rule}
+\ttindextype{simplify\_gamma2}{operator}
+\ttindextype{simplify\_gamman}{operator}
+\hypertarget{operator:SIMPLIFY_GAMMA}{}                                                                                                                         
+\hypertarget{operator:SIMPLIFY_GAMMA2}{}
+\hypertarget{operator:SIMPLIFY_GAMMAN}{}
+\hypertarget{operator:SIMPLIFY_COMBINATORIAL}{}
 
 For the decision that an expression $a_k$ is a hypergeometric term, it is
 necessary to find out whether or not $a_{k}/a_{k-1}$ is a rational
@@ -943,6 +958,7 @@ Other examples are
 
 \subsection{Tracing}
 \ttindexswitch[ZEILBERG]{ZB\_TRACE}
+\hypertarget{switch:ZB_TRACE}{}
 
 If you set
 {\small
@@ -1040,6 +1056,16 @@ Zeilberger algorithm successful
 \ttindexswitch[ZEILBERG]{ZB\_PROOF}
 \ttindextype{GOSPER\_REPRESENTATION}{variable}
 \ttindextype{ZEILBERGER\_REPRESENTATION}{variable}
+\ttindextype{ZB\_F}{internal operator}
+\ttindextype{ZB\_SIGMA}{internal operator}
+\hypertarget{reserved:ZB_DIRECTION}{}
+\hypertarget{reserved:ZB_ORDER}{}
+\hypertarget{reserved:GOSPER_REPRESENTATION}{}
+\hypertarget{reserved:ZEILBERGER_REPRESENTATION}{}
+\hypertarget{reserved:ZB_F}{}
+\hypertarget{reserved:ZB_SIGMA}{}
+\hypertarget{switch:ZB_FACTOR}{}
+\hypertarget{switch:ZB_PROOF}{}
 
 The following global variables and switches can be used in connection with
 the {\tt ZEILBERG} package:
@@ -1141,6 +1167,10 @@ If a {\tt sumrecursion} command is issued, and if the Zeilberger
 algorithm is successful, then the variable
 {\tt zeilberger\_representation} is set to the final Gosper
 representation used, see \cite{Koornwinder:93}.
+\item
+  \texttt{zb\_f}, internal operator, do not use.
+\item
+  \texttt{zb\_sigma}, internal operator, do not use.
 \end{itemize}
 
 \subsection{Messages}

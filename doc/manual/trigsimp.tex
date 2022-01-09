@@ -1,10 +1,11 @@
+\section[TRIGSIMP]{TRIGSIMP: Simplification and factorization of trigonometric
+and hyperbolic functions}
+\label{TRIGSIMP}
 
-\subsection{Introduction}
-
-The \REDUCE{} package TRIGSIMP is a useful tool for all kinds of
+TRIGSIMP is a useful tool for all kinds of
 problems related to trigonometric and hyperbolic simplification and
-factorization.  There are three operators included in TRIGSIMP:
-trigsimp, trigfactorize and triggcd.  The first is for simplifying
+factorization.\footnote{This code was written by Wolfram Koepf.}  There are three operators included:
+\f{TRIGSIMP}, \f{TRIGFACTORIZE} and \f{TRIGGCD}.  The first is for simplifying
 trigonometric or hyperbolic expressions and has many options, the
 second is for factorizing them and the third is for finding the
 greatest common divisor of two trigonometric or hyperbolic
@@ -13,8 +14,8 @@ operators is used.
 
 
 \subsection{Simplifying trigonometric expressions}
-\ttindex{TRIGSIMP}
-
+\ttindextype{TRIGSIMP}{operator}
+\hypertarget{operator:TRIGSIMP}{}
 As there is no normal form for trigonometric and hyperbolic
 expressions, the same function can convert in many different
 directions, e.g.\ $\sin(2x) \leftrightarrow 2\sin(x)\cos(x)$.  The
@@ -78,8 +79,8 @@ trigsimp(sin(x)*cos(y), combine);
 -------------------------
             2
 \end{verbatim}
-With \texttt{compact}, the \REDUCE{} operator \texttt{compact}
-\cite{Hearn:COMPACT} is applied to \texttt{f}.  This often leads to a simple
+With \texttt{compact}, the \REDUCE{} operator \texttt{compact} (cf.~section~\ref{sec:COMPACT})
+is applied to \texttt{f}.  This often leads to a simple
 form, but in contrast to \texttt{expand} one does not get a normal
 form. For example:
 \begin{verbatim}
@@ -194,6 +195,8 @@ trigsimp( { sin(2x) = cos(2x) } );
 
 
 \subsection{Factorizing trigonometric expressions}
+\ttindextype{TRIGFACTORIZE}{operator}
+\hypertarget{operator:TRIGFACTORIZE}{}
 
 With \texttt{trigfactorize(p,x)} one can factorize the trigonometric
 or hyperbolic polynomial \texttt{p} in terms of trigonometric
@@ -244,6 +247,8 @@ trigfactorize(1+cos(x), x/2);
 
 
 \subsection{GCDs of trigonometric expressions}
+\ttindextype{TRIGGCD}{operator}
+\hypertarget{operator:TRIGGCD}{}
 
 The operator \texttt{triggcd} is essentially an application of the
 algorithm behind \texttt{trigfactorize}.  With its help the user can
