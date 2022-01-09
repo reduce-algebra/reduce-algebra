@@ -210,6 +210,8 @@ flag('(faslout),'noval);
 
 % Reset module entry point
 
+remprop('resetreduce,'stat);
+
 defautoload(resetreduce,reset,expr,0);
 
 put('resetreduce,'stat,'endstat);
