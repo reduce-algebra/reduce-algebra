@@ -247,9 +247,9 @@ put('vector,'stat,'rlis);
 
 % CVIT package entry points
 
-global '(!*cvit);
+global '(!*cvit !*cviterror !*cvitbtr !*cvitrace !*cvitop);
 
-switch cvit;
+switch cvit=off,cviterror=on,cvitbtr=on,cvitrace=off,cvitop=off;
 
 put('cvit,'simpfg,'((t (load!-package 'cvit))));
 
@@ -365,6 +365,24 @@ put('matrixproc,'stat,'readmatproc);
 fluid '(!*trode);
 
 switch trode;
+switch odesolve_explicit;
+switch odesolve_expand;
+switch odesolve_full;
+switch odesolve_implicit;
+switch odesolve_noint;
+switch noint;
+switch odesolve_verbose;
+switch odesolve_basis;
+switch odesolve_noswap;
+switch odesolve_norecurse;
+switch odesolve_fast;
+switch odesolve_check;
+switch nointint=on;
+switch plus_or_minus=off;
+switch odesolve_equidim_y=on;
+switch odesolve_plus_or_minus=on;
+switch odesolve_diff=on;
+
 
 put('odesolve,'psopfn,'odesolve!-eval);
 
@@ -458,6 +476,9 @@ defautoload rprint;
 
 % SOLVE module entry points.
 
+switch allbranch=on,arbvars=on,fullroots,multiplicities,solvesingular=on;
+switch trigform=on,trnonlnr=off;
+
 defautoload(solveeval,solve);
 
 defautoload(solve0,solve,expr,2);
@@ -468,14 +489,8 @@ defautoload(solve0,solve,expr,2);
 
 put('solve,'psopfn,'solveeval);
 
-switch allbranch,arbvars,fullroots,multiplicities,nonlnr,solvesingular;
+switch allbranch=on,arbvars=on,fullroots,multiplicities,nonlnr,solvesingular=on;
 %      varopt;
-
-% Default values.
-
-!*allbranch     := t;
-!*arbvars       := t;
-!*solvesingular := t;
 
 put('arbint,'simpfn,'simpiden);
 
@@ -494,6 +509,10 @@ deflist('((arbcomplex simp!-arbcomplex)),'simpfn);
 
 
 % Ineq package entry point
+
+global '(!*trlinineq !*trlinineqint !*prlinineq);
+
+switch trlinineq,prlinineq,trlinineqint;
 
 defautoload(ineqseval!*,ineq);
 
@@ -515,6 +534,8 @@ put('m_roots,'psopfn,
 
 % Rsolve package entry points.
 
+switch multiplicities=off,trsolve=off;
+
 defautoload(i_solve!-eval,rsolve);
 
 defautoload(r_solve!-eval,rsolve);
@@ -524,6 +545,9 @@ put('i_solve, 'psopfn, 'i_solve!-eval);
 put('r_solve, 'psopfn, 'r_solve!-eval);
 
 % Root finding package entry points.
+
+switch trroot=off,rootmsg=off,multiroot=on,nosturm=off,ratroot=off;
+switch fullprecision=off,compxroots=off;
 
 defautoload roots;
 
@@ -553,13 +577,10 @@ for each n in '(roots rlrootno realroots isolater firstroot
 
 put('sturm,'psopfn,'sturm0);
 
-switch trroot,rootmsg;
-
 put('multroot,'psopfn,'multroot1);
 
-switch fullprecision,compxroots;
 
-% Limits entry points.
+% Limits module entry points.
 
 for each c in '(limit limit!+ limit!-) do
    <<put(c,'simpfn,'simplimit);
@@ -605,9 +626,10 @@ defautoload(simpchangevar,changevr);
 
 put('changevar,'simpfn,'simpchangevar);
 
-% Sum entry points.
+% Sum module entry points.
 
 switch trsum;
+switch zeilberg;
 
 defautoload(simp!-sum,sum);
 defautoload(simp!-sum0,sum,expr,2);
@@ -620,7 +642,7 @@ put('prod,'simpfn,'simp!-prod);
 
 switch zeilberg;
 
-% Zeilberg entry points
+% Zeilberg module entry points
 
 switch zb_factor=on, zb_timer,zb_proof, zb_trace,zb_inhomogeneous;
 
@@ -672,11 +694,20 @@ deflist('((summ simpiden) (zb_f simpiden) (zb_sigma simpiden)),'simpfn);
 
 % Taylor module entry points
 
+switch taylorautocombine=on,
+       taylorautoexpand=off,
+       taylorkeeporiginal=off,
+       taylorprintorder=on,
+       trtaylor=off,
+       verboseload;
+
 put('taylor,'simpfn,'simptaylor);
 
 defautoload(simptaylor,taylor);
 
 % TPS entry points
+
+switch psprintorder=on;
 
 put('ps,'simpfn,'simpps);
 
@@ -892,34 +923,55 @@ flag('(down_qratio up_qratio), 'opfn);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% elliptic functions and integrals
-% remove the autoloading of elliptic functions temporarily.
-%      defautoload_operator(jacobiam, (specfn specbess));
-%      defautoload_operator(jacobisn, (specfn specbess));
-%      defautoload_operator(jacobicn, (specfn specbess));
-%      defautoload_operator(jacobidn, (specfn specbess));
-%      defautoload_operator(jacobins, (specfn specbess));
-%      defautoload_operator(jacobinc, (specfn specbess));
-%      defautoload_operator(jacobind, (specfn specbess));
-%      defautoload_operator(jacobisc, (specfn specbess));
-%      defautoload_operator(jacobisd, (specfn specbess));
-%      defautoload_operator(jacobics, (specfn specbess));
-%      defautoload_operator(jacobids, (specfn specbess));
-%      defautoload_operator(jacobicd, (specfn specbess));
-%      defautoload_operator(jacobidc, (specfn specbess));
-%      defautoload_operator(jacobie,  (specfn specbess));
-      
-%      defautoload_operator(elliptice,       (specfn specbess));
-%      defautoload_operator(elliptice!',     (specfn specbess));
-%      defautoload_operator(ellipticf,       (specfn specbess));
-%      defautoload_operator(elliptick,       (specfn specbess));
-%      defautoload_operator(elliptick!',     (specfn specbess));
-
-%      defautoload_operator(elliptictheta1,  (specfn specbess));
-%      defautoload_operator(elliptictheta2,  (specfn specbess));
-%      defautoload_operator(elliptictheta3,  (specfn specbess));
-%      defautoload_operator(elliptictheta4,  (specfn specbess));
-
+% Jacobi elliptic functions
+     defautoload_operator(jacobiam, ellipfn);
+     defautoload_operator(jacobisn, ellipfn);
+     defautoload_operator(jacobicn, ellipfn);
+     defautoload_operator(jacobidn, ellipfn);
+     defautoload_operator(jacobins, ellipfn);
+     defautoload_operator(jacobinc, ellipfn);
+     defautoload_operator(jacobind, ellipfn);
+     defautoload_operator(jacobisc, ellipfn);
+     defautoload_operator(jacobisd, ellipfn);
+     defautoload_operator(jacobics, ellipfn);
+     defautoload_operator(jacobids, ellipfn);
+     defautoload_operator(jacobicd, ellipfn);
+     defautoload_operator(jacobidc, ellipfn);
+     defautoload_operator(jacobie,  ellipfn);
+% Elliptic integrals     
+     defautoload_operator(elliptice,       ellipfn);
+     defautoload_operator(elliptice!',     ellipfn);
+     defautoload_operator(ellipticf,       ellipfn);
+     defautoload_operator(elliptick,       ellipfn);
+     defautoload_operator(elliptick!',     ellipfn);
+% Jacobi theta functions
+     defautoload_operator(elliptictheta1,  ellipfn);
+     defautoload_operator(elliptictheta2,  ellipfn);
+     defautoload_operator(elliptictheta3,  ellipfn);
+     defautoload_operator(elliptictheta4,  ellipfn);
+% Inverse Jacobi elliptic functions
+     defautoload_operator(arcsn, ellipfn);
+     defautoload_operator(arccn, ellipfn);
+     defautoload_operator(arcdn, ellipfn);
+     defautoload_operator(arcns, ellipfn);
+     defautoload_operator(arcnc, ellipfn);
+     defautoload_operator(arcnd, ellipfn);
+     defautoload_operator(arcsc, ellipfn);
+     defautoload_operator(arcsd, ellipfn);
+     defautoload_operator(arccs, ellipfn);
+     defautoload_operator(arcds, ellipfn);
+     defautoload_operator(arccd, ellipfn);
+     defautoload_operator(arcdc, ellipfn);
+% Weierstrassian elliptic and sigma functions 
+     defautoload_operator(weierstrass, ellipfn);
+     defautoload_operator(weierstrass1, ellipfn);
+     defautoload_operator(weierstrasszeta, ellipfn);
+     defautoload_operator(weierstrasszeta1, ellipfn);
+     defautoload_operator(sigma, ellipfn);
+     defautoload_operator(sigma1, ellipfn);
+     defautoload_operator(sigma2, ellipfn);
+     defautoload_operator(sigma3, ellipfn);
+    
 % specfn2 module entry points
 
 defautoload_operator(hypergeometric,(specfn specfn2));
@@ -980,7 +1032,7 @@ put('log_sum,'simpfn,'simpiden);
 
 % Rtrace entry points
 
-switch rtrace;
+switch rtrace=on;
 
 defautoload(rtr!*,rtrace,expr,2);
 
@@ -1192,8 +1244,7 @@ defautoload(rl_exceptionp, rlsupport, expr, 1);
 
 % Redlog entry points
 
-switch rlabout;
-on1 'rlabout;
+switch rlabout=on;
 
 put('rlset, 'psopfn, 'rl_set!$);
 defautoload(rl_set!$, redlog, expr, 1);
@@ -1203,6 +1254,8 @@ defautoload(rl_set, redlog, expr, 1);
 defautoload(rl_copyc, redlog, expr, 2);
 
 % Qhull entry point
+
+switch qhullkeepfiles;
 
 symbolic operator qhull;
 defautoload(qhull, qhull, expr, 1);
@@ -1215,6 +1268,8 @@ defautoload(gurobi_newmodel, gurobi, expr, 2);
 
 % Crack, Applysym & Liepde
 
+switch batch_mode;
+
 defautoload(backup_reduce_flags, crack, expr, 0);
 symbolic operator setcrackflags;
 defautoload(setcrackflags, crack, expr, 0);
@@ -1226,6 +1281,10 @@ defautoload(einfachst, applysym, expr, 2);
 fluid '(!*assert assert_functionl!*);
 
 switch assert;
+switch assert_procedures, assert_inline_procedures;
+switch assertinstall;
+switch evalassert;
+switch assertbreak, assertstatistics;
 
 put('assert, 'simpfg, '((t (assert_onoff)) (nil (assert_onoff))));
 defautoload(assert_onoff, assert, expr, 0);
@@ -1256,6 +1315,9 @@ defautoload(sqp, assert, expr, 1);
 
 % LALR
 
+switch tracelex, lalr_verbose;
+switch parse_errors_fatal;
+
 defautoload(lex_cleanup, lalr, expr, 0);
 defautoload(lalr_construct_parser, lalr, expr, 2);
 defautoload(yyparse, lalr, expr, 1);
@@ -1269,9 +1331,7 @@ defautoload(ra_x, ranum, expr, 0);
 defautoload(ra_y, ranum, expr, 0);
 
 % Smt
-switch smtabout, smtprompt;
-on1 'smtabout;
-on1 'smtprompt;
+switch smtabout=on, smtprompt=on;
 put('smt, 'psopfn, 'smt_smt);
 defautoload(smt_smt, smt, expr, 1);
 
@@ -1279,6 +1339,8 @@ operator smt_mainloop;
 defautoload(smt_mainloop, smt, expr, 0);
 
 % mrvlimit
+global '(!*tracelimit);
+switch tracelimit;
 symbolic operator mrv_limit;
 defautoload(mrv_limit, mrvlimit, expr, 3);
 
