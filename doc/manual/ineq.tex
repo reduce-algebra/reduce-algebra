@@ -4,13 +4,12 @@
 \ttindextype{INEQ\_SOLVE}{operator}
 \hypertarget{operator:INEQ_SOLVE}{}
 The operator \f{ineq\_solve}
-tries to solves single inequalities and sets of coupled inequalities.
-The following types of systems are supported :
+tries to solves single inequalities and sets of coupled inequalities\footnote{This code was written by Herbert Melenk.}.
+The following types of systems are supported:
 \begin{itemize}
 \item only numeric coefficients (no parametric system),
 \item a linear system of mixed equations and $<=$ -- $>=$ 
-     inequalities, applying the method of Fourier and Motzkin
-     \footnote{described by G.B.~Dantzig in \cite{Dantzig1963}},
+     inequalities, applying the method of Fourier and Motzkin, as described by G.~B.~Dantzig in \cite{Dantzig1963},
 \item a univariate inequality with $<=$, $>=$, $>$ or $<$ operator
      and polynomial or rational left--hand and right--hand sides,
      or a system of such inequalities with only one variable.

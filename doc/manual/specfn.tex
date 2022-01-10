@@ -1011,6 +1011,80 @@ as the series for the generating function is extendible and need only be
 calculated once; it will be extended automatically if higher order numbers or
 polynomials are required.
 
+\subsection{Function Bases}
+\ttindextype{MONOMIAL\_BASE}{procedure}
+\ttindextype{TRIGONOMETRIC\_BASE}{procedure}
+\ttindextype{BERNSTEIN\_BASE}{procedure}
+\ttindextype{LEGENDRE\_BASE}{procedure}
+\ttindextype{LAGUERRE\_BASE}{procedure}
+\ttindextype{HERMITE\_BASE}{procedure}
+\ttindextype{CHEBYSHEV\_BASE\_T}{procedure}
+\ttindextype{CHEBYSHEV\_BASE\_U}{procedure}
+\ttindextype{GEGENBAUER\_BASE}{procedure}
+\hypertarget{procedure:MONOMIAL_BASE}{}
+\hypertarget{procedure:TRIGONOMETRIC_BASE}{}
+\hypertarget{procedure:BERNSTEIN_BASE}{}
+\hypertarget{procedure:LEGENDRE_BASE}{}
+\hypertarget{procedure:LAGUERRE_BASE}{}
+\hypertarget{procedure:HERMITE_BASE}{}
+\hypertarget{procedure:CHEBYSHEV_BASE_T}{}
+\hypertarget{procedure:CHEBYSHEV_BASE_U}{}
+\hypertarget{procedure:GEGENBAUER_BASE_U}{}
+
+The following procedures compute sets of functions
+e.g. to be used for approximation.
+All procedures have
+two parameters, the expression to be used as $variable$
+(an identifier in most cases) and the
+order of the desired system.
+The functions are not scaled to a specific interval, but
+the $variable$ can be accompanied by a scale factor
+and/or a translation
+in order to map the generic interval of orthogonality to another
+(e.g. $(x- 1/2 ) * 2 pi$).
+The result is a function list with ascending order, such that
+the first element is the function of order zero and (for
+the polynomial systems) the function of order $n$ is the $n+1$-th
+element.
+
+\begin{verbatim}
+
+     monomial_base(x,n)       {1,x,...,x**n}
+     trigonometric_base(x,n)  {1,sin x,cos x,sin(2x),cos(2x)...}
+     Bernstein_base(x,n)      Bernstein polynomials
+     Legendre_base(x,n,a,b)   Legendre polynomials
+     Laguerre_base(x,n,a)     Laguerre polynomials
+     Hermite_base(x,n)        Hermite polynomials
+     Chebyshev_base_T(x,n)    Chebyshev polynomials first kind
+     Chebyshev_base_U(x,n)    Chebyshev polynomials second kind
+     Gegenbauer_base(x,n,a)   Gegenbauer polynomials
+
+\end{verbatim}
+
+Example:
+\begin{verbatim}
+ Bernstein_base(x,5);
+
+         5      4       3       2
+    { - X  + 5*X  - 10*X  + 10*X  - 5*X + 1,
+
+           4      3      2
+     5*X*(X  - 4*X  + 6*X  - 4*X + 1),
+
+         2      3      2
+     10*X *( - X  + 3*X  - 3*X + 1),
+
+         3   2
+     10*X *(X  - 2*X + 1),
+
+        4
+     5*X *( - X + 1),
+
+      5
+     X }
+
+\end{verbatim}
+
 \subsection{Acknowledgements}
 
 The contributions of Kerry Gaskell, Matthew Rebbeck, Lisa Temme,

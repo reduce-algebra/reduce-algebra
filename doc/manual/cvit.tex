@@ -1,5 +1,5 @@
 
-\subsection*{Abstract}
+\subsection{The CVIT package}
 
 In modern high energy physics the calculation of Feynman diagrams are
 still very important. One of the difficulties of these calculations
@@ -7,13 +7,13 @@ are trace calculations. So the calculation of traces of Dirac's
 $\gamma$-matrices were one of first task of computer algebra systems.
 All available algorithms are based on the fact that gamma-matrices
 constitute a basis of a Clifford algebra:
-\begin{verbatim}
-           {Gm,Gn} = 2gmn.
-\end{verbatim}
+\begin{displaymath}
+  \left\{G_{m},G_{n}\right\} = 2g_{mn}.
+\end{displaymath}
 
 We present the implementation of an alternative algorithm based on
 treating of gamma-matrices as 3-j symbols (details may be found in
-[1,2]).
+\cite{Ilyin:89,Kennedy:1982}).
 
 The program consists of 5 modules described below.
 
@@ -55,7 +55,6 @@ The program consists of 5 modules described below.
                   |________________|
 
 
-      Requires of REDUCE version: 3.2, 3.3.
 \end{verbatim}
 
 
@@ -295,7 +294,7 @@ COLOR-STRAND finishes strand generation.
 \end{verbatim}
 
 
-\subsubsection*{ LIST OF MESSAGES}
+\subsubsection*{LIST OF MESSAGES}
 
 \begin{itemize}
 
@@ -385,20 +384,6 @@ CALC_SPUR
 *Unmarked functions are from CVITMPPING module.
 
 \end{verbatim}
-
-
-\subsection*{References}
-
-\begin{itemize}
-
-\item{1.}
-Ilyin V.A., Kryukov A.P., Rodionov A.Ya., Taranov A.Yu.
-Fast algorithm for calculation of Diracs gamma-matrices
-traces. SIGSAM Bull., 1989, v.23, no.4, pp.15-24.
-
-\item{2.}
-Kennedy A.D. Phys.Rev., 1982, D26, p.1936.
-\end{itemize}
 
 \subsection*{Keywords}
 

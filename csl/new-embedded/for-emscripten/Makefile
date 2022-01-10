@@ -41,7 +41,8 @@ CXX=em++
 # to avoid warnings.
 
 # Emscripten compile and link flags:
-EM_CC_LD_FLAGS = -flto
+EM_CC_LD_FLAGS = -flto -s USE_ZLIB
+# USE_ZLIB needed (initially) at compile time to install <zlib.h>!
 
 # Emscripten compile flags:
 EM_CCFLAGS = $(EM_CC_LD_FLAGS)
@@ -50,9 +51,7 @@ EM_CCFLAGS = $(EM_CC_LD_FLAGS)
 EM_LDFLAGS = $(EM_CC_LD_FLAGS)\
  -s EXIT_RUNTIME\
  -s INITIAL_MEMORY=1024mb\
- -s NO_ERROR_ON_UNDEFINED_SYMBOLS\
- -s USE_ZLIB
-
+ -s NO_ERROR_ON_UNDEFINED_SYMBOLS
 
 
 #ASYNC_FUNCTIONS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$cfuns)

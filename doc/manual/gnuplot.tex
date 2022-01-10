@@ -1,32 +1,16 @@
+\chapter{Graphical display}
 
+\section{GNUPLOT: Display of functions and surfaces}
+\index{GNUPLOT}
+\index{Graphical display}
+\index{Display, graphical}
 
-%\newcommand{\xr}{\texttt{XR}}
-
-%\setlength{\oddsidemargin}{5mm}
-%\setlength{\evensidemargin}{-5mm}
-%\setlength{\textwidth}{159.2mm}
-%\setlength{\textheight}{235mm}
-%\addtolength{\topmargin}{-18mm}
+Graphical display of functions and data is done via an interface to the popular GNUPLOT package\footnote{This interface, together with the code for plotting data, was written by Herbert Melenk.}.
+It allows you to display functions in 2D and surfaces in 3D
+on a variety of output devices including X terminals, PC monitors, and
+postscript and Latex printer files.
 
 \newcommand{\Gnuplot}{\textsc{GnuPlot}}
-
-\iffalse
-\newpage
-  Gnuplot
-\newpage
-\title{{\Gnuplot} Interface for REDUCE\\Version 4}
-\author{Herbert Melenk \\
-Konrad--Zuse--Zentrum f\"ur Informationstechnik Berlin \\
-E--mail: Melenk@zib.de}
-\maketitle
-
-\fi
-
-%\markboth{APPENDIX}{GNUPLOT Interface for REDUCE}
-
-%\section{APPENDIX: GNUPLOT Interface for REDUCE}
-
-\subsection{Introduction}
 
 The {\Gnuplot} system provides easy to use graphics output for curves or surfaces
 which are defined by formulas and/or data sets.  {\Gnuplot} supports a variety of
@@ -36,21 +20,9 @@ The {\REDUCE} {\Gnuplot} package lets one use the {\Gnuplot} graphical output
 directly from inside {\REDUCE}, either for the interactive display of
 curves/surfaces or for the production of pictures on paper.
 
-\iffalse
-{\REDUCE} supports {\Gnuplot} 3.4 (or higher).  For DOS, Windows, Windows 95,
-Windows NT, OS/2 and Unix versions of {\REDUCE} {\Gnuplot} binaries are delivered
-together with {\REDUCE}\footnote{The {\Gnuplot} developers have agreed that {\Gnuplot}
-binaries can be distributed together with {\REDUCE}.  As {\Gnuplot} is a package
-distributed without cost, the {\Gnuplot} support of {\REDUCE} also is an add-on to
-the {\REDUCE} kernel system without charge.  We recommend fetching the full
-{\Gnuplot} system by anonymous FTP from a file server.  } % end of footnote
-. However, this is a basic set only.  If you intend to use more facilities of
-the {\Gnuplot} system you should pick up the full {\Gnuplot} file tree
-from \url{http://sourceforge.net/projects/gnuplot}.
-\fi
-
 \subsection{Command \texttt{plot}}
 \ttindex{PLOT}
+\hypertarget{command:PLOT}{}
 
 Under {\REDUCE} {\Gnuplot} is used as graphical output server, invoked by the
 command \texttt{plot(...)}.  This command can have a variable number of
@@ -293,6 +265,7 @@ removal is not available with point lists.
 
 \subsection{{\Gnuplot} operation}
 \ttindex{PLOTRESET}
+\hypertarget{command:PLOTRESET}{}
 
 The command \texttt{plotreset;} deletes the current {\Gnuplot} output
 window. The next call to \texttt{plot} will then open a new one.
@@ -331,6 +304,7 @@ actual {\REDUCE} output.  Normally the data files are erased after calling
 
 \subsection{Direct Call of {\Gnuplot}}
 \ttindextype{GNUPLOT}{command}
+\hypertarget{command:GNUPLOT}{}
 
 {\Gnuplot} has a lot of facilities which are not accessed by the operators and
 parameters described above. Therefore genuine {\Gnuplot} commands can be sent by
@@ -344,7 +318,10 @@ inside {\REDUCE} separated by commas. The parameters are evaluated by {\REDUCE}
 and then transmitted to {\Gnuplot} in {\Gnuplot} syntax. Usually a drawing is built by
 a sequence of commands which are buffered by {\REDUCE} or the operating
 system. For terminating and activating them use the {\REDUCE}
-command \texttt{plotshow}.  Example:
+command \texttt{plotshow}.
+\ttindextype{command}{PLOTSHOW}
+\hypertarget{command:PLOTSHOW}{}
+Example:
 \begin{verbatim}
      gnuplot(set,polar);
      gnuplot(unset,parametric);

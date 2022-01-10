@@ -150,7 +150,7 @@ tmp:= ps(jacobins(x,k),x,0);
 tmp1 := ps(jacobisn(x,k),x,0);
 tmp1*tmp;
 
-ps(jacobidn(x,k),x, i*ellipticK!'(k));
+ps(jacobidc(x,k),x, 3*ellipticK(k));
 
 % Weierstrass functions
 % at a pole
