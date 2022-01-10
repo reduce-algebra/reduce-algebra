@@ -1,7 +1,7 @@
 AC_INIT([REDUCE], [from SourceForge], [acn1@cam.ac.uk])
 
 # **************************************************************************
-# * Copyright (C) 2017-21, Codemist.                      A C Norman       *
+# * Copyright (C) 2017-22, Codemist.                      A C Norman       *
 # *                                                                        *
 # * Redistribution and use in source and binary forms, with or without     *
 # * modification, are permitted provided that the following conditions are *
@@ -424,12 +424,13 @@ fi
 # I will only attempt to build a Mac univeral binary if things are
 # configured with "--enable-universal", and even then such a build will
 # only be possible if enough build libraries have been installed in
-# universal mode. At the time of inserting this comment (February 2021)
-# this is just about possible on an ARM-based Mac but needs some delicate
-# manual adjustment, while on an Intel Mac the current Macports fails
-# to get there. I fully expect that soon things will improve, so when
-# I can I will first make the default builds on ARM based Macs universal
-# and maybe later let the Intel builds catch up.
+# universal mode. At the time of updating this comment (January 2022)
+# this seems possible on either an Intel or arm-based Mac running Big Sur.
+# It needs universal versions of many of the libraries etc that get
+# set up using macports, and scripts/make-universal.sh is available to
+# try to establish a suitable encironment. Note that make-universal.sh will
+# NOT manage to make every "port" universal, but for me it manages enough.
+# and over time the rest may catch up, for what that is worth.
 
 AC_ARG_ENABLE(universal,
   AS_HELP_STRING([--enable-universal],
@@ -1291,11 +1292,12 @@ fi
 
 AC_MSG_NOTICE([About to configure libffi])
 mkdir -p libffi
-case "`uname -s` `uname -m`" in
-*Darwin*arm64*)
+if test "$enable_universal" = "yes"
+then
+# This is a messy script that arranges to build a universal version of
+# the library on MacOS.
   cp $abssrcdir/libraries/libffi-for-mac/Makefile libffi
-  ;;
-*)
+else
   cd libffi
   setpasscc
   doconfig="$SHELL $abssrcdir/libraries/libffi/configure -C $filtered \
@@ -1314,8 +1316,7 @@ case "`uname -s` `uname -m`" in
   printf "\n\n+++ About to configure libffi +++\n\n"
   eval "$doconfig"
   cd "$builddir"
-  ;;
-esac
+endif
 
 AC_MSG_NOTICE([About to configure libsoftfloat])
 mkdir -p softfloat
