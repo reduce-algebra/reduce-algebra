@@ -1,10 +1,10 @@
 
 \index{Power series} \index{extendible power series}
 \index{Barnes, Alan} \index{Padget, Julian}
-\subsection{Introduction}
+
 \index{Power series expansions}
 This package implements formal power series expansions in one
-variable using the domain mechanism of REDUCE. This means that power
+variable using the domain mechanism of REDUCE.\footnote{This code was written by Alan Barnes and Julian Padget.} This means that power
 series objects can be added, multiplied, differentiated etc. like other
 first class objects in the system. A lazy evaluation scheme is used in
 the package and thus terms of the series are not evaluated until they
@@ -517,11 +517,11 @@ normal way.
 For example if A and B are power series objects then the commands
 such as:
 
-\ttindextype{+}{operator!power series}
-\ttindextype{-}{operator!power series}
-\ttindextype{/}{operator!power series}
-\ttindextype{*}{operator!power series}
-\ttindextype{**}{operator!power series}
+\ttindextype{+ (plus)}{operator!power series}
+\ttindextype{- (minus)}{operator!power series}
+\ttindextype{/ (quotient)}{operator!power series}
+\ttindextype{* (times)}{operator!power series}
+\ttindextype{** (expt)}{operator!power series}
 \begin{verbatim}
     a*b;
     a/b;

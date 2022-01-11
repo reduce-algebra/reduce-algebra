@@ -1,4 +1,4 @@
-\section{Series expansion}
+\chapter{Series expansion}
 
 Expanding an algebraic expression into a series can be done by standard \REDUCE operators, namely \f{df}, \f{sub}, and possibly \f{limit}.
 Nevertheless, there are many cases where this straightforward method fails.
@@ -6,16 +6,28 @@ Nevertheless, there are many cases where this straightforward method fails.
 \begin{description}
 \item[\f{taylor}] computes a truncated power series.
 \item[\f{ps}] computes extendible power series.
+  \item[\f{FPS}] computes formal power series.
 \end{description}
 
-\subsection{Taylor expansion}
+\section{Taylor expansion}
 This package carries out the Taylor expansion of an expression in one
 or more variables and efficient manipulation of the resulting Taylor
 series. Capabilities include basic operations (addition, subtraction,
 multiplication and division) and also application of certain algebraic
-and transcendental functions.
+and transcendental functions.\footnote{This code was written by Rainer Schöpf.}
 
 \input{taylor}
 
-\subsection{tps}
+\section{TPS: extendible power series}
 \input{tps}
+
+\newpage
+
+\section{FPS: Automatic calculation of formal power series}
+\indexpackage{FPS}
+
+This package can expand a specific class of functions into their
+corresponding Laurent-Puiseux series.\footnote{This package was written by Wolfram Koepf and Winfried Neun.}
+
+\input{fps}
+
