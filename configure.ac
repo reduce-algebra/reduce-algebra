@@ -1316,7 +1316,7 @@ else
   printf "\n\n+++ About to configure libffi +++\n\n"
   eval "$doconfig"
   cd "$builddir"
-endif
+fi
 
 AC_MSG_NOTICE([About to configure libsoftfloat])
 mkdir -p softfloat
