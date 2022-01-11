@@ -1,4 +1,6 @@
 
+\section{Turtle graphics}
+
 \newcommand{\turtlesyntax}[1]{\textsl{SYNTAX: } \texttt{#1}}
 \newcommand{\turtleabb}[1]{\textsl{Abbreviated form: } \texttt{#1}}
 \ifdefined\HCode
@@ -8,10 +10,6 @@
 \newcommand{\turtleincludegraphics}[1]
            {\includegraphics[width=8.1cm,height=8.1cm,angle=270]{#1.pdf}}
 \fi
-
-This package is a simple implementation of the ``Turtle Graphics''
-style of drawing graphs in {\REDUCE}. The background and ideas of
-``Turtle Graphics'' are outlined below.
 
 \subsection{Turtle Graphics}
 
@@ -30,6 +28,7 @@ the incorporation of graphics, known as ``Turtle Graphics'' into the
 language. ``Turtle Graphics'' is regarded by many as the main use of
 LOGO.
 
+For references, see \cite{PutnikZoran:1997,LozanoMacias:1994}.
 
 \textbf{Main Idea: } To use simple commands directing a turtle, such as
 forward, back, turnleft, in order to construct pictures as opposed to
@@ -42,10 +41,10 @@ facing) and $p$ signals whether the pen is up or down (i.e.\ whether or
 not it is drawing on the paper).
 
 
-\subsection{Implementation}
+%\subsection{Implementation}
 Some alterations to the original ``Turtle Graphics'' commands have been
 made in this implementation due to the design of the graphics package
-\emph{gnuplot} used in {\REDUCE}.
+\emph{gnuplot} used in {\REDUCE}.\footnote{The code of the turtle package was written by Caroline Cotter.}
 
 \begin{itemize}
  \item It is not possible to draw lines individually and to see each
@@ -81,7 +80,10 @@ x-axis.
 
 \subsubsection{User Setting Functions}
 \begin{description}
- \item[setheading] Takes a number as its argument and resets the heading
+\item[setheading]
+  \ttindextype{setheading}{Turtle function}
+  \ttindextype{sh}{Turtle function}
+  Takes a number as its argument and resets the heading
        to this number. If the number entered is negative or greater than
        or equal to 360 then it is automatically checked to lie between 0
        and 360.
@@ -91,7 +93,10 @@ x-axis.
        \turtlesyntax{setheading($\theta$)}
 
        \turtleabb{sh($\theta$)}
- \item[leftturn]  The turtle is turned anticlockwise through the
+     \item[leftturn]
+       \ttindextype{leftturn}{Turtle function}
+       \ttindextype{slt}{Turtle function}
+       The turtle is turned anticlockwise through the
        stated number of degrees. Takes a number as its argument and
        resets the heading by adding this number to the previous heading
        setting.
@@ -101,7 +106,10 @@ x-axis.
        \turtlesyntax{leftturn($\alpha$)}
 
        \turtleabb{slt($\alpha$)}
- \item[rightturn] Similar to \texttt{leftturn}, but the turtle is turned
+     \item[rightturn]
+       \ttindextype{rightturn}{Turtle function}
+       \ttindextype{srt}{Turtle function}
+       Similar to \texttt{leftturn}, but the turtle is turned
        clockwise through the stated number of degrees. Takes a number as
        its argument and resets the heading by subtracting this number from
        the previous heading setting.
@@ -111,7 +119,10 @@ x-axis.
        \turtlesyntax{rightturn($\beta$)}
 
        \turtleabb{srt($\beta$)}
- \item[setx] Relocates the turtle in the x direction. Takes a number as
+     \item[setx]
+       \ttindextype{setx}{Turtle function}
+       \ttindextype{sx}{Turtle function}
+       Relocates the turtle in the x direction. Takes a number as
        its argument and repositions the state of the turtle by changing its
        x-coordinate.
 
@@ -120,7 +131,10 @@ x-axis.
        \turtlesyntax{setx($x$)}
 
        \turtleabb{sx($x$)}
- \item[sety] Relocates the turtle in the y direction. Takes a number as
+     \item[sety]
+       \ttindextype{sety}{Turtle function}
+       \ttindextype{sy}{Turtle function}
+       Relocates the turtle in the y direction. Takes a number as
        its argument and repositions the state of the turtle by changing its
        y-coordinate.
 
@@ -129,7 +143,10 @@ x-axis.
        \turtlesyntax{sety($y$)}
 
        \turtleabb{sy($y$)}
- \item[setposition] Relocates the turtle from its current position to the
+     \item[setposition]
+       \ttindextype{setposition}{Turtle function}
+       \ttindextype{spn}{Turtle function}
+       Relocates the turtle from its current position to the
        new cartesian coordinate position described. Takes a pair of
        numbers as its arguments and repositions the state of the turtle by
        changing the x and y coordinates.
@@ -139,7 +156,10 @@ x-axis.
        \turtlesyntax{setposition($x$,$y$)}
 
        \turtleabb{spn($x$,$y$)}
- \item[setheadingtowards] Resets the heading so that the turtle is facing
+     \item[setheadingtowards]
+       \ttindextype{setheadingtowards}{Turtle function}
+       \ttindextype{shto}{Turtle function}
+       Resets the heading so that the turtle is facing
        towards the given point, with respect to its current position on
        the coordinate axes. Takes a pair of numbers as its arguments and
        changes the heading, but the turtle stays in the same place.
@@ -149,7 +169,10 @@ x-axis.
        \turtlesyntax{setheadingtowards($x$,$y$)}
 
        \turtleabb{shto($x$,$y$)}
- \item[setforward] Relocates the turtle from its current position by
+     \item[setforward]
+       \ttindextype{setforward}{Turtle function}
+       \ttindextype{sfwd}{Turtle function}
+       Relocates the turtle from its current position by
        moving forward (in the direction of its heading) the number of
        steps given. Takes a number as its argument and repositions the
        state of the turtle by changing the x and y coordinates.
@@ -159,7 +182,10 @@ x-axis.
        \turtlesyntax {setforward($n$)}
 
        \turtleabb{sfwd($n$)}
- \item[setback] As with \texttt{setforward}, but moves back (in the opposite
+     \item[setback]
+       \ttindextype{setback}{Turtle function}
+       \ttindextype{sbk}{Turtle function}
+       As with \texttt{setforward}, but moves back (in the opposite
        direction of its heading) the number of steps given.
 
        Returns \{\}
@@ -171,7 +197,10 @@ x-axis.
 
 \subsubsection{Line-Drawing Functions}
 \begin{description}
- \item[forward] Moves the turtle forward (in the direction its heading)
+\item[forward]
+  \ttindextype{forward}{Turtle function}
+  \ttindextype{fwd}{Turtle function}
+  Moves the turtle forward (in the direction its heading)
        the number of steps given. Takes a number as its argument and draws
        a line from its current position to a new position on the
        coordinate plane. The x and y coordinates are reset to the new
@@ -183,7 +212,10 @@ x-axis.
        \turtlesyntax{forward($s$)}
 
        \turtleabb{fwd($s$)}
- \item[back] As with \texttt{forward} except the turtle moves back (in the
+     \item[back]
+       \ttindextype{back}{Turtle function}
+       \ttindextype{bk}{Turtle function}
+       As with \texttt{forward} except the turtle moves back (in the
        opposite direction to its heading) the number of steps given.
 
        Returns the list of points
@@ -192,7 +224,10 @@ x-axis.
        \turtlesyntax{back($s$)}
 
        \turtleabb{bk($s$)}
- \item[move] Moves the turtle to a specified point on the coordinate
+     \item[move]
+       \ttindextype{move}{Turtle function}
+       \ttindextype{mv}{Turtle function}
+       Moves the turtle to a specified point on the coordinate
        plane. Takes a pair of numbers as its arguments and draws a line
        from its current position to the position described. The x and y
        coordinates are set to these new values.
@@ -207,7 +242,9 @@ x-axis.
 
 \subsubsection{Plotting Functions}
 \begin{description}
- \item[draw] This is the function the user calls within {\REDUCE} to
+\item[draw]
+  \ttindextype{draw}{Turtle function}
+  This is the function the user calls within {\REDUCE} to
        draw the list of turtle commands given into a picture. Takes a list
        as its argument, with each separate command being separated by a
        comma, and returns the graph drawn by following the commands.
@@ -220,7 +257,9 @@ x-axis.
                          if just one argument is needed. Commands taking
                          more than one argument must be written with
                          parentheses and arguments separated by a comma.
- \item[fdraw] This function is also called in {\REDUCE} by the user
+\item[fdraw]
+  \ttindextype{fdraw}{Turtle function}
+  This function is also called in {\REDUCE} by the user
        and outputs the same as the \texttt{draw} command, but it takes a
        filename as its argument. The file which is called upon by \texttt{fdraw}
        must contain only the turtle commands and other functions
@@ -240,7 +279,9 @@ x-axis.
 
 \subsubsection{Other Important Functions}
 \begin{description}
- \item[info] This function is called on its own in {\REDUCE} to tell
+\item[info]
+  \ttindextype{info}{Turtle function}
+  This function is called on its own in {\REDUCE} to tell
        user the current state of the turtle. Takes no arguments but
        returns a list containing the current values of the x and y
        coordinates and the heading variable.
@@ -248,7 +289,10 @@ x-axis.
        Returns the list \{\textit{x\_coord},\textit{y\_coord},\textit{heading}\}
 
        \turtlesyntax{info()} or simply \texttt{info}
- \item[clearscreen] This is also called on its own in {\REDUCE} to
+     \item[clearscreen]
+  \ttindextype{clearscreen}{Turtle function}
+  \ttindextype{cls}{Turtle function}
+       This is also called on its own in {\REDUCE} to
        get rid of the last gnuplot window, displaying the last turtle
        graphics picture, and to reset all the variables to 0. Takes no
        arguments and returns no printed output to the screen but the
@@ -257,7 +301,9 @@ x-axis.
        \turtlesyntax{clearscreen()} or simply \texttt{clearscreen}
 
        \turtleabb{cls()} or \texttt{cls}
- \item[home] This is a command which can be called within a plot function
+     \item[home]
+       \ttindextype{home}{Turtle function}
+       This is a command which can be called within a plot function
        as well as outside of one. Takes no arguments, and simply resets
        the x and y coordinates and the heading variable to 0. When used in
        a series of turtle commands, it moves the turtle from its current
@@ -299,32 +345,48 @@ as those involving \texttt{if\ldots then\ldots else\ldots} or \texttt{for
 i:=\ldots collect\{\ldots\}} are defined together in a separate file, then
 called into {\REDUCE} using the \texttt{in "\textit{filename}"} command.
 
-\newpage
+\subsection{Global variables}
+
+The following variables are global, so it is advised that these are not altered directly:
+\begin{description}
+\item[x\_coord]
+  \hypertarget{reserved:X_COORD}{}
+  \ttindextype{X\_COORD}{global variable}
+  The current $x$ coordinate.
+\item[y\_coord]
+  \hypertarget{reserved:Y_COORD}{}
+  \ttindextype{Y\_COORD}{global variable}
+  The current $y$ coordinate.
+\item[heading]
+  \hypertarget{reserved:HEADING}{}
+  \ttindextype{HEADING}{global variable}
+  The current heading, as ste by the \f{setheading} function.
+\end{description}
+%\newpage
 
 \subsection{Examples}
 
-The following examples are taken from the tur.tst file.
+The following examples are taken from the turtle.tst file.
 Examples 1, 2, 5 \& 6 are simple calls to draw. Examples 3 \& 4 show how
 more complicated commands can be built (which can take their own set of
 arguments) using procedures. Examples 7 \& 8 show the difference between
 the draw and fdraw commands.
 
+\noindent{\textbf{Example 1:}} Draw 36 rays of length 100
+\nopagebreak
 \begin{verbatim}
-% (1) Draw 36 rays of length 100
-
 draw {for i:=1:36 collect{setheading(i*10), forward 100, back 100} };
 \end{verbatim}
-
+\nopagebreak
 \unitlength=1cm
 \begin{picture}(8,8)(0,0)
 %\put (0,8){\Includegraphics[bb=0 0 504 720,width=8cm,height=8cm,angle=270]{turtleeg1}}
 \put (0,8){\turtleincludegraphics{turtleeg1}}
 \end{picture}
 
+\noindent{\textbf{Example 2:}} Draw 12 regular polygons with 12 sides of length 40, each polygon
+forming an angle of 360/n degrees with the previous one.
 \begin{verbatim}
-% (2) Draw 12 regular polygons with 12 sides of length 40,each polygon
-%forming an angle of 360/n degrees with the previous one.
-
 draw {for i:=1:12 collect
           {leftturn(30), for j:=1:12 collect
                              {forward 40, leftturn(30)}} };
@@ -336,14 +398,15 @@ draw {for i:=1:12 collect
 \put (0,8){\turtleincludegraphics{turtleeg4}}
 \end{picture}
 
+\noindent{\textbf{Example 3:}} A ``peak'' pattern - an example of a recursive procedure.
 \begin{verbatim}
-% (3) A "peak" pattern - an example of a recursive procedure.
-
 procedure peak(r);
 begin;
   return for i:=0:r collect
-             {move(x_coord+5,y_coord-10), move(x_coord+10,y_coord+60),
-              move(x_coord+10,y_coord-60),move(x_coord+5,y_coord+10)};
+             {move(x_coord+5,y_coord-10),
+              move(x_coord+10,y_coord+60),
+              move(x_coord+10,y_coord-60),
+              move(x_coord+5,y_coord+10)};
 end;
 
 draw {home(), peak(3)};
@@ -354,10 +417,9 @@ draw {home(), peak(3)};
 %\put (0,8){\Includegraphics[bb=0 0 504 720,width=8cm,height=8cm,angle=270]{turtleeg5a}}
 \put (0,8){\turtleincludegraphics{turtleeg5a}}
 \end{picture}
-
+%
+This procedure can then be part of a longer chain of commands:
 \begin{verbatim}
-%This procedure can then be part of a longer chain of commands:
-
 draw {home(), move(5,50), peak(3), move(x_coord+10,-100),
       peak(2), move(x_coord+10,0)};
 \end{verbatim}
@@ -368,10 +430,9 @@ draw {home(), move(5,50), peak(3), move(x_coord+10,-100),
 \put (0,8){\turtleincludegraphics{turtleeg5b}}
 \end{picture}
 
+\noindent{\textbf{Example 4:}} Write a recursive procedure which draws "trees" such that every
+branch is half the length of the previous branch.
 \begin{verbatim}
-% (4)  Write a recursive procedure which draws "trees" such that every
-%branch is half the length of the previous branch.
-
 procedure tree(a,b);         %Here: a is the start length, b is the
                              %number of levels
 begin;
@@ -392,9 +453,8 @@ draw {home(), tree(130,7)};
 \put(0,8){\turtleincludegraphics{turtleeg6a}}
 \end{picture}
 
+\noindent{\textbf{Example 5:}} A 36-point star.
 \begin{verbatim}
-% (5)  A 36-point star.
-
 draw {home(), for i:=1:36 collect
                   {leftturn(10), forward 100, leftturn(10), back 100} };
 \end{verbatim}
@@ -405,10 +465,9 @@ draw {home(), for i:=1:36 collect
 \put(0,8){\turtleincludegraphics{turtleeg7}}
 \end{picture}
 
+\noindent{\textbf{Example 6:}} Draw 100 equilateral triangles with the leading points
+equally spaced on a circular path.
 \begin{verbatim}
-% (6) Draw 100 equilateral triangles with the leading points
-%equally spaced on a circular path.
-
 draw {home(), for i:=1:100 collect
                   {forward 150, rightturn(60), back(150),
                    rightturn(60), forward 150, setheading(i*3.6)} };
@@ -420,11 +479,10 @@ draw {home(), for i:=1:100 collect
 \put(0,8){\turtleincludegraphics{turtleeg8}}
 \end{picture}
 
+\noindent{\textbf{Example 7:}} Two or more graphs can be drawn together (this is easier
+if the graphs are named). Here we show graphs 2 and 6 on top of one
+another: 
 \begin{verbatim}
-% (7) Two or more graphs can be drawn together (this is easier
-%if the graphs are named). Here we show graphs 2 and 6 on top of one
-%another:
-
 gr2:={home(), for i:=1:12 collect
                   {leftturn(30), for j:=1:12 collect
                                      {forward 40, leftturn(30)}} }$
@@ -442,15 +500,14 @@ draw {gr2, gr6};
 \put(0,8){\turtleincludegraphics{turtleeg9}}
 \end{picture}
 
+\noindent{\textbf{Example 8:}} Example 7 could have been tackled another way, which makes use of
+the fdraw command.
+By inputting gr2 and gr6 as procedures into reduce, they can then be
+used at any time in the same reduce session in a call to draw and even
+fdraw.
+
+First save the procedures in a file, say fxp (fdraw example procedures):
 \begin{verbatim}
-% (8) Example 7 could have been tackled another way, which makes use of
-%the fdraw command.
-%By inputting gr2 and gr6 as procedures into reduce, they can then be
-%used at any time in the same reduce session in a call to draw and even
-%fdraw.
-
-%First save the procedures in a file, say fxp (fdraw example procedures):
-
 procedure gr2;
 begin;
   return {home, for i:=1:12 collect
@@ -464,42 +521,27 @@ begin;
                   {forward 150, rightturn(60), back(150),
                    rightturn(60), forward 150, setheading(i*3.6)} };
 end;
-
-%Then create another file where the functions may be called to fdraw,
-%e.g. fx:
-
-gr2
-gr6
-
-%Now in reduce, after loading the turtle package just type the following:
-
+\end{verbatim}
+Then create another file where the functions may be called to fdraw,
+e.g. fx:
+\begin{verbatim}
+gr2;
+gr6;
+\end{verbatim}
+Now in reduce, after loading the turtle package just type the following:
+\begin{verbatim}
 in "fxp";
 fdraw '"fx";
-
-%..and the graphs will appear.
-
-%This method is useful if the user wants to define many of their own
-%functions, and, using fdraw, subtle changes can be made quickly without
-%having to type out the whole string of commands to plot each time. It
-%is particularly useful if there are several pictures to plot at once and
-%it is an easy way to build pictures so that the difference an extra
-%command makes to the overall picture can be clearly seen.
-%(In the above example, the file called to fdraw was only 2 lines long,
-%so this method did not have any advantage over the normal draw command.
-%However, when the list of commands is longer it is clearly advantageous
-%to use fdraw)
 \end{verbatim}
+\ldots and the graphs will appear.
 
-
-\subsection{References}
-
-\begin{enumerate}
- \item {\bf An Implementation of Turtle Graphics for Teaching Purposes}\\
-         Zoran I. Putnik \& Zoram d.Budimac
-
- \item {\bf Mapletech -} Maple in Mathematics and the Sciences,\\
-        Special Issue 1994\\
-       {\bf An Implementation of ``Turtle Graphics'' in Maple V}\\
-         Eugenio Roanes Lozano \&  Eugenio Roanes Macias
-
-\end{enumerate}
+This method is useful if the user wants to define many of their own
+functions, and, using fdraw, subtle changes can be made quickly without
+having to type out the whole string of commands to plot each time. It
+is particularly useful if there are several pictures to plot at once and
+it is an easy way to build pictures so that the difference an extra
+command makes to the overall picture can be clearly seen.
+(In the above example, the file called to fdraw was only 2 lines long,
+so this method did not have any advantage over the normal draw command.
+However, when the list of commands is longer it is clearly advantageous
+to use fdraw.)

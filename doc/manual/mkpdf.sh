@@ -52,7 +52,7 @@ if test -f ${JOBNAME}.idx ; then
       -e 's/^\(\\indexentry{[^@]*\)\\char `\\\\/\1\\\\/' \
     <manual.idx >manual.idxtmp ; mv manual.idxtmp manual.idx
 
-  makeindex ${JOBNAME}
+  makeindex -s ${JOBNAME}.ist ${JOBNAME}
   pdflatex ${JOBNAME}
 fi
 

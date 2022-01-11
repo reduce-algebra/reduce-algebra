@@ -46,23 +46,25 @@ then
   svn update
 fi
 
+NPROC=`nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || printf "1"`
+
 rm -rf cslbuild pslbuild
 ./autogen.sh
 ( ./configure --without-autogen --with-csl
   for d in cslbuild/*-*-*
   do
-    cd $d/fox; make -j `nproc` install
-    cd ../crli*; make -j `nproc` install
-    cd ../libffi*; make -j `nproc` install
-    cd ../soft*; make -j `nproc` install
+    cd $d/fox; make -j $NPROC install
+    cd ../crli*; make -j $NPROC install
+    cd ../libffi*; make -j $NPROC install
+    cd ../soft*; make -j $NPROC install
     cd ../csl
-    make -j `nproc` bootstrapreduce
+    make -j $NPROC bootstrapreduce
     cd ../../..
   done
   cd `ls cslbuild/*/csl | head -1` && \
-    make -j `nproc` standard-c-code && \
+    make -j $NPROC standard-c-code && \
     cd ../../.. 
-  make -j `nproc` reduce.img ) &
+  make -j $NPROC reduce.img ) &
 CSL=$!
 case "$NOPSL" in
 *psl*)

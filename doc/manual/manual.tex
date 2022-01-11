@@ -34,11 +34,18 @@
                 \columnseprule \z@
                 \columnsep 35\p@
                 \let\item\@idxitem
+                \setcounter{secnumdepth}{0}%
                 \pdfbookmark[0]{Index}{Index}%
                 \hypertarget{Index}{}%
                 \addtocontents{toc}{\protect\contentsline{chapter}{Index}{\thepage}{Index}}}
                {\if@restonecol\onecolumn\else\clearpage\fi}
 
+\newcommand{\indexsection}[1]{%
+  \section*{#1}%
+  \sectionmark{#1}%
+  \pdfbookmark[1]{#1}{Index.#1}%
+  \hypertarget{Index.#1}{}%
+  \addtocontents{toc}{\protect\contentsline{section}{#1}{\thepage}{Index.#1}}}
 
 \renewenvironment{thebibliography}[1]
      {\chapter{\bibname}%
@@ -334,8 +341,6 @@
 \input{roots}
 \input{rsolve}
 \input{modsr}
-\input{limits}
-\input{series}
 \input{oper2}
 \include{structr}
 \include{polyrat}
@@ -345,6 +350,10 @@
 \include{inter}
 \include{matrix}
 \include{proc}
+\include
+{series}
+\include{gnuplot}
+\input{turtle}
 \include{rtrace}
 \include{user}
 \include{symbolic}

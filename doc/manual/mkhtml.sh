@@ -30,7 +30,7 @@ sed -e 's/^\(\\indexentry{[^@]*\)\\textbar/\1"|/' \
     -e 's/^\(\\indexentry{"\\\^ operator@\\texttt {\)"\\\^/\1\\textasciicircum/' \
   <manual.4dx >manual.4dxtmp ; mv manual.4dxtmp manual.4dx
 
-makeindex -o ${JOBNAME}.ind ${JOBNAME}.4dx
+makeindex -s ${JOBNAME}.ist -o ${JOBNAME}.ind ${JOBNAME}.4dx
 
 bibtex ${JOBNAME}
 

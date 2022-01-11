@@ -32,6 +32,10 @@ algebraic-mode \odesolve{} operator is used.
 
 
 \subsection{User interface}
+\ttindextype{ODESOLVE}{operator}
+\ttindextype{DSOLVE}{operator synonym}
+\hypertarget{operator:ODESOLVE}{}
+\hypertarget{operator:DSOLVE}{}
 
 The principal interface is via the operator \odesolve.  (It also has a
 synonym called \texttt{dsolve} to make porting of examples from Maple
@@ -191,6 +195,26 @@ odesolve(df(y,x,2) = y, y = {A, B}, x = {0, 1});
 
 
 \subsubsection{Specifying options and defaults}
+\ttindextype{odesolve\_explicit}{switch}
+\ttindextype{odesolve\_expand}{switch}
+\ttindextype{odesolve\_full}{switch}
+\ttindextype{odesolve\_implicit}{switch}
+\ttindextype{odesolve\_noint}{switch}
+\ttindextype{odesolve\_verbose}{switch}
+\ttindextype{odesolve\_basis}{switch}
+\ttindextype{trode}{switch}
+\ttindextype{odesolve\_fast}{switch}
+\ttindextype{odesolve\_check}{switch}
+\hypertarget{switch:ODESOLVE_EXPLICIT}{}
+\hypertarget{switch:ODESOLVE_EXPAND}{}
+\hypertarget{switch:ODESOLVE_FULL}{}
+\hypertarget{switch:ODESOLVE_IMPLICIT}{}
+\hypertarget{switch:ODESOLVE_NOINT}{}
+\hypertarget{switch:ODESOLVE_VERBOSE}{}
+\hypertarget{switch:ODESOLVE_BASIS}{}
+\hypertarget{switch:TRODE}{}
+\hypertarget{switch:ODESOLVE_FAST}{}
+\hypertarget{switch:ODESOLVE_CHECK}{}
 
 The final arguments may be one or more of the option identifiers
 listed in the table below, which take precedence over the default
@@ -237,6 +261,10 @@ parametric solutions (only) to implicit form (by eliminating the
 parameter).  These solution conversions may be slow or may fail in
 complicated cases.
 
+\ttindextype{root\_of\_unity}{operator}
+\ttindextype{plus\_or\_minus}{operator}
+\hypertarget{operator:ROOT_OF_UNITY}{}
+\hypertarget{operator:PLUS_OR_MINUS}{}
 ODESOLVE introduces two operators used in solutions:
 \texttt{root\_of\_unity} and \texttt{plus\_or\_minus}, the latter
 being a special case of the former, i.e.\ a second root of unity.

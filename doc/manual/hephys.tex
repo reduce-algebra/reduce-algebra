@@ -339,3 +339,16 @@ numerical. Users should note however, that the \texttt{EPS} operator and the
 $\gamma_{5}$ symbol (\texttt{A}) are not properly defined in other than four
 dimensions and will lead to an error if used.
 
+\section{The CVIT algorithm}
+\hypertarget{switch:CVIT}{}
+
+An alternative algorithm for computing traces of products of gamma matrices is available,
+based on treating of gamma-matrices as 3-j symbols (details may be found in
+\cite{Ilyin:89,Kennedy:1982}).
+
+This alternative algorithm is used when the switch \sw{CVIT} is set to on. With \sw{CVIT} off,
+calculations of Diracs matrices traces are performed using standard REDUCE facilities.
+
+For more information see section~\ref{CVIT}.
+\endinput
+\input{cvit}

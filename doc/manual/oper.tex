@@ -1541,6 +1541,8 @@ Other objects that support a length operator include arrays, lists and
 matrices. The explicit meaning in these cases is included in the description
 of these objects.
 
+\input{limits}
+
 \section{MAP Operator}\ttindex{MAP}
 \hypertarget{operator:MAP}{}
 
@@ -1734,7 +1736,7 @@ f(z)=\sum_{k=-\infty}^\infty a_k\,\frac{1}{z^k}
 \]
 The operator \f{RESIDUE}\texttt{(f,z,a)} determines the residue of $f$ at the point $z=a$
 if $f$ is meromorphic at $z=a$. The calculation of residues at essential
-singularities of $f$ is not supported, as are the residues of factorial terms.
+singularities of $f$ is not supported, as are the residues of factorial terms.\footnote{This code was written by Wolfram Koepf.}
 
 \f{POLEORDER}\texttt{(f,z,a)} determines the pole order of $f$ at the point $z=a$
 if $f$ is meromorphic at $z=a$.
