@@ -208,16 +208,16 @@ off allfac;
 vecop gammamat,q;
 
 
-tensop sigma(2);
+tensop ssigma(2);
 
 
-antisymmetric sigma;
+antisymmetric ssigma;
 
 
 noncom gammamat,gammamat;
 
 
-noncom sigma,gammamat;
+noncom ssigma,gammamat;
 
 
 physindex mu,nu;
@@ -227,11 +227,11 @@ operator delta;
 
 
 for all mu,nu let anticomm(gammamat(mu),gammamat(nu))=2*delta(mu,nu)*unit,
-                  comm(gammamat(mu),gammamat(nu))=2*i*sigma(mu,nu);
+                  comm(gammamat(mu),gammamat(nu))=2*i*ssigma(mu,nu);
 
 
 
-oporder p,q,gammamat,sigma;
+oporder p,q,gammamat,ssigma;
 
 
 off allfac;
@@ -260,7 +260,7 @@ p(idx6)*q(idx7)*gammamat(idx6)*gammamat(idx7)
 commute((gammamat dot p),(gammamat dot q));
 
 
-2*i*p(idx8)*q(idx9)*sigma(idx8,idx9)
+2*i*p(idx8)*q(idx9)*ssigma(idx8,idx9)
 
 % showtime;
 anticommute((gammamat dot p),(gammamat dot q));
@@ -268,7 +268,7 @@ anticommute((gammamat dot p),(gammamat dot q));
 
 2*p(idx10)*q(idx11)*gammamat(idx10)*gammamat(idx11)
 
- - 2*i*p(idx10)*q(idx11)*sigma(idx10,idx11)
+ - 2*i*p(idx10)*q(idx11)*ssigma(idx10,idx11)
 
 on anticom;
 
