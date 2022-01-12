@@ -68,6 +68,8 @@ symbolic procedure trigsimp(f, options);
    else if car f eq 'mat then           % matrix
       'mat . for each ff in cdr f collect
          for each fff in ff collect trigsimp(fff, options)
+   else if car f eq 'taylor!* then
+      TayApplyOpfn2(f, function trigsimp, options)
    else trigsimp1(f, options);          % scalar
 
 

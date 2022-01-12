@@ -32,7 +32,7 @@ module tayintrf;
 %*****************************************************************
 
 
-exports simptaylor, simptaylor!*, taylorexpand$
+exports simptaylor, simptaylor!*, taylorexpand, TayApplyOpfn$
 
 imports
 
@@ -429,6 +429,40 @@ COMMENT The following is necessary to properly process Taylor kernels
         in substitutions;
 
 flag ('(taylor!*), 'simp0fn);
+
+%%
+%%  A more general function: apply a function of one argument
+%%  to a Taylor kernel by calling it on every coefficient and
+%%  the TayOrig part.
+%%  It is assumed that the function takes a prefix form and returns
+%%  a prefix form (i.e. it is basically a symbolic operator of one
+%%  argument).
+%%
+
+symbolic procedure TayApplyOpfn(tay,fnc);
+  %
+  % (TaylorKernel) -> TaylorKernel
+  %
+  make!-taylor!* (
+         for each cc in taycoefflist tay collect
+           taymakecoeff(taycfpl cc,simp!* apply1(fnc,mk!*sq taycfsq cc)),
+         taytemplate tay,
+         if !*taylorkeeporiginal and tayorig tay
+           then simp!* apply1(fnc,mk!*sq tayorig tay) else nil,
+         tayflags tay);
+
+symbolic procedure TayApplyOpfn2(tay,fnc,extra);
+  %
+  % (TaylorKernel) -> TaylorKernel
+  %
+  make!-taylor!* (
+         for each cc in taycoefflist tay collect
+           taymakecoeff(taycfpl cc,simp!* apply2(fnc,mk!*sq taycfsq cc,extra)),
+         taytemplate tay,
+         if !*taylorkeeporiginal and tayorig tay
+           then simp!* apply2(fnc,mk!*sq tayorig tay,extra) else nil,
+         tayflags tay);
+
 
 endmodule;
 

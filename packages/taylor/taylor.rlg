@@ -2831,6 +2831,50 @@ taylor(atanh coth x,x,0,5);
   2
 
 
+
+COMMENT Test interface to trigsimp ;
+
+
+taylor(sin(x+y)^2,x,0,5);
+
+
+      2                              2         2   2    4*cos(y)*sin(y)   3
+sin(y)  + 2*cos(y)*sin(y)*x + (cos(y)  - sin(y) )*x  - -----------------*x
+                                                               3
+
+             2         2
+     - cos(y)  + sin(y)    4                 6
+ + ----------------------*x  + (1 term) + O(x )
+             3
+
+
+trigsimp(ws);
+
+
+      2                                   2       2    4*cos(y)*sin(y)   3
+sin(y)  + 2*cos(y)*sin(y)*x + ( - 2*sin(y)  + 1)*x  - -----------------*x
+                                                              3
+
+            2
+    2*sin(y)  - 1   4                 6
+ + ---------------*x  + (1 term) + O(x )
+          3
+
+
+trigsimp(ws,cos);
+
+
+         2                                    2       2    4*cos(y)*sin(y)   3
+ - cos(y)  + 1 + 2*cos(y)*sin(y)*x + (2*cos(y)  - 1)*x  - -----------------*x
+                                                                  3
+
+               2
+     - 2*cos(y)  + 1   4                 6
+ + ------------------*x  + (1 term) + O(x )
+           3
+
+
+
 %%% showtime;
 
 COMMENT That's all, folks;

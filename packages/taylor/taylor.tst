@@ -913,6 +913,16 @@ taylor(atan cot x,x,0,5);
 
 taylor(atanh coth x,x,0,5);
 
+
+COMMENT Test interface to trigsimp ;
+
+taylor(sin(x+y)^2,x,0,5);
+
+trigsimp(ws);
+
+trigsimp(ws,cos);
+
+
 %%% showtime;
 
 COMMENT That's all, folks;
