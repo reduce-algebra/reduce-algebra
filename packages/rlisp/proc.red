@@ -584,14 +584,14 @@ symbolic procedure readlistproc;
 
 symbolic procedure formlistproc(u,v,w);
    begin 
-     return {'progn,
+     return list('progn,
              formproc(cdr u,v,w),
-             {'put,mkquote caddr u,''rtypefn,''(lambda(x) 'list)},
-             {'put,mkquote caddr u,''listfn,
-              {'list,''lambda,''(x y),
-                     {'list,''listproceval,mkquote mkquote caddr u,''x,''y}}},
-             {'remflag,{'list,mkquote caddr u},''opfn},
-             mkquote caddr u}
+             list('put,mkquote caddr u,''rtypefn,''(lambda(x) 'list)),
+             list('put,mkquote caddr u,''listfn,
+              list('list,''lambda,''(x y),
+                     list('list,''listproceval,mkquote mkquote caddr u,''x,''y))),
+             list('remflag,list('list,mkquote caddr u),''opfn),
+             mkquote caddr u)
    end;
 
 put('listproc,'formfn,'formlistproc);
