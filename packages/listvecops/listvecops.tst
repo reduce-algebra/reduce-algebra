@@ -61,7 +61,7 @@ z := spat3(u,v,w) - 3*spat3(v,u,w);
  
 spat3(u,v,w)+spat3(u,w,v);
 
-% Accesing list elements
+% Accessing list elements
 
 l := {1,{2,3},4};
 

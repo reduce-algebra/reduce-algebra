@@ -7,7 +7,7 @@ module taylor;
 %
 %****************************************************************
 %
-%  Copyright (C) 1989--2021 by Rainer M. Schoepf, all rights reserved.
+%  Copyright (C) 1989--2022 by Rainer M. Schöpf, all rights reserved.
 %
 %
 %  Error reports please to: <reduce-algebra-developers@lists.sourceforge.net>
@@ -81,6 +81,13 @@ module taylor;
 %
 %*****************************************************************
 %
+%
+% 12-Jan-2022    2.4c
+%
+%   Add interface function TayApplyOpfn for applying a symbolic operator
+%    of one argument (e.g., an algebraic procedure to a Taylor kernel)
+%    and TayApplyOpfn2 for applying a symbolic operator with an extra
+%    fixed argument.
 %
 % 25-Sep-2021    2.4b
 %
@@ -1001,8 +1008,8 @@ taylorprintterms := 5;         % Only this nubmer of non-zero terms
                                % in progress to indicate that the error
                                % might disappear if the order is
                                % increased.
-taylor!:version := "2.4b";      % version number of the package
-taylor!:date!* := "25-Sep-2021"; % release date
+taylor!:version := "2.4c";      % version number of the package
+taylor!:date!* := "12-Jan-2022"; % release date
 
 if !*verboseload then
   << terpri ();

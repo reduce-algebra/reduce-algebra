@@ -101,13 +101,3 @@ int({sin x,cos x},x);
 
 { - cos(x),sin(x)}
 \end{verbatim}
-By using the keyword \k{listproc}\ttindextype{LISTPROC}{keyword}, an algebraic
-procedure can be declared to return a list:\index{Procedure!list-valued}
-\begin{verbatim}
-listproc spat3(u,v,w);
-   begin scalar x,y;
-     x := u *. w;
-     y := u *. v;
-     return v*x - w*y
-   end;
-\end{verbatim}

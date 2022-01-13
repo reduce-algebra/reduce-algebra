@@ -257,45 +257,6 @@ put('setlnth!*,'psopfn,'setlnth);
 
 put('lnth,'setqfn,'(lambda (u v w) (setlnth!* u v w)));
 
-% A lazy hack to allow for list procedures.
-% 
-
-symbolic procedure listprocify u;
-  if atom u then u
-  else if eqcar(u, 'procedure) then 'listproc . u
-  else car u . for each a in cdr u collect listprocify a;
-
-symbolic procedure readlistproc;
-   begin
-     scalar w;
-     cursym!* := 'procedure;
-     w := procstat1 'algebraic;
-% Now w will be either       (procedure ...)
-%                   or       (progn ... ... (procedure ...))
-% where the first parts of the progn block establish file and line-number
-% information.
-     return listprocify w; 
-   end;
-
-put('listproc,'stat,'readlistproc);
-
-symbolic procedure formlistproc(u,v,w);
-   begin 
-     return {'progn,
-             formproc(cdr u,v,w),
-             {'put,mkquote caddr u,''rtypefn,''(lambda(x) 'list)},
-             {'put,mkquote caddr u,''listfn,
-              {'list,''lambda,''(x y),
-                     {'list,''listproceval,mkquote mkquote caddr u,''x,''y}}},
-             {'remflag,{'list,mkquote caddr u},''opfn},
-             mkquote caddr u}
-   end;
-
-put('listproc,'formfn,'formlistproc);
-
-symbolic procedure listproceval(op,u,v);
-   reval1(opfneval(op . u),v);
-     
 
 endmodule;
 
