@@ -302,7 +302,7 @@ spat3(u,v,w)+spat3(u,w,v);
 {0,0,0}
 
 
-% Accesing list elements
+% Accessing list elements
 
 l := {1,{2,3},4};
 

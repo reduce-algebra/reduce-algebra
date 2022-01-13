@@ -181,9 +181,9 @@ recurrence relation to compute only those polynomials that have not already
 been derived. We leave it as an exercise for the reader to write such a
 definition.
 
-\section{Matrix-valued Procedures}
-\ttindex{MATRIXPROC}
-\hypertarget{command:MATRIXPROC}{}
+\section{Matrix- and list-valued Procedures}
+\ttindextype{MATRIXPROC}{keyword}
+\hypertarget{reserved:MATRIXPROC}{}
 
 Normally, procedures can only return scalar values. In order for a procedure to
 return a matrix, it has to be declared of 
@@ -213,6 +213,17 @@ Following this declaration, the call to \texttt{SkewSym1} can be used as a matri
         [ - qx*rz + qz*rx]
         [                ]
         [ qx*ry - qy*rx  ]
+\end{verbatim}
+\hypertarget{reserved:LISTPROC}{}
+Similarly, by using the keyword \k{listproc}\ttindextype{LISTPROC}{keyword}, an algebraic
+procedure can be declared to return a list:\index{Procedure!list-valued}
+\begin{verbatim}
+listproc spat3(u,v,w);
+   begin scalar x,y;
+     x := u *. w;
+     y := u *. v;
+     return v*x - w*y
+   end;
 \end{verbatim}
 
 
