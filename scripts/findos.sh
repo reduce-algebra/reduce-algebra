@@ -203,24 +203,24 @@ else
 #       *Mac*OS*X*ProductVersion*\<string\>10.6*)
 #         os="mac_10.6_snowleopard"
 #         ;;
-        *Mac*OS*X*ProductVersion*\<string\>10.7*)
-          os="mac_10.7_lion"
-          ;;
-        *Mac*OS*X*ProductVersion*\<string\>10.8*)
-          os="mac_10.8_mountainlion"
-          ;;
-        *Mac*OS*X*ProductVersion*\<string\>10.9*)
-          os="mac_10.9_mavericks"
-          ;;
-        *Mac*OS*X*ProductVersion*\<string\>10.10*)
-          os="mac_10.10_yosemite"
-          ;;
-        *Mac*OS*X*ProductVersion*\<string\>10.11*)
-          os="mac_10.11_elcapitan"
-          ;;
-        *Mac*OS*X*ProductVersion*\<string\>10.12*)
-          os="mac_10.12_sierra"
-          ;;
+#       *Mac*OS*X*ProductVersion*\<string\>10.7*)
+#         os="mac_10.7_lion"
+#         ;;
+#       *Mac*OS*X*ProductVersion*\<string\>10.8*)
+#         os="mac_10.8_mountainlion"
+#         ;;
+#       *Mac*OS*X*ProductVersion*\<string\>10.9*)
+#         os="mac_10.9_mavericks"
+#         ;;
+#       *Mac*OS*X*ProductVersion*\<string\>10.10*)
+#         os="mac_10.10_yosemite"
+#         ;;
+#       *Mac*OS*X*ProductVersion*\<string\>10.11*)
+#         os="mac_10.11_elcapitan"
+#         ;;
+#       *Mac*OS*X*ProductVersion*\<string\>10.12*)
+#         os="mac_10.12_sierra"
+#         ;;
         *Mac*OS*X*ProductVersion*\<string\>10.13*)
           os="mac_10.13_highsierra"
           ;;
@@ -230,14 +230,13 @@ else
         *Mac*OS*X*ProductVersion*\<string\>10.15*)
           os="mac_10.15_catalina"
           ;;
-# I think that 11.0 and 11.2 are both known as Big Sur?
         *Mac*OS*X*ProductVersion*\<string\>11.*)
           os="mac_11_big_sur"
           ;;
-        *mac*OS*ProductVersion*\<string\>11.*)
-          os="mac_11_bigsur"
+        *mac*OS*ProductVersion*\<string\>12.*)
+          os="mac_12_monterey"
           ;;
-        *Mac*OS*X*ProductVersion*\<string\>*)
+        *)
           os="mac_unknown_version"
           ;;
         esac

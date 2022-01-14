@@ -13,9 +13,13 @@ shift
 shift
 shift
 
-# If you need to debug this script alter maybe_echo so it displays stuff!
-#maybe_echo=echo
-maybe_echo=:
+# If you need to debug this script set the shell variable DEBUG to "yes"
+if test "$DEBUG" = "yes"
+then
+  maybe_echo=echo
+else
+  maybe_echo=:
+fi
 
 # The options here are only really relevent to hard-core CSL hackers. They
 # make it possible to launch versions of the system that have been built
@@ -56,7 +60,8 @@ done
 
 version="$fox$wx$arithlib$conservative$debug"
 
-$maybe_echo Operating system: x$OS
+# Note that the shell variable OS is liable to be set to "Windows_NT"
+# in a Windows world but it is probably otherwise unset.
 case "x$OS" in
 xWindows_NT)
 # Now I will want to check which variant of reduce to use...
@@ -169,6 +174,16 @@ xWindows_NT)
     $maybe_echo exec $here/../cslbuild/$host$version/csl/$ap $CSLFLAGS $*
     exec $here/../cslbuild/$host$version/csl/$ap $CSLFLAGS $*
     exit 0
+  else
+    host1=${host/aarch64/universal}
+    host1=${host1/x86_64/universal}
+    $maybe_echo host=$host host1=$host1
+    if test -x $here/../cslbuild/$host1$version/csl/$ap
+    then
+      $maybe_echo exec $here/../cslbuild/$host1$version/csl/$ap $CSLFLAGS $*
+      exec $here/../cslbuild/$host1$version/csl/$ap $CSLFLAGS $*
+      exit 0
+    fi
   fi
   ;;
 esac
