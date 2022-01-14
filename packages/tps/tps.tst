@@ -144,13 +144,16 @@ tmp1:=ps(coth x,x,3*i*pi/2);
 tmp1*tmp;
 
 % ditto for Jacobi elliptic functions
-load specfn;
 
 tmp:= ps(jacobins(x,k),x,0);
 tmp1 := ps(jacobisn(x,k),x,0);
 tmp1*tmp;
 
+ps(jacobidn(x,k),x, i*ellipticK!'(k));
+
 ps(jacobidc(x,k),x, 3*ellipticK(k));
+
+ps(jacobisd(x,k),x, 3*ellipticK(k)-i*elliptick!'(k));
 
 % Weierstrass functions
 % at a pole

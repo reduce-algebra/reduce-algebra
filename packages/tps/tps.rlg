@@ -914,9 +914,6 @@ tmp1*tmp;
 
 
 % ditto for Jacobi elliptic functions
-load specfn;
-
-
 
 tmp:= ps(jacobins(x,k),x,0);
 
@@ -946,6 +943,25 @@ tmp1*tmp;
 1 + O(x )
 
 
+ps(jacobidn(x,k),x, i*ellipticK!'(k));
+
+
+                               2
+                  -1    i*( - k  + 2)
+ - i*(x - K'(k)*i)   + ---------------*(x - K'(k)*i)
+                              6
+
+             4      2
+    i*( - 7*k  - 8*k  + 8)               3
+ + ------------------------*(x - K'(k)*i)
+             360
+
+              6       4       2
+    i*( - 31*k  + 78*k  - 48*k  + 32)               5                  7
+ + -----------------------------------*(x - K'(k)*i)  + O((x - K'(k)*i) )
+                  15120
+
+
 ps(jacobidc(x,k),x, 3*ellipticK(k));
 
 
@@ -958,6 +974,36 @@ ps(jacobidc(x,k),x, 3*ellipticK(k));
     31*k  - 15*k  - 15*k  + 31              5                 7
  + ----------------------------*(x - 3*K(k))  + O((x - 3*K(k)) )
               15120
+
+
+ps(jacobisd(x,k),x, 3*ellipticK(k)-i*elliptick!'(k));
+
+
+            i                                  -1
+ - -------------------*(x - (3*K(k) - K'(k)*i))
+             2
+    sqrt( - k  + 1)*k
+
+             2
+       i*(2*k  - 1)
+ + ---------------------*(x - (3*K(k) - K'(k)*i))
+               2
+    6*sqrt( - k  + 1)*k
+
+           4      2
+     i*(8*k  - 8*k  - 7)                           3
+ + -----------------------*(x - (3*K(k) - K'(k)*i))
+                 2
+    360*sqrt( - k  + 1)*k
+
+           6       4       2
+    i*(32*k  - 48*k  + 78*k  - 31)                          5
+ + --------------------------------*(x - (3*K(k) - K'(k)*i))
+                      2
+       15120*sqrt( - k  + 1)*k
+
+                             7
+ + O((x - (3*K(k) - K'(k)*i)) )
 
 
 % Weierstrass functions

@@ -554,7 +554,8 @@ jacobicdrules :=
       
 %Derivatives,Integral
 %--------------------
-   df(jacobicd(~u,~m),~x) => -(1 - m^2)*jacobisn(u,m)/jacobidn(u,m)^2*df(u,x) +
+   df(jacobicd(~u,~m),~x) =>
+        -(1 - m^2)*jacobisd(u,m)*jacobind(u,m)*df(u,x) +
         df(m,x)*(jacobisn(u,m)*(jacobie(u,m)-u*(1-m^2))/(m*jacobidn(u,m)^2)),
 
    int(jacobicd(~u,~m),~u) => log(jacobind(u,m) + m*jacobisd(u,m))/m,
@@ -656,7 +657,7 @@ jacobisdrules :=
 
 %Derivatives, Integral
 %---------------------
-   df(jacobisd(~u,~k),~x) => jacobicn(u,k)/jacobidn(u,k)^2*df(u,x) +
+  df(jacobisd(~u,~k),~x) => jacobicd(u,k)*jacobind(u,k)*df(u,x) +
       df(k,x)*((-jacobicn(u,k)*jacobie(u,k)+jacobicn(u,k)*u*(1-k^2) +
          jacobidn(u,k)*jacobisn(u,k)*k^2)/(jacobidn(u,k)^2*k*(1-k^2))),
 	
@@ -749,7 +750,7 @@ jacobindrules :=
 %Derivatives, Integral
 %---------------------
     df(jacobind(~u,~m),~x) =>
-	   df(u,x)*m^2*jacobisn(u,m)*jacobicn(u,m)/jacobidn(u,m)^2 +
+	   df(u,x)*m^2*jacobisd(u,m)*jacobicd(u,m) +
 	   df(m,x)*(-(m*(jacobie(u,m)*jacobisn(u,m)*jacobicn(u,m)
                        -jacobisn(u,m)^2*jacobidn(u,m))/(1-m^2)
                     - m*u*jacobisn(u,m)*jacobicn(u,m))/jacobidn(u,m)^2),
@@ -838,7 +839,7 @@ jacobidcrules :=
 
 %Derivatives, Integral
 %---------------------
-   df(jacobidc(~u,~k),~x) => (1-k^2)*jacobisn(u,k)/jacobicn(u,k)^2*df(u,x) +
+   df(jacobidc(~u,~k),~x) => (1-k^2)*jacobisc(u,k)*jacobinc(u,k)*df(u,x) +
          df(k,x)*(-jacobisn(u,k)*(jacobie(u,k)-u*(1-k^2))/(jacobicn(u,k)^2*k)),
 
    int(jacobidc(~u,~m),~u) => log(jacobinc(u,m) + jacobisc(u,m)),
@@ -932,8 +933,7 @@ jacobincrules :=
    
 %Derivatives, Integral
 %---------------------
-    df(jacobinc(~u,~m),~x) =>
-	   jacobisn(u,m)*jacobidn(u,m)/jacobicn(u,m)^2*df(u,x) +
+    df(jacobinc(~u,~m),~x) => jacobisc(u,m)*jacobidc(u,m)*df(u,x) +
 	     df(m,x)*(-((jacobie(u,m)*jacobisn(u,m)*jacobidn(u,m)/m
 	                 - m*jacobisn(u,m)^2*jacobicn(u,m))/(1-m^2)
                        -u*jacobisn(u,m)*jacobidn(u,m)/m)/jacobicn(u,m)^2),
@@ -1027,7 +1027,7 @@ jacobiscrules :=
 
 %Derivatives, Integral
 %---------------------
-    df(jacobisc(~u,~k),~x) => jacobidn(u,k)/jacobicn(u,k)^2*df(u,x) +
+    df(jacobisc(~u,~k),~x) => jacobidc(u,k)*jacobinc(u,k)*df(u,x) +
 	df(k,x)*((jacobidn(u,k)*u*(1-k^2) - jacobidn(u,k)*jacobie(u,k)
 	         +jacobisn(u,k)*jacobicn(u,k)*k^2)/(jacobicn(u,k)^2*k*(1-k^2))),
 	
@@ -1118,8 +1118,7 @@ jacobinsrules :=
     
 %Derivatives, Integral
 %---------------------
-    df(jacobins(~u,~m),~x) =>
-	   -jacobidn(u,m)*jacobicn(u,m)/jacobisn(u,m)^2*df(u,x) -
+    df(jacobins(~u,~m),~x) => -jacobids(u,m)*jacobics(u,m)*df(u,x) -
 	    df(m,x)*((m*jacobisn(u,m)*jacobicn(u,m)^2
                       -jacobie(u,m)*jacobicn(u,m)*jacobidn(u,m)/m)/(1-m^2)
                      + u*jacobicn(u,m)*jacobidn(u,m)/m)/jacobisn(u,m)^2,
@@ -1211,7 +1210,7 @@ jacobidsrules :=
 
 %Derivatives, Integral
 %---------------------
-   df(jacobids(~u,~k),~x) => -jacobicn(u,k)/jacobisn(u,k)^2*df(u,x) +
+   df(jacobids(~u,~k),~x) => -jacobics(u,k)*jacobins(u,k)*df(u,x) +
        df(k,x)*((jacobicn(u,k)*jacobie(u,k)-u*jacobicn(u,k)*(1-k^2) -
 	         jacobidn(u,k)*jacobisn(u,k)*k^2)/(jacobisn(u,k)^2*k*(1-k^2))),
 
@@ -1300,7 +1299,7 @@ jacobicsrules :=
 
 %Derivatives, Integral
 %---------------------
-   df(jacobics(~u,~k),~x) => -jacobidn(u,k)/jacobisn(u,k)^2*df(u,x) -
+   df(jacobics(~u,~k),~x) => -jacobins(u,k)*jacobids(u,k)*df(u,x) -
        df(k,x)*((jacobidn(u,k)*u*(1-k^2) - jacobidn(u,k)*jacobie(u,k)
                  +jacobisn(u,k)*jacobicn(u,k)*k^2)/(jacobisn(u,k)^2*k*(1-k^2))),
 	      

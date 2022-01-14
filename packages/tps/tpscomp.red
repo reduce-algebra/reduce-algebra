@@ -62,14 +62,14 @@ symbolic procedure ps!:compile(form,depvar,about);
 	    (foreach arg in rands form collect
                 if ps!:p arg then <<
                    ps!:find!-order arg;
-                   prepsq ps!:evaluate(arg,0)
+               	   prepsq ps!:evaluate(arg,0)
 		>>
                 else subst(about,depvar,arg));
 	 tmp := simp!* tmp;
 	 if tmp = '(nil . 1) then
 	    return 0
 	 else
-            return make!-constantps(tmp, form, depvar, about );
+            return make!-constantps(tmp, form, depvar);
       >>;
 
       % optimisation to represent polynomials as a single complete ps.
@@ -141,7 +141,7 @@ begin scalar ps;
   return ps
 end;
 
-symbolic procedure make!-constantps(u,v,d,a);
+symbolic procedure make!-constantps(u,v,d);
 % u is a constant standard quotient, v is a corresponding prefix form
 begin scalar ps;
       if u = '(nil . 1) then return u;	
@@ -152,7 +152,6 @@ begin scalar ps;
       ps!:set!-last!-term(ps,0);
       ps!:set!-terms(ps,list(0 . u));
       ps!:set!-depvar(ps,d);
-      ps!:set!-expansion!-point(ps,a);      
       putv(cdr ps, 7, !*sqvar!*);
       return ps
 end;
@@ -290,7 +289,7 @@ begin scalar prod, variables, constants;
          a:= make!-ps(list('psmult, prod, variables),
                       ps!:arg!-values a,d,n)
       else
-         return make!-constantps(prod, ps!:arg!-values a, d,n);
+         return make!-constantps(prod, ps!:arg!-values a, d);
       ps!:find!-order a;
       return a>>;
 end;
@@ -638,8 +637,8 @@ begin scalar arg1, arg2, arg3, tmp, tmp1, f, m, n, r;
    arg3 := cadddr form;
    f := rator form;
    if depends(arg2, depvar) or depends(arg3, depvar) then
-   % can't handle this case yet, so give up and let ps!:unknown!-crule try.
-       return nil;
+   % can't handle this case yet, so give up.
+    rederr("Expansion not supported if arg 2 or 3 depends on expansion variable");
 
    if f = 'weierstrass1 or f = 'weierstrassZeta1 then <<
       tmp := list('lattice_omega1, arg2, arg3);
@@ -647,7 +646,7 @@ begin scalar arg1, arg2, arg3, tmp, tmp1, f, m, n, r;
       arg2 := tmp;
    >>;
    
-   begin scalar !*ratarg := t;
+   begin scalar !*ratarg :=t;
       tmp := reval arg1;
       tmp := cdr coeffeval list(tmp, arg2);
    end;
