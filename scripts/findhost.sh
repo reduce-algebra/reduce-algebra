@@ -41,28 +41,10 @@ shift
 
 case $host in
 *apple-darwin*)
-# There are TWO things going on here. One is that the GNU script
-# "config.guess" seems to have changes recently between reporting i386 and
-# i686, so I wan to normalise. The second is that the build for the Mac
-# creates a "fat" universal binary that should run on either powerpc or
-# Intel Macs, and so to tag the build with one or the other architecture
-# may could as clumsy. This is an archaic issue now no longer used!
-  host=`echo $host | $SED -e s/i386/universal/`
-  host=`echo $host | $SED -e s/i686/universal/`
-  host=`echo $host | $SED -e s/powerpc/universal/`
-# Well the above is a bit "Historical", but with Apple "m1" (arm64)
-# being releases a whole fresh tranche of transition is upon us!
   case $* in
-  *--with-mac-universal*)
+  *--enable-universal*)
     host=`echo $host | $SED -e s/x86_64/universal/`
     host=`echo $host | $SED -e s/aarch64/universal/`
-    ;;
-  *--with-mac-x86_64*)
-    host=`echo $host | $SED -e s/aarch64/x86_64/`
-    ;;
-  *--with-mac-arm64*)
-# Trying --with-mac-arm64 when running on an Intel-mac will probably not work.
-    host=`echo $host | $SED -e s/x86_65/aarch64/`
     ;;
   esac
   ;;

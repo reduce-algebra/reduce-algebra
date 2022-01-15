@@ -474,7 +474,7 @@ void print(intptr_t a)
         {   intptr_t v = qcar(w1);
             if (!atom(v)) v = qcar(v);
             checkspace(1);
-            fprintf(outputfile, sep);
+            fprintf(outputfile, "%s", sep);
             sep = " ";
             print(v);
         }

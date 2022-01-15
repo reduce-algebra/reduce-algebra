@@ -102,6 +102,8 @@ then
   then MAKE=/usr/sfw/bin/gmake
   elif test -x /usr/pkg/bin/gmake
   then MAKE=/usr/pkg/bin/gmake
+  elif test -x /opt/local/bin/gmake
+  then MAKE=/opt/local/bin/gmake
   elif test -x /usr/local/bin/gmake
   then MAKE=/usr/local/bin/gmake
   elif test -x /usr/bin/gmake
@@ -124,6 +126,11 @@ then
   case "$os" in
   *cygwin* | *windows*)
     list="cslbuild/*-cygwin*/csl cslbuild/*-windows*/csl"
+    ;;
+  mac_*)
+    host1=${host/aarch64/universal}
+    host1=${host1/x86_64/universa}
+    list="cslbuild/*${host}*/csl cslbuild/*${host1}*/csl"
     ;;
   *)
     list="cslbuild/*${host}*/csl"

@@ -47,7 +47,7 @@
 // to avoid introducing any overhead, even small.
 
 #if (defined __CYGWIN__ || defined __MINGW32__) && \
-    !defined USE_CXX_TLS && !defined AVOID_THREADLOCAL
+    !defined USE_CXX_TLS
 #define MICROSOFT_TLS 1
 #endif
 
