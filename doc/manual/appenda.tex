@@ -25,6 +25,7 @@ system.
 \hyperlink{reserved:CLEAR}{\texttt{CLEAR}} %\linebreak
 \hyperlink{CLEARRULES}{\texttt{CLEARRULES}}
 \hyperlink{comments}{\texttt{COMMENT}}
+\hyperlink{command:COFRAME}{\texttt{COFRAME}}
 \hyperlink{command:COMPLEX_CONJUGATES}{\texttt{COMPLEX\_CONJUGATES}}
 \hyperlink{CONT-and-PAUSE}{\texttt{CONT}}
 \hyperlink{operator:DECOMPOSE}{\texttt{DECOMPOSE}}
@@ -32,23 +33,31 @@ system.
 \hyperlink{operator:DEFPOLY}{\texttt{DEFPOLY}}
 \hyperlink{command:DEPEND}{\texttt{DEPEND}}
 \hyperlink{operator:DISPLAY}{\texttt{DISPLAY}}
+\hyperlink{command:DISPLAYFRAME}{\texttt{DISPLAYFRAME}}
 \hyperlink{command:ED}{\texttt{ED}}
 \hyperlink{command:EDITDEF}{\texttt{EDITDEF}}
 \hyperlink{reserved:END}{\texttt{END}}
 \hyperlink{command:EVEN}{\texttt{EVEN}}
 \hyperlink{command:FACTOR}{\texttt{FACTOR}}
+\hyperlink{command:FDOMAIN}{\texttt{FDOMAIN}}
 \hyperlink{command:FOR}{\texttt{FOR}}
 \hyperlink{command:FORALL}{\texttt{FORALL}}
+\hyperlink{command:FORDER}{\texttt{FORDER}}
 \hyperlink{command:FOREACH}{\texttt{FOREACH}}
+\hyperlink{command:FRAME}{\texttt{FRAME}}
 \hyperlink{command:GOTO}{\texttt{GO}}
 \hyperlink{command:GOTO}{\texttt{GOTO}}
 \hyperlink{command:IF}{\texttt{IF}}
 \hyperlink{command:IN}{\texttt{IN}}
 \hyperlink{command:IN_TEX}{\texttt{IN\_TEX}}
 \hyperlink{command:INDEX}{\texttt{INDEX}}
+\hyperlink{command:INDEXRANGE}{\texttt{INDEXRANGE}}
+\hyperlink{command:INDEX_SYMMETRIES}{\texttt{INDEX\_SYMMETRIES}}
 \hyperlink{command:INFIX}{\texttt{INFIX}}
 \hyperlink{reserved:INPUT}{\texttt{INPUT}}
 \hyperlink{command:INTEGER}{\texttt{INTEGER}}
+\hyperlink{command:KEEP}{\texttt{KEEP}}
+\hyperlink{command:KILLING_VECTOR}{\texttt{KILLING\_VECTOR}}
 \hyperlink{command:KORDER}{\texttt{KORDER}}
 \hyperlink{command:LET}{\texttt{LET}}
 \hyperlink{command:LINEAR}{\texttt{LINEAR}}
@@ -64,7 +73,9 @@ system.
 \hyperlink{command:NONCOM}{\texttt{NONCOM}}
 \hyperlink{command:NONZERO}{\texttt{NONZERO}}
 \hyperlink{command:NOSPUR}{\texttt{NOSPUR}}
+\hyperlink{command:NOSUM}{\texttt{NOSUM}}
 \hyperlink{command:NOTREALVALUED}{\texttt{NOTREALVALUED}}
+\hyperlink{command:NOXPND}{\texttt{NOXPND}}
 \hyperlink{command:ODD}{\texttt{ODD}}
 \hyperlink{command:OFF}{\texttt{OFF}}
 \hyperlink{command:ON}{\texttt{ON}}
@@ -72,6 +83,7 @@ system.
 \hyperlink{command:ORDER}{\texttt{ORDER}}
 \hyperlink{command:OUT}{\texttt{OUT}}
 \hyperlink{CONT-and-PAUSE}{\texttt{PAUSE}}
+\hyperlink{command:PFORM}{\texttt{PFORM}}
 \hyperlink{command:PLOTRESET}{\texttt{PLOTRESET}}
 \hyperlink{command:PLOTSHOW}{\texttt{PLOTSHOW}}
 \hyperlink{command:PRECEDENCE}{\texttt{PRECEDENCE}}
@@ -85,9 +97,11 @@ system.
 \hyperlink{command:REMEMBER}{\texttt{REMEMBER}}
 \hyperlink{command:REMFAC}{\texttt{REMFAC}}
 \hyperlink{command:REMIND}{\texttt{REMIND}}
+\hyperlink{command:RENOSUM}{\texttt{RENOSUM}}
 \hyperlink{command:RESETREDUCE}{\texttt{RESETREDUCE}}
 \hyperlink{command:RETRY}{\texttt{RETRY}}
 \hyperlink{command:RETURN}{\texttt{RETURN}}
+\hyperlink{command:RIEMANNCONX}{\texttt{RIEMANNCONX}}
 \hyperlink{command:RTR}{\texttt{RTR}}
 \hyperlink{command:RTROUT}{\texttt{RTROUT}}
 \hyperlink{command:RTRST}{\texttt{RTRST}}
@@ -98,11 +112,13 @@ system.
 \hyperlink{command:SHARE}{\texttt{SHARE}}
 \hyperlink{command:SHOWTIME}{\texttt{SHOWTIME}}
 \hyperlink{command:SHUT}{\texttt{SHUT}}
+\hyperlink{command:SPACEDIM}{\texttt{SPACEDIM}}
 \hyperlink{command:SPUR}{\texttt{SPUR}}
 \hyperlink{target:modes}{\texttt{SYMBOLIC}}
 \hyperlink{reserved:SYMMETRIC}{\texttt{SYMMETRIC}}
 \hyperlink{command:TRRL}{\texttt{TRRL}}
 \hyperlink{command:TRRLID}{\texttt{TRRLID}}
+\hyperlink{command:TVECTOR}{\texttt{TVECTOR}}
 \hyperlink{command:UNRTR}{\texttt{UNRTR}}
 \hyperlink{command:UNRTRST}{\texttt{UNRTRST}}
 \hyperlink{command:UNSET}{\texttt{UNSET}}
@@ -113,6 +129,7 @@ system.
 \hyperlink{command:WEIGHT}{\texttt{WEIGHT}}
 \hyperlink{command:WRITE}{\texttt{WRITE}}
 \hyperlink{command:WTLEVEL}{\texttt{WTLEVEL}}
+\hyperlink{command:XPND}{\texttt{XPND}}
 \halfinterwordspace
 
 \item[Boolean Operators] \doubleinterwordspace
@@ -142,6 +159,9 @@ system.
 \hyperlink{reserved:exptop}{\texttt{**}}
 \hyperlink{reserved:consop}{\texttt{.}}
 \hyperlink{reserved:intervalop}{\texttt{..}}
+\hyperlink{reserved:hodegestareop}{\texttt{\#}}
+\hyperlink{reserved:innerprodop}{\texttt{\_\textbar}}
+\hyperlink{reserved:liederivativeop}{\texttt{\textbar\_}}
 \hyperlink{operator:WHERE}{\texttt{WHERE}}
 \hyperlink{command:SETQ}{\texttt{SETQ}}
 \hyperlink{operator:OR}{\texttt{OR}}
@@ -272,6 +292,7 @@ system.
 \halfinterwordspace
 
 \item[Prefix Operators]\doubleinterwordspace
+\hyperlink{operator:@}{\texttt{@}}
 \hyperlink{operator:APPEND}{\texttt{APPEND}}
 \hyperlink{operator:ARBCOMPLEX}{\texttt{ARBCOMPLEX}}
 \hyperlink{operator:ARBINT}{\texttt{ARBINT}}
@@ -290,6 +311,7 @@ system.
 \hyperlink{operator:CONJ}{\texttt{CONJ}}
 %\hyperlink{operator:CONTFRAC}{\texttt{CONTFRAC}}
 \hyperlink{operator:CONTINUED_FRACTION}{\texttt{CONTINUED\_FRACTION}}
+\hyperlink{operator:DD_GROEBNER}{\texttt{DD\_GROEBNER}}
 \hyperlink{operator:DEG}{\texttt{DEG}}
 \hyperlink{operator:DEN}{\texttt{DEN}}
 \hyperlink{operator:DET}{\texttt{DET}}
@@ -299,6 +321,7 @@ system.
 \hyperlink{operator:EI}{\texttt{EI}}
 \hyperlink{operator:EPS}{\texttt{EPS}}
 \hyperlink{operator:ERF}{\texttt{ERF}}
+\hyperlink{operator:EXDEGREE}{\texttt{EXDEGREE}}
 \hyperlink{operator:EXPAND_CASES}{\texttt{EXPAND\_CASES}}
 \hyperlink{operator:EXTENDED_GOSPER}{\texttt{EXTENDED\_GOSPER}}
 \hyperlink{operator:EXTENDED_SUMRECURSION}{\texttt{EXTENDED\_SUMRECURSION}}
@@ -312,19 +335,37 @@ system.
 \hyperlink{operator:FPS}{\texttt{FPS}}
 \hyperlink{operator:G}{\texttt{G}}
 \hyperlink{operator:GCD}{\texttt{GCD}}
+\hyperlink{operator:GDIMENSION}{\texttt{GDIMENSION}}
 \hyperlink{procedure:GEGENBAUER_BASE}{\texttt{GEGENBAUER\_BASE}}
 \hyperlink{operator:GETROOT}{\texttt{GETROOT}}
 \hyperlink{operator:GFNEWT}{\texttt{GFNEWT}}
 \hyperlink{operator:GFROOT}{\texttt{GFROOT}}
+\hyperlink{operator:GINDEPENDENT_SETS}{\texttt{GINDEPENDENT\_SETS}}
+\hyperlink{operator:GLEXCONVERT}{\texttt{GLEXCONVERT}}
 \hyperlink{command:GNUPLOT}{\texttt{GNUPLOT}}
 \hyperlink{operator:GOSPER}{\texttt{GOSPER}}
+\hyperlink{operator:GREDUCE}{\texttt{GREDUCE}}
+\hyperlink{operator:GREDUCE_ORDERS}{\texttt{GREDUCE\_ORDERS}}
+\hyperlink{operator:GROEBNER}{\texttt{GROEBNER}}
+\hyperlink{operator:GROEBNERT}{\texttt{GROEBNERT}}
+\hyperlink{operator:GROEBNERF}{\texttt{GROEBNERF}}
+\hyperlink{operator:GROEBNER_WALK}{\texttt{GROEBNER\_WALK}}
+\hyperlink{operator:GROEPOSTPROC}{\texttt{GROEPOSTPROC}}
+\hyperlink{operator:GROESOLVE}{\texttt{GROESOLVE}}
+\hyperlink{operator:GSORT}{\texttt{GSORT}}
+\hyperlink{operator:GSPLIT}{\texttt{GSPLIT}}
+\hyperlink{operator:GSPOLY}{\texttt{GSPOLY}}
+\hyperlink{operator:GVARS}{\texttt{GVARS}}
+\hyperlink{operator:GZERODIM!?}{\texttt{GZERODIM!?}}
 \hyperlink{operator:HANKEL_TRANSFORM}{\texttt{HANKEL\_TRANSFORM}}
 \hyperlink{procedure:HERMITE_BASE}{\texttt{HERMITE\_BASE}}
+\hyperlink{operator:HILBERTPOLYNOMIAL}{\texttt{HILBERTPOLYNOMIAL}}
 \hyperlink{operator:HYPERGEOMETRIC}{\texttt{HYPERGEOMETRIC}}
 \hyperlink{operator:HYPERRECURSION}{\texttt{HYPERRECURSION}}
 \hyperlink{operator:HYPERSUM}{\texttt{HYPERSUM}}
 \hyperlink{operator:HYPERTERM}{\texttt{HYPERTERM}}
 \hyperlink{operator:I_SOLVE}{\texttt{I\_SOLVE}}
+\hyperlink{operator:IDEAL_QUOTIENT}{\texttt{IDEAL\_QUOTIENT}}
 \hyperlink{operator:IMPART}{\texttt{IMPART}}
 \hyperlink{operator:INEQ_SOLVE}{\texttt{INEQ\_SOLVE}}
 \hyperlink{operator:INFSUM}{\texttt{INFSUM}}
@@ -357,6 +398,7 @@ system.
 \hyperlink{procedure:MONOMIAL_BASE}{\texttt{MONOMIAL\_BASE}}
 \hyperlink{operator:MOTZKIN}{\texttt{MOTZKIN}}
 \hyperlink{operator:NEARESTROOT}{\texttt{NEARESTROOT}}
+\hyperlink{operator:NOETHER}{\texttt{NOETHER}}
 \hyperlink{operator:NULLSPACE}{\texttt{NULLSPACE}}
 \hyperlink{operator:NUM}{\texttt{NUM}}
 \hyperlink{operator:ODESOLVE}{\texttt{ODESOLVE}}
@@ -369,6 +411,8 @@ system.
 \hyperlink{operator:PLUS_OR_MINUS}{\texttt{PLUS\_OR\_MINUS}}
 \hyperlink{operator:POLEORDER}{\texttt{POLEORDER}}
 \hyperlink{operator:PRECISION}{\texttt{PRECISION}}
+\hyperlink{operator:PREDUCE}{\texttt{PREDUCE}}
+\hyperlink{operator:PREDUCET}{\texttt{PREDUCET}}
 \hyperlink{operator:PROD}{\texttt{PROD}}
 \hyperlink{operator:PRINT_CONDITIONS}{\texttt{PRINT\_CONDITIONS}}
 \hyperlink{operator:PS}{\texttt{PS}}
@@ -385,7 +429,6 @@ system.
 \hyperlink{operator:PSORDLIM}{\texttt{PSORDLIM}}
 \hyperlink{operator:PSORDER}{\texttt{PSORDER}}
 \hyperlink{operator:PSREVERSE}{\texttt{PSREVERSE}}
-\hyperlink{operator:PSSETORDER}{\texttt{PSSETORDER}}
 \hyperlink{operator:PSSUM}{\texttt{PSSUM}}
 \hyperlink{operator:PSTAYLOR}{\texttt{PSTAYLOR}}
 \hyperlink{operator:PSTERM}{\texttt{PSTERM}}
@@ -414,6 +457,7 @@ system.
 \hyperlink{operator:ROOTS}{\texttt{ROOTS}}
 \hyperlink{operator:ROOTS_AT_PREC}{\texttt{ROOTS\_AT\_PREC}}
 \hyperlink{operator:ROOT_VAL}{\texttt{ROOT\_VAL}}
+\hyperlink{operator:SATURATION}{\texttt{SATURATION}}
 \hyperlink{operator:SECOND}{\texttt{SECOND}}
 \hyperlink{operator:SELECT}{\texttt{SELECT}}
 \hyperlink{command:SET}{\texttt{SET}}
@@ -437,6 +481,8 @@ system.
 \hyperlink{operator:SUMTOHYPER}{\texttt{SUMTOHYPER}}
 \hyperlink{operator:SUMRECURSION}{\texttt{SUMRECURSION}}
 \hyperlink{operator:THIRD}{\texttt{THIRD}}
+\hyperlink{operator:TORDER}{\texttt{TORDER}}
+\hyperlink{operator:TORDER_COMPILE}{\texttt{TORDER\_COMPILE}}
 \hyperlink{operator:TOTALDEG}{\texttt{TOTALDEG}}
 \hyperlink{operator:TP}{\texttt{TP}}
 \hyperlink{operator:TRACE}{\texttt{TRACE}}
@@ -444,6 +490,7 @@ system.
 \hyperlink{operator:TRIGGCD}{\texttt{TRIGGCD}}
 \hyperlink{procedure:TRIGONOMETRIC_BASE}{\texttt{TRIGONOMETRIC\_BASE}}
 \hyperlink{operator:TRIGSIMP}{\texttt{TRIGSIMP}}
+\hyperlink{operator:VARDF}{\texttt{VARDF}}
 \hyperlink{operator:VARNAME}{\texttt{VARNAME}}
 \hyperlink{operator:Y_TRANSFORM}{\texttt{Y\_TRANSFORM}}
 \halfinterwordspace
@@ -459,8 +506,14 @@ system.
 \hyperlink{target:modes}{\texttt{EVAL\_MODE}}
 \hyperlink{reserved:FORT_WIDTH}{\texttt{FORT\_WIDTH}}
 \hyperlink{reserved:FPS_SEARCH_DEPTH}{\texttt{FPS\_SEARCH\_DEPTH}}
+\hyperlink{reserved:GMODULE}{\texttt{GMODULE}}
 \hyperlink{reserved:GOLDEN_RATIO}{\texttt{GOLDEN\_RATIO}}
 \hyperlink{reserved:GOSPER_REPRESENTATION}{\texttt{GOSPER\_REPRESENTATION}}
+\hyperlink{reserved:GROEBMONFAC}{\texttt{GROEBMONFAC}}
+\hyperlink{reserved:GROEBPROTFILE}{\texttt{GROEBPROTFILE}}
+\hyperlink{reserved:GROEBRESMAX}{\texttt{GROEBRESMAX}}
+\hyperlink{reserved:GROEBRESTRICTION}{\texttt{GROEBRESTRICTION}}
+\hyperlink{reserved:GVARSLAST}{\texttt{GVARSLAST}}
 \hyperlink{reserved:HIGH_POW}{\texttt{HIGH\_POW}}
 \hyperlink{reserved:I}{\texttt{I}}
 \hyperlink{reserved:INFINITY}{\texttt{INFINITY}}
@@ -557,6 +610,12 @@ system.
 %%ROOTS%%\hyperlink{switch:FULLPRECISION}{\texttt{FULLPRECISION}}
 \hyperlink{switch:FULLROOTS}{\texttt{FULLROOTS}}
 \hyperlink{switch:GCD}{\texttt{GCD}}
+\hyperlink{switch:GROEBFULLREDUCTION}{\texttt{GROEBFULLREDUCTION}}
+\hyperlink{switch:GROEBOPT}{\texttt{GROEBOPT}}
+\hyperlink{switch:GROEBPROT}{\texttt{GROEBPROT}}
+\hyperlink{switch:GROEBSTAT}{\texttt{GROEBSTAT}}
+\hyperlink{switch:GLTBASIS}{\texttt{GLTBASIS}}
+\hyperlink{switch:GLTERMS}{\texttt{GLTERMS}}
 %%\hyperlink{switch:HEUGCD}{\texttt{HEUGCD}}
 \hyperlink{switch:HORNER}{\texttt{HORNER}}
 \hyperlink{switch:IFACTOR}{\texttt{IFACTOR}}
@@ -583,6 +642,7 @@ system.
 \hyperlink{switch:NOCONVERT}{\texttt{NOCONVERT}}
 \hyperlink{switch:NOLNR}{\texttt{NOLNR}}
 \hyperlink{switch:NOSPLIT}{\texttt{NOSPLIT}}
+\hyperlink{switch:NOSUM}{\texttt{NOSUM}}
 \hyperlink{switch:NOT_NEGATIVE}{\texttt{NOT\_NEGATIVE}}
 \hyperlink{switch:ODESOLVE_BASIS}{\texttt{ODESOLVE\_BASIS}}
 \hyperlink{switch:ODESOLVE_CHECK}{\texttt{ODESOLVE\_CHECK}}
@@ -628,6 +688,10 @@ system.
 \hyperlink{switch:TRCOMPACT}{\texttt{TRCOMPACT}}
 \hyperlink{switch:TRDEFINT}{\texttt{TRDEFINT}}
 \hyperlink{switch:TRFAC}{\texttt{TRFAC}}
+\hyperlink{switch:TRGROEB}{\texttt{TRGROEB}}
+\hyperlink{switch:TRGROEBR}{\texttt{TRGROEBR}}
+\hyperlink{switch:TRGROEBS}{\texttt{TRGROEBS}}
+\hyperlink{switch:TRGROEB1}{\texttt{TRGROEB1}}
 \hyperlink{switch:TRIGFORM}{\texttt{TRIGFORM}}
 \hyperlink{switch:TRINT}{\texttt{TRINT}}
 \hyperlink{switch:TRODE}{\texttt{TRODE}}

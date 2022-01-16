@@ -224,6 +224,7 @@ power series expansion are evaluated and printed.
 The expansion is carried out as far as the value specified by an internal
 variable (with a default value of 6). This variable can be accessed via the
 operator \texttt{PSEXPLIM}.
+\hypertarget{operator:PSEXPLIM}{}
 \ttindextype{PSEXPLIM}{operator}
 \begin{verbatim}
   PSEXPLIM(UPTO:integer):integer.
@@ -324,7 +325,7 @@ TPS is zero, the identifier \texttt{UNDEFINED} is returned.
              POWER:integer):algebraic.
 \end{verbatim}
 This procedure truncates the power series \texttt{TPS} discarding terms
-of order higher than {\texttt{POWER}. The series is extended automatically
+of order higher than \texttt{POWER}. The series is extended automatically
 if the value of \texttt{POWER} is greater than the order of last term
 calculated to date. For example
 \begin{verbatim}
