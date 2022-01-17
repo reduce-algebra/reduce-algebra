@@ -59,6 +59,7 @@ zero-forms must also be declared.
 
 An exterior form is introduced by\label{PFORM} \ttindextype{PFORM}{statement}
 \index{Exterior form!declaration}
+\hypertarget{command:PFORM}{}
 
 \hspace*{2em} \k{PFORM} \s{declaration$_1$}, \s{declaration$_2$}, \ldots;
 
@@ -90,6 +91,7 @@ Exterior forms of the same degree can be grouped into lists to save typing.
 \end{verbatim}
 The declaration of vectors is similar. The command \f{TVECTOR}\label{TVECTOR}
 takes a list of names. \ttindextype{TVECTOR}{command} \index{Exterior form!vector}
+\hypertarget{command:TVECTOR}{}
 
 \hspace*{2em} \k{TVECTOR} \s{name$_1$}, \s{name$_2$}, \ldots;
 
@@ -102,7 +104,8 @@ If a declaration of an already existing name is made, the old
 declaration is removed, and the new one is taken.
 
 The exterior degree of a symbol or a general expression can be obtained
-with the function \label{EXDEGREE} \ttindextype{EXDEGREE}{command}
+with the function \label{EXDEGREE} \ttindextype{EXDEGREE}{operator}
+\hypertarget{operator:EXDEGREE}{}
 
 \hspace*{2em} \k{EXDEGREE} \s{expression};
 
@@ -152,6 +155,7 @@ rule for exterior products.
 
 It is possible to declare the dimension of the underlying space
 by\label{SPACEDIM} \ttindextype{SPACEDIM}{command} \index{Dimension}
+\hypertarget{command:SPACEDIM}{}
 
 \hspace*{2em} \k{SPACEDIM} \s{number} $\mid$ \s{identifier};
 
@@ -175,6 +179,7 @@ Partial differentiation is denoted by the operator \f{@}\label{at}.  Its
 capability is the same as the {\REDUCE} \f{DF} operator.
 \ttindextype{"@}{operator} \index{Partial differentiation}
 \index{Differentiation!partial}
+\hypertarget{operator:@}{}
 
 \example\index{EXCALC package!example}
 
@@ -189,7 +194,7 @@ capability is the same as the {\REDUCE} \f{DF} operator.
 \end{verbatim}
 
 An identifier can be declared to be a function of certain variables.
-\ttindextype{FDOMAIN}{command}
+\ttindextype{FDOMAIN}{command}\hypertarget{command:FDOMAIN}{}
 This is done with the command \f{FDOMAIN}\label{FDOMAIN}.  The
 following would tell the partial differentiation operator that \var{F}
 is a function of the variables \var{X} and \var{Y} and that \var{H} is
@@ -246,7 +251,7 @@ operator \f{d}\label{d}.  Products are normally differentiated out,
 \end{verbatim}
 
 This expansion can be suppressed by the command \f{NOXPND D}\label{NOXPNDD}.
-\ttindextype{NOXPND}{! D}
+\ttindextype{NOXPND}{! D}\hypertarget{command:NOXPND}{}
 
 \begin{verbatim}
      noxpnd d;
@@ -268,7 +273,7 @@ appears in the leftmost place.
 \end{verbatim}
 
 Expansion is performed again when the command \f{XPND D}\label{XPNDD}
-is executed. \ttindextype{XPND}{! \texttt{D}}
+is executed. \ttindextype{XPND}{! \texttt{D}}\hypertarget{command:XPND}{}
 
 Functions which are implicitly defined by the \f{FDOMAIN} command are
 expanded into partial derivatives:
@@ -325,6 +330,7 @@ by the diphthong \f{\_\textbar} \label{innerp} (underscore or-bar), which is the
 notation of many textbooks.  If the exterior form is an exterior
 product, the inner product is carried through any factor.
 \ttindextype{\_\textbar}{(inner product) operator}
+\hypertarget{reserved:innerprodop}{}
 
 \example\index{EXCALC package!example}
 
@@ -367,7 +373,7 @@ or between two vectors.  It is represented by the infix operator \f{\textbar\_}
 a vector, the Lie derivative is expressed through inner products and
 exterior differentiations, \emph{i.e.}
 \ttindextype{\textbar\_}{(Lie derivative) operator}
-
+\hypertarget{reserved:liederivativeop}{}
 \begin{verbatim}
      pform z=k;
 
@@ -401,6 +407,7 @@ are differentiated out.
 \subsection{Hodge-* Duality Operator}
 
 \index{Hodge-* duality operator} \ttindextype{"\#}{(Hodge-*) operator}
+\hypertarget{reserved:hodegestareop}{}
 The Hodge-*\label{hodge} duality operator maps an exterior form of degree
 \texttt{K} to an exterior form of degree \texttt{N-K}, where \texttt{N} is the
 dimension of the space.  The double application of the operator must
@@ -444,6 +451,7 @@ More simplifications are performed if a coframe is defined.
 \subsection{Variational Derivative}
 
 \index{Derivative!variational} \index{Variational derivative}
+\hypertarget{operator:VARDF}{}
 \ttindextype{VARDF}{(variational derivative) operator)}
 The function \texttt{VARDF}\label{VARDF} returns as its value the
 variation of a given Lagrangian n-form with respect to a specified
@@ -480,7 +488,7 @@ with respect to indexed quantities is currently not allowed.
 
 For the calculation of the conserved currents induced by symmetry
 operators (vector fields), the function \texttt{NOETHER}\label{NOETHER}
-\ttindextype{NOETHER}{function}
+\ttindextype{NOETHER}{function}\hypertarget{operator:NOETHER}{}
 is provided.  It has the syntax:
 
 \hspace*{2em}
@@ -545,6 +553,7 @@ obtain) is specified, the given expression is evaluated for all
 possible index values, and the summation convention is understood.
 
 \example\label{INDEXRANGE}\index{EXCALC package!example}
+\hypertarget{command:INDEXRANGE}{}
 
 \begin{verbatim}
      indexrange t,r,ph,z;
@@ -639,16 +648,19 @@ index evaluations would take place
 In certain cases, one would like to inhibit the summation over
 specified index names, or at all.  For this the command
 
-\ttindextype{NOSUM}{command}
+\ttindextype{NOSUM}{command}\hypertarget{command:NOSUM}{}
 \hspace*{2em} \k{NOSUM} \s{indexname$_1$}, \ldots;\label{NOSUM}
 
 and the switch \sw{NOSUM} are\ttindexswitch[EXCALC]{NOSUM}
+\hypertarget{command:RENOSUM}{}
+\hypertarget{switch:NOSUM}{}
 available.  The command \f{NOSUM} has the effect that summation is
 not performed over those indices which had been listed.  The command
 \f{RENOSUM}\label{RENOSUM} enables summation again.  The switch \sw{NOSUM},
 if on, inhibits any summation. \ttindextype{RENOSUM}{command}
 
 \label{INDEXSYMMETRIES} \ttindextype{INDEX\_SYMMETRIES}{command}
+\hypertarget{command:INDEX_SYMMETRIES}{}
 It is possible to declare symmetry properties for an indexed quantity by
 the command \f{INDEX\_SYMMETRIES}. A prototypical example is as
 follows
@@ -678,6 +690,7 @@ effect.
 \subsection{Metric Structures}
 
 \index{Metric structure} \index{Coframe}
+\hypertarget{command:COFRAME}{}
 A metric structure is defined in {\bf EXCALC} by specifying a set of
 basis one-forms (the coframe) together with the metric.
 
@@ -773,7 +786,7 @@ be transformed into an expression of the basis one-forms.The system also
 knows how to take the exterior derivative of the basis one-forms.
 
 \index{Spherical coordinates}
-\example (Spherical coordinates)\index{EXCALC package!example}
+\example\ (Spherical coordinates)\index{EXCALC package!example}
 
 \begin{verbatim}
      coframe e(r)=d(r), e(th)=r*d(th), e(ph)=r*sin(th)*d(ph);
@@ -806,6 +819,7 @@ knows how to take the exterior derivative of the basis one-forms.
 
 The frame dual to the frame defined by the \f{COFRAME} command can
 be introduced by \k{FRAME} command. \ttindextype{FRAME}{command}
+\hypertarget{command:FRAME}{}
 
 \hspace*{2em} \k{FRAME} \s{identifier};\label{FRAME}
 
@@ -849,6 +863,7 @@ coordinate functions are replaced by the frame basis vectors.
 \end{verbatim}
 
 \ttindextype{DISPLAYFRAME}{command} \index{Tracing!EXCALC package}\index{EXCALC package!tracing}
+\hypertarget{command:DISPLAYFRAME}{}
 As a convenience, the frames can be displayed at any point in a program
 by the command \f{DISPLAYFRAME;}\label{DISPLAYFRAME}.
 
@@ -868,6 +883,7 @@ indices in a covariant position is taken to be +1.
 \index{Riemannian Connections}
 The command \f{RIEMANNCONX} is provided for calculating the
 \ttindextype{RIEMANNCONX}{command} \label{RIEMANNCONX}
+\hypertarget{command:RIEMANNCONX}{}
 connection 1 forms.  The values are stored on the name given to
 \f{RIEMANNCONX}.  This command is far more efficient than calculating the
 connection from the differential of the basis one-forms and using
@@ -928,13 +944,14 @@ inner products.
 \index{Killing Vectors}
 The command \f{KILLING\_VECTOR} is provided for calculating the
 \ttindextype{KILLING\_VECTOR}{command} \label{KILLING_VECTOR}
+\hypertarget{command:KILLING_VECTOR}{}
 determining system of partial differential equations of Killing vectors for
 a given metric structure provided by the coframe statement.  The result is
 a list where the first entry is a vector constructed from the identifier
 given to the command and the second entry consists of a list of partial
 differential equations for the coefficients of this vector.
 
-\example (Calculate the determining pde's for a Killing vector of S(2))
+\example\ (Calculate the determining pde's for a Killing vector of S(2))
 \index{EXCALC package!example}
 \begin{verbatim}
 
@@ -965,7 +982,7 @@ killing_vector u;
 \subsection{Ordering and Structuring}
 
 \index{Ordering!exterior form} \index{Exterior form!ordering}
-\ttindextype{FORDER}{command}
+\ttindextype{FORDER}{command}\hypertarget{command:FORDER}{}
 The ordering of an exterior form or vector can be changed by the
 command \f{FORDER}.\label{FORDER}  In an expression, the first
 identifier or kernel in the arguments of \texttt{FORDER} is ordered ahead
@@ -979,6 +996,7 @@ elements that are listed as arguments. \ttindextype{REMFORDER}{command}
 An expression can be put in a more structured form by renaming a
 subexpression.  This is done with the command \f{KEEP} which
 has the syntax \ttindextype{KEEP}{command}\label{KEEP}
+\hypertarget{command:KEEP}{}
 
 \hspace*{2em} \k{KEEP}
 \s{name$_1$}=\s{expression$_1$},\s{name$_2$}=\s{expression$_2$}, \ldots
