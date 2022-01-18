@@ -306,22 +306,28 @@ consisting of the single character \texttt{"}.
 
 Text can be included in program\index{Program} listings for the
 convenience of human readers, in such a way that {\REDUCE} pays no
-attention to it.  There are two ways to do this:
+attention to it.  There are three ways to do this:
 
 \begin{enumerate}
-\item Everything from the word \texttt{COMMENT}\ttindextype{COMMENT}{keyword} to the next
+\item Everything from the word \texttt{COMMENT}\ttindextype{COMMENT}{keyword}
+  \index{Comment!COMMENT keyword@\texttt{COMMENT} keyword}to the next
 statement terminator, normally ; or \$, is ignored.  Such comments
 can be placed anywhere a blank could properly appear. (Note that \texttt{END}
 and \texttt{>}\texttt{>} are \emph{not} treated as \texttt{COMMENT} delimiters!)
 
 \item Everything from the symbol \texttt{\%}\index{Percent sign}
-\index{\% (Precent sign)@\texttt{\%} (Percent sign)} to the end
+  \index{\% (Percent sign)@\texttt{\%} (Percent sign)}
+  \index{Comment!\% (Percent sign)@\texttt{\%} (Percent sign)}to the end
 of the line on which it appears is ignored.  Such comments can be placed
 as the last part of any line.  Statement terminators have no special
 meaning in such comments.  Remember to put a semicolon before the \texttt{\%}
 if the earlier part of the line is intended to be so terminated.  Remember
 also to begin each line of a multi-line \texttt{\%} comment with a \texttt{\%}
 sign.
+
+\item C-style inline comments: everything from \texttt{/*} to \texttt{*/}\index{C-style inline comments}
+  \index{/* ... */ (inline comment)@\texttt{/*} \ldots \texttt{*/} (inline comment)}
+  \index{Comment!/* ... */ (inline)@\texttt{/*} \ldots \texttt{*/} (inline)}is ignored. 
 \end{enumerate}
 
 \section{Operators}
@@ -381,7 +387,7 @@ but
 &``\var{cos}'' minus the variable \var{y})
 \end{tabular}
 \end{quote}
-A unary prefix operator\index{Unary prefix operator}\index{Prefix operator, unary}
+A unary prefix operator\index{Unary prefix operator}\index{Prefix operator!unary}
 \index{Operator!unary prefix}
 has a precedence
 \index{Operator!precedence} higher than any infix operator, including
