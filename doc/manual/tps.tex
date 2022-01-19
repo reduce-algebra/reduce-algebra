@@ -1,8 +1,8 @@
 
-\index{Power series} \index{extendible power series}
+\index{Power series} \index{Extendible power series}\index{Power series!extendible}
 \index{Barnes, Alan} \index{Padget, Julian}
 \subsection{Introduction}
-\index{Power series expansions}
+\index{Power series!expansions}
 This package implements formal Laurent power series expansions in one
 variable using the domain mechanism of REDUCE. This means that power
 series objects can be added, multiplied, differentiated etc. like other
@@ -51,7 +51,7 @@ powers of \texttt{1/VAR}.
 \end{verbatim}
 
 \textbf{Operations on Power Series}
-\index{Power Series Arithmetic}
+\index{Power Series!arithmetic}
 
 As power series objects are domain elements they may be added, subtracted,
 multiplied and divided in the normal way. For example if A and B are power
@@ -65,14 +65,14 @@ will produce power series objects representing the sum, product, reciprocal,
 and quotient of the power series objects A and B
 respectively.
 
-\index{Power Series Differentiation}
+\index{Power Series!differentiation}
 \textbf{Differentiation}
 
 Similarly, if A is a power series object depending on X then the input
 {\tt df(a, x);} will produce the power series expansion of the
 derivative of A with respect to X.
 
-\index{Power series integration}
+\index{Power series!integration}
 \textbf{Integration}
 
 The power series expansion of an integral may also be obtained (even if
@@ -94,7 +94,7 @@ Note that the Laurent series domain is not closed under integration with
 respect to the expansion variable; if the term of degree -1 is non-zero a
 logarithmic singularity error will occur on integration.
 
-\index{Power series exponentiation}
+\index{Power series!exponentiation}
 \textbf{Exponentiation}
 The Laurent series domain is closed under exponentiation by an \emph{integer}
 power. Thus, with respect to integer exponentiation, power series are first
@@ -343,7 +343,7 @@ returned.  If \texttt{POWER} does not simplify to an integer or if
 \subsection{Power Series Reversion}
 \hypertarget{operator:PSREVERSE}{}
 \ttindextype{PSREVERSE}{operator}
-\index{Power series reversion}
+\index{Power series!reversion}
 In order to functionally invert a power series the operator \texttt{PSREVERSE}
 is used. 
 \begin{verbatim}
@@ -386,7 +386,7 @@ Some examples:
 \subsection{Power Series Composition}
 \hypertarget{operator:PSCOMPOSE}{}
 \ttindextype{PSCOMPOSE}{operator}
-\index{Power series composition}
+\index{Power series!composition}
 In order to functionally compose two power series the operator
 \texttt{PSCOMPOSE} is used. 
 \begin{verbatim}
