@@ -10,21 +10,30 @@
  */
 
 // Imported variables:
-import { debug, typesetMathsCheckbox, inputDiv } from "./Main.mjs";
+import { debug, typesetMathsCheckbox, inputDiv, Global } from "./Main.js";
+
+// Imported types:
+import { FileSystemWritableFileStream } from "./Main.js";
 
 // Imported functions:
-import { sendPlainTextToIODisplay, sendToReduce, enableTypesetMaths } from "./Main.mjs";
+import { sendPlainTextToIODisplay, sendToReduce, enableTypesetMaths } from "./Main.js";
+
+interface FileSystemFileHandle {
+    readonly name: string,
+    createWritable(): Promise<FileSystemWritableFileStream>
+};
 
 const supported = "showOpenFilePicker" in window;
-const echoFileInputCheckbox = document.getElementById('EchoFileInputCheckbox');
-const outputFileMenuItem = document.getElementById("OutputFileMenuItem");
-const outputHereMenuItem = document.getElementById("OutputHereMenuItem");
+const echoFileInputCheckbox = document.getElementById("EchoFileInputCheckbox") as HTMLInputElement;
+const outputFileMenuItem = document.getElementById("OutputFileMenuItem") as HTMLButtonElement;
+const outputHereMenuItem = document.getElementById("OutputHereMenuItem") as HTMLButtonElement;
 outputHereMenuItem.disabled = true;
-const outputOpenMenuItem = document.getElementById("OutputOpenMenuItem");
+const outputOpenMenuItem = document.getElementById("OutputOpenMenuItem") as HTMLButtonElement;
 outputOpenMenuItem.disabled = true;
-const shutFileMenuItem = document.getElementById("ShutFileMenuItem");
+const shutFileMenuItem = document.getElementById("ShutFileMenuItem") as HTMLButtonElement;
 shutFileMenuItem.disabled = true;
-let typesetMathsEnabled;
+let typesetMathsEnabled: boolean;
+let fileOpen: () => Promise<File>;
 
 if (supported) {
     debug && console.log('Using the File System Access API.');
@@ -45,13 +54,14 @@ if (supported) {
             }
         ]
     };
-    var fileOpen = async () => {
+    fileOpen = async () => {
+        // @ts-ignore non-standard Window method
         const [fileHandle] = await window.showOpenFilePicker(inputPickerOptions);
         return fileHandle.getFile();
     };
 } else {
     debug && console.log('The File System Access API is not available.');
-    var fileOpen = async () => {
+    fileOpen = async () => {
         return new Promise(resolve => {
             const input = document.createElement('input');
             input.type = 'file';
@@ -63,24 +73,24 @@ if (supported) {
 };
 
 document.getElementById("InputFileMenuItem").addEventListener('click', async () => {
-    inputFromKbd = false;
+    Global.inputFromKbd = false;
     try {
-        const file = await fileOpen();
+        const file = await fileOpen() as File;
         sendPlainTextToIODisplay(`Inputting from file "${file.name}"...`, "info");
         const contents = await file.text();
         if (echoFileInputCheckbox.checked) {
-            if (echo) {
+            if (Global.echo) {
                 sendToReduce(contents);
             } else {
                 sendToReduce("on echo;");
-                echo = true;
+                Global.echo = true;
                 setTimeout(sendToReduce, 100, contents);
             }
         } else {
-            if (echo) {
-                hideOutput = true;
+            if (Global.echo) {
+                Global.hideOutput = true;
                 sendToReduce("off echo;");
-                echo = false;
+                Global.echo = false;
                 setTimeout(sendToReduce, 100, contents);
             } else {
                 sendToReduce(contents);
@@ -93,13 +103,14 @@ document.getElementById("InputFileMenuItem").addEventListener('click', async () 
 });
 
 const defaultOutputFileName = "output.log";
-let outputFileName;
+let outputFileName: string;
 
 if (supported) {
     // While outputToFile is defined (true), REDUCE outputs using
     // outputToFile.write(output);
     // outputToFile is declared in "Main.js".
-    var outputFileHandle, writable;
+    var outputFileHandle: FileSystemFileHandle,
+        writable: FileSystemWritableFileStream;
     var outputPickerOptions = {
         id: "output", // keep this picker distinct
         suggestedName: defaultOutputFileName,
@@ -118,8 +129,8 @@ if (supported) {
     // While outputToArray is defined (true), REDUCE outputs using
     // outputToArray.push(output);
     // outputToArray is declared in "Main.js".
-    var outputArray;
-    var fileSave = async (blob) => {
+    var outputArray: BlobPart[];
+    var fileSave = async (blob: Blob | MediaSource) => {
         const a = document.createElement('a');
         a.download = outputFileName;
         a.href = URL.createObjectURL(blob);
@@ -141,11 +152,12 @@ function displayOutputtingToTerminal() {
 outputFileMenuItem.addEventListener('click', async () => {
     try {
         if (supported) {
+            // @ts-ignore non-standard Window method
             outputFileHandle = await window.showSaveFilePicker(outputPickerOptions);
             outputFileName = outputFileHandle.name;
             // Cancelling the picker throws an AbortError.
             // Create a FileSystemWritableFileStream to write to:
-            outputToFile = writable = await outputFileHandle.createWritable();
+            Global.outputToFile = writable = await outputFileHandle.createWritable();
         } else {
             let filename = prompt("Save output file to downloads location as:", defaultOutputFileName);
             if (!filename) {
@@ -154,7 +166,7 @@ outputFileMenuItem.addEventListener('click', async () => {
                 throw error;
             }
             outputFileName = filename;
-            outputToArray = outputArray = []; // array constructed from REDUCE output
+            Global.outputToArray = outputArray = []; // array constructed from REDUCE output
         }
         displayOutputtingToFile();
         // Don't write TeX syntax to output file:
@@ -171,9 +183,9 @@ outputFileMenuItem.addEventListener('click', async () => {
 
 outputHereMenuItem.addEventListener('click', () => {
     if (supported) {
-        outputToFile = false;
+        Global.outputToFile = undefined;
     } else {
-        outputToArray = false;
+        Global.outputToArray = undefined;
     }
     displayOutputtingToTerminal();
     // If typeset maths was on, it has been stealthily turned off,
@@ -186,9 +198,9 @@ outputHereMenuItem.addEventListener('click', () => {
 
 outputOpenMenuItem.addEventListener('click', () => {
     if (supported) {
-        outputToFile = writable;
+        Global.outputToFile = writable;
     } else {
-        outputToArray = outputArray;
+        Global.outputToArray = outputArray;
     }
     displayOutputtingToFile();
     // If typeset maths was on and has not explicilty been turned off,
@@ -206,8 +218,7 @@ shutFileMenuItem.addEventListener('click', async () => {
         } catch (err) {
             console.error(err.name, err.message);
         }
-        writable = undefined;
-        outputToFile = false;
+        Global.outputToFile = writable = undefined;
     } else {
         try {
             const blob = new Blob(outputArray); // array constructed from REDUCE output
@@ -215,8 +226,7 @@ shutFileMenuItem.addEventListener('click', async () => {
         } catch (err) {
             console.error(err.name, err.message);
         }
-        outputArray = undefined;
-        outputToArray = false;
+        Global.outputToArray = outputArray = undefined;
     }
     displayOutputtingToTerminal();
     // If typeset maths was on, it has been stealthily turned off,

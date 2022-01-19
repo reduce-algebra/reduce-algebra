@@ -3,27 +3,38 @@
  * @module Main
  */
 
-// Global variables assigned in more than one module, created as properties of window (=== self === globalThis).
+export interface FileSystemWritableFileStream extends WritableStream {
+    write(data: string): Promise<undefined>;
+};
 
-// Setting of REDUCE echo switch; assigned and read in FileMenu.mjs and InputEditor.mjs:
-self.echo = false;
-// Hide REDUCE output if true; assigned in FileMenu.mjs and InputEditor.mjs, assigned and read in Main.mjs:
-self.hideOutput = false;
-// Control REDUCE input and output; assigned in FileMenu.mjs and InputEditor.mjs, read in Main.mjs:
-self.inputFromKbd = self.outputToFile = self.outputToArray = undefined;
+// Global variables assigned in more than one module:
+export const Global: {
+    // Setting of REDUCE echo switch; assigned and read in FileMenu.js and InputEditor.js:
+    echo: boolean,
+    // Hide REDUCE output if true; assigned in FileMenu.js and InputEditor.js, assigned and read in Main.js:
+    hideOutput: boolean,
+    // Control REDUCE input and output; assigned in FileMenu.js and InputEditor.js, read in Main.js:
+    inputFromKbd: boolean,
+    outputToFile: FileSystemWritableFileStream,
+    outputToArray: (string | BlobPart)[]
+} = {
+    echo: false,
+    hideOutput: false,
+    inputFromKbd: undefined, outputToFile: undefined, outputToArray: undefined
+};
 
 /** True if console logging is enabled. */
 export const debug = (location.search === '?debug');
 
 // Set up access to document elements and reset their defaults for when the page is reloaded:
-const startREDUCEMenuItem = document.getElementById("StartREDUCEMenuItem");
-const stopREDUCEMenuItem = document.getElementById("StopREDUCEMenuItem");
-const clearDisplayMenuItem = document.getElementById("ClearDisplayMenuItem");
-const ioColouringCheckbox = document.getElementById('IOColouringCheckbox');
+const startREDUCEMenuItem = document.getElementById("StartREDUCEMenuItem") as HTMLButtonElement;
+const stopREDUCEMenuItem = document.getElementById("StopREDUCEMenuItem") as HTMLButtonElement;
+const clearDisplayMenuItem = document.getElementById("ClearDisplayMenuItem") as HTMLButtonElement;
+const ioColouringCheckbox = document.getElementById('IOColouringCheckbox') as HTMLInputElement;
 
 /** Typeset Maths View Menu HTML Element. */
-export const typesetMathsCheckbox = document.getElementById('TypesetMathsCheckbox');
-const centreTypesetMathsCheckbox = document.getElementById('CentreTypesetMathsCheckbox');
+export const typesetMathsCheckbox = document.getElementById('TypesetMathsCheckbox') as HTMLInputElement;
+const centreTypesetMathsCheckbox = document.getElementById('CentreTypesetMathsCheckbox') as HTMLInputElement;
 
 /** Input Editor HTML Element. */
 export const inputDiv = document.getElementById('InputDiv');
@@ -31,25 +42,25 @@ inputDiv.innerHTML = "";
 inputDiv.focus();
 
 /** Earlier Button HTML Element. */
-export const earlierButton = document.getElementById('EarlierButton');
+export const earlierButton = document.getElementById('EarlierButton') as HTMLButtonElement;
 earlierButton.disabled = true;
 
 /** Send Input Button HTML Element. */
-export const sendInputButton = document.getElementById('SendInputButton');
+export const sendInputButton = document.getElementById('SendInputButton') as HTMLButtonElement;
 
 /** Later Button HTML Element. */
-export const laterButton = document.getElementById('LaterButton');
+export const laterButton = document.getElementById('LaterButton') as HTMLButtonElement;
 laterButton.disabled = true;
-const fileMenuLink = document.getElementById("FileMenuLink");
-const templatesMenuLink = document.getElementById("TemplatesMenuLink");
-const functionsMenuLink = document.getElementById("FunctionsMenuLink");
+const fileMenuLink = document.getElementById("FileMenuLink") as HTMLAnchorElement;
+const templatesMenuLink = document.getElementById("TemplatesMenuLink") as HTMLAnchorElement;
+const functionsMenuLink = document.getElementById("FunctionsMenuLink") as HTMLAnchorElement;
 let ioDisplayWindow, ioDisplayHead, ioDisplayBody;
 
 /** True if REDUCE has not yet produced any output. */
 export let noOutput = true;
-let worker;
+let worker: Worker;
 
-function setRunningState(running) {
+function setRunningState(running: boolean) {
     startREDUCEMenuItem.disabled = running;
     stopREDUCEMenuItem.disabled = !running;
     sendInputButton.disabled = !running;
@@ -84,13 +95,13 @@ function clearIODisplay() {
  * @param {string} text - The plain text to display.
  * @param {string} [displayClass] - The HTML class attribute to attach to the <pre> element.
  */
-export function sendPlainTextToIODisplay(text, displayClass) {
+export function sendPlainTextToIODisplay(text: string, displayClass?: string) {
     if (noOutput) {
         // This code executes immediately after REDUCE loads:
         window.scrollTo(0, document.getElementById("Menubar").offsetTop);
         clearIODisplay();
         setRunningState(true);
-        displayClass = false;
+        displayClass = undefined;
         noOutput = false;
     }
     // For now, append text within a <pre> element:
@@ -107,22 +118,22 @@ export function sendPlainTextToIODisplay(text, displayClass) {
  * @param {*} event
  * @returns null
  */
-function reduceWebMessageHandler(event) {
-    if (hideOutput) { // hide changes of switches etc.
-        hideOutput = false;
+function reduceWebMessageHandler(event: { data: { channel: string; line: any; }; }) {
+    if (Global.hideOutput) { // hide changes of switches etc.
+        Global.hideOutput = false;
         return;
     }
     if (event.data.channel === 'stdout') {
         let output = event.data.line;
         try {
-            if (outputToFile) { // assigned in "FileMenu.js"
+            if (Global.outputToFile) { // assigned in "FileMenu.js"
                 // Some line termination is necessary, but this produces more vertical space than it should!
-                outputToFile.write(output);
-                outputToFile.write("\n");
+                Global.outputToFile.write(output);
+                Global.outputToFile.write("\n");
                 return;
-            } else if (outputToArray) { // assigned in "FileMenu.js"
-                outputToArray.push(output);
-                outputToArray.push("\n");
+            } else if (Global.outputToArray) { // assigned in "FileMenu.js"
+                Global.outputToArray.push(output);
+                Global.outputToArray.push("\n");
                 return;
             }
         } catch (ignore) { }
@@ -163,7 +174,7 @@ function reduceWebMessageHandler(event) {
                     sendPlainTextToIODisplay(output, match[1] ? "error" : "warning");
                 } else {
                     // Do not colour if input from file because this may be echoed input:
-                    sendPlainTextToIODisplay(output, inputFromKbd && "output");
+                    sendPlainTextToIODisplay(output, Global.inputFromKbd && "output");
                 }
             }
         }
@@ -176,13 +187,13 @@ function reduceWebMessageHandler(event) {
  * @param {*} event
  * @returns null
  */
-function reduceWebErrorHandler(event) { console.error(event.message, event) }
+function reduceWebErrorHandler(event: any) { console.error(event.message, event) }
 
 /**
  * Send a text string to REDUCE as input.
  * @param {string} str - The REDUCE input.
  */
-export function sendToReduce(str) {
+export function sendToReduce(str: string) {
     debug && console.log(` INPUT: ${str}`); // for debugging
     // This function posts a string to REDUCE, which treats it rather as if
     // it had been keyboard input. At the start of a run I use this to send a
@@ -209,11 +220,11 @@ function startREDUCE() {
         ' on nat, fancy; off int >>$');
 }
 
-function stopREDUCE() {
+export function stopREDUCE() {
     worker.terminate();
     sendPlainTextToIODisplay("REDUCE stopped");
     setRunningState(false);
-    noOutput = true; hideOutput = false;
+    noOutput = true; Global.hideOutput = false;
 }
 
 // *****************
@@ -235,7 +246,7 @@ const toASCII = {
  * @param {string} text - Input text to be sent to REDUCE.
  * @returns string
  */
-function asciify(text) {
+function asciify(text: string) {
     let result = "";
     for (const char of text)
         if (char > "\x7F") {
@@ -252,7 +263,7 @@ function asciify(text) {
  * Called in this file, InputEditor.mjs and TempFuncs.mjs.
  * @param {string} text - Input text to be sent to REDUCE.
  */
-export function sendToReduceAndEcho(text) {
+export function sendToReduceAndEcho(text: string) {
     text = asciify(text);
     sendToReduceAndEchoNoAsciify(text);
 }
@@ -263,7 +274,7 @@ export function sendToReduceAndEcho(text) {
  * Called in this file, InputEditor.mjs and TempFuncs.mjs.
  * @param {string} text - Input text to be sent to REDUCE.
  */
-function sendToReduceAndEchoNoAsciify(text) {
+function sendToReduceAndEchoNoAsciify(text: string) {
     sendPlainTextToIODisplay(text, "input");
     sendToReduce(text);
 }
@@ -274,7 +285,7 @@ const loadedPackages = new Set(); // should probably be in a closure!
  * Load the specified package once only.
  * @param {string} pkg - Name of package to be loaded.
  */
-export function loadPackage(pkg) {
+export function loadPackage(pkg: string) {
     if (loadedPackages.has(pkg)) return;
     sendToReduceAndEchoNoAsciify(`load_package ${pkg};`);
     // Need to wait for REDUCE to digest this.
@@ -308,8 +319,8 @@ ioColouringCheckbox.addEventListener("change", event => {
  * Enable/disable typeset maths display by turning the fancy switch on/off privately.
  * @param {boolean} enable - True/false to enable/disable.
  */
-export function enableTypesetMaths(enable) {
-    hideOutput = true;
+export function enableTypesetMaths(enable: boolean) {
+    Global.hideOutput = true;
     sendToReduce(enable ? 'on fancy;' : 'off fancy;');
 }
 
@@ -327,7 +338,7 @@ centreTypesetMathsCheckbox.addEventListener("change", event => {
 // ********************************************
 
 {
-    const iframe = document.getElementById("IODisplayIframe");
+    const iframe = document.getElementById("IODisplayIframe") as HTMLIFrameElement;
     iframe.addEventListener("load", () => {
         // Don't try to access the iframe DOM until the iframe has loaded!
         debug && console.log("IODisplayIframe loaded.");

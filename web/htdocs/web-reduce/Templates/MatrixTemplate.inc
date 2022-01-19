@@ -50,7 +50,7 @@
 	import { Template } from "./TempFuncs.mjs";
 
 	// Imported functions:
-	import { loadPackage } from "./Main.mjs";
+	import { loadPackage } from "./GenJS/Main.js";
 
 	class MatrixTemplate extends Template {
 		constructor() {
