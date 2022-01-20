@@ -1,7 +1,7 @@
 {
-    "compilerOptions": {
-        "outDir": "GenJS",
-        "target": "es2020"
-    },
-    "include": ["typescript/*"]
+  "compilerOptions": {
+    "outDir": "GenJS",
+    "target": "es2020"
+  },
+  "include": ["typescript/*"]
 }
