@@ -269,9 +269,9 @@ Keyboard Shortcut: Control+Enter. (Also hold Shift to prevent auto-termination.)
 
 <?php include '../include/footer.php'; ?>
 
-<script type="module" src="Main.mjs"></script>
-<script type="module" src="InputEditor.mjs"></script>
-<script type="module" src="FileMenu.mjs"></script>
+<script type="module" src="GenJS/Main.js"></script>
+<script type="module" src="GenJS/InputEditor.js"></script>
+<script type="module" src="GenJS/FileMenu.js"></script>
 
 <!-- Modal Dialogues -->
 <script type="module" src="TempFuncs.mjs"></script>

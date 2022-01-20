@@ -4,10 +4,10 @@
  */
 
 // Imported variables:
-import { inputDiv } from "./Main.mjs";
+import { inputDiv } from "./GenJS/Main.js";
 
 // Imported functions:
-import { sendToReduce, sendToReduceAndEcho } from "./Main.mjs";
+import { sendToReduce, sendToReduceAndEcho } from "./GenJS/Main.js";
 
 /**
  * Implement the modal-dialogue custom element.

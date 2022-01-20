@@ -8,19 +8,19 @@
  */
 
 // Imported variables:
-import { inputDiv, earlierButton, sendInputButton, laterButton, noOutput } from "./Main.mjs";
+import { inputDiv, earlierButton, sendInputButton, laterButton, noOutput, Global } from "./Main.js";
 
 // Imported functions:
-import { sendToReduce, sendToReduceAndEcho } from "./Main.mjs";
+import { sendToReduce, sendToReduceAndEcho, stopREDUCE } from "./Main.js";
 
 const inputList = [];
 let inputListIndex = 0;
 let maxInputListIndex = -1;
 const quitPattern = /\b(?:bye|quit)\s*[;$]/i;  // case insensitive
 
-function sendInput(event) {
+function sendInput(event: KeyboardEvent | MouseEvent) {
     if (noOutput) return; // REDUCE not yet loaded!
-    inputFromKbd = true;
+    Global.inputFromKbd = true;
     // Strip trailing white space from the input:
     let text = inputDiv.innerText.replace(/\s+$/, "");
     if (text.length > 0) {
@@ -32,17 +32,17 @@ function sendInput(event) {
         if (event.altKey) {
             // Send keyboard input to REDUCE as if from a file via IN,
             // letting REDUCE echo the input.
-            if (echo) {
+            if (Global.echo) {
                 sendToReduce(text);
             } else {
                 sendToReduce("on echo;" + text);
-                echo = true;
+                Global.echo = true;
             }
         } else {
-            if (echo) {
-                hideOutput = true;
+            if (Global.echo) {
+                Global.hideOutput = true;
                 sendToReduce("off echo;");
-                echo = false;
+                Global.echo = false;
                 setTimeout(sendToReduceAndEcho, 100, text);
             } else {
                 sendToReduceAndEcho(text);
@@ -60,7 +60,7 @@ function sendInput(event) {
 
 sendInputButton.addEventListener('click', sendInput);
 
-function earlierInput(event) {
+function earlierInput(event: KeyboardEvent | MouseEvent) {
     event.preventDefault();
     if (inputListIndex > 0) {
         inputDiv.innerText = inputList[--inputListIndex];
@@ -74,7 +74,7 @@ function earlierInput(event) {
 
 earlierButton.addEventListener('click', earlierInput);
 
-function laterInput(event) {
+function laterInput(event: KeyboardEvent | MouseEvent) {
     event.preventDefault();
     if (inputListIndex < maxInputListIndex) {
         inputDiv.innerText = inputList[++inputListIndex];
@@ -113,9 +113,9 @@ inputDiv.addEventListener("keydown", event => {
  **********************/
 
 let highlighted = false;  // true when text is highlighted.
-const selection = getSelection();
+const selection: Selection = getSelection();
 
-const matchDelimsCheckbox = document.getElementById("MatchDelimsCheckbox");
+const matchDelimsCheckbox = document.getElementById("MatchDelimsCheckbox") as HTMLInputElement;
 matchDelimsCheckbox.checked = true;
 
 matchDelimsCheckbox.addEventListener("change", () =>
@@ -125,7 +125,7 @@ matchDelimsCheckbox.addEventListener("change", () =>
 * Enable or disable delimiter matching by adding or removing the event handlers.
 * @param {boolean} enable - if true then enable.
 */
-function enableMatchDelims(enable) {
+function enableMatchDelims(enable: boolean) {
     if (enable) {
         inputDiv.addEventListener("keyup", matchDelimsKeyHandler);
         inputDiv.addEventListener("click", highlightMatchingDelims);
@@ -149,7 +149,7 @@ enableMatchDelims(true);
  * Filter keyboard events that trigger delimiter matching.
  * @param {KeyboardEvent} event - keyboard event to handle.
  */
-function matchDelimsKeyHandler(event) {
+function matchDelimsKeyHandler(event: { key: string | any[]; ctrlKey: any; }) {
     switch (event.key) {
         case "Enter": case "ArrowUp": case "ArrowDown":
             // Control+key already handled by keydown event:
@@ -185,21 +185,21 @@ function highlightMatchingDelims() {
     // Abort if input is empty or text is selected:
     if (!inputDiv.firstChild || !selection.isCollapsed) return;
     // Get text before and after caret:
-    const caretNode = selection.anchorNode, caret = selection.anchorOffset;
+    const caretNode: Node = selection.anchorNode, caret: number = selection.anchorOffset;
     // Using a range would be better here, but Range.toString() ignores newlines, at least in Firefox.
     selection.setBaseAndExtent(inputDiv, 0, caretNode, caret);
-    const textBefore = selection.toString();
+    const textBefore: string = selection.toString();
     selection.setBaseAndExtent(caretNode, caret, inputDiv, inputDiv.childNodes.length);
-    const textAfter = selection.toString();
+    const textAfter: string = selection.toString();
     // Restore original selection in case it is not set later:
     selection.collapse(caretNode, caret);
     // Separate lines may be in <div> elements, which implicitly end with a <br/>, so...
-    const atEOL = caretNode.parentNode !== inputDiv && caretNode.parentNode.tagName === "DIV" &&
-        caret === caretNode.length && caretNode.parentNode.nextSibling !== null;
+    const atEOL: boolean = caretNode.parentNode !== inputDiv && (<Element>caretNode.parentNode).tagName === "DIV" &&
+        caret === (<Text>caretNode).length && caretNode.parentNode.nextSibling !== null;
     if (textBefore) {
         // Check for matching delimiters closing immediately before caret.
         // The regexp flag i makes searching case-insensitive.
-        let closeDelim, openIndex = -1;
+        let closeDelim: string | any[], openIndex = -1;
         const initialMatch = textBefore.match(/(?:[)}]|>>|\bend)$/i);
         if (initialMatch &&
             !((closeDelim = initialMatch[0].toLowerCase()) === "end" && /^(?:\w|\d)/.test(textAfter))) {
@@ -223,7 +223,7 @@ function highlightMatchingDelims() {
                     }
                 }
             }
-            let span;
+            let span: Node;
             if (openIndex >= 0) {
                 // Matching opening delimiter found.
                 // Replace inputDiv contents with textBeforeOpen<matchSpan>textBeforeClose</matchSpan>textAfter:
@@ -248,7 +248,7 @@ function highlightMatchingDelims() {
     }
     if (textAfter) {
         // Check for matching delimiters opening immediately after caret.
-        let openDelim, closeIndex = -1;
+        let openDelim: string | any[], closeIndex = -1;
         const initialMatch = textAfter.match(/^(?:[({]|<<|begin\b)/i);
         if (initialMatch &&
             !((openDelim = initialMatch[0].toLowerCase()) === "begin" && /(?:\w|\d)$/.test(textBefore))) {
@@ -270,7 +270,7 @@ function highlightMatchingDelims() {
                     }
                 }
             }
-            let span;
+            let span: Node;
             inputDiv.innerText = textBefore;
             if (atEOL) inputDiv.appendChild(document.createElement("br"));
             if (closeIndex >= 0) {
@@ -311,7 +311,7 @@ const tmpDiv = document.createElement("div");
  * Convert newlines in text to <br/> elements and append to inputDiv.
  * @param {string} text - plain text.
  */
-function appendText(text) {
+function appendText(text: string) {
     if (text) {
         tmpDiv.innerText = text;
         inputDiv.append(...tmpDiv.childNodes);
