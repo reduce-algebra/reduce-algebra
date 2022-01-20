@@ -1,4 +1,4 @@
-// csl.cpp                                 Copyright (C) 1989-2021 Codemist
+// csl.cpp                                 Copyright (C) 1989-2022 Codemist
 
 //
 // This is Lisp system for use when delivering Lisp applications
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2021, Codemist.                         A C Norman       *
+ * Copyright (C) 2022, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -1250,7 +1250,6 @@ static LispObject lisp_main()
 
 static long int initial_random_seed;
 
-
 std::vector<stringBoolString> symbolsToDefine;
 std::vector<stringBoolString> stringsToDefine;
 std::vector<string> stringsToEvaluate;
@@ -2176,7 +2175,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 "         the license under which this code is distributed.",
                 [&](string key, bool hasVal, string val)
                 {   fwin_restore();
-                    term_printf("\nCSL was coded by A C Norman, Codemist, 1988-2021\n");
+                    term_printf("\nCSL was coded by A C Norman, Codemist, 1988-2022\n");
                     term_printf("Distributed under the Modified BSD License\n");
                     term_printf("See also --help\n");
                 }
@@ -2474,9 +2473,9 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
             /*! options [-r] \item [{\ttfamily -r}] \index{{\ttfamily -r}}
              * The random-number generator in CSL is normally initialised to a value
              * that is intended not to be reproducible from run to run.
-             * In many cases that behavious is desirable, but for debugging it can be useful
-             * to force a seed. The directive {\ttfamily -r nnn,mmm} sets the seed to
-             * up to 64 bits taken from the values nnn and mmm. The second value if optional,
+             * In many cases that behaviour is desirable, but for debugging it can be useful
+             * to force a seed. The directive {\ttfamily -r nnn} sets the seed to
+             * up to 64 bits taken from the value nnn.
              * and specifying {\ttfamily -r0}  explicitly asks for the non-reproducible
              * behaviour (I hope). Note that the main Reduce-level random number source is
              * coded at a higher level and does not get reset this way -- this is the
@@ -2623,8 +2622,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
         term_printf("GC trigger set to %" PRId64 "\n",
                     reclaim_trigger_target);
 
-
-
     if (fasl_files.empty())
     {   const char *p = standard_directory;
         char *p1;
@@ -2731,6 +2728,11 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     base_time = read_clock();
     gc_time = 0;
 
+// I will seed the random number generator as requested by the user. The
+// default will be to put it in an unpredictable (well hard to predict!)
+// state
+    Csrand(initial_random_seed);
+
     if (init_flags & INIT_VERBOSE)
     {
 #ifdef WITHOUT_GUI
@@ -2805,12 +2807,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     }
 
     fwin_menus(loadable_packages, switches, review_switch_settings);
-
-// Now that setup is complete (and I have done any authorisation I want to)
-// I will seed the random number generator as requested by the user. The
-// default will be to put it in an unpredictable (well hard to predict!)
-// state
-    Csrand((uint32_t)initial_random_seed);
 
     ensure_screen();
     procedural_output = nullptr;

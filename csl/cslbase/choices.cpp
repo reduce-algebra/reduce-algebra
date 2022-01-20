@@ -1,7 +1,7 @@
 // Measure times of various forms of memory access potentially relevant
 // in multi-threaded work.
 
-// A C Norman 2021.
+// A C Norman 2021-22.
 // Available to anybody who wants any of this under the BSD license.
 
 /*

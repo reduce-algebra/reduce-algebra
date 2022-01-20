@@ -1,9 +1,9 @@
-// showmathdemo.cpp                        Copyright (C) Codemist 2013-2020
+// showmathdemo.cpp                        Copyright (C) Codemist 2013-2022
 
 // Demonstrate display of mathematical formulae...
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2022, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

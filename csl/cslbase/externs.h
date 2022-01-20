@@ -1,4 +1,4 @@
-// externs.h                               Copyright (C) Codemist 1989-2021
+// externs.h                               Copyright (C) Codemist 1989-2022
 
 //
 //   Main batch of extern declarations.
@@ -6,7 +6,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2021, Codemist.                         A C Norman       *
+ * Copyright (C) 2022, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -52,18 +52,23 @@
 extern int32_t mpi_rank,mpi_size;
 #endif
 
-extern void **pages, **heap_pages, **vheap_pages;
+extern void** pages;
+extern void** heap_pages;
+extern void** vheap_pages;
 
-extern void **new_heap_pages, **new_vheap_pages;
+extern void** new_heap_pages;
+extern void** new_vheap_pages;
 
-extern void *allocate_page(const char *why);
+extern void* allocate_page(const char* why);
 
 extern size_t pages_count, heap_pages_count, vheap_pages_count;
 
 extern size_t new_heap_pages_count, new_vheap_pages_count;
 
-extern LispObject *list_bases[];
-extern LispObject *nilsegment, *stacksegment;
+extern LispObject* list_bases[];
+extern const char* list_names[];
+extern LispObject* nilsegment;
+extern LispObject* stacksegment;
 extern int32_t stack_segsize;  // measured in units of one CSL page
 extern double max_store_size;
 
@@ -137,8 +142,8 @@ typedef struct _directory_entry
 
 typedef struct directory
 {   directory_header h;
-    std::FILE *f;
-    const char *full_filename;    // nullptr unless native directory
+    std::FILE* f;
+    const char* full_filename;    // nullptr unless native directory
 // It is unexpectedly and unpleasantly the case that the "filename"
 // field here must be the last one before the array of directory
 // entries. This is because in the case where an image file is
@@ -175,7 +180,7 @@ inline int get_dirsize(directory &d)
 #define D_COMPACT   4
 #define D_PENDING   8
 
-extern char *mystrdup(const char *s);
+extern char* mystrdup(const char* s);
 
 class stringBool
 {
@@ -205,17 +210,17 @@ class faslFileRecord
 {
 public:
     bool inUse;
-    const char *name;
-    directory *dir;
+    const char* name;
+    directory* dir;
     bool isOutput;
-    faslFileRecord(const char *n, bool o)
+    faslFileRecord(const char* n, bool o)
     {   inUse = true;
         name = n;
         dir = nullptr;
         isOutput = o;
     }
     ~faslFileRecord()
-    {   if (dir != nullptr) delete [] reinterpret_cast<char *>(dir);
+    {   if (dir != nullptr) delete [] reinterpret_cast<char*>(dir);
     }
 };
 
@@ -224,26 +229,28 @@ extern std::vector<stringBoolString> stringsToDefine;
 extern std::vector<string> stringsToEvaluate;
 extern std::vector<faslFileRecord> fasl_files;
 
-extern char *big_chunk_start, *big_chunk_end;
+extern char* big_chunk_start;
+extern char* big_chunk_end;
 
 extern LispObject multiplication_buffer;
 
 #if defined CONSERVATIVE && defined GENERATIONAL
-extern void write_barrier(LispObject *p, LispObject q);
+extern void write_barrier(LispObject* p, LispObject q);
 #else // !CONSERVATIVE
-inline void write_barrier(LispObject *p, LispObject q)
+inline void write_barrier(LispObject* p, LispObject q)
 {  *p = q;
 }
 #endif // !CONSERVATIVE
 
 extern std::mutex debug_lock;
-extern const char *debug_file;
+extern const char* debug_file;
 extern int debug_line;
 
 extern void DebugTrace();
 extern void DebugTrace(int i);
-extern void DebugTrace(const char *msg);
-extern void DebugTrace(const char *fmt, int i);
+extern void DebugTrace(const char* msg);
+extern void DebugTrace(const char* fmt, int i);
+extern const char* decodeObject(LispObject a);
 
 // This is a macro that sets some global variables because I want Tr()
 // without arguments to be valid, and until C++2a it seems impossible to
@@ -267,7 +274,7 @@ extern volatile char stack_contents_temp;
 extern uintptr_t C_stackLimit;
 
 #ifdef CHECK_STACK
-extern int check_stack(const char *file, int line);
+extern int check_stack(const char* file, int line);
 extern void show_stack();
 
 inline void if_check_stack()
@@ -278,7 +285,7 @@ inline void if_check_stack()
 }
 #else
 inline void if_check_stack()
-{   const char *_p_ = reinterpret_cast<const char *>(&_p_);
+{   const char* _p_ = reinterpret_cast<const char*>(&_p_);
     if (reinterpret_cast<uintptr_t>(_p_) < C_stackLimit)
     {   if (C_stackLimit > 1024*1024) C_stackLimit -= 1024*1024;
         aerror("stack overflow");
@@ -296,14 +303,14 @@ extern char debug_trail[32][32];
 extern char debug_trail_file[32][32];
 extern int debug_trail_line[32];
 extern int debug_trailp;
-extern void debug_record_raw(const char *data, const char *file, int line);
-extern void debug_record_int_raw(const char *s, int n,
-                                 const char *file, int line);
-extern void debug_show_trail_raw(const char *msg, const char *file, int line);
+extern void debug_record_raw(const char* data, const char* file, int line);
+extern void debug_record_int_raw(const char* s, int n,
+                                 const char* file, int line);
+extern void debug_show_trail_raw(const char* msg, const char* file, int line);
 
 #define debug_record(data)     debug_record_raw(data, __FILE__, __LINE__)
 #define debug_record_int(s, n) debug_record_int_raw(s, n, __FILE__, __LINE__)
-#define debug_record_string(s) debug_record((const char *)&celt(s, 0))
+#define debug_record_string(s) debug_record((const char* )&celt(s, 0))
 #define debug_record_symbol(x) debug_record_string(qpname(x))
 #define debug_show_trail(data) debug_show_trail_raw(data, __FILE__, __LINE__)
 
@@ -530,10 +537,10 @@ extern void copy_out_of_nilseg();
 
 extern void rehash_this_table(LispObject v);
 extern void simple_print(LispObject x);
-extern void simple_msg(const char *s, LispObject x);
+extern void simple_msg(const char* s, LispObject x);
 extern uint64_t hash_equal(LispObject key);
 
-extern char *exit_charvec;
+extern char* exit_charvec;
 
 //
 // There is no reason to preserve this across restarts etc so making it a
@@ -546,15 +553,15 @@ extern int procstackp;
 extern bool garbage_collection_permitted;
 
 extern int csl_argc;
-extern const char **csl_argv;
+extern const char** csl_argv;
 extern bool fasl_output_file;
 extern size_t output_directory;
 
-extern LispObject *repeat_heap;
+extern LispObject* repeat_heap;
 extern size_t repeat_count;
 
 #ifdef BUILTIN_IMAGE
-extern const unsigned char *binary_read_filep;
+extern const unsigned char* binary_read_filep;
 #else
 extern std::FILE *binary_read_file;
 #endif
@@ -569,8 +576,8 @@ inline unsigned char& boffo_char(int i)
 {   return basic_ucelt(boffo, i);
 }
 
-extern char **loadable_packages;
-extern char **switches;
+extern char** loadable_packages;
+extern char** switches;
 extern void review_switch_settings();
 
 #ifdef SOCKETS
@@ -578,7 +585,7 @@ extern bool sockets_ready;
 extern void flush_socket();
 #endif
 
-extern void report_file(const char *s);
+extern void report_file(const char* s);
 
 extern int errorset_min, errorset_max;
 
@@ -589,7 +596,7 @@ extern uint64_t force_cons, force_vec;
 
 extern int init_flags;
 
-extern const char *standard_directory;
+extern const char* standard_directory;
 
 extern int64_t gc_number;
 extern int64_t reclaim_trap_count;
@@ -597,9 +604,9 @@ extern uintptr_t reclaim_stack_limit;
 extern uint64_t reclaim_trigger_count, reclaim_trigger_target;
 
 #ifdef CONSERVATIVE
-extern void reclaim(const char *why);
+extern void reclaim(const char* why);
 #else // CONSERVATIVE
-extern LispObject reclaim(LispObject value_to_return, const char *why,
+extern LispObject reclaim(LispObject value_to_return, const char* why,
                           int stg_class, size_t size);
 #endif // CONSERVATIVE
 extern void use_gchook(LispObject arg);
@@ -646,7 +653,7 @@ inline bool vec_forced(size_t n)
 //
 
 extern int tty_count;
-extern std::FILE *spool_file;
+extern std::FILE* spool_file;
 extern char spool_file_name[128];
 
 //
@@ -660,28 +667,28 @@ extern char spool_file_name[128];
 #define CODESIZE                0x1000
 
 typedef struct _entry_point0
-{   no_args *p;
-    const char *s;
+{   no_args* p;
+    const char* s;
 } entry_point0;
 
 typedef struct _entry_point1
-{   one_arg *p;
-    const char *s;
+{   one_arg* p;
+    const char* s;
 } entry_point1;
 
 typedef struct _entry_point2
-{   two_args *p;
-    const char *s;
+{   two_args* p;
+    const char* s;
 } entry_point2;
 
 typedef struct _entry_point3
-{   three_args *p;
-    const char *s;
+{   three_args* p;
+    const char* s;
 } entry_point3;
 
 typedef struct _entry_point4up
-{   fourup_args *p;
-    const char *s;
+{   fourup_args* p;
+    const char* s;
 } entry_point4up;
 
 extern entry_point0 entries_table0[];
@@ -691,15 +698,16 @@ extern entry_point3 entries_table3[];
 extern entry_point4up entries_table4up[];
 extern entry_point1 entries_tableio[];
 
-extern const char *linker_type;
-extern const char *compiler_command[], *import_data[],
-       *config_header[], *csl_headers[];
+extern const char* linker_type;
+extern const char* compiler_command[];
+extern const char* import_data[];
+extern const char* config_header[];
+extern const char* csl_headers[];
 
-extern LispObject encapsulate_pointer(void *);
-extern void *extract_pointer(LispObject a);
+extern LispObject encapsulate_pointer(void*);
+extern void* extract_pointer(LispObject a);
 extern LispObject Lencapsulatedp(LispObject, LispObject a);
-typedef void initfn(LispObject *, LispObject **,
-                    LispObject * volatile *);
+//typedef void initfn(LispObject*, LispObject**, LispObject*volatile*);
 
 extern LispObject characterify(LispObject a);
 extern LispObject char_to_id(int ch);
@@ -707,7 +715,7 @@ extern LispObject char_to_id(int ch);
 extern void Iinit();
 extern void IreInit();
 extern void Ilist();
-extern bool open_output(const char *s, size_t len);
+extern bool open_output(const char* s, size_t len);
 
 #define IMAGE_CODE  ((size_t)(-1000))
 #define HELP_CODE   ((size_t)(-1001))
@@ -716,48 +724,48 @@ extern bool open_output(const char *s, size_t len);
 #define IOPEN_OUT       0
 #define IOPEN_IN        1
 
-extern bool Iopen(const char *name, size_t len, int dirn,
-                  char *expanded_name);
+extern bool Iopen(const char* name, size_t len, int dirn,
+                  char* expanded_name);
 extern bool Iopen_from_stdin(), Iopen_to_stdout();
-extern bool IopenRoot(char *expanded_name, size_t hard,
+extern bool IopenRoot(char* expanded_name, size_t hard,
                       int sixtyfour);
-extern bool Iwriterootp(char *expanded);
+extern bool Iwriterootp(char* expanded);
 extern bool Iopen_banner(int code);
-extern bool Imodulep1(int i, const char *name, size_t len,
-                      char *datestamp,
-                      size_t *size, char *expanded_name);
-extern bool Imodulep(const char *name, size_t len, char *datestamp,
-                     size_t *size, char *expanded_name);
-extern char *trim_module_name(char *name, size_t *lenp);
-extern bool Icopy(const char *name, size_t len);
-extern bool Idelete(const char *name, size_t len);
+extern bool Imodulep1(int i, const char* name, size_t len,
+                      char* datestamp,
+                      size_t* size, char* expanded_name);
+extern bool Imodulep(const char* name, size_t len, char* datestamp,
+                     size_t* size, char* expanded_name);
+extern char* trim_module_name(char* name, size_t* lenp);
+extern bool Icopy(const char* name, size_t len);
+extern bool Idelete(const char* name, size_t len);
 extern bool IcloseInput();
 extern bool IcloseOutput();
 extern bool Ifinished();
 extern int  Igetc();
-extern bool Iread(void *buff, size_t size);
+extern bool Iread(void* buff, size_t size);
 extern bool Iputc(int ch);
-extern bool Iwrite(const void *buff, size_t size);
+extern bool Iwrite(const void* buff, size_t size);
 extern bool def_init();
 extern bool inf_init();
 extern bool def_finish();
 extern bool inf_finish();
 extern int  Zgetc();
-extern bool Zread(void *buff, size_t size);
+extern bool Zread(void* buff, size_t size);
 extern bool Zputc(int ch);
-extern bool Zwrite(const void *buff, size_t size);
+extern bool Zwrite(const void* buff, size_t size);
 extern long int Ioutsize();
-extern const char *CSLtmpdir();
-extern const char *CSLtmpnam(const char *suffix, size_t suffixlen);
-extern int Cmkdir(const char *s);
-extern char *look_in_lisp_variable(char *o, int prefix);
+extern const char* CSLtmpdir();
+extern const char* CSLtmpnam(const char* suffix, size_t suffixlen);
+extern int Cmkdir(const char* s);
+extern char* look_in_lisp_variable(char* o, int prefix);
 
 extern void CSL_MD5_Init();
-extern void CSL_MD5_Update(const unsigned char *data, size_t len);
-extern void CSL_MD5_Final(unsigned char *md);
+extern void CSL_MD5_Update(const unsigned char* data, size_t len);
+extern void CSL_MD5_Final(unsigned char* md);
 extern bool CSL_MD5_busy;
-extern unsigned char *CSL_MD5(unsigned char *data, int n,
-                              unsigned char *md);
+extern unsigned char* CSL_MD5(unsigned char* data, int n,
+                              unsigned char* md);
 extern void checksum(LispObject a);
 
 extern void ensure_screen();
@@ -768,9 +776,9 @@ extern uint64_t base_time;
 extern std::chrono::high_resolution_clock::time_point base_walltime;
 extern uint64_t gc_time;
 extern bool trap_floating_overflow;
-extern const volatile char *errorset_msg;
+extern const volatile char* errorset_msg;
 extern int errorset_code;
-extern void unwind_stack(LispObject *, bool findcatch);
+extern void unwind_stack(LispObject* , bool findcatch);
 extern bool segvtrap;
 extern bool batch_flag;
 extern int escaped_printing;
@@ -794,11 +802,11 @@ extern void record_get(LispObject tag, bool found);
 
 extern bool        isprime(uint64_t);
 extern LispObject  set_up_functions(int restartp);
-extern void        get_user_files_checksum(unsigned char *);
+extern void        get_user_files_checksum(unsigned char* );
 extern LispObject  acons(LispObject a, LispObject b, LispObject c);
 extern LispObject  ash(LispObject a, LispObject b);
 extern LispObject  bytestream_interpret(size_t ppc, LispObject lit,
-                                        LispObject *entry_stack);
+                                        LispObject* entry_stack);
 extern bool        complex_stringp(LispObject a);
 extern LispObject  copy_string(LispObject a, size_t n);
 extern LispObject  characterify_string(LispObject str);
@@ -810,19 +818,18 @@ extern LispObject  cons_no_gc(LispObject a, LispObject b);
 extern LispObject  acons_no_gc(LispObject a, LispObject b,
                                LispObject c);
 extern LispObject  cons_gc_test(LispObject a);
-extern void        convert_fp_rep(void *p, int old_rep, int new_rep,
-                                  int type);
+extern void        convert_fp_rep(void* p, int old_rep, int new_rep, int type);
 extern LispObject  eval(LispObject u, LispObject env);
 extern uint32_t    Crand();
 extern LispObject  Cremainder(LispObject a, LispObject b);
-extern void        Csrand(uint32_t a);
+extern void        Csrand(uint64_t a);
 extern void        discard(LispObject a);
 extern bool        eql_fn(LispObject a, LispObject b);
 extern bool        cl_equal_fn(LispObject a, LispObject b);
 extern bool        equal_fn(LispObject a, LispObject b);
 #ifdef TRACED_EQUAL
 extern bool        traced_equal_fn(LispObject a, LispObject b,
-                                   const char *, int, int);
+                                   const char* , int, int);
 #define equal_fn(a, b) traced_equal_fn(a, b, __FILE__, __LINE__, 0)
 extern void        dump_equals();
 #endif
@@ -845,14 +852,14 @@ extern LispObject  get_vector_init(size_t n, LispObject v);
 extern LispObject  reduce_vector_size(LispObject n, size_t length);
 extern void        prepare_for_borrowing();
 
-inline void zero_out(void *p)
+inline void zero_out(void* p)
 {
 #if 0
 // At an earlier stage I explicitly zeroed out pages of memory with the
 // view that if things went wrong that would avoid confusion when looking
 // at the wreckage. Now is the time to cease putting in that extra
 // overhead.
-    char *p1 = reinterpret_cast<char *>(
+    char* p1 = reinterpret_cast<char* >(
         doubleword_align_up(reinterpret_cast<uintptr_t>(p)));
     std::memset(p1, 0, CSL_PAGE_SIZE);
 #endif // 0
@@ -877,40 +884,40 @@ extern LispObject list4(LispObject a, LispObject b,
 extern LispObject lognot(LispObject a);
 extern LispObject macroexpand(LispObject form, LispObject env);
 extern LispObject make_package(LispObject name);
-extern LispObject make_string(const char *b);
-extern LispObject make_nstring(const char *b, size_t n);
-extern LispObject make_undefined_symbol(const char *s);
-extern LispObject make_symbol(char const *s, int restartp,
-                              no_args *f0, one_arg *f1, two_args *f2,
-                              three_args *f3, fourup_args *f4up);
-extern void stdout_printf(const char *fmt, ...);
-extern void term_printf(const char *fmt, ...);
-extern void err_printf(const char *fmt, ...);
-extern void debug_printf(const char *fmt, ...);
-extern void trace_printf(const char *fmt, ...);
-extern const char  *my_getenv(const char *name);
+extern LispObject make_string(const char* b);
+extern LispObject make_nstring(const char* b, size_t n);
+extern LispObject make_undefined_symbol(const char* s);
+extern LispObject make_symbol(char const* s, int restartp,
+                              no_args* f0, one_arg* f1, two_args* f2,
+                              three_args* f3, fourup_args* f4up);
+extern void stdout_printf(const char* fmt, ...);
+extern void term_printf(const char* fmt, ...);
+extern void err_printf(const char* fmt, ...);
+extern void debug_printf(const char* fmt, ...);
+extern void trace_printf(const char* fmt, ...);
+extern const char* my_getenv(const char* name);
 extern LispObject  ncons(LispObject a);
 extern LispObject  ndelete(LispObject a, LispObject b);
 extern LispObject  negate(LispObject a);
 extern LispObject  nreverse(LispObject a);
 extern LispObject  nreverse2(LispObject a, LispObject b);
-extern std::FILE   *open_file(char *filename,
-                              const char *original_name,
-                              size_t n, const char *dirn,
-                              std::FILE *old_file);
+extern std::FILE*  open_file(char* filename,
+                             const char* original_name,
+                             size_t n, const char* dirn,
+                             std::FILE* old_file);
 extern LispObject  plus2(LispObject a, LispObject b);
-extern void        preserve(const char *msg, size_t len);
+extern void        preserve(const char* msg, size_t len);
 extern LispObject prin(LispObject u);
 extern void debugprint(LispObject a, int depth=10);
-extern void debugprint(const char *s, LispObject a);
-extern void debugprint(const char *s);
-extern const char *get_string_data(LispObject a, const char *why, size_t &len);
+extern void debugprint(const char* s, LispObject a);
+extern void debugprint(const char* s);
+extern const char* get_string_data(LispObject a, const char* why, size_t &len);
 extern LispObject prin_to_stdout(LispObject u);
 extern LispObject prin_to_terminal(LispObject u);
 extern LispObject prin_to_debug(LispObject u);
 extern LispObject prin_to_query(LispObject u);
 extern LispObject prin_to_trace(LispObject u);
-extern LispObject prinhex_to_trace(const char *msg, LispObject value);
+extern LispObject prinhex_to_trace(const char* msg, LispObject value);
 extern LispObject prin_to_error(LispObject u);
 extern LispObject loop_print_stdout(LispObject o);
 extern LispObject loop_print_terminal(LispObject o);
@@ -934,8 +941,8 @@ extern LispObject  quot2(LispObject a, LispObject b);
 extern LispObject  quotrem2(LispObject a, LispObject b);
 extern LispObject  rational(LispObject a);
 extern LispObject  read_eval_print(int noisy);
-extern void        set_fns(LispObject sym, no_args *f0, one_arg *f1,
-                           two_args *f2, three_args *f3, fourup_args *f4up);
+extern void        set_fns(LispObject sym, no_args* f0, one_arg* f1,
+                           two_args* f2, three_args* f3, fourup_args* f4up);
 extern void        init_heap_segments(double size);
 extern void        grab_more_memory(size_t npages);
 extern bool        allocate_more_memory();
@@ -951,10 +958,10 @@ extern uint32_t    thirty_two_bits_unsigned(LispObject a);
 extern int64_t     sixty_four_bits(LispObject a);
 extern uint64_t    sixty_four_bits_unsigned(LispObject a);
 
-extern uint64_t    crc64(uint64_t crc, const void *buf, size_t size);
+extern uint64_t    crc64(uint64_t crc, const void* buf, size_t size);
 
 #ifdef DEBUG
-extern void validate_string_fn(LispObject a, const char *f, int l);
+extern void validate_string_fn(LispObject a, const char* f, int l);
 #define validate_string(a) validate_string_fn(a, __FILE__, __LINE__)
 #else
 #define validate_string(a) // nothing
@@ -1057,11 +1064,11 @@ inline bool eql(LispObject a, LispObject b)
     else return false;
 }
 
-extern no_args     *no_arg_functions[];
-extern one_arg     *one_arg_functions[];
-extern two_args    *two_arg_functions[];
-extern three_args  *three_arg_functions[];
-extern fourup_args *fourup_arg_functions[];
+extern no_args*     no_arg_functions[];
+extern one_arg*     one_arg_functions[];
+extern two_args*    two_arg_functions[];
+extern three_args*  three_arg_functions[];
+extern fourup_args* fourup_arg_functions[];
 
 extern bool no_arg_traceflags[];
 extern bool one_arg_traceflags[];
@@ -1069,20 +1076,20 @@ extern bool two_arg_traceflags[];
 extern bool three_arg_traceflags[];
 extern bool fourup_arg_traceflags[];
 
-extern const char *no_arg_names[];
-extern const char *one_arg_names[];
-extern const char *two_arg_names[];
-extern const char *three_arg_names[];
-extern const char *fourup_arg_names[];
+extern const char* no_arg_names[];
+extern const char* one_arg_names[];
+extern const char* two_arg_names[];
+extern const char* three_arg_names[];
+extern const char* fourup_arg_names[];
 
 
 typedef struct setup_type
-{   const char *name;
-    no_args *zero;
-    one_arg *one;
-    two_args *two;
-    three_args *three;
-    fourup_args *fourup;
+{   const char* name;
+    no_args* zero;
+    one_arg* one;
+    two_args* two;
+    three_args* three;
+    fourup_args* fourup;
     int nargs;
 } setup_type;
 
@@ -1120,7 +1127,7 @@ u01_setup[], u02_setup[], u03_setup[], u04_setup[],
           u55_setup[], u56_setup[], u57_setup[], u58_setup[], u59_setup[],
           u60_setup[];
 
-extern setup_type const *setup_tables[];
+extern setup_type const* setup_tables[];
 
 #ifdef NAG
 extern setup_type const nag_setup[], asp_setup[];
@@ -1133,7 +1140,7 @@ extern setup_type const om_setup[];
 extern setup_type const om_parse_setup[];
 #endif
 
-extern const char *find_image_directory(int argc, const char *argv[]);
+extern const char* find_image_directory(int argc, const char* argv[]);
 extern char program_name[64];
 extern LispObject declare_fn(LispObject args, LispObject env);
 extern LispObject function_fn(LispObject args, LispObject env);

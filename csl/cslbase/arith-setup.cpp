@@ -1,4 +1,4 @@
-// arith-setup.cpp                         Copyright (C) 2020-2021 Codemist
+// arith-setup.cpp                         Copyright (C) 2022-2022 Codemist
 
 #ifdef ARITHLIB
 
@@ -12,7 +12,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2021, Codemist.                         A C Norman       *
+ * Copyright (C) 2022, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

@@ -1,4 +1,4 @@
-% "ccomp.red"                                Copyright 1991-2021,  Codemist
+% "ccomp.red"                                Copyright 1991-2022,  Codemist
 %
 % Compiler that turns Lisp code into C in a way that fits in
 % with the conventions used with CSL/CCL
@@ -6,7 +6,7 @@
 %                                                        A C Norman
 
 %%
-%% Copyright (C) 2021, following the master REDUCE source files.          *
+%% Copyright (C) 2022, following the master REDUCE source files.          *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *

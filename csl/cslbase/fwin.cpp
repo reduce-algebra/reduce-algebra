@@ -1,4 +1,4 @@
-// fwin.cpp                                 Copyright A C Norman 2003-2021
+// fwin.cpp                                 Copyright A C Norman 2003-2022
 //
 //
 // Window interface for old-fashioned C/C++ applications. Intended to
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2021, Codemist.                         A C Norman       *
+ * Copyright (C) 2022, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

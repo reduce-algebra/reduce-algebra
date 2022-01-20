@@ -1,4 +1,4 @@
-% "buildreduce.lsp"                        Copyright (C) Codemist 2016-2021
+% "buildreduce.lsp"                        Copyright (C) Codemist 2016-2022
 %
 % Build a CSL REDUCE.
 %

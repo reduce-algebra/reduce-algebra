@@ -1,4 +1,4 @@
-% arithtest.lsp                                   Copyright A C Norman 2019
+% arithtest.lsp                                   Copyright A C Norman 2022
 
 % This is intended to help me to test (and hence debug) my new
 % arithlib.hpp based arithmetic code in CSL. It runs a numeber of

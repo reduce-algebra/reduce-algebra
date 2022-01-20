@@ -143,7 +143,7 @@ inline void my_assert(bool ok)
 
 // This is to help me in trace messages.
 
-inline const char *where(const char *file, int line)
+inline const char* where(const char* file, int line)
 {   const char *p = std::strrchr(file, '/');
     if (p != nullptr) file = p+1;
     static char whereMsg[100];
@@ -151,7 +151,16 @@ inline const char *where(const char *file, int line)
     return whereMsg;
 }
 
+inline const char* where(const char* file, int line, const char* msg)
+{   const char *p = std::strrchr(file, '/');
+    if (p != nullptr) file = p+1;
+    static char whereMsg[100];
+    sprintf(whereMsg, "%.40s:%d %.50s", file, line, msg);
+    return whereMsg;
+}
+
 #define __WHERE__ where(__FILE__, __LINE__)
+#define __WHERE1__(msg) where(__FILE__, __LINE__, msg)
 
 #if defined __OPTIMIZE__ || !defined __GNUC__
 
@@ -570,13 +579,28 @@ constexpr unsigned int flagbit(int c)
 // are to be printed. With C++20 "consteval" the checking happens at
 // compile time. With older C++ variants it only happens at run-time, and
 // in that case it is perhaps a duplicate of the work that has to be done
-// when actually printing. So in the pre-C++20 world I will comment almost
-// all of the work out!
+// when actually printing.
+
+// If issues are detected at compile time then the diagnostic will point at
+// least in some manner to the call to zprintf() involved. However if they
+// are delated until run-time I need extra steps so that the offending line
+// of source code can be reported. 
+
+#ifdef __cpp_consteval
+#define BadFmt(str) throw std::invalid_argument(str)
+#else // _cpp_consteval
+inline char* formatLocation() // do not rely on having inline variables!
+{   static char b[200];
+    return b;
+}
+#define BadFmt(str) do { strcat(formatLocation(), str);                 \
+                         throw std::invalid_argument(formatLocation()); \
+                       } while(false)
+#endif // __cpp_consteval
 
 template <typename... Args>
 class formatString
-{
-    const std::string_view str;
+{   const std::string_view str;
 public:
     template <typename S>
     CONSTFN formatString(const S a): str(a)
@@ -613,14 +637,14 @@ public:
 // behaviour. But repetition as in say "%0#+0#00-x" is at the very least
 // a style I view as obnoxious!
                     if ((flags & flagbit(data()[i])) != 0)
-                        throw std::invalid_argument(
-                            "repeated flag character following '%'");
+// I format the use of BadFmt() so it is at the start of a line because at
+// least with g++ that makes its presence in diagnostics look better!
+BadFmt("repeated flag character following '%'");
                     flags |= flagbit(data()[i]);
                     continue;
                 case '*':
                     if ((sig & 7) != argTypeInt)
-                        throw std::invalid_argument(
-                            "integer value needed for '*' width");
+BadFmt("integer value needed for '*' width");
                     sig >>= 3;
                     state = parseStar;
                     continue;
@@ -647,8 +671,7 @@ public:
                     state = parsePercent2;
                     break;
                 default: 
-                    throw std::invalid_argument(
-                        "invalid character following '%'");
+BadFmt("invalid character following '%'");
                 }
                 break;
 
@@ -676,8 +699,7 @@ public:
                     state = parsePercent2;
                     break;
                 default: 
-                    throw std::invalid_argument(
-                        "invalid character following '%*'");
+BadFmt("invalid character following '%*'");
                 }
                 break;
 
@@ -710,8 +732,7 @@ public:
                     state = parsePercent2;
                     break;
                 default: 
-                    throw std::invalid_argument(
-                        "invalid character following '%'");
+BadFmt("invalid character following '%'");
                 }
                 break;
 
@@ -720,8 +741,7 @@ public:
                 {
                 case '*':
                     if ((sig & 7) != argTypeInt)
-                        throw std::invalid_argument(
-                            "integer value needed for '*' precision");
+BadFmt("integer value needed for '*' precision");
                     sig >>= 3;
                     state = parsePrecStar;
                     continue;
@@ -731,8 +751,7 @@ public:
                     continue;
                     break;
                 default: 
-                    throw std::invalid_argument(
-                        "invalid character following '%.'");
+BadFmt("invalid character following '%.'");
                 }
 
             case parsePrecStar:   // parseDot followed by '*'
@@ -755,8 +774,7 @@ public:
                     state = parsePercent2;
                     break;
                 default: 
-                    throw std::invalid_argument(
-                        "invalid character following '%.*'");
+BadFmt("invalid character following '%.*'");
                 }
                 break;
 
@@ -783,8 +801,7 @@ public:
                     state = parsePercent2;
                     break;
                 default: 
-                    throw std::invalid_argument(
-                        "invalid character following '%'");
+BadFmt("invalid character following '%'");
                 }
                 break;
             }
@@ -792,14 +809,12 @@ public:
             {
             case parseInt:        // all above then one of d, x, X
                 if ((sig & 7) != argTypeInt)
-                    throw std::invalid_argument(
-                        "integral argument type expected");
+BadFmt("integral argument type expected");
                 sig >>= 3;
                 break;
             case parseFlt:        // e, E, f, F, g, G
                 if ((sig & 7) != argTypeFloat)
-                    throw std::invalid_argument(
-                        "floating point argument type expected");
+BadFmt("floating point argument type expected");
                 sig >>= 3;
                 break;
             default:
@@ -814,11 +829,9 @@ public:
             state = parseSimple;
         }
         if (state != parseSimple)
-            throw std::invalid_argument(
-                "format string ended within a '%' sequence");
+BadFmt("format string ended within a '%' sequence");
         if (sig != 0)
-            throw std::invalid_argument(
-                "more arguments that format directives");
+BadFmt("more arguments that format directives");
     }
 
     constexpr const char* data() const
@@ -891,8 +904,7 @@ public:
             subTypes subtype = subtypeNone;
             flagBit flags = flagnone;
             if (++pos >= size())
-                throw std::invalid_argument(
-                        "Format string ends within a sequence started by '%'");
+BadFmt("Format string ends within a sequence started by '%'");
 // Following a '%' I can have some of "#+-0 ", and I will insist that any
 // that are present are only there a single time. These are "flags" where
 // for instance '#' leads to hex numbers being displayed with a prefix "0x".
@@ -909,13 +921,11 @@ public:
             {   const int f  = flagbit(data()[pos]);
                 if (f == 0) break;
                 else if ((f & flags) != 0)
-                    throw std::invalid_argument(
-                        "Repeated flag character following '%' in format string");
+BadFmt("Repeated flag character following '%' in format string");
                 else
                 {   flags = static_cast<flagBit>(flags | f);
                     if (++pos >= size())
-                        throw std::invalid_argument(
-                            "Format string ends within a sequence started by '%'");
+BadFmt("Format string ends within a sequence started by '%'");
                 }
             }
 // After any potential flags there may be a width field. That can either
@@ -924,19 +934,16 @@ public:
             if (data()[pos] == '*')
             {   width = 255;
                 if (++pos >= size())
-                    throw std::invalid_argument(
-                        "Format string ends within a sequence started by '%'");
+BadFmt("Format string ends within a sequence started by '%'");
             }
             else if (digitVal(data()[pos]) >= 0)
             {   int d1 = digitVal(data()[pos]);
                 if (++pos >= size())
-                    throw std::invalid_argument(
-                        "Format string ends within a sequence started by '%'");
+BadFmt("Format string ends within a sequence started by '%'");
                 else if (digitVal(data()[pos]) >= 0)
                 {   int d2 = digitVal(data()[pos]);
                     if (++pos >= size())
-                        throw std::invalid_argument(
-                            "Format string ends within a sequence started by '%'");
+BadFmt("Format string ends within a sequence started by '%'");
                     width = 10*d1 + d2 + 1;
                 }
                 else width = d1 + 1;
@@ -944,23 +951,23 @@ public:
 // A precision is introduced by a '.'
             if (data()[pos] == '.')
             {   if (++pos >= size())
-                    throw std::invalid_argument(
+BadFmt(
                         "Format string ends within a sequence started by '%'");
                 if (data()[pos] == '*')
                 {   precision = 255;
                     if (++pos >= size())
-                        throw std::invalid_argument(
+BadFmt(
                             "Format string ends within a sequence started by '%'");
                 }
                 else if (digitVal(data()[pos]) >= 0)
                 {   int d1 = digitVal(data()[pos]);
                     if (++pos >= size())
-                        throw std::invalid_argument(
+BadFmt(
                             "Format string ends within a sequence started by '%'");
                     if (digitVal(data()[pos]) >= 0)
                     {   int d2 = digitVal(data()[pos]);
                         if (++pos >= size())
-                            throw std::invalid_argument(
+BadFmt(
                                 "Format string ends within a sequence started by '%'");
                         precision = 10*d1 + d2 + 1;
                     }
@@ -1025,7 +1032,7 @@ public:
                 subtype = subtypePercent; // Will not consume an argument
                 break;
             default:
-                throw std::invalid_argument(
+BadFmt(
                     "Invalid sequence started by '%'");
             }
             end = pos+1;
@@ -1075,18 +1082,18 @@ public:
             if (((dir>>shiftSubType)&maskSubType) == 0) break;
             int width = (dir>>shiftWidth)&maskWidth;
             if (width == 255)
-                throw std::invalid_argument(
+BadFmt(
                     "No argument to provide width information for '*'");
 // Even though precision is not relevant for "%%" formats if the user
 // attempts to use "%.*%" without providing an argument that will be
 // rejected.
             int precision = (dir>>shiftPrecision)&maskPrecision;
             if (precision == 255)
-                throw std::invalid_argument(
+BadFmt(
                     "No argument to provide precision information for '*'");
             if (((dir>>shiftType)&maskType) != argTypeGeneral ||
                  ((dir>>shiftSubType)&maskSubType) != subtypePercent)
-                throw std::invalid_argument(
+BadFmt(
                     "No argument to go with format directive that needs one");
 // It is legal do include things like "%%", "%5%" and "%-5%" where the latter
 // two cases left and right justify a single '%' in a field of the given
@@ -1123,14 +1130,14 @@ public:
         int precision = (dir>>shiftPrecision)&maskPrecision;
         size_t end = (dir>>shiftEnd)&maskEnd;
         if (subtype == 0)
-            throw std::invalid_argument(
+BadFmt(
                 "Argument to zprintf does not have a matching '%' sequence");
 
 // If the width or precision fields are specified as "*" I need to grab an
 // integer to characterise that
         if (width == 255)
         {   if constexpr (!std::is_integral_v<A1>)
-                throw std::invalid_argument(
+BadFmt(
                     "Argument provided for '*' not an integer");
             else
             {   width = (a1%100) + 1;
@@ -1147,7 +1154,7 @@ public:
         }
         if (precision == 255)
         {   if constexpr (!std::is_integral_v<A1>)
-                throw std::invalid_argument(
+BadFmt(
                     "Argument provided for '*' not an integer");
             else
             {   precision = (a1%100) + 1;
@@ -1213,12 +1220,12 @@ public:
             if (precision != 0) std::cout << std::setw(precision-1);
 //          if (type==argTypeInt)
 //          {   if (!maybe_atomic_int<decltype(a1)>())
-//                  throw std::invalid_argument(
+//BadFmt(
 //                      "Argument should be an integer");
 //          }
 //          if (type==argTypeFloat)
 //          {   if (!maybe_atomic_float<A1>())
-//                  throw std::invalid_argument(
+//BadFmt(
 //                      "Argument should be floating_point");
 //          }
             if ((flags & flagblank) != 0)
@@ -1267,6 +1274,14 @@ void zprintf(formatString<my_type_identity_t<Args> ...> format,
     //std::cout << "end of zprintf\n";
 }
 
+#ifndef __cpp_consteval
+// If the diagnostics only happen at run-time I would tend not to get any
+// report of where the offending call to zprintf() had been. This saves
+// that information so it can be displayed.
+#define zprintf(...)                                   \
+    (std::strcpy(formatLocation(), __WHERE1__(".. ")), \
+     zprintf(__VA_ARGS__))
+#endif
 
 #endif // header_log_h
 

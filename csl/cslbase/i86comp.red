@@ -1,4 +1,4 @@
-% "i86comp.red"                          Copyright (C) 1991-2017,  Codemist
+% "i86comp.red"                          Copyright (C) 1991-2022,  Codemist
 %
 % Compiler that turns Lisp code into Intel 80x86 32-bit assembler in a way
 % that fits in with the conventions used with CSL/CCL

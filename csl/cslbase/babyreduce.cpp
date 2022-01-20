@@ -1,8 +1,8 @@
-// babyreduce.cpp                          Copyright (C) 2016-2020 Codemist
+// babyreduce.cpp                          Copyright (C) 2016-2022 Codemist
 
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2022, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

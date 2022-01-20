@@ -1,9 +1,9 @@
-// testcode.cpp                                 Copyright (C) 2021 Codemist
+// testcode.cpp                                 Copyright (C) 2022 Codemist
 
 // This is code to exercise the draft conservative GC.
 
 /**************************************************************************
- * Copyright (C) 2021, Codemist.                         A C Norman       *
+ * Copyright (C) 2022, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -37,25 +37,13 @@
 
 LispObject runtest(int n, int payload)
 {
-#if 0
-    if (n%5 == 0)
+    if (Crand()%2 == 0)
     {   Lgc(nil, fixnum_of_int(1));
-#if defined CONSERVATIVE && defined DEBUG
         zprintf("Fringe = %a at end of GC\n", fringe);
-        zprintf("Limit = %a at end of GC\n", limit);
-#endif
-        return fixnum_of_int(payload);
+        zprintf("Limit = %a at end of GC\n\n\n", limit);
     }
-    return cons(ncons(fixnum_of_int(n)), runtest(n-1, payload));
-#else
-    Lgc(nil, fixnum_of_int(1));
-#ifdef DEBUG
-    zprintf("Fringe = %a at end of GC\n", fringe);
-    zprintf("Limit = %a at end of GC\n", limit);
-#endif
-//    return fixnum_of_int(payload);
-    return cons(fixnum_of_int(payload), fixnum_of_int(-payload));
-#endif
+    if (n < 2) return Lflag(nil, ncons(lisp_true), fixnum_of_int(0x33333));
+    return cons(runtest(n-1, payload), runtest(n-2, payload));
 }
 
 #undef INIT_OBVECI_SIZE
@@ -64,15 +52,46 @@ LispObject runtest(int n, int payload)
 void gcTestCode()
 {   std::printf("\n: Conservative code - run a simple test of the GC\n\n");
     set_up_signal_handlers();
+    setpname(nil, make_string("*NIL*"));
+#if 1
+    lisp_true = get_symbol(false);
+    setheader(lisp_true, TAG_HDR_IMMED+TYPE_SYMBOL);
+    setvalue(lisp_true, lisp_true);
+    setpname(lisp_true, make_string("*T*"));
+    setplist(lisp_true, nil);
+    setfastgets(lisp_true, nil);
+    setpackage(lisp_true, nil);
+    setenv(lisp_true, lisp_true);
+    qfn0(lisp_true) = undefined_0;
+    qfn1(lisp_true) = undefined_1;
+    qfn2(lisp_true) = undefined_2;
+    qfn3(lisp_true) = undefined_3;
+    qfn4up(lisp_true) = undefined_4up;
+    qcountLow(lisp_true) = 0;
+    qcountHigh(lisp_true) = 0;
+
+    int n = Crand() % 20;
+    zprintf("n = %d\n", n);
+    simple_print(runtest(n, fixnum_of_int(0x22222)));
+    Lgc(nil, fixnum_of_int(0x11111));
+#else
+#if 0
     LispObject w;
-    setpname(nil, w = make_string("nil"));
+//  setpname(nil, w = make_string("nil"));
+    setpname(nil, w = cons(fixnum_of_int(1),
+                           cons(fixnum_of_int(2), fixnum_of_int(3))));
+#endif
     setvalue(nil,              nil);          // Whew!
 
-    zprintf("Now run the test\n");
-    for (int i=1; i<500; i++)
-    {   simple_print(runtest(1, 1001001*i));
+    for (int i=0; i<1000; i++) Crand();
+    zprintf("Run the test\n");
+    for (int i=1; i<10; i++)
+    {   simple_print(runtest(1+Crand()%15, i));
         zprintf("\nGC test %d over\n", i);
     }
+#endif
+    term_close();
+    std::quick_exit(0);
 }
 
 // end of testcode.cpp

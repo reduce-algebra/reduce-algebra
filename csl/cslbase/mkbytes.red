@@ -1,4 +1,4 @@
-% mkbytes.red                                Copyright (C) Codemist 2016-20
+% mkbytes.red                                Copyright (C) Codemist 2016-22
 
 
 % Create bytes.h out of opcodes.red

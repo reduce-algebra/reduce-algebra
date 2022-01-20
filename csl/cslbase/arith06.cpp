@@ -1,11 +1,11 @@
-// arith06.cpp                             Copyright (C) 1990-2021 Codemist
+// arith06.cpp                             Copyright (C) 1990-2022 Codemist
 
 //
 // Arithmetic functions... lots of Lisp entrypoints.
 //
 
 /**************************************************************************
- * Copyright (C) 2021, Codemist.                         A C Norman       *
+ * Copyright (C) 2022, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -1271,7 +1271,7 @@ uint32_t Crand()
 // The security of "genuine random values" here depends on the quality of the
 // C++ implementation.
 
-void Csrand(uint32_t seed)
+void Csrand(uint64_t seed)
 {   if (seed == 0)
     {   std::seed_seq random_seed
         {
@@ -1287,7 +1287,13 @@ void Csrand(uint32_t seed)
         };
         mersenne_twister.seed(random_seed);
     }
-    else mersenne_twister.seed(seed);
+    else
+    {   std::seed_seq user_seed
+        {   static_cast<unsigned int>(seed),
+            static_cast<unsigned int>(seed>>32)
+        };
+        mersenne_twister.seed(user_seed);
+    }
 }
 
 LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
