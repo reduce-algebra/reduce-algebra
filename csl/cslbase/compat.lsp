@@ -1,4 +1,4 @@
-% compat.lsp                               Copyright (C) Codemist 2016-2021
+% compat.lsp                               Copyright (C) Codemist 2016-2022
 
 % This file defines functions and variables needed to make REDUCE
 % and the underlying CSL system compatible. it should

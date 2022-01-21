@@ -2,7 +2,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2021, Codemist.                         A C Norman       *
+ * Copyright (C) 2022, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -203,14 +203,26 @@ int main(int argc, char *argv[])
 #endif
 #if (29>=P && 29<=Q)
     if (29>=N&&29<=M) std::cout <<29<<": ",
-        zprintf("2 values %d %d\n", 101, 102);
+        zprintf("g format  |%*.2g|\n", 10, 123.4567);
 #endif
 #if (30>=P && 30<=Q)
     if (30>=N&&30<=M) std::cout <<30<<": ",
-        zprintf("3 values %d %d %d\n", 101, 102, 103);
+        zprintf("g format  |%10.*g|\n", 2, 123.4567);
 #endif
 #if (31>=P && 31<=Q)
     if (31>=N&&31<=M) std::cout <<31<<": ",
+        zprintf("g format  |%*.*g|\n", 10, 2123.4567);
+#endif
+#if (32>=P && 32<=Q)
+    if (32>=N&&32<=M) std::cout <<32<<": ",
+        zprintf("2 values %d %d\n", 101, 102);
+#endif
+#if (33>=P && 33<=Q)
+    if (33>=N&&33<=M) std::cout <<33<<": ",
+        zprintf("3 values %d %d %d\n", 101, 102, 103);
+#endif
+#if (34>=P && 34<=Q)
+    if (34>=N&&34<=M) std::cout <<34<<": ",
         zprintf("3 values %d %g %d\n", 101, 102.102, 103);
 #endif
 

@@ -1,5 +1,5 @@
 // "int128_t.h":  128 bit integer types for C++
-//                             Copyright Jason Lee, Arthur Norman 2013-2021
+//                             Copyright Jason Lee, Arthur Norman 2013-2022
 
 // $Id$
   
@@ -42,7 +42,7 @@ support my current usage. Others who pick this up might want to review
 and extent that!
 
 Copyright (c) 2013 - 2017 Jason Lee @ calccrypto at gmail.com
-              2020 - 2021 Arthur Norman
+              2020 - 2022 Arthur Norman
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

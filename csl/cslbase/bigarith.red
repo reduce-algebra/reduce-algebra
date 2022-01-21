@@ -1,4 +1,4 @@
-% bigarith.red                                Copyright (C) A C Norman 2020
+% bigarith.red                                Copyright (C) A C Norman 2022
 
 % Big-number arithmetic done digit by digit for use testing the
 % native arithmetic package.
@@ -25,7 +25,7 @@
 % run.
 
 % **************************************************************************
-% * Copyright (C) 2020, Codemist.                         A C Norman       *
+% * Copyright (C) 2022, Codemist.                         A C Norman       *
 % *                                                                        *
 % * Redistribution and use in source and binary forms, with or without     *
 % * modification, are permitted provided that the following conditions are *

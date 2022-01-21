@@ -1,11 +1,11 @@
-// fasl.cpp                                Copyright (C) 1990-2021 Codemist
+// fasl.cpp                                Copyright (C) 1990-2022 Codemist
 
 //
 // Binary file support for faster loading of precompiled code etc.
 //
 
 /**************************************************************************
- * Copyright (C) 2021, Codemist.                         A C Norman       *
+ * Copyright (C) 2022, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

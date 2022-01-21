@@ -1,4 +1,4 @@
-// termdemo.cpp                            Copyright (C) 2004-2020 Codemist
+// termdemo.cpp                            Copyright (C) 2004-2022 Codemist
 
 // This code is a very simple test and demonstration of the "termed.cpp"
 // console-mode input local editing and history package that I have, and
@@ -6,7 +6,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist.                         A C Norman       *
+ * Copyright (C) 2022, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

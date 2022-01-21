@@ -87,7 +87,7 @@
 
 // In code that at present (February 2021) is disabled with "#if 0"
 // I use the Mersenne Twister generator as set up in arithlib.hpp
-// to set up some randomized testing for this code. That will only
+// to set up some ransomized testing for this code. That will only
 // compile if you have a "modern" C++ compiler. For use here arithlib.hpp
 // need to know it is being used from within CSL...
 
@@ -334,7 +334,7 @@ size_t activePagesCount;
 //
 
 
-uint32_t activeThreads;
+atomic<uint32_t> activeThreads;
 //  0x00 : total_threads : lisp_threads : still_busy_threads
 
 
@@ -469,6 +469,23 @@ class MakeAssertions
 public:
     MakeAssertions()
     {
+// Note that on aarch64 there is a real probability that sizeof(atomic<int8>)
+// is bigger than 1. So any attempt to use an array of same might lead to
+// nasty surprizes! The same is plausible for int16. 
+        my_assert(sizeof(atomic<std::uintptr_t>) == sizeof(intptr_t),
+                  "atomic<uintptr_t> is not the expected size");
+        my_assert(atomic<uintptr_t>().is_lock_free(),
+                  "Atomic<uintptr_t> not lock-free");
+        my_assert(sizeof(atomic<std::uint32_t>) == 4,
+                  "atomic<uint32_t> is not the expected size");
+        my_assert(atomic<std::uint32_t>().is_lock_free(),
+                  "atomic<uint32_t> not lock-free");
+        if (SIXTY_FOUR_BIT)
+        {   my_assert(sizeof(atomic<std::uint64_t>) == 8,
+                      "atomic<uint64_t> is not the expected size");
+            my_assert(atomic<std::uint64_t>().is_lock_free(),
+                      "atomic<uint64_t> not lock-free");
+        }
         my_assert(std::is_standard_layout<Chunk>::value,
                   "Chunk not standard layout");
     }
@@ -638,7 +655,7 @@ void releaseOtherThreads()
 // time and release all the threads that have been idling.
     {   std::lock_guard<std::mutex> guard(mutexForGc);
         gc_started = false;
-        activeThreads++;
+        activeThreads.fetch_add(0x0000001);
         gc_complete = true;
     }
     cv_for_gc_complete.notify_all();
@@ -677,8 +694,8 @@ void ableToAllocateNewChunk(uintptr_t threadId, size_t n, size_t gap)
     newChunk->length = n+targetChunkSize;
     newChunk->isPinned = 0;
     newChunk->chunkPinChain = nullptr;
-    size_t chunkNo = currentPage->chunkCount++;
-//# zprintf("Page %a gets %d\n", currentPage, currentPage->chunkCount);
+    size_t chunkNo = currentPage->chunkCount.fetch_add(1);
+    zprintf("Page %a gets %d\n", currentPage, currentPage->chunkCount);
     currentPage->chunkMap[chunkNo] = newChunk;
     result = newChunk->dataStart() + TAG_VECTOR;
 //    zprintf("result[%d] = %a\n", threadId, result);
@@ -822,7 +839,7 @@ void waitWhileAnotherThreadGarbageCollects()
 // thread.
     bool inform = false;
     {   std::lock_guard<std::mutex> guard(mutexForGc);
-        uint32_t n = activeThreads++;
+        uint32_t n = activeThreads.fetch_add(0x000001);
         if ((n & 0xff) == ((n>>8) & 0xff) - 2) inform = true;
     }
     if (inform) cv_for_gc_busy.notify_one();
@@ -888,7 +905,7 @@ void waitWhileAnotherThreadGarbageCollects()
         if (!st) my_abort(LOCATION ": condition variable timed out");
     }
     fringe = fringeBis;
-//# zprintf("At %s fringe set to fringeBis = %a\n", __WHERE__, fringe);
+    zprintf("At %s fringe set to fringeBis = %a\n", __WHERE__, fringe);
 }
 
 // Here I have just attempted to allocate n bytes but the attempt failed
@@ -936,7 +953,7 @@ uintptr_t difficult_n_bytes()
 // The fetch_sub() operation here may cost much more than simple access to
 // a variable, but I am in context were I am about to do things costing a
 // lot more than that.
-        int32_t a = activeThreads--;
+        int32_t a = activeThreads.fetch_sub(0x000001);
 // The low byte of activeThreads counts the number of Lisp threads properly
 // busy in the mutator. When it returns a value > 1 it means that at least
 // one other thread has not yet joined in with this synchronization. It will
@@ -958,7 +975,7 @@ uintptr_t difficult_n_bytes()
 // so I need to put its updated value in the correct place.
     THREADID;
     fringe = fringeBis;
-//# zprintf("At %s fringe set to fringeBis = %a\n", __WHERE__, fringe);
+    zprintf("At %s fringe set to fringeBis = %a\n", __WHERE__, fringe);
 #endif
 #ifdef DEBUG
     testLayout();
@@ -1041,7 +1058,7 @@ LispObject borrow_n_bytes(size_t n)
         else
         {   w = freePages;
             freePages = freePages->chain;
-//#         zprintf("freePages := %a\n", freePages);
+            zprintf("freePages := %a\n", freePages);
             setupEmptyPage(w);
         }
         w->chain = static_cast<Page*>(borrowPages);
@@ -1089,8 +1106,22 @@ LispObject borrow_vector(int tag, int type, size_t n)
 void setupEmptyPage(Page* p)
 {
     p->chunkCount = 0;
-//# zprintf("empty page %a sets chunkCount 0\n", p);
+    zprintf("empty page %a sets chunkCount 0\n", p);
     p->chunkMapSorted = false;
+#ifdef SAFE
+    for (size_t i=0; i<sizeof(p->dirtyMap)/sizeof(p->dirtyMap[0]); i++)
+        p->dirtyMap[i] = 0;
+    for (size_t i=0; i<sizeof(p->dirtyMap1)/sizeof(p->dirtyMap1[0]); i++)
+        p->dirtyMap1[i] = 0;
+    for (size_t i=0; i<sizeof(p->dirtyMap2)/sizeof(p->dirtyMap2[0]); i++)
+        p->dirtyMap2[i] = 0;
+#else
+// Here rather than setting each word to zero with an atomic write I
+// use memory fences to (try to!) ensure global sequential ordering and
+// I use memset to clear the block of memory, HOPING that the representation
+// in memory of simple and atomic integers will be identical. This is not
+// standards-conforming.
+    std::atomic_thread_fence(std::memory_order_seq_cst);
     std::memset(reinterpret_cast<void*>(&p->dirtyMap),
                 0, sizeof(p->dirtyMap));
     std::memset(reinterpret_cast<void*>(&p->dirtyMap1),
@@ -1098,6 +1129,7 @@ void setupEmptyPage(Page* p)
     std::memset(reinterpret_cast<void*>(&p->dirtyMap2),
                 0, sizeof(p->dirtyMap2));
     std::atomic_thread_fence(std::memory_order_seq_cst);
+#endif
     p->hasDirty = false;
     p->dirtyPageChain = nullptr;
     p->pageFringe = reinterpret_cast<uintptr_t>(&p->data);
@@ -1112,7 +1144,7 @@ void setupEmptyPage(Page* p)
 
 void setupMostlyFreePage(Page* p)
 {   p->chunkCount = 0;
-//# zprintf("used page %a sets chunkCount 0\n", p);
+    zprintf("used page %a sets chunkCount 0\n", p);
     p->chunkMapSorted = false;
     for (size_t i=0; i<sizeof(p->dirtyMap)/sizeof(p->dirtyMap[0]); i++)
         p->dirtyMap[i] = 0;
@@ -1127,12 +1159,22 @@ void setupMostlyFreePage(Page* p)
 // are there right from the start.
     for (Chunk* c = p->chunkPinChain; c!=nullptr; c=c->chunkPinChain)
         p->chunkMap[p->chunkCount++] = c;
-//# zprintf("Page %a inc chunkCount to %d\n", p, p->chunkCount);
+    zprintf("Page %a inc chunkCount to %d\n", p, p->chunkCount);
 // I want the pinned chunks sorted so that the lowest address one comes
 // first. That will ensure that when one comes to skip past a pinned
 // chunk that the next chunk on the cgain will be the next one up in
 // memory.
-    std::qsort(p->chunkMap, p->chunkCount, sizeof(p->chunkMap[0]), chunkOrder);
+    std::qsort(p->chunkMap, p->chunkCount, sizeof(p->chunkMap[0]),
+               [](const void* a, const void* b)
+               {   const Chunk* aa =
+                       static_cast<const atomic<Chunk*>*>(a)->load();
+                   const Chunk* bb =
+                       static_cast<const atomic<Chunk*>*>(b)->load();
+                   uintptr_t aaa = reinterpret_cast<uintptr_t>(aa);
+                   uintptr_t bbb = reinterpret_cast<uintptr_t>(bb);
+                   return aaa < bbb ? -1 :
+                          aaa > bbb ? 1 : 0;
+               });
     p->chunkPinChain = nullptr;
     for (size_t i=0; i<p->chunkCount; i++)
     {   int j = p->chunkCount-i-1;
@@ -1248,7 +1290,7 @@ size_t heap_pages_count = 0;
 size_t vheap_pages_count = 0;
 bool garbage_collection_permitted = true;
 bool force_verbos = false;
-Page* dirtyPages;
+atomic<Page*> dirtyPages;
 Page* pagesPinChain;
 
 // gc-forcer(a, b) should arrange that a garbage collection is triggered
@@ -1348,7 +1390,7 @@ ThreadStartup::ThreadStartup()
 #endif // NO_THREADS
 // The update here is just fine while I am in fact single threaded, but I
 // will need to review it when multiple threads can be in play.
-    activeThreads += 0x00010101;
+    activeThreads.fetch_add(0x00010101);
 }
 
 ThreadStartup::~ThreadStartup()
@@ -1357,7 +1399,7 @@ ThreadStartup::~ThreadStartup()
     std::lock_guard<std::mutex> lock(mutexForGc);
     releaseThreadNumber(static_cast<uintptr_t>(genuineThreadId));
 #endif // NO_THREADS
-    activeThreads -= 0x00010101;
+    activeThreads.fetch_sub(0x00010101);
 }
 
 LispObject* nilSegment,* stackSegment;
@@ -1375,7 +1417,7 @@ size_t                 gIncrement;
 #else // NO_THREADS
 
 uintptr_t              fringes[maxThreads];
-uintptr_t              limits[maxThreads];
+atomic<uintptr_t>      limits[maxThreads];
 Chunk*                 currentChunks[maxThreads];
 uintptr_t              limitBiss[maxThreads];
 uintptr_t              fringeBiss[maxThreads];
@@ -1386,7 +1428,7 @@ size_t                 gIncrements[maxThreads];
 
 
 
-extern uint32_t         threadCount;
+extern atomic<uint32_t> threadCount;
 std::mutex              mutexForGc;
 std::mutex              mutexForFreePages;
 bool                    gc_started;
@@ -1394,7 +1436,7 @@ std::condition_variable cv_for_gc_idling;
 std::condition_variable cv_for_gc_busy;
 bool                    gc_complete;
 std::condition_variable cv_for_gc_complete;
-uintptr_t               gFringe;
+atomic<uintptr_t>       gFringe;
 uintptr_t               gLimit = 0xaaaaaaaaU*0x80000001U;
 
 void initHeapSegments(double storeSize)
@@ -1423,8 +1465,8 @@ void initHeapSegments(double storeSize)
     for (int i=0; i<16; i++)
         heapSegment[i] = reinterpret_cast<void*>(-1);
     freePages = mostlyFreePages = nullptr;
-//# zprintf("freePages := %a\n", freePages);
-//# zprintf("Allocate %d Kbytes\n", freeSpace/1024U);
+    zprintf("freePages := %a\n", freePages);
+    zprintf("Allocate %d Kbytes\n", freeSpace/1024U);
     allocateSegment(freeSpace);
 
     nilSegment = reinterpret_cast<LispObject*>(
@@ -1437,16 +1479,16 @@ void initHeapSegments(double storeSize)
     stackBase = reinterpret_cast<uintptr_t>(stackSegment);
 // Ensure that I have a currentPage.
     previousPage = nullptr;
-//# zprintf("current from %a to %a\n", currentPage, freePages);
+    zprintf("current from %a to %a\n", currentPage, freePages);
     currentPage = freePages;
     previousCons = 0;
     freePages = freePages->chain;
-//# zprintf("freePages := %a\n", freePages);
+    zprintf("freePages := %a\n", freePages);
     freePagesCount--;
     setupEmptyPage(currentPage);
     currentPage->chain = nullptr;
     busyPages = currentPage;
-//# zprintf("busyPages := %a\n", busyPages);
+    zprintf("busyPages := %a\n", busyPages);
     busyPagesCount = 1;
     setVariablesFromPage(currentPage);
     mostlyFreePages = nullptr;

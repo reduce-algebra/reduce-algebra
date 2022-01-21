@@ -1,4 +1,4 @@
-// allocate.cpp                            Copyright (C) 1989-2021 Codemist
+// allocate.cpp                            Copyright (C) 1989-2022 Codemist
 
 //
 // Code to deal with storage allocation, both grabbing memory at the start
@@ -6,7 +6,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2021, Codemist.                         A C Norman       *
+ * Copyright (C) 2022, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

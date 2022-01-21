@@ -1,4 +1,4 @@
-// tags.h                                  Copyright (C) Codemist 1990-2021
+// tags.h                                  Copyright (C) Codemist 1990-2022
 
 //
 //   Data-structure and tag bit definitions, also common C macros
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2021, Codemist.                         A C Norman       *
+ * Copyright (C) 2022, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -628,7 +628,7 @@ inline bool is_mixed_header(uintptr_t h)
 {   return (h & (0x73<<Tw)) == TYPE_MIXED1;
 }
 
-static constexpr uintptr_t VIRTUAL_TYPE_CONS = 0x7d<<Tw; // what a header for a CONS would be!
+static constexpr uintptr_t VIRTUAL_TYPE_CONS = 0x07d<<Tw;// what a header for a CONS would be!
 static constexpr uintptr_t VIRTUAL_TYPE_REF  = 0x17d<<Tw;// Used by sxhash.
 static constexpr uintptr_t VIRTUAL_TYPE_NIL  = 0x27d<<Tw;// Used in hashing.
 
@@ -1231,7 +1231,7 @@ static constexpr size_t VECTOR_CHUNK_BYTES =
 // machine will have around 0.5 million sub-vectors, each of size a megabyte.
 // that is 2^39 bytes, and so if this is used to store LispObjects there can
 // be up to 2^36 of them. That is 64G cells, consuming 512GBytes of memory.
-// At present (2019) that seems an acceptable limit. If at some stage (!) it
+// At present (2019-2022) that seems an acceptable limit. If at some stage (!) it
 // became essential to go yet further the natural thing would be to increase
 // the basic memory allocation block size from 4 Mbytes upwards, and each
 // doubling of that could allow me to increase the largest vector size by

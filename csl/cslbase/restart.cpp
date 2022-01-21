@@ -1,4 +1,4 @@
-// restart.cpp                             Copyright (C) 1989-2021 Codemist
+// restart.cpp                             Copyright (C) 1989-2022 Codemist
 
 //
 // Code needed to start off Lisp when no initial heap image is available,
@@ -8,7 +8,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2021, Codemist.                         A C Norman       *
+ * Copyright (C) 2022, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -2177,6 +2177,82 @@ LispObject *list_bases[] =
     nullptr              // Used to mark the end of the table.
 };
 
+// For debugging it is sometimes nice to be able to identify the names
+// associated with list-base offsets.
+
+const char* list_names[] =
+{   "active_stream",         "allow_key_key",     "allow_other_keys",
+    "all_packages",          "and_symbol",        "append_symbol",
+    "applyhook",             "apply_symbol",      "autoload_symbol",
+    "aux_key",               "avail_space",       "big_dividend",
+    "big_divisor",           "big_fake1",         "big_fake2",
+    "big_quotient",          "bit_symbol",        "boffo",
+    "break_function",        "B_reg",             "builtin0_symbol",
+    "builtin1_symbol",       "builtin2_symbol",   "builtin3_symbol",
+    "builtin4_symbol",       "bytecoded_symbol",  "call_stack",
+    "callstack",             "catch_tags",        "cfunarg",
+    "char_0_symbol",         "charvec",           "cl_equal_symbol",
+    "codevec",               "comma_at_symbol",   "comma_symbol",
+    "compiler_symbol",       "comp_symbol",       "cond_symbol",
+    "cons_symbol",           "current_file",      "current_function",
+    "current_module",        "current_package",   "debug_io",
+    "declare_symbol",        "double_float",      "echo_symbol",
+    "emsg_star",             "eof_symbol",        "eql_symbol",
+    "eq_symbol",             "equalp_symbol",     "equal_symbol",
+    "error_output",          "err_table",         "evalhook",
+    "eval_symbol",           "exit_tag",          "exit_value",
+    "expand_def_symbol",     "expr_symbol",       "external_symbol",
+    "faslgensyms",           "fasl_stream",       "faslvec",
+    "fastget_names",         "features_symbol",   "fexpr_symbol",
+    "format_symbol",         "funarg",            "funcall_symbol",
+    "function_symbol",       "gchook",            "gcknt_symbol",
+    "gensym_base",           "get_counts",        "go_symbol",
+    "help_index",            "inherited_symbol",  "initial_element",
+    "input_libraries",       "internal_symbol",   "key_key",
+    "keyword_package",       "lambda",            "large_modulus",
+    "lex_words",             "lisp_debug_io",     "lisp_error_output",
+    "lisp_package",          "lisp_query_io",     "lisp_standard_input",
+    "lisp_standard_output",  "lisp_terminal_io",  "lisp_trace_output",
+    "lisp_true",             "lisp_work_stream",  "liststar_symbol",
+    "list_symbol",           "litvec",            "load_selected_source_symbol",
+    "load_source_symbol",    "long_float",        "lose_symbol",
+    "lower_symbol",          "macroexpand_hook",  "macro_symbol",
+    "multiplication_buffer", "mv_call_symbol",    "named_character",
+    "nicknames_symbol",      "not_symbol",        "opt_key",
+    "or_symbol",             "output_library",    "package_symbol",
+    "pathname_symbol",       "prinl_symbol",      "print_array_sym",
+    "procmem",               "procstack",         "progn_symbol",
+    "prompt_thing",          "query_io",          "quote_symbol",
+    "raise_symbol",          "read_base",         "reader_workspace",
+    "read_float_format",     "redef_msg",         "rehash_vec1",
+    "rehash_vec2",           "resources",         "rest_key",
+    "savedefs_symbol",       "savedef_symbol",    "short_float",
+    "single_float",          "special_symbol",    "standard_input",
+    "standard_output",       "startfn",           "startup_symbol",
+    "string_char_sym",       "supervisor",        "sys_hash_table",
+    "terminal_io",           "tracedfn",          "trace_output",
+    "traceprint_symbol",     "trap_time",         "unset_var",
+    "used_space",            "use_symbol",        "work_symbol",
+
+    "user_base_0",  "user_base_1",  "user_base_2",  "user_base_3",  "user_base_4",
+    "user_base_5",  "user_base_6",  "user_base_7",  "user_base_8",  "user_base_9",
+
+    "workbase[ 0]", "workbase[ 1]", "workbase[ 2]", "workbase[ 3]", "workbase[ 4]",
+    "workbase[ 5]", "workbase[ 6]", "workbase[ 7]", "workbase[ 8]", "workbase[ 9]",
+    "workbase[10]", "workbase[11]", "workbase[12]", "workbase[13]", "workbase[14]",
+    "workbase[15]", "workbase[16]", "workbase[17]", "workbase[18]", "workbase[19]",
+    "workbase[20]", "workbase[21]", "workbase[22]", "workbase[23]", "workbase[24]",
+    "workbase[25]", "workbase[26]", "workbase[27]", "workbase[28]", "workbase[29]",
+    "workbase[30]", "workbase[31]", "workbase[32]", "workbase[33]", "workbase[34]",
+    "workbase[35]", "workbase[36]", "workbase[37]", "workbase[38]", "workbase[39]",
+    "workbase[40]", "workbase[41]", "workbase[42]", "workbase[43]", "workbase[44]",
+    "workbase[45]", "workbase[46]", "workbase[47]", "workbase[48]", "workbase[49]",
+    "workbase[50]",
+    nullptr              // Used to mark the end of the table.
+};
+
+
+
 // June 2015: I am now going to try MD5 code from Alexander Peslyak
 // (Solar Designer). The code is public domain and all I do here is provide
 // wrappers so it appears to the bulk of CSL just as the previous version had.
@@ -2219,6 +2295,8 @@ void CSL_MD5_Final(unsigned char *md)
     CSL_MD5_busy = false;
 }
 
+#if defined CONSERVATIVE
 #include "testcode.cpp" // Temporary for debugging
+#endif
 
 // end of restart.cpp

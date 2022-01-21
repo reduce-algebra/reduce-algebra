@@ -15,7 +15,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2017-22, Codemist.                      A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -71,7 +71,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2022, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -124,7 +124,7 @@ int common;
 static char *rights_message[] =
 {
 "%",
-"% Copyright (C) 2017, following the master REDUCE source files.          *",
+"% Copyright (C) 2022, following the master REDUCE source files.          *",
 "%                                                                        *",
 "% Redistribution and use in source and binary forms, with or without     *",
 "% modification, are permitted provided that the following conditions are *",
@@ -204,8 +204,8 @@ int main(int argc, char *argv[])
     if (outputfile == NULL) outputfile = stdout;
 
     if (common)
-        fprintf(outputfile, "\n;; RLISP to LISP converter. A C Norman 2004\n");
-    else fprintf(outputfile, "\n%% RLISP to LISP converter. A C Norman 2004\n");
+        fprintf(outputfile, "\n;; RLISP to LISP converter. A C Norman 2022\n");
+    else fprintf(outputfile, "\n%% RLISP to LISP converter. A C Norman 2022\n");
     fprintf(outputfile, "\n\n");
     if (rights)
     {   char **p = rights_message;
