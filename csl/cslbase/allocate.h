@@ -122,6 +122,32 @@ public:
     }
 };
 
+inline const char* Addr(uintptr_t p)
+{
+// This function may be called several times in a single expression. I
+// do not want it to have to allocate fresh memory, so I set it up with
+// four (4) buffers and use those in turn. 
+    static char rr[4*40];
+    static int seq=0;
+    char* r = &rr[40*(seq++ & 0x3)];
+    if (p == static_cast<uintptr_t>(nil))
+    {   std::strcpy(r, "nil");
+        return r;
+    }
+    std::snprintf(r, 40, "%#" PRIxPTR "/%" PRIdPTR, p, p);
+    return r;
+}
+
+template <typename T>
+inline const char *Addr(const atomic<T>& p)
+{   return Addr(static_cast<T>(p));
+}
+
+template <typename T>
+inline const char *Addr(T p)
+{   return Addr((uintptr_t)p);
+}
+
 inline LispObject cons(LispObject a, LispObject b)
 {
 #ifdef DEBUG
