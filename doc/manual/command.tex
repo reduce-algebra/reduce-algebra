@@ -15,17 +15,17 @@ sub-sections.
 \hypertarget{reserved:ARRAY}{\section{Array Declarations}}
 
 \index{Array declaration}\index{Declaration!array}
-Array\ttindex{ARRAY} declarations in {\REDUCE} are similar to FORTRAN
+Array\ttindex{array} declarations in {\REDUCE} are similar to FORTRAN
 dimension statements.  For example:
 \begin{verbatim}
         array a(10),b(2,3,4);
 \end{verbatim}
 Array indices each range from 0 to the value declared. An element of an
-array is referred to in standard FORTRAN notation, e.g. \texttt{A(2)}.
+array is referred to in standard FORTRAN notation, e.g. \texttt{a(2)}.
 
 We can also use an expression for defining an array bound, provided the
-value of the expression is a positive integer. For example, if \var{X} has the
-value 10 and \var{Y} the value 7 then
+value of the expression is a positive integer. For example, if \var{x} has the
+value 10 and \var{y} the value 7 then
 \texttt{array c(5*x+y)} is the same as \texttt{array c(57)}.
 
 If an array is referenced by an index outside its range, an error occurs.
@@ -34,7 +34,7 @@ If the array is to be one-dimensional, and the bound a number or a variable
 \begin{verbatim}
         array a 10, c 57;
 \end{verbatim}
-The operator \texttt{LENGTH}\ttindex{LENGTH} applied to an array name
+The operator \texttt{length}\ttindex{length}\index{array length} applied to an array name
 returns a list of its dimensions.
 
 All array elements are initialized to 0 at declaration time. In other words,
@@ -54,7 +54,7 @@ Arrays once declared are global in scope, and so can then be referenced
 anywhere in the program. In other words, unlike arrays in most other
 languages, a declaration within a block (or a procedure) does not limit
 the scope of the array to that block, nor does the array go away on
-exiting the block (use \texttt{CLEAR} instead for this purpose).
+exiting the block (use \texttt{clear} instead for this purpose).
 
 \section{Mode Handling Declarations}\index{Mode}
 \hypertarget{command:ON}{}
@@ -63,37 +63,37 @@ exiting the block (use \texttt{CLEAR} instead for this purpose).
 \hypertarget{switch:DEMO}{}
 
 \index{Mode handling declarations}\index{Declaration!mode handling}
-The \sw{ON}\ttindex{ON} and \sw{OFF}\ttindex{OFF} declarations are
+The \sw{on}\ttindex{on} and \sw{off}\ttindex{off} declarations are
 available to the user for controlling various system options.  Each option
-is represented by a \emph{switch}\index{Switch} name. \texttt{ON} and
-\texttt{OFF} take a list of switch names as argument and turn them on and off
+is represented by a \emph{switch}\index{Switch} name. \texttt{on} and
+\texttt{off} take a list of switch names as argument and turn them on and off
 respectively, e.g.,
 \begin{verbatim}
        on time;
 \end{verbatim}
 causes the system to print a message after each command giving the elapsed
-CPU time since the last command, or since \sw{TIME}\ttindex{TIME} was
+CPU time since the last command, or since \sw{time}\ttindex{time} was
 last turned off, or the session began.  Another useful switch with
-interactive use is \sw{DEMO},\ttindex{DEMO} which causes the system to
+interactive use is \sw{demo},\ttindex{demo} which causes the system to
 pause after each command in a file (with the exception of comments)
 until a \key{Return} is typed on the terminal.  This
 enables a user to set up a demonstration file and step through it command
 by command.
 
-As with most declarations, arguments to \texttt{ON} and \texttt{OFF} may be
+As with most declarations, arguments to \texttt{on} and \texttt{off} may be
 strung together separated by commas.  For example,
 \begin{verbatim}
         off time,demo;
 \end{verbatim}
 will turn off both the time messages and the demonstration switch.
 
-We note here that while most \texttt{ON} and \texttt{OFF} commands are obeyed
+We note here that while most \texttt{on} and \texttt{off} commands are obeyed
 almost instantaneously, some trigger slower actions such as
 reading in necessary modules from secondary storage.
 
-A diagnostic message is printed if \texttt{ON}\ttindex{ON} or \texttt{OFF}
-\ttindex{OFF} are used with a switch that is not known to the system.  For
-example, if you misspell \sw{DEMO} and type
+A diagnostic message is printed if \texttt{on}\ttindex{on} or \texttt{off}
+\ttindex{off} are used with a switch that is not known to the system.  For
+example, if you misspell \sw{demo} and type
 \begin{verbatim}
      on demq;
 \end{verbatim}
@@ -105,16 +105,16 @@ you will get the message\index{Switch}
 \section{END}
 \hypertarget{reserved:END}{}
 
-The identifier \texttt{END}\ttindex{END} has two separate uses.
+The identifier \texttt{end}\ttindex{end} has two separate uses.
 
-1) Its use in a \texttt{BEGIN} \ldots{} \texttt{END} bracket has been
+1) Its use in a \texttt{begin} \ldots{} \texttt{end} bracket has been
 discussed in connection with compound statements.
 
-2) Files to be read using \texttt{IN} should end with an extra \texttt{END};
-command.  The reason for this is explained in the section on the \texttt{IN}
-command.  This use of \texttt{END} does not allow an immediately
-preceding \texttt{END} (such as the \texttt{END} of a procedure definition), so
-we advise using \texttt{;END;} there.
+2) Files to be read using \texttt{in} should end with an extra \texttt{end};
+command.  The reason for this is explained in the section on the \texttt{in}
+command.  This use of \texttt{end} does not allow an immediately
+preceding \texttt{end} (such as the \texttt{end} of a procedure definition), so
+we advise using \texttt{;end;} there.
 
 %3) A command \texttt{END}; entered at the top level transfers control to the
 %Lisp system\index{Lisp} which is the host of the {\REDUCE} system.  All
@@ -136,10 +136,10 @@ we advise using \texttt{;END;} there.
 %type \texttt{(BEGIN)} in parentheses and hit the RETURN key.
 
 \hypertarget{command:QUIT}{}
-\hypertarget{command:BYE}{\section{BYE Command}}\ttindextype{BYE}{command}
+\hypertarget{command:BYE}{\section{BYE Command}}\ttindextype{bye}{command}
 
-\index{Command!BYE@\texttt{BYE}}
-The command \texttt{BYE}; (or alternatively \texttt{QUIT};)\ttindex{QUIT}
+\index{Command!bye@\texttt{bye}}
+The command \texttt{bye}; (or alternatively \texttt{quit};)\ttindex{quit}
 stops the execution
 of {\REDUCE}, closes all open output files, and returns you to the calling
 program (usually the operating system).  Your {\REDUCE} session is
@@ -148,8 +148,8 @@ normally destroyed.
 \section{SHOWTIME Command}\ttindextype{SHOWTIME}{command}
 \hypertarget{command:SHOWTIME}{}
 
-\index{Command!SHOWTIME@\texttt{SHOWTIME}}
-\texttt{SHOWTIME}; prints the elapsed time since the last call of this
+\index{Command!showtime@\texttt{showtime}}
+\texttt{showtime}; prints the elapsed time since the last call of this
 command or, on its first call, since the current {\REDUCE} session began.
 The time is normally given in milliseconds and gives the time as measured
 by a system clock.  The operations covered by this measure are system
@@ -158,8 +158,8 @@ dependent.
 \section{DEFINE Command}
 \hypertarget{command:DEFINE}{}
 
-\ttindextype{DEFINE}{command}\index{Command!DEFINE@\texttt{DEFINE}}
-The command \texttt{DEFINE} allows a user to supply a new name for
+\ttindextype{define}{command}\index{command!define@\texttt{define}}
+The command \texttt{define} allows a user to supply a new name for
 any identifier or replace it by any well-formed expression.  Its argument
 is a list of expressions of the form
 \begin{syntaxtable}
@@ -171,15 +171,15 @@ is a list of expressions of the form
 \begin{verbatim}
         define be==,x=y+z;
 \end{verbatim}
-means that \texttt{BE} will be interpreted as an equal sign, and \texttt{X}
+means that \texttt{be} will be interpreted as an equal sign, and \texttt{x}
 as the expression \texttt{y+z} from then on.  This renaming is done at parse
 time, and therefore takes precedence over any other replacement declared
 for the same identifier.  It stays in effect until the end of the
 {\REDUCE} run.
 
-The identifiers \texttt{ALGEBRAIC} and \texttt{SYMBOLIC} have properties which
-prevent \texttt{DEFINE} from being used on them.  To define
-\texttt{ALG} to be a synonym for \texttt{ALGEBRAIC}, use the more complicated
+The identifiers \texttt{algebraic} and \texttt{symbolic} have properties which
+prevent \texttt{define} from being used on them.  To define
+\texttt{alg} to be a synonym for \texttt{algebraic}, use the more complicated
 construction
 \begin{verbatim}
         put('alg,'newnam,'algebraic);
@@ -187,9 +187,9 @@ construction
 
 \section{RESETREDUCE command}
 \hypertarget{command:RESETREDUCE}{}
-\ttindextype{RESETREDUCE}{command}\index{Command!RESETREDUCE@\texttt{RESETREDUCE}}
+\ttindextype{resetreduce}{command}\index{Command!resetreduce@\texttt{resetreduce}}
 
-The command \texttt{RESETREDUCE} works through the                                                                                                                     
+The command \texttt{resetreduce} works through the                                                                                                                     
 history of previous commands, and clears any values which have been
 assigned, plus any rules, arrays and the like.  It also sets the various
 switches to their initial values.  It is not complete, but does work for

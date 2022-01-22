@@ -1,5 +1,5 @@
 \appendix
-\chapter{Reserved Identifiers}
+\hypertarget{sec:appendixa}{\chapter{Reserved Identifiers}}
 \label{reservedids}
 
 We list here all identifiers that are normally reserved in \REDUCE{}
@@ -299,12 +299,16 @@ system.
 \hyperlink{operator:ARBRAT}{\texttt{ARBRAT}}
 %\hyperlink{operator:ARBREAL}{\texttt{ARBREAL}}
 \hyperlink{operator:ARGLENGTH}{\texttt{ARGLENGTH}}
+\hyperlink{operator:BERNOULLIP}{\texttt{BERNOULLIP}}
 \hyperlink{procedure:BERNSTEIN_BASE}{\texttt{BERNSTEIN\_BASE}}
 \hyperlink{operator:CEILING}{\texttt{CEILING}}
 %\hyperlink{operator:CFRAC}{\texttt{CFRAC}}
+\hyperlink{operator:CHEBYSHEVT}{\texttt{CHEBYSHEVT}}
+\hyperlink{operator:CHEBYSHEVU}{\texttt{CHEBYSHEVU}}
 \hyperlink{procedure:CHEBYSHEV_BASE_T}{\texttt{CHEBYSHEV\_BASE\_T}}
 \hyperlink{procedure:CHEBYSHEV_BASE_U}{\texttt{CHEBYSHEV\_BASE\_U}}
 \hyperlink{operator:CI}{\texttt{CI}}
+\hyperlink{operator:Clebsch_Gordan}{\texttt{Clebsch\_Gordan}}
 \hyperlink{operator:COEFF}{\texttt{COEFF}}
 \hyperlink{operator:COEFFN}{\texttt{COEFFN}}
 \hyperlink{operator:COFACTOR}{\texttt{COFACTOR}}
@@ -321,6 +325,7 @@ system.
 \hyperlink{operator:EI}{\texttt{EI}}
 \hyperlink{operator:EPS}{\texttt{EPS}}
 \hyperlink{operator:ERF}{\texttt{ERF}}
+\hyperlink{operator:EULERP}{\texttt{EULERP}}
 \hyperlink{operator:EXDEGREE}{\texttt{EXDEGREE}}
 \hyperlink{operator:EXPAND_CASES}{\texttt{EXPAND\_CASES}}
 \hyperlink{operator:EXTENDED_GOSPER}{\texttt{EXTENDED\_GOSPER}}
@@ -336,6 +341,7 @@ system.
 \hyperlink{operator:G}{\texttt{G}}
 \hyperlink{operator:GCD}{\texttt{GCD}}
 \hyperlink{operator:GDIMENSION}{\texttt{GDIMENSION}}
+\hyperlink{operator:GEGENBAUERP}{\texttt{GEGENBAUERP}}
 \hyperlink{procedure:GEGENBAUER_BASE}{\texttt{GEGENBAUER\_BASE}}
 \hyperlink{operator:GETROOT}{\texttt{GETROOT}}
 \hyperlink{operator:GFNEWT}{\texttt{GFNEWT}}
@@ -358,6 +364,7 @@ system.
 \hyperlink{operator:GVARS}{\texttt{GVARS}}
 \hyperlink{operator:GZERODIM!?}{\texttt{GZERODIM!?}}
 \hyperlink{operator:HANKEL_TRANSFORM}{\texttt{HANKEL\_TRANSFORM}}
+\hyperlink{operator:HERMITEP}{\texttt{HERMITEP}}
 \hyperlink{procedure:HERMITE_BASE}{\texttt{HERMITE\_BASE}}
 \hyperlink{operator:HILBERTPOLYNOMIAL}{\texttt{HILBERTPOLYNOMIAL}}
 \hyperlink{operator:HYPERGEOMETRIC}{\texttt{HYPERGEOMETRIC}}
@@ -372,10 +379,13 @@ system.
 \hyperlink{operator:INT}{\texttt{INT}}
 \hyperlink{operator:INTERPOL}{\texttt{INTERPOL}}
 \hyperlink{operator:INVLAP}{\texttt{INVLAP}}
+\hyperlink{operator:JACOBIP}{\texttt{JACOBIP}}
 \hyperlink{operator:K_TRANSFORM}{\texttt{K\_TRANSFORM}}
+\hyperlink{operator:LAGUERREP}{\texttt{LAGUERREP}}
 \hyperlink{procedure:LAGUERRE_BASE}{\texttt{LAGUERRE\_BASE}}
 \hyperlink{operator:LAPLACE}{\texttt{LAPLACE}}
 \hyperlink{operator:LAPLACE_TRANSFORM}{\texttt{LAPLACE\_TRANSFORM}}
+\hyperlink{operator:LEGENDREP}{\texttt{LEGENDREP}}
 \hyperlink{procedure:LEGENDRE_BASE}{\texttt{LEGENDRE\_BASE}}
 \hyperlink{operator:LCM}{\texttt{LCM}}
 \hyperlink{operator:LCOF}{\texttt{LCOF}}
@@ -469,10 +479,13 @@ system.
 \hyperlink{operator:SIMPLIFY_GAMMA2}{\texttt{SIMPLIFY\_GAMMA2}}
 \hyperlink{operator:SIMPLIFY_GAMMAN}{\texttt{SIMPLIFY\_GAMMAN}}
 \hyperlink{operator:SIMPLIFY_COMBINATORIAL}{\texttt{SIMPLIFY\_COMBINATORIAL}}
+\hyperlink{operator:SixJSymbol}{\texttt{SixJSymbol}}
 \hyperlink{operator:SOLVE}{\texttt{SOLVE}}
 \hyperlink{operator:SOLIDHARMONICY}{\texttt{SOLIDHARMONICY}}
 \hyperlink{operator:SPHERICALHARMONICY}{\texttt{SPHERICALHARMONICY}}
 \hyperlink{operator:SPLIT_FIELD}{\texttt{SPLIT\_FIELD}}
+\hyperlink{operator:STIRLING1}{\texttt{STIRLING1}}
+\hyperlink{operator:STIRLING2}{\texttt{STIRLING2}}
 \hyperlink{operator:STRUCTR}{\texttt{STRUCTR}}
 \hyperlink{operator:STRUVEH_TRANSFORM}{\texttt{STRUVEH\_TRANSFORM}}
 \hyperlink{operator:SUB}{\texttt{SUB}}
@@ -481,6 +494,7 @@ system.
 \hyperlink{operator:SUMTOHYPER}{\texttt{SUMTOHYPER}}
 \hyperlink{operator:SUMRECURSION}{\texttt{SUMRECURSION}}
 \hyperlink{operator:THIRD}{\texttt{THIRD}}
+\hyperlink{operator:ThreeJSymbol}{\texttt{ThreeJSymbol}}
 \hyperlink{operator:TORDER}{\texttt{TORDER}}
 \hyperlink{operator:TORDER_COMPILE}{\texttt{TORDER\_COMPILE}}
 \hyperlink{operator:TOTALDEG}{\texttt{TOTALDEG}}
@@ -656,6 +670,7 @@ system.
 %%ASSIST%%\hyperlink{switch:ONESPACE}{\texttt{ONESPACE}}
 \hyperlink{switch:ONLY_INTEGER}{\texttt{ONLY\_INTEGER}}
 \hyperlink{switch:OUTPUT}{\texttt{OUTPUT}}
+\hyperlink{switch:OVERVIEW}{\texttt{overview}}
 %%INT%%\hyperlink{switch:PARTIALINT}{\texttt{PARTIALINT}}
 %%INT%%\hyperlink{switch:PARTIALINTDF}{\texttt{PARTIALINTDF}}
 %%INT%%\hyperlink{switch:PARTIALINTINT}{\texttt{PARTIALINTINT}}
@@ -712,6 +727,7 @@ system.
 \hyperlink{reserved:THEN}{\texttt{THEN}}
 \hyperlink{reserved:EXPR}{\texttt{EXPR}}
 \hyperlink{reserved:FEXPR}{\texttt{FEXPR}}
+\hyperlink{reserved:FUNCTION}{\texttt{function}}
 \hyperlink{reserved:INPUT}{\texttt{INPUT}}
 \hyperlink{reserved:LAMBDA}{\texttt{LAMBDA}}
 \hyperlink{reserved:LISP}{\texttt{LISP}}

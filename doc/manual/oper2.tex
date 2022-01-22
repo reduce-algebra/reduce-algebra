@@ -5,32 +5,32 @@
 \hypertarget{command:ODD}{}
 \hypertarget{command:NONZERO}{}
 An operator can be declared to be \emph{even} or \emph{odd} in its first
-argument by the declarations \texttt{EVEN}\ttindextype{EVEN}{declaration} and
-\texttt{ODD}\ttindextype{ODD}{declaration} respectively.  Expressions involving an operator
+argument by the declarations \texttt{even}\ttindextype{even}{declaration} and
+\texttt{odd}\ttindextype{odd}{declaration} respectively.  Expressions involving an operator
 declared in this manner are transformed if the first argument contains a
 minus sign.  Any other arguments are not affected.  In addition, if say
-\texttt{F} is declared odd, then \texttt{f(0)} is replaced by zero unless
-\texttt{F} is also declared \emph{non zero} by the declaration
-\texttt{NONZERO}\ttindextype{NONZERO}{declaration}.  For example, the declarations
+\texttt{f} is declared odd, then \texttt{f(0)} is replaced by zero unless
+\texttt{f} is also declared \emph{non zero} by the declaration
+\texttt{nonzero}\ttindextype{nonzero}{declaration}.  For example, the declarations
 \begin{verbatim}
         even f1; odd f2;
 \end{verbatim}
 mean that
 \begin{verbatim}
-        f1(-a)    ->    F1(A)
-        f2(-a)    ->   -F2(A)
-        f1(-a,-b) ->    F1(A,-B)
+        f1(-a)    ->    f1(a)
+        f2(-a)    ->   -f2(a)
+        f1(-a,-b) ->    f1(a,-b)
         f2(0)     ->    0.
 \end{verbatim}
 To inhibit the last transformation, say \texttt{nonzero f2;}.
 
 \section{Linear Operators}\index{Linear operator}\index{Operator!linear}
 \hypertarget{command:LINEAR}{}
-\ttindextype{LINEAR}{declaration}
+\ttindextype{linear}{declaration}
 An operator can be declared to be linear in its first argument over powers
-of its second argument.  If an operator \texttt{F} is so declared, \texttt{F} of
-any sum is broken up into sums of \texttt{F}s, and any factors that are not
-powers of the variable are taken outside.  This means that \texttt{F} must
+of its second argument.  If an operator \texttt{f} is so declared, \texttt{f} of
+any sum is broken up into sums of \texttt{f}s, and any factors that are not
+powers of the variable are taken outside.  This means that \texttt{f} must
 have (at least) two arguments.  In addition, the second argument must be
 an identifier (or more generally a kernel), not an expression.
 
@@ -39,16 +39,16 @@ an identifier (or more generally a kernel), not an expression.
 If \texttt{F} were declared linear, then
 \begin{verbatim}
                                 5
-        f(a*x^5+b*x+c,x) ->  F(X ,X)*A + F(X,X)*B + F(1,X)*C
+        f(a*x^5+b*x+c,x) ->  f(x ,x)*a + f(x,x)*b + f(1,x)*c
 \end{verbatim}
 More precisely, not only will the variable and its powers remain within the
-scope of the \texttt{F} operator, but so will any variable and its powers that
-had been declared to \texttt{DEPEND} on the prescribed variable; and so would
+scope of the \texttt{f} operator, but so will any variable and its powers that
+had been declared to \texttt{depend} on the prescribed variable; and so would
 any expression that contains that variable or a dependent variable on any
 level, e.g. \texttt{cos(sin(x))}.
 
-To declare operators \texttt{F} and \texttt{G} to be linear operators,
-use:\ttindex{LINEAR}
+To declare operators \texttt{f} and \texttt{g} to be linear operators,
+use:\ttindex{linear}
 \begin{verbatim}
         linear f,g;
 \end{verbatim}
@@ -58,27 +58,25 @@ other arguments are ignored. It uses the following rules of evaluation:
   \hspace{0.5in}%
   \begin{tabular}{llll}
     \texttt{f(0)}     & $\longrightarrow$ & \texttt{0} \\
-    \texttt{f(-y,x)}  & $\longrightarrow$ & \texttt{-F(Y,X)} \\
-    \texttt{f(y+z,x)} & $\longrightarrow$ & \texttt{F(Y,X)+F(Z,X)} & \\
-    \texttt{f(y*z,x)} & $\longrightarrow$ & \texttt{Z*F(Y,X)}      &
-    if Z does not depend on X \\
-    \texttt{f(y/z,x)} & $\longrightarrow$ & \texttt{F(Y,X)/Z}      &
-    if Z does not depend on X
+    \texttt{f(-y,x)}  & $\longrightarrow$ & \texttt{-f(y,x)} \\
+    \texttt{f(y+z,x)} & $\longrightarrow$ & \texttt{f(y,x)+f(z,x)} & \\
+    \texttt{f(y*z,x)} & $\longrightarrow$ & \texttt{z*f(y,x)}      &
+    if z does not depend on x \\
+    \texttt{f(y/z,x)} & $\longrightarrow$ & \texttt{f(y,x)/z}      &
+    if z does not depend on x
   \end{tabular}
 \end{flushleft}
-To summarize, \texttt{Y} ``depends'' on the indeterminate \texttt{X} in the above
+To summarize, \texttt{y} ``depends'' on the indeterminate \texttt{x} in the above
 if either of the following hold:
 \begin{enumerate}
-\item \texttt{Y} is an expression that contains \texttt{X} at any level as a
+\item \texttt{y} is an expression that contains \texttt{x} at any level as a
       variable, e.g.: \texttt{cos(sin(x))}
 
-\item Any variable in the expression \texttt{Y} has been declared dependent on
-      \texttt{X} by use of the declaration \texttt{DEPEND}.
+\item Any variable in the expression \texttt{y} has been declared dependent on
+      \texttt{x} by use of the declaration \texttt{depend}.
 \end{enumerate}
 The use of such linear operators\index{Linear operator} can be seen in the
-paper Fox, J.A. and A. C. Hearn, ``Analytic Computation of Some Integrals
-in Fourth Order Quantum Electrodynamics'' Journ. Comp. Phys. 14 (1974)
-301-317, which contains a complete listing of a program for definite
+paper \cite{Fox:74} which contains a complete listing of a program for definite
 integration\index{Integration} of some expressions that arise in fourth
 order quantum electrodynamics.
 
@@ -86,7 +84,7 @@ order quantum electrodynamics.
 \index{Operator!non-commuting}
 \hypertarget{command:NONCOM}{}
 An operator can be declared to be non-commutative under multiplication by
-the declaration \texttt{NONCOM}.\ttindextype{NONCOM}{declaration}
+the declaration \texttt{noncom}.\ttindextype{noncom}{declaration}
 
 \textit{Example:}
 
@@ -98,12 +96,12 @@ the expressions \texttt{u(x)*u(y)-u(y)*u(x)} and \texttt{u(x)*v(y)-v(y)*u(x)}
 will remain unchanged
 on simplification, and in particular will not simplify to zero.
 
-Note that it is the operator (\texttt{U} and \texttt{V} in the above example)
-and not the variable that has the non-commutative property.
+Note that it is the operators (\texttt{u} and \texttt{v} in the above example)
+and not the variable that have the non-commutative property.
 
-The \texttt{LET}\ttindex{LET} statement may be used to introduce rules of
+The \texttt{let}\ttindex{let} statement may be used to introduce rules of
 evaluation for such operators.  In particular, the boolean operator
-\texttt{ORDP}\ttindextype{ORDP}{boolean operator} is useful for introducing an ordering on such
+\texttt{ordp}\ttindextype{ordp}{boolean operator} is useful for introducing an ordering on such
 expressions.
 
 \textit{Example:}
@@ -114,7 +112,7 @@ The rule
            let u(x)*u(y)= u(y)*u(x)+comm(x,y);
 \end{verbatim}
 would introduce the commutator of \texttt{u(x)} and \texttt{u(y)} for all
-\texttt{X} and \texttt{Y}.  Note that since \texttt{ordp(x,x)} is {\em true}, the
+\texttt{x} and \texttt{y}.  Note that since \texttt{ordp(x,x)} is {\em true}, the
 equality check is necessary in the degenerate case to avoid a circular
 loop in the rule.
 
@@ -123,26 +121,26 @@ loop in the rule.
 \index{Antisymmetric operator}\index{Operator!antisymmetric}
 
 An operator can be declared to be symmetric with respect to its arguments
-by the declaration \texttt{SYMMETRIC}.\ttindextype{SYMMETRIC}{declaration} For example
+by the declaration \texttt{symmetric}.\ttindextype{symmetric}{declaration} For example
 \begin{verbatim}
         symmetric u,v;
 \end{verbatim}
-means that any expression involving the top level operators \texttt{U} or
-\texttt{V} will have its arguments reordered to conform to the internal order
+means that any expression involving the top level operators \texttt{u} or
+\texttt{v} will have its arguments reordered to conform to the internal order
 used by {\REDUCE}.  The user can change this order for kernels by the
-command \texttt{KORDER}.
+command \texttt{korder}.
 
 For example, \texttt{u(x,v(1,2))} would become \texttt{u(v(2,1),x)}, since
 numbers are ordered in decreasing order, and expressions are ordered in
 decreasing order of complexity.
 
-Similarly the declaration \texttt{ANTISYMMETRIC}\ttindextype{ANTISYMMETRIC}{declaration}
+Similarly the declaration \texttt{antisymmetric}\ttindextype{antisymmetric}{declaration}
 declares an operator antisymmetric.   For example,
 \begin{verbatim}
         antisymmetric l,m;
 \end{verbatim}
-means that any expression involving the top level operators \texttt{L} or
-\texttt{M} will have its arguments reordered to conform to the internal order
+means that any expression involving the top level operators \texttt{l} or
+\texttt{m} will have its arguments reordered to conform to the internal order
 of the system, and the sign of the expression changed if there are an odd
 number of argument interchanges necessary to bring about the new order.
 
@@ -154,11 +152,11 @@ would also be replaced by 0.
 \hypertarget{command:OPERATOR}{}
 
 The user may add new prefix\index{Prefix operator!declaring new one} operators to the system by
-using the declaration \texttt{OPERATOR}\ttindextype{OPERATOR}{declaration}. For example:
+using the declaration \texttt{operator}\ttindextype{operator}{declaration}. For example:
 \begin{verbatim}
         operator h,g1,arctan;
 \end{verbatim}
-adds the prefix operators \texttt{H}, \texttt{G1} and \texttt{ARCTAN} to the system.
+adds the prefix operators \texttt{h}, \texttt{g1} and \texttt{arctan} to the system.
 
 This allows symbols like \texttt{h(w), h(x,y,z), g1(p+q), arctan(u/v)} to be
 used in expressions, but no meaning or properties of the operator are
@@ -166,24 +164,24 @@ implied.  The same operator symbol can be used equally well as a 0-, 1-, 2-,
 3-, etc.-place operator.
 
 To give a meaning to an operator symbol, or express some of its
-properties, \texttt{LET}\ttindex{LET} statements can be used, or the operator
+properties, \texttt{let}\ttindex{let} statements can be used, or the operator
 can be given a definition as a procedure.
 
 If the user forgets to declare an identifier as an operator, the system
 will prompt the user to do so in interactive mode, or do it automatically
 in non-interactive mode. A diagnostic message will also be printed if an
-identifier is declared \texttt{OPERATOR} more than once.
+identifier is declared \texttt{operator} more than once.
 
 Operators once declared are global in scope, and so can then be referenced
 anywhere in the program.  In other words, a declaration within a block (or
 a procedure) does not limit the scope of the operator to that block, nor
-does the operator go away on exiting the block (use \texttt{CLEAR} instead
+does the operator go away on exiting the block (use \texttt{clear} instead
 for this purpose).
 
 \hypertarget{command:PRINT_INDEXED}{}\hypertarget{command:PRINT_NOINDEXED}{}
 
 An operator declared
-\texttt{PRINT\_INDEXED}\ttindextype{PRINT\_INDEXED}{declaration} has
+\texttt{print\_indexed}\ttindextype{print\_indexed}{declaration} has
 its arguments displayed as indices, e.g.\ after
 \texttt{print\_indexed~a;} the operator value \texttt{a(i,2)} is
 displayed as \(a_{i,2}\).  You can declare several operators together
@@ -192,7 +190,7 @@ to be indexed, e.g.
         print_indexed b, c;
 \end{verbatim}
 and remove indexed declarations using
-\texttt{PRINT\_NOINDEXED}\ttindextype{PRINT\_NOINDEXED}{declaration}.
+\texttt{print\_noindexed}\ttindextype{PRINT\_NOINDEXED}{declaration}.
 
 
 \section{Declaring New Infix Operators}
@@ -200,20 +198,20 @@ and remove indexed declarations using
 \hypertarget{command:PRECEDENCE}{}
 
 Users can add new infix operators by using the declarations
-\texttt{INFIX}\ttindextype{INFIX}{declaration} and \texttt{PRECEDENCE}.\ttindextype{PRECEDENCE}{declaration}
+\texttt{infix}\ttindextype{infix}{declaration} and \texttt{precedence}.\ttindextype{precedence}{declaration}
 For example,
 \begin{verbatim}
         infix mm;
         precedence mm,-;
 \end{verbatim}
 The declaration \texttt{infix mm;} would allow one to use the symbol
-\texttt{MM} as an infix operator:
+\texttt{mm} as an infix operator:
 \begin{quote}
 \hspace{0.2in} \texttt{a mm b} \hspace{0.3in} instead of \hspace{0.3in}
 \texttt{mm(a,b)}.
 \end{quote}
 
-The declaration \texttt{precedence mm,-;} says that \texttt{MM} should be
+The declaration \texttt{precedence mm,-;} says that \texttt{mm} should be
 inserted into the infix operator precedence list just {\em after\/}
 the $-$ operator.  This gives it higher precedence than $-$ and lower
 precedence than * .  Thus
@@ -229,7 +227,7 @@ while
 \end{quote}
 
 Both infix and prefix\index{Prefix} operators have no transformation
-properties unless \texttt{LET}\ttindex{LET} statements or procedure
+properties unless \texttt{let}\ttindex{let} statements or procedure
 declarations are used to assign a meaning.
 
 We should note here that infix operators so defined are always binary:
@@ -246,30 +244,30 @@ There are several facilities in {\REDUCE}, such as the differentiation
 \index{Differentiation}
 operator and the linear operator\index{Linear operator} facility, that
 can utilize knowledge of the dependency between various variables, or
-kernels.  Such dependency may be expressed by the command \texttt{DEPEND}.\ttindextype{DEPEND}{command}
+kernels.  Such dependency may be expressed by the command \texttt{depend}.\ttindextype{depend}{command}
 This takes an arbitrary number of arguments and
 sets up a dependency of the first argument on the remaining arguments.
 For example,
 \begin{verbatim}
         depend x,y,z;
 \end{verbatim}
-says that \texttt{X} is dependent on both \texttt{Y} and \texttt{Z}.
+says that \texttt{x} is dependent on both \texttt{y} and \texttt{z}.
 \begin{verbatim}
         depend z,cos(x),y;
 \end{verbatim}
-says that \texttt{Z} is dependent on \texttt{COS(X)} and \texttt{Y}.
+says that \texttt{z} is dependent on \texttt{cos(x)} and \texttt{y}.
 
-Dependencies introduced by \texttt{DEPEND} can be removed by \texttt{NODEPEND}.
-\ttindextype{NODEPEND}{command} The arguments of this are the same as for \texttt{DEPEND}.
+Dependencies introduced by \texttt{depend} can be removed by \texttt{nodepend}.
+\ttindextype{nodepend}{command} The arguments of this are the same as for \texttt{depend}.
 For example, given the above dependencies,
 \begin{verbatim}
         nodepend z,cos(x);
 \end{verbatim}
-says that \texttt{Z} is no longer dependent on \texttt{COS(X)}, although it remains
-dependent on \texttt{Y}.
+says that \texttt{z} is no longer dependent on \texttt{cos(x)}, although it remains
+dependent on \texttt{y}.
 
 As a convenience, one or more dependent variables can be specified
-together in a list for both the \texttt{DEPEND} and \texttt{NODEPEND}
+together in a list for both the \texttt{depend} and \texttt{nodepend}
 commands, i.e.
 
 \texttt{(no)depend \{$y_1$, $y_2$, $\ldots$\}, $x_1$, $x_2$, $\ldots$}

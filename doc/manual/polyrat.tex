@@ -5,15 +5,15 @@ Many operations in computer algebra are concerned with polynomials
 \index{Polynomial} and rational functions\index{Rational function}.  In
 this section, we review some of the switches and operators available for
 this purpose.  These are in addition to those that work on general
-expressions (such as \texttt{DF} and \texttt{INT}) described elsewhere.  In the
+expressions (such as \texttt{df} and \texttt{int}) described elsewhere.  In the
 case of operators, the arguments are first simplified before the
 operations are applied.  In addition, they operate only on arguments of
 prescribed types, and produce a type mismatch error if given arguments
 which cannot be interpreted in the required mode with the current switch
 settings.  For example, if an argument is required to be a kernel and
-\texttt{a/2} is used (with no other rules for \texttt{A}), an error
+\texttt{a/2} is used (with no other rules for \texttt{a}), an error
 \begin{verbatim}
-        A/2 invalid as kernel
+        a/2 invalid as kernel
 \end{verbatim}
 will result.
 
@@ -23,15 +23,15 @@ the space and time associated with a given calculation. The user should
 therefore experiment with their use in a given calculation in order to
 determine the optimum set for a given problem.
 
-One such operation provided by the system is an operator \texttt{LENGTH}
-\ttindex{LENGTH} which returns the number of top level terms in the
+One such operation provided by the system is an operator \texttt{length}
+\ttindextype{length}{operator} which returns the number of top level terms in the
 numerator of its argument.  For example,
 \begin{verbatim}
         length ((a+b+c)^3/(c+d));
 \end{verbatim}
 has the value 10.  To get the number of terms in the denominator, one
-would first select the denominator by the operator \texttt{DEN}\ttindex{DEN}
-and then call \texttt{LENGTH}, as in
+would first select the denominator by the operator \texttt{den}\ttindex{den}
+and then call \texttt{length}, as in
 \begin{verbatim}
         length den ((a+b+c)^3/(c+d));
 \end{verbatim}
@@ -40,16 +40,16 @@ and the required argument and value modes of the latter, follow.
 
 \section{Controlling the Expansion of Expressions}
 \hypertarget{switch:EXP}{}
-\ttindexswitch{EXP}
+\ttindexswitch{exp}
 
-The switch \sw{EXP}\ttindexswitch{EXP} controls the expansion of expressions.  If
+The switch \sw{exp}\ttindexswitch{exp} controls the expansion of expressions.  If
 it is off, no expansion of powers or products of expressions occurs.
 Users should note however that in this case results come out in a normal
 but not necessarily canonical form.  This means that zero expressions
 simplify to zero, but that two equivalent expressions need not necessarily
 simplify to the same form.
 
-\textit{Example:} With \sw{EXP} on, the two expressions
+\textit{Example:} With \sw{exp} on, the two expressions
 \begin{verbatim}
         (a+b)*(a+2*b)
 \end{verbatim}
@@ -57,13 +57,13 @@ and
 \begin{verbatim}
         a^2+3*a*b+2*b^2
 \end{verbatim}
-will both simplify to the latter form.  With \sw{EXP}
+will both simplify to the latter form.  With \sw{exp}
 off, they would remain unchanged, unless the complete factoring 
-(\sw{ALLFAC}) option were in force. \sw{EXP} is normally on.
+(\sw{allfac}) option were in force. \sw{exp} is normally on.
 
 Several operators that expect a polynomial as an argument behave
-differently when \sw{EXP} is off, since there is often only one term at
-the top level.  For example, with \sw{EXP} off
+differently when \sw{exp} is off, since there is often only one term at
+the top level.  For example, with \sw{exp} off
 \begin{verbatim}
         length((a+b+c)^3/(c+d));
 \end{verbatim}
@@ -80,17 +80,17 @@ Norman and Ms. P. Mary Ann Moore at The University of Cambridge. It is
 described in \cite{NormanMoore:1981A}.
 
 The easiest way to use this facility is to turn on the switch
-\sw{FACTOR},\ttindexswitch{FACTOR} which causes all expressions to be output in
-a factored form.  For example, with \sw{FACTOR} on, the expression
+\sw{factor},\ttindexswitch{factor} which causes all expressions to be output in
+a factored form.  For example, with \sw{factor} on, the expression
 \texttt{a\textasciicircum2-b\textasciicircum2} is returned as 
 \texttt{(a+b)*(a-b)}.
 
 \hypertarget{operator:FACTORIZE}{}
 It is also possible to factorize a given expression explicitly.  The
-operator \texttt{FACTORIZE}\ttindex{FACTORIZE} that invokes this facility is
+operator \texttt{factorize}\ttindex{factorize} that invokes this facility is
 used with the syntax
 \begin{verbatim}
-     FACTORIZE(EXPRN:polynomial[,INTEXP:prime integer]):list,
+     factorize(exprn:polynomial[,intexp:prime integer]):list,
 \end{verbatim}
 the optional argument of which will be described later. Thus to find and
 display all factors of the cyclotomic polynomial $x^{105}-1$, one could
@@ -101,12 +101,12 @@ write:
 The result is a list of factor,exponent pairs.
 In the above example, there is no overall numerical factor in the result,
 so the results will consist only of polynomials in x.  The number of such
-polynomials can be found by using the operator \texttt{LENGTH}.\ttindex{LENGTH}
+polynomials can be found by using the operator \texttt{length}.\ttindextype{length}{operator}
 If there is a numerical factor, as in factorizing $12x^{2}-12$,
-that factor will appear as the first member of the result.
+the first member of the result will be a list with two elements: the numerical factor and its multiplicity (1).
 It will however not be factored further.  Prime factors of such numbers
 can be found, using a probabilistic algorithm, by turning on the switch
-\sw{IFACTOR}.\ttindexswitch{IFACTOR}  For example,
+\sw{ifactor}.\ttindexswitch{ifactor}  For example,
 \begin{verbatim}
         on ifactor; factorize(12x^2-12);
 \end{verbatim}
@@ -115,11 +115,11 @@ would result in the output
         {{2,2},{3,1},{x + 1,1},{x - 1,1}}.
 \end{verbatim}
 
-If the first argument of \texttt{FACTORIZE} is an integer, it will be
-decomposed into its prime components, whether or not \sw{IFACTOR} is on.
+If the first argument of \texttt{factorize} is an integer, it will be
+decomposed into its prime components, whether or not \sw{ifactor} is on.
 
-Note that the \sw{IFACTOR} switch only affects the result of \texttt{FACTORIZE}.
-It has no effect if the \sw{FACTOR}\ttindexswitch{FACTOR} switch is also on.
+Note that the \sw{ifactor} switch only affects the result of \texttt{factorize}.
+It has no effect if the \sw{factor}\ttindexswitch{factor} switch is also on.
 
 The order in which the factors occur in the result (with the exception of
 a possible overall numerical coefficient which comes first) can be system
@@ -133,15 +133,15 @@ selects both evaluation points and primes using a random number generator
 that should lead to different detailed behavior each time any particular
 problem is tackled. If, for some reason, it is known that a certain
 (probably univariate) factorization can be performed effectively with a
-known prime, \texttt{P} say, this value of \texttt{P} can be handed to
-\texttt{FACTORIZE}\ttindex{FACTORIZE} as a second
-argument. An error will occur if a non-prime is provided to \texttt{FACTORIZE} in
+known prime, \texttt{p} say, this value of \texttt{p} can be handed to
+\texttt{factorize}\ttindex{factorize} as a second
+argument. An error will occur if a non-prime is provided to \texttt{factorize} in
 this manner. It is also an error to specify a prime that divides the
 discriminant of the polynomial being factored, but users should note that
 this condition is not checked by the program, so this capability should be
 used with care.
 
-\ttindexswitch{MODULAR}
+\ttindexswitch{modular}
 Factorization can be performed over a number of polynomial coefficient
 domains in addition to integers. The particular description of the relevant
 domain should be consulted to see if factorization is supported. For
@@ -152,21 +152,23 @@ example, the following statements will factorize $x^{4}+1$ modulo 7:
         factorize(x^4+1);
 \end{verbatim}
 \hypertarget{switch:TRFAC}{}
+\hypertarget{switch:OVERVIEW}{}
 The factorization module is provided with a trace facility that may be useful
 as a way of monitoring progress on large problems, and of satisfying
 curiosity about the internal workings of the package. The most simple use
-of this is enabled by issuing the {\REDUCE} command\ttindexswitch{TRFAC}
+of this is enabled by issuing the {\REDUCE} command\ttindexswitch{trfac}
 \texttt{on trfac;} .
 Following this, all calls to the factorizer will generate informative
 messages reporting on such things as the reduction of multivariate to
 univariate cases, the choice of a prime and the reconstruction of full
 factors from their images.  Further levels of detail in the trace are
 intended mainly for system tuners and for the investigation of suspected
-bugs.  For example, \sw{TRALLFAC} gives tracing information at all levels
-of detail.  The switch that can be set by \texttt{on timings;} makes it
-possible for one who is familiar with the algorithms used to determine
-what part of the factorization code is consuming the most resources.
-\texttt{on overview}; reduces the amount of detail presented in other forms of
+bugs.  For example, \sw{trallfac} gives tracing information at all levels
+of detail.
+%The switch that can be set by \texttt{on timings;} makes it
+%possible for one who is familiar with the algorithms used to determine
+%what part of the factorization code is consuming the most resources.
+\texttt{on overview;}\ttindexswitch{overview} reduces the amount of detail presented in other forms of
 trace.  Other forms of trace output are enabled by directives of the form
 \begin{verbatim}
         symbolic set!-trace!-factor(<number>,<filename>);
@@ -176,13 +178,13 @@ intended to make it possible to discover in fairly great detail what just
 some small part of the code has been doing --- the numbers refer mainly to
 depths of recursion when the factorizer calls itself, and to the split
 between its work forming and factorizing images and reconstructing full
-factors from these.  If \texttt{NIL} is used in place of a filename the trace
+factors from these.  If \texttt{nil} is used in place of a filename the trace
 output requested is directed to the standard output stream.  After use of
 this trace facility the generated trace files should be closed by calling
 \begin{verbatim}
         symbolic close!-trace!-files();
 \end{verbatim}
-\textit{NOTE:} Using the factorizer with \sw{MCD}\ttindexswitch{MCD} off will
+\textit{NOTE:} Using the factorizer with \sw{mcd}\ttindexswitch{mcd} off will
 result in an error.
 
 \section{Cancellation of Common Factors}
@@ -190,18 +192,18 @@ result in an error.
 Facilities are available in {\REDUCE} for cancelling common factors in the
 numerators and denominators of expressions, at the option of the user. The
 system will perform this greatest common divisor computation if the switch
-\sw{GCD}\ttindexswitch{GCD} is on. (\sw{GCD} is normally off.)
+\sw{gcd}\ttindexswitch{gcd} is on. (\sw{gcd} is normally off.)
 
 A check is automatically made, however, for common variable and numerical
 products in the numerators and denominators of expressions, and the
 appropriate cancellations made.
 
-When \sw{GCD} is on, and \sw{EXP} is off, a check is made for square
+When \sw{gcd} is on, and \sw{exp} is off, a check is made for square
 free factors in an expression.  This includes separating out and
 independently checking the content of a given polynomial where
 appropriate. (For an explanation of these terms, see \cite{Hearn:79}.)
 
-\textit{Example:} With \sw{EXP}\ttindex{EXP} off and \sw{GCD}\ttindex{GCD}
+\textit{Example:} With \sw{exp}\ttindex{exp} off and \sw{gcd}\ttindex{gcd}
 on,
 the polynomial \texttt{a*c+a*d+b*c+b*d} would be returned as \texttt{(a+b)*(c+d)}.
 
@@ -209,12 +211,12 @@ the polynomial \texttt{a*c+a*d+b*c+b*d} would be returned as \texttt{(a+b)*(c+d)
 Under normal circumstances, GCDs are computed using an algorithm described
 in the above paper. It is also possible in {\REDUCE} to compute GCDs using
 an alternative algorithm, called the EZGCD Algorithm, which uses modular
-arithmetic.  The switch \sw{EZGCD}\ttindexswitch{EZGCD}, if on in addition to
-\sw{GCD}, makes this happen.
+arithmetic.  The switch \sw{ezgcd}\ttindexswitch{ezgcd}, if on in addition to
+\sw{gcd}, makes this happen.
 
 In non-trivial cases, the EZGCD algorithm is almost always better
 than the basic algorithm, often by orders of magnitude.  We therefore
-\emph{strongly} advise users to use the \sw{EZGCD} switch where they have the
+\emph{strongly} advise users to use the \sw{ezgcd} switch where they have the
 resources available for supporting the package.
 
 For a description of the EZGCD algorithm, \cite{Moses1973TheEG}.
@@ -226,19 +228,19 @@ information can be produced using the factorizer trace switches.
 \hypertarget{switch:HEUGCD}{}
 An implementation of the heuristic GCD algorithm, first introduced by B.W.
 Char, K.O.  Geddes and G.H.  Gonnet, as described in \cite{Davenport:85}, is also available on an
-experimental basis.  To use this algorithm, the switch \sw{HEUGCD}\ttindexswitch{HEUGCD}
-should be on in addition to \sw{GCD}.  Note that
-if both \sw{EZGCD} and \sw{HEUGCD} are on, the former takes precedence.
+experimental basis.  To use this algorithm, the switch \sw{heugcd}\ttindexswitch{heugcd}
+should be on in addition to \sw{gcd}.  Note that
+if both \sw{ezgcd} and \sw{heugcd} are on, the former takes precedence.
 
 
 \subsection{Determining the GCD of Two Polynomials}
 \hypertarget{operator:GCD}{}
 This operator, used with the syntax
 \begin{verbatim}
-        GCD(EXPRN1:polynomial,EXPRN2:polynomial):polynomial,
+        gcd(exprn1:polynomial,exprn2:polynomial):polynomial,
 \end{verbatim}
-returns the greatest common divisor of the two polynomials \texttt{EXPRN1} and
-\texttt{EXPRN2}.
+returns the greatest common divisor of the two polynomials \texttt{exprn1} and
+\texttt{exprn2}.
 
 \textit{Examples:}
 \begin{verbatim}
@@ -259,60 +261,60 @@ smaller and more regular in structure than the numerators, considerable
 savings in both time and space can occur if a full GCD check is made when
 the denominators are combined and only a partial check when numerators are
 constructed. In other words, the true least common multiple of the
-denominators is computed at each step. The switch \sw{LCM}\ttindex{LCM}
+denominators is computed at each step. The switch \sw{lcm}\ttindexswitch{lcm}
 is available for this purpose, and is normally on.
 
 \hypertarget{operator:LCM}{}
-In addition, the operator \texttt{LCM},\ttindex{LCM} used with the syntax
+In addition, the operator \texttt{lcm},\ttindextype{lcm}{operator} used with the syntax
 \begin{verbatim}
-        LCM(EXPRN1:polynomial,EXPRN2:polynomial):polynomial,
+        lcm(exprn1:polynomial,exprn2:polynomial):polynomial,
 \end{verbatim}
-returns the least common multiple of the two polynomials \texttt{EXPRN1} and
-\texttt{EXPRN2}.
+returns the least common multiple of the two polynomials \texttt{exprn1} and
+\texttt{exprn2}.
 
 \textit{Examples:}
 \begin{verbatim}
-        lcm(x^2+2*x+1,x^2+3*x+2) ->  X**3 + 4*X**2 + 5*X + 2
-        lcm(2*x^2-2*y^2,4*x+4*y) ->  4*(X**2 - Y**2)
+        lcm(x^2+2*x+1,x^2+3*x+2) ->  x**3 + 4*x**2 + 5*x + 2
+        lcm(2*x^2-2*y^2,4*x+4*y) ->  4*(x**2 - y**2)
 \end{verbatim}
 
 \section{Controlling Use of Common Denominators}
 \hypertarget{switch:MCD}{}
-\ttindexswitch{MCD}
+
 When two rational functions are added, {\REDUCE} normally produces an
 expression over a common denominator. However, if the user does not want
-denominators combined, he or she can turn off the switch \sw{MCD}
-\ttindex{MCD} which controls this process.  The latter switch is
+denominators combined, he or she can turn off the switch \sw{mcd}
+\ttindexswitch{mcd} which controls this process.  The latter switch is
 particularly useful if no greatest common divisor calculations are
 desired, or excessive differentiation of rational functions is required.
 
-\textit{CAUTION:}  With \sw{MCD} off, results are not guaranteed to come out in
+\textit{CAUTION:}  With \sw{mcd} off, results are not guaranteed to come out in
 either normal or canonical form.  In other words, an expression equivalent
 to zero may in fact not be simplified to zero.  This option is therefore
 most useful for avoiding expression swell during intermediate parts of a
 calculation.
 
-\sw{MCD}\ttindex{MCD} is normally on.
+\sw{mcd} is normally on.
 
 \section{Euclidean Division}
-\ttindextype{DIVIDE}{operator}
-\ttindextype{POLY\_QUOTIENT}{operator}
-\ttindextype{REMAINDER}{operator}
-\ttindextype{MOD}{operator}
+\ttindextype{divide}{operator}
+\ttindextype{poly\_quotient}{operator}
+\ttindextype{remainder}{operator}
+\ttindextype{mod}{operator}
 \hypertarget{operator:DIVIDE}{}
 \hypertarget{operator:POLY_QUOTIENT}{}
 \hypertarget{operator:REMAINDER}{}
 \hypertarget{operator:MOD}{}
 
-The operators \texttt{DIVIDE}, \texttt{POLY\_QUOTIENT} and
-\texttt{MOD} / \texttt{REMAINDER} implement Euclidean division of
+The operators \texttt{divide}, \texttt{poly\_quotient} and
+\texttt{mod} / \texttt{remainder} implement Euclidean division of
 polynomials (over the current number domain).
 The \texttt{remainder} operator is used with the syntax
 \begin{verbatim}
-     remainder(EXPRN1:polynomial,EXPRN2:polynomial):
+     remainder(exprn1:polynomial,exprn2:polynomial):
           polynomial.
 \end{verbatim}
-It returns the remainder when \texttt{EXPRN1} is divided by \texttt{EXPRN2}.  This
+It returns the remainder when \texttt{exprn1} is divided by \texttt{exprn2}.  This
 is the true remainder based on the internal ordering of the variables, and
 not the pseudo-remainder. 
 
@@ -353,7 +355,7 @@ e.g.
 
 The Euclidean division operator \texttt{divide} is used with the syntax
 \begin{verbatim}
-     divide(EXPRN1:polynomial,EXPRN2:polynomial):
+     divide(exprn1:polynomial,exprn2:polynomial):
           list(polynomial,polynomial)
 \end{verbatim}
 and returns both the quotient and the remainder together as the first
@@ -434,8 +436,8 @@ with identity (such as the integers, or any polynomial ring) if the
 polynomial $u(x)$ is first multiplied by $\mathrm{lc}(v,x)^{m-n+1}$
 (where lc denotes the leading coefficient).  This is called
 \emph{pseudo-division}.  The polynomial pseudo-division operators
-\texttt{PSEUDO\_DIVIDE}, \texttt{PSEUDO\_QUOTIENT} and
-\texttt{PSEUDO\_REMAINDER} are implemented as prefix operators (only).
+\texttt{pseudo\_divide}, \texttt{pseudo\_quotient} and
+\texttt{pseudo\_remainder} are implemented as prefix operators (only).
 When multivariate polynomials are pseudo-divided it is important which
 variable is taken as the main variable, because the leading
 coefficient of the divisor is computed with respect to this variable.
@@ -519,8 +521,7 @@ denominator 1, e.g.
 All pseudo-division operators accept a (possibly nested) list as first
 argument/operand and map over that list.
 
-Pseudo-division is implemented using an algorithm (D.~E.~Knuth 1981,
-\textit{Seminumerical Algorithms}, Algorithm R, page 407) that does
+Pseudo-division is implemented using an algorithm (\cite{Knuth:TAoCP2}, Algorithm R, page 407) that does
 not perform any actual division at all (which proves that it applies
 over a ring).  It is more efficient than the naive algorithm, and it
 also has the advantage that it works over coefficient domains in which
@@ -533,13 +534,13 @@ The implementation attempts to be reasonably efficient, except that it
 always computes the quotient internally even when only the remainder
 is required (as does the standard remainder operator).
 
-\section{RESULTANT Operator}\ttindex{RESULTANT}
+\section{RESULTANT Operator}\ttindextype{resultant}{operator}
 \hypertarget{operator:RESULTANT}{}
 \hypertarget{switch:BEZOUT}{}
 
 This is used with the syntax
 \begin{verbatim}
-     RESULTANT(EXPRN1:polynomial,EXPRN2:polynomial,VAR:kernel):
+     resultant(exprn1:polynomial,exprn2:polynomial,var:kernel):
         polynomial.
 \end{verbatim}
 It computes the resultant of the two given polynomials with respect to the
@@ -550,18 +551,15 @@ result obtained when the given variable is eliminated between the two input
 polynomials. If the two input polynomials have a non-trivial GCD their
 resultant vanishes.
 
-The switch \sw{BEZOUT}\ttindexswitch{BEZOUT} controls the computation of the
+The switch \sw{bezout}\ttindexswitch{bezout} controls the computation of the
 resultants. It is off by default. In this case a subresultant algorithm
 is used. If the switch Bezout is turned on, the resultant is computed via
 the Bezout Matrix. However, in the latter case, only polynomial coefficients
 are permitted.
 
 %\begin{samepage}
-The sign conventions used by the resultant function follow those in R.
-Loos, ``Computing in Algebraic Extensions'' in ``Computer Algebra --- Symbolic
-and Algebraic Computation'', Second Ed., Edited by B. Buchberger, G.E.
-Collins and R. Loos, Springer-Verlag, 1983. Namely, with \texttt{A} and \texttt{B}
-not dependent on \texttt{X}:
+The sign conventions used by the resultant function follow those in \cite{Loos:1982}.
+namely, with \texttt{a} and \texttt{b} not dependent on \texttt{x}:
 
 \begin{verbatim}
                                deg(p)*deg(q)
@@ -604,39 +602,39 @@ not dependent on \texttt{X}:
    resultant(2x+1,3x+4,x)    -> 5
 \end{verbatim}
 \end{samepage}
-\section{DECOMPOSE Operator}\ttindex{DECOMPOSE}
+\section{DECOMPOSE Operator}\ttindextype{decompose}{operator}
 \hypertarget{operator:DECOMPOSE}{}
 
-The \texttt{DECOMPOSE} operator takes a multivariate polynomial as argument,
+The \texttt{decompose} operator takes a multivariate polynomial as argument,
 and returns an expression and a list of equations from which the
 original polynomial can be found by composition.  Its syntax is:
 \begin{verbatim}
-     DECOMPOSE(EXPRN:polynomial):list.
+     decompose(exprn:polynomial):list.
 \end{verbatim}
 For example:
 \begin{verbatim}
      decompose(x^8-88*x^7+2924*x^6-43912*x^5+263431*x^4-
                     218900*x^3+65690*x^2-7700*x+234)
                    2                  2            2
-              -> {U  + 35*U + 234, U=V  + 10*V, V=X  - 22*X}
+              -> {u  + 35*u + 234, u=v  + 10*v, v=x  - 22*x}
                                      2
-     decompose(u^2+v^2+2u*v+1)  -> {W  + 1, W=U + V}
+     decompose(u^2+v^2+2u*v+1)  -> {w  + 1, w=u + v}
 \end{verbatim}
 Users should note however that, unlike factorization, this decomposition
 is not unique.
 
-\section{INTERPOL operator}\ttindex{INTERPOL}
+\section{INTERPOL operator}\ttindextype{interpol}{operator}
 \hypertarget{operator:INTERPOL}{}
 
 Syntax:
 \begin{syntax}
-  \texttt{INTERPOL(}\meta{values}\texttt{,}\,\meta{variable}\texttt{,}\,\meta{points}\texttt{);}
+  \texttt{interpol(}\meta{values}\texttt{,}\,\meta{variable}\texttt{,}\,\meta{points}\texttt{);}
 \end{syntax}
 
 where \meta{values} and \meta{points} are lists of equal length and
 \texttt{<variable>} is an algebraic expression (preferably a kernel).
 
-\texttt{INTERPOL} generates an interpolation polynomial \emph{f} in the given
+\texttt{interpol} generates an interpolation polynomial \emph{f} in the given
 variable of degree \texttt{length}(\meta{values})-1.  The unique polynomial 
 \emph{f}
 is defined by the property that for corresponding elements \emph{v} of
@@ -651,23 +649,23 @@ These operators select various parts of a polynomial or rational function
 structure. Except for the cost of rearrangement of the structure, these
 operations take very little time to perform.
 
-For those operators in this section that take a kernel \texttt{VAR} as their
+For those operators in this section that take a kernel \texttt{var} as their
 second argument, an error results if the first expression is not a
-polynomial in \texttt{VAR}, although the coefficients themselves can be
-rational as long as they do not depend on \texttt{VAR}.  However, if the
-switch \texttt{RATARG}\ttindexswitch{RATARG} is on, denominators are not checked
-for dependence on \texttt{VAR}, and are taken to be part of the coefficients.
+polynomial in \texttt{var}, although the coefficients themselves can be
+rational as long as they do not depend on \texttt{var}.  However, if the
+switch \texttt{ratarg}\ttindexswitch{ratarg} is on, denominators are not checked
+for dependence on \texttt{var}, and are taken to be part of the coefficients.
 
-\subsection{DEG Operator}\ttindex{DEG}
+\subsection{DEG Operator}\ttindextype{DEG}{operator}
 \hypertarget{operator:DEG}{}
 
 This operator is used with the syntax
 \begin{verbatim}
-        DEG(EXPRN:polynomial,VAR:kernel):integer.
+        deg(exprn:polynomial,var:kernel):integer.
 \end{verbatim}
-It returns the leading degree\index{Degree} of the polynomial \texttt{EXPRN}
-in the variable \texttt{VAR}.  If \texttt{VAR} does not occur as a variable in
-\texttt{EXPRN}, 0 is returned.
+It returns the leading degree\index{Degree} of the polynomial \texttt{exprn}
+in the variable \texttt{var}.  If \texttt{var} does not occur as a variable in
+\texttt{exprn}, 0 is returned.
 
 \textit{Examples:}
 \begin{verbatim}
@@ -675,23 +673,23 @@ in the variable \texttt{VAR}.  If \texttt{VAR} does not occur as a variable in
         deg((a+b)*(c+2*d)^2,d) ->  2
         deg((a+b)*(c+2*d)^2,e) ->  0.
 \end{verbatim}
-Note also that if \sw{RATARG} is on,
+Note also that if \sw{ratarg} is on,
 \begin{verbatim}
         deg((a+b)^3/a,a)       ->  3
 \end{verbatim}
-since in this case, the denominator \texttt{A} is considered part of the
-coefficients of the numerator in \texttt{A}.  With \sw{RATARG} off, however,
+since in this case, the denominator \texttt{a} is considered part of the
+coefficients of the numerator in \texttt{a}.  With \sw{ratarg} off, however,
 an error would result in this case.
 
-\subsection{DEN Operator}\ttindex{DEN}
+\subsection{DEN Operator}\ttindextype{den}{operator}
 \hypertarget{operator:DEN}{}
 
 This is used with the syntax:
 \begin{verbatim}
-        DEN(EXPRN:rational):polynomial.
+        den(exprn:rational):polynomial.
 \end{verbatim}
-It returns the denominator of the rational expression \texttt{EXPRN}.  If
-\texttt{EXPRN} is a polynomial, 1 is returned.
+It returns the denominator of the rational expression \texttt{exprn}.  If
+\texttt{exprn} is a polynomial, 1 is returned.
 
 \textit{Examples:}
 \begin{verbatim}
@@ -702,16 +700,16 @@ It returns the denominator of the rational expression \texttt{EXPRN}.  If
         den(a+b)     ->  1
 \end{verbatim}
 
-\subsection{LCOF Operator}\ttindex{LCOF}
+\subsection{LCOF Operator}\ttindextype{lcof}{operator}
 \hypertarget{operator:LCOF}{}
 
-LCOF is used with the syntax
+\texttt{lcof} is used with the syntax
 \begin{verbatim}
-        LCOF(EXPRN:polynomial,VAR:kernel):polynomial.
+        lcof(exprn:polynomial,var:kernel):polynomial.
 \end{verbatim}
 It returns the leading coefficient\index{Leading coefficient} of the
-polynomial \texttt{EXPRN} in the variable \texttt{VAR}.  If \texttt{VAR} does not
-occur as a variable in \texttt{EXPRN}, \texttt{EXPRN} is returned.
+polynomial \texttt{exprn} in the variable \texttt{var}.  If \texttt{var} does not
+occur as a variable in \texttt{exprn}, \texttt{exprn} is returned.
 %\extendedmanual{\newpage}
 \textit{Examples:}
 \begin{verbatim}
@@ -720,16 +718,16 @@ occur as a variable in \texttt{EXPRN}, \texttt{EXPRN} is returned.
         lcof((a+b)*(c+2*d),e)   ->  a*c+2*a*d+b*c+2*b*d
 \end{verbatim}
 
-\subsection{LPOWER Operator}\ttindex{LPOWER}
+\subsection{LPOWER Operator}\ttindextype{lpower}{operator}
 \hypertarget{operator:LPOWER}{}
 
 %\begin{samepage}
 Syntax:
 \begin{verbatim}
-        LPOWER(EXPRN:polynomial,VAR:kernel):polynomial.
+        lpower(exprn:polynomial,var:kernel):polynomial.
 \end{verbatim}
-LPOWER returns the leading power of \texttt{EXPRN} with respect to \texttt{VAR}.
-If \texttt{EXPRN} does not depend on \texttt{VAR}, 1 is returned.
+\f{lpower} returns the leading power of \texttt{exprn} with respect to \texttt{var}.
+If \texttt{exprn} does not depend on \texttt{var}, 1 is returned.
 %\end{samepage}
 
 \textit{Examples:}
@@ -739,16 +737,16 @@ If \texttt{EXPRN} does not depend on \texttt{VAR}, 1 is returned.
         lpower((a+b)*(c+2*d),e)   ->  1
 \end{verbatim}
 
-\subsection{LTERM Operator}\ttindex{LTERM}
+\subsection{LTERM Operator}\ttindextype{lterm}{operator}
 \hypertarget{operator:LTERM}{}
 
 \begin{samepage}
 Syntax:
 \begin{verbatim}
-        LTERM(EXPRN:polynomial,VAR:kernel):polynomial.
+        lterm(exprn:polynomial,var:kernel):polynomial.
 \end{verbatim}
-LTERM returns the leading term of \texttt{EXPRN} with respect to \texttt{VAR}.
-If \texttt{EXPRN} does not depend on \texttt{VAR}, \texttt{EXPRN} is returned.
+\f{lterm} returns the leading term of \texttt{exprn} with respect to \texttt{var}.
+If \texttt{exprn} does not depend on \texttt{var}, \texttt{exprn} is returned.
 \end{samepage}
 
 \textit{Examples:}
@@ -758,37 +756,37 @@ If \texttt{EXPRN} does not depend on \texttt{VAR}, \texttt{EXPRN} is returned.
         lterm((a+b)*(c+2*d),e)   ->  a*c+2*a*d+b*c+2*b*d
 \end{verbatim}
 
-{\COMPATNOTE} In some earlier versions of REDUCE, \texttt{LTERM} returned
-\texttt{0} if the \texttt{EXPRN} did not depend on \texttt{VAR}.  In the present
-version, \texttt{EXPRN} is always equal to 
-\texttt{LTERM(EXPRN,VAR) + REDUCT(EXPRN,VAR)}.
+{\COMPATNOTE} In some earlier versions of \REDUCE, \texttt{lterm} returned
+\texttt{0} if the \texttt{exprn} did not depend on \texttt{var}.  In the present
+version, \texttt{exprn} is always equal to 
+\texttt{lterm(exprn,var) + reduct(exprn,var)}.
 
-\subsection{MAINVAR Operator}\ttindex{MAINVAR}
+\subsection{MAINVAR Operator}\ttindextype{mainvar}{operator}
 \hypertarget{operator:MAINVAR}{}
 
 Syntax:
 \begin{verbatim}
-        MAINVAR(EXPRN:polynomial):expression.
+        mainvar(exprn:polynomial):expression.
 \end{verbatim}
 Returns the main variable (based on the internal polynomial representation)
-of \texttt{EXPRN}. If \texttt{EXPRN} is a domain element, 0 is returned.
+of \texttt{exprn}. If \texttt{exprn} is a domain element, 0 is returned.
 
 \textit{Examples:}
 
-Assuming \texttt{A} has higher kernel order than \texttt{B}, \texttt{C}, or \texttt{D}:
+Assuming \texttt{a} has higher kernel order than \texttt{b}, \texttt{c}, or \texttt{d}:
 \begin{verbatim}
         mainvar((a+b)*(c+2*d)^2) ->  a
         mainvar(2)               ->  0
 \end{verbatim}
 
-\subsection{NUM Operator}\ttindex{NUM}
+\subsection{NUM Operator}\ttindextype{num}{operator}
 \hypertarget{operator:NUM}{}
 
 Syntax:
 \begin{verbatim}
-        NUM(EXPRN:rational):polynomial.
+        num(exprn:rational):polynomial.
 \end{verbatim}
-Returns the numerator of the rational expression \texttt{EXPRN}.  If \texttt{EXPRN}
+Returns the numerator of the rational expression \texttt{exprn}.  If \texttt{exprn}
 is a polynomial, that polynomial is returned.
 
 \textit{Examples:}
@@ -799,16 +797,16 @@ is a polynomial, that polynomial is returned.
         num(a+b)     ->  a+b
 \end{verbatim}
 
-\subsection{REDUCT Operator}\ttindex{REDUCT}
+\subsection{REDUCT Operator}\ttindextype{reduct}{operator}
 \hypertarget{operator:REDUCT}{}
 
 Syntax:
 \begin{verbatim}
-        REDUCT(EXPRN:polynomial,VAR:kernel):polynomial.
+        reduct(exprn:polynomial,var:kernel):polynomial.
 \end{verbatim}
-Returns the reductum of \texttt{EXPRN} with respect to \texttt{VAR} (i.e., the
-part of \texttt{EXPRN} left after the leading term is removed).  If {\tt
-EXPRN} does not depend on the variable \texttt{VAR}, 0 is returned.
+Returns the reductum of \texttt{exprn} with respect to \texttt{var} (i.e., the
+part of \texttt{exprn} left after the leading term is removed).  If \texttt{exprn}
+does not depend on the variable \texttt{var}, 0 is returned.
 
 \textit{Examples:}
 \begin{verbatim}
@@ -817,11 +815,11 @@ EXPRN} does not depend on the variable \texttt{VAR}, 0 is returned.
      reduct((a+b)*(c+2*d),e) ->  0
 \end{verbatim}
 
-{\COMPATNOTE} In some earlier versions of REDUCE, \texttt{REDUCT} returned
-\texttt{EXPRN} if it did not depend on \texttt{VAR}.  In the present version, {\tt
-EXPRN} is always equal to \texttt{LTERM(EXPRN,VAR) + REDUCT(EXPRN,VAR)}.
+{\COMPATNOTE} In some earlier versions of \REDUCE, \texttt{reduct} returned
+\texttt{exprn} if it did not depend on \texttt{var}.  In the present version,
+\texttt{exprn} is always equal to \texttt{lterm(exprn,var) + reduct(exprn,var)}.
 
-\subsection{TOTALDEG Operator}\ttindex{TOTALDEG}
+\subsection{TOTALDEG Operator}\ttindextype{totaldeg}{operator}
 \hypertarget{operator:TOTALDEG}{}
 
 Syntax:
@@ -847,7 +845,7 @@ integer arithmetic, although the possibility of using real coefficients
 \index{Real coefficient} has been discussed elsewhere.  Rational
 coefficients have also been available by using integer coefficients in
 both the numerator and denominator of an expression, using the 
-\texttt{ON DIV}\ttindexswitch{DIV} option to print the coefficients as rationals.
+\texttt{on div}\ttindexswitch{div} option to print the coefficients as rationals.
 However, {\REDUCE} includes several other coefficient options in its basic
 version which we shall describe in this section.  All such coefficient
 modes are supported in a table-driven manner so that it is
@@ -860,12 +858,12 @@ how to do this is given in \cite{Bradford:86}.
 Instead of treating rational numbers as the numerator and denominator of a
 rational expression, it is also possible to use them as polynomial
 coefficients directly. This is accomplished by turning on the switch
-\sw{RATIONAL}.\ttindexswitch{RATIONAL}
+\sw{rational}.\ttindexswitch{rational}
 
-\textit{Example:} With \sw{RATIONAL} off, the input expression \texttt{a/2}
-would be converted into a rational expression, whose numerator was \texttt{A}
-and denominator 2.  With \sw{RATIONAL} on, the same input would become a
-rational expression with numerator \texttt{1/2*A} and denominator \texttt{1}.
+\textit{Example:} With \sw{rational} off, the input expression \texttt{a/2}
+would be converted into a rational expression, whose numerator was \texttt{a}
+and denominator 2.  With \sw{rational} on, the same input would become a
+rational expression with numerator \texttt{1/2*a} and denominator \texttt{1}.
 Thus the latter can be used in operations that require polynomial input
 whereas the former could not.
 
@@ -874,17 +872,17 @@ whereas the former could not.
 \hypertarget{switch:ROUNDED}{}
 \hypertarget{switch:ROUNDBF}{}
 \hypertarget{operator:PRECISION}{}
-The switch \sw{ROUNDED}\ttindexswitch{ROUNDED} permits the use of arbitrary
+The switch \sw{rounded}\ttindexswitch{rounded} permits the use of arbitrary
 sized real coefficients in polynomial expressions.  The actual precision
-of these coefficients can be set by the operator \texttt{PRECISION}.
-\ttindextype{PRECISION}{operator} For example, \texttt{precision 50;} sets the precision to
+of these coefficients can be set by the operator \texttt{precision}.
+\ttindextype{precision}{operator} For example, \texttt{precision 50;} sets the precision to
 fifty decimal digits.  The default precision is system dependent and can
 be found by \texttt{precision 0;}.  In this mode, denominators are
 automatically made monic, and an appropriate adjustment is made to the
 numerator.
 
 \textit{Example:} With \sw{ROUNDED} on, the input expression \texttt{a/2} would
-be converted into a rational expression whose numerator is \texttt{0.5*A} and
+be converted into a rational expression whose numerator is \texttt{0.5*a} and
 denominator \texttt{1}.
 
 Internally, {\REDUCE} uses floating point numbers up to the precision
@@ -898,7 +896,7 @@ precision) integers, which is a more precise representation in many cases
 than the machine floating point arithmetic, but not as efficient.  If a
 case arises where use of the machine arithmetic leads to problems, a user
 can force {\REDUCE} to use the bigfloat representation at all precisions by
-turning on the switch \sw{ROUNDBF}.\ttindexswitch{ROUNDBF}  In rare cases,
+turning on the switch \sw{roundbf}.\ttindexswitch{roundbf}  In rare cases,
 this switch is turned on by the system, and the user informed by the
 message
 \begin{verbatim}
@@ -908,20 +906,20 @@ message
 \hypertarget{command:PRINT_PRECISION}{}
 Rounded numbers are normally printed to the specified precision.  However,
 if the user wishes to print such numbers with less precision, the printing
-precision can be set by the command \texttt{PRINT\_PRECISION}.
-\ttindextype{PRINT\_PRECISION}{command} For example, \texttt{print\_precision 5;} will
+precision can be set by the command \texttt{print\_precision}.
+\ttindextype{print\_precision}{command} For example, \texttt{print\_precision 5;} will
 cause such numbers to be printed with five digits maximum.
 
 \hypertarget{switch:NOCONVERT}{}
-Under normal circumstances when \sw{ROUNDED} is on, {\REDUCE} converts the
+Under normal circumstances when \sw{rounded} is on, {\REDUCE} converts the
 number 1.0 to the integer 1.  If this is not desired, the switch
-\sw{NOCONVERT}\ttindexswitch{NOCONVERT} can be turned on.
+\sw{noconvert}\ttindexswitch{noconvert} can be turned on.
 
 \hypertarget{switch:BFSPACE}{}
 Numbers that are stored internally as bigfloats are normally printed with
 a space between every five digits to improve readability.  If this
 feature is not required, it can be suppressed by turning off the switch
-\sw{BFSPACE}.\ttindexswitch{BFSPACE}
+\sw{bfspace}.\ttindexswitch{bfspace}
 
 Further information on the bigfloat arithmetic may be found in T. Sasaki,
 ``Manual for Arbitrary Precision Real Arithmetic System in {\REDUCE}'',
@@ -931,17 +929,17 @@ TR-8 (1979).
 \hypertarget{switch:ADJPREC}{}
 When a real number is input, it is normally truncated to the precision in
 effect at the time the number is read.  If it is desired to keep the full
-precision of all numbers input, the switch \sw{ADJPREC}\ttindexswitch{ADJPREC}
-(for \emph{adjust precision}) can be turned on.  While on, \sw{ADJPREC}
+precision of all numbers input, the switch \sw{adjprec}\ttindexswitch{adjprec}
+(for \emph{adjust precision}) can be turned on.  While on, \sw{adjprec}
 will automatically increase the precision, when necessary, to match that
 of any integer or real input, and a message printed to inform the user of
 the precision increase.
 
 \hypertarget{switch:ROUNDALL}{}
-When \sw{ROUNDED} is on, rational numbers are normally converted to
+When \sw{rounded} is on, rational numbers are normally converted to
 rounded representation.  However, if a user wishes to keep such numbers in
 a rational form until used in an operation that returns a real number,
-the switch \sw{ROUNDALL}\ttindexswitch{ROUNDALL} can be turned off.  This
+the switch \sw{roundall}\ttindexswitch{roundall} can be turned off.  This
 switch is normally on.
 
 Results from rounded calculations are returned in rounded form with two
@@ -954,14 +952,14 @@ current precision, the integer result is returned.
 \index{Modular coefficient}
 {\REDUCE} includes facilities for manipulating polynomials whose
 coefficients are computed modulo a given base.  To use this option, two
-commands must be used; \texttt{SETMOD }\meta{integer}\ttindex{SETMOD}, to set
-the prime modulus, and \texttt{ON MODULAR}\ttindexswitch{MODULAR} to cause the
+commands must be used; \texttt{setmod }\meta{integer}\ttindex{setmod}, to set
+the prime modulus, and \texttt{on modular}\ttindexswitch{modular} to cause the
 actual modular calculations to occur.
 For example, with \texttt{setmod 3;} and \texttt{on modular;}, the polynomial
 \texttt{(a+2*b)\textasciicircum3} would become 
-\texttt{A\textasciicircum3+2*B\textasciicircum3}.
+\texttt{a\textasciicircum3+2*b\textasciicircum3}.
 
-The argument of \texttt{SETMOD} is evaluated algebraically, except that
+The argument of \texttt{setmod} is evaluated algebraically, except that
 non-modular (integer) arithmetic is used.  Thus the sequence
 \begin{verbatim}
         setmod 3; on modular; setmod 7;
@@ -975,7 +973,7 @@ to use an equivalent symmetric representation in the interval
 [-p/2+1,p/2], or more precisely
 [-floor((p-1)/2), ceiling((p-1)/2)],
 especially if the modular numbers map objects that include
-negative quantities.  The switch \sw{BALANCED\_MOD}\ttindexswitch{BALANCED\_MOD}
+negative quantities.  The switch \sw{balanced\_mod}\ttindexswitch{balanced\_mod}
 allows you to select the symmetric representation for output.
 
 Users should note that the modular calculations are on the polynomial
@@ -1004,31 +1002,32 @@ and
         (a^2+b^2)/(a+i*b)
 \end{verbatim}
 is not reduced further.  However, if the switch
-\sw{COMPLEX}\ttindexswitch{COMPLEX} is turned on, full complex arithmetic is then
+\sw{complex}\ttindexswitch{complex} is turned on, full complex arithmetic is then
 carried out.  In other words, the above factorization will give the result
 \begin{verbatim}
         {{a + i,1},{a - i,1}}
 \end{verbatim}
 and the quotient will be reduced to \texttt{a-i*b}.
 
-The switch \sw{COMPLEX} may be combined with \sw{ROUNDED} to give complex
+The switch \sw{complex} may be combined with \sw{rounded} to give complex
 real numbers; the appropriate arithmetic is performed in this case.
-Similarly, combining \sw{COMPLEX} with \sw{RATIONAL} performs polynomial
+Similarly, combining \sw{complex} with \sw{rational} performs polynomial
 arithmetic with complex rational numbers.
 
 \hypertarget{switch:RATIONALIZE}{}
 Complex conjugation is used to remove complex numbers from denominators of
-expressions.  To do this if \sw{COMPLEX} is off, you must turn the switch
-\sw{RATIONALIZE}\ttindexswitch{RATIONALIZE} on.
+expressions.  To do this if \sw{complex} is off, you must turn the switch
+\sw{rationalize}\ttindexswitch{rationalize} on.
 
+\iffalse
 \section{ROOT\_VAL Operator}
 \hypertarget{operator:ROOT_VAL}{}
 
-The \texttt{ROOT\_VAL}\ttindex{ROOT\_VAL}  operator takes a single univariate polynomial as
+The \texttt{root\_val}\ttindex{root\_val}  operator takes a single univariate polynomial as
 argument, and returns a list of root values at system precision (or
 greater if required to separate roots).  It is used with the syntax
 \begin{verbatim}
-        ROOT_VAL(EXPRN:univariate polynomial):list.
+        root_val(exprn:univariate polynomial):list.
 \end{verbatim}
 For example, the sequence
 \begin{verbatim}
@@ -1040,4 +1039,6 @@ gives the result
 
           - 0.662358978622,1.32471795724}
 \end{verbatim}
+\fi
 
+\input{roots}

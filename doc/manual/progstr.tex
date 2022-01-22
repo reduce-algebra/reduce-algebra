@@ -56,19 +56,19 @@ numbers again, to any precision. Such numbers are called \emph{real}.
 \item as a signed or unsigned sequence of any number of decimal digits
       with an embedded or trailing decimal point.
 \item as in 1. followed by a decimal exponent which is written as the
-      letter \texttt{E} followed by a signed or unsigned integer.
+      letter \texttt{e} followed by a signed or unsigned integer.
 \end{enumerate}
-e.g. \texttt{32. +32.0 0.32E2} and \texttt{320.E-1} are all representations of
+e.g. \texttt{32. +32.0 0.32e2} and \texttt{320.e-1} are all representations of
 32.
 
-The declaration \texttt{SCIENTIFIC\_NOTATION}\ttindextype{SCIENTIFIC\_NOTATION}{declaration}
+The declaration \texttt{scientific\_notation}\ttindextype{scientific\_notation}{declaration}
 controls the output format of floating point numbers.  At
 the default settings, any number with five or less digits before the
 decimal point is printed in a fixed-point notation, e.g., \texttt{12345.6}.
 Numbers with more than five digits are printed in scientific notation,
-e.g., \texttt{1.234567E+5}.  Similarly, by default, any number with eleven or
+e.g., \texttt{1.234567e+5}.  Similarly, by default, any number with eleven or
 more zeros after the decimal point is printed in scientific notation.  To
-change these defaults, \texttt{SCIENTIFIC\_NOTATION} can be used in one of two
+change these defaults, \texttt{scientific\_notation} can be used in one of two
 ways.
 
 \texttt{SCIENTIFIC\_NOTATION}\ \emph{m};
@@ -134,10 +134,10 @@ and procedures.
 
 In graphical environments with typeset mathematics enabled, the
 (shared) variable
-\texttt{FANCY\_LOWER\_DIGITS}\ttindex{FANCY\_LOWER\_DIGITS} can be set
-to one of the values \texttt{T}, \texttt{NIL} or \texttt{ALL} to
+\texttt{fancy\_lower\_digits}\ttindex{fancy\_lower\_digits} can be set
+to one of the values \texttt{t}, \texttt{nil} or \texttt{all} to
 control the display of digits within identifiers.  The default value
-is \texttt{T}.  Digits in an identifier are typeset as subscripts if
+is \texttt{t}.  Digits in an identifier are typeset as subscripts if
 \texttt{fancy\_lower\_digits~=~all} or if
 \texttt{fancy\_lower\_digits~=~t} and the digits are all at the end of
 the identifier.  For example, with the following values assigned to
@@ -153,7 +153,7 @@ the identifier.  For example, with the following values assigned to
 
 \subsection*{Restrictions}
 
-The reserved words listed in section (\ref{reservedids} may not be used as
+The reserved words listed in appendix \ref{reservedids} may not be used as
 identifiers.  No spaces may appear within an identifier, and an identifier
 may not extend over a line of text.
 
@@ -194,84 +194,83 @@ include:
                \setlength{\labelsep}{1em}%
                \settowidth{\leftmargin}{\texttt{INFINITY\hspace*{\labelsep}}}}
 
-\item[CATALAN] Catalan's constant, defined as
+\item[catalan] Catalan's constant, defined as
   \[
     \sum_{n=0}^{\infty} \frac{(-1)^{n}}{(2n+1)^{2}} .
   \]
-\ttindextype{CATALAN}{reserved variable}
+\ttindextype{catalan}{reserved variable}
 \index{Reserved variable !CATALAN@\texttt{CATALAN}}
 
-\item[E] Intended to represent the base of
+\item[e] Intended to represent the base of
 \ttindextype{E}{reserved variable}
 the natural logarithms.  \texttt{log(e)}, if it occurs in an expression, is
-automatically replaced by 1.  If \sw{ROUNDED}\ttindexswitch{ROUNDED} is
-on, \texttt{E} is replaced by the value of E to the current degree of
+automatically replaced by 1.  If \sw{rounded}\ttindexswitch{rounded} is
+on, \texttt{e} is replaced by the value of e to the current degree of
 floating point precision\index{Numerical precision}.
 
-\item[EULER\_GAMMA] Euler's constant, also available as $-\psi(1)$.
-\ttindextype{EULER\_GAMMA}{reserved variable}
-\index{Reserved variable !EULER\_GAMMA@\texttt{EULER\_GAMMA}}
+\item[euler\_gamma] Euler's constant, also available as $-\psi(1)$.
+\ttindextype{euler\_gamma}{reserved variable}
+\index{Reserved variable !euler\_gamma@\texttt{euler\_gamma}}
 
-\item[GOLDEN\_RATIO] The number $\frac{1+\sqrt{5}}{2}$.
-\ttindextype{GOLDEN\_RATIO}{reserved variable}
-\index{Reserved variable !GOLDEN\_RATION@\texttt{GOLDEN\_RATIO}}
+\item[golden\_ratio] The number $\frac{1+\sqrt{5}}{2}$.
+\ttindextype{golden\_ratio}{reserved variable}
+\index{Reserved variable !golden\_ration@\texttt{golden\_ratio}}
 
-\item[I] Intended to represent the square
-\ttindextype{I}{reserved variable}
-\index{Reserved variable !I@\texttt{I}}
-
+\item[i] Intended to represent the square
+\ttindextype{i}{reserved variable}
+\index{Reserved variable !I@\texttt{i}}
 root of $-1$. \texttt{i\textasciicircum2} is replaced by $-1$, and
-appropriately for higher powers of \texttt{I}.  This applies only to the
-symbol \texttt{I} used on the top
+appropriately for higher powers of \texttt{i}.  This applies only to the
+symbol \texttt{i} used on the top
 level, not as a formal parameter in a procedure, a local variable, nor in
 the context \texttt{for i:= ...}.
 
-\item[INFINITY] Intended to represent $\infty$
-\ttindextype{INFINITY}{reserved variable}
-\index{Reserved variable !INFINITY@\texttt{INFINITY}}
+\item[infinity] Intended to represent $\infty$
+\ttindextype{infinity}{reserved variable}
+\index{Reserved variable !infinity@\texttt{infinity}}
 
 in limit and power series calculations for example, as well as in definite integration.
 Note however that the
 current system does \emph{not} do proper arithmetic on $\infty$.  For example,
 \texttt{infinity + infinity} is \texttt{2*infinity}.
 
-\item[KHINCHIN] Khinchin's constant, defined as
+\item[khinchin] Khinchin's constant, defined as
   \[
     \prod_{n=1}^{\infty}\left(1+\frac{1}{n(n+2)}\right)^{\log_{2} n} .
   \]
 %, as defined in
-\ttindextype{KHINCHIN}{reserved variable}%\cite{Khinchin:64}. 
-\index{Reserved variable !KHINCHIN@\texttt{KHINCHIN}}
+\ttindextype{khinchin}{reserved variable}%\cite{Khinchin:64}. 
+\index{Reserved variable !khinchin@\texttt{khinchin}}
 
-\item[NEGATIVE] Used in the \hyperlink{package:ROOTS}{Roots package}.
-\ttindextype{NEGATIVE}{reserved variable}
-\index{Reserved variable !NEGATIVE@\texttt{NEGATIVE}}
+\item[negative] Used in the \hyperlink{package:ROOTS}{Roots package}.
+\ttindextype{negative}{reserved variable}
+\index{Reserved variable !negative@\texttt{negative}}
 
-\item[NIL] In {\REDUCE} (algebraic mode only)
-taken as a synonym for zero.  Therefore \texttt{NIL} cannot be used as a
+\item[nil] In {\REDUCE} (algebraic mode only)
+taken as a synonym for zero.  Therefore \texttt{nil} cannot be used as a
 variable.
-\ttindextype{NIL}{reserved variable}
-\index{Reserved variable !NIL@\texttt{NIL}}
+\ttindextype{nil}{reserved variable}
+\index{Reserved variable !nil@\texttt{NIL}}
 
-\item[PI] Intended to represent the circular
-\ttindextype{PI}{reserved variable}
-\index{Reserved variable !PI@\texttt{PI}}
-constant.  With \sw{ROUNDED}\ttindexswitch{ROUNDED} on, it is replaced by the value of $\pi$ to
+\item[pi] Intended to represent the circular
+\ttindextype{pi}{reserved variable}
+\index{Reserved variable !pi@\texttt{pi}}
+constant.  With \sw{rounded}\ttindexswitch{rounded} on, it is replaced by the value of $\pi$ to
 the current degree of floating point precision.
 
-\item[POSITIVE] Used in the \hyperlink{package:ROOTS}{Roots package}.
-\ttindextype{POSITIVE}{reserved variable}
-\index{Reserved variable !POSITIVE@\texttt{POSITIVE}}
+\item[positive] Used in the \hyperlink{package:ROOTS}{Roots package}.
+\ttindextype{positive}{reserved variable}
+\index{Reserved variable !positive@\texttt{positive}}
 
-\item[T] Must not be used as a formal
-\ttindextype{T}{reserved variable}
-\index{Reserved variable !T@\texttt{T}}
+\item[t] Must not be used as a formal
+\ttindextype{t}{reserved variable}
+\index{Reserved variable !t@\texttt{t}}
 parameter or local variable in procedures, since conflict arises with the
-symbolic mode meaning of T as \emph{true}.
+symbolic mode meaning of t as \emph{true}.
 \end{list}
 
-Other reserved variables, such as \var{LOW\_POW}, described in other sections,
-are listed in Appendix A.
+Other reserved variables, such as \var{low\_pow}, described in other sections,
+are listed in \hyperlink{sec:appendixa}{Appendix A}.
 
 Using these reserved variables\index{Reserved variable} inappropriately
 will lead to errors.
@@ -289,7 +288,7 @@ deleting the names he doesn't think he is likely to use by mistake.
 
 \section{Strings}
 
-Strings\index{String} are used in \texttt{WRITE} statements, in other
+Strings\index{String} are used in \texttt{write} statements, in other
 output statements (such as error messages), and to name files.  A string
 consists of any number of characters enclosed in double quotes.  For example:
 \begin{verbatim}
@@ -309,11 +308,11 @@ convenience of human readers, in such a way that {\REDUCE} pays no
 attention to it.  There are three ways to do this:
 
 \begin{enumerate}
-\item Everything from the word \texttt{COMMENT}\ttindextype{COMMENT}{keyword}
-  \index{Comment!COMMENT keyword@\texttt{COMMENT} keyword}to the next
+\item Everything from the word \texttt{comment}\ttindextype{comment}{keyword}
+  \index{Comment!comment keyword@\texttt{comment} keyword}to the next
 statement terminator, normally ; or \$, is ignored.  Such comments
-can be placed anywhere a blank could properly appear. (Note that \texttt{END}
-and \texttt{>}\texttt{>} are \emph{not} treated as \texttt{COMMENT} delimiters!)
+can be placed anywhere a blank could properly appear. (Note that \texttt{end}
+and \texttt{>}\texttt{>} are \emph{not} treated as \texttt{comment} delimiters!)
 
 \item Everything from the symbol \texttt{\%}\index{Percent sign}
   \index{\% (Percent sign)@\texttt{\%} (Percent sign)}
@@ -337,9 +336,9 @@ Operators\index{Operator} in {\REDUCE} are specified by name and type.
 There are two types, infix\index{Infix operator} and prefix.
 \index{Prefix operator}  Operators can be purely abstract, just symbols
 with no properties; they can have values assigned (using \texttt{:=} or
-simple \texttt{LET} declarations) for specific arguments; they can have
+simple \texttt{let} declarations) for specific arguments; they can have
 properties declared for some collection of arguments (using more general
-\texttt{LET} declarations); or they can be fully defined (usually by a
+\texttt{let} declarations); or they can be fully defined (usually by a
 procedure declaration).
 
 Infix operators\index{Infix operator} have a definite precedence with
@@ -353,8 +352,8 @@ For example:
 \end{quote}
 Spaces can be freely inserted between operators and variables or operators
 and operators. They are required only where operator names are spelled out
-with letters (such as the \texttt{AND} in the example) and must be unambiguously
-separated from another such or from a variable (like \texttt{Y}). Wherever one
+with letters (such as the \texttt{and} in the example) and must be unambiguously
+separated from another such or from a variable (like \texttt{y}). Wherever one
 space can be used, so can any larger number.
 
 Prefix operators occur to the left of their arguments, which are written as
@@ -442,9 +441,9 @@ These operators may be further divided into the following subclasses:
                                             \texttt{\textasciicircum}|\texttt{**} \\
    \meta{construction operator} &\BNFprod & \texttt{.}
 \end{syntaxtable}
-\texttt{MEMQ} and \texttt{EQ} are not used in the algebraic mode of
+\texttt{memq} and \texttt{eq} are not used in the algebraic mode of
 {\REDUCE}.  They are explained in the section on symbolic mode.
-\texttt{WHERE} is described in the section on substitutions.
+\texttt{where} is described in the section on substitutions.
 
 In previous versions of {\REDUCE}, \emph{not} was also defined as an infix
 operator.  In the present version it is a regular prefix operator, and
@@ -483,10 +482,10 @@ This correspondence is as follows:
 \texttt{.} & \texttt{cons}
 \end{tabular}
 \end{quote}
-Note: \texttt{NEQ} is used to mean \emph{not equal}.  There is no special
+Note: \texttt{neq} is used to mean \emph{not equal}.  There is no special
 symbol provided for it.
 
-The above operators\index{Operator} are binary, except \texttt{NOT} which is
+The above operators\index{Operator} are binary, except \texttt{not} which is
 unary and \texttt{+} and \texttt{*} which are nary (i.e., taking an arbitrary
 number of arguments).  In addition, \texttt{-} and \texttt{/} may be used as
 unary operators, e.g., /2 means the same as 1/2.  Any other operator is
@@ -511,6 +510,6 @@ parentheses are omitted then this order is by the ordering of the
 precedence list\index{Operator!precedence} defined by the right-hand side
 of the \meta{infix operator}\index{Infix operator} table
 at the beginning of this section,
-from lowest to highest.  In other words, \texttt{WHERE} has the lowest
+from lowest to highest.  In other words, \texttt{where} has the lowest
 precedence, and \texttt{.} (the dot operator) the highest.
 

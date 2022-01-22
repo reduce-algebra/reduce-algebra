@@ -1,4 +1,4 @@
-\chapter{Procedures}\ttindextype{PROCEDURE}{command}
+\chapter{Procedures}\ttindextype{procedure}{command}
 \hypertarget{command:PROCEDURE}{}
 
 It is often useful to name a statement for repeated use in calculations
@@ -6,7 +6,7 @@ with varying parameters, or to define a complete evaluation procedure for
 an operator. {\REDUCE} offers a procedural declaration for this purpose. Its
 general syntax is:
 \begin{syntax}
-  [\meta{procedural type}]\texttt{ PROCEDURE }\meta{name}[\meta{varlist}]\texttt{;}
+  [\meta{procedural type}]\texttt{ procedure }\meta{name}[\meta{varlist}]\texttt{;}
     \meta{statement}\texttt{;}
 \end{syntax}
 where
@@ -16,8 +16,8 @@ where
 This will be explained more fully in the following sections.
 
 In the algebraic mode of {\REDUCE} the \meta{procedural type} can be
-omitted, since the default is \texttt{ALGEBRAIC}.  Procedures of type 
-\texttt{INTEGER} or \texttt{REAL} may also be used.  In the former case, the system
+omitted, since the default is \texttt{algebraic}.  Procedures of type 
+\texttt{integer} or \texttt{real} may also be used.  In the former case, the system
 checks that the value of the procedure is an integer.  At present, such
 checking is not done for a real procedure, although this will change in
 the future when a more complete type checking mechanism is installed.
@@ -43,8 +43,8 @@ define a procedure within a procedure will cause an error to occur.
 
 \section{Procedure Heading}\index{Procedure!heading}
 
-Each procedure has a heading consisting of the word \texttt{PROCEDURE}
-(optionally preceded by the word \texttt{ALGEBRAIC}), followed by the name of
+Each procedure has a heading consisting of the word \texttt{procedure}
+(optionally preceded by the word \texttt{algebraic}), followed by the name of
 the procedure to be defined, and followed by its formal parameters -- the
 symbols that will be used in the body of the definition to illustrate
 what is to be done.  There are three cases:
@@ -76,11 +76,11 @@ commas, then follow with a terminator.
 \end{enumerate}
 Referring to the last example, if later in some expression being evaluated
 the symbols \texttt{abc(u,p*q,123)} appear, the operations of the procedure
-body will be carried out as if \texttt{X} had the same value as \texttt{U} does,
-\texttt{Y} the same value as \texttt{p*q} does, and \texttt{Z} the value 123.  The
-values of \texttt{X}, \texttt{Y}, \texttt{Z}, after the procedure body operations
-are completed are unchanged.  So, normally, are the values of \texttt{U},
-\texttt{P}, \texttt{Q}, and (of course) 123. (This is technically referred to as
+body will be carried out as if \texttt{x} had the same value as \texttt{u} does,
+\texttt{y} the same value as \texttt{p*q} does, and \texttt{z} the value 123.  The
+values of \texttt{x}, \texttt{y}, \texttt{z}, after the procedure body operations
+are completed are unchanged.  So, normally, are the values of \texttt{u},
+\texttt{p}, \texttt{q}, and (of course) 123. (This is technically referred to as
 call by value.)\index{Call by value}
 
 The reader will have noted the word \emph{normally} a few lines earlier. The
@@ -106,12 +106,12 @@ definition could read
         procedure f x; (x+5)*(x+6)/(x+7);
 \end{verbatim}
 Then \texttt{f(10)} would evaluate to 240/17, \texttt{f(a-6)} to
-\texttt{A*(A-1)/(A+1)}, and so on.
+\texttt{a*(a-1)/(a+1)}, and so on.
 
 \textit{More Complicated Example:}
 
 Suppose we need a function \texttt{p(n,x)} that, for any positive integer
-\texttt{N}, is the Legendre polynomial\index{Legendre polynomials} of order
+\texttt{n}, is the Legendre polynomial\index{Legendre polynomials} of order
 $n$. We can define this operator using the
 textbook formula defining these functions:
 \[
@@ -169,7 +169,7 @@ its standard recurrence relation:
 \end{verbatim}
 
 \hypertarget{operator:REDERR}{}
-The operator \texttt{REDERR}\ttindex{REDERR} in the above example provides
+The operator \texttt{rederr}\ttindextype{rederr}{operator} in the above example provides
 for a simple error exit from an algebraic procedure (and also a block).
 It can take a string as argument.
 
@@ -182,12 +182,12 @@ been derived. We leave it as an exercise for the reader to write such a
 definition.
 
 \section{Matrix- and list-valued Procedures}
-\ttindextype{MATRIXPROC}{keyword}
+\ttindextype{matrixproc}{keyword}
 \hypertarget{reserved:MATRIXPROC}{}
 
 Normally, procedures can only return scalar values. In order for a procedure to
 return a matrix, it has to be declared of 
-type \k{MATRIXPROC}:\index{Procedure!matrix-valued}
+type \k{matrixproc}:\index{Procedure!matrix-valued}
 \begin{verbatim}
         matrixproc SkewSym1 (w);
            mat((0,-w(3,1),w(2,1)),
@@ -215,7 +215,7 @@ Following this declaration, the call to \texttt{SkewSym1} can be used as a matri
         [ qx*ry - qy*rx  ]
 \end{verbatim}
 \hypertarget{reserved:LISTPROC}{}
-Similarly, by using the keyword \k{listproc}\ttindextype{LISTPROC}{keyword}, an algebraic
+Similarly, by using the keyword \k{listproc}\ttindextype{listproc}{keyword}, an algebraic
 procedure can be declared to return a list:\index{Procedure!list-valued}
 \begin{verbatim}
 listproc spat3(u,v,w);
@@ -229,26 +229,26 @@ listproc spat3(u,v,w);
 
 \section{Using LET Inside Procedures}
 
-By using \texttt{LET}\ttindex{LET} instead of an assignment in the procedure
-body\index{Procedure!using \texttt{LET} inside body} it is possible to bypass the call-by-value
+By using \texttt{let}\ttindex{let} instead of an assignment in the procedure
+body\index{Procedure!using \texttt{let} inside body} it is possible to bypass the call-by-value
 \index{Call by value} protection.  If \texttt{X} is a formal parameter or local
 variable of the procedure (i.e. is in the heading or in a local
-declaration), and \texttt{LET} is used instead of \texttt{:=} to make an
-assignment to \texttt{X}, e.g.
+declaration), and \texttt{let} is used instead of \texttt{:=} to make an
+assignment to \texttt{x}, e.g.
 
 \begin{verbatim}
         let x = 123;
 \end{verbatim}
-then it is the variable that is the value of \texttt{X} that is changed.
+then it is the variable that is the value of \texttt{x} that is changed.
 This effect also occurs with local variables defined in a block.  If the
-value of \texttt{X} is not a variable, but a more general expression, then it
-is that expression that is used on the left-hand side of the \texttt{LET}
-statement.  For example, if \texttt{X} had the value \texttt{p*q}, it is as if
+value of \texttt{x} is not a variable, but a more general expression, then it
+is that expression that is used on the left-hand side of the \texttt{let}
+statement.  For example, if \texttt{x} had the value \texttt{p*q}, it is as if
 \texttt{let p*q = 123} had been executed.
 
 \section{LET Rules as Procedures}
 
-The \texttt{LET}\ttindex{LET} statement offers an alternative syntax and
+The \texttt{let}\ttindex{let} statement offers an alternative syntax and
 semantics for procedure definition.
 
 In place of
@@ -266,17 +266,17 @@ parameters, e.g.
 \begin{verbatim}
         x := 123;
 \end{verbatim}
-in the \texttt{PROCEDURE} case it is a variable holding a copy of the first
+in the \texttt{procedure} case it is a variable holding a copy of the first
 actual argument that is changed.  The actual argument is not changed.
 
-In the \texttt{LET} case, the actual argument is changed.  Thus, if \texttt{ABC}
-is defined using \texttt{LET}, and \texttt{abc(u,v,w)} is evaluated, the value
-of \texttt{U} changes to 123.  That is, the \texttt{LET} form of definition
+In the \texttt{let} case, the actual argument is changed.  Thus, if \texttt{abc}
+is defined using \texttt{let}, and \texttt{abc(u,v,w)} is evaluated, the value
+of \texttt{u} changes to 123.  That is, the \texttt{let} form of definition
 allows the user to bypass the protections that are enforced by the call
-by value conventions of standard \texttt{PROCEDURE} definitions.
+by value conventions of standard \texttt{procedure} definitions.
 
-\textit{Example:}  We take our earlier \texttt{FACTORIAL}\ttindex{FACTORIAL}
-procedure and write it as a \texttt{LET} statement.
+\textit{Example:}  We take our earlier \texttt{factorial}\ttindex{factorial}
+procedure and write it as a \texttt{let} statement.
 \begin{verbatim}
         for all n let factorial n =
                     begin scalar m,s;
@@ -287,54 +287,54 @@ procedure and write it as a \texttt{LET} statement.
                     go to l1
                 end;
 \end{verbatim}
-The reader will notice that we introduced a new local variable, \texttt{S},
-and set it equal to \texttt{N}.  The original form of the procedure contained
-the statement \texttt{n:=n-1;}.  If the user asked for the value of {\tt
-factorial(5)} then \texttt{N} would correspond to, not just have the value
+The reader will notice that we introduced a new local variable, \texttt{s},
+and set it equal to \texttt{n}.  The original form of the procedure contained
+the statement \texttt{n:=n-1;}.  If the user asked for the value of
+\texttt{factorial(5)} then \texttt{n} would correspond to, not just have the value
 of, 5, and {\REDUCE} would object to trying to execute the statement
 5 := $5-1$.
 
-If \texttt{PQR} is a procedure with no parameters,
+If \texttt{pqr} is a procedure with no parameters,
 \begin{verbatim}
         procedure pqr;
            <procedure body>;
 \end{verbatim}
-it can be written as a \texttt{LET} statement quite simply:
+it can be written as a \texttt{let} statement quite simply:
 \begin{verbatim}
         let pqr = <procedure body>;
 \end{verbatim}
-To call \emph{procedure} \texttt{PQR}, if defined in the latter form, the empty
-parentheses would not be used: use \texttt{PQR} not \texttt{PQR()} where a call
+To call \emph{procedure} \texttt{pqr}, if defined in the latter form, the empty
+parentheses would not be used: use \texttt{pqr} not \texttt{pqr()} where a call
 on the procedure is needed.
 
-The two notations for a procedure with no arguments can be combined. \texttt{PQR}
-can be defined in the standard \texttt{PROCEDURE} form. Then a \texttt{LET}
+The two notations for a procedure with no arguments can be combined. \texttt{pqr}
+can be defined in the standard \texttt{procedure} form. Then a \texttt{let}
 statement
 \begin{verbatim}
         let pqr = pqr();
 \end{verbatim}
-would allow a user to use \texttt{PQR} instead of \texttt{PQR()} in calling the
+would allow a user to use \texttt{pqr} instead of \texttt{pqr()} in calling the
 procedure.
 
-A feature available with \texttt{LET}-defined procedures and not with procedures
+A feature available with \texttt{let}-defined procedures and not with procedures
 defined in the standard way is the possibility of defining partial
-functions.\index{Function}
+functions.\index{Function!partial}\index{Partial function}
 \begin{verbatim}
     for all x such that numberp x let uvw(x)=<procedure body>;
 \end{verbatim}
-Now \texttt{UVW} of an integer would be calculated as prescribed by the procedure
-body, while \texttt{UVW} of a general argument, such as \texttt{Z} or \texttt{p+q}
+Now \texttt{uvw} of an integer would be calculated as prescribed by the procedure
+body, while \texttt{uvw} of a general argument, such as \texttt{z} or \texttt{p+q}
 (assuming these evaluate to themselves) would simply stay \texttt{uvw(z)}
 or \texttt{uvw(p+q)} as the case may be.
 
 
-\section{REMEMBER Statement}\ttindex{REMEMBER}
+\section{REMEMBER Statement}\ttindextype{remember}{statement}
 \hypertarget{command:REMEMBER}{}
 
 Setting the remember option for an algebraic procedure by
-\begin{verbatim}
-     REMEMBER (PROCNAME:procedure);
-\end{verbatim}
+\begin{syntax}
+     \texttt{remember (}\meta{procname:procedure}\texttt{);}
+\end{syntax}
 saves all intermediate results of such procedure evaluations, including
 recursive calls.  Subsequent calls to the procedure can then be determined
 from the saved results, and thus the number of evaluations (or the

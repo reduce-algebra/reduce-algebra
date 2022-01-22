@@ -1,13 +1,12 @@
 \chapter{Matrix Calculations} \index{Matrix calculations}
 A very powerful feature of {\REDUCE} is the ease with which matrix
 calculations can be performed. To extend our syntax to this class of
-calculations we need to add another prefix operator, \texttt{MAT},
-\ttindex{MAT} and a further
-variable and expression type as follows:
+calculations we need to add another prefix operator, \texttt{mat},
+and a further variable and expression type as follows:
 
-\section{MAT Operator}\ttindex{MAT}
+\section{MAT Operator}\ttindextype{MAT}{operator}
 \hypertarget{operator:MAT}{}
-This prefix operator is used to represent $n\times m$ matrices. \texttt{MAT} 
+This prefix operator is used to represent $n\times m$ matrices. \texttt{mat}
 has $n$ arguments interpreted as rows of the matrix, each of
 which is a list of $m$ expressions representing elements in that row.
 For example, the matrix
@@ -26,15 +25,15 @@ that would be written as \texttt{mat((x,y))}.
 \hypertarget{command:MATRIX}{}
 
 An identifier may be declared a matrix variable by the declaration 
-\texttt{MATRIX}.\ttindex{MATRIX}
+\texttt{matrix}.\ttindextype{matrix}{declaration}
 The size of the matrix may be declared explicitly in the matrix
 declaration, or by default in assigning such a variable to a matrix
 expression. For example,
 \begin{verbatim}
         matrix x(2,1),y(3,4),z;
 \end{verbatim}
-declares \texttt{X} to be a 2 x 1 (column) matrix, \texttt{Y} to be a 3 x 4
-matrix and \texttt{Z} a matrix whose size is to be declared later.
+declares \texttt{x} to be a 2 x 1 (column) matrix, \texttt{y} to be a 3 x 4
+matrix and \texttt{z} a matrix whose size is to be declared later.
 
 Matrix declarations can appear anywhere in a program. Once a symbol is
 declared to name a matrix, it can not also be used to name an array,
@@ -44,9 +43,9 @@ Note however that matrices once declared are \emph{global} in scope, and so
 can then be referenced anywhere in the program.  In other words, a
 declaration within a block (or a procedure) does not limit the scope of
 the matrix to that block, nor does the matrix go away on exiting the block
-(use \texttt{CLEAR} instead for this purpose).  An element of a matrix is
+(use \texttt{clear} instead for this purpose).  An element of a matrix is
 referred to in the expected manner; thus \texttt{x(1,1)} gives the first
-element of the matrix \texttt{X} defined above.  References to elements of a
+element of the matrix \texttt{x} defined above.  References to elements of a
 matrix whose size has not yet been declared leads to an error.  All
 elements of a matrix whose size is declared are initialized to 0.  As a
 result, a matrix element has an \emph{instant evaluation}\index{Instant
@@ -60,9 +59,9 @@ then an operator should be used to name the matrix elements as in:
 \label{sec:core-matrix-expressions}
 
 These follow the normal rules of matrix algebra as defined by the
-following syntax:\ttindex{MAT}
+following syntax:\ttindextype{MAT}{operator}
 \begin{syntaxtable}
-    \meta{matrix expression} & \BNFprod &\texttt{MAT}\meta{matrix description}|\meta{matrix variable}| \\
+    \meta{matrix expression} & \BNFprod &\texttt{mat}\meta{matrix description}|\meta{matrix variable}| \\
       &&       \meta{scalar expression}\texttt{*}\meta{matrix expression}| \\
       &&       \meta{matrix expression}\texttt{*}\meta{matrix expression}| \\
       &&       \meta{matrix expression}\texttt{+}\meta{matrix expression}| \\
@@ -77,7 +76,7 @@ the inverse of the matrix raised to the corresponding positive power.
 
 \textit{Examples:}
 
-Assuming \texttt{X} and \texttt{Y} have been declared as matrices, the following
+Assuming \texttt{x} and \texttt{y} have been declared as matrices, the following
 are matrix expressions
 \begin{verbatim}
         y
@@ -90,27 +89,27 @@ elimination method due to Bareiss.  An alternative method using Cramer's
 method is also available.  This is usually less efficient than the Bareiss
 method unless the matrices are large and dense, although we have no solid
 statistics on this as yet.  To use Cramer's method instead, the switch
-\sw{CRAMER}\ttindexswitch{CRAMER} should be turned on.
+\sw{cramer}\ttindexswitch{cramer} should be turned on.
 
 
 \section{Operators with Matrix Arguments}
 \label{sec:core-matrix-operators}
 
-The operator \texttt{LENGTH}\ttindex{LENGTH} applied to a matrix returns a
+The operator \texttt{length}\ttindextype{length}{operator} applied to a matrix returns a
 list of the number of rows and columns in the matrix.  Other operators
 useful in matrix calculations are defined in the following subsections.
 Attention is also drawn to the LINALG
 \extendedmanual{(section~\ref{LINALG})} and NORMFORM
 \extendedmanual{(section~\ref{NORMFORM})} packages.
 
-\subsection{DET Operator}\ttindex{DET}
+\subsection{DET Operator}\ttindextype{det}{operator}
 \hypertarget{operator:DET}{}
 Syntax:
-\begin{verbatim}
-        DET(EXPRN:matrix_expression):algebraic.
-\end{verbatim}
+\begin{syntax}
+        \texttt{det(}\meta{exprn:matrix\_expression}\texttt{)}\,:\,\textit{algebraic} .
+\end{syntax}
 
-The operator \texttt{DET} is used to represent the determinant of a square
+The operator \texttt{det} is used to represent the determinant of a square
 matrix expression.  E.g.,
 \begin{verbatim}
         det(y^2)
@@ -132,15 +131,15 @@ Determinant expressions have the \emph{instant evaluation} property.
 sets the \emph{value} of the determinant to 2, and does not set up a rule
 for the determinant itself.
 
-\subsection{MATEIGEN Operator}\ttindex{MATEIGEN}
+\subsection{MATEIGEN Operator}\ttindextype{mateigen}{operator}
 \hypertarget{operator:MATEIGEN}{}
 Syntax:
-\begin{verbatim}
-        MATEIGEN(EXPRN:matrix_expression,ID):list.
-\end{verbatim}
+\begin{syntax}
+        \texttt{mateigen(}\meta{exprn:matrix\_expression,id}\texttt{)}\,:\,\meta{list} .
+\end{syntax}
 
-\texttt{MATEIGEN} calculates the eigenvalue equation and the corresponding
-eigenvectors of a matrix, using the variable \texttt{ID} to denote the
+\texttt{mateigen} calculates the eigenvalue equation and the corresponding
+eigenvectors of a matrix, using the variable \texttt{id} to denote the
 eigenvalue.  A square free decomposition of the characteristic polynomial
 is carried out.  The result is a list of lists of 3 elements, where the
 first element is a square free factor of the characteristic polynomial,
@@ -180,43 +179,43 @@ gives the output
           }}
 \end{verbatim}
 
-\subsection{TP Operator}\ttindex{TP}
-\hypertarget{operator:TP}
+\subsection{TP Operator}\ttindextype{tp}{operator}
+\hypertarget{operator:TP}{}
 Syntax:
-\begin{verbatim}
-        TP(EXPRN:matrix_expression):matrix.
-\end{verbatim}
+\begin{syntax}
+        \texttt{tp(}\meta{exprn:matrix\_expression}\texttt{)}\,:\,\meta{matrix} .
+\end{syntax}
 
 This operator takes a single matrix argument and returns its transpose.
 
-\subsection{Trace Operator}\ttindex{TRACE}
-\hypertarget{operator:TRACE}
+\subsection{Trace Operator}\ttindextype{trace}{operator}
+\hypertarget{operator:TRACE}{}
 Syntax:
-\begin{verbatim}
-        TRACE(EXPRN:matrix_expression):algebraic.
-\end{verbatim}
-The operator \texttt{TRACE} is used to represent the trace of a square matrix.
+\begin{syntax}
+        \texttt{trace(}\meta{exprn:matrix\_expression}\texttt{)}\,:\,\meta{algebraic}.
+\end{syntax}
+The operator \texttt{trace} is used to represent the trace of a square matrix.
 
-\subsection{Matrix Cofactors}\ttindex{COFACTOR}
+\subsection{Matrix Cofactors}\ttindextype{cofactor}{operator}
 \hypertarget{operator:COFACTOR}{}
 Syntax:
-\begin{verbatim}
-  COFACTOR(EXPRN:matrix_expression,ROW:integer,COLUMN:integer):
+\begin{syntax}
+  \texttt{cofactor(}\meta{exprn:matrix\_expression}\texttt{,}\meta{row:integer}\texttt{,}\meta{column:integer}\texttt{)}\,:\,
            algebraic
-\end{verbatim}
+\end{syntax}
 
-The operator \texttt{COFACTOR} returns the cofactor of the element in row
-\texttt{ROW} and column \texttt{COLUMN} of the matrix \texttt{MATRIX}.  Errors occur
-if \texttt{ROW} or \texttt{COLUMN} do not simplify to integer expressions or if
-\texttt{MATRIX} is not square.
+The operator \texttt{cofactor} returns the cofactor of the element in row
+\texttt{row} and column \texttt{column} of the matrix \texttt{matrix}.  Errors occur
+if \texttt{row} or \texttt{column} do not simplify to integer expressions or if
+\texttt{matrix} is not square.
 
-\subsection{NULLSPACE Operator}\ttindex{NULLSPACE}
+\subsection{NULLSPACE Operator}\ttindextype{nullspace}{operator}
 \hypertarget{operator:NULLSPACE}{}
 Syntax:
-\begin{verbatim}
-        NULLSPACE(EXPRN:matrix_expression):list
-\end{verbatim}
-\texttt{NULLSPACE} calculates for a matrix \texttt{A} a list of linear
+\begin{syntax}
+        \texttt{nullspace(}\meta{exprn:matrix\_expression}\texttt{)}\,:\,\meta{list}
+\end{syntax}
+\texttt{nullspace} calculates for a matrix $A$ a list of linear
 independent vectors (a basis) whose linear combinations satisfy the
 equation $A x = 0$.  The basis is provided in a form such that as many
 upper components as possible are isolated.
@@ -224,7 +223,7 @@ upper components as possible are isolated.
 Note that with \texttt{b := nullspace a} the expression \texttt{length b} is 
 the \emph{nullity} of A, and that \texttt{second length a - length b} 
 calculates the \emph{rank} of A.  The rank of a matrix expression can also
-be found more directly by the \texttt{RANK} operator described below.
+be found more directly by the \texttt{rank} operator described below.
 
 \textit{Example:} The command
 \begin{verbatim}
@@ -252,26 +251,25 @@ be found more directly by the \texttt{RANK} operator described below.
          }
 \end{verbatim}
  
-In addition to the {\REDUCE} matrix form, \texttt{NULLSPACE} accepts as input a
+In addition to the {\REDUCE} matrix form, \texttt{nullspace} accepts as input a
 matrix given as a list of lists, that is interpreted as a row matrix.  If
 that form of input is chosen, the vectors in the result will be
 represented by lists as well.  This additional input syntax facilitates
-the use of \texttt{NULLSPACE} in applications different from classical linear
+the use of \texttt{nullspace} in applications different from classical linear
 algebra.
 
-\subsection{RANK Operator}\ttindex{RANK}
+\subsection{RANK Operator}\ttindextype{rank}{operator}
 \hypertarget{operator:RANK}{}
  
 Syntax:
-\begin{verbatim}
-        RANK(EXPRN:matrix_expression):integer
-\end{verbatim}
-\texttt{RANK} calculates the rank of its argument, that, like \texttt{NULLSPACE}
+\begin{syntax}
+        \texttt{rank(}\meta{exprn:matrix\_expression}\texttt{)}\,:\,\meta{integer} .
+\end{syntax}
+\texttt{rank} calculates the rank of its argument, that, like \texttt{nullspace}
 can either be a standard matrix expression, or a list of lists, that can
 be interpreted either as a row matrix or a set of equations.
 
 \texttt{Example:}
-
 \begin{verbatim}
         rank mat((a,b,c),(d,e,f));
 \end{verbatim}

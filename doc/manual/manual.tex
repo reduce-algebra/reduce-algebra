@@ -228,6 +228,7 @@
 %% When generating MathJax output, the definition of syntax using math
 %% mode caused htlatex compilation errors.
 \newenvironment{syntax}{%
+    \samepage
     \list{}{\setlength{\leftmargin}{1em}\setlength{\listparindent}{0em}}%
     \item\relax
     \catcode`\|=\active
@@ -338,7 +339,7 @@
 \include{oper}
 \input{solve}
 \input{ineq}
-\input{roots}
+%\input{roots}
 \input{rsolve}
 \input{modsr}
 \input{oper2}
