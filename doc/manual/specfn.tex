@@ -77,28 +77,33 @@ to be loaded before they may be used with the command:
 
 \subsubsection{Orthogonal Polynomial Functions}
 \index{Orthogonal polynomials}
-\index{Hermite polynomials}\index{Jacobi polynomials}
-\index{Legendre polynomials}\index{Laguerre polynomials}
-\index{Chebyshev polynomials}\index{Gegenbauer polynomials}
+\index{Hermite polynomials}\index{Orthogonal polynomials!Hermite}
+\index{Jacobi polynomials}\index{Orthogonal polynomials!Jacobi}
+\index{Legendre polynomials}\index{Orthogonal polynomials!Legendre}
+\index{Laguerre polynomials}\index{Orthogonal polynomials!Laguerre}
+\index{Chebyshev polynomials}\index{Orthogonal polynomials!Chebyshev}
+\index{Gegenbauer polynomials}\index{Orthogonal polynomials!Gegenbauer}
 
 The polynomial function sets available are:
 \begin{itemize}
-\item \hyperlink{HERMITEP}{Hermite Polynomials};
-\item \hyperlink{LEGENDREP}{Legendre Polynomials};
-\item \hyperlink{LAGUERREP}{Laguerre Polynomials};
-\item \hyperlink{CHEBYSHEVP}{Chebyshev Polynomials};
-\item \hyperlink{JACOBIP}{Jacobi Polynomials};
-\item \hyperlink{GEGENBAUERP}{Gegenbauer Polynomials};
+\item \hyperlink{operator:HERMITEP}{Hermite Polynomials};
+\item \hyperlink{operator:LEGENDREP}{Legendre Polynomials};
+\item \hyperlink{operator:LAGUERREP}{Laguerre Polynomials};
+\item \hyperlink{operator:CHEBYSHEVT}{Chebyshev Polynomials};
+\item \hyperlink{operator:JACOBIP}{Jacobi Polynomials};
+\item \hyperlink{operator:GEGENBAUERP}{Gegenbauer Polynomials};
 \end{itemize}
 
 \subsubsection{Other Polynomial Functions}
-\index{Other polynomials}\index{Bernoulli polynomials}
-\index{Euler polynomials}\index{Fibonacci polynomials}
+\index{Other polynomials}\index{Polynomials!Other}
+\index{Bernoulli polynomials}\index{Polynomials!Bernoulli}
+\index{Euler polynomials}\index{Polynomials!Euler}
+\index{Fibonacci polynomials}\index{Polynomials!Fibonacci}
 
 \begin{itemize}
-\item \hyperlink{BERNOULLIP}{Bernoulli Numbers \& Polynomials};
-\item \hyperlink{EULERP}{Euler  Numbers \& Polynomials};
-\item \hyperlink{FIBONACCIP}{Fibonnacci  Numbers \& Polynomials};
+\item \hyperlink{operator:BERNOULLIP}{Bernoulli Numbers \& Polynomials};
+\item \hyperlink{operator:EULERP}{Euler  Numbers \& Polynomials};
+\item \hyperlink{operator:FIBONACCIP}{Fibonnacci  Numbers \& Polynomials};
 \end{itemize}
 
 \subsection{Simplification and Approximation}
@@ -188,7 +193,8 @@ switch is on by default.
 \hypertarget{operator:Fresnel_C}{}
 \index{Error functions}\index{Integral functions}
 \ttindex{Si}\ttindex{Shi}\ttindex{Chi}\ttindex{Ci}
-\ttindex{Li}\ttindex{Ei}\ttindex{Erf}
+\ttindextype{Li}{(logarithmic integral)}\ttindextype{Ei}{(exponential integral}
+\ttindextype{Erf}{(error function)}
 \ttindex{Fresnel\_S}\ttindex{Fresnel\_C}
 \hypertarget{INTEGF}{}
 
@@ -704,6 +710,9 @@ For $m < 0$ one has:-
 
 \subsection{3j symbols and Clebsch-Gordan Coefficients}
 \hypertarget{CLEBSCHG}{}
+\hypertarget{operator:ThreeJSymbol}{}
+\hypertarget{operator:SixJSymbol}{}
+\hypertarget{operator:Clebsch_Gordan}{}
 \ttindex{ThreejSymbol}\ttindex{SixjSymbol}
 \ttindex{Clebsch\_Gordan}
 The operators \f{ThreeJSymbol} and \f{Clebsch\_Gordan} are defined as
@@ -715,6 +724,7 @@ Clebsch_Gordan({2,0},{2,0},{2,0});
 \end{verbatim}
 
 \subsection{6j symbols }
+\hypertarget{operator:SixJSymbol}{}
 The operator \f{SixJSymbol} is defined as
 in \cite{LandoltBoernstein:68} or \cite{Edmonds:57} and
 expects two lists of values \{$j_1,j_2,j_3$\} and
@@ -731,6 +741,8 @@ will not be found.
 
 \subsection{Stirling Numbers}
 \hypertarget{STIRL}{}
+\hypertarget{operator:STIRLING1}{}
+\hypertarget{operator:STIRLING2}{}
 \index{Stirling numbers}\ttindex{Stirling1}\ttindex{Stirling2}
 The Stirling numbers of the first and second kind are computed
 by calling the binary operators \f{Stirling1} and \f{Stirling2}
@@ -804,7 +816,7 @@ These quantities may be used in \href{https://dlmf.nist.gov/18.2#iv}
 {recurrence relations} when generating the polynomials.
 
 \subsubsection{Legendre Polynomials}
-\hypertarget{LEGENDREP}{}
+\hypertarget{operator:LEGENDREP}{}
 \index{Legendre polynomials}\ttindex{LegendreP}
 The function call \texttt{LegendreP(n,x)} will return the $n$th Legendre
 polynomial if $n$ is a non-negative integer; otherwise the result will involve
@@ -837,8 +849,9 @@ of this section, they are \emph{not} orthonormal:
 \frac{2(l+m)!}{(2l+1)!(l-m)!}\,.\]
 
 \subsubsection{Chebyshev Polynomials}
-\hypertarget{CHEBYSHEVP}{}
-\index{Chebysev polynomials} \ttindex{ChebyshevT}
+\hypertarget{operator:CHEBYSHEVT}{}
+\hypertarget{operator:CHEBYSHEVU}{}
+\index{Chebyshev polynomials} \ttindex{ChebyshevT}
 The function call \texttt{ChebyshevT(n,x)} will return the $n$th Chebyshev
 polynomial of the first kind if $n$ is a non-negative integer; otherwise the
 result will involve the original operator \texttt{ChebyshevT} or on graphical
@@ -860,7 +873,7 @@ $w(x)=(1-x^2)^{-1/2}$ and, for the orthonormal case, the leading
 coefficients are given by $k_n= 2^n$, $\tilde{h}_n = \pi/2$ and $r_n=0$.
 
 \subsubsection{Gegenbauer Polynomials}
-\hypertarget{GEGENBAUERP}{}
+\hypertarget{operator:GEGENBAUERP}{}
 \index{Gegenbauer polynomials} \ttindex{GegenbauerP}
 The function call \texttt{GegenbauerP(n,a,x)} will return the Gegenbauer
 polynomial of degree $n$ and parameter $a$ if $n$ is a non-negative integer
@@ -877,7 +890,7 @@ The parameter $a$ should satisfy $a >-1/2,\ \ a \neq 0$. Also
 \mbox{and}\quad r_n=0\,.\]
 
 \subsubsection{Jacobi Polynomials}
-\hypertarget{JACOBIP}{}
+\hypertarget{operator:JACOBIP}{}
 \index{Jacobi polynomials} \ttindex{JacobiP}
 The function call \texttt{JacobiP(n,a,b,x)} will return the Jacobi
 polynomial of degree $n$ and parameters $a$ and $b$ if $n$ is a non-negative
@@ -903,7 +916,7 @@ The Legendre, Chebyshev and Gegenbauer polynomials are all, in fact, special
 cases of the Jacobi polynomials.
 
 \subsubsection{Laguerre Polynomials}
-\hypertarget{LAGUERREP}{}
+\hypertarget{operator:LAGUERREP}{}
 \index{Laguerre polynomials}\ttindex{LaguerreP}
 The function call \texttt{LaguerreP(n,x)} will return the $n$th Laguerre
 polynomial if $n$ is a non-negative integer; otherwise the result will involve
@@ -929,7 +942,7 @@ are given by $k_n=(-1)^n/n!$, $\tilde{h}_n = \Gamma(n+a+1)/n!$ and
 $r_n=-n(n+a)$. The parameter $a$ should satisfy $a > -1$.
 
 \subsubsection{Hermite Polynomials}
-\hypertarget{HERMITEP}{}
+\hypertarget{operator:HERMITEP}{}
 \index{Hermite polynomials}\ttindex{HermiteP}
 The function call \texttt{HermiteP(n,x)} will return the $n$th Hermite
 polynomial if $n$ is a non-negative integer; otherwise the result will involve
@@ -946,7 +959,7 @@ $k_n=2^n$, $\tilde{h}_n = \sqrt{\pi}2^nn!$ and $r_n=0$.
 
 \subsubsection{Fibonacci Polynomials}
 \index{Fibonacci polynomials}\ttindex{FibonacciP}
-\hypertarget{FIBONACCIP}{}
+\hypertarget{operator:FIBONACCIP}{}
 \texttt{FibonacciP(n,x)} returns the $n$th Fibonacci polynomial
 in the variable $x$. If $n$ is an integer, it will be
 evaluated using the recursive definition:
@@ -958,7 +971,7 @@ computation of lower-order polynomials.
 \subsubsection{Euler Numbers and Polynomials}
 \index{Euler polynomials}\index{Euler numbers}
 \ttindex{EulerP}\ttindex{Euler}
-\hypertarget{EULERP}{}
+\hypertarget{operator:EULERP}{}
 Euler numbers are computed by the unary operator \f{Euler}; the
 call \texttt{Euler(n)} returns the $n$th Euler number; all the odd Euler
 numbers are zero. The computation is
@@ -979,7 +992,7 @@ the summation immediately above.
 \subsubsection{Bernoulli Numbers \& Polynomials}
 \index{Bernoulli polynomials}\index{Bernoulli numbers}
 \ttindex{BernoulliP}\ttindex{Bernoulli}
-\hypertarget{BERNOULLIP}{}
+\hypertarget{operator:BERNOULLIP}{}
 The call \texttt{Bernoulli(n)}
 evaluates to the $n$th Bernoulli number;
 all of the odd Bernoulli numbers, except \texttt{Bernoulli(1)}, are

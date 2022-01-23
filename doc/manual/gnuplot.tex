@@ -21,7 +21,7 @@ directly from inside {\REDUCE}, either for the interactive display of
 curves/surfaces or for the production of pictures on paper.
 
 \subsection{Command \texttt{plot}}
-\ttindex{PLOT}
+\ttindextype{plot}{command}
 \hypertarget{command:PLOT}{}
 
 Under {\REDUCE} {\Gnuplot} is used as graphical output server, invoked by the
@@ -264,7 +264,7 @@ removal is not available with point lists.
 
 
 \subsection{{\Gnuplot} operation}
-\ttindextype{PLOTRESET}{command}
+\ttindextype{plotreset}{command}
 \hypertarget{command:PLOTRESET}{}
 
 The command \texttt{plotreset;} deletes the current {\Gnuplot} output
@@ -290,7 +290,7 @@ from the {\Gnuplot} text window - it offers an exit function.
 \subsection{Saving {\Gnuplot} command sequences}
 \hypertarget{switch:TRPLOT}{}
 \hypertarget{switch:PLOTKEEP}{}
-\ttindexswitch[GNUPLOT]{TRPLOT}\ttindexswitch{PLOTKEEP}{GNUPLOT}
+\ttindexswitch[GNUPLOT]{trplot}\ttindexswitch{PLOTKEEP}{gnuplot}
 \index{Tracing!GNUPLOT package}
 If you want to use the internal {\Gnuplot} command sequence more than once
 (e.g. for producing a picture for a publication), you may set
@@ -303,7 +303,7 @@ actual {\REDUCE} output.  Normally the data files are erased after calling
 
 
 \subsection{Direct Call of {\Gnuplot}}
-\ttindextype{GNUPLOT}{command}
+\ttindextype{gnuplot}{command}
 \hypertarget{command:GNUPLOT}{}
 
 {\Gnuplot} has a lot of facilities which are not accessed by the operators and
@@ -319,7 +319,7 @@ and then transmitted to {\Gnuplot} in {\Gnuplot} syntax. Usually a drawing is bu
 a sequence of commands which are buffered by {\REDUCE} or the operating
 system. For terminating and activating them use the {\REDUCE}
 command \texttt{plotshow}.
-\ttindextype{PLOTSHOW}{command}
+\ttindextype{plotshow}{command}
 \hypertarget{command:PLOTSHOW}{}
 Example:
 \begin{verbatim}

@@ -15,7 +15,7 @@ makes the most obvious guess of your intentions and continues the
 calculation.
 
 \section{Error Handling:
-  \texttt{\small ERRCONT}, \texttt{\small RETRY}}
+  \texttt{\small errcont}, \texttt{\small retry}}
 
 \hypertarget{switch:ERRCONT}{}
 There is also a difference in the handling of errors.  In the former
@@ -25,21 +25,21 @@ erroneous (and possibly time consuming) computations.  So in the
 default case, no further evaluation occurs, although the remainder of
 the input is checked for syntax errors.  A message \texttt{"Continuing
   with parsing only"} informs you that this is happening.  On the
-other hand, the switch \sw{ERRCONT},\ttindexswitch{ERRCONT} if on,
+other hand, the switch \sw{errcont},\ttindexswitch{errcont} if on,
 will cause the system to continue evaluating expressions after such
 errors occur.
 
 \hypertarget{command:RETRY}{}
 When a syntactical error occurs, the place where the system detected
 the error is marked with three dollar signs (\texttt{\$\$\$}). In
-interactive mode, you can then use \texttt{ED}\ttindex{ED} to correct
+interactive mode, you can then use \texttt{ed}\ttindex{ed} to correct
 the error, or retype the command.  When a non-syntactical error occurs
 in interactive mode, the command being evaluated at the time the last
 error occurred is saved, and may later be reevaluated by the command
-\texttt{RETRY}.\ttindex{RETRY}
+\texttt{retry}.\ttindextype{retry}{command}
 
 \section{Referencing Previous Results:
-  \texttt{\small INPUT}, \texttt{\small WS}, \texttt{\small DISPLAY}}
+  \texttt{\small input}, \texttt{\small ws}, \texttt{\small display}}
 
 \hypertarget{reserved:INPUT}{}
 \hypertarget{reserved:WS}{}
@@ -50,10 +50,10 @@ interactive inputs and the results of all interactive computations
 during a given session.  These results are referenced by the command
 number that {\REDUCE} prints automatically in interactive mode.  To
 use a previous input expression in a new computation, write
-\texttt{INPUT(}$n$\texttt{)},\ttindex{INPUT} where $n$ is the command
+\texttt{input(}$n$\texttt{)},\ttindex{input} where $n$ is the command
 number.  To use a previous output expression, write
-\texttt{WS(}$n$\texttt{)}\ttindex{WS} (where WS stands for WorkSpace).
-\texttt{WS} used as a variable (rather than a function) references the
+\texttt{ws(}$n$\texttt{)}\ttindex{ws} (where WS stands for WorkSpace).
+\texttt{ws} used as a variable (rather than a function) references the
 previous output expression.  For example:
 \begin{verbatim}
 1: int(x-1, x);
@@ -88,15 +88,15 @@ x := 101
 \end{verbatim}
 Inputs 15 and 16 above yield the same result, but input 16 does so
 \emph{without} recomputing the integral.  However, an output
-expression referenced using \texttt{WS} is re-evaluated in the current
+expression referenced using \texttt{ws} is re-evaluated in the current
 context, as shown by the last two statements above.
 
 Note that input that causes an error, and some commands such as
-\texttt{LET} statements, file handling and mode changing, do not
+\texttt{let} statements, file handling and mode changing, do not
 produce an output expression, so the output from such input cannot be
-accessed.  \texttt{WS} used as a variable returns the last output
+accessed.  \texttt{ws} used as a variable returns the last output
 expression, which does not necessarily correspond to the last input,
-and \texttt{WS} used as a function reports an error if you try to
+and \texttt{ws} used as a function reports an error if you try to
 access non-existent output.  For example:
 \begin{verbatim}
 1: 6*7;
@@ -127,43 +127,43 @@ access non-existent output.  For example:
 \end{verbatim}
 
 \hypertarget{operator:DISPLAY}{}
-The operator \texttt{DISPLAY}\ttindex{DISPLAY} is available to display previous
+The operator \texttt{display}\ttindextype{display}{operator} is available to display previous
 inputs.  If its argument is a positive integer, $n$ say, then the
-previous $n$ inputs are displayed.  If its argument is \texttt{ALL} (or in fact
+previous $n$ inputs are displayed.  If its argument is \texttt{all} (or in fact
 any non-numerical expression), then all previous inputs are displayed.
 
 \section{Interactive Editing:
-  \texttt{\small ED}, \texttt{\small EDITDEF}}
+  \texttt{\small ed}, \texttt{\small editdef}}
 
 \hypertarget{command:ED}{}
 It is possible when working interactively to edit any {\REDUCE} input
 that comes from your terminal, and also some user-defined procedure
 definitions.  At the top level, you can access any previous command
-string by the command \texttt{ED(}$n$\texttt{)},\ttindex{ED} where $n$
+string by the command \texttt{ed(}$n$\texttt{)},\ttindex{ed} where $n$
 is the desired command number as prompted by the system in interactive
-mode.  The command \texttt{ED} (with no argument) accesses the
+mode.  The command \texttt{ed} (with no argument) accesses the
 previous command.
 
-After \texttt{ED} has been called, you can now edit the displayed string using a
+After \texttt{ed} has been called, you can now edit the displayed string using a
 string editor with the following commands:
 
 \begin{tabular}{@{\hspace{7mm}}lp{\rboxwidth}}
-\texttt{B} & move pointer to beginning \\
-\texttt{C}\meta{character} & replace next character by \meta{character} \\
-\texttt{D} & delete next character \\
-\texttt{E} & end editing and reread text \\
-\texttt{F}\meta{character} & move pointer to next
+\texttt{b} & move pointer to beginning \\
+\texttt{c}\meta{character} & replace next character by \meta{character} \\
+\texttt{d} & delete next character \\
+\texttt{e} & end editing and reread text \\
+\texttt{f}\meta{character} & move pointer to next
 occurrence of \meta{character} \\[1.7pt]
-\texttt{I}\meta{string}\meta{escape} &
+\texttt{i}\meta{string}\meta{escape} &
  insert \meta{string} in front of pointer \\
-\texttt{K}\meta{character} & delete all characters
+\texttt{k}\meta{character} & delete all characters
  until \meta{character} \\
-\texttt{P} & print string from current pointer \\
-\texttt{Q} & give up with error exit \\
-\texttt{S}\meta{string}\meta{escape} &
+\texttt{p} & print string from current pointer \\
+\texttt{q} & give up with error exit \\
+\texttt{s}\meta{string}\meta{escape} &
  search for first occurrence of \meta{string},
                              positioning pointer just before it \\
-\texttt{space} or \texttt{X} & move pointer right
+\texttt{space} or \texttt{x} & move pointer right
 one character.
 \end{tabular}
 
@@ -180,7 +180,7 @@ it to be executed, the following edit command sequence could be used:
 \hypertarget{command:EDITDEF}{}
 You can also use the interactive editor to edit a user-defined
 procedure that has not been compiled.  To do this, use:
-\ttindex{EDITDEF}
+\ttindextype{editdef}{command}
 \begin{syntax}
   \texttt{editdef }\meta{id}\texttt{;}
 \end{syntax}
@@ -191,22 +191,22 @@ redefined on exiting from the editor.
 Some versions of {\REDUCE} include input editing that uses the
 capabilities of modern window systems.  Please consult your system
 dependent documentation to see if this is possible.  Such editing
-techniques are usually much easier to use then \texttt{ED} or
-\texttt{EDITDEF}.
+techniques are usually much easier to use then \texttt{ed} or
+\texttt{editdef}.
 
 \section{Interactive File Control:
-  \texttt{\small INT}, \texttt{\small PAUSE}, \texttt{\small CONT}}
+  \texttt{\small int}, \texttt{\small pause}, \texttt{\small cont}}
 
 \hypertarget{switch:INT}{}
 If input is coming from an external file, the system treats it as a
 batch processed calculation.  If you desire
 interactive\index{Interactive use} response in this case, you can
-include the command \texttt{ON INT};\ttindex{INT} in the file.
-Likewise, you can issue the command \texttt{OFF INT}; in the main
+include the command \texttt{on int};\ttindexswitch{int} in the file.
+Likewise, you can issue the command \texttt{off int}; in the main
 program if you do not desire continual questioning from the system.
-Regardless of the setting of the switch \sw{INT}, input commands from
+Regardless of the setting of the switch \sw{int}, input commands from
 a file are not kept in the system, and so cannot be referenced using
-\texttt{INPUT} or \texttt{WS}, or edited using \texttt{ED}.  However,
+\texttt{input} or \texttt{ws}, or edited using \texttt{ed}.  However,
 an implementation of {\REDUCE} may provide a link to an external
 system editor that can be used for such editing.  The specific
 instructions for the particular implementation should be consulted for
@@ -214,15 +214,15 @@ information on this.
 
 \hypertarget{CONT-and-PAUSE}{}
 Two commands are available in {\REDUCE} for interactive use of files.
-\texttt{PAUSE};\ttindextype{PAUSE}{command}\index{Command!PAUSE@\texttt{PAUSE}}
+\texttt{pause};\ttindextype{pause}{command}\index{Command!pause@\texttt{pause}}
 may be inserted at any point in an input file.  When this command is
-encountered on input, the system prints the message \texttt{CONT? (Y
-  or N)} on your terminal and halts.  If you respond \texttt{Y} (for
+encountered on input, the system prints the message \texttt{Cont? (Y or N)}
+on your terminal and halts.  If you respond \texttt{y} (for
 yes), the calculation continues from that point in the file.  If you
-respond \texttt{N} (for no), control is returned to the terminal, and
+respond \texttt{n} (for no), control is returned to the terminal, and
 you can input further statements and commands.  Later on you can use
 the command
-\texttt{CONT;}\ttindextype{CONT}{COMMAND}\index{Command!CONT@\texttt{CONT}}
+\texttt{cont;}\ttindextype{cont}{command}\index{Command!cont@\texttt{cont}}
 to transfer control back to the point in the file following the last
-\texttt{PAUSE;} encountered.  A top-level \texttt{PAUSE;} from the
+\texttt{pause;} encountered.  A top-level \texttt{pause;} from the
 terminal has no effect.

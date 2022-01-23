@@ -19,26 +19,26 @@ The empty list is represented as
 
 Several operators in the system return their results as lists, and a user
 can create new lists using braces and commas.  Alternatively, one can use
-the operator LIST to construct a list.  An important class of operations
-on lists are MAP and SELECT operations.  For details, please refer to the
-chapters on MAP, SELECT and the FOR command.  See also the documentation
+the operator \texttt{list} to construct a list.  An important class of operations
+on lists are \texttt{map} and \texttt{select} operations.  For details, please refer to the
+chapters on \texttt{map}, \texttt{select} and the \texttt{for} command.  See also the documentation
 on the \hyperlink{ASSIST}{ASSIST}\extendedmanual{ (chapter~\ref{ASSIST})} package.
 
 To facilitate the use of
 lists, a number of operators are also available for manipulating
-them.\ttindextype{PART}{operator!use on lists}
-\texttt{PART(\meta{list},n)} for example will return the
+them.\ttindextype{part}{operator!use on lists}
+\texttt{part(\meta{list},n)} for example will return the
 $n^{th}$ element of a list. 
-\ttindextype{LENGTH}{operator!use on lists}
-\texttt{LENGTH}\ttindextype{LENGTH}{operator} will return the
+\ttindextype{length}{operator!use on lists}
+\texttt{length}\ttindextype{length}{operator} will return the
 length of a list.  Several operators are also defined uniquely for lists.
 For those familiar with them, these operators in fact mirror the
 operations defined for Lisp lists.  These operators are as follows:
 
-\subsection{LIST}
+\subsection{list}
 \hypertarget{operator:LIST}{}
 
-The operator LIST is an alternative to the usage of curly brackets. LIST
+The operator \texttt{list} is an alternative to the usage of curly brackets. \texttt{list}
 accepts an arbitrary number of arguments and returns a list
 of its arguments. This operator is useful in cases where operators
 have to be passed as arguments. E.g.,
@@ -55,26 +55,26 @@ occurs if the argument is not a list, or the list is empty.
 \subsection{SECOND}
 \hypertarget{operator:SECOND}{}
 
-\texttt{SECOND}\ttindextype{SECOND}{operator} returns the second member of a list.  An error
+\texttt{second}\ttindextype{SECOND}{operator} returns the second member of a list.  An error
 occurs if the argument is not a list or has no second element.
 
 \subsection{THIRD}
 \hypertarget{operator:THIRD}{}
 
-This operator\ttindextype{THIRD}{operator} returns the third member of a list.  An error
+This operator\ttindextype{third}{operator} returns the third member of a list.  An error
 occurs if the argument is not a list or has no third element.
 
 \subsection{REST}
 \hypertarget{operator:REST}{}
 
-\texttt{REST}\ttindextype{REST}{operator} returns its argument with the first element
+\texttt{rest}\ttindextype{rest}{operator} returns its argument with the first element
 removed.  An error occurs if the argument is not a list, or is empty.
 
 \subsection{\textbf{.} (Cons) Operator}
 \hypertarget{operator:CONS}{}
 \hypertarget{reserved:consop}{}
 
-This operator\ttindextype{. (CONS)}{operator} adds (``conses'') an expression to the
+This operator\ttindextype{. (cons)}{operator} adds (``conses'') an expression to the
 front of a list.  For example:
 \begin{verbatim}
         a . {b,c}     ->   {a,b,c}.
@@ -83,7 +83,7 @@ front of a list.  For example:
 \subsection{APPEND}
 \hypertarget{operator:APPEND}{}
 
-This operator\ttindextype{APPEND}{operator} appends its first argument to its second to
+This operator\ttindextype{append}{operator} appends its first argument to its second to
 form a new list.
 \textit{Examples:}
 \begin{verbatim}
@@ -94,7 +94,7 @@ form a new list.
 \subsection{REVERSE}
 \hypertarget{operator:REVERSE}{}
 
-The operator \texttt{REVERSE}\ttindextype{REVERSE}{operator} returns its argument with the
+The operator \texttt{reverse}\ttindextype{reverse}{operator} returns its argument with the
 elements in the reverse order.  It only applies to the top level list, not
 any lower level lists that may occur.  Examples are:\index{List operation}
 \begin{verbatim}
@@ -113,9 +113,9 @@ example, the result of evaluating \texttt{log\{a,b,c\}} is the expression
 \texttt{\{log(a),log(b),log(c)\}}.
 
 There are two ways to inhibit this operator distribution.  Firstly, the
-switch \sw{LISTARGS},\ttindexswitch{LISTARGS} if on, will globally inhibit
+switch \sw{listargs},\ttindexswitch{listargs} if on, will globally inhibit
 such distribution.  Secondly, one can inhibit this distribution for a
-specific operator by the declaration \texttt{LISTARGP}.\ttindextype{LISTARGP}{declaration} For
+specific operator by the declaration \texttt{listargp}.\ttindextype{listargp}{declaration} For
 example, with the declaration \texttt{listargp log}, \texttt{log\{a,b,c\}}
  would evaluate to \texttt{log(\{a,b,c\})}.
 

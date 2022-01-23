@@ -13,36 +13,36 @@ to apply l'H\^opital's rule.  A limited amount of bounded arithmetic
 is also employed where applicable.
 
 The standard way of calling limit, applying all of the methods, is
-\ttindextype{LIMIT}{operator}\hypertarget{operator:LIMIT}{}
+\ttindextype{limit}{operator}\hypertarget{operator:LIMIT}{}
 \begin{syntax}
-  \f{LIMIT(}\meta{EXPRN:algebraic},\,\meta{VAR:kernel},\,%
-    \meta{LIMPOINT:algebraic})\,:\,\textit{algebraic}
+  \f{limit(}\meta{exprn:algebraic},\,\meta{var:kernel},\,%
+    \meta{limpoint:algebraic})\,:\,\textit{algebraic}
 \end{syntax}
-The result is the limit of EXPRN as VAR approaches LIMPOINT.
+The result is the limit of exprn as var approaches limpoint.
 To compute the of \(\sin(x)/x\) at the point $0$, enter
 \begin{verbatim}
 limit(sin(x)/x,x,0);
 
 1
 \end{verbatim}
-If the limit depends upon the direction of approach to the \texttt{LIMPOINT},                                                                                                         the functions \texttt{LIMIT!+} and \texttt{LIMIT!-} may be used:
-\ttindex{LIMIT+} \ttindex{LIMIT-}
+If the limit depends upon the direction of approach to the \texttt{limpoint},                                                                                                        the onesided limit functions \texttt{limit!+} and \texttt{limit!-} may be used:
+\ttindextype{limit"!+}{operator}\ttindextype{limit"!-}{operator}
 \hypertarget{operator:LIMIT+}{}
 \hypertarget{operator:LIMIT-}{}
 \begin{syntaxtable}
-  \texttt{LIMIT!+(}\meta{EXPRN:algebraic},\,\meta{VAR:kernel},\,%
-    \meta{LIMPOINT:algebraic}\texttt{)}\,:\,\textit{algebraic} \\
-  \texttt{LIMIT!-(}\meta{EXPRN:algebraic},\,\meta{VAR:kernel},\,%
-    \meta{LIMPOINT:algebraic}\texttt{)}\,:\,\textit{algebraic}
+  \texttt{limit!+(}\meta{exprn:algebraic},\,\meta{var:kernel},\,%
+    \meta{limpoint:algebraic}\texttt{)}\,:\,\textit{algebraic} \\
+  \texttt{limit!-(}\meta{exprn:algebraic},\,\meta{var:kernel},\,%
+    \meta{limpoint:algebraic}\texttt{)}\,:\,\textit{algebraic}
 \end{syntaxtable}
-They are defined by:
+they are defined by:
 \begin{quote}
 \begin{tabular}{l}
- \texttt{LIMIT!+ (LIMIT!-)} (EXP,VAR,LIMPOINT) $\rightarrow$\texttt{LIMIT}(EXP*,$\epsilon$,0), \\
-  \qquad EXP*=sub(VAR=VAR+(-)$\epsilon^2$,EXP)
+ \texttt{limit!+ (limit!-)} (exp,var,limpoint) $\rightarrow$\texttt{limit}(exp*,$\epsilon$,0), \\
+  \qquad exp*=sub(var=var+(-)$\epsilon^2$,exp)
 \end{tabular}
 \end{quote}
-For example,
+for example,
 \begin{verbatim}
 limit!+(sqrt x/sin x,x,0);
 

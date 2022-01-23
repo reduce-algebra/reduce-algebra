@@ -1,20 +1,20 @@
 
 
 
-The most important operator is `\verb+TAYLOR+'. \ttindextype{TAYLOR}{operator}
+The most important operator is \texttt{TAYLOR}.\ttindextype{taylor}{operator}
 It is used as follows:
 \hypertarget{operator:TAYLOR}{}
-\begin{verbatim}
-  TAYLOR(EXP:algebraic,
-         VAR:kernel,VAR0:algebraic,ORDER:integer[,...])
-         :algebraic.
-\end{verbatim}
-where \f{EXP} is the expression to be expanded. It can be any \REDUCE{}
-object, even an expression containing other Taylor kernels. \f{VAR} is
-the kernel with respect to which \f{EXP} is to be expanded. \f{VAR0}
-denotes the point about which and \f{ORDER} the order up to which
-expansion is to take place. If more than one \f{(VAR, VAR0, ORDER)} triple
-is specified \f{TAYLOR} will expand its first argument independently
+\begin{syntax}
+  \texttt{taylor(}\meta{exp:algebraic}\texttt{,}
+         \meta{var:kernel}\texttt{,}\meta{var0:algebraic}\texttt{,}\meta{order:integer}[,\ldots]\texttt{)}
+         \,:\,algebraic.
+\end{syntax}
+where \f{exp} is the expression to be expanded. It can be any \REDUCE{}
+object, even an expression containing other Taylor kernels. \f{var} is
+the kernel with respect to which \f{exp} is to be expanded. \f{var0}
+denotes the point about which and \f{order} the order up to which
+expansion is to take place. If more than one \f{(var, var0, order)} triple
+is specified \f{taylor} will expand its first argument independently
 with respect to each variable in turn. For example,
 \begin{verbatim}
   taylor(e^(x^2+y^2),x,0,2,y,0,2);
@@ -26,33 +26,33 @@ will calculate the Taylor expansion up to order $X^{2}*Y^{2}$:
 \end{verbatim}
 Note that once the expansion has been done it is not possible to
 calculate higher orders.
-Instead of a kernel, \f{VAR} may also
+Instead of a kernel, \f{var} may also
 be a list of kernels. In this case expansion will take place in a way
 so that the \emph{sum} of the degrees of the kernels does not exceed
-\f{ORDER}.
-If \f{VAR0} evaluates to the special identifier \f{INFINITY}, expansion is
-done in a series in 1/VAR instead of \f{VAR}.
+\f{order}.
+If \f{var0} evaluates to the special identifier \f{infinity}, expansion is
+done in a series in 1/var instead of \f{var}.
 
 The expansion is performed variable per variable, i.e.\ in the example
 above by first expanding $\exp(x^{2}+y^{2})$ with respect to $x$ and
 then expanding every coefficient with respect to $y$.
 
-\ttindextype{IMPLICIT\_TAYLOR}{operator}
+\ttindextype{implicit\_taylor}{operator}
 \hypertarget{operator:IMPLICIT_TAYLOR}{}
 There are two
 extra operators to compute the Taylor expansions of implicit and
 inverse functions:
-\begin{verbatim}
-  IMPLICIT_TAYLOR(F:algebraic,
-                  VAR:kernel,DEPVAR:kernel,
-                  VAR0:algebraic,DEPVAR0:algebraic,
-                  ORDER:integer)
-           :algebraic
-\end{verbatim}
-takes a function F depending on two variables VAR and DEPVAR and
-computes the Taylor series of the implicit function DEPVAR(VAR)
-given by the equation F(VAR,DEPVAR) = 0, around the point VAR0.  
-(Violation of the necessary condition F(VAR0,DEPVAR0)=0 causes an error.)
+\begin{syntax}
+  \texttt{implicit\_taylor(}\meta{f:algebraic}\texttt{,}\\
+  \hspace*{1.4in}\meta{var:kernel}\texttt{,}\meta{depvar:kernel}\texttt{,}\\
+  \hspace*{1.4in}\meta{var0:algebraic}\texttt{,}\meta{depvar0:algebraic}\texttt{,}\\
+  \hspace*{1.4in}\meta{order:integer}\texttt{)}
+         \,:\,algebraic.
+\end{syntax}
+takes a function f depending on two variables var and depvar and
+computes the Taylor series of the implicit function depvar(var)
+given by the equation f(var,depvar) = 0, around the point var0.  
+(Violation of the necessary condition f(var0,depvar0)=0 causes an error.)
 For example,
 \begin{verbatim}
   implicit_taylor(x^2 + y^2 - 1,x,y,0,1,5);
@@ -66,13 +66,14 @@ gives the output
 
 \hypertarget{operator:INVERSE_TAYLOR}{}
 The operator
-\begin{verbatim}
-  INVERSE_TAYLOR(F:algebraic,VAR:kernel,DEPVAR:kernel,
-                 VAR0:algebraic,ORDER:integer)
-         : algebraic
-\end{verbatim}
-takes a function F depending on VAR1 and computes the Taylor series of
-the inverse of F with respect to VAR2. For example,
+\begin{syntax}
+  \texttt{inverse\_taylor(}\meta{f:algebraic}\texttt{,}\\
+  \hspace*{1.4in}\meta{var:kernel}\texttt{,}\meta{depvar:kernel}\texttt{,}\\
+  \hspace*{1.4in}\meta{var0:algebraic}\texttt{,}\meta{order:integer}\texttt{)}\\
+         \,:\,algebraic.
+\end{syntax}
+takes a function f depending on var and computes the Taylor series of
+the inverse of f with respect to var0. For example,
 \begin{verbatim}
   inverse_taylor(exp(x)-1,x,y,0,8);
 \end{verbatim}
@@ -84,68 +85,68 @@ yields
 \end{verbatim}
 
 
-\ttindextype{TAYLORPRINTTERMS}{variable}\hypertarget{reserved:TAYLORPRINTTERMS}{}
+\ttindextype{taylorprintterms}{variable}\hypertarget{reserved:TAYLORPRINTTERMS}{}
 When a Taylor kernel is printed, only a certain number of (non-zero)
 coefficients are shown. If there are more, an expression of the form
 \f{($n$ terms)} is printed to indicate how many non-zero
 terms have been suppressed. The number of terms printed is given by
-the value of the shared algebraic variable \var{TAYLORPRINTTERMS}.
+the value of the shared algebraic variable \var{taylorprintterms}.
 Allowed values are integers and the special identifier \f{ALL}. The
 latter setting specifies that all terms are to be printed. The default
 setting is $5$.
 
-\ttindextype{PART}{operator!use on Taylor kernel}%
-The \f{PART} operator can be used to extract subexpressions of a
+\ttindextype{part}{operator!use on Taylor kernel}%
+The \f{part} operator can be used to extract subexpressions of a
 Taylor expansion in the usual way. All terms can be accessed,
-irregardless of the value of the variable \var{TAYLORPRINTTERMS}.
+irregardless of the value of the variable \var{taylorprintterms}.
 
 
-\ttindexswitch[TAYLOR]{TAYLORKEEPORIGINAL}
-If the switch \hyperlink{switch:TAYLORKEEPORIGINAL}{\f{TAYLORKEEPORIGINAL}}
-is set to \f{ON} the
-original expression EXP is kept for later reference.
+\ttindexswitch[TAYLOR]{taylorkeeporiginal}
+If the switch \hyperlink{switch:TAYLORKEEPORIGINAL}{\f{taylorkeeporiginal}}
+is set to \f{on} the
+original expression exp is kept for later reference.
 It can be recovered by means of the operator
 
 \hypertarget{operator:TAYLORORIGINAL}{}
-\hspace*{2em} \texttt{TAYLORORIGINAL}(EXP:{\em exprn}):{\em exprn}
+\hspace*{2em} \texttt{taylororiginal}(exp:{\em exprn}):{\em exprn}
 
-An error is signalled if EXP is not a Taylor kernel or if the original
-expression was not kept, i.e.\ if \sw{TAYLORKEEPORIGINAL} was
-\f{OFF} during expansion.  The template of a Taylor kernel, i.e.\
+An error is signalled if exp is not a Taylor kernel or if the original
+expression was not kept, i.e.\ if \sw{taylorkeeporiginal} was
+\f{off} during expansion.  The template of a Taylor kernel, i.e.\
 the list of all variables with respect to which expansion took place
 together with expansion point and order can be extracted using
-\ttindextype{TAYLORTEMPLATE}{operator}.
+\ttindextype{taylortemplate}{operator}.
 
 \hypertarget{operator:TAYLORTEMPLATE}{}
-\hspace*{2em} \texttt{TAYLORTEMPLATE}(EXP:{\em exprn}):{\em list}
+\hspace*{2em} \texttt{taylortemplate}(exp:{\em exprn}):{\em list}
 
-This returns a list of lists with the three elements (VAR,VAR0,ORDER).
-As with \f{TAYLORORIGINAL},
-an error is signalled if EXP is not a Taylor kernel.
+This returns a list of lists with the three elements (var,var0,order).
+As with \f{taylororiginal},
+an error is signalled if exp is not a Taylor kernel.
 
 The operator
 \hypertarget{operator:TAYLORTOSTANDARD}{}\\
-\hspace*{2em} \texttt{TAYLORTOSTANDARD}(EXP:{\em exprn}):{\em exprn}
+\hspace*{2em} \texttt{taylortostandard}(exp:{\em exprn}):{\em exprn}
 
-converts all Taylor kernels in EXP into standard form and
-\ttindextype{TAYLORTOSTANDARD}{operator} resimplifies the result.
+converts all Taylor kernels in exp into standard form and
+\ttindextype{taylortostandard}{operator} resimplifies the result.
 
 The boolean operator
 \hypertarget{operator:TAYLORSERIESP}{}\\
-\hspace*{2em} \texttt{TAYLORSERIESP}(EXP:{\em exprn}):{\em boolean}
+\hspace*{2em} \texttt{taylorseriesp}(exp:{\em exprn}):{\em boolean}
 
-may be used to determine if EXP is a Taylor kernel.
-\ttindextype{TAYLORSERIESP}{operator} (Note that this operator is subject to the same
-restrictions as, e.g., \f{ORDP} or \f{NUMBERP}, i.e.\ it may only be used in
-boolean expressions in \f{IF} or \f{LET} statements. 
+may be used to determine if exp is a Taylor kernel.
+\ttindextype{taylorseriesp}{operator} (Note that this operator is subject to the same
+restrictions as, e.g., \f{ordp} or \f{numberp}, i.e.\ it may only be used in
+boolean expressions in \f{if} or \f{let} statements. 
 
 Finally there is
 
 \hypertarget{operator:TAYLORCOMBINE}{}
-\hspace*{2em} \texttt{TAYLORCOMBINE}(EXP:{\em exprn}):{\em exprn}
+\hspace*{2em} \texttt{taylorcombine}(exp:{\em exprn}):{\em exprn}
 
-which tries to combine all Taylor kernels found in EXP into one.
-\ttindextype{TAYLORCOMBINE}{operator}
+which tries to combine all Taylor kernels found in exp into one.
+\ttindextype{taylorcombine}{operator}
 Operations currently possible are:
 \index{Taylor series!arithmetic}
 \begin{itemize}
@@ -153,20 +154,20 @@ Operations currently possible are:
   \item Roots, exponentials, and logarithms.
   \item Trigonometric and hyperbolic functions and their inverses.
 \end{itemize}
-Application of unary operators like \f{LOG} and \f{ATAN} will
+Application of unary operators like \f{log} and \f{atan} will
 nearly always succeed. For binary operations their arguments have to be
 Taylor kernels with the same template. This means that the expansion
 variable and the expansion point must match. Expansion order is not so
 important, different order usually means that one of them is truncated
 before doing the operation.
 
-\ttindexswitch[TAYLOR]{TAYLORKEEPORIGINAL} \ttindextype{TAYLORCOMBINE}{operator}
-If \hyperlink{switch:TAYLORKEEPORIGINAL}{\f{TAYLORKEEPORIGINAL}} is set to \f{ON} and if all Taylor
+\ttindexswitch[TAYLOR]{taylorkeeporiginal} \ttindextype{taylorcombine}{operator}
+If \hyperlink{switch:TAYLORKEEPORIGINAL}{\f{taylorkeeporiginal}} is set to \f{on} and if all Taylor
 kernels in \f{exp} have their original expressions kept
-\hyperlink{operator:TAYLORCOMBINE}{\f{TAYLORCOMBINE}} will also combine these and store the result
+\hyperlink{operator:TAYLORCOMBINE}{\f{taylorcombine}} will also combine these and store the result
 as the original expression of the resulting Taylor kernel.
-\ttindexswitch[TAYLOR]{TAYLORAUTOEXPAND}
-There is also the switch \hyperlink{switch:TAYLORAUTOEXPAND}{\f{TAYLORAUTOEXPAND}} (see below).
+\ttindexswitch[TAYLOR]{taylorautoexpand}
+There is also the switch \hyperlink{switch:TAYLORAUTOEXPAND}{\f{taylorautoexpand}} (see below).
 
 There are a few restrictions to avoid mathematically undefined
 expressions: it is not possible to take the logarithm of a Taylor
@@ -195,7 +196,7 @@ that an expression is constant.
 Only simple taylor kernels can be integrated. More complicated
 expressions that contain Taylor kernels as parts of themselves are
 automatically converted into a standard representation by means of the
-\hyperlink{operator:TAYLORTOSTANDARD}{\f{TAYLORTOSTANDARD}} operator. 
+\hyperlink{operator:TAYLORTOSTANDARD}{\f{taylortostandard}} operator. 
 In this case a suitable warning is printed.
 
 \index{Taylor series!reversion} It is possible to revert a Taylor
@@ -204,8 +205,8 @@ expansion of the inverse of $f$ from the expansion of $f$. This is
 done by the operator
 
 \hypertarget{operator:TAYLORREVERT}{}
-\ttindextype{TAYLORREVERT}{operator}
-\hspace*{2em} \texttt{TAYLORREVERT}(EXP:{\em exprn},OLDVAR:{\em kernel},
+\ttindextype{taylorrevert}{operator}
+\hspace*{2em} \texttt{taylorrevert}(exp:{\em exprn},oldvar:{\em kernel},
                                  NEWVAR:{\em kernel}):{\em exprn}
 
 EXP must evaluate to a Taylor kernel with OLDVAR being one of its
@@ -223,37 +224,37 @@ gives
 This package introduces a number of new switches:
 \begin{description}
 
-\ttindexswitch[TAYLOR]{TAYLORAUTOCOMBINE}
-\item[\sw{TAYLORAUTOCOMBINE}] \hypertarget{switch:TAYLORAUTOCOMBINE}{}causes
+\ttindexswitch[TAYLOR]{taylorautocombine}
+\item[\sw{taylorautocombine}] \hypertarget{switch:TAYLORAUTOCOMBINE}{}causes
     Taylor expressions to be automatically combined during the simplification
-    process.  This is equivalent to applying \f{TAYLORCOMBINE} to
+    process.  This is equivalent to applying \f{taylorcombine} to
     every expression that contains Taylor kernels.
-    Default is \f{ON}.
+    Default is \f{on}.
 
-\ttindexswitch[TAYLOR]{TAYLORAUTOEXPAND}
-\item[\sw{TAYLORAUTOEXPAND}] \hypertarget{switch:TAYLORAUTOEXPAND}{} makes Taylor expressions ``contagious''
-    in the sense that \f{TAYLORCOMBINE} tries to Taylor expand
+\ttindexswitch[TAYLOR]{taylorautoexpand}
+\item[\sw{taylorautoexpand}] \hypertarget{switch:taylorautoexpand}{} makes Taylor expressions ``contagious''
+    in the sense that \f{taylorcombine} tries to Taylor expand
     all non-Taylor subexpressions and to combine the result with the
-    rest. Default is \f{OFF}.
+    rest. Default is \f{off}.
 
-\ttindexswitch[TAYLOR]{TAYLORKEEPORIGINAL}\hypertarget{switch:TAYLORKEEPORIGINAL}{}
-\item[\sw{TAYLORKEEPORIGINAL}] forces the
+\ttindexswitch[TAYLOR]{taylorkeeporiginal}\hypertarget{switch:TAYLORKEEPORIGINAL}{}
+\item[\sw{taylorkeeporiginal}] forces the
     package to keep the original expression, i.e.\ the expression
     that was Taylor expanded.  All operations performed on the
     Taylor kernels are also applied to this expression  which can
-    be recovered using the operator \f{TAYLORORIGINAL}.
-    Default is \f{OFF}.
+    be recovered using the operator \f{taylororiginal}.
+    Default is \f{off}.
 
-\ttindexswitch[TAYLOR]{TAYLORPRINTORDER}\hypertarget{switch:TAYLORPRINTORDER}{}
-\item[\sw{TAYLORPRINTORDER}] causes the
+\ttindexswitch[TAYLOR]{taylorprintorder}\hypertarget{switch:TAYLORPRINTORDER}{}
+\item[\sw{taylorprintorder}] causes the
     remainder to be printed in big-$O$ notation.  Otherwise, three
-    dots are printed. Default is \f{ON}.
+    dots are printed. Default is \f{on}.
 
-\ttindexswitch[TAYLOR]{VERBOSELOAD}
-\item[\sw{VERBOSELOAD}] will cause
+\ttindexswitch[TAYLOR]{verboseload}
+\item[\sw{verboseload}] will cause
     \REDUCE{} to print some information when the Taylor package is
     loaded.  This switch is already present in \textsf{PSL} systems.
-    Default is \f{OFF}.
+    Default is \f{off}.
 
 \end{description}
 \index{Defaults! TAYLOR package}
@@ -261,7 +262,7 @@ This package introduces a number of new switches:
 \subsection{Caveats}
 \index{Caveats!TAYLOR package}
 
-\f{TAYLOR} should always detect non-analytical expressions in
+\f{taylor} should always detect non-analytical expressions in
 its first argument. As an example, consider the function $xy/(x+y)$
 that is not analytical in the neighborhood of $(x,y) = (0,0)$: Trying
 to calculate
@@ -273,9 +274,9 @@ causes an error
 ***** Not a unit in argument to QUOTTAYLOR
 \end{verbatim}
 Note that it is not generally possible to apply the standard \REDUCE{}
-operators to a Taylor kernel. For example, \f{PART}, \f{COEFF},
-or \f{COEFFN} cannot be used. Instead, the expression at hand has
-to be converted to standard form first using the \f{TAYLORTOSTANDARD}
+operators to a Taylor kernel. For example, \f{coeff}
+or \f{coeffn} cannot be used. Instead, the expression at hand has
+to be converted to standard form first using the \f{taylortostandard}
 operator.
 
 \subsection{Warning messages}
@@ -343,8 +344,8 @@ operator.
     difficult to detect this in general.
 
 \item[\msg{***** Input expression non-zero at given point}]\mbox{}\\
-    Violation of the necessary condition F(VAR0,DEPVAR0)=0 for the arguments of
-    \f{IMPLICIT\_TAYLOR}.
+    Violation of the necessary condition f(var0,depvar0)=0 for the arguments of
+    \f{implicit\_taylor}.
 
 \item[\msg{***** Invalid substitution in Taylor kernel: ...}]\mbox{}\\
     You tried to substitute a variable that is already present in the
@@ -360,20 +361,20 @@ operator.
     version of the package.
 
 \item[\msg{***** Reversion of Taylor series not possible: ...}]\mbox{}\\
-\ttindextype{TAYLORREVERT}{operator}
-    You tried to call the \f{TAYLORREVERT} operator with
+\ttindextype{taylorrevert}{operator}
+    You tried to call the \f{taylorrevert} operator with
     inappropriate arguments. The second half of this error message
     tells you why this operation is not possible.
 
 \item[\msg{***** Taylor kernel doesn't have an original part}]\mbox{}\\
-\ttindextype{TAYLORORIGINAL}{operator} \ttindexswitch[TAYLOR]{TAYLORKEEPORIGINAL}
-    The Taylor kernel upon which you try to use \f{TAYLORORIGINAL}
-    was created with the switch \sw{TAYLORKEEPORIGINAL}
-    set to \f{OFF}
+\ttindextype{taylororiginal}{operator} \ttindexswitch[TAYLOR]{taylorkeeporiginal}
+    The Taylor kernel upon which you try to use \f{taylororiginal}
+    was created with the switch \sw{taylorkeeporiginal}
+    set to \f{off}
     and does therefore not keep the original expression.
 
 \item[\msg{***** Wrong number of arguments to TAYLOR}]\mbox{}\\
-    You try to use the operator \f{TAYLOR} with a wrong number of
+    You try to use the operator \f{taylor} with a wrong number of
     arguments.
 
 \item[\msg{***** Zero divisor in TAYLOREXPAND}]\mbox{}\\
@@ -390,27 +391,27 @@ operator.
     kernel.
 
 \item[\msg{***** ... invalid as order of Taylor expansion}]\mbox{}\\
-    The order parameter you gave to \f{TAYLOR} is not an integer.
+    The order parameter you gave to \f{taylor} is not an integer.
 
 \item[\msg{***** ... invalid as Taylor kernel}]\mbox{}\\
-\ttindextype{TAYLORORIGINAL}{operator} \ttindextype{TAYLORTEMPLATE}{operator}
-    You tried to apply \f{TAYLORORIGINAL} or \f{TAYLORTEMPLATE}
+\ttindextype{taylororiginal}{operator} \ttindextype{taylortemplate}{operator}
+    You tried to apply \f{taylororiginal} or \f{taylortemplate}
     to an expression that is not a Taylor kernel.
 
 \item[\msg{***** ... invalid as Taylor Template element}]\mbox{}\\
-    You tried to substitute the \f{TAYLORTEMPLATE} part of a Taylor
+    You tried to substitute the \f{taylortemplate} part of a Taylor
     kernel with a list a incorrect form. For the correct form see the
-    description of the \f{TAYLORTEMPLATE} operator.
+    description of the \f{taylortemplate} operator.
 
 \item[\msg{***** ... invalid as Taylor variable}]\mbox{}\\
     You tried to substitute a Taylor variable by an expression that is
     not a kernel.
 
 \item[\msg{***** ... invalid as value of TaylorPrintTerms}]\mbox{}\\
-\ttindextype{TAYLORPRINTTERMS}{variable}
-    You have assigned an invalid value to \hyperlink{reserved:TAYLORPRINTTERMS}{\f{TAYLORPRINTTERMS}}.
+\ttindextype{taylorprintterms}{variable}
+    You have assigned an invalid value to \hyperlink{reserved:TAYLORPRINTTERMS}{\f{taylorprintterms}}.
     Allowed values are: an integer or the special identifier
-    \f{ALL}.
+    \f{all}.
 
 \item[\msg{TAYLOR PACKAGE (...): this can't happen ...}]\mbox{}\\
     This message shows that an internal inconsistency was detected.

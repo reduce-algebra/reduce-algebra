@@ -2,12 +2,12 @@
 
 In many applications, it is desirable to load previously prepared {\REDUCE}
 files into the system, or to write output on other files. {\REDUCE} offers
-four commands for this purpose, namely, \texttt{IN}, \texttt{OUT}, \texttt{SHUT},
-\texttt{LOAD}, and \texttt{LOAD\_PACKAGE}.  
-The first three operators are described here; \texttt{LOAD} and 
-\texttt{LOAD\_PACKAGE} are discussed in Section~\ref{sec-load}.
+four commands for this purpose, namely, \texttt{in}, \texttt{out}, \texttt{shut},
+\texttt{load}, and \texttt{load\_package}.  
+The first three operators are described here; \texttt{load} and 
+\texttt{load\_package} are discussed in Section~\ref{sec-load}.
 
-\section{IN Command}\ttindextype{IN}{command}
+\section{IN Command}\ttindextype{in}{command}
 \hypertarget{command:IN}{}
 \hypertarget{switch:ECHO}{}
 \hypertarget{reserved:__FILE__}{}
@@ -23,32 +23,32 @@ details. For example:
         in f1,"ggg.rr.s";
 \end{verbatim}
 will first load file \texttt{f1}, then \texttt{ggg.rr.s}.  When a semicolon is
-used as the terminator of the IN statement, the statements in the file are
+used as the terminator of the \texttt{in} statement, the statements in the file are
 echoed on the terminal or written on the current output file.  If \texttt{\$}
-\index{Command terminator!\texttt{IN} command} is used as the terminator, the input is not
+\index{Command terminator!\texttt{in} command} is used as the terminator, the input is not
 shown.  Echoing of all or part of the input file can be prevented, even if
-a semicolon was used, by placing an \texttt{off echo;}\ttindexswitch{ECHO} command
+a semicolon was used, by placing an \texttt{off echo;}\ttindexswitch{echo} command
 in the input file.
 
-Files to be read using \texttt{IN} should end with \texttt{;END;}.  Note the two
+Files to be read using \texttt{in} should end with \texttt{;end;}.  Note the two
 semicolons!  First of all, this is protection against obscure difficulties
-the user will have if there are, by mistake, more \texttt{BEGIN}s than
-\texttt{END}s on the file.  Secondly, it triggers some file control book-keeping
-which may improve system efficiency.  If \texttt{END} is omitted, an error
+the user will have if there are, by mistake, more \texttt{begin}s than
+\texttt{end}s on the file.  Secondly, it triggers some file control book-keeping
+which may improve system efficiency.  If \texttt{end} is omitted, an error
 message \texttt{"End-of-file read"} will occur.
 
 While a file is being loaded, the special identifier
-\texttt{!\_\_LINE\_\_}\ttindextype{"!\_\_LINE\_\_}{(special identifier)}
+\texttt{!\_\_line\_\_}\ttindextype{"!\_\_line\_\_}{(special identifier)}
 is replaced by the number of the current line in the file currently
 being read.
-Similarly, \texttt{!\_\_FILE\_\_}\ttindextype{"!\_\_FILE\_\_}{(special identifier)}
+Similarly, \texttt{!\_\_file\_\_}\ttindextype{"!\_\_file\_\_}{(special identifier)}
 is replaced by the name of the file currently
 being read.
 
-\section{IN\_TEX Command}\ttindextype{IN\_TEX}{command}
+\section{in\_tex Command}\ttindextype{in\_tex}{command}
 \hypertarget{command:IN_TEX}{}
 
-This is a variant of the \texttt{IN} command. Its purpose is to document a Reduce session
+This is a variant of the \texttt{in} command. Its purpose is to document a Reduce session
 by interspersing a \LaTeX{} document with Reduce commands to be executed.
 
 When a file is input into Reduce with this command, every line is simply echoed to the output
@@ -58,32 +58,32 @@ which are processed as usual.
 The effect is to produce a \LaTeX{} document with Reduce output.
 
 
-\section{OUT Command}\ttindextype{OUT}{command}
+\section{OUT Command}\ttindextype{out}{command}
 \hypertarget{command:OUT}{}
 This command takes a single file name as argument, and directs output to
-that file from then on, until another \texttt{OUT} changes the output file,
-or \texttt{SHUT} closes it.  Output can go to only one file at a time,
+that file from then on, until another \texttt{out} changes the output file,
+or \texttt{shut} closes it.  Output can go to only one file at a time,
 although many can be open.  If the file has previously been used for
-output during the current job, and not \texttt{SHUT}, the new
+output during the current job, and not \texttt{shut}, the new
 output is appended to the end of the file.  Any existing file is erased
-before its first use for output in a job, or if it had been \texttt{SHUT}
-before the new \texttt{OUT}.
+before its first use for output in a job, or if it had been \texttt{shut}
+before the new \texttt{out}.
 
 To output on the terminal without closing the output file, the reserved
-file name T (for terminal) may be used.  For example,
+file name \texttt{t} (for terminal) may be used.  For example,
 \texttt{out ofile;} will direct output to the file \texttt{ofile} and
 \texttt{out t;} will direct output to the user's terminal.
 
 The output sent to the file will be in the same form that it would have on
 the terminal.  In particular \texttt{x\textasciicircum 2} would appear 
 on two lines, an
-\texttt{X} on the lower line and a 2 on the line above.  If the purpose of the
+\texttt{x} on the lower line and a 2 on the line above.  If the purpose of the
 output file is to save results to be read in later, this is not an
-appropriate form.  We first must turn off the \sw{NAT} switch that
+appropriate form.  We first must turn off the \sw{nat} switch that
 specifies that output should be in standard mathematical notation.
 
-\textit{Example:} To create a file \texttt{ABCD} from which it will be possible
-to read -- using \texttt{IN} -- the value of the expression \texttt{XYZ}:
+\textit{Example:} To create a file \texttt{abcd} from which it will be possible
+to read -- using \texttt{in} -- the value of the expression \texttt{xyz}:
 \begin{verbatim}
  off echo$      % needed if your input is from a file.
  off nat$       % output in IN-readable form. Each expression
@@ -97,17 +97,17 @@ to read -- using \texttt{IN} -- the value of the expression \texttt{XYZ}:
  on nat$                % restore usual output form
 \end{verbatim}
 
-\section{SHUT Command}\ttindextype{SHUT}{command}
+\section{SHUT Command}\ttindextype{shut}{command}
 \hypertarget{command:SHUT}{}
 This command takes a list of names of files that have been previously
-opened via an \texttt{OUT} statement and closes them. Most systems require this
+opened via an \texttt{out} statement and closes them. Most systems require this
 action by the user before he ends the {\REDUCE} job (if not sooner),
-otherwise the output may be lost. If a file is shut and a further \texttt{OUT}
+otherwise the output may be lost. If a file is shut and a further \texttt{out}
 command issued for the same file, the file is erased before the new output
 is written.
 
 If it is the current output file that is shut, output will switch to the
-terminal.  Attempts to shut files that have not been opened by \texttt{OUT},
+terminal.  Attempts to shut files that have not been opened by \texttt{out},
 or an input file, will lead to errors.
 
 \section{\REDUCE startup file}\index{Startup file}
@@ -116,7 +116,7 @@ or an input file, will lead to errors.
 \hypertarget{startup file}
 At the start of a \REDUCE session, the system checks for the existence of a user's
 startup file, and executes the \REDUCE statements in it. This is equivalent to 
-inputting the file with the \texttt{IN} command.
+inputting the file with the \texttt{in} command.
 
 To find the directory/folder where the file resides, the system checks
 the existence of the following environment variables:

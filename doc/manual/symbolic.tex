@@ -5,14 +5,12 @@
 
 At the system level, {\REDUCE} is based on a version of the programming
 language Lisp\index{Lisp} known as \emph{Standard Lisp} which is described
-in J. Marti, Hearn, A. C., Griss, M. L. and Griss, C., ``Standard LISP
-Report" SIGPLAN Notices, ACM, New York, 14, No 10 (1979) 48-68.  We shall
+in \cite{Marti:80}.  We shall
 assume in this section that the reader is familiar with the material in
 that paper.  This also assumes implicitly that the reader has a reasonable
 knowledge about Lisp in general, say at the level of the LISP 1.5
-Programmer's Manual (McCarthy, J., Abrahams, P. W., Edwards, D. J., Hart,
-T. P. and Levin, M. I., ``LISP 1.5 Programmer's Manual'', M.I.T.  Press,
-1965) or any of the books mentioned at the end of this section.  Persons
+Programmer's Manual (\cite{Lisp1.5:1962})
+or any of the books mentioned at the end of this section.  Persons
 unfamiliar with this material will have some difficulty understanding this
 section.
 
@@ -22,15 +20,15 @@ symbolic calculations.  To achieve this generality, however, it is
 necessary to provide the user with two modes of evaluation, namely an
 algebraic mode\index{Algebraic mode} and a symbolic mode.\index{Symbolic
 mode} To enter symbolic mode, the user types \texttt{symbolic;}
-\ttindex{SYMBOLIC} (or \texttt{lisp;})\ttindex{LISP} and to return to
-algebraic mode one types \texttt{algebraic;}.\ttindex{ALGEBRAIC}
+\ttindex{symbolic} (or \texttt{lisp;})\ttindex{lisp} and to return to
+algebraic mode one types \texttt{algebraic;}.\ttindex{algebraic}
 Evaluations proceed differently in each mode so the user is advised to
 check what mode he is in if a puzzling error arises.  He can find his mode
-by typing\ttindextype{EVAL\_MODE}{shared global variable}
+by typing\ttindextype{eval\_mode}{shared global variable}
 \begin{verbatim}
         eval_mode;
 \end{verbatim}
-The current mode will then be printed as \texttt{ALGEBRAIC} or \texttt{SYMBOLIC}.
+The current mode will then be printed as \texttt{algebraic} or \texttt{symbolic}.
 
 Expression evaluation may proceed in either mode at any level of a
 calculation, provided the results are passed from mode to mode in a
@@ -39,7 +37,7 @@ appropriate mode. If the mode name prefixes an expression at the top
 level, it will then be handled as if the global system mode had been
 changed for the scope of that particular calculation.
 
-For example, if the current mode is \texttt{ALGEBRAIC}, then the commands
+For example, if the current mode is \texttt{algebraic}, then the commands
 %\extendedmanual{\newpage}
 \begin{verbatim}
         symbolic car '(a);
@@ -53,7 +51,7 @@ thus affect the expression workspace. On the other hand, the statement
 \end{verbatim}
 will result in the algebraic value \texttt{X+12}.
 
-The use of \texttt{SYMBOLIC} (and equivalently \texttt{ALGEBRAIC}) in this
+The use of \texttt{symbolic} (and equivalently \texttt{algebraic}) in this
 manner is the same as any operator.  That means that parentheses could be
 omitted in the above examples since the meaning is obvious.  In other
 cases, parentheses must be used, as in
@@ -81,10 +79,10 @@ constructions carry over into symbolic mode.\index{Symbolic mode}
 However, there are some differences.  First, expression evaluation now
 becomes Lisp evaluation.  Secondly, assignment statements are handled
 differently, as we shall discuss shortly.  Thirdly, local variables and array
-elements are initialized to \texttt{NIL} rather than \texttt{0}. (In fact, any
-variables not explicitly declared \texttt{INTEGER} are also initialized to
-\texttt{NIL} in algebraic mode, but the algebraic evaluator recognizes 
-\texttt{NIL} as \texttt{0}.) Finally, function definitions follow the 
+elements are initialized to \texttt{nil} rather than \texttt{0}. (In fact, any
+variables not explicitly declared \texttt{integer} are also initialized to
+\texttt{nil} in algebraic mode, but the algebraic evaluator recognizes 
+\texttt{nil} as \texttt{0}.) Finally, function definitions follow the 
 conventions of
 Standard Lisp.
 
@@ -94,8 +92,8 @@ designed primarily if not exclusively for symbolic mode.
 \section{Symbolic Infix Operators}
 
 There are three binary infix operators in {\REDUCE} intended for use in
-symbolic mode, namely \texttt{.} (\texttt{CONS}), \texttt{EQ} and 
-\texttt{MEMQ}. The precedence of these operators was given in another section.
+symbolic mode, namely \texttt{.} (\texttt{cons}), \texttt{eq} and 
+\texttt{memq}. The precedence of these operators was given in another section.
 
 \section{Symbolic Expressions}
 
@@ -109,11 +107,11 @@ rules of the Lisp meta language.
         simp (u+v^2)
 \end{verbatim}
 
-\section{Quoted Expressions}\ttindex{QUOTE}
+\section{Quoted Expressions}\ttindex{quote}
 
 Because symbolic evaluation requires that each variable or expression has a
 value, it is necessary to add to {\REDUCE} the concept of a quoted expression
-by analogy with the Lisp \texttt{QUOTE} function. This is provided by the single
+by analogy with the Lisp \texttt{quote} function. This is provided by the single
 quote mark \texttt{'}.  For example,
 \begin{quote}
 \begin{tabular}{l@{\hspace{0.5in}}ll}
@@ -128,21 +126,21 @@ would write
         prin2 "A String";
 \end{verbatim}
 Within a quoted expression, identifier syntax rules are those of {\REDUCE}.
-Thus \texttt{ (A !. B)} is the list consisting of the three elements \texttt{A},
-\texttt{.}, and \texttt{B}, whereas \texttt{(A . B)} is the dotted pair of \texttt{A}
-and \texttt{B}.
+Thus \texttt{ (a !. b)} is the list consisting of the three elements \texttt{a},
+\texttt{.}, and \texttt{b}, whereas \texttt{(a . b)} is the dotted pair of \texttt{a}
+and \texttt{b}.
 
-\section{Lambda Expressions}\ttindextype{LAMBDA}{reserved word}
+\section{Lambda Expressions}\ttindextype{lambda}{reserved word}
 \hypertarget{reserved:LAMBDA}{}
 \label{sec-lambda}
 
-\texttt{LAMBDA} expressions provide the means for constructing Lisp \texttt{LAMBDA}
+\texttt{lambda} expressions provide the means for constructing Lisp \texttt{lambda}
 expressions in symbolic mode. They may not be used in algebraic mode.
 
 Syntax:
 \begin{syntax}
-  \meta{\texttt{LAMBDA}\ expression}\ \BNFprod\
-    \texttt{LAMBDA }\meta{varlist}\meta{terminator} \meta{statement}
+  \meta{\texttt{lambda}\ expression}\ \BNFprod\
+    \texttt{lambda }\meta{varlist}\meta{terminator} \meta{statement}
 \end{syntax}
  where
 \begin{syntax}
@@ -152,17 +150,17 @@ e.g.,
 \begin{verbatim}
         lambda (x,y); car x . cdr y;
 \end{verbatim}
-is equivalent to the Lisp \texttt{LAMBDA} expression
+is equivalent to the Lisp \texttt{lambda} expression
 \begin{verbatim}
         (lambda (x y) (cons (car x) (cdr y)))
 \end{verbatim}
 The parentheses may be omitted in specifying the variable list if desired.
 
-\texttt{LAMBDA} expressions may be used in symbolic mode in place of prefix
-operators, or as an argument of the reserved word \texttt{FUNCTION}.
+\texttt{lambda} expressions may be used in symbolic mode in place of prefix
+operators, or as an argument of the reserved word \hypertarget{reserved:FUNCTION}{\texttt{function}}.
 
-In those cases where a \texttt{LAMBDA} expression is used to introduce local
-variables to avoid recomputation, a \texttt{WHERE} statement can also be
+In those cases where a \texttt{lambda} expression is used to introduce local
+variables to avoid recomputation, a \texttt{where} statement can also be
 used.  For example, the expression
 \begin{verbatim}
         (lambda (x,y); list(car x,cdr x,car y,cdr y))
@@ -172,42 +170,40 @@ can also be written
 \begin{verbatim}
       {car x,cdr x,car y,cdr y} where x=reverse u,y=reverse v
 \end{verbatim}
-Where possible, \texttt{WHERE} syntax is preferred to \texttt{LAMBDA} syntax,
+Where possible, \texttt{where} syntax is preferred to \texttt{lambda} syntax,
 since it is more natural.
 
 \section{Symbolic Assignment Statements}\index{Assignment}
 \hypertarget{command:SETQ}{}
 
 In symbolic mode, if the left side of an assignment statement is a
-variable, a \texttt{SETQ} of the right-hand side to that variable occurs.  If
+variable, a \texttt{setq} of the right-hand side to that variable occurs.  If
 the left-hand side is an expression, it must be of the form of an array
 element, otherwise an error will result.  For example, \texttt{x:=y}
-translates into \texttt{(SETQ X Y)} whereas \texttt{a(3) := 3} will be valid if
-\texttt{A} has been previously declared a single dimensioned array of at
+translates into \texttt{(setq x y)} whereas \texttt{a(3) := 3} will be valid if
+\texttt{a} has been previously declared a single dimensioned array of at
 least four elements.
 
-\section{FOR EACH Statement}\ttindextype{FOR EACH}{statement}
-\index{Statement!FOR EACH@\texttt{FOR EACH}}
+\section{FOR EACH Statement}\ttindextype{for each}{statement}
+\index{Statement!for each@\texttt{for each}}
 
-The \texttt{FOR EACH} form of the \texttt{FOR} statement, designed for iteration
+The \texttt{for each} form of the \texttt{for} statement, designed for iteration
 down a list, is more general in symbolic mode.  Its syntax is:
-
-\begin{verbatim}
-        FOR EACH ID:identifier {IN|ON} LST:list
-            {DO|COLLECT|JOIN|PRODUCT|SUM} EXPRN:S-expr
-\end{verbatim}
-
-As in algebraic mode, if the keyword \texttt{IN} is used, iteration is on
-each element of the list.  With \texttt{ON}, iteration is on the whole list
+\begin{syntax}
+        \texttt{for each }\meta{id:identifier} (\texttt{in}|\texttt{on}) \meta{lst:list}
+            (\texttt{do}|\texttt{collect}|\texttt{join}|\texttt{product}|\texttt{sum})\meta{exprn:S-expr}
+\end{syntax}
+As in algebraic mode, if the keyword \texttt{in} is used, iteration is on
+each element of the list.  With \texttt{on}, iteration is on the whole list
 remaining at each point in the iteration.  As a result, we have the
-following equivalence between each form of \texttt{FOR EACH} and the various
+following equivalence between each form of \texttt{for each} and the various
 mapping functions in Lisp:
 \begin{center}
 \texttt{
 \begin{tabular}{|l|lr r|} \hline
-& DO & COLLECT & JOIN \\ \hline
-        IN &   MAPC & MAPCAR & MAPCAN \\
-        ON &   MAP &  MAPLIST & MAPCON \\ \hline
+& do & collect & join \\ \hline
+        in &   mapc & mapcar & mapcan \\
+        on &   map &  maplist & mapcon \\ \hline
 \end{tabular}}
 \end{center}
 \textit{Example:} To list each element of the list \texttt{(a b c)}:
@@ -219,7 +215,7 @@ mapping functions in Lisp:
 
 All the functions described in the Standard Lisp Report are available to
 users in symbolic mode. Additional functions may also be defined as
-symbolic procedures. For example, to define the Lisp function \texttt{ASSOC},
+symbolic procedures. For example, to define the Lisp function \texttt{assoc},
 the following could be used:
 \begin{verbatim}
         symbolic procedure assoc(u,v);
@@ -229,12 +225,12 @@ the following could be used:
 \end{verbatim}
 \hypertarget{reserved:MACRO}{}
 \hypertarget{reserved:EXPR}{}
-If the default mode were symbolic, then \texttt{SYMBOLIC} could be omitted in
-the above definition. \texttt{MACRO}s\ttindex{MACRO} may be defined by
-prefixing the keyword \texttt{PROCEDURE} by the word \texttt{MACRO}.
-(In fact, ordinary functions may be defined with the keyword \texttt{EXPR}
-\ttindex{EXPR} prefixing \texttt{PROCEDURE} as was used in the Standard Lisp
-Report.) For example, we could define a \texttt{MACRO CONSCONS} by
+If the default mode were symbolic, then \texttt{symbolic} could be omitted in
+the above definition. \texttt{macro}s\ttindextype{macro}{reserved identifier} may be defined by
+prefixing the keyword \texttt{procedure} by the word \texttt{macro}.
+(In fact, ordinary functions may be defined with the keyword \texttt{expr}
+\ttindex{expr} prefixing \texttt{procedure} as was used in the Standard Lisp
+Report.) For example, we could define a \texttt{macro conscons} by
 \begin{verbatim}
         symbolic macro procedure conscons l;
            expand(cdr l,'cons);
@@ -243,20 +239,20 @@ Report.) For example, we could define a \texttt{MACRO CONSCONS} by
 \hypertarget{reserved:SMACRO}{}
 \hypertarget{reserved:INLINE}{}
 \hypertarget{reserved:FEXPR}{}
-Another form of macro, the \texttt{SMACRO}\ttindextype{SMACRO}{reserved identifier} is also available.
+Another form of macro, the \texttt{smacro}\ttindextype{smacro}{reserved identifier} is also available.
 These are described in the Standard Lisp Report.  The Report also defines
-a function type \texttt{FEXPR}.\ttindextype{FEXPR}{reserved identifier}
+a function type \texttt{fexpr}.\ttindextype{fexpr}{reserved identifier}
 However, its use is discouraged since it is hard to implement efficiently,
 and most uses can be replaced by macros.  At the present time, there are
-no \texttt{FEXPR}s in the core REDUCE system.
+no \texttt{fexpr}s in the core REDUCE system.
 
 \section{Standard Lisp Equivalent of Reduce Input}
 \hypertarget{switch:DEFN}{}
 
 A user can obtain the Standard Lisp equivalent of his {\REDUCE} input by
-turning on the switch \sw{DEFN}\ttindexswitch{DEFN} (for definition).  The
+turning on the switch \sw{defn}\ttindexswitch{defn} (for definition).  The
 system then prints the Lisp translation of his input but does not evaluate
-it.  Normal operation is resumed when \sw{DEFN} is turned off.
+it.  Normal operation is resumed when \sw{defn} is turned off.
 
 \section{Communicating with Algebraic Mode}\index{Mode communication}
 \hypertarget{command:SHARE}{}
@@ -283,7 +279,7 @@ If one wants to evaluate an expression in algebraic mode, and then use
 that expression in symbolic mode calculations, or vice versa, the easiest
 way to do this is to assign a variable to that expression whose value is
 easily obtainable in both modes.  To facilitate this, a declaration 
-\texttt{SHARE}\ttindextype{SHARE}{declaration} is available. \texttt{SHARE} takes a list of
+\texttt{share}\ttindextype{share}{declaration} is available. \texttt{share} takes a list of
 identifiers as argument, and marks these variables as having recognizable
 values in both modes.  The declaration may be used in either mode.
 
@@ -291,9 +287,9 @@ E.g.,
 \begin{verbatim}
         share x,y;
 \end{verbatim}
-says that \texttt{X} and \texttt{Y} will receive values to be used in both modes.
+says that \texttt{x} and \texttt{y} will receive values to be used in both modes.
 
-If a \texttt{SHARE} declaration is made for a variable with a previously
+If a \texttt{share} declaration is made for a variable with a previously
 assigned algebraic value, that value is also made available in symbolic
 mode.
 
@@ -307,28 +303,28 @@ work with \texttt{(a+b)\textasciicircum 2}, one would say, in algebraic mode:
 \begin{verbatim}
         x := (a+b)^2;
 \end{verbatim}
-assuming that \texttt{X} was declared shared as above.  If we now change to
+assuming that \texttt{x} was declared shared as above.  If we now change to
 symbolic mode and say
 \begin{verbatim}
         x;
 \end{verbatim}
 its value will be printed as a prefix form with the syntax:
-\begin{verbatim}
-        (*SQ <standard quotient> T)
-\end{verbatim}
+\begin{syntax}
+        \texttt{(*sq } \meta{standard quotient} \texttt{ t)}
+\end{syntax}
 This particular format reflects the fact that the algebraic mode processor
 currently likes to transfer prefix forms from command to command, but
 doesn't like to reconvert standard forms\index{Standard form} (which
 represent polynomials) and standard quotients back to a true Lisp prefix
 form for the expression (which would result in excessive computation).  So
-\texttt{*SQ} is used to tell the algebraic processor that it is dealing with
+\texttt{*sq} is used to tell the algebraic processor that it is dealing with
 a prefix form which is really a standard quotient\index{Standard
-quotient} and the second argument (\texttt{T} or \texttt{NIL}) tells it whether
+quotient} and the second argument (\texttt{t} or \texttt{nil}) tells it whether
 it needs further processing (essentially, an \emph{already simplified}
 flag).
 
 So to get the true standard quotient form in symbolic mode, one needs
-\texttt{CADR} of the variable. E.g.,
+\texttt{cadr} of the variable. E.g.,
 \begin{verbatim}
         z := cadr x;
 \end{verbatim}
@@ -346,29 +342,31 @@ form.  Those presently defined are as follows:
 \item[REDUCE Selectors]\mbox{}\\[-2mm]
 %
 \begin{tabular}{lp{\rboxwidth}}
-\texttt{DENR} & denominator of standard quotient \\
+%\texttt{!\_pvar!\_} & main variable of a power \\
 %
-\texttt{LC} & leading coefficient of polynomial \\
+\texttt{denr} & denominator of standard quotient \\
 %
-\texttt{LDEG} & leading degree of polynomial \\
+\texttt{lc} & leading coefficient of polynomial \\
 %
-\texttt{LPOW} & leading power of polynomial \\
+\texttt{ldeg} & leading degree of polynomial \\
 %
-\texttt{LT} & leading term of polynomial \\
+\texttt{lpow} & leading power of polynomial \\
 %
-\texttt{MVAR} & main variable of polynomial \\
+\texttt{lt} & leading term of polynomial \\
 %
-\texttt{NUMR} & numerator (of standard quotient) \\
+\texttt{mvar} & main variable of polynomial \\
 %
-\texttt{PDEG} & degree of a power \\
+\texttt{numr} & numerator (of standard quotient) \\
 %
-\texttt{RED} & reductum of polynomial \\
+\texttt{pdeg} & degree of a power \\
 %
-\texttt{TC} & coefficient of a term \\
+\texttt{red} & reductum of polynomial \\
 %
-\texttt{TDEG} & degree of a term \\
+\texttt{tc} & coefficient of a term \\
 %
-\texttt{TPOW} & power of a term
+\texttt{tdeg} & degree of a term \\
+%
+\texttt{tpow} & power of a term
 \end{tabular}
 
 \pagebreak
@@ -399,35 +397,41 @@ include:
 
 {\renewcommand{\arraystretch}{1.5}
 \begin{tabular}{lp{\reduceboxwidth}}
-\texttt{!*A2F} & convert an algebraic expression to
+\texttt{!*a2f} & convert an algebraic expression to
 a standard form.  If result is rational, an error results; \\
 %
-\texttt{!*A2K} & converts an algebraic expression to
+\texttt{!*a2k} & converts an algebraic expression to
 a kernel.  If this is not possible, an error results; \\
 %
-\texttt{!*F2A} & converts a standard form to an
+\texttt{!*f2a} & converts a standard form to an
 algebraic expression; \\
 %
-\texttt{!*F2Q} & convert a standard form to a
+\texttt{!*f2q} & convert a standard form to a
 standard quotient; \\
 %
-\texttt{!*K2F} & convert a kernel to a standard form; \\
-\texttt{!*K2Q} & convert a kernel to a standard quotient; \\
+\texttt{!*k2f} & convert a kernel to a standard form; \\
+\texttt{!*k2q} & convert a kernel to a standard quotient; \\
 %
-\texttt{!*P2F} & convert a standard power to a
+\texttt{!*kk2f} & convert a non-unique kernel to a standard form; \\
+\texttt{!*kk2q} & convert a non-unique kernel to a standard quotient; \\
+%
+\texttt{!*p2f} & convert a standard power to a
 standard form; \\
 %
-\texttt{!*P2Q} & convert a standard power to a standard quotient; \\
+\texttt{!*n2f} & convert a number to a
+standard form; \\
 %
-\texttt{!*Q2F} & convert a standard quotient to a
+\texttt{!*p2q} & convert a standard power to a standard quotient; \\
+%
+\texttt{!*q2f} & convert a standard quotient to a
 standard form.  If the quotient denominator is not 1, an error results; \\
 %
-\texttt{!*Q2K} & convert a standard quotient to a
+\texttt{!*q2k} & convert a standard quotient to a
 kernel.  If this is not possible, an error results; \\
 %
-\texttt{!*T2F} & convert a standard term to a standard form \\
+\texttt{!*t2f} & convert a standard term to a standard form \\
 %
-\texttt{!*T2Q} & convert a standard term to a standard quotient.
+\texttt{!*t2q} & convert a standard term to a standard quotient.
 \end{tabular}}
 
 \subsection{Passing Symbolic Mode Values to Algebraic Mode}
@@ -435,29 +439,30 @@ kernel.  If this is not possible, an error results; \\
 In order to pass the value of a shared variable from symbolic mode to
 algebraic mode, the only thing to do is make sure that the value in
 symbolic mode is a prefix expression. E.g., one uses
-\texttt{(expt (plus a b) 2)} for \texttt{(a+b)\textasciicircum 2}, or the format (\texttt{*sq \meta{standard quotient} t}) as described above.  However, if you have
+\texttt{(expt (plus a b) 2)} for \texttt{(a+b)\textasciicircum 2}, or
+the format (\texttt{*sq \meta{standard quotient} t}) as described above.  However, if you have
 been working with parts of a standard form they will probably not be in
 this form.  In that case, you can do the following:
 \begin{enumerate}
-\item If it is a standard quotient, call \texttt{PREPSQ} on it.  This takes a
+\item If it is a standard quotient, call \texttt{prepsq} on it.  This takes a
 standard quotient as argument, and returns a prefix expression.
-Alternatively, you can call \texttt{MK!*SQ} on it, which returns a prefix
-form like (\texttt{*SQ \meta{standard quotient} T)} and avoids translation of
+Alternatively, you can call \texttt{mk!*sq} on it, which returns a prefix
+form like (\texttt{*sq \meta{standard quotient} t)} and avoids translation of
 the expression into a true prefix form.
 
-\item If it is a standard form, call \texttt{PREPF} on it.  This takes a
+\item If it is a standard form, call \texttt{prepf} on it.  This takes a
 standard form as argument, and returns the equivalent prefix expression.
 Alternatively, you can convert it to a standard quotient and then call
-\texttt{MK!*SQ}.
+\texttt{mk!*sq}.
 
 \item If it is a part of a standard form, you must usually first build up a
 standard form out of it, and then go to step 2. The conversion functions
 described earlier may be used for this purpose. For example,
 \begin{enumerate}
-\item If \texttt{Z} is an expression which is a term, \texttt{!*T2F Z} is a
+\item If \texttt{z} is an expression which is a term, \texttt{!*t2f z} is a
 standard form.
-\item If \texttt{Z} is a standard power, \texttt{!*P2F Z} is a standard form.
-\item If \texttt{Z} is a variable, you can pass it direct to algebraic mode.
+\item If \texttt{z} is a standard power, \texttt{!*p2f z} is a standard form.
+\item If \texttt{z} is a variable, you can pass it direct to algebraic mode.
 \end{enumerate}
 \end{enumerate}
 For example, to pass the leading term of \texttt{(a+b)\textasciicircum 2} back to
@@ -465,8 +470,8 @@ algebraic mode, one could say:
 \begin{verbatim}
         y:= mk!*sq !*t2q lt numr z;
 \end{verbatim}
-where \texttt{Y} has been declared shared as above.  If you now go back to
-algebraic mode, you can work with \texttt{Y} in the usual way.
+where \texttt{y} has been declared shared as above.  If you now go back to
+algebraic mode, you can work with \texttt{y} in the usual way.
 
 
 \subsection{Complete Example}
@@ -498,7 +503,7 @@ symbolic;                    % transfer to symbolic mode
 z := cadr x;                 % store a true standard quotient
                              % in Z
 lt numr z;                   % print the leading term of the
-                             % numerataor of Z
+                             % numerator of Z
 y := mk!*sq !*t2q lt numr z; % store the prefix form of this
                              % leading term in Y
 algebraic;                   % return to algebraic mode
@@ -510,12 +515,12 @@ y^2;                         % evaluate square of the
 
 If one wishes to define a procedure in symbolic mode for use as an
 operator in algebraic mode, it is necessary to declare this fact to the
-system by using the declaration \texttt{OPERATOR}\ttindex{OPERATOR} in
+system by using the declaration \texttt{operator}\ttindextype{operator}{declaration!symbolic mode} in
 symbolic mode. Thus
 \begin{verbatim}
         symbolic operator leadterm;
 \end{verbatim}
-would declare the procedure \texttt{LEADTERM} as an algebraic operator. This
+would declare the procedure \texttt{leadterm} as an algebraic operator. This
 declaration \emph{must} be made in symbolic mode as the effect in algebraic
 mode is different.  The value of such a procedure must be a prefix form.
 
@@ -525,26 +530,26 @@ quotients you must first convert them to that form by using the function
 \texttt{SIMP!*}. This function takes a prefix form as argument and returns the
 evaluated standard quotient.
 
-For example, if you want to define a procedure \texttt{LEADTERM} which gives the
+For example, if you want to define a procedure \texttt{leadterm} which gives the
 leading term of an algebraic expression, one could do this as follows:
 \begin{samepage}
 \begin{verbatim}
-symbolic operator leadterm; % Declare LEADTERM as a symbolic
+symbolic operator leadterm; % Declare leadterm as a symbolic
                             % mode procedure to be used in
                             % algebraic mode.
 
-symbolic procedure leadterm u; % Define LEADTERM.
+symbolic procedure leadterm u; % Define leadterm.
    mk!*sq !*t2q lt numr simp!* u;
 \end{verbatim}
 \end{samepage}
-Note that this operator has a different effect than the operator \texttt{LTERM}
-\ttindex{LTERM}.  In the latter case, the calculation is done
+Note that this operator has a different effect than the operator \texttt{lterm}
+\ttindextype{lterm}{operator}.  In the latter case, the calculation is done
 with respect to the second argument of the operator.  In the example here,
 we simply extract the leading term with respect to the system's choice of
 main variable.
 
 Finally, if you wish to use the algebraic evaluator on an argument in a
-symbolic mode definition, the function \texttt{REVAL} can be used.  The one
-argument of \texttt{REVAL} must be the prefix form of an expression. {\tt
-REVAL} returns the evaluated expression as a true Lisp prefix form.
+symbolic mode definition, the function \texttt{reval} can be used.  The one
+argument of \texttt{reval} must be the prefix form of an expression.
+\texttt{reval} returns the evaluated expression as a true Lisp prefix form.
 

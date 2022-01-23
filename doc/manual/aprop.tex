@@ -10,17 +10,17 @@ how to inform {\REDUCE} of such assumptions.
 \hypertarget{command:REALVALUED}{}
 \hypertarget{command:NOTREALVALUED}{}
 
-The declaration \texttt{REALVALUED}\ttindextype{REALVALUED}{declaration} may be used 
+The declaration \texttt{realvalued}\ttindextype{realvalued}{declaration} may be used 
 to restrict variables to the real numbers. The syntax is:
 \begin{verbatim}
         realvalued v1,...vn;
 \end{verbatim}
-For such variables the operator \texttt{IMPART}\ttindex{IMPART} gives 
+For such variables the operator \texttt{impart}\ttindextype{impart}{operator} gives 
 the result zero. Thus, with
 \begin{verbatim}
         realvalued x,y;
 \end{verbatim}
-the expression \verb;impart(x+sin(y)); is evaluated as zero.
+the expression \texttt{impart(x+sin(y))} is evaluated as zero.
 You may also declare an operator as real valued
 with the meaning, that this operator maps real arguments always to
 real values. Example:
@@ -37,13 +37,13 @@ real values. Example:
 Such declarations are not needed for the standard elementary functions.
         
 To remove the propery from a variable or an operator use the declaration
-\texttt{NOTREALVALUED}\ttindextype{NOTREALVALUED}{declaration} with the syntax:
+\texttt{notrealvalued}\ttindextype{notrealvalued}{declaration} with the syntax:
 \begin{verbatim}
         notrealvalued v1,...vn;
 \end{verbatim}
 
 \hypertarget{operator:REALVALUEDP}{}
-The boolean operator \texttt{REALVALUEDP}\ttindex{REALVALUEDP}
+The boolean operator \texttt{realvaluedp}\ttindextype{realvaluedp}{operator}
 allows you to check if a variable, an operator, or
 an operator expression is known as real valued.
 Thus, 
@@ -68,7 +68,7 @@ expressions test the impart for checking the value range:
 \section{SELFCONJUGATE Declaration}
 \hypertarget{command:SELFCONJUGATE}{}
 
-The declaration \texttt{SELFCONJUGATE}\ttindextype{SELFCONJUGATE}{declaration} may be used 
+The declaration \texttt{selfconjugate}\ttindextype{selfconjugate}{declaration} may be used 
 to declare an operator to be self-conjuate in the sense that
 \texttt{conj(f(z)) = f(conj(z))}. The syntax is:
 \begin{verbatim}
@@ -82,9 +82,9 @@ functions \texttt{log, asin, acos, atanh, acosh} etc. and
 subsets of the real axis).
 
 \section{Declaring Complex Conjugates}
-\ttindextype{COMPLEX\_CONJUGATES}{declaration}
+\ttindextype{complex\_conjugates}{declaration}
 \hypertarget{command:COMPLEX_CONJUGATES}{}
-The argument \texttt{u} of a declaration \texttt{COMPLEX\_CONJUGATES} should
+The argument \texttt{u} of a declaration \texttt{complex\_conjugates} should
 consist of one or more (comma-separated) lists of two identifiers.
 This declaration associates the two identifiers as
 mutual complex-conjugates. If the first is an operator, the second is
@@ -104,16 +104,16 @@ $\overline{z}$ and $\overline{f}$ respectively. If the first identifier
 already has a \emph{fancy special symbol} defined, this will be over-lined
 to produce the fancy print symbol for the second identifier.
 Should the user not wish to have a fancy print symbol automatically generated,
-they may instead use explicit \f{LET} statements as described in the 
-subsection on the operator \hyperlink{operator:CONJ}{\texttt{CONJ}}.
+they may instead use explicit \f{let} statements as described in the 
+subsection on the operator \hyperlink{operator:CONJ}{\texttt{conj}}.
 
 \section{Declaring Expressions Positive or Negative}
 
 Detailed knowlege about the sign of expressions allows {\REDUCE}
-to simplify expressions involving exponentials or \texttt{ABS}\ttindex{ABS}.
+to simplify expressions involving exponentials or \texttt{abs}\ttindextype{abs}{operator}.
 You can express assumptions about the 
 \emph{positivity}\index{positivity} or \emph{negativity}\index{negativity}
-of expressions by rules for the operator \texttt{SIGN}\ttindex{SIGN}.
+of expressions by rules for the operator \texttt{sign}\ttindextype{sign}{operator}.
 Examples:
 \begin{verbatim}
          abs(a*b*c);
@@ -132,7 +132,7 @@ Examples:
 
             x - 1
 \end{verbatim}
-Here factors with known sign are factored out of an \texttt{ABS} expression.
+Here factors with known sign are factored out of an \texttt{abs} expression.
 \begin{verbatim}
          on precise; on factor; 
 

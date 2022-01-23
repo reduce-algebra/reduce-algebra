@@ -102,7 +102,7 @@ If we now use \var{U} in later calculations, the value of the right-hand
 side of the above will be used.
 
 The results of a given calculation are also saved in the variable
-\var{WS}\ttindex{WS} (for WorkSpace), so this can be used in the next
+\var{ws}\ttindex{ws} (for WorkSpace), so this can be used in the next
 calculation for further processing.
 
 For example, the expression
@@ -140,15 +140,15 @@ user wants this, he can say, for example:
                cos(~x)*sin(~y) = (sin(x+y)-sin(x-y))/2,
                sin(~x)*sin(~y) = (cos(x-y)-cos(x+y))/2;
 \end{verbatim}
-where the tilde in front of the variables \var{X} and \var{Y} indicates
+where the tilde in front of the variables \var{x} and \var{y} indicates
 that the rules apply for all values of those variables.
 The result of this calculation is
 \begin{verbatim}
-        -(COS(2*A) + SIN(2*B))
+        -(cos(2*a) + sin(2*b))
 \end{verbatim}
 \extendedmanual{See also the sections on ASSIST
 (chapter~\ref{ASSIST}), CAMAL (chapter~\ref{CAMAL}) and TRIGSIMP
-(section~\ref{TRIGSIMP}).}
+(section~\ref{sec:TRIGSIMP}).}
 
 Another very commonly used capability of the system, and an illustration
 of one of the many output modes of {\REDUCE}, is the ability to output
