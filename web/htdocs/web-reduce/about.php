@@ -6,6 +6,7 @@ include '../include/begin-body.php';
 ?>
 
 <h2 class="text-center"><strong>This facility is experimental!</strong></h2>
+<h2 class="text-center"><strong>Currently only desktop web browsers are supported.</strong></h2>
 
 <h2>Purpose</h2>
 
@@ -101,7 +102,9 @@ if ($_SERVER['QUERY_STRING']): ?>
     </li>
     <li>
         You need a recent web browser, preferably the latest version,
-        to run Web REDUCE. It does not seem to run on mobile devices.
+        to run Web REDUCE. It does not seem to run on mobile devices,
+        such as devices running Android or Chromebooks. I believe this
+        is due to memory-management limitations in current mobile web browsers.
     </li>
 </ul>
 <p>
