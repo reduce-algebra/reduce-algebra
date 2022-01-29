@@ -36,7 +36,7 @@ fluid '(!*allbranch !*arbvars !*exp !*ezgcd !*fullroots !*limitedfactors
 
 global '(!!arbint multiplicities!* assumptions requirements);
 
-switch allbranch,arbvars,fullroots,multiplicities,solvesingular;
+switch allbranch=on,arbvars=on,fullroots,multiplicities,solvesingular=on;
        % nonlnr.
 
 % !*varopt := t;   % Set now in alg/intro.

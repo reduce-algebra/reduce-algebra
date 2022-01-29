@@ -77,6 +77,7 @@ global '(!$eof!$
 flag('(adjprec),'switch);
 
 !*quotenewnam := t;
+put('quotenewnam,'switchdefault,t);
 
 crchar!* := '! ;
 peekchar!* := nil;

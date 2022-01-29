@@ -57,7 +57,7 @@ fluid '(!*TeX);
 
 global '(!*eraise initl!* nat!*!* spare!* !*asterisk);
 
-switch list,ratpri,revpri,nosplit,asterisk,unicode_in_off_nat;
+switch list,ratpri=on,revpri,nosplit=on,asterisk=on,unicode_in_off_nat;
 
 % Global variables initialized in this section.
 

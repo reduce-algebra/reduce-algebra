@@ -113,7 +113,7 @@ fluid  '(
 
 global '(!*eraise charassoc!* initl!* nat!*!* spare!* ofl!*);
 
-switch list,ratpri,revpri,nosplit;
+switch list,ratpri=on,revpri,nosplit=on;
 
 % Global variables initialized in this section.
 

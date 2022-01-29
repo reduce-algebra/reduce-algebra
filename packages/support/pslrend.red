@@ -412,6 +412,7 @@ symbolic procedure initrlisp;
 %   spare!* := 11;
     spare!* := 0;
     !*int := t;
+    put('int,'switchdefault,t);
     !*eolinstringok := t;  % We don't want the "string continued" msg.
     crbuflis!* := nil;     % We don't want to leave old input around.
     remd 'main;
@@ -480,9 +481,8 @@ if getd 'set!-bndstk!-size
 
 % The following is PSL 3.4 specific.
 
-switch fulltrace;   % Prevents node renaming in trace output.
-
-!*fulltrace := t;   % Since we usually want it this way.
+switch fulltrace=on;   % Prevents node renaming in trace output,
+                       % we usually want it on.
 
 COMMENT The global variable ESC* is used by the interactive string
 editor (defined in CEDIT) as a terminator for input strings.  In PSL

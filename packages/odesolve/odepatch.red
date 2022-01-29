@@ -125,7 +125,7 @@ symbolic procedure noint2int u;
    end;
 
 
-switch nointint$  !*nointint := t$
+switch nointint=on$  % !*nointint := t$
 put('nointint, 'simpfg,
    '((nil (put 'int 'simpfn 'simpint) (rmsubs))
      (t (put 'int 'simpfn 'nointint_simpint))))$

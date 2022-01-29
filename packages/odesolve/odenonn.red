@@ -49,8 +49,8 @@ define odenon!-reduce!-order!-next = odesolve!-shift$
 
 define odesolve!-shift!-next = odesolve!-nonlinearn!*1$
 
-switch odesolve_equidim_y$              % TEMPORARY?
-symbolic(!*odesolve_equidim_y := t)$    % TEMPORARY?
+switch odesolve_equidim_y=on$              % TEMPORARY?
+%%%symbolic(!*odesolve_equidim_y := t)$    % TEMPORARY?
 
 algebraic procedure odesolve!-nonlinearn!*1(ode, y, x);
    %% The order here seems to be important in practice:

@@ -35,9 +35,9 @@ module eqn;   % Support for equations as top level structures.
 
 fluid '(!*evallhseqp);
 
-switch evallhseqp;
+switch evallhseqp=on;  % Default is currently on.
 
-!*evallhseqp := t;   % Default is currently on.
+%!*evallhseqp := t;
 
 symbolic procedure equalreval u;
    % This definition really needs to know whether we are trying

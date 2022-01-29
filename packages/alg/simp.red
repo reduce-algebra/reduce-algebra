@@ -51,9 +51,9 @@ global '(!*match
          tstack!*
          ws);
 
-switch expandexpt; % notseparate;
+switch expandexpt=on; % notseparate;
 
-!*expandexpt := t;
+% !*expandexpt := t;  % default set in switch statement above
 
 !*inside!-int!* := nil;
 

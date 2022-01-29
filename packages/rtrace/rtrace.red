@@ -46,7 +46,7 @@ module rtrace$  % Portable REDUCE tracing
 %   merge trrl and trrlid?
 %   provide more intelligible synonyms?
 
-switch rtrace$  !*rtrace := t$
+switch rtrace=on$
 
 % When this switch is on then algebraic-mode output is used if
 % possible; when it is off then Lisp output is used.

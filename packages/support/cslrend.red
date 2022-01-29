@@ -707,6 +707,7 @@ symbolic procedure initrlisp;
     crbuflis!* := nil;
     spare!* := 0;
     !*int := t;
+    put('int,'switchdefault,t);
   >>;
 
 symbolic procedure rlispmain;

@@ -34,10 +34,11 @@ fluid '(!*allfac !*div !*mcd !*noequiv !*pri !*rat factors!* kord!*
 
 global '(dnl!* ordl!* upl!*);
 
-switch allfac,div,pri,rat;
+switch allfac=on,div,pri=on,rat;
 
-!*allfac := t;          % factoring option for this package
-!*pri := t;             % to activate this package
+% defaults now set in switch statement above
+%!*allfac := t;          % factoring option for this package
+%!*pri := t;             % to activate this package
 
 % dnl!* := nil;         % output control flag: puts powers in denom
 % factors!* := nil;     % list of output factors

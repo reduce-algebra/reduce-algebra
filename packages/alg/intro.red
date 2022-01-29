@@ -51,6 +51,7 @@ global '(!*resubs
 !*mcd := t;             % common denominator control flag;
 !*mode := 'symbolic;    % current evaluation mode;
 !*msg := t;             % flag controlling message printing;
+put('msg,'switchdefault,t);
 !*nat := t;             % specifies natural printing mode;
 !*period := t;          % prints a period after a fixed coefficient
                         % when FORT is on;
@@ -313,8 +314,8 @@ deflist ('((exp ((nil (rmsubs)) (t (rmsubs))))
         (reduced ((t (rmsubs))))
         (val ((t (rmsubs))))),'simpfg);
 
-switch exp,cref,factor,fort,gcd,ifactor,intstr,lcm,mcd,nat,nero,numval,
-       period,precise,pri,rationalize,reduced,varopt;   % resubs, val.
+switch exp=on,cref,factor,fort,gcd,ifactor,intstr,lcm=on,mcd=on,nat=on,nero,numval=on,
+       period=on,precise=on,pri=on,rationalize,reduced,varopt=on;   % resubs, val.
 
 endmodule;
 
