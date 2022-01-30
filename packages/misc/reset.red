@@ -52,6 +52,7 @@ put('asterisk,'switchdefault,t);
 put('evallhseqp,'switchdefault,t);
 put('exp,'switchdefault,t);
 put('expandexpt,'switchdefault,t);
+%(!*force_gnuplot_term t)
 put('fulltrace,'switchdefault,t);
 put('int,'switchdefault,t);
 put('lcm,'switchdefault,t);
@@ -69,12 +70,14 @@ put('pri,'switchdefault,t);
 put('quotenewnam,'switchdefault,t);
 % put('raise,'switchdefault,t);   % Led to upsets in February 2019!
 put('ratpri,'switchdefault,t);
+%(!*report_colons t)
 put('revalp,'switchdefault,t);
 put('roundall,'switchdefault,t);
+%(!*savesfs t)
+%(!*smtabout t)
+%(!*smtprompt t)
 put('solvesingular,'switchdefault,t);
 put('varopt,'switchdefault,t);
-%%% assert
-put('assertstatistics,'switchdefault,t);
 %%% assist
 put('onespace,'switchdefault,t);
 %%% cali
@@ -89,7 +92,7 @@ put('tdusetorder,'switchdefault,t);
 put('clprlverbose,'switchdefault,t);
 put('clprlproject,'switchdefault,t);
 %%% crack
-put('allowdfint,'switchdefault,t);
+%put('allowdfint,'switchdefault,t);
 %%% fide
 put('prfourmat,'switchdefault,t);
 put('twogrid,'switchdefault,t);
@@ -107,27 +110,27 @@ put('guardian,'switchdefault,t);
 put('gdqe,'switchdefault,t);
 put('gdmart,'switchdefault,t);
 %%% hephys/cvit
-put('cviterror,'switchdefault,t);
-put('cvitbtr,'switchdefault,t);
+%put('cviterror,'switchdefault,t);
+%put('cvitbtr,'switchdefault,t);
+%put('cvit,'switchdefault,t);
+%%% hephys/physop
 put('mymatch,'switchdefault,t);
-put('cvit,'switchdefault,t);
 %%% lpdo
 put('lpdodf,'switchdefault,t);
 put('lpdocoeffnorm,'switchdefault,t);
 %%% rlfi
 put('lasimp,'switchdefault,t);
 %%% odesolve
-put('odesolve_equidim,'switchdefault,t);
-put('nointint,'switchdefault,t);
-put('odesolve_plus_or_minus,'switchdefault,t);
-put('odesolve_load_specfn,'switchdefault,t);
-put('odesolve_diff,'switchdefault,t);
+%put('odesolve_equidim_y,'switchdefault,t);
+%put('nointint,'switchdefault,t);
+%put('odesolve_plus_or_minus,'switchdefault,t);
+%put('odesolve_diff,'switchdefault,t);
 %%% pm
 put('semantic,'switchdefault,t);
 %%% qsum
-put('qgosper_down,'switchdefault,t);
-put('qgosper_specialsol,'switchdefault,t);
-put('qsumrecursion_down,'switchdefault,t);
+%put('qgosper_down,'switchdefault,t);
+%put('qgosper_specialsol,'switchdefault,t);
+%put('qsumrecursion_down,'switchdefault,t);
 %%% redlog
 put('rlkapursplitequiv,'switchdefault,t);
 put('rlkapurmultimon,'switchdefault,t);
@@ -218,19 +221,19 @@ put('rlenffacne,'switchdefault,t);
 put('rlplsimpl,'switchdefault,t);
 put('rlsmprint,'switchdefault,t);
 %%% roots
-put('multiroot,'switchdefault,t);
+%put('multiroot,'switchdefault,t);
 %%% rtrace
-put('rtrace,'switchdefault,t);
+%put('rtrace,'switchdefault,t);
 %%% scope
 put('ftch,'switchdefault,t);
 put('algpri,'switchdefault,t);
 %%% solve
-put('trigform,'switchdefault,t);
+%put('trigform,'switchdefault,t);
 %%% sum
-put('zb_factor,'switchdefault,t);
+%put('zb_factor,'switchdefault,t);
 %%% taylor
-put('taylorautocombine,'switchdefault,t);
-put('taylorprintorder,'switchdefault,t);
+%put('taylorautocombine,'switchdefault,t);
+%put('taylorprintorder,'switchdefault,t);
 %%% utf8
 put('utf8,'switchdefault,t);
 put('utf82d,'switchdefault,t);

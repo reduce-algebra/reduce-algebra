@@ -31,9 +31,7 @@ module quartic;  % Procedures for solving cubic, quadratic and quartic
 
 fluid '(!*sub2 !*rounded !*trigform dmode!*);
 
-!*trigform := t;   % Default value.
-
-switch trigform;
+switch trigform=on;   % Default value is on.
 
 symbolic procedure multfq(u,v);
    % Multiplies standard form U by standard quotient V.

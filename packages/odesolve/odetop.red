@@ -382,8 +382,8 @@ algebraic procedure odesolve!-exact!-2!-test(f, g, p, y, x);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-switch odesolve_diff$                   % TEMPORARY?
-symbolic(!*odesolve_diff := t)$         % TEMPORARY?
+switch odesolve_diff=on$                   % TEMPORARY?
+%%%symbolic(!*odesolve_diff := t)$         % TEMPORARY?
 
 fluid '(!*arbvars)$
 

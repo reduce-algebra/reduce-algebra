@@ -104,6 +104,7 @@ global '(!$eof!$
          ws);
 
 !*output := t;
+put('output,'switchdefault,t);
 eof!* := 0;
 initl!* := '(fname!* outl!*);
 statcounter := 0;

@@ -169,9 +169,9 @@ flag ('(off on),'ignore);
 
 switch backtrace,comp,defn,demo,echo,errcont,fastfor,   % eoldelimp
        int,lessspace,msg,output,pret,quotenewnam,raise,lower,time,
-       strict_argcount, report_colons;
+       strict_argcount, report_colons=on;
 
-!*report_colons := t;
+%!*report_colons := t;
 
 put('eoldelimp,'simpfg,'((t (flag (list !$eol!$) 'delchar))
                          (nil (remflag (list !$eol!$) 'delchar))));

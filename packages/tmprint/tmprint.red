@@ -226,7 +226,7 @@ global '(!*eraise charassoc!* initl!* nat!*!* spare!* ofl!*);
 % such as "fort" for generating other formats of output.
 %
 
-switch list,ratpri,revpri,nosplit;
+switch list=off,ratpri=on,revpri=off,nosplit=on;
 
 % Temp experiment while investigating a possible fix for an interaction with
 % "on list". Well in fact "on/off acn" can provide a general guard for
@@ -2829,12 +2829,12 @@ fluid '(lispsystem!*);
 fluid '(promptstring!* tm_switches!* tm_switches!-this!-sl!* lessspace!*);
 
 fluid '(!*promptnumbers);
-switch promptnumbers;
+switch promptnumbers=on;
 %% Show prompts in TeXmacs as well.
 %if texmacsp () then % We don't want prompt numbers in a Texmacs worksheet
 %   off1 'promptnumbers
 %else
-on1 'promptnumbers;
+%on1 'promptnumbers;
 
 tm_switches!* := {!*msg,!*output};
 

@@ -45,9 +45,7 @@ fluid  '(!*fort
 
 global '(spare!*);
 
-switch ratpri;
-
-!*ratpri := t;   % default value if this module is loaded.
+switch ratpri=on;   % default value is on if this module is loaded.
 
 put('quotient,'prifn,'quotpri);
 put('quotpri, 'expt, 'inbrackets);

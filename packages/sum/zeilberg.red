@@ -113,8 +113,8 @@ let zb_binomialrules;
 
 
 
-switch zb_factor, zb_timer,zb_proof, zb_trace,zb_inhomogeneous;
-lisp setq(!*zb_factor,t);
+switch zb_factor=on, zb_timer,zb_proof, zb_trace,zb_inhomogeneous;
+%lisp setq(!*zb_factor,t);
 % zb_factor:=1;
 zb_direction:=down;
 

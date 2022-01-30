@@ -38,9 +38,7 @@ global '(!*group rd!-tolerance!* cr!-tolerance!* !*physop!-loaded
 
 put('roundall,'simpfg,'((t (rmsubs))));
 
-switch roundall;
-
-!*roundall := t;   % Default is on.
+switch roundall=on;    % Default is on.
 
 symbolic inline procedure subtrsq(u,v); addsq(u,negsq v);
 

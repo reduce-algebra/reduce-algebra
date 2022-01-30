@@ -284,8 +284,8 @@ symbolic procedure prepexpt u; if caddr u=1 then cadr u else u;
 
 put('!*hold, 'prepfn2, 'prephold);
 
-switch prephold;
-!*prephold := t;
+switch prephold=on;
+%!*prephold := t;
 
 symbolic procedure prephold u;
    if (not !*prephold) or atom u then u

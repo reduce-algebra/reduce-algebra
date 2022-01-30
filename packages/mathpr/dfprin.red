@@ -33,7 +33,7 @@ fluid '(!*fort !*nat !*noarg depl!* posn!*);
 
 global '(!*dfprint farglist!*);
 
-switch dfprint,noarg;
+switch dfprint,noarg=on;
 
 !*dfprint := nil;  % This is OFF by default because switching it on
                    % changes Reduce output in a way that might upset

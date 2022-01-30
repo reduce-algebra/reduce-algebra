@@ -380,7 +380,7 @@ switch odesolve_check;
 switch nointint=on;
 switch plus_or_minus=off;
 switch odesolve_equidim_y=on;
-switch odesolve_plus_or_minus=on;
+switch odesolve_plus_or_minus;
 switch odesolve_diff=on;
 
 

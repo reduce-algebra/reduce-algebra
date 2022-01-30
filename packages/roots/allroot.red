@@ -57,7 +57,7 @@ imports !!mfefix, a2gf, accupr, allout, automod, bfabs, bfdivide,
 
 fluid '(!*trroot !*bftag !*rootmsg !*multiroot !*powergcd !*hardtst
  !*nosturm !2loop !*noinvert);
-switch trroot,rootmsg,multiroot,nosturm;
+switch trroot=off,rootmsg=off,multiroot=on,nosturm=off;
 fluid '(!*xnlist !*pfsav !*xmax !*xmax2 !*gfp pgcd!# allrl!#);
 fluid '(!*pcmp prec!# acc!# sprec!# !*xn eps!# accm!# !*xobf froot!#);
 fluid '(nwmax!# lgmax!# !*xo !*keepimp !1rp !*zx1 !*mb tht!# prm!#

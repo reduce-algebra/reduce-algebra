@@ -32,8 +32,8 @@ module gcd; % Greatest common divisor routines.
 fluid '(!*exp !*anygcd !*ezgcd !*gcd !*heu!-gcd !*mcd asymplis!* dmode!*
         !*combineexpt);
 
-switch anygcd,ezgcd,heugcd;
-!*anygcd := t;
+switch anygcd=on,ezgcd,heugcd;
+%!*anygcd := t; % replaced by =on in switch statement above
 
 % put('heugcd,'simpfg,'((t (load!-package 'heugcd)))); % added by AB
 
