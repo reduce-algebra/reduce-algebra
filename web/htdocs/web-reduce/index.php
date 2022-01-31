@@ -102,7 +102,7 @@ include '../include/begin-head.php';
             <ul class="navbar-nav">
                 <!-- REDUCE Menu -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="REDUCEMenuLink" role="button"
+                    <a class="nav-link dropdown-toggle disabled" href="#" id="REDUCEMenuLink" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false">REDUCE</a>
                     <ul class="dropdown-menu" aria-labelledby="REDUCEMenuLink">
                         <li><button id="StartREDUCEMenuItem" class="dropdown-item" type="button">Start REDUCE</button>
@@ -226,25 +226,8 @@ include '../include/begin-head.php';
 <div class="labelling">
     <label for="IODisplayIframe">Input/Output Display</label>
 </div>
-<iframe id="IODisplayIframe" srcdoc='<!DOCTYPE html>
-<html>
-<head>
-    <title>Web REDUCE</title>
-    <style>
-        body {background-color: white;}
-        body, pre {font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;}
-        pre {white-space: pre-wrap; margin: 0; font-size: 14px;}
-        pre.info {background-color: yellow;}
-        pre.warning {background-color: #ffa50040;} /* orange, 1/4 opaque */
-        pre.error {background-color: #ff000040;} /* red, 1/4 opaque */
-    </style>
-    <script>MathJax = { tex: { macros: { "*": "\\," } } };</script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
-</head>
-<body>
-    By default, REDUCE should load automatically, but if it does not then please right-click here and reload this <b>frame</b>.
-</body>
-</html>'>
+<iframe id="IODisplayIframe">
+    The obsolete browser does not support the iframe HTML element and so cannot run Web REDUCE.
 </iframe>
 
 <div class="labelling">

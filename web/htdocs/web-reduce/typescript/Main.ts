@@ -333,19 +333,39 @@ centreTypesetMathsCheckbox.addEventListener("change", event => {
     ioDisplayWindow.MathJax.startup.getComponents(); // See http://docs.mathjax.org/en/latest/web/configuration.html
 });
 
-// ********************************************
-// Code that requires the iframe to have loaded
-// ********************************************
+// *****************************
+// Load and configure the iframe
+// *****************************
 
 {
     const iframe = document.getElementById("IODisplayIframe") as HTMLIFrameElement;
+    // Don't try to access the iframe DOM until the iframe has loaded!
     iframe.addEventListener("load", () => {
-        // Don't try to access the iframe DOM until the iframe has loaded!
         debug && console.log("IODisplayIframe loaded.");
         ioDisplayWindow = iframe.contentWindow;
         ioDisplayHead = iframe.contentDocument.head;
         ioDisplayBody = iframe.contentDocument.body;
         ioDisplayHead.appendChild(ioColouringStyleElement); // IOColouringCheckbox initially checked
+        document.getElementById("REDUCEMenuLink").classList.remove("disabled"); // Enable REDUCE menu
         if (location.search !== "?noautorun") startREDUCE();
     });
+    iframe.srcdoc = `<!DOCTYPE html>
+<html>
+<head>
+    <title>Web REDUCE</title>
+    <style>
+        body {background-color: white;}
+        body, pre {font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;}
+        pre {white-space: pre-wrap; margin: 0; font-size: 14px;}
+        pre.info {background-color: yellow;}
+        pre.warning {background-color: #ffa50040;} /* orange, 1/4 opaque */
+        pre.error {background-color: #ff000040;} /* red, 1/4 opaque */
+    </style>
+    <script>MathJax = { tex: { macros: { "*": "\\," } } };</script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+    By default, REDUCE should load automatically, but if it does not then please right-click here and reload this <b>frame</b>.
+</body>
+</html>`
 }
