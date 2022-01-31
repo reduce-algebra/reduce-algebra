@@ -926,10 +926,10 @@ flag('(down_qratio up_qratio), 'opfn);
      defautoload_operator(weierstrass1, ellipfn);
      defautoload_operator(weierstrasszeta, ellipfn);
      defautoload_operator(weierstrasszeta1, ellipfn);
-     defautoload_operator(sigma, ellipfn);
-     defautoload_operator(sigma1, ellipfn);
-     defautoload_operator(sigma2, ellipfn);
-     defautoload_operator(sigma3, ellipfn);
+     defautoload_operator(weierstrass_sigma, ellipfn);
+     defautoload_operator(weierstrass_sigma1, ellipfn);
+     defautoload_operator(weierstrass_sigma2, ellipfn);
+     defautoload_operator(weierstrass_sigma3, ellipfn);
     
 % specfn2 module entry points
 

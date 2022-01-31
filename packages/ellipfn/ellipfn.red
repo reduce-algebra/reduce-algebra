@@ -47,10 +47,11 @@ module ellipfn;  % Elliptic functions package for REDUCE.
 %              -- Various utility functions (not autoloading)    %
 %                                                                %
 %     accessible through the new operators:                      %
-%     Jacobi{am,sn,cn,dn,sc...}, Elliptic{E,F,K...}, JacobiE     %
-%     EllipticTheta{1,2,3,4}                                     %
-%     Weierstrass, WeierstrassZeta, Weierstrass1,                %
-%     WeierstrassZeta1, sigma, sigma1, sigma2, sigma3            %
+%     jacobi{am,sn,cn,dn,sc...}, elliptic{E,F,K...}, jacobiE     %
+%     elliptictheta{1,2,3,4}                                     %
+%     weierstrass, weierstrassZeta, Weierstrass1,                %
+%     weierstrassZeta1, weierstrass_sigma, weierstrass_sigma1,   %
+%     weierstrass_sigma2, weierstrass_sigma3                     %
 %     arc{sn,cn,dn,sc,sd...}                                     %
 %  ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  %
 
@@ -98,10 +99,10 @@ remprop('weierstrass,'simpfn);
 remprop('weierstrass1,'simpfn);
 remprop('weierstrasszeta,'simpfn);
 remprop('weierstrasszeta1,'simpfn);
-remprop('sigma,'simpfn);
-remprop('sigma1,'simpfn);
-remprop('sigma2,'simpfn);
-remprop('sigma3,'simpfn);
+remprop('weierstrass_sigma,'simpfn);
+remprop('weierstrass_sigma1,'simpfn);
+remprop('weierstrass_sigma2,'simpfn);
+remprop('weierstrass_sigma3,'simpfn);
 
 create!-package ('(ellipfn efjacobi efellint efjacinv eftheta efweier),
                  '(contrib ellipfn));

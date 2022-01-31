@@ -37,7 +37,8 @@ algebraic;
 
 % WEIERSTRASS and SIGMA FUNCTIONS
 operator weierstrass, weierstrassZeta;
-operator sigma, sigma1, sigma2, sigma3;
+operator weierstrass_sigma, weierstrass_sigma1;
+operator weierstrass_sigma2, weierstrass_sigma3;
 operator eta1, eta2, eta3;
 operator lattice_e1, lattice_e2, lattice_e3;
 operator lattice_g2, lattice_g3, lattice_delta, lattice_g;
@@ -46,126 +47,126 @@ operator lattice_omega1, lattice_omega3;
 
 sigma_rules :=
 {
-   sigma(0,~w1,~w3)  => 0,
-   sigma1(~w1,~w1,~w3) => 0,
-   sigma2(~w1+~w3,~w1,~w3) => 0,
-   sigma3(~w3,~w1,~w3) => 0,
+   weierstrass_sigma(0,~w1,~w3)  => 0,
+   weierstrass_sigma1(~w1,~w1,~w3) => 0,
+   weierstrass_sigma2(~w1+~w3,~w1,~w3) => 0,
+   weierstrass_sigma3(~w3,~w1,~w3) => 0,
 
-   sigma(-~u,~w1,~w3) => -sigma(u,w1,w3),  
-   sigma1(-~u,~w1,~w3) => sigma1(u,w1,w3),  
-   sigma2(-~u,~w1,~w3) => sigma2(u,w1,w3),  
-   sigma3(-~u,~w1,~w3) => sigma3(u,w1,w3),
+   weierstrass_sigma(-~u,~w1,~w3) => -weierstrass_sigma(u,w1,w3),  
+   weierstrass_sigma1(-~u,~w1,~w3) => weierstrass_sigma1(u,w1,w3),  
+   weierstrass_sigma2(-~u,~w1,~w3) => weierstrass_sigma2(u,w1,w3),  
+   weierstrass_sigma3(-~u,~w1,~w3) => weierstrass_sigma3(u,w1,w3),
 
-   sigma(~u,-~w1,-~w3)  => sigma(u,w1,w3),
-   sigma1(~u,-~w1,-~w3) => sigma1(u,w1,w3),
-   sigma2(~u,-~w1,-~w3) => sigma2(u,w1,w3),
-   sigma3(~u,-~w1,-~w3) => sigma3(u,w1,w3),
+   weierstrass_sigma(~u,-~w1,-~w3)  => weierstrass_sigma(u,w1,w3),
+   weierstrass_sigma1(~u,-~w1,-~w3) => weierstrass_sigma1(u,w1,w3),
+   weierstrass_sigma2(~u,-~w1,-~w3) => weierstrass_sigma2(u,w1,w3),
+   weierstrass_sigma3(~u,-~w1,-~w3) => weierstrass_sigma3(u,w1,w3),
    
-   sigma1(0,~w1,~w3) => 1,
-   sigma2(0,~w1,~w3) => 1,
-   sigma3(0,~w1,~w3) => 1,
+   weierstrass_sigma1(0,~w1,~w3) => 1,
+   weierstrass_sigma2(0,~w1,~w3) => 1,
+   weierstrass_sigma3(0,~w1,~w3) => 1,
 
-   sigma(~m*~u, ~m*~w1, ~m*~w3) => m*sigma(u, w1, w3)
+   weierstrass_sigma(~m*~u, ~m*~w1, ~m*~w3) => m*weierstrass_sigma(u, w1, w3)
              when numberp repart m and numberp impart m,
-   sigma1(~m*~u, ~m*~w1, ~m*~w3) => sigma1(u, w1, w3)
+   weierstrass_sigma1(~m*~u, ~m*~w1, ~m*~w3) => weierstrass_sigma1(u, w1, w3)
              when numberp repart m and numberp impart m,
-   sigma2(~m*~u, ~m*~w1, ~m*~w3) => sigma2(u, w1, w3)
+   weierstrass_sigma2(~m*~u, ~m*~w1, ~m*~w3) => weierstrass_sigma2(u, w1, w3)
              when numberp repart m and numberp impart m,
-   sigma3(~m*~u, ~m*~w1, ~m*~w3) => sigma3(u, w1, w3)
+   weierstrass_sigma3(~m*~u, ~m*~w1, ~m*~w3) => weierstrass_sigma3(u, w1, w3)
              when numberp repart m and numberp impart m,
 
 % quasi-periodicity
 
-   sigma((~~u + ~k*~w1)/~~d, ~w1, ~w3) =>
+   weierstrass_sigma((~~u + ~k*~w1)/~~d, ~w1, ~w3) =>
     (begin scalar m, arg;
        m := fix repart(k/(2*d));
        arg := u/d + (k/d-2*m)*w1;
        return
-         (-1)^m*exp(2*m*eta1(w1,w3)*(arg+m*w1))*sigma(arg,w1,w3); 
+         (-1)^m*exp(2*m*eta1(w1,w3)*(arg+m*w1))*weierstrass_sigma(arg,w1,w3); 
      end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
 
-   sigma((~~u + ~k*~w3)/~~d, ~w1, ~w3) =>
+   weierstrass_sigma((~~u + ~k*~w3)/~~d, ~w1, ~w3) =>
     (begin scalar m, arg;
        m := fix repart(k/(2*d));
        arg := u/d + (k/d-2*m)*w3;
        return
-         (-1)^m*exp(2*m*eta3(w1,w3)*(arg+m*w3))*sigma(arg,w1,w3); 
+         (-1)^m*exp(2*m*eta3(w1,w3)*(arg+m*w3))*weierstrass_sigma(arg,w1,w3); 
      end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
 
-   sigma1((~~u + ~k*~w1)/~~d, ~w1, ~w3) =>
+   weierstrass_sigma1((~~u + ~k*~w1)/~~d, ~w1, ~w3) =>
     (begin scalar m, arg;
        m := fix repart(k/(2*d));
        arg := u/d + (k/d-2*m)*w1;
        return
-         (-1)^m*exp(2*m*eta1(w1,w3)*(arg+m*w1))*sigma1(arg,w1,w3); 
+         (-1)^m*exp(2*m*eta1(w1,w3)*(arg+m*w1))*weierstrass_sigma1(arg,w1,w3); 
      end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
 
-   sigma1((~~u + ~k*~w3)/~~d, ~w1, ~w3) =>
+   weierstrass_sigma1((~~u + ~k*~w3)/~~d, ~w1, ~w3) =>
     (begin scalar m, arg;
        m := fix repart(k/(2*d));
        arg := u/d + (k/d-2*m)*w3;
        return
-         exp(2*m*eta3(w1,w3)*(arg+m*w3))*sigma1(arg,w1,w3); 
+         exp(2*m*eta3(w1,w3)*(arg+m*w3))*weierstrass_sigma1(arg,w1,w3); 
      end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
 
-   sigma2((~~u + ~k*~w1)/~~d, ~w1, ~w3) =>
+   weierstrass_sigma2((~~u + ~k*~w1)/~~d, ~w1, ~w3) =>
     (begin scalar m, arg;
        m := fix repart(k/(2*d)); 
        arg := u/d + (k/d-2*m)*w1;
        return
-%         (-1)^m*exp(2*m*eta1(w1,w3)*(arg+m*w1))*sigma2(arg,w1,w3);
-          exp(2*m*eta1(w1,w3)*(arg+m*w1))*sigma2(arg,w1,w3); 
+%         (-1)^m*exp(2*m*eta1(w1,w3)*(arg+m*w1))*weierstrass_sigma2(arg,w1,w3);
+          exp(2*m*eta1(w1,w3)*(arg+m*w1))*weierstrass_sigma2(arg,w1,w3); 
      end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
 
-   sigma2((~~u + ~k*~w3)/~~d, ~w1, ~w3) =>
+   weierstrass_sigma2((~~u + ~k*~w3)/~~d, ~w1, ~w3) =>
     (begin scalar m, arg;
        m := fix repart(k/(2*d));
        arg := u/d + (k/d-2*m)*w3;
        return
-%         (-1)^m*exp(2*m*eta3(w1,w3)*(arg+m*w3))*sigma2(arg,w1,w3); 
-          exp(2*m*eta3(w1,w3)*(arg+m*w3))*sigma2(arg,w1,w3); 
+%         (-1)^m*exp(2*m*eta3(w1,w3)*(arg+m*w3))*weierstrass_sigma2(arg,w1,w3); 
+          exp(2*m*eta3(w1,w3)*(arg+m*w3))*weierstrass_sigma2(arg,w1,w3); 
      end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
 
-   sigma3((~~u + ~k*~w1)/~~d, ~w1, ~w3) =>
+   weierstrass_sigma3((~~u + ~k*~w1)/~~d, ~w1, ~w3) =>
     (begin scalar m, arg;
        m := fix repart(k/(2*d));
        arg := u/d + (k/d-2*m)*w1;
        return
-         exp(2*m*eta1(w1,w3)*(arg+m*w1))*sigma3(arg,w1,w3); 
+         exp(2*m*eta1(w1,w3)*(arg+m*w1))*weierstrass_sigma3(arg,w1,w3); 
      end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
 
-   sigma3((~~u + ~k*~w3)/~~d, ~w1, ~w3) =>
+   weierstrass_sigma3((~~u + ~k*~w3)/~~d, ~w1, ~w3) =>
     (begin scalar m, arg;
        m := fix repart(k/(2*d));
        arg := u/d + (k/d-2*m)*w3;
        return
-         (-1)^m*exp(2*m*eta3(w1,w3)*(arg+m*w3))*sigma3(arg,w1,w3); 
+         (-1)^m*exp(2*m*eta3(w1,w3)*(arg+m*w3))*weierstrass_sigma3(arg,w1,w3); 
      end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
 
-   df(sigma(~u,~w1,~w3),~u)  => sigma(u,w1,w3)*weierstrassZeta(u,w1,w3),
+   df(weierstrass_sigma(~u,~w1,~w3),~u)  => weierstrass_sigma(u,w1,w3)*weierstrassZeta(u,w1,w3),
 
 % Numerical evaluation
-   sigma(~u,~w1,~w3) => n_sigma(num_sigma,u,w1,w3)
+   weierstrass_sigma(~u,~w1,~w3) => n_sigma(num_sigma,u,w1,w3)
            when lisp !*rounded and lisp !*complex and numberp u 
 	        and numberp w1 and numberp w3,
 
-   sigma1(~u,~w1,~w3) => n_sigma(num_sigma1,u,w1,w3)
+   weierstrass_sigma1(~u,~w1,~w3) => n_sigma(num_sigma1,u,w1,w3)
            when lisp !*rounded and lisp !*complex and numberp u 
 	        and numberp w1 and numberp w3,
 
-   sigma2(~u,~w1,~w3) => n_sigma(num_sigma2,u,w1,w3)
+   weierstrass_sigma2(~u,~w1,~w3) => n_sigma(num_sigma2,u,w1,w3)
            when lisp !*rounded and lisp !*complex and numberp u 
 	        and numberp w1 and numberp w3,
 
-   sigma3(~u,~w1,~w3) => n_sigma(num_sigma3,u,w1,w3)
+   weierstrass_sigma3(~u,~w1,~w3) => n_sigma(num_sigma3,u,w1,w3)
            when lisp !*rounded and lisp !*complex and numberp u 
 	        and numberp w1 and numberp w3
 
@@ -558,7 +559,7 @@ end;
 % ******* It is not clear to me why the commented-out procedures num_sigma1
 % ******* and num_sigma3 fail to return correct results in SOME cases when
 % ******* a modular transformation has been used to optimise convergence.
-% ******* sigma1 seems to return the result for sigma3 and vice-versa.
+% ******* weierstrass_sigma1 seems to return the result for weierstrass_sigma3 and vice-versa.
 % ******* They have been replaced by alternative procedures which
 % ******* do not optimise tau before calculating the eta values.
 % ******* This leads to some small imaginary parts when they should be zero.
@@ -789,29 +790,29 @@ end;
 %######################################################################
 
 put('weierstrass1, 'fancy!-functionsymbol, "\wp");
-put('weierstrasszeta1, 'fancy!-functionsymbol, "\zeta_w");
+put('weierstrassZeta1, 'fancy!-functionsymbol, "\zeta_w");
 put('weierstrass1, 'fancy!-prifn, 'fancy!-weier);
 put('weierstrassZeta1, 'fancy!-prifn, 'fancy!-weier);
 put('WeierstrassZeta1, 'fancy!-symbol!-length, 4);
 
 put('weierstrass1, 'plain!-functionsymbol, "P_w");
-put('weierstrasszeta1, 'plain!-functionsymbol, "zeta_w");
+put('weierstrasszZeta1, 'plain!-functionsymbol, "zeta_w");
 put('weierstrass1, 'prifn, 'plain!-weier);
 put('weierstrassZeta1, 'prifn, 'plain!-weier);
 
 put('weierstrass, 'fancy!-functionsymbol, "\wp");
 put('weierstrassZeta, 'fancy!-functionsymbol,"\zeta_w");
-put('sigma, 'fancy!-functionsymbol,"\sigma");
-put('sigma1, 'fancy!-functionsymbol,"\sigma_1");
-put('sigma2, 'fancy!-functionsymbol,"\sigma_2");
-put('sigma3, 'fancy!-functionsymbol,"\sigma_3");
+put('weierstrass_sigma, 'fancy!-functionsymbol,"\sigma");
+put('weierstrass_sigma1, 'fancy!-functionsymbol,"\sigma_1");
+put('weierstrass_sigma2, 'fancy!-functionsymbol,"\sigma_2");
+put('weierstrass_sigma3, 'fancy!-functionsymbol,"\sigma_3");
 put('eta1, 'fancy!-functionsymbol,"\eta_1");
 put('eta2, 'fancy!-functionsymbol,"\eta_2");
 put('eta3, 'fancy!-functionsymbol,"\eta_3");
-put('WeierstrassZeta, 'fancy!-symbol!-length, 4);
-put('sigma1, 'fancy!-symbol!-length, 4);
-put('sigma2, 'fancy!-symbol!-length, 4);
-put('sigma3, 'fancy!-symbol!-length, 4);
+put('weierstrassZeta, 'fancy!-symbol!-length, 4);
+put('weierstrass_sigma1, 'fancy!-symbol!-length, 4);
+put('weierstrass_sigma2, 'fancy!-symbol!-length, 4);
+put('weierstrass_sigma3, 'fancy!-symbol!-length, 4);
 put('eta1, 'fancy!-symbol!-length, 4);
 put('eta2, 'fancy!-symbol!-length, 4);
 put('eta3, 'fancy!-symbol!-length, 4);
@@ -824,7 +825,7 @@ put('lattice_e2, 'fancy!-symbol!-length, 4);
 put('lattice_e3, 'fancy!-symbol!-length, 4);
 
 put('weierstrass, 'prifn, 'plain!-symbol);
-put('weierstrasszeta, 'prifn, 'plain!-symbol);
+put('weierstrassZeta, 'prifn, 'plain!-symbol);
 put('weierstrass, 'plain!-functionsymbol, "P_w");
 put('weierstrasszeta, 'plain!-functionsymbol, 'zeta_w);
 
@@ -863,19 +864,21 @@ put('lattice_omega3, 'plain!-functionsymbol, 'w3);
 % The next 2 declarations enable better checking of the number
 % of arguments by simpiden
 
-flag('(sigma sigma1 sigma2 sigma3 weierstrass weierstrassZeta
+flag('(weierstrass_sigma weierstrass_sigma1 weierstrass_sigma2
+       weierstrass_sigma3 weierstrass weierstrassZeta
        eta1 eta2 eta3 lattice_e1 lattice_e2 lattice_e3 
        lattice_g2 lattice_g3  lattice_delta lattice_g
        lattice_omega1 lattice_omega3 weierstrass1 weierstrasszeta1
       ), 'specfn);
 
 
-deflist('((sigma 3) (sigma1 3) (sigma2 3) (sigma3 3)
+deflist('((weierstrass_sigma 3) (weierstrass_sigma1 3)
+          (weierstrass_sigma2 3) (weierstrass_sigma3 3)
           (weierstrass 3) (weierstrassZeta 3) (eta1 2) (eta2 2)
 	  (eta3 2) (lattice_e1 2) (lattice_e3 2) (lattice_e3 2)
 	  (lattice_roots 2) (lattice_invariants 2) 
 	  (lattice_g2 2) (lattice_g3 2)  (lattice_delta 2) (lattice_g 2)
-	  (weierstrass1 3) (weierstrasszeta1 3)
+	  (weierstrass1 3) (weierstrassZeta1 3)
 	  (lattice_generators 2) (quasi_period_factors 2)
 	  (lattice_omega1 2) (lattice_omega3 2)
         ), 'number!-of!-args);
