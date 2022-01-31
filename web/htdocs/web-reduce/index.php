@@ -82,11 +82,6 @@ include '../include/begin-head.php';
     .fs-normal {
         font-size: medium;
     }
-
-    .error {
-        background-color: #ff000040;
-        /* red, 1/4 opaque */
-    }
 </style>
 
 <?php include '../include/begin-body.php'; ?>

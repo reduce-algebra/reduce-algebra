@@ -182,12 +182,14 @@ function reduceWebMessageHandler(event: { data: { channel: string; line: any; };
 }
 
 /**
- * Respond to an error from the REDUCE web worker
- * by displaying an alert.
- * @param {*} event
+ * Display an error event from the REDUCE web worker.
+ * @param {ErrorEvent} event
  * @returns null
  */
-function reduceWebErrorHandler(event: any) { console.error(event.message, event) }
+function reduceWebErrorHandler(event: ErrorEvent) {
+    // console.error(event.message, event);
+    sendPlainTextToIODisplay(event.toString(), "error");
+}
 
 /**
  * Send a text string to REDUCE as input.
@@ -213,11 +215,20 @@ export function sendToReduce(str: string) {
 
 function startREDUCE() {
     ioDisplayBody.innerHTML = "REDUCE is loading. Please wait&hellip;";
-    worker = new Worker("reduce.web.js");
-    worker.onmessage = reduceWebMessageHandler;
-    worker.onerror = reduceWebErrorHandler;
-    sendToReduce('<< lisp (!*redefmsg := nil); load_package tmprint;' +
-        ' on nat, fancy; off int >>$');
+    try {
+        // Doesn't seem to catch errors in the worker!
+        // Need to catch worker errors in the worker and pass them out as messages.
+        worker = new Worker("reduce.web.js");
+        worker.onmessage = reduceWebMessageHandler;
+        worker.onerror = reduceWebErrorHandler;
+        // The rejectionhandled and unhandledrejection events described
+        // on MDN don't seem to work or to be in the official spec!
+        sendToReduce('<< lisp (!*redefmsg := nil); load_package tmprint;' +
+            ' on nat, fancy; off int >>$');
+    } catch (error) {
+        reduceWebErrorHandler(error);
+        throw error; // cannot continue
+    }
 }
 
 export function stopREDUCE() {
@@ -361,7 +372,7 @@ centreTypesetMathsCheckbox.addEventListener("change", event => {
         pre.warning {background-color: #ffa50040;} /* orange, 1/4 opaque */
         pre.error {background-color: #ff000040;} /* red, 1/4 opaque */
     </style>
-    <script>MathJax = { tex: { macros: { "*": "\\," } } };</script>
+    <script>MathJax = { tex: { macros: { "*": "\\\\," } } };</script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 </head>
 <body>
