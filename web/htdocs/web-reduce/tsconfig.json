@@ -1,9 +1,9 @@
 {
-    "compilerOptions": {
-        "outDir": "GenJS",
-        "target": "es2020",
-        "incremental": true,
-        "tsBuildInfoFile": ".tsbuildinfo"
-    },
-    "include": ["typescript/*"]
+  "compilerOptions": {
+    "outDir": "GenJS",
+    "target": "es2020",
+    "incremental": true,
+    "tsBuildInfoFile": ".tsbuildinfo"
+  },
+  "include": ["typescript/*"]
 }
