@@ -46,9 +46,15 @@ deflist('((expt crexpt!*) (sin crsin!*) (cos crcos!*) (tan crtan!*)
           (coth crcoth!*) (atanh cratanh!*) (acoth cracoth!*)
           (sech crsech!*) (csch crcsch!*) (asech crasech!*)
           (acsch cracsch!*) (atan2 cratan2!*) (arg crarg!*)
-          (sqrt crsqrt!*) (norm crnorm!*) (arg crarg!*) (log crlog!*) 
+          (sqrt crsqrt!*) (norm crnorm!*) (argd crargd!*) (log crlog!*) 
           (log10 crlog10!*) (exp crexp!*) (logb crlogb!*) 
           (e cre!*) (pi crpi!*)),'!:cr!:);
+
+deflist('((sind crsind!*) (cosd crcosd!*) (tand crtand!*)
+          (asind crasind!*) (acosd cracosd!*) (atand cratand!*)
+          (cotd crcotd!*) (acotd cracotd!*) (secd crsecd!*)
+          (cscd crcscd!*) (acscd cracscd!*)
+          (asecd crasecd!*) (argd crargd!*)),'!:cr!:);
 
 symbolic procedure cre!*; mkcr(rde!*(),rdzero!*());
 
@@ -62,6 +68,8 @@ symbolic procedure crnorm!* u; rdhypot!*(tagrl u,tagim u);
 
 symbolic procedure crarg!* u; rdatan2!*(tagim u,tagrl u);
 
+symbolic procedure crargd!* u; rdatan2d!*(tagim u,tagrl u);
+
 symbolic procedure crsqrt!* u; gf2cr!: gfsqrt crprcd u;
 
 symbolic procedure crr2d!* u; mkcr(rad2deg!* tagrl u,rad2deg!* tagim u);
@@ -73,18 +81,36 @@ symbolic procedure crsin!* u;
         rd!:times(rdcos!* rl,rdsinh!* im))
     where rl=tagrl u,im=tagim u;
 
+symbolic procedure crsind!* u;
+   mkcr(rd!:times(rdsind!* rl,rdcosh!* deg2rad!* im),
+        rd!:times(rdcos!* rl,rdsinh!* deg2rad!* im))
+    where rl=tagrl u,im=tagim u;
+
 symbolic procedure crcos!* u;
    mkcr(rd!:times(rdcos!* rl,rdcosh!* im),
         rd!:minus rd!:times(rdsin!* rl,rdsinh!* im))
+    where rl=tagrl u,im=tagim u;
+
+symbolic procedure crcosd!* u;
+   mkcr(rd!:times(rdcosd!* rl,rdcosh!* deg2rad!* im),
+        rd!:minus rd!:times(rdsind!* rl,rdsinh!* deg2rad!* im))
     where rl=tagrl u,im=tagim u;
 
 symbolic procedure crtan!* u;
    cr!:times(cri!*(),cr!:quotient(cr!:differ(y,x),cr!:plus(y,x)))
    where x=crexp!*(cr!:times(cr2i!*(),u)),y=i2cr!* 1;
 
+symbolic procedure crtand!* u;
+   cr!:times(cri!*(),cr!:quotient(cr!:differ(y,x),cr!:plus(y,x)))
+   where x=crexp!*(cr!:times(cr2i!*(),crd2r!* u)),y=i2cr!* 1;
+
 symbolic procedure crcot!* u;
    cr!:times(cri!*(),cr!:quotient(cr!:plus(x,y),cr!:differ(x,y)))
    where x=crexp!*(cr!:times(cr2i!*(),u)),y=i2cr!* 1;
+
+symbolic procedure crcotd!* u;
+   cr!:times(cri!*(),cr!:quotient(cr!:plus(x,y),cr!:differ(x,y)))
+   where x=crexp!*(cr!:times(cr2i!*(),crd2r!* u)),y=i2cr!* 1;
 
 symbolic procedure cratan2!*(y,x);
     begin scalar q,p;
@@ -113,7 +139,13 @@ symbolic procedure timesi!* u; cr!:times(cri!*(),u);
 
 symbolic procedure crsec!* u; cr!:quotient(i2cr!* 1,crcos!* u);
 
+symbolic procedure crsecd!* u;
+   cr!:quotient(i2cr!* 1,crcos!* crd2r!* u);
+
 symbolic procedure crcsc!* u; cr!:quotient(i2cr!* 1,crsin!* u);
+
+symbolic procedure crcscd!* u;
+  cr!:quotient(i2cr!* 1,crsin!* crd2r!* u);
 
 symbolic procedure crsinh!* u;
    cr!:times(crhalf!*(),cr!:differ(y,cr!:quotient(i2cr!* 1,y)))
@@ -203,6 +235,10 @@ end;
 % Branch-cut is {r | r real & (r>=1 or r<=-1)}
 % cr!:minus timesi!* crasinh!* timesi!* u;
 
+symbolic procedure crasind!* u;
+%   crr2d!* cr!:minus timesi!* crasinh!* timesi!* u;
+   crr2d!* crasin!* u;
+
 symbolic procedure cracos!* z;
 % This version uses the formula for the real and imag parts u & v of acos z
 %   u = acos(x^2+y^2-sqrt((x^2+y^2-1)^2+4y^2))/2
@@ -230,6 +266,11 @@ end;
 %   cr!:plus(cr!:times(crhalf!*(),crpi!*()),
 %      timesi!* crasinh!* timesi!* u);
 
+symbolic procedure cracosd!* u;
+%   crr2d!* cr!:plus(cr!:times(crhalf!*(),crpi!*()),
+%      timesi!* crasinh!* timesi!* u);
+    crr2d!* cracos!* u;
+    
 symbolic procedure cratan!* u;
 % Branch points at +i and -i are singular
 % The branch cut is taken to be {r*i | r real and (r>1 or r <-1)}
@@ -247,6 +288,11 @@ symbolic procedure cratan!* u;
 % % Branch points and branch cuts are as above
 %   cr!:minus timesi!* cratanh!* timesi!* u;
 
+symbolic procedure cratand!* u;
+%   crr2d!* cr!:times(cri!/2(),crlog!* cr!:quotient(
+%      cr!:plus(cri!*(),u),cr!:differ(cri!*(),u)));
+   crr2d!* cratan!* u;
+
 symbolic procedure cracot!* u;
 % Branch points and branch-cut is as for atan
 % definition uses acot u =pi/2-atan u
@@ -254,9 +300,22 @@ symbolic procedure cracot!* u;
 % acot(i*z)  with acoth(z) need care!
    cr!:differ(cr!:times(crhalf!*(),crpi!*()), cratan!*  u);
 
+symbolic procedure cracotd!* u;
+%  cr!:differ(i2cr!* 90, cratand!* u);
+  crr2d!* cracot!* u;
+
 symbolic procedure crasec!* u; cracos!* cr!:quotient(i2cr!* 1,u);
 
+symbolic procedure crasecd!* u;
+%   crr2d!* cracos!* cr!:quotient(i2cr!* 1,u);
+    crr2d!* crasec!* u;
+
 symbolic procedure cracsc!* u; crasin!* cr!:quotient(i2cr!* 1,u);
+
+symbolic procedure cracscd!* u;
+%   crr2d!* crasin!* cr!:quotient(i2cr!* 1,u);
+    crr2d!* cracsc!* u;
+
 
 symbolic procedure crasinh!* z;
 % This version uses the formula for the real and imag parts u & v of asinh z

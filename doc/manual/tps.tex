@@ -15,21 +15,26 @@ can sometimes occur using series that are truncated at some fixed depth
 (for example when a term in the required series depends on terms of an
 intermediate series beyond the truncation depth) are thus avoided.
 
+The package was originally based on an earlier \emph{truncated power series} package
+developed by Julian Padget in the 1980's. The name of the original package was
+TPS and this was never changed. The alternative (more accurate) name EPS was
+perhaps rejected because of possible confusion with the acronym for
+\emph{encapsulated PostScript}.
+
 In the first subsection below a brief description of the main operators
 available for series expansion are given together with some examples of
 their use.
 
 \subsection{Basic Use}
 \hypertarget{operator:PS}{}
-\ttindextype{PS}{operator}
-The most important operator is  \texttt{PS} which is used as follows:
-\hypertarget{operator:PS}{}
+\ttindextype{ps}{operator}
+The most important operator is  \texttt{ps} which is used as follows:
 \begin{verbatim}
-  PS(EXP:algebraic, VAR:kernel, 
+  ps(EXP:algebraic, VAR:kernel, 
      ABOUT:algebraic):algebraic.
 \end{verbatim}
 
-The \texttt{PS} operator returns a Laurent power series object (a tagged domain
+The \texttt{ps} operator returns a Laurent power series object (a tagged domain
 element) representing the univariate formal Laurent power series expansion of
 \f{EXP} with respect to the dependent variable \f{VAR} about the expansion point
 \f{ABOUT}.  \f{EXP} may itself contain power series objects.
@@ -38,7 +43,7 @@ Laurent series expansion will be produced.
 
 The algebraic expression \f{ABOUT} should simplify to an expression
 which is independent of the dependent variable \f{VAR}, otherwise
-an error will result.  If \f{ABOUT} is the identifier \texttt{INFINITY}
+an error will result.  If \f{ABOUT} is the identifier \texttt{infinity}
 then the power series expansion about $\infty$ is obtained in ascending
 powers of \texttt{1/VAR}.
 
@@ -185,70 +190,71 @@ stage.
 
 \textbf{Taylor Series Expansion}
 
-The operator \texttt{PSTAYLOR} may be used as follows:
+The operator \texttt{pstaylor} may be used as follows:
 \hypertarget{operator:PSTAYLOR}{}
-\ttindextype{PSTAYLOR}{operator}
+\ttindextype{pstaylor}{operator}
 \begin{verbatim}
-  PSTAYLOR(EXP:algebraic, VAR:kernel, 
+  pstaylor(EXP:algebraic, VAR:kernel, 
            ABOUT:algebraic):algebraic.
 \end{verbatim}
 
 which uses the classic Taylor series algorithm for expanding \f{EXP} and
 returning an extendible Taylor series object.
 
-The \f{PSTAYLOR} operator may be useful in contexts where \f{PS} fails to build
-a suitable recurrence relation automatically and reports too deep a recursion in
-\texttt{ps!:unknown!-crule}. A typical example is the expansion of the $\Gamma$
-function about an expansion point which is not a non-positive integer
+The \f{pstaylor} operator may be useful in contexts where the  operator \f{ps}
+fails to build a suitable recurrence relation automatically and reports too
+deep a recursion in \texttt{ps!:unknown!-crule}. A typical example is the
+expansion of the $\Gamma$ function about an expansion point which is not a
+non-positive integer
 \footnote{Actually the TPS code now detects this case and automatically uses
-\f{PSTAYLOR} where appropriate.}.
+\f{pstaylor} where appropriate.}.
 
-Note, however, that \f{PSTAYLOR} always returns a \emph{Taylor} series whose
-order is non-negative.  Attempting to use \f{PSTAYLOR} to expand a function
+Note, however, that \f{pstaylor} always returns a \emph{Taylor} series whose
+order is non-negative.  Attempting to use \f{pstaylor} to expand a function
 about a pole will fail with a zero divisor error message.
 
 Also in many cases the use of an automatically generated recurrence relation
-built by \f{PS} is more  efficient than using \f{PSTAYLOR}, particularly if a
-large number of terms is required; expansion of \f{TAN} is a typical example
+built by \f{ps} is more  efficient than using \f{pstaylor}, particularly if a
+large number of terms is required; expansion of \f{tan} is a typical example
 where the number of terms in the nth derivative grows exponentially.
 
 
 \subsection{Printing Power Series}
 
-If the command \f{PS} or \f{PSTAYLOR} is terminated by a semi-colon, a power
+If the command \f{ps} or \f{pstaylor} is terminated by a semi-colon, a power
 series object is compiled and then a number of terms of the
 power series expansion are evaluated and printed.
 
-\textbf{PSEXPLIM Operator}
+\textbf{psexplim Operator}
 
 The expansion is carried out as far as the value specified by an internal
 variable (with a default value of 6). This variable can be accessed via the
-operator \texttt{PSEXPLIM}.
+operator \texttt{psexplim}.
 \hypertarget{operator:PSEXPLIM}{}
-\ttindextype{PSEXPLIM}{operator}
+\ttindextype{psexplim}{operator}
 \begin{verbatim}
-  PSEXPLIM(UPTO:integer):integer.
+  psexplim(UPTO:integer):integer.
 or
-  PSEXPLIM():integer
+  psexplim():integer
 \end{verbatim}
-If \texttt{PSEXPLIM} is called with an integer value, the internal variable is
+If \texttt{psexplim} is called with an integer value, the internal variable is
 updated to the value of \texttt{UPTO} and its previous value is returned.
-If \texttt{PSEXPLIM} is called with no argument the current value is unaltered
+If \texttt{psexplim} is called with no argument the current value is unaltered
 and that value is returned. 
 
-If \texttt{PSEXPLIM} is used to increase the expansion limit, sufficient
+If \texttt{psexplim} is used to increase the expansion limit, sufficient
 information is stored in the power series object to enable the additional
 terms to be calculated without recalculating the terms already obtained.
 
 If the command is terminated by a dollar symbol, a power series object
 is compiled and the first term is calculated, but no output is printed.
 
-\textbf{PSPRINTORDER Switch}
+\textbf{psprintorder Switch}
 \hypertarget{switch:PSPRINTORDER}{}
-\ttindexswitch[TPS]{PSPRINTORDER}
+\ttindexswitch[TPS]{psprintorder}
 
-When the switch \sw{PSPRINTORDER} is ON the trailing terms of power series
-beyond \texttt{PSEXPLIM} are represented in print by a big-O notation,
+When the switch \sw{psprintorder} is ON the trailing terms of power series
+beyond \texttt{psexplim} are represented in print by a big-O notation,
 otherwise, three dots are printed. This switch is ON by default.
 However, if expression being expanded is a polynomial in the expansion
 variable and all non-zero terms have been output then the big-O or trailing
@@ -259,69 +265,69 @@ In this section a number of accessor functions which allow the user to extract
 information such as the dependent variable, expansion point, a particular term
 etc. of a power series object.
 
-\textbf{PSDEPVAR Operator}
+\textbf{psdepvar Operator}
 \hypertarget{operator:PSDEPVAR}{}
-\ttindextype{PSDEPVAR}{operator}
+\ttindextype{psdepvar}{operator}
 \begin{verbatim}
-  PSDEPVAR(TPS:power series object):identifier.
+  psdepvar(TPS:power series object):identifier.
 \end{verbatim}
-The operator \texttt{PSDEPVAR} returns the expansion variable of the
+The operator \texttt{psdepvar} returns the expansion variable of the
 power series object TPS. TPS should evaluate to a power
 series object or an integer, otherwise an error results. If TPS
-is an integer, the identifier \texttt{UNDEFINED} is returned.
+is an integer, the identifier \texttt{undefined} is returned.
 
-\textbf{PSEXPANSIONPT operator}
+\textbf{psexpansionpt operator}
 \hypertarget{operator:PSEXPANSIONPT}{}
-\ttindextype{PSEXPANSIONPT}{operator}
+\ttindextype{psexpansionpt}{operator}
 \begin{verbatim}
-  PSEXPANSIONPT(TPS:power-series-object):algebraic.
+  psexpansionpt(TPS:power-series-object):algebraic.
 \end{verbatim}
-The operator \texttt{PSEXPANSIONPT} returns the expansion point of the
+The operator \texttt{psexpansionpt} returns the expansion point of the
 power series object TPS. TPS should evaluate to a power
 series object or an integer, otherwise an error results. If TPS
-is an integer, the identifier \texttt{UNDEFINED} is returned. If the
-expansion is about infinity, the identifier \texttt{INFINITY} is
+is an integer, the identifier \texttt{undefined} is returned. If the
+expansion is about infinity, the identifier \texttt{infinity} is
 returned.
 
-\textbf{PSFUNCTION Operator}
+\textbf{psfunction Operator}
 \hypertarget{operator:PSFUNCTION}{}
-\ttindextype{PSFUNCTION}{operator}
+\ttindextype{psfunction}{operator}
 \begin{verbatim}
-  PSFUNCTION(TPS:power-series-object):algebraic.
+  psfunction(TPS:power-series-object):algebraic.
 \end{verbatim}
-The operator \texttt{PSFUNCTION} returns the function whose expansion
+The operator \texttt{psfunction} returns the function whose expansion
 gave rise to the power series object TPS. TPS should
 evaluate to a power series object or an integer, otherwise an error
 results.
 
-\textbf{PSTERM Operator}
+\textbf{psterm Operator}
 \hypertarget{operator:PSTERM}{}
-\ttindextype{PSTERM}{operator}
+\ttindextype{psterm}{operator}
 \begin{verbatim}
-  PSTERM(TPS:power-series-object, 
+  psterm(TPS:power-series-object, 
          NTH:integer):algebraic.
 \end{verbatim}
-The operator \texttt{PSTERM} returns the NTH term of the existing
+The operator \texttt{psterm} returns the NTH term of the existing
 power series object TPS. If NTH does not evaluate to
 an integer or TPS to a power series object an error results.  It
 should be noted that an integer is treated as a power series.
 
-\textbf{PSORDER Operator}
+\textbf{psorder Operator}
 \hypertarget{operator:PSORDER}{}
-\ttindextype{PSORDER}{operator}
+\ttindextype{psorder}{operator}
 \begin{verbatim}
-  PSORDER(TPS:power-series-object):integer.
+  psorder(TPS:power-series-object):integer.
 \end{verbatim}
-The operator \texttt{PSORDER} returns the order, that is the degree of
+The operator \texttt{psorder} returns the order, that is the degree of
 the first non-zero term, of the power series object TPS.
 TPS should evaluate to a power series object or an error results. If
-TPS is zero, the identifier \texttt{UNDEFINED} is returned.
+TPS is zero, the identifier \texttt{undefined} is returned.
 
-\textbf{PSTRUNCATE Operator}
+\textbf{pstruncate Operator}
 \hypertarget{operator:PSTRUNCATE}{}
-\ttindextype{PSTRUNCATE}{operator}
+\ttindextype{pstruncate}{operator}
 \begin{verbatim}
-  PSTRUNCATE(TPS:power-series-object,
+  pstruncate(TPS:power-series-object,
              POWER:integer):algebraic.
 \end{verbatim}
 This procedure truncates the power series \texttt{TPS} discarding terms
@@ -342,12 +348,12 @@ returned.  If \texttt{POWER} does not simplify to an integer or if
 
 \subsection{Power Series Reversion}
 \hypertarget{operator:PSREVERSE}{}
-\ttindextype{PSREVERSE}{operator}
+\ttindextype{psreverse}{operator}
 \index{Power series!reversion}
-In order to functionally invert a power series the operator \texttt{PSREVERSE}
+In order to functionally invert a power series the operator \texttt{psreverse}
 is used. 
 \begin{verbatim}
-    PSREVERSE(TPS:power-series-object)
+    psreverse(TPS:power-series-object)
               :power-series-object
 \end{verbatim}
 Four cases arise:
@@ -385,12 +391,12 @@ Some examples:
 
 \subsection{Power Series Composition}
 \hypertarget{operator:PSCOMPOSE}{}
-\ttindextype{PSCOMPOSE}{operator}
+\ttindextype{pscompose}{operator}
 \index{Power series!composition}
 In order to functionally compose two power series the operator
-\texttt{PSCOMPOSE} is used. 
+\texttt{pscompose} is used. 
 \begin{verbatim}
-   PSCOMPOSE(TPS1:power-series-object,
+   pscompose(TPS1:power-series-object,
              TPS2:power-series-object)
              :power-series-object
 \end{verbatim}
@@ -435,24 +441,24 @@ Some examples:
   % about x=0.
 \end{verbatim}
 
-\subsection{PSSUM Operator}
+\subsection{pssum Operator}
 \hypertarget{operator:PSSUM}{}
-\ttindextype{PSSUM}{operator}
+\ttindextype{pssum}{operator}
 If an expression is known for the nth term of a power series, an extendible
-power series object may be constructed by the operator \texttt{PSSUM}
+power series object may be constructed by the operator \texttt{pssum}
 
 \begin{verbatim}
-   PSSUM(J:kernel = LOWLIM:integer, 
+   pssum(J:kernel = LOWLIM:integer, 
          COEFF:algebraic, X:kernel, 
          ABOUT:algebraic, POWER:algebraic)
          :power-series-object
 \end{verbatim}
 
-The formal power series sum for J from LOWLIM to \texttt{INFINITY} of
+The formal power series sum for J from LOWLIM to \texttt{infinity} of
 \begin{verbatim}
       COEFF*(X-ABOUT)**POWER
 \end{verbatim}
-when \texttt{ABOUT} is finite or zero, whereas if ABOUT is \texttt{INFINITY}
+when \texttt{ABOUT} is finite or zero, whereas if ABOUT is \texttt{infinity}
 \begin{verbatim}
       COEFF*(1/X)**POWER
 \end{verbatim}
@@ -465,7 +471,7 @@ ABOUT,  COEFF and POWER should not depend on the
 expansion variable X, similarly the algebraic ABOUT should
 not depend on the summation variable J.  The algebraic POWER should be
 a strictly increasing integer-valued function of J for J in the range
-LOWLIM to \texttt{INFINITY}.
+LOWLIM to \texttt{infinity}.
 
 Some examples:
 \begin{verbatim}
@@ -497,11 +503,11 @@ of convergence.
 
 \subsection{Miscellaneous Operators}
 
-\textbf{PSCOPY Operator}
+\textbf{pscopy Operator}
 \hypertarget{operator:PSCOPY}{}
-\ttindextype{PSCOPY}{operator}
+\ttindextype{pscopy}{operator}
 \begin{verbatim}
-   PSCOPY(TPS:power-series-object):power-series-object
+   pscopy(TPS:power-series-object):power-series-object
 \end{verbatim}
 This procedure returns a copy of the power series \texttt{TPS}. 
 The copy has no shared sub-structures in common with the original
@@ -517,37 +523,37 @@ will result in \texttt{a} being set to 1 in each of the terms of the
 power series and the resulting expressions being simplified. Owing to
 the way power series objects are implemented using Lisp vectors, this
 has the side-effect that the value of \texttt{b} is changed.  This may be
-avoided by copying the series with \texttt{ PSCOPY} before applying the
+avoided by copying the series with \texttt{ pscopy} before applying the
 substitution, thus:
 \begin{verbatim}
     b := ps(sin(a*x)), x, 0);
     pscopy b where a => 1;
 \end{verbatim}
 
-\textbf{PSCHANGEVAR Operator}
+\textbf{pschangevar Operator}
 \hypertarget{operator:PSCHANGEVAR}{}
-\ttindextype{PSCHANGEVAR}{operator}
+\ttindextype{pschangevar}{operator}
 \begin{verbatim}
-    PSCHANGEVAR(TPS:power-series-object,
+    pschangevar(TPS:power-series-object,
                 X:kernel):power-series-object
 \end{verbatim}
-The operator \texttt{PSCHANGEVAR} changes the dependent variable of the
+The operator \texttt{pschangevar} changes the dependent variable of the
 power series object TPS to the variable X. TPS should evaluate to a power
 series object and X to a kernel, otherwise an error results.
 Also X should not appear as a parameter in TPS. The power series with the new
 dependent variable is returned.
 
-\textbf{PSORDLIM Operator}
+\textbf{psordlim Operator}
 \hypertarget{operator:PSORDLIM}{}
-\ttindextype{PSORDLIM}{operator}
+\ttindextype{psordlim}{operator}
 \begin{verbatim}
-   PSORDLIM(UPTO:integer):integer
+   psordlim(UPTO:integer):integer
 or
-   PSORDLIM():integer
+   psordlim():integer
 \end{verbatim}
 An internal variable is set to the value of \texttt{UPTO} (which should
 evaluate to an integer). The value returned is the previous value of
-the variable.  The default value is 100.  If \texttt{PSORDLIM} is called
+the variable.  The default value is 100.  If \texttt{psordlim} is called
 with no argument, the current value is returned.
 
 The significance of this control is that the system attempts to find

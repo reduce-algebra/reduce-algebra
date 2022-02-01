@@ -282,28 +282,39 @@ deflist('((acos simpiden) (asin simpiden) (atan simpiden)
           (cosh simpiden) (sinh simpiden) (tanh simpiden)
           (asec simpiden) (acsc simpiden)
           (asech simpiden) (acsch simpiden)
+          (acosd simpiden) (asind simpiden) (atand simpiden)
+          (acotd simpiden) (cosd simpiden) (sind simpiden) (tand simpiden)
+          (secd simpiden) (cscd simpiden) (cotd simpiden) (acotd simpiden)
+          (asecd simpiden) (acscd simpiden) (atan2d simpiden)
    ),'simpfn);
 
 % The following declaration causes the simplifier to pass the full
 % expression (including the function) to simpiden.
 
 flag ('(acos asin atan acosh acot asinh atanh cos sin tan cosh sinh tanh
-        csc csch sec sech cot acot coth acoth asec acsc asech acsch),
+        csc csch sec sech cot acot coth acoth asec acsc asech acsch
+        acosd asind atand acotd cosd sind tand cscd secd cotd acotd asecd acscd
+       ),
       'full);
 
 % flag ('(atan),'oddreal);
 
 flag('(acoth acsc acsch asin asinh atan atanh sin tan csc csch sinh
-       tanh cot coth),
+       tanh cot coth sind asind tand atand cotd cscd acscd),
      'odd);
+% NB acotd is not odd (nor of course are  acosd and asecd even)
+% Principal value in all three cases lies in [0, 180].
 
-flag('(cos sec sech cosh),'even);
 
-flag('(cot coth csc csch acoth),'nonzero);
+flag('(cos sec cosd secd sech cosh),'even);
+
+flag('(cot cotd coth csc cscd csch acoth),'nonzero);
 
 % added by A Barnes 2021
-deflist('((sec 1) (sech 1) (csc 1) (csch 1) (cot 1) (coth 1)),
+deflist('((sec 1) (sed 1) (sech 1) (csc 1) (cscd 1) (csch 1) (cot 1) (cotd 1) (coth 1)),
         'number!-of!-args);
+
+put('atan2d, 'number!-of!-args, 2);
 
 % In the following rules, it is not necessary to let f(0)=0, when f
 % is odd, since simpiden already does this.
@@ -312,16 +323,22 @@ deflist('((sec 1) (sech 1) (csc 1) (csch 1) (cot 1) (coth 1)),
 % other functions.
 
 let cos(0)= 1,
+    cosd(0) => 1,
   % sec(0)= 1,
   % cos(pi/12)=sqrt(2)/4*(sqrt 3+1),
+    sind(15) => sqrt(2)/4*(sqrt 3-1),
     sin(pi/12)=sqrt(2)/4*(sqrt 3-1),
     sin(5pi/12)=sqrt(2)/4*(sqrt 3+1),
+    sind(75) => sqrt(2)/4*(sqrt 3+1),
   % cos(pi/6)=sqrt 3/2,
     sin(pi/6)= 1/2,
+    sind(30) => 1/2,
   % cos(pi/4)=sqrt 2/2,
     sin(pi/4)=sqrt 2/2,
+    sind(45) => sqrt 2/2,
   % cos(pi/3) = 1/2,
     sin(pi/3) = sqrt(3)/2,
+    sind(60) => sqrt(3)/2,
     cos(pi/2)= 0,
     sin(pi/2)= 1,
     sin(pi)= 0,
@@ -347,13 +364,18 @@ let cos(0)= 1,
   ;
 
 for all x let cos acos x=x, sin asin x=x, tan atan x=x,
+           cosd acosd x=x, sind asind x=x, tand atand x=x,
            cosh acosh x=x, sinh asinh x=x, tanh atanh x=x,
            cot acot x=x, coth acoth x=x, sec asec x=x,
+           cotd acotd x=x, secd asecd x=x, cscd acscd x=x,
            csc acsc x=x, sech asech x=x, csch acsch x=x;
 
 for all x let acos(-x)=pi-acos(x),
               asec(-x)=pi-asec(x),
-              acot(-x)=pi-acot(x);
+              acot(-x)=pi-acot(x),
+              acosd(-x)=180-acosd(x),
+              asecd(-x)=180-asecd(x),
+              acotd(-x)=180-acotd(x);  % conflicts with oddness of acotd
 
 % Fold the elementary trigonometric functions down to the origin.
 
@@ -400,6 +422,37 @@ let
      => cot(w/d + ((k/d)-fix repart(k/d))*pi)
       when ((ratnump(rp) and abs(rp) >= 1) where rp => repart(k/d));
 
+let
+ sind((~~w + ~~k)/~~d)
+     => (if evenp fix repart(k/(d*180)) then 1 else -1)
+          * sind(w/d + k/d-fix repart(k/(d*180))*180)
+     when ((ratnump(rp) and abs(rp) >= 180) where rp => repart(k/d)),
+
+ cosd((~~w + ~~k)/~~d)
+     => (if evenp fix repart(k/(d*180)) then 1 else -1)
+          * cosd(w/d + k/d-fix repart(k/(d*180))*180)
+     when ((ratnump(rp) and abs(rp) >= 180) where rp => repart(k/d)),
+
+ tand((~~w + ~~k)/~~d)
+     => tand(w/d + k/d-fix repart(k/(d*180))*180)
+     when ((ratnump(rp) and abs(rp) >= 180) where rp => repart(k/d)),        
+
+ cotd((~~w + ~~k)/~~d)
+     => cotd(w/d + k/d-fix repart(k/(d*180))*180)
+     when ((ratnump(rp) and abs(rp) >= 180) where rp => repart(k/d)),
+
+% the following 2 rules would not be inherited
+
+ cscd((~~w + ~~k)/~~d)
+     => (if evenp fix repart(k/(d*180)) then 1 else -1)
+          * cscd(w/d + k/d-fix repart(k/(d*180))*180)
+     when ((ratnump(rp) and abs(rp) >= 180) where rp => repart(k/d)),
+
+ secd((~~w + ~~k)/~~d)
+     => (if evenp fix repart(k/(d*180)) then 1 else -1)
+          * secd(w/d + k/d-fix repart(k/(d*180))*180)
+     when ((ratnump(rp) and abs(rp) >= 180) where rp => repart(k/d));
+
 % The following rules follow the pattern
 %   sin(~x + pi/2)=> cos(x) when x freeof pi
 % however allowing x to be a quotient and a negative pi/2 shift.
@@ -425,6 +478,61 @@ let sin((~x + ~~k*pi)/~~d) => sign repart(k/d)*cos(x/d + i*pi*impart(k/d))
 
     cot((~x + ~~k*pi)/~~d) => -tan(x/d + i*pi*impart(k/d))
          when x freeof pi and abs repart(k/d) = 1/2;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Rules to shift by 180 into the interval (-90,  +90)
+ 
+let
+ sind((~~w + ~~k)/~~d)
+     => -sind(w/d + k/d-sign(repart(k/d))*180)
+     when ((ratnump(rp) and abs(rp) > 90) where rp => repart(k/d)),
+
+ cosd((~~w + ~~k)/~~d)
+     => -cosd(w/d + k/d-sign(repart(k/d))*180)
+     when ((ratnump(rp) and abs(rp) > 90) where rp => repart(k/d)),
+
+ tand((~~w + ~~k)/~~d)
+     => tand(w/d + k/d-sign(repart(k/d))*180)
+     when ((ratnump(rp) and abs(rp) > 90) where rp => repart(k/d)),
+
+ cotd((~~w + ~~k)/~~d)
+     => cotd(w/d + k/d-sign(repart(k/d))*180)
+     when ((ratnump(rp) and abs(rp) > 90) where rp => repart(k/d)),
+
+% the following 2 rules would not be inherited
+ secd((~~w + ~~k)/~~d)
+     => -secd(w/d + k/d-sign(repart(k/d))*180)
+     when ((ratnump(rp) and abs(rp) > 90) where rp => repart(k/d)),
+
+ cscd((~~w + ~~k)/~~d)
+     => -cscd(w/d + k/d-sign(repart(k/d))*180)
+     when ((ratnump(rp) and abs(rp) > 90) where rp => repart(k/d));
+
+% The following rules follow the pattern
+%   sin(~x + 90)=> cos(x)
+% however allowing x to be a quotient and a negative 90 shift.
+% We need to handle only 90 shifts here because
+% the bigger shifts are already covered by the rules above.
+
+let 
+    sind((~~x + ~~k)/~~d) => sign repart(k/d)*cosd(x/d+i*impart(k/d))
+         when  abs repart(k/d) = 90,
+
+    cosd((~~x + ~~k)/~~d) => -sign repart(k/d)*sind(x/d+i*impart(k/d))
+         when  abs repart(k/d) = 90,
+
+% next two rules could be omitted and use inheritance
+    cscd((~~x + ~~k)/~~d) => sign repart(k/d)*secd(x/d+i*impart(k/d))
+       when  abs repart(k/d) = 90,
+
+    secd((~~x + ~~k)/~~d) => -sign repart(k/d)*cscd(x/d+i*impart(k/d))
+       when  abs repart(k/d) = 90,
+
+    tand((~~x + ~~k)/~~d) => -cotd(x/d+i*impart(k/d))
+         when  abs repart(k/d) = 90,
+
+    cotd((~~x + ~~k)/~~d) => -tand(x/d+i*impart(k/d))
+         when  abs repart(k/d) = 90;
 
 % Inherit function values.
 
@@ -486,6 +594,27 @@ let asin(~x)=>pi/2 - acos(x) when knowledge_about(acos,x,asin),
     asec(~x) => acos(1/x) when knowledge_about(acos,1/x,asec),
     acsch(~x) => acsc(-i*x)/i when knowledge_about(acsc,-i*x,acsch),
     asech(~x) => asec(x)/i when knowledge_about(asec,x,asech);
+
+let 
+     cosd(~x) => sind(90-x)
+         when x neq 0 and knowledge_about(sind, 90-x, cosd),
+%  Test for x /= 0 necessary to avoid circularity in pattern matcher 
+%  with the rule for 90 deg shifts for sin 
+% note third argument of knowledge_about prevents rule triggering for args
+% x+/-pi/2
+    tand(~x) => trigquot(sind(x),cosd(x)) 
+             when knowledge_about(sind,x,cosd),
+    cotd(~x) => trigquot(cosd(x),sind(x))
+               when  knowledge_about(sind,x,cosd),
+    secd(~x) => 1/cosd(x) when knowledge_about(cosd,x,sind),
+    cscd(~x) => 1/sind(x) when knowledge_about(sind,x,cosd);
+  
+% area functions
+
+let asind(~x) => 90 - acosd(x) when knowledge_about(acosd,x,asind),
+    acotd(~x) => 90 - atand(x) when knowledge_about(atand,x,acotd),
+    acscd(~x) => asind(1/x) when knowledge_about(asind,1/x,acscd),
+    asecd(~x) => acosd(1/x) when knowledge_about(acosd,1/x,asecd);
 
 % hyperbolic functions
 
@@ -609,6 +738,46 @@ let atan_rules;
 
 clear atan_rules;
 
+for j:=1:2 do begin scalar olddmode,!*msg;
+  acosd_rules :=
+    symbolic(
+    'list . for j:=0:12 join
+      (if eqcar(q,'acosd) and cadr q=w then {{'replaceby,q,u}})
+       where q=reval{'acosd,w}
+        where w=reval{'cosd,u}
+         where u =15*j)$
+
+  atand_rules :=
+    symbolic(
+    'list . for j:=0:5 join
+      (if eqcar(q,'atand) and cadr q=w then {{'replaceby,q,u}})
+       where q= reval{'atand,w}
+        where w= reval{'tand,u}
+         where u= 15*j)$
+
+% Don't know which domain mode is in effect.
+% Reset any domain mode if j=1.
+   symbolic <<
+     if j=1 then <<
+        olddmode := dmode!*;
+        if olddmode then setdmode(olddmode,nil)>>
+      else setdmode('rational,t);
+   >>;
+
+   let acosd_rules;
+   clear acosd_rules;
+   let atand_rules;
+   clear atand_rules;
+
+% switch back to original domain mode at end
+   symbolic <<
+     if j=2 then <<
+        if olddmode then setdmode(olddmode,t)
+         else setdmode('rational,nil) >>;
+   >>;
+ end;
+
+
 % added by A. Barnes to facilitate use of symbolic complex conjugates
 % and to automatically add the appropriate fancy symbol property to
 % the complex conjugate. May 2021.
@@ -664,6 +833,7 @@ end;
 repart(pi) := pi$       % $ used for bootstrapping purposes.
 impart(pi) := 0$
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ***** Differentiation rules *****.
 
 for all x let df(acos(x),x)= -sqrt(1-x**2)/(1-x**2),
@@ -688,7 +858,19 @@ for all x let df(acos(x),x)= -sqrt(1-x**2)/(1-x**2),
               df(tanh x,x)=1-tanh(x)**2,
               df(csch x,x)= -csch x*coth x,
               df(cot x,x)=-1-cot x**2,
-              df(coth x,x)=1-coth x**2;
+              df(coth x,x)=1-coth x**2,
+              df(cosd(x),x) = -pi/180*sind(x),
+              df(sind(x),x) = pi/180*cosd(x),
+              df(tand(x),x) = pi/180*(1 + tand x**2),
+              df(cotd(x),x) = -pi/180*(1+cotd x**2),
+              df(secd(x),x) = pi/180*secd(x)*tand(x),
+              df(cscd(x),x) = -pi/180*cscd(x)*cotd(x),
+              df(acosd(x),x) = -180/pi*sqrt(1-x**2)/(1-x**2),
+              df(asind(x),x) = 180/pi*sqrt(1-x**2)/(1-x**2),
+              df(atand(x),x) = 180/(pi*(1+x**2)),
+              df(acotd(x),x) = -180/(pi*(1+x**2)),
+              df(acscd(x),x) =  -180/(pi*x*sqrt(x**2 - 1)),
+              df(asecd(x),x) = 180/(pi*x^2*sqrt(1-1/x^2));
 
 % Beware we cannot take an x factor inside the sqrt in the 4 formulae below
 % as this changes the cuts and introduces sign errors in part of the domain.
@@ -701,9 +883,10 @@ let df(acsc(~x),x) =>  -1/(x^2*sqrt(1-1/x^2)),
 % This rule must appear before simp!-atan2 during bootstrap.
 % Otherwise, the simplication of the right hand side calls ezgcdf which
 % isn't defined yet.
-% Temporarily set up simiden as simpfn (overwritten below)
+% Temporarily set up simpiden as simpfn (overwritten below)
 put('atan2,'simpfn,'simpiden);  %temporary, see below
-let df(atan2(~y,~x),~z) => (x*df(y, z)-y*df(x, z))/(x^2+y^2);
+let df(atan2(~y,~x),~z) => (x*df(y, z)-y*df(x, z))/(x^2+y^2),
+    df(atan2d(~y,~x),~z) => 180/pi*(x*df(y, z)-y*df(x, z))/(x^2+y^2);
 
 % This procedure now works for complex arguments and gives results compatible 
 % with the numerical results returned by cratan2!* (and rdatan2!*)
@@ -780,6 +963,16 @@ begin scalar z,v,w;
    >>;
    return simpiden {'atan2, y, x};
 end;
+
+let 
+   atan2d(~y, 0) => sign(y)*90
+      when y neq 0 and  fixp sign(y),
+   atan2d(0, ~x) => (if sign(x)=1 then 0 else 180)
+      when x neq 0 and fixp sign(x),
+   atan2d(~y, ~x) => (if sign(x)=1 then 0 
+                     else if sign(y)=1 then 180
+                     else -180) + atand(y/x)
+      when fixp sign(x) and fixp sign(y);
 
 
 %for all x let e**log x=x;   % Requires every power to be checked.
@@ -866,6 +1059,37 @@ invtrigrules := {
 %                   and acos((1-x^2)/(1+x^2)) freeof acos
 }$
 
+let
+  sind(atand ~u)   => u/sqrt(1+u^2),
+  cosd(atand ~u)   => 1/sqrt(1+u^2),
+  sind(2*atand ~u) => 2*u/(1+u^2),
+  cosd(2*atand ~u) => (1-u^2)/(1+u^2),
+  sind(~n*atand ~u) => sind((n-2)*atand u) * (1-u^2)/(1+u^2) +
+                     cosd((n-2)*atand u) * 2*u/(1+u^2)
+                     when fixp n and n>2,
+  cosd(~n*atand ~u) => cosd((n-2)*atand u) * (1-u^2)/(1+u^2) -
+                     sind((n-2)*atand u) * 2*u/(1+u^2)
+                     when fixp n and n>2,
+  sind(acosd ~u) => sqrt(1-u^2),
+  cosd(asind ~u) => sqrt(1-u^2),
+  sind(2*acosd ~u) => 2 * u * sqrt(1-u^2),
+  cosd(2*acosd ~u) => 2*u^2 - 1,
+  sind(2*asind ~u) => 2 * u * sqrt(1-u^2),
+  cosd(2*asind ~u) => 1 - 2*u^2,
+  sind(~n*acosd ~u) => sind((n-2)*acosd u) * (2*u^2 - 1) +
+                     cosd((n-2)*acosd u) * 2 * u * sqrt(1-u^2)
+                     when fixp n and n>2,
+  cosd(~n*acosd ~u) => cosd((n-2)*acosd u) * (2*u^2 - 1) -
+                     sind((n-2)*acosd u) * 2 * u * sqrt(1-u^2)
+                     when fixp n and n>2,
+  sind(~n*asind ~u) => sind((n-2)*asind u) * (1 - 2*u^2) +
+                     cosd((n-2)*asind u) * 2 * u * sqrt(1-u^2)
+                     when fixp n and n>2,
+  cosd(~n*asind ~u) => cosd((n-2)*asind u) * (1 - 2*u^2) -
+                     sind((n-2)*asind u) * 2 * u * sqrt(1-u^2)
+                     when fixp n and n>2;
+
+
 % The following are useful for simplifying sqrts of complex values
 % Added by A Barnes, Aug 2015
 invtrigrules2 := {
@@ -927,6 +1151,21 @@ trig_imag_rules := {
 
 let trig_imag_rules;
 
+%trigd_imag_rules := {
+%    sind(i * ~~x)   => i * sinh(pi*x/180) when impart(y)=0,
+%    cosd(i * ~~x / ~~y)   => cosh(pi*x/(180*y)) when impart(y)=0,
+%    tand(i * ~~x / ~~y)   => i * tanh(pi*x/(180*y)) when impart(y)=0,
+%    cotd(i * ~~x / ~~y)   => -coth(pi*x/(180*y)) when impart(y)=0,
+%    cscd(i * ~~x / ~~y)   => -i * csch(pi*x/(180*y)) when impart(y)=0,
+%    secd(i * ~~x / ~~y)   => sech(pi*x/(180*y)) when impart(y)=0,
+%    asind(i * ~~x / ~~y)  => 180i/pi * asinh(x/y) when impart(y)=0,
+%    atand(i * ~~x / ~~y)  => 180i/pi * atanh(x/y) when impart(y)=0
+%                                and not(x=1 and y=1)
+%}$
+
+% let trigd_imag_rules;
+
+
 % Generalized periodicity rules for trigonometric functions.
 % FJW, 16 October 1996.
 % exp rule corrected and others generalised to work for negative n
@@ -948,6 +1187,26 @@ let {
  exp(~n*i*pi*arbint(~k) + ~~x) => 
       exp((if evenp n then 0 else 1)*i*pi*arbint(k) + x) when fixp n
 };
+
+let 
+ cosd(~n*arbint(~k) + ~~x) => cosd(x+(n-fix(n/360)*360)*arbint(k))
+    when fixp(n) and abs n >= 360,
+
+ sind(~n*arbint(~k) + ~~x) => sind(x+(n-fix(n/360)*360)*arbint(k))
+     when fixp(n) and abs n >= 360,
+
+ secd(~n*arbint(~k) + ~~x) => secd(x+(n-fix(n/360)*360)*arbint(k))
+     when fixp(n) and abs n >= 360,
+
+ cscd(~n*arbint(~k) + ~~x) => cscd(x+(n-fix(n/360)*360)*arbint(k))
+     when fixp(n) and abs n >= 360,
+
+ tand(~n*arbint(~k) + ~~x) => tand(x+(n-fix(n/180)*180)*arbint(k))
+     when fixp(n) and abs n >= 180,
+
+ cotd(~n*arbint(~k) + ~~x) => cotd(x+(n-fix(n/180)*180)*arbint(k))
+     when fixp(n) and abs n >= 180;
+
 
 endmodule;
 

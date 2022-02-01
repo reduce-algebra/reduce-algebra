@@ -27,7 +27,7 @@ module rdelem;  % Elementary functions in rounded domain.
 
 exports deg2rad!*, quotient!:, rad2deg!*, rdacos!*, rdacosd!*,
         rdacosh!*, rdacot!*, rdacotd!*, rdacoth!*, rdacsc!*, rdacscd!*,
-        rdacsch!*, rdarg!*, rdasec!*, rdasecd!*, rdasech!*, rdasin!*,
+        rdacsch!*, rdarg!*, rdargd!*, rdasec!*, rdasecd!*, rdasech!*, rdasin!*,
         rdasind!*, rdasinh!*, rdatan!*, rdatan2!*, rdatan2d!*,
         rdatand!*, rdatanh!*, rdcbrt!*, rdcos!*, rdcosd!*, rdcosh!*,
         rdcot!*, rdcotd!*, rdcoth!*, rdcsc!*, rdcscd!*, rdcsch!*,
@@ -42,11 +42,11 @@ imports !*f2q, abs!:, acos, acos!*, acosd, acosh, acot, acotd, acoth,
         asinh, atan, atan!*, atan2, atan2d, atand, atanh, bflerrmsg,
         bfloat, bfp!:, bfsqrt, cbrt, conv!:bf2i, conv!:bf2i, conv!:mt,
         convprec, cos, cos!*, cosd, cosh, cot, cotd, coth, csc, cscd,
-        csch, difbf, divbf, e!*, ep!:, eqcar, equal!:, exp, exp!*,
+        csch, deg2rad!*, difbf, divbf, e!*, ep!:, eqcar, equal!:, exp, exp!*,
         exp!:, exptbf, geq, greaterp!:, hypot, i2rd!*, incprec!:,
         invbf, leq, leq!:, lessp!:, log, log!*, log10, log!:,
         logb, logfp, lshift, make!:ibf, minus!:, minusp!:, mk!*sq,
-        mkround, mt!:, neq, pi!*, plubf, preci!:, rd!:minus,
+        mkround, mt!:, neq, pi!*, plubf, preci!:, rad2deg!*, rd!:minus,
         rd!:minusp, read!:num, rndbfon, round!*, round!:last,
         round!:mt, sec, secd, sech, sgn, simprd, sin, sin!*, sind,
         sinh, sqrt, sqrt!:, tan, tan!*, tand, tanh, terrlst, timbf,
@@ -73,21 +73,22 @@ deflist('((exp rdexp!*) (expt rdexpt!*) (log rdlog!*) (sin rdsin!*)
    (atan2 rdatan2!*) (hypot rdhypot!*) % (cbrt rdcbrt!*)
    (deg2rad deg2rad!*) (rad2deg rad2deg!*) (deg2dms deg2dms!*)
    (rad2dms rad2dms!*) (dms2deg dms2deg!*) (dms2rad dms2rad!*)
-   (norm rdnorm!*) (arg rdarg!*) (e rde!*) (pi rdpi!*)),
+   (norm rdnorm!*) (arg rdarg!*) (argd rdargd!*) (e rde!*) (pi rdpi!*)),
    '!:rd!:);
 
-% deflist('((sind rdsind!*) (cosd rdcosd!*) (asind rdasind!*) (acosd
-%    rdacosd!*) (tand rdtand!*) (cotd rdcotd!*) (atand rdatand!*) (acotd
-%    rdacotd!*) (secd rdsecd!*) (cscd rdcscd!*) (asecd rdasecd!*) (acscd
-%    rdacscd!*) (atan2d rdatan2d!*)),'!:rd!:);
+deflist('((sind rdsind!*) (cosd rdcosd!*) (asind rdasind!*) (acosd rdacosd!*)
+   (tand rdtand!*) (cotd rdcotd!*) (atand rdatand!*) (acotd rdacotd!*)
+   (secd rdsecd!*) (cscd rdcscd!*) (asecd rdasecd!*) (acscd rdacscd!*)
+   (atan2d rdatan2d!*)),
+   '!:rd!:);
 
 
 
 for each n in '(exp sin cos tan asin acos atan sinh cosh  % log
     sec csc cot tanh coth sech csch asinh acosh acot asec acsc atanh
     acoth asech acsch ln hypot % logb log10
-%   sind cosd asind acosd tand cotd atand acotd secd cscd asecd acscd
-%   atan2 atan2d cbrt
+    sind cosd asind acosd tand cotd atand acotd secd cscd asecd acscd
+%    atan2 atan2d cbrt
     deg2rad rad2deg deg2dms rad2dms dms2deg dms2rad norm arg argd)
        do put(n,'simpfn,'simpiden);
 
@@ -137,9 +138,9 @@ symbolic procedure rdatan2!*(u,v);
     else (mkround(if atom x then atan2(x,y) else atan2!*(x,y))
           where x=convprec u,y=convprec v);
 
-% symbolic procedure rdatan2d!*(u,v);
-%    mkround(if atom x then atan2d(x,y) else rad2deg!: atan2!*(x,y))
-%    where x=convprec u,y=convprec v;
+symbolic procedure rdatan2d!*(u,v);
+   mkround(if atom x then atan2d(x,y) else rad2deg!: atan2!*(x,y))
+   where x=convprec u,y=convprec v;
 
 symbolic procedure atan2!*(y,x);
    if mt!: x=0 then if (y := mt!: y)=0 then bfz!* else
@@ -148,6 +149,8 @@ symbolic procedure atan2!*(y,x);
       else if mt!: y<0 then difbf(a,pi!*())
          else plubf(a,pi!*()))
      where a=atan!* divbf(y,x)>>;
+
+% not used
 
 % symbolic procedure atan2d!*(y,x);
 %    if mt!: x=0 then if (y := mt!: y)=0 then bfz!* else
@@ -184,49 +187,49 @@ symbolic procedure rdsin!* u;
    mkround (if atom x then sin x else sin!* x)
    where x=convprec u;
 
-% symbolic procedure rdsind!* u;
-%    mkround (if atom x then sind x else sin!* deg2rad!: x)
-%    where x=convprec u;
+symbolic procedure rdsind!* u;
+   mkround (if atom x then sind x else sin!* deg2rad!: x)
+   where x=convprec u;
 
 symbolic procedure rdcos!* u;
    mkround(if atom x then cos x else cos!* x)
    where x=convprec u;
 
-% symbolic procedure rdcosd!* u;
-%    mkround(if atom x then cosd x else cos!* deg2rad!: x)
-%   where x=convprec u;
+symbolic procedure rdcosd!* u;
+   mkround(if atom x then cosd x else cos!* deg2rad!: x)
+   where x=convprec u;
 
 symbolic procedure rdtan!* u;
    mkround(if atom x then tan x else tan!* x)
    where x=convprec u;
 
-% symbolic procedure rdtand!* u;
-%    mkround(if atom x then tand x else tan!* deg2rad!: x)
-%   where x=convprec u;
+symbolic procedure rdtand!* u;
+   mkround(if atom x then tand x else tan!* deg2rad!: x)
+   where x=convprec u;
 
 symbolic procedure rdasin!* u;
    mkround(if atom x then asin x else asin!* x)
    where x=convprec u;
 
-% symbolic procedure rdasind!* u;
-%    mkround(if atom x then asind x else rad2deg!: asin!* x)
-%    where x=convprec u;
+symbolic procedure rdasind!* u;
+   mkround(if atom x then asind x else rad2deg!: asin!* x)
+   where x=convprec u;
 
 symbolic procedure rdacos!* u;
    mkround(if atom x then acos x else acos!* x)
    where x=convprec u;
 
-% symbolic procedure rdacosd!* u;
-%    mkround(if atom x then acosd x else rad2deg!: acos!* x)
-%    where x=convprec u;
+symbolic procedure rdacosd!* u;
+   mkround(if atom x then acosd x else rad2deg!: acos!* x)
+   where x=convprec u;
 
 symbolic procedure rdatan!* u;
    mkround(if atom x then atan x else atan!* x)
    where x=convprec u;
 
-% symbolic procedure rdatand!* u;
-%    mkround(if atom x then atand x else rad2deg!: atan!* x)
-%   where x=convprec u;
+symbolic procedure rdatand!* u;
+   mkround(if atom x then atand x else rad2deg!: atan!* x)
+   where x=convprec u;
 
 symbolic procedure rdsinh!* u;
    mkround(if atom x then sinh x else sinh!* x)
@@ -251,26 +254,25 @@ symbolic procedure rdsec!* u;
    mkround(if atom x then sec x else invbf cos!* x)
    where x=convprec u;
 
-% symbolic procedure rdsecd!* u;
-%    mkround(if atom x then secd x else invbf cos!* deg2rad!: x)
-%    where x=convprec u;
+symbolic procedure rdsecd!* u;
+   mkround(if atom x then secd x else invbf cos!* deg2rad!: x)
+   where x=convprec u;
 
 symbolic procedure rdcsc!* u;
    mkround(if atom x then csc x else invbf sin!* x)
    where x=convprec u;
 
-% symbolic procedure rdcscd!* u;
-%    mkround(if atom x then cscd x else invbf sin!* deg2rad!: x)
-%   where x=convprec u;
+symbolic procedure rdcscd!* u;
+   mkround(if atom x then cscd x else invbf sin!* deg2rad!: x)
+   where x=convprec u;
 
 symbolic procedure rdcot!* u;
    mkround(if atom x then cot x else tan!* difbf(pi!/2!*(),x))
    where x=convprec u;
 
-% symbolic procedure rdcotd!* u;
-%   mkround(if atom x then cotd x else tan!* difbf(pi!/2!*(),
-%           deg2rad!: x))
-%    where x=convprec u;
+symbolic procedure rdcotd!* u;
+   mkround(if atom x then cotd x else tan!* difbf(pi!/2!*(),deg2rad!: x))
+   where x=convprec u;
 
 symbolic procedure rdtanh!* u;
    mkround(if atom x then tanh x else divbf(sinh!* x,cosh!* x))
@@ -315,28 +317,26 @@ symbolic procedure rdacot!* u;
       else difbf(pi!/2!*(),atan!* x))
    where x=convprec u;
 
-% symbolic procedure rdacotd!* u;
-%   mkround(if atom x then acotd x
-%       else rad2deg!: difbf(pi!/2!*(),atan!* x))
-%    where x=convprec u;
+symbolic procedure rdacotd!* u;
+   mkround(if atom x then acotd x else rad2deg!: difbf(pi!/2!*(),atan!* x))
+   where x=convprec u;
 
 symbolic procedure rdasec!* u;  % not yet
    mkround(if atom x then asec x else
       difbf(pi!/2!*(),asin!* invbf x))
    where x=convprec u;
 
-% symbolic procedure rdasecd!* u;  % not yet
-%    mkround(if atom x then asecd x else
-%       rad2deg!: difbf(pi!/2!*(),asin!* invbf x))
-%    where x=convprec u;
+symbolic procedure rdasecd!* u;  % not yet
+   mkround(if atom x then asecd x else rad2deg!: difbf(pi!/2!*(),asin!* invbf x))
+   where x=convprec u;
 
 symbolic procedure rdacsc!* u;
    mkround(if atom x then acsc x else asin!* invbf x)
    where x=convprec u;
 
-% symbolic procedure rdacscd!* u;
-%   mkround(if atom x then acscd x else rad2deg!: asin!* invbf x)
-%   where x=convprec u;
+symbolic procedure rdacscd!* u;
+   mkround(if atom x then acscd x else rad2deg!: asin!* invbf x)
+   where x=convprec u;
 
 symbolic procedure rdatanh!* u;
    mkround(if atom x then atanh x else atanh!* x)
@@ -471,6 +471,9 @@ symbolic procedure rdnorm!* u; if rd!:minusp u then rd!:minus u else u;
 
 symbolic procedure rdarg!* u;
    if rd!:minusp u then rdpi!*() else rdzero!*();
+
+symbolic procedure rdargd!* u;
+   if rd!:minusp u then i2rd!*(180) else rdzero!*();
 
 % the following bfloat definitions are needed in addition to files
 % smbflot and bfelem.red to support rdelem.

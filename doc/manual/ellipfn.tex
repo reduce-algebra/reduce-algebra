@@ -59,20 +59,20 @@ The following Jacobi elliptic functions are available:-
 \hypertarget{operator:JACOBISN}{}
 \hypertarget{operator:JACOBICN}{}
 \hypertarget{operator:JACOBIDN}{}
-\hypertarget{operator:Jacobisd}{}
-\hypertarget{operator:Jacobind}{}
-\hypertarget{operator:Jacobidc}{}
-\hypertarget{operator:Jacobinc}{}
-\hypertarget{operator:Jacobisc}{}
-\hypertarget{operator:Jacobins}{}
-\hypertarget{operator:Jacobids}{}
-\hypertarget{operator:Jacobics}{}
-\ttindex{Jacobisn}\ttindex{Jacobicn}
-\ttindex{Jacobidn}\ttindex{Jacobicd}
-\ttindex{Jacobisd}\ttindex{Jacobind}
-\ttindex{Jacobidc}\ttindex{Jacobinc}
-\ttindex{Jacobisc}\ttindex{Jacobins}
-\ttindex{Jacobids}\ttindex{Jacobics}
+\hypertarget{operator:JACOBISD}{}
+\hypertarget{operator:JACOBIND}{}
+\hypertarget{operator:JACOBIDC}{}
+\hypertarget{operator:JACOBINC}{}
+\hypertarget{operator:jACOBISC}{}
+\hypertarget{operator:JACOBINS}{}
+\hypertarget{operator:JACOBIDS}{}
+\hypertarget{operator:JACOBICS}{}
+\ttindex{jacobisn}\ttindex{jacobicn}
+\ttindex{jacobidn}\ttindex{jacobicd}
+\ttindex{jacobisd}\ttindex{jacobind}
+\ttindex{jacobidc}\ttindex{jacobinc}
+\ttindex{jacobisc}\ttindex{jacobins}
+\ttindex{jacobids}\ttindex{jacobics}
 \begin{itemize}
 \item jacobisn(u,k)
 \item jacobidn(u,k)
@@ -122,11 +122,11 @@ complex arguments it is also better if the \sw{complex} switch is also ON.
 However, if \sw{complex} is OFF, an addition rule will be applied followed by
 Jacobi rules for a purely imaginary first arguments and then the result
 evaluated numerically. This will be considerably more expensive computationally
-than when switch \sw{complex} is ON.
+than when switch \sw{complex} is ON and rounding errors are likely to be larger.
 
 \subsubsection{Jacobi Amplitude Function}
 \hypertarget{operator:JACOBIAM}{}
-\ttindex{Jacobiam}
+\ttindex{jacobiam}
 The amplitude of $u$ can be evaluated using the \f{jacobiam(u,k)}
 command.  A rule list is provided for differentiation of this
 functions with respect to either argument.
@@ -195,7 +195,7 @@ of the arguments.
 
 \subsubsection{Elliptic F}
 \hypertarget{operator:ELLIPTICF}{}
-\ttindex{EllipticF}
+\ttindex{ellipticF}
 
 The Elliptic F function can be used as \f{EllipticF(phi,k)} and
 will return the value of the \emph{Incomplete Elliptic Integral of the
@@ -204,7 +204,7 @@ First Kind}:
 
 \subsubsection{Elliptic K}
 \hypertarget{operator:ELLIPTICK}{}
-\ttindex{EllipticK}
+\ttindex{ellipticK}
 
 The Elliptic K function can be used as \f{EllipticK(k)} and will
 return the value of the \emph{Complete Elliptic Integral of the
@@ -238,8 +238,8 @@ and will return the value
 
 \subsubsection{Jacobi E}
 \hypertarget{operator:JACOBIE}{}
-\ttindex{JacobiE}
-The Jacobi E function can be used as  \f{JacobiE(u,k)};
+\ttindex{jacobiE}
+The Jacobi E function can be used as  \f{jacobiE(u,k)};
 it will return the value of Jacobi's form of
 the \emph{Incomplete Elliptic Integral of the Second Kind}:
 \[\mathcal{E}(u, k)=\int_0^u \mathrm{dn}^2 (v, k) \,\mathrm{d}v.\]
@@ -265,15 +265,15 @@ On non-GUI interfaces the Jacobi E function is rendered as E\_j.
 
 \subsubsection{Jacobi's Zeta Function}
 \hypertarget{operator:JACOBIZETA}{}
-\ttindex{JacobiZeta}\index{Zeta function of Jacobi}
+\ttindex{jacobiZeta}\index{Zeta function of Jacobi}
 
-This can be called as \f{JacobiZeta(u,k)} and refers to Jacobi's (elliptic)
+This can be called as \f{jacobiZeta(u,k)} and refers to Jacobi's (elliptic)
 Zeta function $\mathrm{Z}(u,k)$ whereas the operator \f{Zeta} will invoke
 Riemann's $\zeta$ function.
 
 
 \subsection{Some Numerical Utility Functions}
-\hypertarget{operator:nome}{}
+\hypertarget{operator:NOME}{}
 \hypertarget{ELLIPNOME}{}
 \ttindex{nome} \index{Nome and Related functions}
 
@@ -307,8 +307,8 @@ Firstly four separate functions of two arguments are defined:
 \hypertarget{operator:ELLIPTICTHETA2}{}
 \hypertarget{operator:ELLIPTICTHETA3}{}
 \hypertarget{operator:ELLIPTICTHETA4}{}
-\ttindex{EllipticTheta1} \ttindex{EllipticTheta2}
-\ttindex{EllipticTheta3} \ttindex{EllipticTheta4}
+\ttindex{elliptictheta1} \ttindex{elliptictheta2}
+\ttindex{elliptictheta3} \ttindex{elliptictheta4}
 \begin{itemize}
 \item \f{elliptictheta1(u,tau)} $\qquad \vartheta_1(u, \tau)$
 \item \f{elliptictheta2(u,tau)} $\qquad \vartheta_2(u, \tau)$
@@ -436,12 +436,12 @@ Three main functions of three arguments are defined:
 \hypertarget{operator:SIGMA}{}
 \hypertarget{operator:WEIERSTRASS}{}
 \hypertarget{operator:WEIERSTRASSZETA}{}
-\ttindex{Weierstrass} \ttindex{WeierstrassZeta}
-\ttindex{sigma}
+\ttindex{weierstrass} \ttindex{weierstrassZeta}
+\ttindex{weierstrass\_sigma}
 \begin{itemize}
 \item  $\wp(u, \omega_1, \omega_3)$ \ --- \ \f{weierstrass(u,omega1,omega3)}
 \item $\zeta_w(u, \omega_1, \omega_3)$ \ --- \ \f{weierstrassZeta(u,omega1,omega3)}
-\item $\sigma(u, \omega_1, \omega_3)$ \ --- \ \f{sigma(u,omega1,omega3)}
+\item $\sigma(u, \omega_1, \omega_3)$ \ --- \ \f{weierstrass\_sigma(u,omega1,omega3)}
 \end{itemize}
 
 The notation used is broadly similar used by Lawden \cite{Lawden:89} which is also used in the
@@ -494,7 +494,7 @@ necessary to ensure $\Im(\omega_3/\omega_1) >0$ as the second and third paramete
 \hypertarget{WEIERSTRASSZETA1}{}
 \hypertarget{operator:WEIERSTRASS1}{}
 \hypertarget{operator:WEIERSTRASSZETA1}{}
-\ttindex{Weierstrass1} \ttindex{WeierstrassZeta1}
+\ttindex{weierstrass1} \ttindex{weierstrassZeta1}
 
 Two commonly used alternative forms of the Weierstrassian functions in which
 they are regarded as functions of the lattice invariants $g_2$ and $g_3$
@@ -519,11 +519,12 @@ this  alternative:
 
 Three further Sigma functions are also provided:
 \index{Sigma functions}
-\ttindex{sigma1} \ttindex{sigma2} \ttindex{sigma3}
+\ttindex{weierstrass\_sigma1} \ttindex{weierstrass\_sigma2}
+\ttindex{weierstrass\_sigma3}
 \begin{itemize}
-\item $\sigma_1(u, \omega_1, \omega_3)$ \ --- \ \f{sigma1(u,omega1,omega3)}
-\item $\sigma_2(u, \omega_1, \omega_3)$ \ --- \ \f{sigma2(u,omega1,omega3)}
-\item $\sigma_3(u, \omega_1, \omega_3)$ \ --- \ \f{sigma3(u,omega1,omega3)}
+\item $\sigma_1(u, \omega_1, \omega_3)$ \ --- \ \f{weierstrass\_sigma1(u,omega1,omega3)}
+\item $\sigma_2(u, \omega_1, \omega_3)$ \ --- \ \f{weierstrass\_sigma2(u,omega1,omega3)}
+\item $\sigma_3(u, \omega_1, \omega_3)$ \ --- \ \f{weierstrass\_sigma3(u,omega1,omega3)}
 \end{itemize}
 These are all even functions, regular everywhere, homogenous of degree zero and doubly quasi-periodic. They are closely related to the
 theta functions $\vartheta_2$, $\vartheta_3$ and $\vartheta_4$ respectively; but \emph{note the difference in numbering}.
@@ -662,29 +663,38 @@ arguments such $x=0$, $k=0$ and $k=1$, to implement the inverse function
 simplification formulae illustrated immediately above and for differentiation
 of these functions with respect to their two arguments.
 
-Note that although $\mathrm{sc}, \mathrm{sd}, \mathrm{cs}$ and $\mathrm{ds}$
-are all odd functions of their first argument, the situation is somewhat
-different for the principal values of their inverses;  $\mathrm{arcsc}$ and
-$\mathrm{arcsd}$ are also odd functions of their first argument, whereas
-the functions $\mathrm{arccs}$ and $\mathrm{arcds}$ satisfy:
-\[ \mathrm{arccs}(-x, k) = 2\mathrm{K}(k)-\mathrm{arccs}(x, k),\qquad
-\mathrm{arcds}(-x, k) = 2\mathrm{K}(k)-\mathrm{arcds}(x, k).\]
-
+Note that for simplicity $ \mathrm{arccs}$ is now defined to be an odd
+function of its first argument like $\mathrm{cs}$.
 This choice means that the range of (real) principal values is
-connected, in fact the open interval $(0, 2\mathrm{K}(k))$. c.f.
+\emph{no longer connected} as it is the open set
+$(-\mathrm{K}(k), \mathrm{K}(k)) \setminus 0$.
+It brings it into line with $\mathrm{arcns}$ and
+$\mathrm{arcds}$ whose principal value ranges are necessarily not connected
+as they have poles at zero;
+similarly for the range of principal values of $\mathrm{arcdc}$ which has
+a pole at $\mathrm{K}(k)$.
+  
+In earlier versions of the package it was taken to satisfy:
+\[ \mathrm{arccs}(-x, k) = 2\mathrm{K}(k)-\mathrm{arccs}(x, k).\]
+This was analogous to the situation in Reduce for $\mathrm{acot}$ where
 \[ \mathrm{arctan}(-x) = -\mathrm{arctan}(x),\qquad
   \mathrm{arccot}(-x) = \pi -\mathrm{arccot}(x). \]
 
-When their arguments are purely numerical, these functions  will be evaluated
-numerically if the \sw{rounded} switch is ON.  Currently numerical evaluation
-is only available when both arguments are real and $|k|<=1$ and when the
-result is also real. This neccessitates restictions on the range of acceptable
-values of the first parameter $x$ (see the table below). Note that for
-$\mathrm{arcdn}$ and $\mathrm{arcnd}$ a zero value of the modulus $k$ is
-excluded (since $\mathrm{dn}(x,0) = \mathrm{nd}(x,0) = 1 \quad \forall x$).
+When their arguments are \emph{numerical and real}, these functions will be
+evaluated numerically if the \sw{rounded} switch is ON provided, of course that
+the defining elliptic integral is convergent. Note that in some cases the result
+may be imaginary even if both arguments are real. In these cases if further computation
+is required involving the result, it is better if the switch \sw{complex} is also ON
+
+Note also that for $\mathrm{arcdn}$ and $\mathrm{arcnd}$ a zero value of the modulus $k$
+is excluded (since $\mathrm{dn}(x,0) = \mathrm{nd}(x,0) = 1 \quad \forall x$).
 
 As the Jacobi elliptic functions are doubly periodic, the inverse functions
-are multi-valued. The numerical value returned is the principal value which
+are multi-valued. When both arguments are real and $|k|<=1$ and when the
+result exists and is real there are certain restrictions on the range of
+acceptable values of the first parameter $x$ (see the table below).
+
+The numerical value returned is the principal value which
 lies in the range  given in the third column of the table below. 
 (c.f. the inverse trigonometric functions). Other \emph{real} values of the
 inverse functions are indicated in the fourth column of the table below where
@@ -717,7 +727,7 @@ $\mathop{\mathrm{arcnd}}$: & $ 1 <= x <= 1/k'$ &
   $0 <= v <= \mathrm{K}(k)$ &
   $2 n\mathrm{K}(k) \pm v$ \\   
 $\mathop{\mathrm{arcds}}$: & $ |x| >= k'$ &
-  $0 < v < 2 \mathrm{K}(k)$ &
+  $-\mathrm{K}(k) <= v <= \mathrm{K}(k)$ \& $v \neq 0$ &
   $2 n\mathrm{K}(k)+(-1)^nv $ \\  
 $\mathop{\mathrm{arcsd}}$: & $  |x| <= 1/k'$ &
   $-\mathrm{K}(k) <= v <= \mathrm{K}(k)$ &
@@ -726,9 +736,27 @@ $\mathop{\mathrm{arcsc}}$: & $ x \in \mathbb{R}$ &
   $-\mathrm{K}(k) < v < \mathrm{K}(k)$ &
   $2 n\mathrm{K}(k) + v$ \\  
 $\mathop{\mathrm{arccs}}$: & $ x \in \mathbb{R}$ &
-  $ 0 < v < 2 \mathrm{K}(k)$ &
+$-\mathrm{K}(k) < v < \mathrm{K}(k)$ \& $v \neq 0$ 
   $2 n\mathrm{K}(k) + v$ \\
 \end{tabular}
+
+If one or both arguments are complex, the current version of the package
+attempts to evaluate the result numerically \emph{provided that} the switch
+\sw{complex} is also ON. This code is still under development and whilst
+it succeeds in many cases, it may fail with a \emph{divergent integral error
+message}. If the function in question has a branch point or pole at the
+evaluation point, this is of course correct, but in other cases the value may
+exist, but the current choice of symmetric integral in the algorithm may
+diverge. This can occur when the first parameter is a subrange of the real or
+imaginary axis.
+
+The value currently returned may not always be the principal value
+(ie. the value in the fundamental period parallelogram of the elliptic
+function concerned). However, the value returned should be \emph
+{an inverse value}
+
+(ie. $\mathrm{jacobipq}(\mathrm{arcpq}(z,k),k)) = z$ where
+$\mathrm{pq} = \mathrm{sn, cn, dn, cs} \ldots $).
 
 The numerical values of the inverse functions are calculated by
 expressing them in terms of the symmetric elliptic integral:
@@ -774,18 +802,18 @@ Incomplete Integral (1st kind) $\mathrm{F}(\phi,k)$ & \f{ellipticF(phi,k)}\\
 Complete Integral (2nd kind) $\mathrm{E}(k)$ & \f{ellipticE(k)}\\
 $\mathrm{E}^\prime(k)$ & \f{ellipticE!'(k)}\\
 Legendre Incomplete Int (2nd kind) $\mathrm{E}(u,k)$ & \f{ellipticE(u,k)}\\
-Jacobi Incomplete Int (2nd kind) $\mathcal{E}(u,k)$ & \f{JacobiE(u,k)}\\
-Jacobi's Zeta $\mathrm{Z}(u,k)$ & \f{jacobizeta(u,k)}\\
+Jacobi Incomplete Int (2nd kind) $\mathcal{E}(u,k)$ & \f{jacobiE(u,k)}\\
+Jacobi's Zeta $\mathrm{Z}(u,k)$ & \f{jacobiZeta(u,k)}\\
 $\vartheta_1(u,\tau)$ & \f{elliptictheta1(u,tau)}\\
 $\vartheta_2(u,\tau)$ & \f{elliptictheta2(u,tau)}\\
 $\vartheta_3(u,\tau)$ & \f{elliptictheta3(u,tau)}\\
 $\vartheta_4(u,\tau)$ & \f{elliptictheta4(u,tau)}\\
 $\wp(u,\omega_1, \omega_3)$ & \f{weierstrass(u,omega1,omega3)}\\
-$\zeta_w(u,\omega_1, \omega_3)$ & \f{weierstrasszeta(u,omega1,omega3)}\\
-$\sigma(u,\omega_1, \omega_3)$ & \f{sigma(u,omega1,omega3)}\\
-$\sigma_1(u,\omega_1, \omega_3)$ & \f{sigma1(u,omega1,omega3)}\\
-$\sigma_2(u,\omega_1, \omega_3)$ & \f{sigma2(u,omega1,omega3)}\\
-$\sigma_3(u,\omega_1, \omega_3)$ & \f{sigma3(u,omega1,omega3)}\\
+$\zeta_w(u,\omega_1, \omega_3)$ & \f{weierstrassZeta(u,omega1,omega3)}\\
+$\sigma(u,\omega_1, \omega_3)$ & \f{weierstrass\_sigma(u,omega1,omega3)}\\
+$\sigma_1(u,\omega_1, \omega_3)$ & \f{weierstrass\_sigma1(u,omega1,omega3)}\\
+$\sigma_2(u,\omega_1, \omega_3)$ & \f{weierstrass\_sigma2(u,omega1,omega3)}\\
+$\sigma_3(u,\omega_1, \omega_3)$ & \f{weierstrass\_sigma3(u,omega1,omega3)}\\
 $\wp(u \mid g_2, g_3)$ & \f{weierstrass1(u,g2,g3)}\\
-$\zeta_w(u \mid g_2, g_3)$ & \f{weierstrasszeta1(u,g2,g3)}\\[5pt]
+$\zeta_w(u \mid g_2, g_3)$ & \f{weierstrassZeta1(u,g2,g3)}\\[5pt]
 \end{tabular}}
