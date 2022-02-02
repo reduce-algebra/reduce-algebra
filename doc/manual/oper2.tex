@@ -38,8 +38,10 @@ an identifier (or more generally a kernel), not an expression.
 
 If \texttt{F} were declared linear, then
 \begin{verbatim}
-                                5
-        f(a*x^5+b*x+c,x) ->  f(x ,x)*a + f(x,x)*b + f(1,x)*c
+        f(a*x^5+b*x+c,x) ->  
+
+                5
+             f(x ,x)*a + f(x,x)*b + f(1,x)*c
 \end{verbatim}
 More precisely, not only will the variable and its powers remain within the
 scope of the \texttt{f} operator, but so will any variable and its powers that

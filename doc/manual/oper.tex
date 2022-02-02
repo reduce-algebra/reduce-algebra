@@ -28,7 +28,7 @@ These operators are as follows:
 
 \subsection{ABS}
 \hypertarget{operator:ABS}{}
-\texttt{abs}\ttindex{abs} returns the absolute value
+\texttt{abs}\ttindextype{abs}{operator} returns the absolute value
 of its single argument, if that argument has a numerical value.
 A non-numerical argument is returned as an absolute value, with an overall
 numerical coefficient taken outside the absolute value operator. For example:
@@ -51,7 +51,7 @@ operator.  For example:
         ceiling(-a)   ->  ceiling( - a)
 \end{verbatim}
 
-\subsection{CONJ}\ttindex{CONJ}
+\subsection{CONJ}\ttindextype{conj}{operator}
 \hypertarget{operator:CONJ}{}
 This returns the complex conjugate
 of an expression, if that argument has a numerical value.  By default the
@@ -120,7 +120,36 @@ Note also that the standard elementary functions and their inverses
 operators may be declared to be self-conjugate with the declaration
 \hyperlink{command:SELFCONJUGATE}{\texttt{selfconjugate}}.
 
-\subsection{FACTORIAL}\ttindex{FACTORIAL}
+\subsection{Conversion between degree and radians}
+\ttindextype{deg2rad}{numerical operator}
+\ttindextype{rad2deg}{numerical operator}
+\ttindextype{deg2dms}{numerical operator}
+\ttindextype{rad2dms}{numerical operator}
+\ttindextype{dms2rad}{numerical operator}
+\ttindextype{dms2deg}{numerical operator}
+\hypertarget{operator:DEG2RAD}{}
+\hypertarget{operator:RAD2DEG}{}
+\hypertarget{operator:DEG2DMS}{}
+\hypertarget{operator:RAD2DMS}{}
+\hypertarget{operator:DMS2RAD}{}
+\hypertarget{operator:DMS2DEG}{}
+
+These operators convert an angle in degrees to radians and vice-versa.
+\f{rad2deg} converts the radian value to  an angle in degrees expressed as a single floating point value (according to the currently specified system precision\index{system precision}).  
+The value to be converted may be an integer, a rational or a floating value or indeed any expression that simplifies to a rounded value.
+In particular  numerical constants such as $\pi$ may be used in the input expression.
+\f{deg2rad} performs the inverse conversion.
+
+\f{rad2dms} converts the radian value to an angle expressed in degrees, minutes and seconds returned as a three element list.  The degree and minute values are integers the latter in the range $0 \ldots 59$ inclusive and the seconds value is  a floating point value in the half-open interval $[0, 60.0)$.
+Similarly, \f{deg2dms} converts an angle given in degrees into a such a three element list.
+
+The purpose of the operators  \f{dms2rad} and \f{dms2deg} should  also be obvious.  The degree, minute and second value to be converted is passed to the conversion function as a three element list.  There is considerable flexibility allowed in  format of the list supplied as parameter -- all three values may be integers, rational numbers or rounded values or any combination of these; the minute and second values need not lie between zero and sixty.  The list supplied is simplified with the appropriate \textit{carrys and borrows} performed (in effect at least) between the three values.  For example
+\begin{verbatim} 
+{60.5, 9.2, 11.234}      =>   {60, 39, 23.234}
+{45, 0, -1}              =>   {44, 59, 59}
+\end{verbatim}
+
+\subsection{FACTORIAL}\ttindextype{factorial}{numerical operator}
 \hypertarget{operator:FACTORIAL}{}
 
 If the single argument of \texttt{factorial} evaluates to a non-negative
@@ -161,7 +190,7 @@ This operator returns the imaginary part of an expression, if that argument
 has an numerical value.  A non-numerical argument is returned as an expression
 in the operators \texttt{repart}\ttindex{repart} and \texttt{impart}.  For example:
 \begin{verbatim}
-        impart(1+i)   -> 1
+        impart(1+i)        -> 1
         impart(sin(3+4*i)) -> cos(3)*sinh(4)
         impart(log(2+i))   -> atan(1/2)
         impart(asin(1+i))  -> acosh(sqrt(5)+2)/2
@@ -248,12 +277,16 @@ This is more efficient than calling \texttt{repart} and \texttt{impart}
 separately particularly if its argument is complicated.
 For example:
 \begin{verbatim}
-        reimpart(1+i)   -> {1,1}
-        reimpart(sin(3+4*i)) -> {cosh(4)*sin(3),cos(3)*sinh(4)}
-        reimpart(log(2+i))   -> {log(5)/2,atan(1/2)}
-        reimpart(asin(1+i))  -> {acos(sqrt(5)2)/2,acosh(sqrt(5)+2)/2}
-        reimpart(a+i*b)      ->
-                   { - impart(b) + repart(a),impart(a) + repart(b)}
+      reimpart(1+i)   -> {1,1}
+      reimpart(sin(3+4*i)) ->
+            {cosh(4)*sin(3),cos(3)*sinh(4)}
+      reimpart(log(2+i))   ->
+            {log(5)/2,atan(1/2)}
+      reimpart(asin(1+i))  ->
+            {acos(sqrt(5)2)/2,acosh(sqrt(5)+2)/2}
+      reimpart(a+i*b)      ->
+            { - impart(b) + repart(a),
+              impart(a) + repart(b)}
 \end{verbatim}
 For the inverse trigometric and hyperbolic functions with non-numeric arguments the output is usually more compact when the \sw{FACTOR} is on.
 
@@ -298,23 +331,33 @@ positive only as long as the switch \texttt{complex} is off.
 
 \section{Mathematical Functions}
 \hypertarget{operator:ACOS}{}
+\hypertarget{operator:ACOSD}{}
 \hypertarget{operator:ACOSH}{}
 \hypertarget{operator:ACOT}{}
+\hypertarget{operator:ACOTD}{}
 \hypertarget{operator:ACOTH}{}
 \hypertarget{operator:ACSC}{}
+\hypertarget{operator:ACSCD}{}
 \hypertarget{operator:ACSCH}{}
 \hypertarget{operator:ASEC}{}
+\hypertarget{operator:ASECD}{}
 \hypertarget{operator:ASECH}{}
 \hypertarget{operator:ASIN}{}
+\hypertarget{operator:ASIND}{}
 \hypertarget{operator:ASINH}{}
 \hypertarget{operator:ATAN}{}
+\hypertarget{operator:ATAND}{}
 \hypertarget{operator:ATANH}{}
 \hypertarget{operator:ATAN2}{}
+\hypertarget{operator:ATAN2D}{}
 \hypertarget{operator:COS}{}
+\hypertarget{operator:COSD}{}
 \hypertarget{operator:COSH}{}
 \hypertarget{operator:COT}{}
+\hypertarget{operator:COTD}{}
 \hypertarget{operator:COTH}{}
 \hypertarget{operator:CSC}{}
+\hypertarget{operator:CSCD}{}
 \hypertarget{operator:CSCH}{}
 \hypertarget{operator:EXP}{}
 \hypertarget{operator:HYPOT}{}
@@ -322,27 +365,41 @@ positive only as long as the switch \texttt{complex} is off.
 \hypertarget{operator:LOGB}{}
 \hypertarget{operator:LOG10}{}
 \hypertarget{operator:SEC}{}
+\hypertarget{operator:SECD}{}
 \hypertarget{operator:SECH}{}
 \hypertarget{operator:SIN}{}
+\hypertarget{operator:SIND}{}
 \hypertarget{operator:SINH}{}
 \hypertarget{operator:SQRT}{}
 \hypertarget{operator:TAN}{}
+\hypertarget{operator:TAND}{}
 \hypertarget{operator:TANH}{}
+\hypertarget{operator:NORM}{}
+\hypertarget{operator:ARG}{}
+\hypertarget{operator:ARGD}{}
 
 {\REDUCE} knows that the following represent mathematical functions
 \index{Mathematical functions} that can
 take arbitrary scalar expressions as their argument(s).
-\ttindex{acos}\ttindex{acosh}\ttindex{acot}
-\ttindex{acoth}\ttindex{acsc}\ttindex{acsch}
-\ttindex{asec}\ttindex{asech}\ttindex{asin}
-\ttindex{asinh}\ttindex{atan}\ttindex{atanh}
-\ttindex{atan2}\ttindex{cos}\ttindex{cosh}
-\ttindex{cot}\ttindex{coth}\ttindex{csc}
-\ttindex{csch}\ttindex{exp}\ttindex{hypot}
-\ttindex{log}\ttindex{logb}\ttindex{log10}
-\ttindex{sec}\ttindex{sech}\ttindex{sin}
-\ttindex{sinh}
-\ttindex{sqrt}\ttindex{tan}\ttindex{tanh}
+\ttindextype{acos}{numerical operator}\ttindextype{acosd}{numerical operator}\ttindextype{acosh}{numerical operator}
+\ttindextype{acot}{numerical operator}\ttindextype{acotd}{numerical operator}\ttindextype{acoth}{numerical operator}
+\ttindextype{acsc}{numerical operator}\ttindextype{acscd}{numerical operator}\ttindextype{acsch}{numerical operator}
+\ttindextype{asec}{numerical operator}\ttindextype{asecd}{numerical operator}\ttindextype{asech}{numerical operator}
+\ttindextype{asin}{numerical operator}\ttindextype{asind}{numerical operator}\ttindextype{asinh}{numerical operator}
+\ttindextype{atan}{numerical operator}\ttindextype{atand}{numerical operator}\ttindextype{atanh}{numerical operator}
+\ttindextype{atan2}{numerical operator}\ttindextype{atan2d}{numerical operator}
+\ttindextype{cos}{numerical operator}\ttindextype{cosd}{numerical operator}\ttindextype{cosh}{numerical operator}
+\ttindextype{cot}{numerical operator}\ttindextype{cotd}{numerical operator}\ttindextype{coth}{numerical operator}
+\ttindextype{csc}{numerical operator}\ttindextype{cscd}{numerical operator}\ttindextype{csch}{numerical operator}
+\ttindextype{exp}{numerical operator}\ttindextype{hypot}{numerical operator}
+\ttindextype{log}{numerical operator}\ttindextype{logb}{numerical operator}\ttindextype{log10}{numerical operator}
+\ttindextype{sec}{numerical operator}\ttindextype{secd}{numerical operator}\ttindextype{sech}{numerical operator}
+\ttindextype{sin}{numerical operator}\ttindextype{sind}{numerical operator}\ttindextype{sinh}{numerical operator}
+\ttindextype{sqrt}{numerical operator}
+\ttindextype{tan}{numerical operator}\ttindextype{tand}{numerical operator}\ttindextype{tanh}{numerical operator}
+\ttindextype{norm}{numerical operator}
+\ttindextype{arg}{numerical operator}
+\ttindextype{argd}{numerical operator}
 
 \index{Elementary functions}
 \subsection{Elementary Functions}
@@ -352,19 +409,58 @@ take arbitrary scalar expressions as their argument(s).
     cosh tanh coth csch sech exp
 \end{verbatim}
 
+These functions have arguments given in degrees rather than in radians.
+The secant, cosecant and cotangent functions and their inverses are also supported and, indeed, are treated more as \textit{first class} objects than their corresponding radian-based functions which are often converted to expressions involving sine and cosine by some of the standard {\REDUCE} simplifications rules.   
+
 \textbf{Their inverse functions:}
 \begin{verbatim}
-    asin acos atan acot acsc asec asinh acosh
-    atanh acoth acsch asech log log10 logb
+    asin acos atan acot acsc asec 
+    asinh acosh atanh acoth acsch asech
+    log log10 logb
 \end{verbatim}
 where \f{log} is the natural logarithm, \f{log10} is the logarithm to
 base 10, and \f{logb} has two arguments of which the second is the
-logarithmic base.  Note on the CSL GUI and other graphical interfaces
+logarithmic base.
+Note on the CSL GUI and other graphical interfaces
 the inverse trig and hyperbolic functions are output as $\arcsin$ etc.
+
+\textbf{The degree variants of the trigonometric functions and their inverses:}
+\begin{verbatim}
+    sind cosd tand cotd cscd secd
+    asind acosd atand acotd acscd asecd
+\end{verbatim}
+The names of the degree-based functions are those of the normal trig
+functions with the letter d appended, for example \f{sind}, \f{cosd}
+and \f{tand} denote the sine, cosine and tangent repectively and their
+corresponding inverse functions are \f{asind}, \f{acosd} and
+\f{atand}. The secant, cosecant and cotangent functions and their
+inverses are also supported and, indeed, are treated more as
+\textit{first class} objects than their corresponding radian-based
+functions which are often converted to expressions involving sine and
+cosine by some of the standard {\REDUCE} simplifications rules.
+
+These degree-based functions are probably best regarded as functions
+defined for \emph{real} values only, but complex arguments are
+supported for completeness. The numerical evaluation routines are
+fairly comprehensive for both real and complex arguments. However, few
+simplifications occur for trigd functions with complex arguments.
+
+The range of the principal values returned by the inverse functions is
+consistent with those of the corresponding radian-valued functions.
+More precisely, for \f{asind}, \f{atand} and \f{acscd} the (closure of
+the) range is $[-90, 90]$ whilst for \f{acosd}, \f{acotd} and
+\f{asecd} the (closure of the) range is $[0, 180]$. In addition the
+operator \f{atan2d} is the degree valued version of the two argument
+inverse tangent function which returns an angle in the half-open
+interval $(-180, 180]$ in the correct quadrant depending on the signs
+of its two arguments. For $x>0$, \texttt{atan2d(y, x)} returns the
+same numerical value as \texttt{atand(y/x)}. If $x=0$ then $\pm 90$ is
+returned depending on the sign of $y$.
 
 \textbf{Miscellaneous functions:}
 \begin{verbatim}
     sqrt  hypot  atan2
+    norm  arg    argd
 \end{verbatim}
 The function \texttt{hypot} takes two arguments $x$  and $y$ and
 returns the value $\sqrt{x^2+y^2}$ but, when the switch \sw{rounded} is ON,
@@ -375,6 +471,32 @@ The function \f{atan2} also takes two arguments $y$ and $x$
 respectively and returns a value of $\arctan(y/x)$ in the range
 $(-\pi, \pi]$ taking account of the signs of its two arguments and
 avoiding an error if $x=0$.
+
+The operator \f{norm} returns the modulus (or absolute value or norm) of a complex number when the switches \sw{rounded} and \sw{complex} are on.
+When the switches \sw{rounded} and \sw{complex} are both \texttt{on}, \f{arg} will return the argument in radians of the complex number supplied as its parameter  --- supplying zero as the parameter causes an error to be raised.  With a real numerical value as parameter, it returns $0$ or $\pi$ when the value is positive or negative respectively.
+\f{argd} is similar to \f{arg}, but returns the argument expressed in  degrees.
+Currently these are \emph{purely numeric} operators; when \sw{rounded} is \texttt{off} they basically return the input expression (perhaps with their parameter simplified).
+Example
+\begin{verbatim}
+1: on rounded;
+
+2: {argd(-5), argd(1+i)};
+
+{180.0,argd(i + 1)}
+
+3: on complex;
+
+*** Domain mode rounded changed to complex-rounded
+
+4: {argd(1+i), argd(-1-i)};
+
+{45.0, - 135.0}
+
+5: {arg(3+4i), norm(3+4i)};
+
+{0.927295218002,5.0}
+
+\end{verbatim}
 
 {\REDUCE} knows various elementary identities and properties
 of these functions. For example:
@@ -396,31 +518,45 @@ used, e.g.
 \begin{verbatim}
       showrules tan;
 
-{tan(~n*arbint(~i)*pi + ~~x) => tan(x) when fixp(n),
+{tan(~n*arbint(~i)*pi + ~~x)
 
- tan(~x) => trigquot(sin(x),cos(x)) when knowledge_about(sin,x,tan),
+  => tan(x) when fixp(n),
 
-      ~x + ~~k*pi              x                 k
- tan(-------------) =>  - cot(--- + i*pi*impart(---))
-          ~~d                  d                 d
-                                                     k     1
-                                    when abs(repart(---))=---,
-                                                     d     2
+ tan(~x) => trigquot(sin(x),cos(x))
 
-      ~~w + ~~k*pi           w      k                k
- tan(--------------) => tan(--- + (--- - fix(repart(---)))*pi)
-          ~~d                d      d                d
+  when knowledge_about(sin,x,tan),
 
-                                                         k
-  when ((ratnump(rp) and abs(rp)>=1) where rp => repart(---)),
-                                                         d
+      ~x + ~~k*pi
+ tan(-------------) => 
+          ~~d
+
+         x                 k
+  - cot(--- + i*pi*impart(---))
+         d                 d
+
+                   k     1
+  when abs(repart(---))=---,
+                   d     2
+
+      ~~w + ~~k*pi
+ tan(--------------) => 
+          ~~d
+
+      w      k                k
+ tan(--- + (--- - fix(repart(---)))*pi) when ((
+      d      d                d
+
+ ratnump(rp) and abs(rp)>=1) where rp
+
+             k
+  => repart(---)),
+             d
 
  tan(atan(~x)) => x,
 
                              2
  df(tan(~x),~x) => 1 + tan(x) }
 \end{verbatim}
-
 For further simplification, especially of expressions involving
 trigonometric functions, see section \ref{sec:TRIGSIMP}.
 
@@ -543,10 +679,12 @@ yields the output
 If the switch \sw{rounded}\ttindexswitch{rounded} is on, any of the
 elementary functions
 \begin{verbatim}
-    acos acosh acot acoth acsc acsch asec asech
-    asin asinh atan atanh atan2 cos cosh cot coth
-    csc csch exp hypot log logb log10 sec sech
-    sin sinh sqrt tan tanh
+    acos acosd acosh acot acotd acoth acsc acscd
+    acsch asec asecd asech asin asind asinh atan
+    atan2 atanh atan2 atan2d cos cosd cosh cot
+    cotd coth csc cscd csch exp hypot log logb
+    log10 sec secd sech sin sind sinh sqrt tan
+    tand tanh
 \end{verbatim}
 when given a numerical argument has its value calculated to the current
 degree of floating point precision.  In addition, real (non-integer
@@ -563,19 +701,23 @@ if given complex arguments.  For example, with \texttt{on rounded,complex;}
 
 For \texttt{log} and the inverse trigonometric and hyperbolic functions which are
 multi-valued, the principal value is returned. The branch cuts chosen
-(except for \texttt{acot}) are now
+(except for \texttt{acot} and \texttt{acotd}) are now
 those recommended by W.~Kahan (\cite{Kahan1987BranchCF})
 
-The exception for \texttt{acot} is necessary as elsewhere in {\REDUCE}
+The exception for \texttt{acot} and \texttt{acotd} is necessary as elsewhere in {\REDUCE}
 $\mathop{\mathrm{acot}}(-z)$ is taken to be $\pi - \mathop{\mathrm{acot}}(z)$
-rather than $-\mathop{\mathrm{acot}}(z)$.
+rather than $-\mathop{\mathrm{acot}}(z)$, and
+$\mathop{\mathrm{acotd}}(-z) = 180 - \mathop{\mathrm{acotd}}(z)$.
 \index{Branch Cuts}
 The branch cuts are:\\
 \begin{tabular}{ll}
   $\log$, $\mathrm{sqrt}$:     & $ \{r   \mid r \in\mathbb{R} \land r < 0\} $\\
-  $\mathop{\mathrm{asin}}$, $\mathop{\mathrm{acos}}$: & $ \{r   \mid r \in\mathbb{R} \land (r > 1 \lor r < -1)\} $\\
-  $\mathop{\mathrm{acsc}}$, $\mathop{\mathrm{asec}}$: & $ \{r   \mid r \in\mathbb{R} \land r \neq 0 \land r > -1 \land r < 1\} $\\
-  $\mathop{\mathrm{atan}}$, $\mathop{\mathrm{acot}}$: & $ \{r*i \mid r \in\mathbb{R} \land (r > 1 \lor r < -1)\} $\\
+  $\mathop{\mathrm{asin}}$, $\mathop{\mathrm{asind}}$, $\mathop{\mathrm{acos}}$, $\mathop{\mathrm{acosd}}$:
+                               & $ \{r   \mid r \in\mathbb{R} \land (r > 1 \lor r < -1)\} $\\
+  $\mathop{\mathrm{acsc}}$, $\mathop{\mathrm{acscd}}$, $\mathop{\mathrm{asec}}$, $\mathop{\mathrm{asecd}}$:
+                               & $ \{r   \mid r \in\mathbb{R} \land r \neq 0 \land r > -1 \land r < 1\} $\\
+  $\mathop{\mathrm{atan}}$, $\mathop{\mathrm{atand}}$, $\mathop{\mathrm{acot}}$, $\mathop{\mathrm{acotd}}$:
+                               & $ \{r*i \mid r \in\mathbb{R} \land (r > 1 \lor r < -1)\} $\\
   $\mathop{\mathrm{asinh}}$:         & $ \{r*i \mid r \in\mathbb{R} \land (r \geq  1 \lor r \leq  -1)\} $\\
   $\mathop{\mathrm{acsch}}$:         & $ \{r*i \mid r \in\mathbb{R} \land r \neq 0 \land r \geq  -1 \land r \leq  1\} $\\
   $\mathop{\mathrm{acosh}}$:         & $ \{r   \mid r \in\mathbb{R} \land r < 1\} $\\
@@ -860,21 +1002,22 @@ a \hyperlink{ELLIPFNTAB}{Quick Reference Table} is available.
 
 \section{Combinatorial Numbers}
 \index{Combinatorial numbers}
-\index{Binomial coefficients}  \ttindex{Binomial}
+\index{Binomial coefficients}  \ttindextype{Binomial}{operator}
+\hypertarget{operator:BINOMIAL}{}
 \textbf{Binomial coefficients} are provided by the binary operator \f{Binomial}.
-The value of \texttt{binomial(n, m)}, where $n$ and $m$ are non-negative
+The value of \texttt{Binomial(n, m)}, where $n$ and $m$ are non-negative
 integers with $n \geq m$, is the number of ways of choosing $m$ items from a
 set of $n$ distinct items as well, of course, as being the coefficient of $x^m$
 in the expansion of $(1+x)^n$.
 
-The function call \texttt{binomial(n,m)}, where $n$ and $m$
+The function call \texttt{Binomial(n,m)}, where $n$ and $m$
 are non-negative integers, will return the expected integer value
 (from Pascal's triangle). For other real numerical values the result will
 usually involve the $\Gamma$ function, but if the switch
-\sw{ROUNDED} is ON the $\Gamma$ functions will be evaluated numerically.
+\sw{rounded} is ON the $\Gamma$ functions will be evaluated numerically.
 This will also be the case for complex numerical arguments if the switch
-\sw{COMPLEX} is ON.  For non-numeric arguments the result returned will
-involve the original oerator \f{binomial}, or its pretty-printed equivalent
+\sw{complex} is ON.  For non-numeric arguments the result returned will
+involve the original operator \f{binomial}, or its pretty-printed equivalent
 on graphical interfaces.
 
 \hypertarget{operator:Stirling1}{}\hypertarget{operator:Stirling2}{}
@@ -882,10 +1025,10 @@ on graphical interfaces.
 \textbf{Stirling numbers} of the first and second kind are computed
 by the binary operators \f{Stirling1} and \f{Stirling2}
 respectively using explicit formulae.
-\texttt{stirling1(n, k)} is $(-1)^{n-k}\ \times$
+\texttt{Stirling1(n, k)} is $(-1)^{n-k}\ \times$
 \emph{(the number of permutations of the set} $\{1, 2, \ldots, n\}$
 \emph{into exactly $k$ cycles)}.\\
-\texttt{stirling2(n, k)} is \emph{the number of partitions of the set}
+\texttt{Stirling2(n, k)} is \emph{the number of partitions of the set}
 $\{1, 2, \ldots, n\}$ \emph{into exactly $k$ non-empty subsets}.\\
 Here $n$ and $k$ should be non-negative integers with $n \geq k$.
 
@@ -927,7 +1070,7 @@ It also includes a list of reserved constants known to {\REDUCE}.
 \f{Bernoulli}. If $n$ is a non-negative integer, the call \texttt{Bernoulli(n)}
 evaluates to the $n$th Bernoulli number; all of the odd Bernoulli numbers,
 except \texttt{Bernoulli(1)}, are zero. Otherwise the result involves the
-original operator \texttt{bernoulli}; on graphical interfaces this is rendered
+original operator \texttt{Bernoulli}; on graphical interfaces this is rendered
 as $\mathrm{B}_n$.
 
 \ttindex{Euler}\index{Euler numbers}
@@ -935,7 +1078,7 @@ as $\mathrm{B}_n$.
 \textbf{Euler numbers} are computed by the unary operator \f{Euler}.  If $n$
 is a non-negative integer, the call \texttt{Euler(n)} returns the $n$th
 Euler number; all of the odd Euler numbers are zero.
-Otherwise the result returned involves the original operator \texttt{euler};
+Otherwise the result returned involves the original operator \texttt{Euler};
 on graphical interfaces this is rendered
 as $\mathrm{E}_n$.
 
@@ -987,7 +1130,7 @@ except for one difference: the first command returns the transformed differentia
 equation, the second one a list with a single element.
 
 \hypertarget{switch:DISPJACOBIAN}{}
-The switch \sw{DISPJACOBIAN} governs the display the entries of the inverse Jacobian,
+The switch \sw{dispjacobian} governs the display the entries of the inverse Jacobian,
 it is \texttt{off} per default.\ttindexswitch{dispjacobian}
 
 The mathematics behind the change of independent variable(s) in differential
@@ -1092,7 +1235,7 @@ So our call to \texttt{changevar} reads as follows:
 \end{verbatim}
 and returns the result
 \begin{verbatim}
-   df(y(u),u,3) - 6*df(y(u),u,2) + 11*df(y(u),u) - 6*y(u)
+ df(y(u),u,3) - 6*df(y(u),u,2) + 11*df(y(u),u) - 6*y(u)
 \end{verbatim}
 
 
@@ -1223,8 +1366,9 @@ continued_fraction e;
  ----------,
   4996032
 
- {2, {1,1}, {1,2}, {1,1}, {1,1}, {1,4}, {1,1}, {1,1}, {1,6},
-  {1,1}, {1,1}, {1,8}, {1,1}, {1,1}, {1,10}, {1,1}, {1,1}, {1,12}}}
+ {2, {1,1}, {1,2}, {1,1}, {1,1}, {1,4}, {1,1}, {1,1},
+  {1,6}, {1,1}, {1,1}, {1,8}, {1,1}, {1,1}, {1,10},
+  {1,1}, {1,1}, {1,12}}}
 \end{verbatim}
 
 
@@ -1673,9 +1817,9 @@ Given \texttt{2/((x+1)\textasciicircum2*(x+2))} in the workspace,
 \end{verbatim}
 \end{samepage}
 
-If you want the denominators in factored form, use \texttt{off exp;}.
+If you want the denominators in factored form, set the switch \sw{exp} to off.
 Thus, with \texttt{2/((x+1)\textasciicircum2*(x+2))} in the workspace,
-the commands \texttt{off exp; pf(ws,x);} give the result
+the input \texttt{off exp; pf(ws,x);} gives the result
 \begin{verbatim}
             2      - 2       2
         {-------,-------,----------} .
@@ -1745,6 +1889,7 @@ Note that both functions use the operator \f{taylor} in
 connection with representations (\eqnref{eq:Laurent})--(\eqnref{eq:Laurent2}).
 
 Here are some examples:
+\begin{small}
 \begin{verbatim}
 2: residue(x/(x^2-2),x,sqrt(2));
 
@@ -1867,7 +2012,7 @@ Here are some examples:
 
 0
 \end{verbatim}
-
+\end{small}
 
 \section{SELECT Operator}\ttindextype{SELECT}{operator}
 \hypertarget{operator:SELECT}{}

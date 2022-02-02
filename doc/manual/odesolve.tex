@@ -67,7 +67,7 @@ odesolve(df(y,x));
 {y=arbconst(1)}
 \end{verbatim}
 Output of ODESOLVE messages is controlled by the standard \REDUCE{}
-switch \texttt{msg}.
+switch \sw{msg}.
 
 
 \subsubsection{Specifying the ODE and its variables}
@@ -195,16 +195,16 @@ odesolve(df(y,x,2) = y, y = {A, B}, x = {0, 1});
 
 
 \subsubsection{Specifying options and defaults}
-\ttindextype{odesolve\_explicit}{switch}
-\ttindextype{odesolve\_expand}{switch}
-\ttindextype{odesolve\_full}{switch}
-\ttindextype{odesolve\_implicit}{switch}
-\ttindextype{odesolve\_noint}{switch}
-\ttindextype{odesolve\_verbose}{switch}
-\ttindextype{odesolve\_basis}{switch}
-\ttindextype{trode}{switch}
-\ttindextype{odesolve\_fast}{switch}
-\ttindextype{odesolve\_check}{switch}
+\ttindexswitch[ODESOLVE]{odesolve\_explicit}
+\ttindexswitch[ODESOLVE]{odesolve\_expand}
+\ttindexswitch[ODESOLVE]{odesolve\_full}
+\ttindexswitch[ODESOLVE]{odesolve\_implicit}
+\ttindexswitch[ODESOLVE]{odesolve\_noint}
+\ttindexswitch[ODESOLVE]{odesolve\_verbose}
+\ttindexswitch[ODESOLVE]{odesolve\_basis}
+\ttindexswitch[ODESOLVE]{trode}
+\ttindexswitch[ODESOLVE]{odesolve\_fast}
+\ttindexswitch[ODESOLVE]{odesolve\_check}
 \hypertarget{switch:ODESOLVE_EXPLICIT}{}
 \hypertarget{switch:ODESOLVE_EXPAND}{}
 \hypertarget{switch:ODESOLVE_FULL}{}
@@ -355,7 +355,7 @@ checker rather than in the solver.
 In some cases, in particular in symbolic solutions of Clairaut ODEs,
 the checker may need to differentiate a composition of operators using
 the chain rule.  In order to do this, it turns on the differentiator
-switch \texttt{expanddf} locally only.
+switch \sw{expanddf} locally only.
 
 
 \subsection{Output syntax}

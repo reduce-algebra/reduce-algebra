@@ -146,7 +146,7 @@ Of course, such a rule may call a procedure:
    let my_step2(~x) => my_step3(x) when numberp x;
    plot(my_step2(x));
 \end{verbatim}
-The direct use of a produre with a numeric \texttt{if} clause is impossible.
+The direct use of a procedure with a numeric \texttt{if} clause is impossible.
 
 \subsubsection{Plot options}
 The following plot options are supported in the \texttt{plot} command:
@@ -290,7 +290,7 @@ from the {\Gnuplot} text window - it offers an exit function.
 \subsection{Saving {\Gnuplot} command sequences}
 \hypertarget{switch:TRPLOT}{}
 \hypertarget{switch:PLOTKEEP}{}
-\ttindexswitch[GNUPLOT]{trplot}\ttindexswitch{PLOTKEEP}{gnuplot}
+\ttindexswitch[GNUPLOT]{trplot}\ttindexswitch{GNUPLOT}{plotkeep}
 \index{Tracing!GNUPLOT package}
 If you want to use the internal {\Gnuplot} command sequence more than once
 (e.g. for producing a picture for a publication), you may set
@@ -370,7 +370,7 @@ plot(x^3 + y^3 - 3*x*y = {0,1,2,3}, x=(-2.5 .. 2), y=(-5 .. 5));
 \put(0,0){\Includegraphics[scale=0.5]{bild1}}
 \end{picture}
 
-\newpage
+%\newpage
 A test for hidden surfaces:
 \begin{verbatim}
 plot(cos sqrt(x^2 + y^2), x=(-3 .. 3), y=(-3 .. 3), hidden3d);

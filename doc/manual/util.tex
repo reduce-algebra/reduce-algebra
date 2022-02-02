@@ -11,25 +11,22 @@ implementations of {\REDUCE} currently available.
 Many versions of {\REDUCE} include a Standard Lisp compiler that is
 automatically loaded on demand.  You should check your system specific
 user guide to make sure you have such a compiler.  To make the compiler
-active, the switch \sw{COMP}\ttindexswitch{COMP} should be turned on.  Any
+active, the switch \sw{comp}\ttindexswitch{comp} should be turned on.  Any
 further definitions input after this will be compiled automatically.  If
 the compiler used is a derivative version of the original Griss-Hearn
-compiler,
-(M. L. Griss and A.
-C. Hearn, ``A Portable LISP Compiler", SOFTWARE --- Practice and Experience
-11 (1981) 541-605),
+compiler (\cite{Griss:79}),
 there are other switches that might also be
 used in this regard.  However, these additional switches are not supported
 in all compilers.  They are as follows:
-%\ttindex{PLAP}\ttindex{PGWD}\ttindex{PWRDS}
+\ttindexswitch{plap}\ttindexswitch{pgwd}\ttindexswitch{pwrds}
 \begin{description}
-\item[\sw{PLAP}] If ON, causes the printing of the
+\item[\sw{plap}] If on, causes the printing of the
 portable macros produced by the compiler; 
 %
-\item[\sw{PGWD}]  If ON, causes the printing of the
+\item[\sw{pgwd}]  If on, causes the printing of the
 actual assembly language instructions generated from the macros; 
 %
-\item[\sw{PWRDS}] If ON, causes a statistic
+\item[\sw{pwrds}] If on, causes a statistic
 message of the form \newline
 \texttt{\meta{function} COMPILED, \meta{words} WORDS, \meta{words} LEFT} \newline
 to be printed.  The first number is the number of words of binary
@@ -49,7 +46,7 @@ or {\REDUCE} commands and build a fast loading version of them. In Rlisp or
          <commands or IN statements>
          faslend;
 \end{verbatim}
-To load such a file, one uses the command \texttt{LOAD},\ttindex{LOAD}
+To load such a file, one uses the command \texttt{load},\ttindextype{load}{command}
 e.g. \texttt{load foo;}
 or \texttt{load foo,bah;}
 
@@ -71,7 +68,7 @@ The {\REDUCE} sources should be consulted for further details on this.
 % statements.
 
 To avoid excessive printout, input statements should be followed by a \texttt{\$}
-instead of the semicolon.  With \texttt{LOAD} however, the input doesn't
+instead of the semicolon.  With \texttt{load} however, the input doesn't
 print out regardless of which terminator is used with the command.
 
 If you subsequently change the source files used in producing a fast
@@ -80,20 +77,20 @@ the fast loading file correspondingly.  Remember also that the text which
 is read in during the creation of the fast load file, in the compiling
 process described above, is \emph{not} stored in your {\REDUCE}
 environment, but only translated and output.  If you want to use the file
-just created, you must then use \texttt{LOAD} to load the output of the
+just created, you must then use \texttt{load} to load the output of the
 fast-loading file generation program.
 
 When the file to be loaded contains a complete package for a given
-application, \texttt{LOAD\_PACKAGE}\ttindex{LOAD\_PACKAGE} rather than
-\texttt{LOAD} should be used.  The syntax is the same.  However,
-\texttt{LOAD\_PACKAGE} does some additional bookkeeping such as recording that
+application, \texttt{load\_package}\ttindextype{load\_package}{command} rather than
+\texttt{load} should be used.  The syntax is the same.  However,
+\texttt{load\_package} does some additional bookkeeping such as recording that
 this package has now been loaded, that is required for the correct
 operation of the system.
 
 \section{The Standard Lisp Cross Reference Program}\index{Cross reference}
 \hypertarget{switch:CREF}{}
 
-\texttt{CREF}\ttindex{CREF} is a Standard Lisp program for processing a
+\texttt{cref}\ttindexswitch{cref} is a Standard Lisp program for processing a
 set of Standard LISP function definitions to produce:
 \begin{enumerate}
 \item A ``summary'' showing:
@@ -104,22 +101,22 @@ are only called by themselves);
 \item A list of undefined functions (functions called but not
 defined in this set of functions);
 \item A list of variables that were used non-locally but not
-declared \texttt{GLOBAL} or \texttt{FLUID} before their use;
-\item A list of variables that were declared \texttt{GLOBAL} but not used
-as \texttt{FLUID}s, i.e., bound in a function;
-\item A list of \texttt{FLUID} variables that were not bound in a function
-so that one might consider declaring them \texttt{GLOBAL}s;
-\item A list of all \texttt{GLOBAL} variables present;
-\item A list of all \texttt{FLUID} variables present;
+declared \texttt{global} or \texttt{fluid} before their use;
+\item A list of variables that were declared \texttt{global} but not used
+as \texttt{fluid}s, i.e., bound in a function;
+\item A list of \texttt{fluid} variables that were not bound in a function
+so that one might consider declaring them \texttt{global}s;
+\item A list of all \texttt{global} variables present;
+\item A list of all \texttt{fluid} variables present;
 \item A list of all functions present.
 \end{enumerate}
 \item A ``global variable usage'' table, showing for each non-local
    variable:
 \begin{enumerate}
-\item Functions in which it is used as a declared \texttt{FLUID} or \texttt{GLOBAL};
+\item Functions in which it is used as a declared \texttt{fluid} or \texttt{global};
 \item Functions in which it is used but not declared;
 \item Functions in which it is bound;
-\item Functions in which it is changed by \texttt{SETQ}.
+\item Functions in which it is changed by \texttt{setq}.
 \end{enumerate}
 \item A ``function usage'' table showing for each function:
 \begin{enumerate}
@@ -140,12 +137,12 @@ name.
 
 Algebraic procedures in {\REDUCE} are treated as if they were symbolic, so
 that algebraic constructs will actually appear as calls to symbolic
-functions, such as \texttt{AEVAL}.
+functions, such as \texttt{aeval}.
 
 \subsection{Usage}
 
-To invoke the cross reference program, the switch \texttt{CREF}
-\ttindexswitch{CREF} is used. \texttt{on cref} causes the cref program to load
+To invoke the cross reference program, the switch \texttt{cref}
+\ttindexswitch{cref} is used. \texttt{on cref} causes the cref program to load
 and the cross-referencing process to begin.  After all the required
 definitions are loaded, \texttt{off cref} will cause the cross-reference
 listing to be produced.  For example, if you wish to cross-reference all
@@ -158,20 +155,20 @@ listing in the file \texttt{tst.crf}, the following sequence can be used:
         off cref;
         shut "tst.crf";
 \end{verbatim}
-To process more than one file, more \texttt{IN} statements may be added
-before the call of \texttt{off cref}, or the \texttt{IN} statement changed to
+To process more than one file, more \texttt{in} statements may be added
+before the call of \texttt{off cref}, or the \texttt{in} statement changed to
 include a list of files.
 
 \subsection{Options}
 
-Functions with the flag \texttt{NOLIST} will not be examined or output.
+Functions with the flag \texttt{nolist} will not be examined or output.
 Initially, all Standard Lisp functions are so flagged. (In fact, they are
-kept on a list \texttt{NOLIST!*}, so if you wish to see references to 
-\emph{all} functions, then \texttt{CREF} should be first loaded with the command \texttt{load cref}, and this variable then set to \texttt{NIL}).
+kept on a list \texttt{nolist!*}, so if you wish to see references to 
+\emph{all} functions, then \texttt{cref} should be first loaded with the command \texttt{load cref}, and this variable then set to \texttt{nil}).
 
 It should also be remembered that any macros with the property list flag
-\texttt{EXPAND}, or, if the switch \sw{FORCE} is on, without the property
-list flag \texttt{NOEXPAND}, will be expanded before the definition is seen
+\texttt{expand}, or, if the switch \sw{force} is on, without the property
+list flag \texttt{noexpand}, will be expanded before the definition is seen
 by the cross-reference program, so this flag can also be used to select
 those macros you require expanded and those you do not.
 
@@ -179,8 +176,8 @@ those macros you require expanded and those you do not.
 \hypertarget{switch:PRET}{}
 
 {\REDUCE} includes a module for printing {\REDUCE} syntax in a standard
-format.  This module is activated by the switch \sw{PRET},
-\ttindexswitch{PRET} which is normally off.
+format.  This module is activated by the switch \sw{pret},
+\ttindexswitch{pret} which is normally off.
 
 Since the system converts algebraic input into an equivalent symbolic form,
 the printing program tries to interpret this as an algebraic expression
@@ -191,21 +188,21 @@ it is formally equivalent.
 
 \hypertarget{switch:MSG}{}
 If you want to prettyprint a whole file, say \texttt{off output,msg;}
-\ttindexswitch{MSG} and (hopefully) only clean output will result.  Unlike 
-\sw{DEFN},\ttindexswitch{DEFN} input is also evaluated with \sw{PRET}
-\ttindexswitch{PRET} on.
+\ttindexswitch{msg} and (hopefully) only clean output will result.  Unlike 
+\sw{defn},\ttindexswitch{defn} input is also evaluated with \sw{pret}
+\ttindexswitch{pret} on.
 
 \section{Prettyprinting Standard Lisp S-Expressions}\index{Prettyprinting}
 
 REDUCE includes a module for printing
 S-expressions in a standard format.  The Standard Lisp function for this
-purpose is \texttt{PRETTYPRINT}\ttindex{PRETTYPRINT} which takes a Lisp
+purpose is \texttt{prettyprint}\ttindextype{prettyprint}{function} which takes a Lisp
 expression and prints the formatted equivalent.
 
 Users can also have their {\REDUCE} input printed in this form by use of
-the switch \sw{DEFN}.\ttindexswitch{DEFN} This is in fact a convenient way to
+the switch \sw{defn}.\ttindexswitch{defn} This is in fact a convenient way to
 convert {\REDUCE} (or Rlisp) syntax into Lisp. \texttt{off msg;} will prevent
 warning messages from being printed.
 
-NOTE: When \sw{DEFN} is on, input is not evaluated.
+NOTE: When \sw{defn} is on, input is not evaluated.
 

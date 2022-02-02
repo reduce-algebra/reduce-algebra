@@ -168,16 +168,24 @@
                           \renewcommand{\|}{\protect\textbar}%
                           \index{#1@\texttt{#1}}}}
 \def\ttindextypehelper#1!#2\relax{\def\blubbera{#1}\def\blubberb{#2}}
-\def\capitalizehelper#1#2\relax{\edef\blubba{\uppercase{#1}\lowercase{#2}}}
+%\def\capitalizehelper#1#2\relax{\edef\blubba{\uppercase{#1}\lowercase{#2}}}
+\def\capitalizehelper#1#2\relax{\uppercase{\def\blubba{#1}}\lowercase{\def\blubbb{#2}}\edef\blubba{\blubba\blubbb}}
 \def\capitalize#1{\capitalizehelper#1\relax}
-\newcommand{\ttindextype}[2]{{\renewcommand{\_}{\protect\underscore}%
-                              \renewcommand{\|}{\protect\textbar}%
-                              \ttindextypehelper#2!\relax
-                              \ifx\\\blubberb\\% true if \blubberb is empty
-                                \index{#1 #2@\texttt{#1} #2}%
-                              \else
-                                \index{#1 \blubbera@\texttt{#1} \blubbera!\blubberb}%
-                              \fi}}
+\newcommand{\ttindextype}[3][]{{%
+    \renewcommand{\_}{\protect\underscore}%
+    \renewcommand{\|}{\protect\textbar}%
+    \def\blubber{#1}%
+    \ttindextypehelper#3!\relax  % set \blubberb to text after !
+    \ifx\blubberb\empty  % true if \blubberb is empty
+      \ifx\blubber\empty % no optional argument to \ttindextype
+        \index{#2 #3@\texttt{#2} #3}%
+      \else
+        \capitalize{#1}%
+        \index{#2 #3 (\blubba\space package)@\texttt{#2} #3 (\textsc{\blubba} package)}%
+      \fi
+    \else
+      \index{#2 \blubbera@\texttt{#2} \blubbera!\blubberb}%
+    \fi}}
 
 %% In the HTML version, small capitals appear as capitals except that
 %% ligatures remain in lower case, so force capitals for now.

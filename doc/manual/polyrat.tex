@@ -30,7 +30,7 @@ numerator of its argument.  For example,
         length ((a+b+c)^3/(c+d));
 \end{verbatim}
 has the value 10.  To get the number of terms in the denominator, one
-would first select the denominator by the operator \texttt{den}\ttindex{den}
+would first select the denominator by the operator \texttt{den}\ttindextype{den}{operator}
 and then call \texttt{length}, as in
 \begin{verbatim}
         length den ((a+b+c)^3/(c+d));
@@ -203,7 +203,7 @@ free factors in an expression.  This includes separating out and
 independently checking the content of a given polynomial where
 appropriate. (For an explanation of these terms, see \cite{Hearn:79}.)
 
-\textit{Example:} With \sw{exp}\ttindex{exp} off and \sw{gcd}\ttindex{gcd}
+\textit{Example:} With \sw{exp}\ttindexswitch{exp} off and \sw{gcd}\ttindexswitch{gcd}
 on,
 the polynomial \texttt{a*c+a*d+b*c+b*d} would be returned as \texttt{(a+b)*(c+d)}.
 

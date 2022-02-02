@@ -32,7 +32,7 @@ errors occur.
 \hypertarget{command:RETRY}{}
 When a syntactical error occurs, the place where the system detected
 the error is marked with three dollar signs (\texttt{\$\$\$}). In
-interactive mode, you can then use \texttt{ed}\ttindex{ed} to correct
+interactive mode, you can then use \texttt{ed}\ttindextype{ed}{command} to correct
 the error, or retype the command.  When a non-syntactical error occurs
 in interactive mode, the command being evaluated at the time the last
 error occurred is saved, and may later be reevaluated by the command
@@ -139,7 +139,8 @@ any non-numerical expression), then all previous inputs are displayed.
 It is possible when working interactively to edit any {\REDUCE} input
 that comes from your terminal, and also some user-defined procedure
 definitions.  At the top level, you can access any previous command
-string by the command \texttt{ed(}$n$\texttt{)},\ttindex{ed} where $n$
+string by the command \texttt{ed(}$n$\texttt{)},\ttindextype{ed}{command}
+\index{Command!\texttt{ed}} where $n$
 is the desired command number as prompted by the system in interactive
 mode.  The command \texttt{ed} (with no argument) accesses the
 previous command.

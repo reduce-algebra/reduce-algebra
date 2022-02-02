@@ -16,7 +16,7 @@
                                 \end{array}\right.}
 \fi
 This package is a careful implementation of the Gosper%
-\footnote{The {\tt sum} package contains also a partial implementation
+\footnote{The \textsc{sum} package contains also a partial implementation
 of the Gosper algorithm.}
 and Zeilberger algorithms for indefinite, and definite summation of
 hypergeometric terms, respectively. Further, extensions of these algorithms
@@ -74,12 +74,12 @@ is not of this type since the summand $\binom{n}{k}$ depends on the upper
 boundary point $n$ explicitly. This is an example of a definite sum
 that we consider in the next section.
 
-Our package supports the input of powers ({\tt a\verb+^+k)},
-factorials ({\tt factorial(k)}),
-$\Gamma$ function terms ({\tt gamma(a)}), binomial coefficients
-({\tt binomial(n,k)}), shifted factorials
-({\tt pochhammer(a,k)$=a(a+1)\cdots(a+k-1)=\Gamma (a+k)/\Gamma (a)$}), and
-partially products ({\tt prod(f,k,k1,k2)}).
+Our package supports the input of powers (\texttt{a\textasciicircum k}),
+factorials (\texttt{factorial(k)}),
+$\Gamma$ function terms (\texttt{gamma(a)}), binomial coefficients
+(\texttt{Binomial(n,k)}), shifted factorials
+(\texttt{Pochhammer(a,k)$=a(a+1)\cdots(a+k-1)=\Gamma (a+k)/\Gamma (a)$}), and
+partially products (\texttt{prod(f,k,k1,k2)}).
 It takes care of the necessary simplifications, and therefore
 provides you with the solution of the decision problem
 as long as the memory or time requirements are not too high for the
@@ -137,9 +137,9 @@ that Zeilberger's method is just a clever application of Gosper's algorithm.
 Our implementation is mainly based on \cite{Koornwinder:93} and \cite{Koepf:94b}.
 More examples can be found in \cite{PauleSchorn:95}, \cite{Strehl:93}, \cite{Wilf:90},
 and \cite{Wilf:93} many of which are contained in the test file
-{\tt zeilberg.tst}.
+\texttt{zeilberg.tst}.
 
-\subsection{\REDUCE{} operator {\tt GOSPER}}
+\subsection{\REDUCE{} operator \texttt{GOSPER}}
 
 \iffalse
 The ZEILBERG package must be loaded by:
@@ -152,14 +152,14 @@ The ZEILBERG package must be loaded by:
 \fi
 
 \hypertarget{operator:GOSPER}{}
-The \texttt{gosper} operator\ttindextype{GOSPER}{operator} is an implementation of the Gosper algorithm.
+The \texttt{gosper} operator\ttindextype[ZEILBERG]{gosper}{operator} is an implementation of the Gosper algorithm.
 \begin{itemize}
 \item
-{\tt gosper(a,k)} determines a closed
+\texttt{gosper(a,k)} determines a closed
 form antidifference. If it does not return a closed form solution, then
 a closed form solution does not exist.
 \item
-{\tt gosper(a,k,m,n)} determines
+\texttt{gosper(a,k,m,n)} determines
 \[
 \sum_{k=m}^n a_k
 \]
@@ -297,14 +297,14 @@ g_k=\prod_{j=1}^k (e+b\,j+c\,j^2+d\,j^3)
 \]
 and for analogous expressions of higher degree polynomials.
 
-\subsection{\REDUCE{} operator {\tt EXTENDED\_GOSPER}}
-\ttindextype{EXTENDED\_GOSPER}{operator}
+\subsection{\REDUCE{} operator \texttt{EXTENDED\_GOSPER}}
+\ttindextype[ZEILBERG]{extended\_gosper}{operator}
 \hypertarget{operator:EXTENDED_GOSPER}{}
-The {\tt extended\_gosper} operator is an implementation of an extended
+The \texttt{extended\_gosper} operator is an implementation of an extended
 version of Gosper's algorithm given by Koepf \cite{Koepf:94b}.
 \begin{itemize}
 \item
-{\tt extended\_gosper(a,k)} determines an antidifference $g_k$ of $a_k$
+\texttt{extended\_gosper(a,k)} determines an antidifference $g_k$ of $a_k$
 whenever there is a number $m$ such that $h_{k}-h_{k-m}=a_k$, and $h_k$ is an
 \textsl{$m$-fold hypergeometric term}, i.e.
 \[
@@ -312,7 +312,7 @@ h_{k}/h_{k-m}\quad\mbox{is a rational function with respect to $k$.}
 \]
 If it does not return a solution, then such a solution does not exist.
 \item
-{\tt extended\_gosper(a,k,m)}
+\texttt{extended\_gosper(a,k,m)}
 determines an \textsl{$m$-fold antidifference} $h_k$ of $a_k$,
 i.e.\ $h_{k}-h_{k-m}=a_k$, if it is an $m$-fold hypergeometric term.
 \end{itemize}
@@ -336,27 +336,27 @@ Examples:
 \end{verbatim}
 }\noindent
 
-\subsection{\REDUCE{} operator {\tt SUMRECURSION}}
-\ttindextype{SUMRECURSION}{operator}
+\subsection{\REDUCE{} operator \texttt{SUMRECURSION}}
+\ttindextype[ZEILBERG]{sumrecursion}{operator}
 \hypertarget{operator:SUMRECURSION}{}
 
-The {\tt sumrecursion} operator is an implementation of the (fast)
+The \texttt{sumrecursion} operator is an implementation of the (fast)
 Zeilberger algorithm.
 \begin{itemize}
 \item
-{\tt sumrecursion(f,k,n)} determines a holonomic recurrence equation
+\texttt{sumrecursion(f,k,n)} determines a holonomic recurrence equation
 for
 \[
-{\tt sum(n)} =\sum\limits_{k=-\infty}^\infty f(n,k)
+\texttt{sum(n)} =\sum\limits_{k=-\infty}^\infty f(n,k)
 \]
 with respect to $n$, applying
-{\tt extended\_sumrecursion} if necessary,
+\texttt{extended\_sumrecursion} if necessary,
 see \S~\ref{sec:EXTENDED_SUMRECURSION}.
 The resulting expression equals zero.
 \item
-{\tt sumrecursion(f,k,n,j)} % $(j\in\mathbb{N})$
+\texttt{sumrecursion(f,k,n,j)} % $(j\in\mathbb{N})$
 searches for a holonomic recurrence equation of order $j$. This
-operator does not use {\tt extended\_sumrecursion} automatically.
+operator does not use \texttt{extended\_sumrecursion} automatically.
 Note that if $j$ is too large, the recurrence equation
 may not be unique, and only one particular solution is returned.
 \end{itemize}
@@ -374,7 +374,7 @@ A simple example deals with Equation (\eqnref{eq:nchoosek})%
 The whole \textsl{hypergeometric database} of the {\sl
 Vandermonde, Gau{\ss}, Kummer, Saalsch\"utz, Dixon, Clausen} and \textsl{Dougall
 identities} (see \cite{Wilf:93}), and many more identities (see e.\ g.\
-\cite{Koepf:94b}), can be obtained using {\tt sumrecursion}.
+\cite{Koepf:94b}), can be obtained using \texttt{sumrecursion}.
 As examples, we consider the difficult cases of Clausen and Dougall:%
 
 {\small
@@ -480,18 +480,18 @@ and finally check the initial conditions:
 \end{verbatim}
 }\noindent
 
-\subsection{\REDUCE{} operator {\tt EXTENDED\_SUMRECURSION}}
+\subsection{\REDUCE{} operator \texttt{EXTENDED\_SUMRECURSION}}
 \label{sec:EXTENDED_SUMRECURSION}
-\ttindextype{EXTENDED\_SUMRECURSION}{operator}
+\ttindextype[ZEILBERG]{extended\_sumrecursion}{operator}
 \hypertarget{operator:EXTENDED_SUMRECURSION}{}
 
-The {\tt extended\_sumrecursion} operator is an implementation
+The \texttt{extended\_sumrecursion} operator is an implementation
 of an extension of the (fast) Zeilberger algorithm given by Koepf
 \cite{Koepf:94b}.
 \begin{itemize}
 \item
-{\tt extended\_sumrecursion(f,k,n,m,l)} determines a holonomic recurrence
-equation for ${\tt sum(n)} =\sum\limits_{k=-\infty}^\infty f(n,k)$
+\texttt{extended\_sumrecursion(f,k,n,m,l)} determines a holonomic recurrence
+equation for $\texttt{sum(n)} =\sum\limits_{k=-\infty}^\infty f(n,k)$
 with respect to $n$ if $f(n,k)$ is an \textsl{$(m,l)$-fold hypergeometric term}
 with respect to $(n,k)$, i.e.
 \[
@@ -504,7 +504,7 @@ with respect to $(n,k)$, i.e.
 are rational functions with respect to both $n$ and $k$.
 The resulting expression equals zero.
 \item
-{\tt sumrecursion(f,k,n)} invokes {\tt extended\_sumrecursion(f,k,n,m,l)}
+\texttt{sumrecursion(f,k,n)} invokes \texttt{extended\_sumrecursion(f,k,n,m,l)}
 with suitable values $m$ and $l$, and covers therefore the extended
 algorithm completely.
 \end{itemize}
@@ -547,8 +547,8 @@ In the last example, the progam chooses $m=2$, and $l=1$ to derive the
 resulting recurrence equation (see \cite{Koepf:94b}, Table 3, (1.3)).
 
 
-\subsection{\REDUCE{} operator {\tt HYPERRECURSION}}
-\ttindextype{HYPERRECURSION}{operator}\ttindextype{HYPERTERM}{operator}
+\subsection{\REDUCE{} operator \texttt{HYPERRECURSION}}
+\ttindextype[ZEILBERG]{hyperrecursion}{operator}\ttindextype[ZEILBERG]{hyperterm}{operator}
 \hypertarget{operator:HYPERRECURSION}{}
 \hypertarget{operator:HYPERTERM}{}
 
@@ -571,22 +571,22 @@ generalized hypergeometric function is to be established, you can use
 the following \REDUCE{} operator:
 \begin{itemize}
 \item
-{\tt hyperrecursion(upper,lower,x,n)} determines a holonomic recurrence
+\texttt{hyperrecursion(upper,lower,x,n)} determines a holonomic recurrence
 equation with respect to $n$ for
 $_{p}F_{q}\left.\left(\begin{array}{cccc}
 a_{1},&a_{2},&\cdots,&a_{p}\\
 b_{1},&b_{2},&\cdots,&b_{q}\\
             \end{array}\right| x\right)
-$, where {\tt upper}$=\{a_{1}, a_{2}, \ldots, a_{p}\}$
+$, where \texttt{upper}$=\{a_{1}, a_{2}, \ldots, a_{p}\}$
 is the list of upper parameters, and
-{\tt lower}$=\{b_{1}, b_{2}, \ldots, b_{q}\}$
+\texttt{lower}$=\{b_{1}, b_{2}, \ldots, b_{q}\}$
 is the list of lower parameters depending on $n$. If Zeilberger's algorithm
-does not apply, {\tt extended\_sumrecursion}
+does not apply, \texttt{extended\_sumrecursion}
 of \S~\ref{sec:EXTENDED_SUMRECURSION} is used.
 \item
-{\tt hyperrecursion(upper,lower,x,n,j)} $(j\in\mathbb{N})$
+\texttt{hyperrecursion(upper,lower,x,n,j)} $(j\in\mathbb{N})$
 searches only for a holonomic recurrence equation of order $j$. This
-operator does not use {\tt extended\_sumrecursion} automatically.
+operator does not use \texttt{extended\_sumrecursion} automatically.
 \end{itemize}
 Therefore
 
@@ -626,24 +626,24 @@ whereas
 proves Dougall's identity, again.
 
 If a hypergeometric expression is given in hypergeometric notation, then
-the use of {\tt hyperrecursion} is more natural than the use of
-{\tt sumrecursion}.
+the use of \texttt{hyperrecursion} is more natural than the use of
+\texttt{sumrecursion}.
 
 Moreover you may use the \REDUCE{} operator
 \begin{itemize}
 \item
-{\tt hyperterm(upper,lower,x,k)} that yields the hypergeometric term
+\texttt{hyperterm(upper,lower,x,k)} that yields the hypergeometric term
 \[
 \frac
 {(a_{1})_{k}\cdot(a_{2})_{k}\cdots(a_{p})_{k}}
 {(b_{1})_{k}\cdot(b_{2})_{k}\cdots(b_{q})_{k}\,k!}x^{k}
 \]
-with upper parameters {\tt upper}$=\{a_{1}, a_{2}, \ldots, a_{p}\}$,
-and lower parameters {\tt lower}$=\{b_{1}, b_{2}, \ldots, b_{q}\}$
+with upper parameters \texttt{upper}$=\{a_{1}, a_{2}, \ldots, a_{p}\}$,
+and lower parameters \texttt{lower}$=\{b_{1}, b_{2}, \ldots, b_{q}\}$
 \end{itemize}
 in connection with hypergeometric terms.
 
-The operator {\tt sumrecursion} can also be used to
+The operator \texttt{sumrecursion} can also be used to
 obtain three-term recurrence equations for systems of orthogonal polynomials
 with the aid of known hypergeometric representations. By
 (\cite{NikiforovUvarovSuslov:91}, (2.7.11a)), the discrete Krawtchouk polynomials $k_n^{(p)}(x,N)$
@@ -693,25 +693,25 @@ and get the three three-term recurrence equations
 }\noindent
 with respect to the parameters $n$, $x$, and $N$ respectively.
 
-\subsection{\REDUCE{} operator {\tt HYPERSUM}}
-\ttindextype{HYPERSUM}{operator}
+\subsection{\REDUCE{} operator \texttt{HYPERSUM}}
+\ttindextype[ZEILBERG]{hypersum}{operator}
 \hypertarget{operator:HYPERSUM}{}
 
-With the operator {\tt hypersum}, hypergeometric sums are directly
+With the operator \texttt{hypersum}, hypergeometric sums are directly
 evaluated in closed form whenever the extended
 Zeilberger algorithm leads to a recurrence equation containing only
 two terms:
 \begin{itemize}
 \item
-{\tt hypersum(upper,lower,x,n)} determines a closed form representation
+\texttt{hypersum(upper,lower,x,n)} determines a closed form representation
 for
 $_{p}F_{q}\left.\left(\begin{array}{cccc}
 a_{1},&a_{2},&\cdots,&a_{p}\\
 b_{1},&b_{2},&\cdots,&b_{q}\\
             \end{array}\right| x\right)
-$, where {\tt upper}$=\{a_{1}, a_{2}, \ldots, a_{p}\}$
+$, where \texttt{upper}$=\{a_{1}, a_{2}, \ldots, a_{p}\}$
 is the list of upper parameters, and
-{\tt lower}$=\{b_{1}, b_{2}, \ldots, b_{q}\}$
+\texttt{lower}$=\{b_{1}, b_{2}, \ldots, b_{q}\}$
 is the list of lower parameters depending on $n$. The result is given as a
 hypergeometric term with respect to $n$.
 
@@ -740,7 +740,7 @@ Examples \cite{Koepf:94b}:
  pochhammer(a - d + 1,n)
 \end{verbatim}
 }\noindent
-Note that the operator {\tt togamma} converts expressions given in
+Note that the operator \texttt{togamma} converts expressions given in
 factorial-$\Gamma$-binomial-Pochhammer notation
 into a pure $\Gamma$ function representation:
 
@@ -812,18 +812,18 @@ _3 F_2\left.
 }
 \]
 
-\subsection{\REDUCE{} operator {\tt SUMTOHYPER}}
-\ttindextype{SUMTOHYPER}{operator}
+\subsection{\REDUCE{} operator \texttt{SUMTOHYPER}}
+\ttindextype[ZEILBERG]{sumtohyper}{operator}
 \hypertarget{operator:SUMTOHYPER}{}
 
-With the operator {\tt sumtohyper}, sums given in
+With the operator \texttt{sumtohyper}, sums given in
 factorial-$\Gamma$-binomial-Poch\-hammer notation
 are converted into hypergeometric notation.\\
 \texttt{sumtohyper(f,k)} determines the hypergeometric representation
 of
 $\sum\limits_{k=-\infty}^\infty f_k$,
 i.e.\
-its output is {\tt c*hypergeometric(upper,lower,x)}, corresponding to
+its output is \texttt{c*hypergeometric(upper,lower,x)}, corresponding to
 the representation
 \[
 \sum\limits_{k=-\infty}^\infty f_k=c\cdot\;
@@ -833,8 +833,8 @@ b_{1},&b_{2},&\cdots,&b_{q}\\
             \end{array}\right| x\right)
 \;,
 \]
-where {\tt upper}$=\{a_{1}, a_{2}, \ldots, a_{p}\}$
-and {\tt lower}$=\{b_{1}, b_{2}, \ldots, b_{q}\}$
+where \texttt{upper}$=\{a_{1}, a_{2}, \ldots, a_{p}\}$
+and \texttt{lower}$=\{b_{1}, b_{2}, \ldots, b_{q}\}$
 are the lists of upper and lower parameters.
 \\
 Examples:
@@ -858,11 +858,11 @@ hypergeometric({ - n, - n, - n},{1,1},-1)
 
 
 \subsection{Simplification Operators}
-\ttindextype{SIMPLIFY\_GAMMA}{operator}
-\ttindextype{simplify\_combinatorial}{operator}
-\ttindextype{GAMMATOFACTORIAL}{rule}
-\ttindextype{simplify\_gamma2}{operator}
-\ttindextype{simplify\_gamman}{operator}
+\ttindextype[ZEILBERG]{simplify\_gamma}{operator}
+\ttindextype[ZEILBERG]{simplify\_combinatorial}{operator}
+\ttindextype[ZEILBERG]{gammatofactorial}{rule}
+\ttindextype[ZEILBERG]{simplify\_gamma2}{operator}
+\ttindextype[ZEILBERG]{simplify\_gamman}{operator}
 \hypertarget{operator:SIMPLIFY_GAMMA}{}                                                                                                                         
 \hypertarget{operator:SIMPLIFY_GAMMA2}{}
 \hypertarget{operator:SIMPLIFY_GAMMAN}{}
@@ -877,32 +877,32 @@ binomial coefficients, and Pochhammer symbols is a hypergeometric term,
 the following simplification operators can be used:
 \begin{itemize}
 \item
-{\tt simplify\_gamma(f)} simplifies an expression {\tt f} involving
+\texttt{simplify\_gamma(f)} simplifies an expression \texttt{f} involving
 only rational, powers and $\Gamma$ function terms according to a recursive
 application of the simplification rule $\Gamma\:(a+1)=a\,\Gamma\:(a)$
 to the expression tree. Since all $\Gamma$ arguments with integer difference
 are transformed, this gives a decision procedure for rationality
 for integer-linear $\Gamma$ term product ratios.
 \item
-{\tt simplify\_combinatorial(f)} simplifies an expression {\tt f}
+\texttt{simplify\_combinatorial(f)} simplifies an expression \texttt{f}
 involving powers, factorials, $\Gamma$ function terms,
 binomial coefficients, and Pochhammer symbols by converting
 factorials, binomial coefficients, and Poch\-hammer symbols into
-$\Gamma$ function terms, and applying {\tt simplify\_gamma} to its
+$\Gamma$ function terms, and applying \texttt{simplify\_gamma} to its
 result. If the output is not rational,
 it is given in terms of $\Gamma$ functions. If you prefer factorials
 you may use
 \item
-{\tt gammatofactorial} (rule) converting $\Gamma$ function terms into
+\texttt{gammatofactorial} (rule) converting $\Gamma$ function terms into
 factorials using $\Gamma\:(x)\rightarrow (x-1)!$.
 \item
-{\tt simplify\_gamma2(f)}
+\texttt{simplify\_gamma2(f)}
 uses the duplication formula of the $\Gamma$ function to simplify $f$.
 \item
-{\tt simplify\_gamman(f,n)}
+\texttt{simplify\_gamman(f,n)}
 uses the multiplication formula of the $\Gamma$ function to simplify $f$.
 \end{itemize}
-The use of {\tt simplify\_combinatorial(f)} is a safe way to
+The use of \texttt{simplify\_combinatorial(f)} is a safe way to
 decide the rationality for any ratio of products of powers, factorials,
 $\Gamma$ function terms, binomial coefficients, and Pochhammer symbols.
 
@@ -957,7 +957,7 @@ Other examples are
 }\noindent
 
 \subsection{Tracing}
-\ttindexswitch[ZEILBERG]{ZB\_TRACE}
+\ttindexswitch[ZEILBERG]{zb\_trace}
 \hypertarget{switch:ZB_TRACE}{}
 
 If you set
@@ -1049,15 +1049,15 @@ Zeilberger algorithm successful
 }\noindent
 
 \subsection{Global Variables and Switches}
-\ttindexswitch[ZEILBERG]{ZB\_TRACE}
-\ttindextype{ZB\_DIRECTION}{variable}
-\ttindextype{ZB\_ORDER}{variable}
-\ttindexswitch[ZEILBERG]{ZB\_FACTOR}
-\ttindexswitch[ZEILBERG]{ZB\_PROOF}
-\ttindextype{GOSPER\_REPRESENTATION}{variable}
-\ttindextype{ZEILBERGER\_REPRESENTATION}{variable}
-\ttindextype{ZB\_F}{internal operator}
-\ttindextype{ZB\_SIGMA}{internal operator}
+\ttindexswitch[ZEILBERG]{zb\_trace}
+\ttindextype[ZEILBERG]{zb\_direction}{variable}
+\ttindextype[ZEILBERG]{zb\_order}{variable}
+\ttindexswitch[ZEILBERG]{zb\_factor}
+\ttindexswitch[ZEILBERG]{zb\_proof}
+\ttindextype[ZEILBERG]{gosper\_representation}{variable}
+\ttindextype[ZEILBERG]{zeilberger\_representation}{variable}
+\ttindextype[ZEILBERG]{zb\_f}{internal operator}
+\ttindextype[ZEILBERG]{zb\_sigma}{internal operator}
 \hypertarget{reserved:ZB_DIRECTION}{}
 \hypertarget{reserved:ZB_ORDER}{}
 \hypertarget{reserved:GOSPER_REPRESENTATION}{}
@@ -1068,17 +1068,17 @@ Zeilberger algorithm successful
 \hypertarget{switch:ZB_PROOF}{}
 
 The following global variables and switches can be used in connection with
-the {\tt ZEILBERG} package:
+the \textsc{ZEILBERG} package:
 \begin{itemize}
 \item
-{\tt zb\_trace}, switch; default setting {\tt off}.
+\texttt{zb\_trace}, switch; default setting \texttt{off}.
 Turns tracing on and off.
 \item
-{\tt zb\_direction}, variable; settings: {\tt down}, {\tt up};
-default setting {\tt down}.
+\texttt{zb\_direction}, variable; settings: \texttt{down}, \texttt{up};
+default setting \texttt{down}.
 
 In the case of the Gosper algorithm, either a downward or a forward
-antidifference is calculated, i.e., {\tt gosper} finds $g_k$ with either
+antidifference is calculated, i.e., \texttt{gosper} finds $g_k$ with either
 \[
 a_k=g_k-g_{k-1}
 \quad\quad\mbox{or}\quad\quad
@@ -1101,23 +1101,23 @@ sum(n + 1)*n + sum(n + 1) - 4*sum(n)*n - 2*sum(n)
 \end{verbatim}
 }\noindent
 \item
-{\tt zb\_order}, variable; settings: any nonnegative integer;
-default setting~{\tt 5}.
+\texttt{zb\_order}, variable; settings: any nonnegative integer;
+default setting~\texttt{5}.
 Gives the maximal order for the recurrence
-equation that {\tt sumrecursion} searches for.
+equation that \texttt{sumrecursion} searches for.
 \item
-{\tt zb\_factor}, switch; default setting {\tt on}.
-If {\tt off}, the factorization of the output usually producing nicer results
+\texttt{zb\_factor}, switch; default setting \texttt{on}.
+If \texttt{off}, the factorization of the output usually producing nicer results
 is suppressed.
 \item
-{\tt zb\_proof}, switch; default setting {\tt off}. If {\tt on},
+\texttt{zb\_proof}, switch; default setting \texttt{off}. If \texttt{on},
 then several intermediate results are stored in global variables:
 \item
-{\tt gosper\_representation}, variable; default setting {\tt nil}.
+\texttt{gosper\_representation}, variable; default setting \texttt{nil}.
 
-If a {\tt gosper} command is issued, and if the Gosper algorithm is applicable,
-then the variable {\tt gosper\_representation} is set to the
-list of polynomials (with respect to $k$) {\tt \{p,q,r,f\}}
+If a \texttt{gosper} command is issued, and if the Gosper algorithm is applicable,
+then the variable \texttt{gosper\_representation} is set to the
+list of polynomials (with respect to $k$) \texttt{\{p,q,r,f\}}
 corresponding to the representation
 \[
 \frac{a_k}{a_{k-1}}=\frac{p_k}{p_{k-1}}\,\frac{q_k}{r_k}
@@ -1161,11 +1161,11 @@ see \cite{Gosper:78}. Examples:
 \end{verbatim}
 }\noindent
 \item
-{\tt zeilberger\_representation}, variable; default setting {\tt nil}.
+\texttt{zeilberger\_representation}, variable; default setting \texttt{nil}.
 
-If a {\tt sumrecursion} command is issued, and if the Zeilberger
+If a \texttt{sumrecursion} command is issued, and if the Zeilberger
 algorithm is successful, then the variable
-{\tt zeilberger\_representation} is set to the final Gosper
+\texttt{zeilberger\_representation} is set to the final Gosper
 representation used, see \cite{Koornwinder:93}.
 \item
   \texttt{zb\_f}, internal operator, do not use.
@@ -1178,44 +1178,44 @@ representation used, see \cite{Koornwinder:93}.
 The following messages may occur:
 \begin{itemize}
 \item
-{\tt ***** Gosper algorithm:\ no closed form solution exists}
+\texttt{***** Gosper algorithm:\ no closed form solution exists}
 
 Example input:
 
-{\tt gosper(factorial(k),k)}.
+\texttt{gosper(factorial(k),k)}.
 \item
-{\tt ***** Gosper algorithm not applicable}
+\texttt{***** Gosper algorithm not applicable}
 
 Example input:
 
-{\tt gosper(factorial(k/2),k)}.
+\texttt{gosper(factorial(k/2),k)}.
 
 The term ratio $a_k/a_{k-1}$ is not rational.
 \item
-{\tt ***** illegal number of arguments}
+\texttt{***** illegal number of arguments}
 
 Example input:
 
-{\tt gosper(k)}.
+\texttt{gosper(k)}.
 \item
-{\tt ***** Zeilberger algorithm fails.\ Enlarge zb\_order}
+\texttt{***** Zeilberger algorithm fails.\ Enlarge zb\_order}
 
 Example input:
 
-{\tt sumrecursion(binomial(n,k)*binomial(6*k,n),k,n)}
+\texttt{sumrecursion(binomial(n,k)*binomial(6*k,n),k,n)}
 
-For  this example a setting {\tt zb\_order:=6} is needed.
+For  this example a setting \texttt{zb\_order:=6} is needed.
 \item
-{\tt ***** Zeilberger algorithm not applicable}
+\texttt{***** Zeilberger algorithm not applicable}
 
 Example input:
 
-{\tt sumrecursion(binomial(n/2,k),k,n)}
+\texttt{sumrecursion(binomial(n/2,k),k,n)}
 
 One of the term ratios $f(n,k)/f(n-1,k)$ or $f(n,k)/f(n,k-1)$
 is not rational.
 \item
-{\tt ***** SOLVE given inconsistent equations}
+\texttt{***** SOLVE given inconsistent equations}
 
 You can ignore this message that occurs with Version 3.5.
 \end{itemize}

@@ -68,8 +68,8 @@ tracing.)
 
 \hypertarget{command:RTR}{}
 \hypertarget{command:UNRTR}{}
-\ttindextype{RTR}{command}
-\ttindextype{UNRTR}{command}
+\ttindextype{rtr}{command}
+\ttindextype{unrtr}{command}
 Tracing of one or more procedures is initiated by the command
 \texttt{rtr}:
 \begin{verbatim}
@@ -167,8 +167,8 @@ using the names \texttt{Arg1}, \texttt{Arg2}, etc.
 
 \hypertarget{command:RTRST}{}
 \hypertarget{command:UNRTRST}{}
-\ttindextype{RTRST}{command}
-\ttindextype{UNRTRST}{command}
+\ttindextype{rtrst}{command}
+\ttindextype{unrtrst}{command}
 One often needs information about the internal behaviour of a
 procedure, especially if it is a longer piece of code.  For an
 interpreted procedure declared in an \texttt{rtrst} command:
@@ -242,8 +242,8 @@ name depending on the underlying Lisp systems.
 
 \hypertarget{command:TRRL}{}
 \hypertarget{command:UNTRRL}{}
-\ttindextype{TRRL}{command}
-\ttindextype{UNTRRL}{command}
+\ttindextype{trrl}{command}
+\ttindextype{untrrl}{command}
 The command \texttt{trrl} initiates tracing when they fire of
 individual rules or rule lists that have been activated using
 \texttt{let}.
@@ -325,8 +325,8 @@ clearrules trigrules;
 
 \hypertarget{command:TRRLID}{}
 \hypertarget{command:UNTRRLID}{}
-\ttindextype{TRRLID}{command}
-\ttindextype{UNTRRLID}{command}
+\ttindextype{trrlid}{command}
+\ttindextype{untrrlid}{command}
 The command \texttt{trrlid} initiates tracing of individual rule lists
 that have been assigned to variables, but have not been activated
 using \texttt{let}:
@@ -358,7 +358,7 @@ untrrlid trigrules;
 \section{Output control: RTROUT}
 
 \hypertarget{command:RTROUT}{}
-\ttindextype{RTROUT}{command}
+\ttindextype{rtrout}{command}
 The trace output (only) can be redirected to a separate file by using
 the command \texttt{rtrout}, followed by a file name in string quotes.
 A second call of \texttt{rtrout} closes any current output file and
@@ -366,7 +366,7 @@ opens a new one.  The file name \texttt{NIL} (without string quotes)
 closes any current output file and causes the trace output to be
 redirected to the standard output device.
 
-\ttindexswitch[RTRACE]{RTRACE}
+\ttindexswitch[RTRACE]{rtrace}
 The \rdebug{} variables \texttt{trlimit} and \texttt{trprinter!*} are
 not implemented in \rtrace{}.  If you want to select Lisp-style
 tracing then turn off the switch \rtrace{}:

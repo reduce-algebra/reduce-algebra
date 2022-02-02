@@ -55,7 +55,7 @@ example:
 \begin{quote}
 \begin{tabular}{ll}
 \texttt{a1 := b + c} \\
-\texttt{h(l,m) := x-2*y} \hspace{1in} & (where \texttt{h} is an operator) \\
+\texttt{h(l,m) := x-2*y} \hspace{1cm} & (where \texttt{h} is an operator) \\
 \texttt{k(3,5) := x-2*y}              & (where \texttt{k} is a 2-dim. array)
 \end{tabular}
 \end{quote}
@@ -154,7 +154,8 @@ The conditional statement\index{Conditional statement}\index{Statement!condition
 has the following syntax:
 \begin{syntaxtable}
  \meta{conditional statement} &\BNFprod &
-    \texttt{if }\meta{boolean expression}\texttt{ then }\meta{statement} \\
+ \texttt{if }\meta{boolean expression} \\
+      && \texttt{then }\meta{statement} \\
       && [\texttt{else }\meta{statement}]
 \end{syntaxtable}
 The boolean expression is evaluated. If this is \emph{true}, the first
@@ -338,7 +339,7 @@ prints \texttt{A} twice, not 1 followed by 2.
 \hypertarget{command:WHILE}{}
 
 The\ttindex{while} \texttt{for} \ldots{} \texttt{do}\ttindex{do} feature
-\index{while statement}\index{Statement!while}
+\ttindextype{while}{statement}\index{Statement!while}
 allows easy coding of a repeated operation in which the number of repetitions
 is known in advance.  If the criterion for repetition is more complicated,
 \texttt{while} \ldots{} \texttt{do} can often be used.  Its syntax is:
@@ -589,7 +590,7 @@ statement to a point within the compound statement using a \texttt{go to}.
 
 The value corresponding to a \texttt{begin} \ldots{} \texttt{end} compound
 statement,\index{return statement}\index{Statement!return}
-\ttindex{begin \ldots{} END} such as a procedure body, is normally 0
+\ttindex{begin \ldots{} end} such as a procedure body, is normally 0
 (\texttt{nil} in symbolic mode).  By executing a \texttt{return}\ttindex{return}
 statement in the compound statement a different value can be returned.
 After a \texttt{return} statement is executed, no further statements within

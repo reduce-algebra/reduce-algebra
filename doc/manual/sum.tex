@@ -1,16 +1,18 @@
 
-\index{Gosper's Algorithm} \ttindextype{SUM}{operator} \ttindextype{PROD}{operator}
+\index{Gosper's Algorithm} \ttindextype[SUM]{SUM}{operator} \ttindextype[SUM]{PROD}{operator}
 This package implements the Gosper algorithm for the summation of series.
-It defines operators SUM and PROD.  The operator SUM returns the indefinite
-or definite summation of a given expression, and the operator PROD returns
+It defines operators \texttt{sum} and \texttt{prod}.  The operator \texttt{sum} returns the indefinite
+or definite summation of a given expression, and the operator \texttt{prod} returns
 the product of the given expression.  These are used with the syntax:
 
+\hypertarget{operator:SUM}{}
+\hypertarget{operator:PROD}{}
 \vspace{.1in}
-\noindent {\tt SUM}(EXPR:{\em expression}, K:{\em kernel},
-[LOLIM:{\em expression} [, UPLIM:{\em expression}]])
+\noindent \texttt{sum}(expr:{\em expression}, k:{\em kernel},
+[lolim:{\em expression} [, uplim:{\em expression}]])
 \vspace{.1in}
-\noindent {\tt PROD}(EXPR:{\em expression}, K:{\em kernel},
-[LOLIM:{\em expression} [, UPLIM:{\em expression}]])
+\noindent \texttt{prod}(expr:{\em expression}, k:{\em kernel},
+[lolim:{\em expression} [, uplim:{\em expression}]])
 
 If there is no closed form solution, these operators return the input
 unchanged.  UPLIM and LOLIM are optional parameters specifying the lower
@@ -36,7 +38,7 @@ Gosper's algorithm succeeds whenever the ratio
 
 \noindent is a rational function of $n$.  The function SUM!-SQ
 handles basic functions such as polynomials, rational functions and
-exponentials. \ttindextype{SUM"!-SQ}{operator}
+exponentials. \ttindextype[SUM]{SUM"!-SQ}{operator}
 
 The trigonometric functions sin, cos, etc. are converted to exponentials
 and then Gosper's algorithm is applied.  The result is converted back into
@@ -44,19 +46,16 @@ sin, cos, sinh and cosh.
 
 Summations of logarithms or products of exponentials are treated by the
 formula:
-
-\vspace{.1in}
-\hspace*{2em} \[ \sum_{k=n_0}^{n} \log f(k) = \log \prod_{k=n_0}^n f(k) \]
-\vspace{.1in}
-\hspace*{2em} \[ \prod_{k=n_0}^n \exp f(k) = \exp \sum_{k=n_0}^n f(k) \]
-\vspace{.1in}
-
+\begin{gather*}
+  \sum_{k=n_0}^{n} \log f(k) = \log \prod_{k=n_0}^n f(k) \\
+  \prod_{k=n_0}^n \exp f(k) = \exp \sum_{k=n_0}^n f(k)
+\end{gather*}
 Other functions, as shown in the test file for the case of binomials and
 formal products, can be summed by providing LET rules which must relate the
 functions evaluated at $k$ and $k - 1$ ($k$ being the summation variable).
 
-\index{Tracing!SUM package} \ttindexswitch[SUM]{TRSUM}
+\index{Tracing!SUM package} \ttindexswitch[SUM]{trsum}
 \hypertarget{switch:TRSUM}{}
-There is a switch TRSUM (default OFF).  If this switch is on, trace
+There is a switch \sw{trsum} (default OFF).  If this switch is on, trace
 messages are printed out during the course of Gosper's algorithm.
 

@@ -5,14 +5,14 @@
   algebraic-mode support for set operations on lists regarded as sets
   (or representing explicit sets) and on implicit sets represented by
   identifiers.  It provides the set-valued infix operators (with
-  synonyms) {\tt union}, {\tt intersection} ({\tt intersect}) and {\tt
-  setdiff} (\verb|\|, {\tt minus}) and the Boolean-valued infix
-  operators (predicates) {\tt member}, {\tt subset\_eq}, {\tt subset},
-  {\tt set\_eq}.  The union and intersection operators are n-ary and
+  synonyms) \texttt{union}, \texttt{intersection} (\texttt{intersect}) and
+  \texttt{setdiff} (\texttt{\textbackslash}, \texttt{minus}) and the Boolean-valued infix
+  operators (predicates) \texttt{member}, \texttt{subset\_eq}, \texttt{subset},
+  \texttt{set\_eq}.  The union and intersection operators are n-ary and
   the rest are binary.  A list can be explicitly converted to the
-  canonical set representation by applying the operator {\tt mkset}.
+  canonical set representation by applying the operator \texttt{mkset}.
   (The package also provides an operator not specifically related to
-  set theory called {\tt evalb} that allows the value of any
+  set theory called \texttt{evalb} that allows the value of any
   Boolean-valued expression to be displayed in algebraic mode.)
 %\end{abstract}
 
@@ -44,7 +44,7 @@ on such symbolic set-valued expressions, but this is currently rather
 {\it ad hoc\/} and is probably incomplete.
 
 For examples of the operation of the SETS package see (or run) the
-test file {\tt sets.tst}.  This package is experimental and
+test file \texttt{sets.tst}.  This package is experimental and
 developments are under consideration; if you have suggestions for
 improvements (or corrections) then please send them to me (FJW),
 preferably by email.  The package is intended to be run under
@@ -63,8 +63,8 @@ subset freeof + - setdiff union intersection * / ^ .
 \end{verbatim}
 
 
-\subsection{Explicit set representation and {\tt mkset}}
-\ttindex{MKSET}
+\subsection{Explicit set representation and \texttt{mkset}}
+\ttindextype{mkset}{operator}
 
 Explicit sets are represented by lists, and this package does not
 require any restrictions at all on the forms of lists that are
@@ -77,7 +77,7 @@ conventional and may be convenient to sort them into some standard
 order, and an appropriate ordering of a normal representation gives a
 canonical representation.  This means that two identical sets have
 identical representations, and therefore the standard REDUCE equality
-predicate ({\tt =}) correctly determines set equality; without a
+predicate (\texttt{=}) correctly determines set equality; without a
 canonical representation this is not the case.
 
 Pre-processing of explicit set-valued arguments of the set-valued
@@ -88,11 +88,11 @@ duplicate elements.  Such sets are also currently sorted, mainly
 because the result looks better.  The ordering used satisfies the {\tt
 ordp} predicate used for most sorting within REDUCE, except that
 explicit integers are sorted into increasing numerical order rather
-than the decreasing order that satisfies {\tt ordp}.
+than the decreasing order that satisfies \texttt{ordp}.
 
 Hence explicit sets appearing in the result of any set operator are
 currently returned in a canonical form.  Any explicit set can also be
-put into this form by applying the operator {\tt mkset} to the list
+put into this form by applying the operator \texttt{mkset} to the list
 representing it.  For example
 \begin{verbatim}
 mkset {1,2,y,x*y,x+y};
@@ -104,10 +104,10 @@ The empty set is represented by the empty list \verb|{}|.
 
 
 \subsection{Union and intersection}
-\ttindex{UNION}\ttindex{INTERSECTION}
+\ttindextype{union}{operator}\ttindextype{intersection}{operator}
 
-The operator {\tt intersection} (the name used internally) has the
-shorter synonym {\tt intersect}.  These operators will probably most
+The operator \f{intersection} (the name used internally) has the
+shorter synonym \f{intersect}.  These operators will probably most
 commonly be used as binary infix operators applied to explicit sets,
 e.g.
 \begin{verbatim}
@@ -133,7 +133,7 @@ intersect({1,2,3}, {2,3,4}, {3,4,5});
 \end{verbatim}
 For completeness, they can currently also be used as unary operators,
 in which case they just return their arguments (in canonical form),
-and so act as slightly less efficient versions of {\tt mkset} (but
+and so act as slightly less efficient versions of \f{mkset} (but
 this may change), e.g.
 \begin{verbatim}
 union {1,5,3,5,1};
@@ -190,13 +190,13 @@ a intersection b union a intersection c
 
 
 \subsection{Set difference}
-\ttindex{SETDIFF}
-\ttindextype{\char`\\}{operator (\texttt{SETDIFF})}
+\ttindextype{setdiff}{operator}
+\ttindextype{\textbackslash{} (setdiff)}{operator}
 
-The set difference operator is represented by the symbol \verb|\| and
+The set difference operator is represented by the symbol \texttt{\textbackslash} and
 is always output using this symbol, although it can also be input using
-either of the two names {\tt setdiff} (the name used internally) or
-{\tt minus} (as used in Maple).  It is a binary operator, its operands
+either of the two names \f{setdiff} (the name used internally) or
+\f{minus} (as used in Maple).  It is a binary operator, its operands
 may be any combination of explicit or implicit sets, and it may be
 used in an argument of any other set operator.  Here are some
 examples:
@@ -228,22 +228,22 @@ a
 
 
 \subsection{Predicates on sets}
-\ttindex{EVALB}
+\ttindextype{evalb}{operator}
 
 These are all binary infix operators.  Currently, like all REDUCE
-predicates, they can only be used within conditional statements ({\tt
-if}, {\tt while}, {\tt repeat}) or within the argument of the {\tt
-evalb} operator provided by this package, and they cannot remain
+predicates, they can only be used within conditional statements
+\texttt{if}, \texttt{while}, \texttt{repeat}) or within the argument of the
+\texttt{evalb} operator provided by this package, and they cannot remain
 symbolic -- a predicate that cannot be evaluated to a Boolean value
 causes a normal REDUCE error.
 
-The {\tt evalb} operator provides a convenient shorthand for an {\tt
-if} statement designed purely to display the value of any Boolean
+The \texttt{evalb} operator provides a convenient shorthand for an \texttt{if}
+statement designed purely to display the value of any Boolean
 expression (not only predicates defined in this package).  It has some
-similarity with the {\tt evalb} function in Maple, except that the
-values returned by {\tt evalb} in REDUCE (the identifiers {\tt true}
-and {\tt false}) have no significance to REDUCE itself.  Hence, in
-REDUCE, use of {\tt evalb} is {\em never\/} necessary.
+similarity with the \texttt{evalb} function in Maple, except that the
+values returned by \texttt{evalb} in REDUCE (the identifiers \texttt{true}
+and \texttt{false}) have no significance to REDUCE itself.  Hence, in
+REDUCE, use of \texttt{evalb} is {\em never\/} necessary.
 \begin{verbatim}
 if a = a then true else false;
 
@@ -269,14 +269,14 @@ evalb 0;
 
 false
 \end{verbatim}
-I will use the {\tt evalb} operator in preference to an explicit {\tt
-if} statement for purposes of illustration.
+I will use the \texttt{evalb} operator in preference to an explicit
+\texttt{if} statement for purposes of illustration.
 
 
 \subsubsection{Set membership}
-\ttindex{MEMBER}
+\ttindextype{member}{operator}
 
-Set membership is tested by the predicate {\tt member}.  Its left
+Set membership is tested by the predicate \texttt{member}.  Its left
 operand is regarded as a potential set element and its right operand
 {\em must\/} evaluate to an explicit set.  There is currently no sense
 in which the right operand could be an implicit set; this would
@@ -299,12 +299,12 @@ evalb(a member b);
 
 
 \subsubsection{Set inclusion}
-\ttindex{SUBSET\_EQ}
+\ttindextype{subset\_eq}{operator}
 
-Set inclusion is tested by the predicate {\tt subset\_eq} where {\tt a
-subset\_eq b} is true if the set $a$ is either a subset of or equal to
-the set $b$; strict inclusion is tested by the predicate {\tt subset}
-where {\tt a subset b} is true if the set $a$ is {\em strictly\/} a
+Set inclusion is tested by the predicate \texttt{subset\_eq} where
+\texttt{a subset\_eq b} is true if the set $a$ is either a subset of or equal to
+the set $b$; strict inclusion is tested by the predicate \texttt{subset}
+where \texttt{a subset b} is true if the set $a$ is {\em strictly\/} a
 subset of the set $b$ and is false is $a$ is equal to $b$.  These
 predicates provide some support for symbolic set expressions, but this
 is not yet correct as indicated below.  Here are some examples:
@@ -349,11 +349,11 @@ false
 
 
 \subsubsection{Set equality}
-\ttindex{SET\_EQ}
+\ttindextype{set\_eq}{operator}
 
 As explained above, equality of two sets in canonical form can be
-reliably tested by the standard REDUCE equality predicate ({\tt =}).
-This package also provides the predicate {\tt set\_eq} to test
+reliably tested by the standard REDUCE equality predicate (\texttt{=}).
+This package also provides the predicate \texttt{set\_eq} to test
 equality of two sets not represented canonically.  The two predicates
 behave identically for operands that are symbolic set expressions
 because these are always evaluated to canonical form (although
@@ -390,6 +390,6 @@ true
 \item More symbolic set algebra, canonical forms for set expressions,
   more complete simplification.
 \item Better support for Boolean variables via a version (evalb10?)
-  of {\tt evalb} that returns 1/0 instead of {\tt true}/{\tt false},
+  of \texttt{evalb} that returns 1/0 instead of \texttt{true}/\texttt{false},
   or predicates that return 1/0 directly.
 \end{itemize}

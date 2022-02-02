@@ -47,9 +47,32 @@ New command \f{unset}
 
 New operators \f{continued\_fraction}, \f{totaldeg}
 
-Operators now defined in the \REDUCE core:\\
-\f{changevar},
-\f{divide}, \f{pseudo\_divide}, \f{pseudo\_div}, \f{pseudo\_quotient}, \f{pseudo\_remainder},
+Improvements to the \f{conj} operator, added \f{selfconjugate} declaration.
+
+Added \f{complex\_conjugates} declaration to associate pairs of identifiers
+as mutual complex-conjugates.
+
+\paragraph*{Core Package mathpr}
+
+New switch \sw{unicode\_in\_off\_nat} to have unicode characters
+displayed as such when nat is off.
+
+\paragraph*{Core Package solve}
+
+New boolean operator \f{polyp}(p,var), to determine whether p is a pure polynomial
+in var, ie. the coefficients of p do not contain var.
+
+\paragraph*{Core Package matrix}
+
+New keyword \k{matrixproc} for declaration of matrix-valued procedures, and listproc for declaration of list-valued procedures.
+
+\paragraph*{Operators now defined in the \REDUCE core}
+
+From changevar: \f{changevar},
+
+From polyrat: \f{divide}, \f{pseudo\_divide}, \f{pseudo\_div}, \f{pseudo\_quotient}, \f{pseudo\_remainder},
+
+From specfn: 
 \f{Li}, \f{Si}, \f{Ci}, \f{Shi}, \f{Chi},
 \f{Fresnel\_S}, \f{Fresnel\_C},
 \f{gamma}, \f{igamma}, \f{psi}, \f{polygamma}, \f{beta}, \f{ibeta},
@@ -78,44 +101,60 @@ Operators now defined in the \REDUCE core:\\
 \f{sphericalharmonic},
 \f{fibonacci},\f{fibonaccip},
 \f{motzkin},
-\f{hypergeometric}, \f{MeijerG},
+\f{hypergeometric}, \f{MeijerG}
+
+From limit: 
 \f{limits}, \f{limit!+}, \f{limit!-},
 
-Series: New operators
+From taylor and tps
 \f{taylor}, \f{implicit\_taylor}, \f{inverse\_taylor},
 \f{taylororiginal}, \f{taylortemplate}, \f{taylortostandard}, \f{taylorcombine}, \f{taylorseriesp},
 \f{taylorrevert},
 \f{ps}, 
 \f{psexplim}, \f{psordlim}, \f{psterm}, \f{psorder}, \f{pssetorder}, \f{psdepvar}, \f{psexpansionpt},
-\f{psfunction}, \f{pschangevar}, \f{psreverse}, \f{pscompose}, \f{pssum}, \f{pstaylor}, \f{pscopy}, \f{pstruncate},
-\f{fps}, \f{simplede}, \f{infsum}
+\f{psfunction}, \f{pschangevar}, \f{psreverse}, \f{pscompose}, \f{pssum}, \f{pstaylor}, \f{pscopy}, \f{pstruncate}
 
-New switches \sw{tracefps}, \sw{zb\_factor}, \sw{zb\_proof}, \sw{zb\_trace}
+From fps: \f{fps}, \f{simplede}, \f{infsum}
 
-New operators:
-\f{compact},
-\f{residue}, \f{poleorder},
-\f{ineq\_solve}, \f{r\_solve}, \f{i\_solve},
+From compact: \f{compact}
+
+From residue: \f{residue}, \f{poleorder}
+
+From ineq and rsolve: \f{ineq\_solve}, \f{r\_solve}, \f{i\_solve},
+
+From roots:
 \f{realroots}, \f{isolater}, \f{rlrootno}, 
 \f{roots}, \f{roots\_at\_prec}, \f{root\_val}, \f{nearestroot}, \f{firstroot},
 \f{getroot}, \f{mkpoly}, \f{gfnewt}, \f{gfroot},
-\f{laplace}, \f{invlap},
+
+From laplace: \f{laplace}, \f{invlap},
+
+From defint:
 \f{laplace\_transform}, \f{hankel\_transform}, \f{y\_transform}, \f{k\_transform}, \f{struveh\_transform},
 \f{fourier\_sin}, \f{fourier\_cos},
-\f{defpoly}, \f{split\_field},
+
+From arnum: \f{defpoly}, \f{split\_field}
+
+From zeilberg:
 \f{extended\_gosper}, \f{extended\_sumrecursion},
 \f{gosper}, \f{hyperrecursion}, \f{hypersum}, \f{hyperterm},
 \f{sumtohyper}, \f{sumrecursion},
 \f{simplify\_gamma}, \f{simplify\_gamma2}, \f{simplify\_gamman}, \f{simplify\_combinatorial},
-\f{trigsimp}, \f{triggcd}, \f{trigfactorize},
-\f{ratint}, \f{log\_sum},
+
+From trigsimp: \f{trigsimp}, \f{triggcd}, \f{trigfactorize}
+
+From ratint: \f{ratint}, \f{log\_sum}
+
+From odesolve:
 \f{odesolve}, \f{dsolve}, \f{root\_of\_unity}, \f{plus\_or\_minus},
 
-Plotting: New operator \f{plot}, new commands \f{gnuplot}, \f{plotshow} and \f{plotreset}.
+From gnuplot:
+New operator \f{plot}, new commands \f{gnuplot}, \f{plotshow} and \f{plotreset}.
+
+New switches \sw{tracefps}, \sw{zb\_factor}, \sw{zb\_proof}, \sw{zb\_trace}
 
 Constants now part of the core:\\
- now known as part of the
-core, as well as constants \var{catalan}, \var{euler\_gamma}, \var{golden\_ratio},
+\var{catalan}, \var{euler\_gamma}, \var{golden\_ratio},
 \var{khinchin}.
 
 Variables as part of the core: \f{gosper\_representation},
@@ -124,24 +163,7 @@ Variables as part of the core: \f{gosper\_representation},
 
 Consistent branch cuts for complex numerical functions.
 
-Improvements to the \f{conj} operator, added \f{selfconjugate} declaration.
 
-Added \f{complex\_conjugates} declaration to associate pairs of identifiers
-as mutual complex-conjugates.
-
-\paragraph*{Core Package mathpr}
-
-New switch \sw{unicode\_in\_off\_nat} to have unicode characters
-displayed as such when nat is off.
-
-\paragraph*{Core Package solve}
-
-New boolean operator \f{polyp}(p,var), to determine whether p is a pure polynomial
-in var, ie. the coefficients of p do not contain var.
-
-\paragraph*{Core Package matrix}
-
-New keyword \k{matrixproc} for declaration of matrix-valued procedures.
 
 \paragraph{Package specfn}
 

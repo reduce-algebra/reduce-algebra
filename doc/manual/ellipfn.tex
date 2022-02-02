@@ -67,12 +67,12 @@ The following Jacobi elliptic functions are available:-
 \hypertarget{operator:JACOBINS}{}
 \hypertarget{operator:JACOBIDS}{}
 \hypertarget{operator:JACOBICS}{}
-\ttindex{jacobisn}\ttindex{jacobicn}
-\ttindex{jacobidn}\ttindex{jacobicd}
-\ttindex{jacobisd}\ttindex{jacobind}
-\ttindex{jacobidc}\ttindex{jacobinc}
-\ttindex{jacobisc}\ttindex{jacobins}
-\ttindex{jacobids}\ttindex{jacobics}
+\ttindextype[ELLIPFN]{jacobisn}{operator}\ttindextype[ELLIPFN]{jacobicn}{operator}
+\ttindextype[ELLIPFN]{jacobidn}{operator}\ttindextype[ELLIPFN]{jacobicd}{operator}
+\ttindextype[ELLIPFN]{jacobisd}{operator}\ttindextype[ELLIPFN]{jacobind}{operator}
+\ttindextype[ELLIPFN]{jacobidc}{operator}\ttindextype[ELLIPFN]{jacobinc}{operator}
+\ttindextype[ELLIPFN]{jacobisc}{operator}\ttindextype[ELLIPFN]{jacobins}{operator}
+\ttindextype[ELLIPFN]{jacobids}{operator}\ttindextype[ELLIPFN]{jacobics}{operator}
 \begin{itemize}
 \item jacobisn(u,k)
 \item jacobidn(u,k)
@@ -103,6 +103,14 @@ respect to either argument, to implement the standard addition formulae,
 argument shifts by multiples of the two quarter-periods $K$ and $iK'$ and
 finally Jacobi's transformations for a purely imaginary first argument.
 
+\hypertarget{reserved:TO_SN}{}
+\hypertarget{reserved:TO_CN}{}
+\hypertarget{reserved:TO_DN}{}
+\hypertarget{reserved:NO_GLAISHER}{}
+\ttindextype[ELLIPFN]{to\_sn}{rule list}
+\ttindextype[ELLIPFN]{to\_cn}{rule list}
+\ttindextype[ELLIPFN]{to\_dn}{rule list}
+\ttindextype[ELLIPFN]{no\_glaisher}{rule list}
 Four utility rule lists \texttt{to\_sn}, \texttt{to\_cn}, \texttt{to\_dn} and
 \texttt{no\_glaisher} are provided for user convenience. The first
 \texttt{to\_sn} replaces occurences of the squares of $\mathrm{cn}$ and
@@ -126,12 +134,14 @@ than when switch \sw{complex} is ON and rounding errors are likely to be larger.
 
 \subsubsection{Jacobi Amplitude Function}
 \hypertarget{operator:JACOBIAM}{}
-\ttindex{jacobiam}
+\ttindextype[ELLIPFN]{jacobiam}{operator}
 The amplitude of $u$ can be evaluated using the \f{jacobiam(u,k)}
 command.  A rule list is provided for differentiation of this
 functions with respect to either argument.
 
 \subsubsection{Arithmetic Geometric Mean (AGM)}
+\hypertarget{operator:AGM_FUNCTION}{}
+\ttindextype[ELLIPFN]{AGM\_function}{operator}
 A procedure to evaluate the AGM of initial values \(a_0,b_0,c_0\)
 exists as \\
 \texttt{AGM\_function(\(a_0,b_0,c_0\))} and will return \\
@@ -195,7 +205,7 @@ of the arguments.
 
 \subsubsection{Elliptic F}
 \hypertarget{operator:ELLIPTICF}{}
-\ttindex{ellipticF}
+\ttindextype[ELLIPFN]{EllipticF}{operator}
 
 The Elliptic F function can be used as \f{EllipticF(phi,k)} and
 will return the value of the \emph{Incomplete Elliptic Integral of the
@@ -204,7 +214,9 @@ First Kind}:
 
 \subsubsection{Elliptic K}
 \hypertarget{operator:ELLIPTICK}{}
-\ttindex{ellipticK}
+\hypertarget{operator:ELLIPTICK'}{}
+\ttindextype[ELLIPFN]{EllipticK}{operator}
+\ttindextype[ELLIPFN]{EllipticK'}{operator}
 
 The Elliptic K function can be used as \f{EllipticK(k)} and will
 return the value of the \emph{Complete Elliptic Integral of the
@@ -220,7 +232,9 @@ which is the other quarter-period of the Jacobi elliptic functions.
 
 \subsubsection{Elliptic E}
 \hypertarget{operator:ELLIPTICE}{}
-\ttindex{EllipticE}
+\hypertarget{operator:ELLIPTICE'}{}
+\ttindextype[ELLIPFN]{EllipticE}{operator}
+\ttindextype[ELLIPFN]{EllipticE'}{operator}
 
 The Elliptic E function comes with either one or two arguments;
 used with two arguments as \f{EllipticE(u,k)}
@@ -238,7 +252,7 @@ and will return the value
 
 \subsubsection{Jacobi E}
 \hypertarget{operator:JACOBIE}{}
-\ttindex{jacobiE}
+\ttindextype[ELLIPFN]{JacobiE}{operator}
 The Jacobi E function can be used as  \f{jacobiE(u,k)};
 it will return the value of Jacobi's form of
 the \emph{Incomplete Elliptic Integral of the Second Kind}:
@@ -265,7 +279,7 @@ On non-GUI interfaces the Jacobi E function is rendered as E\_j.
 
 \subsubsection{Jacobi's Zeta Function}
 \hypertarget{operator:JACOBIZETA}{}
-\ttindex{jacobiZeta}\index{Zeta function of Jacobi}
+\ttindextype[ELLIPFN]{jacobiZeta}{operator}\index{Zeta function of Jacobi}
 
 This can be called as \f{jacobiZeta(u,k)} and refers to Jacobi's (elliptic)
 Zeta function $\mathrm{Z}(u,k)$ whereas the operator \f{Zeta} will invoke
@@ -274,8 +288,17 @@ Riemann's $\zeta$ function.
 
 \subsection{Some Numerical Utility Functions}
 \hypertarget{operator:NOME}{}
+\hypertarget{operator:NOME2K}{}
+\hypertarget{operator:NOME2K'}{}
+\hypertarget{operator:NOME2MOD}{}
+\hypertarget{operator:NOME2MOD'}{}
 \hypertarget{ELLIPNOME}{}
-\ttindex{nome} \index{Nome and Related functions}
+\index{Nome and Related functions}
+\ttindextype[ELLIPFN]{nome}{operator}
+\ttindextype[ELLIPFN]{nome2"!K}{operator}
+\ttindextype[ELLIPFN]{nome2"!K"!'}{operator}
+\ttindextype[ELLIPFN]{nome2mod}{operator}
+\ttindextype[ELLIPFN]{nome2mod"!'}{operator}
 
 Five utility functions are provided:
 \begin{itemize}
@@ -307,8 +330,8 @@ Firstly four separate functions of two arguments are defined:
 \hypertarget{operator:ELLIPTICTHETA2}{}
 \hypertarget{operator:ELLIPTICTHETA3}{}
 \hypertarget{operator:ELLIPTICTHETA4}{}
-\ttindex{elliptictheta1} \ttindex{elliptictheta2}
-\ttindex{elliptictheta3} \ttindex{elliptictheta4}
+\ttindextype[ELLIPFN]{elliptictheta1}{operator} \ttindextype[ELLIPFN]{elliptictheta2}{operator}
+\ttindextype[ELLIPFN]{elliptictheta3}{operator} \ttindextype[ELLIPFN]{elliptictheta4}{operator}
 \begin{itemize}
 \item \f{elliptictheta1(u,tau)} $\qquad \vartheta_1(u, \tau)$
 \item \f{elliptictheta2(u,tau)} $\qquad \vartheta_2(u, \tau)$
@@ -398,9 +421,13 @@ by multiplying by the `correcting' factor $q^{1/4}\exp(-i\pi\tau/4)$.
 \subsubsection{Derivatives of Theta Functions}
 
 \hypertarget{THETAD}{}
+\hypertarget{operator:THETA1D}{}
+\hypertarget{operator:THETA2D}{}
+\hypertarget{operator:THETA3D}{}
+\hypertarget{operator:THETA4D}{}
 \index{Theta function derivatives}
-\ttindex{theta1d} \ttindex{theta2d}
-\ttindex{theta3d}\ttindex{theta4d}
+\ttindextype[ELLIPFN]{theta1d}{operator} \ttindextype[ELLIPFN]{theta2d}{operator}
+\ttindextype[ELLIPFN]{theta3d}{operator}\ttindextype[ELLIPFN]{theta4d}{operator}
 Four functions are provided:
 \begin{itemize}
 \item \f{theta1d(u,ord,tau)}
@@ -411,7 +438,7 @@ Four functions are provided:
 These return the $d$th derivatives of the respective theta functions
 with respect to their first argument $u$; $\tau$ is as usual the modulus
 of the theta function. These functions are only operative when the switches
-\sw{ROUNDED} and \sw{COMPLEX} are ON and their arguments are numeric with
+\sw{rounded} and \sw{complex} are ON and their arguments are numeric with
 $d$ being a positive integer.  They are provided mainly to support the implementation
 the Weierstrassian and Sigma functions discussed in the following subsection.
 
@@ -433,11 +460,11 @@ Three main functions of three arguments are defined:
 \hypertarget{WEIERSTRASS}{}
 \hypertarget{WEIERSTRASSZETA}{}
 \hypertarget{SIGMA}{}
-\hypertarget{operator:SIGMA}{}
+\hypertarget{operator:WEIERSTRASS_SIGMA}{}
 \hypertarget{operator:WEIERSTRASS}{}
 \hypertarget{operator:WEIERSTRASSZETA}{}
-\ttindex{weierstrass} \ttindex{weierstrassZeta}
-\ttindex{weierstrass\_sigma}
+\ttindextype[ELLIPFN]{weierstrass}{operator} \ttindextype[ELLIPFN]{weierstrassZeta}{operator}
+\ttindextype[ELLIPFN]{weierstrass\_sigma}{operator}
 \begin{itemize}
 \item  $\wp(u, \omega_1, \omega_3)$ \ --- \ \f{weierstrass(u,omega1,omega3)}
 \item $\zeta_w(u, \omega_1, \omega_3)$ \ --- \ \f{weierstrassZeta(u,omega1,omega3)}
@@ -486,7 +513,7 @@ $\wp$, $\zeta_w$ and $\sigma$ are homogenous of degrees -2, -1 and +1 respective
 where the lattice parameters have been omitted for conciseness.
 
 Rule sets are provided which implement all the properties such as double periodicity discussed above. For numerical evaluation
-the switches \sw{ROUNDED} and \sw{COMPLEX} must both be ON and all three parameters must be numeric. It is not, however,
+the switches \sw{rounded} and \sw{complex} must both be ON and all three parameters must be numeric. It is not, however,
 necessary to ensure $\Im(\omega_3/\omega_1) >0$ as the second and third parameters will be swapped if required.
 
 \subsubsection{Alternative forms of the Weierstrass Functions}
@@ -494,7 +521,7 @@ necessary to ensure $\Im(\omega_3/\omega_1) >0$ as the second and third paramete
 \hypertarget{WEIERSTRASSZETA1}{}
 \hypertarget{operator:WEIERSTRASS1}{}
 \hypertarget{operator:WEIERSTRASSZETA1}{}
-\ttindex{weierstrass1} \ttindex{weierstrassZeta1}
+\ttindextype[ELLIPFN]{weierstrass1}{operator} \ttindextype[ELLIPFN]{weierstrassZeta1}{operator}
 
 Two commonly used alternative forms of the Weierstrassian functions in which
 they are regarded as functions of the lattice invariants $g_2$ and $g_3$
@@ -513,14 +540,14 @@ this  alternative:
 
 \subsubsection{Other Sigma Functions}
 \hypertarget{SIGMA1}{}
-\hypertarget{operator:SIGMA1}{}
-\hypertarget{operator:SIGMA2}{}
-\hypertarget{operator:SIGMA3}{}
+\hypertarget{operator:WEIERSTRASS_SIGMA1}{}
+\hypertarget{operator:WEIERSTRASS_SIGMA2}{}
+\hypertarget{operator:WEIERSTRASS_SIGMA3}{}
 
 Three further Sigma functions are also provided:
 \index{Sigma functions}
-\ttindex{weierstrass\_sigma1} \ttindex{weierstrass\_sigma2}
-\ttindex{weierstrass\_sigma3}
+\ttindextype[ELLIPFN]{weierstrass\_sigma1}{operator}\ttindextype[ELLIPFN]{weierstrass\_sigma2}{operator}
+\ttindextype[ELLIPFN]{weierstrass\_sigma3}{operator}
 \begin{itemize}
 \item $\sigma_1(u, \omega_1, \omega_3)$ \ --- \ \f{weierstrass\_sigma1(u,omega1,omega3)}
 \item $\sigma_2(u, \omega_1, \omega_3)$ \ --- \ \f{weierstrass\_sigma2(u,omega1,omega3)}
@@ -533,8 +560,16 @@ they do not appear in the NIST Digital Library of Mathematical Functions, but ar
 
 \subsubsection{ Quasi-Period Factors \& Lattice Functions}
 \hypertarget{ETA}{}
-\ttindex{lattice\_e1}\ttindex{lattice\_e2}\ttindex{lattice\_e3}
-\ttindex{lattice\_g2}\ttindex{lattice\_g3}\ttindex{lattice\_delta}
+\hypertarget{operator:LATTICE_E1}{}
+\hypertarget{operator:LATTICE_E2}{}
+\hypertarget{operator:LATTICE_E3}{}
+\hypertarget{operator:LATTICE_G}{}
+\hypertarget{operator:LATTICE_DELTA}{}
+\hypertarget{operator:LATTICE_G2}{}
+\hypertarget{operator:LATTICE_G3}{}
+\ttindextype[ELLIPFN]{lattice\_e1}{operator}\ttindextype[ELLIPFN]{lattice\_e2}{operator}
+\ttindextype[ELLIPFN]{lattice\_e3}{operator}\ttindextype[ELLIPFN]{lattice\_g}{operator}
+\ttindextype[ELLIPFN]{lattice\_g2}{operator}\ttindextype[ELLIPFN]{lattice\_g3}{operator}\ttindextype[ELLIPFN]{lattice\_delta}{operator}
 \index{Lattice roots}\index{Lattice invariants}\index{Quasi-period factors}
 
 Ten functions are provided:
@@ -551,7 +586,7 @@ Ten functions are provided:
 \item $\eta_3(\omega_1, \omega_3)$ \ --- \ \f{eta\_3(omega1, omega3)}.
 \end{itemize}
 
-These are operative when the switches \sw{ROUNDED} and \sw{COMPLEX} are ON
+These are operative when the switches \sw{rounded} and \sw{complex} are ON
 and their arguments are numerical. The first three are referred to as lattice
 roots and are related to the invariants
 $g_2, g_3$, the discriminant $\Delta = g_2^3-27g_3^2$ and a closely related
@@ -564,11 +599,14 @@ there are at most two distinct lattice roots and the elliptic function
 degenerates to an elementary one. The advantage of the invariant
 $\mathrm{G}$ is that it is a function of $\tau = \omega_3/\omega_1$ only.
 
-\ttindex{eta\_1}\ttindex{eta\_2}\ttindex{eta\_3}
+\hypertarget{operator:ETA_1}{}
+\hypertarget{operator:ETA_2}{}
+\hypertarget{operator:ETA_3}{}
+\ttindextype[ELLIPFN]{eta\_1}{operator}\ttindextype[ELLIPFN]{eta\_2}{operator}\ttindextype[ELLIPFN]{eta\_3}{operator}
 The remaining three functions \f{eta\_1}, \f{eta\_2} \& \f{eta\_3} appear in
 the rules for the quasi-periodicity of the four sigma functions and of the
 Weierstrassian Zeta function. They are also used in the numerical
-evaluation of these functions when the switches \sw{ROUNDED} and \sw{COMPLEX}
+evaluation of these functions when the switches \sw{rounded} and \sw{complex}
 are ON. The quasi-period relations are:
 \begin{eqnarray*}
   \zeta_w(u+2\omega_j) & = & \zeta_w(u)+2\eta_j\\
@@ -584,8 +622,16 @@ The quasi-period factors satisfy
    \eta_1\omega_3-\eta_3\omega_1=\eta_2\omega_1-\eta_1\omega_2=\eta_3\omega_2-\eta_2\omega_3=i\pi/2.\]
 As well as the scalar-valued functions discussed above in this section,
 there are four functions which return a list as their value:
-\ttindex{lattice\_roots}\ttindex{lattice\_invariants}
-\ttindex{lattice\_generators}\ttindex{quasi\_period\_factors}
+\hypertarget{operator:LATTICE_ROOTS}{}
+\hypertarget{operator:LATTICE_INVARIANTS}{}
+\hypertarget{operator:LATTICE_GENERATORS}{}
+\hypertarget{operator:QUASI_PERIOD_FACTORS}{}
+\hypertarget{operator:LATTICE_ROOTS}{}
+\hypertarget{operator:LATTICE_INVARIANTS}{}
+\hypertarget{operator:LATTICE_GENERATORS}{}
+\hypertarget{operator:QUASI_PERIOD_FACTORS}{}
+\ttindextype[ELLIPFN]{lattice\_roots}{operator}\ttindextype[ELLIPFN]{lattice\_invariants}{operator}
+\ttindextype[ELLIPFN]{lattice\_generators}{operator}\ttindextype[ELLIPFN]{quasi\_period\_factors}{operator}
 \begin{itemize}
 \item \f{lattice\_roots(omega1, omega3)} --- returns $\{e_1,\ e_2,\ e_3\}$;
 \item \f{lattice\_invariants(omega1, omega3)} --- returns
@@ -597,8 +643,8 @@ there are four functions which return a list as their value:
 The first three are actually more efficient than calling the requisite
 scalar-valued functions individually and the fourth is used in the numerical
 evaluation of the Weierstrass functions regarded as functions of the
-invariants. These functions are only useful when the switches \sw{ROUNDED} and
-\sw{COMPLEX} are ON and their arguments are all numerical.
+invariants. These functions are only useful when the switches \sw{rounded} and
+\sw{complex} are ON and their arguments are all numerical.
 Note that the call sequence:
 \begin{verbatim}
   lattice_generators(g2,g3);
@@ -631,12 +677,12 @@ The following inverses of the 12 Jacobi elliptic functions are available:-
 \hypertarget{operator:ARCNS}{}
 \hypertarget{operator:ARCDS}{}
 \hypertarget{operator:ARCCS}{}
-\ttindex{arcsn}\ttindex{arccn}
-\ttindex{arcdn}\ttindex{arccd}
-\ttindex{arcsd}\ttindex{arcnd}
-\ttindex{arcdc}\ttindex{arcnc}
-\ttindex{arcsc}\ttindex{arcns}
-\ttindex{arcds}\ttindex{arccs}
+\ttindextype[ELLIPFN]{arcsn}{operator}\ttindextype[ELLIPFN]{arccn}{operator}
+\ttindextype[ELLIPFN]{arcdn}{operator}\ttindextype[ELLIPFN]{arccd}{operator}
+\ttindextype[ELLIPFN]{arcsd}{operator}\ttindextype[ELLIPFN]{arcnd}{operator}
+\ttindextype[ELLIPFN]{arcdc}{operator}\ttindextype[ELLIPFN]{arcnc}{operator}
+\ttindextype[ELLIPFN]{arcsc}{operator}\ttindextype[ELLIPFN]{arcns}{operator}
+\ttindextype[ELLIPFN]{arcds}{operator}\ttindextype[ELLIPFN]{arccs}{operator}
 \begin{itemize}
 \item arcsn(u,k)
 \item arcdn(u,k)

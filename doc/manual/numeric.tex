@@ -1,4 +1,4 @@
-The {\small NUMERIC} package implements some numerical (approximative)
+The \textsc{NUMERIC} package implements some numerical (approximative)
 algorithms for \REDUCE, based on the \REDUCE\ rounded mode
 arithmetic. These algorithms are implemented for standard cases.
 They should not be called for ill-conditioned problems;
@@ -7,10 +7,10 @@ please use standard mathematical libraries for these.
 \subsection{Syntax}
 
 \subsubsection{Intervals, Starting Points}
-\ttindextype{..}{(interval) operator}
+\ttindextype{.. (interval)}{operator}
 
 Intervals are generally coded as lower bound and
-upper bound connected by the operator \verb+`..'+, usually
+upper bound connected by the operator `\texttt{..}', usually
 associated to a variable in an
 equation. E.g.
 \begin{verbatim}
@@ -20,7 +20,7 @@ means that the variable x is taken in the range from 2.5 up to
 3.5. Note, that the bounds can be algebraic
 expressions, which, however, must evaluate to numeric results.
 In cases where an interval is returned as the result, the lower
-and upper bounds can be extracted by the \verb+PART+ operator
+and upper bounds can be extracted by the \texttt{part} operator
 as the first and second part respectively.
 A starting point is specified by an equation with a numeric
 righthand side, e.g.
@@ -32,22 +32,22 @@ specified by intervals or as a starting point, these
 specifications can be collected in one parameter (which is then
 a list) or they can be given as separate parameters
 alternatively. The list form is more appropriate when the
-parameters are built from other REDUCE calculations in an
+parameters are built from other \REDUCE{} calculations in an
 automatic style, while the flat form is more convenient
 for direct interactive input.
 
 \subsubsection{Accuracy Control}
 
-The keyword parameters $accuracy=a$ and $iterations=i$, where
-$a$ and $i$ must be positive integer numbers, control the
+The keyword parameters \texttt{accuracy=}\meta{a} and \texttt{iterations=}\meta{i}, where
+\meta{a} and \meta{i} must be positive integer numbers, control the
 iterative algorithms: the iteration is continued until
 the local error is below $10^{-a}$; if that is impossible
-within $i$ steps, the iteration is terminated with an
+within \meta{i} steps, the iteration is terminated with an
 error message. The values reached so far are then returned
 as the result.
 
 \subsubsection{tracing}
-\ttindexswitch[NUMERIC]{TRNUMERIC}
+\ttindexswitch[NUMERIC]{trnumeric}
 Normally the algorithms produce only a minimum of printed
 output during their operation. In cases of an unsuccessful
 or unexpected long operation a trace of the iteration can be
@@ -58,9 +58,10 @@ printed by setting
 
 
 \subsection{Minima}
-\ttindex{NUM\_MIN}
+\ttindextype[NUMERIC]{NUM\_MIN}{operator}
+\hypertarget{operator:NUM_MIN}{}
 
-The Fletcher Reeves version of the $steepest\ descent$
+The Fletcher Reeves version of the \emph{steepest descent}
 algorithms is used to find the minimum of a
 function of one or more variables. The
 function must have continuous partial derivatives with respect to all
@@ -70,15 +71,14 @@ The steepest descent algorithms in general find only local
 minima.
 
 Syntax:
-
 \begin{description}
-\item[NUM\_MIN] $(exp, var_1[=val_1] [,var_2[=val_2] \ldots]$
+\item[num\_min] $(exp, var_1[=val_1] [,var_2[=val_2] \ldots]$
 
 $             [,accuracy=a][,iterations=i]) $
 
 or
 
-\item[NUM\_MIN] $(exp, \{ var_1[=val_1] [,var_2[=val_2] \ldots] \}$
+\item[num\_min] $(exp, \{ var_1[=val_1] [,var_2[=val_2] \ldots] \}$
 
 $             [,accuracy=a][,iterations=i]) $
 
@@ -88,7 +88,7 @@ where $exp$ is a function expression,
 $var_1, var_2, \ldots$ are the variables in $exp$ and
 $val_1,val_2, \ldots$ are the (optional) start values.
 
-NUM\_MIN tries to find the next local minimum along the descending
+\texttt{num\_min} tries to find the next local minimum along the descending
 path starting at the given point. The result is a list
 with the minimum function value as first element followed by a list
 of equations, where the variables are equated to the coordinates
@@ -96,26 +96,26 @@ of the result point.
 \end{description}
 
 Examples:
-
 \begin{verbatim}
    num_min(sin(x)+x/5, x);
 
-   {4.9489585606,{X=29.643767785}}
+   { - 0.0775896851944,{x=4.51103102502}}
 
    num_min(sin(x)+x/5, x=0);
 
-   { - 1.3342267466,{X= - 1.7721582671}}
+   { - 1.33422674662,{x= - 1.77215826714}}
 
    % Rosenbrock function (well known as hard to minimize).
    fktn := 100*(x1**2-x2)**2 + (1-x1)**2;
    num_min(fktn, x1=-1.2, x2=1, iterations=200);
 
-   {0.00000021870228295,{X1=0.99953284494,X2=0.99906807238}}
+   {0.000000218702254529,{x1=0.999532844959,x2=0.99906807243}}
 
 \end{verbatim}
 
 \subsection{Roots of Functions/ Solutions of Equations}
-\ttindex{NUM\_SOLVE}
+\ttindextype[NUMERIC]{num\_solve}{operator}
+\hypertarget{operator:NUM_SOLVE}{}
 
 An adaptively damped Newton iteration is used to find
 an approximative zero of a function, a function vector or the solution
@@ -129,24 +129,24 @@ forms is not equal to the number of variables, the
 Newton method cannot be applied. Then the minimum
 of the sum of absolute squares is located instead.
 
-With ON COMPLEX solutions with imaginary parts can be
+With \texttt{on} \sw{complex} solutions with imaginary parts can be
 found, if either the expression(s) or the starting point
 contain a nonzero imaginary part.
 
 Syntax:
 
 \begin{description}
-\item[NUM\_SOLVE]  $(exp_1, var_1[=val_1][,accuracy=a][,iterations=i])$
+\item[\texttt{num\_solve}] \texttt{(}\meta{exp$_1$}\texttt{,}\meta{var$_1$}[=val$_1$][,accuracy=a][,iterations=i])
 
 or
 
-\item[NUM\_SOLVE]  $(\{exp_1,\ldots,exp_n\},
+\item[num\_solve]  $(\{exp_1,\ldots,exp_n\},
    var_1[=val_1],\ldots,var_n[=val_n]$
 \item[\ \ \ \ \ \ \ \ ]$[,accuracy=a][,iterations=i])$
 
 or
 
-\item[NUM\_SOLVE]  $(\{exp_1,\ldots,exp_n\},
+\item[num\_solve]  $(\{exp_1,\ldots,exp_n\},
    \{var_1[=val_1],\ldots,var_n[=val_n]\}$
 \item[\ \ \ \ \ \ \ \ ]$[,accuracy=a][,iterations=i])$
 
@@ -156,30 +156,32 @@ where $exp_1, \ldots,exp_n$ are function expressions,
 
       $val_1, \ldots, val_n$ are optional start values.
 
-NUM\_SOLVE tries to find a zero/solution of the expression(s).
+\texttt{num\_solve} tries to find a zero/solution of the expression(s).
 Result is a list of equations, where the variables are
 equated to the coordinates of the result point.
 
+\hypertarget{reserved:JACOBIAN}{}
 The Jacobian matrix is stored as a side effect in the shared
-variable JACOBIAN.
+variable \texttt{jacobian}\ttindextype[NUMERIC]{jacobian}{shared variable}.
 
 \end{description}
 
 Example:
 \begin{verbatim}
-    num_solve({sin x=cos y, x + y = 1},{x=1,y=2});
+    num_solve({sin x=cos y, x + y = 1},{x=1,y=1});
 
-    {X= - 1.8561957251,Y=2.856195584}
+    {x= - 1.85619449019,y=2.85619449019}
 
     jacobian;
 
-    [COS(X)  SIN(Y)]
+    [cos(x)  sin(y)]
     [              ]
     [  1       1   ]
 \end{verbatim}
 
 \subsection{Integrals}
-\ttindex{NUM\_INT}
+\ttindextype[NUMERIC]{num\_int}{operator}
+\hypertarget{operator:NUM_INT}{}
 
 For the numerical evaluation of univariate integrals over a finite
 interval the following strategy is used:
@@ -205,7 +207,7 @@ error (comparison of order 1 and order 2 approximations).
 Syntax:
 
 \begin{description}
-\item[NUM\_INT] $(exp,var_1=(l_1 .. u_1)[,var_2=(l_2 .. u_2)\ldots]$
+\item[num\_int] $(exp,var_1=(l_1 .. u_1)[,var_2=(l_2 .. u_2)\ldots]$
 \item[\ \ \ \ \ \ ]$[,accuracy=a][,iterations=i])$
 
 where $exp$ is the function to be integrated,
@@ -225,11 +227,12 @@ Example:
 \begin{verbatim}
     num_int(sin x,x=(0 .. pi));
 
-    2.0000010334
+    2.0
 \end{verbatim}
 
 \subsection{Ordinary Differential Equations}
-\ttindex{NUM\_ODESOLVE}
+\ttindextype[NUMERIC]{num\_odesolve}{operator}
+\hypertarget{operator:NUM_ODESOLVE}{}
 
 A Runge-Kutta method of order 3 finds an approximate graph for
 the solution of a ordinary differential equation
@@ -237,7 +240,7 @@ real initial value problem.
 
 Syntax:
 \begin{description}
-\item[NUM\_ODESOLVE]($exp$,$depvar=dv$,$indepvar$=$(from .. to)$
+\item[num\_odesolve]($exp$,$depvar=dv$,$indepvar$=$(from .. to)$
 
 $                   [,accuracy=a][,iterations=i]) $
 
@@ -269,64 +272,69 @@ increased automatically.
 
 Result is a list of pairs, each representing a point of the
 approximate solution of the ODE problem.
-\end{description}
 
-
-Example:
-\begin{verbatim}
-
-    num_odesolve(df(y,x)=y,y=1,x=(0 .. 1), iterations=5);
-
- {{0.0,1.0},{0.2,1.2214},{0.4,1.49181796},{0.6,1.8221064563},
-
-  {0.8,2.2255208258},{1.0,2.7182511366}}
-
-\end{verbatim}
 Remarks:
-
 \begin{enumerate}
 
-\item[--] If in $exp$ the differential is not isolated on the lefthand side,
-please ensure that the dependent variable is explicitly declared
-using a \verb+DEPEND+ statement, e.g.
-
-\begin{verbatim}
-    depend y,x;
-\end{verbatim}
-
-otherwise the formal derivative will be computed to zero by REDUCE.
-
-\item[--] The REDUCE package SOLVE is used to convert the form into
+  \item[--]
+Note that the dependent variable must be explicitly declared
+using a \texttt{depend} statement, e.g., \texttt{depend y,x}.
+\item[--] The \REDUCE{} package \textsc{SOLVE} is used to convert the form into
 an explicit ODE. If that process fails or has no unique result,
 the evaluation is stopped with an error message.
 
 \end{enumerate}
 
+\end{description}
+
+Example:
+\begin{verbatim}
+
+    depend y,x;
+
+    num_odesolve(df(y,x)=y,y=1,x=(0 .. 1), iterations=5);
+
+{{x,y},
+
+ {0.0,1.0},
+
+ {0.2,1.22140275816},
+
+ {0.4,1.49182469764},
+
+ {0.6,1.82211880039},
+
+ {0.8,2.22554092849},
+
+ {1.0,2.71828182846}}
+
+\end{verbatim}
+
+
 \subsection{Bounds of a Function}
-\ttindex{BOUNDS}
+\ttindextype[NUMERIC]{bounds}{operator}
+\hypertarget{operator:BOUNDS}{}
 
 Upper and lower bounds of a real valued function over an
 interval or a rectangular multivariate domain are computed
-by the operator BOUNDS. The algorithmic basis is the computation
+by the operator \texttt{bounds}. The algorithmic basis is the computation
 with inequalities: starting from the interval(s) of the
 variables, the bounds are propagated in the expression
 using the rules for inequality computation. Some knowledge
 about the behavior of special functions like ABS, SIN, COS, EXP, LOG,
 fractional exponentials etc. is integrated and can be evaluated
-if the operator BOUNDS is called with rounded mode on
+if the operator \texttt{bounds} is called with rounded mode on
 (otherwise only algebraic evaluation rules are available).
 
-If BOUNDS finds a singularity within an interval, the evaluation
+If \texttt{bounds} finds a singularity within an interval, the evaluation
 is stopped with an error message indicating the problem part
 of the expression.
 
 Syntax:
-
-
 \begin{description}
-\item[BOUNDS]$(exp,var_1=(l_1 .. u_1) [,var_2=(l_2 .. u_2) \ldots])$
+\item[bounds]$(exp,var_1=(l_1 .. u_1) [,var_2=(l_2 .. u_2) \ldots])$
 
-\item[{\it BOUNDS}]$(exp,\{var_1=(l_1 .. u_1) [,var_2=(l_2 .. u_2)\ldots]\})$
+\item[\textit{bounds}]$(exp,\{var_1=(l_1 .. u_1) [,var_2=(l_2 .. u_2)\ldots]\})$
 
 where $exp$ is the function to be investigated,
 
@@ -334,7 +342,7 @@ $var_1, var_2 , \ldots$ are the variables of exp,
 
 $l_1, l_2 , \ldots$  and  $u_1, u_2 , \ldots$ specify the area (intervals).
 
-$BOUNDS$ computes upper and lower bounds for the expression in the
+\texttt{bounds} computes upper and lower bounds for the expression in the
 given area. An interval is returned.
 
 \end{description}
@@ -345,12 +353,12 @@ Example:
 
     bounds(sin x,x=(1 .. 2));
 
-    {-1,1}
+    - 1 .. 1
 
     on rounded;
     bounds(sin x,x=(1 .. 2));
 
-    0.84147098481 .. 1
+    0.841470984808 .. 1
 
     bounds(x**2+x,x=(-0.5 .. 0.5));
 
@@ -359,10 +367,14 @@ Example:
 \end{verbatim}
 
 \subsection{Chebyshev Curve Fitting}
-\ttindex{CHEBYSHEV\_FIT}
-\ttindex{CHEBYSHEV\_EVAL}
-\ttindex{CHEBYSHEV\_DF}
-\ttindex{CHEBYSHEV\_INT}
+\ttindextype[NUMERIC]{chebyshev\_fit}{operator}
+\ttindextype[NUMERIC]{chebyshev\_eval}{operator}
+\ttindextype[NUMERIC]{chebyshev\_df}{operator}
+\ttindextype[NUMERIC]{chebyshev\_int}{operator}
+\hypertarget{operator:CHEBYSHEV_FIT}{}
+\hypertarget{operator:CHEBYSHEV_EVAL}{}
+\hypertarget{operator:CHEBYSHEV_DF}{}
+\hypertarget{operator:CHEBYSHEV_INT}{}
 
 The operator family $Chebyshev\_\ldots$ implements approximation
 and evaluation of functions by the Chebyshev method.
@@ -370,37 +382,38 @@ Let $T_n^{(a,b)}(x)$ be the Chebyshev polynomial of order $n$
 transformed to the interval $(a,b)$. Then a function $f(x)$ can be
 approximated in $(a,b)$ by a series
 
-$f(x) \approx \sum_{i=0}^N c_i T_i^{(a,b)}(x)$
-
-The operator $Chebyshev\_fit$ computes this approximation and
+\begin{displaymath}
+ f(x) \approx \sum_{i=0}^N c_i T_i^{(a,b)}(x) 
+\end{displaymath}
+The operator \texttt{chebyshev\_fit} computes this approximation and
 returns a list, which has as first element the sum expressed
 as a polynomial and as second element the sequence
-of Chebyshev coefficients ${c_i}$.
-$Chebyshev\_df$ and $Chebyshev\_int$ transform a Chebyshev
+of Chebyshev coefficients $c_{i}$.
+\texttt{chebyshev\_df} and \texttt{chebyshev\_int} transform a Chebyshev
 coefficient list into the coefficients of the corresponding
 derivative or integral respectively. For evaluating a Chebyshev
 approximation at a given point in the basic interval the
-operator $Chebyshev\_eval$ can be used. Note that
-$Chebyshev\_eval$ is based on a recurrence relation which is
+operator \texttt{chebyshev\_eval} can be used. Note that
+\texttt{Chebyshev\_eval} is based on a recurrence relation which is
 in general more stable than a direct evaluation of the
 complete polynomial.
 
 \begin{description}
-\item[CHEBYSHEV\_FIT] $(fcn,var=(lo .. hi),n)$
+\item[chebyshev\_fit] $(fcn,var=(lo .. hi),n)$
 
-\item[CHEBYSHEV\_EVAL] $(coeffs,var=(lo .. hi),var=pt)$
+\item[chebyshev\_eval] $(coeffs,var=(lo .. hi),var=pt)$
 
-\item[CHEBYSHEV\_DF] $(coeffs,var=(lo .. hi))$
+\item[chebyshev\_df] $(coeffs,var=(lo .. hi))$
 
-\item[CHEBYSHEV\_INT] $(coeffs,var=(lo .. hi))$
+\item[chebyshev\_int] $(coeffs,var=(lo .. hi))$
 
-where $fcn$ is an algebraic expression (the function to be
-fitted), $var$ is the variable of $fcn$, $lo$ and $hi$ are
+where \meta{fcn} is an algebraic expression (the function to be
+fitted), \meta{var} is the variable of \meta{fcn}, \meta{lo} and \meta{hi} are
 numerical real values which describe an interval ($lo < hi$),
-$n$ is the approximation order,an integer $>0$, set to 20 if missing,
-$pt$ is a numerical value in the interval and $coeffs$ is
-a series of Chebyshev coefficients, computed by one of
-$CHEBYSHEV\_COEFF$, $\_DF$ or $\_INT$.
+\meta{n} is the approximation order, a positive integer, set to 20 if missing,
+\meta{pt} is a numerical value in the interval and \meta{coeffs} is
+a series of Chebyshev coefficients, computed by one of the operators
+\texttt{chebyshev\_coeff}, \texttt{chebyshev\_df}, or \texttt{chebyshev\_int}.
 \end{description}
 
 Example:
@@ -411,21 +424,25 @@ on rounded;
 
 w:=chebyshev_fit(sin x/x,x=(1 .. 3),5);
 
-               3           2
-w := {0.03824*x  - 0.2398*x  + 0.06514*x + 0.9778,
+w := {0.0382345446975*x  - 0.239802588672*x  + 0.0651206939005*x
 
-      {0.8991,-0.4066,-0.005198,0.009464,-0.00009511}}
+       + 0.977836217464,
+
+      {0.899091895826,-0.406599215895,-0.00519766024352,0.00946374143079,
+
+       -0.0000948947435876}}
 
 chebyshev_eval(second w, x=(1 .. 3), x=2.1);
 
-0.4111
+0.411091086819
 
 \end{verbatim}
 
 \subsection{General Curve Fitting}
-\ttindex{NUM\_FIT}
+\ttindextype[NUMERIC]{num\_fit}{operator}
+\hypertarget{operator:NUM_FIT}{}
 
-The operator $NUM\_FIT$ finds for a set of
+The operator \texttt{num\_fit} finds for a set of
 points the linear combination of a given set of
 functions (function basis) which approximates the
 points best under the objective of the least squares
@@ -436,7 +453,7 @@ gradient vector of the sum of squared errors.
 Syntax:
 
 \begin{description}
-\item[NUM\_FIT] $(vals,basis,var=pts)$
+\item[num\_fit] $(vals,basis,var=pts)$
 
 where $vals$ is a list of numeric values,
 
@@ -466,24 +483,20 @@ Example:
     num_fit(vals,{1,x,x**2},x=pts);
 
                    2
-    {14.571428571*X  - 61.428571429*X + 54.6,{54.6,
+    {14.5714285714*x  - 61.4285714286*x + 54.6,{54.6,
 
-         - 61.428571429,14.571428571}}
+         - 61.4285714286,14.5714285714}}
 
     num_fit(vals,{1,x,x**2,x**3,x**4},x=pts);
 
-                   4                 3
-    {2.2083333234*X  - 20.249999879*X
+    {2.20833333343*x  - 20.2500000011*x
 
-                      2
-      + 67.791666154*X  - 93.749999133*X
+      + 67.7916666713*x  - 93.7500000077*x
 
-      + 44.999999525,
+      + 45.0000000042,
 
-     {44.999999525, - 93.749999133,67.791666154,
+     {45.0000000042, - 93.7500000077,67.7916666713,
 
-       - 20.249999879,2.2083333234}}
-
-
+      - 20.2500000011,2.20833333343}}
 \end{verbatim}
 
