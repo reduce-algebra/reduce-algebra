@@ -1,7 +1,7 @@
 
 
 
-The most important operator is \texttt{TAYLOR}.\ttindextype{taylor}{operator}
+The most important operator is \texttt{taylor}.\ttindextype{taylor}{operator}
 It is used as follows:
 \hypertarget{operator:TAYLOR}{}
 \begin{syntax}
@@ -232,7 +232,7 @@ This package introduces a number of new switches:
     Default is \f{on}.
 
 \ttindexswitch[TAYLOR]{taylorautoexpand}
-\item[\sw{taylorautoexpand}] \hypertarget{switch:taylorautoexpand}{} makes Taylor expressions ``contagious''
+\item[\sw{taylorautoexpand}] \hypertarget{switch:TAYLORAUTOEXPAND}{} makes Taylor expressions ``contagious''
     in the sense that \f{taylorcombine} tries to Taylor expand
     all non-Taylor subexpressions and to combine the result with the
     rest. Default is \f{off}.
@@ -303,8 +303,8 @@ operator.
     power yields a non analytical term (i.e.\ a fractional power).
 
 \item[\msg{***** Cannot replace part ... in Taylor kernel}]\mbox{}\\
-\ttindextype{PART}{operator!use on Taylor kernel}%
-    The \f{PART} operator can only be used to either replace the
+\ttindextype{part}{operator!error when using on Taylor kernel}%
+    The \f{part} operator can only be used to either replace the
     template of a Taylor kernel (part 2) or the original expression
     that is kept for reference (part 3).    
 

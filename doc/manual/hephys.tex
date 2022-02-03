@@ -14,8 +14,8 @@ We begin by introducing three new operators required in these calculations.
 \subsection{. (Cons) Operator}\index{Dot product}
 Syntax:
 \begin{verbatim}
-        (EXPRN1:vector_expression)
-                 . (EXPRN2:vector_expression):algebraic.
+        (exprn1:vector_expression)
+                 . (exprn2:vector_expression):algebraic.
 \end{verbatim}
 The binary \texttt{.} operator, which is normally used to denote the addition
 of an element to the front of a list, can also be used in algebraic mode
@@ -28,17 +28,16 @@ assume that Lorentz four-vectors are used, but these routines could be
 rewritten to handle other cases.
 
 Components of vectors can be represented by including representations of
-unit vectors in the system.  Thus if \texttt{EO} represents the unit vector
+unit vectors in the system.  Thus if \texttt{eo} represents the unit vector
 \texttt{(1,0,0,0)}, \texttt{(p.eo)} represents the zeroth component of the
-four-vector P.  Our metric and notation follows Bjorken and Drell
-``Relativistic Quantum Mechanics'' (McGraw-Hill, New York, 1965).
-Similarly, an arbitrary component \texttt{P} may be represented by
+four-vector P.  Our metric and notation follows Bjorken and Drell \cite{BjorkenDrell:1965}.
+Similarly, an arbitrary component \texttt{p} may be represented by
 \texttt{(p.u)}.  If contraction over components of vectors is required, then
-the declaration \texttt{INDEX}\ttindex{INDEX} must be used.  Thus
+the declaration \texttt{index}\ttindextype{index}{declaration} must be used.  Thus
 \begin{verbatim}
         index u;
 \end{verbatim}
-declares \texttt{U} as an index, and the simplification of
+declares \texttt{u} as an index, and the simplification of
 \begin{verbatim}
         p.u * q.u
 \end{verbatim}
@@ -47,33 +46,33 @@ would result in
         P.Q
 \end{verbatim}
 The metric tensor $g^{\mu \nu}$ may be represented by \texttt{(u.v)}.  If
-contraction over \texttt{U} and \texttt{V} is required, then they should be
+contraction over \texttt{u} and \texttt{v} is required, then they should be
 declared as indices.
 
 Errors occur if indices are not properly matched in expressions.
 
 \hypertarget{command:REMIND}{}
 If a user later wishes to remove the index property from specific vectors,
-he can do it with the declaration \texttt{REMIND}.\ttindex{REMIND} Thus
+he can do it with the declaration \texttt{remind}.\ttindextype{remind}{declaration} Thus
 \texttt{remind v1,\ldots{},vn;} removes the index flags from the variables 
 \var{V1}
 through \var{Vn}.  However, these variables remain vectors in the system.
 
 \subsection{G Operator for Gamma Matrices}\index{Dirac $\gamma$ matrix}
-\ttindex{G}
+\ttindextype{g}{operator}
 \hypertarget{operator:G}{}
 
 Syntax:
 \begin{verbatim}
-        G(ID:identifier[,EXPRN:vector_expression])
+        g(id:identifier[,exprn:vector_expression])
                 :gamma_matrix_expression.
 \end{verbatim}
-\texttt{G} is an n-ary operator used to denote a product of $\gamma$ matrices
+\texttt{g} is an n-ary operator used to denote a product of $\gamma$ matrices
 contracted with Lorentz four-vectors. Gamma matrices are associated with
 fermion lines in a Feynman diagram. If more than one such line occurs,
 then a different set of $\gamma$ matrices (operating in independent spin
 spaces) is required to represent each line. To facilitate this, the first
-argument of \texttt{G} is a line identification identifier (not a number)
+argument of \texttt{g} is a line identification identifier (not a number)
 used to distinguish different lines.
 
 Thus
@@ -81,8 +80,8 @@ Thus
         g(l1,p) * g(l2,q)
 \end{verbatim}
 denotes the product of \texttt{$\gamma$.p} associated with a fermion line
-identified as \texttt{L1}, and \texttt{$\gamma$.q} associated with another line
-identified as \texttt{L2} and where \texttt{p} and \texttt{q} are Lorentz
+identified as \texttt{l1}, and \texttt{$\gamma$.q} associated with another line
+identified as \texttt{l2} and where \texttt{p} and \texttt{q} are Lorentz
 four-vectors.  A product of $\gamma$ matrices associated with the same
 line may be written in a contracted form.
 
@@ -90,30 +89,30 @@ Thus
 \begin{verbatim}
         g(l1,p1,p2,...,p3) = g(l1,p1)*g(l1,p2)*...*g(l1,p3) .
 \end{verbatim}
-The vector \texttt{A} is reserved in arguments of G to denote the special
+The vector \texttt{a} is reserved in arguments of G to denote the special
 $\gamma$ matrix $\gamma^{5}$. Thus
 \begin{quote}
 \begin{tabular}{lll}
- \texttt{g(l,a)} & $ = \gamma^{5}$ & associated with the line \texttt{L} \\[0.1in]
+ \texttt{g(l,a)} & $ = \gamma^{5}$ & associated with the line \texttt{l} \\[0.1in]
  \texttt{g(l,p,a)} & $ = \gamma\cdot p \times \gamma^{5}$ & 
-           associated with the line \texttt{L}.
+           associated with the line \texttt{l}.
 \end{tabular}
 \end{quote}
-$\gamma^{\mu}$ (associated with the line \texttt{L}) may be written as
-\texttt{g(l,u)}, with \texttt{U} flagged as an index if contraction over \texttt{U}
+$\gamma^{\mu}$ (associated with the line \texttt{l}) may be written as
+\texttt{g(l,u)}, with \texttt{u} flagged as an index if contraction over \texttt{u}
 is required.
 
 The notation of Bjorken and Drell is assumed in all operations involving
 $\gamma$ matrices.
 
-\subsection{EPS Operator}\ttindex{EPS}
+\subsection{EPS Operator}\ttindextype{eps}{operator}
 \hypertarget{operator:EPS}{}
 Syntax:
 \begin{verbatim}
-         EPS(EXPRN1:vector_expression,...,EXPRN4:vector_exp)
+         eps(exprn1:vector_expression,...,exprn4:vector_exp)
             :vector_exp.
 \end{verbatim}
-The operator \texttt{EPS} has four arguments, and is used only to denote the
+The operator \texttt{eps} has four arguments, and is used only to denote the
 completely antisymmetric tensor of order 4 and its contraction with Lorentz
 four-vectors. Thus
 \[ \epsilon_{i j k l} = \left\{ \begin{array}{cl}
@@ -126,21 +125,21 @@ four-vectors. Thus
                       \right. \]
 
 A contraction of the form $\epsilon_{i j \mu \nu}p_{\mu}q_{\nu}$ may be
-written as \texttt{eps(i,j,p,q)}, with \texttt{I} and \texttt{J} flagged as indices,
+written as \texttt{eps(i,j,p,q)}, with \texttt{i} and \texttt{j} flagged as indices,
 and so on.
 
 \section{Vector Variables}
 \hypertarget{command:VECTOR}{}
 
-Apart from the line identification identifier in the \texttt{G} operator, all
+Apart from the line identification identifier in the \texttt{g} operator, all
 other arguments of the operators in this section are vectors.  Variables
-used as such must be declared so by the type declaration \texttt{VECTOR},
-\ttindex{VECTOR} for example:
+used as such must be declared so by the type declaration \texttt{vector},
+\ttindextype{vector}{declaration} for example:
 \begin{verbatim}
         vector  p1,p2;
 \end{verbatim}
-declares \texttt{P1} and \texttt{P2} to be vectors.  Variables declared as
-indices or given a mass\ttindex{MASS} are automatically declared
+declares \texttt{p1} and \texttt{p2} to be vectors.  Variables declared as
+indices or given a mass\ttindextype{mass}{declaration} are automatically declared
 vector by these declarations.
 
 \section{Additional Expression Types}
@@ -161,7 +160,7 @@ informed of this by a message.
 
 \textit{Examples:}
 
-Assuming \texttt{P} and \texttt{Q} have been declared vectors, the following are
+Assuming \texttt{p} and \texttt{q} have been declared vectors, the following are
 vector expressions
 \begin{verbatim}
         p
@@ -189,8 +188,8 @@ expressions, as for matrix expressions, is of course non-commutative.
 When a Dirac expression is evaluated, the system computes one quarter of
 the trace of each $\gamma$ matrix product in the expansion of the expression.
 One quarter of each trace is taken in order to avoid confusion between the
-trace of the scalar \texttt{M}, say, and \texttt{M} representing
-\texttt{M * \meta{unit 4 by 4 matrix}}.  
+trace of the scalar \texttt{m}, say, and \texttt{m} representing
+\texttt{m * \meta{unit 4 by 4 matrix}}.  
 Contraction over indices occurring in such expressions is
 also performed.  If an unmatched index is found in such an expression, an
 error occurs.
@@ -199,44 +198,43 @@ The algorithms used for trace calculations are the best available at the
 time this system was produced. For example, in addition to the algorithm
 developed by Chisholm for contracting indices in products of traces,
 {\REDUCE} uses the elegant algorithm of Kahane for contracting indices in
-$\gamma$ matrix products.  These algorithms are described in Chisholm, J. S.
-R., Il Nuovo Cimento X, 30, 426 (1963) and Kahane, J., Journal Math.
-Phys. 9, 1732 (1968).
+$\gamma$ matrix products.  These algorithms are described in \cite{Chisholm1963}
+and \cite{Kahane:1968}.
 
 It is possible to prevent the trace calculation over any line identifier
-by the declaration \texttt{NOSPUR}.\ttindex{NOSPUR}  For example,
+by the declaration \texttt{nospur}.\ttindextype{nospur}{declaration}  For example,
 \begin{verbatim}
         nospur l1,l2;
 \end{verbatim}
 will mean that no traces are taken of $\gamma$ matrix terms involving the line
-numbers \texttt{L1} and \texttt{L2}.  However, in some calculations involving
+numbers \texttt{l1} and \texttt{l2}.  However, in some calculations involving
 more than one line, a catastrophic error
 \begin{verbatim}
-        This NOSPUR option not implemented
+        NOSPUR on more than one line not implemented
 \end{verbatim}
 can occur (for the reason stated!) If you encounter this error, please let
 us know!
 
 A trace of a $\gamma$ matrix expression involving a line identifier which has
-been declared \texttt{NOSPUR} may be later taken by making the declaration
-\texttt{SPUR}.\ttindex{SPUR}
+been declared \texttt{nospur} may be later taken by making the declaration
+\texttt{spur}.\ttindextype{spur}{declaration}
 
-See also the CVIT package for an alternative
+See also the \textsc{CVIT} package for an alternative
 mechanism\extendedmanual{ (chapter~\ref{CVIT})}.
 
-\section{Mass Declarations}\ttindex{MASS}
+\section{Mass Declarations}\ttindextype{mass}{declaration}
 \hypertarget{command:MASS}{}
 \hypertarget{command:MSHELL}{}
 
 It is often necessary to put a particle ``on the mass shell'' in a
-calculation.  This can, of course, be accomplished with a \texttt{LET}
+calculation.  This can, of course, be accomplished with a \texttt{let}
 command such as
 \begin{verbatim}
         let p.p= m^2;
 \end{verbatim}
-but an alternative method is provided by two commands \texttt{MASS} and
-\texttt{MSHELL}.\ttindex{MSHELL}
-\texttt{MASS} takes a list of equations of the form:
+but an alternative method is provided by two commands \texttt{mass} and
+\texttt{mshell}.\ttindextype{mshell}{command}
+\texttt{mass} takes a list of equations of the form:
 \begin{syntax}
   \meta{vector variable}\texttt{ = }\meta{scalar variable}
 \end{syntax}
@@ -292,9 +290,9 @@ $\displaystyle\frac{\alpha^2}{2m^2}\left(\frac{k^\prime}{k}\right)^2$ we need to
  \left(\frac{\gamma\cdot k_i\gamma\cdot e\gamma\cdot e^\prime}{2k.p_i} +
   \frac{\gamma\cdot k_f\gamma\cdot e^\prime \gamma\cdot e}{2k^\prime.p_i}\right) 
 \]
-A straightforward REDUCE program for this, with appropriate substitutions
-(using \texttt{P1} for $p_i$, \texttt{PF} for $p_f$, \texttt{KI}
-for $k_i$ and \texttt{KF} for $k_f$) is
+A straightforward \REDUCE{} program for this, with appropriate substitutions
+(using \texttt{p1} for $p_i$, \texttt{pf} for $p_f$, \texttt{ki}
+for $k_i$ and \texttt{kf} for $k_f$) is
 \begin{verbatim}
  on div; % this gives output in same form as Bjorken and Drell.
  mass ki= 0, kf= 0, p1= m, pf= m; vector e,ep;
@@ -314,13 +312,13 @@ for $k_i$ and \texttt{KF} for $k_f$) is
  write "The Compton cxn is ",ws;
 \end{verbatim}
 
-(We use \texttt{P1} instead of \texttt{PI} in the above to avoid confusion with
-the reserved variable \texttt{PI}).
+(We use \texttt{p1} instead of \texttt{pi} in the above to avoid confusion with
+the reserved variable \texttt{pi}).
 
 This program will print the following result
 \begin{verbatim}
                          2    1      -1    1   -1
-The Compton cxn is 2*E.EP  + ---*K*KP   + ---*K  *KP - 1
+The Compton cxn is 2*e.ep  + ---*k*kp   + ---*k  *kp - 1
                               2            2
 \end{verbatim}
 
@@ -330,13 +328,13 @@ The Compton cxn is 2*E.EP  + ---*K*KP   + ---*K  *KP - 1
 In our discussion so far, we have assumed that we are working in the
 normal four dimensions of QED calculations. However, in most cases, the
 programs will also work in an arbitrary number of dimensions. The command
-\ttindex{VECDIM}
+\ttindextype{vecdim}{command}
 \begin{syntax}
   \texttt{vecdim }\meta{expression}\meta{terminator}
 \end{syntax}
 sets the appropriate dimension. The dimension can be symbolic as well as
-numerical. Users should note however, that the \texttt{EPS} operator and the
-$\gamma_{5}$ symbol (\texttt{A}) are not properly defined in other than four
+numerical. Users should note however, that the \texttt{eps} operator and the
+$\gamma_{5}$ symbol (\texttt{a}) are not properly defined in other than four
 dimensions and will lead to an error if used.
 
 \section{The CVIT algorithm}
@@ -346,8 +344,8 @@ An alternative algorithm for computing traces of products of gamma matrices is a
 based on treating of gamma-matrices as 3-j symbols (details may be found in
 \cite{Ilyin:89,Kennedy:1982}).
 
-This alternative algorithm is used when the switch \sw{CVIT} is set to on. With \sw{CVIT} off,
-calculations of Diracs matrices traces are performed using standard REDUCE facilities.
+This alternative algorithm is used when the switch \sw{cvit} is set to on. With \sw{cvit} off,
+calculations of Diracs matrices traces are performed using standard \REDUCE{} facilities.
 
 For more information see section~\ref{CVIT}.
 \endinput

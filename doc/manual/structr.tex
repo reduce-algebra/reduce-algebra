@@ -306,9 +306,8 @@ line. With \sw{list} on, our expression prints as
 \end{verbatim}
 \texttt{list} is normally off.
 
-\subsubsection{NOSPLIT Switch}\ttindex{NOSPLIT}
+\subsubsection{NOSPLIT Switch}\ttindexswitch{nosplit}
 \hypertarget{switch:NOSPLIT}{}
-\ttindexswitch{nosplit}
 
 Under normal circumstances, the printing routines try to break an expression
 across lines at a natural point.  This is a fairly expensive process.  If
@@ -449,17 +448,17 @@ and \texttt{t}, come from the blanks in the quoted strings.
 
 \item To print a table of the squares of the integers from 1 to 20:
 \begin{verbatim}
-        for i:=1:20 do write i," ",i^2;
+     for i:=1:20 do write i," ",i^2;
 \end{verbatim}
 
 \item To print a table of the squares of the integers from 1 to 20, and at
 the same time store them in positions 1 to 20 of an array \texttt{a}:
 \begin{verbatim}
-        for i:=1:20 do <<a(i):=i^2; write i," ",a(i)>>;
+     for i:=1:20 do <<a(i):=i^2; write i," ",a(i)>>;
 \end{verbatim}
 This will give us two columns of numbers. If we had used
 \begin{verbatim}
-        for i:=1:20 do write i," ",a(i):=i^2;
+     for i:=1:20 do write i," ",a(i):=i^2;
 \end{verbatim}
 we would also get \texttt{a(}i\texttt{) := } repeated on each line.
 
@@ -472,15 +471,15 @@ series, first reported in \cite{Sconzo1965SymbolicCO}.
  f:= 1$
  g:= 0$
  for i:= 1 step 1 until 10 do begin
-    f1:= -mu*g+x1*df(f,eps)+x2*df(f,sig)+x3*df(f,mu);
-    write "f(",i,") := ",f1;
-    g1:= f+x1*df(g,eps)+x2*df(g,sig)+x3*df(g,mu);
-    write "g(",i,") := ",g1;
-    f:=f1$
-    g:=g1$
-   end;
+   f1:= -mu*g+x1*df(f,eps)+x2*df(f,sig)+x3*df(f,mu);
+   write "f(",i,") := ",f1;
+   g1:= f+x1*df(g,eps)+x2*df(g,sig)+x3*df(g,mu);
+   write "g(",i,") := ",g1;
+   f:=f1$
+   g:=g1$
+  end;
 \end{verbatim}
- A portion of the output, to illustrate the printout from the \texttt{WRITE}
+A portion of the output, to illustrate the printout from the \texttt{write}
 command, is as follows:
 \begin{verbatim}
                 ... <prior output> ...
@@ -506,7 +505,7 @@ command, is as follows:
 \ttindexswitch{nero}
 
 It is sometimes annoying to have zero assignments (i.e. assignments of the
-form \texttt{<expression> := 0}) printed, especially in printing large arrays
+form \meta{expression}\texttt{ := 0}) printed, especially in printing large arrays
 with many zero elements.  The output from such assignments can be
 suppressed by turning on the switch \sw{nero}.\ttindextype{nero}{switch}
 
@@ -603,10 +602,10 @@ output routine prints the arguments of \texttt{write} sequentially, and the
 continuation mechanism therefore generates its auxiliary variables after
 the preceding expression has been printed.
 
-Finally, since there is no direct analog of {\em list\/} in FORTRAN,
+Finally, since there is no direct analog of \emph{list} in FORTRAN,
 a comment line of the form
 \begin{verbatim}
-        c ***** invalid fortran construct (list) not printed
+    c ***** invalid fortran construct (list) not printed
 \end{verbatim}
 will be printed if you try to print a list with \texttt{fort} on.
 
@@ -614,7 +613,7 @@ will be printed if you try to print a list with \texttt{fort} on.
 \hypertarget{reserved:FORT_WIDTH}{}
 \hypertarget{switch:PERIOD}{}
 \hypertarget{switch:FORTUPPER}{}
-\ttindex{card\_no}
+\ttindextype{card\_no}{shared global variable}
 \ttindextype{fort\_width}{variable}
 There are a number of methods available to change the default format of the
 FORTRAN output.
@@ -693,7 +692,7 @@ will do this for you.  Its syntax is:
 The structure is printed effectively as a tree, in which the subparts are
 laid out with auxiliary names.  If the optional \texttt{id1} is absent, the
 auxiliary names are prefixed by the root \texttt{ans}.  This root may be
-changed by the operator \texttt{varname}\ttindex{varname}.  If the
+changed by the operator \texttt{varname}\ttindextype{varname}{operator}.  If the
 optional \texttt{id1} is present, and is an array name, the subparts are
 named as elements of that array, otherwise \texttt{id1} is used as the root
 prefix. (The second optional argument \texttt{id2} is explained later.)

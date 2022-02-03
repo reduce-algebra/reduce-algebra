@@ -14,8 +14,8 @@ sub-sections.
 
 \hypertarget{reserved:ARRAY}{\section{Array Declarations}}
 
-\index{Array declaration}\index{Declaration!array}
-Array\ttindex{array} declarations in {\REDUCE} are similar to FORTRAN
+\index{Declaration!array}
+Array\ttindextype{array}{declaration} declarations in {\REDUCE} are similar to FORTRAN
 dimension statements.  For example:
 \begin{verbatim}
         array a(10),b(2,3,4);
@@ -63,7 +63,7 @@ exiting the block (use \texttt{clear} instead for this purpose).
 \hypertarget{switch:DEMO}{}
 
 \index{Mode handling declarations}\index{Declaration!mode handling}
-The \sw{on}\ttindex{on} and \sw{off}\ttindex{off} declarations are
+The \texttt{on}\ttindex{on} and \texttt{off}\ttindex{off} declarations are
 available to the user for controlling various system options.  Each option
 is represented by a \emph{switch}\index{Switch} name. \texttt{on} and
 \texttt{off} take a list of switch names as argument and turn them on and off
@@ -72,9 +72,9 @@ respectively, e.g.,
        on time;
 \end{verbatim}
 causes the system to print a message after each command giving the elapsed
-CPU time since the last command, or since \sw{time}\ttindex{time} was
+CPU time since the last command, or since \sw{time}\ttindexswitch{time} was
 last turned off, or the session began.  Another useful switch with
-interactive use is \sw{demo},\ttindex{demo} which causes the system to
+interactive use is \sw{demo},\ttindexswitch{demo} which causes the system to
 pause after each command in a file (with the exception of comments)
 until a \key{Return} is typed on the terminal.  This
 enables a user to set up a demonstration file and step through it command
@@ -158,7 +158,7 @@ dependent.
 \section{DEFINE Command}
 \hypertarget{command:DEFINE}{}
 
-\ttindextype{define}{command}\index{command!define@\texttt{define}}
+\ttindextype{define}{command}\index{Command!define@\texttt{define}}
 The command \texttt{define} allows a user to supply a new name for
 any identifier or replace it by any well-formed expression.  Its argument
 is a list of expressions of the form

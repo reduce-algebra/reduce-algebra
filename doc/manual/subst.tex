@@ -237,7 +237,7 @@ will cause \texttt{h(-5)} to be evaluated as 0, but \texttt{h} of a positive
 integer, or of an argument that is not an integer at all, would not be
 affected.  Any boolean expression can follow the \texttt{such that} keywords.
 
-\hypertarget{reserved:CLEAR}{\subsection{Removing Assignments and Substitution Rules}}\ttindextype{CLEAR}{command}
+\hypertarget{reserved:CLEAR}{\subsection{Removing Assignments and Substitution Rules}}\ttindextype{clear}{command}
 
 The user may remove all assignments and substitution rules from any
 expression by the command \texttt{clear}, in the form
@@ -417,7 +417,7 @@ would cause \texttt{a\textasciicircum 2*c*x} to be replaced by \texttt{3*z*x}, b
 with the \texttt{for all} constructions described above.
 
 To remove substitution rules of the type discussed in this section, the
-\texttt{clear}\ttindextype{CLEAR}{command} command can be used, combined, if necessary,
+\texttt{clear}\ttindextype{clear}{command} command can be used, combined, if necessary,
 with the same \texttt{for all} clause with which the rule was defined, for
 example:
 \begin{verbatim}
@@ -460,7 +460,7 @@ designed to replace products of cosines, would not be correct, since the
 second rule would only apply to the explicit argument \texttt{x}.  Later
 occurrences in the same rule may also be marked, but this is optional
 (internally, all such rules are stored with each relevant variable
-explicitly marked).  The optional \texttt{when}\ttindex{when} clause allows
+explicitly marked).  The optional \texttt{when}\ttindextype{when}{clause} clause allows
 constraints to be placed on the application of the rule, much as the 
 \texttt{such that} clause in a \texttt{let} statement.
 
@@ -590,7 +590,7 @@ diff(sin(z)*cos(z),z);
 \end{verbatim}
 
 \hypertarget{reserved:doubleslashop}{}
-\ttindextype{//}{operator}
+\ttindextype{// (double slash)}{operator}
 \index{Double slash operator!in rules}
 \index{Rules!Double slash operators}
 \index{Operator!double slash}
