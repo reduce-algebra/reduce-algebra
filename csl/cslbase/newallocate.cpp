@@ -423,6 +423,7 @@ Page* busyPages = px;       // Chained list of pages that contain live data.
 Page* mostlyFreePages = px; // Chained list of pages that the GC has mostly
                             // cleared but that have some pinned data left
                             // in them.
+Page* mostlyFreeTail = px;  // Final item on above.
 Page* freePages = px;       // Chained list of pages that are not currently
                             // in use and that contain no useful information.
 Page* oldPages = px;        // Page from which live stuff is being evacuated.
@@ -564,7 +565,7 @@ void newRegionNeeded()
          previousPage == nullptr) &&
         userGcRequest != GcStyleMinor)
     {   if ((busyPagesCount >= freePagesCount+mostlyFreePagesCount ||
-             userGcRequest == GcStyleMajor))
+             userGcRequest == GcStyleMajor || true /*@@@*/))
         {   zprintf("full GC needed\n");
             userGcRequest = GcStyleNone;
             fullGarbageCollect();
@@ -675,7 +676,7 @@ void ableToAllocateNewChunk(uintptr_t threadId, size_t n, size_t gap)
     Chunk* newChunk = reinterpret_cast<Chunk*>(
                           static_cast<uintptr_t>(gFringe));
     newChunk->length = n+targetChunkSize;
-    newChunk->isPinned = 0;
+    newChunk->isPinned = false;
     newChunk->chunkPinChain = nullptr;
     size_t chunkNo = currentPage->chunkCount++;
 //# zprintf("Page %a gets %d\n", currentPage, currentPage->chunkCount);
@@ -693,8 +694,7 @@ void ableToAllocateNewChunk(uintptr_t threadId, size_t n, size_t gap)
     setHeaderWord(result-TAG_VECTOR, n, TYPE_VEC32);
     fringeBis = newChunk->dataStart() + n;
 //  zprintf("At %s fringeBis[%d] = %a\n", __WHERE__, threadId, fringeBis);
-    gFringe = limitBis = limit =
-              fringeBis + targetChunkSize;
+    gFringe = limitBis = limit = fringeBis + targetChunkSize;
 }
 
 void tryToSatisfyAtLeastOneThread(unsigned int &pendingCount)
@@ -1037,6 +1037,8 @@ LispObject borrow_n_bytes(size_t n)
         if (mostlyFreePages != nullptr)
         {   w = mostlyFreePages;
             mostlyFreePages = mostlyFreePages->chain;
+            if (mostlyFreePages == nullptr) mostlyFreeTail = nullptr;
+            mostlyFreePagesCount--;
         }
         else
         {   w = freePages;
@@ -1046,6 +1048,7 @@ LispObject borrow_n_bytes(size_t n)
         }
         w->chain = static_cast<Page*>(borrowPages);
         borrowPages = w;
+        borrowPages->type = borrowPage;
         borrowFringe = w->pageFringe;
         borrowLimit = w->pageLimit;
         borrowNext = 0;    // BAD....
@@ -1133,6 +1136,8 @@ void setupMostlyFreePage(Page* p)
 // chunk that the next chunk on the cgain will be the next one up in
 // memory.
     std::qsort(p->chunkMap, p->chunkCount, sizeof(p->chunkMap[0]), chunkOrder);
+// re-work the cgainig of pinned chunks so that they are in ascending
+// order in the chain.
     p->chunkPinChain = nullptr;
     for (size_t i=0; i<p->chunkCount; i++)
     {   int j = p->chunkCount-i-1;
@@ -1140,6 +1145,10 @@ void setupMostlyFreePage(Page* p)
             static_cast<Chunk*>(p->chunkPinChain);
         p->chunkPinChain = static_cast<Chunk*>(p->chunkMap[j]);
     }
+    zprintf("Sorted pinchain:");
+    for (Chunk* c = p->chunkPinChain; c!=nullptr; c = c->chunkPinChain)
+        zprintf(" %a", c);
+    zprintf("\n");
 // Start as if the page is utterly empty.
     p->pageFringe = reinterpret_cast<uintptr_t>(&p->data);
 // Now if MAY be that the first part of memory is consumed by one (or a
@@ -1237,6 +1246,7 @@ bool allocateSegment(size_t n)
         p->chain = freePages;
         p->chunkCount = 0; // Should be enough to mark it as empty.
         freePages = p;
+        freePages->type = freePage;
         freePagesCount++;
     }
     zprintf("%d pages available\n", freePagesCount);
@@ -1422,7 +1432,8 @@ void initHeapSegments(double storeSize)
     heapSegmentCount = 0;
     for (int i=0; i<16; i++)
         heapSegment[i] = reinterpret_cast<void*>(-1);
-    freePages = mostlyFreePages = nullptr;
+    freePages = mostlyFreePages = mostlyFreeTail =
+        busyPages = borrowPages = oldPages = nullptr;
 //# zprintf("freePages := %a\n", freePages);
 //# zprintf("Allocate %d Kbytes\n", freeSpace/1024U);
     allocateSegment(freeSpace);
@@ -1439,6 +1450,7 @@ void initHeapSegments(double storeSize)
     previousPage = nullptr;
 //# zprintf("current from %a to %a\n", currentPage, freePages);
     currentPage = freePages;
+    currentPage->type = busyPage;
     previousCons = 0;
     freePages = freePages->chain;
 //# zprintf("freePages := %a\n", freePages);
@@ -1449,7 +1461,7 @@ void initHeapSegments(double storeSize)
 //# zprintf("busyPages := %a\n", busyPages);
     busyPagesCount = 1;
     setVariablesFromPage(currentPage);
-    mostlyFreePages = nullptr;
+    mostlyFreePages = mostlyFreeTail = nullptr;
     mostlyFreePagesCount = 0;
 // The next line just so that restart.cpp reports properly.
     pages_count = freePagesCount + busyPagesCount;

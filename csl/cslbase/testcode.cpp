@@ -91,6 +91,8 @@ void gcTestCode()
     }
 #endif
     term_close();
+    fflush(stdout);
+    fflush(stderr);
     std::quick_exit(0);
 }
 
