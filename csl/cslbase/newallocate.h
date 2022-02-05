@@ -206,9 +206,8 @@ public:
 // initialised.
     uintptr_t chunkFringe;
 // pinnedObjects is a reference for identifyingobjects present in a Chunk
-// where isPinned is true. isPinned is an integer showing how many pinned
-// items are present in the chunk.
-    size_t isPinned;
+// where isPinned is true.
+    bool isPinned;
     LispObject pinnedObjects;
 // At the start of garbage collection as I collect a chain of pinned chunks
 // those chunks may appear on the list in arbitrary order, but at the end
@@ -239,14 +238,14 @@ public:
     uintptr_t dataEnd()
     {   return reinterpret_cast<uintptr_t>(this) + length;
     }
-    bool pointsWithin(uintptr_t p)
+    bool pointsWithinChunk(uintptr_t p)
     {   return p >= dataStart() && p < chunkFringe;
     }
 // Because gdb is a little awkward to use with atomic fields I provide
 // some access functions here...
     uintptr_t Flength() { return length; }
     uintptr_t FchunkFringe() { return chunkFringe; }
-    size_t FisPinned() { return isPinned; }
+    bool FisPinned() { return isPinned; }
     LispObject FpinnedObjects() { return pinnedObjects; }
     Chunk* FchunkPinChain() { return chunkPinChain; }
     Chunk* FpendingChunks() { return pendingChunks; }
@@ -275,6 +274,14 @@ extern Chunk* pendingChunks;
 static const size_t extraChunks = 5;
 static const size_t chunksPerPage = 2*pageSize/targetChunkSize + extraChunks;
 
+enum PageType
+{   freePage,
+    mostlyFreePage,
+    busyPage,
+    borrowPage,
+    oldPage
+};
+
 class alignas(pageSize) Page
 {
 public:
@@ -282,6 +289,7 @@ public:
 // new page is set up. This is a very minor optimisation!
     Page* chain;
     size_t chunkCount;
+    PageType type;
     uintptr_t pageFringe;
     uintptr_t pageLimit;
     bool hasPinned;
@@ -334,10 +342,12 @@ public:
 
 extern Page* freePages;         // Free and clear of pinning.
 extern Page* mostlyFreePages;   // Free apart from a little pinned data.
+extern Page* mostlyFreeTail;    // Final entry on mostlyFreePages or nullptr
 extern Page* busyPages;         // All pages that are in use (including above).
-extern thread_local Page* borrowedPages;
-                                // Used for transient data
+extern Page* borrowPages;       // Used for transient data
 extern Page* oldPages;          // Used during GC.
+
+extern void appendMostlyFree(Page* p);
 
 extern size_t freePagesCount;
 extern size_t mostlyFreePagesCount;
@@ -909,12 +919,12 @@ inline LispObject get_n_bytes(size_t n, uintptr_t r, uintptr_t w)
 // is required I need to record this chunk in the table of chunks that
 // the page maintains. I also need to fill in the chunk header -- well the
 // pinChain pointer does not need initializing until and unless the page
-// gets pinned, but the isPinned flag must start off zero so that when the
+// gets pinned, but the isPinned flag must start off false so that when the
 // GC finds an ambiguous pointer within this chunk it knows when that is the
 // first such.
             currentChunk = newChunk;
             newChunk->length = targetChunkSize+n;
-            newChunk->isPinned = 0;
+            newChunk->isPinned = false;
             newChunk->pinnedObjects = TAG_FIXNUM;
             newChunk->chunkPinChain = nullptr;
             size_t chunkNo = p->chunkCount++;
@@ -1248,10 +1258,6 @@ inline void restoreGfringe()
         gIncrement = 0;
     }
 #endif // NO_THREADS
-// Note that I write this as "gFringe = gFringe - inc;" rather than as
-// "gFringe -= inc;" because there is a risk that the latter might compile
-// into an atomic decrement - and that is not needed here and may be a lot
-// more expensive than the load and store of the alternative.
     gFringe = gFringe - inc;
 }
 
@@ -1303,7 +1309,7 @@ inline void regionInPageIsFull(unsigned int threadId, size_t n,
         {   Chunk* c = reinterpret_cast<Chunk*>(
                            static_cast<uintptr_t>(gFringe));
             c->length = n + targetChunkSize;
-            c->isPinned = 0;
+            c->isPinned = false;
             c->pinnedObjects = TAG_FIXNUM;
             size_t chunkNo = currentPage->chunkCount++;
 //#         zprintf("regioninpagefull %a %d\n", currentPage, currentPage->chunkCount);
@@ -1323,17 +1329,24 @@ inline void regionInPageIsFull(unsigned int threadId, size_t n,
     if (request != 0) pendingCount++;
 }
 
+// Eventually I expect I will always wish to allocate a Free page rather
+// than a MostlyFree one, but while developing and debugging it is good
+// to be able to exercise the recycling of cluttered space.
+
 inline void grabNewCurrentPage(bool preferMostlyFree)
 {   //# zprintf("[1] Old current = %a\n", currentPage);
     if (preferMostlyFree && mostlyFreePages != nullptr)
     {   currentPage = mostlyFreePages;
+        currentPage->type = busyPage;
         previousCons = 0;
 //#     zprintf("new current from mostlyFree = %a\n", currentPage);
         mostlyFreePages = mostlyFreePages->chain;
+        if (mostlyFreePages == nullptr) mostlyFreeTail = nullptr;
         mostlyFreePagesCount--;
     }
     else if (freePages != nullptr)
     {   currentPage = freePages;
+        currentPage->type = busyPage;
         previousCons = 0;
 //#     zprintf("new current from Free = %a\n", currentPage);
         freePages = freePages->chain;
@@ -1347,6 +1360,7 @@ inline void grabNewCurrentPage(bool preferMostlyFree)
     }
     else
     {   currentPage = mostlyFreePages;
+        currentPage->type = busyPage;
         previousCons = 0;
 //#     zprintf("new current from mostlyFree = %a\n", currentPage);
         my_assert(currentPage != nullptr,
@@ -1357,6 +1371,7 @@ inline void grabNewCurrentPage(bool preferMostlyFree)
                  std::exit(99); });
 #endif // HAVE_QUICK_EXIT
         mostlyFreePages = mostlyFreePages->chain;
+        if (mostlyFreePages == nullptr) mostlyFreeTail = nullptr;
         mostlyFreePagesCount--;
     }
     currentPage->chain = busyPages;
@@ -1607,14 +1622,14 @@ public:
         while (static_cast<Page*>(borrowPages) != nullptr)
         {   if (static_cast<Page*>(borrowPages)->chunkCount != 0)
             {   Page* w = static_cast<Page*>(borrowPages)->chain;
-                static_cast<Page*>(borrowPages)->chain = mostlyFreePages;
-                mostlyFreePages = borrowPages;
+                appendMostlyFree(borrowPages);
                 borrowPages = w;
             }
             else
             {   Page* w = static_cast<Page*>(borrowPages)->chain;
                 static_cast<Page*>(borrowPages)->chain = freePages;
                 freePages = borrowPages;
+                freePages->type = freePage;
 //#             zprintf("freePages := %a\n", freePages);
                 borrowPages = w;
             }

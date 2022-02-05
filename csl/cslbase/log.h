@@ -92,7 +92,7 @@ extern void term_close();
 #endif // HAVE_QUICK_EXIT
 }
 
-[[noreturn]] inline void my_abort(const char *msg)
+[[noreturn]] inline void my_abort(const char* msg)
 {   std::fprintf(stdout, "\n\n!!! Aborting: %s\n\n", msg);
     std::fflush(stdout);
     std::fflush(stderr);
@@ -110,18 +110,12 @@ extern void term_close();
 #endif // HAVE_QUICK_EXIT
 }
 
-inline void my_assert(bool ok, const char *msg)
-{   if (!ok)
-    {   std::cout << "\n+++ " << msg << std::endl;
-        my_abort();
-    }
+inline void my_assert(bool ok, const char* msg)
+{   if (!ok) my_abort(msg);
 }
 
 inline void my_assert(bool ok, std::string msg)
-{   if (!ok)
-    {   std::cout << "\n+++ " << msg << std::endl;
-        my_abort();
-    }
+{   if (!ok) my_abort(msg.c_str());
 }
 
 template <typename F>
@@ -144,7 +138,7 @@ inline void my_assert(bool ok)
 // This is to help me in trace messages.
 
 inline const char* where(const char* file, int line)
-{   const char *p = std::strrchr(file, '/');
+{   const char* p = std::strrchr(file, '/');
     if (p != nullptr) file = p+1;
     static char whereMsg[100];
     sprintf(whereMsg, "%.40s:%d", file, line);
@@ -152,7 +146,7 @@ inline const char* where(const char* file, int line)
 }
 
 inline const char* where(const char* file, int line, const char* msg)
-{   const char *p = std::strrchr(file, '/');
+{   const char* p = std::strrchr(file, '/');
     if (p != nullptr) file = p+1;
     static char whereMsg[100];
     sprintf(whereMsg, "%.40s:%d %.50s", file, line, msg);
@@ -179,7 +173,7 @@ inline const char* where(const char* file, int line, const char* msg)
 #else // !__OPTIMIZE__
 
 #define D do {                                                      \
-          const char *_f_ = std::strrchr(__FILE__, '/');            \
+          const char* _f_ = std::strrchr(__FILE__, '/');            \
           if (_f_ == nullptr) _f_ = std::strrchr(__FILE__, '\\');   \
           if (_f_ == nullptr) _f_ = __FILE__; else _f_++;           \
           std::fprintf(stderr, "Line %d File %s\n", __LINE__, _f_); \
@@ -187,7 +181,7 @@ inline const char* where(const char* file, int line, const char* msg)
           } while (false)
 
 #define DS(s) do {                                                  \
-          const char *_f_ = std::strrchr(__FILE__, '/');            \
+          const char* _f_ = std::strrchr(__FILE__, '/');            \
           if (_f_ == nullptr) _f_ = std::strrchr(__FILE__, '\\');   \
           if (_f_ == nullptr) _f_ = __FILE__; else _f_++;           \
           std::fprintf(stderr, "Line %d File %s: %s\n",             \
@@ -196,7 +190,7 @@ inline const char* where(const char* file, int line, const char* msg)
           } while (false)
 
 #define DX(s) do {                                                       \
-          const char *_f_ = std::strrchr(__FILE__, '/');                 \
+          const char* _f_ = std::strrchr(__FILE__, '/');                 \
           if (_f_ == nullptr) _f_ = std::strrchr(__FILE__, '\\');        \
           if (_f_ == nullptr) _f_ = __FILE__; else _f_++;                \
           std::fprintf(stderr, "Line %d File %s: %llx\n", __LINE__, _f_, \
@@ -205,7 +199,7 @@ inline const char* where(const char* file, int line, const char* msg)
           } while (false)
 
 #define DF(f,...) do {                                               \
-          const char *_f_ = std::strrchr(__FILE__, '/');             \
+          const char* _f_ = std::strrchr(__FILE__, '/');             \
           if (_f_ == nullptr) _f_ = std::strrchr(__FILE__, '\\');    \
           if (_f_ == nullptr) _f_ = __FILE__; else _f_++;            \
           std::fprintf(stderr, "Line %d File %s: ", __LINE__, _f_);  \
@@ -223,16 +217,16 @@ static const size_t LONGEST_LEGAL_FILENAME_1 = 1024;
 
 #if defined __OPTIMIZE__ || !defined __GNUC__
 
-inline void printlog(const char *s, ...)
+inline void printlog(const char* s, ...)
 {}
 
 #else // __OPTIMIZE__
 
 #define LOGFILE_NAME "debug.log"
 
-extern const char *programDir;
+extern const char* programDir;
 
-inline void printlog(const char *s, ...)
+inline void printlog(const char* s, ...)
 {   static std::FILE *logfile = nullptr;
     std::va_list x;
     if (logfile == nullptr)
