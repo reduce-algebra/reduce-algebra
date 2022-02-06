@@ -33,16 +33,22 @@ fi
 # universal ports get installed that it is possible to build Reduce with
 # "--enable-universal" specified when you go "./configure". 
 #
-# The ports that did not install for me on a recent attempt are:
-#   dav1d dvipng dvisvgm gd2 ghostscript gmake gnuplot gtime
-#   libcaca libheif p5.30-params-util rav1e shared-mime-info
-#   texlive-bin xorg-libXaw
-# ghostscript is used by Reduce for displaying graphs, so Intel and ARM
-# installations will require different versions (or an universal binary
-# built some other way). Most of the rest are utilities and the libraries
-# that they depend on that are used locally while building Reduce (especially
-# its documentation) or running tests: they do not provide components that
-# go into distribution files. 
+# The ports that did not install in full universal form for me on a
+# February 2022 attempt running on an Intel Mac were:
+#   at-spi2-atk at-spi2-core atk dav1d findutils fontforge
+#   gdk-pixbuf2 ghostscript gmake graphite2 grep groff gtime
+#   gtk3 harfbuzz harfbuzz-icu libde265 libepoxy m4 openldap
+#   pango subversion texlive-bin
+# Note that those are mostly not libraries that I need to link in
+# to create the Reduce executables - thay are tools used during a
+# build and some libraries used by those tools.
+#
+# For instance ghostscript is used by Reduce for displaying graphs, so
+# Intel and ARM installations will require different versions (or an
+# universal binary built some other way). Most of the rest are utilities
+# and the libraries that they depend on that are used locally while
+# building Reduce (especially its documentation), debugging it or running
+# tests: they do not provide components that go into distribution files. 
 
 
 # Report that date at start and end of this just for interest.
@@ -83,11 +89,16 @@ install ()
     S=""
     ;;
   esac
-  port -N clean $P
+# When I clean things I will clean all the other ports that this one
+# depends on (in a recursive sense, so that dependencies of dependencies
+# are followed). This is because trying to install this may trigger attempts
+# to build some or even all of those, and if any are in an untidy state
+# that could disrupt the entire build.
+  port -N clean --all $P rdepof:$P
   if ! port -N $S install $P +universal
   then
     printf "### Fallback to simple install of $P\n"
-    port -N clean $P
+    port -N clean --all $P rdepof:$P
     port -N $S install $P
   fi
 }
@@ -130,8 +141,7 @@ for p in                      \
   timeout                     \
   xorg-libXrandr:s            \
   xorg-libXcursor:s           \
-  brotli                      \
-  date
+  brotli
 do
   install $p
 done
@@ -207,27 +217,27 @@ failures=""
 # I will then check each to see if a universal version is already installed,
 # and if not whether one may be available.
 
-for p in $all
+for P in $all
 do
-  if port installed $p | grep "universal.*active" >/dev/null
+  if port installed $P | grep "universal.*active" >/dev/null
   then
 # If the current version is already universal I do not have to do more for
 # this package.
     continue
   fi
-  if port variants $p | grep "universal:" > /dev/null
+  if port variants $P | grep "universal:" > /dev/null
   then
 # Here the currently active port is not universal but the option +universal
 # will be understood.
-    printf "$p is not universal yet but potentially could be\n"
+    printf "$P is not universal yet but potentially could be\n"
   else
     continue
   fi
-  port -N clean $p
-  if ! port -N install $p +universal
+  port -N clean --all $P rdepof:$P
+  if ! port -N install $P +universal
   then
 # Collect a list of cases where the universal build fails.
-    failures="$failures $p"
+    failures="$failures $P"
   fi
 done
 
