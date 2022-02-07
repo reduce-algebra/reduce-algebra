@@ -1,6 +1,7 @@
 
 \index{trig functions} \index{degree arguments}
 \index{Barnes, Alan}
+\index{Persons!Barnes, Alan}
 \subsection{Introduction}
 This module provides facilities for the numerical evaluation and algebraic simplification of expressions involving  trigonometrical functions with arguments given in degrees rather than in radians.  The degree-valued inverse functions are also provided.  
 
@@ -173,7 +174,7 @@ The behaviour of the numerical evaluation routines for inverse trig functions wi
 Currently  there are no facilities analogous to those provided in the module \texttt{TRIGSIMP} for the standard trig.\ functions.  There users have a wide range of  standard simplification formulae available for use and can control which are to be used depending on the  requirements of their particular application: whether to eliminate
  \f{sin} in favour of \f{cos} or vice-versa or to get rid of both in favour of \f{tan} of half-angles; or whether to use the trigonometrical addition formulae in order to transform  trig functions whose arguments are sums into a form where the arguments are single terms or whether to perform the inverse transformations.  It is hoped to make the \texttt{TRIGSIMP}  faciliites available for use with the \texttt{TRIGD} functions in the near future.
 
-Integration is not directly supported although the approach using rule-lists to convert the \texttt{TRIGD} functions  to standard trig ones should work well.  Introducing direct support for integration will not therefore be a priority. 
+Integration is not directly supported although the approach using rule-lists to convert the \texttt{TRIGD} functions  to standard trig ones should work well.  Introducing direct supp<ort for integration will not therefore be a priority. 
 
  For the standard sine function there is a rule for imaginary arguments namely: \texttt{sin(i*x) => i*sinh(x)}. The corresponding rule for the degree version is \texttt{sind(i*x) => i*sinh(x*pi/180)}.  However, currently such rules are \emph{NOT} implemented by the system.  They may be implemented in future, but it is not a high priority as it is felt that the radian-based trig functions are best suited  for such symbolic calculations.
 

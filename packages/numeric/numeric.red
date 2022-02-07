@@ -52,13 +52,13 @@ switch trnumeric;
 
 begin
    scalar !*msg;
-   newtok '( (!. !.) !*interval!*)
+   newtok '( (!. !.) !*interval!*);
+   put('!*interval!*,'prtch,'! !.!.! );
 end;
 
 if null get('!*interval!*,'simpfn) then
 <<precedence .., or;
   algebraic operator ..;
-  put('!*interval!*,'prtch,'! !.!.! );
 >>;
 
 % some common utilities

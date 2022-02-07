@@ -15,23 +15,24 @@ esac
 
 all=`port installed installed | grep active | tail -n +2 | sed -e 's/@.*$//g'`
 failures=""
-for p in $all
+for P in $all
 do
-  if port installed $p | grep "universal.*active" >/dev/null
+  if port installed $P | grep "universal.*active" >/dev/null
   then
     continue
   fi
-  if port variants $p | grep "universal:" > /dev/null
+  if port variants $P | grep "universal:" > /dev/null
   then
-    printf "$p is not universal yet but could be\n"
+    printf "$P is not universal yet but could be\n"
   else
     continue
   fi
   if test "$what" != "yes"
   then
-    if ! port -N install $p +universal
+    port -N clean --all $P rdepof:$P
+    if ! port -N install $P +universal
     then
-      failures="$failures $p"
+      failures="$failures $P"
     fi
   fi
 done
@@ -40,5 +41,4 @@ if test "$failures" != ""
 then
   printf "\n\nFailed: $failures\n"
 fi
-
 

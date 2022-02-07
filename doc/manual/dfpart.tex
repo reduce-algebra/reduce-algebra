@@ -1,15 +1,19 @@
+
+\index{Melenk, Herbert}\index{Persons!Melenk, Herbert}
+
 \index{derivatives} 
 \index{partial derivatives}
 \index{generic function}
 
-The package {\tt DFPART} supports computations with total and partial
+The package \textsc{DFPART} supports computations with total and partial
 derivatives of formal function objects. Such computations can
 be useful in the context of differential equations or
 power series expansions.
 
 \subsection{Generic Functions}
 
-\ttindex{GENERIC\_FUNCTION}
+\ttindextype[DFPART]{generic\_function}{declaration}
+\hypertarget{declaration:GENERIC_FUNCTION}
 A generic function is a symbol which represents a mathematical
 function. The minimal information about a generic function 
 function is the number of its arguments. In order to facilitate
@@ -18,7 +22,7 @@ assumes that the arguments of a generic function have default
 names such as $f(x,y)$,$q(rho,phi)$. 
 A generic function is declared by prototype form in a statement
 \begin{syntax}
-  \f{GENERIC\_FUNCTION }\meta{fname}\texttt{(}\meta{arg$_1$},\,\meta{arg$_2$},\,\dots,\,\meta{arg$_n$}\texttt{);}
+  \f{generic\_function }\meta{fname}\texttt{(}\meta{arg$_1$},\,\meta{arg$_2$},\,\dots,\,\meta{arg$_n$}\texttt{);}
 \end{syntax}
 
 \noindent
@@ -28,7 +32,6 @@ In the following $fname$ is referred to as ``generic function",
 $arg_1,arg_2,\dots,arg_n$ as ``generic arguments" and
 $fname(arg_1,arg_2,\dots,arg_n)$ as ``generic form".
 Examples:
-
 \begin{verbatim}
    generic_function f(x,y);
    generic_function g(z);
@@ -52,10 +55,11 @@ as $\frac{\partial f}{\partial x} \frac{d u}{d w} +
 
 \subsection{Partial Derivatives}
 
-\ttindex{DFP}
-The operator \f{DFP} represents a partial derivative:
+\ttindextype[DFPART]{dfp}{operator}
+\hypertarget{operator:DFP}{}
+The operator \f{dfp} represents a partial derivative:
 \begin{syntax}
-  \f{DFP(}\meta{expr},\,\meta{dfarg$_1$},\,\meta{dfarg$_2$},\,\dots,\,\meta{dfarg$_n$}\texttt{);}
+  \f{dfp(}\meta{expr},\,\meta{dfarg$_1$},\,\meta{dfarg$_2$},\,\dots,\,\meta{dfarg$_n$}\texttt{);}
 \end{syntax}
 \noindent
 where $expr$ is a function expression and $dfarg_i$ are
@@ -71,7 +75,7 @@ means $\frac{\partial ^2 f}{\partial x \partial y}$ and
 stands for $\frac{\partial ^2 f}{\partial x \partial y} (u,v)$.
 For compatibility with the $DF$ operator the differentiation
 variables need not be entered in list form; instead the syntax
-of {\tt DF} can be used, where the function expression is followed
+of \texttt{DF} can be used, where the function expression is followed
 by the differentiation variables, eventually with repetition
 numbers. Such forms are interenally converted to the above
 form with a list as second parameter.
@@ -83,7 +87,7 @@ second case the standard differentiation rules are applied
 in order to reduce each derivative expressions to a minimal
 form.
 
-When the switch \texttt{NAT} is on partial derivatives of generic
+When the switch \sw{nat} is on partial derivatives of generic
 functions are printed in standard index notation, that is
 $f_{xy}$ for $\frac{\partial ^2 f}{\partial x \partial y}$
 and $f_{xy}(u,v)$ for $\frac{\partial ^2 f}{\partial x \partial y}(u,v)$.
@@ -96,18 +100,18 @@ whenever possible. Examples:
   generic_function g(y);
   dfp(f(),x,2);
 
-  F
-   XX
+  f
+   xx
 
   dfp(f()*g(),x,2);
 
-  F  *G()
-   XX
+  f  *g()
+   xx
 
   dfp(f()*g(),x,y);
 
-  F  *G() + F *G
-   XY        X  Y
+  f  *g() + f *g
+   xy        x  y
 
 \end{verbatim}
 
@@ -118,16 +122,16 @@ illustrated by the following example:
   generic_function h(x);
   dfp(f(x,h(x))*g(h(x)),x);
 
-  F (X,H(X))*G(H(X))
-   X
+  f (x,h(x))*g(h(x))
+   x
 
   df(f(x,h(x))*g(h(x)),x);
 
-  F (X,H(X))*G(H(X)) + F (X,H(X))*H (X)*G(H(X))
-   X                    Y          X
+  f (x,h(x))*g(h(x)) + f (x,h(x))*h (x)*g(h(x))
+   x                    y          x
 
-   + G (H(X))*H (X)*F(X,H(X))
-      Y        X
+   + g (h(x))*h (x)*f(x,h(x))
+      y        x
 \end{verbatim}
 
 Cooperation of partial derivatives and Taylor series under
@@ -139,23 +143,23 @@ a differential side relation $\frac{dq}{dx}=f(x,q)$:
   let df(q(~x),x) => f(x,q(x));
   taylor(q(x0+h),h,0,3);
 
-                         F (X0,Q(X0)) + F (X0,Q(X0))*F(X0,Q(X0))
-                          X              Y                         2
-Q(X0) + F(X0,Q(X0))*H + -----------------------------------------*H
+                         f (x0,q(x0)) + f (x0,q(x0))*f(x0,q(x0))
+                          x              y                         2
+q(x0) + f(x0,q(x0))*h + -----------------------------------------*h
                                             2
 
-+ (F  (X0,Q(X0)) + F  (X0,Q(X0))*F(X0,Q(X0))
-    XX              XY
++ (f  (x0,q(x0)) + f  (x0,q(x0))*f(x0,q(x0))
+    xx              xy
 
-    + F (X0,Q(X0))*F (X0,Q(X0)) + F  (X0,Q(X0))*F(X0,Q(X0))
-       X            Y              YX
+    + f (x0,q(x0))*f (x0,q(x0)) + f  (x0,q(x0))*f(x0,q(x0))
+       x            y              yx
 
                                2               2                 3
-    + F  (X0,Q(X0))*F(X0,Q(X0))  + F (X0,Q(X0)) *F(X0,Q(X0)))/6*H
-       YY                           Y
+    + f  (x0,q(x0))*f(x0,q(x0))  + f (x0,q(x0)) *f(x0,q(x0)))/6*h
+       yy                           y
 
       4
- + O(H )
+ + o(h )
 
 \end{verbatim}
 
@@ -164,13 +168,15 @@ Normally partial differentials are assumed as non-commutative
 \begin{verbatim}
   dfp(f(),x,y)-dfp(f(),y,x);
 
-  F   - F
-   XY    YX
+  f   - f
+   xy    yx
 \end{verbatim}
 
+\ttindextype[DFPART]{dfp\_commute}{declaration}
+\hypertarget{command:DFP_COMMUTE}{}
 However, a generic function can be declared to have globally
 interchangeable partial derivatives using the declaration 
-{\tt DFP\_COMMUTE}
+\texttt{dfp\_commute}
 which takes the name of a generic function or a generic function
 form as argument. For such a function differentiation variables are
 rearranged corresponding to the sequence of the generic variables.
@@ -191,7 +197,7 @@ list.
 
 \subsection{Substitutions}
 
-When a generic form or a {\tt DFP} expression takes part in a 
+When a generic form or a \f{dfp} expression takes part in a 
 substitution the following steps are performed:
 \begin{enumerate}
 \item The substitutions are performed for the arguments. If the
@@ -215,28 +221,28 @@ Examples:
   generic_function f(x,y);
   sub(y=10,f());
  
-  F(X,10)
+  f(x,10)
 
   sub(y=10,dfp(f(),x,2));
 
 
-  F  (X,10)
-   XX
+  f  (x,10)
+   xx
 
   sub(y=10,dfp(f(y,y),x,2));
 
-  F  (10,10)
-   XX
+  f  (10,10)
+   xx
 
   sub(f=x**3*y**3,dfp(f(),x,2));
 
        3
-  6*X*Y
+  6*x*y
 
   generic_function ff(y,z);
   sub(f=ff,f(a,b));
 
-  FF(B,Z)
+  ff(b,z)
 \end{verbatim}
 
 The dataset \texttt{dfpart.tst} contains more examples,

@@ -360,6 +360,48 @@ defautoload(readmatproc,'(matrix),expr,0);
 
 put('matrixproc,'stat,'readmatproc);
 
+% Rataprx entry points.
+
+switch cf_taylor=off;
+
+defautoload(cont!-fract,rataprx);
+
+put('contfrac, 'simpfn, 'simpiden);
+put('cf, 'psopfn, 'cont!-fract);
+put('continued_fraction, 'psopfn, 'cont!-fract);
+
+defautoload(cf!:expr,rataprx);
+defautoload(cf!:conv,rataprx);
+defautoload(cf!:coef!-list,rataprx);
+defautoload(cf!:conv!-list,rataprx);
+defautoload(cf!:transform,rataprx);
+defautoload(cf!:unit!-num,rataprx);
+defautoload(cf!:unit!-den,rataprx);
+defautoload(cf!:remove!-fracs,rataprx);
+defautoload(cf!:remove!-const,rataprx);
+defautoload(cf!:even!-odd,rataprx);
+defautoload(cf!:cf!:euler,rataprx);
+
+put('cf_expression,'psopfn,'cf!:expr);
+put('cf_convergent,'psopfn,'cf!:conv);
+put('cf_continuents,'psopfn,'cf!:coef!-list);
+put('cf_convergents,'psopfn, 'cf!:conv!-list);
+put('cf_transform, 'psopfn, 'cf!:transform);
+put('cf_unit_numerators, 'psopfn, 'cf!:unit!-num);
+put('cf_unit_denominators, 'psopfn, 'cf!:unit!-den);
+put('cf_remove_fractions, 'psopfn, 'cf!:remove!-fracs);
+put('cf_remove_constant, 'psopfn, 'cf!:remove!-const);
+put('cf_even_odd, 'psopfn, 'cf!:even!-odd);
+put('cf_euler, 'psopfn, 'cf!:euler);
+
+%defautoload(polynomqq,rataprx);
+%defautoload(ttttype_ratpoly,rataprx);
+%
+%flag ('(type_ratpoly vari polynomialp),'boolean);
+%
+%put('polynomqq,'psopfn,'polynomqqq);
+%put('type_ratpoly,'psopfn,'ttttype_ratpoly);
+
 % ODESolve entry point.
 
 fluid '(!*trode);
@@ -620,11 +662,26 @@ defautoload(simpcompact,compact);
 
 put('compact,'simpfn,'simpcompact);
 
-% Changevar entry point
+% Changevar module entry point
 
 defautoload(simpchangevar,changevr);
 
 put('changevar,'simpfn,'simpchangevar);
+
+% dfpart module entry points
+
+put('dfp,'simpfn,'simpdfp);
+
+defautoload(simpdfp,dfpart);
+
+defautoload(generic_function,dfpart);
+
+put('generic_function,'stat,'rlis);
+
+defautoload(dfp_commute,dfpart);
+
+put('dfp_commute,'stat,'rlis);
+
 
 % Sum module entry points.
 

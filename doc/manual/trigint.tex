@@ -1,3 +1,5 @@
+ \index{Langmead, Neil} \index{Persons!Langmead, Neil}
+
 \subsection{Introduction}
 This package is an implementation of a new algorithm proposed by D.J. Jeffrey and A.D. Rich~\cite{JeffreyRich:94} to remove "spurious" discontinuities from integrals. Their paper focuses on the Weirstrass substitution, $u=\tan(x/2)$, currently used in conjunction with the Risch algorithm in most computer algebra systems to evaluate trigonometric integrals. Expressions obtained using this substitution sometimes contain discontinuities, which limit the domain over which the expression is correct. The algorithm presented finds a better expression, in the sense that it is continous on wider intervals whilst still being an anti derivative of the integrand.
 
@@ -14,7 +16,7 @@ Jeffery and Richs' algorithm returns the following to the given problem:
 which differs from (2) by the constant 2$\pi$, and this is the correct way of removing the discontinuity.
 
 \subsection{Statement of the Algorithm}
-We define a Weierstrass substitution to be one that uses a function $u=\Phi(x)$ appearing in the following table:
+We define a Weierstra\ss{} substitution to be one that uses a function $u=\Phi(x)$ appearing in the following table:
 
 \begin{table}[htbp]
 \begin{tabular}{|c|c|c|c|c|c|c|} \hline
@@ -39,12 +41,16 @@ where the point $b$ is given in the table. the corrected integral is then
 where the period $p$ is taken from the table, and $\lfloor x \rfloor$ is the floor function.
 
 \subsection{REDUCE implementation}
+\ttindextype[TRIGINT]{trigint}{operator}
+\hypertarget{operator:TRIGINT}{}
 The name of the function used in \REDUCE to implement these ideas is trigint, which has the following syntax:
-\begin{center}  \textbf{trigint(exp, var)}, \end{center}
-where exp is the expression to be integrated, and var is the variable of integration.
+\begin{syntax}
+  \texttt{trigint(\meta{exp}, \meta{var})}
+\end{syntax}
+where \meta{exp} is the expression to be integrated, and \meta{var} is the variable of integration.
 
 If trigint is used to calculate the integrals of trigonometric functions for which no substitution is necessary, then non standard results may occur. For example, if we calculate
-  \begin{center} \textbf{trigint(cos(x), x)}, \end{center}
+\texttt{trigint(cos(x), x)},
 we obtain
 \[ \frac{2\tan\frac{x}{2}}{\tan^{2}\frac{x}{2}+1} \]
 which, by using simple trigonometric identities, simplifies to:
@@ -116,19 +122,19 @@ sub(x=4*pi,F)-sub(x=0,F);
         3
 \end{verbatim}
 and this is the correct value of the definite integral.
-Note that although the expression in (*) is continuous, the functions value at the points $x=\pi,3\pi$ etc. must be intepreted as a limit, and these values cannot substituted directly into the formula given in (*). Hence care should be taken to ensure that the definite integral is well defined, and that singularities are dealt with appropriately. For more details of this in \REDUCE, please see the documentation for the \emph{cwi} addition to the \emph{defint} package.
+Note that although the expression in (*) is continuous, the functions value at the points $x=\pi,3\pi$ etc. must be intepreted as a limit, and these values cannot substituted directly into the formula given in (*). Hence care should be taken to ensure that the definite integral is well defined, and that singularities are dealt with appropriately. For more details of this in \REDUCE, please see the documentation for the \emph{cwi} addition to the \textsc{DEFINT} package.
 
 \subsection{Tracing the \emph{trigint} function}
 
-The package includes a facility to trace in some detail the inner workings of the \emph{ratint} program. Messages are given at key points of the algorithm, together with the results obtained. These messages are displayed whenever the switch \emph{tracetrig} is on, which is done in \REDUCE with the following command:
-\begin{verbatim}
-on tracetrig;
-\end{verbatim}
+The package includes a facility to trace in some detail the inner workings of the \texttt{trigint} program. Messages are given at key points of the algorithm, together with the results obtained. These messages are displayed whenever the switch \sw{tracetrig} is on, which is done in \REDUCE with the
+\ttindexswitch[TRIGINT]{tracetrig}
+\hypertarget{switch:TRACETRIG}{}
+command \texttt{on tracetrig;}
 This switch is off by default. In particular, the messages inform the user which substitution is being tried, and the result of that substitution. The error message
 \begin{verbatim}
 cannot integrate after subs
 \end{verbatim}
-means that \REDUCE has tried all four of the Weierstra\ss \hspace{1 mm} substitutions, and the system's standard integrator is unable to integrate after the substitution has been completed.
+means that \REDUCE has tried all four of the Weierstra\ss{} substitutions, and the system's standard integrator is unable to integrate after the substitution has been completed.
 
 \subsection{Bugs, comments, suggestions}
 This program was written whilst the author was a placement student at ZIB Berlin.
