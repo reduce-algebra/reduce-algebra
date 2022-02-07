@@ -104,7 +104,7 @@ symbolic procedure rdnewton2(f,jac,vars,acc,x,mode,low,high);
 %*******************
     if !*trnumeric then lprim "Newton iteration";
     mode:=nil;
-    if !*trnumeric then lprim "evalute function in the initial point";
+    if !*trnumeric then lprim "evaluate function at the initial point";
     e0:=list!-evaluate(f,vars,x);
   loop:
     count:=add1 count;
@@ -125,7 +125,7 @@ symbolic procedure rdnewton2(f,jac,vars,acc,x,mode,low,high);
   step:
       % evaluate function at new point.
     x1:=list!-list(x,scal!*list(dmp,dx));
-    if !*trnumeric then lprim "evalute function in the next point";
+    if !*trnumeric then lprim "evaluate function at the next point";
     e1 := errorset({'list!-evaluate,mkquote f,
               mkquote vars,mkquote x1},nil,nil)
                        where !*msg=nil,!*protfg=t;
@@ -152,7 +152,7 @@ symbolic procedure rdnewton2(f,jac,vars,acc,x,mode,low,high);
 
   contract:
     if !*trnumeric then
-         lprim "reduce the difference limititeration to its half";
+         lprim "reduce the difference limit iteration to its half";
 %*** modification  nov. 2005: /2 replaced by *0.5
     dmp:=dmp*0.5;
 %***************
