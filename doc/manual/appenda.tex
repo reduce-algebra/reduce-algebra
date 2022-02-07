@@ -45,6 +45,8 @@ system.
 \hyperlink{command:FORDER}{\texttt{forder}}
 \hyperlink{command:FOREACH}{\texttt{foreach}}
 \hyperlink{command:FRAME}{\texttt{frame}}
+\hyperlink{command:GENERIC_FUNCTION}{\texttt{GENERIC\_FUNCTION}}
+\hyperlink{command:GETCSYSTEM}{\texttt{getcsystem}}
 \hyperlink{command:GOTO}{\texttt{go}}
 \hyperlink{command:GOTO}{\texttt{goto}}
 \hyperlink{command:IF}{\texttt{if}}
@@ -91,6 +93,7 @@ system.
 \hyperlink{command:PRINT_NOINDEXED}{\texttt{print\_noindexed}}
 \hyperlink{command:PRINT_PRECISION}{\texttt{print\_precision}}
 \hyperlink{command:PROCEDURE}{\texttt{procedure}}
+\hyperlink{command:PUTCSYSTEM}{\texttt{putcsystem}}
 \hyperlink{command:QUIT}{\texttt{quit}}
 \hyperlink{command:REAL}{\texttt{real}}
 \hyperlink{command:REALVALUED}{\texttt{realvalued}}
@@ -125,11 +128,13 @@ system.
 \hyperlink{command:UNSET}{\texttt{unset}}
 \hyperlink{command:UNTRRL}{\texttt{untrrl}}
 \hyperlink{command:UNTRRLID}{\texttt{untrrlid}}
+\hyperlink{command:VEC}{\texttt{vec}}
 \hyperlink{command:VECDIM}{\texttt{vecdim}}
 \hyperlink{command:VECTOR}{\texttt{vector}}
 \hyperlink{command:WEIGHT}{\texttt{weight}}
 \hyperlink{command:WRITE}{\texttt{write}}
 \hyperlink{command:WTLEVEL}{\texttt{wtlevel}}
+\hyperlink{command:VSTART}{\texttt{vstart}}
 \hyperlink{command:XPND}{\texttt{xpnd}}
 \halfinterwordspace
 
@@ -147,6 +152,7 @@ system.
 \hyperlink{reserved:assignop}{\texttt{:=}}\
 \hyperlink{reserved:equalop}{\texttt{=}}
 \hyperlink{reserved:geqop}{\texttt{>=}}
+\hyperlink{reserved:vectorcross}{\texttt{><}}
 \hyperlink{reserved:greaterop}{\texttt{>}}
 \hyperlink{reserved:leqop}{\texttt{<=}}
 \hyperlink{reserved:lessop}{\texttt{<}}
@@ -168,8 +174,10 @@ system.
 \hyperlink{operator:OR}{\texttt{or}}
 \hyperlink{operator:AND}{\texttt{and}}
 \hyperlink{operator:CONS}{\texttt{cons}}
+\hyperlink{operator:CROSS}{\texttt{cross}}
 \hyperlink{operator:DIFFERENCE}{\texttt{difference}}
 \hyperlink{operator:DIVIDE}{\texttt{divide}}
+\hyperlink{operator:DOT}{\texttt{dot}}
 \hyperlink{operator:EQ}{\texttt{eq}}
 \hyperlink{operator:EQUAL}{\texttt{equal}}
 \hyperlink{operator:EXPT}{\texttt{expt}}
@@ -187,6 +195,7 @@ system.
 \hyperlink{operator:QUOTIENT}{\texttt{quotient}}
 \hyperlink{operator:RECIP}{\texttt{recip}}
 \hyperlink{operator:TIMES}{\texttt{times}}
+\hyperlink{operator:VMOD}{\texttt{vmod}}
 \halfinterwordspace
 
 \item[Numerical Operators]\doubleinterwordspace
@@ -326,6 +335,7 @@ system.
 \hyperlink{operator:ARBRAT}{\texttt{arbrat}}
 %\hyperlink{operator:ARBREAL}{\texttt{arbreal}}
 \hyperlink{operator:ARGLENGTH}{\texttt{arglength}}
+\hyperlink{operator:AVEC}{\texttt{avec}}
 \hyperlink{operator:BERNOULLIP}{\texttt{BernoulliP}}
 \hyperlink{procedure:BERNSTEIN_BASE}{\texttt{Bernstein\_base}}
 \hyperlink{operator:BINOMIAL}{\texttt{Binomial}}
@@ -348,13 +358,25 @@ system.
 \hyperlink{operator:CONJ}{\texttt{conj}}
 %\hyperlink{operator:CONTFRAC}{\texttt{CONTFRAC}}
 \hyperlink{operator:CONTINUED_FRACTION}{\texttt{continued\_fraction}}
+\hyperlink{operator:COORDINATES}{\texttt{coordinates}}
+\hyperlink{operator:CURL}{\texttt{curl}}
 \hyperlink{operator:DD_GROEBNER}{\texttt{dd\_groebner}}
+\hyperlink{operator:DEFINT}{\texttt{defint}}
+\hyperlink{operator:DEFLINEINT}{\texttt{deflineint}}
 \hyperlink{operator:DEG}{\texttt{deg}}
+\hyperlink{operator:DELSQ}{\texttt{delsq}}
 \hyperlink{operator:DEN}{\texttt{den}}
 \hyperlink{operator:DET}{\texttt{det}}
 \hyperlink{operator:DF}{\texttt{df}}
+\hyperlink{operator:DFP}{\texttt{dfp}}
+\hyperlink{operator:DFP_COMMUTE}{\texttt{dfp\_commute}}
 \hyperlink{operator:DILOG}{\texttt{dilog}}
+\hyperlink{operator:DIV}{\texttt{div}}
+\hyperlink{operator:DLINEINT}{\texttt{dlineint}}
+\hyperlink{operator:DOTGRAD}{\texttt{dotgrad}}
 \hyperlink{operator:DSOLVE}{\texttt{dsolve}}
+\hyperlink{operator:DVINT}{\texttt{dvint}}
+\hyperlink{operator:DVOLINT}{\texttt{dvolint}}
 \hyperlink{operator:EI}{\texttt{Ei}}
 \hyperlink{operator:EPS}{\texttt{eps}}
 \hyperlink{operator:ERF}{\texttt{Erf}}
@@ -386,6 +408,7 @@ system.
 \hyperlink{operator:GLEXCONVERT}{\texttt{GLEXCONVERT}}
 \hyperlink{command:GNUPLOT}{\texttt{gnuplot}}
 \hyperlink{operator:GOSPER}{\texttt{gosper}}
+\hyperlink{operator:GRAD}{\texttt{grad}}
 \hyperlink{operator:GREDUCE}{\texttt{greduce}}
 \hyperlink{operator:GREDUCE_ORDERS}{\texttt{greduce\_orders}}
 \hyperlink{operator:GROEBNER}{\texttt{groebner}}
@@ -415,6 +438,7 @@ system.
 \hyperlink{operator:INT}{\texttt{int}}
 \hyperlink{operator:INTERPOL}{\texttt{interpol}}
 \hyperlink{operator:INVLAP}{\texttt{INVLAP}}
+\hyperlink{operator:INVZTRANS}{\texttt{invztrans}}
 \hyperlink{operator:JACOBIP}{\texttt{JacobiP}}
 \hyperlink{operator:K_TRANSFORM}{\texttt{K\_transform}}
 \hyperlink{operator:LAGUERREP}{\texttt{LaguerreP}}
@@ -437,8 +461,11 @@ system.
 \hyperlink{operator:LCOF}{\texttt{lcof}}
 \hyperlink{operator:LENGTH}{\texttt{length}}
 \hyperlink{operator:LHS}{\texttt{lhs}}
+\hyperlink{operator:LINEINT}{\texttt{lineint}}
+\hyperlink{operator:LINEINT_OV}{\texttt{lineint}}
 \hyperlink{operator:LINELENGTH}{\texttt{linelength}}
 \hyperlink{operator:LIST}{\texttt{list}}
+\hyperlink{operator:LOG_SUM}{\texttt{log\_sum}}
 \hyperlink{operator:LPOWER}{\texttt{lpower}}
 \hyperlink{operator:LTERM}{\texttt{lterm}}
 \hyperlink{operator:M_SOLVE}{\texttt{m\_solve}}
@@ -469,6 +496,7 @@ system.
 \hyperlink{operator:NUM_SOLVE}{\texttt{num\_solve}}
 \hyperlink{operator:ODESOLVE}{\texttt{odesolve}}
 \hyperlink{operator:ONE_OF}{\texttt{one\_of}}
+\hyperlink{operator:OV_LIMIT}{\texttt{ov\_limit}}
 %\hyperlink{operator:PADE}{\texttt{PADE}}
 \hyperlink{operator:PART}{\texttt{part}}
 %\hyperlink{operator:PERIODIC}{\texttt{PERIODIC}}
@@ -504,6 +532,7 @@ system.
 \hyperlink{operator:RANDOM}{\texttt{random}}
 \hyperlink{operator:RANDOM_NEW_SEED}{\texttt{random\_new\_seed}}
 \hyperlink{operator:RANK}{\texttt{rank}}
+\hyperlink{operator:RATINT}{\texttt{ratint}}
 \hyperlink{operator:REDERR}{\texttt{rederr}}
 \hyperlink{operator:REALROOTS}{\texttt{realroots}}
 \hyperlink{operator:REDUCT}{\texttt{reduct}}
@@ -525,6 +554,7 @@ system.
 \hyperlink{operator:ROOTS_AT_PREC}{\texttt{roots\_at\_prec}}
 \hyperlink{operator:ROOT_VAL}{\texttt{root\_val}}
 \hyperlink{operator:SATURATION}{\texttt{saturation}}
+\hyperlink{operator:SCALEFACTORS}{\texttt{scalefactors}}
 \hyperlink{operator:SECOND}{\texttt{second}}
 \hyperlink{operator:SELECT}{\texttt{select}}
 \hyperlink{command:SET}{\texttt{set}}
@@ -550,6 +580,7 @@ system.
 \hyperlink{operator:SUMM}{\texttt{summ}}
 \hyperlink{operator:SUMTOHYPER}{\texttt{sumtohyper}}
 \hyperlink{operator:SUMRECURSION}{\texttt{sumrecursion}}
+\hyperlink{operator:SVEC}{\texttt{svec}}
 \hyperlink{operator:THETA1D}{\texttt{theta1d}}
 \hyperlink{operator:THETA2D}{\texttt{theta2d}}
 \hyperlink{operator:THETA3D}{\texttt{theta3d}}
@@ -563,19 +594,29 @@ system.
 \hyperlink{operator:TRACE}{\texttt{trace}}
 \hyperlink{operator:TRIGFACTORIZE}{\texttt{trigfactorize}}
 \hyperlink{operator:TRIGGCD}{\texttt{triggcd}}
+\hyperlink{operator:TRIGINT}{\texttt{trigint}}
 \hyperlink{procedure:TRIGONOMETRIC_BASE}{\texttt{trigonometric\_base}}
 \hyperlink{operator:TRIGSIMP}{\texttt{trigsimp}}
-\hyperlink{operator:VARDF}{\texttt{VARDF}}
+\hyperlink{operator:VARDF}{\texttt{vardf}}
 \hyperlink{operator:VARNAME}{\texttt{varname}}
+\hyperlink{operator:VDF}{\texttt{vdf}}
+\hyperlink{operator:VINT}{\texttt{vint}}
+\hyperlink{operator:VOLINT}{\texttt{volint}}
+\hyperlink{operator:VOLINTEGRAL}{\texttt{volintegral}}
+\hyperlink{reserved:VOLINTORDER}{\texttt{volintorder}}
+\hyperlink{reserved:VTAYLOR}{\texttt{vtaylor}}
 \hyperlink{operator:Y_TRANSFORM}{\texttt{Y\_transform}}
+\hyperlink{operator:ZTRANS}{\texttt{ztrans}}
 \halfinterwordspace
 
 \item[Reserved Variables]\doubleinterwordspace
+\hyperlink{reserved:!*CSYSTEMS}{\texttt{!*csystems}}
 \hyperlink{reserved:__FILE__}{\texttt{!\_\_FILE\_\_}}
 \hyperlink{reserved:__LINE__}{\texttt{!\_\_LINE\_\_}}
 \hyperlink{reserved:assumptions}{\texttt{assumptions}}
 \hyperlink{reserved:CARD_NO}{\texttt{card\_no}}
 \hyperlink{reserved:CATALAN}{\texttt{catalan}}
+\hyperlink{reserved:COORDS}{\texttt{coords}}
 \hyperlink{reserved:E}{\texttt{e}}
 \hyperlink{reserved:EULER_GAMMA}{\texttt{euler\_gamma}}
 \hyperlink{target:modes}{\texttt{eval\_mode}}
@@ -593,6 +634,7 @@ system.
 \hyperlink{reserved:GROEBRESMAX}{\texttt{groebresmax}}
 \hyperlink{reserved:GROEBRESTRICTION}{\texttt{groebrestriction}}
 \hyperlink{reserved:GVARSLAST}{\texttt{gvarslast}}
+\hyperlink{reserved:HFACTORS}{\texttt{hfactors}}
 \hyperlink{reserved:HIGH_POW}{\texttt{high\_pow}}
 \hyperlink{reserved:I}{\texttt{i}}
 \hyperlink{reserved:INFINITY}{\texttt{infinity}}
@@ -775,6 +817,8 @@ system.
 \hyperlink{switch:TIME}{\texttt{time}}
 \hyperlink{switch:TRA}{\texttt{tra}}
 \hyperlink{switch:TRACEFPS}{\texttt{tracefps}}
+\hyperlink{switch:TRACERATINT}{\texttt{traceratint}}
+\hyperlink{switch:TRACETRIG}{\texttt{tracetrig}}
 \hyperlink{switch:TRCOMPACT}{\texttt{trcompact}}
 \hyperlink{switch:TRDEFINT}{\texttt{trdefint}}
 \hyperlink{switch:TRFAC}{\texttt{trfac}}

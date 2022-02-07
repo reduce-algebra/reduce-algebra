@@ -1,10 +1,11 @@
-
+\index{Eastwood, James W.}\index{Persons!Eastwood, James W.}
+\setcounter{examplectr}{0}
 \iffalse
 The revised version of ORTHOVEC is a collection of REDUCE 3.4 procedures and
 operations which provide a simple to use environment for the manipulation of
 scalars and vectors.  Operations include addition, subtraction, dot and cross
 products, division, modulus, div, grad, curl, laplacian, differentiation,
-integration, ${\bf a \cdot \nabla}$ and Taylor expansion. 
+integration, $\textbf{a \cdot \nabla}$ and Taylor expansion. 
 \fi
 Version 2 is
 summarized in \cite{Eastwood:91}.  It differs from the original (\cite
@@ -52,8 +53,8 @@ summarized in \cite{Eastwood:91}.  It differs from the original (\cite
 %\end{tabular}
 
 \subsection{Introduction}
-The revised version of ORTHOVEC\cite{Eastwood:91} is, like the
-original\cite{Eastwood:87}, a collection of REDUCE procedures and
+The revised version of \textsc{ORTHOVEC} (\cite{Eastwood:91}) is, like the
+original (\cite{Eastwood:87}), a collection of \REDUCE procedures and
 operators designed to simplify the machine aided manipulation of vectors
 and vector expansions frequently met in many areas of applied mathematics.
 The revisions have been introduced for two reasons: firstly, to add extra
@@ -73,7 +74,7 @@ to vectors
 \end{enumerate}
 
 The LISP vector primitives are again used to store vectors, although 
-with the introduction of LIST types in algebraic mode in REDUCE
+with the introduction of LIST types in algebraic mode in \REDUCE
 3.4, the implementation may have been more simply achieved 
 using lists to store vector components.
 
@@ -81,9 +82,9 @@ The philosophy used in Version 2 follows that used in the original:
 namely, algebraic mode is used wherever possible.  The view is taken
 that some computational inefficiencies are acceptable if it allows
 coding to be intelligible to (and thence adaptable by) users other
-than LISP experts familiar with the internal workings of REDUCE.
+than LISP experts familiar with the internal workings of \REDUCE.
 
-Procedures and operators in ORTHOVEC fall into the five classes: 
+Procedures and operators in \textsc{ORTHOVEC} fall into the five classes: 
 initialisation, input-output, algebraic operations, differential
 operations and integral operations.  Definitions are given in 
 the following sections, and
@@ -91,50 +92,51 @@ a summary of the procedure names and their meanings are give in Table 1.
 The final section discusses test examples.
 
 \subsection{Initialisation}\label{vstart}
-\ttindex{VSTART}
-The procedure VSTART initialises ORTHOVEC.  It may be
-called after ORTHOVEC has been INputted (or LOADed if a fast load
-version has been made) to reset coordinates.  VSTART provides a
-menu of standard coordinate systems:-
-
+\ttindextype[ORTHOVEC]{vstart}{procedure}
+\hyperlink{command:VSTART}{}
+The procedure \f{vstart} initialises \textsc{ORTHOVEC}.  It may be
+called after \textsc{ORTHOVEC} has been loaded to reset coordinates.
+\f{vstart} provides a
+menu of standard coordinate systems:
 
 \begin{enumerate}
 \index{Cartesian coordinates}\index{Coordinates!cartesian}
-\item cartesian $(x, y, z) = $ {\tt (x, y, z)}
+\item cartesian $(x, y, z) = $ \texttt{(x, y, z)}
 \index{Cylindrical coordinates}\index{Coordinates!cylindrical}
-\item cylindrical $(r, \theta, z) = $ {\tt (r, th, z)}
+\item cylindrical $(r, \theta, z) = $ \texttt{(r, th, z)}
 \index{Spherical coordinates}\index{coordinates!spherical}
-\item spherical $(r, \theta, \phi) = $ {\tt (r, th, ph) }
-\item general $( u_1, u_2, u_3 ) = $ {\tt (u1, u2, u3) }
+\item spherical $(r, \theta, \phi) = $ \texttt{(r, th, ph) }
+\item general $( u_1, u_2, u_3 ) = $ \texttt{(u1, u2, u3) }
 \item others
 \end{enumerate}
 
 which the user selects by number.  Selecting options (1)-(4)
 automatically sets up the coordinates and scale factors.  Selection
 option (5) shows the user how to select another coordinate system.  If
-VSTART is not called, then the default cartesian coordinates are used.
-ORTHOVEC may be re-initialised to a new coordinate system at any time
-during a given REDUCE session by typing
+\f{vstart} is not called, then the default cartesian coordinates are used.
+\textsc{ORTHOVEC} may be re-initialised to a new coordinate system at any time
+during a given \REDUCE session by typing
 \begin{verbatim}
-VSTART $.
+vstart $
 \end{verbatim}
 
 \subsection{Input-Output}
 
-ORTHOVEC assumes all quantities are either scalars or 3 component
+\textsc{ORTHOVEC} assumes all quantities are either scalars or 3 component
 vectors.  To define a vector $a$ with components $(c_1, c_2, c_3)$ use
-the procedure SVEC as follows \ttindex{SVEC}
+the procedure \f{svec} as follows \ttindextype[ORTHOVEC]{svec}{procedure}
+\hyperlink{operator:SVEC}{}
 \begin{verbatim}
 a := svec(c1, c2, c3);
 \end{verbatim}
 
-The standard REDUCE output for vectors when using the terminator ``$;$''
+The standard \REDUCE output for vectors when using the terminator ``$;$''
 is to list the three components inside square brackets
 $[\cdots]$, with each component in prefix form.  A replacement for the
-standard REDUCE procedure MAPRIN is included in
+standard \REDUCE procedure \texttt{maprin} is included in
 the package to change the 
 output of LISP vector components to algebraic notation.  The procedure
-\ttindex{VOUT} VOUT (which returns the value of its argument)
+\ttindextype[ORTHOVEC]{VOUT}{procedure} \f{vout} (which returns the value of its argument)
 can be used to give labelled output of components 
 in algebraic form: e.g.,
 \begin{verbatim}
@@ -142,29 +144,31 @@ b := svec (sin(x)**2, y**2, z)$
 vout(b)$
 \end{verbatim}
 
-The operator {\tt \_} can be used to select a particular 
+The operator \texttt{\textunderscore} can be used to select a particular 
 component (1, 2 or 3) for output e.g.
 \begin{verbatim}
-b_1 ;
+b _1 ;
 \end{verbatim}
+Note the space before the \texttt{\textunderscore} operator: otherwise this would be read as identifier \texttt{b\_1}.
 
 \subsection{Algebraic Operations}
 
 Six infix operators, sum, difference, quotient, times, exponentiation
 and cross product, and four prefix
 operators, plus, minus, reciprocal
-and  modulus are defined in ORTHOVEC.  These operators can take suitable
+and  modulus are defined in \textsc{ORTHOVEC}.  These operators can take suitable
 combinations of scalar and vector arguments,
 and in the case of scalar arguments reduce to the usual definitions of
 $ +, -, *, /, $ etc.
 
 The operators are represented by symbols 
-\ttindextype{+ (plus)}{operator!3-D vectors}
-\ttindextype{- (minus)}{operator!3-D vectors}
-\ttindextype{/ (quotient)}{operator!3-D vectors}
-\ttindextype{* (times)}{operator!3-D vectors}
-\ttindextype{"\textasciicircum{} (expt)}{operator!3-D vectors}
-\ttindextype{><}{(cross product) operator!3-D vectors}
+\ttindextype[ORTHOVEC]{+ (plus)}{operator!3-D vectors}
+\ttindextype[ORTHOVEC]{- (minus)}{operator!3-D vectors}
+\ttindextype[ORTHOVEC]{/ (quotient)}{operator!3-D vectors}
+\ttindextype[ORTHOVEC]{* (times)}{operator!3-D vectors}
+\ttindextype[ORTHOVEC]{"\textasciicircum{} (expt)}{operator!3-D vectors}
+\ttindextype[ORTHOVEC]{>< (vectorcross}{ operator!3-D vectors}
+\hypertarget{reserved:vectorcross}{}
 \begin{verbatim}  
 +, -, /, *, ^, ><
 \end{verbatim}
@@ -178,78 +182,78 @@ are as summarised below.  The notation used is\\
 \emph{result :=procedure(left argument, right argument) } or\\
 \emph{result :=(left operand) operator (right operand) } . 
 
-\newpage
+%\newpage
 \underline{Vector Addition} \\
-\ttindex{VECTORPLUS} \ttindex{VECTORADD} \index{Vector!addition}
+\ttindextype[ORTHOVEC]{vectorplus}{operator} \ttindextype[ORTHOVEC]{vectoradd}{operator} \index{Vector!addition}
 \begin{tabular}{rclcrcl}
-{\bf v} &:=& VECTORPLUS({\bf v})  &{\rm or}& {\bf v} &:=&  +  {\bf v} \\
-     s  &:=& VECTORPLUS(s)  &{\rm or} &      s  &:=&  +       s  \\
-{\bf v} &:=& VECTORADD({\bf v},{\bf v})  &{\rm or }& {\bf v} &:=&  
-{\bf v} +  {\bf v} \\
-     s  &:=& VECTORADD(s,s)  &{\rm or }&      s  &:=&  s + s \\
+\textbf{v} &:=& vectorplus(\textbf{v})  &{\rm or}& \textbf{v} &:=&  +  \textbf{v} \\
+     s  &:=& vectorplus(s)  &{\rm or} &      s  &:=&  +       s  \\
+\textbf{v} &:=& vectoradd(\textbf{v},\textbf{v})  &{\rm or }& \textbf{v} &:=&  
+\textbf{v} +  \textbf{v} \\
+     s  &:=& vectoradd(s,s)  &{\rm or }&      s  &:=&  s + s \\
 \end{tabular}
 
 \underline{Vector Subtraction} \\
-\ttindex{VECTORMINUS} \ttindex{VECTORDIFFERENCE} \index{Vector!subtraction}
+\ttindextype[ORTHOVEC]{vectorminus}{operator} \ttindextype[ORTHOVEC]{vectordifference}{operator} \index{Vector!subtraction}
 \begin{tabular}{rclcrcl}
-{\bf v} &:=& VECTORMINUS({\bf v})  &{\rm or}&
- {\bf v} &:=&  -  {\bf v} \\
- s  &:=& VECTORMINUS(s)  &{\rm or} &      s  &:=&  -       s  \\
-{\bf v} &:=& VECTORDIFFERENCE({\bf v},{\bf v})  &{\rm or }& {\bf v} &:=&
-  {\bf v} -  {\bf v} \\
- s  &:=& VECTORDIFFERENCE(s,s)  &{\rm or }&      s  &:=&  s - s \\
+\textbf{v} &:=& vectorminus(\textbf{v})  &{\rm or}&
+ \textbf{v} &:=&  -  \textbf{v} \\
+ s  &:=& vectorminus(s)  &{\rm or} &      s  &:=&  -       s  \\
+\textbf{v} &:=& vectordifference(\textbf{v},\textbf{v})  &{\rm or }& \textbf{v} &:=&
+  \textbf{v} -  \textbf{v} \\
+ s  &:=& vectordifference(s,s)  &{\rm or }&      s  &:=&  s - s \\
 \end{tabular}
 
 \underline{Vector Division}\\
-\ttindex{VECTORRECIP} \ttindex{VECTORQUOTIENT} \index{Vector!division}
+\ttindextype[ORTHOVEC]{vectorrecip}{operator} \ttindextype[ORTHOVEC]{vectorquotient}{operator} \index{Vector!division}
 \begin{tabular}{rclcrcl}
-{\bf v} &:=& VECTORRECIP({\bf v})  &{\rm or}& {\bf v} &:=&  /  
-{\bf v} \\
- s  &:=& VECTORRECIP(s)  &{\rm or} &      s  &:=&  /       s  \\
-{\bf v} &:=& VECTORQUOTIENT({\bf v},{\bf v})  &{\rm or }& {\bf v} &:=&  
-{\bf v} /  {\bf v} \\
-{\bf v} &:=& VECTORQUOTIENT({\bf v},    s  )  &{\rm or }& {\bf v} &:=&  
-{\bf v} /     s    \\
-{\bf v} &:=& VECTORQUOTIENT(   s   ,{\bf v})  &{\rm or }& {\bf v} &:=&  
-   s    /  {\bf v} \\
-     s  &:=& VECTORQUOTIENT(s,s)  &{\rm or }&      s  &:=&  s / s       
-       \\
+\textbf{v} &:=& vectorrecip(\textbf{v})  &{\rm or}& \textbf{v} &:=&  /  
+\textbf{v} \\
+ s  &:=& vectorrecip(s)  &{\rm or} &      s  &:=&  /       s  \\
+\textbf{v} &:=& vectorquotient(\textbf{v},\textbf{v})  &{\rm or }& \textbf{v} &:=&  
+\textbf{v} /  \textbf{v} \\
+\textbf{v} &:=& vectorquotient(\textbf{v},    s  )  &{\rm or }& \textbf{v} &:=&  
+\textbf{v} /     s    \\
+\textbf{v} &:=& vectorquotient(   s   ,\textbf{v})  &{\rm or }& \textbf{v} &:=&  
+   s    /  \textbf{v} \\
+     s  &:=& vectorquotient(s,s)  &{\rm or }&      s  &:=&  s / s       
+       
 \end{tabular}
 
 \underline{Vector Multiplication}\\ 
-\ttindex{VECTORTIMES} \index{Vector!multiplication}
+\ttindextype[ORTHOVEC]{vectortimes}{operator} \index{Vector!multiplication}
 \begin{tabular}{rclcrcl}
-{\bf v} &:=& VECTORTIMES(   s   ,{\bf v})  &{\rm or }& {\bf v} &:=&     
-s    *  {\bf v} \\
-{\bf v} &:=& VECTORTIMES({\bf v},   s   )  &{\rm or }& {\bf v} &:=& {\bf
+\textbf{v} &:=& vectortimes(   s   ,\textbf{v})  &{\rm or }& \textbf{v} &:=&     
+s    *  \textbf{v} \\
+\textbf{v} &:=& vectortimes(\textbf{v},   s   )  &{\rm or }& \textbf{v} &:=& {\bf
  v}  *     s    \\
-   s    &:=& VECTORTIMES({\bf v},{\bf v})  &{\rm or }&    s    &:=& {\bf
- v}  *  {\bf v} \\
-   s    &:=& VECTORTIMES(   s   ,   s   )  &{\rm or }&    s    &:=&     
-s    *     s    \\
+   s    &:=& vectortimes(\textbf{v},\textbf{v})  &{\rm or }&    s    &:=& {\bf
+ v}  *  \textbf{v} \\
+   s    &:=& vectortimes(   s   ,   s   )  &{\rm or }&    s    &:=&     
+s    *     s    
 \end{tabular}
  
 \underline{Vector Cross Product} \\
-\ttindex{VECTORCROSS} \index{Cross product} \index{Vector!cross product}
+\ttindextype[ORTHOVEC]{vectorcross}{operator} \index{Cross product} \index{Vector!cross product}
 \begin{tabular}{rclcrcl}
-{\bf v} &:=& VECTORCROSS({\bf v},{\bf v})  &{\rm or }& {\bf v} &:=& {\bf
- v} $\times$   {\bf v} \\
+\textbf{v} &:=& vectorcross(\textbf{v},\textbf{v})  &{\rm or }& \textbf{v} &:=& {\bf
+ v} $\times$   \textbf{v} 
 \end{tabular}
  
 \underline{Vector Exponentiation}\\
-\ttindex{VECTOREXPT} \index{Vector!exponentiation}
+\ttindextype[ORTHOVEC]{vectorexpt}{operator} \index{Vector!exponentiation}
 \begin{tabular}{rclcrcl}
-   s    &:=& VECTOREXPT ({\bf v},   s   )  &{\rm or }&    s    &:=& {\bf
+   s    &:=& vectorexpt (\textbf{v},   s   )  &{\rm or }&    s    &:=& {\bf
  v}  \^{} s   \\
-   s    &:=& VECTOREXPT (   s   ,   s   )  &{\rm or }&    s    &:=&    s
-     \^{} s   \\
+   s    &:=& vectorexpt (   s   ,   s   )  &{\rm or }&    s    &:=&    s
+     \^{} s   
 \end{tabular}
 
 \underline{Vector Modulus}\\
-\ttindex{VMOD} \index{Vector!modulus}
+\ttindextype[ORTHOVEC]{vmod}{operator} \index{Vector!modulus}
 \begin{tabular}{rcl}
-   s    &:=& VMOD (s)\\
-   s    &:=& VMOD ({\bf v}) \\
+   s    &:=& vmod (s)\\
+   s    &:=& vmod (\textbf{v}) 
 \end{tabular}
 
 All other combinations of operands for these operators lead to error 
@@ -260,7 +264,7 @@ multiplication are scalar multiplication of vectors, the third is the
 product of two scalars and the last is the inner (dot) product.  The
 unary operators  \texttt{+, -, /} can take either scalar or vector
 arguments and return results of the same type as their arguments. 
-VMOD returns a scalar.
+\f{vmod} returns a scalar.
 
 In compound expressions, parentheses may be used to specify the order of
 combination.  If parentheses are omitted the ordering of the
@@ -268,27 +272,28 @@ operators, in increasing order of precedence is
 \begin{verbatim}
 + | - | dotgrad | * | >< | ^ | _
 \end{verbatim}
-and these are placed in the precedence list defined in REDUCE
+and these are placed in the precedence list defined in \REDUCE
 after $<$.
-The differential operator DOTGRAD is defined in the \ttindextype{DOTGRAD}{operator}
-following section, and the component selector {\tt \_} was introduced in
+The differential operator \f{dotgrad} is defined in the \ttindextype[ORTHOVEC]{dotgrad}{operator}
+\hypertarget{operator:DORGRAD}{}
+following section, and the component selector \texttt{\textunderscore} was introduced in
 section 3.
 
-Vector divisions are defined as follows:  If ${\bf a}$ and ${\bf b}$ are
+Vector divisions are defined as follows:  If $\textbf{a}$ and $\textbf{b}$ are
 vectors and $c$ is a scalar, then
-\begin{eqnarray*}
-{\bf a} /  {\bf b} & = &  \frac{{\bf a} \cdot {\bf b}}{  \mid {\bf b} 
+\begin{align*}
+\textbf{a} /  \textbf{b} & =   \frac{\textbf{a} \cdot \textbf{b}}{  \mid \textbf{b} 
 \mid^2}\\
-c / {\bf a}   & = &  \frac{c {\bf a}  }{ \mid {\bf a} \mid^2}
-\end{eqnarray*}
+c / \textbf{a}   & =   \frac{c \textbf{a}  }{ \mid \textbf{a} \mid^2}
+\end{align*}
 
 Both scalar multiplication and dot products are given by the same symbol, 
 braces are advisable to ensure the correct
-precedences in expressions such as $({\bf a} \cdot {\bf b}) 
-({\bf c} \cdot {\bf d})$.
+precedences in expressions such as $(\textbf{a} \cdot \textbf{b}) 
+(\textbf{c} \cdot \textbf{d})$.
 
 Vector exponentiation is defined as the power of the modulus:\\
-${\bf a}^n \equiv  {\rm VMOD}(a)^n =   \mid {\bf a} \mid^n$
+$\textbf{a}^n \equiv  \f{vmod}(a)^n =   \mid \textbf{a} \mid^n$
 
 \subsection{Differential Operations}
 Differential operators provided are div, grad, curl, delsq, and dotgrad.
@@ -302,57 +307,59 @@ operator and argument, and the type of the result are shown in table~\ref{vvectt
 \begin{table}[!tbp]
 \begin{center}
 \begin{tabular}{rcl}
-s & := & div ({\bf v})  \\
-{\bf v} & := & grad(s) \\
-{\bf v} & := & curl({\bf v})  \\
-{\bf v} & := & delsq({\bf v}) \\
+s & := & div (\textbf{v})  \\
+\textbf{v} & := & grad(s) \\
+\textbf{v} & := & curl(\textbf{v})  \\
+\textbf{v} & := & delsq(\textbf{v}) \\
  s  & := & delsq(s) \\
-{\bf v} & := & {\bf v}  dotgrad {\bf v}  \\
- s & := & {\bf v}  dotgrad  s 
+\textbf{v} & := & \textbf{v}  dotgrad \textbf{v}  \\
+ s & := & \textbf{v}  dotgrad  s 
 \end{tabular}
 \end{center}
-\caption{ORTHOVEC valid combinations of operator and argument}\label{vvecttable}
+\caption{\textsc{ORTHOVEC} valid combinations of operator and argument}\label{vvecttable}
 \end{table}
 
 All other combinations of operator and argument type cause error
 messages to be issued.  The differential operators have their usual
 meanings~\cite{Spiegel:59}.  The coordinate system used by these operators is
-set by invoking  VSTART (cf. Sec.~\ref{vstart}).  The names {\tt h1}, 
-{\tt h2}  and {\tt h3 } are
-reserved for the scale factors, and {\tt u1}, {\tt u2} and {\tt u3} are 
+set by invoking  \f{vstart} (cf. Sec.~\ref{vstart}).  The names \texttt{h1}, 
+\texttt{h2}  and \texttt{h3} are
+reserved for the scale factors, and \texttt{u1}, \texttt{u2} and \texttt{u3} are 
 used for the coordinates.
 
-A vector extension, VDF, of the REDUCE procedure DF allows the 
+A vector extension, \f{vdf}, of the \REDUCE procedure DF allows the 
 differentiation of a vector (scalar) with respect to a scalar to be
-performed.  Allowed forms are \ttindex{VDF}
-VDF({\bf v}, s)  $\rightarrow$  {\bf v}   and
-VDF(s, s)  $\rightarrow$   s , 
+performed.  Allowed forms are \ttindextype[ORTHOVEC]{vdf}{operator}
+\hypertarget{operator:VDF}{}
+\f{vdf}(\textbf{v}, s)  $\rightarrow$  \textbf{v}   and
+\f{vdf}(s, s)  $\rightarrow$   s , 
 where, for example
-\begin{eqnarray*}
-{\tt vdf( B,x)} \equiv \frac{\partial {\bf B}}{\partial x}
-\end{eqnarray*}
+\begin{equation*}
+\texttt{vdf( B,x)} \equiv \frac{\partial \textbf{B}}{\partial x}
+\end{equation*}
 
-The standard REDUCE procedures DEPEND and NODEPEND have been redefined
+The standard \REDUCE declarations \f{depend} and \f{nodepend} have been redefined
 to allow dependences of vectors to be compactly
-defined.  For example \index{DEPEND statement} \index{NODEPEND statement}
+defined.  For example \index{depend statement} \index{nodepend statement}
 \begin{verbatim}
 a := svec(a1,a2,a3)$;
 depend a,x,y;
 \end{verbatim}
-causes all three components {\tt a1},{\tt a2} and {\tt a3} of {\tt a} 
-to be treated as functions of {\tt x} and {\tt y}.
+causes all three components \texttt{a1},\texttt{a2} and \texttt{a3} of \texttt{a} 
+to be treated as functions of \texttt{x} and \texttt{y}.
 Individual component dependences can still be defined if desired.
 \begin{verbatim}
 depend a3,z;
 \end{verbatim}
 
-The procedure VTAYLOR gives truncated Taylor series expansions of scalar
-or vector functions:- \ttindex{VTAYLOR}
+The procedure \f{vtaylor} gives truncated Taylor series expansions of scalar
+or vector functions: \ttindextype[ORTHOVEC]{vtaylor}{operator}
+\hypertarget{operator:VTAYLOR}{}
 \begin{verbatim}
 vtaylor(vex,vx,vpt,vorder);
 \end{verbatim}
 returns the series expansion of the expression 
-VEX  with respect to variable VX \ttindex{VORDER}
+VEX  with respect to variable VX 
 about point VPT  to order VORDER.  Valid
 combinations of argument types are shown in table~\ref{ORTHOVEC:validexp}.
 
@@ -360,15 +367,15 @@ combinations of argument types are shown in table~\ref{ORTHOVEC:validexp}.
 \begin{center}
 \begin{tabular}{cccc}
 VEX & VX & VPT &  VORDER \\[2ex]
-{\bf v} & {\bf v} &  {\bf v} &  {\bf v}\\
-{\bf v} &  {\bf v} & {\bf v} & s\\
-{\bf v} & s & s & s \\
-s & {\bf v} &  {\bf v} & {\bf v}   \\
-s & {\bf v} & {\bf v} & s\\
+\textbf{v} & \textbf{v} &  \textbf{v} &  \textbf{v}\\
+\textbf{v} &  \textbf{v} & \textbf{v} & s\\
+\textbf{v} & s & s & s \\
+s & \textbf{v} &  \textbf{v} & \textbf{v}   \\
+s & \textbf{v} & \textbf{v} & s\\
 s & s & s & s\\
 \end{tabular}
 \end{center}
-\caption{ORTHOVEC valid combination of argument types.}\label{ORTHOVEC:validexp}
+\caption{\textsc{ORTHOVEC} valid combination of argument types.}\label{ORTHOVEC:validexp}
 \end{table}
 
 Any other combinations cause error messages to be issued.  Elements of
@@ -376,41 +383,49 @@ VORDER must be non-negative integers, otherwise error messages are
 issued.  If scalar VORDER is given for a vector expansion, expansions
 in each component are truncated at the same order, VORDER.
 
+\hypertarget{operator:OV_LIMIT}{}
 The new version of Taylor expansion applies \index{l'H\^opital's rule}
 l'H\^opital's rule in evaluating coefficients, so handle cases such as
-$\sin(x) / (x) $ , etc.  which the original version of ORTHOVEC could
-not. The procedure used for this is OV\_LIMIT, \ttindex{OV\_LIMIT} which can
-be used directly to find the limit of a scalar function {\tt ex} of
-variable {\tt x} at point {\tt pt}:-
+$\sin(x) / (x) $ , etc.  which the original version of \textsc{ORTHOVEC} could
+not. The procedure used for this is \f{ov\_limit}, \ttindextype[ORTHOVEC]{ov\_limit}{operator} which can
+be used directly to find the limit of a scalar function \texttt{ex} of
+variable \texttt{x} at point \texttt{pt}:-
 
 \begin{verbatim}
-ans := limit(ex,x,pt);
+ans := ov_limit(ex,x,pt);
 \end{verbatim}
 
 \subsection{Integral Operations}
 Definite and indefinite vector, volume and scalar line integration
-procedures are included in ORTHOVEC.  They are defined as follows:
-\ttindex{VINT} \ttindex{DVINT}
-\ttindex{VOLINT} \ttindex{DVOLINT} \ttindex{LINEINT} \ttindex{DLINEINT}
-\begin{eqnarray*}
-{\rm VINT} ({\bf v},x) & = & \int {\bf v}(x)dx\\
+procedures are included in \textsc{ORTHOVEC}.  They are defined as follows:
+\ttindextype[ORTHOVEC]{vint}{operator} \ttindextype[ORTHOVEC]{dvint}{operator}
+\ttindextype[ORTHOVEC]{volint}{operator} \ttindextype[ORTHOVEC]{dvolint}{operator}
+\ttindextype[ORTHOVEC]{lineint}{operator} \ttindextype[ORTHOVEC]{dlineint}{operator}
+\hyperlink{operator:VINT}{}
+\hyperlink{operator:DVINT}{}
+\hyperlink{operator:VOLINT}{}
+\hyperlink{operator:DVOLINT}{}
+\hyperlink{operator:LININT_OV}{}
+\hyperlink{operator:DLINEINT}{}
+\begin{align*}
+\f{vint} (\mathbf{v},x) & =  \int \mathbf{v}(x)dx\\
 %
-{\rm DVINT} ({\bf v},x, a, b) & = & \int^b_a {\bf v} (x) dx\\
+\f{dvint} (\mathbf{v},x, a, b) & =  \int^b_a \mathbf{v} (x) dx\\
 %
-{\rm VOLINT} ({\bf v}) & = & \int {\bf v} h_1 h_2 h_3 du_1 du_2 du_3\\
+\f{volint} (\mathbf{v}) & =  \int \mathbf{v} h_1 h_2 h_3 du_1 du_2 du_3\\
 %
-{\rm DVOLINT}({\bf v},{\bf l},{\bf u},n) & = & \int^{\bf u}_{\bf l}
-{\bf v} h_1 h_2 h_3 du_1 du_2 du_3\\
+\f{dvolint}(\mathbf{v},\mathbf{l},\mathbf{u},n) & = \int^\mathbf{u}_\mathbf{l}
+\mathbf{v} h_1 h_2 h_3 du_1 du_2 du_3\\
 %
-{\rm LINEINT} ({\bf v, \omega}, t) & = & \int {\bf v} \cdot {\bf dr}
+\f{lineint} (\mathbf{v, \omega}, t) & =  \int \mathbf{v} \cdot \mathbf{dr}
 \equiv \int v_i h_i \frac{\partial \omega_i}{\partial t} dt\\
 %
-{\rm DLINEINT} ({\bf v, \omega} t, a, b) & = & \int^b_a v_i h_i
-\frac{\partial \omega_i}{\partial t} dt\\
-\end{eqnarray*}
+\f{dlineint} (\mathbf{v, \omega} t, a, b) & = \int^b_a v_i h_i
+\frac{\partial \omega_i}{\partial t} dt
+\end{align*}
 
-In the vector and volume integrals, ${\bf v}$ are vector or scalar,
-$a, b,x$ and $n$ are scalar.  Vectors ${\bf l}$ and ${\bf u}$ contain
+In the vector and volume integrals, $\mathbf{v}$ are vector or scalar,
+$a, b,x$ and $n$ are scalar.  Vectors $\mathbf{l}$ and $\mathbf{u}$ contain
 expressions for lower and upper bounds to the integrals.  The integer
 index $n$ defines the order in which the integrals over $u_1, u_2$ and
 $u_3$ are performed in order to allow for functional dependencies in
@@ -431,92 +446,92 @@ n & order\\ 1 & $u_1~u_2~u_3$\\
 \end{center}
 
 
-The vector ${\bf \omega}$ in the line integral's arguments contain
+The vector $\mathbf{\omega}$ in the line integral's arguments contain
 explicit paramterisation of the coordinates $u_1, u_2, u_3$ of the
-line ${\bf u}(t)$ along which the integral is taken.
+line $\mathbf{u}(t)$ along which the integral is taken.
 
 \begin{table}
 \begin{center}
 \begin{tabular}{|l c l|} \hline 
 \multicolumn{1}{|c}{Procedures} & & \multicolumn{1}{c|}{Description} \\ \hline
-VSTART & & select coordinate
-system \\ & & \\ SVEC & & set up a vector \\ VOUT & & output a vector
-\\ VECTORCOMPONENT & \_ & extract a vector component (1-3) \\ & & \\
-VECTORADD & + & add two vectors or scalars \\ 
-VECTORPLUS & + & unary vector or scalar plus\\ 
-VECTORMINUS & - & unary vector or scalar minus\\ 
-VECTORDIFFERENCE & - & subtract two vectors or scalars \\ 
-VECTORQUOTIENT & / & vector divided by scalar \\ 
-VECTORRECIP & / & unary vector or scalar division \\ & & \ \ \ (reciprocal)\\ 
-VECTORTIMES & * & multiply vector or scalar by \\ & & \ \ \ vector/scalar \\ 
-VECTORCROSS & $><$ & cross product of two vectors \\ 
-VECTOREXPT & \^{} & exponentiate vector modulus or scalar \\
-VMOD & & length of vector or scalar \\ \hline
+  \f{vstart} & & select coordinate system \\[\baselineskip]
+  \f{svec} & & set up a vector \\
+  \f{vout} & & output a vector \\
+\f{ vectorcomponent} & \_ & extract a vector component (1-3) \\[\baselineskip]
+\f{vectoradd} & + & add two vectors or scalars \\ 
+\f{vectorplus} & + & unary vector or scalar plus\\ 
+\f{vectorminus} & - & unary vector or scalar minus\\ 
+\f{vectordifference} & - & subtract two vectors or scalars \\ 
+\f{vectorquotient} & / & vector divided by scalar \\ 
+\f{vectorrecip} & / & unary vector or scalar division \\ & & \ \ \ (reciprocal)\\ 
+\f{vectortimes} & * & multiply vector or scalar by \\ & & \ \ \ vector/scalar \\ 
+\f{vectorcross} & $><$ & cross product of two vectors \\ 
+\f{vectorexpt} & \^{} & exponentiate vector modulus or scalar \\
+\f{vmod} & & length of vector or scalar \\ \hline
 \end{tabular}
 \end{center}
-\caption{Procedures names and operators used in ORTHOVEC (part 1)}
+\caption{Procedures names and operators used in \textsc{ORTHOVEC} (part 1)}
 \end{table}
 
 \begin{table}
 \begin{center}
 \begin{tabular}{|l l|} \hline 
 \multicolumn{1}{|c}{Procedures} & \multicolumn{1}{c|}{Description} \\ \hline 
-DIV & divergence of vector \\ 
-GRAD & gradient of scalar \\ 
-CURL & curl of vector \\ 
-DELSQ & laplacian of scalar or vector \\ 
-DOTGRAD & (vector).grad(scalar or vector) \\ &  \\ 
-VTAYLOR & vector or scalar Taylor series of vector or scalar \\ 
-VPTAYLOR & vector or scalar Taylor series of scalar \\ 
-TAYLOR & scalar Taylor series of scalar \\
-LIMIT & limit of quotient using l'H\^opital's rule \\ &  \\
-VINT & vector integral \\ 
-DVINT & definite vector integral \\ 
-VOLINT & volume integral \\ 
-DVOLINT & definite volume integral \\ 
-LINEINT & line integral \\ 
-DLINEINT & definite line integral \\  & \\
-MAPRIN & vector extension of REDUCE MAPRIN \\
-DEPEND & vector extension of REDUCE DEPEND \\
-NODEPEND & vector extension of REDUCE NODEPEND \\ \hline 
+\f{div} & divergence of vector \\ 
+\f{grad} & gradient of scalar \\ 
+\f{curl} & curl of vector \\ 
+\f{delsq} & laplacian of scalar or vector \\ 
+\f{dotgrad} & (vector).grad(scalar or vector) \\ &  \\ 
+\f{vtaylor} & vector or scalar Taylor series of vector or scalar \\ 
+\f{vptaylor} & vector or scalar Taylor series of scalar \\ 
+\f{taylor} & scalar Taylor series of scalar \\
+\f{limit} & limit of quotient using l'H\^opital's rule \\ &  \\
+\f{vint} & vector integral \\ 
+\f{dvint} & definite vector integral \\ 
+\f{volint} & volume integral \\ 
+\f{dvolint} & definite volume integral \\ 
+\f{lineint} & line integral \\ 
+\f{dlineint} & definite line integral \\  & \\
+\f{maprin} & vector extension of \REDUCE \f{maprin} \\
+\f{depend} & vector extension of \REDUCE \f{depend} \\
+\f{nodepend} & vector extension of \REDUCE \f{nodepend} \\ \hline 
 \end{tabular}
 \end{center}
-\caption{Procedures names and operators used in ORTHOVEC (part 2)}
+\caption{Procedures names and operators used in \textsc{ORTHOVEC} (part 2)}
 \end{table}
 
 
 \subsection{Test Cases}
 
-To use the REDUCE source version of ORTHOVEC, initiate a REDUCE
-session and then IN the file {\em orthovec.red} containing ORTHOVEC.
-However, it is recommended that for efficiency a compiled fast loading
-version be made and LOADed when required (see Sec.~18 of the REDUCE
+To use the \REDUCE source version of \textsc{ORTHOVEC}, initiate a \REDUCE
+session and then load the package with the command \texttt{load\_package orthovec;}
+(see section~\ref{sec-load} of the \REDUCE
 manual).  If coordinate dependent differential and integral operators
-other than cartesian are needed, then VSTART must be used to reset
+other than cartesian are needed, then \f{vstart} must be used to reset
 coordinates and scale factors.
 
 Six  simple examples are given in the Test Run Output file 
-{\em orthovectest.log} to illustrate the working of ORTHOVEC.  
+\emph{orthovec.rlg} to illustrate the working of \textsc{ORTHOVEC}.  
 The input lines were taken from the file
-{\em orthovectest.red} (the Test Run Input), but could 
+\emph{orthovec.tst} (the Test Run Input), but could 
 equally well be typed in at the Terminal.
 
 \example\index{Orthovec package@\textsc{Orthovec} package!example}
 
 Show that
-\begin{eqnarray*}
-({\bf a}  \times {\bf b}) \cdot ({\bf c} \times {\bf d}) - ({\bf a} 
-\cdot {\bf c})({\bf b} \cdot {\bf d})
- + ({\bf a} \cdot {\bf d})({\bf b} \cdot {\bf c}) \equiv 0
-\end{eqnarray*}
+\begin{equation*}
+(\mathbf{a}  \times \mathbf{b}) \cdot (\mathbf{c} \times \mathbf{d}) - (\mathbf{a} 
+\cdot \mathbf{c})(\mathbf{b} \cdot \mathbf{d})
+ + (\mathbf{a} \cdot \mathbf{d})(\mathbf{b} \cdot \mathbf{c}) \equiv 0
+\end{equation*}
  
 \example\index{Orthovec package@\textsc{Orthovec} package!example}\label{ORTHOVEC:eqm}
 
 Write the equation of motion
-\begin{eqnarray*}
-\frac{\partial {\bf v}}{\partial t} + {\bf v} \cdot {\bf \nabla v} 
-+ {\bf \nabla} p - curl ({\bf B}) \times {\bf B}
-\end{eqnarray*}
+\begin{equation*}
+\frac{\partial \mathbf{v}}{\partial t} + \mathbf{v} \cdot \mathbf{\nabla v} 
++ \mathbf{\nabla} p - curl (\mathbf{B}) \times \mathbf{B}
+\end{equation*}
 in cylindrical coordinates.
 
 \example\index{Orthovec package@\textsc{Orthovec} package!example}\label{ORTHOVEC:taylor}
@@ -529,8 +544,8 @@ fifth order in $z$.
 
 \item $\sin(x)/x$ about $x$ to fifth order.
 
-\item ${\bf v}$ about ${\bf x}=(x,y,z)$ to fifth order, where
-${\bf v} = (x/ \sin(x),(e^y-1)/y,(1+z)^{10})$.
+\item $\mathbf{v}$ about $\mathbf{x}=(x,y,z)$ to fifth order, where
+$\mathbf{v} = (x/ \sin(x),(e^y-1)/y,(1+z)^{10})$.
 \end{itemize}
 
 \example\index{Orthovec package@\textsc{Orthovec} package!example}
@@ -542,21 +557,21 @@ vector Taylor series in example~\ref{ORTHOVEC:taylor}.
 \example\index{Orthovec package@\textsc{Orthovec} package!example}
 
 Evaluate the line integral 
-\begin{eqnarray*}
-\int^{{\bf r}_2}_{{\bf r}_1} {\bf A} \cdot d{\bf r}
-\end{eqnarray*}
-from point ${\bf r}_1 = (1,1,1)$ to point
-${\bf r}_2 = (2,4,8)$ along the path $(x,y,z) = (s, s^2, s^3)$ where
-\begin{eqnarray*}
-{\bf A} = (3x^2 + 5y) {\bf i} - 12xy{\bf j} + 2xyz^2{\bf k}
-\end{eqnarray*}
-and $({\bf i, j, k})$ are unit vectors in the ($x,y,z$) directions.
+\begin{equation*}
+\int^{\mathbf{r}_2}_{\mathbf{r}_1} \mathbf{A} \cdot d\mathbf{r}
+\end{equation*}
+from point $\mathbf{r}_1 = (1,1,1)$ to point
+$\mathbf{r}_2 = (2,4,8)$ along the path $(x,y,z) = (s, s^2, s^3)$ where
+\begin{equation*}
+\mathbf{A} = (3x^2 + 5y) \mathbf{i} - 12xy\mathbf{j} + 2xyz^2\mathbf{k}
+\end{equation*}
+and $(\mathbf{i, j, k})$ are unit vectors in the ($x,y,z$) directions.
 
 \example\index{Orthovec package@\textsc{Orthovec} package!example}
 
 Find the volume $V$ common to the intersecting cylinders $x^2 + y^2 
 = r^2$ and $x^2 + z^2 = r^2$ i.e. evaluate
-\begin{eqnarray*}
+\begin{equation*}
 V = 8 \int^r_0 dx \int^{ub}_0 dy \int^{ub}_0 dz
-\end{eqnarray*}
+\end{equation*}
 where $ub = \overline{\sqrt { r^2 - x^2}}$

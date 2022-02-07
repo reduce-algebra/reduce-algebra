@@ -1,6 +1,10 @@
 
+\index{Koepf, Wolfram}\index{Persons!Koepf, Wolfram}
+\index{Temme, Lisa}\index{Persons!Temme, Lisa}
+
 \subsection[Z-Transform]{$Z$-Transform}
-\ttindex{ZTRANS}
+\ttindextype[ZTRANS]{ztrans}{operator}
+\hypertarget{operator:ZTRANS}{}
   The $Z$-Transform of a sequence $\{f_n\}$ is the discrete analogue
   of the Laplace Transform, and
   \[{\cal Z}\{f_n\} = F(z) = \sum^\infty_{n=0} f_nz^{-n}\;.\]
@@ -9,14 +13,15 @@
 
 
 \begin{tabular}{@{}l@{}l}
-  {\bf SYNTAX:}\ \ {\tt ztrans($f_n$, n,  z)}\ \ \ \ \ \ \ \
+  {\bf SYNTAX:}\ \ {\f{ztrans}($f_n$, n,  z)}\ \ \ \ \ \ \ \
   & where $f_n$ is an expression, and $n$,$z$ \\
   & are identifiers.
 \end{tabular}
 
 
 \subsection[Inverse Z-Transform]{Inverse $Z$-Transform}
-\ttindex{INVZTRANS}
+\ttindextype[ZTRANS]{invztrans}{operator}
+\hypertarget{operator:INVZTRANS}{}
   The calculation of the Laurent coefficients of a regular function
   results in the following inverse formula for the $Z$-Transform:
   \\

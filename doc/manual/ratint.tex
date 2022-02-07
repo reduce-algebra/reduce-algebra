@@ -1,14 +1,19 @@
+\index{Langmead, Neil} \index{Persons!Langmead, Neil}
 
 \subsection{Rational Integration}
 
 This package implements the Horowitz/ Rothstein/ Trager algorithms ~\cite{Geddes:92} for the integration of rational functions in \REDUCE. We work within a field $K$ of characteristic $0$ and functions $p,q \in K[x]$. $K$ is normally the field $Q$ of rational numbers, but not always. These procedures return $\int \frac{p}{q} dx.$
  The aim is to be able to integrate any function of the form $p/q$ in $x$, where $p$ and $q$ are polynomials in the field $Q$. The algorithms used avoid algebraic number extensions wherever possible, and in general, express the integral using the minimal algebraic extension field.
 
-\subsubsection{Syntax of \emph{ratint}}
+ \subsubsection{Syntax of \f{ratint}}
+ \ttindextype[RATINT]{ratint}{operator}
+ \hypertarget{operator:RATINT}{}
 This function has the following syntax:
-\begin{center} \textbf{ratint(p,q,var)} \end{center}
-where $p$ and $q$ are polynomials in var, so that $p/q$ is a rational function in $var$.
-The output of \emph{ratint} is a list of two elements: the first is the polynomial part of the integral, the second is the logarithmic part. The integral is the sum of these parts.
+\begin{syntax}
+  \texttt{ratint(\meta{p},\meta{q},\meta{var})}
+\end{syntax}
+where \meta{p} and \meta{q} are polynomials in \meta{var}, so that $p/q$ is a rational function in $var$.
+The output of \f{ratint} is a list of two elements: the first is the polynomial part of the integral, the second is the logarithmic part. The integral is the sum of these parts.
 \subsubsection{Examples}
 Consider the following examples in \REDUCE (the meaning of the \f{log\_sum} operator will be explained in the next section).
 \begin{verbatim}
@@ -158,7 +163,10 @@ return(integral) \\
 end
 \end{flushleft}
 
-\subsection{The log\_sum operator}
+\subsection{The \texttt{log\_sum} operator}
+
+\ttindextype[RATINT]{log\_sum}{operator}
+\hypertarget{operator:LOG_SUM}{}
 The algorithms above returns a sum of terms of the form
 \[ \sum_{\alpha \mid R(\alpha)=0} \log(S(\alpha,x)), \]
 
@@ -205,9 +213,9 @@ log\_sum(\alpha,\alpha^2  -\alpha -\frac{1}{4},0,\log( - 2\alpha x^2  - 2\alpha 
 \[ \int \frac{1}{x^3+x+1} \, dx = log\_sum(\beta,\beta^3-\frac{3}{31}\beta^2-\frac{1}{31},0,\beta \log(-\frac{62}{9}\beta^2+\frac{31}{9} \beta +x+\frac{4}{9})). \]
 
 \subsection{Options}
-There are several alternative forms that the answer to the integration problem can take. One output is the $log\_sum$ form shown in the examples above. There is an option with this package to convert this to a ``normal'' sum of logarithms in the case when the degree of $eqn$ in $\alpha$ is two, and $\alpha$ can be expressed in surds. To do this, use the function \emph{convert}, which has the following syntax:
+There are several alternative forms that the answer to the integration problem can take. One output is the $log\_sum$ form shown in the examples above. There is an option with this package to convert this to a ``normal'' sum of logarithms in the case when the degree of $eqn$ in $\alpha$ is two, and $\alpha$ can be expressed in surds. To do this, use the function \f{convert}, which has the following syntax:
 \begin{center}  convert(exp) \end{center}
-If exp is free of $log\_sum$ terms, then $\exp$ itself is returned. If $\exp$ contains $log\_sum$ terms, then $\alpha$ is represented as surds, and substituted into the $log\_sum$ expression. For example, using the last example, we have in \REDUCE:
+If exp is free of $log\_sum$ terms, then $exp$ itself is returned. If $\exp$ contains $log\_sum$ terms, then $\alpha$ is represented as surds, and substituted into the $log\_sum$ expression. For example, using the last example, we have in \REDUCE:
 \begin{verbatim}
 2: ratint(a,b,x);
 
@@ -240,10 +248,13 @@ If exp is free of $log\_sum$ terms, then $\exp$ itself is returned. If $\exp$ co
       + log(sqrt(2)*x  + sqrt(2)*x + x  - x - 1))
 \end{verbatim}
 
-\subsubsection{LogtoAtan function}
-The user could then combine these to form a more elegant answer, using the switch combinelogs if one so wished. Another option is to convert complex logarithms to real arctangents ~\cite{Bronstein:97}, which is recommended if definite integration is the goal. This is implemented in \REDUCE via a function \emph{convert\_log}, which has the following syntax:
+\subsubsection{\f{LogtoAtan} function}
+The user could then combine these to form a more elegant answer, using the switch combinelogs if one so wished. Another option is to convert complex logarithms to real arctangents ~\cite{Bronstein:97}, which is recommended if definite integration is the goal. This is implemented in \REDUCE via a function \f{convert\_log}, which has the following syntax:
+\begin{syntax}
+  \texttt{convert\_log(\meta{exp})}
+\end{syntax}
 \begin{center} \textbf{convert\_log(exp)}, \end{center}
-where $\exp$ is any $log\_sum$ expression.
+where \meta{exp} is any expression containing $log\_sum$ terms.
 
 The procedure to convert complex logarithms to real arctangents is based on an algorithm by Rioboo. Here is what it does:
 
@@ -268,8 +279,6 @@ Another example in \REDUCE is given below:
 \begin{verbatim}
 1: ratint(1,x^2+1,x);
 
-*** Domain mode rational changed to arnum
-
                     2    1
 {0,log_sum(beta,beta  + ---,0,log(2*beta*x - 1)*beta)}
                          4
@@ -291,7 +300,7 @@ log_sum(beta,beta  + ---,0,log(2*beta*x - 1)*beta)
 
 logtoAtan(-x,1,x);
 
-2*atan(x)
+ - 2*atan(x)
 \end{verbatim}
 
 \subsection{Hermite's method}
@@ -300,7 +309,9 @@ The package also implements Hermite's method to reduce the integral into its pol
 For a complete explanation of this and the other algorithms used in this package, including the theoretical justification and proofs, please consult ~\cite{Geddes:92}.
 
 \subsection{Tracing the \emph{ratint} program}
-The package includes a facility to trace in some detail the inner workings of the \emph{ratint} program. Messages are given at the key stages of the algorithm, together with the results obtained. These messages are displayed when the switch \emph{traceratint} is on, which is done in \REDUCE with the command
+The package includes a facility to trace in some detail the inner workings of the \f{ratint} program. Messages are given at the key stages of the algorithm, together with the results obtained. These messages are displayed when the switch \sw{traceratint} is on, which is done in \REDUCE with the command
+\ttindexswitch[RATINT]{traceratint}
+\hypertarget{switch:TRACERATINT}{}
 \begin{verbatim}
 on traceratint;
 \end{verbatim}
