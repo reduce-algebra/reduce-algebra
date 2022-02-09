@@ -32,28 +32,29 @@ algebraic;
 
 %######################################################################
 %DESCENDING LANDEN TRANSFORMATION
+% Moved to efnumeric.red by AB, Feb 2022
 
-procedure landentrans(phi,alpha);
-begin scalar alpha1, phi1, alist, plist, tol;
-   tol := 10.0^-(symbolic !:prec!:);
-
-   alist :=  list alpha;
-   plist :=  list phi;
-
-   while alpha > tol do <<
-       alpha1 := asin(2/(1+cos alpha) -1);
-       phi1 := phi + (atan(cos(alpha)*tan(phi)))
-                     + floor((floor(phi/(pi/2))+1)/2)*pi;
-
-       alist := alpha1 . alist;
-       plist := phi1.plist;
-
-       alpha := alpha1;
-       phi   := phi1;
-   >>;
-
-   return list(reverse plist, reverse alist)
-end;
+%% procedure landentrans(phi,alpha);
+%% begin scalar alpha1, phi1, alist, plist, tol;
+%%    tol := 10.0^-(symbolic !:prec!:);
+%% 
+%%    alist :=  list alpha;
+%%    plist :=  list phi;
+%% 
+%%    while alpha > tol do <<
+%%        alpha1 := asin(2/(1+cos alpha) -1);
+%%        phi1 := phi + (atan(cos(alpha)*tan(phi)))
+%%                      + floor((floor(phi/(pi/2))+1)/2)*pi;
+%% 
+%%        alist := alpha1 . alist;
+%%        plist := phi1.plist;
+%% 
+%%        alpha := alpha1;
+%%        phi   := phi1;
+%%    >>;
+%% 
+%%    return list(reverse plist, reverse alist)
+%% end;
 
 %######################################################################
 %VALUE OF EllipticF(phi,m)
@@ -183,7 +184,7 @@ end;
 % EllipticE(phi, m) definition     Legendre's form of elliptic integral
 % ============================     of the second kind.
 
-% operator elliptice; % already defined in sfellip.red
+% operator elliptice; % already defined in efjacobi.red
 
 jacobidrules :=
 {
@@ -394,7 +395,7 @@ jacobizetarules :=
 }$
 let jacobizetarules;
 
-% Support for theta functions moved to a separate file (sftheta.red).
+% Support for theta functions moved to a separate file (eftheta.red).
 
 endmodule;
 end;

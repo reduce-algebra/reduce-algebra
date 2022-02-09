@@ -1,66 +1,21 @@
-% out "ellipfn.rlg";
-
-% load_package ellipfn;
-
-% test of facilities  of elliptic functions package
-% Author: Alan Barnes   (Alan.Barnes45678@gmail.com) July 2019
-% Modified August 2019. Tests of theta functions moved to sftheta.tst -- 2021
-% Renamed (was sfellip.tst) and moved to a new package ellipfn, December 2021
-% by Alan Barnes
-% Renamed ellipfn.tst and incorporated test from eftheta.tst and efweier.tst
-% by Alan Barnes  January 2022
-
-% periodic properties and quarter period shifts
-
-jacobisn(u+2*elliptick(k),k);
-
 
  - sn(u,k)
 
-jacobisn(u+2*i*elliptick!'(k),k);
-
-
 sn(u,k)
 
-jacobisn(u+elliptick(k),k);
-
-
 cd(u,k)
-
-jacobisn(u+i*elliptick!'(k),k);
-
 
  ns(u,k)
 ---------
     k
 
-
-jacobizeta(u+2*elliptick(k),k);
-
-
 Z(u,k)
-
-jacobie(u+14*elliptick(k),k);
-
 
 14*E(k) + E_j(u,k)
 
-
-% derivatives and consistency checks
-
-df(jacobicn(u,k),u);
-
-
  - dn(u,k)*sn(u,k)
 
-df(jacobisn(u,k)^2+jacobicn(u,k)^2,u);
-
-
 0
-
-
-df(jacobidn(u,k),k);
-
 
                                            2
  sn(u,k)*k*( - cn(u,k)*E_j(u,k) - cn(u,k)*k *u + cn(u,k)*u + dn(u,k)*sn(u,k))
@@ -68,25 +23,14 @@ df(jacobidn(u,k),k);
                                      2
                                     k  - 1
 
-df(k^2*jacobisn(u,k)^2+jacobidn(u,k)^2,k);
-
-
           2              2  2          2    2
  2*sn(u,k) *k*( - cn(u,k) *k  + dn(u,k)  + k  - 1)
 ---------------------------------------------------
                        2
                       k  - 1
 
-% vanishes by Pythagorean identity for dn and cn
-
-df(jacobie(u,k),u);
-
-
        2
 dn(u,k)
-
-df(jacobie(u,k),k);
-
 
            2                                             2  2            2
  k*(cn(u,k) *E_j(u,k) - cn(u,k)*dn(u,k)*sn(u,k) - sn(u,k) *k *u + sn(u,k) *u)
@@ -94,1789 +38,773 @@ df(jacobie(u,k),k);
                                      2
                                     k  - 1
 
-
-df(elliptick(k),k);
-
-
                  2
   - E(k) - K(k)*k  + K(k)
 --------------------------
             2
         k*(k  - 1)
 
-df(elliptice(k),k);
-
-
  E(k) - K(k)
 -------------
       k
 
-
-% check a well-known identity
-df(elliptice(k)*elliptick!'(k)+elliptice!'(k)*elliptick(k)-elliptick(k)*elliptick!'(k),k);
-
-
 0
-
-
-df(jacobizeta(u,k),u);
-
 
                        2
   - E(k) + K(k)*dn(u,k)
 -------------------------
           K(k)
 
-df(elliptice(u,k),u);
-
-
               2  2
 sqrt( - sin(u) *k  + 1)
-
-df(elliptice(u,k),k);
-
 
  E(u,k) - F(u,k)
 -----------------
         k
 
-
-% quasi-periodicity
-elliptice(u+pi/2,k);
-
-
 E(k) + E(u,k)
 
-ellipticf(u-5*pi/2,k);
-
-
 F(u,k) - 5*K(k)
-
-elliptice(u+11*pi/3,k);
-
 
    pi + 6*u
 E(----------,k) + 7*E(k)
       6
 
-
-% inverse Jacobian elliptic functions: special cases and derivatives
-
-arcsn(x,0);
-
-
 asin(x)
-
-arcdn(x,1);
-
 
 asech(x)
 
-arcsn(-x,k);
-
-
  - arcsn(x,k)
-
-arccn(-x,k);
-
 
  - arccn(x,k) + 2*K(k)
 
-arccs(-x,k);
+ - arccs(x,k)
 
-
- - arccs(x,k) + 2*K(k)
-
-arcds(-x,k);
-
-
- - arcds(x,k) + 2*K(k)
-
-arcsd(-x,k);
-
+ - arcds(x,k)
 
  - arcsd(x,k)
-
-df(arccn(x,k),x);
-
 
                   - 1
 --------------------------------------
        2  2    2               2
  sqrt(k *x  - k  + 1)*sqrt( - x  + 1)
 
-df(arcdc(x,k),x);
-
-
                1
 -------------------------------
           2    2        2
  sqrt( - k  + x )*sqrt(x  - 1)
 
-
-jacobidn(arcdn(x^2,k),k);
-
-
  2
 x
 
-
-% theta functions tests from former sftheta.tst
-% added January 2022
-
-% periodicity, quasi-periodicity and zeroes
-elliptictheta1(z+6*pi, tau);
-
-
 theta1(z,tau)
-
-elliptictheta1(z+7*pi, tau);
-
 
  - theta1(z,tau)
 
-elliptictheta2(z+7*pi/2, tau);
-
-
 theta1(z,tau)
 
-elliptictheta2(z+9*pi/2, tau);
-
-
  - theta1(z,tau)
-
-elliptictheta4(z+9*pi, tau);
-
 
 theta4(z,tau)
 
-elliptictheta4(z+9*pi/2, tau);
-
-
 theta3(z,tau)
 
-
-elliptictheta1(6*pi+7*pi*tau, tau);
-
-
 0
-
-s1:=elliptictheta1(z+5*pi/2+3*pi*tau, tau);
-
 
           theta2(z,tau)
 s1 := ---------------------
         9*i*pi*tau + 6*i*z
        e
 
-elliptictheta2(6*pi+7*pi*tau, tau);
-
-
  theta2(0,tau)
 ---------------
   49*i*pi*tau
  e
 
-elliptictheta2(7/2*pi+7*pi*tau, tau);
-
-
 0
 
-
-elliptictheta4(6*pi+7/2*pi*tau, tau);
-
-
 0
-
-s2:=elliptictheta4(z+6*pi+7/2*pi*tau, tau);
-
 
            - theta1(z,tau)*i
 s2 := ---------------------------
         (49*i*pi*tau + 28*i*z)/4
        e
 
-elliptictheta3(z+6*pi+7/2*pi*tau, tau);
-
-
        theta2(z,tau)
 ---------------------------
   (49*i*pi*tau + 28*i*z)/4
  e
 
-elliptictheta3(7*pi/2+3/2*pi*tau, tau);
-
-
 0
-
-
-elliptictheta1(-z,tau);
-
 
  - theta1(z,tau)
 
-elliptictheta3(-z,tau);
-
-
 theta3(z,tau)
-
-elliptictheta3(z,tau+1);
-
 
 theta4(z,tau)
 
-elliptictheta1(z,tau-1);
-
-
  (7*i*pi)/4
 e          *theta1(z,tau)
-
-elliptictheta2(z,-1/tau);
-
 
          2
  (i*tau*z )/pi
 e             *sqrt( - i*tau)*theta4(tau*z,tau)
 
-
-% tests of weierstrassian elliptic functions from
-% former file sfweier.tst added by AB January 2022
-
-% periodicity, quasi-periodicity, zeroes etc.
-weierstrass(u+2v+4w,v,w);
-
-
 P_w(u,v,w)
-
-a1:=weierstrass(u-2v-6w,v,w);
-
 
 a1 := P_w(u,v,w)
 
-a2:=weierstrass(u+2v+3w,v,w);
-
-
 a2 := P_w(u + w,v,w)
-
-a3:=weierstrass(u+5v+4w,v,w);
-
 
 a3 := P_w(u + v,v,w)
 
-a4:=weierstrass(u+3v+5w,v,w);
-
-
 a4 := P_w(u + v + w,v,w)
-
-weierstrass(2v+3w,v,w);
-
 
 e3(v,w)
 
-weierstrass(5v+2w,v,w);
-
-
 e1(v,w)
 
-weierstrass(3v+5w,v,w);
-
-
 e2(v,w)
-
-
-weierstrass(-2u^3,v,w);
-
 
        3
 P_w(2*u ,v,w)
 
-m :=6;
-
-
 m := 6
-
-weierstrass(m*u,m*v,m*w);
-
 
  P_w(u,v,w)
 ------------
      36
 
-
-weierstrassZeta(u+2v+4w,v,w);
-
-
 2*eta1(v,w) + 4*eta3(v,w) + zeta_w(u,v,w)
-
-b1:=weierstrassZeta(u-2v-6w,v,w);
-
 
 b1 :=  - 2*eta1(v,w) - 6*eta3(v,w) + zeta_w(u,v,w)
 
-b2:=weierstrassZeta(u+2v+3w,v,w);
-
-
 b2 := 2*eta1(v,w) + 2*eta3(v,w) + zeta_w(u + w,v,w)
-
-b3:=weierstrassZeta(u+5v+4w,v,w);
-
 
 b3 := 4*eta1(v,w) + 4*eta3(v,w) + zeta_w(u + v,v,w)
 
-b4:=weierstrassZeta(u+3v+5w,v,w);
-
-
 b4 := 2*eta1(v,w) + 4*eta3(v,w) + zeta_w(u + v + w,v,w)
-
-weierstrassZeta(2v+3w,v,w);
-
 
 2*eta1(v,w) + 3*eta3(v,w)
 
-weierstrassZeta(5v+4w,v,w);
-
-
 5*eta1(v,w) + 4*eta3(v,w)
-
-weierstrassZeta(3v+5w,v,w);
-
 
 3*eta1(v,w) + 5*eta3(v,w)
 
-
-weierstrassZeta(-u+2w+4v,v,w);
-
-
 4*eta1(v,w) + 2*eta3(v,w) - zeta_w(u,v,w)
 
-m:= -5;
-
-
 m := -5
-
-weierstrassZeta(m*u,m*v,m*w);
-
 
   - zeta_w(u,v,w)
 ------------------
         5
 
-
-
-sigma(u+2v,v,w);
-
-
     2*eta1(v,w)*u + 2*eta1(v,w)*v
- - e                             *sigma(u,v,w)
-
-sigma(u-2w,v,w);
-
+ - e                             *weierstrass_sigma(u,v,w)
 
      2*eta3(v,w)*w
-  - e             *sigma(u,v,w)
---------------------------------
-          2*eta3(v,w)*u
-         e
-
-sigma(u+2v+2w,v,w);
-
+  - e             *weierstrass_sigma(u,v,w)
+--------------------------------------------
+                2*eta3(v,w)*u
+               e
 
  2*eta1(v,w)*u + 2*eta1(v,w)*v + 4*eta1(v,w)*w + 2*eta3(v,w)*u + 2*eta3(v,w)*w
 e
 
-*sigma(u,v,w)
+*weierstrass_sigma(u,v,w)
 
-c1:=sigma(u-2v-6w,v,w);
+c1 := 
 
-
-        2*eta1(v,w)*v + 12*eta1(v,w)*w + 18*eta3(v,w)*w
-       e                                               *sigma(u,v,w)
-c1 := ---------------------------------------------------------------
+  2*eta1(v,w)*v + 12*eta1(v,w)*w + 18*eta3(v,w)*w
+ e                                               *weierstrass_sigma(u,v,w)
+---------------------------------------------------------------------------
                        2*eta1(v,w)*u + 6*eta3(v,w)*u
                       e
 
-c2:=sigma(u+2v+3w,v,w);
-
-
 c2 := e**(2*eta1(v,w)*u + 2*eta1(v,w)*v + 6*eta1(v,w)*w + 2*eta3(v,w)*u
 
-           + 4*eta3(v,w)*w)*sigma(u + w,v,w)
-
-c3:=sigma(u+5v+4w,v,w);
-
+           + 4*eta3(v,w)*w)*weierstrass_sigma(u + w,v,w)
 
 c3 := e**(4*eta1(v,w)*u + 12*eta1(v,w)*v + 16*eta1(v,w)*w + 4*eta3(v,w)*u
 
-           + 4*eta3(v,w)*v + 8*eta3(v,w)*w)*sigma(u + v,v,w)
-
-c4:=sigma(u+3v+5w,v,w);
-
+           + 4*eta3(v,w)*v + 8*eta3(v,w)*w)*weierstrass_sigma(u + v,v,w)
 
 c4 :=  - e**(2*eta1(v,w)*u + 4*eta1(v,w)*v + 10*eta1(v,w)*w + 4*eta3(v,w)*u
 
-              + 4*eta3(v,w)*v + 12*eta3(v,w)*w)*sigma(u + v + w,v,w)
-
-sigma(2v+4w,v,w);
-
+              + 4*eta3(v,w)*v + 12*eta3(v,w)*w)*weierstrass_sigma(u + v + w,v,w)
 
 0
 
-sigma(-2v-4w,v,w);
-
-
 0
-
-sigma(2v+w,v,w);
-
 
     2*eta1(v,w)*v + 2*eta1(v,w)*w
- - e                             *sigma(w,v,w)
-
-sigma(v+4w,v,w);
-
+ - e                             *weierstrass_sigma(w,v,w)
 
  4*eta3(v,w)*v + 8*eta3(v,w)*w
-e                             *sigma(v,v,w)
-
-sigma(3v+w,v,w);
-
+e                             *weierstrass_sigma(v,v,w)
 
     4*eta1(v,w)*v + 2*eta1(v,w)*w
- - e                             *sigma(v + w,v,w)
-
-
-sigma(-u+2v+4w,v,w);
-
+ - e                             *weierstrass_sigma(v + w,v,w)
 
   2*eta1(v,w)*v + 8*eta1(v,w)*w + 8*eta3(v,w)*w
- e                                             *sigma(u,v,w)
--------------------------------------------------------------
-                2*eta1(v,w)*u + 4*eta3(v,w)*u
-               e
-
-
-sigma1(u+2v,v,w);
-
+ e                                             *weierstrass_sigma(u,v,w)
+-------------------------------------------------------------------------
+                      2*eta1(v,w)*u + 4*eta3(v,w)*u
+                     e
 
     2*eta1(v,w)*u + 2*eta1(v,w)*v
- - e                             *sigma1(u,v,w)
-
-sigma1(u-2w,v,w);
-
+ - e                             *weierstrass_sigma1(u,v,w)
 
   2*eta3(v,w)*w
- e             *sigma1(u,v,w)
-------------------------------
-         2*eta3(v,w)*u
-        e
-
-sigma1(u+2v+2w,v,w);
-
+ e             *weierstrass_sigma1(u,v,w)
+------------------------------------------
+               2*eta3(v,w)*u
+              e
 
  - 
 
  2*eta1(v,w)*u + 2*eta1(v,w)*v + 4*eta1(v,w)*w + 2*eta3(v,w)*u + 2*eta3(v,w)*w
 e
 
-*sigma1(u,v,w)
+*weierstrass_sigma1(u,v,w)
 
-d1:=sigma1(u-2v-6w,v,w);
+d1 := 
 
-
-           2*eta1(v,w)*v + 12*eta1(v,w)*w + 18*eta3(v,w)*w
-        - e                                               *sigma1(u,v,w)
-d1 := -------------------------------------------------------------------
+     2*eta1(v,w)*v + 12*eta1(v,w)*w + 18*eta3(v,w)*w
+  - e                                               *weierstrass_sigma1(u,v,w)
+-------------------------------------------------------------------------------
                          2*eta1(v,w)*u + 6*eta3(v,w)*u
                         e
-
-d2:=sigma1(u+2v+3w,v,w);
-
 
 d2 :=  - e**(2*eta1(v,w)*u + 2*eta1(v,w)*v + 6*eta1(v,w)*w + 2*eta3(v,w)*u
 
-              + 4*eta3(v,w)*w)*sigma1(u + w,v,w)
-
-d3:=sigma1(u+5v+4w,v,w);
-
+              + 4*eta3(v,w)*w)*weierstrass_sigma1(u + w,v,w)
 
 d3 := e**(4*eta1(v,w)*u + 12*eta1(v,w)*v + 16*eta1(v,w)*w + 4*eta3(v,w)*u
 
-           + 4*eta3(v,w)*v + 8*eta3(v,w)*w)*sigma1(u + v,v,w)
-
-d4:=sigma1(u+3v+5w,v,w);
-
+           + 4*eta3(v,w)*v + 8*eta3(v,w)*w)*weierstrass_sigma1(u + v,v,w)
 
 d4 :=  - e**(2*eta1(v,w)*u + 4*eta1(v,w)*v + 10*eta1(v,w)*w + 4*eta3(v,w)*u
 
-              + 4*eta3(v,w)*v + 12*eta3(v,w)*w)*sigma1(u + v + w,v,w)
+              + 4*eta3(v,w)*v + 12*eta3(v,w)*w)
 
-sigma1(2v+4w,v,w);
-
-
-    2*eta1(v,w)*v + 8*eta1(v,w)*w + 8*eta3(v,w)*w
- - e
-
-sigma1(-2v-4w,v,w);
-
+      *weierstrass_sigma1(u + v + w,v,w)
 
     2*eta1(v,w)*v + 8*eta1(v,w)*w + 8*eta3(v,w)*w
  - e
 
-sigma1(2v+w,v,w);
-
+    2*eta1(v,w)*v + 8*eta1(v,w)*w + 8*eta3(v,w)*w
+ - e
 
     2*eta1(v,w)*v + 2*eta1(v,w)*w
- - e                             *sigma1(w,v,w)
-
-sigma1(v+4w,v,w);
-
+ - e                             *weierstrass_sigma1(w,v,w)
 
 0
 
-sigma1(3v+w,v,w);
-
-
     4*eta1(v,w)*v + 2*eta1(v,w)*w
- - e                             *sigma1(v + w,v,w)
-
-sigma1(-u+2v+4w,v,w);
-
+ - e                             *weierstrass_sigma1(v + w,v,w)
 
      2*eta1(v,w)*v + 8*eta1(v,w)*w + 8*eta3(v,w)*w
-  - e                                             *sigma1(u,v,w)
------------------------------------------------------------------
-                  2*eta1(v,w)*u + 4*eta3(v,w)*u
-                 e
-
-
-sigma2(u+2v,v,w);
-
+  - e                                             *weierstrass_sigma1(u,v,w)
+-----------------------------------------------------------------------------
+                        2*eta1(v,w)*u + 4*eta3(v,w)*u
+                       e
 
  2*eta1(v,w)*u + 2*eta1(v,w)*v
-e                             *sigma2(u,v,w)
-
-sigma2(u-2w,v,w);
-
+e                             *weierstrass_sigma2(u,v,w)
 
   2*eta3(v,w)*w
- e             *sigma2(u,v,w)
-------------------------------
-         2*eta3(v,w)*u
-        e
-
-sigma2(u+2v+2w,v,w);
-
+ e             *weierstrass_sigma2(u,v,w)
+------------------------------------------
+               2*eta3(v,w)*u
+              e
 
  2*eta1(v,w)*u + 2*eta1(v,w)*v + 4*eta1(v,w)*w + 2*eta3(v,w)*u + 2*eta3(v,w)*w
 e
 
-*sigma2(u,v,w)
+*weierstrass_sigma2(u,v,w)
 
-f1:=sigma2(u-2v-6w,v,w);
+f1 := 
 
-
-        2*eta1(v,w)*v + 12*eta1(v,w)*w + 18*eta3(v,w)*w
-       e                                               *sigma2(u,v,w)
-f1 := ----------------------------------------------------------------
+  2*eta1(v,w)*v + 12*eta1(v,w)*w + 18*eta3(v,w)*w
+ e                                               *weierstrass_sigma2(u,v,w)
+----------------------------------------------------------------------------
                         2*eta1(v,w)*u + 6*eta3(v,w)*u
                        e
 
-f2:=sigma2(u+2v+3w,v,w);
-
-
 f2 := e**(2*eta1(v,w)*u + 2*eta1(v,w)*v + 6*eta1(v,w)*w + 2*eta3(v,w)*u
 
-           + 4*eta3(v,w)*w)*sigma2(u + w,v,w)
-
-f3:=sigma2(u+5v+4w,v,w);
-
+           + 4*eta3(v,w)*w)*weierstrass_sigma2(u + w,v,w)
 
 f3 := e**(4*eta1(v,w)*u + 12*eta1(v,w)*v + 16*eta1(v,w)*w + 4*eta3(v,w)*u
 
-           + 4*eta3(v,w)*v + 8*eta3(v,w)*w)*sigma2(u + v,v,w)
-
-f4:=sigma2(u+3v+5w,v,w);
-
+           + 4*eta3(v,w)*v + 8*eta3(v,w)*w)*weierstrass_sigma2(u + v,v,w)
 
 f4 := e**(2*eta1(v,w)*u + 4*eta1(v,w)*v + 10*eta1(v,w)*w + 4*eta3(v,w)*u
 
-           + 4*eta3(v,w)*v + 12*eta3(v,w)*w)*sigma2(u + v + w,v,w)
-
-sigma2(2v+4w,v,w);
-
+           + 4*eta3(v,w)*v + 12*eta3(v,w)*w)*weierstrass_sigma2(u + v + w,v,w)
 
  2*eta1(v,w)*v + 8*eta1(v,w)*w + 8*eta3(v,w)*w
 e
 
-sigma2(-2v-4w,v,w);
-
-
  2*eta1(v,w)*v + 8*eta1(v,w)*w + 8*eta3(v,w)*w
 e
-
-sigma2(2v+w,v,w);
-
 
  2*eta1(v,w)*v + 2*eta1(v,w)*w
-e                             *sigma2(w,v,w)
-
-sigma2(v+4w,v,w);
-
+e                             *weierstrass_sigma2(w,v,w)
 
  4*eta3(v,w)*v + 8*eta3(v,w)*w
-e                             *sigma2(v,v,w)
-
-sigma2(3v+w,v,w);
-
+e                             *weierstrass_sigma2(v,v,w)
 
 0
 
-sigma2(-u+2v+4w,v,w);
-
-
   2*eta1(v,w)*v + 8*eta1(v,w)*w + 8*eta3(v,w)*w
- e                                             *sigma2(u,v,w)
---------------------------------------------------------------
-                 2*eta1(v,w)*u + 4*eta3(v,w)*u
-                e
-
-
-sigma3(u+2v,v,w);
-
+ e                                             *weierstrass_sigma2(u,v,w)
+--------------------------------------------------------------------------
+                       2*eta1(v,w)*u + 4*eta3(v,w)*u
+                      e
 
  2*eta1(v,w)*u + 2*eta1(v,w)*v
-e                             *sigma3(u,v,w)
-
-sigma3(u-2w,v,w);
-
+e                             *weierstrass_sigma3(u,v,w)
 
      2*eta3(v,w)*w
-  - e             *sigma3(u,v,w)
----------------------------------
-          2*eta3(v,w)*u
-         e
-
-sigma3(u+2v+2w,v,w);
-
+  - e             *weierstrass_sigma3(u,v,w)
+---------------------------------------------
+                2*eta3(v,w)*u
+               e
 
  - 
 
  2*eta1(v,w)*u + 2*eta1(v,w)*v + 4*eta1(v,w)*w + 2*eta3(v,w)*u + 2*eta3(v,w)*w
 e
 
-*sigma3(u,v,w)
+*weierstrass_sigma3(u,v,w)
 
-g1:=sigma3(u-2v-6w,v,w);
+g1 := 
 
-
-           2*eta1(v,w)*v + 12*eta1(v,w)*w + 18*eta3(v,w)*w
-        - e                                               *sigma3(u,v,w)
-g1 := -------------------------------------------------------------------
+     2*eta1(v,w)*v + 12*eta1(v,w)*w + 18*eta3(v,w)*w
+  - e                                               *weierstrass_sigma3(u,v,w)
+-------------------------------------------------------------------------------
                          2*eta1(v,w)*u + 6*eta3(v,w)*u
                         e
 
-g2:=sigma3(u+2v+3w,v,w);
-
-
 g2 :=  - e**(2*eta1(v,w)*u + 2*eta1(v,w)*v + 6*eta1(v,w)*w + 2*eta3(v,w)*u
 
-              + 4*eta3(v,w)*w)*sigma3(u + w,v,w)
-
-g3:=sigma3(u+5v+4w,v,w);
-
+              + 4*eta3(v,w)*w)*weierstrass_sigma3(u + w,v,w)
 
 g3 := e**(4*eta1(v,w)*u + 12*eta1(v,w)*v + 16*eta1(v,w)*w + 4*eta3(v,w)*u
 
-           + 4*eta3(v,w)*v + 8*eta3(v,w)*w)*sigma3(u + v,v,w)
-
-g4:=sigma3(u+3v+5w,v,w);
-
+           + 4*eta3(v,w)*v + 8*eta3(v,w)*w)*weierstrass_sigma3(u + v,v,w)
 
 g4 := e**(2*eta1(v,w)*u + 4*eta1(v,w)*v + 10*eta1(v,w)*w + 4*eta3(v,w)*u
 
-           + 4*eta3(v,w)*v + 12*eta3(v,w)*w)*sigma3(u + v + w,v,w)
-
-sigma3(2v+4w,v,w);
-
+           + 4*eta3(v,w)*v + 12*eta3(v,w)*w)*weierstrass_sigma3(u + v + w,v,w)
 
  2*eta1(v,w)*v + 8*eta1(v,w)*w + 8*eta3(v,w)*w
 e
 
-sigma3(-2v-4w,v,w);
-
-
  2*eta1(v,w)*v + 8*eta1(v,w)*w + 8*eta3(v,w)*w
 e
-
-sigma3(2v+w,v,w);
-
 
 0
 
-sigma3(v+4w,v,w);
-
-
  4*eta3(v,w)*v + 8*eta3(v,w)*w
-e                             *sigma3(v,v,w)
-
-sigma3(3v+w,v,w);
-
+e                             *weierstrass_sigma3(v,v,w)
 
  4*eta1(v,w)*v + 2*eta1(v,w)*w
-e                             *sigma3(v + w,v,w)
-
-sigma3(-u+2v+4w,v,w);
-
+e                             *weierstrass_sigma3(v + w,v,w)
 
   2*eta1(v,w)*v + 8*eta1(v,w)*w + 8*eta3(v,w)*w
- e                                             *sigma3(u,v,w)
---------------------------------------------------------------
-                 2*eta1(v,w)*u + 4*eta3(v,w)*u
-                e
-
-
-df(weierstrass1(u, v, w), u);
-
+ e                                             *weierstrass_sigma3(u,v,w)
+--------------------------------------------------------------------------
+                       2*eta1(v,w)*u + 4*eta3(v,w)*u
+                      e
 
                     3
  - sqrt(4*P_w(u|v,w)  - P_w(u|v,w)*v - w)
-
-weierstrass1(2*u, v, w);
-
 
  P_w(u|16*v,64*w)
 ------------------
         4
 
-weierstrass1(i*u, v, w);
-
-
  - P_w(u|v, - w)
-
-
-on complex;
-
-
-m :=6i;
-
 
 m := 6*i
 
-sigma(m*u,m*v,m*w);
-
-
-6*i*sigma(u,v,w)
-
-
-m :=-6i;
-
+6*i*weierstrass_sigma(u,v,w)
 
 m :=  - 6*i
 
-sigma1(m*u,m*v,m*w);
-
-
-sigma1(u,v,w)
-
-
-m :=6+i;
-
+weierstrass_sigma1(u,v,w)
 
 m := 6 + i
 
-sigma2(m*u,m*v,m*w);
-
-
-sigma2(u,v,w)
-
-
-m :=-(6+i);
-
+weierstrass_sigma2(u,v,w)
 
 m :=  - (6 + i)
 
-sigma3(m*u,m*v,m*w);
-
-
-sigma3(u,v,w)
-
-
-off complex;
-
-
-
-% complete elliptic integrals of 1st kind
-on rounded;
-
-
-
-K := elliptick(0.4);
-
+weierstrass_sigma3(u,v,w)
 
 k := 1.63999986586
 
-K!' := elliptick!'(0.4);
-
-
 k' := 2.35926355475
-
-
-% complete elliptic integrals of 2nd kind
-EE := elliptice(0.4);
-
 
 ee := 1.50594161236
 
-EE!' := elliptice!'(0.4);
-
-
 ee' := 1.15065562978
-
-
-% Jacobi Zeta function
-u := 0.6;
-
 
 u := 0.6
 
-Z:= jacobizeta(u, 0.4);
-
-
 z := 0.0384326240009
-
-E2 := jacobie(u, 0.4);
-
 
 e2 := 0.589386917488
 
-
-% checks
-EE - jacobie(K, 0.4);
-
+0
 
 0
 
-
-EE * K!' + EE!' * K - K * K!' - pi/2;
-
-
 0
-
-
-Z - E2 + EE*u/K;
-
-
-0
-
-
-% Jacobi functions
-m := 0.8;
-
 
 m := 0.8
 
-
-s := jacobisn(u,m);
-
-
 s := 0.546968794688
-
-c :=  jacobicn(u,m);
-
 
 c := 0.837152995358
 
-d :=  jacobidn(u,m);
-
-
 d := 0.899181899333
 
-s^2+c^2;
-
-
 1
 
-d^2+m^2*s^2;
-
-
 1
-
-
-u := 1/2+i/3;
-
 
 u := 0.333333333333*i + 0.5
 
-s := jacobisn(u,m);
-
-
 s := 0.277063460865*i + 0.505246491282
-
-c :=  jacobicn(u,m);
-
 
 c :=  - 0.152311999241*i + 0.91906968697
 
-d :=  jacobidn(u,m);
-
-
 d :=  - 0.0947148006035*i + 0.945898824328
 
-s^2+c^2;
-
+1
 
 1
 
-d^2+m^2*s^2;
+v := 0.57539770089
 
+0.531969494445
 
-1
+w := 0.575679225813
 
+0.00028152492314
 
-% inverse Jacobi functions
-v := arcsn(0.5,0.7);
+0.0100004186627
 
+0.00999999863641
 
-v := 0.53536740276
+w := 3.01695404081
 
-jacobisn(v,0.7);
+ - 0.627032365872
 
+w :=  - 0.943560050934
 
-0.5
-
-w := arcns(2.0,0.7);
-
-
-w := 0.53536740276
-
-w-v;
-
-
-0
-
-
-arcds(100.0, 0.4);
-
-
-0.0100001133381
-
-arccs(100.0, 0.4);
-
-
-0.00999969335032
-
-
-w:=arccn(-0.3,0.8);
-
-
-w := 2.49031911944
-
-jacobicn(w,0.8);
-
-
- - 0.3
-
-
-w:=arccs(-0.4,0.8);
-
-
-w := 2.60562233889
-
-w:=arcsc(-2.5,0.8);
-
-
-w :=  - 1.38498321644
-
-
-% Nome and related utilities
-on complex;
-
+w :=  - 0.943212760238
 
 *** Domain mode rounded changed to complex-rounded 
 
-a:=nome(0.4);
-
-
 a := 0.0108953620102
-
-nome2mod(a);
-
 
 0.4
 
-nome(0.99);
-
-
 0.22819021013
 
-
-elliptick(0.4);
-
+1.63999986586
 
 1.63999986586
 
-nome2!K(a);
-
-
-1.63999986586
-
-elliptick!'(0.4);
-
-
 2.35926355475
 
-nome2!K!'(a);
-
-
 2.35926355475
-
-
-% theta functions
-% numerical evaluation and consistency checks
-
-tau := -i*log(0.1)/pi;
-
 
 tau := 0.732935598879*i
 
-elliptictheta1(pi/6,tau);
-
-
 0.551095061028
-
-elliptictheta2(pi/4,tau);
-
 
 0.787317226209
 
-elliptictheta3(pi/3,tau);
-
-
 0.899900002
-
-elliptictheta4(pi/2,tau);
-
 
 1.200200002
 
-
-a := elliptictheta3(0,tau);
-
-
 a := 1.200200002
-
-b := elliptictheta2(0,tau);
-
 
 b := 1.13593060157
 
-c := elliptictheta4(0,tau);
-
-
 c := 0.800199998
 
-a^4-b^4-c^4;
-
-
 0
-
-
-tau := -i*log(0.8)/pi;
-
 
 tau := 0.0710287984215*i
 
-elliptictheta1(pi/6,tau);
-
-
 0.0275406402266
-
-elliptictheta2(pi/4,tau);
-
 
 0.23644721313
 
-elliptictheta3(pi/3,tau);
-
-
 0.0275406620076
-
-elliptictheta4(pi/2,tau);
-
 
 3.75217224012
 
-
-a := elliptictheta3(0,tau);
-
-
 a := 3.75217224012
-
-b := elliptictheta2(0,tau);
-
 
 b := 3.75217224012
 
-c := elliptictheta4(0,tau);
-
-
 c := 0.000118336439005
-
-a^4-b^4-c^4;
-
 
  - 1.96098370636e-16
 
-
-z := 0.5;
-
-
 z := 0.5
-
-w:=z+5*pi/2+3*pi*tau;
-
 
 w := 8.35398163397 + 0.669430653943*i
 
-elliptictheta1(w,tau);
-
-
  - 9.02694464039 - 1.28675975301*i
 
-s1;
-
-
  - 9.02694464039 - 1.28675975301*i
-
-
-w:= z+6*pi+7/2*pi*tau;
-
 
 w := 19.3495559215 + 0.7810024296*i
 
-elliptictheta4(w,tau);
-
-
 0.118818060548 + 0.317198653152*i
 
-s2;
-
-
 0.118818060548 + 0.317198653152*i
-
-
-w:=pi/6;
-
 
 w := 0.523598775598
 
-
-e1:=elliptictheta1(w,tau);
-
-
 e1 := 0.0275406402266
-
-e2:=elliptictheta2(w,tau);
-
 
 e2 := 1.09826116104
 
-e3:=elliptictheta3(w,tau);
-
-
 e3 := 1.09826116104
-
-e4:=elliptictheta4(w,tau);
-
 
 e4 := 0.0275406620076
 
-
-e1^4+e3^4-e2^4-e4^4;
-
-
 1.42679947108e-16
-
-
-a:=atan(4/3)/pi -i/pi*log 0.75;
-
 
 a := 0.295167235301 + 0.0915720477392*i
 
-elliptictheta1(i*pi/6,a);
-
-
 1.87514166378 + 4.14563335489*i
-
-elliptictheta1(i*pi/6,a-1);
-
 
 4.2573308437 + 1.60548007141*i
 
-elliptictheta2((2+i)*pi/4,a);
-
-
  - 1.92773728695 - 13.5245766715*i
-
-elliptictheta2((2+i)*pi/4,a-1);
-
 
  - 10.926435985 - 8.20020376913*i
 
-elliptictheta3(i*pi/3,a);
-
-
  - 73.2581402392 + 48.0515668745*i
 
-elliptictheta3(i*pi/3,a-1);
-
-
  - 23.4494434307 + 13.1483902038*i
 
-elliptictheta4(i*pi/3,a);
-
-
  - 23.4494434307 + 13.1483902038*i
-
-
-d := elliptictheta3(0,a);
-
 
 d := 1.2820283404 + 1.00618011087*i
 
-b := elliptictheta2(0,a);
-
-
 b := 1.61440190067 + 1.12780588196*i
-
-c := elliptictheta4(0,a);
-
 
 c :=  - 0.375065740987 - 1.65578853008*i
 
-d^4-b^4-c^4;
-
-
 0
-
-
-% theta derivatives
-
-theta1d(z,1,tau);
-
 
 0.211275669698
 
-theta2d(z,2,tau);
-
-
 13.6092664594
-
-theta3d(z,3,tau);
-
 
 37.3239604073
 
-theta4d(z,2,tau);
-
-
 1.83038802765
-
-
-td1:= theta1d(0,1,tau);
-
 
 td1 := 0.00166603464559
 
-td3:= theta1d(0,3,tau);
-
-
 td3 := 0.285431704178
-
-t2 := elliptictheta2(0,tau);
-
 
 t2 := 3.75217224012
 
-t3 := elliptictheta3(0,tau);
-
-
 t3 := 3.75217224012
-
-t4 := elliptictheta4(0,tau);
-
 
 t4 := 0.000118336439005
 
-
-td1-t2*t3*t4;
-
-
 0
-
-
-t2dd := theta2d(0,2,tau);
-
 
 t2dd :=  - 33.630120324
 
-t3dd := theta3d(0,2,tau);
-
-
 t3dd :=  - 33.630120324
-
-t4dd := theta4d(0,2,tau);
-
 
 t4dd := 0.0223951321728
 
-
-
-td3/td1-(t2dd/t2+t3dd/t3+t4dd/t4);
-
-
 0
 
-
-% weierstrassian elliptic functions and lattice functions
-% numerical evaluations  -- should agree with Lawden's tables 
-
-weierstrass(0.1, 1, 0.4i);
-
+100.154750762
 
 100.154750762
 
-9*weierstrass(0.3, 3, 1.2i);
-
-
-100.154750762
-
-weierstrass(0.5+0.3i, 1, 0.3i);
-
-
 8.56109276988
 
-16*weierstrass(2.0+1.2i, 4, 1.2i);
-
-
 8.56109276988
-
-weierstrass(1,1,(1+1.4i)/2);
-
 
 1.16506417116
 
-weierstrass(1.2, 1.2, 0.8i)-lattice_e1(1.2, 0.8i);
-
+0
 
 0
 
-weierstrass(0.8i, 1.2, 0.8i)-lattice_e3(1.2, 0.8i);
-
-
 0
-
-weierstrass(1.2+0.8i, 1.2, 0.8i)-lattice_e2(1.2, 0.8i);
-
-
-0
-
-
-weierstrassZeta(0.2, 1, 1.6i);
-
 
 4.99889643343
 
-3*weierstrassZeta(0.6, 3, 4.8i);
-
-
 4.99889643343
 
-weierstrassZeta(1.9, 1, 0.6i);
-
+ - 9.32912341014
 
  - 9.32912341014
 
-4*weierstrassZeta(7.6, 4, 2.4i);
-
-
- - 9.32912341014
-
-weierstrassZeta(1, 1, 1.6i)-eta1(1,1.6i);
-
+0
 
 0
 
-weierstrassZeta(1.6i, 1, 1.6i)-eta3(1,1.6i);
-
-
 0
-
-weierstrassZeta(1+1.6i, 1, 1.6i)+eta2(1,1.6i);
-
-
-0
-
-
-sigma(0.2, 1, 1.6i);
-
 
 0.19998899833
 
-sigma(0.6, 3, 4.8i)/3;
-
-
 0.19998899833
 
-sigma(1.9, 1, 0.6i);
-
+0.182726966444
 
 0.182726966444
 
-sigma(7.6, 4, 2.4i)/4;
-
-
-0.182726966444
-
-sigma(2, 1, 1.6i);
-
+0
 
 0
 
-sigma(3.2i, 1, 1.6i);
-
-
 0
-
-sigma(2+3.2i, 1, 1.6i);
-
-
-0
-
-
-sigma1(0.2, 1, 1.6i);
-
 
 0.966797813534
 
-sigma1(0.6, 3, 4.8i);
-
-
 0.966797813534
 
-sigma1(1.9, 1, 0.6i);
-
+ - 1.80385108579
 
  - 1.80385108579
 
-sigma1(7.6, 4, 2.4i);
-
-
- - 1.80385108579
-
--sigma1(2, 1, 1.6i)/exp(2*eta1(1,1.6i));
-
-
 1
 
-sigma1(3.2i, 1, 1.6i)/exp(2*eta3(1,1.6i)*1.6i);
-
-
 1
-
-sigma1(1, 1, 1.6i);
-
 
 0
 
-
-sigma2(0.2, 1, 1.6i);
-
+1.01405333088
 
 1.01405333088
 
-sigma2(0.6, 3, 4.8i);
-
-
-1.01405333088
-
-sigma2(1.9, 1, 0.6i);
-
+1.809244598
 
 1.809244598
 
-sigma2(7.6, 4, 2.4i);
-
-
-1.809244598
-
-sigma2(2, 1, 1.6i)/exp(2*eta1(1,1.6i));
-
-
 1
 
-sigma2(3.2i, 1, 1.6i)/exp(2*eta3(1,1.6i)*1.6i);
-
-
 1
-
-sigma2(1+1.6i, 1, 1.6i);
-
 
 0
-
-
-sigma3(0.2, 1, 1.6i);
-
 
 1.01914973447 - 5.42101086243e-20*i
 
-sigma3(0.6, 3, 4.8i);
-
-
 1.01914973447
 
-sigma3(1.9, 1, 0.6i);
-
-
 1.86885620246 + 1.73472347598e-18*i
 
-sigma3(7.6, 4, 2.4i);
-
-
 1.86885620246 + 1.73472347598e-18*i
-
-sigma3(2, 1, 1.6i)/exp(2*eta1(1,1.6i));
-
 
 1 - 6.7083034574e-19*i
 
--sigma3(3.2i, 1, 1.6i)/exp(2*eta3(1,1.6i)*1.6i);
-
-
 1
-
-sigma3(1.6i, 1, 1.6i);
-
 
 0
 
-
-u:=1;
-
-
 u := 1
- v:=2;
-
 
 v := 2
- w:= 0.5i;
-
 
 w := 0.5*i
 
-weierstrass(u-2v-6w,v,w)-a1;
-
+0
 
 0
 
-weierstrass(u+2v+3w,v,w)-a2;
-
+0
 
 0
 
-weierstrass(u+5v+4w,v,w)-a3;
-
+0
 
 0
 
-weierstrass(u+3v+5w,v,w)-a4;
-
+0
 
 0
 
-
-weierstrassZeta(u-2v-6w,v,w)-b1;
-
+0
 
 0
 
-weierstrassZeta(u+2v+3w,v,w)-b2;
-
+0
 
 0
 
-weierstrassZeta(u+5v+4w,v,w)-b3;
-
+0
 
 0
 
-weierstrassZeta(u+3v+5w,v,w)-b4;
-
+0
 
 0
 
-
-sigma(u-2v-6w,v,w)-c1;
-
+0
 
 0
 
-sigma(u+2v+3w,v,w)-c2;
-
+0
 
 0
 
-sigma(u+5v+4w,v,w)-c3;
-
+0
 
 0
 
-sigma(u+3v+5w,v,w)-c4;
-
-
 0
 
-
-sigma1(u-2v-6w,v,w)-d1;
-
-
 0
-
-sigma1(u+2v+3w,v,w)-d2;
-
-
-0
-
-sigma1(u+5v+4w,v,w)-d3;
-
-
-0
-
-sigma1(u+3v+5w,v,w)-d4;
-
-
-0
-
-
-sigma2(u-2v-6w,v,w)-f1;
-
-
-0
-
-sigma2(u+2v+3w,v,w)-f2;
-
-
-0
-
-sigma2(u+5v+4w,v,w)-f3;
-
-
-0
-
-sigma2(u+3v+5w,v,w)-f4;
-
-
-0
-
-
-sigma3(u-2v-6w,v,w)-g1;
-
-
-0
-
-sigma3(u+2v+3w,v,w)-g2;
-
-
-0
-
-sigma3(u+5v+4w,v,w)-g3;
-
-
-0
-
-sigma3(u+3v+5w,v,w)-g4;
-
-
-0
-
-
-l := lattice_generators(4,1);
-
 
 l := {1.22569469099,1.49672932312*i}
 
-lattice_invariants(first l, second l);
-
-
 {4.0,1,37.0,2.37037037037}
-
-
-l := lattice_generators(2+i, 3+i);
-
 
 l := {1.18034748219 - 0.0824458762258*i,0.631644726227 + 1.12580170872*i}
 
-lattice_invariants(first l, second l);
-
-
 {2.0 + 1.0*i,3.0 + 1.0*i, - 214.0 - 151.0*i,0.0303703703704 + 0.0281481481481*i}
 
-
-weierstrass1(0.5, 3, 0);
-
-
 4.03761735675
-      % special case (g3=0)
-weierstrasszeta1(0.5, 0, 3);
-
 
 1.99933031794 - 7.68191711955e-19*i
-  % special case (g2=0)
-weierstrass1(0.5, 4, 1);
-
 
 4.05244860454
-  % real lattice roots
-weierstrass1(0.5, 4, -1);
-
 
 4.04796905729
- % ditto -- same discriminant
-weierstrasszeta1(0.5, 1, 2);
-
 
 1.99746907884 - 8.45013581917e-19*i
-  % one real & 2 complex-conjugate roots
-weierstrasszeta1(0.5, 1, -2);
-
 
 1.99836235894
- % ditto -- same discriminant
-weierstrass1(0.5, 4*(2+i)^2, (2+i)^3);
-
 
 4.1526522003 + 0.229886351282*i
-  % complex lattice roots (collinear)
-weierstrass1(0.5, 2+i, 2+i);
-
 
 4.02950935818 + 0.0147923036032*i
-            % complex lattice roots (general)
-
-lattice_roots(2+i, 1+3i);
-
 
 {0.206255574541 - 0.275007432721*i, - 0.206255574541 + 0.275007432721*i,0}
-
-quasi_period_factors(2+i, 1+3i);
-
 
 {0.314159265359 - 0.157079632679*i, - 0.471238898038 + 0.628318530718*i,
 
  0.157079632679 - 0.471238898038*i}
-
-
-;
-
-end;

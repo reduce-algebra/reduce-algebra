@@ -30,11 +30,16 @@ module efjacinv;  % Procedures and Rules for Inverse Jacobi Elliptic functions.
 
 algebraic;
 
+% The next 4 functions may well get replaced by alternative versions
+% in efnumeric.red using the duplication method for evaluation rather
+% than quadratic transformations.
+% But they are retained at least in the short term.
+
 % see DLMF 19.36(ii) and 19.25(v) for more details on the
 % numerical computation of the symmetric elliptic integral RF and the
 % inverse Jacobi functions.
 
-% only valid for real arguments
+% only valid for real arguments, but works when only rounded is on.
 algebraic procedure carlson_RCR(x,y);
    (if x<0 or y=0 then
       rederr("1st parameter of RC must be non-negative and the 2nd non-zero")
@@ -44,6 +49,7 @@ algebraic procedure carlson_RCR(x,y);
     else if x<y then atan(z/sqrt x)/z
     else 1/sqrt x) where z=>sqrt(abs(x-y));
 
+% valid for complex arguments but needs both rounded and complex on
 algebraic procedure carlson_RC(x,y);
     if y = 0 or (impart x = 0 and x<0) then
       rederr("1st parameter of RC must be non-negative and 2nd non-zero")
@@ -53,7 +59,7 @@ algebraic procedure carlson_RC(x,y);
              atanh(sqrt x/z)/z % Cauchy principal value
           else atanh(z/sqrt x)/z)  where z => sqrt(x-y);
 
-% only valid for real arguments
+% only valid for real arguments but works when only rounded is on
 algebraic procedure sym_int_RFR(x,y,z);
    begin scalar t0,tn,a0,an,c0,cn,tol,theta,tmp,oldprec,n:=0;
       if x<=0 then
@@ -110,6 +116,7 @@ algebraic procedure sym_int_RFR(x,y,z);
       return tmp;
    end;
 
+% valid for complex arguments but needs both rounded and complex on
 algebraic procedure sym_int_RF(x,y,z);
    begin scalar t0,tn,a0,an,c0,cn,tol,tmp,oldprec,n:=0;
       if impart x=0  then

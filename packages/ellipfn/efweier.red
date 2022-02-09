@@ -382,7 +382,7 @@ procedure lattice_roots(w1,w3);
 if impart (w3/w1) = 0 then rederr
    ("Ratio of the period parameters of the lattice must be complex")
 else begin scalar res, oldprec;
-  oldprec := precision 0;
+  oldprec := precision(0);
   precision max(oldprec+3, 15);
   res := l_roots(w1,w3);
   precision oldprec;   
@@ -404,7 +404,7 @@ procedure lattice_invariants(w1,w3);
 if impart (w3/w1) = 0 then rederr
    ("Ratio of the period parameters of the lattice must be complex")
 else begin scalar res, oldprec;
-  oldprec := precision 0;
+  oldprec := precision(0);
   precision max(oldprec+3, 15);
   res := l_invariants(w1,w3);
   precision oldprec;   
@@ -519,7 +519,7 @@ procedure quasi_period_factors(w1,w3);
 if impart (w3/w1) = 0 then rederr
    ("Ratio of the period parameters of the lattice must be complex")
 else begin scalar res, oldprec;
-  oldprec := precision 0;
+  oldprec := precision(0);
   precision max(oldprec+3, 15);
   res := num_qpf(w1,w3);
   precision oldprec;   
@@ -687,7 +687,7 @@ begin scalar res, oldprec;
   if g2^3-27*g3^2 = 0 then
     rederr("The discriminant of the invariants is zero.");
 
-  oldprec := precision 0;
+  oldprec := precision(0);
   precision max(oldprec+3, 15);
   res := num_omegas(g2,g3);
   precision oldprec;   
@@ -774,18 +774,19 @@ begin scalar l;
   return num_weierZeta(u, first l, second l); 
 end;
 
-procedure agm_basic(a0, b0);
-begin scalar an, bn, cn, tol;
-   tol := 10.0^-(symbolic !:prec!:);
-   repeat <<
-      an := (a0 + b0)/2;
-      bn := sqrt(a0*b0);
-      cn := (a0 - b0)/2;
-      a0 := an;
-      b0 := bn
-   >> until cn < tol;
-   return an;
-end;
+% moved to efnumeric.red by AB, Feb 2022.
+%% procedure agm_basic(a0, b0);
+%% begin scalar an, bn, cn, tol;
+%%    tol := 10.0^-(symbolic !:prec!:);
+%%    repeat <<
+%%       an := (a0 + b0)/2;
+%%       bn := sqrt(a0*b0);
+%%       cn := (a0 - b0)/2;
+%%       a0 := an;
+%%       b0 := bn
+%%    >> until cn < tol;
+%%    return an;
+%% end;
 
 %######################################################################
 
