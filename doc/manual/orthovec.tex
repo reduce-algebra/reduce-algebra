@@ -93,7 +93,7 @@ The final section discusses test examples.
 
 \subsection{Initialisation}\label{vstart}
 \ttindextype[ORTHOVEC]{vstart}{procedure}
-\hyperlink{command:VSTART}{}
+\hypertarget{command:VSTART}{}
 The procedure \f{vstart} initialises \textsc{ORTHOVEC}.  It may be
 called after \textsc{ORTHOVEC} has been loaded to reset coordinates.
 \f{vstart} provides a
@@ -125,7 +125,7 @@ vstart $
 \textsc{ORTHOVEC} assumes all quantities are either scalars or 3 component
 vectors.  To define a vector $a$ with components $(c_1, c_2, c_3)$ use
 the procedure \f{svec} as follows \ttindextype[ORTHOVEC]{svec}{procedure}
-\hyperlink{operator:SVEC}{}
+\hypertarget{operator:SVEC}{}
 \begin{verbatim}
 a := svec(c1, c2, c3);
 \end{verbatim}
@@ -297,8 +297,9 @@ $\textbf{a}^n \equiv  \f{vmod}(a)^n =   \mid \textbf{a} \mid^n$
 
 \subsection{Differential Operations}
 Differential operators provided are div, grad, curl, delsq, and dotgrad.
-\ttindextype{DIV}{operator} \ttindextype{GRAD}{operator}\ttindextype{CURL}{operator}
-\ttindextype{DELSQ}{ operator} \ttindextype{DOTGRAD}{operator}
+\ttindextype[ORTHOVEC]{div}{operator} \ttindextype[ORTHOVEC]{grad}{operator}\ttindextype[ORTHOVEC]{curl}{operator}
+\ttindextype[ORTHOVEC]{delsq}{ operator} \ttindextype[ORTHOVEC]{dotgrad}{operator}
+\hypertarget{operator:DOTGRAD}{}
 All but the last of these are prefix operators having a single
 vector or scalar argument as appropriate.  Valid combinations of 
 operator and argument, and the type of the result are shown in table~\ref{vvecttable}.
@@ -401,12 +402,12 @@ procedures are included in \textsc{ORTHOVEC}.  They are defined as follows:
 \ttindextype[ORTHOVEC]{vint}{operator} \ttindextype[ORTHOVEC]{dvint}{operator}
 \ttindextype[ORTHOVEC]{volint}{operator} \ttindextype[ORTHOVEC]{dvolint}{operator}
 \ttindextype[ORTHOVEC]{lineint}{operator} \ttindextype[ORTHOVEC]{dlineint}{operator}
-\hyperlink{operator:VINT}{}
-\hyperlink{operator:DVINT}{}
-\hyperlink{operator:VOLINT}{}
-\hyperlink{operator:DVOLINT}{}
-\hyperlink{operator:LININT_OV}{}
-\hyperlink{operator:DLINEINT}{}
+\hypertarget{operator:VINT}{}
+\hypertarget{operator:DVINT}{}
+\hypertarget{operator:VOLINT}{}
+\hypertarget{operator:DVOLINT}{}
+\hypertarget{operator:LINEINT_OV}{}
+\hypertarget{operator:DLINEINT}{}
 \begin{align*}
 \f{vint} (\mathbf{v},x) & =  \int \mathbf{v}(x)dx\\
 %

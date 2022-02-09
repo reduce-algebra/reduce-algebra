@@ -126,6 +126,10 @@
 #include <sys/resource.h>
 #endif
 
+#ifdef PROCEDURAL_WASM_XX
+#include <emscripten.h>
+#endif
+
 // These flags are used to ensure that protected symbols don't get
 // overwritten by default, and that the system keeps quiet about it.
 
@@ -1463,7 +1467,7 @@ char *mystrdup(const char *s)
 }
 
 // Note that I will not have my signal handlers active during the call
-// to cslstart(). 
+// to cslstart().
 
 void cslstart(int argc, const char *argv[], character_writer *wout)
 {
@@ -1725,7 +1729,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // size of the Lisp stack segment in the range 1-10. It is legal to
 // express nnn as a floating point value, as in 2.5G. Since full floating
 // point notation is allowed one can use "-k1.2e3" (1200 Mbytes), or
-// "-k1.2e6K" (1200000 Kbytes, ie the same!) or "-k1.2e-1G" for 120 Mbytes. 
+// "-k1.2e6K" (1200000 Kbytes, ie the same!) or "-k1.2e-1G" for 120 Mbytes.
 // Ignore case in the specifier.
                     string valLow(val);
                     std::transform(valLow.begin(), valLow.end(), valLow.begin(),
@@ -3195,31 +3199,12 @@ int buff_ready = 0;
 const char *buffer = nullptr;
 int buff_size = 0;
 
-void PROC_insert_buffer(const char *buf, int size)
-{   buffer = buf;
-    buff_size = size;
-    buff_ready = 1;
-}
-
+EMSCRIPTEN_KEEPALIVE // instead of adding function to EXPORTED_FUNCTIONS
 void insert_buffer(const char *buf, int size)
 {   buffer = buf;
     buff_size = size;
     buff_ready = 1;
 }
-
-#if 0
-void _PROC_insert_buffer(const char *buf, int size)
-{   buffer = buf;
-    buff_size = size;
-    buff_ready = 1;
-}
-
-void _insert_buffer(const char *buf, int size)
-{   buffer = buf;
-    buff_size = size;
-    buff_ready = 1;
-}
-#endif
 
 void PROC_mainloop()
 {   if (buff_ready)
@@ -3387,6 +3372,9 @@ int main(int argc, const char *argv[])
 
 #endif // EMBEDDED
 
+#ifdef PROCEDURAL_WASM_XX
+EMSCRIPTEN_KEEPALIVE
+#endif
 int ENTRYPOINT(int argc, const char *argv[])
 {   int res;
 #ifdef EMBEDDED
@@ -3494,7 +3482,7 @@ int PROC_process_one_reduce_statement(const char *s)
              return 1);  // Failed one way or another
 // At present (?) the web interface does not get output sent to it
 // until a line-end, and the Reduce TeX output does not automatically
-// append one bacause that is deemed implicit within the embedded LaTeX. 
+// append one bacause that is deemed implicit within the embedded LaTeX.
     std::printf("\n");
     procedural_input = save_read;
     return w != nil;
