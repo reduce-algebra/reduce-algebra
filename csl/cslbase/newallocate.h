@@ -700,7 +700,24 @@ inline const char* Addr(uintptr_t p)
             return r;
         }
     }
-    std::snprintf(r, 40, "%#" PRIxPTR "/%" PRIdPTR, p, p);
+    bool maybeChars = true;
+    for (uintptr_t w=p; w!=0; w=w>>8)
+    {   int c = w & 0xff;
+        if (c < ' ' || c >= 0x7f) maybeChars = false;
+    }
+    if (maybeChars && p!=0)
+    {   std::snprintf(r, 40, "%#" PRIxPTR "/%" PRIdPTR, p, p);
+        size_t q = strlen(r);
+        r[q++] = '/';
+        r[q++] = '"';
+        while (p != 0)
+        {   r[q++] = p & 0xff;
+            p = p>>8;
+        }
+        r[q++] = '"';
+        r[q] = 0;
+    }
+    else std::snprintf(r, 40, "%#" PRIxPTR "/%" PRIdPTR, p, p);
     return r;
 }
 

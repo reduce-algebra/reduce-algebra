@@ -73,7 +73,9 @@ void gcTestCode()
     int n = Crand() % 20;
     zprintf("n = %d\n", n);
     simple_print(runtest(n, fixnum_of_int(0x22222)));
+    std::printf("Nearly done - just one more GC\n");
     Lgc(nil, fixnum_of_int(0x11111));
+    std::printf("completed final GC\n");
 #else
 #if 0
     LispObject w;
@@ -90,6 +92,7 @@ void gcTestCode()
         zprintf("\nGC test %d over\n", i);
     }
 #endif
+    std::printf("About to terminate\n");
     term_close();
     fflush(stdout);
     fflush(stderr);
