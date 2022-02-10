@@ -412,21 +412,15 @@ uint32_t activeThreads;
 // objects only reside in the data[] part the first couple of kilobytes
 // of objstart[] will never be used.
 
-// The initializeation here is intended to make the code more fragile
-// so that unless I initialize elsewhere I stand a good chance of seeing
-// a prompt sigsegv.
-static Page* px = reinterpret_cast<Page*>(0xeffaceabaddecade);
-
-Page* currentPage = px;     // Where allocation is happening. The "nursery".
-Page* previousPage = px;    // A page that was recently the current one.
-Page* busyPages = px;       // Chained list of pages that contain live data.
-Page* mostlyFreePages = px; // Chained list of pages that the GC has mostly
-                            // cleared but that have some pinned data left
-                            // in them.
-Page* mostlyFreeTail = px;  // Final item on above.
-Page* freePages = px;       // Chained list of pages that are not currently
-                            // in use and that contain no useful information.
-Page* oldPages = px;        // Page from which live stuff is being evacuated.
+Page* currentPage = nullptr;    // Where allocation is happening. The "nursery".
+Page* previousPage = nullptr;   // A page that was recently the current one.
+Page* busyPages = nullptr;      // Pages that contain live data.
+Page* mostlyFreePages = nullptr;// Pages that the GC has mostly cleared but
+                                // that have some pinned data left in them.
+Page* mostlyFreeTail = nullptr; // Final item on above.
+Page* freePages = nullptr;      // Pages that are not currently in use and
+                                // that contain no useful information.
+Page* oldPages = nullptr;       // Pages from which stuff is being evacuated.
 
 size_t busyPagesCount = -1, mostlyFreePagesCount = -1,
        freePagesCount = -1, oldPagesCount = -1;
@@ -560,13 +554,25 @@ void newRegionNeeded()
 // the value GcStyleMajor I need to force a full collection even if there
 // is plenty of space available and if it is GcStyleMinor I must force
 // a minor GC.
+    if (busyPagesCount >= freePagesCount+mostlyFreePagesCount)
+    {
+// If memory is starting to get full I can ask the operating system to
+// allocate some more. If it succeeds then I do not have anything messy
+// to do here. This strategy can allow me to start by reserving a modest
+// amount of memory and then maybe double it each time it starts to
+// fill up, and in many cases that will avoid having to do any garbage
+// collections at all. A consequence of such a policy is that the garbage
+// collector will only get activated when I have a LOT of memory in play.
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    }
     if ((!generationalGarbageCollection ||
          !garbage_collection_permitted ||
          previousPage == nullptr) &&
         userGcRequest != GcStyleMinor)
     {   if ((busyPagesCount >= freePagesCount+mostlyFreePagesCount ||
              userGcRequest == GcStyleMajor || true /*@@@*/))
-        {   zprintf("full GC needed\n");
+        {
+            zprintf("full GC needed\n");
             userGcRequest = GcStyleNone;
             fullGarbageCollect();
         }

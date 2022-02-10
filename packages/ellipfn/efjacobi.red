@@ -44,100 +44,103 @@ module efjacobi;  % Procedures and Rules for Jacobi Elliptic functions.
 
 algebraic;
 
-%ARITHMETIC GEOMETRIC MEAN
+% moved to efnumeric.red by AB Feb 2022
+%% ARITHMETIC GEOMETRIC MEAN
+%% 
+%% The following procedure is the process of the Arithmetic Geometric
+%% Mean.
+%% 
+%% procedure agm_function(a0,b0,c0);
+%% begin scalar n, an, bn, cn, alist, clist, tol;
+%%      tol := 10.0^-(symbolic !:prec!:);
+%%      cn    := 20; % To initiate while loop below.
+%%      alist := {a0}$
+%%      clist := {c0}$
+%% 
+%%      while abs(cn) > tol do <<
+%%          an := (a0 + b0)/2;
+%%          bn := sqrt(a0*b0);
+%%          cn := (a0 - b0)/2;
+%% 
+%%          alist := an.alist;
+%%          clist := cn.clist;
+%%          % Note no need to accumulate bn's
+%% 
+%%          a0 := an;
+%%          b0 := bn
+%%       >>;
+%% 
+%%      n := length(alist) - 1;
+%% 
+%%      return {n, alist, clist};
+%% 
+%% end;
+%% 
+%% ######################################################################
+%% CALCULATING PHI
+%%               N
+%% 
+%% 
+%% The following procedure sucessively computes phi   ,phi   ,...,phi ,
+%%                                                N-1    N-2        0
+%% from the recurrence relation:
+%% 
+%%       sin(2phi    - phi ) = (c /a )sin phi
+%%               N-1      N       N  N          N
+%% 
+%% and returns a list of phi  to phi . This list is then used in the
+%%                        0        N
+%% calculation of Jacobisn, Jacobicn, Jacobidn, which in turn are used
+%% to calculate the remaining twelve Jacobi Functions.
+%% 
+%% 
+%% procedure phi_function(a0,b0,c0,u);
+%% begin scalar agm, alist, clist, n, an, cn, phi_n, phi_list;
+%% 
+%%     agm   := agm_function(a0,b0,c0);
+%%     alist := second agm;
+%%     clist := third agm;
+%%     n :=  first agm;
+%%     an :=  first alist; 
+%%     phi_n := (2^n)*an*u;
+%%     phi_list := {phi_n};
+%% 
+%%     while rest alist neq {} do <<
+%%         an := first alist;
+%%         cn := first clist;
+%% 
+%%         phi_n := (asin(cn/an*sin phi_n) + phi_n) / 2;
+%%         phi_list := phi_n.phi_list;
+%%         alist := rest alist;
+%% 	clist := rest clist;
+%%     >>;
+%%     return phi_list;
+%% end;
+%% 
 
-%The following procedure is the process of the Arithmetic Geometric
-%Mean.
-
-procedure agm_function(a0,b0,c0);
-begin scalar n, an, bn, cn, alist, clist, tol;
-     tol := 10.0^-(symbolic !:prec!:);
-     cn    := 20; % To initiate while loop below.
-     alist := {a0}$
-     clist := {c0}$
-
-     while abs(cn) > tol do <<
-         an := (a0 + b0)/2;
-         bn := sqrt(a0*b0);
-         cn := (a0 - b0)/2;
-
-         alist := an.alist;
-         clist := cn.clist;
-         % Note no need to accumulate bn's
-
-         a0 := an;
-         b0 := bn
-      >>;
-
-     n := length(alist) - 1;
-
-     return {n, alist, clist};
-
-end;
-
-%######################################################################
-%CALCULATING PHI
-%               N
-
-
-%The following procedure sucessively computes phi   ,phi   ,...,phi ,
-%                                                N-1    N-2        0
-%from the recurrence relation:
-%
-%       sin(2phi    - phi ) = (c /a )sin phi
-%               N-1      N       N  N          N
-%
-%and returns a list of phi  to phi . This list is then used in the
-%                        0        N
-%calculation of Jacobisn, Jacobicn, Jacobidn, which in turn are used
-%to calculate the remaining twelve Jacobi Functions.
-
-
-procedure phi_function(a0,b0,c0,u);
-begin scalar agm, alist, clist, n, an, cn, phi_n, phi_list;
-
-    agm   := agm_function(a0,b0,c0);
-    alist := second agm;
-    clist := third agm;
-    n :=  first agm;
-    an :=  first alist; 
-    phi_n := (2^n)*an*u;
-    phi_list := {phi_n};
-
-    while rest alist neq {} do <<
-        an := first alist;
-        cn := first clist;
-
-        phi_n := (asin(cn/an*sin phi_n) + phi_n) / 2;
-        phi_list := phi_n.phi_list;
-        alist := rest alist;
-	clist := rest clist;
-    >>;
-    return phi_list;
-end;
-
-%######################################################################
-%JACOBI FUNCTIONS
 
 %Increases the precision used to evaluate algebraic arguments.
 
-symbolic procedure  n_elliptic (u);
-% check that length u >= 2 !
- if length u < 2 then
-         rederr "illegal call to n_elliptic" else
-   begin scalar oldprec,res;
-     oldprec := precision 0;
-     precision max(oldprec,15);
+%% symbolic procedure  n_elliptic (u);
+%% % check that length u >= 2 !
+%%  if length u < 2 then
+%%          rederr "illegal call to n_elliptic" else
+%%    begin scalar oldprec,res;
+%%      oldprec := precision 0;
+%%      precision max(oldprec,15);
+%% 
+%%     res :=  aeval u;
+%%     precision oldprec;
+%%     return res;
+%% 
+%%   end;
+%% 
+%% put('num_elliptic, 'psopfn, 'n_elliptic);
+%% 
+%% %###################################################################### 
 
-    res :=  aeval u;
-    precision oldprec;
-    return res;
+%JACOBI FUNCTIONS
 
-  end;
-
-put('num_elliptic, 'psopfn, 'n_elliptic);
-
-%######################################################################
 %JACOBI AMPLITUDE
 
 

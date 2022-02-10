@@ -81,7 +81,7 @@ DEFINE_THREAD_LOCAL(uintptr_t, genuineThreadId);
 
 LispObject nil;
 #ifdef NO_THREADS
-LispObject *stack;
+LispObject* stack;
 uintptr_t   stackBase;
 uintptr_t   stackFringe;
 uintptr_t   stackLimit = 0;
@@ -89,7 +89,7 @@ uintptr_t   C_stackBase;
 uintptr_t   C_stackFringe;
 uintptr_t   C_stackLimit;
 #else // NO_THREADS
-LispObject *stacks[maxThreads];
+LispObject* stacks[maxThreads];
 uintptr_t   stackBases[maxThreads];
 uintptr_t   stackFringes[maxThreads];
 uintptr_t   stackLimits[maxThreads];
@@ -98,11 +98,11 @@ Bintptr_t   C_stackFringes[maxThreads];
 uintptr_t   C_stackLimits[maxThreads];
 #endif // NO_THREADS
 
-LispObject *nilsegment;
-LispObject *stacksegment;
+LispObject* nilsegment;
+LispObject* stacksegment;
 int32_t stack_segsize = 1;
 
-char *exit_charvec = nullptr;
+char* exit_charvec = nullptr;
 intptr_t exit_reason;
 
 intptr_t nwork;
@@ -163,7 +163,8 @@ char program_name[64] = {0};
 // nullptr (reserved for other uses...) and each string has a single character
 // stuck on its front that is also used as a marker elsewhere...
 
-char **loadable_packages = nullptr, **switches = nullptr;
+char** loadable_packages = nullptr;
+char** switches = nullptr;
 
 bool trap_floating_overflow = false;
 
@@ -231,10 +232,10 @@ entry_point2 entries_table2[] =
 {   {0,                                 "illegal"},
 // A few special forms that are set up manually so slip through the normal
 // scheme...
-    {(two_args *)quote_fn,              "quote"},
-    {(two_args *)progn_fn,              "progn"},
-    {(two_args *)declare_fn,            "declare"},
-    {(two_args *)function_fn,           "function"},
+    {(two_args*)quote_fn,               "quote"},
+    {(two_args*)progn_fn,               "progn"},
+    {(two_args*)declare_fn,             "declare"},
+    {(two_args*)function_fn,            "function"},
     {undefined_2,                       "undefined_2"},
     {G2W0,                              "G2W0"},
     {G2W1,                              "G2W1"},
@@ -307,37 +308,37 @@ entry_point4up entries_table4up[] =
 
 entry_point1 entries_tableio[] =
 {   {0,                                 "illegal"},
-    {(one_arg *)char_from_illegal,      "char_from_illegal"},
-    {(one_arg *)char_to_illegal,        "char_to_illegal"},
-    {(one_arg *)read_action_illegal,    "read_action_illegal"},
-    {(one_arg *)write_action_illegal,   "write_action_illegal"},
-    {(one_arg *)char_from_terminal,     "char_from_terminal"},
-    {(one_arg *)char_to_terminal,       "char_to_terminal"},
-    {(one_arg *)read_action_terminal,   "read_action_terminal"},
-    {(one_arg *)write_action_terminal,  "write_action_terminal"},
-    {(one_arg *)char_from_file,         "char_from_file"},
-    {(one_arg *)char_to_file,           "char_to_file"},
-    {(one_arg *)read_action_file,       "read_action_file"},
-    {(one_arg *)read_action_output_file,"read_action_output_file"},
-    {(one_arg *)write_action_file,      "write_action_file"},
-    {(one_arg *)binary_outchar,         "binary_outchar"},
-    {(one_arg *)char_from_list,         "char_from_list"},
-    {(one_arg *)char_to_list,           "char_to_list"},
-    {(one_arg *)code_to_list,           "code_to_list"},
-    {(one_arg *)read_action_list,       "read_action_list"},
-    {(one_arg *)write_action_list,      "write_action_list"},
-    {(one_arg *)count_character,        "count_character"},
-    {(one_arg *)char_to_pipeout,        "char_to_pipeout"},
-    {(one_arg *)write_action_pipe,      "write_action_pipe"},
-    {(one_arg *)char_from_synonym,      "char_from_synonym"},
-    {(one_arg *)char_to_synonym,        "char_to_synonym"},
-    {(one_arg *)read_action_synonym,    "read_action_synonym"},
-    {(one_arg *)write_action_synonym,   "write_action_synonym"},
-    {(one_arg *)char_from_concatenated, "char_from_concatenated"},
-    {(one_arg *)char_to_broadcast,      "char_to_broadcast"},
-    {(one_arg *)read_action_concatenated,"read_action_concatenated"},
-    {(one_arg *)write_action_broadcast, "write_action_broadcast"},
-    {(one_arg *)char_from_echo,         "char_from_echo"},
+    {(one_arg* )char_from_illegal,      "char_from_illegal"},
+    {(one_arg* )char_to_illegal,        "char_to_illegal"},
+    {(one_arg* )read_action_illegal,    "read_action_illegal"},
+    {(one_arg* )write_action_illegal,   "write_action_illegal"},
+    {(one_arg* )char_from_terminal,     "char_from_terminal"},
+    {(one_arg* )char_to_terminal,       "char_to_terminal"},
+    {(one_arg* )read_action_terminal,   "read_action_terminal"},
+    {(one_arg* )write_action_terminal,  "write_action_terminal"},
+    {(one_arg* )char_from_file,         "char_from_file"},
+    {(one_arg* )char_to_file,           "char_to_file"},
+    {(one_arg* )read_action_file,       "read_action_file"},
+    {(one_arg* )read_action_output_file,"read_action_output_file"},
+    {(one_arg* )write_action_file,      "write_action_file"},
+    {(one_arg* )binary_outchar,         "binary_outchar"},
+    {(one_arg* )char_from_list,         "char_from_list"},
+    {(one_arg* )char_to_list,           "char_to_list"},
+    {(one_arg* )code_to_list,           "code_to_list"},
+    {(one_arg* )read_action_list,       "read_action_list"},
+    {(one_arg* )write_action_list,      "write_action_list"},
+    {(one_arg* )count_character,        "count_character"},
+    {(one_arg* )char_to_pipeout,        "char_to_pipeout"},
+    {(one_arg* )write_action_pipe,      "write_action_pipe"},
+    {(one_arg* )char_from_synonym,      "char_from_synonym"},
+    {(one_arg* )char_to_synonym,        "char_to_synonym"},
+    {(one_arg* )read_action_synonym,    "read_action_synonym"},
+    {(one_arg* )write_action_synonym,   "write_action_synonym"},
+    {(one_arg* )char_from_concatenated, "char_from_concatenated"},
+    {(one_arg* )char_to_broadcast,      "char_to_broadcast"},
+    {(one_arg* )read_action_concatenated,"read_action_concatenated"},
+    {(one_arg* )write_action_broadcast, "write_action_broadcast"},
+    {(one_arg* )char_from_echo,         "char_from_echo"},
     {nullptr,                           "dummy"}
 };
 
@@ -361,17 +362,17 @@ static LispObject Lreclaim_stack_limit(LispObject env, LispObject a)
     return onevalue(fixnum_of_int(previous));
 }
 
-static const char *find_checksum(const char *name, size_t len,
-                                 const setup_type *p)
-{   const char *n;
+static const char* find_checksum(const char* name, size_t len,
+                                 const setup_type* p)
+{   const char* n;
     while (p->name != nullptr) p++;
-    n = reinterpret_cast<const char *>(p->zero);
+    n = reinterpret_cast<const char*>(p->zero);
     if (std::strlen(n) == len && std::memcmp(name, n, len) == 0)
-        return reinterpret_cast<const char *>(p->one);
+        return reinterpret_cast<const char*>(p->one);
     else return nullptr;
 }
 
-setup_type const *setup_tables[] =
+setup_type const* setup_tables[] =
 {   u01_setup, u02_setup, u03_setup, u04_setup,
     u05_setup, u06_setup, u07_setup, u08_setup, u09_setup,
     u10_setup, u11_setup, u12_setup, u13_setup, u14_setup,
@@ -409,8 +410,8 @@ static LispObject Lcheck_c_code(LispObject env, LispObject name,
 {   int32_t c1=-1, c2=-1, c3=-1;
     long int x1=-2, x2=-2, x3=-2;
     int32_t len;
-    const char *p;
-    const char *sname;
+    const char* p;
+    const char* sname;
     size_t i;
     LispObject lc3 = arg4("check-c-code", a4up);
 // This is called as when the system is about to install some links between
@@ -429,7 +430,7 @@ static LispObject Lcheck_c_code(LispObject env, LispObject name,
     c1 = int_of_fixnum(lc1);
     c2 = int_of_fixnum(lc2);
     c3 = int_of_fixnum(lc3);
-    sname = reinterpret_cast<const char *>(&celt(name, 0));
+    sname = reinterpret_cast<const char*>(&celt(name, 0));
     len = length_of_byteheader(vechdr(name)) - CELL;
 
     p = nullptr;
@@ -500,25 +501,25 @@ static void count_symbols(setup_type const s[])
     for (i=0; s[i].name != nullptr; i++) defined_symbols++;
 }
 
-static LispObject make_undefined_fluid(const char *name)
+static LispObject make_undefined_fluid(const char* name)
 {   LispObject v = make_undefined_symbol(name);
     setheader(v, qheader(v) | SYM_SPECIAL_VAR);
     return v;
 }
 
-static LispObject make_undefined_global(const char *name)
+static LispObject make_undefined_global(const char* name)
 {   LispObject v = make_undefined_symbol(name);
     setheader(v, qheader(v) | SYM_GLOBAL_VAR);
     return v;
 }
 
-LispObject make_constant(const char *name, LispObject value)
+LispObject make_constant(const char* name, LispObject value)
 {   LispObject w = make_undefined_global(name);
     setvalue(w, value);
     return w;
 }
 
-LispObject make_variable(const char *name, LispObject value)
+LispObject make_variable(const char* name, LispObject value)
 {   LispObject w = make_undefined_fluid(name);
     setvalue(w, value);
     return w;
@@ -549,7 +550,7 @@ static void cold_setup()
 // eq_hash_tables is not an ordinary list-base, si I need to clear it
 // individually.
     eq_hash_tables = nil;
-    for (LispObject **p=list_bases; *p!=nullptr; p++) **p = nil;
+    for (LispObject** p=list_bases; *p!=nullptr; p++) **p = nil;
     eq_hash_tables = nil;
 // The package I am using at present will always be a package object
 // stored in the value cell of "current-package". But that symbol does not
@@ -636,8 +637,8 @@ static void cold_setup()
 // Ditto interrupts.
 #define boffo_size 256
     boffo = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+boffo_size);
-    std::memset(reinterpret_cast<void *>(
-        reinterpret_cast<char *>(boffo) + (CELL - TAG_VECTOR)),
+    std::memset(reinterpret_cast<void*>(
+        reinterpret_cast<char*>(boffo) + (CELL - TAG_VECTOR)),
         '@', boffo_size);
 // The next line has hidden depths.  When it is obeyed during cold start
 // the C variable *package* has the value nil (because I will not have
@@ -988,8 +989,8 @@ LispObject set_up_functions(int restart_flag)
     return nil;
 }
 
-static int alpha1(const void *a, const void *b)
-{   return std::strcmp(1+*(const char **)a, 1+*(const char **)b);
+static int alpha1(const void* a, const void* b)
+{   return std::strcmp(1+*(const char**)a, 1+*(const char**)b);
 }
 
 // This sets up:
@@ -1108,7 +1109,7 @@ LispObject set_up_variables(int restart_flag)
 #ifdef COMMON
         LispObject n = features_symbol;
         char opsys[32];
-        char *p1 = opsys, *p2 = OPSYS;
+        char* p1 = opsys,* p2 = OPSYS;
         int ii;
         while ((*p1++ = std::toupper(*p2++)) != 0);
         *p1 = 0;
@@ -1263,7 +1264,8 @@ LispObject set_up_variables(int restart_flag)
         setheader(n, qheader(n) | SYM_SPECIAL_VAR);
 #endif
         defined_symbols = 0;
-        for (i=0; setup_tables[i]!=nullptr;
+        for (i=0;
+             setup_tables[i]!=nullptr;
              i++) count_symbols(setup_tables[i]);
 #ifdef COMMON
 // A gratuitous misery here is the need to make words
@@ -1690,7 +1692,7 @@ LispObject set_up_variables(int restart_flag)
 // is always a string. The second can turn it into a symbol, number etc.
     for (auto ss : symbolsToDefine)
     {   bool undef = !ss.flag;
-        const char *s = ss.key.c_str();
+        const char* s = ss.key.c_str();
         if (undef)
         {   LispObject n = make_undefined_symbol(s);
             setvalue(n, unset_var);
@@ -1720,7 +1722,7 @@ LispObject set_up_variables(int restart_flag)
     }
     for (auto ss : stringsToDefine)
     {   bool undef = !ss.flag;
-        const char *s = ss.key.c_str();
+        const char* s = ss.key.c_str();
         if (undef)
         {   LispObject n = make_undefined_symbol(s);
             setvalue(n, unset_var);
@@ -1739,7 +1741,7 @@ LispObject set_up_variables(int restart_flag)
         }
     }
     for (auto ss : stringsToEvaluate)
-    {   const char *s = ss.c_str();
+    {   const char* s = ss.c_str();
         THREADID;
         TRY
             LispObject v = make_string(s);
@@ -1780,11 +1782,11 @@ LispObject set_up_variables(int restart_flag)
     {   LispObject w1 = qvalue(make_undefined_symbol("loadable-packages*"));
         LispObject w2;
         int n;
-        char *v;
+        char* v;
         n = 0;
         for (w2=w1; consp(w2); w2=cdr(w2)) n++; // How many?
         n = 2*n;
-        loadable_packages = new (std::nothrow) char *[n+1];
+        loadable_packages = new (std::nothrow) char* [n+1];
         if (loadable_packages != nullptr)
         {   n = 0;
             for (w2=w1; consp(w2); w2=cdr(w2))
@@ -1802,15 +1804,15 @@ LispObject set_up_variables(int restart_flag)
                 loadable_packages[n++] = v;
                 loadable_packages[n++] = nullptr;
             }
-            std::qsort(loadable_packages, n/2, 2*sizeof(char *), alpha1);
+            std::qsort(loadable_packages, n/2, 2*sizeof(char*), alpha1);
             loadable_packages[n] = nullptr;   // nullptr-terminate the list
         }
         w1 = qvalue(make_undefined_symbol("switches*"));
         n = 0;
         for (w2=w1; consp(w2); w2=cdr(w2)) n++; // How many?
-        n = (n+1)*sizeof(char *);
+        n = (n+1)*sizeof(char*);
         n = 2*n;
-        switches = new (std::nothrow) char *[n+1];
+        switches = new (std::nothrow) char* [n+1];
         if (switches != nullptr)
         {   n = 0;
             for (w2=w1; consp(w2); w2=cdr(w2))
@@ -1823,7 +1825,7 @@ LispObject set_up_variables(int restart_flag)
                 n1 = length_of_byteheader(vechdr(w3))-CELL;
                 if (n1 > 60) break;
                 std::sprintf(sname, "*%.*s", n1,
-                             reinterpret_cast<const char *>(&celt(w3, 0)));
+                             reinterpret_cast<const char*>(&celt(w3, 0)));
                 w4 = make_undefined_symbol(sname);
                 v = new (std::nothrow) char[n1+2];
                 if (v == nullptr) break;
@@ -1841,7 +1843,7 @@ LispObject set_up_variables(int restart_flag)
                 switches[n++] = v;
                 switches[n++] = nullptr;
             }
-            std::qsort(switches, n/2, 2*sizeof(char *), alpha1);
+            std::qsort(switches, n/2, 2*sizeof(char*), alpha1);
             switches[n] = nullptr;
         }
     }
@@ -1861,8 +1863,8 @@ void review_switch_settings()
     {   LispObject s = car(sw);
         char sname[64];
         int n1;
-        char *v;
-        char **p;
+        char* v;
+        char** p;
         LispObject starsw;
         sw = cdr(sw);
         if (is_symbol(s)) s = qpname(s);
@@ -1870,7 +1872,7 @@ void review_switch_settings()
         n1 = length_of_byteheader(vechdr(s))-CELL;
         if (n1 > 60) continue;
         std::sprintf(sname, "*%.*s", n1,
-                     reinterpret_cast<const char *>(&celt(s, 0)));
+                     reinterpret_cast<const char*>(&celt(s, 0)));
         for (p=switches; *p!=nullptr; p+=2)
         {   if (std::strcmp(1+*p, &sname[1]) == 0) break;
         }
@@ -1897,8 +1899,8 @@ void review_switch_settings()
     {   LispObject s = car(sw);
         char sname[64];
         int n1;
-        char *v;
-        char **p;
+        char* v;
+        char** p;
         sw = cdr(sw);
         if (is_symbol(s)) s = qpname(s);
         if (!is_vector(s) || !is_string_header(s)) continue;
@@ -1924,16 +1926,16 @@ bool CSL_MD5_busy;
 // checksum lives is a bit crummy. But the total cost is linear in the
 // number of things that have been compiled into C.
 
-static void get_checksum(const setup_type *p)
+static void get_checksum(const setup_type* p)
 {   while (p->name!=nullptr) p++;
     if (p->one != nullptr && p->two != nullptr)
-    {   const unsigned char *w = reinterpret_cast<const unsigned char *>
+    {   const unsigned char* w = reinterpret_cast<const unsigned char*>
                                  (p->two);
-        CSL_MD5_Update(w, std::strlen(reinterpret_cast<const char *>(w)));
+        CSL_MD5_Update(w, std::strlen(reinterpret_cast<const char*>(w)));
     }
 }
 
-void get_user_files_checksum(unsigned char *b)
+void get_user_files_checksum(unsigned char* b)
 {   size_t i;
     CSL_MD5_Init();
     for (i=0; setup_tables[i]!=nullptr; i++)
@@ -1964,7 +1966,7 @@ void setup(int restart_flag, double store_size)
     if ((restart_flag & 2) != 0) init_heap_segments(store_size);
     garbage_collection_permitted = false;
     THREADID;
-    stack = reinterpret_cast<LispObject *>(stackBase);
+    stack = reinterpret_cast<LispObject*>(stackBase);
     *stack = nil;
     exit_tag = exit_value = nil;
     exit_reason = UNWIND_NULL;
@@ -2030,7 +2032,7 @@ void setup(int restart_flag, double store_size)
             }
         }
     }
-    else for (LispObject **p = list_bases; *p!=nullptr; p++) **p = nil;
+    else for (LispObject** p = list_bases; *p!=nullptr; p++) **p = nil;
 
     stackLimit = ~static_cast<uintptr_t>(0xff) &
                  reinterpret_cast<uintptr_t>(
@@ -2038,10 +2040,10 @@ void setup(int restart_flag, double store_size)
     // allow some slop at end
 
 #ifndef CONSERVATIVE
-    void *p = vheap_pages[vheap_pages_count++] =
+    void* p = vheap_pages[vheap_pages_count++] =
                   allocate_page("vheap warm setup");
     vfringe = reinterpret_cast<LispObject>(
-                  8 + reinterpret_cast<char *>(doubleword_align_up(
+                  8 + reinterpret_cast<char*>(doubleword_align_up(
                               reinterpret_cast<intptr_t>(p))));
     vheaplimit = static_cast<LispObject>(vfringe + (CSL_PAGE_SIZE - 16));
     p = heap_pages[heap_pages_count++] = allocate_page("heap warm setup");
@@ -2064,9 +2066,9 @@ void setup(int restart_flag, double store_size)
 // could be adjusted on the basis of experience with this code.
     if ((init_flags & INIT_EXPANDABLE) != 0)
     {   int32_t more = heap_pages_count + vheap_pages_count;
-        more = 3 *more - pages_count;
+        more = 3*more - pages_count;
         while (more-- > 0)
-        {   void *page = reinterpret_cast<void *>(
+        {   void* page = reinterpret_cast<void*>(
                 new (std::nothrow) char[CSL_PAGE_SIZE]);
             if (page == nullptr)
             {   init_flags &= ~INIT_EXPANDABLE;
@@ -2106,7 +2108,7 @@ LispObject multiplication_buffer;
 // Here is a table of all the list-bases that CSL marks from, and that
 // must have their values captured in checkpoint files.
 
-LispObject *list_bases[] =
+LispObject* list_bases[] =
 {   &active_stream,         &allow_key_key,     &allow_other_keys,
     &all_packages,          &and_symbol,        &append_symbol,
     &applyhook,             &apply_symbol,      &autoload_symbol,

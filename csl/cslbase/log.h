@@ -61,6 +61,8 @@
 #include <cassert>
 #include <stdexcept>
 #include <atomic>
+#include <thread>
+#include <chrono>
 
 
 #ifdef CSL
@@ -84,6 +86,7 @@ extern void term_close();
         std::fflush(spool_file);
     }
     term_close();
+    std::exit(999);
 #endif
 #ifdef HAVE_QUICK_EXIT
     std::quick_exit(EXIT_FAILURE);
@@ -103,6 +106,7 @@ extern void term_close();
     }
     term_close();
 #endif
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 #ifdef HAVE_QUICK_EXIT
     std::quick_exit(EXIT_FAILURE);
 #else // HAVE_QUICK_EXIT

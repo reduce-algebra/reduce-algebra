@@ -104,8 +104,8 @@ remprop('weierstrass_sigma1,'simpfn);
 remprop('weierstrass_sigma2,'simpfn);
 remprop('weierstrass_sigma3,'simpfn);
 
-create!-package ('(ellipfn efjacobi efellint efjacinv eftheta efweier),
-                 '(contrib ellipfn));
+create!-package ('(ellipfn efjacobi efellint efjacinv eftheta
+                   efweier efnumeric), '(contrib ellipfn));
 
 %switch savesfs=on;
 
