@@ -6,6 +6,7 @@ include '../include/begin-body.php';
 ?>
 <h2>Contents</h2>
 <ul>
+    <li><a href="#Versions">Desktop and Mobile Versions</a></li>
     <li><a href="#MainPage">Main Page</a></li>
     <li><a href="#InputEditor">Input Editor</a></li>
     <li><a href="#REDUCEMenu">REDUCE Menu</a></li>
@@ -17,8 +18,33 @@ include '../include/begin-body.php';
     <li><a href="#QueryString">Controlling Web REDUCE via the URL Query String</a></li>
 </ul>
 
-<h2 id="MainPage">Main Page</h2>
+<h2 id="Versions">Desktop and Mobile Versions</h2>
+<p>
+    There are currently two versions of Web REDUCE: desktop and
+    mobile.  The desktop (normal) version allocates 1GB of memory and
+    is a full build of REDUCE, including all packages.  The mobile
+    version allocates 256MB of memory and does not include the more
+    specialised packages.  The mobile version is currently necessary
+    because of problems with memory management in mobile web browsers
+    and not primarily because mobile devices lack physical memory.
+    The mobile version runs on desktop browsers, but probably not vice
+    versa!
+</p>
+<p>
+    You select the version you want to run by clicking the appropriate
+    button on the start page, which you reach by selecting <em>Web
+    REDUCE</em> in the main navigation panel.  The desktop version is
+    started by visiting the URL <a href="/web-reduce/">/web-reduce/</a>
+    whereas the mobile version is started by visiting the URL
+    <a href="/web-reduce/?mobile">/web-reduce/?mobile</a>, which you
+    can also do explicitly.  The mobile version defaults to full
+    window mode (see the <a href="#ViewMenu">View Menu</a>) and tries to
+    re-position the window contents after input events so that you can
+    see the output, whereas the desktop version refocuses the input
+    editor.
+</p>
 
+<h2 id="MainPage">Main Page</h2>
 <p>
     Web REDUCE normally starts loading as soon as its main page is
     opened and starts running as soon as it has loaded, which should
@@ -54,7 +80,7 @@ include '../include/begin-body.php';
 <p>
     You type (or paste) REDUCE input into the input editor pane, edit
     it as necessary, and then click on the <em>Send Input</em>
-    button, which sends the input to REDUCE and echos it in the top
+    button, which sends the input to REDUCE and echoes it in the top
     pane. This clears the input editor, but you can scroll through
     previous input (entered via the input editor) using the
     <em>Earlier Input</em> and <em>Later Input</em> buttons.
@@ -119,22 +145,34 @@ include '../include/begin-body.php';
     multi-statement input.
 </p>
 <p>
-    By default, matching delimiter pairs in the input editor are highlighted by underlining the delimiters and their
-    content when the text cursor is immediately after a closing delimiter or immediately before an opening delimiter.
-    The delimiter pairs that are highlighted are: brackets, <code>(&hellip;)</code> and <code>{&hellip;}</code>;
-    group statements, <code>&lt;&lt;&hellip;>></code>; block statements, <code>begin&hellip;end</code>.
-    Delimiter highlighting can be turned on and off using an entry in the <a href="#ViewMenu">View menu</a>. Delimiter
-    matching handles nested delimiters correctly and partially ignores delimiters in strings, but not in comments since
-    comments are not expected in interactive input. An unmatched closing or opening delimiter immediately before or
-    after the text cursor is highlighted in the same error style as used in the I/O display.
+    By default, matching delimiter pairs in the input editor are
+    highlighted by underlining the delimiters and their content when
+    the text cursor is immediately after a closing delimiter or
+    immediately before an opening delimiter.  The delimiter pairs that
+    are highlighted are: brackets, <code>(&hellip;)</code> and
+    <code>{&hellip;}</code>; group statements,
+    <code>&lt;&lt;&hellip;>></code>; block statements,
+    <code>begin&hellip;end</code>.  Delimiter highlighting can be
+    turned on and off using an entry in the <a href="#ViewMenu">View menu</a>.
+    Delimiter matching handles nested delimiters correctly and
+    partially ignores delimiters in strings, but not in comments since
+    comments are not expected in interactive input. An unmatched
+    closing or opening delimiter immediately before or after the text
+    cursor is highlighted in the same error style as used in the I/O
+    display.
 </p>
 <p>
-    Most Greek letters (both cases) input as Unicode characters via the input editor or the menus (see below) are
-    converted to their TeX names when they are sent to REDUCE, and should then be handled appropriately and displayed as
-    Greek letters in REDUCE output if typeset maths is enabled (which it is by default; see below). This facility is
-    primarily intended for use by the <a href="#FunctionsMenu">Functions</a> dialogues to allow conventional parameter
-    names to be used, some of which are Greek. Superscript 2 is also converted to its ASCII equivalent. (Other non-ASCII
-    characters may be similarly converted in later releases.)
+    Most Greek letters (both cases) input as Unicode characters via
+    the input editor or the menus (see below) are converted to their
+    TeX names when they are sent to REDUCE, and should then be handled
+    appropriately and displayed as Greek letters in REDUCE output if
+    typeset maths is enabled (which it is by default; see below). This
+    facility is primarily intended for use by the
+    <a href="#FunctionsMenu">Functions</a> dialogues to allow
+    conventional parameter names to be used, some of which are
+    Greek. Superscript 2 is also converted to its ASCII equivalent.
+    (Other non-ASCII characters may be similarly converted in later
+    releases.)
 </p>
 
 <h2 id="REDUCEMenu">REDUCE Menu</h2>
@@ -178,11 +216,14 @@ include '../include/begin-body.php';
     The <em>File</em> menu uses the experimental
     <a href="https://web.dev/file-system-access/">File System Access API</a> provided by
     <a href=https://en.wikipedia.org/wiki/Chromium_(web_browser)>Chromium-based browsers</a>
-    such as Chrome, Edge, and Opera on desktop platforms, which works well. On other browsers,
-    such as Firefox, Safari and on mobile platforms, much cruder facilities have to be used, which work much less well.
-    <strong>If you intend to use file input or output then I recommend that you use a Chromium-based browsers on a
+    such as Chrome, Edge, and Opera on desktop platforms, which works
+    well. On other browsers, such as Firefox, Safari and on mobile
+    platforms, much cruder facilities have to be used, which work much
+    less well.  <strong>If you intend to use file input or output then
+        I recommend that you use a Chromium-based browsers on a
         desktop platform!</strong>
-    The <em>File</em> menu is enabled only when Web REDUCE is running, and provides the following items:
+    The <em>File</em> menu is enabled only when Web REDUCE is running,
+    and provides the following items:
 </p>
 <dl>
     <dt>Echo File Input</dt>
@@ -218,13 +259,18 @@ include '../include/begin-body.php';
         outputting to the specified file.
     </dd>
     <dd>
-        On Chromium-based desktop browsers, the normal file picker is used to select an output file, and if it already
-        exists you can choose to overwrite it. On other browsers, a dialogue allows the default output file name to be
-        edited, but the file will be output to a location determined by your browser, which you may be able to configure
-        as one of your browser's settings. Also, your browser's normal download dialogue will appear when you shut the
-        output file, which you must acknowledge appropriately, because saving the output file is unavoidably emulated as
-        a download. If the output file already exists then the new file will be automatically renamed and the existing
-        file will not be overwritten.
+        On Chromium-based desktop browsers, the normal file picker is
+        used to select an output file, and if it already exists you
+        can choose to overwrite it. On other browsers, a dialogue
+        allows the default output file name to be edited, but the file
+        will be output to a location determined by your browser, which
+        you may be able to configure as one of your browser's
+        settings. Also, your browser's normal download dialogue will
+        appear when you shut the output file, which you must
+        acknowledge appropriately, because saving the output file is
+        unavoidably emulated as a download. If the output file already
+        exists then the new file will be automatically renamed and the
+        existing file will not be overwritten.
     </dd>
     <dt>Output Here</dt>
     <dd>
@@ -262,6 +308,16 @@ include '../include/begin-body.php';
     The <em>View</em> menu provides the following items:
 </p>
 <dl>
+    <dt>Full Window</dt>
+    <dd>
+        When this box is checked, Web REDUCE hides content that is
+        extraneous to the web app, namely the header and footer
+        regions, navigation panel, page heading and MathJax logo, so
+        that the web app uses the full browser window.  This is
+        primarily intended for use on small displays and is the
+        default in mobile mode.  In desktop mode, this box is
+        unchecked by default.
+    </dd>
     <dt>I/O Colouring</dt>
     <dd>
         When this box is checked, Web REDUCE displays input coloured
@@ -291,8 +347,8 @@ include '../include/begin-body.php';
     </dd>
     <dt>Highlight Matching Delimiters</dt>
     <dd>
-        When this box is checked, the input editor underlines matching delimiters and their content.
-        It is checked by default.
+        When this box is checked, the input editor underlines matching
+        delimiters and their content.  It is checked by default.
     </dd>
 </dl>
 
@@ -386,15 +442,20 @@ include '../include/begin-body.php';
         two-sided limit. All fields are required.
     </dd>
     <dt>Sum or Product&hellip;</dt>
-    <dd>This template supports repeated sums and products of sequences, i.e. functions of a discrete control variable that
+    <dd>This template supports repeated sums and products of sequences, i.e. functions of a discrete control variable
+        that
         runs over a range of successive integers. You select whether to construct a sum or product by clicking on the
         appropriate toggle button, which defaults to a sum.
     </dd>
     <dd>
-        You can select whether the range is considered to be symbolic or numeric, which selects different algorithms. Selecting
-        the symbolic range option (the default) implies that you want a closed-form result, which is analogous to evaluating an
-        integral, and the upper or both limit values can be omitted, giving an indefinite sum or product. Selecting the numeric
-        range option implies explicitly adding or multiplying a finite sets of values using a <code>for</code> loop, and all
+        You can select whether the range is considered to be symbolic or numeric, which selects different algorithms.
+        Selecting
+        the symbolic range option (the default) implies that you want a closed-form result, which is analogous to
+        evaluating an
+        integral, and the upper or both limit values can be omitted, giving an indefinite sum or product. Selecting the
+        numeric
+        range option implies explicitly adding or multiplying a finite sets of values using a <code>for</code> loop, and
+        all
         field values are required.
     </dd>
     <dt>Matrix&hellip;</dt>
@@ -438,7 +499,7 @@ include '../include/begin-body.php';
     function dialogues all provide hyperlinks to the key sections of
     the HTML version of the REDUCE Manual, which open in a new tab in
     your web browser. Hover over a function name to pop up a tooltip
-    that gives a hint at its definition, which often uses linearlized
+    that gives a hint at its definition, which often uses linearized
     mathematical notation similar to LaTeX (but without any
     backslashes).
 </p>
@@ -526,8 +587,18 @@ include '../include/begin-body.php';
 </dl>
 
 <h2 id="QueryString">Controlling Web REDUCE via the URL</h2>
-
+<p>
+    Currently, the following options can be used only singly; they
+    cannot be combined.
+</p>
 <ul>
+    <li>
+        If the main Web REDUCE page is opened with the query string
+        <code>?mobile</code> appended to the URL, i.e. <code>/web-reduce/?mobile</code>,
+        then the mobile version of Web REDUCE is started in full
+        window mode; see <a href="#Versions">Desktop and Mobile Versions</a>
+        and <a href="#ViewMenu">View Menu</a>.
+    </li>
     <li>
         If the main Web REDUCE page is opened with the query string
         <code>?noautorun</code> appended to the URL, i.e. <code>/web-reduce/?noautorun</code>,
@@ -543,7 +614,7 @@ include '../include/begin-body.php';
     </li>
 </ul>
 
-<address>Francis Wright, December 2021</address>
+<address>Francis Wright, February 2022</address>
 </div><!-- opened in begin-body.php -->
 <?php include '../include/footer.php'; ?>
 </body>

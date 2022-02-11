@@ -16,7 +16,7 @@ import { debug, typesetMathsCheckbox, inputDiv, Global } from "./Main.js";
 import { FileSystemWritableFileStream } from "./Main.js";
 
 // Imported functions:
-import { sendPlainTextToIODisplay, sendToReduce, enableTypesetMaths } from "./Main.js";
+import { refocus, sendPlainTextToIODisplay, sendToReduce, enableTypesetMaths } from "./Main.js";
 
 interface FileSystemFileHandle {
     readonly name: string,
@@ -99,7 +99,7 @@ document.getElementById("InputFileMenuItem").addEventListener('click', async () 
     } catch (err) {
         if (err.name !== 'AbortError') console.error(err.name, err.message);
     }
-    inputDiv.focus();
+    refocus();
 });
 
 const defaultOutputFileName = "output.log";
