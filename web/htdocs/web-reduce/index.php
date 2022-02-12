@@ -140,6 +140,11 @@ include '../include/begin-head.php';
                         data-bs-toggle="dropdown" aria-expanded="false">View</a>
                     <ul class="dropdown-menu" aria-labelledby="ViewMenuLink">
                         <li class="dropdown-item">
+                            <input id="FullWindowCheckbox" type="checkbox" />
+                            <label for="FullWindowCheckbox">Full Window</label>
+                        </li>
+                        <hr class="dropdown-divider">
+                        <li class="dropdown-item">
                             <input id="IOColouringCheckbox" type="checkbox" checked="checked" />
                             <label for="IOColouringCheckbox">I/O Colouring</label>
                         </li>

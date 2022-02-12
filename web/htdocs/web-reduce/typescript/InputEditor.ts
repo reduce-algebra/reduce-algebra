@@ -11,7 +11,7 @@
 import { inputDiv, earlierButton, sendInputButton, laterButton, noOutput, Global } from "./Main.js";
 
 // Imported functions:
-import { sendToReduce, sendToReduceAndEcho, stopREDUCE } from "./Main.js";
+import { refocus, sendToReduce, sendToReduceAndEcho, stopREDUCE } from "./Main.js";
 
 const inputList = [];
 let inputListIndex = 0;
@@ -55,7 +55,7 @@ function sendInput(event: KeyboardEvent | MouseEvent) {
         laterButton.disabled = true;
         if (quitPattern.test(text)) stopREDUCE();
     }
-    inputDiv.focus()
+    refocus()
 }
 
 sendInputButton.addEventListener('click', sendInput);

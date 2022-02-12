@@ -6,7 +6,6 @@ include '../include/begin-body.php';
 ?>
 
 <h2 class="text-center"><strong>This facility is experimental!</strong></h2>
-<h2 class="text-center"><strong>Currently only desktop web browsers are supported.</strong></h2>
 
 <h2>Purpose</h2>
 
@@ -23,17 +22,37 @@ include '../include/begin-body.php';
 if ($_SERVER['QUERY_STRING']): ?>
 <h2>Running Web REDUCE</h2>
 <p>
-    Click the button below to open the Web REDUCE main page. Web
-    REDUCE will start loading immediately and start running as
+    Click a button below to open the Web REDUCE main page
+    and start the appropriate version of Web REDUCE, which
+    will start loading immediately and start running as
     soon as it has loaded. <strong>Beware that, the first time
         you run it (or after an update to the Web REDUCE engine),
         there will be a noticeable pause while the Web REDUCE engine
         downloads.</strong> But normally it should load and run
     almost instantaneously.
 </p>
-<p class="text-center">
-    <a class="btn btn-primary btn-lg" href="/web-reduce">Start Web REDUCE</a>
+<p>
+    The difference between the two versions of Web REDUCE is that
+    the mobile version uses less memory than the desktop version
+    and omits some of the more specialised packages. The mobile
+    version is currently necessary because of problems with
+    memory management in mobile web browsers and not primarily
+    because mobile devices lack physical memory. The mobile version
+    runs on desktop browsers, but probably not vice versa!
 </p>
+<p><strong>
+    Beware that the mobile version defaults to full window mode, which
+    hides the main navigation panel/widget.  Full window mode can be
+    controlled using the View menu.
+</strong></p>
+<ul class="list-group list-group-horizontal-sm text-center">
+    <li class="list-group-item bg-transparent">
+        <a class="btn btn-primary btn-lg" href="/web-reduce">Start desktop Web REDUCE</a>
+    </li>
+    <li class="list-group-item bg-transparent">
+        <a class="btn btn-primary btn-lg" href="/web-reduce/?mobile">Start mobile Web REDUCE</a>
+    </li>
+</ul>
 <?php endif; ?>
 
 <h2>Limitations</h2>
@@ -56,7 +75,8 @@ if ($_SERVER['QUERY_STRING']): ?>
     </li>
     <li>
         Web REDUCE does not support compiling or loading user modules
-        or packages. It does, however, provide all the standard
+        or packages, although it does support compiling procedures using <code>on comp</code>.
+        It does, however, provide all (or many of) the standard
         REDUCE packages, which as usual either autoload or can be
         loaded explicitly with the
         <a href="/manual-lookup.php?User%20Contributed%20Packages"><code>load_package</code></a>
@@ -72,21 +92,22 @@ if ($_SERVER['QUERY_STRING']): ?>
         loads the matrix package the first time it is used.
     </li>
     <li>
-        Web REDUCE does not provide any input prompts, unlike
-        conventional REDUCE. This limits the usefulness of the
-        standard REDUCE commands
-        <a href="/manual-lookup.php?Referencing%20Previous%20Results"><code>ws</code>
-            and <code>input</code></a>, which work but you have to count
-        inputs yourself! In principle, the standard REDUCE command
-        <a href="/manual-lookup.php?Referencing%20Previous%20Results"><code>display</code></a>
-        should help, but it doesn't work.
-    </li>
-    <li>
         User queries do not work, so Web REDUCE sets <a href="/manual-lookup.php?Interactive%20File%20Control"><code>off
             int</code></a> by default. This means that after a syntax error, REDUCE will not recover in the way that it
         would when running interactively, but instead will continue with parsing only. The only way to recover from this
         at present is to restart REDUCE, which you can do using the <a href="UserGuide.php#REDUCEMenu">REDUCE Menu</a>
         or by reloading the Web REDUCE main page, which will reset the interface and restart REDUCE.
+    </li>
+    <li>
+        Web REDUCE does not provide any input prompts, unlike
+        conventional REDUCE. This limits the usefulness of the
+        standard REDUCE operators
+        <a href="/manual-lookup.php?Referencing%20Previous%20Results"><code>ws</code>
+            and <code>input</code></a>, which work but you have to count
+        inputs yourself! (In principle, the standard REDUCE command
+        <a href="/manual-lookup.php?Referencing%20Previous%20Results"><code>display</code></a>
+        should help, but it doesn't work with <code>off int</code>.)
+        However, <code>ws</code> used as a variable works as usual.
     </li>
     <li>
         Any kind of comment at the end of input causes an
@@ -102,9 +123,7 @@ if ($_SERVER['QUERY_STRING']): ?>
     </li>
     <li>
         You need a recent web browser, preferably the latest version,
-        to run Web REDUCE. It does not seem to run on mobile devices,
-        such as devices running Android or Chromebooks. I believe this
-        is due to memory-management limitations in current mobile web browsers.
+        to run Web REDUCE.
     </li>
 </ul>
 <p>
@@ -136,7 +155,7 @@ if ($_SERVER['QUERY_STRING']): ?>
     library, which is also used elsewhere on the REDUCE web site.
 </p>
 
-<address><a href="https://sites.google.com/site/fjwcentaur/feedback">Francis Wright</a>, January 2022</address>
+<address><a href="https://sites.google.com/site/fjwcentaur/feedback">Francis Wright</a>, February 2022</address>
 
 </div><!-- opened in begin-body.php -->
 <?php include '../include/footer.php'; ?>

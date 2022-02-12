@@ -26,6 +26,9 @@ export const Global: {
 /** True if console logging is enabled. */
 export const debug = (location.search === '?debug');
 
+/** True if mobile version selected. */
+const mobileVersion = (location.search === "?mobile");
+
 // Set up access to document elements and reset their defaults for when the page is reloaded:
 const startREDUCEMenuItem = document.getElementById("StartREDUCEMenuItem") as HTMLButtonElement;
 const stopREDUCEMenuItem = document.getElementById("StopREDUCEMenuItem") as HTMLButtonElement;
@@ -41,6 +44,13 @@ export const inputDiv = document.getElementById('InputDiv');
 inputDiv.innerHTML = "";
 inputDiv.focus();
 
+export function refocus() {
+    if (mobileVersion) // Ensure I/O Display is visible:
+        window.scrollTo(0, document.getElementById("IODisplayIframe").offsetTop);
+    else // Focus the input editor:
+        inputDiv.focus();
+}
+
 /** Earlier Button HTML Element. */
 export const earlierButton = document.getElementById('EarlierButton') as HTMLButtonElement;
 earlierButton.disabled = true;
@@ -54,7 +64,9 @@ laterButton.disabled = true;
 const fileMenuLink = document.getElementById("FileMenuLink") as HTMLAnchorElement;
 const templatesMenuLink = document.getElementById("TemplatesMenuLink") as HTMLAnchorElement;
 const functionsMenuLink = document.getElementById("FunctionsMenuLink") as HTMLAnchorElement;
-let ioDisplayWindow, ioDisplayHead, ioDisplayBody;
+
+interface MJWindow extends Window { readonly MathJax?: any }
+let ioDisplayWindow: MJWindow, ioDisplayHead: HTMLElement, ioDisplayBody: HTMLElement;
 
 /** True if REDUCE has not yet produced any output. */
 export let noOutput = true;
@@ -103,6 +115,7 @@ export function sendPlainTextToIODisplay(text: string, displayClass?: string) {
         setRunningState(true);
         displayClass = undefined;
         noOutput = false;
+        text = (mobileVersion ? "Mobile " : "") + "Web " + text;
     }
     // For now, append text within a <pre> element:
     const pre = document.createElement("pre");
@@ -218,7 +231,7 @@ function startREDUCE() {
     try {
         // Doesn't seem to catch errors in the worker!
         // Need to catch worker errors in the worker and pass them out as messages.
-        worker = new Worker("reduce.web.js");
+        worker = new Worker(mobileVersion ? "mobile/reduce.web.js" : "reduce.web.js");
         worker.onmessage = reduceWebMessageHandler;
         worker.onerror = reduceWebErrorHandler;
         // The rejectionhandled and unhandledrejection events described
@@ -309,14 +322,35 @@ export function loadPackage(pkg: string) {
 // Menu Support
 // ************
 
-// REDUCE menu support:
+// REDUCE menu:
 startREDUCEMenuItem.addEventListener("click", startREDUCE);
 stopREDUCEMenuItem.addEventListener("click", stopREDUCE);
 clearDisplayMenuItem.addEventListener("click", clearIODisplay);
 document.getElementById("PrintDisplayMenuItem").addEventListener("click", () => ioDisplayWindow.print());
 
-// View menu support:
-let ioColouringStyleElement = document.createElement("style");
+// View menu -
+// Full Window:
+function setFullWindow(full: boolean) {
+    // If full then hide header, footer and navigation menu:
+    document.getElementsByTagName("header")[0].hidden = full;
+    document.getElementsByTagName("footer")[0].hidden = full;
+    document.querySelector<HTMLElement>("#navmenu div").hidden = full;
+    document.getElementById("main").className = full ? "" : defaultMainClassName;
+    // If full then hide page heading and MathJax logo:
+    document.querySelector<HTMLElement>("#main h1").hidden = full;
+    document.querySelector<HTMLElement>("a[href='https://www.mathjax.org']").hidden = full;
+}
+
+const defaultMainClassName = document.getElementById("main").className;
+
+const fullWindowCheckbox = document.getElementById("FullWindowCheckbox") as HTMLInputElement;
+fullWindowCheckbox.checked = mobileVersion;
+if (mobileVersion) setFullWindow(true);
+fullWindowCheckbox.addEventListener("change",
+    () => setFullWindow(fullWindowCheckbox.checked));
+
+// I/O Colouring:
+const ioColouringStyleElement = document.createElement("style");
 ioColouringStyleElement.innerText = "pre.input {color: red;} *.output {color: blue;}";
 
 ioColouringCheckbox.addEventListener("change", event => {
@@ -326,6 +360,7 @@ ioColouringCheckbox.addEventListener("change", event => {
         ioColouringStyleElement.remove();
 });
 
+// Typeset Maths:
 /**
  * Enable/disable typeset maths display by turning the fancy switch on/off privately.
  * @param {boolean} enable - True/false to enable/disable.
@@ -339,6 +374,7 @@ typesetMathsCheckbox.addEventListener("change", () => {
     enableTypesetMaths(typesetMathsCheckbox.checked);
 });
 
+// Centre Typeset Maths:
 centreTypesetMathsCheckbox.addEventListener("change", event => {
     ioDisplayWindow.MathJax.config.chtml.displayAlign = centreTypesetMathsCheckbox.checked ? 'center' : 'left';
     ioDisplayWindow.MathJax.startup.getComponents(); // See http://docs.mathjax.org/en/latest/web/configuration.html
@@ -376,7 +412,7 @@ centreTypesetMathsCheckbox.addEventListener("change", event => {
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 </head>
 <body>
-    By default, REDUCE should load automatically, but if it does not then please right-click here and reload this <b>frame</b>.
+    By default, REDUCE should load automatically.
 </body>
 </html>`
 }
