@@ -433,7 +433,7 @@ example shows how the factor is chosen here
 The indeterminate sgn in the above example denotes the sign of the
 determinant of the metric. It can be assigned a value or will be
 automatically set if more of the metric structure is specified (via
-COFRAME), \emph{i.e.} it is then set to $g/|g|$, where $g$ is the
+\k{coframe}), \emph{i.e.} it is then set to $g/|g|$, where $g$ is the
 determinant of the metric.  If the Hodge-* operator appears in an
 exterior product of maximal degree as the leftmost factor, the Hodge-*
 is shifted to the right according to
@@ -714,10 +714,10 @@ Syntax:\label{COFRAME}
   \end{tabular}
 \end{flushleft}
 
-\index{Euclidean metric} \index{COFRAME!WITH METRIC}
+\index{Euclidean metric} \ttindex{coframe!with metric}
 This statement automatically sets the dimension of the space and the
 index range. The clause \texttt{with metric} can be omitted if the metric
-\index{COFRAME!WITH SIGNATURE}
+\ttindex{coframe!with signature}
 is Euclidean and the shorthand \texttt{with signature \s{diagonal elements}}
 \label{SIGNATURE} can be used in the case of a pseudo-Euclidean metric. The
 splitting of a metric structure in its metric tensor coefficients and
@@ -877,9 +877,9 @@ The Hodge-* duality operator returns the explicitly constructed dual
 element if applied to coframe base elements. The metric is properly
 taken into account.
 
-\index{Levi-Cevita tensor} \ttindextype[EXCALC]{EPS}{operator}
-The total antisymmetric Levi-Cevita tensor \texttt{eps}\label{EPS} is
-also available.  The value of \texttt{eps} with an even permutation of the
+\index{Levi-Cevita tensor} \ttindextype[EXCALC]{eps}{operator}
+The total antisymmetric Levi-Cevita tensor \f{eps}\label{EPS} is
+also available.  The value of \f{eps} with an even permutation of the
 indices in a covariant position is taken to be +1.
 
 
