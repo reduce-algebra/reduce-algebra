@@ -1,9 +1,9 @@
-\index{Wright, Francis J.}
+\index{Wright, Francis J.}\
 \index{Persons!Wright, Francis J.}
 
 
 %\begin{abstract}
-  The SETS package for \REDUCE 3.5 and later versions provides
+  The SETS package for \REDUCE provides
   algebraic-mode support for set operations on lists regarded as sets
   (or representing explicit sets) and on implicit sets represented by
   identifiers.  It provides the set-valued infix operators (with
@@ -21,9 +21,9 @@
 
 \subsection{Introduction}
 
-REDUCE has no specific representation for a set, neither in algebraic
+\REDUCE has no specific representation for a set, neither in algebraic
 mode nor internally, and any object that is mathematically a set is
-represented in REDUCE as a list.  The difference between a set and a
+represented in \REDUCE as a list.  The difference between a set and a
 list is that in a set the ordering of elements is not significant and
 duplicate elements are not allowed (or are ignored).  Hence a list
 provides a perfectly natural and satisfactory representation for a set
@@ -32,18 +32,18 @@ different internal representations for sets and lists, which may allow
 sets to be processed more efficiently, but this is not \emph{necessary}.
 
 This package supports set theoretic operations on lists and represents
-the results as normal algebraic-mode lists, so that all other REDUCE
+the results as normal algebraic-mode lists, so that all other \REDUCE
 facilities that apply to lists can still be applied to lists that have
 been constructed by explicit set operations.  The algebraic-mode set
 operations provided by this package have all been available in
 symbolic mode for a long time, and indeed are used internally by the
-rest of REDUCE, so in that sense set theory facilities in REDUCE are
+rest of \REDUCE, so in that sense set theory facilities in \REDUCE are
 far from new.  What this package does is make them available in
 algebraic mode, generalize their operation by extending the arity of
 union and intersection, and allow their arguments to be implicit sets
 represented by unbound identifiers.  It performs some simplifications
 on such symbolic set-valued expressions, but this is currently rather
-{\it ad hoc\/} and is probably incomplete.
+\emph{ad hoc} and is probably incomplete.
 
 For examples of the operation of the SETS package see (or run) the
 test file \texttt{sets.tst}.  This package is experimental and
@@ -56,8 +56,8 @@ versions although I cannot provide support for such use.
 
 \subsection{Infix operator precedence}
 
-The set operators are currently inserted into the standard REDUCE
-precedence list (see page 28, \S2.7, of the REDUCE 3.6 manual) as
+The set operators are currently inserted into the standard \REDUCE
+precedence list (see page \pageref{sect:infix}, \S\ref{sect:infix}, of the \REDUCE manual) as
 follows:
 \begin{verbatim}
 or and not member memq = set_eq neq eq >= > <= < subset_eq
@@ -66,7 +66,8 @@ subset freeof + - setdiff union intersection * / ^ .
 
 
 \subsection{Explicit set representation and \texttt{mkset}}
-\ttindextype{mkset}{operator}
+\ttindextype[SETS]{mkset}{operator}
+\hypertarget{operator:MKSET}{}
 
 Explicit sets are represented by lists, and this package does not
 require any restrictions at all on the forms of lists that are
@@ -78,8 +79,9 @@ Since the order of elements in a set is irrelevant it is also
 conventional and may be convenient to sort them into some standard
 order, and an appropriate ordering of a normal representation gives a
 canonical representation.  This means that two identical sets have
-identical representations, and therefore the standard REDUCE equality
-predicate (\texttt{=}) correctly determines set equality; without a
+identical representations, and therefore the standard \REDUCE equality
+predicate (\texttt{=}) \ttindextype{=}{for comparing sets}
+correctly determines set equality; without a
 canonical representation this is not the case.
 
 Pre-processing of explicit set-valued arguments of the set-valued
@@ -87,8 +89,9 @@ operators to remove duplicates is always done because of the obvious
 efficiency advantage if there were any duplicates, and hence explicit
 sets appearing in the values of such operators will never contain any
 duplicate elements.  Such sets are also currently sorted, mainly
-because the result looks better.  The ordering used satisfies the {\tt
-ordp} predicate used for most sorting within REDUCE, except that
+because the result looks better.  The ordering used satisfies the \f{ordp}
+\ttindextype{ordp}{boolean operator}
+predicate used for most sorting within \REDUCE, except that
 explicit integers are sorted into increasing numerical order rather
 than the decreasing order that satisfies \texttt{ordp}.
 
@@ -102,12 +105,14 @@ mkset {1,2,y,x*y,x+y};
 {x + y,x*y,y,1,2}
 \end{verbatim}
 
-The empty set is represented by the empty list \verb|{}|.
+The empty set is represented by the empty list \texttt{\{\}}.
 
 
 \subsection{Union and intersection}
-\ttindextype{union}{operator}\ttindextype{intersection}{operator}
-
+\ttindextype[SETS]{union}{operator}\ttindextype[SETS]{intersection}{operator}\ttindextype[SETS]{intersect}{operator}
+\hypertarget{operator:SETS_UNION}{}
+\hypertarget{operator:INTERSECTION}{}
+\hypertarget{operator:INTERSECT}{}
 The operator \f{intersection} (the name used internally) has the
 shorter synonym \f{intersect}.  These operators will probably most
 commonly be used as binary infix operators applied to explicit sets,
@@ -123,7 +128,7 @@ e.g.
 \end{verbatim}
 They can also be used as n-ary operators with any number of arguments,
 in which case it saves typing to use them as prefix operators (which
-is possible with all REDUCE infix operators), e.g.
+is possible with all \REDUCE infix operators), e.g.
 \begin{verbatim}
 {1,2,3} union {2,3,4} union {3,4,5};
 
@@ -164,7 +169,7 @@ a intersect {};
 {}
 \end{verbatim}
 
-In implementations of REDUCE that provide fancy display using
+In implementations of \REDUCE that provide fancy display using
 mathematical notation, the empty set, union, intersection and set
 difference are all displayed using their conventional mathematical
 symbols, namely $\emptyset$, $\cup$, $\cap$, $\setminus$.
@@ -178,8 +183,10 @@ b intersection c union a
 \end{verbatim}
 
 Intersection distributes over union, which is not applied by default
-but is implemented as a rule list assigned to the variable {\tt
-set\_distribution\_rule}, e.g.
+but is implemented as a rule list assigned to the variable
+\texttt{set\_distribution\_rule}, e.g.
+\ttindextype[SETS]{set\_distribution\_rule}{variable}
+\hypertarget{reserved:SET_DISTRIBUTION_RULE}{}
 \begin{verbatim}
 a intersect (b union c);
 
@@ -192,8 +199,10 @@ a intersection b union a intersection c
 
 
 \subsection{Set difference}
-\ttindextype{setdiff}{operator}
-\ttindextype{\textbackslash{} (setdiff)}{operator}
+\ttindextype[SETS]{setdiff}{operator}
+\ttindextype[SETS]{\textbackslash{} (setdiff)}{operator}
+\hypertarget{operator:SETDIFF}{}
+\hypertarget{operator:setdiffop}{}
 
 The set difference operator is represented by the symbol \texttt{\textbackslash} and
 is always output using this symbol, although it can also be input using
@@ -230,22 +239,25 @@ a
 
 
 \subsection{Predicates on sets}
-\ttindextype{evalb}{operator}
+\ttindextype[SETS]{evalb}{operator}
+\ttindextype[SETS]{true}{identifier}
+\ttindextype[SETS]{false}{identifier}
+\hypertarget{operator:EVALB}{}
 
-These are all binary infix operators.  Currently, like all REDUCE
+These are all binary infix operators.  Currently, like all \REDUCE
 predicates, they can only be used within conditional statements
 \texttt{if}, \texttt{while}, \texttt{repeat}) or within the argument of the
 \texttt{evalb} operator provided by this package, and they cannot remain
 symbolic -- a predicate that cannot be evaluated to a Boolean value
-causes a normal REDUCE error.
+causes a normal \REDUCE error.
 
 The \texttt{evalb} operator provides a convenient shorthand for an \texttt{if}
 statement designed purely to display the value of any Boolean
 expression (not only predicates defined in this package).  It has some
 similarity with the \texttt{evalb} function in Maple, except that the
-values returned by \texttt{evalb} in REDUCE (the identifiers \texttt{true}
-and \texttt{false}) have no significance to REDUCE itself.  Hence, in
-REDUCE, use of \texttt{evalb} is {\em never\/} necessary.
+values returned by \texttt{evalb} in \REDUCE (the identifiers \texttt{true}
+and \texttt{false}) have no significance to \REDUCE itself.  Hence, in
+\REDUCE, use of \texttt{evalb} is \emph{never} necessary.
 \begin{verbatim}
 if a = a then true else false;
 
@@ -276,11 +288,12 @@ I will use the \texttt{evalb} operator in preference to an explicit
 
 
 \subsubsection{Set membership}
-\ttindextype{member}{operator}
+\ttindextype[SETS]{member}{operator}
+\hypertarget{operator:MEMBER}{}
 
 Set membership is tested by the predicate \texttt{member}.  Its left
 operand is regarded as a potential set element and its right operand
-{\em must\/} evaluate to an explicit set.  There is currently no sense
+\emph{must} evaluate to an explicit set.  There is currently no sense
 in which the right operand could be an implicit set; this would
 require a mechanism for declaring implicit set membership (akin to
 implicit variable dependence) which is currently not implemented.  Set
@@ -301,12 +314,14 @@ evalb(a member b);
 
 
 \subsubsection{Set inclusion}
-\ttindextype{subset\_eq}{operator}
+\ttindextype[SETS]{subset\_eq}{operator}\ttindextype[SETS]{subset}{operator}
+\hypertarget{operator:SUBSET_EQ}{}
+\hypertarget{operator:SUBSET}{}
 
 Set inclusion is tested by the predicate \texttt{subset\_eq} where
 \texttt{a subset\_eq b} is true if the set $a$ is either a subset of or equal to
 the set $b$; strict inclusion is tested by the predicate \texttt{subset}
-where \texttt{a subset b} is true if the set $a$ is {\em strictly\/} a
+where \texttt{a subset b} is true if the set $a$ is \emph{strictly} a
 subset of the set $b$ and is false is $a$ is equal to $b$.  These
 predicates provide some support for symbolic set expressions, but this
 is not yet correct as indicated below.  Here are some examples:
@@ -337,7 +352,7 @@ evalb(a intersect b subset a union b);  %%% BUG
 false
 \end{verbatim}
 
-An undecidable predicate causes a normal REDUCE error, e.g.
+An undecidable predicate causes a normal \REDUCE error, e.g.
 \begin{verbatim}
 evalb(a subset_eq {b});
 
@@ -351,10 +366,11 @@ false
 
 
 \subsubsection{Set equality}
-\ttindextype{set\_eq}{operator}
+\ttindextype[SETS]{set\_eq}{operator}
+\hypertarget{operator:SET_EQ}{}
 
 As explained above, equality of two sets in canonical form can be
-reliably tested by the standard REDUCE equality predicate (\texttt{=}).
+reliably tested by the standard \REDUCE equality predicate (\texttt{=}).
 This package also provides the predicate \texttt{set\_eq} to test
 equality of two sets not represented canonically.  The two predicates
 behave identically for operands that are symbolic set expressions

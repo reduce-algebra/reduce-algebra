@@ -39,7 +39,7 @@ numerical coefficient taken outside the absolute value operator. For example:
         abs(-x)       ->  abs(x)
 \end{verbatim}
 
-\subsection{CEILING}\ttindex{CEILING}
+\subsection{CEILING}\ttindextype{ceiling}{operator}
 \hypertarget{operator:CEILING}{}
 This operator returns the ceiling (i.e., the least integer greater than
 the given argument) if its single argument has a numerical value.  A
@@ -57,7 +57,7 @@ This returns the complex conjugate
 of an expression, if that argument has a numerical value.  By default the
 complex conjugate of a non-numerical argument is returned as an expression
 in the operators
-\texttt{repart}\ttindex{repart} and \texttt{impart}\ttindex{impart}.
+\texttt{repart}\ttindextype{repart}{opreator} and \texttt{impart}\ttindextype{impart}{operator}.
 For example:
 \begin{verbatim}
         conj(1+i)     -> - i + 1
@@ -68,7 +68,7 @@ For example:
 If rules have been previously defined for the complex conjugate(s)
 of one or more non-numerical terms appearing in the argument, these rules are
 applied and the expansion in terms of the operators
-\texttt{repart}\ttindex{repart} and \texttt{impart}\ttindex{impart} is
+\texttt{repart}\ttindextype{repart}{operator} and \texttt{impart}\ttindextype{impart}{operator} is
 suppressed.
 
 For example:
@@ -172,7 +172,7 @@ operator.  For example:
         fix(a)      ->  fix(a)
 \end{verbatim}
 
-\subsection{FLOOR}\ttindex{FLOOR}
+\subsection{FLOOR}\ttindextype{floor}{operator}
 \hypertarget{operator:FLOOR}{}
 This operator returns the floor (i.e., the greatest integer less than
 the given argument) if its single argument has a numerical value.  A
@@ -184,11 +184,11 @@ operator.  For example:
         floor(a)      ->  floor(a)
 \end{verbatim}
 
-\subsection{IMPART}\ttindex{IMPART}
+\subsection{IMPART}\ttindextype{impart}{operator}
 \hypertarget{operator:IMPART}{}
 This operator returns the imaginary part of an expression, if that argument
 has an numerical value.  A non-numerical argument is returned as an expression
-in the operators \texttt{repart}\ttindex{repart} and \texttt{impart}.  For example:
+in the operators \texttt{repart}\ttindextype{repart}{operator} and \texttt{impart}\ttindextype{impart}{operator}.  For example:
 \begin{verbatim}
         impart(1+i)        -> 1
         impart(sin(3+4*i)) -> cos(3)*sinh(4)
@@ -212,7 +212,7 @@ which, by its very definition can only have one of the values $\{-1,0,1\}$.
 \hypertarget{operator:MAX}{}
 \hypertarget{operator:MIN}{}
 
-\texttt{max} and \texttt{min}\ttindex{max}\ttindex{min} can take an arbitrary
+\texttt{max} and \texttt{min}\ttindextype{max}{operator}\ttindextype{min}{operator} can take an arbitrary
 number of expressions as their arguments.  If all arguments evaluate to
 numerical values, the maximum or minimum of the argument list is returned.
 If any argument is non-numeric, an appropriately reduced expression is
@@ -225,7 +225,7 @@ returned.  For example:
 \end{verbatim}
 \texttt{max} or \texttt{min} of an empty list returns 0.
 
-\subsection{NEXTPRIME}\ttindex{NEXTPRIME}
+\subsection{NEXTPRIME}\ttindextype{nextprime}{operator}
 \hypertarget{operator:NEXTPRIME}{}
 
 \texttt{nextprime} returns the next prime greater than its integer argument,
@@ -272,7 +272,7 @@ A type error occurs if the value of the argument is not a positive integer.
 This returns a two-element list of the real and imaginary parts of an
 expression, if that argument has an
 numerical value.  A non-numerical argument is returned as an expression in
-the operators \texttt{repart} and \texttt{impart}\ttindex{impart}.
+the operators \texttt{repart}\ttindextype{repart}{operator} and \texttt{impart}\ttindextype{impart}{operator}.
 This is more efficient than calling \texttt{repart} and \texttt{impart}
 separately particularly if its argument is complicated.
 For example:
@@ -915,13 +915,13 @@ for example \texttt{jacobisn(x,k)} will be output as $\mathrm{sn}(x,k)$ and
 \texttt{weierstrass(x,omega1,omega3)} as $\wp(x,\omega_1,\omega_3)$.
 
 \index{Jacobi Elliptic functions}\index{Elliptic functions}
-\ttindex{jacobiam}
-\ttindex{jacobisn}\ttindex{jacobicn}
-\ttindex{jacobidn}\ttindex{jacobins}
-\ttindex{jacobinc}\ttindex{jacobind}
-\ttindex{jacobisc}\ttindex{jacobisd}
-\ttindex{jacobicd}\ttindex{jacobics}
-\ttindex{jacobids}\ttindex{jacobidc}
+\ttindextype[ELLIPFN]{jacobiam}{operator}
+\ttindextype[ELLIPFN]{jacobisn}{operator}\ttindextype[ELLIPFN]{jacobicn}{operator}
+\ttindextype[ELLIPFN]{jacobidn}{operator}\ttindextype[ELLIPFN]{jacobins}{operator}
+\ttindextype[ELLIPFN]{jacobinc}{operator}\ttindextype[ELLIPFN]{jacobind}{operator}
+\ttindextype[ELLIPFN]{jacobisc}{operator}\ttindextype[ELLIPFN]{jacobisd}{operator}
+\ttindextype[ELLIPFN]{jacobicd}{operator}\ttindextype[ELLIPFN]{jacobics}{operator}
+\ttindextype[ELLIPFN]{jacobids}{operator}\ttindextype[ELLIPFN]{jacobidc}{operator}
 \textbf{Jacobi Elliptic Functions:}
 \begin{verbatim}
     jacobisn jacobicn jacobidn
@@ -939,8 +939,8 @@ All are binary functions with the second argument being the modulus.
 The binary function \f{jacobiam} is the amplitude.
 
 \index{Elliptic Integrals}\index{Zeta function of Jacobi}
-\ttindex{jacobiZeta}\ttindex{jacobiE}
-\ttindex{ellipticK}\ttindex{ellipticE}\ttindex{ellipticF}
+\ttindextype[ELLIPFN]{jacobiZeta}{operator}\ttindextype[ELLIPFN]{jacobiE}{operator}
+\ttindextype[ELLIPFN]{ellipticK}{operator}\ttindextype[ELLIPFN]{ellipticE}{operator}\ttindextype[ELLIPFN]{ellipticF}{operator}
 \textbf{Complete and Incomplete Elliptic Integrals of the First \& Second Kinds:}
 \begin{verbatim}
     ellipticK ellipticE ellipticF 
@@ -955,8 +955,8 @@ the first kind, Jacobi's form of the incomplete elliptic integral of
 the second kind and Jacobi's Zeta function respectively.
 
 \index{Jacobi Theta functions}
-\ttindex{elliptictheta1}\ttindex{elliptictheta2}
-\ttindex{elliptictheta3}\ttindex{elliptictheta4}
+\ttindextype[ELLIPFN]{elliptictheta1}{operator}\ttindextype[ELLIPFN]{elliptictheta2}{operator}
+\ttindextype[ELLIPFN]{elliptictheta3}{operator}\ttindextype[ELLIPFN]{elliptictheta4}{operator}
 \textbf{Jacobi's Theta Functions:}
 \begin{verbatim}
     elliptictheta1 elliptictheta2

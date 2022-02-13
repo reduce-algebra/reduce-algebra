@@ -1,3 +1,8 @@
+
+\index{Gaskell, Kerry}\index{Persons!Gaskell, Kerry}
+\index{Kameny, Stanley L.}\index{Persons!Kameny, Stanley L.}
+\index{Neun, Winfried}\index{Persons!Neun, Winfried}
+
 \subsection{Introduction}
 %% For MathJax, must be part of a paragraph to avoid extra space:
 \ifdefined\VerbMath{\makehashletter
@@ -136,8 +141,8 @@ To use this package, you must first load it by the command
 \begin{verbatim}
 load_package defint;
 \end{verbatim}
-Definite integration is then possible using the \verb+int+
-command with the syntax:
+Definite integration is then possible using the \f{int} operator
+with the syntax:
 \begin{verbatim}
    INT(EXPRN:algebraic,VAR:kernel,LOW:algebraic,UP:algebraic)
        :algebraic.
@@ -166,8 +171,8 @@ the definite integration of EXPRN with respect to VAR.
  int(x*sin(1/x),x,0,infinity);
 
            1
-INT(X*SIN(---),X,0,INFINITY)
-           X
+int(x*sin(---),x,0,infinity)
+           x
 \end{verbatim}
 
 \[
@@ -189,9 +194,9 @@ INT(X*SIN(---),X,0,INFINITY)
 \begin{verbatim}
  int(x*e^(-1/2x)*Heaviside(1-x),x,0,infinity);
 
-  2*(2*SQRT(E) - 3)
+  2*(2*sqrt(e) - 3)
  -------------------
-       SQRT(E)
+       sqrt(e)
 \end{verbatim}
 
 \[
@@ -213,7 +218,7 @@ INT(X*SIN(---),X,0,INFINITY)
 \begin{verbatim}
  int(cos(2x),x,y,2y);
 
- SIN(4*Y) - SIN(2*Y)
+ sin(4*y) - sin(2*y)
 ---------------------
           2
 \end{verbatim}
@@ -239,7 +244,7 @@ available are as follows:
 \index{Laplace transform}
 \index{Integral transform!Laplace transform}
 \hypertarget{operator:LAPLACE_TRANSFORM}{}
-\ttindextype{LAPLACE\_TRANSFORM}{operator}
+\ttindextype{laplace\_transform}{operator}
 
 The Laplace transform
 
@@ -247,10 +252,9 @@ The Laplace transform
 f(s) = \mathcal{L}\{\mathrm{F}(t)\} = \int_{0}^{\infty} e^{-st}F(t)\,dt
 \]
 
-can be calculated by using the \verb+laplace_transform+ command.
+can be calculated by using the \f{laplace\_transform} operator.
 
 This requires as parameters
-
 \begin{itemize}
 \item the function to be integrated
 \item the integration variable.
@@ -278,27 +282,26 @@ and returns the result
 \index{Hankel transform}
 \index{Integral transform!Hankel transform}
 \hypertarget{operator:HANKEL_TRANSFORM}{}
-\ttindextype{HANKEL\_TRANSFORM}{operator}
+\ttindextype{hankel\_transform}{operator}
 
 The Hankel transform
-
 \[
 f(\omega) = \int_{0}^{\infty} F(t) \,J_{\nu}(2\sqrt{\omega t}) \,dt
 \]
 
-can be calculated by using the \verb+hankel_transform+ command e.g.
+can be calculated by using the \f{hankel\_transform} operator, e.g.,
 
 \begin{verbatim}
         hankel_transform(f(x),x);
 \end{verbatim}
 
-This is used in the same way as the \texttt{laplace\_transform} command.
+This is used in the same way as the \f{laplace\_transform} operator.
 
 \subsubsection{Y-transform}
 \index{Y-transform}
 \index{Integral transform!Y-transform}
 \hypertarget{operator:Y_TRANSFORM}{}
-\ttindextype{y\_transform}{operator}
+\ttindextype{Y\_transform}{operator}
 
 The Y-transform
 
@@ -306,19 +309,19 @@ The Y-transform
 f(\omega) = \int_{0}^{\infty} F(t) \,Y_{\nu}(2\sqrt{\omega t}) \,dt
 \]
 
-can be calculated by using the \verb+Y_transform+ command e.g.
+can be calculated by using the \f{Y\_transform} operator, e.g.,
 
 \begin{verbatim}
         Y_transform(f(x),x);
 \end{verbatim}
 
-This is used in the same way as the \verb+laplace_transform+ command.
+This is used in the same way as the \f{laplace\_transform} operator.
 
 \subsubsection{K-transform}
 \index{K-transform}
 \index{Integral transform!K-transform}
 \hypertarget{operator:K_TRANSFORM}{}
-\ttindextype{K\_TRANSFORM}{operator}
+\ttindextype{K\_transform}{operator}
 
 The K-transform
 
@@ -326,19 +329,19 @@ The K-transform
 f(\omega) = \int_{0}^{\infty} F(t) \,K_{\nu}(2\sqrt{\omega t}) \,dt
 \]
 
-can be calculated by using the \verb+K_transform+ command e.g.
+can be calculated by using the \f{K\_transform} operator, e.g.,
 
 \begin{verbatim}
         K_transform(f(x),x);
 \end{verbatim}
 
-This is used in the same way as the \verb+laplace_transform+ command.
+This is used in the same way as the \f{laplace\_transform} operator.
 
 \subsubsection{StruveH transform}
 \index{StruveH transform}
 \index{Integral transform!StruveH transform}
 \hypertarget{operator:STRUVEH_TRANSFORM}{}
-\ttindextype{STRUVEH\_TRANSFORM}{operator}
+\ttindextype{struveh\_transform}{operator}
 
 The StruveH transform
 
@@ -346,19 +349,19 @@ The StruveH transform
 f(\omega) = \int_{0}^{\infty} F(t) \,StruveH(\nu,2\sqrt{\omega t}) \,dt
 \]
 
-can be calculated by using the \verb+struveh_transform+ command e.g.
+can be calculated by using the \f{struveh\_transform} operator, e.g.,
 
 \begin{verbatim}
         struveh_transform(f(x),x);
 \end{verbatim}
 
-This is used in the same way as the \verb+laplace_transform+ command.
+This is used in the same way as the \f{laplace\_transform} operator.
 
 \subsubsection{Fourier sine transform}
 \index{Fourier sine transform}
 \index{Integral transform!Fourier sine transform}
 \hypertarget{operator:FOURIER_SIN}{}
-\ttindextype{FOURIER\_SIN}{operator}
+\ttindextype{fourier\_sin}{operator}
 
 The Fourier sine transform
 
@@ -366,18 +369,18 @@ The Fourier sine transform
 f(s) = \int_{0}^{\infty} F(t) \sin(st) \,dt
 \]
 
-can be calculated by using the \verb+fourier_sin+ command e.g.
+can be calculated by using the \f{fourier\_sin} operator, e.g.,
 \begin{verbatim}
         fourier_sin(f(x),x);
 \end{verbatim}
 
-This is used in the same way as the \verb+laplace_transform+ command.
+This is used in the same way as the \f{laplace\_transform} operator.
 
 \subsubsection{Fourier cosine transform}
 \index{Fourier cosine transform}
 \index{Integral transform!Fourier cosine transform}
 \hypertarget{operator:FOURIER_COS}{}
-\ttindextype{FOURIER\_COS}{operator}
+\ttindextype{fourier\_cos}{operator}
 
 The Fourier cosine transform
 
@@ -385,12 +388,12 @@ The Fourier cosine transform
 f(s) = \int_{0}^{\infty} F(t) \cos(st) \,dt
 \]
 
-can be calculated by using the \verb+fourier_cos+ command e.g.
+can be calculated by using the \f{fourier\_cos} operator, e.g.,
 \begin{verbatim}
         fourier_cos(f(x),x);
 \end{verbatim}
 
-This is used in the same way as the \verb+laplace_transform+ command.
+This is used in the same way as the \f{laplace\_transform} operator.
 
 \subsection{Additional Meijer G-function Definitions}
 
@@ -469,7 +472,7 @@ For example after calculating the following laplace transform
         laplace_transform(x^k,x);
 \end{verbatim}
 
-using the \verb+print_conditions+ command would produce
+using the \f{print\_conditions} operator would produce
 
 \begin{verbatim}
 repart(sum(ai) - sum(bj)) + 1/2 (q + 1 - p)>(q - p) repart(s)
@@ -498,7 +501,7 @@ s,t,u,v,p,q,\alpha \; {\rm as \; in \; (1)}
 \subsection{Tracing}
 %\hypertarget{switch:TRDEFINT}{}
 
-A new switch \sw{TRDEFINT} can be set to ON to print information about intermediate steps
+A new switch \sw{trdefint} can be set to ON to print information about intermediate steps
 of the calculation.
 
 \subsection{Acknowledgements}

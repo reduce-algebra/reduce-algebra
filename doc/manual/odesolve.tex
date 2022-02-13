@@ -38,8 +38,8 @@ algebraic-mode \odesolve{} operator is used.
 
 
 \subsection{User interface}
-\ttindextype{ODESOLVE}{operator}
-\ttindextype{DSOLVE}{operator synonym}
+\ttindextype[ODESOLVE]{odesolve}{operator}
+\ttindextype[ODESOLVE]{dsolve}{operator synonym}
 \hypertarget{operator:ODESOLVE}{}
 \hypertarget{operator:DSOLVE}{}
 
@@ -110,14 +110,14 @@ odesolve(df(y(x(a),b),x(a)) = 0);
 
 The order in which arguments are given must be preserved, but
 arguments may be omitted, except that if $x$ is specified then $y$
-must also be specified, although an empty list \verb|{}| can be used
+must also be specified, although an empty list \texttt{\{\}} can be used
 as a ``place-holder'' to represent ``no specified argument''.
 Variables are distinguished from options by requiring that if a
 variable is specified then it must appear in the ODE, otherwise it is
 assumed to be an option.
 
 Generally in \REDUCE{} it is not recommended to use the identifier
-\verb|t| as a variable, since it is reserved in Lisp.  However, it is
+\texttt{t} as a variable, since it is reserved in Lisp.  However, it is
 very common practice in applied mathematics to use it as a variable to
 represent time, and for that reason ODESOLVE provides special support
 to allow it as either the independent or a dependent variable.  But,
@@ -695,8 +695,8 @@ to nil in the context of ODESOLVE hooks.)
 \noindent\hrulefill
 
 \begin{description}
-\item[Hook names:] \verb|ODESolve_Before_Hook|,
-\verb|ODESolve_After_Hook|.
+\item[Hook names:] \texttt{ODESolve\_Before\_Hook},
+\texttt{ODESolve\_After\_Hook}.
 \item[Run before and after:] The general ODE solver.
 \item[Arguments:] 3
 \begin{enumerate}
@@ -712,8 +712,8 @@ ODESOLVE itself.
 \noindent\hrulefill
 
 \begin{description}
-\item[Hook names:] \verb|ODESolve_Before_Non_Hook|,
-\verb|ODESolve_After_Non_Hook|.
+\item[Hook names:] \texttt{ODESolve\_Before\_Non\_Hook},
+\texttt{ODESolve\_After\_Non\_Hook}.
 \item[Run before and after:] The nonlinear ODE solver.
 \item[Arguments:] 4
 \begin{enumerate}
@@ -731,8 +731,8 @@ ODESOLVE itself.
 \pagebreak
 
 \begin{description}
-\item[Hook names:] \verb|ODESolve_Before_Lin_Hook|,
-\verb|ODESolve_After_Lin_Hook|.
+\item[Hook names:] \texttt{ODESolve\_Before\_Lin\_Hook},
+\texttt{ODESolve\_After\_Lin\_Hook}.
 \item[Run before and after:] The general linear ODE solver.
 \item[Arguments:] 6
 \begin{enumerate}
@@ -763,8 +763,8 @@ and its first element is also always a list.)
 \noindent\hrulefill
 
 \begin{description}
-\item[Hook names:] \verb|ODESolve_Before_Non1Grad_Hook|, \\
-\verb|ODESolve_After_Non1Grad_Hook|.
+\item[Hook names:] \texttt{ODESolve\_Before\_Non1Grad\_Hook}, \\
+\texttt{ODESolve\_After\_Non1Grad\_Hook}.
 \item[Run before and after:] The solver for first-order first-degree
 nonlinear (``gradient'') ODEs, which can be expressed in the form
 $dy/dx = \mathrm{gradient}(y,x)$.

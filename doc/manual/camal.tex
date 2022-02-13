@@ -1,13 +1,12 @@
-
-\index{Fitch, John P.}\index{Persons!Fitch, John P.}
+h\index{Fitch, John P.}\index{Persons!Fitch, John P.}
 \emph{It is generally accepted that special purpose algebraic systems
 are more efficient than general purpose ones, but as machines get
 faster this does not matter.  An experiment has been performed to see
 if using the ideas of the special purpose algebra system CAMAL(F) it
-is possible to make the general purpose system REDUCE perform
+is possible to make the general purpose system \REDUCE perform
 calculations in celestial mechanics as efficiently as CAMAL did twenty
 years ago.  To this end a prototype Fourier module is created for
-REDUCE, and it is tested on some small and medium-sized problems taken
+\REDUCE, and it is tested on some small and medium-sized problems taken
 from the CAMAL test suite. The largest calculation is the
 determination of the Lunar Disturbing Function to the sixth order.  An
 assessment is made as to the progress, or lack of it, which computer
@@ -38,9 +37,9 @@ been a number of subsequent special systems for celestial mechanics,
 but these tend to be restricted to the group of the originator.
 
 The main body of the paper describes an experiment to create within
-the REDUCE system a sub-system for the efficient manipulation of
+the \REDUCE system a sub-system for the efficient manipulation of
 Fourier series.  This prototype program is then assessed against both
-the normal (general) REDUCE and the extant CAMAL results.  The tests
+the normal (general) \REDUCE and the extant CAMAL results.  The tests
 are run on a number of small problems typical of those for which CAMAL
 was used, and one medium-sized problem, the calculation of the Lunar
 Disturbing Function.  The mathematical background to this problem is
@@ -48,7 +47,7 @@ also presented for completeness.  It is important as a problem as it
 is the first stage in the development of a Delaunay Lunar Theory.
 
 The paper ends with an assessment of how close the performance of a
-modern REDUCE on modern equipment is to the (almost) defunct CAMAL of
+modern \REDUCE on modern equipment is to the (almost) defunct CAMAL of
 eighteen years ago.
 
 \subsection{How CAMAL Worked}
@@ -117,7 +116,7 @@ of large problems on relatively small machines.
 
 In order to maintain Fourier series in a canonical form it is
 necessary to apply the transformations for linearising products of
-sine and cosines.  These will be familiar to readers of the REDUCE
+sine and cosines.  These will be familiar to readers of the \REDUCE
 test program as
 \begin{eqnarray}
 \cos \theta \cos \phi & \Rightarrow &
@@ -208,17 +207,17 @@ merging of the new terms into the answer easier.
 \subsection{Towards a CAMAL Module}
 
 For the purposes of this work it was necessary to reproduce as many of
-the ideas of CAMAL as feasible within the REDUCE framework and
+the ideas of CAMAL as feasible within the \REDUCE framework and
 philosophy.  It was not intended at this stage to produce a complete
 product, and so for simplicity a number of compromises were made with
-the ``no restrictions'' principle in REDUCE and the space and time
+the ``no restrictions'' principle in \REDUCE and the space and time
 efficiency of CAMAL.  This section describes the basic design
 decisions.
 
 \subsubsection{Data Structures}
 
 In a fashion similar to CAMAL a two level data representation is used.
-The coefficients are the standard quotients of REDUCE, and their
+The coefficients are the standard quotients of \REDUCE, and their
 representation need not concern us further.  The angular part is
 similar to that of CAMAL, but the ability to pack angle multipliers
 and use a single bit for the function are not readily available in
@@ -281,27 +280,27 @@ main special case for substitution.
 The problem is the last case.  Typically many variables used in a
 Fourier series program have had a WEIGHT assigned to them.  This means
 that substitution must take account of any possible WEIGHTs for
-variables.  The standard code in REDUCE does this in effect by
+variables.  The standard code in \REDUCE does this in effect by
 translating the expression to prefix form, and recalculating the value.
 A Fourier series has a large number of coefficients, and so this
 operations are repeated rather too often.  At present this is the
 largest problem area with the internal code, as will be seen in the
 discussion of the Disturbing Function calculation.
 
-\subsection{Integration with REDUCE}
+\subsection{Integration with \REDUCE}
 
-The Fourier module needs to be seen as part of REDUCE rather than as a
+The Fourier module needs to be seen as part of \REDUCE rather than as a
 separate language.  This can be seen as having internal and external
 parts.
 
 \subsubsection{Internal Interface}
 
-The Fourier expressions need to co-exist with the normal REDUCE syntax
+The Fourier expressions need to co-exist with the normal \REDUCE syntax
 and semantics.  The prototype version does this by (ab)using the
 module method, based in part on the TPS code \cite{Padget90}.  Of course
 Fourier series are not constant, and so are not really domain
 elements.  However by asserting that Fourier series form a ring of
-constants REDUCE can arrange to direct basic operations to the Fourier
+constants \REDUCE can arrange to direct basic operations to the Fourier
 code for addition, subtraction, multiplication and the like.
 
 The main interface which needs to be provided is a simplification
@@ -311,15 +310,15 @@ functions, and creating canonical forms.
 
 \subsubsection{User Interface}
 
-The creation of \texttt{HDIFF} and \texttt{HINT} functions for
+The creation of \f{hdiff} and \f{hint} functions for
 differentiation disguises this.  An unsatisfactory aspect of the
-interface is that the tokens \texttt{SIN} and \texttt{COS} are already in
+interface is that the tokens \f{sin} and \f{cos} are already in
 use.  The prototype uses the operator form
 \begin{verbatim}
         fourier sin(u)
 \end{verbatim}
 to introduce harmonically represented sine functions.  An alternative of
-using the tokens \texttt{F\_SIN} and \texttt{F\_COS} is also available.
+using the tokens \f{f\_sin} and \f{f\_cos} is also available.
 
 It is necessary to declare the names of the angles, which is achieved
 with the declaration
@@ -328,12 +327,12 @@ with the declaration
 \end{verbatim}
 
 At present there is no protection against using a variable as both an
-angle and a polynomial varaible.  This will nooed to be done in a
+angle and a polynomial variable.  This will nooed to be done in a
 user-oriented version.
 
 \subsection{The Simple Experiments}
 
-The REDUCE test file contains a simple example of a Fourier
+The \REDUCE test file contains a simple example of a Fourier
 calculation, determining the value of $(a_1 \cos({wt}) + a_3
 \cos(3{wt}) + b_1 \sin({wt}) + b_3 \sin(3{wt}))^3$.  For the purposes
 of this system this is too trivial to do more than confirm the correct
@@ -356,15 +355,14 @@ This is of course precisely the case for which the HSUB operation is
 designed, and so in order to calculate $E_n - u$ all one requires is
 the code
 \begin{verbatim}
-        bige := fourier 0;
-        for k:=1:n do <<
-          wtlevel k;
-          bige:=fourier e * hsub(fourier(sin u), u, u, bige, k);
-        >>;
-        write "Kepler Eqn solution:", bige$
+    bige := fourier 0;
+    for k:=1:n do <<
+      wtlevel k;
+      bige:=fourier e * hsub(fourier(sin u), u, u, bige, k);
+    >>;
+    write "Kepler Eqn solution:", bige$
 \end{verbatim}
-
-It is possible to create a regular REDUCE program to simulate this (as
+It is possible to create a regular \REDUCE program to simulate this (as
 is done for example in Barton and Fitch\cite{Barton72}, page 254).
 Comparing these two programs indicates substantial advantages to the
 Fourier module, as could be expected.
@@ -373,7 +371,7 @@ Fourier module, as could be expected.
 \begin{tabular}{ | c | l l |}
 \multicolumn{3}{@{}c@{}}{\bf Solving Kepler's Equation} \\
 \hline
-Order   &       REDUCE  &       Fourier Module \\
+Order   &       \REDUCE  &       Fourier Module \\
 5       &       9.16    &       2.48    \\
 6       &       17.40   &       4.56    \\
 7       &       33.48   &       8.06    \\
@@ -416,21 +414,25 @@ extent of the calculation.
 
 Referring to the figure 1 which gives the cordinate system, the basic
 equations are
-\begin{eqnarray}
-S  & = & (1-\gamma ^2)\cos(f + g +h -f' -g' -h')
-+ \gamma ^2 \cos(f + g -h +f' +g' +h') \\
-r & = & a (1 - e \cos E) \\
-l & = & E - e \sin E \\
-a & = & \frac{r\mathbf{d} E}{\mathbf{d}l} \\
-\frac{r ^2 \mathbf{d} f}{\mathbf{d} l} & = & a^2 (1 - e^2)^{\frac{1}{2}}\\
-R & = & m' \frac{a^2}{{a'}^3} \frac{a'}{r'} \left \{ \left (\frac{r}{a}\right )^2
-\left (\frac{a'}{r'}\right )^2 P_2(S) +
-\left (\frac{a}{a'}\right )\left
-(\frac{r}{a}\right )^3 \left (\frac{a'}{r'}\right )^3 P_3(S)
-+ \ldots \right \}
-\end{eqnarray}
+\begin{subequations}
+\begin{align}
+  S  & = (1-\gamma ^2)\cos(f + g +h -f' -g' -h') \notag \\
+     & \qquad + \gamma ^2 \cos(f + g -h +f' +g' +h')  \label{eq:calc-S}\\
+r & = a (1 - e \cos E) \label{eq:radial}\\
+l & = E - e \sin E \label{eq:Kepler}\\
+a & = \frac{r\mathbf{d} E}{\mathbf{d}l} \label{eq:calc-a}\\
+\frac{r ^2 \mathbf{d} f}{\mathbf{d} l} & = a^2 (1 - e^2)^{\frac{1}{2}} \label{eq:calc-f}\\
+  R & = m' \frac{a^2}{{a'}^3} \frac{a'}{r'}
+         \left \{ \left (\frac{r}{a}\right )^2
+              \left (\frac{a'}{r'}\right )^2 P_2(S) \right. \notag \\
+     & \hphantom{ = m' \frac{a^2}{{a'}^3} \frac{a'}{r'} \Biggl\{ \Biggr\} }
+       + \left. \left (\frac{a}{a'}\right )\left
+              (\frac{r}{a}\right )^3 \left (\frac{a'}{r'}\right )^3 P_3(S)
+              + \ldots \right \} \label{eq:calc-R}
+\end{align}
+\end{subequations}
 
-There are similar equations to (7) to (10) for the quantities $r'$,
+There are similar equations to (\ref{eq:radial}) to (\ref{eq:calc-f}) for the quantities $r'$,
 $a'$, $e'$, $l'$, $E'$ and $f'$ which refer to the position of the Sun
 rather than the Moon.  The problem is to calculate the expression $R$
 as an expansion in terms of the quantities $e$, $e'$, $\gamma$,
@@ -440,10 +442,10 @@ second order.
 
 The steps required are
 \begin{enumerate}
-\item Solve the Kepler equation (8)
-\item Substiture into (7) to give $r/a$ in terms of $e$ and $l$.
-\item Calculate $a/r$ from (9) and $f$ from (10)
-\item Substitute for $f$ and $f'$ into $S$ using (6)
+\item Solve the Kepler equation (\ref{eq:Kepler})
+\item Substitute into (\ref{eq:radial}) to give $r/a$ in terms of $e$ and $l$.
+\item Calculate $a/r$ from (\ref{eq:calc-a}) and $f$ from (\ref{eq:calc-f})
+\item Substitute for $f$ and $f'$ into $S$ using (\ref{eq:calc-S})
 \item Calculate $R$ from $S$, $a'/r'$ and $r/a$
 \end{enumerate}
 
@@ -454,22 +456,22 @@ The program is given in the Appendix.
 The Lunar Disturbing function was calculated by a direct coding of the
 previous sections' mathematics.  The program was taken from Barton
 and Fitch \cite{Barton72} with just small changes to generalise it for
-any order, and to make it acceptable for Reduce3.4.  The Fourier
+any order, and to make it acceptable for \REDUCE3.4.  The Fourier
 program followed the same pattern, but obviously used the \texttt{HSUB}
 operation as appropriate and the harmonic integration.  It is very
 similar to the CAMAL program in \cite{Barton72}.
 
 The disturbing function was calculated to orders 2, 4 and 6 using
 Cambridge LISP on an HLH Orion 1/05 (Intergraph Clipper), with the
-three programs $\alpha$) Reduce3.4, $\beta$) Reduce3.4 + Camal Linear
-Module and $\gamma$) Reduce3.4 + Camal AVL Module.  The timings for
+three programs $\alpha$) \REDUCE3.4, $\beta$) \REDUCE3.4 + Camal Linear
+Module and $\gamma$) \REDUCE3.4 + Camal AVL Module.  The timings for
 CPU seconds (excluding garbage collection time) are summarised the
 following table:
 \medskip
 \begin{center}
 \begin{tabular}{ | c || l | l | l |}
 \hline
-Order of DDF    & Reduce        & Camal Linear  & Camal Tree \\
+Order of DDF    & \REDUCE        & Camal Linear  & Camal Tree \\
 \hline
 2       &       23.68   &       11.22   &       12.9    \\
 4       &       429.44  &       213.56  &       260.64  \\
@@ -481,13 +483,13 @@ Order of DDF    & Reduce        & Camal Linear  & Camal Tree \\
 \end{center}
 \medskip
 
-If these numbers are normalised so REDUCE calculating the DDF is 100
+If these numbers are normalised so \REDUCE calculating the DDF is 100
 units for each order the table becomes
 \medskip
 \begin{center}
 \begin{tabular}{ | c || l | l | l |}
 \hline
-Order of DDF    & Reduce        & Camal Linear  & Camal Tree \\ \hline
+Order of DDF    & \REDUCE        & Camal Linear  & Camal Tree \\ \hline
 2       &       100     &       47.38   &       54.48   \\
 4       &       100     &       49.73   &       60.69   \\
 6       &       100     &       $<$41.13        &       $<$45.94 \\
@@ -508,13 +510,13 @@ that the sixth order DDF took 30s on a CDC6600 with TRIGMAN in 1970
 order DDF on TITAN with CAMAL \cite{Barton72}.  A closer look at the
 relative times for individual sections of the program shows that the
 substitution case of replacing a polynomial variable by a Fourier
-series is only marginally faster than the simple REDUCE program.  In
+series is only marginally faster than the simple \REDUCE program.  In
 the DDF program this operation is only used once in a major form,
 substituting into the Legendre polynomials, which have been previously
 calculated by Rodrigues formula.  This suggests that we replace this
 with the recurrence relationship.
 
-Making this change actually slows down the normal REDUCE by a small
+Making this change actually slows down the normal \REDUCE by a small
 amount but makes a significant change to the Fourier module; it
 reduces the run time for the 6th order DDF from 3084.62s to 2002.02s.
 This gives some indication of the problems with benchmarks.  What is
@@ -526,13 +528,13 @@ series for a polynomial variable is inadequate.
 The Fourier module is far from complete.  The operations necessary for
 the solution of Duffing's and Hill's equations are not yet written,
 although they should not cause much problem.  The main defficiency is
-the treatment of series truncation; at present it relies on the REDUCE
-WTLEVEL mechanism, and this seems too coarse for efficient truncation.
+the treatment of series truncation; at present it relies on the \REDUCE
+\texttt{wtlevel} mechanism, and this seems too coarse for efficient truncation.
 It would be possible to re-write the polynomial manipulator as well,
-while retaining the REDUCE syntax, but that seems rather more than one
+while retaining the \REDUCE syntax, but that seems rather more than one
 would hope.
 
-The real failure so far is the large time lag between the REDUCE-based
+The real failure so far is the large time lag between the \REDUCE-based
 system on a modern workstation against a mainframe of 25 years ago
 running a special system.  The CAMAL Disturbing function program could
 calculate the tenth order with a maximum of 32K words (about
@@ -544,8 +546,8 @@ using a maximum of 15459 words of memory for heap --- or about
 62Kbytes.  A rough estimate is that the Orion 1/05 is comparable in
 speed to the 360/165, but with more real memory and virtual memory.
 
-However, a simple Fourier manipulator has been created for REDUCE which
-performs between twice and three times the speed of REDUCE using
+However, a simple Fourier manipulator has been created for \REDUCE which
+performs between twice and three times the speed of \REDUCE using
 pattern matching.  It has been shown that this system is capable of
 performing the calculations of celestial mechanics, but it still
 seriously lags behind the efficiency of the specialist systems of

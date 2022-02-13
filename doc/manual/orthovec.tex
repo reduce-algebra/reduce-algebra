@@ -5,7 +5,7 @@ The revised version of ORTHOVEC is a collection of REDUCE 3.4 procedures and
 operations which provide a simple to use environment for the manipulation of
 scalars and vectors.  Operations include addition, subtraction, dot and cross
 products, division, modulus, div, grad, curl, laplacian, differentiation,
-integration, $\textbf{a \cdot \nabla}$ and Taylor expansion. 
+integration, $\mathbf{a \cdot \nabla}$ and Taylor expansion. 
 \fi
 Version 2 is
 summarized in \cite{Eastwood:91}.  It differs from the original (\cite
@@ -279,21 +279,21 @@ The differential operator \f{dotgrad} is defined in the \ttindextype[ORTHOVEC]{d
 following section, and the component selector \texttt{\textunderscore} was introduced in
 section 3.
 
-Vector divisions are defined as follows:  If $\textbf{a}$ and $\textbf{b}$ are
+Vector divisions are defined as follows:  If $\mathbf{a}$ and $\mathbf{b}$ are
 vectors and $c$ is a scalar, then
 \begin{align*}
-\textbf{a} /  \textbf{b} & =   \frac{\textbf{a} \cdot \textbf{b}}{  \mid \textbf{b} 
+\mathbf{a} /  \mathbf{b} & =   \frac{\mathbf{a} \cdot \mathbf{b}}{  \mid \mathbf{b} 
 \mid^2}\\
-c / \textbf{a}   & =   \frac{c \textbf{a}  }{ \mid \textbf{a} \mid^2}
+c / \mathbf{a}   & =   \frac{c \mathbf{a}  }{ \mid \mathbf{a} \mid^2}
 \end{align*}
 
 Both scalar multiplication and dot products are given by the same symbol, 
 braces are advisable to ensure the correct
-precedences in expressions such as $(\textbf{a} \cdot \textbf{b}) 
-(\textbf{c} \cdot \textbf{d})$.
+precedences in expressions such as $(\mathbf{a} \cdot \mathbf{b}) 
+(\mathbf{c} \cdot \mathbf{d})$.
 
 Vector exponentiation is defined as the power of the modulus:\\
-$\textbf{a}^n \equiv  \f{vmod}(a)^n =   \mid \textbf{a} \mid^n$
+$\mathbf{a}^n \equiv  \f{vmod}(a)^n =   \mid \mathbf{a} \mid^n$
 
 \subsection{Differential Operations}
 Differential operators provided are div, grad, curl, delsq, and dotgrad.
@@ -411,18 +411,18 @@ procedures are included in \textsc{ORTHOVEC}.  They are defined as follows:
 \begin{align*}
 \f{vint} (\mathbf{v},x) & =  \int \mathbf{v}(x)dx\\
 %
-\f{dvint} (\mathbf{v},x, a, b) & =  \int^b_a \mathbf{v} (x) dx\\
+\f{dvint} (\mathbf{v},x, a, b) & =  \int^{b}_{a} \mathbf{v} (x) dx\\
 %
-\f{volint} (\mathbf{v}) & =  \int \mathbf{v} h_1 h_2 h_3 du_1 du_2 du_3\\
+\f{volint} (\mathbf{v}) & =  \int \mathbf{v} h_{1} h_{2} h_{3} du_{1} du_{2} du_{3}\\
 %
-\f{dvolint}(\mathbf{v},\mathbf{l},\mathbf{u},n) & = \int^\mathbf{u}_\mathbf{l}
-\mathbf{v} h_1 h_2 h_3 du_1 du_2 du_3\\
+\f{dvolint}(\mathbf{v},\mathbf{l},\mathbf{u},n) & = \int^{\mathbf{u}}_{\mathbf{l}}
+\mathbf{v} h_{1} h_{2} h_{3} du_{1} du_{2} du_{3}\\
 %
 \f{lineint} (\mathbf{v, \omega}, t) & =  \int \mathbf{v} \cdot \mathbf{dr}
-\equiv \int v_i h_i \frac{\partial \omega_i}{\partial t} dt\\
+\equiv \int v_{i} h_{i} \frac{\partial \omega_{i}}{\partial t} dt\\
 %
-\f{dlineint} (\mathbf{v, \omega} t, a, b) & = \int^b_a v_i h_i
-\frac{\partial \omega_i}{\partial t} dt
+\f{dlineint} (\mathbf{v, \omega} t, a, b) & = \int^{b}_{a} v_i h_i
+\frac{\partial \omega_{i}}{\partial t} dt
 \end{align*}
 
 In the vector and volume integrals, $\mathbf{v}$ are vector or scalar,
@@ -467,7 +467,7 @@ line $\mathbf{u}(t)$ along which the integral is taken.
 \f{vectorrecip} & / & unary vector or scalar division \\ & & \ \ \ (reciprocal)\\ 
 \f{vectortimes} & * & multiply vector or scalar by \\ & & \ \ \ vector/scalar \\ 
 \f{vectorcross} & $><$ & cross product of two vectors \\ 
-\f{vectorexpt} & \^{} & exponentiate vector modulus or scalar \\
+\f{vectorexpt} & \textasciicircum{} & exponentiate vector modulus or scalar \\
 \f{vmod} & & length of vector or scalar \\ \hline
 \end{tabular}
 \end{center}

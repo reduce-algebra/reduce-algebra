@@ -243,8 +243,9 @@
 }{\endlist}
 
 \newenvironment{syntaxtable}{
+  \def\intertext##1{\multicolumn{1}{@{}l}{##1}}%
     \syntax
-    \begin{tabular}{lcl}%
+    \begin{tabular}{@{}lcl}%
 }{\end{tabular}\endsyntax}
 
 % Will print out a heading in bold, and then indent the following text.
@@ -260,6 +261,7 @@
 \setlength{\abovedisplayskip}{\topsep}  % for "long" equations
 \setlength{\belowdisplayskip}{\topsep}
 
+\newcommand{\package}[1]{\capitalize{#1}\textsc{\blubba}}
 \newcommand{\key}[1]{\fbox{\textsf{#1}}}
 \newcommand{\extendedmanual}[1]{#1}
 
@@ -336,6 +338,8 @@
 \tableofcontents
 \fi
 
+\index{Hearn, Anthony C.}
+\index{Persons!Hearn, Anthony C.}
 \include{abstract}
 \include{acknowl}
 \include{intro}
