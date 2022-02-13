@@ -1,12 +1,12 @@
 %
 % List of documentation/packages missing:
 %
+% atensor/*.tex - only atensor.ps
 % crack/conlaw.tex
 % crack/crack.tex
 % crack/v3tools.tex
 % gentran/gentran.tex -- too long!
 % mathml/*.tex
-% misc/reset.tex
 % occal/ocpaper.tex
 % rtrace/rdebug.tex -- PSL only
 % scope/scope.tex -- too long!
@@ -113,10 +113,29 @@ Author: Hubert Caprasse.
 
 \newpage
 
+\section{ATENSOR: A \REDUCE program for tensor simplification}
+\indexpackage{ATENSOR}
+
+Simplification of tensor expression with taking into account multiterm linear
+identities, symmetry relations and renaming dummy indices. This problem is important
+for the calculation in the gravity theory, differential geometry,
+other fields where indexed objects arise.
+
+The group algebra technique for permutation group is applied to construt a canonical
+subspace and the effective algorithm for the corresponding projection.
+
+Authors V.~A.~Ilyin and A.~P.~Kryukov.
+
+For more information, see \cite{Ilyin:96}.
+
+%\input{atensor}
+
+\newpage
+
 \section{AVECTOR: A vector algebra and calculus package}
 \indexpackage{AVECTOR}
 
-This package provides REDUCE with the ability to perform vector algebra
+This package provides \REDUCE with the ability to perform vector algebra
 using the same notation as scalar algebra.  The basic algebraic operations
 are supported, as are differentiation and integration of vectors with
 respect to scalar variables, cross product and dot product, component
@@ -174,7 +193,7 @@ Author: Hans-Gert Gr\"abe.
 \indexpackage{CAMAL}
 \label{CAMAL}
 
-This packages implements in REDUCE the Fourier transform procedures of the
+This packages implements in \REDUCE the Fourier transform procedures of the
 CAMAL package for celestial mechanics.
 
 Author: John P. Fitch.
@@ -348,7 +367,7 @@ Author: Alain Dresse.
 \section{EDS: A package for exterior differential systems}
 \indexpackage{EDS}
 
-EDS is a REDUCE package for symbolic analysis of partial differential
+EDS is a \REDUCE package for symbolic analysis of partial differential
 equations using the geometrical approach of exterior differential
 systems. The package implements much of exterior differential systems
 theory, including prolongation and involution analysis, and has been
@@ -399,7 +418,7 @@ Author: Eberhard Schr\"ufer.
 This package performs  automation of  the process of numerically
 solving  partial  differential  equations  systems  (PDES)  by  means of
 computer algebra.  For PDES solving, the finite difference method is applied.
-The  computer  algebra  system  REDUCE  and  the  numerical  programming
+The  computer  algebra  system  \REDUCE  and  the  numerical  programming
 language FORTRAN  are used in the presented methodology. The main aim of
 this methodology is to speed up the process of preparing numerical
 programs for  solving PDES.  This process is quite often, especially for
@@ -455,7 +474,7 @@ It allows you to display functions in 2D and surfaces in 3D
 on a variety of output devices including X terminals, PC monitors, and
 postscript and Latex printer files.
 
-NOTE: The GNUPLOT package may not be included in all versions of REDUCE.
+NOTE: The GNUPLOT package may not be included in all versions of \REDUCE.
 
 Author: Herbert Melenk.
 
@@ -516,7 +535,7 @@ Authors: Andreas Dolzmann and Thomas Sturm.
 \indexpackage{IDEALS}
 
 This package implements the basic arithmetic for polynomial ideals by
-exploiting the Gr\"obner bases package of REDUCE.  In order to save
+exploiting the Gr\"obner bases package of \REDUCE.  In order to save
 computing time all intermediate Gr\"obner bases are stored internally such
 that time consuming repetitions are inhibited.
 
@@ -656,7 +675,7 @@ This package was written when the author was a placement student at ZIB Berlin.
 
 This package allows the user to set up automatically a consistent
 environment for computing in an algebra where the non--commutativity is
-defined by Lie-bracket commutators.  The package uses the {REDUCE} {\bf
+defined by Lie-bracket commutators.  The package uses the {\REDUCE} {\bf
 noncom} mechanism for elementary polynomial arithmetic; the commutator
 rules are automatically computed from the Lie brackets.
 
@@ -763,7 +782,7 @@ Other contributor: Alan Barnes.
 
 \indexpackage{Orthovec}
 
-ORTHOVEC is a collection of REDUCE procedures and operations which
+ORTHOVEC is a collection of \REDUCE procedures and operations which
 provide a simple-to-use environment for the manipulation of scalars and
 vectors.  Operations include addition, subtraction, dot and cross
 products, division, modulus, div, grad, curl, laplacian, differentiation,
@@ -793,7 +812,7 @@ Author: Mathias Warns.
 
 \newpage
 
-\section{PM: A REDUCE pattern matcher}
+\section{PM: A \REDUCE pattern matcher}
 \indexpackage{PM}
 
 PM is a general pattern matcher similar in style to those found in systems
@@ -872,7 +891,7 @@ Author: Francis J. Wright.
 
 \newpage
 
-\section{RATAPRX: Rational Approximations Package for REDUCE}
+\section{RATAPRX: Rational Approximations Package for \REDUCE}
 \indexpackage{RATAPRX}
 
 Authors: Lisa Temme and Wolfram Koepf
@@ -923,7 +942,7 @@ Documentation for this package can be found \href{http://redlog.eu/}{online}.
 Authors: Andreas Dolzmann and Thomas Sturm
 
 \iffalse
-\section{RESET: Code to reset REDUCE to its initial state}
+\section{RESET: Code to reset \REDUCE to its initial state}
 \indexpackage{RESET}
 
 This package defines a command RESETREDUCE that works through the
@@ -954,10 +973,10 @@ Author: Wolfram Koepf.
 
 \newpage
 
-\section{RLFI: REDUCE \LaTeX{} formula interface}
+\section{RLFI: \REDUCE  \LaTeX{} formula interface}
 \indexpackage{RLFI}
 
-This package adds \LaTeX{} syntax to REDUCE.  Text generated by REDUCE in
+This package adds \LaTeX{} syntax to \REDUCE.  Text generated by \REDUCE in
 this mode can be directly used in \LaTeX{} source documents.  Various
 mathematical constructions are supported by the interface including
 subscripts, superscripts, font changing, Greek letters, divide-bars,
@@ -970,7 +989,7 @@ Author: Richard Liska.
 \newpage
 
 \iffalse
-\section{ROOTS: A REDUCE root finding package}
+\section{ROOTS: A \REDUCE root finding package}
 \indexpackage{ROOTS}
 
 This root finding package can be used to find some or all of the roots of a
@@ -1025,13 +1044,13 @@ Authors: Herbert Melenk and Francis J. Wright
 \newpage
 \fi
 
-\section{SCOPE: REDUCE source code optimization package}
+\section{SCOPE: \REDUCE source code optimization package}
 \indexpackage{SCOPE}
 \label{SCOPE}
 
 SCOPE is a package for the production of an optimized form of a set of
 expressions.  It applies an heuristic search for common (sub)expressions
-to almost any set of proper REDUCE assignment statements.  The
+to almost any set of proper \REDUCE assignment statements.  The
 output is obtained as a sequence of assignment statements.  GENTRAN is
 used to facilitate expression output.
 
@@ -1209,7 +1228,7 @@ Author: Rainer Sch\"opf.
 \ttindex{PS}
 
 This package implements formal Laurent series expansions in one variable
-using the domain mechanism of REDUCE.  This means that power series
+using the domain mechanism of \REDUCE.  This means that power series
 objects can be added, multiplied, differentiated etc.,  like other first
 class objects in the system.  A lazy evaluation scheme is used and thus
 terms of the series are not evaluated until they are required for printing
@@ -1227,11 +1246,11 @@ Authors:  Alan Barnes and Julian Padget.
 \newpage
 \fi
 
-\section{TRI: TeX REDUCE interface}
+\section{TRI: TeX \REDUCE interface}
 \indexpackage{TRI}
 
-This package provides facilities written in REDUCE-Lisp for typesetting
-REDUCE formulas using \TeX.  The \TeX-REDUCE-Interface incorporates three
+This package provides facilities written in \REDUCE-Lisp for typesetting
+\REDUCE formulas using \TeX.  The \TeX-\REDUCE-Interface incorporates three
 levels of \TeX output: without line breaking, with line breaking, and
 with line breaking plus indentation.
 
@@ -1287,7 +1306,7 @@ Author: Wolfram Koepf.
 \iffalse
 \newpage
 
-\section{TURTLE: Turtle Graphics Interface for REDUCE}
+\section{TURTLE: Turtle Graphics Interface for \REDUCE}
 
 \indexpackage{TURTLE}
 Author: Caroline Cotter
@@ -1300,7 +1319,7 @@ Author: Caroline Cotter
 \section{WU: Wu algorithm for polynomial systems}
 \indexpackage{WU}
 
-This is a simple implementation of the Wu algorithm implemented in REDUCE
+This is a simple implementation of the Wu algorithm implemented in \REDUCE
 working directly from ``A Zero Structure Theorem for
 Polynomial-Equations-Solving,'' Wu Wen-tsun, Institute of Systems Science,
 Academia Sinica, Beijing.
