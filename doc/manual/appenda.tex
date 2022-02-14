@@ -7,17 +7,23 @@ including names of commands, operators and switches initially in the system.
 Excluded are words that are reserved in specific implementations of the
 system.
 
+\iffalse
 \begin{list}{}{\renewcommand{\makelabel}[1]{#1\hspace{\fill}}%
                \settowidth{\labelwidth}{Numerical Operators}%
                \setlength{\labelsep}{1em}%
                \settowidth{\leftmargin}{Numerical Operators\hspace*{\labelsep}}%
                \sloppy}
 
-\raggedright
+             \raggedright
+
+\fi
 \newcommand{\doubleinterwordspace}{\fontdimen2\font=2\fontdimen2\font}
 \newcommand{\halfinterwordspace}{\fontdimen2\font=.5\fontdimen2\font}
 
-\item[Commands] \doubleinterwordspace
+
+\section{Commands}
+
+\doubleinterwordspace
 \hyperlink{target:modes}{\texttt{algebraic}}
 \hyperlink{command:ANTICOM}{\texttt{anticom}}
 \hyperlink{reserved:ANTISYMMETRIC}{\texttt{antisymmetric}}
@@ -33,6 +39,7 @@ system.
 \hyperlink{CONT-and-PAUSE}{\texttt{cont}}
 \hyperlink{operator:DECOMPOSE}{\texttt{decompose}}
 \hyperlink{command:DEFINE}{\texttt{define}}
+\hyperlink{command:DEFINE_SPACES}{\texttt{define\_spaces}}
 \hyperlink{operator:DEFPOLY}{\texttt{defpoly}}
 \hyperlink{command:DEPEND}{\texttt{depend}}
 \hyperlink{command:DFP_COMMUTE}{\texttt{dfp\_commute}}
@@ -51,8 +58,9 @@ system.
 \hyperlink{command:FORDER}{\texttt{forder}}
 \hyperlink{command:FOREACH}{\texttt{foreach}}
 \hyperlink{command:FRAME}{\texttt{frame}}
-\hyperlink{command:GENERIC_FUNCTION}{\texttt{GENERIC\_FUNCTION}}
+\hyperlink{command:GENERIC_FUNCTION}{\texttt{generic\_function}}
 \hyperlink{command:GETCSYSTEM}{\texttt{getcsystem}}
+\hyperlink{command:GLOBAL_SIGN}{\texttt{global\_sign}}
 \hyperlink{command:GOTO}{\texttt{go}}
 \hyperlink{command:GOTO}{\texttt{goto}}
 \hyperlink{command:IF}{\texttt{if}}
@@ -73,6 +81,7 @@ system.
 \hyperlink{command:LISTARGP}{\texttt{listargp}}
 \hyperlink{command:LOAD}{\texttt{load}}
 \hyperlink{command:LOAD_PACKAGE}{\texttt{load\_package}}
+\hyperlink{command:MAKE_VARIABLES}{\texttt{make\_variables}}
 \hyperlink{command:MASS}{\texttt{mass}}
 \hyperlink{command:MATCH}{\texttt{match}}
 \hyperlink{command:MATRIX}{\texttt{matrix}}
@@ -104,6 +113,9 @@ system.
 \hyperlink{command:QUIT}{\texttt{quit}}
 \hyperlink{command:REAL}{\texttt{real}}
 \hyperlink{command:REALVALUED}{\texttt{realvalued}}
+\hyperlink{command:REM_DUMMY_INDICES}{\texttt{rem\_dummy\_indices}}
+\hyperlink{command:REM_SPACES}{\texttt{rem\_spaces}}
+\hyperlink{command:REM_TENSOR}{\texttt{rem\_tensor}}
 \hyperlink{command:REMANTICOM}{\texttt{remanticom}}
 \hyperlink{command:REMEMBER}{\texttt{remember}}
 \hyperlink{command:REMFAC}{\texttt{remfac}}
@@ -131,11 +143,13 @@ system.
 \hyperlink{command:SHOW_DUMMY_NAMES}{\texttt{show\_dummy\_names}}
 \hyperlink{command:SHOWTIME}{\texttt{showtime}}
 \hyperlink{command:SHUT}{\texttt{shut}}
+\hyperlink{command:SIGNATURE}{\texttt{signature}}
 \hyperlink{command:SPACEDIM}{\texttt{spacedim}}
 \hyperlink{command:SPUR}{\texttt{spur}}
 \hyperlink{target:modes}{\texttt{symbolic}}
 \hyperlink{reserved:SYMMETRIC}{\texttt{symmetric}}
 \hyperlink{command:SYMTREE}{\texttt{symtree}}
+\hyperlink{command:TENSOR}{\texttt{tensor}}
 \hyperlink{command:TRRL}{\texttt{trrl}}
 \hyperlink{command:TRRLID}{\texttt{trrlid}}
 \hyperlink{command:TVECTOR}{\texttt{tvector}}
@@ -155,7 +169,9 @@ system.
 \hyperlink{command:XPND}{\texttt{xpnd}}
 \halfinterwordspace
 
-\item[Boolean Operators] \doubleinterwordspace
+\section{Boolean Operators}
+
+\doubleinterwordspace
 \hyperlink{operator:ABAGLISTP}{\texttt{abaglistp}}
 \hyperlink{operator:BAGLISTP}{\texttt{baglistp}}
 \hyperlink{operator:BAGP}{\texttt{bagp}}
@@ -172,7 +188,9 @@ system.
 \hyperlink{operator:SETP}{\texttt{setp}}
 \halfinterwordspace
 
-\item[Infix Operators]\doubleinterwordspace
+\section{Infix Operators}
+
+\doubleinterwordspace
 \hyperlink{reserved:assignop}{\texttt{:=}}\
 \hyperlink{reserved:equalop}{\texttt{=}}
 \hyperlink{reserved:setvalueop}{\texttt{==}}
@@ -190,11 +208,11 @@ system.
 \hyperlink{reserved:caretop}{\texttt{\char94}}
 \hyperlink{reserved:exptop}{\texttt{**}}
 \hyperlink{reserved:consop}{\texttt{.}}
-\hyperlink{operator:IDEALSUM}\texttt{.+}
-\hyperlink{operator:IDEALPRODUCT}\texttt{.*}
-\hyperlink{operator:IDEALQUOTIENT}\texttt{.:}
-\hyperlink{operator:IDEALQUOTIENTALT}\texttt{./}
-\hyperlink{operator:IDEALEQUALITY}\texttt{.=}
+\hyperlink{operator:IDEALSUM}{\texttt{.+}}
+\hyperlink{operator:IDEALPRODUCT}{\texttt{.*}}
+\hyperlink{operator:IDEALQUOTIENT}{\texttt{.:}}
+\hyperlink{operator:IDEALQUOTIENTALT}{\texttt{./}}
+\hyperlink{operator:IDEALEQUALITY}{\texttt{.=}}
 \hyperlink{reserved:intervalop}{\texttt{..}}
 \hyperlink{reserved:hodegestareop}{\texttt{\#}}
 \hyperlink{operator:setdiffop}{\texttt{\textbackslash}}
@@ -238,7 +256,9 @@ system.
 \hyperlink{operator:VMOD}{\texttt{vmod}}
 \halfinterwordspace
 
-\item[Numerical Operators]\doubleinterwordspace
+\section{Numerical Operators}
+
+\doubleinterwordspace
 \hyperlink{operator:ABS}{\texttt{abs}}
 \hyperlink{operator:ACOS}{\texttt{acos}}
 \hyperlink{operator:ACOSD}{\texttt{acosd}}
@@ -368,7 +388,9 @@ system.
 \hyperlink{operator:ZETA}{\texttt{Zeta}}
 \halfinterwordspace
 
-\item[Prefix Operators]\doubleinterwordspace
+\section{Prefix Operators}
+
+\doubleinterwordspace
 \hyperlink{operator:@}{\texttt{@}}
 \hyperlink{operator:AFFINE_MONOMIAL_CURVE}{\texttt{affine\_monomial\_curve}}
 \hyperlink{operator:AFFINE_POINTS}{\texttt{affine\_points}}
@@ -469,6 +491,7 @@ system.
 \hyperlink{operator:DIVPOL}{\texttt{divpol}}
 \hyperlink{operator:DLINEINT}{\texttt{dlineint}}
 \hyperlink{operator:DOTGRAD}{\texttt{dotgrad}}
+\hyperlink{operator:DUMMY_INDICES}{\texttt{dummy\_indices}}
 \hyperlink{operator:DPGCD}{\texttt{dpgcd}}
 \hyperlink{operator:DSOLVE}{\texttt{dsolve}}
 \hyperlink{operator:DVINT}{\texttt{dvint}}
@@ -574,7 +597,7 @@ system.
 \hyperlink{operator:IDEALSUM}{\texttt{idealsum}}
 \hyperlink{operator:IMPART}{\texttt{impart}}
 \hyperlink{operator:IMPLICIT}{\texttt{implicit}}
-\hyperlink{operator:INDEPVARSETS_SOLVE}{\texttt{indepvarsets}}
+\hyperlink{operator:INDEPVARSETS}{\texttt{indepvarsets}}
 \hyperlink{operator:INEQ_SOLVE}{\texttt{ineq\_solve}}
 \hyperlink{operator:INFSUM}{\texttt{infsum}}
 \hyperlink{operator:INITMAT}{\texttt{initmat}}
@@ -635,6 +658,7 @@ system.
 \hyperlink{operator:M_ROOTS}{\texttt{m\_roots}}
 \hyperlink{operator:MAINVAR}{\texttt{mainvar}}
 \hyperlink{operator:MAP}{\texttt{map}}
+\hyperlink{operator:MAKE_PARTIC_TENS}{\texttt{make\_partic\_tens}}
 \hyperlink{operator:MAT}{\texttt{mat}}
 \hyperlink{operator:MAT2LIST}{\texttt{mat2list}}
 \hyperlink{operator:MATAPPEND}{\texttt{matappend}}
@@ -657,6 +681,8 @@ system.
 \hyperlink{operator:MINIMAL_GENERATORS}{\texttt{minimal\_generators}}
 \hyperlink{operator:MINORS}{\texttt{minors}}
 \hyperlink{operator:MINVECT}{\texttt{minvect}}
+\hyperlink{operator:MK_IDS_BELONG_SPACE}{\texttt{mk\_ids\_belong\_space}}
+\hyperlink{operator:MK_IDS_BELONG_ANYSPACE}{\texttt{mk\_ids\_belong\_anyspace}}
 \hyperlink{operator:MKDEPTH_ONE}{\texttt{mkdepth\_one}}
 \hyperlink{operator:MKGAM}{\texttt{mkgam}}
 \hyperlink{operator:MKID}{\texttt{mkid}}
@@ -799,7 +825,8 @@ system.
 \hyperlink{operator:SETRING}{\texttt{setring}}
 \hyperlink{operator:SETRULES}{\texttt{setrules}}
 \hyperlink{operator:SHOW}{\texttt{show}}
-\hyperlink{operator:SHOW}{\texttt{show}}
+\hyperlink{operator:SHOW_EPSILONS}{\texttt{show\_epsilons}}
+\hyperlink{operator:SHOW_SPACES}{\texttt{show\_spaces}}
 \hyperlink{operator:SHOWRULES}{\texttt{showrules}}
 \hyperlink{operator:SI}{\texttt{Si}}
 \hyperlink{operator:SIEVE}{\texttt{sieve}}
@@ -872,9 +899,9 @@ system.
 \hyperlink{operator:VINT}{\texttt{vint}}
 \hyperlink{operator:VOLINT}{\texttt{volint}}
 \hyperlink{operator:VOLINTEGRAL}{\texttt{volintegral}}
-\hyperlink{reserved:VOLINTORDER}{\texttt{volintorder}}
 \hyperlink{operator:VTAYLOR}{\texttt{vtaylor}}
 \hyperlink{operator:WEIGHTEDHILBERTSERIES}{\texttt{WeightedHilbertSeries}}
+\hyperlink{operator:WHOLESPACE_DIM}{\texttt{wholespace\_dim}}
 \hyperlink{operator:Y_TRANSFORM}{\texttt{Y\_transform}}
 \hyperlink{operator:ZEROPRIMARYDECOMPOSITION}{\texttt{zeroprimarydecomposition}}
 \hyperlink{operator:ZEROPRIMES}{\texttt{zeroprimes}}
@@ -883,14 +910,16 @@ system.
 \hyperlink{operator:ZTRANS}{\texttt{ztrans}}
 \halfinterwordspace
 
-\item[Reserved Variables]\doubleinterwordspace
+\section{Reserved Variables}
+
+\doubleinterwordspace
 \hyperlink{reserved:!*CSYSTEMS}{\texttt{!*csystems}}
 \hyperlink{reserved:__FILE__}{\texttt{!\_\_FILE\_\_}}
 \hyperlink{reserved:__LINE__}{\texttt{!\_\_LINE\_\_}}
 \hyperlink{reserved:assumptions}{\texttt{assumptions}}
 \hyperlink{variable:CALI!=BASERING}{\texttt{cali!=basering}}
 \hyperlink{variable:CALI!=DEGREES}{\texttt{cali!=degrees}}
-\hyperlink{reserved:CALI!=MONSET}{\texttt{cali!=monset}}
+\hyperlink{variable:CALI!=MONSET}{\texttt{cali!=monset}}
 \hyperlink{reserved:CARD_NO}{\texttt{card\_no}}
 \hyperlink{reserved:CATALAN}{\texttt{catalan}}
 \hyperlink{reserved:COORDS}{\texttt{coords}}
@@ -907,7 +936,7 @@ system.
 \hyperlink{reserved:GORDERS}{\texttt{gorders}}
 \hyperlink{reserved:GROEBMONFAC}{\texttt{groebmonfac}}
 \hyperlink{reserved:GREDUCE_RESULT}{\texttt{greduce\_result}}
-\hyperlink{reserved:GROEBPROTFILE}{\texttt{GROEBPROTFILE}}
+\hyperlink{reserved:GROEBPROTFILE}{\texttt{groebprotfile}}
 \hyperlink{reserved:GROEBRESMAX}{\texttt{groebresmax}}
 \hyperlink{reserved:GROEBRESTRICTION}{\texttt{groebrestriction}}
 \hyperlink{reserved:GVARSLAST}{\texttt{gvarslast}}
@@ -922,6 +951,7 @@ system.
 \hyperlink{variable:NC_FACTOR_TIME}{\texttt{nc\_factor\_time}}
 \hyperlink{reserved:NEGATIVE}{\texttt{negative}}
 \hyperlink{reserved:NIL}{\texttt{nil}}
+\hyperlink{reserved:NO_GLAISHER}{\texttt{no\_glaisher}}
 \hyperlink{reserved:PI}{\texttt{pi}}
 \hyperlink{reserved:POSITIVE}{\texttt{positive}}
 \hyperlink{reserved:requirements}{\texttt{requirements}}
@@ -934,7 +964,8 @@ system.
 \hyperlink{reserved:TO_CN}{\texttt{to\_cn}}
 \hyperlink{reserved:TO_DN}{\texttt{to\_dn}}
 \hyperlink{reserved:TO_SN}{\texttt{to\_sn}}
-\hyperlink{reserved:NO_GLAISHER}{\texttt{no\_glaisher}}
+\hyperlink{reserved:VOLINTORDER}{\texttt{volintorder}}
+\hyperlink{reserved:WHOLESPACE}{\texttt{wholespace}}
 \hyperlink{reserved:ZB_F}{\texttt{zb\_f}}
 \hyperlink{reserved:ZB_DIRECTION}{\texttt{zb\_direction}}
 \hyperlink{reserved:ZB_ORDER}{\texttt{zb\_order}}
@@ -942,7 +973,9 @@ system.
 \hyperlink{reserved:ZEILBERGER_REPRESENTATION}{\texttt{zeilberger\_representation}}
 \halfinterwordspace
 
-\item[Switches]\doubleinterwordspace
+\section{Switches}
+
+\doubleinterwordspace
 \hyperlink{switch:ADJPREC}{\texttt{adjprec}}
 \hyperlink{switch:ALGINT}{\texttt{algint}}
 \hyperlink{switch:ALLBRANCH}{\texttt{allbranch}}
@@ -1002,7 +1035,7 @@ system.
 \hyperlink{switch:ERRCONT}{\texttt{errcont}}
 %%ASSERT%%\hyperlink{switch:EVALASSERT}{\texttt{EVALASSERT}}
 \hyperlink{switch:EVALLHSEQP}{\texttt{evallhseqp}}
-%%ASSIST%%\hyperlink{switch:EXDELT}{\texttt{EXDELT}}
+\hyperlink{switch:EXDELT}{\texttt{exdelt}}
 \hyperlink{switch:EXP}{\texttt{exp}}
 %%CDE%%\hyperlink{switch:EXPAND_TD}{\texttt{EXPAND\_{TD}}}
 \hyperlink{switch:EXPANDDF}{\texttt{expanddf}}
@@ -1066,7 +1099,7 @@ system.
 \hyperlink{switch:ODESOLVE_IMPLICIT}{\texttt{odesolve\_implicit}}
 \hyperlink{switch:ODESOLVE_NOINT}{\texttt{odesolve\_noint}}
 \hyperlink{switch:ODESOLVE_VERBOSE}{\texttt{odesolve\_verbose}}
-\hyperlink{switch:ONESPACE}{\texttt{ONESPACE}}
+\hyperlink{switch:ONESPACE}{\texttt{onespace}}
 \hyperlink{switch:ONLY_INTEGER}{\texttt{only\_integer}}
 \hyperlink{switch:OUTPUT}{\texttt{output}}
 \hyperlink{switch:OVERVIEW}{\texttt{overview}}
@@ -1128,7 +1161,9 @@ system.
 \hyperlink{switch:ZB_TRACE}{\texttt{zb\_trace}}
 \halfinterwordspace
 
-\item[Other Reserved Ids]\doubleinterwordspace
+\section{Other Reserved Ids}
+
+\doubleinterwordspace
 \hyperlink{reserved:BAG}{\texttt{bag}}
 \hyperlink{command:BEGIN}{\texttt{begin}}
 \hyperlink{reserved:DO}{\texttt{do}}
@@ -1152,5 +1187,3 @@ system.
 \hyperlink{command:WHILE}{\texttt{while}}
 \hyperlink{reserved:WS}{\texttt{ws}}
 \halfinterwordspace
-
-\end{list}
