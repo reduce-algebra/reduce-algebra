@@ -1,14 +1,54 @@
+
+\chapter{Solving numerical problems}
+
+\indexpackage{NUMERIC}
+
 \index{Melenk, Herbert}\index{Persons!Melenk, Herbert}
 
-The \textsc{NUMERIC} package implements some numerical (approximative)
+The \package{NUMERIC} package implements some numerical (approximative)
 algorithms for \REDUCE, based on the \REDUCE\ rounded mode
-arithmetic. These algorithms are implemented for standard cases.
+arithmetic.\footnote{This code was written by Herbert Melenk.}
+These algorithms are implemented for standard cases:
+
+\index{Newton's method}
+\index{Chebyshev fit}
+\index{Minimum}\index{Quadrature}
+This package implements basic algorithms of numerical analysis.
+These include:
+\begin{itemize}
+\item solution of algebraic equations by Newton's method
+\begin{verbatim}
+    num_solve({sin x=cos y, x + y = 1},{x=1,y=2})
+\end{verbatim}
+\item solution of ordinary differential equations
+\begin{verbatim}
+    num_odesolve(df(y,x)=y,y=1,x=(0 .. 1), iterations=5)
+\end{verbatim}
+\item bounds of a function over an interval
+\begin{verbatim}
+    bounds(sin x+x,x=(1 .. 2));
+\end{verbatim}
+\item minimizing a function (Fletcher Reeves steepest descent)
+\begin{verbatim}
+    num_min(sin(x)+x/5, x);
+\end{verbatim}
+\item Chebyshev curve fitting
+\begin{verbatim}
+    chebyshev_fit(sin x/x,x=(1 .. 3),5);
+\end{verbatim}
+\item numerical quadrature
+\begin{verbatim}
+    num_int(sin x,x=(0 .. pi));
+\end{verbatim}
+\end{itemize}
 They should not be called for ill-conditioned problems;
-please use standard mathematical libraries for these.
+please use standard mathematical libraries for
+these.
 
-\subsection{Syntax}
 
-\subsubsection{Intervals, Starting Points}
+\section{Syntax}
+
+\subsection{Intervals, Starting Points}
 \ttindextype{.. (interval)}{operator}
 
 Intervals are generally coded as lower bound and
@@ -38,7 +78,7 @@ parameters are built from other \REDUCE{} calculations in an
 automatic style, while the flat form is more convenient
 for direct interactive input.
 
-\subsubsection{Accuracy Control}
+\subsection{Accuracy Control}
 
 The keyword parameters \texttt{accuracy=}\meta{a} and \texttt{iterations=}\meta{i}, where
 \meta{a} and \meta{i} must be positive integer numbers, control the
@@ -48,7 +88,7 @@ within \meta{i} steps, the iteration is terminated with an
 error message. The values reached so far are then returned
 as the result.
 
-\subsubsection{tracing}
+\subsection{Tracing}
 \ttindexswitch[NUMERIC]{trnumeric}
 Normally the algorithms produce only a minimum of printed
 output during their operation. In cases of an unsuccessful
@@ -59,7 +99,7 @@ printed by setting
 \end{verbatim}
 
 
-\subsection{Minima}
+\section{Minima}
 \ttindextype[NUMERIC]{NUM\_MIN}{operator}
 \hypertarget{operator:NUM_MIN}{}
 
@@ -73,29 +113,22 @@ The steepest descent algorithms in general find only local
 minima.
 
 Syntax:
-\begin{description}
-\item[num\_min] $(exp, var_1[=val_1] [,var_2[=val_2] \ldots]$
+\begin{syntaxtable}
+  \f{num\_min} (\meta{exp}, \meta{$var_1$}\optional{=$val_1$} [,$var_2$[=$val_2$] \ldots]
+             [,accuracy=a][,iterations=i]) \\
+\intertext{or}\\
+  \f{num\_min} (\meta{exp}, \{\meta{$var_1$}\optional{=$val_1$} [,$var_2$[=$val_2$] \ldots]\}
+             [,accuracy=a][,iterations=i]) 
+\end{syntaxtable}
+where \meta{exp} is a function expression, \meta{$var_{1}$}, \meta{$var_{2}$}, \ldots\ are
+the variables in \meta{exp} and \meta{$val_{1}$}, \meta{$val_{2}$}, \ldots\  are
+the (optional) start values.
 
-$             [,accuracy=a][,iterations=i]) $
-
-or
-
-\item[num\_min] $(exp, \{ var_1[=val_1] [,var_2[=val_2] \ldots] \}$
-
-$             [,accuracy=a][,iterations=i]) $
-
-
-where $exp$ is a function expression,
-
-$var_1, var_2, \ldots$ are the variables in $exp$ and
-$val_1,val_2, \ldots$ are the (optional) start values.
-
-\texttt{num\_min} tries to find the next local minimum along the descending
+\f{num\_min} tries to find the next local minimum along the descending
 path starting at the given point. The result is a list
 with the minimum function value as first element followed by a list
 of equations, where the variables are equated to the coordinates
 of the result point.
-\end{description}
 
 Examples:
 \begin{verbatim}
@@ -115,7 +148,7 @@ Examples:
 
 \end{verbatim}
 
-\subsection{Roots of Functions/ Solutions of Equations}
+\section{Roots of Functions / Solutions of Equations}
 \ttindextype[NUMERIC]{num\_solve}{operator}
 \hypertarget{operator:NUM_SOLVE}{}
 
@@ -181,7 +214,7 @@ Example:
     [  1       1   ]
 \end{verbatim}
 
-\subsection{Integrals}
+\section{Integrals}
 \ttindextype[NUMERIC]{num\_int}{operator}
 \hypertarget{operator:NUM_INT}{}
 
@@ -232,7 +265,7 @@ Example:
     2.0
 \end{verbatim}
 
-\subsection{Ordinary Differential Equations}
+\section{Ordinary Differential Equations}
 \ttindextype[NUMERIC]{num\_odesolve}{operator}
 \hypertarget{operator:NUM_ODESOLVE}{}
 
@@ -313,7 +346,7 @@ Example:
 \end{verbatim}
 
 
-\subsection{Bounds of a Function}
+\section{Bounds of a Function}
 \ttindextype[NUMERIC]{bounds}{operator}
 \hypertarget{operator:BOUNDS}{}
 
@@ -368,7 +401,7 @@ Example:
 
 \end{verbatim}
 
-\subsection{Chebyshev Curve Fitting}
+\section{Chebyshev Curve Fitting}
 \ttindextype[NUMERIC]{chebyshev\_fit}{operator}
 \ttindextype[NUMERIC]{chebyshev\_eval}{operator}
 \ttindextype[NUMERIC]{chebyshev\_df}{operator}
@@ -440,7 +473,7 @@ chebyshev_eval(second w, x=(1 .. 3), x=2.1);
 
 \end{verbatim}
 
-\subsection{General Curve Fitting}
+\section{General Curve Fitting}
 \ttindextype[NUMERIC]{num\_fit}{operator}
 \hypertarget{operator:NUM_FIT}{}
 

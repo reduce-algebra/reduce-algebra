@@ -7,7 +7,7 @@ generates a set of tables that can then be used by the function
 Internally it uses a very well established technique known ``LALR'' which
 takes the grammar are derives the description of a stack automaton that
 can accept it. Details of the procedure can be found in standard books
-on compiler construction, such as the one by Aho, Ullman Lam and Sethi.
+on compiler construction, such as the one by Aho, Ullman, Lam and Sethi~\cite{dragoonBook}.
 
 At the time of writing this explanation the code is not in its final form,
 so this will describe the current state and include a few notes on what
@@ -16,7 +16,8 @@ might chaneg in the future.
 Building a parser is done in Reduce symbolic mode, so say "\texttt{symbolic;}" 
 or "\texttt{lisp;}" before starting your work.
 
-To use the code here you use a function \texttt{lalr\_create\_parser},
+\hypertarget{function:LALR_CREATE_PARSER}{}
+To use the code here you use a function \texttt{lalr\_create\_parser}\ttindextype[LALR]{lalr\_create\_parser}{lisp function},
 giving it two arguments. The first indicates precedence information and
 will be described later: for now just pass the value \var{nil}.
 The second argument is a list of productions, and the first one of these
@@ -163,11 +164,12 @@ be provided with an associated semantic action.
          ;
 
  PT2     ::= ")"         % Semantic actions as Lisp code
-         | lisp-s-expressoin PT2
+         | lisp-s-expression PT2
          ; 
 \end{verbatim}
 
-\ttindextype{LALR\_PRECEDENCE}{operator}
+\hypertarget{function:LALR_PRECEDENCE}{}
+\ttindextype[LALR]{lalr\_precedence}{lisp function}
 Before specifying a grammar it is possible to declare the precedence and
 associativity of some of the terminal symbols it will use. Here is an
 example:
@@ -181,7 +183,8 @@ Both ``\verb@*@'' and ``\verb@/@'' have the same precedence and both are
 left associative, and finally ``\verb@+@'' and ``\verb@-@'' are also equal
 in precedence but lower than ``\verb@*@''.
 
-\ttindextype{LALR\_CONSTRUCT\_PARSER}{operator}
+\hypertarget{function:LALR_CONSTRUCT_PARSER}{}
+\ttindextype[LALR]{lalr\_construct\_parser}{lisp function}
 With those precedences in place one could specify a grammar by
 \begin{verbatim}
  lalr_construct_parser '(

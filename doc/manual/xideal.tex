@@ -1,4 +1,6 @@
 
+\index{Hartley, David}\index{Persons!Hartley, David}
+
 \subsection{Description}
 
 The method of Gr{\"o}bner bases in commutative polynomial rings introduced by
@@ -16,17 +18,17 @@ problem: a unique normal form for every polynomial does not guarantee that
 all elements in the ideal reduce to zero. This leads to two possible
 definitions of Gr{\"o}bner bases as pointed out by Stokes \cite{Stokes:90}.
 
-XIDEAL constructs Gr{\"o}bner bases for solving the left ideal membership
+\package{XIDEAL} constructs Gr{\"o}bner bases for solving the left ideal membership
 problem: Gr{\"o}bner left ideal bases or GLIBs. For graded ideals, where each
 form is homogeneous in degree, the distinction between left and right
 ideals vanishes. Furthermore, if the generating forms are all homogeneous,
 then the Gr{\"o}bner bases for the non-graded and graded ideals are
-identical. In this case, XIDEAL is able to save time by truncating the
+identical. In this case, \package{XIDEAL} is able to save time by truncating the
 Gr{\"o}bner basis at some maximum degree if desired.
 
-XIDEAL uses the exterior calculus package EXCALC of E.~Schr{\"u}fer
-\cite{Schruefer:85} to provide the exterior algebra definitions. EXCALC is loaded
-automatically with XIDEAL.
+\package{XIDEAL} uses the exterior calculus package \package{EXCALC} of E.~Schr{\"u}fer
+\cite{Schruefer:85} to provide the exterior algebra definitions. \package{EXCALC} is loaded
+automatically with \package{XIDEAL}.
 % The basis 1-forms for the exterior algebra
 % are automatically extracted from the input. Consequently, each expression
 % must be written in terms of these 1-forms -- $p$-form kernels with $p>1$
@@ -40,7 +42,8 @@ automatically with XIDEAL.
 The exterior variables may be specified explicitly, or extracted
 automatically from the input polynomials.  All distinct exterior variables
 in the input are assumed to be linearly independent -- if a dimension has
-been fixed (using the EXCALC \f{spacedim} or \f{coframe} statements), then
+been fixed (using the \package{EXCALC} \f{spacedim}\ttindextype{spacedim}{command}
+or \f{coframe}\ttindextype{coframe}{command} statements), then
 input containing distinct exterior variables with degrees totaling more
 than this number will generate an error.
 
@@ -56,16 +59,17 @@ than this number will generate an error.
 
 
 \subsubsection*{xorder}
-\ttindex{XORDER}
 
-\f{xorder} sets the term ordering for all other calculations. The syntax is
+\hypertarget{command:XORDER}{}
+\f{xorder}\ttindextype[XIDEAL]{xorder}{declaration}
+ sets the term ordering for all other calculations. The syntax is
 \begin{verbatim}
      xorder k
 \end{verbatim}
 where \f{k} is one of \f{lex}, \f{gradlex} or \f{deglex}. The
 lexicographical ordering \f{lex} is based on the prevailing EXCALC kernel
-ordering for the exterior variables. The EXCALC kernel ordering can be
-changed with the \REDUCE{} \f{korder} or EXCALC \f{forder} declarations. The
+ordering for the exterior variables. The \package{EXCALC} kernel ordering can be
+changed with the \REDUCE{} \f{korder} or \package{EXCALC} \f{forder} declarations. The
 graded lexicographical ordering \f{gradlex} puts terms with more factors
 first (irrespective of their exterior degrees) and sorts terms of the same
 grading lexicographically. The degree lexicographical ordering \f{deglex}
@@ -75,20 +79,21 @@ The default ordering is \f{deglex}.
 
 
 \subsubsection*{xvars}
-\ttindex{XVARS}
 
+\hypertarget{command:XVARS}{}
 It is possible to consider scalar and 0-form variables in exterior
 polynomials in two ways: as variables or as coefficient parameters. This
 difference is crucial for Gr{\"o}bner basis calculations. By default, all
 scalar variables which have been declared as 0-forms are treated as
-exterior variables, along with any EXCALC kernels of degree 0. This
-division can be changed with the \f{xvars} declaration. The syntax is
+exterior variables, along with any \package{EXCALC} kernels of degree 0. This
+division can be changed with the \f{xvars}\ttindextype[XIDEAL]{xvars}{declaration}
+declaration. The syntax is
 \begin{verbatim}
      xvars U,V,W,...
 \end{verbatim}
 where the arguments are either kernels or lists of kernels. All variables
 specified in the \f{xvars} declaration are treated as exterior variables in
-subsequent XIDEAL calculations with exterior polynomials, and any other
+subsequent \package{XIDEAL} calculations with exterior polynomials, and any other
 scalars are treated as parameters. This is true whether or not the
 variables have been declared as 0-forms. The declaration
 \begin{verbatim}
@@ -101,7 +106,7 @@ causes all degree 0 variables to be treated as parameters, and
 restores the default. Of course, $p$-form kernels with $p\not=0$ are always
 considered as exterior variables. The order of the variables in an
 \f{xvars} declaration has no effect on the \REDUCE{} kernel ordering or
-XIDEAL term ordering.
+\package{XIDEAL} term ordering.
 
 
 
@@ -109,115 +114,112 @@ XIDEAL term ordering.
 
 
 \subsubsection*{xideal}
-\ttindex{XIDEAL}
 
-\f{xideal} calculates a Gr{\"o}bner left ideal basis in
+\hypertarget{operator:XIDEAL}{}
+\f{xideal}\ttindextype[XIDEAL]{xideal}{operator} calculates a Gr{\"o}bner left ideal basis in
 an exterior algebra. The syntax is
-\begin{verbatim}
-     xideal(S:list of forms[,V:list of kernels][,R:integer])
+\begin{syntax}
+     \f{xideal}(\meta{S:list of forms}[,\meta{V:list of kernels}][,\meta{R:integer}])
            :list of forms.
-\end{verbatim}
+\end{syntax}
 \f{xideal} calculates a Gr{\"o}bner basis for the left ideal generated by
-\f{S} using the current term ordering. The resulting list can be used for
+\meta{S} using the current term ordering. The resulting list can be used for
 subsequent reductions with \f{xmod} as long as the term ordering is not
 changed. Which 0-form variables are to be regarded as exterior variables
-can be specified in an optional argument \f{V} (just like an \f{xvars}
-declaration). The order of variables in \f{V} has no effect on the term
-ordering. If the set of generators \f{S} is graded, an optional parameter
-\f{R} can be given, and \f{xideal} produces a truncated basis suitable for
-reducing exterior forms of degree less than or equal to \f{R} in the left
+can be specified in an optional argument \meta{V} (just like an \f{xvars}
+declaration). The order of variables in \meta{V} has no effect on the term
+ordering. If the set of generators \meta{S} is graded, an optional parameter
+\meta{R} can be given, and \f{xideal} produces a truncated basis suitable for
+reducing exterior forms of degree less than or equal to \meta{R} in the left
 ideal. This can save time and space with large problems, but the result
-cannot be used for exterior forms of degree greater than \f{R}. The forms
+cannot be used for exterior forms of degree greater than \meta{R}. The forms
 returned by \f{xideal} are sorted in increasing order. See also the
-switches \f{trxideal} and \f{xfullreduction}.
+switches \sw{trxideal} and \sw{xfullreduction}.
 
 
 \subsubsection*{xmodideal}
-\ttindex{XMODIDEAL}
 
-\f{xmodideal} reduces exterior forms to their (unique) normal forms modulo
+\hypertarget{operator:XMODIDEAL}{}
+\f{xmodideal}\ttindextype[XIDEAL]{xmodideal}{operator} reduces exterior forms to their (unique) normal forms modulo
 a left ideal. The syntax is
-\begin{verbatim}
-     xmodideal(F:form, S:list of forms):form
-\end{verbatim}
-or
-\begin{verbatim}
-     xmodideal(F:list of forms, S:list of forms)
+\begin{syntaxtable}
+     \f{xmodideal}(\meta{F:form}, \meta{S:list of forms}):form \\
+     \intertext{or}\\
+     \f{xmodideal}(\meta{F:list of forms}, \meta{S:list of forms})
               :list of forms.
-\end{verbatim}
+\end{syntaxtable}
 An alternative infix syntax is also available:
-\begin{verbatim}
-     F xmodideal S.
-\end{verbatim}
-\f{xmodideal(F,S)} first calculates a Gr{\"o}bner basis for the left ideal
-generated by \f{S}, and then reduces \f{F}. \f{F} may be either a single
-exterior form, or a list of forms, and \f{S} is a list of forms. If \f{F}
+\begin{syntax}
+     \meta{F} xmodideal \meta{S} .
+\end{syntax}
+\f{xmodideal}(\meta{F},\meta{S}) first calculates a Gr{\"o}bner basis for the left ideal
+generated by \meta{S}, and then reduces \meta{F}. \meta{F} may be either a single
+exterior form, or a list of forms, and \meta{S} is a list of forms. If \meta{F}
 is a list of forms, each element is reduced, and any which vanish are
 deleted from the result. 
-% If this operator is used more than once, and \f{S} does not change
+% If this operator is used more than once, and \meta{S} does not change
 % between calls, then the Gr{\"o}bner basis is not recalculated. 
-If the set of generators \f{S} is graded, then a truncated Gr{\"o}bner basis
-is calculated using the degree of \f{F} (or the maximal degree in
-\f{F}). See also \f{trxmod}.
+If the set of generators \meta{S} is graded, then a truncated Gr{\"o}bner basis
+is calculated using the degree of \meta{F} (or the maximal degree in
+\meta{F}). See also \sw{trxmod}.
 
 
 \subsubsection*{xmod}
-\ttindex{XMOD}
 
-\f{xmod} reduces exterior forms to their (not necessarily unique) normal
+\hypertarget{operator:XMOD}{}
+\f{xmod}\ttindextype[XIDEAL]{xmod}{operator}
+ reduces exterior forms to their (not necessarily unique) normal
 forms modulo a set of exterior polynomials. The syntax is
-\begin{verbatim}
-     xmod(F:form, S:list of forms):form
-\end{verbatim}
-or
-\begin{verbatim}
-     xmod(F:list of forms, S:list of forms):list of forms.
-\end{verbatim}
+\begin{syntaxtable}
+     \f{xmod}(\meta{F:form}, \meta{S:list of forms}):form\\
+     \intertext{or}\\
+     \f{xmod}(\meta{F:list of forms}, \meta{S:list of forms}):list of forms.
+\end{syntaxtable}
 An alternative infix syntax is also available:
-\begin{verbatim}
-     F xmod S.
-\end{verbatim}
-\f{xmod(F,S)} reduces \f{F} with respect to the set of exterior polynomials
-\f{S}, which is not necessarily a Gr{\"o}bner basis. \f{F} may be either a
-single exterior form, or a list of forms, and \f{S} is a list of
+\begin{syntax}
+      \meta{F} \f{xmod} \meta{S} .
+\end{syntax}
+\f{xmod}(\meta{F},\meta{S}) reduces \meta{F} with respect to the set of exterior polynomials
+\meta{S}, which is not necessarily a Gr{\"o}bner basis. \meta{F} may be either a
+single exterior form, or a list of forms, and \meta{S} is a list of
 forms. This operator can be used in conjunction with \f{xideal} to produce
-the same effect as \f{xmodideal}: for a single homogeneous form \f{F} and a
-set of exterior forms \f{S}, \f{F xmodideal S} is equivalent to \f{F xmod
-xideal(S,exdegree F)}. See also \f{trxmod}.
+the same effect as \f{xmodideal}: for a single homogeneous form \meta{F} and a
+set of exterior forms \meta{S}, \meta{F} \f{xmodideal} \meta{S} is equivalent to
+\meta{F} \f{xmod} \f{xideal}(\meta{S},\f{exdegree} \meta{F}). See also \sw{trxmod}.
 
 
 \subsubsection*{xauto}
-\ttindex{XAUTO}
 
-\f{xauto} autoreduces a set of exterior forms. The syntax is
-\begin{verbatim}
-     xauto(S:list of forms):list of forms.
-\end{verbatim}
-\f{xauto S} returns a set of exterior polynomials which generate the same
+\hypertarget{operator:XAUTO}{}
+\f{xauto}\ttindextype[XIDEAL]{XAUTO}{operator} autoreduces a set of exterior forms. The syntax is
+\begin{syntax}
+     \f{xauto}(\meta{S:list of forms}):list of forms.
+\end{syntax}
+\f{xauto} \meta{S} returns a set of exterior polynomials which generate the same
 left ideal, but which are in normal form with respect to each other. For
 linear expressions, this is equivalent to finding the reduced row echelon
 form of the coefficient matrix.
 
 
 \subsubsection*{excoeffs}
-\ttindex{EXCOEFFS}
 
-The operator \f{excoeffs}, with syntax
-\begin{verbatim}
-     excoeffs(F:form):list of expressions
-\end{verbatim}
+\hypertarget{operator:EXCOEFFS}{}
+The operator \f{excoeffs}\ttindextype[XIDEAL]{EXCOEFFS}{operator}, with syntax
+\begin{syntax}
+     \f{excoeffs}(\meta{F:form}):list of expressions
+\end{syntax}
 returns the coefficients from an exterior form as a list. The coefficients
 are always scalars, but which degree 0 variables count as coefficient
 parameters is controlled by the command \f{xvars}.
 
 
 \subsubsection*{exvars}
-\ttindex{EXVARS}
 
-The operator \f{exvars}, with syntax
-\begin{verbatim}
-     exvars(F:form):list of kernels
-\end{verbatim}
+\hypertarget{operator:EXVARS}{}
+The operator \f{exvars}\ttindextype[XIDEAL]{xvars}{operator}, with syntax
+\begin{syntax}
+     \f{exvars}(\meta{F:form}):list of kernels
+\end{syntax}
 returns the exterior powers from an exterior form as a list. All non-scalar
 variables are returned, but which degree 0 variables count as coefficient
 parameters is controlled by the command \f{xvars}.
@@ -227,29 +229,29 @@ parameters is controlled by the command \f{xvars}.
 
 
 \subsubsection*{xfullreduce}
-\ttindextype{XFULLREDUCE}{switch}
 
-\f{on xfullreduce} allows \f{xideal} and \f{xmodideal} to calculate
+\hypertarget{switch:XFULLREDUCE}{}
+\texttt{on} \sw{xfullreduce}\ttindexswitch[XIDEAL]{xfullreduce} allows \f{xideal} and \f{xmodideal} to calculate
 reduced, monic Gr{\"o}bner bases, which speeds up subsequent reductions, and
-guarantees a unique form for the Gr{\"o}bner basis. \f{off xfullreduce} turns
+guarantees a unique form for the Gr{\"o}bner basis. \texttt{off} \sw{xfullreduce} turns
 of this feature, which may speed up calculation of some Gr{\"o}bner
-basis. \f{xfullreduce} is \f{on} by default.
+basis. \sw{xfullreduce} is \f{on} by default.
 
 
 \subsubsection*{trxideal}
-\ttindextype{TRXIDEAL}{switch}
 
-\f{on trxideal} produces a trace of the calculations done by \f{xideal} and
+\hypertarget{switch:TRXIDEAL}{}
+\f{on} \sw{trxideal}\ttindexswitch[XIDEAL]{trxideal} produces a trace of the calculations done by \f{xideal} and
 \f{xmodideal}, showing the basis polynomials and the results of the
 critical element calculations. This can generate profuse amounts of output.
-\f{trxideal} is \f{off} by default.
+\sw{trxideal} is \f{off} by default.
 
 
 \subsubsection*{trxmod}
-\ttindextype{TRXMOD}{switch}
 
-\f{on trxmod} produces a trace of reductions to normal form during
-calculations by XIDEAL operators. \f{trxmod} is \f{off} by default.
+\hypertarget{switch:TRXMOD}{}
+\f{on} \sw{trxmod}\ttindexswitch[XIDEAL]{trxmod} produces a trace of reductions to normal form during
+calculations by \package{XIDEAL} operators. \sw{trxmod} is \f{off} by default.
 
 
 % \subsubsection*{XSTATS}
@@ -264,7 +266,7 @@ calculations by XIDEAL operators. \f{trxmod} is \f{off} by default.
 
 \subsection{Examples}
 
-Suppose XIDEAL has been loaded, the switches are at their default settings,
+Suppose \package{XIDEAL} has been loaded, the switches are at their default settings,
 and the following exterior variables have been declared:
 
 \begin{verbatim}

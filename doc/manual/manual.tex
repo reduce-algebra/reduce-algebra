@@ -236,6 +236,7 @@
 %% When generating MathJax output, the definition of syntax using math
 %% mode caused htlatex compilation errors.
 \newenvironment{syntax}{%
+    \def\optional##1{$\,[$##1$]\,$}%
     \samepage
     \list{}{\setlength{\leftmargin}{1em}\setlength{\listparindent}{0em}}%
     \item\relax
@@ -261,7 +262,7 @@
 \setlength{\abovedisplayskip}{\topsep}  % for "long" equations
 \setlength{\belowdisplayskip}{\topsep}
 
-\newcommand{\package}[1]{\capitalize{#1}\textsc{\blubba}}
+\DeclareRobustCommand{\package}[1]{\capitalize{#1}\textsc{\blubba}}
 \newcommand{\key}[1]{\fbox{\textsf{#1}}}
 \newcommand{\extendedmanual}[1]{#1}
 
@@ -284,7 +285,7 @@
 \newcommand{\var}[1] {\terminalfont{#1}}
 
 % \sw is a switch.
-\newcommand{\sw}[1] {\terminalfont{#1}}
+\DeclareRobustCommand{\sw}[1]{\terminalfont{#1}}
 
 % \msg for message text
 \newcommand{\msg}[1]{\terminalfont{#1}}
@@ -363,8 +364,8 @@
 \include{inter}
 \include{matrix}
 \include{proc}
-\include
-{series}
+\include{series}
+\include{numeric}
 \include{gnuplot}
 \input{turtle}
 \include{rtrace}
