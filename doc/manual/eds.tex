@@ -1,29 +1,20 @@
 
+\index{Hartley, David}\index{Persons!Hartley, David}
+
 % Extra macros
 
-%\newcommand\implies{\Rightarrow}
-\newcommand{\optional}[1]{$\,[$#1$]\,$}
-\newenvironment{edssyntax}
-   {\begin{list}{}{\tt}\item[]}
-   {\end{list}}
 
 %% For MathJax, must be part of a paragraph to avoid extra space:
 \ifdefined\VerbMath
 \(
 \newcommand{\deriv}{\mathrm{d}}
-\newcommand{\union}{\cup}
-\newcommand{\R}{\mathbf{R}}
-\newcommand{\del}{\partial}
 \)%
 \else
 \newcommand{\deriv}{\mathrm{d}}
-\newcommand{\union}{\cup}
-\def\R{\hbox{\bf R}}
-\newcommand{\del}{\partial}
 \fi
 %
 %\begin{abstract}
-EDS is a REDUCE package for symbolic analysis of partial differential
+\package{EDS} is a \REDUCE package for symbolic analysis of partial differential
 equations using the geometrical approach of exterior differential
 systems. The package implements much of exterior differential systems
 theory, including prolongation and involution analysis, and has been
@@ -47,25 +38,25 @@ introduction to exterior differential systems beyond the scant details
 given in section \ref{EDS data structures and concepts}, but there are a
 number of up-to-date texts on the subject (eg \cite{Bryant:1991,Spivak:1979}).
 
-EDS provides a number of tools for setting up and manipulating exterior
+\package{EDS} provides a number of tools for setting up and manipulating exterior
 differential systems and implements many features of the theory. Its main
 strengths are the ability to use anholonomic or moving frames and the care
 taken with nonlinear problems.
 
 There has long been interest in implementing the theory of exterior
 differential systems in a computer algebra system (eg
-\cite{Arais:1974,Ganzha:1981,Hartley:91}). The EDS package owes much to these
+\cite{Arais:1974,Ganzha:1981,Hartley:91}). The \package{EDS} package owes much to these
 earlier efforts, and also to related packages for PDE analysis (eg
 \cite{Mansfield:1993,reid_1991,Seiler:1995}), as well as to earlier versions of
-EDS produced at Lancaster university with R~W~Tucker and
-P~A~Tuckey. Finally, EDS uses the exterior calculus package EXCALC of
-E~Schr{\"u}fer \ref{package:EXCALC} and the exterior ideals package XIDEAL
-\ref{package:XIDEAL}. XIDEAL and EXCALC are loaded automatically with EDS.
+\package{EDS} produced at Lancaster university with R.~W.~Tucker and
+P.~A.~Tuckey. Finally, \package{EDS} uses the exterior calculus package \package{EXCALC} of
+E.~Schr{\"u}fer \ref{package:EXCALC} and the exterior ideals package \package{XIDEAL}
+\ref{package:XIDEAL}. \package{XIDEAL} and \package{EXCALC} are loaded automatically with \package{EDS}.
 
 This work has been supported by the Graduate College on Scientific
 Computing, University of Cologne and GMD St Augustin, funded by the DFG (Deutsche
-Forschungsgemeinschaft). I would like to express my thanks to R~W~Tucker,
-E~Schr{\"u}fer, P~A~Tuckey, F~W~Hehl and R~B~Gardner for helpful and
+Forschungsgemeinschaft). I would like to express my thanks to R.~W.~Tucker,
+E.~Schr{\"u}fer, P.~A.~Tuckey, F.~W.~Hehl and R.~B.~Gardner for helpful and
 encouraging discussions.
 
 
@@ -76,23 +67,23 @@ encouraging discussions.
 \label{EDS data structures and concepts}
 
 This section presents the various structures used for expressing exterior
-systems quantities in EDS. In addition, some the concepts used in EDS to
+systems quantities in \package{EDS}. In addition, some the concepts used in \package{EDS} to
 aid computation are described.
 
 \subsubsection{Coframings}
 \label{Coframings}
 
-Within the context of EDS, a {\it coframing} means a real
+Within the context of \package{EDS}, a \emph{coframing} means a real
 finite-dimensional differentiable manifold with a given global cobasis.
-The information about a coframing required by EDS is kept in a
+The information about a coframing required by \package{EDS} is kept in a
 \meta{coframing} object. The cobasis is the identifying element of an
-EDS \meta{coframing}: distinct cobases for the same differentiable
-manifold are treated as distinct \meta{coframing} objects in EDS. The
+\package{EDS} \meta{coframing}: distinct cobases for the same differentiable
+manifold are treated as distinct \meta{coframing} objects in \package{EDS}. The
 cobasis may be either holonomic or anholonomic, allowing some manifolds
 with non-trivial topology (eg.  group manifolds) to be treated.
 
-In addition to the cobasis, an EDS \meta{coframing} can be given {\it
-coordinates}, {\it structure equations} and {\it restrictions}. The
+In addition to the cobasis, an \package{EDS} \meta{coframing} can be given
+\emph{coordinates}, \emph{structure equations} and \emph{restrictions}. The
 coordinates may be an incomplete or overcomplete set. The structure
 equations express the exterior derivative of the coordinates and cobasis
 elements as needed.  All coordinate differentials must be expressed in
@@ -111,17 +102,17 @@ convenient to accept an abuse of language and think of the
 A \meta{coframing} is constructed or selected using the \f{coframing}
 operator.
 
-\paragraph{\it Examples:}
+\paragraph{\textit{Examples:}}
 \begin{itemize}
-\item $\R^3$ with cobasis $\{\deriv x,\deriv y,\deriv z\}$ and coordinates $\{x,y,z\}$.
-\item $\R^2\backslash\{0\}$ with cobasis $\{e^1,e^2\}$, a single
+\item ${\mathbf{R}}^3$ with cobasis $\{\deriv x,\deriv y,\deriv z\}$ and coordinates $\{x,y,z\}$.
+\item ${\mathbf{R}}^2\backslash\{0\}$ with cobasis $\{e^1,e^2\}$, a single
 	coordinate $\{r\}$, ``structure equations'' $\{\deriv r = e^1$,
 	$\deriv e^1=0$,$\deriv e^2=e^1\wedge e^2/r\}$ and restrictions $\{r\neq0\}$.
-\item $\R^2\backslash\{0\}$ with cobasis $\{\deriv x,\deriv y\}$,
+\item ${\mathbf{R}}^2\backslash\{0\}$ with cobasis $\{\deriv x,\deriv y\}$,
 	coordinates $\{x,y\}$ and restrictions $\{x^2+y^2\neq0\}$.
 \item $S^1$ with cobasis $\{\omega\}$ and structure equations
 	$\{\deriv\omega = 0\}$.
-\item $S^2$ cannot be encapsulated by an EDS \meta{coframing} since there
+\item $S^2$ cannot be encapsulated by an \package{EDS} \meta{coframing} since there
         is no global cobasis.
 \end{itemize}
 
@@ -132,13 +123,13 @@ A simple \meta{EDS}, or exterior differential system, is a triple
 $(S,\Omega,M)$, where $M$ is a \meta{coframing} (section
 \ref{Coframings}), $S$ is a \meta{system} (section \ref{Systems}) on
 $M$, and $\Omega$ is an independence condition: either a decomposable
-\meta{p-form} or a \meta{system} of 1-forms on $M$ (exterior
+\meta{p-form} or a \meta{system} of $1$-forms on $M$ (exterior
 differential systems without independence condition are not treated by
-EDS).
+\package{EDS}).
 
 More generally, an \meta{EDS} is a list of simple \meta{EDS} objects
 where the various coframings are all disjoint. This last requirement in
-not enforced within EDS unless the \f{edsdisjoint} switch is \f{on}
+not enforced within \package{EDS} unless the \f{edsdisjoint} switch is \f{on}
 (section \ref{edsdisjoint}). These more general \meta{EDS} objects are
 represented as a list of simple \meta{EDS} objects. All operators which
 take an \meta{EDS} argument accept both simple and compound types.
@@ -158,13 +149,13 @@ preserved. Solutions at a single point are described by integral elements
 \subsubsection{Systems}
 \label{Systems}
 
-In EDS, the label \meta{system} refers to a list
-\begin{edssyntax}
+In \package{EDS}, the label \meta{system} refers to a list
+\begin{syntax}
 	\{\meta{p-form expr},$\cdots$\}
-\end{edssyntax}
+\end{syntax}
 of differential forms. This is distinct from an \meta{EDS} (section
 \ref{Exterior differential systems}), which has additional structure.
-However, many EDS operators will accept either an \meta{EDS} or a
+However, many \package{EDS} operators will accept either an \meta{EDS} or a
 \meta{system} as arguments. In the latter case, any extra information
 which is required is taken from the background coframing (section
 \ref{Background coframing}).
@@ -180,8 +171,8 @@ inactive. However, when operations are performed on a \meta{coframing} or an
 \meta{EDS} object (sections \ref{Coframings}, \ref{Exterior differential
 systems}), this information is activated for the duration of those
 operations. It is possible to activate the rules and orderings of a
-\f{coframing} operator globally, by making it the {\em background
-coframing}. All subsequent EXCALC operations will be governed by those
+\f{coframing} operator globally, by making it the \emph{background
+coframing}. All subsequent \package{EXCALC} operations will be governed by those
 rules. Operations on \meta{EDS} objects are unaffected, since their
 coframings are still activated locally. The background coframing can be set
 and changed with the \f{set\_coframing} command, and inspected using
@@ -190,27 +181,27 @@ and changed with the \f{set\_coframing} command, and inspected using
 \subsubsection{Integral elements}
 \label{Integral elements}
 
-An {\it integral element} of an exterior system $(S,\Omega,M)$ is a
+An \emph{integral element} of an exterior system $(S,\Omega,M)$ is a
 subspace $P\subset T_pM$ of the tangent space at some point $p\in M$
 such that all forms in $S$ vanish when evaluated on vectors from $P$. In
 addition, no non-zero vector in $P$ may annul every form in $\Omega$.
 
 Alternatively, an integral element $P\subset T_pM$ can be represented
-by its annihilator $P^\perp\subset T^*_pM$, comprising those 1-forms
+by its annihilator $P^\perp\subset T^*_pM$, comprising those $1$-forms
 at $p$ which annul every vector in $P$. This can also be understood as a
-maximal set of 1-forms at $p$ such that $S \simeq 0 \pmod{P^\perp}$ and
+maximal set of $1$-forms at $p$ such that $S \simeq 0 \pmod{P^\perp}$ and
 the rank of $\Omega$ is preserved modulo $P^\perp$.  This is the
-representation used by EDS. Further, the reference to the point $p$ is
-omitted, so an \meta{integral element} in EDS is a distribution of
-1-forms on $M$, specified as a \meta{system} of 1-forms.
+representation used by \package{EDS}. Further, the reference to the point $p$ is
+omitted, so an \meta{integral element} in \package{EDS} is a distribution of
+$1$-forms on $M$, specified as a \meta{system} of $1$-forms.
 
 In specifying an integral element for a particular \meta{EDS}, it is
 possible to omit the Pfaffian component of the \meta{EDS}, since these
-1-forms must be part of any integral element.
+$1$-forms must be part of any integral element.
 
-\paragraph{\it Examples:}
+\paragraph{\textit{Examples:}}
 \begin{itemize}
-\item With $M = \R^3 = \{(x,y,z)\}$, $S = \{\deriv x\wedge \deriv z\}$ and
+\item With $M = {\mathbf{R}}^3 = \{(x,y,z)\}$, $S = \{\deriv x\wedge \deriv z\}$ and
       $\Omega = \{\deriv x,\deriv y\}$, the integral element $P =
        \{\partial_x + \partial_z,\partial_y\}$ is equally determined by its
       annihilator $P^\perp = \{\deriv z - \deriv x\}$.
@@ -226,16 +217,16 @@ For large problems, it can require a great deal of computation to establish
 whether, for example, a system is closed or not. In order to save
 recomputing such properties, an \meta{EDS} object carries a list of
 \meta{properties} of the form
-\begin{edssyntax}
+\begin{syntax}
 	\{\meta{keyword} = \meta{value},$\cdots$\}
-\end{edssyntax}
+\end{syntax}
 where \meta{keyword} is one of \f{closed}, \f{quasilinear}, \f{pfaffian} or
 \f{involutive}, and \meta{value} is either \f{0} (false) or \f{1}
 (true). These properties are suppressed when an \meta{EDS} is printed,
 unless the \f{nat} switch is \f{off}. They can be examined using the
 \f{properties} operator (section \ref{properties}).
 
-Properties are usually generated automatically by EDS as required, but may
+Properties are usually generated automatically by \package{EDS} as required, but may
 be explicitly checked using the operators in section \ref{Testing exterior
 systems}. If a property is not yet present on the list, it is not yet
 known, and must be checked explicitly if required.
@@ -255,10 +246,10 @@ are never checked. Properties can be erased using the \f{cleanup} operator
 \subsubsection{Maps}
 \label{Maps}
 
-Within EDS, a map $f:M\to N$ is given as a \meta{map} object, a list
-\begin{edssyntax}
+Within \package{EDS}, a map $f:M\to N$ is given as a \meta{map} object, a list
+\begin{syntax}
 \{\meta{coordinate} = \meta{expr},$\cdots$,\meta{expr} neq \meta{expr},$\cdots$\}
-\end{edssyntax}
+\end{syntax}
 of substitutions and restrictions. The substitutions express coordinates on
 the target manifold $N$ in terms of those on the source manifold $M$. The
 restrictions describe point sets not contained in the source manifold
@@ -275,12 +266,12 @@ operator, section \ref{cross}).
 Maps are applied using the \f{pullback} and \f{restrict} operators
 (sections \ref{pullback}, \ref{restrict}).
 
-\paragraph{\it Examples:}
+\paragraph{\textit{Examples:}}
 \begin{itemize}
-\item The map $\R^2\backslash\{0\}\to\R^3$, $(x,y)\mapsto (x,y,z=x^2+y^2)$
+\item The map ${\mathbf{R}}^2\backslash\{0\}\to{\mathbf{R}}^3$, $(x,y)\mapsto (x,y,z=x^2+y^2)$
       is represented $\{z = x^2+y^2,z\neq 0\}$.
 \item $\{x=u+v,y=u-v\}$ might represent the coordinate change
-      $\R^3\to\R^3$, $(u,v,z)\mapsto(x=u+v,y=u-v,z)$.
+      ${\mathbf{R}}^3\to{\mathbf{R}}^3$, $(u,v,z)\mapsto(x=u+v,y=u-v,z)$.
 \item $\{x=u+v,y=2u-x\}$ is the same map again.
 \item $\{x=2v+y,y=2u-x\}$ is unacceptable since $x$ and $y$ cannot be
       eliminated from the right-hand sides by repeated substitution.
@@ -289,25 +280,25 @@ Maps are applied using the \f{pullback} and \f{restrict} operators
 \subsubsection{Cobasis transformations}
 \label{Cobasis transformations}
 
-A cobasis transformation is given in EDS by a \meta{transform}, a list
-\begin{edssyntax}
+A cobasis transformation is given in \package{EDS} by a \meta{transform}, a list
+\begin{syntax}
 	\{\meta{cobasis element} = \meta{1-form expr},$\cdots$\}
-\end{edssyntax}
+\end{syntax}
 of substitutions. When applying a transformation to a \meta{p-form} or
-\meta{system}, it is necessary to specify the {\it forward}
+\meta{system}, it is necessary to specify the \emph{forward}
 transformation just as for a \f{sub} substitution. For \meta{EDS} and
 \meta{coframing} objects, it is also possible to specify the inverse of
-the desired substition: EDS will automatically invert the transformation
+the desired substition: \package{EDS} will automatically invert the transformation
 as required. For a partial change of cobasis, it is not necessary to
 include trivial equalities. Cobasis transformations are applied by the
 \f{transform} operator (section \ref{transform}).
 
-\paragraph{\it Examples:}
+\paragraph{\textit{Examples:}}
 \begin{itemize}
 \item $\{\omega^1 = x\deriv y - y\deriv x, \omega^2 = x\deriv x + y\deriv y\}$ gives a
 transformation between Cartesian and polar cobases on
-$\R^2\backslash\{0\}$.
-\item On $J^1(\R^2,\R)$ with cobasis $\{\deriv u,\deriv p,\deriv q,\deriv r,\deriv s,\deriv t,\deriv
+${\mathbf{R}}^2\backslash\{0\}$.
+\item On $J^1({\mathbf{R}}^2,{\mathbf{R}})$ with cobasis $\{\deriv u,\deriv p,\deriv q,\deriv r,\deriv s,\deriv t,\deriv
 x,\deriv y\}$, the list $\{\theta^1=\deriv u - p\deriv x - q\deriv y, \theta^2=\deriv p -
 r\deriv x - s\deriv y, \theta^3=\deriv q - s\deriv x - t\deriv y\}$ specifies a new cobasis in
 which the contact system is simply $\{\theta^1,\theta^2,\theta^3\}$.
@@ -318,12 +309,12 @@ which the contact system is simply $\{\theta^1,\theta^2,\theta^3\}$.
 
 For a quasilinear Pfaffian exterior differential system
 $(\{\theta^a\},\{\omega^i\},M)$, the tableau $A=[\pi^a_i]$
-is a matrix of 1-forms such that
+is a matrix of $1$-forms such that
 \[	\deriv \theta^a + \pi^a_i\wedge\omega^i \simeq 0
 		\pmod{\{\theta^a,\omega^i\wedge\omega^j\}}
 \]
 The $\pi^a_i$ are not unique: if $\{\theta^a,\pi^\rho,\omega^i\}$ is a
-standard cobasis for the system (section \ref{Standard cobasis}), the EDS
+standard cobasis for the system (section \ref{Standard cobasis}), the \package{EDS}
 \meta{tableau} is a matrix containing linear combinations of the $\pi^\rho$
 only. Zero rows are omitted.
 
@@ -337,22 +328,22 @@ Cartan characters of a tableau are found using \f{characters} (section
 
 Parts of the theory of exterior differential systems apply only at points
 on the underlying manifold where the system is in some sense
-non-singular. To ensure the theory applies, EDS automatically works all
-exterior systems $(S,\Omega,M)$ into a {\em normal form} in which
+non-singular. To ensure the theory applies, \package{EDS} automatically works all
+exterior systems $(S,\Omega,M)$ into a \emph{normal form} in which
 
 \begin{enumerate}
-\item The Pfaffian (degree 1) component of $S$ is in {\em solved} form,
+\item The Pfaffian (degree 1) component of $S$ is in \emph{solved} form,
       where each expression has a distinguished term with coefficient 1,
       unique to that expression.
 \item The independence condition $\Omega$ is also in solved form.
-\item The distinguished terms from the 1-forms in $S$ have been eliminated
+\item The distinguished terms from the $1$-forms in $S$ have been eliminated
       from the rest of $S$ and from $\Omega$.
-\item Any 1-forms in $S$ which vanish modulo the independence condition are
+\item Any $1$-forms in $S$ which vanish modulo the independence condition are
       removed from the system and their coefficients are appended as
       0-forms.
 \end{enumerate}
 
-Conditions 1 and 2 ensure the 1-forms have constant rank, while 3 is
+Conditions 1 and 2 ensure the $1$-forms have constant rank, while 3 is
 convenient for many tests and calculations. In bringing the system into
 solved form, divisions will be made only by coefficients which are
 constants, parameters or functions which are nowhere zero on the
@@ -365,9 +356,9 @@ This ``normal form'' has, of course, nothing to do with the various normal
 forms (eg Goursat) into which some exterior systems may be brought by
 cobasis transformations and choices of generators.
 
-\paragraph{\it Examples:}
+\paragraph{\textit{Examples:}}
 \begin{itemize}
-\item On $M=\{(u,v,w)\in\R^3\mid u\neq v\}$, the Pfaffian system
+\item On $M=\{(u,v,w)\in{\mathbf{R}}^3\mid u\neq v\}$, the Pfaffian system
       \[\{u\deriv u + v\deriv v + \deriv w,\>(u^2 + u - v^2)\deriv u + u\deriv v + \deriv w\}\] has
       the solved form
       \[\{\deriv v + (u + v)\deriv u,\>\deriv w + ( - uv + u - v )\deriv u\}.\]
@@ -383,14 +374,14 @@ cobasis transformations and choices of generators.
 
 Given an \meta{EDS} $(S,\Omega,M)$ in normal form (section \ref{Normal
 form}), the cobasis of the \meta{coframing} $M$ can be decomposed into three
-sets: $\{\theta^a\}$, the distinguished terms from the 1-forms in $S$,
-$\{\omega^i\}$, the distinguished terms from the 1-forms in $\Omega$, and
-the remainder $\{\pi^\rho\}$. Within EDS, $\{\theta^a,\pi^\rho,\omega^i\}$
-is called the {\em standard cobasis}, and all expressions are ordered so
+sets: $\{\theta^a\}$, the distinguished terms from the $1$-forms in $S$,
+$\{\omega^i\}$, the distinguished terms from the $1$-forms in $\Omega$, and
+the remainder $\{\pi^\rho\}$. Within \package{EDS}, $\{\theta^a,\pi^\rho,\omega^i\}$
+is called the \emph{standard cobasis}, and all expressions are ordered so
 that $\theta^a > \pi^\rho > \omega^i$. The ordering within the three sets
-is determined by the REDUCE \meta{kernel} ordering.
+is determined by the \REDUCE \meta{kernel} ordering.
 
-\paragraph{\it Examples:}
+\paragraph{\textit{Examples:}}
 \begin{itemize}
 \item For the system $S=\{\deriv u - \deriv x - u_y\deriv y\}$, $\Omega=\deriv x\wedge\deriv y$,
       the decomposed standard cobasis is $\{\deriv u\}\cup\{\deriv u_y\}\cup\{\deriv
@@ -412,58 +403,59 @@ is determined by the REDUCE \meta{kernel} ordering.
 \subsection{Constructing EDS objects}
 \label{Constructing EDS objects}
 
-Before analysing an exterior system, it is necessary to enter it into EDS
+Before analysing an exterior system, it is necessary to enter it into \package{EDS}
 somehow. Several means are provided for this purpose, and are described in
 this section.
 
-\subsubsection{\tt coframing}
+\subsubsection{\f{coframing}}
 \label{coframing}
 
-An EDS \meta{coframing} is constructed using the \f{coframing}
+\hypertarget{operator:COFRAMING}{}
+An \package{EDS} \meta{coframing} is constructed using the \f{coframing}\ttindextype[EDS]{coframing}{operator}
 operator. There are several ways in which it can be used.
 
 The simplest syntax
-\begin{edssyntax}
-	coframing(\{\meta{expr},$\cdots$\})
-\end{edssyntax}
+\begin{syntax}
+	\f{coframing}(\{\meta{expr},$\cdots$\})
+\end{syntax}
 examines the argument for 0-form and 1-form variables and deduces a full
 \meta{coframing} object capable of supporting the given expressions. This
 includes recursively examining the exterior derivatives of the variables
 appearing explicitly in the argument, taking into account prevailing
 \f{let} rules. In this form, the ordering of the final cobasis elements
-follows the prevailing REDUCE ordering. Free indices in indexed expressions
+follows the prevailing \REDUCE ordering. Free indices in indexed expressions
 are expanded to a list of explicit indices using \f{index\_expand} (section
 \ref{index_expand}).
 
 A more basic syntax is
-\begin{edssyntax}
-	coframing(\meta{cobasis}\optional{,\meta{coordinates}}
+\begin{syntax}
+	\f{coframing}(\meta{cobasis}\optional{,\meta{coordinates}}
 	\optional{,\meta{restrictions}}
 	\\\phantom \qquad\qquad\quad
 	\optional{,\meta{structure equations}})
-\end{edssyntax}
-where \meta{cobasis} is a list of \meta{kernel} 1-forms,
-\meta{coordinates} is a list of \meta{kernel} 0-forms,
+\end{syntax}
+where \meta{cobasis} is a list of \meta{kernel} $1$-forms,
+\meta{coordinates} is a list of \meta{kernel} $0$-forms,
 \meta{restrictions} is a list of inequalities (using only $\neq$ at
 present), and \meta{structure equations} is a list of rules giving the
 exterior derivatives of the coordinates and cobasis elements. All
 arguments except the cobasis are optional, and the order of arguments is
 unimportant. As in the first syntax, missing parts are deduced. The
 ordering of the final cobasis elements follows the ordering specified,
-rather than the prevailing REDUCE ordering.
+rather than the prevailing \REDUCE ordering.
 
 Finally,
-\begin{edssyntax}
-	coframing(\meta{EDS})
-\end{edssyntax}
+\begin{syntax}
+	\f{coframing}(\meta{EDS})
+\end{syntax}
 returns the coframing argument of an \meta{EDS}, and
-\begin{edssyntax}
-	coframing()
-\end{edssyntax}
+\begin{syntax}
+	\f{coframing}()
+\end{syntax}
 returns the current background coframing (section \ref{Background
 coframing}).
 
-\paragraph{\it Examples:}
+\paragraph{\textit{Examples:}}
 \begin{verbatim}
 coframing {x,y,z};
 
@@ -487,17 +479,18 @@ coframing({e 2}) where {d r=e 1,d e 1=0,d e 2=e 1^e 2/r};
              {r neq 0})
 \end{verbatim}
 
-\subsubsection{\tt eds}
+\subsubsection{\f{eds}}
 \label{eds}
 
-A simple \meta{EDS} is constructed using the \f{eds} operator.
-\begin{edssyntax}
-	eds(\meta{system},\meta{indep. condition}\ignorespaces
+\hypertarget{operator:EDS}{}
+A simple \meta{EDS} is constructed using the \f{eds}\ttindextype[EDS]{eds}{operator} operator.
+\begin{syntax}
+	\f{eds}(\meta{system},\meta{indep. condition}%
 	\optional{,\meta{coframing}}\optional{,\meta{properties}})
-\end{edssyntax}
+\end{syntax}
 (cf sections \ref{Systems}, \ref{Coframings}, \ref{Properties}). The
 \meta{indep. condition} can be either a decomposable \meta{p-form} or a
-\meta{system} of 1-forms. Free indices in indexed expressions are expanded
+\meta{system} of $1$-forms. Free indices in indexed expressions are expanded
 to a list of explicit indices using \f{index\_expand} (section
 \ref{index_expand}).
 
@@ -522,7 +515,7 @@ The parts of an \meta{EDS} are obtained with the operators \f{system},
 \f{cobasis}, \f{independence} and \f{properties} (sections \ref{system},
 \ref{cobasis}, \ref{independence} and \ref{properties}).
 
-\paragraph{\it Examples:}
+\paragraph{\textit{Examples:}}
 \begin{verbatim}
 pform {x,y,z,p,q}=0,{e(i),w(i,j)}=1;
 
@@ -549,15 +542,16 @@ coframing ws;
                              1
 \end{verbatim}
 
-\subsubsection{\tt contact}
+\subsubsection{\f{contact}}
 \label{contact}
 
+\hypertarget{operator:CONTACT}{}
 Many PDE problems are formulated as exterior systems using a jet bundle
 contact system. To facilitate construction of these systems, the
-\f{contact} operator is provided. The syntax is
-\begin{edssyntax}
+\f{contact}\ttindextype[EDS]{contact}{operator} operator is provided. The syntax is
+\begin{syntax}
 	contact(\meta{order},\meta{source manifold},\meta{target manifold})
-\end{edssyntax}
+\end{syntax}
 where \meta{order} is a non-negative integer, and the two remaining
 arguments are either \meta{coframing} objects or lists of \meta{p-form}
 expressions. In the latter case, the expressions are fed to the
@@ -567,7 +561,7 @@ bundle $J^r(M,N)$ of $r$-jets of maps $M\to N$ is thus returned by
 cobases. Indexed names for the jet bundle fibre coordinates are constructed
 using the identifiers in the source and target cobases.
 
-\paragraph{\it Examples:}
+\paragraph{\textit{Examples:}}
 \begin{verbatim}
 pform {x,y,z,u,v}=0,{e i,w a}=1;
 indexrange {i}={1,2},{a}=1;
@@ -592,17 +586,18 @@ contact(2,{e(i)},{w(a)}) where OMrules;
              2          1 2      1          2 2
 \end{verbatim}
 
-\subsubsection{\tt pde2eds}
+\subsubsection{\f{pde2eds}}
 \label{pde2eds}
 
-A PDE system can be encoded into an \meta{EDS} using \f{pde2eds}. The
+\hypertarget{operator:PDE2EDS}{}
+A PDE system can be encoded into an \meta{EDS} using \f{pde2eds}\ttindextype[EDS]{pde2eds}{operator}. The
 syntax is
-\begin{edssyntax}
-	pde2eds(\meta{pde}\optional{,\meta{dependent},\meta{independent}})
-\end{edssyntax}
+\begin{syntax}
+	\f{pde2eds}(\meta{pde}\optional{,\meta{dependent},\meta{independent}})
+\end{syntax}
 where \meta{pde} is a list of equations or expressions (implicitly assumed
 to vanish) specifying the PDE system using either
-the standard REDUCE \f{df} operator, or the EXCALC \f{@} operator. If the
+the standard \REDUCE \f{df} operator, or the \package{EXCALC} \f{@} operator. If the
 optional variable lists \meta{dependent} and \meta{independent} are not
 given, \f{pde2eds} infers them from the expressions in \meta{pde}. The
 order of each dependent variable is determined automatically.
@@ -643,7 +638,7 @@ operator \f{mkdepend} can be used to restore the initial state.
 See also the operators \f{pde2jet} (section \ref{pde2jet}) and \f{mkdepend}
 (section \ref{mkdepend}).
 
-\paragraph{\it Example:}
+\paragraph{\emph{Example:}}
 \begin{verbatim}
 depend u,x,y; depend v,x,y;
 pde2eds({df(u,y,y)=df(v,x),df(v,y)=y*df(v,x)});
@@ -665,21 +660,22 @@ dependencies;
    {{u,y,x},{v,y,x}}
 \end{verbatim}
 
-\subsubsection{\tt set\_coframing}
+\subsubsection{\f{set\_coframing}}
 \label{set_coframing}
 
+\hypertarget{operator:SET_COFRAMING}{}
 The background coframing (section \ref{Background coframing}) is set with
-\f{set\_coframing}. The syntax is
-\begin{edssyntax}
-   set\_coframing \meta{arg}
-\end{edssyntax}
+\f{set\_coframing}\ttindextype[EDS]{set\_coframing}{operator}. The syntax is
+\begin{syntax}
+   \f{set\_coframing} \meta{arg}
+\end{syntax}
 where \meta{arg} is a \meta{coframing} or an \meta{EDS} and the previous
 background coframing is returned. All rules, orderings etc pertaining to the
 previous background coframing are removed and replaced by those for the new
 \meta{coframing}. The special form
-\begin{edssyntax}
-   set\_coframing()
-\end{edssyntax}
+\begin{syntax}
+   \f{set\_coframing}()
+\end{syntax}
 clears the background coframing entirely and returns the previous one.
 
 
@@ -688,35 +684,37 @@ clears the background coframing entirely and returns the previous one.
 \subsection{Inspecting EDS objects}
 \label{Inspecting EDS objects}
 
-Given an \meta{EDS} or some other EDS structure, it is often desirable to
+Given an \meta{EDS} or some other \package{EDS} structure, it is often desirable to
 inspect or extract some part of it. The operators described in this section
 do just that. Many of them accept various types of arguments and return the
 relevant information in each case.
 
-\subsubsection{\tt cobasis}
+\subsubsection{\f{cobasis}}
 \label{cobasis}
 
-\begin{edssyntax}
-	cobasis \meta{arg}
-\end{edssyntax}
-returns the cobasis for \meta{arg}, which may be either a \meta{coframing}
+\hypertarget{operator:COBASIS}{}
+\begin{syntax}
+	\f{cobasis} \meta{arg}
+\end{syntax}
+\ttindextype[EDS]{cobasis}{operator}returns the cobasis for \meta{arg}, which may be either a \meta{coframing}
 or an \meta{EDS} (sections \ref{Coframings}, \ref{Exterior differential
 systems}). The order of the items in the list gives the \meta{kernel}
 ordering which applies when the \meta{coframing} in \meta{arg} is active.
 
-\subsubsection{\tt coordinates}
+\subsubsection{\f{coordinates}}
 \label{coordinates}
 
-\begin{edssyntax}
-	coordinates \meta{arg}
-\end{edssyntax}
-returns the coordinates for \meta{arg}, which may be either a
+\hypertarget{operator:COORDINATES}{}
+\begin{syntax}
+	\f{coordinates} \meta{arg}
+\end{syntax}
+\ttindextype[EDS]{coordinates}{operator}returns the coordinates for \meta{arg}, which may be either a
 \meta{coframing}, an \meta{EDS}, or a list of \meta{expr} (sections
 \ref{Coframings}, \ref{Exterior differential systems}). The coordinates in a
 list of \meta{expr} are defined to be those 0-form \meta{kernels} with no
 implicit dependencies.
 
-\paragraph{\it Examples:}
+\paragraph{\textit{Examples:}}
 \begin{verbatim}
 coordinates contact(3,{x},{u});
 
@@ -729,13 +727,14 @@ coordinates {d u+d y};
    {x,y}
 \end{verbatim}
 
-\subsubsection{\tt structure\_equations}
+\subsubsection{\f{structure\_equations}}
 \label{structure_equations}
 
-\begin{edssyntax}
-	structure\_equations \meta{arg}
-\end{edssyntax}
-returns the structure equations (cf section \ref{Coframings}) for
+\hypertarget{operator:STRUCTURE_EQUATIONS}{}
+\begin{syntax}
+	\f{structure\_equations} \meta{arg}
+\end{syntax}
+\ttindextype[EDS]{structure\_equations}{operator}returns the structure equations (cf section \ref{Coframings}) for
 \meta{arg}, which may be either a \meta{coframing}, an \meta{EDS}, or a
 \meta{transform} (sections \ref{Coframings}, \ref{Exterior differential
 systems}, \ref{Cobasis transformations}). In the case of a
@@ -744,12 +743,12 @@ sides are known, and a list giving the exterior derivatives of the
 left-hand sides is returned. This requires inverting the transformation. In
 case this has already been done, and was time consuming, an alternative
 syntax
-\begin{edssyntax}
-	structure\_equations(\meta{transform},\meta{inverse transform})
-\end{edssyntax}
+\begin{syntax}
+	\f{structure\_equations}(\meta{transform},\meta{inverse transform})
+\end{syntax}
 avoids recomputing the inverse.
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 structure_equations{e 1=d x/x,e 2=x*d y};
 
@@ -757,52 +756,56 @@ structure_equations{e 1=d x/x,e 2=x*d y};
    {d e  => 0,d e  => e ^e }
 \end{verbatim}
 
-\subsubsection{\tt restrictions}
+\subsubsection{\f{restrictions}}
 \label{restrictions}
 
-\begin{edssyntax}
-	restrictions \meta{arg}
-\end{edssyntax}
-returns the restrictions for \meta{arg}, which may be either a
+\hypertarget{operator:RESTRICTIONS}{}
+\begin{syntax}
+	\f{restrictions} \meta{arg}
+\end{syntax}
+\ttindextype[EDS]{restrictions}{operator}returns the restrictions for \meta{arg}, which may be either a
 \meta{coframing} or an \meta{EDS} (sections \ref{Coframings}, \ref{Exterior
 differential systems}). The result is a list of inequalities.
 
-\subsubsection{\tt system}
+\subsubsection{\f{system}}
 \label{system}
 
-\begin{edssyntax}
-	system \meta{EDS}
-\end{edssyntax}
-returns the system component of an \meta{EDS} (sections \ref{Exterior
+\hypertarget{operator:EDS_SYSTEM}{}
+\begin{syntax}
+	\f{system} \meta{EDS}
+\end{syntax}
+\ttindextype[EDS]{system}{operator}returns the system component of an \meta{EDS} (sections \ref{Exterior
 differential systems}, \ref{Systems}) as a list of \meta{p-form}
-expressions. (The PSL-based REDUCE command \f{system} operates as before:
+expressions. (The \REDUCE command \f{system} operates as before:
 the syntax
-\begin{edssyntax}
-	system "\meta{command}"
-\end{edssyntax}
-executes an operating system (eg UNIX) command.)
+\begin{syntax}
+	\f{system} "\meta{command}"
+\end{syntax}
+executes an operating system command.)
 
-\subsubsection{\tt independence}
+\subsubsection{\f{independence}}
 \label{independence}
 
-\begin{edssyntax}
-	independence \meta{EDS}
-\end{edssyntax}
-returns the independence condition of an \meta{EDS} (section \ref{Exterior
+\hypertarget{operator:INDEPENDENCE}{}
+\begin{syntax}
+	\f{independence} \meta{EDS}
+\end{syntax}
+\ttindextype[EDS]{independence}{operator}returns the independence condition of an \meta{EDS} (section \ref{Exterior
 differential systems}) as a list of \meta{1-form} expressions.
 
 
-\subsubsection{\tt properties}
+\subsubsection{\f{properties}}
 \label{properties}
 
-\begin{edssyntax}
-	properties \meta{EDS}
-\end{edssyntax}
-returns the currently known properties of an \meta{EDS} (sections
+\hypertarget{operator:PROPERTIES}{}
+\begin{syntax}
+	\f{properties} \meta{EDS}
+\end{syntax}
+\ttindextype[EDS]{properties}{operator}returns the currently known properties of an \meta{EDS} (sections
 \ref{Exterior differential systems}, \ref{Properties}) as a list of
 equations of the form {\tt\meta{keyword} = \meta{value}}.
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 properties closure contact(1,{x},{u});
 
@@ -810,34 +813,37 @@ properties closure contact(1,{x},{u});
 \end{verbatim}
 
 
-\subsubsection{\tt one\_forms}
+\subsubsection{\f{one\_forms}}
 \label{one_forms}
 
-\begin{edssyntax}
-	one\_forms \meta{arg}
-\end{edssyntax}
-returns the 1-forms in \meta{arg}, which may be either an \meta{EDS} or a
+\hypertarget{operator:ONE_FORMS}{}
+\begin{syntax}
+	\f{one\_forms} \meta{arg}
+\end{syntax}
+\ttindextype[EDS]{one\_forms}{operator}returns the $1$-forms in \meta{arg}, which may be either an \meta{EDS} or a
 list of \meta{expr} (sections \ref{Exterior differential systems},
 \ref{Systems}).
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 one_forms {5,x*y - u,d u - x*d y,d u^d x- x*d y^d x};
 
    {d u - d y*x}
 \end{verbatim}
 
-\subsubsection{\tt zero\_forms, nought\_forms}
+\subsubsection{\f{zero\_forms}, \f{nought\_forms}}
 \label{zero_forms}
 
-\begin{edssyntax}
-	zero\_forms \meta{arg}
-\end{edssyntax}
-returns the 0-forms in \meta{arg}, which may be either an \meta{EDS} or a
+\hypertarget{operator:ZERO_FORMS}{}
+\hypertarget{operator:NOUGHT_FORMS}{}
+\begin{syntax}
+	\f{zero\_forms} \meta{arg}
+\end{syntax}
+\ttindextype[EDS]{zero\_forms}{operator}returns the $0$-forms in \meta{arg}, which may be either an \meta{EDS} or a
 list of \meta{expr} (sections \ref{Exterior differential systems},
-\ref{Systems}). The alternative syntax \f{nought\_forms} does the same thing.
+\ref{Systems}). The alternative syntax \f{nought\_forms}\ttindextype[EDS]{nought\_forms}{operator} does the same thing.
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 zero_forms {5,x*y - u,d u - x*d y,d u^d x- x*d y^d x};
 
@@ -852,24 +858,25 @@ zero_forms {5,x*y - u,d u - x*d y,d u^d x- x*d y^d x};
 The abililty to change coordinates or cobasis, or to modify the system or
 coframing can make the difference between an intractible problem and a
 solvable one. The facilities described in this section form the low-level
-core of EDS functions.
+core of \package{EDS} functions.
 
 Most of the operators in this section can be applied to both \meta{EDS} and
 \meta{coframing} objects. Where it makes sense (eg \f{pullback},
 \f{restrict} and \f{transform}), they can be applied to a \meta{system}, or
 list of differential forms as well.
 
-\subsubsection{\tt augment}
+\subsubsection{\f{augment}}
 \label{augment}
 
-\begin{edssyntax}
-	augment(\meta{EDS},\meta{system})
-\end{edssyntax}
-appends the extra forms in the second argument to the system part of the
+\hypertarget{operator:AUGMENT}{}
+\begin{syntax}
+	\f{augment}(\meta{EDS},\meta{system})
+\end{syntax}
+\ttindextype[EDS]{augment}{operator}appends the extra forms in the second argument to the system part of the
 first. If the forms in the \meta{system} do not live on the coframing of the
 \meta{EDS}, an error results. The original \meta{EDS} is unchanged.
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 % Non-Pfaffian system for a Monge-Ampere equation
 S := contact(1,{x,y},{z})$
@@ -882,14 +889,15 @@ S := augment(S,{d z(-x)^d z(-y)});
                 x    y
 \end{verbatim}
 
-\subsubsection{\tt cross}
+\subsubsection{\f{cross}}
 \label{cross}
 
-The infix operator \f{cross} gives the direct product of
+\hypertarget{operator:EDS_CROSS}{}
+The infix operator \f{cross}\ttindextype[EDS]{cross}{infix operator} gives the direct product of
 \meta{coframing} objects. The syntax is
-\begin{edssyntax}
-	\meta{arg1} cross \meta{arg2} \optional{cross $\cdots$}
-\end{edssyntax}
+\begin{syntax}
+	\meta{arg1} \f{cross} \meta{arg2} \optional{\f{cross} $\cdots$}
+\end{syntax}
 The first argument may be either a \meta{coframing} (section
 \ref{Coframings}) or an \meta{EDS} (section \ref{Exterior differential
 systems}). The remaining arguments may be either \meta{coframing}
@@ -902,7 +910,7 @@ If the first argument is an \meta{EDS}, the result is the \meta{EDS}
 lifted to the direct product space. In this way, it is possible to
 execute a pullback under a projection.
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 coordinates(contact(1,{x,y},{u}) cross {v});
 
@@ -910,14 +918,15 @@ coordinates(contact(1,{x,y},{u}) cross {v});
            x  y
 \end{verbatim}
 
-\subsubsection{\tt pullback}
+\subsubsection{\f{pullback}}
 \label{pullback}
 
-Pullbacks with respect to an EDS \meta{map} (section \ref{Maps}) have the
-syntax
-\begin{edssyntax}
-	pullback(\meta{arg},\meta{map})
-\end{edssyntax}
+\hypertarget{operator:PULLBACK}{}
+Pullbacks with respect to an \package{EDS} \meta{map} (section \ref{Maps}) have the
+syntax\ttindextype[EDS]{pullback}{operator}
+\begin{syntax}
+	\f{pullback}(\meta{arg},\meta{map})
+\end{syntax}
 where \meta{arg} can be any one of \meta{EDS}, \meta{coframing},
 \meta{system} or \meta{p-form} expression (sections \ref{Exterior
 differential systems}, \ref{Coframings}, \ref{Systems}). The result is of
@@ -928,7 +937,7 @@ calculates the pullbacks of the cobasis elements and chooses a cobasis for
 the source coframing itself. For a \meta{system}, any zeroes in the result
 are dropped from the list.
 
-\paragraph{\it Examples:}
+\paragraph{\textit{Examples:}}
 \begin{verbatim}
 pullback(contact(1,{x,y},{u}),{u(-y) = u*u(-x)});
 
@@ -953,14 +962,15 @@ pullback({y*d y,d y - d x},{y=x});
    {d x*x}
 \end{verbatim}
 
-\subsubsection{\tt restrict}
+\subsubsection{\f{restrict}}
 \label{restrict}
 
-Restrictions with respect to an EDS \meta{map} (section \ref{Maps}) have the
-syntax
-\begin{edssyntax}
-	restrict(\meta{arg},\meta{map})
-\end{edssyntax}
+\hypertarget{operator:RESTRICT}{}
+Restrictions with respect to an \package{EDS} \meta{map} (section \ref{Maps}) have the
+syntax\ttindextype[EDS]{restrict}{operator}
+\begin{syntax}
+	\f{restrict}(\meta{arg},\meta{map})
+\end{syntax}
 where \meta{arg} can be any one of \meta{EDS}, \meta{coframing},
 \meta{system} or \meta{p-form} expression (sections \ref{Exterior
 differential systems}, \ref{Coframings}, \ref{Systems}). The result is of
@@ -968,7 +978,7 @@ the same type as \meta{arg}. The action of \f{restrict} is similar to that
 of \f{pullback}, except that only scalar coefficients are affected: 1-form
 variables are unchanged.
 
-\paragraph{\it Examples:}
+\paragraph{\textit{Examples:}}
 \begin{verbatim}
 % Bring a system into normal form by restricting the coframing
 
@@ -993,13 +1003,14 @@ restrict({x*d x - y*d y},{x=y,y=1});
    {d x - d y}
 \end{verbatim}
 
-\subsubsection{\tt transform}
+\subsubsection{\f{transform}}
 \label{transform}
 
-A change of cobasis is made using the \f{transform} operator
-\begin{edssyntax}
-	transform(\meta{arg},\meta{transform})
-\end{edssyntax}
+\hypertarget{operator:TRANSFORM}{}
+A change of cobasis is made using the \f{transform}\ttindextype[EDS]{transform}{operator} operator
+\begin{syntax}
+	\f{transform}(\meta{arg},\meta{transform})
+\end{syntax}
 where \meta{arg} can be any one of \meta{EDS}, \meta{coframing},
 \meta{system} or \meta{p-form} expression (sections \ref{Exterior
 differential systems}, \ref{Coframings}, \ref{Systems}) and \meta{transform}
@@ -1013,7 +1024,7 @@ element is eliminated, its expression in terms of the new cobasis is added
 to the list of structure equations, since the corresponding coordinate may
 still be present elsewhere in the structure.
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 S := contact(1,{x},{u});
 
@@ -1046,24 +1057,25 @@ structure_equations s;
     d x => w }
 \end{verbatim}
 
-\subsubsection{\tt lift}
+\subsubsection{\f{lift}}
 \label{lift}
 
+\hypertarget{operator:LIFT}{}
 Many of the analysis tools (section \ref{Analysing exterior systems})
-cannot treat systems containing 0-forms. The \f{lift} operator
-\begin{edssyntax}
-	lift \meta{EDS}
-\end{edssyntax}
-solves the 0-forms in the system and uses the solution to pull back to a
-smaller manifold. This may generate new 0-form conditions (in the course of
+cannot treat systems containing 0-forms. The \f{lift}\ttindextype[EDS]{lift}{operator} operator
+\begin{syntax}
+	\f{lift} \meta{EDS}
+\end{syntax}
+solves the $0$-forms in the system and uses the solution to pull back to a
+smaller manifold. This may generate new $0$-form conditions (in the course of
 bringing the pulled-back system into normal form), in which case the
 process is repeated until the system is generated in positive degree. In
 non-linear problems, the solution space of the 0-forms may be a variety, in
 which case a compound \meta{EDS} (section \ref{Exterior differential
-systems}) will result. If \f{edsverbose} is on (section \ref{edsverbose}),
+systems}) will result. If \sw{edsverbose} is on (section \ref{edsverbose}),
 the solutions are displayed as they are generated.
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 S := augment(contact(2,{x,y},{u}),{u(-y,-y)-u(-x,-x)})$
 on edsverbose;
@@ -1098,71 +1110,76 @@ of these operators are used in the longer examples in the test file which
 accompanies this package.
 
 
-\subsubsection{\tt cartan\_system}
+\subsubsection{\f{cartan\_system}}
 \label{cartan_system}
 
-The {\em Cartan system} of a form or system $S$ is the smallest Pfaffian
+The \emph{Cartan system} of a form or system $S$ is the smallest Pfaffian
 system $C$ such that $\Lambda(C)$ contains a set $I$ of forms algebraically
-equivalent to $S$. The Cartan system is also known as the {\em associated
-Pfaff system} or {\em retracting space}. An alternative characterisation is
+equivalent to $S$. The Cartan system is also known as the \emph{associated
+Pfaff system} or \emph{retracting space}. An alternative characterisation is
 to note that the annihilator $C^\perp$ comprises all vectors $V$ satisfying
 $i_V S \simeq 0 \pmod{S}$.  Note this is a purely algebraic concept: $S$
 need not be closed under differentiation. See also \f{cauchy\_system}
 (section \ref{cauchy_system}).
 
-The operator
-\begin{edssyntax}
-	cartan\_system \meta{arg}
-\end{edssyntax}
+\hypertarget{operator:CARTAN_SYSTEM}{}
+The operator\ttindextype[EDS]{cartan\_system}{operator}
+\begin{syntax}
+	\f{cartan\_system} \meta{arg}
+\end{syntax}
 returns the Cartan system of \meta{arg}, which may be an \meta{EDS}, a
 \meta{system} or a single \meta{p-form} expression (sections \ref{Exterior
 differential systems}, \ref{Systems}). For an \meta{EDS}, the result is a
 Pfaffian \meta{EDS} on the same manifold, otherwise it is a
 \meta{system}. The argument must be generated in positive degree.
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 cartan_system{d u^d v + d v^d w + d x^d y};
 
    {d u - d w,d v,d x,d y}
 \end{verbatim}
 
-\subsubsection{\tt cauchy\_system}
+\subsubsection{\f{cauchy\_system}}
 \label{cauchy_system}
 
-The {\em Cauchy system} $C$ of a form or system $S$ is the Cartan system or
+The \emph{Cauchy system} $C$ of a form or system $S$ is the Cartan system or
 retracting space of its closure under exterior differentiation (section
 \ref{cartan_system}). The annihilator $C^\perp$ consists of the Cauchy
 vectors for the $S$.
 
-The operator
-\begin{edssyntax}
-	cauchy\_system \meta{arg}
-\end{edssyntax}
+\hypertarget{operator:CAUCHY_SYSTEM}{}
+The operator\ttindextype[EDS]{cauchy\_system}{operator}
+\begin{syntax}
+	\f{cauchy\_system} \meta{arg}
+\end{syntax}
 returns the Cauchy system of \meta{arg}, which may be an \meta{EDS}, a
 \meta{system} or a single \meta{p-form} expression (sections \ref{Exterior
 differential systems}, \ref{Systems}). For an \meta{EDS}, the result is a
 Pfaffian \meta{EDS} on the same manifold, otherwise it is a
 \meta{system}. The argument must be generated in positive degree.
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 cauchy_system{u*d v + v*d w + x*d y};
 
    {d u,d v,d w,d x,d y}
 \end{verbatim}
 
-\subsubsection{\tt characters}
+\subsubsection{\f{characters}}
 \label{characters}
 
+\hypertarget{operator:CHARACTERS}{}
 The Cartan characters $\{s_1,...,s_n\}$ of an \meta{EDS} or \meta{tableau}
 (sections \ref{Exterior differential systems}, \ref{Tableaux}) are obtained
-with
-\begin{edssyntax}
-	characters \meta{EDS} \qquad{\em or}\qquad characters \meta{tableau}
-\end{edssyntax}
+with\ttindextype[EDS]{characters}{operator}
+\begin{syntaxtable}
+  \f{characters} \meta{EDS}\\
+  \intertext{or}\\
+  \f{characters} \meta{tableau}
+\end{syntaxtable}
 The zeroth character $s_0$ is not returned, it is simply the number of
-1-forms in the \meta{EDS} (cf \f{one\_forms}, section \ref{one_forms}). The
+$1$-forms in the \meta{EDS} (cf \f{one\_forms}, section \ref{one_forms}). The
 definition used for the last character: $s_n = (d - n) - (s_0 + s_1 + ... +
 s_{n-1})$, where $d$ is the manifold dimension, allows Cartan's test to be
 used even when Cauchy characteristics are present.
@@ -1172,25 +1189,25 @@ stratum of the Grassmann bundle variety of ordinary integral elements (cf
 \f{grassmann\_variety} in section \ref{grassmann_variety}). Nonetheless,
 they are constant on each stratum, so it suffices to calculate them at one
 point (ie at one integral element). This is done using the syntax
-\begin{edssyntax}
-	characters(\meta{EDS},\meta{integral element})
-\end{edssyntax}
-where \meta{integral element} is a list of 1-forms (cf section
+\begin{syntax}
+	\f{characters}(\meta{EDS},\meta{integral element})
+\end{syntax}
+where \meta{integral element} is a list of $1$-forms (cf section
 \ref{Integral elements}).
 
 The Cartan characters are calculated from the reduced characters for a
-fixed flag of integral elements based on the 1-forms in the independence
+fixed flag of integral elements based on the $1$-forms in the independence
 condition of an \meta{EDS}. This can lead to incorrect results if the flag
 is somehow singular, so two switches are provided to overcome this (section
 \ref{ranpos}). First, \f{genpos} looks at a generic flag by using a general
-linear transformation to put the system in {\em general position}. This
+linear transformation to put the system in \emph{general position}. This
 guarantees correct results, but can be too slow for practical
 purposes. Secondly, \f{ranpos} performs a linear transformation using a
 sparse matrix of random integers. In most cases, this is much faster than
 using general position, and a few repetitions give some confidence in the
 results.
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 S := pullback(contact(2,{x,y},{u}),{u(-x,-y)=0});
 
@@ -1212,29 +1229,31 @@ on ranpos; characters S;
    {2,0}
 \end{verbatim}
 
-\subsubsection{\tt closure}
+\subsubsection{f{closure}}
 \label{closure}
 
-\begin{edssyntax}
-	closure \meta{EDS}
-\end{edssyntax}
-returns the closure of the \meta{EDS} under exterior differentiation.
+\hypertarget{operator:CLOSURE}{}
+\begin{syntax}
+	\f{closure} \meta{EDS}
+\end{syntax}
+\ttindextype[EDS]{closure}{operator}returns the closure of the \meta{EDS} under exterior differentiation.
 
 Owing to conflicts with the requirements of a normal form (section
 \ref{Normal form}), \f{closure} cannot guarantee that the resulting system
 is closed if the \meta{EDS} contains 0-forms.
 
-\subsubsection{\tt derived\_system}
+\subsubsection{\f{derived\_system}}
 \label{derived_system}
 
-\begin{edssyntax}
-	derived\_system \meta{arg}
-\end{edssyntax}
-returns the first derived system of \meta{arg}, which must be a Pfaffian
+\hypertarget{operator:DERIVED_SYSTEM}{}
+\begin{syntax}
+	\f{derived\_system} \meta{arg}
+\end{syntax}
+\ttindextype[EDS]{derived\_system}{operator}returns the first derived system of \meta{arg}, which must be a Pfaffian
 \meta{EDS} or \meta{system}. Repeated use gives the derived flag leading to
 the maximal integrable subsystem.
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 pform {p,r,x,y,z}=0; korder z;
 derived_system eds({d z - q*d y,d p - e**z*d y,
@@ -1256,40 +1275,43 @@ derived_system ws;
                p
 \end{verbatim}
 
-\subsubsection{\tt dim\_grassmann\_variety}
+\subsubsection{f{dim\_grassmann\_variety}}
 \label{dim_grassmann_variety}
 
-\begin{edssyntax}
-	dim\_grassmann\_variety \meta{EDS}
-\end{edssyntax}
-returns the dimension of the Grassmann bundle variety of ordinary integral
+\hypertarget{operator:DIM_GRASSMANN_VARIETY}{}
+\begin{syntax}
+	\f{dim\_grassmann\_variety} \meta{EDS}
+\end{syntax}
+\ttindextype[EDS]{dim\_grassmann\_variety}{operator}returns the dimension of the Grassmann bundle variety of ordinary integral
 elements for an \meta{EDS} (cf \f{grassmann\_variety}, section
 \ref{grassmann_variety}). This number is useful, for example, in Cartan's
 test. For a nonlinear \meta{EDS}, this can vary from stratum to stratum of
 the variety, so
-\begin{edssyntax}
+\begin{syntax}
 	dim\_grassmann\_variety(\meta{EDS},\meta{integral element})
-\end{edssyntax}
+\end{syntax}
 returns the dimension of the stratum containing the \meta{integral element}
 (cf section \ref{Integral elements}).
 
-\subsubsection{\tt dim}
+\subsubsection{\f{dim}}
 \label{dim}
 
-\begin{edssyntax}
-	dim \meta{arg}
-\end{edssyntax}
-returns the dimension of the manifold underlying \meta{arg},
+\hypertarget{operator:EDS_DIM}{}
+\begin{syntax}
+	\f{dim} \meta{arg}
+\end{syntax}
+\ttindextype[EDS]{dim}{operator}returns the dimension of the manifold underlying \meta{arg},
 which can be either an \meta{EDS} or a \meta{coframing} (sections \ref{Exterior
 differential systems}, \ref{Coframings}).
 
-\subsubsection{\tt involution}
+\subsubsection{\f{involution}}
 \label{involution}
 
-\begin{edssyntax}
-	involution \meta{EDS}
-\end{edssyntax}
-repeatedly prolongs an \meta{EDS} until it reaches involution or
+\hypertarget{operator:INVOLUTION}{}
+\begin{syntax}
+	\f{involution} \meta{EDS}
+\end{syntax}
+\ttindextype[EDS]{involution}{operator}repeatedly prolongs an \meta{EDS} until it reaches involution or
 inconsistency (cf \f{prolong}, section \ref{prolong}). The system must be
 in normal form (section \ref{Normal form}) and generated in positive
 degree. For nonlinear problems, all branches of the prolongation tree are
@@ -1299,34 +1321,36 @@ giving the involutive prolongation. In case some variety couldn't be
 resolved during the process, the relevant branch is truncated at that point
 and represented by a system with 0-forms, as with \f{grassmann\_variety}
 (section \ref{grassmann_variety}). The result of \f{involution} might then
-{\em not} be in involution.
+\emph{not} be in involution.
 
 If the \f{edsverbose} switch is on (section \ref{edsverbose}), a trace of
 the prolongations is produced. See the Janet problem in the test file for
 an example.
 
-\subsubsection{\tt linearise, linearize}
+\subsubsection{\f{linearise}, \f{linearize}}
 \label{linearise}
 
+\hypertarget{operator:LINEARISE}{}
+\hypertarget{operator:LINEARIZE}{}
 A nonlinear exterior system can be linearised at some point on the
 manifold with respect to any integral element, yielding a constant
-coefficient exterior system with the same Cartan characters. In EDS,
+coefficient exterior system with the same Cartan characters. In \package{EDS},
 reference to the point is omitted, so the result is an exterior system
 linearised with respect to a distribution of integral elements. The syntax
-is
-\begin{edssyntax}
-	linearise(\meta{EDS},\meta{integral element})
-\end{edssyntax}
-but \f{linearize} will work just as well. See the isometric embeddings
+is\ttindextype[EDS]{linearise}{operator}
+\begin{syntax}
+	\f{linearise}(\meta{EDS},\meta{integral element})
+\end{syntax}
+but \f{linearize}\ttindextype[EDS]{linearize}{operator} will work just as well. See the isometric embeddings
 example in the test file.
 
-For a quasilinear \meta{EDS} (cf section \ref{quasilinear}),
-\begin{edssyntax}
-	linearise \meta{EDS}
-\end{edssyntax}
+For a quasilinear \meta{EDS} (cf.~section \ref{quasilinear}),
+\begin{syntax}
+	\f{linearise} \meta{EDS}
+\end{syntax}
 returns an equivalent exterior system containing only linear generators.
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 f := d u^d x + d v^d y$
 S := eds({f,d v^f},{d x,d y});
@@ -1338,13 +1362,14 @@ linearise S;
    EDS({d u^d x + d v^d y},{d x,d y})
 \end{verbatim}
 
-\subsubsection{\tt integral\_element}
+\subsubsection{\f{integral\_element}}
 \label{integral_element}
 
-\begin{edssyntax}
-	integral\_element \meta{EDS}
-\end{edssyntax}
-returns a random \meta{integral element} of the \meta{EDS} (section
+\hypertarget{operator:INTEGRAL_ELEMENT}{}
+\begin{syntax}
+	\f{integral\_element} \meta{EDS}
+\end{syntax}
+\ttindextype[EDS]{integral\_element}{operator}returns a random \meta{integral element} of the \meta{EDS} (section
 \ref{Integral elements}). The system must be in normal form (section
 \ref{Normal form}) and generated in positive degree. This integral element
 is found using the method described by Wahlquist \cite{Wahlquist:1993}
@@ -1356,16 +1381,17 @@ Cartan characters, section \ref{characters}).
 
 See the isometric embedding problem in the test file for an example.
 
-\subsubsection{\tt prolong}
+\subsubsection{\f{prolong}}
 \label{prolong}
 
-\begin{edssyntax}
-	prolong \meta{EDS}
-\end{edssyntax}
-calculates the prolongation of the \meta{EDS} to the Grassmann bundle
+\hypertarget{operator:PROLONG}{}
+\begin{syntax}
+	\f{prolong} \meta{EDS}
+\end{syntax}
+\ttindextype[EDS]{prolong}{operator}calculates the prolongation of the \meta{EDS} to the Grassmann bundle
 variety of integral elements. The system must be in normal form (section
 \ref{Normal form}) and generated in positive degree. The variety is
-decomposed using essentially the REDUCE \f{solve} operator. If no solutions
+decomposed using essentially the \REDUCE \f{solve} operator. If no solutions
 can be found, the variety is empty, and the prolongation is the
 inconsistent \meta{EDS} (section \ref{Exterior differential
 systems}). Otherwise, the result is a list of variety components, which
@@ -1397,7 +1423,7 @@ subsequently in the global variable \f{pullback\_maps}. This facility is
 still very primitive and unstructured. It should be extended to the
 \f{involution} operator as well...
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 pde := {u(-y,-y)=u(-x,-x)**2/2,u(-x,-y)=u(-x,-x)};
 
@@ -1443,17 +1469,18 @@ prolong S;
             x x
 \end{verbatim}
 
-\subsubsection{\tt tableau}
+\subsubsection{\f{tableau}}
 \label{tableau}
 
-\begin{edssyntax}
-	tableau \meta{EDS}
-\end{edssyntax}
-returns the \meta{tableau} (section \ref{Tableaux}) of a quasilinear
+\hypertarget{operator:TABLEAU}{}
+\begin{syntax}
+	\f{tableau} \meta{EDS}
+\end{syntax}
+\ttindextype[EDS]{tableau}{operator}returns the \meta{tableau} (section \ref{Tableaux}) of a quasilinear
 Pfaffian \meta{EDS}, which must be in normal form and generated in positive
 degree.
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 tableau contact(2,{x,y},{u});
 
@@ -1464,15 +1491,16 @@ tableau contact(2,{x,y},{u});
    [   x y     y y]
 \end{verbatim}
 
-\subsubsection{\tt torsion}
+\subsubsection{\f{torsion}}
 \label{torsion}
 
+\hypertarget{operator:TORSION}{}
 For a semilinear Pfaffian exterior differential system, the torsion
 corresponds to first-order integrability conditions for the
-system. Specifically,
-\begin{edssyntax}
-	torsion \meta{EDS}
-\end{edssyntax}
+system. Specifically,\ttindextype[EDS]{torsion}{operator}
+\begin{syntax}
+	\f{torsion} \meta{EDS}
+\end{syntax}
 returns a list of 0-forms describing the projection of the Grassmann bundle
 variety of integral elements onto the base manifold. If the switch
 \f{edssloppy} (section \ref{edssloppy}) is on, quasilinear systems are
@@ -1480,7 +1508,7 @@ treated as semilinear. A semilinear system is involutive if both the
 torsion is empty, and Cartan's test for the reduced characters is
 satisfied.
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 S := pullback(contact(2,{x,y},{u}),
               {u(-y,-y)=u(-x),u(-x,-y)=u});
@@ -1499,18 +1527,19 @@ torsion s;
      x x    y
 \end{verbatim}
 
-\subsubsection{\tt grassmann\_variety}
+\subsubsection{\f{grassmann\_variety}}
 \label{grassmann_variety}
 
+\hypertarget{operator:GRASSMANN_VARIETY}{}
 Given an exterior system $(S,\Omega,M)$ with independence condition of
 rank $n$, the Grassmann bundle of $n$-planes over $M$ contains a
 submanifold characterised by those $n$-planes compatible with the
 independence condition. All integral elements must lie in this
 submanifold. The operator
-\begin{edssyntax}
-	grassmann\_variety \meta{EDS}
-\end{edssyntax}
-returns the contact system for this part of the Grassmann bundle augmented
+\begin{syntax}
+	\f{grassmann\_variety} \meta{EDS}
+\end{syntax}
+\ttindextype[EDS]{grassmann\_variety}{operator}returns the contact system for this part of the Grassmann bundle augmented
 by the 0-forms specifying the variety of integral elements of $S$. In cases
 where \f{prolong} (section \ref{prolong}) is unable to decompose the
 variety automatically, \f{grassmann\_variety} can be used in combination
@@ -1518,7 +1547,7 @@ with \f{zero\_forms} (section \ref{zero_forms}) to calculate the variety
 conditions. Any solutions found ``by hand'' can be incorporated using
 \f{pullback} (section \ref{pullback}).
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 Using the system from the example in section \ref{prolong}:
 \begin{verbatim}
 zero_forms grassmann_variety S;
@@ -1558,16 +1587,17 @@ these properties can be very time-consuming, the result of the first test
 is stored on the \meta{properties} record of an \meta{EDS} to avoid
 re-checking. This memory can be cleared using the \f{cleanup} operator.
 
-\subsubsection{\tt closed}
+\subsubsection{\f{closed}}
 \label{closed}
 
-\begin{edssyntax}
-	closed \meta{arg}
-\end{edssyntax}
-checks whether \meta{arg}, which may be an \meta{EDS}, a \meta{system} or a
+\hypertarget{operator:CLOSED}{}
+\begin{syntax}
+	\f{closed} \meta{arg}
+\end{syntax}
+\ttindextype[EDS]{closed}{operator}checks whether \meta{arg}, which may be an \meta{EDS}, a \meta{system} or a
 single \meta{p-form} is closed under exterior differentiation.
 
-\paragraph{\it Examples:}
+\paragraph{\textit{Examples:}}
 \begin{verbatim}
 closed(x*d x);
 
@@ -1578,27 +1608,29 @@ closed {d u - p*d x,d p - p/y*d x};
    0
 \end{verbatim}
 
-\subsubsection{\tt involutive}
+\subsubsection{\f{involutive}}
 \label{involutive}
 
-\begin{edssyntax}
-	involutive \meta{EDS}
-\end{edssyntax}
-checks whether \meta{EDS} is involutive, using Cartan's test. See the test
+\hypertarget{operator:INVOLUTIVE}{}
+\begin{syntax}
+	\f{involutive} \meta{EDS}
+\end{syntax}
+\ttindextype[EDS]{involutive}{operator}checks whether \meta{EDS} is involutive, using Cartan's test. See the test
 file for examples.
 
-\subsubsection{\tt pfaffian}
+\subsubsection{\f{pfaffian}}
 \label{pfaffian}
 
-\begin{edssyntax}
-	pfaffian \meta{EDS}
-\end{edssyntax}
-checks whether \meta{EDS} is a Pfaffian system: generated by a set of
-1-forms and their exterior derivatives. The \meta{EDS} must be in normal
+\hypertarget{operator:EDS_PFAFFIAN}{}
+\begin{syntax}
+	\f{pfaffian} \meta{EDS}
+\end{syntax}
+\ttindextype[EDS]{pfaffian}{operator}checks whether \meta{EDS} is a Pfaffian system: generated by a set of
+$1$-forms and their exterior derivatives. The \meta{EDS} must be in normal
 form (section \ref{Normal form}) for this to succeed. Systems with 0-forms
-are non-Pfaffian by definition in EDS.
+are non-Pfaffian by definition in \package{EDS}.
 
-\paragraph{\it Examples:}
+\paragraph{\textit{Examples:}}
 \begin{verbatim}
 pfaffian eds({d u - p*d x - q*d y,d p^d x+d q^d y},{d x,d y});
 
@@ -1609,22 +1641,23 @@ pfaffian eds({d u - p*d x - q*d y,d p^d q},{d x,d y});
    0
 \end{verbatim}
 
-\subsubsection{\tt quasilinear}
+\subsubsection{\f{quasilinear}}
 \label{quasilinear}
 
-An exterior system $(S,\Omega,M)$ is said to be {\em quasilinear} if, when
+\hypertarget{operator:QUASILINEAR}{}
+An exterior system $(S,\Omega,M)$ is said to be \emph{quasilinear} if, when
 written in the standard cobasis $\{\theta^a,\pi^\rho,\omega^i\}$ (section
-\ref{Standard cobasis}), its {\em closure} can be generated by a set of
+\ref{Standard cobasis}), its \emph{closure} can be generated by a set of
 forms which are of combined total degree 1 in $\{\theta^a,\pi^\rho\}$. The
 operation
-\begin{edssyntax}
-	quasilinear \meta{EDS}
-\end{edssyntax}
-checks whether the {\em closure} of \meta{EDS} is a quasilinear system. The
+\begin{syntax}
+	\f{quasilinear} \meta{EDS}
+\end{syntax}
+\ttindextype[EDS]{quasilinear}{operator}checks whether the \emph{closure} of \meta{EDS} is a quasilinear system. The
 \meta{EDS} must be in normal form (section \ref{Normal form}) for this to
-succeed. Systems with 0-forms are not quasilinear by definition in EDS.
+succeed. Systems with 0-forms are not quasilinear by definition in \package{EDS}.
 
-\paragraph{\it Examples:}
+\paragraph{\textit{Examples:}}
 \begin{verbatim}
 % A system where pi(rho)={d p,d q}, and which looks non-linear
 
@@ -1646,20 +1679,21 @@ quasilinear eds({d u - p*d x - q*d y,d p^d q},{d x,d y});
    0
 \end{verbatim}
 
-\subsubsection{\tt semilinear}
+\subsubsection{\f{semilinear}}
 \label{semilinear}
 
+\hypertarget{operator:SEMILINEAR}{}
 Let $(S,\Omega,M)$ be such that, written in the standard cobasis
 $\{\theta^a,\pi^\rho,\omega^i\}$ (section \ref{Standard cobasis}), its
 closure is explicitly quasilinear. If the coefficients of $\{\pi^\rho\}$
 depend only on the independent variables, then the system is said to be
-{\em semilinear}.  The operation
-\begin{edssyntax}
-	semilinear \meta{EDS}
-\end{edssyntax}
-checks whether {\em closure} of \meta{EDS} is a semilinear system. The
+\emph{semilinear}.  The operation\ttindextype[EDS]{semilinear}{operator}
+\begin{syntax}
+	\f{semilinear} \meta{EDS}
+\end{syntax}
+checks whether \emph{closure} of \meta{EDS} is a semilinear system. The
 \meta{EDS} must be in normal form (section \ref{Normal form}) for this to
-succeed. Systems with 0-forms are not semilinear by definition in EDS.
+succeed. Systems with 0-forms are not semilinear by definition in \package{EDS}.
 
 For semilinear systems, the expressions determining the Grassmann bundle
 variety of integral elements will be linear in the Grassmann bundle fibre
@@ -1667,10 +1701,10 @@ coordinates, with coefficients which depend only upon the independent
 variables. This allows alternative, faster algorithms to be used in
 analysis.
 
-If the switch \f{edssloppy} is on (section \ref{edssloppy}), all
+If the switch \sw{edssloppy} is on (section \ref{edssloppy}), all
 quasilinear systems are treated as if they are semilinear.
 
-\paragraph{\it Examples:}
+\paragraph{\textit{Examples:}}
 \begin{verbatim}
 % A semilinear system: @(u,y) = y*@(u,x)
 S := eds({d u - p*d x - p*y*d y},{d x,d y})$
@@ -1691,16 +1725,17 @@ semilinear S;
    1
 \end{verbatim}
 
-\subsubsection{\tt frobenius}
+\subsubsection{\f{frobenius}}
 \label{frobenius}
 
-\begin{edssyntax}
-	frobenius \meta{arg}
-\end{edssyntax}
-checks whether \meta{arg}, which may be an \meta{EDS} or a \meta{system},
+\hypertarget{operator:EDS_FROBENIUS}{}
+\begin{syntax}
+	\f{frobenius} \meta{arg}
+\end{syntax}
+\ttindextype[EDS]{frobenius}{operator}checks whether \meta{arg}, which may be an \meta{EDS} or a \meta{system},
 is a completely integrable Pfaffian system.
 
-\paragraph{\it Examples:}
+\paragraph{\textit{Examples:}}
 \begin{verbatim}
 if frobenius eds({d u -p*(d x+d y)},d x^d y) then yes else no;
 
@@ -1711,16 +1746,17 @@ if frobenius eds({d u -u*(d x+d y)},d x^d y) then yes else no;
    yes
 \end{verbatim}
 
-\subsubsection{\tt equiv}
+\subsubsection{\f{equiv}}
 \label{equiv}
 
-\begin{edssyntax}
-	\meta{EDS1} equiv \meta{EDS2}
-\end{edssyntax}
-checks whether \meta{EDS1} and \meta{EDS2} are algebraically equivalent as
+\hypertarget{operator:EDS_EQUIV}{}
+\begin{syntax}
+	\meta{EDS1} \f{equiv} \meta{EDS2}
+\end{syntax}
+\ttindextype[EDS]{equiv}{infix operator}checks whether \meta{EDS1} and \meta{EDS2} are algebraically equivalent as
 exterior systems (ie generate the same algebraic ideal).
 
-\paragraph{\it Examples:}
+\paragraph{\textit{Examples:}}
 \begin{verbatim}
 S1 := contact(2,{x,y},{u})$
 S2 := augment(S1,foreach f in system S1 join {d f,d x^d f})$
@@ -1743,31 +1779,31 @@ if closure S1 equiv S2 then yes else no;
 EDS provides several switches to govern the display of information and
 speed or reliability of the results.
 
-\subsubsection{\tt edsverbose}
+\subsubsection{\sw{edsverbose}}
 \label{edsverbose}
 
-If \f{edsverbose} is \f{on}, a number of operators (eg \f{prolong},
+If \sw{edsverbose} is \f{on}, a number of operators (eg \f{prolong},
 \f{involution}) will display additional information as the calculation
 progresses. For large problems, this can produce too much output to be
-useful, so \f{edsverbose} is \f{off} by default. This allows only warning
-(\f{***}) and error (\f{*****}) messages to be printed.
+useful, so \sw{edsverbose} is \f{off} by default. This allows only warning
+(\texttt{***}) and error (\texttt{*****}) messages to be printed.
 
-\subsection{\tt edsdebug}
+\subsection{{\texttt{edsdebug}}}
 \label{edsdebug}
 
-If \f{edsdebug} is \f{on}, EDS produces copious quantities of information,
-in addition to that produced with \f{edsverbose} on. This information is
+If \sw{edsdebug} is \f{on}, \package{EDS} produces copious quantities of information,
+in addition to that produced with \sw{edsverbose} on. This information is
 for debugging purposes, and may not make much sense without knowledge of
-the inner workings of EDS. \f{edsdebug} is \f{off} by default.
+the inner workings of \package{EDS}. \sw{edsdebug} is \f{off} by default.
 
-\subsection{\tt edssloppy}
+\subsection{\texttt{edssloppy}}
 \label{edssloppy}
 
-Normally, EDS will not divide by any expressions it does not know to be
+Normally, \package{EDS} will not divide by any expressions it does not know to be
 nowhere zero. If an \meta{EDS} can be brought into normal form only by
 restricting away from the zeroes of some coefficients, then these
 restrictions should be made using the \f{restrict} operator (section
-\ref{restrict}). However, if \f{edssloppy} is \f{on}, then EDS will, as a
+\ref{restrict}). However, if \f{edssloppy} is \f{on}, then \package{EDS} will, as a
 last resort, divide by whatever is necessary to bring an \meta{EDS} into
 normal form, invert a transformation, and so on. The relevant restrictions
 will be made automatically, so no inconsistency should arise. In addition,
@@ -1776,27 +1812,27 @@ were semilinear (cf section \ref{semilinear}). \f{edssloppy} is \f{off} by
 default.
 
 
-\subsection{\tt edsdisjoint}
+\subsection{\texttt{edsdisjoint}}
 \label{edsdisjoint}
 
-When decomposing a variety into (something like) smooth components, EDS
+When decomposing a variety into (something like) smooth components, \package{EDS}
 normally pays no attention to whether the components are disjoint. Turning
-\f{on} the switch \f{edsdisjoint} forces EDS to ensure the decomposition is
+\f{on} the switch \f{edsdisjoint} forces \package{EDS} to ensure the decomposition is
 a disjoint union (cf \f{disjoin}, section \ref{disjoin}). For large
 problems this can lead to a proliferation of singular pieces. If some of
-these turn out to be uninteresting, EDS cannot re-join the remaining pieces
+these turn out to be uninteresting, \package{EDS} cannot re-join the remaining pieces
 into a smaller decomposition. \f{edsdisjoint} is \f{off} by default.
 
-\subsection{\tt ranpos, genpos}
+\subsection{\texttt{ranpos}, \texttt{genpos}}
 \label{ranpos}
 
-When calculating Cartan characters (eg to check involution), EDS uses the
-independence condition of an \meta{EDS} {\em as presented} to define a flag
+When calculating Cartan characters (eg to check involution), \package{EDS} uses the
+independence condition of an \meta{EDS} \emph{as presented} to define a flag
 of integral elements. Depending on the cobasis and ordering, this flag may
 be singular, leading to incorrect Cartan characters. To overcome this
 problem, the switches \f{ranpos} and \f{genpos} provide a means to select
 other flags. With \f{ranpos} \f{on}, a flag defined by taking a random
-linear transformation of the 1-forms in the independence condition will be
+linear transformation of the $1$-forms in the independence condition will be
 used. The results may still be incorrect, but the likelihood is much lower.
 With \f{genpos} on, a generic (upper triangular) transformation is
 used. this guarantees the correct Cartan characters, but reduces
@@ -1811,22 +1847,23 @@ performance too much to be useful for large problems. Both switches are
 \label{Auxiliary functions}
 
 This section describes various operators designed to ease working with
-exterior forms and exterior systems in REDUCE.
+exterior forms and exterior systems in \REDUCE.
 
-\subsubsection{\tt invert}
+\subsubsection{\f{invert}}
 \label{invert}
 
-\begin{edssyntax}
-	invert \meta{transform}
-\end{edssyntax}
-returns a \meta{transform} which is inverse to the given one (section
+\hypertarget{operator:EDS_INVERT}{}
+\begin{syntax}
+	\f{invert} \meta{transform}
+\end{syntax}
+\ttindextype[EDS]{invert}{operator}returns a \meta{transform} which is inverse to the given one (section
 \ref{transform}). If the \meta{transform} given is only partial, the
 1-form \meta{kernel}s to eliminate are chosen based on the prevailing
 kernel ordering. If a background coframing (section \ref{Background
 coframing}) is active, and \f{edssloppy} (section \ref{edssloppy}) is
 \f{off}, \f{invert} will divide by nowhere-zero expressions only.
 
-\paragraph{\it Examples:}
+\paragraph{\textit{Examples:}}
 \begin{verbatim}
 set_coframing coframing{u,v,w,x,y,z}$
 invert {d u = 3*d x - d y + 5*d z, d v = d x + 2*d z};
@@ -1841,17 +1878,18 @@ invert {d u = 3*d x - y*d y + 5*d z, d v = d x + 2*d z};
 \end{verbatim}
 
 
-% \subsubsection{\tt exact}
+% \subsubsection{\f{exact}}
 % \label{exact}
-
-% \begin{edssyntax}
-% 	exact \meta{expr}
-% \end{edssyntax}
-% is a boolean operator which tests if the given expression is an exact
+%
+% \hypertarget{operator:EDS_EXACT}{}
+% \begin{syntax}
+% 	\f{exact} \meta{expr}
+% \end{syntax}
+% \ttindextype[EDS]{exact}{operator}is a boolean operator which tests if the given expression is an exact
 % \meta{kernel} (ie $\deriv x$ for some variable $x$). More general exact
 % expressions are not recognised
 
-% \paragraph{\it Examples:}
+% \paragraph{\textit{Examples:}}
 % \begin{verbatim}
 % if exact d x then yes;
 
@@ -1862,16 +1900,17 @@ invert {d u = 3*d x - y*d y + 5*d z, d v = d x + 2*d z};
 %    no
 % \end{verbatim}
 
-\subsubsection{\tt linear\_divisors}
+\subsubsection{\f{linear\_divisors}}
 \label{linear_divisors}
 
-\begin{edssyntax}
-	linear\_divisors \meta{pform}
-\end{edssyntax}
-returns a basis for the space of linear divisors (1-form factors) of a
+\hypertarget{operator:LINEAR_DIVISORS}{}
+\begin{syntax}
+	\f{linear\_divisors} \meta{pform}
+\end{syntax}
+\ttindextype[EDS]{linear\_divisors}{operator}returns a basis for the space of linear divisors (1-form factors) of a
 \meta{p-form}.
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 f := d p^d q^d u - d p^d q^d x*x + d p^d q^d z*y
      - d u^d v^d x*x + d u^d v^d z*y + d u^d x^d y
@@ -1881,16 +1920,18 @@ linear_divisors f;
    {d u - d x*x + d z*y}
 \end{verbatim}
 
-\subsubsection{\tt exfactors}
+\subsubsection{\f{exfactors}}
 \label{exfactors}
-\begin{edssyntax}
-	exfactors \meta{pform}
-\end{edssyntax}
-returns a list of factors for a \meta{p-form}, consisting of the linear
+
+\hypertarget{operator:EXFACTORS}{}
+\begin{syntax}
+	\f{exfactors} \meta{pform}
+\end{syntax}
+\ttindextype[EDS]{exfactors}{operator}returns a list of factors for a \meta{p-form}, consisting of the linear
 divisors plus one more factor. The list is ordered such that the original
 expression is a product of the factors in this order.
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 f := d p^d q^d u - d p^d q^d x*x + d p^d q^d z*y
      - d u^d v^d x*x + d u^d v^d z*y + d u^d x^d y
@@ -1905,26 +1946,27 @@ f - (part(ws,0) := ^);
    0
 \end{verbatim}
 
-\subsubsection{\tt index\_expand}
+\subsubsection{\f{index\_expand}}
 \label{index_expand}
 
-EXCALC caters for indexed variables in which various index names have been
-assigned a specific set of values. Any expression with {\em paired} indices
+\hypertarget{operator:INDEX_EXPAND}{}
+\package{EXCALC} caters for indexed variables in which various index names have been
+assigned a specific set of values. Any expression with \emph{paired} indices
 is expanded automatically to an explicit sum over the index set (provided
-the EXCALC command \f{nosum} has not been applied). The EDS operator
-\f{index\_expand} is designed to expand an expression with {\em free}
+the \package{EXCALC} command \f{nosum} has not been applied). The \package{EDS} operator
+\f{index\_expand}\ttindextype[EDS]{index\_expand}{operator} is designed to expand an expression with \emph{free}
 indices to an explicit list over the index set, taking some limited account
 of the possible index symmetries.
 
 The syntax is
-\begin{edssyntax}
-	index\_expand \meta{arg}
-\end{edssyntax}
+\begin{syntax}
+	\f{index\_expand} \meta{arg}
+\end{syntax}
 where \meta{arg} can be an expression, a rule or equation or a boolean
 expression, or an arbitrarily nested list of these items. The result is a
 flattened list.
 
-\paragraph{\it Examples:}
+\paragraph{\textit{Examples:}}
 \begin{verbatim}
 indexrange {i,j,k}={1,2,3},{a,b}={x,y};
 pform {e(i),o(a,b)}=1;
@@ -1940,17 +1982,18 @@ index_expand{o(-a,-b)+o(-b,-a) => 0};
 \end{verbatim}
 
 
-\subsubsection{\tt pde2jet}
+\subsubsection{\f{pde2jet}}
 \label{pde2jet}
 
-A PDE system can be encoded into EDS jet variable notation using
-\f{pde2jet}. The syntax is as for \f{pde2eds}:
-\begin{edssyntax}
-	pde2jet(\meta{pde}\optional{,\meta{dependent},\meta{independent}})
-\end{edssyntax}
+\hypertarget{operator:PDE2JET}{}
+A PDE system can be encoded into \package{EDS} jet variable notation using
+\f{pde2jet}\ttindextype[EDS]{pde2jet}{operator}. The syntax is as for \f{pde2eds}:
+\begin{syntax}
+	\f{pde2jet}(\meta{pde}\optional{,\meta{dependent},\meta{independent}})
+\end{syntax}
 where \meta{pde} is a list of equations or expressions (implicitly assumed
-to vanish) specifying the PDE system using either the standard REDUCE
-\f{df} operator, or the EXCALC \f{@} operator. If the optional variable
+to vanish) specifying the PDE system using either the standard \REDUCE
+\f{df} operator, or the \package{EXCALC} \f{@} operator. If the optional variable
 lists \meta{dependent} and \meta{independent} are not given, \f{pde2jet}
 infers them from the expressions in \meta{pde}, using the same rules as
 \f{pde2eds} (section \ref{pde2eds}).
@@ -1960,7 +2003,7 @@ of dependent variables replaced by indexed 0-form variables from the
 appropriate jet bundle. Unlike \f{pde2eds}, \f{pde2jet} does not disturb
 the variable dependencies.
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 depend u,x,y; depend v,x,y;
 pde2jet({df(u,y,y)=df(v,x),df(v,y)=y*df(v,x)});
@@ -1973,31 +2016,33 @@ pde2jet({df(u,y,y)=df(v,x),df(v,y)=y*df(v,x)});
 \end{verbatim}
 
 
-\subsubsection{\tt mkdepend}
+\subsubsection{\f{mkdepend}}
 \label{mkdepend}
 
-The \f{mkdepend} operator is intended for restoring the dependencies
+\hypertarget{operator:EDS_MKDEPEND}{}
+The \f{mkdepend}\ttindextype[EDS]{mkdepend}{operator} operator is intended for restoring the dependencies
 destroyed by a call to \f{pde2eds} (section \ref{pde2eds}). The syntax is
-\begin{edssyntax}
-	mkdepend \{\meta{list of variables},$\cdots$\}
-\end{edssyntax}
+\begin{syntax}
+	\f{mkdepend} \{\meta{list of variables},$\cdots$\}
+\end{syntax}
 where the first variable in each list is declared to depend on the
 remaining ones.
 
 
-\subsubsection{\tt disjoin}
+\subsubsection{\f{disjoin}}
 \label{disjoin}
 
-The \f{disjoin} operator takes a list of \meta{maps} (section \ref{Maps})
+\hypertarget{operator:DISJOIN}{}
+The \f{disjoin}\ttindextype[EDS]{disjoin}{operator} operator takes a list of \meta{maps} (section \ref{Maps})
 describing a decomposition of a variety, and returns an equivalent list of
 \meta{maps} such that the components are all disjoint. The background
 coframing (section \ref{Background coframing}) should be set appropriately
 before calling \f{disjoin}. The syntax is
-\begin{edssyntax}
-	disjoin \{\meta{map},$\cdots$\}
-\end{edssyntax}
+\begin{syntax}
+	\f{disjoin} \{\meta{map},$\cdots$\}
+\end{syntax}
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 set_coframing coframing {x,y};
 disjoin {{x=0},{y=0}};
@@ -2005,26 +2050,27 @@ disjoin {{x=0},{y=0}};
    {{y=0,x neq 0},{x=0,y neq 0},{y=0,x=0}}
 \end{verbatim}
 
-\subsubsection{\tt cleanup}
+\subsubsection{\f{cleanup}}
 \label{cleanup}
 
-To avoid lengthy recomputations, EDS stores various properties (section
+\hypertarget{operator:CLEANUP}{}
+To avoid lengthy recomputations, \package{EDS} stores various properties (section
 \ref{Properties}) and also many intermediate results in a hidden list
-attached to each \meta{EDS}. When EDS detects a change in circumstances
+attached to each \meta{EDS}. When \package{EDS} detects a change in circumstances
 which could make the information innacurate, it is discarded and
 recomputed. Unfortunately, this mechanism is not perfect, and occasionally
 misses something which renders the results incorrect. In such a case, it is
 possible to discard all the properties and hidden information using the
-\f{cleanup} operator. The call
-\begin{edssyntax}
-	cleanup \meta{arg}
-\end{edssyntax}
+\f{cleanup}\ttindextype[EDS]{cleanup}{operator} operator. The call
+\begin{syntax}
+	\f{cleanup} \meta{arg}
+\end{syntax}
 returns a copy of \meta{arg}, which may be a \meta{coframing} or an
 \meta{EDS} which has been stripped of this auxilliary information. Note
 that the original input (with possible innacuracies) is left undisturbed by
 this operation: the result of \f{cleanup} must be used.
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 % An erroneous property assertion
 S := eds({d u - p*d x},{d x,d y},{closed = 1})$
@@ -2042,22 +2088,23 @@ closure S;
    EDS({d u - p*d x, - d p^d x},{d x,d y});
 \end{verbatim}
 
-\subsubsection{\tt reorder}
+\subsubsection{\f{reorder}}
 \label{reorder}
 
+\hypertarget{operator:EDS_REORDER}{}
 All operations with a \meta{coframing} or \meta{EDS} temporarily override
 the prevailing kernel order with their own. Thus the ordering of the
 cobasis elements in a \meta{coframing} operator remains fixed, even when a
-REDUCE \f{korder} statement is issued. To enforce conformity to the
-prevailing kernel order, the \f{reorder} operator is available. The call
-\begin{edssyntax}
-	reorder \meta{arg}
-\end{edssyntax}
+\REDUCE \f{korder} statement is issued. To enforce conformity to the
+prevailing kernel order, the \f{reorder}\ttindextype[EDS]{reorder}{operator} operator is available. The call
+\begin{syntax}
+	\f{reorder} \meta{arg}
+\end{syntax}
 returns a copy of \meta{arg}, which may be a \meta{coframing} or an
 \meta{EDS} which has been reordered. Note that the original input is left
 undisturbed by this operation: the result of \f{reorder} must be used.
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 M := coframing {x,y,z};
 
@@ -2076,24 +2123,25 @@ reorder m;
 \subsection{Experimental facilities}
 \label{Experimental facilities}
 
-This section describes various operators in EDS which either not
+This section describes various operators in \package{EDS} which either not
 algorithmically well-founded, or whose implementation is very unstable, or
 which have known bugs.
 
 
-\subsubsection{\tt poincare}
+\subsubsection{\f{poincare}}
 \label{poincare}
 
-The \f{poincare} operator implements the homotopy integral found in the
+\hypertarget{operator:POINCARE}{}
+The \f{poincare}\ttindextype[EDS]{poincare}{operator} operator implements the homotopy integral found in the
 proof of Poincar{\'e}'s lemma. The expansion point is the origin of the
 coordinates found in the input. The syntax is
-\begin{edssyntax}
-	poincare \meta{p-form}
-\end{edssyntax}
+\begin{syntax}
+	\f{poincare} \meta{p-form}
+\end{syntax}
 If \f{f} is a $p$-form, then \f{poincare f} is a $(p-1)$-form, and
 \f{f - poincare d f} is an exact $p$-form.
 
-\paragraph{\it Examples:}
+\paragraph{\textit{Examples:}}
 \begin{verbatim}
 poincare(3*d x^d y^d z);
 
@@ -2109,21 +2157,22 @@ d ws;
 \end{verbatim}
 
 
-\subsubsection{\tt invariants}
+\subsubsection{\f{invariants}}
 \label{invariants}
 
-The \f{invariants} operator implements the algorithm implicit in the
+\hypertarget{operator:INVARIANTS}{}
+The \f{invariants}\ttindextype[EDS]{invariants}{operator} operator implements the algorithm implicit in the
 inductive proof of the Frobenius theorem. The syntax is
-\begin{edssyntax}
-	invariants(\meta{system}\optional{,\meta{list of coordinate}})
-\end{edssyntax}
-where \meta{system} is a set of 1-forms satisfying the Frobenius condition.
+\begin{syntax}
+	\f{invariants}(\meta{system}\optional{,\meta{list of coordinate}})
+\end{syntax}
+where \meta{system} is a set of $1$-forms satisfying the Frobenius condition.
 The optional second argument specifies the order in which the coordinates
 are projected away to get a trivially integrable system.  The CRACK and
 ODESOLVE packages are used to solve the ODE systems which arise, so the
 limitations of these packages constrain the scope of this operator as well.
 
-\paragraph{\it Examples:}
+\paragraph{\textit{Examples:}}
 \begin{verbatim}
 invariants {d x*y + d y*x*z + d z*log(y)*x*y};
 
@@ -2138,10 +2187,11 @@ invariants {d y*z**2 - d y*z + d z*y,d x*(1 - z) + d z*x};
 \end{verbatim}
 
 
-\subsubsection{\tt symbol\_relations}
+\subsubsection{\f{symbol\_relations}}
 \label{symbol_relations}
 
-The \f{symbol\_relations} operator finds the linear relations between the
+\hypertarget{operator:SYMBOL_RELATIONS}{}
+The \f{symbol\_relations}\ttindextype[EDS]{symbol\_relations}{operator} operator finds the linear relations between the
 entries of the tableau matrix for a quasilinear system. The syntax is
 \begin{syntax}
   \f{symbol\_relations}(\meta{EDS},\,\meta{identifier})
@@ -2149,7 +2199,7 @@ entries of the tableau matrix for a quasilinear system. The syntax is
 where \meta{EDS} is a quasilinear Pfaffian system and \meta{identifier} is
 used to create a 2-indexed 1-form which will label the tableau entries.
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 S := pde2eds {df(u,y,y) = df(u,x,x)};
 
@@ -2172,10 +2222,11 @@ symbol_relations(S,pi);
         y       x
 \end{verbatim}
 
-\subsubsection{\tt symbol\_matrix}
+\subsubsection{\f{symbol\_matrix}}
 \label{symbol_matrix}
 
-The \f{symbol\_matrix} operator returns the symbol matrix for a quasilinear
+\hypertarget{operator:SYMBOL_MATRIX}{}
+The \f{symbol\_matrix}\ttindextype[EDS]{symbol\_matrix}{operator} operator returns the symbol matrix for a quasilinear
 system in terms of a given variable. The syntax is
 \begin{syntax}
   \f{symbol\_matrix}(\meta{EDS},\,\meta{identifier})
@@ -2183,7 +2234,7 @@ system in terms of a given variable. The syntax is
 where \meta{EDS} is a quasilinear Pfaffian system and \meta{identifier} is
 used to create an indexed 0-form which will parameterise the matrix.
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 % With the same system as for symbol_relations:
 
@@ -2196,10 +2247,11 @@ symbol_matrix(S,xi);
    [  y       x]
 \end{verbatim}
 
-\subsubsection{\tt characteristic\_variety}
+\subsubsection{\f{characteristic\_variety}}
 \label{characteristic_variety}
 
-The \f{characteristic\_variety} operator returns the equations specifying
+\hypertarget{operator:CHARACTERISTIC_VARIETY}{}
+The \f{characteristic\_variety}\ttindextype[EDS]{characteristic\_variety}{operator} operator returns the equations specifying
 the characteristic variety for a quasilinear
 system in terms of a given variable. The syntax is
 \begin{syntax}
@@ -2210,7 +2262,7 @@ used to create an indexed 0-form variable. The result is a list of two
 lists: the first being the variety equations and the second the variables
 involved.
 
-\paragraph{\it Example:}
+\paragraph{\textit{Example:}}
 \begin{verbatim}
 % With the same system as for symbol_relations:
 
@@ -2268,7 +2320,7 @@ characteristic_variety(S,xi);
 
 % Text
 
-The tables in this appendix summarise the commands available in EDS.
+The tables in this appendix summarise the commands available in \package{EDS}.
 More detailed descriptions of the syntax and function of each command
 are to be found in the earlier sections. In each case, examples of
 the command are given, whereby the argument variables have the following
@@ -2293,7 +2345,7 @@ $T$         &\meta{tableau}\\
 $P$         &\meta{integral element}\\
 \end{tabular}
 
-\begin{commandtable}{Commands for constructing EDS objects}{constructors}
+\begin{commandtable}{Commands for constructing \package{EDS} objects}{constructors}
 \header{Command}
     &\header{Function}\\\hline
 \literal{coframing($cob$,$crd$,$rsx$,$drv$)}
@@ -2310,7 +2362,7 @@ $P$         &\meta{integral element}\\
     &constructs the \meta{EDS} for the contact system of the jet bundle
      $J^r(M,N)$\\\hline
 \literal{pde2eds($pde$,$dep$,$ind$)}
-    &converts a PDE system to an EDS: dependent and independent
+    &converts a PDE system to an \package{EDS}: dependent and independent
     variables are deduced if they are not specified (variable dependencies
     are removed)\\\hline
 \literal{set\_coframing($M$)}\nl
@@ -2321,7 +2373,7 @@ $P$         &\meta{integral element}\\
 \end{commandtable}
 
 
-\begin{commandtable}{Commands for inspecting EDS objects}{selectors}
+\begin{commandtable}{Commands for inspecting \package{EDS} objects}{selectors}
 \header{Command}
     &\header{Function}\\\hline
 \literal{coframing($E$)}
@@ -2347,13 +2399,13 @@ $P$         &\meta{integral element}\\
     &returns the currently known properties of the \meta{EDS} $E$ as a list of
      equations \meta{keyword}$ = $\meta{value}\\\hline
 \literal{one\_forms($E$)}\nl \literal{one\_forms($S$)}
-    &selects the 1-forms from a system\\\hline
+    &selects the $1$-forms from a system\\\hline
 \literal{zero\_forms($E$)}\nl \literal{zero\_forms($S$)}
     &selects the 0-forms from a system\\\hline
 \end{commandtable}
 
 
-\begin{commandtable}{Commands for manipulating EDS objects}{manipulators}
+\begin{commandtable}{Commands for manipulating \package{EDS} objects}{manipulators}
 \header{Command}
     &\header{Function}\\\hline
 \literal{augment($E$,$S$)}
@@ -2408,7 +2460,7 @@ $P$         &\meta{integral element}\\
 \literal{involution($E$)}
     &repeatedly prolongs $E$ to involution (or inconsistency)\\\hline
 \literal{linearise($E$,$P$)}
-    &linearise the (non-linear) EDS $E$ with respect to the integral element
+    &linearise the (non-linear) \package{EDS} $E$ with respect to the integral element
      $P$\\\hline
 \literal{integral\_element($E$)}
     &find a random \meta{integral element} of $E$\\\hline
@@ -2437,13 +2489,13 @@ $P$         &\meta{integral element}\\
 \literal{involutive($E$)}
     &applies Cartan's test for involution\\\hline
 \literal{pfaffian($E$)}
-    &checks if $E$ is generated by 1-forms and their exterior
+    &checks if $E$ is generated by $1$-forms and their exterior
      derivatives\\\hline
 \literal{quasilinear($E$)}
-    &tests if the {\it closure} of $E$ can be generated by forms at
+    &tests if the \textit{closure} of $E$ can be generated by forms at
      most linear in the complement of the independence condition\\\hline
 \literal{semilinear($E$)}
-    &tests if the {\it closure} of $E$ is quasilinear and, in addition, the
+    &tests if the \textit{closure} of $E$ is quasilinear and, in addition, the
     coefficients of the linear terms contain only independent variables or
     constants\\\hline
 \literal{$E$ equiv $E'$}
@@ -2461,7 +2513,7 @@ $P$         &\meta{integral element}\\
     &if \literal{on}, produces copious quantities of internal information,
     in addition to that produced by \literal{edsverbose}\\\hline
 \literal{edssloppy}
-    &if \literal{on}, allows EDS to divide by expressions not known to be non-zero
+    &if \literal{on}, allows \package{EDS} to divide by expressions not known to be non-zero
     and treats quasilinear systems as semilinear\\\hline
 \literal{edsdisjoint}
     &if \literal{on}, forces varieties to be decomposed into disjoint
@@ -2489,7 +2541,7 @@ $P$         &\meta{integral element}\\
 \literal{exfactors($\Omega$)}
     &as for \literal{linear\_divisors}, but with the additional (non-linear) factor\\\hline
 \literal{index\_expand($any$)}
-    &returns a list of copies of its argument, with free EXCALC indices
+    &returns a list of copies of its argument, with free \package{EXCALC} indices
      replaced by successive values from the relevant index range\\\hline
 \literal{pde2jet($pde$,$dep$,$ind$)}
     &converts a PDE system into jet bundle notation, replacing derivatives by
@@ -2504,7 +2556,7 @@ $P$         &\meta{integral element}\\
      results removed\\\hline
 \literal{reorder($E$)}\nl \literal{reorder($M$)}
     &returns a fresh copy of $E$ or $M$, conforming to the prevailing
-    REDUCE kernel order\\\hline
+    \REDUCE kernel order\\\hline
 \end{commandtable}
 
 

@@ -7,17 +7,14 @@ the product of the given expression.  These are used with the syntax:
 
 \hypertarget{operator:SUM}{}
 \hypertarget{operator:PROD}{}
-\vspace{.1in}
-\noindent \texttt{sum}(expr:{\em expression}, k:{\em kernel},
-[lolim:{\em expression} [, uplim:{\em expression}]])
-\vspace{.1in}
-\noindent \texttt{prod}(expr:{\em expression}, k:{\em kernel},
-[lolim:{\em expression} [, uplim:{\em expression}]])
-
+\begin{syntaxtable}
+  \f{sum}(\meta{expr:expression},\meta{k:kernel}[,\meta{lolim:expression}[,\meta{uplim:expression}]]) \\[\baselineskip]
+  \f{prod}(\meta{expr:expression},\meta{k:kernel}[,\meta{lolim:expression}[,\meta{uplim:expression}]]) \\
+\end{syntaxtable}
 If there is no closed form solution, these operators return the input
-unchanged.  UPLIM and LOLIM are optional parameters specifying the lower
-limit and upper limit of the summation (or product), respectively.  If UPLIM
-is not supplied, the upper limit is taken as K (the summation variable
+unchanged.  \meta{lolim} and \meta{uplim} are optional parameters specifying the lower
+limit and upper limit of the summation (or product), respectively.  If \meta{uplim}
+is not supplied, the upper limit is taken as \meta{k} (the summation variable
 itself).
 
 For example:
@@ -33,12 +30,10 @@ For example:
 \end{verbatim}
 
 Gosper's algorithm succeeds whenever the ratio
-
 \[ \frac{\sum_{k=n_0}^n f(k)}{\sum_{k=n_0}^{n-1} f(k)} \]
-
-\noindent is a rational function of $n$.  The function SUM!-SQ
+is a rational function of $n$.  The function \f{sum!-sq}
 handles basic functions such as polynomials, rational functions and
-exponentials. \ttindextype[SUM]{SUM"!-SQ}{operator}
+exponentials. \ttindextype[SUM]{sum"!-sq}{operator}
 
 The trigonometric functions sin, cos, etc. are converted to exponentials
 and then Gosper's algorithm is applied.  The result is converted back into
@@ -56,6 +51,6 @@ functions evaluated at $k$ and $k - 1$ ($k$ being the summation variable).
 
 \index{Tracing!SUM package} \ttindexswitch[SUM]{trsum}
 \hypertarget{switch:TRSUM}{}
-There is a switch \sw{trsum} (default OFF).  If this switch is on, trace
+There is a switch \sw{trsum} (default off).  If this switch is on, trace
 messages are printed out during the course of Gosper's algorithm.
 
