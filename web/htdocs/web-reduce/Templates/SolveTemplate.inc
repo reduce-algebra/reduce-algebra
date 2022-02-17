@@ -117,7 +117,7 @@
 
 <script type="module">
 	// Imported classes:
-	import { Template } from "./TempFuncs.mjs";
+	import { Template } from "./GenJS/TempFuncs.js";
 
 	class SolveTemplate extends Template {
 		constructor() {

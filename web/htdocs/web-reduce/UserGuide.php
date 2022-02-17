@@ -588,29 +588,33 @@ include '../include/begin-body.php';
 
 <h2 id="QueryString">Controlling Web REDUCE via the URL</h2>
 <p>
-    Currently, the following options can be used only singly; they
-    cannot be combined.
+    Options can be combined in any order with any or no separators, provided they begin with "?", e.g.
+    <code>/web-reduce/?mobile,noautorun</code>.
 </p>
 <ul>
     <li>
-        If the main Web REDUCE page is opened with the query string
-        <code>?mobile</code> appended to the URL, i.e. <code>/web-reduce/?mobile</code>,
+        If the main Web REDUCE page is opened with a query string containing
+        <code>mobile</code> appended to the URL, e.g. <code>/web-reduce/?mobile</code>,
         then the mobile version of Web REDUCE is started in full
         window mode; see <a href="#Versions">Desktop and Mobile Versions</a>
         and <a href="#ViewMenu">View Menu</a>.
     </li>
     <li>
-        If the main Web REDUCE page is opened with the query string
-        <code>?noautorun</code> appended to the URL, i.e. <code>/web-reduce/?noautorun</code>,
-        then Web REDUCE is not automatically run, but the web page is
-        otherwise set up normally.
-    </li>
-    <li>
-        If the main Web REDUCE page is opened with the query string
-        <code>?debug</code> appended to the URL, i.e. <code>/web-reduce/?debug</code>, then
+        If the main Web REDUCE page is opened with a query string containing
+        <code>debug</code> appended to the URL, e.g. <code>/web-reduce/?debug</code>, then
         input to and output from REDUCE is logged to the web browser's
         JavaScript console (by calling <code>console.log()</code>).
         This facility is intended for developers.
+    </li>
+    <li>
+        If the main Web REDUCE page is opened with a query string containing
+        <code>noautorun</code> appended to the URL, e.g. <code>/web-reduce/?noautorun</code>,
+        then Web REDUCE is not automatically run.
+    </li>
+    <li>
+        If the main Web REDUCE page is opened with a query string containing
+        <code>spoof</code> appended to the URL, e.g. <code>/web-reduce/?spoof</code>,
+        then Web REDUCE is not automatically run, but the menus are enabled as if REDUCE were running.
     </li>
 </ul>
 

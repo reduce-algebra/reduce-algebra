@@ -24,10 +24,10 @@ export const Global: {
 };
 
 /** True if console logging is enabled. */
-export const debug = (location.search === '?debug');
+export const debug = (location.search.includes("debug"));
 
 /** True if mobile version selected. */
-const mobileVersion = (location.search === "?mobile");
+const mobileVersion = (location.search.includes("mobile"));
 
 // Set up access to document elements and reset their defaults for when the page is reloaded:
 const startREDUCEMenuItem = document.getElementById("StartREDUCEMenuItem") as HTMLButtonElement;
@@ -208,7 +208,7 @@ function reduceWebErrorHandler(event: ErrorEvent) {
  * Send a text string to REDUCE as input.
  * @param {string} str - The REDUCE input.
  */
-export function sendToReduce(str: string) {
+export let sendToReduce = (str: string) => {
     debug && console.log(` INPUT: ${str}`); // for debugging
     // This function posts a string to REDUCE, which treats it rather as if
     // it had been keyboard input. At the start of a run I use this to send a
@@ -394,7 +394,10 @@ centreTypesetMathsCheckbox.addEventListener("change", event => {
         ioDisplayBody = iframe.contentDocument.body;
         ioDisplayHead.appendChild(ioColouringStyleElement); // IOColouringCheckbox initially checked
         document.getElementById("REDUCEMenuLink").classList.remove("disabled"); // Enable REDUCE menu
-        if (location.search !== "?noautorun") startREDUCE();
+        if (location.search.includes("spoof")) {
+            setRunningState(true);
+            sendToReduce = (str: string) => { };
+        } else if (!location.search.includes("noautorun")) startREDUCE();
     });
     iframe.srcdoc = `<!DOCTYPE html>
 <html>

@@ -40,19 +40,17 @@ if ($_SERVER['QUERY_STRING']): ?>
     because mobile devices lack physical memory. The mobile version
     runs on desktop browsers, but probably not vice versa!
 </p>
-<p><strong>
-    Beware that the mobile version defaults to full window mode, which
-    hides the main navigation panel/widget.  Full window mode can be
-    controlled using the View menu.
-</strong></p>
-<ul class="list-group list-group-horizontal-sm text-center">
-    <li class="list-group-item bg-transparent">
-        <a class="btn btn-primary btn-lg" href="/web-reduce">Start desktop Web REDUCE</a>
-    </li>
-    <li class="list-group-item bg-transparent">
-        <a class="btn btn-primary btn-lg" href="/web-reduce/?mobile">Start mobile Web REDUCE</a>
-    </li>
-</ul>
+<p>
+    <strong>
+        Beware that the mobile version defaults to full window mode, which
+        hides the main navigation panel/widget. Full window mode can be
+        controlled using the View menu.
+    </strong>
+</p>
+<div style="display: flex; justify-content: space-evenly; flex-wrap: wrap;">
+    <a class="btn btn-primary btn-lg mb-2" href="/web-reduce">Start desktop Web REDUCE</a>
+    <a class="btn btn-primary btn-lg mb-2" href="/web-reduce/?mobile">Start mobile Web REDUCE</a>
+</div>
 <?php endif; ?>
 
 <h2>Limitations</h2>
