@@ -51,28 +51,27 @@ include '../include/begin-head.php';
         font-style: italic;
     }
 
-    table.function-templates {
-        table-layout: fixed;
-        width: 90%;
-        margin-left: auto;
-        margin-right: auto;
-        border-collapse: separate;
-        border-spacing: 10px;
+    div.function-templates {
+        display: grid;
+        grid-row-gap: 20px;
+        align-items: center;
+        justify-content: center;
     }
 
-    table.function-templates td {
-        text-align: center;
-        padding-top: 5px;
-        padding-bottom: 5px;
+    div.function-templates.three-col {
+        grid-template-columns: repeat(auto-fill, 250px);
     }
 
-    table.function-templates td.selected {
+    div.function-templates.two-col {
+        grid-template-columns: repeat(auto-fill, 340px);
+    }
+
+    div.function-templates>div.selected {
         outline: auto blue medium;
     }
 
-    table.function-templates p {
-        margin-top: -5px;
-        margin-bottom: 5px;
+    div.function-templates p {
+        margin-bottom: 0;
     }
 
     .fs-big {
@@ -257,7 +256,7 @@ Keyboard Shortcut: Control+Enter. (Also hold Shift to prevent auto-termination.)
 <script type="module" src="GenJS/FileMenu.js"></script>
 
 <!-- Modal Dialogues -->
-<script type="module" src="TempFuncs.mjs"></script>
+<script type="module" src="GenJS/TempFuncs.js"></script>
 <?php
     include './TempFuncs.inc';
 

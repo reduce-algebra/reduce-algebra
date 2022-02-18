@@ -1,6 +1,6 @@
 
-\index{Koepf, Wolfram}\index{Persons!Koepf, Wolfram}
-\index{B\"oing, Harald}\index{Persons!B\"oing, Harald}
+\index{Koepf, Wolfram}\index{People!Koepf, Wolfram}
+\index{B\"oing, Harald}\index{People!B\"oing, Harald}
 \newcounter{redprompt}
 {\setcounter{redprompt}{0}}
 \newcommand{\redprompt}{\stepcounter{redprompt}\theredprompt:}
@@ -279,7 +279,7 @@ algorithm.
 		antidifference. (By default it returns a \textsl{downward}
 		antidifference, which may be changed by the switch
 		\sw{qgosper\_down}; see also
-                \ttindexswitch[QSUM]{QGOSPER\_DOWN}
+                \ttindexswitch[QSUM]{qgosper\_down}
 		\S~\ref{switches}.)
 		If it does not return a \textsl{q}-hypergeometric antidifference,
 		then such an antidifference does not exist.
@@ -426,7 +426,7 @@ summand is zero for all $k>n$ as $\qfac{q^{-n}}{k}=0$ and
 the $\qfac{q}{k}$-term in the denominator makes the summand
 vanish for all $k<0$.
 
-\ttindexswitch[QSUM]{QSUMRECURSION\_CERTIFICATE}
+\ttindexswitch[QSUM]{qsumrecursion\_certificate}
 With the switch \sw{qsumrecursion\_certificate} it is possible
 to get the antidifference $g_k$ described above. When switched
 on, \f{qsumrecursion} returns a list with five entries,
@@ -594,7 +594,7 @@ polynomials.
 \end{alltt}}
 
 The setting of \sw{qsum\_nullspace}
-\ttindexswitch[QSUM]{QSUM\_NULLSPACE}
+\ttindexswitch[QSUM]{qsum\_nullspace}
 (see \cite{PauleRiese:95} and \S~\ref{switches})
 results in a faster
 calculation of the recurrence equation for this example.
@@ -605,10 +605,10 @@ calculation of the recurrence equation for this example.
 \subsection{Simplification Operators}
 \label{qsum:simplification}
 
-\ttindextype{QSIMPCOMB}{operator}
-\ttindextype{UP\_QRATIO}{operator}
-\ttindextype{QRATIO}{operator}
-\ttindextype{DOWN\_QRATIO}{operator}
+\ttindextype{qsimpcomb}{operator}
+\ttindextype{up\_qratio}{operator}
+\ttindextype{qratio}{operator}
+\ttindextype{down\_qratio}{operator}
 An essential step in the algorithms introduced above is to decide
 whether a term $a_k$ is $q$-hypergeometric, i.\,e.\ if the
 ratio $a_{k}/a_{k-1}$ is rational in $q^k$.
@@ -646,14 +646,14 @@ The following synomyms may be used:
 \subsection{Global Variables and Switches}
 \label{switches}
 
-\ttindexswitch[QSUM]{QSUM\_TRACE}
-\ttindexswitch[QSUM]{QGOSPER\_DOWN}
-\ttindexswitch[QSUM]{QSUMRECURSION\_DOWN}
-\ttindexswitch[QSUM]{QSUM\_NULLSPACE}
-\ttindexswitch[QSUM]{QGOSPER\_SPECIALSOL}
-\ttindexswitch[QSUM]{QSUMRECURSION\_EXP}
-\ttindexswitch[QSUM]{QSUMRECURSION\_CERTIFICATE}
-\ttindex{DOWNWARD\_ANTIDIFFERENCE}\ttindex{UPWARD\_ANTIDIFFERENCE}
+\ttindexswitch[QSUM]{qsum\_trace}
+\ttindexswitch[QSUM]{qgosper\_down}
+\ttindexswitch[QSUM]{qsumrecursion\_down}
+\ttindexswitch[QSUM]{qsum\_nullspace}
+\ttindexswitch[QSUM]{qgosper\_specialsol}
+\ttindexswitch[QSUM]{qsumrecursion\_exp}
+\ttindexswitch[QSUM]{qsumrecursion\_certificate}
+\ttindex{downward\_antidifference}\ttindex{upward\_antidifference}
 The following switches can be used in connection with
 the \texttt{QSUM} package:
 %

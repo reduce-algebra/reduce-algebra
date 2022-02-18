@@ -10,20 +10,22 @@
 		<small>REDUCE Manual:&ensp;
 			<a href="/manual-lookup.php?LIMITS:" target="_blank" title="Opens in a new tab.">LIMITS Package</a></small>
 	</p>
-	<div class="pattern">
-		<div style="display: inline-block; vertical-align: middle;">
+	<div class="pattern" style="display: flex; justify-content: center; align-items: flex-start;">
+		<div style="display: inline-block; vertical-align: middle; flex: 0 0 auto;">
 			lim<br />
 			<input type="text" placeholder="var" style="width: 3em; font-size: small;" value="x" />
 			→
 			<input type="text" placeholder="alg" style="width: 3em; font-size: small;" value="0" />
 			<sup style="border: gray solid thin; cursor: pointer;">&ensp;</sup>
-		</div>&ensp;<input type="text" placeholder="algebraic" value="ws" />
+		</div>
+		&ensp;
+		<input type="text" placeholder="algebraic" value="ws" style="flex: 0 1 10em;" />
 	</div>
 </modal-dialogue>
 
 <script type="module">
 	// Imported classes:
-	import { Template } from "./TempFuncs.mjs";
+	import { Template } from "./GenJS/TempFuncs.js";
 
 	// Imported functions:
 	// import { loadPackage } from "./GenJS/Main.js";

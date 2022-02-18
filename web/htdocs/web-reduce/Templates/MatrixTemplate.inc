@@ -11,43 +11,25 @@
 			<a href="/manual-lookup.php?MAT%20Operator" target="_blank" title="Opens in a new tab.">MAT
 				Operator</a></small>
 	</p>
-	<div class="pattern">
-		<span style="font-size: 10em; line-height: 60%; vertical-align: -0.48em;">(</span>
-		<table style="display: inline-table;">
-			<tbody>
-				<tr>
-					<td><input type="text" style="width: 5em" /></td>
-					<td><input type="text" style="width: 5em" /></td>
-					<td><input type="text" style="width: 5em" /></td>
-					<td><input type="text" style="width: 5em" /></td>
-				</tr>
-				<tr>
-					<td><input type="text" style="width: 5em" /></td>
-					<td><input type="text" style="width: 5em" /></td>
-					<td><input type="text" style="width: 5em" /></td>
-					<td><input type="text" style="width: 5em" /></td>
-				</tr>
-				<tr>
-					<td><input type="text" style="width: 5em" /></td>
-					<td><input type="text" style="width: 5em" /></td>
-					<td><input type="text" style="width: 5em" /></td>
-					<td><input type="text" style="width: 5em" /></td>
-				</tr>
-				<tr>
-					<td><input type="text" style="width: 5em" /></td>
-					<td><input type="text" style="width: 5em" /></td>
-					<td><input type="text" style="width: 5em" /></td>
-					<td><input type="text" style="width: 5em" /></td>
-				</tr>
-			</tbody>
-		</table>
-		<span style="font-size: 10em; line-height: 60%; vertical-align: -0.48em;">)</span>
+	<div class="pattern" style="display: grid; justify-content: center; grid-template-areas:
+	'L . . . . R'
+	'L . . . . R'
+	'L . . . . R'
+	'L . . . . R';
+	grid-template-columns: min-content repeat(4, minmax(1em,5em)) min-content;
+	grid-gap: 2px 2px;">
+		<span style="font-size: 10em; line-height: 50%; grid-area: L;">(</span>
+		<input type="text" /><input type="text" /><input type="text" /><input type="text" />
+		<input type="text" /><input type="text" /><input type="text" /><input type="text" />
+		<input type="text" /><input type="text" /><input type="text" /><input type="text" />
+		<input type="text" /><input type="text" /><input type="text" /><input type="text" />
+		<span style="font-size: 10em; line-height: 50%; grid-area: R;">)</span>
 	</div>
 </modal-dialogue>
 
 <script type="module">
 	// Imported classes:
-	import { Template } from "./TempFuncs.mjs";
+	import { Template } from "./GenJS/TempFuncs.js";
 
 	// Imported functions:
 	import { loadPackage } from "./GenJS/Main.js";

@@ -7,26 +7,26 @@
 			and products over numeric ranges require both limits to evaluate to numbers.
 		</small>
 	</p>
-	<p>
-	<div class="btn-group btn-group-sm me-5" role="group" aria-label="Basic radio toggle button group">
-		<input type="radio" class="btn-check" name="SumProdTemplate-SumProdButtons" id="SumProdTemplate-Sum"
-			autocomplete="off" value="∑" checked="checked" />
-		<label class="btn btn-outline-primary" for="SumProdTemplate-Sum">Sum</label>
-		<input type="radio" class="btn-check" name="SumProdTemplate-SumProdButtons" id="SumProdTemplate-Prod"
-			autocomplete="off" value="∏" />
-		<label class="btn btn-outline-primary" for="SumProdTemplate-Prod">Product</label>
+	<div style="display: flex; justify-content: space-evenly; flex-wrap: wrap;">
+		<div class="btn-group btn-group-sm mb-2" role="group" aria-label="Basic radio toggle button group">
+			<input type="radio" class="btn-check" name="SumProdTemplate-SumProdButtons" id="SumProdTemplate-Sum"
+				autocomplete="off" value="∑" checked="checked" />
+			<label class="btn btn-outline-primary" for="SumProdTemplate-Sum">Sum</label>
+			<input type="radio" class="btn-check" name="SumProdTemplate-SumProdButtons" id="SumProdTemplate-Prod"
+				autocomplete="off" value="∏" />
+			<label class="btn btn-outline-primary" for="SumProdTemplate-Prod">Product</label>
+		</div>
+		<div class="btn-group btn-group-sm mb-2" role="group" aria-label="Basic radio toggle button group">
+			<input type="radio" class="btn-check" name="SumProdTemplate-SymNumButtons" id="SumProdTemplate-Sym"
+				autocomplete="off" checked="checked" />
+			<label class="btn btn-outline-primary" for="SumProdTemplate-Sym" title="Seek a closed-form result.">Symbolic
+				Range</label>
+			<input type="radio" class="btn-check" name="SumProdTemplate-SymNumButtons" id="SumProdTemplate-Num"
+				autocomplete="off" />
+			<label class="btn btn-outline-primary" for="SumProdTemplate-Num" title="Use a for loop.">Numeric
+				Range</label>
+		</div>
 	</div>
-	<div class="btn-group btn-group-sm" role="group" aria-label="Basic radio toggle button group">
-		<input type="radio" class="btn-check" name="SumProdTemplate-SymNumButtons" id="SumProdTemplate-Sym"
-			autocomplete="off" checked="checked" />
-		<label class="btn btn-outline-primary" for="SumProdTemplate-Sym" title="Seek a closed-form result.">Symbolic
-			Range</label>
-		<input type="radio" class="btn-check" name="SumProdTemplate-SymNumButtons" id="SumProdTemplate-Num"
-			autocomplete="off" />
-		<label class="btn btn-outline-primary" for="SumProdTemplate-Num" title="Use a for loop.">Numeric
-			Range</label>
-	</div>
-	</p>
 	<p>
 		<small>REDUCE Manual:&ensp;
 			<a href="/manual-lookup.php?SUM:%20A%20package%20for%20series%20summation" target="_blank"
@@ -46,7 +46,7 @@
 					<td><input type="text" placeholder="algebraic" value="ws" /></td>
 				</tr>
 				<tr>
-					<td>
+					<td style="white-space: nowrap;">
 						<input type="text" placeholder="var" style="width: 3em; font-size: small;" value="i" />
 						=
 						<input type="text" placeholder="alg" style="width: 3em; font-size: small;" value="0" />
@@ -59,7 +59,7 @@
 
 <script type="module">
 	// Imported classes:
-	import { Template } from "./TempFuncs.mjs";
+	import { Template } from "./GenJS/TempFuncs.js";
 
 	class SumProdTemplate extends Template {
 		constructor() {

@@ -4,24 +4,26 @@
  */
 
 // Imported variables:
-import { inputDiv } from "./GenJS/Main.js";
+import { inputDiv } from "./Main.js";
 
 // Imported functions:
-import { sendToReduce, sendToReduceAndEcho } from "./GenJS/Main.js";
+import { refocus, sendToReduce, sendToReduceAndEcho } from "./Main.js";
 
 /**
- * Implement the modal-dialogue custom element.
+ * Class implementing the modal-dialogue custom element.
  */
 class ModalDialogue extends HTMLElement {
 	constructor() {
 		super();
 		// Handle <modal-dialogue> funcsHeader attribute:
 		if (this.hasAttribute("specfnsHeader")) {
-			const specfnsHeader = document.getElementById("special-functions-header").cloneNode(true).content.children;
+			const specfnsHeader = (document.getElementById("special-functions-header").cloneNode(true) as HTMLTemplateElement)
+				.content.children;
 			this.prepend(...specfnsHeader);
 		}
 		// Wrap the template content around the content of this <modal-dialogue> element.
-		const templateContent = document.getElementById("modal-dialogue-template").content.firstElementChild.cloneNode(true);
+		const templateContent = (document.getElementById("modal-dialogue-template") as HTMLTemplateElement)
+			.content.firstElementChild.cloneNode(true) as HTMLElement;
 		const modalBody = templateContent.querySelector("div.modal-body");
 		modalBody.append(...this.children);
 		this.appendChild(templateContent);
@@ -45,18 +47,28 @@ window.addEventListener("load", () =>
 	customElements.define("modal-dialogue", ModalDialogue));
 
 /**
- * The Template and Functions classes inherit from this class.
+ * Class representing a generic template or function dialogue,
+ * which the Template and Functions classes extend.
  */
 class TempFuncs {
-	constructor(dialogueId) {
+	dialogue: HTMLElement;
+	inputs: NodeListOf<HTMLInputElement>;
+	buttons: NodeListOf<HTMLButtonElement>;
+	initialInputValues: string[];
+
+	/**
+	 * Create a generic template or function dialogue.
+	 * @param {string} dialogueId - The id attribute of the modal-dialogue element.
+	 */
+	constructor(dialogueId: string) {
 		this.dialogue = document.getElementById(dialogueId);
-		this.inputs = this.dialogue.querySelectorAll("input[type=text]");
-		this.buttons = this.dialogue.querySelectorAll("div.modal-footer > button");
+		this.inputs = this.dialogue.querySelectorAll<HTMLInputElement>("input[type=text]");
+		this.buttons = this.dialogue.querySelectorAll<HTMLButtonElement>("div.modal-footer > button");
 
 		this.buttons[0].addEventListener("click", () => this.resetButtonAction());
 		// Just using the function this.resetButtonAction fails because this in resetButtonAction refers to the wrong object!
 
-		this.dialogue.addEventListener("hidden.bs.modal", () => inputDiv.focus());
+		// this.dialogue.addEventListener("hidden.bs.modal", () => inputDiv.focus());
 
 		// Save initial input values:
 		this.initialInputValues = [];
@@ -74,8 +86,9 @@ class TempFuncs {
 
 	/**
 	 * Insert text in inputDiv at caret or replace a selection if there is one.
+	 * @param {string} text - The text to insert.
 	 */
-	inputDivInsert(text) {
+	inputDivInsert(text: string) {
 		let selBeg = 0;
 		const selProps = preMenuSelectionProps;
 		const insertionNode = selProps.anchorNode;
@@ -106,14 +119,26 @@ class TempFuncs {
 }
 
 /**
- * Specific template classes inherit from this class.
+ * Class representing a generic template dialogue,
+ * which specific template classes extend.
+ * @extends TempFuncs
  */
 export class Template extends TempFuncs {
-	constructor(templateName) {
+	pattern: HTMLDivElement;
+	alertHeader: string;
+	checkNonEmpty: boolean;
+	result?(): string;
+
+	/**
+	 * Create a generic template dialogue.
+	 * @param {string} templateName - The id attribute of the modal-dialogue element, but with added spaces.
+	 */
+	 constructor(templateName: string) {
 		super(templateName.replace(/\s+/g, ""));
 		this.pattern = this.dialogue.querySelector("div.pattern");
 		this.alertHeader = `${templateName} Error\n`;
 
+		// Edit button action:
 		this.buttons[1].addEventListener("click", () => {
 			// try {
 			// No fields are required:
@@ -121,8 +146,10 @@ export class Template extends TempFuncs {
 			this.inputDivInsert(this.result());
 			this.buttons[3].click();
 			// } catch (ignored) { }
+			inputDiv.focus(); // always return focus to input editor
 		});
 
+		// Evaluate button action:
 		this.buttons[2].addEventListener("click", () => {
 			try {
 				// Check required fields provided:
@@ -130,15 +157,25 @@ export class Template extends TempFuncs {
 				sendToReduceAndEcho(this.result() + ";");
 				this.buttons[3].click();
 			} catch (ignored) { }
+			refocus(); // return focus to input editor on desktop, I/O Display on mobile
 		});
 	}
 
-	resetButtonAction() {
+	/**
+	 * Reset the values of all input fields.
+	 */
+	 resetButtonAction() {
 		// This seems to be necessary!
 		super.resetButtonAction();
 	}
 
-	getValueCheckNonEmpty(input) {
+	/**
+	 * Get the value of an input element and check that it is not empty.
+	 * Throw an error if empty.
+	 * @param {HTMLInputElement} input - The input element.
+	 * @returns {string} The non-empty value of the input element.
+	 */
+	getValueCheckNonEmpty(input: HTMLInputElement) {
 		const value = input.value.trim();
 		if (this.checkNonEmpty && !value) {
 			alert(this.alertHeader +
@@ -150,14 +187,22 @@ export class Template extends TempFuncs {
 }
 
 /**
- * Specific functions classes inherit from this class.
+ * Class representing a generic function dialogue,
+ * which specific function classes extend.
+ * @extends TempFuncs
  */
 export class Functions extends TempFuncs {
-	constructor(functionsId) {
+	selectedFunction: HTMLElement;
+
+	/**
+	 * Create a generic function dialogue.
+	 * @param {string} dialogueId - The id attribute of the modal-dialogue element.
+	 */
+	 constructor(functionsId: string) {
 		super(functionsId);
 		this.selectedFunction = undefined;
 
-		const functions = this.dialogue.querySelectorAll("td");
+		const functions = this.dialogue.querySelectorAll("div.function-templates>div") as NodeListOf<HTMLElement>;
 		for (const fn of functions)
 			fn.addEventListener("click", event => {
 				if (this.selectedFunction) this.selectedFunction.classList.remove("selected");
@@ -165,18 +210,25 @@ export class Functions extends TempFuncs {
 				this.selectedFunction.classList.add("selected");
 			});
 
+		// Edit button action:
 		this.buttons[1].addEventListener("click", () => {
 			if (this.selectedFunction) this.inputDivInsert(this.result());
 			this.buttons[3].click();
+			inputDiv.focus(); // always return focus to input editor
 		});
 
+		// Evaluate button action:
 		this.buttons[2].addEventListener("click", () => {
 			if (this.selectedFunction) sendToReduceAndEcho(this.result() + ";");
 			this.buttons[3].click();
+			refocus(); // return focus to input editor on desktop, I/O Display on mobile
 		});
 	}
 
-	resetButtonAction() {
+	/**
+	 * Reset the values of all input fields.
+	 */
+	 resetButtonAction() {
 		super.resetButtonAction();
 		if (this.selectedFunction) {
 			this.selectedFunction.classList.remove("selected");
@@ -184,7 +236,11 @@ export class Functions extends TempFuncs {
 		}
 	}
 
-	result() {
+	/**
+	 * Get the REDUCE input representing the selected function application.
+	 * @returns {string} The REDUCE input string.
+	 */
+	result(): string {
 		const values = [...this.selectedFunction.getElementsByTagName("input")]
 			.map(el => el.value.trim());
 		return `${this.selectedFunction.dataset.function}(${values.join()})`;
@@ -192,7 +248,12 @@ export class Functions extends TempFuncs {
 }
 
 // Template and Function menu support:
-let preMenuSelectionProps; // set when drop-down menus are shown
+let preMenuSelectionProps: {
+	anchorNode: Node,
+	anchorOffset: number,
+	focusNode: Node,
+	focusOffset: number
+}; // set when drop-down menus are shown
 
 /**
 * Save relevant properties of the current Selection object.

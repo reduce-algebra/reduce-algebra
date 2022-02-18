@@ -12,34 +12,37 @@
 			<a href="/manual-lookup.php?INT%20Operator" target="_blank" title="Opens in a new tab.">INT
 				Operator</a></small>
 	</p>
-	<div class="pattern">
-		<div style="display: inline-block; vertical-align: middle">
-			<input type="text" size="3" />
+	<div class="pattern" style="display: flex; justify-content: center; align-items: center;">
+		<div style="display: inline-block; vertical-align: middle; min-width: 1em; flex: 0 1 3em;">
+			<input type="text" style="width: 100%;" />
 			<div style="margin-top: -1rem; font-size: 300%; color: red">∫</div>
-			<input type="text" size="3" />
+			<input type="text" style="width: 100%;" />
 		</div>
-		<div style="display: inline-block; vertical-align: middle">
-			<input type="text" size="3" />
+		&nbsp;
+		<div style="display: inline-block; vertical-align: middle; min-width: 1em; flex: 0 1 3em;">
+			<input type="text" style="width: 100%;" />
 			<div style="margin-top: -1rem; font-size: 300%; color: green">∫</div>
-			<input type="text" size="3" />
+			<input type="text" style="width: 100%;" />
 		</div>
-		<div style="display: inline-block; vertical-align: middle">
-			<input type="text" size="3" />
+		&nbsp;
+		<div style="display: inline-block; vertical-align: middle; min-width: 1em; flex: 0 1 3em;">
+			<input type="text" style="width: 100%;" />
 			<div style="margin-top: -1rem; font-size: 300%; color: blue">∫</div>
-			<input type="text" size="3" />
+			<input type="text" style="width: 100%;" />
 		</div>
-		<input placeholder="algebraic" type="text" size="25" value="ws" />
-		<span style="color: blue">d</span>
-		<input placeholder="var" type="text" size="1" value="x" />&nbsp;
-		<span style="color: green">d</span>
-		<input type="text" size="1" />&nbsp;
-		<span style="color: red">d</span>
-		<input type="text" size="1" />
+		&nbsp;
+		<input placeholder="algebraic" type="text" value="ws" style="min-width: 5em; flex: 0 1 15em;" />
+		&nbsp; <span style=" color: blue">d</span>
+		<input placeholder="var" type="text" value="x" style="min-width: 1em; flex: 0 2 2em;" />
+		&nbsp; <span style="color: green">d</span>
+		<input type="text" style="min-width: 1em; flex: 0 2 2em;" />
+		&nbsp; <span style="color: red">d</span>
+		<input type="text" style="min-width: 1em; flex: 0 2 2em;" />
 	</div>
 </modal-dialogue>
 
 <script type="module">
-	import { Template } from "./TempFuncs.mjs";
+	import { Template } from "./GenJS/TempFuncs.js";
 
 	class IntegralTemplate extends Template {
 		constructor() {
