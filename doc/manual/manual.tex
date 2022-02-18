@@ -181,7 +181,7 @@
         \index{#2 #3@\texttt{#2} #3}%
       \else
         \capitalize{#1}%
-        \index{#2 #3@\texttt{#2} #3!\blubba\space package@\textsc{\blubba} package}%
+        \index{#2 #3@\texttt{#2} #3!\blubba\space package@\string\textsc{\blubba} package}%
       \fi
     \else
       \index{#2 \blubbera@\texttt{#2} \blubbera!\blubberb}%
@@ -198,8 +198,8 @@
 \else
 \newcommand*{\indexpackage}[1]{%
   \capitalize{#1}%
-  \index{#1 package@\textsc{\blubba} package}%
-  \index{Packages!#1@\textsc{\blubba}}%
+  \index{\blubba\space package@\string\textsc{\blubba} package}%
+  \index{Packages!\blubba@\string\textsc{\blubba}}%
 }
 \fi
 
@@ -213,7 +213,7 @@
          \def\blubber{\index{Switches by package ! 000@REDUCE Core! #2@\texttt{#2}}}%
        \else
          \capitalize{#1}%
-         \def\blubber{\index{Switches by package ! #1 package@\textsc{\blubba} package ! #2@\texttt{#2}}}%
+         \def\blubber{\index{Switches by package ! #1 package@\string\textsc{\blubba} package ! #2@\texttt{#2}}}%
        \fi
        \blubber}}
 %\show\ttindexswitch

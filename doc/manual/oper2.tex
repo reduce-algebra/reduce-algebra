@@ -5,13 +5,14 @@
 \hypertarget{command:ODD}{}
 \hypertarget{command:NONZERO}{}
 An operator can be declared to be \emph{even} or \emph{odd} in its first
-argument by the declarations \texttt{even}\ttindextype{even}{declaration} and
-\texttt{odd}\ttindextype{odd}{declaration} respectively.  Expressions involving an operator
+argument by the declarations \texttt{even}\ttindextype{even}{declaration}\index{Declaration!\texttt{even}} and
+\texttt{odd}\ttindextype{odd}{declaration}\index{Declaration!\texttt{odd}} respectively.  Expressions involving an operator
 declared in this manner are transformed if the first argument contains a
 minus sign.  Any other arguments are not affected.  In addition, if say
 \texttt{f} is declared odd, then \texttt{f(0)} is replaced by zero unless
 \texttt{f} is also declared \emph{non zero} by the declaration
-\texttt{nonzero}\ttindextype{nonzero}{declaration}.  For example, the declarations
+\texttt{nonzero}\ttindextype{nonzero}{declaration}\index{Declaration!\texttt{nonzero}}.
+For example, the declarations
 \begin{verbatim}
         even f1; odd f2;
 \end{verbatim}
@@ -26,7 +27,7 @@ To inhibit the last transformation, say \texttt{nonzero f2;}.
 
 \section{Linear Operators}\index{Linear operator}\index{Operator!linear}
 \hypertarget{command:LINEAR}{}
-\ttindextype{linear}{declaration}
+\ttindextype{linear}{declaration}\index{Declaration!\texttt{linear}}
 An operator can be declared to be linear in its first argument over powers
 of its second argument.  If an operator \texttt{f} is so declared, \texttt{f} of
 any sum is broken up into sums of \texttt{f}s, and any factors that are not
@@ -86,7 +87,7 @@ order quantum electrodynamics.
 \index{Operator!non-commuting}
 \hypertarget{command:NONCOM}{}
 An operator can be declared to be non-commutative under multiplication by
-the declaration \texttt{noncom}.\ttindextype{noncom}{declaration}
+the declaration \texttt{noncom}\ttindextype{noncom}{declaration}\index{Declaration!\texttt{noncom}}.
 
 \textit{Example:}
 
@@ -123,7 +124,8 @@ loop in the rule.
 \index{Antisymmetric operator}\index{Operator!antisymmetric}
 
 An operator can be declared to be symmetric with respect to its arguments
-by the declaration \texttt{symmetric}.\ttindextype{symmetric}{declaration} For example
+by the declaration \texttt{symmetric}\ttindextype{symmetric}{declaration}\index{Declaration!\texttt{symmetric}}.
+For example
 \begin{verbatim}
         symmetric u,v;
 \end{verbatim}
@@ -136,7 +138,7 @@ For example, \texttt{u(x,v(1,2))} would become \texttt{u(v(2,1),x)}, since
 numbers are ordered in decreasing order, and expressions are ordered in
 decreasing order of complexity.
 
-Similarly the declaration \texttt{antisymmetric}\ttindextype{antisymmetric}{declaration}
+Similarly the declaration \texttt{antisymmetric}\ttindextype{antisymmetric}{declaration}\index{Declaration!\texttt{antisymmetric}}
 \hypertarget{reserved:ANTISYMMETRIC}{}
 declares an operator antisymmetric.   For example,
 \begin{verbatim}
@@ -155,7 +157,8 @@ would also be replaced by 0.
 \hypertarget{command:OPERATOR}{}
 
 The user may add new prefix\index{Prefix operator!declaring new one} operators to the system by
-using the declaration \texttt{operator}\ttindextype{operator}{declaration}. For example:
+using the declaration \texttt{operator}\ttindextype{operator}{declaration}\index{Declaration!\texttt{operator}}.
+For example:
 \begin{verbatim}
         operator h,g1,arctan;
 \end{verbatim}
@@ -184,7 +187,7 @@ for this purpose).
 \hypertarget{command:PRINT_INDEXED}{}\hypertarget{command:PRINT_NOINDEXED}{}
 
 An operator declared
-\texttt{print\_indexed}\ttindextype{print\_indexed}{declaration} has
+\texttt{print\_indexed}\ttindextype{print\_indexed}{declaration}\index{Declaration!\texttt{print\_indexed}} has
 its arguments displayed as indices, e.g.\ after
 \texttt{print\_indexed~a;} the operator value \texttt{a(i,2)} is
 displayed as \(a_{i,2}\).  You can declare several operators together
@@ -193,7 +196,7 @@ to be indexed, e.g.
         print_indexed b, c;
 \end{verbatim}
 and remove indexed declarations using
-\texttt{print\_noindexed}\ttindextype{PRINT\_NOINDEXED}{declaration}.
+\texttt{print\_noindexed}\ttindextype{print\_noindexed}{declaration}\index{Declaration!\texttt{print\_noindexed}}.
 
 
 \section{Declaring New Infix Operators}
@@ -201,7 +204,8 @@ and remove indexed declarations using
 \hypertarget{command:PRECEDENCE}{}
 
 Users can add new infix operators by using the declarations
-\texttt{infix}\ttindextype{infix}{declaration} and \texttt{precedence}.\ttindextype{precedence}{declaration}
+\texttt{infix}\ttindextype{infix}{declaration}\index{Declaration!\texttt{index}} and
+\texttt{precedence}\ttindextype{precedence}{declaration}\index{Declaration!\texttt{precedence}}.
 For example,
 \begin{verbatim}
         infix mm;
@@ -247,7 +251,8 @@ There are several facilities in {\REDUCE}, such as the differentiation
 \index{Differentiation}
 operator and the linear operator\index{Linear operator} facility, that
 can utilize knowledge of the dependency between various variables, or
-kernels.  Such dependency may be expressed by the command \texttt{depend}.\ttindextype{depend}{command}
+kernels.  Such dependency may be expressed by the command
+\texttt{depend}\ttindextype{depend}{command}.
 This takes an arbitrary number of arguments and
 sets up a dependency of the first argument on the remaining arguments.
 For example,

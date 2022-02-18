@@ -201,7 +201,7 @@ the package will improperly work when dealing with numeric indices.
 \end{verbatim}
 \hypertarget{operator:SHOW_SPACES}
 To remind ones the space context in which one is working, the use of the
-function \ttindextype{CANTENS]}{show\_spaces}{operator}\f{show\_spaces} is required. Its output is an
+function \ttindextype[CANTENS]{show\_spaces}{operator}\f{show\_spaces} is required. Its output is an
 \emph{algebraic value} from which the user can retrieve all the informations
 displayed. After the declarations above, this function gives:
 \begin{verbatim}
@@ -356,8 +356,8 @@ Notice that the system distinguishes indices from variables on input
 solely on the basis that the user puts variables \emph{inside a list}.
 
 The dependence can also be declared implicit through the \REDUCE\ command
-\ttindextype[CANTENS]{depend}{declaration}
-\index{Cantens package@\textsc{Cantens} package!depend@\texttt{depend}}\f{depend}
+\ttindextype[CANTENS]{depend}{command}
+\index{Cantens package@\textsc{Cantens} package!depend declaration@\texttt{depend} declaration}\f{depend}
 which is generalized so as to allow to declare a tensor
 to depend on another tensor irrespective of its components. It means that only \emph{one}
 declaration is enough to express the dependence with respect to
@@ -1817,16 +1817,16 @@ for the output polynomial.
 \end{enumerate}
 Its capabilities  have been extended in four directions:
 \begin{itemize}
-\item It is able to work within \emph{several} spaces\index{Spaces!Cantens package}%
+\item It is able to work within \emph{several} spaces\index{Spaces!\package{Cantens} package}%
 \index{Cantens package@\textsc{Cantens} package!spaces}.
 \item It manages correctly expressions where
 formal tensor \emph{derivatives} are present%
 \footnote{In \package{DUMMY}\index{Dummy package@\textsc{Dummy} package} it does not take them into account}.
 \item It takes into account all symmetries even if partial.
 \item As its parent function, it can deal with non-commutative
-and anticommutative indexed objects\index{Anticommutative!Cantens package}%
+and anticommutative indexed objects\index{Anticommutative!\package{Cantens} package}%
 \index{Cantens package@\textsc{Cantens} package!anticommutative indexed objects}.
-So, Indexed objects may be spinors\index{Spinor!Cantens package}%
+So, Indexed objects may be spinors\index{Spinor!\package{Cantens} package}%
 \index{Cantens package@\textsc{Cantens} package!spinor} or quantum fields.
 \end{itemize}
 We describe most of these features in the rest of this
@@ -2583,7 +2583,7 @@ derivatives. We recognize here  that extensions should still be made.
 The subsequent illustrations show how \f{canonical} does indeed
 manage to find  the canonical form and simplify  expressions
 which contain derivatives. Notice, the use of
-the (modified) \ttindextype[CANTENS]{depend}{declaration}\texttt{depend}  declaration.
+the (modified) \ttindextype[CANTENS]{depend}{command}\texttt{depend} command.
 \index{onespace switch@\texttt  {onespace} switch!On}
 \begin{verbatim}
       on onespace;
